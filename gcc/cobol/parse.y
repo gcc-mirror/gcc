@@ -440,7 +440,31 @@ class locale_tgt_t {
 
 			/* tokens without semantic value */
                         /* CDF (COPY and >> defined here but used in cdf.y) */
-%token			BASIS CBL CONSTANT COPY
+                        
+%token			// CDF Flag-02 operands
+                        FLAG_02
+                        MOVE_TO_SAME_NAME
+                        RANGE_EXCEPTION_FOR_INDEX
+                        TERMINATE_WITH_VARYING
+
+                        // CDF Flag-14 operands
+                        FLAG_14
+                        COMPILE_TIME_ARITHMETIC_EXPRESSIONS
+                        I_O_DECLARATIVE I_O_STATUS_04 I_O_STATUS_07
+			NUM_ED_ZERO_FIGCONST
+			READ_PREVIOUS REF_MOD_ZERO_LENGTH
+			VALUE_EDITING VALUE_FIG_CON_LENGTH VALUE_ZERO
+			WRITE_END_OF_PAGE
+			// Other unsupported CDF words
+                        LEAP_SECOND LISTING PROPAGATE
+                        ZERO_LENGTH
+
+                        // boolean operators
+			B_AND B_NOT B_OR 
+                        B_SHIFT_L B_SHIFT_LC B_SHIFT_R B_SHIFT_RC
+                        B_XOR
+                        
+                        BASIS CBL CONSTANT COPY
 			DEFINED ENTER FEATURE INSERTT
 			LSUB "("
 			PARAMETER_kw "PARAMETER"
@@ -634,6 +658,7 @@ class locale_tgt_t {
 			SPECIAL_NAMES SQRT STACK
 			STANDARD
 			STANDARD_1 "STANDARD-1"
+			STANDARD_2 "STANDARD-2"
 			STANDARD_DEVIATION  "STANDARD-DEVIATION "
 			STANDARD_COMPARE "STANDARD-COMPARE"
 			STATUS STRONG
@@ -1415,7 +1440,7 @@ class locale_tgt_t {
 			END_IF
 
 %left  THRU
-%left  OR
+%left  OR XOR
 %left  AND
 %right  NOT
 %left '<' '>' EQ NE LE GE

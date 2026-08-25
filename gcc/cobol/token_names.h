@@ -107,603 +107,633 @@ tokens = {
 	{ "date-fmt", DATE_FMT }, // 359
 	{ "time-fmt", TIME_FMT }, // 360
 	{ "datetime-fmt", DATETIME_FMT }, // 361
-	{ "basis", BASIS }, // 362
-	{ "cbl", CBL }, // 363
-	{ "constant", CONSTANT }, // 364
-	{ "copy", COPY }, // 365
-	{ "defined", DEFINED }, // 366
-	{ "enter", ENTER }, // 367
-	{ "feature", FEATURE }, // 368
-	{ "insertt", INSERTT }, // 369
-	{ "lsub", LSUB }, // 370
-	{ "parameter", PARAMETER_kw }, // 371
-	{ "override", OVERRIDE }, // 372
-	{ "ready", READY }, // 373
-	{ "reset", RESET }, // 374
-	{ "rsub", RSUB }, // 375
-	{ "service-reload", SERVICE_RELOAD }, // 376
-	{ "star-cbl", STAR_CBL }, // 377
-	{ "subscript", SUBSCRIPT }, // 378
-	{ "suppress", SUPPRESS }, // 379
-	{ "trace", TRACE }, // 380
-	{ "use", USE }, // 381
-	{ "cobol-words", COBOL_WORDS }, // 382
-	{ "equate", EQUATE }, // 383
-	{ "undefine", UNDEFINE }, // 384
-	{ "cdf-define", CDF_DEFINE }, // 385
-	{ "cdf-display", CDF_DISPLAY }, // 386
-	{ "cdf-if", CDF_IF }, // 387
-	{ "cdf-else", CDF_ELSE }, // 388
-	{ "cdf-end-if", CDF_END_IF }, // 389
-	{ "cdf-evaluate", CDF_EVALUATE }, // 390
-	{ "cdf-when", CDF_WHEN }, // 391
-	{ "cdf-end-evaluate", CDF_END_EVALUATE }, // 392
-	{ "call-convention", CALL_CONVENTION }, // 393
-	{ "call-cobol", CALL_COBOL }, // 394
-	{ "call-verbatim", CALL_VERBATIM }, // 395
-	{ "cdf-push", CDF_PUSH }, // 396
-	{ "cdf-pop", CDF_POP }, // 397
-	{ "source-format", SOURCE_FORMAT }, // 398
-	{ "if", IF }, // 399
-	{ "then", THEN }, // 400
-	{ "else", ELSE }, // 401
-	{ "sentence", SENTENCE }, // 402
-	{ "accept", ACCEPT }, // 403
-	{ "add", ADD }, // 404
-	{ "alter", ALTER }, // 405
-	{ "call", CALL }, // 406
-	{ "cancel", CANCEL }, // 407
-	{ "close", CLOSE }, // 408
-	{ "compute", COMPUTE }, // 409
-	{ "continue", CONTINUE }, // 410
-	{ "delete", DELETE }, // 411
-	{ "display", DISPLAY }, // 412
-	{ "divide", DIVIDE }, // 413
-	{ "evaluate", EVALUATE }, // 414
-	{ "exit", EXIT }, // 415
-	{ "filler", FILLER_kw }, // 416
-	{ "goback", GOBACK }, // 417
-	{ "goto", GOTO }, // 418
-	{ "initialize", INITIALIZE }, // 419
-	{ "inspect", INSPECT }, // 420
-	{ "merge", MERGE }, // 421
-	{ "move", MOVE }, // 422
-	{ "multiply", MULTIPLY }, // 423
-	{ "open", OPEN }, // 424
-	{ "paragraph", PARAGRAPH }, // 425
-	{ "read", READ }, // 426
-	{ "release", RELEASE }, // 427
-	{ "return", RETURN }, // 428
-	{ "rewrite", REWRITE }, // 429
-	{ "search", SEARCH }, // 430
-	{ "set", SET }, // 431
-	{ "select", SELECT }, // 432
-	{ "sort", SORT }, // 433
-	{ "sort-merge", SORT_MERGE }, // 434
-	{ "string", STRING_kw }, // 435
-	{ "stop", STOP }, // 436
-	{ "subtract", SUBTRACT }, // 437
-	{ "start", START }, // 438
-	{ "unstring", UNSTRING }, // 439
-	{ "write", WRITE }, // 440
-	{ "when", WHEN }, // 441
-	{ "argument-number", ARGUMENT_NUMBER }, // 442
-	{ "argument-value", ARGUMENT_VALUE }, // 443
-	{ "environment-name", ENVIRONMENT_NAME }, // 444
-	{ "environment-value", ENVIRONMENT_VALUE }, // 445
-	{ "abs", ABS }, // 446
-	{ "access", ACCESS }, // 447
-	{ "acos", ACOS }, // 448
-	{ "actual", ACTUAL }, // 449
-	{ "advancing", ADVANCING }, // 450
-	{ "after", AFTER }, // 451
-	{ "all", ALL }, // 452
-	{ "allocate", ALLOCATE }, // 453
-	{ "alphabet", ALPHABET }, // 454
-	{ "alphabetic", ALPHABETIC }, // 455
-	{ "alphabetic-lower", ALPHABETIC_LOWER }, // 456
-	{ "alphabetic-upper", ALPHABETIC_UPPER }, // 457
-	{ "alphanumeric", ALPHANUMERIC }, // 458
-	{ "alphanumeric-edited", ALPHANUMERIC_EDITED }, // 459
-	{ "also", ALSO }, // 460
-	{ "alternate", ALTERNATE }, // 461
-	{ "annuity", ANNUITY }, // 462
-	{ "anum", ANUM }, // 463
-	{ "any", ANY }, // 464
-	{ "anycase", ANYCASE }, // 465
-	{ "apply", APPLY }, // 466
-	{ "are", ARE }, // 467
-	{ "area", AREA }, // 468
-	{ "areas", AREAS }, // 469
-	{ "as", AS }, // 470
-	{ "ascending", ASCENDING }, // 471
-	{ "activating", ACTIVATING }, // 472
-	{ "asin", ASIN }, // 473
-	{ "assign", ASSIGN }, // 474
-	{ "at", AT }, // 475
-	{ "atan", ATAN }, // 476
-	{ "based", BASED }, // 477
-	{ "baseconvert", BASECONVERT }, // 478
-	{ "before", BEFORE }, // 479
-	{ "binary", BINARY }, // 480
-	{ "bit", BIT }, // 481
-	{ "bit-of", BIT_OF }, // 482
-	{ "bit-to-char", BIT_TO_CHAR }, // 483
-	{ "blank", BLANK }, // 484
-	{ "block", BLOCK_kw }, // 485
-	{ "boolean-of-integer", BOOLEAN_OF_INTEGER }, // 486
-	{ "bottom", BOTTOM }, // 487
-	{ "by", BY }, // 488
-	{ "byte", BYTE }, // 489
-	{ "byte-length", BYTE_LENGTH }, // 490
-	{ "cf", CF }, // 491
-	{ "ch", CH }, // 492
-	{ "changed", CHANGED }, // 493
-	{ "char", CHAR }, // 494
-	{ "char-national", CHAR_NATIONAL }, // 495
-	{ "character", CHARACTER }, // 496
-	{ "characters", CHARACTERS }, // 497
-	{ "checking", CHECKING }, // 498
-	{ "class", CLASS }, // 499
-	{ "cobol", COBOL }, // 500
-	{ "code", CODE }, // 501
-	{ "code-set", CODESET }, // 502
-	{ "collating", COLLATING }, // 503
-	{ "column", COLUMN }, // 504
-	{ "combined-datetime", COMBINED_DATETIME }, // 505
-	{ "comma", COMMA }, // 506
-	{ "command-line", COMMAND_LINE }, // 507
-	{ "command-line-count", COMMAND_LINE_COUNT }, // 508
-	{ "commit", COMMIT }, // 509
-	{ "common", COMMON }, // 510
-	{ "concat", CONCAT }, // 511
-	{ "condition", CONDITION }, // 512
-	{ "configuration section", CONFIGURATION_SECT }, // 513
-	{ "contains", CONTAINS }, // 514
-	{ "content", CONTENT }, // 515
-	{ "control", CONTROL }, // 516
-	{ "controls", CONTROLS }, // 517
-	{ "convert", CONVERT }, // 518
-	{ "converting", CONVERTING }, // 519
-	{ "corresponding", CORRESPONDING }, // 520
-	{ "cos", COS }, // 521
-	{ "count", COUNT }, // 522
-	{ "currency", CURRENCY }, // 523
-	{ "current", CURRENT }, // 524
-	{ "current-date", CURRENT_DATE }, // 525
-	{ "data", DATA }, // 526
-	{ "date", DATE }, // 527
-	{ "date-compiled", DATE_COMPILED }, // 528
-	{ "date-of-integer", DATE_OF_INTEGER }, // 529
-	{ "date-to-yyyymmdd", DATE_TO_YYYYMMDD }, // 530
-	{ "date-written", DATE_WRITTEN }, // 531
-	{ "day", DAY }, // 532
-	{ "day-of-integer", DAY_OF_INTEGER }, // 533
-	{ "day-of-week", DAY_OF_WEEK }, // 534
-	{ "day-to-yyyyddd", DAY_TO_YYYYDDD }, // 535
-	{ "dbcs", DBCS }, // 536
-	{ "de", DE }, // 537
-	{ "debugging", DEBUGGING }, // 538
-	{ "decimal-point", DECIMAL_POINT }, // 539
-	{ "declaratives", DECLARATIVES }, // 540
-	{ "delimited", DELIMITED }, // 541
-	{ "delimiter", DELIMITER }, // 542
-	{ "depending", DEPENDING }, // 543
-	{ "descending", DESCENDING }, // 544
-	{ "detail", DETAIL }, // 545
-	{ "direct", DIRECT }, // 546
-	{ "direct-access", DIRECT_ACCESS }, // 547
-	{ "down", DOWN }, // 548
-	{ "duplicates", DUPLICATES }, // 549
-	{ "dynamic", DYNAMIC }, // 550
-	{ "e", E }, // 551
-	{ "ebcdic", EBCDIC }, // 552
-	{ "ec", EC }, // 553
-	{ "egcs", EGCS }, // 554
-	{ "encoding", ENCODING }, // 555
-	{ "entry", ENTRY }, // 556
-	{ "environment", ENVIRONMENT }, // 557
-	{ "every", EVERY }, // 558
-	{ "examine", EXAMINE }, // 559
-	{ "exhibit", EXHIBIT }, // 560
-	{ "exp", EXP }, // 561
-	{ "exp10", EXP10 }, // 562
-	{ "extend", EXTEND }, // 563
-	{ "external", EXTERNAL }, // 564
-	{ "exception-file", EXCEPTION_FILE }, // 565
-	{ "exception-file-n", EXCEPTION_FILE_N }, // 566
-	{ "exception-location", EXCEPTION_LOCATION }, // 567
-	{ "exception-location-n", EXCEPTION_LOCATION_N }, // 568
-	{ "exception-statement", EXCEPTION_STATEMENT }, // 569
-	{ "exception-status", EXCEPTION_STATUS }, // 570
-	{ "factorial", FACTORIAL }, // 571
-	{ "false", FALSE_kw }, // 572
-	{ "fd", FD }, // 573
-	{ "file-control", FILE_CONTROL }, // 574
-	{ "file", FILE_KW }, // 575
-	{ "file-limit", FILE_LIMIT }, // 576
-	{ "final", FINAL }, // 577
-	{ "finally", FINALLY }, // 578
-	{ "find-string", FIND_STRING }, // 579
-	{ "first", FIRST }, // 580
-	{ "fixed", FIXED }, // 581
-	{ "footing", FOOTING }, // 582
-	{ "for", FOR }, // 583
-	{ "formatted-current-date", FORMATTED_CURRENT_DATE }, // 584
-	{ "formatted-date", FORMATTED_DATE }, // 585
-	{ "formatted-datetime", FORMATTED_DATETIME }, // 586
-	{ "formatted-time", FORMATTED_TIME }, // 587
-	{ "form-overflow", FORM_OVERFLOW }, // 588
-	{ "free", FREE }, // 589
-	{ "fraction-part", FRACTION_PART }, // 590
-	{ "from", FROM }, // 591
-	{ "function", FUNCTION }, // 592
-	{ "generate", GENERATE }, // 593
-	{ "giving", GIVING }, // 594
-	{ "global", GLOBAL }, // 595
-	{ "go", GO }, // 596
-	{ "group", GROUP }, // 597
-	{ "heading", HEADING }, // 598
-	{ "hex", HEX }, // 599
-	{ "hex-of", HEX_OF }, // 600
-	{ "hex-to-char", HEX_TO_CHAR }, // 601
-	{ "high-values", HIGH_VALUES }, // 602
-	{ "highest-algebraic", HIGHEST_ALGEBRAIC }, // 603
-	{ "hold", HOLD }, // 604
-	{ "ibm-360", IBM_360 }, // 605
-	{ "in", IN }, // 606
-	{ "include", INCLUDE }, // 607
-	{ "index", INDEX }, // 608
-	{ "indexed", INDEXED }, // 609
-	{ "indicate", INDICATE }, // 610
-	{ "initial", INITIAL_kw }, // 611
-	{ "initiate", INITIATE }, // 612
-	{ "input", INPUT }, // 613
-	{ "installation", INSTALLATION }, // 614
-	{ "interface", INTERFACE }, // 615
-	{ "integer", INTEGER }, // 616
-	{ "integer-of-boolean", INTEGER_OF_BOOLEAN }, // 617
-	{ "integer-of-date", INTEGER_OF_DATE }, // 618
-	{ "integer-of-day", INTEGER_OF_DAY }, // 619
-	{ "integer-of-formatted-date", INTEGER_OF_FORMATTED_DATE }, // 620
-	{ "integer-part", INTEGER_PART }, // 621
-	{ "into", INTO }, // 622
-	{ "intrinsic", INTRINSIC }, // 623
-	{ "invoke", INVOKE }, // 624
-	{ "i-o", IO }, // 625
-	{ "i-o-control", IO_CONTROL }, // 626
-	{ "is", IS }, // 627
-	{ "isnt", ISNT }, // 628
-	{ "kanji", KANJI }, // 629
-	{ "key", KEY }, // 630
-	{ "label", LABEL }, // 631
-	{ "last", LAST }, // 632
-	{ "leading", LEADING }, // 633
-	{ "left", LEFT }, // 634
-	{ "length", LENGTH }, // 635
-	{ "length-of", LENGTH_OF }, // 636
-	{ "limit", LIMIT }, // 637
-	{ "limits", LIMITS }, // 638
-	{ "line", LINE }, // 639
-	{ "lines", LINES }, // 640
-	{ "line-counter", LINE_COUNTER }, // 641
-	{ "linage", LINAGE }, // 642
-	{ "linkage", LINKAGE }, // 643
-	{ "locale", LOCALE }, // 644
-	{ "locale-compare", LOCALE_COMPARE }, // 645
-	{ "locale-date", LOCALE_DATE }, // 646
-	{ "locale-time", LOCALE_TIME }, // 647
-	{ "locale-time-from-seconds", LOCALE_TIME_FROM_SECONDS }, // 648
-	{ "local-storage", LOCAL_STORAGE }, // 649
-	{ "location", LOCATION }, // 650
-	{ "lock", LOCK }, // 651
-	{ "lock-on", LOCK_ON }, // 652
-	{ "log", LOG }, // 653
-	{ "log10", LOG10 }, // 654
-	{ "lower-case", LOWER_CASE }, // 655
-	{ "low-values", LOW_VALUES }, // 656
-	{ "lowest-algebraic", LOWEST_ALGEBRAIC }, // 657
-	{ "lparen", LPAREN }, // 658
-	{ "manual", MANUAL }, // 659
-	{ "maxx", MAXX }, // 660
-	{ "mean", MEAN }, // 661
-	{ "median", MEDIAN }, // 662
-	{ "midrange", MIDRANGE }, // 663
-	{ "minn", MINN }, // 664
-	{ "multiple", MULTIPLE }, // 665
-	{ "mod", MOD }, // 666
-	{ "mode", MODE }, // 667
-	{ "module-name", MODULE_NAME }, // 668
-	{ "named", NAMED }, // 669
-	{ "namespace", NAMESPACE }, // 670
-	{ "namespace-prefix", NAMESPACE_PREFIX }, // 671
-	{ "nat", NAT }, // 672
-	{ "national", NATIONAL }, // 673
-	{ "national-edited", NATIONAL_EDITED }, // 674
-	{ "national-of", NATIONAL_OF }, // 675
-	{ "native", NATIVE }, // 676
-	{ "nested", NESTED }, // 677
-	{ "next", NEXT }, // 678
-	{ "no", NO }, // 679
-	{ "note", NOTE }, // 680
-	{ "nulls", NULLS }, // 681
-	{ "null", NULLS }, // 681
-	{ "nullptr", NULLPTR }, // 682
-	{ "numeric", NUMERIC }, // 683
-	{ "numeric-edited", NUMERIC_EDITED }, // 684
-	{ "numval", NUMVAL }, // 685
-	{ "numval-c", NUMVAL_C }, // 686
-	{ "numval-f", NUMVAL_F }, // 687
-	{ "occurs", OCCURS }, // 688
-	{ "of", OF }, // 689
-	{ "off", OFF }, // 690
-	{ "omitted", OMITTED }, // 691
-	{ "on", ON }, // 692
-	{ "only", ONLY }, // 693
-	{ "optional", OPTIONAL }, // 694
-	{ "options", OPTIONS }, // 695
-	{ "ord", ORD }, // 696
-	{ "order", ORDER }, // 697
-	{ "ord-max", ORD_MAX }, // 698
-	{ "ord-min", ORD_MIN }, // 699
-	{ "organization", ORGANIZATION }, // 700
-	{ "other", OTHER }, // 701
-	{ "otherwise", OTHERWISE }, // 702
-	{ "output", OUTPUT }, // 703
-	{ "packed-decimal", PACKED_DECIMAL }, // 704
-	{ "padding", PADDING }, // 705
-	{ "page", PAGE }, // 706
-	{ "page-counter", PAGE_COUNTER }, // 707
-	{ "pf", PF }, // 708
-	{ "ph", PH }, // 709
-	{ "pi", PI }, // 710
-	{ "pic", PIC }, // 711
-	{ "picture", PICTURE }, // 712
-	{ "plus", PLUS }, // 713
-	{ "present-value", PRESENT_VALUE }, // 714
-	{ "print-switch", PRINT_SWITCH }, // 715
-	{ "procedure", PROCEDURE }, // 716
-	{ "procedures", PROCEDURES }, // 717
-	{ "proceed", PROCEED }, // 718
-	{ "processing", PROCESSING }, // 719
-	{ "program-id", PROGRAM_ID }, // 720
-	{ "program", PROGRAM_kw }, // 721
-	{ "property", PROPERTY }, // 722
-	{ "prototype", PROTOTYPE }, // 723
-	{ "pseudotext", PSEUDOTEXT }, // 724
-	{ "quotes", QUOTES }, // 725
-	{ "quote", QUOTES }, // 725
-	{ "random", RANDOM }, // 726
-	{ "random-seed", RANDOM_SEED }, // 727
-	{ "range", RANGE }, // 728
-	{ "raise", RAISE }, // 729
-	{ "raising", RAISING }, // 730
-	{ "rd", RD }, // 731
-	{ "record", RECORD }, // 732
-	{ "recording", RECORDING }, // 733
-	{ "records", RECORDS }, // 734
-	{ "recursive", RECURSIVE }, // 735
-	{ "redefines", REDEFINES }, // 736
-	{ "reel", REEL }, // 737
-	{ "reference", REFERENCE }, // 738
-	{ "relative", RELATIVE }, // 739
-	{ "rem", REM }, // 740
-	{ "remainder", REMAINDER }, // 741
-	{ "remarks", REMARKS }, // 742
-	{ "removal", REMOVAL }, // 743
-	{ "renames", RENAMES }, // 744
-	{ "replace", REPLACE }, // 745
-	{ "replacing", REPLACING }, // 746
-	{ "report", REPORT }, // 747
-	{ "reporting", REPORTING }, // 748
-	{ "reports", REPORTS }, // 749
-	{ "repository", REPOSITORY }, // 750
-	{ "rerun", RERUN }, // 751
-	{ "reserve", RESERVE }, // 752
-	{ "restricted", RESTRICTED }, // 753
-	{ "resume", RESUME }, // 754
-	{ "retry", RETRY }, // 755
-	{ "reverse", REVERSE }, // 756
-	{ "reversed", REVERSED }, // 757
-	{ "rewind", REWIND }, // 758
-	{ "rf", RF }, // 759
-	{ "rh", RH }, // 760
-	{ "right", RIGHT }, // 761
-	{ "rounded", ROUNDED }, // 762
-	{ "run", RUN }, // 763
-	{ "same", SAME }, // 764
-	{ "screen", SCREEN }, // 765
-	{ "sd", SD }, // 766
-	{ "seconds-from-formatted-time", SECONDS_FROM_FORMATTED_TIME }, // 767
-	{ "seconds-past-midnight", SECONDS_PAST_MIDNIGHT }, // 768
-	{ "security", SECURITY }, // 769
-	{ "separate", SEPARATE }, // 770
-	{ "sequence", SEQUENCE }, // 771
-	{ "sequential", SEQUENTIAL }, // 772
-	{ "sharing", SHARING }, // 773
-	{ "simple-exit", SIMPLE_EXIT }, // 774
-	{ "sign", SIGN }, // 775
-	{ "sin", SIN }, // 776
-	{ "size", SIZE }, // 777
-	{ "smallest-algebraic", SMALLEST_ALGEBRAIC }, // 778
-	{ "source", SOURCE }, // 779
-	{ "source-computer", SOURCE_COMPUTER }, // 780
-	{ "special-names", SPECIAL_NAMES }, // 781
-	{ "sqrt", SQRT }, // 782
-	{ "stack", STACK }, // 783
-	{ "standard", STANDARD }, // 784
-	{ "standard-1", STANDARD_1 }, // 785
-	{ "standard-deviation", STANDARD_DEVIATION }, // 786
-	{ "standard-compare", STANDARD_COMPARE }, // 787
-	{ "status", STATUS }, // 788
-	{ "strong", STRONG }, // 789
-	{ "substitute", SUBSTITUTE }, // 790
-	{ "sum", SUM }, // 791
-	{ "symbol", SYMBOL }, // 792
-	{ "symbolic", SYMBOLIC }, // 793
-	{ "synchronized", SYNCHRONIZED }, // 794
-	{ "tallying", TALLYING }, // 795
-	{ "tan", TAN }, // 796
-	{ "terminate", TERMINATE }, // 797
-	{ "test", TEST }, // 798
-	{ "test-date-yyyymmdd", TEST_DATE_YYYYMMDD }, // 799
-	{ "test-day-yyyyddd", TEST_DAY_YYYYDDD }, // 800
-	{ "test-formatted-datetime", TEST_FORMATTED_DATETIME }, // 801
-	{ "test-numval", TEST_NUMVAL }, // 802
-	{ "test-numval-c", TEST_NUMVAL_C }, // 803
-	{ "test-numval-f", TEST_NUMVAL_F }, // 804
-	{ "than", THAN }, // 805
-	{ "time", TIME }, // 806
-	{ "times", TIMES }, // 807
-	{ "to", TO }, // 808
-	{ "top", TOP }, // 809
-	{ "top-level", TOP_LEVEL }, // 810
-	{ "tracks", TRACKS }, // 811
-	{ "track-area", TRACK_AREA }, // 812
-	{ "trailing", TRAILING }, // 813
-	{ "transform", TRANSFORM }, // 814
-	{ "trim", TRIM }, // 815
-	{ "true", TRUE_kw }, // 816
-	{ "try", TRY }, // 817
-	{ "turn", TURN }, // 818
-	{ "type", TYPE }, // 819
-	{ "typedef", TYPEDEF }, // 820
-	{ "ulength", ULENGTH }, // 821
-	{ "unbounded", UNBOUNDED }, // 822
-	{ "unit", UNIT }, // 823
-	{ "units", UNITS }, // 824
-	{ "unit-record", UNIT_RECORD }, // 825
-	{ "until", UNTIL }, // 826
-	{ "up", UP }, // 827
-	{ "upon", UPON }, // 828
-	{ "upos", UPOS }, // 829
-	{ "upper-case", UPPER_CASE }, // 830
-	{ "usage", USAGE }, // 831
-	{ "using", USING }, // 832
-	{ "usubstr", USUBSTR }, // 833
-	{ "usupplementary", USUPPLEMENTARY }, // 834
-	{ "utility", UTILITY }, // 835
-	{ "uuid4", UUID4 }, // 836
-	{ "uvalid", UVALID }, // 837
-	{ "uwidth", UWIDTH }, // 838
-	{ "validating", VALIDATING }, // 839
-	{ "value", VALUE }, // 840
-	{ "variance", VARIANCE }, // 841
-	{ "varying", VARYING }, // 842
-	{ "volatile", VOLATILE }, // 843
-	{ "when-compiled", WHEN_COMPILED }, // 844
-	{ "with", WITH }, // 845
-	{ "working-storage", WORKING_STORAGE }, // 846
-	{ "year-to-yyyy", YEAR_TO_YYYY }, // 847
-	{ "yyyyddd", YYYYDDD }, // 848
-	{ "yyyymmdd", YYYYMMDD }, // 849
-	{ "arithmetic", ARITHMETIC }, // 850
-	{ "attribute", ATTRIBUTE }, // 851
-	{ "auto", AUTO }, // 852
-	{ "automatic", AUTOMATIC }, // 853
-	{ "away-from-zero", AWAY_FROM_ZERO }, // 854
-	{ "background-color", BACKGROUND_COLOR }, // 855
-	{ "bell", BELL }, // 856
-	{ "binary-encoding", BINARY_ENCODING }, // 857
-	{ "blink", BLINK }, // 858
-	{ "capacity", CAPACITY }, // 859
-	{ "center", CENTER }, // 860
-	{ "classification", CLASSIFICATION }, // 861
-	{ "cycle", CYCLE }, // 862
-	{ "decimal-encoding", DECIMAL_ENCODING }, // 863
-	{ "entry-convention", ENTRY_CONVENTION }, // 864
-	{ "eol", EOL }, // 865
-	{ "eos", EOS }, // 866
-	{ "erase", ERASE }, // 867
-	{ "expands", EXPANDS }, // 868
-	{ "float-binary", FLOAT_BINARY }, // 869
-	{ "float-decimal", FLOAT_DECIMAL }, // 870
-	{ "foreground-color", FOREGROUND_COLOR }, // 871
-	{ "forever", FOREVER }, // 872
-	{ "full", FULL }, // 873
-	{ "highlight", HIGHLIGHT }, // 874
-	{ "high-order-left", HIGH_ORDER_LEFT }, // 875
-	{ "high-order-right", HIGH_ORDER_RIGHT }, // 876
-	{ "ignoring", IGNORING }, // 877
-	{ "implements", IMPLEMENTS }, // 878
-	{ "initialized", INITIALIZED }, // 879
-	{ "intermediate", INTERMEDIATE }, // 880
-	{ "lc-all", LC_ALL_kw }, // 881
-	{ "lc-collate", LC_COLLATE_kw }, // 882
-	{ "lc-ctype", LC_CTYPE_kw }, // 883
-	{ "lc-messages", LC_MESSAGES_kw }, // 884
-	{ "lc-monetary", LC_MONETARY_kw }, // 885
-	{ "lc-numeric", LC_NUMERIC_kw }, // 886
-	{ "lc-time", LC_TIME_kw }, // 887
-	{ "lowlight", LOWLIGHT }, // 888
-	{ "nearest-away-from-zero", NEAREST_AWAY_FROM_ZERO }, // 889
-	{ "nearest-even", NEAREST_EVEN }, // 890
-	{ "nearest-toward-zero", NEAREST_TOWARD_ZERO }, // 891
-	{ "none", NONE }, // 892
-	{ "normal", NORMAL }, // 893
-	{ "numbers", NUMBERS }, // 894
-	{ "prefixed", PREFIXED }, // 895
-	{ "previous", PREVIOUS }, // 896
-	{ "prohibited", PROHIBITED }, // 897
-	{ "relation", RELATION }, // 898
-	{ "required", REQUIRED }, // 899
-	{ "reverse-video", REVERSE_VIDEO }, // 900
-	{ "rounding", ROUNDING }, // 901
-	{ "seconds", SECONDS }, // 902
-	{ "secure", SECURE }, // 903
-	{ "short", SHORT }, // 904
-	{ "signed", SIGNED_kw }, // 905
-	{ "standard-binary", STANDARD_BINARY }, // 906
-	{ "standard-decimal", STANDARD_DECIMAL }, // 907
-	{ "statement", STATEMENT }, // 908
-	{ "step", STEP }, // 909
-	{ "structure", STRUCTURE }, // 910
-	{ "toward-greater", TOWARD_GREATER }, // 911
-	{ "toward-lesser", TOWARD_LESSER }, // 912
-	{ "truncation", TRUNCATION }, // 913
-	{ "ucs-4", UCS_4 }, // 914
-	{ "underline", UNDERLINE }, // 915
-	{ "unsigned", UNSIGNED_kw }, // 916
-	{ "utf-16", UTF_16 }, // 917
-	{ "utf-8", UTF_8 }, // 918
-	{ "xml-declaration", XML_DECLARATION }, // 919
-	{ "xmlgenerate", XMLGENERATE }, // 920
-	{ "xmlparse", XMLPARSE }, // 921
-	{ "address", ADDRESS }, // 922
-	{ "end-accept", END_ACCEPT }, // 923
-	{ "end-add", END_ADD }, // 924
-	{ "end-call", END_CALL }, // 925
-	{ "end-compute", END_COMPUTE }, // 926
-	{ "end-delete", END_DELETE }, // 927
-	{ "end-display", END_DISPLAY }, // 928
-	{ "end-divide", END_DIVIDE }, // 929
-	{ "end-evaluate", END_EVALUATE }, // 930
-	{ "end-multiply", END_MULTIPLY }, // 931
-	{ "end-perform", END_PERFORM }, // 932
-	{ "end-read", END_READ }, // 933
-	{ "end-return", END_RETURN }, // 934
-	{ "end-rewrite", END_REWRITE }, // 935
-	{ "end-search", END_SEARCH }, // 936
-	{ "end-start", END_START }, // 937
-	{ "end-string", END_STRING }, // 938
-	{ "end-subtract", END_SUBTRACT }, // 939
-	{ "end-unstring", END_UNSTRING }, // 940
-	{ "end-write", END_WRITE }, // 941
-	{ "end-xml", END_XML }, // 942
-	{ "end-if", END_IF }, // 943
-	{ "attributes", ATTRIBUTES }, // 944
-	{ "element", ELEMENT }, // 945
-	{ "nonnumeric", NONNUMERIC }, // 946
-	{ "thru", THRU }, // 947
-	{ "through", THRU }, // 947
-	{ "or", OR }, // 948
-	{ "and", AND }, // 949
-	{ "not", NOT }, // 950
-	{ "ne", NE }, // 951
-	{ "le", LE }, // 952
-	{ "ge", GE }, // 953
-	{ "pow", POW }, // 954
-	{ "neg", NEG }, // 955
+	{ "flag-02", FLAG_02 }, // 362
+	{ "move-to-same-name", MOVE_TO_SAME_NAME }, // 363
+	{ "range-exception-for-index", RANGE_EXCEPTION_FOR_INDEX }, // 364
+	{ "terminate-with-varying", TERMINATE_WITH_VARYING }, // 365
+	{ "flag-14", FLAG_14 }, // 366
+	{ "compile-time-arithmetic-expressions", COMPILE_TIME_ARITHMETIC_EXPRESSIONS }, // 367
+	{ "i-o-declarative", I_O_DECLARATIVE }, // 368
+	{ "i-o-status-04", I_O_STATUS_04 }, // 369
+	{ "i-o-status-07", I_O_STATUS_07 }, // 370
+	{ "num-ed-zero-figconst", NUM_ED_ZERO_FIGCONST }, // 371
+	{ "read-previous", READ_PREVIOUS }, // 372
+	{ "ref-mod-zero-length", REF_MOD_ZERO_LENGTH }, // 373
+	{ "value-editing", VALUE_EDITING }, // 374
+	{ "value-fig-con-length", VALUE_FIG_CON_LENGTH }, // 375
+	{ "value-zero", VALUE_ZERO }, // 376
+	{ "write-end-of-page", WRITE_END_OF_PAGE }, // 377
+	{ "leap-second", LEAP_SECOND }, // 378
+	{ "listing", LISTING }, // 379
+	{ "propagate", PROPAGATE }, // 380
+	{ "zero-length", ZERO_LENGTH }, // 381
+	{ "b-and", B_AND }, // 382
+	{ "b-not", B_NOT }, // 383
+	{ "b-or", B_OR }, // 384
+	{ "b-shift-l", B_SHIFT_L }, // 385
+	{ "b-shift-lc", B_SHIFT_LC }, // 386
+	{ "b-shift-r", B_SHIFT_R }, // 387
+	{ "b-shift-rc", B_SHIFT_RC }, // 388
+	{ "b-xor", B_XOR }, // 389
+	{ "basis", BASIS }, // 390
+	{ "cbl", CBL }, // 391
+	{ "constant", CONSTANT }, // 392
+	{ "copy", COPY }, // 393
+	{ "defined", DEFINED }, // 394
+	{ "enter", ENTER }, // 395
+	{ "feature", FEATURE }, // 396
+	{ "insertt", INSERTT }, // 397
+	{ "lsub", LSUB }, // 398
+	{ "parameter", PARAMETER_kw }, // 399
+	{ "override", OVERRIDE }, // 400
+	{ "ready", READY }, // 401
+	{ "reset", RESET }, // 402
+	{ "rsub", RSUB }, // 403
+	{ "service-reload", SERVICE_RELOAD }, // 404
+	{ "star-cbl", STAR_CBL }, // 405
+	{ "subscript", SUBSCRIPT }, // 406
+	{ "suppress", SUPPRESS }, // 407
+	{ "trace", TRACE }, // 408
+	{ "use", USE }, // 409
+	{ "cobol-words", COBOL_WORDS }, // 410
+	{ "equate", EQUATE }, // 411
+	{ "undefine", UNDEFINE }, // 412
+	{ "cdf-define", CDF_DEFINE }, // 413
+	{ "cdf-display", CDF_DISPLAY }, // 414
+	{ "cdf-if", CDF_IF }, // 415
+	{ "cdf-else", CDF_ELSE }, // 416
+	{ "cdf-end-if", CDF_END_IF }, // 417
+	{ "cdf-evaluate", CDF_EVALUATE }, // 418
+	{ "cdf-when", CDF_WHEN }, // 419
+	{ "cdf-end-evaluate", CDF_END_EVALUATE }, // 420
+	{ "call-convention", CALL_CONVENTION }, // 421
+	{ "call-cobol", CALL_COBOL }, // 422
+	{ "call-verbatim", CALL_VERBATIM }, // 423
+	{ "cdf-push", CDF_PUSH }, // 424
+	{ "cdf-pop", CDF_POP }, // 425
+	{ "source-format", SOURCE_FORMAT }, // 426
+	{ "if", IF }, // 427
+	{ "then", THEN }, // 428
+	{ "else", ELSE }, // 429
+	{ "sentence", SENTENCE }, // 430
+	{ "accept", ACCEPT }, // 431
+	{ "add", ADD }, // 432
+	{ "alter", ALTER }, // 433
+	{ "call", CALL }, // 434
+	{ "cancel", CANCEL }, // 435
+	{ "close", CLOSE }, // 436
+	{ "compute", COMPUTE }, // 437
+	{ "continue", CONTINUE }, // 438
+	{ "delete", DELETE }, // 439
+	{ "display", DISPLAY }, // 440
+	{ "divide", DIVIDE }, // 441
+	{ "evaluate", EVALUATE }, // 442
+	{ "exit", EXIT }, // 443
+	{ "filler", FILLER_kw }, // 444
+	{ "goback", GOBACK }, // 445
+	{ "goto", GOTO }, // 446
+	{ "initialize", INITIALIZE }, // 447
+	{ "inspect", INSPECT }, // 448
+	{ "merge", MERGE }, // 449
+	{ "move", MOVE }, // 450
+	{ "multiply", MULTIPLY }, // 451
+	{ "open", OPEN }, // 452
+	{ "paragraph", PARAGRAPH }, // 453
+	{ "read", READ }, // 454
+	{ "release", RELEASE }, // 455
+	{ "return", RETURN }, // 456
+	{ "rewrite", REWRITE }, // 457
+	{ "search", SEARCH }, // 458
+	{ "set", SET }, // 459
+	{ "select", SELECT }, // 460
+	{ "sort", SORT }, // 461
+	{ "sort-merge", SORT_MERGE }, // 462
+	{ "string", STRING_kw }, // 463
+	{ "stop", STOP }, // 464
+	{ "subtract", SUBTRACT }, // 465
+	{ "start", START }, // 466
+	{ "unstring", UNSTRING }, // 467
+	{ "write", WRITE }, // 468
+	{ "when", WHEN }, // 469
+	{ "argument-number", ARGUMENT_NUMBER }, // 470
+	{ "argument-value", ARGUMENT_VALUE }, // 471
+	{ "environment-name", ENVIRONMENT_NAME }, // 472
+	{ "environment-value", ENVIRONMENT_VALUE }, // 473
+	{ "abs", ABS }, // 474
+	{ "access", ACCESS }, // 475
+	{ "acos", ACOS }, // 476
+	{ "actual", ACTUAL }, // 477
+	{ "advancing", ADVANCING }, // 478
+	{ "after", AFTER }, // 479
+	{ "all", ALL }, // 480
+	{ "allocate", ALLOCATE }, // 481
+	{ "alphabet", ALPHABET }, // 482
+	{ "alphabetic", ALPHABETIC }, // 483
+	{ "alphabetic-lower", ALPHABETIC_LOWER }, // 484
+	{ "alphabetic-upper", ALPHABETIC_UPPER }, // 485
+	{ "alphanumeric", ALPHANUMERIC }, // 486
+	{ "alphanumeric-edited", ALPHANUMERIC_EDITED }, // 487
+	{ "also", ALSO }, // 488
+	{ "alternate", ALTERNATE }, // 489
+	{ "annuity", ANNUITY }, // 490
+	{ "anum", ANUM }, // 491
+	{ "any", ANY }, // 492
+	{ "anycase", ANYCASE }, // 493
+	{ "apply", APPLY }, // 494
+	{ "are", ARE }, // 495
+	{ "area", AREA }, // 496
+	{ "areas", AREAS }, // 497
+	{ "as", AS }, // 498
+	{ "ascending", ASCENDING }, // 499
+	{ "activating", ACTIVATING }, // 500
+	{ "asin", ASIN }, // 501
+	{ "assign", ASSIGN }, // 502
+	{ "at", AT }, // 503
+	{ "atan", ATAN }, // 504
+	{ "based", BASED }, // 505
+	{ "baseconvert", BASECONVERT }, // 506
+	{ "before", BEFORE }, // 507
+	{ "binary", BINARY }, // 508
+	{ "bit", BIT }, // 509
+	{ "bit-of", BIT_OF }, // 510
+	{ "bit-to-char", BIT_TO_CHAR }, // 511
+	{ "blank", BLANK }, // 512
+	{ "block", BLOCK_kw }, // 513
+	{ "boolean-of-integer", BOOLEAN_OF_INTEGER }, // 514
+	{ "bottom", BOTTOM }, // 515
+	{ "by", BY }, // 516
+	{ "byte", BYTE }, // 517
+	{ "byte-length", BYTE_LENGTH }, // 518
+	{ "cf", CF }, // 519
+	{ "ch", CH }, // 520
+	{ "changed", CHANGED }, // 521
+	{ "char", CHAR }, // 522
+	{ "char-national", CHAR_NATIONAL }, // 523
+	{ "character", CHARACTER }, // 524
+	{ "characters", CHARACTERS }, // 525
+	{ "checking", CHECKING }, // 526
+	{ "class", CLASS }, // 527
+	{ "cobol", COBOL }, // 528
+	{ "code", CODE }, // 529
+	{ "code-set", CODESET }, // 530
+	{ "collating", COLLATING }, // 531
+	{ "column", COLUMN }, // 532
+	{ "combined-datetime", COMBINED_DATETIME }, // 533
+	{ "comma", COMMA }, // 534
+	{ "command-line", COMMAND_LINE }, // 535
+	{ "command-line-count", COMMAND_LINE_COUNT }, // 536
+	{ "commit", COMMIT }, // 537
+	{ "common", COMMON }, // 538
+	{ "concat", CONCAT }, // 539
+	{ "condition", CONDITION }, // 540
+	{ "configuration section", CONFIGURATION_SECT }, // 541
+	{ "contains", CONTAINS }, // 542
+	{ "content", CONTENT }, // 543
+	{ "control", CONTROL }, // 544
+	{ "controls", CONTROLS }, // 545
+	{ "convert", CONVERT }, // 546
+	{ "converting", CONVERTING }, // 547
+	{ "corresponding", CORRESPONDING }, // 548
+	{ "cos", COS }, // 549
+	{ "count", COUNT }, // 550
+	{ "currency", CURRENCY }, // 551
+	{ "current", CURRENT }, // 552
+	{ "current-date", CURRENT_DATE }, // 553
+	{ "data", DATA }, // 554
+	{ "date", DATE }, // 555
+	{ "date-compiled", DATE_COMPILED }, // 556
+	{ "date-of-integer", DATE_OF_INTEGER }, // 557
+	{ "date-to-yyyymmdd", DATE_TO_YYYYMMDD }, // 558
+	{ "date-written", DATE_WRITTEN }, // 559
+	{ "day", DAY }, // 560
+	{ "day-of-integer", DAY_OF_INTEGER }, // 561
+	{ "day-of-week", DAY_OF_WEEK }, // 562
+	{ "day-to-yyyyddd", DAY_TO_YYYYDDD }, // 563
+	{ "dbcs", DBCS }, // 564
+	{ "de", DE }, // 565
+	{ "debugging", DEBUGGING }, // 566
+	{ "decimal-point", DECIMAL_POINT }, // 567
+	{ "declaratives", DECLARATIVES }, // 568
+	{ "delimited", DELIMITED }, // 569
+	{ "delimiter", DELIMITER }, // 570
+	{ "depending", DEPENDING }, // 571
+	{ "descending", DESCENDING }, // 572
+	{ "detail", DETAIL }, // 573
+	{ "direct", DIRECT }, // 574
+	{ "direct-access", DIRECT_ACCESS }, // 575
+	{ "down", DOWN }, // 576
+	{ "duplicates", DUPLICATES }, // 577
+	{ "dynamic", DYNAMIC }, // 578
+	{ "e", E }, // 579
+	{ "ebcdic", EBCDIC }, // 580
+	{ "ec", EC }, // 581
+	{ "egcs", EGCS }, // 582
+	{ "encoding", ENCODING }, // 583
+	{ "entry", ENTRY }, // 584
+	{ "environment", ENVIRONMENT }, // 585
+	{ "every", EVERY }, // 586
+	{ "examine", EXAMINE }, // 587
+	{ "exhibit", EXHIBIT }, // 588
+	{ "exp", EXP }, // 589
+	{ "exp10", EXP10 }, // 590
+	{ "extend", EXTEND }, // 591
+	{ "external", EXTERNAL }, // 592
+	{ "exception-file", EXCEPTION_FILE }, // 593
+	{ "exception-file-n", EXCEPTION_FILE_N }, // 594
+	{ "exception-location", EXCEPTION_LOCATION }, // 595
+	{ "exception-location-n", EXCEPTION_LOCATION_N }, // 596
+	{ "exception-statement", EXCEPTION_STATEMENT }, // 597
+	{ "exception-status", EXCEPTION_STATUS }, // 598
+	{ "factorial", FACTORIAL }, // 599
+	{ "false", FALSE_kw }, // 600
+	{ "fd", FD }, // 601
+	{ "file-control", FILE_CONTROL }, // 602
+	{ "file", FILE_KW }, // 603
+	{ "file-limit", FILE_LIMIT }, // 604
+	{ "final", FINAL }, // 605
+	{ "finally", FINALLY }, // 606
+	{ "find-string", FIND_STRING }, // 607
+	{ "first", FIRST }, // 608
+	{ "fixed", FIXED }, // 609
+	{ "footing", FOOTING }, // 610
+	{ "for", FOR }, // 611
+	{ "formatted-current-date", FORMATTED_CURRENT_DATE }, // 612
+	{ "formatted-date", FORMATTED_DATE }, // 613
+	{ "formatted-datetime", FORMATTED_DATETIME }, // 614
+	{ "formatted-time", FORMATTED_TIME }, // 615
+	{ "form-overflow", FORM_OVERFLOW }, // 616
+	{ "free", FREE }, // 617
+	{ "fraction-part", FRACTION_PART }, // 618
+	{ "from", FROM }, // 619
+	{ "function", FUNCTION }, // 620
+	{ "generate", GENERATE }, // 621
+	{ "giving", GIVING }, // 622
+	{ "global", GLOBAL }, // 623
+	{ "go", GO }, // 624
+	{ "group", GROUP }, // 625
+	{ "heading", HEADING }, // 626
+	{ "hex", HEX }, // 627
+	{ "hex-of", HEX_OF }, // 628
+	{ "hex-to-char", HEX_TO_CHAR }, // 629
+	{ "high-values", HIGH_VALUES }, // 630
+	{ "highest-algebraic", HIGHEST_ALGEBRAIC }, // 631
+	{ "hold", HOLD }, // 632
+	{ "ibm-360", IBM_360 }, // 633
+	{ "in", IN }, // 634
+	{ "include", INCLUDE }, // 635
+	{ "index", INDEX }, // 636
+	{ "indexed", INDEXED }, // 637
+	{ "indicate", INDICATE }, // 638
+	{ "initial", INITIAL_kw }, // 639
+	{ "initiate", INITIATE }, // 640
+	{ "input", INPUT }, // 641
+	{ "installation", INSTALLATION }, // 642
+	{ "interface", INTERFACE }, // 643
+	{ "integer", INTEGER }, // 644
+	{ "integer-of-boolean", INTEGER_OF_BOOLEAN }, // 645
+	{ "integer-of-date", INTEGER_OF_DATE }, // 646
+	{ "integer-of-day", INTEGER_OF_DAY }, // 647
+	{ "integer-of-formatted-date", INTEGER_OF_FORMATTED_DATE }, // 648
+	{ "integer-part", INTEGER_PART }, // 649
+	{ "into", INTO }, // 650
+	{ "intrinsic", INTRINSIC }, // 651
+	{ "invoke", INVOKE }, // 652
+	{ "i-o", IO }, // 653
+	{ "i-o-control", IO_CONTROL }, // 654
+	{ "is", IS }, // 655
+	{ "isnt", ISNT }, // 656
+	{ "kanji", KANJI }, // 657
+	{ "key", KEY }, // 658
+	{ "label", LABEL }, // 659
+	{ "last", LAST }, // 660
+	{ "leading", LEADING }, // 661
+	{ "left", LEFT }, // 662
+	{ "length", LENGTH }, // 663
+	{ "length-of", LENGTH_OF }, // 664
+	{ "limit", LIMIT }, // 665
+	{ "limits", LIMITS }, // 666
+	{ "line", LINE }, // 667
+	{ "lines", LINES }, // 668
+	{ "line-counter", LINE_COUNTER }, // 669
+	{ "linage", LINAGE }, // 670
+	{ "linkage", LINKAGE }, // 671
+	{ "locale", LOCALE }, // 672
+	{ "locale-compare", LOCALE_COMPARE }, // 673
+	{ "locale-date", LOCALE_DATE }, // 674
+	{ "locale-time", LOCALE_TIME }, // 675
+	{ "locale-time-from-seconds", LOCALE_TIME_FROM_SECONDS }, // 676
+	{ "local-storage", LOCAL_STORAGE }, // 677
+	{ "location", LOCATION }, // 678
+	{ "lock", LOCK }, // 679
+	{ "lock-on", LOCK_ON }, // 680
+	{ "log", LOG }, // 681
+	{ "log10", LOG10 }, // 682
+	{ "lower-case", LOWER_CASE }, // 683
+	{ "low-values", LOW_VALUES }, // 684
+	{ "lowest-algebraic", LOWEST_ALGEBRAIC }, // 685
+	{ "lparen", LPAREN }, // 686
+	{ "manual", MANUAL }, // 687
+	{ "maxx", MAXX }, // 688
+	{ "mean", MEAN }, // 689
+	{ "median", MEDIAN }, // 690
+	{ "midrange", MIDRANGE }, // 691
+	{ "minn", MINN }, // 692
+	{ "multiple", MULTIPLE }, // 693
+	{ "mod", MOD }, // 694
+	{ "mode", MODE }, // 695
+	{ "module-name", MODULE_NAME }, // 696
+	{ "named", NAMED }, // 697
+	{ "namespace", NAMESPACE }, // 698
+	{ "namespace-prefix", NAMESPACE_PREFIX }, // 699
+	{ "nat", NAT }, // 700
+	{ "national", NATIONAL }, // 701
+	{ "national-edited", NATIONAL_EDITED }, // 702
+	{ "national-of", NATIONAL_OF }, // 703
+	{ "native", NATIVE }, // 704
+	{ "nested", NESTED }, // 705
+	{ "next", NEXT }, // 706
+	{ "no", NO }, // 707
+	{ "note", NOTE }, // 708
+	{ "nulls", NULLS }, // 709
+	{ "null", NULLS }, // 709
+	{ "nullptr", NULLPTR }, // 710
+	{ "numeric", NUMERIC }, // 711
+	{ "numeric-edited", NUMERIC_EDITED }, // 712
+	{ "numval", NUMVAL }, // 713
+	{ "numval-c", NUMVAL_C }, // 714
+	{ "numval-f", NUMVAL_F }, // 715
+	{ "occurs", OCCURS }, // 716
+	{ "of", OF }, // 717
+	{ "off", OFF }, // 718
+	{ "omitted", OMITTED }, // 719
+	{ "on", ON }, // 720
+	{ "only", ONLY }, // 721
+	{ "optional", OPTIONAL }, // 722
+	{ "options", OPTIONS }, // 723
+	{ "ord", ORD }, // 724
+	{ "order", ORDER }, // 725
+	{ "ord-max", ORD_MAX }, // 726
+	{ "ord-min", ORD_MIN }, // 727
+	{ "organization", ORGANIZATION }, // 728
+	{ "other", OTHER }, // 729
+	{ "otherwise", OTHERWISE }, // 730
+	{ "output", OUTPUT }, // 731
+	{ "packed-decimal", PACKED_DECIMAL }, // 732
+	{ "padding", PADDING }, // 733
+	{ "page", PAGE }, // 734
+	{ "page-counter", PAGE_COUNTER }, // 735
+	{ "pf", PF }, // 736
+	{ "ph", PH }, // 737
+	{ "pi", PI }, // 738
+	{ "pic", PIC }, // 739
+	{ "picture", PICTURE }, // 740
+	{ "plus", PLUS }, // 741
+	{ "present-value", PRESENT_VALUE }, // 742
+	{ "print-switch", PRINT_SWITCH }, // 743
+	{ "procedure", PROCEDURE }, // 744
+	{ "procedures", PROCEDURES }, // 745
+	{ "proceed", PROCEED }, // 746
+	{ "processing", PROCESSING }, // 747
+	{ "program-id", PROGRAM_ID }, // 748
+	{ "program", PROGRAM_kw }, // 749
+	{ "property", PROPERTY }, // 750
+	{ "prototype", PROTOTYPE }, // 751
+	{ "pseudotext", PSEUDOTEXT }, // 752
+	{ "quotes", QUOTES }, // 753
+	{ "quote", QUOTES }, // 753
+	{ "random", RANDOM }, // 754
+	{ "random-seed", RANDOM_SEED }, // 755
+	{ "range", RANGE }, // 756
+	{ "raise", RAISE }, // 757
+	{ "raising", RAISING }, // 758
+	{ "rd", RD }, // 759
+	{ "record", RECORD }, // 760
+	{ "recording", RECORDING }, // 761
+	{ "records", RECORDS }, // 762
+	{ "recursive", RECURSIVE }, // 763
+	{ "redefines", REDEFINES }, // 764
+	{ "reel", REEL }, // 765
+	{ "reference", REFERENCE }, // 766
+	{ "relative", RELATIVE }, // 767
+	{ "rem", REM }, // 768
+	{ "remainder", REMAINDER }, // 769
+	{ "remarks", REMARKS }, // 770
+	{ "removal", REMOVAL }, // 771
+	{ "renames", RENAMES }, // 772
+	{ "replace", REPLACE }, // 773
+	{ "replacing", REPLACING }, // 774
+	{ "report", REPORT }, // 775
+	{ "reporting", REPORTING }, // 776
+	{ "reports", REPORTS }, // 777
+	{ "repository", REPOSITORY }, // 778
+	{ "rerun", RERUN }, // 779
+	{ "reserve", RESERVE }, // 780
+	{ "restricted", RESTRICTED }, // 781
+	{ "resume", RESUME }, // 782
+	{ "retry", RETRY }, // 783
+	{ "reverse", REVERSE }, // 784
+	{ "reversed", REVERSED }, // 785
+	{ "rewind", REWIND }, // 786
+	{ "rf", RF }, // 787
+	{ "rh", RH }, // 788
+	{ "right", RIGHT }, // 789
+	{ "rounded", ROUNDED }, // 790
+	{ "run", RUN }, // 791
+	{ "same", SAME }, // 792
+	{ "screen", SCREEN }, // 793
+	{ "sd", SD }, // 794
+	{ "seconds-from-formatted-time", SECONDS_FROM_FORMATTED_TIME }, // 795
+	{ "seconds-past-midnight", SECONDS_PAST_MIDNIGHT }, // 796
+	{ "security", SECURITY }, // 797
+	{ "separate", SEPARATE }, // 798
+	{ "sequence", SEQUENCE }, // 799
+	{ "sequential", SEQUENTIAL }, // 800
+	{ "sharing", SHARING }, // 801
+	{ "simple-exit", SIMPLE_EXIT }, // 802
+	{ "sign", SIGN }, // 803
+	{ "sin", SIN }, // 804
+	{ "size", SIZE }, // 805
+	{ "smallest-algebraic", SMALLEST_ALGEBRAIC }, // 806
+	{ "source", SOURCE }, // 807
+	{ "source-computer", SOURCE_COMPUTER }, // 808
+	{ "special-names", SPECIAL_NAMES }, // 809
+	{ "sqrt", SQRT }, // 810
+	{ "stack", STACK }, // 811
+	{ "standard", STANDARD }, // 812
+	{ "standard-1", STANDARD_1 }, // 813
+	{ "standard-2", STANDARD_2 }, // 814
+	{ "standard-deviation", STANDARD_DEVIATION }, // 815
+	{ "standard-compare", STANDARD_COMPARE }, // 816
+	{ "status", STATUS }, // 817
+	{ "strong", STRONG }, // 818
+	{ "substitute", SUBSTITUTE }, // 819
+	{ "sum", SUM }, // 820
+	{ "symbol", SYMBOL }, // 821
+	{ "symbolic", SYMBOLIC }, // 822
+	{ "synchronized", SYNCHRONIZED }, // 823
+	{ "tallying", TALLYING }, // 824
+	{ "tan", TAN }, // 825
+	{ "terminate", TERMINATE }, // 826
+	{ "test", TEST }, // 827
+	{ "test-date-yyyymmdd", TEST_DATE_YYYYMMDD }, // 828
+	{ "test-day-yyyyddd", TEST_DAY_YYYYDDD }, // 829
+	{ "test-formatted-datetime", TEST_FORMATTED_DATETIME }, // 830
+	{ "test-numval", TEST_NUMVAL }, // 831
+	{ "test-numval-c", TEST_NUMVAL_C }, // 832
+	{ "test-numval-f", TEST_NUMVAL_F }, // 833
+	{ "than", THAN }, // 834
+	{ "time", TIME }, // 835
+	{ "times", TIMES }, // 836
+	{ "to", TO }, // 837
+	{ "top", TOP }, // 838
+	{ "top-level", TOP_LEVEL }, // 839
+	{ "tracks", TRACKS }, // 840
+	{ "track-area", TRACK_AREA }, // 841
+	{ "trailing", TRAILING }, // 842
+	{ "transform", TRANSFORM }, // 843
+	{ "trim", TRIM }, // 844
+	{ "true", TRUE_kw }, // 845
+	{ "try", TRY }, // 846
+	{ "turn", TURN }, // 847
+	{ "type", TYPE }, // 848
+	{ "typedef", TYPEDEF }, // 849
+	{ "ulength", ULENGTH }, // 850
+	{ "unbounded", UNBOUNDED }, // 851
+	{ "unit", UNIT }, // 852
+	{ "units", UNITS }, // 853
+	{ "unit-record", UNIT_RECORD }, // 854
+	{ "until", UNTIL }, // 855
+	{ "up", UP }, // 856
+	{ "upon", UPON }, // 857
+	{ "upos", UPOS }, // 858
+	{ "upper-case", UPPER_CASE }, // 859
+	{ "usage", USAGE }, // 860
+	{ "using", USING }, // 861
+	{ "usubstr", USUBSTR }, // 862
+	{ "usupplementary", USUPPLEMENTARY }, // 863
+	{ "utility", UTILITY }, // 864
+	{ "uuid4", UUID4 }, // 865
+	{ "uvalid", UVALID }, // 866
+	{ "uwidth", UWIDTH }, // 867
+	{ "validating", VALIDATING }, // 868
+	{ "value", VALUE }, // 869
+	{ "variance", VARIANCE }, // 870
+	{ "varying", VARYING }, // 871
+	{ "volatile", VOLATILE }, // 872
+	{ "when-compiled", WHEN_COMPILED }, // 873
+	{ "with", WITH }, // 874
+	{ "working-storage", WORKING_STORAGE }, // 875
+	{ "year-to-yyyy", YEAR_TO_YYYY }, // 876
+	{ "yyyyddd", YYYYDDD }, // 877
+	{ "yyyymmdd", YYYYMMDD }, // 878
+	{ "arithmetic", ARITHMETIC }, // 879
+	{ "attribute", ATTRIBUTE }, // 880
+	{ "auto", AUTO }, // 881
+	{ "automatic", AUTOMATIC }, // 882
+	{ "away-from-zero", AWAY_FROM_ZERO }, // 883
+	{ "background-color", BACKGROUND_COLOR }, // 884
+	{ "bell", BELL }, // 885
+	{ "binary-encoding", BINARY_ENCODING }, // 886
+	{ "blink", BLINK }, // 887
+	{ "capacity", CAPACITY }, // 888
+	{ "center", CENTER }, // 889
+	{ "classification", CLASSIFICATION }, // 890
+	{ "cycle", CYCLE }, // 891
+	{ "decimal-encoding", DECIMAL_ENCODING }, // 892
+	{ "entry-convention", ENTRY_CONVENTION }, // 893
+	{ "eol", EOL }, // 894
+	{ "eos", EOS }, // 895
+	{ "erase", ERASE }, // 896
+	{ "expands", EXPANDS }, // 897
+	{ "float-binary", FLOAT_BINARY }, // 898
+	{ "float-decimal", FLOAT_DECIMAL }, // 899
+	{ "foreground-color", FOREGROUND_COLOR }, // 900
+	{ "forever", FOREVER }, // 901
+	{ "full", FULL }, // 902
+	{ "highlight", HIGHLIGHT }, // 903
+	{ "high-order-left", HIGH_ORDER_LEFT }, // 904
+	{ "high-order-right", HIGH_ORDER_RIGHT }, // 905
+	{ "ignoring", IGNORING }, // 906
+	{ "implements", IMPLEMENTS }, // 907
+	{ "initialized", INITIALIZED }, // 908
+	{ "intermediate", INTERMEDIATE }, // 909
+	{ "lc-all", LC_ALL_kw }, // 910
+	{ "lc-collate", LC_COLLATE_kw }, // 911
+	{ "lc-ctype", LC_CTYPE_kw }, // 912
+	{ "lc-messages", LC_MESSAGES_kw }, // 913
+	{ "lc-monetary", LC_MONETARY_kw }, // 914
+	{ "lc-numeric", LC_NUMERIC_kw }, // 915
+	{ "lc-time", LC_TIME_kw }, // 916
+	{ "lowlight", LOWLIGHT }, // 917
+	{ "nearest-away-from-zero", NEAREST_AWAY_FROM_ZERO }, // 918
+	{ "nearest-even", NEAREST_EVEN }, // 919
+	{ "nearest-toward-zero", NEAREST_TOWARD_ZERO }, // 920
+	{ "none", NONE }, // 921
+	{ "normal", NORMAL }, // 922
+	{ "numbers", NUMBERS }, // 923
+	{ "prefixed", PREFIXED }, // 924
+	{ "previous", PREVIOUS }, // 925
+	{ "prohibited", PROHIBITED }, // 926
+	{ "relation", RELATION }, // 927
+	{ "required", REQUIRED }, // 928
+	{ "reverse-video", REVERSE_VIDEO }, // 929
+	{ "rounding", ROUNDING }, // 930
+	{ "seconds", SECONDS }, // 931
+	{ "secure", SECURE }, // 932
+	{ "short", SHORT }, // 933
+	{ "signed", SIGNED_kw }, // 934
+	{ "standard-binary", STANDARD_BINARY }, // 935
+	{ "standard-decimal", STANDARD_DECIMAL }, // 936
+	{ "statement", STATEMENT }, // 937
+	{ "step", STEP }, // 938
+	{ "structure", STRUCTURE }, // 939
+	{ "toward-greater", TOWARD_GREATER }, // 940
+	{ "toward-lesser", TOWARD_LESSER }, // 941
+	{ "truncation", TRUNCATION }, // 942
+	{ "ucs-4", UCS_4 }, // 943
+	{ "underline", UNDERLINE }, // 944
+	{ "unsigned", UNSIGNED_kw }, // 945
+	{ "utf-16", UTF_16 }, // 946
+	{ "utf-8", UTF_8 }, // 947
+	{ "xml-declaration", XML_DECLARATION }, // 948
+	{ "xmlgenerate", XMLGENERATE }, // 949
+	{ "xmlparse", XMLPARSE }, // 950
+	{ "address", ADDRESS }, // 951
+	{ "end-accept", END_ACCEPT }, // 952
+	{ "end-add", END_ADD }, // 953
+	{ "end-call", END_CALL }, // 954
+	{ "end-compute", END_COMPUTE }, // 955
+	{ "end-delete", END_DELETE }, // 956
+	{ "end-display", END_DISPLAY }, // 957
+	{ "end-divide", END_DIVIDE }, // 958
+	{ "end-evaluate", END_EVALUATE }, // 959
+	{ "end-multiply", END_MULTIPLY }, // 960
+	{ "end-perform", END_PERFORM }, // 961
+	{ "end-read", END_READ }, // 962
+	{ "end-return", END_RETURN }, // 963
+	{ "end-rewrite", END_REWRITE }, // 964
+	{ "end-search", END_SEARCH }, // 965
+	{ "end-start", END_START }, // 966
+	{ "end-string", END_STRING }, // 967
+	{ "end-subtract", END_SUBTRACT }, // 968
+	{ "end-unstring", END_UNSTRING }, // 969
+	{ "end-write", END_WRITE }, // 970
+	{ "end-xml", END_XML }, // 971
+	{ "end-if", END_IF }, // 972
+	{ "attributes", ATTRIBUTES }, // 973
+	{ "element", ELEMENT }, // 974
+	{ "nonnumeric", NONNUMERIC }, // 975
+	{ "thru", THRU }, // 976
+	{ "through", THRU }, // 976
+	{ "or", OR }, // 977
+	{ "xor", XOR }, // 978
+	{ "and", AND }, // 979
+	{ "not", NOT }, // 980
+	{ "ne", NE }, // 981
+	{ "le", LE }, // 982
+	{ "ge", GE }, // 983
+	{ "pow", POW }, // 984
+	{ "neg", NEG }, // 985
 };
 
 // cppcheck-suppress useInitializationList
@@ -812,598 +842,628 @@ token_names = {
 	"DATE-FMT", // 101 (359)
 	"TIME-FMT", // 102 (360)
 	"DATETIME-FMT", // 103 (361)
-	"BASIS", // 104 (362)
-	"CBL", // 105 (363)
-	"CONSTANT", // 106 (364)
-	"COPY", // 107 (365)
-	"DEFINED", // 108 (366)
-	"ENTER", // 109 (367)
-	"FEATURE", // 110 (368)
-	"INSERTT", // 111 (369)
-	"LSUB", // 112 (370)
-	"PARAMETER", // 113 (371)
-	"OVERRIDE", // 114 (372)
-	"READY", // 115 (373)
-	"RESET", // 116 (374)
-	"RSUB", // 117 (375)
-	"SERVICE-RELOAD", // 118 (376)
-	"STAR-CBL", // 119 (377)
-	"SUBSCRIPT", // 120 (378)
-	"SUPPRESS", // 121 (379)
-	"TRACE", // 122 (380)
-	"USE", // 123 (381)
-	"COBOL-WORDS", // 124 (382)
-	"EQUATE", // 125 (383)
-	"UNDEFINE", // 126 (384)
-	"CDF-DEFINE", // 127 (385)
-	"CDF-DISPLAY", // 128 (386)
-	"CDF-IF", // 129 (387)
-	"CDF-ELSE", // 130 (388)
-	"CDF-END-IF", // 131 (389)
-	"CDF-EVALUATE", // 132 (390)
-	"CDF-WHEN", // 133 (391)
-	"CDF-END-EVALUATE", // 134 (392)
-	"CALL-CONVENTION", // 135 (393)
-	"CALL-COBOL", // 136 (394)
-	"CALL-VERBATIM", // 137 (395)
-	"CDF-PUSH", // 138 (396)
-	"CDF-POP", // 139 (397)
-	"SOURCE-FORMAT", // 140 (398)
-	"IF", // 141 (399)
-	"THEN", // 142 (400)
-	"ELSE", // 143 (401)
-	"SENTENCE", // 144 (402)
-	"ACCEPT", // 145 (403)
-	"ADD", // 146 (404)
-	"ALTER", // 147 (405)
-	"CALL", // 148 (406)
-	"CANCEL", // 149 (407)
-	"CLOSE", // 150 (408)
-	"COMPUTE", // 151 (409)
-	"CONTINUE", // 152 (410)
-	"DELETE", // 153 (411)
-	"DISPLAY", // 154 (412)
-	"DIVIDE", // 155 (413)
-	"EVALUATE", // 156 (414)
-	"EXIT", // 157 (415)
-	"FILLER", // 158 (416)
-	"GOBACK", // 159 (417)
-	"GOTO", // 160 (418)
-	"INITIALIZE", // 161 (419)
-	"INSPECT", // 162 (420)
-	"MERGE", // 163 (421)
-	"MOVE", // 164 (422)
-	"MULTIPLY", // 165 (423)
-	"OPEN", // 166 (424)
-	"PARAGRAPH", // 167 (425)
-	"READ", // 168 (426)
-	"RELEASE", // 169 (427)
-	"RETURN", // 170 (428)
-	"REWRITE", // 171 (429)
-	"SEARCH", // 172 (430)
-	"SET", // 173 (431)
-	"SELECT", // 174 (432)
-	"SORT", // 175 (433)
-	"SORT-MERGE", // 176 (434)
-	"STRING", // 177 (435)
-	"STOP", // 178 (436)
-	"SUBTRACT", // 179 (437)
-	"START", // 180 (438)
-	"UNSTRING", // 181 (439)
-	"WRITE", // 182 (440)
-	"WHEN", // 183 (441)
-	"ARGUMENT-NUMBER", // 184 (442)
-	"ARGUMENT-VALUE", // 185 (443)
-	"ENVIRONMENT-NAME", // 186 (444)
-	"ENVIRONMENT-VALUE", // 187 (445)
-	"ABS", // 188 (446)
-	"ACCESS", // 189 (447)
-	"ACOS", // 190 (448)
-	"ACTUAL", // 191 (449)
-	"ADVANCING", // 192 (450)
-	"AFTER", // 193 (451)
-	"ALL", // 194 (452)
-	"ALLOCATE", // 195 (453)
-	"ALPHABET", // 196 (454)
-	"ALPHABETIC", // 197 (455)
-	"ALPHABETIC-LOWER", // 198 (456)
-	"ALPHABETIC-UPPER", // 199 (457)
-	"ALPHANUMERIC", // 200 (458)
-	"ALPHANUMERIC-EDITED", // 201 (459)
-	"ALSO", // 202 (460)
-	"ALTERNATE", // 203 (461)
-	"ANNUITY", // 204 (462)
-	"ANUM", // 205 (463)
-	"ANY", // 206 (464)
-	"ANYCASE", // 207 (465)
-	"APPLY", // 208 (466)
-	"ARE", // 209 (467)
-	"AREA", // 210 (468)
-	"AREAS", // 211 (469)
-	"AS", // 212 (470)
-	"ASCENDING", // 213 (471)
-	"ACTIVATING", // 214 (472)
-	"ASIN", // 215 (473)
-	"ASSIGN", // 216 (474)
-	"AT", // 217 (475)
-	"ATAN", // 218 (476)
-	"BASED", // 219 (477)
-	"BASECONVERT", // 220 (478)
-	"BEFORE", // 221 (479)
-	"BINARY", // 222 (480)
-	"BIT", // 223 (481)
-	"BIT-OF", // 224 (482)
-	"BIT-TO-CHAR", // 225 (483)
-	"BLANK", // 226 (484)
-	"BLOCK", // 227 (485)
-	"BOOLEAN-OF-INTEGER", // 228 (486)
-	"BOTTOM", // 229 (487)
-	"BY", // 230 (488)
-	"BYTE", // 231 (489)
-	"BYTE-LENGTH", // 232 (490)
-	"CF", // 233 (491)
-	"CH", // 234 (492)
-	"CHANGED", // 235 (493)
-	"CHAR", // 236 (494)
-	"CHAR-NATIONAL", // 237 (495)
-	"CHARACTER", // 238 (496)
-	"CHARACTERS", // 239 (497)
-	"CHECKING", // 240 (498)
-	"CLASS", // 241 (499)
-	"COBOL", // 242 (500)
-	"CODE", // 243 (501)
-	"CODE-SET", // 244 (502)
-	"COLLATING", // 245 (503)
-	"COLUMN", // 246 (504)
-	"COMBINED-DATETIME", // 247 (505)
-	"COMMA", // 248 (506)
-	"COMMAND-LINE", // 249 (507)
-	"COMMAND-LINE-COUNT", // 250 (508)
-	"COMMIT", // 251 (509)
-	"COMMON", // 252 (510)
-	"CONCAT", // 253 (511)
-	"CONDITION", // 254 (512)
-	"CONFIGURATION", // 255 (513)
-	"CONTAINS", // 256 (514)
-	"CONTENT", // 257 (515)
-	"CONTROL", // 258 (516)
-	"CONTROLS", // 259 (517)
-	"CONVERT", // 260 (518)
-	"CONVERTING", // 261 (519)
-	"CORRESPONDING", // 262 (520)
-	"COS", // 263 (521)
-	"COUNT", // 264 (522)
-	"CURRENCY", // 265 (523)
-	"CURRENT", // 266 (524)
-	"CURRENT-DATE", // 267 (525)
-	"DATA", // 268 (526)
-	"DATE", // 269 (527)
-	"DATE-COMPILED", // 270 (528)
-	"DATE-OF-INTEGER", // 271 (529)
-	"DATE-TO-YYYYMMDD", // 272 (530)
-	"DATE-WRITTEN", // 273 (531)
-	"DAY", // 274 (532)
-	"DAY-OF-INTEGER", // 275 (533)
-	"DAY-OF-WEEK", // 276 (534)
-	"DAY-TO-YYYYDDD", // 277 (535)
-	"DBCS", // 278 (536)
-	"DE", // 279 (537)
-	"DEBUGGING", // 280 (538)
-	"DECIMAL-POINT", // 281 (539)
-	"DECLARATIVES", // 282 (540)
-	"DELIMITED", // 283 (541)
-	"DELIMITER", // 284 (542)
-	"DEPENDING", // 285 (543)
-	"DESCENDING", // 286 (544)
-	"DETAIL", // 287 (545)
-	"DIRECT", // 288 (546)
-	"DIRECT-ACCESS", // 289 (547)
-	"DOWN", // 290 (548)
-	"DUPLICATES", // 291 (549)
-	"DYNAMIC", // 292 (550)
-	"E", // 293 (551)
-	"EBCDIC", // 294 (552)
-	"EC", // 295 (553)
-	"EGCS", // 296 (554)
-	"ENCODING", // 297 (555)
-	"ENTRY", // 298 (556)
-	"ENVIRONMENT", // 299 (557)
-	"EVERY", // 300 (558)
-	"EXAMINE", // 301 (559)
-	"EXHIBIT", // 302 (560)
-	"EXP", // 303 (561)
-	"EXP10", // 304 (562)
-	"EXTEND", // 305 (563)
-	"EXTERNAL", // 306 (564)
-	"EXCEPTION-FILE", // 307 (565)
-	"EXCEPTION-FILE-N", // 308 (566)
-	"EXCEPTION-LOCATION", // 309 (567)
-	"EXCEPTION-LOCATION-N", // 310 (568)
-	"EXCEPTION-STATEMENT", // 311 (569)
-	"EXCEPTION-STATUS", // 312 (570)
-	"FACTORIAL", // 313 (571)
-	"FALSE", // 314 (572)
-	"FD", // 315 (573)
-	"FILE-CONTROL", // 316 (574)
-	"FILE", // 317 (575)
-	"FILE-LIMIT", // 318 (576)
-	"FINAL", // 319 (577)
-	"FINALLY", // 320 (578)
-	"FIND-STRING", // 321 (579)
-	"FIRST", // 322 (580)
-	"FIXED", // 323 (581)
-	"FOOTING", // 324 (582)
-	"FOR", // 325 (583)
-	"FORMATTED-CURRENT-DATE", // 326 (584)
-	"FORMATTED-DATE", // 327 (585)
-	"FORMATTED-DATETIME", // 328 (586)
-	"FORMATTED-TIME", // 329 (587)
-	"FORM-OVERFLOW", // 330 (588)
-	"FREE", // 331 (589)
-	"FRACTION-PART", // 332 (590)
-	"FROM", // 333 (591)
-	"FUNCTION", // 334 (592)
-	"GENERATE", // 335 (593)
-	"GIVING", // 336 (594)
-	"GLOBAL", // 337 (595)
-	"GO", // 338 (596)
-	"GROUP", // 339 (597)
-	"HEADING", // 340 (598)
-	"HEX", // 341 (599)
-	"HEX-OF", // 342 (600)
-	"HEX-TO-CHAR", // 343 (601)
-	"HIGH-VALUES", // 344 (602)
-	"HIGHEST-ALGEBRAIC", // 345 (603)
-	"HOLD", // 346 (604)
-	"IBM-360", // 347 (605)
-	"IN", // 348 (606)
-	"INCLUDE", // 349 (607)
-	"INDEX", // 350 (608)
-	"INDEXED", // 351 (609)
-	"INDICATE", // 352 (610)
-	"INITIAL", // 353 (611)
-	"INITIATE", // 354 (612)
-	"INPUT", // 355 (613)
-	"INSTALLATION", // 356 (614)
-	"INTERFACE", // 357 (615)
-	"INTEGER", // 358 (616)
-	"INTEGER-OF-BOOLEAN", // 359 (617)
-	"INTEGER-OF-DATE", // 360 (618)
-	"INTEGER-OF-DAY", // 361 (619)
-	"INTEGER-OF-FORMATTED-DATE", // 362 (620)
-	"INTEGER-PART", // 363 (621)
-	"INTO", // 364 (622)
-	"INTRINSIC", // 365 (623)
-	"INVOKE", // 366 (624)
-	"I-O", // 367 (625)
-	"I-O-CONTROL", // 368 (626)
-	"IS", // 369 (627)
-	"ISNT", // 370 (628)
-	"KANJI", // 371 (629)
-	"KEY", // 372 (630)
-	"LABEL", // 373 (631)
-	"LAST", // 374 (632)
-	"LEADING", // 375 (633)
-	"LEFT", // 376 (634)
-	"LENGTH", // 377 (635)
-	"LENGTH-OF", // 378 (636)
-	"LIMIT", // 379 (637)
-	"LIMITS", // 380 (638)
-	"LINE", // 381 (639)
-	"LINES", // 382 (640)
-	"LINE-COUNTER", // 383 (641)
-	"LINAGE", // 384 (642)
-	"LINKAGE", // 385 (643)
-	"LOCALE", // 386 (644)
-	"LOCALE-COMPARE", // 387 (645)
-	"LOCALE-DATE", // 388 (646)
-	"LOCALE-TIME", // 389 (647)
-	"LOCALE-TIME-FROM-SECONDS", // 390 (648)
-	"LOCAL-STORAGE", // 391 (649)
-	"LOCATION", // 392 (650)
-	"LOCK", // 393 (651)
-	"LOCK-ON", // 394 (652)
-	"LOG", // 395 (653)
-	"LOG10", // 396 (654)
-	"LOWER-CASE", // 397 (655)
-	"LOW-VALUES", // 398 (656)
-	"LOWEST-ALGEBRAIC", // 399 (657)
-	"LPAREN", // 400 (658)
-	"MANUAL", // 401 (659)
-	"MAXX", // 402 (660)
-	"MEAN", // 403 (661)
-	"MEDIAN", // 404 (662)
-	"MIDRANGE", // 405 (663)
-	"MINN", // 406 (664)
-	"MULTIPLE", // 407 (665)
-	"MOD", // 408 (666)
-	"MODE", // 409 (667)
-	"MODULE-NAME", // 410 (668)
-	"NAMED", // 411 (669)
-	"NAMESPACE", // 412 (670)
-	"NAMESPACE-PREFIX", // 413 (671)
-	"NAT", // 414 (672)
-	"NATIONAL", // 415 (673)
-	"NATIONAL-EDITED", // 416 (674)
-	"NATIONAL-OF", // 417 (675)
-	"NATIVE", // 418 (676)
-	"NESTED", // 419 (677)
-	"NEXT", // 420 (678)
-	"NO", // 421 (679)
-	"NOTE", // 422 (680)
-	"NULLS", // 423 (681)
-	"NULLPTR", // 424 (682)
-	"NUMERIC", // 425 (683)
-	"NUMERIC-EDITED", // 426 (684)
-	"NUMVAL", // 427 (685)
-	"NUMVAL-C", // 428 (686)
-	"NUMVAL-F", // 429 (687)
-	"OCCURS", // 430 (688)
-	"OF", // 431 (689)
-	"OFF", // 432 (690)
-	"OMITTED", // 433 (691)
-	"ON", // 434 (692)
-	"ONLY", // 435 (693)
-	"OPTIONAL", // 436 (694)
-	"OPTIONS", // 437 (695)
-	"ORD", // 438 (696)
-	"ORDER", // 439 (697)
-	"ORD-MAX", // 440 (698)
-	"ORD-MIN", // 441 (699)
-	"ORGANIZATION", // 442 (700)
-	"OTHER", // 443 (701)
-	"OTHERWISE", // 444 (702)
-	"OUTPUT", // 445 (703)
-	"PACKED-DECIMAL", // 446 (704)
-	"PADDING", // 447 (705)
-	"PAGE", // 448 (706)
-	"PAGE-COUNTER", // 449 (707)
-	"PF", // 450 (708)
-	"PH", // 451 (709)
-	"PI", // 452 (710)
-	"PIC", // 453 (711)
-	"PICTURE", // 454 (712)
-	"PLUS", // 455 (713)
-	"PRESENT-VALUE", // 456 (714)
-	"PRINT-SWITCH", // 457 (715)
-	"PROCEDURE", // 458 (716)
-	"PROCEDURES", // 459 (717)
-	"PROCEED", // 460 (718)
-	"PROCESSING", // 461 (719)
-	"PROGRAM-ID", // 462 (720)
-	"PROGRAM", // 463 (721)
-	"PROPERTY", // 464 (722)
-	"PROTOTYPE", // 465 (723)
-	"PSEUDOTEXT", // 466 (724)
-	"QUOTES", // 467 (725)
-	"RANDOM", // 468 (726)
-	"RANDOM-SEED", // 469 (727)
-	"RANGE", // 470 (728)
-	"RAISE", // 471 (729)
-	"RAISING", // 472 (730)
-	"RD", // 473 (731)
-	"RECORD", // 474 (732)
-	"RECORDING", // 475 (733)
-	"RECORDS", // 476 (734)
-	"RECURSIVE", // 477 (735)
-	"REDEFINES", // 478 (736)
-	"REEL", // 479 (737)
-	"REFERENCE", // 480 (738)
-	"RELATIVE", // 481 (739)
-	"REM", // 482 (740)
-	"REMAINDER", // 483 (741)
-	"REMARKS", // 484 (742)
-	"REMOVAL", // 485 (743)
-	"RENAMES", // 486 (744)
-	"REPLACE", // 487 (745)
-	"REPLACING", // 488 (746)
-	"REPORT", // 489 (747)
-	"REPORTING", // 490 (748)
-	"REPORTS", // 491 (749)
-	"REPOSITORY", // 492 (750)
-	"RERUN", // 493 (751)
-	"RESERVE", // 494 (752)
-	"RESTRICTED", // 495 (753)
-	"RESUME", // 496 (754)
-	"RETRY", // 497 (755)
-	"REVERSE", // 498 (756)
-	"REVERSED", // 499 (757)
-	"REWIND", // 500 (758)
-	"RF", // 501 (759)
-	"RH", // 502 (760)
-	"RIGHT", // 503 (761)
-	"ROUNDED", // 504 (762)
-	"RUN", // 505 (763)
-	"SAME", // 506 (764)
-	"SCREEN", // 507 (765)
-	"SD", // 508 (766)
-	"SECONDS-FROM-FORMATTED-TIME", // 509 (767)
-	"SECONDS-PAST-MIDNIGHT", // 510 (768)
-	"SECURITY", // 511 (769)
-	"SEPARATE", // 512 (770)
-	"SEQUENCE", // 513 (771)
-	"SEQUENTIAL", // 514 (772)
-	"SHARING", // 515 (773)
-	"SIMPLE-EXIT", // 516 (774)
-	"SIGN", // 517 (775)
-	"SIN", // 518 (776)
-	"SIZE", // 519 (777)
-	"SMALLEST-ALGEBRAIC", // 520 (778)
-	"SOURCE", // 521 (779)
-	"SOURCE-COMPUTER", // 522 (780)
-	"SPECIAL-NAMES", // 523 (781)
-	"SQRT", // 524 (782)
-	"STACK", // 525 (783)
-	"STANDARD", // 526 (784)
-	"STANDARD-1", // 527 (785)
-	"STANDARD-DEVIATION", // 528 (786)
-	"STANDARD-COMPARE", // 529 (787)
-	"STATUS", // 530 (788)
-	"STRONG", // 531 (789)
-	"SUBSTITUTE", // 532 (790)
-	"SUM", // 533 (791)
-	"SYMBOL", // 534 (792)
-	"SYMBOLIC", // 535 (793)
-	"SYNCHRONIZED", // 536 (794)
-	"TALLYING", // 537 (795)
-	"TAN", // 538 (796)
-	"TERMINATE", // 539 (797)
-	"TEST", // 540 (798)
-	"TEST-DATE-YYYYMMDD", // 541 (799)
-	"TEST-DAY-YYYYDDD", // 542 (800)
-	"TEST-FORMATTED-DATETIME", // 543 (801)
-	"TEST-NUMVAL", // 544 (802)
-	"TEST-NUMVAL-C", // 545 (803)
-	"TEST-NUMVAL-F", // 546 (804)
-	"THAN", // 547 (805)
-	"TIME", // 548 (806)
-	"TIMES", // 549 (807)
-	"TO", // 550 (808)
-	"TOP", // 551 (809)
-	"TOP-LEVEL", // 552 (810)
-	"TRACKS", // 553 (811)
-	"TRACK-AREA", // 554 (812)
-	"TRAILING", // 555 (813)
-	"TRANSFORM", // 556 (814)
-	"TRIM", // 557 (815)
-	"TRUE", // 558 (816)
-	"TRY", // 559 (817)
-	"TURN", // 560 (818)
-	"TYPE", // 561 (819)
-	"TYPEDEF", // 562 (820)
-	"ULENGTH", // 563 (821)
-	"UNBOUNDED", // 564 (822)
-	"UNIT", // 565 (823)
-	"UNITS", // 566 (824)
-	"UNIT-RECORD", // 567 (825)
-	"UNTIL", // 568 (826)
-	"UP", // 569 (827)
-	"UPON", // 570 (828)
-	"UPOS", // 571 (829)
-	"UPPER-CASE", // 572 (830)
-	"USAGE", // 573 (831)
-	"USING", // 574 (832)
-	"USUBSTR", // 575 (833)
-	"USUPPLEMENTARY", // 576 (834)
-	"UTILITY", // 577 (835)
-	"UUID4", // 578 (836)
-	"UVALID", // 579 (837)
-	"UWIDTH", // 580 (838)
-	"VALIDATING", // 581 (839)
-	"VALUE", // 582 (840)
-	"VARIANCE", // 583 (841)
-	"VARYING", // 584 (842)
-	"VOLATILE", // 585 (843)
-	"WHEN-COMPILED", // 586 (844)
-	"WITH", // 587 (845)
-	"WORKING-STORAGE", // 588 (846)
-	"YEAR-TO-YYYY", // 589 (847)
-	"YYYYDDD", // 590 (848)
-	"YYYYMMDD", // 591 (849)
-	"ARITHMETIC", // 592 (850)
-	"ATTRIBUTE", // 593 (851)
-	"AUTO", // 594 (852)
-	"AUTOMATIC", // 595 (853)
-	"AWAY-FROM-ZERO", // 596 (854)
-	"BACKGROUND-COLOR", // 597 (855)
-	"BELL", // 598 (856)
-	"BINARY-ENCODING", // 599 (857)
-	"BLINK", // 600 (858)
-	"CAPACITY", // 601 (859)
-	"CENTER", // 602 (860)
-	"CLASSIFICATION", // 603 (861)
-	"CYCLE", // 604 (862)
-	"DECIMAL-ENCODING", // 605 (863)
-	"ENTRY-CONVENTION", // 606 (864)
-	"EOL", // 607 (865)
-	"EOS", // 608 (866)
-	"ERASE", // 609 (867)
-	"EXPANDS", // 610 (868)
-	"FLOAT-BINARY", // 611 (869)
-	"FLOAT-DECIMAL", // 612 (870)
-	"FOREGROUND-COLOR", // 613 (871)
-	"FOREVER", // 614 (872)
-	"FULL", // 615 (873)
-	"HIGHLIGHT", // 616 (874)
-	"HIGH-ORDER-LEFT", // 617 (875)
-	"HIGH-ORDER-RIGHT", // 618 (876)
-	"IGNORING", // 619 (877)
-	"IMPLEMENTS", // 620 (878)
-	"INITIALIZED", // 621 (879)
-	"INTERMEDIATE", // 622 (880)
-	"LC-ALL", // 623 (881)
-	"LC-COLLATE", // 624 (882)
-	"LC-CTYPE", // 625 (883)
-	"LC-MESSAGES", // 626 (884)
-	"LC-MONETARY", // 627 (885)
-	"LC-NUMERIC", // 628 (886)
-	"LC-TIME", // 629 (887)
-	"LOWLIGHT", // 630 (888)
-	"NEAREST-AWAY-FROM-ZERO", // 631 (889)
-	"NEAREST-EVEN", // 632 (890)
-	"NEAREST-TOWARD-ZERO", // 633 (891)
-	"NONE", // 634 (892)
-	"NORMAL", // 635 (893)
-	"NUMBERS", // 636 (894)
-	"PREFIXED", // 637 (895)
-	"PREVIOUS", // 638 (896)
-	"PROHIBITED", // 639 (897)
-	"RELATION", // 640 (898)
-	"REQUIRED", // 641 (899)
-	"REVERSE-VIDEO", // 642 (900)
-	"ROUNDING", // 643 (901)
-	"SECONDS", // 644 (902)
-	"SECURE", // 645 (903)
-	"SHORT", // 646 (904)
-	"SIGNED", // 647 (905)
-	"STANDARD-BINARY", // 648 (906)
-	"STANDARD-DECIMAL", // 649 (907)
-	"STATEMENT", // 650 (908)
-	"STEP", // 651 (909)
-	"STRUCTURE", // 652 (910)
-	"TOWARD-GREATER", // 653 (911)
-	"TOWARD-LESSER", // 654 (912)
-	"TRUNCATION", // 655 (913)
-	"UCS-4", // 656 (914)
-	"UNDERLINE", // 657 (915)
-	"UNSIGNED", // 658 (916)
-	"UTF-16", // 659 (917)
-	"UTF-8", // 660 (918)
-	"XML-DECLARATION", // 661 (919)
-	"XMLGENERATE", // 662 (920)
-	"XMLPARSE", // 663 (921)
-	"ADDRESS", // 664 (922)
-	"END-ACCEPT", // 665 (923)
-	"END-ADD", // 666 (924)
-	"END-CALL", // 667 (925)
-	"END-COMPUTE", // 668 (926)
-	"END-DELETE", // 669 (927)
-	"END-DISPLAY", // 670 (928)
-	"END-DIVIDE", // 671 (929)
-	"END-EVALUATE", // 672 (930)
-	"END-MULTIPLY", // 673 (931)
-	"END-PERFORM", // 674 (932)
-	"END-READ", // 675 (933)
-	"END-RETURN", // 676 (934)
-	"END-REWRITE", // 677 (935)
-	"END-SEARCH", // 678 (936)
-	"END-START", // 679 (937)
-	"END-STRING", // 680 (938)
-	"END-SUBTRACT", // 681 (939)
-	"END-UNSTRING", // 682 (940)
-	"END-WRITE", // 683 (941)
-	"END-XML", // 684 (942)
-	"END-IF", // 685 (943)
-	"ATTRIBUTES", // 686 (944)
-	"ELEMENT", // 687 (945)
-	"NONNUMERIC", // 688 (946)
-	"THRU", // 689 (947)
-	"OR", // 690 (948)
-	"AND", // 691 (949)
-	"NOT", // 692 (950)
-	"NE", // 693 (951)
-	"LE", // 694 (952)
-	"GE", // 695 (953)
-	"POW", // 696 (954)
-	"NEG", // 697 (955)
+	"FLAG-02", // 104 (362)
+	"MOVE-TO-SAME-NAME", // 105 (363)
+	"RANGE-EXCEPTION-FOR-INDEX", // 106 (364)
+	"TERMINATE-WITH-VARYING", // 107 (365)
+	"FLAG-14", // 108 (366)
+	"COMPILE-TIME-ARITHMETIC-EXPRESSIONS", // 109 (367)
+	"I-O-DECLARATIVE", // 110 (368)
+	"I-O-STATUS-04", // 111 (369)
+	"I-O-STATUS-07", // 112 (370)
+	"NUM-ED-ZERO-FIGCONST", // 113 (371)
+	"READ-PREVIOUS", // 114 (372)
+	"REF-MOD-ZERO-LENGTH", // 115 (373)
+	"VALUE-EDITING", // 116 (374)
+	"VALUE-FIG-CON-LENGTH", // 117 (375)
+	"VALUE-ZERO", // 118 (376)
+	"WRITE-END-OF-PAGE", // 119 (377)
+	"LEAP-SECOND", // 120 (378)
+	"LISTING", // 121 (379)
+	"PROPAGATE", // 122 (380)
+	"ZERO-LENGTH", // 123 (381)
+	"B-AND", // 124 (382)
+	"B-NOT", // 125 (383)
+	"B-OR", // 126 (384)
+	"B-SHIFT-L", // 127 (385)
+	"B-SHIFT-LC", // 128 (386)
+	"B-SHIFT-R", // 129 (387)
+	"B-SHIFT-RC", // 130 (388)
+	"B-XOR", // 131 (389)
+	"BASIS", // 132 (390)
+	"CBL", // 133 (391)
+	"CONSTANT", // 134 (392)
+	"COPY", // 135 (393)
+	"DEFINED", // 136 (394)
+	"ENTER", // 137 (395)
+	"FEATURE", // 138 (396)
+	"INSERTT", // 139 (397)
+	"LSUB", // 140 (398)
+	"PARAMETER", // 141 (399)
+	"OVERRIDE", // 142 (400)
+	"READY", // 143 (401)
+	"RESET", // 144 (402)
+	"RSUB", // 145 (403)
+	"SERVICE-RELOAD", // 146 (404)
+	"STAR-CBL", // 147 (405)
+	"SUBSCRIPT", // 148 (406)
+	"SUPPRESS", // 149 (407)
+	"TRACE", // 150 (408)
+	"USE", // 151 (409)
+	"COBOL-WORDS", // 152 (410)
+	"EQUATE", // 153 (411)
+	"UNDEFINE", // 154 (412)
+	"CDF-DEFINE", // 155 (413)
+	"CDF-DISPLAY", // 156 (414)
+	"CDF-IF", // 157 (415)
+	"CDF-ELSE", // 158 (416)
+	"CDF-END-IF", // 159 (417)
+	"CDF-EVALUATE", // 160 (418)
+	"CDF-WHEN", // 161 (419)
+	"CDF-END-EVALUATE", // 162 (420)
+	"CALL-CONVENTION", // 163 (421)
+	"CALL-COBOL", // 164 (422)
+	"CALL-VERBATIM", // 165 (423)
+	"CDF-PUSH", // 166 (424)
+	"CDF-POP", // 167 (425)
+	"SOURCE-FORMAT", // 168 (426)
+	"IF", // 169 (427)
+	"THEN", // 170 (428)
+	"ELSE", // 171 (429)
+	"SENTENCE", // 172 (430)
+	"ACCEPT", // 173 (431)
+	"ADD", // 174 (432)
+	"ALTER", // 175 (433)
+	"CALL", // 176 (434)
+	"CANCEL", // 177 (435)
+	"CLOSE", // 178 (436)
+	"COMPUTE", // 179 (437)
+	"CONTINUE", // 180 (438)
+	"DELETE", // 181 (439)
+	"DISPLAY", // 182 (440)
+	"DIVIDE", // 183 (441)
+	"EVALUATE", // 184 (442)
+	"EXIT", // 185 (443)
+	"FILLER", // 186 (444)
+	"GOBACK", // 187 (445)
+	"GOTO", // 188 (446)
+	"INITIALIZE", // 189 (447)
+	"INSPECT", // 190 (448)
+	"MERGE", // 191 (449)
+	"MOVE", // 192 (450)
+	"MULTIPLY", // 193 (451)
+	"OPEN", // 194 (452)
+	"PARAGRAPH", // 195 (453)
+	"READ", // 196 (454)
+	"RELEASE", // 197 (455)
+	"RETURN", // 198 (456)
+	"REWRITE", // 199 (457)
+	"SEARCH", // 200 (458)
+	"SET", // 201 (459)
+	"SELECT", // 202 (460)
+	"SORT", // 203 (461)
+	"SORT-MERGE", // 204 (462)
+	"STRING", // 205 (463)
+	"STOP", // 206 (464)
+	"SUBTRACT", // 207 (465)
+	"START", // 208 (466)
+	"UNSTRING", // 209 (467)
+	"WRITE", // 210 (468)
+	"WHEN", // 211 (469)
+	"ARGUMENT-NUMBER", // 212 (470)
+	"ARGUMENT-VALUE", // 213 (471)
+	"ENVIRONMENT-NAME", // 214 (472)
+	"ENVIRONMENT-VALUE", // 215 (473)
+	"ABS", // 216 (474)
+	"ACCESS", // 217 (475)
+	"ACOS", // 218 (476)
+	"ACTUAL", // 219 (477)
+	"ADVANCING", // 220 (478)
+	"AFTER", // 221 (479)
+	"ALL", // 222 (480)
+	"ALLOCATE", // 223 (481)
+	"ALPHABET", // 224 (482)
+	"ALPHABETIC", // 225 (483)
+	"ALPHABETIC-LOWER", // 226 (484)
+	"ALPHABETIC-UPPER", // 227 (485)
+	"ALPHANUMERIC", // 228 (486)
+	"ALPHANUMERIC-EDITED", // 229 (487)
+	"ALSO", // 230 (488)
+	"ALTERNATE", // 231 (489)
+	"ANNUITY", // 232 (490)
+	"ANUM", // 233 (491)
+	"ANY", // 234 (492)
+	"ANYCASE", // 235 (493)
+	"APPLY", // 236 (494)
+	"ARE", // 237 (495)
+	"AREA", // 238 (496)
+	"AREAS", // 239 (497)
+	"AS", // 240 (498)
+	"ASCENDING", // 241 (499)
+	"ACTIVATING", // 242 (500)
+	"ASIN", // 243 (501)
+	"ASSIGN", // 244 (502)
+	"AT", // 245 (503)
+	"ATAN", // 246 (504)
+	"BASED", // 247 (505)
+	"BASECONVERT", // 248 (506)
+	"BEFORE", // 249 (507)
+	"BINARY", // 250 (508)
+	"BIT", // 251 (509)
+	"BIT-OF", // 252 (510)
+	"BIT-TO-CHAR", // 253 (511)
+	"BLANK", // 254 (512)
+	"BLOCK", // 255 (513)
+	"BOOLEAN-OF-INTEGER", // 256 (514)
+	"BOTTOM", // 257 (515)
+	"BY", // 258 (516)
+	"BYTE", // 259 (517)
+	"BYTE-LENGTH", // 260 (518)
+	"CF", // 261 (519)
+	"CH", // 262 (520)
+	"CHANGED", // 263 (521)
+	"CHAR", // 264 (522)
+	"CHAR-NATIONAL", // 265 (523)
+	"CHARACTER", // 266 (524)
+	"CHARACTERS", // 267 (525)
+	"CHECKING", // 268 (526)
+	"CLASS", // 269 (527)
+	"COBOL", // 270 (528)
+	"CODE", // 271 (529)
+	"CODE-SET", // 272 (530)
+	"COLLATING", // 273 (531)
+	"COLUMN", // 274 (532)
+	"COMBINED-DATETIME", // 275 (533)
+	"COMMA", // 276 (534)
+	"COMMAND-LINE", // 277 (535)
+	"COMMAND-LINE-COUNT", // 278 (536)
+	"COMMIT", // 279 (537)
+	"COMMON", // 280 (538)
+	"CONCAT", // 281 (539)
+	"CONDITION", // 282 (540)
+	"CONFIGURATION", // 283 (541)
+	"CONTAINS", // 284 (542)
+	"CONTENT", // 285 (543)
+	"CONTROL", // 286 (544)
+	"CONTROLS", // 287 (545)
+	"CONVERT", // 288 (546)
+	"CONVERTING", // 289 (547)
+	"CORRESPONDING", // 290 (548)
+	"COS", // 291 (549)
+	"COUNT", // 292 (550)
+	"CURRENCY", // 293 (551)
+	"CURRENT", // 294 (552)
+	"CURRENT-DATE", // 295 (553)
+	"DATA", // 296 (554)
+	"DATE", // 297 (555)
+	"DATE-COMPILED", // 298 (556)
+	"DATE-OF-INTEGER", // 299 (557)
+	"DATE-TO-YYYYMMDD", // 300 (558)
+	"DATE-WRITTEN", // 301 (559)
+	"DAY", // 302 (560)
+	"DAY-OF-INTEGER", // 303 (561)
+	"DAY-OF-WEEK", // 304 (562)
+	"DAY-TO-YYYYDDD", // 305 (563)
+	"DBCS", // 306 (564)
+	"DE", // 307 (565)
+	"DEBUGGING", // 308 (566)
+	"DECIMAL-POINT", // 309 (567)
+	"DECLARATIVES", // 310 (568)
+	"DELIMITED", // 311 (569)
+	"DELIMITER", // 312 (570)
+	"DEPENDING", // 313 (571)
+	"DESCENDING", // 314 (572)
+	"DETAIL", // 315 (573)
+	"DIRECT", // 316 (574)
+	"DIRECT-ACCESS", // 317 (575)
+	"DOWN", // 318 (576)
+	"DUPLICATES", // 319 (577)
+	"DYNAMIC", // 320 (578)
+	"E", // 321 (579)
+	"EBCDIC", // 322 (580)
+	"EC", // 323 (581)
+	"EGCS", // 324 (582)
+	"ENCODING", // 325 (583)
+	"ENTRY", // 326 (584)
+	"ENVIRONMENT", // 327 (585)
+	"EVERY", // 328 (586)
+	"EXAMINE", // 329 (587)
+	"EXHIBIT", // 330 (588)
+	"EXP", // 331 (589)
+	"EXP10", // 332 (590)
+	"EXTEND", // 333 (591)
+	"EXTERNAL", // 334 (592)
+	"EXCEPTION-FILE", // 335 (593)
+	"EXCEPTION-FILE-N", // 336 (594)
+	"EXCEPTION-LOCATION", // 337 (595)
+	"EXCEPTION-LOCATION-N", // 338 (596)
+	"EXCEPTION-STATEMENT", // 339 (597)
+	"EXCEPTION-STATUS", // 340 (598)
+	"FACTORIAL", // 341 (599)
+	"FALSE", // 342 (600)
+	"FD", // 343 (601)
+	"FILE-CONTROL", // 344 (602)
+	"FILE", // 345 (603)
+	"FILE-LIMIT", // 346 (604)
+	"FINAL", // 347 (605)
+	"FINALLY", // 348 (606)
+	"FIND-STRING", // 349 (607)
+	"FIRST", // 350 (608)
+	"FIXED", // 351 (609)
+	"FOOTING", // 352 (610)
+	"FOR", // 353 (611)
+	"FORMATTED-CURRENT-DATE", // 354 (612)
+	"FORMATTED-DATE", // 355 (613)
+	"FORMATTED-DATETIME", // 356 (614)
+	"FORMATTED-TIME", // 357 (615)
+	"FORM-OVERFLOW", // 358 (616)
+	"FREE", // 359 (617)
+	"FRACTION-PART", // 360 (618)
+	"FROM", // 361 (619)
+	"FUNCTION", // 362 (620)
+	"GENERATE", // 363 (621)
+	"GIVING", // 364 (622)
+	"GLOBAL", // 365 (623)
+	"GO", // 366 (624)
+	"GROUP", // 367 (625)
+	"HEADING", // 368 (626)
+	"HEX", // 369 (627)
+	"HEX-OF", // 370 (628)
+	"HEX-TO-CHAR", // 371 (629)
+	"HIGH-VALUES", // 372 (630)
+	"HIGHEST-ALGEBRAIC", // 373 (631)
+	"HOLD", // 374 (632)
+	"IBM-360", // 375 (633)
+	"IN", // 376 (634)
+	"INCLUDE", // 377 (635)
+	"INDEX", // 378 (636)
+	"INDEXED", // 379 (637)
+	"INDICATE", // 380 (638)
+	"INITIAL", // 381 (639)
+	"INITIATE", // 382 (640)
+	"INPUT", // 383 (641)
+	"INSTALLATION", // 384 (642)
+	"INTERFACE", // 385 (643)
+	"INTEGER", // 386 (644)
+	"INTEGER-OF-BOOLEAN", // 387 (645)
+	"INTEGER-OF-DATE", // 388 (646)
+	"INTEGER-OF-DAY", // 389 (647)
+	"INTEGER-OF-FORMATTED-DATE", // 390 (648)
+	"INTEGER-PART", // 391 (649)
+	"INTO", // 392 (650)
+	"INTRINSIC", // 393 (651)
+	"INVOKE", // 394 (652)
+	"I-O", // 395 (653)
+	"I-O-CONTROL", // 396 (654)
+	"IS", // 397 (655)
+	"ISNT", // 398 (656)
+	"KANJI", // 399 (657)
+	"KEY", // 400 (658)
+	"LABEL", // 401 (659)
+	"LAST", // 402 (660)
+	"LEADING", // 403 (661)
+	"LEFT", // 404 (662)
+	"LENGTH", // 405 (663)
+	"LENGTH-OF", // 406 (664)
+	"LIMIT", // 407 (665)
+	"LIMITS", // 408 (666)
+	"LINE", // 409 (667)
+	"LINES", // 410 (668)
+	"LINE-COUNTER", // 411 (669)
+	"LINAGE", // 412 (670)
+	"LINKAGE", // 413 (671)
+	"LOCALE", // 414 (672)
+	"LOCALE-COMPARE", // 415 (673)
+	"LOCALE-DATE", // 416 (674)
+	"LOCALE-TIME", // 417 (675)
+	"LOCALE-TIME-FROM-SECONDS", // 418 (676)
+	"LOCAL-STORAGE", // 419 (677)
+	"LOCATION", // 420 (678)
+	"LOCK", // 421 (679)
+	"LOCK-ON", // 422 (680)
+	"LOG", // 423 (681)
+	"LOG10", // 424 (682)
+	"LOWER-CASE", // 425 (683)
+	"LOW-VALUES", // 426 (684)
+	"LOWEST-ALGEBRAIC", // 427 (685)
+	"LPAREN", // 428 (686)
+	"MANUAL", // 429 (687)
+	"MAXX", // 430 (688)
+	"MEAN", // 431 (689)
+	"MEDIAN", // 432 (690)
+	"MIDRANGE", // 433 (691)
+	"MINN", // 434 (692)
+	"MULTIPLE", // 435 (693)
+	"MOD", // 436 (694)
+	"MODE", // 437 (695)
+	"MODULE-NAME", // 438 (696)
+	"NAMED", // 439 (697)
+	"NAMESPACE", // 440 (698)
+	"NAMESPACE-PREFIX", // 441 (699)
+	"NAT", // 442 (700)
+	"NATIONAL", // 443 (701)
+	"NATIONAL-EDITED", // 444 (702)
+	"NATIONAL-OF", // 445 (703)
+	"NATIVE", // 446 (704)
+	"NESTED", // 447 (705)
+	"NEXT", // 448 (706)
+	"NO", // 449 (707)
+	"NOTE", // 450 (708)
+	"NULLS", // 451 (709)
+	"NULLPTR", // 452 (710)
+	"NUMERIC", // 453 (711)
+	"NUMERIC-EDITED", // 454 (712)
+	"NUMVAL", // 455 (713)
+	"NUMVAL-C", // 456 (714)
+	"NUMVAL-F", // 457 (715)
+	"OCCURS", // 458 (716)
+	"OF", // 459 (717)
+	"OFF", // 460 (718)
+	"OMITTED", // 461 (719)
+	"ON", // 462 (720)
+	"ONLY", // 463 (721)
+	"OPTIONAL", // 464 (722)
+	"OPTIONS", // 465 (723)
+	"ORD", // 466 (724)
+	"ORDER", // 467 (725)
+	"ORD-MAX", // 468 (726)
+	"ORD-MIN", // 469 (727)
+	"ORGANIZATION", // 470 (728)
+	"OTHER", // 471 (729)
+	"OTHERWISE", // 472 (730)
+	"OUTPUT", // 473 (731)
+	"PACKED-DECIMAL", // 474 (732)
+	"PADDING", // 475 (733)
+	"PAGE", // 476 (734)
+	"PAGE-COUNTER", // 477 (735)
+	"PF", // 478 (736)
+	"PH", // 479 (737)
+	"PI", // 480 (738)
+	"PIC", // 481 (739)
+	"PICTURE", // 482 (740)
+	"PLUS", // 483 (741)
+	"PRESENT-VALUE", // 484 (742)
+	"PRINT-SWITCH", // 485 (743)
+	"PROCEDURE", // 486 (744)
+	"PROCEDURES", // 487 (745)
+	"PROCEED", // 488 (746)
+	"PROCESSING", // 489 (747)
+	"PROGRAM-ID", // 490 (748)
+	"PROGRAM", // 491 (749)
+	"PROPERTY", // 492 (750)
+	"PROTOTYPE", // 493 (751)
+	"PSEUDOTEXT", // 494 (752)
+	"QUOTES", // 495 (753)
+	"RANDOM", // 496 (754)
+	"RANDOM-SEED", // 497 (755)
+	"RANGE", // 498 (756)
+	"RAISE", // 499 (757)
+	"RAISING", // 500 (758)
+	"RD", // 501 (759)
+	"RECORD", // 502 (760)
+	"RECORDING", // 503 (761)
+	"RECORDS", // 504 (762)
+	"RECURSIVE", // 505 (763)
+	"REDEFINES", // 506 (764)
+	"REEL", // 507 (765)
+	"REFERENCE", // 508 (766)
+	"RELATIVE", // 509 (767)
+	"REM", // 510 (768)
+	"REMAINDER", // 511 (769)
+	"REMARKS", // 512 (770)
+	"REMOVAL", // 513 (771)
+	"RENAMES", // 514 (772)
+	"REPLACE", // 515 (773)
+	"REPLACING", // 516 (774)
+	"REPORT", // 517 (775)
+	"REPORTING", // 518 (776)
+	"REPORTS", // 519 (777)
+	"REPOSITORY", // 520 (778)
+	"RERUN", // 521 (779)
+	"RESERVE", // 522 (780)
+	"RESTRICTED", // 523 (781)
+	"RESUME", // 524 (782)
+	"RETRY", // 525 (783)
+	"REVERSE", // 526 (784)
+	"REVERSED", // 527 (785)
+	"REWIND", // 528 (786)
+	"RF", // 529 (787)
+	"RH", // 530 (788)
+	"RIGHT", // 531 (789)
+	"ROUNDED", // 532 (790)
+	"RUN", // 533 (791)
+	"SAME", // 534 (792)
+	"SCREEN", // 535 (793)
+	"SD", // 536 (794)
+	"SECONDS-FROM-FORMATTED-TIME", // 537 (795)
+	"SECONDS-PAST-MIDNIGHT", // 538 (796)
+	"SECURITY", // 539 (797)
+	"SEPARATE", // 540 (798)
+	"SEQUENCE", // 541 (799)
+	"SEQUENTIAL", // 542 (800)
+	"SHARING", // 543 (801)
+	"SIMPLE-EXIT", // 544 (802)
+	"SIGN", // 545 (803)
+	"SIN", // 546 (804)
+	"SIZE", // 547 (805)
+	"SMALLEST-ALGEBRAIC", // 548 (806)
+	"SOURCE", // 549 (807)
+	"SOURCE-COMPUTER", // 550 (808)
+	"SPECIAL-NAMES", // 551 (809)
+	"SQRT", // 552 (810)
+	"STACK", // 553 (811)
+	"STANDARD", // 554 (812)
+	"STANDARD-1", // 555 (813)
+	"STANDARD-2", // 556 (814)
+	"STANDARD-DEVIATION", // 557 (815)
+	"STANDARD-COMPARE", // 558 (816)
+	"STATUS", // 559 (817)
+	"STRONG", // 560 (818)
+	"SUBSTITUTE", // 561 (819)
+	"SUM", // 562 (820)
+	"SYMBOL", // 563 (821)
+	"SYMBOLIC", // 564 (822)
+	"SYNCHRONIZED", // 565 (823)
+	"TALLYING", // 566 (824)
+	"TAN", // 567 (825)
+	"TERMINATE", // 568 (826)
+	"TEST", // 569 (827)
+	"TEST-DATE-YYYYMMDD", // 570 (828)
+	"TEST-DAY-YYYYDDD", // 571 (829)
+	"TEST-FORMATTED-DATETIME", // 572 (830)
+	"TEST-NUMVAL", // 573 (831)
+	"TEST-NUMVAL-C", // 574 (832)
+	"TEST-NUMVAL-F", // 575 (833)
+	"THAN", // 576 (834)
+	"TIME", // 577 (835)
+	"TIMES", // 578 (836)
+	"TO", // 579 (837)
+	"TOP", // 580 (838)
+	"TOP-LEVEL", // 581 (839)
+	"TRACKS", // 582 (840)
+	"TRACK-AREA", // 583 (841)
+	"TRAILING", // 584 (842)
+	"TRANSFORM", // 585 (843)
+	"TRIM", // 586 (844)
+	"TRUE", // 587 (845)
+	"TRY", // 588 (846)
+	"TURN", // 589 (847)
+	"TYPE", // 590 (848)
+	"TYPEDEF", // 591 (849)
+	"ULENGTH", // 592 (850)
+	"UNBOUNDED", // 593 (851)
+	"UNIT", // 594 (852)
+	"UNITS", // 595 (853)
+	"UNIT-RECORD", // 596 (854)
+	"UNTIL", // 597 (855)
+	"UP", // 598 (856)
+	"UPON", // 599 (857)
+	"UPOS", // 600 (858)
+	"UPPER-CASE", // 601 (859)
+	"USAGE", // 602 (860)
+	"USING", // 603 (861)
+	"USUBSTR", // 604 (862)
+	"USUPPLEMENTARY", // 605 (863)
+	"UTILITY", // 606 (864)
+	"UUID4", // 607 (865)
+	"UVALID", // 608 (866)
+	"UWIDTH", // 609 (867)
+	"VALIDATING", // 610 (868)
+	"VALUE", // 611 (869)
+	"VARIANCE", // 612 (870)
+	"VARYING", // 613 (871)
+	"VOLATILE", // 614 (872)
+	"WHEN-COMPILED", // 615 (873)
+	"WITH", // 616 (874)
+	"WORKING-STORAGE", // 617 (875)
+	"YEAR-TO-YYYY", // 618 (876)
+	"YYYYDDD", // 619 (877)
+	"YYYYMMDD", // 620 (878)
+	"ARITHMETIC", // 621 (879)
+	"ATTRIBUTE", // 622 (880)
+	"AUTO", // 623 (881)
+	"AUTOMATIC", // 624 (882)
+	"AWAY-FROM-ZERO", // 625 (883)
+	"BACKGROUND-COLOR", // 626 (884)
+	"BELL", // 627 (885)
+	"BINARY-ENCODING", // 628 (886)
+	"BLINK", // 629 (887)
+	"CAPACITY", // 630 (888)
+	"CENTER", // 631 (889)
+	"CLASSIFICATION", // 632 (890)
+	"CYCLE", // 633 (891)
+	"DECIMAL-ENCODING", // 634 (892)
+	"ENTRY-CONVENTION", // 635 (893)
+	"EOL", // 636 (894)
+	"EOS", // 637 (895)
+	"ERASE", // 638 (896)
+	"EXPANDS", // 639 (897)
+	"FLOAT-BINARY", // 640 (898)
+	"FLOAT-DECIMAL", // 641 (899)
+	"FOREGROUND-COLOR", // 642 (900)
+	"FOREVER", // 643 (901)
+	"FULL", // 644 (902)
+	"HIGHLIGHT", // 645 (903)
+	"HIGH-ORDER-LEFT", // 646 (904)
+	"HIGH-ORDER-RIGHT", // 647 (905)
+	"IGNORING", // 648 (906)
+	"IMPLEMENTS", // 649 (907)
+	"INITIALIZED", // 650 (908)
+	"INTERMEDIATE", // 651 (909)
+	"LC-ALL", // 652 (910)
+	"LC-COLLATE", // 653 (911)
+	"LC-CTYPE", // 654 (912)
+	"LC-MESSAGES", // 655 (913)
+	"LC-MONETARY", // 656 (914)
+	"LC-NUMERIC", // 657 (915)
+	"LC-TIME", // 658 (916)
+	"LOWLIGHT", // 659 (917)
+	"NEAREST-AWAY-FROM-ZERO", // 660 (918)
+	"NEAREST-EVEN", // 661 (919)
+	"NEAREST-TOWARD-ZERO", // 662 (920)
+	"NONE", // 663 (921)
+	"NORMAL", // 664 (922)
+	"NUMBERS", // 665 (923)
+	"PREFIXED", // 666 (924)
+	"PREVIOUS", // 667 (925)
+	"PROHIBITED", // 668 (926)
+	"RELATION", // 669 (927)
+	"REQUIRED", // 670 (928)
+	"REVERSE-VIDEO", // 671 (929)
+	"ROUNDING", // 672 (930)
+	"SECONDS", // 673 (931)
+	"SECURE", // 674 (932)
+	"SHORT", // 675 (933)
+	"SIGNED", // 676 (934)
+	"STANDARD-BINARY", // 677 (935)
+	"STANDARD-DECIMAL", // 678 (936)
+	"STATEMENT", // 679 (937)
+	"STEP", // 680 (938)
+	"STRUCTURE", // 681 (939)
+	"TOWARD-GREATER", // 682 (940)
+	"TOWARD-LESSER", // 683 (941)
+	"TRUNCATION", // 684 (942)
+	"UCS-4", // 685 (943)
+	"UNDERLINE", // 686 (944)
+	"UNSIGNED", // 687 (945)
+	"UTF-16", // 688 (946)
+	"UTF-8", // 689 (947)
+	"XML-DECLARATION", // 690 (948)
+	"XMLGENERATE", // 691 (949)
+	"XMLPARSE", // 692 (950)
+	"ADDRESS", // 693 (951)
+	"END-ACCEPT", // 694 (952)
+	"END-ADD", // 695 (953)
+	"END-CALL", // 696 (954)
+	"END-COMPUTE", // 697 (955)
+	"END-DELETE", // 698 (956)
+	"END-DISPLAY", // 699 (957)
+	"END-DIVIDE", // 700 (958)
+	"END-EVALUATE", // 701 (959)
+	"END-MULTIPLY", // 702 (960)
+	"END-PERFORM", // 703 (961)
+	"END-READ", // 704 (962)
+	"END-RETURN", // 705 (963)
+	"END-REWRITE", // 706 (964)
+	"END-SEARCH", // 707 (965)
+	"END-START", // 708 (966)
+	"END-STRING", // 709 (967)
+	"END-SUBTRACT", // 710 (968)
+	"END-UNSTRING", // 711 (969)
+	"END-WRITE", // 712 (970)
+	"END-XML", // 713 (971)
+	"END-IF", // 714 (972)
+	"ATTRIBUTES", // 715 (973)
+	"ELEMENT", // 716 (974)
+	"NONNUMERIC", // 717 (975)
+	"THRU", // 718 (976)
+	"OR", // 719 (977)
+	"XOR", // 720 (978)
+	"AND", // 721 (979)
+	"NOT", // 722 (980)
+	"NE", // 723 (981)
+	"LE", // 724 (982)
+	"GE", // 725 (983)
+	"POW", // 726 (984)
+	"NEG", // 727 (985)
 };

@@ -1534,6 +1534,142 @@ USE({SPC}FOR)?		{ return USE; }
                         tmpstring = NULL; pop_return LITERAL; }
 }
 
+  /* These appear only in ISO list of CDF reserved words */
+  /* DE-EDITING 		{ return DE_EDITING; } */
+  /* EXTERNAL-FILE-FILE-STATUS 	{ return EXTERNAL_FILE_FILE_STATUS; } */
+  /* FORMAT 		{ return FORMAT; } */
+  /* FUNCTION-ARGUMENT	{ return FUNCTION_ARGUMENT; } */
+  /* GREATER 		{ return GREATER; } */
+
+<cdf_state>{
+  ALL 			{ return ALL; }
+  AND 			{ return AND; }
+  AS 			{ return AS; }
+  B-AND 		{ return B_AND; }
+  B-NOT 		{ return B_NOT; }
+  B-OR 			{ return B_OR; }
+  B-SHIFT-L 		{ return B_SHIFT_L; }
+  B-SHIFT-LC 		{ return B_SHIFT_LC; }
+  B-SHIFT-R 		{ return B_SHIFT_R; }
+  B-SHIFT-RC 		{ return B_SHIFT_RC; }
+  B-XOR 		{ return B_XOR; }
+  CALL-CONVENTION 	{ return CALL_CONVENTION; }
+  CHECKING 		{ return CHECKING; }
+  COBOL 		{ return COBOL; }
+  COBOL-WORDS 		{ return COBOL_WORDS; }
+  COMPILE-TIME-ARITHMETIC-EXPRESSIONS 	{ return COMPILE_TIME_ARITHMETIC_EXPRESSIONS; }
+  CORRESPONDING 	{ return CORRESPONDING; }
+  DEFINE 		{ return CDF_DEFINE; }
+  DEFINED 		{ return DEFINED; }
+  DISPLAY 		{ return CDF_DISPLAY; }
+  DIVIDE 		{ return DIVIDE; }
+  ELSE 			{ return CDF_ELSE; }
+  END-EVALUATE 		{ return CDF_END_EVALUATE; }
+  END-IF 		{ return CDF_END_IF; }
+  EQUAL 		{ return '='; }
+  EQUATE 		{ return EQUATE; }
+  EVALUATE 		{ return CDF_EVALUATE; }
+  FIXED 		{ return FIXED; }
+  FLAG-02 		{ return FLAG_02; }
+  FLAG-14 		{ return FLAG_14; }
+  FREE 			{ return FREE; }
+  I-O-DECLARATIVE 	{ return I_O_DECLARATIVE; }
+  I-O-STATUS-04 	{ return I_O_STATUS_04; }
+  I-O-STATUS-07 	{ return I_O_STATUS_07; }
+  IF 			{ return CDF_IF; }
+  IS 			{ return IS; }
+  LEAP-SECOND 		{ return LEAP_SECOND; }
+  LISTING 		{ return LISTING; }
+  LOCATION 		{ return LOCATION; }
+  MOVE 			{ return MOVE; }
+  MOVE-TO-SAME-NAME	{ return MOVE_TO_SAME_NAME; }
+  NOT 			{ return NOT; }
+  NUM-ED-ZERO-FIGCONST	{ return NUM_ED_ZERO_FIGCONST; }
+  NUMVAL 		{ return NUMVAL; }
+  OFF 			{ return OFF; }
+  ON 			{ return ON; }
+  OR 			{ return OR; }
+  OTHER 		{ return OTHER; }
+  OVERRIDE 		{ return OVERRIDE; }
+  PAGE 			{ return PAGE; }
+  PARAMETER 		{ return PARAMETER_kw; }
+  POP	 		{ return CDF_POP; }
+  PROPAGATE 		{ return PROPAGATE; }
+  PUSH 			{ return CDF_PUSH; }
+  RANGE-EXCEPTION-FOR-INDEX { return RANGE_EXCEPTION_FOR_INDEX; }
+  READ-PREVIOUS 	{ return READ_PREVIOUS; }
+  REF-MOD-ZERO-LENGTH	{ return REF_MOD_ZERO_LENGTH; }
+  TERMINATE-WITH-VARYING { return TERMINATE_WITH_VARYING; }
+  RESERVE 		{ return RESERVE; }
+  SET	 		{ return SET; }
+  SIZE 			{ return SIZE; }
+  SOURCE 		{ return SOURCE; }
+  SOURCE{BLANK}FORMAT	{ return SOURCE_FORMAT; }
+  STANDARD-1 		{ return STANDARD_1; }
+  STANDARD-2 		{ return STANDARD_2; }
+  STATUS 		{ return STATUS; }
+  SUBSTITUTE 		{ return SUBSTITUTE; }
+  THAN 			{ return THAN; }
+  THROUGH |
+  THRU 			{ return THRU; }
+  TO 			{ return TO; }
+  TRUE 			{ return TRUE; }
+  TURN 			{ return TURN; }
+  UNDEFINE 		{ return UNDEFINE; }
+  UPON 			{ return UPON; }
+  VALUE-EDITING 	{ return VALUE_EDITING; }
+  VALUE-FIG-CON-LENGTH	{ return VALUE_FIG_CON_LENGTH; }
+  VALUE-ZERO 		{ return VALUE_ZERO; }
+  WHEN	 		{ return CDF_WHEN; }
+  WITH 			{ return WITH; }
+  WRITE-END-OF-PAGE	{ return WRITE_END_OF_PAGE; }
+  EXCLUSIVE-OR |
+  XOR	 		{ return XOR; }
+  ZERO-LENGTH 		{ return ZERO_LENGTH; }
+  
+  [+-]?{INTEGERZ}       { int value;
+			  if( is_integer_token(&value) ) {
+			    ydflval.number = value;
+			    return cdf::parser::token::YDF_NUMBER;
+			  }
+			  dbgmsg("%s not an integer = %d",
+				   yytext, value);
+			  return NO_CONDITION;
+			}
+
+  {NAME}{SPC}AS 	{ char *s = xstrdup(yytext);
+			  char *p = strchr(s, 0x20);
+			  gcc_assert(p); // just found via regex
+			  *p = '\0';
+			  ydflval.string = yylval.string = s;
+			  return NAME;
+			}
+  {NAME}	 	{ ydflval.string = yylval.string = xstrdup(yytext);
+			  return NAME;
+			}
+
+  {QSTRING1} |
+  {QSTRING2}		{ ydflval.string = unquote(); return LITERAL; }
+
+  %EBCDIC-MODE		{ ydflval.number = feature_internal_ebcdic_e;
+			  return FEATURE; }
+  %64-BIT-POINTER	{ ydflval.number = feature_embiggen_e;
+			  return FEATURE; }
+  [[:blank:]]+
+  {BLANK_EOL}
+}
+
+<cobol_words>{
+  EQUATE	{ return EQUATE; }
+  UNDEFINE	{ return UNDEFINE; }
+  SUBSTITUTE	{ return SUBSTITUTE; }
+  RESERVE	{ return RESERVE; }
+  {NAME}	{
+                  ydflval.string = yylval.string = xstrdup(yytext);
+		  pop_return NAME;
+		}
+}
+
     /* ISO Reserved Words */
 <*>{
   ACCEPT	{ return ACCEPT; }
@@ -1844,46 +1980,6 @@ USE({SPC}FOR)?		{ return USE; }
   (IS{SPC})?DEFINED	{ ydflval.boolean = true;  return DEFINED; }
   {ISNT}{SPC}DEFINED	{ ydflval.boolean = false; return DEFINED; }
   OFF		{ return OFF; }
-}
-
-<cdf_state>{
-  CALL-CONVENTION	{ return CALL_CONVENTION; }
-  COBOL-WORDS		{ return COBOL_WORDS; }
-  DEFINE		{ return CDF_DEFINE; }
-  OVERRIDE		{ return OVERRIDE; }
-  PARAMETER		{ return PARAMETER_kw; }
-  SOURCE{BLANK}FORMAT	{ return SOURCE_FORMAT; }
-
-  [+-]?{INTEGERZ}       { int value;
-			  if( is_integer_token(&value) ) {
-			    ydflval.number = value;
-			    return cdf::parser::token::YDF_NUMBER;
-			  }
-			  dbgmsg("%s not an integer = %d",
-				   yytext, value);
-			  return NO_CONDITION;
-			}
-
-  {NAME}{SPC}AS 	{ char *s = xstrdup(yytext);
-			  char *p = strchr(s, 0x20);
-			  gcc_assert(p); // just found via regex
-			  *p = '\0';
-			  ydflval.string = yylval.string = s;
-			  return NAME;
-			}
-  {NAME}	 	{ ydflval.string = yylval.string = xstrdup(yytext);
-			  return NAME;
-			}
-
-  {QSTRING1} |
-  {QSTRING2}		{ ydflval.string = unquote(); return LITERAL; }
-
-  %EBCDIC-MODE		{ ydflval.number = feature_internal_ebcdic_e;
-			  return FEATURE; }
-  %64-BIT-POINTER	{ ydflval.number = feature_embiggen_e;
-			  return FEATURE; }
-  [[:blank:]]+
-  {BLANK_EOL}
 }
 
 <program_id_state>{
@@ -2575,17 +2671,6 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   TRUE		{ return TRUE_kw; }
 
   ALL			{ return ALL; }
-}
-
-<cobol_words>{
-  EQUATE	{ return EQUATE; }
-  UNDEFINE	{ return UNDEFINE; }
-  SUBSTITUTE	{ return SUBSTITUTE; }
-  RESERVE	{ return RESERVE; }
-  {NAME}	{
-                  ydflval.string = yylval.string = xstrdup(yytext);
-		  pop_return NAME;
-		}
 }
 
 <*>{
