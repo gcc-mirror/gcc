@@ -647,10 +647,11 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 /* A fast AdvSIMD scanner implementation using table lookup.
 
    Lookup the low 4 bits of each character using TBL and compare the
-   result with the original input.  The lookup table contains the 4
-   search characters at entries MOD 16, so a match results in the same
-   character.  This works because the low 4 bits of the search
-   characters are unique.
+   the 128-bit result with the original input.  The lookup table contains
+   the 4 search characters at entries MOD 16, thus if tab[ch % 16] == ch, we
+   have found a match.  This works because the low 4 bits of the search
+   characters are unique in ASCII, allowing the use of TBL.  Use a special
+   value in tab[0] to avoid matching NUL.
 
    Typical statistics for number of characters till a match:
     1-15: 30.9%
@@ -668,6 +669,8 @@ search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
    *end containing a match and CPP_BUFFER_PADDING >= 16.  */
 
 static_assert (CPP_BUFFER_PADDING >= 16, "");
+static_assert ('\n' == 10 && '\r' == 13 && '\\' == 92 && '?' == 63,
+	       "non-ASCII encoding");
 
 /* TBL lookup with each search char at (ch % 16).  Avoid matching NUL by
    setting the first entry to 1.  */
@@ -785,64 +788,53 @@ search_line_fast (const uchar *s, const uchar *end)
 #elif defined (__ARM_NEON)
 #include "arm_neon.h"
 
+/* A fast NEON scanner implementation using table lookup.
+
+   Lookup the low 3 bits of each character using 2 64-bit TBLs and compare
+   the 128-bit result with the original input.  The lookup table contains
+   the 4 search characters at entries MOD 8, thus if tab[ch % 8] == ch, we
+   have found a match.  This works because the low 3 bits of the search
+   characters are unique in ASCII, allowing the use of TBL.  Use a special
+   value in tab[0] to avoid matching NUL.
+
+   To get good performance, what matters is to quickly get the match result
+   for the first few vectors with minimal initialization overhead.
+   We simply loop until a match is found even if the input pointer is
+   unaligned or close to the end.  Since this may overread, it relies on
+   *end containing a match and CPP_BUFFER_PADDING >= 16.
+*/
+
+static_assert (CPP_BUFFER_PADDING >= 16, "");
+static_assert ('\n' == 10 && '\r' == 13 && '\\' == 92 && '?' == 63,
+	       "non-ASCII encoding");
+
 static const uchar *
 search_line_fast (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
 {
-  const uint8x16_t repl_nl = vdupq_n_u8 ('\n');
-  const uint8x16_t repl_cr = vdupq_n_u8 ('\r');
-  const uint8x16_t repl_bs = vdupq_n_u8 ('\\');
-  const uint8x16_t repl_qm = vdupq_n_u8 ('?');
-  const uint8x16_t xmask = (uint8x16_t) vdupq_n_u64 (0x8040201008040201ULL);
+  uint8x16_t data, res, m;
+  uint8x8_t tab, res1, res2;
+  uint64_t mask;
+  m = vdupq_n_u8 (0x7);
+  /* Equivalent: uint8_t tab[8] = { 1, 0, '\n', 0, '\\', '\r', 0, '?' }.  */
+  tab = (uint8x8_t) vdup_n_u64 (0x3f000d5c000a0001UL);
 
-  unsigned int misalign, found, mask;
-  const uint8_t *p;
-  uint8x16_t data;
-
-  /* Align the source pointer.  */
-  misalign = (uintptr_t)s & 15;
-  p = (const uint8_t *)((uintptr_t)s & -16);
-  data = vld1q_u8 (p);
-
-  /* Create a mask for the bytes that are valid within the first
-     16-byte block.  The Idea here is that the AND with the mask
-     within the loop is "free", since we need some AND or TEST
-     insn in order to set the flags for the branch anyway.  */
-  mask = (-1u << misalign) & 0xffff;
-
-  /* Main loop, processing 16 bytes at a time.  */
-  goto start;
-
-  do
+  while (1)
     {
-      uint8x8_t l;
-      uint16x4_t m;
-      uint32x2_t n;
-      uint8x16_t t, u, v, w;
-
-      p += 16;
-      data = vld1q_u8 (p);
-      mask = 0xffff;
-
-    start:
-      t = vceqq_u8 (data, repl_nl);
-      u = vceqq_u8 (data, repl_cr);
-      v = vorrq_u8 (t, vceqq_u8 (data, repl_bs));
-      w = vorrq_u8 (u, vceqq_u8 (data, repl_qm));
-      t = vandq_u8 (vorrq_u8 (v, w), xmask);
-      l = vpadd_u8 (vget_low_u8 (t), vget_high_u8 (t));
-      m = vpaddl_u8 (l);
-      n = vpaddl_u16 (m);
-
-      found = vget_lane_u32 ((uint32x2_t) vorr_u64 ((uint64x1_t) n,
-	      vshr_n_u64 ((uint64x1_t) n, 24)), 0);
-      found &= mask;
+      data = vld1q_u8 (s);
+      s += 16;
+      res = vandq_u8 (data, m);
+      res1 = vtbl1_u8 (tab, vget_low_u8 (res));
+      res2 = vtbl1_u8 (tab, vget_high_u8 (res));
+      res = vcombine_u8 (res1, res2);
+      res = vceqq_u8 (res, data);
+      mask = (uint64_t) vaddhn_u16 ((uint16x8_t)res, (uint16x8_t)res);
+      /* Use asm to ensure the vmov r2, r3, d16 to transfer 'mask' to scalar
+	 registers does not get split into 32-bit transfers.  */
+      asm ("" : "+r" (mask));
+      /* After CTZ adjust for ADDHN bias and the post-increment of 's'.  */
+      if (mask)
+	return s + ((__builtin_ctzll (mask) + 3 - 16 * 4) >> 2);
     }
-  while (!found);
-
-  /* FOUND contains 1 in bits for which we matched a relevant
-     character.  Conversion to the byte index is trivial.  */
-  found = __builtin_ctz (found);
-  return (const uchar *)p + found;
 }
 
 #else
