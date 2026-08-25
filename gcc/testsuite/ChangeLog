@@ -1,3 +1,31 @@
+2026-08-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126873
+	* gcc.target/riscv/pr126873.c: New test.
+
+2026-08-24  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/126426
+	* gcc.target/riscv/pr126426.c: New test.
+
+2026-08-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array43.adb: New test.
+
+2026-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127004
+	* gcc.target/avr/torture/pr127004.c: New test.
+
 2026-08-20  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:

@@ -1,3 +1,13 @@
+2026-08-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127026
+	* exp_aggr.adb (Must_Slide): Reorder parameters, rename Obj_Type to
+	Ob_Typ and add Assign boolean parameter.  Return Assign's value in
+	the case where Obj_Typ is unconstrained.
+	(Build_Array_Aggr_Code): Adjust call to Must_Slide.
+	(In_Place_Assign_OK): Likewise.
+	(Expand_Array_Aggregate): Likewise.
+
 2026-08-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/126553

@@ -1,3 +1,37 @@
+2026-08-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126873
+	* config/riscv/autovec.md (vec_set<mode>): Zero-extend a
+	sub-Pmode index to Pmode.
+	(vec_extract<mode><vel>): Likewise.
+
+2026-08-24  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/126426
+	* ext-dce.cc (carry_backpropagate): Return a conservatively
+	correct mask when presented with vector modes.
+	(ext_dce_process_uses): Don't use GET_MODE_INNER, we need to
+	know the full extent of the bits for vector and complex modes.
+
+2026-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127004
+	* config/avr/avr-passes.cc (rtl-iter.h): Include.
+	(insninfo_t::scratch_mask): New method.
+	(optimize_data_t::try_split_ldi): Use it for ignore_mask.
+	(optimize_data_t::try_split_any): Same.
+	(optimize_data_t::emit_sequence): Dump ignore_mask prior to
+	calling fatal_insn.
+
 2026-08-20  Hongyu Wang  <hongyu.wang@intel.com>
 
 	Backported from master:
