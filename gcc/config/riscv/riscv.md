@@ -2877,6 +2877,32 @@
   DONE;
 })
 
+;; We don't have a real TImode move but the middle-end demands it if we're
+;; allowing TImode.  Just move the individual registers.
+(define_expand "movti"
+  [(set (match_operand:TI 0 "nonimmediate_operand")
+	(match_operand:TI 1 "general_operand"))]
+  "TARGET_64BIT"
+{
+  /* TODO: Rather than spilling everything we could catch loads or stores
+     of subreg-punned vector registers like
+      (set (mem:TI ...) (subreg:TI (reg:V4SI ...)))
+     and emit a vector load/store right away.  The same is true for the
+     OImode expander.  */
+  riscv_split_doubleword_move (operands[0], operands[1]);
+  DONE;
+})
+
+;; Similar for OImode.
+(define_expand "movoi"
+  [(set (match_operand:OI 0 "nonimmediate_operand")
+	(match_operand:OI 1 "general_operand"))]
+  "TARGET_64BIT"
+{
+  riscv_split_quadword_move (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "cmpmemsi"
   [(parallel [(set (match_operand:SI 0)
                (compare:SI (match_operand:BLK 1)

@@ -5315,6 +5315,84 @@ riscv_subword (rtx op, bool high_p)
   return simplify_gen_subreg (word_mode, op, mode, byte);
 }
 
+/* Same as riscv_subword, just only for OImode.  */
+
+static rtx
+riscv_subpart (rtx op, bool high_p)
+{
+  unsigned int byte = (high_p != BYTES_BIG_ENDIAN) ? 16 : 0;
+  machine_mode mode = GET_MODE (op);
+
+  if (mode == VOIDmode)
+    mode = OImode;
+
+  gcc_assert (mode == OImode);
+
+  if (MEM_P (op))
+    return adjust_address (op, TImode, byte);
+
+  return simplify_gen_subreg (TImode, op, mode, byte);
+}
+
+/* Return true if OP is a subreg that we cannot split into words or false
+   otherwise.  */
+
+static inline bool
+subreg_word_unsplittable_p (rtx op)
+{
+  return SUBREG_P ((op))
+    && maybe_lt ((unsigned) UNITS_PER_WORD,
+		 riscv_regmode_natural_size (GET_MODE (SUBREG_REG ((op)))));
+}
+
+/* Given a move from SRC to DEST where either SRC, DEST, or both are
+   not splittable at word boundaries, emit the necessary spill code to handle
+   the move.  */
+
+static void
+spill_subreg_move (rtx dest, rtx src)
+{
+  bool spill_dest = subreg_word_unsplittable_p (dest);
+  bool spill_src = subreg_word_unsplittable_p (src);
+
+  gcc_assert (spill_dest || spill_src);
+  gcc_assert (can_create_pseudo_p ());
+  gcc_assert (!paradoxical_subreg_p (src) && !paradoxical_subreg_p (dest));
+
+  rtx tmp_src = src;
+  if (spill_src)
+    {
+      /* Get a stack slot of inner mode, move the inner reg to it and
+	 "view" in outer mode.  We can only get here when handling
+	 subreg-punned registers for which the subreg byte is 0.  */
+      rtx inner = SUBREG_REG (src);
+      gcc_assert (known_eq (SUBREG_BYTE (src), 0));
+      machine_mode mode_inner = GET_MODE (inner);
+      rtx mem = assign_stack_temp (mode_inner, GET_MODE_SIZE (mode_inner));
+      emit_move_insn (mem, inner);
+      tmp_src = adjust_address (mem, GET_MODE (src), 0);
+    }
+
+  if (!spill_dest)
+    {
+      emit_move_insn (dest, tmp_src);
+      return;
+    }
+
+  /* Similar to the source, first get a stack slot of inner mode.
+     Then, view it as outer mode and move the source to it.
+     Finally, store it in the inner subreg.  */
+  rtx inner = SUBREG_REG (dest);
+  gcc_assert (known_eq (SUBREG_BYTE (dest), 0));
+  machine_mode mode_inner = GET_MODE (inner);
+  rtx mem = assign_stack_temp (mode_inner, GET_MODE_SIZE (mode_inner));
+  rtx mem_outer = adjust_address (mem, GET_MODE (dest), 0);
+  if (maybe_gt (GET_MODE_SIZE (mode_inner), GET_MODE_SIZE (GET_MODE (dest))))
+    emit_move_insn (mem, inner);
+  emit_move_insn (mem_outer, tmp_src);
+  emit_move_insn (inner, mem);
+}
+
 /* Return true if a 64-bit move from SRC to DEST should be split into two.  */
 
 bool
@@ -5449,6 +5527,22 @@ riscv_split_doubleword_move (rtx dest, rtx src)
 	}
     }
 
+  /* Nothing to do for highwords of paradoxical subregs.  */
+  if (paradoxical_subreg_p (src) || paradoxical_subreg_p (dest))
+    {
+      riscv_emit_move (riscv_subword (dest, false),
+		       riscv_subword (src, false));
+      return;
+    }
+
+  /* We cannot build DI subregs of larger-sized vector regs (see
+     riscv_regmode_natural_size), spill instead.  */
+  if (subreg_word_unsplittable_p (src) || subreg_word_unsplittable_p (dest))
+    {
+      spill_subreg_move (dest, src);
+      return;
+    }
+
    /* The operation can be split into two normal moves.  Decide in
       which order to do them.  */
    rtx low_dest = riscv_subword (dest, false);
@@ -5462,6 +5556,50 @@ riscv_split_doubleword_move (rtx dest, rtx src)
        riscv_emit_move (low_dest, riscv_subword (src, false));
        riscv_emit_move (riscv_subword (dest, true), riscv_subword (src, true));
      }
+}
+
+/* This just splits OImode into two TImode halves and lets
+   riscv_split_doubleword_move do the rest.  */
+
+void
+riscv_split_quadword_move (rtx dest, rtx src)
+{
+  gcc_assert (GET_MODE (dest) == OImode);
+  gcc_assert (!BYTES_BIG_ENDIAN);
+
+  /* Nothing to do for highwords of paradoxical subregs.  */
+  if (paradoxical_subreg_p (dest) || paradoxical_subreg_p (src))
+    {
+      riscv_split_doubleword_move (riscv_subpart (dest, false),
+				   riscv_subpart (src, false));
+      return;
+    }
+
+  /* We cannot build TI subregs of larger-sized vector regs (see
+     riscv_regmode_natural_size), spill instead.  */
+  if (subreg_word_unsplittable_p (src) || subreg_word_unsplittable_p (dest))
+    {
+      spill_subreg_move (dest, src);
+      return;
+    }
+
+  /* Split into TImode hi/lo parts and hand off to
+     riscv_split_doubleword_move.  */
+  rtx src_lo = riscv_subpart (src, false);
+  rtx dest_lo = riscv_subpart (dest, false);
+  rtx src_hi = riscv_subpart (src, true);
+  rtx dest_hi = riscv_subpart (dest, true);
+
+  if (reg_overlap_mentioned_p (dest_lo, src))
+    {
+      riscv_split_doubleword_move (dest_hi, src_hi);
+      riscv_split_doubleword_move (dest_lo, src_lo);
+    }
+  else
+    {
+      riscv_split_doubleword_move (dest_lo, src_lo);
+      riscv_split_doubleword_move (dest_hi, src_hi);
+    }
 }
 
 /* Constant VAL is known to be sum of two S12 constants.  Break it into
