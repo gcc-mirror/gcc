@@ -6571,6 +6571,41 @@ can_widen_to_narrow_p (scalar_int_mode narrow_mode, unsigned int half_width,
 
 static bool long_mul_op_fits_p (tree, unsigned, bitmap);
 
+/* Build into *SEQ the (N/2)-bit halves *LO and *HI of OP, in the form
+   USE_WIDEN selects.  An operand provably within N/2 bits has a zero
+   high half: *HI is left null.  */
+
+static void
+build_long_mul_partial_operand (gimple_seq *seq, location_t loc, tree op,
+				tree half_type, tree half_amt, bool use_widen,
+				tree *lo, tree *hi)
+{
+  tree acc_type = TREE_TYPE (op);
+  unsigned int half_prec = TYPE_PRECISION (half_type);
+  auto_bitmap phi_seen;
+  bool fits = long_mul_op_fits_p (op, half_prec, phi_seen);
+
+  *hi = NULL_TREE;
+  if (!fits)
+    *hi = gimple_build (seq, loc, RSHIFT_EXPR, acc_type, op, half_amt);
+
+  if (use_widen)
+    {
+      *lo = gimple_build (seq, loc, NOP_EXPR, half_type, op);
+      if (*hi)
+	*hi = gimple_build (seq, loc, NOP_EXPR, half_type, *hi);
+    }
+  else if (fits)
+    *lo = op;
+  else
+    {
+      tree mask = wide_int_to_tree (acc_type,
+				    wi::mask (half_prec, false,
+					      TYPE_PRECISION (acc_type)));
+      *lo = gimple_build (seq, loc, BIT_AND_EXPR, acc_type, op, mask);
+    }
+}
+
 /* Append to *SEQ the operand split and partial products for an unsigned
    long multiply of OP1 by OP2 at the precision of TREE_TYPE (OP1).
    HALF_TYPE is the (N/2)-bit unsigned type; HALF_AMT is the integer-typed
@@ -6594,48 +6629,22 @@ build_long_mul_partials (gimple_seq *seq, location_t loc, tree op1, tree op2,
 			 bool use_widen)
 {
   tree acc_type = TREE_TYPE (op1);
-  unsigned int half_prec = TYPE_PRECISION (half_type);
-  auto_bitmap phi_seen1, phi_seen2;
-  bool op1_fits = long_mul_op_fits_p (op1, half_prec, phi_seen1);
-  bool op2_fits = long_mul_op_fits_p (op2, half_prec, phi_seen2);
   tree zero = build_zero_cst (acc_type);
-  tree op1_hi = NULL_TREE, op2_hi = NULL_TREE;
-  if (!op1_fits)
-    op1_hi = gimple_build (seq, loc, RSHIFT_EXPR, acc_type, op1, half_amt);
-  if (!op2_fits)
-    op2_hi = gimple_build (seq, loc, RSHIFT_EXPR, acc_type, op2, half_amt);
-  tree op1_lo, op2_lo;
-  tree_code mul_code;
+  tree_code mul_code = use_widen ? WIDEN_MULT_EXPR : MULT_EXPR;
+  tree op1_lo, op1_hi, op2_lo, op2_hi;
 
-  if (use_widen)
-    {
-      op1_lo = gimple_build (seq, loc, NOP_EXPR, half_type, op1);
-      op2_lo = gimple_build (seq, loc, NOP_EXPR, half_type, op2);
-      if (op1_hi)
-	op1_hi = gimple_build (seq, loc, NOP_EXPR, half_type, op1_hi);
-      if (op2_hi)
-	op2_hi = gimple_build (seq, loc, NOP_EXPR, half_type, op2_hi);
-      mul_code = WIDEN_MULT_EXPR;
-    }
-  else
-    {
-      tree mask = wide_int_to_tree (acc_type,
-				    wi::mask (half_prec, false,
-					      TYPE_PRECISION (acc_type)));
-      op1_lo = op1_fits ? op1
-	       : gimple_build (seq, loc, BIT_AND_EXPR, acc_type, op1, mask);
-      op2_lo = op2_fits ? op2
-	       : gimple_build (seq, loc, BIT_AND_EXPR, acc_type, op2, mask);
-      mul_code = MULT_EXPR;
-    }
+  build_long_mul_partial_operand (seq, loc, op1, half_type, half_amt, use_widen,
+				  &op1_lo, &op1_hi);
+  build_long_mul_partial_operand (seq, loc, op2, half_type, half_amt, use_widen,
+				  &op2_lo, &op2_hi);
 
   *lolo = gimple_build (seq, loc, mul_code, acc_type, op1_lo, op2_lo);
-  *hilo = op1_fits ? zero
-	  : gimple_build (seq, loc, mul_code, acc_type, op1_hi, op2_lo);
-  *lohi = op2_fits ? zero
-	  : gimple_build (seq, loc, mul_code, acc_type, op1_lo, op2_hi);
-  *hihi = op1_fits || op2_fits ? zero
-	  : gimple_build (seq, loc, mul_code, acc_type, op1_hi, op2_hi);
+  *hilo = op1_hi
+	  ? gimple_build (seq, loc, mul_code, acc_type, op1_hi, op2_lo) : zero;
+  *lohi = op2_hi
+	  ? gimple_build (seq, loc, mul_code, acc_type, op1_lo, op2_hi) : zero;
+  *hihi = op1_hi && op2_hi
+	  ? gimple_build (seq, loc, mul_code, acc_type, op1_hi, op2_hi) : zero;
 }
 
 /* Emit into *SEQ the high N bits of the unsigned product A * B, where A and B
