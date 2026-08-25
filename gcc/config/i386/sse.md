@@ -26952,13 +26952,13 @@
 	  [(match_operand:VFH 1 "vector_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
-  "TARGET_SSE4_1 && !flag_trapping_math"
+  "TARGET_SSE4_1"
   "operands[2] = GEN_INT (ROUND_FLOOR | ROUND_NO_EXC);")
 
 (define_expand "lfloor<mode><sseintvecmodelower>2"
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VHF_AVX512VL 1 "nonimmediate_operand")]
- "TARGET_AVX512FP16 && !flag_trapping_math"
+ "TARGET_AVX512FP16"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_floor<mode>2 (tmp, operands[1]));
@@ -26969,7 +26969,7 @@
 (define_expand "lfloor<mode><sseintvecmodelower>2"
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VF1_VF2_AVX512DQ 1 "register_operand")]
- "TARGET_SSE4_1 && !flag_trapping_math"
+ "TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_floor<mode>2 (tmp, operands[1]));
@@ -26983,13 +26983,13 @@
 	  [(match_operand:VFH 1 "vector_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
-  "TARGET_SSE4_1 && !flag_trapping_math"
+  "TARGET_SSE4_1"
   "operands[2] = GEN_INT (ROUND_CEIL | ROUND_NO_EXC);")
 
 (define_expand "lceil<mode><sseintvecmodelower>2"
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VHF_AVX512VL 1 "register_operand")]
- "TARGET_AVX512FP16 && !flag_trapping_math"
+ "TARGET_AVX512FP16"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_ceil<mode>2 (tmp, operands[1]));
@@ -27000,7 +27000,7 @@
 (define_expand "lceil<mode><sseintvecmodelower>2"
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VF1_VF2_AVX512DQ 1 "register_operand")]
- "TARGET_SSE4_1 && !flag_trapping_math"
+ "TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   emit_insn (gen_ceil<mode>2 (tmp, operands[1]));
@@ -27014,7 +27014,7 @@
 	  [(match_operand:VFH 1 "vector_operand")
 	   (match_dup 2)]
 	  UNSPEC_ROUND))]
-  "TARGET_SSE4_1 && !flag_trapping_math"
+  "TARGET_SSE4_1"
   "operands[2] = GEN_INT (ROUND_TRUNC | ROUND_NO_EXC);")
 
 (define_expand "round<mode>2"
