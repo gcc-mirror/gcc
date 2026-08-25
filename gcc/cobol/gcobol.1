@@ -59,6 +59,7 @@
 .Op Fl Wno-comp-6
 .Op Fl Wno-comp-x
 .Op Fl Wno-copybook-found
+.Op Fl Wno-dynamic-call
 .Op Fl Wno-ec-unknown
 .Op Fl Wno-entry-convention
 .Op Fl Wno-ibm-cdf
@@ -621,7 +622,7 @@ Warn if EXTERNAL is used with ASSIGN.
 Warn if filename is used with ASSIGN.
 .It Fl Wno-binary-long-long
 Warn if BINARY-LONG-LONG is used.
-.It Fl Wno-call_fd
+.It Fl Wno-call-fd
 Warn if CALL with FD parameter is used.
 This feature is currently unimplemented. 
 .It Fl Wno-call_giving
@@ -634,6 +635,8 @@ Warn if CDF \[Do]IF is used.
 Warn if COMPUTATIONAL-6 is used.
 .It Fl Wno-comp-x
 Warn if COMPUTATIONAL is used with PICTURE X.
+.It Fl Wno-dynamic-call
+Note if CALL with dynamic target is used.
 .It Fl Wno-file-code-set
 Warn if FILE CODE SET is used.
 .It Fl Wno-inspect-trailing

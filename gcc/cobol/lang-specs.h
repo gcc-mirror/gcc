@@ -57,6 +57,7 @@
 	"%{Wassign-file} %{Wno-assign-file} "
 	"%{Wbinary-long-long} %{Wno-binary-long-long} "
 	"%{Wcall-fd} %{Wno-call-fd} "
+	"%{Wdynamic-call} %{Wno-dynamic-call} "
 	"%{Wcall-giving} %{Wno-call-giving} "
 	"%{Wcall-literal} %{Wno-call-literal} "
 	"%{Wcdf-dollar} %{Wno-cdf-dollar} "

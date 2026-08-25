@@ -212,6 +212,7 @@ enum cbl_diag_id_t : uint64_t {
   MfUsageTypename,
   
   Par78CdfDefinedW,
+  ParDynamicCall,
   ParIconvE, 
   ParInfoI,
   ParLangInfoW,

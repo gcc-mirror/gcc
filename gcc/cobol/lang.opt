@@ -211,7 +211,7 @@ Warn if referenced CDF name is not defined.
 
 ; LexInputN
 Wcopybook-found
-Cobol Warning Var(copybook_found, 1) Init(1)
+Cobol Warning Var(copybook_found, 1) Init(0)
 Print message when copybook is processed.
 
 ; EcUnknownW
@@ -228,6 +228,11 @@ Print message when ENTRY CONVENTION is specified.
 Winclude-file-found
 Cobol Warning Var(include_file_found, 1) Init(1)
 Print message when include file is processed.
+
+; ParDynamicCall
+Wdynamic-call
+Cobol Warning Var(cobol_dynamic_call, 1) Init(0)
+Note if CALL target is not a literal constant.
 
 ; ParLiteral2W
 Wliteral-concat

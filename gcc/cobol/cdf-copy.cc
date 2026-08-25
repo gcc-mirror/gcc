@@ -103,8 +103,8 @@ static void
 verify_bounds( size_t pos, size_t size, const char input[] ) {
   gcc_assert(pos < size );
   if( !( pos < size) ) {
-    cbl_internal_error( "REPLACING %zu characters exceeds system capacity"
-                        "'%s'", pos, input);
+    cbl_internal_error( "REPLACING %lu characters exceeds system capacity %qs",
+                        (unsigned long)pos, input);
   }
 }
 

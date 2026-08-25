@@ -174,6 +174,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { LexSeparatorE, "-Woperator-space", diagnostics::kind::error, dialect_mf_gnu }, 
 
   { Par78CdfDefinedW, "-Wlevel-78-defined", diagnostics::kind::warning },
+  { ParDynamicCall, "-Wdynamic-call", diagnostics::kind::ignored }, 
   { ParIconvE, "-Wiconv-error", diagnostics::kind::note }, 
   { ParInfoI, "-Wentry-convention", diagnostics::kind::note }, 
   { ParLangInfoW, "-Wnllanginfo-error", diagnostics::kind::warning },
@@ -236,6 +237,18 @@ cbl_diagnostic_kind( cbl_diag_id_t id, diagnostics::kind kind ) {
   return false;
 }
 
+/*
+ * Implementation note: lang.opt sets the initial value for each variable
+ * associated with an option.  We ignore that value in the cbl_diagnostics
+ * table, above.  Consequently there is no indication in that table whether or
+ * not an option is off by default.
+ *
+ * For the most part it doesn't matter.  Warnings are on by default and
+ * generally defeated by dialect settings.  Notes however cannot have a default
+ * setting to diagnostics::kind::note because then they would always appear.
+ * So, in this function for those options we ignore the table, too, and
+ * hard-code the diagnositic's kind.
+ */
 void
 cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
   gcc_assert( 0 <= yn && yn <= 1 );
@@ -244,8 +257,15 @@ cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
     diagnostics::kind::warning : diagnostics::kind::ignored;
 
   // Some warnings are just notes.
-  if( id == LexInputN && kind == diagnostics::kind::warning ) {
-    kind = diagnostics::kind::note;
+  if( kind == diagnostics::kind::warning ) {
+    switch(id) {
+    case LexInputN:
+    case ParDynamicCall:
+      kind = diagnostics::kind::note;
+      break;
+    default:
+      break;
+    }
   }
   
   if( warning_as_error ) {

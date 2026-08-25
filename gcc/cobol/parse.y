@@ -10725,6 +10725,9 @@ ffi_name:       scalar
                     assert($1->field->parent > 0);
                     auto& L = *cbl_label_of(symbol_at($1->field->parent));
                     $$->field = new_literal(strlen(L.name), L.name, quoted_e);
+                  } else {
+                    cbl_message( @1, ParDynamicCall, "dynamic target: CALL %s",
+                                 nice_name_of($1->field) );
                   }
                 }
         |       LITERAL
