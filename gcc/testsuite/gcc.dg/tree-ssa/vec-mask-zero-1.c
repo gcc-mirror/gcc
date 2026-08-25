@@ -1,4 +1,4 @@
-/* { dg-do compile { target vect_int } } */
+/* { dg-do compile { target { vect_int && vect128 } } } */
 /* { dg-options "-O2 -fdump-tree-optimized -Wno-psabi" } */
 /* { dg-additional-options "-msse2" { target ia32 } } */
 /* Combine pairs of vector comparisons against zero or all-ones.  Use
