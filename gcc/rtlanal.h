@@ -336,8 +336,12 @@ vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode,
 		       rtx sel);
 
 bool
-vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel);
+vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode,
+		      rtx sel);
 
 bool
 contains_paradoxical_subreg_p (rtx x);
+
+rtx
+get_ref_base_and_offset (rtx x, poly_uint64 *offset_ptr);
 #endif

@@ -3092,7 +3092,7 @@ extern bool rtx_equal_p (const_rtx, const_rtx,
 			 rtx_equal_p_callback_function = NULL);
 
 extern bool rtvec_all_equal_p (const_rtvec);
-extern bool rtvec_series_p (rtvec, int);
+extern bool rtvec_series_p (rtvec, poly_int64);
 
 /* Return true if X is a vector constant with a duplicated element value.  */
 

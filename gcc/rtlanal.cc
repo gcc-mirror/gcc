@@ -7057,14 +7057,12 @@ register_asm_p (const_rtx x)
 bool
 vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
 {
-  int nunits;
-  if (GET_MODE_NUNITS (op_mode).is_constant (&nunits)
-      && targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
-    {
-      int offset = BYTES_BIG_ENDIAN ? 0 : nunits - XVECLEN (sel, 0);
-      return rtvec_series_p (XVEC (sel, 0), offset);
-    }
-  return false;
+  if (!targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
+    return false;
+  if (BYTES_BIG_ENDIAN)
+    return rtvec_series_p (XVEC (sel, 0), 0);
+  poly_int64 offset = GET_MODE_NUNITS (op_mode) - XVECLEN (sel, 0);
+  return rtvec_series_p (XVEC (sel, 0), offset);
 }
 
 /* Return true if, for all OP of mode OP_MODE:
@@ -7076,14 +7074,12 @@ vec_series_highpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
 bool
 vec_series_lowpart_p (machine_mode result_mode, machine_mode op_mode, rtx sel)
 {
-  int nunits;
-  if (GET_MODE_NUNITS (op_mode).is_constant (&nunits)
-      && targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
-    {
-      int offset = BYTES_BIG_ENDIAN ? nunits - XVECLEN (sel, 0) : 0;
-      return rtvec_series_p (XVEC (sel, 0), offset);
-    }
-  return false;
+  if (!targetm.can_change_mode_class (op_mode, result_mode, ALL_REGS))
+    return false;
+  if (!BYTES_BIG_ENDIAN)
+    return rtvec_series_p (XVEC (sel, 0), 0);
+  poly_int64 offset = GET_MODE_NUNITS (op_mode) - XVECLEN (sel, 0);
+  return rtvec_series_p (XVEC (sel, 0), offset);
 }
 
 /* Return true if X contains a paradoxical subreg.  */
@@ -7099,4 +7095,77 @@ contains_paradoxical_subreg_p (rtx x)
 	return true;
     }
   return false;
+}
+
+/* Analyze X as accessing a consecutive sequence of bytes in some base
+   rtx that is no smaller than X.  Return the base value and set *OFFSET_PTR
+   to the byte offset of X from the start of the base.  Like SUBREG_BYTE,
+   this byte offset follows memory order.  */
+
+rtx
+get_ref_base_and_offset (rtx x, poly_uint64 *offset_ptr)
+{
+  poly_uint64 outer_bytes = GET_MODE_SIZE (GET_MODE (x));
+  poly_uint64 offset = 0;
+  for (;;)
+    {
+      switch (GET_CODE (x))
+	{
+	case SUBREG:
+	  if (!paradoxical_subreg_p (x))
+	    {
+	      offset += SUBREG_BYTE (x);
+	      x = SUBREG_REG (x);
+	      continue;
+	    }
+	  break;
+
+	case ASHIFT:
+	case LSHIFTRT:
+	case ASHIFTRT:
+	  if (SCALAR_INT_MODE_P (GET_MODE (x))
+	      && CONST_INT_P (XEXP (x, 1))
+	      && UINTVAL (XEXP (x, 1)) % BITS_PER_UNIT == 0)
+	    {
+	      auto inner_bytes = GET_MODE_SIZE (GET_MODE (x));
+	      /* Reanalyze the current extraction as a shift right of X.  */
+	      poly_uint64 lsb = subreg_size_lsb (outer_bytes, inner_bytes,
+						 offset);
+	      /* Convert it to a shift right of XEXP (x, 0).  This might
+		 wrap.  */
+	      if (GET_CODE (x) == ASHIFT)
+		lsb -= UINTVAL (XEXP (x, 1));
+	      else
+		lsb += UINTVAL (XEXP (x, 1));
+	      if (known_le (lsb, (inner_bytes - outer_bytes) * BITS_PER_UNIT))
+		{
+		  x = XEXP (x, 0);
+		  offset = subreg_size_offset_from_lsb (outer_bytes,
+							inner_bytes, lsb);
+		  continue;
+		}
+	    }
+	  break;
+
+	case VEC_SELECT:
+	  {
+	    rtx sel = XEXP (x, 1);
+	    poly_int64 start;
+	    if (poly_int_rtx_p (XVECEXP (sel, 0, 0), &start)
+		&& rtvec_series_p (XVEC (sel, 0), start))
+	      {
+		x = XEXP (x, 0);
+		offset += start * GET_MODE_UNIT_SIZE (GET_MODE (x));
+		continue;
+	      }
+	    break;
+	  }
+
+	default:
+	  break;
+      }
+
+    *offset_ptr = offset;
+     return x;
+   }
 }

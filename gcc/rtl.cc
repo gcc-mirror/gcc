@@ -594,12 +594,13 @@ rtvec_all_equal_p (const_rtvec vec)
    { START, START+1, START+2, ... }.  */
 
 bool
-rtvec_series_p (rtvec vec, int start)
+rtvec_series_p (rtvec vec, poly_int64 start)
 {
   for (int i = 0; i < GET_NUM_ELEM (vec); i++)
     {
-      rtx x = RTVEC_ELT (vec, i);
-      if (!CONST_INT_P (x) || INTVAL (x) != i + start)
+      poly_int64 elt;
+      if (!poly_int_rtx_p (RTVEC_ELT (vec, i), &elt)
+	   || maybe_ne (elt, i + start))
 	return false;
     }
   return true;

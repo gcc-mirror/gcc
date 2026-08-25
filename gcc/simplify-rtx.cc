@@ -5600,17 +5600,26 @@ simplify_ashift:
 	    return simplify_gen_binary (VEC_SELECT, mode, XEXP (trueop0, 0),
 					gen_rtx_PARALLEL (VOIDmode, vec));
 	  }
-	/* (vec_concat:
-	     (subreg_lowpart:N OP)
-	     (vec_select:N OP P))  -->  OP when P selects the high half
-	    of the OP.  */
-	if (GET_CODE (trueop0) == SUBREG
-	    && subreg_lowpart_p (trueop0)
-	    && GET_CODE (trueop1) == VEC_SELECT
-	    && SUBREG_REG (trueop0) == XEXP (trueop1, 0)
-	    && !side_effects_p (XEXP (trueop1, 0))
-	    && vec_series_highpart_p (op1_mode, mode, XEXP (trueop1, 1)))
-	  return XEXP (trueop1, 0);
+	/* (vec_concat:N
+	     (subreg:N/2 OP 0)
+	     (subreg:N/2 OP N/2)) --> OP
+	   i.e. where concatenating the first and second halves of the
+	   same object OP.  */
+	{
+	  poly_uint64 offset = 0u;
+	  rtx base0 = get_ref_base_and_offset (trueop0, &offset);
+	  if (known_eq (offset, 0u)
+	      && known_eq (GET_MODE_SIZE (GET_MODE (base0)),
+			   GET_MODE_SIZE (mode)))
+	    {
+	      rtx base1 = get_ref_base_and_offset (trueop1, &offset);
+	      if (rtx_equal_p (base0, base1)
+		  && known_eq (offset, GET_MODE_SIZE (op0_mode))
+		  && !side_effects_p (trueop0)
+		  && !side_effects_p (trueop1))
+		return gen_lowpart (mode, base0);
+	    }
+	}
       }
       return 0;
 
