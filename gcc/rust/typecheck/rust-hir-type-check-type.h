@@ -84,6 +84,10 @@ private:
 				TypeCheckBlockContextItem &ctx,
 				TyTy::BaseType **result);
 
+  bool try_resolve_contextual_self_associated_type (
+    const HIR::TypePathSegment &segment, bool first_segment,
+    bool ty_seg_is_big_self, TyTy::BaseType **result);
+
   TyTy::BaseType *translated;
 };
 

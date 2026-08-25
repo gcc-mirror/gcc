@@ -4,7 +4,7 @@
 
 pub trait Foo {
     type Bar;
-    fn foo(bar: Self::bar); // { dg-error "failed to resolve path segment using an impl Probe" }
+    fn foo(bar: Self::bar); // { dg-error "failed to resolve path segment .bar. as a type" }
 }
 
 pub struct FooImpl;

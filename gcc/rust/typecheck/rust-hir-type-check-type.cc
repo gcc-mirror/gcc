@@ -19,11 +19,11 @@
 #include "rust-hir-type-check-type.h"
 #include "options.h"
 #include "optional.h"
+#include "rich-location.h"
 #include "rust-hir-map.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-hir-type-check-expr.h"
-#include "rust-hir-path-probe.h"
-#include "rust-hir-type-bounds.h"
+#include "rust-hir-path-probe-type.h"
 #include "rust-finalized-name-resolution-context.h"
 #include "rust-mapping-common.h"
 #include "rust-rib.h"
@@ -32,6 +32,8 @@
 #include "rust-system.h"
 #include "rust-compile-base.h"
 #include "rust-resolve-builtins.h"
+#include "rust-tyty.h"
+#include "text-range-label.h"
 
 namespace Rust {
 namespace Resolver {
@@ -507,6 +509,19 @@ TypeCheckType::resolve_associated_type (const std::string &search,
   return false;
 }
 
+bool
+TypeCheckType::try_resolve_contextual_self_associated_type (
+  const HIR::TypePathSegment &segment, bool first_segment,
+  bool ty_seg_is_big_self, TyTy::BaseType **result)
+{
+  if (!first_segment || !ty_seg_is_big_self
+      || !context->block_context ().is_in_context ())
+    return false;
+
+  TypeCheckBlockContextItem ctx = context->block_context ().peek ();
+  return resolve_associated_type (segment.to_string (), ctx, result);
+}
+
 TyTy::BaseType *
 TypeCheckType::resolve_segments (
   HirId expr_id, std::vector<std::unique_ptr<HIR::TypePathSegment>> &segments,
@@ -514,82 +529,71 @@ TypeCheckType::resolve_segments (
   const Analysis::NodeMapping &expr_mappings, location_t expr_locus,
   bool tySegIsBigSelf)
 {
-  TyTy::BaseType *prev_segment = tyseg;
   for (size_t i = offset; i < segments.size (); i++)
     {
-      std::unique_ptr<HIR::TypePathSegment> &seg = segments.at (i);
-
-      bool reciever_is_generic
-	= prev_segment->get_kind () == TyTy::TypeKind::PARAM;
-      bool probe_bounds = true;
-      bool probe_impls = !reciever_is_generic;
-      bool ignore_mandatory_trait_items = !reciever_is_generic;
+      auto &seg = segments.at (i);
+      const auto &ident_segment = seg->get_ident_segment ();
       bool first_segment = i == offset;
-      bool selfResolveOk = false;
+      TyTy::BaseType *associated_type = nullptr;
 
-      if (first_segment && tySegIsBigSelf
-	  && context->block_context ().is_in_context ())
+      bool selfResolveOk
+	= try_resolve_contextual_self_associated_type (*seg, first_segment,
+						       tySegIsBigSelf,
+						       &associated_type);
+      if (selfResolveOk)
 	{
-	  TypeCheckBlockContextItem ctx = context->block_context ().peek ();
-	  TyTy::BaseType *lookup = nullptr;
-	  selfResolveOk
-	    = resolve_associated_type (seg->to_string (), ctx, &lookup);
-	  if (selfResolveOk)
-	    {
-	      prev_segment = tyseg;
-	      tyseg = lookup;
-	    }
+	  tyseg = associated_type;
 	}
-      if (!selfResolveOk)
+      else
 	{
-	  // probe the path is done in two parts one where we search impls if no
-	  // candidate is found then we search extensions from traits
-	  auto candidates
-	    = PathProbeType::Probe (prev_segment, seg->get_ident_segment (),
-				    probe_impls, false,
-				    ignore_mandatory_trait_items);
-	  if (candidates.size () == 0)
+	  if (auto adt = tyseg->try_as<TyTy::ADTType> ())
 	    {
-	      candidates
-		= PathProbeType::Probe (prev_segment, seg->get_ident_segment (),
-					false, probe_bounds,
-					ignore_mandatory_trait_items);
-	      if (candidates.size () == 0)
+	      if (adt->is_enum ())
 		{
-		  rust_error_at (
-		    seg->get_locus (),
-		    "failed to resolve path segment using an impl Probe");
-		  return new TyTy::ErrorType (expr_id);
+		  rich_location r (line_table, seg->get_locus ());
+		  text_range_label label ("enum declared here");
+
+		  auto item_lookup = mappings.lookup_defid (adt->get_id ());
+		  if (item_lookup.has_value ())
+		    {
+		      auto &item = item_lookup.value ();
+		      r.add_range (item->get_locus (), SHOW_RANGE_WITHOUT_CARET,
+				   &label);
+		    }
+
+		  TyTy::VariantDef *v;
+		  if (adt->lookup_variant (ident_segment.to_string (), &v))
+		    {
+		      rust_error_at (
+			r, ErrorCode::E0573,
+			"expected type, found variant of %<%s::%s%>",
+			adt->get_name ().c_str (),
+			v->get_identifier ().c_str ());
+		      return new TyTy::ErrorType (expr_id);
+		    }
 		}
+	    }
+
+	  auto result = TypePathProbe::Probe (tyseg, ident_segment);
+	  auto &candidates = result.type_candidates;
+
+	  if (candidates.empty ())
+	    {
+	      rust_error_at (seg->get_locus (),
+			     "failed to resolve path segment %<%s%> as a type",
+			     ident_segment.to_string ().c_str ());
+	      return new TyTy::ErrorType (expr_id);
 	    }
 
 	  if (candidates.size () > 1)
 	    {
-	      ReportMultipleCandidateError::Report (candidates,
-						    seg->get_ident_segment (),
+	      ReportMultipleCandidateError::Report (candidates, ident_segment,
 						    seg->get_locus ());
 	      return new TyTy::ErrorType (expr_id);
 	    }
 
 	  auto &candidate = *candidates.begin ();
-	  prev_segment = tyseg;
 	  tyseg = candidate.ty;
-
-	  if (candidate.is_enum_candidate ())
-	    {
-	      TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (tyseg);
-	      auto last_variant = adt->get_variants ();
-	      TyTy::VariantDef *variant = last_variant.back ();
-
-	      rich_location richloc (line_table, seg->get_locus ());
-	      richloc.add_fixit_replace ("not a type");
-
-	      rust_error_at (richloc, ErrorCode::E0573,
-			     "expected type, found variant of %<%s::%s%>",
-			     adt->get_name ().c_str (),
-			     variant->get_identifier ().c_str ());
-	      return new TyTy::ErrorType (expr_id);
-	    }
 	}
 
       if (seg->is_generic_segment ())
