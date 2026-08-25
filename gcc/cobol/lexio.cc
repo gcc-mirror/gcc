@@ -1419,8 +1419,6 @@ find_filter( const char filter[] ) {
   return NULL;
 }
 
-bool verbose_file_reader = false;
-
 typedef std::pair <char *, std::list<std::string> > preprocessor_filter_t;
 static std::list<preprocessor_filter_t> preprocessor_filters;
 static std::list<const char *> included_files;
@@ -1610,11 +1608,8 @@ cdftext::open_input( const char filename[] ) {
     dbgmsg( "could not open '%s': %s", filename, xstrerror(erc) );
   }
 
-  verbose_file_reader = NULL != getenv("GCOBOL_TEMPDIR");
+  cbl_message(LexInputN, "opening %s for input", filename);
 
-  if( verbose_file_reader ) {
-    cbl_message(LexInputN, "opening %s for input", filename);
-  }
   return fd;
 }
 

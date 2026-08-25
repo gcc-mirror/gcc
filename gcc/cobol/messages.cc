@@ -166,7 +166,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { LexIncludeE, "-Winclude-file-not-found", diagnostics::kind::error }, 
   { LexIncludeOkN, "-Winclude-file-found", diagnostics::kind::note }, 
   { LexIndicatorE, "-Wstray-indicator", diagnostics::kind::error }, 
-  { LexInputN, "-Wcopybook-found", diagnostics::kind::note }, 
+  { LexInputN, "-Wcopybook-found", diagnostics::kind::ignored }, 
   { LexLineE, "-Wbad-line-directive", diagnostics::kind::error }, 
   { LexPreprocessE, "-Wpreprocessor-error", diagnostics::kind::error }, 
   { LexReplaceE, "-Wreplace-error", diagnostics::kind::error },
@@ -242,6 +242,11 @@ cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
 
   diagnostics::kind kind = yn?
     diagnostics::kind::warning : diagnostics::kind::ignored;
+
+  // Some warnings are just notes.
+  if( id == LexInputN && kind == diagnostics::kind::warning ) {
+    kind = diagnostics::kind::note;
+  }
   
   if( warning_as_error ) {
     kind = diagnostics::kind::error;
