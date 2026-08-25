@@ -1,3 +1,80 @@
+2026-08-24  Peter Bergner  <bergner@tenstorrent.com>
+
+	Backported from master:
+	2026-08-13  Peter Bergner  <bergner@tenstorrent.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add tt-ascalon-xg.
+	(RISCV_CORE): Likewise.
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add tt_ascalon_xg.
+	* config/riscv/riscv.md (tune): Likewise.
+	* config/riscv/tt-ascalon-d8.md (asc-xg-fp64-vec0, asc-xg-fp64-vec1):
+	New define_cpu_unit.
+	(tt_ascalon_xg_fp64_vec): New define_reservation.
+	(tt_ascalon_d8_int_load, tt_ascalon_d8_alu, tt_ascalon_d8_sfb,
+	tt_ascalon_d8_branch, tt_ascalon_d8_float_move, tt_ascalon_d8_fcvt,
+	tt_ascalon_d8_fcmp, tt_ascalon_d8_imul, tt_ascalon_d8_idiv,
+	tt_ascalon_d8_fadd, tt_ascalon_d8_mul, tt_ascalon_d8_float_fma,
+	tt_ascalon_d8_float_div_half, tt_ascalon_d8_float_div_single,
+	tt_ascalon_d8_float_div_double, tt_ascalon_d8_popcount,
+	tt_ascalon_d8_vec_load, tt_ascalon_d8_vec_store,
+	tt_ascalon_d8_vec_load_strided, tt_ascalon_d8_vec_store_strided,
+	tt_ascalon_d8_vec_load_indexed, tt_ascalon_d8_vec_store_indexed,
+	tt_ascalon_d8_vec_loadstore_seg, tt_ascalon_d8_vec_alu_1,
+	tt_ascalon_d8_vec_alu_2, tt_ascalon_d8_vec_alu_3,
+	tt_ascalon_d8_vec_alu_4, tt_ascalon_d8_vec_imul, tt_ascalon_d8_vec_pop,
+	tt_ascalon_d8_vec_crypto_aes, tt_ascalon_d8_vec_crypto_sha,
+	tt_ascalon_d8_vec_perm_1, tt_ascalon_d8_vec_perm_3,
+	tt_ascalon_d8_vec_perm_4, tt_ascalon_d8_vec_reduction,
+	tt_ascalon_d8_vec_ordered_reduction, tt_ascalon_d8_vec_idiv_byte,
+	tt_ascalon_d8_vec_idiv_half, tt_ascalon_d8_vec_idiv_single,
+	tt_ascalon_d8_vec_idiv_double, tt_ascalon_d8_vec_float_divsqrt_half,
+	tt_ascalon_d8_vec_float_divsqrt_single,
+	tt_ascalon_d8_vec_float_divsqrt_double, tt_ascalon_d8_vec_mask,
+	tt_ascalon_d8_vec_vesetvl, tt_ascalon_d8_vec_setrm,
+	tt_ascalon_d8_vec_readlen, tt_ascalon_d8_vec_unknown):
+	Use tt_ascalon_xg.
+	(tt_ascalon_d8_vec_fcmp, tt_ascalon_d8_vec_fadd,
+	tt_ascalon_d8_vec_fmul): Disable vector instructions that produce FP64
+	output values when tuning for tt_ascalon_xg.
+	(tt_ascalon_xg_fp64_vec_insns): New define_insn_reservation.
+	* doc/riscv-mcpu.texi: Regenerate.
+	* doc/riscv-mtune.texi: Likewise.
+
+2026-08-24  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2026-08-21  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126873
+	* config/riscv/autovec.md (vec_set<mode>): Zero-extend a
+	sub-Pmode index to Pmode.
+	(vec_extract<mode><vel>): Likewise.
+
+2026-08-24  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-08-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR rtl-optimization/126426
+	* ext-dce.cc (carry_backpropagate): Return a conservatively
+	correct mask when presented with vector modes.
+	(ext_dce_process_uses): Don't use GET_MODE_INNER, we need to
+	know the full extent of the bits for vector and complex modes.
+
+2026-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127004
+	* config/avr/avr-passes.cc (rtl-iter.h): Include.
+	(insninfo_t::scratch_mask): New method.
+	(optimize_data_t::try_split_ldi): Use it for ignore_mask.
+	(optimize_data_t::try_split_any): Same.
+	(optimize_data_t::emit_sequence): Dump ignore_mask prior to
+	calling fatal_insn.
+
 2026-08-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	Backported from master:

@@ -1,3 +1,25 @@
+2026-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-06-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105594
+	* module.cc (gfc_use_module): Suppress bogus warning for a missing
+	ONLY clause on a submodule.
+
+2026-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-06-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88632
+	PR fortran/104630
+	* module.cc (write_symtree): Do not filter out private symbols
+	when writing a submodule interface file (.smod).  Submodules are
+	descendants of their ancestor module and access private symbols
+	in the module's contains section via host association per
+	Fortran 2018 section 14.2.2.
+
 2026-08-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
