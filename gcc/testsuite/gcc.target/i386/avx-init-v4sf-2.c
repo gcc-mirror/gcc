@@ -24,9 +24,8 @@ v4sf fm000() { return (v4sf){m,0.0f,0.0f,0.0f}; }
 v4sf fm0m0() { return (v4sf){m,0.0f,m,0.0f}; }
 v4sf fmmmm() { return (v4sf){m,m,m,m}; }
 
-/* { dg-final { scan-assembler-times "vmovss" 18 } } */
-/* { dg-final { scan-assembler-times "vpslldq" 3 } } */
-/* { dg-final { scan-assembler-times "vshufps" 2 } } */
-/* { dg-final { scan-assembler-times "vmovlhps" 4 } } */
 /* { dg-final { scan-assembler-times "vbroadcastss" 2 } } */
-/* { dg-final { scan-assembler-times "vunpcklps" 5 } } */
+/* { dg-final { scan-assembler-times "vinsertps" 8 } } */
+/* { dg-final { scan-assembler-times "vmovlhps" 4 } } */
+/* { dg-final { scan-assembler-times "vmovss" 13 } } */
+/* { dg-final { scan-assembler-times "vshufps" 2 } } */

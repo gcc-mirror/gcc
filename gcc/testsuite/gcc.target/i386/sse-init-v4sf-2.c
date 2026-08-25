@@ -24,9 +24,9 @@ v4sf fm000() { return (v4sf){m,0.0f,0.0f,0.0f}; }
 v4sf fm0m0() { return (v4sf){m,0.0f,m,0.0f}; }
 v4sf fmmmm() { return (v4sf){m,m,m,m}; }
 
-/* { dg-final { scan-assembler-times "xorps" 16 } } */
-/* { dg-final { scan-assembler-times "movss" 19 } } */
-/* { dg-final { scan-assembler-times "movaps" 10 } } */
+/* { dg-final { scan-assembler-times "xorps" 9 } } */
+/* { dg-final { scan-assembler-times "movss" 9 } } */
+/* { dg-final { scan-assembler-times "movaps" 6 } } */
 /* { dg-final { scan-assembler-times "shufps" 7 } } */
-/* { dg-final { scan-assembler-times "movlhps" 4 } } */
+/* { dg-final { scan-assembler-times "movlhps" 7 } } */
 /* { dg-final { scan-assembler-times "unpcklps" 5 } } */

@@ -12570,15 +12570,18 @@
    (set_attr "prefix" "orig,maybe_vex,maybe_vex")
    (set_attr "mode" "SF")])
 
+;; Different register preferences for V4SI vs V4SF.
+(define_mode_attr vec_set_0_gpr [(V4SI "r ") (V4SF "?r")])
+
 ;; Avoid combining registers from different units in a single alternative,
 ;; see comment above inline_secondary_memory_needed function in i386.cc
 (define_insn "vec_set<mode>_0"
   [(set (match_operand:VI4F_128 0 "nonimmediate_operand"
-	  "=Yr,*x,v,v,v,v,x,x,v,Yr ,?x ,x  ,m ,m   ,m")
+	  "=Yr,*x,v,v,v,v ,x,x,v,Yr ,?x ,x  ,m ,m   ,m")
 	(vec_merge:VI4F_128
 	  (vec_duplicate:VI4F_128
 	    (match_operand:<ssescalarmode> 2 "general_operand"
-	  " Yr,*x,v,v,m,r ,m,x,v,?jrjm,?jrjm,?rm,!x,?re,!*fF"))
+	  " Yr,*x,v,v,m,<vec_set_0_gpr>,m,x,v,?jrjm,?jrjm,?rm,!x,?re,!*fF"))
 	  (match_operand:VI4F_128 1 "nonimm_or_0_operand"
 	  " C , C,C,C,C,C ,C,0,v,0  ,0  ,x  ,0 ,0   ,0")
 	  (const_int 1)))]
@@ -12836,7 +12839,7 @@
    (set_attr "mode" "HF,HI")])
 
 ;; A subset is vec_setv4sf.
-(define_insn "*vec_setv4sf_sse4_1"
+(define_insn "vec_setv4sf_sse4_1"
   [(set (match_operand:V4SF 0 "register_operand" "=Yr,*x,v")
 	(vec_merge:V4SF
 	  (vec_duplicate:V4SF
@@ -12998,6 +13001,62 @@
    (set_attr "prefix_extra" "1")
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "orig,maybe_evex")
+   (set_attr "mode" "V4SF")])
+
+;; Use sse4_1_insertps_v4sf to vector_init one non-zero value.
+(define_insn "sse4_1_insertps_v4sf_init"
+  [(set (match_operand:V4SF 0 "register_operand" "=Yr,*x,v,v")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (match_operand:SF 1 "nonimmediate_operand" "Yrjm,*xjm,v,m"))
+	  (match_operand:V4SF 2 "const0_operand")
+	  (match_operand:SI 3 "const248_operand")))]
+  "TARGET_SSE4_1"
+{
+  int op3 = INTVAL (operands[3]);
+  operands[3] = GEN_INT ((exact_log2 (op3) << 4) + (op3 ^ 15));
+  switch (which_alternative)
+    {
+    case 0:
+    case 1:
+      return "insertps\t{%3, %1, %0|%0, %1, %3}";
+    case 2:
+      return "vinsertps\t{%3, %1, %1, %0|%0, %1, %1, %3}";
+    case 3:
+      return "vinsertps\t{%3, %1, %0, %0|%0, %0, %1, %3}";
+    default:
+      gcc_unreachable ();
+    }
+}
+  [(set_attr "isa" "noavx,noavx,avx,avx")
+   (set_attr "type" "sselog")
+   (set_attr "addr" "gpr16,gpr16,*,*")
+   (set_attr "prefix_data16" "1,1,*,*")
+   (set_attr "prefix_extra" "1")
+   (set_attr "length_immediate" "1")
+   (set_attr "prefix" "orig,orig,maybe_evex,maybe_evex")
+   (set (attr "preferred_for_speed")
+    (cond [(eq_attr "alternative" "3")
+	     (symbol_ref "false")]
+	   (symbol_ref "true")))
+   (set_attr "mode" "V4SF")])
+
+;; Use SSE2's pslldq to vector_init v4sf one non-zero value at 3.
+(define_insn "sse2_insertps_v4sf_3"
+  [(set (match_operand:V4SF 0 "register_operand" "=x")
+	(vec_merge:V4SF
+	  (vec_duplicate:V4SF
+	    (match_operand:SF 1 "register_operand" "0"))
+	  (match_operand:V4SF 2 "const0_operand")
+	  (const_int 8)))]
+  "TARGET_SSE2 && !TARGET_SSE4_1"
+  "pslldq\t{$12, %0|%0, 12}"
+  [(set_attr "isa" "noavx")
+   (set_attr "type" "sseishft")
+   (set_attr "length_immediate" "1")
+   (set_attr "atom_unit" "sishuf")
+   (set_attr "prefix_data16" "1")
+   (set_attr "prefix" "orig")
    (set_attr "mode" "V4SF")])
 
 (define_split
