@@ -5160,8 +5160,8 @@ vect_create_vectorized_demotion_stmts (vec_info *vinfo, vec<tree> *vec_oprnds,
 /* Create vectorized promotion statements for vector operands from VEC_OPRNDS0
    and VEC_OPRNDS1, for a binary operation associated with scalar statement
    STMT_INFO.  For multi-step conversions store the resulting vectors and
-   call the function recursively.  When HALF is true only generate half
-   of the result.  */
+   call the function recursively.  When NUM_VECTORS is not -1U then only
+   NUM_VECTORS will be produced.  */
 
 static void
 vect_create_vectorized_promotion_stmts (vec_info *vinfo,
@@ -5171,14 +5171,15 @@ vect_create_vectorized_promotion_stmts (vec_info *vinfo,
 					gimple_stmt_iterator *gsi,
 					code_helper ch1,
 					code_helper ch2, int op_type,
-					bool half)
+					unsigned num_vectors)
 {
   int i;
   tree vop0, vop1, new_tmp1, new_tmp2;
   gimple *new_stmt1, *new_stmt2;
   vec<tree> vec_tmp = vNULL;
 
-  vec_tmp.create ((half ? 1 : 2) * vec_oprnds0->length ());
+  vec_tmp.create (num_vectors != -1U
+		  ? num_vectors : 2 * vec_oprnds0->length ());
   FOR_EACH_VEC_ELT (*vec_oprnds0, i, vop0)
     {
       if (op_type == binary_op)
@@ -5852,8 +5853,7 @@ vectorizable_conversion (vec_info *vinfo,
 						    &vec_oprnds1, stmt_info,
 						    this_dest, gsi,
 						    c1, c2, op_type,
-						    vec_oprnds0.length ()
-						    == num_vectors);
+						    i == 0 ? num_vectors : -1u);
 	}
 
       FOR_EACH_VEC_ELT (vec_oprnds0, i, vop0)

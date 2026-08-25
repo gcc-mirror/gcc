@@ -10908,11 +10908,15 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
 
   number_of_copies = nunits * number_of_vectors / group_size;
 
-  number_of_places_left_in_vector = nunits;
   constant_p = true;
   tree uniform_elt = NULL_TREE;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
+  /* Zero-pad the last vector if necessary.  */
+  number_of_places_left_in_vector
+    = nunits - nunits * number_of_vectors % group_size;
+  for (i = nunits; i > number_of_places_left_in_vector; --i)
+    elts[i-1] = build_zero_cst (TREE_TYPE (vector_type));
   stmt_vec_info insert_after = NULL;
   for (j = 0; j < number_of_copies; j++)
     {
