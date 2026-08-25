@@ -5354,7 +5354,8 @@ vect_analyze_data_refs (vec_info *vinfo, bool *fatal)
 	  tree init_offset = fold_build2 (PLUS_EXPR, TREE_TYPE (offset),
 					  init, offset);
 	  tree init_addr = fold_build_pointer_plus (base, init_offset);
-	  tree init_ref = build_fold_indirect_ref (init_addr);
+	  tree init_ref = build2 (MEM_REF, TREE_TYPE (DR_REF (dr)),
+				  init_addr, build_zero_cst (ptr_type_node));
 
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
