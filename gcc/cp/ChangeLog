@@ -1,3 +1,31 @@
+2026-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125822
+	* cp-tree.def: Implement C++29 P3822R2 - Conditional noexcept
+	specifiers in compound requirements.
+	(COMPOUND_REQ): Use 3 operands rather than 2, adjust comment.
+	* cp-tree.h (COMPOUND_REQ_NOEXCEPT_P): Remove.
+	(finish_compound_requirement): Change last argument from bool to
+	tree.
+	* parser.cc (cp_parser_compound_requirement): Parse C++29
+	conditional noexcept in compound requirement.  Pass a tree to
+	finish_compound_requirement rather than bool.
+	* constraint.cc (tsubst_compound_requirement): Read noexcept from
+	TREE_OPERAND (req, 2) rather than COMPOUND_REQ_NOEXCEPT_P (req),
+	instantiate, convert, evaluate and pass to
+	finish_compound_requirement.
+	(finish_compound_requirement): Change last argument from bool to
+	tree, store it as third operand of COMPOUND_REQ rather than in
+	COMPOUND_REQ_NOEXCEPT_P flag and call
+	check_for_bare_parameter_packs on it.
+	* cxx-pretty-print.cc (pp_cxx_compound_requirement): Print noexcept
+	with argument if TREE_OPERAND (t, 2) is neither true nor false
+	constant and check it for printing "noexcept" instead oof
+	COMPOUND_REQ_NOEXCEPT_P flag.
+	* mangle.cc (write_requirement): Don't use COMPOUND_REQ_NOEXCEPT_P
+	flag, instead mangle without N or with N if third operand is false
+	or true constant and as C <expression> otherwise.
+
 2026-08-22  Jason Merrill  <jason@redhat.com>
 
 	PR c++/124888

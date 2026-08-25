@@ -1,3 +1,9 @@
+2026-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125822
+	* c-cppbuiltin.cc (c_cpp_builtins): Define __cpp_concepts to
+	202606L rather than 202002L for C++29.
+
 2026-08-12  Jørgen Kvalsvik  <j@lambda.is>
 
 	* c-attribs.cc (handle_suppress_coverage_attribute): New

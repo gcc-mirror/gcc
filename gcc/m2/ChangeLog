@@ -1,3 +1,12 @@
+2026-08-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Make-lang.in (GM2_FOR_TARGET_ESC): Remove.
+	(m2/gm2-libs/Builtins.def): Use "$(GM2_FOR_TARGET)" instead of
+	$(GM2_FOR_TARGET_ESC).
+	(m2/gm2-libs/Builtins.mod): Ditto.
+	(m2/gm2-libs/SYSTEM.def): Ditto.
+	(m2/gm2-libs-iso/SYSTEM.def): Ditto.
+
 2026-08-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/126911

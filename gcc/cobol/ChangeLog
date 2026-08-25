@@ -1,3 +1,58 @@
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/123890
+	* Make-lang.in: Remove unneeded message suppression for scan.l.
+	* parse.y: SORT uses tableish, not tableref.
+	* scan.l: Use usual Procedure Division name recognition for SORT.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* gcobol.1: Add new section.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Supply locations to arith_t object.
+	* parse_ante.h (struct arith_t): Add and use numeric_ok and
+	helper functions.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* genapi.cc (parser_sleep): Use RETURN_IF_PARSE_ONLY.
+	* genmath.cc (parser_compute): Same.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (cbl_diagnostic_ignored): Declare function.
+	* lexio.cc (cdftext::free_form_reference_format):
+	Honor -Wno-stray-indicator.
+	* messages.cc (cbl_diagnostic_ignored): New function.
+	* parse.y: Persist in the face of lexio errors.
+	* parse_ante.h (parser_move_carefully): Use cbl_field_type_name.
+	* scan_post.h (start_condition_str): Add fd_state.
+	* util.cc (cbl_field_type_str): Report name as "???" if confused.
+	(valid_move): Allow MOVE literal to numeric-edited.
+	(ERROR_MSG_BODY): Remove macro.
+	(error_msg): Use old macro body directly in function.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Accept device name as filename in SELECT.
+	* scan.l: Remove CR exclusion and rename STRING to STRING2.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Add IbmContentExpr.
+	* cobol1.cc (cobol_langhook_handle_option): Process OPT_Wcontent_expr.
+	* gcobol.1: Document Wno-content-expr and recent Wno-redefines-grow.
+	* genapi.cc (create_and_call): Remove unqualified diagnostic.
+	* lang-specs.h: Add option to spec string.
+	* lang.opt: Define Wno-content-expr.
+	* messages.cc: Add IbmContentExpr to ibm dialect.
+	* parse.y: Verify BY CONTENT with by_content_ok().
+	* parse_ante.h (by_content_ok): New function.
+	* scan.l: Reduce overambitious TITLE scan.
+	* symbols.h (struct cbl_ffi_arg_t): Add by_content() for convenience.
+
 2026-08-21  James K. Lowden  <jklowden@cobolworx.com>
 
 	* cbldiag.h (enum cbl_diag_id_t): Define IsoRedefinesGrow.

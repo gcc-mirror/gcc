@@ -1,3 +1,167 @@
+2026-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-stdc-bit-1.c (main): Fix two pastos.
+
+2026-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125822
+	* g++.dg/cpp29/complex-req-noexcept1.C: New test.
+	* g++.dg/cpp29/complex-req-noexcept2.C: New test.
+	* g++.dg/cpp29/complex-req-noexcept3.C: New test.
+	* g++.dg/cpp29/complex-req-noexcept4.C: New test.
+	* g++.dg/cpp29/complex-req-noexcept5.C: New test.
+	* g++.dg/cpp29/feat-cxx29.C: Expect __cpp_concepts 202606L rather
+	than 202002L for C++29.
+
+2026-08-24  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126745
+	* gcc.dg/tree-ssa/pr126745.c: New test.
+
+2026-08-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* gcc.dg/pr127039.c: New test.
+
+2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.cob:
+	Use numeric type because numeric-edited is disallowed.
+	* cobol.dg/group2/FUNCTION_as_CALL_parameter_BY_CONTENT.cob:
+	expressions are now permitted as BY CONTENT parameters.
+
+2026-08-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array43.adb: New test.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127018
+	* gcc.dg/vect/bb-slp-pr127018.c: New testcase.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127000
+	* gcc.dg/torture/pr127000.c: New testcase.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126984
+	* gcc.dg/vect/vect-pr126984.c: New testcase.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126995
+	* gcc.dg/vect/bb-slp-pr126995.c: New testcase.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126933
+	* gcc.target/i386/truncsfbf-5.c (CALC): Flush input denormal to
+	zero.
+	(main): Add tests for float denormal inputs.
+	* gcc.target/i386/truncsfbf-6.c (CALC): Flush input denormal to
+	zero.
+	(main): Add tests for float denormal inputs.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126933
+	* gcc.target/i386/truncsfbf-1.c (dg-options): Add
+	-mno-avxneconvert -mno-avx512bf16.  Use check-function-bodies to
+	check updated codegen.
+	* gcc.target/i386/truncsfbf-2.c (dg-options): Add
+	-mno-avxneconvert -mno-avx512bf16.
+	(foo): Make it static with __attribute__ ((noipa, noinline)).
+	(CALC): Add __attribute__ ((noipa, noinline)).  Flush input
+	denormal to zero.
+	(main): Add tests for float denormal inputs.
+	* gcc.target/i386/truncsfbf-3.c: New test.
+	* gcc.target/i386/truncsfbf-4.c: Likewise.
+	* gcc.target/i386/truncsfbf-5.c: Likewise.
+	* gcc.target/i386/truncsfbf-6.c: Likewise.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126997
+	* gcc.dg/torture/pr126997.c: New testcase.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/mcpu-sifive-p550.c: New test.
+	* gcc.target/riscv/mcpu-sifive-p870-d.c: New test.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/cpunative/riscv-cpunative.exp: New file.
+	* gcc.target/riscv/cpunative/info_0: New file.
+	* gcc.target/riscv/cpunative/info_1: New file.
+	* gcc.target/riscv/cpunative/info_2: New file.
+	* gcc.target/riscv/cpunative/info_3: New file.
+	* gcc.target/riscv/cpunative/info_4: New file.
+	* gcc.target/riscv/cpunative/native_cpu_0.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_1.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_2.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_3.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_4.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_5.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_6.c: New test.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_riscv_native_cpu_detect): New.
+	* gcc.target/riscv/march-native-1.c: New test.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/pr106910-1.c: Scan both roundps and vrndscaleps.
+	* gcc.target/i386/pr85950.c: Scan both roundsd and vrndscalesd.
+	* gcc.target/i386/sse4_1-round-roundeven-1.c: Scan both rounds[ds]
+	and vrndscales[ds].
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/vect-cbranch-cond-any-128.c (dg-options): Add
+	-mtune=generic.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* g++.target/i386/vect-pragma-target-2.C (dg-options): Add
+	-march=x86-64.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* g++.target/i386/vect-pragma-target-1.C (dg-options): Add
+	-march=x86-64.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/sse4_1-stv-10.c: Scan both movaps and vmovdqa.
+	* gcc.target/i386/sse4_1-stv-11.c: Likewise.
+	* gcc.target/i386/sse4_1-stv-12.c: Likewise.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* g++.target/i386/pr82625.C (dg-options): Add -march=x86-64.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/avx-loadu2-m128-1.c (dg-options): Add
+	-mno-avx512f.
+	* gcc.target/i386/avx-loadu2-m128d-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx-loadu2-m128i-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx-storeu2-m128-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx-storeu2-m128d-1.c (dg-options): Likewise.
+	* gcc.target/i386/avx-storeu2-m128i-1.c (dg-options): Likewise.
+
 2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/127004

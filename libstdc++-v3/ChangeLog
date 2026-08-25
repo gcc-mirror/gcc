@@ -1,3 +1,10 @@
+2026-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127006
+	* include/std/spanstream (basic_ospanstream(span, openmode)):
+	Add correct openmode value to parameter.
+	* testsuite/27_io/spanstream/127006.cc: New test.
+
 2026-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/std/time/clock/utc/leap_second_info-2.cc: Create

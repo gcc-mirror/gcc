@@ -1,3 +1,13 @@
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/feature_bits.c: Include
+	common/config/riscv/riscv-hwprobe.h, and drop the hwprobe key
+	numbers, extension bit positions, struct riscv_hwprobe and
+	syscall_5_args that moved there.
+	(__init_riscv_features_bits_linux): Set the extension bits from
+	riscv-hwprobe.def.
+	(__init_riscv_feature_bits): Add a declaration.
+
 2026-08-16  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/lib1funcs.S: Fix typo in comment.

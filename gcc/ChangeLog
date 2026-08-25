@@ -1,3 +1,200 @@
+2026-08-24  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/126991
+	* genmatch.cc (dt_node::gen_kids): New in_gcond argument.
+	(dt_node::gen_kids_1): New in_gcond argument.
+	Disable SSA_NAME generation when in_gcond is true.
+	(dt_operand::gen): Pass false to gen_kids.
+	(decision_tree::gen): Likewise.
+	(write_predicate): Likewise.
+	(dt_operand::gen_phi_on_cond): Pass true to gen_kids.
+
+2026-08-24  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126745
+	* range-op.cc (operator_div::op1_op2_relation_effect): add
+	VREL_EQ range equal one for op1/op2 and op1%op2 if op1 == op2.
+
+2026-08-24  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR target/126738
+	* config/rs6000/rs6000.opt: Fix formatting of the -mfuture warning.
+	Co-authored-by: Göran Uddeborg <goeran@uddeborg.se>
+
+2026-08-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* match.pd (REDUC (@0 op VECTOR_CST)): Require the constant reduction
+	to simplify.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vect_get_vector_types_for_stmt): Remove
+	nunits_vectype_out parameter and code computing it.
+	* tree-vectorizer.h (vect_get_vector_types_for_stmt): Adjust.
+	(vect_get_smallest_scalar_type): Remove.
+	* tree-vect-data-refs.cc (vect_get_smallest_scalar_type): Likewise.
+	(simd_clone_call_p): Likewise.
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Adjust.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_record_vectype): Inline ...
+	(vect_build_slp_tree_2): ... here.
+	(vect_build_slp_tree_1): ... and here.  Use vectype to
+	guide splitting for BB vectorization.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Hard-fail early
+	due to BB SLP unrolling.
+
+2026-08-24  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126896
+	* tree-ssa-threadedge.cc
+	(edge_forwards_cmp_to_conditional_jump_through_empty_bb_p): Make
+	static.  Split into...
+	(cond_on_phi_p): ...this...
+	(phi_arg_from_cmp_p): ...and this.
+	* tree-ssa-threadedge.h (cond_on_phi_p): Declare.
+	(phi_arg_from_cmp_p): Declare.
+
+2026-08-24  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126896
+	* cfghooks.cc (can_duplicate_block_on_edge_p): New.
+	* cfghooks.h (can_duplicate_block_on_edge_p): Declare.
+	* tree-ssa-threadedge.cc: Include cfghooks.h.
+	(jump_threader::thread_across_edge): Use
+	can_duplicate_block_on_edge_p.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127018
+	* tree-vect-slp.cc (vect_schedule_scc): For SCCs of
+	multiple components update the scheduling state and
+	propagate it to all nodes.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127018
+	* tree-vect-slp.cc (slp_scc_info::res): New member.
+	(vect_schedule_scc): Initialize res for invariants
+	and when pushing to the stack.  Record result for
+	singletons and look it up for already visited entries.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127000
+	* match.pd ((T *)(ptr - ptr_cst)): Use build1 to build
+	an ADDR_EXPR.
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Avoid
+	creating GIMPLE_SINGLE_RHS to insert stmts.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126984
+	* tree-vect-slp-patterns.cc (complex_pattern::build):
+	Rename to ...
+	(complex_pattern::build_common): ... this.
+	(complex_pattern::build): Likewise and adjust.
+	(complex_pattern::m_rep): New.
+	(complex_pattern::complex_pattern): Initialize m_rep.
+	(complex_add_pattern::build): Call build_common instead
+	of complex_pattern::build.
+	(complex_mul_pattern::build): Likewise.
+	(complex_fms_pattern::build): Likewise.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126995
+	* tree-vect-slp.cc (vect_schedule_slp_node): Keep
+	schedule when we schedule to a point dominated by the
+	trapping stmt.
+
+2026-08-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126933
+	* config/i386/i386-expand.cc (ix86_expand_truncsfbf2): New.
+	* config/i386/i386-protos.h (ix86_expand_truncsfbf2): Likewise.
+	* config/i386/i386.md (truncsfbf2): Changed to define_expand
+	and update comments.
+	(truncsfbf2_vcvtneps2bf16): New.
+
+2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126997
+	* tree-ssa-loop-unswitch.cc (tree_ssa_unswitch_loops):
+	Perform invariant motion when we unswitched a loop.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/driver-riscv.cc (riscv_arch_from_hwprobe): Use
+	RISCV_HWPROBE_EXT_V rather than the removed RISCV_HWPROBE_IMA_V.
+
+2026-08-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* Makefile.in (check_p_min_slots, check_p_jobs, check_p_slots): New
+	variables.
+	(check_p_subdirs): Use check_p_slots.
+
+2026-08-24  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-cp.cc (adjust_clone_incoming_counts): Adjust counts only when
+	ipa quality.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add sifive-p550 and
+	sifive-p870-d.
+	(RISCV_CORE): Add sifive-p550 and sifive-p870-d.
+	* config/riscv/riscv.cc (sifive_p550_tune_info): New.
+	(sifive_p870_tune_info): New.
+	* doc/riscv-mcpu.texi: Regenerate.
+	* doc/riscv-mtune.texi: Regenerate.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-common.cc (standard_extensions_p):
+	Rename to...
+	(riscv_ext_is_known_p): ...this, and export.
+	(riscv_subset_list::parse_single_std_ext): Update the callers.
+	(riscv_subset_list::parse_single_multiletter_ext): Likewise.
+	* config/riscv/riscv-subset.h (riscv_ext_is_known_p): Declare.
+	* config/riscv/driver-riscv.cc: Include riscv-subset.h.
+	(riscv_native_arch): Split the hwprobe half out into...
+	(riscv_arch_from_hwprobe): ...this new function.
+	(struct riscv_cpuinfo): New.
+	(riscv_cpuinfo_file, riscv_cpuinfo_forced, riscv_cpuinfo_cpu)
+	(riscv_cpuinfo_field, riscv_read_cpuinfo, riscv_cpuinfo)
+	(riscv_filter_isa, riscv_arch_from_cpuinfo): New functions.
+	* config/riscv/x-riscv: Update the dependencies.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config.host: Build driver-riscv.o for riscv*-*-linux* hosts.
+	* config/riscv/driver-riscv.cc: New file.
+	* config/riscv/x-riscv: New file.
+	* config/riscv/riscv.h (host_detect_local_cpu): Declare.
+	(HAVE_LOCAL_CPU_DETECT): Define.
+	(RISCV_NATIVE_SPEC_FUNCTIONS): Define.
+	(RISCV_NATIVE_SPECS): Define.
+	(EXTRA_SPEC_FUNCTIONS): Add RISCV_NATIVE_SPEC_FUNCTIONS.
+	(DRIVER_SELF_SPECS): Add RISCV_NATIVE_SPECS.
+	* doc/invoke.texi (RISC-V Options): Document -march=native.
+
+2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-hwprobe.def: New file.
+	* common/config/riscv/riscv-hwprobe.h: New file.
+
+2026-08-24  vekumar  <Venkataramanan.Kumar@amd.com>
+
+	* config/i386/x86-tune-costs.h (znver4_cost): Increase branch
+	mispredict scale from COSTS_N_INSNS (2) to COSTS_N_INSNS (2) + 3.
+	(znver5_cost): Likewise.
+
 2026-08-23  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/127004

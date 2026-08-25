@@ -1,3 +1,22 @@
+2026-08-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126847
+	PR modula2/125129
+	PR modula2/126863
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Call AC_PYTHON_INTERPRETER.
+	Remove call to AC_PYTHON_DEVEL.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+	* ax_python_devel.m4: Removed.
+	* ax_python_interpreter.m4: New file.
+
 2026-08-12  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/125129
