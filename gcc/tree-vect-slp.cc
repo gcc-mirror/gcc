@@ -12200,10 +12200,14 @@ vect_schedule_slp_node (vec_info *vinfo,
 	     This is only necessary for BB vectorization since for loop vect
 	     all operations are in a single BB and scalar stmt based
 	     placement doesn't play well with epilogue vectorization.  */
-	  gcc_assert (!last_stmt
-		      || dominated_by_p (CDI_DOMINATORS,
-					 gimple_bb (stmt_info->stmt),
-					 gimple_bb (last_stmt)));
+	  if (last_stmt
+	      && !dominated_by_p (CDI_DOMINATORS,
+				  gimple_bb (stmt_info->stmt),
+				  gimple_bb (last_stmt)))
+	    {
+	      gcc_assert (place_only);
+	      return false;
+	    }
 	  si = gsi_after_labels (gimple_bb (stmt_info->stmt));
 	  last_stmt = gsi_stmt (si);
 	}
