@@ -1,5 +1,5 @@
 /* { dg-additional-options "-fdiagnostics-text-art-charset=ascii" } */
-/* { dg-skip-if "" { powerpc-ibm-aix* } } */
+/* { dg-skip-if "" { avr-*-* powerpc-ibm-aix* } } */
 
 #include <string.h>
 

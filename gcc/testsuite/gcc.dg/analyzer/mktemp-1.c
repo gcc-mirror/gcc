@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */
+/* { dg-skip-if "incomplete stdio" { avr-*-* } } */
 
 /* TODO: mktemp is deprecated per MSC24-C
    (https://wiki.sei.cmu.edu/confluence/x/hNYxBQ).

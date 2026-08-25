@@ -3,9 +3,9 @@
 
 /* { dg-additional-options "-O1" } */
 
-typedef unsigned int u32;
-typedef long long s64;
-typedef unsigned long long u64;
+typedef __UINT32_TYPE__ u32;
+typedef __INT64_TYPE__ s64;
+typedef __UINT64_TYPE__ u64;
 
 enum v4l2_ctrl_type {
   V4L2_CTRL_TYPE_INTEGER = 1,

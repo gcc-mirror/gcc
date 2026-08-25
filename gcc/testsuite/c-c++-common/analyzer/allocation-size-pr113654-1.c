@@ -3,8 +3,8 @@
 #define round_up(x, y) ((((x)-1) | __round_mask(x, y))+1)
 
 /* Reduced from Linux kernel's drivers/gpu/drm/i915/display/intel_bios.c  */
-typedef unsigned short u16;
-typedef unsigned int u32;
+typedef __UINT16_TYPE__ u16;
+typedef __UINT32_TYPE__ u32;
 typedef unsigned long __kernel_size_t;
 typedef __kernel_size_t size_t;
 

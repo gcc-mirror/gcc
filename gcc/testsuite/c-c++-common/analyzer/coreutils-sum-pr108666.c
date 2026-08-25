@@ -1,6 +1,7 @@
 /* Reduced from coreutils's sum.c: bsd_sum_stream */
 
 /* { dg-additional-options "-fno-exceptions" } */
+/* { dg-skip-if "" { avr-*-* } } */
 
 typedef __SIZE_TYPE__ size_t;
 typedef unsigned char __uint8_t;

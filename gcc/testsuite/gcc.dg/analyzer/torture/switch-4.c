@@ -1,6 +1,6 @@
 struct snd_ac97 {
   // snip
-  unsigned int id;
+  __UINT32_TYPE__ id;
   // snip
 };
 

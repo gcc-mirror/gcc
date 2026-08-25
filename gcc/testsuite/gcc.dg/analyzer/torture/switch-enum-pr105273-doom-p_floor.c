@@ -1,11 +1,11 @@
 /* Reduced from linuxdoom-1.10's p_floor.c (GPLv2).  */
 
 #define FRACBITS		16
-#define FRACUNIT		(1<<FRACBITS)
+#define FRACUNIT		((__INT32_TYPE__)1<<FRACBITS)
 #define PU_LEVSPEC		51
 #define FLOORSPEED		FRACUNIT
 
-typedef int fixed_t;
+typedef __INT32_TYPE__ fixed_t;
 typedef struct line_s line_t;
 
 typedef struct
@@ -30,7 +30,7 @@ typedef struct
 
 extern sector_t* sectors;
 
-void* Z_Malloc (int size, int tag, void *ptr);
+void* Z_Malloc (__SIZE_TYPE__ size, int tag, void *ptr);
 
 int
 P_FindSectorFromLineTag

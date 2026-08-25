@@ -1,3 +1,5 @@
+/* { dg-skip-if "" { avr-*-* } } */
+
 /* Test of -Wanalyzer-overlapping-buffers.  */
 
 #include <string.h>

@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */
+/* { dg-skip-if "incomplete stdio" { avr-*-* } } */
 
 #include <stdio.h>
 #include <stdlib.h>

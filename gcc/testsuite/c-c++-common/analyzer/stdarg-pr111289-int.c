@@ -35,7 +35,7 @@ test_2 (char const *name, ...)
   va_list arg;
   va_start (arg, name);
 
-  global_2 = va_arg (arg, int16_t); /* { dg-warning "promoted to 'int'" } */
+  global_2 = va_arg (arg, int16_t); /* { dg-warning "promoted to 'int'" "" { target { ! int16 } } } */
 
   va_end (arg);
 }

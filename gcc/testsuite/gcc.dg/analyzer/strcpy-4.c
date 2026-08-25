@@ -1,4 +1,5 @@
 /* { dg-additional-options "-Wno-stringop-overflow" } */
+/* { dg-skip-if "" { avr-*-* } } */
 
 #include <string.h>
 #include "analyzer-decls.h"

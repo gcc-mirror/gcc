@@ -133,10 +133,10 @@ void example_4 (DataPacket *packet)
 
 void example_5 (void)
 {
-  int *id_sequence;
+  __INT32_TYPE__ *id_sequence;
 
   /* Allocate space for an array of three ids. */
-  id_sequence = (int*) malloc(3); /* { dg-warning "allocated buffer size is not a multiple of the pointee's size" } */
+  id_sequence = (__INT32_TYPE__*) malloc(3); /* { dg-warning "allocated buffer size is not a multiple of the pointee's size" } */
   if (id_sequence == NULL) exit(1);
 
   /* Populate the id array. */

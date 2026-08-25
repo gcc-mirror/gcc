@@ -1,4 +1,6 @@
 /* { dg-additional-options "-Wno-stringop-overflow -Wno-stringop-truncation" } */
+/* { dg-skip-if "strcpy is asm" { avr-*-* } } */
+
 #include <string.h>
 
 /* Wanalyzer-out-of-bounds tests for strpy-related overflows.

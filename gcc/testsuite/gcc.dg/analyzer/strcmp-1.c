@@ -1,3 +1,5 @@
+/* { dg-skip-if "" { avr-*-* } } */
+
 /* Verify that we clarify the sense of paths involving strcmp.  */
 
 #include <string.h>

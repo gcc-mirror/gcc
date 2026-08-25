@@ -1,5 +1,7 @@
-typedef unsigned int __u32;
-__extension__ typedef unsigned long long __u64;
+/* { dg-require-effective-target int32plus } */
+
+typedef __UINT32_TYPE__ __u32;
+__extension__ typedef __UINT64_TYPE__ __u64;
 
 extern unsigned long
 copy_from_user(void *to, const void *from, unsigned long n);

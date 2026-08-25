@@ -1,3 +1,5 @@
+/* { dg-skip-if "" { avr-*-* } } */
+
 /* Adapted from https://samate.nist.gov/SARD/test-cases/293/versions/1.0.0
    Part of https://samate.nist.gov/SARD/test-suites/81
    See:

@@ -1,4 +1,4 @@
-/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
+/* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { { ! hostedlib } || { avr-*-* } } } */
 
 #include <stdlib.h>
 #include <string.h>

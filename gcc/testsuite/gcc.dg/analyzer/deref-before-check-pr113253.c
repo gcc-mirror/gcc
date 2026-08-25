@@ -45,10 +45,10 @@ enum More_Lisp_Bits
   PSEUDOVECTOR_SIZE_BITS = 12,
   PSEUDOVECTOR_REST_BITS = 12,
   PSEUDOVECTOR_AREA_BITS = PSEUDOVECTOR_SIZE_BITS + PSEUDOVECTOR_REST_BITS,
-  PVEC_TYPE_MASK = 0x3f << PSEUDOVECTOR_AREA_BITS
+  PVEC_TYPE_MASK = (__UINT32_TYPE__) 0x3f << PSEUDOVECTOR_AREA_BITS
 };
 static inline _Bool
-PSEUDOVECTORP(Lisp_Object a, int code)
+PSEUDOVECTORP(Lisp_Object a, __INT32_TYPE__ code)
 {
   return (
     ((((union vectorlike_header*)((uintptr_t)XLP((a)) -

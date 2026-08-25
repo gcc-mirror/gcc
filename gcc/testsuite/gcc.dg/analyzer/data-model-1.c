@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fno-ipa-modref" } */
+/* { dg-skip-if "" { avr-*-* } } */
 
 #include <stdlib.h>
 #include <string.h>

@@ -1,3 +1,5 @@
+/* { dg-require-effective-target size20plus } */
+
 #include <stdint.h>
 
 /* Attacker-controlled 8 bit values where the array isn't

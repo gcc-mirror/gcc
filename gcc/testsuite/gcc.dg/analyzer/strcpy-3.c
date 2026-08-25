@@ -1,3 +1,5 @@
+/* { dg-skip-if "" { avr-*-* } } */
+
 #include <string.h>
 #include "analyzer-decls.h"
 

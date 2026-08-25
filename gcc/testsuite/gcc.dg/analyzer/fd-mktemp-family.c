@@ -1,3 +1,5 @@
+/* { dg-skip-if "fcntl,unistd" { avr-*-* } } */
+
 /* Tests for fd leak and errno handling of mktemp-family functions.  */
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */
 

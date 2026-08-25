@@ -1,7 +1,7 @@
 /* PR analyzer/112792 ("-Wanalyzer-out-of-bounds false positives seen on
    Linux kernel with certain unions").  */
 
-typedef unsigned int u32;
+typedef __UINT32_TYPE__ u32;
 
 union msix_perm {
   struct {

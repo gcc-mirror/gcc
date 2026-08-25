@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fdiagnostics-text-art-charset=unicode" } */
+/* { dg-skip-if "" { avr-*-* } } */
 
 #include <string.h>
 #include "analyzer-decls.h"

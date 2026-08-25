@@ -1,7 +1,7 @@
 /* Regression test for ICE with short values of
    --param=analyzer-text-art-string-ellipsis-threshold=.  */
 /* { dg-additional-options "-fdiagnostics-text-art-charset=unicode --param=analyzer-text-art-string-ellipsis-threshold=0" } */
-/* { dg-skip-if "" { powerpc-ibm-aix* } } */
+/* { dg-skip-if "" { avr-*-* powerpc-ibm-aix* } } */
 
 #include <string.h>
 
