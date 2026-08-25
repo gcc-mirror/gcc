@@ -1,3 +1,12 @@
+2026-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-08-24  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127024
+	* libf7-asm.sx (to_integer): Don't skip XJMP
+	if __AVR_ERRATA_SKIP_JMP_CALL__.
+
 2025-06-05  Release Manager
 
 	* GCC 13.4.0 released.
