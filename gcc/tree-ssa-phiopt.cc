@@ -3503,12 +3503,12 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 }
 
 /* Return the last store in BB with VDEF or NULL if there are
-   loads following the store. VPHI is where the only use of the
+   loads following the store. VUSE_ONLY is where the only use of the
    vdef should be.  If ONLYONESTORE is true, then the store is
    the only store in the BB.  */
 
 static gimple *
-trailing_store_in_bb (basic_block bb, tree vdef, gphi *vphi, bool onlyonestore)
+trailing_store_in_bb (basic_block bb, tree vdef, gimple *vuse_only, bool onlyonestore)
 {
   if (SSA_NAME_IS_DEFAULT_DEF (vdef))
     return NULL;
@@ -3524,14 +3524,17 @@ trailing_store_in_bb (basic_block bb, tree vdef, gphi *vphi, bool onlyonestore)
       && gimple_code (SSA_NAME_DEF_STMT (gimple_vuse (store))) != GIMPLE_PHI)
     return NULL;
 
+  // Needs to be an simple store and not a call.
+  if (!gimple_assign_single_p (store))
+    return NULL;
 
   /* Verify there is no load or store after the store, the vdef of the store
-     should only be used by the vphi joining the 2 bbs.  */
+     should only be used by the vuse_only.  */
   use_operand_p use_p;
   gimple *use_stmt;
   if (!single_imm_use (gimple_vdef (store), &use_p, &use_stmt))
     return NULL;
-  if (use_stmt != vphi)
+  if (use_stmt != vuse_only)
     return NULL;
 
   return store;
@@ -3854,8 +3857,49 @@ cond_if_else_store_replacement_limited (basic_block then_bb, basic_block else_bb
   if (!else_assign)
     return false;
 
-  return cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
-					   then_assign, else_assign, vphi);
+  if (!cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+					 then_assign, else_assign, vphi))
+    {
+      gimple *then_n, *else_n;
+
+      // Try to see if one "store" can be skipped on either side.
+      if (!flag_expensive_optimizations)
+	return false;
+      then_n = trailing_store_in_bb (then_bb, gimple_vuse (then_assign),
+				     then_assign, true);
+      if (then_n)
+	{
+	  ao_ref then_ref_n;
+	  ao_ref_init (&then_ref_n, gimple_assign_lhs (then_n));
+	  if (stmt_may_clobber_ref_p_1 (then_assign, &then_ref_n, false)
+	      || ref_maybe_used_by_stmt_p (then_assign, &then_ref_n, false))
+	    then_n = nullptr;
+	}
+      else_n = trailing_store_in_bb (else_bb, gimple_vuse (else_assign),
+				     else_assign, true);
+      if (else_n)
+	{
+	  ao_ref else_ref_n;
+	  ao_ref_init (&else_ref_n, gimple_assign_lhs (else_n));
+	  if (stmt_may_clobber_ref_p_1 (else_assign, &else_ref_n, false)
+	      || ref_maybe_used_by_stmt_p (else_assign, &else_ref_n, false))
+	    else_n = nullptr;
+	}
+      if (then_n
+	  && cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+					       then_n, else_assign, vphi))
+	return true;
+      if (else_n
+	  && cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+					       then_assign, else_n, vphi))
+	return true;
+      if (else_n && then_n
+	  && cond_if_else_store_replacement_1 (then_bb, else_bb, join_bb,
+					       then_n, else_n, vphi))
+	return true;
+      return false;
+  }
+  return true;
 }
 
 /* Conditional store replacement.  We already know
