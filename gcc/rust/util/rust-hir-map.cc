@@ -830,6 +830,47 @@ Mappings::iterate_impl_items (
 }
 
 void
+Mappings::insert_adt_impl_mapping (NodeId adt_node_id, HIR::ImplBlock *impl)
+{
+  hirAdtImplMappings[adt_node_id].push_back (impl);
+  hirIndexedAdtImpls.insert (impl);
+}
+
+void
+Mappings::iterate_adt_impl_items (
+  NodeId adt_node_id,
+  std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb)
+{
+  auto iterate_impl = [&] (HIR::ImplBlock *impl) {
+    for (auto &item : impl->get_impl_items ())
+      {
+	HIR::ImplItem *impl_item = item.get ();
+	HirId id = impl_item->get_impl_mappings ().get_hirid ();
+	if (!cb (id, impl_item, impl))
+	  return false;
+      }
+    return true;
+  };
+
+  auto adt_impls = hirAdtImplMappings.find (adt_node_id);
+  if (adt_impls != hirAdtImplMappings.end ())
+    for (auto *impl : adt_impls->second)
+      if (!iterate_impl (impl))
+	return;
+
+  // Impl self types which cannot be classified as a concrete ADT include
+  // blanket implementations such as `impl<T> Trait for T`.  They must remain
+  // candidates for every ADT receiver.
+  for (auto &mapping : hirImplBlockMappings)
+    {
+      HIR::ImplBlock *impl = mapping.second;
+      if (hirIndexedAdtImpls.find (impl) == hirIndexedAdtImpls.end ())
+	if (!iterate_impl (impl))
+	  return;
+    }
+}
+
+void
 Mappings::insert_trait_impl_mapping (NodeId trait_node_id, HIR::ImplBlock *impl)
 {
   hirTraitImplMappings[trait_node_id].push_back (impl);

@@ -300,6 +300,23 @@ PathProbeType::process_enum_item_for_candiates (const TyTy::ADTType *adt)
 void
 PathProbeType::process_impl_items_for_candidates ()
 {
+  if (auto *adt = receiver->try_as<TyTy::ADTType> ())
+    {
+      auto adt_item = mappings.lookup_defid (adt->get_id ());
+      if (adt_item.has_value ())
+	{
+	  NodeId adt_node_id = adt_item.value ()->get_mappings ().get_nodeid ();
+	  mappings.iterate_adt_impl_items (
+	    adt_node_id,
+	    [&] (HirId id, HIR::ImplItem *item,
+		 HIR::ImplBlock *impl) mutable -> bool {
+	      process_impl_item_candidate (id, item, impl);
+	      return true;
+	    });
+	  return;
+	}
+    }
+
   mappings.iterate_impl_items (
     [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
       process_impl_item_candidate (id, item, impl);
