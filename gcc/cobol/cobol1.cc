@@ -358,7 +358,7 @@ enable_exceptions( bool enable ) {
        NULL != (name = strtok(name, ",")); name = NULL ) {
     ec_type_t type = ec_type_of(name);
     if( type == ec_none_e ) {
-      cbl_message(EcUnknownW, "unrecognized exception '%s'", name);
+      cbl_message(EcUnknownW, "unrecognized exception %qs", name);
       continue;
     }
     add_cobol_exception(type, enable );
@@ -436,6 +436,28 @@ append_copybook_prefix(const char *prefix, void (*fn)(const char *))
 
 void cobol_warning( cbl_diag_id_t id, int yn, bool );
 void cobol_warning_suppress( cbl_dialect_t dialect );
+
+/*
+ * If an unrecognized/unimplmemented EC is specified, emit a warning.  If the
+ * warning is turned off, keep quiet.
+ * 
+ * Tue Aug 25 09:41:37 2026: For reasons unclear gcobol duplicates some
+ * command-line options to cobol1.  In any case if the user specifies the ssme
+ * EC twice, or uses it more than once in the body of the code, he doesn't
+ * need two messages.
+ */
+void cbl_enabled_exceptions_t::
+complain( ec_type_t type ) {
+  static std::set<ec_type_t> said_so;
+  auto p = said_so.insert(type);
+  if( p.second ) {
+    ec_disposition_t disposition = ec_type_disposition(type);
+    if( disposition != ec_implemented(disposition) ) {
+      cbl_message(EcUnknownW, "sorry, exception %qs not implemented",
+                  ec_type_str(type));
+    }
+  }
+}
 
 static bool
 cobol_langhook_handle_option (size_t scode,

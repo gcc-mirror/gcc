@@ -3894,6 +3894,7 @@ procedure_division_ready( const cbl_loc_t& loc, cbl_field_t *returning, ffi_args
   // Apply ECs from the command line
   std::list<exception_turn_t>& exception_turns = current.pending_exceptions();
   for( const auto& exception_turn : exception_turns) {
+    //// exception_turn.dump();
     apply_cdf_turn(exception_turn);
   }
   exception_turns.clear();

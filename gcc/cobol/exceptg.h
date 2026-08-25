@@ -77,10 +77,6 @@ class exception_turn_t {
   const ec_filemap_t& exception_files() const { return exceptions; }
 
   bool add_exception( ec_type_t type, const filelist_t& files = filelist_t() ) {
-    ec_disposition_t disposition = ec_type_disposition(type);
-    if( disposition != ec_implemented(disposition) ) {
-      cbl_unimplementedw(EcUnknownW, "exception %qs", ec_type_str(type));
-    }
     auto elem = exceptions.find(type);
     if( elem != exceptions.end() ) return false; // cannot add twice
 
@@ -96,8 +92,17 @@ class exception_turn_t {
     enabled = location = false;
   }
 
+#if 0
+  void dump() const {
+    fprintf(stderr, "exception_turn_t::dump: %s\n", enabled? "enabled" : "disabled");
+    int i = 0;
+    for( auto ex : exceptions ) {
+      fprintf( stderr, "%4d: %s, %zu files\n",
+               i++, ec_type_str(ex.first), ex.second.size() );
+    } 
+  }
+#endif
 };
-
 #endif
 
 

@@ -614,11 +614,15 @@ typedef std::vector<cbl_declarative_t> cbl_declaratives_t;
 
 class cbl_enabled_exceptions_t : protected std::set<cbl_enabled_exception_t>
 {
+  static void complain( ec_type_t ec );
+
   void apply( bool enabled, const cbl_enabled_exception_t& elem ) {
     if( ! enabled ) {
       erase(elem);
       return;
     }
+    complain( elem.ec );
+
     auto inserted = insert( elem );
     if( ! inserted.second ) {
       erase(inserted.first);
