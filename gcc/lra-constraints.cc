@@ -4418,7 +4418,7 @@ process_address_1 (int nop, bool check_only_p,
       addr = *ad.inner;
       new_reg = lra_create_new_reg (Pmode, NULL_RTX, cl, NULL, "addr");
       /* addr => new_base.  */
-      lra_emit_move (new_reg, addr);
+      lra_emit_move (new_reg, canonicalize_reload_addr (addr));
       *ad.inner = new_reg;
     }
   *before = end_sequence ();
