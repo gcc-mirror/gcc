@@ -3601,7 +3601,9 @@ cond_store_replacement_limited (basic_block middle_bb, basic_block join_bb,
 
   if (!store_middle
       || !gimple_assign_single_p (store_middle)
-      || gimple_has_volatile_ops (store_middle))
+      || gimple_has_volatile_ops (store_middle)
+      // Rejects clobbers too.
+      || gimple_clobber_p (store_middle))
     return false;
 
   locus = gimple_location (store_middle);
@@ -3610,8 +3612,6 @@ cond_store_replacement_limited (basic_block middle_bb, basic_block join_bb,
   if ((!REFERENCE_CLASS_P (lhs)
        && !DECL_P (lhs))
       || !is_gimple_reg_type (TREE_TYPE (lhs)))
-    return false;
-  if (TREE_CODE (rhs) != SSA_NAME)
     return false;
 
   /* Three cases that can be handled:
