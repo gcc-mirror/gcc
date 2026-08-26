@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target bitint } } */
 /* { dg-options "-O2" } */
 
 typedef _BitInt(65535) T;
