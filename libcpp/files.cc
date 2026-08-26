@@ -1227,11 +1227,11 @@ _cpp_find_header_unit (cpp_reader *pfile, const char *name, bool angle,
 {
   if (_cpp_file *file = test_header_unit (pfile, name, angle, loc))
     {
-      if (file->fd > 0)
+      if (file->fd != -1)
 	{
 	  /* Don't leave it open.  */
 	  close (file->fd);
-	  file->fd = 0;
+	  file->fd = -1;
 	}
 
       file->header_unit = +1;
