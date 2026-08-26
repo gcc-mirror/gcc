@@ -1,3 +1,14 @@
+2026-08-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98573
+	* trans-array.cc (gfc_array_init_size): If the expr3_desc is an
+	array descriptor, use it for 'type'.
+	* trans-stmt.cc (gfc_trans_allocate): Use trans_assignment to
+	assign the source for class sources.
+
 2026-08-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

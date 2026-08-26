@@ -1,3 +1,26 @@
+2026-08-25  Matthias Kretz  <m.kretz@gsi.de>
+
+	Backported from master:
+	2026-08-18  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR libstdc++/122981
+	* include/experimental/bits/simd.h (__int_for_sizeof): Return
+	int32_t, int8_t, int16_t, and int64_t, rather than int, signed
+	char, short, long, and long long.
+	* include/experimental/bits/simd_neon.h (_S_popcount): Cast
+	elements to int8_t, int16_t, int32_t, or int64_t, rather than
+	signed char, short, int, or long.
+
+2026-08-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-08-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127006
+	* include/std/spanstream (basic_ospanstream(span, openmode)):
+	Add correct openmode value to parameter.
+	* testsuite/27_io/spanstream/127006.cc: New test.
+
 2026-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

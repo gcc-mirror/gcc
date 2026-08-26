@@ -1,3 +1,16 @@
+2026-08-25  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Sync from Binutils.
+
+2026-08-25  Josef Melcr  <josef.melcr@suse.com>
+
+	Backported from master:
+	2026-08-25  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/127023
+	* multiple_target.cc (create_dispatcher_calls): Use the call
+	statement variant of create_reference.
+
 2026-08-24  Peter Bergner  <bergner@tenstorrent.com>
 
 	Backported from master:
