@@ -2395,11 +2395,28 @@ back_jt_path_registry::duplicate_thread_path (edge entry,
 {
   unsigned i;
   class loop *loop = entry->dest->loop_father;
-  edge exit_copy;
   edge redirected;
   profile_count curr_count;
 
-  if (!can_copy_bbs_p (region, n_region))
+  gcc_checking_assert (n_region && region[n_region - 1] == exit->src);
+
+  /* Let EXIT prevail only when its source ends in abnormal edges, which cannot
+     be redirected.  Ordinary paths commonly thread back into themselves, which
+     the prevailing exit does not support as its copy would have to jump back
+     into the original region.  An abnormal exit reentering the region is
+     refused by can_copy_bbs_p either way.  */
+  edge prevailing_exit = NULL;
+  for (edge e : exit->src->succs)
+    if (e->flags & EDGE_ABNORMAL)
+      {
+	prevailing_exit = exit;
+	break;
+      }
+  /* Abnormal successors imply a computed goto, whose successors are
+     all abnormal, EXIT included.  */
+  gcc_checking_assert (!prevailing_exit || (exit->flags & EDGE_ABNORMAL));
+
+  if (!can_copy_bbs_p (region, n_region, prevailing_exit))
     {
       *failure_reason = "Cannot copy the blocks in the path";
       return false;
@@ -2432,8 +2449,8 @@ back_jt_path_registry::duplicate_thread_path (edge entry,
   set_loop_copy (loop, loop);
 
   basic_block *region_copy = XNEWVEC (basic_block, n_region);
-  copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
-	    split_edge_bb_loc (entry), false);
+  copy_bbs (region, n_region, region_copy, NULL, 0, NULL, loop,
+	    split_edge_bb_loc (entry), false, prevailing_exit);
 
   /* Fix up: copy_bbs redirects all edges pointing to copied blocks.  The
      following code ensures that all the edges exiting the jump-thread path are

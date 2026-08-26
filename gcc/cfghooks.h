@@ -275,10 +275,10 @@ extern void lv_adjust_loop_header_phi (basic_block, basic_block, basic_block,
 extern void lv_add_condition_to_bb (basic_block, basic_block, basic_block,
 				    void *);
 
-extern bool can_copy_bbs_p (basic_block *, unsigned);
+extern bool can_copy_bbs_p (basic_block *, unsigned, edge = NULL);
 extern void copy_bbs (basic_block *, unsigned, basic_block *,
 		      edge *, unsigned, edge *, class loop *,
-		      basic_block, bool);
+		      basic_block, bool, edge = NULL);
 
 void profile_record_check_consistency (profile_record *);
 void profile_record_account_profile (profile_record *);

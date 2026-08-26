@@ -1377,9 +1377,13 @@ lv_add_condition_to_bb (basic_block first, basic_block second,
   cfg_hooks->lv_add_condition_to_bb (first, second, new_block, cond);
 }
 
-/* Checks whether all N blocks in BBS array can be copied.  */
+/* Checks whether all N blocks in BBS array can be copied.
+
+   PREVAILING_EXIT is as in copy_bbs.  If non-NULL, the copy of its source
+   keeps only the prevailing edge, so the abnormal successor edges of that
+   block do not require redirection.  */
 bool
-can_copy_bbs_p (basic_block *bbs, unsigned n)
+can_copy_bbs_p (basic_block *bbs, unsigned n, edge prevailing_exit)
 {
   unsigned i;
   edge e;
@@ -1388,17 +1392,28 @@ can_copy_bbs_p (basic_block *bbs, unsigned n)
   for (i = 0; i < n; i++)
     bbs[i]->flags |= BB_DUPLICATED;
 
+  /* A prevailing edge jumping back into the region is not supported:
+     its copy would have to keep targeting the original block.  */
+  if (prevailing_exit && (prevailing_exit->dest->flags & BB_DUPLICATED))
+    {
+      ret = false;
+      goto end;
+    }
+
   for (i = 0; i < n; i++)
     {
-      /* In case we should redirect abnormal edge during duplication, fail.  */
+      /* In case we should redirect abnormal edge during duplication, fail.
+	 However, the copy of PREVAILING_EXIT->src is exempt as its outgoing
+	 edges are removed or left in place rather than redirected.  */
       edge_iterator ei;
-      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
-	if ((e->flags & EDGE_ABNORMAL)
-	    && (e->dest->flags & BB_DUPLICATED))
-	  {
-	    ret = false;
-	    goto end;
-	  }
+      if (!(prevailing_exit && bbs[i] == prevailing_exit->src))
+	FOR_EACH_EDGE (e, ei, bbs[i]->succs)
+	  if ((e->flags & EDGE_ABNORMAL)
+	      && (e->dest->flags & BB_DUPLICATED))
+	    {
+	      ret = false;
+	      goto end;
+	    }
 
       if (!can_duplicate_block_p (bbs[i]))
 	{
@@ -1435,12 +1450,21 @@ end:
    also in the same order.
 
    Newly created basic blocks are put after the basic block AFTER in the
-   instruction stream, and the order of the blocks in BBS array is preserved.  */
+   instruction stream, and the order of the blocks in BBS array is preserved.
+
+   If PREVAILING_EXIT is non-NULL, its source must be in BBS, and its
+   destination must not be: the copy of that block keeps only its edges to
+   PREVAILING_EXIT->dest, and the rest of its outgoing edges are removed.  None
+   of its edges are redirected, which allows copying a region whose exit block
+   has abnormal successor edges into the region.  It is the caller's
+   responsibility to remove or rewrite the copied block's control
+   statement.  */
 
 void
 copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
 	  edge *edges, unsigned num_edges, edge *new_edges,
-	  class loop *base, basic_block after, bool update_dominance)
+	  class loop *base, basic_block after, bool update_dominance,
+	  edge prevailing_exit)
 {
   unsigned i, j;
   basic_block bb, new_bb, dom_bb;
@@ -1452,6 +1476,11 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
      PHIs in the set of source BBs.  */
   for (i = 0; i < n; i++)
     bbs[i]->flags |= BB_DUPLICATED;
+
+  /* A prevailing edge into the region would be redirected like any
+     other.  We refuse this in can_copy_bbs_p.  */
+  gcc_checking_assert (!prevailing_exit
+		       || !(prevailing_exit->dest->flags & BB_DUPLICATED));
 
   /* Duplicate bbs, update dominators, assign bbs to loops.  */
   for (i = 0; i < n; i++)
@@ -1495,11 +1524,19 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       new_bb = new_bbs[i];
       bb = bbs[i];
 
-      FOR_EACH_EDGE (e, ei, new_bb->succs)
+      for (ei = ei_start (new_bb->succs); (e = ei_safe_edge (ei)); )
 	{
-	  if (!(e->dest->flags & BB_DUPLICATED))
-	    continue;
-	  redirect_edge_and_branch_force (e, get_bb_copy (e->dest));
+	  /* Remove the edges that do not prevail instead of
+	     redirecting them.  */
+	  if (prevailing_exit && bb == prevailing_exit->src
+	      && e->dest != prevailing_exit->dest)
+	    {
+	      remove_edge (e);
+	      continue;
+	    }
+	  if (e->dest->flags & BB_DUPLICATED)
+	    redirect_edge_and_branch_force (e, get_bb_copy (e->dest));
+	  ei_next (&ei);
 	}
     }
   for (j = 0; j < num_edges; j++)
