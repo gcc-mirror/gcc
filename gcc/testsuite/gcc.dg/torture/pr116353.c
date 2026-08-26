@@ -1,5 +1,6 @@
 /* PR tree-optimization/116353 */
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 
 enum desmode { C };
 struct {
