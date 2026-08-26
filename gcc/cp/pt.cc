@@ -8881,19 +8881,6 @@ maybe_build_nontype_implicit_conv (tree type, tree arg, bool force)
   return arg;
 }
 
-/* True if we need an IMPLICIT_CONV_EXPR for converting EXPR to TYPE, possibly
-   in a FORCED context (i.e. alias or concept).  */
-
-static bool
-dependent_implicit_conv_p (tree type, tree expr, bool forced)
-{
-  return (dependent_type_p (type) || type_dependent_expression_p (expr)
-	  || (forced
-	      && !(same_type_ignoring_top_level_qualifiers_p
-		   (TREE_TYPE (expr), type))
-	      && value_dependent_expression_p (expr)));
-}
-
 /* Convert the non-type template parameter ARG to the indicated TYPE.
    If one of them is dependent, create an appropriate conversion.
    FORCE_CONV is true in a forced context (i.e. alias or concept).  */
@@ -8903,7 +8890,7 @@ convert_nontype_argument_maybe_dependent (tree type, tree arg,
 					  bool force_conv,
 					  tsubst_flags_t complain)
 {
-  if (dependent_implicit_conv_p (type, arg, force_conv))
+  if (dependent_type_p (type) || type_dependent_expression_p (arg))
     {
       tree val = canonicalize_expr_argument (arg, complain);
       return maybe_build_nontype_implicit_conv (type, val, force_conv);
@@ -8917,8 +8904,24 @@ convert_nontype_argument_maybe_dependent (tree type, tree arg,
      deciding whether or not these conversions can occur is part of
      determining which function template to call, or whether a given
      explicit argument specification is valid.  */
-  return convert_nontype_argument (type, convert_from_reference (arg),
-				   complain);
+  tree r = convert_nontype_argument (type, convert_from_reference (arg),
+				     complain);
+
+  /* When force_conv, we need to express this conversion with
+     IMPLICIT_CONV_EXPR rather than NOP_EXPR so we go through
+     convert_nontype_argument again at substitution time for
+     e.g. narrowing checks.  */
+  if (force_conv && r && CONVERT_EXPR_P (r)
+      && !same_type_ignoring_top_level_qualifiers_p (type, TREE_TYPE (arg))
+      && value_dependent_expression_p (arg))
+    {
+      tree op = TREE_OPERAND (r, 0);
+      gcc_assert (same_type_ignoring_top_level_qualifiers_p (TREE_TYPE (op),
+							     TREE_TYPE (arg)));
+      r = maybe_build_nontype_implicit_conv (type, op, force_conv);
+    }
+
+  return r;
 }
 
 /* Convert the indicated template ARG as necessary to match the
@@ -21787,17 +21790,10 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 	tree expr = RECUR (TREE_OPERAND (t, 0));
-	if (dependent_implicit_conv_p (type, expr,
-				       IMPLICIT_CONV_EXPR_FORCED (t)))
-	  {
-	    retval = copy_node (t);
-	    TREE_TYPE (retval) = type;
-	    TREE_OPERAND (retval, 0) = expr;
-	    RETURN (retval);
-	  }
 	if (IMPLICIT_CONV_EXPR_NONTYPE_ARG (t))
 	  {
-	    tree r = convert_nontype_argument (type, expr, complain);
+	    tree r = (convert_nontype_argument_maybe_dependent
+		      (type, expr, IMPLICIT_CONV_EXPR_FORCED (t), complain));
 	    if (r == NULL_TREE)
 	      r = error_mark_node;
 	    RETURN (r);
