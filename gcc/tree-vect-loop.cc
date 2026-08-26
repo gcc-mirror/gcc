@@ -7956,7 +7956,6 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 {
   tree vectype_out = SLP_TREE_VECTYPE (slp_node);
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  unsigned vec_num;
 
   vect_reduc_info reduc_info = info_for_reduction (loop_vinfo, slp_node);
 
@@ -7976,11 +7975,9 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
   int reduc_index = SLP_TREE_REDUC_IDX (slp_node);
-  tree vectype_in = SLP_TREE_VECTYPE (slp_node);
-  if (lane_reducing_op_p (op.code))
-    vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
-
-  vec_num = vect_get_num_copies (loop_vinfo, SLP_TREE_CHILDREN (slp_node)[0]);
+  slp_tree node_in = SLP_TREE_CHILDREN (slp_node)[reduc_index == 0 ? 1 : 0];
+  tree vectype_in = SLP_TREE_VECTYPE (node_in);
+  unsigned vec_in_num = SLP_TREE_VEC_DEFS (node_in).length ();
 
   code_helper code = canonicalize_code (op.code, op.type);
   internal_fn cond_fn
@@ -8160,44 +8157,6 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
       tree reduc_vectype_in = vectype_in;
       gcc_assert (reduc_vectype_in);
-
-      unsigned effec_reduc_ncopies
-	= vect_get_num_copies (loop_vinfo, SLP_TREE_CHILDREN (slp_node)[0]);
-
-      gcc_assert (effec_ncopies <= effec_reduc_ncopies);
-
-      if (effec_ncopies < effec_reduc_ncopies)
-	{
-	  /* Find suitable def-use cycles to generate vectorized statements
-	     into, and reorder operands based on the selection.  */
-	  unsigned curr_pos = VECT_REDUC_INFO_RESULT_POS (reduc_info);
-	  unsigned next_pos = (curr_pos + effec_ncopies) % effec_reduc_ncopies;
-
-	  gcc_assert (curr_pos < effec_reduc_ncopies);
-	  VECT_REDUC_INFO_RESULT_POS (reduc_info) = next_pos;
-
-	  if (curr_pos)
-	    {
-	      unsigned count = effec_reduc_ncopies - effec_ncopies;
-	      unsigned start = curr_pos - count;
-
-	      if ((int) start < 0)
-		{
-		  count = curr_pos;
-		  start = 0;
-		}
-
-	      for (unsigned i = 0; i < op.num_ops - 1; i++)
-		{
-		  for (unsigned j = effec_ncopies; j > start; j--)
-		    {
-		      unsigned k = j - 1;
-		      std::swap (vec_oprnds[i][k], vec_oprnds[i][k + count]);
-		      gcc_assert (!vec_oprnds[i][k]);
-		    }
-		}
-	    }
-	}
     }
 
   bool emulated_mixed_dot_prod = vect_is_emulated_mixed_dot_prod (slp_node);
@@ -8235,7 +8194,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	  gcc_assert (!lane_reducing);
 
 	  tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
-					  vec_num, vectype_in,
+					  vec_in_num, vectype_in,
 					  mask_index++);
 	  gcall *call;
 	  if (code.is_internal_fn () && cond_fn_p)
@@ -8265,7 +8224,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	  if (masked_loop_p && mask_by_cond_expr)
 	    {
 	      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
-					      vec_num, vectype_in,
+					      vec_in_num, vectype_in,
 					      mask_index++);
 	      build_vect_cond_expr (code, vop, mask, gsi);
 	    }
