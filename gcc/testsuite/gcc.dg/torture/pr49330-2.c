@@ -7,8 +7,8 @@ int a;
 void __attribute__((noipa))
 foo()
 {
-  unsigned long b = (unsigned long) &a - 134518548;
-  volatile unsigned long c = b;
+  __UINTPTR_TYPE__ b = (__UINTPTR_TYPE__) &a - 134518548;
+  volatile __UINTPTR_TYPE__ c = b;
   if (c == 0) {
     if (b != 0) __builtin_abort ();
   }
