@@ -1,7 +1,7 @@
-// { dg-do compile { target { aarch64*-*-* i?86-*-* x86_64-*-* } } }
+// { dg-do compile { target { x86 || aarch64*-*-* } } }
 // { dg-options "-O2 -fdump-tree-optimized" }
-// { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } }
-// { dg-require-effective-target int128 { target { i?86-*-* x86_64-*-* } } }
+// { dg-additional-options "-msse4" { target x86 } }
+// { dg-require-effective-target int128 { target x86 } }
 // Extension is monotone, so it commutes with the comparison and the outer
 // truncation is exact.  The argument is lanewise, so a widened vector
 // MIN/MAX feeding a truncating conversion narrows.

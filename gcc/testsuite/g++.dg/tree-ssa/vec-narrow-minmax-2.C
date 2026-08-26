@@ -1,7 +1,7 @@
 // { dg-do compile }
 // { dg-options "-O2 -fdump-tree-forwprop1" }
-// { dg-additional-options "-msse4" { target { i?86-*-* x86_64-*-* } } }
-// { dg-require-effective-target int128 { target { i?86-*-* x86_64-*-* } } }
+// { dg-additional-options "-msse4" { target x86 } }
+// { dg-require-effective-target int128 { target x86 } }
 
 typedef int v2si __attribute__((vector_size (8)));
 typedef long long v2di __attribute__((vector_size (16)));
