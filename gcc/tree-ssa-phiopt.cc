@@ -4872,29 +4872,6 @@ execute_over_cond_phis (func_type func)
 
    where left and right are typically adjacent pointers in a tree structure.  */
 
-/* Return TRUE if duplicating E's destination with E redirected to
-   the copy leaves the loop structure unchanged.  Requires
-   EDGE_DFS_BACK to be current.  */
-
-static bool
-preserves_loop_structure_p (edge e)
-{
-  basic_block bb = e->dest;
-
-  if ((e->flags & EDGE_DFS_BACK)
-      || e->src->loop_father != bb->loop_father)
-    return false;
-
-  edge s;
-  edge_iterator ei;
-  FOR_EACH_EDGE (s, ei, bb->succs)
-    if ((s->flags & EDGE_DFS_BACK)
-	|| s->dest->loop_father != bb->loop_father)
-      return false;
-
-  return true;
-}
-
 /* Replicate the join block at E's destination into E's source.  The copy's
    PHIs degenerate to their argument on E, so the copied conditional tests the
    predecessor's own value.  The net effect after cleanups, for edge (3, 5)
@@ -4919,8 +4896,7 @@ replicate_cond_into_pred (edge e)
 {
   basic_block bb = e->dest;
 
-  if (!can_duplicate_block_on_edge_p (e)
-      || !preserves_loop_structure_p (e))
+  if (!can_duplicate_block_on_edge_p (e))
     return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4958,13 +4934,14 @@ replicate_conds_over_phis (void)
   bool cfgchanged = false;
   basic_block bb;
 
-  mark_dfs_back_edges ();
   initialize_original_copy_tables ();
   FOR_EACH_BB_FN (bb, cfun)
     {
       gcond *cond;
       gphi *phi;
-      if (EDGE_COUNT (bb->preds) < 2
+      /* Never duplicate loop headers.  */
+      if (bb->loop_father->header == bb
+	  || EDGE_COUNT (bb->preds) < 2
 	  || !cond_on_phi_p (bb, &cond, &phi))
 	continue;
 
@@ -4980,6 +4957,12 @@ replicate_conds_over_phis (void)
 	}
     }
   free_original_copy_tables ();
+
+  /* Removing an entry of an irreducible region can make it reducible, creating
+     a new loop.  */
+  if (cfgchanged)
+    loops_state_set (LOOPS_NEED_FIXUP);
+
   return cfgchanged;
 }
 
