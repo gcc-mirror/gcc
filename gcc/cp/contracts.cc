@@ -1982,7 +1982,7 @@ rebuild_postconditions (tree fndecl)
   tree type = TREE_TYPE (TREE_TYPE (fndecl));
 
   /* If the return type is undeduced, defer until later.  */
-  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM)
+  if (type_uses_auto (type))
     return;
 
   tree contract_spec = get_fn_contract_specifiers (fndecl);
@@ -2018,6 +2018,11 @@ rebuild_postconditions (tree fndecl)
 	  invalidate_contract (contract);
 	  continue;
 	}
+
+      /* A concrete late-parsed result variable still needs validation, but
+	 not rebuilding.  Rebuild only one whose type was undeduced.  */
+      if (!type_uses_auto (TREE_TYPE (oldvar)))
+	continue;
 
       /* "Instantiate" the result variable using the known type.  */
       tree newvar = copy_node (oldvar);

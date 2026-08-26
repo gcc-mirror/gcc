@@ -33824,20 +33824,20 @@ cp_parser_late_contract_condition (cp_parser *parser, tree fn, tree contract)
   processing_postcondition = POSTCONDITION_P (contract);
   /* Build a fake variable for the result identifier.  */
   tree result = NULL_TREE;
+  const bool undeduced_result_type_p
+    = r_ident && type_uses_auto (type);
   if (r_ident)
     {
       cp_expr result_id (r_ident, r_loc);
       result = make_postcondition_variable (result_id, type);
-      ++processing_template_decl;
+      if (undeduced_result_type_p)
+	++processing_template_decl;
     }
   cp_expr parsed_condition = cp_parser_conditional_expression (parser);
   /* Commit to changes.  */
   update_late_contract (contract, result, parsed_condition);
-  if (r_ident)
+  if (undeduced_result_type_p)
     --processing_template_decl;
-
-  /* Rebuild the postcondition since we didn't do it in grokfndecl. */
-  rebuild_postconditions (fn);
 
   /* Leave our temporary scope for the postcondition result.  */
   processing_postcondition = old_pc;

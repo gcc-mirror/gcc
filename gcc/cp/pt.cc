@@ -12398,12 +12398,14 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
 	  return invalidate_contract (r);
     }
 
-  /* Instantiate the condition.  If the return type is undeduced, process
-     the expression as if inside a template to avoid spurious type errors.  */
+  /* Instantiate the condition.  If the postcondition has a result binding
+     whose type is undeduced, process the expression as if inside a template to
+     avoid spurious type errors.  */
   begin_scope (sk_contract, decl);
   bool old_pc = processing_postcondition;
   processing_postcondition = POSTCONDITION_P (t);
-  if (auto_p)
+  const bool undeduced_result_type_p = auto_p && newvar;
+  if (undeduced_result_type_p)
     ++processing_template_decl;
   if (newvar)
     /* Make the variable available for lookup.  */
@@ -12429,7 +12431,7 @@ tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
      && !type_dependent_expression_p (CONTRACT_ASSERTION_KIND (r))
      && !type_dependent_expression_p (CONTRACT_COMMENT (r)));
 
-  if (auto_p)
+  if (undeduced_result_type_p)
     --processing_template_decl;
   processing_postcondition = old_pc;
   gcc_checking_assert (scope_chain && scope_chain->bindings
