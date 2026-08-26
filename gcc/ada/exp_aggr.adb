@@ -9617,23 +9617,23 @@ package body Exp_Aggr is
       Assign  : Boolean) return Boolean
    is
    begin
-      --  No sliding if the type of the object is not established yet, if it is
-      --  an unconstrained type whose actual subtype comes from the aggregate,
-      --  or if the two types are identical. If the aggregate contains only
-      --  an Others_Clause it gets its type from the context and no sliding
-      --  is involved either.
+      --  No sliding if the type of the object is not established yet, or if
+      --  the two types are identical. And if the aggregate contains only an
+      --  Others_Clause, it gets its type from the context and no sliding is
+      --  involved either. When the type of the object is unconstrained, no
+      --  sliding either if its actual subtype comes from the aggregate.
 
       if not Is_Array_Type (Obj_Typ) then
          return False;
-
-      elsif not Is_Constrained (Obj_Typ) then
-         return Assign;
 
       elsif Typ = Obj_Typ then
          return False;
 
       elsif Is_Others_Aggregate (Aggr) then
          return False;
+
+      elsif not Is_Constrained (Obj_Typ) then
+         return Assign;
 
       --  Check if sliding is required
 
