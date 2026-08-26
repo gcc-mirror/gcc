@@ -33,14 +33,14 @@ struct run_remove
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename InputIterator, typename OutputIterator, typename Size, typename T>
     void
-    operator()(__pstl::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                OutputIterator out_last, OutputIterator expected_first, OutputIterator expected_last, Size n,
                const T& value)
     {
     }
     template <typename InputIterator, typename OutputIterator, typename Size, typename T>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, OutputIterator out_last, OutputIterator expected_first,
                OutputIterator expected_last, Size n, const T& value)
     {
@@ -71,14 +71,14 @@ struct run_remove_if
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename InputIterator, typename OutputIterator, typename Size, typename Predicate>
     void
-    operator()(__pstl::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                OutputIterator out_last, OutputIterator expected_first, OutputIterator expected_last, Size n,
                Predicate pred)
     {
     }
     template <typename InputIterator, typename OutputIterator, typename Size, typename Predicate>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, OutputIterator out_last, OutputIterator expected_first,
                OutputIterator expected_last, Size n, Predicate pred)
     {

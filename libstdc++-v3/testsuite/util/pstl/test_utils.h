@@ -1115,7 +1115,7 @@ template <typename Op, typename... T>
 void
 invoke_on_all_policies(Op op, T&&... rest)
 {
-    using namespace __pstl::execution;
+    using namespace std::execution;
 
     // Try static execution policies
     invoke_on_all_iterator_types()(seq, op, std::forward<T>(rest)...);

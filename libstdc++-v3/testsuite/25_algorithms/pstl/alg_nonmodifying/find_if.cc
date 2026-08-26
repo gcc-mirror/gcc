@@ -33,13 +33,13 @@ struct test_find_if
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename Iterator, typename Predicate, typename NotPredicate>
     void
-    operator()(__pstl::execution::unsequenced_policy, Iterator first, Iterator last, Predicate pred,
+    operator()(std::execution::unsequenced_policy, Iterator first, Iterator last, Predicate pred,
                NotPredicate not_pred)
     {
     }
     template <typename Iterator, typename Predicate, typename NotPredicate>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Predicate pred,
+    operator()(std::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Predicate pred,
                NotPredicate not_pred)
     {
     }

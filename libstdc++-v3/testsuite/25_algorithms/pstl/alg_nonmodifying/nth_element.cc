@@ -82,13 +82,13 @@ struct test_one_policy
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) // dummy specialization by policy type, in case of broken configuration
     template <typename Iterator1, typename Size, typename Generator1, typename Generator2, typename Compare>
     typename std::enable_if<is_same_iterator_category<Iterator1, std::random_access_iterator_tag>::value, void>::type
-    operator()(__pstl::execution::unsequenced_policy, Iterator1 first1, Iterator1 last1, Iterator1 first2,
+    operator()(std::execution::unsequenced_policy, Iterator1 first1, Iterator1 last1, Iterator1 first2,
                Iterator1 last2, Size n, Size m, Generator1 generator1, Generator2 generator2, Compare comp)
     {
     }
     template <typename Iterator1, typename Size, typename Generator1, typename Generator2, typename Compare>
     typename std::enable_if<is_same_iterator_category<Iterator1, std::random_access_iterator_tag>::value, void>::type
-    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator1 first1, Iterator1 last1, Iterator1 first2,
+    operator()(std::execution::parallel_unsequenced_policy, Iterator1 first1, Iterator1 last1, Iterator1 first2,
                Iterator1 last2, Size n, Size m, Generator1 generator1, Generator2 generator2, Compare comp)
     {
     }

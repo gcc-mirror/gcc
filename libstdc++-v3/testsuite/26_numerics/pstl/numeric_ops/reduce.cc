@@ -65,12 +65,12 @@ struct test_two_short_forms
 #if defined(_PSTL_ICC_16_VC14_TEST_PAR_TBB_RT_RELEASE_64_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename Iterator>
     void
-    operator()(__pstl::execution::parallel_policy, Iterator first, Iterator last, Sum init, Sum expected)
+    operator()(std::execution::parallel_policy, Iterator first, Iterator last, Sum init, Sum expected)
     {
     }
     template <typename Iterator>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Sum init, Sum expected)
+    operator()(std::execution::parallel_unsequenced_policy, Iterator first, Iterator last, Sum init, Sum expected)
     {
     }
 #endif

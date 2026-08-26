@@ -32,12 +32,12 @@ struct test_one_policy
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename Iterator, typename Size, typename T, typename Predicate>
     void
-    operator()(__pstl::execution::unsequenced_policy, Iterator b, Iterator e, Size count, const T& value, Predicate pred)
+    operator()(std::execution::unsequenced_policy, Iterator b, Iterator e, Size count, const T& value, Predicate pred)
     {
     }
     template <typename Iterator, typename Size, typename T, typename Predicate>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator b, Iterator e, Size count, const T& value,
+    operator()(std::execution::parallel_unsequenced_policy, Iterator b, Iterator e, Size count, const T& value,
                Predicate pred)
     {
     }
