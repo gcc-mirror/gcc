@@ -1,3 +1,9 @@
+2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127071
+	* config/avr/t-copy-libgcc: Remove file.
+	* config/avr/t-avrlibc: Remove code to pull in t-copy-libgcc.
+
 2026-08-24  Kito Cheng  <kito.cheng@sifive.com>
 
 	* config/riscv/feature_bits.c: Include

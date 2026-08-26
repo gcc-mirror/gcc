@@ -1,3 +1,8 @@
+2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127071
+	* t-libf7-math-symbols: Adjust comment.
+
 2026-08-24  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/127024

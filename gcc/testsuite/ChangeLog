@@ -1,3 +1,296 @@
+2026-08-26  Sebastian Miles  <sebastianmiles20@gmail.com>
+
+	PR c++/127016
+	* g++.dg/cpp0x/initlist-array26.C: New test.
+
+2026-08-26  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR c++/125343
+	* g++.dg/cpp2a/pr125343.C: New test.
+
+2026-08-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt110.adb: New test.
+
+2026-08-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR libstdc++/127005
+	* g++.dg/warn/Wuninitialized-36.C: New test.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/127056
+	* gcc.target/aarch64/pr127056.c: New test.
+
+2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* c-c++-common/analyzer/taint-index-pr106229.c: Require size20plus.
+	* c-c++-common/analyzer/stdarg-pr111289-int.c [int16]: One
+	warning won't show up.
+	* c-c++-common/analyzer/pr96653.c: Use correct types to
+	define u16, u32, s64, size_t, etc.
+	* c-c++-common/analyzer/allocation-size-pr113654-1.c: Same.
+	* c-c++-common/analyzer/out-of-bounds-pr112792.c: Same.
+	* c-c++-common/analyzer/realloc-pr110014.c: Same.
+	* c-c++-common/analyzer/uninit-pr108704.c: Same.
+	* gcc.dg/analyzer/CWE-131-examples.c: Same.
+	* gcc.dg/analyzer/deref-before-check-pr113253.c: Same.
+	* gcc.dg/analyzer/torture/switch-3.c: Same.
+	* gcc.dg/analyzer/torture/switch-4.c: Same.
+	* gcc.dg/analyzer/torture/switch-enum-pr105273-doom-p_floor.c: Same.
+	* gcc.dg/analyzer/atoi-1.c [avr]: Hide one function.
+	* c-c++-common/analyzer/coreutils-sum-pr108666.c [avr-*-*]: Skip.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Same.
+	* c-c++-common/analyzer/out-of-bounds-1.c: Same.
+	* c-c++-common/analyzer/out-of-bounds-2.c: Same.
+	* c-c++-common/analyzer/out-of-bounds-3.c: Same.
+	* c-c++-common/analyzer/out-of-bounds-diagram-strcat-2.c: Same.
+	* c-c++-common/analyzer/out-of-bounds-diagram-strcat.c: Same.
+	* c-c++-common/analyzer/overlapping-buffers.c: Same.
+	* gcc.dg/analyzer/SARD-tc293-basic-00045-min.c: Same.
+	* gcc.dg/analyzer/data-model-1.c: Same.
+	* gcc.dg/analyzer/fd-mktemp-family.c: Same.
+	* gcc.dg/analyzer/mkdtemp-1.c: Same.
+	* gcc.dg/analyzer/mkostemp-1.c: Same.
+	* gcc.dg/analyzer/mkostemps-1.c: Same.
+	* gcc.dg/analyzer/mkstemp-1.c: Same.
+	* gcc.dg/analyzer/mkstemps-1.c: Same.
+	* gcc.dg/analyzer/mktemp-1.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-4.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-13.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-15.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-16.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-17.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-18.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-19.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-4.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-5-ascii.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-5-unicode.c: Same.
+	* gcc.dg/analyzer/out-of-bounds-diagram-7.c: Same.
+	* gcc.dg/analyzer/strcmp-1.c: Same.
+	* gcc.dg/analyzer/strcpy-1.c: Same.
+	* gcc.dg/analyzer/strcpy-3.c: Same.
+	* gcc.dg/analyzer/strcpy-4.c: Same.
+	* gcc.dg/analyzer/taint-read-offset-1.c: Same.
+	* gcc.dg/analyzer/taint-write-offset-1.c: Same.
+
+2026-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp: Provide aarch64_mcmodel_large/tiny.
+	* gcc.target/aarch64/pr70120-2.c: Require mcmodel support.
+	* gcc.target/aarch64/pr78255.c: Likewise.
+	* gcc.target/aarch64/pr78561.c: Likewise.
+	* gcc.target/aarch64/pr78733.c: Likewise.
+	* gcc.target/aarch64/pr79041-2.c: Likewise.
+	* gcc.target/aarch64/pr94530.c: Likewise.
+	* gcc.target/aarch64/reload-valid-spoff.c: Likewise.
+	* gcc.target/aarch64/symbol-range-tiny.c: Likewise.
+
+2026-08-25  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* g++.target/i386/ssp-global-hidden-1.C: Port to Mach-O.
+	* g++.target/i386/ssp-global-hidden-2.C: Likewise.
+	* g++.target/i386/ssp-global-hidden-3.C: Likewise.
+	* gcc.target/i386/ssp-global-hidden-1.c: Likewise.
+	* gcc.target/i386/ssp-global-hidden-2.c: Likewise.
+	* gcc.target/i386/ssp-global-hidden-3.c: Likewise.
+
+2026-08-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/125746
+	* gcc.target/i386/pr125746.c: New test.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* gfortran.dg/value_18.f90: New test.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* gfortran.dg/value_15.f90: New test.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* gfortran.dg/value_3.f90: Compile under -std=f2003 and replace the
+	now-invalid expectation that an explicit-shape array dummy with
+	VALUE conflicts with DIMENSION; this combination is permitted
+	(F2008, C557).
+	* gfortran.dg/assumed_rank_11.f90: Update expected diagnostic for
+	VALUE on an assumed-rank dummy.
+	* gfortran.dg/c-interop/c535a-2.f90: Likewise.
+	* gfortran.dg/value_12.f90: New test.
+	* gfortran.dg/value_13.f90: New test.
+	* gfortran.dg/value_16.f90: New test.
+	* gfortran.dg/value_17.f90: New test.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* gfortran.dg/value_5.f90: Compile under -std=f2003 so the Fortran
+	2008 assumed-length VALUE relaxation is exercised as a rejection,
+	and update the C-interop error expectation to match the
+	consolidated diagnostic.
+	* gfortran.dg/value_6.f90: New test.
+	* gfortran.dg/value_7.f90: New test.
+	* gfortran.dg/value_11.f90: New test.
+	* gfortran.dg/value_14.f90: New test.
+
+2026-08-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126999
+	* gcc.dg/pr126999.c: New.
+
+2026-08-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127027
+	* gcc.dg/pr127027.c: New.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127069
+	* gcc.dg/tree-ssa/vec-mask-zero-1.c: Also require vect128.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127049
+	* g++.dg/torture/pr127049.C: New testcase.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/tree-ssa/vec-narrow-1.C: Restrict the test to AArch64 and
+	x86 targets.
+	* g++.dg/tree-ssa/vec-narrow-minmax-2.C: Scan before target lowering.
+
+2026-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/48609
+	* gcc.target/i386/pr48609.c: New test case.
+
+2026-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/126619
+	* gcc.target/i386/avx-init-v4sf-1.c: Update test case.
+	* gcc.target/i386/avx-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/avx2-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/sse-init-v4sf-3.c: Likewise.
+	* gcc.target/i386/sse2-init-v4sf-1.c: Likewise.
+	* gcc.target/i386/sse2-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4sf-2.c: Likewise.
+	* gcc.target/i386/sse4_1-init-v4sf-3.c: Likewise.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127058
+	PR tree-optimization/127051
+	* gcc.dg/vect/bb-slp-pr127051.c: New testcase.
+	* gfortran.dg/vect/pr127058.f90: Likewise.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126995
+	* gcc.dg/vect/bb-slp-pr126995-2.c: New testcase.
+
+2026-08-25  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR middle-end/127031
+	* gcc.target/avr/pr127031.c: New test.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/widening-mul-conv-1.c: New test.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/fccmp_1.c: New test.
+	* gcc.target/aarch64/fccmp_2.c: Likewise.
+
+2026-08-25  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* gcc.target/i386/avx512bmm-check-1.c: New test.
+	* gcc.target/i386/avx512bmm-check-2.c: New test.
+	* gcc.target/i386/avx512bmm-check-3.c: New test.
+
+2026-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/126933
+	* gcc.target/i386/truncsfbf-2.c: Require sse2_runtime.
+	Include "truncsfbf-check.h".
+	* gcc.target/i386/truncsfbf-5.c (dg-options): Add -save-temps.
+	(CHECK_CPU_SUPPORTS): New.
+	(ATTRIBUTE): Likewise.
+	Include "truncsfbf-check.h".
+	Scan "\t{vex} vcvtneps2bf16".
+	* gcc.target/i386/truncsfbf-6.c (dg-options): Add -save-temps.
+	Include "truncsfbf-check.h".
+	(CHECK_CPU_SUPPORTS): New.
+	(ATTRIBUTE): Likewise.
+	Scan "\tvcvtneps2bf16".
+	* gcc.target/i386/truncsfbf-check.h: New file.
+
+2026-08-25  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/127023
+	* gcc.target/i386/pr127023.c: New test.
+
+2026-08-25  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126896
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: Scan the phiopt2 dump.
+	* gcc.dg/tree-ssa/phi_on_compare-2.c: Scan the optimized dump.
+	* gcc.dg/tree-ssa/phi_on_compare-3.c: Likewise.
+	* gcc.dg/tree-ssa/dom-jump-threading-1.c: Disable phiopt.
+	* gcc.dg/tree-ssa/dom-jump-threading-2.c: Likewise.
+	* gcc.dg/tree-ssa/phi_on_compare-5.c: New test.
+
+2026-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127045
+	* gcc.target/i386/pr127045.c: New test.
+	* gcc.target/i386/zext-sse-1.c (func1): Adjust expected codegen.
+	(func2): Likewise.
+	* gcc.target/i386/zext-sse-2.c (func1): Likewise.
+	(func2): Likewise.
+
+2026-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127020
+	* gcc.target/i386/sse4_1-stv-14.c: New test.
+
+2026-08-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-22.c: Remove xfail for
+	csrr asm check.
+	* gcc.target/riscv/rvv/base/pr112431-23.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr112431-24.c: Ditto.
+
+2026-08-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-52.c: New test.
+
+2026-08-25  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmulsu_vx-i8-mf8.c: New test.
+
 2026-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/builtin-stdc-bit-1.c (main): Fix two pastos.

@@ -1,3 +1,7 @@
+2026-08-25  James K. Lowden  <jklowden@cobolworx.com>
+
+	* common-defs.h (class cbl_enabled_exceptions_t): Use complain().
+
 2026-08-19  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

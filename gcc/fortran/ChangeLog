@@ -1,3 +1,67 @@
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* trans-expr.cc (conv_dummy_value): Suppress the CHARACTER copy
+	and pass a null pointer and a zero length when the actual argument
+	is an absent optional one.
+	(gfc_conv_procedure_call): Give gfc_conv_subref_array_arg the
+	symbol of the actual argument, so that an absent optional one
+	suppresses the copy.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* trans-expr.cc (has_value_array_dummy): New function.
+	(conv_seq_assoc_value_arg): New function.  Copy the element
+	sequence declared by a VALUE array dummy when the actual argument
+	is a sequence associated scalar.
+	(gfc_conv_procedure_call): Request an interface mapping when a
+	dummy is an explicit-shape VALUE array, and call
+	conv_seq_assoc_value_arg for a scalar actual argument passed to a
+	VALUE array dummy.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* resolve.cc (resolve_symbol): Allow VALUE on assumed-shape and
+	explicit-shape array dummies under Fortran 2008 (C557); reject it
+	on assumed-size arrays, on array dummies of a BIND(C) procedure,
+	and, as not yet implemented, on polymorphic array dummies.
+	* symbol.cc (gfc_check_conflict): Remove the conflict between
+	VALUE and DIMENSION; only VALUE and CODIMENSION remain mutually
+	exclusive.
+	* trans-expr.cc (gfc_conv_procedure_call): For a VALUE array
+	dummy, pass a private deep copy of the actual argument via
+	gfc_conv_subref_array_arg with INTENT_IN.
+	* trans-types.cc (gfc_sym_type): Use byref=1 for VALUE array
+	dummies, so the ABI still passes by reference.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* resolve.cc (resolve_symbol): Allow character(len=*) VALUE and a
+	specified but non-constant length under Fortran 2008; consolidate
+	the C-interop length checks into a single "must have length one"
+	check ordered ahead of the Fortran 2008 allowance.
+	* trans-expr.cc (conv_dummy_value): For assumed-length or
+	non-constant-length CHARACTER VALUE dummies, make a caller-side
+	copy and pass its address; scale the copy size by the size of the
+	character kind.
+	* trans-types.cc (gfc_sym_type): Use byref=1 for assumed-length or
+	non-constant-length VALUE character dummies, so the ABI still
+	passes by reference.
+
+2026-08-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/49802
+	* trans.h (gfc_conv_subref_array_arg): Add DEEP_COPY argument.
+	* trans-expr.cc (gfc_conv_subref_array_arg): Take DEEP_COPY and
+	pass it on to gfc_trans_scalar_assign; deallocate the allocatable
+	components of the temporary after the call.  Dereference the
+	descriptor when setting the pointer for an optional argument that
+	is not also checked for contiguity, and pass the string length
+	back to the caller's gfc_se.
+
 2026-08-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/126909

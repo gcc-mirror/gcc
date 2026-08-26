@@ -1,3 +1,9 @@
+2026-08-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR libstdc++/127005
+	* include/std/optional (optional::_M_destroy): Add an assumption on _M_engaged
+	being false after the destructor call.
+
 2026-08-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/127006

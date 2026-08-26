@@ -1,3 +1,29 @@
+2026-08-25  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Add ParDynamicCall.
+	* cdf-copy.cc (verify_bounds): Use diagnostic quotes.
+	* cobol1.cc (cobol_langhook_handle_option): Handle new option.
+	* gcobol.1: Document new option.
+	* lang-specs.h: Add new option to spec string.
+	* lang.opt: Add Wdynamic-call option.
+	* messages.cc (cbl_diagnostic_kind): Same.
+	(cobol_warning): Use diagnostics::kind::note for option.
+	* parse.y: Use new option.
+
+2026-08-25  James K. Lowden  <jklowden@cobolworx.com>
+
+	* lexio.cc (find_filter): Remove verbose_file_reader.
+	(cdftext::open_input): Remove reliance on GCOBOL_TEMPDIR.
+	* messages.cc (cobol_warning): Use diagnostics::kind::note.
+
+2026-08-25  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/126492
+	* cobol1.cc (enable_exceptions): Use diagnostic quotes.
+	(complain): New function honors EcUnknownW.
+	* exceptg.h (class exception_turn_t): Remove unconditional diagnostic.
+	* parse_ante.h (procedure_division_ready): Whitespace.
+
 2026-08-24  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/123890

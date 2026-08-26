@@ -1,3 +1,227 @@
+2026-08-25  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/125984
+	* tree-dfa.cc (get_ref_base_and_extent) <ARRAY_REF>: Use the range
+	of the difference between the index expression and the low bound,
+	instead of that of the index expression itself, to constrain the
+	maximum size of the access.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/127056
+	* lra-constraints.cc (process_address_1): Canonicalize a complete
+	address reload.
+
+2026-08-25  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/125746
+	* config/i386/i386.cc (ix86_hard_regno_mode_ok): For SSEv1,
+	reject 16-bit modes.
+
+2026-08-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126999
+	* tree-vrp.cc (remove_unreachable::m_list): Change from a std::pair
+	to an edge vector.
+	(remove_unreachable::maybe_register): Save edge.
+	(remove_unreachable::remove): Use the edge.
+	(remove_unreachable::remove_and_update_globals): Likewise.
+
+2026-08-25  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127027
+	* gimple-range-infer.cc (exit_range::bbi): Change from stmt.
+	(infer_range_manager::add_range): Update block index not stmt.
+	(infer_range_manager::clear): Remove from specified block list.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127049
+	* tree-vect-data-refs.cc (vect_analyze_data_refs): Build
+	a MEM_REF of the DR_REF type for analyzing the innermost
+	loop behavior for outer loop vectorization.
+
+2026-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/48609
+	* rtl.cc (rtvec_series_p): Enhance to allow START to be a
+	poly_int64 instead of just an int.
+	* rtl.h (rtvec_series_p): Update function prototype.
+	* rtlanal.cc (vec_series_highpart_p): Now that rtxvec_series_p
+	can handle poly_int64, we handle modes that aren't constant size.
+	(vec_series_lowpart_p): Likewise.
+	(get_ref_base_and_offset): New function to determine the base RTX
+	and byte offset of an arbitrary expression, typically a SUBREG.
+	* rtlanal.h (get_ref_base_and_offset): Prototype here.
+	* simplify-rtx.cc (simplify_binary_operation_1) <case VEC_CONCAT>:
+	Generalize the existing (vec_concat (first_half) (second_half))
+	optimization using the new get_ref_base_and_offset function.
+
+2026-08-25  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/126619
+	* config/i386/i386-expand.cc
+	(ix86_expand_vector_init_one_nonzero) <case E_V4SFmode>:
+	Improved initialization of one non-zero element V4SF vectors.
+	(ix86_expand_vector_init_v4sf): Reuse the above function
+	ix86_expand_vector_init_one_nonzero where possible.  Various
+	improvements.  Fall back to using (the original)
+	ix86_expand_vector_init_concat in the general case, when
+	SSE 4.1 instructions aren't available.
+	* config/i386/sse.md (vec_set<mode>_0): Prefer to avoid
+	inter-unit moves to general purpose registers in reload.
+	(vec_setv4sf_sse4_1): Remove asterisk to expose to i386-expand.
+	(sse4_1_insertps_v4sf_init): Variant of insertps that clears
+	all the other elements of the destination to zero.
+	(sse2_insertps_v4sf_3): Implementation of the above instruction
+	available on SSE2 by using the pslldq instruction.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127058
+	PR tree-optimization/127051
+	* tree-vect-slp.cc (vect_create_constant_vectors): Zero-pad
+	excess elements.
+	* tree-vect-stmts.cc (vect_create_vectorized_demotion_stmts):
+	Change 'half' parameter to indicate optional fixed number
+	of vectors to produce.
+	(vectorizable_conversion): Adjust.
+
+2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127032
+	* config/avr/avr.md (Tag_GNU_AVR_BITS_LONG_DOUBLE)
+	(Tag_GNU_AVR_BITS_DOUBLE): New define_constants.
+	* config/avr/avr.cc (avr_uses_long_double_p)
+	(avr_uses_double_p): New static variables.
+	(avr_find_double): New function.
+	(avr_file_end) [HAVE_AS_AVR_GNU_ATTRIBUTE]: Run avr_find_double
+	on each varpool node.  Output .gnu_attribute according to
+	avr_uses_long_double_p and avr_uses_double_p.
+	* config/avr/avr-passes.cc (gimple-walk.h): Include.
+	(avr_pass_has) <op_callback>: New static method.
+	<scan_bb>: Use it in walk_gimple_op.
+	<execute>: Set up walk_stmt_info and pass it to scan_bb.
+	* config/avr/avr-passes.def (avr_pass_has): Adjust comment.
+	* config/avr/avr-protos.h (avr_find_double): New proto.
+
+2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* configure.ac [avr] <HAVE_AS_AVR_GNU_ATTRIBUTE>: Set
+	according to gcc_GAS_CHECK_FEATURE for .gnu_attribute.
+	* configure: Rebuild.
+	* config.in: Rebuild.
+	* config/avr/avr.h (avr_addrspace_t) <gnu_attr_val>: New field.
+	* config/avr/avr.cc (avr_addrspace): Adjust initializer.
+	(avr_uses_vtable_p): New global variable.
+	(avr_file_end): Update avr_uses_vtable_p according to varpool,
+	then output .gnu_attribute 4 according to avr_uses_vtable_p.
+	* config/avr/avr-passes.cc (gimple.h): Include.
+	(gimple-iterator.h): Include.
+	(avr_pass_data_has): New pass data.
+	(avr_pass_has): New gimple pass.
+	(make_avr_pass_has): New function.
+	* config/avr/avr-passes.def (avr_pass_has): Insert pass.
+	* config/avr/avr-protos.h (avr_uses_vtable_p): New global var.
+	(class gimple_opt_pass): Declare.
+	(make_avr_pass_has): New proto.
+	* config/avr/avr.md (Tag_GNU_AVR_VTABLE_AS)
+	(Val_GNU_AVR_VTABLE_NONE, Val_GNU_AVR_VTABLE_RAM)
+	(Val_GNU_AVR_VTABLE_FLASH, Val_GNU_AVR_VTABLE_FLASH1)
+	(Val_GNU_AVR_VTABLE_FLASH2, Val_GNU_AVR_VTABLE_FLASH3)
+	(Val_GNU_AVR_VTABLE_FLASH4, Val_GNU_AVR_VTABLE_FLASH5)
+	(Val_GNU_AVR_VTABLE_FLASHX): Define constants.
+
+2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt (-mfuse-ifelse): New option.
+	* config/avr/avr-passes.cc (avr_pass_ifelse::gate): Don't
+	return true when avropt_fuse_ifelse is false.
+	* config/avr/avr.opt.urls (mfuse-ifelse): Add URL.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table)
+	[OPT_LEVELS_1_PLUS]: Set OPT_mfuse_ifelse to 1.
+	* doc/invoke.texi (AVR Options): Document it.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126995
+	* tree-vect-slp.cc (vect_schedule_slp_node): When we cannot
+	place according to constraints for possibly trapping stmts,
+	fail.
+
+2026-08-25  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR middle-end/127031
+	* expmed.h (struct algorithm): Add one slot to the op and log
+	arrays for the operation synth_mult appends to a full
+	sub-algorithm before discarding it.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-math-opts.cc (convert_plusminus_to_widen): Require the
+	result of an intervening conversion to be single-use.
+
+2026-08-25  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_gen_ccmp_first): Handle HFmode.
+	(aarch64_gen_ccmp_next): Likewise.  Reject unsupported HFmode early.
+	* config/aarch64/aarch64.md
+	(@ccmp<CCFP_CCFPE:mode><GPF_F16:mode>): Use GPF_F16 and stype.
+	(@ccmp<CCFP_CCFPE:mode><GPF_F16:mode>_rev): Likewise.
+
+2026-08-25  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Detect AVX512BMM from
+	extended features instead of standard leaf.
+	* config/i386/cpuid.h (bit_AVX512BMM): Move to extended features
+	section.
+
+2026-08-25  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/127023
+	* multiple_target.cc (create_dispatcher_calls): Use the call
+	statement variant of create_reference.
+
+2026-08-25  Josef Melcr  <josef.melcr@suse.com>
+
+	PR plugins/126882
+	* plugin.cc (struct callback_info): Put the struct into an
+	anonymous namespace.
+
+2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127000
+	* match.pd ((T *)(ptr - ptr_cst)): Canonicalize directly
+	to (T *)ptr p+ cst.
+
+2026-08-25  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126896
+	* tree-ssa-phiopt.cc: Include tree-ssa-threadedge.h.
+	(preserves_loop_structure_p): New.
+	(replicate_cond_into_pred): New.
+	(replicate_conds_over_phis): New.
+	(pass_phiopt::execute): Call replicate_conds_over_phis.
+
+2026-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127045
+	* config/i386/i386.md (*fix_trunc<mode>si_sse_zext): Removed.
+	(*fix_trunc<mode>si_sse_2_zext): Likewise.
+
+2026-08-25  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127020
+	* config/i386/i386-features.cc
+	(timode_scalar_chain::compute_convert_gain): Check TARGET_SSE4_1
+	instead of TARGET_AVX for pinsrq and pextrq.
+
+2026-08-25  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-08-24  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR middle-end/126991
