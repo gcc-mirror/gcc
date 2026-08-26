@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-finline-stringops -fno-lto" } */
+/* { dg-require-effective-target size20plus } */
 
 void *zero (unsigned long long (*p)[32], int n)
 {
