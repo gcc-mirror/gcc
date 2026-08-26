@@ -1,0 +1,1783 @@
+// <optional> -*- C++ -*-
+
+// Copyright (C) 2013-2026 Free Software Foundation, Inc.
+// Copyright The GNU Toolchain Authors.
+//
+// This file is part of the GNU ISO C++ Library.  This library is free
+// software; you can redistribute it and/or modify it under the
+// terms of the GNU General Public License as published by the
+// Free Software Foundation; either version 3, or (at your option)
+// any later version.
+
+// This library is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+
+// Under Section 7 of GPL version 3, you are granted additional
+// permissions described in the GCC Runtime Library Exception, version
+// 3.1, as published by the Free Software Foundation.
+
+// You should have received a copy of the GNU General Public License and
+// a copy of the GCC Runtime Library Exception along with this program;
+// see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+// <http://www.gnu.org/licenses/>.
+
+/** @file include/optional
+ *  This is a Standard C++ Library header.
+ */
+
+#ifndef GCC_BACKPORT_GLIBCXX_OPTIONAL
+#define GCC_BACKPORT_GLIBCXX_OPTIONAL 1
+
+#define WANT_FUNCTIONAL
+#include "gbits/check_system_h.h"
+
+#include <type_traits>
+#include <initializer_list>
+
+#include "gbits/assert.h"
+#include "gbits/enable_special_members.h"
+#include "gbits/functional_hash.h"
+#include "gbits/exception_defines.h"
+#include "gbits/invoke.h"
+#include "gbits/optional_ref.h"  // nullopt_t, optional<_Tp&>
+#include "gbits/stl_construct.h" // _Construct
+
+#ifdef GCC_BACKPORT_WANT_EXCEPTIONS
+# include <exception>
+#endif
+
+#include "optionalfwd"
+
+namespace gcc
+{
+
+  /**
+   *  @addtogroup utilities
+   *  @{
+   */
+
+#ifdef GCC_BACKPORT_WANT_EXCEPTIONS
+  /**
+   *  @brief Exception class thrown when a disengaged optional object is
+   *  dereferenced.
+   *  @ingroup exceptions
+   */
+  class bad_optional_access : public std::exception
+  {
+  public:
+    bad_optional_access() = default;
+    virtual ~bad_optional_access() = default;
+
+#if __cpp_lib_constexpr_exceptions >= 202502L
+    constexpr
+#endif
+    const char* what() const noexcept override
+    { return "bad optional access"; }
+  };
+#endif
+
+  // XXX Does not belong here.
+  [[__noreturn__]]
+#if __cpp_lib_constexpr_exceptions >= 202502L
+  constexpr
+#else
+  inline
+#endif
+  void
+  g_throw_bad_optional_access()
+  { g_throw_or_abort(bad_optional_access()); }
+
+  // This class template manages construction/destruction of
+  // the contained value for a std::optional.
+  template <typename G_Tp>
+    struct G_Optional_payload_base
+    {
+      using G_Stored_type = std::remove_const_t<G_Tp>;
+
+      G_Optional_payload_base() = default;
+      ~G_Optional_payload_base() = default;
+
+      template<typename... G_Args>
+	constexpr
+	G_Optional_payload_base(in_place_t g_tag, G_Args&&... g_args)
+	: m_payload(g_tag, std::forward<G_Args>(g_args)...),
+	  m_engaged(true)
+	{ }
+
+      template<typename G_Up, typename... G_Args>
+	constexpr
+	G_Optional_payload_base(std::initializer_list<G_Up> g_il,
+			       G_Args&&... g_args)
+	: m_payload(g_il, std::forward<G_Args>(g_args)...),
+	  m_engaged(true)
+	{ }
+
+      // Constructor used by _Optional_base copy constructor when the
+      // contained value is not trivially copy constructible.
+      constexpr
+      G_Optional_payload_base(bool /* __engaged */,
+			     const G_Optional_payload_base& g_other)
+      {
+	if (g_other.m_engaged)
+	  this->m_construct(g_other.m_get());
+      }
+
+      // Constructor used by _Optional_base move constructor when the
+      // contained value is not trivially move constructible.
+      constexpr
+      G_Optional_payload_base(bool /* __engaged */,
+			     G_Optional_payload_base&& g_other)
+      {
+	if (g_other.m_engaged)
+	  this->m_construct(std::move(g_other.m_get()));
+      }
+
+      // Copy constructor is only used to when the contained value is
+      // trivially copy constructible.
+      G_Optional_payload_base(const G_Optional_payload_base&) = default;
+
+      // Move constructor is only used to when the contained value is
+      // trivially copy constructible.
+      G_Optional_payload_base(G_Optional_payload_base&&) = default;
+
+      G_Optional_payload_base&
+      operator=(const G_Optional_payload_base&) = default;
+
+      G_Optional_payload_base&
+      operator=(G_Optional_payload_base&&) = default;
+
+      // used to perform non-trivial copy assignment.
+      constexpr void
+      m_copy_assign(const G_Optional_payload_base& g_other)
+      {
+	if (this->m_engaged && g_other.m_engaged)
+	  this->m_get() = g_other.m_get();
+	else
+	  {
+	    if (g_other.m_engaged)
+	      this->m_construct(g_other.m_get());
+	    else
+	      this->m_reset();
+	  }
+      }
+
+      // used to perform non-trivial move assignment.
+      constexpr void
+      m_move_assign(G_Optional_payload_base&& g_other)
+      noexcept(and_<std::is_nothrow_move_constructible<G_Tp>,
+		       std::is_nothrow_move_assignable<G_Tp>>::value)
+      {
+	if (this->m_engaged && g_other.m_engaged)
+	  this->m_get() = std::move(g_other.m_get());
+	else
+	  {
+	    if (g_other.m_engaged)
+	      this->m_construct(std::move(g_other.m_get()));
+	    else
+	      this->m_reset();
+	  }
+      }
+
+      struct G_Empty_byte { };
+
+      template<typename G_Up, bool = std::is_trivially_destructible<G_Up>::value>
+	union G_Storage
+	{
+	  constexpr G_Storage() noexcept : m_empty() { }
+
+	  template<typename... G_Args>
+	    constexpr
+	    G_Storage(in_place_t, G_Args&&... g_args)
+	    : m_value(std::forward<G_Args>(g_args)...)
+	    { }
+
+	  template<typename G_Vp, typename... G_Args>
+	    constexpr
+	    G_Storage(std::initializer_list<G_Vp> g_il, G_Args&&... g_args)
+	    : m_value(g_il, std::forward<G_Args>(g_args)...)
+	    { }
+
+	  template<typename G_Fn, typename G_Arg>
+	    constexpr
+	    G_Storage(G_Optional_func<G_Fn> g_f, G_Arg&& g_arg)
+	    : m_value(gcc::invoke(std::forward<G_Fn>(g_f.m_f),
+				     std::forward<G_Arg>(g_arg)))
+	    { }
+
+	  G_Empty_byte m_empty;
+	  G_Up m_value;
+	};
+
+      template<typename G_Up>
+	union G_Storage<G_Up, false>
+	{
+	  constexpr G_Storage() noexcept : m_empty() { }
+
+	  template<typename... G_Args>
+	    constexpr
+	    G_Storage(in_place_t, G_Args&&... g_args)
+	    : m_value(std::forward<G_Args>(g_args)...)
+	    { }
+
+	  template<typename G_Vp, typename... G_Args>
+	    constexpr
+	    G_Storage(std::initializer_list<G_Vp> g_il, G_Args&&... g_args)
+	    : m_value(g_il, std::forward<G_Args>(g_args)...)
+	    { }
+
+	  template<typename G_Fn, typename G_Arg>
+	    constexpr
+	    G_Storage(G_Optional_func<G_Fn> g_f, G_Arg&& g_arg)
+	    : m_value(gcc::invoke(std::forward<G_Fn>(g_f.m_f),
+				     std::forward<G_Arg>(g_arg)))
+	    { }
+
+	  // User-provided destructor is needed when _Up has non-trivial dtor.
+	  GCC_BACKPORT20_CONSTEXPR
+	  ~G_Storage() { }
+
+	  G_Storage(const G_Storage&) = default;
+	  G_Storage(G_Storage&&) = default;
+	  G_Storage& operator=(const G_Storage&) = default;
+	  G_Storage& operator=(G_Storage&&) = default;
+
+	  G_Empty_byte m_empty;
+	  G_Up m_value;
+	};
+
+      G_Storage<G_Stored_type> m_payload;
+
+      bool m_engaged = false;
+
+      template<typename... G_Args>
+	constexpr void
+	m_construct(G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Stored_type, G_Args...>::value)
+	{
+	  gcc::construct_at(std::addressof(this->m_payload.m_value),
+			    std::forward<G_Args>(g_args)...);
+	  this->m_engaged = true;
+	}
+
+      constexpr void
+      m_destroy() noexcept
+      {
+	m_engaged = false;
+	m_payload.m_value.~G_Stored_type();
+#if defined(__clang__) && __cplusplus >= 202002L // full constexpr support
+	if (std::is_constant_evaluated())
+	  // Work around PR124910 for Clang.
+	  gcc::construct_at(std::addressof(m_payload.m_empty));
+#endif
+      }
+
+      template<typename G_Fn, typename G_Up>
+	constexpr void
+	m_apply(G_Optional_func<G_Fn> g_f, G_Up&& g_x)
+	{
+	  gcc::construct_at(std::addressof(this->m_payload),
+			    g_f, std::forward<G_Up>(g_x));
+	  m_engaged = true;
+	}
+
+      // The _M_get() operations have _M_engaged as a precondition.
+      // They exist to access the contained value with the appropriate
+      // const-qualification, because _M_payload has had the const removed.
+
+      constexpr G_Tp&
+      m_get() noexcept
+      { return this->m_payload.m_value; }
+
+      constexpr const G_Tp&
+      m_get() const noexcept
+      { return this->m_payload.m_value; }
+
+      // _M_reset is a 'safe' operation with no precondition.
+      constexpr void
+      m_reset() noexcept
+      {
+	if (this->m_engaged)
+	  m_destroy();
+	else // This seems redundant but improves codegen, see PR 112480.
+	  this->m_engaged = false;
+      }
+    };
+
+  // Class template that manages the payload for optionals.
+  template <typename G_Tp,
+	    bool /*_HasTrivialDestructor*/ =
+	      std::is_trivially_destructible<G_Tp>::value,
+	    bool /*_HasTrivialCopy */ =
+	      std::is_trivially_copy_assignable<G_Tp>::value
+	      && std::is_trivially_copy_constructible<G_Tp>::value,
+	    bool /*_HasTrivialMove */ =
+	      std::is_trivially_move_assignable<G_Tp>::value
+	      && std::is_trivially_move_constructible<G_Tp>::value>
+    struct G_Optional_payload;
+
+  // Payload for potentially-constexpr optionals (trivial copy/move/destroy).
+  template <typename G_Tp>
+    struct G_Optional_payload<G_Tp, true, true, true>
+    : G_Optional_payload_base<G_Tp>
+    {
+      using G_Optional_payload_base<G_Tp>::G_Optional_payload_base;
+
+      G_Optional_payload() = default;
+    };
+
+  // Payload for optionals with non-trivial copy construction/assignment.
+  template <typename G_Tp>
+    struct G_Optional_payload<G_Tp, true, false, true>
+    : G_Optional_payload_base<G_Tp>
+    {
+      using G_Optional_payload_base<G_Tp>::G_Optional_payload_base;
+
+      G_Optional_payload() = default;
+      ~G_Optional_payload() = default;
+      G_Optional_payload(const G_Optional_payload&) = default;
+      G_Optional_payload(G_Optional_payload&&) = default;
+      G_Optional_payload& operator=(G_Optional_payload&&) = default;
+
+      // Non-trivial copy assignment.
+      constexpr
+      G_Optional_payload&
+      operator=(const G_Optional_payload& g_other)
+      {
+	this->m_copy_assign(g_other);
+	return *this;
+      }
+    };
+
+  // Payload for optionals with non-trivial move construction/assignment.
+  template <typename G_Tp>
+    struct G_Optional_payload<G_Tp, true, true, false>
+    : G_Optional_payload_base<G_Tp>
+    {
+      using G_Optional_payload_base<G_Tp>::G_Optional_payload_base;
+
+      G_Optional_payload() = default;
+      ~G_Optional_payload() = default;
+      G_Optional_payload(const G_Optional_payload&) = default;
+      G_Optional_payload(G_Optional_payload&&) = default;
+      G_Optional_payload& operator=(const G_Optional_payload&) = default;
+
+      // Non-trivial move assignment.
+      constexpr
+      G_Optional_payload&
+      operator=(G_Optional_payload&& g_other)
+      noexcept(and_<std::is_nothrow_move_constructible<G_Tp>,
+		       std::is_nothrow_move_assignable<G_Tp>>::value)
+      {
+	this->m_move_assign(std::move(g_other));
+	return *this;
+      }
+    };
+
+  // Payload for optionals with non-trivial copy and move assignment.
+  template <typename G_Tp>
+    struct G_Optional_payload<G_Tp, true, false, false>
+    : G_Optional_payload_base<G_Tp>
+    {
+      using G_Optional_payload_base<G_Tp>::G_Optional_payload_base;
+
+      G_Optional_payload() = default;
+      ~G_Optional_payload() = default;
+      G_Optional_payload(const G_Optional_payload&) = default;
+      G_Optional_payload(G_Optional_payload&&) = default;
+
+      // Non-trivial copy assignment.
+      constexpr
+      G_Optional_payload&
+      operator=(const G_Optional_payload& g_other)
+      {
+	this->m_copy_assign(g_other);
+	return *this;
+      }
+
+      // Non-trivial move assignment.
+      constexpr
+      G_Optional_payload&
+      operator=(G_Optional_payload&& g_other)
+      noexcept(and_<std::is_nothrow_move_constructible<G_Tp>,
+		       std::is_nothrow_move_assignable<G_Tp>>::value)
+      {
+	this->m_move_assign(std::move(g_other));
+	return *this;
+      }
+    };
+
+  // Payload for optionals with non-trivial destructors.
+  template <typename G_Tp, bool G_Copy, bool G_Move>
+    struct G_Optional_payload<G_Tp, false, G_Copy, G_Move>
+    : G_Optional_payload<G_Tp, true, false, false>
+    {
+      // Base class implements all the constructors and assignment operators:
+      using G_Optional_payload<G_Tp, true, false, false>::G_Optional_payload;
+      G_Optional_payload() = default;
+      G_Optional_payload(const G_Optional_payload&) = default;
+      G_Optional_payload(G_Optional_payload&&) = default;
+      G_Optional_payload& operator=(const G_Optional_payload&) = default;
+      G_Optional_payload& operator=(G_Optional_payload&&) = default;
+
+      // Destructor needs to destroy the contained value:
+      GCC_BACKPORT20_CONSTEXPR ~G_Optional_payload() { this->m_reset(); }
+    };
+
+  /**
+    * @brief Class template that provides copy/move constructors of optional.
+    *
+    * Such a separate base class template is necessary in order to
+    * conditionally make copy/move constructors trivial.
+    *
+    * When the contained value is trivially copy/move constructible,
+    * the copy/move constructors of _Optional_base will invoke the
+    * trivial copy/move constructor of _Optional_payload. Otherwise,
+    * they will invoke _Optional_payload(bool, const _Optional_payload&)
+    * or _Optional_payload(bool, _Optional_payload&&) to initialize
+    * the contained value, if copying/moving an engaged optional.
+    *
+    * Whether the other special members are trivial is determined by the
+    * _Optional_payload<_Tp> specialization used for the _M_payload member.
+    *
+    * @see optional, _Enable_special_members
+    */
+  template<typename G_Tp,
+	   bool = std::is_trivially_copy_constructible<G_Tp>::value,
+	   bool = std::is_trivially_move_constructible<G_Tp>::value>
+    struct G_Optional_base
+    {
+      // Constructors for disengaged optionals.
+      constexpr G_Optional_base() = default;
+
+      // Constructors for engaged optionals.
+      template<typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp, G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t, G_Args&&... g_args)
+	: m_payload(in_place, std::forward<G_Args>(g_args)...)
+	{ }
+
+      template<typename G_Up, typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp,
+					      std::initializer_list<G_Up>&,
+					      G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t,
+			std::initializer_list<G_Up> g_il,
+			G_Args&&... g_args)
+	: m_payload(in_place, g_il, std::forward<G_Args>(g_args)...)
+	{ }
+
+      // Copy and move constructors.
+      constexpr
+      G_Optional_base(const G_Optional_base& g_other)
+      noexcept(std::is_nothrow_copy_constructible<G_Tp>::value)
+      : m_payload(g_other.m_payload.m_engaged, g_other.m_payload)
+      { }
+
+      constexpr
+      G_Optional_base(G_Optional_base&& g_other)
+      noexcept(std::is_nothrow_move_constructible<G_Tp>::value)
+      : m_payload(g_other.m_payload.m_engaged,
+		   std::move(g_other.m_payload))
+      { }
+
+      // Assignment operators.
+      G_Optional_base& operator=(const G_Optional_base&) = default;
+      G_Optional_base& operator=(G_Optional_base&&) = default;
+
+      G_Optional_payload<G_Tp> m_payload;
+
+    protected:
+      // For the primary template, we define these functions here.
+      using G_Stored_type = std::remove_const_t<G_Tp>;
+
+      // The _M_construct operation has !_M_engaged as a precondition
+      // while _M_destruct has _M_engaged as a precondition.
+      template<typename... G_Args>
+	constexpr void
+	m_construct(G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Stored_type, G_Args...>::value)
+	{
+	  m_payload.m_construct(std::forward<G_Args>(g_args)...);
+	}
+
+      constexpr void
+      m_destruct() noexcept
+      { m_payload.m_destroy(); }
+
+      // _M_reset is a 'safe' operation with no precondition.
+      constexpr void
+      m_reset() noexcept
+      { m_payload.m_reset(); }
+
+      constexpr bool m_is_engaged() const noexcept
+      { return m_payload.m_engaged; }
+
+      // The _M_get operations have _M_engaged as a precondition.
+      constexpr G_Tp&
+      m_get() noexcept
+      { return m_payload.m_get(); }
+
+      constexpr const G_Tp&
+      m_get() const noexcept
+      { return m_payload.m_get(); }
+    };
+
+  // If P0848R3 "Conditionally Trivial Special Member Functions" is not
+  // supported (as determined from the __cpp_concepts macro value), the
+  // _Optional_base primary template only has non-trivial copy and move
+  // constructors. Use partial specializations of _Optional_base<T, C, M>
+  // that have a trivial copy and/or move constructor.
+
+  // Common base class for _Optional_base<T> to avoid repeating these
+  // member functions in each partial specialization.
+  // Only used if P0848R3 "Conditionally Trivial Special Member Functions"
+  // is not supported, as indicated by the __cpp_concepts value.
+  template<typename G_Tp, typename G_Dp>
+    class G_Optional_base_impl
+    {
+    protected:
+      using G_Stored_type = std::remove_const_t<G_Tp>;
+
+      // The _M_construct operation has !_M_engaged as a precondition
+      // while _M_destruct has _M_engaged as a precondition.
+      template<typename... G_Args>
+	constexpr void
+	m_construct(G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Stored_type, G_Args...>::value)
+	{
+	  static_cast<G_Dp*>(this)->m_payload.m_construct(
+	    std::forward<G_Args>(g_args)...);
+	}
+
+      constexpr void
+      m_destruct() noexcept
+      { static_cast<G_Dp*>(this)->m_payload.m_destroy(); }
+
+      // _M_reset is a 'safe' operation with no precondition.
+      constexpr void
+      m_reset() noexcept
+      { static_cast<G_Dp*>(this)->m_payload.m_reset(); }
+
+      constexpr bool m_is_engaged() const noexcept
+      { return static_cast<const G_Dp*>(this)->m_payload.m_engaged; }
+
+      // The _M_get operations have _M_engaged as a precondition.
+      constexpr G_Tp&
+      m_get() noexcept
+      { return static_cast<G_Dp*>(this)->m_payload.m_get(); }
+
+      constexpr const G_Tp&
+      m_get() const noexcept
+      { return static_cast<const G_Dp*>(this)->m_payload.m_get(); }
+    };
+
+  template<typename G_Tp>
+    struct G_Optional_base<G_Tp, false, true> // trivial move ctor
+    : G_Optional_base_impl<G_Tp, G_Optional_base<G_Tp>>
+    {
+      // Constructors for disengaged optionals.
+      constexpr G_Optional_base() = default;
+
+      // Constructors for engaged optionals.
+      template<typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp, G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t, G_Args&&... g_args)
+	: m_payload(in_place, std::forward<G_Args>(g_args)...)
+	{ }
+
+      template<typename G_Up, typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp,
+					      std::initializer_list<G_Up>&,
+					      G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t,
+			std::initializer_list<G_Up> g_il,
+		       G_Args... g_args)
+	: m_payload(in_place, g_il, std::forward<G_Args>(g_args)...)
+	{ }
+
+      // Copy and move constructors.
+      constexpr G_Optional_base(const G_Optional_base& g_other)
+      : m_payload(g_other.m_payload.m_engaged, g_other.m_payload)
+      { }
+
+      constexpr G_Optional_base(G_Optional_base&& g_other) = default;
+
+      // Assignment operators.
+      G_Optional_base& operator=(const G_Optional_base&) = default;
+      G_Optional_base& operator=(G_Optional_base&&) = default;
+
+      G_Optional_payload<G_Tp> m_payload;
+    };
+
+  template<typename G_Tp>
+    struct G_Optional_base<G_Tp, true, false> // trivial copy ctor
+    : G_Optional_base_impl<G_Tp, G_Optional_base<G_Tp>>
+    {
+      // Constructors for disengaged optionals.
+      constexpr G_Optional_base() = default;
+
+      // Constructors for engaged optionals.
+      template<typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp, G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t, G_Args&&... g_args)
+	: m_payload(in_place, std::forward<G_Args>(g_args)...)
+	{ }
+
+      template<typename G_Up, typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp,
+					      std::initializer_list<G_Up>&,
+					      G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t,
+			std::initializer_list<G_Up> g_il,
+		       G_Args&&... g_args)
+	: m_payload(in_place, g_il, std::forward<G_Args>(g_args)...)
+	{ }
+
+      // Copy and move constructors.
+      constexpr G_Optional_base(const G_Optional_base& g_other) = default;
+
+      constexpr
+      G_Optional_base(G_Optional_base&& g_other)
+      noexcept(std::is_nothrow_move_constructible<G_Tp>::value)
+      : m_payload(g_other.m_payload.m_engaged,
+		   std::move(g_other.m_payload))
+      { }
+
+      // Assignment operators.
+      G_Optional_base& operator=(const G_Optional_base&) = default;
+      G_Optional_base& operator=(G_Optional_base&&) = default;
+
+      G_Optional_payload<G_Tp> m_payload;
+    };
+
+  template<typename G_Tp>
+    struct G_Optional_base<G_Tp, true, true> // trivial copy and move ctors
+    : G_Optional_base_impl<G_Tp, G_Optional_base<G_Tp>>
+    {
+      // Constructors for disengaged optionals.
+      constexpr G_Optional_base() = default;
+
+      // Constructors for engaged optionals.
+      template<typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp, G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t, G_Args&&... g_args)
+	: m_payload(in_place, std::forward<G_Args>(g_args)...)
+	{ }
+
+      template<typename G_Up, typename... G_Args,
+	       std::enable_if_t<std::is_constructible<G_Tp,
+					      std::initializer_list<G_Up>&,
+					      G_Args...>::value, bool> = false>
+	constexpr explicit
+	G_Optional_base(in_place_t,
+			std::initializer_list<G_Up> g_il,
+		       G_Args&&... g_args)
+	: m_payload(in_place, g_il, std::forward<G_Args>(g_args)...)
+	{ }
+
+      // Copy and move constructors.
+      constexpr G_Optional_base(const G_Optional_base& g_other) = default;
+      constexpr G_Optional_base(G_Optional_base&& g_other) = default;
+
+      // Assignment operators.
+      G_Optional_base& operator=(const G_Optional_base&) = default;
+      G_Optional_base& operator=(G_Optional_base&&) = default;
+
+      G_Optional_payload<G_Tp> m_payload;
+    };
+
+  template<typename>
+    struct g_is_optional : std::false_type {};
+
+  template<typename G_Tp>
+    struct g_is_optional<optional<G_Tp>> : std::true_type {};
+
+  template<typename G_Tp, typename G_Up>
+    using g_converts_from_optional
+      = g_converts_from_any_cvref<G_Tp, optional<G_Up>>;
+
+  template<typename G_Tp, typename G_Up>
+    using g_assigns_from_optional =
+      or_<std::is_assignable<G_Tp&, const optional<G_Up>&>,
+	    std::is_assignable<G_Tp&, optional<G_Up>&>,
+	    std::is_assignable<G_Tp&, const optional<G_Up>&&>,
+	    std::is_assignable<G_Tp&, optional<G_Up>&&>>;
+
+  /**
+    * @brief Class template for optional values.
+    */
+  template<typename G_Tp>
+    class optional
+    : private G_Optional_base<G_Tp>,
+      private G_Enable_copy_move<
+	// Copy constructor.
+	std::is_copy_constructible<G_Tp>::value,
+	// Copy assignment.
+	and_<std::is_copy_constructible<G_Tp>, std::is_copy_assignable<G_Tp>>::value,
+	// Move constructor.
+	std::is_move_constructible<G_Tp>::value,
+	// Move assignment.
+	and_<std::is_move_constructible<G_Tp>, std::is_move_assignable<G_Tp>>::value,
+	// Unique tag type.
+	optional<G_Tp>>
+    {
+      static_assert (g_is_valid_contained_type_for_optional<G_Tp>,
+		     "Given type not valid for an optional");
+
+    private:
+      using G_Base = G_Optional_base<G_Tp>;
+
+      // SFINAE helpers
+
+      template<typename G_From, typename = std::remove_cv_t<G_Tp>>
+	struct g_not_constructing_bool_from_optional
+	: std::true_type
+	{ };
+
+      template<typename G_From>
+	struct g_not_constructing_bool_from_optional<G_From, bool>
+	: not_<g_is_optional<remove_cvref_t<G_From>>>
+	{ };
+
+      template<typename G_From, typename = std::remove_cv_t<G_Tp>>
+	struct g_construct_from_contained_value
+	: not_<g_converts_from_optional<G_Tp, G_From>>
+	{ };
+
+      template<typename G_From>
+	struct g_construct_from_contained_value<G_From, bool>
+	: std::true_type
+	{ };
+
+      template<typename G_Up>
+	using g_not_self = not_<std::is_same<optional, remove_cvref_t<G_Up>>>;
+      template<typename G_Up>
+	using g_not_tag = not_<std::is_same<in_place_t, remove_cvref_t<G_Up>>>;
+
+    public:
+      using value_type = G_Tp;
+
+      constexpr optional() noexcept { }
+
+      constexpr optional(nullopt_t) noexcept { }
+
+      template<typename G_Up = std::remove_cv_t<G_Tp>,
+	       G_Requires<g_not_self<G_Up>, g_not_tag<G_Up>,
+			 std::is_constructible<G_Tp, G_Up>,
+			 std::is_convertible<G_Up, G_Tp>,
+			 g_not_constructing_bool_from_optional<G_Up>> = true>
+	constexpr
+	optional(G_Up&& g_t)
+	noexcept(std::is_nothrow_constructible<G_Tp, G_Up>::value)
+	: G_Base(in_place, std::forward<G_Up>(g_t)) { }
+
+      template<typename G_Up = std::remove_cv_t<G_Tp>,
+	       G_Requires<g_not_self<G_Up>, g_not_tag<G_Up>,
+			 std::is_constructible<G_Tp, G_Up>,
+			 not_<std::is_convertible<G_Up, G_Tp>>,
+			 g_not_constructing_bool_from_optional<G_Up>> = false>
+	explicit constexpr
+	optional(G_Up&& g_t)
+	noexcept(std::is_nothrow_constructible<G_Tp, G_Up>::value)
+	: G_Base(in_place, std::forward<G_Up>(g_t)) { }
+
+      template<typename G_Up,
+	       G_Requires<not_<std::is_same<G_Tp, G_Up>>,
+			 std::is_constructible<G_Tp, const G_Up&>,
+			 std::is_convertible<const G_Up&, G_Tp>,
+			 g_construct_from_contained_value<G_Up>> = true>
+	constexpr
+	optional(const optional<G_Up>& g_t)
+	noexcept(std::is_nothrow_constructible<G_Tp, const G_Up&>::value)
+	{
+	  if (g_t)
+	    emplace(g_t.m_fwd());
+	}
+
+      template<typename G_Up,
+	       G_Requires<not_<std::is_same<G_Tp, G_Up>>,
+			 std::is_constructible<G_Tp, const G_Up&>,
+			 not_<std::is_convertible<const G_Up&, G_Tp>>,
+			 g_construct_from_contained_value<G_Up>> = false>
+	explicit constexpr
+	optional(const optional<G_Up>& g_t)
+	noexcept(std::is_nothrow_constructible<G_Tp, const G_Up&>::value)
+	{
+	  if (g_t)
+	    emplace(g_t.m_fwd());
+	}
+
+      template<typename G_Up,
+	       G_Requires<not_<std::is_same<G_Tp, G_Up>>,
+			 std::is_constructible<G_Tp, G_Up>,
+			 std::is_convertible<G_Up, G_Tp>,
+			 g_construct_from_contained_value<G_Up>> = true>
+	constexpr
+	optional(optional<G_Up>&& g_t)
+	noexcept(std::is_nothrow_constructible<G_Tp, G_Up>::value)
+	{
+	  if (g_t)
+	    emplace(std::move(g_t).m_fwd());
+	}
+
+      template<typename G_Up,
+	       G_Requires<not_<std::is_same<G_Tp, G_Up>>,
+			 std::is_constructible<G_Tp, G_Up>,
+			 not_<std::is_convertible<G_Up, G_Tp>>,
+			 g_construct_from_contained_value<G_Up>> = false>
+	explicit constexpr
+	optional(optional<G_Up>&& g_t)
+	noexcept(std::is_nothrow_constructible<G_Tp, G_Up>::value)
+	{
+	  if (g_t)
+	    emplace(std::move(g_t).m_fwd());
+	}
+
+      template<typename... G_Args,
+	       G_Requires<std::is_constructible<G_Tp, G_Args...>> = false>
+	explicit constexpr
+	optional(in_place_t, G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Tp, G_Args...>::value)
+	: G_Base(in_place, std::forward<G_Args>(g_args)...) { }
+
+      template<typename G_Up, typename... G_Args,
+	       G_Requires<std::is_constructible<G_Tp,
+					  std::initializer_list<G_Up>&,
+					  G_Args...>> = false>
+	explicit constexpr
+	optional(in_place_t, std::initializer_list<G_Up> g_il, G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Tp, std::initializer_list<G_Up>&,
+					    G_Args...>::value)
+	: G_Base(in_place, g_il, std::forward<G_Args>(g_args)...) { }
+
+      // Assignment operators.
+      constexpr optional&
+      operator=(nullopt_t) noexcept
+      {
+	this->m_reset();
+	return *this;
+      }
+
+      template<typename G_Up = std::remove_cv_t<G_Tp>>
+        constexpr
+	std::enable_if_t<and_<g_not_self<G_Up>,
+			      not_<and_<std::is_scalar<G_Tp>,
+					std::is_same<G_Tp, std::decay_t<G_Up>>>>,
+			      std::is_constructible<G_Tp, G_Up>,
+			      std::is_assignable<G_Tp&, G_Up>>::value,
+		      optional&>
+	operator=(G_Up&& g_u)
+	noexcept(and_<std::is_nothrow_constructible<G_Tp, G_Up>,
+			 std::is_nothrow_assignable<G_Tp&, G_Up>>::value)
+	{
+	  if (this->m_is_engaged())
+	    this->m_get() = std::forward<G_Up>(g_u);
+	  else
+	    this->m_construct(std::forward<G_Up>(g_u));
+
+	  return *this;
+	}
+
+      template<typename G_Up>
+        constexpr
+	std::enable_if_t<and_<not_<std::is_same<G_Tp, G_Up>>,
+			    std::is_constructible<G_Tp, const G_Up&>,
+			    std::is_assignable<G_Tp&, const G_Up&>,
+			    not_<g_converts_from_optional<G_Tp, G_Up>>,
+			    not_<g_assigns_from_optional<G_Tp, G_Up>>>::value,
+		    optional&>
+	operator=(const optional<G_Up>& g_u)
+	noexcept(and_<std::is_nothrow_constructible<G_Tp, const G_Up&>,
+			 std::is_nothrow_assignable<G_Tp&, const G_Up&>>::value)
+	{
+	  if (g_u)
+	    {
+	      if (this->m_is_engaged())
+		this->m_get() = g_u.m_fwd();
+	      else
+		this->m_construct(g_u.m_fwd());
+	    }
+	  else
+	    {
+	      this->m_reset();
+	    }
+	  return *this;
+	}
+
+      template<typename G_Up>
+        constexpr
+	std::enable_if_t<and_<not_<std::is_same<G_Tp, G_Up>>,
+			      std::is_constructible<G_Tp, G_Up>,
+			      std::is_assignable<G_Tp&, G_Up>,
+			      not_<g_converts_from_optional<G_Tp, G_Up>>,
+			      not_<g_assigns_from_optional<G_Tp, G_Up>>>::value,
+			 optional&>
+	operator=(optional<G_Up>&& g_u)
+	noexcept(and_<std::is_nothrow_constructible<G_Tp, G_Up>,
+			 std::is_nothrow_assignable<G_Tp&, G_Up>>::value)
+	{
+	  if (g_u)
+	    {
+	      if (this->m_is_engaged())
+		this->m_get() = std::move(g_u).m_fwd();
+	      else
+		this->m_construct(std::move(g_u).m_fwd());
+	    }
+	  else
+	    {
+	      this->m_reset();
+	    }
+
+	  return *this;
+	}
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 2746. Inconsistency between requirements for emplace between optional and variant
+      template<typename... G_Args>
+        constexpr
+	std::enable_if_t<std::is_constructible<G_Tp, G_Args...>::value, G_Tp&>
+	emplace(G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Tp, G_Args...>::value)
+	{
+	  this->m_reset();
+	  this->m_construct(std::forward<G_Args>(g_args)...);
+	  return this->m_get();
+	}
+
+      template<typename G_Up, typename... G_Args>
+        constexpr
+	std::enable_if_t<std::is_constructible<G_Tp, std::initializer_list<G_Up>&, G_Args...>::value,
+			 G_Tp&>
+	emplace(std::initializer_list<G_Up> g_il, G_Args&&... g_args)
+	noexcept(std::is_nothrow_constructible<G_Tp, std::initializer_list<G_Up>&,
+					    G_Args...>::value)
+	{
+	  this->m_reset();
+	  this->m_construct(g_il, std::forward<G_Args>(g_args)...);
+	  return this->m_get();
+	}
+
+      // Destructor is implicit, implemented in _Optional_base.
+
+      // Swap.
+      constexpr void
+      swap(optional& g_other)
+      noexcept(std::is_nothrow_move_constructible<G_Tp>::value
+	       && g_is_nothrow_swappable<G_Tp>::value)
+      {
+	using std::swap;
+
+	if (this->m_is_engaged() && g_other.m_is_engaged())
+	  swap(this->m_get(), g_other.m_get());
+	else if (this->m_is_engaged())
+	  {
+	    g_other.m_construct(std::move(this->m_get()));
+	    this->m_destruct();
+	  }
+	else if (g_other.m_is_engaged())
+	  {
+	    this->m_construct(std::move(g_other.m_get()));
+	    g_other.m_destruct();
+	  }
+      }
+
+      // Observers.
+      constexpr const G_Tp*
+      operator->() const noexcept
+      {
+	gccbackport_assert(this->m_is_engaged());
+	return std::addressof(this->m_get());
+      }
+
+      constexpr G_Tp*
+      operator->() noexcept
+      {
+	gccbackport_assert(this->m_is_engaged());
+	return std::addressof(this->m_get());
+      }
+
+      constexpr const G_Tp&
+      operator*() const& noexcept
+      {
+	gccbackport_assert(this->m_is_engaged());
+	return this->m_get();
+      }
+
+      constexpr G_Tp&
+      operator*()& noexcept
+      {
+	gccbackport_assert(this->m_is_engaged());
+	return this->m_get();
+      }
+
+      constexpr G_Tp&&
+      operator*()&& noexcept
+      {
+	gccbackport_assert(this->m_is_engaged());
+	return std::move(this->m_get());
+      }
+
+      constexpr const G_Tp&&
+      operator*() const&& noexcept
+      {
+	gccbackport_assert(this->m_is_engaged());
+	return std::move(this->m_get());
+      }
+
+      constexpr explicit operator bool() const noexcept
+      { return this->m_is_engaged(); }
+
+      constexpr bool has_value() const noexcept
+      { return this->m_is_engaged(); }
+
+      constexpr const G_Tp&
+      value() const&
+      {
+	if (this->m_is_engaged())
+	  return this->m_get();
+	g_throw_bad_optional_access();
+      }
+
+      constexpr G_Tp&
+      value()&
+      {
+	if (this->m_is_engaged())
+	  return this->m_get();
+	g_throw_bad_optional_access();
+      }
+
+      constexpr G_Tp&&
+      value()&&
+      {
+	if (this->m_is_engaged())
+	  return std::move(this->m_get());
+	g_throw_bad_optional_access();
+      }
+
+      constexpr const G_Tp&&
+      value() const&&
+      {
+	if (this->m_is_engaged())
+	  return std::move(this->m_get());
+	g_throw_bad_optional_access();
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4406. value_or return statement is inconsistent with Mandates
+      template<typename G_Up = std::remove_cv_t<G_Tp>>
+	constexpr std::remove_cv_t<G_Tp>
+	value_or(G_Up&& g_u) const&
+	{
+	  using G_Xp = std::remove_cv_t<G_Tp>;
+	  static_assert(std::is_convertible<const G_Tp&, G_Xp>::value, "");
+	  static_assert(std::is_convertible<G_Up, G_Xp>::value, "");
+
+	  if (this->m_is_engaged())
+	    return this->m_get();
+	  return std::forward<G_Up>(g_u);
+	}
+
+      template<typename G_Up = std::remove_cv_t<G_Tp>>
+	constexpr std::remove_cv_t<G_Tp>
+	value_or(G_Up&& g_u) &&
+	{
+	  using G_Xp = std::remove_cv_t<G_Tp>;
+	  static_assert(std::is_convertible<G_Tp, G_Xp>::value, "");
+	  static_assert(std::is_convertible<G_Up, G_Xp>::value, "");
+
+	  if (this->m_is_engaged())
+	    return std::move(this->m_get());
+	  return std::forward<G_Up>(g_u);
+	}
+
+      // [optional.monadic]
+
+      template<typename G_Fn>
+	constexpr auto
+	and_then(G_Fn&& g_f) &
+	{
+	  using G_Up = remove_cvref_t<g_invoke_result_t<G_Fn, G_Tp&>>;
+	  static_assert(g_is_optional<G_Up>::value,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
+	  if (has_value())
+	    return gcc::invoke(std::forward<G_Fn>(g_f), m_get());
+	  else
+	    return G_Up();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	and_then(G_Fn&& g_f) const &
+	{
+	  using G_Up = remove_cvref_t<g_invoke_result_t<G_Fn, const G_Tp&>>;
+	  static_assert(g_is_optional<G_Up>::value,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
+	  if (has_value())
+	    return gcc::invoke(std::forward<G_Fn>(g_f), m_get());
+	  else
+	    return G_Up();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	and_then(G_Fn&& g_f) &&
+	{
+	  using G_Up = remove_cvref_t<g_invoke_result_t<G_Fn, G_Tp>>;
+	  static_assert(g_is_optional<G_Up>::value,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
+	  if (has_value())
+	    return gcc::invoke(std::forward<G_Fn>(g_f), std::move(m_get()));
+	  else
+	    return G_Up();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	and_then(G_Fn&& g_f) const &&
+	{
+	  using G_Up = remove_cvref_t<g_invoke_result_t<G_Fn, const G_Tp>>;
+	  static_assert(g_is_optional<G_Up>::value,
+			"the function passed to std::optional<T>::and_then "
+			"must return a std::optional");
+	  if (has_value())
+	    return gcc::invoke(std::forward<G_Fn>(g_f), std::move(m_get()));
+	  else
+	    return G_Up();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	transform(G_Fn&& g_f) &
+	{
+	  using G_Up = std::remove_cv_t<g_invoke_result_t<G_Fn, G_Tp&>>;
+	  if (has_value())
+	    return optional<G_Up>(G_Optional_func<G_Fn>{g_f}, m_get());
+	  else
+	    return optional<G_Up>();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	transform(G_Fn&& g_f) const &
+	{
+	  using G_Up = std::remove_cv_t<g_invoke_result_t<G_Fn, const G_Tp&>>;
+	  if (has_value())
+	    return optional<G_Up>(G_Optional_func<G_Fn>{g_f}, m_get());
+	  else
+	    return optional<G_Up>();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	transform(G_Fn&& g_f) &&
+	{
+	  using G_Up = std::remove_cv_t<g_invoke_result_t<G_Fn, G_Tp>>;
+	  if (has_value())
+	    return optional<G_Up>(G_Optional_func<G_Fn>{g_f}, std::move(m_get()));
+	  else
+	    return optional<G_Up>();
+	}
+
+      template<typename G_Fn>
+	constexpr auto
+	transform(G_Fn&& g_f) const &&
+	{
+	  using G_Up = std::remove_cv_t<g_invoke_result_t<G_Fn, const G_Tp>>;
+	  if (has_value())
+	    return optional<G_Up>(G_Optional_func<G_Fn>{g_f}, std::move(m_get()));
+	  else
+	    return optional<G_Up>();
+	}
+
+      template<typename G_Fn,
+	       G_Requires<
+		 gcc::g_is_invocable<G_Fn>,
+		 std::is_copy_constructible<G_Tp>
+		 > = false>
+	constexpr optional
+	or_else(G_Fn&& g_f) const&
+	{
+	  using G_Up = g_invoke_result_t<G_Fn>;
+	  static_assert(std::is_same<remove_cvref_t<G_Up>, optional>::value,
+			"the function passed to std::optional<T>::or_else "
+			"must return a std::optional<T>");
+
+	  if (has_value())
+	    return *this;
+	  else
+	    return std::forward<G_Fn>(g_f)();
+	}
+
+      template<typename G_Fn,
+	       G_Requires<
+		 gcc::g_is_invocable<G_Fn>,
+		 std::is_move_constructible<G_Tp>
+		 > = false>
+	constexpr optional
+	or_else(G_Fn&& g_f) &&
+	{
+	  using G_Up = g_invoke_result_t<G_Fn>;
+	  static_assert(std::is_same<remove_cvref_t<G_Up>, optional>::value,
+			"the function passed to std::optional<T>::or_else "
+			"must return a std::optional<T>");
+
+	  if (has_value())
+	    return std::move(*this);
+	  else
+	    return std::forward<G_Fn>(g_f)();
+	}
+
+      constexpr void reset() noexcept { this->m_reset(); }
+
+    private:
+      using G_Base::m_get;
+
+      [[gnu::always_inline]]
+      constexpr G_Tp&
+      m_fwd() & noexcept
+      { return m_get(); }
+
+      [[gnu::always_inline]]
+      constexpr G_Tp&&
+      m_fwd() && noexcept
+      { return std::move(m_get()); }
+
+      [[gnu::always_inline]]
+      constexpr const G_Tp&
+      m_fwd() const& noexcept
+      { return m_get(); }
+
+      [[gnu::always_inline]]
+      constexpr const G_Tp&&
+      m_fwd() const&& noexcept
+      { return std::move(m_get()); }
+
+      template<typename G_Up> friend class optional;
+
+      template<typename G_Fn, typename G_Value>
+	explicit constexpr
+	optional(G_Optional_func<G_Fn> g_f, G_Value&& g_v)
+	{
+	  this->m_payload.m_apply(g_f, std::forward<G_Value>(g_v));
+	}
+    };
+
+  template<typename G_Tp>
+    constexpr G_Tp&
+    optional<G_Tp&>::value() const
+    {
+      if (m_val)
+	return *m_val;
+      g_throw_bad_optional_access();
+    }
+
+  template<typename G_Tp>
+    template<typename G_Up,
+	     typename G_Tp_,
+	     G_Requires<
+	       std::is_object<G_Tp_>,
+	       not_<std::is_array<G_Tp_>>
+	       >>
+      constexpr std::decay_t<G_Tp>
+      optional<G_Tp&>::value_or(G_Up&& g_u) const
+      {
+	using G_Xp = std::remove_cv_t<G_Tp>;
+	static_assert(std::is_convertible<G_Tp&, G_Xp>::value, "");
+	static_assert(std::is_convertible<G_Up, G_Xp>::value, "");
+	if (m_val)
+	  return *m_val;
+	return std::forward<G_Up>(g_u);
+      }
+
+  template<typename G_Tp>
+    template<typename G_Fn>
+      constexpr auto
+      optional<G_Tp&>::and_then(G_Fn&& g_f) const
+      {
+        using G_Up = remove_cvref_t<g_invoke_result_t<G_Fn, G_Tp&>>;
+        static_assert(g_is_optional<G_Up>::value,
+                      "the function passed to std::optional<T&>::and_then "
+                      "must return a std::optional");
+        if (has_value())
+          return gcc::invoke(std::forward<G_Fn>(g_f), *m_val);
+        else
+          return G_Up();
+      }
+
+  template<typename G_Tp>
+    template<typename G_Fn>
+      constexpr optional<std::remove_cv_t<g_invoke_result_t<G_Fn, G_Tp&>>>
+      optional<G_Tp&>::transform(G_Fn&& g_f) const
+      {
+        using G_Up = std::remove_cv_t<g_invoke_result_t<G_Fn, G_Tp&>>;
+        if (has_value())
+          return optional<G_Up>(G_Optional_func<G_Fn>{g_f}, *m_val);
+        else
+          return optional<G_Up>();
+      }
+
+  template<typename G_Tp>
+    template<typename G_Fn,
+	     G_Requires<g_is_invocable<G_Fn>>>
+      constexpr optional<G_Tp&>
+      optional<G_Tp&>::or_else(G_Fn&& g_f) const
+      {
+        static_assert(std::is_same<remove_cvref_t<g_invoke_result_t<G_Fn>>, optional>::value,
+                      "the function passed to std::optional<T&>::or_else "
+                      "must return a std::optional<T&>");
+        // _GLIBCXX_RESOLVE_LIB_DEFECTS
+        // 4367. Improve optional<T&>::or_else
+        if (has_value())
+          return *this;
+        else
+          return std::forward<G_Fn>(g_f)();
+      }
+
+  template<typename G_Tp>
+    template<typename G_Fn, typename G_Value>
+      constexpr
+      optional<G_Tp&>::optional(G_Optional_func<G_Fn> g_f, G_Value&& g_v)
+      {
+        G_Tp& g_r = gcc::invoke(std::forward<G_Fn>(g_f.m_f), std::forward<G_Value>(g_v));
+        m_val = std::addressof(g_r);
+      }
+
+  template<typename G_Tp>
+    using g_optional_relop_t =
+      std::enable_if_t<std::is_convertible<G_Tp, bool>::value, bool>;
+
+  template<typename G_Tp, typename G_Up>
+    using g_optional_eq_t = g_optional_relop_t<
+      decltype(std::declval<const G_Tp&>() == std::declval<const G_Up&>())
+      >;
+
+  template<typename G_Tp, typename G_Up>
+    using g_optional_ne_t = g_optional_relop_t<
+      decltype(std::declval<const G_Tp&>() != std::declval<const G_Up&>())
+      >;
+
+  template<typename G_Tp, typename G_Up>
+    using g_optional_lt_t = g_optional_relop_t<
+      decltype(std::declval<const G_Tp&>() < std::declval<const G_Up&>())
+      >;
+
+  template<typename G_Tp, typename G_Up>
+    using g_optional_gt_t = g_optional_relop_t<
+      decltype(std::declval<const G_Tp&>() > std::declval<const G_Up&>())
+      >;
+
+  template<typename G_Tp, typename G_Up>
+    using g_optional_le_t = g_optional_relop_t<
+      decltype(std::declval<const G_Tp&>() <= std::declval<const G_Up&>())
+      >;
+
+  template<typename G_Tp, typename G_Up>
+    using g_optional_ge_t = g_optional_relop_t<
+      decltype(std::declval<const G_Tp&>() >= std::declval<const G_Up&>())
+      >;
+
+  // Comparisons between optional values.
+  template<typename G_Tp, typename G_Up>
+    constexpr auto
+    operator==(const optional<G_Tp>& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_eq_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value() != g_rhs.has_value())
+	return false;
+      if (!g_lhs.has_value())
+	return true;
+      return *g_lhs == *g_rhs;
+    }
+
+  template<typename G_Tp, typename G_Up>
+    constexpr auto
+    operator!=(const optional<G_Tp>& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_ne_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value() != g_rhs.has_value())
+	return true;
+      if (!g_lhs.has_value())
+	return false;
+      return *g_lhs != *g_rhs;
+    }
+
+  template<typename G_Tp, typename G_Up>
+    constexpr auto
+    operator<(const optional<G_Tp>& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_lt_t<G_Tp, G_Up>
+    {
+      if (!g_rhs.has_value())
+	return false;
+      if (!g_lhs.has_value())
+	return true;
+      return *g_lhs < *g_rhs;
+    }
+
+  template<typename G_Tp, typename G_Up>
+    constexpr auto
+    operator>(const optional<G_Tp>& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_gt_t<G_Tp, G_Up>
+    {
+      if (!g_lhs.has_value())
+	return false;
+      if (!g_rhs.has_value())
+	return true;
+      return *g_lhs > *g_rhs;
+    }
+
+  template<typename G_Tp, typename G_Up>
+    constexpr auto
+    operator<=(const optional<G_Tp>& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_le_t<G_Tp, G_Up>
+    {
+      if (!g_lhs.has_value())
+	return true;
+      if (!g_rhs.has_value())
+	return false;
+      return *g_lhs <= *g_rhs;
+    }
+
+  template<typename G_Tp, typename G_Up>
+    constexpr auto
+    operator>=(const optional<G_Tp>& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_ge_t<G_Tp, G_Up>
+    {
+      if (!g_rhs.has_value())
+	return true;
+      if (!g_lhs.has_value())
+	return false;
+      return *g_lhs >= *g_rhs;
+    }
+
+#ifdef __cpp_lib_three_way_comparison
+  template<typename G_Tp, std::three_way_comparable_with<G_Tp> G_Up>
+    [[nodiscard]]
+    constexpr std::compare_three_way_result_t<G_Tp, G_Up>
+    operator<=>(const optional<G_Tp>& g_x, const optional<G_Up>& g_y)
+    {
+      return g_x && g_y ? *g_x <=> *g_y : bool(g_x) <=> bool(g_y);
+    }
+#endif
+
+  // Comparisons with nullopt.
+  template<typename G_Tp>
+    [[nodiscard]]
+    constexpr bool
+    operator==(const optional<G_Tp>& g_lhs, nullopt_t) noexcept
+    { return !g_lhs; }
+
+#ifdef __cpp_lib_three_way_comparison
+  template<typename G_Tp>
+    [[nodiscard]]
+    constexpr std::strong_ordering
+    operator<=>(const optional<G_Tp>& g_x, nullopt_t) noexcept
+    { return bool(g_x) <=> false; }
+#else
+  template<typename G_Tp>
+    constexpr bool
+    operator==(nullopt_t, const optional<G_Tp>& g_rhs) noexcept
+    { return !g_rhs; }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator!=(const optional<G_Tp>& g_lhs, nullopt_t) noexcept
+    { return static_cast<bool>(g_lhs); }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator!=(nullopt_t, const optional<G_Tp>& g_rhs) noexcept
+    { return static_cast<bool>(g_rhs); }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator<(const optional<G_Tp>& /* __lhs */, nullopt_t) noexcept
+    { return false; }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator<(nullopt_t, const optional<G_Tp>& g_rhs) noexcept
+    { return static_cast<bool>(g_rhs); }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator>(const optional<G_Tp>& g_lhs, nullopt_t) noexcept
+    { return static_cast<bool>(g_lhs); }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator>(nullopt_t, const optional<G_Tp>& /* __rhs */) noexcept
+    { return false; }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator<=(const optional<G_Tp>& g_lhs, nullopt_t) noexcept
+    { return !g_lhs; }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator<=(nullopt_t, const optional<G_Tp>& /* __rhs */) noexcept
+    { return true; }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator>=(const optional<G_Tp>& /* __lhs */, nullopt_t) noexcept
+    { return true; }
+
+  template<typename G_Tp>
+    constexpr bool
+    operator>=(nullopt_t, const optional<G_Tp>& g_rhs) noexcept
+    { return !g_rhs; }
+#endif // three-way-comparison
+
+  // Comparisons with value type.
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Up>>> = false>
+    constexpr auto
+    operator== [[nodiscard]] (const optional<G_Tp>& g_lhs, const G_Up& g_rhs)
+    -> g_optional_eq_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value())
+	return *g_lhs == g_rhs;
+      return false;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Tp>>> = false>
+    constexpr auto
+    operator== [[nodiscard]] (const G_Tp& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_eq_t<G_Tp, G_Up>
+    {
+      if (g_rhs.has_value())
+	return g_lhs == *g_rhs;
+      return false;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Up>>> = false>
+    constexpr auto
+    operator!= [[nodiscard]] (const optional<G_Tp>& g_lhs, const G_Up& g_rhs)
+    -> g_optional_ne_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value())
+	return *g_lhs != g_rhs;
+      return true;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Tp>>> = false>
+    constexpr auto
+    operator!= [[nodiscard]] (const G_Tp& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_ne_t<G_Tp, G_Up>
+    {
+      if (g_rhs.has_value())
+	return g_lhs != *g_rhs;
+      return true;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Up>>> = false>
+    constexpr auto
+    operator< [[nodiscard]] (const optional<G_Tp>& g_lhs, const G_Up& g_rhs)
+    -> g_optional_lt_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value())
+	return *g_lhs < g_rhs;
+      return true;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Tp>>> = false>
+    constexpr auto
+    operator< [[nodiscard]] (const G_Tp& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_lt_t<G_Tp, G_Up>
+    {
+      if (g_rhs.has_value())
+	return g_lhs < *g_rhs;
+      return false;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Up>>> = false>
+    constexpr auto
+    operator> [[nodiscard]] (const optional<G_Tp>& g_lhs, const G_Up& g_rhs)
+    -> g_optional_gt_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value())
+	return *g_lhs > g_rhs;
+      return false;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Tp>>> = false>
+    constexpr auto
+    operator> [[nodiscard]] (const G_Tp& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_gt_t<G_Tp, G_Up>
+    {
+      if (g_rhs.has_value())
+	return g_lhs > *g_rhs;
+      return true;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Up>>> = false>
+    constexpr auto
+    operator<= [[nodiscard]] (const optional<G_Tp>& g_lhs, const G_Up& g_rhs)
+    -> g_optional_le_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value())
+	return *g_lhs <= g_rhs;
+      return true;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Tp>>> = false>
+    constexpr auto
+    operator<= [[nodiscard]] (const G_Tp& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_le_t<G_Tp, G_Up>
+    {
+      if (g_rhs.has_value())
+	return g_lhs <= *g_rhs;
+      return false;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Up>>> = false>
+    constexpr auto
+    operator>= [[nodiscard]] (const optional<G_Tp>& g_lhs, const G_Up& g_rhs)
+    -> g_optional_ge_t<G_Tp, G_Up>
+    {
+      if (g_lhs.has_value())
+	return *g_lhs >= g_rhs;
+      return false;
+    }
+
+  template<typename G_Tp, typename G_Up,
+	   G_Requires<not_<g_is_optional<G_Tp>>> = false>
+    constexpr auto
+    operator>= [[nodiscard]] (const G_Tp& g_lhs, const optional<G_Up>& g_rhs)
+    -> g_optional_ge_t<G_Tp, G_Up>
+    {
+      if (g_rhs.has_value())
+	return g_lhs >= *g_rhs;
+      return true;
+    }
+
+#ifdef __cpp_lib_three_way_comparison
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3746. optional's spaceship with U with a type derived from optional
+  // causes infinite constraint meta-recursion
+  template<typename G_Tp>
+    concept g_is_derived_from_optional = requires (const G_Tp& g_t) {
+      []<typename G_Up>(const optional<G_Up>&){ }(g_t);
+    };
+
+  template<typename G_Tp, typename G_Up>
+    requires (!g_is_derived_from_optional<G_Up>)
+      && requires { typename std::compare_three_way_result_t<G_Tp, G_Up>; }
+      && std::three_way_comparable_with<G_Tp, G_Up>
+    constexpr std::compare_three_way_result_t<G_Tp, G_Up>
+    operator<=> [[nodiscard]] (const optional<G_Tp>& g_x, const G_Up& g_v)
+    { return bool(g_x) ? *g_x <=> g_v : std::strong_ordering::less; }
+#endif
+
+  // Swap and creation functions.
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2748. swappable traits for optionals
+  template<typename G_Tp>
+    constexpr
+    inline std::enable_if_t<std::is_move_constructible<G_Tp>::value && g_is_swappable<G_Tp>::value>
+    swap(optional<G_Tp>& g_lhs, optional<G_Tp>& g_rhs)
+    noexcept(noexcept(g_lhs.swap(g_rhs)))
+    { g_lhs.swap(g_rhs); }
+
+  // We deviate from standard, that do not declared separate swap overload
+  // from optional<T&>.
+  template<typename G_Tp>
+    constexpr void
+    swap(optional<G_Tp&>& g_lhs, optional<G_Tp&>& g_rhs) noexcept
+    { g_lhs.swap(g_rhs); }
+
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 2766. Swapping non-swappable types
+  template<typename G_Tp>
+    std::enable_if_t<!(std::is_move_constructible<G_Tp>::value && g_is_swappable<G_Tp>::value)>
+    swap(optional<G_Tp>&, optional<G_Tp>&) = delete;
+
+  template<int = 0, typename G_Tp>
+    constexpr
+    std::enable_if_t<std::is_constructible<std::decay_t<G_Tp>, G_Tp>::value,
+		optional<std::decay_t<G_Tp>>>
+    make_optional(G_Tp&& g_t)
+    noexcept(std::is_nothrow_constructible<optional<std::decay_t<G_Tp>>, G_Tp>::value)
+    { return optional<std::decay_t<G_Tp>>( std::forward<G_Tp>(g_t) ); }
+
+  template<typename G_Tp, typename... G_Args>
+    constexpr
+    std::enable_if_t<std::is_constructible<G_Tp, G_Args...>::value,
+		optional<G_Tp>>
+    make_optional(G_Args&&... g_args)
+    noexcept(std::is_nothrow_constructible<G_Tp, G_Args...>::value)
+    { return optional<G_Tp>( in_place, std::forward<G_Args>(g_args)... ); }
+
+  template<typename G_Tp, typename G_Up, typename... G_Args>
+    constexpr
+    std::enable_if_t<std::is_constructible<G_Tp, std::initializer_list<G_Up>&, G_Args...>::value,
+		optional<G_Tp>>
+    make_optional(std::initializer_list<G_Up> g_il, G_Args&&... g_args)
+    noexcept(std::is_nothrow_constructible<G_Tp, std::initializer_list<G_Up>&, G_Args...>::value)
+    { return optional<G_Tp>( in_place, g_il, std::forward<G_Args>(g_args)... ); }
+
+  // Hash.
+
+  template<typename G_Tp, typename G_Up = std::remove_const_t<G_Tp>>
+    struct g_optional_hash
+    {
+#if __cplusplus < 202002L
+      using result_type = size_t;
+      using argument_type = optional<G_Tp>;
+#endif
+
+      size_t
+      operator()(const optional<G_Tp>& g_t) const
+      noexcept(noexcept(std::hash<G_Up>{}(*g_t)))
+      {
+	// We pick an arbitrary hash for disengaged optionals which hopefully
+	// usual values of _Tp won't typically hash to.
+	constexpr size_t g_magic_disengaged_hash = static_cast<size_t>(-3333);
+	return g_t ? std::hash<G_Up>{}(*g_t) : g_magic_disengaged_hash;
+      }
+    };
+
+#if __cpp_deduction_guides >= 201606
+  template <typename G_Tp> optional(G_Tp) -> optional<G_Tp>;
+#endif
+
+} // namespace gcc
+
+namespace std {
+
+  template<typename G_Tp>
+    struct hash<gcc::optional<G_Tp>>
+    // hash for optional<T&> is disabled because is_hash_enabled_for<T&> is false
+    : public std::conditional_t<
+        gcc::g_is_hash_enabled_for<std::remove_const_t<G_Tp>>::value,
+        gcc::g_optional_hash<G_Tp>,
+	gcc::g_hash_not_enabled<G_Tp>>
+    { };
+
+} // namespace std
+
+#endif // GCC_BACKPORT_GLIBCXX_OPTIONAL
