@@ -8751,17 +8751,25 @@ the implementation.
 @opindex Wstrict-aliasing
 @opindex Wno-strict-aliasing
 @item -Wstrict-aliasing
-This option is only active when @option{-fstrict-aliasing} is active.
-It warns about code that might break the strict aliasing rules that the
-compiler is using for optimization.  The warning does not catch all
-cases, but does attempt to catch the more common pitfalls.  It is
-included in @option{-Wall}.
+This option warns about code that might break the strict aliasing rules
+that the compiler uses for optimization.  The type-based checking done
+in the front end is performed even when @option{-fstrict-aliasing} is
+not active, provided @option{-Wstrict-aliasing} is requested explicitly;
+it is not performed for @option{-fno-strict-aliasing -Wall} alone.  When
+optimization is enabled, the warning also runs in the back end, where it
+handles multiple-statement cases using flow-sensitive points-to
+information.  The warning does not catch all cases, but does attempt to
+catch the more common pitfalls.  It is included in @option{-Wall}.
 It is equivalent to @option{-Wstrict-aliasing=3}.
 
 @item -Wstrict-aliasing=@var{n}
-This option is only active when @option{-fstrict-aliasing} is active.
-It warns about code that might break the strict aliasing rules that the
-compiler is using for optimization.
+This option warns about code that might break the strict aliasing rules
+that the compiler uses for optimization.  The type-based checking done
+in the front end is performed even when @option{-fstrict-aliasing} is
+not active, provided @option{-Wstrict-aliasing} is requested explicitly.
+When optimization is enabled, the warning also runs in the back end,
+where it handles multiple-statement cases using flow-sensitive points-to
+information.
 Higher levels correspond to higher accuracy (fewer false positives).
 Higher levels also correspond to more effort, similar to the way @option{-O}
 works.

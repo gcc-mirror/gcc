@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "langhooks.h"
 #include "gcc-urlifier.h"
+#include "opts.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -701,14 +702,20 @@ strict_aliasing_warning (location_t loc, tree type, tree expr)
   STRIP_NOPS (expr);
   tree otype = TREE_TYPE (expr);
 
-  if (!(flag_strict_aliasing
-	&& POINTER_TYPE_P (type)
+  if (!(POINTER_TYPE_P (type)
 	&& POINTER_TYPE_P (otype)
 	&& !VOID_TYPE_P (TREE_TYPE (type)))
       /* If the type we are casting to is a ref-all pointer
 	 dereferencing it is always valid.  */
       || TYPE_REF_CAN_ALIAS_ALL (type))
     return false;
+
+  /* Temporarily enable strict aliasing so that the alias set query
+     functions return meaningful results for the warning.
+     Only do this if the user explicitly asked for `-Wstrict-aliasing`  */
+  temp_override<int> save (flag_strict_aliasing,
+			   OPTION_SET_P (warn_strict_aliasing) ?
+			   1 : flag_strict_aliasing);
 
   if ((warn_strict_aliasing > 1) && TREE_CODE (expr) == ADDR_EXPR
       && (DECL_P (TREE_OPERAND (expr, 0))
