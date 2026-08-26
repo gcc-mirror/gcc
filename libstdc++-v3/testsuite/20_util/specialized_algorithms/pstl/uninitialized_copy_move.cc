@@ -84,13 +84,13 @@ struct test_uninitialized_copy_move
 #if defined(_PSTL_ICC_17_VC141_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) || defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN)
     template <typename InputIterator, typename OutputIterator>
     void
-    operator()(__pstl::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                size_t n, /*is_trivial<T>=*/std::true_type)
     {
     }
     template <typename InputIterator, typename OutputIterator>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, size_t n, /*is_trivial<T>=*/std::true_type)
     {
     }

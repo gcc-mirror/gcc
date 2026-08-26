@@ -35,7 +35,7 @@ struct run_copy
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size, typename T>
     void
-    operator()(__pstl::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2 expected_last, Size size,
                Size n, T trash)
     {
@@ -43,7 +43,7 @@ struct run_copy
 
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size, typename T>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, OutputIterator out_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, Size size, Size n, T trash)
     {
@@ -87,7 +87,7 @@ struct run_move
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     void
-    operator()(__pstl::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2 expected_last, Size size,
                Size n, T trash)
     {
@@ -95,7 +95,7 @@ struct run_move
 
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, OutputIterator out_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, Size size, Size n, T trash)
     {
@@ -129,7 +129,7 @@ struct run_move<Wrapper<T>>
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     void
-    operator()(__pstl::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::unsequenced_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2 expected_last, Size size,
                Size n, Wrapper<T> trash)
     {
@@ -137,7 +137,7 @@ struct run_move<Wrapper<T>>
 
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, OutputIterator out_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, Size size, Size n, Wrapper<T> trash)
     {
