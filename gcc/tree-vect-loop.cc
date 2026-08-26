@@ -6700,12 +6700,12 @@ build_vect_cond_expr (code_helper code, tree vop[3], tree mask,
    may be different from VECTYPE_IN, either in base type or vectype lanes,
    lane-reducing operation is the case.  This function check if it is possible,
    and how to perform partial vectorization on the operation in the context
-   of LOOP_VINFO.  */
+   of LOOP_VINFO.  It returns whether partial vectors are possible.  The
+   caller is responsible to register the usage appropriately.  */
 
-static void
+static bool
 vect_reduction_update_partial_vector_usage (loop_vec_info loop_vinfo,
 					    vect_reduc_info reduc_info,
-					    slp_tree slp_node,
 					    code_helper code, tree type,
 					    tree vectype_in)
 {
@@ -6750,18 +6750,8 @@ vect_reduction_update_partial_vector_usage (loop_vec_info loop_vinfo,
       LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
     }
   else
-    {
-      internal_fn mask_reduc_fn
-			= get_masked_reduction_fn (reduc_fn, vectype_in);
-      vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
-      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
-      unsigned nvectors = vect_get_num_copies (loop_vinfo, slp_node);
-
-      if (mask_reduc_fn == IFN_MASK_LEN_FOLD_LEFT_PLUS)
-	vect_record_loop_len (loop_vinfo, lens, nvectors, vectype_in, 1);
-      else
-	vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype_in, NULL);
-    }
+    return true;
+  return false;
 }
 
 /* Check if STMT_INFO is a lane-reducing operation that can be vectorized in
@@ -6888,9 +6878,21 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
     {
       enum tree_code code = gimple_assign_rhs_code (stmt);
-      vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
-						  node_in, code, type,
-						  vectype_in);
+      if (vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
+						      code, type, vectype_in))
+	{
+	  internal_fn reduc_fn = VECT_REDUC_INFO_FN (reduc_info);
+	  internal_fn mask_reduc_fn
+	    = get_masked_reduction_fn (reduc_fn, vectype_in);
+	  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+	  vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
+	  if (mask_reduc_fn == IFN_MASK_LEN_FOLD_LEFT_PLUS)
+	    vect_record_loop_len (loop_vinfo, lens, ncopies_for_cost,
+				  vectype_in, 1);
+	  else
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies_for_cost,
+				   vectype_in, NULL);
+	}
     }
 
   /* Transform via vect_transform_reduction.  */
@@ -7855,10 +7857,22 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   else
     {
       STMT_VINFO_DEF_TYPE (tem) = vect_reduction_def;
-      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-	vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
-						    slp_node, op.code, op.type,
-						    vectype_in);
+      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	  && vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
+							 op.code, op.type,
+							 vectype_in))
+	{
+	  internal_fn reduc_fn = VECT_REDUC_INFO_FN (reduc_info);
+	  internal_fn mask_reduc_fn
+	    = get_masked_reduction_fn (reduc_fn, vectype_in);
+	  vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
+	  vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
+	  if (mask_reduc_fn == IFN_MASK_LEN_FOLD_LEFT_PLUS)
+	    vect_record_loop_len (loop_vinfo, lens, ncopies, vectype_in, 1);
+	  else
+	    vect_record_loop_mask (loop_vinfo, masks, ncopies,
+				   vectype_in, NULL);
+	}
     }
   return true;
 }
