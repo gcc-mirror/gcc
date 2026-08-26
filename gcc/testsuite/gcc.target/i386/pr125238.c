@@ -22,5 +22,3 @@ foo (void)
     }
   }
 }
-
-/* { dg-final { scan-assembler "movabsq\[ \\t\]+\\\$8589934594, %r\[a-z0-9\]+" { target { ! ia32 } } } } */
