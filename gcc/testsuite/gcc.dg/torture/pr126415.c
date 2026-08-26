@@ -4,6 +4,7 @@
    original widened operation is fully defined.  The narrow op then collapses
    through defined-wrap identities (mod 2^narrow-prec), changing the value.  */
 /* { dg-do run } */
+/* { dg-require-effective-target int32plus } */
 
 int printf(const char *, ...);
 
