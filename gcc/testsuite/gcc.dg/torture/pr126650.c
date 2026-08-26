@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { le || be } } } */
 
 #include <stdarg.h>
 #include <stdlib.h>
@@ -17,14 +17,14 @@ void __attribute__((noipa)) foo (int n, ...)
 
 int main()
 {
-  struct b {
+  struct __attribute__ ((scalar_storage_order ("little-endian"))) b {
     int : 7;
     int : 2;
     int : 6;
     int : 3;
     int c : 7;
   };
-  union {
+  union __attribute__ ((scalar_storage_order ("little-endian"))) {
     int d;
     struct b bf;
     char e[4];
