@@ -4070,6 +4070,14 @@ static const std::set<std::string> reserved_words = {
   "END-START",
 
   // ISO 2023 keywords
+  "B_AND",
+  "B_NOT",
+  "B_OR",
+  "B_SHIFT_L",
+  "B_SHIFT_LC",
+  "B_SHIFT_R",
+  "B_SHIFT_RC",
+  "B_XOR",
   "ACCEPT",
   "ACCESS",
   "ACTIVE-CLASS",

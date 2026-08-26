@@ -1664,17 +1664,17 @@ cdf_words:	%empty
 cobol_words:	cobol_words1
 	|	cobol_words cobol_words1
 		;
-cobol_words1:	COBOL_WORDS EQUATE NAME[keyword] WITH NAME[name] {
-		  if( ! cdf_tokens.equate(@keyword, $keyword, $name) ) { YYERROR; }
+cobol_words1:	COBOL_WORDS EQUATE LITERAL[keyword] WITH LITERAL[name] {
+		  if( ! cdf_tokens.equate(@keyword, $keyword.data, $name.data) ) { YYERROR; }
 		}
-	|	COBOL_WORDS UNDEFINE NAME[keyword] {
-		  if( ! cdf_tokens.undefine(@keyword, $keyword) ) { YYERROR; }
+	|	COBOL_WORDS UNDEFINE LITERAL[keyword] {
+		  if( ! cdf_tokens.undefine(@keyword, $keyword.data) ) { YYERROR; }
 		}
-	|	COBOL_WORDS SUBSTITUTE NAME[keyword] BY NAME[name] {
-		  if( ! cdf_tokens.substitute(@keyword, $keyword, $name) ) { YYERROR; }
+	|	COBOL_WORDS SUBSTITUTE LITERAL[keyword] BY LITERAL[name] {
+		  if( ! cdf_tokens.substitute(@keyword, $keyword.data, $name.data) ) { YYERROR; }
 		}
-	|	COBOL_WORDS RESERVE NAME[name] {
-		  if( ! cdf_tokens.reserve(@name, $name) ) { YYERROR; }
+	|	COBOL_WORDS RESERVE LITERAL[name] {
+		  if( ! cdf_tokens.reserve(@name, $name.data) ) { YYERROR; }
 		}
         |       PROCESS {
                   cbl_message(@1, IbmCdf, "CDF directive ignored: %qs", $1);
