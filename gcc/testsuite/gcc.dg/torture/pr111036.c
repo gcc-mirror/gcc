@@ -10,7 +10,7 @@ __attribute__((aligned(32))) static struct
 static inline void __attribute__((always_inline))
 foo (void *base, size_t length)
 {
-  unsigned long int p = (unsigned long int) base;
+  __UINTPTR_TYPE__ p = (__UINTPTR_TYPE__) base;
   if (__builtin_constant_p(p) && (p & 31) == 0) { exit (0); } 
   else if (__builtin_constant_p(length)) { exit (0); } 
   else { exit (0); }
