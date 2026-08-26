@@ -1295,6 +1295,32 @@
    ""
   [(set_attr "type" "bitmanip")])
 
+;; BEXT masks the bit position with XLEN - 1.  Fold an explicit mask only
+;; when it has exactly the same semantics.
+(define_split
+  [(set (pc)
+	(if_then_else
+	  (match_operator 1 "equality_operator"
+	   [(zero_extract:X (match_operand:X 2 "register_operand")
+			    (const_int 1)
+			    (and:X
+			      (match_operand:X 3 "register_operand")
+			      (match_operand 4 "const_int_operand")))
+	    (const_int 0)])
+	  (label_ref (match_operand 0 ""))
+	  (pc)))]
+  "TARGET_ZBS
+   && UINTVAL (operands[4]) + 1 == GET_MODE_BITSIZE (<MODE>mode)"
+  [(set (match_dup 5) (zero_extract:X (match_dup 2)
+				      (const_int 1)
+				      (and:X (match_dup 3)
+					     (match_dup 4))))
+   (set (pc) (if_then_else (match_op_dup 1
+					[(match_dup 5) (const_int 0)])
+			   (label_ref (match_dup 0))
+			   (pc)))]
+  "operands[5] = gen_reg_rtx (<MODE>mode);")
+
 ;; ZBKC or ZBC extension
 (define_insn "riscv_clmul_<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=r")
