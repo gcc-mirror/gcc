@@ -6852,9 +6852,12 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   tree vectype_in = SLP_TREE_VECTYPE (node_in);
   gcc_assert (vectype_in);
 
-  /* Compute number of effective vector statements for costing.  */
-  unsigned int ncopies_for_cost = vect_get_num_copies (loop_vinfo, node_in);
-  gcc_assert (ncopies_for_cost >= 1);
+  /* Compute number of effective vector statements for costing from the
+     number of input lanes allow for excess lanes in the last input vector.  */
+  unsigned int ncopies_for_cost;
+  bool res = vect_get_num_copies_for_invariant (loop_vinfo, node_in,
+						&ncopies_for_cost);
+  gcc_assert (res && ncopies_for_cost >= 1);
 
   if (vect_is_emulated_mixed_dot_prod (slp_node))
     {

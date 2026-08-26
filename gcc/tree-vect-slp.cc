@@ -8910,7 +8910,7 @@ vect_scalar_ops_slice_hash::equal (const value_type &s1,
    excess elements in the last vector.  Returns false if *NVECTORS
    cannot be computed.  */
 
-static bool
+bool
 vect_get_num_copies_for_invariant (vec_info *vinfo, slp_tree node,
 				   unsigned *nvectors)
 {
