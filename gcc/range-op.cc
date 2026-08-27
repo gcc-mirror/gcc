@@ -4408,7 +4408,49 @@ public:
 				const irange &op1_range,
 				const irange &op2_range,
 				relation_kind rel) const final override;
+protected:
+  bool same_quotient (wide_int &lb, wide_int &ub, const wide_int &x_lb,
+		      const wide_int &x_ub, const wide_int &y_lb,
+		      const wide_int &y_ub, signop sign) const;
 } op_trunc_mod;
+
+
+bool
+operator_trunc_mod::same_quotient (wide_int &lb, wide_int &ub,
+				  const wide_int &x_lb, const wide_int &x_ub,
+				  const wide_int &y_lb, const wide_int &y_ub,
+				  signop sign) const
+{
+  // Y must not contain zero.
+  if (wi::ge_p (y_ub, 0, sign) && wi::le_p (y_lb, 0, sign))
+    return false;
+
+  // If all endpoints do not have the same quotient, nothing further.
+  wide_int q = wi::div_trunc (x_lb, y_lb, sign);
+  if (q != wi::div_trunc (x_lb, y_ub, sign))
+    return false;
+  if (q != wi::div_trunc (x_ub, y_lb, sign))
+    return false;
+  if (q != wi::div_trunc (x_ub, y_ub, sign))
+    return false;
+
+  // Compute the range extremes.
+  wide_int v1 = x_lb - q * y_lb;
+  wide_int v2 = x_lb - q * y_ub;
+  wide_int v3 = x_ub - q * y_lb;
+  wide_int v4 = x_ub - q * y_ub;
+
+  // And choose the minimum and maximum
+  lb = wi::min (v1, v2, sign);
+  lb = wi::min (lb, v3, sign);
+  lb = wi::min (lb, v4, sign);
+
+  ub = wi::max (v1, v2, sign);
+  ub = wi::max (ub, v3, sign);
+  ub = wi::max (ub, v4, sign);
+
+  return true;
+}
 
 void
 operator_trunc_mod::wi_fold (irange &r, tree type,
@@ -4465,22 +4507,12 @@ operator_trunc_mod::wi_fold (irange &r, tree type,
 
   value_range_with_overflow (r, type, new_lb, new_ub);
 
-  // When all positive and all X/Y combinations produce the same quotient
-  // we can refine the result with    X % Y == X - Q * Y.
-  // Ensure that division by 0 is not an option.
-  if (wi::gt_p (rh_lb, 0, sign) && wi::ge_p (lh_lb, 0, sign))
+  // If all X/Y combinations have the same quotient, refine using
+  // X % Y == X - Q * Y.
+  if (same_quotient (new_lb, new_ub, lh_lb, lh_ub, rh_lb, rh_ub, sign))
     {
-      wide_int q_lb = wi::div_trunc (lh_lb, rh_ub, sign);
-      wide_int q_ub = wi::div_trunc (lh_ub, rh_lb, sign);
-
-      if (q_lb == q_ub)
-	{
-	  new_lb = lh_lb - q_lb * rh_ub;
-	  new_ub = lh_ub - q_lb * rh_lb;
-
-	  int_range<2> refined (type, new_lb, new_ub);
-	  r.intersect (refined);
-	}
+      int_range<2> refined (type, new_lb, new_ub);
+      r.intersect (refined);
     }
 }
 
