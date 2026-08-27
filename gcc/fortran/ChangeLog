@@ -1,3 +1,13 @@
+2026-08-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/126127
+	* interface.cc (find_symtree0): Check for NULL pointer.
+	(gfc_find_sym_in_symtree): Also search user-defined operator list
+	when the symbol refers to a function.
+
 2026-08-16  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
