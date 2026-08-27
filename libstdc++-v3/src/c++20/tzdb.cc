@@ -250,14 +250,20 @@ namespace std::chrono
 	switch (c)
 	{
 	  case 's':
+	  case 'S':
 	    return {Standard, true};
 	  case 'u':
+	  case 'U':
 	  case 'g':
+	  case 'G':
 	  case 'z':
+	  case 'Z':
 	    return {Universal, true};
 	  case 'w':
+	  case 'W':
 	    return {Wall, true};
 	  case 'd':
+	  case 'D':
 	    return {Daylight, true};
 	  default:
 	    return {Wall, false};
@@ -377,7 +383,7 @@ namespace std::chrono
       {
 	string s;
 	auto c = ws(in).peek();
-	if (c == 'm') [[unlikely]] // keyword "minimum"
+	if (c == 'm' || c == 'M') [[unlikely]] // keyword "minimum"
 	  {
 	    in >> s; // extract the rest of the word
 	    yy.from = year(1900);
@@ -386,12 +392,12 @@ namespace std::chrono
 	  yy.from = year{num};
 
 	c = ws(in).peek();
-	if (c == 'm') // keyword "maximum"
+	if (c == 'm' || c == 'M') // keyword "maximum"
 	  {
 	    in >> s; // extract the rest of the word
 	    yy.to = year::max();
 	  }
-	else if (c == 'o') // keyword "only"
+	else if (c == 'o' || c == 'O') // keyword "only"
 	  {
 	    in >> s; // extract the rest of the word
 	    yy.to = yy.from;
@@ -1532,28 +1538,37 @@ namespace std::chrono
 	    {
 	      case '#':
 		break;
+	      case 'r':
 	      case 'R':
 	      {
 		// Rule  NAME  FROM  TO  TYPE  IN  ON  AT  SAVE  LETTER/S
 		is >> type; // extract the "Rule" or "R" marker
+		type[0] = 'R';
+
 		Rule rule;
 		is >> rule;
 		node->rules.push_back(std::move(rule));
 		break;
 	      }
+	      case 'l':
 	      case 'L':
 	      {
 		// Link  TARGET           LINK-NAME
 		is >> type; // extract the "Link" or "L" marker
+		type[0] = 'L';
+
 		time_zone_link link(nullptr);
 		is >> quoted(link._M_target) >> quoted(link._M_name);
 		node->db.links.push_back(std::move(link));
 		break;
 	      }
+	      case 'z':
 	      case 'Z':
 	      {
 		// Zone  NAME        STDOFF  RULES   FORMAT  [UNTIL]
 		is >> type; // extract the "Zone" or "Z" marker
+		type[0] = 'Z';
+
 		time_zone tz(std::make_unique<time_zone::_Impl>(node));
 		is >> quoted(tz._M_name);
 		node->db.zones.push_back(time_zone(std::move(tz)));
@@ -1937,60 +1952,76 @@ namespace std::chrono
       in >> s;
       switch (s[0])
       {
+      case 'j':
       case 'J':
 	switch (s[1])
 	{
 	case 'a':
+	case 'A':
 	  am.m = January;
 	  return in;
 	case 'u':
+	case 'U':
 	  switch (s[2])
 	  {
 	  case 'n':
+	  case 'N':
 	    am.m = June;
 	    return in;
 	  case 'l':
+	  case 'L':
 	    am.m = July;
 	    return in;
 	  }
 	  break;
 	}
 	break;
+      case 'f':
       case 'F':
 	am.m = February;
 	return in;
+      case 'm':
       case 'M':
-	if (s[1] == 'a') [[likely]]
+	if (s[1] == 'a' || s[1] == 'A') [[likely]]
 	  switch (s[2])
 	  {
 	  case 'r':
+	  case 'R':
 	    am.m = March;
 	    return in;
 	  case 'y':
+	  case 'Y':
 	    am.m = May;
 	    return in;
 	  }
 	break;
+      case 'a':
       case 'A':
 	switch (s[1])
 	{
 	case 'p':
+	case 'P':
 	  am.m = April;
 	  return in;
 	case 'u':
+	case 'U':
 	  am.m = August;
 	  return in;
 	}
 	break;
+      case 's':
       case 'S':
 	am.m = September;
 	return in;
+      case 'o':
       case 'O':
 	am.m = October;
 	return in;
+      case 'n':
       case 'N':
 	am.m = November;
 	return in;
+      case 'd':
       case 'D':
 	am.m = December;
 	return in;
@@ -2014,37 +2045,46 @@ namespace std::chrono
 	// Just peek at one char at a time.
 	switch (in.peek())
 	{
+	case 'm':
 	case 'M':
 	  aw.wd = Monday;
 	  break;
+	case 't':
 	case 'T':
 	  in.ignore(1); // Discard the 'T'
 	  switch (in.peek())
 	  {
 	  case 'u':
+	  case 'U':
 	    aw.wd = Tuesday;
 	    break;
 	  case 'h':
+	  case 'H':
 	    aw.wd = Thursday;
 	    break;
 	  default:
 	    in.setstate(ios::failbit);
 	  }
 	  break;
+	case 'w':
 	case 'W':
 	  aw.wd = Wednesday;
 	  break;
+	case 'f':
 	case 'F':
 	  aw.wd = Friday;
 	  break;
+	case 's':
 	case 'S':
 	  in.ignore(1); // Discard the 'S'
 	  switch (in.peek())
 	  {
 	  case 'a':
+	  case 'A':
 	    aw.wd = Saturday;
 	    break;
 	  case 'u':
+	  case 'U':
 	    aw.wd = Sunday;
 	    break;
 	  default:
@@ -2057,7 +2097,7 @@ namespace std::chrono
 	in.ignore(1); // Discard whichever char we just looked at.
 
 	// Discard any remaining chars from weekday, e.g. "onday".
-	string_view day_chars = "ondayesritu";
+	string_view day_chars = "ondayesrituONDAYESRITU";
 	auto is_day_char = [&day_chars](int c) {
 	  return c != char_traits<char>::eof()
 		   && day_chars.find((char)c) != day_chars.npos;
@@ -2091,7 +2131,7 @@ namespace std::chrono
 		  return in;
 		}
 	    }
-	  else if (c == 'l') // lastSunday, lastWed, ...
+	  else if (c == 'l' || c == 'L') // lastSunday, lastWed, ...
 	    {
 	      in.ignore(4);
 	      if (abbrev_weekday w{}; in >> w) [[likely]]
