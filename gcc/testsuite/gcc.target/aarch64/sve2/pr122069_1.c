@@ -24,8 +24,7 @@ int foo_int(unsigned char *x, unsigned char * restrict y) {
 ** foo2_int:
 ** 	...
 ** 	add	z[0-9]+.h, z[0-9]+.h, z[0-9]+.h
-** 	uaddwb	z[0-9]+.s, z[0-9]+.s, z[0-9]+.h
-** 	uaddwt	z[0-9]+.s, z[0-9]+.s, z[0-9]+.h
+** 	uadalp	z[0-9]+.s, p[0-7]/m, z[0-9]+.h
 ** 	...
 */
 int foo2_int(unsigned short *x, unsigned short * restrict y) {
