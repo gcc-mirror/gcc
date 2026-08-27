@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -ffast-math -mapxf -mno-80387 -mfpmath=387" } */
+/* { dg-options "-O2 -ffast-math -mapxf -mno-80387 -mno-sse" } */
 
 int foo (int a, double b) {
   if (a || b)

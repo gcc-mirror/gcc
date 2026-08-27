@@ -2793,6 +2793,13 @@ ix86_option_override_internal (bool main_args_p,
 	      opts->x_ix86_fpmath = FPMATH_SSE;
 	    }
 	}
+      else if ((opts->x_ix86_fpmath & FPMATH_387)
+	       && !TARGET_80387_P (opts->x_target_flags)
+	       && TARGET_SSE_P (opts->x_ix86_isa_flags))
+	{
+	  warning (0, "387 instruction set disabled, using SSE arithmetics");
+	  opts->x_ix86_fpmath = FPMATH_SSE;
+	}
     }
   /* For all chips supporting SSE2, -mfpmath=sse performs better than
      fpmath=387.  The second is however default at many targets since the
