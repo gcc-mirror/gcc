@@ -1,3 +1,9 @@
+2026-08-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127026
+	* exp_aggr.adb (Must_Slide): Check for the unconstrained case only
+	after all the negative tests.
+
 2026-08-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/127026

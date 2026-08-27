@@ -1,3 +1,21 @@
+2026-08-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/125984
+	* tree-dfa.cc (get_ref_base_and_extent) <ARRAY_REF>: Use the range
+	of the difference between the index expression and the low bound,
+	instead of that of the index expression itself, to constrain the
+	maximum size of the access.
+
+2026-08-26  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	Backported from master:
+	2026-08-25  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Detect AVX512BMM from
+	extended features instead of standard leaf.
+	* config/i386/cpuid.h (bit_AVX512BMM): Move to extended features
+	section.
+
 2026-08-25  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* config/aarch64/aarch64-sys-regs.def: Sync from Binutils.

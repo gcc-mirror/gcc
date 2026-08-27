@@ -1,3 +1,25 @@
+2026-08-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt110.adb: New test.
+
+2026-08-26  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	Backported from master:
+	2026-08-25  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* gcc.target/i386/avx512bmm-check-1.c: New test.
+	* gcc.target/i386/avx512bmm-check-2.c: New test.
+	* gcc.target/i386/avx512bmm-check-3.c: New test.
+
+2026-08-26  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2026-08-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/126650
+	* gcc.dg/torture/pr126650.c: Be explicit about endianness
+	expectations.
+
 2026-08-25  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
