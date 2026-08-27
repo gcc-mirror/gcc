@@ -4,7 +4,7 @@
 /* PR tree-optimization/123778 */
 
 typedef char (*t)[3];
-long __GIMPLE(ssa) f(char a, int d)
+__PTRDIFF_TYPE__ __GIMPLE(ssa) f(char a, int d)
 {
   _Bool _107;
   __PTRDIFF_TYPE__ _14;
