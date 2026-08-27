@@ -1,3 +1,18 @@
+2026-08-26  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/126611
+	* parse.y: Modify COBOL WORDS grammar.
+	* scan.l: Add support for $DISPLAY.
+	* util.cc: Add Boolean bit-operators to reserved-word list.
+
+2026-08-26  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/126611
+	* cdf.y: Renumber tokens.
+	* parse.y: Add tokens from ISO CDF reserved word list.
+	* scan.l: Same, and reposition.
+	* token_names.h: Regenerate.
+
 2026-08-25  James K. Lowden  <jklowden@cobolworx.com>
 
 	* cbldiag.h (enum cbl_diag_id_t): Add ParDynamicCall.

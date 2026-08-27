@@ -1,3 +1,38 @@
+2026-08-26  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config.gcc: Default the 64b arch to core2.
+
+2026-08-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_gen_ccmp_next): Reject a
+	comparison that would lose an observable exception.
+	* target.def (gen_ccmp_next): Document the rule.
+	* doc/tm.texi: Regenerate.
+
+2026-08-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc (aarch64_fp_cc_mode): New function.
+	Use CCFPmode when the FCMPE exception is not observable.
+	(aarch64_select_cc_mode): Use it.
+
+2026-08-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* match.pd (REDUC (@0 op VECTOR_CST)): Require FMAX and FMIN
+	constant reductions to simplify.
+
+2026-08-26  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/125138
+	* config/rs6000/vsx.md (xxpermx): Use a temporary register for the
+	negated control vector.
+
+2026-08-26  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* cgraph.cc (cgraph_nodes_queue): Removed.
+	(cgraph_cc_finalize): Removed cgraph_nodes_queue
+	initialization.
+
 2026-08-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/125984

@@ -1,3 +1,93 @@
+2026-08-26  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* g++.dg/gcov/gcov-12.C: Require effective target fpic.
+	* g++.old-deja/g++.mike/eh30.C: Ditto.
+	* g++.old-deja/g++.mike/p4750.C: Ditto.
+	* g++.old-deja/g++.robertl/eb106.C: Ditto.
+
+2026-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/82065
+	* gfortran.dg/iso_fortran_env_10.f90: New test.
+
+2026-08-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/126415
+	PR testsuite/52641
+	* gcc.dg/torture/pr126415.c: Require int32plus.
+
+2026-08-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/49330
+	PR testsuite/52641
+	* gcc.dg/torture/pr49330-2.c (foo): Use __UINTPTR_TYPE__
+	instead of unsigned long.
+
+2026-08-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/fccmp-trap-1.c: New test.
+	* gcc.target/aarch64/fccmp-trap-2.c: Likewise.
+	* gcc.target/aarch64/fccmp-trap-3.c: Likewise.
+
+2026-08-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/ccmp_1.c: Update and anchor the FP scans.
+	* gcc.target/aarch64/fccmp_1.c: Update the expected mode.
+	* gcc.target/aarch64/fccmp_3.c: New test.
+
+2026-08-26  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* gcc.target/aarch64/vec-reduc-fmax-const-1.c: New test.
+
+2026-08-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/52641
+	* gcc.dg/torture/inline-mem-set-1.c: Require size20plus.
+
+2026-08-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/111036
+	* gcc.dg/torture/pr111036.c (foo): Use __UINTPTR_TYPE__
+	instead of unsigned long int.
+
+2026-08-26  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/116353
+	* gcc.dg/torture/pr116353.c: Require int32plus.
+
+2026-08-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/vect/pr122797.c: Remove explict "dg-do run".
+	* gcc.dg/vect/pr123731.c: Likewise.
+
+2026-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/125238
+	* gcc.target/i386/pr125238.c: Remove scan for
+	mpvabsq.
+
+2026-08-26  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/127048
+	* gcc.target/i386/pr89523-1a.c: Remove scan for addr32 vgather.
+	* gcc.target/i386/pr89523-1b.c: Likewise.
+
+2026-08-26  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/125138
+	* gcc.target/powerpc/pr125138.c: New test.
+
+2026-08-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/pr126538.c: Require bitint.
+
+2026-08-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/126650
+	* gcc.dg/torture/pr126650.c: Be explicit about endianness
+	expectations.
+
 2026-08-26  Sebastian Miles  <sebastianmiles20@gmail.com>
 
 	PR c++/127016
