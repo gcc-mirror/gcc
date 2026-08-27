@@ -394,7 +394,9 @@ phi_analyzer::process_phi (gphi *phi, range_query &query)
 	  cycle_p = false;
 	  break;
 	}
-      bitmap_set_bit (m_current, SSA_NAME_VERSION (phi_def));
+      // If the PHI is already processed, no need to scan it again.
+      if (!bitmap_set_bit (m_current, SSA_NAME_VERSION (phi_def)))
+	continue;
       // Process the args.
       for (x = 0; x < gimple_phi_num_args (phi_stmt); x++)
 	{
