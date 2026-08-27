@@ -180,6 +180,7 @@ static bool xtensa_member_type_forces_blk (const_tree,
 
 static void xtensa_conditional_register_usage (void);
 static unsigned int xtensa_hard_regno_nregs (unsigned int, machine_mode);
+static unsigned char xtensa_class_max_nregs (reg_class_t, machine_mode);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 static HOST_WIDE_INT xtensa_constant_alignment (const_tree, HOST_WIDE_INT);
@@ -339,6 +340,10 @@ static tree xtensa_handle_force_l32_attribute (tree *, tree, tree, int, bool *);
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS xtensa_hard_regno_nregs
+
+#undef TARGET_CLASS_MAX_NREGS
+#define TARGET_CLASS_MAX_NREGS xtensa_class_max_nregs
+
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK xtensa_hard_regno_mode_ok
 
@@ -857,25 +862,26 @@ gen_float_relational (enum rtx_code test_code, /* relational test (EQ, etc) */
   rtx (*gen_fn) (rtx, rtx, rtx);
   rtx brtmp;
   int reverse_regs, invert;
+  bool sf = GET_MODE (cmp0) == E_SFmode;
 
   switch (test_code)
     {
-    case EQ: reverse_regs = 0; invert = 0; gen_fn = gen_seq_sf; break;
-    case NE: reverse_regs = 0; invert = 1; gen_fn = gen_seq_sf; break;
-    case LE: reverse_regs = 0; invert = 0; gen_fn = gen_sle_sf; break;
-    case GT: reverse_regs = 1; invert = 0; gen_fn = gen_slt_sf; break;
-    case LT: reverse_regs = 0; invert = 0; gen_fn = gen_slt_sf; break;
-    case GE: reverse_regs = 1; invert = 0; gen_fn = gen_sle_sf; break;
-    case UNEQ: reverse_regs = 0; invert = 0; gen_fn = gen_suneq_sf; break;
-    case LTGT: reverse_regs = 0; invert = 1; gen_fn = gen_suneq_sf; break;
-    case UNLE: reverse_regs = 0; invert = 0; gen_fn = gen_sunle_sf; break;
-    case UNGT: reverse_regs = 1; invert = 0; gen_fn = gen_sunlt_sf; break;
-    case UNLT: reverse_regs = 0; invert = 0; gen_fn = gen_sunlt_sf; break;
-    case UNGE: reverse_regs = 1; invert = 0; gen_fn = gen_sunle_sf; break;
+    case EQ: reverse_regs = 0; invert = 0; gen_fn = sf ? gen_seq_sf : gen_seq_df; break;
+    case NE: reverse_regs = 0; invert = 1; gen_fn = sf ? gen_seq_sf : gen_seq_df; break;
+    case LE: reverse_regs = 0; invert = 0; gen_fn = sf ? gen_sle_sf : gen_sle_df; break;
+    case GT: reverse_regs = 1; invert = 0; gen_fn = sf ? gen_slt_sf : gen_slt_df; break;
+    case LT: reverse_regs = 0; invert = 0; gen_fn = sf ? gen_slt_sf : gen_slt_df; break;
+    case GE: reverse_regs = 1; invert = 0; gen_fn = sf ? gen_sle_sf : gen_sle_df; break;
+    case UNEQ: reverse_regs = 0; invert = 0; gen_fn = sf ? gen_suneq_sf : gen_suneq_df; break;
+    case LTGT: reverse_regs = 0; invert = 1; gen_fn = sf ? gen_suneq_sf : gen_suneq_df; break;
+    case UNLE: reverse_regs = 0; invert = 0; gen_fn = sf ? gen_sunle_sf : gen_sunle_df; break;
+    case UNGT: reverse_regs = 1; invert = 0; gen_fn = sf ? gen_sunlt_sf : gen_sunlt_df; break;
+    case UNLT: reverse_regs = 0; invert = 0; gen_fn = sf ? gen_sunlt_sf : gen_sunlt_df; break;
+    case UNGE: reverse_regs = 1; invert = 0; gen_fn = sf ? gen_sunle_sf : gen_sunle_df; break;
     case UNORDERED:
-      reverse_regs = 0; invert = 0; gen_fn = gen_sunordered_sf; break;
+      reverse_regs = 0; invert = 0; gen_fn = sf ? gen_sunordered_sf : gen_sunordered_df; break;
     case ORDERED:
-      reverse_regs = 0; invert = 1; gen_fn = gen_sunordered_sf; break;
+      reverse_regs = 0; invert = 1; gen_fn = sf ? gen_sunordered_sf : gen_sunordered_df; break;
     default:
       fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
       reverse_regs = 0; invert = 0; gen_fn = 0; /* avoid compiler warnings */
@@ -902,14 +908,21 @@ xtensa_expand_conditional_branch (rtx *operands, machine_mode mode)
   switch (mode)
     {
     case E_SFmode:
-      if (TARGET_HARD_FLOAT)
+      if (TARGET_FLOAT32)
+	{
+	  cmp = gen_float_relational (test_code, cmp0, cmp1);
+	  break;
+	}
+      fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
+
+    case E_DFmode:
+      if (TARGET_FLOAT64)
 	{
 	  cmp = gen_float_relational (test_code, cmp0, cmp1);
 	  break;
 	}
       /* FALLTHRU */
 
-    case E_DFmode:
     default:
       fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
 
@@ -992,7 +1005,8 @@ gen_conditional_move (enum rtx_code code, machine_mode mode,
       return gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
     }
 
-  if (TARGET_HARD_FLOAT && mode == SFmode)
+  if ((TARGET_FLOAT32 && mode == SFmode)
+      || (TARGET_FLOAT64 && mode == DFmode))
     return gen_float_relational (code, op0, op1);
 
   return 0;
@@ -1000,7 +1014,7 @@ gen_conditional_move (enum rtx_code code, machine_mode mode,
 
 
 int
-xtensa_expand_conditional_move (rtx *operands, int isflt)
+xtensa_expand_conditional_move (rtx *operands, machine_mode mode)
 {
   rtx dest = operands[0];
   rtx cmp = operands[1];
@@ -1011,14 +1025,29 @@ xtensa_expand_conditional_move (rtx *operands, int isflt)
 				    XEXP (cmp, 0), XEXP (cmp, 1))))
     return 0;
 
-  if (isflt)
-    gen_fn = (cmp_mode == SImode
-	      ? gen_movsfcc_internal0
-	      : gen_movsfcc_internal1);
-  else
-    gen_fn = (cmp_mode == SImode
-	      ? gen_movsicc_internal0
-	      : gen_movsicc_internal1);
+  switch (mode)
+    {
+    case E_SImode:
+      gen_fn = (cmp_mode == SImode
+		? gen_movsicc_internal0
+		: gen_movsicc_internal1);
+      break;
+
+    case E_SFmode:
+      gen_fn = (cmp_mode == SImode
+		? gen_movsfcc_internal0
+		: gen_movsfcc_internal1);
+      break;
+
+    case E_DFmode:
+      gen_fn = (cmp_mode == SImode
+		? gen_movdfcc_internal0
+		: gen_movdfcc_internal1);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
 
   emit_insn (gen_fn (dest, XEXP (cmp, 0), operands[2], operands[3], cmp));
   return 1;
@@ -1300,6 +1329,8 @@ xtensa_copy_incoming_a7 (rtx opnd)
   switch (mode)
     {
     case E_DFmode:
+      emit_insn (gen_movdf_internal (tmp, gen_raw_REG (mode, A7_REG - 1)));
+      break;
     case E_DImode:
       /* Copy the value out of A7 here but keep the first word in A6 until
 	 after the set_frame_ptr insn.  Otherwise, the register allocator
@@ -1307,6 +1338,8 @@ xtensa_copy_incoming_a7 (rtx opnd)
 	 value.  */
       emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 4),
 				     gen_raw_REG (SImode, A7_REG)));
+      emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 0),
+				     gen_rtx_REG (SImode, A7_REG - 1)));
       break;
     case E_SFmode:
       emit_insn (gen_movsf_internal (tmp, gen_raw_REG (mode, A7_REG)));
@@ -1326,10 +1359,6 @@ xtensa_copy_incoming_a7 (rtx opnd)
 
   cfun->machine->set_frame_ptr_insn = emit_insn (gen_set_frame_ptr ());
 
-  /* For DF and DI mode arguments, copy the incoming value in A6 now.  */
-  if (mode == DFmode || mode == DImode)
-    emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 0),
-				   gen_rtx_REG (SImode, A7_REG - 1)));
   entry_insns = end_sequence ();
 
   if (cfun->machine->vararg_a7)
@@ -2103,6 +2132,8 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
   static char result[64];
   enum rtx_code code;
   const char *op;
+  const char *dot_suffix = "";
+  int n;
 
   code = GET_CODE (operands[4]);
   if (inverted)
@@ -2127,9 +2158,26 @@ xtensa_emit_movcc (bool inverted, bool isfp, bool isbool, rtx *operands)
 	default:	gcc_unreachable ();
 	}
     }
+  if (isfp)
+    {
+      switch (GET_MODE (operands[0]))
+	{
+	case E_SFmode:	dot_suffix = ".s"; break;
+	case E_DFmode:	dot_suffix = ".s"; break; /* It should be .d, but this
+						     is supposed to be a macro
+						     and it's missing in the
+						     assembler. */
+	default:	gcc_unreachable ();
+	}
+    }
 
-  sprintf (result, "mov%s%s\t%%0, %%%d, %%1",
-	   op, isfp ? ".s" : "", inverted ? 3 : 2);
+  n = sprintf (result, "mov%s%s\t%%0, %%%d, %%1",
+	       op, dot_suffix, inverted ? 3 : 2);
+  if (!isfp && GET_MODE (operands[0]) == E_DFmode)
+    {
+      sprintf (result + n, " ; mov%s\t%%D0, %%D%d, %%1",
+	       op, inverted ? 3 : 2);
+    }
   return result;
 }
 
@@ -3000,7 +3048,8 @@ xtensa_option_override (void)
 	  else if (GP_REG_P (regno))
 	    temp = ((regno & 1) == 0 || (size <= UNITS_PER_WORD));
 	  else if (FP_REG_P (regno))
-	    temp = (TARGET_HARD_FLOAT && (mode == SFmode));
+	    temp = ((TARGET_FLOAT32 && mode == SFmode)
+		    || (TARGET_FLOAT64 && mode == DFmode));
 	  else if (BR_REG_P (regno))
 	    temp = (TARGET_BOOLEANS && (mode == CCmode));
 	  else
@@ -3070,6 +3119,16 @@ xtensa_hard_regno_nregs (unsigned int regno, machine_mode mode)
   return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
+/* Implement TARGET_CLASS_MAX_NREGS.  */
+
+static unsigned char
+xtensa_class_max_nregs (reg_class_t rclass, machine_mode mode)
+{
+  if (rclass == FP_REGS)
+    return CEIL (GET_MODE_SIZE (mode), UNITS_PER_FPREG);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
@@ -3123,6 +3182,8 @@ xtensa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
    'G', CONST_DOUBLE:SF, print 0~3 when rval is 0.0f, 1.0f, 2.0f, or 0.5f,
 	respectively.
    'D'  REG, print second register of double-word register operand
+   'T'  REG, print register holding top bits of double-word register operand
+   'B'  REG, print register holding bottom bits of double-word register operand
    'N'  MEM, print address of next word following a memory operand
    'v'  MEM, if memory reference is volatile, output a MEMW before it
    't'  any constant, add "@h" suffix for top 16 bits
@@ -3155,6 +3216,20 @@ print_operand (FILE *file, rtx x, int letter)
 	fprintf (file, "%s", reg_names[xt_true_regnum (x) + 1]);
       else
 	output_operand_lossage ("invalid %%D value");
+      break;
+
+    case 'T':
+      if (REG_P (x) || SUBREG_P (x))
+	fprintf (file, "%s", reg_names[xt_true_regnum (x) + !TARGET_BIG_ENDIAN]);
+      else
+	output_operand_lossage ("invalid %%T value");
+      break;
+
+    case 'B':
+      if (REG_P (x) || SUBREG_P (x))
+	fprintf (file, "%s", reg_names[xt_true_regnum (x) + !!TARGET_BIG_ENDIAN]);
+      else
+	output_operand_lossage ("invalid %%B value");
       break;
 
     case 'v':
@@ -3219,21 +3294,21 @@ print_operand (FILE *file, rtx x, int letter)
       break;
 
     case 'U':
-      if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+      if (CONST_DOUBLE_P (x) && (GET_MODE (x) == SFmode || GET_MODE (x) == DFmode))
 	fprintf (file, "%d", REAL_EXP (CONST_DOUBLE_REAL_VALUE (x)) - 1);
       else
 	output_operand_lossage ("invalid %%U value");
       break;
 
     case 'V':
-      if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+      if (CONST_DOUBLE_P (x) && (GET_MODE (x) == SFmode || GET_MODE (x) == DFmode))
 	fprintf (file, "%d", 1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (x)));
       else
 	output_operand_lossage ("invalid %%V value");
       break;
 
     case 'G':
-      if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+      if (CONST_DOUBLE_P (x) && (GET_MODE (x) == SFmode || GET_MODE (x) == DFmode))
 	fprintf (file, "%d", xtensa_fp_const (CONST_DOUBLE_REAL_VALUE (x)));
       else
 	output_operand_lossage ("invalid %%G value");
@@ -4670,9 +4745,9 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case NEG:
       {
 	if (mode == SFmode)
-	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 1 : 50);
+	  *total = COSTS_N_INSNS (TARGET_FLOAT32 ? 1 : 50);
 	else if (mode == DFmode)
-	  *total = COSTS_N_INSNS (50);
+	  *total = COSTS_N_INSNS (TARGET_FLOAT64 ? 1 : 50);
 	else if (mode == DImode)
 	  *total = COSTS_N_INSNS (4);
 	else
@@ -4684,8 +4759,10 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MINUS:
       {
 	if (mode == SFmode)
-	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 1 : 50);
-	else if (mode == DFmode || mode == DImode)
+	  *total = COSTS_N_INSNS (TARGET_FLOAT32 ? 1 : 50);
+	else if (mode == DFmode)
+	  *total = COSTS_N_INSNS (TARGET_FLOAT64 ? 1 : 50);
+	else if (mode == DImode)
 	  *total = COSTS_N_INSNS (50);
 	else
 	  *total = COSTS_N_INSNS (1);
@@ -4695,9 +4772,9 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MULT:
       {
 	if (mode == SFmode)
-	  *total = COSTS_N_INSNS (TARGET_HARD_FLOAT ? 4 : 50);
+	  *total = COSTS_N_INSNS (TARGET_FLOAT32 ? 4 : 50);
 	else if (mode == DFmode)
-	  *total = COSTS_N_INSNS (50);
+	  *total = COSTS_N_INSNS (TARGET_FLOAT64 ? 4 : 50);
 	else if (mode == DImode)
 	  *total = COSTS_N_INSNS (TARGET_MUL32_HIGH ? 10 : 50);
 	else if (TARGET_MUL32)
@@ -4716,12 +4793,12 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
       {
 	if (mode == SFmode)
 	  {
-	    *total = COSTS_N_INSNS (TARGET_HARD_FLOAT_DIV ? 8 : 50);
+	    *total = COSTS_N_INSNS (TARGET_FLOAT32_DIV ? 8 : 50);
 	    return true;
 	  }
 	else if (mode == DFmode)
 	  {
-	    *total = COSTS_N_INSNS (50);
+	    *total = COSTS_N_INSNS (TARGET_FLOAT64_DIV ? 8 : 50);
 	    return true;
 	  }
       }
@@ -4741,7 +4818,9 @@ xtensa_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
     case SQRT:
       if (mode == SFmode)
-	*total = COSTS_N_INSNS (TARGET_HARD_FLOAT_SQRT ? 8 : 50);
+	*total = COSTS_N_INSNS (TARGET_FLOAT32_SQRT ? 8 : 50);
+      else if (mode == DFmode)
+	*total = COSTS_N_INSNS (TARGET_FLOAT64_SQRT ? 8 : 50);
       else
 	*total = COSTS_N_INSNS (50);
       return true;
@@ -5112,11 +5191,14 @@ xtensa_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 	   || ! xtensa_postreload_completed_p ()
 	   || xtensa_simm12b (INTVAL (x));
 
-  if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+  if (CONST_DOUBLE_P (x) && (GET_MODE (x) == SFmode || GET_MODE (x) == DFmode))
     {
       int i = xtensa_fp_const (CONST_DOUBLE_REAL_VALUE (x));
 
-      return i == 0 || (TARGET_HARD_FLOAT_CONST_S && i > 0);
+      return i == 0 || (TARGET_HARD_FLOAT_CONST &&
+			((GET_MODE (x) == SFmode && TARGET_FLOAT32)
+			 || (GET_MODE (x) == DFmode && TARGET_FLOAT64))
+			&& i > 0);
     }
 
   return !xtensa_tls_referenced_p (x);
@@ -5603,7 +5685,11 @@ xtensa_zero_call_used_regs (HARD_REG_SET selected_regs)
 					   rtvec_alloc (0),
 					   UNKNOWN_LOCATION));
 	}
-      else if (TARGET_HARD_FLOAT && FP_REG_P (regno))
+      else if (TARGET_FLOAT64 && FP_REG_P (regno))
+	emit_insn (gen_movdf_concat (gen_rtx_REG (DFmode, regno),
+				     gen_rtx_REG (SImode, zeroed_regno),
+				     gen_rtx_REG (SImode, zeroed_regno)));
+      else if (TARGET_FLOAT32 && FP_REG_P (regno))
 	emit_move_insn (gen_rtx_REG (SFmode, regno),
 			gen_rtx_REG (SFmode, zeroed_regno));
       else if (TARGET_MAC16 && ACC_REG_P (regno))
@@ -5912,7 +5998,7 @@ FPreg_neg_scaled_simm12b (rtx_insn *insn)
 		REG_DEAD (reg:SF gpr)
      where cst is a negatively-scaled signed 12-bit integer immediate
      value.  */
-  if (TARGET_HARD_FLOAT && !TARGET_CONST16
+  if (TARGET_FLOAT32 && !TARGET_CONST16
       && GET_CODE (pat = PATTERN (insn)) == SET
       && REG_P (dest = SET_DEST (pat)) && GP_REG_P (REGNO (dest))
       && GET_MODE (dest) == SFmode

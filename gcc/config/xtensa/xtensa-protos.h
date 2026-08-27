@@ -40,7 +40,7 @@ extern bool constantpool_address_p (const_rtx);
 extern int constantpool_mem_p (rtx);
 extern void xtensa_extend_reg (rtx, rtx);
 extern void xtensa_expand_conditional_branch (rtx *, machine_mode);
-extern int xtensa_expand_conditional_move (rtx *, int);
+extern int xtensa_expand_conditional_move (rtx *, machine_mode);
 extern int xtensa_expand_scc (rtx *, machine_mode);
 extern int xtensa_expand_block_move (rtx *);
 extern int xtensa_expand_block_set (rtx *);

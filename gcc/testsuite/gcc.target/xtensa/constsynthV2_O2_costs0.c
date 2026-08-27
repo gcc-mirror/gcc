@@ -16,4 +16,5 @@ _Complex double test(int a[], float b[])
   return 1-1i;
 }
 
-/* { dg-final { scan-assembler-times "l32r" 10 } } */
+/* { dg-final { scan-assembler-times "l32r" 10 { target { ! hard_float } } } } */
+/* { dg-final { scan-assembler-times "l32r" 9 { target { hard_float } } } } */

@@ -44,6 +44,7 @@
   UNSPEC_CEIL
   UNSPEC_FLOOR
   UNSPEC_ROUND
+  UNSPEC_CONCAT
 ])
 
 (define_c_enum "unspecv" [
@@ -90,6 +91,11 @@
 ;; the same template.
 (define_mode_iterator HQI [HI QI])
 (define_mode_attr mode_bits [(HI "16") (QI "8")])
+
+;; Single/Double precision floating point iterator
+(define_mode_iterator SDF [SF DF])
+(define_mode_attr sd [(SF "s") (DF "d")])
+(define_mode_attr sdf_mode_bits [(SF "32") (DF "64")])
 
 ;; This iterator and attribute allow signed/unsigned FP truncations to be
 ;; generated from one template.
@@ -307,14 +313,14 @@
 		      (const_int 5)
 		      (const_int 6)))])
 
-(define_insn "addsf3"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(plus:SF (match_operand:SF 1 "register_operand" "%f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "add.s\t%0, %1, %2"
+(define_insn "add<mode>3"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(plus:SDF (match_operand:SDF 1 "register_operand" "%f")
+		  (match_operand:SDF 2 "register_operand" "f")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "add.<sd>\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
 
@@ -377,14 +383,14 @@
   DONE;
 })
 
-(define_insn "subsf3"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(minus:SF (match_operand:SF 1 "register_operand" "f")
-		  (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "sub.s\t%0, %1, %2"
+(define_insn "sub<mode>3"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(minus:SDF (match_operand:SDF 1 "register_operand" "f")
+		   (match_operand:SDF 2 "register_operand" "f")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "sub.<sd>\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
 
@@ -486,37 +492,37 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "mulsf3"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mult:SF (match_operand:SF 1 "register_operand" "%f")
-		 (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "mul.s\t%0, %1, %2"
+(define_insn "mul<mode>3"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(mult:SDF (match_operand:SDF 1 "register_operand" "%f")
+		  (match_operand:SDF 2 "register_operand" "f")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "mul.<sd>\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
-(define_insn "fmasf4"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(fma:SF (match_operand:SF 1 "register_operand" "f")
-		(match_operand:SF 2 "register_operand" "f")
-		(match_operand:SF 3 "register_operand" "0")))]
-  "TARGET_HARD_FLOAT"
-  "madd.s\t%0, %1, %2"
+(define_insn "fma<mode>4"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(fma:SDF (match_operand:SDF 1 "register_operand" "f")
+		 (match_operand:SDF 2 "register_operand" "f")
+		 (match_operand:SDF 3 "register_operand" "0")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "madd.<sd>\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
 ;; Note that (C - A*B) = (-A*B + C)
-(define_insn "fnmasf4"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(fma:SF (neg:SF (match_operand:SF 1 "register_operand" "f"))
-		(match_operand:SF 2 "register_operand" "f")
-		(match_operand:SF 3 "register_operand" "0")))]
-  "TARGET_HARD_FLOAT"
-  "msub.s\t%0, %1, %2"
+(define_insn "fnma<mode>4"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(fma:SDF (neg:SDF (match_operand:SDF 1 "register_operand" "f"))
+		 (match_operand:SDF 2 "register_operand" "f")
+		 (match_operand:SDF 3 "register_operand" "0")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "msub.<sd>\t%0, %1, %2"
   [(set_attr "type"	"fmadd")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
 
@@ -577,13 +583,13 @@
    (set_attr "mode"	"SI")
    (set_attr "length"	"3")])
 
-(define_insn "abssf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(abs:SF (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "abs.s\t%0, %1"
+(define_insn "abs<mode>2"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(abs:SDF (match_operand:SDF 1 "register_operand" "f")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "abs.<sd>\t%0, %1"
   [(set_attr "type"	"farith")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
 
@@ -752,14 +758,14 @@
   DONE;
 })
 
-(define_insn_and_split "negsf2"
-  [(set (match_operand:SF 0 "register_operand")
-        (neg:SF (match_operand:SF 1 "register_operand")))
+(define_insn_and_split "neg<mode>2"
+  [(set (match_operand:SDF 0 "register_operand")
+        (neg:SDF (match_operand:SDF 1 "register_operand")))
    (clobber (match_scratch:SI 2))]
-  "TARGET_HARD_FLOAT"
+  "TARGET_FLOAT<sdf_mode_bits>"
   {@ [cons: =0, 1, =2; attrs: type, length]
      [D, D, &a; arith , 7] #
-     [f, f,  X; farith, 3] neg.s\t%0, %1
+     [f, f,  X; farith, 3] neg.<sd>\t%0, %1
   }
   "&& reload_completed && REG_P (operands[2])"
   [(set (match_dup 2)
@@ -767,11 +773,17 @@
    (set (match_dup 2)
 	(ashift:SI (match_dup 2)
 		   (const_int 31)))
-   (set (subreg:SI (match_dup 0) 0)
-	(plus:SI (subreg:SI (match_dup 1) 0)
+   (set (match_dup 3)
+	(plus:SI (match_dup 4)
 		 (match_dup 2)))]
-  ""
-  [(set_attr "mode" "SF")])
+{
+  if (GET_MODE_SIZE (SImode) < GET_MODE_SIZE (<MODE>mode))
+    emit_insn (gen_movsi (gen_rtx_SUBREG (SImode, operands[0], subreg_lowpart_offset (SImode, <MODE>mode)),
+			  gen_rtx_SUBREG (SImode, operands[1], subreg_lowpart_offset (SImode, <MODE>mode))));
+  operands[3] = gen_rtx_SUBREG (SImode, operands[0], subreg_highpart_offset (SImode, <MODE>mode));
+  operands[4] = gen_rtx_SUBREG (SImode, operands[1], subreg_highpart_offset (SImode, <MODE>mode));
+}
+  [(set_attr "mode" "<MODE>")])
 
 
 ;; Logical instructions.
@@ -1188,79 +1200,97 @@
 
 ;; Conversions.
 
-(define_insn "fix<s_fix>_truncsfsi2"
+(define_insn "fix<s_fix>_trunc<mode>si2"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(any_fix:SI (match_operand:SF 1 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "<m_fix>.s\t%0, %1, 0"
+	(any_fix:SI (match_operand:SDF 1 "register_operand" "f")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_fix>.<sd>\t%0, %1, 0"
   [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
-(define_insn "*fix<s_fix>_truncsfsi2_2x"
+(define_insn "*fix<s_fix>_trunc<mode>si2_2x"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(any_fix:SI (plus:SF (match_operand:SF 1 "register_operand" "f")
-			     (match_dup 1))))]
-  "TARGET_HARD_FLOAT"
-  "<m_fix>.s\t%0, %1, 1"
+	(any_fix:SI (plus:SDF (match_operand:SDF 1 "register_operand" "f")
+			      (match_dup 1))))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_fix>.<sd>\t%0, %1, 1"
   [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
-(define_insn "*fix<s_fix>_truncsfsi2_scaled"
+(define_insn "*fix<s_fix>_trunc<mode>si2_scaled"
   [(set (match_operand:SI 0 "register_operand" "=a")
-	(any_fix:SI (mult:SF (match_operand:SF 1 "register_operand" "f")
-			     (match_operand:SF 2 "fix_scaling_operand" ""))))]
-  "TARGET_HARD_FLOAT"
-  "<m_fix>.s\t%0, %1, %U2"
+	(any_fix:SI (mult:SDF (match_operand:SDF 1 "register_operand" "f")
+			      (match_operand:SDF 2 "fix_scaling_operand" ""))))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_fix>.<sd>\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
-(define_insn "float<s_float>sisf2"
+(define_insn "float<s_float>si<mode>2"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(any_float:SDF (match_operand:SI 1 "register_operand" "a")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_float>.<sd>\t%0, %1, 0"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_insn "*float<s_float>si<mode>2_scaled"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(mult:SDF (any_float:SDF (match_operand:SI 1 "register_operand" "a"))
+		  (match_operand:SDF 2 "float_scaling_operand" "")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_float>.<sd>\t%0, %1, %V2"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_insn "l<m_round><mode>si2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(match_operand:SDF 1 "register_operand" "f")] ANY_ROUND))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_round>.<sd>\t%0, %1, 0"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_insn "*l<m_round><mode>si2_2x"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(plus:SDF (match_operand:SDF 1 "register_operand" "f")
+			      (match_dup 1))] ANY_ROUND))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_round>.<sd>\t%0, %1, 1"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_insn "*l<m_round><mode>si2_scaled"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(unspec:SI [(mult:SDF (match_operand:SDF 1 "register_operand" "f")
+			      (match_operand:SDF 2 "fix_scaling_operand" ""))] ANY_ROUND))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<m_round>.<sd>\t%0, %1, %U2"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_insn "extendsfdf2"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(float_extend:DF (match_operand:SF 1 "register_operand" "f")))]
+  "TARGET_FLOAT64"
+  "cvtd.s\t%0, %1"
+  [(set_attr "type"	"fconv")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"3")])
+
+(define_insn "truncdfsf2"
   [(set (match_operand:SF 0 "register_operand" "=f")
-	(any_float:SF (match_operand:SI 1 "register_operand" "a")))]
-  "TARGET_HARD_FLOAT"
-  "<m_float>.s\t%0, %1, 0"
-  [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*float<s_float>sisf2_scaled"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mult:SF (any_float:SF (match_operand:SI 1 "register_operand" "a"))
-		 (match_operand:SF 2 "float_scaling_operand" "")))]
-  "TARGET_HARD_FLOAT"
-  "<m_float>.s\t%0, %1, %V2"
-  [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "l<m_round>sfsi2"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(unspec:SI [(match_operand:SF 1 "register_operand" "f")] ANY_ROUND))]
-  "TARGET_HARD_FLOAT"
-  "<m_round>.s\t%0, %1, 0"
-  [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*l<m_round>sfsi2_2x"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(unspec:SI [(plus:SF (match_operand:SF 1 "register_operand" "f")
-			     (match_dup 1))] ANY_ROUND))]
-  "TARGET_HARD_FLOAT"
-  "<m_round>.s\t%0, %1, 1"
-  [(set_attr "type"	"fconv")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
-
-(define_insn "*l<m_round>sfsi2_scaled"
-  [(set (match_operand:SI 0 "register_operand" "=a")
-	(unspec:SI [(mult:SF (match_operand:SF 1 "register_operand" "f")
-			     (match_operand:SF 2 "fix_scaling_operand" ""))] ANY_ROUND))]
-  "TARGET_HARD_FLOAT"
-  "<m_round>.s\t%0, %1, %U2"
+	(float_truncate:SF (match_operand:DF 1 "register_operand" "f")))]
+  "TARGET_FLOAT64"
+  "cvts.d\t%0, %1"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
@@ -1496,7 +1526,7 @@
 			 (match_operand:SI 2 "fpmem_offset_operand" ""))))
    (set (match_dup 1)
 	(plus:SI (match_dup 1) (match_dup 2)))]
-  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
+  "TARGET_FLOAT32 && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
@@ -1512,7 +1542,7 @@
 	(match_operand:SF 2 "register_operand" "f"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0) (match_dup 1)))]
-  "TARGET_HARD_FLOAT && !TARGET_HARD_FLOAT_POSTINC"
+  "TARGET_FLOAT32 && !TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
@@ -1522,36 +1552,36 @@
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
 
-(define_insn "*lsip"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(mem:SF (match_operand:SI 1 "register_operand" "+a")))
+(define_insn "*l<sd>ip"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+	(mem:SDF (match_operand:SI 1 "register_operand" "+a")))
    (set (match_dup 1)
 	(plus:SI (match_dup 1)
 		 (match_operand:SI 2 "fpmem_offset_operand" "")))]
-  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+  "TARGET_FLOAT<sdf_mode_bits> && TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
-  return "lsip\t%0, %1, %2";
+  return "l<sd>ip\t%0, %1, %2";
 }
   [(set_attr "type"	"fload")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
-(define_insn "*ssip"
-  [(set (mem:SF (match_operand:SI 0 "register_operand" "+a"))
-	(match_operand:SF 1 "register_operand" "f"))
+(define_insn "*s<sd>ip"
+  [(set (mem:SDF (match_operand:SI 0 "register_operand" "+a"))
+	(match_operand:SDF 1 "register_operand" "f"))
    (set (match_dup 0)
 	(plus:SI (match_dup 0)
 		 (match_operand:SI 2 "fpmem_offset_operand" "")))]
-  "TARGET_HARD_FLOAT && TARGET_HARD_FLOAT_POSTINC"
+  "TARGET_FLOAT<sdf_mode_bits> && TARGET_HARD_FLOAT_POSTINC"
 {
   if (TARGET_SERIALIZE_VOLATILE && volatile_refs_p (PATTERN (insn)))
     output_asm_insn ("memw", operands);
-  return "ssip\t%1, %0, %2";
+  return "s<sd>ip\t%1, %0, %2";
 }
   [(set_attr "type"	"fstore")
-   (set_attr "mode"	"SF")
+   (set_attr "mode"	"<MODE>")
    (set_attr "length"	"3")])
 
 ;; 64-bit floating point moves
@@ -1561,7 +1591,8 @@
 	(match_operand:DF 1 "general_operand" ""))]
   ""
 {
-  if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS && CONST_DOUBLE_P (operands[1]))
+  if (! satisfies_constraint_Gc (operands[1])
+      && !TARGET_CONST16 && !TARGET_AUTO_LITPOOLS && CONST_DOUBLE_P (operands[1]))
     operands[1] = force_const_mem (DFmode, operands[1]);
 
   if (!register_operand (operands[0], DFmode)
@@ -1577,20 +1608,42 @@
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
   {@ [cons: =0, 1; attrs: type, length]
-     [a,  r; move,   6] #
-     [a,  Y; load,   6] ^
-     [W, iF; move,  12] ^
-     [a,  T; load,   6] ^
-     [a,  U; load,   6] ^
-     [U,  r; store,  6] ^
+     [D, Gz; move  , 4] movi.n\t%T0, 0\;movi.n\t%B0, 0
+     [a, Gz; move  , 6] movi\t%T0, 0\;movi\t%B0, 0
+     [f, Gc; farith, 3] const.d\t%0, %G1
+     [f,  r; farith, 3] wfrd\t%0, %T1, %B1
+     [a,  f; farith, 6] rfrd\t%T0, %1\;rfr\t%B0, %1
+     [f,  f; farith, 3] mov.d\t%0, %1
+     [f,  U; fload , 3] %v1ldi\t%0, %1
+     [U,  f; fstore, 3] %v0sdi\t%1, %0
+     [a,  r; move  , 6] df-move-a-from-r\t%0, %1
+     [a,  Y; load  , 6] df-load-a-from-Y\t%0, %1
+     [a,  T; load  , 6] df-load-a-from-T\t%0, %1
+     [a,  U; load  , 6] df-load-a-from-U\t%0, %1
+     [U,  r; store , 6] df-store-r-to-U\t%0, %1
   }
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 2))
    (set (match_dup 1) (match_dup 3))]
 {
+  if ((register_operand (operands[0], DFmode)
+       && (FP_REG_P (REGNO (operands[0])) || CONSTANT_P (operands[1])))
+      || (register_operand (operands[1], DFmode)
+	  && FP_REG_P (REGNO (operands[1]))))
+    FAIL;
   xtensa_split_operand_pair (operands, SFmode);
 }
   [(set_attr "mode" "DF")])
+
+(define_insn "movdf_concat"
+  [(set (match_operand:DF 0 "register_operand" "=f")
+	(unspec:DF [(match_operand:SI 1 "register_operand" "r")
+		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_CONCAT))]
+  "TARGET_FLOAT64"
+  "wfrd\t%0, %1, %2"
+  [(set_attr "type"	"farith")
+   (set_attr "mode"	"DF")
+   (set_attr "length"	"3")])
 
 ;; Block moves
 
@@ -1912,14 +1965,14 @@
   DONE;
 })
 
-(define_expand "cbranchsf4"
+(define_expand "cbranch<mode>4"
   [(match_operator 0 "comparison_operator"
-    [(match_operand:SF 1 "register_operand")
-     (match_operand:SF 2 "register_operand")])
+    [(match_operand:SDF 1 "register_operand")
+     (match_operand:SDF 2 "register_operand")])
    (match_operand 3 "")]
-  "TARGET_HARD_FLOAT"
+  "TARGET_FLOAT<sdf_mode_bits>"
 {
-  xtensa_expand_conditional_branch (operands, SFmode);
+  xtensa_expand_conditional_branch (operands, <MODE>mode);
   DONE;
 })
 
@@ -2400,14 +2453,14 @@
   DONE;
 })
 
-(define_expand "cstoresf4"
+(define_expand "cstore<mode>4"
   [(match_operand:SI 0 "register_operand")
    (match_operator:SI 1 "comparison_operator"
-    [(match_operand:SF 2 "register_operand")
-     (match_operand:SF 3 "register_operand")])]
-  "TARGET_HARD_FLOAT"
+    [(match_operand:SDF 2 "register_operand")
+     (match_operand:SDF 3 "register_operand")])]
+  "TARGET_FLOAT<sdf_mode_bits>"
 {
-  if (!xtensa_expand_scc (operands, SFmode))
+  if (!xtensa_expand_scc (operands, <MODE>mode))
     FAIL;
   DONE;
 })
@@ -2423,19 +2476,19 @@
 			 (match_operand:SI 3 "register_operand" "")))]
   ""
 {
-  if (!xtensa_expand_conditional_move (operands, 0))
+  if (!xtensa_expand_conditional_move (operands, SImode))
     FAIL;
   DONE;
 })
 
-(define_expand "movsfcc"
-  [(set (match_operand:SF 0 "register_operand" "")
-	(if_then_else:SF (match_operand 1 "comparison_operator" "")
-			 (match_operand:SF 2 "register_operand" "")
-			 (match_operand:SF 3 "register_operand" "")))]
+(define_expand "mov<mode>cc"
+  [(set (match_operand:SDF 0 "register_operand" "")
+	(if_then_else:SDF (match_operand 1 "comparison_operator" "")
+			  (match_operand:SDF 2 "register_operand" "")
+			  (match_operand:SDF 3 "register_operand" "")))]
   ""
 {
-  if (!xtensa_expand_conditional_move (operands, 1))
+  if (!xtensa_expand_conditional_move (operands, <MODE>mode))
     FAIL;
   DONE;
 })
@@ -2468,13 +2521,13 @@
   }
   [(set_attr "mode" "SI")])
 
-(define_insn "movsfcc_internal0"
-  [(set (match_operand:SF 0 "register_operand")
-	(if_then_else:SF (match_operator 4 "branch_operator"
-			   [(match_operand:SI 1 "register_operand")
-			    (const_int 0)])
-			 (match_operand:SF 2 "register_operand")
-			 (match_operand:SF 3 "register_operand")))]
+(define_insn "mov<mode>cc_internal0"
+  [(set (match_operand:SDF 0 "register_operand")
+	(if_then_else:SDF (match_operator 4 "branch_operator"
+			    [(match_operand:SI 1 "register_operand")
+			     (const_int 0)])
+			  (match_operand:SDF 2 "register_operand")
+			  (match_operand:SDF 3 "register_operand")))]
   ""
   {@ [cons: =0, 1, 2, 3; attrs: type, length]
      [a, r, r, 0; move, 3] << xtensa_emit_movcc (false, false, false, operands);
@@ -2482,15 +2535,15 @@
      [f, r, f, 0; move, 3] << xtensa_emit_movcc (false, true, false, operands);
      [f, r, 0, f; move, 3] << xtensa_emit_movcc (true, true, false, operands);
   }
-  [(set_attr "mode" "SF")])
+  [(set_attr "mode" "<MODE>")])
 
-(define_insn "movsfcc_internal1"
-  [(set (match_operand:SF 0 "register_operand")
-	(if_then_else:SF (match_operator 4 "boolean_operator"
-			   [(match_operand:CC 1 "register_operand")
-			    (const_int 0)])
-			 (match_operand:SF 2 "register_operand")
-			 (match_operand:SF 3 "register_operand")))]
+(define_insn "mov<mode>cc_internal1"
+  [(set (match_operand:SDF 0 "register_operand")
+	(if_then_else:SDF (match_operator 4 "boolean_operator"
+			    [(match_operand:CC 1 "register_operand")
+			     (const_int 0)])
+			  (match_operand:SDF 2 "register_operand")
+			  (match_operand:SDF 3 "register_operand")))]
   "TARGET_BOOLEANS"
   {@ [cons: =0, 1, 2, 3; attrs: type, length]
      [a, b, r, 0; move, 3] << xtensa_emit_movcc (false, false, true, operands);
@@ -2498,17 +2551,17 @@
      [f, b, f, 0; move, 3] << xtensa_emit_movcc (false, true, true, operands);
      [f, b, 0, f; move, 3] << xtensa_emit_movcc (true, true, true, operands);
   }
-  [(set_attr "mode" "SF")])
+  [(set_attr "mode" "<MODE>")])
 
 
 ;; Floating-point comparisons.
 
-(define_insn "s<code>_sf"
+(define_insn "s<code>_<mode>"
   [(set (match_operand:CC 0 "register_operand" "=b")
-	(any_scc_sf:CC (match_operand:SF 1 "register_operand" "f")
-		       (match_operand:SF 2 "register_operand" "f")))]
-  "TARGET_HARD_FLOAT"
-  "<scc_sf>.s\t%0, %1, %2"
+	(any_scc_sf:CC (match_operand:SDF 1 "register_operand" "f")
+		       (match_operand:SDF 2 "register_operand" "f")))]
+  "TARGET_FLOAT<sdf_mode_bits>"
+  "<scc_sf>.<sd>\t%0, %1, %2"
   [(set_attr "type"	"farith")
    (set_attr "mode"	"BL")
    (set_attr "length"	"3")])
