@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_condition } */
-/* { dg-additional-options "-fno-tree-vectorize -ftree-slp-vectorize -ftree-loop-if-convert" } */
+/* { dg-additional-options "-fno-tree-vectorize -ftree-slp-vectorize" } */
 
 #include "tree-vect.h"
 
@@ -50,4 +50,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" { target { vect_element_align && vect_pack_trunc } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" { xfail { vect_element_align && vect_pack_trunc } } } } */

@@ -2038,12 +2038,12 @@ EnumValue
 Enum(stack_reuse_level) String(none) Value(SR_NONE)
 
 ftree-loop-if-convert
-Common Var(flag_tree_loop_if_convert) Init(-1) Optimization
-Convert conditional jumps in innermost loops to branchless equivalents.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 ftree-loop-if-convert-stores
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 ; -finhibit-size-directive inhibits output of .size for ELF.
 ; This is used only for compiling crtstuff.c,

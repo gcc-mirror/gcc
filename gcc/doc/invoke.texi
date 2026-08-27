@@ -683,8 +683,7 @@ Objective-C and Objective-C++ Dialects}.
 -fthread-jumps  -ftracer  -ftree-bit-ccp
 -ftree-builtin-call-dce  -ftree-ccp  -ftree-ch  -ftree-coalesce-vars
 -ftree-copy-prop  -ftree-cselim  -ftree-dce  -ftree-dominator-opts
--ftree-dse  -ftree-forwprop  -ftree-fre  -fcode-hoisting
--ftree-loop-if-convert  -ftree-loop-im
+-ftree-dse  -ftree-forwprop  -ftree-fre  -fcode-hoisting -ftree-loop-im
 -ftree-phiprop  -ftree-loop-distribution  -ftree-loop-distribute-patterns
 -ftree-loop-ivcanon  -ftree-loop-linear  -ftree-loop-optimize
 -ftree-loop-vectorize
@@ -15227,15 +15226,6 @@ limit the ability to debug an optimized program compiled with
 @option{-fno-var-tracking-assignments}.  In the negated form, this flag
 prevents SSA coalescing of user variables.  This option is enabled by
 default if optimization is enabled, and it does very little otherwise.
-
-@opindex ftree-loop-if-convert
-@opindex fno-tree-loop-if-convert
-@item -ftree-loop-if-convert
-Attempt to transform conditional jumps in the innermost loops to
-branch-less equivalents.  The intent is to remove control-flow from
-the innermost loops in order to improve the ability of the
-vectorization pass to handle these loops.  This is enabled by default
-if vectorization is enabled.
 
 @opindex ftree-loop-distribution
 @opindex fno-tree-loop-distribution
