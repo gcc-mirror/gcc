@@ -36,7 +36,7 @@ Richard Earnshaw                                <richard.earnshaw@arm.com>
 Jakub Jelinek                                   <jakub@redhat.com>
 Richard Kenner                                  <kenner@nyu.edu>
 Jeff Law                                        <jlaw@ventanamicro.com>
-Michael Meissner                                <gnu@the-meissners.org>
+Michael Meissner                                <meissner@gcc.gnu.org>
 Jason Merrill                                   <jason@redhat.com>
 David S. Miller                                 <davem@redhat.com>
 Joseph Myers                                    <josmyers@redhat.com>
@@ -198,7 +198,6 @@ libphobos               Iain Buclaw             <ibuclaw@gdcproject.org>
 line map                Dodji Seketeli          <dodji@redhat.com>
 soft-fp                 Joseph Myers            <josmyers@redhat.com>
 scheduler (+ haifa)     Jim Wilson              <wilson@tuliptree.org>
-scheduler (+ haifa)     Michael Meissner        <gnu@the-meissners.org>
 scheduler (+ haifa)     Jeff Law                <jeffreyalaw@gmail.com>
 scheduler (+ haifa)     Vladimir Makarov        <vmakarov@redhat.com>
 modulo-scheduler        Roman Zhuykov           <zhroma@ispras.ru>
@@ -668,7 +667,7 @@ Roland McGrath                  roland          <roland@hack.frob.com>
 Bryce McKinlay                  bryce           <mckinlay@redhat.com>
 Adam Megacz                     -               <adam@xwt.org>
 Bingfeng Mei                    meibf           <bmei@broadcom.com>
-Michael Meissner                meissner        <gnu@the-meissners.org>
+Michael Meissner                meissner        <meissner@gcc.gnu.org>
 Josef Melcr                     -               <melcrjos@fit.cvut.cz>
 Jason Merrill                   jason           <jason@redhat.com>
 Jim Meyering                    -               <jim@meyering.net>
