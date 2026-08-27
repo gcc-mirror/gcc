@@ -2520,6 +2520,42 @@
 	(cond:SI (reg:<xCC> CRIS_CC0_REGNUM) (const_int 0)))]
   "")
 
+;; Test a field of bits starting at bit 0 against 0/non-0.
+(define_insn_and_split "*cstore<mode>4_btstqb0_<CC>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(zcond
+	 (zero_extract:BWD
+	  (match_operand:BWD 1 "register_operand" "r")
+	  (match_operand 2 "const_int_operand" "Kc")
+	  (const_int 0))
+	 (const_int 0)))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  ""
+  "#"
+  "&& reload_completed"
+  [(set (reg:CC_NZ CRIS_CC0_REGNUM)
+	(compare:CC_NZ
+	 (zero_extract:SI (match_dup 1) (match_dup 2) (const_int 0))
+	 (const_int 0)))
+   (set (match_dup 0)
+	(zcond:SI (reg:CC_NZ CRIS_CC0_REGNUM) (const_int 0)))]
+  "")
+
+;; Setting a register to (the result of a test of zero against) a
+;; single bit at operand[0] (to 0 or non-0) is at the moment a bit too
+;; complicated to be worthwhile: for the non-zero case, it's a tie
+;; using btstq+smi or lsrq+andq.  For the zero case (in effect an
+;; extzv+negation) we could do with one insn less (no negation).
+;; However, for the negated combination, combine looks for a match
+;; against different patterns depending on which bit (number) is
+;; tested.  FIXME: Revisit for combine changes.  Guided by combine
+;; attempts, attempted extzv+matching an anonymous pattern that does
+;; (zero_extract:BWD (xor (reg:BWD) (const_int 1 << pos))
+;;                   (const_int 1) (const_int pos)))
+;; where pos is a Kc constant.  (Works for some values of pos, not for
+;; others.  Combine seems to always pick BWD=QI regardless of size of
+;; datum matched.)
+
 ;; Like bCC, we have to check the overflow bit for
 ;; signed conditions.
 
