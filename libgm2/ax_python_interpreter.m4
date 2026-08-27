@@ -83,7 +83,7 @@ AC_DEFUN([AC_PYTHON_INTERPRETER],[
                 # A Python shim class, VPy, is used to implement correct version comparisons via
                 # string expressions, since e.g. a naive textual ">= 2.7.3" won't work for
                 # Python 2.7.10 (the ".1" being evaluated as less than ".3").
-                if test -n $1; then
+                if test -n "$1"; then
                     AC_MSG_CHECKING([whether internal python version string is $1])
                     cat << EOF > ax_python_interpreter_vpy.py
 class VPy:

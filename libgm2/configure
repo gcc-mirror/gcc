@@ -18761,7 +18761,7 @@ $as_echo "yes" >&6; }
                 # A Python shim class, VPy, is used to implement correct version comparisons via
                 # string expressions, since e.g. a naive textual ">= 2.7.3" won't work for
                 # Python 2.7.10 (the ".1" being evaluated as less than ".3").
-                if test -n >= '3.0'; then
+                if test -n ">= '3.0'"; then
                     { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether internal python version string is >= '3.0'" >&5
 $as_echo_n "checking whether internal python version string is >= '3.0'... " >&6; }
                     cat << EOF > ax_python_interpreter_vpy.py
