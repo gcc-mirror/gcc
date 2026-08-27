@@ -624,6 +624,44 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
 /* Array descriptor higher level routines.
  ******************************************************************************/
 
+/* Return a constructor for a descriptor dtype with the caracteristics given by
+   the arguments.  */
+
+tree
+gfc_build_dtype_constructor (tree size, int type, int rank)
+{
+  tree field;
+  vec<constructor_elt, va_gc> *v = NULL;
+
+  gcc_assert (size);
+
+  STRIP_NOPS (size);
+  size = fold_convert (size_type_node, size);
+  tree dtype_type_node = get_dtype_type_node ();
+  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
+			     GFC_DTYPE_ELEM_LEN);
+  CONSTRUCTOR_APPEND_ELT (v, field,
+			  fold_convert (TREE_TYPE (field), size));
+  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
+			     GFC_DTYPE_VERSION);
+  CONSTRUCTOR_APPEND_ELT (v, field,
+			  build_zero_cst (TREE_TYPE (field)));
+
+  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
+			     GFC_DTYPE_RANK);
+  if (rank >= 0)
+    CONSTRUCTOR_APPEND_ELT (v, field,
+			    build_int_cst (TREE_TYPE (field), rank));
+
+  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
+			     GFC_DTYPE_TYPE);
+  CONSTRUCTOR_APPEND_ELT (v, field,
+			  build_int_cst (TREE_TYPE (field), type));
+
+  return build_constructor (dtype_type_node, v);
+}
+
+
 /* Build a null array descriptor constructor.  */
 
 tree

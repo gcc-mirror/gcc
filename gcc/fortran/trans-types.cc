@@ -1709,10 +1709,6 @@ gfc_get_dtype_rank_type (int rank, tree etype)
   tree ptype;
   tree size;
   int n;
-  tree tmp;
-  tree dtype;
-  tree field;
-  vec<constructor_elt, va_gc> *v = NULL;
 
   ptype = etype;
   while (TREE_CODE (etype) == POINTER_TYPE
@@ -1784,34 +1780,7 @@ gfc_get_dtype_rank_type (int rank, tree etype)
       break;
     }
 
-  gcc_assert (size);
-
-  STRIP_NOPS (size);
-  size = fold_convert (size_type_node, size);
-  tmp = get_dtype_type_node ();
-  field = gfc_advance_chain (TYPE_FIELDS (tmp),
-			     GFC_DTYPE_ELEM_LEN);
-  CONSTRUCTOR_APPEND_ELT (v, field,
-			  fold_convert (TREE_TYPE (field), size));
-  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
-			     GFC_DTYPE_VERSION);
-  CONSTRUCTOR_APPEND_ELT (v, field,
-			  build_zero_cst (TREE_TYPE (field)));
-
-  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
-			     GFC_DTYPE_RANK);
-  if (rank >= 0)
-    CONSTRUCTOR_APPEND_ELT (v, field,
-			    build_int_cst (TREE_TYPE (field), rank));
-
-  field = gfc_advance_chain (TYPE_FIELDS (dtype_type_node),
-			     GFC_DTYPE_TYPE);
-  CONSTRUCTOR_APPEND_ELT (v, field,
-			  build_int_cst (TREE_TYPE (field), n));
-
-  dtype = build_constructor (tmp, v);
-
-  return dtype;
+  return gfc_build_dtype_constructor (size, n, rank);
 }
 
 
