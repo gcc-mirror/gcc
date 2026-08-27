@@ -28394,6 +28394,45 @@ aarch64_evpc_rev_global (struct expand_vec_perm_d *d)
   return true;
 }
 
+inline static bool
+is_bb_in_loop (basic_block bb)
+{
+  return bb && bb_loop_depth (bb) > 0;
+}
+
+/* Recognize patterns for the Advanced SIMD REV64 + EXT insns, which reverse
+   elements within a full vector.  */
+
+static bool
+aarch64_evpc_rev64_ext (struct expand_vec_perm_d *d)
+{
+  poly_uint64 nelt = d->perm.length ();
+
+  if (!d->one_vector_p || d->vec_flags != VEC_ADVSIMD)
+    return false;
+
+  if (!d->perm.series_p (0, 1, nelt - 1, -1))
+    return false;
+
+  if (is_bb_in_loop (gimple_bb (currently_expanding_gimple_stmt)))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  rtx tmp1 = gen_reg_rtx (d->vmode);
+  rtx tmp2 = gen_reg_rtx (V16QImode);
+  rtx unspec_rev64
+      = gen_rtx_UNSPEC (d->vmode, gen_rtvec (1, d->op0), UNSPEC_REV64);
+  emit_set_insn (tmp1, unspec_rev64);
+  rtvec vec = gen_rtvec (3, gen_lowpart (V16QImode, tmp1),
+			 gen_lowpart (V16QImode, tmp1), GEN_INT (8));
+  rtx unspec_ext = gen_rtx_UNSPEC (V16QImode, vec, UNSPEC_EXT);
+  emit_set_insn (tmp2, unspec_ext);
+  emit_set_insn (d->target, gen_lowpart (d->vmode, tmp2));
+  return true;
+}
+
 static bool
 aarch64_evpc_dup (struct expand_vec_perm_d *d)
 {
@@ -28857,6 +28896,8 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  else if (aarch64_evpc_ins (d))
 	    return true;
 	  else if (aarch64_evpc_hvla (d))
+	    return true;
+	  else if (aarch64_evpc_rev64_ext (d))
 	    return true;
 	  else if (aarch64_evpc_reencode (d))
 	    return true;
