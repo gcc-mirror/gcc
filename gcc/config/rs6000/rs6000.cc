@@ -5992,7 +5992,7 @@ rs6000_machine_from_flags (void)
 
   /* Disable the flags that should never influence the .machine selection.  */
   flags &= ~(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_PPC_GPOPT | OPTION_MASK_ISEL
-	     | OPTION_MASK_ALTIVEC);
+	     | OPTION_MASK_ALTIVEC | OPTION_MASK_BLOCK_OPS_VECTOR_PAIR);
 
   if ((flags & (FUTURE_MASKS_SERVER & ~POWER11_MASKS_SERVER)) != 0)
     return "future";
