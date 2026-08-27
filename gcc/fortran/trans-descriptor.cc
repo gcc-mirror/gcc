@@ -593,7 +593,7 @@ gfc_conv_descriptor_ubound_set (stmtblock_t *block, tree desc,
 
 void
 gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
-				     tree *dtype_off, tree *span_off,
+				     tree *rank_off, tree *span_off,
 				     tree *dim_off, tree *dim_size,
 				     tree *stride_suboff, tree *lower_suboff,
 				     tree *upper_suboff)
@@ -602,13 +602,19 @@ gfc_get_descriptor_offsets_for_info (const_tree desc_type, tree *data_off,
   tree type;
 
   type = TYPE_MAIN_VARIANT (desc_type);
-  field = gfc_advance_chain (TYPE_FIELDS (type), DATA_FIELD);
+  tree fields = TYPE_FIELDS (type);
+  field = gfc_advance_chain (fields, DATA_FIELD);
   *data_off = byte_position (field);
-  field = gfc_advance_chain (TYPE_FIELDS (type), DTYPE_FIELD);
-  *dtype_off = byte_position (field);
-  field = gfc_advance_chain (TYPE_FIELDS (type), SPAN_FIELD);
+  field = gfc_advance_chain (fields, DTYPE_FIELD);
+  tree dtype_off = byte_position (field);
+  type = TREE_TYPE (field);
+  field = gfc_advance_chain (TYPE_FIELDS (type), GFC_DTYPE_RANK);
+  tree rank_suboff = byte_position (field);
+  *rank_off = fold_build2 (PLUS_EXPR, TREE_TYPE (dtype_off), dtype_off,
+			   rank_suboff);
+  field = gfc_advance_chain (fields, SPAN_FIELD);
   *span_off = byte_position (field);
-  field = gfc_advance_chain (TYPE_FIELDS (type), DIMENSION_FIELD);
+  field = gfc_advance_chain (fields, DIMENSION_FIELD);
   *dim_off = byte_position (field);
   type = TREE_TYPE (TREE_TYPE (field));
   *dim_size = TYPE_SIZE_UNIT (type);
