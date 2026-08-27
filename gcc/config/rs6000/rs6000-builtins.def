@@ -4313,3 +4313,75 @@
   dmr1024 __builtin_mma_pmdmxvf16gerx2nn_internal (dmr1024, v256, vuc, const int<8>, \
 						 const int<4>, const int<2>);
     PMDMXVF16GERX2NN_INTERNAL dmf_pmdmxvf16gerx2nn {dm,pair}
+
+  void __builtin_dmsha2hash (dmr1024 *, dmr1024 *, const int<1>);
+    DMSHA2HASH nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmsha2hash_internal (dmr1024, dmr1024, const int<1>);
+    DMSHA2HASH_INTERNAL dmsha2hash {dm}
+
+  void __builtin_dmsha256hash (dmr1024 *, dmr1024 *);
+    DMSHA256HASH nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmsha256hash_internal (dmr1024, dmr1024);
+    DMSHA256HASH_INTERNAL dmsha256hash {dm}
+
+  void __builtin_dmsha512hash (dmr1024 *, dmr1024 *);
+    DMSHA512HASH nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmsha512hash_internal (dmr1024, dmr1024);
+    DMSHA512HASH_INTERNAL dmsha512hash {dm}
+
+  void __builtin_dmxxshapad (dmr1024 *, vuc, const int<2>, const int<1>, const int<2>);
+    DMXXSHAPAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxshapad_internal (dmr1024, vuc, const int<2>, const int<1>, const int<2>);
+    DMXXSHAPAD_INTERNAL dmxxshapad {dm}
+
+  void __builtin_dmxxsha3512pad (dmr1024 *, vuc, const int<1>);
+    DMXXSHA3512PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxsha3512pad_internal (dmr1024, vuc, const int<1>);
+    DMXXSHA3512PAD_INTERNAL dmxxsha3512pad {dm}
+
+  void __builtin_dmxxsha3384pad (dmr1024 *, vuc, const int<1>);
+    DMXXSHA3384PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxsha3384pad_internal (dmr1024, vuc, const int<1>);
+    DMXXSHA3384PAD_INTERNAL dmxxsha3384pad {dm}
+
+  void __builtin_dmxxsha3256pad (dmr1024 *, vuc, const int<1>);
+    DMXXSHA3256PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxsha3256pad_internal (dmr1024, vuc, const int<1>);
+    DMXXSHA3256PAD_INTERNAL dmxxsha3256pad {dm}
+
+  void __builtin_dmxxsha3224pad (dmr1024 *, vuc, const int<1>);
+    DMXXSHA3224PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxsha3224pad_internal (dmr1024, vuc, const int<1>);
+    DMXXSHA3224PAD_INTERNAL dmxxsha3224pad {dm}
+
+  void __builtin_dmxxshake256pad (dmr1024 *, vuc, const int<1>);
+    DMXXSHAKE256PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxshake256pad_internal (dmr1024, vuc, const int<1>);
+    DMXXSHAKE256PAD_INTERNAL dmxxshake256pad {dm}
+
+  void __builtin_dmxxshake128pad (dmr1024 *, vuc, const int<1>);
+    DMXXSHAKE128PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxshake128pad_internal (dmr1024, vuc, const int<1>);
+    DMXXSHAKE128PAD_INTERNAL dmxxshake128pad {dm}
+
+  void __builtin_dmxxsha384512pad (dmr1024 *, vuc);
+    DMXXSHA384512PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxsha384512pad_internal (dmr1024, vuc);
+    DMXXSHA384512PAD_INTERNAL dmxxsha384512pad {dm}
+
+  void __builtin_dmxxsha224256pad (dmr1024 *, vuc);
+    DMXXSHA224256PAD nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxxsha224256pad_internal (dmr1024, vuc);
+    DMXXSHA224256PAD_INTERNAL dmxxsha224256pad {dm}

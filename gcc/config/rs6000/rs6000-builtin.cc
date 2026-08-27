@@ -3788,6 +3788,23 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 	}
     }
 
+  if (fcode == RS6000_BIF_DMXXSHAPAD_INTERNAL)
+    {
+      tree arg3 = CALL_EXPR_ARG (exp, 2);
+      tree arg5 = CALL_EXPR_ARG (exp, 4);
+
+      HOST_WIDE_INT id_param = TREE_INT_CST_LOW (arg3);
+      HOST_WIDE_INT bl_param = TREE_INT_CST_LOW (arg5);
+
+      if (id_param == 1 && (bl_param == 0 || bl_param == 1))
+	{
+	  error ("Invalid combination for %qs: argument 5 cannot be %ld if "
+		 "the argument 3 is 1",
+		 rs6000_builtin_info[fcode].bifname, bl_param);
+	  return const0_rtx;
+	}
+    }
+
   if (bif_is_ldstmask (*bifaddr))
     return rs6000_expand_ldst_mask (target, arg[0]);
 

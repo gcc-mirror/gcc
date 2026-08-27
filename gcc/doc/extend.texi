@@ -27189,6 +27189,38 @@ vec_t __builtin_galois_field_mult_gcm (vec_t, vec_t);
 vec_t __builtin_galois_field_mult_xts (vec_t, vec_t);
 @end smallexample
 
+@subsubheading PowerPC Secure Hash Algorithm (SHA) Acceleration Built-in Functions
+
+Future ISA of the PowerPC may add new instructions for accelerating SHA
+hash function. GCC provides support for these new instructions through the
+following built-in functions.
+
+@smallexample
+void __builtin_dmsha2hash (__dmr1024*, __dmr1024*, uint1);
+
+void __builtin_dmsha256hash (__dmr1024*, __dmr1024*);
+
+void __builtin_dmsha512hash (__dmr1024*, __dmr1024*);
+
+void __builtin_dmxxshapad (__dmr1024*, vec_t, uint2, uint1, uint2);
+
+void __builtin_dmxxsha3512pad (__dmr1024*, vec_t, uint1);
+
+void __builtin_dmxxsha3384pad (__dmr1024*, vec_t, uint1);
+
+void __builtin_dmxxsha3256pad (__dmr1024*, vec_t, uint1);
+
+void __builtin_dmxxsha3224pad (__dmr1024*, vec_t, uint1);
+
+void __builtin_dmxxshake256pad (__dmr1024*, vec_t, uint1);
+
+void __builtin_dmxxshake128pad (__dmr1024*, vec_t, uint1);
+
+void __builtin_dmxxsha384512pad (__dmr1024*, vec_t);
+
+void __builtin_dmxxsha224256pad (__dmr1024*, vec_t);
+@end smallexample
+
 @subsubheading PowerPC Vector Integer Multiply High Built-in Functions
 
 Future PowerPC processors may add new instructions for vector integer

@@ -48,6 +48,18 @@
    UNSPEC_XXAES128GENLKP
    UNSPEC_XXAES192GENLKP
    UNSPEC_XXAES256GENLKP
+   UNSPEC_DMSHA2HASH
+   UNSPEC_DMSHA256HASH
+   UNSPEC_DMSHA512HASH
+   UNSPEC_DMXXSHAPAD
+   UNSPEC_DMXXSHA3512PAD
+   UNSPEC_DMXXSHA3384PAD
+   UNSPEC_DMXXSHA3256PAD
+   UNSPEC_DMXXSHA3224PAD
+   UNSPEC_DMXXSHAKE256PAD
+   UNSPEC_DMXXSHAKE128PAD
+   UNSPEC_DMXXSHA384512PAD
+   UNSPEC_DMXXSHA224256PAD
    UNSPEC_XXGFMUL128
    UNSPEC_XXGFMUL128GCM
    UNSPEC_XXGFMUL128XTS])
@@ -82,6 +94,34 @@
 				       UNSPEC_XXAESDECP])
 (define_int_attr AESACC_base_insn [(UNSPEC_XXAESENCP  "xxaesencp")
 				   (UNSPEC_XXAESDECP  "xxaesdecp")])
+
+;; Iterator and attribute for SHA2 extended mnemonics
+(define_int_iterator SHA2_code [UNSPEC_DMSHA256HASH
+				UNSPEC_DMSHA512HASH])
+
+(define_int_attr SHA2_insn [(UNSPEC_DMSHA256HASH "dmsha256hash")
+			    (UNSPEC_DMSHA512HASH "dmsha512hash")])
+
+;; Iterator and attribute for SHAPAD extended mnemonics
+(define_int_iterator SHAPAD_code [UNSPEC_DMXXSHA3512PAD
+				  UNSPEC_DMXXSHA3384PAD
+				  UNSPEC_DMXXSHA3256PAD
+				  UNSPEC_DMXXSHA3224PAD
+				  UNSPEC_DMXXSHAKE256PAD
+				  UNSPEC_DMXXSHAKE128PAD])
+
+(define_int_iterator SHA2PAD_code [UNSPEC_DMXXSHA384512PAD
+				   UNSPEC_DMXXSHA224256PAD])
+
+(define_int_attr SHAPAD_insn [(UNSPEC_DMXXSHA3512PAD "dmxxsha3512pad")
+			      (UNSPEC_DMXXSHA3384PAD "dmxxsha3384pad")
+			      (UNSPEC_DMXXSHA3256PAD "dmxxsha3256pad")
+			      (UNSPEC_DMXXSHA3224PAD "dmxxsha3224pad")
+			      (UNSPEC_DMXXSHAKE256PAD "dmxxshake256pad")
+			      (UNSPEC_DMXXSHAKE128PAD "dmxxshake128pad")])
+
+(define_int_attr SHA2PAD_insn [(UNSPEC_DMXXSHA384512PAD "dmxxsha384512pad")
+			       (UNSPEC_DMXXSHA224256PAD "dmxxsha224256pad")])
 
 ;; Iterator and attribute for AES encrypt/decrypt extended mnemonics
 (define_int_iterator AESACC_code [UNSPEC_XXAES128ENCP
@@ -211,3 +251,48 @@
 		  AESGF_code))]
   "TARGET_FUTURE"
   "<AESGF_insn> %x0,%x1,%x2")
+
+(define_insn "dmsha2hash"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+    (unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		 (match_operand:TDO 2 "dmr_register_operand" "wD")
+		 (match_operand:SI 3 "const_0_to_1_operand" "n")]
+		UNSPEC_DMSHA2HASH))]
+  "TARGET_FUTURE"
+  "dmsha2hash %0,%2,%3")
+
+(define_insn "<SHA2_insn>"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+    (unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		 (match_operand:TDO 2 "dmr_register_operand" "wD")]
+		SHA2_code))]
+  "TARGET_FUTURE"
+  "<SHA2_insn> %0,%2")
+
+(define_insn "dmxxshapad"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+    (unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		 (match_operand:V16QI 2 "vsx_register_operand" "wa")
+		 (match_operand:SI 3 "const_0_to_3_operand" "n")
+		 (match_operand:SI 4 "const_0_to_1_operand" "n")
+		 (match_operand:SI 5 "const_0_to_3_operand" "n")]
+		UNSPEC_DMXXSHAPAD))]
+  "TARGET_FUTURE"
+  "dmxxshapad %0,%2,%3,%4,%5")
+
+(define_insn "<SHAPAD_insn>"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+    (unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		 (match_operand:V16QI 2 "vsx_register_operand" "wa")
+		 (match_operand:SI 3 "const_0_to_1_operand" "n")]
+		SHAPAD_code))]
+  "TARGET_FUTURE"
+  "<SHAPAD_insn> %0,%2,%3")
+
+(define_insn "<SHA2PAD_insn>"
+  [(set (match_operand:TDO 0 "dmr_register_operand" "=wD")
+    (unspec:TDO [(match_operand:TDO 1 "dmr_register_operand" "0")
+		 (match_operand:V16QI 2 "vsx_register_operand" "wa")]
+		SHA2PAD_code))]
+  "TARGET_FUTURE"
+  "<SHA2PAD_insn> %0,%2")
