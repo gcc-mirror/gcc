@@ -61,6 +61,12 @@ along with GCC; see the file COPYING3.  If not see
 #define LBOUND_SUBFIELD 1
 #define UBOUND_SUBFIELD 2
 
+#define GFC_DTYPE_ELEM_LEN 0
+#define GFC_DTYPE_VERSION 1
+#define GFC_DTYPE_RANK 2
+#define GFC_DTYPE_TYPE 3
+#define GFC_DTYPE_ATTRIBUTE 4
+
 
 /* Get FIELD_IDX'th field in struct TYPE.  */
 
@@ -697,9 +703,16 @@ gfc_build_null_descriptor (tree type)
 #undef SPAN_FIELD
 #undef DIMENSION_FIELD
 #undef CAF_TOKEN_FIELD
+
 #undef STRIDE_SUBFIELD
 #undef LBOUND_SUBFIELD
 #undef UBOUND_SUBFIELD
+
+#undef GFC_DTYPE_ELEM_LEN
+#undef GFC_DTYPE_VERSION
+#undef GFC_DTYPE_RANK
+#undef GFC_DTYPE_TYPE
+#undef GFC_DTYPE_ATTRIBUTE
 
 
 /* For an array descriptor, get the total number of elements.  This is just
