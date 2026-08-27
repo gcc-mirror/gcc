@@ -2149,6 +2149,9 @@ cont:
 	  argv_ptr[6] = NULL;
 	  if (parallel)
 	    {
+	      /* Saved LTRANS outputs can exist from an earlier link.  */
+	      if (save_temps && !ltrans_cache)
+		fprintf (mstream, ".PHONY: %s\n", output_name);
 	      fprintf (mstream, "%s:\n\t@%s ", output_name, new_argv[0]);
 	      for (j = 1; new_argv[j] != NULL; ++j)
 		fprintf (mstream, " '%s'", new_argv[j]);
