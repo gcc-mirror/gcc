@@ -5,10 +5,12 @@
 
 bool check (bool b) { return b; }
 
+bool e;
+
 class S
 {
-  bool f ()
+  auto f ()
     post (r: check (r))
     post (r: r)
-  {}
+  { return e; }
 };
