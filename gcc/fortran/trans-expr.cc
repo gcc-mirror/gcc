@@ -10069,6 +10069,83 @@ gfc_trans_subarray_assign (tree dest, gfc_component * cm, gfc_expr * expr)
 
 
 static stmtblock_t *final_block;
+
+
+/* Get the address of element index of contiguous character array data whose elements
+   are len characters of ksize bytes each.  */
+
+static tree
+gfc_char_elem_addr (tree char_ptr, tree data, tree idx, tree len, tree ksize)
+{
+  tree offset = fold_build2_loc (input_location, MULT_EXPR,
+				 gfc_array_index_type, len, ksize);
+  offset = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			    idx, offset);
+  return fold_build_pointer_plus_loc (input_location,
+				      fold_convert (char_ptr, data), offset);
+}
+
+
+/* Copy a deferred-shape allocatable character array component in a structure
+   constructor when the source element length (SRC_LEN) may differ from the
+   component's declared length.  Like gfc_duplicate_allocatable, a
+   contiguous source layout is assumed.  DEST and SRC are array descriptors;
+   DEST already carries the source's bounds.  */
+
+static tree
+gfc_trans_alloc_char_subarray_assign (tree dest, gfc_component *cm, tree src,
+				      tree src_len, int rank)
+{
+  stmtblock_t block, body;
+  tree dlen, slen, ksize, nelems, idx, size, tmp, pchar, cond;
+
+  gfc_init_block (&block);
+
+  pchar = gfc_get_pchar_type (cm->ts.kind);
+  ksize = fold_convert (gfc_array_index_type,
+			TYPE_SIZE_UNIT (gfc_get_char_type (cm->ts.kind)));
+  dlen = fold_convert (gfc_array_index_type, cm->ts.u.cl->backend_decl);
+  slen = fold_convert (gfc_array_index_type, src_len);
+  nelems = gfc_full_array_size (&block, src, rank);
+  nelems = gfc_evaluate_now (nelems, &block);
+
+  /* Allocate the destination data: nelems elements of the component length.  */
+  size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			  nelems, dlen);
+  size = fold_build2_loc (input_location, MULT_EXPR, gfc_array_index_type,
+			  size, ksize);
+  tmp = GFC_TYPE_ARRAY_DATAPTR_TYPE (TREE_TYPE (dest));
+  gfc_conv_descriptor_data_set (&block, dest,
+				gfc_call_malloc (&block, tmp, size));
+
+  /* Copy element IDX, padding or truncating to the component length.  */
+  idx = gfc_create_var (gfc_array_index_type, "idx");
+  gfc_init_block (&body);
+  gfc_trans_string_copy (&body, cm->ts.u.cl->backend_decl,
+			 gfc_char_elem_addr (pchar,
+					     gfc_conv_descriptor_data_get (dest),
+					     idx, dlen, ksize),
+			 cm->ts.kind, src_len,
+			 gfc_char_elem_addr (pchar,
+					     gfc_conv_descriptor_data_get (src),
+					     idx, slen, ksize),
+			 cm->ts.kind);
+  gfc_simple_for_loop (&block, idx, gfc_index_zero_node, nelems, LT_EXPR,
+		       gfc_index_one_node, gfc_finish_block (&body));
+
+  tmp = gfc_finish_block (&block);
+
+  /* Null the destination if the source is unallocated.  */
+  gfc_init_block (&body);
+  gfc_conv_descriptor_data_set (&body, dest, null_pointer_node);
+  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			  fold_convert (pvoid_type_node,
+					gfc_conv_descriptor_data_get (src)),
+			  null_pointer_node);
+  return build3_v (COND_EXPR, cond, tmp, gfc_finish_block (&body));
+}
+
+
 static tree
 gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
 				 gfc_expr * expr)
@@ -10131,6 +10208,13 @@ gfc_trans_alloc_subarray_assign (tree dest, gfc_component * cm,
     tmp = gfc_duplicate_allocatable (dest, se.expr,
 				     gfc_typenode_for_spec (&cm->ts),
 				     cm->as->rank, NULL_TREE);
+  else if (cm->ts.type == BT_CHARACTER)
+    /* Explicit-length character: the source element length may differ from
+       the component length, so a bitwise duplicate would copy the wrong
+       bytes.  Copy element by element with padding/truncation.  */
+    tmp = gfc_trans_alloc_char_subarray_assign (dest, cm, se.expr,
+						se.string_length,
+						cm->as->rank);
   else
     tmp = gfc_duplicate_allocatable (dest, se.expr,
 				     TREE_TYPE(cm->backend_decl),
