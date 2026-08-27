@@ -297,7 +297,7 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %type	<cdfarg>	namelit name_any name_one
 %type	<string>	name subscript subscripts inof
 %token <boolean>  BOOL
-%token <number>  FEATURE 396  NUMBER 304  EXCEPTION_NAME 280    "EXCEPTION NAME"
+%token <number>  FEATURE 400  NUMBER 308  EXCEPTION_NAME 284    "EXCEPTION NAME"
 
 %type	<cdfval>	cdf_expr
 %type	<cdfval>	cdf_relexpr cdf_reloper cdf_and cdf_bool_expr
@@ -309,55 +309,55 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 
 %type   <number>        cdf_stackable
 
-%token BY 516
-%token COPY 393
-%token CDF_DISPLAY 414    ">>DISPLAY"
-%token IN 634
-%token NAME 286
-%token NUMSTR 306    "numeric literal"
-%token OF 717
-%token PSEUDOTEXT 752
-%token REPLACING 774
-%token LITERAL 299
-%token SUPPRESS 407
+%token BY 520
+%token COPY 397
+%token CDF_DISPLAY 418    ">>DISPLAY"
+%token IN 638
+%token NAME 290
+%token NUMSTR 310    "numeric literal"
+%token OF 721
+%token PSEUDOTEXT 755
+%token REPLACING 777
+%token LITERAL 303
+%token SUPPRESS 411
 
-%token LSUB 398    "("
-%token SUBSCRIPT 406  RSUB 403    ")"
+%token LSUB 402    "("
+%token SUBSCRIPT 410  RSUB 407    ")"
 
-%token CDF_DEFINE 413    ">>DEFINE"
-%token CDF_IF 415    ">>IF"
-%token CDF_ELSE 416    ">>ELSE"
-%token CDF_END_IF 417    ">>END-IF"
-%token CDF_EVALUATE 418    ">>EVALUATE"
-%token CDF_WHEN 419    ">>WHEN"
-%token CDF_END_EVALUATE 420    ">>END-EVALUATE"
+%token CDF_DEFINE 417    ">>DEFINE"
+%token CDF_IF 419    ">>IF"
+%token CDF_ELSE 420    ">>ELSE"
+%token CDF_END_IF 421    ">>END-IF"
+%token CDF_EVALUATE 422    ">>EVALUATE"
+%token CDF_WHEN 423    ">>WHEN"
+%token CDF_END_EVALUATE 424    ">>END-EVALUATE"
 
-%token ALL 480
-%token CALL_CONVENTION 421    ">>CALL-CONVENTION"
-%token COBOL_WORDS 410    ">>COBOL-WORDS"
-%token CDF_PUSH 424    ">>PUSH"
-%token CDF_POP 425    ">>POP"
-%token SOURCE_FORMAT 426    ">>SOURCE FORMAT"
+%token ALL 484
+%token CALL_CONVENTION 425    ">>CALL-CONVENTION"
+%token COBOL_WORDS 414    ">>COBOL-WORDS"
+%token CDF_PUSH 428    ">>PUSH"
+%token CDF_POP 429    ">>POP"
+%token SOURCE_FORMAT 430    ">>SOURCE FORMAT"
 
-%token AS 498  CONSTANT 392  DEFINED 394
+%token AS 502  CONSTANT 396  DEFINED 398
 %type	<boolean>	     DEFINED
-%token OTHER 729  PARAMETER_kw 399    "PARAMETER"
-%token OFF 718  OVERRIDE 400
-%token THRU 976
-%token TRUE_kw 845    "True"
+%token OTHER 733  PARAMETER_kw 403    "PARAMETER"
+%token OFF 722  OVERRIDE 404
+%token THRU 979
+%token TRUE_kw 848    "True"
 
-%token CALL_COBOL 422    "CALL"
-%token CALL_VERBATIM 423    "CALL (as C)"
+%token CALL_COBOL 426    "CALL"
+%token CALL_VERBATIM 427    "CALL (as C)"
 
-%token TURN 847  CHECKING 526  LOCATION 678  ON 720  WITH 874
+%token TURN 850  CHECKING 530  LOCATION 682  ON 724  WITH 877
 
-%left OR 977
-%left AND 979
-%right NOT 980
-%left '<'  '>'  EQ 298    "EQUAL"  NE 981  LE 982  GE 983
+%left OR 980
+%left AND 982
+%right NOT 983
+%left '<'  '>'  _EQ 302    "EQUAL"  _NE 984  _LE 985  _GE 986
 %left '-'  '+'
 %left '*'  '/'
-%right NEG 985
+%right NEG 988
 
 %require "3.8.2"  // for C++ output
 %language "c++"
@@ -466,7 +466,7 @@ cdf_define:	CDF_DEFINE cdf_constant NAME as cdf_expr[value] override
                   cdf_field_add( @NAME, $NAME, $value );
 
 		}
-	|	CDF_DEFINE cdf_constant NAME EQ cdf_expr[value] override
+	|	CDF_DEFINE cdf_constant NAME _EQ cdf_expr[value] override
 		{  /* accept, but as error */
 		  if( scanner_parsing() ) {
 		    error_msg(@NAME, "CDF error: %s = value invalid", $NAME);
@@ -671,8 +671,8 @@ cdf_reloper:	    cdf_relexpr
 		;
 
 cdf_relexpr:	cdf_relexpr '<' cdf_expr { $$ = $1(@1) <  $3(@3); }
-	|	cdf_relexpr LE  cdf_expr { $$ = $1(@1) <= $3(@3); }
-	|	cdf_relexpr EQ cdf_expr {
+	|	cdf_relexpr _LE  cdf_expr { $$ = $1(@1) <= $3(@3); }
+	|	cdf_relexpr _EQ cdf_expr {
 		  $$ = cdfval_t(false);
 		  if( ( $1.string &&  $3.string) ||
 		      (!$1.string && !$3.string) )
@@ -685,7 +685,7 @@ cdf_relexpr:	cdf_relexpr '<' cdf_expr { $$ = $1(@1) <  $3(@3); }
 		    error_msg(@1, "%s", msg);
 		  }
 		}
-	|	cdf_relexpr NE cdf_expr
+	|	cdf_relexpr _NE cdf_expr
 		{
 		  $$ = cdfval_t(false);
 		  if( ( $1.string &&  $3.string) ||
@@ -699,7 +699,7 @@ cdf_relexpr:	cdf_relexpr '<' cdf_expr { $$ = $1(@1) <  $3(@3); }
 		    error_msg(@1, "%s", msg);
 		  }
 		}
-	|	cdf_relexpr GE  cdf_expr { $$ = $1(@1) >= $3(@3); }
+	|	cdf_relexpr _GE  cdf_expr { $$ = $1(@1) >= $3(@3); }
 	|	cdf_relexpr '>' cdf_expr { $$ = $1(@1) >  $3(@3); }
 	|	cdf_expr
 		;

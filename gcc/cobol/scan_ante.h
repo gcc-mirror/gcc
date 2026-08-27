@@ -576,7 +576,7 @@ update_location_col( const char str[], int correction = 0) {
 #define bcomputable(T, C)                               \
     yylval.computational.type=T,                        \
     yylval.computational.capacity=C,                    \
-    yylval.computational.signable=true, BINARY_INTEGER
+    yylval.computational.signable=true, _BINARY_INTEGER
 #define scomputable(T, C)                               \
     yylval.computational.type=T,                        \
     yylval.computational.capacity=C,                    \
@@ -593,11 +593,11 @@ static char *tmpstring = NULL;
 // map of alias => canonical
 static std::map <std::string, std::string> keyword_aliases;
 
-const std::string& 
+std::pair<std::string, bool> 
 keyword_alias_add( const std::string& keyword, const std::string& alias ) {
-  auto p = keyword_aliases.find(alias);
-  if( p != keyword_aliases.end() ) return p->second; // error: do not overwrite
-  return keyword_aliases[alias] = keyword;
+  auto elem = std::make_pair(alias, keyword);
+  auto result = keyword_aliases.insert(elem);
+  return std::make_pair(keyword_aliases[alias], result.second);
 }
 
 /*
@@ -618,11 +618,11 @@ static const std::map <std::string, bint_t > binary_integers {
   { "COMP-4",           { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
   { "COMPUTATIONAL-4",  { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
   
-  { "BINARY-CHAR",      { BINARY_INTEGER, FldNumericBin5,   1, true } }, 
-  { "BINARY-SHORT",     { BINARY_INTEGER, FldNumericBin5,   2, true } }, 
-  { "BINARY-LONG",      { BINARY_INTEGER, FldNumericBin5,   4, true } }, 
-  { "BINARY-DOUBLE",    { BINARY_INTEGER, FldNumericBin5,   8, true } }, 
-  { "BINARY-LONG-LONG", { BINARY_INTEGER, FldNumericBin5,   8, true } }, 
+  { "BINARY-CHAR",      { _BINARY_INTEGER, FldNumericBin5,   1, true } }, 
+  { "BINARY-SHORT",     { _BINARY_INTEGER, FldNumericBin5,   2, true } }, 
+  { "BINARY-LONG",      { _BINARY_INTEGER, FldNumericBin5,   4, true } }, 
+  { "BINARY-DOUBLE",    { _BINARY_INTEGER, FldNumericBin5,   8, true } }, 
+  { "BINARY-LONG-LONG", { _BINARY_INTEGER, FldNumericBin5,   8, true } }, 
 
   { "COMP-5",           { COMPUTATIONAL, FldNumericBin5,    0, false } }, 
   { "COMPUTATIONAL-5",  { COMPUTATIONAL, FldNumericBin5,    0, false } }, 
@@ -689,7 +689,7 @@ binary_integer_usage_of( const char name[] ) {
     int token = p->second.token;
     switch( token ) {
     case COMPUTATIONAL:
-    case BINARY_INTEGER:
+    case _BINARY_INTEGER:
       return token;
     default:
       gcc_unreachable();

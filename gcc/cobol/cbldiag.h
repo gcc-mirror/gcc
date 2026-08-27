@@ -197,6 +197,7 @@ enum cbl_diag_id_t : uint64_t {
   MfBinaryLongLong,
   MfCallGiving,
   MfCallLiteral,
+  MfDisplayScreen, 
   MfCdfDollar, 
   MfComp6,
   MfCompX,

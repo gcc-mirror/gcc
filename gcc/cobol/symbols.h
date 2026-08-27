@@ -2858,8 +2858,9 @@ class name_queue_t : private std::queue<cbl_namelocs_t>
 
 };
 
-const std::string& keyword_alias_add( const std::string& keyword,
-				      const std::string& alias );
+std::pair<std::string, bool> keyword_alias_add( const std::string& keyword,
+                                                const std::string& alias );
+
 int binary_integer_usage_of( const char name[] );
   
 void tee_up_empty();
@@ -2995,7 +2996,7 @@ class current_tokens_t {
       auto lname( lowercase(name) );
       auto cw = cobol_words.insert(lname);
       if( ! cw.second ) {
-        error_msg(loc, "COBOL-WORDS %s: %s may appear but once", verb, name);
+        error_msg(loc, "COBOL-WORDS %s: %qs may appear but once", verb, name);
         return false;
       }
       auto p = tokens.find(lowercase(name));
@@ -3004,20 +3005,15 @@ class current_tokens_t {
         tokens[lname] = token;
         dbgmsg("%s:%d: %d has alias %s", __func__, __LINE__, token, name);
       } else {
-        error_msg(loc, "%s: %s already defined as a token", verb, name);
+        error_msg(loc, "%s: %qs already reserved", verb, name);
       }
       return fOK;
     }
     bool undefine( const cbl_loc_t& loc,
                    const cbl_name_t name, const cbl_name_t verb = "UNDEFINE" ) {
       auto lname( lowercase(name) );
-      auto cw = cobol_words.insert(lname);
-      if( ! cw.second ) {
-        error_msg(loc, "COBOL-WORDS %s: %s may appear but once", verb, name);
-        return false;
-      }
 
-      // Do not erase generic, multi-type tokens COMPUTATIONAL and BINARY_INTEGER.
+      // Do not erase generic, multi-type tokens COMPUTATIONAL and _BINARY_INTEGER.
       if( binary_integer_usage_of(name) ) {
         dbgmsg("%s:%d: generic %s remains valid as a token", __func__, __LINE__, name);
         return true;
@@ -3028,9 +3024,9 @@ class current_tokens_t {
       if( fOK ) { // name in use
         tokens.erase(p);
       } else {
-        error_msg(loc, "%s: %s not defined as a token", verb, name);
+        error_msg(loc, "%s: not a reserved word: %qs", verb, name);
       }
-      dbgmsg("%s:%d: %s removed as a valid token name", __func__, __LINE__, name);
+      dbgmsg("%s:%d: removed as a valid token name: %s", __func__, __LINE__, name);
       return fOK;
     }
   
@@ -3045,7 +3041,7 @@ class current_tokens_t {
       auto lname( lowercase(name) );
       auto cw = cobol_words.insert(lname);
       if( ! cw.second ) {
-        error_msg(loc, "COBOL-WORDS RESERVE: %s may appear but once", name);
+        error_msg(loc, "COBOL-WORDS RESERVE: %qs may appear but once", name);
         return false;
       }
       tokens[lname] = -42;
@@ -3078,33 +3074,35 @@ class current_tokens_t {
     int token; 
     if( 0 == (token = binary_integer_usage_of(keyword)) ) {
       if( 0 == (token = keyword_tok(keyword)) ) {
-	error_msg(loc, "EQUATE %s: not a valid token", keyword);
+	error_msg(loc, "EQUATE: not a reserved word: %qs", keyword);
 	return false;
       }
     }
-    auto name = keyword_alias_add(tokens.uppercase(keyword),
-				  tokens.uppercase(alias));
-    if( name != keyword ) {
-      error_msg(loc, "EQUATE: %s is already an alias for %s", alias, name.c_str());
+    auto result = keyword_alias_add(tokens.uppercase(keyword),
+                                    tokens.uppercase(alias));
+    if( ! result.second ) {
+      error_msg(loc, "EQUATE: %qs is already an alias for %qs",
+                alias, result.first.c_str());
       return false;
     } 
     return tokens.equate(loc, token, alias);
   }
-  bool undefine( const cbl_loc_t& loc, cbl_name_t keyword ) {
+  bool undefine( const cbl_loc_t& loc, const cbl_name_t keyword ) {
     return tokens.undefine(loc, keyword);
   }
   bool substitute( const cbl_loc_t& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
     int token; 
     if( 0 == (token = binary_integer_usage_of(keyword)) ) {
       if( 0 == (token = keyword_tok(keyword)) ) {
-	error_msg(loc, "SUBSTITUTE %s: not a valid token", keyword);
+	error_msg(loc, "SUBSTITUTE: not a reserved word: %qs", keyword);
 	return false;
       }
     }
-    auto name = keyword_alias_add(tokens.uppercase(keyword),
-				  tokens.uppercase(alias));
-    if( name != keyword ) {
-      error_msg(loc, "SUBSTITUTE: %s is already an alias for %s", alias, name.c_str());
+    auto result = keyword_alias_add(tokens.uppercase(keyword),
+                                    tokens.uppercase(alias));
+    if( ! result.second ) {
+      error_msg(loc, "SUBSTITUTE: %qs is already an alias for %qs",
+                alias, result.first.c_str());
       return false;
     } 
 

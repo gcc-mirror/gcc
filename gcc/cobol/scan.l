@@ -338,33 +338,33 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
 
 <INITIAL,procedure_div,cdf_state>{
   (IS{SPC})?"<"         { return '<'; }
-  (IS{SPC})?"<="        { return LE;  }
+  (IS{SPC})?"<="        { return _LE;  }
   (IS{SPC})?"="         { static char eq[] = "=";
 			  ydflval.string = yylval.string = eq;
-  			  return EQ; }
-  (IS{SPC})?"<>"        { return NE;  }
-  (IS{SPC})?">="        { return GE;  }
+  			  return _EQ; }
+  (IS{SPC})?"<>"        { return _NE;  }
+  (IS{SPC})?">="        { return _GE;  }
   (IS{SPC})?">"         { return '>'; }
 
   {LESS_THAN}/[[:space:]] 		{ return '<'; }
-  {LESS_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return LE; }
+  {LESS_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return _LE; }
   (IS{SPC})?EQUALS?({SPC}TO)?/[[:space:]] {
 		  static char eq[] = "EQUAL";
 		  ydflval.string = yylval.string = eq;
-		  return EQ; }
-  {GREATER_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return GE; }
+		  return _EQ; }
+  {GREATER_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return _GE; }
   {GREATER_THAN}/[[:space:]]			{ return '>'; }
 
   {ISNT}{OSPC}">="        { verify_ws(yytext[yyleng - 3]); return '<'; }
-  {ISNT}{OSPC}">"         { verify_ws(yytext[yyleng - 2]); return LE;  }
-  {ISNT}{OSPC}"="         { verify_ws(yytext[yyleng - 2]); return NE;  }
-  {ISNT}{OSPC}"<"         { verify_ws(yytext[yyleng - 2]); return GE;  }
+  {ISNT}{OSPC}">"         { verify_ws(yytext[yyleng - 2]); return _LE;  }
+  {ISNT}{OSPC}"="         { verify_ws(yytext[yyleng - 2]); return _NE;  }
+  {ISNT}{OSPC}"<"         { verify_ws(yytext[yyleng - 2]); return _GE;  }
   {ISNT}{OSPC}"<="        { verify_ws(yytext[yyleng - 3]); return '>'; }
 
   {ISNT}{SPC}GREATER({SPC}THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '<'; }
-  {ISNT}{SPC}GREATER({SPC}THAN)?/[[:space:]]	{ return LE; }
-  {ISNT}{SPC}EQUALS?({SPC}TO)?/[[:space:]]	{ return NE; }
-  {ISNT}{SPC}LESS({SPC}THAN)?/[[:space:]]	{ return GE; }
+  {ISNT}{SPC}GREATER({SPC}THAN)?/[[:space:]]	{ return _LE; }
+  {ISNT}{SPC}EQUALS?({SPC}TO)?/[[:space:]]	{ return _NE; }
+  {ISNT}{SPC}LESS({SPC}THAN)?/[[:space:]]	{ return _GE; }
   {ISNT}{SPC}LESS({SPC}THAN)?{SPC}{OR_EQUAL}/[[:space:]] { return '>'; }
 
   [*]{2}	{ return POW; }
@@ -562,13 +562,8 @@ XML-DECLARATION		{ return XML_DECLARATION; }
 END-XML			{ return END_XML; }
 
 ZEROE?S?	{ return ZERO; }
-
 WRITE		{ return WRITE; }
-
-WITH{SPC}NO/[[:^alnum:]_-]		{ return NO; }
-
 WITH		{ return WITH; }
-
 WHEN	        { return WHEN; }
 ALSO	        { return ALSO; }
 
@@ -576,7 +571,8 @@ VARYING		{ return VARYING; }
 VALUE		{ return VALUE; }
 UTILITY		{ return UTILITY; }
 USING		{ return USING; }
-USE{SPC}(AFTER{SPC})?/(EC|EXCEPTION)		{ return USE; }
+
+USE{SPC}(AFTER{SPC})?/(EC|EXCEPTION) |
 USE		{ return USE; }
 
 UPON		{ return UPON; }
@@ -1556,7 +1552,7 @@ USE({SPC}FOR)?		{ return USE; }
   CALL-CONVENTION 	{ return CALL_CONVENTION; }
   CHECKING 		{ return CHECKING; }
   COBOL 		{ return COBOL; }
-  COBOL-WORDS 		{ return COBOL_WORDS; }
+  /* COBOL-WORDS 		{ return COBOL_WORDS; } */
   COMPILE-TIME-ARITHMETIC-EXPRESSIONS 	{ return COMPILE_TIME_ARITHMETIC_EXPRESSIONS; }
   CORRESPONDING 	{ return CORRESPONDING; }
   DEFINE 		{ return CDF_DEFINE; }
@@ -1649,7 +1645,12 @@ USE({SPC}FOR)?		{ return USE; }
 			}
 
   {QSTRING1} |
-  {QSTRING2}		{ ydflval.string = unquote(); return LITERAL; }
+  {QSTRING2}		{ char *s = unquote();
+			  ydflval.string = s;
+			  auto& lit(yylval.literal);
+			  lit.set_data(strlen(s), s);
+			  return LITERAL;
+			}
 
   %EBCDIC-MODE		{ ydflval.number = feature_internal_ebcdic_e;
 			  return FEATURE; }
@@ -1660,13 +1661,53 @@ USE({SPC}FOR)?		{ return USE; }
 }
 
 <cobol_words>{
+  BY            { return BY; }
   EQUATE	{ return EQUATE; }
   UNDEFINE	{ return UNDEFINE; }
   SUBSTITUTE	{ return SUBSTITUTE; }
   RESERVE	{ return RESERVE; }
-  {NAME}	{
-                  ydflval.string = yylval.string = xstrdup(yytext);
-		  pop_return NAME;
+  WITH		{ return WITH; }
+
+  {QSTRING1} |
+  {QSTRING2} 	{ char *s = unquote();
+		  auto& lit(yylval.literal);
+		  lit.set_data(strlen(s), s);
+                  dbgmsg("%s:%d: literally '%s'", __FILE__, __LINE__, s);
+		  return LITERAL;
+		}
+
+  ID(ENTIFICATION)?{SPC}DIVISION { BEGIN(0); return IDENTIFICATION_DIV; }
+
+  {NAME}	{ // COBOL-WORDS might change "ID DIVISION" to "Chapter One"
+		  static struct {
+                    int token;
+                    size_t pos;
+                  } prior;
+                  dbgmsg("yytext: %s {%d} @ %lu", yytext, yyleng, (unsigned long)prior.pos);
+		  if( keyword_tok(yytext) == IDENTIFICATION ) {
+                    int ch;
+		    while( (ch = yyinput()) != EOF ) {
+                        dbgmsg("yytext: got  a  '%c'", ch);
+		      if( ! ISSPACE(ch) ) {
+			unput(ch);
+                        dbgmsg("yytext: skip to '%c'", ch);
+			break;
+                      }
+                    }
+                    if( ch == EOF ) return YYEOF;
+                    prior.token = IDENTIFICATION;
+                  } else {
+                    while( YY_START ) yy_pop_state(); // end of COBOL-WORDS, for sure
+                    if( prior.token == IDENTIFICATION ) {
+                      prior = {};
+                      if( keyword_tok(yytext) == DIVISION ) {
+                        return IDENTIFICATION_DIV;
+                      }
+                      myless(0);
+                      return IDENTIFICATION;
+                    }
+                    myless(0); // try again with INIITAL start condition
+                  }
 		}
 }
 
@@ -1770,7 +1811,7 @@ USE({SPC}FOR)?		{ return USE; }
   END-WRITE	{ return END_WRITE; }
   ENVIRONMENT	{ return ENVIRONMENT; }
   EQUAL		{ ydflval.string = yylval.string = xstrdup(yytext);
-		  return EQ; }
+		  return _EQ; }
   ERROR		{ return ERROR; }
   EVALUATE	{ return EVALUATE; }
   /* EXCEPTION	special handling */
@@ -2307,7 +2348,7 @@ USE({SPC}FOR)?		{ return USE; }
   {NAME}{OSPC}[(] { myless(0); yy_pop_state(); }
 
   {NAME} 	{ yylval.string = xstrdup(yytext);
-		  pop_return symbol_file(PROGRAM, yytext)? FILENAME : NAME;
+		  pop_return symbol_file(PROGRAM, yytext)? _FILENAME : NAME;
 		}
 }
 
@@ -2553,7 +2594,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 
 <procedure_div>{
    EQUALS?{OSPC}/[(]	{ ydflval.string = yylval.string = xstrdup(yytext);
-		  	  return EQ; }
+		  	  return _EQ; }
 
    {NAME}{OSPC}/[(] { /* If /{OSPC}, "dangerous trailing context" "*/
                   if( is_integer_token() ) return numstr_of(yytext);
@@ -2606,7 +2647,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 		    return EXCEPTION_NAME;
 		  }
 		  ydflval.string = xstrdup(yytext);
-		  return symbol_file(PROGRAM, yytext)? FILENAME : NAME;
+		  return symbol_file(PROGRAM, yytext)? _FILENAME : NAME;
 		}
   [[:blank:]]+
   {EOL}		{ yy_pop_state(); }
@@ -2656,7 +2697,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ^[ ]*>>{OBLANK}DISPLAY 	{ PUSH_CDF_STATE; return CDF_DISPLAY; }
 
   ^[ ]*>>{OBLANK}TURN 		{ yy_push_state(exception); return TURN; }
-  ^[ ]*>>{OBLANK}COBOL-WORDS	{ yy_push_state(cobol_words); return COBOL_WORDS; }
+  ^[ ]*>>{OBLANK}COBOL-WORDS	{ yy_push_state( cobol_words); return COBOL_WORDS; }
 
   ^[ ]*>>{OBLANK}SOURCE{BLANK}FORMAT	{ return SOURCE_FORMAT; }
 

@@ -371,10 +371,10 @@ class locale_tgt_t {
 #include "parse_ante.h"
 %}
 
-%token                  IDENTIFICATION_DIV   "IDENTIFICATION DIVISION"
-			ENVIRONMENT_DIV      "ENVIRONMENT DIVISION"
-			PROCEDURE_DIV        "PROCEDURE DIVISION"
-                        DATA_DIV             "DATA DIVISION"
+%token                  IDENTIFICATION IDENTIFICATION_DIV   "IDENTIFICATION DIVISION"
+			ENVIRONMENT    ENVIRONMENT_DIV      "ENVIRONMENT DIVISION"
+                        DATA           DATA_DIV             "DATA DIVISION"
+			PROCEDURE      PROCEDURE_DIV        "PROCEDURE DIVISION"
 			FILE_SECT            "FILE SECTION"
 			INPUT_OUTPUT_SECT    "INPUT-OUTPUT SECTION"
 			LINKAGE_SECT         "LINKAGE SECTION"
@@ -402,15 +402,15 @@ class locale_tgt_t {
 			NUMED_CR  "NUMERIC-EDITED CR picture"
 			NUMED_DB  "NUMERIC-EDITED DB picture"
 %token  <number>        NINEDOT NINES NINEV PIC_P "PICTURE P symbol" ONES
-%token  <string>        SPACES EQ "EQUAL"
+%token  <string>        SPACES _EQ "EQUAL"
 %token  <literal>       LITERAL
 %token  <number>        END EOP
-%token  <string>        FILENAME
+%token  <string>        _FILENAME
 %token  <number>        INVALID
 %token  <number>        NUMBER NEGATIVE
 %token  <numstr>        NUMSTR    "numeric literal"
 %token  <number>        OVERFLOW_kw "OVERFLOW"
-%token  <computational> BINARY_INTEGER COMPUTATIONAL
+%token  <computational> _BINARY_INTEGER COMPUTATIONAL
 
 %token  <boolean>       PERFORM BACKWARD
 %token  <number>        POSITIVE
@@ -525,12 +525,13 @@ class locale_tgt_t {
 			COMMAND_LINE_COUNT "COMMAND-LINE-COUNT"
 			COMMIT COMMON
 
-			CONCAT CONDITION CONFIGURATION_SECT "CONFIGURATION SECTION"
+			CONCAT CONDITION
+                        CONFIGURATION CONFIGURATION_SECT "CONFIGURATION SECTION"
 			CONTAINS
 			CONTENT CONTROL CONTROLS CONVERT CONVERTING CORRESPONDING COS
 			COUNT CURRENCY CURRENT CURRENT_DATE
 
-			DATA DATE DATE_COMPILED
+			DATE DATE_COMPILED
 			DATE_OF_INTEGER "DATE-OF-INTEGER"
 			DATE_TO_YYYYMMDD "DATE-TO-YYYYMMDD"
 			DATE_WRITTEN "DATE-WRITTEN"
@@ -540,11 +541,11 @@ class locale_tgt_t {
 			DBCS DE DEBUGGING DECIMAL_POINT
 			DECLARATIVES DELIMITED DELIMITER DEPENDING
 			DESCENDING DETAIL DIRECT
-			DIRECT_ACCESS "DIRECT-ACCESS"
+			DIRECT_ACCESS "DIRECT-ACCESS" DIVISION
 			DOWN DUPLICATES
 			DYNAMIC
 
-			E EBCDIC EC EGCS ENCODING ENTRY ENVIRONMENT 
+			E EBCDIC EC EGCS ENCODING ENTRY
 			EVERY EXAMINE EXHIBIT EXP EXP10 EXTEND EXTERNAL
 
 			EXCEPTION_FILE	     "EXCEPTION-FILE"
@@ -632,7 +633,7 @@ class locale_tgt_t {
 			PAGE_COUNTER "PAGE-COUNTER"
 			PF PH PI PIC PICTURE
 			PLUS PRESENT_VALUE PRINT_SWITCH
-			PROCEDURE PROCEDURES PROCEED PROCESSING
+			PROCEDURES PROCEED PROCESSING
 			PROGRAM_ID "PROGRAM-ID"
 			PROGRAM_kw "Program" PROPERTY PROTOTYPE PSEUDOTEXT
 
@@ -764,7 +765,9 @@ class locale_tgt_t {
 
 %type   <number>        test_before usage_clause1 might_be alphanational
 %type   <boolean>       all filler initialized is_signed
-                        on_off optional sign_leading strong 
+                        on_off optional sign_leading strong
+                        with_whatevs
+
 %type   <number>        count data_clauses data_clause
 %type   <number>        nine nines nps relop spaces_etc reserved_value signed
 %type   <number>        variable_type binary_type
@@ -962,7 +965,7 @@ class locale_tgt_t {
 %type	<module_type>	module_type
 
 %type   <nameloc>       repo_func_name                        
-%type   <namelocs>      repo_func_names
+%type   <namelocs>      repo_func_names literals
 %type   <tokens>        repo_intrinsics
 %type   <number>        repo_intrinsic
 %type   <codeset>       codeset_name
@@ -1115,7 +1118,7 @@ class locale_tgt_t {
 
 %printer { fprintf(yyo, "%s (token %d)", keyword_str($$), $$ ); } relop
 %printer { fprintf(yyo, "'%s'", $$? $$ : "" ); } NAME <string>
-%printer { fprintf(yyo, "%s'%.*s'{" HOST_SIZE_T_PRINT_UNSIGNED "} %s",
+%printer { fprintf(yyo, "%s'%.*s'{" HOST_SIZE_T_PRINT_UNSIGNED "} name: %s",
                         $$.prefix, int($$.len), $$.data, (fmt_size_t)$$.len,
                         $$.symbol_name()); } <literal>
 %printer { fprintf(yyo,"%s (1st of " HOST_SIZE_T_PRINT_UNSIGNED")",
@@ -1219,7 +1222,7 @@ class locale_tgt_t {
                         CONTENT CONTROL CONTROLS CONVERT CONVERTING CORRESPONDING COS
                         COUNT CSP CURRENCY CURRENT CURRENT_DATE
 
-                        DATA DATE DATE_COMPILED
+                        DATE DATE_COMPILED
 			DATE_OF_INTEGER
 			DATE_TO_YYYYMMDD
                         DATE_FMT
@@ -1237,7 +1240,7 @@ class locale_tgt_t {
                         DYNAMIC
 
                         E EBCDIC EC EGCS ELEMENT
-                        ENTRY ENVIRONMENT ERROR EVERY
+                        ENTRY ERROR EVERY
                         EXAMINE EXCEPTION EXHIBIT EXP EXP10 EXTEND EXTERNAL
 
                         EXCEPTION_FILE
@@ -1248,7 +1251,7 @@ class locale_tgt_t {
                         EXCEPTION_STATEMENT
 			EXCEPTION_STATUS
 
-                        FACTORIAL FALSE_kw FD FILENAME
+                        FACTORIAL FALSE_kw FD _FILENAME
 			FILE_CONTROL
 			FILE_KW
                         FILE_LIMIT
@@ -1443,7 +1446,7 @@ class locale_tgt_t {
 %left  OR XOR
 %left  AND
 %right  NOT
-%left '<' '>' EQ NE LE GE
+%left '<' '>' _EQ _NE _LE _GE
 %left '-' '+'
 %left '*' '/'
 %right POW
@@ -1665,21 +1668,42 @@ cobol_words:	cobol_words1
 	|	cobol_words cobol_words1
 		;
 cobol_words1:	COBOL_WORDS EQUATE LITERAL[keyword] WITH LITERAL[name] {
-		  if( ! cdf_tokens.equate(@keyword, $keyword.data, $name.data) ) { YYERROR; }
+		  cdf_tokens.equate(@keyword, $keyword.data, $name.data);
 		}
-	|	COBOL_WORDS UNDEFINE LITERAL[keyword] {
-		  if( ! cdf_tokens.undefine(@keyword, $keyword.data) ) { YYERROR; }
-		}
-	|	COBOL_WORDS SUBSTITUTE LITERAL[keyword] BY LITERAL[name] {
-		  if( ! cdf_tokens.substitute(@keyword, $keyword.data, $name.data) ) { YYERROR; }
-		}
-	|	COBOL_WORDS RESERVE LITERAL[name] {
-		  if( ! cdf_tokens.reserve(@name, $name.data) ) { YYERROR; }
+	|	COBOL_WORDS UNDEFINE literals[words]
+                {
+                  for( const auto& word : *$words ) {
+		    cdf_tokens.undefine(word.loc, word.name);
+                  }
+                }
+	|	COBOL_WORDS SUBSTITUTE literal_pairs 
+	|	COBOL_WORDS RESERVE literals[words]
+                {
+                  const auto& words(*$words);
+                  for( const auto& word : words ) {
+                    cdf_tokens.reserve(word.loc, word.name);
+                  }
 		}
         |       PROCESS {
                   cbl_message(@1, IbmCdf, "CDF directive ignored: %qs", $1);
                 }
 		;
+literal_pairs:  literal_pair
+        |       literal_pairs literal_pair
+                ;
+literal_pair:   LITERAL[keyword] BY LITERAL[name] {
+		  cdf_tokens.substitute(@keyword, $keyword.data, $name.data);
+		}
+                ;
+literals:       LITERAL { $$ = new cbl_namelocs_t ( 1, cbl_nameloc_t(@1, $1.data) ); }
+        |       literals LITERAL {
+                  $$ = $1;
+                  const auto& word($2);
+                  dbgmsg("%s:%d: pushing ''%s' onto nameloc list", __FILE__, __LINE__,
+                         word.data);
+                  $$->push_back( cbl_nameloc_t(@2, $2.data) );
+                }
+                ;
 
 program_id:     PROGRAM_ID dot namestr[name] program_as program_attrs[attr] dot
                 {
@@ -5121,7 +5145,7 @@ usage_clause1:  usage BIT
 		{
 		  cbl_unimplemented("Boolean type not implemented");
 		}
-        |       usage BINARY_INTEGER [comp] is_signed
+        |       usage _BINARY_INTEGER [comp] is_signed
                 {
                   bool signable = $is_signed? $comp.signable : false;
                   if( proto_field.has_clause(picture_clause_e) ) {
@@ -6368,7 +6392,7 @@ compute_body:   rnames { statement_begin(@$, COMPUTE); } compute_expr[expr] {
                   $$.ast_op = $expr;
                 }
                 ;
-compute_expr:   EQ expr {
+compute_expr:   _EQ expr {
                   if( $1[0] == 'E' ) { // lexer found EQUALS keyword
                     dialect_ok(@1, IbmEqualAssignE,
                                "EQUAL as assignment operator" );
@@ -6387,10 +6411,47 @@ display:        disp_body end_display[advance]
                 }
                 ;
 end_display:    %empty				{ $$ = DISPLAY_ADVANCE; }
-        |                    END_DISPLAY	{ $$ = DISPLAY_ADVANCE; }
-        |       NO ADVANCING			{ $$ = DISPLAY_NO_ADVANCE; }
-        |       NO ADVANCING END_DISPLAY	{ $$ = DISPLAY_NO_ADVANCE; }
+        |       with              END_DISPLAY	{ $$ = DISPLAY_ADVANCE; }
+        |       with NO ADVANCING		{ $$ = DISPLAY_NO_ADVANCE; }
+        |       with NO ADVANCING END_DISPLAY	{ $$ = DISPLAY_NO_ADVANCE; }
+        |       with with_whatevs
+                {
+                  if( dialect_ok(@2, MfDisplayScreen, "WITH") ) {
+                    if( ! $2 ) {
+                      error_msg(@2, "invalid WITH");
+                    }
+                  }
+                  $$ = DISPLAY_ADVANCE;
+                }
                 ;
+
+with_whatevs:   ERASE NAME { $$ = strcasecmp($NAME, "eol")
+                              ||  strcasecmp($NAME, "eos"); }
+        |       BLANK LINE { $$ = true; }
+        |       BLANK SCREEN { $$ = true; }
+        |       CONTROL is LITERAL { $$ = true; }
+        |       CONTROL is NAME { $$ = true; }
+        |       NAME {
+                  std::vector<const char *> names(1, $NAME);
+                  $$ = with_gnu_names(names);
+                }
+        |       NAME[fgbg] is num_operand[color] {
+                  std::vector<const char *> names(1, $fgbg);
+                  $$ = with_gnu_color(names);
+                  if( ! $$ ) {
+                    error_msg(@$, "invalid WITH %s", $fgbg);
+                  } else {
+                    $$ = is_numeric($color->field);
+                    if( ! $$  ) {
+                      error_msg(@$, "invalid color: WITH %s IS %qs",
+                                $fgbg, nice_name_of($color->field));
+                    }
+                  }
+                }
+        |       SIZE is NAME   { $$ = true; }
+        |       SIZE is NUMSTR { $$ = true; }
+                ;
+
 disp_body:      disp_vargs[vargs]
                 {
                   $$.special = NULL;
@@ -7658,6 +7719,8 @@ context_word:   APPLY                   { static char s[] ="APPLY";
                                          $$ = s; } // LOCK MODE clause
         |       MULTIPLE               { static char s[] ="MULTIPLE";
                                          $$ = s; } // LOCK ON phrase
+        |       NAMESPACE              { static char s[] ="NAMESPACE";
+                                         $$ = s; } // XML namespace
         |       NAT                    { static char s[] ="NAT";
                                          $$ = s; } // CONVERT function
         |       NEAREST_AWAY_FROM_ZERO { static char s[] ="NEAREST-AWAY-FROM-ZERO";
@@ -7983,10 +8046,10 @@ arith_err:      SIZE_ERROR
     */
 
 relop:          '<' { $$ = '<'; }
-        |       LE  { $$ = LE;  }
-        |       EQ { $$ = EQ; }
-        |       NE  { $$ = NE;  }
-        |       GE  { $$ = GE;  }
+        |       _LE  { $$ = _LE;  }
+        |       _EQ { $$ = _EQ; }
+        |       _NE  { $$ = _NE;  }
+        |       _GE  { $$ = _GE;  }
         |       '>' { $$ = '>'; }
                 ;
 
@@ -8058,10 +8121,10 @@ num_value:      scalar // might actually be a string
 /*              ; */
 /* cce_relexpr: cce_expr */
 /*      |       cce_relexpr '<' cce_expr { $$ = $1 <  $3; } */
-/*      |       cce_relexpr LE  cce_expr { $$ = $1 <= $3; } */
-/*      |       cce_relexpr EQ cce_expr { $$ = $1 == $3; } */
-/*      |       cce_relexpr NE  cce_expr { $$ = $1 != $3; } */
-/*      |       cce_relexpr GE  cce_expr { $$ = $1 >= $3; } */
+/*      |       cce_relexpr _LE  cce_expr { $$ = $1 <= $3; } */
+/*      |       cce_relexpr _EQ cce_expr { $$ = $1 == $3; } */
+/*      |       cce_relexpr _NE  cce_expr { $$ = $1 != $3; } */
+/*      |       cce_relexpr _GE  cce_expr { $$ = $1 >= $3; } */
 /*      |       cce_relexpr '>' cce_expr { $$ = $1 >  $3; } */
 /*              ; */
 
@@ -8871,7 +8934,7 @@ varg1a:         ADDRESS OF scalar {
                 }
                 ;
 
-binary_type:	BINARY_INTEGER { $$ = $1.capacity; }
+binary_type:	_BINARY_INTEGER { $$ = $1.capacity; }
 	|	COMPUTATIONAL  { $$ = $1.capacity; }
 		;
 
@@ -9921,7 +9984,7 @@ search_stmts:   statements    %prec ADD
 search_terms:   search_term
         |       search_terms AND search_term
                 ;
-search_term:    scalar[key] EQ search_expr[sarg]
+search_term:    scalar[key] _EQ search_expr[sarg]
                 {
                   if( $key->nsubscript() == 0 ) {
                     error_msg(@1, "no index for key");
@@ -9993,7 +10056,7 @@ sort_table:     SORT tableish[table] sort_keys sort_dup sort_seq {
                 }
                 ;
 
-sort_file:      SORT FILENAME[file] sort_keys  sort_dup    sort_seq
+sort_file:      SORT _FILENAME[file] sort_keys  sort_dup    sort_seq
                                     sort_input sort_output
                 {
                   statement_begin(@1, SORT);
@@ -10035,7 +10098,7 @@ sort_file:      SORT FILENAME[file] sort_keys  sort_dup    sort_seq
                                     noutput, outputs,
                                     in_proc, out_proc );
                 }
-        |       SORT FILENAME[file] sort_keys sort_dup sort_seq  error
+        |       SORT _FILENAME[file] sort_keys sort_dup sort_seq  error
                 {
                   error_msg(@file, "SORT missing INPUT or OUTPUT phrase");
                 }
@@ -13162,22 +13225,19 @@ current_tokens_t::tokenset_t::find( const cbl_name_t name, bool include_intrinsi
    * The input name may be one of:
    *  1. an intrinsic function name (OK if include_intrinsics)
    *  2. an ISO/GCC reserved word or context-sensitive word (OK)
-   *  3. a token in our token list for convenience, such as BINARY_INTEGER (bzzt)
+   *  3. a token in our token list for convenience, such as _BINARY_INTEGER (bzzt)
    */  
   cbl_name_t lname;
   std::transform(name, name + strlen(name) + 1, lname, ftolower);
-  dbgmsg("current_tokens_t::tokenset_t::find: scanning %lu tokens for '%s'",
-         (unsigned long)tokens.size(), lname);
   auto p = tokens.find(lname);
   if( p == tokens.end() ) return 0;
   int token = p->second;
 
   if( token == SECTION ) yylval.number = 0;
 
-  if( include_intrinsics && intrinsic_cname(token) ) return token;
-  if( iso_cobol_word(uppercase(name), true) ) return token;
-  
-  return 0;
+  if( intrinsic_cname(token) && ! include_intrinsics ) token = 0;
+
+  return token;
 }
 
 int
@@ -13212,10 +13272,10 @@ static enum relop_t
 relop_of(int token) {
   switch(token) {
   case '<': return lt_op;
-  case LE:  return le_op;
-  case EQ: return eq_op;
-  case NE:  return ne_op;
-  case GE:  return ge_op;
+  case _LE:  return le_op;
+  case _EQ: return eq_op;
+  case _NE:  return ne_op;
+  case _GE:  return ge_op;
   case '>': return gt_op;
   }
   cbl_internal_error( "%s:%d: invalid relop token %d",
@@ -13245,10 +13305,10 @@ relop_debug_str(int token) {
   switch(token) {
   case 0:   return "zilch";
   case '<': return "<";
-  case LE:  return "LE";
-  case EQ: return "=";
-  case NE:  return "NE";
-  case GE:  return "GE";
+  case _LE:  return "LE";
+  case _EQ: return "=";
+  case _NE:  return "NE";
+  case _GE:  return "GE";
   case '>': return ">";
   }
   dbgmsg("%s:%d: invalid relop token %d", __func__, __LINE__, token);
@@ -13259,10 +13319,10 @@ static int
 token_of(enum relop_t op) {
   switch(op) {
   case lt_op: return '<';
-  case le_op: return LE;
-  case eq_op: return EQ;
-  case ne_op: return NE;
-  case ge_op: return GE;
+  case le_op: return _LE;
+  case eq_op: return _EQ;
+  case ne_op: return _NE;
+  case ge_op: return _GE;
   case gt_op: return '>';
   }
   cbl_errx( "%s:%d: invalid relop_t %d", __func__, __LINE__, op);

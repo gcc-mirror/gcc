@@ -59,6 +59,7 @@
 .Op Fl Wno-comp-6
 .Op Fl Wno-comp-x
 .Op Fl Wno-copybook-found
+.Op Fl Wno-display-screen
 .Op Fl Wno-dynamic-call
 .Op Fl Wno-ec-unknown
 .Op Fl Wno-entry-convention
@@ -496,13 +497,14 @@ to indicate MicroFocus syntax:
 .Bl -bullet -compact
 .It
 CDF
-.Sy $IF , $ELSE , $END , Sy $END-IF , Li and Sy $SET
+.Sy \[Do]IF , \[Do]ELSE , \[Do]END , Sy \[Do]END-IF , Li and Sy \[Do]SET
+.It
+CDF
+.Sy \[Do]DISPLAY
 .It
 .Sy BINARY-LONG-LONG
 .It
-.Sy CALL ... GIVING
-.It
-.Sy CDF \[Do]IF
+.Sy CALL Li ... Sy GIVING
 .It
 .Sy COMPUTATIONAL-6
 .It
@@ -510,7 +512,11 @@ CDF
 used with
 .Sy PICTURE X
 .It
-.Sy INSPECT ... TRAILING
+.Sy DISPLAY WITH
+.Aq "screen features"
+.Li *> e.g. BACKGROUND-COLOR
+.It
+.Sy INSPECT Li ... Sy TRAILING
 .It
 .Sy LEVEL 78
 constants
@@ -635,6 +641,8 @@ Warn if CDF \[Do]IF is used.
 Warn if COMPUTATIONAL-6 is used.
 .It Fl Wno-comp-x
 Warn if COMPUTATIONAL is used with PICTURE X.
+.It Fl Wno-display-screen
+Warn if DISPLAY WITH screen options is used.
 .It Fl Wno-dynamic-call
 Note if CALL with dynamic target is used.
 .It Fl Wno-file-code-set

@@ -623,6 +623,10 @@ cobol_langhook_handle_option (size_t scode,
           cobol_warning(MfCallLiteral, call_literal, warning_as_error);
           return true;
 
+        case OPT_Wdisplay_screen:
+          cobol_warning(MfDisplayScreen, display_screen, warning_as_error);
+          return true;
+
         case OPT_Wcdf_dollar:
           cobol_warning(MfCdfDollar, cdf_dollar, warning_as_error);
           return true;

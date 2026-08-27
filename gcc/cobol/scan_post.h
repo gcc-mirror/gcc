@@ -306,7 +306,10 @@ prelex() {
 
   // Do not disturb lexer state while we're not parsing the COBOL. 
   if( parsing.on() ) {
-    if( YY_START == cdf_state ) yy_pop_state();
+    if( YY_START == cdf_state ) {
+        yy_pop_state();
+    }
+    // still parsing.on() 
 
     if( yy_flex_debug ) {
       dbgmsg("scanner SC <%s>", start_condition_is());
@@ -329,6 +332,7 @@ prelex() {
         if( tok ) token = tok;
       }
       yy_pop_state();
+
       dbgmsg("%s: scanner SC <%s>, token now %s", __func__,
              start_condition_is(), keyword_str(token));
     }
@@ -488,4 +492,5 @@ namespace cdf {
 // tokens.h is generated as needed from parse.h with tokens.h.gen
 current_tokens_t::tokenset_t::tokenset_t() {
 #include "token_names.h"
+  // Reserved words that we don't use as terminals.
 }
