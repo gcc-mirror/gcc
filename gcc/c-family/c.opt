@@ -1522,7 +1522,7 @@ Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are
 
 Wsynth
 C++ ObjC++ Warning Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 Wsystem-headers
 C ObjC C++ ObjC++ Warning
@@ -1743,7 +1743,7 @@ C++ ObjC++ WarnRemoved
 
 fallow-parameterless-variadic-functions
 C ObjC Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 falt-external-templates
 C++ ObjC++ WarnRemoved

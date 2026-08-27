@@ -308,7 +308,7 @@ Add extra annotations to diagrams.
 
 fanalyzer-fine-grained
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fanalyzer-feasibility
 Common Var(flag_analyzer_feasibility) Init(1)
@@ -372,7 +372,7 @@ Dump various analyzer internals to stderr.
 
 fdump-analyzer-callgraph
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fdump-analyzer-exploded-graph
 Common RejectNegative Var(flag_dump_analyzer_exploded_graph)

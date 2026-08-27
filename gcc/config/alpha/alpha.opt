@@ -28,7 +28,7 @@ Use fp registers.
 
 mgas
 Target Ignore Undocumented
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 mieee-conformant
 Target RejectNegative Mask(IEEE_CONFORMANT)

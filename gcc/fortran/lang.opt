@@ -211,7 +211,7 @@ Warn about creation of array temporaries.
 
 Wargument-mismatch
 Fortran WarnRemoved
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 Wc-binding-type
 Fortran Var(warn_c_binding_type) Warning LangEnabledBy(Fortran,Wall)
@@ -560,7 +560,7 @@ Allow dollar signs in entity names.
 
 fdump-core
 Fortran Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fdump-fortran-original
 Fortran Var(flag_dump_fortran_original)

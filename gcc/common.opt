@@ -696,7 +696,7 @@ Warn if dereferencing a NULL pointer may lead to erroneous or undefined behavior
 
 Wunsafe-loop-optimizations
 Common Ignore Warning
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 Wmissing-noreturn
 Common Warning Alias(Wsuggest-attribute=noreturn)
@@ -854,7 +854,7 @@ Warn about maybe uninitialized automatic variables.
 
 Wunreachable-code
 Common Ignore Warning
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 Wunused
 Common Var(warn_unused) Init(0) Warning
@@ -1134,19 +1134,19 @@ Enable static analysis pass.
 
 fargument-alias
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fargument-noalias
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fargument-noalias-global
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fargument-noalias-anything
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fsanitize=
 Common Driver Joined
@@ -1938,7 +1938,7 @@ Use STB_GNU_UNIQUE if supported by the assembler.
 
 floop-flatten
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 floop-nest-optimize
 Common Var(flag_loop_nest_optimize) Optimization
@@ -2225,11 +2225,11 @@ Reduce stack alignment on call sites if possible.
 
 fipa-matrix-reorg
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fipa-struct-reorg
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 fipa-vrp
 Common Var(flag_ipa_vrp) Optimization
@@ -2567,7 +2567,7 @@ If neither case applies, generate table-based CRC.
 
 foptimize-register-move
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 foptimize-sibling-calls
 Common Var(flag_optimize_sibling_calls) Optimization
@@ -2793,7 +2793,7 @@ Return small aggregates in registers.
 
 fregmove
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 flifetime-dse
 Common Var(flag_lifetime_dse,2) Init(2) Optimization
@@ -3574,7 +3574,7 @@ Enables the dynamic vectorizer cost model.  Preserved for backward compatibility
 
 ftree-vect-loop-version
 Common Ignore
-Does nothing. Preserved for backward compatibility.
+Does nothing.  Preserved for backward compatibility.
 
 ftree-scev-cprop
 Common Var(flag_tree_scev_cprop) Init(1) Optimization
