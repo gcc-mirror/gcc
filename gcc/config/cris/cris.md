@@ -2199,16 +2199,54 @@
   "swapwb %0"
   [(set_attr "slottable" "yes")])
 
+(define_insn "*bswapsi2_not<setcc><setnz><setnzvc>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bswap:SI
+	 (not:SI (match_operand:SI 1 "register_operand" "0"))))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "TARGET_HAS_SWAP"
+  "swapnwb %0"
+  [(set_attr "slottable" "yes")])
+
 ;; This instruction swaps all bits in a register.
 ;; That means that the most significant bit is put in the place
 ;; of the least significant bit, and so on.
 
-(define_insn "cris_swap_bits"
+(define_insn "<acc><anz><anzvc>bitreversesi2<setcc><setnz><setnzvc>"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(bitreverse:SI (match_operand:SI 1 "register_operand" "0")))
    (clobber (reg:CC CRIS_CC0_REGNUM))]
   "TARGET_HAS_SWAP"
   "swapwbr %0"
+  [(set_attr "slottable" "yes")])
+
+;; Takes an cycle extra but is shorter than a BITREVERSE and a NOT.
+(define_insn "*bitreversesi2_not<setcc><setnz><setnzvc>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(bitreverse:SI
+	 (not:SI (match_operand:SI 1 "register_operand" "0"))))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "TARGET_HAS_SWAP"
+  "swapnwbr %0"
+  [(set_attr "slottable" "yes")])
+
+(define_insn "*rotsi2_16<setcc><setnz><setnzvc>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(rotate:SI (match_operand:SI 1 "register_operand" "0")
+		   (const_int 16)))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "TARGET_HAS_SWAP"
+  "swapw %0"
+  [(set_attr "slottable" "yes")])
+
+(define_insn "*rotsi2_16_not<setcc><setnz><setnzvc>"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(not:SI
+	 (rotate:SI (match_operand:SI 1 "register_operand" "0")
+		    (const_int 16))))
+   (clobber (reg:CC CRIS_CC0_REGNUM))]
+  "TARGET_HAS_SWAP"
+  "swapnw %0"
   [(set_attr "slottable" "yes")])
 
 ;; Implement ctz using two instructions, one for bit swap and one for clz.
