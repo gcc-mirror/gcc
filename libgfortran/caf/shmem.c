@@ -570,6 +570,17 @@ _gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
 
 extern void _gfortran_report_exception (void);
 
+/* Tell the supervisor that this image error stopped, so that it can terminate
+   all other images.  */
+
+static void
+mark_error_stopped (void)
+{
+  if (this_image.supervisor && this_image.image_num >= 0)
+    this_image.supervisor->images[this_image.image_num].status
+      = IMAGE_ERROR_STOP;
+}
+
 void
 _gfortran_caf_stop_numeric (int stop_code, bool quiet)
 {
@@ -607,6 +618,7 @@ _gfortran_caf_error_stop_str (const char *string, size_t len, bool quiet)
 	fputc (*(string++), stderr);
       fputs ("\n", stderr);
     }
+  mark_error_stopped ();
   exit (1);
 }
 
@@ -739,6 +751,7 @@ _gfortran_caf_error_stop (int error, bool quiet)
       _gfortran_report_exception ();
       fprintf (stderr, "ERROR STOP %d\n", error);
     }
+  mark_error_stopped ();
   exit (error);
 }
 

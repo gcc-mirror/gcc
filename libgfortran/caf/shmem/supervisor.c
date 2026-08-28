@@ -408,12 +408,24 @@ supervisor_main_loop (int *argc __attribute__ ((unused)),
 	  --i;
 	  continue;
 	}
+      for (j = 0;
+	   j < local->total_num_images && m->images[j].pid != finished_pid;
+	   j++)
+	;
+
+      /* An ERROR STOP on any image terminates all images.  */
+      if (j < local->total_num_images
+	  && m->images[j].status == IMAGE_ERROR_STOP)
+	{
+	  kill_all_images (m);
+	  while (wait (NULL) > 0)
+	    ;
+	  *exit_code = WIFEXITED (chstatus) ? WEXITSTATUS (chstatus) : 1;
+	  return 0;
+	}
+
       if (WIFEXITED (chstatus) && !WEXITSTATUS (chstatus))
 	{
-	  for (j = 0;
-	       j < local->total_num_images && m->images[j].pid != finished_pid;
-	       j++)
-	    ;
 	  /* Only set the status, when it has not been set by the (failing)
 	     image already.  */
 	  if (m->images[j].status == IMAGE_OK)
@@ -424,10 +436,6 @@ supervisor_main_loop (int *argc __attribute__ ((unused)),
 	}
       else if (!WIFEXITED (chstatus) || WEXITSTATUS (chstatus))
 	{
-	  for (j = 0;
-	       j < local->total_num_images && m->images[j].pid != finished_pid;
-	       j++)
-	    ;
 	  if (WEXITSTATUS (chstatus) == 210)
 	    {
 	      --i;

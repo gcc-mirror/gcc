@@ -41,7 +41,9 @@ typedef enum
   IMAGE_UNKNOWN = 0,
   IMAGE_OK,
   IMAGE_FAILED,
-  IMAGE_SUCCESS
+  IMAGE_SUCCESS,
+  /* The image executed an ERROR STOP and requires all images to terminate.  */
+  IMAGE_ERROR_STOP
 } image_status;
 
 typedef struct
