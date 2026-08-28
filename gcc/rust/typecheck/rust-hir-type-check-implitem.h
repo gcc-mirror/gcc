@@ -58,6 +58,8 @@ protected:
   TypeCheckImplItem (HIR::ImplBlock &parent, TyTy::BaseType *self,
 		     std::vector<TyTy::SubstitutionParamMapping> substitutions);
 
+  TyTy::FnType *resolve_function_signature (HIR::Function &function);
+
   HIR::ImplBlock &parent;
   TyTy::BaseType *self;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;

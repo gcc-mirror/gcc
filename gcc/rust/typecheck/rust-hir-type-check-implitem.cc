@@ -203,11 +203,9 @@ TypeCheckImplItem::Resolve (
   return resolver.result;
 }
 
-void
-TypeCheckImplItem::visit (HIR::Function &function)
+TyTy::FnType *
+TypeCheckImplItem::resolve_function_signature (HIR::Function &function)
 {
-  auto binder_pin = context->push_lifetime_binder ();
-
   if (function.has_generics ())
     resolve_generic_params (HIR::Item::ItemKind::Function,
 			    function.get_locus (),
@@ -230,7 +228,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 	{
 	  rust_error_at (function.get_locus (),
 			 "failed to resolve return type");
-	  return;
+	  return nullptr;
 	}
 
       ret_type = resolved->clone ();
@@ -285,7 +283,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 		      {
 			rust_inform (self_param.get_locus (),
 				     "failed to resolve lifetime");
-			return;
+			return nullptr;
 		      }
 		  }
 		else
@@ -310,7 +308,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 		      {
 			rust_error_at (self_param.get_locus (),
 				       "failed to resolve lifetime");
-			return;
+			return nullptr;
 		      }
 		  }
 		else
@@ -326,7 +324,7 @@ TypeCheckImplItem::visit (HIR::Function &function)
 
 	    default:
 	      rust_unreachable ();
-	      return;
+	      return nullptr;
 	    }
 	}
 
@@ -367,8 +365,30 @@ TypeCheckImplItem::visit (HIR::Function &function)
   context->insert_type (function.get_mappings (), fnType);
   result = fnType;
 
+  return fnType;
+}
+
+void
+TypeCheckImplItem::visit (HIR::Function &function)
+{
+  auto binder_pin = context->push_lifetime_binder ();
+
+  TyTy::BaseType *resolved = nullptr;
+  TyTy::FnType *resolve_fn_type = nullptr;
+  if (context->lookup_type (function.get_mappings ().get_hirid (), &resolved))
+    {
+      if (resolved->get_kind () != TyTy::TypeKind::FNDEF)
+	return;
+      resolve_fn_type = static_cast<TyTy::FnType *> (resolved);
+      result = resolve_fn_type;
+    }
+  else
+    resolve_fn_type = resolve_function_signature (function);
+
+  if (resolve_fn_type == nullptr)
+    return;
+
   // need to get the return type from this
-  TyTy::FnType *resolve_fn_type = fnType;
   auto expected_ret_tyty = resolve_fn_type->get_return_type ();
   context->push_return_type (TypeCheckContextItem (parent, &function),
 			     expected_ret_tyty);

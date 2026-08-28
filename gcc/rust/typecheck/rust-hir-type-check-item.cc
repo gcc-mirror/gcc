@@ -794,10 +794,9 @@ TypeCheckItem::resolve_impl_item (HIR::ImplBlock &impl_block,
   return TypeCheckImplItem::Resolve (impl_block, item, self, substitutions);
 }
 
-void
-TypeCheckItem::visit (HIR::Function &function)
+TyTy::FnType *
+TypeCheckItem::resolve_function_signature (HIR::Function &function)
 {
-  auto lifetime_pin = context->push_clean_lifetime_resolver ();
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (function.has_generics ())
     resolve_generic_params (HIR::Item::ItemKind::Function,
@@ -817,7 +816,7 @@ TypeCheckItem::visit (HIR::Function &function)
     {
       auto resolved = TypeCheckType::Resolve (function.get_return_type ());
       if (resolved->get_kind () == TyTy::TypeKind::ERROR)
-	return;
+	return nullptr;
 
       ret_type = resolved->clone ();
       ret_type->set_ref (
@@ -855,8 +854,29 @@ TypeCheckItem::visit (HIR::Function &function)
 
   context->insert_type (function.get_mappings (), fn_type);
 
+  return fn_type;
+}
+
+void
+TypeCheckItem::visit (HIR::Function &function)
+{
+  auto lifetime_pin = context->push_clean_lifetime_resolver ();
+
+  TyTy::BaseType *resolved = nullptr;
+  TyTy::FnType *resolved_fn_type = nullptr;
+  if (context->lookup_type (function.get_mappings ().get_hirid (), &resolved))
+    {
+      if (resolved->get_kind () != TyTy::TypeKind::FNDEF)
+	return;
+      resolved_fn_type = static_cast<TyTy::FnType *> (resolved);
+    }
+  else
+    resolved_fn_type = resolve_function_signature (function);
+
+  if (resolved_fn_type == nullptr)
+    return;
+
   // need to get the return type from this
-  TyTy::FnType *resolved_fn_type = fn_type;
   auto expected_ret_tyty = resolved_fn_type->get_return_type ();
   context->push_return_type (TypeCheckContextItem (&function),
 			     expected_ret_tyty);
@@ -866,7 +886,7 @@ TypeCheckItem::visit (HIR::Function &function)
 
   // emit check for
   // error[E0121]: the type placeholder `_` is not allowed within types on item
-  const auto placeholder = ret_type->contains_infer ();
+  const auto placeholder = expected_ret_tyty->contains_infer ();
   if (placeholder != nullptr && function.has_return_type ())
     {
       // FIXME
@@ -906,7 +926,7 @@ TypeCheckItem::visit (HIR::Function &function)
 
   context->pop_return_type ();
 
-  infered = fn_type;
+  infered = resolved_fn_type;
 }
 
 void

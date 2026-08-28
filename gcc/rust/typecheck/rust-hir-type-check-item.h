@@ -88,6 +88,8 @@ protected:
 
   TyTy::BaseType *resolve_impl_block_self (HIR::ImplBlock &impl_block);
 
+  TyTy::FnType *resolve_function_signature (HIR::Function &function);
+
   bool validate_repr_simd (const std::vector<TyTy::StructFieldType *> &fields,
 			   location_t locus);
 
