@@ -4382,9 +4382,6 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
   if (fail)
     return false;
 
-  /* Remember a stmt with the actual reduction operation.  */
-  stmt_vec_info reduc_scalar_stmt = scalar_stmts[0];
-
   /* When the SSA def chain through reduc-idx does not form a natural
      reduction chain try to linearize an associative operation manually.  */
   if (scalar_stmts.length () == 1
@@ -4392,9 +4389,11 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       && associative_tree_code ((tree_code)code)
       /* We may not associate if a fold-left reduction is required.  */
       && !needs_fold_left_reduction_p (TREE_TYPE (gimple_get_lhs
-						    (reduc_scalar_stmt->stmt)),
+						    (scalar_stmts[0]->stmt)),
 				       code))
     {
+      /* Remember a stmt with the actual reduction operation.  */
+      stmt_vec_info reduc_scalar_stmt = scalar_stmts[0];
       auto_vec<chain_op_t> chain;
       auto_vec<std::pair<tree_code, gimple *> > worklist;
       gimple *op_stmt = NULL, *other_op_stmt = NULL;
