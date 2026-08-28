@@ -44,8 +44,6 @@ namespace Resolver {
 
 TypeCheckExpr::TypeCheckExpr () : TypeCheckBase (), infered (nullptr) {}
 
-// Perform type checking on expr. Also runs type unification algorithm.
-// Returns the unified type of expr
 TyTy::BaseType *
 TypeCheckExpr::Resolve (HIR::Expr &expr)
 {

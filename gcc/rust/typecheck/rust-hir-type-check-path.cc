@@ -418,28 +418,12 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
   for (size_t i = offset; i < segments.size (); i++)
     {
       HIR::PathExprSegment &seg = segments.at (i);
-      bool probe_impls = !receiver_is_generic;
-
-      // probe the path is done in two parts one where we search impls if no
-      // candidate is found then we search extensions from traits
-      auto candidates
-	= PathProbeExpr::Probe (prev_segment, seg.get_segment (), probe_impls,
-				false /*probe_bounds*/,
-				true /*ignore_mandatory_trait_items*/);
+      auto candidates = PathProbeExpr::Probe (prev_segment, seg.get_segment ());
       if (candidates.size () == 0)
 	{
-	  candidates
-	    = PathProbeExpr::Probe (prev_segment, seg.get_segment (), false,
-				    true /*probe_bounds*/,
-				    false /*ignore_mandatory_trait_items*/);
-
-	  if (candidates.size () == 0)
-	    {
-	      rust_error_at (
-		seg.get_locus (),
-		"failed to resolve path segment using an impl Probe");
-	      return;
-	    }
+	  rust_error_at (seg.get_locus (),
+			 "failed to resolve path segment using an impl Probe");
+	  return;
 	}
 
       if (candidates.size () > 1)
