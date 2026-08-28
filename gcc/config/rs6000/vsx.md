@@ -6264,7 +6264,7 @@
    (SFBOOL_MFVSR_A		 3)		;; move to gpr src
    (SFBOOL_BOOL_D		 4)		;; and/ior/xor dest
    (SFBOOL_BOOL_A1		 5)		;; and/ior/xor arg1
-   (SFBOOL_BOOL_A2		 6)		;; and/ior/xor arg1
+   (SFBOOL_BOOL_A2		 6)		;; and/ior/xor arg2
    (SFBOOL_SHL_D		 7)		;; shift left dest
    (SFBOOL_SHL_A		 8)		;; shift left arg
    (SFBOOL_MTVSR_D		 9)		;; move to vecter dest
@@ -6304,18 +6304,18 @@
 ;; GPR, and instead move the integer mask value to the vector register after a
 ;; shift and do the VSX logical operation.
 
-;; The insns for dealing with SFmode in GPR registers looks like:
+;; The insns for dealing with SFmode in GPR registers looks like on power8:
 ;; (set (reg:V4SF reg2) (unspec:V4SF [(reg:SF reg1)] UNSPEC_VSX_CVDPSPN))
 ;;
-;; (set (reg:DI reg3) (unspec:DI [(reg:V4SF reg2)] UNSPEC_P8V_RELOAD_FROM_VSX))
+;; (set (reg:DI reg3) (zero_extend:DI (reg:SI reg2)))
 ;;
-;; (set (reg:DI reg4) (and:DI (reg:DI reg3) (reg:DI reg3)))
+;; (set (reg:DI reg4) (and:SI (reg:SI reg3) (reg:SI mask)))
 ;;
 ;; (set (reg:DI reg5) (ashift:DI (reg:DI reg4) (const_int 32)))
 ;;
 ;; (set (reg:SF reg6) (unspec:SF [(reg:DI reg5)] UNSPEC_P8V_MTVSRD))
 ;;
-;; (set (reg:SF reg6) (unspec:SF [(reg:SF reg6)] UNSPEC_VSX_CVSPDPN))
+;; (set (reg:SF reg7) (unspec:SF [(reg:SF reg6)] UNSPEC_VSX_CVSPDPN))
 
 (define_peephole2
   [(match_scratch:DI SFBOOL_TMP_GPR "r")
@@ -6394,6 +6394,138 @@
   operands[SFBOOL_MFVSR_A_V4SF] = gen_rtx_REG (V4SFmode, regno_mfvsr_a);
   operands[SFBOOL_TMP_VSX_DI] = gen_rtx_REG (DImode, regno_tmp_vsx);
   operands[SFBOOL_MTVSR_D_V4SF] = gen_rtx_REG (V4SFmode, regno_mtvsr_d);
+})
+
+;; Constants for SFbool optimization on power9/power10
+(define_constants
+  [(SFBOOL2_TMP_VSX_V4SI	 0)		;; vector temporary (V4SI)
+   (SFBOOL2_TMP_GPR_SI		 1)		;; GPR temporary (SI)
+   (SFBOOL2_MFVSR_D		 2)		;; move to gpr dest (DI)
+   (SFBOOL2_MFVSR_A		 3)		;; move to gpr src (SI)
+   (SFBOOL2_BOOL_D		 4)		;; and/ior/xor dest (SI)
+   (SFBOOL2_BOOL_A1		 5)		;; and/ior/xor arg1 (SI)
+   (SFBOOL2_BOOL_A2		 6)		;; and/ior/xor arg2 (SI)
+   (SFBOOL2_SPLAT_D		 7)		;; splat dest (V4SI)
+   (SFBOOL2_MTVSR_D		 8)		;; move/splat to VSX dest.
+   (SFBOOL2_MTVSR_A		 9)		;; move/splat to VSX arg.
+   (SFBOOL2_MFVSR_A_V4SI	10)		;; MFVSR_A as V4SI
+   (SFBOOL2_MTVSR_D_V4SI	11)		;; MTVSR_D as V4SI
+   (SFBOOL2_XXSPLTW		12)])		;; 1 or 3 for XXSPLTW
+
+;; On power9/power10, the code is different because we have a splat 32-bit
+;; operation that does a direct move to the FPR/vector registers (MTVSRWS).
+;;
+;; The insns for dealing with SFmode in GPR registers looks like on
+;; power9/power10:
+;;
+;; (set (reg:V4SF reg2) (unspec:V4SF [(reg:SF reg1)] UNSPEC_VSX_CVDPSPN))
+;;
+;; (set (reg:DI reg3) (zero_extend:DI (reg:SI reg2)))
+;;
+;; (set (reg:SI reg4) (and:SI (reg:SI reg3) (reg:SI mask)))
+;;
+;; (set (reg:V4SI reg5) (vec_duplicate:V4SI (reg:SI reg4)))
+;;
+;; (set (reg:SF reg6) (unspec:SF [(reg:SF reg5)] UNSPEC_VSX_CVSPDPN))
+
+;; The VSX temporary needs to be an Altivec register in case we are trying to
+;; do and/ior/xor of -16..15 and we want to use VSPLTISW to load the constant.
+;;
+;; The GPR temporary is only used if we are trying to do a logical operation
+;; with a constant outside of the -16..15 range on a power9.  Otherwise, we can
+;; load the constant directly into the VSX temporary register.
+
+(define_peephole2
+  [(match_scratch:V4SI SFBOOL2_TMP_VSX_V4SI "v")
+   (match_scratch:SI SFBOOL2_TMP_GPR_SI "r")
+
+   ;; Zero_extend and direct move
+   (set (match_operand:DI SFBOOL2_MFVSR_D "int_reg_operand")
+	(zero_extend:DI
+	 (match_operand:SI SFBOOL2_MFVSR_A "vsx_register_operand")))
+
+   ;; AND/IOR/XOR operation on int
+   (set (match_operand:SI SFBOOL2_BOOL_D "int_reg_operand")
+	(and_ior_xor:SI
+	 (match_operand:SI SFBOOL2_BOOL_A1 "int_reg_operand")
+	 (match_operand:SI SFBOOL2_BOOL_A2 "reg_or_cint_operand")))
+
+   ;; Splat sfbool result to vector register
+   (set (match_operand:V4SI SFBOOL2_SPLAT_D "vsx_register_operand")
+	(vec_duplicate:V4SI
+	 (match_dup SFBOOL2_BOOL_D)))]
+
+  "TARGET_POWERPC64 && TARGET_P9_VECTOR
+   && REG_P (operands[SFBOOL2_MFVSR_D])
+   && REG_P (operands[SFBOOL2_BOOL_A1])
+   && (REGNO (operands[SFBOOL2_MFVSR_D]) == REGNO (operands[SFBOOL2_BOOL_A1])
+       || (REG_P (operands[SFBOOL2_BOOL_A2])
+           && (REGNO (operands[SFBOOL2_MFVSR_D])
+               == REGNO (operands[SFBOOL2_BOOL_A2]))))
+   && peep2_reg_dead_p (3, operands[SFBOOL2_MFVSR_D])
+   && peep2_reg_dead_p (4, operands[SFBOOL2_BOOL_D])"
+
+  ;; Either (set (reg:SI xxx) (reg:SI yyy))	or
+  ;;        (set (reg:V4SI xxx) (const_vector (parallel [c, c, c, c])))
+  [(set (match_dup SFBOOL2_MTVSR_D)
+	(match_dup SFBOOL2_MTVSR_A))
+
+   ;; And/ior/xor on vector registers
+   (set (match_dup SFBOOL2_TMP_VSX_V4SI)
+	(and_ior_xor:V4SI
+	 (match_dup SFBOOL2_MFVSR_A_V4SI)
+	 (match_dup SFBOOL2_TMP_VSX_V4SI)))
+
+   ;; XXSPLTW t,r,r,1
+   (set (match_dup SFBOOL2_SPLAT_D)
+	(vec_duplicate:V4SI
+	 (vec_select:SI
+	  (match_dup SFBOOL2_TMP_VSX_V4SI)
+	  (parallel [(match_dup SFBOOL2_XXSPLTW)]))))]
+{
+  rtx mfvsr_d = operands[SFBOOL2_MFVSR_D];
+  rtx bool_a1 = operands[SFBOOL2_BOOL_A1];
+  rtx bool_a2 = operands[SFBOOL2_BOOL_A2];
+  rtx bool_arg = (rtx_equal_p (mfvsr_d, bool_a1) ? bool_a2 : bool_a1);
+  int regno_mfvsr_a = REGNO (operands[SFBOOL2_MFVSR_A]);
+  int regno_tmp_vsx = REGNO (operands[SFBOOL2_TMP_VSX_V4SI]);
+
+  /* If the logical operation is a constant, form the constant in a vector
+     register.  */
+  if (CONST_INT_P (bool_arg))
+    {
+      HOST_WIDE_INT value = INTVAL (bool_arg);
+
+      /* See if we can directly load the constant, either by VSPLTIW or by
+         XXSPLTIW on power10.  */
+
+      if (IN_RANGE (value, -16, 15) || TARGET_PREFIXED)
+	{
+	  rtvec cv = gen_rtvec (4, bool_arg, bool_arg, bool_arg, bool_arg);
+	  operands[SFBOOL2_MTVSR_D] = gen_rtx_REG (V4SImode, regno_tmp_vsx);
+	  operands[SFBOOL2_MTVSR_A] = gen_rtx_CONST_VECTOR (V4SImode, cv);
+	}
+
+      else
+	{
+	  /* We need to load up the constant to a GPR and move it to a
+	     vector register.  */
+	  rtx tmp_gpr = operands[SFBOOL2_TMP_GPR_SI];
+	  emit_move_insn (tmp_gpr, bool_arg);
+	  operands[SFBOOL2_MTVSR_D] = gen_rtx_REG (SImode, regno_tmp_vsx);
+	  operands[SFBOOL2_MTVSR_A] = tmp_gpr;
+	}
+    }
+  else
+    {
+      /* Mask is in a register, move it to a vector register.  */
+      operands[SFBOOL2_MTVSR_D] = gen_rtx_REG (SImode, regno_tmp_vsx);
+      operands[SFBOOL2_MTVSR_A] = bool_arg;
+    }
+
+    operands[SFBOOL2_TMP_VSX_V4SI] = gen_rtx_REG (V4SImode, regno_tmp_vsx);
+    operands[SFBOOL2_MFVSR_A_V4SI] = gen_rtx_REG (V4SImode, regno_mfvsr_a);
+    operands[SFBOOL2_XXSPLTW] = GEN_INT (BYTES_BIG_ENDIAN ? 1 : 2);
 })
 
 ;; Support signed/unsigned long long to float conversion vectorization.
