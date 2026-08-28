@@ -18,6 +18,7 @@
 
 #include "rust-bir-drop-analysis.h"
 #include "rust-bir.h"
+#include "rust-diagnostics.h"
 #include "rust-hir-map.h"
 
 namespace Rust {
@@ -301,8 +302,19 @@ annotate_drop_statements (
 			  static_cast<NodeId> (
 			    rhs_place.variable_or_field_index));
 		      if (hirid.has_value ())
-			results.move_sources[move_site.value ()]
-			  = hirid.value ();
+			{
+			  auto move_source
+			    = results.move_sources.find (move_site.value ());
+			  if (move_source != results.move_sources.end ()
+			      && move_source->second != hirid.value ())
+			    rust_sorry_at (statement.get_location (),
+					   "moving multiple IDs within the "
+					   "same location is not "
+					   "yet supported");
+			  else
+			    results.move_sources.emplace (move_site.value (),
+							  hirid.value ());
+			}
 		    }
 		}
 	    }

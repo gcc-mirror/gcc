@@ -280,17 +280,19 @@ protected: // Helpers to add BIR statements
   }
 
   void push_tmp_assignment (AbstractExpr *rhs, TyTy::BaseType *tyty,
-			    location_t location)
+			    location_t location,
+			    tl::optional<HirId> move_site = tl::nullopt)
   {
     PlaceId tmp = ctx.place_db.add_temporary (tyty);
     push_storage_live (tmp);
-    push_assignment (tmp, rhs, location);
+    push_assignment (tmp, rhs, location, move_site);
   }
 
-  void push_tmp_assignment (PlaceId rhs, location_t location)
+  void push_tmp_assignment (PlaceId rhs, location_t location,
+			    tl::optional<HirId> move_site = tl::nullopt)
   {
-    push_tmp_assignment (new Assignment (rhs), ctx.place_db[rhs].tyty,
-			 location);
+    push_tmp_assignment (new Assignment (rhs), ctx.place_db[rhs].tyty, location,
+			 move_site);
   }
 
   void push_switch (PlaceId switch_val, location_t location,
@@ -353,7 +355,8 @@ protected: // Helpers to add BIR statements
     return translated;
   }
 
-  PlaceId move_place (PlaceId arg, location_t location)
+  PlaceId move_place (PlaceId arg, location_t location,
+		      tl::optional<HirId> move_site = tl::nullopt)
   {
     auto &place = ctx.place_db[arg];
 
@@ -366,7 +369,7 @@ protected: // Helpers to add BIR statements
     if (place.is_rvalue ())
       return arg;
 
-    push_tmp_assignment (arg, location);
+    push_tmp_assignment (arg, location, move_site);
     return translated;
   }
 
@@ -379,12 +382,14 @@ protected: // Helpers to add BIR statements
   }
 
   template <typename T>
-  void move_all (T &args, std::vector<location_t> locations)
+  void move_all (T &args, std::vector<location_t> locations,
+		 tl::optional<HirId> move_site = tl::nullopt)
   {
     rust_assert (args.size () == locations.size ());
     std::transform (args.begin (), args.end (), locations.begin (),
-		    args.begin (), [this] (PlaceId arg, location_t location) {
-		      return move_place (arg, location);
+		    args.begin (),
+		    [this, move_site] (PlaceId arg, location_t location) {
+		      return move_place (arg, location, move_site);
 		    });
   }
 
