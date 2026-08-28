@@ -318,6 +318,7 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %token OF 721
 %token PSEUDOTEXT 755
 %token REPLACING 777
+%token READY 405  TRACE 412  RESET 406
 %token LITERAL 303
 %token SUPPRESS 411
 
@@ -392,6 +393,7 @@ completes:	complete
 		;
 complete:	cdf_define
 	|	cdf_display
+	|	cdf_trace
 	|	cdf_turn
         |       cdf_call_convention
         |       cdf_push
@@ -512,6 +514,10 @@ cdf_constant:	%empty
 override:	%empty   { $$ = false; }
 	|	OVERRIDE { $$ = true; }
 		;
+
+cdf_trace:      READY TRACE
+        |       RESET TRACE
+                ;
 
 cdf_turn:	TURN except_names except_check
 		{

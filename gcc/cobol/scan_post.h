@@ -168,6 +168,8 @@ is_cdf_token( int token ) {
   case COPY:
   case TURN:
     return true;
+  case READY: case RESET: case TRACE:
+    return true;
   }
   return false;
 }

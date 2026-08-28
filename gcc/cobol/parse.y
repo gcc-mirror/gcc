@@ -469,7 +469,7 @@ class locale_tgt_t {
 			LSUB "("
 			PARAMETER_kw "PARAMETER"
 			OVERRIDE READY RESET
-			RSUB")"
+			RSUB ")"
 			SERVICE_RELOAD "SERVICE RELOAD" STAR_CBL "*CBL"
 			SUBSCRIPT SUPPRESS TRACE USE
 
@@ -5950,7 +5950,7 @@ end_accept:     %empty %prec ACCEPT
         |       END_ACCEPT
                 ;
 
-accept_body:    ACCEPT scalar[r]
+accept_body:    ACCEPT scalar[r] with_decorum
                 {
                   statement_begin(@1, ACCEPT);
 		  $$.func = accept_done_e;
@@ -6423,6 +6423,11 @@ end_display:    %empty				{ $$ = DISPLAY_ADVANCE; }
                   }
                   $$ = DISPLAY_ADVANCE;
                 }
+                ;
+
+with_decorum:   %empty
+        |       WITH with_whatevs
+        |       WITH NAME AFTER NUMSTR /* timeout or time-out */
                 ;
 
 with_whatevs:   ERASE NAME { $$ = strcasecmp($NAME, "eol")
