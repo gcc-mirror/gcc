@@ -736,6 +736,16 @@ gfc_init_result_descriptor (stmtblock_t *block, tree descr)
 }
 
 
+/* Add code to BLOCK initializing array descriptor DESCR so that it represents
+   an absent actual argument associated with an optional dummy.  */
+
+void
+gfc_init_absent_descriptor (stmtblock_t *block, tree descr)
+{
+  gfc_conv_descriptor_data_set (block, descr, null_pointer_node);
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 

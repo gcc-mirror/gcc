@@ -65,6 +65,7 @@ tree gfc_build_null_descriptor (tree type);
 
 void gfc_nullify_descriptor (stmtblock_t *block, tree);
 void gfc_init_result_descriptor (stmtblock_t *block, tree descr);
+void gfc_init_absent_descriptor (stmtblock_t *block, tree descr);
 
 tree gfc_conv_descriptor_size (tree, int);
 tree gfc_conv_descriptor_cosize (tree, int, int);
