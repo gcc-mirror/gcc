@@ -725,6 +725,17 @@ gfc_nullify_descriptor (stmtblock_t *block, tree descr)
 }
 
 
+/* Add code to BLOCK default-initializing array function result descriptor
+   DESCR.  This is used for the initialization of polymorphic allocatable
+   function results.  */
+
+void
+gfc_init_result_descriptor (stmtblock_t *block, tree descr)
+{
+  gfc_conv_descriptor_data_set (block, descr, null_pointer_node);
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 
