@@ -22,7 +22,7 @@
 #include "rust-compile-context.h"
 #include "rust-compile-implitem.h"
 #include "rust-bir-drop-analysis.h"
-#include "rust-hir-path-probe.h"
+#include "rust-hir-path-probe-impl-trait.h"
 #include "rust-hir-trait-reference.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-lang-item.h"

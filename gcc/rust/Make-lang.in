@@ -187,6 +187,7 @@ GRS_OBJS = \
     rust/rust-polonius.o\
     rust/rust-hir-dot-operator.o \
     rust/rust-hir-path-probe.o \
+    rust/rust-hir-path-probe-impl-trait.o \
     rust/rust-hir-path-probe-type.o \
     rust/rust-hir-path.o \
     rust/rust-hir-type.o \

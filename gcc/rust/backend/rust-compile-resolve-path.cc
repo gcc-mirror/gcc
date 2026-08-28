@@ -24,7 +24,7 @@
 #include "rust-compile-expr.h"
 #include "rust-hir-map.h"
 #include "rust-hir-trait-resolve.h"
-#include "rust-hir-path-probe.h"
+#include "rust-hir-path-probe-impl-trait.h"
 #include "rust-compile-extern.h"
 #include "rust-constexpr.h"
 #include "rust-rib.h"

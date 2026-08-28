@@ -173,23 +173,6 @@ public:
   }
 };
 
-class PathProbeImplTrait : public PathProbeType
-{
-public:
-  static std::set<PathProbeCandidate>
-  Probe (TyTy::BaseType *receiver, const HIR::PathIdentSegment &segment_name,
-	 const TraitReference *trait_reference);
-
-private:
-  PathProbeImplTrait (TyTy::BaseType *receiver,
-		      const HIR::PathIdentSegment &query,
-		      const TraitReference *trait_reference);
-
-  void process_trait_impl_items_for_candidates ();
-
-  const TraitReference *trait_reference;
-};
-
 } // namespace Resolver
 } // namespace Rust
 

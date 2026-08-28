@@ -472,38 +472,5 @@ PathProbeType::is_receiver_generic () const
   return receiver_is_type_param || receiver_is_dyn;
 }
 
-// PathProbImplTrait
-
-PathProbeImplTrait::PathProbeImplTrait (TyTy::BaseType *receiver,
-					const HIR::PathIdentSegment &query,
-					const TraitReference *trait_reference)
-  : PathProbeType (receiver, query, UNKNOWN_DEFID),
-    trait_reference (trait_reference)
-{}
-
-std::set<PathProbeCandidate>
-PathProbeImplTrait::Probe (TyTy::BaseType *receiver,
-			   const HIR::PathIdentSegment &segment_name,
-			   const TraitReference *trait_reference)
-{
-  PathProbeImplTrait probe (receiver, segment_name, trait_reference);
-  // iterate all impls for this trait and receiver
-  // then search for possible candidates using base class behaviours
-  probe.process_trait_impl_items_for_candidates ();
-  return probe.candidates;
-}
-
-void
-PathProbeImplTrait::process_trait_impl_items_for_candidates ()
-{
-  NodeId trait_node_id = trait_reference->get_mappings ().get_nodeid ();
-  mappings.iterate_trait_impl_items (
-    trait_node_id,
-    [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
-      process_impl_item_candidate (id, item, impl);
-      return true;
-    });
-}
-
 } // namespace Resolver
 } // namespace Rust

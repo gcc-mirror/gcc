@@ -30,7 +30,7 @@
 #include "rust-expr.h" // for AST::AttrInputLiteral
 #include "rust-hir-map.h"
 #include "rust-macro.h" // for AST::MetaNameValueStr
-#include "rust-hir-path-probe.h"
+#include "rust-hir-path-probe-impl-trait.h"
 #include "rust-type-util.h"
 #include "rust-compile-implitem.h"
 #include "rust-attribute-values.h"
