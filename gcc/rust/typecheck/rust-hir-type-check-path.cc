@@ -25,7 +25,7 @@
 #include "rust-hir-trait-resolve.h"
 #include "rust-rib.h"
 #include "rust-substitution-mapper.h"
-#include "rust-hir-path-probe.h"
+#include "rust-hir-path-probe-expr.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-item.h"
@@ -423,13 +423,13 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
       // probe the path is done in two parts one where we search impls if no
       // candidate is found then we search extensions from traits
       auto candidates
-	= PathProbeType::Probe (prev_segment, seg.get_segment (), probe_impls,
+	= PathProbeExpr::Probe (prev_segment, seg.get_segment (), probe_impls,
 				false /*probe_bounds*/,
 				true /*ignore_mandatory_trait_items*/);
       if (candidates.size () == 0)
 	{
 	  candidates
-	    = PathProbeType::Probe (prev_segment, seg.get_segment (), false,
+	    = PathProbeExpr::Probe (prev_segment, seg.get_segment (), false,
 				    true /*probe_bounds*/,
 				    false /*ignore_mandatory_trait_items*/);
 
