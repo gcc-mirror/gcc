@@ -746,6 +746,34 @@ gfc_init_absent_descriptor (stmtblock_t *block, tree descr)
 }
 
 
+/* Add code to BLOCK initializing the array descriptor DESCR corresponding to
+   the array variable SYM.  This is only used for variables needing a default
+   initialization of their descriptor.  Typically allocatable (array) variables,
+   that have an initial status of unallocated, are among them; they need their
+   data pointer set to nullptr.  */
+
+void
+gfc_init_descriptor_variable (stmtblock_t *block, gfc_symbol *sym, tree descr)
+{
+  /* NULLIFY the data pointer for non-saved allocatables, or for non-saved
+     pointers when -fcheck=pointer is specified.  */
+  if (!sym->attr.save
+      && (sym->attr.allocatable
+	  || (sym->attr.pointer && (gfc_option.rtcheck & GFC_RTCHECK_POINTER))))
+    {
+      gfc_conv_descriptor_data_set (block, descr, null_pointer_node);
+      if (flag_coarray == GFC_FCOARRAY_LIB && sym->attr.codimension)
+	gfc_conv_descriptor_token_set (block, descr, null_pointer_node);
+    }
+
+  gcc_assert (sym->as && sym->as->rank>=0);
+  tree etype = gfc_get_element_type (TREE_TYPE (descr));
+  gfc_conv_descriptor_dtype_set (block, descr,
+				 gfc_get_dtype_rank_type (sym->as->rank,
+							  etype));
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 
