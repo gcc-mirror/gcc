@@ -11755,7 +11755,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
       if (expr2->expr_type == EXPR_NULL)
 	{
 	  /* Just set the data pointer to null.  */
-	  gfc_conv_descriptor_data_set (&lse.pre, lse.expr, null_pointer_node);
+	  gfc_nullify_descriptor (&lse.pre, lse.expr);
 	}
       else if (rank_remap)
 	{

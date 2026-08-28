@@ -715,6 +715,16 @@ gfc_build_null_descriptor (tree type)
 #undef GFC_DTYPE_ATTRIBUTE
 
 
+/* Add code to BLOCK implementing the pointer assigment from NULL() to the
+   pointer represented by the array descriptor DESCR.  */
+
+void
+gfc_nullify_descriptor (stmtblock_t *block, tree descr)
+{
+  gfc_conv_descriptor_data_set (block, descr, null_pointer_node);
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 
