@@ -1145,6 +1145,7 @@ USE({SPC}FOR)?		{ return USE; }
   TRUE			{ return TRUE_kw; }
   TYPE			{ return TYPE; }
   TYPEDEF		{ return TYPEDEF; }
+  VALUE			{ return VALUE; }
   VARYING		{ return VARYING; }
   VOLATILE    		{ return VOLATILE; }
   WHEN    		{ return WHEN; }
@@ -2296,7 +2297,7 @@ USE({SPC}FOR)?		{ return USE; }
 
 <partial_name>{
   LENGTH{SPC}OF{SPC}{NAME}	{
-    std::reverse_iterator beg(yytext + yyleng), end(yytext);
+    std::reverse_iterator<const char*>  beg(yytext + yyleng), end(yytext);
     auto p = std::find_if(beg, end, []( char ch ) { return ISSPACE(ch); });
     auto len = p.base() - yytext;
     myless(len); // avoid dangerous trailing context
