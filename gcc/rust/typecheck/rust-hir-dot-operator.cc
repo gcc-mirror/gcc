@@ -124,73 +124,86 @@ MethodResolver::assemble_inherent_impl_candidates (
   bool receiver_is_ref = raw->get_kind () == TyTy::TypeKind::REF;
 
   // Assemble inherent impl items (non-trait impl blocks)
-  mappings.iterate_impl_items (
-    [&] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) mutable -> bool {
-      bool is_trait_impl = impl->has_trait_ref ();
-      if (is_trait_impl)
-	return true;
-
-      bool is_fn
-	= item->get_impl_item_type () == HIR::ImplItem::ImplItemType::FUNCTION;
-      if (!is_fn)
-	return true;
-
-      HIR::Function *func = static_cast<HIR::Function *> (item);
-      if (!func->is_method ())
-	return true;
-
-      bool name_matches = func->get_function_name ().as_string ().compare (
-			    segment_name.to_string ())
-			  == 0;
-      if (!name_matches)
-	return true;
-
-      TyTy::BaseType *ty = nullptr;
-      if (!query_type (func->get_mappings ().get_hirid (), &ty))
-	return true;
-      if (ty == nullptr || ty->get_kind () == TyTy::TypeKind::ERROR)
-	return true;
-      if (ty->get_kind () != TyTy::TypeKind::FNDEF)
-	return true;
-
-      TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
-      const TyTy::BaseType *impl_self
-	= TypeCheckItem::ResolveImplBlockSelf (*impl);
-
-      // see:
-      // https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
-      // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
-      bool impl_self_is_ptr = impl_self->get_kind () == TyTy::TypeKind::POINTER;
-      bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
-      if (receiver_is_raw_ptr && impl_self_is_ptr)
-	{
-	  const TyTy::PointerType &sptr
-	    = *static_cast<const TyTy::PointerType *> (impl_self);
-	  const TyTy::PointerType &ptr
-	    = *static_cast<const TyTy::PointerType *> (raw);
-
-	  // we could do this via lang-item assemblies if we refactor this
-	  bool mut_match = sptr.mutability () == ptr.mutability ();
-	  if (!mut_match)
-	    return true;
-	}
-      else if (receiver_is_ref && impl_self_is_ref)
-	{
-	  const TyTy::ReferenceType &sptr
-	    = *static_cast<const TyTy::ReferenceType *> (impl_self);
-	  const TyTy::ReferenceType &ptr
-	    = *static_cast<const TyTy::ReferenceType *> (raw);
-
-	  // we could do this via lang-item assemblies if we refactor this
-	  bool mut_match = sptr.mutability () == ptr.mutability ();
-	  if (!mut_match)
-	    return true;
-	}
-
-      inherent_impl_fns.emplace_back (func, impl, fnty);
-
+  mappings.iterate_impl_items ([&] (HirId id, HIR::ImplItem *item,
+				    HIR::ImplBlock *impl) mutable -> bool {
+    bool is_trait_impl = impl->has_trait_ref ();
+    if (is_trait_impl)
       return true;
-    });
+
+    bool is_fn
+      = item->get_impl_item_type () == HIR::ImplItem::ImplItemType::FUNCTION;
+    if (!is_fn)
+      return true;
+
+    HIR::Function *func = static_cast<HIR::Function *> (item);
+    if (!func->is_method ())
+      return true;
+
+    bool name_matches = func->get_function_name ().as_string ().compare (
+			  segment_name.to_string ())
+			== 0;
+    if (!name_matches)
+      return true;
+
+    TyTy::BaseType *impl_self = TypeCheckItem::ResolveImplBlockSelf (*impl);
+
+    if (impl_self == nullptr || impl_self->get_kind () == TyTy::TypeKind::ERROR)
+      return true;
+
+    if (receiver.get_kind () == TyTy::TypeKind::ADT
+	&& impl_self->get_kind () == TyTy::TypeKind::ADT)
+      {
+	const auto &receiver_adt
+	  = static_cast<const TyTy::ADTType &> (receiver);
+	const auto &impl_adt = static_cast<const TyTy::ADTType &> (*impl_self);
+	if (receiver_adt.get_id () != impl_adt.get_id ())
+	  return true;
+      }
+
+    // see:
+    // https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
+    // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
+    bool impl_self_is_ptr = impl_self->get_kind () == TyTy::TypeKind::POINTER;
+    bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
+    if (receiver_is_raw_ptr && impl_self_is_ptr)
+      {
+	const TyTy::PointerType &sptr
+	  = *static_cast<const TyTy::PointerType *> (impl_self);
+	const TyTy::PointerType &ptr
+	  = *static_cast<const TyTy::PointerType *> (raw);
+
+	// we could do this via lang-item assemblies if we refactor this
+	bool mut_match = sptr.mutability () == ptr.mutability ();
+	if (!mut_match)
+	  return true;
+      }
+    else if (receiver_is_ref && impl_self_is_ref)
+      {
+	const TyTy::ReferenceType &sptr
+	  = *static_cast<const TyTy::ReferenceType *> (impl_self);
+	const TyTy::ReferenceType &ptr
+	  = *static_cast<const TyTy::ReferenceType *> (raw);
+
+	// we could do this via lang-item assemblies if we refactor this
+	bool mut_match = sptr.mutability () == ptr.mutability ();
+	if (!mut_match)
+	  return true;
+      }
+
+    TyTy::BaseType *ty = nullptr;
+    if (!query_type (func->get_mappings ().get_hirid (), &ty))
+      return true;
+    if (ty == nullptr || ty->get_kind () == TyTy::TypeKind::ERROR)
+      return true;
+    if (ty->get_kind () != TyTy::TypeKind::FNDEF)
+      return true;
+
+    TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
+
+    inherent_impl_fns.emplace_back (func, impl, fnty);
+
+    return true;
+  });
 
   return inherent_impl_fns;
 }
@@ -228,17 +241,22 @@ MethodResolver::assemble_trait_impl_candidates (
 	if (!name_matches)
 	  continue;
 
-	TyTy::BaseType *ty = nullptr;
-	if (!query_type (func->get_mappings ().get_hirid (), &ty))
-	  continue;
-	if (ty == nullptr || ty->get_kind () == TyTy::TypeKind::ERROR)
-	  continue;
-	if (ty->get_kind () != TyTy::TypeKind::FNDEF)
+	TyTy::BaseType *impl_self = TypeCheckItem::ResolveImplBlockSelf (*impl);
+
+	if (impl_self == nullptr
+	    || impl_self->get_kind () == TyTy::TypeKind::ERROR)
 	  continue;
 
-	TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
-	const TyTy::BaseType *impl_self
-	  = TypeCheckItem::ResolveImplBlockSelf (*impl);
+	if (receiver.get_kind () == TyTy::TypeKind::ADT
+	    && impl_self->get_kind () == TyTy::TypeKind::ADT)
+	  {
+	    const auto &receiver_adt
+	      = static_cast<const TyTy::ADTType &> (receiver);
+	    const auto &impl_adt
+	      = static_cast<const TyTy::ADTType &> (*impl_self);
+	    if (receiver_adt.get_id () != impl_adt.get_id ())
+	      continue;
+	  }
 
 	// see:
 	// https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
@@ -270,6 +288,16 @@ MethodResolver::assemble_trait_impl_candidates (
 	    if (!mut_match)
 	      continue;
 	  }
+
+	TyTy::BaseType *ty = nullptr;
+	if (!query_type (func->get_mappings ().get_hirid (), &ty))
+	  continue;
+	if (ty == nullptr || ty->get_kind () == TyTy::TypeKind::ERROR)
+	  continue;
+	if (ty->get_kind () != TyTy::TypeKind::FNDEF)
+	  continue;
+
+	TyTy::FnType *fnty = static_cast<TyTy::FnType *> (ty);
 
 	impl_candidates.emplace_back (func, impl, fnty);
 	return true;
