@@ -1,3 +1,25 @@
+2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Introduce MfDisplayScreen.
+	* cdf.y: Renumber tokens.
+	* cobol1.cc (cobol_langhook_handle_option): Handle Wdisplay_screen.
+	* gcobol.1: Document option.
+	* lang-specs.h: Add option to spec string.
+	* lang.opt: Define Wdisplay_screen.
+	* messages.cc: Add Wdisplay_screen to -dialect mf.
+	* parse.y: Rename implementation tokens.  Extend DISPLAY
+	grammar and revise COBOL-WORDS grammar to accept lists.
+	* parse_ante.h (with_gnu_stuff): Ignore DISPLAY keywords.
+	(with_gnu_names): Same.
+	(with_gnu_color): Same.
+	* scan.l: Use new token names and revise COBOL-WORDS lexing.
+	* scan_ante.h (bcomputable): Use new token names.
+	(binary_integer_usage_of): Same.
+	* scan_post.h (prelex): Whitespace.
+	* symbols.h (keyword_alias_add): Return bool, too.
+	(class current_tokens_t): Use diagnostic quotes.
+	* token_names.h: Regenerate.
+
 2026-08-26  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/126611

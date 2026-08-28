@@ -1,3 +1,37 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* lang.opt (Wargument-mismatch): Use 2 spaces instead of 1 between
+	sentences in the description.
+	(fdump-core): Likewise.
+
+2026-08-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans.h (GFC_DTYPE_ELEM_LEN, GFC_DTYPE_VERSION, GFC_DTYPE_RANK,
+	GFC_DTYPE_TYPE, GFC_DTYPE_ATTRIBUTE): Move preprocessor constants...
+	* trans-descriptor.cc (GFC_DTYPE_ELEM_LEN, GFC_DTYPE_VERSION,
+	GFC_DTYPE_RANK, GFC_DTYPE_TYPE, GFC_DTYPE_ATTRIBUTE): ... here.
+	Undefine the constants after the last function using them.
+
+2026-08-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-descriptor.cc (gfc_get_descriptor_offsets_for_info): Remove
+	the dtype offset argument and add a rank offset argument.  Set the
+	value of that offset.  Use a variable to factor repeated accesses to
+	TYPE_FIELDS (type).
+	* trans-types.cc (gfc_get_array_descr_info): Update caller.  Create
+	the rank expression using the just obtained rank offset.
+
+2026-08-27  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-types.cc (gfc_get_dtype_rank_type): Move constructor
+	generation ...
+	* trans-descriptor.cc (gfc_build_dtype_constructor): ... here as a
+	new function.
+	* trans-descriptor.h (gfc_build_dtype_constructor): New declaration.
+
 2026-08-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/82065

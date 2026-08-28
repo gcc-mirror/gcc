@@ -1,3 +1,9 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* analyzer.opt (fanalyzer-fine-grained): Use 2 spaces instead of 1
+	between sentences in the description.
+	(fdump-analyzer-callgraph): Likewise.
+
 2026-08-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
 
 	PR analyzer/110578

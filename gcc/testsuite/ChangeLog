@@ -1,3 +1,106 @@
+2026-08-27  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/contracts/cpp26/contracts-class1.C: Fix test.
+
+2026-08-27  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
+
+	PR target/102055
+	* gcc.target/aarch64/pr102055-loop.c: New test.
+	* gcc.target/aarch64/pr102055.c: New test.
+
+2026-08-27  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	PR c++/125537
+	* g++.dg/contracts/cpp26/template-post1.C: New test.
+	* g++.dg/contracts/cpp26/contracts-class1.C: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127100
+	* gfortran.dg/pr127100.f90: New test.
+
+2026-08-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126828
+	PR c++/112632
+	* g++.dg/cpp0x/alias-decl-nontype2.C: New test.
+
+2026-08-27  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR target/120192
+	* gcc.target/i386/pr120192.c: New test.
+
+2026-08-27  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/127085
+	* gcc.dg/torture/pr127085.c: New test.
+
+2026-08-27  Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR target/126512
+	* gcc.target/powerpc/pr126512.c: New test.
+
+2026-08-27  Vijay Shankar  <vijay@linux.ibm.com>
+
+	PR target/116004
+	* gcc.target/powerpc/pr116004.c: New Test.
+
+2026-08-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/123778
+	* gcc.dg/torture/pr123778-1.c (f): Return __PTRDIFF_TYPE__
+	instead of long.
+
+2026-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126998
+	* gcc.dg/vect/vect-reduc-dot-pr126998.c: New testcase.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125842
+	* g++.dg/cpp/line-1.C: New test.
+	* g++.dg/cpp/line-2.C: New test.
+	* g++.dg/cpp/line-3.C: New test.
+
+2026-08-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127069
+	* gcc.dg/tree-ssa/vec-mask-zero-1.c: Restrict to AArch64 and x86 with
+	SSE2.  Scan forwprop1.
+
+2026-08-27  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127064
+	* g++.dg/tree-ssa/vec-narrow-1.C: Use the x86 effective target.
+	* g++.dg/tree-ssa/vec-narrow-minmax-2.C: Likewise.
+
+2026-08-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/cris/swapnw_v3.c: New test case.
+	* gcc.target/cris/swapnw_v8.c: Likewise.
+	* gcc.target/cris/swapnwb_v3.c: Likewise.
+	* gcc.target/cris/swapnwb_v8.c: Likewise.
+	* gcc.target/cris/swapnwbr_v3.c: Likewise.
+	* gcc.target/cris/swapnwbr_v8.c: Likewise.
+	* gcc.target/cris/swapw_v3.c: Likewise.
+	* gcc.target/cris/swapw_v8.c: Likewise.
+	* gcc.target/cris/swapwbr_v3.c: Likewise.
+	* gcc.target/cris/swapwbr_v8.c: Likewise.
+
+2026-08-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* gcc.target/cris/btst-scc-1.c: New test.
+
+2026-08-27  Sammy Al Hashemi  <sammy@salh.xyz>
+
+	* c-c++-common/Wstrict-aliasing2-with-fno.c: New test.
+	* c-c++-common/Wstrict-aliasing3-with-fno.c: New test.
+
+2026-08-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.target/aarch64/crc32-zero.c: New test.
+
 2026-08-26  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* g++.dg/gcov/gcov-12.C: Require effective target fpic.

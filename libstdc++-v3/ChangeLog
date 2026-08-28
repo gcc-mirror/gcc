@@ -1,3 +1,16 @@
+2026-08-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/123510
+	* src/c++20/tzdb.cc (at_time::is_indicator): Add case labels
+	for uppercase letters.
+	(operator>>(istream&, years_from_to)): Check for 'M' and 'O',
+	(chrono::reload_tzdb): Add case labels for lowercase letters,
+	and normalize first letter of type.
+	(operator>>(istream&, abbrev_month&)): Match all cases in
+	switch and days_chars.
+	(operator>>(istream&, on_month_day&)): Check for 'L'.
+	* testsuite/std/time/tzdb/name_matching.cc: New test.
+
 2026-08-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR libstdc++/127005

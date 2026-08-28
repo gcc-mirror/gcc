@@ -1,3 +1,30 @@
+2026-08-27  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	PR c++/125537
+	* pt.cc (tsubst_contract): Keep template processing enabled
+	only for postconditions with an undeduced result binding.
+	* contracts.cc (rebuild_postconditions): Only rebuild
+	undeduced result variable.
+	* parser.cc (cp_parser_late_contract_condition): Enable
+	pseudo-template mode only for result bindings whose return
+	type has not yet been deduced.  Do not immediately rebuild
+	postconditions that have already completed late parsing.
+
+2026-08-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126828
+	PR c++/112632
+	* pt.cc (dependent_implicit_conv_p): Remove.
+	(convert_nontype_argument_maybe_dependent): Rewrite
+	simple conversion when force_conv.
+	(tsubst_expr): Use it.
+
+2026-08-27  Sammy Al Hashemi  <sammy@salh.xyz>
+
+	* cp-tree.h (class temp_override): Move to c-common.h.
+	(type_identity_t): Likewise.
+	(make_temp_override): Likewise.
+
 2026-08-26  Sebastian Miles  <sebastianmiles20@gmail.com>
 
 	PR c++/127016

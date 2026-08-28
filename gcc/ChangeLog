@@ -1,3 +1,162 @@
+2026-08-27  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
+
+	PR target/102055
+	* config/aarch64/aarch64.cc (is_bb_in_loop): New.
+	(aarch64_evpc_rev64_ext): New.
+	(aarch64_expand_vec_perm_const_1): Call aarch64_evpc_rev64_ext.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127100
+	* doc/md.texi (vec_mask_len_load_lanes@var{m}@var{n}): Use
+	operand4 - operand5 rather than operand4 + operand5.
+	(vec_mask_len_store_lanes@var{m}@var{n}): Use
+	operand3 - operand4 rather than operand3 + operand4.
+	(mask_len_gather_load@var{m}@var{n}): Use operand 7 - operand 8
+	rather than operand 7 + operand 8.
+	(mask_len_strided_load@var{m}): Use operand 4 - operand 5 rather
+	than operand 4 + operand 5.
+	(mask_len_scatter_store@var{m}@var{n}): Use operand 6 - operand 7
+	rather than operand 6 + operand 7.
+	(mask_len_strided_store@var{m}): Use operand 4 - operand 5 rather
+	than operand 4 + operand 5.
+	(len_load_@var{m}): Use operand 3 - operand 4 rather than
+	operand 3 + operand 4.
+	(len_store_@var{m}): Use operand 2 - operand 3 rather than
+	operand 2 + operand 3.
+	(mask_len_load@var{m}@var{n}): Use operand 4 - operand 5 rather
+	than operand 3 + operand 4 or operand 4 + operand 5.  Use
+	Operand 5 rather than Operand 4 when talking about bias QI mode.
+	(mask_len_store@var{m}@var{n}): Use operand 3 - operand 4 rather
+	than operand 3 + operand 4 or operand 2 + operand 4.
+	(cond_len_neg@var{mode}): Use operand 4 - operand 5 rather than
+	operand 4 + operand 5.  Use ops[4] - ops[5] rather than
+	ops[4] + ops[5].
+	(cond_len_add@var{mode}): Use operand 5 - operand 6 rather than
+	operand 5 + operand 6.  Use ops[5] - ops[6] rather than
+	ops[5] + ops[6].
+	(cond_len_fma@var{mode}): Use ops[6] - ops[7] rather than
+	ops[6] + ops[7].
+	* gimple-fold.cc (partial_load_store_mask_state): Compute wlen
+	as wi::to_poly_widest (len) - wi::to_widest (bias) rather than
+	wi::to_poly_widest (len) + wi::to_widest (bias).
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* common.opt (Wunsafe-loop-optimizations): Use 2 spaces instead of
+	1 between sentences in the description.
+	(Wunreachable-code, fargument-alias, fargument-noalias,
+	fargument-noalias-global, fargument-noalias-anything,
+	floop-flatten, fipa-matrix-reorg, fipa-struct-reorg,
+	foptimize-register-move, fregmove, ftree-vect-loop-version):
+	Likewise.
+	* config/alpha/alpha.opt (mgas): Use 2 spaces instead of 1 between
+	sentences in the description.
+
+2026-08-27  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR target/120192
+	* cfgexpand.cc (defer_stack_allocation): Use align_local_variable
+	to compute the alignment, matching expand_one_stack_var_1.
+
+2026-08-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_3): Move stmt-local
+	checks first.  Check unsupported BIT_FIELD_REFs for all stmts.
+
+2026-08-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_3): New function,
+	split out from ...
+	(vect_build_slp_tree_1): ... here.
+
+2026-08-27  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/127085
+	* tree-ssa-phiopt.cc (preserves_loop_structure_p): Remove.
+	(replicate_cond_into_pred): Do not call it.
+	(replicate_conds_over_phis): Never duplicate loop headers; do
+	not mark back edges; set LOOPS_NEED_FIXUP when the CFG changed.
+
+2026-08-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/9175.md: Complete list of instructions which are
+	utilizing the LSU/FXA/FXB.
+
+2026-08-27  Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR target/126512
+	* config/rs6000/rs6000-builtins.def (__builtin_altivec_vperm_1ti,
+	__builtin_altivec_vperm_1ti_uns, __builtin_altivec_vsel_1ti,
+	__builtin_altivec_vsel_1ti_uns, __builtin_altivec_vsldoi_v1ti): Move
+	from the [altivec] stanza to the [vsx] stanza.
+
+2026-08-27  Vijay Shankar  <vijay@linux.ibm.com>
+
+	PR target/116004
+	* config/rs6000/vsx.md (first_mismatch_or_eos_index): Remove redundant
+	emit_insns.
+
+2026-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126998
+	* tree-vectorizer.h (vect_get_num_copies_for_invariant):
+	Declare.
+	* tree-vect-slp.cc (vect_get_num_copies_for_invariant): Export.
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Use
+	vect_get_num_copies_for_invariant on the SLP input.
+
+2026-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126998
+	* tree-vect-loop.cc (vect_reduction_update_partial_vector_usage):
+	Return a bool, defer vect_record_loop_{len,mask} to the caller.
+	(vectorizable_lane_reducing): Adjust.
+	(vectorizable_reduction): Likewise.
+
+2026-08-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126998
+	* tree-vect-loop.cc (vect_transform_reduction): Remove
+	redundant effec_reduc_ncopies, compute vec_num based on
+	the actual vector inputs and rename to vec_in_num.
+
+2026-08-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/cris/cris.md (*bswapsi2_not<setcc><setnz><setnzvc>):
+	New define_insn.
+	(cris_swap_bits): Rename to...
+	(<acc><anz><anzvc>bitreversesi2<setcc><setnz><setnzvc>): Renamed
+	from cris_swap_bits.
+	(*bitreversesi2_not<setcc><setnz><setnzvc>): New define_insn.
+	(*rotsi2_16<setcc><setnz><setnzvc>): Likewise.
+	(*rotsi2_16_not<setcc><setnz><setnzvc>): Likewise.
+
+2026-08-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*cstore<mode>4_btstqb0_<CC>"): New
+	define_insn_and_split.
+
+2026-08-27  Hans-Peter Nilsson  <hp@axis.com>
+
+	* config/cris/cris.md ("*btst<mode>): Simplify; iterate only over
+	ZnNNZSET and compare only to a zero_extract result of SImode.
+	Just add sanity checks for the mode of operand 0 in the condition.
+	("*cbranch<mode>4_btstrq1_<CC>", "*cbranch<mode>4_btstqb0_<CC>"):
+	Generate a zero_extract in SImode.
+
+2026-08-27  Sammy Al Hashemi  <sammy@salh.xyz>
+
+	* doc/invoke.texi (-Wstrict-aliasing): Document that the
+	front-end type-based checking runs without -fstrict-aliasing
+	when the warning is requested explicitly.
+	(-Wstrict-aliasing=n): Likewise.
+
+2026-08-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/aarch64/aarch64.md: allow usage of zero reg for CRC32
+	instructions
+
 2026-08-26  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config.gcc: Default the 64b arch to core2.

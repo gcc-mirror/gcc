@@ -1,3 +1,19 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wsynth): Use 2 spaces instead of 1 between
+	sentences in the description.
+	(fallow-parameterless-variadic-functions): Likewise.
+
+2026-08-27  Sammy Al Hashemi  <sammy@salh.xyz>
+
+	* c-common.h (class temp_override): Move from cp-tree.h.
+	(type_identity_t): Likewise.
+	(make_temp_override): Likewise.
+	* c-warn.cc: Include opts.h.
+	(strict_aliasing_warning): Do not gate on flag_strict_aliasing.
+	Temporarily enable it around the alias set queries when
+	-Wstrict-aliasing was requested explicitly.
+
 2026-08-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/125822
