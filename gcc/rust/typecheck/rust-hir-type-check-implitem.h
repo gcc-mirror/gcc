@@ -50,6 +50,10 @@ public:
   Resolve (HIR::ImplBlock &parent, HIR::ImplItem &item, TyTy::BaseType *self,
 	   std::vector<TyTy::SubstitutionParamMapping> substitutions);
 
+  static TyTy::FnType *ResolveFunctionSignature (
+    HIR::ImplBlock &parent, HIR::Function &function, TyTy::BaseType *self,
+    std::vector<TyTy::SubstitutionParamMapping> substitutions);
+
   void visit (HIR::Function &function) override;
   void visit (HIR::ConstantItem &const_item) override;
   void visit (HIR::TypeAlias &type_alias) override;

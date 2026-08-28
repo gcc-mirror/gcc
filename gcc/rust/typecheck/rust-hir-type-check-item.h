@@ -30,6 +30,8 @@ class TypeCheckItem : private TypeCheckBase, private HIR::HIRVisItemVisitor
 public:
   static TyTy::BaseType *Resolve (HIR::Item &item);
 
+  static TyTy::FnType *ResolveFunctionSignature (HIR::Function &function);
+
   static TyTy::BaseType *ResolveImplItem (HIR::ImplBlock &impl_block,
 					  HIR::ImplItem &item);
 

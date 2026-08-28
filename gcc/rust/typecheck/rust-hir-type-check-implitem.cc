@@ -191,7 +191,14 @@ TypeCheckImplItem::Resolve (
   bool already_resolved
     = context->lookup_type (item.get_impl_mappings ().get_hirid (), &resolved);
   if (already_resolved)
-    return resolved;
+    {
+      bool function_body_pending = false;
+      if (auto fn = resolved->try_as<TyTy::FnType> ())
+	function_body_pending = context->function_body_pending (fn->get_id ());
+
+      if (!function_body_pending)
+	return resolved;
+    }
 
   // resolve
   TypeCheckImplItem resolver (parent, self, substitutions);
@@ -201,6 +208,22 @@ TypeCheckImplItem::Resolve (
   resolver.context->block_context ().exit ();
 
   return resolver.result;
+}
+
+TyTy::FnType *
+TypeCheckImplItem::ResolveFunctionSignature (
+  HIR::ImplBlock &parent, HIR::Function &function, TyTy::BaseType *self,
+  std::vector<TyTy::SubstitutionParamMapping> substitutions)
+{
+  TypeCheckImplItem resolver (parent, self, std::move (substitutions));
+  auto binder_pin = resolver.context->push_lifetime_binder ();
+  resolver.context->block_context ().enter (
+    TypeCheckBlockContextItem (&parent));
+  TyTy::FnType *result = resolver.resolve_function_signature (function);
+  resolver.context->block_context ().exit ();
+  if (result != nullptr)
+    resolver.context->mark_function_body_pending (result->get_id ());
+  return result;
 }
 
 TyTy::FnType *
@@ -387,6 +410,10 @@ TypeCheckImplItem::visit (HIR::Function &function)
 
   if (resolve_fn_type == nullptr)
     return;
+
+  // Mark the body as claimed before resolving it.  Recursive queries from the
+  // body must reuse the cached signature rather than re-entering this body.
+  context->clear_function_body_pending (resolve_fn_type->get_id ());
 
   // need to get the return type from this
   auto expected_ret_tyty = resolve_fn_type->get_return_type ();

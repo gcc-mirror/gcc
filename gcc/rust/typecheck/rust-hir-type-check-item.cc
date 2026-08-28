@@ -93,7 +93,14 @@ TypeCheckItem::Resolve (HIR::Item &item)
   bool already_resolved
     = context->lookup_type (item.get_mappings ().get_hirid (), &resolved);
   if (already_resolved)
-    return resolved;
+    {
+      bool function_body_pending = false;
+      if (auto fn = resolved->try_as<TyTy::FnType> ())
+	function_body_pending = context->function_body_pending (fn->get_id ());
+
+      if (!function_body_pending)
+	return resolved;
+    }
 
   rust_assert (item.get_hir_kind () == HIR::Node::BaseKind::VIS_ITEM);
   HIR::VisItem &vis_item = static_cast<HIR::VisItem &> (item);
@@ -101,6 +108,17 @@ TypeCheckItem::Resolve (HIR::Item &item)
   TypeCheckItem resolver;
   vis_item.accept_vis (resolver);
   return resolver.infered;
+}
+
+TyTy::FnType *
+TypeCheckItem::ResolveFunctionSignature (HIR::Function &function)
+{
+  TypeCheckItem resolver;
+  auto lifetime_pin = resolver.context->push_clean_lifetime_resolver ();
+  TyTy::FnType *result = resolver.resolve_function_signature (function);
+  if (result != nullptr)
+    resolver.context->mark_function_body_pending (result->get_id ());
+  return result;
 }
 
 TyTy::BaseType *
@@ -114,6 +132,7 @@ TyTy::BaseType *
 TypeCheckItem::ResolveImplBlockSelf (HIR::ImplBlock &impl_block)
 {
   TypeCheckItem resolver;
+  auto lifetime_pin = resolver.context->push_clean_lifetime_resolver (true);
 
   bool failed_flag = false;
   auto result
@@ -135,6 +154,7 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (
   TyTy::SubstitutionArgumentMappings *infer_arguments)
 {
   TypeCheckItem resolver;
+  auto lifetime_pin = resolver.context->push_clean_lifetime_resolver (true);
 
   bool failed_flag = false;
   auto result = resolver.resolve_impl_block_substitutions (impl, failed_flag);
@@ -875,6 +895,10 @@ TypeCheckItem::visit (HIR::Function &function)
 
   if (resolved_fn_type == nullptr)
     return;
+
+  // Mark the body as claimed before resolving it.  Recursive queries from the
+  // body must reuse the cached signature rather than re-entering this body.
+  context->clear_function_body_pending (resolved_fn_type->get_id ());
 
   // need to get the return type from this
   auto expected_ret_tyty = resolved_fn_type->get_return_type ();

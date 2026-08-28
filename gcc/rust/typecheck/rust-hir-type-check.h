@@ -209,6 +209,10 @@ public:
   bool lookup_type (HirId id, TyTy::BaseType **type) const;
   void clear_type (TyTy::BaseType *ty);
 
+  void mark_function_body_pending (DefId id);
+  void clear_function_body_pending (DefId id);
+  bool function_body_pending (DefId id) const;
+
   void insert_implicit_type (HirId id, TyTy::BaseType *type);
 
   void insert_type_by_node_id (NodeId ref, HirId id);
@@ -239,6 +243,7 @@ public:
 
   bool
   find_matching_impl_trait_frame (const TraitReference &tref,
+				  TyTy::BaseType &self,
 				  struct ImplTraitContextFrame *find) const;
   bool have_impl_trait_context () const;
   void push_impl_trait_context (struct ImplTraitContextFrame frame);
@@ -329,6 +334,7 @@ private:
 
   std::map<NodeId, HirId> node_id_refs;
   std::map<HirId, TyTy::BaseType *> resolved;
+  std::set<DefId> function_bodies_pending;
   std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
   std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>
     return_type_stack;

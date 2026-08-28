@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-hir-item.h"
 #include "rust-system.h"
 #include "rust-type-util.h"
 #include "rust-diagnostics.h"
@@ -73,7 +74,21 @@ query_type (HirId reference, TyTy::BaseType **result)
     {
       rust_debug_loc (item.value ()->get_locus (), "resolved item {%u} to",
 		      reference);
-      *result = TypeCheckItem::Resolve (*item.value ());
+
+      DefId item_defid = item.value ()->get_mappings ().get_defid ();
+      bool is_local = item_defid.crateNum == mappings.get_current_crate ();
+      bool is_fn
+	= item.value ()->get_item_kind () == HIR::Item::ItemKind::Function;
+      if (is_fn && is_local)
+	{
+	  HIR::Function &fn = *static_cast<HIR::Function *> (item.value ());
+	  *result = TypeCheckItem::ResolveFunctionSignature (fn);
+	}
+      else
+	{
+	  *result = TypeCheckItem::Resolve (*item.value ());
+	}
+
       context->query_completed (reference);
       return true;
     }
@@ -82,30 +97,33 @@ query_type (HirId reference, TyTy::BaseType **result)
     {
       auto impl_block
 	= mappings.lookup_hir_impl_block (impl_item->second).value ();
+      auto lifetime_pin = context->push_clean_lifetime_resolver (true);
+
+      bool failure_flag = false;
+      auto substitutions
+	= TypeCheckItem::ResolveImplBlockSubstitutions (*impl_block,
+							failure_flag);
+      if (failure_flag)
+	{
+	  *result
+	    = TypeCheckItem::ResolveImplItem (*impl_block, *impl_item->first);
+	  context->query_completed (reference);
+	  return true;
+	}
+
+      TyTy::BaseType *self = nullptr;
+      bool ok
+	= query_type (impl_block->get_type ().get_mappings ().get_hirid (),
+		      &self);
+      if (!ok)
+	{
+	  context->query_completed (reference);
+	  return false;
+	}
 
       tl::optional<ImplTraitFrameGuard> guard;
       if (impl_block->has_trait_ref ())
 	{
-	  bool failure_flag = false;
-	  auto substitutions
-	    = TypeCheckItem::ResolveImplBlockSubstitutions (*impl_block,
-							    failure_flag);
-	  if (failure_flag)
-	    {
-	      context->query_completed (reference);
-	      return false;
-	    }
-
-	  TyTy::BaseType *self = nullptr;
-	  bool ok
-	    = query_type (impl_block->get_type ().get_mappings ().get_hirid (),
-			  &self);
-	  if (!ok)
-	    {
-	      context->query_completed (reference);
-	      return false;
-	    }
-
 	  HIR::TypePath &ref = impl_block->get_trait_ref ();
 	  auto trait_reference = TraitResolver::Resolve (ref);
 	  if (trait_reference->is_error ())
@@ -132,7 +150,19 @@ query_type (HirId reference, TyTy::BaseType **result)
       rust_debug_loc (impl_item->first->get_locus (),
 		      "resolved impl-item {%u} to", reference);
 
-      *result = TypeCheckItem::ResolveImplItem (*impl_block, *impl_item->first);
+      DefId item_defid = impl_item->first->get_impl_mappings ().get_defid ();
+      bool is_local = item_defid.crateNum == mappings.get_current_crate ();
+      if (impl_item->first->get_impl_item_type () == HIR::ImplItem::FUNCTION
+	  && is_local)
+	{
+	  HIR::Function &fn = *static_cast<HIR::Function *> (impl_item->first);
+	  *result = TypeCheckImplItem::ResolveFunctionSignature (
+	    *impl_block, fn, self, std::move (substitutions));
+	}
+      else
+	*result = TypeCheckImplItem::Resolve (*impl_block, *impl_item->first,
+					      self, std::move (substitutions));
+
       context->query_completed (reference);
       return true;
     }
@@ -606,7 +636,8 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
     }
 
   ImplTraitContextFrame frame;
-  if (!ctx->find_matching_impl_trait_frame (*proj->get_trait_ref (), &frame))
+  if (!ctx->find_matching_impl_trait_frame (*proj->get_trait_ref (),
+					    *proj->get_self (), &frame))
     {
       // No concrete impl frame check WHERE clause bindings on the self type
       //

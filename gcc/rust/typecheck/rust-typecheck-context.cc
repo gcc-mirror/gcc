@@ -110,6 +110,24 @@ TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type) const
 }
 
 void
+TypeCheckContext::mark_function_body_pending (DefId id)
+{
+  function_bodies_pending.insert (id);
+}
+
+void
+TypeCheckContext::clear_function_body_pending (DefId id)
+{
+  function_bodies_pending.erase (id);
+}
+
+bool
+TypeCheckContext::function_body_pending (DefId id) const
+{
+  return function_bodies_pending.find (id) != function_bodies_pending.end ();
+}
+
+void
 TypeCheckContext::clear_type (TyTy::BaseType *ty)
 {
   auto it = resolved.find (ty->get_ref ());
@@ -253,7 +271,8 @@ TypeCheckContext::swap_head_loop_context (TyTy::BaseType *val)
 
 bool
 TypeCheckContext::find_matching_impl_trait_frame (
-  const TraitReference &tref, struct ImplTraitContextFrame *find) const
+  const TraitReference &tref, TyTy::BaseType &self,
+  struct ImplTraitContextFrame *find) const
 {
   if (!have_impl_trait_context ())
     return false;
@@ -262,7 +281,26 @@ TypeCheckContext::find_matching_impl_trait_frame (
        it != impl_trait_frame_stack.rend (); ++it)
     {
       const auto &i = *it;
-      if (i.trait->is_equal (tref))
+      if (!i.trait->is_equal (tref))
+	continue;
+
+      TyTy::BaseType *resolved_self = &self;
+      bool unresolved_trait_self = false;
+      if (auto param = self.try_as<TyTy::ParamType> ())
+	{
+	  if (param->can_resolve ())
+	    resolved_self = param->resolve ();
+	  else
+	    unresolved_trait_self = param->is_implicit_self_trait ();
+	}
+
+      bool compatible_self
+	= unresolved_trait_self
+	  || types_compatable (TyTy::TyWithLocation (i.self),
+			       TyTy::TyWithLocation (resolved_self),
+			       UNDEF_LOCATION, false /* emit_errors */,
+			       false /* check_bounds */);
+      if (compatible_self)
 	{
 	  *find = i;
 	  return true;
