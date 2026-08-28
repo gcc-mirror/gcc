@@ -1,3 +1,76 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-stdc-bit-1.c (main): Fix two pastos.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126534
+	* gcc.dg/pr126534.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/125048
+	* c-c++-common/cpp/va-opt-11.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126464
+	* gcc.dg/pr126464.c: Guard uses of 1e300 with
+	__DBL_MAX_10_EXP__ >= 301 and uses of 1e4000L with
+	__LDBL_MAX_10_EXP__ >= 4001.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126601
+	* gcc.dg/tree-ssa/pr126601.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126564
+	* gcc.dg/torture/pr126564.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126547
+	* gcc.dg/torture/pr126547.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/126576
+	* gcc.dg/torture/pr126576.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126484
+	* g++.target/mips/pr126484.C: New test.
+
 2026-08-24  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
