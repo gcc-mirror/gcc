@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -ftree-vectorize -ffast-math -mavx512bw -save-temps" } */
+/* { dg-options "-O2 -ftree-vectorize -ffast-math -mavx512bw -mtune=generic -save-temps" } */
 /* { dg-require-effective-target avx512bw } */
 
 #include "avx512bw-check.h"
