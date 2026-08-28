@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-optimized -msse2 -Wno-psabi" } */
+/* { dg-options "-O3 -fdump-tree-optimized -msse2 -mno-avx -Wno-psabi" } */
 
 typedef unsigned short v8hi __attribute__((vector_size(16)));
 typedef unsigned int v4si __attribute__((vector_size(16)));
