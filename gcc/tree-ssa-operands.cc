@@ -1026,6 +1026,7 @@ operands_scanner::verify_ssa_operands ()
   unsigned i;
   tree def;
   bool volatile_p = gimple_has_volatile_ops (stmt);
+  gcc_assert (!cfun->gimple_df->ssa_renaming_needed);
 
   /* build_ssa_operands w/o finalizing them.  */
   gimple_set_has_volatile_ops (stmt, false);
@@ -1098,6 +1099,12 @@ operands_scanner::verify_ssa_operands ()
   if (gimple_has_volatile_ops (stmt) != volatile_p)
     {
       error ("statement volatile flag not up to date");
+      return true;
+    }
+
+  if (cfun->gimple_df->ssa_renaming_needed)
+    {
+      error ("statement contains unrenamed symbols");
       return true;
     }
 
