@@ -184,6 +184,11 @@ Wredefines-first
 Cobol Warning Var(redefines_first, 1) Init(1)
 Warn if REDEFINES does not appear immediately after NAME.
 
+; MfRedefinesTable
+Wredefines-table
+Cobol Warning Var(redefines_table, 1) Init(1)
+Warn if REDEFINES source is a table.
+
 ; MfReturningNum
 Wreturning-number
 Cobol Warning Var(returning_number, 1) Init(1)

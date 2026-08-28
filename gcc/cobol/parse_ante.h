@@ -3194,9 +3194,9 @@ valid_redefine( const cbl_loc_t& loc,
 
   // cannot redefine a table
   if( orig->occurs.ntimes() ) {
-    error_msg(loc, "cannot redefine table %s %s",
-            orig->level_str(), orig->name);
-    return false;
+    if( ! dialect_ok(loc, MfRedefinesTable, "cannot redefine table") ) {
+      return false;
+    }
   }
 
   // redefined field cannot be ODO

@@ -84,6 +84,7 @@
 .Op Fl Wno-procedure-pointer
 .Op Fl Wno-replace-error
 .Op Fl Wno-redefines-first
+.Op Fl Wno-redefines-table
 .Op Fl Wno-returning-number
 .Op Fl Wno-segment-error
 .Op Fl Wno-segment-negative
@@ -656,12 +657,13 @@ Warn if CDF defines Level 78 constant.
 .It Fl Wno-move-index
 Warn if MOVE INDEX is used.
 .It Fl Wno-move-pointer
-Warn if
-MOVE POINTER is used.
+Warn if MOVE POINTER is used.
 .It Fl Wno-set-numeric
 Warn if SET is used with NUMERIC target.
 .It Fl Wno-redefines-first
 Warn if REDEFINES does not appear immediately after NAME.
+.It Fl Wno-redefines-table
+Warn if REDEFINES target is a table.
 .It Fl Wno-returning-number
 Warn if RETURNING <number> is used.
 .It Fl Wno-usage-typename
@@ -1187,6 +1189,14 @@ resolution of
 .Ar filename
 is deferred until runtime, when the name must appear in the program's
 environment.
+.Ss TRACE
+.Nm
+accepts the CDF directives
+.Sy "READY TRACE"
+and
+.Sy "RESET TRACE" .
+Per documentation of modern IBM compilers, these directives have no effect.
+They allow old code to compile without comment.
 .Ss XML PARSE
 .Nm
 emulates the IBM

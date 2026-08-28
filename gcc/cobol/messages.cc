@@ -159,6 +159,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { MfMoveIndex, "-Wmove-index", diagnostics::kind::error, dialect_gnu_e },
   { MfMovePointer, "-Wmove-pointer", diagnostics::kind::error, dialect_mf_gnu },
   { MfRedefinesFirst, "-Wredefines-first", diagnostics::kind::error, dialect_mf_gnu },
+  { MfRedefinesTable, "-Wredefines-table", diagnostics::kind::error, dialect_mf_gnu },
   { MfReturningNum, "-Wreturning-number", diagnostics::kind::error, dialect_mf_gnu },
   { MfSetNumeric, "-Wset-numeric", diagnostics::kind::error, dialect_mf_gnu },
   { MfTrailing, "-Winspect-trailing", diagnostics::kind::error, dialect_mf_gnu },
