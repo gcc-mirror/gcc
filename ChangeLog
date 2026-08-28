@@ -1,3 +1,8 @@
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* MAINTAINERS: Update Michael Meissner's information.
+	Backported from master from 2026-08-07.1
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.

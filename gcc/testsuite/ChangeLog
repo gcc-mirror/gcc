@@ -1,3 +1,42 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127100
+	* gfortran.dg/pr127100.f90: New test.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120681
+	* gcc.target/powerpc/pr120681.c: New test.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120528
+	* gcc.target/powerpc/pr120528.c: New test.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99293
+	* gcc.target/powerpc/pr99293.c: New test.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117487
+	* gcc.target/powerpc/pr117487.c: New test.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/future-3.c: New test.
+
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/builtin-stdc-bit-1.c (main): Fix two pastos.
+
 2026-08-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/opt110.adb: New test.

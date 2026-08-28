@@ -1,3 +1,86 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127100
+	* doc/md.texi (vec_mask_len_load_lanes@var{m}@var{n}): Use
+	operand4 - operand5 rather than operand4 + operand5.
+	(vec_mask_len_store_lanes@var{m}@var{n}): Use
+	operand3 - operand4 rather than operand3 + operand4.
+	(mask_len_gather_load@var{m}@var{n}): Use operand 7 - operand 8
+	rather than operand 7 + operand 8.
+	(mask_len_strided_load@var{m}): Use operand 4 - operand 5 rather
+	than operand 4 + operand 5.
+	(mask_len_scatter_store@var{m}@var{n}): Use operand 6 - operand 7
+	rather than operand 6 + operand 7.
+	(mask_len_strided_store@var{m}): Use operand 4 - operand 5 rather
+	than operand 4 + operand 5.
+	(len_load_@var{m}): Use operand 3 - operand 4 rather than
+	operand 3 + operand 4.
+	(len_store_@var{m}): Use operand 2 - operand 3 rather than
+	operand 2 + operand 3.
+	(mask_len_load@var{m}@var{n}): Use operand 4 - operand 5 rather
+	than operand 3 + operand 4 or operand 4 + operand 5.  Use
+	Operand 5 rather than Operand 4 when talking about bias QI mode.
+	(mask_len_store@var{m}@var{n}): Use operand 3 - operand 4 rather
+	than operand 3 + operand 4 or operand 2 + operand 4.
+	(cond_len_neg@var{mode}): Use operand 4 - operand 5 rather than
+	operand 4 + operand 5.  Use ops[4] - ops[5] rather than
+	ops[4] + ops[5].
+	(cond_len_add@var{mode}): Use operand 5 - operand 6 rather than
+	operand 5 + operand 6.  Use ops[5] - ops[6] rather than
+	ops[5] + ops[6].
+	(cond_len_fma@var{mode}): Use ops[6] - ops[7] rather than
+	ops[6] + ops[7].
+	* gimple-fold.cc (partial_load_store_mask_state): Compute wlen
+	as wi::to_poly_widest (len) - wi::to_widest (bias) rather than
+	wi::to_poly_widest (len) + wi::to_widest (bias).
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120681
+	* config/rs6000/linux64.h (PCREL_SUPPORTED_BY_OS): Allow large
+	code model as well as medium code model.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	Likewise.
+	(rs6000_elf_declare_function_name): Don't create the
+	local/non-local labels for large code model if we are using
+	PC-relative addressing.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120528
+	* config/rs6000/rs6000.md (zero_extend??ti2 peephole2): Add a
+	peephole2 to simplify zero extending a QI/HI/SI/DImode value in
+	memory to a TImode target in a vector register to use the
+	LXVR{B,H,W,D}X instructins.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99293
+	* config/rs6000/vsx.md (vsx_splat_extract_<mode>): New insn.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117487
+	* config/rs6000/vsx.md (SFmode logical peephoole): Update comments in
+	the original code that supports power8.
+	(SFBOOL2_*): New constants.
+	(power9/power10 define_peephol2): Add a new define_peephole2 to optimize
+	float and logical operations on power9/power10/power11 similar to the
+	optimiztion that is done on power8.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (FUTURE_MASKS_SERVER): Enable using load
+	vector pair and store vector pair instructions for memory and string
+	built-in functions.
+	(POWERPC_MASKS): Make -mblock-ops-vector-pair an option that is set by
+	the -mcpu=<xxx> command line option.
+	* config/rs6000/rs6000.cc (rs6000_machine_from_flags): Disable
+	-mblock-ops-vector-pair from influencing .machine selection.
+
 2026-08-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/125984
