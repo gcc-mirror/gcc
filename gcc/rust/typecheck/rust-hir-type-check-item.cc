@@ -122,6 +122,13 @@ TypeCheckItem::ResolveFunctionSignature (HIR::Function &function)
 }
 
 TyTy::BaseType *
+TypeCheckItem::ResolveTraitSignature (HIR::Trait &trait)
+{
+  TypeCheckItem resolver;
+  return resolver.resolve_trait (trait, false);
+}
+
+TyTy::BaseType *
 TypeCheckItem::ResolveImplItem (HIR::ImplBlock &impl_block, HIR::ImplItem &item)
 {
   TypeCheckItem resolver;
@@ -963,6 +970,12 @@ TypeCheckItem::visit (HIR::Module &module)
 void
 TypeCheckItem::visit (HIR::Trait &trait)
 {
+  infered = resolve_trait (trait, true);
+}
+
+TyTy::BaseType *
+TypeCheckItem::resolve_trait (HIR::Trait &trait, bool resolve_bodies)
+{
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
 
   if (trait.has_type_param_bounds ())
@@ -987,11 +1000,14 @@ TypeCheckItem::visit (HIR::Trait &trait)
   if (trait_ref->is_error ())
     {
       infered = new TyTy::ErrorType (trait.get_mappings ().get_hirid ());
-      return;
+      return infered;
     }
 
+  if (resolve_bodies)
+    trait_ref->resolve_default_function_bodies ();
+
   RustIdent ident{CanonicalPath::create_empty (), trait.get_locus ()};
-  infered = new TyTy::DynamicObjectType (
+  return new TyTy::DynamicObjectType (
     trait.get_mappings ().get_hirid (), ident,
     {TyTy::TypeBoundPredicate (*trait_ref, BoundPolarity::RegularBound,
 			       trait.get_locus ())});

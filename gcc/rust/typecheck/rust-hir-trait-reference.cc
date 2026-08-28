@@ -75,6 +75,11 @@ TraitItemReference::get_tyty () const
 {
   rust_assert (hir_trait_item != nullptr);
 
+  TyTy::BaseType *resolved = nullptr;
+  if (type == FN
+      && context->lookup_type (get_mappings ().get_hirid (), &resolved))
+    return resolved;
+
   switch (type)
     {
     case CONST:
@@ -353,6 +358,13 @@ TraitReference::on_resolved ()
 	  != TraitItemReference::TraitItemType::TYPE)
 	item.on_resolved (this);
     }
+}
+
+void
+TraitReference::resolve_default_function_bodies ()
+{
+  for (auto &item : item_refs)
+    item.resolve_default_function_body (this);
 }
 
 bool

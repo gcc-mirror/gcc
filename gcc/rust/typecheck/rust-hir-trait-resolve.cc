@@ -437,12 +437,35 @@ TraitItemReference::on_resolved (const TraitReference *tref)
       break;
 
     case FN:
-      resolve_item (tref, static_cast<HIR::TraitItemFunc &> (*hir_trait_item));
+      {
+	TyTy::BaseType *fn_type = get_tyty ();
+	if (is_optional () && fn_type->get_kind () == TyTy::TypeKind::FNDEF)
+	  context->mark_function_body_pending (
+	    static_cast<TyTy::FnType *> (fn_type)->get_id ());
+      }
       break;
 
     default:
       break;
     }
+}
+
+void
+TraitItemReference::resolve_default_function_body (const TraitReference *tref)
+{
+  if (type != FN || !is_optional ())
+    return;
+
+  auto &func = static_cast<HIR::TraitItemFunc &> (*hir_trait_item);
+  TyTy::BaseType *item_tyty = get_tyty ();
+  if (item_tyty->get_kind () != TyTy::TypeKind::FNDEF)
+    return;
+
+  auto fn_type = static_cast<TyTy::FnType *> (item_tyty);
+  if (!context->function_body_pending (fn_type->get_id ()))
+    return;
+
+  resolve_item (tref, func);
 }
 
 void
@@ -537,6 +560,7 @@ TraitItemReference::resolve_item (const TraitReference *tref,
 
   // need to get the return type from this
   TyTy::FnType *resolved_fn_type = static_cast<TyTy::FnType *> (item_tyty);
+  context->clear_function_body_pending (resolved_fn_type->get_id ());
   auto expected_ret_tyty = resolved_fn_type->get_return_type ();
   context->push_return_type (TypeCheckContextItem (&func), expected_ret_tyty);
 

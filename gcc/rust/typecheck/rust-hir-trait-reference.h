@@ -104,6 +104,8 @@ public:
   // the trait will not be stored in its own map yet
   void on_resolved (const TraitReference *tref);
 
+  void resolve_default_function_body (const TraitReference *tref);
+
   bool is_object_safe () const;
 
 private:
@@ -208,6 +210,8 @@ public:
     std::vector<const TraitItemReference *> &result) const;
 
   void on_resolved ();
+
+  void resolve_default_function_bodies ();
 
   bool is_equal (const TraitReference &other) const;
 

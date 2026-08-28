@@ -84,6 +84,12 @@ query_type (HirId reference, TyTy::BaseType **result)
 	  HIR::Function &fn = *static_cast<HIR::Function *> (item.value ());
 	  *result = TypeCheckItem::ResolveFunctionSignature (fn);
 	}
+      else if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Trait
+	       && is_local)
+	{
+	  HIR::Trait &trait = *static_cast<HIR::Trait *> (item.value ());
+	  *result = TypeCheckItem::ResolveTraitSignature (trait);
+	}
       else
 	{
 	  *result = TypeCheckItem::Resolve (*item.value ());
