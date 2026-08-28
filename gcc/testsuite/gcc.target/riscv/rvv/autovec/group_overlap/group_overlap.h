@@ -1212,6 +1212,34 @@
     ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
     ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
 
+/* Like LOOP_DUAL_WIDEN_TERNARY_VX_BODY_OVERLAP_X2 but the narrowed vector
+   source is unsigned while the accumulator is signed, thus reinterpreting the
+   accumulator takes two steps: RI_UF turns the signed widened accumulator into
+   the unsigned widened type, RI_NUF reinterprets that as the unsigned narrowed
+   element type and GET_UF extracts the highest-numbered half of it.  */
+#define LOOP_DUAL_WIDEN_TERNARY_VX_BODY_SU_OVERLAP_X2(NUT, WT, WNUT, LD_WF, \
+						      RI_UF, RI_NUF, GET_UF,\
+						      OUT_F, ST_F, OUT,     \
+						      START, X, VL)         \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WNUT vr0 = RI_NUF (RI_UF (vw0));                                        \
+    WNUT vr1 = RI_NUF (RI_UF (vw1));                                        \
+                                                                            \
+    NUT vs0 = GET_UF (vr0, 1);                                              \
+    NUT vs1 = GET_UF (vr1, 1);                                              \
+                                                                            \
+    WT vd0 = OUT_F (vw0, X, vs0, VL);                                       \
+    WT vd1 = OUT_F (vw1, X, vs1, VL);                                       \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+
 #define DEF_GROUP_OVERLAP_UNARY_0(VL_F, NT, WT, LD_F, OUT_F, ST_F, NAME, \
 				  LOOP_BODY)                             \
   void test_group_overlap_##NAME##_##NT##_unary_0(uint8_t *data,         \
@@ -1384,6 +1412,24 @@
     while (start < end) {                                                   \
       LOOP_BODY (NT, WT, WNT, LD_WF, RI_F, GET_F, OUT_F, ST_F, out, start,  \
 		 x, vl);                                                    \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_TERNARY_6(VL_F, NUT, WT, WNUT, ST, LD_WF, RI_UF,  \
+				    RI_NUF, GET_UF, OUT_F, ST_F, NAME,      \
+				    LOOP_BODY)                              \
+  void test_group_overlap_##NAME##_##NUT##_ternary_6(uint8_t *data,         \
+						     uint8_t *out,          \
+						     ST x,                  \
+						     size_t limit)          \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NUT, WT, WNUT, LD_WF, RI_UF, RI_NUF, GET_UF, OUT_F, ST_F,  \
+		 out, start, x, vl);                                        \
     }                                                                       \
   }
 
