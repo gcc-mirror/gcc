@@ -268,7 +268,7 @@ struct GTY(()) cpp_token {
   /* Location of first char of token, together with range of full token.  */
   location_t src_loc;
 
-  ENUM_BITFIELD(cpp_ttype) type : CHAR_BIT;  /* token type */
+  enum cpp_ttype type : CHAR_BIT;  /* token type */
   unsigned short flags;		/* flags - see above */
 
   union cpp_token_u
@@ -1076,7 +1076,7 @@ struct GTY(()) cpp_hashnode {
 					   Otherwise, a NODE_OPERATOR.  */
   unsigned int rid_code : 8;		/* Rid code - for front ends.  */
   unsigned int flags : 9;		/* CPP flags.  */
-  ENUM_BITFIELD(node_type) type : 2;	/* CPP node type.  */
+  enum node_type type : 2;		/* CPP node type.  */
 
   /* 5 bits spare.  */
 

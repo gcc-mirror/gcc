@@ -428,7 +428,7 @@ struct GTY((tag ("1"))) line_map_ordinary : public line_map {
   /* 4 bytes of integers, each 1 byte for easy extraction/insertion.  */
 
   /* The reason for creation of this line map.  */
-  ENUM_BITFIELD (lc_reason) reason : 8;
+  enum lc_reason reason : 8;
 
   /* SYSP is one for a system header, two for a C system header file
      that therefore needs to be extern "C" protected in C++, and zero
