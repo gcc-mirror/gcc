@@ -5,7 +5,7 @@
 
 /* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 /* { dg-additional-options "-D_POSIX_SOURCE" } */
-
+/* { dg-additional-options "-D_DARWIN_C_SOURCE" { target *-*-darwin* } } */
 /* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
 /* { dg-skip-if "C++98 builds hit different limits exploring egraph" { c++98_only } } */
 /* { dg-skip-if "isatty" { avr-*-* } } */

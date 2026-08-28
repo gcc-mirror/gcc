@@ -1,5 +1,6 @@
 /* { dg-skip-if "no strndup in libc" { *-*-darwin[789]* *-*-darwin10* hppa*-*-hpux* *-*-mingw* *-*-vxworks* } } */
 /* { dg-additional-options "-D_POSIX_C_SOURCE=200809L" } */
+/* { dg-additional-options "-D_DARWIN_C_SOURCE" { target *-*-darwin* } } */
 /* { dg-skip-if "requires hosted libstdc++ for stdlib free" { ! hostedlib } } */
 /* { dg-additional-options "-fno-exceptions" } */
 
