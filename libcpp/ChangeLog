@@ -1,3 +1,14 @@
+2026-08-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/125048
+	* macro.cc (replace_args): Remember the position of map
+	in the pfile->line_table->info_macro.maps array and if vostate
+	is DROP, recompute map pointer as expand_arg call could have
+	reallocated the pfile->line_table->info_macro.maps array.
+
 2026-03-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
