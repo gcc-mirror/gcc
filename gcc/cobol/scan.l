@@ -2281,7 +2281,8 @@ USE({SPC}FOR)?		{ return USE; }
 	            yy_push_state(partial_name);
 		    tee_up_empty();
 		}
-  {NAME}({SPC}(IN|OF){SPC}{NAME})+ { // Keep only {NAME}.
+  LENGTH{SPC}OF/{SPC}{NAME}	{ return LENGTH_OF; }
+  {NAME}{SPC}(IN|OF){SPC}{NAME} { // Keep only {NAME}.
 		    auto len = length_upto(0x20);
 		    myless(len); // avoid dangerous trailing context
                     int token = keyword_tok(yytext);
@@ -2294,6 +2295,13 @@ USE({SPC}FOR)?		{ return USE; }
 }
 
 <partial_name>{
+  LENGTH{SPC}OF{SPC}{NAME}	{
+    std::reverse_iterator beg(yytext + yyleng), end(yytext);
+    auto p = std::find_if(beg, end, []( char ch ) { return ISSPACE(ch); });
+    auto len = p.base() - yytext;
+    myless(len); // avoid dangerous trailing context
+    return LENGTH_OF; }
+
   {NAME}/{SPC}(IN|OF)[[:space:]] {
     tee_up_name(yylloc, xstrdup(yytext));
   }
@@ -2344,6 +2352,7 @@ USE({SPC}FOR)?		{ return USE; }
 }
 
 <sort_state>{
+  LENGTH{SPC}OF/{SPC}{NAME}	{ return LENGTH_OF; }
   {NAME}{SPC}(IN|OF) |
   {NAME}{OSPC}[(] { myless(0); yy_pop_state(); }
 
