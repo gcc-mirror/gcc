@@ -631,6 +631,9 @@ fold_const_reduction (tree type, tree arg, tree_code code)
 		       || code == BIT_IOR_EXPR);
 
   unsigned HOST_WIDE_INT nelts = vector_cst_encoded_nelts (arg);
+  /* Fall back to the exact element count for singleton sNaN encodings, since
+     a known single-element vector performs no operation and so cannot raise an
+     exception.  */
   bool singleton_snan_p
     = (nelts == 1
 	&& tree_expr_maybe_signaling_nan_p (VECTOR_CST_ELT (arg, 0)));
