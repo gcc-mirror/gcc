@@ -70,6 +70,8 @@ void gfc_init_descriptor_variable (stmtblock_t *block, gfc_symbol *sym,
 				   tree descr);
 tree gfc_create_unallocated_library_result_descriptor (stmtblock_t *, tree,
 						       tree);
+tree gfc_create_null_actual_descriptor (stmtblock_t *, gfc_typespec *,
+					symbol_attribute, int);
 
 tree gfc_conv_descriptor_size (tree, int);
 tree gfc_conv_descriptor_cosize (tree, int, int);

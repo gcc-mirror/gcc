@@ -805,6 +805,45 @@ gfc_create_unallocated_library_result_descriptor (stmtblock_t *block,
 }
 
 
+/* Create a new descriptor to represent a null actual argument of type TS and
+   rank RANK passed to a dummy argument having attributes ATTR.  Add
+   initialization code to BLOCK and return the descriptor declaration.  */
+
+tree
+gfc_create_null_actual_descriptor (stmtblock_t *block, gfc_typespec *ts,
+				   symbol_attribute attr, int rank)
+{
+  tree etype = gfc_typenode_for_spec (ts);
+
+  enum gfc_array_kind akind;
+
+  if (attr.pointer)
+    akind = GFC_ARRAY_POINTER_CONT;
+  else if (attr.allocatable)
+    akind = GFC_ARRAY_ALLOCATABLE;
+  else
+    akind = GFC_ARRAY_ASSUMED_SHAPE_CONT;
+
+  tree lower[GFC_MAX_DIMENSIONS];
+  tree upper[GFC_MAX_DIMENSIONS];
+  memset (&lower, 0, rank * sizeof (lower[0]));
+  memset (&upper, 0, rank * sizeof (upper[0]));
+
+  tree type = gfc_get_array_type_bounds (etype, rank, 0, lower, upper, 1,
+					 akind, !(attr.pointer || attr.target));
+  tree desc = gfc_create_var (type, "desc");
+  DECL_ARTIFICIAL (desc) = 1;
+
+  gfc_conv_descriptor_dtype_set (block, desc,
+				 gfc_get_dtype_rank_type (rank, etype));
+  gfc_conv_descriptor_data_set (block, desc, null_pointer_node);
+  gfc_conv_descriptor_span_set (block, desc,
+				gfc_conv_descriptor_elem_len_get (desc));
+
+  return desc;
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 
