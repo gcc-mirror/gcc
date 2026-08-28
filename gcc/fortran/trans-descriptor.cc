@@ -774,6 +774,37 @@ gfc_init_descriptor_variable (stmtblock_t *block, gfc_symbol *sym, tree descr)
 }
 
 
+/* Create a fresh array descriptor copied from SOURCE_DESCR, with a cleared data
+   pointer and a possibly different dtype value.  Set the dtype field to DTYPE
+   if different from NULL_TREE; otherwise set it with a default value built
+   using SOURCE_DESCR's type.  Add the copying code and any other initialization
+   to BLOCK and return the descriptor declaration.
+
+   The descriptor created by this function is used to pass to intrinsic
+   functions from the library, when the result is assigned to a reallocatable
+   variable.  The left hand side variable descriptor is not passed directly to
+   the library, and the unallocated descriptor this function creates is passed
+   instead.  Allocation happens in the library; deallocation of the left hand
+   side variable data, if any, and correct bounds mapping happen outside the
+   library, after the function returns.  */
+
+tree
+gfc_create_unallocated_library_result_descriptor (stmtblock_t *block,
+						  tree source_descr, tree dtype)
+{
+  /* Unallocated, the descriptor does not have a dtype.  */
+  if (dtype == NULL_TREE)
+    dtype = gfc_get_dtype (TREE_TYPE (source_descr));
+
+  gfc_conv_descriptor_dtype_set (block, source_descr, dtype);
+
+  tree res_desc = gfc_evaluate_now (source_descr, block);
+  gfc_conv_descriptor_data_set (block, res_desc, null_pointer_node);
+
+  return res_desc;
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 

@@ -12581,15 +12581,8 @@ fcncall_realloc_result (gfc_se *se, int rank, tree dtype)
   if (POINTER_TYPE_P (TREE_TYPE (desc)))
     desc = build_fold_indirect_ref_loc (input_location, desc);
 
-  /* Unallocated, the descriptor does not have a dtype.  */
-  if (dtype != NULL_TREE)
-    gfc_conv_descriptor_dtype_set (&se->pre, desc, dtype);
-  else
-    gfc_conv_descriptor_dtype_set (&se->pre, desc,
-				   gfc_get_dtype (TREE_TYPE (desc)));
-
-  res_desc = gfc_evaluate_now (desc, &se->pre);
-  gfc_conv_descriptor_data_set (&se->pre, res_desc, null_pointer_node);
+  res_desc = gfc_create_unallocated_library_result_descriptor (&se->pre, desc,
+							       dtype);
   se->expr = gfc_build_addr_expr (NULL_TREE, res_desc);
 
   /* Free the lhs after the function call and copy the result data to
