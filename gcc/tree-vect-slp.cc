@@ -4355,46 +4355,35 @@ vect_build_slp_instance (vec_info *vinfo,
      Iff there is any mismatches in the toplevel stmts those will prevail,
      otherwise we get the non-power-of-two tail of the lanes failed.
      For BB reductions we mainly want to catch the first case so we pick
-     a more useful subset of lanes to reduce.  */
-  if (kind == slp_inst_kind_bb_reduc && matches[0] == 0)
+     a more useful subset of lanes to reduce.  Pick the largest matching
+     subset of that covers half of the group or more.  */
+  if (kind == slp_inst_kind_bb_reduc && matches[0] != -1)
     {
-      unsigned n_matching = 0;
+      unsigned *n_matching = XALLOCAVEC (unsigned, group_size);
+      memset (n_matching, 0, sizeof (unsigned) * group_size);
       for (unsigned i = 0; i < group_size; ++i)
-	if (matches[i] == 0)
-	  n_matching++;
-      vec<stmt_vec_info> scalar_stmts2 = vNULL;
-      /* Try matched parts and put the rest to remain.  */
-      if (n_matching >= 2 && n_matching >= group_size / 2)
+	if (matches[i] != -2 && matches[i] != -1)
+	  n_matching[matches[i].v]++;
+      unsigned largest_i = 0;
+      for (unsigned i = 1; i < group_size; ++i)
+	if (n_matching[i] > n_matching[largest_i])
+	  largest_i = i;
+      /* Pick the largest matching part and put the rest to remain.  */
+      if (n_matching[largest_i] >= 2
+	  && n_matching[largest_i] >= group_size / 2)
 	{
 	  /* As we know the matches[] stmts match up, recursing for
 	     non-power-of-two sizes will just force-fail the tail
 	     for us at hopefully optimal vector size and succesfully
 	     finish discovery.  */
-	  scalar_stmts2.create (n_matching);
+	  vec<stmt_vec_info> scalar_stmts2;
+	  scalar_stmts2.create (n_matching[largest_i]);
 	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i] == 0)
+	    if (matches[i] == (int)largest_i)
 	      scalar_stmts2.quick_push (scalar_stmts[i]);
 	    else
 	      remain.safe_push
 		(gimple_get_lhs (vect_orig_stmt (scalar_stmts[i])->stmt));
-	}
-      /* Try the non-matching part.  */
-      else if (group_size - n_matching >= 2)
-	{
-	  /* We do not know whether the !matches[] part matches, so avoid
-	     cutting to a multiple of the vector size too early.  We should
-	     make progress by means of remain only growing and most of the
-	     time prefering the matching[] part.  */
-	  scalar_stmts2.create (scalar_stmts.length () - n_matching);
-	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i] != 0)
-	      scalar_stmts2.quick_push (scalar_stmts[i]);
-	    else
-	      remain.safe_push
-		(gimple_get_lhs (vect_orig_stmt (scalar_stmts[i])->stmt));
-	}
-      if (scalar_stmts2.exists ())
-	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location, "Splitting %d "
 			     "non-matching lanes to scalar remains\n",
