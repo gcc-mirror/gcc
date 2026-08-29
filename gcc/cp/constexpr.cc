@@ -2860,8 +2860,12 @@ unshare_constructor (tree t MEM_STAT_DECL)
       vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (n);
       constructor_elt *ce;
       for (HOST_WIDE_INT i = 0; vec_safe_iterate (v, i, &ce); ++i)
-	if (ce->value && TREE_CODE (ce->value) == CONSTRUCTOR)
-	  ptrs.safe_push (&ce->value);
+	{
+	  if (ce->index && TREE_CODE (ce->index) == RANGE_EXPR)
+	    ce->index = copy_node (ce->index PASS_MEM_STAT);
+	  if (ce->value && TREE_CODE (ce->value) == CONSTRUCTOR)
+	    ptrs.safe_push (&ce->value);
+	}
     }
   return t;
 }
