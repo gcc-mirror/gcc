@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fdump-tree-forwprop4-details" } */
 /* { dg-additional-options "-msse2" { target i?86-*-* x86_64-*-* } } */
+/* { dg-require-effective-target int32plus } */
 
 #include <stdint.h>
 
