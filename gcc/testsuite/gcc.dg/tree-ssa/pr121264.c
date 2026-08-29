@@ -1,5 +1,6 @@
 /* PR tree-optimization/121264 */
 /* { dg-do compile } */
+/* { dg-require-effective-target int32plus } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-final { scan-tree-dump " \\\| " "optimized" } } */
 
