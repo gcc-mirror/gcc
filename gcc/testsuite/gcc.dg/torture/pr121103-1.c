@@ -12,7 +12,7 @@ void f(void *);
 
 struct B {
   char d[5];
-  int n;
+__INT32_TYPE__ n;
 };
 
 __attribute__((always_inline)) inline void g(struct B *p, struct A a) {
