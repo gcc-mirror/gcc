@@ -8,8 +8,11 @@ end
 
 subroutine sub (a, n)
   integer :: a(n), n
+  integer, volatile :: v
+  v = 0
   do i = 1, n
     a(i) = i
   end do
-  write (*,*) a	! { dg-final { gdb-test 14 "a(10)" "10" } }
+  write (*,*) a
+  v = v + 1	! { dg-final { gdb-test 17 "a(10)" "10" } }
 end subroutine
