@@ -1219,7 +1219,8 @@ do {									\
 
 /* Given an rtx for the frame pointer,
    return an rtx for the address of the frame.  */
-#define FRAME_ADDR_RTX(frame) plus_constant (Pmode, frame, SPARC_STACK_BIAS)
+#define FRAME_ADDR_RTX(count, frame) \
+  plus_constant (Pmode, frame, SPARC_STACK_BIAS)
 
 /* The return address isn't on the stack, it is in a register, so we can't
    access it from the current frame pointer.  We can access it from the

@@ -863,7 +863,7 @@ expand_builtin_return_addr (enum built_in_function fndecl_code, int count)
   /* For __builtin_frame_address, return what we've got.  But, on
      the SPARC for example, we may have to add a bias.  */
   if (fndecl_code == BUILT_IN_FRAME_ADDRESS)
-    return FRAME_ADDR_RTX (tem);
+    return FRAME_ADDR_RTX (count, tem);
 
   /* For __builtin_return_address, get the return address from that frame.  */
 #ifdef RETURN_ADDR_RTX

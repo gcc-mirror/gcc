@@ -538,7 +538,7 @@ typedef struct GTY (()) machine_function
 
 /* Given an rtx for the frame pointer,
    return an rtx for the address of the frame.  */
-#define FRAME_ADDR_RTX(frame) \
+#define FRAME_ADDR_RTX(count, frame) \
   ((frame) == hard_frame_pointer_rtx ? arg_pointer_rtx : NULL)
 
 #define EPIPHANY_RETURN_REGNO \

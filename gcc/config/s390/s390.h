@@ -586,7 +586,7 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    somewhere into the middle of the local variables since the packed
    stack layout generally does not need all the bytes in the register
    save area.  */
-#define FRAME_ADDR_RTX(FRAME)			\
+#define FRAME_ADDR_RTX(COUNT, FRAME)		\
   DYNAMIC_CHAIN_ADDRESS ((FRAME))
 
 #define RETURN_ADDR_RTX(COUNT, FRAME)					      \

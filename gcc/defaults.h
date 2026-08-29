@@ -1259,7 +1259,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #ifndef FRAME_ADDR_RTX
-#define FRAME_ADDR_RTX(x) (x)
+#define FRAME_ADDR_RTX(count, x) (x)
 #endif
 
 #ifndef REVERSE_CONDITION
