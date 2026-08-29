@@ -1,6 +1,7 @@
 /* PR tree-optimization/112104 */
 /* { dg-do run } */
 /* { dg-options "-O1" } */
+/* { dg-require-effective-target int32plus } */
 
 #include "pr112104-1.c"
 
