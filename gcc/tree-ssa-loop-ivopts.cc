@@ -6105,8 +6105,8 @@ ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
   /* If both IV cands and invariants spill, calculate additional cost for
      having to store spilled candidates. */
   else
-    cost = target_spill_cost [speed] * (regs_needed - available_regs) / 2;
-		+ target_spill_cost[speed] * (n_cands - available_regs) / 2;
+    cost = (target_spill_cost [speed] * (regs_needed - available_regs) / 2
+	    + target_spill_cost[speed] * (n_cands - available_regs) / 2);
 
   return cost;
 }
