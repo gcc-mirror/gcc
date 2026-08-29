@@ -1098,9 +1098,6 @@ UrlSuffix(gcc/Optimize-Options.html#index-fif-conversion2)
 fstack-reuse=
 UrlSuffix(gcc/Code-Gen-Options.html#index-fstack-reuse)
 
-ftree-loop-if-convert
-UrlSuffix(gcc/Optimize-Options.html#index-fno-tree-loop-if-convert)
-
 finhibit-size-directive
 UrlSuffix(gcc/Code-Gen-Options.html#index-finhibit-size-directive)
 
