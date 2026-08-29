@@ -19487,7 +19487,7 @@ void __builtin_arm_set_fpscr (unsigned int);
 GCC implements the ARMv8-M Security Extensions as described in the ARMv8-M
 Security Extensions: Requirements on Development Tools Engineering
 Specification, which can be found at
-@uref{https://developer.arm.com/documentation/ecm0359818/latest/}.
+@uref{https://support.arm.com/documentation/ecm0359818/latest/}.
 
 As part of the Security Extensions GCC implements two new function attributes:
 @code{cmse_nonsecure_entry} and @code{cmse_nonsecure_call}.

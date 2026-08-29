@@ -24247,7 +24247,7 @@ is only available when generating non-pic code for M-profile targets.
 @item -mcmse
 Generate secure code as per the "ARMv8-M Security Extensions: Requirements on
 Development Tools Engineering Specification", which can be found on
-@url{https://developer.arm.com/documentation/ecm0359818/latest/}.
+@url{https://support.arm.com/documentation/ecm0359818/latest/}.
 
 @opindex mfix-cmse-cve-2021-35465
 @opindex mno-fix-cmse-cve-2021-35465
