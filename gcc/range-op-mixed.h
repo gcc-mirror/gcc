@@ -648,6 +648,7 @@ public:
   using range_operator::op1_range;
   using range_operator::op2_range;
   using range_operator::lhs_op1_relation;
+  using range_operator::op1_op2_relation;
   using range_operator::op1_op2_relation_effect;
   using range_operator::update_bitmask;
   bool op1_range (irange &r, tree type,
@@ -668,6 +669,8 @@ public:
   relation_kind lhs_op1_relation (const irange &lhs,
 				  const irange &op1, const irange &op2,
 				  relation_kind rel) const final override;
+  relation_kind op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const final override;
   bool op1_op2_relation_effect (irange &lhs_range, tree type,
 				const irange &op1_range,
 				const irange &op2_range,

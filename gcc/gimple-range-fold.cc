@@ -1751,9 +1751,12 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
   // leading to the condition such as:
   // c_2 = a_4 < b_7
   // if (c_2)
+  // as well as relations implied by a known result, such as:
+  // c_2 = a_4 - b_7
+  // if (c_2 == 0)
   FOR_EACH_GORI_EXPORT_NAME (gori_ssa (), bb, name)
     {
-      if (TREE_CODE (TREE_TYPE (name)) != BOOLEAN_TYPE)
+      if (!INTEGRAL_TYPE_P (TREE_TYPE (name)))
 	continue;
       gimple *stmt = SSA_NAME_DEF_STMT (name);
       gimple_range_op_handler handler (stmt);

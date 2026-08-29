@@ -2102,6 +2102,25 @@ minus_op1_op2_relation_effect (irange &lhs_range, tree type,
   return true;
 }
 
+// Check if the LHS range indicates a relation between OP1 and OP2.
+// OP1 - OP2 == 0 implies OP1 == OP2 even with wrapping arithmetic.
+
+relation_kind
+operator_minus::op1_op2_relation (const irange &lhs, const irange &,
+				  const irange &) const
+{
+  if (lhs.undefined_p ())
+    return VREL_UNDEFINED;
+
+  if (lhs.zero_p ())
+    return VREL_EQ;
+
+  if (!lhs.contains_zero_p ())
+    return VREL_NE;
+
+  return VREL_VARYING;
+}
+
 bool
 operator_minus::op1_op2_relation_effect (irange &lhs_range, tree type,
 					 const irange &op1_range,
