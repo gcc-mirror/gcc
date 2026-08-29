@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Ofast -fdump-tree-phiopt2-details -fdump-tree-optimized-details-blocks" } */
+/* { dg-options "-Ofast -fdump-tree-phiopt1-details -fdump-tree-optimized-details-blocks" } */
 
 void g (int);
 void g1 (int);
@@ -27,5 +27,5 @@ f (long a, long b, long c, long d, long x)
   g (a);
 }
 
-/* { dg-final { scan-tree-dump-times "replicating conditional" 2 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times "replicating conditional" 2 "phiopt1" } } */
 /* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */

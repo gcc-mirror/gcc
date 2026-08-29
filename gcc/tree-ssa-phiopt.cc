@@ -5103,7 +5103,7 @@ pass_phiopt::execute (function *)
 
   execute_over_cond_phis (phiopt_exec);
 
-  if (!early_p && replicate_conds_over_phis ())
+  if (replicate_conds_over_phis ())
     {
       free_dominance_info (CDI_DOMINATORS);
       return TODO_cleanup_cfg | TODO_update_ssa;

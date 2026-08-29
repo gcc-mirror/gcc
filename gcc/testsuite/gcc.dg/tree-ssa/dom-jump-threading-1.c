@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 --param=dom-jump-threading=0 -fdisable-tree-phiopt2 -fdisable-tree-phiopt3 -fdisable-tree-phiopt4 -fdump-tree-dom2-details -fdump-tree-optimized" } */
+/* { dg-options "-O2 --param=dom-jump-threading=0 -fdisable-tree-phiopt1 -fdisable-tree-phiopt2 -fdisable-tree-phiopt3 -fdisable-tree-phiopt4 -fdump-tree-dom2-details -fdump-tree-optimized" } */
 
 /* Verify that --param=dom-jump-threading=0 keeps DOM from threading
    jumps.  Only DOM can thread a PHI of compares (the backward
