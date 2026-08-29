@@ -1,3 +1,19 @@
+2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127105
+	* gcc.dg/vect/vect-pr127105.c: New testcase.
+
+2026-08-28  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-08-26  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/vect/pr122797.c: Remove explict "dg-do run".
+	* gcc.dg/vect/pr123731.c: Likewise.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
