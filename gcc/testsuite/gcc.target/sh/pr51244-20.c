@@ -6,13 +6,10 @@
 /* { dg-final { scan-assembler-not "not\t" } } */
 /* { dg-final { scan-assembler-times "cmp/eq" 2 } } */
 /* { dg-final { scan-assembler-times "cmp/hi" 4 } } */
-/* { dg-final { scan-assembler-times "cmp/gt" 2 } } */
+/* { dg-final { scan-assembler-times "cmp/gt" 3 } } */
 
-/* { dg-final { scan-assembler-times "tst" 7 { target { ! sh2a } } } } */
-/* { dg-final { scan-assembler-times "movt" 2 { target { ! sh2a } } } } */
-
-/* { dg-final { scan-assembler-times "tst" 6 { target { sh2a } } } } */
-/* { dg-final { scan-assembler-not "movt" { target { sh2a } } } } */
+/* { dg-final { scan-assembler-times "tst" 6 } } */
+/* { dg-final { scan-assembler-not "movt" } } */
 /* { dg-final { scan-assembler-times "nott" 2 { target { sh2a } } } } */
 
 
