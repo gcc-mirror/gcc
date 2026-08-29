@@ -4000,9 +4000,11 @@ final_value_replacement_loop (class loop *loop)
 	  tmp &= bit2;
 	if bit2 is an invariant in loop which could simple to
 	tmp &= bit2.  */
-      else if ((bitinv_def
-		= analyze_and_compute_bitop_with_inv_effect (loop,
-							     phidef, niter)))
+      else if (integer_zerop (niter_desc.may_be_zero)
+	       && (bitinv_def
+		   = analyze_and_compute_bitop_with_inv_effect (loop,
+								phidef,
+								niter)))
 	def = bitinv_def;
 
       /* Handle bitwise induction expression.
