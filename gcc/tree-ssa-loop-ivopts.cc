@@ -6111,9 +6111,7 @@ ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
 	   + target_spill_cost [speed] * (n_cands - available_regs) * 2
 	   + target_spill_cost [speed] * (regs_needed - n_cands);
 
-  /* Finally, add the number of candidates, so that we prefer eliminating
-     induction variables if possible.  */
-  return cost + n_cands;
+  return cost;
 }
 
 /* For each size of the induction variable set determine the penalty.  */
