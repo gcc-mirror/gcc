@@ -58,6 +58,10 @@
   UNSPEC_ATOMIC
   UNSPEC_CMPXCHG
   UNSPEC_XCHG
+
+  ;; Stack protector
+  UNSPEC_SSP_SET
+  UNSPEC_SSP_TEST
 ])
 
 ;; UNSPEC_VOLATILE:
@@ -3679,6 +3683,71 @@
   ""
   "call_pal 0x81"
   [(set_attr "type" "callpal")])
+
+;; Stack protector.  The canary is read from __stack_chk_guard, whose
+;; address is not a valid memory address on its own, so legitimize it
+;; here; only the address, never the canary value itself, is allowed to
+;; live in a pseudo.
+
+(define_expand "stack_protect_set"
+  [(match_operand:DI 0 "memory_operand")
+   (match_operand:DI 1 "memory_operand")]
+  ""
+{
+  if (!memory_operand (operands[1], DImode))
+    operands[1] = replace_equiv_address (operands[1],
+					 copy_addr_to_reg (XEXP (operands[1],
+								 0)));
+  emit_insn (gen_stack_protect_setdi (operands[0], operands[1]));
+  DONE;
+})
+
+;; DO NOT SPLIT THIS PATTERN.  It is important for security reasons that
+;; the canary value does not live beyond the life of this sequence.
+(define_insn "stack_protect_setdi"
+  [(set (match_operand:DI 0 "memory_operand" "=m")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")]
+		   UNSPEC_SSP_SET))
+   (set (match_scratch:DI 2 "=&r") (const_int 0))]
+  ""
+  "ldq %2,%1\;stq %2,%0\;bis $31,$31,%2"
+  [(set_attr "type" "multi")
+   (set_attr "length" "12")])
+
+(define_expand "stack_protect_test"
+  [(match_operand:DI 0 "memory_operand")
+   (match_operand:DI 1 "memory_operand")
+   (match_operand 2)]
+  ""
+{
+  rtx res, ops[4];
+
+  if (!memory_operand (operands[1], DImode))
+    operands[1] = replace_equiv_address (operands[1],
+					 copy_addr_to_reg (XEXP (operands[1],
+								 0)));
+  res = gen_reg_rtx (DImode);
+  emit_insn (gen_stack_protect_testdi (res, operands[0], operands[1]));
+
+  ops[0] = gen_rtx_EQ (VOIDmode, res, const0_rtx);
+  ops[1] = res;
+  ops[2] = const0_rtx;
+  ops[3] = operands[2];
+  alpha_emit_conditional_branch (ops, DImode);
+  DONE;
+})
+
+;; DO NOT SPLIT THIS PATTERN, as above.
+(define_insn "stack_protect_testdi"
+  [(set (match_operand:DI 0 "register_operand" "=&r")
+	(unspec:DI [(match_operand:DI 1 "memory_operand" "m")
+		    (match_operand:DI 2 "memory_operand" "m")]
+		   UNSPEC_SSP_TEST))
+   (clobber (match_scratch:DI 3 "=&r"))]
+  ""
+  "ldq %0,%1\;ldq %3,%2\;xor %0,%3,%0\;bis $31,$31,%3"
+  [(set_attr "type" "multi")
+   (set_attr "length" "16")])
 
 ;; For userland, we load the thread pointer from the TCB.
 ;; For the kernel, we load the per-cpu private value.
