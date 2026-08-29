@@ -1,5 +1,6 @@
 /* { dg-additional-options -O2 } */
 /* { dg-additional-options -fdump-tree-optimized } */
+/* { dg-require-effective-target int32plus } */
 
 /* Code taken from Perlbench */
 
