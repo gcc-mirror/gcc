@@ -18,4 +18,4 @@ int main() {
     __builtin_abort ();
 }
 
-/* { dg-final { scan-assembler-times "vcpop.m" 2 } } */
+/* { dg-final { scan-assembler-times "vcpop.m" 1 } } */
