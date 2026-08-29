@@ -207,6 +207,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "tree-cfgcleanup.h"
 #include "tree-ssa.h"
+#include "gimple-match.h"
 
 const int ignore_edge_flags = EDGE_DFS_BACK | EDGE_EXECUTABLE;
 
@@ -1320,25 +1321,15 @@ merge_stmts_p (gimple *stmt1, gimple *stmt2)
 
   if (is_gimple_call (stmt1)
       && gimple_call_internal_p (stmt1))
-    switch (gimple_call_internal_fn (stmt1))
-      {
-      case IFN_UBSAN_NULL:
-      case IFN_UBSAN_BOUNDS:
-      case IFN_UBSAN_VPTR:
-      case IFN_UBSAN_CHECK_ADD:
-      case IFN_UBSAN_CHECK_SUB:
-      case IFN_UBSAN_CHECK_MUL:
-      case IFN_UBSAN_OBJECT_SIZE:
-      case IFN_UBSAN_PTR:
-      case IFN_ASAN_CHECK:
-	/* For these internal functions, gimple_location is an implicit
-	   parameter, which will be used explicitly after expansion.
-	   Merging these statements may cause confusing line numbers in
-	   sanitizer messages.  */
-	return gimple_location (stmt1) == gimple_location (stmt2);
-      default:
-	break;
-      }
+    {
+      location_t locs[2];
+      locs[0] = gimple_location (stmt1);
+      locs[1] = gimple_location (stmt2);
+
+      if (!factor_operation_ok (gimple_call_internal_fn (stmt1),
+				-2, nullptr, locs, 2, true, true))
+	return false;
+    }
 
   return true;
 }

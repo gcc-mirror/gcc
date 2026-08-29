@@ -2226,29 +2226,13 @@ again:
   if (opnum == -1)
     return;
 
-  /* BIT_FIELD_REF and BIT_INSERT_EXPR can't be factored out for non-0 operands
-     as the other operands require constants. */
-  if ((arg1_op.code == BIT_FIELD_REF
-       || arg1_op.code == BIT_INSERT_EXPR)
-      && opnum != 0)
+  tree args[2] = { new_arg0, new_arg1 };
+  location_t locs[2];
+  locs[0] = gimple_location (arg0_def_stmt);
+  locs[1] = gimple_location (arg1_def_stmt);
+  if (!factor_operation_ok (arg1_op.code, opnum, args, locs, 2, true, true))
     return;
 
-  /* It is not profitability to factor out vec_perm with
-     constant masks (operand 2).  The target might not support it
-     and that might be invalid to do as such. Also with constants
-     masks, the number of elements of the mask type does not need
-     to match the number of elements of other operands and can be
-     arbitrary integral vector type so factoring that out can't work.
-     Note in the case where one mask is a constant and the other is not,
-     the next check for compatible types will reject the case the
-     constant mask has the incompatible type.  */
-  if (arg1_op.code == VEC_PERM_EXPR && opnum == 2
-      && TREE_CODE (new_arg0) == VECTOR_CST
-      && TREE_CODE (new_arg1) == VECTOR_CST)
-    return;
-
-  if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
-    return;
   tree new_res = make_ssa_name (TREE_TYPE (new_arg0), NULL);
 
   /* Create the operation stmt if possible and insert it.  */

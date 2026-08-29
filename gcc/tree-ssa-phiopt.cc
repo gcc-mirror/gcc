@@ -430,44 +430,11 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
 				 arg1_op.ops, arg1_op.num_ops))
 	return false;
 
-      /* If this was a division and the operand is the divisor
-	 and either divisor was a constant, don't factor out
-	 the division; dividing by an explicit constant can be
-	 expanded better than without an constant.
-	 FIXME: maybe isel could undo this case.  */
-      if (int_divide_or_mod_p (arg1_op.code)
-	  && opnum == 1
-	  && (poly_int_tree_p (new_arg0)
-	      || poly_int_tree_p (new_arg1)))
-	return false;
-
-      /* For early phiopt, don't factor out constants for pointer plus.
-	 BOS pass does not like that factoring.  */
-      if (early_p && arg1_op.code == POINTER_PLUS_EXPR
-	  && opnum == 1
-	  && TREE_CODE (new_arg0) != SSA_NAME
-	  && TREE_CODE (new_arg1) != SSA_NAME)
-	return false;
-
-      /* BIT_FIELD_REF and BIT_INSERT_EXPR can't be factored out for non-0 operands
-	 as the other operands require constants. */
-      if ((arg1_op.code == BIT_FIELD_REF
-	   || arg1_op.code == BIT_INSERT_EXPR)
-	  && opnum != 0)
-	return false;
-
-      /* It is not profitability to factor out vec_perm with
-	 constant masks (operand 2).  The target might not support it
-	 and that might be invalid to do as such. Also with constants
-	 masks, the number of elements of the mask type does not need
-	 to match the number of elements of other operands and can be
-	 arbitrary integral vector type so factoring that out can't work.
-	 Note in the case where one mask is a constant and the other is not,
-	 the check for compatible types will reject the case the
-	 constant mask has the incompatible type.  */
-      if (arg1_op.code == VEC_PERM_EXPR && opnum == 2
-	  && TREE_CODE (new_arg0) == VECTOR_CST
-	  && TREE_CODE (new_arg1) == VECTOR_CST)
+      tree args[2] = { new_arg0, new_arg1 };
+      location_t locs[2];
+      locs[0] = gimple_location (arg0_def_stmt);
+      locs[1] = gimple_location (arg1_def_stmt);
+      if (!factor_operation_ok (arg1_op.code, opnum, args, locs, 2, false, !early_p))
 	return false;
 
       if (gimple_has_location (arg1_def_stmt))
@@ -574,10 +541,6 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       if (gimple_has_location (arg0_def_stmt))
 	locus = gimple_location (arg0_def_stmt);
     }
-
-  /* If types of new_arg0 and new_arg1 are different bailout.  */
-  if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
-    return false;
 
   /* Create a new PHI stmt.  */
   result = gimple_phi_result (phi);

@@ -429,5 +429,8 @@ internal_fn get_conditional_internal_fn (code_helper, tree);
 int find_different_opnum (const gimple_match_op &arg0_op,
 			  const gimple_match_op &arg1_op,
 			  tree *new_arg0, tree *new_arg1);
+bool factor_operation_ok (code_helper code, int opnum,
+			  tree *args, location_t *locs, size_t numargs,
+			  bool divconstok, bool ptrplusconstok);
 
 #endif  /* GCC_GIMPLE_MATCH_H */
