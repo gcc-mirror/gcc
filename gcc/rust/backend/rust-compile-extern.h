@@ -171,10 +171,9 @@ public:
 	      function.get_locus ());
 	    break;
 	  case LlvmBuiltinAdapter::FORWARD_ARGUMENTS:
-	    // TODO placeholder
-	    adapter_tree = compile_x86_output_pointer_adapter (
-	      ctx, fntype, resolved, OutputTupleOrder::STATUS_VALUE,
-	      function.get_locus ());
+	    adapter_tree
+	      = compile_x86_forwarding_adapter (ctx, fntype, resolved,
+						function.get_locus ());
 	    break;
 	  }
 
@@ -262,7 +261,7 @@ private:
    * @param order whether the LLVM built-in returns (value, status) or (status,
    * value)
    * @param locus
-   * @return tree
+   * @return tree the resultant wrapper function
    */
   static tree compile_x86_output_pointer_adapter (Context *ctx,
 						  TyTy::FnType *fntype,
@@ -386,6 +385,85 @@ private:
     ctx->add_statement (
       Backend::return_statement (fndecl, tuple_result, locus));
 
+    tree body = ctx->pop_block ();
+    DECL_SAVED_TREE (fndecl) = body;
+
+    ctx->push_function (fndecl);
+    return fndecl;
+  }
+
+  /**
+   * Compiles a 1-to-1 wrapper for LLVM built-ins that wraps around GCC
+   * built-ins.
+   *
+   * @param ctx
+   * @param fntype the LLVM built-in function type
+   * @param gcc_builtin the GCC built-in function
+   * @param locus
+   * @return tree the resultant wrapper function
+   */
+  static tree compile_x86_forwarding_adapter (Context *ctx,
+					      TyTy::FnType *fntype,
+					      tree gcc_builtin,
+					      location_t locus)
+  {
+    tree compiled_fn_type = TyTyResolveCompile::compile (ctx, fntype);
+
+    const auto &path = fntype->get_ident ().path;
+    std::string ir_name = path.get () + fntype->subst_as_string ();
+    std::string asm_name = ctx->mangle_item (fntype, path);
+
+    // start building the wrapper function
+    tree fndecl
+      = Backend::function (compiled_fn_type, ir_name, asm_name, 0, locus);
+
+    TREE_PUBLIC (fndecl) = 0;
+    DECL_ARTIFICIAL (fndecl) = 1;
+    DECL_EXTERNAL (fndecl) = 0;
+    DECL_DECLARED_INLINE_P (fndecl) = 1;
+
+    // compile params for the rust wrapper
+    std::vector<Bvariable *> param_vars;
+    param_vars.reserve (fntype->get_params ().size ());
+    for (auto &param : fntype->get_params ())
+      {
+	auto &pattern = param.get_pattern ();
+	tree type = TyTyResolveCompile::compile (ctx, param.get_type ());
+	Bvariable *variable
+	  = CompileFnParam::compile (ctx, fndecl, pattern, type,
+				     pattern.get_locus ());
+	param_vars.emplace_back (variable);
+      }
+
+    if (!Backend::function_set_parameters (fndecl, param_vars))
+      return error_mark_node;
+
+    // forward the rust params, convert each into the corresponding gcc
+    // built-in param type
+    std::vector<tree> call_arguments;
+    call_arguments.reserve (param_vars.size ());
+    tree gcc_argument_types = TYPE_ARG_TYPES (TREE_TYPE (gcc_builtin));
+    for (Bvariable *param : param_vars)
+      {
+	tree argument = param->get_tree (locus);
+	tree expected_type = TREE_VALUE (gcc_argument_types);
+	argument = Backend::convert_expression (expected_type, argument, locus);
+	call_arguments.emplace_back (argument);
+	gcc_argument_types = TREE_CHAIN (gcc_argument_types);
+      }
+
+    tree builtin_call
+      = build_call_expr_loc_array (locus, gcc_builtin,
+				   static_cast<int> (call_arguments.size ()),
+				   call_arguments.data ());
+    tree wrapper_ret_type = TREE_TYPE (DECL_RESULT (fndecl));
+
+    builtin_call
+      = Backend::convert_expression (wrapper_ret_type, builtin_call, locus);
+    tree block = Backend::block (fndecl, NULL_TREE, {}, locus, locus);
+    ctx->push_block (block);
+    ctx->add_statement (
+      Backend::return_statement (fndecl, builtin_call, locus));
     tree body = ctx->pop_block ();
     DECL_SAVED_TREE (fndecl) = body;
 

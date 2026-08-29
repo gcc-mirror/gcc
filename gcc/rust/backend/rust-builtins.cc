@@ -416,7 +416,17 @@ BuiltinsContext::register_llvm_to_gcc_builtin ()
      {"__builtin_ia32_addcarryx_u64", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
     {"llvm.x86.subborrow.64",
      {"__builtin_ia32_sbb_u64",
-      LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE}}};
+      LlvmBuiltinAdapter::OUTPUT_POINTER_STATUS_VALUE}},
+
+    {"llvm.x86.vcvtph2ps.128",
+     {"__builtin_ia32_vcvtph2ps", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
+    {"llvm.x86.vcvtph2ps.256",
+     {"__builtin_ia32_vcvtph2ps256", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
+    {"llvm.x86.vcvtps2ph.128",
+     {"__builtin_ia32_vcvtps2ph", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
+    {"llvm.x86.vcvtps2ph.256",
+     {"__builtin_ia32_vcvtps2ph256", LlvmBuiltinAdapter::FORWARD_ARGUMENTS}},
+  };
 }
 
 void

@@ -19,17 +19,19 @@ extern "unadjusted" {
 
     #[link_name = "llvm.x86.addcarry.32"]
     fn llvm_addcarry_u32(a: u8, b: u32, c: u32) -> (u8, u32);
-    // #[link_name = "llvm.x86.addcarryx.u32"]
-    // fn llvm_addcarryx_u32(a: u8, b: u32, c: u32, d: *mut u8) -> u8;
+    #[link_name = "llvm.x86.addcarryx.u32"]
+    fn llvm_addcarryx_u32(a: u8, b: u32, c: u32, d: *mut u8) -> u8;
     #[link_name = "llvm.x86.subborrow.32"]
     fn llvm_subborrow_u32(a: u8, b: u32, c: u32) -> (u8, u32);
     #[link_name = "llvm.x86.addcarry.64"]
     fn llvm_addcarry_u64(a: u8, b: u64, c: u64) -> (u8, u64);
-    // #[link_name = "llvm.x86.addcarryx.u64"]
-    // fn llvm_addcarryx_u64(a: u8, b: u64, c: u64, d: *mut u8) -> u8;
+    #[link_name = "llvm.x86.addcarryx.u64"]
+    fn llvm_addcarryx_u64(a: u8, b: u64, c: u64, d: *mut u8) -> u8;
     #[link_name = "llvm.x86.subborrow.64"]
     fn llvm_subborrow_u64(a: u8, b: u64, c: u64) -> (u8, u64);
 
+    // TODO implement the SIMD types (i16x8, f32x4, f32x8) before
+    // enabling these tests
     // #[link_name = "llvm.x86.vcvtph2ps.128"]
     // fn llvm_vcvtph2ps_128(a: i16x8) -> f32x4;
     // #[link_name = "llvm.x86.vcvtph2ps.256"]
