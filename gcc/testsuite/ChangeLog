@@ -1,3 +1,97 @@
+2026-08-28  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Specify
+	_DARWIN_C_SOURCE.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Likewise.
+	* c-c++-common/analyzer/strndup-1.c: Likewise.
+
+2026-08-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* gcc.target/aarch64/sve/vec-reduc-dup-1.c: New test.
+	* gcc.target/aarch64/sve/vec-reduc-pattern-1.c: New test.
+	* gcc.target/aarch64/sve/vec-reduc-snan-1.c: New test.
+	* gcc.target/aarch64/sve/vec-reduc-uniform-1.c: New test.
+	* gcc.target/riscv/rvv/base/reduc-xor-uniform-1.c: New test.
+
+2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127105
+	* gcc.dg/vect/vect-pr127105.c: New testcase.
+
+2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pattern-2.c: Adjust.
+	* gcc.target/i386/pr45685.c: Likewise.
+
+2026-08-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127082
+	* gcc.dg/pr127082.c: New.
+
+2026-08-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-53.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-54.c: New test.
+
+2026-08-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-mf8.c: New test.
+
+2026-08-28  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-mf8.c: New test.
+
+2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/125645
+	* g++.dg/contracts/cpp26/fold-pr125645.C: New test.
+
+2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/125011
+	* g++.dg/contracts/cpp26/template-post-pr125011.C: New test.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p7-t1.C: Expect
+	additional error.
+	* g++.dg/contracts/cpp26/dcl.contract.func.p7-t2.C: Likewise.
+
+2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	PR c++/125712
+	* g++.dg/contracts/cpp26/specialization-pr125712.C: New test.
+
 2026-08-27  Jason Merrill  <jason@redhat.com>
 
 	* g++.dg/contracts/cpp26/contracts-class1.C: Fix test.

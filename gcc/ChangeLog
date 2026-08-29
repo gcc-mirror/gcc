@@ -1,3 +1,55 @@
+2026-08-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* fold-const-call.cc (fold_const_reduction): Fold non-stepped constants
+	when the available lane-count information determines the result.
+	* match.pd (reduction of a vector duplicate): New simplifications to
+	the duplicated element or zero.
+
+2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127105
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Access
+	scalar_stmts[0] only after we determined it exists.
+
+2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (ftree-loop-if-convert): Mark as ignored.
+	* doc/invoke.texi (ftree-loop-if-convert): Remove.
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement):
+	Do not check !flag_tree_loop_if_convert.
+	* tree-if-conv.cc (pass_if_conversion::gate): Only
+	run when loop vectorization is enabled on any loop.
+	(pass_if_conversion::execute): Adjust.
+	(tree_if_conversion): Likewise.  Simplify as we now
+	always version.
+	(convert_scalar_cond_reduction): Remove loop_versioned
+	argument which is now always true.
+	(predicate_scalar_phi): Likewise.
+	(predicate_all_scalar_phis): Likewise.
+	(combine_blocks): Likewise.
+
+2026-08-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-operands.cc (operands_scanner::verify_ssa_operands):
+	Verify there are no operands that need renaming.
+
+2026-08-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127094
+	* gimple-range-phi.cc (phi_analyzer::process_phi): Do not process
+	the same name multiple times.
+
+2026-08-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127082
+	* range-op.cc (operator_trunc_mod::same_quotient): New.
+	(operator_trunc_mod::wi_fold): Call same_quotient.
+
+2026-08-28  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-08-27  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
 
 	PR target/102055

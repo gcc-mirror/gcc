@@ -1,3 +1,26 @@
+2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/125645
+	* cp-tree.h (PACK_INDEX_PARENTHESIZED_P): Fix incorrect
+	documentation in usage.
+	* name-lookup.h (enum scope_kind): Move sk_contract before
+	sk_function_parms.
+	* pt.cc (make_pack_expansion): Use local_bindings_p.
+
+2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/125011
+	* contracts.cc (rebuild_postconditions): Skip if
+	processing_template_decl.
+
+2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	PR c++/125712
+	* pt.cc (regenerate_decl_from_template): Regenerate contracts
+	from the current code pattern.
+
 2026-08-27  Wang Jinghao  <zheng.xianyuwang@gmail.com>
 
 	PR c++/125537

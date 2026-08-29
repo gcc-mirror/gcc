@@ -1,3 +1,66 @@
+2026-08-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (conv_null_actual): Remove dummy symbol intent
+	attribute modification.  Move the three times repeated descriptor
+	initialization...
+	* trans-descriptor.cc (gfc_create_null_actual_descriptor): ...
+	here as a new function and inline the call to
+	gfc_conv_scalar_to_descriptor.  Remove the inapplicable or
+	redundant parts from the inlined code.  Create lower and upper
+	bounds arrays and clear them before passing to the type creation
+	function.
+	* trans-descriptor.h (gfc_create_null_actual_descriptor): New
+	declaration.
+
+2026-08-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (fcncall_realloc_result): Move descriptor
+	creation and initialization...
+	* trans-descriptor.cc
+	(gfc_create_unallocated_library_result_descriptor): ... here as a
+	new function.
+	* trans-descriptor.h
+	(gfc_create_unallocated_library_result_descriptor): New declaration.
+
+2026-08-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-array.cc (gfc_trans_deferred_array): Move default descriptor
+	initialization...
+	* trans-descriptor.cc (gfc_init_descriptor_variable): ... here
+	as a new function.
+	* trans-descriptor.h (gfc_init_descriptor_variable): New
+	declaration.
+
+2026-08-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (gfc_conv_derived_to_class): Move absent array
+	descriptor initialization ...
+	* trans-descriptor.cc (gfc_init_absent_descriptor): ... here as a
+	new function.
+	* trans-descriptor.h (gfc_init_absent_descriptor): New declaration.
+
+2026-08-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-decl.cc (gfc_trans_deferred_vars): Move result array
+	descriptor default initialization ...
+	* trans-descriptor.cc (gfc_init_descriptor_result): ... here as
+	a new function.
+	* trans-descriptor.h (gfc_init_descriptor_result): New declaration.
+
+2026-08-28  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (gfc_trans_pointer_assignment): Move pointer
+	nullification generation ...
+	* trans-descriptor.cc (gfc_nullify_descriptor): ... here as a new
+	function.
+	* trans-descriptor.h (gfc_nullify_descriptor): New declaration.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt (Wargument-mismatch): Use 2 spaces instead of 1 between

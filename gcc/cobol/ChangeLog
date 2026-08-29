@@ -1,5 +1,31 @@
 2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
 
+	PR cobol/126612
+	PR cobol/126614
+	* cdf.y: Add TRACE syntax.
+	* parse.y: Add ACCEPT ... WITH grammar.
+	* scan_post.h (is_cdf_token): Add trace tokens.
+
+2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Add MfRedefinesTable.
+	* cobol1.cc (cobol_langhook_handle_option): Handle Wredefines-table.
+	* gcobol.1: Document Wredefines-table.
+	* lang-specs.h: Add Wredefines-table to spec string.
+	* lang.opt: Define Wredefines-table.
+	* messages.cc: Add Wredefines-table to -dialect mf.
+	* parse_ante.h (valid_redefine): Honor new diagnostic.
+
+2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* scan.l: Add VALUE to fd_state Start Condition.
+
+2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* scan.l: Ubiquitous LENGTH OF patterns.
+
+2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
+
 	* cbldiag.h (enum cbl_diag_id_t): Introduce MfDisplayScreen.
 	* cdf.y: Renumber tokens.
 	* cobol1.cc (cobol_langhook_handle_option): Handle Wdisplay_screen.
