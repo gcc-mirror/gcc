@@ -1099,7 +1099,7 @@ public:
   static const uint8_t FNTYPE_DEFAULT_FLAGS = 0x00;
   static const uint8_t FNTYPE_IS_METHOD_FLAG = 0x01;
   static const uint8_t FNTYPE_IS_EXTERN_FLAG = 0x02;
-  static const uint8_t FNTYPE_IS_VARADIC_FLAG = 0X04;
+  static const uint8_t FNTYPE_IS_VARIADIC_FLAG = 0X04;
   static const uint8_t FNTYPE_IS_SYN_CONST_FLAG = 0X08;
 
   FnType (HirId ref, DefId id, std::string identifier, RustIdent ident,
@@ -1160,7 +1160,7 @@ public:
 
   bool is_extern () const { return (flags & FNTYPE_IS_EXTERN_FLAG) != 0; }
 
-  bool is_variadic () const { return (flags & FNTYPE_IS_VARADIC_FLAG) != 0; }
+  bool is_variadic () const { return (flags & FNTYPE_IS_VARIADIC_FLAG) != 0; }
 
   bool is_syn_constant () const
   {

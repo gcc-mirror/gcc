@@ -134,7 +134,7 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
   uint8_t flags = TyTy::FnType::FNTYPE_IS_EXTERN_FLAG;
   if (function.is_variadic ())
     {
-      flags |= TyTy::FnType::FNTYPE_IS_VARADIC_FLAG;
+      flags |= TyTy::FnType::FNTYPE_IS_VARIADIC_FLAG;
       if (parent.get_abi () != Rust::ABI::C)
 	{
 	  rust_error_at (
