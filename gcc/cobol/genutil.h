@@ -48,7 +48,7 @@ extern tree var_decl_exception_section;      // const char *__gg__exception_sect
 extern tree var_decl_exception_paragraph;    // const char *__gg__exception_paragraph;
 
 extern tree var_decl_default_compute_error;  // int         __gg__default_compute_error;
-extern tree var_decl_rdigits;                // int         __gg__rdigits;
+extern tree var_decl_fracdigits;             // int         __gg__fracdigits;
 extern tree var_decl_unique_prog_id;         // size_t      __gg__unique_prog_id;
 
 extern tree var_decl_exit_address;           // This is for implementing pseudo_return_pop
@@ -70,7 +70,7 @@ tree      get_data_address( cbl_field_t *field,
                             tree         offset);
 
 FIXED_WIDE_INT(128) get_power_of_ten(int n);
-void      scale_by_power_of_ten_N(tree value,
+void      scale_by_power_of_ten_N(tree &value,
                                 int N,
                                 bool check_for_fractional = false);
 // cppcheck-suppress unknownMacro
@@ -95,8 +95,6 @@ tree      gg_array_of_uchar_p( const std::vector<tree> &uchar_p );
 void      parser_display_internal_field(tree file_descriptor,
                                         cbl_field_t *field,
                                         bool advance=DISPLAY_NO_ADVANCE);
-char     *get_literal_string(cbl_field_t *field);
-
 bool      refer_is_clean(const cbl_refer_t &refer);
 bool      field_is_super_clean(const cbl_field_t *field);
 bool      refer_is_super_clean(const cbl_refer_t &refer);
@@ -114,7 +112,7 @@ tree      build_array_of_referlets( size_t N,
 
 tree      build_array_of_refers(size_t N,
                                 cbl_refer_t *refers);
-void      get_depending_on_value_from_odo(tree retval, cbl_field_t *odo);
+tree      get_depending_on_value_from_odo(cbl_field_t *odo);
 uint64_t  get_time_nanoseconds();
 
 bool      is_pure_integer(const cbl_field_t *field);
@@ -122,27 +120,13 @@ bool      is_pure_integer(const cbl_field_t *field);
 tree      tree_type_from_field(const cbl_field_t *field);
 tree      tree_type_from_refer(const cbl_refer_t &refer);
 
-void      get_binary_value(tree &value,
-                     const cbl_field_t *field,
-                           tree type = NULL_TREE);
+tree      get_binary_value(const cbl_field_t *field, tree type);
+tree      get_binary_value(const cbl_refer_t &refer, tree type);
 
-void      get_binary_value(tree &value,
-                     const cbl_refer_t &refer,
-                           tree type = NULL_TREE);
+tree      get_location(const cbl_field_t *field);
+tree      get_location(const cbl_refer_t &refer);
 
-void      get_location(tree &retval, const cbl_field_t *field);
-void      get_location(tree &retval, const cbl_refer_t &refer);
-
-void      safe_cast(tree &target,         // A defined variable.
-                    tree source_location, // A pointer, usually UCHAR_P.
-                    tree source_type);    // The variable type pointed to by
-                                          // source_location.
-void      safe_cast(tree &target,         // A defined variable.
-                    const cbl_field_t *field);
-void      safe_cast(tree &target,         // A defined variable.
-                    const cbl_refer_t &refer);
-
-void      get_length(tree &retval, const cbl_refer_t &refer);
+tree      get_length(const cbl_refer_t &refer);
 
 void treeplet_fill_source(TREEPLET &treeplet, const cbl_refer_t &refer);
 
@@ -156,5 +140,12 @@ void safe_assign(tree target, // A defined variable.
            const cbl_field_t *field);
 void safe_assign(tree target, // A defined variable.
            const cbl_refer_t &refer);
+
+tree safe_load(tree source_location,
+               tree source_type);
+
+void safe_store(tree dest_location,
+                tree dest_type,
+                tree value);
 
 #endif

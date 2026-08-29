@@ -172,10 +172,9 @@ digiter(int &digits, int &rdigits, const cbl_refer_t &refer)
     if( rdigits < 0 )
       {
       // This is like 999PPPP with rdigits = -4
-      // So, digits becomes 7, and rdigits becomes 0
+      // So, digits evntually becomes 7, and rdigits becomes 0
       // Our caller will have to multiply by 10^4 to get the 999 digits into
       // the right place.
-      digits += rdigits;
       rdigits = 0;
       }
     else
@@ -189,41 +188,64 @@ digiter(int &digits, int &rdigits, const cbl_refer_t &refer)
 static int
 total_digits(int &left_rdigits,
              int &right_rdigits,
+             int &left_discard,
+             int &right_discard,
              const cbl_refer_t &left_side,
              const cbl_refer_t &right_side)
   {
-  // This routine is called when neither parameter is intermediate_e, and thus
-  // we can use the compile-time values:
-  int left_digits=0;
-  int right_digits=0;
-  digiter(left_digits,  left_rdigits,  left_side);
+  int left_digits = 0;
+  int right_digits = 0;
+
+  left_discard = 0;
+  right_discard = 0;
+
+  digiter(left_digits, left_rdigits, left_side);
   digiter(right_digits, right_rdigits, right_side);
 
-  if( (left_side.field->attr & scaled_e) && left_side.field->data.rdigits < 0)
+  if(    (left_side.field->attr & scaled_e)
+      && left_side.field->data.rdigits < 0 )
     {
     right_rdigits -= left_side.field->data.rdigits;
     }
-  if( (right_side.field->attr & scaled_e) && right_side.field->data.rdigits < 0)
+
+  if(    (right_side.field->attr & scaled_e)
+      && right_side.field->data.rdigits < 0 )
     {
     left_rdigits -= right_side.field->data.rdigits;
     }
 
-  // We can reduce the two rdigits values by the common portion of both:
   int excess_digits = std::min(left_rdigits, right_rdigits);
 
   left_rdigits  -= excess_digits;
   right_rdigits -= excess_digits;
 
-  // And now we can scale up both left_digits and right_digits by the rdigits
-  // of the other side.  Keep in mind that at this point, one of them is
-  // zero:
-
   left_digits  += right_rdigits;
   right_digits += left_rdigits;
 
-  // Our return value is the larger of those two numbers:
-  int retval = std::max(left_digits, right_digits);
-  return retval;
+  int ntotal_digits = std::max(left_digits, right_digits);
+  int too_much = ntotal_digits - MAX_INT128_DIGITS;
+
+  if( too_much > 0 )
+    {
+    gcc_assert(left_rdigits || right_rdigits);
+
+    if( left_rdigits )
+      {
+      gcc_assert(too_much <= left_rdigits);
+      left_rdigits -= too_much;
+      left_discard = too_much;
+      }
+    else
+      {
+      gcc_assert(too_much <= right_rdigits);
+      right_rdigits -= too_much;
+      right_discard = too_much;
+      }
+
+    ntotal_digits = MAX_INT128_DIGITS;
+    }
+
+  return ntotal_digits;
   }
 
 static void
@@ -320,6 +342,14 @@ total_digits_tree( tree &left_rdigits,
 static tree
 type_based_on_digits(int digits, bool signable)
   {
+  /* When working one's way through this code, it is useful to know that the
+     underlying design assumptions are:
+
+     Supported targets are LP64.
+     Values entering the 128-bit comparison path fit in signed INT128.
+     Intermediate rdigits is nonnegative.
+     intermediate_e and scaled_e are mutually exclusive.  */
+
   tree retval;
   if( signable )
     {
@@ -403,109 +433,104 @@ numeric_compare(tree        &left,
     {
     int left_rdigits;
     int right_rdigits;
+    int left_discard;
+    int right_discard;
     int ntotal_digits = total_digits( left_rdigits,
                                       right_rdigits,
+                                      left_discard,
+                                      right_discard,
                                       left_side,
                                       right_side);
-    if( ntotal_digits <= MAX_INT128_DIGITS )
+    gcc_assert( ntotal_digits <= MAX_INT128_DIGITS );
+    if( left_discard )
       {
-      // Our interest is comparison, so we need both left and right to be
-      // big enough to hold ntotal_digits, and we need both to be the same
-      // class of signable.  If signables don't match, we use unsigned, and
-      // we check later for a high-order bit to be on.
-      bool mismatched =    (left_side.field->attr  & signable_e)
-                        != (right_side.field->attr & signable_e) ;
+      scale_by_power_of_ten_N(left, -left_discard);
+      }
 
-      bool are_signed = mismatched || (left_side.field->attr  & signable_e) ;
-      tree type = type_based_on_digits(ntotal_digits, are_signed);
+    if( right_discard )
+      {
+      scale_by_power_of_ten_N(right, -right_discard);
+      }
 
-      get_binary_value(left, left_side, type);
-      get_binary_value(right, right_side, type);
-      // We have two good binary values, and they are the same size.
+    // Our interest is in comparison.  So, we need the two values to be
+    // of the same type.  This is complicated by the problem of comparing
+    // a signed value to an unsigned value.  To be sure of doing that, we
+    // convert both the signed and unsigned values to be signed values of a
+    // larger type.
 
-      // If they were mismatched in signable, they were both assigned to
-      // signed types.  We need to check to see if the one that is
-      // signable was negative.  If so, we return 0 and 1 so that the
-      // test comes out right.
+    bool mismatched =    (left_side.field->attr  & signable_e)
+                      != (right_side.field->attr & signable_e) ;
 
-      if(     (left_side.field->attr  & signable_e)
-          && !(right_side.field->attr & signable_e) )
+    bool are_signed = mismatched || (left_side.field->attr  & signable_e) ;
+    tree type = type_based_on_digits(ntotal_digits, are_signed);
+
+    if( mismatched )
+      {
+      switch( gg_sizeof(type) )
         {
-        tree signable_type = type_based_on_digits(ntotal_digits, true);
-        IF( gg_cast(signable_type, left),
-            lt_op,
-            gg_cast(signable_type, integer_zero_node) )
-          {
-          gg_assign(left,  gg_cast(type, integer_zero_node));
-          gg_assign(right, gg_cast(type, integer_one_node));
-          }
-        ELSE
-          {
-          }
-        ENDIF
+        case 1:
+          type = SHORT;
+          break;
+        case 2:
+          type = INT;
+          break;
+        case 4:
+          type = LONG;
+          break;
+        default:
+          type = INT128;
+          break;
         }
-      else if(   !(left_side.field->attr  & signable_e)
-              &&  (right_side.field->attr & signable_e) )
-        {
-        tree signable_type = type_based_on_digits(ntotal_digits, true);
-        IF( gg_cast(signable_type, right),
-            lt_op,
-            gg_cast(signable_type, integer_zero_node) )
-          {
-          gg_assign(left,  gg_cast(type, integer_one_node));
-          gg_assign(right, gg_cast(type, integer_zero_node));
-          }
-        ELSE
-          {
-          }
-        ENDIF
-        }
-      // If left_rdigits and right_rdigits are different, then one of the
-      // values needs to be scaled by the other's rdigits:
+      }
 
-      static uint64_t powt[] =
-        {
-        1UL,                       // 00
-        10UL,                      // 01
-        100UL,                     // 02
-        1000UL,                    // 03
-        10000UL,                   // 04
-        100000UL,                  // 05
-        1000000UL,                 // 06
-        10000000UL,                // 07
-        100000000UL,               // 08
-        1000000000UL,              // 09
-        10000000000UL,             // 10
-        100000000000UL,            // 11
-        1000000000000UL,           // 12
-        10000000000000UL,          // 13
-        100000000000000UL,         // 14
-        1000000000000000UL,        // 15
-        10000000000000000UL,       // 16
-        };
+    left  = get_binary_value(left_side, type);
+    right = get_binary_value(right_side, type);
 
-      while(left_rdigits)
-        {
-        // We need to multiply right by 10^left_rdigits
-        int next = std::min(left_rdigits, 16);
-        left_rdigits -= next;
-        gg_assign(right,
-                  gg_multiply(right,
-                              gg_cast(type,
-                                      build_int_cst_type(ULONG,
-                                                         powt[next]))));
-        }
-      while(right_rdigits)
-        {
-        // We need to multiply left by 10^right_rdigits
-        int next = std::min(right_rdigits, 9);
-        right_rdigits -= next;
-        gg_assign(left,
-                  gg_multiply(left,
-                              gg_cast(type,
-                                      build_int_cst_type(ULONG,
-                                                         powt[next]))));
-        }
+    // We have two good binary values, and they are the same size.
+
+    // If left_rdigits and right_rdigits are different, then one of the
+    // values needs to be scaled by the other's rdigits:
+
+    static uint64_t powt[] =
+      {
+      1UL,                       // 00
+      10UL,                      // 01
+      100UL,                     // 02
+      1000UL,                    // 03
+      10000UL,                   // 04
+      100000UL,                  // 05
+      1000000UL,                 // 06
+      10000000UL,                // 07
+      100000000UL,               // 08
+      1000000000UL,              // 09
+      10000000000UL,             // 10
+      100000000000UL,            // 11
+      1000000000000UL,           // 12
+      10000000000000UL,          // 13
+      100000000000000UL,         // 14
+      1000000000000000UL,        // 15
+      10000000000000000UL,       // 16
+      };
+
+    while(left_rdigits)
+      {
+      // We need to multiply right by 10^left_rdigits
+      int next = std::min(left_rdigits, 16);
+      left_rdigits -= next;
+      right =   gg_multiply(right,
+                            gg_cast(type,
+                                    build_int_cst_type(ULONG,
+                                                       powt[next])));
+      }
+    while(right_rdigits)
+      {
+      // We need to multiply left by 10^right_rdigits
+      int next = std::min(right_rdigits, 9);
+      right_rdigits -= next;
+      left =    gg_multiply(left,
+                            gg_cast(type,
+                                    build_int_cst_type(ULONG,
+                                                       powt[next])));
       }
     compared = true;
     }
@@ -522,66 +547,26 @@ numeric_compare(tree        &left,
                       left_side,
                       right_side);
 
-    // Our interest is comparison.
+    // Our interest is comparison, so we convert them both to INT128.
     tree type = INT128;
 
-    get_binary_value(left, left_side, type);
-    get_binary_value(right, right_side, type);
+    left  = get_binary_value(left_side, type);
+    right = get_binary_value(right_side, type);
 
     // We have two good binary values, and they are the same size.
 
-    // If they were mismatched in signable, they were both assigned to
-    // signed types.  We need to check to see if the one that is
-    // signable was negative.  If so, we return 0 and 1 so that the
-    // test comes out right.
-
-    if(     (left_side.field->attr  & signable_e)
-        && !(right_side.field->attr & signable_e) )
-      {
-      tree signable_type = INT128;
-      IF( gg_cast(signable_type, left),
-          lt_op,
-          gg_cast(signable_type, integer_zero_node) )
-        {
-        gg_assign(left,  gg_cast(type, integer_zero_node));
-        gg_assign(right, gg_cast(type, integer_one_node));
-        }
-      ELSE
-        {
-        }
-      ENDIF
-      }
-    else if(    !(left_side.field->attr  & signable_e)
-              && (right_side.field->attr & signable_e) )
-      {
-      tree signable_type = INT128;
-      IF( gg_cast(signable_type, right),
-          lt_op,
-          gg_cast(signable_type, integer_zero_node) )
-        {
-        gg_assign(left,  gg_cast(type, integer_one_node));
-        gg_assign(right, gg_cast(type, integer_zero_node));
-        }
-      ELSE
-        {
-        }
-      ENDIF
-      }
-
     // To normalize the positions of decimal points, each number has to be
     // multiplied by the rdigits of the other
-    gg_assign(right,
-              gg_multiply(right,
+    right =   gg_multiply(right,
                           gg_call_expr(INT128,
                                        "__gg__power_of_ten",
                                        left_rdigits,
-                                       NULL_TREE)));
-    gg_assign(left,
-              gg_multiply(left,
+                                       NULL_TREE));
+    left =   gg_multiply(left,
                           gg_call_expr(INT128,
                                        "__gg__power_of_ten",
                                        right_rdigits,
-                                       NULL_TREE)));
+                                       NULL_TREE));
     // The left and right values are ready to be compared
     compared = true;
     }
@@ -599,16 +584,11 @@ alpha_compare_figconst( tree        &left,
   cbl_figconst_t figconst_right
                    = (cbl_figconst_t)(right_side.field->attr & FIGCONST_MASK);
 
-  tree location_left;
-  tree length_left;
-
-  get_location(location_left, left_side);
-  get_length(length_left, left_side);
+  tree location_left = get_location(left_side);
+  tree length_left = get_length(left_side);
 
   const charmap_t *charmap_left =
                        __gg__get_charmap(left_side.field->codeset.encoding);
-////  charmap_t *charmap_right =
-////                       __gg__get_charmap(right_side.field->codeset.encoding);
 
   // We know the result of this mapping has to be an 8-bit value, because
   // all figconsts map to a single byte.  HIGH-VALUE is a bit of a problem,
@@ -623,7 +603,7 @@ alpha_compare_figconst( tree        &left,
     {
     // Comparing an alphanumeric to a figconst
     // We need to convert the char_right to the left's encoding:
-    converted = __gg__iconverter(right_side.field->codeset.encoding,
+    converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                  left_side.field->codeset.encoding,
                                  &char_right,
                                  1,
@@ -638,17 +618,15 @@ alpha_compare_figconst( tree        &left,
                                  right_side.field->data.capacity(),
                                  &nbytes);
     }
-  left  = gg_define_variable(INT);
-  right = gg_define_variable(INT, 0L);
-  gg_call(VOID,
-          "__gg__compare_string_all",
-          gg_get_address_of(left),
-          location_left,
-          length_left,
-          build_int_cst_type(INT, charmap_left->stride()),
-          build_string_literal(nbytes, converted),
-          build_int_cst_type(SIZE_T, nbytes),
-          NULL_TREE);
+  right = integer_zero_node;
+  left = gg_call_expr(INT,
+                      "__gg__compare_string_all",
+                      location_left,
+                      length_left,
+                      build_int_cst_type(INT, charmap_left->stride()),
+                      build_string_literal(nbytes, converted),
+                      build_int_cst_type(SIZE_T, nbytes),
+                      NULL_TREE);
   }
 
 static bool
@@ -763,22 +741,20 @@ alpha_compare(tree        &left,
       {
       // Call the library routine that converts the right side to the left
       // encoding.
-      get_location(location_left, left_side);
-      get_length(length_left, left_side);
-      get_location(location_right, right_side);
-      get_length(length_right, right_side);
-      left  = gg_define_variable(INT);
-      right = gg_define_variable(INT, 0L);
-      gg_call(VOID,
-              "__gg_compare_string_different",
-              gg_get_address_of(left),
-              location_left,
-              length_left,
-              build_int_cst_type(INT, left_side.field->codeset.encoding),
-              location_right,
-              length_right,
-              build_int_cst_type(INT, right_side.field->codeset.encoding),
-              NULL_TREE);
+      location_left = get_location(left_side);
+      length_left   = get_length(left_side);
+      location_right = get_location(right_side);
+      length_right   = get_length(right_side);
+      right = integer_zero_node;
+      left = gg_call_expr(INT,
+                          "__gg_compare_string_different",
+                          location_left,
+                          length_left,
+                          build_int_cst_type(INT, left_side.field->codeset.encoding),
+                          location_right,
+                          length_right,
+                          build_int_cst_type(INT, right_side.field->codeset.encoding),
+                          NULL_TREE);
       retval = true;
       goto done;
       }
@@ -799,6 +775,7 @@ alpha_compare(tree        &left,
     // R.J.Dubner; 2026-05-08
     static const long MAGIC_NUMBER = 16;
 
+    // The conversion of a space can be no more than four bytes.
     char ach_space[4];
     char ch = ascii_space;
     size_t nbytes;
@@ -807,6 +784,8 @@ alpha_compare(tree        &left,
                                              &ch,
                                              1,
                                              &nbytes);
+    gcc_assert(nbytes <= sizeof(ach_space));
+    gcc_assert(nbytes == static_cast<size_t>(charmap_left->stride()));
     memcpy(ach_space, converted, nbytes);
     const char *the_routine;
     switch( charmap_left->stride() )
@@ -823,19 +802,19 @@ alpha_compare(tree        &left,
           {
           size_t length_l = left_side.field->data.capacity();
           size_t length_r = right_side.field->data.capacity();
+          ssize_t diff = length_l - length_r;
           if(    refer_is_super_clean(left_side)
               && refer_is_super_clean(right_side)
-              && std::abs(   static_cast<long>(length_l)
-                           - static_cast<long>(length_r)) <= MAGIC_NUMBER )
+              && std::abs(diff) <= MAGIC_NUMBER )
             {
             // There is no collation table in use, we are single-byte encoded,
             // and both variables are in working storage at known locations and
             // with known lengths.  We can build code that is extremely
             // efficient.
-            get_location(location_left, left_side);
-            get_location(location_right, right_side);
+            location_left  = get_location(left_side);
+            location_right = get_location(right_side);
             left  = gg_define_variable(INT);
-            right = gg_define_variable(INT, 0L);
+            right = integer_zero_node;
             size_t length = std::min(length_l, length_r);
             gg_assign(left,
                       gg_memcmp(location_left,
@@ -848,10 +827,10 @@ alpha_compare(tree        &left,
               // char.
               IF( left, eq_op, integer_zero_node )
                 {
-                tree count = gg_define_variable(INT);
-                gg_assign(count, build_int_cst_type(INT,
+                tree count = gg_define_variable(SIZE_T);
+                gg_assign(count, build_int_cst_type(SIZE_T,
                                                    length));
-                WHILE( count, lt_op, build_int_cst_type(INT,
+                WHILE( count, lt_op, build_int_cst_type(SIZE_T,
                                                         length_l) )
                   {
                   IF( gg_indirect(location_left, count),
@@ -871,15 +850,15 @@ alpha_compare(tree        &left,
                       }
                     ENDIF
                     // Force the end of the loop:
-                    gg_assign(count, build_int_cst_type(INT,
+                    gg_assign(count, build_int_cst_type(SIZE_T,
                                                         length_l));
                     }
                   ELSE
                     {
                     // The *left is a space; keep going
+                    gg_increment(count);
                     }
                   ENDIF
-                  gg_increment(count);
                   }
                 WEND
                 }
@@ -895,10 +874,10 @@ alpha_compare(tree        &left,
               // char.
               IF( left, eq_op, integer_zero_node )
                 {
-                tree count = gg_define_variable(INT);
-                gg_assign(count, build_int_cst_type(INT,
+                tree count = gg_define_variable(SIZE_T);
+                gg_assign(count, build_int_cst_type(SIZE_T,
                                                    length));
-                WHILE( count, lt_op, build_int_cst_type(INT,
+                WHILE( count, lt_op, build_int_cst_type(SIZE_T,
                                                         length_r) )
                   {
                   IF( gg_indirect(location_right, count),
@@ -918,15 +897,15 @@ alpha_compare(tree        &left,
                       }
                     ENDIF
                     // Force the end of the loop:
-                    gg_assign(count, build_int_cst_type(INT,
+                    gg_assign(count, build_int_cst_type(SIZE_T,
                                                         length_r));
                     }
                   ELSE
                     {
                     // The *right is a space; keep going
+                    gg_increment(count);
                     }
                   ENDIF
-                  gg_increment(count);
                   }
                 WEND
                 }
@@ -986,21 +965,19 @@ alpha_compare(tree        &left,
         break;
         }
       }
-    get_location(location_left, left_side);
-    get_length(length_left, left_side);
-    get_location(location_right, right_side);
-    get_length(length_right, right_side);
-    left  = gg_define_variable(INT);
-    right = gg_define_variable(INT, 0L);
-    gg_call(VOID,
-            the_routine,
-            gg_get_address_of(left),
-            location_left,
-            length_left,
-            location_right,
-            length_right,
-            build_string_literal(charmap_left->stride(), ach_space),
-            NULL_TREE);
+    location_left = get_location(left_side);
+    length_left   = get_length(left_side);
+    location_right = get_location(right_side);
+    length_right   = get_length(right_side);
+    right = integer_zero_node;
+    left = gg_call_expr(INT,
+                        the_routine,
+                        location_left,
+                        length_left,
+                        location_right,
+                        length_right,
+                        build_string_literal(charmap_left->stride(), ach_space),
+                        NULL_TREE);
     retval = true;
     goto done;
     }
@@ -1026,12 +1003,9 @@ numeric_alpha_compare(tree        &left,
 
   const charmap_t *charmap_left =
                           __gg__get_charmap(left_side.field->codeset.encoding);
-
-  charmap_t *charmap_right =
-                         __gg__get_charmap(right_side.field->codeset.encoding);
   cbl_figconst_t figconst_right
                    = (cbl_figconst_t)(right_side.field->attr & FIGCONST_MASK);
-  uint8_t char_right = charmap_right->figconst_character(figconst_right);
+  uint8_t char_right = char_from_figconst(figconst_right);
 
   if( left_side.field->type == FldLiteralN )
     {
@@ -1059,7 +1033,7 @@ numeric_alpha_compare(tree        &left,
         {
         // Comparing an alphanumeric to a figconst
         // We need to convert the char_right to the left's encoding:
-        converted = __gg__iconverter(right_side.field->codeset.encoding,
+        converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                      left_side.field->codeset.encoding,
                                      &char_right,
                                      1,
@@ -1074,37 +1048,33 @@ numeric_alpha_compare(tree        &left,
                                      right_side.field->data.capacity(),
                                      &nbytes);
         }
-      left  = gg_define_variable(INT);
-      right = gg_define_variable(INT, 0L);
-      gg_call(VOID,
-              "__gg__compare_string_all",
-              gg_get_address_of(left),
-              location_left,
-              length_left,
-              build_int_cst_type(INT, charmap_left->stride()),
-              build_string_literal(nbytes, converted),
-              build_int_cst_type(SIZE_T, nbytes),
-              NULL_TREE);
+      right = integer_zero_node;
+      left = gg_call_expr(INT,
+                          "__gg__compare_string_all",
+                          location_left,
+                          length_left,
+                          build_int_cst_type(INT, charmap_left->stride()),
+                          build_string_literal(nbytes, converted),
+                          build_int_cst_type(SIZE_T, nbytes),
+                          NULL_TREE);
       compared = true;
       }
     else if( right_side.field->type == FldLiteralA )
       {
       // Corner cases.  One grows to dislike them.  Here we are comparing a
       // FieldLiteraN to a FldLiteralA
-      left  = gg_define_variable(INT);
-      right = gg_define_variable(INT, 0L);
+      right = integer_zero_node;
       tree str = gg_string_literal(right_side.field->data.original());
       tree length = build_int_cst_type(SIZE_T,
                                     strlen(right_side.field->data.original()));
-      gg_call( VOID,
-               "__gg__compare_string_1a",
-                gg_get_address_of(left),
-                location_left,
-                length_left,
-                str,
-                length,
-                integer_zero_node,
-                NULL_TREE);
+      left = gg_call_expr(INT,
+                          "__gg__compare_string_1a",
+                          location_left,
+                          length_left,
+                          str,
+                          length,
+                          gg_cast(UCHAR_P, integer_zero_node),
+                          NULL_TREE);
       compared = true;
       }
     }
@@ -1119,7 +1089,7 @@ numeric_alpha_compare(tree        &left,
     tree type = tree_type_from_refer(left_side);
 
     // We have what we need to get the value:
-    get_binary_value(value, left_side, type);
+    value = get_binary_value(left_side, type);
 
     // We have corner case to deal with here.  When comparing a numeric to a
     // alphanumeric that is a figconst zero_value_e, we treat the right side
@@ -1127,25 +1097,18 @@ numeric_alpha_compare(tree        &left,
 
     if( figconst_right == zero_value_e )
       {
-      left  = gg_define_variable(INT);
-      right = gg_define_variable(INT, 0L);
+      value = save_expr(value);
+      right = integer_zero_node;
       gg_assign(left, integer_zero_node);
-      IF( value, lt_op, gg_cast(type, integer_zero_node) )
-        {
-        gg_assign(left, integer_minus_one_node);
-        }
-      ELSE
-        {
-        IF( value, gt_op, gg_cast(type, integer_zero_node) )
-          {
-          gg_assign(left, integer_one_node);
-          }
-        ELSE
-          {
-          }
-        ENDIF
-        }
-      ENDIF
+      tree below = gg_logical_lt(value, gg_cast(type, integer_zero_node));
+      tree above = gg_logical_gt(value, gg_cast(type, integer_zero_node));
+      left = if_condition(below,
+                          gg_cast(type, integer_minus_one_node),
+                          if_condition(above,
+                                       gg_cast(type, integer_one_node),
+                                       gg_cast(type, integer_zero_node),
+                                       type),
+                          type);
       compared = true;
       }
     else
@@ -1153,19 +1116,18 @@ numeric_alpha_compare(tree        &left,
       if( left_side.field->data.rdigits < 0 )
         {
         // We need to multiply value by 10^-rdigits
-        gg_assign(value, scale_by_power_of_ten(value,
-                                               build_int_cst_type(INT,
-                                               -left_side.field->data.rdigits)));
+        value = scale_by_power_of_ten( value,
+                                       build_int_cst_type(INT,
+                                       -left_side.field->data.rdigits));
         }
 
       if( left_side.field->attr&signable_e )
         {
         // For numeric-alphabetic comparisons, there are no negative values:
-        gg_assign(value, gg_abs(value));
+        value = gg_abs(value);
         }
 
-      left  = gg_define_variable(INT);
-      right = gg_define_variable(INT, 0L);
+      right = integer_zero_node;
 
       if( figconst_right || right_side.all )
         {
@@ -1173,7 +1135,7 @@ numeric_alpha_compare(tree        &left,
         char *converted;
         if( figconst_right )
           {
-          converted = __gg__iconverter(right_side.field->codeset.encoding,
+          converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                        left_side.field->codeset.encoding,
                                        &char_right,
                                        1,
@@ -1183,38 +1145,33 @@ numeric_alpha_compare(tree        &left,
           {
           converted = __gg__iconverter(right_side.field->codeset.encoding,
                                        left_side.field->codeset.encoding,
-                                       right_side.field->data.original(),
+                                       right_side.field->data.initial,
                                        right_side.field->data.capacity(),
                                        &nbytes);
           }
-        left  = gg_define_variable(INT);
-        right = gg_define_variable(INT, 0L);
-        gg_call(VOID,
-                "__gg__compare_numeric_all",
-                gg_get_address_of(left),
-                gg_cast(UINT128, value),
-                build_int_cst_type(SIZE_T, left_side.field->data.digits),
-                build_string_literal(nbytes, converted),
-                build_int_cst_type(SIZE_T, nbytes),
-                build_int_cst_type(INT, left_side.field->codeset.encoding),
-                NULL_TREE);
+        left = gg_call_expr(INT,
+                            "__gg__compare_numeric_all",
+                            gg_cast(INT128, value),
+                            build_int_cst_type(SIZE_T, left_side.field->data.digits),
+                            build_string_literal(nbytes, converted),
+                            build_int_cst_type(SIZE_T, nbytes),
+                            build_int_cst_type(INT, left_side.field->codeset.encoding),
+                            NULL_TREE);
         }
       else
         {
         tree location_right;
         tree length_right;
-        get_location(location_right, right_side);
-        get_length(length_right, right_side);
-
-        gg_call(VOID,
-                "__gg__compare_binary_to_string",
-                gg_get_address_of(left),
-                gg_cast(UINT128, value),
-                build_int_cst_type(SIZE_T, left_side.field->data.digits),
-                location_right,
-                length_right,
-                build_int_cst_type(INT, right_side.field->codeset.encoding),
-                NULL_TREE);
+        location_right = get_location(right_side);
+        length_right = get_length(right_side);
+        left = gg_call_expr(INT,
+                            "__gg__compare_binary_to_string",
+                            gg_cast(INT128, value),
+                            build_int_cst_type(SIZE_T, left_side.field->data.digits),
+                            location_right,
+                            length_right,
+                            build_int_cst_type(INT, right_side.field->codeset.encoding),
+                            NULL_TREE);
         }
       compared = true;
       }
@@ -1235,40 +1192,23 @@ addr_of_compare(tree        &left,
   tree r;
   if( left_side.addr_of && !right_side.addr_of )
     {
-    get_location(l, left_side);
-    get_binary_value(r, right_side, type);
+    l = get_location(left_side);
+    r = get_binary_value(right_side, type);
     }
   else if( !left_side.addr_of && right_side.addr_of )
     {
-    get_binary_value(l, left_side, type);
-    get_location(r, right_side);
+    l = get_binary_value(left_side, type);
+    r = get_location(right_side);
     }
   else
     {
     // They are both addr_of.
-    get_location(l, left_side);
-    get_location(r, right_side);
+    l = get_location(left_side);
+    r = get_location(right_side);
     }
-  left  = gg_define_variable(INT);
-  right = gg_define_variable(INT, 0L);
 
-  gg_assign(left, integer_zero_node);
-  IF( gg_cast(type, l), lt_op, gg_cast(type, r) )
-    {
-    gg_assign(left, integer_minus_one_node);
-    }
-  ELSE
-    {
-    IF( gg_cast(type, l), gt_op, gg_cast(type, r) )
-      {
-      gg_assign(left, integer_one_node);
-      }
-    ELSE
-      {
-      }
-    ENDIF
-    }
-  ENDIF
+  left  = gg_cast(SIZE_T, l);
+  right = gg_cast(SIZE_T, r);
 
   return true;
   }
@@ -1279,60 +1219,56 @@ float_compare(tree        &left,
         const cbl_refer_t &left_side,
         const cbl_refer_t &right_side)
   {
-  // left is a float, and if right is also a float it is smaller than left
+  // left_side is a float, and if right_side is also a float it is smaller than
+  // left_side.
+
+  // See the comment at type_based_on_digits
+
   tree type = tree_type_from_field(left_side.field);
-  get_binary_value(left, left_side);
-  tree rightv;
-  get_binary_value(rightv, right_side, type);
-  right = gg_define_variable(type);
-  gg_assign(right, gg_cast(type, rightv));
+  left  = get_binary_value(left_side, type);
+  right = get_binary_value(right_side, type);
 
   if( right_side.field->attr & intermediate_e )
     {
-    tree rdigits = gg_define_variable(INT);
-    gg_assign(rdigits,
-              gg_cast(INT,
-                      member(right_side.field->var_decl_node, "rdigits")));
-    gg_assign(right,
-              gg_real_divide(right,
+    tree rdigits = gg_cast(INT,
+                           member(right_side.field->var_decl_node,
+                                  "rdigits"));
+    right =   gg_real_divide(right,
                              gg_cast(type,
                                      gg_call_expr(INT128,
                                                   "__gg__power_of_ten",
                                                   rdigits,
-                                                  NULL_TREE))));
+                                                  NULL_TREE)));
     }
   else
     {
     int rdigits = right_side.field->data.rdigits;
-    if( right_side.field->attr & scaled_e )
+
+    if(    (right_side.field->attr & scaled_e)
+        && rdigits > 0 )
       {
-      if( rdigits < 0 )
-        {
-        rdigits = -rdigits;
-        }
-      else
-        {
-        rdigits += right_side.field->data.digits ;
-        gg_assign(right,
-                  gg_multiply(right,
-                              gg_cast(type,
-                                      gg_call_expr(INT128,
-                                           "__gg__power_of_ten",
-                                           build_int_cst_type(INT, rdigits),
-                                           NULL_TREE))));
-        rdigits = 0;
-        }
+      rdigits += right_side.field->data.digits;
       }
-    if( rdigits )
+
+    if( rdigits < 0 )
       {
-      gg_assign(right,
-                gg_real_divide(right,
-                               gg_cast(type,
-                                       gg_call_expr(
-                                            INT128,
-                                            "__gg__power_of_ten",
-                                            build_int_cst_type(INT, rdigits),
-                                            NULL_TREE))));
+      right = gg_multiply(
+                right,
+                gg_cast(type,
+                        gg_call_expr(INT128,
+                                     "__gg__power_of_ten",
+                                     build_int_cst_type(INT, -rdigits),
+                                     NULL_TREE)));
+      }
+    else if( rdigits > 0 )
+      {
+      right = gg_real_divide(
+                right,
+                gg_cast(type,
+                        gg_call_expr(INT128,
+                                     "__gg__power_of_ten",
+                                     build_int_cst_type(INT, rdigits),
+                                     NULL_TREE)));
       }
     }
 
@@ -1346,20 +1282,17 @@ compare_class( tree        &left,
          const cbl_refer_t &right_side)
   {
   // Left side is FldClass
-  left  = gg_define_variable(INT);
-  right = gg_define_variable(INT, 0L);
-  tree right_loc;
-  tree right_length;
-  get_location(right_loc, right_side);
-  get_length(right_length, right_side);
-  gg_assign(left,
-            gg_call_expr(INT,
-                         "__gg__compare_field_class",
-                         gg_get_address_of(right_side.field->var_decl_node),
-                         right_loc,
-                         right_length,
-                         gg_get_address_of(left_side.field->var_decl_node),
-                         NULL_TREE));
+  right = integer_zero_node;
+  tree right_loc = get_location(right_side);
+  tree right_length = get_length(right_side);
+
+  left = gg_call_expr( INT,
+                       "__gg__compare_field_class",
+                       gg_get_address_of(right_side.field->var_decl_node),
+                       right_loc,
+                       right_length,
+                       gg_get_address_of(left_side.field->var_decl_node),
+                       NULL_TREE);
   return true;
   }
 

@@ -1180,8 +1180,7 @@ inspect_backward_format_1(const size_t integers[],
                                     id_2_results[i].id2_s,
                                     id_2_value.i128,
                                     0,
-                                    truncation_e,
-                                    NULL);
+                                    truncation_e);
     }
   }
 
@@ -1549,8 +1548,7 @@ __gg__inspect_format_1( int backward,
                                     id_2_results[i].id2_s,
                                     id_2_value.i128,
                                     0,
-                                    truncation_e,
-                                    NULL);
+                                    truncation_e);
     }
   }
 
@@ -3011,7 +3009,6 @@ __gg__inspect_format_1_sbc( int backward,
                                     id_2_results[i].id2_s,
                                     id_2_value.i128,
                                     0,
-                                    truncation_e,
-                                    NULL);
+                                    truncation_e);
     }
   }

@@ -4160,14 +4160,14 @@ new_temporary_clone( const cbl_field_t *orig) {
     temporaries.add(field);
   }
   field->data = orig->data;
+  field->attr = intermediate_e;
   if( field->type == FldNumericBin5 ) {
     field->type = orig->type;
     field->codeset = orig->codeset;
+    field->attr |= orig->attr & signable_e;
     field->attr &= ~big_endian_e;
     field->attr |= endian_bit();
-
   }
-  field->attr = intermediate_e;
 
   return parser_symbol_add2(field);
 }

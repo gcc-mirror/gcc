@@ -93,16 +93,6 @@ is_figconst(const cbl_refer_t &sourceref)
   return is_figconst_t(sourceref.field);
   }
 
-static void
-conditional_abs(tree source, const cbl_field_t *field)
-  {
-  Analyze();
-  if( !(field->attr & signable_e) )
-    {
-    gg_assign(source, gg_abs(source));
-    }
-  }
-
 static tree
 get_literalN_value(cbl_field_t *var)
   {
@@ -137,28 +127,24 @@ get_binary_value_from_float(tree         value,
       gcc_unreachable();
       break;
     }
-  tree fvalue = gg_define_variable(ftype);
-  gg_assign(fvalue,
-            gg_indirect(gg_cast(build_pointer_type(ftype),
-                                gg_add( member(source->var_decl_node,"data"),
-                                        source_offset))));
+  tree source_location =
+    gg_add(member(source->var_decl_node, "data"),
+           source_offset);
 
-  // We need to convert the floating point value to an integer value with the
-  // rdigits lined up properly.
+  tree fvalue =
+    gg_cast(ftype,
+            safe_load(source_location, ftype));
 
-  int rdigits = get_scaled_rdigits( dest.field );
-  gg_assign(fvalue,
-            gg_multiply(fvalue,
-                        gg_float(ftype,
-                                 wide_int_to_tree(INT,
-                                                  get_power_of_ten(rdigits)))));
+  int rdigits = get_scaled_rdigits(dest.field);
 
-  // And we need to throw away any digits to the left of the leftmost digits:
-  // At least, we need to do so in principle.  I am deferring this problem until
-  // I understand it better.
+  tree multiplier =
+    gg_float(ftype,
+             wide_int_to_tree(INT,
+                              get_power_of_ten(rdigits)));
 
-  // We now have a floating point value that has been multiplied by 10**rdigits
-  gg_assign(value, gg_trunc(TREE_TYPE(value), fvalue));
+  gg_assign(value,
+            gg_trunc(TREE_TYPE(value),
+                     gg_multiply(fvalue, multiplier)));
   }
 
 static bool
@@ -196,11 +182,8 @@ mh_identical(const cbl_refer_t &destref,
       }
 
     // They are identical, and they have no refmods or subscripts
-    tree source;
-    tree dest;
-    get_location(source, sourceref);
-    get_location(dest, destref);
-
+    tree source = get_location(sourceref);
+    tree dest   = get_location(destref);
     gg_memcpy(dest,
               source,
               build_int_cst_type(SIZE_T,
@@ -275,18 +258,16 @@ mh_source_is_literalN(cbl_refer_t &destref,
           SHOW_PARSE_TEXT("mh_source_is_literalN: pointer/index")
           }
 
-        tree source;
-        get_binary_value(source, sourceref);
+        tree source =
+          get_binary_value(sourceref, SIZE_T);
 
-        tree dest_type = tree_type_from_refer(destref);
-        tree dest = gg_define_variable(dest_type);
-        gg_assign(dest, gg_cast(dest_type, source));
+        tree dest_type =
+          tree_type_from_refer(destref);
 
-        tree location;
-        get_location(location, destref);
-        gg_memcpy(location,
-                  gg_get_address_of(dest),
-                  build_int_cst_type(SIZE_T, gg_sizeof(dest_type)));
+        tree location = get_location(destref);
+
+        safe_store(location, dest_type, source);
+
         moved = true;
 
         break;
@@ -294,58 +275,84 @@ mh_source_is_literalN(cbl_refer_t &destref,
 
       case FldNumericBin5:
         {
-        // We are moving from a FldLiteralN (which we know has no subscripts or
-        // refmods), to a NumericBin5, which might.
+        // We are moving from a FldLiteralN, which has no subscripts or
+        // reference modification, to a NumericBin5, which might.
 
         SHOW_PARSE1
           {
           SHOW_PARSE_INDENT
-          SHOW_PARSE_TEXT("mh_source_is_literalN: FldNumericBin5")
+          SHOW_PARSE_TEXT(
+            "mh_source_is_literalN: FldNumericBin5")
           }
 
         // For now, we are ignoring intermediates:
         assert( !(destref.field->attr & intermediate_e) );
-        tree calc_type = tree_type_from_refer(sourceref);
+
         tree dest_type = tree_type_from_refer(destref);
 
-        // Pick up the source data.
-        tree source = gg_define_variable(calc_type);
-        tree dest   = gg_define_variable(dest_type);
-        gg_assign(source, gg_cast(calc_type, sourceref.field->data_decl_node));
+        /*
+         * Keep the value wide until after scaling and size checking.
+         * Otherwise, conversion to dest_type can wrap before we examine
+         * the value.
+         */
+        tree value = gg_define_variable(INT128);
 
-        // Take the absolute value, if the destination is not signable
-        conditional_abs(source, destref.field);
+        gg_assign(value,
+                  gg_cast(INT128,
+                          sourceref.field->data_decl_node));
 
-        // Cast our source to the target:
-        gg_assign(dest, gg_cast(dest_type, source));
+        /*
+         * An unsigned receiving item receives the absolute value of the
+         * sending item.
+         */
+        if( !(destref.field->attr & signable_e) )
+          {
+          gg_assign(value, gg_abs(value));
+          }
 
-        // See if it needs to be scaled:
+        /*
+         * Scale in INT128 rather than dest_type.  This prevents ordinary
+         * destination-width overflow from occurring before the size
+         * check.
+         */
         scale_by_power_of_ten_N(
-                    dest,
-                    destref.field->data.rdigits-sourceref.field->data.rdigits);
+          value,
+          destref.field->data.rdigits
+            - sourceref.field->data.rdigits);
 
         if( check_for_error && size_error )
           {
           Analyzer.Message("Check to see if result fits");
+
           if( destref.field->data.digits )
             {
             FIXED_WIDE_INT(128) power_of_ten =
-                                 get_power_of_ten(destref.field->data.digits);
-            IF( dest, ge_op, wide_int_to_tree(calc_type, power_of_ten) )
+              get_power_of_ten(destref.field->data.digits);
+
+            tree limit =
+              wide_int_to_tree(INT128, power_of_ten);
+
+            /*
+             * Cast-before-abs is unnecessary here because value already
+             * has type INT128.
+             */
+            IF( gg_abs(value), ge_op, limit )
               {
               gg_assign(size_error,
-                        gg_bitwise_or(size_error, integer_one_node));
+                        gg_bitwise_or(size_error,
+                                      integer_one_node));
               }
             ELSE
               ENDIF
             }
           }
 
-        tree dest_location;
-        get_location(dest_location, destref);
-        gg_memcpy(dest_location,
-                  gg_get_address_of(dest),
-                  build_int_cst_type(SIZE_T, gg_sizeof(dest)));
+        /*
+         * Narrow only after the value has been checked.
+         */
+        tree dest_location = get_location(destref);
+        safe_store(dest_location, dest_type, value);
+
         moved = true;
         break;
         }
@@ -355,8 +362,6 @@ mh_source_is_literalN(cbl_refer_t &destref,
       case FldNumericEdited:
       case FldPacked:
         {
-        tree berror = gg_define_variable(INT);
-        gg_assign(berror, integer_zero_node);
         SHOW_PARSE1
           {
           SHOW_PARSE_INDENT
@@ -370,16 +375,16 @@ mh_source_is_literalN(cbl_refer_t &destref,
           SHOW_PARSE_TEXT("calling __gg__int128_to_qualified_field ")
           }
 
-        gg_call(INT,
-                "__gg__int128_to_qualified_field",
-                gg_get_address_of(destref.field->var_decl_node),
-                refer_offset(destref),
-                refer_size_dest(destref),
-                gg_cast(INT128, literalN_value),
-                build_int_cst_type(INT, sourceref.field->data.rdigits),
-                build_int_cst_type(INT, rounded),
-                gg_get_address_of(berror),
-                NULL_TREE);
+        tree berror = gg_call_expr(
+                      INT,
+                      "__gg__int128_to_qualified_field",
+                      gg_get_address_of(destref.field->var_decl_node),
+                      refer_offset(destref),
+                      refer_size_dest(destref),
+                      gg_cast(INT128, literalN_value),
+                      build_int_cst_type(INT, sourceref.field->data.rdigits),
+                      build_int_cst_type(INT, rounded),
+                      NULL_TREE);
 
         if( size_error )
           {
@@ -389,6 +394,10 @@ mh_source_is_literalN(cbl_refer_t &destref,
             }
           ELSE
             ENDIF
+          }
+        else
+          {
+          gg_append_statement(berror);
           }
         moved = true;
         break;
@@ -439,25 +448,24 @@ mh_source_is_literalN(cbl_refer_t &destref,
           {
           case 4:
             {
-            // The following generated code is the exact equivalent
-            // of the C code:
-            //   *(float *)dest = (float)data.value
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(FLOAT), tdest)),
-                      gg_cast (FLOAT, sourceref.field->data.value_of()));
+            safe_store(tdest, FLOAT, sourceref.field->data.value_of());
             break;
             }
+
           case 8:
             {
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(DOUBLE), tdest)),
-                      gg_cast (DOUBLE, sourceref.field->data.value_of()));
+            safe_store(tdest, DOUBLE, sourceref.field->data.value_of());
             break;
             }
+
           case 16:
             {
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(FLOAT128), tdest)),
-                      sourceref.field->data.value_of());
+            safe_store(tdest, FLOAT128, sourceref.field->data.value_of());
             break;
             }
+
+          default:
+            gcc_unreachable();
           }
         moved=true;
         break;
@@ -600,10 +608,8 @@ mh_dest_is_float( cbl_refer_t &destref,
                                refer_offset(destref));
             tree source = gg_add(member(sourceref.field->var_decl_node, "data"),
                                 refer_offset(sourceref));
-            gg_assign(gg_indirect(gg_cast(build_pointer_type(dtype), tdest)),
-                      gg_cast(dtype,
-                              gg_indirect(gg_cast(build_pointer_type(stype),
-                                          source))));
+            tree source_value = gg_cast(stype, safe_load(source, stype));
+            safe_store(tdest, dtype, source_value);
             }
           else
             {
@@ -787,7 +793,7 @@ clear_negative_zero(const cbl_refer_t &destref,
   gg_create_goto_pair(&goto_bugout,
                       &label_bugout);
   tree p     = gg_define_variable(UCHAR_P);
-  tree p_end =  gg_define_variable(UCHAR_P);
+  tree p_end = gg_define_variable(UCHAR_P);
   gg_assign(p, dest_location);
   gg_assign(p_end,
             gg_add(p,
@@ -1230,12 +1236,11 @@ mh_numeric_display( const cbl_refer_t &destref,
         ENDIF
         break;
       }
+    clear_negative_zero(destref,
+                        sourceref,
+                        qualified_data_location(destref));
     moved = true;
     }
-
-  clear_negative_zero(destref,
-                      sourceref,
-                      qualified_data_location(destref));
 
   return moved;
   }
@@ -1282,8 +1287,7 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
     tree minus = build_int_cst_type(UCHAR,
                                    charmap_dest->is_like_ebcdic()
                                    ? ebcdic_minus : ascii_minus );
-    tree dest_location;
-    get_location(dest_location, destref);
+    tree dest_location = get_location(destref);
 
     tree s_type   = tree_type_from_refer(sourceref);
     tree d_type   = tree_type_from_refer(destref);
@@ -1291,19 +1295,19 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
     // Our working type is the larger of the source and destination types.
     tree work_type = cobol_wider_type_with_x_signedness(d_type, s_type);
 
-    tree value ;
-    get_binary_value(value, sourceref, work_type);
+    tree value = get_binary_value(sourceref, work_type);
 
-    tree prohibited = gg_define_variable(INT, integer_zero_node);
+    tree prohibited = integer_zero_node;
     if( rounded == prohibited_e )
       {
-      gg_assign(prohibited,
+      prohibited =
                 gg_call_expr(INT,
                              "__gg__prohibited",
                              gg_get_address_of(destref.field->var_decl_node),
                              value,
-                             NULL_TREE));
+                             NULL_TREE);
       }
+
     IF(prohibited, eq_op, integer_one_node)
       {
       set_exception_code(ec_size_truncation_e);
@@ -1314,7 +1318,7 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
       }
     ELSE
       {
-      get_binary_value(value, sourceref, work_type);
+      value = get_binary_value(sourceref, work_type);
       tree negative = gg_define_variable(INT);
       gg_assign(negative, integer_zero_node);
 
@@ -1322,34 +1326,33 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
 
       if( destref.field->attr & signable_e )
         {
-        sign_location = gg_define_variable(UCHAR_P);
         if(    (destref.field->attr & separate_e)
             && (destref.field->attr & leading_e ) )
           {
           // separate and leading
-          gg_assign(sign_location, dest_location);
-          gg_increment(dest_location);
+          sign_location = dest_location;
+          dest_location = gg_add(dest_location, integer_one_node);
           }
         else if(    (destref.field->attr & separate_e)
                 && !(destref.field->attr & leading_e ) )
           {
           // separate and trailing
-          gg_assign(sign_location, gg_add(dest_location,
-                                          build_int_cst_type(SIZE_T,
-                                           destref.field->data.capacity()-1)));
+          sign_location = gg_add(dest_location,
+                                 build_int_cst_type(SIZE_T,
+                                            destref.field->data.capacity()-1));
           }
         else if(   !(destref.field->attr & separate_e)
                 &&  (destref.field->attr & leading_e ) )
           {
           // internal and leading
-          gg_assign(sign_location, dest_location);
+          sign_location = dest_location;
           }
         else
           {
           // internal and trailing
-          gg_assign(sign_location, gg_add(dest_location,
-                                          build_int_cst_type(SIZE_T,
-                                           destref.field->data.capacity()-1)));
+          sign_location = gg_add(dest_location,
+                                 build_int_cst_type(SIZE_T,
+                                           destref.field->data.capacity()-1));
           }
         }
 
@@ -1374,9 +1377,8 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
         {
         // We need to multiply the source by 10^(-nshift) to line them up.
         FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -nshift );
-        gg_assign(value, gg_multiply(value,
-                                     wide_int_to_tree(work_type,
-                                                      power_of_ten)));
+        value = gg_multiply(value,   wide_int_to_tree(work_type,
+                                                      power_of_ten));
         }
       else if(nshift > 0)
         {
@@ -1398,7 +1400,7 @@ mh_binary_to_numdisp(const cbl_refer_t &destref,
 
       if( !TYPE_UNSIGNED(work_type) )
         {
-        gg_assign(value, gg_abs(value));
+        value = gg_abs(value);
         }
 
       if( size_error )
@@ -1510,8 +1512,7 @@ mh_binary_to_packed(const cbl_refer_t &destref,
             || sourceref.field->type == FldIndex
             || sourceref.field->type == FldPointer ) )
     {
-    tree dest_location;
-    get_location(dest_location, destref);
+    tree dest_location = get_location(destref);
 
     tree s_type   = tree_type_from_refer(sourceref);
     tree d_type   = tree_type_from_refer(destref);
@@ -1519,8 +1520,7 @@ mh_binary_to_packed(const cbl_refer_t &destref,
     // Our working type is the larger of the source and destination types.
     tree work_type = cobol_wider_type_with_x_signedness(d_type, s_type);
 
-    tree value ;
-    get_binary_value(value, sourceref, work_type);
+    tree value = get_binary_value(sourceref, work_type);
 
     tree negative = gg_define_variable(INT);
     gg_assign(negative, integer_zero_node);
@@ -1573,7 +1573,7 @@ mh_binary_to_packed(const cbl_refer_t &destref,
 
     if( !TYPE_UNSIGNED(work_type) )
       {
-      gg_assign(value, gg_abs(value));
+      value = gg_abs(value);
       }
 
     if( size_error )
@@ -1602,7 +1602,7 @@ mh_binary_to_packed(const cbl_refer_t &destref,
       {
       // This is ordinary packed.  We need to multiply the value by ten to
       // make room for the sign nybble.
-      gg_assign(value, gg_multiply(value, build_int_cst_type(work_type, 10)));
+      value = gg_multiply(value, build_int_cst_type(work_type, 10));
       ndigits = destref.field->data.digits+1;
       }
     else
@@ -1675,19 +1675,17 @@ copy_native_into_place(cbl_field_t *dest,
                               bool check_for_error,
                         const tree &size_error)
   {
-  tree value_type = TREE_TYPE(value);
   tree dest_type = tree_type_from_field(dest);
 
-  if( gg_sizeof(dest_type) > gg_sizeof(value_type) )
-    {
-    // Because the dest_type is greater than the value_type, we don't need to
-    // do any size checking.
-    check_for_error = false;
-    }
+  /*
+   * Perform sign handling, scaling, and range checking in INT128.
+   * Valid COBOL numeric values contain at most 37 digits.
+   */
+  value = gg_cast(INT128, value);
 
   if( !(dest->attr & signable_e) )
     {
-    gg_assign(value, gg_abs(value));
+    value = gg_abs(value);
     }
 
   if( check_for_error && dest->data.digits)
@@ -1700,8 +1698,7 @@ copy_native_into_place(cbl_field_t *dest,
     // 10^(5 - 3 + 2) is 10^4, which is 10000.  Because 12345 is >= 10000, the
     // source can't fit into the destination.
 
-    tree abs_value = gg_define_variable(TREE_TYPE(value));
-    gg_assign(abs_value, gg_abs(value));
+    tree abs_value = gg_abs(value);
 
     FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten(  dest->data.digits
                                                         - dest->data.rdigits
@@ -1725,26 +1722,81 @@ copy_native_into_place(cbl_field_t *dest,
 
   if( check_for_error && !dest->data.digits )
     {
-    // The destination is pure binary.  Make sure we fit:
-    int nbytes = gg_sizeof(dest_type);
-    // We are making sure that value is less than the power of two
-    FIXED_WIDE_INT(128) power_of_two = get_power_of_two(nbytes);
-    tree p_of_two = wide_int_to_tree(value_type, power_of_two);
+    unsigned int precision = TYPE_PRECISION(dest_type);
 
-    IF( value, ge_op, p_of_two )
+    /*
+     * Valid COBOL values have at most 37 digits.  Therefore, no valid
+     * value can overflow a signed or unsigned 128-bit destination.
+     */
+    if( precision < 128 )
       {
-      // Flag the size error
-      gg_assign(size_error, gg_bitwise_or(size_error, integer_one_node));
+      FIXED_WIDE_INT(128) limit = 1;
+
+      if( TYPE_UNSIGNED(dest_type) )
+        {
+        /*
+         * The valid range is:
+         *
+         *   0 through 2^precision - 1
+         *
+         * value has already been made positive for an unsigned
+         * destination.
+         */
+        limit <<= precision;
+
+        tree upper_limit =
+          wide_int_to_tree(INT128, limit);
+
+        IF( value, ge_op, upper_limit )
+          {
+          gg_assign(size_error,
+                    gg_bitwise_or(size_error,
+                                  integer_one_node));
+          }
+        ELSE
+          ENDIF
+        }
+      else
+        {
+        /*
+         * The valid signed range is:
+         *
+         *   -2^(precision - 1)
+         *        through
+         *    2^(precision - 1) - 1
+         */
+        limit <<= precision - 1;
+
+        tree lower_limit =
+          wide_int_to_tree(INT128, -limit);
+
+        tree upper_limit =
+          wide_int_to_tree(INT128, limit);
+
+        IF( value, lt_op, lower_limit )
+          {
+          gg_assign(size_error,
+                    gg_bitwise_or(size_error,
+                                  integer_one_node));
+          }
+        ELSE
+          {
+          IF( value, ge_op, upper_limit )
+            {
+            gg_assign(size_error,
+                      gg_bitwise_or(size_error,
+                                    integer_one_node));
+            }
+          ELSE
+            ENDIF
+          }
+        ENDIF
+        }
       }
-    ELSE
-      {
-      }
-    ENDIF
     }
 
-  tree dest_pointer = gg_define_variable(UCHAR_P);
-  gg_assign(dest_pointer, gg_add(member(dest->var_decl_node, "data"),
-                                 dest_offset));
+  tree dest_pointer = gg_add(member(dest->var_decl_node, "data"),
+                             dest_offset);
 
   if( dest->type == FldNumericBinary )
     {
@@ -1764,9 +1816,7 @@ copy_native_into_place(cbl_field_t *dest,
     // We need the target to be native binary, so just leave it be
     }
   // Copy the target to the destination.
-  gg_memcpy(dest_pointer,
-            gg_get_address_of(target),
-            build_int_cst_type(SIZE_T, gg_sizeof(dest_type)));
+  safe_store(dest_pointer, dest_type, target);
   }
 
 static bool
@@ -1844,8 +1894,7 @@ mh_to_binary( const cbl_refer_t &destref,
     else
       {
       tree source_type = tree_type_from_refer(sourceref);
-      tree source;
-      get_binary_value(source, sourceref, source_type);
+      tree source = get_binary_value(sourceref, source_type);
       copy_native_into_place( destref.field,
                               refer_offset(destref),
                               source,
@@ -1900,219 +1949,241 @@ mh_source_is_group( const cbl_refer_t &destref,
 static bool
 mh_source_is_literalA(const cbl_refer_t &destref,
                       const cbl_refer_t &sourceref,
-                            cbl_round_t rounded,
-                            tree        size_error)
+                            cbl_round_t   rounded,
+                            tree          size_error)
   {
-  bool moved = false;
-  if( sourceref.field->type == FldLiteralA )
+  if( sourceref.field->type != FldLiteralA )
     {
-    // We are moving a literal somewhere.  Because a program-id can take
-    // variables of ANY LENGTH, we don't know the length of the target
-    // variable.  We do, however, know its encoding.  So, we are going to
-    // construct a string with the same number of characters as the source, but
-    // in the target variable's encoding.
-
-    // We will then call a library routine that will be in charge of run-time
-    // trimming or space filling, as necessary.
-
-    cbl_encoding_t encoding_dest =   destref.field->codeset.encoding;
-    charmap_t *charmap_dest = __gg__get_charmap(encoding_dest);
-
-    static char *buffer = NULL;
-    static size_t buffer_size = 0;
-    size_t source_length;
-    size_t dest_length;
-    if( sourceref.field->attr & hex_encoded_e )
-      {
-      // Hex-encoded data is moved as-is
-      source_length = sourceref.field->data.capacity();
-      dest_length   = std::min(source_length,
-                          static_cast<size_t>(destref.field->data.capacity()));
-      }
-    else
-      {
-      // Otherwise, data.initial prevails:
-      size_t source_based_on_strlen = strlen(sourceref.field->data.original());
-      size_t source_based_on_capacity = sourceref.field->data.capacity() /
-                                        sourceref.field->codeset.stride() ;
-      source_length = std::max( source_based_on_strlen ,
-                                source_based_on_capacity );
-      dest_length   = source_length * charmap_dest->stride();
-      }
-
-    if( buffer_size < dest_length )
-      {
-      buffer_size = dest_length;
-      buffer = static_cast<char *>(xrealloc(buffer, buffer_size));
-      }
-    gcc_assert(buffer);
-
-    cbl_figconst_t figconst = cbl_figconst_of( sourceref.field->data.original());
-    size_t outlength;
-    if( figconst )
-      {
-      // We are going to fill 'buffer' with a solid run of the figurative
-      // constant in the destination codeset.
-      char const_char = 0x7F;  // Head off a compiler warning about
-      //                       // uninitialized variables
-      switch(figconst)
-        {
-        case normal_value_e :
-          // This is not possible, it says here in the fine print.
-          gcc_unreachable();
-          break;
-        case low_value_e    :
-          const_char = charmap_dest->low_value_character();
-          break;
-        case zero_value_e   :
-          const_char = charmap_dest->mapped_character(ascii_zero);
-          break;
-        case space_value_e  :
-          const_char = charmap_dest->mapped_character(ascii_space);
-          break;
-        case quote_value_e  :
-          const_char = charmap_dest->quote_character();
-          break;
-        case high_value_e   :
-          const_char = charmap_dest->high_value_character();
-          break;
-        case null_value_e:
-          const_char = 0x00;
-          break;
-        }
-      memset(buffer, const_char, source_length);
-      }
-     else
-      {
-      if( sourceref.field->attr & hex_encoded_e )
-        {
-        // hex_encoded data goes as is:
-        memcpy(buffer, sourceref.field->data.original(), dest_length);
-        outlength = dest_length;
-        }
-      else
-        {
-        // We are going to convert the source string to the destination
-        // codeset, and then copy it to 'buffer', trimming if necessary, and
-        // space-filling to the right if necessary:
-        const char *source_string =
-        __gg__iconverter(
-                       sourceref.field->codeset.default_encodings.source->type,
-                       encoding_dest,
-                       sourceref.field->data.original(),
-                       source_length,
-                       &outlength );
-        if( outlength > dest_length )
-          {
-          outlength = dest_length;
-          }
-        // Copy over the converted string
-        memcpy( buffer,
-                source_string,
-                outlength );
-        }
-      }
-
-    // Check to see if we can do a simple alphanumeric-to-alphanumeric move
-    if( (   destref.field->type == FldAlphanumeric
-         || destref.field->type == FldGroup )
-       && !(destref.field->attr & any_length_e)
-       && !sourceref.all
-       && !size_error)
-      {
-      // A simple alpha-to-alpha move is possible
-      size_t dest_bytes = destref.field->data.capacity();
-      // We have 'outlength' bytes in 'buffer' that need to go to
-      // destref.field->data.capacity() bytes at destref.field->data.
-      char *src = static_cast<char *>(xmalloc(dest_bytes));
-      size_t src_bytes = std::min(outlength, dest_bytes);
-      charmap_t *charmap = __gg__get_charmap(destref.field->codeset.encoding);
-      charmap->memset(src, charmap->mapped_character(ascii_space), dest_bytes);
-
-      if( destref.field->attr & rjust_e )
-        {
-        size_t fill = 0;
-        if( src_bytes < dest_bytes )
-          {
-          fill = dest_bytes - src_bytes;
-          }
-        memcpy(src+fill, buffer+outlength-src_bytes, src_bytes);
-        }
-      else
-        {
-        memcpy(src, buffer, src_bytes);
-        }
-      // src is now the desired string, space-filled if necessary on the right,
-      // (or on the left, for rjust_e destinations).
-
-      if( refer_is_clean(destref) )
-        {
-        gg_memcpy(member(destref.field->var_decl_node, "data"),
-                  build_string_literal(dest_bytes, src),
-                  build_int_cst_type(SIZE_T, dest_bytes));
-        }
-      else
-        {
-        // The refer has some information in it.
-        gg_memcpy(gg_add(member(destref.field->var_decl_node, "data"),
-                         refer_offset(destref)),
-                  build_string_literal(dest_bytes, src),
-                  refer_size_dest(destref));
-        }
-      free(src);
-      }
-    else
-      {
-      // This is more complicated than a simple alpha-to-alpha move
-      if(    destref.refmod.from
-          || destref.refmod.len )
-        {
-        // Let the move routine know to treat the destination as alphanumeric
-        attribute_bit_set(destref.field, refmod_e);
-        }
-      // If the source is flagged ALL, or if we are setting the destination to
-      // a figurative constant, pass along the ALL bit:
-      int rounded_parameter = rounded
-                             | ((sourceref.all || figconst ) ? REFER_ALL_BIT : 0);
-
-      if( size_error )
-        {
-        gg_assign(size_error,
-                  gg_call_expr( INT,
-                                "__gg__move_literala",
-                                gg_get_address_of(destref.field->var_decl_node),
-                                refer_offset(destref),
-                                refer_size_dest(destref),
-                                build_int_cst_type(INT, rounded_parameter),
-                                build_string_literal(outlength,
-                                                     buffer),
-                                build_int_cst_type( SIZE_T, outlength),
-                                NULL_TREE));
-        }
-      else
-        {
-                  gg_call     ( INT,
-                                "__gg__move_literala",
-                                gg_get_address_of(destref.field->var_decl_node),
-                                refer_offset(destref),
-                                refer_size_dest(destref),
-                                build_int_cst_type(INT, rounded_parameter),
-                                build_string_literal(outlength,
-                                                     buffer),
-                                build_int_cst_type( SIZE_T, outlength),
-                                NULL_TREE);
-        }
-      if(    destref.refmod.from
-          || destref.refmod.len )
-        {
-        // Return that value to its original form
-        attribute_bit_clear(destref.field, refmod_e);
-        }
-      }
-
-    moved = true;
+    return false;
     }
-  return moved;
+
+  cbl_encoding_t dest_encoding =
+    destref.field->codeset.encoding;
+
+  charmap_t *dest_charmap = __gg__get_charmap(dest_encoding);
+
+  cbl_figconst_t figconst =
+    cbl_figconst_of(sourceref.field->data.original());
+
+  /*
+   * __gg__iconverter returns a pointer to static storage.  Copy its
+   * result before doing anything that might call __gg__iconverter
+   * again, including some charmap operations.
+   */
+  static char *buffer = NULL;
+  static size_t buffer_size = 0;
+
+  const char *converted = NULL;
+  size_t outlength = 0;
+  cbl_char_t const_char = 0;
+
+  if( figconst )
+    {
+    /*
+     * A figurative constant is a one-character pattern.  The ALL bit
+     * supplied below causes the library to repeat that pattern.
+     */
+    outlength = dest_charmap->stride();
+
+    switch( figconst )
+      {
+      case normal_value_e:
+        gcc_unreachable();
+
+      case low_value_e:
+        const_char = dest_charmap->low_value_character();
+        break;
+
+      case zero_value_e:
+        const_char =
+          dest_charmap->mapped_character(ascii_zero);
+        break;
+
+      case space_value_e:
+        const_char =
+          dest_charmap->mapped_character(ascii_space);
+        break;
+
+      case quote_value_e:
+        const_char = dest_charmap->quote_character();
+        break;
+
+      case high_value_e:
+        const_char = dest_charmap->high_value_character();
+        break;
+
+      case null_value_e:
+        const_char = 0;
+        break;
+      }
+    }
+  else if( sourceref.field->attr & hex_encoded_e )
+    {
+    /*
+     * data.initial contains the exact literal bytes.  Do not limit the
+     * literal to the destination's declared capacity here.
+     */
+    converted = sourceref.field->data.initial;
+    outlength = sourceref.field->data.capacity();
+    }
+  else if( sourceref.field->codeset.encoding == dest_encoding )
+    {
+    /*
+     * The literal was encoded by cbl_field_t::set_initial().
+     */
+    converted = sourceref.field->data.initial;
+    outlength = sourceref.field->data.capacity();
+    }
+  else
+    {
+    /*
+     * Convert from the literal's actual internal encoding, using its
+     * exact byte length.
+     */
+    converted =
+      __gg__iconverter(sourceref.field->codeset.encoding,
+                       dest_encoding,
+                       sourceref.field->data.initial,
+                       sourceref.field->data.capacity(),
+                       &outlength);
+    }
+
+  /*
+   * Keep one byte available even for an empty literal.  This also makes
+   * the pointer supplied to build_string_literal nonnull.
+   */
+  size_t required = std::max(outlength, size_t(1));
+
+  if( buffer_size < required )
+    {
+    buffer = static_cast<char *>(xrealloc(buffer, required));
+    buffer_size = required;
+    }
+
+  gcc_assert(buffer);
+
+  if( figconst )
+    {
+    /*
+     * charmap_t::memset writes complete encoded characters and takes a
+     * byte count.  Plain memset would be incorrect for stride 2 or 4.
+     */
+    dest_charmap->memset(buffer, const_char, outlength);
+    }
+  else if( outlength )
+    {
+    gcc_assert(converted);
+    memcpy(buffer, converted, outlength);
+    }
+
+  bool move_all = sourceref.all || figconst;
+
+  /*
+   * A direct move is possible whenever the effective destination size
+   * is a compile-time constant.  This includes ordinary subscripting
+   * and constant reference modification.
+   */
+  tree dest_size = refer_size_dest(destref);
+
+  bool direct_move =
+       (   destref.field->type == FldAlphanumeric
+        || destref.field->type == FldGroup)
+    && !(destref.field->attr & any_length_e)
+    && !move_all
+    && !size_error
+    && tree_fits_uhwi_p(dest_size);
+
+  if( direct_move )
+    {
+    size_t dest_bytes =
+      static_cast<size_t>(tree_to_uhwi(dest_size));
+
+    size_t allocation = std::max(dest_bytes, size_t(1));
+    char *source = static_cast<char *>(xmalloc(allocation));
+
+    cbl_char_t space =
+      dest_charmap->mapped_character(ascii_space);
+
+    dest_charmap->memset(source, space, dest_bytes);
+
+    size_t source_bytes = std::min(outlength, dest_bytes);
+
+    if( destref.field->attr & rjust_e )
+      {
+      size_t fill = dest_bytes - source_bytes;
+
+      memcpy(source + fill,
+             buffer + outlength - source_bytes,
+             source_bytes);
+      }
+    else
+      {
+      memcpy(source, buffer, source_bytes);
+      }
+
+    tree source_literal =
+      build_string_literal(dest_bytes, source);
+
+    free(source);
+
+    tree dest_location =
+      member(destref.field->var_decl_node, "data");
+
+    if( !refer_is_clean(destref) )
+      {
+      dest_location =
+        gg_add(dest_location, refer_offset(destref));
+      }
+
+    gg_memcpy(dest_location, source_literal, dest_size);
+    }
+  else
+    {
+    bool dest_is_refmod =
+         destref.refmod.from
+      || destref.refmod.len;
+
+    if( dest_is_refmod )
+      {
+      /*
+       * A reference-modified receiving item is treated as
+       * alphanumeric by the library.
+       */
+      attribute_bit_set(destref.field, refmod_e);
+      }
+
+    int rounded_parameter =
+      rounded | (move_all ? REFER_ALL_BIT : 0);
+
+    tree move_call =
+      gg_call_expr(INT,
+                   "__gg__move_literala",
+                   gg_get_address_of(
+                     destref.field->var_decl_node),
+                   refer_offset(destref),
+                   refer_size_dest(destref),
+                   build_int_cst_type(INT,
+                                      rounded_parameter),
+                   build_string_literal(outlength, buffer),
+                   build_int_cst_type(SIZE_T, outlength),
+                   NULL_TREE);
+
+    if( size_error )
+      {
+      gg_assign(size_error, move_call);
+      }
+    else
+      {
+      gg_append_statement(move_call);
+      }
+
+    if( dest_is_refmod )
+      {
+      attribute_bit_clear(destref.field, refmod_e);
+      }
+    }
+
+  return true;
   }
 
 static bool
@@ -2403,14 +2474,12 @@ mh_numdisp_to_packed(const cbl_refer_t &destref,
   tree umask = build_int_cst_type(UCHAR, 0x0F);
   tree ufour = build_int_cst_type(SIZE_T,   4);
 
-  tree source_location;
-  tree dest_location;
+  tree source_location = get_location(sourceref);
+  tree dest_location   = get_location(destref);
   tree dest_p          = gg_define_variable(UCHAR_P);
   tree source_p        = gg_define_variable(UCHAR_P);
 
-  get_location(dest_location, destref);
   gg_assign(dest_p, dest_location);
-  get_location(source_location, sourceref);
 
   int source_digits   = sourceref.field->data.digits;
   int source_rdigits  = sourceref.field->data.rdigits;
@@ -2710,13 +2779,9 @@ mh_packed_to_packed(const cbl_refer_t &destref,
   // in the dest.  We fiddle with the leading digits, the trailing digits, and
   // the sign nybble as necessary.
 
-  tree source_location;
-  tree dest_location;
-  tree source_sign     = gg_define_variable(UCHAR_P);
-  tree dest_sign       = gg_define_variable(UCHAR_P);
-
-  get_location(dest_location, destref);
-  get_location(source_location, sourceref);
+  tree source_location = get_location(sourceref);
+  tree dest_base       = get_location(destref);
+  tree dest_location   = dest_base;
 
   if( check_for_error )
     {
@@ -2792,15 +2857,14 @@ mh_packed_to_packed(const cbl_refer_t &destref,
     tree shifted = gg_define_variable(shifted_type);
     TREE_ADDRESSABLE(shifted) = 1;
     tree source_p        = gg_define_variable(UCHAR_P);
-    tree shifted_p_left  = gg_define_variable(UCHAR_P);
     tree shifted_p_right = gg_define_variable(UCHAR_P);
     tree carry      = gg_define_variable(UCHAR);
-    tree carry_next = gg_define_variable(UCHAR);
+    tree carry_next;
     gg_assign(source_p,
               gg_add(source_location,
                      build_int_cst_type(SIZE_T,
                                         source_capacity-1)));
-    gg_assign(shifted_p_left, gg_pointer_to_array(shifted));
+    tree shifted_p_left = gg_pointer_to_array(shifted);
     gg_assign(shifted_p_right,
               gg_add(shifted_p_left,
                      build_int_cst_type(SIZE_T, shifted_size-1)));
@@ -2818,9 +2882,9 @@ mh_packed_to_packed(const cbl_refer_t &destref,
     gg_decrement(shifted_p_right);
     WHILE(shifted_p_right, gt_op, shifted_p_left)
       {
-      gg_assign(carry_next,
+      carry_next =
                 gg_rshift(gg_indirect(source_p),
-                          build_int_cst_type(SIZE_T, 4)));
+                          build_int_cst_type(SIZE_T, 4));
       gg_assign(gg_indirect(shifted_p_right),
                 gg_bitwise_or(gg_lshift(gg_indirect(source_p),
                                         build_int_cst_type(SIZE_T, 4)),
@@ -2851,16 +2915,16 @@ mh_packed_to_packed(const cbl_refer_t &destref,
     source_digits  += 1;
     source_rdigits += 1;
     source_capacity = source_digits/2 + 1;
-    gg_assign(source_location, shifted_p_left);
+    source_location = shifted_p_left;
     }
-  gg_assign(source_sign,
+  tree source_sign =
             gg_add(source_location,
                    build_int_cst_type(SIZE_T,
-                                      source_capacity-1)));
-  gg_assign(dest_sign,
+                                      source_capacity-1));
+  tree dest_sign =
             gg_add(dest_location,
                    build_int_cst_type(SIZE_T,
-                                      destref.field->data.capacity()-1)));
+                                      destref.field->data.capacity()-1));
 
   // This is the straightforward case, where the dest and source decimal
   // places are in phase, which means that the middles of the values can
@@ -2877,10 +2941,10 @@ mh_packed_to_packed(const cbl_refer_t &destref,
     {
     // There are too many source lbytes.   We just skip those extra bytes,
     // truncating off those high-order digits.
-    gg_assign(source_location,
+    source_location =
               gg_add(source_location,
                      build_int_cst_type(SIZE_T,
-                                        source_lbytes-dest_lbytes)));
+                                        source_lbytes-dest_lbytes));
     }
   else if( source_lbytes < dest_lbytes )
     {
@@ -2889,9 +2953,9 @@ mh_packed_to_packed(const cbl_refer_t &destref,
     gg_memset(dest_location,
               integer_zero_node,
               build_int_cst_type(SIZE_T, dest_lbytes-source_lbytes));
-    gg_assign(dest_location,
-              gg_add(dest_location,
-                     build_int_cst_type(SIZE_T, dest_lbytes-source_lbytes)));
+    dest_location =  gg_add(dest_location,
+                            build_int_cst_type(SIZE_T,
+                                               dest_lbytes-source_lbytes));
     // And reduce the total number to move by the number we zeroed:
     dest_bytes -= dest_lbytes-source_lbytes;
     }
@@ -3018,10 +3082,17 @@ mh_packed_to_packed(const cbl_refer_t &destref,
         }
       }
     }
+  // A standard packed-decimal item with an even number of digits has an
+  // unused high-order nybble.  It must always be zero.
+  if( !(destref.field->data.digits & 1) )
+    {
+    gg_assign(gg_indirect(dest_base),
+              gg_bitwise_and(gg_indirect(dest_base),
+                             build_int_cst_type(UCHAR, 0x0F)));
+    }
   clear_negative_zero(destref,
                       sourceref,
-                      dest_location);
-  return true;
+                      dest_base);  return true;
   }
 
 static bool
@@ -3031,92 +3102,141 @@ mh_packed_to_numdisp(const cbl_refer_t &destref,
                            bool         check_for_error)
   {
   charmap_t *charmap =
-                   __gg__get_charmap(destref.field->codeset.encoding);
+    __gg__get_charmap(destref.field->codeset.encoding);
 
-  if(    (sourceref.field->type != FldPacked         )
-      || (destref.field->type   != FldNumericDisplay )
-      || (charmap->stride()     != 1                 )
-      || (sourceref.field->attr  & scaled_e          )
-      || (destref.field->attr    & scaled_e          )
-      || (sourceref.field->attr  & packed_no_sign_e  )
-      || (destref.field->attr    & leading_e         )
-      || (destref.field->attr    & separate_e        ) )
+  if(    sourceref.field->type != FldPacked
+      || destref.field->type   != FldNumericDisplay
+      || charmap->stride()     != 1
+      || sourceref.field->attr & scaled_e
+      || destref.field->attr   & scaled_e
+      || sourceref.field->attr & packed_no_sign_e
+      || destref.field->attr   & leading_e
+      || destref.field->attr   & separate_e )
     {
     return false;
     }
 
-  /* Source is packed, dest is numeric-display, neither are scaled, the
-     packed source has a sign nybble, and the numeric-display dest has an
-     ordinary sign bit encoded in the final digit.  */
+  gcc_assert(!check_for_error || size_error);
+
+  /*
+   * The source is packed and the destination is numeric-display.
+   * Neither is scaled.  The packed source has a sign nybble, and
+   * the numeric-display destination has an embedded trailing sign.
+   */
+
   tree umask = build_int_cst_type(UCHAR, 0x0F);
-  tree ufour = build_int_cst_type(SIZE_T,   4);
-  tree uzero = build_int_cst_type(UCHAR,
-                                  charmap->mapped_character(ascii_zero));
-  tree source_location;
-  tree dest_location;
-  tree dest_p          = gg_define_variable(UCHAR_P);
-  tree source_p        = gg_define_variable(UCHAR_P);
+  tree ufour = build_int_cst_type(SIZE_T, 4);
+  tree uzero =
+    build_int_cst_type(
+      UCHAR,
+      charmap->mapped_character(ascii_zero));
 
-  get_location(dest_location, destref);
+  tree source_location = get_location(sourceref);
+  tree dest_location   = get_location(destref);
+
+  tree dest_p   = gg_define_variable(UCHAR_P);
+  tree source_p = gg_define_variable(UCHAR_P);
+
   gg_assign(dest_p, dest_location);
-  get_location(source_location, sourceref);
 
-  // source_digits will be the number of digits extracted from the source that
-  // find their way into the destination.
-  int source_digits   = sourceref.field->data.digits;
+  /*
+   * These counts describe actual COBOL digits.  They do not include
+   * the leading padding nybble present in an even-digit packed item.
+   */
+
+  int source_data_digits =
+    sourceref.field->data.digits;
+  int source_rdigits =
+    sourceref.field->data.rdigits;
+  int source_data_ldigits =
+    source_data_digits - source_rdigits;
+
+  int dest_digits =
+    destref.field->data.digits;
+  int dest_rdigits =
+    destref.field->data.rdigits;
+  int dest_ldigits =
+    dest_digits - dest_rdigits;
+
+  int truncate_data_ldigits =
+    std::max(0, source_data_ldigits - dest_ldigits);
+  int truncate_rdigits =
+    std::max(0, source_rdigits - dest_rdigits);
+
+  int digits_to_move =
+      source_data_digits
+    - truncate_data_ldigits
+    - truncate_rdigits;
+
+  /*
+   * source_digits and source_ldigits describe the physical packed
+   * representation.  For an even-digit source, source_digits includes
+   * its leading padding nybble.
+   */
+
+  int source_digits = source_data_digits;
 
   if( !(source_digits & 0x01) )
     {
-    // Because this is an even number, the first byte of the packed value is
-    // 0x0N.  The following logic is a tad simpler when we just increment it,
-    // as if the zero in the left nybble is part of the packed-decimal value.
     source_digits += 1;
     }
 
-  int source_rdigits  = sourceref.field->data.rdigits;
-  int source_ldigits  = source_digits - source_rdigits;
-  int dest_digits     = destref.field->data.digits;
-  int dest_rdigits    = destref.field->data.rdigits;
-  int dest_ldigits    = dest_digits - dest_rdigits;
+  int source_ldigits =
+    source_digits - source_rdigits;
 
-  int truncate_ldigits = std::max(0, source_ldigits-dest_ldigits);
-  int truncate_rdigits = std::max(0, source_rdigits-dest_rdigits);
-  int leading_zeroes   = std::max(0, dest_ldigits-source_ldigits);
-  int trailing_zeroes  = std::max(0, dest_rdigits-source_rdigits);
+  int truncate_ldigits =
+    std::max(0, source_ldigits - dest_ldigits);
+  int leading_zeroes =
+    std::max(0, dest_ldigits - source_ldigits);
+  int trailing_zeroes =
+    std::max(0, dest_rdigits - source_rdigits);
 
   int digit_pairs;
   int source_remaining;
 
-  int truncate_pairs = truncate_ldigits/2 ;
+  int truncate_pairs = truncate_ldigits / 2;
+
   if( truncate_pairs )
     {
-    // We handle truncation of digits on the left by moving the starting line
-    // one byte to the right for each full pair of digits
+    /*
+     * Move the source starting position one byte to the right for
+     * each complete pair of truncated digits.
+     */
 
     if( check_for_error )
       {
       gg_assign(source_p, source_location);
+
       tree truncate_end = gg_define_variable(UCHAR_P);
-      gg_assign(truncate_end,
-                gg_add(source_location,
-                       build_int_cst_type(SIZE_T, truncate_pairs)));
+
+      gg_assign(
+        truncate_end,
+        gg_add(
+          source_location,
+          build_int_cst_type(SIZE_T, truncate_pairs)));
+
       WHILE( source_p, lt_op, truncate_end )
         {
-        gg_assign(size_error,
-                  gg_bitwise_or(size_error,
-                                gg_cast(INT, gg_indirect(source_p))));
+        gg_assign(
+          size_error,
+          gg_bitwise_or(
+            size_error,
+            gg_cast(INT, gg_indirect(source_p))));
+
         gg_increment(source_p);
         }
       WEND
       }
     else
       {
-      gg_assign(source_p,
-                gg_add(source_location,
-                       build_int_cst_type(SIZE_T, truncate_pairs)));
+      gg_assign(
+        source_p,
+        gg_add(
+          source_location,
+          build_int_cst_type(SIZE_T, truncate_pairs)));
       }
-    source_digits    -= 2*truncate_pairs;
-    //source_ldigits   -= 2*truncate_pairs;
+
+    source_digits -= 2 * truncate_pairs;
     truncate_ldigits &= 0x01;
     }
   else
@@ -3124,144 +3244,256 @@ mh_packed_to_numdisp(const cbl_refer_t &destref,
     gg_assign(source_p, source_location);
     }
 
-  // At this point, truncate_ldigits might be one, meaning that when we
-  // get around to  moving digits, we will have to skip the first one.
+  /*
+   * truncate_ldigits can now only be zero or one.  When it is one,
+   * the high nybble at source_p is discarded and the low nybble is
+   * the first source digit transferred.
+   */
 
   if( truncate_rdigits )
     {
-    // We handle truncation of digits on the right by moving the finish line
-    // to the left.
-    source_digits    -= truncate_rdigits;
-    //source_ldigits   -= truncate_rdigits;
+    source_digits -= truncate_rdigits;
     }
 
   source_remaining = source_digits;
 
-  // We are ready to start building our numeric-displace destination.
-
-  if( leading_zeroes )
+  if( digits_to_move == 0 )
     {
-    tree tleading_zeroes = build_int_cst_type(SIZE_T, leading_zeroes);
-    gg_memset(dest_p,
-              uzero,
-              tleading_zeroes);
-    gg_assign(dest_p, gg_add(dest_p, tleading_zeroes));
+    /*
+     * The source and destination digit ranges do not overlap.  The
+     * result is zero.  In particular, do not interpret the packed
+     * source's sign nybble as a digit.
+     */
+
+    gg_memset(
+      dest_p,
+      uzero,
+      build_int_cst_type(
+        SIZE_T,
+        destref.field->data.capacity()));
     }
-
-  // At this point, we are ready to start moving over source_remaining digits.
-
-  if( truncate_ldigits )
+  else
     {
-    // When truncate_ldigits is one, the first byte comes from the right nybble
-    // of *source_p.  We therefore skip the digit in the left nybble.
-    if( check_for_error )
+    if( leading_zeroes )
       {
-      gg_assign(size_error,
-                gg_cast(INT,
-                        gg_bitwise_and(gg_indirect(source_p),
-                                       build_int_cst_type(UCHAR, 0xF0))));
-      }
-    gg_assign(gg_indirect(dest_p),
-                gg_bitwise_or(gg_bitwise_and(gg_indirect(source_p),
-                                             umask),
-                              uzero));
-    gg_increment(source_p);
-    gg_increment(dest_p);
-    source_remaining -= 2;
-    }
+      tree tleading_zeroes =
+        build_int_cst_type(SIZE_T, leading_zeroes);
 
-  // We now pull pairs of digits from the packed source, and put them into the
-  // destination numeric-display.
+      gg_memset(dest_p,
+                uzero,
+                tleading_zeroes);
 
-  digit_pairs = source_remaining/2;
-
-  if( digit_pairs )
-    {
-    tree source_end = gg_define_variable(UCHAR_P);
-    gg_assign(source_end,
-              gg_add(source_p,
-                     build_int_cst_type(SIZE_T, digit_pairs)));
-    WHILE( source_p, lt_op, source_end )
-      {
-      // Left digit
-      gg_assign(gg_indirect(dest_p),
-                gg_bitwise_or(gg_rshift(gg_indirect(source_p),
-                                        ufour),
-                              uzero));
-      gg_increment(dest_p);
-      // Right digit
-      gg_assign(gg_indirect(dest_p),
-                gg_bitwise_or(gg_bitwise_and(gg_indirect(source_p),
-                                             umask),
-                              uzero));
-      gg_increment(dest_p);
-      gg_increment(source_p);
-      }
-    WEND
-    source_remaining -= 2 * digit_pairs;
-    }
-
-  // At this point, source_remaining is zero or one
-
-  if( source_remaining )
-    {
-    // We have one remaining left digit;
-    gg_assign(gg_indirect(dest_p),
-              gg_bitwise_or(gg_rshift(gg_indirect(source_p),
-                                      ufour),
-                            uzero));
-    gg_increment(dest_p);
-    }
-
-  if( trailing_zeroes )
-    {
-    tree ttrailing_zeroes = build_int_cst_type(SIZE_T, trailing_zeroes);
-    gg_memset(dest_p,
-              uzero,
-              ttrailing_zeroes);
-    }
-
-  if(    (destref.field->attr   & signable_e)
-      && (sourceref.field->attr & signable_e) )
-    {
-    // The source and the destination are both signable.
-    gg_assign(source_p,
-              gg_add(source_location,
-                     build_int_cst_type(SIZE_T,
-                                       sourceref.field->data.capacity()-1)));
-    IF(gg_bitwise_and(gg_indirect(source_p),
-                      umask),
-       eq_op,
-       build_int_cst_type(UCHAR, 0x0D) )
-      {
-      // The source is negative
       gg_assign(dest_p,
-                gg_add(dest_location,
-                       build_int_cst_type(SIZE_T,
-                                       destref.field->data.capacity()-1)));
-      if( charmap->is_like_ebcdic() )
+                gg_add(dest_p, tleading_zeroes));
+      }
+
+    if( truncate_ldigits )
+      {
+      /*
+       * The high nybble is being discarded.  Preserve any size error
+       * already detected while examining complete truncated bytes.
+       */
+
+      if( check_for_error )
         {
-        // Turn the 0xFZ EBCDIC digit into 0xDZ to flag it as negative.
-        gg_assign(gg_indirect(dest_p),
-                  gg_bitwise_and(gg_indirect(dest_p),
-                                 build_int_cst_type(UCHAR, 0xDF)));
+        gg_assign(
+          size_error,
+          gg_bitwise_or(
+            size_error,
+            gg_cast(
+              INT,
+              gg_bitwise_and(
+                gg_indirect(source_p),
+                build_int_cst_type(UCHAR, 0xF0)))));
         }
-      else
+
+      gg_assign(
+        gg_indirect(dest_p),
+        gg_bitwise_or(
+          gg_bitwise_and(gg_indirect(source_p), umask),
+          uzero));
+
+      gg_increment(source_p);
+      gg_increment(dest_p);
+
+      /*
+       * One nybble was discarded and one was transferred, so the
+       * complete source byte has been consumed.
+       */
+      source_remaining -= 2;
+      }
+
+    /*
+     * Transfer complete pairs of packed digits.
+     */
+
+    digit_pairs = source_remaining / 2;
+
+    if( digit_pairs )
+      {
+      tree source_end = gg_define_variable(UCHAR_P);
+
+      gg_assign(
+        source_end,
+        gg_add(
+          source_p,
+          build_int_cst_type(SIZE_T, digit_pairs)));
+
+      WHILE( source_p, lt_op, source_end )
         {
-        // Turn the 0x3Z ASCII digit into 07Z to flag it as negative.
-        gg_assign(gg_indirect(dest_p),
-                  gg_bitwise_or(gg_indirect(dest_p),
-                                 build_int_cst_type(UCHAR, 0x70)));
+        /*
+         * Transfer the left packed digit.
+         */
+
+        gg_assign(
+          gg_indirect(dest_p),
+          gg_bitwise_or(
+            gg_rshift(gg_indirect(source_p), ufour),
+            uzero));
+
+        gg_increment(dest_p);
+
+        /*
+         * Transfer the right packed digit.
+         */
+
+        gg_assign(
+          gg_indirect(dest_p),
+          gg_bitwise_or(
+            gg_bitwise_and(
+              gg_indirect(source_p),
+              umask),
+            uzero));
+
+        gg_increment(dest_p);
+        gg_increment(source_p);
         }
+      WEND
+
+      source_remaining -= 2 * digit_pairs;
+      }
+
+    /*
+     * source_remaining is now zero or one.
+     */
+
+    if( source_remaining )
+      {
+      gg_assign(
+        gg_indirect(dest_p),
+        gg_bitwise_or(
+          gg_rshift(gg_indirect(source_p), ufour),
+          uzero));
+
+      gg_increment(dest_p);
+      }
+
+    if( trailing_zeroes )
+      {
+      tree ttrailing_zeroes =
+        build_int_cst_type(SIZE_T, trailing_zeroes);
+
+      gg_memset(dest_p,
+                uzero,
+                ttrailing_zeroes);
+      }
+    }
+
+  if(    destref.field->attr   & signable_e
+      && sourceref.field->attr & signable_e )
+    {
+    /*
+     * Determine whether truncation occurred.  If it did, preserve a
+     * negative sign only when the resulting destination is nonzero.
+     * This prevents either left or right truncation from producing
+     * negative zero.
+     */
+
+    tree preserve_negative = integer_one_node;
+
+    if( truncate_data_ldigits || truncate_rdigits )
+      {
+      preserve_negative = integer_zero_node;
+
+      for( size_t i = 0;
+           i < destref.field->data.capacity();
+           i++ )
+        {
+        tree digit =
+          gg_bitwise_and(
+            gg_indirect(
+              dest_location,
+              build_int_cst_type(SIZE_T, i)),
+            umask);
+
+        preserve_negative =
+          gg_bitwise_or(
+            preserve_negative,
+            gg_cast(INT, digit));
+        }
+      }
+
+    tree source_sign =
+      gg_add(
+        source_location,
+        build_int_cst_type(
+          SIZE_T,
+          sourceref.field->data.capacity() - 1));
+
+    IF( gg_bitwise_and(gg_indirect(source_sign), umask),
+        eq_op,
+        build_int_cst_type(UCHAR, 0x0D) )
+      {
+      /*
+       * The source is negative.  Apply that sign only when doing so
+       * will not create a negative zero through truncation.
+       */
+
+      IF( preserve_negative, ne_op, integer_zero_node )
+        {
+        tree dest_sign =
+          gg_add(
+            dest_location,
+            build_int_cst_type(
+              SIZE_T,
+              destref.field->data.capacity() - 1));
+
+        if( charmap->is_like_ebcdic() )
+          {
+          /*
+           * Turn the EBCDIC 0xFZ digit into 0xDZ.
+           */
+
+          gg_assign(
+            gg_indirect(dest_sign),
+            gg_bitwise_and(
+              gg_indirect(dest_sign),
+              build_int_cst_type(UCHAR, 0xDF)));
+          }
+        else
+          {
+          /*
+           * Turn the ASCII 0x3Z digit into 0x7Z.
+           */
+
+          gg_assign(
+            gg_indirect(dest_sign),
+            gg_bitwise_or(
+              gg_indirect(dest_sign),
+              build_int_cst_type(UCHAR, 0x70)));
+          }
+        }
+      ELSE
+        {
+        }
+      ENDIF
       }
     ELSE
       {
       }
     ENDIF
     }
-  clear_negative_zero(destref,
-                      sourceref,
-                      dest_location);
+
   return true;
   }
 
@@ -3276,6 +3508,7 @@ move_helper(tree size_error,        // This is an INT
             bool restore_on_error
             )
   {
+  //extern bool var_decl_count; var_decl_count=true;
   Analyze();
   SHOW_PARSE1
     {
@@ -3288,34 +3521,34 @@ move_helper(tree size_error,        // This is an INT
     gg_assign(size_error, integer_zero_node);
     }
 
-  static tree stash =
-                gg_define_variable(UCHAR_P, "..move_stasher", vs_file_static);
-
+  tree stash   = NULL_TREE;
   tree st_data = NULL_TREE;
   tree st_size = NULL_TREE;
+
   if( restore_on_error )
     {
-    // We are creating a copy of the original destination in case we clobber it
-    // and have to restore it because of a computational error.
-    static bool first_time = true;
-    static size_t stash_size = 1024;
-    if( first_time )
-      {
-      first_time = false;
-      gg_assign(stash, gg_cast(UCHAR_P, gg_malloc(stash_size)));
-      }
-    if( stash_size < destref.field->data.capacity() )
-      {
-      stash_size = destref.field->data.capacity();
-      gg_assign(stash, gg_cast(UCHAR_P, gg_realloc(stash, stash_size)));
-      }
-    st_data = qualified_data_location(destref);
-    st_size = refer_size_dest(destref);
+    gcc_assert(size_error);
+
+    st_data = gg_define_variable(UCHAR_P);
+    st_size = gg_define_variable(SIZE_T);
+    stash   = gg_define_variable(UCHAR_P);
+
+    // Snapshot the destination address and length before executing the move.
+    gg_assign(st_data,
+              qualified_data_location(destref));
+    gg_assign(st_size,
+              refer_size_dest(destref));
+
+    gg_assign(stash,
+              gg_call_expr(UCHAR_P,
+                           "__gg__move_stash_acquire",
+                           st_size,
+                           NULL_TREE));
+
     gg_memcpy(stash,
               st_data,
               st_size);
     }
-
   bool moved = mh_source_is_group(destref, sourceref, tsource);
 
   if( !moved )
@@ -3433,15 +3666,14 @@ move_helper(tree size_error,        // This is an INT
 
     int nflags =   (sourceref.all      ? REFER_T_MOVE_ALL   : 0)
                  + (sourceref.addr_of  ? REFER_T_ADDRESS_OF : 0);
-
     if( size_error )
       {
       gg_assign(size_error,
                 gg_call_expr( INT,
                               "__gg__move",
                               gg_get_address_of(destref.field->var_decl_node),
-                              refer_offset(destref),
-                              refer_size_dest(destref),
+                              gg_cast(SIZE_T, refer_offset(destref)),
+                              gg_cast(SIZE_T, refer_size_dest(destref)),
                               tsource.pfield,
                               tsource.offset,
                               tsource.length,
@@ -3454,8 +3686,8 @@ move_helper(tree size_error,        // This is an INT
                 gg_call     ( INT,
                               "__gg__move",
                               gg_get_address_of(destref.field->var_decl_node),
-                              refer_offset(destref),
-                              refer_size_dest(destref),
+                              gg_cast(SIZE_T, refer_offset(destref)),
+                              gg_cast(SIZE_T, refer_size_dest(destref)),
                               tsource.pfield,
                               tsource.offset,
                               tsource.length,
@@ -3478,7 +3710,7 @@ move_helper(tree size_error,        // This is an INT
 
   if( restore_on_error )
     {
-    IF(size_error, ne_op, integer_zero_node)
+    IF( size_error, ne_op, integer_zero_node )
       {
       gg_memcpy(st_data,
                 stash,
@@ -3486,15 +3718,18 @@ move_helper(tree size_error,        // This is an INT
       }
     ELSE
       ENDIF
+
+    gg_call(VOID,
+            "__gg__move_stash_release",
+            stash,
+            NULL_TREE);
     }
   else
     {
     if( check_for_error )
       {
-      IF(size_error, ne_op, integer_zero_node)
+      IF( size_error, ne_op, integer_zero_node )
         {
-        // We had a size error, but there was no restore_on_error.
-        // Let our lord and master know there was a truncation:
         set_exception_code(ec_size_truncation_e);
         }
       ELSE

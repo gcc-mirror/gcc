@@ -36,6 +36,7 @@
 // looks *are* important, and the multiple definitions make things easier
 // to understand.
 
+#define IF_CONDITION(a) gg_create_true_false_statement_lists(a);
 #define IF(a,b,c) gg_if((a),(b),(c));
 #define ELSE current_function->statement_list_stack.pop_back();
 #define ENDIF current_function->statement_list_stack.pop_back();
@@ -44,38 +45,39 @@
 
 // mnemonics for variable types:
 
-#define VOID       void_type_node
-#define BOOL       boolean_type_node
-#define CHAR       char_type_node
-#define SCHAR      signed_char_type_node
-#define SCHAR_P    build_pointer_type(SCHAR)
-#define UCHAR      unsigned_char_type_node
-#define SHORT      short_integer_type_node
-#define SHORT_P    build_pointer_type(short_integer_type_node)
-#define USHORT     short_unsigned_type_node
-#define WCHAR      short_unsigned_type_node
-#define INT        integer_type_node
-#define INT_P      build_pointer_type(integer_type_node)
-#define UINT       unsigned_type_node
-#define LONG       long_integer_type_node
-#define ULONG      long_unsigned_type_node
-#define LONGLONG   long_long_integer_type_node
-#define UINT64  uint64_type_node
-#define SIZE_T     size_type_node
-#define SIZE_T_P   (build_pointer_type(SIZE_T))
-#define SSIZE_T    ptrdiff_type_node
-#define INT128     intTI_type_node
-#define UINT128    unsigned_intTI_type_node
-#define FLOAT      float32_type_node
-#define DOUBLE     float64_type_node
-#define LONGDOUBLE long_double_type_node
-#define FLOAT128   float128_type_node
-#define VOID_P     ptr_type_node
-#define VOID_P_P   (build_pointer_type(VOID_P))
-#define CHAR_P     char_ptr_type_node
-#define UCHAR_P    uchar_ptr_type_node
-#define WCHAR_P    wchar_ptr_type_node
-#define FILE_P     fileptr_type_node
+#define VOID         void_type_node
+#define BOOL         boolean_type_node
+#define CHAR         char_type_node
+#define SCHAR        signed_char_type_node
+#define SCHAR_P      build_pointer_type(SCHAR)
+#define UCHAR        unsigned_char_type_node
+#define SHORT        short_integer_type_node
+#define SHORT_P      build_pointer_type(short_integer_type_node)
+#define USHORT       short_unsigned_type_node
+#define WCHAR        short_unsigned_type_node
+#define INT          integer_type_node
+#define INT_P        build_pointer_type(integer_type_node)
+#define UINT         unsigned_type_node
+#define LONG         long_integer_type_node
+#define ULONG        long_unsigned_type_node
+#define LONGLONG     long_long_integer_type_node
+#define UINT64       uint64_type_node
+#define SIZE_T       size_type_node
+#define SIZE_T_P     (build_pointer_type(SIZE_T))
+#define SSIZE_T      ptrdiff_type_node
+#define INT128       intTI_type_node
+#define UINT128      unsigned_intTI_type_node
+#define FLOAT        float32_type_node
+#define DOUBLE       float64_type_node
+#define LONGDOUBLE   long_double_type_node
+#define FLOAT128     float128_type_node
+#define VOID_P       ptr_type_node
+#define VOID_P_P     (build_pointer_type(VOID_P))
+#define CHAR_P       char_ptr_type_node
+#define CONST_CHAR_P const_char_ptr_type_node
+#define UCHAR_P      uchar_ptr_type_node
+#define WCHAR_P      wchar_ptr_type_node
+#define FILE_P       fileptr_type_node
 
 #define SIZE128 (16) // In bytes
 
@@ -144,9 +146,6 @@ struct gg_function_t
 
     // The function_decl is fundamental to many, many things
     tree function_decl;
-
-    // We keep track of the end of the chain of blocks:
-    tree current_block;
 
     // Every function has a context, wherein temporary variables get created
     // and whose names won't collide with the names in other function.
@@ -298,29 +297,33 @@ struct cbl_translation_unit_t
     // to tell the compiler to create data definitions for translation_unit_decl
     // variables:
     std::unordered_map<std::string, tree> trans_unit_var_decls;
+
+    // This map is to make chaining BLOCKs an O(1) operation.
+    std::unordered_map<tree, tree> block_var_tails;
     };
 
 extern struct cbl_translation_unit_t gg_trans_unit;
 
 #define current_function (&gg_trans_unit.function_stack.back())
 
-extern GTY(()) tree char_nodes[256]      ;
-extern GTY(()) tree pvoid_type_node      ;
-extern GTY(()) tree integer_minusone_node;
-extern GTY(()) tree integer_two_node     ;
-extern GTY(()) tree integer_eight_node   ;
-extern GTY(()) tree size_t_zero_node     ;
-extern GTY(()) tree int128_zero_node     ;
-extern GTY(()) tree int128_five_node     ;
-extern GTY(()) tree int128_ten_node      ;
-extern GTY(()) tree bool_true_node       ;
-extern GTY(()) tree bool_false_node      ;
-extern GTY(()) tree char_ptr_type_node   ;
-extern GTY(()) tree uchar_ptr_type_node  ;
-extern GTY(()) tree wchar_ptr_type_node  ;
-extern GTY(()) tree long_double_ten_node ;
-extern GTY(()) tree sizeof_size_t        ;
-extern GTY(()) tree sizeof_pointer       ;
+extern GTY(()) tree char_nodes[256]         ;
+extern GTY(()) tree pvoid_type_node         ;
+extern GTY(()) tree integer_minusone_node   ;
+extern GTY(()) tree integer_two_node        ;
+extern GTY(()) tree integer_eight_node      ;
+extern GTY(()) tree size_t_zero_node        ;
+extern GTY(()) tree int128_zero_node        ;
+extern GTY(()) tree int128_five_node        ;
+extern GTY(()) tree int128_ten_node         ;
+extern GTY(()) tree bool_true_node          ;
+extern GTY(()) tree bool_false_node         ;
+extern GTY(()) tree char_ptr_type_node      ;
+extern GTY(()) tree const_char_ptr_type_node;
+extern GTY(()) tree uchar_ptr_type_node     ;
+extern GTY(()) tree wchar_ptr_type_node     ;
+extern GTY(()) tree long_double_ten_node    ;
+extern GTY(()) tree sizeof_size_t           ;
+extern GTY(()) tree sizeof_pointer          ;
 
 // These routines happen when beginning to process a new file, which is also
 // known, in GCC, as a "translation unit"
@@ -387,7 +390,9 @@ extern tree gg_array_value(tree pointer, int N);
 
 // Here are some unary operations
 extern void gg_increment(tree var);
+extern void gg_increment2(tree &var);
 extern void gg_decrement(tree var);
+extern void gg_decrement2(tree &var);
 extern tree gg_negate(tree var);        // Two's complement negation
 extern tree gg_bitwise_not(tree var);   // Bitwise inversion
 extern tree gg_abs(tree var);           // Absolute value
@@ -419,6 +424,20 @@ extern tree gg_build_logical_expression(tree operand_a,
         enum logop_t op,
         tree operand_b);
 
+extern tree gg_logical_eq(tree a, tree b);
+extern tree gg_logical_ne(tree a, tree b);
+extern tree gg_logical_lt(tree a, tree b);
+extern tree gg_logical_gt(tree a, tree b);
+extern tree gg_logical_le(tree a, tree b);
+extern tree gg_logical_ge(tree a, tree b);
+extern tree gg_logical_and(tree a, tree b);
+extern tree gg_logical_or(tree a, tree b);
+extern tree gg_logical_xor(tree a, tree b);
+extern tree gg_logical_not(tree a);
+extern tree if_condition(tree cond,
+                         tree expr_if_true,
+                         tree expr_if_false,
+                         tree type);
 extern void gg_create_true_false_statement_lists(tree relational_expression);
 extern void gg_while(tree operand_a, enum relop_t op, tree operand_b);
 extern void gg_if(   tree operand_a, enum relop_t op, tree operand_b);
@@ -438,8 +457,6 @@ extern tree gg_memchr(tree s, tree c, tree n);
 extern tree gg_memcmp(const tree dest, const tree src, tree size);
 extern void gg_memcpy(tree dest, const tree src, tree size);
 extern void gg_memmove(tree dest, const tree src, tree size);
-extern tree gg_memdup(tree data, tree length);
-extern tree gg_memdup(tree data, size_t length);
 extern void gg_strcpy(tree char_star_A, tree char_star_B);
 extern tree gg_strdup(tree char_star_A);
 extern tree gg_strcmp(tree char_star_A, tree char_star_B);
@@ -450,7 +467,6 @@ extern void gg_return(tree operand = NULL_TREE);
 
 // These routines are the preamble and postamble that bracket everything else
 extern tree gg_build_fn_decl(const char *funcname, tree fndecl_type);
-extern tree gg_peek_fn_decl(const char *funcname);
 extern tree gg_define_function( tree return_type,
                                 const char *funcname,
                                 const char *unmangled_name,
@@ -515,7 +531,7 @@ extern tree gg_strlen(tree psz);
 extern size_t gg_sizeof(tree decl_node);
 
 extern tree gg_array_of_field_pointers( const std::vector<const cbl_field_t *> &fields );
-extern tree gg_array_of_bytes( size_t N, unsigned char *values);
+extern tree gg_array_of_bytes( size_t N, const unsigned char *values);
 extern tree gg_indirect(tree pointer, tree byte_offset = NULL_TREE);
 extern tree gg_indirect_i(tree pointer, size_t offset=0);
 extern tree gg_string_literal(const char *string);

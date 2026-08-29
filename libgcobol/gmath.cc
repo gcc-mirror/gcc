@@ -75,13 +75,12 @@ conditional_stash(  cblc_field_t *destination,
     {
     // It's an uncomplicated assignment, because there was no
     // ON SIZE ERROR phrase
-    __gg__int128_to_qualified_field(destination,
-                                    destination_o,
-                                    destination_s,
-                                    value,
-                                    rdigits,
-                                    rounded,
-                                    &retval);
+    retval = __gg__int128_to_qualified_field(destination,
+                                             destination_o,
+                                             destination_s,
+                                             value,
+                                             rdigits,
+                                             rounded);
     }
   else
     {
@@ -92,13 +91,12 @@ conditional_stash(  cblc_field_t *destination,
     massert(stash);
     memcpy(stash, destination->data+destination_o, destination_s);
 
-    __gg__int128_to_qualified_field(destination,
-                                    destination_o,
-                                    destination_s,
-                                    value,
-                                    rdigits,
-                                    rounded,
-                                    &retval);
+    retval = __gg__int128_to_qualified_field(destination,
+                                             destination_o,
+                                             destination_s,
+                                             value,
+                                             rdigits,
+                                             rounded);
     if( retval )
       {
       // Because there was a size error, we will report that
@@ -1986,19 +1984,27 @@ __gg__dividef45(cbl_arith_format_t ,
 
     if( !error_this_time )
       {
-      *compute_error |= conditional_stash(C[1].field, C[1].offset, C[1].size,
+      // C[0] is the temporary remainder and C[1] is the quotient.
+      // The quotient's rounding mode is therefore rounded_p[1].
+      *compute_error |= conditional_stash(C[1].field,
+                                          C[1].offset,
+                                          C[1].size,
                                           on_size_error,
                                           c_value,
-                                          *rounded_p++);
+                                          rounded_p[1]);
+
       // This is floating point, and there is a remainder, and we don't know
-      // what that means.  Set the remainder to zero
+      // what that means.  Set the remainder to zero.  A remainder has no
+      // ROUNDED phrase, so use truncation explicitly.
       if( !*compute_error )
         {
         c_value = 0;
-        *compute_error |= conditional_stash(C[0].field, C[0].offset, C[0].size,
+        *compute_error |= conditional_stash(C[0].field,
+                                            C[0].offset,
+                                            C[0].size,
                                             on_size_error,
                                             c_value,
-                                            *rounded_p++);
+                                            truncation_e);
         }
       }
     }
@@ -2482,13 +2488,12 @@ __gg__compute_fixed(const char          opstring[],
   value <<= 64;
   value  +=  v256.i64[0];
 
-  __gg__int128_to_qualified_field(target,
-                                  target_offset,
-                                  target->capacity,
-                                  value,
-                                  v256.rdigits,
-                                  truncation_e,
-                                  &retval);
+  retval |= __gg__int128_to_qualified_field(target,
+                                            target_offset,
+                                            target->capacity,
+                                            value,
+                                            v256.rdigits,
+                                            truncation_e);
   return retval;
   }
 

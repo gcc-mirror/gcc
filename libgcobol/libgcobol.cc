@@ -40,6 +40,7 @@
 #include <unordered_map>
 #include <vector>
 #include <cwctype>
+#include <limits>
 
 #include <dirent.h>
 #include <dlfcn.h>
@@ -211,7 +212,7 @@ const char *__gg__exception_source_file       = NULL ;
 int         __gg__exception_line_number       = 0    ;
 const char *__gg__exception_statement         = NULL ;
 int         __gg__default_compute_error       = 0    ;
-int         __gg__rdigits                     = 0    ;
+int         __gg__fracdigits                     = 0    ;
 int         __gg__nop                         = 0    ;
 int         __gg__main_called                 = 0    ;
 size_t      __gg__entry_index                 = 0    ;
@@ -1376,8 +1377,8 @@ __int128
 __gg__scale_by_power_of_ten_1(__int128 value, int N)
   {
   // This routine is called when the result of the scaling is not allowed to
-  // have non-zero rdigits.  __gg__rdigits is set to 1 when the result is
-  // in the bad zone.  The ultimate caller needs to examine __gg__rdigits to
+  // have non-zero rdigits.  __gg__fracdigits is set to 1 when the result is
+  // in the bad zone.  The ultimate caller needs to examine __gg__fracdigits to
   // decide what to do about it.
 
   // This is a separate routine because of the performance hit caused by the
@@ -1385,21 +1386,21 @@ __gg__scale_by_power_of_ten_1(__int128 value, int N)
   // turned on.
   if( N > 0 )
     {
-    __gg__rdigits = 0;
+    __gg__fracdigits = 0;
     value *= __gg__power_of_ten(N);
     }
   else if( N < 0)
     {
-    // We throwing away the N rightmost digits.  Use __gg__rdigits
+    // We throwing away the N rightmost digits.  Use __gg__fracdigits
     // to let the calling chain know they were non-zero:
     __int128 pot = __gg__power_of_ten(-N);
     if( value % pot)
       {
-      __gg__rdigits = 1;
+      __gg__fracdigits = 1;
       }
     else
       {
-      __gg__rdigits = 0;
+      __gg__fracdigits = 0;
       }
 
     value /= pot;
@@ -1407,7 +1408,7 @@ __gg__scale_by_power_of_ten_1(__int128 value, int N)
   else
     {
     // N is zero
-    __gg__rdigits = 0;
+    __gg__fracdigits = 0;
     }
   return value;
   }
@@ -4529,7 +4530,7 @@ extern "C"
 int
 __gg__compare_field_class(const cblc_field_t  *conditional,
                     unsigned char       *conditional_location,
-                    int                  conditional_length,
+                    size_t               conditional_length,
                     cblc_field_t        *list)
   {
   int retval = 1; // Zero means equal
@@ -6882,14 +6883,12 @@ __gg__move( cblc_field_t        *fdest,
                 }
               }
 
-            __gg__int128_to_qualified_field(
-                                  fdest,
-                                  dest_offset,
-                                  dest_size,
-                                  val128.i128,
-                                  val128.rdigits,
-                                  rounded,
-                                  &size_error );
+            size_error = __gg__int128_to_qualified_field(fdest,
+                                                     dest_offset,
+                                                     dest_size,
+                                                     val128.i128,
+                                                     val128.rdigits,
+                                                     rounded);
             break;
             }
 
@@ -6945,14 +6944,12 @@ __gg__move( cblc_field_t        *fdest,
               {
               value128 = -value128;
               }
-            __gg__int128_to_qualified_field(
-                                  fdest,
-                                  dest_offset,
-                                  dest_size,
-                                  value128,
-                                  rdigits,
-                                  rounded,
-                                  &size_error );
+            size_error = __gg__int128_to_qualified_field( fdest,
+                                                          dest_offset,
+                                                          dest_size,
+                                                          value128,
+                                                          rdigits,
+                                                          rounded);
             break;
             }
 
@@ -7005,13 +7002,12 @@ __gg__move( cblc_field_t        *fdest,
                                               fsource,
                                               source_offset,
                                               source_size);
-           __gg__int128_to_qualified_field( fdest,
-                                            dest_offset,
-                                            dest_size,
-                                            val128.i128,
-                                            val128.rdigits,
-                                            rounded,
-                                            &size_error );
+           size_error = __gg__int128_to_qualified_field(fdest,
+                                                        dest_offset,
+                                                        dest_size,
+                                                        val128.i128,
+                                                        val128.rdigits,
+                                                        rounded);
             break;
             }
 
@@ -7288,14 +7284,12 @@ __gg__move_literala(cblc_field_t *field,
           value %= __gg__power_of_ten(field->digits);
           }
         }
-      __gg__int128_to_qualified_field(
-                            field,
-                            field_offset,
-                            field_size,
-                            value,
-                            rdigits,
-                            rounded,
-                            &size_error );
+      size_error = __gg__int128_to_qualified_field( field,
+                                                    field_offset,
+                                                    field_size,
+                                                    value,
+                                                    rdigits,
+                                                    rounded);
       break;
       }
 
@@ -7311,14 +7305,12 @@ __gg__move_literala(cblc_field_t *field,
                                     field->encoding,
                                     strlen,
                                     &rdigits );
-      __gg__int128_to_qualified_field(
-                            field,
-                            field_offset,
-                            field_size,
-                            value,
-                            rdigits,
-                            rounded,
-                            &size_error );
+      size_error = __gg__int128_to_qualified_field( field,
+                                                    field_offset,
+                                                    field_size,
+                                                    value,
+                                                    rdigits,
+                                                    rounded);
       break;
 
     case FldAlphaEdited:
@@ -7825,8 +7817,7 @@ move_string(cblc_field_t *field,
                                       length,
                                       value,
                                       rdigits,
-                                      truncation_e,
-                                      NULL);
+                                      truncation_e);
       break;
       }
 
@@ -8120,8 +8111,7 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
                                       ref[INDEX_OF_POINTER].size,
                                       (__int128)(pointer+1),
                                       0,
-                                      truncation_e,
-                                      NULL );
+                                      truncation_e);
       }
     }
   else
@@ -8518,8 +8508,7 @@ we_are_done:
                                       length,
                                       value,
                                       rdigits,
-                                      truncation_e,
-                                      NULL);
+                                      truncation_e);
       break;
       }
 
@@ -8541,8 +8530,7 @@ we_are_done:
                                       length,
                                       value,
                                       rdigits,
-                                      truncation_e,
-                                      NULL);
+                                      truncation_e);
       break;
       }
     }
@@ -8687,22 +8675,23 @@ __gg__int128_to_field(cblc_field_t   *tgt,
   }
 
 extern "C"
-void
+int
 __gg__int128_to_qualified_field(cblc_field_t   *tgt,
                                 size_t          offset,
                                 size_t          length,
                                 __int128        value,
                                 int             source_rdigits,
-                                enum cbl_round_t  rounded,
-                                int            *compute_error)
+                                enum cbl_round_t  rounded)
   {
+  int            compute_error = 0;
   int128_to_field(tgt,
                   tgt->data + offset,
                   length ? length : tgt->capacity,
                   value,
                   source_rdigits,
                   rounded,
-                  compute_error);
+                  &compute_error);
+  return compute_error;
   }
 
 static __int128
@@ -10289,8 +10278,7 @@ __gg__unstring( const cblc_referlet_t *id2,
                                       id6[nreceiver].size,
                                       (__int128)examined,
                                       0,
-                                      truncation_e,
-                                      NULL );
+                                      truncation_e);
       }
 
     // Update the state variables:
@@ -10311,8 +10299,7 @@ done:
                                     id8_s,
                                     (__int128)tally,
                                     0,
-                                    truncation_e,
-                                    NULL );
+                                    truncation_e);
     }
 
   if( id7 )
@@ -10322,8 +10309,7 @@ done:
                                     id7_s,
                                     (__int128)pointer,
                                     0,
-                                    truncation_e,
-                                    NULL );
+                                    truncation_e);
     }
 
   if( left < right )
@@ -13072,13 +13058,12 @@ __gg__show_int128(__int128 val)
   }
 
 extern "C"
-void
-__gg__compare_string_all(int            *result,
-                   const unsigned char  *left,
-                         size_t          length_left,
-                         int             stride,
-                   const unsigned char  *right,
-                         size_t          length_right)
+int
+__gg__compare_string_all(const unsigned char  *left,
+                               size_t          length_left,
+                               int             stride,
+                         const unsigned char  *right,
+                               size_t          length_right)
   {
   // "all" in the name is in the confusing COBOL sense, as in VALUE ALL "A".
 
@@ -13090,7 +13075,7 @@ __gg__compare_string_all(int            *result,
      and so on.  So, for now if the stride is one, we use the display
      alphabet. */
 
-  *result = 0;
+  int result = 0;
   size_t index = 0;
   if( stride == 1 )
     {
@@ -13101,7 +13086,7 @@ __gg__compare_string_all(int            *result,
 
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         break;
         }
       index += 1;
@@ -13118,7 +13103,7 @@ __gg__compare_string_all(int            *result,
                                                + (index % length_right) * 2);
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         break;
         }
       index += 1;
@@ -13135,27 +13120,27 @@ __gg__compare_string_all(int            *result,
                                                + (index % length_right) * 4);
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         break;
         }
       index += 1;
       }
     }
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_string_1( int            *result,
-                  const unsigned char  *left,
-                        size_t          length_left,
-                  const unsigned char  *right,
-                        size_t          length_right,
-                  const unsigned char  *char_space)
+int
+__gg__compare_string_1( const unsigned char  *left,
+                              size_t          length_left,
+                        const unsigned char  *right,
+                              size_t          length_right,
+                        const unsigned char  *char_space)
   {
   // This is the the routine that will probably do all of the real-world work,
   // the following routines not withstanding.  It does single-byte comparisons
   // through the collation table.
-  *result = 0;
+  int result = 0;
 
   size_t length = std::min(length_left, length_right);
   size_t index = 0;
@@ -13165,19 +13150,19 @@ __gg__compare_string_1( int            *result,
     unsigned char ch_r = collated(right[index]);
     if( ch_l != ch_r )
       {
-      *result =  ch_l < ch_r ? -1 : +1 ;
+      result =  ch_l < ch_r ? -1 : +1 ;
       goto done;
       }
     index += 1;
     }
-  if( *result == 0 )
+  if( result == 0 )
     {
     while( index < length_left )
       {
       unsigned char ch_l = collated(left[index]);
       if( ch_l != *char_space )
         {
-        *result =  ch_l < *char_space ? -1 : +1 ;
+        result =  ch_l < *char_space ? -1 : +1 ;
         goto done;
         }
       index += 1;
@@ -13187,14 +13172,14 @@ __gg__compare_string_1( int            *result,
       unsigned char ch_r = collated(right[index]);
       if( *char_space != ch_r )
         {
-        *result =  *char_space < ch_r ? -1 : +1 ;
+        result =  *char_space < ch_r ? -1 : +1 ;
         goto done;
         }
       index += 1;
       }
     }
   done:
-  return;
+  return result;
   }
 
 #define ASCII_16 "                "
@@ -13211,8 +13196,8 @@ static const unsigned char  ascii_1024[1025] =  ASCII_1024;
 static const unsigned char ebcdic_1024[1025] = EBCDIC_1024;
 
 extern "C"
-void
-__gg__compare_string_1a( int            *result,
+int
+__gg__compare_string_1a(
                    const unsigned char  *left,
                          size_t          length_left,
                    const unsigned char  *right,
@@ -13221,11 +13206,11 @@ __gg__compare_string_1a( int            *result,
   {
   // This is the rarely-seen, but simplest routine of all, comparing
   // single-byte ASCII characters in the same encoding without fear or favor.
-  *result = 0;
+  int result = 0;
 
   size_t length = std::min(length_left, length_right);
-  *result = memcmp(left, right, length);
-  if( *result == 0 )
+  result = memcmp(left, right, length);
+  if( result == 0 )
     {
     if( length < length_left ) // Right is shorter than Left
       {
@@ -13236,8 +13221,8 @@ __gg__compare_string_1a( int            *result,
       while( length_left )
         {
         size_t this_time = std::min(1024UL, length_left);
-        *result = memcmp(left, ascii_1024, this_time);
-        if( *result )
+        result = memcmp(left, ascii_1024, this_time);
+        if( result )
           {
           break;
           }
@@ -13254,8 +13239,8 @@ __gg__compare_string_1a( int            *result,
       while( length_right )
         {
         size_t this_time = std::min(1024UL, length_right);
-        *result = memcmp(ascii_1024, right, this_time);
-        if( *result )
+        result = memcmp(ascii_1024, right, this_time);
+        if( result )
           {
           break;
           }
@@ -13264,12 +13249,12 @@ __gg__compare_string_1a( int            *result,
         }
       }
     }
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_string_1e( int            *result,
+int
+__gg__compare_string_1e(
                    const unsigned char  *left,
                          size_t          length_left,
                    const unsigned char  *right,
@@ -13278,11 +13263,11 @@ __gg__compare_string_1e( int            *result,
   {
   // This is the rarely-seen, but simplest routine of all, comparing
   // single-byte EBCDIC characters in the same encoding without fear or favor.
-  *result = 0;
+  int result = 0;
 
   size_t length = std::min(length_left, length_right);
-  *result = memcmp(left, right, length);
-  if( *result == 0 )
+  result = memcmp(left, right, length);
+  if( result == 0 )
     {
     if( length < length_left ) // Right is shorter than Left
       {
@@ -13293,8 +13278,8 @@ __gg__compare_string_1e( int            *result,
       while( length_left )
         {
         size_t this_time = std::min(1024UL, length_left);
-        *result = memcmp(left, ebcdic_1024, this_time);
-        if( *result )
+        result = memcmp(left, ebcdic_1024, this_time);
+        if( result )
           {
           break;
           }
@@ -13311,8 +13296,8 @@ __gg__compare_string_1e( int            *result,
       while( length_right )
         {
         size_t this_time = std::min(1024UL, length_right);
-        *result = memcmp(ebcdic_1024, right, this_time);
-        if( *result )
+        result = memcmp(ebcdic_1024, right, this_time);
+        if( result )
           {
           break;
           }
@@ -13321,12 +13306,12 @@ __gg__compare_string_1e( int            *result,
         }
       }
     }
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_string_2( int            *result,
+int
+__gg__compare_string_2(
                    const unsigned char  *left,
                          size_t          length_left,
                    const unsigned char  *right,
@@ -13340,7 +13325,7 @@ __gg__compare_string_2( int            *result,
 
   bool is_little_endian = *char_space != 0;
 
-  *result = 0;
+  int result = 0;
 
   size_t length = std::min(length_left, length_right);
   size_t index = 0;
@@ -13366,7 +13351,7 @@ __gg__compare_string_2( int            *result,
     uint32_t ch_r = collated(index_r);
     if( ch_l != ch_r )
       {
-      *result =  ch_l < ch_r ? -1 : +1 ;
+      result =  ch_l < ch_r ? -1 : +1 ;
       goto done;
       }
     index += 2;
@@ -13386,7 +13371,7 @@ __gg__compare_string_2( int            *result,
     uint32_t ch_l = collated(index_l);
     if( ch_l != ascii_space )
       {
-      *result =  ch_l < ascii_space ? -1 : +1 ;
+      result =  ch_l < ascii_space ? -1 : +1 ;
       goto done;
       }
     index += 2;
@@ -13406,18 +13391,18 @@ __gg__compare_string_2( int            *result,
     uint32_t ch_r = collated(index_r);
     if( ascii_space != ch_r )
       {
-      *result =  ascii_space < ch_r ? -1 : +1 ;
+      result =  ascii_space < ch_r ? -1 : +1 ;
       goto done;
       }
     index += 2;
     }
   done:
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_string_2a( int            *result,
+int
+__gg__compare_string_2a(
                    const unsigned char  *left,
                          size_t          length_left,
                    const unsigned char  *right,
@@ -13425,7 +13410,7 @@ __gg__compare_string_2a( int            *result,
                    const char           *char_space)
   {
   // This compares two-byte character strings.
-  *result = 0;
+  int result = 0;
 
   length_left/=2;
   length_left*=2;
@@ -13455,7 +13440,7 @@ __gg__compare_string_2a( int            *result,
       ch_r = right[index+1];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       // And then compare the low bytes
@@ -13463,7 +13448,7 @@ __gg__compare_string_2a( int            *result,
       ch_r = right[index];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       index += stride;
@@ -13477,13 +13462,13 @@ __gg__compare_string_2a( int            *result,
       ch_l = left[index+1];
       if( ch_l != char_space[1] )
         {
-        *result =  ch_l < char_space[1] ? -1 : +1 ;
+        result =  ch_l < char_space[1] ? -1 : +1 ;
         goto done;
         }
       ch_l = left[index];
       if( ch_l != char_space[0] )
         {
-        *result =  ch_l < char_space[0] ? -1 : +1 ;
+        result =  ch_l < char_space[0] ? -1 : +1 ;
         goto done;
         }
       index += stride;
@@ -13494,13 +13479,13 @@ __gg__compare_string_2a( int            *result,
       ch_r = right[index+1];
       if( char_space[1] != ch_r )
         {
-        *result =  char_space[1] < ch_r ? -1 : +1 ;
+        result =  char_space[1] < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_r = right[index];
       if( char_space[0] != ch_r )
         {
-        *result =  char_space[0] < ch_r ? -1 : +1 ;
+        result =  char_space[0] < ch_r ? -1 : +1 ;
         goto done;
         }
       index += stride;
@@ -13518,7 +13503,7 @@ __gg__compare_string_2a( int            *result,
       ch_r = right[index];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       index += 1;
@@ -13531,13 +13516,13 @@ __gg__compare_string_2a( int            *result,
       ch_l = left[index++];
       if( ch_l != char_space[0] )
         {
-        *result =  ch_l < char_space[0] ? -1 : +1 ;
+        result =  ch_l < char_space[0] ? -1 : +1 ;
         goto done;
         }
       ch_l = left[index++];
       if( ch_l != char_space[1] )
         {
-        *result =  ch_l < char_space[1] ? -1 : +1 ;
+        result =  ch_l < char_space[1] ? -1 : +1 ;
         goto done;
         }
       }
@@ -13547,24 +13532,24 @@ __gg__compare_string_2a( int            *result,
       ch_r = right[index++];
       if( char_space[0] != ch_r )
         {
-        *result =  char_space[0] < ch_r ? -1 : +1 ;
+        result =  char_space[0] < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_r = right[index++];
       if( char_space[1] != ch_r )
         {
-        *result =  char_space[1] < ch_r ? -1 : +1 ;
+        result =  char_space[1] < ch_r ? -1 : +1 ;
         goto done;
         }
       }
     }
   done:
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_string_4( int            *result,
+int
+__gg__compare_string_4(
                    const unsigned char  *left,
                          size_t          length_left,
                    const unsigned char  *right,
@@ -13578,7 +13563,7 @@ __gg__compare_string_4( int            *result,
 
   bool is_little_endian = *char_space != 0;
 
-  *result = 0;
+  int result = 0;
 
   size_t length = std::min(length_left, length_right);
   size_t index = 0;
@@ -13616,7 +13601,7 @@ __gg__compare_string_4( int            *result,
     uint32_t ch_r = collated(index_r);
     if( ch_l != ch_r )
       {
-      *result =  ch_l < ch_r ? -1 : +1 ;
+      result =  ch_l < ch_r ? -1 : +1 ;
       goto done;
       }
     index += 2;
@@ -13642,7 +13627,7 @@ __gg__compare_string_4( int            *result,
     uint32_t ch_l = collated(index_l);
     if( ch_l != ascii_space )
       {
-      *result =  ch_l < ascii_space ? -1 : +1 ;
+      result =  ch_l < ascii_space ? -1 : +1 ;
       goto done;
       }
     index += 2;
@@ -13668,18 +13653,18 @@ __gg__compare_string_4( int            *result,
     uint32_t ch_r = collated(index_r);
     if( ascii_space != ch_r )
       {
-      *result =  ascii_space < ch_r ? -1 : +1 ;
+      result =  ascii_space < ch_r ? -1 : +1 ;
       goto done;
       }
     index += 2;
     }
   done:
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_string_4a( int            *result,
+int
+__gg__compare_string_4a(
                    const unsigned char  *left,
                          size_t          length_left,
                    const unsigned char  *right,
@@ -13687,7 +13672,7 @@ __gg__compare_string_4a( int            *result,
                    const char           *char_space)
   {
   // This compares four-byte character strings.
-  *result = 0;
+  int result = 0;
 
   length_left/=4;
   length_left*=4;
@@ -13717,21 +13702,21 @@ __gg__compare_string_4a( int            *result,
       ch_r = right[index+3];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_l =  left[index+2];
       ch_r = right[index+2];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_l =  left[index+1];
       ch_r = right[index+1];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       // And then compare the low bytes
@@ -13739,7 +13724,7 @@ __gg__compare_string_4a( int            *result,
       ch_r = right[index];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       index += stride;
@@ -13753,25 +13738,25 @@ __gg__compare_string_4a( int            *result,
       ch_l = left[index+3];
       if( ch_l != char_space[3] )
         {
-        *result =  ch_l < char_space[3] ? -1 : +1 ;
+        result =  ch_l < char_space[3] ? -1 : +1 ;
         goto done;
         }
       ch_l = left[index+2];
       if( ch_l != char_space[2] )
         {
-        *result =  ch_l < char_space[2] ? -1 : +1 ;
+        result =  ch_l < char_space[2] ? -1 : +1 ;
         goto done;
         }
       ch_l = left[index+1];
       if( ch_l != char_space[1] )
         {
-        *result =  ch_l < char_space[1] ? -1 : +1 ;
+        result =  ch_l < char_space[1] ? -1 : +1 ;
         goto done;
         }
       ch_l = left[index];
       if( ch_l != char_space[0] )
         {
-        *result =  ch_l < char_space[0] ? -1 : +1 ;
+        result =  ch_l < char_space[0] ? -1 : +1 ;
         goto done;
         }
       index += stride;
@@ -13782,25 +13767,25 @@ __gg__compare_string_4a( int            *result,
       ch_r = right[index+3];
       if( char_space[3] != ch_r )
         {
-        *result =  char_space[1] < ch_r ? -1 : +1 ;
+        result =  char_space[1] < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_r = right[index+2];
       if( char_space[2] != ch_r )
         {
-        *result =  char_space[1] < ch_r ? -1 : +1 ;
+        result =  char_space[1] < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_r = right[index+1];
       if( char_space[1] != ch_r )
         {
-        *result =  char_space[1] < ch_r ? -1 : +1 ;
+        result =  char_space[1] < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_r = right[index];
       if( char_space[0] != ch_r )
         {
-        *result =  char_space[0] < ch_r ? -1 : +1 ;
+        result =  char_space[0] < ch_r ? -1 : +1 ;
         goto done;
         }
       index += stride;
@@ -13818,7 +13803,7 @@ __gg__compare_string_4a( int            *result,
       ch_r = right[index];
       if( ch_l != ch_r )
         {
-        *result =  ch_l < ch_r ? -1 : +1 ;
+        result =  ch_l < ch_r ? -1 : +1 ;
         goto done;
         }
       index += 1;
@@ -13831,23 +13816,23 @@ __gg__compare_string_4a( int            *result,
       ch_l = left[index++];
       if( ch_l != char_space[0] )
         {
-        *result =  ch_l < char_space[0] ? -1 : +1 ;
+        result =  ch_l < char_space[0] ? -1 : +1 ;
         goto done;
         }
       ch_l = left[index++];
       if( ch_l != char_space[1] )
         {
-        *result =  ch_l < char_space[1] ? -1 : +1 ;
+        result =  ch_l < char_space[1] ? -1 : +1 ;
         goto done;
         }
       if( ch_l != char_space[2] )
         {
-        *result =  ch_l < char_space[2] ? -1 : +1 ;
+        result =  ch_l < char_space[2] ? -1 : +1 ;
         goto done;
         }
       if( ch_l != char_space[3] )
         {
-        *result =  ch_l < char_space[3] ? -1 : +1 ;
+        result =  ch_l < char_space[3] ? -1 : +1 ;
         goto done;
         }
       }
@@ -13857,45 +13842,45 @@ __gg__compare_string_4a( int            *result,
       ch_r = right[index++];
       if( char_space[0] != ch_r )
         {
-        *result =  char_space[0] < ch_r ? -1 : +1 ;
+        result =  char_space[0] < ch_r ? -1 : +1 ;
         goto done;
         }
       ch_r = right[index];
       if( char_space[1] != ch_r )
         {
-        *result =  char_space[1] < ch_r ? -1 : +1 ;
+        result =  char_space[1] < ch_r ? -1 : +1 ;
         goto done;
         }
       if( char_space[2] != ch_r )
         {
-        *result =  char_space[2] < ch_r ? -1 : +1 ;
+        result =  char_space[2] < ch_r ? -1 : +1 ;
         goto done;
         }
       if( char_space[3] != ch_r )
         {
-        *result =  char_space[3] < ch_r ? -1 : +1 ;
+        result =  char_space[3] < ch_r ? -1 : +1 ;
         goto done;
         }
       index += stride;
       }
     }
   done:
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg_compare_string_different(int            *result,
-                        const unsigned char  *left,
-                              size_t          length_left,
-                              cbl_encoding_t  encoding_left,
-                        const unsigned char  *right,
-                              size_t          length_right,
-                              cbl_encoding_t  encoding_right)
+int
+__gg_compare_string_different(const unsigned char  *left,
+                                    size_t          length_left,
+                                    cbl_encoding_t  encoding_left,
+                              const unsigned char  *right,
+                                    size_t          length_right,
+                                    cbl_encoding_t  encoding_right)
   {
   /*  This routine converts the right string to the left encoding, and then
       compares the results.  In the case where the left side is the
       __gg__display_encoding, the `collated` table is used. */
+  int result = 0;
   const charmap_t *charmap = __gg__get_charmap(encoding_left);
   int stride = charmap->stride();
   unsigned char ach_space[4];
@@ -13917,49 +13902,46 @@ __gg_compare_string_different(int            *result,
     {
     case 1:
       {
-      __gg__compare_string_1a( result,
-                               left,
-                               length_left,
-                               as_unsigned_chars(converted),
-                               nbytes,
-                               NULL);
+      result = __gg__compare_string_1a(left,
+                                       length_left,
+                                       as_unsigned_chars(converted),
+                                       nbytes,
+                                       NULL);
       break;
       }
 
     case 2:
       {
-      __gg__compare_string_2(result,
-                             left,
-                             length_left,
-                             as_unsigned_chars(converted),
-                             nbytes,
-                             ach_space);
+      result = __gg__compare_string_2( left,
+                                       length_left,
+                                       as_unsigned_chars(converted),
+                                       nbytes,
+                                       ach_space);
       break;
       }
 
     case 4:
       {
-      __gg__compare_string_4(result,
-                             left,
-                             length_left,
-                             as_unsigned_chars(converted),
-                             nbytes,
-                             ach_space);
+      result = __gg__compare_string_4( left,
+                                       length_left,
+                                       as_unsigned_chars(converted),
+                                       nbytes,
+                                       ach_space);
       break;
       }
     }
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_numeric_all(int *result,
-                          __int128 value,
+int
+__gg__compare_numeric_all(__int128 value,
                           size_t digits,
                           const unsigned char *string,
                           size_t length,
                           cbl_encoding_t encoding )
   {
+  int result = 0;
   char ach[128];
   unsigned char *pach = as_unsigned_chars(ach);
   if( digits == 0 )
@@ -13991,7 +13973,6 @@ __gg__compare_numeric_all(int *result,
                                             ach,
                                             digits,
                                             &nbytes);
-  *result = 0;
   for(size_t i=0; i<digits; i++)
     {
     cbl_char_t chl = charmap->getch(converted, i);
@@ -14001,27 +13982,27 @@ __gg__compare_numeric_all(int *result,
     chr = collated(chr);
     if( chl > chr )
       {
-      *result = 1;
+      result = 1;
       break;
       }
     else if( chl < chr )
       {
-      *result = -1;
+      result = -1;
       break;
       }
     }
-  return;
+  return result;
   }
 
 extern "C"
-void
-__gg__compare_binary_to_string( int *result,
-                                __int128 value,
+int
+__gg__compare_binary_to_string( __int128 value,
                                 size_t digits,
                                 char *right,
                                 size_t length,
                                 cbl_encoding_t encoding)
   {
+  int result = 0;
   char ach[128];
   unsigned char *pach = as_unsigned_chars(ach);
   if( digits == 0 )
@@ -14064,7 +14045,7 @@ __gg__compare_binary_to_string( int *result,
   switch( charmap->stride() )
     {
     case 1:
-      __gg__compare_string_1(result,
+      result = __gg__compare_string_1(
                              as_unsigned_chars(converted),
                              nbytes,
                              as_unsigned_chars(right),
@@ -14072,7 +14053,7 @@ __gg__compare_binary_to_string( int *result,
                              ach_space);
       break;
     case 2:
-      __gg__compare_string_2(result,
+      result = __gg__compare_string_2(
                              as_unsigned_chars(converted),
                              nbytes,
                              as_unsigned_chars(right),
@@ -14080,7 +14061,7 @@ __gg__compare_binary_to_string( int *result,
                              ach_space);
       break;
     case 4:
-      __gg__compare_string_4(result,
+      result = __gg__compare_string_4(
                              as_unsigned_chars(converted),
                              nbytes,
                              as_unsigned_chars(right),
@@ -14088,7 +14069,7 @@ __gg__compare_binary_to_string( int *result,
                              ach_space);
       break;
     }
-  return;
+  return result;
   }
 
 extern "C"
@@ -14160,4 +14141,108 @@ __gg__prohibited(const cblc_field_t *field, __int128 value)
       }
     }
   return retval;
+  }
+
+struct move_stash_slot
+  {
+  unsigned char *data;
+  size_t capacity;
+
+  move_stash_slot()
+    : data(NULL),
+      capacity(0)
+    {
+    }
+  };
+
+struct move_stash_pool
+  {
+  std::vector<move_stash_slot> slots;
+  size_t depth;
+
+  move_stash_pool()
+    : depth(0)
+    {
+    }
+
+  ~move_stash_pool()
+    {
+    for( move_stash_slot &slot : slots )
+      {
+      std::free(slot.data);
+      }
+    }
+  };
+
+static thread_local move_stash_pool move_stashes;
+
+static size_t
+next_stash_capacity(size_t old_capacity, size_t required)
+  {
+  size_t capacity = old_capacity ? old_capacity : 1024;
+
+  while( capacity < required )
+    {
+    if( capacity > std::numeric_limits<size_t>::max() / 2 )
+      {
+      capacity = required;
+      break;
+      }
+
+    capacity *= 2;
+    }
+
+  return capacity;
+  }
+
+extern "C" unsigned char *
+__gg__move_stash_acquire(size_t size)
+  {
+  // Return a non-null pointer even for a zero-byte request.
+  size_t required = size ? size : 1;
+  size_t slot_number = move_stashes.depth++;
+
+  if( slot_number == move_stashes.slots.size() )
+    {
+    move_stashes.slots.emplace_back();
+    }
+
+  move_stash_slot &slot = move_stashes.slots[slot_number];
+
+  if( slot.capacity < required )
+    {
+    size_t new_capacity =
+                       next_stash_capacity(slot.capacity, required);
+    void *new_data = std::realloc(slot.data, new_capacity);
+
+    if( !new_data )
+      {
+      std::abort();
+      }
+
+    slot.data = static_cast<unsigned char *>(new_data);
+    slot.capacity = new_capacity;
+    }
+
+  return slot.data;
+  }
+
+extern "C" void
+__gg__move_stash_release(const unsigned char *stash)
+  {
+  if( move_stashes.depth == 0 )
+    {
+    std::abort();
+    }
+
+  const move_stash_slot &slot =
+                    move_stashes.slots[move_stashes.depth-1];
+
+  // This also verifies that acquisition and release remain LIFO.
+  if( slot.data != stash )
+    {
+    std::abort();
+    }
+
+  move_stashes.depth -= 1;
   }

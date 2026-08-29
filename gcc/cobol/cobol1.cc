@@ -163,6 +163,8 @@ create_our_type_nodes_init()
   int128_five_node    = build_int_cst_type(INT128,  5);
   int128_ten_node     = build_int_cst_type(INT128, 10);
   char_ptr_type_node  = build_pointer_type(CHAR);
+  const_char_ptr_type_node = build_pointer_type(build_qualified_type(CHAR,
+                                                             TYPE_QUAL_CONST));
   uchar_ptr_type_node = build_pointer_type(UCHAR);
   wchar_ptr_type_node = build_pointer_type(WCHAR);
   long_double_ten_node = build_real_from_int_cst(
