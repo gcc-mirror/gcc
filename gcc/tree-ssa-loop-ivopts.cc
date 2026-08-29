@@ -6096,15 +6096,17 @@ ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
   if (regs_needed <= available_regs)
     cost = 0;
   /* If we run out of available registers but the number of candidates
-     does not, we penalize extra registers using target_spill_cost.  */
+     does not, we penalize extra registers using target_spill_cost.
+     As we tend to spill invariants here, only take loading the
+     invariant into account, because the invariant won't change for the
+     duration of the loop and storing it every iteration is unnecessary. */
   else if (n_cands <= available_regs)
-    cost = target_spill_cost [speed] * (regs_needed - available_regs);
-  /* If the number of candidates runs out available registers, we penalize
-     extra candidate registers using target_spill_cost * 2.  Because it is
-     more expensive to spill induction variable than invariant.  */
+    cost = target_spill_cost [speed] * (regs_needed - available_regs) / 2;
+  /* If both IV cands and invariants spill, calculate additional cost for
+     having to store spilled candidates. */
   else
-    cost = target_spill_cost [speed] * (n_cands - available_regs) * 2
-	   + target_spill_cost [speed] * (regs_needed - n_cands);
+    cost = target_spill_cost [speed] * (regs_needed - available_regs) / 2;
+		+ target_spill_cost[speed] * (n_cands - available_regs) / 2;
 
   return cost;
 }
