@@ -623,6 +623,14 @@ enum reg_class {
 
 #define RETURN_ADDR_RTX  alpha_return_addr
 
+/* An Alpha frame carries no link to its caller: $15 is a frame pointer only
+   in a function that needs one, and offset 0 of a frame that has one holds
+   the saved return address, not a saved frame pointer.  Decline frames above
+   the current one the way alpha_return_addr already does, so that the caller
+   gets 0 and a diagnostic rather than a text address.  */
+
+#define FRAME_ADDR_RTX(COUNT, FRAME) ((COUNT) == 0 ? (FRAME) : NULL_RTX)
+
 /* Provide a definition of DWARF_FRAME_REGNUM here so that fallback unwinders
    can use DWARF_ALT_FRAME_RETURN_COLUMN defined below.  This is just the same
    as the default definition in dwarf2out.cc.  */
