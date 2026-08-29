@@ -8072,7 +8072,12 @@ alpha_initial_elimination_offset (unsigned int from,
   switch (from)
     {
     case FRAME_POINTER_REGNUM:
-      break;
+      /* With a downward-growing frame the frame pointer sits at the high
+	 end of the local variables, which is where the argument pointer
+	 is too.  */
+      if (!FRAME_GROWS_DOWNWARD)
+	break;
+      /* FALLTHRU */
 
     case ARG_POINTER_REGNUM:
       ret += (ALPHA_ROUND (get_frame_size ()
@@ -8157,8 +8162,16 @@ alpha_vms_initial_elimination_offset (unsigned int from, unsigned int to)
     switch (from)
       {
       case FRAME_POINTER_REGNUM:
-	offset = ALPHA_ROUND (sa_size + pv_save_size);
-	break;
+	/* With a downward-growing frame the frame pointer sits at the high
+	   end of the local variables, which is where the argument pointer
+	   is too.  */
+	if (!FRAME_GROWS_DOWNWARD)
+	  {
+	    offset = ALPHA_ROUND (sa_size + pv_save_size);
+	    break;
+	  }
+	/* FALLTHRU */
+
       case ARG_POINTER_REGNUM:
 	offset = (ALPHA_ROUND (sa_size + pv_save_size
 			       + get_frame_size ()

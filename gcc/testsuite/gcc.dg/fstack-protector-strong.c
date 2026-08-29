@@ -1,6 +1,6 @@
 /* Test that stack protection is done on chosen functions. */
 
-/* { dg-do compile { target i?86-*-* x86_64-*-* rs6000-*-* s390x-*-* } } */
+/* { dg-do compile { target alpha*-*-* i?86-*-* x86_64-*-* rs6000-*-* s390x-*-* } } */
 /* { dg-options "-O2 -fstack-protector-strong" } */
 
 /* This test checks the presence of __stack_chk_fail function in assembler.
@@ -156,4 +156,7 @@ void foo12 ()
   global3 ();
 }
 
-/* { dg-final { scan-assembler-times "stack_chk_fail" 12 } } */
+/* { dg-final { scan-assembler-times "stack_chk_fail" 12 { target { ! alpha*-*-* } } } } */
+/* Alpha names the callee twice per call, once for !literal and once for
+   !lituse_jsr.  */
+/* { dg-final { scan-assembler-times "stack_chk_fail" 24 { target alpha*-*-* } } } */

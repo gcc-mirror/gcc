@@ -479,8 +479,13 @@ enum reg_class {
 /* Define this to nonzero if the nominal address of the stack frame
    is at the high-address end of the local variables;
    that is, each additional local variable allocated
-   goes at a more negative offset in the frame.  */
-/* #define FRAME_GROWS_DOWNWARD 0 */
+   goes at a more negative offset in the frame.
+
+   The stack protector requires that the canary be placed above the
+   local arrays it protects, which only happens with a downward-growing
+   frame.  Alpha otherwise grows the frame upward, so switch the
+   direction only when the stack protector is in use.  */
+#define FRAME_GROWS_DOWNWARD (flag_stack_protect != 0)
 
 /* If we generate an insn to push BYTES bytes,
    this says how many the stack pointer really advances by.
