@@ -1,4 +1,4 @@
-/* { dg-do compile { target { int128 && { ! ia32 } } } } */
+/* { dg-do compile { target int128 } } */
 /* { dg-options "-mapxf -mtune-ctrl=enable_ndd_mem -O2" } */
 
 #include "pr91681-2.c"

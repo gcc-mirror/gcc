@@ -1,4 +1,4 @@
-/* { dg-do run { target { int128 && { ! ia32 } } } } */
+/* { dg-do compile { target int128 } } */
 /* { dg-require-effective-target apxf } */
 /* { dg-options "-O2" } */
 
