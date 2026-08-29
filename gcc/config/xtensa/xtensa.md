@@ -1228,7 +1228,7 @@
 
 (define_insn_and_split "movdi_internal"
   [(set (match_operand:DI 0 "nonimmed_operand")
-	(match_operand:DI 1 "move_operand"))]
+	(match_operand:DI 1 "move_int_operand"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
   {@ [cons: =0, 1; attrs: type, length]
@@ -1260,7 +1260,7 @@
 
 (define_insn "movsi_internal"
   [(set (match_operand:SI 0 "nonimmed_operand")
-	(match_operand:SI 1 "move_operand"))]
+	(match_operand:SI 1 "move_int_operand"))]
   "xtensa_valid_move (SImode, operands)"
   {@ [cons: =0, 1; attrs: type, length]
      [ D,  M; move , 2] movi.n\t%0, %x1
@@ -1307,7 +1307,7 @@
 
 (define_insn "movhi_internal"
   [(set (match_operand:HI 0 "nonimmed_operand")
-	(match_operand:HI 1 "move_operand"))]
+	(match_operand:HI 1 "move_int_operand"))]
   "xtensa_valid_move (HImode, operands)"
   {@ [cons: =0, 1; attrs: type, length]
      [ D,  M; move , 2] movi.n\t%0, %x1
@@ -1338,7 +1338,7 @@
 
 (define_insn "movqi_internal"
   [(set (match_operand:QI 0 "nonimmed_operand")
-	(match_operand:QI 1 "move_operand"))]
+	(match_operand:QI 1 "move_int_operand"))]
   "xtensa_valid_move (QImode, operands)"
   {@ [cons: =0, 1; attrs: type, length]
      [ D,  M; move , 2] movi.n\t%0, %x1
@@ -1393,15 +1393,13 @@
 	(match_operand:SF 1 "general_operand" ""))]
   ""
 {
-  if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS && CONSTANT_P (operands[1]))
+  if (! satisfies_constraint_Gz (operands[1])
+      && ! satisfies_constraint_Gc (operands[1])
+      && !TARGET_CONST16 && !TARGET_AUTO_LITPOOLS && CONST_DOUBLE_P (operands[1]))
     operands[1] = force_const_mem (SFmode, operands[1]);
 
-  if ((!register_operand (operands[0], SFmode)
-       && !register_operand (operands[1], SFmode))
-      || (FP_REG_P (xt_true_regnum (operands[0]))
-	  && can_create_pseudo_p ()
-	  && (constantpool_mem_p (operands[1])
-	      || CONSTANT_P (operands[1]))))
+  if (! register_operand (operands[0], SFmode)
+      && ! register_operand (operands[1], SFmode))
     operands[1] = force_reg (SFmode, operands[1]);
 
   operands[1] = xtensa_copy_incoming_a7 (operands[1]);
@@ -1409,12 +1407,13 @@
 
 (define_insn "movsf_internal"
   [(set (match_operand:SF 0 "nonimmed_operand")
-	(match_operand:SF 1 "move_operand"))]
-  "((register_operand (operands[0], SFmode)
-     || register_operand (operands[1], SFmode))
-    && !(FP_REG_P (xt_true_regnum (operands[0]))
-	 && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
+	(match_operand:SF 1 "move_fp_operand"))]
+  "register_operand (operands[0], SFmode)
+   || register_operand (operands[1], SFmode)"
   {@ [cons: =0, 1; attrs: type, length]
+     [D, Gz; move  , 2] movi.n\t%0, 0
+     [a, Gz; move  , 3] movi\t%0, 0
+     [f, Gc; farith, 3] const.s\t%0, %G1
      [W, iF; move  , 6] const16\t%0, %t1\;const16\t%0, %b1
      [a,  Y; load  , 3] movi\t%0, %y1
      [a,  T; load  , 3] %v1l32r\t%0, %1
@@ -1503,7 +1502,7 @@
 	(match_operand:DF 1 "general_operand" ""))]
   ""
 {
-  if (CONSTANT_P (operands[1]) && !TARGET_CONST16 && !TARGET_AUTO_LITPOOLS)
+  if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS && CONST_DOUBLE_P (operands[1]))
     operands[1] = force_const_mem (DFmode, operands[1]);
 
   if (!register_operand (operands[0], DFmode)
@@ -1515,7 +1514,7 @@
 
 (define_insn_and_split "movdf_internal"
   [(set (match_operand:DF 0 "nonimmed_operand")
-	(match_operand:DF 1 "move_operand"))]
+	(match_operand:DF 1 "move_fp_operand"))]
   "register_operand (operands[0], DFmode)
    || register_operand (operands[1], DFmode)"
   {@ [cons: =0, 1; attrs: type, length]

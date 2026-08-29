@@ -140,24 +140,21 @@
   return false;
 })
 
-(define_predicate "move_operand"
-  (ior
-     (ior (match_operand 0 "register_operand")
-	  (match_operand 0 "memory_operand"))
-     (ior (and (match_code "const_int")
-	       (match_test "(GET_MODE_CLASS (mode) == MODE_INT
-			     && xtensa_simm12b (INTVAL (op)))
-			    || ! xtensa_postreload_completed_p ()"))
-	  (and (match_code "const_int,const_double,const,symbol_ref,label_ref")
-	       (match_test "(TARGET_CONST16 || TARGET_AUTO_LITPOOLS)
-			    && CONSTANT_P (op)")))))
+(define_predicate "move_int_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (ior (and (match_code "const_int")
+		 (match_test "! xtensa_postreload_completed_p ()
+			      || xtensa_simm12b (INTVAL (op))"))
+	    (and (match_code "const_int,const,symbol_ref,label_ref")
+		 (match_test "(TARGET_CONST16 || TARGET_AUTO_LITPOOLS)
+			      && CONSTANT_P (op)")))))
 
-;; Accept the floating point constant 1 in the appropriate mode.
-(define_predicate "const_float_1_operand"
-  (match_code "const_double")
-{
-  return real_equal (CONST_DOUBLE_REAL_VALUE (op), &dconst1);
-})
+(define_predicate "move_fp_operand"
+  (ior (match_operand 0 "nonimmediate_operand")
+       (match_test "satisfies_constraint_Gz (op)
+		    || satisfies_constraint_Gc (op)
+		    || ((TARGET_CONST16 || TARGET_AUTO_LITPOOLS)
+			&& CONST_DOUBLE_P (op))")))
 
 (define_predicate "fix_scaling_operand"
   (match_code "const_double")

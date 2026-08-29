@@ -518,6 +518,23 @@ xtensa_mask_immediate (HOST_WIDE_INT v)
 }
 
 
+int
+xtensa_fp_const (const REAL_VALUE_TYPE *rval)
+{
+  /* real_equal() treats non-negative and negative zeros as equal.  */
+  if (rval->cl == rvc_zero && rval->sign == 0)
+    return 0;
+  if (real_equal (rval, &dconst1))
+    return 1;
+  if (real_equal (rval, &dconst2))
+    return 2;
+  if (real_equal (rval, &dconsthalf))
+    return 3;
+
+  return -1;
+}
+
+
 /* This is just like the standard true_regnum() function except that it
    works even when reg_renumber is not initialized.  */
 
@@ -3107,6 +3124,8 @@ xtensa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
    'L'  CONST_INT, print ((32 - X) & 0x1f)
    'U', CONST_DOUBLE:SF, print (REAL_EXP (rval) - 1)
    'V', CONST_DOUBLE:SF, print (1 - REAL_EXP (rval))
+   'G', CONST_DOUBLE:SF, print 0~3 when rval is 0.0f, 1.0f, 2.0f, or 0.5f,
+	respectively.
    'D'  REG, print second register of double-word register operand
    'N'  MEM, print address of next word following a memory operand
    'v'  MEM, if memory reference is volatile, output a MEMW before it
@@ -3215,6 +3234,13 @@ print_operand (FILE *file, rtx x, int letter)
 	fprintf (file, "%d", 1 - REAL_EXP (CONST_DOUBLE_REAL_VALUE (x)));
       else
 	output_operand_lossage ("invalid %%V value");
+      break;
+
+    case 'G':
+      if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+	fprintf (file, "%d", xtensa_fp_const (CONST_DOUBLE_REAL_VALUE (x)));
+      else
+	output_operand_lossage ("invalid %%G value");
       break;
 
     case 'x':
@@ -5091,6 +5117,13 @@ xtensa_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
     return TARGET_CONST16 || TARGET_AUTO_LITPOOLS
 	   || ! xtensa_postreload_completed_p ()
 	   || xtensa_simm12b (INTVAL (x));
+
+  if (CONST_DOUBLE_P (x) && GET_MODE (x) == SFmode)
+    {
+      int i = xtensa_fp_const (CONST_DOUBLE_REAL_VALUE (x));
+
+      return i == 0 || (TARGET_HARD_FLOAT_CONST_S && i > 0);
+    }
 
   return !xtensa_tls_referenced_p (x);
 }
