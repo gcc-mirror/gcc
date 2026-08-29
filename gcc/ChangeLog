@@ -1,3 +1,37 @@
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120681
+	* config/rs6000/linux64.h (PCREL_SUPPORTED_BY_OS): Allow large
+	code model as well as medium code model.
+	* config/rs6000/rs6000.cc (rs6000_option_override_internal):
+	Likewise.
+	(rs6000_elf_declare_function_name): Don't create the
+	local/non-local labels for large code model if we are using
+	PC-relative addressing.
+
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120528
+	* config/rs6000/rs6000.md (zero_extend??ti2 peephole2): Add a
+	peephole2 to simplify zero extending a QI/HI/SI/DImode value in
+	memory to a TImode target in a vector register to use the
+	LXVR{B,H,W,D}X instructins.
+
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99293
+	* config/rs6000/vsx.md (vsx_splat_extract_<mode>): New insn.
+
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117487
+	* config/rs6000/vsx.md (SFmode logical peephoole): Update comments in
+	the original code that supports power8.
+	(SFBOOL2_*): New constants.
+	(power9/power10 define_peephol2): Add a new define_peephole2 to optimize
+	float and logical operations on power9/power10/power11 similar to the
+	optimiztion that is done on power8.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,24 @@
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120681
+	* gcc.target/powerpc/pr120681.c: New test.
+
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/120528
+	* gcc.target/powerpc/pr120528.c: New test.
+
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/99293
+	* gcc.target/powerpc/pr99293.c: New test.
+	* gcc.target/powerpc/builtins-1.c: Update instruction count.
+
+2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117487
+	* gcc.target/powerpc/pr117487.c: New test.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
