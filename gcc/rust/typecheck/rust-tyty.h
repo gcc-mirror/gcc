@@ -917,7 +917,8 @@ public:
     STRUCT_STRUCT,
     TUPLE_STRUCT,
     UNION,
-    ENUM
+    ENUM,
+    EXTERN
   };
 
   enum ReprKind

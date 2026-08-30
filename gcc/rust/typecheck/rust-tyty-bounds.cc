@@ -22,6 +22,7 @@
 #include "rust-substitution-mapper.h"
 #include "rust-hir-trait-resolve.h"
 #include "rust-type-util.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
@@ -170,10 +171,17 @@ TypeBoundsProbe::assemble_marker_builtins ()
       // FIXME str and slice need to be moved and test cases updated
     case TyTy::SLICE:
     case TyTy::STR:
-    case TyTy::ADT:
     case TyTy::TUPLE:
       // FIXME add extra checks
       assemble_builtin_candidate (LangItem::Kind::SIZED);
+      break;
+
+    case TyTy::ADT:
+      {
+	const auto &adt = *static_cast<const TyTy::ADTType *> (raw);
+	if (adt.get_adt_kind () != TyTy::ADTType::ADTKind::EXTERN)
+	  assemble_builtin_candidate (LangItem::Kind::SIZED);
+      }
       break;
 
     case TyTy::CONST:

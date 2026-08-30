@@ -342,6 +342,10 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 
       type_record = build_vector_type (inner_type, variant.num_fields ());
     }
+  else if (type.get_adt_kind () == TyTy::ADTType::ADTKind::EXTERN)
+    {
+      type_record = Backend::struct_type ({});
+    }
   else if (!type.is_enum ())
     {
       rust_assert (type.number_of_variants () == 1);

@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-type-check-implitem.h"
+#include "rust-canonical-path.h"
 #include "rust-diagnostics.h"
 #include "rust-hir-full-decls.h"
 #include "rust-hir-pattern.h"
@@ -169,8 +170,26 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
 void
 TypeCheckTopLevelExternItem::visit (HIR::ExternalTypeItem &type)
 {
-  rust_sorry_at (type.get_locus (), "extern types are not supported yet");
-  // TODO
+  CanonicalPath path
+    = CanonicalPath::new_seg (type.get_mappings ().get_nodeid (),
+			      type.get_item_name ().as_string ());
+
+  RustIdent ident{path, type.get_locus ()};
+
+  TyTy::ADTType::ReprOptions repr;
+  std::vector<TyTy::VariantDef *> variants;
+  TyTy::RegionConstraints region_constraints;
+  std::vector<TyTy::SubstitutionParamMapping> substitutions;
+
+  auto *extern_type = new TyTy::ADTType (
+    type.get_mappings ().get_defid (), type.get_mappings ().get_hirid (),
+    type.get_mappings ().get_hirid (), type.get_item_name ().as_string (),
+    ident, TyTy::ADTType::ADTKind::EXTERN, std::move (variants),
+    std::move (substitutions), repr,
+    TyTy::SubstitutionArgumentMappings::empty (0), region_constraints);
+
+  context->insert_type (type.get_mappings (), extern_type);
+  resolved = extern_type;
 }
 
 TypeCheckImplItem::TypeCheckImplItem (

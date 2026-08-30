@@ -204,7 +204,15 @@ public:
 
   void visit (HIR::ExternalTypeItem &type) override
   {
-    rust_sorry_at (type.get_locus (), "extern types are not supported yet");
+    TyTy::BaseType *lookup = nullptr;
+    if (!ctx->get_tyctx ()->lookup_type (type.get_mappings ().get_hirid (),
+					 &lookup))
+      {
+	rust_error_at (type.get_locus (), "failed to resolve type");
+	return;
+      }
+
+    TyTyResolveCompile::compile (ctx, lookup);
   }
 
 private:

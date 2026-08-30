@@ -978,6 +978,8 @@ PlaceInfo::specialize (const Constructor &c) const
 	      // TODO: support unions
 	      rust_unreachable ();
 	    }
+	  case TyTy::ADTType::ADTKind::EXTERN:
+	    return {};
 	  }
       }
       break;
