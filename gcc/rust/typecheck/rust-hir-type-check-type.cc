@@ -156,8 +156,17 @@ TypeCheckType::visit (HIR::TypePath &path)
   TyTy::BaseType *path_type = root;
   if (mode == ResolutionMode::REFERENCE)
     {
-      path_type = root->clone ();
-      path_type->set_ref (path.get_mappings ().get_hirid ());
+      // A recursive path must keep referring to the in-progress nominal ADT.
+      // Cloning its currently empty variant list would leave a permanently
+      // incomplete snapshot in the recursive field.
+      auto *root_adt = root->try_as<TyTy::ADTType> ();
+      bool recursive_root
+	= root_adt != nullptr && root_adt->get_variants ().empty ();
+      if (!recursive_root)
+	{
+	  path_type = root->clone ();
+	  path_type->set_ref (path.get_mappings ().get_hirid ());
+	}
       context->insert_implicit_type (path.get_mappings ().get_hirid (),
 				     path_type);
     }

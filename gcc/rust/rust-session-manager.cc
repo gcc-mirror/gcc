@@ -809,6 +809,9 @@ Session::compile_crate (const char *filename)
   Compile::Context *ctx = Compile::Context::get ();
   Resolver::TypeResolution::Resolve (hir);
 
+  if (saw_errors ())
+    return;
+
   Resolver::TypeCheckContext::get ()->get_variance_analysis_ctx ().solve ();
 
   if (saw_errors ())

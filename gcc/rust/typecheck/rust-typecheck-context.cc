@@ -98,6 +98,43 @@ TypeCheckContext::insert_implicit_type (HirId id, TyTy::BaseType *type)
   resolved[id] = type;
 }
 
+static std::pair<DefId, std::vector<HirId>>
+make_adt_substitution_key (DefId id,
+			   const TyTy::SubstitutionArgumentMappings &mappings)
+{
+  std::vector<HirId> arguments;
+  arguments.reserve (mappings.size ());
+  for (const auto &mapping : mappings.get_mappings ())
+    arguments.push_back (mapping.get_tyty ()->get_ty_ref ());
+
+  return {id, std::move (arguments)};
+}
+
+bool
+TypeCheckContext::lookup_adt_substitution (
+  DefId id, const TyTy::SubstitutionArgumentMappings &mappings,
+  TyTy::ADTType **type) const
+{
+  auto it = adt_substitutions.find (make_adt_substitution_key (id, mappings));
+  if (it == adt_substitutions.end ())
+    return false;
+
+  *type = it->second;
+  return true;
+}
+
+void
+TypeCheckContext::insert_adt_substitution (
+  DefId id, const TyTy::SubstitutionArgumentMappings &mappings,
+  TyTy::ADTType *type)
+{
+  rust_assert (type != nullptr);
+  auto inserted
+    = adt_substitutions.emplace (make_adt_substitution_key (id, mappings),
+				 type);
+  rust_assert (inserted.second);
+}
+
 bool
 TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type) const
 {

@@ -43,6 +43,87 @@
 namespace Rust {
 namespace Resolver {
 
+static bool
+type_contains_adt_without_indirection (
+  const TyTy::BaseType *type, DefId target,
+  std::set<const TyTy::BaseType *> &visited)
+{
+  bool found = visited.find (type) != visited.end ();
+  if (found)
+    return false;
+  visited.insert (type);
+
+  switch (type->get_kind ())
+    {
+    case TyTy::TypeKind::ADT:
+      {
+	auto *adt = static_cast<const TyTy::ADTType *> (type);
+	if (adt->get_id () == target)
+	  return true;
+
+	for (auto *variant : adt->get_variants ())
+	  {
+	    for (auto *field : variant->get_fields ())
+	      {
+		if (type_contains_adt_without_indirection (
+		      field->get_field_type (), target, visited))
+		  return true;
+	      }
+	  }
+
+	return false;
+      }
+
+    case TyTy::TypeKind::TUPLE:
+      {
+	auto *tuple = static_cast<const TyTy::TupleType *> (type);
+	for (const auto &field : tuple->get_fields ())
+	  {
+	    if (type_contains_adt_without_indirection (field.get_tyty (),
+						       target, visited))
+	      return true;
+	  }
+
+	return false;
+      }
+
+    case TyTy::TypeKind::ARRAY:
+      return type_contains_adt_without_indirection (
+	static_cast<const TyTy::ArrayType *> (type)->get_element_type (),
+	target, visited);
+
+    case TyTy::TypeKind::SLICE:
+      return type_contains_adt_without_indirection (
+	static_cast<const TyTy::SliceType *> (type)->get_element_type (),
+	target, visited);
+
+    default:
+      return false;
+    }
+}
+
+static bool
+validate_adt_size (TyTy::ADTType *type)
+{
+  for (auto *variant : type->get_variants ())
+    {
+      for (auto *field : variant->get_fields ())
+	{
+	  std::set<const TyTy::BaseType *> visited;
+	  if (!type_contains_adt_without_indirection (field->get_field_type (),
+						      type->get_id (), visited))
+	    continue;
+
+	  rust_error_at (field->get_locus (), ErrorCode::E0072,
+			 "recursive type %qs has infinite size",
+			 type->get_identifier ().c_str ());
+	  return false;
+	}
+    }
+
+  return true;
+}
+
 // Const-evaluate the discriminants of a repr(C) enum and warn when a value does
 // not fit into a C int/unsigned int. Done here, during type resolution, using
 // the compile context (a singleton shared with the backend).
@@ -335,6 +416,25 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
   TyTy::ADTType::ReprOptions repr
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
+  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid (),
+				Resolver2_0::Namespace::Types);
+  RustIdent ident{path, struct_decl.get_locus ()};
+
+  std::vector<TyTy::VariantDef *> variants;
+  auto *type = new TyTy::ADTType (
+    struct_decl.get_mappings ().get_defid (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_identifier ().as_string (), ident,
+    TyTy::ADTType::ADTKind::TUPLE_STRUCT, std::move (variants),
+    std::move (substitutions), repr,
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
+  context->insert_type (struct_decl.get_mappings (), type);
+
   std::vector<TyTy::StructFieldType *> fields;
   size_t idx = 0;
   for (auto &field : struct_decl.get_fields ())
@@ -357,37 +457,20 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 	return;
     }
 
-  // get the path
-
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
-
-  CanonicalPath path
-    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid (),
-				Resolver2_0::Namespace::Types);
-
-  RustIdent ident{path, struct_decl.get_locus ()};
-
   // its a single variant ADT
-  std::vector<TyTy::VariantDef *> variants;
-  variants.push_back (
-    new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
-			  struct_decl.get_mappings ().get_defid (),
-			  struct_decl.get_identifier ().as_string (), ident,
-			  TyTy::VariantDef::VariantType::TUPLE, tl::nullopt,
-			  std::move (fields)));
-
-  auto *type = new TyTy::ADTType (
-    struct_decl.get_mappings ().get_defid (),
-    struct_decl.get_mappings ().get_hirid (),
-    struct_decl.get_mappings ().get_hirid (),
-    struct_decl.get_identifier ().as_string (), ident,
-    TyTy::ADTType::ADTKind::TUPLE_STRUCT, std::move (variants),
-    std::move (substitutions), repr,
-    TyTy::SubstitutionArgumentMappings::empty (
-      context->get_lifetime_resolver ().get_num_bound_regions ()),
-    region_constraints);
-
-  context->insert_type (struct_decl.get_mappings (), type);
+  auto variant
+    = new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
+			    struct_decl.get_mappings ().get_defid (),
+			    struct_decl.get_identifier ().as_string (), ident,
+			    TyTy::VariantDef::VariantType::TUPLE, tl::nullopt,
+			    std::move (fields));
+  type->get_variants ().push_back (variant);
+  if (!validate_adt_size (type))
+    {
+      infered = new TyTy::ErrorType (struct_decl.get_mappings ().get_hirid ());
+      context->insert_type (struct_decl.get_mappings (), infered);
+      return;
+    }
   infered = type;
 
   context->get_variance_analysis_ctx ().add_type_constraints (*type);
@@ -398,6 +481,12 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 {
   auto lifetime_pin = context->push_clean_lifetime_resolver ();
   auto &mappings = Analysis::Mappings::get ();
+
+  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  CanonicalPath path
+    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid (),
+				Resolver2_0::Namespace::Types);
+  RustIdent ident{path, struct_decl.get_locus ()};
 
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
   if (struct_decl.has_generics ())
@@ -414,6 +503,19 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
   TyTy::ADTType::ReprOptions repr
     = parse_repr_options (attrs, struct_decl.get_locus ());
 
+  std::vector<TyTy::VariantDef *> variants;
+  auto *type = new TyTy::ADTType (
+    struct_decl.get_mappings ().get_defid (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_mappings ().get_hirid (),
+    struct_decl.get_identifier ().as_string (), ident,
+    TyTy::ADTType::ADTKind::STRUCT_STRUCT, std::move (variants),
+    std::move (substitutions), repr,
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
+  context->insert_type (struct_decl.get_mappings (), type);
+
   std::vector<TyTy::StructFieldType *> fields;
   for (auto &field : struct_decl.get_fields ())
     {
@@ -425,6 +527,9 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 	  rust_error_at (mappings.lookup_location (infer_type->get_ref ()),
 			 "the placeholder %<_%> is not allowed within types on "
 			 "item signatures for structs");
+	  infered
+	    = new TyTy::ErrorType (struct_decl.get_mappings ().get_hirid ());
+	  context->insert_type (struct_decl.get_mappings (), infered);
 	  return;
 	}
       auto *ty_field
@@ -459,37 +564,22 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 	}
     }
 
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
-
-  CanonicalPath path
-    = nr_ctx.to_canonical_path (struct_decl.get_mappings ().get_nodeid (),
-				Resolver2_0::Namespace::Types);
-
-  RustIdent ident{path, struct_decl.get_locus ()};
-
   // its a single variant ADT
   auto variant_type = struct_decl.is_unit_struct ()
 			? TyTy::VariantDef::VariantType::UNIT
 			: TyTy::VariantDef::VariantType::STRUCT;
-  std::vector<TyTy::VariantDef *> variants;
-  variants.push_back (
-    new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
-			  struct_decl.get_mappings ().get_defid (),
-			  struct_decl.get_identifier ().as_string (), ident,
-			  variant_type, tl::nullopt, std::move (fields)));
-
-  auto *type = new TyTy::ADTType (
-    struct_decl.get_mappings ().get_defid (),
-    struct_decl.get_mappings ().get_hirid (),
-    struct_decl.get_mappings ().get_hirid (),
-    struct_decl.get_identifier ().as_string (), ident,
-    TyTy::ADTType::ADTKind::STRUCT_STRUCT, std::move (variants),
-    std::move (substitutions), repr,
-    TyTy::SubstitutionArgumentMappings::empty (
-      context->get_lifetime_resolver ().get_num_bound_regions ()),
-    region_constraints);
-
-  context->insert_type (struct_decl.get_mappings (), type);
+  auto variant
+    = new TyTy::VariantDef (struct_decl.get_mappings ().get_hirid (),
+			    struct_decl.get_mappings ().get_defid (),
+			    struct_decl.get_identifier ().as_string (), ident,
+			    variant_type, tl::nullopt, std::move (fields));
+  type->get_variants ().push_back (variant);
+  if (!validate_adt_size (type))
+    {
+      infered = new TyTy::ErrorType (struct_decl.get_mappings ().get_hirid ());
+      context->insert_type (struct_decl.get_mappings (), infered);
+      return;
+    }
   infered = type;
 
   context->get_variance_analysis_ctx ().add_type_constraints (*type);
@@ -504,12 +594,35 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
     resolve_generic_params (HIR::Item::ItemKind::Enum, enum_decl.get_locus (),
 			    enum_decl.get_generic_params (), substitutions);
 
+  TyTy::RegionConstraints region_constraints;
+  ResolveWhereClauseItem::Resolve (enum_decl.get_where_clause (),
+				   region_constraints);
+
+  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (enum_decl.get_mappings ().get_nodeid (),
+				Resolver2_0::Namespace::Types);
+
+  RustIdent ident{canonical_path, enum_decl.get_locus ()};
+
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = enum_decl.get_outer_attrs ();
   TyTy::ADTType::ReprOptions repr
     = parse_repr_options (attrs, enum_decl.get_locus ());
 
   std::vector<TyTy::VariantDef *> variants;
+  auto *type = new TyTy::ADTType (
+    enum_decl.get_mappings ().get_defid (),
+    enum_decl.get_mappings ().get_hirid (),
+    enum_decl.get_mappings ().get_hirid (),
+    enum_decl.get_identifier ().as_string (), ident,
+    TyTy::ADTType::ADTKind::ENUM, std::move (variants),
+    std::move (substitutions), repr,
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
+  context->insert_type (enum_decl.get_mappings (), type);
+
   int64_t discriminant_value = 0;
   for (auto &variant : enum_decl.get_variants ())
     {
@@ -518,7 +631,7 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
       if (field_type)
 	{
 	  discriminant_value++;
-	  variants.push_back (field_type);
+	  type->get_variants ().push_back (field_type);
 	}
     }
 
@@ -534,25 +647,12 @@ TypeCheckItem::visit (HIR::Enum &enum_decl)
 	}
     }
 
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
-
-  // get the path
-  CanonicalPath canonical_path
-    = nr_ctx.to_canonical_path (enum_decl.get_mappings ().get_nodeid (),
-				Resolver2_0::Namespace::Types);
-
-  RustIdent ident{canonical_path, enum_decl.get_locus ()};
-
-  // multi variant ADT
-  auto *type
-    = new TyTy::ADTType (enum_decl.get_mappings ().get_defid (),
-			 enum_decl.get_mappings ().get_hirid (),
-			 enum_decl.get_mappings ().get_hirid (),
-			 enum_decl.get_identifier ().as_string (), ident,
-			 TyTy::ADTType::ADTKind::ENUM, std::move (variants),
-			 std::move (substitutions), repr);
-
-  context->insert_type (enum_decl.get_mappings (), type);
+  if (!validate_adt_size (type))
+    {
+      infered = new TyTy::ErrorType (enum_decl.get_mappings ().get_hirid ());
+      context->insert_type (enum_decl.get_mappings (), infered);
+      return;
+    }
   infered = type;
 
   context->get_variance_analysis_ctx ().add_type_constraints (*type);
@@ -574,6 +674,31 @@ TypeCheckItem::visit (HIR::Union &union_decl)
   ResolveWhereClauseItem::Resolve (union_decl.get_where_clause (),
 				   region_constraints);
 
+  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (union_decl.get_mappings ().get_nodeid (),
+				Resolver2_0::Namespace::Types);
+
+  RustIdent ident{canonical_path, union_decl.get_locus ()};
+
+  // Process #[repr(X)] attribute, if any
+  const AST::AttrVec &attrs = union_decl.get_outer_attrs ();
+  TyTy::ADTType::ReprOptions repr
+    = parse_repr_options (attrs, union_decl.get_locus ());
+
+  std::vector<TyTy::VariantDef *> variants;
+  auto *type = new TyTy::ADTType (
+    union_decl.get_mappings ().get_defid (),
+    union_decl.get_mappings ().get_hirid (),
+    union_decl.get_mappings ().get_hirid (),
+    union_decl.get_identifier ().as_string (), ident,
+    TyTy::ADTType::ADTKind::UNION, std::move (variants),
+    std::move (substitutions), repr,
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    region_constraints);
+  context->insert_type (union_decl.get_mappings (), type);
+
   std::vector<TyTy::StructFieldType *> fields;
   for (auto &variant : union_decl.get_variants ())
     {
@@ -588,33 +713,20 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 			    ty_variant->get_field_type ());
     }
 
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
+  auto variant
+    = new TyTy::VariantDef (union_decl.get_mappings ().get_hirid (),
+			    union_decl.get_mappings ().get_defid (),
+			    union_decl.get_identifier ().as_string (), ident,
+			    TyTy::VariantDef::VariantType::STRUCT, tl::nullopt,
+			    std::move (fields));
+  type->get_variants ().push_back (variant);
+  if (!validate_adt_size (type))
+    {
+      infered = new TyTy::ErrorType (union_decl.get_mappings ().get_hirid ());
+      context->insert_type (union_decl.get_mappings (), infered);
+      return;
+    }
 
-  // get the path
-  CanonicalPath canonical_path
-    = nr_ctx.to_canonical_path (union_decl.get_mappings ().get_nodeid (),
-				Resolver2_0::Namespace::Types);
-
-  RustIdent ident{canonical_path, union_decl.get_locus ()};
-
-  // there is only a single variant
-  std::vector<TyTy::VariantDef *> variants;
-  variants.push_back (
-    new TyTy::VariantDef (union_decl.get_mappings ().get_hirid (),
-			  union_decl.get_mappings ().get_defid (),
-			  union_decl.get_identifier ().as_string (), ident,
-			  TyTy::VariantDef::VariantType::STRUCT, tl::nullopt,
-			  std::move (fields)));
-
-  auto *type
-    = new TyTy::ADTType (union_decl.get_mappings ().get_defid (),
-			 union_decl.get_mappings ().get_hirid (),
-			 union_decl.get_mappings ().get_hirid (),
-			 union_decl.get_identifier ().as_string (), ident,
-			 TyTy::ADTType::ADTKind::UNION, std::move (variants),
-			 std::move (substitutions));
-
-  context->insert_type (union_decl.get_mappings (), type);
   infered = type;
 
   context->get_variance_analysis_ctx ().add_type_constraints (*type);

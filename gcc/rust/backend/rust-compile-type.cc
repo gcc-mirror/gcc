@@ -17,8 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-type.h"
-#include "rust-constexpr.h"
-#include "rust-compile-base.h"
 #include "rust-type-util.h"
 
 #include "rust-tyty.h"
@@ -31,6 +29,90 @@ namespace Compile {
 
 static const std::string RUST_ENUM_DISR_FIELD_NAME = "RUST$ENUM$DISR";
 
+static bool
+type_reaches_adt (TyTy::BaseType *type, DefId target, bool indirect,
+		  std::set<std::pair<DefId, bool>> &visited)
+{
+  type = type->destructure ();
+  switch (type->get_kind ())
+    {
+    case TyTy::TypeKind::POINTER:
+      return type_reaches_adt (
+	static_cast<TyTy::PointerType *> (type)->get_base (), target, true,
+	visited);
+
+    case TyTy::TypeKind::REF:
+      return type_reaches_adt (
+	static_cast<TyTy::ReferenceType *> (type)->get_base (), target, true,
+	visited);
+
+    case TyTy::TypeKind::TUPLE:
+      {
+	auto *tuple = static_cast<TyTy::TupleType *> (type);
+	for (size_t i = 0; i < tuple->num_fields (); i++)
+	  {
+	    if (type_reaches_adt (tuple->get_field (i), target, indirect,
+				  visited))
+	      return true;
+	  }
+	return false;
+      }
+
+    case TyTy::TypeKind::ARRAY:
+      return type_reaches_adt (
+	static_cast<TyTy::ArrayType *> (type)->get_element_type (), target,
+	indirect, visited);
+
+    case TyTy::TypeKind::FNPTR:
+      {
+	auto *fn = static_cast<TyTy::FnPtr *> (type);
+	for (const auto &param : fn->get_params ())
+	  {
+	    if (type_reaches_adt (param.get_tyty (), target, true, visited))
+	      return true;
+	  }
+
+	return type_reaches_adt (fn->get_return_type (), target, true, visited);
+      }
+
+    case TyTy::TypeKind::ADT:
+      break;
+
+    default:
+      return false;
+    }
+
+  auto *adt = static_cast<TyTy::ADTType *> (type);
+  if (adt->get_id () == target && indirect)
+    return true;
+
+  auto key = std::make_pair (adt->get_id (), indirect);
+  bool found = visited.find (key) != visited.end ();
+  if (found)
+    return false;
+  visited.insert (key);
+
+  for (auto *variant : adt->get_variants ())
+    {
+      for (auto *field : variant->get_fields ())
+	{
+	  if (type_reaches_adt (field->get_field_type (), target, indirect,
+				visited))
+	    return true;
+	}
+    }
+
+  return false;
+}
+
+static bool
+is_recursive_adt (const TyTy::ADTType &type)
+{
+  std::set<std::pair<DefId, bool>> visited;
+  return type_reaches_adt (const_cast<TyTy::ADTType *> (&type), type.get_id (),
+			   false, visited);
+}
+
 TyTyResolveCompile::TyTyResolveCompile (Context *ctx, bool trait_object_mode)
   : ctx (ctx), trait_object_mode (trait_object_mode),
     translated (error_mark_node)
@@ -42,6 +124,14 @@ TyTyResolveCompile::compile (Context *ctx, const TyTy::BaseType *ty,
 {
   TyTyResolveCompile compiler (ctx, trait_object_mode);
   const TyTy::BaseType *destructured = ty->destructure ();
+
+  if (const auto *adt = destructured->try_as<const TyTy::ADTType> ())
+    {
+      tree compiled_adt = NULL_TREE;
+      if (ctx->lookup_compiled_adt (*adt, &compiled_adt))
+	return compiled_adt;
+    }
+
   destructured->accept_vis (compiler);
 
   if (compiler.translated != error_mark_node
@@ -297,6 +387,24 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
   tree type_record = error_mark_node;
 
   TyTy::ADTType::ReprOptions repr = type.get_repr_options ();
+  bool cached_incomplete_record = false;
+
+  if (is_recursive_adt (type)
+      && repr.repr_kind != TyTy::ADTType::ReprKind::TRANSPARENT
+      && repr.repr_kind != TyTy::ADTType::ReprKind::SIMD)
+    {
+      tree aggregate = make_node (type.is_union () ? UNION_TYPE : RECORD_TYPE);
+      std::string name
+	= type.get_ident ().path.get () + type.subst_as_string ();
+
+      tree decl = build_decl (type.get_ident ().locus, TYPE_DECL,
+			      Backend::get_identifier_node (name), aggregate);
+      TYPE_NAME (aggregate) = decl;
+      type_record = aggregate;
+      ctx->insert_compiled_adt (type, type_record);
+      cached_incomplete_record = true;
+    }
+
   if (repr.repr_kind == TyTy::ADTType::ReprKind::TRANSPARENT)
     {
       rust_assert (type.number_of_variants () == 1);
@@ -400,8 +508,11 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 				   type.get_locus ());
 	    }
 	}
-      type_record = type.is_union () ? Backend::union_type (fields, false)
-				     : Backend::struct_type (fields, false);
+      if (cached_incomplete_record)
+	type_record = Backend::fill_in_fields (type_record, fields, false);
+      else
+	type_record = type.is_union () ? Backend::union_type (fields, false)
+				       : Backend::struct_type (fields, false);
     }
   else
     {
@@ -523,7 +634,10 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
 
       std::vector<Backend::typed_identifier> fields
 	= {discrim, variants_union_field};
-      type_record = Backend::struct_type (fields, false);
+      if (cached_incomplete_record)
+	type_record = Backend::fill_in_fields (type_record, fields, false);
+      else
+	type_record = Backend::struct_type (fields, false);
     }
 
   // Handle repr options
@@ -549,10 +663,22 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
       layout_type (type_record);
     }
 
-  std::string named_struct_str
-    = type.get_ident ().path.get () + type.subst_as_string ();
-  translated = Backend::named_type (named_struct_str, type_record,
-				    type.get_ident ().locus);
+  if (cached_incomplete_record)
+    {
+      // see gcc/c/c-decl.cc this sets up any incomplete variants of the tree
+      for (tree variant = TYPE_NEXT_VARIANT (type_record); variant != NULL_TREE;
+	   variant = TYPE_NEXT_VARIANT (variant))
+	TYPE_FIELDS (variant) = TYPE_FIELDS (type_record);
+
+      translated = type_record;
+    }
+  else
+    {
+      std::string named_struct_str
+	= type.get_ident ().path.get () + type.subst_as_string ();
+      translated = Backend::named_type (named_struct_str, type_record,
+					type.get_ident ().locus);
+    }
 }
 
 void

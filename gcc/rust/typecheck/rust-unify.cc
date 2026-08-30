@@ -38,11 +38,13 @@ UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 			location_t locus, bool commit_flag, bool emit_error,
 			bool check_bounds, bool infer,
 			std::vector<CommitSite> &commits,
-			std::vector<InferenceSite> &infers)
+			std::vector<InferenceSite> &infers,
+			ActiveADTs &active_adts)
   : lhs (lhs), rhs (rhs), locus (locus), commit_flag (commit_flag),
     emit_error (emit_error), infer_flag (infer),
     check_bounds_flag (check_bounds), commits (commits), infers (infers),
-    mappings (Analysis::Mappings::get ()), context (*TypeCheckContext::get ())
+    active_adts (active_adts), mappings (Analysis::Mappings::get ()),
+    context (*TypeCheckContext::get ())
 {}
 
 TyTy::BaseType *
@@ -50,10 +52,15 @@ UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		     location_t locus, bool commit_flag, bool emit_error,
 		     bool check_bounds, bool infer,
 		     std::vector<CommitSite> &commits,
-		     std::vector<InferenceSite> &infers)
+		     std::vector<InferenceSite> &infers,
+		     ActiveADTs *active_adts)
 {
+  ActiveADTs root_active_adts;
+  if (active_adts == nullptr)
+    active_adts = &root_active_adts;
+
   UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, check_bounds, infer,
-		commits, infers);
+		commits, infers, *active_adts);
 
   TyTy::BaseType *result = r.go ();
   bool failed = result->get_kind () == TyTy::TypeKind::ERROR;
@@ -76,7 +83,8 @@ UnifyRules::resolve_subtype (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs)
 {
   TyTy::BaseType *result
     = UnifyRules::Resolve (lhs, rhs, locus, commit_flag, emit_error,
-			   check_bounds_flag, infer_flag, commits, infers);
+			   check_bounds_flag, infer_flag, commits, infers,
+			   &active_adts);
 
   // If the recursive call resulted in an error and would have emitted an error
   // message, disable error emission for the current level to avoid duplicate
@@ -585,6 +593,9 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
     case TyTy::ADT:
       {
 	TyTy::ADTType &type = *static_cast<TyTy::ADTType *> (rtype);
+	if (ltype == &type)
+	  return ltype;
+
 	if (ltype->get_adt_kind () != type.get_adt_kind ())
 	  {
 	    return unify_error_type_node ();
@@ -604,6 +615,10 @@ UnifyRules::expect_adt (TyTy::ADTType *ltype, TyTy::BaseType *rtype)
 	  {
 	    return unify_error_type_node ();
 	  }
+
+	ActiveADTGuard guard (active_adts, {ltype, &type});
+	if (guard.already_active ())
+	  return ltype;
 
 	for (size_t i = 0; i < type.number_of_variants (); ++i)
 	  {

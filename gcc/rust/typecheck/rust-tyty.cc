@@ -767,6 +767,9 @@ BaseType::monomorphized_clone () const
     }
   else if (auto adt = x->try_as<const ADTType> ())
     {
+      if (!adt->has_substitutions_defined () || !adt->needs_substitution ())
+	return const_cast<ADTType *> (adt);
+
       std::vector<VariantDef *> cloned_variants;
       for (auto &variant : adt->get_variants ())
 	cloned_variants.push_back (variant->monomorphized_clone ());
@@ -825,30 +828,45 @@ BaseType::debug () const
 const TyTy::BaseType *
 BaseType::contains_infer () const
 {
+  std::set<const TyTy::BaseType *> visited;
+  return contains_infer (visited);
+}
+
+const TyTy::BaseType *
+BaseType::contains_infer (std::set<const TyTy::BaseType *> &visited) const
+{
   const TyTy::BaseType *x = destructure ();
+  bool found = visited.find (x) != visited.end ();
+  if (found)
+    return nullptr;
+  visited.insert (x);
 
   if (auto fn = x->try_as<const FnType> ())
     {
       for (const auto &param : fn->get_params ())
 	{
-	  auto infer = param.get_type ()->contains_infer ();
+	  auto infer = param.get_type ()->contains_infer (visited);
 	  if (infer)
 	    return infer;
 	}
-      return fn->get_return_type ()->contains_infer ();
+      return fn->get_return_type ()->contains_infer (visited);
     }
   else if (auto fn = x->try_as<const FnPtr> ())
     {
       for (const auto &param : fn->get_params ())
 	{
-	  auto infer = param.get_tyty ()->contains_infer ();
+	  auto infer = param.get_tyty ()->contains_infer (visited);
 	  if (infer)
 	    return infer;
 	}
-      return fn->get_return_type ()->contains_infer ();
+      return fn->get_return_type ()->contains_infer (visited);
     }
   else if (auto adt = x->try_as<const ADTType> ())
     {
+      // non generic adt's cannot have infer vars on them
+      if (!adt->has_substitutions_defined ())
+	return nullptr;
+
       for (auto &variant : adt->get_variants ())
 	{
 	  bool is_num_variant
@@ -861,7 +879,7 @@ BaseType::contains_infer () const
 	  for (auto &field : variant->get_fields ())
 	    {
 	      const BaseType *field_type = field->get_field_type ();
-	      auto infer = (field_type->contains_infer ());
+	      auto infer = field_type->contains_infer (visited);
 	      if (infer)
 		return infer;
 	    }
@@ -870,28 +888,28 @@ BaseType::contains_infer () const
     }
   else if (auto arr = x->try_as<const ArrayType> ())
     {
-      auto type_infer = (arr->get_element_type ()->contains_infer ());
+      auto type_infer = arr->get_element_type ()->contains_infer (visited);
       if (type_infer)
 	return type_infer;
-      return arr->get_capacity ()->contains_infer ();
+      return arr->get_capacity ()->contains_infer (visited);
     }
   else if (auto slice = x->try_as<const SliceType> ())
     {
-      return slice->get_element_type ()->contains_infer ();
+      return slice->get_element_type ()->contains_infer (visited);
     }
   else if (auto ptr = x->try_as<const PointerType> ())
     {
-      return ptr->get_base ()->contains_infer ();
+      return ptr->get_base ()->contains_infer (visited);
     }
   else if (auto ref = x->try_as<const ReferenceType> ())
     {
-      return ref->get_base ()->contains_infer ();
+      return ref->get_base ()->contains_infer (visited);
     }
   else if (auto tuple = x->try_as<const TupleType> ())
     {
       for (size_t i = 0; i < tuple->num_fields (); i++)
 	{
-	  auto infer = (tuple->get_field (i)->contains_infer ());
+	  auto infer = tuple->get_field (i)->contains_infer (visited);
 	  if (infer)
 	    return infer;
 	}
@@ -899,10 +917,10 @@ BaseType::contains_infer () const
     }
   else if (auto closure = x->try_as<const ClosureType> ())
     {
-      auto infer = (closure->get_parameters ().contains_infer ());
+      auto infer = closure->get_parameters ().contains_infer (visited);
       if (infer)
 	return infer;
-      return closure->get_result_type ().contains_infer ();
+      return closure->get_result_type ().contains_infer (visited);
     }
   else if (x->is<InferType> ())
     {
@@ -922,7 +940,18 @@ BaseType::contains_infer () const
 bool
 BaseType::is_concrete () const
 {
+  std::set<const TyTy::BaseType *> visited;
+  return is_concrete (visited);
+}
+
+bool
+BaseType::is_concrete (std::set<const TyTy::BaseType *> &visited) const
+{
   const TyTy::BaseType *x = destructure ();
+  bool found = visited.find (x) != visited.end ();
+  if (found)
+    return true;
+  visited.insert (x);
 
   if (x->is<ParamType> ())
     {
@@ -939,7 +968,7 @@ BaseType::is_concrete () const
   else if (x->is<ProjectionType> ())
     {
       const auto p = x->as<const TyTy::ProjectionType> ();
-      return p->get_self ()->is_concrete ();
+      return p->get_self ()->is_concrete (visited);
     }
   // placeholder is a special case for this case when it is not resolvable
   // it means we its just an empty placeholder associated type which is
@@ -952,22 +981,25 @@ BaseType::is_concrete () const
     {
       for (const auto &param : fn->get_params ())
 	{
-	  if (!param.get_type ()->is_concrete ())
+	  if (!param.get_type ()->is_concrete (visited))
 	    return false;
 	}
-      return fn->get_return_type ()->is_concrete ();
+      return fn->get_return_type ()->is_concrete (visited);
     }
   else if (auto fn = x->try_as<const FnPtr> ())
     {
       for (const auto &param : fn->get_params ())
 	{
-	  if (!param.get_tyty ()->is_concrete ())
+	  if (!param.get_tyty ()->is_concrete (visited))
 	    return false;
 	}
-      return fn->get_return_type ()->is_concrete ();
+      return fn->get_return_type ()->is_concrete (visited);
     }
   else if (auto adt = x->try_as<const ADTType> ())
     {
+      if (!adt->has_substitutions_defined ())
+	return true;
+
       if (adt->is_unit ())
 	return !adt->needs_substitution ();
 
@@ -983,7 +1015,7 @@ BaseType::is_concrete () const
 	  for (auto &field : variant->get_fields ())
 	    {
 	      const BaseType *field_type = field->get_field_type ();
-	      if (!field_type->is_concrete ())
+	      if (!field_type->is_concrete (visited))
 		return false;
 	    }
 	}
@@ -991,35 +1023,35 @@ BaseType::is_concrete () const
     }
   else if (auto arr = x->try_as<const ArrayType> ())
     {
-      return arr->get_element_type ()->is_concrete ()
-	     && arr->get_capacity ()->is_concrete ();
+      return arr->get_element_type ()->is_concrete (visited)
+	     && arr->get_capacity ()->is_concrete (visited);
     }
   else if (auto slice = x->try_as<const SliceType> ())
     {
-      return slice->get_element_type ()->is_concrete ();
+      return slice->get_element_type ()->is_concrete (visited);
     }
   else if (auto ptr = x->try_as<const PointerType> ())
     {
-      return ptr->get_base ()->is_concrete ();
+      return ptr->get_base ()->is_concrete (visited);
     }
   else if (auto ref = x->try_as<const ReferenceType> ())
     {
-      return ref->get_base ()->is_concrete ();
+      return ref->get_base ()->is_concrete (visited);
     }
   else if (auto tuple = x->try_as<const TupleType> ())
     {
       for (size_t i = 0; i < tuple->num_fields (); i++)
 	{
-	  if (!tuple->get_field (i)->is_concrete ())
+	  if (!tuple->get_field (i)->is_concrete (visited))
 	    return false;
 	}
       return true;
     }
   else if (auto closure = x->try_as<const ClosureType> ())
     {
-      if (closure->get_parameters ().is_concrete ())
+      if (closure->get_parameters ().is_concrete (visited))
 	return false;
-      return closure->get_result_type ().is_concrete ();
+      return closure->get_result_type ().is_concrete (visited);
     }
   else if (x->is<InferType> () || x->is<BoolType> () || x->is<CharType> ()
 	   || x->is<IntType> () || x->is<UintType> () || x->is<FloatType> ()
@@ -1998,10 +2030,16 @@ ADTType::as_string () const
 bool
 ADTType::is_equal (const BaseType &other) const
 {
+  if (this == &other)
+    return true;
+
   if (get_kind () != other.get_kind ())
     return false;
 
   auto other2 = other.as<const ADTType> ();
+  if (get_id () != other2->get_id ())
+    return false;
+
   if (get_adt_kind () != other2->get_adt_kind ())
     return false;
 
@@ -2028,15 +2066,8 @@ ADTType::is_equal (const BaseType &other) const
 	}
     }
 
-  for (size_t i = 0; i < number_of_variants (); i++)
-    {
-      const TyTy::VariantDef *a = get_variants ().at (i);
-      const TyTy::VariantDef *b = other2->get_variants ().at (i);
-
-      if (!a->is_equal (*b))
-	return false;
-    }
-
+  // ADTs are nominal.  Their fields describe the definition, not the type's
+  // identity, and walking them here cannot terminate for recursive ADTs.
   return true;
 }
 
@@ -2131,9 +2162,18 @@ handle_substitions (SubstitutionArgumentMappings &subst_mappings,
 ADTType *
 ADTType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
 {
+  auto context = Resolver::TypeCheckContext::get ();
+  ADTType *cached = nullptr;
+  if (context->lookup_adt_substitution (get_id (), subst_mappings, &cached))
+    return cached;
+
   auto adt = clone ()->as<ADTType> ();
   adt->set_ty_ref (mappings.get_next_hir_id ());
   adt->used_arguments = subst_mappings;
+
+  // track these to handle recursive types
+  context->insert_implicit_type (adt->get_ty_ref (), adt);
+  context->insert_adt_substitution (get_id (), subst_mappings, adt);
 
   for (auto &sub : adt->get_substs ())
     {
@@ -2589,7 +2629,7 @@ FnPtr::as_string () const
   auto &params = get_params ();
   for (auto &p : params)
     {
-      params_str += p.get_tyty ()->as_string () + " ,";
+      params_str += p.get_tyty ()->get_name () + " ,";
     }
 
   std::string unsafety = "";
@@ -2598,7 +2638,7 @@ FnPtr::as_string () const
 
   std::string abi = get_string_from_abi (get_abi ());
   return unsafety + "abi:" + abi + " " + "fnptr (" + params_str + ") -> "
-	 + get_return_type ()->as_string ();
+	 + get_return_type ()->get_name ();
 }
 
 bool
@@ -3641,7 +3681,7 @@ std::string
 PointerType::as_string () const
 {
   return std::string ("* ") + (is_mutable () ? "mut" : "const") + " "
-	 + get_base ()->as_string ();
+	 + get_base ()->get_name ();
 }
 
 std::string

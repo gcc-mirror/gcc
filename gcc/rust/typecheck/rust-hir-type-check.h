@@ -215,6 +215,15 @@ public:
 
   void insert_implicit_type (HirId id, TyTy::BaseType *type);
 
+  bool
+  lookup_adt_substitution (DefId id,
+			   const TyTy::SubstitutionArgumentMappings &mappings,
+			   TyTy::ADTType **type) const;
+  void
+  insert_adt_substitution (DefId id,
+			   const TyTy::SubstitutionArgumentMappings &mappings,
+			   TyTy::ADTType *type);
+
   void insert_type_by_node_id (NodeId ref, HirId id);
   bool lookup_type_by_node_id (NodeId ref, HirId *id);
 
@@ -343,6 +352,8 @@ private:
 
   std::map<NodeId, HirId> node_id_refs;
   std::map<HirId, TyTy::BaseType *> resolved;
+  std::map<std::pair<DefId, std::vector<HirId>>, TyTy::ADTType *>
+    adt_substitutions;
   std::set<DefId> function_bodies_pending;
   std::vector<std::unique_ptr<TyTy::BaseType>> builtins;
   std::vector<std::pair<TypeCheckContextItem, TyTy::BaseType *>>

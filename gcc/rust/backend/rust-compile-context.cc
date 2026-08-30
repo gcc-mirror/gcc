@@ -49,6 +49,13 @@ Context::setup_builtins ()
 hashval_t
 Context::type_hasher (tree type)
 {
+  hash_set<tree> active_types;
+  return type_hasher (type, active_types);
+}
+
+hashval_t
+Context::type_hasher (tree type, hash_set<tree> &active_types)
+{
   inchash::hash hstate;
 
   hstate.add_int (TREE_CODE (type));
@@ -63,6 +70,15 @@ Context::type_hasher (tree type)
   for (tree t = TYPE_ATTRIBUTES (type); t; t = TREE_CHAIN (t))
     /* Just the identifier is adequate to distinguish.  */
     hstate.add_object (IDENTIFIER_HASH_VALUE (TREE_PURPOSE (t)));
+
+  /* recursive guard */
+  bool found = active_types.contains (type);
+  if (found)
+    {
+      hstate.add_int (TYPE_UID (TYPE_MAIN_VARIANT (type)));
+      return hstate.end ();
+    }
+  active_types.add (type);
 
   switch (TREE_CODE (type))
     {
@@ -120,7 +136,7 @@ Context::type_hasher (tree type)
 	for (tree t = TYPE_FIELDS (type); t; t = TREE_CHAIN (t))
 	  {
 	    hashval_t name_hash = IDENTIFIER_HASH_VALUE (DECL_NAME (t));
-	    hashval_t type_hash = type_hasher (TREE_TYPE (t));
+	    hashval_t type_hash = type_hasher (TREE_TYPE (t), active_types);
 	    hstate.add_object (name_hash);
 	    hstate.add_object (type_hash);
 	  }
@@ -133,7 +149,7 @@ Context::type_hasher (tree type)
     case REFERENCE_TYPE:
     case POINTER_TYPE:
       {
-	hashval_t type_hash = type_hasher (TREE_TYPE (type));
+	hashval_t type_hash = type_hasher (TREE_TYPE (type), active_types);
 	hstate.add_object (type_hash);
       }
       break;
@@ -142,6 +158,7 @@ Context::type_hasher (tree type)
       break;
     }
 
+  active_types.remove (type);
   return hstate.end ();
 }
 

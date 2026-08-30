@@ -368,6 +368,10 @@ public:
   virtual bool is_box () const { return false; }
 
 protected:
+  const TyTy::BaseType *
+  contains_infer (std::set<const TyTy::BaseType *> &visited) const;
+  bool is_concrete (std::set<const TyTy::BaseType *> &visited) const;
+
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::set<HirId> refs = std::set<HirId> ());
 
