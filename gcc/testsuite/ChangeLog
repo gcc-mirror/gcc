@@ -1,3 +1,19 @@
+2026-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/guality/arg1.f90: Put a breakpoint on volatile
+	variable increment instead of on the write statement.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/127098
+	* gcc.target/avr/torture/pr127098.c: New test.
+
 2026-08-28  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
