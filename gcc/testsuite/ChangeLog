@@ -1,3 +1,11 @@
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/127098
+	* gcc.target/avr/torture/pr127098.c: New test.
+
 2026-08-28  Michael Meissner  <meissner@linux.ibm.com>
 
 	PR target/120681
