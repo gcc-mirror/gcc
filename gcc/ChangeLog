@@ -1,3 +1,90 @@
+2026-08-29  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* tree-ssa-loop-ivopts.cc (ivopts_estimate_reg_pressure): Remove
+	stray semi-colon and fix formatting.
+
+2026-08-29  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt.urls: Regenerate.
+
+2026-08-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/install.texi (Configuration): Update SARIF website.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.md (UNSPEC_SSP_SET, UNSPEC_SSP_TEST): New
+	unspecs.
+	(stack_protect_set, stack_protect_setdi): New patterns.
+	(stack_protect_test, stack_protect_testdi): Likewise.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.h (FRAME_GROWS_DOWNWARD): Define.
+	* config/alpha/alpha.cc (alpha_initial_elimination_offset): Resolve
+	FRAME_POINTER_REGNUM to the high end of the local variables when
+	FRAME_GROWS_DOWNWARD.
+	(alpha_vms_initial_elimination_offset): Likewise.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.cc (alpha_expand_unaligned_load): Use
+	copy_addr_to_reg to compute the byte address.
+	(alpha_expand_unaligned_store_safe_partial): Likewise.
+
+2026-08-29  Jovan Dmitrovic  <jovan.dmitrovic@htecgroup.com>
+	    Radosav Krunić  <radosav.krunic@htecgroup.com>
+
+	* tree-ssa-loop-ivopts.cc (ivopts_estimate_reg_pressure):
+	Change register pressure estimate in order to respect
+	the impact of spilling induction variables, compared
+	to spilling loop invariants.
+
+2026-08-29  Jovan Dmitrovic  <jovan.dmitrovic@htecgroup.com>
+
+	* tree-ssa-loop-ivopts.cc (ivopts_estimate_reg_pressure):
+	Remove target_reg_cost from the computation of register pressure
+	and target_res_regs from the computation of available registers.
+
+2026-08-29  Jovan Dmitrovic  <jovan.dmitrovic@htecgroup.com>
+	    Radosav Krunić  <radosav.krunic@htecgroup.com>
+
+	* tree-ssa-loop-ivopts.cc (ivopts_estimate_reg_pressure):
+	Remove n_cands bias from reg pressure cost calculation.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.h (FRAME_ADDR_RTX): Define.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* builtins.cc (expand_builtin_return_addr): Pass COUNT to
+	FRAME_ADDR_RTX.
+	* defaults.h (FRAME_ADDR_RTX): Add COUNT argument.
+	* config/epiphany/epiphany.h (FRAME_ADDR_RTX): Likewise.
+	* config/s390/s390.h (FRAME_ADDR_RTX): Likewise.
+	* config/sparc/sparc.h (FRAME_ADDR_RTX): Likewise.
+	* doc/tm.texi.in (FRAME_ADDR_RTX): Document COUNT and the
+	NULL_RTX return value.
+	* doc/tm.texi: Regenerate.
+
+2026-08-29  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (ARM ARMv8-M Security Extensions): Update URL.
+	* doc/invoke.texi (ARM Options): Ditto.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/127098
+	* config/avr/avr.md (MPUSH): Add TImode to mode iterator.
+	* config/avr/avr.h (PUSH_ROUNDING): Adjust comment.
+
+2026-08-29  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126896
+	* tree-ssa-phiopt.cc (pass_phiopt::execute): Run
+	replicate_conds_over_phis in early phiopt too.
+
 2026-08-28  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	PR tree-optimization/127039

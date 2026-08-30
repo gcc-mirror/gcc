@@ -1,3 +1,10 @@
+2026-08-29  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* include/cpplib.h (struct cpp_token): Remove ENUM_BITFIELD.
+	(struct cpp_hashnode): Ditto.
+	* include/line-map.h (struct line_map_ordinary): Ditto.
+
 2026-08-21  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* lex.cc (search_line_neon): New optimized AdvSIMD implementation.

@@ -1,3 +1,90 @@
+2026-08-29  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/apx-ndd-adc.c (dg-do): Replace
+	"target { int128 && { ! ia32 } }" with "target int128".
+	* gcc.target/i386/apx-ndd-sbb.c (dg-do): Likewise.
+	* gcc.target/i386/apx-ndd-ti-shift.c (dg-do): Likewise.
+
+2026-08-29  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
+
+	PR c++/127046
+	* g++.dg/cpp2a/constexpr-dtor20.C: New test.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/alpha/stack-protector-1.c: New test.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.dg/fstack-protector-strong.c: Run on alpha*-*-*.  Expect
+	twice as many stack_chk_fail matches there, since Alpha names the
+	callee once for !literal and once for !lituse_jsr.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/alpha/unaligned-big-frame.c: New test.
+
+2026-08-29  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.dg/Wno-frame-address.c: Skip on alpha*-*-*.
+	* gcc.target/alpha/frame-address-1.c: New test.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/117728
+	* gcc.dg/tree-ssa/satd-hadamard.c: Require int32plus.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/123967
+	* gcc.dg/tree-ssa/pr123967.c: Require int32plus.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/121264
+	* gcc.dg/tree-ssa/pr121264.c: Require size32plus.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/112104
+	* gcc.dg/tree-ssa/pr112104-2.c: Require int32plus.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/121103
+	* gcc.dg/torture/pr121103-1.c (B.n): Use __INT32_TYPE__
+	instead of int.
+
+2026-08-29  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/sh/pr51244-20.c: Merge a few sh2a and !sh2a expectations.
+
+2026-08-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/guality/arg1.f90: Put a breakpoint on volatile
+	variable increment instead of on the write statement.
+
+2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR middle-end/127098
+	* gcc.target/avr/torture/pr127098.c: New test.
+
+2026-08-29  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126896
+	* gcc.dg/tree-ssa/dom-jump-threading-1.c: Disable phiopt1.
+	* gcc.dg/tree-ssa/dom-jump-threading-2.c: Likewise.
+	* gcc.dg/tree-ssa/phi_on_compare-1.c: Scan the phiopt1 dump.
+
+2026-08-29  Luke Zhuang  <luke.zhuang@linux.alibaba.com>
+
+	* gcc.target/riscv/slliw-shifted-bitfield-rtl.c: New test.
+
+2026-08-29  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/reduc/pr123501.c: Adjust expected
+	output.
+
 2026-08-28  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c-c++-common/analyzer/flex-with-call-summaries.c: Specify

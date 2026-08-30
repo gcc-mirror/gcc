@@ -1,3 +1,8 @@
+2026-08-29  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
+
+	PR c++/127046
+	* constexpr.cc (unshare_constructor): Copy RANGE_EXPR indexes.
+
 2026-08-28  Wang Jinghao  <zheng.xianyuwang@gmail.com>
 	    Jason Merrill  <jason@redhat.com>
 
