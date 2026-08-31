@@ -490,6 +490,8 @@ TraitItemReference::resolve_item (const TraitReference *tref,
 				TyTy::SubstitutionArgumentMappings::error (),
 				{}, {}, inherited_count);
 
+  context->insert_type (type.get_mappings (), projection);
+
   // Attach the bounds declared on the associated type itself:
   //
   //     type IntoIter: Iterator<Item = Self::Item>
@@ -514,8 +516,6 @@ TraitItemReference::resolve_item (const TraitReference *tref,
       if (!trait_item_bounds.empty ())
 	projection->inherit_bounds (trait_item_bounds);
     }
-
-  context->insert_type (type.get_mappings (), projection);
 }
 
 void
