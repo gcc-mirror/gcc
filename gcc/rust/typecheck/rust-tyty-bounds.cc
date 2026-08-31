@@ -332,11 +332,6 @@ TypeCheckBase::get_predicate_from_bound (
 	  std::make_unique<HIR::TupleType> (mapping, std::move (params_copy),
 					    final_seg.get_locus ()));
 
-	// resolve the fn_once_output type which assumes there must be an output
-	// set
-	rust_assert (fn.has_return_type ());
-	TypeCheckType::Resolve (fn.get_return_type ());
-
 	HIR::TraitItem *trait_item
 	  = mappings
 	      .lookup_trait_item_lang_item (LangItem::Kind::FN_ONCE_OUTPUT,
@@ -344,10 +339,16 @@ TypeCheckBase::get_predicate_from_bound (
 	      .value ();
 
 	std::vector<HIR::GenericArgsBinding> bindings;
-	location_t output_locus = fn.get_return_type ().get_locus ();
-	bindings.emplace_back (Identifier (trait_item->trait_identifier ()),
-			       fn.get_return_type ().clone_type (),
-			       output_locus);
+
+	if (fn.has_return_type ())
+	  {
+	    TypeCheckType::Resolve (fn.get_return_type ());
+
+	    location_t output_locus = fn.get_return_type ().get_locus ();
+	    bindings.emplace_back (Identifier (trait_item->trait_identifier ()),
+				   fn.get_return_type ().clone_type (),
+				   output_locus);
+	  }
 
 	args = HIR::GenericArgs ({} /* lifetimes */,
 				 std::move (inputs) /* type_args*/,
