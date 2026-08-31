@@ -11285,6 +11285,10 @@ riscv_register_move_cost (machine_mode mode,
   bool from_is_gpr = reg_class_subset_p (from, GR_REGS);
   bool to_is_fpr = reg_class_subset_p (to, FP_REGS);
   bool to_is_gpr = reg_class_subset_p (to, GR_REGS);
+
+  if (riscv_secondary_memory_needed (mode, from, to))
+    return 8;
+
   if ((from_is_fpr && to_is_gpr) || (from_is_gpr && to_is_fpr))
     return tune_param->fmv_cost;
 
@@ -11304,7 +11308,7 @@ riscv_register_move_cost (machine_mode mode,
 	return get_fr2vr_cost ();
     }
 
-  return riscv_secondary_memory_needed (mode, from, to) ? 8 : 2;
+  return 2;
 }
 
 /* Implement TARGET_HARD_REGNO_NREGS.  */
