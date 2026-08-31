@@ -4558,13 +4558,16 @@ users:
 - sn: Patry
   cn: Pierre-Emmanuel Patry
   email:
-  - pierre-emmanuel.patry@embecosm.com
+  - pierre.emmanuel.patry@opensrcsec.com
   - pep@gcc.gnu.org
   roles:
   - Maintainer: Rust
   - Maintainer: libgrust
   - WriteAfter
+  - DCO: pierre.emmanuel.patry@opensrcsec.com
   - DCO: pierre-emmanuel.patry@embecosm.com
+  inactive_email:
+  - pierre-emmanuel.patry@embecosm.com
   account: pep
 - sn: Pavenis
   cn: Andris Pavenis

@@ -177,7 +177,7 @@ objective-c/c++         Iain Sandoe             <iain@sandoe.co.uk>
 objective-c/c++         Mike Stump              <mikestump@comcast.net>
 Rust                    Arthur Cohen            <arthur.cohen@embecosm.com>
 Rust                    Philip Herron           <herron.philip@googlemail.com>
-Rust                    Pierre-Emmanuel Patry   <pierre-emmanuel.patry@embecosm.com>
+Rust                    Pierre-Emmanuel Patry   <pierre.emmanuel.patry@opensrcsec.com>
 
                         Various Maintainers   (Area alphabetical order)
 
@@ -237,7 +237,7 @@ libgomp                 Jakub Jelinek           <jakub@redhat.com>
 libgomp (OpenACC)       Thomas Schwinge         <tschwinge@baylibre.com>
 libgrust                Arthur Cohen            <arthur.cohen@embecosm.com>
 libgrust                Philip Herron           <herron.philip@googlemail.com>
-libgrust                Pierre-Emmanuel Patry   <pierre-emmanuel.patry@embecosm.com>
+libgrust                Pierre-Emmanuel Patry   <pierre.emmanuel.patry@opensrcsec.com>
 libiberty               Ian Lance Taylor        <ian@airs.com>
 libitm                  Torvald Riegel          <triegel@redhat.com>
 libobjc                 Nicola Pero             <nicola.pero@meta-innovation.com>
@@ -758,7 +758,7 @@ Seongbae Park                   spark           <seongbae.park@gmail.com>
 Kishan Parmar                   kishan          <kishan@linux.ibm.com>
 Srinath Parvathaneni            sripar01        <srinath.parvathaneni@arm.com>
 Devang Patel                    dpatel          <dpatel@apple.com>
-Pierre-Emmanuel Patry           pep             <pierre-emmanuel.patry@embecosm.com>
+Pierre-Emmanuel Patry           pep             <pierre.emmanuel.patry@opensrcsec.com>
 Andris Pavenis                  andris          <andris.pavenis@iki.fi>
 Fernando Pereira                pronesto        <pronesto@gmail.com>
 Nicola Pero                     nicola          <nicola.pero@meta-innovation.com>
@@ -1022,6 +1022,7 @@ Shreya Munnangi                                 <smunnang@qti.qualcomm.com>
 Shreya Munnangi                                 <smunnangi1@ventanamicro.com>
 Szabolcs Nagy                                   <nsz@gcc.gnu.org>
 Pierre-Emmanuel Patry                           <pierre-emmanuel.patry@embecosm.com>
+Pierre-Emmanuel Patry                           <pierre.emmanuel.patry@opensrcsec.com>
 Mikael Pettersson                               <mikpelinux@gmail.com>
 Andrea Pinski                                   <andrew.pinski@oss.qualcomm.com>
 Andrea Pinski                                   <quic_apinski@quicinc.com>
