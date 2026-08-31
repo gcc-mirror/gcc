@@ -2996,20 +2996,19 @@ aarch64_regmode_natural_size (machine_mode mode)
   /* The natural size for SVE data modes is one SVE data vector,
      and similarly for predicates.  We can't independently modify
      anything smaller than that.  */
-  /* ??? For now, only do this for variable-width SVE registers.
-     Doing it for constant-sized registers breaks lower-subreg.cc.  */
-  /* ??? And once that's fixed, we should probably have similar
-     code for Advanced SIMD.  */
-  if (!aarch64_sve_vg.is_constant ())
+  if (VECTOR_MODE_P (mode))
     {
-      /* REGMODE_NATURAL_SIZE influences general subreg validity rules,
-	 so we need to handle memory-only modes as well.  */
       unsigned int vec_flags = aarch64_classify_vector_memory_mode (mode);
       if (vec_flags & VEC_SVE_PRED)
 	return BYTES_PER_SVE_PRED;
       if (vec_flags & VEC_SVE_DATA)
 	return BYTES_PER_SVE_VECTOR;
+      if (vec_flags & VEC_ADVSIMD)
+	return MAX (exact_div (GET_MODE_SIZE (mode),
+			       aarch64_ldn_stn_vectors (mode)).to_constant (),
+		    UNITS_PER_WORD);
     }
+
   return UNITS_PER_WORD;
 }
 
