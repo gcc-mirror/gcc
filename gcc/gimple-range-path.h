@@ -42,6 +42,8 @@ public:
   bool range_of_expr (vrange &r, tree name, gimple * = NULL) override;
   bool range_of_stmt (vrange &r, gimple *, tree name = NULL) override;
   bool unreachable_path_p ();
+  // Path ranger should not be an active query.
+  virtual bool active_query_compatible_p () { return false; }
   void dump (FILE *) override;
   void debug ();
 

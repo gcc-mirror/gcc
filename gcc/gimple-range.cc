@@ -748,10 +748,11 @@ enable_ranger (struct function *fun, bool use_imm_uses)
 {
   gimple_ranger *r;
 
-  gcc_checking_assert (!fun->x_range_query);
   r = new gimple_ranger (use_imm_uses);
-  fun->x_range_query = r;
+  range_query *q = set_range_query (fun, r);
 
+  // Ranger should be the first and only instance.
+  gcc_checking_assert (q == get_global_range_query ());
   return r;
 }
 
@@ -761,9 +762,9 @@ enable_ranger (struct function *fun, bool use_imm_uses)
 void
 disable_ranger (struct function *fun)
 {
-  gcc_checking_assert (fun->x_range_query);
-  delete fun->x_range_query;
-  fun->x_range_query = NULL;
+  // Ensure this is the query being removed.
+  range_query *q = set_range_query (fun, get_global_range_query ());
+  delete q;
 }
 
 // ---------------------------------------------------------------------------

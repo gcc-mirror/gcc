@@ -95,6 +95,8 @@ public:
   void create_gori (int not_executable_flag = 0, int sw_max_edges = INT_MAX);
   void destroy_gori ();
 
+  // Return TRUE if this path query can be a current_range_query.
+  virtual bool active_query_compatible_p () { return true; }
   virtual void dump (FILE *);
 
 protected:
@@ -138,6 +140,10 @@ get_range_query (const struct function *fun)
 {
   return (fun && fun->x_range_query) ? fun->x_range_query : &global_ranges;
 }
+
+// Provide a way to change the current range query if it is valid, return
+// the previous query.
+range_query *set_range_query (struct function *fun, range_query *q);
 
 // Query the global range of NAME in function F.  Default to cfun.
 extern void gimple_range_global (vrange &v, tree name,

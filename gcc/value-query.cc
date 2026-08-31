@@ -35,6 +35,32 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-range-storage.h"
 #include "target.h"
 
+// Attempt to make Q the current range query for FUN.  If it is already the
+// current range query, return NULL.
+// If the specified query is not compatible with being the current query,
+// instead push the global query for safety.  This is most common when
+// the requested query is a path ranger, and it can be unstable to make
+// arbitrary queries which may be in the middle or after a path.
+
+range_query *
+set_range_query (struct function *fun, range_query *q)
+{
+  // Set the global query if it hasn't been set.
+  if (!fun->x_range_query)
+    fun->x_range_query = get_global_range_query ();
+
+  // If this is not a compatible range query, revert to the global query.
+  if (!q->active_query_compatible_p ())
+    q = get_global_range_query ();
+
+  if (q == fun->x_range_query)
+    return NULL;
+
+  range_query *orig = fun->x_range_query;
+  fun->x_range_query = q;
+  return orig;
+}
+
 // range_query default methods.
 
 bool

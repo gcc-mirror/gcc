@@ -1241,20 +1241,21 @@ execute_fast_vrp (struct function *fun, bool final_p)
 {
   calculate_dominance_info (CDI_DOMINATORS);
   dom_ranger dr;
+  // Create a relation oracle without transitives.  It will automatically
+  // be destroyed when the destructor for 'dr' runs.
+  dr.create_relation_oracle (false);
   fvrp_folder folder (&dr, final_p);
 
-  gcc_checking_assert (!fun->x_range_query);
   set_all_edges_as_executable (fun);
-  fun->x_range_query = &dr;
-  // Create a relation oracle without transitives.
-  get_range_query (fun)->create_relation_oracle (false);
+  // Make DR the current range_query.
+  range_query *saved = set_range_query (fun, &dr);
 
   folder.substitute_and_fold ();
   if (folder.m_unreachable)
     folder.m_unreachable->remove ();
 
-  get_range_query (fun)->destroy_relation_oracle ();
-  fun->x_range_query = NULL;
+  range_query *q = set_range_query (fun, saved);
+  gcc_checking_assert (q == &dr);
   return 0;
 }
 

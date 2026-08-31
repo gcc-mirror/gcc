@@ -694,9 +694,9 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   // If the specified query is different, make it the current one.
   // PR 125854 - The fold machinery may make a query call.
   // PR 126814 - tree_expr_nonnegative_p may make a call.
-  range_query *save = cfun->x_range_query;
-  if (src.query () != get_range_query (cfun))
-    cfun->x_range_query = src.query ();
+  // PR 126942 - path_ranger queries should never be the current query.
+  //		 set_range_query will revert to a global query for this.
+  range_query *saved_query = set_range_query (cfun, src.query ());
 
   gimple_range_op_handler handler (s);
   if (gimple_code (s) == GIMPLE_ASSIGN
@@ -731,7 +731,8 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   if (!res)
     {
       // Restore the original query.
-      cfun->x_range_query = save;
+      if (saved_query)
+	set_range_query (cfun, saved_query);
       // If no name specified or range is unsupported, bail.
       if (!name || !gimple_range_ssa_p (name))
 	return false;
@@ -743,7 +744,8 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   if (r.undefined_p ())
     {
       // Restore the original query.
-      cfun->x_range_query = save;
+      if (saved_query)
+	set_range_query (cfun, saved_query);
       return true;
     }
 
@@ -771,7 +773,7 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
 	  else
 	    {
 	      // If we couldn't find anything, try fold.
-	      x_fold_context = { s, src.query () };
+	      x_fold_context = { s, get_range_query (cfun) };
 	      rhs = gimple_fold_stmt_to_constant_1 (s, pta_valueize,
 						    pta_valueize);
 	      if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
@@ -780,7 +782,8 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
 	}
     }
   // Restore the original query.
-  cfun->x_range_query = save;
+  if (saved_query)
+    set_range_query (cfun, saved_query);
   return true;
 }
 
