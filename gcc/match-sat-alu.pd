@@ -207,16 +207,19 @@ along with GCC; see the file COPYING3.  If not see
   /* SAT_U_TRUNC<NT>(MAX (0, X)) =
 	     (UT)X & ~(NT)(-1) ? (-X) >> TYPE_PRECISION(X) - 1 : X
 
-     The gimple representation uses X > ~(NT)(-1) instead of
-     using & so match on gt instead of bit_and.
+     The gimple representation uses an unsigned X > ~(NT)(-1) instead of
+     using & so match on gt instead of bit_and.  The right shift must be
+     signed so that it produces -1 for values above NT_MAX.
 
      The two sides only agree when X is not the minimum of its type.  At
      that value the negation is its own inverse, so the shift yields -1
      and the expression gives NT_MAX where MAX (0, X) gives 0.  */
-  (convert (cond^ (gt (nop_convert? @0) INTEGER_CST@1)
-	 (rshift:s (nop_convert? (negate (nop_convert? @0))) INTEGER_CST@2)
+  (convert (cond^ (gt (nop_convert?@3 @0) INTEGER_CST@1)
+	 (rshift:s@4 (nop_convert? (negate (nop_convert? @0))) INTEGER_CST@2)
 	 @0))
-  (if (! TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (if (! TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& TYPE_UNSIGNED (TREE_TYPE (@3))
+	&& ! TYPE_UNSIGNED (TREE_TYPE (@4)))
    (with
     {
      unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
