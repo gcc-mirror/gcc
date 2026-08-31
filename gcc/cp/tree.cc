@@ -5328,6 +5328,8 @@ zero_init_expr_p (tree t)
     return false;
   if (TYPE_PTRMEM_P (type))
     return null_member_pointer_value_p (t);
+  if (REFLECTION_TYPE_P (type))
+    return null_reflection_p (t);
   if (TREE_CODE (t) == CONSTRUCTOR)
     {
       if (COMPOUND_LITERAL_P (t)

@@ -3896,8 +3896,14 @@ write_expression (tree expr)
 				if (field == ce->index)
 				  break;
 				if (abi_check (21))
-				  write_expression (build_zero_cst
-						    (TREE_TYPE (field)));
+				  {
+				    tree type = TREE_TYPE (field), expr;
+				    if (REFLECTION_TYPE_P (type))
+				      expr = get_null_reflection ();
+				    else
+				      expr = build_zero_cst (type);
+				    write_expression (expr);
+				  }
 				field = DECL_CHAIN (field);
 			      }
 			  }
