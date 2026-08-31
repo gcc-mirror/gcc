@@ -428,6 +428,6 @@ extern int backtrace_uncompress_lzma (struct backtrace_state *,
 				      size_t *uncompressed_size);
 
 /* Current expected backtrace_moredata version.  */
-#define BACKTRACE_MOREDATA_VERSION (3)
+#define BACKTRACE_MOREDATA_VERSION (4)
 
 #endif

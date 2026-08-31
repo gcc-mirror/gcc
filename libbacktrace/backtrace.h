@@ -245,7 +245,7 @@ struct backtrace_moredata
      possible that future versions of libbacktrace will add new fields
      and increment the version number accordingly. There is no plan to
      remove fields from this struct.  Thus the current value of the
-     version field will be 3.  */
+     version field will be 4.  */
   int backtrace_version;
   /* The DATA value passed to whatever function is calling the callback
      (backtrace_full, backtrace_pcinfo, or backtrace_syminfo).  */
@@ -253,6 +253,9 @@ struct backtrace_moredata
   /* The DWARF discriminator.  This is zero if there is none. See
      https://wiki.dwarfstd.org/Path_Discriminators.md.  */
   unsigned int backtrace_discriminator;
+  /* The line number of the start of the function declaration or
+     definition.  This is 0 if not available. */
+  int backtrace_decl_lineno;
 };
 
 #ifdef __cplusplus

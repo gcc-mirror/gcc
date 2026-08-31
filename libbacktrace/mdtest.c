@@ -48,6 +48,22 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include "testlib.h"
 
+/* Used to collect moredata info from backtraces.  */
+
+struct mdinfo
+{
+  int decl_lineno;
+};
+
+/* We pass a pointer to this as the data field to the backtrace
+   functions.  */
+
+struct mddata
+{
+  struct bdata bdata;
+  struct mdinfo *mdall;
+};
+
 /* backtrace_full_callback with moredata flag.  */
 
 static int
@@ -55,14 +71,20 @@ md_callback_one (void *vdata, uintptr_t pc, const char *filename, int lineno,
 		 const char *function)
 {
   struct backtrace_moredata *md = (struct backtrace_moredata *) vdata;
-  struct bdata *data = (struct bdata *) md->backtrace_data;
+  struct mddata *mddata = (struct mddata *) md->backtrace_data;
+  struct bdata *data = &mddata->bdata;
 
   if (md->backtrace_version != BACKTRACE_MOREDATA_VERSION)
     {
-      fprintf (stderr, "md_callback_one: wrong moredata version: got %u, want %u\n", md->backtrace_version, BACKTRACE_MOREDATA_VERSION);
+      fprintf (stderr,
+	       "md_callback_one: wrong moredata version: got %u, want %u\n",
+	       md->backtrace_version, BACKTRACE_MOREDATA_VERSION);
       data->failed = 1;
       return 1;
     }
+
+  if (data->index < data->max)
+    mddata->mdall[data->index].decl_lineno = md->backtrace_decl_lineno;
 
   return callback_one ((void *) data, pc, filename, lineno, function);
 }
@@ -78,7 +100,19 @@ md_callback_three (void *vdata, uintptr_t pc, const char *symname,
 
   if (md->backtrace_version != BACKTRACE_MOREDATA_VERSION)
     {
-      fprintf (stderr, "md_callback_one: wrong moredata version: got %u, want %u\n", md->backtrace_version, BACKTRACE_MOREDATA_VERSION);
+      fprintf (stderr,
+	       "md_callback_three: wrong moredata version: got %u, want %u\n",
+	       md->backtrace_version, BACKTRACE_MOREDATA_VERSION);
+      data->failed = 1;
+      return;
+    }
+
+  if (md->backtrace_decl_lineno != 0)
+    {
+      fprintf (stderr,
+	       "md_callback_three: unexpected non-zero decl_lineno %d\n",
+	       md->backtrace_decl_lineno);
+      data->failed = 1;
       return;
     }
 
@@ -91,17 +125,11 @@ static int test1 (void) __attribute__ ((noinline, noclone, optnone, unused));
 static int f2 (int) __attribute__ ((noinline, noclone));
 static int f3 (int, int) __attribute__ ((noinline, noclone));
 
-static int
-test1 (void)
-{
-  /* Returning a value here and elsewhere avoids a tailcall which
-     would mess up the backtrace.  */
+static int test1 (void) {
   return f2 (__LINE__) + 1;
 }
 
-static int
-f2 (int f1line)
-{
+static int f2 (int f1line) {
   return f3 (f1line, __LINE__) + 2;
 }
 
@@ -109,14 +137,16 @@ static int
 f3 (int f1line, int f2line)
 {
   struct info all[20];
-  struct bdata data;
+  struct mdinfo mdall[20];
+  struct mddata data;
   int f3line;
   int i;
 
-  data.all = &all[0];
-  data.index = 0;
-  data.max = 20;
-  data.failed = 0;
+  data.bdata.all = &all[0];
+  data.bdata.index = 0;
+  data.bdata.max = 20;
+  data.bdata.failed = 0;
+  data.mdall = &mdall[0];
 
   f3line = __LINE__ + 1;
   i = backtrace_full (state, 0, md_callback_one, error_callback_one, &data);
@@ -124,24 +154,44 @@ f3 (int f1line, int f2line)
   if (i != 0)
     {
       fprintf (stderr, "test1: unexpected return value %d\n", i);
-      data.failed = 1;
+      data.bdata.failed = 1;
     }
 
-  if (data.index < 3)
+  if (data.bdata.index < 3)
     {
       fprintf (stderr,
 	       "test1: not enough frames; got %zu, expected at least 3\n",
-	       data.index);
-      data.failed = 1;
+	       data.bdata.index);
+      data.bdata.failed = 1;
     }
 
-  check ("test1", 0, all, f3line, "f3", "mdtest.c", &data.failed);
-  check ("test1", 1, all, f2line, "f2", "mdtest.c", &data.failed);
-  check ("test1", 2, all, f1line, "test1", "mdtest.c", &data.failed);
+  check ("test1", 0, all, f3line, "f3", "mdtest.c", &data.bdata.failed);
+  check ("test1", 1, all, f2line, "f2", "mdtest.c", &data.bdata.failed);
+  check ("test1", 2, all, f1line, "test1", "mdtest.c", &data.bdata.failed);
 
-  printf ("%s: backtrace_full noinline\n", data.failed ? "FAIL" : "PASS");
+  if (!data.bdata.failed)
+    {
+      /* This assumes a particular pattern for the definitions of f1 and
+	 f2, above.  */
+      if (data.mdall[1].decl_lineno != f2line - 1)
+	{
+	  fprintf (stderr,
+		   "test1: incorrect f2 decl_lineno; got %d, expected %d\n",
+		   data.mdall[1].decl_lineno, f2line - 1);
+	  data.bdata.failed = 1;
+	}
+      if (data.mdall[2].decl_lineno != f1line - 1)
+	{
+	  fprintf (stderr,
+		   "test1: incorrect f1 decl_lineno; got %d, expected %d\n",
+		   data.mdall[2].decl_lineno, f1line - 1);
+	  data.bdata.failed = 1;
+	}
+    }
 
-  if (data.failed)
+  printf ("%s: backtrace_full noinline\n", data.bdata.failed ? "FAIL" : "PASS");
+
+  if (data.bdata.failed)
     ++failures;
 
   return failures;
@@ -169,14 +219,16 @@ static inline int
 f13 (int f1line, int f2line)
 {
   struct info all[20];
-  struct bdata data;
+  struct mdinfo mdall[20];
+  struct mddata data;
   int f3line;
   int i;
 
-  data.all = &all[0];
-  data.index = 0;
-  data.max = 20;
-  data.failed = 0;
+  data.bdata.all = &all[0];
+  data.bdata.index = 0;
+  data.bdata.max = 20;
+  data.bdata.failed = 0;
+  data.mdall = &mdall[0];
 
   f3line = __LINE__ + 1;
   i = backtrace_full (state, 0, md_callback_one, error_callback_one, &data);
@@ -184,16 +236,16 @@ f13 (int f1line, int f2line)
   if (i != 0)
     {
       fprintf (stderr, "test2: unexpected return value %d\n", i);
-      data.failed = 1;
+      data.bdata.failed = 1;
     }
 
-  check ("test2", 0, all, f3line, "f13", "mdtest.c", &data.failed);
-  check ("test2", 1, all, f2line, "f12", "mdtest.c", &data.failed);
-  check ("test2", 2, all, f1line, "test2", "mdtest.c", &data.failed);
+  check ("test2", 0, all, f3line, "f13", "mdtest.c", &data.bdata.failed);
+  check ("test2", 1, all, f2line, "f12", "mdtest.c", &data.bdata.failed);
+  check ("test2", 2, all, f1line, "test2", "mdtest.c", &data.bdata.failed);
 
-  printf ("%s: backtrace_full inline\n", data.failed ? "FAIL" : "PASS");
+  printf ("%s: backtrace_full inline\n", data.bdata.failed ? "FAIL" : "PASS");
 
-  if (data.failed)
+  if (data.bdata.failed)
     ++failures;
 
   return failures;
