@@ -127,12 +127,12 @@ namespace __gnu_debug
     void
     _M_attach(const _Safe_sequence_base* __seq, bool __constant);
 
-    /** Likewise, but not thread-safe. */
+    /** Like _M_attach but not thread-safe. */
     void
     _M_attach_single(const _Safe_sequence_base* __seq,
 		     bool __constant) _GLIBCXX_USE_NOEXCEPT;
 
-    /** Detach the iterator for whatever sequence it is attached to,
+    /** Detach the iterator from whatever sequence it is attached to,
      *	if any.
     */
     void
@@ -152,7 +152,7 @@ namespace __gnu_debug
 #endif
 
   public:
-    /** Likewise, but not thread-safe. */
+    /** Like _M_detach but not thread-safe. */
     void
     _M_detach_single() _GLIBCXX_USE_NOEXCEPT;
 
@@ -339,7 +339,7 @@ namespace __gnu_debug
     void
     _M_attach(_Safe_iterator_base* __it, bool __constant) const;
 
-    /** Likewise but not thread safe. */
+    /** Like _M_attach but not thread-safe. */
     void
     _M_attach_single(_Safe_iterator_base* __it,
 		     bool __constant) const _GLIBCXX_USE_NOEXCEPT;
@@ -348,7 +348,7 @@ namespace __gnu_debug
     void
     _M_detach(_Safe_iterator_base* __it) const;
 
-    /** Likewise but not thread safe. */
+    /** Like _M_detach but not thread-safe. */
     void
     _M_detach_single(_Safe_iterator_base* __it) const _GLIBCXX_USE_NOEXCEPT;
   };
