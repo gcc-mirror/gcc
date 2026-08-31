@@ -124,10 +124,6 @@ static int *cfg_order_to_bb;
 static bitmap ssa_edge_worklist;
 static vec<gimple *> uid_to_stmt;
 
-/* Current RPO index in the iteration.  */
-static int curr_order;
-
-
 /* We have just defined a new value for VAR.  If IS_VARYING is true,
    add all immediate uses of VAR to VARYING_SSA_EDGES, otherwise add
    them to INTERESTING_SSA_EDGES.  */
@@ -435,8 +431,6 @@ ssa_propagation_engine::ssa_propagate (void)
 {
   ssa_prop_init ();
 
-  curr_order = 0;
-
   /* Iterate until the worklists are empty.  We iterate both blocks
      and stmts in RPO order, prioritizing backedge processing.
      Seed the algorithm by adding the successors of the entry block to the
@@ -470,7 +464,6 @@ ssa_propagation_engine::ssa_propagate (void)
 	  && (next_stmt_bb_order == -1
 	      || next_block_order <= next_stmt_bb_order))
 	{
-	  curr_order = next_block_order;
 	  bitmap_clear_bit (cfg_blocks, next_block_order);
 	  basic_block bb
 	    = BASIC_BLOCK_FOR_FN (cfun, cfg_order_to_bb [next_block_order]);
@@ -479,7 +472,6 @@ ssa_propagation_engine::ssa_propagate (void)
       /* Else simulate from the SSA edge worklist.  */
       else
 	{
-	  curr_order = next_stmt_bb_order;
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
 	      fprintf (dump_file, "\nSimulating statement: ");

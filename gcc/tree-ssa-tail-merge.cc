@@ -271,9 +271,6 @@ struct aux_bb_info
   same_succ *bb_same_succ;
   /* The cluster that this bb is a member of.  */
   bb_cluster *cluster;
-  /* The vop state at the exit of a bb.  This is shortlived data, used to
-     communicate data between update_block_by and update_vuses.  */
-  tree vop_at_exit;
   /* The bb that either contains or is dominated by the dependencies of the
      bb.  */
   basic_block dep_bb;
@@ -284,7 +281,6 @@ struct aux_bb_info
 #define BB_SIZE(bb) (((struct aux_bb_info *)bb->aux)->size)
 #define BB_SAME_SUCC(bb) (((struct aux_bb_info *)bb->aux)->bb_same_succ)
 #define BB_CLUSTER(bb) (((struct aux_bb_info *)bb->aux)->cluster)
-#define BB_VOP_AT_EXIT(bb) (((struct aux_bb_info *)bb->aux)->vop_at_exit)
 #define BB_DEP_BB(bb) (((struct aux_bb_info *)bb->aux)->dep_bb)
 
 /* Valueization helper querying the VN lattice.  */

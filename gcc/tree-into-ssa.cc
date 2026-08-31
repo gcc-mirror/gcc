@@ -116,14 +116,6 @@ static bitmap blocks_with_phis_to_rewrite;
    NULL if they need to be initialized by create_new_def_for.  */
 static struct function *update_ssa_initialized_fn = NULL;
 
-/* Global data to attach to the main dominator walk structure.  */
-struct mark_def_sites_global_data
-{
-  /* This bitmap contains the variables which are set before they
-     are used in a basic block.  */
-  bitmap kills;
-};
-
 /* It is advantageous to avoid things like life analysis for variables which
    do not need PHI nodes.  This enum describes whether or not a particular
    variable may need a PHI node.  */
