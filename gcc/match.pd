@@ -10195,6 +10195,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (real_isinf (TREE_REAL_CST_PTR (@1)))
   { build_complex_inf (type, TREE_REAL_CST_PTR (@1)->sign); }))
 
+/* cproj(cproj(x)) -> cproj(x).  */
+(simplify
+ (CPROJ (CPROJ @0))
+ (CPROJ @0))
+
+/* cabs(cproj(x)) -> cabs(x).  */
+(simplify
+ (CABS (CPROJ @0))
+ (CABS @0))
+
 (for pows (POW)
      sqrts (SQRT)
      cbrts (CBRT)
