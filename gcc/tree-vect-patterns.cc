@@ -138,6 +138,18 @@ vect_init_pattern_stmt (vec_info *vinfo, gimple *pattern_stmt,
 		      == vect_use_mask_type_p (orig_stmt_info)));
       STMT_VINFO_VECTYPE (pattern_stmt_info) = vectype;
       pattern_stmt_info->mask_precision = orig_stmt_info->mask_precision;
+      if (dump_enabled_p ())
+	{
+	  if (pattern_stmt_info->mask_precision == ~0U)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "using normal nonmask vectors for %G",
+			     pattern_stmt_info->stmt);
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "using boolean precision %d for %G",
+			     pattern_stmt_info->mask_precision,
+			     pattern_stmt_info->stmt);
+	}
     }
   return pattern_stmt_info;
 }
@@ -174,8 +186,22 @@ append_pattern_def_seq (vec_info *vinfo,
       stmt_vec_info new_stmt_info = vinfo->add_stmt (new_stmt);
       STMT_VINFO_VECTYPE (new_stmt_info) = vectype;
       if (scalar_type_for_mask)
-	new_stmt_info->mask_precision
-	  = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (scalar_type_for_mask));
+	{
+	  new_stmt_info->mask_precision
+	    = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (scalar_type_for_mask));
+	  if (dump_enabled_p ())
+	    {
+	      if (new_stmt_info->mask_precision == ~0U)
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "using normal nonmask vectors for %G",
+				 new_stmt_info->stmt);
+	      else
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "using boolean precision %d for %G",
+				 new_stmt_info->mask_precision,
+				 new_stmt_info->stmt);
+	    }
+	}
     }
   gimple_seq_add_stmt_without_update (&STMT_VINFO_PATTERN_DEF_SEQ (stmt_info),
 				      new_stmt);
@@ -6471,7 +6497,7 @@ vect_recog_mask_conversion_pattern (vec_info *vinfo,
       if (!vectype1)
 	return NULL;
       rhs2 = build_mask_conversion (vinfo, rhs2, vectype1, stmt_vinfo,
-				    rhs2_type);
+				    rhs1_type);
     }
   else
     {
