@@ -7992,9 +7992,9 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
   int reduc_index = SLP_TREE_REDUC_IDX (slp_node);
-  slp_tree node_in = SLP_TREE_CHILDREN (slp_node)[reduc_index == 0 ? 1 : 0];
-  tree vectype_in = SLP_TREE_VECTYPE (node_in);
-  unsigned vec_in_num = SLP_TREE_VEC_DEFS (node_in).length ();
+  tree vectype_in = SLP_TREE_VECTYPE (slp_node);
+  if (lane_reducing_op_p (op.code))
+    vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
 
   code_helper code = canonicalize_code (op.code, op.type);
   internal_fn cond_fn
@@ -8085,6 +8085,7 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 
   /* For single def-use cycles get one copy of the vectorized reduction
      definition.  */
+  unsigned vec_in_num = vec_oprnds[reduc_index == 0 ? 1 : 0].length ();
   if (single_defuse_cycle)
     {
       vect_get_vec_defs (loop_vinfo, slp_node,
