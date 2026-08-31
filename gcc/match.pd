@@ -5052,6 +5052,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (cmp (bit_ior (convert:utype @0) (convert:utype @1))
         { build_zero_cst (utype); } ))))
 
+/* MIN (A, B) == 0 -> A == 0 if B is positive.
+   MIN (A, B) != 0 -> A != 0 if B is positive.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (min:c @0 tree_expr_nonnegative_p@1) integer_zerop@2)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && tree_expr_nonzero_p (@1))
+   (cmp @0 @2))))
+
 /* Optimize MIN (a, b) >= 0 to a >= 0 if b is non-negative.
    Optimize MIN (a, b) < 0 to a < 0 if b is non-negative.
    Optimize (a | b) >= 0 to a >= 0 if b is non-negative.
