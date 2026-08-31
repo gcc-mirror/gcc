@@ -180,39 +180,49 @@ GenericTyPerCrateCtx::debug_print_solutions ()
       BaseType *ty = lookup_type (ref);
 
       std::string result = "\t";
+      SubstitutionRef *subst = nullptr;
 
-      if (auto adt = ty->try_as<ADTType> ())
+      switch (ty->get_kind ())
 	{
-	  result += adt->get_identifier ();
-	  result += "<";
-
-	  size_t i = solution_index;
-	  for (auto &region : adt->get_used_arguments ().get_regions ())
-	    {
-	      (void) region;
-	      if (i > solution_index)
-		result += ", ";
-	      result += solutions[i].as_string ();
-	      i++;
-	    }
-	  for (auto &param : adt->get_substs ())
-	    {
-	      if (i > solution_index)
-		result += ", ";
-	      result += param.get_type_representation ().as_string ();
-	      result += "=";
-	      result += solutions[i].as_string ();
-	      i++;
-	    }
-
-	  result += ">";
+	case TypeKind::ADT:
+	  subst = static_cast<ADTType *> (ty);
+	  break;
+	case TypeKind::FNDEF:
+	  subst = static_cast<FnType *> (ty);
+	  break;
+	case TypeKind::CLOSURE:
+	  subst = static_cast<ClosureType *> (ty);
+	  break;
+	case TypeKind::PROJECTION:
+	  subst = static_cast<ProjectionType *> (ty);
+	  break;
+	default:
+	  rust_unreachable ();
 	}
-      else
+
+      result += ty->get_name ();
+      result += "<";
+
+      size_t i = solution_index;
+      for (auto &region : subst->get_used_arguments ().get_regions ())
 	{
-	  rust_sorry_at (
-	    ty->get_ref (),
-	    "This is a compiler bug: Unhandled type in variance analysis");
+	  (void) region;
+	  if (i > solution_index)
+	    result += ", ";
+	  result += solutions[i].as_string ();
+	  i++;
 	}
+      for (auto &param : subst->get_substs ())
+	{
+	  if (i > solution_index)
+	    result += ", ";
+	  result += param.get_type_representation ().as_string ();
+	  result += "=";
+	  result += solutions[i].as_string ();
+	  i++;
+	}
+
+      result += ">";
       rust_debug ("%s", result.c_str ());
     }
 }
