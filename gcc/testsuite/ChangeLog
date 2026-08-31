@@ -1,3 +1,11 @@
+2026-08-30  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
+
+	Backported from master:
+	2026-08-29  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
+
+	PR c++/127046
+	* g++.dg/cpp2a/constexpr-dtor20.C: New test.
+
 2026-08-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
