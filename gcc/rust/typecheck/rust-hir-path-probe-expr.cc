@@ -80,6 +80,21 @@ PathProbeExpr::probe_adt_impls (TyTy::ADTType *adt)
   mappings.iterate_adt_impl_items (
     adt_node_id,
     [this] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) -> bool {
+      if (impl->has_trait_ref ())
+	return true;
+
+      return process_impl_item_candidate (id, item, impl);
+    });
+
+  if (!candidates.empty ())
+    return;
+
+  mappings.iterate_adt_impl_items (
+    adt_node_id,
+    [this] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) -> bool {
+      if (!impl->has_trait_ref ())
+	return true;
+
       return process_impl_item_candidate (id, item, impl);
     });
 }
@@ -89,6 +104,20 @@ PathProbeExpr::probe_fallback_impls ()
 {
   mappings.iterate_impl_items (
     [this] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) -> bool {
+      if (impl->has_trait_ref ())
+	return true;
+
+      return process_impl_item_candidate (id, item, impl);
+    });
+
+  if (!candidates.empty ())
+    return;
+
+  mappings.iterate_impl_items (
+    [this] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) -> bool {
+      if (!impl->has_trait_ref ())
+	return true;
+
       return process_impl_item_candidate (id, item, impl);
     });
 }
