@@ -4820,6 +4820,10 @@ simplify_phi_result_movdiv (gimple *stmt, tree_code code)
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree_code new_code;
 
+  /* Skip complex types (PR127163) */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
+    return false;
+
   switch (code)
     {
       case TRUNC_MOD_EXPR:
