@@ -1,3 +1,282 @@
+2026-08-30  Robert Dubner  <rdubner@symas.com>
+
+	* cobol1.cc (create_our_type_nodes_init): New type node.
+	* compare.cc (digiter): Change comment.
+	(total_digits): Change how two variables are compared when
+	total precision exceeds 37 digits.
+	(type_based_on_digits): Comment.
+	(numeric_compare): Change how two variables are compared when
+	total precision exceeds 37 digits.
+	(alpha_compare_figconst): Correct encoding conversions; eliminate
+	a VAR_DECL.
+	(alpha_compare): Avoid VAR_DECL creation.
+	(numeric_alpha_compare): Correct encoding conversions; avoid
+	VAR_DECL creation.
+	(addr_of_compare): Use cleaner tree-fetching routines; avoid
+	VAR_DECL creation with logical expressions.
+	(float_compare): Avoid VAR_DECL creation.
+	(compare_class): Likewise.
+	* genapi.cc (COBOL_FUNCTION_RETURN_TYPE): Eliminate.
+	(COBOL_FUNCTION_RETURN_64): Create.
+	(COBOL_FUNCTION_RETURN_128): Create.
+	(build_main_that_calls_something): Normalize return value
+	processing.
+	(get_field_p): Fix cbl_internal_error() string formatting.
+	(get_level_88_domain): Correct memory allocation calculation.
+	(get_class_condition_string): Fix cbl_internal_error() string.
+	(parser_call_target_update): Correct return value type.
+	(function_pointer_from_name): Return value processing; avoid
+	VAR_DECL.
+	(parser_initialize_programs): Return value processing.
+	(store_location_stuff): Likewise.
+	(depending_on_value): Eliminate VAR_DECLs.
+	(tree_type_from_field_type): Return value processing.
+	(get_interfunction_type): Likewise.
+	(parser_goto): Use improved get_binary_value().
+	(parser_perform_times): Likewise.
+	(internal_perform_through_times): Likewise.
+	(SET_VAR_DECL): Likewise.
+	(enter_program_common): Return value processing.
+	(parser_accept): Eliminate VAR_DECL; use logical expressions.
+	(parser_accept_command_line): Likewise.
+	(parser_accept_envar): Likewise.
+	(parser_display_internal): Fix file_descriptor blunder.
+	(parser_display): Eliminate VAR_DECL.
+	(parser_exhibit): Likewise.
+	(parser_initialize_table): Likewise.
+	(program_end_stuff): Return value processing; eliminate VAR_DECLs.
+	(parser_xml_parse): Eliminate VAR_DECLS.
+	(establish_using): Likewise.
+	(parser_division): Return value processing; eliminate VAR_DECLs.
+	(parser_relop_long): Simplify logic.
+	(parser_see_stop_run): Use improved get_binary_value().
+	(parser_perform_inline_times): Likewise.
+	(parser_file_open): Eliminate VAR_DECL; improve error reports.
+	(parser_file_write): Likewise.
+	(parser_file_delete): Likewise.
+	(parser_file_delete_file): Likewise.
+	(parser_file_rewrite): Likewise.
+	(parser_file_start): Likewise.
+	(inspect_tally): Likewise.
+	(inspect_replacing): Likewise.
+	(parser_intrinsic_call_1): Likewise.
+	(handle_gg_trim): Likewise.
+	(parser_trim): Likewise.
+	(field_increment): Likewise.
+	(parser_lsearch_start): Likewise.
+	(parser_bsearch_start): Likewise.
+	(parser_sort): Likewise.
+	(parser_file_sort): Likewise.
+	(parser_file_merge): Likewise.
+	(parser_string): Likewise.
+	(parser_call_exception_end): Formatting.
+	(create_and_call): Return value processing.
+	(parser_call): Likewise.
+	(parser_set_pointers): Likewise.
+	(parser_program_hierarchy): Fixed a blunder populating a std::set.
+	(parser_match_exception): Use improved get_binary_value.
+	(hijack_for_development): Return value processing.
+	* gengen.cc (gg_build_translation_unit): Improve BLOCK chaining.
+	(gg_chain_onto_block_vars): Likewise.
+	(gg_append_var_decl): Improve map population.
+	(gg_show_type): Expand capability.
+	(gg_assign): Improved error reporting when types don't match.
+	(gg_structure_type_constructor): Type checking and error reporting.
+	(gg_find_field_in_struct): Improved error reporting.
+	(gg_declare_variable): Improved "saw this before" error reporting;
+	improved handling of WEAK and COMMON VAR_DECLs.
+	(class DECL_COUNTER): Debug counter of VAR_DECL creation.
+	(gg_define_from_declaration): Likewise.
+	(gg_define_variable): Likewise.
+	(gg_get_address_of): Improved use of TREE_ADDRESSABLE.
+	(gg_increment2): New function for avoiding VAR_DECL.
+	(gg_decrement2): Likewise.
+	(gg_get_larger_type): Renamed.
+	(get_larger_type): Fix messed up implementation.
+	(gg_add): Use new get_larger_type().
+	(gg_subtract): Likewise.
+	(gg_multiply): Likewise.
+	(gg_real_divide): Likewise.
+	(gg_divide): Likewise.
+	(gg_mod): Likewise.
+	(gg_bitwise_or): Likewise.
+	(gg_bitwise_xor): Likewise.
+	(gg_bitwise_and): Likewise.
+	(gg_bswap): Renamed format parameter for clarity.
+	(gg_logical_eq): New function for creating logical expressions.
+	(gg_logical_ne): Likewise.
+	(gg_logical_lt): Likewise.
+	(gg_logical_gt): Likewise.
+	(gg_logical_le): Likewise.
+	(gg_logical_ge): Likewise.
+	(gg_logical_and): Likewise.
+	(gg_logical_or): Likewise.
+	(gg_logical_xor): Likewise.
+	(gg_logical_not): Likewise.
+	(if_condition): New function that creates COND_EXPR.
+	(LOGICAL_OKAY): Test for proper logical expression.
+	(gg_build_logical_expression): Use LOGICAL_OKAY.
+	(gg_create_goto_pair): Set proper attributes on a LABEL_DECL.
+	(gg_while): Use LOOP_EXPR instead of a VAR_DECL counter.
+	(gg_create_true_false_statement_lists): Fix COND_EXPR construction.
+	(gg_printf): Eliminate VAR_DECL; improve parameter handling for call
+	to printf().
+	(gg_fprintf): Likewise.
+	(gg_memdup): Eliminate unused functions.
+	(gg_return): Return value processing.
+	(chain_parameter_to_function): Formatting; improved error detection
+	and formatting.
+	(function_decl_key): Eliminate.
+	(gg_peek_fn_decl): Eliminate.
+	(gg_build_fn_decl): Change function map; improved error reporting.
+	(gg_define_function): Likewise; improve label handling in
+	function_decl.
+	(gg_get_function_decl): Eliminate unused function.
+	(gg_finalize_function): Comment; error message.
+	(gg_push_context): It wasn't correct.  I think it is, now.
+	(gg_pop_context): Error detection and reporting.
+	(gg_call_expr): Change narg error report.
+	(gg_call): Likewise.
+	(gg_create_bind_expr): Use alloc_stmt_list().
+	(gg_sizeof): Improve size calculation.
+	(gg_array_of_bytes): Simplified.
+	(gg_string_literal): Likewise.
+	(gg_insert_into_assembler): Add ASM_BASIC and ASM_VOLATILE.
+	* gengen.h (IF_CONDITION): New convenience macro.
+	(VOID): Formatting.
+	(BOOL): Likewise.
+	(CHAR): Likewise.
+	(SCHAR): Likewise.
+	(SCHAR_P): Likewise.
+	(UCHAR): Likewise.
+	(SHORT): Likewise.
+	(SHORT_P): Likewise.
+	(USHORT): Likewise.
+	(WCHAR): Likewise.
+	(INT): Likewise.
+	(INT_P): Likewise.
+	(UINT): Likewise.
+	(LONG): Likewise.
+	(ULONG): Likewise.
+	(LONGLONG): Likewise.
+	(UINT64): Likewise.
+	(SIZE_T): Likewise.
+	(SIZE_T_P): Likewise.
+	(SSIZE_T): Likewise.
+	(INT128): Likewise.
+	(UINT128): Likewise.
+	(FLOAT): Likewise.
+	(DOUBLE): Likewise.
+	(LONGDOUBLE): Likewise.
+	(FLOAT128): Likewise.
+	(VOID_P): Likewise.
+	(VOID_P_P): Likewise.
+	(CHAR_P): Likewise.
+	(UCHAR_P): Likewise.
+	(WCHAR_P): Likewise.
+	(FILE_P): Likewise.
+	(CONST_CHAR_P): Likewise.
+	(struct gg_function_t): Eliminate current_block; add
+	block_var_tails.
+	(GTY): Add const_char_ptr_type_node to the list.
+	(gg_increment2): New declaration.
+	(gg_decrement2): Likewise.
+	(gg_logical_eq): Likewise.
+	(gg_logical_ne): Likewise.
+	(gg_logical_lt): Likewise.
+	(gg_logical_gt): Likewise.
+	(gg_logical_le): Likewise.
+	(gg_logical_ge): Likewise.
+	(gg_logical_and): Likewise.
+	(gg_logical_or): Likewise.
+	(gg_logical_xor): Likewise.
+	(gg_logical_not): Likewise.
+	(if_condition): Likewise.
+	(gg_memdup): Eliminate.
+	(gg_peek_fn_decl): Likewise.
+	(gg_array_of_bytes): Change formal parameter list.
+	* genmath.cc (arithmetic_operation): Fix uninititalized byte.
+	(all_results_integer): Fast route only handles trunction_e.
+	(largest_binary_term): Improve logic.
+	(struct binary_term_properties): New structure.
+	(inspect_binary_terms): Improve logic.
+	(fast_add): Use new get_binary_value; use safe_store.
+	(fast_subtract): Likewise.
+	(fast_multiply): Likewise.
+	(fast_divide): Likewise.
+	(add_litN_to_numdisp): Likewise.
+	(subtract_floats): Likewise.
+	* genutil.cc (giv_helper): Eliminate VAR_DECLs.
+	(get_integer_value): Likewise.
+	(get_and_check_refstart_and_reflen): Likewise.
+	(get_depending_on_value_from_odo): Likewise.
+	(get_depending_on_value): Likewise.
+	(get_data_offset):  Likewise.
+	(get_data_address): Likewise.
+	(get_power_of_two): Fix off-by-one error in array size.
+	(scale_by_power_of_ten_N): AVoid need for VAR_DECL.
+	(scale_by_power_of_ten): Likewise.
+	(build_array_of_size_t): Switch to temporary array, rather than
+	malloc.
+	(get_literal_string): Eliminate.
+	(refer_is_super_clean): Add FldLiteralN to logic.
+	(refer_refmod_length): Eliminate VAR_DECLs.
+	(refer_fill_depends): Likewise.
+	(refer_offset): Initialize referenced parameter.
+	(refer_size_source): Eliminate VAR_DECL.
+	(safe_load): Simplified helper; safe for random byte alignment.
+	(safe_store): Likewise.
+	(safe_cast): Uses safe_load().
+	(binary_from_FldNumericBin5): Uses safe_cast().
+	(binary_from_FldLiteralN): Likewise.
+	(binary_from_FldNumericBinary): Eliminate VAR_DECL.
+	(d_and_q_num_disp): Likewise.
+	(binary_from_numdisp): Eliminate VAR_DECLs; use conditional logic.
+	(binary_from_FldNumericDisplay): Eliminate VAR_DECL.
+	(d_and_q_packed): Likewise.
+	(b_from_c3): Likewise.
+	(binary_from_comp_3): Likewise.
+	(binary_from_comp_6): Likewise.
+	(binary_from_FldFloat): Use safe_cast().
+	(get_binary_value): Eliminate VAR_DECL.
+	(get_location): Likewise.
+	(safe_assign): Use new get_binary_value().
+	(get_length): Return tree instead of modifying a reference.
+	(treeplet_fill_source): Properly establish offset.
+	(data_decl_type_for): Return SCHAR instead of CHAR for one-byte
+	value.
+	(round_this_value): Avoid VAR_DECL; simplify logic.
+	* genutil.h (scale_by_power_of_ten_N): Update declaration.
+	(get_literal_string): Likewise.
+	(get_depending_on_value_from_odo): Likewise.
+	(get_binary_value): Likewise.
+	(get_location): Likewise.
+	(safe_cast): Likewise.
+	(get_length): Likewise.
+	(safe_load): Likewise.
+	(safe_store): Likewise.
+	* move.cc (conditional_abs): Eliminate.
+	(get_binary_value_from_float): Eliminate a VAR_DECL.
+	(mh_identical): Eliminate use of VAR_DECLs.
+	(mh_source_is_literalN): Likewise.
+	(mh_dest_is_float): Use safe_store().
+	(clear_negative_zero): Formatting.
+	(mh_numeric_display): Don't call clear_negative_zero() when it is
+	not needed.
+	(mh_binary_to_numdisp): Avoid use of VAR_DECLs.
+	(mh_binary_to_packed): Likewise.
+	(copy_native_into_place): Avoid VAR_DECLs; improve logic; use
+	safe_store().
+	(mh_to_binary): Use new get_binary_value().
+	(mh_source_is_literalA): Repair character encoding logic; avoid
+	VAR_DECL.
+	(mh_numdisp_to_packed): Repair character encoding logic; repair
+	figurative constant handling.
+	(mh_packed_to_packed): Eliminate VAR_DECLs.
+	(mh_packed_to_numdisp): Eliminate VAR_DECLs; improve logic.
+	(move_helper): Put stashed value storage into libgcobol.
+	* symbols.cc (new_temporary_clone): Clone sign attribute bit.
+
 2026-08-28  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/126612

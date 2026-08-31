@@ -1,3 +1,28 @@
+2026-08-30  Anlai Lu  <agicy@qq.com>
+
+	* include/bits/chrono_io.h (__detail::__chrono_write_time):
+	New function that conditionally	skips locale for integer-second
+	time_points.
+	(__formatter_chrono::_M_subsecs): Add __always_inline__.
+	(operator<<(basic_ostream<...>, const hh_mm_ss<_Duration>&)):
+	Use if constexpr to skip locale	for integer-second durations.
+	(operator<<(basic_ostream<...>, const zoned_time<_Duration>&))
+	(operator<<(basic_ostream<...>, const sys_time<_Duration>&))
+	(operator<<(basic_ostream<...>, const utc_time<_Duration>&))
+	(operator<<(basic_ostream<...>, const tai_time<_Duration>&))
+	(operator<<(basic_ostream<...>, const file_time<_Duration>&))
+	(operator<<(basic_ostream<...>, const local_time<_Duration>&)):
+	Use __chrono_write_time.
+	(operator<<(basic_ostream<...>, const sys_days<_Duration>&)):
+	Remove trailing semicolon.
+
+2026-08-30  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Update reference to openDPL
+	Parallel API.
+	* doc/xml/manual/status_cxx2020.xml: Ditto.
+	* doc/html/manual/status.html: Regenerate.
+
 2026-08-27  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/123510

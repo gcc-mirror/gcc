@@ -1,3 +1,38 @@
+2026-08-30  Robert Dubner  <rdubner@symas.com>
+
+	* gmath.cc (conditional_stash): Use new __gg__int128_to_qualified_field().
+	(__gg__dividef45): Use new conditional_stash().
+	(__gg__compute_fixed): Likewise.
+	* inspect.cc (inspect_backward_format_1): New interface.
+	(__gg__inspect_format_1): Likewise.
+	(__gg__inspect_format_1_sbc): Likewise.
+	* libgcobol.cc (__gg__scale_by_power_of_ten_1): Rename variable fo
+	greater clarity.
+	(__gg__compare_field_class): Eliminate VAR_DECLs.
+	(__gg__move): Use new __gg__int128_to_qualified_field().
+	(__gg__move_literala): Likewise.
+	(move_string): New interface.
+	(__gg__string): Likewise.
+	(__gg__unstring): Likewise.
+	(__gg__compare_string_all): Likewise.
+	(__gg__compare_string_1): Likewise.
+	(__gg__compare_string_1a): Likewise.
+	(__gg__compare_string_1e): Likewise.
+	(__gg__compare_string_2): Likewise.
+	(__gg__compare_string_2a): Likewise.
+	(__gg__compare_string_4): Likewise.
+	(__gg__compare_string_4a): Likewise.
+	(__gg_compare_string_different): Likewise.
+	(__gg__compare_numeric_all): Likewise.
+	(__gg__compare_binary_to_string): Likewise.
+	(struct move_stash_slot): Stashed storage for failed move.
+	(struct move_stash_pool): Likewise/
+	(next_stash_capacity): Likewise/
+	(__gg__move_stash_acquire): Likewise/
+	(__gg__move_stash_release): Likewise/
+	* libgcobol.h (__gg__int128_to_qualified_field):
+	Updated declaration.
+
 2026-08-25  James K. Lowden  <jklowden@cobolworx.com>
 
 	* common-defs.h (class cbl_enabled_exceptions_t): Use complain().
