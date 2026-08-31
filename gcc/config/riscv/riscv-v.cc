@@ -4059,12 +4059,12 @@ shuffle_even_odd_patterns (struct expand_vec_perm_d *d)
      vnsrl instructions, each extracting the even/odd elements of one source,
      and a vslideup instruction to merge them into one vector.
 
-     PR target/124996: VLS mode subregs larger than what
-     riscv_regmode_natural_size allows cause a memory roundtrip.  Therefore, for
-     now, we only do this when the mode size is no greater than the natural size
-     of the register.  Once this is fixed, the condition should be replaced by
-     the ELEN condition.  */
-  if (known_le (GET_MODE_SIZE (vmode), riscv_regmode_natural_size (vmode)))
+     Until we have a "widening" vector concat pattern (just like slideup here
+     but with the proper modes) we still need the natural-size check for
+     LMUL > 1 cases.  */
+  unsigned int max_elen = TARGET_VECTOR_ELEN_64 ? 64 : 32;
+  if (GET_MODE_BITSIZE (GET_MODE_INNER (vmode)) * 2 <= max_elen
+      && known_le (GET_MODE_SIZE (vmode), riscv_regmode_natural_size (vmode)))
     {
       unsigned int elen = GET_MODE_BITSIZE (GET_MODE_INNER (vmode));
       unsigned int elen2x = elen * 2;
@@ -4075,6 +4075,8 @@ shuffle_even_odd_patterns (struct expand_vec_perm_d *d)
       machine_mode vmode_half = get_vector_mode (smode, vlen / 2).require ();
       unsigned int shift_amt = even ? 0 : elen;
       insn_code icode = code_for_pred_narrow_scalar (LSHIFTRT, vmode_elen2x);
+      /* TODO these lowpart subreg workarounds should go, this is actually a
+	 simple concatenation of two "half"-sized vectors.  */
       rtx tmp = gen_reg_rtx (vmode);
       rtx ops_shift1[]
 	= {gen_lowpart (vmode_half, d->target),

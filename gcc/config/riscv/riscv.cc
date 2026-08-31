@@ -13175,7 +13175,9 @@ riscv_can_change_mode_class (machine_mode from, machine_mode to,
      we cannot, statically, determine which part of it to extract.
      Therefore prevent that.  */
   if (reg_classes_intersect_p (V_REGS, rclass)
-      && riscv_vls_mode_p (from)
+      && VECTOR_MODE_P (from)
+      && GET_MODE_NUNITS (from).is_constant ()
+      && maybe_ne (GET_MODE_PRECISION (from), GET_MODE_PRECISION (to))
       && !ordered_p (BITS_PER_RISCV_VECTOR, GET_MODE_PRECISION (from)))
       return false;
 
@@ -13595,9 +13597,6 @@ riscv_regmode_natural_size (machine_mode mode)
   /* The natural size for RVV data modes is one RVV data vector,
      and similarly for predicates.  We can't independently modify
      anything smaller than that.  */
-  /* ??? For now, only do this for variable-width RVV registers.
-     Doing it for constant-sized registers breaks lower-subreg.c.  */
-
   if (riscv_vector_mode_p (mode))
     {
       poly_uint64 size = GET_MODE_SIZE (mode);
@@ -13607,20 +13606,10 @@ riscv_regmode_natural_size (machine_mode mode)
 	  if (known_lt (size, BYTES_PER_RISCV_VECTOR))
 	    return size;
 	}
-      else if (riscv_vla_mode_p (mode))
-	{
-	  /* RVV mask modes always consume a single register.  */
-	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
-	    return BYTES_PER_RISCV_VECTOR;
-	}
       if (!size.is_constant ())
 	return BYTES_PER_RISCV_VECTOR;
-      else if (!riscv_vls_mode_p (mode))
-	/* For -march=rv64gc_zve32f, the natural vector register size
-	   is 32 bits which is smaller than scalar register size, so we
-	   return minimum size between vector register size and scalar
-	   register size.  */
-	return MIN (size.to_constant (), UNITS_PER_WORD);
+      else
+	return TARGET_MIN_VLEN / BITS_PER_UNIT;
     }
   return UNITS_PER_WORD;
 }

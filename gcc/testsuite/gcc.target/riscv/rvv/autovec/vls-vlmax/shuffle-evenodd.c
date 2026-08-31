@@ -65,5 +65,5 @@ TEST_ALL (PERMUTE1)
 TEST_ALL (PERMUTE2)
 
 /* { dg-final { scan-assembler-times "vslideup" 48 } } */
-/* { dg-final { scan-assembler-times "vcompress" 84 } } */
-/* { dg-final { scan-assembler-times "vnsrl" 12 } } */
+/* { dg-final { scan-assembler-times "vcompress" 68 } } */
+/* { dg-final { scan-assembler-times "vnsrl" 28 } } */
