@@ -8925,12 +8925,14 @@ vect_scalar_ops_slice_hash::equal (const value_type &s1,
 }
 
 /* Like vect_get_num_copies but N copies of the vector might have
-   excess elements in the last vector.  Returns false if *NVECTORS
-   cannot be computed.  */
+   excess elements in the last vector.  Stores the number of excess
+   elements in the last vector in *EXCESS_ELTS.
+   Returns false if *NVECTORS or *EXCESS_ELTS cannot be computed.  */
 
 bool
 vect_get_num_copies_for_invariant (vec_info *vinfo, slp_tree node,
-				   unsigned *nvectors)
+				   unsigned *nvectors,
+				   unsigned *excess_elts)
 {
   poly_uint64 vf;
 
@@ -8941,8 +8943,12 @@ vect_get_num_copies_for_invariant (vec_info *vinfo, slp_tree node,
   vf *= SLP_TREE_LANES (node);
 
   tree vectype = SLP_TREE_VECTYPE (node);
-  bool res = can_div_away_from_zero_p (vf, TYPE_VECTOR_SUBPARTS (vectype),
-				       nvectors);
+  uint64_t rem;
+  bool res = (can_div_away_from_zero_p (vf, TYPE_VECTOR_SUBPARTS (vectype),
+					nvectors)
+	      && ((TYPE_VECTOR_SUBPARTS (vectype) * *nvectors - vf)
+		  .is_constant (&rem)));
+  *excess_elts = rem;
   return res;
 }
 
@@ -9126,8 +9132,9 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	    }
 
 	  /* Make sure we can generate them and then cost them.  */
-	  unsigned nvectors;
-	  if (!vect_get_num_copies_for_invariant (vinfo, node, &nvectors))
+	  unsigned nvectors, excess_elts;
+	  if (!vect_get_num_copies_for_invariant (vinfo, node, &nvectors,
+						  &excess_elts))
 	    return false;
 	  vect_prologue_cost_for_slp (child, nvectors, cost_vec);
 	}
@@ -10896,9 +10903,10 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   /* We always want SLP_TREE_VECTYPE (op_node) here correctly set.  */
   vector_type = SLP_TREE_VECTYPE (op_node);
 
-  unsigned int number_of_vectors;
+  unsigned int number_of_vectors, excess_elts;
   bool res = vect_get_num_copies_for_invariant (vinfo, op_node,
-						&number_of_vectors);
+						&number_of_vectors,
+						&excess_elts);
   gcc_assert (res);
   SLP_TREE_VEC_DEFS (op_node).create (number_of_vectors);
   auto_vec<tree> voprnds (number_of_vectors);
@@ -10931,8 +10939,7 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   /* Zero-pad the last vector if necessary.  */
-  number_of_places_left_in_vector
-    = nunits - nunits * number_of_vectors % group_size;
+  number_of_places_left_in_vector = nunits - excess_elts;
   for (i = nunits; i > number_of_places_left_in_vector; --i)
     elts[i-1] = build_zero_cst (TREE_TYPE (vector_type));
   stmt_vec_info insert_after = NULL;

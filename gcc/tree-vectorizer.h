@@ -2790,7 +2790,7 @@ extern tree prepare_vec_mask (loop_vec_info, tree, tree, tree,
 extern tree vect_get_mask_load_else (int, tree);
 extern bool vect_load_perm_consecutive_p (slp_tree, unsigned = UINT_MAX);
 extern bool vect_get_num_copies_for_invariant (vec_info *, slp_tree,
-					       unsigned *);
+					       unsigned *, unsigned *);
 
 /* In tree-vect-patterns.cc.  */
 extern void
