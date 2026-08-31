@@ -41,6 +41,7 @@ RISCV_TUNE("sifive-p400-series", sifive_p400, sifive_p400_tune_info)
 RISCV_TUNE("sifive-p600-series", sifive_p600, sifive_p600_tune_info)
 RISCV_TUNE("tt-ascalon-x", generic_ooo, tt_ascalon_d8_tune_info)
 RISCV_TUNE("tt-ascalon-d8", generic_ooo, tt_ascalon_d8_tune_info)
+RISCV_TUNE("tt-ascalon-xg", generic_ooo, tt_ascalon_d8_tune_info)
 RISCV_TUNE("thead-c906", generic, thead_c906_tune_info)
 RISCV_TUNE("xiangshan-nanhu", xiangshan, xiangshan_nanhu_tune_info)
 RISCV_TUNE("generic-ooo", generic_ooo, generic_ooo_tune_info)
@@ -109,6 +110,14 @@ RISCV_CORE("tt-ascalon-d8",   "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_"
 			      "zvbb_zvbc_zvfbfmin_zvfbfwma_zvfh_zvkng_zvl256b_"
 			      "zfhmin_zicntr_zihpm_zkr_zkt_zvfhmin_zvkt",
 			      "tt-ascalon-d8")
+
+RISCV_CORE("tt-ascalon-xg",   "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_"
+			      "ziccamoa_ziccif_zicclsm_ziccrse_zicond_zicsr_"
+			      "zifencei_zihintntl_zihintpause_zimop_za64rs_"
+			      "zawrs_zfa_zfbfmin_zfh_zcb_zcmop_zba_zbb_zbs_"
+			      "zvbb_zvbc_zvfbfmin_zvfbfwma_zvfh_zvl256b_"
+			      "zfhmin_zicntr_zihpm_zkr_zkt_zvfhmin_zvkt",
+			      "tt-ascalon-xg")
 
 RISCV_CORE("xiangshan-nanhu",      "rv64imafdc_zba_zbb_zbc_zbs_"
 			      "zbkb_zbkc_zbkx_zknd_zkne_zknh_zksed_zksh_"
