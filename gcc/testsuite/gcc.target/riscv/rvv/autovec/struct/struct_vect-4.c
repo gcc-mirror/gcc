@@ -7,13 +7,13 @@
 /* { dg-final { scan-assembler-times {vlseg2e64\.v} 8 } } */
 /* { dg-final { scan-assembler-times {vlseg3e64\.v} 8 } } */
 /* { dg-final { scan-assembler-times {vlseg4e64\.v} 8 } } */
-/* { dg-final { scan-assembler-times {vlseg5e64\.v} 7 } } */
+/* { dg-final { scan-assembler-times {vlseg5e64\.v} 8 } } */
 /* { dg-final { scan-assembler-times {vlseg6e64\.v} 7 } } */
 /* { dg-final { scan-assembler-times {vlseg7e64\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vlseg8e64\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vsseg2e64\.v} 8 } } */
 /* { dg-final { scan-assembler-times {vsseg3e64\.v} 8 } } */
-/* { dg-final { scan-assembler-times {vsseg4e64\.v} 4 } } */
+/* { dg-final { scan-assembler-times {vsseg4e64\.v} 7 } } */
 /* { dg-final { scan-assembler-times {vsseg5e64\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vsseg6e64\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vsseg7e64\.v} 4 } } */

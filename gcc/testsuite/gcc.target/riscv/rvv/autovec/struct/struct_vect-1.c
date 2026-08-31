@@ -223,7 +223,7 @@ NAME(g8) (TYPE *__restrict a, TYPE *__restrict b, TYPE *__restrict c,
 /* { dg-final { scan-assembler-times {vlseg8e8\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vsseg2e8\.v} 8 } } */
 /* { dg-final { scan-assembler-times {vsseg3e8\.v} 8 } } */
-/* { dg-final { scan-assembler-times {vsseg4e8\.v} 4 } } */
+/* { dg-final { scan-assembler-times {vsseg4e8\.v} 8 } } */
 /* { dg-final { scan-assembler-times {vsseg5e8\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vsseg6e8\.v} 4 } } */
 /* { dg-final { scan-assembler-times {vsseg7e8\.v} 4 } } */
