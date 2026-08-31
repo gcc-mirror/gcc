@@ -366,15 +366,29 @@ GenericTyVisitorCtx::lookup_or_add_type (HirId hir_id)
     }
 
   SubstitutionRef *subst = nullptr;
-  if (auto adt = ty->try_as<ADTType> ())
+  switch (ty->get_kind ())
     {
-      subst = adt;
-    }
-  else
-    {
+    case TypeKind::ADT:
+      subst = static_cast<ADTType *> (ty);
+      break;
+
+    case TypeKind::FNDEF:
+      subst = static_cast<FnType *> (ty);
+      break;
+
+    case TypeKind::CLOSURE:
+      subst = static_cast<ClosureType *> (ty);
+      break;
+
+    case TypeKind::PROJECTION:
+      subst = static_cast<ProjectionType *> (ty);
+      break;
+
+    default:
       rust_sorry_at (
 	ty->get_locus (),
 	"This is a compiler bug: Unhandled type in variance analysis");
+      break;
     }
   rust_assert (subst != nullptr);
 
