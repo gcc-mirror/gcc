@@ -1,7 +1,4 @@
 /* { dg-require-effective-target vect_int } */
-/* We now if-convert the loop unconditonally as the memory locations
-   are always stored to.  */
-/* { dg-additional-options "-fno-tree-loop-if-convert" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -65,4 +62,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect"  } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" { target { ! vect_masked_store } } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" { target { vect_masked_store } } } } */
+/* { dg-final { scan-tree-dump "loop versioned for vectorization because of possible aliasing" "vect" { target { vect_masked_store } } } } */
