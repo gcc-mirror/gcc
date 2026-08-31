@@ -26,7 +26,6 @@
 #include "rust-type-util.h"
 #include "rust-attribute-values.h"
 #include "rust-tyty.h"
-#include "tree.h"
 
 namespace Rust {
 namespace Resolver {
@@ -58,6 +57,9 @@ TypeCheckBase::ResolvePredicateFromBound (
 				       is_qualified_type, is_super_trait);
 }
 
+static void walk_type_to_constrain (std::set<HirId> &constrained_symbols,
+				    TyTy::BaseType &r);
+
 static void
 walk_types_to_constrain (std::set<HirId> &constrained_symbols,
 			 const TyTy::SubstitutionArgumentMappings &constraints)
@@ -70,6 +72,7 @@ walk_types_to_constrain (std::set<HirId> &constrained_symbols,
 	  const auto p = arg->get_root ();
 	  constrained_symbols.insert (p->get_ref ());
 	  constrained_symbols.insert (p->get_ty_ref ());
+	  walk_type_to_constrain (constrained_symbols, *arg);
 
 	  if (p->has_substitutions_defined ())
 	    {
