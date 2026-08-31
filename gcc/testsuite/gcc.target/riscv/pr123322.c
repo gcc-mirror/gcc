@@ -17,7 +17,5 @@ TEST(lshift, <<=)
 /* AND and MULT can be handled too, but need a different neutral element that
    we aren't handling yet.  */
 
-/* Each test should have precisely one czero.  But for rv64, the int tests
-   generate 2 for int cases where the op is widened.  */
-/* { dg-final { scan-assembler-times "czero" 14 { target rv32 } } } */
-/* { dg-final { scan-assembler-times "czero" 18 { target rv64 } } } */
+/* Each test should have precisely one czero.  */
+/* { dg-final { scan-assembler-times "czero" 14 } } */

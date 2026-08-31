@@ -3370,6 +3370,41 @@ noce_try_sign_mask (struct noce_if_info *if_info)
   return true;
 }
 
+/* Return the arithmetic operation in X, looking through an extension.  */
+
+static rtx
+noce_cond_arith_operation (rtx x)
+{
+  enum rtx_code code = GET_CODE (x);
+  if (code == SIGN_EXTEND || code == ZERO_EXTEND)
+    x = XEXP (x, 0);
+
+  return noce_cond_zero_binary_op_supported (x) ? x : NULL_RTX;
+}
+
+/* Return true if X contains an EXT_CODE extension from its mode to
+   OUTER_MODE.  */
+
+static bool
+noce_operand_known_extended_p (rtx x, machine_mode outer_mode,
+			       enum rtx_code ext_code)
+{
+  machine_mode inner_mode = GET_MODE (x);
+  unsigned int precision = GET_MODE_PRECISION (outer_mode).to_constant ();
+  unsigned int inner_precision
+    = GET_MODE_PRECISION (inner_mode).to_constant ();
+  if (ext_code == SIGN_EXTEND)
+    return (num_sign_bit_copies (x, outer_mode)
+	    > precision - inner_precision);
+
+  if (ext_code == ZERO_EXTEND)
+    return (HWI_COMPUTABLE_MODE_P (outer_mode)
+	    && (nonzero_bits (x, outer_mode)
+		& ~GET_MODE_MASK (inner_mode)) == 0);
+
+  return false;
+}
+
 /*  Helper function to return REG itself,
     otherwise NULL_RTX for other RTX_CODE.  */
 
@@ -3412,7 +3447,7 @@ get_base_reg_or_constant (rtx exp)
 static int
 noce_try_cond_arith (struct noce_if_info *if_info)
 {
-  rtx target, a, b, a_op0, a_op1;
+  rtx target, a, b, a_op0, a_op1, outer_a;
   rtx cond = if_info->cond;
   rtx_code code = GET_CODE (cond);
   rtx_insn *seq;
@@ -3431,9 +3466,11 @@ noce_try_cond_arith (struct noce_if_info *if_info)
 
   a = copy_rtx (if_info->a);
   b = copy_rtx (if_info->b);
+  rtx a_arith = noce_cond_arith_operation (a);
+  rtx b_arith = noce_cond_arith_operation (b);
 
   /* Canonicalize x = y : (y op z) to x = (y op z) : y.  */
-  if (REG_P (a) && noce_cond_zero_binary_op_supported (b))
+  if (REG_P (a) && b_arith)
     {
       if (if_info->rev_cond)
 	{
@@ -3443,16 +3480,27 @@ noce_try_cond_arith (struct noce_if_info *if_info)
       else
 	code = reversed_comparison_code (cond, if_info->jump);
       std::swap (a, b);
+      a_arith = b_arith;
     }
 
   /* Check if x = (y op z) : y is supported by czero based ifcvt.  */
-  else if (!(noce_cond_zero_binary_op_supported (a) && REG_P (b)))
+  else if (!(a_arith && REG_P (b)))
     goto fail;
 
   if (code == UNKNOWN)
     goto fail;
 
+  outer_a = a == a_arith ? NULL_RTX : a;
+  a = a_arith;
   op = GET_CODE (a);
+
+  /* EXTEND (y op z) : y is valid only when Y already contains the same
+     extension of its lowpart.  AND uses a different transformation.  */
+  if (outer_a
+      && (op == AND
+	  || GET_MODE (outer_a) != mode
+	  || !SCALAR_INT_MODE_P (GET_MODE (a))))
+    goto fail;
 
   /* Canonicalize x = (z op y) : y to x = (y op z) : y */
   a_op1 = get_base_reg_or_constant (XEXP (a, 1));
@@ -3468,6 +3516,14 @@ noce_try_cond_arith (struct noce_if_info *if_info)
   /* Ensure the cond is of form: x = (y op z) : y */
   a_op0 = get_base_reg_or_constant (XEXP (a, 0));
   if (!(a_op0 && rtx_equal_p (a_op0, b)))
+    goto fail;
+
+  if (outer_a
+      && (!SUBREG_P (XEXP (a, 0))
+	  || !subreg_lowpart_p (XEXP (a, 0))
+	  || GET_MODE (SUBREG_REG (XEXP (a, 0))) != mode
+	  || !noce_operand_known_extended_p (XEXP (a, 0), mode,
+					      GET_CODE (outer_a))))
     goto fail;
 
   start_sequence ();
@@ -3507,6 +3563,14 @@ noce_try_cond_arith (struct noce_if_info *if_info)
 	goto end_seq_n_fail;
       target = rtl_hooks.gen_lowpart_no_emit (GET_MODE (XEXP (a, op != AND)), target);
       gcc_assert (target);
+    }
+
+  if (outer_a)
+    {
+      XEXP (a, 1) = target;
+      noce_emit_move_insn (if_info->x, outer_a);
+      target = if_info->x;
+      goto success;
     }
 
   /* For AND, try `cond ? z : -1` to see if that is cheaper or the same cost.
