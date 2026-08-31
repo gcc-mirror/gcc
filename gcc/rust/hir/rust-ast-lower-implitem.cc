@@ -234,6 +234,11 @@ void
 ASTLowerTraitItem::visit (AST::Function &func)
 {
   std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
+  where_clause_items.reserve (func.get_where_clause ().get_items ().size ());
+  for (auto &item : func.get_where_clause ().get_items ())
+    where_clause_items.emplace_back (
+      ASTLowerWhereClauseItem::translate (*item.get ()));
+
   HIR::WhereClause where_clause (std::move (where_clause_items));
   HIR::FunctionQualifiers qualifiers
     = lower_qualifiers (func.get_qualifiers ());
