@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fdump-tree-optimized" } */
 
 #include <stdint.h>
 
@@ -16,6 +16,6 @@ clip_loop (uint8_t *res, int64_t *x, int w)
     res[i] = clip_uint8 (x[i]);
 }
 
-/* { dg-final { scan-tree-dump-times ".SAT_TRUNC " 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR " 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times ".SAT_TRUNC " 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "MAX_EXPR " 2 "optimized" } } */
 /* { dg-final { scan-assembler-times {vnclipu\.wi} 3 } } */

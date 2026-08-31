@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-phiopt1-details" } */
-/* { dg-final { scan-tree-dump-times "changed to factor operation out from COND_EXPR." 1 "phiopt1" } } */
+/* { dg-options "-O3 -fdump-tree-gimple" } */
+/* { dg-final { scan-tree-dump-times "MAX_EXPR" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "gimple" } } */
 
 typedef unsigned char uint8_t;
 

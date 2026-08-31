@@ -13372,6 +13372,43 @@ and,
  (BUILT_IN_CONSTANT_P (nop_convert@1 @0))
  (BUILT_IN_CONSTANT_P @0))
 
+/* Canonicalize a conditional signed narrow clip while the signed negation
+   has its original overflow semantics:
+
+     (NT) ((UT) X > NT_MAX ? (-X) >> (PREC - 1) : X)
+       -> (NT) MIN ((UT) MAX (X, 0), NT_MAX).  */
+(if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+ (simplify
+  (cond (gt (nop_convert@4 @0) INTEGER_CST@1)
+	(convert (rshift@5
+		  (nop_convert? (negate@3 (nop_convert? @0)))
+		  INTEGER_CST@2))
+	(convert @0))
+  (if (!TREE_SIDE_EFFECTS (@0)
+	&& !TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& TYPE_UNSIGNED (TREE_TYPE (@4))
+	&& !TYPE_UNSIGNED (TREE_TYPE (@5))
+	&& TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@3))
+	&& !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@3)))
+   (with
+    {
+     tree utype = TREE_TYPE (@4);
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int int_cst_1 = wi::to_wide (@1, itype_precision);
+     wide_int int_cst_2 = wi::to_wide (@2, itype_precision);
+     wide_int shift_amount = wi::uhwi (itype_precision - 1,
+				  itype_precision);
+    }
+    (if (otype_precision < itype_precision
+	 && wi::eq_p (trunc_max, int_cst_1)
+	 && wi::eq_p (int_cst_2, shift_amount))
+     (convert (min:utype
+		(convert:utype
+		 (max @0 { build_zero_cst (TREE_TYPE (@0)); }))
+		@1)))))))
+
 #if GIMPLE
 
 /* Include the saturation alu match patterns.  */

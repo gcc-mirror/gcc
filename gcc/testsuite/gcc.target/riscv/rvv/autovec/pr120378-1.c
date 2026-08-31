@@ -16,6 +16,6 @@ clip_loop (uint8_t *res, int *x, int w)
     res[i] = clip_uint8 (x[i]);
 }
 
-/* { dg-final { scan-tree-dump-times ".SAT_TRUNC " 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR " 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times ".SAT_TRUNC " 2 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "MAX_EXPR " 2 "optimized" } } */
 /* { dg-final { scan-assembler-times {vnclipu\.wi} 2 } } */
