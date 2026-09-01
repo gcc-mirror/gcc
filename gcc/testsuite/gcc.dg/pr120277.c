@@ -2,7 +2,7 @@
 /* { dg-options "-O2" } */
 
 int a, b;
-int c(int d, long e) {
+int c(int d, __INTPTR_TYPE__ e) {
   switch (d) {
   case 129:
     a = 1;
@@ -13,7 +13,7 @@ int c(int d, long e) {
   }
   *(int *)e = 0;
 }
-void f(int d, long e) { c(d, e); }
+void f(int d, __INTPTR_TYPE__ e) { c(d, e); }
 void g() {
   int h = b * sizeof(int);
   f(h + 7, h);
