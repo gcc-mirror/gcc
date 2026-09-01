@@ -3630,17 +3630,15 @@ vect_recog_average_pattern (vec_info *vinfo,
   if (!new_vectype)
     return NULL;
 
-  bool fallback_p = false;
-
-  if (direct_internal_fn_supported_p (ifn, new_vectype, OPTIMIZE_FOR_SPEED))
-    ;
-  else if (TYPE_UNSIGNED (new_type)
-	   && optab_for_tree_code (RSHIFT_EXPR, new_vectype, optab_scalar)
-	   && optab_for_tree_code (PLUS_EXPR, new_vectype, optab_default)
-	   && optab_for_tree_code (BIT_IOR_EXPR, new_vectype, optab_default)
-	   && optab_for_tree_code (BIT_AND_EXPR, new_vectype, optab_default))
-    fallback_p = true;
-  else
+  bool fallback_p = !direct_internal_fn_supported_p (ifn, new_vectype,
+						      OPTIMIZE_FOR_SPEED);
+  if (fallback_p
+      && (!target_supports_op_p (new_vectype, RSHIFT_EXPR, optab_scalar)
+	  || !target_supports_op_p (new_vectype, PLUS_EXPR, optab_default)
+	  || !target_supports_op_p (new_vectype, BIT_AND_EXPR, optab_default)
+	  || (ifn == IFN_AVG_CEIL
+	      && !target_supports_op_p (new_vectype, BIT_IOR_EXPR,
+					optab_default))))
     return NULL;
 
   /* The IR requires a valid vector type for the cast result, even though
@@ -3664,7 +3662,9 @@ vect_recog_average_pattern (vec_info *vinfo,
 	 unmasked_carry = new_ops[0] and/or new_ops[1];
 	 carry = unmasked_carry & 1;
 	 new_var = sum_of_shifted + carry;
-      */
+
+	 For signed types, arithmetic shifts round down and the carry is one
+	 when both operands are odd (or either operand for IFN_AVG_CEIL).  */
 
       tree one_cst = build_one_cst (new_type);
       gassign *g;
