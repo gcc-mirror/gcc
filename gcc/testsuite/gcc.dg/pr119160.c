@@ -1,4 +1,4 @@
-/* { dg-do run } */
+/* { dg-do run { target { scheduling } } } */
 /* { dg-options "-O2 -finstrument-functions-once -favoid-store-forwarding -fnon-call-exceptions -fschedule-insns -Wno-psabi" } */
 /* { dg-additional-options "-mgeneral-regs-only" { target { x86_64-*-* i?86-*-* arm*-*-* aarch64*-*-* } } } */
 
