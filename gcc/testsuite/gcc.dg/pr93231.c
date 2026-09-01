@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target int32plus } } */
 /* { dg-options "-O2 -fdump-tree-forwprop2-details -Wno-shift-count-negative" } */
 
 int ctz_ice1 (int x)
