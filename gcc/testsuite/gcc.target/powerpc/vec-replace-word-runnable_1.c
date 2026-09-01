@@ -5,7 +5,6 @@
 
 #include <altivec.h>
 
-#define DEBUG 0
 
 #if DEBUG
 #include <stdio.h>
@@ -64,7 +63,7 @@ main (int argc, char *argv [])
   src_va_uint = (vector unsigned int) { 0, 1, 2, 3 };
   vresult_uint = (vector unsigned int) { 0, 0, 0, 0 };
   expected_vresult_uint = (vector unsigned int) { 0, 1, 345, 3 };
-						 
+
   vresult_uint = vec_replace_elt (src_va_uint, src_a_uint, 2);
 
   if (!vec_all_eq (vresult_uint, expected_vresult_uint)) {
@@ -82,7 +81,7 @@ main (int argc, char *argv [])
   src_va_int = (vector int) { 0, 1, 2, 3 };
   vresult_int = (vector int) { 0, 0, 0, 0 };
   expected_vresult_int = (vector int) { 0, 234, 2, 3 };
-						 
+
   vresult_int = vec_replace_elt (src_va_int, src_a_int, 1);
 
   if (!vec_all_eq (vresult_int, expected_vresult_int)) {
@@ -95,12 +94,12 @@ main (int argc, char *argv [])
     abort();
 #endif
   }
-  
+
   src_a_float = 34.0;
   src_va_float = (vector float) { 0.0, 10.0, 20.0, 30.0 };
   vresult_float = (vector float) { 0.0, 0.0, 0.0, 0.0 };
   expected_vresult_float = (vector float) { 0.0, 34.0, 20.0, 30.0 };
-						 
+
   vresult_float = vec_replace_elt (src_va_float, src_a_float, 1);
 
   if (!vec_all_eq (vresult_float, expected_vresult_float)) {
@@ -119,7 +118,7 @@ main (int argc, char *argv [])
   src_va_ullint = (vector unsigned long long int) { 0, 1 };
   vresult_ullint = (vector unsigned long long int) { 0, 0 };
   expected_vresult_ullint = (vector unsigned long long int) { 0, 456 };
-						 
+
   vresult_ullint = vec_replace_elt (src_va_ullint, src_a_ullint, 1);
 
   if (!vec_all_eq (vresult_ullint,  expected_vresult_ullint)) {
@@ -137,7 +136,7 @@ main (int argc, char *argv [])
   src_va_llint = (vector long long int) { 0, 1 };
   vresult_llint = (vector long long int) { 0, 0 };
   expected_vresult_llint = (vector long long int) { 0, 678 };
-						 
+
   vresult_llint = vec_replace_elt (src_va_llint, src_a_llint, 1);
 
   if (!vec_all_eq (vresult_llint, expected_vresult_llint)) {
@@ -150,12 +149,12 @@ main (int argc, char *argv [])
     abort();
 #endif
   }
-  
+
   src_a_double = 678.0;
   src_va_double = (vector double) { 0.0, 50.0 };
   vresult_double = (vector double) { 0.0, 0.0 };
   expected_vresult_double = (vector double) { 0.0, 678.0 };
-						 
+
   vresult_double = vec_replace_elt (src_va_double, src_a_double, 1);
 
   if (!vec_all_eq (vresult_double, expected_vresult_double)) {
@@ -176,11 +175,17 @@ main (int argc, char *argv [])
 					  0, 0, 0, 0, 0, 0, 0, 0 };
   vresult_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					   0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_uchar
+    = (vector unsigned char) { 1, 0, 0, 0, 0, 0x1, 0x59, 0,
+			       0, 0, 0, 0, 0, 0, 0, 0 };
+#else
   /* Byte index 7 will overwrite part of elements 2 and 3 */
   expected_vresult_uchar
     = (vector unsigned char) { 1, 0, 0, 0, 2, 0, 0, 0,
 			       0, 0x59, 0x1, 0, 0, 0, 0, 0 };
-						 
+#endif
+
   vresult_uchar = vec_replace_unaligned (src_va_uchar, src_a_uint, 3);
 
   if (!vec_all_eq (vresult_uchar, expected_vresult_uchar)) {
@@ -199,9 +204,15 @@ main (int argc, char *argv [])
 					  3, 0, 0, 0, 4, 0, 0, 0 };
   vresult_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					   0, 0, 0, 0, 0, 0, 0, 0 };
+
+#ifdef __BIG_ENDIAN__
+  expected_vresult_uchar = (vector unsigned char) { 1, 0, 0, 0, 0, 0, 0, 0,
+						    0, 0, 0xea, 0, 4, 0, 0, 0 };
+#else
   /* Byte index 7 will over write part of elements 1 and 2 */
   expected_vresult_uchar = (vector unsigned char) { 1, 0, 0, 0, 0, 0xea, 0, 0,
 						    0, 0, 0, 0, 4, 0, 0, 0 };
+#endif
 
   vresult_uchar = vec_replace_unaligned (src_va_uchar, src_a_int, 7);
 
@@ -221,10 +232,16 @@ main (int argc, char *argv [])
 					  5, 6, 7, 8, 0x41, 0xf0, 0, 0};
   vresult_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					   0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_uchar
+    = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0x41, 0xa0,
+			       0x42, 8, 0, 0, 0x41, 0xf0, 0, 0 };
+#else
   expected_vresult_uchar
     = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 8, 0x42,
 			       5, 6, 7, 8, 0x41, 0xf0, 0, 0 };
-						 
+#endif
+
   vresult_uchar = vec_replace_unaligned (src_va_uchar, src_a_float, 8);
 
   if (!vec_all_eq (vresult_uchar, expected_vresult_uchar)) {
@@ -245,10 +262,16 @@ main (int argc, char *argv [])
 					  0x22, 0x2, 0, 0, 0, 0, 0, 0 };
   vresult_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					   0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_uchar
+    = (vector unsigned char) { 0, 0xc, 0x1, 0, 0, 0, 0, 0,
+			       0, 0, 0, 0, 0, 0x1, 0xc8, 0 };
+#else
   expected_vresult_uchar
     = (vector unsigned char) { 0, 0xc8, 0x1, 0, 0, 0, 0, 0,
 			       0, 2, 0, 0, 0, 0, 0, 0 };
-						 
+#endif
+
   /* Byte index 7 will over write least significant byte of  element 0  */
   vresult_uchar = vec_replace_unaligned (src_va_uchar, src_a_ullint, 7);
 
@@ -268,11 +291,17 @@ main (int argc, char *argv [])
   src_va_uchar = (vector unsigned char) { 0, 0xa6, 0x2, 0, 0, 0, 0, 0,
 					  0x0, 0x1, 0, 0, 0, 0, 0, 0 };
   vresult_llint = (vector long long int) { 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_uchar
+    = (vector unsigned char) { 0x0, 0xa6, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0,
+			       0x0, 0x0, 0x0, 0x0, 0x0, 0x2, 0xa6, 0x0 };
+#else
   /* Byte index 7 will over write least significant byte of  element 0  */
   expected_vresult_uchar
     = (vector unsigned char) { 0x0, 0xa6, 0x2, 0x0, 0x0, 0x0, 0x0, 0x0,
 			       0x0, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
-						 
+#endif
+
   vresult_uchar = vec_replace_unaligned (src_va_uchar, src_a_llint, 7);
 
   if (!vec_all_eq (vresult_uchar, expected_vresult_uchar)) {
@@ -286,14 +315,20 @@ main (int argc, char *argv [])
     abort();
 #endif
   }
-  
+
   src_a_double = 678.0;
   src_va_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					  0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_uchar
+    = (vector unsigned char) { 0x40, 0x85, 0x30, 0x0, 0x0, 0x0, 0x0, 0x0,
+			       0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0 };
+#else
   expected_vresult_uchar
     = (vector unsigned char) { 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
 			       0x0, 0x0, 0x0, 0x0, 0x0, 0x30, 0x85, 0x40 };
-						 
+#endif
+
   vresult_uchar = vec_replace_unaligned (src_va_uchar, src_a_double, 0);
 
   if (!vec_all_eq (vresult_uchar, expected_vresult_uchar)) {
@@ -307,7 +342,7 @@ main (int argc, char *argv [])
     abort();
 #endif
   }
-  
+
   return 0;
 }
 
