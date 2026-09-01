@@ -3,7 +3,7 @@
 volatile int v;
 
 __attribute__((noipa)) int
-f (int a)
+f (__INT32_TYPE__ a)
 {
   switch (a)
     {
