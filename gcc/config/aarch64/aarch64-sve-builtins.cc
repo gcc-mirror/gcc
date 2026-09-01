@@ -3565,7 +3565,10 @@ gimple_folder::fold_to_ptrue ()
 gimple *
 gimple_folder::fold_to_pfalse ()
 {
-  return gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+  if (type_suffix (0).tclass == TYPE_bool)
+    return gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+
+  return NULL;
 }
 
 /* Fold an operation to a constant predicate in which the first VL
