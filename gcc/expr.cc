@@ -14581,29 +14581,6 @@ gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial,
   return quotient;
 }
 
-/* Calculate CRC for the initial CRC and given POLYNOMIAL.
-   CRC_BITS is CRC size.  */
-
-static unsigned HOST_WIDE_INT
-calculate_crc (unsigned HOST_WIDE_INT crc,
-	       unsigned HOST_WIDE_INT polynomial,
-	       unsigned short crc_bits)
-{
-  unsigned HOST_WIDE_INT msb = HOST_WIDE_INT_1U << (crc_bits - 1);
-  crc = crc << (crc_bits - 8);
-  for (short i = 8; i > 0; --i)
-    {
-      if (crc & msb)
-	crc = (crc << 1) ^ polynomial;
-      else
-	crc <<= 1;
-    }
-  /* Zero out bits in crc beyond the specified number of crc_bits.  */
-  if (crc_bits < sizeof (crc) * CHAR_BIT)
-    crc &= (HOST_WIDE_INT_1U << crc_bits) - 1;
-  return crc;
-}
-
 /* Assemble CRC table with 256 elements for the given POLYNOM and CRC_BITS.
    POLYNOM is the polynomial used to calculate the CRC table's elements.
    CRC_BITS is the size of CRC, may be 8, 16, ... . */
@@ -14620,7 +14597,7 @@ assemble_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
   vec_alloc (initial_values, table_el_n);
   for (size_t i = 0; i < table_el_n; ++i)
     {
-      unsigned HOST_WIDE_INT crc = calculate_crc (i, polynom, crc_bits);
+      unsigned HOST_WIDE_INT crc = calculate_crc (0, i, polynom, crc_bits, 8);
       tree element = build_int_cstu (make_unsigned_type (crc_bits), crc);
       vec_safe_push (initial_values, element);
     }
@@ -14654,28 +14631,6 @@ generate_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_bits)
   return assemble_crc_table (polynom, crc_bits);
 }
 
-/* Calculate CRC for the initial CRC and given POLYNOMIAL.
-   CRC_BITS is CRC size.  */
-
-static unsigned HOST_WIDE_INT
-calculate_reversed_crc (unsigned HOST_WIDE_INT crc,
-			unsigned HOST_WIDE_INT polynomial,
-			unsigned short crc_bits)
-{
-  unsigned HOST_WIDE_INT rev_polynom = reflect_hwi (polynomial, crc_bits);
-  for (int j = 0; j < 8; j++)
-    {
-      if (crc & 1)
-	crc = (crc >> 1) ^ rev_polynom;
-      else
-	crc >>= 1;
-    }
-  /* Zero out bits in crc beyond the specified number of crc_bits.  */
-  if (crc_bits < sizeof (crc) * CHAR_BIT)
-    crc &= (HOST_WIDE_INT_1U << crc_bits) - 1;
-  return crc;
-}
-
 /* Assemble CRC table with 256 elements for the given POLYNOM and CRC_BITS.
    POLYNOM is the polynomial used to calculate the CRC table's elements.
    CRC_BITS is the size of CRC, may be 8, 16, ... . */
@@ -14692,7 +14647,8 @@ assemble_reversed_crc_table (unsigned HOST_WIDE_INT polynom, unsigned short crc_
   vec_alloc (initial_values, table_el_n);
   for (size_t i = 0; i < table_el_n; ++i)
     {
-      unsigned HOST_WIDE_INT crc = calculate_reversed_crc (i, polynom, crc_bits);
+      unsigned HOST_WIDE_INT crc = calculate_reversed_crc (0, i, polynom,
+							   crc_bits, 8);
       tree element = build_int_cstu (make_unsigned_type (crc_bits), crc);
       vec_safe_push (initial_values, element);
     }

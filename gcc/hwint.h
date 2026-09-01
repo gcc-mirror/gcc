@@ -286,6 +286,19 @@ extern HOST_WIDE_INT mul_hwi (HOST_WIDE_INT, HOST_WIDE_INT);
 extern HOST_WIDE_INT least_common_multiple (HOST_WIDE_INT, HOST_WIDE_INT);
 extern unsigned HOST_WIDE_INT reflect_hwi (unsigned HOST_WIDE_INT, unsigned);
 
+/* Calculate CRC for a given initial CRC, DATA, POLYNOMIAL,
+   CRC_SIZE in bits and DATA_SIZE in bits.  */
+extern unsigned HOST_WIDE_INT
+calculate_crc (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+	       unsigned HOST_WIDE_INT, unsigned short, unsigned short);
+
+/* Calculate reversed CRC for a given initial CRC, DATA, POLYNOMIAL,
+   CRC_SIZE in bits and DATA_SIZE in bits.  */
+extern unsigned HOST_WIDE_INT
+calculate_reversed_crc (unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT,
+			unsigned HOST_WIDE_INT, unsigned short,
+			unsigned short);
+
 /* Like ctz_hwi, except 0 when x == 0.  */
 
 inline int
