@@ -9825,57 +9825,71 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       li_scalar_costs.quick_push (std::make_pair (l, cost));
     }
   /* Use a random used loop as fallback in case the first vector_costs
-     entry does not have a stmt_info associated with it.  */
+     entry does not have a location associated with it.  */
   unsigned l = li_scalar_costs[0].first;
   FOR_EACH_VEC_ELT (vector_costs, i, cost)
     {
-      /* We inherit from the previous COST, invariants, externals and
-	 extracts immediately follow the cost for the related stmt.  */
-      if (cost->stmt_info)
+      /* Use SLP node placement according to the computed schedule.  */
+      if (cost->node && cost->node->si)
+	l = gimple_bb (cost->node->si)->loop_father->num;
+      /* For schedules at region boundary use the region entry loop.  */
+      else if (cost->node)
+	l = bb_vinfo->bbs[0]->loop_father->num;
+      /* SLP instance root stmts do not have an associated SLP node.  */
+      else if (cost->stmt_info)
 	l = gimple_bb (cost->stmt_info->stmt)->loop_father->num;
+      /* And since vect_prologue_cost_for_slp can end up costing with
+	 neither, inherit from the previous node.  */
       li_vector_costs.quick_push (std::make_pair (l, cost));
     }
   li_scalar_costs.stablesort (li_cost_vec_cmp, NULL);
   li_vector_costs.stablesort (li_cost_vec_cmp, NULL);
+
+  unsigned total_vec_outside_cost = 0;
+  unsigned total_vec_inside_cost = 0;
+  unsigned total_scalar_cost = 0;
 
   /* Now cost the portions individually.  */
   unsigned vi = 0;
   unsigned si = 0;
   bool profitable = true;
   while (si < li_scalar_costs.length ()
-	 && vi < li_vector_costs.length ())
+	 || vi < li_vector_costs.length ())
     {
-      unsigned sl = li_scalar_costs[si].first;
-      unsigned vl = li_vector_costs[vi].first;
-      if (sl != vl)
+      unsigned sl
+	= si < li_scalar_costs.length () ? li_scalar_costs[si].first : -1U;
+      unsigned vl
+	= vi < li_vector_costs.length () ? li_vector_costs[vi].first : -1U;
+
+      class vector_costs *scalar_target_cost_data = nullptr;
+      scalar_cost = 0;
+      if (sl <= vl)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Scalar %d and vector %d loop part do not "
-			     "match up, skipping scalar part\n", sl, vl);
-	  /* Skip the scalar part, assuming zero cost on the vector side.  */
+			     "Scalar cost for part in loop %d\n", sl);
+	  scalar_target_cost_data = init_cost (bb_vinfo, true);
 	  do
 	    {
+	      add_stmt_cost (scalar_target_cost_data,
+			     li_scalar_costs[si].second);
 	      si++;
 	    }
 	  while (si < li_scalar_costs.length ()
 		 && li_scalar_costs[si].first == sl);
-	  continue;
+	  scalar_target_cost_data->finish_cost (nullptr);
+	  scalar_cost = scalar_target_cost_data->body_cost ();
+	  total_scalar_cost += scalar_cost;
+	  if (sl < vl)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Scalar %d loop part does not "
+				 "have corresponding vector part\n", sl);
+	      delete scalar_target_cost_data;
+	      continue;
+	    }
 	}
-
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Scalar cost for part in loop %d\n", sl);
-      class vector_costs *scalar_target_cost_data = init_cost (bb_vinfo, true);
-      do
-	{
-	  add_stmt_cost (scalar_target_cost_data, li_scalar_costs[si].second);
-	  si++;
-	}
-      while (si < li_scalar_costs.length ()
-	     && li_scalar_costs[si].first == sl);
-      scalar_target_cost_data->finish_cost (nullptr);
-      scalar_cost = scalar_target_cost_data->body_cost ();
 
       /* Complete the target-specific vector cost calculation.  */
       if (dump_enabled_p ())
@@ -9895,15 +9909,30 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       vec_prologue_cost = vect_target_cost_data->prologue_cost ();
       vec_inside_cost = vect_target_cost_data->body_cost ();
       vec_epilogue_cost = vect_target_cost_data->epilogue_cost ();
-      delete scalar_target_cost_data;
+      if (scalar_target_cost_data)
+	delete scalar_target_cost_data;
       delete vect_target_cost_data;
 
       vec_outside_cost = vec_prologue_cost + vec_epilogue_cost;
 
+      total_vec_outside_cost += vec_outside_cost;
+      total_vec_inside_cost += vec_inside_cost;
+
+      if (sl > vl && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Vector %d loop part does not "
+			 "have corresponding scalar part\n", vl);
+
+      /* When this is vector costs for the region entry delay costing
+	 and instead only require the total costs to be profitable.  */
+      if (vl == (unsigned) bb_vinfo->bbs[0]->loop_father->num)
+	continue;
+
       if (dump_enabled_p ())
 	{
 	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Cost model analysis for part in loop %d:\n", sl);
+			   "Cost model analysis for part in loop %d:\n",
+			   std::min (sl, vl));
 	  dump_printf (MSG_NOTE, "  Vector cost: %d\n",
 		       vec_inside_cost + vec_outside_cost);
 	  dump_printf (MSG_NOTE, "  Scalar cost: %d\n", scalar_cost);
@@ -9917,14 +9946,20 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       if (vec_outside_cost + vec_inside_cost > scalar_cost)
 	profitable = false;
     }
-  if (profitable && vi < li_vector_costs.length ())
+
+  if (dump_enabled_p ())
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Excess vector cost for part in loop %d:\n",
-			 li_vector_costs[vi].first);
-      profitable = false;
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "Cost model analysis for whole subgraph:\n");
+      dump_printf (MSG_NOTE, "  Vector cost: %d\n",
+		   total_vec_inside_cost + total_vec_outside_cost);
+      dump_printf (MSG_NOTE, "  Scalar cost: %d\n", total_scalar_cost);
     }
+
+  /* For the case where the outermost region had no scalar cost require
+     overall profitability.  */
+  if (total_vec_outside_cost + total_vec_inside_cost > total_scalar_cost)
+    profitable = false;
 
   /* Unset visited flag.  This is delayed when the subgraph is profitable
      and we process the loop for remaining unvectorized if-converted code.  */
