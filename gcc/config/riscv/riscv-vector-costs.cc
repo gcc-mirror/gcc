@@ -1569,7 +1569,7 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
   /* Apply LMUL cost scaling uniformly to all vector operations.
      Larger LMUL values have higher latency and register pressure,
      which affects performance regardless of loop structure.  */
-  if (vectype)
+  if (VECTOR_TYPE_P (vectype))
     {
       unsigned lmul_factor = get_lmul_cost_scaling (TYPE_MODE (vectype));
       if (lmul_factor > 1)
@@ -1584,6 +1584,15 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		      stmt_vec_info stmt_info, slp_tree node, tree vectype,
 		      int misalign, vect_cost_model_location where)
 {
+  /* VECTYPE is null when costing scalar IL.  Recover the scalar type to
+     distinguish floating-point statements from integer statements.  */
+  if (m_cost_type == SCALAR_COST && stmt_info)
+    {
+      gcc_assert (!vectype);
+      if (tree lhs = gimple_get_lhs (STMT_VINFO_STMT (stmt_info)))
+	vectype = TREE_TYPE (lhs);
+    }
+
   int stmt_cost
     = targetm.vectorize.builtin_vectorization_cost (kind, vectype, misalign);
 
