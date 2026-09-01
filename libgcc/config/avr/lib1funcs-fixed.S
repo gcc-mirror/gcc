@@ -906,6 +906,71 @@ ENDF  __ssmulsa3
 #undef C7
 #undef SS
 
+/********************************************************
+    Fixed signed (saturated) Multiplication  s.31 x s.31
+*********************************************************/
+
+;;; Argument 1 and result
+#define A0 22
+#define A1 A0+1
+#define A2 A0+2
+#define A3 A0+3
+
+;;; Argument 2
+#define B0 18
+#define B1 B0+1
+#define B2 B0+2
+#define B3 B0+3
+
+#if defined (L_mulsq3)
+DEFUN __mulsq3
+ENTRY __ssmulsq3
+    ;; tmp.7 = result sign
+    mov     __tmp_reg__, A3
+    eor     __tmp_reg__, B3
+    push    __tmp_reg__
+    .call_if_neg A3, __negsi2       ; A = |A|
+    .call_if_neg B3, __negsi2_r18   ; B = |B|
+
+    XCALL   __umulsidi3
+    ;; Adjust for only 31 fractional bits.
+    lsl     A0
+    rol     A1
+    rol     A2
+    rol     A3
+
+    ;; r30.7 = result sign
+    pop     r30
+
+    brcs .Lsaturate
+    ;; In the negative result case, A = 0x80.. is no overflow,
+    ;; but treating it as such keeps the value unchanged.
+    brmi .Lsaturate          ; Overflow?
+    ;; Handle result sign.
+    sbrs    r30, 7
+    ret
+    XJMP    __negsi2
+.Lsaturate:
+    ;; r30.7 = 0 -> C = 1 -> 0x7f..
+    ;; r30.7 = 1 -> C = 0 -> 0x80..
+    cpi     r30, 0x80
+    sbc     A0, A0
+    sbc     A1, A1
+    wmov    A2, A0
+    subi    A3, 0x80
+    ret
+ENDF  __mulsq3
+#endif /* L_mulsq3 */
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+
 /*******************************************************
     Fixed 64 x 64 saturated Multiplication
 *******************************************************/

@@ -98,6 +98,7 @@ FUNCS_notiny += \
 	_fractsfhq _fractsfuhq _fractsfha _fractsfuha \
 	_fractsfsq _fractsfusq _fractsfsa _fractsfusa \
 	_mulsa3 _mulusa3 \
+	_mulsq3 \
 	_usmulusa3 _ssmulsa3 \
 	_umulditi3_raw \
 	_muluda3 _muluta3 _muludq3 \

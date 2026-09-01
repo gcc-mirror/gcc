@@ -943,6 +943,8 @@ ENDF __muldi3
 ;; X = R20[2] = B2[2]
 ;; Z = R22[2] = A0[2]
 DEFUN __umulsidi3
+ENTRY __mulusq3
+ENTRY __usmulusq3
     clt
     ;; FALLTHRU
 ENDF  __umulsidi3
@@ -1091,6 +1093,8 @@ DEFUN __mulsidi3
 ENDF  __mulsidi3
 
 DEFUN __umulsidi3
+ENTRY __mulusq3
+ENTRY __usmulusq3
     clt     ; skipped
     ;; Save 10 Registers: R10..R17, R28, R29
     do_prologue_saves 10
