@@ -2540,6 +2540,12 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
 	splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
 	if (n)
 	  {
+	    /* With shared memory, static global variables still need to be
+	       handled, except for 'link', pointing already to the host
+	       variable. */
+	    if ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+		&& n->refcount != REFCOUNT_INFINITY)
+	      continue;
 	    int kind = get_kind (short_mapkind, kinds, i);
 	    if (n->host_start > cur_node.host_start
 		|| n->host_end < cur_node.host_end)
@@ -2820,17 +2826,22 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       k->refcount = is_link_var ? REFCOUNT_LINK : REFCOUNT_INFINITY;
       k->dynamic_refcount = 0;
       k->aux = NULL;
+
+      /* If GOMP_OFFLOAD_CAP_SHARED_MEM: For link variable, set the device
+	 variable to point to the host variable (as required for self_maps);
+	 as no data transfer is needed for 'link' variables with shared memory,
+	 skip adding it to the splay tree.  */
+      if (is_link_var && devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+	{
+	  gomp_copy_host2dev (devicep, NULL, (void *) target_var->start,
+			      &k->host_start, sizeof (void *), false, NULL);
+	  continue;
+	}
+
       array->left = NULL;
       array->right = NULL;
       splay_tree_insert (&devicep->mem_map, array);
       array++;
-
-      if (is_link_var
-	  && ((omp_requires_mask
-	      & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
-	  || (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)))
-	gomp_copy_host2dev (devicep, NULL, (void *) target_var->start,
-			    &k->host_start, sizeof (void *), false, NULL);
     }
 
   /* Last entry is for the ICV struct variable; if absent, start = end = 0.  */
@@ -3699,6 +3710,34 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
   struct gomp_offload_session *session
     = gomp_offload_session_new (devicep, gomp_alloca);
 
+  if ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+      && !(omp_requires_mask
+	   & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
+    {
+      /* When USM is anabled (cf. GOMP_RUNTIME_USM) but enter clauses are not
+	 automatically turned into 'link' clauses in the compiler, they still
+	 need to be handled in map clauses.
+	 TODO: Implement this feature; for now fail with an error if those
+	 are encountered.
+	 FIXME: Not only 'always' has to be handled as variables in the target
+	 region and an (indirect) access to the global variable in a function
+	 call must refer to the same variable.  */
+      constexpr bool short_mapkind = true;  /* OpenMP */
+      constexpr int typemask = 0xff;
+      for (size_t i = 0; i < mapnum; i++)
+	if (GOMP_MAP_ALWAYS_P (typemask & get_kind (short_mapkind, kinds, i)))
+	  {
+	    struct splay_tree_key_s cur_node;
+	    cur_node.host_start = (uintptr_t) hostaddrs[i];
+	    cur_node.host_end = cur_node.host_start + sizes[i];
+	    splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
+	    if (n && n->refcount == REFCOUNT_INFINITY)
+	      gomp_fatal ("Sorry, unimplemented: TARGET with ALWAYS "
+			  "modifier for device static variables when "
+			  "GOMP_RUNTIME_USM is enabled");
+	  }
+    }
+
   if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
     {
       if (!fpc_done)
@@ -4352,6 +4391,33 @@ GOMP_target_data_ext (int device, size_t mapnum, void **hostaddrs,
 {
   struct gomp_device_descr *devicep = resolve_device (device, true);
 
+  if (devicep
+      && ((devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+	  && !(omp_requires_mask
+	       & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
+		  | GOMP_REQUIRES_SELF_MAPS))))
+    {
+      /* When USM is anabled (cf. GOMP_RUNTIME_USM) but enter clauses are not
+	 automatically turned into 'link' clauses in the compiler, they still
+	 need to be handled in map clauses.
+	 TODO: Implement this feature; for now fail with an error if those
+	 are encountered.  */
+      constexpr bool short_mapkind = true; /* OpenMP */
+      const int typemask = 0xff;
+      for (size_t i = 0; i < mapnum; i++)
+	if (GOMP_MAP_ALWAYS_P (typemask & get_kind (short_mapkind, kinds, i)))
+	  {
+	    struct splay_tree_key_s cur_node;
+	    cur_node.host_start = (uintptr_t) hostaddrs[i];
+	    cur_node.host_end = cur_node.host_start + sizes[i];
+	    splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
+	    if (n && n->refcount == REFCOUNT_INFINITY)
+	      gomp_fatal ("Sorry, unimplemented: TARGET DATA with ALWAYS "
+			  "modifier for device static variables when "
+			  "GOMP_RUNTIME_USM is enabled");
+	  }
+    }
+
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
       || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
@@ -4444,9 +4510,16 @@ GOMP_target_update_ext (int device, size_t mapnum, void **hostaddrs,
 	}
     }
 
+  /* For GOMP_OFFLOAD_CAP_SHARED_MEM, still static global varibles
+     that lack the link clause need to be handled, unless the
+     USM/self_maps requirement is set (as then all such variables
+     have the link clause); cf. also GOMP_RUNTIME_USM_DISABLED).
+     Note that USM/self_maps implies that all available devices
+     support CAP_SHARED_MEM.  */
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-      || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+      || (omp_requires_mask
+	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
     return;
 
   struct gomp_thread *thr = gomp_thread ();
@@ -4596,6 +4669,73 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
     }
 }
 
+/* Copy data for global static non-link variable, only; to be use with
+   GOMP_RUNTIME_USM.  Global variables with 'link' already point to the
+   host and can be ignored.  Only mapping with ALWAYS needs to be handled
+   as static has infinite ref count.  */
+
+static void
+gomp_target_enter_exit_data_usm (bool map_entering_p,
+				 struct gomp_device_descr *devicep,
+				 size_t mapnum, void **hostaddrs,
+				 size_t *sizes, unsigned short *kinds)
+{
+  constexpr bool short_mapkind = true;  /* OpenMP */
+  constexpr int typemask = 0xff;
+  size_t *iterator_count = NULL;
+  bool iterators_p = gomp_merge_iterator_maps (&mapnum, &hostaddrs, &sizes,
+					       (void **)&kinds, &iterator_count);
+  gomp_mutex_lock (&devicep->lock);
+  if (devicep->state == GOMP_DEVICE_FINALIZED)
+    {
+      gomp_mutex_unlock (&devicep->lock);
+      return;
+    }
+  for (size_t i = 0; i < mapnum; i++)
+    {
+      int kind = get_kind (short_mapkind, kinds, i);
+      if (!sizes[i])
+	continue;
+      if (!GOMP_MAP_ALWAYS_P (typemask & kind))
+	continue;
+      struct splay_tree_key_s cur_node;
+      cur_node.host_start = (uintptr_t) hostaddrs[i];
+      cur_node.host_end = cur_node.host_start + sizes[i];
+      splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
+      if (!n || n->refcount != REFCOUNT_INFINITY)
+	continue;
+      if (n->host_start > cur_node.host_start
+	  || n->host_end < cur_node.host_end)
+	{
+	  gomp_mutex_unlock (&devicep->lock);
+	  gomp_fatal ("Trying to update [%p..%p) object when only [%p..%p) is "
+		      "mapped",
+		      (void *) cur_node.host_start,
+		      (void *) cur_node.host_end,
+		      (void *) n->host_start,
+		      (void *) n->host_end);
+	}
+      void *hostaddr = (void *) cur_node.host_start;
+      void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
+				+ cur_node.host_start - n->host_start);
+      size_t size = cur_node.host_end - cur_node.host_start;
+
+      if (map_entering_p)
+	gomp_copy_host2dev (devicep, NULL, devaddr, hostaddr, size, false,
+			    NULL);
+      else
+	gomp_copy_dev2host (devicep, NULL, hostaddr, devaddr, size);
+    }
+  gomp_mutex_unlock (&devicep->lock);
+  if (iterators_p)
+    {
+      free (hostaddrs);
+      free (sizes);
+      free (kinds);
+      free (iterator_count);
+    }
+}
+
 void
 GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 			     size_t *sizes, unsigned short *kinds,
@@ -4651,7 +4791,8 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 
   if (devicep == NULL
       || !(devicep->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
-      || devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+      || (omp_requires_mask
+	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
     return;
 
   struct gomp_thread *thr = gomp_thread ();
@@ -4670,6 +4811,17 @@ GOMP_target_enter_exit_data (int device, size_t mapnum, void **hostaddrs,
 	      && thr->task->taskgroup->prev->cancelled)
 	    return;
 	}
+    }
+
+  /* When USM is anabled (cf. GOMP_RUNTIME_USM) but enter clauses are not
+     automatically turned into 'link' clauses in the compiler, they still
+     need to be honored.  */
+  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    {
+      bool map_entering_p = (flags & GOMP_TARGET_FLAG_EXIT_DATA) == 0;
+      gomp_target_enter_exit_data_usm (map_entering_p, devicep, mapnum,
+				       hostaddrs, sizes, kinds);
+      return;
     }
 
   htab_t refcount_set = htab_create (mapnum);
