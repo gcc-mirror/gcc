@@ -1,3 +1,23 @@
+2026-08-31  Ian Lance Taylor  <iant@golang.org>
+
+	* backtrace.h (struct backtrace_moredata): Add
+	backtrace_decl_lineno field.
+	* internal.h (BACKTRACE_MOREDATA_VERSION): Change to 4.
+	* dwarf.c (struct function): Add decl_lineno field.
+	(call_callback): Add decl_lineno parameter. Change all callers.
+	(read_referenced_name_from_attr): Likewise.
+	(read_referenced_name): Likewise.
+	(report_inlined_functions): Likewise.
+	(read_function_entry): Set decl_lineno field.
+	(dwarf_lookup_pc): Handle decl_lineno across inlines.
+	* mdtest.c (struct mdinfo): Define.
+	(struct mddata): Define.
+	(md_callback_one): Adjust for mddata.
+	(md_callback_three): Likewise.
+	(test1, f2): Reformat for simpler line number testing.
+	(f3): Test that decl_lineno is correct.
+	(f13): Adjust for mddata.
+
 2026-07-06  Ian Lance Taylor  <iant@golang.org>
 
 	* backtrace.h (backtrace_create_state): Rewrite comment to change

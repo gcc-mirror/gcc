@@ -1,3 +1,16 @@
+2026-08-31  Patrick Palka  <ppalka@redhat.com>
+
+	* include/std/flat_set (_Flat_set_impl::_M_try_emplace):
+	Turn nullary overload into a non-template.
+
+2026-08-31  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/118665
+	* include/bits/uniform_int_dist.h (uniform_int_distribution::_S_nd):
+	Substract __min (_Urbg::min()) from each generator invocation.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/values.cc:
+	Add testDiscreteDist for shifted (with non-zero min()) engine.
+
 2026-08-30  Anlai Lu  <agicy@qq.com>
 
 	* include/bits/chrono_io.h (__detail::__chrono_write_time):

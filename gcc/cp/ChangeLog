@@ -1,3 +1,12 @@
+2026-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126922
+	* mangle.cc (write_expression): For CONSTRUCTOR skipped
+	member of std::meta::info type, call write_expression on
+	get_null_reflection rather than build_zero_cst.
+	* tree.cc (zero_init_expr_p): If type is std::meta::info,
+	return true iff t is null reflection.
+
 2026-08-29  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
 
 	PR c++/127046

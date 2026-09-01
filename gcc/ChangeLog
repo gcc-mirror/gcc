@@ -1,3 +1,169 @@
+2026-08-31  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	PR tree-optimization/126690
+	* match.pd: Add patterns to fold CPROJ when nested inside CPROJ or CABS.
+
+2026-08-31  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/127163
+	* tree-ssa-forwprop.cc (simplify_phi_result_movdiv): check if
+	the div/mod is using INTEGRAL_TYPE_P operands.
+
+2026-08-31  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126906
+	* cfghooks.h (can_copy_bbs_p): Add prevailing_exit argument.
+	(copy_bbs): Likewise.
+	* cfghooks.cc (can_copy_bbs_p): Exempt prevailing_exit->src
+	from the abnormal successor edge refusal; refuse a
+	prevailing_exit->dest inside the region.
+	(copy_bbs): Prune the non-prevailing edges of
+	prevailing_exit->src's copy instead of redirecting them.
+	Assert the prevailing exit leaves the region.
+	* tree-ssa-threadupdate.cc
+	(back_jt_path_registry::duplicate_thread_path): Pass EXIT to
+	can_copy_bbs_p and copy_bbs when the path ends in abnormal
+	edges.  Assert the region ends in EXIT's source.  Remove
+	write-only exit_copy.
+
+2026-08-31  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* tree-into-ssa.cc (struct mark_def_sites_global_data): Remove.
+	* tree-ssa-propagate.cc (ssa_propagation_engine::ssa_propagate):
+	Remove.
+	* tree-ssa-tail-merge.cc (struct aux_bb_info): Remove
+	(BB_VOP_AT_EXIT): Remove.
+	* tree-vectorizer.h (vect_detect_hybrid_slp): Remove.
+
+2026-08-31  wangjue  <juewang@linux.alibaba.com>
+
+	* ifcvt.cc (noce_cond_arith_operation): New function.
+	(noce_operand_known_extended_p): New function.
+	(noce_try_cond_arith): Handle arithmetic operations wrapped in an
+	extension.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126998
+	* tree-vectorizer.h (vect_get_num_copies_for_invariant):
+	Adjust API.
+	* tree-vect-slp.cc (vect_get_num_copies_for_invariant): Also
+	compute and output the constant number of excess lanes produced.
+	(vect_create_constant_vectors): Adjust.
+	(vect_slp_analyze_node_operations): Likewise.
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Likewise.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127152
+	* tree-vect-loop.cc (vect_transform_reduction): Restore
+	vectype_in computation, compute vec_in_num from unaltered
+	vec_oprnds.
+
+2026-08-31  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/101179
+	* tree-ssa-forwprop.cc (simplify_phi_result_movdiv): New
+	forwprop step where MOD/DIV ops with pow2 divisors can be
+	simplified to BIT_AND/RSHIFT.
+	(pass_forwprop::execute): Call simplify_phi_result_movdiv.
+
+2026-08-31  Jin Ma  <jinma@linux.alibaba.com>
+
+	* config/riscv/bitmanip.md: Split masked bit-test branches into
+	BEXT.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127116
+	* tree-vect-patterns.cc (vect_recog_mask_conversion_pattern):
+	Pass rhs1_type as scalar type to build_mask_conversion.
+	(vect_init_pattern_stmt): Dump mask-precision used for the stmt.
+	(append_pattern_def_seq): Likewise.
+
+2026-08-31  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/126982
+	* match-sat-alu.pd (signed_integer_sat_trunc): Require the
+	conversion to keep the precision of the operand, and the result
+	to be narrower than it.
+
+2026-08-31  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/126981
+	* match-sat-alu.pd (unsigned_integer_narrow_clip): Require the
+	operand to be known different from the minimum of its type.
+
+2026-08-31  Lunex  <imlunex2011@gmail.com>
+
+	PR tree-optimization/126994
+	* tree-scalar-evolution.cc (final_value_replacement_loop): Guard
+	analyze_and_compute_bitop_with_inv_effect on
+	integer_zerop (niter_desc.may_be_zero).
+
+2026-08-31  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR target/127055
+	* config/i386/sse.md (floor<mode>2): Drop !flag_trapping_math.
+	(lfloor<mode><sseintvecmodelower>2): Likewise.
+	(ceil<mode>2): Likewise.
+	(lceil<mode><sseintvecmodelower>2): Likewise.
+	(btrunc<mode>2): Likewise.
+
+2026-08-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (Gz, Gc): New FP constant constraint.
+	* config/xtensa/predicates.md (move_operand):
+	Remove to replace the role with the following two new predicates, in
+	order to make it easier for both humans and compilers to understand.
+	(move_int_operand): New predicate for the second operand of
+	"mov[dshq]i_internal" MD patterns.
+	(move_fp_operand): New predicate for the second operand of
+	"mov[ds]f_internal" MD patterns.
+	(const_float_1_operand): Remove as it is not being used.
+	* config/xtensa/xtensa-protos.h (xtensa_fp_const):
+	New function prototype.
+	* config/xtensa/xtensa.cc (xtensa_fp_const):
+	New function that returns the corresponding non-negative index number
+	for FP constant values supported by the CONST.S instruction.
+	(print_operand): Add a new format specifier "G" that outputs the index
+	for the FP constant value handled by the "CONST.S" instruction.
+	(xtensa_legitimate_constant_p): Add the non-negative zero set by the
+	"MOVI" instruction and the floating-point constant supported by the
+	"CONST.S" instruction to the evaluation range.
+	* config/xtensa/xtensa.h (TARGET_HARD_FLOAT_CONST_S):
+	A new macro indicating the conditions under which the "CONST.S"
+	instruction is available.
+	* config/xtensa/xtensa.md
+	(movdi_internal, movsi_internal, movhi_internal, movqi_internal):
+	Replace the "move_operand" predicate with "move_int_operand".
+	(movsf): Modify the preparation statement used during RTL generation
+	to prevent constant immediates that satisfy "Gz" or "Gc" constraints
+	from being placed in literal pool.
+	(movsf_internal): Replace the "move_operand" predicate with
+	"move_fp_operand", and Add the "MOVI" instruction using the "Gz"
+	constraint and the "CONST.S" instruction using the "Gs" constraint to
+	the alternatives.
+	(movdf_internal): Replace the "move_operand" predicate with
+	"move_fp_operand".
+
+2026-08-31  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/127102
+	* match.pd: Add pattern to simplify MIN(A,B) == 0 to A == 0 and
+	MIN(A,B) != 0 to A != 0 when B is known positive.
+
+2026-08-31  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
+2026-08-31  Sun, Qin  <qin.sun@intel.com>
+
+	PR target/119300
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Warn and use SSE arithmetics when -mfpmath=387 is set, 387 is turned
+	off but SSE is available.
+
 2026-08-29  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	* tree-ssa-loop-ivopts.cc (ivopts_estimate_reg_pressure): Remove

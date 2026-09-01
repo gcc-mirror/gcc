@@ -1,3 +1,13 @@
+2026-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127128
+	* resolve.cc (replace_forall_var): New function.
+	(replace_in_expr_recursive): Traverse with gfc_traverse_expr
+	instead of walking the expression by hand.
+	(replace_in_code_recursive): Substitute in the whole branch chain
+	of IF and WHERE constructs, in the allocate-objects of ALLOCATE
+	and DEALLOCATE, and in SELECT TYPE and SELECT RANK case lists.
+
 2026-08-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/125722

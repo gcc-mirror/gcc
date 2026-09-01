@@ -1,3 +1,135 @@
+2026-08-31  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	PR tree-optimization/126690
+	* gcc.dg/tree-ssa/pr126690.c: New test.
+
+2026-08-31  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/127163
+	* gcc.dg/torture/pr127163.c: New test.
+
+2026-08-31  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-1.c: Update expected
+	output.
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-2.c: Update expected
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-3.c: Update expected
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-4.c: Update expected
+	* gcc.target/riscv/rvv/autovec/struct/struct_vect-5.c: Update expected
+	* gcc.target/riscv/rvv/vsetvl/avl_single-26.c: Likewise.
+
+2026-08-31  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126906
+	* gcc.dg/tree-ssa/ssa-thread-25.c: New test.
+	* gcc.dg/tree-ssa/ssa-thread-26.c: New test.
+
+2026-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127128
+	* gfortran.dg/do_concurrent_typespec_5.f90: New test.
+
+2026-08-31  wangjue  <juewang@linux.alibaba.com>
+
+	* gcc.target/riscv/pr122769.c: Add the branch cost and restrict the
+	test to compatible optimization options.
+	* gcc.target/riscv/zicond-conditional-add-extend.c: New test.
+	* gcc.target/riscv/pr123322.c: Update expected output.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126998
+	* gcc.dg/vect/vect-reduc-dot-pr126998-2.c: New testcase.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127152
+	* gcc.dg/vect/vect-pr127152.c: New testcase.
+
+2026-08-31  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/101179
+	* gcc.dg/tree-ssa/pr101179.c: New test.
+
+2026-08-31  Jin Ma  <jinma@linux.alibaba.com>
+
+	* g++.target/riscv/zbs-branch-bext.C: New test.
+	* gcc.target/riscv/zbs-branch-bext.c: New test.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127116
+	* gcc.dg/vect/bb-slp-pr127116.c: New testcase.
+
+2026-08-31  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/126982
+	* gcc.dg/vect/pr126982.c: New test.
+
+2026-08-31  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/126981
+	* gcc.dg/vect/pr126981.c: New test.
+
+2026-08-31  Lunex  <imlunex2011@gmail.com>
+
+	PR tree-optimization/126994
+	* gcc.c-torture/execute/pr126994.c: New test.
+
+2026-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126922
+	* g++.dg/reflect/mangle10.C: New test.
+
+2026-08-31  Matthias Kretz  <m.kretz@gsi.de>
+
+	* gcc.target/i386/avx-pr127055.c: New test.
+	* gcc.target/i386/avx512f-pr127055.c: New test.
+	* gcc.target/i386/avx512fp16-pr127055.c: New test.
+	* gcc.target/i386/sse4_1-pr127055.c: New test.
+
+2026-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/127122
+	* gcc.dg/vect/vect-cselim-2.c: Adjust.
+
+2026-08-31  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/127102
+	* gcc.dg/tree-ssa/pr127102.c: New test.
+
+2026-08-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-55.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-56.c: New test.
+
+2026-08-31  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-i8-mf8.c: New test.
+
+2026-08-31  Sun, Qin  <qin.sun@intel.com>
+
+	PR target/119300
+	* gcc.target/i386/pr119300.c: New test.
+	* gcc.target/i386/pr126148.c: Use -mno-sse instead of -mfpmath=387
+	to disable SSE math.
+
 2026-08-30  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.dg/pubtypes-2.c: Relax size constraint.
