@@ -2754,10 +2754,11 @@ ref_outside_object_p (tree size, poly_offset_int off, tree refsz)
 
 /* Return true if EXPR can trap, as in dereferencing an invalid pointer
    location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
-   This routine expects only GIMPLE lhs or rhs input.  */
+   This routine expects only GIMPLE lhs or rhs input.
+   LHS is true when LHS is a lhs.  */
 
-bool
-tree_could_trap_p (tree expr)
+static bool
+tree_could_trap_1 (tree expr, bool lhs)
 {
   enum tree_code code;
   bool fp_operation = false;
@@ -2813,7 +2814,7 @@ tree_could_trap_p (tree expr)
 
     case ARRAY_RANGE_REF:
       base = TREE_OPERAND (expr, 0);
-      if (tree_could_trap_p (base))
+      if (tree_could_trap_1 (base, lhs))
 	return true;
       if (TREE_THIS_NOTRAP (expr))
 	return false;
@@ -2821,7 +2822,7 @@ tree_could_trap_p (tree expr)
 
     case ARRAY_REF:
       base = TREE_OPERAND (expr, 0);
-      if (tree_could_trap_p (base))
+      if (tree_could_trap_1 (base, lhs))
 	return true;
       if (TREE_THIS_NOTRAP (expr))
 	return false;
@@ -2830,7 +2831,7 @@ tree_could_trap_p (tree expr)
     case TARGET_MEM_REF:
     case MEM_REF:
       if (TREE_CODE (TREE_OPERAND (expr, 0)) == ADDR_EXPR
-	  && tree_could_trap_p (TREE_OPERAND (TREE_OPERAND (expr, 0), 0)))
+	  && tree_could_trap_1 (TREE_OPERAND (TREE_OPERAND (expr, 0), 0), lhs))
 	return true;
       if (TREE_THIS_NOTRAP (expr))
 	return false;
@@ -2851,7 +2852,9 @@ tree_could_trap_p (tree expr)
 	  tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
 	  return ref_outside_object_p (size, off, refsz);
 	}
-      if (cfun
+      /* See if the base is this for C++ methods. For LHS, this can still
+	 trap.  */
+      if (!lhs && cfun
 	  && TREE_CODE (TREE_TYPE (cfun->decl)) == METHOD_TYPE
 	  && ((TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
 	       && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (expr, 0))
@@ -2884,10 +2887,13 @@ tree_could_trap_p (tree expr)
       if (!t || !DECL_P (t))
 	return true;
       if (DECL_WEAK (t))
-	return tree_could_trap_p (t);
+	return tree_could_trap_1 (t, lhs);
       return false;
 
     case FUNCTION_DECL:
+      /* Functions will cause a trap if on the lhs.  */
+      if (lhs)
+	return true;
       /* Assume that accesses to weak functions may trap, unless we know
 	 they are certainly defined in current TU or in some other
 	 LTO partition.  */
@@ -2901,6 +2907,9 @@ tree_could_trap_p (tree expr)
       return false;
 
     case VAR_DECL:
+      /* Readonly non-local decls can cause a trap on the lhs.  */
+      if (lhs && !auto_var_p (expr) && TREE_READONLY (expr))
+	return true;
       /* Assume that accesses to weak vars may trap, unless we know
 	 they are certainly defined in current TU or in some other
 	 LTO partition.  */
@@ -2912,25 +2921,37 @@ tree_could_trap_p (tree expr)
 	  return !(node && node->in_other_partition);
 	}
       return false;
-
+    /* Strings, const and labels will cause a trap if on the lhs.  */
+    case LABEL_DECL:
+    case CONST_DECL:
+    case STRING_CST:
+      return lhs;
+    /* Result and arguments will never cause a trap.  */
+    case RESULT_DECL:
+    case PARM_DECL:
+      return false;
     default:
       return false;
     }
+}
+
+
+
+/* Return true if EXPR can trap, as in dereferencing an invalid pointer
+   location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
+   This routine expects only GIMPLE lhs or rhs input.  */
+
+bool
+tree_could_trap_p (tree expr)
+{
+  return tree_could_trap_1 (expr, false);
 }
 
 /* Returns true if LHS is known not to trap as a store.  */
 bool
 lhs_could_trap_p (tree lhs)
 {
-  tree lhsbase = get_base_address (lhs);
-  if (tree_could_trap_p (lhs))
-    return true;
-  /* tree_could_trap_p is a predicate for loads, so check
-     for readonly memory explicitly.  */
-  if ((DECL_P (lhsbase) && TREE_READONLY (lhsbase))
-      || TREE_CODE (lhsbase) == STRING_CST)
-    return true;
-  return false;
+  return tree_could_trap_1 (lhs, true);
 }
 
 /* Return non-NULL if there is an integer operation with trapping overflow
