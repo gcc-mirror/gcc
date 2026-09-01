@@ -425,6 +425,11 @@
     UNSPECV_BLOCKAGE		; Represent a blockage
     UNSPECV_PROBE_STACK_RANGE	; Represent stack range probing.
     UNSPECV_SPECULATION_BARRIER ; Represent speculation barrier.
+    UNSPECV_YIELD		; Represent yield instruction.
+    UNSPECV_WFE			; Represent wfe instruction.
+    UNSPECV_WFI			; Represent wfi instruction.
+    UNSPECV_SEV			; Represent sev instruction.
+    UNSPECV_SEVL		; Represent sevl instruction.
     UNSPECV_BTI_NOARG		; Represent BTI.
     UNSPECV_BTI_C		; Represent BTI c.
     UNSPECV_BTI_J		; Represent BTI j.
@@ -1332,6 +1337,46 @@
   ""
   "nop"
   [(set_attr "type" "no_insn")]
+)
+
+(define_insn "aarch64_yield"
+  [(unspec_volatile [(const_int 0)] UNSPECV_YIELD)
+   (clobber (mem:BLK (scratch)))]
+  ""
+  "yield"
+  [(set_attr "type" "nop")]
+)
+
+(define_insn "aarch64_wfe"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WFE)
+   (clobber (mem:BLK (scratch)))]
+  ""
+  "wfe"
+  [(set_attr "type" "nop")]
+)
+
+(define_insn "aarch64_wfi"
+  [(unspec_volatile [(const_int 0)] UNSPECV_WFI)
+   (clobber (mem:BLK (scratch)))]
+  ""
+  "wfi"
+  [(set_attr "type" "nop")]
+)
+
+(define_insn "aarch64_sev"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SEV)
+   (clobber (mem:BLK (scratch)))]
+  ""
+  "sev"
+  [(set_attr "type" "nop")]
+)
+
+(define_insn "aarch64_sevl"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SEVL)
+   (clobber (mem:BLK (scratch)))]
+  ""
+  "sevl"
+  [(set_attr "type" "nop")]
 )
 
 (define_insn "prefetch"

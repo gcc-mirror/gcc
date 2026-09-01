@@ -751,6 +751,12 @@ enum aarch64_builtins
   AARCH64_BUILTIN_STSHH_SF,
   AARCH64_BUILTIN_STSHH_DF,
   AARCH64_BUILTIN_STSHH_PTR,
+  /* System Hint Operation builtins.  */
+  AARCH64_BUILTIN_YIELD,
+  AARCH64_BUILTIN_WFE,
+  AARCH64_BUILTIN_WFI,
+  AARCH64_BUILTIN_SEV,
+  AARCH64_BUILTIN_SEVL,
   AARCH64_BUILTIN_MAX
 };
 
@@ -1259,6 +1265,30 @@ aarch64_get_attributes (unsigned int f, machine_mode mode)
     attrs = aarch64_add_attribute ("nothrow", attrs);
 
   return aarch64_add_attribute ("leaf", attrs);
+}
+
+/* System Hint Operation builtins.  */
+void
+aarch64_init_syshintop_builtins (void)
+{
+  tree vtype_node
+    = build_function_type_list (void_type_node, NULL);
+
+  aarch64_builtin_decls[AARCH64_BUILTIN_YIELD]
+    = aarch64_general_simulate_builtin ("__yield", vtype_node,
+					AARCH64_BUILTIN_YIELD);
+  aarch64_builtin_decls[AARCH64_BUILTIN_WFE]
+    = aarch64_general_simulate_builtin ("__wfe", vtype_node,
+					AARCH64_BUILTIN_WFE);
+  aarch64_builtin_decls[AARCH64_BUILTIN_WFI]
+    = aarch64_general_simulate_builtin ("__wfi", vtype_node,
+					AARCH64_BUILTIN_WFI);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SEV]
+    = aarch64_general_simulate_builtin ("__sev", vtype_node,
+					AARCH64_BUILTIN_SEV);
+  aarch64_builtin_decls[AARCH64_BUILTIN_SEVL]
+    = aarch64_general_simulate_builtin ("__sevl", vtype_node,
+					AARCH64_BUILTIN_SEVL);
 }
 
 /* Due to the architecture not providing lane variant of the lane instructions
@@ -2180,6 +2210,7 @@ handle_arm_acle_h (void)
   aarch64_init_tme_builtins ();
   aarch64_init_memtag_builtins ();
   aarch64_init_prefetch_builtins ();
+  aarch64_init_syshintop_builtins ();
 }
 
 /* Initialize fpsr fpcr getters and setters.  */
@@ -4353,6 +4384,26 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
 	expand_insn (CODE_FOR_aarch64_fjcvtzs, 2, ops);
 	return ops[0].value;
       }
+
+    case AARCH64_BUILTIN_YIELD:
+      emit_insn (GEN_FCN (CODE_FOR_aarch64_yield) ());
+      return NULL_RTX;
+
+    case AARCH64_BUILTIN_WFE:
+      emit_insn (GEN_FCN (CODE_FOR_aarch64_wfe) ());
+      return NULL_RTX;
+
+    case AARCH64_BUILTIN_WFI:
+      emit_insn (GEN_FCN (CODE_FOR_aarch64_wfi) ());
+      return NULL_RTX;
+
+    case AARCH64_BUILTIN_SEV:
+      emit_insn (GEN_FCN (CODE_FOR_aarch64_sev) ());
+      return NULL_RTX;
+
+    case AARCH64_BUILTIN_SEVL:
+      emit_insn (GEN_FCN (CODE_FOR_aarch64_sevl) ());
+      return NULL_RTX;
 
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ0_V2SF:
     case AARCH64_SIMD_BUILTIN_FCMLA_LANEQ90_V2SF:
