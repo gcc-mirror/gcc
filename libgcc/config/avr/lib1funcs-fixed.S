@@ -1152,6 +1152,8 @@ ENDF  __multa3
 DEFUN __mulQ64_work
     mov     __tmp_reg__, A7
     eor     __tmp_reg__, B7
+    bst     B7, 7
+    bld     __tmp_reg__, 0
     push    __tmp_reg__
 
     .call_if_neg  A7, __negdi2          ; A = |A|
@@ -1159,6 +1161,20 @@ DEFUN __mulQ64_work
 
     set    ; for signed
     XICALL ; __muluxx3.2
+
+    ;; r30.7 = sign result
+    ;; r30.0 = sign B
+    pop     r30
+
+    ;; If we clobbered B, unclobber it now.
+#ifdef __AVR_ERRATA_SKIP_JMP_CALL__
+    asr     r30
+    brcc 0f
+#else
+    sbrc    r30, 0
+#endif
+    XCALL   __negdi2_r10
+0:
 
     ;; Adjust for signed Q formats that have one FBIT less.
     lsl     A0
@@ -1171,9 +1187,6 @@ DEFUN __mulQ64_work
     rol     A5
     rol     A6
     rol     A7
-
-    ;; r30.7 = result sign
-    pop     r30
 
     ;; Handle overflow.
     brcs .Lsaturate
