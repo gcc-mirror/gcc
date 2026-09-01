@@ -584,8 +584,14 @@ elf_nodebug (struct backtrace_state *state, uintptr_t pc,
       bdata.full_error_callback = error_callback;
       bdata.full_data = data;
       bdata.ret = 0;
-      state->syminfo_fn (state, pc, backtrace_syminfo_to_full_callback,
-			 backtrace_syminfo_to_full_error_callback, &bdata);
+      if (state->moredata)
+	state->syminfo_fn (state, pc,
+			   backtrace_syminfo_to_full_callback_moredata,
+			   backtrace_syminfo_to_full_error_callback,
+			   &bdata);
+      else
+	state->syminfo_fn (state, pc, backtrace_syminfo_to_full_callback,
+			   backtrace_syminfo_to_full_error_callback, &bdata);
       return bdata.ret;
     }
 

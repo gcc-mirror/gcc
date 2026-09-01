@@ -649,6 +649,8 @@ USE_DSYMUTIL_FALSE
 USE_DSYMUTIL_TRUE
 HAVE_OBJCOPY_DEBUGLINK_FALSE
 HAVE_OBJCOPY_DEBUGLINK_TRUE
+HAVE_OBJCOPY_STRIPDEBUG_FALSE
+HAVE_OBJCOPY_STRIPDEBUG_TRUE
 READELF
 OBJCOPY
 HAVE_COMPRESSED_DEBUG_ZSTD_FALSE
@@ -12024,7 +12026,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12027 "configure"
+#line 12029 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12130,7 +12132,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12133 "configure"
+#line 12135 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14585,6 +14587,33 @@ $as_echo "no" >&6; }
 fi
 
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether objcopy supports --strip-debug" >&5
+$as_echo_n "checking whether objcopy supports --strip-debug... " >&6; }
+if ${libbacktrace_cv_objcopy_stripdebug+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "${with_target_subdir}"; then
+  libbacktrace_cv_objcopy_stripdebug=no
+elif ! test -n "${OBJCOPY}"; then
+  libbacktrace_cv_objcopy_stripdebug=no
+elif ${OBJCOPY} --help | grep strip-debug >/dev/null 2>&1; then
+  libbacktrace_cv_objcopy_stripdebug=yes
+else
+  libbacktrace_cv_objcopy_stripdebug=no
+fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libbacktrace_cv_objcopy_stripdebug" >&5
+$as_echo "$libbacktrace_cv_objcopy_stripdebug" >&6; }
+ if test "$libbacktrace_cv_objcopy_stripdebug" = yes; then
+  HAVE_OBJCOPY_STRIPDEBUG_TRUE=
+  HAVE_OBJCOPY_STRIPDEBUG_FALSE='#'
+else
+  HAVE_OBJCOPY_STRIPDEBUG_TRUE='#'
+  HAVE_OBJCOPY_STRIPDEBUG_FALSE=
+fi
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether objcopy supports debuglink" >&5
 $as_echo_n "checking whether objcopy supports debuglink... " >&6; }
 if ${libbacktrace_cv_objcopy_debuglink+:} false; then :
@@ -15074,6 +15103,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_COMPRESSED_DEBUG_ZSTD_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_ZSTD_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_COMPRESSED_DEBUG_ZSTD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_OBJCOPY_STRIPDEBUG_TRUE}" && test -z "${HAVE_OBJCOPY_STRIPDEBUG_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_OBJCOPY_STRIPDEBUG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_OBJCOPY_DEBUGLINK_TRUE}" && test -z "${HAVE_OBJCOPY_DEBUGLINK_FALSE}"; then

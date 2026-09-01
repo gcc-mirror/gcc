@@ -563,6 +563,20 @@ AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG_ZSTD, test "$libgo_cv_ld_compress_zstd" = y
 AC_ARG_VAR(OBJCOPY, [location of objcopy])
 AC_CHECK_PROG(OBJCOPY, objcopy, objcopy,)
 AC_CHECK_PROG(READELF, readelf, readelf)
+
+AC_CACHE_CHECK([whether objcopy supports --strip-debug],
+[libbacktrace_cv_objcopy_stripdebug],
+[if test -n "${with_target_subdir}"; then
+  libbacktrace_cv_objcopy_stripdebug=no
+elif ! test -n "${OBJCOPY}"; then
+  libbacktrace_cv_objcopy_stripdebug=no
+elif ${OBJCOPY} --help | grep strip-debug >/dev/null 2>&1; then
+  libbacktrace_cv_objcopy_stripdebug=yes
+else
+  libbacktrace_cv_objcopy_stripdebug=no
+fi])
+AM_CONDITIONAL(HAVE_OBJCOPY_STRIPDEBUG, test "$libbacktrace_cv_objcopy_stripdebug" = yes)
+
 AC_CACHE_CHECK([whether objcopy supports debuglink],
 [libbacktrace_cv_objcopy_debuglink],
 [if test -n "${with_target_subdir}"; then

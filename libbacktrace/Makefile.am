@@ -133,6 +133,23 @@ libbacktrace_noformat_la_LIBADD = $(BACKTRACE_FILE) $(VIEW_FILE) $(ALLOC_FILE)
 libbacktrace_noformat_la_DEPENDENCIES = $(libbacktrace_noformat_la_LIBADD)
 
 if HAVE_ELF
+if HAVE_OBJCOPY_STRIPDEBUG
+
+strippedtest_SOURCES = strippedtest.c testlib.c
+strippedtest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -O
+strippedtest_LDFLAGS = $(libbacktrace_testing_ldflags) -static -Wl,-Bstatic
+strippedtest_LDADD = libbacktrace.la
+
+check_PROGRAMS += strippedtest
+MAKETESTS += strippedtest_stripped
+
+%_stripped: %
+	$(OBJCOPY) --strip-debug $< $@
+
+endif HAVE_OBJCOPY_STRIPDEBUG
+endif HAVE_ELF
+
+if HAVE_ELF
 if HAVE_OBJCOPY_DEBUGLINK
 
 TEST_BUILD_ID_DIR=$(abs_builddir)/usr/lib/debug/.build-id/

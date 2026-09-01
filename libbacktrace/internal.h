@@ -394,6 +394,15 @@ extern void backtrace_syminfo_to_full_callback (void *data, uintptr_t pc,
 						uintptr_t symval,
 						uintptr_t symsize);
 
+/* A variant of backtrace_syminfo_to_full_callback for when the moredata
+   flag is set.  */
+
+extern void backtrace_syminfo_to_full_callback_moredata (void *data,
+							 uintptr_t pc,
+							 const char *symname,
+							 uintptr_t symval,
+							 uintptr_t symsize);
+
 /* An error callback that corresponds to
    backtrace_syminfo_to_full_callback.  */
 
