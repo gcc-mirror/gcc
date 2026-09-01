@@ -14,5 +14,5 @@ bar ()
 }
 
 /* Two phis for reduction, one in loop header, one in loop exit.  One phi for iv
-   in loop header.  */
-/* { dg-final { scan-tree-dump-times "PHI" 3 "optimized" } } */
+   in loop header.  One missed elided for a conversion.  */
+/* { dg-final { scan-tree-dump-times "PHI" 4 "optimized" } } */

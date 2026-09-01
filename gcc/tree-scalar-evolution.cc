@@ -1425,7 +1425,13 @@ simplify_peeled_chrec (class loop *loop, tree arg, tree init_cond)
 
   /* Transform (init, {left, right}_LOOP)_LOOP to {init, right}_LOOP
      if "left" equals to "init + right".  */
-  if (operand_equal_p (left, step_val, 0))
+  if (operand_equal_p (left, step_val, 0)
+      && ((!POINTER_TYPE_P (type) && !INTEGRAL_TYPE_P (type))
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  /* When overflow in the type doesn't wrap, make sure the
+	     resulting CHREC does not either.  */
+	  || !scev_probably_wraps_p (NULL_TREE, init_cond, right, NULL,
+				     loop, false)))
     {
       if (dump_file && (dump_flags & TDF_SCEV))
 	fprintf (dump_file, "Simplify PEELED_CHREC into POLYNOMIAL_CHREC.\n");
@@ -1447,7 +1453,13 @@ simplify_peeled_chrec (class loop *loop, tree arg, tree init_cond)
 
   /* Transform (init, {left, right}_LOOP)_LOOP to {init, right}_LOOP
      if "left" equals to "init + right".  */
-  if (aff_combination_zero_p (&aff1))
+  if (aff_combination_zero_p (&aff1)
+      && ((!POINTER_TYPE_P (type) && !INTEGRAL_TYPE_P (type))
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  /* When overflow in the type doesn't wrap, make sure the
+	     resulting CHREC does not either.  */
+	  || !scev_probably_wraps_p (NULL_TREE, init_cond, right, NULL,
+				     loop, false)))
     {
       if (dump_file && (dump_flags & TDF_SCEV))
 	fprintf (dump_file, "Simplify PEELED_CHREC into POLYNOMIAL_CHREC.\n");
