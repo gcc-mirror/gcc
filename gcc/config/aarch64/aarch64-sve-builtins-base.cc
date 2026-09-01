@@ -2485,10 +2485,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    if (f.type_suffix (0).tclass == TYPE_bool)
-      return f.fold_to_pfalse ();
-
-    return nullptr;
+    return f.fold_to_pfalse ();
   }
 
   rtx
@@ -3369,6 +3366,10 @@ public:
     /* Check whether the result is known to be all-false.  */
     if (m_eq_p ? known_gt (arg0, arg1) : known_ge (arg0, arg1))
       return f.fold_to_pfalse ();
+
+    /* Punt if we are trying to fold a predicate-as-counter builtin.  */
+    if (f.type_suffix (0).tclass == TYPE_count)
+      return NULL;
 
     /* Punt if we can't tell at compile time whether the result
        is all-false.  */
