@@ -8944,12 +8944,14 @@ vect_get_num_copies_for_invariant (vec_info *vinfo, slp_tree node,
 
   tree vectype = SLP_TREE_VECTYPE (node);
   uint64_t rem;
-  bool res = (can_div_away_from_zero_p (vf, TYPE_VECTOR_SUBPARTS (vectype),
-					nvectors)
-	      && ((TYPE_VECTOR_SUBPARTS (vectype) * *nvectors - vf)
-		  .is_constant (&rem)));
-  *excess_elts = rem;
-  return res;
+  if (can_div_away_from_zero_p (vf, TYPE_VECTOR_SUBPARTS (vectype),
+				nvectors)
+      && (TYPE_VECTOR_SUBPARTS (vectype) * *nvectors - vf) .is_constant (&rem))
+    {
+      *excess_elts = rem;
+      return true;
+    }
+  return false;
 }
 
 /* Compute the prologue cost for invariant or constant operands represented
