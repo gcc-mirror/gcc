@@ -2,8 +2,8 @@
 /* { dg-options "-Wno-psabi -O2 -fdump-tree-forwprop2" } */
 /* { dg-additional-options "-msse2" { target { i?86-*-* x86_64-*-* } } } */
 
-typedef int v4si __attribute__((vector_size(4 * sizeof(int))));
-typedef unsigned int v4usi __attribute__((vector_size(4 * sizeof(unsigned int))));
+typedef __INT32_TYPE__ v4si __attribute__((vector_size(4 * sizeof(__INT32_TYPE__))));
+typedef __UINT32_TYPE__ v4usi __attribute__((vector_size(4 * sizeof(__INT32_TYPE__))));
 
 #define TEST_NE(type)                                         \
   type test_ne_##type (type a) { return (a >> 31) != 0; }
