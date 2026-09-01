@@ -166,6 +166,113 @@ public:
   }
 };
 
+/* Check if CHANGE exists in CHANGES.  */
+
+static bool
+change_in_vec_p (const auto_vec<change_info *> &changes,
+		 const change_info &change)
+{
+  for (const change_info *other_change : changes)
+    if (other_change->change->insn () == change.change->insn ())
+      return true;
+
+  return false;
+}
+
+/* Instruction changes that are going to be committed, keyed by the id of the
+   fold group that they belong to (see fold_groups).  */
+using changes_map_t
+  = hash_map<int_hash<unsigned, -1U, -2U>, auto_vec<change_info *>>;
+
+/* Zeroing the constant of a fold insn is only correct if every fold-mem-offset
+   root that addresses memory through it is updated with the compensating
+   offset.  Roots that share fold insns, directly or through another root,
+   therefore form a group, which has to be committed, or cancelled, as one
+   unit.  */
+
+class fold_groups
+{
+public:
+  /* Put the def-chain FOLD_INSNS in one group and return its id.  Insns that
+     already belong to a group merge that group into the result, so chains
+     sharing a fold insn end up in the same group.  */
+  unsigned add_chain (const vec<insn_info *> &fold_insns)
+  {
+    unsigned group = 0;
+    bool found = false;
+    for (insn_info *insn : fold_insns)
+      if (unsigned *seen = m_insn_group.get (insn))
+	{
+	  group = found ? merge (group, *seen) : find (*seen);
+	  found = true;
+	}
+
+    if (!found)
+      {
+	group = m_parent.length ();
+	m_parent.safe_push (group);
+      }
+
+    for (insn_info *insn : fold_insns)
+      m_insn_group.put (insn, group);
+
+    return group;
+  }
+
+  /* Changes to commit, per group.  */
+  changes_map_t changes;
+
+  /* Groups whose changes have been cancelled; no further changes may be
+     attempted for them.  */
+  auto_bitmap cancelled;
+
+private:
+  /* Resolve ID to the id of the group that it now belongs to.  */
+  unsigned find (unsigned id)
+  {
+    while (m_parent[id] != id)
+      id = m_parent[id];
+    return id;
+  }
+
+  /* Merge the groups holding A and B and return the surviving id, which
+     takes over the changes and the cancelled state of the absorbed group.  */
+  unsigned merge (unsigned a, unsigned b)
+  {
+    a = find (a);
+    b = find (b);
+    if (a == b)
+      return a;
+
+    /* Canonicalize on the smaller id, so that the surviving key does not
+       depend on the order in which the chains were processed.  */
+    if (b < a)
+      std::swap (a, b);
+    m_parent[b] = a;
+
+    /* Take A's entry first: get_or_insert can resize the map, which would
+       invalidate a pointer to B's entry taken before it.  The groups were
+       disjoint, so the lists cannot overlap.  */
+    auto_vec<change_info *> &a_changes = changes.get_or_insert (a);
+    if (auto_vec<change_info *> *b_changes = changes.get (b))
+      {
+	a_changes.safe_splice (*b_changes);
+	changes.remove (b);
+      }
+
+    if (bitmap_clear_bit (cancelled, b))
+      bitmap_set_bit (cancelled, a);
+
+    return a;
+  }
+
+  /* Union-find parent of every group id.  */
+  auto_vec<unsigned> m_parent;
+
+  /* The group of each fold insn seen so far.  */
+  hash_map<insn_info *, unsigned> m_insn_group;
+};
+
 /* Test if INSN is a memory load / store that can have an offset folded to it.
    Return true when INSN is such an instruction and return through MEM,
    REG and OFFSET the RTX that has a MEM code, the register that is
@@ -819,30 +926,6 @@ sort_changes (insn_change *a, insn_change *b)
   return a->insn ()->compare_with (b->insn ()) < 0;
 }
 
-/* A changes_map entry copied out for deterministic, regno-ordered traversal:
-   REGNO is the map key and CHANGES the insn_change list for it.  */
-
-struct regno_changes
-{
-  unsigned regno;
-  auto_vec<insn_change *> *changes;
-};
-
-/* qsort comparator that orders regno_changes entries by ascending regno.  */
-
-static int
-sort_pairs (const void *p1, const void *p2)
-{
-  const regno_changes *a = (const regno_changes *) p1;
-  const regno_changes *b = (const regno_changes *) p2;
-
-  if (a->regno < b->regno)
-    return -1;
-  if (a->regno > b->regno)
-    return 1;
-  return 0;
-}
-
 /* Find and return the last definition of INSN.  */
 
 static def_info *
@@ -870,39 +953,25 @@ move_uses_to_prev_def (def_info *def)
     }
 }
 
-/* Check if CHANGE exists in CHANGES.  */
-
-static bool
-change_in_vec_p (const auto_vec<change_info *> &changes,
-		 const change_info &change)
-{
-  for (const change_info *other_change : changes)
-    if (other_change->change->insn () == change.change->insn ())
-      return true;
-
-  return false;
-}
-
-/* Cancel current changes, clear CHANGES vector and update REMOVED_REGNOS.  */
+/* Cancel GROUP, lowering MIN_INDEX to CHANGE_INDEX so that cancel_changes
+   drops everything the group has validated so far.  */
 static void
-cancel_changes_for_group (int change_index, bitmap removed_regnos,
-			  unsigned regno, int *min_index)
+cancel_changes_for_group (int change_index, bitmap cancelled_groups,
+			  unsigned group, int *min_index)
 {
   if (*min_index == -1 || change_index < *min_index)
     *min_index = change_index;
-  bitmap_set_bit (removed_regnos, regno);
+  bitmap_set_bit (cancelled_groups, group);
 }
 
-/* Find the keys in CHANGES_MAP that need to be removed, based on
-   CANCEL_MIN_INDEX and store them in KEYS_TO_REMOVE.  We do this by iterating
-   the entries of the map recalculating the minimum index, until reaching a
-   fixed-point.  */
+/* Store in GROUPS_TO_CANCEL the groups of CHANGES_MAP that have a change at
+   or after CANCEL_MIN_INDEX, lowering it to the minimum index of each such
+   group until reaching a fixed-point.  */
 
 static void
-find_keys_to_remove (const hash_map<int_hash<unsigned, -1U, -2U>,
-			      auto_vec<change_info *>> &changes_map,
-		     bitmap keys_to_remove,
-		     int *cancel_min_index)
+find_groups_to_cancel (const changes_map_t &changes_map,
+		       bitmap groups_to_cancel,
+		       int *cancel_min_index)
 {
   bool index_changed;
   do {
@@ -910,7 +979,7 @@ find_keys_to_remove (const hash_map<int_hash<unsigned, -1U, -2U>,
     for (const auto &entry : changes_map)
       {
 	int min_index = INT_MAX;
-	bool cancelled_group = bitmap_bit_p (keys_to_remove, entry.first);
+	bool cancelled_group = bitmap_bit_p (groups_to_cancel, entry.first);
 	for (change_info *change : entry.second)
 	  {
 	    int change_index = change->change_index;
@@ -919,7 +988,7 @@ find_keys_to_remove (const hash_map<int_hash<unsigned, -1U, -2U>,
 
 	    if (!cancelled_group && change_index >= *cancel_min_index)
 	      {
-		bitmap_set_bit (keys_to_remove, entry.first);
+		bitmap_set_bit (groups_to_cancel, entry.first);
 		cancelled_group = true;
 	      }
 	  }
@@ -950,17 +1019,12 @@ free_changes_info (auto_vec<change_info *> &changes_info)
 }
 
 /* Update the memory offsets and constants in fold insns based on the analysis
-   done in fold_mem_offsets_1, using RTL SSA.  ATTEMPT is the attempt object
-   for the current changes.  CHANGES_MAP holds the changes that are going
-   to performed and is updated inside the function.  REMOVED_REGNOS holds the
-   keys of the map that have been removed, in order to prevent new attempts
-   on these.  */
+   done in fold_mem_offsets_1.  ATTEMPT is the attempt object for the current
+   changes, which are recorded in GROUPS.  */
 static unsigned int
 update_insns (fold_mem_info *info,
 	      obstack_watermark *attempt,
-	      hash_map<int_hash<unsigned, -1U, -2U>, auto_vec<change_info *>>
-	      *changes_map,
-	      bitmap removed_regnos,
+	      fold_groups *groups,
 	      int *cancel_min_index)
 {
   insn_info *insn = info->insn;
@@ -979,20 +1043,13 @@ update_insns (fold_mem_info *info,
       return stats_fold_count;
     }
 
-  const rtx_insn *last_fold_insn_rtl = info->fold_insns.last ()->rtl ();
-  rtx last_set = single_set (last_fold_insn_rtl);
-  if (!last_set)
-    {
-      free_changes_info (changes_info);
-      return stats_fold_count;
-    }
-  unsigned regno_key = REGNO (SET_DEST (last_set));
-  auto_vec<change_info *> *prev_changes = changes_map->get (regno_key);
+  unsigned group = groups->add_chain (info->fold_insns);
+  auto_vec<change_info *> *prev_changes = groups->changes.get (group);
 
-  /* Abort if changes for this key have been cancelled before.  */
-  if (bitmap_bit_p (removed_regnos, regno_key))
+  /* Abort if changes for this group have been cancelled before.  */
+  if (bitmap_bit_p (groups->cancelled, group))
     {
-      cancel_changes_for_group (change_index, removed_regnos, regno_key,
+      cancel_changes_for_group (change_index, groups->cancelled, group,
 				cancel_min_index);
       free_changes_info (changes_info);
       return stats_fold_count;
@@ -1009,7 +1066,7 @@ update_insns (fold_mem_info *info,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Restrict movement: Cannot update INSN %u.\n",
 		 insn->uid ());
-      cancel_changes_for_group (change_index, removed_regnos, regno_key,
+      cancel_changes_for_group (change_index, groups->cancelled, group,
 				cancel_min_index);
       free_changes_info (changes_info);
       return stats_fold_count;
@@ -1033,7 +1090,7 @@ update_insns (fold_mem_info *info,
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Recog/verify: Cannot update INSN %u.\n",
 		 insn->uid ());
-      cancel_changes_for_group (change_index, removed_regnos, regno_key,
+      cancel_changes_for_group (change_index, groups->cancelled, group,
 				cancel_min_index);
       free_changes_info (changes_info);
       return stats_fold_count;
@@ -1064,7 +1121,7 @@ update_insns (fold_mem_info *info,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Restrict movement: Cannot update INSN %u.\n",
 		     fold_insn->uid ());
-	  cancel_changes_for_group (change_index, removed_regnos, regno_key,
+	  cancel_changes_for_group (change_index, groups->cancelled, group,
 				    cancel_min_index);
 	  free_changes_info (changes_info);
 	  return 0;
@@ -1076,7 +1133,7 @@ update_insns (fold_mem_info *info,
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "Verify: Cannot update INSN %u.\n",
 		     fold_insn->uid ());
-	  cancel_changes_for_group (change_index, removed_regnos, regno_key,
+	  cancel_changes_for_group (change_index, groups->cancelled, group,
 				    cancel_min_index);
 	  free_changes_info (changes_info);
 	  return 0;
@@ -1100,7 +1157,7 @@ update_insns (fold_mem_info *info,
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "Recog: Cannot update INSN %u.\n",
 			 fold_insn->uid ());
-	      cancel_changes_for_group (change_index, removed_regnos, regno_key,
+	      cancel_changes_for_group (change_index, groups->cancelled, group,
 					cancel_min_index);
 	      free_changes_info (changes_info);
 	      return 0;
@@ -1121,7 +1178,7 @@ update_insns (fold_mem_info *info,
       stats_fold_count++;
     }
 
-  /* Add new changes to changes_map.  */
+  /* Add new changes to the group.  */
   if (prev_changes)
     {
       for (change_info *change : changes_info)
@@ -1137,7 +1194,7 @@ update_insns (fold_mem_info *info,
     for (change_info *change : changes_info)
       {
 	auto_vec<change_info *> &change_vect
-	  = changes_map->get_or_insert (regno_key);
+	  = groups->changes.get_or_insert (group);
 
 	if (!change_in_vec_p (change_vect, *change))
 	  change_vect.safe_push (change);
@@ -1159,19 +1216,13 @@ fold_mem_offsets_1 (bool single_use)
 {
   unsigned int stats_fold_count = 0;
 
-  /* This maps the instruction changes to the register defined by the last
-     fold_insn of the def-chain (the one nearest the fold-mem-offset root).
-     We use this so that we can group interdependent instructions.  In this
-     way, we can restrict the change cancellation in a group only, if anything
-     goes wrong.  */
-  hash_map<int_hash<unsigned, -1U, -2U>, auto_vec<change_info *>> changes_map;
+  /* This collects the instruction changes into groups of interdependent
+     def-chains, so that the change cancellation can be restricted to a single
+     group if anything goes wrong.  */
+  fold_groups groups;
 
   auto attempt = crtl->ssa->new_change_attempt ();
   insn_change_watermark watermark;
-
-  /* Set of removed reg numbers (keys to changes_map).  If a change for a reg
-     number has been cancelled, we need to invalidate any future changes.  */
-  auto_bitmap removed_regnos;
 
   int cancel_min_index = -1;
 
@@ -1212,8 +1263,8 @@ fold_mem_offsets_1 (bool single_use)
 
       if (single_use)
 	{
-	  stats_fold_count += update_insns (info, &attempt, &changes_map,
-					    removed_regnos, &cancel_min_index);
+	  stats_fold_count += update_insns (info, &attempt, &groups,
+					    &cancel_min_index);
 	  delete info;
 	}
       else
@@ -1230,8 +1281,8 @@ fold_mem_offsets_1 (bool single_use)
       while (!worklist.is_empty ())
 	{
 	  fold_mem_info *info = worklist.pop ();
-	  stats_fold_count += update_insns (info, &attempt, &changes_map,
-					    removed_regnos, &cancel_min_index);
+	  stats_fold_count += update_insns (info, &attempt, &groups,
+					    &cancel_min_index);
 	  delete info;
 	}
     }
@@ -1241,13 +1292,14 @@ fold_mem_offsets_1 (bool single_use)
      cancel_changes.  */
   if (cancel_min_index != -1)
     {
-      find_keys_to_remove (changes_map, removed_regnos, &cancel_min_index);
+      find_groups_to_cancel (groups.changes, groups.cancelled,
+			     &cancel_min_index);
 
       bitmap_iterator bi;
       unsigned int key;
-      EXECUTE_IF_SET_IN_BITMAP (removed_regnos, 0, key, bi)
+      EXECUTE_IF_SET_IN_BITMAP (groups.cancelled, 0, key, bi)
 	{
-	  auto_vec<change_info *> *changes = changes_map.get (key);
+	  auto_vec<change_info *> *changes = groups.changes.get (key);
 	  if (changes)
 	    {
 	      for (change_info *change : *changes)
@@ -1259,7 +1311,7 @@ fold_mem_offsets_1 (bool single_use)
 		  delete change;
 		}
 	    }
-	  changes_map.remove (key);
+	  groups.changes.remove (key);
 	}
 
       cancel_changes (cancel_min_index);
@@ -1268,51 +1320,26 @@ fold_mem_offsets_1 (bool single_use)
   if (cancel_min_index != 0)
     confirm_change_group ();
 
-  /* Copy the map into a vector and sort it for traversal.  */
-  unsigned int map_entries_num = changes_map.elements ();
-  auto_vec<regno_changes> regno_changes_vec (map_entries_num);
+  /* change_insns wants the changes in program order, which also makes the
+     result independent of the map's traversal order.  */
+  auto_vec<insn_change *> live_changes;
+  for (auto entry : groups.changes)
+    for (change_info *ci : entry.second)
+      if (ci->change->insn ()->has_been_deleted ())
+	delete ci->change;
+      else
+	live_changes.safe_push (ci->change);
 
-  for (auto entry : changes_map)
-    {
-      auto_vec<insn_change *> *changes_vec
-	 = new auto_vec<insn_change *> (entry.second.length ());
+  std::sort (live_changes.begin (), live_changes.end (), sort_changes);
+  crtl->ssa->change_insns (live_changes);
 
-      for (change_info *change : entry.second)
-	changes_vec->quick_push (change->change);
-
-      regno_changes rc;
-      rc.regno = static_cast<unsigned> (entry.first);
-      rc.changes = changes_vec;
-      regno_changes_vec.quick_push (rc);
-    }
-
-  regno_changes_vec.qsort (sort_pairs);
-
-  for (const auto &rc : regno_changes_vec)
-    {
-      auto_vec<insn_change *> &changes = *rc.changes;
-
-      /* Skip already deleted instructions.  */
-      auto_vec<insn_change *> live_changes (changes.length ());
-      for (insn_change *change : changes)
-	if (change->insn ()->has_been_deleted ())
-	  delete change;
-	else
-	  live_changes.quick_push (change);
-
-      std::sort (live_changes.begin (), live_changes.end (), sort_changes);
-      crtl->ssa->change_insns (live_changes);
-
-      for (insn_change *change : live_changes)
-	delete change;
-
-      delete rc.changes;
-    }
+  for (insn_change *change : live_changes)
+    delete change;
 
   /* Free the change_info wrappers for successful (non-cancelled) entries.
      Their inner insn_change has already been deleted above.  Cancelled
-     entries were removed from changes_map and freed earlier.  */
-  for (auto entry : changes_map)
+     entries were removed from the map and freed earlier.  */
+  for (auto entry : groups.changes)
     for (change_info *ci : entry.second)
       delete ci;
 
