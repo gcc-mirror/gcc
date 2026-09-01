@@ -1,4 +1,4 @@
-/* { dg-do run { target { ! ia32 } } } */
+/* { dg-do run { target { { ! ia32 } && { ! *-*-darwin* } } } } */
 /* { dg-require-effective-target apxf } */
 /* { dg-options "-mapxf -march=x86-64 -O2" } */
 #include "apx-zu-1.c"

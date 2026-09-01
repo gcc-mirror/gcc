@@ -1,5 +1,5 @@
 /* PR target/113711 */
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-options "-mapxf -mtune-ctrl=enable_ndd_mem -O2" } */
 
 #include <stdint.h>

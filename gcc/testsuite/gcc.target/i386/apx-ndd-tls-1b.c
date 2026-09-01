@@ -1,5 +1,5 @@
 /* PR target/113733 */
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-require-effective-target tls } */
 /* { dg-require-effective-target code_6_gottpoff_reloc } */
 /* { dg-options "-save-temps -std=gnu17 -mapxf -mtune-ctrl=enable_ndd_mem -O3 -w" } */

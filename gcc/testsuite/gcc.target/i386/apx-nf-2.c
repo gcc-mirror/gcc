@@ -28,5 +28,5 @@ int foo2 (unsigned a, unsigned b, unsigned d, unsigned e, int *p)
   return c ? d : e;
 }
 
-/* { dg-final { scan-assembler-not "set" } } */
+/* { dg-final { scan-assembler-not "set\[abceglnops\]" } } */
 

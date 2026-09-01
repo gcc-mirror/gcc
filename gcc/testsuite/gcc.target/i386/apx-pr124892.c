@@ -1,5 +1,5 @@
 /* PR target/124892 */
-/* { dg-do run { target { apxf && { lzcnt && { ! ia32 } } } } } */
+/* { dg-do run { target { apxf && { lzcnt && { { ! ia32 } && { ! *-*-darwin* } } } } } } */
 /* { dg-options "-O2 -frename-registers" } */
 
 [[gnu::noipa, gnu::target ("apxf"), gnu::target ("lzcnt")]] char

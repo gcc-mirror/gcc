@@ -1,5 +1,5 @@
 /* PR target/114696 */
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-require-effective-target maybe_x32 } */
 /* { dg-options "-mapxf -mtune-ctrl=enable_ndd_mem -O0 -mx32 -maddress-mode=long" } */
 

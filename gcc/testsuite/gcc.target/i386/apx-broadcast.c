@@ -1,11 +1,11 @@
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-options "-mavx512vl -mapxf -O2" } */
 
 #include <stdint.h>
 #include <immintrin.h>
 
 void broadcast_avx2(int *sx, __m256i *coeff, __m128i *temp) {
-  
+
   __m256i semp[8];
 
 

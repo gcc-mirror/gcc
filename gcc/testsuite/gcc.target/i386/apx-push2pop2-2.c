@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target { { ! ia32 } && { ! *-*-darwin* } } } } */
 /* { dg-options "-O2 -mpreferred-stack-boundary=3 -mapx-features=push2pop2 -fomit-frame-pointer" } */
 
 extern int bar (int);

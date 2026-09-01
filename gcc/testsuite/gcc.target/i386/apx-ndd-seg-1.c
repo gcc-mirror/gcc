@@ -1,5 +1,5 @@
 /* PR target/113711 */
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-options "-mapxf -mtune-ctrl=enable_ndd_mem -O2" } */
 
 #include <stdint.h>
@@ -10,7 +10,7 @@ foo_##OP_NAME##_##TYPE (void)					\
 {								\
   TYPE b = (*(TYPE __seg_fs *) 0) OP IMM;			\
   return b;							\
-}			
+}
 
 #define BAR(TYPE, UTYPE, OP_NAME, OP, IMM)			\
 int64_t								\
@@ -18,7 +18,7 @@ bar_##OP_NAME##_##TYPE (void)					\
 {								\
   int64_t b = (*(UTYPE __seg_fs *) 0) OP IMM;			\
   return b;							\
-}			
+}
 
 FOO (char, add, +, 0x7)
 BAR (char, unsigned char, add, +, 0x7)

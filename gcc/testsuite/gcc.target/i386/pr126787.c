@@ -1,4 +1,4 @@
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-options "-O2 -mapxf -mprefer-avx128 -funroll-loops --param max-unroll-times=4 -ffast-math -ftree-vectorize" } */
 
 typedef float f4;

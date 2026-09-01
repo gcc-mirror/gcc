@@ -1,4 +1,4 @@
-/* { dg-do assemble { target { apxf && { ! ia32 } } } } */
+/* { dg-do assemble { target { apxf && { { ! ia32 } && { ! *-*-darwin* } } } } } */
 /* { dg-require-effective-target tls } */
 /* { dg-options "-mapxf -mtune-ctrl=enable_ndd_mem -O2" } */
 

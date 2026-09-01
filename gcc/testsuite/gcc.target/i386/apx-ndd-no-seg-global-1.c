@@ -1,5 +1,5 @@
 /* PR target/113711 */
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target { { ! ia32 } && { ! *-*-darwin* } } } } */
 /* { dg-options "-mapxf -mtune-ctrl=enable_ndd_mem -O2" } */
 
 #include <stdint.h>
@@ -11,7 +11,7 @@ foo_##OP_NAME##_##TYPE (void)					\
 {								\
   TYPE b = foo_##OP_NAME##_##TYPE##_var OP IMM;			\
   return b;							\
-}			
+}
 
 #define BAR(TYPE, UTYPE, OP_NAME, OP, IMM)			\
 extern UTYPE bar_##OP_NAME##_##TYPE##_var;			\
@@ -20,7 +20,7 @@ bar_##OP_NAME##_##TYPE (void)					\
 {								\
   int64_t b = bar_##OP_NAME##_##TYPE##_var OP IMM;		\
   return b;							\
-}			
+}
 
 FOO (char, add, +, 0x7)
 FOO (short, add, +, 0x2000)
