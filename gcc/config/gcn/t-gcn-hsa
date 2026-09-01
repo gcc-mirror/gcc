@@ -48,7 +48,10 @@ MULTILIB_DIRNAMES = $(multilib_list) simt
 gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
-ALL_HOST_OBJS += gcn-tree.o
+gcn-simt-vectorize.o: $(srcdir)/config/gcn/gcn-simt-vectorize.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+ALL_HOST_OBJS += gcn-tree.o gcn-simt-vectorize.o
 
 $(srcdir)/config/gcn/gcn-tables.opt: $(srcdir)/config/gcn/gcn-devices.def $(srcdir)/config/gcn/gen-opt-tables.awk
 	$(AWK) -f $(srcdir)/config/gcn/gen-opt-tables.awk $< > $@
@@ -56,3 +59,5 @@ $(srcdir)/config/gcn/gcn-tables.opt: $(srcdir)/config/gcn/gcn-devices.def $(srcd
 gcn-device-macros.h: $(srcdir)/config/gcn/gcn-devices.def $(srcdir)/config/gcn/gen-gcn-device-macros.awk
 	$(AWK) -f $(srcdir)/config/gcn/gen-gcn-device-macros.awk $< > $@
 generated_files += gcn-device-macros.h
+
+PASSES_EXTRA += $(srcdir)/config/gcn/gcn-passes.def
