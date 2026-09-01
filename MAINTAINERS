@@ -175,7 +175,7 @@ go                      Ian Lance Taylor        <ian@airs.com>
 Modula-2 front end      Gaius Mulley            <gaiusmod2@gmail.com>
 objective-c/c++         Iain Sandoe             <iain@sandoe.co.uk>
 objective-c/c++         Mike Stump              <mikestump@comcast.net>
-Rust                    Arthur Cohen            <arthur.cohen@embecosm.com>
+Rust                    Arthur Cohen            <arthur.cohen@opensrcsec.com>
 Rust                    Philip Herron           <herron.philip@googlemail.com>
 Rust                    Pierre-Emmanuel Patry   <pierre.emmanuel.patry@opensrcsec.com>
 
@@ -235,7 +235,7 @@ libgo                   Ian Lance Taylor        <ian@airs.com>
 libgomp                 Tobias Burnus           <tburnus@baylibre.com>
 libgomp                 Jakub Jelinek           <jakub@redhat.com>
 libgomp (OpenACC)       Thomas Schwinge         <tschwinge@baylibre.com>
-libgrust                Arthur Cohen            <arthur.cohen@embecosm.com>
+libgrust                Arthur Cohen            <arthur.cohen@opensrcsec.com>
 libgrust                Philip Herron           <herron.philip@googlemail.com>
 libgrust                Pierre-Emmanuel Patry   <pierre.emmanuel.patry@opensrcsec.com>
 libiberty               Ian Lance Taylor        <ian@airs.com>
@@ -439,7 +439,7 @@ Tamar Christina                 tnfchris        <tamar.christina@arm.com>
 Eric Christopher                echristo        <echristo@gmail.com>
 Paul Clarke                     pc              <pc@us.ibm.com>
 Nick Clifton                    nickc           <nickc@redhat.com>
-Arthur Cohen                    cohenarthur     <arthur.cohen@embecosm.com>
+Arthur Cohen                    cohenarthur     <arthur.cohen@opensrcsec.com>
 William Cohen                   wcohen          <wcohen@redhat.com>
 Michael Collison                collison        <michael.collison@arm.com>
 Alejandro Colomar               alx             <alx@kernel.org>

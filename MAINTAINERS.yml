@@ -1033,7 +1033,7 @@ users:
 - sn: Cohen
   cn: Arthur Cohen
   email:
-  - arthur.cohen@embecosm.com
+  - arthur.cohen@opensrcsec.com
   - cohenarthur@gcc.gnu.org
   roles:
   - Maintainer: Rust
@@ -1041,6 +1041,8 @@ users:
   - WriteAfter
   account: cohenarthur
   forgeid: cohenarthur
+  inactive_email:
+  - arthur.cohen@embecosm.com
 - sn: Cohen
   cn: William Cohen
   email:
