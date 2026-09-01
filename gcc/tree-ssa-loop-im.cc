@@ -3351,8 +3351,6 @@ ref_in_loop_hot_body::operator () (mem_ref_loc *loc)
 static bool
 can_sm_ref_p (class loop *loop, im_mem_ref *ref)
 {
-  tree base;
-
   /* Can't hoist unanalyzable refs.  */
   if (!MEM_ANALYZABLE (ref))
     return false;
@@ -3371,14 +3369,8 @@ can_sm_ref_p (class loop *loop, im_mem_ref *ref)
   if (tree_could_throw_p (ref->mem.ref))
     return false;
 
-  /* If it can trap, it must be always executed in LOOP.
-     Readonly memory locations may trap when storing to them, but
-     tree_could_trap_p is a predicate for rvalues, so check that
-     explicitly.  */
-  base = get_base_address (ref->mem.ref);
-  if ((tree_could_trap_p (ref->mem.ref)
-       || (DECL_P (base) && TREE_READONLY (base))
-       || TREE_CODE (base) == STRING_CST)
+  /* If the store can trap, it must be always executed in LOOP.  */
+  if (lhs_could_trap_p (ref->mem.ref)
       /* ???  We can at least use false here, allowing loads?  We
 	 are forcing conditional stores if the ref is not always
 	 stored to later anyway.  So this would only guard
