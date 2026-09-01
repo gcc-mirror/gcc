@@ -554,7 +554,7 @@ xcoff_syminfo (struct backtrace_state *state ATTRIBUTE_UNUSED, uintptr_t addr,
   else
     {
       memset (&md, 0, sizeof md);
-      md.backtrace_version = 3;
+      md.backtrace_version = BACKTRACE_MOREDATA_VERSION;
       md.backtrace_data = data;
       mdata = (void *) &md;
     }
@@ -825,7 +825,7 @@ xcoff_lookup_pc (struct backtrace_state *state,
       struct backtrace_moredata md;
 
       memset (&md, 0, sizeof md);
-      md.backtrace_version = 3;
+      md.backtrace_version = BACKTRACE_MOREDATA_VERSION;
       md.backtrace_data = data;
       return callback ((void *) &md, pc, filename, lnno, function);
     }
@@ -885,9 +885,9 @@ xcoff_fileline (struct backtrace_state *state, uintptr_t pc,
       struct backtrace_moredata md;
 
       memset (&md, 0, sizeof md);
-      md.backtrace_version = 3;
+      md.backtrace_version = BACKTRACE_MOREDATA_VERSION;
       md.backtrace_data = data;
-      return callback ((void *) data, pc, NULL, 0, NULL);
+      return callback ((void *) &md, pc, NULL, 0, NULL);
     }
 }
 

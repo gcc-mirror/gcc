@@ -54,7 +54,7 @@ unknown_fileline (struct backtrace_state *state, uintptr_t pc,
       struct backtrace_moredata md;
 
       memset (&md, 0, sizeof md);
-      md.backtrace_version = 3;
+      md.backtrace_version = BACKTRACE_MOREDATA_VERSION;
       md.backtrace_data = data;
       return callback ((void *) &md, pc, NULL, 0, NULL);
     }
