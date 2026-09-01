@@ -4611,6 +4611,7 @@ variable is not set.
 * OMP_WAIT_POLICY::         How waiting threads are handled
 * GOMP_CPU_AFFINITY::       Bind threads to specific CPUs
 * GOMP_DEBUG::              Enable debugging output
+* GOMP_RUNTIME_USM::        Control runtime Unified Shared Memory application
 * GOMP_STACKSIZE::          Set default thread stack size
 * GOMP_SPINCOUNT::          Set the busy-wait spin count
 * GOMP_RTEMS_THREAD_POOLS:: Set the RTEMS specific thread pools
@@ -5236,6 +5237,44 @@ Enable debugging output.  The variable should be set to @code{0}
 
 If enabled, some debugging output is printed during execution.
 This is currently not specified in more detail, and subject to change.
+@end table
+
+
+
+@node GOMP_RUNTIME_USM
+@section @env{GOMP_RUNTIME_USM} -- Control runtime Unified Shared Memory application
+@cindex Environment Variable
+@table @asis
+@item @emph{Description}:
+Control the behavior of devices which can access host moemory, specifically
+whether data mapping copies data or uses self-mapping, such that the device
+directly accesses the corresponding host memory.  Setting the environment
+variable to @code{DISABLED} does not make use of Unified Shared Memory by
+default.  Setting it to @code{AUTO} conditionally enables Unified Shared
+Memory on specific integrated GPUs (APUs, in the verbiage of AMD).  In most
+workloads on these types of GPUs, self-mapping is expected to reduce runtime
+overhead.  Lastly, setting it to @code{ENABLED} unconditionally attempts
+to make use of Unified Shared Memory if the device claims to support it.  Of
+additional note, specifying the @code{unified_shared_memory} or
+@code{self_maps} clauses with the @code{requires} directive causes that
+behavior to take precedence over the behavior set by this environment
+variable.  For caveats around Unified Shared Memory, please consult
+the relevant sections in @ref{Offload-Target Specifics}.
+
+When Unified Shared Memory is enabled, whether by a @code{requires} directive
+or by this environment variable being set to @code{AUTO} or @code{ENABLED},
+global static variables that appear in a @code{declare target} directive are
+not updated between device and host.  That is, data copying under this model
+for global static variables is ignored.
+
+OpenACC is unaffected by the value of this environment variable, however,
+hybrid usage of OpenMP and OpenACC offloading results in the first used
+framework taking precedent.  As an example, if one uses OpenMP offloading and
+then later OpenACC offloading, the capabilities the device possesses reflect
+the original OpenMP model.
+
+@item @emph{See also}:
+@ref{Offload-Target Specifics}, @ref{AMD Radeon}
 @end table
 
 
@@ -7715,6 +7754,11 @@ The implementation remark:
       available devices, possibly leaving only the initial device (``host
       fallback''); consider using @code{ROCR_VISIBLE_DEVICES} to only enable
       devices supporting unified-shared memory.
+@item APU (integrated GPU) systems that do not support XNACK, but make use of
+      Unified Shared Memory, may encounter issues, especially related to
+      device-side page-fault handling.
+@item The MI100 (gfx908) and gfx902 are not supported with the
+      @code{GOMP_RUNTIME_USM} environment variable.
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the

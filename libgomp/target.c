@@ -187,7 +187,7 @@ resolve_device (int device_id, bool remapped)
 
   gomp_mutex_lock (&devices[device_id].lock);
   if (devices[device_id].state == GOMP_DEVICE_UNINITIALIZED)
-    gomp_init_device (&devices[device_id]);
+    gomp_init_device (&devices[device_id], true);
   else if (devices[device_id].state == GOMP_DEVICE_FINALIZED)
     {
       gomp_mutex_unlock (&devices[device_id].lock);
@@ -2826,8 +2826,9 @@ gomp_load_image_to_device (struct gomp_device_descr *devicep, unsigned version,
       array++;
 
       if (is_link_var
-	  && (omp_requires_mask
-	      & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
+	  && ((omp_requires_mask
+	      & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
+	  || (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)))
 	gomp_copy_host2dev (devicep, NULL, (void *) target_var->start,
 			    &k->host_start, sizeof (void *), false, NULL);
     }
@@ -3115,10 +3116,11 @@ GOMP_offload_unregister (const void *host_table, int target_type,
 }
 
 /* This function initializes the target device, specified by DEVICEP.  DEVICEP
-   must be locked on entry, and remains locked on return.  */
+   must be locked on entry, and remains locked on return.  'openmp_p' must be
+   set if called from an OpenMP context, and must not be set for OpenACC.  */
 
 attribute_hidden void
-gomp_init_device (struct gomp_device_descr *devicep)
+gomp_init_device (struct gomp_device_descr *devicep, bool openmp_p)
 {
   int i;
   if (!devicep->init_device_func (devicep->target_id))
@@ -3126,6 +3128,33 @@ gomp_init_device (struct gomp_device_descr *devicep)
       gomp_mutex_unlock (&devicep->lock);
       gomp_fatal ("device initialization failed");
     }
+
+  /* Evaluate device capabilities and determine if we want USM enabled
+     in accordance with the environment variable 'GOMP_RUNTIME_USM'.
+     If we explicitly requested USM, skip the check.
+     We also check to make sure we're in OpenMP - if we are in OpenACC,
+     we need to skip this.
+     See also gomp_target_init for the generic requires USM/self_maps
+     handling.  */
+  if (!(omp_requires_mask
+	& (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
+      && openmp_p)
+    {
+      /* If we have not used the 'requires' directive, then we
+	 can safely modify the device capabilities without losing that
+	 information.  We should not be in here if we have required
+	 USM or self maps, anyways.  */
+      devicep->capabilities |= devicep->get_dev_caps_func (devicep->target_id);
+      if ((gomp_runtime_usm_var == GOMP_RUNTIME_USM_AUTO)
+	  && !(devicep->capabilities & GOMP_OFFLOAD_CAP_APU_SHARED_MEM))
+	devicep->capabilities &= ~GOMP_OFFLOAD_CAP_SHARED_MEM;
+      if (gomp_runtime_usm_var == GOMP_RUNTIME_USM_DISABLED)
+	devicep->capabilities &= ~GOMP_OFFLOAD_CAP_SHARED_MEM;
+    }
+  /* Since we only query runtime device capabilities from the OpenMP side,
+     OpenACC initialization will never hit that path, meaning we don't have
+     to worry about accidentally automatically enabling USM de facto.  */
+
 
   /* Load to device all images registered by the moment.  */
   for (i = 0; i < num_offload_images; i++)
@@ -3140,6 +3169,7 @@ gomp_init_device (struct gomp_device_descr *devicep)
   /* Initialize OpenACC asynchronous queues.  */
   goacc_init_asyncqueues (devicep);
 
+  gomp_debug (0, "capabilities: %d\n", devicep->capabilities);
   devicep->state = GOMP_DEVICE_INITIALIZED;
 }
 
@@ -4976,7 +5006,7 @@ gomp_page_locked_host_alloc (void **ptr, size_t size)
     {
       gomp_mutex_lock (&device->lock);
       if (device->state == GOMP_DEVICE_UNINITIALIZED)
-	gomp_init_device (device);
+	gomp_init_device (device, true);
       else if (device->state == GOMP_DEVICE_FINALIZED)
 	{
 	  gomp_mutex_unlock (&device->lock);
@@ -6495,7 +6525,8 @@ gomp_target_init (void)
 		    /* Skip the device (= remove from available devices)
 		       if a requirement cannot be fulfilled.
 		       For USM/self_maps, set SHARED_MEM capability for the
-		       device.  */
+		       device.  See also GOMP_RUNTIME_USM handling in
+		       gomp_init_device.  */
 		    int dev_caps = current_device.capabilities;
 		    if (current_device.get_dev_caps_func)
 		      dev_caps |= current_device.get_dev_caps_func (i);

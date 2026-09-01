@@ -323,7 +323,7 @@ acc_init_1 (acc_device_t d, acc_construct_t parent_construct, int implicit,
       gomp_fatal ("device already active");
     }
 
-  gomp_init_device (acc_dev);
+  gomp_init_device (acc_dev, false);
   gomp_mutex_unlock (&acc_dev->lock);
 
   if (profiling_p)
@@ -548,13 +548,13 @@ goacc_attach_host_thread_to_device (int ord)
   struct goacc_thread *thr = goacc_thread ();
   struct gomp_device_descr *acc_dev = NULL, *base_dev = NULL;
   int num_devices;
-  
+
   if (thr && thr->dev && (thr->dev->target_id == ord || ord < 0))
     return;
-  
+
   if (ord < 0)
     ord = goacc_device_num;
-  
+
   /* Decide which type of device to use.  If the current thread has a device
      type already (e.g. set by acc_set_device_type), use that, else use the
      global default.  */
@@ -565,15 +565,15 @@ goacc_attach_host_thread_to_device (int ord)
       assert (cached_base_dev);
       base_dev = cached_base_dev;
     }
-  
+
   num_devices = base_dev->get_num_devices_func ();
   if (num_devices <= 0 || ord >= num_devices)
     acc_dev_num_out_of_range (acc_device_type (base_dev->type), ord,
 			      num_devices);
-  
+
   if (!thr)
     thr = goacc_new_thread ();
-  
+
   thr->base_dev = base_dev;
   thr->dev = acc_dev = &base_dev[ord];
   thr->saved_bound_dev = NULL;
@@ -704,7 +704,7 @@ acc_init (acc_device_t d)
   gomp_mutex_lock (&acc_device_lock);
   cached_base_dev = acc_init_1 (d, acc_construct_runtime_api, 0, -1);
   gomp_mutex_unlock (&acc_device_lock);
-  
+
   goacc_attach_host_thread_to_device (-1);
 }
 
@@ -779,7 +779,7 @@ acc_set_device_type (acc_device_t d)
 
   gomp_mutex_lock (&acc_dev->lock);
   if (acc_dev->state == GOMP_DEVICE_UNINITIALIZED)
-    gomp_init_device (acc_dev);
+    gomp_init_device (acc_dev, false);
   gomp_mutex_unlock (&acc_dev->lock);
 
   gomp_mutex_unlock (&acc_device_lock);
@@ -925,14 +925,14 @@ acc_set_device_num (int ord, acc_device_t d)
 
       gomp_mutex_lock (&acc_dev->lock);
       if (acc_dev->state == GOMP_DEVICE_UNINITIALIZED)
-        gomp_init_device (acc_dev);
+	gomp_init_device (acc_dev, false);
       gomp_mutex_unlock (&acc_dev->lock);
 
       gomp_mutex_unlock (&acc_device_lock);
 
       goacc_attach_host_thread_to_device (ord);
     }
-  
+
   goacc_device_num = ord;
 }
 
@@ -958,7 +958,7 @@ get_property_any (int ord, acc_device_t d, acc_device_property_t prop)
 
   gomp_mutex_lock (&dev->lock);
   if (dev->state == GOMP_DEVICE_UNINITIALIZED)
-    gomp_init_device (dev);
+    gomp_init_device (dev, false);
   gomp_mutex_unlock (&dev->lock);
 
   gomp_mutex_unlock (&acc_device_lock);
@@ -1060,7 +1060,7 @@ goacc_restore_bind (void)
 }
 
 /* This is called from any OpenACC support function that may need to implicitly
-   initialize the libgomp runtime, either globally or from a new host thread. 
+   initialize the libgomp runtime, either globally or from a new host thread.
    On exit "goacc_thread" will return a valid & populated thread block.  */
 
 attribute_hidden void
