@@ -1763,7 +1763,6 @@ function_instance::match (cgraph_node *node,
 	  count_info *info = lookup_count (gimple_location (phi), stack, node);
 	  gcc_assert (!info);
 	  dump_stmt (phi, info, NULL, stack);
-	  counts.add (info);
 	  /* PHI arguments are indexed by incoming (predecessor) edges.  */
 	  for (edge e : bb->preds)
 	    {
