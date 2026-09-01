@@ -13025,6 +13025,10 @@ instantiate_class_template (tree type)
   /* Defer access checking while we substitute into the types named in
      the base-clause.  */
   push_deferring_access_checks (dk_deferred);
+
+  /* Push into the containing scope for name lookup (114804).  */
+  tree pushed_scope = push_scope (CP_TYPE_CONTEXT (type));
+
   if (BINFO_N_BASE_BINFOS (pbinfo))
     {
       tree pbase_binfo;
@@ -13102,8 +13106,8 @@ instantiate_class_template (tree type)
      class, so that name lookups into base classes, etc. will work
      correctly.  This is precisely analogous to what we do in
      begin_class_definition when defining an ordinary non-template
-     class, except we also need to push the enclosing classes.  */
-  push_nested_class (type);
+     class.  */
+  pushclass (type);
 
   /* Now check accessibility of the types named in its base-clause,
      relative to the scope of the class.  */
@@ -13425,7 +13429,8 @@ instantiate_class_template (tree type)
   for (tree x : used)
     mark_used (x);
 
-  pop_nested_class ();
+  popclass ();
+  pop_scope (pushed_scope);
   maximum_field_alignment = saved_maximum_field_alignment;
   if (!fn_context)
     pop_from_top_level ();
