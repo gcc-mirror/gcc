@@ -1,10 +1,10 @@
 /* { dg-do compile } */
 /* { dg-options "-Os" } */
-int e, f, n;
+__INT32_TYPE__ e, f, n;
 static int a () { return e; }
 void b () { while (a()); }
 static int d () { return e; }
-static void g (int h) {
+static void g (__INT32_TYPE__ h) {
   if (e)
   c:
     if (d())
