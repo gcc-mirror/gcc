@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { int32plus } } } */
 /* { dg-options "-O2 -fgimple" } */
 
 int printf(const char *, ...);
