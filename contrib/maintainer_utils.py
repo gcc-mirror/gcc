@@ -75,6 +75,14 @@ maintainer_schema = {
                         },
                         "minItems": 1,
                     },
+                    'inactive_DCO': {
+                        'type': 'array',
+                        'items': {
+                            'type': 'string',
+                            'format': 'email',
+                        },
+                        "minItems": 1,
+                    },
                     'roles': {
                         'type': 'array',
                         'items': {
@@ -143,6 +151,7 @@ maintainer_schema = {
                 'anyOf': [
                     {'required': ['roles']},
                     {'required': ['DCO']},
+                    {'required': ['inactive_DCO']},
                 ],
             },
         },
@@ -247,10 +256,18 @@ def _check_schema(data):
 def _check_dco(user):
     # An email addrss in a DCO entry must also be listed in either the
     # active emails list, or the inactive_emails list.
-    emails = set(user['email'] + user.get('inactive_email', []))
-    for dco in user['DCO']:
+    emails = user['email']
+    for dco in user.get('DCO', []):
         if dco not in emails:
-            _error(f"User: {user['cn']} DCO {dco} not listed in other emails")
+            _error(f"User: {user['cn']} DCO {dco} not listed in emails")
+    emails = user.get('inactive_email', [])
+    for dco in user.get('inactive_DCO', []):
+        if dco not in emails:
+            _error(
+                f"User: {user['cn']} inactive_DCO {dco} not listed in inactive_emails"
+            )
+        if dco in user.get('DCO', []):
+            _error(f"User: {user['cn']} inactive_DCO {dco} also listed in DCO")
 
 
 def validate(data):
@@ -263,10 +280,11 @@ def validate(data):
     # subsystems list; Maintainer entires must also have a class entry, though
     # that is optional for Reviewers.
     for u in data['users']:
-        if 'DCO' in u:
+        if 'DCO' in u or 'inactive_DCO' in u:
             _check_dco(u)
-        # The schema ensures that at least one of 'DCO' or 'roles'
-        # exists, so if roles is missing, we're done.
+        # The schema ensures that at least one of 'DCO',
+        # 'inactive_DCO' or 'roles' exists, so if roles is missing,
+        # we're done.
         if 'roles' not in u:
             continue
         # Users with the 'BZ' role should not have any other roles; we

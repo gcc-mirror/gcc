@@ -4603,6 +4603,7 @@ users:
   account: pep
   DCO:
   - pierre.emmanuel.patry@opensrcsec.com
+  inactive_DCO:
   - pierre-emmanuel.patry@embecosm.com
 - sn: Pavenis
   cn: Andris Pavenis

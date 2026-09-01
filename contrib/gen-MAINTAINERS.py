@@ -245,7 +245,7 @@ def format_output(outfile, data):
             subclass = section['filter'].get('subclass')
             for u in all_users:
                 if role == 'DCO':
-                    for email in u.get('DCO', []):
+                    for email in u.get('DCO', []) + u.get('inactive_DCO', []):
                         d = {
                             'email': email,
                             'account': u.get('account', '-'),
