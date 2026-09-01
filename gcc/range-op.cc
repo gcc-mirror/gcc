@@ -2647,8 +2647,15 @@ operator_div::op1_op2_relation_effect (irange &lhs_range,
     /* op1/op2 = 0 if op1 < op2 and both op1 and op2
        are known positives.  */
     case VREL_LT:
+      // Exact, and truncate division will produce 0 for this case.
+      // Floor division will be treated similar to truncate div as rounding towards
+      //  to 0 is the same as rounding towards -inf for positive values.
+      if (m_code != EXACT_DIV_EXPR
+	  && m_code != TRUNC_DIV_EXPR
+	  && m_code != FLOOR_DIV_EXPR)
+	return false;
       if (!op1_range.nonnegative_p ()
-	   || !op2_range.nonnegative_p ())
+	  || !op2_range.nonnegative_p ())
 	return false;
       rel_range.set_zero (type);
       break;
