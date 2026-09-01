@@ -1015,7 +1015,7 @@ tombstone_subsequence_p (const vector<unsigned>& sub,
 	if (yitr == yend)
 	  return false;
       }
-    else if (*yitr != *xitr)
+    else if (yitr == yend || *yitr != *xitr)
       return false;
 
   yitr = find_if_not (yitr, yend, tombstone_p);
