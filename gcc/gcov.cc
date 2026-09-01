@@ -3215,9 +3215,6 @@ find_prime_paths (function_info *fn)
     }
 
   vec<vec<int>> prime_paths (struct graph*, size_t);
-  /* TODO: Pass extra information in the PATH_TAG section.  In case
-     that is empty this might still need to be tunable should the
-     coverage be requested without instrumentation.  */
   vec<vec<int>> paths = prime_paths (cfg, (size_t)-1);
   fn->paths.paths.reserve (paths.length ());
   for (vec<int> &path : paths)
