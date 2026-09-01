@@ -2085,6 +2085,44 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
   return NULL_TREE;
 }
 
+/* Given a CRC polynomial POLYNOMIAL_ARG, the current CRC value in CRC_ARG and
+   new data item DATA_ARG.  Compute the updated CRC result value in type TYPE.
+   The CRC direction is inferred from FN (forward vs reversed).  */
+
+static tree
+fold_const_crc (internal_fn fn, tree type, tree crc_arg, tree data_arg,
+		tree polynomial_arg)
+{
+  if (!integer_cst_p (crc_arg)
+      || !integer_cst_p (data_arg)
+      || !integer_cst_p (polynomial_arg))
+    return NULL_TREE;
+
+  unsigned int crc_bits = TYPE_PRECISION (type);
+  unsigned int data_bits = TYPE_PRECISION (TREE_TYPE (data_arg));
+
+  if ((data_bits != 8 && data_bits != 16 && data_bits != 32 && data_bits != 64)
+      || (crc_bits != 8 && crc_bits != 16 && crc_bits != 32 && crc_bits != 64)
+      || data_bits > crc_bits)
+    return NULL_TREE;
+
+  if (!tree_fits_uhwi_p (crc_arg)
+      || !tree_fits_uhwi_p (data_arg)
+      || !tree_fits_uhwi_p (polynomial_arg))
+    return NULL_TREE;
+
+  unsigned HOST_WIDE_INT crc = tree_to_uhwi (crc_arg);
+  unsigned HOST_WIDE_INT data = tree_to_uhwi (data_arg);
+  unsigned HOST_WIDE_INT polynomial = tree_to_uhwi (polynomial_arg);
+
+  if (fn == IFN_CRC_REV)
+    crc = calculate_reversed_crc (crc, data, polynomial, crc_bits, data_bits);
+  else
+    crc = calculate_crc (crc, data, polynomial, crc_bits, data_bits);
+
+  return build_int_cstu (type, crc);
+}
+
 /* Try to fold FN (ARG0, ARG1, ARG2) to a constant.  Return the constant on
    success, otherwise return null.  TYPE is the type of the return value.  */
 
@@ -2185,6 +2223,29 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1, tree arg2)
 	  return build_complex (type, r2, build_int_cst (itype, ovf));
 	}
       return NULL_TREE;
+
+    case CFN_BUILT_IN_CRC8_DATA8:
+    case CFN_BUILT_IN_CRC16_DATA8:
+    case CFN_BUILT_IN_CRC16_DATA16:
+    case CFN_BUILT_IN_CRC32_DATA8:
+    case CFN_BUILT_IN_CRC32_DATA16:
+    case CFN_BUILT_IN_CRC32_DATA32:
+    case CFN_BUILT_IN_CRC64_DATA8:
+    case CFN_BUILT_IN_CRC64_DATA16:
+    case CFN_BUILT_IN_CRC64_DATA32:
+    case CFN_BUILT_IN_CRC64_DATA64:
+    case CFN_BUILT_IN_REV_CRC8_DATA8:
+    case CFN_BUILT_IN_REV_CRC16_DATA8:
+    case CFN_BUILT_IN_REV_CRC16_DATA16:
+    case CFN_BUILT_IN_REV_CRC32_DATA8:
+    case CFN_BUILT_IN_REV_CRC32_DATA16:
+    case CFN_BUILT_IN_REV_CRC32_DATA32:
+    case CFN_BUILT_IN_REV_CRC64_DATA8:
+    case CFN_BUILT_IN_REV_CRC64_DATA16:
+    case CFN_BUILT_IN_REV_CRC64_DATA32:
+    case CFN_BUILT_IN_REV_CRC64_DATA64:
+      return fold_const_crc (associated_internal_fn (fn, type),
+			     type, arg0, arg1, arg2);
 
     default:
       return fold_const_call_1 (fn, type, arg0, arg1, arg2);
