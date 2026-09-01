@@ -3011,7 +3011,16 @@ gimple_folder::fold_to_ptrue ()
 gimple *
 gimple_folder::fold_to_pfalse ()
 {
-  return gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+  if (type_suffix (0).tclass == TYPE_bool)
+    return gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+
+  if (type_suffix (0).tclass == TYPE_count)
+    {
+      tree svbool_type = abi_vector_types[VECTOR_TYPE_svbool_t];
+      return fold_call_to (build_zero_cst (svbool_type));
+    }
+
+  return NULL;
 }
 
 /* Fold an operation to a constant predicate in which the first VL
