@@ -1860,7 +1860,7 @@ amdgcn-*-amdhsa)
 	tmake_file="gcn/t-gcn-hsa"
 	native_system_header_dir=/include
 	extra_modes=gcn/gcn-modes.def
-	extra_objs="${extra_objs} gcn-tree.o gcn-simt-vectorize.o"
+	extra_objs="${extra_objs} gcn-tree.o gcn-simt-vectorize.o gcn-simt-cbranch.o"
 	extra_options="${extra_options} gcn/gcn-tables.opt"
 	case "$host" in
 	x86_64*-*-linux-gnu )

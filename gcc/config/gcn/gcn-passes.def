@@ -22,3 +22,4 @@
 /* This needs to be between into_cfglayout and outof_cfglayout to
    ensure the edge changes are tracked properly.  */
 INSERT_PASS_BEFORE (pass_outof_cfg_layout_mode, 1, pass_gcn_simt_vectorize);
+INSERT_PASS_BEFORE (pass_outof_cfg_layout_mode, 1, pass_gcn_simt_cbranch);

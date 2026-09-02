@@ -51,7 +51,10 @@ gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.cc
 gcn-simt-vectorize.o: $(srcdir)/config/gcn/gcn-simt-vectorize.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
-ALL_HOST_OBJS += gcn-tree.o gcn-simt-vectorize.o
+gcn-simt-cbranch.o: $(srcdir)/config/gcn/gcn-simt-cbranch.cc
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+ALL_HOST_OBJS += gcn-tree.o gcn-simt-vectorize.o gcn-simt-cbranch.o
 
 $(srcdir)/config/gcn/gcn-tables.opt: $(srcdir)/config/gcn/gcn-devices.def $(srcdir)/config/gcn/gen-opt-tables.awk
 	$(AWK) -f $(srcdir)/config/gcn/gen-opt-tables.awk $< > $@

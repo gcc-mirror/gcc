@@ -89,6 +89,7 @@ extern void print_operand (FILE *file, rtx x, int code);
 extern bool regno_ok_for_index_p (int);
 
 rtl_opt_pass *make_pass_gcn_simt_vectorize (gcc::context *);
+rtl_opt_pass *make_pass_gcn_simt_cbranch (gcc::context *);
 
 enum gcn_cvt_t
 {
