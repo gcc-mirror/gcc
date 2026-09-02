@@ -2316,6 +2316,14 @@ proc check_effective_target_riscv_zvbb { } {
     }]
 }
 
+proc check_effective_target_riscv_zvabd { } {
+    return [check_no_compiler_messages riscv_ext_zvabd assembly {
+       #ifndef __riscv_zvabd
+       #error "Not __riscv_zvabd"
+       #endif
+    }]
+}
+
 # Return 1 if the target arch supports the Zbc extension, 0 otherwise.
 # Cache the result.
 
@@ -2589,6 +2597,27 @@ proc check_effective_target_riscv_zvbb_ok { } {
 	    return 1
 	}
     return 0
+}
+
+proc check_effective_target_riscv_zvabd_ok { } {
+    if { ![istarget riscv*-*-*] } {
+	return 0
+    }
+
+    set gcc_march [riscv_get_arch]
+    if { [check_effective_target_riscv_zvabd] } {
+	set opts ""
+    } else {
+	set opts "-march=${gcc_march}_zvabd"
+    }
+
+    return [check_runtime ${gcc_march}_zvabd_exec {
+	int main()
+	{
+	    asm ("vsetivli zero,8,e8,m1,ta,ma");
+	    asm ("vwabdau.vv v8,v16,v18" : : : "v8", "v9");
+	    return 0;
+	} } $opts]
 }
 
 # Return 1 if we can load a vector from a 1-byte aligned address.
@@ -2865,6 +2894,13 @@ proc add_options_for_riscv_zvbb { flags } {
 
 proc remove_options_for_riscv_zvbb { flags } {
     return [add_options_for_riscv_multi_letter_ext zvbb $flags]
+}
+
+proc add_options_for_riscv_zvabd { flags } {
+    if { ![check_effective_target_riscv_zvabd_ok] } {
+	return $flags
+    }
+    return [add_options_for_riscv_z_ext zvabd $flags]
 }
 
 proc add_options_for_riscv_zvfh { flags } {

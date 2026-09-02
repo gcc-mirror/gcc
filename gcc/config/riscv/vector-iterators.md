@@ -1258,10 +1258,8 @@
   (RVVMF2SF "TARGET_VECTOR_ELEN_FP_32 && TARGET_VECTOR_ELEN_64")
 ])
 
-(define_mode_iterator VWEXTI_HS [
+(define_mode_iterator VWEXTI_H [
   RVVM8HI RVVM4HI RVVM2HI RVVM1HI RVVMF2HI (RVVMF4HI "TARGET_VECTOR_ELEN_64")
-
-  RVVM8SI RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_VECTOR_ELEN_64")
 
   (V1HI "riscv_vector::vls_mode_valid_p (V1HImode)")
   (V2HI "riscv_vector::vls_mode_valid_p (V2HImode)")
@@ -1275,6 +1273,10 @@
   (V512HI "riscv_vector::vls_mode_valid_p (V512HImode) && TARGET_MIN_VLEN >= 1024")
   (V1024HI "riscv_vector::vls_mode_valid_p (V1024HImode) && TARGET_MIN_VLEN >= 2048")
   (V2048HI "riscv_vector::vls_mode_valid_p (V2048HImode) && TARGET_MIN_VLEN >= 4096")
+])
+
+(define_mode_iterator VWEXTI_S [
+  RVVM8SI RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_VECTOR_ELEN_64")
   (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
   (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
   (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
@@ -1287,6 +1289,8 @@
   (V512SI "riscv_vector::vls_mode_valid_p (V512SImode) && TARGET_MIN_VLEN >= 2048")
   (V1024SI "riscv_vector::vls_mode_valid_p (V1024SImode) && TARGET_MIN_VLEN >= 4096")
 ])
+
+(define_mode_iterator VWEXTI_HS [VWEXTI_H VWEXTI_S])
 
 (define_mode_iterator VWEXTI_D [
   (RVVM8DI "TARGET_VECTOR_ELEN_64") (RVVM4DI "TARGET_VECTOR_ELEN_64")

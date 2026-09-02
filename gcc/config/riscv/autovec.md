@@ -1135,9 +1135,9 @@
 }
 [(set_attr "type" "vialu")])
 
-;; -------------------------------------------------------------------------------
+;; ----------------------------------------------------------------------------
 ;; - [INT] ABS expansion
-;; -------------------------------------------------------------------------------
+;; ----------------------------------------------------------------------------
 
 (define_expand "abs<mode>2"
   [(set (match_operand:V_VLSI 0 "register_operand")
@@ -1160,6 +1160,70 @@
   rtx ops2[] = {operands[0], operands[1], neg};
   riscv_vector::emit_vlmax_insn (CODE_FOR_pred_smax<mode>,
 				 riscv_vector::BINARY_OP, ops2);
+  DONE;
+})
+
+;; ----------------------------------------------------------------------------
+;; - [INT] Absolute differences
+;; ----------------------------------------------------------------------------
+(define_insn_and_split "<su>abd<mode>3"
+  [(set (match_operand:VI_QH 0 "register_operand" "=vr")
+	(unspec:VI_QH
+	 [(match_operand:VI_QH 1 "register_operand" "vr")
+	  (match_operand:VI_QH 2 "register_operand" "vr")]
+	 UNSPEC_VABD))]
+  "TARGET_ZVABD && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+{
+  riscv_vector::emit_vlmax_insn (CODE_FOR_pred_vabd<su><mode>,
+				 riscv_vector::BINARY_OP, operands);
+  DONE;
+}
+[(set_attr "type" "vialu")])
+
+;; ----------------------------------------------------------------------------
+;; - [INT] Sum of absolute differences
+;; ----------------------------------------------------------------------------
+
+;; These are supported directly.
+(define_expand "<su>sad<mode><v_double_trunc>"
+  [(set (match_operand:VWEXTI_HS 0 "register_operand" "=vr")
+    (unspec:VWEXTI_HS
+	 [(match_operand:<V_DOUBLE_TRUNC> 1 "register_operand" "vr")
+	  (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand" "vr")
+	  (match_operand:VWEXTI_HS 3 "register_operand")]
+	 UNSPEC_VABD))]
+  "TARGET_ZVABD"
+{
+  rtx ops[] = {operands[0], operands[3], operands[1], operands[2]};
+  riscv_vector::emit_vlmax_insn (CODE_FOR_pred_widen_abd_plus<su><mode>,
+				 riscv_vector::WIDEN_TERNARY_OP, ops);
+  DONE;
+})
+
+;; These we can synthesize.
+(define_expand "<su>sad<mode><v_quad_trunc>"
+  [(set (match_operand:VWEXTI_S 0 "register_operand" "=vr")
+    (unspec:VWEXTI_S
+        [(match_operand:<V_QUAD_TRUNC> 1 "register_operand" "vr")
+         (match_operand:<V_QUAD_TRUNC> 2 "register_operand" "vr")
+         (match_operand:VWEXTI_S 3 "register_operand")]
+        UNSPEC_VABD))]
+  "TARGET_ZVABD"
+{
+  rtx abd = gen_reg_rtx (<V_DOUBLE_TRUNC>mode);
+  emit_move_insn (abd, CONST0_RTX (<V_DOUBLE_TRUNC>mode));
+  rtx ops1[] = {abd, abd, operands[1], operands[2]};
+  insn_code icode = CODE_FOR_pred_widen_abd_plus<su><v_double_trunc>;
+  riscv_vector::emit_vlmax_insn (icode, riscv_vector::WIDEN_TERNARY_OP, ops1);
+
+  rtx ops2[] = {operands[0], operands[3], abd};
+  riscv_vector::emit_vlmax_insn (code_for_pred_single_widen_add (ZERO_EXTEND,
+								 <MODE>mode),
+				 riscv_vector::BINARY_OP, ops2);
+
   DONE;
 })
 
@@ -3091,23 +3155,3 @@
     riscv_vector::expand_strided_store (<MODE>mode, operands);
     DONE;
   })
-
-; ========
-; == Absolute difference (not including sum)
-; ========
-(define_insn_and_split "<su>abd<mode>3"
-  [(set (match_operand:VI_QH 0 "register_operand" "=vr")
-	(unspec:VI_QH
-	 [(match_operand:VI_QH 1 "register_operand" "vr")
-	  (match_operand:VI_QH 2 "register_operand" "vr")]
-	 UNSPEC_VABD))]
-  "TARGET_ZVABD && can_create_pseudo_p ()"
-  "#"
-  "&& 1"
-  [(const_int 0)]
-{
-  riscv_vector::emit_vlmax_insn (CODE_FOR_pred_vabd<su><mode>,
-				 riscv_vector::BINARY_OP, operands);
-  DONE;
-}
-[(set_attr "type" "vialu")])
