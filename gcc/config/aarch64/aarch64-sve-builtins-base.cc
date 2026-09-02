@@ -72,6 +72,18 @@ is_undef (tree val)
   return false;
 }
 
+/* Emit the notional FFR update for an LDFF1 or LDNF1 instruction.
+   Use the load expression rather than the load result, so that later RTL
+   optimizers can still treat the load result as single-use.  */
+static void
+emit_ldf1_ffr_update (rtx_insn *load_insn)
+{
+  rtx set = single_set (load_insn);
+  gcc_assert (set && GET_CODE (SET_SRC (set)) == UNSPEC);
+  emit_insn (gen_aarch64_update_ffr (GET_MODE (SET_SRC (set)),
+				       copy_rtx (SET_SRC (set))));
+}
+
 /* Return the UNSPEC_CMLA* unspec for rotation amount ROT.  */
 static int
 unspec_cmla (int rot)
@@ -1976,16 +1988,18 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    /* See the block comment in aarch64-sve.md for details about the
-       FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr_for_load ());
-
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, since ldff1_gather uses the same operand
        order as mask_gather_load_optab.  */
     e.rotate_inputs_left (0, 5);
     machine_mode mem_mode = e.memory_vector_mode ();
-    return e.use_exact_insn (code_for_aarch64_ldff1_gather (mem_mode));
+    rtx res = e.use_exact_insn (code_for_aarch64_ldff1_gather (mem_mode));
+
+    /* See the block comment in aarch64-sve.md for details about the
+       FFR handling.  */
+    emit_ldf1_ffr_update (get_last_insn ());
+
+    return res;
   }
 };
 
@@ -1998,10 +2012,6 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    /* See the block comment in aarch64-sve.md for details about the
-       FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr_for_load ());
-
     e.prepare_gather_address_operands (1);
     /* Put the predicate last, since ldff1_gather uses the same operand
        order as mask_gather_load_optab.  */
@@ -2011,7 +2021,11 @@ public:
     insn_code icode = code_for_aarch64_ldff1_gather (extend_rtx_code (),
 						     e.vector_mode (0),
 						     e.memory_vector_mode ());
-    return e.use_exact_insn (icode);
+    rtx res = e.use_exact_insn (icode);
+    /* See the block comment in aarch64-sve.md for details about the
+       FFR handling.  */
+    emit_ldf1_ffr_update (get_last_insn ());
+    return res;
   }
 };
 
@@ -2050,12 +2064,13 @@ public:
   rtx
   expand (function_expander &e) const override
   {
+    machine_mode mode = e.vector_mode (0);
+    insn_code icode = code_for_aarch64_ldf1 (m_unspec, mode);
+    rtx res = e.use_contiguous_load_insn (icode);
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr_for_load ());
-
-    machine_mode mode = e.vector_mode (0);
-    return e.use_contiguous_load_insn (code_for_aarch64_ldf1 (m_unspec, mode));
+    emit_ldf1_ffr_update (get_last_insn ());
+    return res;
   }
 
   /* The unspec associated with the load.  */
@@ -2078,14 +2093,15 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    /* See the block comment in aarch64-sve.md for details about the
-       FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr_for_load ());
+    machine_mode mode = e.vector_mode (0);
 
     insn_code icode = code_for_aarch64_ldf1 (m_unspec, extend_rtx_code (),
-					     e.vector_mode (0),
-					     e.memory_vector_mode ());
-    return e.use_contiguous_load_insn (icode);
+					     mode, e.memory_vector_mode ());
+    rtx res = e.use_contiguous_load_insn (icode);
+    /* See the block comment in aarch64-sve.md for details about the
+       FFR handling.  */
+    emit_ldf1_ffr_update (get_last_insn ());
+    return res;
   }
 
   /* The unspec associated with the load.  */
