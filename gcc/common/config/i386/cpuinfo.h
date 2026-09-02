@@ -837,7 +837,7 @@ get_available_features (struct __processor_model *cpu_model,
   int has_kl = 0;
   /* Record AVX10 version.  */
   int avx10_set = 0;
-  int ace_set = 0, avx10v2aux_set = 0;
+  int ace_set = 0, avx10v2aux_set = 0, avx10v1aux_set = 0;
   int version = 0;
   if ((ecx & bit_OSXSAVE))
     {
@@ -1169,13 +1169,20 @@ get_available_features (struct __processor_model *cpu_model,
 	      set_feature (FEATURE_AVX10V2AUX);
 	      avx10v2aux_set = 1;
 	    }
+	  if (ecx & bit_AVX10V1AUX)
+	    {
+	      set_feature (FEATURE_AVX10V1AUX);
+	      avx10v1aux_set = 1;
+	    }
 	}
     }
 
   /* Get Advanced Features at level 0x1d (eax = 0x1d).
-     ACE check must be put after AVX10 check to get AVX10 features.
-     TODO: Change the condition after AVX10V1AUX is added.  */
-  if (version >= 2 && avx10v2aux_set && ace_set && max_cpuid_level >= 0x1d)
+     ACE check must be put after AVX10 check to get AVX10 features.  */
+  if (((avx10v1aux_set && version >= 1) || version >= 2)
+	&& avx10v2aux_set
+	&& ace_set
+	&& max_cpuid_level >= 0x1d)
     {
       __cpuid_count (0x1d, 0, eax, ebx, ecx, edx);
       if (eax == 2)

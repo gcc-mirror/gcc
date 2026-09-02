@@ -173,6 +173,7 @@
 
 /* AVX10 sub leaf (%eax == 0x24, %ecx == 1) */
 /* %ecx */
+#define bit_AVX10V1AUX	(1 << 2)
 #define bit_AVX10V2AUX	(1 << 3)
 
 /* AMX sub leaf (%eax == 0x1e, %ecx == 1) */

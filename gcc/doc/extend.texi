@@ -9575,6 +9575,11 @@ Enable/disable the generation of the AVX10V2AUX instructions.
 @itemx no-acev1
 Enable/disable the generation of the ACEV1 instructions.
 
+@atindex @code{target("avx10v1aux")}, x86
+@item avx10v1aux
+@itemx no-avx10v1aux
+Enable/disable the generation of the AVX10V1AUX instructions.
+
 @atindex @code{target("cld")}, x86
 @item cld
 @itemx no-cld
