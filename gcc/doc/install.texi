@@ -2500,7 +2500,7 @@ Linux systems and on big endian 64-bit systems where the default CPU
 is at least power7 (i.e.@: @option{--with-cpu=power7},
 @option{--with-cpu=power8}, or @option{--with-cpu=power9} is used).
 
-If you use the @option{--with-long-double-64} configuration option,
+If you use the @option{--without-long-double-128} configuration option,
 the @option{--with-long-double-format=ibm} and
 @option{--with-long-double-format=ieee} options are ignored.
 
