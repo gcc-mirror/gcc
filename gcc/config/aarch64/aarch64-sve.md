@@ -594,7 +594,7 @@
 ;;   In addition, any FFRT region that includes a load also has at least one
 ;;   instance of:
 ;;
-;;       L2: FFR = update(FFR, FFRT)  [type == no_insn]
+;;       L2: FFR = update(FFR, FFRT, <load result>)  [type == no_insn]
 ;;
 ;;   to make it clear that the region both reads from and writes to the FFR.
 ;;
@@ -1150,10 +1150,13 @@
 ;; so that the FFR value is live on entry to the region and so that the FFR
 ;; value visibly changes within the region.  This is used (possibly multiple
 ;; times) in an FFRT region that includes LDFF1 or LDNF1 instructions.
-(define_insn "aarch64_update_ffr_for_load"
+(define_insn "@aarch64_update_ffr<mode>"
   [(set (reg:VNx16BI FFR_REGNUM)
-	(unspec:VNx16BI [(reg:VNx16BI FFRT_REGNUM)
-			 (reg:VNx16BI FFR_REGNUM)] UNSPEC_UPDATE_FFR))]
+	(unspec:VNx16BI
+	 [(reg:VNx16BI FFRT_REGNUM)
+	  (reg:VNx16BI FFR_REGNUM)
+	  (match_operand:SVE_ALL 0 "register_operand" "w")
+	 ] UNSPEC_UPDATE_FFR))]
   "TARGET_SVE"
   ""
   [(set_attr "type" "no_insn")]
