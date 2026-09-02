@@ -1,3 +1,120 @@
+2026-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/apx-broadcast.c: Skip for Darwin.
+	* gcc.target/i386/apx-ccmp-2.c: Likewise.
+	* gcc.target/i386/apx-legacy-insn-check-norex2-asm.c: Likewise.
+	* gcc.target/i386/apx-ndd-2.c: Likewise.
+	* gcc.target/i386/apx-ndd-no-seg-global-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-3.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-4.c: Likewise.
+	* gcc.target/i386/apx-ndd-seg-5.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-1a.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-1b.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-2.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-3.c: Likewise.
+	* gcc.target/i386/apx-ndd-tls-4.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-1.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-2a.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-2b.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-2c.c: Likewise.
+	* gcc.target/i386/apx-ndd-x32-2d.c: Likewise.
+	* gcc.target/i386/apx-pr124892.c: Likewise.
+	* gcc.target/i386/apx-push2pop2-2.c: Likewise.
+	* gcc.target/i386/apx-zu-2.c: Likewise.
+	* gcc.target/i386/pr126787.c: Likewise.
+	* gcc.target/i386/apx-nf-2.c: Constrain asm scan to avoid .set.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/119160
+	* gcc.dg/pr119160.c: Require scheduling.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/120277
+	* gcc.dg/pr120277.c (e): Use __INTPTR_TYPE__ instead of long.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/121035
+	* gcc.dg/pr121035.c: Require int32plus.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/121468
+	* gcc.dg/pr121468.c: Use __INT32_TYPE__ for variables that
+	obviously require int32plus.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/123109
+	* gcc.dg/pr123109-vector.c (v4si, v4usi): Use SImode elements.
+	* gcc.dg/pr123109-scalar.c: Use 32-bit integer types.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/126536
+	* gcc.dg/pr126536-1.c (f): Pass a as __INT32_TYPE__.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.dg/pr28796-2.c: Skip on avr.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/93231
+	* gcc.dg/pr93231.c: Require int32plus.
+
+2026-09-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/aarch64/acle/hint-1.c: New test.
+	* gcc.target/aarch64/acle/hint-2.c: Likewise.
+
+2026-09-01  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+	    Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/126977
+	* gcc.target/i386/pr113609-2.c: Update for factoring of
+	BIT_INSERT_EXPR.
+	* gcc.dg/torture/pr126977-1.c: New test.
+
+2026-09-01  Wang Yaduo  <wangyaduo@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/autovec/scalar-fp-cost.c: New test.
+
+2026-09-01  Alexey Klimkin  <alexey.klimkin@intel.com>
+
+	PR c++/127097
+	* g++.dg/modules/pragma-once-hu-1_a.H: New test.
+	* g++.dg/modules/pragma-once-hu-1_b.C: New test.
+
+2026-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127130
+	* gcc.dg/torture/pr127130-1.c: New testcase.
+	* gcc.dg/torture/pr127130-2.c: Likewise.
+	* gcc.dg/gomp/static-chunk-size-one.c: Adjust.
+
+2026-09-01  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.dg/crc-builtin-rev-target32.c: modified test to avoid
+	const fold.
+	* gcc.dg/crc-builtin-rev-target64.c: likewise.
+	* gcc.dg/crc-builtin-target32.c: likewise.
+	* gcc.dg/crc-builtin-target64.c: likewise.
+	* gcc.target/aarch64/crc-builtin-pmul64.c: likewise.
+	* gcc.target/riscv/crc-builtin-zbc32.c: likewise.
+	* gcc.target/riscv/crc-builtin-zbc64.c: likewise.
+	* gcc.target/riscv/rvv/base/crc-builtin-zvbc.c: likewise.
+	* gcc.dg/crc-builtin-const-fold-target32.c: New test.
+	* gcc.dg/crc-builtin-const-fold-target64.c: New test.
+
+2026-09-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/sse2-v1ti-logic-2.c: Allow for vpord instruction
+	variant.
+
 2026-08-31  Dipesh Sharma  <Dipesh.Sharma@amd.com>
 
 	PR tree-optimization/126690

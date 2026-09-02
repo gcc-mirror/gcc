@@ -1,3 +1,45 @@
+2026-09-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_load_image_to_device): With shared memory, do not
+	add 'link' variables to the splay tree.
+	(GOMP_target_update_ext): For OFFLOAD_CAP_SHARED_MEM, still call
+	gomp_update unless requires self_maps/USM is set.
+	(gomp_update): For OFFLOAD_CAP_SHARED_MEM, only handle global
+	static variables (other than 'link').
+	(GOMP_target_ext, GOMP_target_data_ext): For OFFLOAD_CAP_SHARED_MEM
+	without 'requires self_maps/USM', abort with a 'sorry' for
+	global static variables other than 'link' as the MAP clause would
+	otherwise be ignored.
+	(gomp_target_enter_exit_data_usm): New; handle global static variables
+	other than 'link' with OFFLOAD_CAP_SHARED_MEM.
+	(GOMP_target_enter_exit_data): Call it in that case, unless there
+	is a 'requires self_maps/USM'.
+	* testsuite/libgomp.c/usm_env_handling-1.c: New test.
+
+2026-09-01  supers1ngular  <supers1ngular@baylibre.com>
+
+	* env.c (enum gomp_runtime_usm_t): New variable.
+	(parse_rt_usm): New function to parse environment variable.
+	(initialize_env): Enforce default 'disabled'.
+	* libgomp.h (struct gomp_team_state): Whitespace.
+	(enum gomp_device_num): Ditto.
+	(enum gomp_runtime_usm_t): New enum.
+	(gomp_init_device): Update signature.
+	* libgomp.texi: Add relevant documentation.
+	* oacc-init.c (acc_init_1): Update function call.
+	(goacc_attach_host_thread_to_device): Whitespace.
+	(acc_init): Ditto.
+	(acc_set_device_type): Update function call.
+	(acc_set_device_num): Ditto.
+	(get_property_any): Ditto.
+	(goacc_restore_bind): Whitespace.
+	* target.c (resolve_device): Update function call.
+	(gomp_load_image_to_device): Allow copying if the device
+	capability is set.
+	(gomp_init_device): Update signature, and add capability logic.
+	Also add a debugging output.
+	(gomp_page_locked_host_alloc): Update function call.
+
 2026-08-20  Paul-Antoine Arras  <parras@baylibre.com>
 
 	* config/gcn/teams.c (GOMP_distribute_static_worksharing_start):

@@ -1,3 +1,7 @@
+2026-09-01  Jason Merrill  <jason@redhat.com>
+
+	* gcc-changelog/git_commit.py (dr_regex): Add CWG|LWG and [DP]NNNN.
+
 2026-08-19  Richard Earnshaw  <rearnsha@arm.com>
 
 	* add-write-after.py (getuserdata): Also capture an optional

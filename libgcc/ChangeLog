@@ -1,3 +1,15 @@
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/t-avr (FUNCS_notiny): Add _mulsq3.
+	* config/avr/lib1funcs-fixed.S (__mulsq3, __ssmulsq3): Implement.
+	* config/avr/lib1funcs.S (__umulsidi3): Add ENTRYs
+	__mulusq3, __usmulusq3.
+
+2026-09-01  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/lib1funcs-fixed.S (__mulQ64_work):
+	Restore B = R10..R17 to its orignal value.
+
 2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/127071

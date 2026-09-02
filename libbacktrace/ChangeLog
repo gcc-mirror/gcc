@@ -1,3 +1,29 @@
+2026-09-01  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (elf_nodebug): Handle state->moredata.
+	* fileline.c (backtrace_syminfo_to_full_callback): Remove
+	incorrect comment about MOREDATA.
+	(backtrace_syminfo_to_full_callback_moredata): New function.
+	* internal.h (backtrace_syminfo_to_full_callback_moredata):
+	Declare.
+	* strippedtest.c: New file.
+	* configure.ac: check whether objcopy supports --strip-debug.
+	* Makefile.am (strippedtest_SOURCES): New variable.
+	(strippedtest_CFLAGS, strippedtest_LDFLAGS): Likewise.
+	(strippedtest_LDADD): Likewise.
+	(check_PROGRAMS): Add strippedtest.
+	(MAKETESTS): Add strippedtest_stripped
+	(%_stripped): New rule.
+	* configure, Makefile.in: Regenerate.
+
+2026-09-01  Ian Lance Taylor  <iant@golang.org>
+
+	* pecoff.c (coff_syminfo): Use BACKTRACE_MOREDATA_VERSION.
+	* xcoff.c (xcoff_syminfo): Likewise.
+	(xcoff_lookup_pc): Likewise.
+	(xcoff_fileline): Likewise.
+	* unknown.c (unknown_fileline): Likewise.
+
 2026-08-31  Ian Lance Taylor  <iant@golang.org>
 
 	* backtrace.h (struct backtrace_moredata): Add

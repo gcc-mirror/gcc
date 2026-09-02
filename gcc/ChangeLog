@@ -1,3 +1,104 @@
+2026-09-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (enum aarch64_builtins): Add
+	AARCH64_BUILTIN_YIELD, AARCH64_BUILTIN_WFE, AARCH64_BUILTIN_WFI,
+	AARCH64_BUILTIN_SEV and AARCH64_BUILTIN_SEVL.
+	(aarch64_init_syshintop_builtins): New function.
+	(handle_arm_acle_h): Call aarch64_init_syshintop_builtins.
+	(aarch64_general_expand_builtin): Expand the system hint builtins.
+	* config/aarch64/aarch64.md (unspecv): Add UNSPECV_YIELD, UNSPECV_WFE,
+	UNSPECV_WFI, UNSPECV_SEV and UNSPECV_SEVL.
+	(aarch64_yield): New insn pattern.
+	(aarch64_wfe): Likewise.
+	(aarch64_wfi): Likewise.
+	(aarch64_sev): Likewise.
+	(aarch64_sevl): Likewise.
+
+2026-09-01  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+	    Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/126977
+	* gimple-match-exports.cc (fn_arg_must_be_const_p): New function.
+	(all_ssa_names_p): New function.
+	(factor_operation_ok): New exported function.
+	* gimple-match.h (factor_operation_ok): New declaration.
+	* tree-if-conv.cc (factor_out_operators): Use factor_operation_ok.
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Use
+	factor_operation_ok.
+	* tree-ssa-tail-merge.cc (merge_stmts_p): Use factor_operation_ok
+	instead of just looking at specific internal functions.
+
+2026-09-01  Wang Yaduo  <wangyaduo@linux.alibaba.com>
+
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost):
+	Restrict LMUL scaling to vector types.
+	(costs::add_stmt_cost): Recover the scalar type for scalar costing.
+
+2026-09-01  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127039
+	* fold-const-call.cc (fold_const_reduction): Explain the handling of
+	singleton sNaN encodings.
+
+2026-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127130
+	* tree-scalar-evolution.cc (simplify_peeled_chrec):
+	Guard against signed integer overflow UB.
+
+2026-09-01  Christopher Bazley  <chris.bazley@arm.com>
+
+	* tree-vect-slp.cc (vect_create_constant_vectors):
+	Add an assertion to guard against the outer loop never
+	terminating because the inner loop is never entered.
+
+2026-09-01  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* fold-const-call.cc (fold_const_crc): new function to fold crc
+	(fold_const_call): invoke fold_const_crc to fold builtin crc
+
+2026-09-01  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* expr.cc (calculate_crc): Moved to hwint.cc file.
+	(assemble_crc_table): Updated function call.
+	(calculate_reversed_crc): Moved to hwint.cc file.
+	(assemble_reversed_crc_table): Updated function call.
+	* hwint.cc (calculate_crc): Moved from expr.cc and made public.
+	(calculate_reversed_crc): Moved from expr.cc and made public.
+	* hwint.h (calculate_crc): Added function prototype.
+	(calculate_reversed_crc): Added function prototype.
+
+2026-09-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127154
+	* value-range-storage.cc (prange_storage::set_prange) Access
+	bitmask and points to fields only for kinds those that use them
+
+2026-09-01  Jørgen Kvalsvik  <j@lambda.is>
+
+	* profile.cc (coverage_instrumentation_p): Put return type on
+	separate line.
+
+2026-09-01  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (find_prime_paths): Remove comment.
+
+2026-09-01  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/127038
+	* gcov.cc (tombstone_subsequence_p): Guard iterator
+	dereference.
+
+2026-09-01  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* auto-profile.cc (function_instance::match): Do not insert a null
+	entry into counts.
+
+2026-09-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_get_num_copies_for_invariant):
+	Refactor to avoid accessing rem when we will return false.
+
 2026-08-31  Dipesh Sharma  <Dipesh.Sharma@amd.com>
 
 	PR tree-optimization/126690
