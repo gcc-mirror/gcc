@@ -2318,6 +2318,17 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
   vect_pattern_detected ("vec_recog_popcount_clz_ctz_ffs_pattern",
 			 call_stmt);
 
+  tree orig_lhs_type = lhs_type;
+  gimple *cast_stmt = NULL;
+  if (!type_has_mode_precision_p (lhs_type))
+    {
+      lhs_type = TREE_TYPE (vec_type);
+      cast_stmt
+	= gimple_build_assign (vect_recog_temp_ssa_var (lhs_type, NULL),
+			       NOP_EXPR, unprom_diff.op);
+      unprom_diff.op = gimple_assign_lhs (cast_stmt);
+    }
+
   /* Create B = .POPCOUNT (A).  */
   new_var = vect_recog_temp_ssa_var (lhs_type, NULL);
   tree arg2 = NULL_TREE;
@@ -2358,11 +2369,23 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 	= vect_recog_ctz_ffs_pattern (vinfo, new_stmt_info, type_out);
       if (pattern_stmt == NULL)
 	return NULL;
+      if (cast_stmt)
+	append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, vec_type);
       if (gimple_seq seq = STMT_VINFO_PATTERN_DEF_SEQ (new_stmt_info))
 	{
 	  gimple_seq *pseq = &STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
 	  gimple_seq_add_seq_without_update (pseq, seq);
 	}
+    }
+  else if (cast_stmt)
+    append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, vec_type);
+
+  if (cast_stmt)
+    {
+      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, vec_type);
+      tree ret_var = vect_recog_temp_ssa_var (orig_lhs_type, NULL);
+      pattern_stmt = gimple_build_assign (ret_var, NOP_EXPR,
+					  gimple_get_lhs (pattern_stmt));
     }
   return pattern_stmt;
 }
