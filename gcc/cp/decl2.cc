@@ -2145,6 +2145,12 @@ cplus_decl_attributes (tree *decl, tree attributes, int flags)
     {
       if (check_for_bare_parameter_packs (attributes))
 	return;
+
+      /* Ask the target now rather than leaving it to decl_attributes below:
+	 a target that adds an attribute of its own in reaction to one of
+	 these would never see the ones we are about to splice out.  */
+      targetm.insert_attributes (STRIP_TEMPLATE (*decl), &attributes);
+
       late_attrs = splice_template_attributes (&attributes, *decl);
     }
 

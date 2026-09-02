@@ -56,7 +56,7 @@ void plain () {}
 /* { dg-final { scan-assembler "_Z6taggedB16riscv_vls_cc_128B4userv:" } } */
 /* { dg-final { scan-assembler "_Z7tagged2B3abcB16riscv_vls_cc_128B4userv:" } } */
 /* { dg-final { scan-assembler "_ZN2ns1S6memberB16riscv_vls_cc_128Ev:" } } */
-/* { dg-final { scan-assembler "_Z3tplIiEvT_:" } } */
+/* { dg-final { scan-assembler "_Z3tplB16riscv_vls_cc_128IiEvT_:" } } */
 /* { dg-final { scan-assembler "_Z9tpl_nodepB16riscv_vls_cc_128IiEvv:" } } */
 /* { dg-final { scan-assembler "_Z9vector_ccv:" } } */
 /* { dg-final { scan-assembler "_Z5plainv:" } } */
