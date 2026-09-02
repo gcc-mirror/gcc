@@ -417,7 +417,11 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
 	  if (tree sval = avals->safe_sval_at (c->operand_num))
 	    val = ipa_find_agg_cst_from_init (sval, c->offset, c->by_ref);
-	  if (!val)
+	  /* ipa_argagg_value_list is indexed by byte offsets, so a condition
+	     which does not start at a byte boundary (a bit-field) cannot be
+	     looked up in it; the containing byte would be reinterpreted as
+	     the whole field below.  */
+	  if (!val && (c->offset % BITS_PER_UNIT) == 0)
 	    {
 	      ipa_argagg_value_list avs (avals);
 	      val = avs.get_value (c->operand_num, c->offset / BITS_PER_UNIT,
