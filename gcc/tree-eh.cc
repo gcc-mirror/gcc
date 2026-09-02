@@ -2118,7 +2118,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
       if (stmt_could_throw_p (cfun, stmt)
 	  && gimple_has_lhs (stmt)
 	  && gimple_stmt_may_fallthru (stmt)
-	  && !tree_could_throw_p (gimple_get_lhs (stmt))
+	  && !lhs_could_trap_p (gimple_get_lhs (stmt))
 	  && is_gimple_reg_type (TREE_TYPE (gimple_get_lhs (stmt))))
 	{
 	  tree lhs = gimple_get_lhs (stmt);
@@ -3057,7 +3057,7 @@ stmt_could_throw_1_p (gassign *stmt)
     }
 
   /* First check the LHS.  */
-  if (tree_could_trap_p (gimple_assign_lhs (stmt)))
+  if (tree_could_trap_1 (gimple_assign_lhs (stmt), true))
     return true;
 
   /* Check if the main expression may trap.  */
@@ -3144,7 +3144,7 @@ tree_could_throw_p (tree t)
   if (TREE_CODE (t) == MODIFY_EXPR)
     {
       if (cfun->can_throw_non_call_exceptions
-          && tree_could_trap_p (TREE_OPERAND (t, 0)))
+	  && tree_could_trap_1 (TREE_OPERAND (t, 0), true))
         return true;
       t = TREE_OPERAND (t, 1);
     }
