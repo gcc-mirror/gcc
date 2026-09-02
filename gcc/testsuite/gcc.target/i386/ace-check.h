@@ -51,6 +51,18 @@ void fill_bsr (__bsr *bsr, union512i_ub* src1, union512i_ub* src2)
     }
 }
 
+void init_tile_config (__tilecfg *dst, __bsr* bsr)
+{
+  int i;
+  dst->palette_id = 2;
+  for (i = 0; i < 63; i++)
+    dst->reserved[i] = 0;
+  for (i = 0; i < 128; i++)
+    bsr->buf[i] = 0xff;
+  _tile_ace_loadconfig (dst);
+  _bsr0_init ();
+}
+
 #ifndef DO_TEST
 #define DO_TEST do_test
 static void test_ace (void);

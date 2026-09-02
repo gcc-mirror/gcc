@@ -14711,11 +14711,13 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
    with variable number of operands.  */
 
 static rtx
-ix86_expand_ace_builtin (const struct builtin_description *d, tree exp)
+ix86_expand_ace_builtin (const struct builtin_description *d, tree exp,
+			 rtx target)
 {
   tree arg;
   rtx pat, op;
-  unsigned int i, nargs;
+  unsigned int i, nargs, arg_adjust = 0;
+  bool tmm_src = false;
   rtx xops[4];
   enum insn_code icode = d->icode;
   const struct insn_data_d *insn_p = &insn_data[icode];
@@ -14725,6 +14727,16 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp)
     case VOID_FTYPE_UQI:
       nargs = 1;
       break;
+    case V16SF_FTYPE_UQI_SI:
+    case V32BF_FTYPE_UQI_SI:
+    case V32HF_FTYPE_UQI_SI:
+    case V16SI_FTYPE_UQI_SI:
+      nargs = 2;
+      tmm_src = true;
+      break;
+    case VOID_FTYPE_UQI_V16SI_SI:
+      nargs = 3;
+      break;
 
     default:
       gcc_unreachable ();
@@ -14732,9 +14744,20 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp)
 
   gcc_assert (nargs <= ARRAY_SIZE (xops));
 
+  if (tmm_src)
+    {
+      machine_mode tmode = insn_p->operand[0].mode;
+      arg_adjust = 1;
+      if (optimize
+	  || target == 0
+	  || !register_operand (target, tmode)
+	  || GET_MODE (target) != tmode)
+	target = gen_reg_rtx (tmode);
+    }
+
   for (i = 0; i < nargs; i++)
     {
-      machine_mode mode = insn_p->operand[i].mode;
+      machine_mode mode = insn_p->operand[i + arg_adjust].mode;
 
       arg = CALL_EXPR_ARG (exp, i);
       op = ix86_expand_unsigned_small_int_cst_argument (arg);
@@ -14765,20 +14788,37 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp)
       xops[i] = op;
     }
 
-  switch (nargs)
+  if (tmm_src)
     {
-    case 1:
-      pat = GEN_FCN (icode) (xops[0]);
-      break;
-    default:
-      gcc_unreachable ();
+      switch (nargs)
+	{
+	case 2:
+	  pat = GEN_FCN (icode) (target, xops[0], xops[1]);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+  }
+  else
+    {
+      switch (nargs)
+	{
+	case 1:
+	  pat = GEN_FCN (icode) (xops[0]);
+	  break;
+	case 3:
+	  pat = GEN_FCN (icode) (xops[0], xops[1], xops[2]);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
     }
 
   if (!pat)
     return 0;
 
   emit_insn (pat);
-  return 0;
+  return tmm_src ? target : 0;
 }
 
 /* Return the integer constant in ARG.  Constrain it to be in the range
@@ -17413,7 +17453,7 @@ rdseed_step:
       && fcode <= IX86_BUILTIN__BDESC_ACE_LAST)
     {
       i = fcode - IX86_BUILTIN__BDESC_ACE_FIRST;
-      return ix86_expand_ace_builtin (bdesc_ace + i, exp);
+      return ix86_expand_ace_builtin (bdesc_ace + i, exp, target);
     }
 
   gcc_unreachable ();

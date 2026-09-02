@@ -32,6 +32,10 @@
   type _CONCAT(_,func) (op1_type A, int const I)			\
   { return func (A, imm); }
 
+#define test_1t(func, type, imm, op1_type)				\
+  type _CONCAT(_,func) (int const I, op1_type A)			\
+  { return func (imm, A); }
+
 #define test_1x(func, type, op1_type, imm1, imm2)			\
   type _CONCAT(_,func) (op1_type A, int const I, int const L)		\
   { return func (A, imm1, imm2); }
@@ -43,6 +47,10 @@
 #define test_2(func, type, op1_type, op2_type, imm)			\
   type _CONCAT(_,func) (op1_type A, op2_type B, int const I)		\
   { return func (A, B, imm); }
+
+#define test_2vt(func, imm, op1_type, op2_type)				\
+  void _CONCAT(_,func) (int const I, op1_type A, op2_type B)		\
+  { func (imm, A, B); }
 
 #define test_2x(func, type, op1_type, op2_type, imm1, imm2)		\
   type _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L) \
@@ -1211,4 +1219,12 @@ test_2 (_mm512_maskz_unpack_epi8, __m512i, __mmask64, __m512i, 10)
 /* acev1intrin.h */
 #ifdef __x86_64__
 test_0v (_tile_ace_zero, 1)
+test_1t (_tile_cvtrow_epi32_ps, __m512, 1, int)
+test_1t (_tile_cvtrowh_ps_pbh, __m512bh, 1, int)
+test_1t (_tile_cvtrowl_ps_pbh, __m512bh, 1, int)
+test_1t (_tile_cvtrowh_ps_ph, __m512h, 1, int)
+test_1t (_tile_cvtrowl_ps_ph, __m512h, 1, int)
+test_1t (_tile_extractrow, __m512i, 1, int)
+test_2vt (_tile_insertrow, 1, __m512i, int)
+test_2vt (_tile_insertcol, 1, __m512i, int)
 #endif

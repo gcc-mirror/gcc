@@ -921,6 +921,14 @@
 /* acev1intrin.h */
 #ifdef __x86_64__
 #define __builtin_ia32_tilezero(A) __builtin_ia32_tilezero (1)
+#define __builtin_ia32_tcvtrowd2ps(A, B) __builtin_ia32_tcvtrowd2ps (1, B)
+#define __builtin_ia32_tcvtrowps2bf16h(A, B) __builtin_ia32_tcvtrowps2bf16h (1, B)
+#define __builtin_ia32_tcvtrowps2bf16l(A, B) __builtin_ia32_tcvtrowps2bf16l (1, B)
+#define __builtin_ia32_tcvtrowps2phh(A, B) __builtin_ia32_tcvtrowps2phh (1, B)
+#define __builtin_ia32_tcvtrowps2phl(A, B) __builtin_ia32_tcvtrowps2phl (1, B)
+#define __builtin_ia32_tilemovrowextract(A, B) __builtin_ia32_tilemovrowextract (1, B)
+#define __builtin_ia32_tilemovrowinsert(A, B, C) __builtin_ia32_tilemovrowinsert (1, B, C)
+#define __builtin_ia32_tilemovcolinsert(A, B, C) __builtin_ia32_tilemovcolinsert (1, B, C)
 #endif
 
 #include <wmmintrin.h>

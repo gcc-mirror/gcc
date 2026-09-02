@@ -99,9 +99,89 @@ _tile_ace_zero (const int __A)
   __builtin_ia32_tilezero (__A);
 }
 
+extern __inline __m512
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_cvtrow_epi32_ps (const int __A, int __B)
+{
+  return (__m512) __builtin_ia32_tcvtrowd2ps (__A, __B);
+}
+
+extern __inline __m512bh
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_cvtrowh_ps_pbh (const int __A, int __B)
+{
+  return (__m512bh) __builtin_ia32_tcvtrowps2bf16h (__A, __B);
+}
+
+extern __inline __m512bh
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_cvtrowl_ps_pbh (const int __A, int __B)
+{
+  return (__m512bh) __builtin_ia32_tcvtrowps2bf16l (__A, __B);
+}
+
+extern __inline __m512h
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_cvtrowh_ps_ph (const int __A, int __B)
+{
+  return (__m512h) __builtin_ia32_tcvtrowps2phh (__A, __B);
+}
+
+extern __inline __m512h
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_cvtrowl_ps_ph (const int __A, int __B)
+{
+  return (__m512h) __builtin_ia32_tcvtrowps2phl (__A, __B);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_extractrow (const int __A, int __B)
+{
+  return (__m512i) __builtin_ia32_tilemovrowextract (__A, __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_insertrow (const int __A, __m512i __B, int __C)
+{
+  __builtin_ia32_tilemovrowinsert (__A, (__v16si) __B, __C);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_insertcol (const int __A, __m512i __B, int __C)
+{
+  __builtin_ia32_tilemovcolinsert (__A, (__v16si) __B, __C);
+}
+
 #else
 #define _tile_ace_zero(A)			\
   __builtin_ia32_tilezero (A);
+
+#define _tile_cvtrow_epi32_ps(A, B)		\
+  (__m512) __builtin_ia32_tcvtrowd2ps ((A), (B))
+
+#define _tile_cvtrowh_ps_pbh(A, B)		\
+  (__m512bh) __builtin_ia32_tcvtrowps2bf16h ((A), (B))
+
+#define _tile_cvtrowl_ps_pbh(A, B)		\
+  (__m512bh) __builtin_ia32_tcvtrowps2bf16l ((A), (B))
+
+#define _tile_cvtrowh_ps_ph(A, B)		\
+  (__m512h) __builtin_ia32_tcvtrowps2phh ((A), (B))
+
+#define _tile_cvtrowl_ps_ph(A, B)		\
+  (__m512h) __builtin_ia32_tcvtrowps2phl ((A), (B))
+
+#define _tile_extractrow(A, B)			\
+  (__m512i) __builtin_ia32_tilemovrowextract ((A), (B))
+
+#define _tile_insertrow(A, B, C)		\
+  __builtin_ia32_tilemovrowinsert ((A), (__v16si) (B), (C))
+
+#define _tile_insertcol(A, B, C)		\
+  __builtin_ia32_tilemovcolinsert ((A), (__v16si) (B), (C))
 
 #endif /* __OPTIMIZE__ */
 

@@ -285,6 +285,10 @@
   ;; For ACEv1 support
   UNSPEC_BSRMOVH_STORE
   UNSPEC_BSRMOVL_STORE
+  UNSPEC_TCVTROWD2PS
+  UNSPEC_TCVTROWPS2FP16H
+  UNSPEC_TCVTROWPS2FP16L
+  UNSPEC_TILEMOVROWEXTRACT
 ])
 
 (define_c_enum "unspecv" [
@@ -314,6 +318,8 @@
   UNSPECV_BSRMOVF
   UNSPECV_BSRMOVH_LOAD
   UNSPECV_BSRMOVL_LOAD
+  UNSPECV_TILEMOVROWINSERT
+  UNSPECV_TILEMOVCOLINSERT
 ])
 
 ;; All vector modes including V?TImode, used in move patterns.
@@ -572,6 +578,7 @@
 
 (define_mode_iterator VHFBF
   [V32HF V16HF V8HF V32BF V16BF V8BF])
+(define_mode_iterator VHFBF_512 [V32HF V32BF])
 (define_mode_iterator VHFBF_256 [V16HF V16BF])
 (define_mode_iterator VHFBF_128 [V8HF V8BF])
 
@@ -35052,4 +35059,61 @@
 	  UNSPEC_BSRMOVL_STORE))]
   "TARGET_ACEV1"
   "bsrmovl\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "tcvtrowd2ps"
+  [(set (match_operand:V16SF 0 "register_operand" "=v")
+        (unspec:V16SF
+	  [(reg:V32SI TMM_REGNUM)
+	   (match_operand:QI 1 "const_0_to_7_operand")
+	   (match_operand:SI 2 "nonmemory_operand" "rN")]
+	  UNSPEC_TCVTROWD2PS))]
+  "TARGET_ACEV1"
+  "tcvtrowd2ps\t{%2, %%tmm%c1, %0|%0, tmm%c1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_int_iterator UNSPEC_TCVTROWPS2FP16TYPE
+  [UNSPEC_TCVTROWPS2FP16H UNSPEC_TCVTROWPS2FP16L])
+
+(define_int_attr highlowsuffix
+  [(UNSPEC_TCVTROWPS2FP16H "h") (UNSPEC_TCVTROWPS2FP16L "l")])
+
+(define_insn "tcvtrowps2<bf16_ph><highlowsuffix>"
+  [(set (match_operand:VHFBF_512 0 "register_operand" "=v")
+        (unspec:VHFBF_512
+	  [(reg:V32SF TMM_REGNUM)
+	   (match_operand:QI 1 "const_0_to_7_operand")
+	   (match_operand:SI 2 "nonmemory_operand" "rN")]
+	  UNSPEC_TCVTROWPS2FP16TYPE))]
+  "TARGET_ACEV1"
+  "tcvtrowps2<bf16_ph><highlowsuffix>\t{%2, %%tmm%c1, %0|%0, tmm%c1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_int_iterator UNSPECV_TILEMOVINSERT
+  [UNSPECV_TILEMOVROWINSERT UNSPECV_TILEMOVCOLINSERT])
+
+(define_int_attr rowcol
+  [(UNSPECV_TILEMOVROWINSERT "row")
+   (UNSPECV_TILEMOVCOLINSERT "col")])
+
+(define_insn "tilemovrow_extract"
+  [(set (match_operand:V16SI 0 "register_operand" "=v")
+        (unspec:V16SI
+	  [(reg:V32SI TMM_REGNUM)
+	   (match_operand:QI 1 "const_0_to_7_operand")
+	   (match_operand:SI 2 "nonmemory_operand" "rN")]
+	  UNSPEC_TILEMOVROWEXTRACT))]
+  "TARGET_ACEV1"
+  "tilemovrow\t{%2, %%tmm%c1, %0|%0, tmm%c1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "tilemov<rowcol>_insert"
+  [(set (reg:V32SI TMM_REGNUM)
+        (unspec_volatile:V32SI
+	  [(match_operand:QI 0 "const_0_to_7_operand")
+	   (match_operand:V16SI 1 "register_operand" "v")
+	   (match_operand:SI 2 "nonmemory_operand" "rN")]
+	  UNSPECV_TILEMOVINSERT))]
+  "TARGET_ACEV1"
+  "tilemov<rowcol>\t{%2, %1, %%tmm%c0|tmm%c0, %1, %2}"
   [(set_attr "prefix" "evex")])

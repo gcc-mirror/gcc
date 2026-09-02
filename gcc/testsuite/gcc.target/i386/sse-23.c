@@ -903,6 +903,14 @@
 /* acev1intrin.h */
 #ifdef __x86_64__
 #define __builtin_ia32_tilezero(A) __builtin_ia32_tilezero (1)
+#define __builtin_ia32_tcvtrowd2ps(A, B) __builtin_ia32_tcvtrowd2ps (1, B)
+#define __builtin_ia32_tcvtrowps2bf16h(A, B) __builtin_ia32_tcvtrowps2bf16h (1, B)
+#define __builtin_ia32_tcvtrowps2bf16l(A, B) __builtin_ia32_tcvtrowps2bf16l (1, B)
+#define __builtin_ia32_tcvtrowps2phh(A, B) __builtin_ia32_tcvtrowps2phh (1, B)
+#define __builtin_ia32_tcvtrowps2phl(A, B) __builtin_ia32_tcvtrowps2phl (1, B)
+#define __builtin_ia32_tilemovrowextract(A, B) __builtin_ia32_tilemovrowextract (1, B)
+#define __builtin_ia32_tilemovrowinsert(A, B, C) __builtin_ia32_tilemovrowinsert (1, B, C)
+#define __builtin_ia32_tilemovcolinsert(A, B, C) __builtin_ia32_tilemovcolinsert (1, B, C)
 #endif
 
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2,amx-avx512,amx-fp8,movrs,amx-movrs,avx10v2aux,acev1")
