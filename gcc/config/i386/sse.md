@@ -281,6 +281,10 @@
   UNSPEC_VCVTHF62HF8
   UNSPEC_VUNPACKB
   UNSPEC_VPMOVSSDB
+
+  ;; For ACEv1 support
+  UNSPEC_BSRMOVH_STORE
+  UNSPEC_BSRMOVL_STORE
 ])
 
 (define_c_enum "unspecv" [
@@ -306,6 +310,10 @@
 
   ;; For ACEv1
   UNSPECV_TILEZERO
+  UNSPECV_BSRINIT
+  UNSPECV_BSRMOVF
+  UNSPECV_BSRMOVH_LOAD
+  UNSPECV_BSRMOVL_LOAD
 ])
 
 ;; All vector modes including V?TImode, used in move patterns.
@@ -34992,3 +35000,56 @@
   "TARGET_ACEV1"
   "tilezero\t{%%tmm%c0|tmm%c0}"
   [(set_attr "prefix" "vex")])
+
+(define_insn "bsrinit"
+  [(set (match_operand:V32SI 0 "bsr0_operand")
+        (unspec_volatile:V32SI [(const_int 0)] UNSPECV_BSRINIT))]
+  "TARGET_ACEV1"
+  "bsrinit\t{%0|%0}"
+  [(set_attr "prefix" "vex")])
+
+(define_insn "bsrmovf"
+  [(set (match_operand:V32SI 0 "bsr0_operand")
+        (unspec_volatile:V32SI
+	  [(match_operand:V16SI 1 "register_operand" "v")
+	   (match_operand:V16SI 2 "vector_operand" "vm")]
+	  UNSPECV_BSRMOVF))]
+  "TARGET_ACEV1"
+  "bsrmovf\t{%2, %1, %0|%0, %1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "bsrmovh_load"
+  [(set (match_operand:V32SI 0 "bsr0_operand")
+        (unspec_volatile:V32SI
+	  [(match_operand:V16SI 1 "vector_operand" "vm")]
+	  UNSPECV_BSRMOVH_LOAD))]
+  "TARGET_ACEV1"
+  "bsrmovh\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "bsrmovl_load"
+  [(set (match_operand:V32SI 0 "bsr0_operand")
+        (unspec_volatile:V32SI
+	  [(match_operand:V16SI 1 "vector_operand" "vm")]
+	  UNSPECV_BSRMOVL_LOAD))]
+  "TARGET_ACEV1"
+  "bsrmovl\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "bsrmovh_store"
+  [(set (match_operand:V16SI 0 "vector_operand" "=vm")
+        (unspec:V16SI
+          [(match_operand:V32SI 1 "bsr0_operand")]
+	  UNSPEC_BSRMOVH_STORE))]
+  "TARGET_ACEV1"
+  "bsrmovh\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "bsrmovl_store"
+  [(set (match_operand:V16SI 0 "vector_operand" "=vm")
+        (unspec:V16SI
+          [(match_operand:V32SI 1 "bsr0_operand")]
+	  UNSPEC_BSRMOVL_STORE))]
+  "TARGET_ACEV1"
+  "bsrmovl\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")])

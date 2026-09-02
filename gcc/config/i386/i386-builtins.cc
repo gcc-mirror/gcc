@@ -1265,6 +1265,26 @@ ix86_init_mmx_sse_builtins (void)
 	       "__builtin_ia32_uwrmsr", VOID_FTYPE_UINT64_UINT64,
 	       IX86_BUILTIN_UWRMSR);
 
+  /* ACEv1.  */
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_ACEV1,
+	       "__builtin_ia32_bsr0init", VOID_FTYPE_VOID,
+	       IX86_BUILTIN_BSR0INIT);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_ACEV1,
+	       "__builtin_ia32_bsr0movf", VOID_FTYPE_V16SI_V16SI,
+	       IX86_BUILTIN_BSR0MOVF);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_ACEV1,
+	       "__builtin_ia32_bsr0movhinsert", VOID_FTYPE_V16SI,
+	       IX86_BUILTIN_BSR0MOVHINSERT);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_ACEV1,
+	       "__builtin_ia32_bsr0movhextract", V16SI_FTYPE_VOID,
+	       IX86_BUILTIN_BSR0MOVHEXTRACT);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_ACEV1,
+	       "__builtin_ia32_bsr0movlinsert", VOID_FTYPE_V16SI,
+	       IX86_BUILTIN_BSR0MOVLINSERT);
+  def_builtin (OPTION_MASK_ISA_64BIT, OPTION_MASK_ISA2_ACEV1,
+	       "__builtin_ia32_bsr0movlextract", V16SI_FTYPE_VOID,
+	       IX86_BUILTIN_BSR0MOVLEXTRACT);
+
   /* CLDEMOTE.  */
   def_builtin (0, OPTION_MASK_ISA2_CLDEMOTE, "__builtin_ia32_cldemote",
 	       VOID_FTYPE_PCVOID, IX86_BUILTIN_CLDEMOTE);

@@ -49,6 +49,48 @@ _tile_ace_release (void)
   __asm__ volatile ("tilerelease" ::);
 }
 
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bsr0_init ()
+{
+  __builtin_ia32_bsr0init ();
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bsr0_insertfull (__m512i __A, __m512i __B)
+{
+  __builtin_ia32_bsr0movf ((__v16si) __A, (__v16si) __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bsr0_inserth (__m512i __A)
+{
+  __builtin_ia32_bsr0movhinsert ((__v16si) __A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bsr0_extracth ()
+{
+  return (__m512i) __builtin_ia32_bsr0movhextract ();
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bsr0_insertl (__m512i __A)
+{
+  __builtin_ia32_bsr0movlinsert ((__v16si) __A);
+}
+
+extern __inline __m512i
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_bsr0_extractl ()
+{
+  return (__m512i) __builtin_ia32_bsr0movlextract ();
+}
+
 #ifdef __OPTIMIZE__
 extern __inline void
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))

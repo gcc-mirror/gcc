@@ -15685,6 +15685,60 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
 	return target;
       }
 
+    case IX86_BUILTIN_BSR0INIT:
+      {
+	target = gen_rtx_REG (V32SImode, BSR0_REG);
+	emit_insn (gen_bsrinit (target));
+	return 0;
+      }
+
+    case IX86_BUILTIN_BSR0MOVF:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	arg1 = CALL_EXPR_ARG (exp, 1);
+	op0 = expand_normal (arg0);
+	op1 = expand_normal (arg1);
+
+	target = gen_rtx_REG (V32SImode, BSR0_REG);
+	if (CONST_VECTOR_P (op0) || MEM_P (op0))
+	  op0 = force_reg (V16SImode, op0);
+	if (CONST_VECTOR_P (op1))
+	  op1 = force_reg (V16SImode, op1);
+	emit_insn (gen_bsrmovf (target, op0, op1));
+	return 0;
+      }
+
+    case IX86_BUILTIN_BSR0MOVHINSERT:
+    case IX86_BUILTIN_BSR0MOVLINSERT:
+      {
+	arg0 = CALL_EXPR_ARG (exp, 0);
+	op0 = expand_normal (arg0);
+
+	if (fcode == IX86_BUILTIN_BSR0MOVHINSERT)
+	  icode = CODE_FOR_bsrmovh_load;
+	else
+	  icode = CODE_FOR_bsrmovl_load;
+	target = gen_rtx_REG (V32SImode, BSR0_REG);
+	if (CONST_VECTOR_P (op0))
+	  op0 = force_reg (V16SImode, op0);
+	emit_insn (GEN_FCN (icode) (target, op0));
+	return 0;
+      }
+
+    case IX86_BUILTIN_BSR0MOVHEXTRACT:
+    case IX86_BUILTIN_BSR0MOVLEXTRACT:
+      {
+	op0 = gen_rtx_REG (V32SImode, BSR0_REG);
+	if (fcode == IX86_BUILTIN_BSR0MOVHEXTRACT)
+	  icode = CODE_FOR_bsrmovh_store;
+	else
+	  icode = CODE_FOR_bsrmovl_store;
+	if (target == 0 || !register_operand (target, V16SImode))
+	  target = gen_reg_rtx (V16SImode);
+	emit_insn (GEN_FCN (icode) (target, op0));
+	return target;
+      }
+
     case IX86_BUILTIN_VEC_INIT_V2SI:
     case IX86_BUILTIN_VEC_INIT_V4HI:
     case IX86_BUILTIN_VEC_INIT_V8QI:

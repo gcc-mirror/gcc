@@ -11777,6 +11777,19 @@ proc check_effective_target_amx_movrs { } {
     } "-mamx-movrs" ]
 }
 
+
+# Return 1 if acev1 instructions can be compiled.
+proc check_effective_target_acev1 { } {
+    return [check_no_compiler_messages acev1 object {
+	void
+	_bsr0_init ()
+	{
+	  __builtin_ia32_bsr0init ();
+	}
+
+    } "-macev1" ]
+}
+
 # Return 1 if sse instructions can be compiled.
 proc check_effective_target_sse { } {
     return [check_no_compiler_messages sse object {

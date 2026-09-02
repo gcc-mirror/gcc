@@ -8,7 +8,9 @@
 #ifndef AVX512F_HELPER_INCLUDED
 #define AVX512F_HELPER_INCLUDED
 
-#if defined(AVX10)
+#if defined(ACE)
+#include "ace-check.h"
+#elif defined(AVX10)
 #include "avx10-check.h"
 #else
 #include "avx512-check.h"
