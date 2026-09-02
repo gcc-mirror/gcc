@@ -66,6 +66,7 @@
 #define __glibcxx_want_type_trait_variable_templates
 #define __glibcxx_want_unwrap_ref
 #define __glibcxx_want_void_t
+#define __glibcxx_want_within_lifetime
 #include <bits/version.h>
 
 extern "C++"
@@ -4399,6 +4400,13 @@ template<typename _Ret, typename _Fn, typename... _Args>
 #endif
     };
 #endif // C++11
+
+#if __cpp_lib_within_lifetime >= 202306L // C++ >= 26
+  template<typename _Tp>
+    consteval bool
+    is_within_lifetime(const _Tp* __p) noexcept
+    { return __builtin_is_within_lifetime (__p); }
+#endif
 
   /// @} group metaprogramming
 

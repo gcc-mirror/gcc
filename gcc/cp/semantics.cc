@@ -3540,6 +3540,32 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 	      warn_for_memset (input_location, arg0, arg2, literal_mask);
 	    }
 
+	  if (TREE_CODE (fn) == FUNCTION_DECL
+	      && fndecl_built_in_p (fn, CP_BUILT_IN_IS_WITHIN_LIFETIME,
+				    BUILT_IN_FRONTEND))
+	    {
+	      /* Unless users call the builtin directly, the following 2 checks
+		 should be ensured from std::is_within_lifetime template.  */
+	      if (vec_safe_length (*args) != 1)
+		{
+		  if (complain & tf_error)
+		    error ("%<__builtin_is_within_lifetime%> needs a single "
+			   "argument");
+		  return error_mark_node;
+		}
+	      tree arg = (**args)[0];
+	      if (error_operand_p (arg))
+		return error_mark_node;
+	      tree ptype = TREE_TYPE (arg);
+	      if (!POINTER_TYPE_P (ptype))
+		{
+		  if (complain & tf_error)
+		    error ("%<__builtin_is_within_lifetime%> argument type "
+			   "%qT is not pointer type", ptype);
+		  return error_mark_node;
+		}
+	    }
+
 	  /* A call to a namespace-scope function.  */
 	  result = build_new_function_call (fn, args, orig_complain);
 	}

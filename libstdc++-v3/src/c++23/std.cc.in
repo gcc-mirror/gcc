@@ -3610,6 +3610,9 @@ export namespace std
   using std::is_structural;
   using std::is_structural_v;
 #endif
+#if __cpp_lib_within_lifetime >= 202306L
+  using std::is_within_lifetime;
+#endif
 }
 
 // <typeindex>

@@ -2497,6 +2497,15 @@ ftms = {
 };
 
 ftms = {
+  name = within_lifetime;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_is_within_lifetime)";
+  };
+};
+
+ftms = {
   name = hardened_array;
   values = {
     v = 202502;

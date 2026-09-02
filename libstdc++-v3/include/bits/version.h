@@ -2749,6 +2749,16 @@
 #endif /* !defined(__cpp_lib_valarray) */
 #undef __glibcxx_want_valarray
 
+#if !defined(__cpp_lib_within_lifetime)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_is_within_lifetime))
+#  define __glibcxx_within_lifetime 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_within_lifetime)
+#   define __cpp_lib_within_lifetime 202306L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_within_lifetime) */
+#undef __glibcxx_want_within_lifetime
+
 #if !defined(__cpp_lib_hardened_array)
 # if (__cplusplus >= 201103L) && (defined(_GLIBCXX_ASSERTIONS))
 #  define __glibcxx_hardened_array 202502L

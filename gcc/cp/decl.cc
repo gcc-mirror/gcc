@@ -5673,6 +5673,12 @@ cxx_init_decl_processing (void)
 			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
   set_call_expr_flags (decl, ECF_NOTHROW | ECF_LEAF);
 
+  decl = add_builtin_function ("__builtin_is_within_lifetime",
+			       bool_vaftype, CP_BUILT_IN_IS_WITHIN_LIFETIME,
+			       BUILT_IN_FRONTEND, NULL, NULL_TREE);
+  set_call_expr_flags (decl, ECF_NOTHROW | ECF_LEAF);
+  SET_DECL_IMMEDIATE_FUNCTION_P (decl);
+
   integer_two_node = build_int_cst (NULL_TREE, 2);
 
   /* Guess at the initial static decls size.  */

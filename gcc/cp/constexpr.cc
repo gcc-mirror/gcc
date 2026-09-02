@@ -1180,8 +1180,9 @@ enum constexpr_switch_state {
 
 class constexpr_global_ctx {
   /* Values for any temporaries or local variables within the
-     constant-expression. Objects outside their lifetime have
-     value 'void_node'.  */
+     constant-expression.  Objects outside their lifetime have
+     value 'void_node' or 'void_list_node', the former if they are outside
+     of lifetime but still before storage has been deallocated.  */
   hash_map<tree,tree> values;
 public:
   /* Number of cxx_eval_constant_expression calls (except skipped ones,
@@ -1242,16 +1243,20 @@ public:
   bool is_outside_lifetime (tree t)
   {
     if (tree *p = values.get (t))
-      if (*p == void_node)
+      if (*p == void_node || *p == void_list_node)
 	return true;
     return false;
   }
  tree get_value (tree t)
   {
     if (tree *p = values.get (t))
-      if (*p != void_node)
+      if (*p != void_node && *p != void_list_node)
 	return *p;
     return NULL_TREE;
+  }
+  tree *get_raw_value_ptr (tree t)
+  {
+    return values.get (t);
   }
   tree *get_value_ptr (tree t, bool initializing)
   {
@@ -1259,7 +1264,7 @@ public:
       return nullptr;
     if (tree *p = values.get (t))
       {
-	if (*p != void_node)
+	if (*p != void_node && *p != void_list_node)
 	  return p;
 	else if (initializing)
 	  {
@@ -1275,12 +1280,12 @@ public:
     if (!already_in_map && modifiable)
       modifiable->add (t);
   }
-  void destroy_value (tree t)
+  void destroy_value (tree t, bool past_storage_end = true)
   {
     if (TREE_CODE (t) == VAR_DECL
 	|| TREE_CODE (t) == PARM_DECL
 	|| TREE_CODE (t) == RESULT_DECL)
-      values.put (t, void_node);
+      values.put (t, past_storage_end ? void_list_node : void_node);
     else
       values.remove (t);
   }
@@ -2533,6 +2538,253 @@ cxx_eval_constexpr_diag (const constexpr_ctx *ctx, tree t, bool *non_constant_p,
   return void_node;
 }
 
+static tree eval_and_check_array_index (const constexpr_ctx *, tree, bool,
+					bool *, bool *, tree *);
+
+/* Attempt to evaluate T which represents a call to
+   __builtin_is_within_lifetime.  */
+
+static tree
+cxx_eval_is_within_lifetime (const constexpr_ctx *ctx, tree t,
+			     bool *non_constant_p, bool *overflow_p,
+			     tree *jump_target)
+{
+  location_t loc = EXPR_LOCATION (t);
+  tree arg = CALL_EXPR_ARG (t, 0);
+  arg = cxx_eval_constant_expression (ctx, arg, vc_prvalue,
+				      non_constant_p, overflow_p,
+				      jump_target);
+  if (*jump_target)
+    return NULL_TREE;
+  if (*non_constant_p)
+    return t;
+  /* Need to strip casts to pointers to void, but should preserve
+     pointer casts within the innermost pointer to void cast if
+     any, so that e.g. pointers to heap allocations are handled
+     correctly.  */
+  tree p = arg;
+  while (CONVERT_EXPR_P (p) || TREE_CODE (p) == NON_LVALUE_EXPR)
+    {
+      if (!TYPE_PTR_P (TREE_TYPE (p)))
+	break;
+      if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (p))))
+	arg = TREE_OPERAND (p, 0);
+      p = TREE_OPERAND (p, 0);
+    }
+  if (integer_zerop (arg))
+    {
+      if (!ctx->quiet)
+	error_at (loc, "%qs called with a null pointer",
+		  "__builtin_is_within_lifetime");
+      *non_constant_p = true;
+      return t;
+    }
+  if (POINTER_TYPE_P (TREE_TYPE (arg))
+      && (TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == FUNCTION_TYPE
+	  || TREE_CODE (TREE_TYPE (TREE_TYPE (arg))) == METHOD_TYPE))
+    {
+      if (!ctx->quiet)
+	error_at (loc, "%qs called with pointer to function",
+		  "__builtin_is_within_lifetime");
+      *non_constant_p = true;
+      return t;
+    }
+  arg = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (arg)), arg);
+  arg = cxx_eval_constant_expression (ctx, arg, vc_glvalue,
+				      non_constant_p, overflow_p,
+				      jump_target);
+  if (*jump_target)
+    return NULL_TREE;
+  if (*non_constant_p)
+    return t;
+  auto_vec <tree, 4> refs;
+  tree obj;
+  for (obj = arg; ; obj = TREE_OPERAND (obj, 0))
+    {
+      switch (TREE_CODE (obj))
+	{
+	case COMPONENT_REF:
+	case ARRAY_REF:
+	case REALPART_EXPR:
+	case IMAGPART_EXPR:
+	  refs.safe_push (obj);
+	  continue;
+	default:
+	  break;
+	}
+      break;
+    }
+  tree *valp = nullptr;
+  bool check_mutable = false;
+  if (DECL_P (obj))
+    {
+      valp = ctx->global->get_raw_value_ptr (obj);
+      if (!valp
+	  && VAR_P (obj)
+	  && TREE_STATIC (obj)
+	  && decl_constant_var_p (obj))
+	{
+	  valp = &DECL_INITIAL (obj);
+	  check_mutable = true;
+	}
+    }
+  if (!valp || *valp == void_list_node)
+    {
+      if (!ctx->quiet)
+	{
+	  auto_diagnostic_group d;
+	  if (DECL_P (obj) && DECL_NAME (obj) == heap_deleted_identifier)
+	    {
+	      error_at (loc, "%qs on allocated storage after deallocation "
+			"is not a constant expression",
+			"__builtin_is_within_lifetime");
+	      inform (DECL_SOURCE_LOCATION (obj), "allocated here");
+	    }
+	  else if (DECL_P (obj) && ctx->global->is_outside_lifetime (obj))
+	    {
+	      error_at (loc, "%qs on %qE after its storage has been released "
+			"is not a constant expression",
+			"__builtin_is_within_lifetime", obj);
+	      inform (DECL_SOURCE_LOCATION (obj), "declared here");
+	    }
+	  else
+	    error_at (loc, "%qs on %qE from outside current evaluation "
+		      "is not a constant expression",
+		      "__builtin_is_within_lifetime", obj);
+	}
+      *non_constant_p = true;
+      return t;
+    }
+  tree val = *valp;
+  if (val == void_node)
+    return boolean_false_node;
+  unsigned i;
+  tree ref;
+  /* Magic value used for val when inside the following loop when
+     inside of an omitted part of initializer due to it being
+     uninitialized.  In this case return boolean_true_node unless
+     there is some union member access, in unitialized union
+     no member is within lifetime.  */
+  const tree val_uninit = global_namespace;
+  /* Magic value used for val when inside the following loop when
+     inside of an omitted part of initializer due to it being
+     zero initialized.  In this case return boolean_true_node unless
+     there is some union member access except for the first member.  */
+  const tree val_zero_init = std_node;
+  if (val == NULL_TREE)
+    val = val_uninit;
+  FOR_EACH_VEC_ELT_REVERSE (refs, i, ref)
+    switch (TREE_CODE (ref))
+      {
+      case REALPART_EXPR:
+      case IMAGPART_EXPR:
+	if (TREE_CODE (val) == COMPLEX_EXPR
+	    && (TREE_OPERAND (val, TREE_CODE (ref) == IMAGPART_EXPR)
+		== void_node))
+	  return boolean_false_node;
+	return boolean_true_node;
+      case COMPONENT_REF:
+	if (check_mutable && DECL_MUTABLE_P (TREE_OPERAND (ref, 1)))
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc, "%qs on %<mutable%> sub-object %qD",
+			"__builtin_is_within_lifetime",
+			TREE_OPERAND (ref, 1));
+	    *non_constant_p = true;
+	    return t;
+	  }
+	if (TREE_CODE (TREE_TYPE (TREE_OPERAND (ref, 0))) == UNION_TYPE)
+	  {
+	    tree union_type = TREE_TYPE (TREE_OPERAND (ref, 0));
+	    if (val == val_zero_init)
+	      {
+		if (TREE_OPERAND (ref, 1)
+		    != next_aggregate_field (TYPE_FIELDS (union_type)))
+		  return boolean_false_node;
+		continue;
+	      }
+	    else if (val == val_uninit)
+	      return boolean_false_node;
+	    else
+	      {
+		gcc_assert (TREE_CODE (val) == CONSTRUCTOR);
+		if (CONSTRUCTOR_NELTS (val) == 0)
+		  {
+		    if (CONSTRUCTOR_NO_CLEARING (val))
+		      return boolean_false_node;
+		    tree first
+		      = next_aggregate_field (TYPE_FIELDS (union_type));
+		    if (first != TREE_OPERAND (ref, 1))
+		      return boolean_false_node;
+		    val = val_zero_init;
+		    continue;
+		  }
+		else
+		  {
+		    if (CONSTRUCTOR_ELT (val, 0)->index
+			!= TREE_OPERAND (ref, 1))
+		      return boolean_false_node;
+		    val = CONSTRUCTOR_ELT (val, 0)->value;
+		    if (val == void_node)
+		      return boolean_false_node;
+		    continue;
+		  }
+	      }
+	  }
+	if (val == val_zero_init || val == val_uninit)
+	  continue;
+	gcc_assert (TREE_CODE (val) == CONSTRUCTOR);
+	unsigned int j;
+	tree field, value;
+	FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (val), j, field, value)
+	  if (field == TREE_OPERAND (ref, 1))
+	    {
+	      if (value == void_node)
+		return boolean_false_node;
+	      val = value;
+	      ref = NULL_TREE;
+	      break;
+	    }
+	if (ref == NULL_TREE)
+	  continue;
+	if (CONSTRUCTOR_NO_CLEARING (val))
+	  val = val_uninit;
+	else
+	  val = val_zero_init;
+	continue;
+      case ARRAY_REF:
+	field = eval_and_check_array_index (ctx, ref, false,
+					    non_constant_p, overflow_p,
+					    jump_target);
+	if (*jump_target)
+	  return NULL_TREE;
+	if (*non_constant_p)
+	  return t;
+	if (val == val_zero_init || val == val_uninit)
+	  continue;
+	if (TREE_CODE (val) == STRING_CST)
+	  return boolean_true_node;
+	gcc_assert (TREE_CODE (val) == CONSTRUCTOR);
+	HOST_WIDE_INT idx;
+	idx = find_array_ctor_elt (val, field, false);
+	if (idx != -1)
+	  {
+	    val = CONSTRUCTOR_ELT (val, idx)->value;
+	    if (val == void_node)
+	      return boolean_false_node;
+	    continue;
+	  }
+	if (CONSTRUCTOR_NO_CLEARING (val))
+	  val = val_uninit;
+	else
+	  val = val_zero_init;
+	continue;
+      default:
+	gcc_unreachable ();
+      }
+  return boolean_true_node;
+}
+
 /* Attempt to evaluate T which represents a call to a builtin function.
    We assume here that all builtin functions evaluate to scalar types
    represented by _CST nodes.  */
@@ -2605,6 +2857,10 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       case CP_BUILT_IN_CONSTEXPR_DIAG:
 	return cxx_eval_constexpr_diag (ctx, t, non_constant_p, overflow_p,
 					jump_target);
+
+      case CP_BUILT_IN_IS_WITHIN_LIFETIME:
+	return cxx_eval_is_within_lifetime (ctx, t, non_constant_p, overflow_p,
+					    jump_target);
 
       default:
 	break;
@@ -8171,7 +8427,8 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
       if (CLOBBER_KIND (init) >= CLOBBER_OBJECT_END
 	  && refs->is_empty ())
 	{
-	  ctx->global->destroy_value (object);
+	  ctx->global->destroy_value (object, (CLOBBER_KIND (init)
+					       > CLOBBER_OBJECT_END));
 	  return void_node;
 	}
 
