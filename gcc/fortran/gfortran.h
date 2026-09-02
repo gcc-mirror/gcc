@@ -957,7 +957,7 @@ typedef struct
      "real" (original) value here.  */
   unsigned class_pointer:1;
 
-  ENUM_BITFIELD (save_state) save:2;
+  enum save_state save:2;
 
   unsigned data:1,		/* Symbol is named in a DATA statement.  */
     is_protected:1,		/* Symbol has been marked as protected.  */
@@ -1043,13 +1043,13 @@ typedef struct
   unsigned referenced:1;
 
   /* Set if the value of the symbol has been assigned one way or another.  */
-  ENUM_BITFIELD (value_set) value_set:3;
+  enum value_set value_set:3;
 
   /* Set if the value of the symbol has been used.  */
-  ENUM_BITFIELD (value_used) value_used:3;
+  enum value_used value_used:3;
 
   /* Set if the symbol has been allocated in the current procedure.  */
-  ENUM_BITFIELD (var_allocated) allocated:2;
+  enum var_allocated allocated:2;
 
   /* Set if we already emitted a warning for this symbol and the
      middle-end should not add additional ones.  */
@@ -1059,12 +1059,12 @@ typedef struct
   unsigned is_main_program:1;
 
   /* Mutually exclusive multibit attributes.  */
-  ENUM_BITFIELD (gfc_access) access:2;
-  ENUM_BITFIELD (sym_intent) intent:2;
-  ENUM_BITFIELD (sym_flavor) flavor:4;
-  ENUM_BITFIELD (ifsrc) if_source:2;
+  enum gfc_access access:2;
+  enum sym_intent intent:2;
+  enum sym_flavor flavor:4;
+  enum ifsrc if_source:2;
 
-  ENUM_BITFIELD (procedure_type) proc:3;
+  enum procedure_type proc:3;
 
   /* Special attributes for Cray pointers, pointees.  */
   unsigned cray_pointer:1, cray_pointee:1;
@@ -1103,7 +1103,7 @@ typedef struct
   unsigned omp_declare_target_link:1;
   unsigned omp_declare_target_local:1;
   unsigned omp_declare_target_indirect:1;
-  ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
+  enum gfc_omp_device_type omp_device_type:2;
   unsigned omp_groupprivate:1;
   unsigned omp_allocate:1;
 
@@ -1115,7 +1115,7 @@ typedef struct
   unsigned oacc_declare_link:1;
 
   /* OpenACC 'routine' directive's level of parallelism.  */
-  ENUM_BITFIELD (oacc_routine_lop) oacc_routine_lop:3;
+  enum oacc_routine_lop oacc_routine_lop:3;
   unsigned oacc_routine_nohost:1;
 
   /* Attributes set by compiler extensions (!GCC$ ATTRIBUTES).  */
@@ -1480,13 +1480,13 @@ typedef struct gfc_omp_namelist
       gfc_omp_depend_doacross_op depend_doacross_op;
       struct
         {
-	  ENUM_BITFIELD (gfc_omp_map_op) op : 16;
+	  enum gfc_omp_map_op op : 16;
 	  bool readonly;
         } map;
       gfc_expr *align;
       struct
 	{
-	  ENUM_BITFIELD (gfc_omp_linear_op) op:4;
+	  enum gfc_omp_linear_op op:4;
 	  bool old_modifier;
 	} linear;
       struct gfc_common_head *common;
@@ -1750,18 +1750,18 @@ typedef struct gfc_omp_clauses
   unsigned full:1, erroneous:1;
   unsigned thread_limit_strict:1, num_threads_strict:1;
   unsigned num_teams_dims:1, thread_limit_dims:1, num_threads_dims:1;
-  ENUM_BITFIELD (gfc_omp_sched_kind) sched_kind:3;
-  ENUM_BITFIELD (gfc_omp_device_type) device_type:2;
-  ENUM_BITFIELD (gfc_omp_memorder) memorder:3;
-  ENUM_BITFIELD (gfc_omp_memorder) fail:3;
-  ENUM_BITFIELD (gfc_omp_cancel_kind) cancel:3;
-  ENUM_BITFIELD (gfc_omp_proc_bind_kind) proc_bind:3;
-  ENUM_BITFIELD (gfc_omp_depend_doacross_op) depobj_update:4;
-  ENUM_BITFIELD (gfc_omp_bind_type) bind:2;
-  ENUM_BITFIELD (gfc_omp_at_type) at:2;
-  ENUM_BITFIELD (gfc_omp_severity_type) severity:2;
-  ENUM_BITFIELD (gfc_omp_sched_kind) dist_sched_kind:3;
-  ENUM_BITFIELD (gfc_omp_fallback) fallback:2;
+  enum gfc_omp_sched_kind sched_kind:3;
+  enum gfc_omp_device_type device_type:2;
+  enum gfc_omp_memorder memorder:3;
+  enum gfc_omp_memorder fail:3;
+  enum gfc_omp_cancel_kind cancel:3;
+  enum gfc_omp_proc_bind_kind proc_bind:3;
+  enum gfc_omp_depend_doacross_op depobj_update:4;
+  enum gfc_omp_bind_type bind:2;
+  enum gfc_omp_at_type at:2;
+  enum gfc_omp_severity_type severity:2;
+  enum gfc_omp_sched_kind dist_sched_kind:3;
+  enum gfc_omp_fallback fallback:2;
 
   /* OpenACC. */
   struct gfc_expr *async_expr;
@@ -2239,7 +2239,7 @@ typedef struct gfc_common_head
   unsigned char omp_declare_target_link : 1;
   unsigned char omp_declare_target_local : 1;
   unsigned char omp_groupprivate : 1;
-  ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
+  enum gfc_omp_device_type omp_device_type:2;
   /* Provide sufficient space to hold "symbol.symbol.eq.1234567890".  */
   char name[2*GFC_MAX_SYMBOL_LEN + 1 + 14 + 1];
   struct gfc_symbol *head;
@@ -2476,7 +2476,7 @@ typedef struct gfc_namespace
   unsigned has_import_set:1;
 
   /* Flag F2018 import status */
-  ENUM_BITFIELD (importstate) import_state :3;
+  enum importstate import_state :3;
 
 
   /* Set to 1 if the namespace uses "IMPLICIT NONE (export)".  */
@@ -2655,7 +2655,7 @@ typedef struct gfc_intrinsic_arg
 
   gfc_typespec ts;
   unsigned optional:1, value:1;
-  ENUM_BITFIELD (sym_intent) intent:2;
+  enum sym_intent intent:2;
 
   struct gfc_intrinsic_arg *next;
 }
