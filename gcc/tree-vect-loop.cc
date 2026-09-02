@@ -6855,10 +6855,16 @@ vectorizable_lane_reducing (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   /* Compute number of effective vector statements for costing from the
      number of input lanes allow for excess lanes in the last input vector.  */
   unsigned int ncopies_for_cost, excess_elts;
-  bool res = vect_get_num_copies_for_invariant (loop_vinfo, node_in,
-						&ncopies_for_cost,
-						&excess_elts);
-  gcc_assert (res && ncopies_for_cost >= 1);
+  if (!vect_get_num_copies_for_invariant (loop_vinfo, node_in,
+					  &ncopies_for_cost,
+					  &excess_elts))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "incompatible vector types for invariants\n");
+      return false;
+    }
+  gcc_assert (ncopies_for_cost >= 1);
 
   if (vect_is_emulated_mixed_dot_prod (slp_node))
     {
