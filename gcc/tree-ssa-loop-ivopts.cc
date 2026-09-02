@@ -133,6 +133,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "cfganal.h"
 #include "gimple-fold.h"
+#include "gimple-range.h"
 
 /* For lang_hooks.types.type_for_mode.  */
 #include "langhooks.h"
@@ -5234,14 +5235,40 @@ difference_cannot_overflow_p (struct ivopts_data *data, tree base, tree offset)
     }
 }
 
+/* Return true if STEP * VAL, computed in OFF_TYPE, is known to be a
+   non-negative offset which does not overflow, i.e. if the value of VAL is
+   non-negative and multiplying it by STEP fits in the signed range of
+   OFF_TYPE.  */
+
+static bool
+nonneg_scaled_offset_p (tree val, HOST_WIDE_INT step, tree off_type)
+{
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (val)) || step == 0)
+    return false;
+
+  signop sgn = TYPE_SIGN (TREE_TYPE (val));
+  int_range_max r;
+  if (!get_range_query (cfun)->range_of_expr (r, val)
+      || r.undefined_p ()
+      || wi::neg_p (r.lower_bound (), sgn))
+    return false;
+
+  widest_int max = widest_int::from (r.upper_bound (), sgn);
+  widest_int limit
+    = widest_int::from (wi::max_value (TYPE_PRECISION (off_type), SIGNED),
+			SIGNED);
+  return wi::leu_p (max, wi::udiv_trunc (limit, absu_hwi (step)));
+}
+
 /* Tries to replace loop exit by one formulated in terms of a LT_EXPR
    comparison with CAND.  NITER describes the number of iterations of
-   the loops.  If successful, the comparison in COMP_P is altered accordingly.
+   the loops.  If successful, the comparison in COMP_P is altered accordingly
+   and the bound in BOUND_P is recomputed.
 
    We aim to handle the following situation:
 
    sometype *base, *p;
-   int a, b, i;
+   unsigned a, b, i;
 
    i = a;
    p = p_0 = base + a;
@@ -5265,20 +5292,32 @@ difference_cannot_overflow_p (struct ivopts_data *data, tree base, tree offset)
      }
    while (p < p_0 - a + b);
 
-   This preserves the correctness, since the pointer arithmetics does not
-   overflow.  More precisely:
+   Note that the bound has to be computed as p_0 - a + b and not from the
+   number of iterations as p_0 + (b - a): the latter is only equivalent if
+   b - a does not wrap, which is not the case when the loop rolls zero times.
+
+   For this to preserve correctness, we need to know that the values compared
+   in the transformed loop are ordered the same way as i and b are.  Since the
+   comparison of the pointers is performed modulo the size of the address
+   space, this needs a + 1 > b to be an unsigned comparison, and the offsets
+   a and b scaled by the step of the candidate to be non-negative and to not
+   overflow.  Then:
 
    1) if a + 1 <= b, then p_0 - a + b is the final value of p, hence there is no
-      overflow in computing it or the values of p.
-   2) if a + 1 > b, then we need to verify that the expression p_0 - a does not
-      overflow.  To prove this, we use the fact that p_0 = base + a.  */
+      overflow in computing it or the values of p, and the pointers increase
+      monotonically together with i.
+   2) if a + 1 > b, then the loop exits at the first test, and b <= a implies
+      that p_0 - a + b lies between the valid addresses p_0 - a and p_0, so
+      the test indeed fails.  Here we also need to verify that the expression
+      p_0 - a does not overflow, which we prove using p_0 = base + a.  */
 
 static bool
-iv_elimination_compare_lt (struct ivopts_data *data,
+iv_elimination_compare_lt (struct ivopts_data *data, struct iv_use *use,
 			   struct iv_cand *cand, enum tree_code *comp_p,
-			   class tree_niter_desc *niter)
+			   class tree_niter_desc *niter, tree *bound_p)
 {
-  tree cand_type, a, b, mbz, nit_type = TREE_TYPE (niter->niter), offset;
+  tree cand_type, a, b, mbz, nit_type = TREE_TYPE (niter->niter);
+  tree off_type, offset, bound;
   class aff_tree nit, tmpa, tmpb;
   enum tree_code comp;
   HOST_WIDE_INT step;
@@ -5302,6 +5341,11 @@ iv_elimination_compare_lt (struct ivopts_data *data,
   if (!cst_and_fits_in_hwi (cand->iv->step))
     return false;
   step = int_cst_value (cand->iv->step);
+
+  /* The bound we compute below is the value the candidate has after the last
+     iteration, so the exit test has to see the incremented candidate.  */
+  if (!stmt_after_increment (data->current_loop, cand, use->stmt))
+    return false;
 
   /* Check that the number of iterations matches the expected pattern:
      a + 1 > b ? 0 : b - a - 1.  */
@@ -5346,12 +5390,23 @@ iv_elimination_compare_lt (struct ivopts_data *data,
   if (tmpb.n != 0 || maybe_ne (tmpb.offset, 1))
     return false;
 
-  /* Finally, check that CAND->IV->BASE - CAND->IV->STEP * A does not
-     overflow.  */
-  offset = fold_build2 (MULT_EXPR, TREE_TYPE (cand->iv->step),
-			cand->iv->step,
-			fold_convert (TREE_TYPE (cand->iv->step), a));
+  /* The comparison A + 1 > B only tells us that B is at most A if it is
+     an unsigned one; otherwise B may well be negative.  */
+  if (!TYPE_UNSIGNED (TREE_TYPE (a)))
+    return false;
+
+  /* Check that CAND->IV->BASE - CAND->IV->STEP * A does not overflow.  */
+  off_type = TREE_TYPE (cand->iv->step);
+  offset = fold_build2 (MULT_EXPR, off_type, cand->iv->step,
+			fold_convert (off_type, a));
   if (!difference_cannot_overflow_p (data, cand->iv->base, offset))
+    return false;
+
+  /* The candidate is compared as an unsigned quantity, so the offsets by
+     which A and B move it away from CAND->IV->BASE - CAND->IV->STEP * A have
+     to be ordered the same way as A and B themselves.  */
+  if (!nonneg_scaled_offset_p (a, step, off_type)
+      || !nonneg_scaled_offset_p (b, step, off_type))
     return false;
 
   /* Determine the new comparison operator.  */
@@ -5362,6 +5417,22 @@ iv_elimination_compare_lt (struct ivopts_data *data,
     *comp_p = invert_tree_comparison (comp, false);
   else
     gcc_unreachable ();
+
+  /* Recompute the bound as CAND->IV->BASE - CAND->IV->STEP * A
+     + CAND->IV->STEP * B.  Deriving it from the number of iterations, as
+     cand_value_at does, is not correct here: B - A is computed in NIT_TYPE
+     and converting it to OFF_TYPE is not value preserving when the loop
+     rolls zero times and B - A is thus negative.  */
+  bound = fold_build2 (MINUS_EXPR, off_type,
+		       fold_build2 (MULT_EXPR, off_type, cand->iv->step,
+				    fold_convert (off_type, b)),
+		       offset);
+  cand_type = TREE_TYPE (cand->iv->base);
+  if (POINTER_TYPE_P (cand_type))
+    *bound_p = fold_build_pointer_plus (cand->iv->base, bound);
+  else
+    *bound_p = fold_build2 (PLUS_EXPR, cand_type, cand->iv->base,
+			    fold_convert (cand_type, bound));
 
   return true;
 }
@@ -5472,12 +5543,6 @@ may_eliminate_iv (struct ivopts_data *data,
 			 aff_combination_to_tree (&bnd));
   *comp = iv_elimination_compare (data, use);
 
-  /* It is unlikely that computing the number of iterations using division
-     would be more profitable than keeping the original induction variable.  */
-  bool cond_overflow_p;
-  if (expression_expensive_p (*bound, &cond_overflow_p))
-    return false;
-
   /* Sometimes, it is possible to handle the situation that the number of
      iterations may be zero unless additional assumptions by using <
      instead of != in the exit condition.
@@ -5485,8 +5550,15 @@ may_eliminate_iv (struct ivopts_data *data,
      TODO: we could also calculate the value MAY_BE_ZERO ? 0 : NITER and
 	   base the exit condition on it.  However, that is often too
 	   expensive.  */
-  if (!integer_zerop (desc->may_be_zero))
-    return iv_elimination_compare_lt (data, cand, comp, desc);
+  if (!integer_zerop (desc->may_be_zero)
+      && !iv_elimination_compare_lt (data, use, cand, comp, desc, bound))
+    return false;
+
+  /* It is unlikely that computing the number of iterations using division
+     would be more profitable than keeping the original induction variable.  */
+  bool cond_overflow_p;
+  if (expression_expensive_p (*bound, &cond_overflow_p))
+    return false;
 
   return true;
 }

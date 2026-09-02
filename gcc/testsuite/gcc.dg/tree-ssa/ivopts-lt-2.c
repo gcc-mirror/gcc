@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-options "-O2 -fno-tree-vectorize -fno-tree-loop-distribute-patterns -fdump-tree-ivopts" } */
 /* { dg-skip-if "PR68644" { hppa*-*-* powerpc*-*-* } } */
 
