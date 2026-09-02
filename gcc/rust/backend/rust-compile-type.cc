@@ -344,7 +344,10 @@ TyTyResolveCompile::visit (const TyTy::ADTType &type)
     }
   else if (type.get_adt_kind () == TyTy::ADTType::ADTKind::EXTERN)
     {
-      type_record = Backend::struct_type ({});
+      // Extern types are codegen'd as C's void type. They can only be used
+      // through indirection, so they're effectively always codegen'd as
+      // `void *` types.
+      type_record = void_type_node;
     }
   else if (!type.is_enum ())
     {
