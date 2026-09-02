@@ -1928,11 +1928,12 @@
 )
 
 ;; Match MOVK as a normal AND and IOR operation.
-(define_insn "aarch64_movk<mode>"
+(define_insn "*aarch64_movk<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
-	(ior:GPI (and:GPI (match_operand:GPI 1 "register_operand" "0")
-			  (match_operand:GPI 2 "const_int_operand"))
-		 (match_operand:GPI 3 "const_int_operand")))]
+	(any_or_plus:GPI
+	  (and:GPI (match_operand:GPI 1 "register_operand" "0")
+		   (match_operand:GPI 2 "const_int_operand"))
+	  (match_operand:GPI 3 "const_int_operand")))]
   "aarch64_movk_shift (rtx_mode_t (operands[2], <MODE>mode),
 		       rtx_mode_t (operands[3], <MODE>mode)) >= 0"
   {
