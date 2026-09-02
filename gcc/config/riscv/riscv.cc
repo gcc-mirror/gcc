@@ -8184,17 +8184,29 @@ riscv_get_vls_cc_attr (const_tree args, bool check_only = false)
 	abi_vlen = TREE_INT_CST_LOW (vlen_arg);
     }
 
-  if (!riscv_valid_abi_vlen_vls_cc_p (abi_vlen) && !check_only)
+  if (!riscv_valid_abi_vlen_vls_cc_p (abi_vlen))
     {
-      error_at (input_location,
-		"unsupported %<ABI_VLEN%> value %d for %qs attribute; "
-		"%<ABI_VLEN%> must be in the range [32, 16384] and must be "
-		"a power of 2",
-		abi_vlen, "riscv_vls_cc");
+      if (!check_only)
+	error_at (input_location,
+		  "unsupported %<ABI_VLEN%> value %d for %qs attribute; "
+		  "%<ABI_VLEN%> must be in the range [32, 16384] and must be "
+		  "a power of 2",
+		  abi_vlen, "riscv_vls_cc");
       return RISCV_CC_UNKNOWN;
     }
 
   return riscv_get_riscv_cc_by_abi_vlen (abi_vlen);
+}
+
+/* Return the vls_cc attribute in ATTRS, either spelling, or NULL_TREE.  */
+
+static tree
+riscv_lookup_vls_cc_attribute (tree attrs)
+{
+  tree attr = lookup_attribute ("vls_cc", attrs);
+  if (!attr)
+    attr = lookup_attribute ("riscv_vls_cc", attrs);
+  return attr;
 }
 
 /* Return true if FUNC is a riscv_vector_cc function.
@@ -8203,11 +8215,9 @@ riscv_get_vls_cc_attr (const_tree args, bool check_only = false)
 static riscv_cc
 riscv_vls_cc_function_abi (const_tree fntype, bool check_only)
 {
-  tree attr = TYPE_ATTRIBUTES (fntype);
-  bool vls_cc_p = lookup_attribute ("vls_cc", attr) != NULL_TREE
-		  || lookup_attribute ("riscv_vls_cc", attr) != NULL_TREE;
+  tree attr = riscv_lookup_vls_cc_attribute (TYPE_ATTRIBUTES (fntype));
 
-  if (!vls_cc_p)
+  if (!attr)
     return RISCV_CC_UNKNOWN;
 
   if (!TARGET_VECTOR && !check_only)
@@ -8216,7 +8226,80 @@ riscv_vls_cc_function_abi (const_tree fntype, bool check_only)
 	      "riscv_vls_cc");
 
   tree args = TREE_VALUE (attr);
-  return riscv_get_vls_cc_attr (args);
+  return riscv_get_vls_cc_attr (args, check_only);
+}
+
+/* Return true if ATTRS already carries the ABI tag TAG.  */
+
+static bool
+riscv_abi_tag_present_p (tree attrs, const char *tag)
+{
+  for (tree a = lookup_attribute ("abi_tag", attrs); a;
+       a = lookup_attribute ("abi_tag", TREE_CHAIN (a)))
+    for (tree v = TREE_VALUE (a); v; v = TREE_CHAIN (v))
+      {
+	tree s = TREE_VALUE (v);
+	if (s && TREE_CODE (s) == STRING_CST
+	    && strcmp (TREE_STRING_POINTER (s), tag) == 0)
+	  return true;
+      }
+  return false;
+}
+
+/* Implement TARGET_INSERT_ATTRIBUTES.  The psABI tags a function using the
+   fixed-length vector calling convention with riscv_vls_cc_<ABI_VLEN>.  The
+   hook runs from decl_attributes before ATTRIBUTES is applied, so the
+   convention is looked for there as well as on the type and on the decl.  */
+
+static void
+riscv_insert_attributes (tree node, tree *attributes)
+{
+  if (!lang_GNU_CXX () || TREE_CODE (node) != FUNCTION_DECL)
+    return;
+
+  tree attr = riscv_lookup_vls_cc_attribute (*attributes);
+  if (!attr && TREE_TYPE (node))
+    attr = riscv_lookup_vls_cc_attribute (TYPE_ATTRIBUTES (TREE_TYPE (node)));
+  if (!attr)
+    attr = riscv_lookup_vls_cc_attribute (DECL_ATTRIBUTES (node));
+  if (!attr)
+    return;
+
+  riscv_cc cc = riscv_get_vls_cc_attr (TREE_VALUE (attr),
+				       /* check_only */ true);
+  if (!riscv_vls_cc_p (cc))
+    return;
+
+  char tag[sizeof ("riscv_vls_cc_") + 3 * sizeof (unsigned int)];
+  int len = snprintf (tag, sizeof (tag), "riscv_vls_cc_%u",
+		      riscv_get_cc_abi_vlen (cc));
+
+  if (riscv_abi_tag_present_p (*attributes, tag)
+      || riscv_abi_tag_present_p (DECL_ATTRIBUTES (node), tag))
+    return;
+
+  tree str = build_string (len + 1, tag);
+  /* check_abi_tag_args insists on a real narrow string literal type.  */
+  TREE_TYPE (str) = build_array_type (char_type_node,
+				      build_index_type (size_int (len)));
+
+  tree existing = lookup_attribute ("abi_tag", *attributes);
+  if (existing)
+    {
+      /* The list may be shared with other decls, so copy before touching it.  */
+      tree copy = copy_list (*attributes);
+      tree slot = lookup_attribute ("abi_tag", copy);
+      TREE_VALUE (slot) = chainon (copy_list (TREE_VALUE (slot)),
+				   build_tree_list (NULL_TREE, str));
+      *attributes = copy;
+    }
+  else
+    /* Attach it directly instead of through ATTRIBUTES: decl_attributes would
+       run handle_abi_tag_attribute, which rejects an extern "C" declaration,
+       and riscv_vls_cc on one is valid today.  */
+    DECL_ATTRIBUTES (node) = tree_cons (get_identifier ("abi_tag"),
+					build_tree_list (NULL_TREE, str),
+					DECL_ATTRIBUTES (node));
 }
 
 /* Implementation of TARGET_FNTYPE_ABI, but one extra parameter `check_only`
@@ -17311,6 +17394,9 @@ riscv_memtag_tag_bitsize ()
 
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE riscv_mangle_type
+
+#undef TARGET_INSERT_ATTRIBUTES
+#define TARGET_INSERT_ATTRIBUTES riscv_insert_attributes
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P riscv_scalar_mode_supported_p
