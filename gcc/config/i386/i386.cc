@@ -181,6 +181,8 @@ enum reg_class const regclass_map[FIRST_PSEUDO_REGISTER] =
   GENERAL_REGS, GENERAL_REGS, GENERAL_REGS, GENERAL_REGS,
   /* TMM fake register placeholder */
   NO_REGS,
+  /* Block Scale register */
+  NO_REGS,
 };
 
 /* The "default" register map used in 32bit mode.  */
@@ -219,6 +221,8 @@ unsigned int const debugger_register_map[FIRST_PSEUDO_REGISTER] =
   INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
   /* TMM fake register placeholder */
   INVALID_REGNUM,
+  /* Block Scale register */
+  INVALID_REGNUM,
 };
 
 /* The "default" register map used in 64bit mode.  */
@@ -250,6 +254,8 @@ unsigned int const debugger64_register_map[FIRST_PSEUDO_REGISTER] =
   130, 131, 132, 133, 134, 135, 136, 137,
   138, 139, 140, 141, 142, 143, 144, 145,
   /* tmm fake register placeholder */
+  IGNORED_DWARF_REGNUM,
+  /* block scale register */
   IGNORED_DWARF_REGNUM,
 };
 
@@ -340,6 +346,8 @@ unsigned int const svr4_debugger_register_map[FIRST_PSEUDO_REGISTER] =
   INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
   INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM, INVALID_REGNUM,
   /* TMM fake register placeholder */
+  INVALID_REGNUM,
+  /* Block Scale register */
   INVALID_REGNUM,
 };
 
@@ -587,6 +595,12 @@ ix86_conditional_register_usage (void)
   if (! (TARGET_AMX_TILE || TARGET_ACEV1))
     {
       CLEAR_HARD_REG_BIT (accessible_reg_set, TMM_REGNUM);
+    }
+
+  /* If ACEV1 is disabled, disable bsr0.  */
+  if (! TARGET_ACEV1)
+    {
+      CLEAR_HARD_REG_BIT (accessible_reg_set, BSR0_REG);
     }
 }
 
@@ -14058,6 +14072,7 @@ print_reg (rtx x, int code, FILE *file)
 	putc (msize > 4 && TARGET_64BIT ? 'r' : 'e', file);
       /* FALLTHRU */
     case 2:
+    case 128:
     normal:
       reg = hi_reg_name[regno];
       break;

@@ -97,6 +97,11 @@
   (and (match_code "reg")
        (match_test "MASK_REGNO_P (REGNO (op))")))
 
+;; Return true if op is the block scale register.
+(define_special_predicate "bsr0_operand"
+  (and (match_code "reg")
+       (match_test "REGNO (op) == BSR0_REG")))
+
 ;; Match a DI, SI or HImode register operand.
 (define_special_predicate "int248_register_operand"
   (and (match_operand 0 "register_operand")
