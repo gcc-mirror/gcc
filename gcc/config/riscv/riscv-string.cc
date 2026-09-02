@@ -798,15 +798,14 @@ riscv_expand_block_compare (rtx result, rtx src1, rtx src2, rtx nbytes)
 }
 /* Emit straight-line code to move LENGTH bytes from SRC to DEST
    with accesses that are ALIGN bytes aligned.
-   Assume that the areas do not overlap.  */
+   Only assume overlap may happen if OVERLAP_P is true.  */
 
 static void
 riscv_block_move_straight (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
-			   unsigned HOST_WIDE_INT align)
+			   unsigned HOST_WIDE_INT align, bool overlap_p)
 {
   unsigned HOST_WIDE_INT offset = 0, delta;
   unsigned HOST_WIDE_INT bits;
-  int i;
   enum machine_mode mode;
   rtx *regs;
 
@@ -815,32 +814,71 @@ riscv_block_move_straight (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
   mode = mode_for_size (bits, MODE_INT, 0).require ();
   delta = bits / BITS_PER_UNIT;
 
-  if (2 * delta <= length)
+  if (overlap_p)
     {
-      /* Allocate a buffer for the temporary registers.  */
-      regs = XALLOCAVEC (rtx, length / delta - 1);
+      /* For overlap, read everything including the remainder into
+	 registers first, then store.  The last store can overlap the
+	 one before it.  */
 
-      /* Load as many BITS-sized chunks as possible.  Use a normal load if
-	 the source has enough alignment, otherwise use left/right pairs.  */
-      for (offset = 0, i = 0; offset + 2 * delta <= length;
-	   offset += delta, i++)
+      /* The element size is the next power of two smaller than length
+	 for small lengths or DELTA.  */
+      unsigned HOST_WIDE_INT elsz = HOST_WIDE_INT_1U << floor_log2 (length);
+      elsz = std::min (elsz, delta);
+
+      HOST_WIDE_INT nregs = CEIL (length, elsz);
+      regs = XALLOCAVEC (rtx, nregs);
+
+      scalar_int_mode elmode
+	= int_mode_for_size (elsz * BITS_PER_UNIT, 0).require ();
+
+      for (int i = 0; i < nregs; i++)
 	{
-	  regs[i] = gen_reg_rtx (mode);
-	  riscv_emit_move (regs[i], adjust_address (src, mode, offset));
+	  regs[i] = gen_reg_rtx (elmode);
+	  HOST_WIDE_INT off = i * elsz;
+	  if (i == nregs - 1)
+	    off = length - elsz;
+	  riscv_emit_move (regs[i], adjust_address (src, elmode, off));
+	}
+      for (int i = 0; i < nregs; i++)
+	{
+	  HOST_WIDE_INT off = i * elsz;
+	  if (i == nregs - 1)
+	    off = length - elsz;
+	  riscv_emit_move (adjust_address (dest, elmode, off), regs[i]);
+	}
+    }
+  else
+    {
+      unsigned HOST_WIDE_INT step = 2 * delta;
+      if (step <= length)
+	{
+	  int i;
+	  /* Allocate a buffer for the temporary registers.  */
+	  regs = XALLOCAVEC (rtx, length / delta - 1);
+
+	  /* Load as many BITS-sized chunks as possible.  Use a normal load
+	     if the source has enough alignment, otherwise use left/right
+	     pairs.  */
+	  for (offset = 0, i = 0; offset + step <= length;
+	       offset += delta, i++)
+	    {
+	      regs[i] = gen_reg_rtx (mode);
+	      riscv_emit_move (regs[i], adjust_address (src, mode, offset));
+	    }
+
+	  /* Copy the chunks to the destination.  */
+	  for (offset = 0, i = 0; offset + step <= length;
+	       offset += delta, i++)
+	    riscv_emit_move (adjust_address (dest, mode, offset), regs[i]);
 	}
 
-      /* Copy the chunks to the destination.  */
-      for (offset = 0, i = 0; offset + 2 * delta <= length;
-	   offset += delta, i++)
-	riscv_emit_move (adjust_address (dest, mode, offset), regs[i]);
-    }
-
-  /* Mop up any left-over bytes.  */
-  if (offset < length)
-    {
-      src = adjust_address (src, BLKmode, offset);
-      dest = adjust_address (dest, BLKmode, offset);
-      move_by_pieces (dest, src, length - offset, align, RETURN_BEGIN);
+      /* Mop up any left-over bytes.  */
+      if (offset < length)
+	{
+	  src = adjust_address (src, BLKmode, offset);
+	  dest = adjust_address (dest, BLKmode, offset);
+	  move_by_pieces (dest, src, length - offset, align, RETURN_BEGIN);
+	}
     }
 }
 
@@ -894,7 +932,7 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
   emit_label (label);
 
   /* Emit the loop body.  */
-  riscv_block_move_straight (dest, src, bytes_per_iter, align);
+  riscv_block_move_straight (dest, src, bytes_per_iter, align, false);
 
   /* Move on to the next block.  */
   riscv_emit_move (src_reg, plus_constant (Pmode, src_reg, bytes_per_iter));
@@ -906,16 +944,17 @@ riscv_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
 
   /* Mop up any left-over bytes.  */
   if (leftover)
-    riscv_block_move_straight (dest, src, leftover, align);
+    riscv_block_move_straight (dest, src, leftover, align, false);
   else
     emit_insn (gen_nop ());
 }
 
-/* Expand a cpymemsi instruction, which copies LENGTH bytes from
-   memory reference SRC to memory reference DEST.  */
+/* Expand a cpymemsi/movmemsi instruction, which copies or moves LENGTH bytes
+   from memory reference SRC to memory reference DEST.  Handle overlap
+   for short sequences that won't loop if OVERLAP_P is true.  */
 
 static bool
-riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
+riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length, bool overlap_p)
 {
   if (!CONST_INT_P (length))
     return false;
@@ -923,8 +962,17 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
   unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
   unsigned HOST_WIDE_INT factor, align;
 
-  if (riscv_memcpy_size_threshold >= 0
+  if (overlap_p
+      && riscv_memmove_size_threshold >= 0
+      && hwi_length > (unsigned HOST_WIDE_INT) riscv_memmove_size_threshold)
+    return false;
+  if (!overlap_p
+      && riscv_memcpy_size_threshold >= 0
       && hwi_length > (unsigned HOST_WIDE_INT) riscv_memcpy_size_threshold)
+    return false;
+
+  /* Don't bother with overlap for slow misaligned access.  */
+  if (overlap_p && riscv_slow_unaligned_access_p)
     return false;
 
   if (riscv_slow_unaligned_access_p)
@@ -945,10 +993,10 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
 
   if (hwi_length <= (RISCV_MAX_MOVE_BYTES_STRAIGHT / factor))
     {
-      riscv_block_move_straight (dest, src, hwi_length, align);
+      riscv_block_move_straight (dest, src, hwi_length, align, overlap_p);
       return true;
     }
-  else if (optimize && align >= BITS_PER_WORD)
+  else if (optimize && align >= BITS_PER_WORD && !overlap_p)
     {
       unsigned min_iter_words
 	= RISCV_MAX_MOVE_BYTES_PER_LOOP_ITER / UNITS_PER_WORD;
@@ -975,21 +1023,22 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
 
 /* This function delegates block-move expansion to either the vector
    implementation or the scalar one.  Return TRUE if successful or FALSE
-   otherwise.  Assume that the memory regions do not overlap.  */
+   otherwise.  Assume that the memory regions may overlap if OVERLAP_P
+   is true.  */
 
 bool
-riscv_expand_block_move (rtx dest, rtx src, rtx length)
+riscv_expand_block_move (rtx dest, rtx src, rtx length, bool overlap_p)
 {
   if (TARGET_VECTOR
       && stringop_strategy & STRATEGY_VECTOR)
     {
-      bool ok = riscv_vector::expand_block_move (dest, src, length, false);
+      bool ok = riscv_vector::expand_block_move (dest, src, length, overlap_p);
       if (ok)
 	return true;
     }
 
   if (stringop_strategy & STRATEGY_SCALAR)
-    return riscv_expand_block_move_scalar (dest, src, length);
+    return riscv_expand_block_move_scalar (dest, src, length, overlap_p);
 
   return false;
 }
@@ -1223,7 +1272,7 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
 /* Used by cpymemsi in riscv.md .  */
 
 bool
-expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
+expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool overlap_p)
 {
   /*
     memcpy:
@@ -1250,13 +1299,13 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
   if (CONST_INT_P (length_in))
     {
       HOST_WIDE_INT length = INTVAL (length_in);
-      if (movmem_p
+      if (overlap_p
 	  && riscv_memmove_size_threshold >= 0
 	  && length > riscv_memmove_size_threshold)
 	return false;
-      else if (!movmem_p
-	       && riscv_memcpy_size_threshold >= 0
-	       && length > riscv_memcpy_size_threshold)
+      if (!overlap_p
+	  && riscv_memcpy_size_threshold >= 0
+	  && length > riscv_memcpy_size_threshold)
 	return false;
     }
   else if (riscv_memmove_size_threshold != -1)
@@ -1267,7 +1316,7 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
      count however for situations where the entire move fits in one vector
      operation we can do all reads before doing any writes so we don't have to
      worry so generate the inline vector code in such situations.  */
-  if (info.need_loop && movmem_p)
+  if (info.need_loop && overlap_p)
     return false;
 
   rtx src, dst;

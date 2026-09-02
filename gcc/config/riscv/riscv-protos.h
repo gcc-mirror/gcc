@@ -224,7 +224,7 @@ extern bool vsetvl_insn_p (rtx_insn *);
 
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_compare (rtx, rtx, rtx, rtx);
-extern bool riscv_expand_block_move (rtx, rtx, rtx);
+extern bool riscv_expand_block_move (rtx, rtx, rtx, bool);
 extern bool riscv_expand_block_clear (rtx, rtx);
 
 /* Information about one CPU we know about.  */
