@@ -8993,7 +8993,6 @@ vect_prologue_cost_for_slp (slp_tree node, unsigned nvectors,
     }
   /* ???  We're just tracking whether vectors in a single node are the same.
      Ideally we'd do something more global.  */
-  bool passed = false;
   for (unsigned int start : starts)
     {
       vect_cost_for_stmt kind;
@@ -9003,15 +9002,8 @@ vect_prologue_cost_for_slp (slp_tree node, unsigned nvectors,
 	kind = scalar_to_vec;
       else
 	kind = vec_construct;
-      /* The target cost hook has no idea which part of the SLP node
-	 we are costing so avoid passing it down more than once.  Pass
-	 it to the first vec_construct or scalar_to_vec part since for those
-	 the x86 backend tries to account for GPR to XMM register moves.  */
-      record_stmt_cost (cost_vec, 1, kind, nullptr,
-			(kind != vector_load && !passed) ? node : nullptr,
+      record_stmt_cost (cost_vec, 1, kind, nullptr, node,
 			vectype, 0, vect_prologue);
-      if (kind != vector_load)
-	passed = true;
     }
 }
 
@@ -9385,9 +9377,14 @@ add_slp_costs (vector_costs *costs, stmt_vector_for_cost& cost_vec)
       while (end < cost_vec.length ()
 	     && cost_vec[start].node == cost_vec[end].node)
 	end++;
-      costs->add_slp_cost (cost_vec[start].node,
-			   array_slice<stmt_info_for_cost>
-			     (cost_vec.begin () + start, end - start));
+      if (cost_vec[start].node)
+	costs->add_slp_cost (cost_vec[start].node,
+			     array_slice<stmt_info_for_cost>
+			       (cost_vec.begin () + start, end - start));
+      else
+	costs->vector_costs::add_slp_cost (cost_vec[start].node,
+			     array_slice<stmt_info_for_cost>
+			       (cost_vec.begin () + start, end - start));
       start = end;
     }
 }

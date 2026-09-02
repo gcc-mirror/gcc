@@ -26518,6 +26518,7 @@ public:
 			      stmt_vec_info stmt_info, slp_tree node,
 			      tree vectype, int misalign,
 			      vect_cost_model_location where) override;
+  unsigned int add_slp_cost (slp_tree, const array_slice<stmt_info_for_cost> &);
   void finish_cost (const vector_costs *) override;
   bool better_main_loop_than_p (const vector_costs *) const override;
   bool better_epilogue_loop_than_p (const vector_costs *other,
@@ -27111,75 +27112,6 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       stmt_cost *= (GET_MODE_BITSIZE (TYPE_MODE (ls_type))
 		    / GET_MODE_BITSIZE (TYPE_MODE (ls_eltype)) + 1);
     }
-  else if ((kind == vec_construct || kind == scalar_to_vec)
-	   && node
-	   && SLP_TREE_DEF_TYPE (node) == vect_external_def)
-    {
-      stmt_cost = ix86_default_vector_cost (kind, mode);
-      unsigned i;
-      tree op;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
-	if (TREE_CODE (op) == SSA_NAME)
-	  TREE_VISITED (op) = 0;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
-	{
-	  if (TREE_CODE (op) != SSA_NAME
-	      || TREE_VISITED (op))
-	    continue;
-	  TREE_VISITED (op) = 1;
-	  gimple *def = SSA_NAME_DEF_STMT (op);
-	  tree tem;
-	  /* Look through a conversion.  */
-	  if (is_gimple_assign (def)
-	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
-	      && ((tem = gimple_assign_rhs1 (def)), true)
-	      && TREE_CODE (tem) == SSA_NAME)
-	    def = SSA_NAME_DEF_STMT (tem);
-	  /* When the component is loaded from memory without sign-
-	     or zero-extension we can move it to a vector register and/or
-	     insert it via vpinsr with a memory operand.  */
-	  if (gimple_assign_load_p (def)
-	      && tree_nop_conversion_p (TREE_TYPE (op),
-					TREE_TYPE (gimple_assign_lhs (def)))
-	      && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op))) > 1
-		  || TARGET_SSE4_1))
-	    ;
-	  /* When the component is extracted from a vector it is already
-	     in a vector register.  */
-	  else if (is_gimple_assign (def)
-		   && gimple_assign_rhs_code (def) == BIT_FIELD_REF
-		   && VECTOR_TYPE_P (TREE_TYPE
-				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))
-	    ;
-	  else
-	    {
-	      if (fp)
-		{
-		  /* Scalar FP values residing in x87 registers need to be
-		     spilled and reloaded.  */
-		  auto mode2 = TYPE_MODE (TREE_TYPE (op));
-		  if (IS_STACK_MODE (mode2))
-		    {
-		      int cost
-			= (ix86_cost->hard_register.fp_store[mode2 == SFmode
-							     ? 0 : 1]
-			   + ix86_cost->sse_load[sse_store_index (mode2)]);
-		      stmt_cost += COSTS_N_INSNS (cost) / 2;
-		    }
-		  m_num_sse_needed[where]++;
-		}
-	      else
-		{
-		  m_num_gpr_needed[where]++;
-
-		  stmt_cost += COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
-		}
-	    }
-	}
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
-	if (TREE_CODE (op) == SSA_NAME)
-	  TREE_VISITED (op) = 0;
-    }
   if (stmt_cost == -1)
     stmt_cost = ix86_default_vector_cost (kind, mode);
 
@@ -27234,6 +27166,92 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
   m_costs[where] += retval;
 
   return retval;
+}
+
+unsigned
+ix86_vector_costs::add_slp_cost (slp_tree node,
+				 const array_slice<stmt_info_for_cost> &parts)
+{
+  int stmt_cost = 0;
+
+  /* For vector construction account for the cost of moving data between
+     GRP and XMM.  As we are looking at the SLP nodes elements, avoid
+     duplicate costs by doing this in add_slp_cost, leaving the actual
+     splat/ctor cost to add_stmt_cost.  */
+  if (SLP_TREE_DEF_TYPE (node) == vect_external_def)
+    {
+      unsigned i;
+      tree op;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	{
+	  if (TREE_CODE (op) != SSA_NAME
+	      || TREE_VISITED (op))
+	    continue;
+	  TREE_VISITED (op) = 1;
+	  gimple *def = SSA_NAME_DEF_STMT (op);
+	  tree tem;
+	  /* Look through a conversion.  */
+	  if (is_gimple_assign (def)
+	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def))
+	      && ((tem = gimple_assign_rhs1 (def)), true)
+	      && TREE_CODE (tem) == SSA_NAME)
+	    def = SSA_NAME_DEF_STMT (tem);
+	  /* When the component is loaded from memory without sign-
+	     or zero-extension we can move it to a vector register and/or
+	     insert it via vpinsr with a memory operand.  */
+	  if (gimple_assign_load_p (def)
+	      && tree_nop_conversion_p (TREE_TYPE (op),
+					TREE_TYPE (gimple_assign_lhs (def)))
+	      && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op))) > 1
+		  || TARGET_SSE4_1))
+	    ;
+	  /* When the component is extracted from a vector it is already
+	     in a vector register.  */
+	  else if (is_gimple_assign (def)
+		   && gimple_assign_rhs_code (def) == BIT_FIELD_REF
+		   && VECTOR_TYPE_P (TREE_TYPE
+				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))
+	    ;
+	  else
+	    {
+	      if (FLOAT_TYPE_P (TREE_TYPE (op)))
+		{
+		  /* Scalar FP values residing in x87 registers need to be
+		     spilled and reloaded.  */
+		  auto mode2 = TYPE_MODE (TREE_TYPE (op));
+		  if (IS_STACK_MODE (mode2))
+		    {
+		      int cost
+			= (ix86_cost->hard_register.fp_store[mode2 == SFmode
+							     ? 0 : 1]
+			   + ix86_cost->sse_load[sse_store_index (mode2)]);
+		      stmt_cost += COSTS_N_INSNS (cost) / 2;
+		    }
+		  m_num_sse_needed[vect_prologue]++;
+		}
+	      else
+		{
+		  m_num_gpr_needed[vect_prologue]++;
+
+		  stmt_cost += COSTS_N_INSNS (ix86_cost->integer_to_sse) / 2;
+		}
+	    }
+	}
+      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_OPS (node), i, op)
+	if (TREE_CODE (op) == SSA_NAME)
+	  TREE_VISITED (op) = 0;
+
+      if (stmt_cost > 0
+	  && dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "node %p gpr->xmm moves costs %d in prologue\n",
+		 (void *)node, stmt_cost);
+      m_costs[vect_prologue] += stmt_cost;
+    }
+
+  return stmt_cost + vector_costs::add_slp_cost (node, parts);
 }
 
 void
