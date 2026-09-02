@@ -456,7 +456,16 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  continue;
 	}
 
-      if (val && TYPE_SIZE (c->type) == TYPE_SIZE (TREE_TYPE (val)))
+      if (val
+	  && (c->type == TREE_TYPE (val)
+	      || (TYPE_SIZE (c->type) == TYPE_SIZE (TREE_TYPE (val))
+		  /* Avoid precision mismatch like with bit-fields where the
+		     VIEW_CONVERT_EXPR does not truncate excess bits
+		     appropriately.  */
+		  && ((!INTEGRAL_TYPE_P (c->type)
+		       || type_has_mode_precision_p (c->type))
+		      && (!INTEGRAL_TYPE_P (TREE_TYPE (val))
+			  || type_has_mode_precision_p (TREE_TYPE (val)))))))
 	{
 	  if (c->type != TREE_TYPE (val))
 	    val = fold_unary (VIEW_CONVERT_EXPR, c->type, val);
