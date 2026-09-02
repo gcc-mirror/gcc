@@ -5440,6 +5440,13 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 		temp = copy_to_reg (temp);
 	    }
 
+	  if (targetm.simt.stack_variable_offset)
+	    temp = simplify_gen_binary (PLUS, Pmode, temp,
+					targetm.simt.stack_variable_offset
+					(type
+					 ? tree_to_poly_uint64 (TYPE_SIZE_UNIT (type))
+					 : poly_uint64 (rtx_to_poly_int64 (size))));
+
 	  target = gen_rtx_MEM (BLKmode, temp);
 
 	  /* We do *not* set_mem_attributes here, because incoming arguments
@@ -5593,6 +5600,17 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 #endif
 	{
 	  addr = simplify_gen_binary (PLUS, Pmode, args_addr, args_so_far);
+
+	  if (targetm.simt.stack_variable_offset)
+	    {
+	      rtx offset = targetm.simt.stack_variable_offset
+			     (type
+			      ? tree_to_poly_uint64 (TYPE_SIZE_UNIT (type))
+			      : poly_uint64 (GET_MODE_SIZE (mode)));
+	      if (offset)
+		addr = simplify_gen_binary (PLUS, Pmode, addr, offset);
+	    }
+
 	  dest = gen_rtx_MEM (mode, memory_address (mode, addr));
 
 	  /* We do *not* set_mem_attributes here, because incoming arguments
@@ -12368,7 +12386,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		  align = MAX (align, TYPE_ALIGN (TREE_TYPE (tem)));
 		align = MIN (align, (unsigned) MAX_SUPPORTED_STACK_ALIGNMENT);
 	      }
-	    memloc = assign_stack_local (tem_mode, size, align);
+	    memloc = assign_stack_local_simt (tem_mode, size, align);
 	    emit_move_insn (memloc, op0);
 	    op0 = memloc;
 	    clear_mem_expr = true;

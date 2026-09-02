@@ -550,6 +550,50 @@ assign_stack_local (machine_mode mode, poly_int64 size, int align)
 {
   return assign_stack_local_1 (mode, size, align, ASLK_RECORD_PAD);
 }
+
+/* Return the stack space required for an object of SIZE bytes whose value
+   may differ between SIMT threads.  On SIMT targets each thread needs its
+   own copy, so this may be larger than SIZE.  */
+
+poly_int64
+simt_stack_object_size (poly_int64 size)
+{
+  if (targetm.simt.stack_variable_padding)
+    return targetm.simt.stack_variable_padding (size);
+  return size;
+}
+
+/* ADDR is the address of a stack slot allocated with room for
+   simt_stack_object_size (SIZE) bytes.  Return the address of the copy that
+   belongs to the current SIMT thread.  */
+
+rtx
+simt_stack_object_address (rtx addr, poly_int64 size)
+{
+  if (!targetm.simt.stack_variable_offset)
+    return addr;
+
+  rtx offset = targetm.simt.stack_variable_offset (size);
+  if (!offset || offset == const0_rtx)
+    return addr;
+  return gen_rtx_PLUS (Pmode, addr, offset);
+}
+
+/* Like assign_stack_local, but for an object whose value may differ between
+   SIMT threads, such as a parameter or other user-visible value.  Each SIMT
+   thread gets its own copy, and the returned MEM refers to the current
+   thread's copy.  Do not use this for slots that hold wave-uniform state, or
+   after the SIMT transformations have run.  */
+
+rtx
+assign_stack_local_simt (machine_mode mode, poly_int64 size, int align)
+{
+  rtx slot = assign_stack_local (mode, simt_stack_object_size (size), align);
+  rtx addr = simt_stack_object_address (XEXP (slot, 0), size);
+  if (addr != XEXP (slot, 0))
+    slot = replace_equiv_address_nv (slot, addr);
+  return slot;
+}
 
 /* In order to evaluate some expressions, such as function calls returning
    structures in memory, we need to temporarily allocate stack locations.
@@ -770,7 +814,8 @@ find_temp_slot_from_address (rtx x)
 
   /* Last resort: Address is a virtual stack var address.  */
   poly_int64 offset;
-  if (strip_offset (x, &offset) == virtual_stack_vars_rtx)
+  rtx base = strip_offset (x, &offset);
+  if (base == virtual_stack_vars_rtx)
     {
       int i;
       for (i = max_slot_level (); i >= 0; i--)
@@ -778,6 +823,13 @@ find_temp_slot_from_address (rtx x)
 	  if (known_in_range_p (offset, p->base_offset, p->full_size))
 	    return p;
     }
+
+  /* The address of a SIMT thread's copy of a temporary has a non-constant
+     per-thread term added; see simt_stack_object_address.  */
+  if (targetm.simt.stack_variable_offset
+      && GET_CODE (base) == PLUS
+      && !CONSTANT_P (XEXP (base, 1)))
+    return find_temp_slot_from_address (XEXP (base, 0));
 
   return NULL;
 }
@@ -802,6 +854,15 @@ assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
   gcc_assert (known_size_p (size));
 
   align = get_stack_local_alignment (type, mode);
+
+  /* Temporaries hold values that may differ between SIMT threads, so each
+     thread needs its own copy.  From here on SIZE is the space for all the
+     copies; LANE_SIZE is the size of each one.  */
+  poly_int64 lane_size = (mode == BLKmode
+			  ? aligned_upper_bound (size,
+						 (int) align / BITS_PER_UNIT)
+			  : size);
+  size = simt_stack_object_size (lane_size);
 
   /* Try to find an available, already-allocated temporary of the proper
      mode which meets the size and alignment requirements.  Choose the
@@ -930,6 +991,14 @@ assign_stack_temp_for_type (machine_mode mode, poly_int64 size, tree type)
   pp = temp_slots_at_level (p->level);
   insert_slot_to_list (p, pp);
   insert_temp_slot_address (XEXP (p->slot, 0), p);
+
+  /* Select this SIMT thread's copy.  */
+  rtx lane_addr = simt_stack_object_address (addr, lane_size);
+  if (lane_addr != addr)
+    {
+      addr = lane_addr;
+      insert_temp_slot_address (addr, p);
+    }
 
   /* Create a new MEM rtx to avoid clobbering MEM flags of old slots.  */
   slot = gen_rtx_MEM (mode, XEXP (p->slot, 0));
@@ -2676,6 +2745,15 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
   stack_parm = crtl->args.internal_arg_pointer;
   if (offset_rtx != const0_rtx)
     stack_parm = gen_rtx_PLUS (Pmode, stack_parm, offset_rtx);
+
+  if (targetm.simt.stack_variable_offset)
+    {
+      rtx hook_offset = targetm.simt.stack_variable_offset
+			  (tree_to_poly_uint64 (TYPE_SIZE_UNIT (TREE_TYPE (parm))));
+      if (hook_offset)
+	stack_parm = gen_rtx_PLUS (Pmode, stack_parm, hook_offset);
+    }
+
   stack_parm = gen_rtx_MEM (data->arg.mode, stack_parm);
 
   if (!data->arg.pass_by_reference)
@@ -2952,8 +3030,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	{
 	  rtx allocsize = gen_int_mode (size_stored, Pmode);
 	  get_dynamic_stack_size (&allocsize, 0, DECL_ALIGN (parm), NULL);
-	  stack_parm = assign_stack_local (BLKmode, UINTVAL (allocsize),
-					   MAX_SUPPORTED_STACK_ALIGNMENT);
+	  stack_parm = assign_stack_local_simt (BLKmode, UINTVAL (allocsize),
+						MAX_SUPPORTED_STACK_ALIGNMENT);
 	  rtx addr = align_dynamic_address (XEXP (stack_parm, 0),
 					    DECL_ALIGN (parm));
 	  mark_reg_pointer (addr, DECL_ALIGN (parm));
@@ -2961,8 +3039,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	  MEM_NOTRAP_P (stack_parm) = 1;
 	}
       else
-	stack_parm = assign_stack_local (BLKmode, size_stored,
-					 DECL_ALIGN (parm));
+	stack_parm = assign_stack_local_simt (BLKmode, size_stored,
+					      DECL_ALIGN (parm));
       if (known_eq (GET_MODE_SIZE (GET_MODE (entry_parm)), size))
 	PUT_MODE (stack_parm, GET_MODE (entry_parm));
       set_mem_attributes (stack_parm, parm, 1);
@@ -3367,9 +3445,10 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
 					    TYPE_MODE (TREE_TYPE (parm)),
 					    TYPE_ALIGN (TREE_TYPE (parm)));
 	  parmreg
-	    = assign_stack_local (TYPE_MODE (TREE_TYPE (parm)),
-				  GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (parm))),
-				  align);
+	    = assign_stack_local_simt (TYPE_MODE (TREE_TYPE (parm)),
+				       GET_MODE_SIZE (TYPE_MODE
+						      (TREE_TYPE (parm))),
+				       align);
 	  set_mem_attributes (parmreg, parm, 1);
 	}
 
@@ -3524,9 +3603,10 @@ assign_parm_setup_stack (struct assign_parm_data_all *all, tree parm,
 						    align)))
 	    align = GET_MODE_ALIGNMENT (GET_MODE (data->entry_parm));
 	  data->stack_parm
-	    = assign_stack_local (GET_MODE (data->entry_parm),
-				  GET_MODE_SIZE (GET_MODE (data->entry_parm)),
-				  align);
+	    = assign_stack_local_simt (GET_MODE (data->entry_parm),
+				       GET_MODE_SIZE (GET_MODE
+						      (data->entry_parm)),
+				       align);
 	  align = MEM_ALIGN (data->stack_parm);
 	  set_mem_attributes (data->stack_parm, parm, 1);
 	  set_mem_align (data->stack_parm, align);
@@ -3604,7 +3684,7 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all,
 
 	      /* split_complex_arg put the real and imag parts in
 		 pseudos.  Move them to memory.  */
-	      tmp = assign_stack_local (DECL_MODE (parm), size, align);
+	      tmp = assign_stack_local_simt (DECL_MODE (parm), size, align);
 	      set_mem_attributes (tmp, parm, 1);
 	      rmem = adjust_address_nv (tmp, inner, 0);
 	      imem = adjust_address_nv (tmp, inner, GET_MODE_SIZE (inner));
@@ -4067,6 +4147,10 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
   round_boundary = targetm.calls.function_arg_round_boundary (passed_mode,
 							      type);
   locate->where_pad = where_pad;
+
+  if (targetm.simt.stack_variable_padding)
+    sizetree = size_int (targetm.simt.stack_variable_padding
+			 (tree_to_uhwi (sizetree)));
 
   /* Alignment can't exceed MAX_SUPPORTED_STACK_ALIGNMENT.  */
   if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
@@ -5248,7 +5332,7 @@ expand_function_start (tree subr)
 	    = build_decl (DECL_SOURCE_LOCATION (parm), VAR_DECL,
 			  DECL_NAME (parm), TREE_TYPE (parm));
 	  rtx saved_static_chain_rtx
-	    = assign_stack_local (Pmode, GET_MODE_SIZE (Pmode), 0);
+	    = assign_stack_local_simt (Pmode, GET_MODE_SIZE (Pmode), 0);
 	  SET_DECL_RTL (saved_static_chain_decl, saved_static_chain_rtx);
 	  emit_move_insn (saved_static_chain_rtx, chain);
 	  SET_DECL_VALUE_EXPR (parm, saved_static_chain_decl);

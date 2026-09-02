@@ -3148,6 +3148,10 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   /* Args grow down.  Not handled by generic routines.  */
 
   u = fold_convert (sizetype, size_in_bytes (type));
+  /* In SIMT mode each stack-passed argument has one copy per lane; see
+     gcn_simt_stack_variable_padding.  */
+  if (flag_simt_mode)
+    u = size_binop (MULT_EXPR, u, size_int (64));
   u = fold_build1 (NEGATE_EXPR, sizetype, u);
   t = fold_build_pointer_plus (valist, u);
 
@@ -3160,6 +3164,19 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   t = build2 (MODIFY_EXPR, valist_type, valist, t);
 
   t = fold_convert (ptr, t);
+
+  /* Select this lane's copy; see gcn_simt_stack_variable_offset.  */
+  if (flag_simt_mode)
+    {
+      tree lane = build_call_expr (gcn_builtin_decl (GCN_BUILTIN_OMP_DIM_POS,
+						     true),
+				   1, build_int_cst (integer_type_node, 2));
+      lane = fold_convert (unsigned_type_node, lane);
+      u = size_binop (MULT_EXPR, fold_convert (sizetype, lane),
+		      fold_convert (sizetype, size_in_bytes (type)));
+      t = fold_build_pointer_plus (t, u);
+    }
+
   t = build_va_arg_indirect_ref (t);
 
   if (indirect)
@@ -6059,6 +6076,36 @@ gcn_prefer_gather_scatter (machine_mode ARG_UNUSED (mode),
 }
 
 /* }}}  */
+/* {{{ SIMT.  */
+
+/* Implement TARGET_STACK_VARIABLE_PADDING.  */
+
+poly_uint64
+gcn_simt_stack_variable_padding (poly_uint64 default_size)
+{
+  if (!flag_simt_mode)
+    return default_size;
+
+  return default_size * 64;
+}
+
+/* Implement TARGET_STACK_VARIABLE_OFFSET.  */
+
+rtx
+gcn_simt_stack_variable_offset (poly_uint64 unit_size)
+{
+  if (!flag_simt_mode)
+    return const0_rtx;
+
+  rtx _0_1_2_3 = gen_rtx_REG (SImode, VGPR_REGNO (1));
+  rtx _0_1_2_3_di = gen_rtx_ZERO_EXTEND (DImode, _0_1_2_3);
+  rtx result = gen_rtx_MULT (DImode, _0_1_2_3_di,
+			     gen_int_mode (unit_size, DImode));
+
+  return result;
+}
+
+/* }}} */
 /* {{{ md_reorg pass.  */
 
 /* Identify VMEM instructions from their "type" attribute.  */
@@ -8428,6 +8475,10 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_small_register_classes_for_mode_p
 #undef  TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS gcn_spill_class
+#undef  TARGET_SIMT_STACK_VARIABLE_PADDING
+#define TARGET_SIMT_STACK_VARIABLE_PADDING gcn_simt_stack_variable_padding
+#undef  TARGET_SIMT_STACK_VARIABLE_OFFSET
+#define TARGET_SIMT_STACK_VARIABLE_OFFSET gcn_simt_stack_variable_offset
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING gcn_strict_argument_naming
 #undef  TARGET_TRAMPOLINE_INIT

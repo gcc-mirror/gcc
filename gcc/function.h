@@ -668,6 +668,9 @@ extern unsigned int spill_slot_alignment (machine_mode);
 
 extern rtx assign_stack_local_1 (machine_mode, poly_int64, int, int);
 extern rtx assign_stack_local (machine_mode, poly_int64, int);
+extern poly_int64 simt_stack_object_size (poly_int64);
+extern rtx simt_stack_object_address (rtx, poly_int64);
+extern rtx assign_stack_local_simt (machine_mode, poly_int64, int);
 extern rtx assign_stack_temp_for_type (machine_mode, poly_int64, tree);
 extern rtx assign_stack_temp (machine_mode, poly_int64);
 extern rtx assign_temp (tree, int, int);
