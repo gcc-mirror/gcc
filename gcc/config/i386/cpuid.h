@@ -145,6 +145,9 @@
 #define bit_AVXIFMA     (1 << 23)
 #define bit_MOVRS	(1 << 31)
 
+/* %ecx */
+#define bit_ACE		(1 << 11)
+
 /* %edx */
 #define bit_AVXVNNIINT8 (1 << 4)
 #define bit_AVXNECONVERT	(1 << 5)

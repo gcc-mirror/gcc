@@ -9566,6 +9566,11 @@ Enable/disable the generation of the AMX-MOVRS instructions.
 @itemx no-avx10v2aux
 Enable/disable the generation of the AVX10V2AUX instructions.
 
+@atindex @code{target("acev1")}, x86
+@item acev1
+@itemx no-acev1
+Enable/disable the generation of the ACEV1 instructions.
+
 @atindex @code{target("cld")}, x86
 @item cld
 @itemx no-cld

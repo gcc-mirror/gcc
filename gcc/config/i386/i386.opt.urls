@@ -638,3 +638,6 @@ UrlSuffix(gcc/x86-Options.html#index-mavx512bmm)
 mavx10v2aux
 UrlSuffix(gcc/x86-Options.html#index-mavx10v2aux)
 
+macev1
+UrlSuffix(gcc/x86-Options.html#index-macev1)
+

@@ -2682,6 +2682,33 @@ Test system has support for the CORE-V BI extension.
 @item autoincdec
 Target supports autoincrement/decrement addressing.
 
+@item acev1
+Target supports the execution of @code{acev1} instructions.
+
+@item amx_avx512
+Target supports the execution of @code{amx-avx512} instructions.
+
+@item amx_bf16
+Target supports the execution of @code{amx-bf16} instructions.
+
+@item amx_complex
+Target supports the execution of @code{amx-complex} instructions.
+
+@item amx_fp16
+Target supports the execution of @code{amx-fp16} instructions.
+
+@item amx_fp8
+Target supports the execution of @code{amx-fp8} instructions.
+
+@item amx_int8
+Target supports the execution of @code{amx-int8} instructions.
+
+@item amx_movrs
+Target supports the execution of @code{amx-movrs} instructions.
+
+@item amx_tile
+Target supports the execution of @code{amx-tile} instructions.
+
 @item avx
 Target supports compiling @code{avx} instructions.
 
@@ -2726,30 +2753,6 @@ Target supports the execution of @code{avxvnniint8} instructions.
 
 @item avxvnniint16
 Target supports the execution of @code{avxvnniint16} instructions.
-
-@item amx_tile
-Target supports the execution of @code{amx-tile} instructions.
-
-@item amx_int8
-Target supports the execution of @code{amx-int8} instructions.
-
-@item amx_bf16
-Target supports the execution of @code{amx-bf16} instructions.
-
-@item amx_avx512
-Target supports the execution of @code{amx-avx512} instructions.
-
-@item amx_complex
-Target supports the execution of @code{amx-complex} instructions.
-
-@item amx_fp16
-Target supports the execution of @code{amx-fp16} instructions.
-
-@item amx_movrs
-Target supports the execution of @code{amx-movrs} instructions.
-
-@item amx_fp8
-Target supports the execution of @code{amx-fp8} instructions.
 
 @item can_deref_null
 Target runtime permits dereferencing a null pointer without trapping, for

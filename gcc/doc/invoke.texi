@@ -1553,7 +1553,7 @@ See RS/6000 and PowerPC Options.
 -mavxneconvert  -mcmpccxadd  -mamx-fp16  -mprefetchi  -mraoint
 -mamx-complex  -mavxvnniint16  -msm3  -msha512  -msm4  -mapxf
 -musermsr  -mavx10.1  -mavx10.2  -mamx-avx512  -mmovrs  -mamx-movrs 
--mavx512bmm  -mavx10v2aux
+-mavx512bmm  -mavx10v2aux  -macev1
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl  -mwidekl
@@ -36309,6 +36309,12 @@ Support AMX-MOVRS built-in functions and code generation.
 @item -mavx10v2aux
 Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
 AVX10.1 and AVX10V2AUX built-in functions and code generation.
+
+@opindex macev1
+@opindex mno-acev1
+@item -macev1
+Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX, AVX2,
+AVX10.1 and ACEV1 built-in functions and code generation.
 @end table
 
 These additional options are available for the x86 processor family.

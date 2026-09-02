@@ -802,8 +802,9 @@ get_available_features (struct __processor_model *cpu_model,
 #define XSTATE_ZMM			0x40
 #define XSTATE_HI_ZMM			0x80
 #define XSTATE_TILECFG			0x20000
-#define XSTATE_TILEDATA		0x40000
+#define XSTATE_TILEDATA			0x40000
 #define XSTATE_APX_F			0x80000
+#define XSTATE_BSR			0x100000
 
 #define XCR_AVX_ENABLED_MASK \
   (XSTATE_SSE | XSTATE_YMM)
@@ -811,17 +812,21 @@ get_available_features (struct __processor_model *cpu_model,
   (XSTATE_SSE | XSTATE_YMM | XSTATE_OPMASK | XSTATE_ZMM | XSTATE_HI_ZMM)
 #define XCR_AMX_ENABLED_MASK \
   (XSTATE_TILECFG | XSTATE_TILEDATA)
+#define XCR_ACE_ENABLED_MASK \
+  (XSTATE_TILECFG | XSTATE_TILEDATA | XSTATE_BSR)
 #define XCR_APX_F_ENABLED_MASK XSTATE_APX_F
 
-  /* Check if AVX, AVX512 and APX are usable.  */
+  /* Check if AVX, AVX512, AMX, APX and ACE are usable.  */
   int avx_usable = 0;
   int avx512_usable = 0;
   int amx_usable = 0;
   int apx_usable = 0;
+  int ace_usable = 0;
   /* Check if KL is usable.  */
   int has_kl = 0;
   /* Record AVX10 version.  */
   int avx10_set = 0;
+  int ace_set = 0, avx10v2aux_set = 0;
   int version = 0;
   if ((ecx & bit_OSXSAVE))
     {
@@ -842,6 +847,8 @@ get_available_features (struct __processor_model *cpu_model,
 		    == XCR_AMX_ENABLED_MASK);
       apx_usable = ((xcrlow & XCR_APX_F_ENABLED_MASK)
 		    == XCR_APX_F_ENABLED_MASK);
+      ace_usable = ((xcrlow & XCR_ACE_ENABLED_MASK)
+		    == XCR_ACE_ENABLED_MASK);
     }
 
 #define set_feature(f) \
@@ -1045,6 +1052,14 @@ get_available_features (struct __processor_model *cpu_model,
 	      if (edx & bit_AVX10)
 		avx10_set = 1;
 	    }
+	  if (avx10_set)
+	    {
+	      /* The XSTATE for vector registers has been checked
+		 when setting avx10_set.  */
+	      if (ace_usable)
+		if (ecx & bit_ACE)
+		  ace_set = 1;
+	    }
 	  if (amx_usable)
 	    {
 	      if (eax & bit_AMX_FP16)
@@ -1133,7 +1148,32 @@ get_available_features (struct __processor_model *cpu_model,
 	{
 	  __cpuid_count (0x24, 1, eax, ebx, ecx, edx);
 	  if (ecx & bit_AVX10V2AUX)
-	    set_feature (FEATURE_AVX10V2AUX);
+	    {
+	      set_feature (FEATURE_AVX10V2AUX);
+	      avx10v2aux_set = 1;
+	    }
+	}
+    }
+
+  /* Get Advanced Features at level 0x1d (eax = 0x1d).
+     ACE check must be put after AVX10 check to get AVX10 features.
+     TODO: Change the condition after AVX10V1AUX is added.  */
+  if (version >= 2 && avx10v2aux_set && ace_set && max_cpuid_level >= 0x1d)
+    {
+      __cpuid_count (0x1d, 0, eax, ebx, ecx, edx);
+      if (eax == 2)
+	{
+	  __cpuid_count (0x1d, 2, eax, ebx, ecx, edx);
+	  version = eax & 0xff;
+	  switch (version)
+	    {
+	    case 1:
+	      set_feature (FEATURE_ACEV1);
+	      break;
+	    default:
+	      set_feature (FEATURE_ACEV1);
+	      break;
+	    }
 	}
     }
 
