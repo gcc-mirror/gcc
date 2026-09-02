@@ -50,4 +50,4 @@ int main ()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" { xfail { vect_element_align && vect_pack_trunc } } } } */
+/* { dg-final { scan-tree-dump-times "optimized: basic block" 1 "slp1" { target { vect_element_align && vect_pack_trunc } xfail { vect_element_align && vect_pack_trunc } } } } */
