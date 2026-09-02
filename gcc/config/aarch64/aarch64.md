@@ -3598,12 +3598,11 @@
 (define_insn "subv<GPI:mode>_insn"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
+	 (minus:<DWI>
+	  (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "rk"))
+	  (sign_extend:<DWI> (match_operand:GPI 2 "register_operand" "r")))
 	 (sign_extend:<DWI>
-	  (minus:GPI
-	   (match_operand:GPI 1 "register_operand" "rk")
-	   (match_operand:GPI 2 "register_operand" "r")))
-	 (minus:<DWI> (sign_extend:<DWI> (match_dup 1))
-		      (sign_extend:<DWI> (match_dup 2)))))
+	  (minus:GPI (match_dup 1) (match_dup 2)))))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(minus:GPI (match_dup 1) (match_dup 2)))]
   ""
@@ -3614,12 +3613,11 @@
 (define_insn "subv<GPI:mode>_imm"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
+	 (minus:<DWI>
+	  (sign_extend:<DWI> (match_operand:GPI 1 "register_operand"))
+	  (match_operand:GPI 2 "aarch64_plus_immediate"))
 	 (sign_extend:<DWI>
-	  (minus:GPI
-	   (match_operand:GPI 1 "register_operand")
-	   (match_operand:GPI 2 "aarch64_plus_immediate")))
-	 (minus:<DWI> (sign_extend:<DWI> (match_dup 1))
-		      (match_dup 2))))
+	  (minus:GPI (match_dup 1) (match_dup 2)))))
    (set (match_operand:GPI 0 "register_operand")
 	(minus:GPI (match_dup 1) (match_dup 2)))]
   ""
@@ -3646,9 +3644,10 @@
 (define_insn "negv<GPI:mode>_insn"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
+	 (neg:<DWI>
+	  (sign_extend:<DWI> (match_operand:GPI 1 "register_operand" "r")))
 	 (sign_extend:<DWI>
-	  (neg:GPI (match_operand:GPI 1 "register_operand" "r")))
-	 (neg:<DWI> (sign_extend:<DWI> (match_dup 1)))))
+	  (neg:GPI (match_dup 1)))))
    (set (match_operand:GPI 0 "register_operand" "=r")
 	(neg:GPI (match_dup 1)))]
   ""
@@ -3659,22 +3658,23 @@
 (define_insn "negv<GPI:mode>_cmp_only"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
+	 (neg:<DWI>
+	  (sign_extend:<DWI> (match_operand:GPI 0 "register_operand" "r")))
 	 (sign_extend:<DWI>
-	  (neg:GPI (match_operand:GPI 0 "register_operand" "r")))
-	 (neg:<DWI> (sign_extend:<DWI> (match_dup 0)))))]
+	  (neg:GPI (match_dup 0)))))]
   ""
-  "negs\\t%<w>zr, %<w>0"
+  "negs\\t<w>zr, %<w>0"
   [(set_attr "type" "alus_sreg")]
 )
 
 (define_insn "*cmpv<GPI:mode>_insn"
   [(set (reg:CC_V CC_REGNUM)
 	(compare:CC_V
+	 (minus:<DWI>
+	  (sign_extend:<DWI> (match_operand:GPI 0 "register_operand"))
+	  (sign_extend:<DWI> (match_operand:GPI 1 "aarch64_plus_operand")))
 	 (sign_extend:<DWI>
-	  (minus:GPI (match_operand:GPI 0 "register_operand")
-		     (match_operand:GPI 1 "aarch64_plus_operand")))
-	 (minus:<DWI> (sign_extend:<DWI> (match_dup 0))
-		    (sign_extend:<DWI> (match_dup 1)))))]
+	  (minus:GPI (match_dup 0) (match_dup 1)))))]
   ""
   {@ [ cons: 0 , 1  ]
      [ r       , r  ] cmp\t%<w>0, %<w>1

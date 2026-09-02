@@ -12792,11 +12792,13 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	      << (GET_MODE_BITSIZE (mode_x).to_constant () / 2))))
     return CC_ADCmode;
 
-  /* A test for signed overflow.  */
+  /* Tests for signed overflow.  */
   if ((mode_x == DImode || mode_x == TImode)
-      && code == NE
-      && code_x == PLUS
-      && GET_CODE (y) == SIGN_EXTEND)
+      && (code == NE || code == EQ)
+      && (code_x == PLUS || code_x == MINUS || code_x == NEG)
+      && GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+      && GET_CODE (y) == SIGN_EXTEND
+      && GET_CODE (XEXP (y, 0)) == code_x)
     return CC_Vmode;
 
   /* For everything else, return CCmode.  */
