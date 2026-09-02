@@ -1,3 +1,47 @@
+2026-09-01  Peter Bergner  <bergner@tenstorrent.com>
+
+	Backported from master:
+	2026-08-24  Peter Bergner  <bergner@tenstorrent.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add tt-ascalon-xg.
+	(RISCV_CORE): Likewise.
+	* doc/invoke.texi: Document it.
+
+2026-09-01  Peter Bergner  <bergner@tenstorrent.com>
+
+	Backported from master:
+	2026-06-25  Peter Bergner  <bergner@tenstorrent.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add tt-ascalon-x.
+	(RISCV_CORE): Likewise.
+	* doc/invoke.texi: Document it.
+
+2026-09-01  Peter Bergner  <bergner@tenstorrent.com>
+
+	Backported from master:
+	2026-01-23  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/123492
+	* config/riscv/riscv-cores.def (RISCV_CORE): Add zvfbfmin to
+	tt-ascalon-d8.
+
+2026-09-01  Peter Bergner  <bergner@tenstorrent.com>
+
+	Backported from master:
+	2026-01-09  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/123492
+	* config/riscv/riscv-cores.def (RISCV_CORE)<tt-ascalon-d8>: Add missing
+	extensions from the rva23s64 profile and adding zkr.
+
+2026-09-01  Anton Blanchard  <antonb@tenstorrent.com>
+
+	Backported from master:
+	2025-09-08  Anton Blanchard  <antonb@tenstorrent.com>
+
+	* config/riscv/riscv.cc (tt_ascalon_d8_tune_info): Increase branch_cost
+	from 3 to 4.
+
 2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
