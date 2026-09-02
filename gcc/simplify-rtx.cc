@@ -1505,6 +1505,12 @@ simplify_context::simplify_unary_operation_1 (rtx_code code, machine_mode mode,
       /* (bswap (bswap x)) -> x.  */
       if (GET_CODE (op) == BSWAP)
 	return XEXP (op, 0);
+      /* Canonicalize (bswap (bitreverse x)) as (bitreverse (bswap x)).  */
+      if (GET_CODE (op) == BITREVERSE)
+	return simplify_gen_unary (BITREVERSE, mode,
+				   simplify_gen_unary (BSWAP, mode,
+						       XEXP (op, 0), mode),
+				   mode);
       break;
 
     case BITREVERSE:
