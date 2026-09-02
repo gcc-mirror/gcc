@@ -258,10 +258,7 @@ Mappings::get_ast_crate_by_node_id (NodeId id)
 AST::Crate *
 Mappings::get_ast_crate_by_node_id_raw (NodeId id)
 {
-  auto i = crate_node_to_crate_num.find (id);
-  rust_assert (i != crate_node_to_crate_num.end ());
-
-  CrateNum crateNum = i->second;
+  CrateNum crateNum = lookup_crate_num (id).value ();
   auto it = ast_crate_mappings.find (crateNum);
   rust_assert (it != ast_crate_mappings.end ());
   return it->second;
