@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2 -mmovrs -mavx10v2aux" } */
+/* { dg-options "-O2 -Werror-implicit-function-declaration -march=k8 -m3dnow -mavx -mavx2 -maes -mpclmul -mgfni -mprefetchi -mavx10.2 -mmovrs -mavx10v2aux -macev1" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -917,6 +917,11 @@
 #define __builtin_ia32_vunpackb128_mask(A, B, C, D) __builtin_ia32_vunpackb128_mask(A, 8, C, D)
 #define __builtin_ia32_vunpackb256_mask(A, B, C, D) __builtin_ia32_vunpackb256_mask(A, 8, C, D)
 #define __builtin_ia32_vunpackb512_mask(A, B, C, D) __builtin_ia32_vunpackb512_mask(A, 8, C, D)
+
+/* acev1intrin.h */
+#ifdef __x86_64__
+#define __builtin_ia32_tilezero(A) __builtin_ia32_tilezero (1)
+#endif
 
 #include <wmmintrin.h>
 #include <immintrin.h>

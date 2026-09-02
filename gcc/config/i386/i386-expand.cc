@@ -14707,6 +14707,80 @@ ix86_expand_special_args_builtin (const struct builtin_description *d,
   return klass == store ? 0 : target;
 }
 
+/* Subroutine of ix86_expand_builtin to take care of amx insns
+   with variable number of operands.  */
+
+static rtx
+ix86_expand_ace_builtin (const struct builtin_description *d, tree exp)
+{
+  tree arg;
+  rtx pat, op;
+  unsigned int i, nargs;
+  rtx xops[4];
+  enum insn_code icode = d->icode;
+  const struct insn_data_d *insn_p = &insn_data[icode];
+
+  switch ((enum ix86_builtin_func_type) d->flag)
+    {
+    case VOID_FTYPE_UQI:
+      nargs = 1;
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  gcc_assert (nargs <= ARRAY_SIZE (xops));
+
+  for (i = 0; i < nargs; i++)
+    {
+      machine_mode mode = insn_p->operand[i].mode;
+
+      arg = CALL_EXPR_ARG (exp, i);
+      op = ix86_expand_unsigned_small_int_cst_argument (arg);
+
+      if (i == 0 && !IN_RANGE (INTVAL (op), 0, 7))
+	{
+	  /* This must be the tmm reg number constant.  */
+	  error ("the tmm register number argument must be between 0 to 7");
+	  return const0_rtx;
+	}
+      else
+	{
+	  /* This must be register.  */
+	  if (VECTOR_MODE_P (mode))
+	    op = safe_vector_operand (op, mode);
+
+	  op = fixup_modeless_constant (op, mode);
+
+	  if (GET_MODE (op) == mode || GET_MODE (op) == VOIDmode)
+	    op = copy_to_mode_reg (mode, op);
+	  else
+	    {
+	      op = copy_to_reg (op);
+	      op = lowpart_subreg (mode, op, GET_MODE (op));
+	    }
+	}
+
+      xops[i] = op;
+    }
+
+  switch (nargs)
+    {
+    case 1:
+      pat = GEN_FCN (icode) (xops[0]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (!pat)
+    return 0;
+
+  emit_insn (pat);
+  return 0;
+}
+
 /* Return the integer constant in ARG.  Constrain it to be in the range
    of the subparts of VEC_TYPE; issue an error if not.  */
 
@@ -14859,6 +14933,7 @@ ix86_check_builtin_isa_match (unsigned int fcode,
      OPTION_MASK_ISA_AES or (OPTION_MASK_ISA_AVX512VL | OPTION_MASK_ISA2_VAES)
      OPTION_MASK_ISA2_AVX10_2 or OPTION_MASK_ISA2_AVXVNNIINT8
      OPTION_MASK_ISA2_AVX10_2 or OPTION_MASK_ISA2_AVXVNNIINT16
+     OPTION_MASK_ISA2_AMX_TILE or OPTION_MASK_ISA2_ACEV1
      where for each such pair it is sufficient if either of the ISAs is
      enabled, plus if it is ored with other options also those others.
      OPTION_MASK_ISA_MMX in bisa is satisfied also if TARGET_MMX_WITH_SSE.  */
@@ -14888,6 +14963,7 @@ ix86_check_builtin_isa_match (unsigned int fcode,
 		 OPTION_MASK_ISA2_AVX10_2);
   SHARE_BUILTIN (0, OPTION_MASK_ISA2_AVXVNNIINT16, 0,
 		 OPTION_MASK_ISA2_AVX10_2);
+  SHARE_BUILTIN (0, OPTION_MASK_ISA2_AMX_TILE, 0, OPTION_MASK_ISA2_ACEV1);
   isa = tmp_isa;
   isa2 = tmp_isa2;
 
@@ -17277,6 +17353,13 @@ rdseed_step:
       i = fcode - IX86_BUILTIN__BDESC_CET_FIRST;
       return ix86_expand_special_args_builtin (bdesc_cet + i, exp,
 					       target);
+    }
+
+  if (fcode >= IX86_BUILTIN__BDESC_ACE_FIRST
+      && fcode <= IX86_BUILTIN__BDESC_ACE_LAST)
+    {
+      i = fcode - IX86_BUILTIN__BDESC_ACE_FIRST;
+      return ix86_expand_ace_builtin (bdesc_ace + i, exp);
     }
 
   gcc_unreachable ();

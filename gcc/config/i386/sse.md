@@ -303,6 +303,9 @@
   UNSPECV_AESENCWIDE256KLU8
   UNSPECV_ENCODEKEY128U32
   UNSPECV_ENCODEKEY256U32
+
+  ;; For ACEv1
+  UNSPECV_TILEZERO
 ])
 
 ;; All vector modes including V?TImode, used in move patterns.
@@ -34980,3 +34983,12 @@
 	    (operands[0], operands[1], operands[2]));
   DONE;
 })
+
+(define_insn "tilezero"
+  [(set (reg:V32SI TMM_REGNUM)
+        (unspec_volatile:V32SI
+	  [(match_operand:QI 0 "const_0_to_7_operand")]
+	  UNSPECV_TILEZERO))]
+  "TARGET_ACEV1"
+  "tilezero\t{%%tmm%c0|tmm%c0}"
+  [(set_attr "prefix" "vex")])

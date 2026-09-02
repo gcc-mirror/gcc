@@ -163,4 +163,7 @@
 #include <avx512bmmintrin.h>
 
 #include <avx512bmmvlintrin.h>
+
+#include <acev1intrin.h>
+
 #endif /* _IMMINTRIN_H_INCLUDED */

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -msha -mxsavec -mxsaves -mclflushopt -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd -menqcmd -mavx512vp2intersect -mserialize -mtsxldtrk -mamx-tile -mamx-int8 -mamx-bf16 -mkl -mwidekl -mavxvnni -mavxifma -mavxvnniint8 -mavxneconvert -mamx-fp16 -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mavx10.2 -mamx-avx512 -mamx-fp8 -mmovrs -mamx-movrs -mavx10v2aux" } */
+/* { dg-options "-O0 -Werror-implicit-function-declaration -march=k8 -msse4a -m3dnow -mavx -mavx2 -mfma4 -mxop -maes -mpclmul -mpopcnt -mabm -mlzcnt -mbmi -mbmi2 -mtbm -mlwp -mfsgsbase -mrdrnd -mf16c -mfma -mrtm -mrdseed -mprfchw -madx -mfxsr -mxsaveopt -msha -mxsavec -mxsaves -mclflushopt -mclwb -mmwaitx -mclzero -mpku -msgx -mrdpid -mgfni -mpconfig -mwbnoinvd -menqcmd -mavx512vp2intersect -mserialize -mtsxldtrk -mamx-tile -mamx-int8 -mamx-bf16 -mkl -mwidekl -mavxvnni -mavxifma -mavxvnniint8 -mavxneconvert -mamx-fp16 -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mavx10.2 -mamx-avx512 -mamx-fp8 -mmovrs -mamx-movrs -mavx10v2aux -macev1" } */
 /* { dg-add-options bind_pic_locally } */
 
 #include <mm_malloc.h>
@@ -23,6 +23,10 @@
 #define test_0(func, type, imm)						\
   type _CONCAT(_,func) (int const I)					\
   { return func (imm); }
+
+#define test_0v(func, imm)						\
+  void _CONCAT(_,func) (int const I)					\
+  { func (imm); }
 
 #define test_1(func, type, op1_type, imm)				\
   type _CONCAT(_,func) (op1_type A, int const I)			\
@@ -1194,12 +1198,17 @@ test_3x (_mm_maskz_minmax_round_sh, __m128h, __mmask8, __m128h, __m128h, 100, 4)
 test_4x (_mm_mask_minmax_round_sh, __m128h, __m128h, __mmask8, __m128h, __m128h, 100, 4)
 
 /* avx10v2auxintrin.h */
-test_1(_mm_unpack_epi8, __m128i, __m128i, 10)
-test_3(_mm_mask_unpack_epi8, __m128i, __m128i, __mmask16, __m128i, 10)
-test_2(_mm_maskz_unpack_epi8, __m128i, __mmask16, __m128i, 10)
-test_1(_mm256_unpack_epi8, __m256i, __m256i, 10)
-test_3(_mm256_mask_unpack_epi8, __m256i, __m256i, __mmask32, __m256i, 10)
-test_2(_mm256_maskz_unpack_epi8, __m256i, __mmask32, __m256i, 10)
-test_1(_mm512_unpack_epi8, __m512i, __m512i, 10)
-test_3(_mm512_mask_unpack_epi8, __m512i, __m512i, __mmask64, __m512i, 10)
-test_2(_mm512_maskz_unpack_epi8, __m512i, __mmask64, __m512i, 10)
+test_1 (_mm_unpack_epi8, __m128i, __m128i, 10)
+test_3 (_mm_mask_unpack_epi8, __m128i, __m128i, __mmask16, __m128i, 10)
+test_2 (_mm_maskz_unpack_epi8, __m128i, __mmask16, __m128i, 10)
+test_1 (_mm256_unpack_epi8, __m256i, __m256i, 10)
+test_3 (_mm256_mask_unpack_epi8, __m256i, __m256i, __mmask32, __m256i, 10)
+test_2 (_mm256_maskz_unpack_epi8, __m256i, __mmask32, __m256i, 10)
+test_1 (_mm512_unpack_epi8, __m512i, __m512i, 10)
+test_3 (_mm512_mask_unpack_epi8, __m512i, __m512i, __mmask64, __m512i, 10)
+test_2 (_mm512_maskz_unpack_epi8, __m512i, __mmask64, __m512i, 10)
+
+/* acev1intrin.h */
+#ifdef __x86_64__
+test_0v (_tile_ace_zero, 1)
+#endif

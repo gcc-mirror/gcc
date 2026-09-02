@@ -93,6 +93,7 @@ extern void test_amx_fp8 (void)                 __attribute__((__target__("amx-f
 extern void test_movrs (void)			__attribute__((__target__("movrs")));
 extern void test_amx_movrs (void)		__attribute__((__target__("amx-movrs")));
 extern void test_avx10v2aux (void)		__attribute__((__target__("avx10v2aux")));
+extern void test_acev1 (void)			__attribute__((__target__("acev1")));
 
 extern void test_no_sgx (void)			__attribute__((__target__("no-sgx")));
 extern void test_no_avx512vpopcntdq(void)	__attribute__((__target__("no-avx512vpopcntdq")));
@@ -187,6 +188,7 @@ extern void test_no_amx_fp8 (void)              __attribute__((__target__("no-am
 extern void test_no_movrs (void)		__attribute__((__target__("no-movrs")));
 extern void test_no_amx_movrs (void)		__attribute__((__target__("no-amx-movrs")));
 extern void test_no_avx10v2aux (void)		__attribute__((__target__("no-avx10v2aux")));
+extern void test_no_acev1 (void)		__attribute__((__target__("no-acev1")));
 
 extern void test_arch_nocona (void)		__attribute__((__target__("arch=nocona")));
 extern void test_arch_core2 (void)		__attribute__((__target__("arch=core2")));
