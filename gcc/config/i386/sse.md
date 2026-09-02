@@ -320,6 +320,16 @@
   UNSPECV_BSRMOVL_LOAD
   UNSPECV_TILEMOVROWINSERT
   UNSPECV_TILEMOVCOLINSERT
+  UNSPECV_TOP2BF16PS
+  UNSPECV_TOP4BSSD
+  UNSPECV_TOP4BSUD
+  UNSPECV_TOP4BUSD
+  UNSPECV_TOP4BUUD
+  UNSPECV_TOP4MXBF8PS
+  UNSPECV_TOP4MXBHF8PS
+  UNSPECV_TOP4MXHBF8PS
+  UNSPECV_TOP4MXHF8PS
+  UNSPECV_TOP4MXBSSPS
 ])
 
 ;; All vector modes including V?TImode, used in move patterns.
@@ -35116,4 +35126,72 @@
 	  UNSPECV_TILEMOVINSERT))]
   "TARGET_ACEV1"
   "tilemov<rowcol>\t{%2, %1, %%tmm%c0|tmm%c0, %1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "top2bf16ps"
+  [(set (reg:V32SF TMM_REGNUM)
+        (unspec_volatile:V32SF
+	  [(match_operand:QI 0 "const_0_to_7_operand")
+	   (match_operand:V32BF 1 "register_operand" "v")
+	   (match_operand:V32BF 2 "register_operand" "v")]
+	  UNSPECV_TOP2BF16PS))]
+  "TARGET_ACEV1"
+  "top2bf16ps\t{%2, %1, %%tmm%c0|tmm%c0, %1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_int_iterator TOP4BDTYPE
+  [UNSPECV_TOP4BSSD
+   UNSPECV_TOP4BSUD
+   UNSPECV_TOP4BUSD
+   UNSPECV_TOP4BUUD])
+
+(define_int_attr top4bdtype
+  [(UNSPECV_TOP4BSSD "bssd") (UNSPECV_TOP4BSUD "bsud")
+   (UNSPECV_TOP4BUSD "busd") (UNSPECV_TOP4BUUD "buud")])
+
+(define_insn "top4<top4bdtype>"
+  [(set (reg:V32SI TMM_REGNUM)
+        (unspec_volatile:V32SI
+	  [(match_operand:QI 0 "const_0_to_7_operand")
+	   (match_operand:V64QI 1 "register_operand" "v")
+	   (match_operand:V64QI 2 "register_operand" "v")]
+	  TOP4BDTYPE))]
+  "TARGET_ACEV1"
+  "top4<top4bdtype>\t{%2, %1, %%tmm%c0|tmm%c0, %1, %2}"
+  [(set_attr "prefix" "evex")])
+
+(define_int_iterator TOP4MXFP8TYPE
+  [UNSPECV_TOP4MXBF8PS UNSPECV_TOP4MXBHF8PS
+   UNSPECV_TOP4MXHBF8PS UNSPECV_TOP4MXHF8PS])
+
+(define_int_attr top4mxfp8type
+  [(UNSPECV_TOP4MXBF8PS "mxbf8")
+   (UNSPECV_TOP4MXBHF8PS "mxbhf8")
+   (UNSPECV_TOP4MXHBF8PS "mxhbf8")
+   (UNSPECV_TOP4MXHF8PS "mxhf8")])
+
+(define_insn "top4<top4mxfp8type>ps"
+  [(set (reg:V32SF TMM_REGNUM)
+        (unspec_volatile:V32SF
+	  [(match_operand:QI 0 "const_0_to_7_operand")
+	   (match_operand:V64QI 1 "register_operand" "v")
+	   (match_operand:V64QI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_0_to_255_operand")
+	   (reg:V32SI BSR0_REG)]
+	  TOP4MXFP8TYPE))]
+  "TARGET_ACEV1"
+  "top4<top4mxfp8type>ps\t{%3, %2, %1, %%tmm%c0|tmm%c0, %1, %2, %3}"
+  [(set_attr "prefix" "evex")])
+
+(define_insn "top4mxbssps"
+  [(set (reg:V32SF TMM_REGNUM)
+        (unspec_volatile:V32SF
+	  [(match_operand:QI 0 "const_0_to_7_operand")
+	   (match_operand:V64QI 1 "register_operand" "v")
+	   (match_operand:V64QI 2 "register_operand" "v")
+	   (match_operand:SI 3 "const_0_to_255_operand")
+	   (reg:V32SI BSR0_REG)]
+	  UNSPECV_TOP4MXBSSPS))]
+  "TARGET_ACEV1"
+  "top4mxbssps\t{%3, %2, %1, %%tmm%c0|tmm%c0, %1, %2, %3}"
   [(set_attr "prefix" "evex")])

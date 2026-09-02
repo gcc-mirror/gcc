@@ -14716,7 +14716,7 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp,
 {
   tree arg;
   rtx pat, op;
-  unsigned int i, nargs, arg_adjust = 0;
+  unsigned int i, nargs, arg_adjust = 0, constant = 100;
   bool tmm_src = false;
   rtx xops[4];
   enum insn_code icode = d->icode;
@@ -14735,7 +14735,13 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp,
       tmm_src = true;
       break;
     case VOID_FTYPE_UQI_V16SI_SI:
+    case VOID_FTYPE_UQI_V32BF_V32BF:
+    case VOID_FTYPE_UQI_V64QI_V64QI:
       nargs = 3;
+      break;
+    case VOID_FTYPE_UQI_V64QI_V64QI_SI:
+      nargs = 4;
+      constant = 3;
       break;
 
     default:
@@ -14762,11 +14768,21 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp,
       arg = CALL_EXPR_ARG (exp, i);
       op = ix86_expand_unsigned_small_int_cst_argument (arg);
 
-      if (i == 0 && !IN_RANGE (INTVAL (op), 0, 7))
+      if (i == 0 || i == constant)
 	{
-	  /* This must be the tmm reg number constant.  */
-	  error ("the tmm register number argument must be between 0 to 7");
-	  return const0_rtx;
+	  if (i == 0 && !IN_RANGE (INTVAL (op), 0, 7))
+	    {
+	      /* This must be the tmm reg number constant.  */
+	      error ("the tmm register number argument must be between 0 to 7");
+	      return const0_rtx;
+	    }
+	  else if (!insn_p->operand[i + arg_adjust].predicate(op, SImode))
+	    {
+	      /* This must be the constant.  */
+	      error ("the argument must be constant");
+	      return const0_rtx;
+	    }
+
 	}
       else
 	{
@@ -14808,6 +14824,9 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp,
 	  break;
 	case 3:
 	  pat = GEN_FCN (icode) (xops[0], xops[1], xops[2]);
+	  break;
+	case 4:
+	  pat = GEN_FCN (icode) (xops[0], xops[1], xops[2], xops[3]);
 	  break;
 	default:
 	  gcc_unreachable ();

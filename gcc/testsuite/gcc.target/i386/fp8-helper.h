@@ -210,14 +210,19 @@ bf8_isInf(unsigned char value)
 static int64_t
 shift_fp8_to_int64 (unsigned char x, int bf8, int *valueState)
 {
-  *valueState = (x >> 7) ? -1 : 1;
-  if (fp8_isNan (x, bf8))
-    *valueState = -2;
-  if (bf8)
-    if (bf8_isInf(x) == 1)
-      *valueState = 3;
-    else if (bf8_isInf(x) == -1)
-      *valueState = -3;
+  if (valueState != NULL)
+    {
+      *valueState = (x >> 7) ? -1 : 1;
+      if (fp8_isNan (x, bf8))
+	*valueState = -2;
+      if (bf8)
+	{
+	  if (bf8_isInf(x) == 1)
+	    *valueState = 3;
+	  else if (bf8_isInf(x) == -1)
+	    *valueState = -3;
+	}
+    }
 
   unsigned short sign = (x & 0x80) >> 7;
   unsigned short exp = bf8 ? (x & 0x7c) >> 2 : (x & 0x78) >> 3;

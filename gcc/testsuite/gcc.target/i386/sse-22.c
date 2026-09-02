@@ -58,6 +58,10 @@
   type _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L) \
   { return func (A, B, imm1, imm2); }
 
+#define test_2vxt(func, imm1, op1_type, op2_type, imm2)			\
+  void _CONCAT(_,func) (int const I, op1_type A, op2_type B, int const L) \
+  { func (imm1, A, B, imm2); }
+
 #define test_2y(func, type, op1_type, op2_type, imm1, imm2, imm3)	 \
   type _CONCAT(_,func) (op1_type A, op2_type B, int const I, int const L,\
 			int const R)					 \
@@ -1268,4 +1272,14 @@ test_1t (_tile_cvtrowl_ps_ph, __m512h, 1, int)
 test_1t (_tile_extractrow, __m512i, 1, int)
 test_2vt (_tile_insertrow, 1, __m512i, int)
 test_2vt (_tile_insertcol, 1, __m512i, int)
+test_2vt (_tile_op2bf16_ps, 1, __m512bh, __m512bh)
+test_2vt (_tile_op4bssd_epi32, 1, __m512i, __m512i)
+test_2vt (_tile_op4bsud_epi32, 1, __m512i, __m512i)
+test_2vt (_tile_op4busd_epi32, 1, __m512i, __m512i)
+test_2vt (_tile_op4buud_epi32, 1, __m512i, __m512i)
+test_2vxt (_tile_op4mxbf8_ps, 1, __m512i, __m512i, 9)
+test_2vxt (_tile_op4mxbhf8_ps, 1, __m512i, __m512i, 9)
+test_2vxt (_tile_op4mxhbf8_ps, 1, __m512i, __m512i, 9)
+test_2vxt (_tile_op4mxhf8_ps, 1, __m512i, __m512i, 9)
+test_2vxt (_tile_op4mxbss_ps, 1, __m512i, __m512i, 9)
 #endif

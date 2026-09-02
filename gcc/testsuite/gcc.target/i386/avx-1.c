@@ -929,6 +929,16 @@
 #define __builtin_ia32_tilemovrowextract(A, B) __builtin_ia32_tilemovrowextract (1, B)
 #define __builtin_ia32_tilemovrowinsert(A, B, C) __builtin_ia32_tilemovrowinsert (1, B, C)
 #define __builtin_ia32_tilemovcolinsert(A, B, C) __builtin_ia32_tilemovcolinsert (1, B, C)
+#define __builtin_ia32_top2bf16ps(W, A, B) __builtin_ia32_top2bf16ps (1, A, B)
+#define __builtin_ia32_top4bssd(W, A, B) __builtin_ia32_top4bssd (1, A, B)
+#define __builtin_ia32_top4bsud(W, A, B) __builtin_ia32_top4bsud (1, A, B)
+#define __builtin_ia32_top4busd(W, A, B) __builtin_ia32_top4busd (1, A, B)
+#define __builtin_ia32_top4buud(W, A, B) __builtin_ia32_top4buud (1, A, B)
+#define __builtin_ia32_top4mxbf8ps(W, A, B, C) __builtin_ia32_top4mxbf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxbhf8ps(W, A, B, C) __builtin_ia32_top4mxbhf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxhbf8ps(W, A, B, C) __builtin_ia32_top4mxhbf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxhf8ps(W, A, B, C) __builtin_ia32_top4mxhf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxbssps(W, A, B, C) __builtin_ia32_top4mxbssps (1, A, B, 9)
 #endif
 
 #include <wmmintrin.h>

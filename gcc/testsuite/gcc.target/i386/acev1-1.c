@@ -15,6 +15,16 @@
 /* { dg-final { scan-assembler-times "tcvtrowps2phl\[ \t]" 1 } } */
 /* { dg-final { scan-assembler-times "tilemovrow\[ \t]" 2 } } */
 /* { dg-final { scan-assembler-times "tilemovcol\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top2bf16ps\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4bssd\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4bsud\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4busd\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4buud\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4mxbf8ps\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4mxbhf8ps\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4mxhbf8ps\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4mxhf8ps\[ \t]" 1 } } */
+/* { dg-final { scan-assembler-times "top4mxbssps\[ \t]" 1 } } */
 #include <immintrin.h>
 
 extern int t[];
@@ -51,4 +61,18 @@ void cvtrow ()
   a1 = _tile_extractrow (6, 2);
   _tile_insertrow (7, a1, 10);
   _tile_insertcol (2, a2, 11);
+}
+
+void op ()
+{
+  _tile_op2bf16_ps (1, b1, b2);
+  _tile_op4bssd_epi32 (2, a1, a2);
+  _tile_op4bsud_epi32 (3, a1, a2);
+  _tile_op4busd_epi32 (4, a1, a2);
+  _tile_op4buud_epi32 (5, a1, a2);
+  _tile_op4mxbf8_ps (6, a1, a2, 1);
+  _tile_op4mxbhf8_ps (7, a1, a2, 6);
+  _tile_op4mxhbf8_ps (0, a1, a2, 9);
+  _tile_op4mxhf8_ps (1, a1, a2, 3);
+  _tile_op4mxbss_ps (2, a1, a2, 4);
 }

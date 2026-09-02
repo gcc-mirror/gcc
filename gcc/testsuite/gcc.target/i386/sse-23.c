@@ -911,6 +911,16 @@
 #define __builtin_ia32_tilemovrowextract(A, B) __builtin_ia32_tilemovrowextract (1, B)
 #define __builtin_ia32_tilemovrowinsert(A, B, C) __builtin_ia32_tilemovrowinsert (1, B, C)
 #define __builtin_ia32_tilemovcolinsert(A, B, C) __builtin_ia32_tilemovcolinsert (1, B, C)
+#define __builtin_ia32_top2bf16ps(W, A, B) __builtin_ia32_top2bf16ps (1, A, B)
+#define __builtin_ia32_top4bssd(W, A, B) __builtin_ia32_top4bssd (1, A, B)
+#define __builtin_ia32_top4bsud(W, A, B) __builtin_ia32_top4bsud (1, A, B)
+#define __builtin_ia32_top4busd(W, A, B) __builtin_ia32_top4busd (1, A, B)
+#define __builtin_ia32_top4buud(W, A, B) __builtin_ia32_top4buud (1, A, B)
+#define __builtin_ia32_top4mxbf8ps(W, A, B, C) __builtin_ia32_top4mxbf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxbhf8ps(W, A, B, C) __builtin_ia32_top4mxbhf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxhbf8ps(W, A, B, C) __builtin_ia32_top4mxhbf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxhf8ps(W, A, B, C) __builtin_ia32_top4mxhf8ps (1, A, B, 9)
+#define __builtin_ia32_top4mxbssps(W, A, B, C) __builtin_ia32_top4mxbssps (1, A, B, 9)
 #endif
 
 #pragma GCC target ("sse4a,3dnow,avx,avx2,fma4,xop,aes,pclmul,popcnt,abm,lzcnt,bmi,bmi2,tbm,lwp,fsgsbase,rdrnd,f16c,fma,rtm,rdseed,prfchw,adx,fxsr,xsaveopt,sha,xsavec,xsaves,clflushopt,clwb,mwaitx,clzero,pku,sgx,rdpid,gfni,vpclmulqdq,pconfig,wbnoinvd,enqcmd,avx512vp2intersect,serialize,tsxldtrk,amx-tile,amx-int8,amx-bf16,kl,widekl,avxvnni,avxifma,avxvnniint8,avxneconvert,cmpccxadd,amx-fp16,prefetchi,raoint,amx-complex,avxvnniint16,sm3,sha512,sm4,avx10.2,amx-avx512,amx-fp8,movrs,amx-movrs,avx10v2aux,acev1")

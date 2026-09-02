@@ -155,6 +155,76 @@ _tile_insertcol (const int __A, __m512i __B, int __C)
   __builtin_ia32_tilemovcolinsert (__A, (__v16si) __B, __C);
 }
 
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op2bf16_ps (const int __W, __m512bh __A, __m512bh __B)
+{
+  __builtin_ia32_top2bf16ps (__W, (__v32bf) __A, (__v32bf) __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4bssd_epi32 (const int __W, __m512i __A, __m512i __B)
+{
+  __builtin_ia32_top4bssd (__W, (__v64qi) __A, (__v64qi) __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4bsud_epi32 (const int __W, __m512i __A, __m512i __B)
+{
+  __builtin_ia32_top4bsud (__W, (__v64qi) __A, (__v64qi) __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4busd_epi32 (const int __W, __m512i __A, __m512i __B)
+{
+  __builtin_ia32_top4busd (__W, (__v64qi) __A, (__v64qi) __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4buud_epi32 (const int __W, __m512i __A, __m512i __B)
+{
+  __builtin_ia32_top4buud (__W, (__v64qi) __A, (__v64qi) __B);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4mxbf8_ps (const int __W, __m512i __A, __m512i __B, const int __C)
+{
+  __builtin_ia32_top4mxbf8ps (__W, (__v64qi) __A, (__v64qi) __B, __C);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4mxbhf8_ps (const int __W, __m512i __A, __m512i __B, const int __C)
+{
+  __builtin_ia32_top4mxbhf8ps (__W, (__v64qi) __A, (__v64qi) __B, __C);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4mxhbf8_ps (const int __W, __m512i __A, __m512i __B, const int __C)
+{
+  __builtin_ia32_top4mxhbf8ps (__W, (__v64qi) __A, (__v64qi) __B, __C);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4mxhf8_ps (const int __W, __m512i __A, __m512i __B, const int __C)
+{
+  __builtin_ia32_top4mxhf8ps (__W, (__v64qi) __A, (__v64qi) __B, __C);
+}
+
+extern __inline void
+__attribute__((__gnu_inline__, __always_inline__, __artificial__))
+_tile_op4mxbss_ps (const int __W, __m512i __A, __m512i __B, const int __C)
+{
+  __builtin_ia32_top4mxbssps (__W, (__v64qi) __A, (__v64qi) __B, __C);
+}
+
 #else
 #define _tile_ace_zero(A)			\
   __builtin_ia32_tilezero (A);
@@ -182,6 +252,36 @@ _tile_insertcol (const int __A, __m512i __B, int __C)
 
 #define _tile_insertcol(A, B, C)		\
   __builtin_ia32_tilemovcolinsert ((A), (__v16si) (B), (C))
+
+#define _tile_op2bf16_ps(W, A, B)		\
+  __builtin_ia32_top2bf16ps (W, (__v32bf) (A), (__v32bf) (B))
+
+#define _tile_op4bssd_epi32(W, A, B)		\
+  __builtin_ia32_top4bssd (W, (__v64qi) (A), (__v64qi) (B))
+
+#define _tile_op4bsud_epi32(W, A, B)		\
+  __builtin_ia32_top4bsud (W, (__v64qi) (A), (__v64qi) (B))
+
+#define _tile_op4busd_epi32(W, A, B)		\
+  __builtin_ia32_top4busd (W, (__v64qi) (A), (__v64qi) (B))
+
+#define _tile_op4buud_epi32(W, A, B)		\
+  __builtin_ia32_top4buud (W, (__v64qi) (A), (__v64qi) (B))
+
+#define _tile_op4mxbf8_ps(W, A, B, C)		\
+  __builtin_ia32_top4mxbf8ps (W, (__v64qi) (A), (__v64qi) (B), C)
+
+#define _tile_op4mxbhf8_ps(W, A, B, C)		\
+  __builtin_ia32_top4mxbhf8ps (W, (__v64qi) (A), (__v64qi) (B), C)
+
+#define _tile_op4mxhbf8_ps(W, A, B, C)		\
+  __builtin_ia32_top4mxhbf8ps (W, (__v64qi) (A), (__v64qi) (B), C)
+
+#define _tile_op4mxhf8_ps(W, A, B, C)		\
+  __builtin_ia32_top4mxhf8ps (W, (__v64qi) (A), (__v64qi) (B), C)
+
+#define _tile_op4mxbss_ps(W, A, B, C)		\
+  __builtin_ia32_top4mxbssps (W, (__v64qi) (A), (__v64qi) (B), C)
 
 #endif /* __OPTIMIZE__ */
 

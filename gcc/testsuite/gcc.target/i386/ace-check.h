@@ -63,6 +63,27 @@ void init_tile_config (__tilecfg *dst, __bsr* bsr)
   _bsr0_init ();
 }
 
+#define CHECK_TILE_REGISTER(regnum, dst_ref)	\
+{						\
+  int miss = 0;					\
+  for (int j = 0; j < 16; j++)			\
+    {						\
+      __m512i tmp;				\
+      union512i_ub a;				\
+      tmp = _tile_extractrow (regnum, j);	\
+      a.x = tmp;				\
+      for (int k = 0; k < 64; k++)		\
+        if (a.a[k] != dst_ref.buf[j * 64 + k])	\
+          {					\
+	    printf ("Row %d Column %d: 0x%x != 0x%x\n", j, k, a.a[k],	\
+                    dst_ref.buf[j * 64 + k]);				\
+            miss += 1;				\
+	  }					\
+    }						\
+    if (miss)					\
+      abort ();					\
+}
+
 #ifndef DO_TEST
 #define DO_TEST do_test
 static void test_ace (void);
