@@ -3719,9 +3719,9 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
 	 need to be handled in map clauses.
 	 TODO: Implement this feature; for now fail with an error if those
 	 are encountered.
-	 FIXME: Not only 'always' has to be handled as variables in the target
-	 region and an (indirect) access to the global variable in a function
-	 call must refer to the same variable.  */
+	 Note that only the data transfer it required. Code inside target
+	 structured blocks already directly accesses device variable;
+	 'hostaddrs' does not even contain those for mapping purposes.  */
       constexpr bool short_mapkind = true;  /* OpenMP */
       constexpr int typemask = 0xff;
       for (size_t i = 0; i < mapnum; i++)
