@@ -1662,6 +1662,28 @@ DEFHOOK
 "Return number of threads in SIMT thread group on the target.",
 int, (void), NULL)
 
+/* Allow the target to pad stack variables.  */
+DEFHOOK
+(stack_variable_padding,
+ "This target hook can modify the padding around stack variables and stack\n\
+parameters. The hook should return the required total size, with padding.\n\
+The primary use case is to support SIMT, where there must be a copy of each\n\
+variable for each thread.  See also @code{TARGET_SIMT_STACK_VARIABLE_OFFSET}.",
+poly_uint64, (poly_uint64 default_size), NULL)
+
+/* Allow the target to use custom offset within the padding of
+   stack variables.  */
+DEFHOOK
+(stack_variable_offset,
+ "This target hook can modify the use of padding around stack variables and\n\
+stack parameters.  The amount of padding should have been specified with\n\
+@code{TARGET_SIMT_STACK_VARIABLE_PADDING}.  The hook should return an offset\n\
+into the padding space as an RTL expression.  The offset may be a constant,\n\
+or may be computed at runtime, and may give a different result for each SIMT\n\
+thread.  The primary use case is to support SIMT, where there must be a copy\n\
+of each variable for each thread.  The default is to use no offset.",
+rtx, (const_tree type), NULL)
+
 HOOK_VECTOR_END (simt)
 
 /* Functions relating to OpenMP.  */

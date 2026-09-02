@@ -2676,6 +2676,14 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
   stack_parm = crtl->args.internal_arg_pointer;
   if (offset_rtx != const0_rtx)
     stack_parm = gen_rtx_PLUS (Pmode, stack_parm, offset_rtx);
+
+  if (targetm.simt.stack_variable_offset)
+    {
+      rtx hook_offset = targetm.simt.stack_variable_offset (TREE_TYPE (parm));
+      if (hook_offset)
+	stack_parm = gen_rtx_PLUS (Pmode, stack_parm, hook_offset);
+    }
+
   stack_parm = gen_rtx_MEM (data->arg.mode, stack_parm);
 
   if (!data->arg.pass_by_reference)
@@ -4067,6 +4075,10 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
   round_boundary = targetm.calls.function_arg_round_boundary (passed_mode,
 							      type);
   locate->where_pad = where_pad;
+
+  if (targetm.simt.stack_variable_padding)
+    sizetree = size_int (targetm.simt.stack_variable_padding
+			 (tree_to_uhwi (sizetree)));
 
   /* Alignment can't exceed MAX_SUPPORTED_STACK_ALIGNMENT.  */
   if (boundary > MAX_SUPPORTED_STACK_ALIGNMENT)

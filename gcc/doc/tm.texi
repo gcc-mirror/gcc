@@ -4331,6 +4331,23 @@ definition that is usually appropriate, refer to @file{expr.h} for additional
 documentation.
 @end deftypefn
 
+@deftypefn {Target Hook} poly_uint64 TARGET_SIMT_STACK_VARIABLE_PADDING (poly_uint64 @var{default_size})
+This target hook can modify the padding around stack variables and stack
+parameters. The hook should return the required total size, with padding.
+The primary use case is to support SIMT, where there must be a copy of each
+variable for each thread.  See also @code{TARGET_SIMT_STACK_VARIABLE_OFFSET}.
+@end deftypefn
+
+@deftypefn {Target Hook} rtx TARGET_SIMT_STACK_VARIABLE_OFFSET (const_tree @var{type})
+This target hook can modify the use of padding around stack variables and
+stack parameters.  The amount of padding should have been specified with
+@code{TARGET_SIMT_STACK_VARIABLE_PADDING}.  The hook should return an offset
+into the padding space as an RTL expression.  The offset may be a constant,
+or may be computed at runtime, and may give a different result for each SIMT
+thread.  The primary use case is to support SIMT, where there must be a copy
+of each variable for each thread.  The default is to use no offset.
+@end deftypefn
+
 @deftypefn {Target Hook} rtx TARGET_FUNCTION_INCOMING_ARG (cumulative_args_t @var{ca}, const function_arg_info @var{&arg})
 Define this hook if the caller and callee on the target have different
 views of where arguments are passed.  Also define this hook if there are

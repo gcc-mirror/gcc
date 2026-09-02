@@ -488,6 +488,10 @@ add_stack_var (tree decl, bool really_expand)
   /* All variables initially conflict with no other.  */
   v->conflicts = NULL;
 
+  /* Apply target hooks.  */
+  if (targetm.simt.stack_variable_padding)
+    v->size = targetm.simt.stack_variable_padding (v->size);
+
   /* Ensure that this decl doesn't get put onto the list twice.  */
   set_rtl (decl, pc_rtx);
 
@@ -1345,6 +1349,13 @@ expand_one_stack_var_at (tree decl, rtx base, unsigned base_align,
   else
     x = plus_constant (Pmode, base, offset);
 
+  if (targetm.simt.stack_variable_offset)
+    {
+      rtx val = targetm.simt.stack_variable_offset (TREE_TYPE (decl));
+      if (val)
+	x = gen_rtx_PLUS (Pmode, x, val);
+    }
+
   x = gen_rtx_MEM (TREE_CODE (decl) == SSA_NAME
 		   ? TYPE_MODE (TREE_TYPE (decl))
 		   : DECL_MODE (decl), x);
@@ -1742,6 +1753,9 @@ expand_one_stack_var_1 (tree var)
     }
   else
     size = tree_to_poly_uint64 (DECL_SIZE_UNIT (var));
+
+  if (targetm.simt.stack_variable_padding)
+    size = targetm.simt.stack_variable_padding (size);
 
   byte_align = align_local_variable (var, true);
 

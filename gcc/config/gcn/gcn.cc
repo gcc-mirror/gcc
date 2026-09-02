@@ -5944,6 +5944,37 @@ gcn_prefer_gather_scatter (machine_mode ARG_UNUSED (mode),
 }
 
 /* }}}  */
+/* {{{ SIMT.  */
+
+/* Implement TARGET_STACK_VARIABLE_PADDING.  */
+
+poly_uint64
+gcn_simt_stack_variable_padding (poly_uint64 default_size)
+{
+  if (!flag_simt_mode)
+    return default_size;
+
+  return default_size * 64;
+}
+
+/* Implement TARGET_STACK_VARIABLE_OFFSET.  */
+
+rtx
+gcn_simt_stack_variable_offset (const_tree type)
+{
+  if (!flag_simt_mode)
+    return const0_rtx;
+
+  poly_uint64 unit_size = tree_to_poly_int64 (TYPE_SIZE_UNIT (type));
+
+  rtx _0_1_2_3 = gen_rtx_REG (SImode, VGPR_REGNO (1));
+  rtx _0_1_2_3_di = gen_rtx_ZERO_EXTEND (DImode, _0_1_2_3);
+  rtx result = gen_rtx_MULT (DImode, _0_1_2_3_di, GEN_INT (unit_size));
+
+  return result;
+}
+
+/* }}} */
 /* {{{ md_reorg pass.  */
 
 /* Identify VMEM instructions from their "type" attribute.  */
@@ -8300,6 +8331,10 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_small_register_classes_for_mode_p
 #undef  TARGET_SPILL_CLASS
 #define TARGET_SPILL_CLASS gcn_spill_class
+#undef  TARGET_SIMT_STACK_VARIABLE_PADDING
+#define TARGET_SIMT_STACK_VARIABLE_PADDING gcn_simt_stack_variable_padding
+#undef  TARGET_SIMT_STACK_VARIABLE_OFFSET
+#define TARGET_SIMT_STACK_VARIABLE_OFFSET gcn_simt_stack_variable_offset
 #undef  TARGET_STRICT_ARGUMENT_NAMING
 #define TARGET_STRICT_ARGUMENT_NAMING gcn_strict_argument_naming
 #undef  TARGET_TRAMPOLINE_INIT
