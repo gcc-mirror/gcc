@@ -1025,7 +1025,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*  r16,  r17, r18, r19, r20, r21, r22, r23*/			\
      0,   0,   0,   0,   0,   0,   0,   0,			\
 /*  r24,  r25, r26, r27, r28, r29, r30, r31*/			\
-     0,   0,   0,   0,   0,   0,   0,   0}			\
+     0,   0,   0,   0,   0,   0,   0,   0,			\
+/*  tmm*/							\
+     1}								\
 
 /* 1 for registers not available across function calls.
    These must include the FIXED_REGISTERS and also any
@@ -1066,7 +1068,9 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /*  r16,  r17, r18, r19, r20, r21, r22, r23*/			\
      1,   1,   1,   1,   1,   1,   1,   1,			\
 /*  r24,  r25, r26, r27, r28, r29, r30, r31*/			\
-     1,   1,   1,   1,   1,   1,   1,   1}			\
+     1,   1,   1,   1,   1,   1,   1,   1,			\
+/*  tmm*/							\
+     1}								\
 
 /* Order in which to allocate registers.  Each register must be
    listed once, even those in FIXED_REGISTERS.  List frame pointer
@@ -1083,7 +1087,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47,	\
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63,	\
   64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79,	\
-  80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91}
+  80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92}
 
 /* ADJUST_REG_ALLOC_ORDER is a macro which permits reg_alloc_order
    to be rearranged based on a particular function.  When using sse math,
@@ -2105,7 +2109,8 @@ do {							\
  "xmm28", "xmm29", "xmm30", "xmm31",					\
  "k0", "k1", "k2", "k3", "k4", "k5", "k6", "k7",			\
  "r16", "r17", "r18", "r19", "r20", "r21", "r22", "r23",		\
- "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31" }
+ "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31",		\
+ "tmm"}
 
 #define REGISTER_NAMES HI_REGISTER_NAMES
 
