@@ -1725,7 +1725,7 @@ contains_storage_order_barrier_p (vec<vn_reference_op_s> ops)
 /* Return true if OPS represent an access with reverse storage order.  */
 
 static bool
-reverse_storage_order_for_component_p (vec<vn_reference_op_s> ops)
+reverse_storage_order_for_component_p (const vec<vn_reference_op_s> &ops)
 {
   unsigned i = 0;
   if (ops[i].opcode == REALPART_EXPR || ops[i].opcode == IMAGPART_EXPR)
@@ -3772,6 +3772,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Now re-write REF to be based on the rhs of the assignment.  */
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       copy_reference_ops_from_ref (rhs1, &rhs);
+
+      /* When none of the original operands survives the storage order of
+	 the translated reference is the one of the RHS of the copy.  The
+	 operands we folded into a constant offset above may well have
+	 specified a reverse storage order, which is a property of the
+	 component and not of its position, so it is not recoverable from
+	 that offset.  Punt unless both accesses are in natural order.  */
+      if (i < 0
+	  && (reverse_storage_order_for_component_p (vr->operands)
+	      || reverse_storage_order_for_component_p (rhs)))
+	return (void *)-1;
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
       bool force_no_tbaa = false;
