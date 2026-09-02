@@ -128,7 +128,7 @@ struct GTY((chain_next ("%h.level_chain"))) binding_level
   binding_level *level_chain;
 
   /* The kind of scope this object represents.  */
-  ENUM_BITFIELD (level_kind) kind : 4;
+  enum level_kind kind : 4;
 };
 
 /* The binding level currently in effect.  */
