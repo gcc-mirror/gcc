@@ -8336,6 +8336,7 @@ perform_inline_until(   struct cbl_perform_tgt_t *tgt,
                   GOTO TOP
       EXIT:
   */
+  gg_append_statement(tgt->addresses.testA.label);
   gg_append_statement(tgt->addresses.test.label);
 
   // Go to where the conditional is recalculated....
@@ -8688,7 +8689,7 @@ perform_inline_testafter_varying(  struct cbl_perform_tgt_t *tgt,
   // the list of statements:
   gg_append_statement(tgt->addresses.top.go_to);
 
-  // The list of statements ends with a goto TESTA, and that;s here:
+  // The list of statements ends with a goto TESTA, and that's here:
   gg_append_statement(tgt->addresses.testA.label);
 
   // Build the test section

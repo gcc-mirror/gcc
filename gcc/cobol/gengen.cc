@@ -283,8 +283,8 @@ gg_append_var_decl(tree var_decl)
 
 #define LOOK_FOR_MISSING_LABELS_not
 #ifdef LOOK_FOR_MISSING_LABELS
-static std::set<tree> missing_labels;
-static std::map<tree, int> missing_gotos;
+static std::unordered_set<tree> missing_labels;
+static std::unordered_map<tree, int> missing_gotos;
 void
 dump_missing_labels()
   {
@@ -361,23 +361,13 @@ gg_append_statement(tree stmt)
       }
     else
       {
-        /* computed goto or other expression-valued destination */
+      /* computed goto or other expression-valued destination */
       }
-    //fprintf(stderr,
-    //        "Laying down a GOTO_EXPR  %s %p at line %d\n",
-    //        name_text,
-    //        reinterpret_cast<void *>(label_decl),
-    //        cobol_location().first_line);
     missing_gotos[label_decl] = cobol_location().first_line;
     }
   if( TREE_CODE(stmt) == LABEL_EXPR )
     {
     tree label_decl = LABEL_EXPR_LABEL(stmt);   /* This is a LABEL_DECL. */
-    //fprintf(stderr,
-    //        "Laying down a LABEL_EXPR %s %p at line %d\n",
-    //        name_text,
-    //        reinterpret_cast<void *>(label_decl),
-    //        cobol_location().first_line);
     missing_labels.insert(label_decl);
     }
 #endif
