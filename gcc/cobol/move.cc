@@ -295,11 +295,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
          * Otherwise, conversion to dest_type can wrap before we examine
          * the value.
          */
-        tree value = gg_define_variable(INT128);
-
-        gg_assign(value,
-                  gg_cast(INT128,
-                          sourceref.field->data_decl_node));
+        tree value = gg_cast(INT128, sourceref.field->data_decl_node);
 
         /*
          * An unsigned receiving item receives the absolute value of the
@@ -307,7 +303,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
          */
         if( !(destref.field->attr & signable_e) )
           {
-          gg_assign(value, gg_abs(value));
+          value = gg_abs(value);
           }
 
         /*
@@ -315,10 +311,9 @@ mh_source_is_literalN(cbl_refer_t &destref,
          * destination-width overflow from occurring before the size
          * check.
          */
-        scale_by_power_of_ten_N(
-          value,
-          destref.field->data.rdigits
-            - sourceref.field->data.rdigits);
+        scale_by_power_of_ten_N(value,
+                                destref.field->data.rdigits -
+                                sourceref.field->data.rdigits);
 
         if( check_for_error && size_error )
           {
@@ -329,13 +324,8 @@ mh_source_is_literalN(cbl_refer_t &destref,
             FIXED_WIDE_INT(128) power_of_ten =
               get_power_of_ten(destref.field->data.digits);
 
-            tree limit =
-              wide_int_to_tree(INT128, power_of_ten);
+            tree limit = wide_int_to_tree(INT128, power_of_ten);
 
-            /*
-             * Cast-before-abs is unnecessary here because value already
-             * has type INT128.
-             */
             IF( gg_abs(value), ge_op, limit )
               {
               gg_assign(size_error,
@@ -350,8 +340,7 @@ mh_source_is_literalN(cbl_refer_t &destref,
         /*
          * Narrow only after the value has been checked.
          */
-        tree dest_location = get_location(destref);
-        safe_store(dest_location, dest_type, value);
+        safe_store(get_location(destref), dest_type, value);
 
         moved = true;
         break;
@@ -1716,9 +1705,7 @@ copy_native_into_place(cbl_field_t *dest,
   scale_by_power_of_ten_N(value, dest->data.rdigits - rhs_rdigits);
 
   // Create a variable of our target type.
-  tree target = gg_define_variable(dest_type);
-  // Cast the source to the target
-  gg_assign(target, gg_cast(dest_type, value));
+  tree target = gg_cast(dest_type, value);
 
   if( check_for_error && !dest->data.digits )
     {
@@ -1808,7 +1795,7 @@ copy_native_into_place(cbl_field_t *dest,
     else
       {
       // 'target' is little-endian, so make it big-endian
-      gg_assign(target, gg_bswap(target));
+      target = gg_bswap(target);
       }
     }
   else

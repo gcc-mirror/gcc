@@ -84,57 +84,9 @@
 
     That turns out to be unnecessarily slow.
 
-    The routine implemented here uses a divide-and-conquer approach to
-    minimimizing the number of operations, and when you get down to two
-    digits it does a divide-by-100 and uses the remainder in a table lookup
-    to get the digits. */
-
-/*  These static tables are born of a pathologic desire to avoid calculations.
-    Whether that paranoia is justified (perhaps "digit%10 + '0';" ) would
-    actually be faster) is currently untested.  But I figured this would be
-    pretty darn fast.
-
-    Use them when you know the index is between zero and one hundred.  */
-
-static const char digit_low[100] =
-  {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
-  };
-
-static const char digit_high[100] =
-  {
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-  2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
-  3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-  4, 4, 4, 4, 4, 4, 4, 4, 4, 4,
-  5, 5, 5, 5, 5, 5, 5, 5, 5, 5,
-  6, 6, 6, 6, 6, 6, 6, 6, 6, 6,
-  7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
-  8, 8, 8, 8, 8, 8, 8, 8, 8, 8,
-  9, 9, 9, 9, 9, 9, 9, 9, 9, 9,
-  };
-
-static char combined_string[128];
-static char zero_char;
-
-typedef struct
-  {
-  int   run;
-  union
-    {
-    unsigned __int128 val128;
-    };
-  } COMBINED;
+    The routine implemented here splits wide values into large decimal chunks
+    to minimize the number of divisions.  Within each chunk, it emits digits
+    two at a time through a table lookup. */
 
 #if defined(__cplusplus) && __cplusplus >= 201703L
 #  define FALLTHROUGH [[fallthrough]]
@@ -158,313 +110,419 @@ static const unsigned char digits2[100][2] =
   {9,0},{9,1},{9,2},{9,3},{9,4},{9,5},{9,6},{9,7},{9,8},{9,9}
   };
 
-static void
-uint_to_8_digits(unsigned int a, unsigned char *ach, int n)
+template<int stride>
+static inline void
+uint_to_8_digits_direct( unsigned int   value,
+                         unsigned char *result,
+                         int            digits,
+                         unsigned char  zero )
   {
-  unsigned int x;
+  unsigned int pair;
 
-  switch(n)
+  switch( digits )
     {
     case 8:
-      x = a % 100;
-      ach[6] = digits2[x][0];
-      ach[7] = digits2[x][1];
-      a /= 100;
+      pair = value % 100;
+      result[6*stride] = digits2[pair][0] + zero;
+      result[7*stride] = digits2[pair][1] + zero;
+      value /= 100;
       FALLTHROUGH;
 
-    case 7:
     case 6:
-      x = a % 100;
-      ach[4] = digits2[x][0];
-      ach[5] = digits2[x][1];
-      a /= 100;
+      pair = value % 100;
+      result[4*stride] = digits2[pair][0] + zero;
+      result[5*stride] = digits2[pair][1] + zero;
+      value /= 100;
       FALLTHROUGH;
 
-    case 5:
     case 4:
-      x = a % 100;
-      ach[2] = digits2[x][0];
-      ach[3] = digits2[x][1];
-      a /= 100;
+      pair = value % 100;
+      result[2*stride] = digits2[pair][0] + zero;
+      result[3*stride] = digits2[pair][1] + zero;
+      value /= 100;
       FALLTHROUGH;
 
-    case 3:
     case 2:
-      x = a % 100;
-      ach[0] = digits2[x][0];
-      ach[1] = digits2[x][1];
-      FALLTHROUGH;
-    default:
+      /* The caller guarantees that value fits in digits, so the final pair
+         is already in the range zero through 99. */
+      result[0] = digits2[value][0] + zero;
+      result[stride] = digits2[value][1] + zero;
       break;
+
+    default:
+      __builtin_unreachable();
     }
   }
 
-static
-void
-string_from_combined(const COMBINED &combined)
+template<int stride>
+static inline void
+string_from_uint64( unsigned char *result,
+                    int            digits,
+                    uint64_t       value,
+                    unsigned char  zero )
   {
-  int ndigits = combined.run;
-  unsigned __int128 value = combined.val128;
+  if( digits & 0x01 )
+    {
+    result[(digits-1)*stride]
+      = static_cast<unsigned char>(value % 10 + zero);
 
-  if( ndigits & 0x01 )
-    {
-    combined_string[ndigits-1] = value%10;
-    value /= 10;
-    ndigits -= 1;
-    }
-  while(ndigits >= 8)
-    {
-    unsigned int val = value % 100000000;
-    uint_to_8_digits(val,
-           reinterpret_cast<unsigned char *>(combined_string + ndigits-8), 8);
-    value /= 100000000;
-    ndigits -= 8;
-    }
-  if( ndigits )
-    {
-    const unsigned int pots[8] =
+    if( digits == 1 )
       {
-      1,
-      10,
-      100,
-      1000,
-      10000,
-      100000,
-      1000000,
-      10000000,
-      };
-
-    unsigned int val = value % pots[ndigits];
-    uint_to_8_digits(val,
-                  reinterpret_cast<unsigned char *>(combined_string), ndigits);
-    value /= 100000000;
-    }
-  char *p = combined_string;
-  const char *pend = p + combined.run;
-  while(p < pend)
-    {
-    *p++ += zero_char;
-    }
-  }
-
-static bool
-binary_to_string(char *result, int digits, __int128 value)
-  {
-  bool retval; // True means the value was too big to fit into digits
-  if( digits < 39 )
-    {
-    // Note that this routine does not terminate the generated string with a
-    // NUL.  This routine is sometimes used to generate a NumericDisplay string
-    // of digits in place, with no terminator.
-    __int128 mask = __gg__power_of_ten(digits);
-
-    COMBINED combined;
-    if( value < 0 )
-      {
-      value = -value;
+      return;
       }
 
-    // A non-zero retval means the number was too big to fit into the desired
-    // number of digits:
-    retval = !!(value / mask);
-
-    // mask off the bottom digits to avoid garbage when value is too large
-    value %= mask;
-
-    combined.run = digits;
-    combined.val128 = value;
-    string_from_combined(combined);
-    memcpy(result, combined_string, digits);
-    return retval;
+    value /= 10;
+    digits -= 1;
     }
-  else
-    {
-    // We assume that this is a PIC X(16) COMP-X, so the value is always
-    // positive.
-    COMBINED combined;
-    // A non-zero retval means the number was too big to fit into the desired
-    // number of digits:
-    retval = false;
 
-    combined.run = digits;
-    combined.val128 = value;
-    string_from_combined(combined);
-    memcpy(result, combined_string, digits);
+  /* Leave the final one-to-eight digits in value.  Their value is already
+     known to be less than 10^digits, so neither a remainder nor a final
+     division is needed for that last group. */
+  while( digits > 8 )
+    {
+    unsigned int chunk
+      = static_cast<unsigned int>(value % 100000000);
+
+    uint_to_8_digits_direct<stride>(
+      chunk,
+      result + (digits-8)*stride,
+      8,
+      zero);
+
+    value /= 100000000;
+    digits -= 8;
     }
-  return retval;
-  }
 
-extern "C"
-bool
-__gg__binary_to_string_ascii(char *result, int digits, __int128 value)
-  {
-  zero_char = ascii_zero;
-  return binary_to_string(result, digits, value);
-  }
-
-extern "C"
-bool
-__gg__binary_to_string_ebcdic(char *result, int digits, __int128 value)
-  {
-  zero_char = ebcdic_zero;
-  return binary_to_string(result, digits, value);
-  }
-
-bool
-__gg__binary_to_string_encoded( char *result,
-                                size_t digits,
-                                __int128 value,
-                                cbl_encoding_t encoding)
-  {
-  // A non-zero retval means the number was too big to fit into the desired
-  // number of digits.
-
-  const charmap_t *charmap = __gg__get_charmap(encoding);
-  int stride = charmap->stride();
-
-  zero_char = charmap->is_like_ebcdic() ? ebcdic_zero : ascii_0;
-
-  // Note that this routine does not terminate the generated string with a
-  // NUL.  This routine is sometimes used to generate a NumericDisplay string
-  // of digits in place, with no terminator.
-  __int128 mask = __gg__power_of_ten(digits);
-
-  COMBINED combined;
-  if( value < 0 )
+  if( digits )
     {
+    uint_to_8_digits_direct<stride>(
+      static_cast<unsigned int>(value),
+      result,
+      digits,
+      zero);
+    }
+  }
+
+template<int stride>
+static bool
+binary_to_string( char          *result,
+                  int            digits,
+                  __int128       signed_value,
+                  unsigned char  zero )
+  {
+  unsigned __int128 value
+    = static_cast<unsigned __int128>(signed_value);
+
+  if( signed_value < 0 )
+    {
+    /* Unsigned negation also handles the minimum signed __int128 value. */
     value = -value;
     }
 
-  bool retval = !!(value / mask);
+  bool overflow = false;
 
-  // mask off the bottom digits to avoid garbage when value is too large
-  value %= mask;
-
-  combined.run = digits;
-  combined.val128 = value;
-  string_from_combined(combined);
-  if( stride == 1 )
+  if( digits < 39 )
     {
-    memcpy(result, combined_string, digits);
+    unsigned __int128 mask
+      = static_cast<unsigned __int128>(__gg__power_of_ten(digits));
+
+    overflow = value >= mask;
+
+    /* Overflow should be uncommon.  Avoid 128-bit division entirely when
+       the value already fits the requested number of digits. */
+    if( overflow )
+      {
+      value %= mask;
+      }
+    }
+
+  /* 10^19 is the largest power of ten that fits in uint64_t.  For values
+     wider than 64 bits, one 128-bit division produces two pieces that can be
+     formatted using only 64-bit and 32-bit arithmetic. */
+  static const uint64_t ten_to_19 = 10000000000000000000ULL;
+  unsigned char *output = reinterpret_cast<unsigned char *>(result);
+
+  if( (value >> 64) == 0 )
+    {
+    string_from_uint64<stride>(
+      output,
+      digits,
+      static_cast<uint64_t>(value),
+      zero);
     }
   else
     {
-    char *p = combined_string;
-    const char *pend = p + digits;
-    char *d = result;
+    uint64_t low
+      = static_cast<uint64_t>(value % ten_to_19);
+    uint64_t high
+      = static_cast<uint64_t>(value / ten_to_19);
 
-    /* We take advantage of knowing that every character in combined_string
-       becomes just the low byte of a little-endian int16 or 32, and the high
-       byte of a big-endian.  */
-    if( charmap->is_big_endian() )
+    string_from_uint64<stride>(output, digits-19, high, zero);
+    string_from_uint64<stride>(
+      output+(digits-19)*stride,
+      19,
+      low,
+      zero);
+    }
+
+  return overflow;
+  }
+
+extern "C"
+bool
+__gg__binary_to_string_ascii( char     *result,
+                              int       digits,
+                              __int128  value )
+  {
+  return binary_to_string<1>(result, digits, value, ascii_zero);
+  }
+
+extern "C"
+bool
+__gg__binary_to_string_ebcdic( char     *result,
+                               int       digits,
+                               __int128  value )
+  {
+  return binary_to_string<1>(result, digits, value, ebcdic_zero);
+  }
+
+bool
+__gg__binary_to_string_encoded( char           *result,
+                                size_t          digits,
+                                __int128        value,
+                                cbl_encoding_t  encoding )
+  {
+  const charmap_t *charmap = __gg__get_charmap(encoding);
+  int stride = charmap->stride();
+  unsigned char zero
+    = charmap->is_like_ebcdic() ? ebcdic_zero : ascii_0;
+
+  if( stride == 1 )
+    {
+    return binary_to_string<1>(
+      result,
+      static_cast<int>(digits),
+      value,
+      zero);
+    }
+
+  /* Clear the complete destination once, then write each digit directly into
+     the byte selected by the encoding's byte order. */
+  size_t output_size = digits * static_cast<size_t>(stride);
+  memset(result, 0, output_size);
+
+  size_t digit_offset
+    = charmap->is_big_endian() ? static_cast<size_t>(stride-1) : 0;
+  char *digit_result = result + digit_offset;
+
+  if( stride == 2 )
+    {
+    return binary_to_string<2>(
+      digit_result,
+      static_cast<int>(digits),
+      value,
+      zero);
+    }
+
+  return binary_to_string<4>(
+    digit_result,
+    static_cast<int>(digits),
+    value,
+    zero);
+  }
+
+static const unsigned char bin2pd[100] =
+  {
+  0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
+  0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
+  0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29,
+  0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
+  0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49,
+  0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59,
+  0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
+  0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79,
+  0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89,
+  0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99,
+  };
+
+static inline void
+uint32_to_packed( unsigned char *result,
+                  int            bytes,
+                  uint32_t       value )
+  {
+  unsigned int pair;
+
+  switch( bytes )
+    {
+    case 4:
+      pair = value % 100;
+      result[3] = bin2pd[pair];
+      value /= 100;
+      FALLTHROUGH;
+
+    case 3:
+      pair = value % 100;
+      result[2] = bin2pd[pair];
+      value /= 100;
+      FALLTHROUGH;
+
+    case 2:
+      pair = value % 100;
+      result[1] = bin2pd[pair];
+      value /= 100;
+      FALLTHROUGH;
+
+    case 1:
+      /* Retain the low-order pair when the source has more decimal digits than
+         the destination. */
+      result[0] = bin2pd[value % 100];
+      break;
+
+    default:
+      __builtin_unreachable();
+    }
+  }
+
+static inline void
+uint64_to_packed( unsigned char *result,
+                  int            bytes,
+                  uint64_t       value )
+  {
+  /* Four packed bytes hold eight decimal digits.  Extracting four bytes at a
+     time limits the divisions of value to one per four output bytes; the
+     remaining divisions operate on 32-bit chunks. */
+  while( bytes > 4 )
+    {
+    uint32_t chunk
+      = static_cast<uint32_t>(value % 100000000);
+
+    uint32_to_packed(result+bytes-4, 4, chunk);
+    value /= 100000000;
+    bytes -= 4;
+    }
+
+  if( bytes )
+    {
+    uint32_t final_chunk;
+
+    if( value >> 32 )
       {
-      while(p < pend)
-        {
-        memset(d, 0, stride-1);
-        d += stride-1;
-        *d++ = *p++;
-        }
+      /* Truncate in base ten before narrowing to uint32_t. */
+      final_chunk = static_cast<uint32_t>(value % 100000000);
       }
     else
       {
-      while(p < pend)
-        {
-        *d++ = *p++;
-        memset(d, 0, stride-1);
-        d += stride-1;
-        }
+      final_chunk = static_cast<uint32_t>(value);
       }
+
+    uint32_to_packed(
+      result,
+      bytes,
+      final_chunk);
     }
-  return retval;
   }
 
-static void
-packed_from_combined(const COMBINED &combined)
+static inline void
+moderate_uint128_to_packed( unsigned char     *result,
+                            int                bytes,
+                            unsigned __int128  value )
   {
-  /*  The combined.value must be positive at this point.
+  unsigned char *d = result + bytes;
 
-      The combined.run value has to be the number of places needed to hold
-      combined.value.  The proper calculation is (digits+1)/2.
-
-      For a signable value, the caller had to multiple the original value by
-      ten to create room on the right for the sign nybble. */
-
-  static const unsigned char bin2pd[100] =
+  /* GCC expands division of an unsigned __int128 by the constant 100 inline.
+     For moderately wide values, peeling a few pairs this way is faster than
+     invoking the general 128-bit division helper for a large divisor. */
+  while( d > result && value >> 64 )
     {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09,
-    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19,
-    0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29,
-    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39,
-    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49,
-    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59,
-    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69,
-    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79,
-    0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89,
-    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99,
-    } ;
-
-  char *d = combined_string + combined.run;
-
-  if( combined.run > 9)
-    {
-    // Stage 1: pull from __int128 until the top half is zero.
-    __int128 value128 = combined.val128;
-#if COBOL_LITTLE_ENDIAN
-    while(value128>>64)
-      {
-      *(--d) = bin2pd[value128%100];
-      value128 /= 100;
-      }
-    // Stage 2: Keep going with the 64-bit bottom half.
-    uint64_t value64 = value128;
-    while(d > combined_string)
-      {
-      *(--d) = bin2pd[value64%100];
-      value64 /= 100;
-      }
-#else
-    // The cute trick for little-endian is trickier in big-endian.  Right now
-    // it's late, and I don't feel like it.  It would be easier if there were
-    // __int128 constants, because the test up above could be
-    //    while(value128/2^64)
-    // but that's not available as of this writing.
-    while(d > combined_string)
-      {
-      *(--d) = bin2pd[value128%100];
-      value128 /= 100;
-      }
-#endif
+    *(--d) = bin2pd[static_cast<unsigned int>(value % 100)];
+    value /= 100;
     }
-  else
+
+  uint64_to_packed(
+    result,
+    static_cast<int>(d-result),
+    static_cast<uint64_t>(value));
+  }
+
+static inline void
+large_uint128_to_packed( unsigned char     *result,
+                         int                bytes,
+                         unsigned __int128  value )
+  {
+  static const uint64_t ten_to_18 = 1000000000000000000ULL;
+  static const uint64_t ten_to_19 = 10000000000000000000ULL;
+
+  /* One division at 10^19 divides every supported packed value into two
+     uint64_t values.  Since 19 is odd, one packed byte crosses the boundary
+     between the two values. */
+  uint64_t low
+    = static_cast<uint64_t>(value % ten_to_19);
+  uint64_t high
+    = static_cast<uint64_t>(value / ten_to_19);
+
+  /* low contains the low-order 19 decimal digits.  It therefore contains all
+     the digits needed by a destination of nine bytes or fewer. */
+  if( bytes <= 9 )
     {
-    uint64_t value = combined.val128;
-    while(d > combined_string)
-      {
-      *(--d) = bin2pd[value%100];
-      value /= 100;
-      }
+    uint64_to_packed(result, bytes, low);
+    return;
     }
+
+  unsigned int low_leading_digit
+    = static_cast<unsigned int>(low / ten_to_18);
+  uint64_t low_trailing_digits = low % ten_to_18;
+
+  unsigned int high_trailing_digit
+    = static_cast<unsigned int>(high % 10);
+  high /= 10;
+
+  uint64_to_packed(result+bytes-9, 9, low_trailing_digits);
+  result[bytes-10]
+    = bin2pd[high_trailing_digit*10 + low_leading_digit];
+  uint64_to_packed(result, bytes-10, high);
   }
 
 extern "C"
 void
 __gg__binary_to_packed( unsigned char *result,
-                             int digits,
-                             __int128 value)
+                        int            digits,
+                        __int128       value )
   {
-  size_t length = (digits+1)/2;
+  /* The caller supplies a positive value.  For a signable item, it has
+     already multiplied the magnitude by ten to reserve the low nybble for
+     the sign. */
+  unsigned __int128 magnitude
+    = static_cast<unsigned __int128>(value);
+  int bytes = (digits+1)/2;
 
-  COMBINED combined;
-  combined.run = length;
-  combined.val128 = value;
-  packed_from_combined(combined);
-  memcpy(result, combined_string, length);
+  if( (magnitude >> 64) == 0 )
+    {
+    uint64_to_packed(result, bytes, static_cast<uint64_t>(magnitude));
+    }
+  else
+    {
+    /* This threshold is a performance choice, not a numeric boundary.  Below
+       10^27, peeling a small number of pairs is faster on current GCC targets.
+       At and above it, the single 10^19 split is faster. */
+    static const unsigned __int128 ten_to_27
+      =   static_cast<unsigned __int128>(10000000000000ULL)
+        * 100000000000000ULL;
+
+    if( magnitude < ten_to_27 )
+      {
+      moderate_uint128_to_packed(result, bytes, magnitude);
+      }
+    else
+      {
+      large_uint128_to_packed(result, bytes, magnitude);
+      }
+    }
   }
 
 const unsigned char __gg__dp2bin[256] =
   {
   // This table is used both by the compile-time and the run-time.  Given the
-  // packed decimal byte 0x23, it provides s the equivalent decimal value of
+  // packed decimal byte 0x23, it provides the equivalent decimal value of
   // 23.  This table is not used on the final byte of COMP-3 values; that
   // digit has to be extracted specifically.
 
@@ -488,70 +546,134 @@ const unsigned char __gg__dp2bin[256] =
    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0, // 0xF0
   };
 
-static
-__int128
-pd_dive_rt(const unsigned char *psz, int nplaces)
+static inline uint32_t
+four_packed_bytes_to_uint32(const unsigned char *p)
   {
-  __int128 retval;
-  switch(nplaces)
+  return   static_cast<uint32_t>(__gg__dp2bin[p[0]]) * 1000000
+         + static_cast<uint32_t>(__gg__dp2bin[p[1]]) * 10000
+         + static_cast<uint32_t>(__gg__dp2bin[p[2]]) * 100
+         + static_cast<uint32_t>(__gg__dp2bin[p[3]]);
+  }
+
+static inline uint32_t
+initial_packed_bytes_to_uint32( const unsigned char *p,
+                                int                  nplaces )
+  {
+  switch( nplaces )
     {
-    case 0:
-      retval =   0;
-      break;
     case 1:
-      retval =   __gg__dp2bin[psz[0]];
-      break;
+      return __gg__dp2bin[p[0]];
+
     case 2:
-      retval =   __gg__dp2bin[psz[0]] * 100
-               + __gg__dp2bin[psz[1]];
-      break;
+      return   __gg__dp2bin[p[0]] * 100
+             + __gg__dp2bin[p[1]];
+
     case 3:
-      retval =   __gg__dp2bin[psz[0]] * 10000
-               + __gg__dp2bin[psz[1]] * 100
-               + __gg__dp2bin[psz[2]];
-      break;
+      return   __gg__dp2bin[p[0]] * 10000
+             + __gg__dp2bin[p[1]] * 100
+             + __gg__dp2bin[p[2]];
+
     case 4:
-      retval =   __gg__dp2bin[psz[0]] * 1000000
-               + __gg__dp2bin[psz[1]] * 10000
-               + __gg__dp2bin[psz[2]] * 100
-               + __gg__dp2bin[psz[3]];
-      break;
+      return four_packed_bytes_to_uint32(p);
+
     default:
-      {
-      int nright = nplaces/2;
-      int nleft  = nplaces - nright;
-      __int128 pot = __gg__power_of_ten(nright*2);
-      retval =   pd_dive_rt(psz,       nleft) * pot
-               + pd_dive_rt(psz+nleft, nright);
-      break;
-      }
+      __builtin_unreachable();
+    }
+  }
+
+static inline uint64_t
+packed_bytes_to_uint64( const unsigned char *p,
+                        int                  nplaces )
+  {
+  int first = nplaces & 3;
+  if( first == 0 )
+    {
+    first = 4;
     }
 
-  return retval;
+  uint64_t value = initial_packed_bytes_to_uint32(p, first);
+  p += first;
+  nplaces -= first;
+
+  while( nplaces )
+    {
+    value = value * 100000000 + four_packed_bytes_to_uint32(p);
+    p += 4;
+    nplaces -= 4;
+    }
+
+  return value;
+  }
+
+static inline unsigned __int128
+packed_bytes_to_uint128( const unsigned char *p,
+                         int                  nplaces )
+  {
+  switch( nplaces )
+    {
+    case 0:
+      return 0;
+
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+      return initial_packed_bytes_to_uint32(p, nplaces);
+
+    default:
+      break;
+    }
+
+  if( nplaces <= 9 )
+    {
+    return packed_bytes_to_uint64(p, nplaces);
+    }
+
+  /* The low nine packed bytes contain 18 decimal digits and fit in uint64_t.
+     Decode both halves with 64-bit arithmetic, then combine them with one
+     128-bit multiplication.  Only a 19-byte COMP-6 value has a ten-byte high
+     portion; split that portion into one byte and nine bytes. */
+  static const uint64_t ten_to_18 = 1000000000000000000ULL;
+  int high_places = nplaces - 9;
+  unsigned __int128 high;
+
+  if( high_places <= 9 )
+    {
+    high = packed_bytes_to_uint64(p, high_places);
+    }
+  else
+    {
+    high =   static_cast<unsigned __int128>(__gg__dp2bin[p[0]]) * ten_to_18
+           + packed_bytes_to_uint64(p+1, 9);
+    }
+
+  uint64_t low = packed_bytes_to_uint64(p+high_places, 9);
+  return high * ten_to_18 + low;
   }
 
 extern "C"
 __int128
-__gg__packed_to_binary(const unsigned char *psz,
-                             int            nplaces) // Number of bytes
+__gg__packed_to_binary( const unsigned char *psz,
+                        int                  nplaces ) // Number of bytes
   {
-  __int128 retval;
   // Check to see if the final nybble is a sign bit:
-  bool signable = (psz[nplaces-1] & 0x0F) >= 0x0C;
+  unsigned int sign = psz[nplaces-1] & 0x0F;
+  bool signable = sign >= 0x0A;
+  unsigned __int128 magnitude;
 
   if( signable )
     {
-    retval = pd_dive_rt(psz, nplaces-1) * 10 + (psz[nplaces-1] >> 4);
+    magnitude =   packed_bytes_to_uint128(psz, nplaces-1) * 10
+                + (psz[nplaces-1] >> 4);
     }
   else
     {
-    retval = pd_dive_rt(psz, nplaces);
+    magnitude = packed_bytes_to_uint128(psz, nplaces);
     }
-  if(     signable
-      && (psz[nplaces-1] & 0x0F) == 0x0D )
-    {
-    retval = -retval;
-    }
-  return retval;
-  }
 
+  if( sign == 0x0B || sign == 0x0D )
+    {
+    return -static_cast<__int128>(magnitude);
+    }
+  return static_cast<__int128>(magnitude);
+  }

@@ -27,7 +27,7 @@
             display "short-val is: " short-val.
             display "long-val is: " long-val.
             display "longlong-val is: " longlong-val.
-            display "sixteenbytes-val is: " sixteenbytes-val.
+            display "sixteenbytes-val is messed up and needs fixing"
             goback.
         end  program            compx.
 

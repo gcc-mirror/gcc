@@ -5774,37 +5774,18 @@ program_end_stuff(const cbl_refer_t &refer,
   if( returner )
     {
     cbl_field_type_t field_type = returner->type;
-    tree return_type = tree_type_from_field(returner);
-    tree retval   = gg_define_variable(return_type);
-
-    gg_assign(retval, gg_cast(return_type, integer_zero_node));
 
     if( is_valuable( field_type ) )
       {
-      // The field being returned is numeric.
-      if(     field_type == FldNumericBin5
-          ||  field_type == FldFloat
-          ||  field_type == FldPointer
-          ||  field_type == FldIndex )
-        {
-        // These are easily handled because they are all native binary
-        gg_memcpy(gg_get_address_of(retval),
-                  member(returner, "data"),
-                  build_int_cst_type( SIZE_T,
-                                      std::min(gg_sizeof(return_type),
-                                         (size_t)returner->data.capacity())));
-        }
-      else
-        {
-        // The field_type has a PICTURE string, so we need to convert from the
-        // COBOL form to native binary:
-        tree value = get_binary_value(returner, return_type);
-        gg_memcpy(gg_get_address_of(retval),
-                  gg_get_address_of(value),
-                  build_int_cst_type(SIZE_T, gg_sizeof(return_type)));
-        }
+      tree inside_type  = tree_type_from_field(returner);
+      tree outside_type = get_interfunction_type(inside_type);
+      tree outside      = gg_define_variable(outside_type);
+      tree value        = get_binary_value(returner, inside_type);
+      safe_store(gg_get_address_of(outside),
+                 outside_type,
+                 value);
       restore_local_variables();
-      gg_return(retval);
+      gg_return(outside);
       }
     else
       {
@@ -5816,7 +5797,7 @@ program_end_stuff(const cbl_refer_t &refer,
 
       tree array_type = build_array_type_nelts(UCHAR,
                                     returner->data.capacity());
-      tree array     =  gg_define_variable(array_type, vs_static);
+      tree array =  gg_define_variable(array_type, vs_static);
       gg_memcpy(gg_pointer_to_array(array),
                 member(returner->var_decl_node, "data"),
                 member(returner->var_decl_node, "capacity"));
@@ -13008,6 +12989,7 @@ create_and_call(size_t narg,
     // a list of call expressions whose function_decl targets will be replaced.
     parser_call_target( funcname, call_expr );
     }
+  call_expr = save_expr(call_expr);
 
   tree returned_value;
 
@@ -13017,12 +12999,12 @@ create_and_call(size_t narg,
     // we treat that returned value depends on the target.
 
     // Create a variable of the type expected from the called function
-    returned_value = gg_define_variable(interfunction_type);
+    //returned_value = gg_define_variable(interfunction_type);
 
     // Actually call the function, assigning the returned value to that
     // variable:
     push_program_state();
-    gg_assign(returned_value, gg_cast(interfunction_type, call_expr));
+    returned_value = call_expr;
     pop_program_state();
 
     // Now we decided what to do with the returned value, based on its type.
@@ -13225,6 +13207,7 @@ parser_call(   cbl_refer_t name,
 
   size_t nbytes;
   tree returned_value_type = tree_type_from_field_type(returned.field, nbytes);
+  tree interfunction_type = get_interfunction_type(returned_value_type);
 
   if( use_static_call() && is_literal(name.field) )
     {
@@ -13240,7 +13223,7 @@ parser_call(   cbl_refer_t name,
   else if( name.field && name.field->type == FldPointer )
     {
     tree function_pointer = function_pointer_from_name( name,
-                                                        returned_value_type);
+                                                        interfunction_type);
     // This is call-by-pointer; we know function_pointer is good:
     create_and_call(narg,
                     args,
@@ -13253,7 +13236,7 @@ parser_call(   cbl_refer_t name,
   else
     {
     tree function_pointer = function_pointer_from_name( name,
-                                                      returned_value_type);
+                                                      interfunction_type);
     // We might not have a good handle, so we have to check:
     IF( function_pointer,
         ne_op,

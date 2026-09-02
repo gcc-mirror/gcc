@@ -1,6 +1,6 @@
       *> Do not edit this generated file.  See README.txt
       *> { dg-do run }
-       *> { dg-options "-dialect ibm" }
+       *> { dg-options "-dialect ibm -Wno-any-length" }
        *> { dg-output-file "group2/FUNCTION_as_CALL_parameter_BY_CONTENT.out" }
 
        IDENTIFICATION DIVISION.

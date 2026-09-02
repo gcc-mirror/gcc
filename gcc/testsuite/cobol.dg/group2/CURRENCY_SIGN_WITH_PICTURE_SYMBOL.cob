@@ -13,14 +13,15 @@
 
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       77  val      pic 99v99 value 12.34.
+       77  euro-val pic 99v99.
        77  EUROS    PIC U99v99.
        77  cents    PIC 9,999c.
        77  DOLLARS  Pic $$,$$9.99.
 
        PROCEDURE DIVISION.
-           MOVE val TO EUROS
-           MULTIPLY val BY 100 GIVING cents.
+           MOVE 12.34 TO EURO-val.
+           MULTIPLY euro-val BY 100 GIVING cents.
+           move euro-val to EUROS.
            DISPLAY "#" EUROS "# equal #" cents '#'.
            Move 1500 to DOLLARS
            Display "Invoice amount #1 is " DOLLARS '.'.

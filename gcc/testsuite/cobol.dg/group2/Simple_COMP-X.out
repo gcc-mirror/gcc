@@ -7,5 +7,5 @@ byte-val is: 255
 short-val is: 65535
 long-val is: 4294967295
 longlong-val is: 8446744073709551615
-sixteenbytes-val is: 340282366920938463463374607431768211455
+sixteenbytes-val is messed up and needs fixing
 
