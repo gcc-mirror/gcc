@@ -226,6 +226,19 @@ pathcov004d (int a, int b, int c, int d)
     }
 }
 
+/* BEGIN paths
+   summary: 1/1 */
+int
+nested001a (int a) {
+/* END */
+#pragma GCC suppress_coverage begin
+    REQUIRE (a >= 0);
+    int suppressed_twice = a + a;
+    ENSURE (suppressed_twice > a);
+#pragma GCC suppress_coverage end
+    return suppressed_twice;
+}
+
 int
 main ()
 {
@@ -238,6 +251,7 @@ main ()
   suppressed_in_loop3 (10);
   pathcov004c (0, 0, 0, 0);
   pathcov004d (0, 1, 0, 0);
+  nested001a (1);
 }
 
 /* { dg-final { run-gcov prime-paths { --prime-paths-lines=both gcov-39.c } } } */

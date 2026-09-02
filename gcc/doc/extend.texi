@@ -10643,9 +10643,10 @@ problem with defensive code or when asserting invariants and properties.
 This attribute does nothing unless coverage is enabled, e.g. with
 @option{--coverage} or @option{-fpath-coverage}.
 
-A @code{end} without a @code{begin}, or a @code{begin} when another is
-already in effect, will generate a warning.  A @code{begin} without a
-matching @code{end} will suppress the rest of the file.
+A @code{end} without a @code{begin}.  A @code{begin} without a
+matching @code{end} will suppress the rest of the file.  Suppressions
+can be nested and @code{end} will apply to the last unclosed
+@code{begin}.
 
 @smallexample
   #pragma GCC suppress_coverage begin

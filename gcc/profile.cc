@@ -1247,32 +1247,35 @@ any_block_coverage_suppressed_p ()
    UNKNOWN_LOCATION.  */
 static vec<source_range> suppress_coverage_ranges;
 
-/* Try to add LOC as the beginning of a new range.  If a range was started
-   already, this is a no-op.  Returns true if a new range was created.  */
-bool
+/* Try to add LOC as the beginning of a new range.  A new range is always
+   created, even if the previous one was left open.  */
+void
 suppress_coverage_begin (location_t loc)
 {
-  if (!suppress_coverage_ranges.is_empty ()
-      && suppress_coverage_ranges.last ().m_finish == UNKNOWN_LOCATION)
-    return false;
-
   loc = get_pure_location (expansion_point_location (loc));
   source_range range = source_range::from_locations (loc, UNKNOWN_LOCATION);
   suppress_coverage_ranges.safe_push (range);
-  return true;
 }
 
-/* Try to close the last range created by suppress_coverage_begin at LOC.  If
-   the range has been closed already (or not opened), this is a no-op.  Returns
-   true if a range was closed.  */
+/* Try to close the last open range created by suppress_coverage_begin at LOC.
+   If all ranges have been closed already (or never opened), this is a no-op.
+   Returns true if a range was closed.  */
 bool
 suppress_coverage_end (location_t loc)
 {
-  if (suppress_coverage_ranges.is_empty ()
-      || suppress_coverage_ranges.last ().m_finish != UNKNOWN_LOCATION)
-      return false;
+  if (suppress_coverage_ranges.is_empty ())
+    return false;
+
+  source_range *current = nullptr;
+  for (int i = suppress_coverage_ranges.length () - 1; !current && i >= 0; i--)
+    if (suppress_coverage_ranges[i].m_finish == UNKNOWN_LOCATION)
+      current = &suppress_coverage_ranges[i];
+
+  if (!current)
+    return false;
+
   loc = get_pure_location (expansion_point_location (loc));
-  suppress_coverage_ranges.last ().m_finish = loc;
+  current->m_finish = loc;
   return true;
 }
 

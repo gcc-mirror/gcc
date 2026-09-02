@@ -1069,11 +1069,8 @@ handle_pragma_suppress_coverage (cpp_reader*)
 	GCC_BAD ("no matching begin for %<#pragma GCC suppress_coverage end%>");
     }
   else
-    {
-      if (!suppress_coverage_begin (input_location))
-	GCC_BAD ("%<#pragma GCC suppress_coverage begin%> "
-		 "was already in effect, ignored");
-    }
+    suppress_coverage_begin (input_location);
+
   if (pragma_lex (&x, &loc) != CPP_EOF)
     GCC_BAD_AT (loc, "junk at end of %<#pragma GCC suppress_coverage%>");
 }
