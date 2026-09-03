@@ -1971,7 +1971,7 @@ enum lang_decl_selector
 
 struct GTY (()) lang_decl_base
 {
-  ENUM_BITFIELD (lang_decl_selector) selector : 3;
+  enum lang_decl_selector selector : 3;
   unsigned use_template : 2;
   unsigned not_really_extern : 1;    /* var or fn */
   unsigned initialized_in_class : 1; /* var or fn */
@@ -2189,7 +2189,7 @@ struct GTY (()) rust_cp_binding_level
   /* The kind of scope that this object represents.  However, a
       SK_TEMPLATE_SPEC scope is represented with KIND set to
       SK_TEMPLATE_PARMS and EXPLICIT_SPEC_P set to true.  */
-  ENUM_BITFIELD (scope_kind) kind : 4;
+  enum scope_kind kind : 4;
 
   /* True if this scope is an SK_TEMPLATE_SPEC scope.  This field is
       only valid if KIND == SK_TEMPLATE_PARMS.  */
