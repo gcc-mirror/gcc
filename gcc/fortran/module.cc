@@ -4353,6 +4353,7 @@ mio_f2k_derived (gfc_namespace *f2k)
   mio_rparen ();
 }
 
+
 static void
 mio_full_f2k_derived (gfc_symbol *sym)
 {
@@ -4367,24 +4368,10 @@ mio_full_f2k_derived (gfc_symbol *sym)
     {
       if (peek_atom () != ATOM_RPAREN)
 	{
-	  gfc_namespace *ns;
-
 	  sym->f2k_derived = gfc_get_namespace (NULL, 0);
 
-	  /* PDT templates make use of the mechanisms for formal args
-	     and so the parameter symbols are stored in the formal
-	     namespace.  Transfer the sym_root to f2k_derived and then
-	     free the formal namespace since it is unneeded.  */
-	  if (sym->attr.pdt_template && sym->formal && sym->formal->sym)
-	    {
-	      ns = sym->formal->sym->ns;
-	      sym->f2k_derived->sym_root = ns->sym_root;
-	      ns->sym_root = NULL;
-	      ns->refs++;
-	      gfc_free_namespace (ns);
-	      ns = NULL;
-	    }
-
+	  /* PDT type-parameter namespaces are reconstructed
+	     after all needed module symbols are loaded.  */
 	  mio_f2k_derived (sym->f2k_derived);
 	}
       else
@@ -5711,25 +5698,37 @@ read_cleanup (pointer_info *p)
   read_cleanup (p->left);
   read_cleanup (p->right);
 
-  if (p->type == P_SYMBOL && p->u.rsym.state == USED && !p->u.rsym.referenced)
+  if (p->type == P_SYMBOL && p->u.rsym.state == USED
+      && (!p->u.rsym.referenced
+	  || (p->u.rsym.sym && (p->u.rsym.sym->attr.pdt_kind
+				|| p->u.rsym.sym->attr.pdt_len))))
     {
       gfc_namespace *ns;
-      /* Add hidden symbols to the symtree.  */
+
+      /* Add hidden symbols and PDT parameters to the symtree.  */
       q = get_integer (p->u.rsym.ns);
       ns = (gfc_namespace *) q->u.pointer;
 
-      if (!p->u.rsym.sym->attr.vtype
-	    && !p->u.rsym.sym->attr.vtab)
-	st = gfc_get_unique_symtree (ns);
-      else
+      /* PDT parameters have no namespace so return.  */
+      if (ns == NULL)
+	{
+	  gcc_assert (p->u.rsym.sym->attr.pdt_kind
+		      || p->u.rsym.sym->attr.pdt_len);
+	  return;
+	}
+
+      if (p->u.rsym.sym->attr.pdt_kind || p->u.rsym.sym->attr.pdt_len
+	  || p->u.rsym.sym->attr.vtype || p->u.rsym.sym->attr.vtab)
 	{
 	  /* There is no reason to use 'unique_symtrees' for vtabs or
 	     vtypes - their name is fine for a symtree and reduces the
-	     namespace pollution.  */
+	     namespace pollution.  PDT parameters need their source name.  */
 	  st = gfc_find_symtree (ns->sym_root, p->u.rsym.sym->name);
 	  if (!st)
 	    st = gfc_new_symtree (&ns->sym_root, p->u.rsym.sym->name);
 	}
+      else
+	st = gfc_get_unique_symtree (ns);
 
       st->n.sym = p->u.rsym.sym;
       st->n.sym->refs++;
@@ -5743,6 +5742,55 @@ read_cleanup (pointer_info *p)
   /* Free unused symbols.  */
   if (p->type == P_SYMBOL && p->u.rsym.state == UNUSED)
     gfc_free_symbol (p->u.rsym.sym);
+}
+
+
+/* Reconstruct PDT parameter namespaces after all needed module symbols have
+   been loaded.  read_cleanup installs named symtrees for the type-parameter
+   symbols first.  */
+
+static void
+fixup_pdt_parameter_namespaces (pointer_info *p)
+{
+  gfc_symbol *sym;
+  gfc_formal_arglist *f, *fp;
+  gfc_namespace *ns;
+  gfc_symbol *super;
+
+  if (p == NULL)
+    return;
+
+  fixup_pdt_parameter_namespaces (p->left);
+  fixup_pdt_parameter_namespaces (p->right);
+
+  if (p->type != P_SYMBOL || p->u.rsym.state != USED)
+    return;
+
+  sym = p->u.rsym.sym;
+
+/* Transfer the sym_root of the namespace containing locally-declared PDT
+   type-parameter symbols to that the derived type's namespace.  */
+  if (sym == NULL
+      || !sym->attr.pdt_template
+      || sym->f2k_derived == NULL
+      || sym->f2k_derived->sym_root != NULL)
+    return;
+
+  f = sym->formal;
+  super = gfc_get_derived_super_type (sym);
+  if (super && super->attr.pdt_template)
+    for (fp = super->formal; fp && f; fp = fp->next)
+      f = f->next;
+
+  if (f == NULL || f->sym == NULL || f->sym->ns == NULL
+      || f->sym->ns->sym_root == NULL)
+    return;
+
+  ns = f->sym->ns;
+  sym->f2k_derived->sym_root = ns->sym_root;
+  ns->sym_root = NULL;
+  ns->refs++;
+  gfc_free_namespace (ns);
 }
 
 
@@ -6303,6 +6351,10 @@ read_module (void)
      to hidden symbols.  */
 
   read_cleanup (pi_root);
+
+  /* Reconstruct PDT type-parameter namespaces now that inherited
+     and local formal parameter lists have been loaded completely.  */
+  fixup_pdt_parameter_namespaces (pi_root);
 }
 
 
