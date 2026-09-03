@@ -472,6 +472,10 @@ Mappings::insert_hir_impl_block (HIR::ImplBlock *item)
 
   HirId impl_type_id = item->get_type ().get_mappings ().get_hirid ();
   hirImplBlockMappings[id] = item;
+  if (item->has_trait_ref ())
+    hirTraitImplBlockMappings[id] = item;
+  else
+    hirInherentImplBlockMappings[id] = item;
   hirImplBlockTypeMappings[impl_type_id] = item;
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }

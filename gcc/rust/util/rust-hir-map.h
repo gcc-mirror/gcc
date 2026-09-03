@@ -224,6 +224,22 @@ public:
   iterate_trait_impl_blocks (NodeId trait_node_id,
 			     std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
+  template <typename Callback> void iterate_trait_impl_blocks (Callback &&cb)
+  {
+    for (auto it = hirTraitImplBlockMappings.begin ();
+	 it != hirTraitImplBlockMappings.end (); ++it)
+      if (!cb (it->first, it->second))
+	return;
+  }
+
+  template <typename Callback> void iterate_inherent_impl_blocks (Callback &&cb)
+  {
+    for (auto it = hirInherentImplBlockMappings.begin ();
+	 it != hirInherentImplBlockMappings.end (); ++it)
+      if (!cb (it->first, it->second))
+	return;
+  }
+
   void iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
   void iterate_trait_items (
@@ -411,6 +427,8 @@ private:
   std::map<HirId, HIR::SelfParam *> hirSelfParamMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplItemsToImplMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockMappings;
+  std::map<HirId, HIR::ImplBlock *> hirInherentImplBlockMappings;
+  std::map<HirId, HIR::ImplBlock *> hirTraitImplBlockMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockTypeMappings;
   std::map<NodeId, std::vector<HIR::ImplBlock *>> hirAdtImplMappings;
   std::set<HIR::ImplBlock *> hirIndexedAdtImpls;
