@@ -34,6 +34,10 @@ struct ssaexpand
      its definition should be forwarded.  */
   bitmap values;
 
+  /* For an SSA name version V bit V is set iff conditional-compare
+     recognition found no explicit comparison that can be folded.  */
+  bitmap ccmp_no_comparison;
+
   /* For a partition number I partition_to_pseudo[I] contains the
      RTL expression of the allocated space of it (either a MEM or
      a pseudos REG).  */

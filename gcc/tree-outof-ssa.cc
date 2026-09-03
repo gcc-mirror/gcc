@@ -1489,6 +1489,8 @@ finish_out_of_ssa (struct ssaexpand *sa)
   free (sa->partition_to_pseudo);
   if (sa->values)
     BITMAP_FREE (sa->values);
+  if (sa->ccmp_no_comparison)
+    BITMAP_FREE (sa->ccmp_no_comparison);
   delete_var_map (sa->map);
   BITMAP_FREE (sa->partitions_for_parm_default_defs);
   BITMAP_FREE (sa->partitions_for_undefined_values);
