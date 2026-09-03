@@ -429,26 +429,6 @@ backtrace_syminfo_to_full_callback (void *data, uintptr_t pc,
   bdata->ret = bdata->full_callback (bdata->full_data, pc, NULL, 0, symname);
 }
 
-/* Variant of backtrace_syminfo_to_full_callback that handles the exta
-   wrapping of moredata.  */
-
-void
-backtrace_syminfo_to_full_callback_moredata (void *data, uintptr_t pc,
-					     const char *symname,
-					     uintptr_t symval ATTRIBUTE_UNUSED,
-					     uintptr_t symsize ATTRIBUTE_UNUSED)
-{
-  struct backtrace_moredata *md = (struct backtrace_moredata *) data;
-  struct backtrace_call_full *bdata;
-  struct backtrace_moredata callback_md;
-
-  bdata = (struct backtrace_call_full *) md->backtrace_data;
-  memset (&callback_md, 0, sizeof callback_md);
-  callback_md.backtrace_version = BACKTRACE_MOREDATA_VERSION;
-  callback_md.backtrace_data = bdata->full_data;
-  bdata->ret = bdata->full_callback (&callback_md, pc, NULL, 0, symname);
-}
-
 /* An error callback that corresponds to
    backtrace_syminfo_to_full_callback.  */
 

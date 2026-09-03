@@ -566,6 +566,26 @@ elf_nosyms (struct backtrace_state *state ATTRIBUTE_UNUSED,
   error_callback (data, "no symbol table in ELF executable", -1);
 }
 
+/* Variant of backtrace_syminfo_to_full_callback that handles the exta
+   wrapping of moredata.  */
+
+static void
+backtrace_syminfo_to_full_callback_moredata (void *data, uintptr_t pc,
+					     const char *symname,
+					     uintptr_t symval ATTRIBUTE_UNUSED,
+					     uintptr_t symsize ATTRIBUTE_UNUSED)
+{
+  struct backtrace_moredata *md = (struct backtrace_moredata *) data;
+  struct backtrace_call_full *bdata;
+  struct backtrace_moredata callback_md;
+
+  bdata = (struct backtrace_call_full *) md->backtrace_data;
+  memset (&callback_md, 0, sizeof callback_md);
+  callback_md.backtrace_version = BACKTRACE_MOREDATA_VERSION;
+  callback_md.backtrace_data = bdata->full_data;
+  bdata->ret = bdata->full_callback (&callback_md, pc, NULL, 0, symname);
+}
+
 /* A callback function used when we can't find any debug info.  */
 
 static int
