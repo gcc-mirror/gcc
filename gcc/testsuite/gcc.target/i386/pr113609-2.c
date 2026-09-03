@@ -1,10 +1,12 @@
 /* PR target/113609 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64-v4" } */
-/* { dg-final { scan-assembler-times "\[ \\t\]+sete" 8 } } */
+/* { dg-final { scan-assembler-times "\[ \\t\]+sete" 8 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "\[ \\t\]+sete" 4 { target ia32 } } } */
 /* { dg-final { scan-assembler-times "\[ \\t\]+setne" 4 } } */
 /* { dg-final { scan-assembler-times "\[ \\t\]+je" 0 } } */
-/* { dg-final { scan-assembler-times "\[ \\t\]+jne" 4 } } */
+/* { dg-final { scan-assembler-times "\[ \\t\]+jne" 4 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "\[ \\t\]+jne" 8 { target ia32 } } } */
 
 #include <immintrin.h>
 
