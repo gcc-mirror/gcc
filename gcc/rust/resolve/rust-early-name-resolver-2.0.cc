@@ -594,8 +594,12 @@ Early::visit (AST::UseDeclaration &decl)
       if (rebind.get_path ().get_final_segment ().is_lower_self_seg ())
 	{
 	  collect_error (
-	    Error (decl.get_locus (), ErrorCode::E0429,
+	    Error (rebind.get_path ().get_final_segment ().get_locus (),
+		   ErrorCode::E0429,
 		   "%<self%> imports are only allowed within a { } list"));
+	  // We must not continue, malformed use declaration must not be
+	  // finalized.
+	  return;
 	}
     }
 
