@@ -512,7 +512,10 @@ Used to represent pointer types, and pointer to data member types.  The
 
 @item REFERENCE_TYPE
 Used to represent reference types.  The @code{TREE_TYPE} gives the type
-to which this type refers.
+to which this type refers.  A @code{PARM_DECL} whose reference type refers
+to an object type must designate an object whose size is at least that of
+the referred-to type.  Front ends must use @code{POINTER_TYPE} for a
+parameter that can be absent or otherwise fail to designate such an object.
 
 @item FUNCTION_TYPE
 Used to represent the type of non-member functions and of static member
@@ -537,6 +540,8 @@ The type of @code{*this}, i.e., the class of which functions of this
 type are a member, is given by the @code{TYPE_METHOD_BASETYPE}.  The
 @code{TYPE_ARG_TYPES} is the parameter list, as for a
 @code{FUNCTION_TYPE}, and includes the @code{this} argument.
+The @code{this} argument must designate an object whose size is at least
+that of @code{TYPE_METHOD_BASETYPE}.
 
 @item ARRAY_TYPE
 Used to represent array types.  The @code{TREE_TYPE} gives the type of

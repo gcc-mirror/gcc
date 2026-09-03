@@ -2752,6 +2752,54 @@ ref_outside_object_p (tree size, poly_offset_int off, tree refsz)
   return false;
 }
 
+/* If PTR is a PARM_DECL or its default SSA definition, return the
+   PARM_DECL.  Otherwise return NULL_TREE.  */
+
+static tree
+parm_decl_from_ptr (tree ptr)
+{
+  if (TREE_CODE (ptr) == SSA_NAME)
+    {
+      if (!SSA_NAME_IS_DEFAULT_DEF (ptr))
+	return NULL_TREE;
+      ptr = SSA_NAME_VAR (ptr);
+    }
+
+  return ptr && TREE_CODE (ptr) == PARM_DECL ? ptr : NULL_TREE;
+}
+
+/* If PTR is a parameter of the current function, or the default definition
+   of one, that is known to designate a whole object, return the size of that
+   object in bytes.  Otherwise return NULL_TREE.
+
+   Two kinds of parameter qualify.  The this pointer of a method points to
+   an object of the method base type.  A parameter whose reference type
+   refers to an object type is bound to an object of the referenced type.
+   In both cases the pointed-to object is at least as large as that type.  */
+
+static tree
+whole_object_param_size (tree ptr)
+{
+  tree type;
+
+  if (!cfun)
+    return NULL_TREE;
+
+  ptr = parm_decl_from_ptr (ptr);
+  if (!ptr)
+    return NULL_TREE;
+
+  if (TREE_CODE (TREE_TYPE (ptr)) == REFERENCE_TYPE)
+    type = TREE_TYPE (TREE_TYPE (ptr));
+  else if (TREE_CODE (TREE_TYPE (cfun->decl)) == METHOD_TYPE
+	   && ptr == DECL_ARGUMENTS (cfun->decl))
+    type = TYPE_METHOD_BASETYPE (TREE_TYPE (cfun->decl));
+  else
+    return NULL_TREE;
+
+  return nonnull_arg_p (ptr) ? TYPE_SIZE_UNIT (type) : NULL_TREE;
+}
+
 /* Return true if EXPR can trap, as in dereferencing an invalid pointer
    location or evaluating floating-point arithmetic.  See may_trap_p for the
    RTL counterpart.  This routine expects only GIMPLE lhs or rhs input.  LHS
@@ -2852,23 +2900,16 @@ tree_could_trap_1 (tree expr, bool lhs)
 	  tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
 	  return ref_outside_object_p (size, off, refsz);
 	}
-      /* See if the base is this for C++ methods. For LHS, this can still
-	 trap.  */
-      if (!lhs && cfun
-	  && TREE_CODE (TREE_TYPE (cfun->decl)) == METHOD_TYPE
-	  && ((TREE_CODE (TREE_OPERAND (expr, 0)) == SSA_NAME
-	       && SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (expr, 0))
-	       && (SSA_NAME_VAR (TREE_OPERAND (expr, 0))
-		   == DECL_ARGUMENTS (cfun->decl)))
-	      || TREE_OPERAND (expr, 0) == DECL_ARGUMENTS (cfun->decl)))
+      if (!lhs)
 	{
-	  poly_offset_int off = mem_ref_offset (expr);
-	  if (maybe_lt (off, 0))
-	    return true;
-	  tree size = TYPE_SIZE_UNIT
-			(TYPE_METHOD_BASETYPE (TREE_TYPE (cfun->decl)));
-	  tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
-	  return ref_outside_object_p (size, off, refsz);
+	  if (tree size = whole_object_param_size (TREE_OPERAND (expr, 0)))
+	    {
+	      poly_offset_int off = mem_ref_offset (expr);
+	      if (maybe_lt (off, 0))
+		return true;
+	      tree refsz = TYPE_SIZE_UNIT (TREE_TYPE (expr));
+	      return ref_outside_object_p (size, off, refsz);
+	    }
 	}
       return true;
 
