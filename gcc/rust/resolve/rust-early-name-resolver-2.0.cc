@@ -540,8 +540,11 @@ Early::finalize_rebind_import (const Early::ImportPair &mapping)
 	    // Erroneous `self` or `{self}` use declaration
 	    if (segments.size () == 1)
 	      return;
-	    declared_name = segments[segments.size () - 2].as_string ();
-	    import_id = segments[segments.size () - 2].get_node_id ();
+
+	    auto pre_self_segment = segments.rbegin () + 1;
+
+	    declared_name = pre_self_segment->as_string ();
+	    import_id = pre_self_segment->get_node_id ();
 	  }
 	else
 	  {
