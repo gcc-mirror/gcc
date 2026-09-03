@@ -392,10 +392,6 @@ extern GTY(()) int darwin_ms_struct;
 	   ___emutls_get_address -exported_symbol ___emutls_get_address \
 	  -U ___emutls_register_common \
 	  -exported_symbol ___emutls_register_common \
-	  -U ___gcc_nested_func_ptr_created \
-	  -exported_symbol ___gcc_nested_func_ptr_created \
-	  -U ___gcc_nested_func_ptr_deleted \
-	  -exported_symbol ___gcc_nested_func_ptr_deleted \
       }} \
     }}}\
     %{!r:%{!nostdlib:%{!nostartfiles:%E}}} %{T*} %{F*} "\
