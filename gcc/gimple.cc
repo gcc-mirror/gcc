@@ -2382,8 +2382,8 @@ gimple_has_side_effects (const gimple *s)
 
 /* Helper for gimple_could_trap_p and gimple_assign_rhs_could_trap_p.
    Return true if S can trap.  When INCLUDE_MEM is true, check whether
-   the memory operations could trap.  When INCLUDE_STORES is true and
-   S is a GIMPLE_ASSIGN, the LHS of the assignment is also checked.  */
+   the memory operations could trap.  When INCLUDE_STORES is true, also
+   check a memory LHS with store semantics.  */
 
 bool
 gimple_could_trap_p_1 (const gimple *s, bool include_mem, bool include_stores)
@@ -2393,7 +2393,17 @@ gimple_could_trap_p_1 (const gimple *s, bool include_mem, bool include_stores)
 
   if (include_mem)
     {
-      unsigned i, start = (is_gimple_assign (s) && !include_stores) ? 1 : 0;
+      unsigned i, start = 0;
+
+      /* Use store semantics for the LHS.  A call marked for return-slot
+	 optimization can still use a temporary and a caller-side copy.  */
+      if (include_stores
+	  && gimple_store_p (s)
+	  && lhs_could_trap_p (gimple_get_lhs (s)))
+	return true;
+
+      if (gimple_has_lhs (s))
+	start = 1;
 
       for (i = start; i < gimple_num_ops (s); i++)
 	if (tree_could_trap_p (gimple_op (s, i)))
@@ -3670,6 +3680,63 @@ test_assign_binop ()
   ASSERT_EQ (MULT_EXPR, gimple_assign_rhs_code (stmt));
 }
 
+/* Verify that GIMPLE trap queries distinguish a register definition and a
+   trapping store from their nontrapping right-hand sides.  */
+
+static void
+test_could_trap ()
+{
+  tree reg_lhs = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			     get_identifier ("readonly_reg"),
+			     integer_type_node);
+  TREE_READONLY (reg_lhs) = 1;
+  gassign *stmt = gimple_build_assign (reg_lhs, integer_one_node);
+
+  ASSERT_FALSE (gimple_store_p (stmt));
+  ASSERT_FALSE (gimple_could_trap_p (stmt));
+  ASSERT_FALSE (gimple_assign_rhs_could_trap_p (stmt));
+
+  tree mem_lhs = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			     get_identifier ("readonly_mem"),
+			     integer_type_node);
+  TREE_READONLY (mem_lhs) = 1;
+  TREE_STATIC (mem_lhs) = 1;
+  TREE_ADDRESSABLE (mem_lhs) = 1;
+  stmt = gimple_build_assign (mem_lhs, integer_one_node);
+
+  ASSERT_TRUE (gimple_store_p (stmt));
+  ASSERT_TRUE (gimple_could_trap_p (stmt));
+  ASSERT_FALSE (gimple_assign_rhs_could_trap_p (stmt));
+
+  tree record_type = make_node (RECORD_TYPE);
+  tree field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
+			   get_identifier ("value"), integer_type_node);
+  DECL_CONTEXT (field) = record_type;
+  TYPE_FIELDS (record_type) = field;
+  layout_type (record_type);
+
+  tree call_lhs = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+			      get_identifier ("readonly_call_mem"),
+			      record_type);
+  TREE_READONLY (call_lhs) = 1;
+  TREE_STATIC (call_lhs) = 1;
+  TREE_ADDRESSABLE (call_lhs) = 1;
+
+  tree fn_type = build_function_type_list (record_type, NULL_TREE);
+  tree fn = build_fn_decl ("nothrow_call", fn_type);
+  gcall *call = gimple_build_call (fn, 0);
+  gimple_call_set_lhs (call, call_lhs);
+  gimple_call_set_nothrow (call, true);
+
+  ASSERT_TRUE (gimple_store_p (call));
+  ASSERT_TRUE (gimple_could_trap_p (call));
+  ASSERT_FALSE (gimple_could_trap_p_1 (call, true, false));
+
+  gimple_call_set_return_slot_opt (call, true);
+  ASSERT_TRUE (gimple_could_trap_p (call));
+  ASSERT_FALSE (gimple_could_trap_p_1 (call, true, false));
+}
+
 /* Build a GIMPLE_NOP and verify various properties of it.  */
 
 static void
@@ -3723,6 +3790,7 @@ gimple_cc_tests ()
 {
   test_assign_single ();
   test_assign_binop ();
+  test_could_trap ();
   test_nop_stmt ();
   test_return_stmt ();
   test_return_without_value ();

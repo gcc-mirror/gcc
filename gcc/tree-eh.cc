@@ -3132,7 +3132,17 @@ stmt_could_throw_p (function *fun, gimple *stmt)
       return true;
 
     case GIMPLE_CALL:
-      return !gimple_call_nothrow_p (as_a <gcall *> (stmt));
+      {
+	gcall *call = as_a <gcall *> (stmt);
+	if (!gimple_call_nothrow_p (call))
+	  return true;
+	/* Return slot optimization can fall back to a temporary and a
+	   caller-side copy.  */
+	if ((fun && !fun->can_throw_non_call_exceptions)
+	    || !gimple_store_p (call))
+	  return false;
+	return lhs_could_trap_p (gimple_call_lhs (call));
+      }
 
     case GIMPLE_COND:
       {
