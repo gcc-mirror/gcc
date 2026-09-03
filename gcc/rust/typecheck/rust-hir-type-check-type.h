@@ -46,7 +46,14 @@ private:
 class TypeCheckType : public TypeCheckBase, public HIR::HIRTypeVisitor
 {
 public:
-  static TyTy::BaseType *Resolve (HIR::Type &type);
+  enum class ResolutionMode
+  {
+    REFERENCE,
+    CANONICAL
+  };
+
+  static TyTy::BaseType *Resolve (HIR::Type &type, ResolutionMode mode
+						   = ResolutionMode::REFERENCE);
 
   void visit (HIR::BareFunctionType &fntype) override;
   void visit (HIR::TupleType &tuple) override;
@@ -67,8 +74,8 @@ public:
   void visit (HIR::TraitBound &bound) override {}
 
 private:
-  TypeCheckType (HirId id)
-    : TypeCheckBase (), translated (new TyTy::ErrorType (id))
+  TypeCheckType (HirId id, ResolutionMode mode)
+    : TypeCheckBase (), translated (new TyTy::ErrorType (id)), mode (mode)
   {}
 
   TyTy::BaseType *resolve_root_path (HIR::TypePath &path, size_t *offset,
@@ -89,6 +96,7 @@ private:
     bool ty_seg_is_big_self, TyTy::BaseType **result);
 
   TyTy::BaseType *translated;
+  ResolutionMode mode;
 };
 
 class TypeResolveGenericParam : public TypeCheckBase

@@ -61,17 +61,17 @@ TypeCheckResolveGenericArguments::visit (HIR::TypePathSegmentGeneric &generic)
 }
 
 TyTy::BaseType *
-TypeCheckType::Resolve (HIR::Type &type)
+TypeCheckType::Resolve (HIR::Type &type, ResolutionMode mode)
 {
   // is it already resolved?
   auto context = TypeCheckContext::get ();
   TyTy::BaseType *resolved = nullptr;
   bool already_resolved
     = context->lookup_type (type.get_mappings ().get_hirid (), &resolved);
-  if (already_resolved)
+  if (already_resolved && mode == ResolutionMode::REFERENCE)
     return resolved;
 
-  TypeCheckType resolver (type.get_mappings ().get_hirid ());
+  TypeCheckType resolver (type.get_mappings ().get_hirid (), mode);
   type.accept_vis (resolver);
   rust_assert (resolver.translated != nullptr);
   resolver.context->insert_type (type.get_mappings (), resolver.translated);
@@ -153,9 +153,14 @@ TypeCheckType::visit (HIR::TypePath &path)
       return;
     }
 
-  TyTy::BaseType *path_type = root->clone ();
-  path_type->set_ref (path.get_mappings ().get_hirid ());
-  context->insert_implicit_type (path.get_mappings ().get_hirid (), path_type);
+  TyTy::BaseType *path_type = root;
+  if (mode == ResolutionMode::REFERENCE)
+    {
+      path_type = root->clone ();
+      path_type->set_ref (path.get_mappings ().get_hirid ());
+      context->insert_implicit_type (path.get_mappings ().get_hirid (),
+				     path_type);
+    }
 
   bool fully_resolved = offset >= path.get_segments ().size ();
   if (fully_resolved)
@@ -1048,7 +1053,9 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
     }
 
   auto &binding_type_path = item.get_bound_type ();
-  TyTy::BaseType *binding = TypeCheckType::Resolve (binding_type_path);
+  TyTy::BaseType *binding
+    = TypeCheckType::Resolve (binding_type_path,
+			      TypeCheckType::ResolutionMode::CANONICAL);
 
   // FIXME double check there might be a trait cycle here see TypeParam handling
 
@@ -1089,49 +1096,6 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	}
     }
   binding->inherit_bounds (specified_bounds);
-
-  // When we apply these bounds we must lookup which type this binding
-  // resolves to, as this is the type which will be used during resolution
-  // of the block.
-  NodeId ast_node_id = binding_type_path.get_mappings ().get_nodeid ();
-
-  // then lookup the reference_node_id
-  NodeId ref_node_id = UNKNOWN_NODEID;
-
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
-
-  if (auto id = nr_ctx.lookup (ast_node_id, Resolver2_0::Namespace::Types))
-    {
-      ref_node_id = *id;
-    }
-  else
-    {
-      // FIXME
-      rust_error_at (UNDEF_LOCATION,
-		     "Failed to lookup type reference for node: %s",
-		     binding_type_path.to_string ().c_str ());
-      return;
-    }
-
-  // node back to HIR
-  if (auto hid = mappings.lookup_node_to_hir (ref_node_id))
-    {
-      // the base reference for this name _must_ have a type set
-      TyTy::BaseType *lookup;
-      if (!context->lookup_type (*hid, &lookup))
-	{
-	  rust_error_at (mappings.lookup_location (*hid),
-			 "Failed to resolve where-clause binding type: %s",
-			 binding_type_path.to_string ().c_str ());
-	  return;
-	}
-
-      // FIXME
-      // rust_assert (binding->is_equal (*lookup));
-      lookup->inherit_bounds (specified_bounds);
-      return;
-    }
-  rust_error_at (UNDEF_LOCATION, "where-clause reverse lookup failure");
 }
 
 } // namespace Resolver
