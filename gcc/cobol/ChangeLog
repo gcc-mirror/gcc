@@ -1,3 +1,18 @@
+2026-09-02  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (perform_inline_until): Create testA.label.
+	(perform_inline_testafter_varying): Update comment.
+	* gengen.cc (gg_append_statement): Update comments.
+
+2026-09-02  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (program_end_stuff): Eliminate VAR_DECL, use save_expr()
+	instead.  Use proper type conversion.
+	(create_and_call): Likewise.
+	(parser_call): Use proper type conversion.
+	* move.cc (mh_source_is_literalN): Eliminate a VAR_DECL.
+	(copy_native_into_place): Likewise.
+
 2026-08-30  Robert Dubner  <rdubner@symas.com>
 
 	* cobol1.cc (create_our_type_nodes_init): New type node.

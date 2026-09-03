@@ -1,3 +1,261 @@
+2026-09-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127092
+	* range-op.cc (operator_div::op1_op2_relation_effect): Only
+	handle TRUNC_DIV_EXPR, EXACT_DIV_EXPR and FLOOR_DIV_EXPR
+	for the `a < b` case.
+
+2026-09-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/125557
+	* ifcvt.cc: Include "explow.h".
+	(noce_simple_cmove_operand_p): New function.
+	(noce_try_cmove): Use it.
+	(noce_convert_multiple_sets): Handle diamond CFG cleanup.
+	(noce_convert_multiple_sets_1): Evaluate secondary-arm values in fresh
+	pseudos, preserve their source locations, and use their final values
+	as conditional-move inputs.  Use copy_to_mode_reg.  Reject secondary
+	sequences that modify condition inputs and handle condition-code
+	clobbers.
+	(bb_ok_for_noce_convert_multiple_sets): Add REQUIRE_MULTIPLE,
+	LIVE_OUT_DESTS, HAS_NON_SIMPLE_SRC, NONREG_LIVE_OUT_DESTS, and
+	INSN_COUNT.  Record distinct live-out destinations, non-simple sources,
+	the raw source class of each final live-out definition, and the number
+	of active sets.
+	(noce_process_if_block): Recognize and cost multi-set diamonds.  Choose
+	the compatible primary arm from the validated live-out destinations.
+	Require a shared destination with a non-register final source in at least
+	one arm.  Limit unconditional secondary-arm evaluation with
+	MAX_CONDITIONAL_EXECUTE.  Defer all-simple diamonds to existing
+	conditional-move handling.
+	(check_cond_move_block): Use noce_simple_cmove_operand_p.
+
+2026-09-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_unary_operation_1) <case BSWAP>:
+	Canonicalize (BSWAP (BITREVERSE x)) as (BITREVERSE (BSWAP x)).
+
+2026-09-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/aarch64/aarch64.md (*aarch_movk<mode>): Prepend asterisk.
+	Use any_or_plus iterator to also recognize PLUS and XOR forms.
+
+2026-09-02  wangjue  <juewang@linux.alibaba.com>
+
+	* ifcvt.cc (noce_parallel_cost_node): New.
+	(noce_parallel_costed_insn_p): New.
+	(noce_dependency_level): New.
+	(noce_parallel_seq_cost): New.
+	(default_noce_conversion_profitable_p): Use it.
+
+2026-09-02  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv.cc (riscv_register_move_cost): Check
+	secondary memory necessity before early return.
+
+2026-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126153
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Do not
+	look up an aggregate value for a condition whose offset is not
+	byte aligned.
+
+2026-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127190
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Fail
+	when vect_get_num_copies_for_invariant does.
+
+2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127149
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Handle lhs_type without mode precision by adding casts.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* config/i386/acev1intrin.h: Add new intrins.
+	* config/i386/i386-builtin-types.def: Add new builtin type.
+	* config/i386/i386-builtin.def (BDESC): Add new builtins.
+	* config/i386/i386-expand.cc (ix86_expand_ace_builtin):
+	Handle new builtin type.
+	* config/i386/sse.md (UNSPECV_TOP2BF16PS): New.
+	(UNSPECV_TOP4BSSD): Ditto.
+	(UNSPECV_TOP4BSUD): Ditto.
+	(UNSPECV_TOP4BUSD): Ditto.
+	(UNSPECV_TOP4BUUD): Ditto.
+	(UNSPECV_TOP4MXBF8PS): Ditto.
+	(UNSPECV_TOP4MXBHF8PS): Ditto.
+	(UNSPECV_TOP4MXHBF8PS): Ditto.
+	(UNSPECV_TOP4MXHF8PS): Ditto.
+	(UNSPECV_TOP4MXBSSPS): Ditto.
+	(top2bf16ps): Ditto.
+	(top4<top4bdtype>): Ditto.
+	(top4<top4mxfp8type>ps): Ditto.
+	(top4mxbssps): Ditto.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* config/i386/acev1intrin.h: Add new intrins.
+	* config/i386/i386-builtin-types.def: Add new builtin types.
+	* config/i386/i386-builtin.def (BDESC): Handle new builtins.
+	* config/i386/i386-expand.cc
+	(ix86_expand_ace_builtin): Handle new builtin type.
+	* config/i386/sse.md (UNSPEC_TCVTROWD2PS) New.
+	(UNSPEC_TCVTROWPS2FP16H): Ditto.
+	(UNSPEC_TCVTROWPS2FP16L): Ditto.
+	(UNSPEC_TILEMOVROWEXTRACT): Ditto.
+	(UNSPECV_TILEMOVROWINSERT): Ditto.
+	(UNSPECV_TILEMOVCOLINSERT): Ditto.
+	(VHFBF_512): Ditto.
+	(tcvtrowd2ps): Ditto.
+	(tcvtrowps2<bf16_ph><highlowsuffix>): Ditto.
+	(tilemovrow_extract): Ditto.
+	(tilemov<rowcol>_insert): Ditto.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* config/i386/acev1intrin.h: Add new intrins.
+	* config/i386/i386-builtin-types.def: Add new function types.
+	* config/i386/i386-builtins.cc
+	(ix86_init_mmx_sse_builtins): Add new builtins.
+	* config/i386/i386-builtins.h (enum ix86_builtins): Ditto.
+	* config/i386/i386-expand.cc (ix86_expand_builtin):
+	Handle new builtins.
+	* config/i386/sse.md (UNSPEC_BSRMOVH_STORE): New.
+	(UNSPEC_BSRMOVL_STORE): Ditto.
+	(UNSPECV_BSRINIT): Ditto.
+	(UNSPECV_BSRMOVH_LOAD): Ditto.
+	(UNSPECV_BSRMOVL_LOAD): Ditto.
+	(bsrinit): Ditto.
+	(bsrmovf): Ditto.
+	(bsrmovh_load): Ditto.
+	(bsrmovl_load): Ditto.
+	(bsrmovh_store): Ditto.
+	(bsrmovl_store): Ditto.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* config.gcc: Include acev1intrin.h.
+	* config/i386/i386-builtin-types.def: Add new function type.
+	* config/i386/i386-builtin.def (BDESC): Reuse AMX-TILE builtins
+	and handle ACEV1 new builtins.
+	* config/i386/i386-builtins.cc
+	(BDESC_VERIFYS): Add BDESC_ACE.
+	(def_builtin): Share builtin between AMX-TILE and ACEv1.
+	(ix86_init_mmx_sse_builtins): Handle BDESC_ACE.
+	* config/i386/i386-expand.cc
+	(ix86_expand_ace_builtin): New.
+	(ix86_check_builtin_isa_match): Share builtin between AMX-TILE
+	and ACEv1.
+	(ix86_expand_builtin): Handle BDESC_ACE.
+	* config/i386/i386.md (ldtilecfg): Add TARGET_ACEV1.
+	(sttilecfg): Ditto.
+	* config/i386/immintrin.h: Include acev1intrin.h.
+	* config/i386/sse.md (UNSPECV_TILEZERO): New.
+	(tilezero): Ditto.
+	* config/i386/acev1intrin.h: New intrin file.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* config/i386/i386.cc (regclass_map): Add BSR_REGS.
+	(debugger_register_map): Add bsr.
+	(debugger64_register_map): Add bsr.
+	(svr_debugger_register_map): Add bsr.
+	(ix86_conditional_register_usage): Enable bsr when ACE exists.
+	(print_reg): Handle bsr.
+	* config/i386/i386.h (FIXED_REGISTERS): Add bsr0.
+	(CALL_USED_REGISTERS): Ditto.
+	(REG_ALLOC_ORDER): Ditto.
+	(HI_REGISTER_NAMES): Add bsr0.
+	* config/i386/i386.md: Add BSR0_REG.
+	* config/i386/predicates.md (bsr0_operand): New.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* config/i386/i386.cc (regclass_map): Add tmm.
+	(debugger64_register_map): Ditto.
+	(debugger_register_map): Ditto. Also fix for APX r16-31.
+	(svr4_debugger_register_map): Ditto.
+	(ix86_conditional_register_usage): Enable tmm only when AMX
+	or ACE exists.
+	* config/i386/i386.h (FIXED_REGISTERS): Ditto.
+	(CALL_USED_REGISTERS): Ditto.
+	(REG_ALLOC_ORDER): Ditto.
+	(HI_REGISTER_NAMES): Ditto.
+	* config/i386/i386.md: Ditto.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_available_features): Add ACEV1.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_ACEV1_SET): New.
+	(OPTION_MASK_ISA2_AVX10V2AUX_UNSET): Disable ACEV1.
+	(OPTION_MASK_ISA2_ACEV1_UNSET): New.
+	(ix86_handle_option): Handle ACEV1.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_features): Add FEATURE_ACEV1.
+	* common/config/i386/i386-isas.h: Handle acev1.
+	* config/i386/cpuid.h (bit_ACE): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal):
+	Handle acev1.
+	* config/i386/i386-isa.def (ACEV1): Add DEF_PTA.
+	* config/i386/i386-options.cc (isa2_opts): Handle acev1.
+	(ix86_valid_target_attribute_inner_p): Ditto.
+	* config/i386/i386.opt: Add macev1.
+	* config/i386/i386.opt.urls: Regenerated.
+	* doc/extend.texi: Add acev1 documentation.
+	* doc/invoke.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+
+2026-09-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127166
+	* match.pd: Canonicalize conditional signed narrow clips before loop
+	if-conversion.
+
+2026-09-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (unsigned_integer_narrow_clip): Require an
+	unsigned comparison and a signed right shift.
+
+2026-09-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/127114
+	* config/i386/i386.cc (ix86_optab_supported_p): Return true for
+	round_optab in HFmode.
+
+2026-09-02  Peter Bergner  <bergner@gcc.gnu.org>
+
+	* doc/install.texi: Remove incorrect mention of --with-long-double-64.
+	Co-authored-by: Kishan Parmar <kishan@linux.ibm.com>
+
+2026-09-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127133
+	PR tree-optimization/127134
+	* tree-eh.cc (tree_could_trap_p): Split into ...
+	(tree_could_trap_1): This. Take into account lhs
+	in some cases.
+	(lhs_could_trap_p): Just call tree_could_trap_1.
+
+2026-09-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-loop-im.cc (can_sm_ref_p): Use lhs_could_trap_p.
+	* tree-ssa-phiopt.cc (cond_store_replacement): Likewise.
+
+2026-09-02  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-09-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	* config/aarch64/aarch64-builtins.cc (enum aarch64_builtins): Add

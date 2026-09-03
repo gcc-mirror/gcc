@@ -1,3 +1,21 @@
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* MAINTAINERS.yml: Convert an entry to use inactive_DCO.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* MAINTAINERS.yml: Move all DCO 'roles' to a separate list.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* MAINTAINERS.yml: Add initial comment
+
+2026-09-02  Peter Bergner  <bergner@gcc.gnu.org>
+
+	PR target/122535
+	* configure.ac: Error out on --with-long-double-64.
+	* configure: Regenerate.
+
 2026-09-01  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
 
 	* MAINTAINERS: Regenerate.

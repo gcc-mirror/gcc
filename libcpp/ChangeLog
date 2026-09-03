@@ -1,3 +1,7 @@
+2026-09-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* lex.cc (search_line_fast): Optimized Arm implementation.
+
 2026-09-01  Alexey Klimkin  <alexey.klimkin@intel.com>
 
 	PR c++/127097

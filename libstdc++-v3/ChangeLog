@@ -1,3 +1,13 @@
+2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	P2641R4
+	* include/bits/version.def (within_lifetime): New.
+	* include/bits/version.h: Regenerate.
+	* include/std/type_traits: Define __glibcxx_want_within_lifetime
+	before including bits/version.h.
+	(std::is_within_lifetime): New function template.
+	* src/c++23/std.cc.in (std::is_within_lifetime): Export.
+
 2026-08-31  Patrick Palka  <ppalka@redhat.com>
 
 	* include/std/flat_set (_Flat_set_impl::_M_try_emplace):

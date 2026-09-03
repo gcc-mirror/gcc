@@ -1,3 +1,232 @@
+2026-09-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/avx2-shiftqihi-constant-2.c: Require AVX512.
+	* gcc.target/i386/pr104704-1.c: Likewise.
+	* gcc.target/i386/pr104704-4.c: Likewise.
+	* gcc.target/i386/pr110227.c: Likewise.
+	* gcc.target/i386/vect-pr115895.c: Likewise.
+	* gcc.target/i386/avx512fp16-pr101846.c: Add mdynmic-no-pic
+	for 32b Darwin.
+	* gcc.target/i386/pr101796-1.c: Likewise.
+	* gcc.target/i386/pr101846-2.c: Likewise.
+
+2026-09-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/builtin-copysign-2.c: Check 16 byte literal
+	explicitly.
+	* gcc.target/i386/builtin-copysign-3.c: Likewise.
+	* gcc.target/i386/builtin-copysign-5.c: Likewise.
+	* gcc.target/i386/builtin-fabs-1.c: Likewise.
+
+2026-09-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127092
+	* gfortran.dg/pr127092-1.f90: New test.
+
+2026-09-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/125557
+	* gcc.c-torture/execute/ifcvt-diamond-1.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond_2.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond_3.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond_4.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond_5.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond_9.c: New test.
+	* gcc.target/aarch64/ifcvt_multiple_sets_diamond_10.c: New test.
+	* gcc.target/i386/ifcvt-multiple-sets-diamond-1.c: New test.
+
+2026-09-02  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/aarch64/movk_4.c: New test case.
+
+2026-09-02  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.cob:
+	Syntax error handling.
+	* cobol.dg/group2/FUNCTION_as_CALL_parameter_BY_CONTENT.cob:
+	Likewise.
+	* cobol.dg/group2/Simple_COMP-X.cob: Different handling of large
+	COMP-X values.
+	* cobol.dg/group2/Simple_COMP-X.out: Likewise.
+	* cobol.dg/group2/Ignore_1970s_segment_numbers_for_segmenting_programs.cob: New test.
+	* cobol.dg/group2/Ignore_1970s_segment_numbers_for_segmenting_programs.out: New test.
+	* cobol.dg/group2/PR59_RT3586_-_Code_format_heuristic_fails.cob: New test.
+	* cobol.dg/group2/RT3609_Unexpected_PROCESS.cob: New test.
+
+2026-09-02  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.target/riscv/rv32-fmv-cost-memory.c: New test.
+
+2026-09-02  Lunex  <imlunex2011@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/114804
+	* g++.dg/template/dependent-base7.C: New test.
+
+2026-09-02  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/105679
+	PR tree-optimization/126906
+	* gcc.dg/tree-ssa/pr105679.c: New test.
+
+2026-09-02  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/106495
+	PR tree-optimization/126906
+	* gcc.dg/tree-ssa/pr106495-1.c: New test.
+	* gcc.dg/tree-ssa/pr106495-2.c: New test.
+
+2026-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126153
+	* gcc.dg/torture/pr126153.c: New test.
+
+2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127149
+	* gcc.dg/bitint-142.c: New test.
+
+2026-09-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-pattern-2.c: Both guard with target
+	and xfail.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* gcc.target/i386/acev1-1.c: Add compile test.
+	* gcc.target/i386/ace-check.h: Add helper function.
+	* gcc.target/i386/ace-helper.h: Ditto.
+	* gcc.target/i386/fp8-helper.h: Modify helper function
+	to skip special value check.
+	* gcc.target/i386/avx-1.c: Add acev1 tests.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/acev1-op2bf16ps-2.c: New test.
+	* gcc.target/i386/acev1-op4bssd-2.c: Ditto.
+	* gcc.target/i386/acev1-op4bsud-2.c: Ditto.
+	* gcc.target/i386/acev1-op4busd-2.c: Ditto.
+	* gcc.target/i386/acev1-op4buud-2.c: Ditto.
+	* gcc.target/i386/acev1-op4mxbf8ps-2.c: Ditto.
+	* gcc.target/i386/acev1-op4mxbhf8ps-2.c: Ditto.
+	* gcc.target/i386/acev1-op4mxbssps-2.c: Ditto.
+	* gcc.target/i386/acev1-op4mxhbf8ps-2.c: Ditto.
+	* gcc.target/i386/acev1-op4mxhf8ps-2.c: Ditto.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* gcc.target/i386/ace-check.h: Add new helper function.
+	* gcc.target/i386/acev1-1.c: Add new compile test.
+	* gcc.target/i386/avx-1.c: Add acev1 tests.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/acev1-movcol-2.c: New test.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* gcc.target/i386/acev1-1.c: Add new tests.
+	* gcc.target/i386/avx512f-helper.h: Modify include logic to
+	reuse 512 related union.
+	* lib/target-supports.exp: Check for ACEv1.
+	* gcc.target/i386/ace-check.h: Add function entry for
+	ACE execution test.
+	* gcc.target/i386/ace-helper.h: Add helper function file.
+	* gcc.target/i386/acev1-bsrinit-2.c: New test.
+	* gcc.target/i386/acev1-bsrmovf-2.c: Ditto.
+	* gcc.target/i386/acev1-bsrmovh-2.c: Ditto.
+	* gcc.target/i386/acev1-bsrmovl-2.c: Ditto.
+
+2026-09-02  Haochen Jiang  <haochen.jiang@intel.com>
+	    Dipesh Sharma  <Dipesh.Sharma@amd.com>
+
+	* g++.dg/other/i386-2.C: Add acev1 tests.
+	* g++.dg/other/i386-3.C: Ditto.
+	* gcc.target/i386/avx-1.c: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Ditto.
+	* gcc.target/i386/sse-12.c: Ditto.
+	* gcc.target/i386/sse-13.c: Ditto.
+	* gcc.target/i386/sse-14.c: Ditto.
+	* gcc.target/i386/sse-22.c: Ditto.
+	* gcc.target/i386/sse-23.c: Ditto.
+	* gcc.target/i386/acev1-1.c: New test.
+	* gcc.target/i386/acev1-1b.c: Ditto.
+
+2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	P2641R4
+	* g++.dg/cpp26/within-lifetime1.C: New test.
+	* g++.dg/cpp26/within-lifetime2.C: New test.
+	* g++.dg/cpp26/within-lifetime3.C: New test.
+	* g++.dg/cpp26/within-lifetime4.C: New test.
+	* g++.dg/cpp26/within-lifetime5.C: New test.
+	* g++.dg/cpp26/within-lifetime6.C: New test.
+	* g++.dg/cpp26/within-lifetime7.C: New test.
+
+2026-09-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127166
+	* gcc.dg/tree-ssa/pr103771.c: Check the earlier canonicalization.
+	* gcc.dg/tree-ssa/pr127166.c: New test.
+	* gcc.dg/tree-ssa/pr127166-3.c: New test.
+	* gcc.dg/vect/pr127166.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr120378-1.c: Update expected dump
+	counts.
+	* gcc.target/riscv/rvv/autovec/pr120378-2.c: Request an optimized dump.
+	* gcc.target/riscv/rvv/autovec/pr120378-3.c: Likewise.  Update expected
+	dump counts.
+	* gcc.target/riscv/rvv/autovec/pr120378-4.c: Request an optimized dump.
+
+2026-09-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/pr127166-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr127166.c: New test.
+
+2026-09-02  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/127114
+	* gcc.target/i386/pr127114.c: New test.
+
+2026-09-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127133
+	PR tree-optimization/127134
+	* g++.dg/torture/const-method-this-1.C: New test.
+	* g++.dg/torture/const-method-this-2.C: New test.
+
+2026-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-57.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-58.c: New test.
+
+2026-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-mf8.c: New test.
+
+2026-09-02  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-37.c: Remove xfail.
+
 2026-09-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/apx-broadcast.c: Skip for Darwin.

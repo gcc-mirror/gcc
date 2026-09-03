@@ -1,3 +1,51 @@
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py (maintainer_schema): Set the minimum array
+	size to 1 for email, inactive_email and aliases.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py (_unilower): New function.
+	(sort_users): Likewise.
+	(verify): Check the sort order of the user data.
+	(store): Sort the user data before writing it.
+	* add-write-after.py (unilower): Delete
+	(main): No need to sort the user data here now.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py (maintainer_schema): Allow inactive_DCO
+	for retired DCO addresses.
+	(_check_dco): Validate inactive_DCO entries as well.
+	(validate): Check inactive_DCO data.
+	* gen-MAINTAINERS.py (format_output): Combine inactive_DCO with
+	DCO entries.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py (maintainer_schema): Move the DCO data
+	to a top-level user list.  Ensure that each user entry has at
+	least one of roles and DCO.
+	(_check_dco): New function.
+	(validate): Use it.  Handle roles being absent.
+	* gen-MAINTAINERS.py (format_output):  Scan the list of DCO
+	entries if generating the DCO table.  Split the overflowing
+	field logic into ...
+	(paginate): ... here.
+	* add-write-after.py (getuserdata): Write DCO data to new field.
+	Check that DCO email address is known and add to inactive_email
+	if not.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py (maintainer_schema): Fix size validation
+	checks.
+
+2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
+
+	* maintainer_utils.py(store): New function.
+	* add-write-after.py(main): Use it.
+
 2026-09-01  Jason Merrill  <jason@redhat.com>
 
 	* gcc-changelog/git_commit.py (dr_regex): Add CWG|LWG and [DP]NNNN.

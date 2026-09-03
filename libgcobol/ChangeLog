@@ -1,3 +1,27 @@
+2026-09-02  Robert Dubner  <rdubner@symas.com>
+
+	* stringbin.cc (uint_to_8_digits): Fix static variable error.
+	Improve speed.
+	(uint_to_8_digits_direct): New faster routine.
+	(string_from_combined): Eliminated.
+	(string_from_uint64): New faster routine.
+	(binary_to_string): Improved speed.
+	(__gg__binary_to_string_ascii): Fix static variable error.
+	(__gg__binary_to_string_ebcdic): Likewise.
+	(__gg__binary_to_string_encoded): Improved speed.
+	(uint32_to_packed): New faster routine.
+	(uint64_to_packed): Likewise.
+	(packed_from_combined): Eliminated.
+	(moderate_uint128_to_packed): New faster routine.
+	(large_uint128_to_packed): Likewise.
+	(__gg__binary_to_packed): Improved speed.
+	(pd_dive_rt): Eliminated.
+	(four_packed_bytes_to_uint32): New faster routine.
+	(initial_packed_bytes_to_uint32): Likewise.
+	(packed_bytes_to_uint64): Likewise.
+	(packed_bytes_to_uint128): Likewise.
+	(__gg__packed_to_binary): Use faster routines.
+
 2026-08-30  Robert Dubner  <rdubner@symas.com>
 
 	* gmath.cc (conditional_stash): Use new __gg__int128_to_qualified_field().

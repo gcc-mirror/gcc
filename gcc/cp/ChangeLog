@@ -1,3 +1,28 @@
+2026-09-02  Lunex  <imlunex2011@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/114804
+	* pt.cc (instantiate_class_template): Push enclosing scope
+	before base substitution, pop at the end.
+
+2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	P2641R4
+	* cp-tree.h: Implement C++26 P2641R4 - Checking if a union
+	alternative is active.
+	(enum cp_built_in_function): Add CP_BUILT_IN_IS_WITHIN_LIFETIME.
+	* tree.cc (builtin_valid_in_constant_expr_p): Handle
+	CP_BUILT_IN_IS_WITHIN_LIFETIME.
+	* decl.cc (cxx_init_decl_processing): Create decl for
+	CP_BUILT_IN_IS_WITHIN_LIFETIME.
+	* semantics.cc (finish_call_expr): Perform semantic checking of
+	__builtin_is_within_lifetime.
+	* constexpr.cc (constexpr_global_ctx::get_value): New method.
+	(eval_and_check_array_index): Add forward declaration.
+	(cxx_eval_is_within_lifetime): New function.
+	(cxx_eval_builtin_function_call): Handle
+	CP_BUILT_IN_IS_WITHIN_LIFETIME.
+
 2026-08-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/126922
