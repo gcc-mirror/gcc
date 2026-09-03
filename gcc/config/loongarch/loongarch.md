@@ -4771,7 +4771,7 @@
 (define_expand "bitreversehi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
 	(bitreverse:HI (match_operand:HI 1 "register_operand" "r")))]
-  ""
+  "TARGET_64BIT || TARGET_32BIT_S"
   {
     rtx t = gen_reg_rtx (word_mode);
 
