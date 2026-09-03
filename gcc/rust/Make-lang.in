@@ -108,6 +108,7 @@ GRS_OBJS = \
     rust/rust-derive-eq.o \
     rust/rust-derive-ord.o \
     rust/rust-derive-hash.o \
+    rust/rust-derive-coerce-pointee.o \
     rust/rust-proc-macro.o \
     rust/rust-macro-invoc-lexer.o \
     rust/rust-macro-substitute-ctx.o \

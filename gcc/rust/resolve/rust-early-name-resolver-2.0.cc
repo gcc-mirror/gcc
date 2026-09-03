@@ -392,6 +392,12 @@ Early::visit_derive_attribute (AST::Attribute &attr,
   auto traits = attr.get_traits_to_derive ();
   for (auto &trait : traits)
     {
+      // Special case CoercePointee if we're in a proper compatibility mode.
+      // Count it as a builtin derive macro and keep going.
+      if (trait.get ().as_string () == "CoercePointee"
+	  && Session::get_instance ().should_support_coerce_pointee ())
+	continue;
+
       auto ns_def = ctx.resolve_path (trait.get (), Namespace::Macros);
       if (!ns_def.has_value ())
 	{

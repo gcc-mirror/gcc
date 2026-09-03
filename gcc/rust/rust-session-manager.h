@@ -519,6 +519,11 @@ public:
     return get_compat_version () >= 90;
   }
 
+  bool should_support_coerce_pointee () const
+  {
+    return get_compat_version () >= 84;
+  }
+
 private:
   Session () : mappings (Analysis::Mappings::get ()) {}
   void compile_crate (const char *filename);
