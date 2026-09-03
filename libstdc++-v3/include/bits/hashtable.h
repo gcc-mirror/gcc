@@ -1107,7 +1107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Note we ignore the hint argument.
 	  __hash_code __code;
 	  size_type __bkt;
-	  if (auto __loc = _M_locate(__k))
+	  if (auto __loc = _M_locate_tr(__k))
 	    return { iterator(__loc), false };
 	  else
 	    {
