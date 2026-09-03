@@ -2110,11 +2110,6 @@ TypeCheckExpr::resolve_operator_overload (
 				lang_item_type, specified_segment, pred, expr);
       context->insert_deferred_operator_overload (std::move (defer));
 
-      if (rhs != nullptr)
-	lhs = unify_site (expr.get_mappings ().get_hirid (),
-			  TyTy::TyWithLocation (lhs),
-			  TyTy::TyWithLocation (rhs), expr.get_locus ());
-
       infered = unify_site (expr.get_mappings ().get_hirid (),
 			    TyTy::TyWithLocation (lhs),
 			    TyTy::TyWithLocation (infer), expr.get_locus ());
