@@ -1,6 +1,6 @@
 /* Test that ifcvt is not being too aggressive when -mrestrict-it.  */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mrestrict-it" } */
+/* { dg-options "-O2 -mthumb -mrestrict-it" } */
 /* { dg-require-effective-target arm_thumb2_ok } */
 
 int
