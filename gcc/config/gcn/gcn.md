@@ -47,7 +47,9 @@
    (EXEC_LO_REG			 126)
    (EXEC_HI_REG			 127)
    (EXECZ_REG			 128)
-   (SCC_REG			 129)])
+   (SCC_REG			 129)
+   (LANE_ID_REG			 161) ; v1
+  ])
 
 (define_constants
   [(SP_REGNUM 16)
@@ -60,7 +62,10 @@
   UNSPECV_KERNEL_RETURN
   UNSPECV_BARRIER
   UNSPECV_ATOMIC
-  UNSPECV_ICACHE_INV])
+  UNSPECV_ICACHE_INV
+  UNSPECV_SIMT_FORK UNSPECV_SIMT_JOIN
+  UNSPECV_SIMT_ENTER UNSPECV_SIMT_EXIT
+  UNSPECV_SIMT_EXEC_BARRIER])
 
 (define_c_enum "unspec" [
   UNSPEC_ADDPTR
@@ -87,7 +92,11 @@
   UNSPEC_FLOOR UNSPEC_CEIL UNSPEC_SIN UNSPEC_COS UNSPEC_EXP2 UNSPEC_LOG2
   UNSPEC_LDEXP UNSPEC_FREXP_EXP UNSPEC_FREXP_MANT
   UNSPEC_DIV_SCALE UNSPEC_DIV_FMAS UNSPEC_DIV_FIXUP
-  UNSPEC_PAIR])
+  UNSPEC_PAIR
+  UNSPEC_SIMT_XCHG_BFLY
+  UNSPEC_SIMT_VOTE_ANY UNSPEC_SIMT_LAST_LANE UNSPEC_SIMT_XCHG_IDX
+  UNSPEC_VSUBREG_WRITE UNSPEC_VSUBREG_READ
+  UNSPEC_ENSURE_SCALAR])
 
 ;; }}}
 ;; {{{ Attributes
@@ -290,6 +299,7 @@
 (define_attr "rdna" "any,no,yes,n3,3p" (const_string "any"))
 
 (define_attr "xnack" "na,off,on" (const_string "na"))
+(define_attr "simt" "any,simd,simt" (const_string "any"))
 
 (define_attr "enabled" ""
   (cond [
@@ -313,6 +323,12 @@
 	   (const_int 0)
 	 (and (eq_attr "xnack" "on")
 	      (eq (symbol_ref "TARGET_XNACK") (const_int 0)))
+	   (const_int 0)
+	 (and (eq_attr "simt" "simd")
+	      (ne (symbol_ref "flag_simt_mode") (const_int 0)))
+	   (const_int 0)
+	 (and (eq_attr "simt" "simt")
+	      (ne (symbol_ref "flag_simt_mode") (const_int 1)))
 	   (const_int 0)]
 	(const_int 1)))
 
@@ -345,6 +361,45 @@
 ; for later conditional s_nop insertion.
 
 (define_attr "transop" "yes,no" (const_string "no"))
+
+;; Attributes that control the simt-vect pass.
+; simt_clobber takes a decimal encoding that describes how to handle each
+; clobber in the pattern, concatenated into a single integer:
+;   - 0: unset (default; causes as ICE in simt-vect)
+;   - 1: keep as-is
+;   - 2: delete
+;   - 3: transform scalar to vector
+; E.g. "231" deletes the first clobber, transforms the second, and does
+; nothing to the third clobber (a fourth clobber would ICE).
+
+(define_attr "simt_clobber" "" (const_int 0))
+
+; simt_const controls what mode const_vector is assigned, when transformed.
+;  - default: use the same mode as the set destination
+;  - si2: use V64SI unconditionally for second input (e.g. for shifts)
+;  - sextdi2: use (sign_extend:V64DI (const_vector:V64SI))
+;    for constants in the second input (e.g. for *_imm)
+;  - uextdi2: likewise, but with zero_extend
+;  - cstore: look inside (set (r) (compare (MODE)))
+
+(define_attr "simt_const" "default,si2,sextdi2,uextdi2,cstore"
+	     (const_string "default"))
+
+; simt_special instructs the simt_vect pass to treat the conversion as
+; a special case.
+;
+;   - default: no special treatment
+;   - set_vcc: prevents [(set (...) (...)) (set (vcc:DI) (op:DI ...))]
+;	       getting broken by a DI -> V64DI conversion.
+;   - add_di_clobber: Add an additional clobber:DI 
+;   - add_vdi_clobber: Likewise, but clobber:V64DI 
+;   - add_vsi_di_clobber: Likewise, two clobbers (V64SI and DI)
+;   - symbols_ok: prevents breaking out symbol_ref and label_ref
+;   - scalar_shiftop: keep the shift amount operand scalar
+
+(define_attr "simt_special" "default,set_vcc,add_di_clobber,add_vdi_clobber,
+			    add_vsi_di_clobber,symbols_ok,scalar_shiftop"
+  (const_string "default"))
 
 ;; }}}
 ;; {{{ Iterators useful across the wole machine description
@@ -545,22 +600,23 @@
   [(set (match_operand:BI 0 "nonimmediate_operand")
 	(match_operand:BI 1 "gcn_load_operand"))]
   "gcn_valid_move_p (BImode, operands[0], operands[1])"
-  {@ [cons: =0,1   ;attrs: type,exec,length,vcmp,xnack,laneselect,flatmemaccess]
-  [Sg ,SSA ;sop1 ,*   ,4 ,*   ,*  ,*   ,*    ] s_mov_b32\t%0 ,%1
-  [v  ,vSvA;vop1 ,*   ,4 ,*   ,*  ,*   ,*    ] v_mov_b32\t%0 ,%1
-  [Sg ,v   ;vop3a,none,4 ,*   ,*  ,read,*    ] v_readlane_b32\t%0 ,%1 ,0
-  [cs ,SS  ;sopk ,*   ,4 ,*   ,*  ,*   ,*    ] s_cmpk_lg_u32\t%1 ,0
-  [cV ,v   ;vopc ,*   ,4 ,vcmp,*  ,*   ,*    ] v_cmp_ne_u32\tvcc ,0 ,%1
-  [cV ,SS  ;mult ,*   ,8 ,*   ,*  ,*   ,*    ] s_mov_b32\tvcc_lo ,%1\;s_mov_b32\tvcc_hi ,0
-  [Sm ,RS  ;smem ,*   ,12,*   ,off,*   ,*    ] s_load_dword\t%0 ,%A1\;s_waitcnt\tlgkmcnt(0)
-  [&Sm,RS  ;smem ,*   ,12,*   ,on ,*   ,*    ] ^
-  [RS ,Sm  ;smem ,*   ,12,*   ,*  ,*   ,*    ] s_store_dword\t%1 ,%A0
-  [v  ,RF  ;flat ,*   ,12,*   ,off,*   ,load ] flat_load_dword\t%0 ,%A1%O1%g1\;s_waitcnt\t0
-  [&v ,RF  ;flat ,*   ,12,*   ,on ,*   ,load ] ^
-  [RF ,v   ;flat ,*   ,12,*   ,*  ,*   ,store] flat_store_dword\t%A0 ,%1%O0%g0
-  [v  ,RM  ;flat ,*   ,12,*   ,off,*   ,load ] global_load_dword\t%0 ,%A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  [&v ,RM  ;flat ,*   ,12,*   ,on ,*   ,load ] ^
-  [RM ,v   ;flat ,*   ,12,*   ,*  ,*   ,store] global_store_dword\t%A0,%1%O0%g0
+  {@ [cons: =0,1   ;attrs: type,exec,length,vcmp,xnack,laneselect,simt,flatmemaccess]
+  [Sg ,SSA ;sop1 ,*   ,4 ,*   ,*  ,*   ,*   ,*    ] s_mov_b32\t%0 ,%1
+  [v  ,vSvA;vop1 ,*   ,4 ,*   ,*  ,*   ,*   ,*    ] v_mov_b32\t%0 ,%1
+  [Sg ,v   ;vop3a,none,4 ,*   ,*  ,read,simd,*    ] v_readlane_b32\t%0 ,%1 ,0
+  [Sg ,v   ;vop3a,none,4 ,*   ,*  ,*   ,simt,*    ] v_readfirstlane_b32\t%0 ,%1
+  [cs ,SS  ;sopk ,*   ,4 ,*   ,*  ,*   ,*   ,*    ] s_cmpk_lg_u32\t%1 ,0
+  [cV ,v   ;vopc ,*   ,4 ,vcmp,*  ,*   ,*   ,*    ] v_cmp_ne_u32\tvcc ,0 ,%1
+  [cV ,SS  ;mult ,*   ,8 ,*   ,*  ,*   ,*   ,*    ] s_mov_b32\tvcc_lo ,%1\;s_mov_b32\tvcc_hi ,0
+  [Sm ,RS  ;smem ,*   ,12,*   ,off,*   ,*   ,*    ] s_load_dword\t%0 ,%A1\;s_waitcnt\tlgkmcnt(0)
+  [&Sm,RS  ;smem ,*   ,12,*   ,on ,*   ,*   ,*    ] ^
+  [RS ,Sm  ;smem ,*   ,12,*   ,*  ,*   ,*   ,*    ] s_store_dword\t%1 ,%A0
+  [v  ,RF  ;flat ,*   ,12,*   ,off,*   ,*   ,load ] flat_load_dword\t%0 ,%A1%O1%g1\;s_waitcnt\t0
+  [&v ,RF  ;flat ,*   ,12,*   ,on ,*   ,*   ,load ] ^
+  [RF ,v   ;flat ,*   ,12,*   ,*  ,*   ,*   ,store] flat_store_dword\t%A0 ,%1%O0%g0
+  [v  ,RM  ;flat ,*   ,12,*   ,off,*   ,*   ,load ] global_load_dword\t%0 ,%A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v ,RM  ;flat ,*   ,12,*   ,on ,*   ,*   ,load ] ^
+  [RM ,v   ;flat ,*   ,12,*   ,*  ,*   ,*   ,store] global_store_dword\t%A0,%1%O0%g0
   })
 
 ; 32bit move pattern
@@ -569,38 +625,40 @@
   [(set (match_operand:SISF 0 "nonimmediate_operand")
 	(match_operand:SISF 1 "gcn_load_operand"))]
   "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
-  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack, laneselect, flatmemaccess]
-   [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
-   [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ,*    ,*    ] s_movk_i32\t%0, %1
-   [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
-   [SD  ,RB  ;smem ,*   ,12,*    ,off,*    ,*    ] s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
-   [&SD ,RB  ;smem ,*   ,12,*    ,on ,*    ,*    ] ^
-   [RB  ,Sm  ;smem ,*   ,12,*    ,*  ,*    ,*    ] s_buffer_store%s1\t%1, s[0:3], %0
-   [Sm  ,RS  ;smem ,*   ,12,*    ,off,*    ,*    ] s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
-   [&Sm ,RS  ;smem ,*   ,12,*    ,on ,*    ,*    ] ^
-   [RS  ,Sm  ;smem ,*   ,12,*    ,*  ,*    ,*    ] s_store_dword\t%1, %A0
-   [v   ,v   ;vop1 ,*   ,4 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
-   [Sg  ,v   ;vop3a,none,8 ,*    ,*  ,read ,*    ] v_readlane_b32\t%0, %1, 0
-   [v   ,Sv  ;vop3a,none,8 ,*    ,*  ,write,*    ] v_writelane_b32\t%0, %1, 0
-   [v   ,^a  ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_read_b32\t%0, %1
-   [a   ,v   ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_write_b32\t%0, %1
-   [a   ,a   ;vop1 ,*    ,4,cdna2,*  ,*    ,*    ] v_accvgpr_mov_b32\t%0, %1
-   [v   ,RF  ;flat ,*   ,12,*    ,off,*    ,load ] flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
-   [&v  ,RF  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
-   [^a  ,RF  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
-   [&^a ,RF  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
-   [RF  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] flat_store_dword\t%A0, %1%O0%g0
-   [RF  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
-   [v   ,B   ;vop1 ,*   ,8 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
-   [RLRG,v   ;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-   [v   ,RLRG;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-   [SD  ,Y   ;sop1 ,*   ,8 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
-   [v   ,RM  ;flat ,*   ,12,*    ,off,*    ,load ] global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-   [&v  ,RM  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
-   [^a  ,RM  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
-   [&^a ,RM  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
-   [RM  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] global_store_dword\t%A0, %1%O0%g0
-   [RM  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
+  {@ [cons: =0,1   ;attrs: type,exec,length,cdna ,xnack,laneselect,simt,flatmemaccess]
+  [SD  ,SSA ;sop1     ,*   ,4 ,*    ,*  ,*    ,*   ,*    ] s_mov_b32\t%0, %1
+  [SD  ,J   ;sopk     ,*   ,4 ,*    ,*  ,*    ,*   ,*    ] s_movk_i32\t%0, %1
+  [SD  ,B   ;sop1     ,*   ,8 ,*    ,*  ,*    ,*   ,*    ] s_mov_b32\t%0, %1
+  [SD  ,RB  ;smem     ,*   ,12,*    ,off,*    ,*   ,*    ] s_buffer_load%s0\t%0, s[0:3], %1\;s_waitcnt\tlgkmcnt(0)
+  [&SD ,RB  ;smem     ,*   ,12,*    ,on ,*    ,*   ,*    ] ^
+  [RB  ,Sm  ;smem     ,*   ,12,*    ,*  ,*    ,*   ,*    ] s_buffer_store%s1\t%1, s[0:3], %0
+  [Sm  ,RS  ;smem     ,*   ,12,*    ,off,*    ,*   ,*    ] s_load_dword\t%0, %A1\;s_waitcnt\tlgkmcnt(0)
+  [&Sm ,RS  ;smem     ,*   ,12,*    ,on ,*    ,*   ,*    ] ^
+  [RS  ,Sm  ;smem     ,*   ,12,*    ,*  ,*    ,*   ,*    ] s_store_dword\t%1, %A0
+  [v   ,v   ;vop1     ,*   ,4 ,*    ,*  ,*    ,*   ,*    ] v_mov_b32\t%0, %1
+  [Sg  ,v   ;vop3a    ,none,8 ,*    ,*  ,read ,simd,*    ] v_readlane_b32\t%0, %1, 0
+  [v   ,Sv  ;vop3a    ,none,8 ,*    ,*  ,write,simd,*    ] v_writelane_b32\t%0, %1, 0
+  [Sg  ,v   ;vop3a    ,none,8 ,*    ,*  ,*    ,simt,*    ] v_readfirstlane_b32\t%0, %1
+  [v   ,Sv  ;vop3a    ,none,8 ,*    ,*  ,*    ,simt,*    ] v_mov_b32\t%0, %1
+  [v   ,^a  ;vop3p_mai,*   ,8 ,*    ,*  ,*    ,*   ,*    ] v_accvgpr_read_b32\t%0, %1
+  [a   ,v   ;vop3p_mai,*   ,8 ,*    ,*  ,*    ,*   ,*    ] v_accvgpr_write_b32\t%0, %1
+  [a   ,a   ;vop1     ,*   ,4 ,cdna2,*  ,*    ,*   ,*    ] v_accvgpr_mov_b32\t%0, %1
+  [v   ,RF  ;flat     ,*   ,12,*    ,off,*    ,*   ,load ] flat_load_dword\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [&v  ,RF  ;flat     ,*   ,12,*    ,on ,*    ,*   ,load ] ^
+  [^a  ,RF  ;flat     ,*   ,12,cdna2,off,*    ,*   ,load ] ^
+  [&^a ,RF  ;flat     ,*   ,12,cdna2,on ,*    ,*   ,load ] ^
+  [RF  ,v   ;flat     ,*   ,12,*    ,*  ,*    ,*   ,store] flat_store_dword\t%A0, %1%O0%g0
+  [RF  ,a   ;flat     ,*   ,12,cdna2,*  ,*    ,*   ,store] ^
+  [v   ,B   ;vop1     ,*   ,8 ,*    ,*  ,*    ,*   ,*    ] v_mov_b32\t%0, %1
+  [RLRG,v   ;ds       ,*   ,12,*    ,*  ,*    ,*   ,*    ] ds_write_b32\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RLRG;ds       ,*   ,12,*    ,*  ,*    ,*   ,*    ] ds_read_b32\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [SD  ,Y   ;sop1     ,*   ,8 ,*    ,*  ,*    ,*   ,*    ] s_mov_b32\t%0, %1
+  [v   ,RM  ;flat     ,*   ,12,*    ,off,*    ,*   ,load ] global_load_dword\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v  ,RM  ;flat     ,*   ,12,*    ,on ,*    ,*   ,load ] ^
+  [^a  ,RM  ;flat     ,*   ,12,cdna2,off,*    ,*   ,load ] ^
+  [&^a ,RM  ;flat     ,*   ,12,cdna2,on ,*    ,*   ,load ] ^
+  [RM  ,v   ;flat     ,*   ,12,*    ,*  ,*    ,*   ,store] global_store_dword\t%A0, %1%O0%g0
+  [RM  ,a   ;flat     ,*   ,12,cdna2,*  ,*    ,*   ,store] ^
   })
 
 ; 8/16bit move pattern
@@ -610,36 +668,38 @@
   [(set (match_operand:QIHI 0 "nonimmediate_operand")
 	(match_operand:QIHI 1 "gcn_load_operand"))]
   "gcn_valid_move_p (<MODE>mode, operands[0], operands[1])"
-  {@ [cons: =0, 1; attrs: type, exec, length, cdna, xnack, laneselect, flatmemaccess]
-  [SD  ,SSA ;sop1 ,*   ,4 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
-  [SD  ,J   ;sopk ,*   ,4 ,*    ,*  ,*    ,*    ] s_movk_i32\t%0, %1
-  [SD  ,B   ;sop1 ,*   ,8 ,*    ,*  ,*    ,*    ] s_mov_b32\t%0, %1
-  [v   ,v   ;vop1 ,*   ,4 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
-  [Sg  ,v   ;vop3a,none,4 ,*    ,*  ,read ,*    ] v_readlane_b32\t%0, %1, 0
-  [v   ,Sv  ;vop3a,none,4 ,*    ,*  ,write,*    ] v_writelane_b32\t%0, %1, 0
-  [v   ,^a  ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_read_b32\t%0, %1
-  [a   ,v   ;vop3p_mai,*,8,*    ,*  ,*    ,*    ] v_accvgpr_write_b32\t%0, %1
-  [a   ,a   ;vop1 ,*    ,8,cdna2,*  ,*    ,*    ] v_accvgpr_mov_b32\t%0, %1
-  [v   ,RF  ;flat ,*   ,12,*    ,off,*    ,load ] flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
-  [&v  ,RF  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
-  [^a  ,RF  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
-  [&^a ,RF  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
-  [RF  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] flat_store%s0\t%A0, %1%O0%g0
-  [RF  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
-  [v   ,B   ;vop1 ,*   ,8 ,*    ,*  ,*    ,*    ] v_mov_b32\t%0, %1
-  [RLRG,v   ;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
-  [v   ,RLRG;ds   ,*   ,12,*    ,*  ,*    ,*    ] ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
-  [v   ,RM  ;flat ,*   ,12,*    ,off,*    ,load ] global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
-  [&v  ,RM  ;flat ,*   ,12,*    ,on ,*    ,load ] ^
-  [^a  ,RM  ;flat ,*   ,12,cdna2,off,*    ,load ] ^
-  [&^a ,RM  ;flat ,*   ,12,cdna2,on ,*    ,load ] ^
-  [RM  ,v   ;flat ,*   ,12,*    ,*  ,*    ,store] global_store%s0\t%A0, %1%O0%g0
-  [RM  ,a   ;flat ,*   ,12,cdna2,*  ,*    ,store] ^
+  {@ [cons: =0,1   ;attrs: type,exec,length,cdna ,xnack,laneselect,simt,flatmemaccess]
+  [SD  ,SSA ;sop1     ,*   ,4 ,*    ,*  ,*    ,*   ,*    ] s_mov_b32\t%0, %1
+  [SD  ,J   ;sopk     ,*   ,4 ,*    ,*  ,*    ,*   ,*    ] s_movk_i32\t%0, %1
+  [SD  ,B   ;sop1     ,*   ,8 ,*    ,*  ,*    ,*   ,*    ] s_mov_b32\t%0, %1
+  [v   ,v   ;vop1     ,*   ,4 ,*    ,*  ,*    ,*   ,*    ] v_mov_b32\t%0, %1
+  [Sg  ,v   ;vop3a    ,none,4 ,*    ,*  ,read ,simd,*    ] v_readlane_b32\t%0, %1, 0
+  [v   ,Sv  ;vop3a    ,none,4 ,*    ,*  ,write,simd,*    ] v_writelane_b32\t%0, %1, 0
+  [Sg  ,v   ;vop3a    ,none,4 ,*    ,*  ,*    ,simt,*    ] v_readfirstlane_b32\t%0, %1
+  [v   ,Sv  ;vop3a    ,none,4 ,*    ,*  ,*    ,simt,*    ] v_mov_b32\t%0, %1
+  [v   ,^a  ;vop3p_mai,*   ,8 ,*    ,*  ,*    ,*   ,*    ] v_accvgpr_read_b32\t%0, %1
+  [a   ,v   ;vop3p_mai,*   ,8 ,*    ,*  ,*    ,*   ,*    ] v_accvgpr_write_b32\t%0, %1
+  [a   ,a   ;vop1     ,*   ,8 ,cdna2,*  ,*    ,*   ,*    ] v_accvgpr_mov_b32\t%0, %1
+  [v   ,RF  ;flat     ,*   ,12,*    ,off,*    ,*   ,load ] flat_load%o1\t%0, %A1%O1%g1\;s_waitcnt\t0
+  [&v  ,RF  ;flat     ,*   ,12,*    ,on ,*    ,*   ,load ] ^
+  [^a  ,RF  ;flat     ,*   ,12,cdna2,off,*    ,*   ,load ] ^
+  [&^a ,RF  ;flat     ,*   ,12,cdna2,on ,*    ,*   ,load ] ^
+  [RF  ,v   ;flat     ,*   ,12,*    ,*  ,*    ,*   ,store] flat_store%s0\t%A0, %1%O0%g0
+  [RF  ,a   ;flat     ,*   ,12,cdna2,*  ,*    ,*   ,store] ^
+  [v   ,B   ;vop1     ,*   ,8 ,*    ,*  ,*    ,*   ,*    ] v_mov_b32\t%0, %1
+  [RLRG,v   ;ds       ,*   ,12,*    ,*  ,*    ,*   ,*    ] ds_write%b0\t%A0, %1%O0\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RLRG;ds       ,*   ,12,*    ,*  ,*    ,*   ,*    ] ds_read%u1\t%0, %A1%O1\;s_waitcnt\tlgkmcnt(0)
+  [v   ,RM  ;flat     ,*   ,12,*    ,off,*    ,*   ,load ] global_load%o1\t%0, %A1%O1%g1\;s_waitcnt\tvmcnt(0)
+  [&v  ,RM  ;flat     ,*   ,12,*    ,on ,*    ,*   ,load ] ^
+  [^a  ,RM  ;flat     ,*   ,12,cdna2,off,*    ,*   ,load ] ^
+  [&^a ,RM  ;flat     ,*   ,12,cdna2,on ,*    ,*   ,load ] ^
+  [RM  ,v   ;flat     ,*   ,12,*    ,*  ,*    ,*   ,store] global_store%s0\t%A0, %1%O0%g0
+  [RM  ,a   ;flat     ,*   ,12,cdna2,*  ,*    ,*   ,store] ^
   })
 
 ; 64bit move pattern
 
-(define_insn_and_split "*mov<mode>_insn"
+(define_insn_and_split "mov<mode>_insn"
   [(set (match_operand:DIDF 0 "nonimmediate_operand")
 	(match_operand:DIDF 1 "general_operand"))]
   "GET_CODE(operands[1]) != SYMBOL_REF
@@ -705,7 +765,7 @@
 
 ; 128-bit move.
 
-(define_insn_and_split "*movti_insn"
+(define_insn_and_split "movti_insn"
   [(set (match_operand:TI 0 "nonimmediate_operand")
 	(match_operand:TI 1 "general_operand"  ))]
   "!(MEM_P (operands[0]) && MEM_P (operands[1]))"
@@ -873,6 +933,42 @@
 			   (lt (minus (match_dup 0) (pc))
 			       (const_int 131072)))
 		      (const_int 4)
+		      (const_int 36)))
+   (set_attr "simt_special" "symbols_ok")])
+
+(define_insn "*cjump_vcc"
+  [(set (pc)
+	(if_then_else
+	  (match_operator:DI 1 "gcn_conditional_operator"
+	    [(match_operand:DI 2 "gcn_conditional_register_operand" "cV")
+	     (const_int 0)])
+	  (label_ref (match_operand 0))
+	  (pc)))]
+  ""
+  {
+    if (get_attr_length (insn) == 4)
+      return "s_cbranch%C1\t%0";
+    else
+      {
+	/* !!! This sequence clobbers EXEC_SAVE_REG and CC_SAVE_REG but
+	       restores SCC.  */
+	return "s_cbranch%c1\t.Lskip%=\;"
+	       "s_mov_b32\ts22, scc\;"
+	       "s_getpc_b64\ts[20:21]\;"
+	       "s_add_u32\ts20, s20, %0@rel32@lo+4\;"
+	       "s_addc_u32\ts21, s21, %0@rel32@hi+4\;"
+	       "s_cmpk_lg_u32\ts22, 0\;"
+	       "s_setpc_b64\ts[20:21]\n"
+	       ".Lskip%=:";
+      }
+  }
+  [(set_attr "type" "sopp")
+   (set (attr "length")
+	(if_then_else (and (ge (minus (match_dup 0) (pc))
+			       (const_int -131072))
+			   (lt (minus (match_dup 0) (pc))
+			       (const_int 131072)))
+		      (const_int 4)
 		      (const_int 36)))])
 
 ; Returning from a normal function is different to returning from a
@@ -908,7 +1004,8 @@
   s_getpc_b64\t%2\;s_add_u32\t%L2, %L2, %0@rel32@lo+4\;s_addc_u32\t%H2, %H2, %0@rel32@hi+4\;s_swappc_b64\ts[18:19], %2
   s_swappc_b64\ts[18:19], %0"
   [(set_attr "type" "mult,sop1")
-   (set_attr "length" "24,4")])
+   (set_attr "length" "24,4")
+   (set_attr "simt_clobber" "11")])
 
 (define_insn "movdi_symbol"
  [(set (match_operand:DI 0 "nonimmediate_operand" "=Sg")
@@ -931,7 +1028,9 @@
 	   "s_addc_u32\t%H0, %H0, %1@rel32@hi+4";
   }
  [(set_attr "type" "mult")
-  (set_attr "length" "32")])
+  (set_attr "length" "32")
+  ; The conversion changes this to a straight move, and inserts another instance.
+  (set_attr "simt_clobber" "2")])
 
 (define_insn "movdi_symbol_save_scc"
  [(set (match_operand:DI 0 "nonimmediate_operand" "=Sg")
@@ -972,7 +1071,8 @@
   ""
   "s_swappc_b64\ts[18:19], %0"
   [(set_attr "type" "sop1")
-   (set_attr "length" "4")])
+   (set_attr "length" "4")
+   (set_attr "simt_clobber" "11")])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "")
@@ -994,7 +1094,9 @@
   s_getpc_b64\t%3\;s_add_u32\t%L3, %L3, %1@rel32@lo+4\;s_addc_u32\t%H3, %H3, %1@rel32@hi+4\;s_swappc_b64\ts[18:19], %3
   s_swappc_b64\ts[18:19], %1"
   [(set_attr "type" "sop1")
-   (set_attr "length" "24")])
+   (set_attr "length" "24")
+   (set_attr "simt_clobber" "11")
+   (set_attr "simt_special" "symbols_ok")])
 
 (define_insn "gcn_call_value_indirect"
   [(set (match_operand 0 "register_operand"		  "=Sgv")
@@ -1005,7 +1107,8 @@
   ""
   "s_swappc_b64\ts[18:19], %1"
   [(set_attr "type" "sop1")
-   (set_attr "length" "4")])
+   (set_attr "length" "4")
+   (set_attr "simt_clobber" "11")])
 
 ; GCN does not have an instruction to clear only part of the instruction
 ; cache, so the operands are ignored.
@@ -1046,7 +1149,9 @@
    s_cmp%D1\t%2, %3
    s_cmp%D1\t%2, %3"
   [(set_attr "type" "sopc,sopk,sopk,sopk")
-   (set_attr "length" "4,4,8,8")])
+   (set_attr "length" "4,4,8,8")
+   (set_attr "simt_special" "add_di_clobber")
+   (set_attr "simt_const" "cstore")])
 
 (define_expand "cbranchsi4"
   [(match_operator 0 "gcn_compare_operator"
@@ -1067,8 +1172,8 @@
 (define_expand "cstoredi4"
   [(set (match_operand:BI 0 "gcn_conditional_register_operand")
 	(match_operator:BI 1 "gcn_compare_operator"
-			   [(match_operand:DI 2 "gcn_alu_operand")
-			    (match_operand:DI 3 "gcn_alu_operand")]))]
+			     [(match_operand:DI 2 "gcn_alu_operand")
+			      (match_operand:DI 3 "gcn_alu_operand")]))]
   ""
   {})
 
@@ -1083,7 +1188,9 @@
    v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "sopc,vopc")
    (set_attr "vcmp" "vcmp")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_special" "add_di_clobber")
+   (set_attr "simt_const" "cstore")])
 
 (define_insn "cstoredi4_vector"
   [(set (match_operand:BI 0 "gcn_conditional_register_operand" "= cV")
@@ -1094,7 +1201,9 @@
   "v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "vopc")
    (set_attr "vcmp" "vcmp")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_special" "add_di_clobber")
+   (set_attr "simt_const" "cstore")])
 
 (define_expand "cbranchdi4"
   [(match_operator 0 "gcn_compare_operator"
@@ -1121,7 +1230,9 @@
   "v_cmp%E1\tvcc, %2, %3"
   [(set_attr "type" "vopc")
    (set_attr "vcmp" "vcmp")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_special" "add_di_clobber")
+   (set_attr "simt_const" "cstore")])
 
 (define_expand "cbranch<mode>4"
   [(match_operator 0 "gcn_fp_compare_operator"
@@ -1136,6 +1247,22 @@
 			       gen_rtx_NE (BImode, cc, const0_rtx), cc));
     DONE;
   })
+
+(define_insn "@cselect<mode>"
+  [(set (match_operand:SIDI 0 "register_operand")
+        (if_then_else:SIDI
+	  (ne:BI (match_operand:BI 1 "gcn_conditional_register_operand")
+		 (const_int 0))
+	  (match_operand:SIDI 2 "gcn_alu_operand")
+	  (match_operand:SIDI 3 "gcn_alu_operand")))]
+  ""
+  {@ [cons: =0, 1, 2, 3; attrs: length]
+  [SDcV, cs, ASS, ASS; 4] s_cselect%b0\t%0, %2, %3
+  [SDcV, cs, C  , ASS; 8] ^
+  [SDcV, cs, ASS, C  ; 8] ^
+  }
+  [(set_attr "type" "sop2")
+   (set_attr "simt_special" "add_vdi_clobber")])
 
 ;; }}}
 ;; {{{ ALU special cases: Plus
@@ -1152,7 +1279,8 @@
    s_add_i32\t%0, %1, %2
    {v_add_u32|v_add_nc_u32}\t%0, %2, %1"
   [(set_attr "type" "sop2,sopk,sop2,vop2")
-   (set_attr "length" "4,4,8,8")])
+   (set_attr "length" "4,4,8,8")
+   (set_attr "simt_clobber" "2")])
 
 (define_expand "addsi3_scc"
   [(parallel [(set (match_operand:SI 0 "register_operand")
@@ -1205,7 +1333,8 @@
     DONE;
   }
   [(set_attr "type" "mult,vmult")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_clobber" "21")])
 
 (define_expand "adddi3_scc"
   [(parallel [(set (match_operand:DI 0 "register_operand")
@@ -1346,14 +1475,31 @@
    {v_subrev_u32|v_subrev_nc_u32}\t%0, %2, %1
    {v_sub_u32|v_sub_nc_u32}\t%0, %1, %2"
   [(set_attr "type" "sop2,sop2,vop2,vop2")
-   (set_attr "length" "4,8,8,8")])
+   (set_attr "length" "4,8,8,8")
+   (set_attr "simt_clobber" "2")])
 
-(define_insn_and_split "subdi3"
+(define_expand "subdi3"
+ [(parallel [
+   (set (match_operand:DI 0 "register_operand")
+     (minus:DI
+      (match_operand:DI 1 "gcn_alu_operand")
+      (match_operand:DI 2 "gcn_alu_operand")))
+   (clobber (match_dup 3))])]
+  ""
+  {
+    if (reload_completed)
+      operands[3] = gen_rtx_REG (BImode, SCC_REG);
+    else
+      operands[3] = gen_rtx_SCRATCH (BImode);
+  }
+)
+
+(define_insn_and_split "*subdi3_insn"
   [(set (match_operand:DI 0 "register_operand"        "=Sg, Sg")
 	(minus:DI
 		(match_operand:DI 1 "gcn_alu_operand" "SgA,SgB")
 		(match_operand:DI 2 "gcn_alu_operand" "SgB,SgA")))
-   (clobber (reg:BI SCC_REG))]
+   (clobber (match_scratch:BI 3			      "=cs, cs"))]
   ""
   "#"
   "reload_completed"
@@ -1375,7 +1521,8 @@
 		  gcn_operand_part (DImode, operands[1], 1)));
     DONE;
   }
-  [(set_attr "length" "8")])
+  [(set_attr "length" "8")
+  (set_attr "simt_clobber" "3")])
 
 (define_insn "subsi3_scalar_carry"
   [(set (match_operand:SI 0 "register_operand"          "=Sg, Sg")
@@ -1452,7 +1599,8 @@
    s_mul_i32\t%0, %1, %2
    v_mul_lo_u32\t%0, %1, %2"
   [(set_attr "type" "sop2,sopk,sop2,vop3a")
-   (set_attr "length" "4,4,8,4")])
+   (set_attr "length" "4,4,8,4")
+   (set_attr "simt_clobber" "2")])
 
 (define_code_iterator any_extend [sign_extend zero_extend])
 (define_code_attr sgnsuffix [(sign_extend "%i") (zero_extend "%u")])
@@ -1484,7 +1632,7 @@
 })
 
 (define_insn "<su>mulsi3_highpart_reg"
-  [(set (match_operand:SI 0 "register_operand"	       "=Sg,  v")
+  [(set (match_operand:SI 0 "register_operand"	           "=Sg,  v")
 	(truncate:SI
 	  (lshiftrt:DI
 	    (mult:DI
@@ -1498,7 +1646,8 @@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   v_mul_hi<sgnsuffix>0\t%0, %2, %1"
   [(set_attr "type" "sop2,vop3a")
-   (set_attr "length" "4,8")])
+   (set_attr "length" "4,8")
+   (set_attr "simt_special" "scalar_shiftop")])
 
 (define_insn "<su>mulsi3_highpart_imm"
   [(set (match_operand:SI 0 "register_operand"	              "=Sg,Sg,v")
@@ -1515,7 +1664,9 @@
   s_mul_hi<sgnsuffix>0\t%0, %1, %2
   v_mul_hi<sgnsuffix>0\t%0, %2, %1"
   [(set_attr "type" "sop2,sop2,vop3a")
-   (set_attr "length" "4,8,8")])
+   (set_attr "length" "4,8,8")
+   (set_attr "simt_const" "<su>extdi2")
+   (set_attr "simt_special" "scalar_shiftop")])
 
 (define_expand "<su>mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -1567,7 +1718,8 @@
     emit_insn (gen_mulsi3 (dstlo, operands[1], operands[2]));
     emit_insn (gen_<su>mulsi3_highpart (dsthi, operands[1], operands[2]));
     DONE;
-  })
+  }
+  [(set_attr "simt_const" "<su>extdi2")])
 
 (define_insn_and_split "muldi3"
   [(set (match_operand:DI 0 "register_operand"         "=&Sg,&Sg,?&v,?&v")
@@ -1598,7 +1750,8 @@
     add = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, add, clob));
     emit_insn (add);
     DONE;
-  })
+  }
+  [(set_attr "simt_clobber" "32")])
 
 (define_insn "<u>mulhisi3"
   [(set (match_operand:SI 0 "register_operand"			"=v")
@@ -1636,7 +1789,8 @@
    s_<s_mnemonic>0\t%0, %1
    v_<mnemonic>0\t%0, %1<popcount_extra_op>"
   [(set_attr "type" "sop1,vop1")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_clobber" "2")])
 
 (define_code_iterator countzeros [clz ctz])
 
@@ -1658,7 +1812,8 @@
   ""
   "s_<s_mnemonic>1\t%0, %1"
   [(set_attr "type" "sop1")
-   (set_attr "length" "4,8")])
+   (set_attr "length" "4,8")
+   (set_attr "simt_special" "add_vsi_di_clobber")])
 
 (define_insn "gcn_flbit<mode>_int"
   [(set (match_operand:SI 0 "register_operand"              "=Sg,Sg")
@@ -1716,7 +1871,8 @@
    v_<mnemonic>0\t%0, %1, %2
    ds_<mnemonic>0\t%A0, %2%O0"
   [(set_attr "type" "sop2,vop2,ds")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_clobber" "2")])
 
 (define_insn "<expander>si3"
   [(set (match_operand:SI 0 "register_operand"  "=Sg, Sg,  ?v")
@@ -1730,7 +1886,8 @@
    s_<mnemonic>0\t%0, %1, %2
    v_<revmnemonic>0\t%0, %2, %1"
   [(set_attr "type" "sop2,sop2,vop2")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_clobber" "2")])
 
 (define_expand "<expander>si3_scc"
   [(parallel [(set (match_operand:SI 0 "gcn_valu_dst_operand")
@@ -1765,6 +1922,7 @@
     operands[5] = gcn_operand_part (DImode, operands[0], 1);
     operands[6] = gcn_operand_part (DImode, operands[1], 1);
   }
+  [(set_attr "simt_clobber" "2")]
 )
 
 (define_code_iterator vec_and_scalar64_com [and ior xor])
@@ -1795,7 +1953,8 @@
     operands[9] = gcn_operand_part (DImode, operands[2], 1);
   }
   [(set_attr "type" "sop2,vop2")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_clobber" "2")])
 
 (define_insn "<expander>di3"
   [(set (match_operand:DI 0 "register_operand"   "=Sg, Sg,  ?v")
@@ -1809,7 +1968,9 @@
    s_<mnemonic>0\t%0, %1, %2
    v_<revmnemonic>0\t%0, %2, %1"
   [(set_attr "type" "sop2,sop2,vop2")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_clobber" "2")
+   (set_attr "simt_const" "si2")])
 
 ;; }}}
 ;; {{{ ALU: generic 128-bit binop
@@ -2472,25 +2633,215 @@
   [(set_attr "type" "sopp")])
 
 (define_expand "oacc_fork"
-  [(set (match_operand:SI 0 "")
-	(match_operand:SI 1 ""))
-   (use (match_operand:SI 2 ""))]
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec_volatile [(match_operand:SI 1 "")
+			  (match_operand:SI 2 "")]
+			 UNSPECV_SIMT_FORK))]
   ""
   {
     /* We need to have oacc_fork/oacc_join named patterns as a pair,
        but the fork isn't actually used.  */
-    gcc_unreachable ();
+    if (!flag_simt_mode)
+      {
+        gcc_unreachable ();
+	DONE;
+      }
   })
 
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_insn "*oacc_fork_insn"
+  [(set (match_operand:SI 0 "register_operand")
+	(unspec_volatile [(match_operand:SI 1 "")
+			  (match_operand:SI 2 "")]
+			 UNSPECV_SIMT_FORK))]
+  ""
+  "; simt_fork %0 %1 %2 ")
+
 (define_expand "oacc_join"
-  [(set (match_operand:SI 0 "")
-	(match_operand:SI 1 ""))
-   (use (match_operand:SI 2 ""))]
+  [(unspec_volatile [(match_operand:SI 0 "")
+		     (match_operand:SI 1 "")
+		     (match_operand:SI 2 "")]
+		    UNSPECV_SIMT_JOIN)]
   ""
   {
-    emit_insn (gen_gcn_wavefront_barrier ());
+    int dim = INTVAL (operands[2]);
+    if (dim == GOMP_DIM_WORKER)
+      {
+        emit_insn (gen_gcn_wavefront_barrier ());
+        DONE;
+      }
+    else if (!flag_simt_mode)
+      {
+        gcc_unreachable ();
+	DONE;
+      }
+    /* else use default expansion.  */
+  })
+
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_insn "*oacc_join_insn"
+  [(unspec_volatile [(match_operand:SI 0 "")
+		     (match_operand:SI 1 "")
+		     (match_operand:SI 2 "")]
+		    UNSPECV_SIMT_JOIN)]
+  ""
+  "; simt_join %0 %1 %2 ")
+
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_insn "omp_simt_enter"
+  [(set (match_operand 0 "register_operand" "=r")
+        (unspec_volatile
+	  [(match_operand 1 "nonmemory_operand" "ri")
+	   (match_operand 2 "const_int_operand" "n")]
+	  UNSPECV_SIMT_ENTER))
+   (set (reg:DI EXEC_REG) (const_int -1))
+   (set (reg:BI EXECZ_REG) (const_int 0))]
+  ""
+  "s_mov_b64 exec, -1; simt enter %0 %1 %2")
+
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_insn "omp_simt_exit"
+  [(unspec_volatile [(match_operand 0 "register_operand" "r")]
+		    UNSPECV_SIMT_EXIT)
+   (set (reg:DI EXEC_REG) (const_int 1))
+   (set (reg:BI EXECZ_REG) (const_int 0))]
+  ""
+  "s_mov_b64 exec, 1; simt exit %0")
+
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_expand "omp_simt_lane"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(reg:SI LANE_ID_REG))]
+  "flag_simt_mode")
+
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_expand "omp_simt_xchg_bfly"
+  [(match_operand 0 "register_operand")
+   (match_operand 1 "register_operand")
+   (match_operand:SI 2 "nonmemory_operand")]
+  "flag_simt_mode"
+  {
+    emit_insn (gen_omp_simt_xchg_bfly (GET_MODE (operands[0]), operands[0],
+				       operands[1], operands[2]));
     DONE;
   })
+
+(define_insn "@omp_simt_xchg_bfly<mode>"
+  [(set (match_operand:MOV_MODE 0 "register_operand" "=r")
+	(unspec:MOV_MODE
+	  [(match_operand:MOV_MODE 1 "register_operand" "r")
+	   (match_operand:SI 2 "nonmemory_operand" "ri")]
+	  UNSPEC_SIMT_XCHG_BFLY))]
+  "flag_simt_mode"
+  "; %0 = simt_xchg_bfly %1 %2")
+
+;; Implement IFN_GOMP_SIMT_VOTE_ANY:
+;; set operand 0 to zero iff all lanes supply zero in operand 1
+; This pseudo instruction should be replaced by the simt_vect pass
+(define_insn "omp_simt_vote_any"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec:SI [(match_operand:SI 1 "register_operand" "")]
+		   UNSPEC_SIMT_VOTE_ANY))]
+  "flag_simt_mode"
+  "; %0 = simt_vote_any %1")
+
+;; Implement IFN_GOMP_SIMT_LAST_LANE:
+;; set operand 0 to the value of the last active lane
+; This pseudo instruction should be replace by the simt_vect pass
+(define_insn "omp_simt_last_lane"
+  [(set (match_operand:SI 0 "register_operand" "")
+        (unspec:SI [(match_operand:SI 1 "register_operand" "")]
+		   UNSPEC_SIMT_LAST_LANE))]
+  "flag_simt_mode"
+  "; %0 = simt_last_lane %1")
+
+;; Implement IFN_GOMP_SIMT_XCHG_IDX: broadcast value in operand 1
+;; from lane given by index in operand 2 to operand 0 in all lanes
+(define_insn "omp_simt_xchg_idx"
+  [(set (match_operand 0 "register_operand" "")
+	(unspec [(match_operand 1 "register_operand" "")
+		 (match_operand:SI 2 "nonmemory_operand" "")]
+		UNSPEC_SIMT_XCHG_IDX))]
+  "flag_simt_mode"
+  "; %0 = simt_xchg_idx %1")
+
+;; Ensure that scalar values are visible to all lanes at the SIMT_ENTER 
+;; transition point.  This could be a vec_duplicate, or just ensuring it's
+;; in a scalar register.
+;;
+;; The VGPR alternative is deliberately not split: in RTL terms the
+;; readfirstlane/broadcast pair would be a move to a scratch and a move back
+;; again, which passes such as cprop_hardreg would delete as a no-op.
+
+(define_insn "@ensure_scalar<mode>"
+  [(set (match_operand:MOV_MODE 0 "register_operand")
+        (unspec:MOV_MODE [(match_operand:MOV_MODE 1 "register_operand")]
+			 UNSPEC_ENSURE_SCALAR))
+   (clobber (match_scratch:SI 2))]
+  "flag_simt_mode"
+  {@ [cons: =0, 1, =2; attrs: type, exec]
+  [SSSa,0,X ;sop1 ,*   ] ; live scalar in %0
+  [v   ,v,Sg;vmult,none] << gcn_output_ensure_scalar (operands, <MODE>mode);
+  }
+  [(set (attr "length")
+	(if_then_else (eq_attr "alternative" "0")
+		      (const_int 0)
+		      (symbol_ref "MAX (1, GET_MODE_SIZE (<MODE>mode) / 4)
+				   * (TARGET_CDNA3_NOPS ? 16 : 12)")))])
+
+;; SIMT EXEC handling instructions that won't get optimized away
+
+(define_insn "exec_barrier"
+  [(unspec_volatile [(const_int 0)] UNSPECV_SIMT_EXEC_BARRIER)]
+  "flag_simt_mode"
+  "; exec barrier"
+  [(set_attr "length" "0")])
+
+(define_expand "saveexec"
+  [(set (match_operand:DI 0 "register_operand")
+	(reg:DI EXEC_REG))]
+  "flag_simt_mode")
+
+(define_insn "setexec"
+  [(set (reg:DI EXEC_REG)
+	(match_operand:DI 0 "register_operand" "Sg"))
+   (set (reg:BI EXECZ_REG)
+        (eq:BI (match_dup 0) (const_int 0)))
+   (unspec_volatile [(const_int 0)] UNSPECV_SIMT_EXEC_BARRIER)] ; HACK HACK HACK
+  "flag_simt_mode"
+  "s_mov_b64\texec, %0"
+  [(set_attr "type" "sop1")
+   (set_attr "length" "4")])
+
+(define_code_iterator execop [and ior xor])
+
+(define_insn "setexec_<expander>"
+  [(set (reg:DI EXEC_REG)
+	(execop:DI (match_operand:DI 0 "register_operand" "Sg")
+		   (reg:DI EXEC_REG)))
+   (set (reg:BI EXECZ_REG)
+        (eq:BI (execop:DI (match_dup 0) (reg:DI EXEC_REG)) (const_int 0)))
+   (set (reg:BI SCC_REG)
+        (ne:BI (execop:DI (match_dup 0) (reg:DI EXEC_REG)) (const_int 0)))]
+  "flag_simt_mode"
+  "s_<bare_mnemonic>_b64\texec, exec, %0"
+  [(set_attr "type" "sop2")
+   (set_attr "length" "4")])
+
+(define_insn "setexec_<expander>_with_save"
+  [(set (match_operand:DI 0 "register_operand" "=Sg")
+        (reg:DI EXEC_REG))
+   (set (reg:DI EXEC_REG)
+	(execop:DI (match_operand:DI 1 "register_operand" "Sg")
+		   (reg:DI EXEC_REG)))
+   (set (reg:BI EXECZ_REG)
+        (eq:BI (execop:DI (match_dup 1) (reg:DI EXEC_REG)) (const_int 0)))
+   (set (reg:BI SCC_REG)
+        (ne:BI (execop:DI (match_dup 1) (reg:DI EXEC_REG)) (const_int 0)))]
+  "flag_simt_mode"
+  "s_<bare_mnemonic>_saveexec_b64\t%0, %1"
+  [(set_attr "type" "sop1")
+   (set_attr "length" "4")])
 
 ;; }}}
 

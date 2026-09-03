@@ -95,6 +95,9 @@
 (define_register_constraint "Sv" "SGPR_VOP_SRC_REGS"
   "registers useable as a source of VOP3A instruction")
 
+(define_register_constraint "Sa" "AFP_REGS"
+  "virtual scalar registers")
+
 (define_register_constraint "ca" "ALL_CONDITIONAL_REGS"
   "SCC VCCZ or EXECZ")
 

@@ -125,6 +125,10 @@ gcn_init_machine_status (void)
   //if (TARGET_GCN3)
     f->use_flat_addressing = true;
 
+  /* Vector modes start disabled, in SIMT mode, and will be reenabled later
+     during the simt_vect pass.  */
+  f->vectors_enabled = !flag_simt_mode;
+
   return f;
 }
 
@@ -189,6 +193,10 @@ gcn_option_override (void)
      to be set to '2', so I'll leave it default for now.
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       param_vect_partial_vector_usage, 1);  */
+
+  /* FIXME: do transformations to unbreak debug info in simt_vect!  */
+  if (flag_simt_mode)
+    flag_var_tracking = false;
 }
 
 /* }}}  */
@@ -2582,6 +2590,13 @@ gcn_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 static void
 gcn_conditional_register_usage (void)
 {
+  if (flag_simt_mode)
+    {
+      /* In SIMT mode the EXEC mask is never used as a constraint.  */
+      fixed_regs[EXEC_LO_REG] = 1;
+      fixed_regs[EXEC_HI_REG] = 1;
+    }
+
   /* Some architectures have a register allocation granularity that does not
      permit use of the full register count.  */
   for (int i = 256 - (256 % TARGET_VGPR_GRANULARITY);
@@ -2849,10 +2864,9 @@ gcn_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
       if (targetm.calls.must_pass_in_stack (arg))
 	return 0;
 
-      int first_reg = (VECTOR_MODE_P (arg.mode)
-		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
-      int cum_num = (VECTOR_MODE_P (arg.mode)
-		     ? cum->vnum : cum->num);
+      bool use_vector_args = (flag_simt_mode || VECTOR_MODE_P (arg.mode));
+      int first_reg = (use_vector_args ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int cum_num = (use_vector_args ? cum->vnum : cum->num);
       int reg_num = first_reg + cum_num;
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
@@ -2910,10 +2924,9 @@ gcn_function_arg_advance (cumulative_args_t cum_v,
       if (!arg.named)
 	return;
 
-      int first_reg = (VECTOR_MODE_P (arg.mode)
-		       ? FIRST_VPARM_REG : FIRST_PARM_REG);
-      int *cum_num = (VECTOR_MODE_P (arg.mode)
-		      ? &cum->vnum : &cum->num);
+      bool use_vector_args = (flag_simt_mode || VECTOR_MODE_P (arg.mode));
+      int first_reg = (use_vector_args ? FIRST_VPARM_REG : FIRST_PARM_REG);
+      int *cum_num = (use_vector_args ? &cum->vnum : &cum->num);
       int num_regs = num_arg_regs (arg);
       if (num_regs > 0)
 	while ((first_reg + *cum_num) % num_regs != 0)
@@ -3195,6 +3208,140 @@ gcn_compute_frame_offsets (void)
 }
 
 /* Insert code into the prologue or epilogue to store or load any
+   callee-save register to/from the stack, in a way that doesn't break
+   SIMT code.
+
+   NOTE: in SIMT mode the EXEC is not touched, so it's only valid to clobber
+   *active* lanes of caller-save registers, and only necessary to save active
+   lanes of callee-save register.
+
+   Helper function for gcn_expand_prologue and gcn_expand_epilogue.  */
+
+static void
+move_callee_saved_registers_simt (rtx sp, machine_function *offsets,
+				  bool prologue)
+{
+  int regno, offset = 0;
+
+  start_sequence ();
+
+  /* Save/Restore scalars.
+     TODO: coalesce consecutive registers into combined stores.  */
+  rtx sdata = gen_rtx_REG (SImode, VGPR_REGNO (3));
+  rtx sp_plus_zero = NULL;
+  for (regno = 0; regno < FIRST_VGPR_REG; regno++)
+    if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
+	|| ((regno & ~1) == LINK_REGNUM && offsets->lr_needs_saving)
+	|| ((regno & ~1) == HARD_FRAME_POINTER_REGNUM
+	    && offsets->need_frame_pointer))
+      {
+	if (!sp_plus_zero)
+	  {
+	    rtx v0 = gen_rtx_REG (SImode, VGPR_REGNO (0));
+	    emit_move_insn (v0, const0_rtx);
+	    sp_plus_zero = gen_rtx_PLUS (DImode, sp, v0);
+	  }
+
+	rtx reg = gen_rtx_REG (SImode, regno);
+	rtx mem = gen_rtx_MEM (SImode,
+			       gen_rtx_PLUS (DImode, sp_plus_zero,
+					     gen_rtx_CONST_INT (VOIDmode,
+								offset)));
+	set_mem_addr_space (mem, ADDR_SPACE_GLOBAL);
+	MEM_INDEPENDENT_P (mem) = 1;
+
+	if (prologue)
+	  {
+	    emit_move_insn (sdata, reg);
+	    emit_move_insn (mem, sdata);
+	  }
+	else
+	  {
+	    emit_move_insn (sdata, mem);
+	    emit_move_insn (reg, sdata);
+	  }
+
+	offset += 4;
+
+	/* TODO: CFI meta-data.  */
+      }
+
+  rtx move_scalars = end_sequence ();
+  start_sequence ();
+
+  /* Prepare a ladder reg suitable for storing V64SImode values.  Note
+     that this only clobbers the active lanes of a caller-save register.  */
+  rtx _0_1_2_3 = gen_rtx_REG (V64SImode, VGPR_REGNO (1));
+  rtx _0_4_8_12 = gen_rtx_REG (V64SImode, VGPR_REGNO (3));
+  emit_insn (gen_ashlv64si3 (_0_4_8_12, _0_1_2_3, GEN_INT (2)));
+
+  /* Save/Restore vectors.  */
+  rtx vsp = gen_rtx_VEC_DUPLICATE (V64DImode, sp);
+  int raw_offset = offset;
+  for (regno = FIRST_VGPR_REG; regno < FIRST_PSEUDO_REGISTER; regno++)
+    if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
+      {
+	rtx reg = gen_rtx_REG (V64SImode, regno);
+	rtx addr = gen_rtx_PLUS (V64DImode,
+				 gen_rtx_PLUS (V64DImode, vsp, _0_4_8_12),
+				 gcn_vec_constant (V64DImode, offset));
+	rtx mem = gen_rtx_MEM (V64SImode, addr);
+	set_mem_addr_space (mem, ADDR_SPACE_GLOBAL);
+	MEM_INDEPENDENT_P (mem) = 1;
+
+	if (prologue)
+	  emit_move_insn (mem, reg);
+	else
+	  emit_move_insn (reg, mem);
+
+	/* TODO: CFI meta-data.  */
+
+	offset += 4*64;
+	raw_offset += 4*64;
+
+	if (offset > (TARGET_11BIT_GLOBAL_OFFSET ? 1<<11 : 1<<12))
+	  {
+	    /* We ran out of bits in the offset field, so reset the base.
+	       Don't edit the SP itself, because the caller will do that.  */
+	    rtx old_sp = XEXP (vsp, 0);
+	    rtx new_sp = old_sp; 
+	    if (old_sp == sp)
+	      {
+		/* The frame pointer should be dead here.  */
+		new_sp = gen_rtx_REG (DImode, HARD_FRAME_POINTER_REGNUM);
+		vsp = gen_rtx_VEC_DUPLICATE (V64DImode, new_sp);
+	      }
+	    rtx scc = gen_rtx_REG (BImode, SCC_REG);
+	    rtx new_lo = gcn_operand_part (DImode, new_sp, 0);
+	    rtx old_lo = gcn_operand_part (DImode, old_sp, 0);
+	    rtx new_hi = gcn_operand_part (DImode, new_sp, 1);
+	    rtx old_hi = gcn_operand_part (DImode, old_sp, 1);
+	    emit_insn (gen_addsi3_scalar_carry (new_lo, old_lo,
+						GEN_INT (offset), scc));
+	    emit_insn (gen_addcsi3_scalar_zero (new_hi, old_hi, scc));
+	    offset = 0;
+	  }
+      }
+
+  rtx move_vectors = end_sequence ();
+
+  if (prologue)
+    {
+      emit_insn (move_scalars);
+      emit_insn (move_vectors);
+    }
+  else
+    {
+      emit_insn (move_vectors);
+      emit_insn (move_scalars);
+    }
+
+  /* This happens when a new register becomes "live" after reload.
+     Check your splitters!  */
+  gcc_assert (raw_offset <= offsets->callee_saves);
+}
+
+/* Insert code into the prologue or epilogue to store or load any
    callee-save register to/from the stack.
 
    Helper function for gcn_expand_prologue and gcn_expand_epilogue.  */
@@ -3203,6 +3350,12 @@ static void
 move_callee_saved_registers (rtx sp, machine_function *offsets,
 			     bool prologue)
 {
+  if (flag_simt_mode)
+    {
+      move_callee_saved_registers_simt (sp, offsets, prologue);
+      return;
+    }
+
   int regno, offset, saved_scalars;
   rtx exec = gen_rtx_REG (DImode, EXEC_REG);
   rtx vcc = gen_rtx_REG (DImode, VCC_LO_REG);
@@ -3462,8 +3615,8 @@ gcn_expand_prologue ()
 	     the note.  */
 	  rtx scc = gen_rtx_REG (BImode, SCC_REG);
 	  rtx adjustment = gen_int_mode (sp_adjust, SImode);
-	  rtx insn = emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo,
-							 adjustment, scc));
+	  emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo, adjustment, scc));
+	  rtx insn = emit_insn (gen_addcsi3_scalar_zero (sp_hi, sp_hi, scc));
 	  if (!offsets->need_frame_pointer)
 	    {
 	      RTX_FRAME_RELATED_P (insn) = 1;
@@ -3472,7 +3625,7 @@ gcn_expand_prologue ()
 					 gen_rtx_PLUS (DImode, sp,
 						       adjustment)));
 	    }
-	  emit_insn (gen_addcsi3_scalar_zero (sp_hi, sp_hi, scc));
+	  emit_insn (gen_prologue_use (sp_hi));
 	}
 
       if (offsets->need_frame_pointer)
@@ -3506,6 +3659,14 @@ gcn_expand_prologue ()
     }
   else
     {
+      /* Initialize the registers unmasked.  */
+      if (flag_simt_mode && !cfun->machine->normal_function)
+	{
+	  rtx exec = gen_rtx_REG (DImode, EXEC_REG);
+	  emit_move_insn (exec, constm1_rtx);
+	  emit_insn (gen_prologue_use (exec));
+	}
+
       if (TARGET_PACKED_WORK_ITEMS)
 	{
 	  /* v0 conatins the X, Y and Z dimensions all in one.
@@ -3639,6 +3800,14 @@ gcn_expand_prologue ()
       emit_insn (gen_prologue_use (gen_rtx_REG (DImode, FLAT_SCRATCH_REG)));
     }
 
+  /* Kernels always enter in single-threaded mode.  */
+  if (flag_simt_mode && !cfun->machine->normal_function)
+    {
+      rtx exec = gen_rtx_REG (DImode, EXEC_REG);
+      emit_move_insn (exec, const1_rtx);
+      emit_insn (gen_prologue_use (exec));
+    }
+
   /* Ensure that the scheduler doesn't do anything unexpected.  */
   emit_insn (gen_blockage ());
 
@@ -3697,6 +3866,9 @@ gcn_expand_epilogue (void)
       /* Similar for frame pointer.  */
       if (offsets->need_frame_pointer)
 	emit_use (gen_rtx_REG (DImode, HARD_FRAME_POINTER_REGNUM));
+
+      if (flag_simt_mode)
+	emit_use (gen_rtx_REG (DImode, EXEC_REG));
     }
   else if (flag_openmp)
     {
@@ -5076,6 +5248,30 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	  }
 	return result;
       }
+    case GCN_BUILTIN_SIMT_ENTER:
+      {
+	if (!REG_P (target))
+	  target = gen_reg_rtx (SImode);
+	rtx arg1 = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX, mode,
+				EXPAND_NORMAL);
+	rtx arg2 = expand_expr (CALL_EXPR_ARG (exp, 1), NULL_RTX, mode,
+				EXPAND_NORMAL);
+	if (MEM_P (arg1))
+	  arg1 = force_reg (SImode, arg1);
+	if (MEM_P (arg2))
+	  arg2 = force_reg (SImode, arg2);
+	emit_insn (gen_omp_simt_enter (target, arg1, arg2));
+	return target;
+      }
+    case GCN_BUILTIN_SIMT_EXIT:
+      {
+	rtx arg1 = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX, mode,
+				EXPAND_NORMAL);
+	if (MEM_P (arg1))
+	  arg1 = force_reg (SImode, arg1);
+	emit_insn (gen_omp_simt_exit (arg1));
+	return target;
+      }
     default:
       gcc_unreachable ();
     }
@@ -5946,6 +6142,23 @@ gcn_prefer_gather_scatter (machine_mode ARG_UNUSED (mode),
 /* }}}  */
 /* {{{ SIMT.  */
 
+/* Implement TARGET_SIMT_VF.  */
+
+static int
+gcn_simt_vf (void)
+{
+  switch (param_offload_gpu_mode)
+    {
+    case OFFLOAD_GPU_MODE_AUTO:
+    case OFFLOAD_GPU_MODE_SIMD:
+      return 1;
+    case OFFLOAD_GPU_MODE_SIMT_DIRECTED:
+    case OFFLOAD_GPU_MODE_SIMT:
+      return 64;
+    }
+  return 1;
+}
+
 /* Implement TARGET_STACK_VARIABLE_PADDING.  */
 
 poly_uint64
@@ -5972,6 +6185,95 @@ gcn_simt_stack_variable_offset (const_tree type)
   rtx result = gen_rtx_MULT (DImode, _0_1_2_3_di, GEN_INT (unit_size));
 
   return result;
+}
+
+/* Implement TARGET_EXTRA_LIVE_ON_ENTRY.  */
+
+void
+gcn_extra_live_on_entry (bitmap regs)
+{
+  if (!flag_simt_mode)
+    return;
+
+  bitmap_set_bit (regs, EXEC_LO_REG);
+  bitmap_set_bit (regs, EXEC_HI_REG);
+}
+
+/* Implement TARGET_MD_ASM_ADJUST.
+
+   Rewrite the generic register constraints, "r" and "g", in SIMT mode.
+   These work fine in SIMD mode (GENERAL_REGS maps to SGPRS), but fail in
+   SIMT mode because they should probably use VGPRs for that.
+
+   In SIMT mode:
+     - "r" becomes "v".
+     - "g" becomes "vmi".  */
+
+static rtx_insn *
+gcn_md_asm_adjust (vec<rtx> & /*outputs*/, vec<rtx> & /*inputs*/,
+		   vec<machine_mode> & /*input_modes*/,
+		   vec<const char *> &constraints, vec<rtx> & /*uses*/,
+		   vec<rtx> & /*clobbers*/, HARD_REG_SET & /*clobbered_regs*/,
+		   location_t /*loc*/)
+{
+  if (!flag_simt_mode)
+    return NULL;
+
+  const char *const g_replacement = "vmi";
+
+  for (auto &constraint : constraints)
+    {
+      /* Scan the constraints.  */
+      size_t growth = 0;
+      bool found = false;
+      for (const char *p = constraint; *p; p += CONSTRAINT_LEN (*p, p))
+	{
+	  /* Take care not to interpret the second part of "Sg" as "g".  */
+	  if (CONSTRAINT_LEN (*p, p) != 1)
+	    continue;
+	  if (*p == 'r')
+	    found = true;
+	  else if (*p == 'g')
+	    {
+	      found = true;
+	      growth += strlen (g_replacement) - 1;
+	    }
+	}
+      if (!found)
+	continue;
+
+      /* Generate the new constraint string.  */
+      char *modified = (char *) ggc_alloc_atomic (strlen (constraint)
+						  + growth + 1);
+      char *q = modified;
+      for (const char *p = constraint; *p; )
+	{
+	  size_t len = CONSTRAINT_LEN (*p, p);
+	  if (len == 1 && *p == 'r')
+	    *q++ = 'v', p++;
+	  else if (len == 1 && *p == 'g')
+	    {
+	      strcpy (q, g_replacement);
+	      q += strlen (g_replacement);
+	      p++;
+	    }
+	  else
+	    {
+	      memcpy (q, p, len);
+	      q += len;
+	      p += len;
+	    }
+	}
+      *q = '\0';
+
+      if (dump_file)
+	fprintf (dump_file,
+		 "gcn_md_asm_adjust: SIMT mode, so modify the constraint "
+		 "\"%s\" to \"%s\".\n", constraint, modified);
+      constraint = modified;
+    }
+
+  return NULL;
 }
 
 /* }}} */
@@ -6129,6 +6431,10 @@ gcn_md_reorg (void)
       /* Update data-flow information for split instructions.  */
       df_insn_rescan_all ();
     }
+
+  if (!flag_simt_mode)
+    {
+      /* FIXME: break this out. */
 
   df_live_add_problem ();
   df_live_set_all_dirty ();
@@ -6329,6 +6635,7 @@ gcn_md_reorg (void)
     }
 
   CLEAR_REG_SET (&live);
+    } /* !flag_simt_mode */
 
   /* "Manually Inserted Wait States (NOPs)."
 
@@ -6666,7 +6973,8 @@ gcn_md_reorg (void)
 
 #define GCN_DEFAULT_GANGS 0	/* Choose at runtime.  */
 #define GCN_DEFAULT_WORKERS 0	/* Choose at runtime.  */
-#define GCN_DEFAULT_VECTORS 1	/* Use autovectorization only, for now.  */
+#define GCN_DEFAULT_SIMD_VECTORS 1	/* Use autovectorization only.  */
+#define GCN_DEFAULT_SIMT_VECTORS 64	/* Full vectors.  */
 
 /* Implement TARGET_GOACC_VALIDATE_DIMS.
 
@@ -6679,24 +6987,42 @@ gcn_goacc_validate_dims (tree decl, int dims[], int fn_level,
 {
   bool changed = false;
   const int max_workers = 16;
+  const int max_simt = 64;
 
-  /* The vector size must appear to be 64, to the user, unless this is a
-     SEQ routine.  The real, internal value is always 1, which means use
-     autovectorization, but the user should not see that.  */
-  if (fn_level <= GOMP_DIM_VECTOR && fn_level >= -1
-      && dims[GOMP_DIM_VECTOR] >= 0)
+  /* In SIMD mode, the vector size must appear to be 64, to the user, unless
+     this is a SEQ routine.  The real, internal value is always 1, which means
+     use autovectorization, but the user should not see that.
+     In SIMT mode, the vector size works as OpenACC intends.  */
+  if (flag_simt_mode)
     {
-      if (fn_level < 0 && dims[GOMP_DIM_VECTOR] >= 0
-	  && dims[GOMP_DIM_VECTOR] != 64)
-	warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION,
-		    OPT_Wopenacc_dims,
-		    (dims[GOMP_DIM_VECTOR]
-		     ? G_("using %<vector_length (64)%>, ignoring %d")
-		     : G_("using %<vector_length (64)%>, "
-			  "ignoring runtime setting")),
-		    dims[GOMP_DIM_VECTOR]);
-      dims[GOMP_DIM_VECTOR] = 1;
-      changed = true;
+      if (dims[GOMP_DIM_VECTOR] > max_simt)
+	{
+	  warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION,
+		      OPT_Wopenacc_dims,
+		      "using %<num_vector (%d)%>, ignoring %d",
+		      max_simt, dims[GOMP_DIM_VECTOR]);
+	  dims[GOMP_DIM_VECTOR] = max_simt;
+	  changed = true;
+	}
+    }
+  else
+    {
+      if (fn_level <= GOMP_DIM_VECTOR && fn_level >= -1
+	  && dims[GOMP_DIM_VECTOR] >= 0)
+	{
+	  if (fn_level < 0 && dims[GOMP_DIM_VECTOR] >= 0
+	      && dims[GOMP_DIM_VECTOR] != 64)
+	    warning_at (decl ? DECL_SOURCE_LOCATION (decl) : UNKNOWN_LOCATION,
+			OPT_Wopenacc_dims,
+			(dims[GOMP_DIM_VECTOR]
+			 ? G_("using %<vector_length (64)%>, ignoring %d")
+			 : G_("using %<vector_length (64)%>, "
+			      "ignoring runtime setting")),
+			dims[GOMP_DIM_VECTOR]);
+
+	  dims[GOMP_DIM_VECTOR] = 1;
+	  changed = true;
+	}
     }
 
   /* Check the num workers is not too large.  */
@@ -6713,7 +7039,10 @@ gcn_goacc_validate_dims (tree decl, int dims[], int fn_level,
   /* Set global defaults.  */
   if (!decl)
     {
-      dims[GOMP_DIM_VECTOR] = GCN_DEFAULT_VECTORS;
+      if (!flag_simt_mode)
+	dims[GOMP_DIM_VECTOR] = GCN_DEFAULT_SIMD_VECTORS;
+      else if (dims[GOMP_DIM_VECTOR] < 0)
+	dims[GOMP_DIM_VECTOR] = GCN_DEFAULT_SIMT_VECTORS;
       if (dims[GOMP_DIM_WORKER] < 0)
 	dims[GOMP_DIM_WORKER] = GCN_DEFAULT_WORKERS;
       if (dims[GOMP_DIM_GANG] < 0)
@@ -6781,12 +7110,24 @@ gcn_oacc_dim_pos (int dim)
 static bool
 gcn_fork_join (gcall *call, const int dims[], bool is_fork)
 {
-  tree arg = gimple_call_arg (call, 2);
-  unsigned axis = TREE_INT_CST_LOW (arg);
+  switch (param_offload_gpu_mode)
+    {
+    case OFFLOAD_GPU_MODE_AUTO:
+    case OFFLOAD_GPU_MODE_SIMD:
+	{
+	  tree arg = gimple_call_arg (call, 2);
+	  unsigned axis = TREE_INT_CST_LOW (arg);
 
-  if (!is_fork && axis == GOMP_DIM_WORKER && dims[axis] != 1)
-    return true;
+	  if (!is_fork && axis == GOMP_DIM_WORKER && dims[axis] != 1)
+	    return true;
+	  break;
+	}
 
+    case OFFLOAD_GPU_MODE_SIMT_DIRECTED:
+      /* FIXME do something different.  */
+    case OFFLOAD_GPU_MODE_SIMT:
+      return true;
+    }
   return false;
 }
 
@@ -7396,9 +7737,16 @@ print_operand_address (FILE *file, rtx mem)
 	      /* The assembler requires a 64-bit VGPR pair here, even though
 	         the offset should be only 32-bit.  */
 	      if (vgpr_offset == NULL_RTX)
-		/* In this case, the vector offset is zero, so we use the first
-		   lane of v1, which is initialized to zero.  */
-		fprintf (file, "v1");
+		{
+		  /* In this case, the vector offset is zero, so we use the first
+		     lane of v1, which is initialized to zero.  */
+		  fprintf (file, "v1");
+
+		  /* The above is not valid for SIMT where scalars are
+		     duplicated across all lanes, and lane 0 might not even
+		     be enabled.  */
+		  gcc_assert (!flag_simt_mode);
+		}
 	      else if (REG_P (vgpr_offset)
 		       && VGPR_REGNO_P (REGNO (vgpr_offset)))
 		fprintf (file, "v%d", REGNO (vgpr_offset) - FIRST_VGPR_REG);
@@ -7811,8 +8159,11 @@ print_operand (FILE *file, rtx x, int code)
 	  }
 	switch (REGNO (XEXP (x, 0)))
 	  {
-	  case VCC_REG:
 	  case VCCZ_REG:
+	    /* VCCZ is 1 if EXEC is 0.  */
+	    invert = !invert;
+	    /* Fall through.  */
+	  case VCC_REG:
 	    s = "_vcc";
 	    break;
 	  case SCC_REG:
@@ -7821,6 +8172,10 @@ print_operand (FILE *file, rtx x, int code)
 	    s = "_scc";
 	    break;
 	  case EXECZ_REG:
+	    /* EXECZ is 1 if EXEC is 0.  */
+	    invert = !invert;
+	    /* Fall through.  */
+	  case EXEC_REG:
 	    s = "_exec";
 	    break;
 	  default:
@@ -8181,6 +8536,32 @@ gcn_dwarf_register_span (rtx rtl)
   return p;
 }
 
+/* Output the VGPR alternative of ensure_scalar<mode>.  Make the value in
+   operand 1 (a VGPR, valid in the first active lane) uniform across all
+   lanes of operand 0, using SGPR operand 2 as a scratch.  This is output as
+   a single insn because, in RTL terms, the two moves would just copy the
+   value out and back again, and later passes would delete the copy back.  */
+
+const char *
+gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
+{
+  int partcount = MAX (1, GET_MODE_SIZE (mode) / 4);
+  for (int p = 0; p < partcount; p++)
+    {
+      rtx ops[3];
+      ops[0] = gen_rtx_REG (SImode, REGNO (operands[0]) + p);
+      ops[1] = gen_rtx_REG (SImode, REGNO (operands[1]) + p);
+      ops[2] = operands[2];
+      output_asm_insn ("v_readfirstlane_b32\t%2, %1", ops);
+      /* CDNA3: VALU writes SGPR followed by VALU reads that SGPR as a
+	 constant requires 1 wait state.  */
+      if (TARGET_CDNA3_NOPS)
+	output_asm_insn ("s_nop\t0", ops);
+      output_asm_insn ("v_mov_b32\t%0, %2", ops);
+    }
+  return "";
+}
+
 /* }}}  */
 /* {{{ TARGET hook overrides.  */
 
@@ -8250,6 +8631,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_EXPAND_BUILTIN gcn_expand_builtin
 #undef  TARGET_EXPAND_DIVMOD_LIBFUNC
 #define TARGET_EXPAND_DIVMOD_LIBFUNC gcn_expand_divmod_libfunc
+#undef  TARGET_EXTRA_LIVE_ON_ENTRY
+#define TARGET_EXTRA_LIVE_ON_ENTRY gcn_extra_live_on_entry
 #undef  TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED gcn_frame_pointer_rqd
 #undef  TARGET_FUNCTION_ARG
@@ -8296,6 +8679,8 @@ gcn_dwarf_register_span (rtx rtl)
 #define TARGET_LIBC_HAS_FUNCTION gcn_libc_has_function
 #undef  TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG gcn_md_reorg
+#undef  TARGET_MD_ASM_ADJUST
+#define TARGET_MD_ASM_ADJUST gcn_md_asm_adjust
 #undef  TARGET_MEMORY_MOVE_COST
 #define TARGET_MEMORY_MOVE_COST gcn_memory_move_cost
 #undef  TARGET_MODES_TIEABLE_P
@@ -8326,6 +8711,8 @@ gcn_dwarf_register_span (rtx rtl)
   gcn_simd_clone_compute_vecsize_and_simdlen
 #undef  TARGET_SIMD_CLONE_USABLE
 #define TARGET_SIMD_CLONE_USABLE gcn_simd_clone_usable
+#undef  TARGET_SIMT_VF
+#define TARGET_SIMT_VF gcn_simt_vf
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p

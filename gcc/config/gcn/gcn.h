@@ -16,6 +16,9 @@
 
 #include "config/gcn/gcn-opts.h"
 
+/* Ensure these are available in the machine description.  */
+#include "gomp-constants.h"
+
 extern const struct gcn_device_def {
   enum processor_type id;
   const char *name;
@@ -228,6 +231,10 @@ STATIC_ASSERT (LAST_AVGPR_REG + 1 - FIRST_AVGPR_REG == 256);
 #define VGPR_REGNO_P(N)		((N) >= FIRST_VGPR_REG && (N) <= LAST_VGPR_REG)
 #define AVGPR_REGNO_P(N)        ((N) >= FIRST_AVGPR_REG && (N) <= LAST_AVGPR_REG)
 #define SSRC_REGNO_P(N)		((N) <= PRIVATE_LIMT_REG && (N) != VCCZ_REG)
+#define SCALAR_HARDREG_P(N)	((N) < FIRST_VGPR_REG \
+				 || ((N) > LAST_AVGPR_REG \
+				     && (N) < FIRST_PSEUDO_REGISTER))
+#define VECTOR_HARDREG_P(N)     ((N) >= FIRST_VGPR_REG && (N) <= LAST_AVGPR_REG)
 #define SDST_REGNO_P(N)		((N) <= EXEC_HI_REG && (N) != VCCZ_REG)
 #define CC_REG_P(X)		(REG_P (X) && CC_REGNO_P (REGNO (X)))
 #define CC_REGNO_P(X)		((X) == SCC_REG || (X) == VCC_REG)
@@ -795,6 +802,7 @@ struct GTY(()) machine_function
   unsigned HOST_WIDE_INT reduction_limit;
 
   bool use_flat_addressing;
+  bool vectors_enabled;
 };
 #endif
 

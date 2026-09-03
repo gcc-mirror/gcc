@@ -194,6 +194,10 @@
 		       V16QI V16HI V16HF V16SI V16SF V16DI V16DF V16TI
 		       V32QI V32HI V32HF V32SI V32SF V32DI V32DF V32TI
 		       V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
+(define_mode_iterator V64_MOV
+		      [V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
+(define_mode_iterator V64_MOV_ALT
+		      [V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
 
 (define_mode_attr scalar_mode
   [(QI "qi") (HI "hi") (SI "si") (TI "ti")
@@ -908,11 +912,15 @@
    (set_attr "exec" "none")
    (set_attr "laneselect" "write")])
 
+; Note that the vec_duplicate patterns are used by the middle-end to determine
+; if vectors can be used to optimize memcpy.  We use these conditions to
+; disable the patterns at expand time, and re-enabled them later.
+
 (define_insn "vec_duplicate<mode><exec>"
   [(set (match_operand:V_1REG 0 "register_operand"	   "=v")
 	(vec_duplicate:V_1REG
 	  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand" "SvB")))]
-  ""
+  "!flag_simt_mode || (cfun && cfun->machine && cfun->machine->vectors_enabled)"
   "v_mov_b32\t%0, %1"
   [(set_attr "type" "vop3a")
    (set_attr "length" "8")])
@@ -921,7 +929,7 @@
   [(set (match_operand:V_2REG 0 "register_operand"	   "=  v")
 	(vec_duplicate:V_2REG
 	  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand" "SvDB")))]
-  ""
+  "!flag_simt_mode || (cfun && cfun->machine && cfun->machine->vectors_enabled)"
   "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1"
   [(set_attr "type" "vop3a")
    (set_attr "length" "16")])
@@ -930,7 +938,7 @@
   [(set (match_operand:V_4REG 0 "register_operand"	   "=  v")
 	(vec_duplicate:V_4REG
 	  (match_operand:<SCALAR_MODE> 1 "gcn_alu_operand" "SvDB")))]
-  ""
+  "!flag_simt_mode || (cfun && cfun->machine && cfun->machine->vectors_enabled)"
   "v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1"
   [(set_attr "type" "mult")
    (set_attr "length" "32")])
@@ -1049,6 +1057,38 @@
       }
     DONE;
   })
+
+(define_insn "@extract_first_<mode>"
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand" "=SD")
+        (vec_select:<SCALAR_MODE>
+	  (match_operand:V_1REG 1 "register_operand" "v")
+	  (parallel [(ctz:SI (reg:DI EXEC_REG))])))]
+  ""
+  "v_readfirstlane_b32\t%0, %1"
+  [(set_attr "type" "vop1")
+   (set_attr "length" "1")])
+
+(define_insn_and_split "@extract_first_<mode>"
+  [(set (match_operand:<SCALAR_MODE> 0 "register_operand" "=SD")
+        (vec_select:<SCALAR_MODE>
+	  (match_operand:V_2REG 1 "register_operand" "v")
+	  (parallel [(ctz:SI (reg:DI EXEC_REG))])))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    emit_insn (gen_extract_first_<vnsi> (gcn_operand_part (<SCALAR_MODE>mode,
+							   operands[0], 0),
+					 gcn_operand_part (<MODE>mode,
+							   operands[1], 0)));
+    emit_insn (gen_extract_first_<vnsi> (gcn_operand_part (<SCALAR_MODE>mode,
+							   operands[0], 1),
+					 gcn_operand_part (<MODE>mode,
+							   operands[1], 1)));
+    DONE;
+  }
+  [(set_attr "type" "mult")])
 
 (define_expand "extract_last_<mode>"
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
@@ -1436,7 +1476,7 @@
 	(plus:V_DI
 	  (match_operand:V_DI 1 "register_operand" "%vDb")
 	  (match_operand:V_DI 2 "gcn_alu_operand"  " vDb")))
-   (clobber (reg:DI VCC_REG))]
+   (clobber (match_scratch:DI 3			   "= cV"))]
   ""
   "#"
   "gcn_can_split_p  (<MODE>mode, operands[0])
@@ -1444,7 +1484,7 @@
    && gcn_can_split_p (<MODE>mode, operands[2])"
   [(const_int 0)]
   {
-    rtx vcc = gen_rtx_REG (DImode, VCC_REG);
+    rtx vcc = operands[3];
     emit_insn (gen_add<vnsi>3_vcc
 		(gcn_operand_part (<MODE>mode, operands[0], 0),
 		 gcn_operand_part (<MODE>mode, operands[1], 0),
@@ -1578,7 +1618,7 @@
 	(minus:V_DI                                        
 	  (match_operand:V_DI 1 "gcn_alu_operand" "vDb,  v")
 	  (match_operand:V_DI 2 "gcn_alu_operand" "  v,vDb")))
-   (clobber (reg:DI VCC_REG))]
+   (clobber (match_scratch:DI 3			  "=cV, cV"))]
   ""
   "#"
   "gcn_can_split_p  (<MODE>mode, operands[0])
@@ -2064,7 +2104,7 @@
 ;; {{{ ALU special case: mult
 
 (define_insn "<su>mul<mode>3_highpart<exec>"
-  [(set (match_operand:V_SI 0 "register_operand"        "=  v")
+  [(set (match_operand:V_SI 0 "register_operand"             "=  v")
 	(truncate:V_SI
 	  (lshiftrt:<VnDI>
 	    (mult:<VnDI>
@@ -2353,6 +2393,28 @@
 					      old_hi, exec));
     emit_insn (gen_mul<vnsi>3_exec (tmp, left, right_hi, undef, exec));
     emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
+    DONE;
+  })
+
+(define_insn_and_split "<su>mul<vnsi><mode>3"
+  [(set (match_operand:V_DI 0 "register_operand"      "=&v")
+	(mult:V_DI
+	  (any_extend:V_DI
+	    (match_operand:<VnSI> 1 "gcn_alu_operand" "  v"))
+	  (any_extend:V_DI
+	    (match_operand:<VnSI> 2 "gcn_alu_operand" " vA"))))]
+  ""
+  "#"
+  "reload_completed"
+  [(const_int 0)]
+  {
+    rtx out_lo = gcn_operand_part (<MODE>mode, operands[0], 0);
+    rtx out_hi = gcn_operand_part (<MODE>mode, operands[0], 1);
+    rtx left = operands[1];
+    rtx right = operands[2];
+
+    emit_insn (gen_mul<vnsi>3 (out_lo, left, right));
+    emit_insn (gen_<su>mul<vnsi>3_highpart (out_hi, left, right));
     DONE;
   })
 
@@ -3464,7 +3526,8 @@
   ""
   "v_div_scale%i0\t%0, %4, %3, %1, %2"
   [(set_attr "type" "vop3b")
-   (set_attr "length" "8")])
+   (set_attr "length" "8")
+   (set_attr "simt_special" "set_vcc")])
 
 ;; v_div_fmas is "FMA and Scale" that uses the VCC output from v_div_scale
 ;; to conditionally scale the output of the whole division operation.
@@ -3798,11 +3861,11 @@
 ;; }}}
 ;; {{{ Vector comparison/merge
 
-(define_insn "vec_cmp<mode>di"
+(define_insn "@vec_cmp<mode>di"
   [(set (match_operand:DI 0 "register_operand"	      "=cV,cV,  e, e,Sg,Sg,  e, e")
 	(match_operator:DI 1 "gcn_fp_compare_operator"
 	  [(match_operand:V_noQI 2 "gcn_alu_operand"  "vSv, B,vSv, B, v,vA,vSv, B")
-	   (match_operand:V_noQI 3 "gcn_vop3_operand" "  v, v,  v, v,vA, v,  v, v")]))
+	   (match_operand:V_noQI 3 "gcn_alu_operand"  "  v, v,  v, v,vA, v,  v, v")]))
    (clobber (match_scratch:DI 4			      "= X, X, cV,cV, X, X,  X, X"))]
   ""
   "@
@@ -4521,5 +4584,157 @@
     emit_insn (gen_add<mode>3 (operands[0], tmp, op1vec));
     DONE;
   })
+
+;; }}}
+;; {{{ SIMT
+
+(define_mode_iterator VSUBREG_ALL
+		      [DI V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
+(define_mode_iterator VSUBREG_ALT
+		      [DI V64QI V64HI V64HF V64SI V64SF V64DI V64DF V64TI])
+(define_mode_iterator V64SIDI [V64SI V64DI])
+(define_mode_iterator V64SIDITI [V64SI V64DI V64TI])
+(define_mode_iterator V64DITI [V64DI V64TI])
+
+(define_expand "@vsubreg_write<VSUBREG_ALL:mode><VSUBREG_ALT:mode>"
+  [(set (match_operand:VSUBREG_ALL 0 "register_operand")
+    (unspec:VSUBREG_ALL [(match_operand:VSUBREG_ALT 1 "gcn_alu_operand")
+			 (match_operand:SI 2 "immediate_operand")
+			 (match_dup 0)]
+		        UNSPEC_VSUBREG_WRITE))]
+  "")
+
+(define_expand "@vsubreg_read<VSUBREG_ALL:mode><VSUBREG_ALT:mode>"
+  [(set (match_operand:VSUBREG_ALL 0 "register_operand")
+    (unspec:VSUBREG_ALL [(match_operand:VSUBREG_ALT 1 "gcn_alu_operand")
+		     (match_operand:SI 2 "immediate_operand")]
+		    UNSPEC_VSUBREG_READ))]
+  "")
+
+(define_insn_and_split "*vsubreg_write<V64_MOV:mode><V64_MOV_ALT:mode>_insn"
+  [(set (match_operand:V64_MOV 0 "register_operand"		    "=v")
+    (unspec:V64_MOV [(match_operand:V64_MOV_ALT 1 "gcn_alu_operand" " v")
+		     (match_operand:SI 2 "immediate_operand"	    " A")
+		     (match_operand:V64_MOV 3 "register_operand"    " 0")]
+		    UNSPEC_VSUBREG_WRITE))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 3) (match_dup 4))]
+  {
+    /* (subreg:outermode (reg:innermode))  */
+    machine_mode outermode = <V64_MOV_ALT:MODE>mode;
+    machine_mode innermode = <V64_MOV:MODE>mode;
+
+    if (GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
+      /* Paradoxical subregs require a truncate.  */
+      operands[4] = gen_rtx_TRUNCATE (outermode, operands[1]);
+    else
+      operands[4] = operands[1];
+    operands[3] = gen_rtx_REG (outermode,
+			       REGNO (operands[0]) + INTVAL (operands[2]));
+  })
+
+(define_insn_and_split "*vsubreg_read<V64_MOV:mode><V64_MOV_ALT:mode>_insn"
+  [(set (match_operand:V64_MOV 0 "register_operand"		    "=v")
+    (unspec:V64_MOV [(match_operand:V64_MOV_ALT 1 "gcn_alu_operand" " v")
+		     (match_operand:SI 2 "immediate_operand"	    " A")]
+		    UNSPEC_VSUBREG_READ))]
+  ""
+  "#"
+  "reload_completed"
+  [(set (match_dup 0) (match_dup 3))]
+  {
+    /* (subreg:outermode (reg:innermode))  */
+    machine_mode innermode = <V64_MOV_ALT:MODE>mode;
+    machine_mode outermode = <V64_MOV:MODE>mode;
+
+    if (GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
+      {
+	/* Paradoxical subreg require an extend.  */
+	/* FIXME: When can this be a no-op conversion?  */
+	operands[3] = gen_rtx_ZERO_EXTEND (outermode, operands[1]);
+      }
+    else
+      operands[3] = gen_rtx_REG (outermode,
+				 REGNO (operands[1]) + INTVAL (operands[2]));
+  })
+
+(define_insn_and_split "*vsubreg_read<V64_MOV:mode>di_insn"
+  [(set (match_operand:V64_MOV 0 "register_operand"	     "=  v")
+    (unspec:V64_MOV [(match_operand:DI 1 "gcn_alu_operand"   "SScV")
+		     (match_operand:SI 2 "immediate_operand" "   A")]
+		    UNSPEC_VSUBREG_READ))]
+  ""
+  "#"
+  "reload_completed"
+  [(parallel
+     [(set (match_dup 0)
+	   (vec_merge:V64_MOV
+	     (match_dup 3)
+	     (match_dup 4)
+	     (match_dup 1)))
+      (clobber (scratch:V64DI))])]
+  {
+    operands[3] = gcn_vec_constant (<MODE>mode, 1);
+    operands[4] = gcn_vec_constant (<MODE>mode, 0);
+  })
+
+(define_insn "omp_simt_xchg_bfly<mode>"
+  [(set (match_operand:V_MOV 0 "register_operand"   "=v")
+	(unspec:V_MOV
+	  [(match_operand:V_MOV 1 "register_operand" "v")
+	   (match_operand:SI 2 "nonmemory_operand"  "Sg")]
+	  UNSPEC_SIMT_XCHG_BFLY))]
+  "flag_simt_mode"
+  "; %0 = simt_xchg_bfly %1 %2")
+
+(define_insn_and_split "omp_simt_vote_any_v64si"
+  [(set (match_operand:V64SI 0 "register_operand" "=v")
+	(unspec:V64SI [(match_operand:V64SI 1 "register_operand" "v")]
+		      UNSPEC_SIMT_VOTE_ANY))]
+  "flag_simt_mode"
+  "#"
+  "can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    rtx sreg = gen_reg_rtx (BImode);
+    rtx vcc = gen_reg_rtx (DImode);
+    emit_insn (gen_vec_cmpv64sidi (vcc, gen_rtx_NE (VOIDmode, 0, 0),
+				   operands[1],
+				   gen_const_vec_duplicate (V64SImode,
+							    const0_rtx)));
+    emit_insn (gen_cstoredi4 (sreg, gen_rtx_NE (VOIDmode, 0, 0), vcc,
+			      const0_rtx));
+    emit_insn (gen_vec_duplicatev64si (operands[0],
+				       gen_rtx_SUBREG (SImode, sreg, 0)));
+    DONE;
+  }
+  [(set_attr "type" "mult")])
+  
+(define_insn_and_split "omp_simt_last_lane_v64si"
+  [(set (match_operand:V64SI 0 "register_operand" "=v")
+        (unspec:V64SI [(match_operand:V64SI 1 "register_operand" "v")]
+		      UNSPEC_SIMT_LAST_LANE))]
+  "flag_simt_mode"
+  "#"
+  "can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    rtx sreg = gen_reg_rtx (SImode);
+    emit_insn (gen_extract_last_v64si (sreg, gen_rtx_REG (DImode, EXEC_REG),
+				       operands[1]));
+    emit_insn (gen_vec_duplicatev64si (operands[0], sreg));
+    DONE;
+  }
+  [(set_attr "type" "mult")])
+
+(define_insn "omp_simt_xchg_idx_<mode>"
+  [(set (match_operand:V_MOV 0 "register_operand" "")
+	(unspec [(match_operand:V_MOV 1 "register_operand" "")
+		 (match_operand:V64SI 2 "nonmemory_operand" "")]
+		UNSPEC_SIMT_XCHG_IDX))]
+  "flag_simt_mode"
+  "sorry, placeholder %0 = simt_xchg_idx %1")
 
 ;; }}}

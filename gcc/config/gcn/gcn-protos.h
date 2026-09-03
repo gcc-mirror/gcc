@@ -72,6 +72,7 @@ extern rtx gcn_oacc_dim_pos (int dim);
 extern rtx gcn_oacc_dim_size (int dim);
 extern rtx gcn_operand_doublepart (machine_mode, rtx, int);
 extern rtx gcn_operand_part (machine_mode, rtx, int);
+extern const char *gcn_output_ensure_scalar (rtx *, machine_mode);
 extern bool gcn_regno_mode_code_ok_for_base_p (int, machine_mode,
 					       addr_space_t, int, int);
 extern reg_class gcn_regno_reg_class (int regno);
