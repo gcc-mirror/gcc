@@ -3351,6 +3351,8 @@ ref_in_loop_hot_body::operator () (mem_ref_loc *loc)
 static bool
 can_sm_ref_p (class loop *loop, im_mem_ref *ref)
 {
+  bool store_could_trap;
+
   /* Can't hoist unanalyzable refs.  */
   if (!MEM_ANALYZABLE (ref))
     return false;
@@ -3365,12 +3367,18 @@ can_sm_ref_p (class loop *loop, im_mem_ref *ref)
       || !for_each_index (&ref->mem.ref, may_move_till, loop))
     return false;
 
-  /* If it can throw fail, we do not properly update EH info.  */
-  if (tree_could_throw_p (ref->mem.ref))
+  store_could_trap = lhs_could_trap_p (ref->mem.ref);
+
+  /* Do not move a load or store that can throw.  Store motion does not
+     update EH information.  */
+  if (tree_could_throw_p (ref->mem.ref)
+      || (flag_exceptions
+	  && cfun->can_throw_non_call_exceptions
+	  && store_could_trap))
     return false;
 
-  /* If the store can trap, it must be always executed in LOOP.  */
-  if (lhs_could_trap_p (ref->mem.ref)
+  /* If a store can trap, it must be always executed in LOOP.  */
+  if (store_could_trap
       /* ???  We can at least use false here, allowing loads?  We
 	 are forcing conditional stores if the ref is not always
 	 stored to later anyway.  So this would only guard
