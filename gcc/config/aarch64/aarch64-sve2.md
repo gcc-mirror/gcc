@@ -3053,6 +3053,19 @@
 ;; - UQXTNT
 ;; -------------------------------------------------------------------------
 
+;; The "bottom" narrowing instructions write each result into the low half of
+;; its source element, which is where the element of the unpacked result mode
+;; lives.  This holds for an unpacked source too, since the bits above each
+;; source element are then don't-care on both sides.
+(define_insn "<sat_trunc_op>trunc<mode><Vnarrowq>2"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(SAT_TRUNC:<VNARROWQ>
+	  (match_operand:SVE_HSDI 1 "register_operand" "w")))]
+  "TARGET_SVE2"
+  "<shrn_op>xtnb\t%0.<Ventype>, %1.<Vetype>"
+  [(set_attr "sve_type" "sve_int_extract")]
+)
+
 (define_insn "@aarch64_sve_<sve_int_op><mode>"
   [(set (match_operand:<VNARROW> 0 "register_operand" "=w")
 	(unspec:<VNARROW>

@@ -2190,13 +2190,20 @@
 (define_mode_attr Vnarrowd [(V4HI "v8qi") (V2SI "v4hi")
 			    (DI   "v2si")])
 
-;; Narrowed double-modes for VQN (Used for XTN).
+;; Modes with the same number of elements, each half as wide.  Used for XTN
+;; and for the SVE "bottom" narrowing instructions, whose result is unpacked.
 (define_mode_attr VNARROWQ [(V8HI "V8QI") (V4SI "V4HI")
 			    (V2DI "V2SI")
 			    (DI	  "SI")	  (SI	"HI")
-			    (HI	  "QI")])
+			    (HI	  "QI")
+			    (VNx8HI "VNx8QI") (VNx4HI "VNx4QI")
+			    (VNx2HI "VNx2QI") (VNx4SI "VNx4HI")
+			    (VNx2SI "VNx2HI") (VNx2DI "VNx2SI")])
 (define_mode_attr Vnarrowq [(V8HI "v8qi") (V4SI "v4hi")
-			    (V2DI "v2si")])
+			    (V2DI "v2si")
+			    (VNx8HI "vnx8qi") (VNx4HI "vnx4qi")
+			    (VNx2HI "vnx2qi") (VNx4SI "vnx4hi")
+			    (VNx2SI "vnx2hi") (VNx2DI "vnx2si")])
 
 ;; Narrowed quad-modes for VQN (Used for XTN2).
 (define_mode_attr VNARROWQ2 [(V8HI "V16QI") (V4SI "V8HI")
@@ -2347,7 +2354,9 @@
 
 ;; SVE vector after narrowing.
 (define_mode_attr Ventype [(VNx8HI "b") (VNx8HF "b")
+			   (VNx4HI "b") (VNx2HI "b")
 			   (VNx4SI "h") (VNx4SF "h")
+			   (VNx2SI "h")
 			   (VNx2DI "s") (VNx2DF "s")
 			   (VNx8SI "h") (VNx16SI "b")
 			   (VNx8DI "h") (VNx16HI "b")])
