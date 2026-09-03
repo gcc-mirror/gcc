@@ -10969,7 +10969,7 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   if (!TYPE_VECTOR_SUBPARTS (vector_type).is_constant (&nunits))
     nunits = group_size;
 
-  number_of_copies = nunits * number_of_vectors / group_size;
+  number_of_copies = (nunits * number_of_vectors - excess_elts) / group_size;
 
   constant_p = true;
   tree uniform_elt = NULL_TREE;
@@ -11120,6 +11120,8 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
             }
         }
     }
+
+  gcc_assert (number_of_places_left_in_vector == nunits);
 
   /* Since the vectors are created in the reverse order, we should invert
      them.  */
