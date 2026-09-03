@@ -105,7 +105,8 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::RUSTC_ALLOCATOR_NOUNWIND, CODE_GENERATION},
      {Attrs::GLOBAL_ALLOCATOR, CODE_GENERATION},
      {Attrs::RUSTC_CONVERSION_SUGGESTION, TYPE_CHECK},
-     {Attrs::CFI_ENCODING, CODE_GENERATION}};
+     {Attrs::CFI_ENCODING, CODE_GENERATION},
+     {Attrs::USED, CODE_GENERATION}};
 
 static const std::set<std::string> __outer_attributes
   = {Attrs::INLINE,

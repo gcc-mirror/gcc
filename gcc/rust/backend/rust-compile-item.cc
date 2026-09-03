@@ -71,6 +71,20 @@ CompileItem::visit (HIR::StaticItem &var)
   bool is_hidden = false;
   bool in_unique_section = true;
 
+  // NOTE: We currently compile global variables and always mark them as "used"
+  // with TREE_USED(tree). I'm not sure this is correct - they should be marked
+  // as used only if the `MarkLive` pass reaches them and flags them. However,
+  // the `#[used]` built-in attribute can be used here to *force* a static
+  // variable to be used by the compiler so that it isn't deleted.
+  // We should probably be doing something along the lines of:
+  //
+  // - Removing the `TREE_USED (decl) = 1` line in `Backend::global_variable`
+  // - Check if the static item has a `used` attribute
+  // - If it does, check whether it's the default `used` version, or the version
+  // with an argument - `used(compiler)` or `used(linker)`
+  // - If we have the attribute or the `compiler` version of the attribute, then
+  // we `TREE_USED` the decl.
+
   Bvariable *static_global
     = Backend::global_variable (name, asm_name, type, is_external, is_hidden,
 				in_unique_section, var.get_locus ());

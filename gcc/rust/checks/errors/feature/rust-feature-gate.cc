@@ -124,6 +124,15 @@ FeatureGate::visit (AST::ExternBlock &block)
 }
 
 void
+FeatureGate::check_used_attribute (const AST::Attribute &attribute)
+{
+  if (attribute.get_path ().as_string () == Values::Attributes::USED)
+    if (attribute.has_attr_input ())
+      gate (Feature::Name::USED_WITH_ARG, attribute.get_locus (),
+	    "malformed #[used] attribute input");
+}
+
+void
 FeatureGate::check_no_core_attribute (const AST::Attribute &attribute)
 {
   if (attribute.get_path ().as_string () == Values::Attributes::NO_CORE)
@@ -366,6 +375,14 @@ FeatureGate::visit (AST::EnumItem &enum_variant)
 {
   check_lang_item_attribute (enum_variant.get_outer_attrs ());
   AST::DefaultASTVisitor::visit (enum_variant);
+}
+void
+FeatureGate::visit (AST::StaticItem &static_item)
+{
+  for (const auto &attr : static_item.get_outer_attrs ())
+    check_used_attribute (attr);
+
+  AST::DefaultASTVisitor::visit (static_item);
 }
 
 void

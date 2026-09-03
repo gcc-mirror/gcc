@@ -354,6 +354,47 @@ target_feature (const AST::Attribute &attribute)
     }
 }
 
+static void
+used (const AST::Attribute &attribute)
+{
+  auto is_invalid = false;
+  if (attribute.has_attr_input ())
+    {
+      switch (attribute.get_attr_input ().get_attr_input_type ())
+	{
+	case AST::AttrInput::TOKEN_TREE:
+	  {
+	    auto input = static_cast<const AST::DelimTokenTree &> (
+			   attribute.get_attr_input ())
+			   .parse_to_meta_item ();
+
+	    for (const auto &item : input->get_items ())
+	      {
+		if (item->as_string () != "compiler"
+		    && item->as_string () != "linker")
+		  is_invalid = true;
+	      }
+	  }
+
+	  break;
+	case AST::AttrInput::EXPR:
+	case AST::AttrInput::LITERAL:
+	case AST::AttrInput::META_ITEM:
+	  is_invalid = true;
+	  break;
+	}
+    }
+
+  if (is_invalid)
+    {
+      rust_error_at (attribute.get_locus (),
+		     "malformed %<used%> attribute input");
+      rust_inform (attribute.get_locus (),
+		   "must be of the form: %<#[used(compiler)]%> or "
+		   "%<#[used(linker)]%>");
+    }
+}
+
 void
 expect_no_input (const AST::Attribute &attribute)
 {
@@ -385,6 +426,7 @@ const std::unordered_map<std::string, std::function<void (AST::Attribute &)>>
     {Attrs::PROC_MACRO, handlers::proc_macro},
     {Attrs::PROC_MACRO_ATTRIBUTE, handlers::proc_macro},
     {Attrs::TARGET_FEATURE, handlers::target_feature},
+    {Attrs::USED, handlers::used},
     {Attrs::RUSTC_STD_INTERNAL_SYMBOL, handlers::expect_no_input},
     {Attrs::RUSTC_ALLOCATOR, handlers::expect_no_input},
     {Attrs::RUSTC_ALLOCATOR_NOUNWIND, handlers::expect_no_input},
@@ -443,8 +485,10 @@ check_valid_attribute_for_item (const AST::Attribute &attr,
 		     "to structs, enums and unions",
 		     attr.get_path ().as_string ().c_str ());
     }
-  else if (attr.get_path () == Values::Attributes::GLOBAL_ALLOCATOR
-	   && item.get_item_kind () != AST::Item::Kind::StaticItem)
+  else if (item.get_item_kind () != AST::Item::Kind::StaticItem
+	   && (attr.get_path () == Values::Attributes::GLOBAL_ALLOCATOR
+	       || attr.get_path () == Values::Attributes::USED))
+
     {
       rust_error_at (attr.get_locus (),
 		     "the %<#[%s]%> attribute may only be applied "
