@@ -4845,7 +4845,7 @@ get_vec_init_expr (tree t)
 /* The underlying artificial VAR_DECL for structured binding.  On the
    artificial base VAR_DECL this can be NULL, or integer_{zero,one}_node
    for structured binding used in if/while/for resp. switch conditions,
-   or a TARGET_EXPR with the condition value after cp_finish_decomp in
+   or a NON_LVALUE_EXPR with the condition value after cp_finish_decomp in
    those cases.  */
 #define DECL_DECOMP_BASE(NODE) \
   (LANG_DECL_DECOMP_CHECK (NODE)->base)

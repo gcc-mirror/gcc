@@ -1139,12 +1139,12 @@ maybe_convert_cond (tree cond)
   /* For structured binding used in condition, the conversion needs to be
      evaluated before the individual variables are initialized in the
      std::tuple_{size,element} case.  cp_finish_decomp saved the conversion
-     result in a TARGET_EXPR, pick it up from there.  */
+     result in a NON_LVALUE_EXPR, pick it up from there.  */
   if (DECL_DECOMPOSITION_P (cond)
       && DECL_DECOMP_IS_BASE (cond)
       && DECL_DECOMP_BASE (cond)
-      && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
-    cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
+      && TREE_CODE (DECL_DECOMP_BASE (cond)) == NON_LVALUE_EXPR)
+    cond = TREE_OPERAND (DECL_DECOMP_BASE (cond), 0);
 
   if (warn_sequence_point && !processing_template_decl)
     verify_sequence_points (cond);
@@ -1932,12 +1932,12 @@ finish_switch_cond (tree cond, tree switch_stmt)
       /* For structured binding used in condition, the conversion needs to be
 	 evaluated before the individual variables are initialized in the
 	 std::tuple_{size,element} case.  cp_finish_decomp saved the
-	 conversion result in a TARGET_EXPR, pick it up from there.  */
+	 conversion result in a NON_LVALUE_EXPR, pick it up from there.  */
       if (DECL_DECOMPOSITION_P (cond)
 	  && DECL_DECOMP_IS_BASE (cond)
 	  && DECL_DECOMP_BASE (cond)
-	  && TREE_CODE (DECL_DECOMP_BASE (cond)) == TARGET_EXPR)
-	cond = TARGET_EXPR_SLOT (DECL_DECOMP_BASE (cond));
+	  && TREE_CODE (DECL_DECOMP_BASE (cond)) == NON_LVALUE_EXPR)
+	cond = TREE_OPERAND (DECL_DECOMP_BASE (cond), 0);
       cond = build_expr_type_conversion (WANT_INT | WANT_ENUM, cond, true);
       if (cond == NULL_TREE)
 	{

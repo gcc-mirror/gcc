@@ -11105,7 +11105,10 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	  /* For structured bindings used in conditions we need to evaluate
 	     the conversion of decl (aka e in the standard) to bool or
 	     integral/enumeral type (the latter for switch conditions)
-	     before the get methods.  */
+	     before the get methods, as [dcl.struct.bind]/7 requires that:
+	     "The initialization of e and any conversion of e considered as
+	     a decision variable is sequenced before the initialization of
+	     any r_i."  */
 	  tree cond = convert_from_reference (decl);
 	  if (integer_onep (DECL_DECOMP_BASE (decl)))
 	    /* switch condition.  */
@@ -11116,12 +11119,14 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	    cond = contextual_conv_bool (cond, tf_warning_or_error);
 	  if (cond && !error_operand_p (cond))
 	    {
-	      /* Wrap that value into a TARGET_EXPR, emit it right
-		 away and save for later uses in the cp_parse_condition
-		 or its instantiation.  */
-	      cond = get_internal_target_expr (cond);
-	      add_stmt (cond);
-	      DECL_DECOMP_BASE (decl) = cond;
+	      cond = get_temp_regvar (TREE_TYPE (cond), cond);
+	      pushdecl (cond);
+	      /* Set DECL_DECOMP_BASE to cond VAR_DECL wrapped in
+		 NON_LVALUE_EXPR, such that it is considered to be
+		 the condition of a structured binding rather than
+		 structured binding's base variable.  */
+	      DECL_DECOMP_BASE (decl)
+		= build1 (NON_LVALUE_EXPR, TREE_TYPE (cond), cond);
 	    }
 	}
       int save_read = DECL_READ_P (decl);
