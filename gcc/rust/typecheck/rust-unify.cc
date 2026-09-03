@@ -1989,6 +1989,12 @@ UnifyRules::expect_projection (TyTy::ProjectionType *ltype,
       {
 	if (ltype->is_trait_position ())
 	  {
+	    // A trait-position projection whose Self is still generic cannot be
+	    // normalized against a concrete impl candidate.
+	    auto dself = ltype->get_self ()->destructure ();
+	    if (dself->is<TyTy::ParamType> ())
+	      return ltype;
+
 	    TyTy::BaseType *ln
 	      = normalize_projection (ltype, locus, false, false);
 	    if (ln != nullptr && ln != ltype)

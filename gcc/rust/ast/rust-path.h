@@ -71,10 +71,18 @@ public:
 // A binding of an identifier to a type used in generic arguments in paths
 struct GenericArgsBinding
 {
+public:
+  enum class Kind
+  {
+    Equality,
+    Constraint
+  };
+
 private:
   Identifier identifier;
   std::unique_ptr<Type> type;
   location_t locus;
+  Kind kind;
 
 public:
   // Returns whether binding is in an error state.
@@ -90,7 +98,7 @@ public:
     if (type)
       new_type = type->reconstruct ();
 
-    return GenericArgsBinding (identifier, std::move (new_type), locus);
+    return GenericArgsBinding (identifier, std::move (new_type), locus, kind);
   }
 
   // Creates an error state generic args binding.
@@ -101,13 +109,15 @@ public:
 
   // Pointer type for type in constructor to enable polymorphism
   GenericArgsBinding (Identifier ident, std::unique_ptr<Type> type_ptr,
-		      location_t locus = UNDEF_LOCATION)
-    : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
+		      location_t locus = UNDEF_LOCATION,
+		      Kind kind = Kind::Equality)
+    : identifier (std::move (ident)), type (std::move (type_ptr)),
+      locus (locus), kind (kind)
   {}
 
   // Copy constructor has to deep copy the type as it is a unique pointer
   GenericArgsBinding (GenericArgsBinding const &other)
-    : identifier (other.identifier), locus (other.locus)
+    : identifier (other.identifier), locus (other.locus), kind (other.kind)
   {
     // guard to protect from null pointer dereference
     if (other.type != nullptr)
@@ -122,6 +132,7 @@ public:
   {
     identifier = other.identifier;
     locus = other.locus;
+    kind = other.kind;
 
     // guard to protect from null pointer dereference
     if (other.type != nullptr)
@@ -154,6 +165,7 @@ public:
   location_t get_locus () const { return locus; }
 
   Identifier get_identifier () const { return identifier; }
+  Kind get_kind () const { return kind; }
 };
 
 /* Class representing a const generic application */

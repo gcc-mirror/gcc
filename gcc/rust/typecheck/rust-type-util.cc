@@ -679,6 +679,24 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
 	      auto it = binding.find (assoc_name);
 	      if (it != binding.end ())
 		return it->second;
+
+	      const auto &constraints
+		= bound.get_substitution_arguments ().get_constraint_args ();
+	      auto constraint = constraints.find (assoc_name);
+	      if (constraint != constraints.end ())
+		{
+		  TyTy::BaseType *constrained = proj->clone ();
+		  constrained->inherit_bounds (*constraint->second);
+
+		  // Keep the constrained projection distinct from the canonical
+		  // associated-type declaration.
+		  auto &mappings = Analysis::Mappings::get ();
+		  HirId fresh = mappings.get_next_hir_id ();
+		  constrained->set_ref (fresh);
+		  constrained->set_ty_ref (fresh);
+		  ctx->insert_implicit_type (fresh, constrained);
+		  return constrained;
+		}
 	    }
 	}
 

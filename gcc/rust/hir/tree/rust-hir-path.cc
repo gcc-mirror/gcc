@@ -25,13 +25,14 @@ namespace HIR {
 
 GenericArgsBinding::GenericArgsBinding (Identifier ident,
 					std::unique_ptr<Type> type_ptr,
-					location_t locus)
-  : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus)
+					location_t locus, Kind kind)
+  : identifier (std::move (ident)), type (std::move (type_ptr)), locus (locus),
+    kind (kind)
 {}
 
 GenericArgsBinding::GenericArgsBinding (GenericArgsBinding const &other)
   : identifier (other.identifier), type (other.type->clone_type ()),
-    locus (other.locus)
+    locus (other.locus), kind (other.kind)
 {}
 
 GenericArgsBinding &
@@ -40,6 +41,7 @@ GenericArgsBinding::operator= (GenericArgsBinding const &other)
   identifier = other.identifier;
   type = other.type->clone_type ();
   locus = other.locus;
+  kind = other.kind;
   return *this;
 }
 

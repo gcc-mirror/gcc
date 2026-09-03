@@ -108,8 +108,9 @@ GenericArg::disambiguate_to_type () const
 std::string
 GenericArgsBinding::as_string () const
 {
-  // TODO: rewrite to work with non-literalisable types
-  return identifier.as_string () + " = " + type->as_string ();
+  auto type_string = type->as_string ();
+  auto separator = kind == Kind::Constraint ? " : " : " = ";
+  return identifier.as_string () + separator + type_string;
 }
 
 std::string

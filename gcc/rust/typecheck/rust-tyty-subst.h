@@ -175,12 +175,12 @@ typedef std::function<void (const ParamType &, const SubstitutionArg &)>
 class SubstitutionArgumentMappings
 {
 public:
-  SubstitutionArgumentMappings (std::vector<SubstitutionArg> mappings,
-				std::map<std::string, BaseType *> binding_args,
-				RegionParamList regions, location_t locus,
-				ParamSubstCb param_subst_cb = nullptr,
-				bool trait_item_flag = false,
-				bool error_flag = false);
+  SubstitutionArgumentMappings (
+    std::vector<SubstitutionArg> mappings,
+    std::map<std::string, BaseType *> binding_args, RegionParamList regions,
+    location_t locus, ParamSubstCb param_subst_cb = nullptr,
+    bool trait_item_flag = false, bool error_flag = false,
+    std::map<std::string, BaseType *> constraint_args = {});
 
   SubstitutionArgumentMappings (const SubstitutionArgumentMappings &other);
   SubstitutionArgumentMappings &
@@ -233,6 +233,8 @@ public:
 
   const std::map<std::string, BaseType *> &get_binding_args () const;
 
+  const std::map<std::string, BaseType *> &get_constraint_args () const;
+
   const RegionParamList &get_regions () const;
   RegionParamList &get_mut_regions ();
 
@@ -247,6 +249,7 @@ public:
 private:
   std::vector<SubstitutionArg> mappings;
   std::map<std::string, BaseType *> binding_args;
+  std::map<std::string, BaseType *> constraint_args;
   RegionParamList regions;
   location_t locus;
   ParamSubstCb param_subst_cb;

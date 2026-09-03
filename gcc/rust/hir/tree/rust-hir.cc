@@ -2387,7 +2387,9 @@ GenericArgs::to_string () const
 std::string
 GenericArgsBinding::to_string () const
 {
-  return identifier.as_string () + " = " + type->to_string ();
+  auto type_string = type->to_string ();
+  auto separator = kind == Kind::Constraint ? " : " : " = ";
+  return identifier.as_string () + separator + type_string;
 }
 
 std::string

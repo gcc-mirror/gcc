@@ -469,11 +469,10 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
       copied_arg_mappings.push_back (std::move (c));
     }
 
-  used_arguments
-    = SubstitutionArgumentMappings (copied_arg_mappings,
-				    other.used_arguments.get_binding_args (),
-				    other.used_arguments.get_regions (),
-				    other.used_arguments.get_locus ());
+  used_arguments = SubstitutionArgumentMappings (
+    copied_arg_mappings, other.used_arguments.get_binding_args (),
+    other.used_arguments.get_regions (), other.used_arguments.get_locus (),
+    nullptr, false, false, other.used_arguments.get_constraint_args ());
 }
 
 TypeBoundPredicate &
@@ -511,11 +510,10 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
       copied_arg_mappings.emplace_back (&substitutions.at (i++), argument);
     }
 
-  used_arguments
-    = SubstitutionArgumentMappings (copied_arg_mappings,
-				    other.used_arguments.get_binding_args (),
-				    other.used_arguments.get_regions (),
-				    other.used_arguments.get_locus ());
+  used_arguments = SubstitutionArgumentMappings (
+    copied_arg_mappings, other.used_arguments.get_binding_args (),
+    other.used_arguments.get_regions (), other.used_arguments.get_locus (),
+    nullptr, false, false, other.used_arguments.get_constraint_args ());
   super_traits = other.super_traits;
 
   return *this;

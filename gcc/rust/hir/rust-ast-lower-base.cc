@@ -651,10 +651,19 @@ ASTLoweringBase::lower_path_expr_seg (AST::PathExprSegment &s)
 HIR::GenericArgsBinding
 ASTLoweringBase::lower_binding (AST::GenericArgsBinding &binding)
 {
-  HIR::Type *lowered_type = ASTLoweringType::translate (binding.get_type ());
+  auto impl_trait_allowed
+    = binding.get_kind () == AST::GenericArgsBinding::Kind::Constraint
+	? ASTLoweringType::ImplTrait::Allow
+	: ASTLoweringType::ImplTrait::Forbid;
+  HIR::Type *lowered_type
+    = ASTLoweringType::translate (binding.get_type (), false,
+				  impl_trait_allowed);
+  auto kind = binding.get_kind () == AST::GenericArgsBinding::Kind::Constraint
+		? HIR::GenericArgsBinding::Kind::Constraint
+		: HIR::GenericArgsBinding::Kind::Equality;
   return HIR::GenericArgsBinding (binding.get_identifier (),
 				  std::unique_ptr<HIR::Type> (lowered_type),
-				  binding.get_locus ());
+				  binding.get_locus (), kind);
 }
 
 HIR::GenericArgs
