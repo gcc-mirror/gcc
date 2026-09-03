@@ -476,6 +476,11 @@ MethodResolver::select (TyTy::BaseType &receiver)
 	      receiver.debug_str ().c_str (),
 	      segment_name.to_string ().c_str ());
 
+  // Predicate candidates have the highest priority.  Try them before
+  // assembling impl candidates, which can trigger expensive trait resolution.
+  if (try_select_predicate_candidates (receiver))
+    return true;
+
   // Assemble candidates
   std::vector<impl_item_candidate> inherent_impl_fns;
   if (specified_trait == nullptr)
@@ -498,19 +503,15 @@ MethodResolver::select (TyTy::BaseType &receiver)
 
   // Try selection in the priority order defined by Rust's method resolution:
 
-  // 1. Try predicate candidates first (highest priority)
-  if (try_select_predicate_candidates (receiver))
-    return true;
-
-  // 2. Try inherent impl functions (non-trait impl blocks)
+  // 1. Try inherent impl functions (non-trait impl blocks)
   if (try_select_inherent_impl_candidates (receiver, inherent_impl_fns, false))
     return true;
 
-  // 3. Try inherent impl functions from trait impl blocks
+  // 2. Try inherent impl functions from trait impl blocks
   if (try_select_inherent_impl_candidates (receiver, inherent_impl_fns, true))
     return true;
 
-  // 4. Try trait functions (lowest priority)
+  // 3. Try trait functions (lowest priority)
   return try_select_trait_impl_candidates (receiver, trait_fns);
 }
 
