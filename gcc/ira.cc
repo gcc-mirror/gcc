@@ -5765,9 +5765,11 @@ ira (FILE *f)
   lra_simple_p
     = (ira_use_lra_p
        && (num_used_regs >= (1U << 26) / last_basic_block_for_fn (cfun)
-           /* max uid is a good evaluation of the number of insns as most
-              optimizations are done on tree-SSA level.  */
-           || ((uint64_t) get_max_uid ()
+	   /* get_max_insn_count is a good evaluation of the number of insns
+	      as most optimizations are done on tree-SSA level.  Unlike
+	      get_max_uid, it excludes debug insns, so the choice below does
+	      not depend on debug information.  */
+	   || ((uint64_t) get_max_insn_count ()
 	       > (uint64_t) param_ira_simple_lra_insn_threshold * 1000)));
 
   if (lra_simple_p)
