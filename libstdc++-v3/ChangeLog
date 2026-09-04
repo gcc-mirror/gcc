@@ -1,3 +1,10 @@
+2026-09-03  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/126800
+	* include/bits/hashtable.h: (try_emplace): Call correct helper.
+	* testsuite/23_containers/unordered_map/modifiers/hetero/insert.cc:
+	whether key arguments have been copied.
+
 2026-08-31  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:

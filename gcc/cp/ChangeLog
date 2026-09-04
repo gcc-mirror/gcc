@@ -1,3 +1,23 @@
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123495
+	PR c++/126860
+	* cvt.cc (cp_get_fndecl_from_callee): Use fold_non_dependent_expr
+	instead of maybe_constant_init.
+
+2026-09-03  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	Backported from master:
+	2026-08-20  Odysseas Georgoudis  <odygrd@hotmail.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/124983
+	* search.cc (lookup_member): Skip access checks for declarations
+	from dependent scope.
+
 2026-08-30  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,38 @@
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126472
+	* g++.dg/cpp0x/initlist135.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123495
+	PR c++/126860
+	* g++.dg/template/non-dependent36.C: New test.
+	* g++.dg/template/non-dependent37.C: New test.
+
+2026-09-03  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	Backported from master:
+	2026-08-20  Odysseas Georgoudis  <odygrd@hotmail.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/124983
+	* g++.dg/template/pr124983.C: New test.
+
+2026-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127128
+	* gfortran.dg/do_concurrent_typespec_5.f90: New test.
+
 2026-08-30  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
 
 	Backported from master:
