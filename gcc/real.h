@@ -40,7 +40,7 @@ struct GTY(()) real_value {
   /* Use the same underlying type for all bit-fields, so as to make
      sure they're packed together, otherwise REAL_VALUE_TYPE_SIZE will
      be miscomputed.  */
-  unsigned int /* ENUM_BITFIELD (real_value_class) */ cl : 2;
+  unsigned int /* enum real_value_class */ cl : 2;
   /* 1 if number is decimal floating point.  */
   unsigned int decimal : 1;
   /* 1 if number is negative.  */

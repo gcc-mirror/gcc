@@ -63,11 +63,6 @@ def filter_src(text):
                   r'(\1)',
                   text)
 
-    # Replace 'ENUM_BITFIELD(enum_name)' with 'enum enum_name'.
-    text = re.sub('ENUM_BITFIELD\s*\(([^\)]*)\)',
-                  r'enum \1',
-                  text)
-
     return text
 
 class FilteringTests(unittest.TestCase):
@@ -155,11 +150,6 @@ class FilteringTests(unittest.TestCase):
         self.assert_filters_to(
             'char *strcpy PARAMS ((char *dest, char *source));\n',
             'char *strcpy (char *dest, char *source);\n')
-
-    def test_ENUM_BITFIELD(self):
-        self.assert_filters_to(
-            '  ENUM_BITFIELD (sym_intent) intent:2;\n',
-            '  enum sym_intent intent:2;\n')
 
 def act_on_files(argv):
     for filename in argv[1:]:

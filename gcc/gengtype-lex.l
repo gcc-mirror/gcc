@@ -119,8 +119,7 @@ CXX_KEYWORD inline|public:|private:|protected:|template|operator|friend|static|m
   return NUM;
 }
 
-{IWORD}({WS}{IWORD})*/{EOID}		|
-"ENUM_BITFIELD"{WS}?"("{WS}?{ID}{WS}?")"	{
+{IWORD}({WS}{IWORD})*/{EOID}	{
   size_t len;
 
   for (len = yyleng; ISSPACE (yytext[len-1]); len--)
