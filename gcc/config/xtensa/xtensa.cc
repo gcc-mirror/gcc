@@ -5601,9 +5601,11 @@ xtensa_zero_call_used_regs (HARD_REG_SET selected_regs)
 	    zeroed_regno = regno;
 	  continue;
 	}
+      if (zeroed_regno < 0)
+	emit_move_insn (gen_rtx_REG (SImode, zeroed_regno = A9_REG),
+			const0_rtx);
       if (TARGET_BOOLEANS && BR_REG_P (regno))
 	{
-	  gcc_assert (zeroed_regno >= 0);
 	  argvec = rtvec_alloc (1);
 	  RTVEC_ELT (argvec, 0) = gen_rtx_REG (SImode, zeroed_regno);
 	  convec = rtvec_alloc (1);
@@ -5612,23 +5614,15 @@ xtensa_zero_call_used_regs (HARD_REG_SET selected_regs)
 					   "", 0, argvec, convec,
 					   rtvec_alloc (0),
 					   UNKNOWN_LOCATION));
-	  continue;
 	}
-      if (TARGET_HARD_FLOAT && FP_REG_P (regno))
-	{
-	  gcc_assert (zeroed_regno >= 0);
-	  emit_move_insn (gen_rtx_REG (SFmode, regno),
-			  gen_rtx_REG (SFmode, zeroed_regno));
-	  continue;
-	}
-      if (TARGET_MAC16 && ACC_REG_P (regno))
-	{
-	  gcc_assert (zeroed_regno >= 0);
-	  emit_move_insn (gen_rtx_REG (SImode, regno),
-			  gen_rtx_REG (SImode, zeroed_regno));
-	  continue;
-	}
-      CLEAR_HARD_REG_BIT (selected_regs, regno);
+      else if (TARGET_HARD_FLOAT && FP_REG_P (regno))
+	emit_move_insn (gen_rtx_REG (SFmode, regno),
+			gen_rtx_REG (SFmode, zeroed_regno));
+      else if (TARGET_MAC16 && ACC_REG_P (regno))
+	emit_move_insn (gen_rtx_REG (SImode, regno),
+			gen_rtx_REG (SImode, zeroed_regno));
+      else
+	CLEAR_HARD_REG_BIT (selected_regs, regno);
     }
 
   return selected_regs;
