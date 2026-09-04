@@ -9,6 +9,10 @@
 extern int mkostemp (char *, int);
 extern void populate (char *buf);
 
+#if defined(__APPLE__) && !defined(O_CLOEXEC)
+# define O_CLOEXEC 0x1000000
+#endif
+
 void test_passthrough (char *s, int flags)
 {
   mkostemp (s, flags);
