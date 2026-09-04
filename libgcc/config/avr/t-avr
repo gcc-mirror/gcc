@@ -106,6 +106,7 @@ FUNCS_notiny += \
 	_muluQ64_tail _mulQ64_work \
 	_udivuda3 _udivuta3 _udivudq3 _udivuQ64_common \
 	_divda3 _divta3 _divdq3 _divQ64_tail \
+	_divsq3 _udivusq3 \
 	_clr_8 \
 	_ssneg_4 _ssneg_8 \
 	_ssabs_4 _ssabs_8 \

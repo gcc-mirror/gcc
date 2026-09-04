@@ -1951,6 +1951,148 @@ ENDF __udivusa3
 #undef Cnt
 #undef Sign
 
+/*********************************************************
+    Fixed 0.32 and s.31 (saturated) [U]SQmode Divisions
+*********************************************************/
+
+#ifndef __AVR_TINY__
+
+;;; USQmode arg1 (dividend) and result.
+#define A0  22
+#define A1  A0+1
+#define A2  A0+2
+#define A3  A0+3
+
+;;; USQmode arg2 (divisor) and result.
+#define B0  18
+#define B1  B0+1
+#define B2  B0+2
+#define B3  B0+3
+
+;;; UDAmode arg1 (dividend) and result.
+#define X0  18
+#define X1  X0+1
+#define X2  X0+2
+#define X3  X0+3
+#define X4  X0+4
+#define X5  X0+5
+#define X6  X0+6
+#define X7  X0+7
+
+;;; UDAmode arg2 (divisor) and result.
+#define Y0  10
+#define Y1  Y0+1
+#define Y2  Y0+2
+#define Y3  Y0+3
+#define Y4  Y0+4
+#define Y5  Y0+5
+#define Y6  Y0+6
+#define Y7  Y0+7
+
+#if defined (L_udivusq3)
+;;; (set (reg:USQ 22 [A])
+;;;      (us_div:USQ (reg:USQ 22 [A])
+;;;                  (reg:USQ 18 [B])))
+DEFUN __udivusq3
+ENTRY __usdivusq3
+    ;; Save R10..R17, Y.
+    do_prologue_saves 10
+
+    ;; Y = B
+    mov4    Y0, B0
+    ;; X = A
+    mov4    X0, A0
+    ;; Zero extend X and Y from USQ to UDA.
+    clr     X4
+    clr     X5
+    wmov    X6, X4
+    mov4    Y4, X4
+
+    ;; (set (reg:UDA 18 [X])
+    ;;      (us_div:UDA (reg:UDA 18 [X])
+    ;;                  (reg:UDA 10 [Y])))
+    XCALL __usdivuda3
+
+    ;; Saturate UDA to USQ
+    or      X7, X6
+    or      X7, X5
+    or      X7, X4
+    mov4    A0, X0
+    breq 9f
+    ;; X[4..7] != 0: Saturate
+    ldi     A3, 0xff
+    ldi     A2, 0xff
+    wmov    A0, A2
+9:
+    do_epilogue_restores 10
+ENDF __udivusq3
+#endif /* L_udivusq3 */
+
+#if defined (L_divsq3)
+;;; (set (reg:SQ 22 [A])
+;;;      (ss_div:SQ (reg:SQ 22 [A])
+;;;                 (reg:SQ 18 [B])))
+DEFUN __divsq3
+ENTRY __ssdivsq3
+    ;; Save R10..R17, Y.
+    do_prologue_saves 10
+
+    ;; Y = B
+    mov4    Y0, B0
+    lsl     B3                  ; C = B.sign
+    ;; X = A
+    mov4    X0, A0
+
+    ;; Sign-extend Y from SQ to DA.
+    sbc     Y4, Y4
+    sbc     Y5, Y5
+    wmov    Y6, Y4
+    ;; Sign-extend X from SQ to DA.
+    lsl     A3                  ; C = A.sign
+    sbc     X4, X4
+    sbc     X5, X5
+    wmov    X6, X4
+
+    ;; (set (reg:DA 18 [X])
+    ;;      (ss_div:DA (reg:DA 18 [X])
+    ;;                 (reg:DA 10 [Y])))
+    XCALL __ssdivda3
+
+    ;; (set (reg:SQ 22 [A])
+    ;;      (sat_fract:SQ (reg:DA 18 [X])))
+    XCALL __satfractdasq
+
+    do_epilogue_restores 10
+ENDF __divsq3
+#endif /* L_divsq3 */
+
+#undef A0
+#undef A1
+#undef A2
+#undef A3
+#undef B0
+#undef B1
+#undef B2
+#undef B3
+#undef X0
+#undef X1
+#undef X2
+#undef X3
+#undef X4
+#undef X5
+#undef X6
+#undef X7
+#undef Y0
+#undef Y1
+#undef Y2
+#undef Y3
+#undef Y4
+#undef Y5
+#undef Y6
+#undef Y7
+
+#endif /* ! AVR_TINY */
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Saturation, 1 Byte
