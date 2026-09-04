@@ -1062,7 +1062,20 @@ omp_max_simt_vf (void)
   if (ENABLE_OFFLOADING)
     for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
       {
-	if (startswith (c, "nvptx"))
+	if (startswith (c, "amdgcn"))
+	  {
+	    switch (param_offload_gpu_mode)
+	      {
+	      case OFFLOAD_GPU_MODE_SIMT: /* For now.  */
+	      case OFFLOAD_GPU_MODE_SIMT_DIRECTED:
+		return 64;
+	      case OFFLOAD_GPU_MODE_AUTO:
+	      case OFFLOAD_GPU_MODE_SIMD:
+		return 0;
+	      }
+	    gcc_unreachable ();
+	  }
+	else if (startswith (c, "nvptx"))
 	  return 32;
 	else if ((c = strchr (c, ':')))
 	  c++;

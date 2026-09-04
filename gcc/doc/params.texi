@@ -1950,6 +1950,30 @@ bubbles.  This is the current default.  Zero means the scheduling description
 might not be available/accurate or perhaps not applicable at all, such as for
 modern out-of-order processors.
 
+@item offload-gpu-mode
+Controls how vector parallel code is generated for OpenMP and OpenACC offload
+kernels.  Different modes may suit different use cases, and may be implemented
+to differing levels of completion.   Not all GPUs support all the modes.
+@option{--param=offload-gpu-mode=auto} selects the recommended mode for each
+GPU architecture.
+@option{--param=offload-gpu-mode=simd} uses the autovectorizer for all kernel
+code (default on AMD GCN, not available for NVPTX).  In general, SIMD mode may
+produce tighter loops, but performs very badly if the vectorizer fails (due to
+function calls, pattern mismatches, or complex logic).  The vectorizer is
+active for all GPU code, at @option{-O2} or above; the OpenMP and OpenACC
+directives are treated as optimization hints.
+@option{--param=offload-gpu-mode=simt-directed} (default on NVPTX, experimental
+on AMD GCN) uses SIMT code-generation for loops with an OpenMP @samp{simd}
+directive, or an OpenACC @samp{loop vector} directive.  Code that does not use
+these directives will not make use of the vector hardware at all.
+@samp{omp_get_num_threads} reports the wavefront/warp count.
+@option{--param=offload-gpu-mode=simt} (experimental) uses SIMT for all code
+parallelized with OpenMP threads (OpenACC behavior is unchanged from
+@option{simt-directed} mode).  The OpenMP @samp{simd} directive may be a no-op.
+@samp{omp_get_num_threads} reports the total number of work-items/threads
+across all wavefronts/warps.  This mode most-closely imitates the LLVM
+behavior.
+
 @end table
 
 @node Target-Specific Parameters
