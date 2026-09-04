@@ -7961,9 +7961,70 @@ normalize_for_inspect_format_4(const cblc_field_t  *var,
   return retval;
   }
 
+// The compiler ensures that every operand uses the target encoding, so an
+// ordinary operand can be used directly.
+static inline const char *
+string_operand(const cblc_referlet_t &refer,
+               charmap_t             *charmap,
+               size_t                 stride,
+               char                   figurative[4],
+               size_t                *size)
+  {
+  const cblc_field_t *field = refer.field;
+  if( !field )
+    {
+    *size = 0;
+    return figurative;
+    }
+
+  cbl_figconst_t figconst =
+                  static_cast<cbl_figconst_t>(field->attr & FIGCONST_MASK);
+  // We have a corner case to deal with:
+  if(    !figconst
+      && field->name[0] == 'N'
+      && strcmp(field->name, "NULLS") == 0 )
+    {
+    figconst = null_value_e;
+    }
+
+  if( figconst )
+    {
+    cbl_char_t figchar = '\0';
+    switch( figconst )
+      {
+      case low_value_e   :
+        figchar = charmap->low_value_character();
+        break;
+      case zero_value_e  :
+        figchar = charmap->mapped_character(ascii_0);
+        break;
+      case space_value_e :
+        figchar = charmap->mapped_character(ascii_space);
+        break;
+      case quote_value_e :
+        figchar = charmap->quote_character();
+        break;
+      case high_value_e  :
+        figchar = charmap->high_value_character();
+        break;
+      case null_value_e:
+        break;
+      default:
+        abort();
+        break;
+      }
+    charmap->putch(figchar, figurative, size_t(0));
+    *size = stride;
+    return figurative;
+    }
+
+  *size = refer.size;
+  return as_chars(field->data + refer.offset);
+  }
+
 extern "C"
 int
-__gg__string(const size_t integers[], const cblc_referlet_t *ref)
+__gg__string_1(const size_t integers[], const cblc_referlet_t *ref)
   {
   // The first integer is the count of identifier-2 values.  Call it N
   // The following N integers are the counts of each of the identifier-1
@@ -7988,7 +8049,6 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
   // controls all the parameters.
   cbl_encoding_t tgt_encoding = tgt->encoding;
   charmap_t *charmap = __gg__get_charmap(tgt_encoding);
-  int stride = charmap->stride();
 
   // Pick up the rest of the parameters
   size_t tgt_o = ref[index_cblc].offset;
@@ -7996,7 +8056,7 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
   index_cblc += 1;
 
   char  *dest         = as_chars(tgt->data + tgt_o);
-  size_t dest_length = tgt_s/stride;
+  size_t dest_length = tgt_s;
 
   // Skip over the index of POINTER:
   index_cblc += 1;
@@ -8006,22 +8066,22 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
   int overflow = 0;
   if( ref[INDEX_OF_POINTER].field )
     {
-    int p  = (size_t)__gg__int128_from_qualified_field(
-                                                    ref[INDEX_OF_POINTER]
-                                                      .field,
-                                                    ref[INDEX_OF_POINTER]
-                                                      .offset,
-                                                    ref[INDEX_OF_POINTER].size
-                                                    );
-    if( p<0 )
+    __int128 p = __gg__int128_from_qualified_field(
+                                              ref[INDEX_OF_POINTER].field,
+                                              ref[INDEX_OF_POINTER].offset,
+                                              ref[INDEX_OF_POINTER].size);
+    if( p < 1 || static_cast<unsigned __int128>(p) > dest_length )
       {
       overflow = 1;
       }
-    pointer = p - 1;
+    else
+      {
+      pointer = static_cast<size_t>(p - 1);
+      }
     }
 
   // Make sure that the destination pointer is within the destination
-  if( pointer < dest_length )
+  if( !overflow && pointer < dest_length )
     {
     // We are go for looping through identifier-2 values:
 
@@ -8030,6 +8090,7 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
     // Pick up the number of identifier-2 values
     size_t N = integers[index_int++];
 
+    std::string delimiter;
     for( size_t i=0; i<N; i++ )
       {
       // Pick up the number of M identifier-1 values for this list of
@@ -8037,69 +8098,74 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
       size_t M = integers[index_int++];
 
       // Pick up the identifier_2 DELIMITED BY value
-      std::u32string str_id2 = normalize_for_inspect_format_4(
-                                                        ref[index_cblc].field,
-                                                        ref[index_cblc].offset,
-                                                        ref[index_cblc].size,
-                                                        tgt_encoding);
+      char fig_id2[4];
+      size_t str_id2_size;
+      const char *str_id2 = string_operand(ref[index_cblc],
+                                            charmap,
+                                            1,
+                                            fig_id2,
+                                            &str_id2_size);
       index_cblc += 1;
+
+      // Preserve the delimiter in case it overlaps the target.
+      delimiter.assign(str_id2, str_id2_size);
 
       for(size_t j=0; j<M; j++)
         {
         // Pick up the next id-1 source string for the current id-2 delimiter
-        std::u32string str_id1 = normalize_for_inspect_format_4(
-                                                        ref[index_cblc].field,
-                                                        ref[index_cblc].offset,
-                                                        ref[index_cblc].size,
-                                                        tgt_encoding);
+        char fig_id1[4];
+        size_t str_id1_size;
+        const char *str_id1 = string_operand(ref[index_cblc],
+                                              charmap,
+                                              1,
+                                              fig_id1,
+                                              &str_id1_size);
         index_cblc += 1;
 
         size_t nfound;
-        if( str_id2.size() == 0 )
+        if( delimiter.empty() )
           {
           // No given delimiter means DELIMITED BY SIZE
-          nfound = str_id1.size();
+          nfound = str_id1_size;
+          }
+        else if( delimiter.size() == 1 )
+          {
+          // A one-character delimiter is overwhelmingly the common case.
+          const void *found = memchr(str_id1,
+                                     static_cast<unsigned char>(delimiter[0]),
+                                     str_id1_size);
+          nfound = found
+                 ? static_cast<size_t>(
+                              static_cast<const char *>(found) - str_id1)
+                 : str_id1_size;
           }
         else
           {
           // We have an id2, so we look for it inside id1
-          nfound = str_id1.find(str_id2);
-          if( nfound == std::u32string::npos )
-            {
-            nfound = str_id1.size();
-            }
+          const char *found = std::search(str_id1,
+                                          str_id1 + str_id1_size,
+                                          delimiter.begin(),
+                                          delimiter.end());
+          nfound = static_cast<size_t>(found - str_id1);
           }
 
-
+        // We have found id2 inside id1 at location nfound.
+        size_t available = dest_length - pointer;
+        size_t count = std::min(nfound, available);
+        memmove(dest + pointer, str_id1, count);
+        pointer += count;
+        if( count != nfound )
           {
-          // We have found id2 inside id1 at location nfound.
-
-          // Convert the UTF32 to the original encoding:
-          size_t bytes_converted;
-          char *converted = __gg__miconverter(HOST_32_ENCODING,
-                                              tgt_encoding,
-                                              str_id1.data(),
-                                              nfound*width_of_utf32,
-                                              &bytes_converted );
-          size_t k = 0;
-          while(k < nfound)
-            {
-            if( pointer >= dest_length )
-              {
-              overflow = 1;
-              break;
-              }
-            cbl_char_t ch = charmap->getch(converted, k*stride);
-            charmap->putch(ch, dest, pointer*stride);
-            k += 1;
-            pointer += 1;
-            }
-          free(converted);
+          overflow = 1;
           }
         if( overflow )
           {
           break;
           }
+        }
+      if( overflow )
+        {
+        break;
         }
       }
 
@@ -8121,6 +8187,222 @@ __gg__string(const size_t integers[], const cblc_referlet_t *ref)
     }
 
   return overflow;
+  }
+
+static size_t
+find_string_24(const char *str_id1,
+               size_t      str_id1_size,
+               const char *str_id2,
+               size_t      str_id2_size,
+               size_t      stride)
+  {
+  size_t id1_characters = str_id1_size / stride;
+  size_t id2_characters = str_id2_size / stride;
+
+  if( id2_characters == 0 || id2_characters > id1_characters )
+    {
+    return id1_characters;
+    }
+
+  size_t last = id1_characters - id2_characters;
+  if( stride == 2 )
+    {
+    uint16_t first = load_unaligned<uint16_t>(str_id2);
+    for(size_t i=0; i<=last; i++)
+      {
+      const char *candidate = str_id1 + i * stride;
+      if(    load_unaligned<uint16_t>(candidate) == first
+          && (   id2_characters == 1
+              || memcmp(candidate, str_id2, str_id2_size) == 0) )
+        {
+        return i;
+        }
+      }
+    }
+  else
+    {
+    uint32_t first = load_unaligned<uint32_t>(str_id2);
+    for(size_t i=0; i<=last; i++)
+      {
+      const char *candidate = str_id1 + i * stride;
+      if(    load_unaligned<uint32_t>(candidate) == first
+          && (   id2_characters == 1
+              || memcmp(candidate, str_id2, str_id2_size) == 0) )
+        {
+        return i;
+        }
+      }
+    }
+  return id1_characters;
+  }
+
+extern "C"
+int
+__gg__string_24(const size_t integers[], const cblc_referlet_t *ref)
+  {
+  // The first integer is the count of identifier-2 values.  Call it N
+  // The following N integers are the counts of each of the identifier-1
+  // values,
+  // one for each identifier-1.  Call them M.
+
+  // The first refer is the target
+  // The second refer is the pointer
+  // The third refer is identifier-2 for N1
+  // That's followed by M1 identifier-1 values
+  // That's followed by identifier2 for N2
+  // And so on
+
+  static const int INDEX_OF_POINTER = 1;
+
+  size_t index_cblc = 0 ;
+
+  // Pick up the target
+  const cblc_field_t *tgt = ref[index_cblc].field;
+
+  // Pick up the target encoding, which according to the ISO specification
+  // controls all the parameters.
+  cbl_encoding_t tgt_encoding = tgt->encoding;
+  charmap_t *charmap = __gg__get_charmap(tgt_encoding);
+  size_t stride = static_cast<size_t>(charmap->stride());
+
+  // Pick up the rest of the parameters
+  size_t tgt_o = ref[index_cblc].offset;
+  size_t tgt_s = ref[index_cblc].size;
+  index_cblc += 1;
+
+  char  *dest        = as_chars(tgt->data + tgt_o);
+  size_t dest_length = tgt_s / stride;
+
+  // Skip over the index of POINTER:
+  index_cblc += 1;
+
+  // Pick up the pointer, if any
+  size_t pointer = 0;
+  int overflow = 0;
+  if( ref[INDEX_OF_POINTER].field )
+    {
+    __int128 p = __gg__int128_from_qualified_field(
+                                              ref[INDEX_OF_POINTER].field,
+                                              ref[INDEX_OF_POINTER].offset,
+                                              ref[INDEX_OF_POINTER].size);
+    if( p < 1 || static_cast<unsigned __int128>(p) > dest_length )
+      {
+      overflow = 1;
+      }
+    else
+      {
+      pointer = static_cast<size_t>(p - 1);
+      }
+    }
+
+  // Make sure that the destination pointer is within the destination
+  if( !overflow && pointer < dest_length )
+    {
+    // We are go for looping through identifier-2 values:
+
+    size_t index_int = 0;
+
+    // Pick up the number of identifier-2 values
+    size_t N = integers[index_int++];
+
+    std::string delimiter;
+    for(size_t i=0; i<N; i++)
+      {
+      // Pick up the number of M identifier-1 values for this list of
+      // identifier-2 values:
+      size_t M = integers[index_int++];
+
+      // Pick up the identifier_2 DELIMITED BY value
+      char fig_id2[4];
+      size_t str_id2_size;
+      const char *str_id2 = string_operand(ref[index_cblc],
+                                            charmap,
+                                            stride,
+                                            fig_id2,
+                                            &str_id2_size);
+      index_cblc += 1;
+
+      // Preserve the delimiter in case it overlaps the target.
+      delimiter.assign(str_id2, str_id2_size);
+
+      for(size_t j=0; j<M; j++)
+        {
+        // Pick up the next id-1 source string for the current id-2 delimiter
+        char fig_id1[4];
+        size_t str_id1_size;
+        const char *str_id1 = string_operand(ref[index_cblc],
+                                              charmap,
+                                              stride,
+                                              fig_id1,
+                                              &str_id1_size);
+        index_cblc += 1;
+
+        size_t nfound;
+        if( delimiter.empty() )
+          {
+          // No given delimiter means DELIMITED BY SIZE
+          nfound = str_id1_size / stride;
+          }
+        else
+          {
+          // We have an id2, so we look for it inside id1
+          nfound = find_string_24(str_id1,
+                                  str_id1_size,
+                                  delimiter.data(),
+                                  delimiter.size(),
+                                  stride);
+          }
+
+        // We have found id2 inside id1 at location nfound.
+        size_t available = dest_length - pointer;
+        size_t count = std::min(nfound, available);
+        memmove(dest + pointer * stride,
+                str_id1,
+                count * stride);
+        pointer += count;
+        if( count != nfound )
+          {
+          overflow = 1;
+          }
+        if( overflow )
+          {
+          break;
+          }
+        }
+      if( overflow )
+        {
+        break;
+        }
+      }
+
+    // Update the pointer, if there is one
+    if( ref[INDEX_OF_POINTER].field )
+      {
+      __gg__int128_to_qualified_field(ref[INDEX_OF_POINTER].field,
+                                      ref[INDEX_OF_POINTER].offset,
+                                      ref[INDEX_OF_POINTER].size,
+                                      (__int128)(pointer+1),
+                                      0,
+                                      truncation_e);
+      }
+    }
+  else
+    {
+    // The initial pointer is not inside the destination
+    overflow = 1;
+    }
+
+  return overflow;
+  }
+
+extern "C"
+int
+__gg__string(const size_t integers[], const cblc_referlet_t *ref)
+  {
+  const charmap_t *charmap = __gg__get_charmap(ref[0].field->encoding);
+  return charmap->stride() == 1
+       ? __gg__string_1(integers, ref)
+       : __gg__string_24(integers, ref);
   }
 
 static
@@ -10006,9 +10288,53 @@ __gg__assign_value_from_stack(cblc_field_t *dest, __int128 parameter)
     }
   }
 
-extern "C"
-int
-__gg__unstring( const cblc_referlet_t *id2,
+struct unstring_finder_1
+  {
+  static size_t
+  find(const char *str_id1,
+       size_t      str_id1_size,
+       const char *str_id2,
+       size_t      str_id2_size,
+       size_t)
+    {
+    if( str_id2_size == 1 )
+      {
+      const void *found = memchr(str_id1,
+                                 static_cast<unsigned char>(str_id2[0]),
+                                 str_id1_size);
+      return found
+           ? static_cast<size_t>(static_cast<const char *>(found) - str_id1)
+           : str_id1_size;
+      }
+
+    const char *found = std::search(str_id1,
+                                    str_id1 + str_id1_size,
+                                    str_id2,
+                                    str_id2 + str_id2_size);
+    return static_cast<size_t>(found - str_id1);
+    }
+  };
+
+struct unstring_finder_24
+  {
+  static size_t
+  find(const char *str_id1,
+       size_t      str_id1_size,
+       const char *str_id2,
+       size_t      str_id2_size,
+       size_t      stride)
+    {
+    return find_string_24(str_id1,
+                          str_id1_size,
+                          str_id2,
+                          str_id2_size,
+                          stride);
+    }
+  };
+
+template <typename finder_t>
+static int
+unstring_fixed( const cblc_referlet_t *id2,
                 const cblc_referlet_t *id4,
                 const cblc_referlet_t *id5,
                 const cblc_referlet_t *id6,
@@ -10023,7 +10349,8 @@ __gg__unstring( const cblc_referlet_t *id2,
                 size_t        id7_s,
                 cblc_field_t *id8,        // Count of identifier-4 updates
                 size_t        id8_o,
-                size_t        id8_s)
+                size_t        id8_s,
+                size_t        stride_id1)
   {
   // The names of the parameters are based on the ISO 1989:2014 specification.
 
@@ -10043,11 +10370,10 @@ __gg__unstring( const cblc_referlet_t *id2,
   size_t left=0;
   size_t right=0;
 
-  std::u32string str_id1;
-  std::vector<std::u32string> delimiters;
+  std::string str_id1;
+  std::vector<std::string> delimiters;
 
-  const charmap_t *charmap_id1 = __gg__get_charmap(id1->encoding);
-  int stride_id1 = charmap_id1->stride();
+  charmap_t *charmap_id1 = __gg__get_charmap(id1->encoding);
 
   if( id8  )
     {
@@ -10058,15 +10384,17 @@ __gg__unstring( const cblc_referlet_t *id2,
 
   if( id7 )
     {
-    int p = (int)__gg__int128_from_qualified_field(id7,
-                                                   id7_o,
-                                                   id7_s);
-    if( p < 1 )
+    __int128 p = __gg__int128_from_qualified_field(id7,
+                                                    id7_o,
+                                                    id7_s);
+    if(    p < 1
+        || static_cast<unsigned __int128>(p)
+                                      > std::numeric_limits<size_t>::max() )
       {
       overflow = 1;
       goto done;
       }
-    pointer = p;
+    pointer = static_cast<size_t>(p);
     }
 
   // As per the spec, if the string is zero-length; we are done.
@@ -10084,18 +10412,13 @@ __gg__unstring( const cblc_referlet_t *id2,
     }
   // pointer is one-based throughout; don't forget that
 
-  /* I thought long and hard about converting things to UTF32 for UNSTRING. It
-     was not obviously necessary.  But, darn it all, sooner or later somebody
-     is going to demand UTF-8 capability and I can't think of any obvious way
-     of being able to handle multibyte codepoints as single characters without
-     doing something like converting to UTF32.  */
+  /* The earlier implementation converted everything to UTF32.  The
+     fixed-width entry points handle their encodings directly. */
 
-  str_id1 = normalize_for_inspect_format_4( id1,
-                                            id1_o,
-                                            id1_s,
-                                            id1->encoding);
+  // Preserve identifier-1 because a receiving item can overlap it.
+  str_id1.assign(as_chars(id1->data + id1_o), id1_s);
   left = pointer-1;
-  right = str_id1.size();
+  right = str_id1.size() / stride_id1;
   if( ndelimiteds == 0 )
     {
     // There are no DELIMITED BY identifier-2 values, so we just peel off
@@ -10113,7 +10436,10 @@ __gg__unstring( const cblc_referlet_t *id2,
         {
         // The receiver is NumericDisplay with a separate sign, so, as per
         // the spec, we reduce the size by one character.
-        id_4_size = id4[receiver].size - 1;
+        if( id_4_size )
+          {
+          id_4_size -= 1;
+          }
         }
 
       // Make sure id_4_size doesn't take us past the end of the universe
@@ -10122,22 +10448,13 @@ __gg__unstring( const cblc_referlet_t *id2,
         id_4_size = right - left;
         }
 
-      // Convert the specified str_id1 characters back to id1->encoding.
-      size_t bytes_converted;
-      const char *converted = __gg__iconverter(HOST_32_ENCODING,
-                                               id1->encoding,
-                                               &str_id1[left],
-                                               (right-left)*width_of_utf32,
-                                               &bytes_converted );
-      char *duped = static_cast<char *>(
-        __gg__memdup(converted, bytes_converted));
-      // Put the converted string into place:
-      __gg__field_from_string(id4[receiver].field,
-                        id4[receiver].offset,
-                        id4[receiver].size,
-                        duped,
-                        bytes_converted);
-      free(duped);
+      // Put the specified string into place:
+      __gg__move_literala(id4[receiver].field,
+                          id4[receiver].offset,
+                          id4[receiver].size,
+                          truncation_e,
+                          str_id1.data() + left * stride_id1,
+                          id_4_size * stride_id1);
       // Update the state variables:
       left += id_4_size;
       pointer += id_4_size;
@@ -10148,31 +10465,49 @@ __gg__unstring( const cblc_referlet_t *id2,
 
   // Arriving here means there is some number of ndelimiteds
 
-  // Convert them to the same encoding as str_id1:
+  // Preserve the delimiters because receiving items can overlap them.
+  delimiters.reserve(ndelimiteds);
   for( size_t i=0; i<ndelimiteds; i++ )
     {
-    std::u32string delimiter
-        = normalize_for_inspect_format_4(id2[i].field,
-                                         id2[i].offset,
-                                         id2[i].size,
-                                         id1->encoding);
-    delimiters.push_back(delimiter);
+    char figurative[4];
+    size_t delimiter_size;
+    const char *delimiter = string_operand(id2[i],
+                                            charmap_id1,
+                                            stride_id1,
+                                            figurative,
+                                            &delimiter_size);
+    delimiters.emplace_back(delimiter, delimiter_size);
     }
 
   nreceiver = 0;
   while( left < right )
     {
+    // If we've used up all receivers, we bail at this point
+    if( nreceiver >= nreceivers )
+      {
+      break;
+      }
+
     // Starting at 'left', see if we can find any of the delimiters.  For each
     // 'left' position, we look through all of the delimiters,
 
-    int    best_delimiter = -1;
+    size_t best_delimiter = ndelimiteds;
     size_t best_leftmost = right; // This is the location of the start of ALL
     size_t best_location = right; // This is the location of the last of ALL
     for( size_t i=0; i<ndelimiteds; i++ )
       {
-      std::u32string str_id2 = delimiters[i];
-      size_t nfound = str_id1.find(str_id2, left);
-      if( nfound != std::u32string::npos )
+      const std::string &str_id2 = delimiters[i];
+      if( str_id2.empty() )
+        {
+        continue;
+        }
+      size_t nfound = left + finder_t::find(
+                                     str_id1.data() + left * stride_id1,
+                                     (right - left) * stride_id1,
+                                     str_id2.data(),
+                                     str_id2.size(),
+                                     stride_id1);
+      if( nfound != right )
         {
         // We found a delimiter
         if( nfound > best_leftmost )
@@ -10190,24 +10525,22 @@ __gg__unstring( const cblc_referlet_t *id2,
           {
           // This delimiter is flagged as ALL, so we need to see if we have
           // a flock of them:
-          size_t next = nfound + str_id2.size() ;
-          while( str_id1.find(str_id2, next ) == next )
+          size_t delimiter_characters = str_id2.size() / stride_id1;
+          size_t next = nfound + delimiter_characters;
+          while(    delimiter_characters <= right - next
+                 && memcmp(str_id1.data() + next * stride_id1,
+                           str_id2.data(),
+                           str_id2.size()) == 0 )
             {
             // We found another consecutive one at next:
             best_location = next;
-            next += str_id2.size();
+            next += delimiter_characters;
             }
           }
         }
       }
 
-    // If we've used up all receivers, we bail at this point
-    if( nreceiver >= nreceivers )
-      {
-      break;
-      }
-
-    if( best_delimiter == -1 )
+    if( best_delimiter == ndelimiteds )
       {
       // We were unable to find a delimiter, so we eat up the remainder
       // of the sender:
@@ -10219,55 +10552,38 @@ __gg__unstring( const cblc_referlet_t *id2,
 
     size_t examined = best_leftmost - left;
 
-    // Convert the data from left to leftmost_delimiter back to encoding of
-    // id1:
-    size_t bytes_converted;
-    const char *converted = __gg__iconverter(
-                           HOST_32_ENCODING,
-                           id1->encoding,
-                           &str_id1[left],
-                           (best_leftmost-left)*width_of_utf32,
-                           &bytes_converted );
-    char *duped = static_cast<char *>(
-      __gg__memdup(converted, bytes_converted));
-    // Put the converted string into place:
-    __gg__field_from_string(id4[nreceiver].field,
-                      id4[nreceiver].offset,
-                      id4[nreceiver].size,
-                      duped,
-                      bytes_converted);
-    free(duped);
+    // Put the specified string into place:
+    __gg__move_literala(id4[nreceiver].field,
+                        id4[nreceiver].offset,
+                        id4[nreceiver].size,
+                        truncation_e,
+                        str_id1.data() + left * stride_id1,
+                        examined * stride_id1);
     // Update the left edge
-    left = best_location + (best_delimiter > -1
-                            ? delimiters[best_delimiter].size()
+    left = best_location + (best_delimiter != ndelimiteds
+                            ? delimiters[best_delimiter].size() / stride_id1
                             : 0) ;
     if( id5[nreceiver].field )
       {
       // The caller wants to know what the delimiter was:
-      if( best_delimiter > -1 )
+      if( best_delimiter != ndelimiteds )
         {
-        converted = __gg__iconverter(
-                             HOST_32_ENCODING,
-                             id1->encoding,
-                             delimiters[best_delimiter].data(),
-                             delimiters[best_delimiter].size()*width_of_utf32,
-                             &bytes_converted );
-        duped = static_cast<char *>(__gg__memdup(converted, bytes_converted));
-        __gg__field_from_string(id5[nreceiver].field,
-                          id5[nreceiver].offset,
-                          id5[nreceiver].size,
-                          duped,
-                          bytes_converted);
-        free(duped);
+        __gg__move_literala(id5[nreceiver].field,
+                            id5[nreceiver].offset,
+                            id5[nreceiver].size,
+                            truncation_e,
+                            delimiters[best_delimiter].data(),
+                            delimiters[best_delimiter].size());
         }
       else
         {
         // We didn't find a delimiter
-        __gg__field_from_string(id5[nreceiver].field,
-                          id5[nreceiver].offset,
-                          id5[nreceiver].size,
-                          "",
-                          0);
+        __gg__move_literala(id5[nreceiver].field,
+                            id5[nreceiver].offset,
+                            id5[nreceiver].size,
+                            truncation_e,
+                            "",
+                            0);
         }
       }
 
@@ -10284,7 +10600,7 @@ __gg__unstring( const cblc_referlet_t *id2,
     // Update the state variables:
     tally += 1;
     nreceiver += 1;
-    if( best_delimiter > -1  )
+    if( best_delimiter != ndelimiteds )
       {
       pointer = left+1 ;
       }
@@ -10318,6 +10634,141 @@ done:
     }
 
   return overflow;
+  }
+
+extern "C"
+int
+__gg__unstring_1( const cblc_referlet_t *id2,
+                  const cblc_referlet_t *id4,
+                  const cblc_referlet_t *id5,
+                  const cblc_referlet_t *id6,
+                  const cblc_field_t *id1,
+                  size_t              id1_o,
+                  size_t              id1_s,
+                  size_t              ndelimiteds,
+                  const char         *all_flags,
+                  size_t              nreceivers,
+                  cblc_field_t       *id7,
+                  size_t              id7_o,
+                  size_t              id7_s,
+                  cblc_field_t       *id8,
+                  size_t              id8_o,
+                  size_t              id8_s)
+  {
+  return unstring_fixed<unstring_finder_1>(id2,
+                                           id4,
+                                           id5,
+                                           id6,
+                                           id1,
+                                           id1_o,
+                                           id1_s,
+                                           ndelimiteds,
+                                           all_flags,
+                                           nreceivers,
+                                           id7,
+                                           id7_o,
+                                           id7_s,
+                                           id8,
+                                           id8_o,
+                                           id8_s,
+                                           1);
+  }
+
+extern "C"
+int
+__gg__unstring_24( const cblc_referlet_t *id2,
+                   const cblc_referlet_t *id4,
+                   const cblc_referlet_t *id5,
+                   const cblc_referlet_t *id6,
+                   const cblc_field_t *id1,
+                   size_t              id1_o,
+                   size_t              id1_s,
+                   size_t              ndelimiteds,
+                   const char         *all_flags,
+                   size_t              nreceivers,
+                   cblc_field_t       *id7,
+                   size_t              id7_o,
+                   size_t              id7_s,
+                   cblc_field_t       *id8,
+                   size_t              id8_o,
+                   size_t              id8_s)
+  {
+  size_t stride = static_cast<size_t>(
+                         __gg__get_charmap(id1->encoding)->stride());
+  return unstring_fixed<unstring_finder_24>(id2,
+                                            id4,
+                                            id5,
+                                            id6,
+                                            id1,
+                                            id1_o,
+                                            id1_s,
+                                            ndelimiteds,
+                                            all_flags,
+                                            nreceivers,
+                                            id7,
+                                            id7_o,
+                                            id7_s,
+                                            id8,
+                                            id8_o,
+                                            id8_s,
+                                            stride);
+  }
+
+extern "C"
+int
+__gg__unstring( const cblc_referlet_t *id2,
+                const cblc_referlet_t *id4,
+                const cblc_referlet_t *id5,
+                const cblc_referlet_t *id6,
+                const cblc_field_t *id1,
+                size_t              id1_o,
+                size_t              id1_s,
+                size_t              ndelimiteds,
+                const char         *all_flags,
+                size_t              nreceivers,
+                cblc_field_t       *id7,
+                size_t              id7_o,
+                size_t              id7_s,
+                cblc_field_t       *id8,
+                size_t              id8_o,
+                size_t              id8_s)
+  {
+  const charmap_t *charmap = __gg__get_charmap(id1->encoding);
+  if( charmap->stride() == 1 )
+    {
+    return __gg__unstring_1(id2,
+                            id4,
+                            id5,
+                            id6,
+                            id1,
+                            id1_o,
+                            id1_s,
+                            ndelimiteds,
+                            all_flags,
+                            nreceivers,
+                            id7,
+                            id7_o,
+                            id7_s,
+                            id8,
+                            id8_o,
+                            id8_s);
+    }
+  return __gg__unstring_24(id2,
+                           id4,
+                           id5,
+                           id6,
+                           id1,
+                           id1_o,
+                           id1_s,
+                           ndelimiteds,
+                           all_flags,
+                           nreceivers,
+                           id7,
+                           id7_o,
+                           id7_s,
+                           id8,
+                           id8_o,
+                           id8_s);
   }
 
 static std::set<void *> to_be_canceled;
