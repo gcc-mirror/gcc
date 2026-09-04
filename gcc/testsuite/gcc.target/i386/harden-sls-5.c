@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-indirect-branch-register -mfunction-return=keep -mindirect-branch=thunk-extern -mharden-sls=return" } */
 /* { dg-additional-options "-fno-pic" { target { ! *-*-darwin* } } } */
+/* { dg-additional-options "-mdynamic-no-pic" { target { ia32 && *-*-darwin* } } } */
 
 typedef void (*dispatch_t)(long offset);
 

@@ -10,7 +10,8 @@ foo (void)
   fptr ();
 }
 
-/* { dg-final { scan-assembler "jmp\[ \t\]+\\*_?fptr" { target { ! x32 } } } } */
+/* { dg-final { scan-assembler "jmp\[ \t\]+\\*_?fptr" { target { { ! x32 } && { ! *-*-darwin* } } } } } */
+/* { dg-final { scan-assembler "jmp\[ \t\]+\\*\\(%\[re\]ax\\)" { target *-*-darwin* } } } */
 /* { dg-final { scan-assembler "movl\[ \t\]+fptr\\(%rip\\), %eax" { target x32 } } } */
 /* { dg-final { scan-assembler "jmp\[ \t\]+\\*%rax" { target x32 } } } */
 /* { dg-final { scan-assembler-times "int3" 1 } } */
