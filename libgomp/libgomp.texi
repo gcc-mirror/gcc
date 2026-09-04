@@ -5246,12 +5246,12 @@ This is currently not specified in more detail, and subject to change.
 @cindex Environment Variable
 @table @asis
 @item @emph{Description}:
-Control the behavior of devices which can access host moemory, specifically
+Control the behavior of devices which can access host memory, specifically
 whether data mapping copies data or uses self-mapping, such that the device
 directly accesses the corresponding host memory.  Setting the environment
 variable to @code{DISABLED} does not make use of Unified Shared Memory by
 default.  Setting it to @code{AUTO} conditionally enables Unified Shared
-Memory on specific integrated GPUs (APUs, in the verbiage of AMD).  In most
+Memory (USM) on specific integrated GPUs (APUs, in the verbiage of AMD).  In most
 workloads on these types of GPUs, self-mapping is expected to reduce runtime
 overhead.  Lastly, setting it to @code{ENABLED} unconditionally attempts
 to make use of Unified Shared Memory if the device claims to support it.  Of
@@ -5261,11 +5261,16 @@ behavior to take precedence over the behavior set by this environment
 variable.  For caveats around Unified Shared Memory, please consult
 the relevant sections in @ref{Offload-Target Specifics}.
 
-When Unified Shared Memory is enabled, whether by a @code{requires} directive
-or by this environment variable being set to @code{AUTO} or @code{ENABLED},
-global static variables that appear in a @code{declare target} directive are
-not updated between device and host.  That is, data copying under this model
-for global static variables is ignored.
+When unified-shared memory is enabled by this environment variable, the
+following is currently @emph{unsupported} for only global static variables
+that are specified in an @code{enter} clause on a @code{declare target}
+directive: specifying those variables in a @code{map} clause with @code{always}
+modifier on a @code{target} or @code{target data} directive.  However, both
+@code{map} clauses without @code{always} modifier and using the
+@code{target update}, @code{target enter data}, or @code{target exit data}
+directives is fully supported.  When the unsupported case is
+encountered, the program aborts with an error message.
+@c FIXME: This is tracked in PR libgomp/127186
 
 OpenACC is unaffected by the value of this environment variable, however,
 hybrid usage of OpenMP and OpenACC offloading results in the first used

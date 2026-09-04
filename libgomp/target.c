@@ -4672,7 +4672,8 @@ gomp_exit_data (struct gomp_device_descr *devicep, size_t mapnum,
 /* Copy data for global static non-link variable, only; to be use with
    GOMP_RUNTIME_USM.  Global variables with 'link' already point to the
    host and can be ignored.  Only mapping with ALWAYS needs to be handled
-   as static has infinite ref count.  */
+   as static has infinite ref count - additionally handle pointer attachment
+   to global static pointer variables.  */
 
 static void
 gomp_target_enter_exit_data_usm (bool map_entering_p,
@@ -4694,13 +4695,15 @@ gomp_target_enter_exit_data_usm (bool map_entering_p,
   for (size_t i = 0; i < mapnum; i++)
     {
       int kind = get_kind (short_mapkind, kinds, i);
-      if (!sizes[i])
-	continue;
-      if (!GOMP_MAP_ALWAYS_P (typemask & kind))
+      int map_kind = typemask & kind;
+      if ((!sizes[i] || !GOMP_MAP_ALWAYS_P (map_kind))
+	  && map_kind != GOMP_MAP_ATTACH)
 	continue;
       struct splay_tree_key_s cur_node;
       cur_node.host_start = (uintptr_t) hostaddrs[i];
-      cur_node.host_end = cur_node.host_start + sizes[i];
+      cur_node.host_end = cur_node.host_start
+			  + (map_kind == GOMP_MAP_ATTACH
+			     ? sizeof (void *) : sizes[i]);
       splay_tree_key n = splay_tree_lookup (&devicep->mem_map, &cur_node);
       if (!n || n->refcount != REFCOUNT_INFINITY)
 	continue;
@@ -4719,7 +4722,24 @@ gomp_target_enter_exit_data_usm (bool map_entering_p,
       void *devaddr = (void *) (n->tgt->tgt_start + n->tgt_offset
 				+ cur_node.host_start - n->host_start);
       size_t size = cur_node.host_end - cur_node.host_start;
-
+      uintptr_t addr;
+      if (map_kind == GOMP_MAP_ATTACH)
+	{
+	  /* Check whether the pointee is a device variable; if so, we need
+	     to use the device address.
+	     NOTE: Assumes that that variable is 'always' mapped such that an
+	     update is actually required.  */
+	  cur_node.host_start = (uintptr_t) *(void **) hostaddr;
+	  cur_node.host_end = cur_node.host_start + 1;
+	  splay_tree_key n2 = splay_tree_lookup (&devicep->mem_map, &cur_node);
+	  if (n2 && n2->refcount == REFCOUNT_INFINITY)
+	    {
+	      addr = (n2->tgt->tgt_start + n2->tgt_offset
+		      + cur_node.host_start - n2->host_start);
+	      hostaddr = &addr;
+	    }
+	  devaddr += sizes[i];
+	}
       if (map_entering_p)
 	gomp_copy_host2dev (devicep, NULL, devaddr, hostaddr, size, false,
 			    NULL);
