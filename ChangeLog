@@ -1,3 +1,19 @@
+2026-09-03  Filip Kastl  <fkastl@suse.cz>
+
+	* configure: Regenerate.
+
+2026-09-03  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* Makefile.in: Regenerate.
+	* Makefile.tpl: Pass "--perf perf.data" to gcc-auto-profile. Separate
+	the make invocation from perf using "--".
+
+2026-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* Makefile.tpl (mail-report.log): Mark as .PHONY.
+	(mail-report-with-warnings.log): Likewise.
+	* Makefile.in: Regenerate.
+
 2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* MAINTAINERS.yml: Convert an entry to use inactive_DCO.

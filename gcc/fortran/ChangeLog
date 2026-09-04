@@ -1,3 +1,21 @@
+2026-09-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104750
+	* module.cc (mio_full_f2k_derived) : Instead of transferring
+	the sym_root from the formal namespace, call mio_f2k_derived so
+	that all required symbols and references are fully loaded.
+	(read_cleanup): Restore named symtree entries for referenced
+	PDT type specification parameters during module cleanup, while
+	preserving existing handling for ordinary hidden symbols and
+	ignoring formal parameters without namespaces.
+	(fixup_pdt_parameter_namespaces): A new function that transfers
+	the namespace of locally declared PDT type specification parms
+	to the derived-type namespace after skipping inherited parameters,
+	preserving the existing namespace ownership and ref counting.
+	(read_module): Call the new fcn after read_cleanup, so that the
+	required symbol and formal-parameter information has been fully
+	reconstructed first.
+
 2026-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127128

@@ -1,3 +1,13 @@
+2026-09-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* c-attribs.cc (handle_callback_only_attribute): Add early
+	return if the attribute is not used on a function.
+
+2026-09-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* c-attribs.cc (handle_callback_only_attribute): Reject variadic
+	dispatching or callback functions.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wsynth): Use 2 spaces instead of 1 between

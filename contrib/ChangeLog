@@ -1,3 +1,8 @@
+2026-09-03  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gen_autofdo_event.py: Add missed updates for passing "--inherit" and
+	"-o $perf_file" to perf.
+
 2026-09-02  Richard Earnshaw  <rearnsha@arm.com>
 
 	* maintainer_utils.py (maintainer_schema): Set the minimum array

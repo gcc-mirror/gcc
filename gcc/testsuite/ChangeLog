@@ -1,3 +1,111 @@
+2026-09-03  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR middle-end/125390
+	* gcc.target/riscv/rvv/autovec/subreg-extract.c: Adjust test
+	expectation.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/full-vec-move1.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/vls-vlmax/shuffle-evenodd.c:
+	Likewise.
+	* gcc.target/riscv/rvv/autovec/pr125390.c: New test.
+
+2026-09-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/126629
+	* gcc.target/aarch64/sve/pr126629.c: New test.
+	* gcc.target/aarch64/sve/pr126629_extend.c: New test.
+	* gcc.target/aarch64/sve/pr126629_gather.c: New test.
+	* gcc.target/aarch64/sve/pr126629_gather2.c: New test.
+
+2026-09-03  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127183
+	* g++.dg/eh/noncall-this-method-1.C: New test.
+
+2026-09-03  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR target/96056
+	* gcc.target/arm/atomic-comp-swap-release-acquire-4.c: New test.
+
+2026-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve2/vect-sat-trunc-shift-1.c: New test.
+	* gcc.target/aarch64/sve2/vect-sat-trunc-shift-1_run.c: Likewise.
+	* gcc.target/aarch64/sve2/vect-sat-trunc-shift-2.c: Likewise.
+
+2026-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve2/vect-sat-trunc-1.c: New test.
+	* gcc.target/aarch64/sve2/vect-sat-trunc-1_run.c: Likewise.
+	* gcc.target/aarch64/sve2/vect-sat-trunc-2.c: Likewise.
+	* gcc.target/aarch64/sve2/vect-sat-trunc-2_run.c: Likewise.
+	* gcc.target/aarch64/sve2/vect-sat-trunc-clip-1_run.c: Likewise.
+
+2026-09-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* gcc.dg/attr-callback.c: Add testcases for the early return.
+
+2026-09-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* gcc.dg/attr-callback.c: Add testcases for variadic functions.
+
+2026-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/arm/short-it-ifcvt-1.c: Add -mthumb.
+	* gcc.target/arm/short-it-ifcvt-2.c: Likewise.
+
+2026-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127195
+	* gcc.dg/vect/vect-pr127195.c: New testcase.
+
+2026-09-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104750
+	* gfortran.dg/pdt_93.f90: New test.
+
+2026-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127109
+	* g++.dg/cpp26/decomp32.C: New test.
+
+2026-09-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/89007
+	* gcc.target/i386/pr89007.c: New test.
+
+2026-09-03  Julio Sotoriva De Bastiani  <Julio.SotorivaDeBastiani@arm.com>
+
+	PR target/126096
+	* gcc.target/aarch64/sve2/acle/general/whilele_1.c: New test.
+	* gcc.target/aarch64/sve2/acle/general/whilelt_1.c: New test.
+
+2026-09-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/march-native-2.c: New test.
+	* gcc.target/riscv/march-native-3.c: New test.
+	* gcc.target/riscv/march-native-4.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_7.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_8.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_9.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_10.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_11.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_12.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_13.c: New test.
+	* gcc.target/riscv/cpunative/native_cpu_0.c: Check the tuning too.
+	* gcc.target/riscv/cpunative/native_cpu_1.c: Likewise.
+	* gcc.target/riscv/cpunative/native_cpu_2.c: Likewise.
+	* gcc.target/riscv/cpunative/native_cpu_4.c: Likewise.
+	* gcc.target/riscv/cpunative/native_cpu_5.c: Likewise.
+	* gcc.target/riscv/cpunative/native_cpu_6.c: Likewise.
+	* gcc.target/riscv/cpunative/native_cpu_3.c: Check that an
+	unrecognised core leaves the tuning alone.
+
+2026-09-03  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.target/i386/pr113609-1.c: Fix for ia32.
+	* gcc.target/i386/pr113609-2.c: Likewise.
+
 2026-09-02  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gcc.target/i386/avx2-shiftqihi-constant-2.c: Require AVX512.

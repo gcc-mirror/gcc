@@ -1,3 +1,12 @@
+2026-09-03  Ian Lance Taylor  <iant@golang.org>
+
+	* elf.c (backtrace_syminfo_to_full_callback_moredata): Move to
+	elf.c from fileline.c and make static.
+	* fileline.c (backtrace_syminfo_to_full_callback_moredata):
+	Moved to elf.c.
+	* internal.h (backtrace_syminfo_to_full_callback_moredata): Don't
+	declare.
+
 2026-09-01  Ian Lance Taylor  <iant@golang.org>
 
 	* elf.c (elf_nodebug): Handle state->moredata.

@@ -1,3 +1,19 @@
+2026-09-03  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/126800
+	* include/bits/hashtable.h: (try_emplace): Call correct helper.
+	* testsuite/23_containers/unordered_map/modifiers/hetero/insert.cc:
+	Check whether key arguments have been copied.
+
+2026-09-03  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/safe_base.h
+	(_Safe_iterator_base::_M_attach_single): Adapt comment to refer to _M_attach.
+	(_Safe_iterator_base::_M_detach): Fix comment typo.
+	(_Safe_iterator_base::_M_detach_single): Adapt comment to refer to _M_detach.
+	(_Safe_sequence_base::_M_attach_single): Adapt comment to refer to _M_attach.
+	(_Safe_sequence_base::_M_detach_single): Adapt comment to refer to _M_detach.
+
 2026-09-02  Jakub Jelinek  <jakub@redhat.com>
 
 	P2641R4

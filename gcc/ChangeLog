@@ -1,3 +1,184 @@
+2026-09-03  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR middle-end/125390
+	* config/riscv/riscv-v.cc (shuffle_even_odd_patterns): Adjust
+	check and clarify comment.
+	* config/riscv/riscv.cc (riscv_can_change_mode_class): Allow
+	same-sized vectors.
+	(riscv_regmode_natural_size): Set to "one vector" for VLS modes.
+
+2026-09-03  Robin Dapp  <rdapp.gcc@gmail.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR target/124996
+	PR middle-end/125390
+	* doc/tm.texi: Document int move requirements for
+	REGMODE_NATURAL_SIZE.
+	* doc/tm.texi.in: Likewise.
+	* expmed.cc (store_bit_field_1): Spill unsplittable modes to
+	memory.
+	(store_integral_bit_field): Defer unsplittable modes to
+	extract_bit_field.
+	(extract_bit_field_1): Spill if necessary.
+	* expr.cc (read_complex_part): Adjust assert.
+	* lower-subreg.cc (interesting_mode_p): Don't consider
+	unsplittable modes as interesting.
+	(simple_move_operand): Don't split subregs whose outer mode
+	can be split but the inner mode cannot.
+	(simplify_subreg_concatn): Don't insist the outer mode is
+	interesting but rather check that its size is constant.
+
+2026-09-03  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv-protos.h (riscv_split_quadword_move):
+	Declare.
+	* config/riscv/riscv.cc (riscv_subpart): New function to get
+	TImode sub-parts from OImode regs.
+	(subreg_word_splittable_p): New function to check if a subreg
+	(spill_subreg_move): New function.
+	(riscv_split_doubleword_move): Add unsplittable-subreg handling.
+	(riscv_split_quadword_move): New function to split OImode.
+	* config/riscv/riscv.md (movti): New expander.
+	(movoi): Likewise.
+
+2026-09-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/126629
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svldff1_gather_impl::expand): Change ffr update.
+	(svldff1_gather_extend::expand): Likewise.
+	(svldxf1_impl::expand): Likewise.
+	(svldxf1_extend_impl::expand): Likewise.
+	* config/aarch64/aarch64-sve.md (aarch64_update_ffr_for_load):
+	Change to...
+	(@aarch64_update_ffr<mode>): ...this.
+
+2026-09-03  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127183
+	* tree-eh.cc (lower_eh_constructs_2): Use lhs_could_trap_p for lhs.
+	(stmt_could_throw_1_p): Use tree_could_throw_1 for lhs.
+	(tree_could_throw_p): Likewise.
+
+2026-09-03  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR target/96056
+	* config/arm/arm.cc (arm_expand_compare_and_swap): Always promote
+	mod_s to ACQ_REL for the RELEASE/ACQUIRE combination.
+
+2026-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/iterators.md (vn_mode): Add the SVE modes whose
+	elements halve without changing the number of lanes.
+	* config/aarch64/aarch64-sve2.md
+	(*aarch64_sve_<shrn_op>shrnb<mode>): New pattern.
+
+2026-09-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/iterators.md (VNARROWQ, Vnarrowq): Add the SVE
+	modes whose elements halve without changing the number of lanes.
+	(Ventype): Add the unpacked SVE modes.
+	* config/aarch64/aarch64-sve2.md
+	(<sat_trunc_op>trunc<mode><Vnarrowq>2): New pattern.
+
+2026-09-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* doc/extend.texi: Reformat callback_only attrbute docs.
+
+2026-09-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* doc/extend.texi: Add a line saying variadic functions are
+	unsupported to the callback_only description.
+
+2026-09-03  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	Move gpr<->xmm move cost ...
+	(ix86_vector_costs::add_slp_cost): ... here, to new overload
+	of add_slp_cost.
+	* tree-vect-slp.cc (vect_prologue_cost_for_slp): Consistently
+	set SLP node for all cost components to make grouping for
+	the add_slp_cost hook work.
+	(add_slp_costs): Avoid calling vector_costs::add_slp_cost
+	with NULL SLP node.
+
+2026-09-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127195
+	* tree-vect-slp.cc (vect_create_constant_vectors):
+	Properly compute number_of_copies, assert we end up
+	on a vector boundary.
+
+2026-09-03  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/gcc-auto-profile: Replace explicit perf.data
+	with perf_file variable. Add parsing for "--perf" flag.
+	* config/i386/gcc-auto-profile: Likewise.
+
+2026-09-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/89007
+	* tree-vect-patterns.cc (vect_recog_average_pattern): Allow signed
+	types in the fallback.  Check whether the fallback operations are
+	supported.
+
+2026-09-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_bb_vectorization_profitable_p):
+	Prefer the computed SLP schedule location to determine
+	the containing loop.  Make sure to make lock-step
+	progress when iterating regions with missing vector/scalar
+	part.  Delay individual assessment of profitability for
+	the region containing the entry and require profitability
+	based on total costs.
+
+2026-09-03  Julio Sotoriva De Bastiani  <Julio.SotorivaDeBastiani@arm.com>
+
+	PR target/126096
+	* config/aarch64/aarch64-acle-builtins.cc
+	(gimple_folder::fold_to_pfalse): Handle svcount_t.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svpfalse_impl::fold): Handle svcount_t.
+	(svwhilelx_impl::fold_type): Punt for non-pfalse svcount_t.
+
+2026-09-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/driver-riscv.cc (struct riscv_cpuid): New.
+	(riscv_cpuid::valid_p, riscv_cpuid::match): New member functions.
+	(struct riscv_core_id): New.
+	(riscv_core_ids): New.
+	(riscv_core_from_cpuid): New function.
+	(riscv_hwprobe_cpus, riscv_hwprobe_affinity, riscv_hwprobe_this_core):
+	New functions.
+	(struct riscv_cpuinfo): Add the identification registers.
+	(riscv_read_cpuinfo): Read them.
+	(riscv_cpuid_from_pairs, riscv_cpuid_from_hwprobe)
+	(riscv_cpuid_from_cpuinfo): New functions.
+	(riscv_native_tune): New function.
+	(host_detect_local_cpu): Handle "tune".
+	* config/riscv/riscv.h (RISCV_NATIVE_SPECS): Handle -mtune=native
+	and -mcpu=native.
+	(OPTION_DEFAULT_SPECS): Leave -mcpu=native to RISCV_NATIVE_SPECS.
+	* config/riscv/x-riscv: Update the dependencies.
+	* doc/invoke.texi (RISC-V Options): Document -mtune=native and
+	-mcpu=native.
+
+2026-09-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-cores.def (RISCV_CORE): Fill in MVENDORID,
+	MARCHID and MIMPID for sifive-u74, sifive-p550, sifive-p870-d,
+	spacemit-x60, spacemit-x100 and spacemit-a100.
+
+2026-09-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* common/config/riscv/riscv-hwprobe.h (riscv_core_id_t): New typedef.
+	* config/riscv/riscv-cores.def (UNKNOWN_ID): New macro.
+	(RISCV_CORE): Take MVENDORID, MARCHID and MIMPID; pass UNKNOWN_ID
+	for every core.
+	* common/config/riscv/riscv-common.cc (RISCV_CORE): Update for the
+	new arguments.
+	* config/riscv/gen-riscv-mcpu-texi.cc (RISCV_CORE): Likewise.
+
 2026-09-02  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/127092
