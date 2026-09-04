@@ -1,3 +1,23 @@
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120789
+	* include/bits/ranges_algo.h (__remove_if_fn::operator()): Use
+	ranges::iter_move(iter) instead of std::move(*iter).
+	* testsuite/25_algorithms/remove_if/120789.cc: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-07-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120789
+	* include/bits/ranges_algo.h (__unique_fn::operator()): Use
+	ranges::iter_move(iter) instead of std::move(*iter).
+	* testsuite/25_algorithms/unique/120789.cc: New test.
+
 2026-08-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

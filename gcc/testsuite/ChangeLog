@@ -1,3 +1,51 @@
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* g++.dg/cpp2a/is-constant-evaluated16.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* g++.dg/template/fn-ptr6.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123529
+	PR c++/98930
+	* g++.dg/cpp1z/nontype9.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121822
+	* g++.dg/cpp2a/concepts-decltype6.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* g++.dg/cpp2a/concepts-placeholder15.C: New test.
+
+2026-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-14  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* gcc.dg/darwin-minversion-link.c: Account for macOS 26.
+
 2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

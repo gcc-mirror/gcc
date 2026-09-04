@@ -1,3 +1,17 @@
+2026-09-03  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	Backported from master:
+	2025-07-14  François-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	PR target/120645
+	* config/darwin-driver.cc: Account for latest macOS numbering
+	scheme.
+
+2026-09-03  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.h: Remove references to heap trampoline
+	symbols.
+
 2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

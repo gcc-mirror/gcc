@@ -1,3 +1,50 @@
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* typeck2.cc (store_init_value): Check maybe_constexpr_fn
+	instead of DECL_DECLARED_CONSTEXPR_P of the function scope.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* pt.cc (mark_template_arguments_used): Split out loop into ...
+	(mark_template_arguments_used_1): ... here. Recurse into
+	argument packs.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-04-07  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123529
+	PR c++/98930
+	* pt.cc (has_value_dependent_address): Correct context
+	dependence check for a static local variable.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-02-17  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121822
+	* cvt.cc (convert_to_void): Don't evaluate a concept-id
+	in an unevaluated context.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* pt.cc (any_template_parm_r) <case TEMPLATE_TYPE_PARM>:
+	Don't walk TREE_TYPE.
+
 2026-08-20  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
