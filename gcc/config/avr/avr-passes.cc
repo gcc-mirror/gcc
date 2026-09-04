@@ -87,8 +87,7 @@ namespace
 {
 
 /////////////////////////////////////////////////////////////////////////////
-// Before we start with the very code, introduce some helpers that are
-// quite generic, though up to now only avr-fuse-add makes use of them.
+// Before we start with the very code, introduce some generic helpers.
 
 /* Get the next / previous NONDEBUG_INSN_P after INSN in basic block BB.
    This assumes we are in CFG layout mode so that BLOCK_FOR_INSN()
@@ -4923,18 +4922,19 @@ bool
 avr_pass_2moves::optimize_2moves_bb (basic_block bb)
 {
   bool changed = false;
-  rtx_insn *insn1 = nullptr;
-  rtx_insn *insn2 = nullptr;
-  rtx_insn *curr;
+  rtx_insn *insn1 = next_nondebug_insn_bb (bb, BB_HEAD (bb));
 
-  FOR_BB_INSNS (bb, curr)
+  while (insn1)
     {
-      if (insn1 && INSN_P (insn1)
-	  && insn2 && INSN_P (insn2))
-	changed |= optimize_2moves (insn1, insn2);
+      rtx_insn *insn2 = next_nondebug_insn_bb (bb, insn1);
+      if (!insn2)
+	break;
 
-      insn1 = insn2;
-      insn2 = curr;
+      rtx_insn *next = next_nondebug_insn_bb (bb, insn2);
+
+      bool change = optimize_2moves (insn1, insn2);
+      changed |= change;
+      insn1 = change ? next : insn2;
     }
 
   return changed;
@@ -4974,7 +4974,10 @@ avr_pass_2moves::optimize_2moves (rtx_insn *insn1, rtx_insn *insn2)
       for (; use; use = DF_REF_NEXT_REG (use))
 	{
 	  rtx_insn *user = DF_REF_INSN (use);
-	  avr_dump (" %d", INSN_UID (user));
+	  bool debug_p = DEBUG_INSN_P (user);
+	  avr_dump (" %d%s", INSN_UID (user), debug_p ? "=debug_insn" : "");
+	  if (debug_p)
+	    continue;
 	  good |= INSN_UID (user) == INSN_UID (insn2);
 	  bad |= INSN_UID (user) != INSN_UID (insn2);
 	}
