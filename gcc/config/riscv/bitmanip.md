@@ -549,7 +549,7 @@
 (define_expand "bswaphi2"
   [(set (match_operand:HI 0 "register_operand" "=r")
         (bswap:HI (match_operand:HI 1 "register_operand" "r")))]
-  "TARGET_ZBB"
+  "TARGET_ZBB || TARGET_ZBKB"
 {
   rtx tmp = gen_reg_rtx (word_mode);
   rtx newop1 = gen_lowpart (word_mode, operands[1]);
@@ -563,6 +563,41 @@
   else
     emit_insn (gen_lshrsi3 (tmp1, tmp, GEN_INT (32 - 16)));
   emit_move_insn (operands[0], gen_lowpart (HImode, tmp1));
+  DONE;
+})
+
+(define_expand "bitreverse<mode>2"
+  [(match_operand:ANYI 0 "register_operand")
+   (match_operand:ANYI 1 "register_operand")]
+  "TARGET_ZBKB"
+{
+  rtx newop1 = gen_lowpart (word_mode, operands[1]);
+  rtx tmp = newop1, tmp2;
+  if (<MODE>mode != QImode)
+    {
+      tmp = gen_reg_rtx (word_mode);
+      if (TARGET_64BIT)
+	emit_insn (gen_bswapdi2 (tmp, newop1));
+      else
+	emit_insn (gen_bswapsi2 (tmp, newop1));
+    }
+  tmp2 = gen_reg_rtx (word_mode);
+  if (TARGET_64BIT)
+    emit_insn (gen_riscv_brev8_di (tmp2, tmp));
+  else
+    emit_insn (gen_riscv_brev8_si (tmp2, tmp));
+  tmp = tmp2;
+  if (<MODE>mode != word_mode && <MODE>mode != QImode)
+    {
+      tmp = gen_reg_rtx (word_mode);
+      if (TARGET_64BIT)
+	emit_insn (gen_lshrdi3 (tmp, tmp2,
+				GEN_INT (64 - GET_MODE_BITSIZE (<MODE>mode))));
+      else
+	emit_insn (gen_lshrsi3 (tmp, tmp2,
+				GEN_INT (32 - GET_MODE_BITSIZE (<MODE>mode))));
+    }
+  emit_move_insn (operands[0], gen_lowpart (<MODE>mode, tmp));
   DONE;
 })
 
