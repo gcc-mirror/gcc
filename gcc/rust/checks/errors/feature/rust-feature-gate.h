@@ -52,8 +52,16 @@ public:
   void visit (AST::Enum &enum_item) override;
   void visit (AST::EnumItem &enum_variant) override;
 
+  enum class GateResult
+  {
+    Gated,
+    Allowed,
+  };
+
+  GateResult gate (Feature::Name name, location_t loc,
+		   const std::string &error_msg);
+
 private:
-  void gate (Feature::Name name, location_t loc, const std::string &error_msg);
   void check_no_core_attribute (const AST::Attribute &attribute);
   void check_rustc_attri (const std::vector<AST::Attribute> &attributes);
   void

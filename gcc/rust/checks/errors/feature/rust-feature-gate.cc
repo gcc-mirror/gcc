@@ -76,7 +76,7 @@ FeatureGate::visit (AST::Crate &crate)
     }
 }
 
-void
+FeatureGate::GateResult
 FeatureGate::gate (Feature::Name name, location_t loc,
 		   const std::string &error_msg)
 {
@@ -102,7 +102,11 @@ FeatureGate::gate (Feature::Name name, location_t loc,
 	  rust_error_at (loc, ErrorCode::E0658, fmt_str, error_msg.c_str (),
 			 feature.as_string ().c_str ());
 	}
+
+      return GateResult::Gated;
     }
+
+  return GateResult::Allowed;
 }
 
 void
