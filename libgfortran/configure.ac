@@ -375,6 +375,12 @@ if test x$enable_caf_shmem = xtrue; then
      enable_caf_shmem=false])
   CFLAGS="$save_CFLAGS"
 fi
+case ${host} in
+  *-*-darwin[[89]]* | *-*-darwin10*)
+    # These versions define PTHREAD_PROCESS_SHARED but the functionality
+    # is not available at runtime, so the configure check misleads.
+    enable_caf_shmem=false;;
+esac
 AM_CONDITIONAL([ENABLE_CAF_SHMEM], [test x$enable_caf_shmem = xtrue])
 
 # Check strerror_r, cannot be above as versions with two and three arguments exist

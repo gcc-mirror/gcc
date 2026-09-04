@@ -18475,6 +18475,12 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$save_CFLAGS"
 fi
+case ${host} in
+  *-*-darwin[89]* | *-*-darwin10*)
+    # These versions define PTHREAD_PROCESS_SHARED but the functionality
+    # is not available at runtime, so the configure check misleads.
+    enable_caf_shmem=false;;
+esac
  if test x$enable_caf_shmem = xtrue; then
   ENABLE_CAF_SHMEM_TRUE=
   ENABLE_CAF_SHMEM_FALSE='#'
