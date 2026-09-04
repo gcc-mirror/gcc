@@ -591,6 +591,15 @@ enum omp_target_mode_kind
   OMP_TARGET_MODE_OMPACC = 1
 };
 
+/* Modes for -param=offload-gpu-mode.  */
+enum offload_gpu_modes
+{
+  OFFLOAD_GPU_MODE_AUTO,
+  OFFLOAD_GPU_MODE_SIMD,
+  OFFLOAD_GPU_MODE_SIMT_DIRECTED,
+  OFFLOAD_GPU_MODE_SIMT
+};
+
 #endif
 
 #endif /* ! GCC_FLAG_TYPES_H */

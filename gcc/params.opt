@@ -882,6 +882,25 @@ The minimum probability of reaching a source block for interblock speculative sc
 Common Joined UInteger Var(param_min_vect_loop_bound) Param Optimization
 If -ftree-vectorize is used, the minimal loop bound of a loop to be considered for vectorization.
 
+Enum
+Name(offload_gpu_modes) Type(enum offload_gpu_modes)
+
+EnumValue
+Enum(offload_gpu_modes) String(auto) Value(OFFLOAD_GPU_MODE_AUTO)
+
+EnumValue
+Enum(offload_gpu_modes) String(simd) Value(OFFLOAD_GPU_MODE_SIMD)
+
+EnumValue
+Enum(offload_gpu_modes) String(simt-directed) Value(OFFLOAD_GPU_MODE_SIMT_DIRECTED)
+
+EnumValue
+Enum(offload_gpu_modes) String(simt) Value(OFFLOAD_GPU_MODE_SIMT)
+
+-param=offload-gpu-mode=
+Common Joined Enum(offload_gpu_modes) Var(param_offload_gpu_mode) Init(OFFLOAD_GPU_MODE_AUTO) Param Optimization
+--param=offload-gpu-mode=[auto|simd|simt-directed|simt]	Specify what vector parallelization mode to use for GPU offload kernels.
+
 -param=openacc-kernels=
 Common Joined Enum(openacc_kernels) Var(param_openacc_kernels) Init(OPENACC_KERNELS_PARLOOPS) Param
 --param=openacc-kernels=[decompose|parloops]	Specify mode of OpenACC 'kernels' constructs handling.
