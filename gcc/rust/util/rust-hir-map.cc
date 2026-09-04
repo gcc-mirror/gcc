@@ -475,7 +475,21 @@ Mappings::insert_hir_impl_block (HIR::ImplBlock *item)
   if (item->has_trait_ref ())
     hirTraitImplBlockMappings[id] = item;
   else
-    hirInherentImplBlockMappings[id] = item;
+    {
+      for (auto &impl_item : item->get_impl_items ())
+	{
+	  if (impl_item->get_impl_item_type ()
+	      != HIR::ImplItem::ImplItemType::FUNCTION)
+	    continue;
+
+	  auto *function = static_cast<HIR::Function *> (impl_item.get ());
+	  if (!function->is_method ())
+	    continue;
+
+	  auto name = function->get_function_name ().as_string ();
+	  hirInherentImplItemMappings[name].emplace_back (impl_item.get (), item);
+	}
+    }
   hirImplBlockTypeMappings[impl_type_id] = item;
   insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
 }
@@ -875,6 +889,49 @@ void
 Mappings::insert_trait_impl_mapping (NodeId trait_node_id, HIR::ImplBlock *impl)
 {
   hirTraitImplMappings[trait_node_id].push_back (impl);
+}
+
+void
+Mappings::iterate_trait_impl_blocks_for_item (
+  const std::string &name,
+  std::function<bool (HirId, HIR::ImplBlock *)> cb)
+{
+  auto traits = hirTraitItemNameMappings.find (name);
+  if (traits == hirTraitItemNameMappings.end ())
+    return;
+
+  for (auto trait_node_id : traits->second)
+    {
+      auto impls = hirTraitImplMappings.find (trait_node_id);
+      if (impls == hirTraitImplMappings.end ())
+	continue;
+
+      for (auto *impl : impls->second)
+	if (!cb (impl->get_mappings ().get_hirid (), impl))
+	  return;
+    }
+}
+
+void
+Mappings::insert_trait_item_mapping (HirId trait_item_id, HIR::Trait *trait)
+{
+  rust_assert (hirTraitItemsToTraitMappings.find (trait_item_id)
+	       == hirTraitItemsToTraitMappings.end ());
+  hirTraitItemsToTraitMappings[trait_item_id] = trait;
+
+  auto item = lookup_hir_trait_item (trait_item_id);
+  rust_assert (item.has_value ());
+  if (item.value ()->get_item_kind ()
+      != HIR::TraitItem::TraitItemKind::FUNC)
+    return;
+
+  auto *function = static_cast<HIR::TraitItemFunc *> (item.value ());
+  if (!function->get_decl ().is_method ())
+    return;
+
+  auto name = function->get_decl ().get_function_name ().as_string ();
+  hirTraitItemNameMappings[name].push_back (
+    trait->get_mappings ().get_nodeid ());
 }
 
 void
