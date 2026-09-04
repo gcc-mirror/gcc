@@ -1,4 +1,4 @@
-/* Header file for pr106833.c test - contains test functions only */
+/* Header file for pr106833.*.c test - contains test functions only */
 
 /* Verify there is no ICE in LTO mode.  */
 

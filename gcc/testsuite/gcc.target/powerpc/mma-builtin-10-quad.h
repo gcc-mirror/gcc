@@ -1,4 +1,4 @@
-/* Header file for mma-builtin-10-quad.c test - contains test functions only */
+/* Header file for mma-builtin-10-quad.*.c test - contains test functions only */
 
 typedef unsigned char  vec_t __attribute__((vector_size(16)));
 

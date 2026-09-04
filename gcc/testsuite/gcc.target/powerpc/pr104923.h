@@ -1,4 +1,4 @@
-/* Header file for pr104923.c test - contains test functions only */
+/* Header file for pr104923.*.c test - contains test functions only */
 
 /* PR target/104923 */
 
