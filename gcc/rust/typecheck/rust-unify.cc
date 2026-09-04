@@ -18,7 +18,6 @@
 
 #include "rust-unify.h"
 #include "fold-const.h"
-#include "rust-substitution-mapper.h"
 #include "rust-tyty-util.h"
 #include "rust-tyty.h"
 #include "rust-type-util.h"
@@ -53,7 +52,7 @@ UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		     std::vector<CommitSite> &commits,
 		     std::vector<InferenceSite> &infers)
 {
-  UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, infer, check_bounds,
+  UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, check_bounds, infer,
 		commits, infers);
 
   TyTy::BaseType *result = r.go ();
@@ -76,8 +75,8 @@ TyTy::BaseType *
 UnifyRules::resolve_subtype (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs)
 {
   TyTy::BaseType *result
-    = UnifyRules::Resolve (lhs, rhs, locus, commit_flag, emit_error, infer_flag,
-			   check_bounds_flag, commits, infers);
+    = UnifyRules::Resolve (lhs, rhs, locus, commit_flag, emit_error,
+			   check_bounds_flag, infer_flag, commits, infers);
 
   // If the recursive call resulted in an error and would have emitted an error
   // message, disable error emission for the current level to avoid duplicate

@@ -46,7 +46,8 @@ MethodResolver::Probe (TyTy::BaseType *receiver,
 std::set<MethodCandidate>
 MethodResolver::Select (std::set<MethodCandidate> &candidates,
 			TyTy::BaseType *receiver,
-			std::vector<TyTy::BaseType *> arguments)
+			std::vector<TyTy::BaseType *> arguments,
+			TyTy::BaseType *result_type)
 {
   std::set<MethodCandidate> selected;
   for (auto &candidate : candidates)
@@ -76,6 +77,21 @@ MethodResolver::Select (std::set<MethodCandidate> &candidates,
 	      failed = true;
 	      break;
 	    }
+	}
+
+      if (!failed && result_type != nullptr)
+	{
+	  TyTy::BaseType *return_type = fn.get_return_type ();
+	  rust_debug ("method candidate output check fn=%s expected=%s "
+		      "return=%s",
+		      fn.debug_str ().c_str (),
+		      result_type->debug_str ().c_str (),
+		      return_type->debug_str ().c_str ());
+	  failed = !types_compatable (TyTy::TyWithLocation (result_type),
+				      TyTy::TyWithLocation (return_type),
+				      UNDEF_LOCATION, false /* emit_errors */);
+	  rust_debug ("method candidate output check result=%s",
+		      failed ? "rejected" : "accepted");
 	}
 
       if (!failed)

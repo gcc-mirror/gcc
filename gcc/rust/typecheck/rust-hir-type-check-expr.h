@@ -35,7 +35,8 @@ public:
   static TyTy::BaseType *
   ResolveOpOverload (LangItem::Kind lang_item_type, HIR::OperatorExprMeta expr,
 		     TyTy::BaseType *lhs, TyTy::BaseType *rhs,
-		     HIR::PathIdentSegment specified_segment);
+		     HIR::PathIdentSegment specified_segment,
+		     TyTy::BaseType *result_type);
 
   void visit (HIR::TupleIndexExpr &expr) override;
   void visit (HIR::TupleExpr &expr) override;
@@ -109,7 +110,10 @@ protected:
 				  HIR::OperatorExprMeta expr,
 				  TyTy::BaseType *lhs, TyTy::BaseType *rhs,
 				  HIR::PathIdentSegment specified_segment
-				  = HIR::PathIdentSegment::create_error ());
+				  = HIR::PathIdentSegment::create_error (),
+				  bool allow_defer = true,
+				  TyTy::BaseType *result_type = nullptr,
+				  TyTy::BaseType *probe_lhs = nullptr);
 
   bool resolve_fn_trait_call (HIR::CallExpr &expr,
 			      TyTy::BaseType *function_tyty,

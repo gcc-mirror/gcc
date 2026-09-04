@@ -257,8 +257,8 @@ unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   std::vector<UnifyRules::CommitSite> commits;
   std::vector<UnifyRules::InferenceSite> infers;
   return UnifyRules::Resolve (lhs, rhs, unify_locus, true /*commit*/,
-			      true /*emit_error*/, false /*infer*/,
-			      true /*check_bounds*/, commits, infers);
+			      true /*emit_error*/, true /*check_bounds*/,
+			      false /*infer*/, commits, infers);
 }
 
 TyTy::BaseType *
@@ -283,7 +283,7 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   std::vector<UnifyRules::InferenceSite> infers;
   TyTy::BaseType *result
     = UnifyRules::Resolve (lhs, rhs, unify_locus, false /*commit inline*/,
-			   emit_errors, implicit_infer_vars, check_bounds,
+			   emit_errors, check_bounds, implicit_infer_vars,
 			   commits, infers);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
 

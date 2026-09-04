@@ -725,8 +725,7 @@ bool
 TypeCheckContext::compute_ambigious_op_overload (HirId id,
 						 DeferredOpOverload &op)
 {
-  rust_debug ("attempting resolution of op overload: %s",
-	      op.predicate.as_string ().c_str ());
+  rust_debug ("attempting resolution of deferred operator overload");
 
   TyTy::BaseType *lhs = nullptr;
   bool ok = lookup_type (op.op.get_lvalue_mappings ().get_hirid (), &lhs);
@@ -739,8 +738,28 @@ TypeCheckContext::compute_ambigious_op_overload (HirId id,
       rust_assert (ok);
     }
 
-  TypeCheckExpr::ResolveOpOverload (op.lang_item_type, op.op, lhs, rhs,
-				    op.specified_segment);
+  TyTy::BaseType *current_result = op.result_type.get_tyty ();
+  rust_assert (current_result != nullptr);
+
+  rust_debug ("deferred operator expr=%u lhs=%s rhs=%s "
+	      "stored-result=%s current-result=%s result-ref=%u ty-ref=%u",
+	      id, lhs->debug_str ().c_str (),
+	      rhs == nullptr ? "<none>" : rhs->debug_str ().c_str (),
+	      current_result->debug_str ().c_str (),
+	      current_result->debug_str ().c_str (), op.result_type.get_ref (),
+	      current_result->get_ty_ref ());
+
+  TyTy::BaseType *resolved
+    = TypeCheckExpr::ResolveOpOverload (op.lang_item_type, op.op, lhs, rhs,
+					op.specified_segment, current_result);
+  if (resolved == nullptr)
+    return false;
+
+  TyTy::BaseType *result
+    = unify_site (id, TyTy::TyWithLocation (current_result),
+		  TyTy::TyWithLocation (resolved), op.op.get_locus ());
+  rust_assert (result != nullptr);
+  rust_assert (result->get_kind () != TyTy::TypeKind::ERROR);
 
   return true;
 }
@@ -748,14 +767,33 @@ TypeCheckContext::compute_ambigious_op_overload (HirId id,
 void
 TypeCheckContext::compute_inference_variables (bool emit_error)
 {
-  iterate_deferred_operator_overloads (
-    [&] (HirId id, DeferredOpOverload &op) mutable -> bool {
-      return compute_ambigious_op_overload (id, op);
-    });
+  auto resolve_deferred_operator_overloads = [this] () {
+    bool progress;
+    do
+      {
+	progress = false;
+	for (auto it = deferred_operator_overloads.begin ();
+	     it != deferred_operator_overloads.end ();)
+	  {
+	    if (compute_ambigious_op_overload (it->first, it->second))
+	      {
+		it = deferred_operator_overloads.erase (it);
+		progress = true;
+	      }
+	    else
+	      ++it;
+	  }
+      }
+    while (progress);
+  };
+
+  resolve_deferred_operator_overloads ();
 
   iterate ([&] (HirId id, TyTy::BaseType *ty) mutable -> bool {
     return compute_infer_var (id, ty, emit_error);
   });
+
+  resolve_deferred_operator_overloads ();
 }
 
 bool
@@ -771,9 +809,15 @@ TypeCheckContext::compute_infer_var (HirId id, TyTy::BaseType *ty,
   TyTy::InferType *infer_var = static_cast<TyTy::InferType *> (ty);
   TyTy::BaseType *default_type;
 
+  TyTy::BaseType *current = TyTy::TyVar (ty->get_ref ()).get_tyty ();
+  rust_assert (current != nullptr);
+
   rust_debug_loc (mappings.lookup_location (id),
-		  "trying to default infer-var: %s",
-		  infer_var->as_string ().c_str ());
+		  "trying to default infer-var id=%u ref=%u ty-ref=%u "
+		  "stored=%s current=%s",
+		  id, ty->get_ref (), ty->get_ty_ref (),
+		  infer_var->debug_str ().c_str (),
+		  current->debug_str ().c_str ());
   bool ok = infer_var->default_type (&default_type);
   if (!ok)
     {
@@ -782,6 +826,9 @@ TypeCheckContext::compute_infer_var (HirId id, TyTy::BaseType *ty,
 		       "type annotations needed");
       return true;
     }
+
+  rust_debug_loc (mappings.lookup_location (id), "default type selected: %s",
+		  default_type->debug_str ().c_str ());
 
   auto result
     = unify_site (id, TyTy::TyWithLocation (ty),

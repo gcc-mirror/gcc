@@ -54,8 +54,8 @@ public:
 
   static TyTy::BaseType *Resolve (TyTy::TyWithLocation lhs,
 				  TyTy::TyWithLocation rhs, location_t locus,
-				  bool commit_flag, bool emit_error, bool infer,
-				  bool check_bounds,
+				  bool commit_flag, bool emit_error,
+				  bool check_bounds, bool infer,
 				  std::vector<CommitSite> &commits,
 				  std::vector<InferenceSite> &infers);
 

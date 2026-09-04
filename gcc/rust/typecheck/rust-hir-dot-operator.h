@@ -64,7 +64,8 @@ public:
 
   static std::set<MethodCandidate>
   Select (std::set<MethodCandidate> &candidates, TyTy::BaseType *receiver,
-	  std::vector<TyTy::BaseType *> arguments);
+	  std::vector<TyTy::BaseType *> arguments,
+	  TyTy::BaseType *result_type = nullptr);
 
   static std::vector<predicate_candidate> get_predicate_items (
     const HIR::PathIdentSegment &segment_name, const TyTy::BaseType &receiver,
