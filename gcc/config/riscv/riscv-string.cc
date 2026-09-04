@@ -1043,10 +1043,12 @@ riscv_expand_block_move (rtx dest, rtx src, rtx length, bool overlap_p)
   return false;
 }
 
-/* Expand a block-clear instruction via cbo.zero instructions.  */
+/* Expand a block-clear instruction via cbo.zero instructions.
+   If TESTING_P is true, don't actually emit instructions, but only
+   return whether we can.  */
 
 static bool
-riscv_expand_block_clear_zicboz_zic64b (rtx dest, rtx length)
+riscv_expand_block_clear_zicboz_zic64b (rtx dest, rtx length, bool testing_p)
 {
   unsigned HOST_WIDE_INT hwi_length;
   unsigned HOST_WIDE_INT align;
@@ -1071,6 +1073,9 @@ riscv_expand_block_clear_zicboz_zic64b (rtx dest, rtx length)
   if (hwi_length > max_bytes)
     return false;
 
+  if (testing_p)
+    return true;
+
   unsigned HOST_WIDE_INT offset = 0;
   while (offset + cbo_bytes <= hwi_length)
     {
@@ -1092,8 +1097,8 @@ riscv_expand_block_clear_zicboz_zic64b (rtx dest, rtx length)
   return true;
 }
 
-bool
-riscv_expand_block_clear (rtx dest, rtx length)
+static bool
+riscv_expand_block_clear (rtx dest, rtx length, bool testing_p)
 {
   /* Only use setmem-zero expansion for Zicboz + Zic64b.  */
   if (!TARGET_ZICBOZ || !TARGET_ZIC64B)
@@ -1102,8 +1107,137 @@ riscv_expand_block_clear (rtx dest, rtx length)
   if (optimize_function_for_size_p (cfun))
     return false;
 
-  return riscv_expand_block_clear_zicboz_zic64b (dest, length);
+  return riscv_expand_block_clear_zicboz_zic64b (dest, length, testing_p);
 }
+
+/* Expand a suitable memset to straightline Xmode moves.
+   Only expand if unaligned access is fast and the length does not
+   exceed the memset inline threshold.
+   Return true on success and false otherwise.  If TESTING_P is true,
+   don't actually emit anything, but just return whether we could.  */
+
+static bool
+expand_scalar_setmem (rtx dst, rtx len, rtx val, bool testing_p)
+{
+  if (!CONST_INT_P (len))
+    return false;
+
+  /* By-pieces can handle this better.  */
+  if (val == const0_rtx)
+    return false;
+
+  unsigned HOST_WIDE_INT hwilen = UINTVAL (len);
+
+  if (riscv_memset_size_threshold >= 0
+      && hwilen > (unsigned HOST_WIDE_INT) riscv_memset_size_threshold)
+    return false;
+
+  /* Unlike memcpy, don't emit loops here for now, irrespective of the
+     user-provided threshold.  */
+  if (hwilen > RISCV_MAX_MOVE_BYTES_STRAIGHT)
+    return false;
+
+  /* Don't expand if misaligned stores are slow.  */
+  if (riscv_slow_unaligned_access_p)
+    return false;
+
+  /* A libcall is smaller.  */
+  if (optimize_function_for_size_p (cfun))
+    return false;
+
+  /* ??? Needed for the splat but we could still emulate it.  */
+  if (!CONST_INT_P (val) && !TARGET_MUL)
+    return false;
+
+  if (testing_p)
+    return true;
+
+  rtx splat;
+  if (!CONST_INT_P (val))
+    {
+      rtx val2 = gen_reg_rtx (Xmode);
+      do_zero_extendqi2 (val2, force_reg (QImode, val));
+
+      /* Splat the value to an Xmode register.  */
+      splat = gen_reg_rtx (Xmode);
+      if (TARGET_64BIT)
+	{
+	  rtx valmul = force_reg (Xmode, GEN_INT
+				  (HOST_WIDE_INT_C (0x0101010101010101)));
+	  emit_insn (gen_muldi3 (splat, val2, valmul));
+	}
+      else
+	{
+	  rtx valmul = force_reg (Xmode, GEN_INT
+				  (HOST_WIDE_INT_C (0x01010101)));
+	  emit_insn (gen_mulsi3 (splat, val2, valmul));
+	}
+    }
+  else
+    splat = force_reg (Xmode, gen_int_mode
+		       ((INTVAL (val) & 0xff)
+			* HOST_WIDE_INT_UC (0x0101010101010101), Xmode));
+
+  unsigned HOST_WIDE_INT i = 0;
+  for (; i + UNITS_PER_WORD <= hwilen; i += UNITS_PER_WORD)
+    {
+      rtx mem = adjust_address (dst, Xmode, i);
+      riscv_emit_move (mem, splat);
+    }
+
+  /* Use an overlapping store for the rest.  */
+  if (i < hwilen)
+    {
+      if (exact_log2 (hwilen - i) != -1)
+	{
+	  scalar_int_mode elmode
+	    = int_mode_for_size ((hwilen - i) * BITS_PER_UNIT, 0).require ();
+	  rtx mem = adjust_address (dst, elmode, i);
+	  riscv_emit_move (mem, gen_lowpart (elmode, splat));
+	}
+      else
+	{
+	  /* Get the next-smaller power of 2 of length.  */
+	  HOST_WIDE_INT elsz = HOST_WIDE_INT_1U << (ceil_log2 (hwilen - i) - 1);
+	  scalar_int_mode elmode
+	    = int_mode_for_size (elsz * BITS_PER_UNIT, 0).require ();
+	  rtx mem = adjust_address (dst, elmode, i);
+	  riscv_emit_move (mem, gen_lowpart (elmode, splat));
+	  mem = adjust_address (dst, elmode, hwilen - elsz);
+	  riscv_emit_move (mem, gen_lowpart (elmode, splat));
+	}
+    }
+
+  return true;
+}
+
+/* Expand a memset operation.  Return true on success and false
+   otherwise.  TESTING_P is true if we're only querying whether
+   we could expand but not actually perform the expansion.  */
+
+bool
+riscv_expand_setmem (rtx dst, rtx len, rtx val, bool testing_p)
+{
+  if (TARGET_VECTOR && stringop_strategy & STRATEGY_VECTOR)
+    {
+      bool ok = riscv_vector::expand_vec_setmem (dst, len, val, testing_p);
+      if (ok)
+	return true;
+    }
+
+  if (val == const0_rtx && riscv_expand_block_clear (dst, len, testing_p))
+    return true;
+
+  if (stringop_strategy & STRATEGY_SCALAR)
+    {
+      bool ok = expand_scalar_setmem (dst, len, val, testing_p);
+      if (ok)
+	return true;
+    }
+
+  return false;
+}
+
 
 /* --- Vector expanders --- */
 
@@ -1686,9 +1820,13 @@ check_vectorise_memory_operation (rtx length_in, HOST_WIDE_INT &lmul_out)
   return true;
 }
 
-/* Used by setmemdi in riscv.md.  */
+/* Expand a vector memset with the given parameters.  If TESTING_P is
+   true, return true if we could expand but don't actually perform
+   the expansion.  */
+
 bool
-expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
+expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in,
+		   bool testing_p)
 {
   stringop_info info;
 
@@ -1706,6 +1844,9 @@ expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
     }
   else if (riscv_memset_size_threshold != -1)
     return false;
+
+  if (testing_p)
+    return true;
 
   rtx dst_addr = copy_addr_to_reg (XEXP (dst_in, 0));
   rtx dst = change_address (dst_in, info.vmode, dst_addr);

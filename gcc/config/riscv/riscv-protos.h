@@ -225,7 +225,6 @@ extern bool vsetvl_insn_p (rtx_insn *);
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_compare (rtx, rtx, rtx, rtx);
 extern bool riscv_expand_block_move (rtx, rtx, rtx, bool);
-extern bool riscv_expand_block_clear (rtx, rtx);
 
 /* Information about one CPU we know about.  */
 struct riscv_cpu_info {
@@ -768,7 +767,7 @@ void expand_popcount (rtx *);
 void expand_rawmemchr (machine_mode, rtx, rtx, rtx, bool = false);
 bool expand_strcmp (rtx, rtx, rtx, rtx, unsigned HOST_WIDE_INT, bool);
 void emit_vec_extract (rtx, rtx, rtx);
-bool expand_vec_setmem (rtx, rtx, rtx);
+bool expand_vec_setmem (rtx, rtx, rtx, bool);
 bool expand_vec_cmpmem (rtx, rtx, rtx, rtx);
 void expand_strided_load (machine_mode, rtx *);
 void expand_strided_store (machine_mode, rtx *);
@@ -849,6 +848,7 @@ const unsigned int RISCV_BUILTIN_CLASS = (1 << RISCV_BUILTIN_SHIFT) - 1;
 /* Routines implemented in riscv-string.cc.  */
 extern bool riscv_expand_strcmp (rtx, rtx, rtx, rtx, rtx);
 extern bool riscv_expand_strlen (rtx, rtx, rtx, rtx);
+extern bool riscv_expand_setmem (rtx, rtx, rtx, bool);
 
 /* Routines implemented in riscv-fusion.cc.  */
 enum riscv_fusion_pairs
