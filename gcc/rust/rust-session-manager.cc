@@ -792,6 +792,7 @@ Session::compile_crate (const char *filename)
 
   // add the mappings to it
   HIR::Crate &hir = mappings.insert_hir_crate (std::move (lowered));
+  mappings.build_impl_indexes ();
   if (options.dump_option_enabled (CompileOptions::HIR_DUMP))
     {
       dump_hir (hir);

@@ -76,9 +76,9 @@ PathProbeExpr::probe_adt_impls (TyTy::ADTType *adt)
       return;
     }
 
-  NodeId adt_node_id = adt_item.value ()->get_mappings ().get_nodeid ();
+  DefId adt_id = adt_item.value ()->get_mappings ().get_defid ();
   mappings.iterate_adt_impl_items (
-    adt_node_id,
+    adt_id,
     [this] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) -> bool {
       if (impl->has_trait_ref ())
 	return true;
@@ -90,7 +90,7 @@ PathProbeExpr::probe_adt_impls (TyTy::ADTType *adt)
     return;
 
   mappings.iterate_adt_impl_items (
-    adt_node_id,
+    adt_id,
     [this] (HirId id, HIR::ImplItem *item, HIR::ImplBlock *impl) -> bool {
       if (!impl->has_trait_ref ())
 	return true;

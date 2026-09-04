@@ -220,20 +220,22 @@ public:
 	return;
   }
 
-  void insert_adt_impl_mapping (NodeId adt_node_id, HIR::ImplBlock *impl);
+  void insert_adt_impl_mapping (DefId adt_id, HIR::ImplBlock *impl);
+
+  void build_impl_indexes ();
 
   void iterate_adt_impl_items (
-    NodeId adt_node_id,
+    DefId adt_id,
     std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
-  void insert_trait_impl_mapping (NodeId trait_node_id, HIR::ImplBlock *impl);
+  void insert_trait_impl_mapping (DefId trait_id, HIR::ImplBlock *impl);
 
   void iterate_trait_impl_items (
-    NodeId trait_node_id,
+    DefId trait_id,
     std::function<bool (HirId, HIR::ImplItem *, HIR::ImplBlock *)> cb);
 
   void
-  iterate_trait_impl_blocks (NodeId trait_node_id,
+  iterate_trait_impl_blocks (DefId trait_id,
 			     std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
   template <typename Callback> void iterate_trait_impl_blocks (Callback &&cb)
@@ -244,9 +246,8 @@ public:
 	return;
   }
 
-  void iterate_trait_impl_blocks_for_item (const std::string &name,
-					  std::function<bool (
-					    HirId, HIR::ImplBlock *)> cb);
+  void iterate_trait_impl_blocks_for_item (
+    const std::string &name, std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
   void iterate_impl_blocks (std::function<bool (HirId, HIR::ImplBlock *)> cb);
 
@@ -435,10 +436,11 @@ private:
 	   std::vector<std::pair<HIR::ImplItem *, HIR::ImplBlock *>>>
     hirInherentImplItemMappings;
   std::map<HirId, HIR::ImplBlock *> hirImplBlockTypeMappings;
-  std::map<NodeId, std::vector<HIR::ImplBlock *>> hirAdtImplMappings;
+  std::map<DefId, std::vector<HIR::ImplBlock *>> hirAdtImplMappings;
   std::set<HIR::ImplBlock *> hirIndexedAdtImpls;
-  std::map<NodeId, std::vector<HIR::ImplBlock *>> hirTraitImplMappings;
-  std::map<std::string, std::vector<NodeId>> hirTraitItemNameMappings;
+  std::map<DefId, std::vector<HIR::ImplBlock *>> hirTraitImplMappings;
+  std::map<std::string, std::vector<DefId>> hirTraitItemNameMappings;
+  bool hirImplIndexesBuilt;
   std::map<HirId, HIR::TraitItem *> hirTraitItemMappings;
   std::map<HirId, HIR::ExternBlock *> hirExternBlockMappings;
   std::map<HirId, std::pair<HIR::ExternalItem *, HirId>> hirExternItemMappings;

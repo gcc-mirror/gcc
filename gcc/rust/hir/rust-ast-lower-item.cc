@@ -27,30 +27,9 @@
 #include "rust-ast-lower-pattern.h"
 #include "rust-ast-lower-block.h"
 #include "rust-item.h"
-#include "rust-finalized-name-resolution-context.h"
 
 namespace Rust {
 namespace HIR {
-
-static void
-register_adt_impl (Analysis::Mappings &mappings, HIR::Type *impl_type,
-		   HIR::ImplBlock *impl)
-{
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
-  auto resolved = nr_ctx.lookup (impl_type->get_mappings ().get_nodeid (),
-				 Resolver2_0::Namespace::Types);
-  if (!resolved.has_value ())
-    return;
-
-  auto ast_item = mappings.lookup_ast_item (resolved.value ());
-  if (!ast_item.has_value ())
-    return;
-
-  auto kind = ast_item.value ()->get_item_kind ();
-  if (kind == AST::Item::Kind::Struct || kind == AST::Item::Kind::Enum
-      || kind == AST::Item::Kind::Union)
-    mappings.insert_adt_impl_mapping (resolved.value (), impl);
-}
 
 HIR::Item *
 ASTLoweringItem::translate (AST::Item &item)
@@ -614,7 +593,6 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
   translated = hir_impl_block;
 
   mappings.insert_hir_impl_block (hir_impl_block);
-  register_adt_impl (mappings, impl_type, hir_impl_block);
   for (auto &impl_item_id : impl_item_ids)
     {
       mappings.insert_impl_item_mapping (impl_item_id, hir_impl_block);
@@ -787,14 +765,6 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
   translated = hir_impl_block;
 
   mappings.insert_hir_impl_block (hir_impl_block);
-
-  register_adt_impl (mappings, impl_type, hir_impl_block);
-
-  auto &nr_ctx = Resolver2_0::FinalizedNameResolutionContext::get ();
-  auto trait_node_id = nr_ctx.lookup (trait_ref->get_mappings ().get_nodeid (),
-				      Resolver2_0::Namespace::Types);
-  rust_assert (trait_node_id.has_value ());
-  mappings.insert_trait_impl_mapping (trait_node_id.value (), hir_impl_block);
 
   for (auto &impl_item_id : impl_item_ids)
     {

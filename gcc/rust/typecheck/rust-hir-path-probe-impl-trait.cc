@@ -44,8 +44,8 @@ PathProbeImplTrait::Probe (TyTy::BaseType *receiver,
 void
 PathProbeImplTrait::process_trait_impl_items_for_candidates ()
 {
-  NodeId trait_node_id = trait_reference->get_mappings ().get_nodeid ();
-  mappings.iterate_trait_impl_items (trait_node_id,
+  DefId trait_id = trait_reference->get_mappings ().get_defid ();
+  mappings.iterate_trait_impl_items (trait_id,
 				     [this] (HirId id, HIR::ImplItem *item,
 					     HIR::ImplBlock *impl) -> bool {
 				       process_impl_item_candidate (id, item,

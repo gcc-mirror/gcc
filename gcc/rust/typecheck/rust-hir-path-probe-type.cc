@@ -77,8 +77,8 @@ TypePathProbe::probe_adt (TyTy::ADTType *adt)
       return;
     }
 
-  NodeId adt_node_id = adt_item.value ()->get_mappings ().get_nodeid ();
-  mappings.iterate_adt_impl_items (adt_node_id,
+  DefId adt_id = adt_item.value ()->get_mappings ().get_defid ();
+  mappings.iterate_adt_impl_items (adt_id,
 				   [this] (HirId id, HIR::ImplItem *item,
 					   HIR::ImplBlock *impl) -> bool {
 				     return process_impl_item (id, item, impl);

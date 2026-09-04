@@ -106,7 +106,7 @@ TypeBoundsProbe::scan ()
     mappings.iterate_trait_impl_blocks (process_impl);
   else
     mappings.iterate_trait_impl_blocks (
-      specified_trait->get_mappings ().get_nodeid (), process_impl);
+      specified_trait->get_mappings ().get_defid (), process_impl);
 
   for (auto &path : possible_trait_paths)
     {

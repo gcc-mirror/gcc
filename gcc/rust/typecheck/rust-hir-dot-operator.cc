@@ -149,8 +149,7 @@ MethodResolver::assemble_inherent_impl_candidates (
       // see:
       // https://gcc-rust.zulipchat.com/#narrow/stream/266897-general/topic/Method.20Resolution/near/338646280
       // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/method/probe.rs#L650-L660
-      bool impl_self_is_ptr
-	= impl_self->get_kind () == TyTy::TypeKind::POINTER;
+      bool impl_self_is_ptr = impl_self->get_kind () == TyTy::TypeKind::POINTER;
       bool impl_self_is_ref = impl_self->get_kind () == TyTy::TypeKind::REF;
       if (receiver_is_raw_ptr && impl_self_is_ptr)
 	{
@@ -321,7 +320,7 @@ MethodResolver::assemble_trait_impl_candidates (
 						 process_impl);
   else
     mappings.iterate_trait_impl_blocks (
-      specified_trait->get_mappings ().get_nodeid (), process_impl);
+      specified_trait->get_mappings ().get_defid (), process_impl);
 }
 
 bool
@@ -333,8 +332,8 @@ MethodResolver::try_select_predicate_candidates (TyTy::BaseType &receiver)
       if (specified_trait != nullptr)
 	{
 	  const TraitReference *parent = predicate.lookup.get_parent ()->get ();
-	  if (parent->get_mappings ().get_nodeid ()
-	      != specified_trait->get_mappings ().get_nodeid ())
+	  if (parent->get_mappings ().get_defid ()
+	      != specified_trait->get_mappings ().get_defid ())
 	    continue;
 	}
 
