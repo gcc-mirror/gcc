@@ -37,17 +37,17 @@ vector unsigned __int128 store_this_us[4] = {
 
 #define NUM_VEC_ELEMS 2
 
-vector signed long long signed_expected[5] = {
-	{ 0x123456789abcdef8,                0x0},
-	{ 0x7654321700000000,         0xfedcba98},
-	{ 0x0000000000000000, 0xcccccccccccccccc},
-	{ 0x0000000000000000, 0xaaaaaaaa00000000}  /*note that some data written into the next word */
+vector signed long long signed_expected[8] = {
+	{ 0x123456789abcdef8,                0x0}, {                0x0,                0x0},
+	{                0x0, 0xfedcba9876543217}, {                0x0,                0x0},
+	{                0x0,                0x0}, { 0xcccccccccccccccc,                0x0},
+	{                0x0,                0x0}, {                0x0, 0xaaaaaaaaaaaaaaaa},
 };
-vector unsigned long long unsigned_expected[5] = {
-	{ 0x123456789abcdef8,                0x0},
-	{ 0x7654321700000000,         0xfedcba98},
-	{ 0x0000000000000000, 0xeeeeeeeeeeeeeeee},
-	{ 0x0000000000000000, 0x5555555500000000}
+vector unsigned long long unsigned_expected[8] = {
+	{ 0x123456789abcdef8,                0x0}, {                0x0,                0x0},
+	{                0x0, 0xfedcba9876543217}, {                0x0,                0x0},
+	{                0x0,                0x0}, { 0xeeeeeeeeeeeeeeee,                0x0},
+	{                0x0,                0x0}, {                0x0, 0x5555555555555555},
 };
 
 unsigned long long rawbuffer[32];
@@ -91,14 +91,15 @@ int main (int argc, char *argv [])
 
    for (i = 0; i < 4 ; i++ ) {
       reset_buffer();
-      test_signed_store (store_this_s[i], 4*i, vsbuffer);
-      memcmpresult = memcmp(rawbuffer,&signed_expected[i],sizeof(vector long long));
+      test_signed_store (store_this_s[i], 8*i, vsbuffer);
+      memcmpresult = memcmp(rawbuffer,&signed_expected[2*i],2*sizeof(vector long long));
       if (memcmpresult) {
 	 printf("mismatch signed buffer, i %d (memcmpresult:%d) \n",i,memcmpresult);
 	 mismatch++;
 	 if (verbose) {
 	    printf("results: ");
 	    PRINT_VEC(vsbuffer);
+	    PRINT_VEC((vsbuffer + 2));
 	    printf("\n");
 	 }
       }
@@ -106,14 +107,15 @@ int main (int argc, char *argv [])
 
    for (i = 0; i < 4 ; i++ ) {
       reset_buffer();
-      test_unsigned_store (store_this_us[i], 4*i, vubuffer);
-      memcmpresult = memcmp(rawbuffer,&unsigned_expected[i],sizeof(vector long long));
+      test_unsigned_store (store_this_us[i], 8*i, vubuffer);
+      memcmpresult = memcmp(rawbuffer,&unsigned_expected[2*i],2*sizeof(vector long long));
       if (memcmpresult) {
 	 printf("mismatch unsigned buffer, i %d (memcmpresult:%d) \n",i,memcmpresult);
 	 mismatch++;
 	 if (verbose) {
 	    printf("results :");
 	    PRINT_VEC(vubuffer);
+	    PRINT_VEC((vubuffer + 2));
 	    printf("\n");
 	 }
       }
