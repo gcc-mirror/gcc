@@ -12813,11 +12813,15 @@ vect_schedule_slp (vec_info *vinfo, vec<slp_instance> &slp_instances,
 	}
       /* Schedule the tree of INSTANCE, scheduling SCCs in a way to
 	 have a PHI be the node breaking the cycle.  */
-      bool res = true;
-      auto_vec<slp_tree> stack;
-      if (!scc_info.get (node))
-	res &= vect_schedule_scc (vinfo, node, instance, scc_info,
-				  maxdfs, stack, place_only);
+      bool res;
+      if (slp_scc_info *info = scc_info.get (node))
+	res = info->res;
+      else
+	{
+	  auto_vec<slp_tree> stack;
+	  res = vect_schedule_scc (vinfo, node, instance, scc_info,
+				   maxdfs, stack, place_only);
+	}
 
       if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
 	{
