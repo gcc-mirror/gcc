@@ -1,3 +1,29 @@
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* g++.dg/opt/is_constant_evaluated3b.C: xfail a1 initializer
+	folding.
+	* g++.dg/cpp2a/is-constant-evaluated16.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	* g++.dg/opt/is_constant_evaluated3a.C: New test.
+	* g++.dg/opt/is_constant_evaluated3b.C: New test.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* g++.dg/template/fn-ptr6.C: New test.
+
 2026-08-29  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
