@@ -125,6 +125,8 @@ public:
 
   static constexpr auto &RUSTC_CONVERSION_SUGGESTION
     = "rustc_conversion_suggestion";
+
+  static constexpr auto &CFI_ENCODING = "cfi_encoding";
 };
 } // namespace Values
 } // namespace Rust

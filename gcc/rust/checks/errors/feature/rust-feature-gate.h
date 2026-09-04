@@ -52,6 +52,8 @@ public:
   void visit (AST::Enum &enum_item) override;
   void visit (AST::EnumItem &enum_variant) override;
 
+  void visit (AST::Attribute &attr) override;
+
   enum class GateResult
   {
     Gated,

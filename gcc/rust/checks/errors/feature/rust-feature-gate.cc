@@ -366,4 +366,20 @@ FeatureGate::visit (AST::EnumItem &enum_variant)
   AST::DefaultASTVisitor::visit (enum_variant);
 }
 
+void
+FeatureGate::visit (AST::Attribute &attr)
+{
+  if (attr.get_path ().as_string () == "cfi_encoding")
+    if (gate (Feature::Name::CFI_ENCODING, attr.get_locus (),
+	      "#[cfi_encoding] is an experimental feature")
+	== GateResult::Allowed)
+      rust_warning_at (
+	attr.get_locus (), 0,
+	"the %<#[cfi_encoding]%> attribute is currently ignored and "
+	"does nothing - we are waiting on a patchset to land "
+	"into GCC as the KCFI functionality is not present yet");
+
+  AST::DefaultASTVisitor::visit (attr);
+}
+
 } // namespace Rust
