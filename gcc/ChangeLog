@@ -1,3 +1,73 @@
+2026-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126671
+	* config/riscv/bitmanip.md (bswaphi2): Use
+	TARGET_ZBB || TARGET_ZBKB condition instead of just
+	TARGET_ZBB.
+	(bitreverse<mode>2): New expander.
+
+2026-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/126463
+	* config/aarch64/aarch64.cc (aarch64_select_cc_mode): Correctly
+	match overflow detection idioms using MINUS and NEG.
+	* config/aarch64/aarch64.md (subv<GPI:mode>4): Re-order the
+	compare into canonical form.
+	(subv<GPI:mode>4_insn): Likewise.
+	(negv<GPI:mode>4): Likewise.
+	(negv<GPI:mode>_insn): Likewise.  Fix typo in output template.
+
+2026-09-04  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR debug/108784
+	* ira.cc (ira): Use get_max_insn_count instead of get_max_uid when
+	selecting simple LRA.
+
+2026-09-04  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* gengtype-lex.l: Remove ENUM_BITFIELD.
+	* real.h (struct real_value): Ditto.
+
+2026-09-04  Dominic P  <gcc@gcc.dp11.uk>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/111609
+	* config/arm/neon.md (neon_vshll<sup>_n<mode>): Emit vmovl for a
+	shift of zero.  Use signless form when the shift amount == element
+	size.
+
+2026-09-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126942
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Use
+	set_range_query.
+	* gimple-range-path.h (path_ranger::active_query_compatible_p): New.
+	* gimple-range.cc (enable_ranger): Use set_range_query.
+	(disable_ranger): Likewise.
+	* tree-vrp.cc (execute_fast_vrp): Likewise.
+	* value-query.cc (set_range_query): New.
+	* value-query.h (range_query::active_query_compatible_p): New.
+	(set_range_query): Declare.
+
+2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127188
+	* config/avr/avr-passes.cc (avr_pass_2moves) <optimize_2moves_bb>:
+	Use next_nondebug_insn_bb to traverse the insns.
+	<optimize_2moves>: Ignore degug insns when traversing
+	DF_REG_USE_CHAIN.
+
+2026-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127206
+	* tree-vect-slp.cc (vect_schedule_slp): If scc_info is already
+	present, use its failure state.
+
+2026-09-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-09-03  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR middle-end/125390

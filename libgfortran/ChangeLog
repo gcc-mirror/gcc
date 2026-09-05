@@ -1,3 +1,16 @@
+2026-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* configure: Regenerate.
+	* configure.ac: Account for missing runtime support for
+	PTHREAD_PROCESS_SHARED on Darwin versions earlier that
+	Darwin11.
+
+2026-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126777
+	* caf/single.c (_gfortran_caf_team_number): Treat a null team
+	handle as the current team.
+
 2026-08-13  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/126799

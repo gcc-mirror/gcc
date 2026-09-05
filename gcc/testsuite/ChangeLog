@@ -1,3 +1,114 @@
+2026-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/harden-sls-4.c: Amend for mach-o
+	* gcc.target/i386/harden-sls-5.c: Likewise.
+
+2026-09-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/analyzer/mkostemp-1.c: Provide a dummy version of
+	O_CLOEXEC where the OS headers omit it.
+	* gcc.dg/analyzer/mkostemps-1.c: Likewise.
+
+2026-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126777
+	* gfortran.dg/coarray/image_index_team_1.f90: New test.
+
+2026-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126777
+	* gfortran.dg/coarray/team_number_1.f90: New test.
+
+2026-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/126671
+	* gcc.target/riscv/bitreverse-1-zbkb.c: New test.
+	* gcc.target/riscv/bitreverse-2-zbkb.c: New test.
+	* gcc.target/riscv/bitreverse-3-zbkb.c: New test.
+
+2026-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/126463
+	* gcc.target/aarch64/negv.c: New test.
+
+2026-09-04  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR debug/108784
+	* gcc.dg/pr108784.c: New test.
+	Assisted-by: OpenAI Codex 5.6 Sol
+	Assisted-by: Claude
+	Signed-off-by: Yongqiang Tian <yqtian668@gmail.com>
+
+2026-09-04  Dominic P  <gcc@gcc.dp11.uk>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/111609
+	* gcc.target/arm/pr111609.c: New test.
+
+2026-09-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126942
+	* gcc.dg/pr126942.c: New.
+
+2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127188
+	* gcc.target/avr/pr127188.c: New test.
+
+2026-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127206
+	* gcc.dg/vect/bb-slp-pr127206.c: New testcase.
+
+2026-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-59.c: New test.
+
+2026-09-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-mf8.c: New test.
+
+2026-09-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/vect-pack-trunc-2.c (dg-options): Add
+	-mtune=generic.
+
+2026-09-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/pr92645.c (dg-options): Add -mno-avx.
+
+2026-09-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/vect-unpack-1.c (dg-options): Add
+	-mtune=generic.
+	* gcc.target/i386/vect-unpack-2.c (dg-options): Likewise.
+	* gcc.target/i386/vect-unpack-3.c (dg-options): Likewise.
+
+2026-09-04  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR testsuite/126923
+	* gcc.target/i386/vect-pack-trunc-1.c (dg-options): Add
+	-mno-avx512vbmi -mtune=generic.
+	* gcc.target/i386/vect-perm-even-1.c (dg-options): Likewise.
+	* gcc.target/i386/vect-perm-odd-1.c (dg-options): Likewise.
+
 2026-09-03  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR middle-end/125390

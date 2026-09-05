@@ -1,3 +1,29 @@
+2026-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126777
+	* trans-intrinsic.cc (trans_image_index): Translate the team
+	argument with gfc_conv_expr_val.
+	(trans_num_images): Force the team_number lvalue into the
+	argument block, not the enclosing one.
+
+2026-09-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126777
+	* intrinsic.texi (IMAGE_INDEX): Document as a transformational
+	function, not an inquiry function.
+	* trans-intrinsic.cc (conv_intrinsic_team_number): Always return
+	-1 for -fcoarray=single, regardless of any TEAM argument.
+
+2026-09-04  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* gfortran.h (symbol_attribute): Remove ENUM_BITFIELD.
+	(gfc_omp_namelist): Ditto.
+	(gfc_omp_clauses): Ditto.
+	(gfc_common_head): Ditto.
+	(gfc_namespace): Ditto.
+	(gfc_intrinsic_arg): Ditto.
+
 2026-09-03  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/104750

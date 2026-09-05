@@ -1,3 +1,10 @@
+2026-09-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR bootstrap/126875
+	* acx.m4 (ACX_PROG_CMP_IGNORE_INITIAL): Clean up from the exit trap
+	without resetting it or re-deriving the exit status, and end the
+	fallback subshell with a builtin so that the trap runs.
+
 2026-08-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* acx.m4 (ACX_PROG_CMP_IGNORE_INITIAL): Use process-specific temporary

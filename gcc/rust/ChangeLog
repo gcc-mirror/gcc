@@ -1,3 +1,9 @@
+2026-09-04  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* backend/rust-tree.h (struct lang_decl_base): Remove ENUM_BITFIELD.
+	(struct rust_cp_binding_level): Ditto.
+
 2026-08-07  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* resolve/rust-forever-stack.h: Declare new cache API.

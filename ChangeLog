@@ -1,3 +1,19 @@
+2026-09-04  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* MAINTAINERS.yml: Update my email, add a section for inactive emails.
+	* MAINTAINERS: Regenerate.
+
+2026-09-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR bootstrap/126875
+	* Makefile.tpl ([+compare-target+]): Escape the comparison command
+	with $(subst) rather than a sed pipe.  Clean up from the exit trap
+	without resetting it or re-deriving the exit status.  Name the shell
+	in the generated makefile.  Remove any previous result file and
+	result shards before comparing.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2026-09-03  Filip Kastl  <fkastl@suse.cz>
 
 	* configure: Regenerate.

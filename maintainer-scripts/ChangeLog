@@ -1,3 +1,7 @@
+2026-09-04  Richard Biener  <rguenther@suse.de>
+
+	* crontab: Remove entry for gcc-13 branch snapshots.
+
 2026-04-22  Jakub Jelinek  <jakub@redhat.com>
 
 	* crontab: Snapshots from trunk are now GCC 17 related.

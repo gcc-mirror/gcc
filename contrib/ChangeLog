@@ -1,3 +1,14 @@
+2026-09-04  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* filter_params.py (filter_src): Remove ENUM_BITFIELD.
+	(FilteringTests): Ditto.
+
+2026-09-04  Pedro Alves  <pedro@palves.net>
+
+	* dg-extract-results.py: Handle new "-f list-file" option.
+	* dg-extract-results.sh: Ditto.
+
 2026-09-03  Dhruv Chawla  <dhruvc@nvidia.com>
 
 	* gen_autofdo_event.py: Add missed updates for passing "--inherit" and

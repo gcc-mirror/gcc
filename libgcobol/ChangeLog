@@ -1,3 +1,18 @@
+2026-09-04  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (string_operand): New structure.
+	(__gg__string): Dispatches to __gg__string_1 and __gg__string_24
+	(__gg__string_1): Optimized for single-byte-coded strings.
+	(find_string_24): New finder for multi-byte strings.
+	(__gg__string_24): Optimized for multi-strings.
+	(__gg__unstring): Dispatches to __gg__unstring_1 and
+	__gg__unstring_24
+	(struct unstring_finder_1): New finder for single-byte strings.
+	(struct unstring_finder_24): New finder for multi-byte strings.
+	(unstring_fixed): Specialized finder for unstring.
+	(__gg__unstring_1): Optimized for single-byte-coded strings.
+	(__gg__unstring_24): Optimized for multi-byte strings.
+
 2026-09-02  Robert Dubner  <rdubner@symas.com>
 
 	* stringbin.cc (uint_to_8_digits): Fix static variable error.

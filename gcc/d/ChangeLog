@@ -1,3 +1,8 @@
+2026-09-04  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR middle-end/125507
+	* d-tree.h (struct binding_level): Remove ENUM_BITFIELD.
+
 2026-06-02  Christopher Bazley  <chris.bazley@arm.com>
 
 	* d-attribs.cc (d_handle_optimize_attribute):
