@@ -105,6 +105,28 @@ along with GCC; see the file COPYING3.  If not see
 	 integer_minus_onep (realpart @2))
   (if (types_match (type, @0) && int_fits_type_p (@1, type))))
  (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, Y)
+     SAT_U_ADD = IMAGPART (SUM) == 0 ? X + Y : -1.  */
+  (cond^ (eq (imagpart (IFN_ADD_OVERFLOW @0 @1)) integer_zerop)
+	 (plus @0 @1) integer_minus_onep))
+ (match (unsigned_integer_sat_add @0 @1)
+  /* SUM = ADD_OVERFLOW (X, Y)
+     SAT_U_ADD = IMAGPART (SUM) != 0 ? -1 : X + Y.  */
+  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW @0 @1)) integer_zerop)
+	 integer_minus_onep (plus @0 @1)))
+ /* A source that tests for overflow against the complement of an operand,
+    such as a > MAX - b ? MAX : a + b, reaches the recognisers as a compare
+    with ~Y, since ~Y is MAX - Y.  The strict and non-strict forms are both
+    exact because at X == ~Y the sum is MAX and the two arms agree.  */
+ (for cmp (ge gt)
+  (match (unsigned_integer_sat_add @0 @1)
+   (cond^ (cmp:c (bit_not @1) @0)
+	  (plus:c @0 @1) integer_minus_onep)))
+ (for cmp (lt le)
+  (match (unsigned_integer_sat_add @0 @1)
+   (cond^ (cmp:c (bit_not @1) @0)
+	  integer_minus_onep (plus:c @0 @1))))
+ (match (unsigned_integer_sat_add @0 @1)
   /* WIDEN_SUM = (WT)X + (WT)Y
      SAT_U_ADD = WIDEN_SUM > MAX ? MAX : (NT)WIDEN_SUM  */
   (cond^ (le (plus (convert@2 @0) (convert@3 @1)) INTEGER_CST@4)
