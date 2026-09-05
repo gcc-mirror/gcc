@@ -255,7 +255,7 @@ grs_langhook_global_bindings_p (void)
 static tree
 grs_langhook_pushdecl (tree decl ATTRIBUTE_UNUSED)
 {
-  rust_unreachable ();
+  // rust_unreachable ();
   return NULL;
 }
 
