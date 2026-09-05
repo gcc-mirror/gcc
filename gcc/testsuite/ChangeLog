@@ -1,3 +1,11 @@
+2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127188
+	* gcc.target/avr/pr127188.c: New test.
+
 2026-09-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

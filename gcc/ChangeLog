@@ -1,3 +1,14 @@
+2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127188
+	* config/avr/avr-passes.cc (avr_pass_2moves) <optimize_2moves_bb>:
+	Use next_nondebug_insn_bb to traverse the insns.
+	<optimize_2moves>: Ignore degug insns when traversing
+	DF_REG_USE_CHAIN.
+
 2026-09-01  Peter Bergner  <bergner@tenstorrent.com>
 
 	Backported from master:
