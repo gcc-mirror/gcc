@@ -8371,6 +8371,7 @@ trees_out::decl_value (tree decl, depset *dep)
       int use_tpl = -1;
       if (tree ti = node_template_info (decl, use_tpl))
 	gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
+			     || TREE_CODE (TI_TEMPLATE (ti)) == IDENTIFIER_NODE
 			     || TREE_CODE (TI_TEMPLATE (ti)) == FIELD_DECL
 			     || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
 				 != decl));
@@ -21902,7 +21903,7 @@ get_originating_module_decl (tree decl)
 	  if (TREE_CODE (decl) != TEMPLATE_DECL)
 	    {
 	      /* A friend template specialization.  */
-	      gcc_checking_assert (OVL_P (decl));
+	      gcc_checking_assert (OVL_P (decl) || identifier_p (decl));
 	      return global_namespace;
 	    }
 	}
