@@ -5107,15 +5107,27 @@
 (define_insn "*aarch64_combinez<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand")
 	(vec_concat:<VDBL>
-          (match_operand:VS32_I_SUB64_F 1 "nonimmediate_operand")
-	  (match_operand:VS32_I_SUB64_F 2 "aarch64_simd_or_scalar_imm_zero")))]
+	 (match_operand:VS32_I_SUB64_F_CONDFP16 1 "nonimmediate_operand")
+	 (match_operand:VS32_I_SUB64_F_CONDFP16 2 "aarch64_simd_or_scalar_imm_zero")))]
   "TARGET_FLOAT && !BYTES_BIG_ENDIAN"
   {@ [ cons: =0 , 1  ; attrs: type      ]
      [ w        , w  ; neon_move        ] fmov\t%<single_type>0, %<single_type>1
      [ w        , r  ; neon_from_gp     ] fmov\t%<single_type>0, %<single_wx>1
      [ w        , m  ; neon_load1_1reg  ] ldr\t%<single_type>0, %1
-     [ r        , r  ; mov_reg          ] uxtw\t%x0, %w1
+     [ r        , r  ; mov_reg          ] uxt<extsize>\t%<single_dwx>0, %w1
      [ r        , m  ; load_4           ] ldr<size>\t%<single_wx>0, %1
+  }
+)
+
+(define_insn "*aarch64_combinez<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand")
+	(vec_concat:<VDBL>
+	 (match_operand:HFBF 1 "nonimmediate_operand")
+	 (match_operand:HFBF 2 "aarch64_simd_or_scalar_imm_zero")))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN && !TARGET_SIMD_F16INST"
+  {@ [ cons: =0 , 1  ; attrs: type ]
+     [ w        , 0  ; neon_move       ] ins\t%0.<single_type>[1], wzr
+     [ w        , m  ; neon_load1_1reg ] ldr\t%<single_type>0, %1
   }
 )
 
@@ -5147,17 +5159,30 @@
 (define_insn "*aarch64_combinez_be<mode>"
   [(set (match_operand:<VDBL> 0 "register_operand")
 	(vec_concat:<VDBL>
-	  (match_operand:VS32_I_SUB64_F 2 "aarch64_simd_or_scalar_imm_zero")
-          (match_operand:VS32_I_SUB64_F 1 "nonimmediate_operand")))]
+	 (match_operand:VS32_I_SUB64_F_CONDFP16 2 "aarch64_simd_or_scalar_imm_zero")
+	 (match_operand:VS32_I_SUB64_F_CONDFP16 1 "nonimmediate_operand")))]
   "TARGET_FLOAT && BYTES_BIG_ENDIAN"
   {@ [ cons: =0 , 1  ; attrs: type      ]
      [ w        , w  ; neon_move        ] fmov\t%<single_type>0, %<single_type>1
      [ w        , r  ; neon_from_gp     ] fmov\t%<single_type>0, %<single_wx>1
      [ w        , m  ; neon_load1_1reg  ] ldr\t%<single_type>0, %1
-     [ r        , r  ; mov_reg          ] uxtw\t%x0, %w1
+     [ r        , r  ; mov_reg          ] uxt<extsize>\t%<single_dwx>0, %w1
      [ r        , m  ; load_4           ] ldr<size>\t%<single_wx>0, %1
   }
 )
+
+(define_insn "*aarch64_combinez_be<mode>"
+  [(set (match_operand:<VDBL> 0 "register_operand")
+	(vec_concat:<VDBL>
+	 (match_operand:HFBF 2 "aarch64_simd_or_scalar_imm_zero")
+	 (match_operand:HFBF 1 "nonimmediate_operand")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN && !TARGET_SIMD_F16INST"
+  {@ [ cons: =0 , 1  ; attrs: type ]
+     [ w        , 0  ; neon_move        ] ins\t%0.<single_type>[0], wzr
+     [ w        , m  ; neon_load1_1reg  ] ldr\t%<single_type>0, %1
+  }
+)
+
 
 ;; Form a vector whose first half (in array order) comes from operand 1
 ;; and whose second half (in array order) comes from operand 2.

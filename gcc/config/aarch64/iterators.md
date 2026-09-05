@@ -253,11 +253,14 @@
 ;; All sub-32-bit integer modes.
 (define_mode_iterator VSSUB32_I [V2QI QI HI])
 
-;; All sub-64-bit floating-point modes.
-(define_mode_iterator VSSUB64_F [V2HF V2BF HF BF])
-
 ;; All 32-bit integer and sub-64-bit floating point modes.
-(define_mode_iterator VS32_I_SUB64_F [V4QI V2HI VSSUB64_F])
+(define_mode_iterator VS32_I_SUB64_F [V4QI V2HI V2HF V2BF HF BF])
+
+;; All 32-bit integer and sub-64-bit floating point modes, excluding BF
+;; and HF when there's no FP16 ISA support.
+(define_mode_iterator VS32_I_SUB64_F_CONDFP16 [V4QI V2HI V2HF V2BF
+					(HF "TARGET_SIMD_F16INST")
+					(BF "TARGET_SIMD_F16INST")])
 
 ;; All Advanced SIMD modes suitable for moving, loading, and storing.
 (define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
