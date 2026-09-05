@@ -1,3 +1,19 @@
+2026-09-04  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	Backported from master:
+	2026-06-24  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR debug/125421
+	* gcc.dg/debug/dwarf2/pr125421.c: New Test.
+
+2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127188
+	* gcc.target/avr/pr127188.c: New test.
+
 2026-09-03  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
