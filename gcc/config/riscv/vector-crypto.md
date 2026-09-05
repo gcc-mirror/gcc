@@ -65,12 +65,31 @@
                               (UNSPEC_VAESDMVS "aesdm") (UNSPEC_VAESZVS  "aesz" )
                               (UNSPEC_VSM4RVV  "sm4r" ) (UNSPEC_VSM4RVS  "sm4r" )])
 
+;; vd overlapping vs2 is reserved for vaes*.vs and vsm4r.vs, but not
+;; for the .vv instructions.
+(define_int_attr vv_ins_con
+  [(UNSPEC_VGMUL "=vr") (UNSPEC_VAESEFVV "=vr")
+   (UNSPEC_VAESEMVV "=vr") (UNSPEC_VAESDFVV "=vr")
+   (UNSPEC_VAESDMVV "=vr") (UNSPEC_VAESEFVS "=&vr")
+   (UNSPEC_VAESEMVS "=&vr") (UNSPEC_VAESDFVS "=&vr")
+   (UNSPEC_VAESDMVS "=&vr") (UNSPEC_VAESZVS "=&vr")
+   (UNSPEC_VSM4RVV "=vr") (UNSPEC_VSM4RVS "=&vr")])
+
 (define_int_attr vv_ins1_name [(UNSPEC_VGHSH "ghsh")     (UNSPEC_VSHA2MS "sha2ms")
                                (UNSPEC_VSHA2CH "sha2ch") (UNSPEC_VSHA2CL "sha2cl")])
+
+;; vd overlapping vs1 or vs2 is reserved for vsha2*, but not for vghsh.
+(define_int_attr vv_ins1_con
+  [(UNSPEC_VGHSH "=vr") (UNSPEC_VSHA2MS "=&vr")
+   (UNSPEC_VSHA2CH "=&vr") (UNSPEC_VSHA2CL "=&vr")])
 
 (define_int_attr vi_ins_name [(UNSPEC_VAESKF1 "aeskf1") (UNSPEC_VSM4K "sm4k")])
 
 (define_int_attr vi_ins1_name [(UNSPEC_VAESKF2 "aeskf2") (UNSPEC_VSM3C "sm3c")])
+
+;; vd overlapping vs2 is reserved for vsm3c, but not for vaeskf2.
+(define_int_attr vi_ins1_con
+  [(UNSPEC_VAESKF2 "=vr") (UNSPEC_VSM3C "=&vr")])
 
 (define_int_attr ins_type [(UNSPEC_VGMUL    "vv") (UNSPEC_VAESEFVV "vv")
                            (UNSPEC_VAESEMVV "vv") (UNSPEC_VAESDFVV "vv")
@@ -464,7 +483,7 @@
 ;; zvknh[ab] and zvkg instructions patterns.
 ;; vsha2ms.vv vsha2ch.vv vsha2cl.vv vghsh.vv
 (define_insn "@pred_v<vv_ins1_name><mode>"
-  [(set (match_operand:VQEXTI 0 "register_operand"     "=vr")
+  [(set (match_operand:VQEXTI 0 "register_operand"     "<vv_ins1_con>")
      (if_then_else:VQEXTI
        (unspec:<VM>
          [(match_operand 4 "vector_length_operand"     "rK")
@@ -487,7 +506,7 @@
 ;; vaesef.[vv,vs] vaesem.[vv,vs] vaesdf.[vv,vs] vaesdm.[vv,vs]
 ;; vsm4r.[vv,vs]
 (define_insn "@pred_crypto_vv<vv_ins_name><ins_type><mode>"
-  [(set (match_operand:V_VLSI_S 0 "register_operand"    "=vr")
+  [(set (match_operand:V_VLSI_S 0 "register_operand"    "<vv_ins_con>")
      (if_then_else:V_VLSI_S
        (unspec:<VM>
          [(match_operand 3 "vector_length_operand" " rK")
@@ -615,7 +634,7 @@
 
 ;; vaeskf2.vi vsm3c.vi
 (define_insn "@pred_vi<vi_ins1_name><mode>_nomaskedoff_scalar"
-  [(set (match_operand:V_VLSI_S 0 "register_operand"       "=vr")
+  [(set (match_operand:V_VLSI_S 0 "register_operand"       "<vi_ins1_con>")
      (if_then_else:V_VLSI_S
        (unspec:<VM>
          [(match_operand 4 "vector_length_operand"    "rK")
@@ -636,7 +655,7 @@
 ;; zvksh instructions patterns.
 ;; vsm3me.vv
 (define_insn "@pred_vsm3me<mode>"
-  [(set (match_operand:V_VLSI_S 0 "register_operand"    "=vr, vr")
+  [(set (match_operand:V_VLSI_S 0 "register_operand"    "=&vr, &vr")
      (if_then_else:V_VLSI_S
        (unspec:<VM>
          [(match_operand 4 "vector_length_operand" " rK, rK")
