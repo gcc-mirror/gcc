@@ -1,4 +1,5 @@
 /* PR tree-optimization/106433 */
+/* { dg-require-effective-target avx512f { target x86 } } */
 
 int m, *p;
 

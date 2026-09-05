@@ -1,5 +1,6 @@
 /* { dg-additional-options "-std=gnu17" } */
 /* { dg-require-effective-target non_strict_prototype } */
+/* { dg-require-effective-target avx512dq { target x86 } } */
 
 void
 pc (void);

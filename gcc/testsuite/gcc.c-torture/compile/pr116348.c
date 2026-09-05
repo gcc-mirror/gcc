@@ -1,4 +1,5 @@
-/* { dg-additional-options "-march=znver4" { target x86_64-*-* i?86-*-* } } */
+/* { dg-additional-options "-march=znver4" { target x86 } } */
+/* { dg-require-effective-target avx512vbmi2 { target x86 } } */
 
 int *a;
 int b;
