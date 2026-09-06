@@ -5577,6 +5577,27 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
 }
 
 
+/* Merge BB into COMBO_BB.  BB has no successor edges left, so if COMBO_BB
+   still has another successor the BARRIER that follows BB is no longer needed
+   and it is in fact incorrect to leave it in the insn stream.  */
+
+static void
+merge_block_into_combo (basic_block combo_bb, basic_block bb)
+{
+  if (EDGE_COUNT (bb->succs) == 0 && EDGE_COUNT (combo_bb->succs) > 1)
+    {
+      rtx_insn *end = NEXT_INSN (BB_END (bb));
+      while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
+	end = NEXT_INSN (end);
+
+      if (end && BARRIER_P (end))
+	delete_insn (end);
+    }
+
+  merge_blocks (combo_bb, bb);
+  num_true_changes++;
+}
+
 /* Merge the blocks and mark for local life update.  */
 
 static void
@@ -5616,47 +5637,13 @@ merge_if_block (struct ce_if_block * ce_info)
      zero, and it normally should be removed.  */
 
   if (then_bb)
-    {
-      /* If THEN_BB has no successors, then there's a BARRIER after it.
-	 If COMBO_BB has more than one successor (THEN_BB), then that BARRIER
-	 is no longer needed, and in fact it is incorrect to leave it in
-	 the insn stream.  */
-      if (EDGE_COUNT (then_bb->succs) == 0
-	  && EDGE_COUNT (combo_bb->succs) > 1)
-	{
-	  rtx_insn *end = NEXT_INSN (BB_END (then_bb));
-	  while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
-	    end = NEXT_INSN (end);
-
-	  if (end && BARRIER_P (end))
-	    delete_insn (end);
-	}
-      merge_blocks (combo_bb, then_bb);
-      num_true_changes++;
-    }
+    merge_block_into_combo (combo_bb, then_bb);
 
   /* The ELSE block, if it existed, had a label.  That label count
      will almost always be zero, but odd things can happen when labels
      get their addresses taken.  */
   if (else_bb)
-    {
-      /* If ELSE_BB has no successors, then there's a BARRIER after it.
-	 If COMBO_BB has more than one successor (ELSE_BB), then that BARRIER
-	 is no longer needed, and in fact it is incorrect to leave it in
-	 the insn stream.  */
-      if (EDGE_COUNT (else_bb->succs) == 0
-	  && EDGE_COUNT (combo_bb->succs) > 1)
-	{
-	  rtx_insn *end = NEXT_INSN (BB_END (else_bb));
-	  while (end && NOTE_P (end) && !NOTE_INSN_BASIC_BLOCK_P (end))
-	    end = NEXT_INSN (end);
-
-	  if (end && BARRIER_P (end))
-	    delete_insn (end);
-	}
-      merge_blocks (combo_bb, else_bb);
-      num_true_changes++;
-    }
+    merge_block_into_combo (combo_bb, else_bb);
 
   /* If there was no join block reported, that means it was not adjacent
      to the others, and so we cannot merge them.  */
