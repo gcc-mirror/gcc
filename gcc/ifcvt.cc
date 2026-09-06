@@ -4281,6 +4281,20 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
   return true;
 }
 
+/* Return true if any insn in SEQ modifies CC_CMP, or REV_CC_CMP when there is
+   one.  Such a sequence cannot be used to select on that condition.  */
+
+static bool
+noce_seq_clobbers_cc_cmp_p (rtx_insn *seq, rtx cc_cmp, rtx rev_cc_cmp)
+{
+  for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
+    if (modified_in_p (cc_cmp, insn)
+	|| (rev_cc_cmp && modified_in_p (rev_cc_cmp, insn)))
+      return true;
+
+  return false;
+}
+
 /* Try to emit the multiple-set conversion described by IF_INFO, selecting on
    the already decoded jump condition COND.  INSN_INFO holds THEN_COUNT
    then-arm entries followed by entries for the else-only definitions recorded
@@ -4499,13 +4513,8 @@ noce_convert_multiple_sets_1 (noce_if_info *if_info, rtx cond,
 
 	  /* The if_then_else in SEQ2 may be affected when cc_cmp/rev_cc_cmp is
 	     clobbered.  We can't safely use the sequence in this case.  */
-	  for (rtx_insn *iter = seq2; iter; iter = NEXT_INSN (iter))
-	    if (modified_in_p (cc_cmp, iter)
-	      || (rev_cc_cmp && modified_in_p (rev_cc_cmp, iter)))
-	      {
-		seq2 = NULL;
-		break;
-	      }
+	  if (noce_seq_clobbers_cc_cmp_p (seq2, cc_cmp, rev_cc_cmp))
+	    seq2 = NULL;
 	}
 
       /* The backend might have created a sequence that uses the
@@ -4598,19 +4607,14 @@ noce_convert_multiple_sets_1 (noce_if_info *if_info, rtx cond,
 	      return false;
 	    }
 
-      if (cc_cmp && seq == seq1)
+      /* If SEQ clobbers registers mentioned in cc_cmp/rev_cc_cmp we have to
+	 fall back on SEQ1 from that point on.  Only check when we use SEQ1,
+	 since SEQ2 has been tested already.  */
+      if (cc_cmp && seq == seq1
+	  && noce_seq_clobbers_cc_cmp_p (seq, cc_cmp, rev_cc_cmp))
 	{
-	  /* Check if SEQ can clobber registers mentioned in cc_cmp/rev_cc_cmp.
-	     If yes, we need to use only SEQ1 from that point on.
-	     Only check when we use SEQ1 since we have already tested SEQ2.  */
-	  for (rtx_insn *iter = seq; iter; iter = NEXT_INSN (iter))
-	    if (modified_in_p (cc_cmp, iter)
-	      || (rev_cc_cmp && modified_in_p (rev_cc_cmp, iter)))
-	      {
-		cc_cmp = NULL_RTX;
-		rev_cc_cmp = NULL_RTX;
-		break;
-	      }
+	  cc_cmp = NULL_RTX;
+	  rev_cc_cmp = NULL_RTX;
 	}
 
       /* End the sub sequence and emit to the main sequence.  */
