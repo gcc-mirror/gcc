@@ -47,6 +47,12 @@
 #include "rtl-iter.h"
 #include "ifcvt.h"
 
+/* The number of instructions this pass may make run unconditionally in place
+   of a branch.  The conditional-execution path uses it as the number of insns
+   it may predicate.  The branchless paths use it as the number of insns they
+   may speculate.  The default charges the cost of an unpredictable branch,
+   plus one.  Some targets override it.  */
+
 #ifndef MAX_CONDITIONAL_EXECUTE
 #define MAX_CONDITIONAL_EXECUTE \
   (BRANCH_COST (optimize_function_for_speed_p (cfun), false) \
