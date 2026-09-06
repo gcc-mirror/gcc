@@ -1814,7 +1814,7 @@ noce_try_shifted_store_flag (struct noce_if_info *if_info)
   start_sequence ();
 
   /* If X and COMMON are the same, then we're going to need a temporary.  */
-  if (common && rtx_equal_p (common, if_info->x))
+  if (rtx_equal_p (common, if_info->x))
     {
       common = gen_reg_rtx (mode);
       noce_emit_move_insn (common, if_info->x);
@@ -2268,19 +2268,22 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 {
   rtx target;
   rtx_insn *seq;
-  bool reversep;
 
   if (!noce_simple_bbs (if_info))
     return false;
 
-  reversep = false;
+  /* Match "if (test) x = 0;" and, with the arms the other way round,
+     "if (!test) x = 0;".  */
+  bool zero_a = (if_info->a == const0_rtx
+		 && (REG_P (if_info->b)
+		     || rtx_equal_p (if_info->b, if_info->x)));
+  bool zero_b = (if_info->b == const0_rtx
+		 && (REG_P (if_info->a)
+		     || rtx_equal_p (if_info->a, if_info->x)));
 
-  if ((if_info->a == const0_rtx
-       && (REG_P (if_info->b) || rtx_equal_p (if_info->b, if_info->x)))
-      || ((reversep = true)
-	  && if_info->b == const0_rtx
-	  && (REG_P (if_info->a) || rtx_equal_p (if_info->a, if_info->x))))
+  if (zero_a || zero_b)
     {
+      bool reversep = !zero_a;
       start_sequence ();
       target = noce_emit_store_flag (if_info,
 				     gen_reg_rtx (GET_MODE (if_info->x)),
@@ -4154,8 +4157,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 
   /* Decompose the condition attached to the jump.  */
   rtx cond = noce_get_condition (jump, &cond_earliest, false);
-  rtx x = XEXP (cond, 0);
-  rtx y = XEXP (cond, 1);
 
   auto_delete_vec<noce_multiple_sets_info> insn_info;
   init_noce_multiple_sets_info (then_bb, insn_info);
@@ -4280,8 +4281,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
     }
 
   set_used_flags (cond);
-  set_used_flags (x);
-  set_used_flags (y);
 
   unshare_all_rtl_in_chain (seq);
   end_sequence ();
