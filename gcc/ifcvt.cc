@@ -2133,7 +2133,7 @@ noce_try_store_flag_logical (struct noce_if_info *if_info)
      adjust its value (if necessary) to -1/0.  */
   start_sequence ();
   rtx temp = gen_reg_rtx (mode);
-  rtx target = noce_emit_store_flag (if_info, temp, !swapped, false);
+  rtx target = noce_emit_store_flag (if_info, temp, !swapped, 0);
   if (!target)
     {
       end_sequence ();
@@ -4238,10 +4238,10 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
     set_used_flags (insn);
 
   /* Mark all our temporaries and targets as used.  */
-  for (unsigned i = 0; i < insn_info.length (); i++)
+  for (const noce_multiple_sets_info *msi : insn_info)
     {
-      set_used_flags (insn_info[i]->temporary);
-      set_used_flags (insn_info[i]->target);
+      set_used_flags (msi->temporary);
+      set_used_flags (msi->target);
     }
 
   set_used_flags (cond);
@@ -5585,7 +5585,7 @@ merge_block_into_combo (basic_block combo_bb, basic_block bb)
 /* Merge the blocks and mark for local life update.  */
 
 static void
-merge_if_block (struct ce_if_block * ce_info)
+merge_if_block (ce_if_block *ce_info)
 {
   basic_block test_bb = ce_info->test_bb;	/* last test block */
   basic_block then_bb = ce_info->then_bb;	/* THEN */
@@ -5823,7 +5823,7 @@ block_jumps_and_fallthru (basic_block cur_bb, basic_block target_bb)
   end = BB_END (cur_bb);
   insn = BB_HEAD (cur_bb);
 
-  while (insn != NULL_RTX)
+  while (insn)
     {
       if (CALL_P (insn))
 	return -1;
@@ -5849,7 +5849,7 @@ block_jumps_and_fallthru (basic_block cur_bb, basic_block target_bb)
    Return TRUE if we were successful at converting the block.  */
 
 static bool
-cond_exec_find_if_block (struct ce_if_block * ce_info)
+cond_exec_find_if_block (ce_if_block *ce_info)
 {
   basic_block test_bb = ce_info->test_bb;
   basic_block then_bb = ce_info->then_bb;
@@ -5894,8 +5894,6 @@ cond_exec_find_if_block (struct ce_if_block * ce_info)
 	{
 	  int total_insns = 0;
 	  int blocks = 0;
-
-	  ce_info->last_test_bb = test_bb;
 
 	  /* Found at least one && or || block, look for more.  */
 	  do
