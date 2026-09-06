@@ -5339,9 +5339,8 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   rtx cond = if_info->cond;
   rtx_insn *seq, *loc_insn;
   int c;
-  vec<rtx> then_regs = vNULL;
-  vec<rtx> else_regs = vNULL;
-  bool success_p = false;
+  auto_vec<rtx> then_regs;
+  auto_vec<rtx> else_regs;
   int limit = param_max_rtl_if_conversion_insns;
 
   /* Build a mapping for each block to the value used for each
@@ -5353,7 +5352,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
   if (!check_cond_move_block (then_bb, &then_vals, &then_regs, cond)
       || (else_bb
 	  && !check_cond_move_block (else_bb, &else_vals, &else_regs, cond)))
-    goto done;
+    return false;
 
   /* Make sure the blocks can be used together.  If the same register
      is set in both blocks, and is not set to a constant in both
@@ -5376,7 +5375,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 	  rtx else_val = *else_slot;
 	  if (!CONSTANT_P (then_val) && !CONSTANT_P (else_val)
 	      && !rtx_equal_p (then_val, else_val))
-	    goto done;
+	    return false;
 	}
     }
 
@@ -5394,7 +5393,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
      them.  */
   if (c > MAX_CONDITIONAL_EXECUTE
       || c > limit)
-    goto done;
+    return false;
 
   /* Try to emit the conditional moves.  First do the then block,
      then do anything left in the else blocks.  */
@@ -5406,11 +5405,11 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 					  &then_vals, &else_vals, true)))
     {
       end_sequence ();
-      goto done;
+      return false;
     }
   seq = end_ifcvt_sequence (if_info);
   if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
-    goto done;
+    return false;
 
   loc_insn = first_active_insn (then_bb);
   if (!loc_insn)
@@ -5422,12 +5421,7 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 
   noce_finish_if_conversion (if_info);
 
-  success_p = true;
-
-done:
-  then_regs.release ();
-  else_regs.release ();
-  return success_p;
+  return true;
 }
 
 
