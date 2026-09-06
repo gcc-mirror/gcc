@@ -1084,7 +1084,7 @@ noce_can_force_operand (rtx x)
 	  auto optab = code_to_optab (GET_CODE (x));
 	  if (!optab)
 	    return false;
-	  return optab_handler (optab, GET_MODE (x));
+	  return optab_handler (optab, GET_MODE (x)) != CODE_FOR_nothing;
 	}
     }
   if (UNARY_P (x))
@@ -1107,7 +1107,7 @@ noce_can_force_operand (rtx x)
 	  auto optab = code_to_optab (GET_CODE (x));
 	  if (!optab)
 	    return false;
-	  return optab_handler (optab, GET_MODE (x));
+	  return optab_handler (optab, GET_MODE (x)) != CODE_FOR_nothing;
 	}
     }
   return false;
@@ -2312,8 +2312,8 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
 		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue, rtx cc_cmp,
 		 rtx rev_cc_cmp)
 {
-  rtx target ATTRIBUTE_UNUSED;
-  bool unsignedp ATTRIBUTE_UNUSED;
+  rtx target;
+  bool unsignedp;
 
   /* If earliest == jump, try to build the cmove insn directly.
      This is helpful when combine has created some complex condition
@@ -2577,9 +2577,7 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
       rtx sset_a = single_set (a_insn);
 
       if (!sset_a)
-	{
-	  return false;
-	}
+	return false;
       /* Record all registers that BB_A sets.  */
       FOR_EACH_INSN_DEF (def, a_insn)
 	if (!(to_rename && DF_REF_REG (def) == to_rename))
@@ -2596,9 +2594,7 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
       rtx sset_b = single_set (b_insn);
 
       if (!sset_b)
-	{
-	  return false;
-	}
+	return false;
 
       /* Make sure this is a REG and not some instance
 	 of ZERO_EXTRACT or non-paradoxical SUBREG or other dangerous stuff.
@@ -2611,18 +2607,12 @@ bbs_ok_for_cmove_arith (basic_block bb_a, basic_block bb_b, rtx to_rename)
 	gcc_assert (rtx_equal_p (SET_DEST (sset_b), to_rename));
       else if (!REG_P (SET_DEST (sset_b))
 	       && !paradoxical_subreg_p (SET_DEST (sset_b)))
-	{
-	  return false;
-	}
+	return false;
 
       /* If the insn uses a reg set in BB_A return false.  */
       FOR_EACH_INSN_USE (use, b_insn)
-	{
-	  if (bitmap_bit_p (bba_sets, DF_REF_REGNO (use)))
-	    {
-	      return false;
-	    }
-	}
+	if (bitmap_bit_p (bba_sets, DF_REF_REGNO (use)))
+	  return false;
 
     }
 
@@ -5451,7 +5441,7 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
   bool then_else_reversed = false;
   rtx_insn *jump;
   rtx_insn *cond_earliest;
-  struct noce_if_info if_info;
+  noce_if_info if_info = {};
   bool speed_p = optimize_bb_for_speed_p (test_bb);
 
   /* We only ever should get here before reload.  */
@@ -5526,7 +5516,6 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
     return false;
 
   /* Initialize an IF_INFO struct to pass around.  */
-  memset (&if_info, 0, sizeof if_info);
   if_info.test_bb = test_bb;
   if_info.then_bb = then_bb;
   if_info.else_bb = else_bb;
