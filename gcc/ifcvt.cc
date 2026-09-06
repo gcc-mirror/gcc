@@ -6392,6 +6392,36 @@ block_has_only_trap (basic_block bb)
 
    (D) These heuristics need a lot of work.  */
 
+/* Return true if the if-case formed by TEST_BB, THEN_BB and ELSE_BB is one we
+   may convert at all.
+
+   If we are partitioning hot/cold basic blocks, we don't want to mess up
+   unconditional or indirect jumps that cross between hot and cold sections.
+   Basic block partitioning may result in some jumps that appear to be
+   optimizable (or blocks that appear to be mergeable), but which really must
+   be left untouched (they are required to make it safely across partition
+   boundaries).  See the comments at the top of
+   bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.
+
+   TEST_BB must also end in a conditional jump with no other side-effects.  */
+
+static bool
+if_case_blocks_ok_p (basic_block test_bb, basic_block then_bb,
+		     basic_block else_bb)
+{
+  if ((BB_END (then_bb)
+       && JUMP_P (BB_END (then_bb))
+       && CROSSING_JUMP_P (BB_END (then_bb)))
+      || (JUMP_P (BB_END (test_bb))
+	  && CROSSING_JUMP_P (BB_END (test_bb)))
+      || (BB_END (else_bb)
+	  && JUMP_P (BB_END (else_bb))
+	  && CROSSING_JUMP_P (BB_END (else_bb))))
+    return false;
+
+  return onlyjump_p (BB_END (test_bb));
+}
+
 /* Tests for case 1 above.  */
 
 static bool
@@ -6404,28 +6434,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   profile_probability then_prob;
   rtx else_target = NULL_RTX;
 
-  /* If we are partitioning hot/cold basic blocks, we don't want to
-     mess up unconditional or indirect jumps that cross between hot
-     and cold sections.
-
-     Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really
-     must be left untouched (they are required to make it safely across
-     partition boundaries).  See  the comments at the top of
-     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
-
-  if ((BB_END (then_bb)
-       && JUMP_P (BB_END (then_bb))
-       && CROSSING_JUMP_P (BB_END (then_bb)))
-      || (JUMP_P (BB_END (test_bb))
-	  && CROSSING_JUMP_P (BB_END (test_bb)))
-      || (BB_END (else_bb)
-	  && JUMP_P (BB_END (else_bb))
-	  && CROSSING_JUMP_P (BB_END (else_bb))))
-    return false;
-
-  /* Verify test_bb ends in a conditional jump with no other side-effects.  */
-  if (!onlyjump_p (BB_END (test_bb)))
+  if (!if_case_blocks_ok_p (test_bb, then_bb, else_bb))
     return false;
 
   /* THEN has one successor.  */
@@ -6528,28 +6537,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
       && else_bb->loop_father->latch == else_bb)
     return false;
 
-  /* If we are partitioning hot/cold basic blocks, we don't want to
-     mess up unconditional or indirect jumps that cross between hot
-     and cold sections.
-
-     Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really
-     must be left untouched (they are required to make it safely across
-     partition boundaries).  See  the comments at the top of
-     bb-reorder.cc:partition_hot_cold_basic_blocks for complete details.  */
-
-  if ((BB_END (then_bb)
-       && JUMP_P (BB_END (then_bb))
-       && CROSSING_JUMP_P (BB_END (then_bb)))
-      || (JUMP_P (BB_END (test_bb))
-	  && CROSSING_JUMP_P (BB_END (test_bb)))
-      || (BB_END (else_bb)
-	  && JUMP_P (BB_END (else_bb))
-	  && CROSSING_JUMP_P (BB_END (else_bb))))
-    return false;
-
-  /* Verify test_bb ends in a conditional jump with no other side-effects.  */
-  if (!onlyjump_p (BB_END (test_bb)))
+  if (!if_case_blocks_ok_p (test_bb, then_bb, else_bb))
     return false;
 
   /* ELSE has one successor.  */
