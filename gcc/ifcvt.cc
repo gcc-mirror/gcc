@@ -1411,6 +1411,42 @@ noce_try_move (struct noce_if_info *if_info)
   return false;
 }
 
+/* TEMP holds an all-ones or all-zeros splat of a tested sign bit.  Return an
+   rtx that narrows it to VAL or zero, expanded into TARGET where possible, or
+   NULL_RTX if the expansion failed.
+
+   The obvious form is a mask, but since the value is known to be -1 or 0 a
+   shift is sometimes cheaper: a logical right shift constructs 2^n-1 and a
+   left shift constructs ~(2^n-1).  Some targets do not have efficient shifts,
+   so build the RTL for each applicable form and expand the cheapest.  */
+
+static rtx
+noce_splat_to_const (machine_mode mode, rtx temp, HOST_WIDE_INT val,
+		     rtx target)
+{
+  rtx and_form = gen_rtx_AND (mode, temp, GEN_INT (val));
+  rtx shift_left = gen_rtx_ASHIFT (mode, temp, GEN_INT (ctz_hwi (val)));
+  HOST_WIDE_INT rshift_count
+    = clz_hwi (val) & (GET_MODE_PRECISION (mode).to_constant () - 1);
+  rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (rshift_count));
+  bool speed_p = optimize_insn_for_speed_p ();
+
+  if (exact_log2 (val + 1) >= 0
+      && (rtx_cost (shift_right, mode, SET, 1, speed_p)
+	  < rtx_cost (and_form, mode, SET, 1, speed_p)))
+    return expand_simple_binop (mode, LSHIFTRT, temp, GEN_INT (rshift_count),
+				target, false, OPTAB_WIDEN);
+
+  if (exact_log2 (~val + 1) >= 0
+      && (rtx_cost (shift_left, mode, SET, 1, speed_p)
+	  < rtx_cost (and_form, mode, SET, 1, speed_p)))
+    return expand_simple_binop (mode, ASHIFT, temp, GEN_INT (ctz_hwi (val)),
+				target, false, OPTAB_WIDEN);
+
+  return expand_simple_binop (mode, AND, temp, GEN_INT (val), target, false,
+			      OPTAB_WIDEN);
+}
+
 /* If a sign bit test is selecting across constants, we may be able
    to generate efficient code utilizing the -1/0 result of a sign
    bit splat idiom.
@@ -1507,33 +1543,7 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
 	    goto fail;
 	}
 
-      /* Since we know the value is currently -1 or 0, some constants may
-	 be more easily handled by shifting the value again.  A right
-	 logical shift constructs 2^n-1 constants a left shift constructs
-	 ~(2^n-1) constants.  Given some targets don't have efficient
-	 shifts, generate the obvious RTL for both forms and select the
-	 one with smaller cost.  */
-      rtx and_form = gen_rtx_AND (mode, temp, GEN_INT (val_a));
-      rtx shift_left = gen_rtx_ASHIFT (mode, temp, GEN_INT (ctz_hwi (val_a)));
-      HOST_WIDE_INT rshift_count
-	= (clz_hwi (val_a) & (GET_MODE_PRECISION (mode).to_constant() - 1));
-      rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (rshift_count));
-      bool speed_p = optimize_insn_for_speed_p ();
-      if (exact_log2 (val_a + 1) >= 0
-	  && (rtx_cost (shift_right, mode, SET, 1, speed_p)
-	      < rtx_cost (and_form, mode, SET, 1, speed_p)))
-	temp = expand_simple_binop (mode, LSHIFTRT, temp,
-				    GEN_INT (rshift_count),
-				    if_info->x, false, OPTAB_WIDEN);
-      else if (exact_log2 (~val_a + 1) >= 0
-	       && (rtx_cost (shift_left, mode, SET, 1, speed_p)
-		   < rtx_cost (and_form, mode, SET, 1, speed_p)))
-	temp = expand_simple_binop (mode, ASHIFT, temp,
-				    GEN_INT (ctz_hwi (val_a)),
-				    if_info->x, false, OPTAB_WIDEN);
-      else
-	temp = expand_simple_binop (mode, AND, temp, GEN_INT (val_a),
-				    if_info->x, false, OPTAB_WIDEN);
+      temp = noce_splat_to_const (mode, temp, val_a, if_info->x);
     }
   /* Same cases, but with the test or arms swapped.  These
      can be realized as well, though it typically costs
@@ -1559,33 +1569,7 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
 	    goto fail;
 	}
 
-      /* Since we know the value is currently -1 or 0, some constants may
-	 be more easily handled by shifting the value again.  A right
-	 logical shift constructs 2^n-1 constants a left shift constructs
-	 ~(2^n-1) constants.  Given some targets don't have efficient
-	 shifts, generate the obvious RTL for both forms and select the
-	 one with smaller cost.  */
-      rtx and_form = gen_rtx_AND (mode, temp, GEN_INT (val_b));
-      rtx shift_left = gen_rtx_ASHIFT (mode, temp, GEN_INT (ctz_hwi (val_b)));
-      HOST_WIDE_INT rshift_count
-	= (clz_hwi (val_b) & (GET_MODE_PRECISION (mode).to_constant() - 1));
-      rtx shift_right = gen_rtx_LSHIFTRT (mode, temp, GEN_INT (rshift_count));
-      bool speed_p = optimize_insn_for_speed_p ();
-      if (exact_log2 (val_b + 1) >= 0
-	  && (rtx_cost (shift_right, mode, SET, 1, speed_p)
-	      < rtx_cost (and_form, mode, SET, 1, speed_p)))
-	temp = expand_simple_binop (mode, LSHIFTRT, temp,
-				    GEN_INT (rshift_count),
-				    if_info->x, false, OPTAB_WIDEN);
-      else if (exact_log2 (~val_b + 1) >= 0
-	       && (rtx_cost (shift_left, mode, SET, 1, speed_p)
-		   < rtx_cost (and_form, mode, SET, 1, speed_p)))
-	temp = expand_simple_binop (mode, ASHIFT, temp,
-				    GEN_INT (ctz_hwi (val_b)),
-				    if_info->x, false, OPTAB_WIDEN);
-      else
-        temp = expand_simple_binop (mode, AND, temp, GEN_INT (val_b),
-				    if_info->x, false, OPTAB_WIDEN);
+      temp = noce_splat_to_const (mode, temp, val_b, if_info->x);
     }
   /* Nothing worked.  */
   else
