@@ -1884,6 +1884,23 @@ noce_try_shifted_store_flag (struct noce_if_info *if_info)
 }
 
 
+/* Set *DIFF to ITRUE - IFALSE truncated to MODE and return true.  Return
+   false, leaving *DIFF alone, when that difference is not representable and
+   so cannot be used to build a store-flag sequence.  */
+
+static bool
+noce_representable_diff_p (HOST_WIDE_INT ifalse, HOST_WIDE_INT itrue,
+			 machine_mode mode, HOST_WIDE_INT *diff)
+{
+  HOST_WIDE_INT d = (unsigned HOST_WIDE_INT) itrue - ifalse;
+
+  if ((d > 0) != ((ifalse < 0) != (itrue < 0) ? ifalse < 0 : ifalse < itrue))
+    return false;
+
+  *diff = trunc_int_for_mode (d, mode);
+  return true;
+}
+
 /* Convert "if (test) x = a; else x = b", for A and B constant.
    Also allow A = y + c1, B = y + c2, with a common y between A
    and B.  */
@@ -1930,13 +1947,8 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
       itrue = INTVAL (b);
       bool subtract_flag_p = false;
 
-      diff = (unsigned HOST_WIDE_INT) itrue - ifalse;
-      /* Make sure we can represent the difference between the two values.  */
-      if ((diff > 0)
-	  != ((ifalse < 0) != (itrue < 0) ? ifalse < 0 : ifalse < itrue))
+      if (!noce_representable_diff_p (ifalse, itrue, mode, &diff))
 	return false;
-
-      diff = trunc_int_for_mode (diff, mode);
 
       can_reverse = noce_reversed_cond_code (if_info) != UNKNOWN;
       reversep = false;
@@ -2476,17 +2488,13 @@ noce_try_cmove (struct noce_if_info *if_info)
 	      return false;
 	    }
 
-	  HOST_WIDE_INT diff = (unsigned HOST_WIDE_INT) itrue - ifalse;
-	  /* Make sure we can represent the difference
-	     between the two values.  */
-	  if ((diff > 0)
-	      != ((ifalse < 0) != (itrue < 0) ? ifalse < 0 : ifalse < itrue))
+	  HOST_WIDE_INT diff;
+	  if (!noce_representable_diff_p (ifalse, itrue, mode, &diff))
 	    {
 	      end_sequence ();
 	      return false;
 	    }
 
-	  diff = trunc_int_for_mode (diff, mode);
 	  target = expand_simple_binop (mode, AND,
 					target, gen_int_mode (diff, mode),
 					if_info->x, 0, OPTAB_WIDEN);
