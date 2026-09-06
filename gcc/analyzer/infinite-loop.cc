@@ -53,7 +53,7 @@ struct infinite_loop
 		logger *logger)
   : m_enode (enode),
     m_loc (loc),
-    m_eedge_vec (eedges)
+    m_eedge_vec (std::move (eedges))
   {
     LOG_SCOPE (logger);
     if (logger)

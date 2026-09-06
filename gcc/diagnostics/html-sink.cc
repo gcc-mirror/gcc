@@ -862,9 +862,9 @@ add_labelled_value (xml::printer &xp,
 		    bool quote_value)
 {
   xp.push_tag ("div", true);
-  xp.set_attr ("id", id);
+  xp.set_attr ("id", std::move (id));
   xp.push_tag ("span");
-  xp.add_text (label);
+  xp.add_text (std::move (label));
   xp.add_text (" ");
   xp.pop_tag ("span");
   xp.push_tag ("span");
