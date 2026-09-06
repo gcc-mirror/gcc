@@ -805,7 +805,7 @@ noce_reversed_cond (noce_if_info *if_info, enum rtx_code *code)
    or UNKNOWN if reversing the condition is not possible.  */
 
 static inline enum rtx_code
-noce_reversed_cond_code (struct noce_if_info *if_info)
+noce_reversed_cond_code (noce_if_info *if_info)
 {
   enum rtx_code code;
   noce_reversed_cond (if_info, &code);
@@ -921,7 +921,7 @@ noce_parallel_seq_cost (rtx_insn *seq, bool speed_p)
 
 bool
 default_noce_conversion_profitable_p (rtx_insn *seq,
-				      struct noce_if_info *if_info)
+				      noce_if_info *if_info)
 {
   bool speed_p = if_info->speed_p;
 
@@ -941,7 +941,7 @@ default_noce_conversion_profitable_p (rtx_insn *seq,
    reversed; callers may rely on this and need not pre-check.  */
 
 static rtx
-noce_emit_store_flag (struct noce_if_info *if_info, rtx x, bool reversep,
+noce_emit_store_flag (noce_if_info *if_info, rtx x, bool reversep,
 		      int normalize)
 {
   rtx cond = if_info->cond;
@@ -1265,7 +1265,7 @@ noce_clobbers_live_cc_p (basic_block test_bb, rtx_insn *seq)
    On failure, this function returns a NULL_RTX.  */
 
 static rtx_insn *
-end_ifcvt_sequence (struct noce_if_info *if_info)
+end_ifcvt_sequence (noce_if_info *if_info)
 {
   rtx_insn *insn;
   rtx_insn *seq = get_insns ();
@@ -1304,7 +1304,7 @@ end_ifcvt_sequence (struct noce_if_info *if_info)
    consist of a single simple set instruction.  */
 
 static bool
-noce_simple_bbs (struct noce_if_info *if_info)
+noce_simple_bbs (noce_if_info *if_info)
 {
   if (!if_info->then_simple)
     return false;
@@ -1340,7 +1340,7 @@ noce_commit_sequence (noce_if_info *if_info, rtx_insn *seq,
    "if (a == b) x = a; else x = b" into "x = b".  */
 
 static bool
-noce_try_move (struct noce_if_info *if_info)
+noce_try_move (noce_if_info *if_info)
 {
   rtx cond = if_info->cond;
   enum rtx_code code = GET_CODE (cond);
@@ -1433,7 +1433,7 @@ noce_splat_to_const (machine_mode mode, rtx temp, HOST_WIDE_INT val,
    (when applicable) are hopefully faster than a conditional move.  */
 
 static bool
-noce_try_sign_bit_splat (struct noce_if_info *if_info)
+noce_try_sign_bit_splat (noce_if_info *if_info)
 {
   rtx cond = if_info->cond;
   enum rtx_code code = GET_CODE (cond);
@@ -1576,7 +1576,7 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
    If that is the case, emit the result into x.  */
 
 static bool
-noce_try_ifelse_collapse (struct noce_if_info * if_info)
+noce_try_ifelse_collapse (noce_if_info * if_info)
 {
   if (!noce_simple_bbs (if_info))
     return false;
@@ -1604,7 +1604,7 @@ noce_try_ifelse_collapse (struct noce_if_info * if_info)
    a go at the conversion.  */
 
 static bool
-noce_try_store_flag (struct noce_if_info *if_info)
+noce_try_store_flag (noce_if_info *if_info)
 {
   bool reversep;
   rtx target;
@@ -1653,7 +1653,7 @@ noce_try_store_flag (struct noce_if_info *if_info)
    expensive constant synthesis.  */
 
 static bool
-noce_try_inverse_constants (struct noce_if_info *if_info)
+noce_try_inverse_constants (noce_if_info *if_info)
 {
   if (!noce_simple_bbs (if_info))
     return false;
@@ -1741,7 +1741,7 @@ noce_cond_zero_binary_op_supported (rtx op)
    This is based on noce_try_store_flag_constants.  */
 
 static bool
-noce_try_shifted_store_flag (struct noce_if_info *if_info)
+noce_try_shifted_store_flag (noce_if_info *if_info)
 {
   rtx target;
   rtx_insn *seq;
@@ -1868,7 +1868,7 @@ noce_representable_diff_p (HOST_WIDE_INT ifalse, HOST_WIDE_INT itrue,
    and B.  */
 
 static bool
-noce_try_store_flag_constants (struct noce_if_info *if_info)
+noce_try_store_flag_constants (noce_if_info *if_info)
 {
   rtx target;
   rtx_insn *seq;
@@ -2077,7 +2077,7 @@ noce_try_store_flag_constants (struct noce_if_info *if_info)
    value (directly or indirectly), then IOR that with the other
    input.  */
 static bool
-noce_try_store_flag_logical (struct noce_if_info *if_info)
+noce_try_store_flag_logical (noce_if_info *if_info)
 {
   rtx a = if_info->a;
   rtx b = if_info->b;
@@ -2139,7 +2139,7 @@ noce_try_store_flag_logical (struct noce_if_info *if_info)
    similarly for "foo--".  */
 
 static bool
-noce_try_addcc (struct noce_if_info *if_info)
+noce_try_addcc (noce_if_info *if_info)
 {
   rtx target;
   rtx_insn *seq;
@@ -2225,7 +2225,7 @@ noce_try_addcc (struct noce_if_info *if_info)
 /* Convert "if (test) x = 0;" to "x &= -(test == 0);"  */
 
 static bool
-noce_try_store_flag_mask (struct noce_if_info *if_info)
+noce_try_store_flag_mask (noce_if_info *if_info)
 {
   rtx target;
   rtx_insn *seq;
@@ -2278,7 +2278,7 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
    the move without materializing its own compare.  */
 
 static rtx
-noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
+noce_emit_cmove (noce_if_info *if_info, rtx x, enum rtx_code code,
 		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue,
 		 rtx cc_cmp = NULL, rtx rev_cc_cmp = NULL)
 {
@@ -2402,7 +2402,7 @@ noce_simple_cmove_operand_p (rtx x)
    the store-flag matchers have had a go.  */
 
 static bool
-noce_try_cmove (struct noce_if_info *if_info)
+noce_try_cmove (noce_if_info *if_info)
 {
   enum rtx_code code;
   rtx target;
@@ -2644,7 +2644,7 @@ noce_emit_bb (rtx last_insn, basic_block bb, bool simple)
 /* Try more complex cases involving conditional_move.  */
 
 static bool
-noce_try_cmove_arith (struct noce_if_info *if_info)
+noce_try_cmove_arith (noce_if_info *if_info)
 {
   rtx a = if_info->a;
   rtx b = if_info->b;
@@ -2900,7 +2900,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
    For these we wish to know that it is A or B in the condition.  */
 
 static rtx
-noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
+noce_get_alt_condition (noce_if_info *if_info, rtx target,
 			rtx_insn **earliest)
 {
   rtx cond, set;
@@ -3054,7 +3054,7 @@ noce_get_alt_condition (struct noce_if_info *if_info, rtx target,
 /* Convert "if (a < b) x = a; else x = b;" to "x = min(a, b);", etc.  */
 
 static bool
-noce_try_minmax (struct noce_if_info *if_info)
+noce_try_minmax (noce_if_info *if_info)
 {
   rtx cond, target;
   rtx_insn *earliest, *seq;
@@ -3155,7 +3155,7 @@ noce_try_minmax (struct noce_if_info *if_info)
    etc.  */
 
 static bool
-noce_try_abs (struct noce_if_info *if_info)
+noce_try_abs (noce_if_info *if_info)
 {
   rtx cond, target, a, b, c;
   rtx_insn *earliest, *seq;
@@ -3321,7 +3321,7 @@ noce_try_abs (struct noce_if_info *if_info)
 /* Convert "if (m < 0) x = b; else x = 0;" to "x = (m >> C) & b;".  */
 
 static bool
-noce_try_sign_mask (struct noce_if_info *if_info)
+noce_try_sign_mask (noce_if_info *if_info)
 {
   rtx cond, t, m, c;
   rtx_insn *seq;
@@ -3476,7 +3476,7 @@ get_base_reg_or_constant (rtx exp)
    to see if it is cheaper to produce `!cond ? y : 0` or `cond ? z : -1`.  */
 
 static bool
-noce_try_cond_arith (struct noce_if_info *if_info)
+noce_try_cond_arith (noce_if_info *if_info)
 {
   rtx target, a, b, a_op0, a_op1, outer_a;
   rtx cond = if_info->cond;
@@ -3674,7 +3674,7 @@ fail:
    transformations.  */
 
 static bool
-noce_try_bitop (struct noce_if_info *if_info)
+noce_try_bitop (noce_if_info *if_info)
 {
   rtx cond, x, a, result;
   rtx_insn *seq;
@@ -3959,7 +3959,7 @@ bb_valid_for_noce_process_p (basic_block test_bb, rtx cond,
    sequence in TEMP_DEST and the sequence costs in SEQ_COST.  */
 
 static rtx_insn*
-try_emit_cmove_seq (struct noce_if_info *if_info, rtx temp,
+try_emit_cmove_seq (noce_if_info *if_info, rtx temp,
 		    rtx cond, rtx new_val, rtx old_val, bool need_cmov,
 		    unsigned *cost, rtx *temp_dest,
 		    rtx cc_cmp = NULL, rtx rev_cc_cmp = NULL)
@@ -4080,7 +4080,7 @@ noce_finish_if_conversion (noce_if_info *if_info)
    and its CFG changes have been committed, otherwise return false.  */
 
 static bool
-noce_convert_multiple_sets (struct noce_if_info *if_info)
+noce_convert_multiple_sets (noce_if_info *if_info)
 {
   basic_block test_bb = if_info->test_bb;
   basic_block then_bb = if_info->then_bb;
@@ -4803,7 +4803,7 @@ noce_original_region_cost (const noce_if_info *if_info, bool speed_p,
    at converting the block.  */
 
 static bool
-noce_process_if_block (struct noce_if_info *if_info)
+noce_process_if_block (noce_if_info *if_info)
 {
   basic_block test_bb = if_info->test_bb;	/* test block */
   basic_block then_bb = if_info->then_bb;	/* THEN */
@@ -5234,7 +5234,7 @@ check_cond_move_block (basic_block bb,
    Return true if successful, false if something goes wrong.  */
 
 static bool
-cond_move_convert_if_block (struct noce_if_info *if_infop,
+cond_move_convert_if_block (noce_if_info *if_infop,
 			    basic_block bb, rtx cond,
 			    hash_map<rtx, rtx> *then_vals,
 			    hash_map<rtx, rtx> *else_vals,
@@ -5301,7 +5301,7 @@ cond_move_convert_if_block (struct noce_if_info *if_infop,
    converting the block.  */
 
 static bool
-cond_move_process_if_block (struct noce_if_info *if_info)
+cond_move_process_if_block (noce_if_info *if_info)
 {
   basic_block then_bb = if_info->then_bb;
   basic_block else_bb = if_info->else_bb;
