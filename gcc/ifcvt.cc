@@ -804,15 +804,34 @@ static bool noce_try_minmax (struct noce_if_info *);
 static bool noce_try_abs (struct noce_if_info *);
 static bool noce_try_sign_mask (struct noce_if_info *);
 
+/* Return the condition to use when the arms of IF_INFO's if-region are
+   swapped, and set *CODE to its comparison code.  When the reversed condition
+   has no rtx of its own the original condition is returned alongside the
+   reversed code, which is the form the store-flag and conditional-move
+   expanders take.  *CODE is UNKNOWN if the condition cannot be reversed.  */
+
+static rtx
+noce_reversed_cond (noce_if_info *if_info, enum rtx_code *code)
+{
+  if (if_info->rev_cond)
+    {
+      *code = GET_CODE (if_info->rev_cond);
+      return if_info->rev_cond;
+    }
+
+  *code = reversed_comparison_code (if_info->cond, if_info->jump);
+  return if_info->cond;
+}
+
 /* Return the comparison code for reversed condition for IF_INFO,
    or UNKNOWN if reversing the condition is not possible.  */
 
 static inline enum rtx_code
 noce_reversed_cond_code (struct noce_if_info *if_info)
 {
-  if (if_info->rev_cond)
-    return GET_CODE (if_info->rev_cond);
-  return reversed_comparison_code (if_info->cond, if_info->jump);
+  enum rtx_code code;
+  noce_reversed_cond (if_info, &code);
+  return code;
 }
 
 /* A register definition and its dependency level.  */
@@ -2160,16 +2179,8 @@ noce_try_addcc (struct noce_if_info *if_info)
       && rtx_equal_p (XEXP (if_info->a, 0), if_info->b)
       && noce_reversed_cond_code (if_info) != UNKNOWN)
     {
-      rtx cond = if_info->rev_cond;
       enum rtx_code code;
-
-      if (cond == NULL_RTX)
-	{
-	  cond = if_info->cond;
-	  code = reversed_comparison_code (cond, if_info->jump);
-	}
-      else
-	code = GET_CODE (cond);
+      rtx cond = noce_reversed_cond (if_info, &code);
 
       /* First try to use addcc pattern.  */
       if (general_operand (XEXP (cond, 0), VOIDmode)
@@ -2739,13 +2750,7 @@ noce_try_cmove_arith (struct noce_if_info *if_info)
 
       if (reversep)
 	{
-	  if (if_info->rev_cond)
-	    {
-	      cond = if_info->rev_cond;
-	      code = GET_CODE (cond);
-	    }
-	  else
-	    code = reversed_comparison_code (cond, if_info->jump);
+	  cond = noce_reversed_cond (if_info, &code);
 	  std::swap (a, b);
 	  std::swap (insn_a, insn_b);
 	  std::swap (a_simple, b_simple);
@@ -3538,13 +3543,7 @@ noce_try_cond_arith (struct noce_if_info *if_info)
   /* Canonicalize x = y : (y op z) to x = (y op z) : y.  */
   if (REG_P (a) && b_arith)
     {
-      if (if_info->rev_cond)
-	{
-	  cond = if_info->rev_cond;
-	  code = GET_CODE (cond);
-	}
-      else
-	code = reversed_comparison_code (cond, if_info->jump);
+      cond = noce_reversed_cond (if_info, &code);
       std::swap (a, b);
       a_arith = b_arith;
     }
