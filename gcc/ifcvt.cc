@@ -81,8 +81,10 @@ static int num_updated_if_blocks;
 /* # of changes made.  */
 static int num_true_changes;
 
-/* Whether conditional execution changes were made.  */
-static bool cond_exec_changed_p;
+/* Whether this pass over the function converted anything, so that another
+   pass may find further opportunities in what it left behind.  Every
+   successful conversion sets it, not only the conditional-execution one.  */
+static bool ifcvt_changed_p;
 
 /* Forward references.  */
 static int count_bb_insns (const_basic_block);
@@ -774,7 +776,7 @@ cond_exec_process_if_block (ce_if_block *ce_info, bool do_multiple_p)
     delete_insn_chain (first_active_insn (else_bb), else_last_head, false);
 
   merge_if_block (ce_info);
-  cond_exec_changed_p = true;
+  ifcvt_changed_p = true;
   return true;
 
  fail:
@@ -4034,7 +4036,8 @@ try_emit_cmove_seq (struct noce_if_info *if_info, rtx temp,
    from TEST_BB straight to JOIN_BB that bypassed THEN, and that goes as well.
    An IF-THEN-ELSE-JOIN has no such edge, and deleting ELSE_BB removes its two
    edges instead.  Redirect TEST_BB to JOIN_BB and merge the two when the tail
-   no longer needs its own block.  */
+   no longer needs its own block.  Count the converted if-block and the CFG
+   changes it took.  */
 
 static void
 noce_finish_if_conversion (noce_if_info *if_info)
@@ -4062,6 +4065,8 @@ noce_finish_if_conversion (noce_if_info *if_info)
       merge_blocks (test_bb, join_bb);
       num_true_changes++;
     }
+
+  num_updated_if_blocks++;
 }
 
 /* We have something like:
@@ -4266,7 +4271,6 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 
   noce_finish_if_conversion (if_info);
 
-  num_updated_if_blocks++;
   if_info->transform_name = "noce_convert_multiple_sets";
   return true;
 }
@@ -5156,7 +5160,6 @@ noce_process_if_block (struct noce_if_info *if_info)
      redirected to the join block.  */
   noce_finish_if_conversion (if_info);
 
-  num_updated_if_blocks++;
   return true;
 }
 
@@ -5409,7 +5412,6 @@ cond_move_process_if_block (struct noce_if_info *if_info)
 
   noce_finish_if_conversion (if_info);
 
-  num_updated_if_blocks++;
   success_p = true;
 
 done:
@@ -5770,7 +5772,7 @@ find_if_header (basic_block test_bb, int pass)
   if (dump_file)
     fprintf (dump_file, "Conversion succeeded on pass %d.\n", pass);
   /* Set this so we continue looking.  */
-  cond_exec_changed_p = true;
+  ifcvt_changed_p = true;
   return ce_info.test_bb;
 }
 
@@ -6847,7 +6849,7 @@ if_convert (ifcvt_phase phase)
       df_analyze ();
       /* Only need to do dce on the first pass.  */
       df_clear_flags (DF_LR_RUN_DCE);
-      cond_exec_changed_p = false;
+      ifcvt_changed_p = false;
       pass++;
 
       if (dump_file && pass > 1)
@@ -6861,10 +6863,10 @@ if_convert (ifcvt_phase phase)
             bb = new_bb;
 	}
 
-      if (dump_file && cond_exec_changed_p)
+      if (dump_file && ifcvt_changed_p)
 	print_rtl_with_bb (dump_file, get_insns (), dump_flags);
     }
-  while (cond_exec_changed_p);
+  while (ifcvt_changed_p);
 
   if (dump_file)
     fprintf (dump_file, "\n\n========== no more changes\n");
