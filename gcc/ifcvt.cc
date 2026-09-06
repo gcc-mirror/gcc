@@ -3679,6 +3679,10 @@ noce_try_cond_arith (struct noce_if_info *if_info)
       gcc_assert (target);
     }
 
+  /* Every path through the fallback above either returns or produces a
+     conditional move, so TARGET is non-null below.  */
+  gcc_checking_assert (target);
+
   if (outer_a)
     {
       XEXP (a, 1) = target;
@@ -3693,8 +3697,6 @@ noce_try_cond_arith (struct noce_if_info *if_info)
     {
       rtx_insn *seq0 = end_sequence ();
       unsigned cost0 = seq_cost (seq0, if_info->speed_p);
-      if (!target)
-	cost0 = -1u;
 
       /* Produce `cond ? z : -1`. */
       rtx targetm1;
@@ -3707,9 +3709,6 @@ noce_try_cond_arith (struct noce_if_info *if_info)
       unsigned costm1 = seq_cost (seqm1, if_info->speed_p);
       if (!targetm1)
 	costm1 = -1u;
-      /* If both fails, then there is no costing to be done. */
-      if (!targetm1 && !target)
-	return false;
 
       /* If -1 is cheaper or the same cost to producing 0, then use that.  */
       if (costm1 <= cost0)
@@ -3724,8 +3723,7 @@ noce_try_cond_arith (struct noce_if_info *if_info)
 	    }
 	  end_sequence ();
 	}
-      if (!target)
-	return false;
+
       /* For 0 the produce sequence is:
 	 tmp = !cond ? y : 0
 	 x = (y & z) | tmp  */
@@ -3739,8 +3737,6 @@ noce_try_cond_arith (struct noce_if_info *if_info)
 	goto end_seq_n_fail;
       goto success;
     }
-  if (!target)
-    goto end_seq_n_fail;
 
   target = expand_simple_binop (mode, op, a_op0, target, if_info->x, 0,
 				OPTAB_WIDEN);
