@@ -93,27 +93,14 @@ static int num_true_changes;
 static bool ifcvt_changed_p;
 
 /* Forward references.  */
-static int count_bb_insns (const_basic_block);
-static bool cheap_bb_rtx_cost_p (const_basic_block, profile_probability, int);
-static rtx_insn *first_active_insn (basic_block);
-static rtx_insn *last_active_insn (basic_block, bool);
-static rtx_insn *find_active_insn_before (basic_block, rtx_insn *);
-static rtx_insn *find_active_insn_after (basic_block, rtx_insn *);
-static basic_block block_fallthru (basic_block);
-static rtx cond_exec_get_condition (rtx_insn *, bool);
-static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static bool noce_operand_ok (const_rtx);
 static void merge_if_block (ce_if_block *);
 static bool find_cond_trap (basic_block, edge, edge);
-static basic_block find_if_header (basic_block, int);
-static int block_jumps_and_fallthru (basic_block, basic_block);
-static bool noce_find_if_block (basic_block, edge, edge, int);
 static bool cond_exec_find_if_block (ce_if_block *);
 static bool find_if_case_1 (basic_block, edge, edge);
 static bool find_if_case_2 (basic_block, edge, edge);
 static bool dead_or_predicable (basic_block, basic_block, basic_block,
 				edge, bool);
-static void noce_emit_move_insn (rtx, rtx);
 static rtx_insn *block_has_only_trap (basic_block);
 static void init_noce_multiple_sets_info (basic_block,
   auto_delete_vec<noce_multiple_sets_info> &);
@@ -795,23 +782,6 @@ cond_exec_process_if_block (ce_if_block *ce_info, bool do_multiple_p)
   return false;
 }
 
-static rtx noce_emit_store_flag (struct noce_if_info *, rtx, bool, int);
-static bool noce_try_move (struct noce_if_info *);
-static bool noce_try_ifelse_collapse (struct noce_if_info *);
-static bool noce_try_store_flag (struct noce_if_info *);
-static bool noce_try_addcc (struct noce_if_info *);
-static bool noce_try_store_flag_constants (struct noce_if_info *);
-static bool noce_try_shifted_store_flag (struct noce_if_info *);
-static bool noce_try_store_flag_mask (struct noce_if_info *);
-static rtx noce_emit_cmove (struct noce_if_info *, rtx, enum rtx_code, rtx,
-			    rtx, rtx, rtx, rtx = NULL, rtx = NULL);
-static bool noce_try_cmove (struct noce_if_info *);
-static bool noce_try_cmove_arith (struct noce_if_info *);
-static rtx noce_get_alt_condition (struct noce_if_info *, rtx, rtx_insn **);
-static bool noce_try_minmax (struct noce_if_info *);
-static bool noce_try_abs (struct noce_if_info *);
-static bool noce_try_sign_mask (struct noce_if_info *);
-
 /* Return the condition to use when the arms of IF_INFO's if-region are
    swapped, and set *CODE to its comparison code.  When the reversed condition
    has no rtx of its own the original condition is returned alongside the
@@ -2309,8 +2279,8 @@ noce_try_store_flag_mask (struct noce_if_info *if_info)
 
 static rtx
 noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
-		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue, rtx cc_cmp,
-		 rtx rev_cc_cmp)
+		 rtx cmp_a, rtx cmp_b, rtx vfalse, rtx vtrue,
+		 rtx cc_cmp = NULL, rtx rev_cc_cmp = NULL)
 {
   rtx target;
   bool unsignedp;
