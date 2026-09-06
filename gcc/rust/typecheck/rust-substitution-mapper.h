@@ -43,6 +43,7 @@ public:
   void visit (TyTy::ADTType &type) override;
   void visit (TyTy::PlaceholderType &type) override;
   void visit (TyTy::ProjectionType &type) override;
+  void visit (TyTy::DynamicObjectType &type) override;
 
   // nothing to do for these
   void visit (TyTy::InferType &) override { rust_unreachable (); }
@@ -67,7 +68,6 @@ public:
   void visit (TyTy::ConstErrorType &) override { rust_unreachable (); }
   void visit (TyTy::StrType &) override { rust_unreachable (); }
   void visit (TyTy::NeverType &) override { rust_unreachable (); }
-  void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
   void visit (TyTy::ClosureType &) override { rust_unreachable (); }
   void visit (TyTy::OpaqueType &) override { rust_unreachable (); }
 
