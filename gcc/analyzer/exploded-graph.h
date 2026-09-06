@@ -150,6 +150,15 @@ public:
     gcc_assert (state.m_valid);
   }
 
+  point_and_state (const point_and_state &other) = default;
+
+  point_and_state (point_and_state &&other)
+  : m_point (other.m_point),
+    m_state (std::move (other.m_state)),
+    m_hash (other.m_hash)
+  {
+  }
+
   hashval_t hash () const
   {
     return m_hash;
@@ -165,6 +174,12 @@ public:
   void set_state (const program_state &state)
   {
     m_state = state;
+    m_hash = m_point.hash () ^ m_state.hash ();
+  }
+
+  void set_state (program_state &&state)
+  {
+    m_state = std::move (state);
     m_hash = m_point.hash () ^ m_state.hash ();
   }
 
@@ -231,6 +246,7 @@ class exploded_node : public dnode<eg_traits>
   static const char * status_to_str (enum status s);
 
   exploded_node (const point_and_state &ps, int index);
+  exploded_node (point_and_state &&ps, int index);
 
   hashval_t hash () const { return m_ps.hash (); }
 

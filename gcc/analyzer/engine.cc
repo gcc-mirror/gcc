@@ -1030,7 +1030,14 @@ exploded_node::exploded_node (const point_and_state &ps,
 			      int index)
 : m_ps (ps), m_status (status::worklist), m_index (index)
 {
-  gcc_checking_assert (ps.get_state ().m_region_model->canonicalized_p ());
+  gcc_checking_assert (m_ps.get_state ().m_region_model->canonicalized_p ());
+}
+
+exploded_node::exploded_node (point_and_state &&ps,
+			      int index)
+: m_ps (std::move (ps)), m_status (status::worklist), m_index (index)
+{
+  gcc_checking_assert (m_ps.get_state ().m_region_model->canonicalized_p ());
 }
 
 /* For use by dump_dot, get a value for the .dot "fillcolor" attribute.
@@ -2571,7 +2578,7 @@ exploded_graph::get_or_create_node (const program_point &point,
 		 Whether we get one or not, merged_state's value_ids have no
 		 relationship to those of the input state, and thus to those
 		 of CHANGE, so we must purge any svalue_ids from *CHANGE.  */
-	      ps.set_state (merged_state);
+	      ps.set_state (std::move (merged_state));
 
 	      if (exploded_node **slot = m_point_and_state_to_node.get (&ps))
 		{
@@ -2612,7 +2619,7 @@ exploded_graph::get_or_create_node (const program_point &point,
   ps.validate (m_ext_state);
 
   /* An exploded_node for "ps" doesn't already exist; create one.  */
-  exploded_node *node = new exploded_node (ps, m_nodes.length ());
+  exploded_node *node = new exploded_node (std::move (ps), m_nodes.length ());
   add_node (node);
   m_point_and_state_to_node.put (node->get_ps_key (), node);
 
@@ -2634,7 +2641,7 @@ exploded_graph::get_or_create_node (const program_point &point,
       logger->end_log_line ();
       logger->start_log_line ();
       pp_string (pp, "state: ");
-      ps.get_state ().dump_to_pp (m_ext_state, true, false, pp);
+      node->get_state ().dump_to_pp (m_ext_state, true, false, pp);
       logger->end_log_line ();
     }
 
