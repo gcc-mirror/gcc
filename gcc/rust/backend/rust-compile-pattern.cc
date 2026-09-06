@@ -47,8 +47,17 @@ CompilePatternCheckExpr::visit (HIR::PathInExpression &pattern)
 				      &lookup);
   rust_assert (ok);
 
-  // must be an ADT (?)
-  rust_assert (lookup->get_kind () == TyTy::TypeKind::ADT);
+  if (lookup->get_kind () != TyTy::TypeKind::ADT)
+    {
+      tree constant_expr = ResolvePathRef::Compile (pattern, ctx);
+
+      check_expr
+	= Backend::comparison_expression (ComparisonOperator::EQUAL,
+					  match_scrutinee_expr, constant_expr,
+					  pattern.get_locus ());
+      return;
+    }
+
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
 
   // if this isn't an enum, always succeed

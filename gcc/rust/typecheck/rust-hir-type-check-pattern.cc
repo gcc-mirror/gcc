@@ -111,8 +111,14 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 	}
     }
 
+  if (path_is_const_item)
+    {
+      infered = pattern_ty;
+      return;
+    }
+
   // If the path is a constructor, it must be a unit struct or unit variants.
-  if (!path_is_const_item && pattern_ty->get_kind () == TyTy::TypeKind::ADT)
+  if (pattern_ty->get_kind () == TyTy::TypeKind::ADT)
     {
       TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (pattern_ty);
       rust_assert (adt->get_variants ().size () > 0);
