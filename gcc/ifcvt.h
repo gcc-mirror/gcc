@@ -34,7 +34,7 @@ struct ce_if_block
   int num_and_and_blocks;		/* # of && blocks.  */
   int num_or_or_blocks;			/* # of || blocks.  */
   int num_multiple_test_insns;		/* # of insns in && and || blocks.  */
-  int and_and_p;			/* Complex test is &&.  */
+  bool and_and_p;			/* Complex test is &&.  */
   int num_then_insns;			/* # of insns in THEN block.  */
   int num_else_insns;			/* # of insns in ELSE block.  */
   int pass;				/* Pass number.  */
@@ -50,9 +50,10 @@ struct noce_multiple_sets_info
   /* The temporaries introduced to allow us to not consider register
      overlap.  */
   rtx temporary;
-  /* The insns we've emitted.  */
+  /* The insn from the original block that this entry describes.  */
   rtx_insn *unmodified_insn;
-  /* True if a simple move can be used instead of a conditional move.  */
+  /* True if the destination is live out of the block, so the value has to be
+     selected with a conditional move rather than moved unconditionally.  */
   bool need_cmov;
 };
 
@@ -80,7 +81,7 @@ struct noce_if_info
   rtx_insn *cond_earliest;
 
   /* Insns in the THEN and ELSE block.  There is always just this
-     one insns in those blocks.  The insns are single_set insns.
+     one insn in those blocks.  The insns are single_set insns.
      If there was no ELSE block, INSN_B is the last insn before
      COND_EARLIEST, or NULL_RTX.  In the former case, the insn
      operands are still valid, as if INSN_B was moved down below
@@ -115,14 +116,14 @@ struct noce_if_info
   bool then_simple;
   bool else_simple;
 
-  /* True if we're optimisizing the control block for speed, false if
+  /* True if we're optimizing the control block for speed, false if
      we're optimizing for size.  */
   bool speed_p;
 
-  /* An estimate of the original costs.  When optimizing for size, this is the
-     combined cost of COND, JUMP and the costs for THEN_BB and ELSE_BB.
-     When optimizing for speed, we use the costs of COND plus weighted average
-     of the costs for THEN_BB and ELSE_BB, as computed in the next field.  */
+  /* An estimate of the cost of the original, un-converted if-region.  It
+     covers COND and JUMP plus the arms: both arms when optimizing for size,
+     and their branch-probability-weighted average when optimizing for speed,
+     since then only one of them runs.  See noce_original_region_cost.  */
   unsigned int original_cost;
 
   /* Maximum permissible cost for the unconditional sequence we should
