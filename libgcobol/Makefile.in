@@ -187,8 +187,9 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/fstat.lo \
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/localtime.lo \
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/lseek.lo posix/shim/open.lo \
-@BUILD_LIBGCOBOL_TRUE@	posix/shim/stat.lo stringbin.lo \
-@BUILD_LIBGCOBOL_TRUE@	unstring.lo valconv.lo xmlparse.lo
+@BUILD_LIBGCOBOL_TRUE@	posix/shim/stat.lo posix/shim/gettime.lo \
+@BUILD_LIBGCOBOL_TRUE@	stringbin.lo unstring.lo valconv.lo \
+@BUILD_LIBGCOBOL_TRUE@	xmlparse.lo
 libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 libgcobol_compat_gnu_la_LIBADD =
@@ -224,7 +225,8 @@ libgcobol_posix_la_LIBADD =
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-read.lo \
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-stat.lo \
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-unlink.lo \
-@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-write.lo
+@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-write.lo \
+@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-clock-gettime.lo
 libgcobol_posix_la_OBJECTS = $(am_libgcobol_posix_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_posix_la_rpath = -rpath \
 @BUILD_LIBGCOBOL_TRUE@	$(toolexeclibdir)
@@ -279,8 +281,9 @@ am__nobase_libsubinclude_HEADERS_DIST = posix/cpy/posix-errno.cpy \
 	posix/cpy/posix-ftruncate.cpy posix/cpy/posix-localtime.cpy \
 	posix/cpy/posix-lseek.cpy posix/cpy/posix-mkdir.cpy \
 	posix/cpy/posix-open.cpy posix/cpy/posix-read.cpy \
-	posix/cpy/posix-stat.cpy posix/cpy/psx-lseek.cpy \
-	posix/cpy/psx-open.cpy posix/cpy/statbuf.cpy posix/cpy/tm.cpy \
+	posix/cpy/posix-stat.cpy posix/cpy/posix-clock-gettime.cpy \
+	posix/cpy/psx-lseek.cpy posix/cpy/psx-open.cpy \
+	posix/cpy/statbuf.cpy posix/cpy/tm.cpy \
 	compat/gnu/cpy/stored-char-length.cpy \
 	compat/gnu/cpy/cblproto.cpy compat/gnu/cpy/cbltypes.cpy \
 	compat/gnu/lib/CBL_ALLOC_MEM.cbl \
@@ -492,6 +495,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@    posix/shim/lseek.cc     \
 @BUILD_LIBGCOBOL_TRUE@    posix/shim/open.cc      \
 @BUILD_LIBGCOBOL_TRUE@    posix/shim/stat.cc      \
+@BUILD_LIBGCOBOL_TRUE@    posix/shim/gettime.cc   \
 @BUILD_LIBGCOBOL_TRUE@    stringbin.cc            \
 @BUILD_LIBGCOBOL_TRUE@    unstring.cc             \
 @BUILD_LIBGCOBOL_TRUE@    valconv.cc              \
@@ -525,7 +529,8 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-read.cbl		\
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-stat.cbl		\
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-unlink.cbl		\
-@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-write.cbl
+@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-write.cbl		\
+@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-clock-gettime.cbl
 
 
 # Install the COBOL for the POSIX and compatibility libraries.
@@ -540,6 +545,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	posix/cpy/posix-open.cpy		\
 @BUILD_LIBGCOBOL_TRUE@	posix/cpy/posix-read.cpy		\
 @BUILD_LIBGCOBOL_TRUE@	posix/cpy/posix-stat.cpy		\
+@BUILD_LIBGCOBOL_TRUE@	posix/cpy/posix-clock-gettime.cpy	\
 @BUILD_LIBGCOBOL_TRUE@	posix/cpy/psx-lseek.cpy			\
 @BUILD_LIBGCOBOL_TRUE@	posix/cpy/psx-open.cpy			\
 @BUILD_LIBGCOBOL_TRUE@	posix/cpy/statbuf.cpy			\
@@ -736,6 +742,8 @@ posix/shim/open.lo: posix/shim/$(am__dirstamp) \
 	posix/shim/$(DEPDIR)/$(am__dirstamp)
 posix/shim/stat.lo: posix/shim/$(am__dirstamp) \
 	posix/shim/$(DEPDIR)/$(am__dirstamp)
+posix/shim/gettime.lo: posix/shim/$(am__dirstamp) \
+	posix/shim/$(DEPDIR)/$(am__dirstamp)
 
 libgcobol.la: $(libgcobol_la_OBJECTS) $(libgcobol_la_DEPENDENCIES) $(EXTRA_libgcobol_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgcobol_la_LINK) $(am_libgcobol_la_rpath) $(libgcobol_la_OBJECTS) $(libgcobol_la_LIBADD) $(LIBS)
@@ -808,6 +816,8 @@ posix/udf/posix-unlink.lo: posix/udf/$(am__dirstamp) \
 	posix/udf/$(DEPDIR)/$(am__dirstamp)
 posix/udf/posix-write.lo: posix/udf/$(am__dirstamp) \
 	posix/udf/$(DEPDIR)/$(am__dirstamp)
+posix/udf/posix-clock-gettime.lo: posix/udf/$(am__dirstamp) \
+	posix/udf/$(DEPDIR)/$(am__dirstamp)
 
 libgcobol_posix.la: $(libgcobol_posix_la_OBJECTS) $(libgcobol_posix_la_DEPENDENCIES) $(EXTRA_libgcobol_posix_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgcobol_posix_la_LINK) $(am_libgcobol_posix_la_rpath) $(libgcobol_posix_la_OBJECTS) $(libgcobol_posix_la_LIBADD) $(LIBS)
@@ -839,6 +849,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@compat/gnu/lib/$(DEPDIR)/cbl_gpi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/errno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/fstat.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/gettime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/localtime.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/lseek.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/open.Plo@am__quote@

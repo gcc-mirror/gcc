@@ -66,6 +66,7 @@ libgcobol_la_SOURCES =      \
     posix/shim/lseek.cc     \
     posix/shim/open.cc      \
     posix/shim/stat.cc      \
+    posix/shim/gettime.cc   \
     stringbin.cc            \
     unstring.cc             \
     valconv.cc              \
@@ -99,7 +100,8 @@ libgcobol_posix_la_SOURCES =			\
 	posix/udf/posix-read.cbl		\
 	posix/udf/posix-stat.cbl		\
 	posix/udf/posix-unlink.cbl		\
-	posix/udf/posix-write.cbl
+	posix/udf/posix-write.cbl		\
+	posix/udf/posix-clock-gettime.cbl
 
 # Install the COBOL for the POSIX and compatibility libraries.
 nobase_libsubinclude_HEADERS =			\
@@ -113,6 +115,7 @@ nobase_libsubinclude_HEADERS =			\
 	posix/cpy/posix-open.cpy		\
 	posix/cpy/posix-read.cpy		\
 	posix/cpy/posix-stat.cpy		\
+	posix/cpy/posix-clock-gettime.cpy	\
 	posix/cpy/psx-lseek.cpy			\
 	posix/cpy/psx-open.cpy			\
 	posix/cpy/statbuf.cpy			\
