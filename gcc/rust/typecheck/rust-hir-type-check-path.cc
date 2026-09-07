@@ -73,7 +73,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
     return;
 
   // inherit the bound
-  root->inherit_bounds ({specified_bound});
+  root->inherit_bound (specified_bound);
 
   // lookup the associated item from the specified bound
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);

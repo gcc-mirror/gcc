@@ -207,7 +207,7 @@ public:
   std::string raw_bounds_as_name () const;
 
 protected:
-  void add_bound (TypeBoundPredicate predicate);
+  void add_bound (const TypeBoundPredicate &predicate);
 
   std::vector<TypeBoundPredicate> specified_bounds;
 };
@@ -244,6 +244,8 @@ public:
   bool bounds_compatible (BaseType &other, location_t locus, bool emit_error);
 
   void inherit_bounds (const BaseType &other);
+
+  void inherit_bound (const TypeBoundPredicate &bound);
 
   void inherit_bounds (
     const std::vector<TyTy::TypeBoundPredicate> &specified_bounds);
@@ -500,7 +502,7 @@ protected:
   BaseGeneric (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	       std::vector<TypeBoundPredicate> specified_bounds,
 	       std::set<HirId> refs = std::set<HirId> ())
-    : BaseType (ref, ty_ref, kind, ident, specified_bounds, refs)
+    : BaseType (ref, ty_ref, kind, ident, std::move (specified_bounds), refs)
   {}
 };
 

@@ -450,14 +450,6 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
   for (const auto &p : other.get_substs ())
     substitutions.push_back (p.clone ());
 
-  std::vector<SubstitutionArg> mappings;
-  for (size_t i = 0; i < other.used_arguments.get_mappings ().size (); i++)
-    {
-      const SubstitutionArg &oa = other.used_arguments.get_mappings ().at (i);
-      SubstitutionArg arg (oa);
-      mappings.push_back (std::move (arg));
-    }
-
   // we need to remap the argument mappings based on this copied constructor
   std::vector<SubstitutionArg> copied_arg_mappings;
   size_t i = 0;
@@ -490,14 +482,6 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
 
   if (other.is_error ())
     return *this;
-
-  std::vector<SubstitutionArg> mappings;
-  for (size_t i = 0; i < other.used_arguments.get_mappings ().size (); i++)
-    {
-      const SubstitutionArg &oa = other.used_arguments.get_mappings ().at (i);
-      SubstitutionArg arg (oa);
-      mappings.push_back (std::move (arg));
-    }
 
   // we need to remap the argument mappings based on this copied constructor
   std::vector<SubstitutionArg> copied_arg_mappings;
@@ -983,7 +967,7 @@ TypeBoundPredicateItem::get_locus () const
 
 TypeBoundsMappings::TypeBoundsMappings (
   std::vector<TypeBoundPredicate> specified_bounds)
-  : specified_bounds (specified_bounds)
+  : specified_bounds (std::move (specified_bounds))
 {}
 
 std::vector<TypeBoundPredicate> &
@@ -1049,7 +1033,7 @@ TypeBoundsMappings::raw_bounds_as_name () const
 }
 
 void
-TypeBoundsMappings::add_bound (TypeBoundPredicate predicate)
+TypeBoundsMappings::add_bound (const TypeBoundPredicate &predicate)
 {
   for (auto &bound : specified_bounds)
     {

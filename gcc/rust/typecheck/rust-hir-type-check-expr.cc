@@ -2018,7 +2018,7 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
   predicate.apply_generic_arguments (&args, false, false);
 
   // finally inherit the trait bound
-  infered->inherit_bounds ({predicate});
+  infered->inherit_bound (predicate);
 }
 
 bool

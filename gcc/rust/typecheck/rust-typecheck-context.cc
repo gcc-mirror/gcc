@@ -574,13 +574,13 @@ TypeCheckContext::have_checked_for_unconstrained (HirId id, bool *result)
 }
 
 void
-TypeCheckContext::insert_resolved_predicate (HirId id,
-					     TyTy::TypeBoundPredicate predicate)
+TypeCheckContext::insert_resolved_predicate (
+  HirId id, const TyTy::TypeBoundPredicate &predicate)
 {
   // auto it = predicates.find (id);
   // rust_assert (it == predicates.end ());
 
-  predicates.insert ({id, predicate});
+  predicates.emplace (id, predicate);
 }
 
 bool

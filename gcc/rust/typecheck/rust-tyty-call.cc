@@ -73,7 +73,7 @@ validate_call_argument_associated_impl_bounds (BaseType *param_ty,
       || resolved_argument_ty->get_kind () == TypeKind::PROJECTION)
     return true;
 
-  for (auto bound : param_ty->get_specified_bounds ())
+  for (const auto &bound : param_ty->get_specified_bounds ())
     {
       bool ambigious = false;
       auto associated

@@ -299,7 +299,8 @@ public:
   void insert_unconstrained_check_marker (HirId id, bool status);
   bool have_checked_for_unconstrained (HirId id, bool *result);
 
-  void insert_resolved_predicate (HirId id, TyTy::TypeBoundPredicate predicate);
+  void insert_resolved_predicate (HirId id,
+				  const TyTy::TypeBoundPredicate &predicate);
   bool lookup_predicate (HirId id, TyTy::TypeBoundPredicate *result);
 
   void insert_query (HirId id);

@@ -221,7 +221,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
     return;
 
   // inherit the bound
-  root->inherit_bounds ({specified_bound});
+  root->inherit_bound (specified_bound);
 
   // lookup the associated item from the specified bound
   HIR::TypePathSegment &item_seg = path.get_associated_segment ();

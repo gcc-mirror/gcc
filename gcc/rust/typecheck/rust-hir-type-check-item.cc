@@ -1086,7 +1086,7 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 
   // inherit the bounds
   if (!specified_bound.is_error ())
-    self->inherit_bounds ({specified_bound});
+    self->inherit_bound (specified_bound);
 
   // check for any unconstrained type-params
   const TyTy::SubstitutionArgumentMappings trait_constraints
