@@ -50,14 +50,12 @@ ReachabilityVisitor::visit_generic_predicates (
     {
       if (generic->get_kind () == HIR::GenericParam::GenericKind::TYPE)
 	{
-	  TyTy::BaseType *generic_ty = nullptr;
-	  auto ok = ty_ctx.lookup_type (generic->get_mappings ().get_hirid (),
-					&generic_ty);
+	  TyTy::BaseType *ty = nullptr;
+	  auto ok
+	    = ty_ctx.lookup_type (generic->get_mappings ().get_hirid (), &ty);
 	  rust_assert (ok);
-	  rust_assert (generic_ty->get_kind () == TyTy::PARAM);
 
-	  auto generic_param = static_cast<TyTy::ParamType *> (generic_ty);
-	  for (const auto &bound : generic_param->get_specified_bounds ())
+	  for (const auto &bound : ty->get_specified_bounds ())
 	    {
 	      const auto trait = bound.get ()->get_hir_trait_ref ();
 	      ctx.update_reachability (trait->get_mappings (), item_reach);

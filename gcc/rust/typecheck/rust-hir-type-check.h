@@ -326,6 +326,14 @@ public:
 
   TyTy::VarianceAnalysis::CrateCtx &get_variance_analysis_ctx ();
 
+  void push_const_context (void) { const_context++; }
+  void pop_const_context (void)
+  {
+    if (const_context > 0)
+      const_context--;
+  }
+  bool const_context_p (void) { return (const_context > 0); }
+
 private:
   TypeCheckContext ();
 
@@ -376,6 +384,8 @@ private:
 
   // variance analysis
   TyTy::VarianceAnalysis::CrateCtx variance_analysis_ctx;
+
+  unsigned int const_context = 0;
 
   /** Used to resolve (interned) lifetime names to their bounding scope. */
   class LifetimeResolver

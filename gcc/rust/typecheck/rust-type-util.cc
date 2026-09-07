@@ -79,16 +79,21 @@ query_type (HirId reference, TyTy::BaseType **result)
       bool is_local = item_defid.crateNum == mappings.get_current_crate ();
       bool is_fn
 	= item.value ()->get_item_kind () == HIR::Item::ItemKind::Function;
-      if (is_fn && is_local)
+      if (!context->const_context_p ())
 	{
-	  HIR::Function &fn = *static_cast<HIR::Function *> (item.value ());
-	  *result = TypeCheckItem::ResolveFunctionSignature (fn);
-	}
-      else if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Trait
-	       && is_local)
-	{
-	  HIR::Trait &trait = *static_cast<HIR::Trait *> (item.value ());
-	  *result = TypeCheckItem::ResolveTraitSignature (trait);
+	  if (is_fn && is_local)
+	    {
+	      HIR::Function &fn = *static_cast<HIR::Function *> (item.value ());
+	      *result = TypeCheckItem::ResolveFunctionSignature (fn);
+	    }
+	  else if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Trait
+		   && is_local)
+	    {
+	      HIR::Trait &trait = *static_cast<HIR::Trait *> (item.value ());
+	      *result = TypeCheckItem::ResolveTraitSignature (trait);
+	    }
+	  else
+	    *result = TypeCheckItem::Resolve (*item.value ());
 	}
       else
 	{
@@ -159,7 +164,7 @@ query_type (HirId reference, TyTy::BaseType **result)
       DefId item_defid = impl_item->first->get_impl_mappings ().get_defid ();
       bool is_local = item_defid.crateNum == mappings.get_current_crate ();
       if (impl_item->first->get_impl_item_type () == HIR::ImplItem::FUNCTION
-	  && is_local)
+	  && is_local && !context->const_context_p ())
 	{
 	  HIR::Function &fn = *static_cast<HIR::Function *> (impl_item->first);
 	  *result = TypeCheckImplItem::ResolveFunctionSignature (

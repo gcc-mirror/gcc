@@ -692,7 +692,10 @@ void
 TypeCheckType::visit (HIR::ArrayType &type)
 {
   auto element_type = TypeCheckType::Resolve (type.get_element_type ());
+  context->push_const_context ();
   auto capacity_type = TypeCheckExpr::Resolve (type.get_size_expr ());
+  context->pop_const_context ();
+
   if (capacity_type->get_kind () == TyTy::TypeKind::ERROR)
     return;
 

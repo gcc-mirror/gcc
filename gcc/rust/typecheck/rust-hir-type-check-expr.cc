@@ -1150,13 +1150,16 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
   HIR::Expr *capacity_expr = nullptr;
   TyTy::BaseType *element_type = nullptr;
   TyTy::BaseType *capacity_type = nullptr;
+
   switch (elements.get_array_expr_type ())
     {
     case HIR::ArrayElems::ArrayExprType::COPIED:
       {
 	HIR::ArrayElemsCopied &elems
 	  = static_cast<HIR::ArrayElemsCopied &> (elements);
+	context->push_const_context ();
 	element_type = TypeCheckExpr::Resolve (elems.get_elem_to_copy ());
+	context->pop_const_context ();
 
 	auto capacity_expr_ty
 	  = TypeCheckExpr::Resolve (elems.get_num_copies_expr ());
@@ -1183,12 +1186,14 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
       {
 	HIR::ArrayElemsValues &elems
 	  = static_cast<HIR::ArrayElemsValues &> (elements);
-
+	context->push_const_context ();
 	std::vector<TyTy::BaseType *> types;
 	for (auto &elem : elems.get_values ())
 	  {
-	    types.push_back (TypeCheckExpr::Resolve (*elem));
+	    auto elem_ty = TypeCheckExpr::Resolve (*elem);
+	    types.push_back (elem_ty);
 	  }
+	context->pop_const_context ();
 
 	// this is a LUB
 	element_type
