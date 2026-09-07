@@ -173,12 +173,16 @@ TypeCheckContext::push_return_type (TypeCheckContextItem item,
 				    TyTy::BaseType *return_type)
 {
   return_type_stack.emplace_back (std::move (item), return_type);
+  // a query can check another function body while an expression in the
+  // caller has an expected type
+  push_expected_type (nullptr);
 }
 
 void
 TypeCheckContext::pop_return_type ()
 {
   rust_assert (!return_type_stack.empty ());
+  pop_expected_type ();
   return_type_stack.pop_back ();
 }
 
