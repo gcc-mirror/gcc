@@ -482,6 +482,11 @@ MethodResolver::select (TyTy::BaseType &receiver)
   if (try_select_predicate_candidates (receiver))
     return true;
 
+  // A receiver that is still a bare unresolved generic type parameter can only
+  // ever satisfy a method through its own trait bounds
+  if (receiver.destructure ()->get_kind () == TyTy::TypeKind::PARAM)
+    return false;
+
   // Assemble candidates
   std::vector<impl_item_candidate> inherent_impl_fns;
   if (specified_trait == nullptr)
