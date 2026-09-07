@@ -456,7 +456,7 @@ cxx_incomplete_type_inform (const_tree type)
 		    else
 		      cand = TYPE_NAME (t);
 		  }
-		
+
 		if (!COMPLETE_TYPE_P (TREE_TYPE (cand)))
 		  continue;
 
@@ -1076,9 +1076,12 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	  || (DECL_IN_AGGR_P (decl)
 	      && DECL_INITIALIZED_IN_CLASS_P (decl)))
 	{
-	  value = fold_non_dependent_expr (value, tf_warning_or_error,
-					   /*manifestly_const_eval=*/true,
-					   decl);
+	  /* As in massage_init_elt, do not fold a CONSTRUCTOR in a template
+	     it has already been folded c++/126811.  */
+	  if (!(processing_template_decl && TREE_CODE (value) == CONSTRUCTOR))
+	    value = fold_non_dependent_expr (value, tf_warning_or_error,
+					     /*manifestly_const_eval=*/true,
+					     decl);
 	  if (value == error_mark_node)
 	    ;
 	  /* Diagnose a non-constant initializer for constexpr variable or
