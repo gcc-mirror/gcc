@@ -1,3 +1,12 @@
+2026-09-06  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	Backported from master:
+	2026-08-13  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR rtl-optimization/125683
+	* gcc.dg/pr125683.c: New test.
+	* gcc.dg/rtl/aarch64/pr125683-flags.c: New test.
+
 2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

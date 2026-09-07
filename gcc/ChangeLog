@@ -1,3 +1,14 @@
+2026-09-06  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	Backported from master:
+	2026-08-13  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR rtl-optimization/125683
+	* simplify-rtx.cc (simplify_context::simplify_ternary_operation):
+	When folding an IF_THEN_ELSE of two equal MEM operands with
+	different memory attributes, return a copy whose attributes are
+	widened to what both operands allow.
+
 2026-09-05  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	Backported from master:
