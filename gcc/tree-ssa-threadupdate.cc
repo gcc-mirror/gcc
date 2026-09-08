@@ -2270,6 +2270,72 @@ back_jt_path_registry::rewire_first_differing_edge (unsigned path_num,
   return true;
 }
 
+/* Adjust the candidate path CAND_PATH_NUM, which starts on the same
+   edge as the path we have just threaded, so it can be threaded within
+   the context of the copies that threading made.  CURR_PATH is the
+   path that was threaded.
+
+   Returns TRUE if the candidate survived.  If it did not, it has been
+   removed from the registry and a different path now sits in its slot.  */
+
+bool
+back_jt_path_registry::adjust_one_path (vec<jump_thread_edge *> *curr_path,
+					unsigned cand_path_num)
+{
+  vec<jump_thread_edge *> *cand_path = m_paths[cand_path_num];
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "adjusting candidate: ");
+      debug_path (dump_file, cand_path_num);
+    }
+
+  /* Find where the candidate differs from the threaded path.  Both start
+     on the same edge, so J is at least 1.  */
+  unsigned minlength = MIN (curr_path->length (), cand_path->length ());
+  unsigned j;
+  for (j = 1; j < minlength; ++j)
+    if ((*cand_path)[j]->e != (*curr_path)[j]->e)
+      {
+	gcc_assert ((*cand_path)[j]->e->src == (*curr_path)[j]->e->src);
+	break;
+      }
+
+  /* If they never differ, the candidate is a prefix of what we threaded, and
+     there's nothing left to do.  */
+  if (j == cand_path->length ())
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "adjusting first edge after MINLENGTH.\n");
+      cancel_thread (cand_path, "Adjusted candidate is EMPTY");
+      m_paths.unordered_remove (cand_path_num);
+      return false;
+    }
+
+  /* Edge J leaves a block we have just copied, so rewire it to come out
+     of the copy.  */
+  if (!rewire_first_differing_edge (cand_path_num, j))
+    {
+      cancel_thread (cand_path, "Adjusted candidate is EMPTY");
+      m_paths.unordered_remove (cand_path_num);
+      return false;
+    }
+
+  /* Chop off from the candidate path any prefix it shares with the
+     recently threaded path.  */
+  if (cand_path->length () - j > 1)
+    cand_path->block_remove (0, j);
+  else if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "Dropping illformed candidate.\n");
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "adjusted candidate: ");
+      debug_path (dump_file, cand_path_num);
+    }
+  return true;
+}
+
 /* After a path has been jump threaded, adjust the remaining paths
    that are subsets of this path, so these paths can be safely
    threaded within the context of the new threaded path.
@@ -2291,84 +2357,29 @@ void
 back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 {
   vec<jump_thread_edge *> *curr_path = m_paths[curr_path_num];
+  edge curr_first = (*curr_path)[0]->e;
 
-  /* Iterate through all the other paths and adjust them.  */
-  for (unsigned cand_path_num = 0; cand_path_num < m_paths.length (); )
+  /* Adjust every other path starting on the edge this one did.  */
+  for (unsigned i = 0; i < m_paths.length (); )
     {
-      if (cand_path_num == curr_path_num)
+      /* The path we just threaded is not a candidate for adjustment.  */
+      if (i == curr_path_num)
 	{
-	  ++cand_path_num;
+	  ++i;
 	  continue;
 	}
-      /* Make sure the candidate to adjust starts with the same path
-	 as the recently threaded path.  */
-      vec<jump_thread_edge *> *cand_path = m_paths[cand_path_num];
-      if ((*cand_path)[0]->e != (*curr_path)[0]->e)
+
+      /* Only a path starting where the threaded one did needs adjusting.  */
+      if ((*m_paths[i])[0]->e != curr_first)
 	{
-	  ++cand_path_num;
+	  ++i;
 	  continue;
 	}
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "adjusting candidate: ");
-	  debug_path (dump_file, cand_path_num);
-	}
 
-      /* Chop off from the candidate path any prefix it shares with
-	 the recently threaded path.  */
-      unsigned minlength = MIN (curr_path->length (), cand_path->length ());
-      unsigned j;
-      for (j = 0; j < minlength; ++j)
-	{
-	  edge cand_edge = (*cand_path)[j]->e;
-	  edge curr_edge = (*curr_path)[j]->e;
-
-	  /* Once the prefix no longer matches, adjust the first
-	     non-matching edge to point from an adjusted edge to
-	     wherever it was going.  */
-	  if (cand_edge != curr_edge)
-	    {
-	      gcc_assert (cand_edge->src == curr_edge->src);
-	      if (!rewire_first_differing_edge (cand_path_num, j))
-		goto remove_candidate_from_list;
-	      break;
-	    }
-	}
-      if (j == minlength)
-	{
-	  /* If we consumed the max subgraph we could look at, and
-	     still didn't find any different edges, it's the
-	     last edge after MINLENGTH.  */
-	  if (cand_path->length () > minlength)
-	    {
-	      if (!rewire_first_differing_edge (cand_path_num, j))
-		goto remove_candidate_from_list;
-	    }
-	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "adjusting first edge after MINLENGTH.\n");
-	}
-      if (j > 0)
-	{
-	  /* If we are removing everything, delete the entire candidate.  */
-	  if (j == cand_path->length ())
-	    {
-	    remove_candidate_from_list:
-	      cancel_thread (cand_path, "Adjusted candidate is EMPTY");
-	      m_paths.unordered_remove (cand_path_num);
-	      continue;
-	    }
-	  /* Otherwise, just remove the redundant sub-path.  */
-	  if (cand_path->length () - j > 1)
-	    cand_path->block_remove (0, j);
-	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "Dropping illformed candidate.\n");
-	}
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "adjusted candidate: ");
-	  debug_path (dump_file, cand_path_num);
-	}
-      ++cand_path_num;
+      /* Adjusting can remove the candidate, and unordered_remove then puts
+	 a different path in slot I, so look at I again.  */
+      if (adjust_one_path (curr_path, i))
+	++i;
     }
 }
 

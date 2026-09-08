@@ -119,6 +119,8 @@ private:
 			      unsigned n_region, unsigned current_path_no,
 			      const char **failure_reason);
   bool rewire_first_differing_edge (unsigned path_num, unsigned edge_num);
+  bool adjust_one_path (vec<jump_thread_edge *> *curr_path,
+			unsigned cand_path_num);
 };
 
 // Rather than search all the edges in jump thread paths each time DOM
