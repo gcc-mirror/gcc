@@ -1,3 +1,11 @@
+2026-09-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-01  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/126054
+	* gcc.target/s390/pr126054.c: New test.
+
 2026-09-06  Rohith Kapelli  <kapellirohith@gmail.com>
 
 	Backported from master:
