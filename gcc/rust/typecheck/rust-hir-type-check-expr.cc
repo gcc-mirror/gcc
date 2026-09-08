@@ -2070,6 +2070,12 @@ TypeCheckExpr::resolve_operator_overload (
       const TyTy::FnType &fn
 	= *static_cast<const TyTy::FnType *> (candidate_type);
 
+      if (probe_lhs != nullptr
+	  && !types_compatable (TyTy::TyWithLocation (fn.get_self_type ()),
+				TyTy::TyWithLocation (probe_lhs),
+				UNDEF_LOCATION, false /* emit_errors */))
+	continue;
+
       DefId current_fn_defid = current_context.get_defid ();
       bool recursive_candidated = fn.get_id () == current_fn_defid;
       if (!recursive_candidated)
