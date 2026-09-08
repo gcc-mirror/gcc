@@ -8430,6 +8430,13 @@ insert_predicates_for_cond (tree_code code, tree lhs, tree rhs,
 	    tree_code nc = gimple_assign_rhs_code (def_stmt);
 	    tree nlhs = vn_valueize (gimple_assign_rhs1 (def_stmt));
 	    tree nrhs = vn_valueize (gimple_assign_rhs2 (def_stmt));
+	    // Canonicalize the comparison before the check below,
+	    // it might be the case where nlhs is a constant now.
+	    if (tree_swap_operands_p (nlhs, nrhs))
+	      {
+		std::swap (nlhs, nrhs);
+		nc = swap_tree_comparison (nc);
+	      }
 	    edge nt = true_e;
 	    edge nf = false_e;
 	    if (code == EQ_EXPR)
