@@ -1048,12 +1048,11 @@
 ;; Combine extend + fma to widen_fma (vfwmacc)
 (define_insn_and_split "*dual_widen_fma<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (plus:VWEXTF
-	  (mult:VWEXTF
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand")))
+	(fma:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
 	  (match_operand:VWEXTF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -1073,11 +1072,10 @@
 ;; pattern and non-widen fma pattern.
 (define_insn_and_split "*single_widen_fma<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (plus:VWEXTF
-	  (mult:VWEXTF
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-	    (match_operand:VWEXTF 3 "register_operand"))
+	(fma:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	  (match_operand:VWEXTF 3 "register_operand")
 	  (match_operand:VWEXTF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -1100,13 +1098,13 @@
 ;; Combine extend + fnma to widen_fnma (vfwnmsac)
 (define_insn_and_split "*dual_widen_fnma<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (minus:VWEXTF
-          (match_operand:VWEXTF 1 "register_operand")
-	  (mult:VWEXTF
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand")))))]
+	(fma:VWEXTF
+	  (neg:VWEXTF
+	    (float_extend:VWEXTF
+	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	  (match_operand:VWEXTF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1125,12 +1123,12 @@
 ;; pattern and non-widen fnma pattern.
 (define_insn_and_split "*single_widen_fnma<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (minus:VWEXTF
-          (match_operand:VWEXTF 1 "register_operand")
-	  (mult:VWEXTF
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-	    (match_operand:VWEXTF 3 "register_operand"))))]
+	(fma:VWEXTF
+	  (neg:VWEXTF
+	    (float_extend:VWEXTF
+	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
+	  (match_operand:VWEXTF 3 "register_operand")
+	  (match_operand:VWEXTF 1 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1152,13 +1150,12 @@
 ;; Combine extend + fms to widen_fms (vfwmsac)
 (define_insn_and_split "*dual_widen_fms<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (minus:VWEXTF
-	  (mult:VWEXTF
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand")))
-	  (match_operand:VWEXTF 1 "register_operand")))]
+	(fma:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	  (neg:VWEXTF (match_operand:VWEXTF 1 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1177,12 +1174,11 @@
 ;; pattern and non-widen fms pattern.
 (define_insn_and_split "*single_widen_fms<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (minus:VWEXTF
-	  (mult:VWEXTF
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
-	    (match_operand:VWEXTF 3 "register_operand"))
-	  (match_operand:VWEXTF 1 "register_operand")))]
+	(fma:VWEXTF
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	  (match_operand:VWEXTF 3 "register_operand")
+	  (neg:VWEXTF (match_operand:VWEXTF 1 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1204,14 +1200,13 @@
 ;; Combine extend + fnms to widen_fnms (vfwnmacc)
 (define_insn_and_split "*dual_widen_fnms<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (minus:VWEXTF
-	  (mult:VWEXTF
-            (neg:VWEXTF
-              (float_extend:VWEXTF
-	        (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
-            (float_extend:VWEXTF
-	      (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand")))
-	  (match_operand:VWEXTF 1 "register_operand")))]
+	(fma:VWEXTF
+	  (neg:VWEXTF
+	    (float_extend:VWEXTF
+	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
+	  (float_extend:VWEXTF
+	    (match_operand:<V_DOUBLE_TRUNC> 3 "register_operand"))
+	  (neg:VWEXTF (match_operand:VWEXTF 1 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1230,13 +1225,12 @@
 ;; pattern and non-widen fnms pattern.
 (define_insn_and_split "*single_widen_fnms<mode>"
   [(set (match_operand:VWEXTF 0 "register_operand")
-        (minus:VWEXTF
-          (mult:VWEXTF
-	    (neg:VWEXTF
-              (match_operand:VWEXTF 3 "register_operand"))
-            (float_extend:VWEXTF
+	(fma:VWEXTF
+	  (neg:VWEXTF
+	    (float_extend:VWEXTF
 	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand")))
-	  (match_operand:VWEXTF 1 "register_operand")))]
+	  (match_operand:VWEXTF 3 "register_operand")
+	  (neg:VWEXTF (match_operand:VWEXTF 1 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
