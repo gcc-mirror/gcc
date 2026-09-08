@@ -552,13 +552,16 @@ extern rtx offset_address (rtx, rtx, unsigned HOST_WIDE_INT);
 
 /* Given REF, a MEM, and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
-   if we are making a new object of this type.  */
-extern void set_mem_attributes (rtx, tree, int);
+   if we are making a new object of this type.  MAY_STORE_P is true when REF
+   can be the destination of a store.  */
+extern void set_mem_attributes (rtx, tree, int, bool = true);
 
 /* Similar, except that BITPOS has not yet been applied to REF, so if
    we alter MEM_OFFSET according to T then we should subtract BITPOS
-   expecting that it'll be added back in later.  */
-extern void set_mem_attributes_minus_bitpos (rtx, tree, int, poly_int64);
+   expecting that it'll be added back in later.  MAY_STORE_P is true when REF
+   can be the destination of a store.  */
+extern void set_mem_attributes_minus_bitpos (rtx, tree, int, poly_int64,
+				     bool = true);
 
 /* Return OFFSET if XEXP (MEM, 0) - OFFSET is known to be ALIGN
    bits aligned for 0 <= OFFSET < ALIGN / BITS_PER_UNIT, or

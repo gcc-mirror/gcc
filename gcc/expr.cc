@@ -64,6 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "rtx-vector-builder.h"
 #include "tree-pretty-print.h"
+#include "tree-eh.h"
 #include "flags.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
@@ -6328,7 +6329,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	      /* If the field is at offset zero, we could have been given the
 		 DECL_RTX of the parent struct.  Don't munge it.  */
 	      to_rtx = shallow_copy_rtx (to_rtx);
-	      set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos);
+	      set_mem_attributes_minus_bitpos (to_rtx, to, 0, bitpos, true);
 	      if (volatilep)
 		MEM_VOLATILE_P (to_rtx) = 1;
 	    }
@@ -11523,6 +11524,10 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
   tree ssa_name = NULL_TREE;
   gimple *g;
 
+  /* EXPAND_NORMAL is the only modifier that guarantees that a memory
+     reference describes a load.  Use store semantics otherwise.  */
+  const bool may_store_p = modifier != EXPAND_NORMAL;
+
   /* Some ABIs define padding bits in _BitInt uninitialized.  Normally, RTL
      expansion sign/zero extends integral types with less than mode precision
      when reading from bit-fields and after arithmetic operations (see
@@ -11759,6 +11764,11 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	decl_rtl = change_address (decl_rtl, TYPE_MODE (type), 0);
       else
 	decl_rtl = copy_rtx (decl_rtl);
+
+      if (exp && MEM_P (decl_rtl))
+	MEM_NOTRAP_P (decl_rtl)
+	  = !(may_store_p
+	      ? lhs_could_trap_p (exp) : tree_could_trap_p (exp));
 
       /* Record writes to register variables.  */
       if (modifier == EXPAND_WRITE
@@ -12078,7 +12088,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	op0 = addr_for_mem_ref (exp, as, true);
 	op0 = memory_address_addr_space (mode, op0, as);
 	temp = gen_rtx_MEM (mode, op0);
-	set_mem_attributes (temp, exp, 0);
+	set_mem_attributes (temp, exp, 0, may_store_p);
 	set_mem_addr_space (temp, as);
 	align = get_object_alignment (exp);
 	if (modifier != EXPAND_WRITE
@@ -12165,7 +12175,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    op0 = memory_address_addr_space (mode, op0, as);
 	  }
 	temp = gen_rtx_MEM (mode, op0);
-	set_mem_attributes (temp, exp, 0);
+	set_mem_attributes (temp, exp, 0, may_store_p);
 	set_mem_addr_space (temp, as);
 	if (TREE_THIS_VOLATILE (exp))
 	  MEM_VOLATILE_P (temp) = 1;
@@ -12734,7 +12744,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	   we should just honor its original memory attributes.  */
 	if (!(TREE_CODE (tem) == SSA_NAME
 	      && (MEM_P (orig_op0) || CONSTANT_P (orig_op0))))
-	  set_mem_attributes (op0, exp, 0);
+	  set_mem_attributes (op0, exp, 0, may_store_p);
 
 	if (REG_P (XEXP (op0, 0)))
 	  mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
@@ -12866,7 +12876,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		if (op0 == orig_op0)
 		  op0 = copy_rtx (op0);
 
-		set_mem_attributes (op0, treeop0, 0);
+		set_mem_attributes (op0, treeop0, 0, may_store_p);
 		if (REG_P (XEXP (op0, 0)))
 		  mark_reg_pointer (XEXP (op0, 0), MEM_ALIGN (op0));
 

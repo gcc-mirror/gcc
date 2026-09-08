@@ -1959,11 +1959,12 @@ get_mem_align_offset (rtx mem, unsigned int align)
 /* Given REF (a MEM) and T, either the type of X or the expression
    corresponding to REF, set the memory attributes.  OBJECTP is nonzero
    if we are making a new object of this type.  BITPOS is nonzero if
-   there is an offset outstanding on T that will be applied later.  */
+   there is an offset outstanding on T that will be applied later.
+   MAY_STORE_P is true when REF can be the destination of a store.  */
 
 void
 set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
-				 poly_int64 bitpos)
+				 poly_int64 bitpos, bool may_store_p)
 {
   poly_int64 apply_bitpos = 0;
   tree type;
@@ -2059,7 +2060,8 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 	t = TREE_OPERAND (t, 0);
 
       /* Note whether this expression can trap.  */
-      MEM_NOTRAP_P (ref) = !tree_could_trap_p (t);
+      MEM_NOTRAP_P (ref)
+	= !(may_store_p ? lhs_could_trap_p (t) : tree_could_trap_p (t));
 
       base = get_base_address (t);
       if (base)
@@ -2191,9 +2193,9 @@ set_mem_attributes_minus_bitpos (rtx ref, tree t, int objectp,
 }
 
 void
-set_mem_attributes (rtx ref, tree t, int objectp)
+set_mem_attributes (rtx ref, tree t, int objectp, bool may_store_p)
 {
-  set_mem_attributes_minus_bitpos (ref, t, objectp, 0);
+  set_mem_attributes_minus_bitpos (ref, t, objectp, 0, may_store_p);
 }
 
 /* Set the alias set of MEM to SET.  */
