@@ -169,7 +169,6 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
   std::vector<TyTy::SubstitutionParamMapping> substitutions
     = inherited_substitutions;
 
-  TyTy::RegionConstraints region_constraints;
   HIR::TraitFunctionDecl &function = fn.get_decl ();
   if (function.has_generics ())
     {
@@ -180,12 +179,9 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 					   ABI::RUST);
     }
 
-  if (function.has_where_clause ())
-    {
-      for (auto &where_clause_item : function.get_where_clause ().get_items ())
-	ResolveWhereClauseItem::Resolve (*where_clause_item,
-					 region_constraints);
-    }
+  TyTy::RegionConstraints region_constraints;
+  ResolveWhereClauseItem::Resolve (function.get_where_clause (),
+				   region_constraints);
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_return_type ())

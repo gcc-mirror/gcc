@@ -80,14 +80,8 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
     }
 
   TyTy::RegionConstraints region_constraints;
-  if (function.has_where_clause ())
-    {
-      for (auto &where_clause_item : function.get_where_clause ().get_items ())
-	{
-	  ResolveWhereClauseItem::Resolve (*where_clause_item,
-					   region_constraints);
-	}
-    }
+  ResolveWhereClauseItem::Resolve (function.get_where_clause (),
+				   region_constraints);
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_return_type ())
@@ -254,11 +248,8 @@ TypeCheckImplItem::resolve_function_signature (HIR::Function &function)
 			    function.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : function.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item.get (),
-				       region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (function.get_where_clause (),
+				   region_constraints);
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_function_return_type ())
@@ -510,11 +501,8 @@ TypeCheckImplItem::visit (HIR::TypeAlias &alias)
   context->insert_type (alias.get_mappings (), actual_type);
   result = actual_type;
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : alias.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item.get (),
-				       region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (alias.get_where_clause (),
+				   region_constraints);
 }
 
 TypeCheckImplItemWithTrait::TypeCheckImplItemWithTrait (

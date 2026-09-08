@@ -310,10 +310,8 @@ TypeCheckItem::visit (HIR::TypeAlias &alias)
   context->insert_type (alias.get_mappings (), actual_type);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : alias.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (alias.get_where_clause (),
+				   region_constraints);
   infered = actual_type;
 }
 
@@ -329,10 +327,8 @@ TypeCheckItem::visit (HIR::TupleStruct &struct_decl)
 			    struct_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (struct_decl.get_where_clause (),
+				   region_constraints);
 
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
@@ -410,10 +406,8 @@ TypeCheckItem::visit (HIR::StructStruct &struct_decl)
 			    struct_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : struct_decl.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (struct_decl.get_where_clause (),
+				   region_constraints);
 
   // Process #[repr(X)] attribute, if any
   const AST::AttrVec &attrs = struct_decl.get_outer_attrs ();
@@ -577,10 +571,8 @@ TypeCheckItem::visit (HIR::Union &union_decl)
 			    union_decl.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : union_decl.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (union_decl.get_where_clause (),
+				   region_constraints);
 
   std::vector<TyTy::StructFieldType *> fields;
   for (auto &variant : union_decl.get_variants ())
@@ -833,10 +825,8 @@ TypeCheckItem::resolve_function_signature (HIR::Function &function)
 			    function.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : function.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (function.get_where_clause (),
+				   region_constraints);
 
   TyTy::BaseType *ret_type = nullptr;
   if (!function.has_function_return_type ())
@@ -1053,10 +1043,8 @@ TypeCheckItem::resolve_impl_block_substitutions (HIR::ImplBlock &impl_block,
 			    impl_block.get_generic_params (), substitutions);
 
   TyTy::RegionConstraints region_constraints;
-  for (auto &where_clause_item : impl_block.get_where_clause ().get_items ())
-    {
-      ResolveWhereClauseItem::Resolve (*where_clause_item, region_constraints);
-    }
+  ResolveWhereClauseItem::Resolve (impl_block.get_where_clause (),
+				   region_constraints);
 
   auto specified_bound = TyTy::TypeBoundPredicate::error ();
   TraitReference *trait_reference = &TraitReference::error_node ();

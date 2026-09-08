@@ -53,7 +53,8 @@ protected:
     HIR::TypePath &path,
     tl::optional<std::reference_wrapper<HIR::Type>> associated_self,
     BoundPolarity polarity = BoundPolarity::RegularBound,
-    bool is_qualified_type = false, bool is_super_trait = false);
+    bool is_qualified_type = false, bool is_super_trait = false,
+    bool defer_bindings = false);
 
   bool check_for_unconstrained (
     const std::vector<TyTy::SubstitutionParamMapping> &params_to_constrain,

@@ -132,7 +132,7 @@ class ResolveWhereClauseItem : public TypeCheckBase
   TyTy::RegionConstraints &region_constraints;
 
 public:
-  static void Resolve (HIR::WhereClauseItem &item,
+  static void Resolve (HIR::WhereClause &clause,
 		       TyTy::RegionConstraints &region_constraints);
 
 protected:
@@ -140,6 +140,12 @@ protected:
   void visit (HIR::TypeBoundWhereClauseItem &item);
 
 private:
+  static void Resolve (HIR::WhereClauseItem &item,
+		       TyTy::RegionConstraints &region_constraints);
+
+  bool defer_bindings = false;
+  bool complete_bindings = false;
+
   ResolveWhereClauseItem (TyTy::RegionConstraints &region_constraints)
     : region_constraints (region_constraints)
   {}

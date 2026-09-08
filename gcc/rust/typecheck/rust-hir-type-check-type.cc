@@ -1024,6 +1024,64 @@ ResolveWhereClauseItem::Resolve (HIR::WhereClauseItem &item,
 }
 
 void
+ResolveWhereClauseItem::Resolve (HIR::WhereClause &clause,
+				 TyTy::RegionConstraints &region_constraints)
+{
+  ResolveWhereClauseItem resolver (region_constraints);
+
+  class PlainTypePath : public HIR::HIRTypeVisitor
+  {
+  public:
+    bool matches = false;
+
+    void visit (HIR::TypePathSegmentFunction &segment) override {}
+    void visit (HIR::QualifiedPathInType &path) override {}
+    void visit (HIR::TraitBound &bound) override {}
+    void visit (HIR::ImplTraitType &type) override {}
+    void visit (HIR::TraitObjectType &type) override {}
+    void visit (HIR::ParenthesisedType &type) override {}
+    void visit (HIR::TupleType &type) override {}
+    void visit (HIR::NeverType &type) override {}
+    void visit (HIR::RawPointerType &type) override {}
+    void visit (HIR::ReferenceType &type) override {}
+    void visit (HIR::ArrayType &type) override {}
+    void visit (HIR::SliceType &type) override {}
+    void visit (HIR::InferredType &type) override {}
+    void visit (HIR::BareFunctionType &type) override {}
+
+    void visit (HIR::TypePath &path) override
+    {
+      bool is_single = path.get_segments ().size () == 1;
+      bool final_seg_is_reg
+	= path.get_final_segment ().get_type () == HIR::TypePathSegment::REG;
+
+      matches = is_single && final_seg_is_reg;
+    }
+  };
+
+  resolver.defer_bindings = true;
+  for (auto &item : clause.get_items ())
+    if (item->get_item_type () == HIR::WhereClauseItem::TYPE_BOUND)
+      {
+	auto &bound = static_cast<HIR::TypeBoundWhereClauseItem &> (*item);
+	PlainTypePath plain;
+	bound.get_bound_type ().accept_vis (plain);
+	if (plain.matches)
+	  resolver.visit (bound);
+      }
+
+  resolver.defer_bindings = false;
+  resolver.complete_bindings = true;
+  for (auto &item : clause.get_items ())
+    {
+      if (item->get_item_type () == HIR::WhereClauseItem::TYPE_BOUND)
+	resolver.visit (static_cast<HIR::TypeBoundWhereClauseItem &> (*item));
+      else
+	Resolve (*item, region_constraints);
+    }
+}
+
+void
 ResolveWhereClauseItem::visit (HIR::LifetimeWhereClauseItem &item)
 {
   auto lhs = context->lookup_and_resolve_lifetime (item.get_lifetime ());
@@ -1060,6 +1118,9 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
     = TypeCheckType::Resolve (binding_type_path,
 			      TypeCheckType::ResolutionMode::CANONICAL);
 
+  if (defer_bindings && binding->get_kind () != TyTy::TypeKind::PARAM)
+    return;
+
   // FIXME double check there might be a trait cycle here see TypeParam handling
 
   std::vector<TyTy::TypeBoundPredicate> specified_bounds;
@@ -1072,13 +1133,17 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	    auto *b = static_cast<HIR::TraitBound *> (bound.get ());
 
 	    TyTy::TypeBoundPredicate predicate
-	      = get_predicate_from_bound (b->get_path (), binding_type_path);
+	      = get_predicate_from_bound (b->get_path (), binding_type_path,
+					  BoundPolarity::RegularBound, false,
+					  false, defer_bindings);
 	    if (!predicate.is_error ())
 	      specified_bounds.push_back (std::move (predicate));
 	  }
 	  break;
 	case HIR::TypeParamBound::BoundType::LIFETIME:
 	  {
+	    if (defer_bindings)
+	      break;
 	    if (auto param = binding->try_as<TyTy::ParamType> ())
 	      {
 		auto *b = static_cast<HIR::Lifetime *> (bound.get ());
@@ -1098,7 +1163,27 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	  break;
 	}
     }
-  binding->inherit_bounds (specified_bounds);
+
+  for (const auto &predicate : specified_bounds)
+    {
+      bool replaced = false;
+      if (complete_bindings)
+	{
+	  for (auto &bound : binding->get_specified_bounds ())
+	    {
+	      if (bound.get_id () == predicate.get_id ()
+		  && bound.get_locus () == predicate.get_locus ())
+		{
+		  bound = predicate;
+		  replaced = true;
+		  break;
+		}
+	    }
+	}
+
+      if (!replaced)
+	binding->inherit_bound (predicate);
+    }
 }
 
 } // namespace Resolver

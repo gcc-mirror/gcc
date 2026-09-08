@@ -261,7 +261,8 @@ TyTy::TypeBoundPredicate
 TypeCheckBase::get_predicate_from_bound (
   HIR::TypePath &type_path,
   tl::optional<std::reference_wrapper<HIR::Type>> associated_self,
-  BoundPolarity polarity, bool is_qualified_type_path, bool is_super_trait)
+  BoundPolarity polarity, bool is_qualified_type_path, bool is_super_trait,
+  bool defer_bindings)
 {
   TyTy::TypeBoundPredicate lookup = TyTy::TypeBoundPredicate::error ();
   bool already_resolved
@@ -340,7 +341,7 @@ TypeCheckBase::get_predicate_from_bound (
 
 	std::vector<HIR::GenericArgsBinding> bindings;
 
-	if (fn.has_return_type ())
+	if (fn.has_return_type () && !defer_bindings)
 	  {
 	    TypeCheckType::Resolve (fn.get_return_type ());
 
@@ -377,6 +378,9 @@ TypeCheckBase::get_predicate_from_bound (
 			       args.get_locus ());
     }
 
+  if (defer_bindings)
+    args.get_binding_args ().clear ();
+
   // we try to apply generic arguments when they are non empty and or when the
   // predicate requires them so that we get the relevant Foo expects x number
   // arguments but got zero see test case rust/compile/traits12.rs
@@ -387,8 +391,9 @@ TypeCheckBase::get_predicate_from_bound (
 					 is_super_trait);
     }
 
-  context->insert_resolved_predicate (type_path.get_mappings ().get_hirid (),
-				      predicate);
+  if (!defer_bindings)
+    context->insert_resolved_predicate (type_path.get_mappings ().get_hirid (),
+					predicate);
 
   return predicate;
 }

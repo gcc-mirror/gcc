@@ -2559,6 +2559,8 @@ public:
     return where_clause;
   }
 
+  WARN_UNUSED_RESULT WhereClause &get_where_clause () { return where_clause; }
+
   ExternalFunctionItem (
     Analysis::NodeMapping mappings, Identifier item_name,
     std::vector<std::unique_ptr<GenericParam>> generic_params,
