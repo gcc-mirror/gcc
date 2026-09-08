@@ -155,6 +155,17 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 {
   auto binder_pin = context->push_clean_lifetime_resolver ();
 
+  auto &mappings = Analysis::Mappings::get ();
+  auto *trait
+    = mappings.lookup_trait_item_mapping (get_mappings ().get_hirid ());
+  rust_assert (trait != nullptr);
+  for (auto &param : trait->get_generic_params ())
+    if (param->get_kind () == HIR::GenericParam::GenericKind::LIFETIME)
+      {
+	auto &lifetime_param = static_cast<HIR::LifetimeParam &> (*param);
+	context->intern_and_insert_lifetime (lifetime_param.get_lifetime ());
+      }
+
   std::vector<TyTy::SubstitutionParamMapping> substitutions
     = inherited_substitutions;
 
