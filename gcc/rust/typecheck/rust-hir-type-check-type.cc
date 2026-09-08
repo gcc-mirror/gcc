@@ -892,6 +892,7 @@ TypeResolveGenericParam::visit (HIR::TypeParam &param)
 
   resolved = new TyTy::ParamType (param.get_type_representation ().as_string (),
 				  param.get_locus (),
+				  param.get_mappings ().get_hirid (),
 				  param.get_mappings ().get_hirid (), {});
 
   if (resolve_trait_bounds)
@@ -912,6 +913,7 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
       TyTy::ParamType *p
 	= new TyTy::ParamType (param.get_type_representation ().as_string (),
 			       param.get_locus (), implicit_id,
+			       pty->get_decl_id (),
 			       {} /*empty specified bounds*/);
       context->insert_implicit_type (implicit_id, p);
 

@@ -3742,24 +3742,25 @@ PointerType::handle_substitions (SubstitutionArgumentMappings &mappings)
 // PARAM Type
 
 ParamType::ParamType (std::string symbol, location_t locus, HirId ref,
+		      HirId decl_id,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
   : BaseGeneric (ref, ref, KIND,
 		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
 		  locus},
 		 std::move (specified_bounds), refs),
-    is_trait_self (false), symbol (symbol)
+    decl_id (decl_id), is_trait_self (false), symbol (symbol)
 {}
 
 ParamType::ParamType (bool is_trait_self, std::string symbol, location_t locus,
-		      HirId ref, HirId ty_ref,
+		      HirId ref, HirId ty_ref, HirId decl_id,
 		      std::vector<TypeBoundPredicate> specified_bounds,
 		      std::set<HirId> refs)
   : BaseGeneric (ref, ty_ref, KIND,
 		 {Resolver::CanonicalPath::new_seg (UNKNOWN_NODEID, symbol),
 		  locus},
 		 std::move (specified_bounds), refs),
-    is_trait_self (is_trait_self), symbol (symbol)
+    decl_id (decl_id), is_trait_self (is_trait_self), symbol (symbol)
 {}
 
 bool
@@ -3814,11 +3815,12 @@ ParamType::clone () const
   bool cycle = Resolver::ScopedPush<HirId>::contains (active, get_ty_ref ());
   if (cycle)
     return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
-			  get_ty_ref (), {}, get_combined_refs ());
+			  get_ty_ref (), get_decl_id (), {},
+			  get_combined_refs ());
 
   Resolver::ScopedPush<HirId> guard (active, get_ty_ref ());
   return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
-			get_ty_ref (), get_specified_bounds (),
+			get_ty_ref (), get_decl_id (), get_specified_bounds (),
 			get_combined_refs ());
 }
 

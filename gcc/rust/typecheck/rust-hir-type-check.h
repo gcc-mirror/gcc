@@ -311,6 +311,8 @@ public:
   void insert_resolved_predicate (HirId id,
 				  const TyTy::TypeBoundPredicate &predicate);
   bool lookup_predicate (HirId id, TyTy::TypeBoundPredicate *result);
+  std::vector<TyTy::TypeBoundPredicate>
+  predicates_for_type (const TyTy::BaseType *receiver) const;
 
   void insert_query (HirId id);
   void query_completed (HirId id);
