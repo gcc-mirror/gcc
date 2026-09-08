@@ -51,14 +51,13 @@ void check_routines (int dev)
   if (omp_target_is_present (&A, dev) != initial_dev)
     __builtin_abort ();
 
-  // For link, it points to the pointer var - FIXME: update for self_maps implying 'link'
-  if (omp_target_is_present (&gEnter, dev) != !invalid_dev)
+  if (omp_target_is_present (&gEnter, dev) != (!invalid_dev && (initial_dev || !REQ_SELF_MAPS)))
     __builtin_abort ();
 
   if (omp_target_is_present (&gLink, dev) != (!invalid_dev && (initial_dev || !REQ_SELF_MAPS)))
     __builtin_abort ();
 
-  if (omp_target_is_present (&gLocal, dev) != !invalid_dev)
+  if (omp_target_is_present (&gLocal, dev) != (!invalid_dev && (initial_dev || !REQ_SELF_MAPS)))
     __builtin_abort ();
 
   int *ptr = (int*) 0xDEEDBEEF;
@@ -100,14 +99,15 @@ void check_routines (int dev)
     __builtin_abort ();
 
   if (!!omp_target_is_present (&gEnter, dev)
-      != (initial_dev || (/* !self_mapping && */ !invalid_dev)))
+      != (initial_dev || (!self_mapping && !invalid_dev)))
     __builtin_abort ();
 
   if (!!omp_target_is_present (&gLink, dev)
       != (initial_dev || (!self_mapping && !invalid_dev)))
     __builtin_abort ();
 
-  if (!!omp_target_is_present (&gLocal, dev) != !invalid_dev)
+  if (!!omp_target_is_present (&gLocal, dev)
+      != (initial_dev || (!self_mapping && !invalid_dev)))
     __builtin_abort ();
 
   int *ptr2 = omp_get_mapped_ptr (&A, dev);
@@ -144,7 +144,7 @@ void check_routines (int dev)
       if (ptr2 != &gEnter)
 	__builtin_abort ();
     }
-  else if (invalid_dev /* FIXME: || self_mapping */)
+  else if (invalid_dev || self_mapping)
     {
       if (ptr2 != nullptr)
 	__builtin_abort ();
@@ -172,7 +172,7 @@ void check_routines (int dev)
       if (ptr2 != &gLocal)
 	__builtin_abort ();
     }
-  else if (invalid_dev)
+  else if (invalid_dev || self_mapping)
     {
       if (ptr2 != nullptr)
 	__builtin_abort ();

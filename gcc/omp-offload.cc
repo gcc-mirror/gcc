@@ -390,6 +390,26 @@ omp_discover_implicit_declare_target (void)
 				      &worklist);
     }
 
+  if (omp_requires_mask
+      & (OMP_REQUIRES_SELF_MAPS | OMP_REQUIRES_UNIFIED_SHARED_MEMORY))
+    FOR_EACH_VARIABLE (vnode)
+      {
+	/* If 'self_maps' or 'unified_shared_memory' is enabled,
+	   remove 'enter/to' and add 'link'. */
+	if (lookup_attribute ("omp declare target",
+			      DECL_ATTRIBUTES (vnode->decl)))
+	  {
+	    DECL_ATTRIBUTES (vnode->decl)
+	      = remove_attribute ("omp declare target",
+				  DECL_ATTRIBUTES (vnode->decl));
+	    if (!lookup_attribute ("omp declare target link",
+				   DECL_ATTRIBUTES (vnode->decl)))
+	      DECL_ATTRIBUTES (vnode->decl)
+		= tree_cons (get_identifier ("omp declare target link"),
+			     NULL_TREE, DECL_ATTRIBUTES (vnode->decl));
+	  }
+      }
+
   lang_hooks.decls.omp_finish_decl_inits ();
 }
 
