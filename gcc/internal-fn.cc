@@ -3404,7 +3404,7 @@ expand_RAWMEMCHR (internal_fn, gcall *stmt)
   create_call_lhs_operand (&ops[0], lhs_rtx, lhs_mode);
 
   tree mem = gimple_call_arg (stmt, 0);
-  rtx mem_rtx = get_memory_rtx (mem, NULL);
+  rtx mem_rtx = get_memory_rtx (mem, NULL, false);
   create_fixed_operand (&ops[1], mem_rtx);
 
   tree pattern = gimple_call_arg (stmt, 1);

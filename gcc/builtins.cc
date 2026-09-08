@@ -1364,10 +1364,10 @@ expand_builtin_prefetch (tree exp)
 /* Get a MEM rtx for expression EXP which is the address of an operand
    to be used in a string instruction (cmpstrsi, cpymemsi, ..).  LEN is
    the maximum length of the block of memory that might be accessed or
-   NULL if unknown.  */
+   NULL if unknown.  STORE_P is true when EXP is the destination.  */
 
 rtx
-get_memory_rtx (tree exp, tree len)
+get_memory_rtx (tree exp, tree len, bool store_p)
 {
   tree orig_exp = exp, base;
   rtx addr, mem;
@@ -1401,7 +1401,7 @@ get_memory_rtx (tree exp, tree len)
      from the original address we got, and build an all-aliasing
      unknown-sized access to that one.  */
   if (is_gimple_mem_ref_addr (TREE_OPERAND (exp, 0)))
-    set_mem_attributes (mem, exp, 0);
+    set_mem_attributes (mem, exp, 0, store_p);
   else if (TREE_CODE (TREE_OPERAND (exp, 0)) == ADDR_EXPR
 	   && (base = get_base_address (TREE_OPERAND (TREE_OPERAND (exp, 0),
 						      0))))
@@ -1414,7 +1414,7 @@ get_memory_rtx (tree exp, tree len)
 							     size_zero_node,
 							     NULL)),
 			 exp, build_int_cst (ptr_type_node, 0));
-      set_mem_attributes (mem, exp, 0);
+      set_mem_attributes (mem, exp, 0, store_p);
       /* Since we stripped parts make sure the offset is unknown and the
 	 alignment is computed from the original address.  */
       clear_mem_offset (mem);
@@ -3770,7 +3770,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
 
   if (expected_align < dest_align)
     expected_align = dest_align;
-  dest_mem = get_memory_rtx (dest, len);
+  dest_mem = get_memory_rtx (dest, len, true);
   set_mem_align (dest_mem, dest_align);
   len_rtx = expand_normal (len);
   determine_block_size (len, len_rtx, &min_size, &max_size,
@@ -3804,7 +3804,7 @@ expand_builtin_memory_copy_args (tree dest, tree src, tree len,
       return dest_mem;
     }
 
-  src_mem = get_memory_rtx (src, len);
+  src_mem = get_memory_rtx (src, len, false);
   set_mem_align (src_mem, src_align);
 
   /* Copy word part most expediently.  */
@@ -3873,8 +3873,8 @@ expand_movstr (tree dest, tree src, rtx target, memop_ret retmode)
   if (!targetm.have_movstr ())
     return NULL_RTX;
 
-  dest_mem = get_memory_rtx (dest, NULL);
-  src_mem = get_memory_rtx (src, NULL);
+  dest_mem = get_memory_rtx (dest, NULL, true);
+  src_mem = get_memory_rtx (src, NULL, false);
   if (retmode == RETURN_BEGIN)
     {
       target = force_reg (Pmode, XEXP (dest_mem, 0));
@@ -4150,7 +4150,7 @@ expand_builtin_strncpy (tree exp, rtx target)
 				   dest_align, false))
 	return NULL_RTX;
 
-      dest_mem = get_memory_rtx (dest, len);
+      dest_mem = get_memory_rtx (dest, len, true);
       store_by_pieces (dest_mem, tree_to_uhwi (len),
 		       builtin_strncpy_read_str,
 		       const_cast<char *> (p), dest_align, false,
@@ -4709,7 +4709,7 @@ expand_builtin_memset_args (tree dest, tree val, tree len,
   len_rtx = expand_normal (len);
   determine_block_size (len, len_rtx, &min_size, &max_size,
 			&probable_max_size);
-  dest_mem = get_memory_rtx (dest, len);
+  dest_mem = get_memory_rtx (dest, len, true);
   val_mode = TYPE_MODE (unsigned_char_type_node);
 
   if (TREE_CODE (val) != INTEGER_CST
@@ -4893,8 +4893,8 @@ expand_builtin_memcmp (tree exp, rtx target, bool result_eq)
   if (arg1_align == 0 || arg2_align == 0)
     return NULL_RTX;
 
-  rtx arg1_rtx = get_memory_rtx (arg1, len);
-  rtx arg2_rtx = get_memory_rtx (arg2, len);
+  rtx arg1_rtx = get_memory_rtx (arg1, len, false);
+  rtx arg2_rtx = get_memory_rtx (arg2, len, false);
   rtx len_rtx = expand_normal (fold_convert_loc (loc, sizetype, len));
 
   /* Set MEM_SIZE as appropriate.  */
@@ -4987,8 +4987,8 @@ expand_builtin_strcmp (tree exp, ATTRIBUTE_UNUSED rtx target)
   arg1 = builtin_save_expr (arg1);
   arg2 = builtin_save_expr (arg2);
 
-  rtx arg1_rtx = get_memory_rtx (arg1, NULL);
-  rtx arg2_rtx = get_memory_rtx (arg2, NULL);
+  rtx arg1_rtx = get_memory_rtx (arg1, NULL, false);
+  rtx arg2_rtx = get_memory_rtx (arg2, NULL, false);
 
   /* Try to call cmpstrsi.  */
   if (cmpstr_icode != CODE_FOR_nothing)
@@ -5144,8 +5144,8 @@ expand_builtin_strncmp (tree exp, ATTRIBUTE_UNUSED rtx target,
       len = fold_convert_loc (loc, sizetype, len);
       len = fold_build2_loc (loc, MIN_EXPR, TREE_TYPE (len), len, len3);
     }
-  rtx arg1_rtx = get_memory_rtx (arg1, len);
-  rtx arg2_rtx = get_memory_rtx (arg2, len);
+  rtx arg1_rtx = get_memory_rtx (arg1, len, false);
+  rtx arg2_rtx = get_memory_rtx (arg2, len, false);
   rtx arg3_rtx = expand_normal (len);
   result = expand_cmpstrn_or_cmpmem (cmpstrn_icode, target, arg1_rtx,
 				     arg2_rtx, TREE_TYPE (len), arg3_rtx,
@@ -7602,7 +7602,8 @@ inline_string_cmp (rtx target, tree var_str, const char *const_str,
 {
   HOST_WIDE_INT offset = 0;
   rtx var_rtx_array
-    = get_memory_rtx (var_str, build_int_cst (unsigned_type_node,length));
+    = get_memory_rtx (var_str, build_int_cst (unsigned_type_node, length),
+		      false);
   rtx var_rtx = NULL_RTX;
   rtx const_rtx = NULL_RTX;
   rtx result = target ? target : gen_reg_rtx (mode);
