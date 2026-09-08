@@ -197,6 +197,17 @@ TypeCheckBase::check_for_unconstrained (
   walk_types_to_constrain (constrained_symbols, constraint_b);
   walk_type_to_constrain (constrained_symbols, *reference);
 
+  for (const auto &param : params_to_constrain)
+    {
+      auto *ty = param.get_param_ty ();
+      for (const auto &bound : ty->get_specified_bounds ())
+	{
+	  const auto &args = bound.get_substitution_arguments ();
+	  for (const auto &binding : args.get_binding_args ())
+	    walk_type_to_constrain (constrained_symbols, *binding.second);
+	}
+    }
+
   // check for unconstrained
   bool unconstrained = false;
   for (auto &sym : symbols_to_constrain)
