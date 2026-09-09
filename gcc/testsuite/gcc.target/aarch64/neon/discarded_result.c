@@ -8,6 +8,7 @@
 
 /*
 ** foo:
+** fadd	v[0-9]+\.2s, (v0\.2s, v1\.2s|v1\.2s, v0\.2s)
 ** ret
 */
 void foo(float32x2_t a, float32x2_t b)

@@ -3,7 +3,7 @@
     the top half of the vector register and no explicit zeroing instructions
     are emitted.  */
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-O -fno-trapping-math" } */
 
 #include <arm_neon.h>
 

@@ -45,6 +45,23 @@
 #include "gimple-fold.h"
 
 namespace aarch64_acle {
+/* Build an asm volatile statement that prevents VALUE from being optimized
+   away, even if it is not used.
+   Equivalent to the following C code:
+   asm volatile ("" : : "w" (VALUE));  */
+gimple *
+build_optimization_barrier (tree value)
+{
+  vec<tree, va_gc> *inputs = nullptr;
+  vec_safe_push (inputs,
+		 build_tree_list (build_tree_list (NULL_TREE,
+						   build_string (1, "w")),
+				  value));
+  auto stmt = gimple_build_asm_vec ("", inputs, nullptr, nullptr, nullptr);
+  gimple_asm_set_volatile (stmt, true);
+  return stmt;
+}
+
 /* Build a cast expression, `(TYPE)EXPR`, if necessary to make an expression
    with type TYPE.  */
 tree
@@ -162,8 +179,24 @@ one_element_vector_type_p (tree type)
    At least one of `expand` or `fold` must be overriden by derived classes.  */
 class gimple_function_base : public function_base
 {
+public:
   rtx expand (function_expander &) const override { gcc_unreachable (); }
   gimple *fold (gimple_folder &) const override { gcc_unreachable (); }
+
+  /* If the expression can raise an FP exception, use an optimization barrier
+     to prevent it being removed even if the resulting value is not used.
+     FIXME (Karl Meakin): This shouldn't be necessary, but not all
+     optimizations obey `-ftrapping-math` at the moment.  */
+  gimple *maybe_optimization_barrier (gimple_folder &f, tree ret) const
+  {
+    if (f.call_properties () & CP_RAISE_FP_EXCEPTIONS)
+      {
+	f.assign (f.lhs, ret);
+	return build_optimization_barrier (f.lhs);
+      }
+    else
+      return gimple_build_assign (f.lhs, ret);
+  }
 };
 
 template <insn_code insn> struct gimple_exact_insn : gimple_function_base
@@ -281,7 +314,7 @@ public:
 	gcc_unreachable ();
       }
 
-    return gimple_build_assign (f.lhs, ret);
+    return this->maybe_optimization_barrier (f, ret);
   }
 };
 
