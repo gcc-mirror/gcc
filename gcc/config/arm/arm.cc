@@ -127,13 +127,7 @@ static const char *shift_op (rtx, HOST_WIDE_INT *);
 static struct machine_function *arm_init_machine_status (void);
 static void thumb_exit (FILE *, int);
 static HOST_WIDE_INT get_jump_table_size (rtx_jump_table_data *);
-static Mnode *move_minipool_fix_forward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
-static Mnode *add_minipool_forward_ref (Mfix *);
-static Mnode *move_minipool_fix_backward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
-static Mnode *add_minipool_backward_ref (Mfix *);
-static void assign_minipool_offsets (Mfix *);
 static void arm_print_value (FILE *, rtx);
-static void dump_minipool (rtx_insn *);
 static int arm_barrier_cost (rtx_insn *);
 static Mfix *create_fix_barrier (Mfix *, HOST_WIDE_INT);
 static void push_minipool_barrier (rtx_insn *, HOST_WIDE_INT);
@@ -17776,16 +17770,37 @@ struct minipool_fixup
 #define MINIPOOL_FIX_SIZE(mode) \
   (GET_MODE_SIZE ((mode)) >= 4 ? GET_MODE_SIZE ((mode)) : 4)
 
-static Mnode *	minipool_vector_head;
-static Mnode *	minipool_vector_tail;
-static rtx_code_label	*minipool_vector_label;
-static int	minipool_pad;
+class minipool
+{
+ public:
+  minipool () { reset (); }
+  void reset()
+    {
+      vector_head = NULL;
+      vector_tail = NULL;
+      vector_label = NULL;
+    }
+  Mnode *head () { return vector_head; }
+  rtx_code_label *label () { return vector_label; }
+  Mnode *add_forward_ref (Mfix *);
+  Mnode *add_backward_ref (Mfix *);
+  void assign_offsets (Mfix *);
+  void dump (rtx_insn *);
+ private:
+  Mnode *move_fix_forward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
+  Mnode *move_fix_backward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
+  Mnode *vector_head;
+  Mnode *vector_tail;
+  rtx_code_label *vector_label;
+};
+
+static int minipool_pad;
 
 /* The linked list of all minipool fixes required for this function.  */
-Mfix * 		minipool_fix_head;
-Mfix * 		minipool_fix_tail;
+Mfix *minipool_fix_head;
+Mfix *minipool_fix_tail;
 /* The fix entry for the current minipool, once it has been placed.  */
-Mfix *		minipool_barrier;
+Mfix *minipool_barrier;
 
 #ifndef JUMP_TABLES_IN_TEXT_SECTION
 #define JUMP_TABLES_IN_TEXT_SECTION 0
@@ -17867,9 +17882,9 @@ get_label_padding (rtx label)
 /* Move a minipool fix MP from its current location to before MAX_MP.
    If MAX_MP is NULL, then MP doesn't need moving, but the addressing
    constraints may need updating.  */
-static Mnode *
-move_minipool_fix_forward_ref (Mnode *mp, Mnode *max_mp,
-			       HOST_WIDE_INT max_address)
+Mnode *
+minipool::move_fix_forward_ref (Mnode *mp, Mnode *max_mp,
+				HOST_WIDE_INT max_address)
 {
   /* The code below assumes these are different.  */
   gcc_assert (mp != max_mp);
@@ -17892,7 +17907,7 @@ move_minipool_fix_forward_ref (Mnode *mp, Mnode *max_mp,
       if (mp->next != NULL)
 	mp->next->prev = mp->prev;
       else
-	minipool_vector_tail = mp->prev;
+	vector_tail = mp->prev;
 
       /* Re-insert it before MAX_MP.  */
       mp->next = max_mp;
@@ -17902,7 +17917,7 @@ move_minipool_fix_forward_ref (Mnode *mp, Mnode *max_mp,
       if (mp->prev != NULL)
 	mp->prev->next = mp;
       else
-	minipool_vector_head = mp;
+	vector_head = mp;
     }
 
   /* Save the new entry.  */
@@ -17922,8 +17937,8 @@ move_minipool_fix_forward_ref (Mnode *mp, Mnode *max_mp,
 
 /* Add a constant to the minipool for a forward reference.  Returns the
    node added or NULL if the constant will not fit in this pool.  */
-static Mnode *
-add_minipool_forward_ref (Mfix *fix)
+Mnode *
+minipool::add_forward_ref (Mfix *fix)
 {
   /* If set, max_mp is the first pool_entry that has a lower
      constraint than the one we are trying to add.  */
@@ -17935,16 +17950,16 @@ add_minipool_forward_ref (Mfix *fix)
      cannot be placed into the current pool.  Furthermore, adding the
      new constant pool entry may cause the pool to start FIX_SIZE bytes
      earlier.  */
-  if (minipool_vector_head &&
+  if (vector_head &&
       (fix->address + get_attr_length (fix->insn)
-       >= minipool_vector_head->max_address - fix->fix_size))
+       >= vector_head->max_address - fix->fix_size))
     return NULL;
 
   /* Scan the pool to see if a constant with the same value has
      already been added.  While we are doing this, also note the
      location where we must insert the constant if it doesn't already
      exist.  */
-  for (mp = minipool_vector_head; mp != NULL; mp = mp->next)
+  for (mp = vector_head; mp != NULL; mp = mp->next)
     {
       if (GET_CODE (fix->value) == GET_CODE (mp->value)
 	  && fix->mode == mp->mode
@@ -17955,7 +17970,7 @@ add_minipool_forward_ref (Mfix *fix)
 	{
 	  /* More than one fix references this entry.  */
 	  mp->refcount++;
-	  return move_minipool_fix_forward_ref (mp, max_mp, max_address);
+	  return move_fix_forward_ref (mp, max_mp, max_address);
 	}
 
       /* Note the insertion point if necessary.  */
@@ -17995,17 +18010,17 @@ add_minipool_forward_ref (Mfix *fix)
     {
       mp->max_address = max_address;
       mp->next = NULL;
-      mp->prev = minipool_vector_tail;
+      mp->prev = vector_tail;
 
       if (mp->prev == NULL)
 	{
-	  minipool_vector_head = mp;
-	  minipool_vector_label = gen_label_rtx ();
+	  vector_head = mp;
+	  vector_label = gen_label_rtx ();
 	}
       else
 	mp->prev->next = mp;
 
-      minipool_vector_tail = mp;
+      vector_tail = mp;
     }
   else
     {
@@ -18020,7 +18035,7 @@ add_minipool_forward_ref (Mfix *fix)
       if (mp->prev != NULL)
 	mp->prev->next = mp;
       else
-	minipool_vector_head = mp;
+	vector_head = mp;
     }
 
   /* Save the new entry.  */
@@ -18038,9 +18053,9 @@ add_minipool_forward_ref (Mfix *fix)
   return max_mp;
 }
 
-static Mnode *
-move_minipool_fix_backward_ref (Mnode *mp, Mnode *min_mp,
-				HOST_WIDE_INT  min_address)
+Mnode *
+minipool::move_fix_backward_ref (Mnode *mp, Mnode *min_mp,
+				 HOST_WIDE_INT  min_address)
 {
   HOST_WIDE_INT offset;
 
@@ -18063,7 +18078,7 @@ move_minipool_fix_backward_ref (Mnode *mp, Mnode *min_mp,
       if (mp->prev != NULL)
 	mp->prev->next = mp->next;
       else
-	minipool_vector_head = mp->next;
+	vector_head = mp->next;
 
       /* Reinsert it after MIN_MP.  */
       mp->prev = min_mp;
@@ -18072,13 +18087,13 @@ move_minipool_fix_backward_ref (Mnode *mp, Mnode *min_mp,
       if (mp->next != NULL)
 	mp->next->prev = mp;
       else
-	minipool_vector_tail = mp;
+	vector_tail = mp;
     }
 
   min_mp = mp;
 
   offset = 0;
-  for (mp = minipool_vector_head; mp != NULL; mp = mp->next)
+  for (mp = vector_head; mp != NULL; mp = mp->next)
     {
       mp->offset = offset;
       if (mp->refcount > 0)
@@ -18098,8 +18113,8 @@ move_minipool_fix_backward_ref (Mnode *mp, Mnode *min_mp,
    somewhat confusing because the calculated offsets for each fix do
    not take into account the size of the pool (which is still under
    construction.  */
-static Mnode *
-add_minipool_backward_ref (Mfix *fix)
+Mnode *
+minipool::add_backward_ref (Mfix *fix)
 {
   /* If set, min_mp is the last pool_entry that has a lower constraint
      than the one we are trying to add.  */
@@ -18113,7 +18128,7 @@ add_minipool_backward_ref (Mfix *fix)
      fixes out of range, then we don't try.  This ensures that we
      can't fail later on.  */
   if (min_address >= minipool_barrier->address
-      || (minipool_vector_tail->min_address + fix->fix_size
+      || (vector_tail->min_address + fix->fix_size
 	  >= minipool_barrier->address))
     return NULL;
 
@@ -18121,7 +18136,7 @@ add_minipool_backward_ref (Mfix *fix)
      already been added.  While we are doing this, also note the
      location where we must insert the constant if it doesn't already
      exist.  */
-  for (mp = minipool_vector_tail; mp != NULL; mp = mp->prev)
+  for (mp = vector_tail; mp != NULL; mp = mp->prev)
     {
       if (GET_CODE (fix->value) == GET_CODE (mp->value)
 	  && fix->mode == mp->mode
@@ -18133,11 +18148,11 @@ add_minipool_backward_ref (Mfix *fix)
 	     end of the table (this is conservative).  */
 	  && (mp->max_address
 	      > (minipool_barrier->address
-		 + minipool_vector_tail->offset
-		 + minipool_vector_tail->fix_size)))
+		 + vector_tail->offset
+		 + vector_tail->fix_size)))
 	{
 	  mp->refcount++;
-	  return move_minipool_fix_backward_ref (mp, min_mp, min_address);
+	  return move_fix_backward_ref (mp, min_mp, min_address);
 	}
 
       if (min_mp != NULL)
@@ -18196,17 +18211,17 @@ add_minipool_backward_ref (Mfix *fix)
   if (min_mp == NULL)
     {
       mp->prev = NULL;
-      mp->next = minipool_vector_head;
+      mp->next = vector_head;
 
       if (mp->next == NULL)
 	{
-	  minipool_vector_tail = mp;
-	  minipool_vector_label = gen_label_rtx ();
+	  vector_tail = mp;
+	  vector_label = gen_label_rtx ();
 	}
       else
 	mp->next->prev = mp;
 
-      minipool_vector_head = mp;
+      vector_head = mp;
     }
   else
     {
@@ -18217,7 +18232,7 @@ add_minipool_backward_ref (Mfix *fix)
       if (mp->next != NULL)
 	mp->next->prev = mp;
       else
-	minipool_vector_tail = mp;
+	vector_tail = mp;
     }
 
   /* Save the new entry.  */
@@ -18245,15 +18260,15 @@ add_minipool_backward_ref (Mfix *fix)
   return min_mp;
 }
 
-static void
-assign_minipool_offsets (Mfix *barrier)
+void
+minipool::assign_offsets (Mfix *barrier)
 {
   HOST_WIDE_INT offset = 0;
   Mnode *mp;
 
   minipool_barrier = barrier;
 
-  for (mp = minipool_vector_head; mp != NULL; mp = mp->next)
+  for (mp = vector_head; mp != NULL; mp = mp->next)
     {
       mp->offset = offset;
 
@@ -18263,15 +18278,15 @@ assign_minipool_offsets (Mfix *barrier)
 }
 
 /* Output the literal table */
-static void
-dump_minipool (rtx_insn *scan)
+void
+minipool::dump (rtx_insn *scan)
 {
   Mnode * mp;
   Mnode * nmp;
   int align64 = 0;
 
   if (ARM_DOUBLEWORD_ALIGN)
-    for (mp = minipool_vector_head; mp != NULL; mp = mp->next)
+    for (mp = vector_head; mp != NULL; mp = mp->next)
       if (mp->refcount > 0 && mp->fix_size >= 8)
 	{
 	  align64 = 1;
@@ -18285,9 +18300,9 @@ dump_minipool (rtx_insn *scan)
 
   scan = emit_label_after (gen_label_rtx (), scan);
   scan = emit_insn_after (align64 ? gen_align_8 () : gen_align_4 (), scan);
-  scan = emit_label_after (minipool_vector_label, scan);
+  scan = emit_label_after (vector_label, scan);
 
-  for (mp = minipool_vector_head; mp != NULL; mp = nmp)
+  for (mp = vector_head; mp != NULL; mp = nmp)
     {
       if (mp->refcount > 0)
 	{
@@ -18344,7 +18359,7 @@ dump_minipool (rtx_insn *scan)
       free (mp);
     }
 
-  minipool_vector_head = minipool_vector_tail = NULL;
+  reset ();
   scan = emit_insn_after (gen_consttable_end (), scan);
   scan = emit_barrier_after (scan);
 }
@@ -18720,6 +18735,180 @@ note_invalid_constants (rtx_insn *insn, HOST_WIDE_INT address, int do_pushes)
     }
 
   return;
+}
+
+/* GCC normally builds a single literal pool for an entire function,
+   but pc-relative loads on Arm (and especially thumb1) have very
+   limited offsets, which means accessing values through a single
+   pool is expensive if we have to build an address for the pool entry.
+   To mitigate this we build tables of literals into the body of a function
+   if it is too large to put them at the end, then place the tables
+   inside the function body (ideally after unconditional branches).  */
+static void
+place_minipools (void)
+{
+  rtx_insn *insn;
+  HOST_WIDE_INT address = 0;
+  Mfix *fix;
+  minipool mpool;
+
+  /* Ensure all insns that must be split have been split at this point.
+     Otherwise, the pool placement code below may compute incorrect
+     insn lengths.  Note that when optimizing, all insns have already
+     been split at this point.  */
+  if (!optimize)
+    split_all_insns_noflow ();
+
+  minipool_fix_head = minipool_fix_tail = NULL;
+
+  /* The first insn must always be a note, or the code below won't
+     scan it properly.  */
+  insn = get_insns ();
+  gcc_assert (NOTE_P (insn));
+  minipool_pad = 0;
+
+  /* Scan all the insns and record the operands that will need fixing.  */
+  for (insn = next_nonnote_insn (insn); insn; insn = next_nonnote_insn (insn))
+    {
+      if (BARRIER_P (insn))
+	push_minipool_barrier (insn, address);
+      else if (INSN_P (insn))
+	{
+	  rtx_jump_table_data *table;
+
+	  note_invalid_constants (insn, address, true);
+	  address += get_attr_length (insn);
+
+	  /* If the insn is a vector jump, add the size of the table
+	     and skip the table.  */
+	  if (tablejump_p (insn, NULL, &table))
+	    {
+	      address += get_jump_table_size (table);
+	      insn = table;
+	    }
+	}
+      else if (LABEL_P (insn))
+	/* Add the worst-case padding due to alignment.  We don't add
+	   the _current_ padding because the minipool insertions
+	   themselves might change it.  */
+	address += get_label_padding (insn);
+    }
+
+  fix = minipool_fix_head;
+
+  /* Now scan the fixups and perform the required changes.  */
+  while (fix)
+    {
+      Mfix *ftmp;
+      Mfix *fdel;
+      Mfix *last_added_fix;
+      Mfix *last_barrier = NULL;
+      Mfix *this_fix;
+
+      /* Skip any further barriers before the next fix.  */
+      while (fix && BARRIER_P (fix->insn))
+	fix = fix->next;
+
+      /* No more fixes.  */
+      if (fix == NULL)
+	break;
+
+      last_added_fix = NULL;
+
+      for (ftmp = fix; ftmp; ftmp = ftmp->next)
+	{
+	  if (BARRIER_P (ftmp->insn))
+	    {
+	      if (ftmp->address >= mpool.head ()->max_address)
+		break;
+
+	      last_barrier = ftmp;
+	    }
+	  else if ((ftmp->minipool = mpool.add_forward_ref (ftmp)) == NULL)
+	    break;
+
+	  last_added_fix = ftmp;  /* Keep track of the last fix added.  */
+	}
+
+      /* If we found a barrier, drop back to that; any fixes that we
+	 could have reached but come after the barrier will now go in
+	 the next mini-pool.  */
+      if (last_barrier != NULL)
+	{
+	  /* Reduce the refcount for those fixes that won't go into this
+	     pool after all.  */
+	  for (fdel = last_barrier->next;
+	       fdel && fdel != ftmp;
+	       fdel = fdel->next)
+	    {
+	      fdel->minipool->refcount--;
+	      fdel->minipool = NULL;
+	    }
+
+	  ftmp = last_barrier;
+	}
+      else
+	{
+	  /* ftmp is first fix that we can't fit into this pool and
+	     there no natural barriers that we could use.  Insert a
+	     new barrier in the code somewhere between the previous
+	     fix and this one, and arrange to jump around it.  */
+	  HOST_WIDE_INT max_address;
+
+	  /* The last item on the list of fixes must be a barrier, so
+	     we can never run off the end of the list of fixes without
+	     last_barrier being set.  */
+	  gcc_assert (ftmp);
+
+	  max_address = mpool.head()->max_address;
+	  /* Check that there isn't another fix that is in range that
+	     we couldn't fit into this pool because the pool was
+	     already too large: we need to put the pool before such an
+	     instruction.  The pool itself may come just after the
+	     fix because create_fix_barrier also allows space for a
+	     jump instruction.  */
+	  if (ftmp->address < max_address)
+	    max_address = ftmp->address + 1;
+
+	  last_barrier = create_fix_barrier (last_added_fix, max_address);
+	}
+
+      mpool.assign_offsets (last_barrier);
+
+      while (ftmp)
+	{
+	  if (!BARRIER_P (ftmp->insn)
+	      && ((ftmp->minipool = mpool.add_backward_ref (ftmp)) == NULL))
+	    break;
+
+	  ftmp = ftmp->next;
+	}
+
+      /* Scan over the fixes we have identified for this pool, fixing them
+	 up and adding the constants to the pool itself.  */
+      for (this_fix = fix; this_fix && ftmp != this_fix;
+	   this_fix = this_fix->next)
+	if (!BARRIER_P (this_fix->insn))
+	  {
+	    rtx addr
+	      = plus_constant (Pmode,
+			       gen_rtx_LABEL_REF (VOIDmode,
+						  mpool.label ()),
+			       this_fix->minipool->offset);
+	    *this_fix->loc = gen_rtx_MEM (this_fix->mode, addr);
+	  }
+
+      mpool.dump (last_barrier->insn);
+      fix = ftmp;
+    }
+
+  /* From now on we must synthesize any constants that we can't handle
+     directly.  This can happen if the RTL gets split during final
+     instruction generation.  */
+  cfun->machine->after_arm_reorg = 1;
+
+  /* Free the minipool memory.  */
+  obstack_free (&minipool_obstack, minipool_startobj);
 }
 
 /* This function computes the clear mask and PADDING_BITS_TO_CLEAR for structs
@@ -19809,17 +19998,10 @@ thumb2_reorg (void)
   CLEAR_REG_SET (&live);
 }
 
-/* Gcc puts the pool in the wrong place for ARM, since we can only
-   load addresses a limited distance around the pc.  We do some
-   special munging to move the constant pool values to the correct
-   point in the code.  */
+/* Perform some target-specific tweaks to the function.  */
 static void
 arm_reorg (void)
 {
-  rtx_insn *insn;
-  HOST_WIDE_INT address = 0;
-  Mfix * fix;
-
   if (use_cmse)
     cmse_nonsecure_call_inline_register_clear ();
 
@@ -19831,169 +20013,10 @@ arm_reorg (void)
   else if (TARGET_THUMB2)
     thumb2_reorg ();
 
-  /* Ensure all insns that must be split have been split at this point.
-     Otherwise, the pool placement code below may compute incorrect
-     insn lengths.  Note that when optimizing, all insns have already
-     been split at this point.  */
-  if (!optimize)
-    split_all_insns_noflow ();
-
-  /* Make sure we do not attempt to create a literal pool even though it should
-     no longer be necessary to create any.  */
-  if (arm_disable_literal_pool)
-    return ;
-
-  minipool_fix_head = minipool_fix_tail = NULL;
-
-  /* The first insn must always be a note, or the code below won't
-     scan it properly.  */
-  insn = get_insns ();
-  gcc_assert (NOTE_P (insn));
-  minipool_pad = 0;
-
-  /* Scan all the insns and record the operands that will need fixing.  */
-  for (insn = next_nonnote_insn (insn); insn; insn = next_nonnote_insn (insn))
-    {
-      if (BARRIER_P (insn))
-	push_minipool_barrier (insn, address);
-      else if (INSN_P (insn))
-	{
-	  rtx_jump_table_data *table;
-
-	  note_invalid_constants (insn, address, true);
-	  address += get_attr_length (insn);
-
-	  /* If the insn is a vector jump, add the size of the table
-	     and skip the table.  */
-	  if (tablejump_p (insn, NULL, &table))
-	    {
-	      address += get_jump_table_size (table);
-	      insn = table;
-	    }
-	}
-      else if (LABEL_P (insn))
-	/* Add the worst-case padding due to alignment.  We don't add
-	   the _current_ padding because the minipool insertions
-	   themselves might change it.  */
-	address += get_label_padding (insn);
-    }
-
-  fix = minipool_fix_head;
-
-  /* Now scan the fixups and perform the required changes.  */
-  while (fix)
-    {
-      Mfix * ftmp;
-      Mfix * fdel;
-      Mfix *  last_added_fix;
-      Mfix * last_barrier = NULL;
-      Mfix * this_fix;
-
-      /* Skip any further barriers before the next fix.  */
-      while (fix && BARRIER_P (fix->insn))
-	fix = fix->next;
-
-      /* No more fixes.  */
-      if (fix == NULL)
-	break;
-
-      last_added_fix = NULL;
-
-      for (ftmp = fix; ftmp; ftmp = ftmp->next)
-	{
-	  if (BARRIER_P (ftmp->insn))
-	    {
-	      if (ftmp->address >= minipool_vector_head->max_address)
-		break;
-
-	      last_barrier = ftmp;
-	    }
-	  else if ((ftmp->minipool = add_minipool_forward_ref (ftmp)) == NULL)
-	    break;
-
-	  last_added_fix = ftmp;  /* Keep track of the last fix added.  */
-	}
-
-      /* If we found a barrier, drop back to that; any fixes that we
-	 could have reached but come after the barrier will now go in
-	 the next mini-pool.  */
-      if (last_barrier != NULL)
-	{
-	  /* Reduce the refcount for those fixes that won't go into this
-	     pool after all.  */
-	  for (fdel = last_barrier->next;
-	       fdel && fdel != ftmp;
-	       fdel = fdel->next)
-	    {
-	      fdel->minipool->refcount--;
-	      fdel->minipool = NULL;
-	    }
-
-	  ftmp = last_barrier;
-	}
-      else
-        {
-	  /* ftmp is first fix that we can't fit into this pool and
-	     there no natural barriers that we could use.  Insert a
-	     new barrier in the code somewhere between the previous
-	     fix and this one, and arrange to jump around it.  */
-	  HOST_WIDE_INT max_address;
-
-	  /* The last item on the list of fixes must be a barrier, so
-	     we can never run off the end of the list of fixes without
-	     last_barrier being set.  */
-	  gcc_assert (ftmp);
-
-	  max_address = minipool_vector_head->max_address;
-	  /* Check that there isn't another fix that is in range that
-	     we couldn't fit into this pool because the pool was
-	     already too large: we need to put the pool before such an
-	     instruction.  The pool itself may come just after the
-	     fix because create_fix_barrier also allows space for a
-	     jump instruction.  */
-	  if (ftmp->address < max_address)
-	    max_address = ftmp->address + 1;
-
-	  last_barrier = create_fix_barrier (last_added_fix, max_address);
-	}
-
-      assign_minipool_offsets (last_barrier);
-
-      while (ftmp)
-	{
-	  if (!BARRIER_P (ftmp->insn)
-	      && ((ftmp->minipool = add_minipool_backward_ref (ftmp))
-		  == NULL))
-	    break;
-
-	  ftmp = ftmp->next;
-	}
-
-      /* Scan over the fixes we have identified for this pool, fixing them
-	 up and adding the constants to the pool itself.  */
-      for (this_fix = fix; this_fix && ftmp != this_fix;
-	   this_fix = this_fix->next)
-	if (!BARRIER_P (this_fix->insn))
-	  {
-	    rtx addr
-	      = plus_constant (Pmode,
-			       gen_rtx_LABEL_REF (VOIDmode,
-						  minipool_vector_label),
-			       this_fix->minipool->offset);
-	    *this_fix->loc = gen_rtx_MEM (this_fix->mode, addr);
-	  }
-
-      dump_minipool (last_barrier->insn);
-      fix = ftmp;
-    }
-
-  /* From now on we must synthesize any constants that we can't handle
-     directly.  This can happen if the RTL gets split during final
-     instruction generation.  */
-  cfun->machine->after_arm_reorg = 1;
-
-  /* Free the minipool memory.  */
-  obstack_free (&minipool_obstack, minipool_startobj);
+  /* Only create a literal pool when one is wanted.  This should be a no-op if
+     we've disabled them, but...  */
+  if (!arm_disable_literal_pool)
+    place_minipools ();
 }
 
 /* Routines to output assembly language.  */
