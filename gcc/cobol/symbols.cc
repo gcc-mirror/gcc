@@ -3088,7 +3088,7 @@ symbol_file( size_t program, const char name[] ) {
       key.program = symbol_at(key.program)->program;
       p = symbols.files.find(key);
       if( p != symbols.files.end() ) {
-        auto f = cbl_file_of(symbol_at(p->second));
+        const cbl_file_t *f = cbl_file_of(symbol_at(p->second));
         if( f->attr & global_e ) break;
       }
     }

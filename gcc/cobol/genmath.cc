@@ -340,7 +340,7 @@ all_results_integer(size_t nC, const cbl_num_result_t *C)
 
   for(size_t i=0; i<nC; i++)
     {
-    if(    !is_pure_integer(C[i].refer.field) 
+    if(    !is_pure_integer(C[i].refer.field)
         || C[i].rounded != truncation_e  )
 
       {
@@ -1040,38 +1040,103 @@ add_floats( size_t nC, cbl_num_result_t *C,
   }
 
 static void
+determine_excess_rdigits(size_t nA, cbl_refer_t *A, int &digits, int &rdigits)
+  {
+  /* This routine scans through the refers, looking at each variable's digits
+     and rdigits.  Since these are all going to be added together, the returned
+     rdigits is the biggest possible that it can be and still have all of the
+     results fit into 37 digits.
+
+     The parameters digits and rdigits are cumulative; they have to be set to
+     zero by the first caller.  */
+  for(size_t i=0; i<nA; i++)
+    {
+    digits  = std::max( digits, get_scaled_digits( A[i].field));
+    rdigits = std::max(rdigits, get_scaled_rdigits(A[i].field));
+    }
+  // We need to make sure that digits + rdigits fits into __int128
+  int excess = (digits + rdigits) - MAX_FIXED_POINT_DIGITS;
+  if( excess > 0 )
+    {
+    // At least one receiver needs too many digits.  Reduce rdigits to bring
+    // the intermediate values into the range of __int128.
+    rdigits -= excess;
+    }
+  }
+
+static tree
+add_phase_1(size_t nA, cbl_refer_t *A, int rdigits )
+  {
+  tree type = INT128;
+
+  tree sum = gg_define_variable(type);
+  gg_assign(sum, get_binary_value(A[0], type));
+  // Now we need to scale that value
+  size_t scale = rdigits - get_scaled_rdigits(A[0].field);
+  if( A[0].field->attr & scaled_e )
+    {
+    if( A[0].field->data.rdigits < 0 )
+      {
+      scale = rdigits-A[0].field->data.rdigits;
+      }
+    }
+  gg_assign(sum, scale_by_power_of_ten(sum, build_int_cst_type(INT, scale)));
+  for(size_t i=1; i<nA; i++)
+    {
+    tree term = gg_define_variable(type);
+    gg_assign(term, get_binary_value(A[i], type));
+    scale = rdigits - get_scaled_rdigits(A[i].field);
+    if( A[i].field->attr & scaled_e )
+      {
+      if( A[i].field->data.rdigits < 0 )
+        {
+        scale = rdigits-A[i].field->data.rdigits;
+        }
+      }
+    term = scale_by_power_of_ten(term, build_int_cst_type(INT, scale));
+    gg_assign(sum, gg_add(sum, term));
+    }
+  return sum;
+  }
+
+static void
 ordinary_add_format_1( size_t nC, cbl_num_result_t *C,
                       size_t nA, cbl_refer_t *A,
-                      cbl_arith_format_t format,
+                      cbl_arith_format_t /*format*/,
                       cbl_label_t *error,
                       cbl_label_t *not_error,
                       tree         compute_error )
   {
   set_up_arithmetic_error_handler(error,
                                   not_error);
-  // Do phase 1, which calculates the subtotal and puts it into a
-  // temporary location
-  arithmetic_operation( 0, NULL,
-                        nA, A,
-                        0, NULL,
-                        format,
-                        error,
-                        not_error,
-                        compute_error,
-                        "__gg__add_fixed_phase1");
-
-  // Do phase 2, which accumulates the subtotal into each target location
-  // in turn
+  // Do phase 1, which calculates the subtotal of A[]
+  int digits=0;
+  int rdigits=0;
+  determine_excess_rdigits(nA, A, digits, rdigits);
   for(size_t i=0; i<nC; i++)
     {
-    arithmetic_operation(1, &C[i],
-                          0, NULL,
-                          0, NULL,
-                          format,
-                          error,
-                          not_error,
-                          compute_error,
-                          "__gg__addf1_fixed_phase2");
+    determine_excess_rdigits(1, &C[i].refer, digits, rdigits);
+    }
+  tree initial = add_phase_1(nA, A, rdigits);
+
+  // Do phase 2, which puts the subtotal into each target location in turn
+  for(size_t i=0; i<nC; i++)
+    {
+    tree identifier_2 = add_phase_1(1, &C[i].refer, rdigits);
+
+    gg_assign(gg_indirect(compute_error),
+              gg_bitwise_or(gg_indirect(compute_error), gg_call_expr(
+                         INT,
+                         "__gg__conditional_stash",
+                         gg_get_address_of(C[i].refer.field->var_decl_node),
+                         refer_offset(C[i].refer),
+                         error || not_error
+                                  ? build_int_cst_type(INT, ON_SIZE_ERROR)
+                                  : integer_zero_node,
+                         gg_add(initial, identifier_2),
+                         build_int_cst_type(INT, rdigits),
+                         build_int_cst_type(INT, C[i].rounded),
+                         NULL_TREE)));
     }
   arithmetic_error_handler( error,
                             not_error,
@@ -1081,35 +1146,41 @@ ordinary_add_format_1( size_t nC, cbl_num_result_t *C,
 static void
 ordinary_subtract_format_1( size_t nC, cbl_num_result_t *C,
                             size_t nA, cbl_refer_t *A,
-                            cbl_arith_format_t format,
+                            cbl_arith_format_t /*format*/,
                             cbl_label_t *error,
                             cbl_label_t *not_error,
                             tree         compute_error )
   {
   set_up_arithmetic_error_handler(error,
                                   not_error);
-  // Do phase 1, which calculates the subtotal and puts it into a
-  // temporary location
-  arithmetic_operation( 0, NULL,
-                        nA, A,
-                        0, NULL,
-                        format,
-                        error,
-                        not_error,
-                        compute_error,
-                        "__gg__add_fixed_phase1");
-
-  // Do phase 2, which subtracts the subtotal from each target in turn
+  // Do phase 1, which calculates the subtotal of A[]
+  int digits=0;
+  int rdigits=0;
+  determine_excess_rdigits(nA, A, digits, rdigits);
   for(size_t i=0; i<nC; i++)
     {
-    arithmetic_operation(1, &C[i],
-                          0, NULL,
-                          0, NULL,
-                          format,
-                          error,
-                          not_error,
-                          compute_error,
-                          "__gg__subtractf1_fixed_phase2");
+    determine_excess_rdigits(1, &C[i].refer, digits, rdigits);
+    }
+  tree initial = add_phase_1(nA, A, rdigits);
+
+  // Do phase 2, which puts the subtotal into each target location in turn
+  for(size_t i=0; i<nC; i++)
+    {
+    tree identifier_2 = add_phase_1(1, &C[i].refer, rdigits);
+
+    gg_assign(gg_indirect(compute_error),
+              gg_bitwise_or(gg_indirect(compute_error), gg_call_expr(
+                         INT,
+                         "__gg__conditional_stash",
+                         gg_get_address_of(C[i].refer.field->var_decl_node),
+                         refer_offset(C[i].refer),
+                         error || not_error
+                                  ? build_int_cst_type(INT, ON_SIZE_ERROR)
+                                  : integer_zero_node,
+                         gg_subtract(identifier_2, initial),
+                         build_int_cst_type(INT, rdigits),
+                         build_int_cst_type(INT, C[i].rounded),
+                         NULL_TREE)));
     }
   arithmetic_error_handler( error,
                             not_error,
@@ -1506,7 +1577,7 @@ add_litN_to_numdisp(size_t nC, cbl_num_result_t *C,
 
     HOST_WIDE_INT literal_value;
     bool literal_is_integer = real_isinteger(&val, &literal_value);
-    
+
     int  digits = C[0].refer.field->data.digits;
     int rdigits = C[0].refer.field->data.rdigits;
 
@@ -1544,7 +1615,7 @@ add_litN_to_numdisp(size_t nC, cbl_num_result_t *C,
       {
       int delta = static_cast<int>(literal_value);
       delta = subtracting ? -delta : delta;
-      
+
       // delta is a non-zero integer in the range of -9 to 9.
       tree tdelta = build_int_cst_type(UCHAR, delta);
 
@@ -2002,40 +2073,41 @@ add_format_2( size_t nC, cbl_num_result_t *C,
               cbl_label_t *not_error,
               tree         compute_error )
   {
+  gcc_assert(nC >= 1);
+  gcc_assert(nA >= 1);
+
   bool handled = false;
   if( format == giving_e )
     {
     // Fixed format 2
-
     set_up_arithmetic_error_handler(error,
                                     not_error);
-    // Do phase 1, which calculates the subtotal and puts it into a
-    // temporary location
-    arithmetic_operation( 0, NULL,
-                          nA, A,
-                          0, NULL,
-                          format,
-                          error,
-                          not_error,
-                          compute_error,
-                          "__gg__add_fixed_phase1");
+    // Do phase 1, which calculates the subtotal of A[]
+    int digits=0;
+    int rdigits=0;
+    determine_excess_rdigits(nA, A, digits, rdigits);
+    tree sum = add_phase_1(nA, A, rdigits);
 
     // Do phase 2, which puts the subtotal into each target location in turn
     for(size_t i=0; i<nC; i++)
       {
-      arithmetic_operation( 1, &C[i],
-                            0, NULL,
-                            0, NULL,
-                            format,
-                            error,
-                            not_error,
-                            compute_error,
-                            "__gg__fixed_phase2_assign_to_c");
+      gg_assign(gg_indirect(compute_error),
+                gg_bitwise_or(gg_indirect(compute_error), gg_call_expr(
+                           INT,
+                           "__gg__conditional_stash",
+                           gg_get_address_of(C[i].refer.field->var_decl_node),
+                           refer_offset(C[i].refer),
+                           error || not_error
+                                    ? build_int_cst_type(INT, ON_SIZE_ERROR)
+                                    : integer_zero_node,
+                           sum,
+                           build_int_cst_type(INT, rdigits),
+                           build_int_cst_type(INT, C[i].rounded),
+                           NULL_TREE)));
       }
     arithmetic_error_handler( error,
                               not_error,
                               compute_error);
-
     handled = true;
     }
   return handled;
@@ -2887,28 +2959,33 @@ subtract_format_2(size_t nC, cbl_num_result_t *C,
     gcc_assert(nB == 1);
     set_up_arithmetic_error_handler(error,
                                     not_error);
-    // Do phase 1, which calculates the subtotal and puts it into a
-    // temporary location
-    arithmetic_operation( 0, NULL,
-                          nA, A,
-                          nB, B,
-                          format,
-                          error,
-                          not_error,
-                          compute_error,
-                          "__gg__subtractf2_fixed_phase1");
+
+    // Do phase 1, which calculates the subtotal of A[]
+    int digits=0;
+    int rdigits=0;
+    determine_excess_rdigits(nA, A, digits, rdigits);
+    determine_excess_rdigits(1,  B, digits, rdigits);
+
+    tree initial      = add_phase_1(nA, A, rdigits);
+    tree identifier_2 = add_phase_1(1,  B, rdigits);
+    tree diff = gg_subtract(identifier_2, initial);
 
     // Do phase 2, which puts the subtotal into each target location in turn
     for(size_t i=0; i<nC; i++)
       {
-      arithmetic_operation( 1, &C[i],
-                            0, NULL,
-                            0, NULL,
-                            format,
-                            error,
-                            not_error,
-                            compute_error,
-                            "__gg__fixed_phase2_assign_to_c");
+      gg_assign(gg_indirect(compute_error),
+                gg_bitwise_or(gg_indirect(compute_error), gg_call_expr(
+                           INT,
+                           "__gg__conditional_stash",
+                           gg_get_address_of(C[i].refer.field->var_decl_node),
+                           refer_offset(C[i].refer),
+                           error || not_error
+                                    ? build_int_cst_type(INT, ON_SIZE_ERROR)
+                                    : integer_zero_node,
+                           diff,
+                           build_int_cst_type(INT, rdigits),
+                           build_int_cst_type(INT, C[i].rounded),
+                           NULL_TREE)));
       }
     arithmetic_error_handler( error,
                               not_error,

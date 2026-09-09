@@ -105,7 +105,29 @@ conditional_stash(  cblc_field_t *destination,
       }
     free(stash);
     }
+  if( retval )
+    {
+    exception_raise(ec_size_truncation_e);
+    }
   return retval;
+  }
+
+extern "C"
+int
+__gg__conditional_stash(  cblc_field_t *destination,
+                          size_t        destination_o,
+                          bool          on_error_flag,
+                          __int128      value,
+                          int           rdigits,
+                          cbl_round_t   rounded)
+  {
+  return conditional_stash(destination,
+                           destination_o,
+                           destination->capacity,
+                           on_error_flag,
+                           value,
+                           rdigits,
+                           rounded);
   }
 
 static int
@@ -540,14 +562,14 @@ squeeze_int256(int256 &val)
   // As long as there are some decimal places left, we hold our nose and
   // right-shift a too-large value rightward by decimal digits.  In other
   // words, we truncate the fractional part to make room for the integer part:
-  while(val.rdigits > 0 && int256_get_u128(val, 1) )
+  while(val.rdigits > 0 && (val.i64[2] || val.i64[3]) )
     {
     divide_int256_by_int64(val, 10UL);
     val.rdigits -= 1;
     }
 
   // At this point, to be useful, val has to have fewer than 128 bits:
-  if( int256_get_u128(val, 1) )
+  if( (val.i64[2] || val.i64[3]) )
     {
     overflow = compute_error_overflow;
     }
@@ -563,15 +585,15 @@ squeeze_int256(int256 &val)
 
     // Binary value of 10^38, written as two 64-bit limbs so that the value is
     // independent of the host byte order and does not require type punning.
-    static const uint128 biggest =
-        (static_cast<uint128>(0x4b3b4ca85a86c47aULL) << 64)
-    // cppcheck-suppress badBitmaskCheck
-      |  static_cast<uint128>(0x098a224000000000ULL);
+    static const uint64_t big_hi = 0x4b3b4ca85a86c47aULL;
+    static const uint64_t big_lo = 0x098a224000000000ULL;
 
     // If we still have some val.rdigits to throw away, we can keep shrinking
     // the value:
 
-    while(val.rdigits > 0 && int256_get_u128(val, 0) >= biggest  )
+    while(    val.rdigits > 0
+          && (   val.i64[1] > big_hi
+              || (val.i64[1] == big_hi && val.i64[0] >= big_lo)) )
       {
       divide_int256_by_int64(val, 10UL);
       val.rdigits -= 1;
@@ -585,7 +607,8 @@ squeeze_int256(int256 &val)
       val.rdigits -= 1;
       }
 
-    if( int256_get_u128(val, 0) >= biggest )
+    if( (    val.i64[1] > big_hi
+         || (val.i64[1] == big_hi && val.i64[0] >= big_lo)) )
       {
       overflow = compute_error_overflow;
       }
@@ -2582,7 +2605,7 @@ __gg__int128_to_int128_rounded( cbl_round_t rounded,
   switch(rounded)
     {
     case truncation_e:
-      // retval is already the truncateed result.
+      // retval is already the truncated result.
       break;
 
     case nearest_even_e:

@@ -1984,7 +1984,7 @@ int128_to_field(cblc_field_t   *var,
         // Value is now scaled to the target's target_rdigits
         bool size_error = false;
 
-        bool is_negative = value < 0 ;
+        bool is_negative = var->type != FldPointer && value < 0 ;
 
         if( !(var->attr & signable_e) && is_negative )
           {
@@ -2281,8 +2281,8 @@ int128_to_field(cblc_field_t   *var,
           *compute_error |= size_error ? compute_error_truncate : 0;
           }
         }
-      }
       break;
+      }
     }
   }
 
@@ -3334,7 +3334,7 @@ format_for_display_internal(char **dest,
                         + (var->attr & leading_e  ? 1 : 0);
         unsigned char *signloc;
         unsigned char *digits;
-        const unsigned char *digits_e;
+        const unsigned char *digits_r = nullptr;
         // This is the running index into our output destination.
         int index = 0;
         bool is_negative=false;
@@ -3348,7 +3348,7 @@ format_for_display_internal(char **dest,
             // not signable
             signloc  = converted;
             digits   = converted;
-            digits_e = converted + outlength;
+            digits_r = converted + outlength;
             is_negative = false;
             break;
           case 4:
@@ -3356,7 +3356,7 @@ format_for_display_internal(char **dest,
             // internal trailing
             signloc  = converted + outlength-1;
             digits   = converted;
-            digits_e = converted + outlength;
+            digits_r = converted + outlength;
             /*  In ascii, negative is indicated by turning bit 0x40 on.
                 In ebcdic, by turning bit 0x20 off.  In both cases, the result
                 is outside of the range '0' through '9'.  Working this way is
@@ -3444,7 +3444,7 @@ format_for_display_internal(char **dest,
             // internal leading
             signloc  = converted;
             digits   = converted;
-            digits_e = converted + outlength;
+            digits_r = converted + outlength;
             const charmap_t *charmap_src = __gg__get_charmap(var->encoding);
             if( charmap_src->is_like_ebcdic() )
               {
@@ -3525,7 +3525,7 @@ format_for_display_internal(char **dest,
             // separate trailing
             signloc  = converted + outlength-1;
             digits   = converted;
-            digits_e = converted + outlength-1;
+            digits_r = converted + outlength-1;
             switch(*signloc)
               {
               case ascii_plus:
@@ -3548,7 +3548,7 @@ format_for_display_internal(char **dest,
             // separate leading
             signloc  = converted;
             digits   = converted+1;
-            digits_e = converted + outlength;
+            digits_r = converted + outlength;
             is_negative = *signloc == ascii_minus;
             switch(*signloc)
               {
@@ -3570,7 +3570,7 @@ format_for_display_internal(char **dest,
           }
         // We have the sign sorted out; make sure that the digits are valid:
         unsigned char *running_location = digits;
-        while(running_location < digits_e)
+        while(running_location < digits_r)
           {
           if( *running_location < ascii_0 || *running_location > ascii_9 )
             {
@@ -8743,7 +8743,7 @@ is_numeric_display_numeric(const cblc_field_t *field, size_t offset, size_t size
   bool leading  = !!(field->attr & leading_e);
   bool separate = !!(field->attr & separate_e);
 
-  char *digits_e = digits+nbytes;
+  char *digits_r = digits+nbytes;
 
   int retval = 1;
   if( size == 0 )
@@ -8776,9 +8776,9 @@ is_numeric_display_numeric(const cblc_field_t *field, size_t offset, size_t size
   if( !leading && separate && signable )
     {
     // Last character must be +/-
-    digits_e -= 1;
-    if(    *digits_e != ascii_plus
-        && *digits_e != ascii_minus )
+    digits_r -= 1;
+    if(    *digits_r != ascii_plus
+        && *digits_r != ascii_minus )
       {
       retval = 0;
       goto done;
@@ -8822,18 +8822,18 @@ is_numeric_display_numeric(const cblc_field_t *field, size_t offset, size_t size
   if( !leading && !separate && signable )
     {
     // The final character is allowed to have a sign bit.
-    digits_e -= 1;
-    if( isdigit(*digits_e) )
+    digits_r -= 1;
+    if( isdigit(*digits_r) )
       {
       goto done;
       }
 
     if( charmap->is_like_ebcdic() )
       {
-      if(    *digits_e == ascii_rbrace
-          || (*digits_e >= ascii_J && *digits_e <= ascii_R) )
+      if(    *digits_r == ascii_rbrace
+          || (*digits_r >= ascii_J && *digits_r <= ascii_R) )
         {
-        *digits_e = ascii_zero;
+        *digits_r = ascii_zero;
         goto done;
         }
       // First character is out of range:
@@ -8842,9 +8842,9 @@ is_numeric_display_numeric(const cblc_field_t *field, size_t offset, size_t size
       }
     else
       {
-      if( *digits_e >= ascii_p && *digits_e <= ascii_y )
+      if( *digits_r >= ascii_p && *digits_r <= ascii_y )
         {
-        *digits_e = ascii_zero;
+        *digits_r = ascii_zero;
         goto done;
         }
       // First character is out of range:
@@ -8857,7 +8857,7 @@ is_numeric_display_numeric(const cblc_field_t *field, size_t offset, size_t size
   if( retval )
     {
     // all remaining characters are supposed to be zero through nine
-    while( digits < digits_e )
+    while( digits < digits_r )
       {
       if(     *digits<ascii_0
           ||  *digits>ascii_9 )

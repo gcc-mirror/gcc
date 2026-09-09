@@ -287,7 +287,7 @@ enum cbl_file_mode_t {
   file_mode_any_e,
 };
 
-enum cbl_round_t {
+enum cbl_round_t : int {
   away_from_zero_e,
   nearest_toward_zero_e,
   toward_greater_e,

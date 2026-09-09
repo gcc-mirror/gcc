@@ -131,8 +131,8 @@ void input_file_status_notify();
 
 static void
 yylocation_print(FILE* file, const cbl_loc_t& loc) {
-  fprintf(file, "%d.%d-%d.%d", 
-          loc.first_line, loc.first_column, 
+  fprintf(file, "%d.%d-%d.%d",
+          loc.first_line, loc.first_column,
           loc.last_line, loc.last_column);
 }
 
@@ -670,7 +670,7 @@ struct arith_t {
   }
 };
 
-static void 
+static void
 ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
            cbl_refer_t lhs, relop_t op, cbl_refer_t rhs );
 
@@ -680,7 +680,7 @@ ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
  * parser_compute to processes the stack to a target.  Alternatively, the
  * COMPUTE statement calls parser_compute with a list of one or more targets.
  */
-struct ast_op_t : private std::stack<rpn_t>{  
+struct ast_op_t : private std::stack<rpn_t>{
   cbl_label_t *lbl; // the COMPUTE error label
  public:
   ast_op_t() : lbl(nullptr) {}
@@ -712,11 +712,11 @@ struct ast_op_t : private std::stack<rpn_t>{
     }
     return tgt;
   }
-  
+
   cbl_refer_t * compute( ast_op_t *operand ) {
     return c.size() == 1 ? &operand->top().term : compute();
   }
-  
+
   /*
    * choose_intermediate_type is a functor that defaults to FldNumericBin5.  If
    * while iterating over the operands it determines that one is FldFloat, or
@@ -759,7 +759,7 @@ struct ast_op_t : private std::stack<rpn_t>{
       rpn_dump(c);
     }
   }
-                
+
   bool rpn_sanity_check() {
     auto n = std::accumulate( c.rbegin(), c.rend(), 0,
                               []( int n, const rpn_t& rpn ) {
@@ -797,12 +797,12 @@ struct ast_op_t : private std::stack<rpn_t>{
     gcc_assert( valid_size() );
     rpn_dump(c); // for now
     rpn_sanity_check();
-    
+
     parser_compute(tgt, c, lbl);
-    
+
     this->c.clear();
     dbgmsg("ast_op_t::%s:%d: output %s %s capacity %u", __func__, __LINE__,
-           cbl_field_type_str(tgt->field->type), nice_name_of(tgt->field), 
+           cbl_field_type_str(tgt->field->type), nice_name_of(tgt->field),
            tgt->field->data.capacity());
     return tgt;
   }
@@ -3474,21 +3474,13 @@ cbl_field_t::blank_initial( size_t nchar, cbl_figconst_t figconst ) {
     *space = char_from_figconst(figconst);
   }
 
-  // Convert that character to the encoded version:
-  size_t nbytes;
-  const char *converted =  __gg__iconverter(DEFAULT_SOURCE_ENCODING,
-                                            codeset.encoding,
-                                            space,
-                                            1,
-                                            &nbytes);
+  charmap_t *charmap = __gg__get_charmap(codeset.encoding);
+  cbl_char_t fill = charmap->mapped_character(space[0]);
+
   // Duplicate that encoded character throughout the target range:
   size_t nbyte = nchar * codeset.stride();
   char *init = static_cast<char *>(xmalloc(nbyte+4));
-  char *d = init;
-  for(size_t i=0; i<nchar; i++) {
-    memcpy(d, converted, codeset.stride());
-    d += codeset.stride();
-  }
+  charmap->memset(init, fill, nbyte);
   data.initial = init;
 }
 
@@ -3683,7 +3675,7 @@ parser_move_carefully( const char */*F*/, int /*L*/,
   for( const auto& num_result : tgt_list->targets ) {
     const cbl_refer_t& tgt = num_result.refer;
 
-    if( was_fd_name(tgt.field) ) { 
+    if( was_fd_name(tgt.field) ) {
       error_msg(src.loc, "cannot compare anything to FD %qs", tgt.field->name);
       return false;
     }
@@ -3792,13 +3784,13 @@ ast_enter_exit_section( cbl_label_t * section ) {
     paragraph = implicit_paragraph();
     prior.para = current.new_paragraph(paragraph);
   }
-  
+
   dbgmsg( "%s:%d: leaving section %s paragraph %s (line %d)",
           __func__, __LINE__,
           prior.sect? prior.sect->name : "''",
           prior.para? prior.para->name : "''",
           yylineno );
-  
+
   if( prior.exists() ) {
     parser_leave_paragraph(prior.para);
     parser_leave_section(prior.sect);
