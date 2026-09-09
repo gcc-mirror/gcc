@@ -200,6 +200,9 @@ static bool pa_cannot_force_const_mem (machine_mode, rtx);
 static bool pa_legitimate_constant_p (machine_mode, rtx);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool,
 				     code_helper = ERROR_MARK);
+static reg_class_t pa_spill_class (reg_class_t, machine_mode);
+static bool pa_legitimize_address_displacement (rtx *, rtx *, poly_int64,
+						machine_mode);
 static bool pa_callee_copies (cumulative_args_t, const function_arg_info &);
 static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
@@ -411,6 +414,11 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_LEGITIMATE_CONSTANT_P pa_legitimate_constant_p
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P pa_legitimate_address_p
+#undef TARGET_SPILL_CLASS
+#define TARGET_SPILL_CLASS pa_spill_class
+#undef TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT
+#define TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT \
+  pa_legitimize_address_displacement
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P pa_use_lra_p
@@ -6348,7 +6356,59 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   int regno;
   enum reg_class rclass = (enum reg_class) rclass_i;
 
+  /* Strip the SUBREG to find the true underlying register entity.  */
+  if (GET_CODE (x) == SUBREG)
+    {
+      rtx inner = SUBREG_REG (x);
+      machine_mode inner_mode = GET_MODE (inner);
+
+      /* Check if we are bridging a 32 or 64-bit Float/Integer Type-Pun.  */
+      if (REG_P (inner)
+	  && ((mode == DImode && inner_mode == DFmode)
+	      || (mode == DFmode && inner_mode == DImode)
+	      || (mode == SImode && inner_mode == SFmode)
+	      || (mode == SFmode && inner_mode == SImode)))
+	{
+	  regno = REGNO (inner);
+
+	  /* If the inner register has not been assigned or is bound
+	     to a floating-point class, we may need a general register
+	     scratchpad to handle the secondary reload.  */
+	  if (regno >= FIRST_PSEUDO_REGISTER
+	      || FP_REG_CLASS_P (REGNO_REG_CLASS (regno)))
+	    {
+	      /* If we need to load/store into an FP register block
+		 but our current instruction class is floating, force
+		 a general register scratchpad.  */
+	      if (FP_REG_CLASS_P (rclass))
+		{
+		  sri->icode = (in_p
+		    ? direct_optab_handler (reload_in_optab, mode)
+		    : direct_optab_handler (reload_out_optab, mode));
+		  return GENERAL_REGS;
+		}
+	    }
+	}
+
+      /* Let normal processing handle the un-wrapped inner rtx if needed.  */
+      x = inner;
+    }
+
   /* Handle the easy stuff first.  */
+  if ((rclass == GENERAL_REGS || FP_REG_CLASS_P (rclass))
+      && reg_plus_base_memory_operand (x, mode))
+    {
+      /* Guard this fallback check against narrow modes.  This guarantees
+	 QImode/HImode will completely bypass direct_optab_handler loops. */
+      if (mode == SImode || mode == DImode)
+	sri->icode = (in_p
+	  ? direct_optab_handler (reload_in_optab, mode)
+	  : direct_optab_handler (reload_out_optab, mode));
+      else
+	sri->icode = CODE_FOR_nothing;
+      return NO_REGS;
+    }
+
   if (rclass == R1_REGS)
     return NO_REGS;
 
@@ -10978,7 +11038,7 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	  /* Long 14-bit displacements always okay for these cases.  */
 	  if (INT14_OK_STRICT
 	      || reload_completed
-	      || (reload_in_progress && !strict)
+	      || ((lra_in_progress || reload_in_progress) && !strict)
 	      || mode == QImode
 	      || mode == HImode)
 	    return true;
@@ -11064,6 +11124,62 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
     return true;
 
   return false;
+}
+
+/* Implement TARGET_SPILL_CLASS.
+
+   On PA-RISC 1.x, floating-point loads and stores strictly require 5-bit
+   offsets, whereas integer loads and stores support full 14-bit offsets.
+   When LRA/reload runs out of hardware registers and needs to spill a
+   pseudo-register to a stack slot during heavy frame pressure, spilling
+   directly into or out of FP_REGS can violate these offset boundaries —
+   especially when handling type-punned subregisters (e.g., SImode/DImode
+   views of float data).
+
+   Forcing these scalar spills to route through GENERAL_REGS provides
+   a safe intermediate bounce path with a full 14-bit offset, preventing
+   compiler allocation failures (ICEs) during complex frame elimination.  */
+
+static reg_class_t
+pa_spill_class (reg_class_t rclass, machine_mode mode)
+{
+  if ((mode == SImode || mode == DImode) && FP_REG_CLASS_P (rclass))
+    return GENERAL_REGS;
+
+  return NO_REGS;
+}
+
+/* Implement TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT.  */
+
+static bool
+pa_legitimize_address_displacement (rtx *offset1, rtx *offset2,
+				    poly_int64 orig_offset,
+				    machine_mode mode)
+{
+  HOST_WIDE_INT val;
+
+  /* Ensure the incoming poly_int64 offset can be treated as a standard
+     scalar integer.  */
+  if (!orig_offset.is_constant (&val))
+    return false;
+
+  /* If it fits in 5 bits, do not split it.  */
+  if (VAL_5_BITS_P (val))
+    return false;
+
+  /* If it fits in 14 bits and the mode can handle it, do not split it.  */
+  if ((INT14_OK_STRICT || mode == QImode || mode == HImode)
+      && VAL_14_BITS_P (val))
+    return false;
+
+  /* Split displacement so residual 'lo' is a signed 5-bit
+     value (-16 to 15).  */
+  HOST_WIDE_INT lo = ((val + 16) & 0x1f) - 16;
+  HOST_WIDE_INT hi = val - lo;
+
+  *offset1 = GEN_INT (hi);
+  *offset2 = GEN_INT (lo);
+  return true;
 }
 
 /* Look for machine dependent ways to make the invalid address AD a
