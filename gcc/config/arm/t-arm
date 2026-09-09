@@ -119,11 +119,12 @@ s-arm-native: $(srcdir)/config/arm/parsecpu.awk \
 	$(STAMP) s-arm-native
 
 aarch-common.o: $(srcdir)/config/arm/aarch-common.cc $(CONFIG_H) $(SYSTEM_H) \
-    coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
+    $(CORETYPES_H) $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/aarch-common.cc
 
-arm.o: $(srcdir)/config/arm/arm.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
+arm.o: $(srcdir)/config/arm/arm.cc $(CONFIG_H) $(SYSTEM_H) $(CORETYPES_H) \
+  $(TM_H) \
   $(RTL_H) $(TREE_H) $(HASH_TABLE_H) $(OBSTACK_H) $(REGS_H) hard-reg-set.h \
   insn-config.h conditions.h output.h dumpfile.h \
   $(INSN_ATTR_H) $(FLAGS_H) reload.h $(FUNCTION_H) \
@@ -132,13 +133,14 @@ arm.o: $(srcdir)/config/arm/arm.cc $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H) sched-int.h \
   arm-cpu-data.h \
+  $(srcdir)/config/arm/minipool.h\
   $(srcdir)/config/arm/arm-protos.h \
   $(srcdir)/config/arm/arm_neon_builtins.def \
   $(srcdir)/config/arm/arm_vfp_builtins.def \
   $(srcdir)/config/arm/arm_mve_builtins.def
 
 arm-builtins.o: $(srcdir)/config/arm/arm-builtins.cc $(CONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(TM_H) \
+  $(SYSTEM_H) $(CORETYPES_H) $(TM_H) \
   $(RTL_H) $(TREE_H) expr.h $(TM_P_H) $(RECOG_H) langhooks.h \
   $(DIAGNOSTIC_CORE_H) $(OPTABS_H) \
   $(srcdir)/config/arm/arm-protos.h \
@@ -151,7 +153,7 @@ arm-builtins.o: $(srcdir)/config/arm/arm-builtins.cc $(CONFIG_H) \
 		$(srcdir)/config/arm/arm-builtins.cc
 
 arm-mve-builtins.o: $(srcdir)/config/arm/arm-mve-builtins.cc $(CONFIG_H) \
-  $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
+  $(SYSTEM_H) $(CORETYPES_H) $(TM_H) $(TREE_H) $(RTL_H) $(TM_P_H) \
   memmodel.h insn-codes.h optabs.h recog.h expr.h basic-block.h \
   function.h fold-const.h gimple.h gimple-fold.h emit-rtl.h langhooks.h \
   stringpool.h attribs.h diagnostic.h \
@@ -167,7 +169,7 @@ arm-mve-builtins.o: $(srcdir)/config/arm/arm-mve-builtins.cc $(CONFIG_H) \
 
 arm-mve-builtins-shapes.o: \
   $(srcdir)/config/arm/arm-mve-builtins-shapes.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) \
+  $(CONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(TM_H) $(TREE_H) \
   $(RTL_H) memmodel.h insn-codes.h optabs.h \
   $(srcdir)/config/arm/arm-mve-builtins.h \
   $(srcdir)/config/arm/arm-mve-builtins-shapes.h
@@ -176,7 +178,7 @@ arm-mve-builtins-shapes.o: \
 
 arm-mve-builtins-base.o: \
   $(srcdir)/config/arm/arm-mve-builtins-base.cc \
-  $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) $(TREE_H) $(RTL_H) \
+  $(CONFIG_H) $(SYSTEM_H) $(CORETYPES_H) $(TM_H) $(TREE_H) $(RTL_H) \
   memmodel.h insn-codes.h $(OPTABS_H) \
   $(BASIC_BLOCK_H) $(FUNCTION_H) $(GIMPLE_H) \
   $(srcdir)/config/arm/arm-mve-builtins.h \
@@ -187,13 +189,24 @@ arm-mve-builtins-base.o: \
 		$(srcdir)/config/arm/arm-mve-builtins-base.cc
 
 arm-c.o: $(srcdir)/config/arm/arm-c.cc $(CONFIG_H) $(SYSTEM_H) \
-    coretypes.h $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
+    $(CORETYPES_H) $(TM_H) $(TREE_H) output.h $(C_COMMON_H)
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-c.cc
 
 arm-d.o: $(srcdir)/config/arm/arm-d.cc
 	$(COMPILE) $<
 	$(POSTCOMPILE)
+
+minipool.o: \
+  $(srcdir)/config/arm/minipool.cc \
+  $(CONFIG_H) $(SYSTEM_H) $(OBSTACK_H) $(CORETYPES_H) $(RTL_H) $(TARGET_H) \
+  output.h insn-attr.h $(OPTABS_H) $(RECOG_H) memmodel.h emit-rtl.h \
+  $(BACKEND_H) \
+  $(srcdir)/config/arm/minipool.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
+		$(srcdir)/config/arm/minipool.cc
+
+EXTRA_OBJS += minipool.o
 
 arm-common.o: arm-cpu-cdata.h
 
