@@ -1,3 +1,14 @@
+2026-09-08  Jin Ma  <jinma@linux.alibaba.com>
+
+	Backported from master:
+	2026-09-05  Jin Ma  <jinma@linux.alibaba.com>
+
+	PR target/126196
+	* gcc.target/riscv/pr126196-1.c: New test.
+	* gcc.target/riscv/pr126196-2.c: New test.
+	* gcc.target/riscv/pr126196-3.c: New test.
+	* gcc.target/riscv/pr126196-4.c: New test.
+
 2026-09-07  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
