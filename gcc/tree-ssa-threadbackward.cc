@@ -646,9 +646,6 @@ back_threader_profitability::possibly_profitable_path_p
   m_multiway_branch_in_path = false;
   m_contains_hot_bb = false;
 
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Checking profitability of path (backwards): ");
-
   /* Count the number of instructions on the path: as these instructions
      will have to be duplicated, we will not record the path if there
      are too many instructions on the path.  Also check that all the
@@ -657,8 +654,6 @@ back_threader_profitability::possibly_profitable_path_p
     {
       basic_block bb = m_path[j];
 
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " bb:%i", bb->index);
       /* Remember, blocks in the path are stored in opposite order in
 	 the PATH array.  The last entry in the array represents the
 	 block with an outgoing edge that we will redirect to the jump
@@ -667,7 +662,6 @@ back_threader_profitability::possibly_profitable_path_p
 	 it ends in a multiway branch.  */
       if (j < m_path.length () - 1)
 	{
-	  int orig_n_insns = m_n_insns;
 	  if (!m_contains_hot_bb && m_speed_p)
 	    m_contains_hot_bb |= optimize_bb_for_speed_p (bb);
 	  for (gsi = gsi_after_labels (bb);
@@ -681,18 +675,12 @@ back_threader_profitability::possibly_profitable_path_p
 	      gimple *stmt = gsi_stmt (gsi);
 	      if (gimple_call_internal_p (stmt, IFN_UNIQUE)
 		  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
-		{
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    fputc ('\n', dump_file);
-		  return false;
-		}
+		return false;
 	      /* Do not count empty statements and labels.  */
 	      if (gimple_code (stmt) != GIMPLE_NOP
 		  && !is_gimple_debug (stmt))
 		m_n_insns += estimate_num_insns (stmt, &eni_size_weights);
 	    }
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, " (%i insns)", m_n_insns-orig_n_insns);
 
 	  /* We do not look at the block with the threaded branch
 	     in this loop.  So if any block with a last statement that
@@ -715,9 +703,16 @@ back_threader_profitability::possibly_profitable_path_p
 	 the last entry in the array when determining if we thread
 	 through the loop latch.  */
       if (loop->latch == bb)
+	m_threaded_through_latch = true;
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Checking profitability of path (backwards): ");
+      for (unsigned j = 0; j < m_path.length (); j++)
 	{
-	  m_threaded_through_latch = true;
-	  if (dump_file && (dump_flags & TDF_DETAILS))
+	  fprintf (dump_file, " bb:%i", m_path[j]->index);
+	  if (loop->latch == m_path[j])
 	    fprintf (dump_file, " (latch)");
 	}
     }
