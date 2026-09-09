@@ -71,10 +71,14 @@ private:
   int m_exit_jump_benefit;
   bool m_threaded_multiway_branch;
   // The following are computed by possibly_profitable_path_p
-  bool m_threaded_through_latch;
-  bool m_multiway_branch_in_path;
-  bool m_contains_hot_bb;
-  bool m_unprofitable_bb;
+  struct path_stats
+  {
+    bool threaded_through_latch;
+    bool multiway_branch_in_path;
+    bool contains_hot_bb;
+    bool unprofitable_bb;
+  };
+  path_stats m_stats;
   int m_n_insns;
 };
 
@@ -97,8 +101,8 @@ back_threader_profitability::back_threader_profitability (bool speed_p,
 void
 back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
 {
-  if (!m_contains_hot_bb && m_speed_p)
-    m_contains_hot_bb |= optimize_bb_for_speed_p (bb);
+  if (!m_stats.contains_hot_bb && m_speed_p)
+    m_stats.contains_hot_bb |= optimize_bb_for_speed_p (bb);
 
   for (gimple_stmt_iterator gsi = gsi_after_labels (bb);
        !gsi_end_p (gsi);
@@ -112,7 +116,7 @@ back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
       if (gimple_call_internal_p (stmt, IFN_UNIQUE)
 	  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
 	{
-	  m_unprofitable_bb = true;
+	  m_stats.unprofitable_bb = true;
 	  return;
 	}
       /* Do not count empty statements and labels.  */
@@ -130,7 +134,7 @@ back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
       if (last
 	  && (gimple_code (last) == GIMPLE_SWITCH
 	      || gimple_code (last) == GIMPLE_GOTO))
-	m_multiway_branch_in_path = true;
+	m_stats.multiway_branch_in_path = true;
     }
 }
 
@@ -687,10 +691,7 @@ back_threader_profitability::possibly_profitable_path_p
   // We recompute the following, when we rewrite possibly_profitable_path_p
   // to work incrementally on added BBs we have to unwind them on backtracking
   m_n_insns = 0;
-  m_threaded_through_latch = false;
-  m_multiway_branch_in_path = false;
-  m_contains_hot_bb = false;
-  m_unprofitable_bb = false;
+  m_stats = path_stats ();
 
   /* Count the number of instructions on the path: as these instructions
      will have to be duplicated, we will not record the path if there
@@ -711,7 +712,7 @@ back_threader_profitability::possibly_profitable_path_p
 	  /* The block in PATH[0] is special, it's the block were we're
 	     going to be able to eliminate its branch.  */
 	  account_bb (bb, /*check_multiway=*/j > 0);
-	  if (m_unprofitable_bb)
+	  if (m_stats.unprofitable_bb)
 	    return false;
 	}
 
@@ -719,7 +720,7 @@ back_threader_profitability::possibly_profitable_path_p
 	 the last entry in the array when determining if we thread
 	 through the loop latch.  */
       if (loop->latch == bb)
-	m_threaded_through_latch = true;
+	m_stats.threaded_through_latch = true;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -794,7 +795,8 @@ back_threader_profitability::possibly_profitable_path_p
 		 "many statements.\n");
       return false;
     }
-  *large_non_fsm = (!(m_threaded_through_latch && m_threaded_multiway_branch)
+  *large_non_fsm = (!(m_stats.threaded_through_latch
+		      && m_threaded_multiway_branch)
 		    && (m_n_insns * param_fsm_scale_path_stmts
 			>= param_max_jump_thread_duplication_stmts));
 
@@ -830,7 +832,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      same loop and the destination does not dominate the loop
      latch, then this thread would create an irreducible loop.  */
   *creates_irreducible_loop = false;
-  if (m_threaded_through_latch
+  if (m_stats.threaded_through_latch
       && loop == taken_edge->dest->loop_father
       && (determine_bb_domination_status (loop, taken_edge->dest)
 	  == DOMST_NONDOMINATING))
@@ -841,7 +843,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      of the hot path later.  Be on the aggressive side here. In some testcases,
      as in PR 78407 this leads to noticeable improvements.  */
   if (m_speed_p
-      && (optimize_edge_for_speed_p (taken_edge) || m_contains_hot_bb))
+      && (optimize_edge_for_speed_p (taken_edge) || m_stats.contains_hot_bb))
     {
       if (probably_never_executed_edge_p (cfun, taken_edge))
 	{
@@ -884,7 +886,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      existing threading path to reduce code duplication.  So for that
      case, drastically reduce the number of statements we are allowed
      to copy.  */
-  if (!(m_threaded_through_latch && m_threaded_multiway_branch)
+  if (!(m_stats.threaded_through_latch && m_threaded_multiway_branch)
       && (m_n_insns * param_fsm_scale_path_stmts
 	  >= param_max_jump_thread_duplication_stmts))
     {
@@ -899,7 +901,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      explode the CFG due to duplicating the edges for that multi-way
      branch.  So like above, only allow a multi-way branch on the path
      if we actually thread a multi-way branch.  */
-  if (!m_threaded_multiway_branch && m_multiway_branch_in_path)
+  if (!m_threaded_multiway_branch && m_stats.multiway_branch_in_path)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file,
@@ -912,7 +914,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      the latch.  This could alter the loop form sufficiently to cause
      loop optimizations to fail.  Disable these threads until after
      loop optimizations have run.  */
-  if ((m_threaded_through_latch || taken_edge->dest == loop->latch)
+  if ((m_stats.threaded_through_latch || taken_edge->dest == loop->latch)
       && !(cfun->curr_properties & PROP_loop_opts_done)
       && empty_block_p (loop->latch))
     {
