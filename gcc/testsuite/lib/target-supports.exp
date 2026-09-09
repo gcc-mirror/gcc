@@ -9502,8 +9502,7 @@ proc check_effective_target_natural_alignment_32 { } {
     # FIXME: 32bit powerpc: guaranteed only if MASK_ALIGN_NATURAL/POWER.
     # FIXME: m68k has -malign-int
     return [check_cached_effective_target natural_alignment_32 {
-      if { ([istarget *-*-darwin*] && [is-effective-target lp64])
-	   || [istarget avr-*-*]
+      if { [istarget avr-*-*]
 	   || [istarget m68k-*-linux*]
 	   || [istarget pru-*-*]
 	   || [istarget stormy16-*-*]
@@ -9526,7 +9525,7 @@ proc check_effective_target_natural_alignment_32 { } {
 proc check_effective_target_natural_alignment_64 { } {
     return [check_cached_effective_target natural_alignment_64 {
       expr { [is-effective-target natural_alignment_32]
-	     && [is-effective-target lp64] && ![istarget *-*-darwin*] }
+	     && [is-effective-target lp64] }
     }]
 }
 
