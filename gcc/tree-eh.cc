@@ -2753,9 +2753,9 @@ ref_outside_object_p (tree size, poly_offset_int off, tree refsz)
 }
 
 /* Return true if EXPR can trap, as in dereferencing an invalid pointer
-   location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
-   This routine expects only GIMPLE lhs or rhs input.
-   LHS is true when LHS is a lhs.  */
+   location or evaluating floating-point arithmetic.  See may_trap_p for the
+   RTL counterpart.  This routine expects only GIMPLE lhs or rhs input.  LHS
+   is true when EXPR is the lhs of a store.  */
 
 static bool
 tree_could_trap_1 (tree expr, bool lhs)
@@ -2935,11 +2935,8 @@ tree_could_trap_1 (tree expr, bool lhs)
     }
 }
 
-
-
-/* Return true if EXPR can trap, as in dereferencing an invalid pointer
-   location or floating point arithmetic.  C.f. the rtl version, may_trap_p.
-   This routine expects only GIMPLE lhs or rhs input.  */
+/* Return true if EXPR can trap when evaluated as an rvalue.  See may_trap_p
+   for the RTL counterpart.  */
 
 bool
 tree_could_trap_p (tree expr)
@@ -2947,7 +2944,7 @@ tree_could_trap_p (tree expr)
   return tree_could_trap_1 (expr, false);
 }
 
-/* Returns true if LHS is known not to trap as a store.  */
+/* Return true if LHS can trap as a store.  */
 bool
 lhs_could_trap_p (tree lhs)
 {
