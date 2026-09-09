@@ -14773,19 +14773,16 @@ ix86_expand_ace_builtin (const struct builtin_description *d, tree exp,
 
       if (i == 0 || i == constant)
 	{
-	  if (i == 0 && !IN_RANGE (INTVAL (op), 0, 7))
+	  if (!insn_p->operand[i + arg_adjust].predicate (op, SImode))
 	    {
-	      /* This must be the tmm reg number constant.  */
-	      error ("the tmm register number argument must be between 0 to 7");
+	      if (i == 0)
+		/* This must be the tmm reg number constant.  */
+		error ("the tmm register number argument must be between 0 to 7");
+	      else
+		/* This must be the constant.  */
+		error ("the argument must be constant");
 	      return const0_rtx;
 	    }
-	  else if (!insn_p->operand[i + arg_adjust].predicate(op, SImode))
-	    {
-	      /* This must be the constant.  */
-	      error ("the argument must be constant");
-	      return const0_rtx;
-	    }
-
 	}
       else
 	{
