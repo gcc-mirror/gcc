@@ -4385,3 +4385,21 @@
 
   dmr1024 __builtin_dmxxsha224256pad_internal (dmr1024, vuc);
     DMXXSHA224256PAD_INTERNAL dmxxsha224256pad {dm}
+
+  void __builtin_dmsha3hash (dmr2048 *, const int<5>);
+    DMSHA3HASH nothing {dm,dmint,dmr}
+
+  dmr2048 __builtin_dmsha3hash_internal (dmr2048, const int<5>);
+    DMSHA3HASH_INTERNAL dmsha3hash {dm}
+
+  void __builtin_dmsha3dw (dmr2048 *);
+    DMSHA3DW nothing {dm,dmint,dmr}
+
+  dmr2048 __builtin_dmsha3dw_internal (dmr2048);
+    DMSHA3DW_INTERNAL dmsha3dw {dm}
+
+  void __builtin_dmcryshash (dmr2048 *);
+    DMCRYSHASH nothing {dm,dmint,dmr}
+
+  dmr2048 __builtin_dmcryshash_internal (dmr2048);
+    DMCRYSHASH_INTERNAL dmcryshash {dm}

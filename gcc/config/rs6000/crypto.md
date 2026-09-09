@@ -60,6 +60,9 @@
    UNSPEC_DMXXSHAKE128PAD
    UNSPEC_DMXXSHA384512PAD
    UNSPEC_DMXXSHA224256PAD
+   UNSPEC_DMSHA3HASH
+   UNSPEC_DMSHA3DW
+   UNSPEC_DMCRYSHASH
    UNSPEC_XXGFMUL128
    UNSPEC_XXGFMUL128GCM
    UNSPEC_XXGFMUL128XTS])
@@ -101,6 +104,14 @@
 
 (define_int_attr SHA2_insn [(UNSPEC_DMSHA256HASH "dmsha256hash")
 			    (UNSPEC_DMSHA512HASH "dmsha512hash")])
+
+;; Iterator and attribute for SHA3 extended mnemonics
+(define_int_iterator SHA3_code [UNSPEC_DMSHA3DW
+				UNSPEC_DMCRYSHASH])
+
+(define_int_attr SHA3_insn [(UNSPEC_DMSHA3DW "dmsha3dw")
+			    (UNSPEC_DMCRYSHASH "dmcryshash")])
+
 
 ;; Iterator and attribute for SHAPAD extended mnemonics
 (define_int_iterator SHAPAD_code [UNSPEC_DMXXSHA3512PAD
@@ -296,3 +307,18 @@
 		SHA2PAD_code))]
   "TARGET_FUTURE"
   "<SHA2PAD_insn> %0,%2")
+
+(define_insn "dmsha3hash"
+  [(set (match_operand:QDO 0 "dmr_register_operand" "=wD")
+    (unspec:QDO [(match_operand:QDO 1 "dmr_register_operand" "0")
+		 (match_operand:SI 2 "u5bit_cint_operand" "n")]
+		UNSPEC_DMSHA3HASH))]
+  "TARGET_FUTURE"
+  "dmsha3hash %0,%2")
+
+(define_insn "<SHA3_insn>"
+  [(set (match_operand:QDO 0 "dmr_register_operand" "=wD")
+    (unspec:QDO [(match_operand:QDO 1 "dmr_register_operand" "0")]
+		SHA3_code))]
+  "TARGET_FUTURE"
+  "<SHA3_insn> %0")

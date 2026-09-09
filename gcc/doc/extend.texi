@@ -27233,7 +27233,7 @@ vec_t __builtin_galois_field_mult_xts (vec_t, vec_t);
 
 Future ISA of the PowerPC may add new instructions for accelerating SHA
 hash function. GCC provides support for these new instructions through the
-following built-in functions.
+following built-in functions. The __dmr2048 type is a 2048 bit integer type.
 
 @smallexample
 void __builtin_dmsha2hash (__dmr1024*, __dmr1024*, uint1);
@@ -27259,6 +27259,12 @@ void __builtin_dmxxshake128pad (__dmr1024*, vec_t, uint1);
 void __builtin_dmxxsha384512pad (__dmr1024*, vec_t);
 
 void __builtin_dmxxsha224256pad (__dmr1024*, vec_t);
+
+void __builtin_dmsha3hash (__dmr2048*, uint5);
+
+void __builtin_dmsha3dw (__dmr2048*);
+
+void __builtin_dmcryshash (__dmr2048*);
 @end smallexample
 
 @subsubheading PowerPC Vector Integer Multiply High Built-in Functions
