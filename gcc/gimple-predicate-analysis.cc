@@ -1858,7 +1858,9 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		{
 		  pred_info one_pred;
 		  one_pred.pred_lhs = gimple_switch_index (gs);
-		  one_pred.pred_rhs = CASE_LOW (l);
+		  one_pred.pred_rhs
+		    = wide_int_to_tree (TREE_TYPE (one_pred.pred_lhs),
+					wi::to_widest (CASE_LOW (l)));
 		  one_pred.cond_code = EQ_EXPR;
 		  one_pred.invert = false;
 		  t_chain.safe_push (one_pred);
@@ -1872,11 +1874,15 @@ predicate::init_from_control_deps (const vec<edge> *dep_chains,
 		     of two here.  */
 		  pred_info one_pred;
 		  one_pred.pred_lhs = gimple_switch_index (gs);
-		  one_pred.pred_rhs = CASE_LOW (l);
+		  one_pred.pred_rhs
+		    = wide_int_to_tree (TREE_TYPE (one_pred.pred_lhs),
+					wi::to_widest (CASE_LOW (l)));
 		  one_pred.cond_code = GE_EXPR;
 		  one_pred.invert = false;
 		  t_chain.safe_push (one_pred);
-		  one_pred.pred_rhs = CASE_HIGH (l);
+		  one_pred.pred_rhs
+		    = wide_int_to_tree (TREE_TYPE (one_pred.pred_lhs),
+					wi::to_widest (CASE_HIGH (l)));
 		  one_pred.cond_code = LE_EXPR;
 		  t_chain.safe_push (one_pred);
 		  has_valid_pred = true;
