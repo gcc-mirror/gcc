@@ -21462,6 +21462,13 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
       darwin*)
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
+        case "${target_os}" in
+          darwin1[6-9]* | darwin2*)
+            # clock_gettime() is available from Darwin12.
+            ac_has_clock_monotonic=yes
+            ac_has_clock_realtime=yes
+            ;;
+        esac
         ;;
       # VxWorks has nanosleep as soon as the kernel is configured with
       # INCLUDE_POSIX_TIMERS, which is normally/most-often the case.
@@ -21808,9 +21815,8 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
+
 	  timespec tp;
-	 #endif
 	  clock_gettime(CLOCK_MONOTONIC, &tp);
 
   ;
@@ -21841,9 +21847,8 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-#if _POSIX_TIMERS > 0
+
 	  timespec tp;
-	 #endif
 	  clock_gettime(CLOCK_REALTIME, &tp);
 
   ;
@@ -21874,9 +21879,8 @@ cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 int
 main ()
 {
-#if _POSIX_TIMERS > 0
+
 	  timespec tp;
-	 #endif
 	  nanosleep(&tp, 0);
 
   ;
@@ -21910,9 +21914,8 @@ $as_echo_n "checking for clock_gettime syscall... " >&6; }
 int
 main ()
 {
-#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
-	    timespec tp;
-	   #endif
+
+	   timespec tp;
 	   syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
 	   syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
 
@@ -53737,7 +53740,7 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     CXXFLAGS='-O0 -S'
 
     cat > conftest.$ac_ext << EOF
-#line 53740 "configure"
+#line 53743 "configure"
 #include <stddef.h>
 int main()
 {

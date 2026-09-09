@@ -1741,9 +1741,12 @@ dnl --disable-libstdcxx-time
 dnl        disables the checks completely
 dnl
 dnl N.B. Darwin provides nanosleep but doesn't support the whole POSIX
-dnl Timers option, so doesn't define _POSIX_TIMERS. Because the test
-dnl below fails Darwin unconditionally defines _GLIBCXX_USE_NANOSLEEP in
-dnl os_defines.h and also defines _GLIBCXX_USE_SCHED_YIELD.
+dnl Timers option, so defines _POSIX_TIMERS (and _POSIX_MONOTONIC_CLOCK)
+dnl to -1 (indicating no claim to POSIX compliance).  Nevertheless, the OS
+dnl has reliable mechanisms and exports those via the nanosleep (and other
+dnl clock_gettime() APIs).  To handle this, we check the APIs directly here
+dnl and  Darwin unconditionally defines _GLIBCXX_USE_NANOSLEEP and
+dnl _GLIBCXX_USE_SCHED_YIELD in os_defines.h.
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 
@@ -1774,6 +1777,13 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
       darwin*)
         ac_has_nanosleep=yes
         ac_has_sched_yield=yes
+        case "${target_os}" in
+          darwin1[[6-9]]* | darwin2*)
+            # clock_gettime() is available from Darwin12.
+            ac_has_clock_monotonic=yes
+            ac_has_clock_realtime=yes
+            ;;
+        esac
         ;;
       # VxWorks has nanosleep as soon as the kernel is configured with
       # INCLUDE_POSIX_TIMERS, which is normally/most-often the case.
@@ -1859,9 +1869,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 	[[#include <unistd.h>
 	 #include <time.h>
 	]],
-	[[#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
+	[[
 	  timespec tp;
-	 #endif
 	  clock_gettime(CLOCK_MONOTONIC, &tp);
 	]])], [ac_has_clock_monotonic=yes], [ac_has_clock_monotonic=no])
 
@@ -1872,9 +1881,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 	[[#include <unistd.h>
 	 #include <time.h>
 	]],
-	[[#if _POSIX_TIMERS > 0
+	[[
 	  timespec tp;
-	 #endif
 	  clock_gettime(CLOCK_REALTIME, &tp);
 	]])], [ac_has_clock_realtime=yes], [ac_has_clock_realtime=no])
 
@@ -1885,9 +1893,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 	[[#include <unistd.h>
 	 #include <time.h>
 	]],
-	[[#if _POSIX_TIMERS > 0
+	[[
 	  timespec tp;
-	 #endif
 	  nanosleep(&tp, 0);
 	]])], [ac_has_nanosleep=yes], [ac_has_nanosleep=no])
 
@@ -1904,9 +1911,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 	   #include <time.h>
 	   #include <sys/syscall.h>
 	  ]],
-	  [[#if _POSIX_TIMERS > 0 && defined(_POSIX_MONOTONIC_CLOCK)
-	    timespec tp;
-	   #endif
+	  [[
+	   timespec tp;
 	   syscall(SYS_clock_gettime, CLOCK_MONOTONIC, &tp);
 	   syscall(SYS_clock_gettime, CLOCK_REALTIME, &tp);
 	  ]])], [ac_has_clock_gettime_syscall=yes], [ac_has_clock_gettime_syscall=no])
