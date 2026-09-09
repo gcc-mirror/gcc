@@ -120,7 +120,7 @@ namespace decimal
 
   // ISO/IEC TR 24733  3.2.5  Initialization from coefficient and exponent.
 
-  static decimal32 make_decimal32(long long __coeff, int __exponent)
+  inline decimal32 make_decimal32(long long __coeff, int __exponent)
   {
     decimal32 __decexp = 1, __multiplier;
 
@@ -138,7 +138,7 @@ namespace decimal
     return __coeff * __decexp;
   }
 
-  static decimal32 make_decimal32(unsigned long long __coeff, int __exponent)
+  inline decimal32 make_decimal32(unsigned long long __coeff, int __exponent)
   {
     decimal32 __decexp = 1, __multiplier;
 
@@ -156,7 +156,7 @@ namespace decimal
     return __coeff * __decexp;
   }
 
-  static decimal64 make_decimal64(long long __coeff, int __exponent)
+  inline decimal64 make_decimal64(long long __coeff, int __exponent)
   {
     decimal64 __decexp = 1, __multiplier;
 
@@ -174,7 +174,7 @@ namespace decimal
     return __coeff * __decexp;
   }
 
-  static decimal64 make_decimal64(unsigned long long __coeff, int __exponent)
+  inline decimal64 make_decimal64(unsigned long long __coeff, int __exponent)
   {
     decimal64 __decexp = 1, __multiplier;
 
@@ -192,7 +192,7 @@ namespace decimal
     return __coeff * __decexp;
   }
 
-  static decimal128 make_decimal128(long long __coeff, int __exponent)
+  inline decimal128 make_decimal128(long long __coeff, int __exponent)
   {
     decimal128 __decexp = 1, __multiplier;
 
@@ -210,7 +210,7 @@ namespace decimal
     return __coeff * __decexp;
   }
 
-  static decimal128 make_decimal128(unsigned long long __coeff, int __exponent)
+  inline decimal128 make_decimal128(unsigned long long __coeff, int __exponent)
   {
     decimal128 __decexp = 1, __multiplier;
 
