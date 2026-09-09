@@ -373,7 +373,7 @@ namespace __format
 	static constexpr bool __once = (is_same_v<_Tp, _Ts> + ...) == 1;
 
       template<typename... _Ts>
-	consteval bool
+	static consteval bool
 	__valid_types_for_check_dynamic_spec()
 	{
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
