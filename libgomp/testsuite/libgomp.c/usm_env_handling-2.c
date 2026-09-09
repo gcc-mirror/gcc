@@ -83,9 +83,9 @@ main ()
   bool is_usm = (is_shared_mem && env_var
 		 && strcasecmp ("enabled", env_var) == 0
 		 && omp_get_num_devices () > 0);
-  printf ("DEBUG: GOMP_RUNTIME_USM = %s, is_shared_mem = %s -> usm = %s\n",
+  printf ("DEBUG: GOMP_RUNTIME_USM = %s, is_shared_mem = %s, num devs = %d -> evn var usm = %s\n",
 	  env_var ? env_var : "<unset>", is_shared_mem ? "true" : "false",
-	  is_usm ? "true" : "false");
+	  omp_get_num_devices (), is_usm ? "true" : "false");
 
 
   // Target update + modifying the data in TARGET

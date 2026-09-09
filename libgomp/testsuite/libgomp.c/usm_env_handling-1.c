@@ -17,6 +17,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef USE_SELF_MAPS
+#pragma omp requires self_maps
+#endif
+
 
 int A[1] = {1};
 #pragma omp declare target enter(A)
@@ -56,9 +60,9 @@ main ()
   bool is_usm = (is_shared_mem && env_var
 		 && strcasecmp ("enabled", env_var) == 0
 		 && omp_get_num_devices () > 0);
-  printf ("DEBUG: GOMP_RUNTIME_USM = %s, is_shared_mem = %s -> usm = %s\n",
+  printf ("DEBUG: GOMP_RUNTIME_USM = %s, is_shared_mem = %s, num devs = %d -> env var usm = %s\n",
 	  env_var ? env_var : "<unset>", is_shared_mem ? "true" : "false",
-	  is_usm ? "true" : "false");
+	  omp_get_num_devices (), is_usm ? "true" : "false");
 
 
   // Check that 'TARGET UPDATE' works
