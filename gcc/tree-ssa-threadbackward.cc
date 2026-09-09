@@ -93,7 +93,6 @@ private:
   struct unwind_state
   {
     path_stats stats;
-    // Unused here; read by the per-block insn dump later in this series.
     int bb_insns;
   };
   auto_vec<unwind_state, 20> m_unwind;
@@ -757,6 +756,10 @@ back_threader_profitability::possibly_profitable_path_p
       for (unsigned j = 0; j < m_path.length (); j++)
 	{
 	  fprintf (dump_file, " bb:%i", m_path[j]->index);
+	  /* The last block on the path is not copied, so it has no
+	     count of its own.  */
+	  if (j + 1 < m_path.length ())
+	    fprintf (dump_file, " (%i insns)", m_unwind[j + 1].bb_insns);
 	  if (loop->latch == m_path[j])
 	    fprintf (dump_file, " (latch)");
 	}
