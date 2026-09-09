@@ -275,6 +275,24 @@ namespace __format
 
   template<typename _CharT> class _Scanner;
 
+  enum class _Arg_t : unsigned char {
+    _Arg_none, _Arg_bool, _Arg_c, _Arg_i, _Arg_u, _Arg_ll, _Arg_ull,
+    _Arg_flt, _Arg_dbl, _Arg_ldbl, _Arg_str, _Arg_sv, _Arg_ptr, _Arg_handle,
+    _Arg_i128, _Arg_u128, _Arg_float128,
+    _Arg_bf16, _Arg_f16, _Arg_f32, _Arg_f64,
+    _Arg_max_,
+
+#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
+    _Arg_ibm128 = _Arg_ldbl,
+    _Arg_ieee128 = _Arg_float128,
+#endif
+  };
+  using enum _Arg_t;
+
+  template<typename _CharT, typename _Tp>
+    consteval _Arg_t
+    __to_arg_t_enum() noexcept;
+
 } // namespace __format
   /// @endcond
 
@@ -337,7 +355,7 @@ namespace __format
 	    __format::__invalid_arg_id_in_format_string();
       }
 
-#if __cpp_lib_format >= 202305L
+#if __cpp_lib_format >= 202305L // >= C++26
       template<typename... _Ts>
 	constexpr void
 	check_dynamic_spec(size_t __id) noexcept
@@ -345,17 +363,22 @@ namespace __format
 	  static_assert(__valid_types_for_check_dynamic_spec<_Ts...>(),
 			"template arguments for check_dynamic_spec<Ts...>(id) "
 			"must be unique and must be one of the allowed types");
-	  if consteval {
-	    __check_dynamic_spec<_Ts...>(__id);
-	  }
+	  if constexpr (sizeof...(_Ts))
+	    if consteval {
+	      const __format::_Arg_t __t[] = {
+		__format::__to_arg_t_enum<_CharT, _Ts>()...
+	      };
+	      __check_dynamic_spec(__id, __t);
+	    }
 	}
 
       constexpr void
       check_dynamic_spec_integral(size_t __id) noexcept
       {
 	if consteval {
-	  __check_dynamic_spec<int, unsigned, long long,
-			       unsigned long long>(__id);
+	  using enum __format::_Arg_t;
+	  const __format::_Arg_t __t[] = { _Arg_i, _Arg_u, _Arg_ll, _Arg_ull };
+	  __check_dynamic_spec(__id, __t);
 	}
       }
 
@@ -363,7 +386,9 @@ namespace __format
       check_dynamic_spec_string(size_t __id) noexcept
       {
 	if consteval {
-	  __check_dynamic_spec<const _CharT*, basic_string_view<_CharT>>(__id);
+	  using enum __format::_Arg_t;
+	  const __format::_Arg_t __t[] = { _Arg_str, _Arg_sv };
+	  __check_dynamic_spec(__id, __t);
 	}
       }
 
@@ -403,14 +428,31 @@ namespace __format
 	    }
 	}
 
-      template<typename... _Ts>
-	consteval void
-	__check_dynamic_spec(size_t __id) noexcept;
+      // Common implementation of check_dynamic_spec{,_string,_integral}
+      consteval void
+      __check_dynamic_spec(size_t __id,
+			   span<const __format::_Arg_t> __types) noexcept
+      {
+	if (__id >= _M_num_args)
+	  __format::__invalid_arg_id_in_format_string();
+
+	// This static_cast is safe because all parse contexts created by the
+	// library are _Scan_parse_context (or a type derived from that).
+	// User code can only create basic_format_parse_context objects with
+	// _M_num_args == 0 and those will be rejected by the condition above.
+	if (auto* __args = static_cast<_Scan_parse_context*>(this)->_M_types)
+	  {
+	    for (auto __t : __types)
+	      if (__args[__id] == __t)
+		return;
+
+	    __invalid_dynamic_spec("arg(id) type does not match");
+	  }
+	// else this is a formatting scanner, do not do any type checks.
+      }
 
       // This must not be constexpr.
       static void __invalid_dynamic_spec(const char*);
-
-      friend __format::_Scanner<_CharT>;
 #endif
 
       // This constructor should only be used by the implementation.
@@ -427,6 +469,18 @@ namespace __format
       _Indexing _M_indexing = _Unknown;
       size_t _M_next_arg_id = 0;
       size_t _M_num_args = 0;
+
+      // Derived parse context used by Scanner when checking format strings.
+      struct _Scan_parse_context;
+      friend __format::_Scanner<_CharT>;
+    };
+
+  template<typename _CharT>
+    struct basic_format_parse_context<_CharT>::_Scan_parse_context
+    : basic_format_parse_context<_CharT>
+    {
+      using basic_format_parse_context<_CharT>::basic_format_parse_context;
+      const __format::_Arg_t* _M_types = nullptr;
     };
 
 /// @cond undocumented
@@ -4107,20 +4161,6 @@ namespace __format
       }
     };
 
-  enum class _Arg_t : unsigned char {
-    _Arg_none, _Arg_bool, _Arg_c, _Arg_i, _Arg_u, _Arg_ll, _Arg_ull,
-    _Arg_flt, _Arg_dbl, _Arg_ldbl, _Arg_str, _Arg_sv, _Arg_ptr, _Arg_handle,
-    _Arg_i128, _Arg_u128, _Arg_float128,
-    _Arg_bf16, _Arg_f16, _Arg_f32, _Arg_f64,
-    _Arg_max_,
-
-#ifdef _GLIBCXX_LONG_DOUBLE_ALT128_COMPAT
-    _Arg_ibm128 = _Arg_ldbl,
-    _Arg_ieee128 = _Arg_float128,
-#endif
-  };
-  using enum _Arg_t;
-
   template<typename _Context>
     struct _Arg_value
     {
@@ -5066,11 +5106,7 @@ namespace __format
     {
       using iterator = typename basic_format_parse_context<_CharT>::iterator;
 
-      struct _Parse_context : basic_format_parse_context<_CharT>
-      {
-	using basic_format_parse_context<_CharT>::basic_format_parse_context;
-	const _Arg_t* _M_types = nullptr;
-      } _M_pc;
+      typename basic_format_parse_context<_CharT>::_Scan_parse_context _M_pc;
 
       constexpr explicit
       _Scanner(basic_string_view<_CharT> __str, size_t __nargs = (size_t)-1)
@@ -5436,38 +5472,6 @@ namespace __format
 
 } // namespace __format
 /// @endcond
-
-#if __cpp_lib_format >= 202305L // >= C++26
-  /// @cond undocumented
-  // Common implementation of check_dynamic_spec{,_string,_integral}
-  template<typename _CharT>
-    template<typename... _Ts>
-      consteval void
-      basic_format_parse_context<_CharT>::
-      __check_dynamic_spec(size_t __id) noexcept
-      {
-	if (__id >= _M_num_args)
-	  __format::__invalid_arg_id_in_format_string();
-	if constexpr (sizeof...(_Ts) != 0)
-	  {
-	    using _Parse_ctx = __format::_Scanner<_CharT>::_Parse_context;
-	    auto* __args = static_cast<_Parse_ctx*>(this)->_M_types;
-	    // Formatting scanner, no type check.
-	    if (!__args)
-	      return;
-
-	    auto __arg = __args[__id];
-	    __format::_Arg_t __types[] = {
-	      __format::__to_arg_t_enum<_CharT, _Ts>()...
-	    };
-	    for (auto __t : __types)
-	      if (__arg == __t)
-		return;
-	  }
-	__invalid_dynamic_spec("arg(id) type does not match");
-      }
-  /// @endcond
-#endif
 
   template<typename _CharT, typename... _Args>
     template<typename _Tp>
