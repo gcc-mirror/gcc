@@ -2701,6 +2701,9 @@
   [(set_attr "type" "multi")
    (set_attr "length" "16")])		; 12 or 16
 
+;; DLTIND relocs need to be converted to DPREL relocs when PIC code
+;; isn't used in a shared object.  Currently, GNU ld only supports
+;; converting addil instructions.
 (define_insn ""
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(plus:SI (match_operand:SI 1 "register_operand" "r")
@@ -2713,16 +2716,18 @@
    (set_attr "length" "4")])
 
 (define_insn ""
-  [(set (match_operand:DI 0 "register_operand" "=a")
-	(plus:DI (match_operand:DI 1 "register_operand" "r")
+  [(set (match_operand:DI 0 "register_operand" "=a,!&r")
+	(plus:DI (match_operand:DI 1 "register_operand" "r,r")
 	         (high:DI (match_operand 2 "" ""))))]
   "symbolic_operand (operands[2], Pmode)
    && ! function_label_operand (operands[2], Pmode)
    && TARGET_64BIT
    && flag_pic"
-  "addil LT'%G2,%1"
-  [(set_attr "type" "binary")
-   (set_attr "length" "4")])
+  "@
+   addil LT'%G2,%1
+   ldil LT'%G2,%0\;add,l %0,%1,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,8")])
 
 (define_insn ""
  [(set (match_operand:SI 0 "register_operand" "=r")
@@ -2749,26 +2754,35 @@
 
 ;; Always use addil rather than ldil;add sequences.  This allows the
 ;; HP linker to eliminate the dp relocation if the symbolic operand
-;; lives in the TEXT space.
+;; lives in the TEXT space.  In order to avoid spill failures with
+;; LRA, we need ldil;add sequence with general register target.
 (define_insn ""
-  [(set (match_operand:SI 0 "register_operand" "=a")
+  [(set (match_operand:SI 0 "register_operand" "=a,!r")
 	(high:SI (match_operand 1 "" "")))]
-  "symbolic_operand (operands[1], Pmode)
+  "! TARGET_LONG_LOAD_STORE
+   && symbolic_operand (operands[1], Pmode)
    && ! function_label_operand (operands[1], Pmode)
    && ! read_only_operand (operands[1], Pmode)
    && ! flag_pic"
-  "*
-{
-  if (TARGET_LONG_LOAD_STORE)
-    return \"addil NLR'%H1,%%r27\;ldo N'%H1(%%r1),%%r1\";
-  else
-    return \"addil LR'%H1,%%r27\";
-}"
+  "@
+   addil LR'%H1,%%r27
+   ldil LR'%H1,%0\;{addl|add,l} %0,%%r27,%0"
+  [(set_attr "type" "binary,binary")
+   (set_attr "length" "4,8")])
+
+(define_insn ""
+  [(set (match_operand:SI 0 "register_operand" "=a,!r")
+	(high:SI (match_operand 1 "" "")))]
+  "TARGET_LONG_LOAD_STORE
+   && symbolic_operand (operands[1], Pmode)
+   && ! function_label_operand (operands[1], Pmode)
+   && ! read_only_operand (operands[1], Pmode)
+   && ! flag_pic"
+  "@
+   addil NLR'%H1,%%r27\;ldo N'%H1(%%r1),%%r1
+   ldil NLR'%H1,%0\;{addl|add,l} %0,%%r27,%0\;ldo N'%H1(%0),%0"
   [(set_attr "type" "binary")
-   (set (attr "length")
-      (if_then_else (not (match_test "TARGET_LONG_LOAD_STORE"))
-		    (const_int 4)
-		    (const_int 8)))])
+   (set_attr "length" "8,12")])
 
 
 ;; This is for use in the prologue/epilogue code.  We need it
@@ -2794,7 +2808,7 @@
   "reload_completed && TARGET_64BIT"
   "@
    addil L'%G2,%1
-   ldil L'%G2,%0\;{addl|add,l} %0,%1,%0"
+   ldil L'%G2,%0\;add,l %0,%1,%0"
   [(set_attr "type" "binary,binary")
    (set_attr "length" "4,8")])
 
