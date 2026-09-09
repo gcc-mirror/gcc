@@ -6229,6 +6229,16 @@ add_body:       sum TO rnames
                   *$$ = std::for_each( pairs.begin(), pairs.end(), *$$ );
                   $$->A.pop_front();
                   $$->tgts.pop_front();
+                  if( 1 < $sum->size() ) {
+                    unsigned long n = $sum->size();
+                    error_msg(@sum, "ADD CORRESPONDING accepts only 1 sending operand, "
+                              "%lu provided", n);
+                  }
+                  if( 1 < rhs.size() ) {
+                    unsigned long n = rhs.size();
+                    error_msg(@rnames, "ADD CORRESPONDING accepts only 1 TO operand, "
+                              "%lu provided", n);
+                  }
                   rhs.clear();
                 }
                 ;

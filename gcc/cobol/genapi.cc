@@ -9484,6 +9484,7 @@ parser_file_write( cbl_file_t *file,
                    bool sequentially
                  )
   {
+  RETURN_IF_PARSE_ONLY;
   if( !file )
     {
     cbl_internal_error("%s: called with NULL *file", __func__);
