@@ -1,4 +1,4 @@
-// { dg-options "-D_GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES" }
+// { dg-options "-D_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS=2" }
 // { dg-do run { target c++11 } }
 // { dg-require-cstdint "" }
 #include "accessors.cc"

@@ -3065,10 +3065,10 @@ namespace __detail
 	// 4052. Bogus requirements for piecewise_linear_distribution
 	auto __cfw = [&__fw](_RealType __n, _RealType __p)
 	{
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-	  return __fw(0.5 * (__n + __p));
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
 	  return _RealType(__fw(_RealType(0.5) * (__n + __p)));
+#else
+	  return __fw(0.5 * (__n + __p));
 #endif
 	};
 
@@ -3098,10 +3098,10 @@ namespace __detail
 	const _RealType __delta = (__xmax - __xmin) / __n;
 	auto __cfw = [&__fw, __delta](_RealType __v)
 	{
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-	  return __fw(__v + 0.5 * __delta);
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
 	  return _RealType(__fw(__v + _RealType(0.5) * __delta));
+#else
+	  return __fw(__v + 0.5 * __delta);
 #endif
 	};
 
@@ -3380,12 +3380,12 @@ namespace __detail
 	const _RealType __delta = (__xmax - __xmin) / __n;
 	const auto __cfw = [&] (_RealType __v)
 	{
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-	  return __fw(__v + __delta);
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 4052. Bogus requirements for piecewise_linear_distribution
 	  return _RealType(__fw(__v));
+#else
+	  return __fw(__v + __delta);
 #endif
 	};
 

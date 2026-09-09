@@ -19,10 +19,10 @@ test_exact()
   VERIFY( interval[0] == RealType(0.0) );
   VERIFY( interval[5] == RealType(5.0) );
 
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-  const std::vector<double>& density = u.densities();
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
   const std::vector<RealType>& density = u.densities();
+#else
+  const std::vector<double>& density = u.densities();
 #endif
 
   VERIFY( density.size() == 6 );
@@ -39,9 +39,9 @@ void
 test_precision_depended()
 {
   constexpr bool preserved
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS == 0
     = sizeof(InputType) <= sizeof(double);
-#elifdef _GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES
+#elif _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS == 2
     = sizeof(InputType) <= sizeof(DistType);
 #else
     // input is converted to DistType and stored in double
@@ -62,10 +62,10 @@ test_precision_depended()
     VERIFY( interval[0] == DistType(0.0) );
     VERIFY( interval[2] == DistType(1.0) );
 
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-    const std::vector<double>& density = dist.densities();
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
     const std::vector<DistType>& density = dist.densities();
+#else
+    const std::vector<double>& density = dist.densities();
 #endif
 
     VERIFY( density.size() == 3 );
@@ -83,7 +83,7 @@ test_precision_depended()
   Distribution from_init_list(x, wf);
   validate(from_init_list);
 
-#ifndef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
   // PR125548 leads to incorrect densities being used
   Distribution from_count(2, InputType(0), InputType(1), wf);
   validate(from_count);
@@ -96,10 +96,10 @@ test_engine_calls()
 {
   constexpr std::size_t bits = __builtin_popcountg(URBG::max() - URBG::min());
   constexpr std::size_t calls
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-    = (std::numeric_limits<double>::digits + bits - 1) / bits;
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
     = (std::numeric_limits<RealType>::digits + bits - 1) / bits;
+#else
+    = (std::numeric_limits<double>::digits + bits - 1) / bits;
 #endif
 
   struct wrapper : URBG

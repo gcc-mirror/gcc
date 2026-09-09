@@ -969,6 +969,10 @@ namespace __gnu_cxx
 #endif // __has_include
 #endif // C++17
 
+#if __cplusplus >= 201103L && !defined(_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS)
+# define _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS 1
+#endif
+
 #pragma GCC diagnostic pop
 
 // End of prewritten config; the settings discovered at configure time follow.

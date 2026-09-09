@@ -6440,10 +6440,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
   namespace __detail
   {
-#if defined(_GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS)
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS == 0
     template<typename _Tp>
       using __piecewise_distributions_storage_t = double;
-#elif defined(_GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES)
+#elif _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS == 2
     template<typename _Tp>
       using __piecewise_distributions_storage_t = _Tp;
 #else
@@ -6499,10 +6499,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
       using _StorageType
 	= __detail::__piecewise_distributions_storage_t<_RealType>;
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-      using _CalcType = double;
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
       using _CalcType = _RealType;
+#else
+      using _CalcType = double;
 #endif
 
     public:
@@ -6548,11 +6548,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	    return _M_int;
 	}
 
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-	std::vector<double>
-	densities() const
-	{ return _M_den.empty() ? std::vector<double>(1, 1.0) : _M_den; }
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 1439. Return from densities() functions?
 	[[__gnu__::__abi_tag__("__rt")]]
@@ -6569,6 +6565,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	    return std::vector<_RealType>(_M_den.begin(), _M_den.end());
 #pragma GCC diagnostic pop
 	}
+#else
+	std::vector<double>
+	densities() const
+	{ return _M_den.empty() ? std::vector<double>(1, 1.0) : _M_den; }
 #endif
 
 	friend bool
@@ -6644,13 +6644,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       /**
        * @brief Returns a vector of the probability densities.
        */
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-      std::vector<double>
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
+      [[__gnu__::__always_inline__]]
+      std::vector<result_type>
       densities() const
       { return _M_param.densities(); }
 #else
-      [[__gnu__::__always_inline__]]
-      std::vector<result_type>
+      std::vector<double>
       densities() const
       { return _M_param.densities(); }
 #endif
@@ -6814,10 +6814,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
       using _StorageType
 	= __detail::__piecewise_distributions_storage_t<_RealType>;
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-      using _CalcType = double;
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
       using _CalcType = _RealType;
+#else
+      using _CalcType = double;
 #endif
 
     public:
@@ -6863,11 +6863,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	    return _M_int;
 	}
 
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-	std::vector<double>
-	densities() const
-	{ return _M_den.empty() ? std::vector<double>(2, 1.0) : _M_den; }
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
 	// _GLIBCXX_RESOLVE_LIB_DEFECTS
 	// 1439. Return from densities() functions?
 	[[__gnu__::__abi_tag__("__rt")]]
@@ -6884,6 +6880,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 	    return std::vector<_RealType>(_M_den.begin(), _M_den.end());
 #pragma GCC diagnostic pop
 	}
+#else
+	std::vector<double>
+	densities() const
+	{ return _M_den.empty() ? std::vector<double>(2, 1.0) : _M_den; }
 #endif
 
 	friend bool
@@ -6961,13 +6961,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
        * @brief Return a vector of the probability densities of the
        *        distribution.
        */
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
-      std::vector<double>
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
+      [[__gnu__::__always_inline__]]
+      std::vector<result_type>
       densities() const
       { return _M_param.densities(); }
 #else
-      [[__gnu__::__always_inline__]]
-      std::vector<result_type>
+      std::vector<double>
       densities() const
       { return _M_param.densities(); }
 #endif

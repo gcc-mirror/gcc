@@ -1379,35 +1379,35 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	especially for format strings using non-ASCII fill characters.
       </para>
     </listitem></varlistentry>
-    <varlistentry><term><code>_GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS</code></term>
+    <varlistentry><term><code>_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS</code></term>
      <listitem>
       <para>
-	Undefined by default.
-	When defined, the behavior of specializations of
+	Defined to the value <literal>1</literal>, if not provided.
+	ABI-changing when defined to the value <literal>2</literal>.
+
+	When defined to a non-zero value,
 	<code>piecewise_constant_distribution</code> and
-	<code>piecewise_linear_distribution</code>
-	is restored to their state prior the implementation
-	of <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	<code>piecewise_linear_distribution</code> incorporates corrections
+	from <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=82749">
 	PR82749</link> (<link xmlns:xlink="http://www.w3.org/1999/xlink"
-	xlink:href="https://cplusplus.github.io/LWG/lwg-defects.html#1439">
-	LWG1439</link>), <link xmlns:xlink="http://www.w3.org/1999/xlink"
+	xlink:href="https://cplusplus.github.io/LWG/lwg-defects.html#1439"
+	>LWG1439</link>), <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://cplusplus.github.io/LWG/lwg-defects.html#4052">
 	LWG4052</link>,	and <link xmlns:xlink="http://www.w3.org/1999/xlink"
 	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=125548">
-	PR125548</link>) in GCC 17.
+	PR125548</link> in GCC 17.
       </para>
-    </listitem></varlistentry>
-    <varlistentry><term><code>_GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES</code></term>
-    <listitem>
       <para>
-	Undefined by default. ABI-changing.
-	When defined, specializations of
-	<code>piecewise_constant_distribution</code> and
-	<code>piecewise_linear_distribution</code> with a
-	<code>result_type</code> of either <code>float</code> or
-	<code>long double</code> will manage their internal state using
-	<code>result_type</code> values (instead of <code>double</code>).
+	When defined to the value <literal>0</literal>, their behavior
+	is restored to their state prior changes in GCC 17.
+      </para>
+      <para>
+	When defined to the value <literal>2</literal>, specializations of
+	beforementioned distributions with a <code>result_type</code> of
+	either <code>float</code> or <code>long double</code> will manage
+	their internal state using <code>result_type</code> values (instead
+	of <code>double</code>).
 	This is required for standard conformance, but is incompatible with
 	the default implementation of those class templates.
       </para>

@@ -4,18 +4,18 @@
 #include <random>
 #include <testsuite_hooks.h>
 
-void 
+void
 test_functor(int n)
 {
   const double step = 1.0/n;
-#ifdef _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS 
-  double expected = step;
-#else
+#if _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
   double expected = 0.0;
+#else
+  double expected = step;
 #endif
 
   auto check_val = [&] (double value) mutable {
-    VERIFY( value == expected ); 
+    VERIFY( value == expected );
     expected += step;
     return value;
   };
