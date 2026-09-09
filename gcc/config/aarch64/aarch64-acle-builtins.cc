@@ -3113,11 +3113,11 @@ gimple_folder::fold ()
   if (!TARGET_SIMD && !TARGET_SVE)
     return NULL;
 
-  /* Punt if the function has a return type and no result location is
-     provided.  The attributes should allow target-independent code to
-     remove the calls if appropriate.  */
+  /* Create a placeholder variable for the result.
+     This allows implementers of `fold` to assume `lhs` will never be null.
+     If the result is unused, it will be optimized away later.  */
   if (!lhs && TREE_TYPE (gimple_call_fntype (call)) != void_type_node)
-    return NULL;
+    lhs = create_tmp_var (TREE_TYPE (gimple_call_fntype (call)));
 
   /* First try some simplifications that are common to many functions.  */
   if (auto *call = redirect_pred_x ())
