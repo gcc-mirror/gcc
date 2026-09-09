@@ -795,38 +795,57 @@ static const struct riscv_fusion_entry riscv_fusion_table[] =
     riscv_fuse_b_alui, "RISCV_FUSE_B_ALUI" },
 };
 
+/* Return the name of fusion operation OP.  */
+
+static const char *
+riscv_fusion_type_name (enum riscv_fusion_pairs op)
+{
+  for (size_t i = 0; i < ARRAY_SIZE (riscv_fusion_table); i++)
+    if (riscv_fusion_table[i].op == op)
+      return riscv_fusion_table[i].fusion_type;
+
+  gcc_unreachable ();
+}
+
+/* Return the enabled fusion operation matched by PREV and CURR, or
+   RISCV_FUSE_NOTHING if the instructions do not form a fusion pair.  */
+
+enum riscv_fusion_pairs
+riscv_get_fusion_pair_type (rtx_insn *prev, rtx_insn *curr)
+{
+  if (!riscv_macro_fusion_p ())
+    return RISCV_FUSE_NOTHING;
+
+  for (size_t i = 0; i < ARRAY_SIZE (riscv_fusion_table); i++)
+    {
+      const struct riscv_fusion_entry *entry = &riscv_fusion_table[i];
+
+      if (!riscv_fusion_enabled_p (entry->op))
+	continue;
+
+      if (entry->checker (prev, curr))
+	return entry->op;
+    }
+
+  return RISCV_FUSE_NOTHING;
+}
+
 /* Implement TARGET_SCHED_MACRO_FUSION_PAIR_P.  Return true if PREV and CURR
    should be kept together during scheduling.  */
 
 bool
 riscv_macro_fusion_pair_p (rtx_insn *prev, rtx_insn *curr)
 {
-  /* If fusion is not enabled, then there's nothing to do.  */
-  if (!riscv_macro_fusion_p ())
-    return false;
-
-  /* If PREV is already marked as fused, then we can't fuse CURR with PREV
-     and if we were to fuse them we'd end up with a blob of insns that
-     essentially are an atomic unit which is bad for scheduling.  */
+  /* Do not extend an existing fusion group.  */
   if (SCHED_GROUP_P (prev))
     return false;
 
-  for (size_t i = 0; i < ARRAY_SIZE (riscv_fusion_table); i++)
-    {
-      const struct riscv_fusion_entry *entry = &riscv_fusion_table[i];
+  enum riscv_fusion_pairs op = riscv_get_fusion_pair_type (prev, curr);
+  if (op == RISCV_FUSE_NOTHING)
+    return false;
 
-      /* Check if this fusion type is enabled.  */
-      if (!riscv_fusion_enabled_p (entry->op))
-	continue;
-
-      if (entry->checker (prev, curr))
-	{
-	  if (dump_file)
-	    fprintf (dump_file, ";; macro fusion: insn %d + insn %d -> %s\n",
-		     INSN_UID (prev), INSN_UID (curr), entry->fusion_type);
-	  return true;
-	}
-    }
-
-  return false;
+  if (dump_file)
+    fprintf (dump_file, ";; macro fusion: insn %d + insn %d -> %s\n",
+	     INSN_UID (prev), INSN_UID (curr), riscv_fusion_type_name (op));
+  return true;
 }

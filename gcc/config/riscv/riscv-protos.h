@@ -873,6 +873,8 @@ enum riscv_fusion_pairs
 
 extern bool riscv_macro_fusion_p (void);
 extern bool riscv_macro_fusion_pair_p (rtx_insn *, rtx_insn *);
+extern enum riscv_fusion_pairs riscv_get_fusion_pair_type (rtx_insn *,
+						    rtx_insn *);
 extern unsigned HOST_WIDE_INT riscv_get_fusible_ops (void);
 
 /* Routines implemented in thead.cc.  */
