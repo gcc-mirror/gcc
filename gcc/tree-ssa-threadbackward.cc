@@ -66,6 +66,7 @@ public:
   bool profitable_path_p (const vec<basic_block> &,
 			  edge taken, bool *irreducible_loop);
 private:
+  void account_bb (basic_block, bool);
   const bool m_speed_p;
   int m_exit_jump_benefit;
   bool m_threaded_multiway_branch;
@@ -73,6 +74,7 @@ private:
   bool m_threaded_through_latch;
   bool m_multiway_branch_in_path;
   bool m_contains_hot_bb;
+  bool m_unprofitable_bb;
   int m_n_insns;
 };
 
@@ -86,6 +88,50 @@ back_threader_profitability::back_threader_profitability (bool speed_p,
   // particular it estimates further DCE from eliminating the exit
   // control stmt.
   m_exit_jump_benefit = estimate_num_insns (last, &eni_size_weights);
+}
+
+/* Account for BB in the cumulative stats for the path being threaded.
+   CHECK_MULTIWAY is true for all blocks except the block whose branch
+   we are going to eliminate.  */
+
+void
+back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
+{
+  if (!m_contains_hot_bb && m_speed_p)
+    m_contains_hot_bb |= optimize_bb_for_speed_p (bb);
+
+  for (gimple_stmt_iterator gsi = gsi_after_labels (bb);
+       !gsi_end_p (gsi);
+       gsi_next_nondebug (&gsi))
+    {
+      /* Do not allow OpenACC loop markers and __builtin_constant_p on
+	 threading paths.  The latter is disallowed, because an
+	 expression might be constant on two threading paths, and
+	 become non-constant (i.e.: phi) when they merge.  */
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_call_internal_p (stmt, IFN_UNIQUE)
+	  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
+	{
+	  m_unprofitable_bb = true;
+	  return;
+	}
+      /* Do not count empty statements and labels.  */
+      if (gimple_code (stmt) != GIMPLE_NOP
+	  && !is_gimple_debug (stmt))
+	m_n_insns += estimate_num_insns (stmt, &eni_size_weights);
+    }
+
+  /* We do not look at the block with the threaded branch in this loop.
+     So if any block with a last statement that is a GIMPLE_SWITCH or
+     GIMPLE_GOTO is seen, then we have a multiway branch on our path.  */
+  if (check_multiway)
+    {
+      gimple *last = *gsi_last_bb (bb);
+      if (last
+	  && (gimple_code (last) == GIMPLE_SWITCH
+	      || gimple_code (last) == GIMPLE_GOTO))
+	m_multiway_branch_in_path = true;
+    }
 }
 
 // Back threader flags.
@@ -636,7 +682,6 @@ back_threader_profitability::possibly_profitable_path_p
   if (m_path.length () <= 1)
       return false;
 
-  gimple_stmt_iterator gsi;
   loop_p loop = m_path[0]->loop_father;
 
   // We recompute the following, when we rewrite possibly_profitable_path_p
@@ -645,6 +690,7 @@ back_threader_profitability::possibly_profitable_path_p
   m_threaded_through_latch = false;
   m_multiway_branch_in_path = false;
   m_contains_hot_bb = false;
+  m_unprofitable_bb = false;
 
   /* Count the number of instructions on the path: as these instructions
      will have to be duplicated, we will not record the path if there
@@ -662,41 +708,11 @@ back_threader_profitability::possibly_profitable_path_p
 	 it ends in a multiway branch.  */
       if (j < m_path.length () - 1)
 	{
-	  if (!m_contains_hot_bb && m_speed_p)
-	    m_contains_hot_bb |= optimize_bb_for_speed_p (bb);
-	  for (gsi = gsi_after_labels (bb);
-	       !gsi_end_p (gsi);
-	       gsi_next_nondebug (&gsi))
-	    {
-	      /* Do not allow OpenACC loop markers and __builtin_constant_p on
-		 threading paths.  The latter is disallowed, because an
-		 expression might be constant on two threading paths, and
-		 become non-constant (i.e.: phi) when they merge.  */
-	      gimple *stmt = gsi_stmt (gsi);
-	      if (gimple_call_internal_p (stmt, IFN_UNIQUE)
-		  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
-		return false;
-	      /* Do not count empty statements and labels.  */
-	      if (gimple_code (stmt) != GIMPLE_NOP
-		  && !is_gimple_debug (stmt))
-		m_n_insns += estimate_num_insns (stmt, &eni_size_weights);
-	    }
-
-	  /* We do not look at the block with the threaded branch
-	     in this loop.  So if any block with a last statement that
-	     is a GIMPLE_SWITCH or GIMPLE_GOTO is seen, then we have a
-	     multiway branch on our path.
-
-	     The block in PATH[0] is special, it's the block were we're
+	  /* The block in PATH[0] is special, it's the block were we're
 	     going to be able to eliminate its branch.  */
-	  if (j > 0)
-	    {
-	      gimple *last = *gsi_last_bb (bb);
-	      if (last
-		  && (gimple_code (last) == GIMPLE_SWITCH
-		      || gimple_code (last) == GIMPLE_GOTO))
-		m_multiway_branch_in_path = true;
-	    }
+	  account_bb (bb, /*check_multiway=*/j > 0);
+	  if (m_unprofitable_bb)
+	    return false;
 	}
 
       /* Note if we thread through the latch, we will want to include
