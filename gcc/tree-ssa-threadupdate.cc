@@ -2305,8 +2305,6 @@ back_jt_path_registry::adjust_one_path (vec<jump_thread_edge *> *curr_path,
      there's nothing left to do.  */
   if (j == cand_path->length ())
     {
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "adjusting first edge after MINLENGTH.\n");
       cancel_thread (cand_path, "Adjusted candidate is EMPTY");
       m_paths.unordered_remove (cand_path_num);
       return false;
@@ -2316,7 +2314,7 @@ back_jt_path_registry::adjust_one_path (vec<jump_thread_edge *> *curr_path,
      of the copy.  */
   if (!rewire_first_differing_edge (cand_path_num, j))
     {
-      cancel_thread (cand_path, "Adjusted candidate is EMPTY");
+      cancel_thread (cand_path, "Candidate could not be rewired");
       m_paths.unordered_remove (cand_path_num);
       return false;
     }
@@ -2326,7 +2324,7 @@ back_jt_path_registry::adjust_one_path (vec<jump_thread_edge *> *curr_path,
   if (cand_path->length () - j > 1)
     cand_path->block_remove (0, j);
   else if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "Dropping illformed candidate.\n");
+    fprintf (dump_file, "Not chopping prefix: candidate would be too short.\n");
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
