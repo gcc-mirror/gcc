@@ -1650,7 +1650,8 @@
 		(<SHIFTEXTEND>:<V2XWIDE>
 		  (match_operand:VSDQ_I_DI 2 "register_operand" "w"))
 		(match_operand:<V2XWIDE> 4 "aarch64_int_rnd_operand"))
-	      (match_operand:VSDQ_I_DI 3 "aarch64_simd_shift_imm_<vec_or_offset>_<Vel>")))
+	      (match_operand:<V2XWIDE> 3
+		"aarch64_simd_shift_imm_<vec_or_offset>_<Vel>")))
 	  (match_operand:VSDQ_I_DI 1 "register_operand" "0")))]
   "TARGET_SIMD
    && aarch64_const_vec_rnd_cst_p (operands[4], operands[3])"
@@ -1689,7 +1690,7 @@
     rtx rnd = immed_wide_int_const (rnd_wi, GET_MODE_INNER (<V2XWIDE>mode));
     if (VECTOR_MODE_P (<MODE>mode))
       {
-	shft = gen_const_vec_duplicate (<MODE>mode, shft);
+	shft = gen_const_vec_duplicate (<V2XWIDE>mode, shft);
 	rnd = gen_const_vec_duplicate (<V2XWIDE>mode, rnd);
       }
 
@@ -7418,7 +7419,8 @@
 	      (<SHIFTEXTEND>:<V2XWIDE>
 		(match_operand:VSDQ_I_DI 1 "register_operand" "w"))
 	      (match_operand:<V2XWIDE> 3 "aarch64_int_rnd_operand"))
-	    (match_operand:VSDQ_I_DI 2 "aarch64_simd_shift_imm_<vec_or_offset>_<Vel>"))))]
+	    (match_operand:<V2XWIDE> 2
+	      "aarch64_simd_shift_imm_<vec_or_offset>_<Vel>"))))]
   "TARGET_SIMD
    && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
   "<sra_op>rshr\t%<v>0<Vmtype>, %<v>1<Vmtype>, %2"
@@ -7441,7 +7443,7 @@
     rtx rnd = immed_wide_int_const (rnd_wi, GET_MODE_INNER (<V2XWIDE>mode));
     if (VECTOR_MODE_P (<MODE>mode))
       {
-	shft = gen_const_vec_duplicate (<MODE>mode, shft);
+	shft = gen_const_vec_duplicate (<V2XWIDE>mode, shft);
 	rnd = gen_const_vec_duplicate (<V2XWIDE>mode, rnd);
       }
 
