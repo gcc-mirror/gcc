@@ -3810,6 +3810,13 @@ ParamType::get_name () const
 BaseType *
 ParamType::clone () const
 {
+  static std::vector<HirId> active;
+  bool cycle = Resolver::ScopedPush<HirId>::contains (active, get_ty_ref ());
+  if (cycle)
+    return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
+			  get_ty_ref (), {}, get_combined_refs ());
+
+  Resolver::ScopedPush<HirId> guard (active, get_ty_ref ());
   return new ParamType (is_trait_self, get_symbol (), ident.locus, get_ref (),
 			get_ty_ref (), get_specified_bounds (),
 			get_combined_refs ());
