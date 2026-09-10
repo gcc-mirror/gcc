@@ -27,6 +27,7 @@
 
 #include "asm-defs.h"
 #include "libf7.h"
+#include "config.h"
 
 #define ZERO __zero_reg__
 #define TMP  __tmp_reg__
@@ -96,6 +97,9 @@
 ;; Make a weak alias if double is 64 bits wide.
 .macro  DALIAS  sym
 #if defined (WITH_LIBF7_MATH_SYMBOLS) && __SIZEOF_DOUBLE__ == 8
+#if defined (HAVE_AS_AVR_GNU_ATTRIBUTE)
+    .gnu_attribute 8,64
+#endif
 ALIAS \sym
 #endif
 .endm
@@ -103,6 +107,9 @@ ALIAS \sym
 ;; Make a weak alias if long double is 64 bits wide.
 .macro  LALIAS  sym
 #if defined (WITH_LIBF7_MATH_SYMBOLS) && __SIZEOF_LONG_DOUBLE__ == 8
+#if defined (HAVE_AS_AVR_GNU_ATTRIBUTE)
+    .gnu_attribute 12,64
+#endif
 ALIAS \sym
 #endif
 .endm
