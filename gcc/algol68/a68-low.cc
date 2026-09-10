@@ -403,32 +403,25 @@ a68_consolidate_ref (MOID_T *m, tree expr)
 
   /* Address EXPR as many times as necessary to match the number of REFs in the
      desired mode.  */
-  while (num_pointers < num_refs)
+
+  if (num_pointers == num_refs)
+    ; /* We are good. */
+  else if (num_pointers == num_refs - 1)
     {
-      if (TREE_CODE (expr) == COMPOUND_EXPR)
-	{
-	  /* (..., x) -> (..., &x) */
-	  //	  gcc_assert (TREE_CODE (TREE_OPERAND (expr, 0)) == MODIFY_EXPR);
-	  //	  gcc_assert (VAR_P (TREE_OPERAND (expr, 1)));
-	  TREE_OPERAND (expr, 1) = a68_consolidate_ref (m, TREE_OPERAND (expr, 1));
-	  TREE_TYPE (expr) = TREE_TYPE (TREE_OPERAND (expr, 1));
-	}
+      /* x -> &x */
+      if (TREE_CODE (expr) == INDIRECT_REF)
+	/* expr is an indirection.  Remove the pointer rather than adding an
+	   addr.  This avoids &* situations and marking stuff as addressable
+	   unnecessarily.  */
+	expr = TREE_OPERAND (expr,0);
       else
 	{
-	  /* x -> &x */
-	  if (TREE_CODE (expr) == INDIRECT_REF)
-	    /* expr is an indirection.  Remove the pointer rather than adding
-	       an addr.  This avoids &* situations and marking stuff as
-	       addressable unnecessarily.  */
-	    expr = TREE_OPERAND (expr,0);
-	  else
-	    {
-	      TREE_ADDRESSABLE (expr) = true;
-	      expr = fold_build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (expr)), expr);
-	    }
+	  TREE_ADDRESSABLE (expr) = true;
+	  expr = fold_build1 (ADDR_EXPR, build_pointer_type (TREE_TYPE (expr)), expr);
 	}
-      num_pointers += 1;
     }
+  else
+    gcc_unreachable ();
 
   return expr;
 }
@@ -450,9 +443,8 @@ a68_make_anonymous_routine_decl (MOID_T *mode)
   free (name);
   DECL_EXTERNAL (func_decl) = 0;
   DECL_STATIC_CHAIN (func_decl) = !a68_in_global_range ();
-  /* Nested functions should be addressable.
-     XXX this should be propagated to their containing functions, so for now
-     we mark them all as addressable.  */
+  /* Anonymous routines will always be nested, and nested functions should be
+     addressable.  */
   TREE_ADDRESSABLE (func_decl) = 1;
   /* A nested function is not global.  */
   TREE_PUBLIC (func_decl) = a68_in_global_range ();

@@ -187,16 +187,6 @@ a68_pop_range (void)
   current_range = range->next;
   tree type = (range->mode == NULL ? void_type_node : CTYPE (range->mode));
 
-  /* If TYPE is a pointer type and the last expression in the statement list is
-     a variable of the type pointed by TYPE then take its address.  */
-  tree_stmt_iterator i = tsi_last (range->stmt_list);
-  if (POINTER_TYPE_P (type) && TREE_TYPE (type) == TREE_TYPE (tsi_stmt (i)))
-    {
-      append_to_statement_list_force (a68_consolidate_ref (range->mode, tsi_stmt (i)),
-				      &range->stmt_list);
-      tsi_delink (&i);
-    }
-
   tree clause = NULL_TREE;
   if (range->frameless)
     clause = range->stmt_list;
@@ -318,30 +308,15 @@ a68_add_completer (void)
   struct range *range = current_range;
 
   /* The last statement in the statements list is either a single unit or a
-     labeled unit, i.e a COMPOUND_EXPR whose first expression is a label and
-     second expression is the unit.  Consolidate the unit within the labeled
-     unit to a ref.  */
+     labeled unit.  Consolidate the unit within the labeled unit to a ref and
+     put it in the clause result decl.  */
   tree_stmt_iterator i = tsi_last (range->stmt_list);
-  tree last_expr = tsi_stmt (i);
+  *tsi_stmt_ptr (i) = fold_build2 (MODIFY_EXPR,
+				   void_type_node,
+				   range->clause_result_decl,
+				   a68_consolidate_ref (range->mode, tsi_stmt (i)));
 
-  if (TREE_CODE (last_expr) == COMPOUND_EXPR
-      && TREE_CODE (TREE_OPERAND (last_expr, 0)) == LABEL_EXPR)
-    {
-      TREE_OPERAND (last_expr, 1) = a68_consolidate_ref (range->mode,
-							 TREE_OPERAND (last_expr, 1));
-      TREE_TYPE (last_expr) = TREE_TYPE (TREE_OPERAND (last_expr, 1));
-    }
-  else
-    last_expr = a68_consolidate_ref (range->mode, last_expr);
-
-  /* Now assign the labeled unit to the clause result decl then jump to the end
-     of the serial clause.  */
-  append_to_statement_list_force (fold_build2 (MODIFY_EXPR,
-					       void_type_node,
-					       range->clause_result_decl,
-					       last_expr),
-				  &range->stmt_list);
-  tsi_delink (&i);
+  /* Jump to the end of the serial clause.  */
   append_to_statement_list_force (fold_build1 (GOTO_EXPR, void_type_node,
 					       range->clause_exit_label_decl),
 				  &range->stmt_list);
@@ -562,18 +537,7 @@ a68_pop_serial_clause_range (void)
      serial clause.  */
   {
     tree_stmt_iterator si = tsi_last (range->stmt_list);
-    tree last_expr = tsi_stmt (si);
-    if (TREE_CODE (last_expr) == COMPOUND_EXPR
-	&& TREE_CODE (TREE_OPERAND (last_expr, 0)) == LABEL_EXPR)
-      {
-	TREE_OPERAND (last_expr, 1) = a68_consolidate_ref (range->mode,
-							   TREE_OPERAND (last_expr, 1));
-	TREE_TYPE (last_expr) = TREE_TYPE (TREE_OPERAND (last_expr, 1));
-      }
-    else
-      last_expr = a68_consolidate_ref (range->mode, last_expr);
-    a68_add_stmt (last_expr);
-    tsi_delink (&si);
+    *tsi_stmt_ptr (si) = a68_consolidate_ref (range->mode, tsi_stmt (si));
   }
 
   /* If the serial clause has completers, we have to make use of the

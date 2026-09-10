@@ -1,0 +1,9 @@
+{ Check ref consolidation of var and ide. }
+
+begin int foo;
+      foo +:= 10 := 20;
+      assert(foo = 20);
+      ref int bar = loc int;
+      bar +:= 10 := 30;
+      assert(bar = 30)
+end

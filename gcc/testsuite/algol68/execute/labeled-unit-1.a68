@@ -1,0 +1,9 @@
+{ Check ref consolidation of labeled unit. }
+
+begin int foo;
+      (skip; lala: lele: foo) := 100;
+      assert(foo = 100);
+      ref int bar = loc int;
+      (skip; lala: lele: bar) := 200;
+      assert(bar = 200)
+end

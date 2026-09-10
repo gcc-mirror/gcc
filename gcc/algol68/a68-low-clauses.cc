@@ -128,7 +128,10 @@ tree
 a68_lower_labeled_unit (NODE_T *p, LOW_CTX_T ctx)
 {
   tree label_expr = a68_lower_tree (SUB (p), ctx);
-  tree unit_expr = a68_lower_tree (NEXT (SUB (p)), ctx);
+  tree unit_expr = a68_lower_tree (NEXT_SUB (p), ctx);
+
+  /* If the labeled unit yields a name, make sure an address is computed.  */
+  unit_expr = a68_consolidate_ref (MOID (NEXT_SUB (p)), unit_expr);
 
   return fold_build2_loc (a68_get_node_location (p),
 			  COMPOUND_EXPR,
