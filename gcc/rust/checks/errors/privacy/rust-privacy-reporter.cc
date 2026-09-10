@@ -97,7 +97,7 @@ void
 PrivacyReporter::check_violation_inner (NodeId ref_node_id,
 					const location_t locus)
 {
-  auto vis = mappings.lookup_visibility (ref_node_id);
+  auto vis = mappings.ast.module_visibility.lookup (ref_node_id);
 
   // FIXME: Can we really return here if the item has no visibility?
   if (!vis)

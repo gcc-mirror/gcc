@@ -1311,22 +1311,6 @@ ProcMacroMappings::lookup_attribute_invocation (AST::SimplePath &invoc)
 }
 
 void
-Mappings::insert_visibility (NodeId id, Privacy::ModuleVisibility visibility)
-{
-  visibility_map.insert ({id, visibility});
-}
-
-tl::optional<Privacy::ModuleVisibility &>
-Mappings::lookup_visibility (NodeId id)
-{
-  auto it = visibility_map.find (id);
-  if (it == visibility_map.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
 Mappings::insert_module_child (NodeId module, NodeId child)
 {
   auto it = module_child_map.find (module);

@@ -157,6 +157,27 @@ public:
 				    AttributeProcMacro def);
 };
 
+template <typename Id, typename Item> class Mapping
+{
+  std::unordered_map<Id, Item> storage;
+
+public:
+  tl::optional<Item &> lookup (Id id)
+  {
+    auto it = storage.find (id);
+    if (it == storage.cend ())
+      return tl::nullopt;
+    return it->second;
+  }
+  void insert (Id id, Item item) { storage.insert ({id, item}); }
+};
+
+class ASTMappings
+{
+public:
+  Mapping<NodeId, Privacy::ModuleVisibility> module_visibility;
+};
+
 class Mappings
 {
 public:
@@ -165,6 +186,7 @@ public:
 
   CrateMappings crate_mapping;
   ProcMacroMappings pmacro_mappings;
+  ASTMappings ast;
 
   NodeId get_next_node_id ();
   HirId get_next_hir_id ()
@@ -179,6 +201,7 @@ public:
   LocalDefId get_next_localdef_id (CrateNum crateNum);
 
   AST::Crate &get_ast_crate_by_node_id (NodeId id);
+
   HIR::Crate &insert_hir_crate (std::unique_ptr<HIR::Crate> &&crate);
   HIR::Crate &get_hir_crate (CrateNum crateNum);
   bool is_local_hirid_crate (HirId crateNum);
@@ -393,9 +416,6 @@ public:
 
   void insert_exported_macro (AST::MacroRulesDefinition &def);
   std::vector<AST::MacroRulesDefinition> get_exported_macros ();
-
-  void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
-  tl::optional<Privacy::ModuleVisibility &> lookup_visibility (NodeId id);
 
   void insert_glob_container (NodeId, AST::GlobContainer *);
   tl::optional<AST::GlobContainer *> lookup_glob_container (NodeId id);

@@ -27,7 +27,7 @@ bool
 PubRestrictedVisitor::is_restriction_valid (NodeId item_id,
 					    const location_t locus)
 {
-  auto visibility = mappings.lookup_visibility (item_id);
+  auto visibility = mappings.ast.module_visibility.lookup (item_id);
 
   // If there is no visibility in the mappings, then the item is private and
   // does not contain any restriction
