@@ -6186,7 +6186,7 @@ end_add:        %empty %prec ADD
 
 add_body:       sum TO rnames
                 {
-                  $$ = new arith_t(@sum, no_giving_e, $sum);
+                  $$ = new arith_t(@sum, no_giving_e, *$sum);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
                   $$->locs.tgts = @rnames;
@@ -6194,7 +6194,7 @@ add_body:       sum TO rnames
                 }
         |       sum TO num_operand[value] GIVING rnames
                 {
-                  $$ = new arith_t(@$, giving_e, $sum);
+                  $$ = new arith_t(@$, giving_e, *$sum);
                   $$->A.push_back(*$value);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
@@ -6203,7 +6203,7 @@ add_body:       sum TO rnames
                 }
         |       sum GIVING rnames
                 { // implicit TO
-                  $$ = new arith_t(@sum, giving_e, $sum);
+                  $$ = new arith_t(@sum, giving_e, *$sum);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
                   $$->locs.tgts = @rnames;
@@ -6222,7 +6222,7 @@ add_body:       sum TO rnames
                     }
                   // First src/tgt elements are templates.
                   // Their subscripts apply to the correspondents.
-                  $$ = new arith_t(@sum, corresponding_e, $sum);
+                  $$ = new arith_t(@sum, corresponding_e, *$sum);
                   $$->tgts.push_front(rhs.front());
                   $$->locs.tgts = @rnames;
                   // use arith_t functor to populate A and tgts
@@ -8878,7 +8878,7 @@ end_subtract:   %empty %prec SUBTRACT
 
 subtract_body:  sum FROM rnames
                 {
-                  $$ = new arith_t(@sum, no_giving_e, $sum);
+                  $$ = new arith_t(@sum, no_giving_e, *$sum);
                   std::copy( rhs.begin(),
                              rhs.end(), back_inserter($$->tgts) );
                   $$->locs.tgts = @rnames;
@@ -8886,7 +8886,7 @@ subtract_body:  sum FROM rnames
                 }
         |       sum FROM num_operand[input] GIVING rnames
                 {
-                  $$ = new arith_t(@sum, giving_e, $sum);
+                  $$ = new arith_t(@sum, giving_e, *$sum);
                   $$->B.push_back(*$input);
                   $$->locs.B = @input;
                   std::copy( rhs.begin(),
@@ -8907,7 +8907,7 @@ subtract_body:  sum FROM rnames
                     }
                   // First src/tgt elements are templates.
                   // Their subscripts apply to the correspondents.
-                  $$ = new arith_t(@sum, corresponding_e, $sum);
+                  $$ = new arith_t(@sum, corresponding_e, *$sum);
                   $$->tgts.push_front(rhs.front());
                   $$->locs.tgts = @rnames;
                   // use arith_t functor to populate A and tgts
@@ -13855,13 +13855,13 @@ valid_pointer_relop( const cbl_loc_t& lloc,
 }
 
 arith_t::arith_t( const cbl_loc_t& loc,
-                  cbl_arith_format_t format, refer_list_t * refers )
-  : format(format), on_error(NULL), not_error(NULL)
+                  cbl_arith_format_t format, const refer_list_t& refers )
+  : format(format)
+  , A(refers.refers.begin(), refers.refers.end())
+  , on_error(NULL)
+  , not_error(NULL)
 {
-  std::copy( refers->refers.begin(), refers->refers.end(), back_inserter(A) );
-  refers->refers.clear();
   locs.A = loc;
-  delete refers;
 }
 
 cbl_key_t::cbl_key_t( sort_key_t that )
