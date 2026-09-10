@@ -644,7 +644,22 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 
      Temporarily, it may be set to a TREE_LIST whose TREE_VALUE is
      the virtual function this one overrides, and whose TREE_CHAIN is
-     the old DECL_VINDEX.  */
+     the old DECL_VINDEX.
+
+   TREE_PRIVATE
+     For CONSTRUCTOR, this is CONSTRUCTOR_IS_PAREN_INIT.
+
+   TREE_PROTECTED
+     For CONSTRUCTOR, this is CONSTRUCTOR_BRACES_ELIDED_P.
+     For IDENTIFIER, this is IDENTIFIER_LAMBDA_P.
+     For AGGR_INIT_EXPR, this is AGGR_INIT_FROM_THUNK_P.
+     For ADDR_EXPR, this is ADDR_EXPR_DENOTES_CALL_P.
+
+   TREE_STATIC
+     For AGGR_INIT_EXPR, this is AGGR_INIT_EXPR_MUST_TAIL.
+
+   TREE_DEPRECATED
+     For CONSTRUCTOR, this is CONSTRUCTOR_OMITTED_NOT_WITHIN_LIFETIME_P.  */
 
 /* Language-specific tree checkers.  */
 
@@ -5099,6 +5114,10 @@ get_vec_init_expr (tree t)
 #define CONSTRUCTOR_BRACES_ELIDED_P(NODE) \
   (CONSTRUCTOR_CHECK (NODE)->base.protected_flag)
 
+/* True if omitted fields are considered to be not within lifetime.  */
+#define CONSTRUCTOR_OMITTED_NOT_WITHIN_LIFETIME_P(NODE) \
+  (CONSTRUCTOR_CHECK (NODE)->base.deprecated_flag)
+
 /* True if NODE represents a conversion for direct-initialization in a
    template.  Set by perform_implicit_conversion_flags.  */
 #define IMPLICIT_CONV_EXPR_DIRECT_INIT(NODE) \
@@ -7231,6 +7250,7 @@ enum cp_built_in_function {
   CP_BUILT_IN_CURRENT_EXCEPTION,
   CP_BUILT_IN_UNCAUGHT_EXCEPTIONS,
   CP_BUILT_IN_IS_WITHIN_LIFETIME,
+  CP_BUILT_IN_START_LIFETIME,
   CP_BUILT_IN_LAST
 };
 
@@ -9432,7 +9452,7 @@ extern tree fold_non_dependent_init		(tree,
 						 bool = false, tree = NULL_TREE);
 extern tree fold_simple				(tree);
 extern tree fold_to_constant			(tree);
-extern bool reduced_constant_expression_p       (tree, tree = NULL_TREE);
+extern bool reduced_constant_expression_p       (tree, tree = NULL_TREE, bool = false);
 extern bool is_instantiation_of_constexpr       (tree);
 extern bool var_in_constexpr_fn                 (tree);
 extern bool var_in_maybe_constexpr_fn           (tree);

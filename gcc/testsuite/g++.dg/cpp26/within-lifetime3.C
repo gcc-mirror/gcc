@@ -17,12 +17,10 @@ foo (bool x)
 {
   std::allocator <int> a;
   auto b = a.allocate (1);
-#if 0
   // [allocator.members]/5 says it should start lifetime of the array
   // but not its elements, and b points to the first element.
   if (std::is_within_lifetime (b))
     return false;
-#endif
   std::construct_at (b);
   if (!std::is_within_lifetime (b))
     return false;

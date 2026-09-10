@@ -579,6 +579,7 @@ builtin_valid_in_constant_expr_p (const_tree decl)
 	  case CP_BUILT_IN_CURRENT_EXCEPTION:
 	  case CP_BUILT_IN_UNCAUGHT_EXCEPTIONS:
 	  case CP_BUILT_IN_IS_WITHIN_LIFETIME:
+	  case CP_BUILT_IN_START_LIFETIME:
 	    return true;
 	  default:
 	    break;

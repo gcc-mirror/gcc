@@ -2661,6 +2661,15 @@ ftms = {
   };
 };
 
+ftms = {
+  name = start_lifetime;
+  values = {
+    v = 202603;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_start_lifetime)";
+  };
+};
+
 // Standard test specifications.
 stds[97] = ">= 199711L";
 stds[03] = ">= 199711L";

@@ -2949,4 +2949,14 @@
 #endif /* !defined(__cpp_lib_hardened_view_interface) */
 #undef __glibcxx_want_hardened_view_interface
 
+#if !defined(__cpp_lib_start_lifetime)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_start_lifetime))
+#  define __glibcxx_start_lifetime 202603L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime)
+#   define __cpp_lib_start_lifetime 202603L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_start_lifetime) */
+#undef __glibcxx_want_start_lifetime
+
 #undef __glibcxx_want_all

@@ -1042,6 +1042,10 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	      case CP_BUILT_IN_CONSTEXPR_DIAG:
 		*expr_p = void_node;
 		break;
+	      case CP_BUILT_IN_START_LIFETIME:
+		*expr_p = fold_convert (void_type_node,
+					CALL_EXPR_ARG (*expr_p, 0));
+		break;
 	      default:
 		break;
 	      }

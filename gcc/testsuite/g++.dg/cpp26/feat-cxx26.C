@@ -655,8 +655,8 @@
 
 #ifndef __cpp_trivial_union
 #  error "__cpp_trivial_union"
-#elif __cpp_trivial_union != 202502
-#  error "__cpp_trivial_union != 202502"
+#elif __cpp_trivial_union != 202603
+#  error "__cpp_trivial_union != 202603"
 #endif
 
 // C++26 attributes:
