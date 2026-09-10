@@ -487,6 +487,8 @@ offload_handle_link_vars (void)
     if (lookup_attribute ("omp declare target link",
 			  DECL_ATTRIBUTES (var->decl)))
       {
+	if (DECL_HAS_VALUE_EXPR_P (var->decl))
+	  continue;
 	tree type = build_pointer_type (TREE_TYPE (var->decl));
 	tree link_ptr_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 					clone_function_name (var->decl,
@@ -498,6 +500,8 @@ offload_handle_link_vars (void)
 	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
 	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
 	DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
+	varpool_node::finalize_decl (link_ptr_var);
+	varpool_node::get (link_ptr_var)->force_output = var->force_output;
       }
 #endif
 }
