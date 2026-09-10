@@ -1380,7 +1380,7 @@ cgraph_edge::make_callback (cgraph_node *n2, unsigned fn_idx, tree attr)
     e2->can_throw_external = can_throw_external;
   e2->lto_stmt_uid = lto_stmt_uid;
   callback_info *ci = callback_info_sum->get_create (e2);
-  ci->init (fn_idx, attr);
+  ci->init (e2, fn_idx, attr);
   symtab->call_edge_duplication_hooks (this, e2);
   n2->mark_address_taken ();
   return e2;

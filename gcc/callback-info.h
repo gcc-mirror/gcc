@@ -35,9 +35,16 @@ public:
      parameter, we will need a separate id field.  */
   unsigned fn_idx;
 
-  /* Mapping from the dispatching function's arguments to the callback
-     function.  */
+  /* Mapping from the indices of the arguments passed to the callback to their
+     indices in the call to the dispatching function or to
+     ARG_MAPPING_UNKNOWN_IDX if they do not correspond to any. */
   auto_vec<int> arg_mapping;
+
+  /* Mapping in the opposite direction, from indices of the actual
+     arguments of the call to the dispatcher to indices of arguments in
+     which they are passed to the callback or to ARG_MAPPING_UNKNOWN_IDX
+     if they are not passed to the callback.  */
+  auto_vec<int> inverted_mapping;
 
   /* TRUE iff the associated callback edge was redirected.  */
   bool redirected;
@@ -52,7 +59,7 @@ public:
   unsigned get_id () const;
 
   /* Initializes the summary.  */
-  void init (unsigned fn_idx, tree attr);
+  void init (cgraph_edge *e, unsigned fn_idx, tree attr);
 };
 
 class callback_info_sum_t : public call_summary<callback_info *>

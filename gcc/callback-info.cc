@@ -33,10 +33,26 @@
 #include "attribs.h"
 #include "symbol-summary.h"
 #include "data-streamer.h"
-#include "callback-info.h"
 #include "attr-callback.h"
+#include "callback-info.h"
 
 callback_info_sum_t *callback_info_sum = NULL;
+
+/* Calculates the CI->INVERTED_MAPPING field from CI->ARG_MAPPING.  */
+static void
+invert_arg_mapping (cgraph_edge *e, callback_info *ci)
+{
+  auto &mapping = ci->arg_mapping;
+  auto &inverted_mapping = ci->inverted_mapping;
+  unsigned num = gimple_call_num_args (e->call_stmt);
+  inverted_mapping.reserve (num);
+  for (unsigned i = 0; i < num; i++)
+    inverted_mapping.quick_push (ARG_MAPPING_UNKNOWN_IDX);
+
+  for (unsigned i = 0; i < mapping.length (); i++)
+    if (mapping[i] != ARG_MAPPING_UNKNOWN_IDX)
+      inverted_mapping[mapping[i]] = i;
+}
 
 /* Streams a vector into an output block, in format N ELEM_1 ... ELEM_N*/
 static void
@@ -68,6 +84,7 @@ callback_info::stream_out (lto_simple_output_block *ob) const
 {
   streamer_write_uhwi_stream (ob->main_stream, fn_idx);
   stream_vector_out (ob, arg_mapping);
+  stream_vector_out (ob, inverted_mapping);
   bitpack_d bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, redirected, 1);
   streamer_write_bitpack (&bp);
@@ -79,6 +96,7 @@ callback_info::stream_in (lto_input_block *ib)
 {
   fn_idx = streamer_read_uhwi (ib);
   stream_vector_in (ib, arg_mapping);
+  stream_vector_in (ib, inverted_mapping);
   bitpack_d bp = streamer_read_bitpack (ib);
   redirected = bp_unpack_value (&bp, 1);
 }
@@ -92,10 +110,11 @@ callback_info::get_id () const
 }
 
 void
-callback_info::init (unsigned fn_idx, tree attr)
+callback_info::init (cgraph_edge *e, unsigned fn_idx, tree attr)
 {
   this->fn_idx = fn_idx;
   arg_mapping = callback_get_arg_mapping_from_attr (attr);
+  invert_arg_mapping (e, this);
   redirected = false;
 }
 
@@ -125,5 +144,6 @@ callback_info_sum_t::duplicate (cgraph_edge *, cgraph_edge *,
   /* Might need to be adjusted in the future, if argument modifications are
      implemented.  */
   dst_s->arg_mapping = src_s->arg_mapping.copy ();
+  dst_s->inverted_mapping = src_s->inverted_mapping.copy ();
   dst_s->redirected = src_s->redirected;
 }
