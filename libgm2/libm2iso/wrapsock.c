@@ -77,7 +77,7 @@ extern void m2iso_M2RTS_RegisterModule (const char *modulename, const char *libn
 #include "malloc.h"
 #endif
 
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_SIGNAL_H)
 #include "signal.h"
 #endif
 

@@ -135,7 +135,7 @@ EXPORT(SetTimeRealtime) (void *ts)
 extern "C" struct timespec *
 EXPORT(InitTimespec) (void)
 {
-#if defined(HAVE_STRUCT_TIMESPEC) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_STRUCT_TIMESPEC) && defined(HAVE_STDLIB_H)
   return (struct timespec *)malloc (sizeof (struct timespec));
 #else
   return NULL;
@@ -157,7 +157,7 @@ EXPORT(InitTimespec) (void)
 extern "C" struct timespec *
 EXPORT(KillTimespec) (void *ts)
 {
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_STDLIB_H)
   free (ts);
 #endif
   return NULL;

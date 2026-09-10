@@ -43,6 +43,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "time.h"
 #endif
 
+#if defined(HAVE_STDLIB_H)
+#include <stdlib.h>
+#endif
+
 #if defined(HAVE_MALLOC_H)
 #include "malloc.h"
 #endif
@@ -77,7 +81,7 @@ EXPORT(InitTimeval) (void)
 extern "C" struct timeval *
 EXPORT(KillTimeval) (void *tv)
 {
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_STDLIB_H)
   free (tv);
 #endif
   return NULL;
@@ -85,7 +89,7 @@ EXPORT(KillTimeval) (void *tv)
 
 /* InitTimezone returns a newly created opaque type.  */
 
-#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_STDLIB_H)
 extern "C" struct timezone *
 EXPORT(InitTimezone) (void)
 {
@@ -102,7 +106,7 @@ EXPORT(InitTimezone) (void)
 /* KillTimezone - deallocates the memory associated with an opaque
    type.  */
 
-#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_STRUCT_TM_TM_ZONE) && defined(HAVE_STDLIB_H)
 extern "C" struct timezone *
 EXPORT(KillTimezone) (struct timezone *tv)
 {
@@ -119,7 +123,7 @@ EXPORT(KillTimezone) (void *tv)
 
 /* InitTM - returns a newly created opaque type.  */
 
-#if defined(HAVE_SYS_TIME_H) && defined(HAVE_MALLOC_H)
+#if defined(HAVE_SYS_TIME_H) && defined(HAVE_STDLIB_H)
 extern "C" struct tm *
 EXPORT(InitTM) (void)
 {
@@ -138,7 +142,7 @@ EXPORT(InitTM) (void)
 extern "C" struct tm *
 EXPORT(KillTM) (struct tm *tv)
 {
-#if defined(HAVE_MALLOC_H)
+#if defined(HAVE_STDLIB_H)
   free (tv);
 #endif
   return NULL;
