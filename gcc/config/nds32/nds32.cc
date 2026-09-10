@@ -3837,7 +3837,6 @@ static rtx
 nds32_dwarf_register_span (rtx reg)
 {
   rtx dwarf_high, dwarf_low;
-  rtx dwarf_single;
   machine_mode mode;
   int regno;
 
