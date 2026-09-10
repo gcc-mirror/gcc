@@ -30414,6 +30414,12 @@ type_dependent_expression_p (tree expression)
       || TREE_CODE (expression) == USING_DECL)
     return true;
 
+  /* Most namespaces have void type and so wouldn't be considered
+     dependent, but some (::, std) have no type.  They are still not
+     dependent, though.  */
+  if (TREE_CODE (expression) == NAMESPACE_DECL)
+    return false;
+
   /* A lambda-expression in template context is dependent.  dependent_type_p is
      true for a lambda in the scope of a class or function template, but that
      doesn't cover all template contexts, like a default template argument.  */

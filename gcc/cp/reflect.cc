@@ -9259,7 +9259,7 @@ valid_splice_for_member_access_p (const_tree t, bool decls_only_p/*=true*/)
    splice is used in foo.[: bar :] or foo->[: bar :] context.  TEMPLATE_P is
    true if the splice-expression was preceded by 'template'.  TARGS_P is true
    if there were template arguments.  COMPLAIN_P is true if any errors should
-   be emitted.  Returns true is no problems are found, false otherwise.  */
+   be emitted.  Returns true if no problems are found, false otherwise.  */
 
 bool
 check_splice_expr (location_t loc, location_t start_loc, tree t,
@@ -9484,6 +9484,29 @@ dependent_splice_p (const_tree t)
   return (TREE_CODE (t) == SPLICE_EXPR
 	  || (TREE_CODE (t) == TEMPLATE_ID_EXPR
 	      && TREE_CODE (TREE_OPERAND (t, 0)) == SPLICE_EXPR));
+}
+
+/* Check if SPLICE is a valid namespace splice.  Returns true if no problems
+   are found, false otherwise.  */
+
+bool
+check_namespace_splice (cp_expr splice)
+{
+  if (TREE_CODE (splice) != NAMESPACE_DECL && !dependent_namespace_p (splice))
+    {
+      auto_diagnostic_group d;
+      error_at (splice.get_location (), "expected a reflection of "
+		"a namespace");
+      inform_tree_category (splice);
+      return false;
+    }
+  else if (splice == global_namespace)
+    {
+      error_at (splice.get_location (), "splice of the global namespace "
+		"can only appear in a nested-name-specifier");
+      return false;
+    }
+  return true;
 }
 
 /* Annotation index for mangling.  */

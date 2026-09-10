@@ -24731,7 +24731,15 @@ cp_parser_namespace_alias_definition (cp_parser* parser)
     }
   cp_parser_require (parser, CPP_EQ, RT_EQ);
   if (cp_parser_nth_token_starts_splice_without_nns_p (parser, 1))
-    namespace_specifier = cp_parser_splice_specifier (parser);
+    {
+      cp_expr splice = cp_parser_splice_specifier (parser);
+      /* [namespace.alias]/2: The splice-specifier (if any) shall designate
+	 a namespace that is not the global namespace.  */
+      if (check_namespace_splice (splice))
+	namespace_specifier = splice;
+      else
+	namespace_specifier = error_mark_node;
+    }
   else
     /* Look for the qualified-namespace-specifier.  */
     namespace_specifier = cp_parser_qualified_namespace_specifier (parser);
@@ -25219,8 +25227,18 @@ cp_parser_using_directive (cp_parser* parser)
   cp_parser_require_keyword (parser, RID_USING, RT_USING);
   /* And the `namespace' keyword.  */
   cp_parser_require_keyword (parser, RID_NAMESPACE, RT_NAMESPACE);
+  const location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  bool dep_error = false;
   if (cp_parser_nth_token_starts_splice_without_nns_p (parser, 1))
-    namespace_decl = cp_parser_splice_specifier (parser);
+    {
+      cp_expr splice = cp_parser_splice_specifier (parser);
+      /* [namespace.udir]/1: The splice-specifier (if any) shall designate
+	 a namespace that is not the global namespace.  */
+      if (check_namespace_splice (splice))
+	namespace_decl = splice;
+      else
+	namespace_decl = error_mark_node;
+    }
   else
     {
       /* Look for the optional `::' operator.  */
@@ -25231,8 +25249,26 @@ cp_parser_using_directive (cp_parser* parser)
 					   /*check_dependency_p=*/true,
 					   /*type_p=*/false,
 					   /*is_declaration=*/true);
-      /* Get the namespace being used.  */
-      namespace_decl = cp_parser_namespace_name (parser);
+      if (parser->scope
+	  && parser->scope != error_mark_node
+	  && (dependent_namespace_p (parser->scope)
+	      || (TYPE_P (parser->scope) && dependent_type_p (parser->scope))))
+	{
+	  /* Don't emit the "not a namespace-name" error.  */
+	  cp_parser_identifier (parser);
+	  dep_error = true;
+	}
+      else
+	/* Get the namespace being used.  */
+	namespace_decl = cp_parser_namespace_name (parser);
+    }
+  /* [namespace.udir]/1: The nested-name-specifier, namespace-name, and
+     splice-specifier shall not be dependent.  */
+  if (dep_error || dependent_namespace_p (namespace_decl))
+    {
+      error_at (loc, "dependent namespaces cannot appear in a using "
+		"directive");
+      namespace_decl = error_mark_node;
     }
   cp_warn_deprecated_use_scopes (namespace_decl);
   /* And any specified GNU attributes.  */

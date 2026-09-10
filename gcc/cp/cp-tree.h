@@ -9560,6 +9560,7 @@ extern bool dependent_splice_p (const_tree) ATTRIBUTE_PURE;
 extern tree reflection_mangle_prefix (tree, char [3]);
 extern bool reflection_function_template_p (const_tree) ATTRIBUTE_PURE;
 extern void dump_data_member_spec (pretty_printer *, tree);
+extern bool check_namespace_splice (cp_expr);
 
 /* Inline bodies.  */
 
