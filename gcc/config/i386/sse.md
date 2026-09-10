@@ -12480,7 +12480,8 @@
 	  "  0, 0,Yv, 0,0, v,m, 0 , m")
 	  (match_operand:SF 2 "nonimm_or_0_operand"
 	  " Yr,*x,Yv, jm,jm, m,C,*ym, C")))]
-  "TARGET_SSE4_1 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_SSE4_1
+   && (operands[2] == CONST0_RTX (SFmode) || !MEM_P (operands[1]))"
   "@
    unpcklps\t{%2, %0|%0, %2}
    unpcklps\t{%2, %0|%0, %2}
@@ -12544,7 +12545,7 @@
 	(vec_concat:V2SF
 	  (match_operand:SF 1 "nonimmediate_operand" " 0,m, 0, m")
 	  (match_operand:SF 2 "reg_or_0_operand"     " x,C,*y, C")))]
-  "TARGET_SSE"
+  "TARGET_SSE && !TARGET_SSE4_1"
   "@
    unpcklps\t{%2, %0|%0, %2}
    movss\t{%1, %0|%0, %1}
@@ -22464,7 +22465,8 @@
 	  "  0, 0, x,Yv, 0, 0,Yv,rm,  0,rm")
 	  (match_operand:SI 2 "nonimm_or_0_operand"
 	  "jrjm,jrjm,rm,rm,Yr,*x,Yv, C,*ym, C")))]
-  "TARGET_SSE4_1 && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "TARGET_SSE4_1
+   && (operands[2] == CONST0_RTX (SImode) || !MEM_P (operands[1]))"
   "@
    pinsrd\t{$1, %2, %0|%0, %2, 1}
    pinsrd\t{$1, %2, %0|%0, %2, 1}
@@ -22512,7 +22514,7 @@
 ;; ??? In theory we can match memory for the MMX alternative, but allowing
 ;; nonimmediate_operand for operand 2 and *not* allowing memory for the SSE
 ;; alternatives pretty much forces the MMX alternative to be chosen.
-(define_insn "*vec_concatv2si"
+(define_insn "*vec_concatv2si_sse"
   [(set (match_operand:V2SI 0 "register_operand"     "=x,x ,x,x,*y,*y")
 	(vec_concat:V2SI
 	  (match_operand:SI 1 "nonimmediate_operand" " 0,rm,0,m, 0,rm")
