@@ -3359,24 +3359,6 @@ gomp_init_device (struct gomp_device_descr *devicep)
       gomp_fatal ("device initialization failed");
     }
 
-  /* Now that we have initialized the device, we can evaluate auto USM.
-     If the user has explicitly requested USM, we can just skip the check.  */
-  if (!(devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM))
-    {
-      devicep->capabilities = devicep->get_dev_caps_func (devicep->target_id);
-      if ((gomp_runtime_usm_var == GOMP_RUNTIME_USM_AUTO)
-	   && !(devicep->capabilities & GOMP_OFFLOAD_CAP_AUTO_USM))
-	devicep->capabilities &= ~GOMP_OFFLOAD_CAP_SHARED_MEM;
-      if (gomp_runtime_usm_var == GOMP_RUNTIME_USM_DISABLED)
-	devicep->capabilities &= ~GOMP_OFFLOAD_CAP_SHARED_MEM;
-    }
-  /* Peel off the GOMP_OFFLOAD_CAP_AUTO_USM, if it was set by the plugin, as
-     we no longer need it.  */
-  devicep->capabilities &= ~GOMP_OFFLOAD_CAP_AUTO_USM;
-  /* We can now set the requires mask based on the capabilities.
-     This makes it so the runtime treats it as if the user requested USM.  */
-  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
-    omp_requires_mask |= GOMP_REQUIRES_UNIFIED_SHARED_MEMORY;
   /* Load to device all images registered by the moment.  */
   for (i = 0; i < num_offload_images; i++)
     {
@@ -3390,7 +3372,6 @@ gomp_init_device (struct gomp_device_descr *devicep)
   /* Initialize OpenACC asynchronous queues.  */
   goacc_init_asyncqueues (devicep);
 
-  gomp_debug (0, "capabilities: %d\n", devicep->capabilities);
   devicep->state = GOMP_DEVICE_INITIALIZED;
 }
 
@@ -6747,7 +6728,6 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM_OPT (supported_threads_dim, supported_threads_dim);
   DLSYM_OPT (supported_teams_dim, supported_teams_dim);
   DLSYM (get_caps);
-  DLSYM (get_dev_caps);
   DLSYM (get_type);
   DLSYM (get_num_devices);
   DLSYM (init_device);
@@ -6773,8 +6753,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
       DLSYM (get_interop_str);
       DLSYM (get_interop_type_desc);
     }
-  /* Returns offloading capabilities, but does not say anything about
-     auto USM yet.  */
+
   device->capabilities = device->get_caps_func ();
   device->session.size = 0;
   if (device->capabilities & GOMP_OFFLOAD_CAP_OPENMP_400)
@@ -6942,10 +6921,10 @@ gomp_target_init (void)
 	      {
 		/* Augment DEVICES and NUM_DEVICES.  */
 
-		/* If USM has been requested, set the capability.  */
+		/* If USM has been requested and is supported by all devices
+		   of this type, set the capability accordingly.  */
 		if (omp_requires_mask
-		    & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY
-		       | GOMP_REQUIRES_SELF_MAPS))
+		    & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS))
 		  current_device.capabilities |= GOMP_OFFLOAD_CAP_SHARED_MEM;
 
 		devs = realloc (devs, (num_devs + new_num_devs)

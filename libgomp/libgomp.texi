@@ -4569,7 +4569,6 @@ variable is not set.
 * OMP_WAIT_POLICY::         How waiting threads are handled
 * GOMP_CPU_AFFINITY::       Bind threads to specific CPUs
 * GOMP_DEBUG::              Enable debugging output
-* GOMP_RUNTIME_USM::        Control runtime enabling of Unified Shared Memory
 * GOMP_STACKSIZE::          Set default thread stack size
 * GOMP_SPINCOUNT::          Set the busy-wait spin count
 * GOMP_RTEMS_THREAD_POOLS:: Set the RTEMS specific thread pools
@@ -5196,25 +5195,6 @@ Enable debugging output.  The variable should be set to @code{0}
 
 If enabled, some debugging output is printed during execution.
 This is currently not specified in more detail, and subject to change.
-@end table
-
-
-
-@node GOMP_RUNTIME_USM
-@section @env{GOMP_RUNTIME_USM} -- Control runtime enabling of Unified Shared Memory
-@cindex Environment Variable
-@table @asis
-@item @emph{Description}:
-Control the behavior of automatic Unified Shared Memory (USM) in the runtime.
-The default is @code{disabled}, meaning that Unified Shared Memory will
-only be used if specified by the @code{requires} clause.  The variable
-may also be set to @code{auto}, in which the runtime will decide whether
-or not to use USM based on safety and performance considerations.  More
-specifically, it will only utilize USM if it detects XNACK support and
-an APU.  Lastly, one can set the variable to @code{enabled}, which will
-unconditionally trust the device's self-report.  This can potentially
-cause instability, as some devices report capabilities that they may not
-actually have.
 @end table
 
 

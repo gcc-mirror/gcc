@@ -50,7 +50,6 @@ extern "C" {
 #define GOMP_OFFLOAD_CAP_NATIVE_EXEC	(1 << 1)
 #define GOMP_OFFLOAD_CAP_OPENMP_400	(1 << 2)
 #define GOMP_OFFLOAD_CAP_OPENACC_200	(1 << 3)
-#define GOMP_OFFLOAD_CAP_AUTO_USM	(1 << 4)
 
 /* Type of offload target device.  Keep in sync with include/gomp-constants.h.  */
 enum offload_target_type
@@ -165,7 +164,6 @@ extern int GOMP_OFFLOAD_supported_teams_dim (int, int);
 extern int GOMP_OFFLOAD_supported_threads_dim (int, int);
 
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
-extern unsigned int GOMP_OFFLOAD_get_dev_caps (int);
 extern int GOMP_OFFLOAD_get_type (void);
 extern int GOMP_OFFLOAD_get_num_devices (unsigned int);
 extern bool GOMP_OFFLOAD_init_device (int);

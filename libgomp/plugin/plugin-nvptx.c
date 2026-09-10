@@ -1434,25 +1434,6 @@ GOMP_OFFLOAD_get_caps (void)
   return GOMP_OFFLOAD_CAP_OPENACC_200 | GOMP_OFFLOAD_CAP_OPENMP_400;
 }
 
-/* We duplicate functionality here for consistency, as this function
-   in plugin-gcn.c is for runtime USM.  The gcn function determines
-   the case for auto-usm as well, however, here we only concern
-   ourselves for the enabled and disabled case.  */
-
-unsigned int
-GOMP_OFFLOAD_get_dev_caps (int ord)
-{
-  unsigned int flags = GOMP_OFFLOAD_CAP_OPENACC_200
-		       | GOMP_OFFLOAD_CAP_OPENMP_400;
-  int pi = 0;
-  CUresult r;
-  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-			 CU_DEVICE_ATTRIBUTE_UNIFIED_ADDRESSING, ord);
-  if (r == CUDA_SUCCESS && pi)
-    flags |= GOMP_OFFLOAD_CAP_SHARED_MEM;
-  return flags;
-}
-
 int
 GOMP_OFFLOAD_get_type (void)
 {

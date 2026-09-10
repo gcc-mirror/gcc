@@ -1747,7 +1747,7 @@ get_memory_region (hsa_region_t region, hsa_region_t *retval,
 }
 
 /* Callback of hsa_agent_iterate_regions.
-
+ 
    Selects a kernargs memory region.  */
 
 static hsa_status_t
@@ -2239,7 +2239,7 @@ process_reverse_offload (uint64_t fn, uint64_t mapnum, uint64_t hostaddrs,
    We print all entries from the last item printed to the next entry without
    a "written" flag.  If the "final" flag is set then it'll continue right to
    the end.
-
+ 
    The print buffer is circular, but the from and to locations don't wrap when
    the buffer does, so the output limit is UINT_MAX.  The target blocks on
    output when the buffer is full.  */
@@ -3648,6 +3648,7 @@ gcn_exec (struct kernel_info *kernel, struct gomp_offload_session *session,
 /* }}}  */
 /* {{{ Generic Plugin API  */
 
+#if 0  /* TODO: Use to enable self-mapping/USM automatically.  */
 /* FIXME: The auto-self-map feature depends on still mapping 'declare target'
    variables, even if ignoring all other mappings. Cf. PR 115279.  */
 
@@ -3700,37 +3701,7 @@ is_integrated_apu (struct agent_info *agent, bool check_xnack)
       }
   return is_apu;
 }
-
-static bool
-is_apu_with_xnack (struct agent_info *agent)
-{
-  /* We do not care for non-APU targets, at the moment.
-     If this ever changes, we can just elide the below check.
-
-     Another point is that we are assuming the gfx902 does not
-     incur performance penalties, as it reports USM and XNACK+.
-     If it is later shown that enabling USM by default on this
-     platform incurs performance issues, then we need to add
-     an additional carveout here.  */
-  if (!is_integrated_apu (agent, false))
-    return false;
-  enum {
-    HSACO_ATTR_UNSUPPORTED,
-    HSACO_ATTR_OFF,
-    HSACO_ATTR_ON,
-    HSACO_ATTR_ANY,
-    HSACO_ATTR_DEFAULT
-  };
-
-  switch (agent->device_isa)
-    {
-#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, ...) \
-    case ELF: return (XNACK == HSACO_ATTR_ANY);
-#include "../../gcc/config/gcn/gcn-devices.def"
-    default: return false;
-    }
-  return false;
-}
+#endif
 
 /* Return the name of the accelerator, which is "gcn".  */
 
@@ -3840,25 +3811,6 @@ GOMP_OFFLOAD_get_caps (void)
 	    | GOMP_OFFLOAD_CAP_OPENACC_200;
 }
 
-
-
-unsigned int
-GOMP_OFFLOAD_get_dev_caps (int ord)
-{
-  struct agent_info *agent = get_agent_info (ord);
-  bool claims_usm_p = 0;
-  unsigned int flags = GOMP_OFFLOAD_CAP_OPENMP_400
-		       | GOMP_OFFLOAD_CAP_OPENACC_200;
-  hsa_system_info_t type = HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT;
-  hsa_status_t status = hsa_fns.hsa_system_get_info_fn (type, &claims_usm_p);
-  if (status != HSA_STATUS_SUCCESS)
-    GOMP_PLUGIN_error ("Could not fetch SVM_ACCESSIBLE_BY_DEFAULT");
-  if (claims_usm_p)
-    flags |= GOMP_OFFLOAD_CAP_SHARED_MEM;
-  if (claims_usm_p && is_apu_with_xnack (agent))
-    flags |= GOMP_OFFLOAD_CAP_AUTO_USM;
-  return flags;
-}
 /* Identify as GCN accelerator.  */
 
 int

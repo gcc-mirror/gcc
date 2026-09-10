@@ -494,7 +494,7 @@ enum gomp_device_num
    section 2.3.1.  Those described as having one copy per task are
    stored within the structure; those described as having one copy
    for the whole program are (naturally) global variables.  */
-
+   
 struct gomp_task_icv
 {
   unsigned long nthreads_var;
@@ -590,13 +590,6 @@ enum gomp_target_offload_t
   GOMP_TARGET_OFFLOAD_DISABLED
 };
 
-enum gomp_runtime_usm_t
-{
-  GOMP_RUNTIME_USM_DISABLED,
-  GOMP_RUNTIME_USM_AUTO,
-  GOMP_RUNTIME_USM_ENABLED
-};
-
 #define gomp_supported_active_levels UCHAR_MAX
 
 extern struct gomp_task_icv gomp_global_icv;
@@ -627,7 +620,6 @@ extern const size_t gomp_omp_allocator_data_size;
 extern const struct gomp_default_icv gomp_default_icv_values;
 extern struct gomp_icv_list *gomp_initial_icv_list;
 extern struct gomp_offload_icv_list *gomp_offload_icv_list;
-extern enum gomp_runtime_usm_t gomp_runtime_usm_var;
 extern int goacc_device_num;
 extern char *goacc_device_type;
 extern int goacc_default_dims[GOMP_DIM_MAX];
@@ -1404,7 +1396,7 @@ typedef struct acc_dispatch_t
   __typeof (GOMP_OFFLOAD_openacc_create_thread_data) *create_thread_data_func;
   __typeof (GOMP_OFFLOAD_openacc_destroy_thread_data)
     *destroy_thread_data_func;
-
+  
   struct {
     /* Once created and put into the "active" list, asyncqueues are then never
        destructed and removed from the "active" list, other than if the TODO
@@ -1477,7 +1469,6 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_supported_teams_dim) *supported_teams_dim_func;
   __typeof (GOMP_OFFLOAD_supported_threads_dim) *supported_threads_dim_func;
   __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
-  __typeof (GOMP_OFFLOAD_get_dev_caps) *get_dev_caps_func;
   __typeof (GOMP_OFFLOAD_get_type) *get_type_func;
   __typeof (GOMP_OFFLOAD_get_num_devices) *get_num_devices_func;
   __typeof (GOMP_OFFLOAD_init_device) *init_device_func;
