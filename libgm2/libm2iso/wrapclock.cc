@@ -86,12 +86,23 @@ typedef long long int longint_t;
 extern "C" int
 EXPORT(GetTimeRealtime) (struct timespec *ts)
 {
-  timespec tp;
 #if defined(_GLIBCXX_USE_CLOCK_GETTIME_SYSCALL)
   return syscall (SYS_clock_gettime, CLOCK_REALTIME, ts);
 #else
   return clock_gettime (CLOCK_REALTIME, ts);
 #endif
+}
+
+#elif defined(HAVE_STRUCT_TIMESPEC) && defined(HAVE_GETTIMEOFDAY)
+extern "C" int
+EXPORT(GetTimeRealtime) (struct timespec *ts)
+{
+  struct timeval tv;
+  if (gettimeofday (&tv, NULL) != 0)
+    return -1;
+  ts->tv_sec = tv.tv_sec;
+  ts->tv_nsec = ((long) tv.tv_usec) * 1000;
+  return 0;
 }
 
 #else
