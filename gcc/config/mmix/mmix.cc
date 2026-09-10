@@ -595,7 +595,6 @@ mmix_setup_frame_addresses (void)
 int
 mmix_initial_elimination_offset (int fromreg, int toreg)
 {
-  int regno;
   int fp_sp_offset
     = (get_frame_size () + crtl->outgoing_args_size + 7) & ~7;
 
@@ -629,7 +628,7 @@ mmix_initial_elimination_offset (int fromreg, int toreg)
      We have to do alignment here; get_frame_size will not return a
      multiple of STACK_BOUNDARY.  FIXME: Add note in manual.  */
 
-  for (regno = MMIX_FIRST_GLOBAL_REGNUM;
+  for (unsigned int regno = MMIX_FIRST_GLOBAL_REGNUM;
        regno <= 255;
        regno++)
     if ((df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
@@ -832,7 +831,7 @@ mmix_function_value_regno_p (const unsigned int regno)
 
 /* EH_RETURN_DATA_REGNO. */
 
-int
+unsigned int
 mmix_eh_return_data_regno (int n)
 {
   if (n >= 0 && n < 4)
@@ -2017,8 +2016,6 @@ mmix_get_hard_reg_initial_val (machine_mode mode, int regno)
 int
 mmix_use_simple_return (void)
 {
-  int regno;
-
   int stack_space_to_allocate
     = (crtl->outgoing_args_size
        + crtl->args.pretend_args_size
@@ -2027,7 +2024,7 @@ mmix_use_simple_return (void)
   if (!TARGET_USE_RETURN_INSN || !reload_completed)
     return 0;
 
-  for (regno = 255;
+  for (unsigned int regno = 255;
        regno >= MMIX_FIRST_GLOBAL_REGNUM;
        regno--)
     /* Note that we assume that the frame-pointer-register is one of these
@@ -2055,7 +2052,6 @@ void
 mmix_expand_prologue (void)
 {
   HOST_WIDE_INT locals_size = get_frame_size ();
-  int regno;
   HOST_WIDE_INT stack_space_to_allocate
     = (crtl->outgoing_args_size
        + crtl->args.pretend_args_size
@@ -2064,7 +2060,7 @@ mmix_expand_prologue (void)
   HOST_WIDE_INT total_allocated_stack_space = 0;
 
   /* Add room needed to save global non-register-stack registers.  */
-  for (regno = 255;
+  for (unsigned int regno = 255;
        regno >= MMIX_FIRST_GLOBAL_REGNUM;
        regno--)
     /* Note that we assume that the frame-pointer-register is one of these
@@ -2099,7 +2095,7 @@ mmix_expand_prologue (void)
 	   + (MMIX_MAX_ARGS_IN_REGS
 	      - crtl->args.pretend_args_size / 8));
 
-      for (regno
+      for (int regno
 	     = MMIX_FIRST_INCOMING_ARG_REGNUM + MMIX_MAX_ARGS_IN_REGS - 1;
 	   regno >= mmix_first_vararg_reg;
 	   regno--)
@@ -2257,7 +2253,7 @@ mmix_expand_prologue (void)
      It is assumed that the frame-pointer is one of these registers, so it
      is explicitly excluded in the count.  */
 
-  for (regno = 255;
+  for (unsigned regno = 255;
        regno >= MMIX_FIRST_GLOBAL_REGNUM;
        regno--)
     if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
@@ -2308,7 +2304,6 @@ void
 mmix_expand_epilogue (void)
 {
   HOST_WIDE_INT locals_size = get_frame_size ();
-  int regno;
   HOST_WIDE_INT stack_space_to_deallocate
     = (crtl->outgoing_args_size
        + crtl->args.pretend_args_size
@@ -2320,7 +2315,7 @@ mmix_expand_epilogue (void)
   /* Add the space for global non-register-stack registers.
      It is assumed that the frame-pointer register can be one of these
      registers, in which case it is excluded from the count when needed.  */
-  for (regno = 255;
+  for (unsigned int regno = 255;
        regno >= MMIX_FIRST_GLOBAL_REGNUM;
        regno--)
     if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)
@@ -2349,7 +2344,7 @@ mmix_expand_epilogue (void)
      First, we restore all registers that are global, i.e. not saved by
      the register file machinery.  */
 
-  for (regno = MMIX_FIRST_GLOBAL_REGNUM;
+  for (unsigned regno = MMIX_FIRST_GLOBAL_REGNUM;
        regno <= 255;
        regno++)
     if (((regno != MMIX_FRAME_POINTER_REGNUM || !frame_pointer_needed)

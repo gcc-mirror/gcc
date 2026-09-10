@@ -19,7 +19,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 extern void mmix_init_expanders (void);
-extern int mmix_eh_return_data_regno (int);
+extern unsigned int mmix_eh_return_data_regno (int);
 extern int mmix_initial_elimination_offset (int, int);
 extern int mmix_function_arg_regno_p (int, int);
 extern void mmix_function_profiler (FILE *, int);
