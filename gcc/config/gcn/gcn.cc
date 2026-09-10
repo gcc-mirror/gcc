@@ -2999,7 +2999,7 @@ gcn_init_cumulative_args (CUMULATIVE_ARGS *cum /* Argument info to init */ ,
     {
       warning_at (UNKNOWN_LOCATION, 0,
 		  "Unified Shared Memory is required, but XNACK is disabled");
-      inform (UNKNOWN_LOCATION, "Try -foffload-options=-mxnack=any");
+      inform (UNKNOWN_LOCATION, "try %<-foffload-options=-mxnack=any%>");
       warned_xnack = 1;
     }
 
