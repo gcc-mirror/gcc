@@ -400,10 +400,12 @@ namespace __debug
 	constexpr iterator
 	emplace(const_iterator __position, _Args&&... __args)
 	{
-	  if (std::is_constant_evaluated())
-	    return iterator(_Base::emplace(__position.base(),
-					   std::forward<_Args>(__args)...),
-			    this);
+	  if consteval
+	    {
+	      return iterator(_Base::emplace(__position.base(),
+					     std::forward<_Args>(__args)...),
+			      this);
+	    }
 
 	  __glibcxx_check_insert(__position);
 	  const difference_type __offset = __position.base() - _Base::cbegin();
@@ -424,10 +426,12 @@ namespace __debug
       constexpr iterator
       insert(const_iterator __position, size_type __n, const _Tp& __x)
       {
-	if (std::is_constant_evaluated())
-	  return iterator(_Base::insert(__position.base(), __n, __x), this);
+	if consteval
+	  {
+	    return iterator(_Base::insert(__position.base(), __n, __x), this);
+	  }
 
-	  __glibcxx_check_insert(__position);
+	__glibcxx_check_insert(__position);
 	const difference_type __offset = __position.base() - _Base::cbegin();
 	_Base_iterator __res = _Base::insert(__position.base(), __n, __x);
 	_M_invalidate_after_nth(__offset);
@@ -439,10 +443,13 @@ namespace __debug
 	insert(const_iterator __position, _InputIterator __first,
 	       _InputIterator __last)
 	{
-	  if (std::is_constant_evaluated())
-	    return iterator(_Base::insert(__position.base(),
-					  __gnu_debug::__unsafe(__first),
-					  __gnu_debug::__unsafe(__last)), this);
+	  if consteval
+	    {
+	      return iterator(_Base::insert(__position.base(),
+					    __gnu_debug::__unsafe(__first),
+					    __gnu_debug::__unsafe(__last)),
+			      this);
+	    }
 
 	  typename __gnu_debug::_Distance_traits<_InputIterator>::__type __dist;
 	  __glibcxx_check_insert_range(__position, __first, __last, __dist);
@@ -476,8 +483,10 @@ namespace __debug
       constexpr iterator
       insert(const_iterator __position, initializer_list<_Tp> __il)
       {
-	if (std::is_constant_evaluated())
-	  return iterator(_Base::insert(__position.base(), __il), this);
+	if consteval
+	  {
+	    return iterator(_Base::insert(__position.base(), __il), this);
+	  }
 
 	__glibcxx_check_insert(__position);
 	const auto __size = size();
@@ -491,8 +500,10 @@ namespace __debug
       constexpr iterator
       erase(const_iterator __position)
       {
-	if (std::is_constant_evaluated())
-	  return iterator(_Base::erase(__position.base()), this);
+	if consteval
+	  {
+	    return iterator(_Base::erase(__position.base()), this);
+	  }
 
 	__glibcxx_check_erase(__position);
 	difference_type __offset = __position.base() - _Base::cbegin();
@@ -504,9 +515,11 @@ namespace __debug
       constexpr iterator
       erase(const_iterator __first, const_iterator __last)
       {
-	if (std::is_constant_evaluated())
-	  return iterator(_Base::erase(__first.base(), __last.base()),
-			  this);
+	if consteval
+	  {
+	    return iterator(_Base::erase(__first.base(), __last.base()),
+			    this);
+	  }
 
 	__glibcxx_check_erase_range(__first, __last);
 
