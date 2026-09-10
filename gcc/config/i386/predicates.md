@@ -1568,6 +1568,17 @@
        (and (match_test "TARGET_AVX")
 	    (match_code "ge,gt,uneq,unle,unlt,ltgt"))))
 
+;; SSE2 doesn't have quiet vector compare for UNLT/UNLE/UNGT/UNGE, so reject
+;; them in the packed FP vec_cmp expanders when trapping math is in effect
+;; and NaNs are honored
+
+(define_predicate "ix86_fp_vec_cmp_operator"
+  (and (match_operand 0 "comparison_operator")
+       (ior (not (match_code "unlt,unle,ungt,unge"))
+	    (match_test "TARGET_AVX")
+	    (not (match_test "flag_trapping_math"))
+	    (not (match_test "HONOR_NANS (GET_MODE (XEXP (op, 0)))")))))
+
 (define_predicate "ix86_comparison_int_operator"
   (match_code "ne,eq,ge,gt,le,lt"))
 

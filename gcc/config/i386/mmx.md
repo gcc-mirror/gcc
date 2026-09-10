@@ -1254,7 +1254,7 @@
 
 (define_expand "vec_cmpv2sfv2si"
   [(set (match_operand:V2SI 0 "register_operand")
-	(match_operator:V2SI 1 ""
+	(match_operator:V2SI 1 "ix86_fp_vec_cmp_operator"
 	  [(match_operand:V2SF 2 "nonimmediate_operand")
 	   (match_operand:V2SF 3 "nonimmediate_operand")]))]
   "TARGET_MMX_WITH_SSE && ix86_partial_vec_fp_math"

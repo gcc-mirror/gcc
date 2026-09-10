@@ -4803,15 +4803,15 @@ ix86_fp_cmp_code_to_pcmp_immediate (enum rtx_code code)
     case LT:
       return 0x01;
     case UNLE:
-      return 0x0a;
+      return 0x1a;
     case UNLT:
-      return 0x09;
+      return 0x19;
     case UNGE:
-      return 0x05;
+      return 0x15;
     case UNGT:
-      return 0x06;
+      return 0x16;
     case UNEQ:
-      return 0x18;
+      return 0x08;
     case LTGT:
       return 0x0c;
     case ORDERED:

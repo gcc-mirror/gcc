@@ -5431,7 +5431,7 @@
 
 (define_expand "vec_cmp<mode><sseintvecmodelower>"
   [(set (match_operand:<sseintvecmode> 0 "register_operand")
-	(match_operator:<sseintvecmode> 1 ""
+	(match_operator:<sseintvecmode> 1 "ix86_fp_vec_cmp_operator"
 	  [(match_operand:VF_128 2 "register_operand")
 	   (match_operand:VF_128 3 "vector_operand")]))]
   "TARGET_SSE"
