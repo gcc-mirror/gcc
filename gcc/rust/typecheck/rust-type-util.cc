@@ -79,26 +79,28 @@ query_type (HirId reference, TyTy::BaseType **result)
       bool is_local = item_defid.crateNum == mappings.get_current_crate ();
       bool is_fn
 	= item.value ()->get_item_kind () == HIR::Item::ItemKind::Function;
-      if (!context->const_context_p ())
+      bool is_const_fn = false;
+      if (is_fn)
 	{
-	  if (is_fn && is_local)
-	    {
-	      HIR::Function &fn = *static_cast<HIR::Function *> (item.value ());
-	      *result = TypeCheckItem::ResolveFunctionSignature (fn);
-	    }
-	  else if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Trait
-		   && is_local)
-	    {
-	      HIR::Trait &trait = *static_cast<HIR::Trait *> (item.value ());
-	      *result = TypeCheckItem::ResolveTraitSignature (trait);
-	    }
-	  else
-	    *result = TypeCheckItem::Resolve (*item.value ());
+	  auto &fn = *static_cast<HIR::Function *> (item.value ());
+	  is_const_fn = fn.get_qualifiers ().is_const ();
+	}
+
+      bool needs_full_resolve_for_const
+	= is_fn && context->const_context_p () && is_const_fn;
+      if (is_fn && is_local && !needs_full_resolve_for_const)
+	{
+	  HIR::Function &fn = *static_cast<HIR::Function *> (item.value ());
+	  *result = TypeCheckItem::ResolveFunctionSignature (fn);
+	}
+      else if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Trait
+	       && is_local && !context->const_context_p ())
+	{
+	  HIR::Trait &trait = *static_cast<HIR::Trait *> (item.value ());
+	  *result = TypeCheckItem::ResolveTraitSignature (trait);
 	}
       else
-	{
-	  *result = TypeCheckItem::Resolve (*item.value ());
-	}
+	*result = TypeCheckItem::Resolve (*item.value ());
 
       context->query_completed (reference);
       return true;
@@ -163,8 +165,18 @@ query_type (HirId reference, TyTy::BaseType **result)
 
       DefId item_defid = impl_item->first->get_impl_mappings ().get_defid ();
       bool is_local = item_defid.crateNum == mappings.get_current_crate ();
-      if (impl_item->first->get_impl_item_type () == HIR::ImplItem::FUNCTION
-	  && is_local && !context->const_context_p ())
+      bool is_fn
+	= impl_item->first->get_impl_item_type () == HIR::ImplItem::FUNCTION;
+      bool is_const_fn = false;
+      if (is_fn)
+	{
+	  auto &fn = *static_cast<HIR::Function *> (impl_item->first);
+	  is_const_fn = fn.get_qualifiers ().is_const ();
+	}
+
+      bool needs_full_resolve_for_const
+	= is_fn && context->const_context_p () && is_const_fn;
+      if (is_fn && is_local && !needs_full_resolve_for_const)
 	{
 	  HIR::Function &fn = *static_cast<HIR::Function *> (impl_item->first);
 	  *result = TypeCheckImplItem::ResolveFunctionSignature (
