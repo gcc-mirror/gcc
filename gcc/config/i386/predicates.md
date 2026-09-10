@@ -2047,6 +2047,30 @@
   return true;
 })
 
+;; Return true if OP is a parallel for an insertps vec_select,
+;; where one of the two operands of the vec_concat is const0_operand.
+(define_predicate "insertps_parallel"
+  (and (match_code "parallel")
+       (match_code "const_int" "a"))
+{
+  int i;
+
+  if (XVECLEN (op, 0) != 4)
+    return false;
+
+  /* One element in [0..3], and the other 3 in [4..7].  */
+  bool found = false;
+  for (i = 0; i < 4; ++i)
+    if (INTVAL (XVECEXP (op, 0, i)) < 4)
+      {
+	if (found)
+	  return false;
+	found = true;
+      }
+
+  return found;
+})
+
 ;; Return true if OP is a const vector with duplicate value.
 (define_predicate "const_vector_duplicate_operand"
   (match_code "const_vector")
