@@ -62,24 +62,41 @@ class back_threader_profitability
 {
 public:
   back_threader_profitability (bool speed_p, gimple *stmt);
+  void push_bb (const vec<basic_block> &);
+  void pop_bb ();
   bool possibly_profitable_path_p (const vec<basic_block> &, bool *);
   bool profitable_path_p (const vec<basic_block> &,
 			  edge taken, bool *irreducible_loop);
 private:
-  void account_bb (basic_block, bool);
+  int account_bb (basic_block, bool);
+  // Number of insns on the path, less the branch we get to remove.
+  int net_insns () const { return m_stats.n_insns - m_exit_jump_benefit; }
   const bool m_speed_p;
   int m_exit_jump_benefit;
   bool m_threaded_multiway_branch;
-  // The following are computed by possibly_profitable_path_p
+  // The loop the path starts in, i.e. m_path[0]->loop_father.
+  class loop *m_loop;
+  // The following are accumulated by push_bb as the path grows and
+  // restored by pop_bb as it shrinks.
   struct path_stats
   {
+    int n_insns;
     bool threaded_through_latch;
     bool multiway_branch_in_path;
     bool contains_hot_bb;
     bool unprofitable_bb;
   };
   path_stats m_stats;
-  int m_n_insns;
+  // One entry per push.  These are the stats as they stood before that push,
+  // and the insns of the block.  Basically the entry pushed for m_path[i]
+  // accounts m_path[i - 1].
+  struct unwind_state
+  {
+    path_stats stats;
+    // Unused here; read by the per-block insn dump later in this series.
+    int bb_insns;
+  };
+  auto_vec<unwind_state, 20> m_unwind;
 };
 
 back_threader_profitability::back_threader_profitability (bool speed_p,
@@ -92,15 +109,20 @@ back_threader_profitability::back_threader_profitability (bool speed_p,
   // particular it estimates further DCE from eliminating the exit
   // control stmt.
   m_exit_jump_benefit = estimate_num_insns (last, &eni_size_weights);
+  m_loop = NULL;
+  m_stats = path_stats ();
 }
 
 /* Account for BB in the cumulative stats for the path being threaded.
    CHECK_MULTIWAY is true for all blocks except the block whose branch
-   we are going to eliminate.  */
+   we are going to eliminate.  Return the number of insns in BB, which
+   PUSH_BB records so the dump can print a per-block count.  */
 
-void
+int
 back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
 {
+  int n_insns = 0;
+
   if (!m_stats.contains_hot_bb && m_speed_p)
     m_stats.contains_hot_bb |= optimize_bb_for_speed_p (bb);
 
@@ -117,12 +139,12 @@ back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
 	  || gimple_call_builtin_p (stmt, BUILT_IN_CONSTANT_P))
 	{
 	  m_stats.unprofitable_bb = true;
-	  return;
+	  return n_insns;
 	}
       /* Do not count empty statements and labels.  */
       if (gimple_code (stmt) != GIMPLE_NOP
 	  && !is_gimple_debug (stmt))
-	m_n_insns += estimate_num_insns (stmt, &eni_size_weights);
+	n_insns += estimate_num_insns (stmt, &eni_size_weights);
     }
 
   /* We do not look at the block with the threaded branch in this loop.
@@ -136,6 +158,42 @@ back_threader_profitability::account_bb (basic_block bb, bool check_multiway)
 	      || gimple_code (last) == GIMPLE_GOTO))
 	m_stats.multiway_branch_in_path = true;
     }
+
+  return n_insns;
+}
+
+/* Update the stats after a block has been appended to PATH.  */
+
+void
+back_threader_profitability::push_bb (const vec<basic_block> &path)
+{
+  unwind_state state = { m_stats, /*bb_insns=*/0 };
+
+  unsigned n = path.length ();
+  if (n == 1)
+    m_loop = path[0]->loop_father;
+  else
+    {
+      /* Appending a block makes the previous entry block part of the copied
+	 path, so that's where to account for now.  */
+      unsigned copied = n - 2;
+      bool check_multiway = copied > 0;
+      state.bb_insns = account_bb (path[copied], check_multiway);
+      m_stats.n_insns += state.bb_insns;
+    }
+  m_unwind.safe_push (state);
+
+  /* Note if we thread through the latch, we will want to include the
+     last entry in the array when determining if we thread through the
+     loop latch.  */
+  if (m_loop->latch == path[n - 1])
+    m_stats.threaded_through_latch = true;
+}
+
+void
+back_threader_profitability::pop_bb ()
+{
+  m_stats = m_unwind.pop ().stats;
 }
 
 // Back threader flags.
@@ -442,6 +500,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
   bb->flags |= m_visited_flag;
 
   m_path.safe_push (bb);
+  profit.push_bb (m_path);
 
   // Try to resolve the path without looking back.  Avoid resolving paths
   // we know are large but are not (yet) recognized as Finite State Machine.
@@ -578,6 +637,7 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 	     param_max_jump_thread_paths);
 
   // Reset things to their original state.
+  profit.pop_bb ();
   m_path.pop ();
   bb->flags &= ~m_visited_flag;
 }
@@ -686,42 +746,10 @@ back_threader_profitability::possibly_profitable_path_p
   if (m_path.length () <= 1)
       return false;
 
-  loop_p loop = m_path[0]->loop_father;
+  loop_p loop = m_loop;
 
-  // We recompute the following, when we rewrite possibly_profitable_path_p
-  // to work incrementally on added BBs we have to unwind them on backtracking
-  m_n_insns = 0;
-  m_stats = path_stats ();
-
-  /* Count the number of instructions on the path: as these instructions
-     will have to be duplicated, we will not record the path if there
-     are too many instructions on the path.  Also check that all the
-     blocks in the path belong to a single loop.  */
-  for (unsigned j = 0; j < m_path.length (); j++)
-    {
-      basic_block bb = m_path[j];
-
-      /* Remember, blocks in the path are stored in opposite order in
-	 the PATH array.  The last entry in the array represents the
-	 block with an outgoing edge that we will redirect to the jump
-	 threading path.  Thus we don't care how many statements are
-	 in that block because it will not be copied or whether or not
-	 it ends in a multiway branch.  */
-      if (j < m_path.length () - 1)
-	{
-	  /* The block in PATH[0] is special, it's the block were we're
-	     going to be able to eliminate its branch.  */
-	  account_bb (bb, /*check_multiway=*/j > 0);
-	  if (m_stats.unprofitable_bb)
-	    return false;
-	}
-
-      /* Note if we thread through the latch, we will want to include
-	 the last entry in the array when determining if we thread
-	 through the loop latch.  */
-      if (loop->latch == bb)
-	m_stats.threaded_through_latch = true;
-    }
+  if (m_stats.unprofitable_bb)
+    return false;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -732,17 +760,10 @@ back_threader_profitability::possibly_profitable_path_p
 	  if (loop->latch == m_path[j])
 	    fprintf (dump_file, " (latch)");
 	}
+      fprintf (dump_file, "\n  Control statement insns: %i\n"
+	       "  Overall: %i insns\n",
+	       m_exit_jump_benefit, net_insns ());
     }
-
-  /* We are going to remove the control statement at the end of the
-     last block in the threading path.  So don't count it against our
-     statement count.  */
-  m_n_insns -= m_exit_jump_benefit;
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\n  Control statement insns: %i\n"
-	     "  Overall: %i insns\n",
-	     m_exit_jump_benefit, m_n_insns);
 
   /* Threading is profitable if the path duplicated is hot but also
      in a case we separate cold path from hot path and permit optimization
@@ -750,7 +771,7 @@ back_threader_profitability::possibly_profitable_path_p
      as in PR 78407 this leads to noticeable improvements.  */
   if (m_speed_p)
     {
-      if (m_n_insns >= param_max_fsm_thread_path_insns)
+      if (net_insns () >= param_max_fsm_thread_path_insns)
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
@@ -768,12 +789,12 @@ back_threader_profitability::possibly_profitable_path_p
 	  return false;
 	}
     }
-  else if (m_n_insns > 1)
+  else if (net_insns () > 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
 		 "duplication of %i insns is needed and optimizing for size.\n",
-		 m_n_insns);
+		 net_insns ());
       return false;
     }
 
@@ -786,7 +807,7 @@ back_threader_profitability::possibly_profitable_path_p
   if ((!m_threaded_multiway_branch
        || !loop->latch
        || loop->latch->index == EXIT_BLOCK)
-      && (m_n_insns * param_fsm_scale_path_stmts
+      && (net_insns () * param_fsm_scale_path_stmts
 	  >= param_max_jump_thread_duplication_stmts))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -797,7 +818,7 @@ back_threader_profitability::possibly_profitable_path_p
     }
   *large_non_fsm = (!(m_stats.threaded_through_latch
 		      && m_threaded_multiway_branch)
-		    && (m_n_insns * param_fsm_scale_path_stmts
+		    && (net_insns () * param_fsm_scale_path_stmts
 			>= param_max_jump_thread_duplication_stmts));
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -853,12 +874,12 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
 	  return false;
 	}
     }
-  else if (m_n_insns > 1)
+  else if (net_insns () > 1)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "  FAIL: Jump-thread path not considered: "
 		 "duplication of %i insns is needed and optimizing for size.\n",
-		 m_n_insns);
+		 net_insns ());
       return false;
     }
 
@@ -871,7 +892,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
   if (!m_threaded_multiway_branch
       && *creates_irreducible_loop
       && (!(cfun->curr_properties & PROP_loop_opts_done)
-	  || (m_n_insns * param_fsm_scale_path_stmts
+	  || (net_insns () * param_fsm_scale_path_stmts
 	      >= param_max_jump_thread_duplication_stmts)))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -887,7 +908,7 @@ back_threader_profitability::profitable_path_p (const vec<basic_block> &m_path,
      case, drastically reduce the number of statements we are allowed
      to copy.  */
   if (!(m_stats.threaded_through_latch && m_threaded_multiway_branch)
-      && (m_n_insns * param_fsm_scale_path_stmts
+      && (net_insns () * param_fsm_scale_path_stmts
 	  >= param_max_jump_thread_duplication_stmts))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
