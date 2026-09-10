@@ -6159,9 +6159,8 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
 	  bool optional = fsym->attr.optional;
 	  fsym->attr.optional = 0;
 	  gfc_conv_subref_array_arg (&se, e, false, fsym->attr.intent,
-				     fsym->attr.pointer, fsym,
-				     fsym->ns->proc_name->name, NULL,
-				     /* check_contiguous= */ true);
+				     false, fsym, fsym->ns->proc_name->name,
+				     NULL, /* check_contiguous= */ true);
 	  fsym->attr.optional = optional;
 	}
       else
@@ -8307,8 +8306,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		  bool whole_span = is_whole_span_addressed_dummy (e);
 		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
 				fsym ? fsym->attr.intent : INTENT_INOUT,
-				fsym && fsym->attr.pointer, fsym, sym->name,
-				NULL, whole_span, false,
+				false, fsym, sym->name, NULL, whole_span, false,
 				whole_span
 				&& dummy_accepts_strided_arg (fsym,
 							      nodesc_arg));
@@ -8331,8 +8329,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		   is converted to a temporary, which is passed and then
 		   written back after the procedure call.  */
 		gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
-					   fsym->attr.intent,
-					   fsym->attr.pointer);
+					   fsym->attr.intent, false);
 
 	      else if (gfc_is_class_array_function (e)
 		       && fsym && fsym->ts.type == BT_DERIVED
@@ -8343,7 +8340,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		{
 		  e->must_finalize = 1;
 		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
-					     INTENT_IN, fsym->attr.pointer);
+					     INTENT_IN, false);
 		}
 	      else if (fsym && fsym->attr.contiguous
 		       && (fsym->attr.target
@@ -8353,8 +8350,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		       && e->rank != -1)
 		{
 		  gfc_conv_subref_array_arg (&parmse, e, nodesc_arg,
-					     fsym->attr.intent,
-					     fsym->attr.pointer);
+					     fsym->attr.intent, false);
 		}
 	      else
 		{

@@ -2064,8 +2064,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_se init;
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (sym->backend_decl)));
       gfc_init_se (&init, NULL);
-      gfc_conv_subref_array_arg (&init, e, false, INTENT_INOUT,
-				 sym && sym->attr.pointer);
+      gfc_conv_subref_array_arg (&init, e, false, INTENT_INOUT, false);
       init.expr = build_fold_indirect_ref_loc (input_location, init.expr);
       gfc_add_modify (&init.pre, sym->backend_decl, init.expr);
       gfc_add_init_cleanup (block, gfc_finish_block (&init.pre),
