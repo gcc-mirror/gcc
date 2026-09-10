@@ -1184,6 +1184,18 @@ public:
   const char *tcc;
 };
 
+/* Helper for easy comparing ID with tree code CODE.  */
+
+static bool
+operator==(id_base &id, enum tree_code code)
+{
+  if (operator_id *oid = dyn_cast <operator_id *> (&id))
+    return oid->code == code;
+  return false;
+}
+
+/* Lookup the identifier ID.  Allow "null" if ALLOW_NULL.  */
+
 /* Identifier that maps to a builtin or internal function code.  */
 
 class fn_id : public id_base
@@ -1276,7 +1288,7 @@ c_code_id::gen_checking (FILE *f, int indent)
     {
       if (t == 0)
 	fprint_indent (f, indent);
-      if (*id == CONVERT_EXPR || *id == NOP_EXPR)
+      if (*i == CONVERT_EXPR || *i == NOP_EXPR)
 	fprintf (f, "CASE_CONVERT:");
       else
 	fprintf (f, "case %s:", i->id);
@@ -1485,18 +1497,6 @@ add_function (T code, const char *id)
     fatal ("duplicate id definition");
   *slot = fn;
 }
-
-/* Helper for easy comparing ID with tree code CODE.  */
-
-static bool
-operator==(id_base &id, enum tree_code code)
-{
-  if (operator_id *oid = dyn_cast <operator_id *> (&id))
-    return oid->code == code;
-  return false;
-}
-
-/* Lookup the identifier ID.  Allow "null" if ALLOW_NULL.  */
 
 id_base *
 get_operator (const char *id, bool allow_null = false)
