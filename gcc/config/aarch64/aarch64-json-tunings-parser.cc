@@ -634,7 +634,7 @@ test_json_integers ()
 	}
     })json";
 
-  tune_params params;
+  tune_params params{};
 
   aarch64_load_tuning_params_from_json_string
     ("test.json", test_json, schema_json, &params);
@@ -661,7 +661,7 @@ test_json_boolean ()
 
   static const cpu_cost_table default_cost_table = {};
 
-  tune_params params;
+  tune_params params{};
   params.insn_extra_cost = &default_cost_table;
 
   aarch64_load_tuning_params_from_json_string
@@ -684,7 +684,7 @@ test_json_strings ()
 	}
     })json";
 
-  tune_params params;
+  tune_params params{};
 
   aarch64_load_tuning_params_from_json_string
     ("test.json", test_json, schema_json, &params);
@@ -708,7 +708,7 @@ test_json_enums ()
 	}
     })json";
 
-  tune_params params;
+  tune_params params{};
 
   aarch64_load_tuning_params_from_json_string
     ("test.json", test_json, schema_json, &params);
