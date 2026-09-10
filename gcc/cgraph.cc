@@ -934,7 +934,7 @@ cgraph_node::get_edge (gimple *call_stmt)
      comes to callback edges, a call statement might have multiple callback
      edges attached to it.  These can be easily obtained from the carrying edge
      instead.  */
-  if (e && e->callback)
+  if (e && e->callback_with_carrying_edge_p ())
     e = e->get_callback_carrying_edge ();
 
   if (n > 100)
@@ -1012,7 +1012,8 @@ cgraph_edge::set_call_stmt (cgraph_edge *e, gcall *new_stmt,
 
   /* When updating a callback or a callback-carrying edge, update every edge
      involved.  */
-  if (update_derived_edges && (e->callback || e->has_callback))
+  if (update_derived_edges
+      && (e->callback_with_carrying_edge_p () || e->has_callback))
     {
       cgraph_edge *current, *next, *carrying;
       carrying = e->has_callback ? e : e->get_callback_carrying_edge ();
@@ -1404,6 +1405,14 @@ cgraph_edge::get_callback_carrying_edge ()
 	break;
     }
   return e;
+}
+
+/* Returns TRUE iff THIS is a callback edge with a carrying edge.  */
+bool
+cgraph_edge::callback_with_carrying_edge_p () const
+{
+  /* Callback edges are always direct, i.e. callee != NULL.  */
+  return callback && !callee->assume_function;
 }
 
 /* Returns the first callback edge in the list of callees of the caller node.
@@ -1851,7 +1860,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
   /* When redirecting a callback edge, all we need to do is replace
      the original address with the address of the function we are
      redirecting to.  */
-  if (e->callback)
+  if (e->callback_with_carrying_edge_p ())
     {
       cgraph_edge *carrying = e->get_callback_carrying_edge ();
       if (!callback_is_special_cased (carrying->callee->decl, e->call_stmt)

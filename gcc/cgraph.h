@@ -1941,6 +1941,9 @@ public:
      this method is caled on.  */
   cgraph_edge *get_callback_carrying_edge ();
 
+  /* Returns TRUE iff THIS is a callback edge with a carrying edge.  */
+  bool callback_with_carrying_edge_p () const;
+
   /* Returns the first callback edge in the list of callees of the caller node.
      Note that the edges might be in arbitrary order.  Must be called on a
      callback or callback-carrying edge.  */
