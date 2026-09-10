@@ -1837,6 +1837,17 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
       || decl == e->callee->decl)
     return e->call_stmt;
 
+  clone_info *callee_info = clone_info::get (e->callee);
+  if (symtab->dump_file)
+    {
+      fprintf (symtab->dump_file,
+	       "updating call of %s -> %s: ", e->caller->dump_name (),
+	       e->callee->dump_name ());
+      print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
+      if (callee_info && callee_info->param_adjustments)
+	callee_info->param_adjustments->dump (symtab->dump_file);
+    }
+
   /* When redirecting a callback edge, all we need to do is replace
      the original address with the address of the function we are
      redirecting to.  */
@@ -1874,16 +1885,6 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
 	  clone_info *info = clone_info::get (node);
 	  gcc_assert (!info || !info->param_adjustments);
 	}
-    }
-
-  clone_info *callee_info = clone_info::get (e->callee);
-  if (symtab->dump_file)
-    {
-      fprintf (symtab->dump_file, "updating call of %s -> %s: ",
-	       e->caller->dump_name (), e->callee->dump_name ());
-      print_gimple_stmt (symtab->dump_file, e->call_stmt, 0, dump_flags);
-      if (callee_info && callee_info->param_adjustments)
-	callee_info->param_adjustments->dump (symtab->dump_file);
     }
 
   if (ipa_param_adjustments *padjs
