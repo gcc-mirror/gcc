@@ -172,7 +172,7 @@ digiter(int &digits, int &rdigits, const cbl_refer_t &refer)
     if( rdigits < 0 )
       {
       // This is like 999PPPP with rdigits = -4
-      // So, digits evntually becomes 7, and rdigits becomes 0
+      // So, digits eventually becomes 7, and rdigits becomes 0
       // Our caller will have to multiply by 10^4 to get the 999 digits into
       // the right place.
       rdigits = 0;
