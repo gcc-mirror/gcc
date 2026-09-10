@@ -23,6 +23,8 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#ifndef __SIMT__
+
 typedef union {
   v2sf t_v2sf;
   v4sf t_v4sf;
@@ -321,3 +323,5 @@ FUN##v##COUNT##SUFFIX (v##COUNT##TYPE __arg1, v##COUNT##TYPE __arg2) \
   DEF_VARIANT (FUN, SUFFIX, OTYPE, TYPE, 16) \
   DEF_VARIANT (FUN, SUFFIX, OTYPE, TYPE, 32) \
   DEF_VARIANT (FUN, SUFFIX, OTYPE, TYPE, 64)
+
+#endif

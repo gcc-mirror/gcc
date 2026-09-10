@@ -1060,6 +1060,7 @@ main (int argc, char **argv)
   bool fopenacc = false;
   bool fPIC = false;
   bool fpic = false;
+  bool simt = false;
   for (int i = 1; i < argc; i++)
     {
 #define STR "-foffload-abi="
@@ -1130,6 +1131,13 @@ main (int argc, char **argv)
 	  while (c != '\0');
 	}
     }
+
+  /* Add -msimt when in SIMT mode, but that option doesn't get passed directly
+     to mkoffload, so let's check the environment.  */
+  const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  if (collect_gcc_options
+      && strstr (collect_gcc_options, "--param=offload-gpu-mode=simt"))
+    simt = true;
 
   check_for_missing_lib (elf_arch, default_arch);
 
@@ -1212,6 +1220,8 @@ main (int argc, char **argv)
   /* The host code may contain exception handling constructs.
      Handle these as good as we can.  */
   obstack_ptr_grow (&cc_argv_obstack, "-mfake-exceptions");
+  if (simt)
+    obstack_ptr_grow (&cc_argv_obstack, "-msimt");
 
   for (int ix = 1; ix != argc; ix++)
     {
@@ -1343,6 +1353,9 @@ main (int argc, char **argv)
 		 || startswith (argv[i], "-Wl")
 		 || startswith (argv[i], "-march"))
 	  obstack_ptr_grow (&ld_argv_obstack, argv[i]);
+
+      if (simt)
+	obstack_ptr_grow (&ld_argv_obstack, "-msimt");
 
       obstack_ptr_grow (&cc_argv_obstack, "-dumpdir");
       obstack_ptr_grow (&cc_argv_obstack, "");

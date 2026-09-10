@@ -51,6 +51,8 @@ extern const struct gcn_device_def {
 	builtin_define ("__RDNA3__");                                          \
       else                                                                     \
 	gcc_unreachable ();                                                    \
+      if (flag_simt_mode)                                                      \
+        builtin_define ("__SIMT__");                                           \
       char *name = (char *)xmalloc (strlen (gcn_devices[gcn_arch].name) + 5);  \
       sprintf (name, "__%s__", gcn_devices[gcn_arch].name);                    \
       char *p;                                                                 \
