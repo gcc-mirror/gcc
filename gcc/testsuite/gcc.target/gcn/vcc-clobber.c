@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2" } */
+/* { dg-require-effective-target vect_int } */
 
 /* Test that gcn_expand_scalar_to_vector_address does not clobber VCC.
    If it does then spills and reloads will be unsafe, leading to unexpected

@@ -4,6 +4,7 @@
 
 /* { dg-do compile } */
 /* { dg-options "-O2 -ftree-vectorize -dp -msram-ecc=any" } */
+/* { dg-require-effective-target vect_int } */
 
 typedef unsigned int v64si __attribute__ ((vector_size (64*4)));
 typedef unsigned short v64hi __attribute__ ((vector_size (64*2)));

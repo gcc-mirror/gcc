@@ -1,6 +1,8 @@
 /* Test that signed and unsigned division and modulus use the correct
    vector routines and give the correct results.  */
 
+/* { dg-require-effective-target vect_int } */
+
 /* Setting it this way ensures the run tests use the same flag as the
    compile tests.  */
 #pragma GCC optimize("O2")

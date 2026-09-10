@@ -4,6 +4,8 @@
 /* { dg-options "-O2 -ftree-vectorize -fno-math-errno -mstack-size=3000000 -fdump-tree-vect" } */
 /* The 'scan-tree-dump' directives are specific to 64-lane vectors.
    { dg-additional-options --param=gcn-preferred-vectorization-factor=64 } */
+/* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_double } */
 
 #undef PRINT_RESULT
 #define VERBOSE 0

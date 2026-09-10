@@ -4653,7 +4653,7 @@ proc check_effective_target_vect_int { } {
       expr {
 	 [check_effective_target_x86]
 	 || [istarget powerpc*-*-*]
-	 || [istarget amdgcn-*-*]
+	 || [check_effective_target_amdgcn_simd]
 	 || [istarget sparc*-*-*]
 	 || [istarget alpha*-*-*]
 	 || [istarget ia64-*-*]
@@ -4696,7 +4696,7 @@ proc check_effective_target_vect_early_break { } {
 	[istarget aarch64*-*-*]
 	|| [check_effective_target_arm_v8_neon_ok]
 	|| [check_effective_target_sse4]
-	|| [istarget amdgcn-*-*]
+	|| [check_effective_target_amdgcn_simd]
 	|| [check_effective_target_riscv_v]
 	|| [check_effective_target_loongarch_sx]
 	}}]
@@ -4713,7 +4713,7 @@ proc check_effective_target_vect_early_break_hw { } {
 	[istarget aarch64*-*-*]
 	|| [check_effective_target_arm_v8_neon_hw]
 	|| [check_sse4_hw_available]
-	|| [istarget amdgcn-*-*]
+	|| [check_effective_target_amdgcn_simd]
 	|| [check_effective_target_riscv_v_ok]
 	|| [check_effective_target_loongarch_sx_hw]
 	}}]
@@ -4857,7 +4857,7 @@ proc check_effective_target_vect_intfloat_cvt { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vxe2])
 	     || ([istarget riscv*-*-*]
@@ -4937,7 +4937,7 @@ proc check_effective_target_vect_uintfloat_cvt { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vxe2])
 	     || ([istarget riscv*-*-*]
@@ -4957,7 +4957,7 @@ proc check_effective_target_vect_floatint_cvt { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget mips*-*-*]
 		 && [et-is-effective-target mips_msa])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vxe2])
 	     || ([istarget riscv*-*-*]
@@ -4975,7 +4975,7 @@ proc check_effective_target_vect_floatuint_cvt { } {
 	    || [is-effective-target arm_neon]
 	    || ([istarget mips*-*-*]
 		&& [et-is-effective-target mips_msa])
-	    || [istarget amdgcn-*-*]
+	    || [check_effective_target_amdgcn_simd]
 	    || ([istarget s390*-*-*]
 		&& [check_effective_target_s390_vxe2])
 	    || ([istarget riscv*-*-*]
@@ -5017,7 +5017,7 @@ proc check_effective_target_vect_simd_clones { } {
     return [check_cached_effective_target vect_simd_clones {
       expr { ([check_effective_target_x86]
 	      && [check_effective_target_avx512f])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || [istarget aarch64*-*-*] }}]
 }
 
@@ -8418,7 +8418,7 @@ proc check_effective_target_vect_shift { } {
 		     || [et-is-effective-target mips_loongson_mmi]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8450,7 +8450,7 @@ proc check_effective_target_whole_vector_shift { } {
 	     && [et-is-effective-target mips_loongson_mmi])
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
-	 || [istarget amdgcn-*-*]
+	 || [check_effective_target_amdgcn_simd]
 	 || ([istarget riscv*-*-*]
 	     && [check_effective_target_riscv_v])
 	 || ([istarget loongarch*-*-*]
@@ -8470,7 +8470,7 @@ proc check_effective_target_vect_bswap { } {
     return [check_cached_effective_target vect_bswap {
       expr { ([istarget aarch64*-*-*]
 	      || [is-effective-target arm_neon]
-	      || [istarget amdgcn-*-*])
+	      || [check_effective_target_amdgcn_simd])
 	      || [istarget loongarch*-*-*]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx]) }}]
@@ -8498,7 +8498,7 @@ proc check_effective_target_vect_char_add { } {
       expr {
 	 [check_effective_target_x86]
 	 || [istarget powerpc*-*-*]
-	 || [istarget amdgcn-*-*]
+	 || [check_effective_target_amdgcn_simd]
 	 || [istarget ia64-*-*]
 	 || [istarget aarch64*-*-*]
 	 || [is-effective-target arm_neon]
@@ -8524,7 +8524,7 @@ proc check_effective_target_vect_shift_char { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8546,7 +8546,7 @@ proc check_effective_target_vect_long { } {
 	      && [et-is-effective-target mips_msa])
 	 || ([istarget s390*-*-*]
 	     && [check_effective_target_s390_vx])
-	 || [istarget amdgcn-*-*]
+	 || [check_effective_target_amdgcn_simd]
 	 || ([istarget riscv*-*-*]
 	     && [check_effective_target_riscv_v])
 	 || ([istarget loongarch*-*-*]
@@ -8578,7 +8578,7 @@ proc check_effective_target_vect_float { } {
 	     || [is-effective-target arm_neon]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vxe])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8611,7 +8611,7 @@ proc check_effective_target_vect_double { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8645,7 +8645,7 @@ proc check_effective_target_vect_long_long { } {
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
 		 && [check_effective_target_loongarch_sx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 
@@ -8698,7 +8698,7 @@ proc check_effective_target_vect_perm { } {
 		     || [et-is-effective-target mips_msa]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8795,7 +8795,7 @@ proc check_effective_target_vect_perm_byte { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8828,7 +8828,7 @@ proc check_effective_target_vect_perm_short { } {
 		  && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -8954,7 +8954,7 @@ proc check_effective_target_vect_widen_mult_qi_to_hi { } {
 		  || [is-effective-target arm_neon]
 		  || ([istarget s390*-*-*]
 		      && [check_effective_target_s390_vx]))
-	      || [istarget amdgcn-*-*] }}]
+	      || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -8978,7 +8978,7 @@ proc check_effective_target_vect_widen_mult_hi_to_si { } {
 		 || [is-effective-target arm_neon]
 		 || ([istarget s390*-*-*]
 		     && [check_effective_target_s390_vx]))
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -8994,7 +8994,7 @@ proc check_effective_target_vect_widen_mult_qi_to_hi_pattern { } {
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
 	     || [istarget loongarch*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -9012,7 +9012,7 @@ proc check_effective_target_vect_widen_mult_hi_to_si_pattern { } {
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target plus current options supports a vector
@@ -9187,7 +9187,7 @@ proc check_effective_target_vect_pack_trunc { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn*-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -9211,7 +9211,7 @@ proc check_effective_target_vect_unpack { } {
 		 && [check_effective_target_arm_little_endian])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn*-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -9257,7 +9257,7 @@ proc check_effective_target_vect_hw_misalign { } {
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
 	     || ([istarget loongarch*-*-*])
-	     || [istarget amdgcn*-*-*] } {
+	     || [check_effective_target_amdgcn_simd] } {
 	  return 1
 	}
 	if { [istarget arm*-*-*]
@@ -9349,7 +9349,7 @@ proc check_effective_target_vect_natural_alignment { } {
     if { [check_effective_target_arm_eabi]
 	 || [istarget nvptx-*-*]
 	 || [istarget s390*-*-*]
-	 || [istarget amdgcn-*-*] } {
+	 || [check_effective_target_amdgcn_simd] } {
 	set et_vect_natural_alignment 0
     }
     verbose "check_effective_target_vect_natural_alignment:\
@@ -9368,7 +9368,7 @@ proc check_effective_target_vect_check_ptrs { } {
 
 proc check_effective_target_vect_fully_masked { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v] }]
 }
 
@@ -9854,7 +9854,7 @@ proc check_effective_target_vect_load_lanes { } {
 proc check_effective_target_vect_masked_load { } {
     return [expr { [check_avx_available]
 		   || [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v] } ]
 }
 
@@ -9863,7 +9863,7 @@ proc check_effective_target_vect_masked_load { } {
 proc check_effective_target_vect_masked_store { } {
     return [expr { [check_avx_available]
 		   || [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v] }]
 }
 
@@ -9871,7 +9871,7 @@ proc check_effective_target_vect_masked_store { } {
 
 proc check_effective_target_vect_gather_load_ifn { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v] }]
 }
 
@@ -9879,7 +9879,7 @@ proc check_effective_target_vect_gather_load_ifn { } {
 
 proc check_effective_target_vect_scatter_store { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v]
 		   || [check_effective_target_loongarch_sx] }]
 }
@@ -9897,7 +9897,7 @@ proc check_effective_target_vect_condition { } {
 	     || [check_effective_target_arm_neon_ok]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -9917,7 +9917,7 @@ proc check_effective_target_vect_cond_mixed { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -9937,7 +9937,7 @@ proc check_effective_target_vect_char_mult { } {
 		 && [et-is-effective-target mips_msa])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -9958,7 +9958,7 @@ proc check_effective_target_vect_short_mult { } {
 		     || [et-is-effective-target mips_loongson_mmi]))
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -9978,7 +9978,7 @@ proc check_effective_target_vect_int_mult { } {
 	     || [check_effective_target_arm32]
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -10007,7 +10007,7 @@ proc check_effective_target_vect_long_mult { } {
 	      && [check_effective_target_riscv_v])
 	 || ([istarget loongarch*-*-*]
 	      && [check_effective_target_loongarch_sx])
-	 || [istarget amdgcn-*-*] } {
+	 || [check_effective_target_amdgcn_simd] } {
 	set answer 1
     } else {
 	set answer 0
@@ -10176,7 +10176,7 @@ proc check_effective_target_vect_call_copysignf { } {
       expr { [check_effective_target_x86]
 	     || [istarget powerpc*-*-*]
 	     || [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -10217,7 +10217,7 @@ proc check_effective_target_vect_call_sqrtf { } {
 	     || ([istarget powerpc*-*-*] && [check_vsx_hw_available])
 	     || ([istarget s390*-*-*]
 		 && [check_effective_target_s390_vx])
-	     || [istarget amdgcn-*-*]
+	     || [check_effective_target_amdgcn_simd]
 	     || ([istarget riscv*-*-*]
 		 && [check_effective_target_riscv_v])
 	     || ([istarget loongarch*-*-*]
@@ -10230,7 +10230,7 @@ proc check_effective_target_vect_call_lrint { } {
     set et_vect_call_lrint 0
     if { ([check_effective_target_x86]
 	  && [check_effective_target_ilp32])
-	 || [istarget amdgcn-*-*]
+	 || [check_effective_target_amdgcn_simd]
 	 || [istarget loongarch*-*-*] } {
 	set et_vect_call_lrint 1
     }
@@ -10244,7 +10244,7 @@ proc check_effective_target_vect_call_lrint { } {
 proc check_effective_target_vect_call_btrunc { } {
     return [check_cached_effective_target vect_call_btrunc {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target supports vector btruncf calls.
@@ -10252,7 +10252,7 @@ proc check_effective_target_vect_call_btrunc { } {
 proc check_effective_target_vect_call_btruncf { } {
     return [check_cached_effective_target vect_call_btruncf {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target supports vector ceil calls.
@@ -10260,7 +10260,7 @@ proc check_effective_target_vect_call_btruncf { } {
 proc check_effective_target_vect_call_ceil { } {
     return [check_cached_effective_target vect_call_ceil {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target supports vector ceilf calls.
@@ -10268,7 +10268,7 @@ proc check_effective_target_vect_call_ceil { } {
 proc check_effective_target_vect_call_ceilf { } {
     return [check_cached_effective_target vect_call_ceilf {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target supports vector floor calls.
@@ -10276,7 +10276,7 @@ proc check_effective_target_vect_call_ceilf { } {
 proc check_effective_target_vect_call_floor { } {
     return [check_cached_effective_target vect_call_floor {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target supports vector floorf calls.
@@ -10284,7 +10284,7 @@ proc check_effective_target_vect_call_floor { } {
 proc check_effective_target_vect_call_floorf { } {
     return [check_cached_effective_target vect_call_floorf {
       expr { [istarget aarch64*-*-*]
-	     || [istarget amdgcn-*-*] }}]
+	     || [check_effective_target_amdgcn_simd] }}]
 }
 
 # Return 1 if the target supports vector lceil calls.
@@ -10333,7 +10333,7 @@ proc check_effective_target_vect_call_roundf { } {
 
 proc check_effective_target_vect_logical_reduc { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v]
 		   || [check_effective_target_loongarch_sx]
 		   || [check_effective_target_x86]
@@ -10344,7 +10344,7 @@ proc check_effective_target_vect_logical_reduc { } {
 
 proc check_effective_target_vect_fold_extract_last { } {
     return [expr { [check_effective_target_aarch64_sve]
-		   || [istarget amdgcn*-*-*]
+		   || [check_effective_target_amdgcn_simd]
 		   || [check_effective_target_riscv_v] }]
 }
 
@@ -12760,6 +12760,9 @@ proc check_vect_support_and_set_flags { } {
 	    set dg-do-what-default compile
 	}
     } elseif [istarget amdgcn-*-*] {
+	if { ![check_effective_target_amdgcn_simd] } {
+	  return 0
+	}
 	set dg-do-what-default run
     } elseif [istarget riscv*-*-*] {
 	if [check_effective_target_riscv_v] {
@@ -15092,4 +15095,32 @@ proc check_effective_target_can_deref_null { } {
 	  return 0;
 	}
       } "-O0 -fno-delete-null-pointer-checks -Wno-null-dereference"]
+}
+
+# Return 1 if the target is amdgcn and is building in SIMD mode.
+# The vector modes only exist in SIMD mode, so the vect_* effective targets
+# use this to decide whether amdgcn has vectors at all.
+
+proc check_effective_target_amdgcn_simd { } {
+    if { ![istarget amdgcn-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages amdgcn_simd_ assembly {
+	#ifdef __SIMT__
+	#error "not simd"
+	#endif
+    }]
+}
+
+# Return 1 if the target is amdgcn and is building in SIMT mode
+
+proc check_effective_target_amdgcn_simt { } {
+    if { ![istarget amdgcn-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages amdgcn_simt_ assembly {
+	#ifndef __SIMT__
+	#error "not simt"
+	#endif
+    }]
 }

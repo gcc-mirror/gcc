@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-march=gfx908 -O1" } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-final { scan-assembler "accvgpr" } } */
 
 typedef int v32si __attribute__ ((__vector_size__ (sizeof(int)*32)));

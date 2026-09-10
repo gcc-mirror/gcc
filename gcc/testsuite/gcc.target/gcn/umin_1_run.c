@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O2 -ftree-vectorize" } */
+/* { dg-require-effective-target vect_int } */
 
 #include "umin_1.c"
 
