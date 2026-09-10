@@ -6553,12 +6553,8 @@ riscv_v_widen_constraint_ok (unsigned int regno, machine_mode mode,
   unsigned int wide_nregs = riscv_hard_regno_nregs (wide_regno, wide_mode);
   unsigned int nregs = riscv_hard_regno_nregs (regno, mode);
 
-  if (wide_nregs == nregs) /* Dest LMUL <= 1.  */
-    {
-      gcc_checking_assert (nregs == 1);
-
-      return true;
-    }
+  if (wide_nregs == nregs)
+    return nregs == 1;   /* Only allow dest LMUL <= 1.  */
 
   gcc_checking_assert (wide_nregs > nregs);
   gcc_checking_assert ((wide_nregs % nregs) == 0);
