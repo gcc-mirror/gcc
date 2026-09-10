@@ -26,10 +26,10 @@
 #include "rust-rib.h"
 #include "rust-substitution-mapper.h"
 #include "rust-hir-path-probe-expr.h"
+#include "rust-hir-path-probe-type.h"
 #include "rust-type-util.h"
 #include "rust-hir-type-bounds.h"
 #include "rust-hir-item.h"
-#include "rust-session-manager.h"
 #include "rust-finalized-name-resolution-context.h"
 
 namespace Rust {
@@ -417,8 +417,19 @@ TypeCheckExpr::resolve_segments (NodeId root_resolved_node_id,
 
   for (size_t i = offset; i < segments.size (); i++)
     {
+      bool last_seg = i == segments.size () - 1;
       HIR::PathExprSegment &seg = segments.at (i);
-      auto candidates = PathProbeExpr::Probe (prev_segment, seg.get_segment ());
+
+      std::set<PathProbeCandidate> candidates;
+      if (last_seg)
+	candidates = PathProbeExpr::Probe (tyseg, seg.get_segment ());
+      else
+	{
+	  auto type_candidates
+	    = TypePathProbe::Probe (tyseg, seg.get_segment ());
+	  candidates = type_candidates.type_candidates;
+	}
+
       if (candidates.size () == 0)
 	{
 	  rust_error_at (seg.get_locus (),
