@@ -38,16 +38,36 @@
 
 callback_info_sum_t *callback_info_sum = NULL;
 
+/* Streams a vector into an output block, in format N ELEM_1 ... ELEM_N*/
+static void
+stream_vector_out (lto_simple_output_block *ob, const auto_vec<int> &v)
+{
+  streamer_write_uhwi_stream (ob->main_stream, v.length ());
+  for (int elem : v)
+    streamer_write_hwi_stream (ob->main_stream, elem);
+}
+
+/* Reads a vector from an LTO input block.  The format is supposed to be the
+   same as stream_vector_out.  */
+static void
+stream_vector_in (lto_input_block *ib, auto_vec<int> &v)
+{
+  unsigned length = streamer_read_uhwi (ib);
+  v.reserve (length);
+
+  for (unsigned i = 0; i < length; i++)
+    {
+      int elem = streamer_read_hwi (ib);
+      v.safe_push (elem);
+    }
+}
+
 /* Stream out callback_info.  */
 void
 callback_info::stream_out (lto_simple_output_block *ob) const
 {
   streamer_write_uhwi_stream (ob->main_stream, fn_idx);
-  streamer_write_uhwi_stream (ob->main_stream, arg_mapping.length ());
-
-  for (int idx : arg_mapping)
-    streamer_write_hwi_stream (ob->main_stream, idx);
-
+  stream_vector_out (ob, arg_mapping);
   bitpack_d bp = bitpack_create (ob->main_stream);
   bp_pack_value (&bp, redirected, 1);
   streamer_write_bitpack (&bp);
@@ -58,15 +78,7 @@ void
 callback_info::stream_in (lto_input_block *ib)
 {
   fn_idx = streamer_read_uhwi (ib);
-  unsigned length = streamer_read_uhwi (ib);
-  arg_mapping.reserve (length);
-
-  for (unsigned i = 0; i < length; i++)
-    {
-      int idx = streamer_read_hwi (ib);
-      arg_mapping.safe_push (idx);
-    }
-
+  stream_vector_in (ib, arg_mapping);
   bitpack_d bp = streamer_read_bitpack (ib);
   redirected = bp_unpack_value (&bp, 1);
 }
