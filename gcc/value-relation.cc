@@ -169,10 +169,10 @@ static const unsigned char rr_transitive_table[VREL_LAST][VREL_LAST] = {
     VREL_GE, VREL_VARYING },
 // VREL_EQ
   { VREL_VARYING, VREL_VARYING, VREL_LT, VREL_LE, VREL_GT, VREL_GE, VREL_EQ,
-    VREL_VARYING },
+    VREL_NE },
 // VREL_NE
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
-    VREL_VARYING, VREL_VARYING, VREL_VARYING } };
+    VREL_VARYING, VREL_NE, VREL_VARYING } };
 
 // Apply transitive operation between relation R1 and relation R2, and
 // return the resulting relation, if any.
