@@ -1,5 +1,6 @@
 /* The 'scan-assembler' directives are specific to 64-lane vectors.
    { dg-additional-options --param=gcn-preferred-vectorization-factor=64 } */
+/* { dg-require-effective-target vect_int } */
 
 #define TYPE char
 #include "simd-math-5.c"

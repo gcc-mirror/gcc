@@ -1,3 +1,4 @@
+/* { dg-require-effective-target vect_int } */
 #define STYPE v4qi
 #define UTYPE v4uqi
 #define N 4

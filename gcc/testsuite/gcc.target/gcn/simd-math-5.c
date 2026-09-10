@@ -3,6 +3,7 @@
 
 /* The 'scan-assembler' directives are specific to 64-lane vectors.
    { dg-additional-options --param=gcn-preferred-vectorization-factor=64 } */
+/* { dg-require-effective-target vect_int } */
 
 /* Setting it this way ensures the run tests use the same flag as the
    compile tests.  */

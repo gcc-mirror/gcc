@@ -1,3 +1,4 @@
+/* { dg-require-effective-target vect_int } */
 #define TYPE v64hi
 #include "simd-math-4.c"
 

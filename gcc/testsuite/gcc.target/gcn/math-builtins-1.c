@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O1" } */
+/* { dg-require-effective-target vect_float } */
+/* { dg-require-effective-target vect_double } */
 
 typedef float v64sf __attribute__ ((vector_size (256)));
 typedef double v64df __attribute__ ((vector_size (512)));

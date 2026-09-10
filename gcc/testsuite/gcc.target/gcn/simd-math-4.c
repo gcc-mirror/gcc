@@ -1,6 +1,8 @@
 /* Test that signed division and modulus give the correct result with
    different variations of signedness.  */
 
+/* { dg-require-effective-target vect_int } */
+
 /* Setting it this way ensures the run tests use the same flag as the
    compile tests.  */
 #pragma GCC optimize("O2")
