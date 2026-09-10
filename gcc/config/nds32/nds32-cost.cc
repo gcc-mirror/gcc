@@ -217,10 +217,16 @@ nds32_rtx_costs_speed_prefer (rtx x ATTRIBUTE_UNUSED,
 	  /* We prefer (and (ior) (ior)) than (ior (and) (and)) for
 	     synthesize pk** and insb instruction.  */
 	  if (code == AND && GET_CODE (op0) == IOR && GET_CODE (op1) == IOR)
-	    return COSTS_N_INSNS (1);
+	    {
+	      *total = COSTS_N_INSNS (1);
+	      return true;
+	    }
 
 	  if (code == IOR && GET_CODE (op0) == AND && GET_CODE (op1) == AND)
-	    return COSTS_N_INSNS (10);
+	    {
+	      *total = COSTS_N_INSNS (10);
+	      return true;
+	    }
 	}
 
       if (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (DImode))
