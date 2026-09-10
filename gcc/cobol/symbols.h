@@ -1861,6 +1861,7 @@ struct cbl_special_name_t {
 };
 
 char * hex_decode( const char text[] );
+char * hex2numstr( const char text[] );
 
 /*
  * An alphabet may just name an encoding, which implies binary collation.
@@ -3073,8 +3074,9 @@ class current_tokens_t {
   }
   bool equate( const cbl_loc_t& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
     int token; 
-    if( 0 == (token = binary_integer_usage_of(keyword)) ) {
-      if( 0 == (token = keyword_tok(keyword)) ) {
+
+    if( 0 == (token = keyword_tok(keyword, true)) ) {
+      if( 0 == (token = binary_integer_usage_of(keyword)) ) {
 	error_msg(loc, "EQUATE: not a reserved word: %qs", keyword);
 	return false;
       }
@@ -3093,8 +3095,8 @@ class current_tokens_t {
   }
   bool substitute( const cbl_loc_t& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
     int token; 
-    if( 0 == (token = binary_integer_usage_of(keyword)) ) {
-      if( 0 == (token = keyword_tok(keyword)) ) {
+    if( 0 == (token = keyword_tok(keyword, true)) ) {
+      if( 0 == (token = binary_integer_usage_of(keyword)) ) {
 	error_msg(loc, "SUBSTITUTE: not a reserved word: %qs", keyword);
 	return false;
       }

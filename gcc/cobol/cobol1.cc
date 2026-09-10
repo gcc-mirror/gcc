@@ -641,6 +641,10 @@ cobol_langhook_handle_option (size_t scode,
           cobol_warning(MfCompX, comp_x, warning_as_error);
           return true;
 
+        case OPT_Whex_numeric:
+          cobol_warning(MfHexNumeric, hex_numeric, warning_as_error);
+          return true;
+
         case OPT_Winspect_trailing:
           cobol_warning(MfTrailing, inspect_trailing, warning_as_error);
           return true;

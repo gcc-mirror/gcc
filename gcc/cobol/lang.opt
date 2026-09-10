@@ -144,6 +144,11 @@ Wcomp-x
 Cobol Warning Var(comp_x, 1) Init(1)
 Warn if COMPUTATIONAL is used with PICTURE X.
 
+; MfHexNumeric
+Whex-numeric
+Cobol Warning Var(hex_numeric, 1) Init(1)
+Warn if hexadecimal notation is used for integers.
+
 ; MfDisplayScreen
 Wdisplay-screen
 Cobol Warning Var(display_screen, 1) Init(1)

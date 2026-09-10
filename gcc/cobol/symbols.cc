@@ -1524,8 +1524,11 @@ dimensions( const cbl_field_t *f ) {
 
   if( f->type == FldIndex ) return 0;
 
-  while( (f = parent_of(f)) != NULL ) {
-    if( is_table(f) ) n++;
+  cbl_field_t *parent;
+  for( ; (parent = parent_of(f)) != nullptr; f = parent ) {
+    if( parent != symbol_redefines(f) ) {
+      if( is_table(parent) ) n++;
+    }
   }
 
   return n;

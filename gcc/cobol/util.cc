@@ -2146,32 +2146,37 @@ const cbl_field_t *
 literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
   // Verify literal subscripts if dimensions are correct.
   size_t ndim(dimensions(r.field));
-  if( ndim == 0 || ndim != r.nsubscript() ) return NULL;
-  std::vector<cbl_field_t *> dims( ndim, NULL );
-  auto pdim = dims.end();
+  if( ndim == 0 || ndim != r.nsubscript() ) return nullptr;
+  std::deque<cbl_field_t *> dims(1, r.field);
+  if( ! is_table(dims[0]) ) dims.clear();
 
-  for( auto f = r.field; f; f = parent_of(f) ) {
-    if( f->occurs.ntimes() ) {
-      --pdim;
-      *pdim = f;
+  // dims is a vector of fields representing the dimensions, starting topmost.
+  cbl_field_t *parent;
+  for( auto f = r.field; (parent = parent_of(f)) != nullptr; f = parent ) {
+    if( parent != symbol_redefines(f) ) {
+      if( is_table(parent) ) {
+        dims.push_front(parent);
+      }
     }
   }
-  assert(dims[0] != NULL);
-  assert(pdim == dims.begin());
+
+  assert(dims.size() == ndim);
 
   /*
    * For each subscript, if it is a literal, verify it is in bounds
    * for the corresponding dimension.  Return the first subscript not
    * meeting those criteria, if any.
    */
-  auto psub = std::find_if( r.subscripts.begin(), r.subscripts.end(),
-                         [pdim]( const cbl_refer_t& r ) mutable {
-                           const auto& occurs((*pdim)->occurs);
-                           pdim++;
-                           return ! occurs.subscript_ok(r.field);
-                         } );
-  isub = psub - r.subscripts.begin();
-  return psub == r.subscripts.end()? NULL : dims[isub];
+  for( isub=0; isub < ndim; isub++ ) {
+    const auto& subscript = r.subscripts[isub];
+    const auto& occurs = dims[isub]->occurs;
+    
+    if( ! occurs.subscript_ok(subscript.field) ) {
+      break; // found one
+    }
+  }
+
+  return isub == ndim? nullptr : dims[isub];
 }
 
 size_t
@@ -2523,6 +2528,18 @@ hex_decode( const char input[] ) {
        end = reinterpret_cast<const hex_pair_t*>(input + len);
   std::transform( beg, end, output, scan_hex() );
   return output;
+}
+
+// input: H'[[:xdigit:]]+', for GnuCOBOL
+char *
+hex2numstr( const char input[] ) {
+  char q;
+  long unsigned int value;
+
+  int n = sscanf(++input, "%c%" GCC_PRISZ "x%c", &q, &value, &q);
+  assert(n == 3 && (q == '\'' || q == '"'));
+         
+  return xasprintf("%lu", value);
 }
 
 /*

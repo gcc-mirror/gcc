@@ -15072,6 +15072,39 @@ cbl_field_t::value_str() const {
     return data.etc_type_str();
 }
 
+/*
+ * Default keyword adjustments for -dialect {mf,gnu}
+ */
+static void
+dialect_words_set( cbl_dialect_t dialect ) {
+  const static auto dialect_mf_gnu = cbl_dialect_t(dialect_mf_e | dialect_gnu_e);
+  static unsigned int done;
+  
+  typedef bool (current_tokens_t::*wordop_func_t)(const cbl_loc_t& loc,
+                          const cbl_name_t keyword,
+                          const cbl_name_t alias);
+  struct wordop_t {
+    cbl_dialect_t dialect;
+    wordop_func_t op;
+    cbl_name_t keyword, alias;
+    bool match(cbl_dialect_t dialect) const { return this->dialect & dialect; }
+    
+  };
+  const static std::vector<wordop_t> wordops {
+    { dialect_mf_gnu, &current_tokens_t::equate, "BINARY-DOUBLE", "BINARY-C-LONG" },
+    { dialect_gnu_e,  &current_tokens_t::substitute, "CONCAT", "CONCATENATE" },
+  };
+
+  if( dialect != (done & dialect) ) { // if any part of dialect not done
+    for( const auto& w : wordops ) {
+      if( w.match(dialect) ) {
+        (cdf_tokens.*w.op)(cbl_loc_t(), w.keyword, w.alias);
+      }
+    }
+  }
+  done |= dialect;
+}
+  
 void
 cobol_dialect_set( cbl_dialect_t dialect ) {
   switch(dialect) {
@@ -15082,11 +15115,8 @@ cobol_dialect_set( cbl_dialect_t dialect ) {
     cobol_gcobol_feature_set(feature_embiggen_e);
     break;
   case dialect_mf_e:
-    break;
   case dialect_gnu_e:
-    if( 0 == (cbl_dialects & dialect) ) { // first time
-      cdf_tokens.equate(cbl_loc_t(), "BINARY-DOUBLE", "BINARY-C-LONG");
-    }
+    dialect_words_set(dialect);
     break;
   }    
   cbl_dialects |= dialect;

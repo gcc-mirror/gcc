@@ -1155,6 +1155,12 @@ USE({SPC}FOR)?		{ return USE; }
   WITH			{ return WITH; }
 
   {INTEGERZ}	{ return numstr_of(yytext); }
+  H{hexseq}	{
+                  dialect_ok(yylloc, MfHexNumeric, yytext);
+                  yylval.numstr.radix = decimal_e;
+		  yylval.numstr.string = hex2numstr(yytext);
+                  return NUMSTR;
+		}
 
   {NAME}	{ 
                   yylval.string = xstrdup(yytext);
@@ -1200,6 +1206,12 @@ USE({SPC}FOR)?		{ return USE; }
   {DOTSEP}		{ yy_pop_state(); return '.'; }
 
   [+-]?{INTEGERZ}	{ return numstr_of(yytext); }
+  H{hexseq}		{
+                          dialect_ok(yylloc, MfHexNumeric, yytext);
+                          yylval.numstr.radix = decimal_e;
+			  yylval.numstr.string = hex2numstr(yytext);
+                          return NUMSTR;
+			}
   [+-]?{dfc}		{ char *s = xstrdup(yytext);
 			  // "The decimal point can appear anywhere within
 			  //  the literal except as the rightmost character."
@@ -1292,11 +1304,11 @@ USE({SPC}FOR)?		{ return USE; }
   VALUES({SPC}ARE)?/[[:space:]] { return VALUE; }
 
   VALUES?({SPC}(IS|ARE))?{SPC}NULLS? { return NULLPTR; }
-  VALUES?({SPC}(IS|ARE))?/{SPC}[+-]?{dfc} {
+  VALUES?({SPC}(IS|ARE))?/{SPC}(H{hexseq}|[+-]?{dfc}) {
                           yy_push_state(numeric_state); return VALUE; }
 
   THRU|THROUGH		{ return THRU; }
- (THRU|THROUGH)/{SPC}[[:digit:].,+-] {
+ (THRU|THROUGH)/{SPC}(H{hexseq}|[[:digit:].,+-]) {
                           yy_push_state(numeric_state);
 			  return THRU; }
 
@@ -2074,13 +2086,19 @@ USE({SPC}FOR)?		{ return USE; }
 
   BX/{hexseq}			{ yylval.numstr.radix = hexadecimal_e;
 			  	  yy_push_state(numstr_state); }
+  H{hexseq}			{
+                                  dialect_ok(yylloc, MfHexNumeric, yytext);
+                                  yylval.numstr.radix = decimal_e;
+			  	  yylval.numstr.string = hex2numstr(yytext);
+                                  return NUMSTR;
+				}
 
-  {PREFIX}?['']                   { yylval.literal.set_prefix(yytext, yyleng-1);
-			     yy_push_state(quoted1); }
-  {PREFIX}?[""]                   { yylval.literal.set_prefix(yytext, yyleng-1);
-			     yy_push_state(quoted2); }
-  {PREFIX}?[""]/{STRING2}[""]      { yylval.literal.set_prefix(yytext, yyleng-1);
-			     yy_push_state(quoted2); }
+  {PREFIX}?['']			{ yylval.literal.set_prefix(yytext, yyleng-1);
+				  yy_push_state(quoted1); }
+  {PREFIX}?[""]			{ yylval.literal.set_prefix(yytext, yyleng-1);
+				  yy_push_state(quoted2); }
+  {PREFIX}?[""]/{STRING2}[""]	{ yylval.literal.set_prefix(yytext, yyleng-1);
+				  yy_push_state(quoted2); }
 
   {INTEGERZ}/[[:punct:]][[:space:]]{BLANK_EOL}? { return numstr_of(yytext); }
   {dfc}/[[:blank:][:punct:]]         		{ return numstr_of(yytext); }
@@ -2105,18 +2123,24 @@ USE({SPC}FOR)?		{ return USE; }
   [[:blank:]]+
   {BLANK_EOL}
 
-  [+-]?{INTEGERZ} {            pop_return numstr_of(yytext); }
-  [+-]?{dfc}([.][[:digit:]])*  {
-                               char *s = xstrdup(yytext);
-                               char *p = strchr(s, '.');
-                               if( p && strlen(p) == 1 ) {
-                                 *p = '\0';
-                                 myless(p - s);
-                               }
-                               int token = numstr_of(s);
-			       free(s);
-                               pop_return token;
-			     }
+  [+-]?{INTEGERZ}		{ pop_return numstr_of(yytext); }
+  H{hexseq}			{
+                                  dialect_ok(yylloc, MfHexNumeric, yytext);
+                                  yylval.numstr.radix = decimal_e;
+			  	  yylval.numstr.string = hex2numstr(yytext);
+                                  pop_return NUMSTR;
+				}
+  [+-]?{dfc}([.][[:digit:]])*	{
+				  char *s = xstrdup(yytext);
+				  char *p = strchr(s, '.');
+				  if( p && strlen(p) == 1 ) {
+				    *p = '\0';
+				    myless(p - s);
+				  }
+				  int token = numstr_of(s);
+				  free(s);
+				  pop_return token;
+				}
 }
 
 <procedure_div>{
@@ -2544,6 +2568,8 @@ USE({SPC}FOR)?		{ return USE; }
   		  if( 0 != (yylval.number = symbol_function_token(name)) ) {
   		    pop_return FUNCTION_UDF;
   		  }
+                  int token = NAME;
+		  if( (token = redefined_token(name)) ) { return token; }
 		  yylval.string = name;
 		  pop_return NAME;
 		}
@@ -2555,6 +2581,8 @@ USE({SPC}FOR)?		{ return USE; }
 		  if( 0 != (yylval.number = symbol_function_token(name)) ) {
   		    pop_return FUNCTION_UDF_0;
   		  }
+                  int token = NAME;
+		  if( (token = redefined_token(name)) ) { return token; }
 		  yylval.string = name;
 		  pop_return NAME;
 	 	}

@@ -201,6 +201,7 @@ enum cbl_diag_id_t : uint64_t {
   MfCdfDollar, 
   MfComp6,
   MfCompX,
+  MfHexNumeric,
   MfLevel_1_Occurs, 
   MfLevel78,
   MfAnyLength, 

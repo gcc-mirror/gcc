@@ -126,7 +126,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
 
   { IbmCallFd, "-Wcall-fd", diagnostics::kind::error, dialect_ibm_e },
   { IbmCdf, "-Wibm-cdf", diagnostics::kind::error, dialect_ibm_e },
-  { IbmContentExpr, "-Wcontent-expr", diagnostics::kind::error, dialect_ibm_e },
+  { IbmContentExpr, "-Wcontent-expr", diagnostics::kind::error, dialect_ibm_mf_gnu },
   { IbmEjectE, "-Wcobol-eject", diagnostics::kind::error, dialect_ibm_e },
   { IbmLengthOf, "-Wlength-of", diagnostics::kind::error, dialect_ibm_mf_gnu },
   { IbmEqualAssignE, "-Wequal-assign", diagnostics::kind::error, dialect_ibm_e },
@@ -154,6 +154,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { MfComp6, "-Wcomp-6", diagnostics::kind::error, dialect_mf_gnu },
   { MfCompX, "-Wcomp-x", diagnostics::kind::error, dialect_mf_gnu },
   { MfDisplayScreen, "-Wdisplay-screen", diagnostics::kind::error, dialect_mf_gnu },
+  { MfHexNumeric, "-Whex-numeric", diagnostics::kind::error, dialect_mf_gnu },
   { MfLevel78, "-Wlevel-78", diagnostics::kind::error, dialect_mf_gnu },
   { MfLevel_1_Occurs, "-Wlevel-1-occurs", diagnostics::kind::error, dialect_mf_gnu },
   { MfMoveIndex, "-Wmove-index", diagnostics::kind::error, dialect_gnu_e },
