@@ -110,7 +110,8 @@ static void c_parser_gimple_label (gimple_parser &, gimple_seq *);
 static void c_parser_gimple_statement (gimple_parser &, gimple_seq *);
 static struct c_expr c_parser_gimple_binary_expression (gimple_parser &, tree);
 static struct c_expr c_parser_gimple_unary_expression (gimple_parser &);
-static struct c_expr c_parser_gimple_postfix_expression (gimple_parser &);
+static struct c_expr c_parser_gimple_postfix_expression
+			(gimple_parser &, tree = error_mark_node);
 static struct c_expr c_parser_gimple_postfix_expression_after_primary
 			(gimple_parser &, location_t, struct c_expr);
 static void c_parser_gimple_declaration (gimple_parser &);
@@ -1023,7 +1024,7 @@ c_parser_gimple_binary_expression (gimple_parser &parser, tree ret_type)
   struct c_expr ret, lhs, rhs;
   enum tree_code code = ERROR_MARK;
   ret.set_error ();
-  lhs = c_parser_gimple_postfix_expression (parser);
+  lhs = c_parser_gimple_postfix_expression (parser, ret_type);
   if (c_parser_error (parser))
     return ret;
   switch (c_parser_peek_token (parser)->type)
@@ -1488,7 +1489,7 @@ c_parser_gimple_typespec (gimple_parser &parser)
 */
 
 static struct c_expr
-c_parser_gimple_postfix_expression (gimple_parser &parser)
+c_parser_gimple_postfix_expression (gimple_parser &parser, tree ret_type)
 {
   location_t loc = c_parser_peek_token (parser)->location;
   source_range tok_range = c_parser_peek_token (parser)->get_range ();
@@ -1750,6 +1751,38 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 					     fold_convert (bitsizetype,
 							   op2.value));
 		}
+	      break;
+	    }
+	  else if (strcmp (IDENTIFIER_POINTER (id), "__CLOBBER") == 0)
+	    {
+	      /* __CLOBBER [ '(' bob | eob | bos | eos ')' ]  */
+	      clobber_kind kind = CLOBBER_UNDEF;
+	      c_parser_consume_token (parser);
+	      if (c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+		{
+		  c_parser_consume_token (parser);
+		  auto tok = c_parser_peek_token (parser);
+		  if (c_parser_require (parser, CPP_NAME,
+					"expected clobber kind"))
+		    {
+		      const char *kind_str = IDENTIFIER_POINTER (tok->value);
+		      if (strcmp (kind_str, "bos") == 0)
+			kind = CLOBBER_STORAGE_BEGIN;
+		      else if (strcmp (kind_str, "bob") == 0)
+			kind = CLOBBER_OBJECT_BEGIN;
+		      else if (strcmp (kind_str, "eob") == 0)
+			kind = CLOBBER_OBJECT_END;
+		      else if (strcmp (kind_str, "eos") == 0)
+			kind = CLOBBER_STORAGE_END;
+		      else
+			c_parser_error (parser, "expected one of %<bos%>, "
+					"%<eos%>, %<bob>, %<eob%>");
+		    }
+		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
+					     "expected %<)%>");
+		}
+	      /* We infer the (redundant) type from the LHS.  */
+	      expr.value = build_clobber (ret_type, kind);
 	      break;
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "_Literal") == 0)

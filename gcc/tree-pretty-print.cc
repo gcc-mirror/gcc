@@ -3047,6 +3047,28 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	widest_int curidx;
 	if (flags & TDF_GIMPLE)
 	  {
+	    if (TREE_CLOBBER_P (node))
+	      {
+		pp_string (pp, "__CLOBBER");
+		switch (CLOBBER_KIND (node))
+		  {
+		  case CLOBBER_STORAGE_BEGIN:
+		    pp_string (pp, "(bos)");
+		    break;
+		  case CLOBBER_STORAGE_END:
+		    pp_string (pp, "(eos)");
+		    break;
+		  case CLOBBER_OBJECT_BEGIN:
+		    pp_string (pp, "(bob)");
+		    break;
+		  case CLOBBER_OBJECT_END:
+		    pp_string (pp, "(eob)");
+		    break;
+		  default:
+		    break;
+		  }
+		break;
+	      }
 	    pp_string (pp, "_Literal (");
 	    dump_generic_node (pp, TREE_TYPE (node), spc, flags, false);
 	    pp_string (pp, ") ");
