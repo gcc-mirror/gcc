@@ -2763,7 +2763,14 @@ eval_store_expression (const constexpr_ctx *ctx, tree t, bool lval,
       /* Evaluate the value to be stored without knowing what object it will be
 	 stored in, so that any side-effects happen first.  */
       if (!SCALAR_TYPE_P (type))
-	new_ctx.ctor = new_ctx.object = NULL_TREE;
+	{
+	  new_ctx.ctor = new_ctx.object = NULL_TREE;
+	  if (TREE_CODE (init) == CONSTRUCTOR)
+	    {
+	      new_ctx.ctor = build_constructor (TREE_TYPE (init), NULL);
+	      CONSTRUCTOR_NO_CLEARING (new_ctx.ctor) = true;
+	    }
+	}
       init = eval_constant_expression (&new_ctx, init, false, non_constant_p,
 				       overflow_p, jump_target);
       if (*non_constant_p)

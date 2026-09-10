@@ -1204,6 +1204,21 @@ CompileExpr::visit (HIR::BorrowExpr &expr)
       return;
     }
 
+  // const expr needs these to be addressable temps otherwise it cant cope. We
+  // get away with this during regular compilation because gcc middle end
+  // optimizes it
+  if (TREE_CODE (main_expr) == CONSTRUCTOR && !TREE_CONSTANT (main_expr))
+    {
+      tree init_stmt = NULL_TREE;
+      Bvariable *tmp
+	= Backend::temporary_variable (ctx->peek_fn ().fndecl,
+				       ctx->peek_enclosing_scope (),
+				       TREE_TYPE (main_expr), main_expr, true,
+				       expr.get_locus (), &init_stmt);
+      ctx->add_statement (init_stmt);
+      main_expr = Backend::var_expression (tmp, expr.get_locus ());
+    }
+
   TyTy::BaseType *tyty = nullptr;
   if (!ctx->get_tyctx ()->lookup_type (expr.get_mappings ().get_hirid (),
 				       &tyty))
