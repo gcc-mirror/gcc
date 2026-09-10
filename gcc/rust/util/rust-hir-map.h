@@ -110,11 +110,9 @@ public:
 
 class ProcMacroMappings
 {
-  std::map<CrateNum, std::vector<CustomDeriveProcMacro>>
-    procmacrosDeriveMappings;
-  std::map<CrateNum, std::vector<BangProcMacro>> procmacrosBangMappings;
-  std::map<CrateNum, std::vector<AttributeProcMacro>>
-    procmacrosAttributeMappings;
+  std::map<CrateNum, std::vector<CustomDeriveProcMacro>> deriveMappings;
+  std::map<CrateNum, std::vector<BangProcMacro>> bangMappings;
+  std::map<CrateNum, std::vector<AttributeProcMacro>> attributeMappings;
 
   std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveMappings;
   std::map<NodeId, BangProcMacro> procmacroBangMappings;
@@ -138,28 +136,25 @@ public:
   tl::optional<std::vector<AttributeProcMacro> &>
   lookup_attribute_proc_macros (CrateNum num);
 
-  void insert_derive_proc_macro_def (CustomDeriveProcMacro macro);
-  void insert_bang_proc_macro_def (BangProcMacro macro);
-  void insert_attribute_proc_macro_def (AttributeProcMacro macro);
+  void insert_derive_def (CustomDeriveProcMacro macro);
+  void insert_bang_def (BangProcMacro macro);
+  void insert_attribute_def (AttributeProcMacro macro);
+
+  tl::optional<CustomDeriveProcMacro &> lookup_derive_def (NodeId id);
+  tl::optional<BangProcMacro &> lookup_bang_def (NodeId id);
+  tl::optional<AttributeProcMacro &> lookup_attribute_def (NodeId id);
 
   tl::optional<CustomDeriveProcMacro &>
-  lookup_derive_proc_macro_def (NodeId id);
-  tl::optional<BangProcMacro &> lookup_bang_proc_macro_def (NodeId id);
-  tl::optional<AttributeProcMacro &>
-  lookup_attribute_proc_macro_def (NodeId id);
-
-  tl::optional<CustomDeriveProcMacro &>
-  lookup_derive_proc_macro_invocation (AST::SimplePath &invoc);
+  lookup_derive_invocation (AST::SimplePath &invoc);
   tl::optional<BangProcMacro &>
-  lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id);
+  lookup_bang_invocation (AST::MacroInvocation &invoc_id);
   tl::optional<AttributeProcMacro &>
-  lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc);
-  void insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
-					    CustomDeriveProcMacro def);
-  void insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
-					  BangProcMacro def);
-  void insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
-					       AttributeProcMacro def);
+  lookup_attribute_invocation (AST::SimplePath &invoc);
+  void insert_derive_invocation (AST::SimplePath &invoc,
+				 CustomDeriveProcMacro def);
+  void insert_bang_invocation (AST::MacroInvocation &invoc, BangProcMacro def);
+  void insert_attribute_invocation (AST::SimplePath &invoc,
+				    AttributeProcMacro def);
 };
 
 class Mappings

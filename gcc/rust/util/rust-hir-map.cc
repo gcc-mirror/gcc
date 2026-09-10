@@ -1137,37 +1137,37 @@ void
 ProcMacroMappings::insert_derive_proc_macros (
   CrateNum num, std::vector<CustomDeriveProcMacro> macros)
 {
-  auto it = procmacrosDeriveMappings.find (num);
-  rust_assert (it == procmacrosDeriveMappings.end ());
+  auto it = deriveMappings.find (num);
+  rust_assert (it == deriveMappings.end ());
 
-  procmacrosDeriveMappings[num] = macros;
+  deriveMappings[num] = macros;
 }
 
 void
 ProcMacroMappings::insert_bang_proc_macros (CrateNum num,
 					    std::vector<BangProcMacro> macros)
 {
-  auto it = procmacrosBangMappings.find (num);
-  rust_assert (it == procmacrosBangMappings.end ());
+  auto it = bangMappings.find (num);
+  rust_assert (it == bangMappings.end ());
 
-  procmacrosBangMappings[num] = macros;
+  bangMappings[num] = macros;
 }
 
 void
 ProcMacroMappings::insert_attribute_proc_macros (
   CrateNum num, std::vector<AttributeProcMacro> macros)
 {
-  auto it = procmacrosAttributeMappings.find (num);
-  rust_assert (it == procmacrosAttributeMappings.end ());
+  auto it = attributeMappings.find (num);
+  rust_assert (it == attributeMappings.end ());
 
-  procmacrosAttributeMappings[num] = macros;
+  attributeMappings[num] = macros;
 }
 
 tl::optional<std::vector<CustomDeriveProcMacro> &>
 ProcMacroMappings::lookup_derive_proc_macros (CrateNum num)
 {
-  auto it = procmacrosDeriveMappings.find (num);
-  if (it == procmacrosDeriveMappings.end ())
+  auto it = deriveMappings.find (num);
+  if (it == deriveMappings.end ())
     return tl::nullopt;
 
   return it->second;
@@ -1176,8 +1176,8 @@ ProcMacroMappings::lookup_derive_proc_macros (CrateNum num)
 tl::optional<std::vector<BangProcMacro> &>
 ProcMacroMappings::lookup_bang_proc_macros (CrateNum num)
 {
-  auto it = procmacrosBangMappings.find (num);
-  if (it == procmacrosBangMappings.end ())
+  auto it = bangMappings.find (num);
+  if (it == bangMappings.end ())
     return tl::nullopt;
 
   return it->second;
@@ -1186,15 +1186,15 @@ ProcMacroMappings::lookup_bang_proc_macros (CrateNum num)
 tl::optional<std::vector<AttributeProcMacro> &>
 ProcMacroMappings::lookup_attribute_proc_macros (CrateNum num)
 {
-  auto it = procmacrosAttributeMappings.find (num);
-  if (it == procmacrosAttributeMappings.end ())
+  auto it = attributeMappings.find (num);
+  if (it == attributeMappings.end ())
     return tl::nullopt;
 
   return it->second;
 }
 
 void
-ProcMacroMappings::insert_derive_proc_macro_def (CustomDeriveProcMacro macro)
+ProcMacroMappings::insert_derive_def (CustomDeriveProcMacro macro)
 {
   auto it = procmacroDeriveMappings.find (macro.get_node_id ());
   rust_assert (it == procmacroDeriveMappings.end ());
@@ -1203,7 +1203,7 @@ ProcMacroMappings::insert_derive_proc_macro_def (CustomDeriveProcMacro macro)
 }
 
 void
-ProcMacroMappings::insert_bang_proc_macro_def (BangProcMacro macro)
+ProcMacroMappings::insert_bang_def (BangProcMacro macro)
 {
   auto it = procmacroBangMappings.find (macro.get_node_id ());
   rust_assert (it == procmacroBangMappings.end ());
@@ -1212,7 +1212,7 @@ ProcMacroMappings::insert_bang_proc_macro_def (BangProcMacro macro)
 }
 
 void
-ProcMacroMappings::insert_attribute_proc_macro_def (AttributeProcMacro macro)
+ProcMacroMappings::insert_attribute_def (AttributeProcMacro macro)
 {
   auto it = procmacroAttributeMappings.find (macro.get_node_id ());
   rust_assert (it == procmacroAttributeMappings.end ());
@@ -1221,7 +1221,7 @@ ProcMacroMappings::insert_attribute_proc_macro_def (AttributeProcMacro macro)
 }
 
 tl::optional<CustomDeriveProcMacro &>
-ProcMacroMappings::lookup_derive_proc_macro_def (NodeId id)
+ProcMacroMappings::lookup_derive_def (NodeId id)
 {
   auto it = procmacroDeriveMappings.find (id);
   if (it == procmacroDeriveMappings.end ())
@@ -1231,7 +1231,7 @@ ProcMacroMappings::lookup_derive_proc_macro_def (NodeId id)
 }
 
 tl::optional<BangProcMacro &>
-ProcMacroMappings::lookup_bang_proc_macro_def (NodeId id)
+ProcMacroMappings::lookup_bang_def (NodeId id)
 {
   auto it = procmacroBangMappings.find (id);
   if (it == procmacroBangMappings.end ())
@@ -1241,7 +1241,7 @@ ProcMacroMappings::lookup_bang_proc_macro_def (NodeId id)
 }
 
 tl::optional<AttributeProcMacro &>
-ProcMacroMappings::lookup_attribute_proc_macro_def (NodeId id)
+ProcMacroMappings::lookup_attribute_def (NodeId id)
 {
   auto it = procmacroAttributeMappings.find (id);
   if (it == procmacroAttributeMappings.end ())
@@ -1251,8 +1251,8 @@ ProcMacroMappings::lookup_attribute_proc_macro_def (NodeId id)
 }
 
 void
-ProcMacroMappings::insert_derive_proc_macro_invocation (
-  AST::SimplePath &invoc, CustomDeriveProcMacro def)
+ProcMacroMappings::insert_derive_invocation (AST::SimplePath &invoc,
+					     CustomDeriveProcMacro def)
 {
   auto it = procmacroDeriveInvocations.find (invoc.get_node_id ());
   rust_assert (it == procmacroDeriveInvocations.end ());
@@ -1261,7 +1261,7 @@ ProcMacroMappings::insert_derive_proc_macro_invocation (
 }
 
 tl::optional<CustomDeriveProcMacro &>
-ProcMacroMappings::lookup_derive_proc_macro_invocation (AST::SimplePath &invoc)
+ProcMacroMappings::lookup_derive_invocation (AST::SimplePath &invoc)
 {
   auto it = procmacroDeriveInvocations.find (invoc.get_node_id ());
   if (it == procmacroDeriveInvocations.end ())
@@ -1271,8 +1271,8 @@ ProcMacroMappings::lookup_derive_proc_macro_invocation (AST::SimplePath &invoc)
 }
 
 void
-ProcMacroMappings::insert_bang_proc_macro_invocation (
-  AST::MacroInvocation &invoc, BangProcMacro def)
+ProcMacroMappings::insert_bang_invocation (AST::MacroInvocation &invoc,
+					   BangProcMacro def)
 {
   auto it = procmacroBangInvocations.find (invoc.get_node_id ());
   rust_assert (it == procmacroBangInvocations.end ());
@@ -1281,8 +1281,7 @@ ProcMacroMappings::insert_bang_proc_macro_invocation (
 }
 
 tl::optional<BangProcMacro &>
-ProcMacroMappings::lookup_bang_proc_macro_invocation (
-  AST::MacroInvocation &invoc)
+ProcMacroMappings::lookup_bang_invocation (AST::MacroInvocation &invoc)
 {
   auto it = procmacroBangInvocations.find (invoc.get_node_id ());
   if (it == procmacroBangInvocations.end ())
@@ -1292,8 +1291,8 @@ ProcMacroMappings::lookup_bang_proc_macro_invocation (
 }
 
 void
-ProcMacroMappings::insert_attribute_proc_macro_invocation (
-  AST::SimplePath &invoc, AttributeProcMacro def)
+ProcMacroMappings::insert_attribute_invocation (AST::SimplePath &invoc,
+						AttributeProcMacro def)
 {
   auto it = procmacroAttributeInvocations.find (invoc.get_node_id ());
   rust_assert (it == procmacroAttributeInvocations.end ());
@@ -1302,8 +1301,7 @@ ProcMacroMappings::insert_attribute_proc_macro_invocation (
 }
 
 tl::optional<AttributeProcMacro &>
-ProcMacroMappings::lookup_attribute_proc_macro_invocation (
-  AST::SimplePath &invoc)
+ProcMacroMappings::lookup_attribute_invocation (AST::SimplePath &invoc)
 {
   auto it = procmacroAttributeInvocations.find (invoc.get_node_id ());
   if (it == procmacroAttributeInvocations.end ())

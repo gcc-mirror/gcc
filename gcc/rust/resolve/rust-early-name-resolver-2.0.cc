@@ -402,12 +402,12 @@ Early::visit_derive_attribute (AST::Attribute &attr,
 	  continue;
 	}
 
-      auto pm_def = mappings.pmacro_mappings.lookup_derive_proc_macro_def (
+      auto pm_def = mappings.pmacro_mappings.lookup_derive_def (
 	ns_def->definition.get_node_id ());
 
       if (pm_def.has_value ())
-	mappings.pmacro_mappings.insert_derive_proc_macro_invocation (
-	  trait, pm_def.value ());
+	mappings.pmacro_mappings.insert_derive_invocation (trait,
+							   pm_def.value ());
     }
 }
 
@@ -425,14 +425,14 @@ Early::visit_non_builtin_attribute (AST::Attribute &attr,
 			    name.c_str ()));
       return;
     }
-  auto pm_def = mappings.pmacro_mappings.lookup_attribute_proc_macro_def (
+  auto pm_def = mappings.pmacro_mappings.lookup_attribute_def (
     ns_def->definition.get_node_id ());
 
   if (!pm_def.has_value ())
     return;
 
-  mappings.pmacro_mappings.insert_attribute_proc_macro_invocation (
-    attr.get_path (), pm_def.value ());
+  mappings.pmacro_mappings.insert_attribute_invocation (attr.get_path (),
+							pm_def.value ());
 }
 
 void
