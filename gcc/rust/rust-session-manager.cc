@@ -1366,9 +1366,10 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 	}
     }
 
-  mappings.insert_attribute_proc_macros (crate_num, attribute_macros);
-  mappings.insert_bang_proc_macros (crate_num, bang_macros);
-  mappings.insert_derive_proc_macros (crate_num, derive_macros);
+  mappings.pmacro_mappings.insert_attribute_proc_macros (crate_num,
+							 attribute_macros);
+  mappings.pmacro_mappings.insert_bang_proc_macros (crate_num, bang_macros);
+  mappings.pmacro_mappings.insert_derive_proc_macros (crate_num, derive_macros);
 
   // always restore the crate_num
   crate_mapping.set_current_crate (saved_crate_num);

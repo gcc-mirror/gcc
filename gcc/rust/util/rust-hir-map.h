@@ -108,6 +108,60 @@ public:
   AST::Crate *get_ast_crate_by_node_id_raw (NodeId id);
 };
 
+class ProcMacroMappings
+{
+  std::map<CrateNum, std::vector<CustomDeriveProcMacro>>
+    procmacrosDeriveMappings;
+  std::map<CrateNum, std::vector<BangProcMacro>> procmacrosBangMappings;
+  std::map<CrateNum, std::vector<AttributeProcMacro>>
+    procmacrosAttributeMappings;
+
+  std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveMappings;
+  std::map<NodeId, BangProcMacro> procmacroBangMappings;
+  std::map<NodeId, AttributeProcMacro> procmacroAttributeMappings;
+  std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveInvocations;
+  std::map<NodeId, BangProcMacro> procmacroBangInvocations;
+  std::map<NodeId, AttributeProcMacro> procmacroAttributeInvocations;
+
+public:
+  void insert_derive_proc_macros (CrateNum num,
+				  std::vector<CustomDeriveProcMacro> macros);
+  void insert_bang_proc_macros (CrateNum num,
+				std::vector<BangProcMacro> macros);
+  void insert_attribute_proc_macros (CrateNum num,
+				     std::vector<AttributeProcMacro> macros);
+
+  tl::optional<std::vector<CustomDeriveProcMacro> &>
+  lookup_derive_proc_macros (CrateNum num);
+  tl::optional<std::vector<BangProcMacro> &>
+  lookup_bang_proc_macros (CrateNum num);
+  tl::optional<std::vector<AttributeProcMacro> &>
+  lookup_attribute_proc_macros (CrateNum num);
+
+  void insert_derive_proc_macro_def (CustomDeriveProcMacro macro);
+  void insert_bang_proc_macro_def (BangProcMacro macro);
+  void insert_attribute_proc_macro_def (AttributeProcMacro macro);
+
+  tl::optional<CustomDeriveProcMacro &>
+  lookup_derive_proc_macro_def (NodeId id);
+  tl::optional<BangProcMacro &> lookup_bang_proc_macro_def (NodeId id);
+  tl::optional<AttributeProcMacro &>
+  lookup_attribute_proc_macro_def (NodeId id);
+
+  tl::optional<CustomDeriveProcMacro &>
+  lookup_derive_proc_macro_invocation (AST::SimplePath &invoc);
+  tl::optional<BangProcMacro &>
+  lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id);
+  tl::optional<AttributeProcMacro &>
+  lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc);
+  void insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
+					    CustomDeriveProcMacro def);
+  void insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
+					  BangProcMacro def);
+  void insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
+					       AttributeProcMacro def);
+};
+
 class Mappings
 {
 public:
@@ -115,6 +169,7 @@ public:
   ~Mappings ();
 
   CrateMappings crate_mapping;
+  ProcMacroMappings pmacro_mappings;
 
   NodeId get_next_node_id ();
   HirId get_next_hir_id ()
@@ -344,43 +399,6 @@ public:
   void insert_exported_macro (AST::MacroRulesDefinition &def);
   std::vector<AST::MacroRulesDefinition> get_exported_macros ();
 
-  void insert_derive_proc_macros (CrateNum num,
-				  std::vector<CustomDeriveProcMacro> macros);
-  void insert_bang_proc_macros (CrateNum num,
-				std::vector<BangProcMacro> macros);
-  void insert_attribute_proc_macros (CrateNum num,
-				     std::vector<AttributeProcMacro> macros);
-
-  tl::optional<std::vector<CustomDeriveProcMacro> &>
-  lookup_derive_proc_macros (CrateNum num);
-  tl::optional<std::vector<BangProcMacro> &>
-  lookup_bang_proc_macros (CrateNum num);
-  tl::optional<std::vector<AttributeProcMacro> &>
-  lookup_attribute_proc_macros (CrateNum num);
-
-  void insert_derive_proc_macro_def (CustomDeriveProcMacro macro);
-  void insert_bang_proc_macro_def (BangProcMacro macro);
-  void insert_attribute_proc_macro_def (AttributeProcMacro macro);
-
-  tl::optional<CustomDeriveProcMacro &>
-  lookup_derive_proc_macro_def (NodeId id);
-  tl::optional<BangProcMacro &> lookup_bang_proc_macro_def (NodeId id);
-  tl::optional<AttributeProcMacro &>
-  lookup_attribute_proc_macro_def (NodeId id);
-
-  tl::optional<CustomDeriveProcMacro &>
-  lookup_derive_proc_macro_invocation (AST::SimplePath &invoc);
-  tl::optional<BangProcMacro &>
-  lookup_bang_proc_macro_invocation (AST::MacroInvocation &invoc_id);
-  tl::optional<AttributeProcMacro &>
-  lookup_attribute_proc_macro_invocation (AST::SimplePath &invoc);
-  void insert_derive_proc_macro_invocation (AST::SimplePath &invoc,
-					    CustomDeriveProcMacro def);
-  void insert_bang_proc_macro_invocation (AST::MacroInvocation &invoc,
-					  BangProcMacro def);
-  void insert_attribute_proc_macro_invocation (AST::SimplePath &invoc,
-					       AttributeProcMacro def);
-
   void insert_visibility (NodeId id, Privacy::ModuleVisibility visibility);
   tl::optional<Privacy::ModuleVisibility &> lookup_visibility (NodeId id);
 
@@ -490,20 +508,6 @@ private:
     macroMappings;
   std::map<NodeId, AST::MacroRulesDefinition *> macroInvocations;
   std::vector<AST::MacroRulesDefinition> exportedMacros;
-
-  // Procedural macros
-  std::map<CrateNum, std::vector<CustomDeriveProcMacro>>
-    procmacrosDeriveMappings;
-  std::map<CrateNum, std::vector<BangProcMacro>> procmacrosBangMappings;
-  std::map<CrateNum, std::vector<AttributeProcMacro>>
-    procmacrosAttributeMappings;
-
-  std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveMappings;
-  std::map<NodeId, BangProcMacro> procmacroBangMappings;
-  std::map<NodeId, AttributeProcMacro> procmacroAttributeMappings;
-  std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveInvocations;
-  std::map<NodeId, BangProcMacro> procmacroBangInvocations;
-  std::map<NodeId, AttributeProcMacro> procmacroAttributeInvocations;
 
   // Low level visibility map for each DefId
   std::map<NodeId, Privacy::ModuleVisibility> visibility_map;

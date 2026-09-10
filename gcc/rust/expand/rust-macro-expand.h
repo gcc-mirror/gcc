@@ -412,7 +412,7 @@ struct MacroExpander
   AST::Fragment expand_derive_proc_macro (T &item, AST::SimplePath &path)
   {
     tl::optional<CustomDeriveProcMacro &> macro
-      = mappings.lookup_derive_proc_macro_invocation (path);
+      = mappings.pmacro_mappings.lookup_derive_proc_macro_invocation (path);
     if (!macro.has_value ())
       {
 	rust_error_at (path.get_locus (), "macro not found");
@@ -435,7 +435,7 @@ struct MacroExpander
 					AST::MacroInvocation &invocation)
   {
     tl::optional<BangProcMacro &> macro
-      = mappings.lookup_bang_proc_macro_invocation (invocation);
+      = mappings.pmacro_mappings.lookup_bang_proc_macro_invocation (invocation);
     if (!macro.has_value ())
       {
 	rust_error_at (invocation.get_locus (), "macro not found");
@@ -457,7 +457,7 @@ struct MacroExpander
   AST::Fragment expand_attribute_proc_macro (T &item, AST::SimplePath &path)
   {
     tl::optional<AttributeProcMacro &> macro
-      = mappings.lookup_attribute_proc_macro_invocation (path);
+      = mappings.pmacro_mappings.lookup_attribute_proc_macro_invocation (path);
     if (!macro.has_value ())
       {
 	rust_error_at (path.get_locus (), "macro not found");
