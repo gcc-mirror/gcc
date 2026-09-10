@@ -49,3 +49,52 @@ Map4 m4{m};
 Map4 m5{m, a};
 Map4 m6{std::move(m)};
 Map4 m7{std::move(m6), a};
+
+// PR libstdc++/126949
+struct ExplicitHash
+{
+  explicit ExplicitHash(bool = false) { }
+
+  std::size_t operator()(int value) const
+  { return value; }
+};
+
+struct ExplicitEqual
+{
+  explicit ExplicitEqual(bool = false) { }
+
+  bool operator()(int lhs, int rhs) const
+  { return lhs == rhs; }
+};
+
+template<typename T>
+  struct ExplicitAlloc
+  {
+    using value_type = T;
+
+    explicit ExplicitAlloc(bool = false) noexcept { }
+
+    template<typename U>
+      ExplicitAlloc(const ExplicitAlloc<U>&) { }
+
+    T *allocate(std::size_t n)
+    { return std::allocator<T>().allocate(n); }
+
+    void deallocate(T *p, std::size_t n)
+    { std::allocator<T>().deallocate(p, n); }
+
+    bool operator==(const ExplicitAlloc&) const { return true; }
+    bool operator!=(const ExplicitAlloc&) const { return false; }
+  };
+
+void
+test_hash()
+{
+  std::unordered_map<int, int, ExplicitHash> map1;
+  std::unordered_map<int, int, std::hash<int>, ExplicitEqual> map2;
+  std::unordered_map<int, int, std::hash<int>, std::equal_to<int>,
+			       ExplicitAlloc<std::pair<const int, int>>> map3;
+  std::unordered_map<int, int, ExplicitHash, ExplicitEqual,
+			       ExplicitAlloc<std::pair<const int, int>>> map4;
+
+}
