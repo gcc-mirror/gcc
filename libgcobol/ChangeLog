@@ -1,3 +1,14 @@
+2026-09-09  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (enum cbl_round_t): Ensure storage is 'int'
+	* gmath.cc (__gg__conditional_stash): Make globally accessible.
+	(squeeze_int256): Improve speed.
+	(__gg__int128_to_int128_rounded): Spelling in comment.
+	* libgcobol.cc (int128_to_field): Treat FldPointer as unsigned.
+	(format_for_display_internal): Change name of 'digits_e' to
+	'digits_r'.
+	(is_numeric_display_numeric): Likewise.
+
 2026-09-06  Robert Dubner  <rdubner@symas.com>
 
 	* inspect.cc (the_alpha_and_omega_sbc): Modified.

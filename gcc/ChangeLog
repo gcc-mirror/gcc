@@ -1,3 +1,157 @@
+2026-09-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/127142
+	* config/pa/pa.md: Add alternatives using ldil/addl
+	sequence to various insns to load the high part of
+	a symbolic operand.
+
+2026-09-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127261
+	* tree-ssa-sccvn.cc (insert_predicates_for_cond): Canonicalize
+	the comparison before testing for recusion.
+
+2026-09-09  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* expr.cc (gen_common_operation_to_reflect): Remove.
+	(reflect_64_bit_value): Remove.
+	(reflect_32_bit_value): Remove.
+	(reflect_16_bit_value): Remove.
+	(reflect_8_bit_value): Remove.
+	(generate_reflecting_code_standard): Remove.
+	* expr.h (generate_reflecting_code_standard): Remove.
+
+2026-09-09  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_spill_class): Declare.
+	(pa_legitimize_address_displacement): Declare.
+	(TARGET_SPILL_CLASS): Define.
+	(TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): Define.
+	(pa_secondary_reload): Handle 32 and 64-bit
+	float/integer type puns.  We need a secondary
+	reload for SImode/DImode REG+D moves to general
+	and float registers.
+	(pa_legitimate_address_p): Allow 14-bit displacements
+	when lra_in_progress is true.
+	(pa_spill_class): Implement.
+	(pa_legitimize_address_displacement): Implement.
+
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (if_case_blocks_ok_p): New function.
+	(find_if_case_1, find_if_case_2): Use it.
+
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_try_shifted_store_flag): Drop the vacuous null test
+	on common.
+	(noce_try_store_flag_mask): Match the two forms without assigning
+	inside the condition.
+	(noce_convert_multiple_sets): Drop the redundant set_used_flags calls
+	and the locals they were the only use of.
+
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_try_cond_arith): Assert that the conditional move
+	exists after the subreg fallback and drop the four dead tests for it.
+
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* system.h (HAVE_DESIGNATED_UNION_INITIALIZERS): Remove and poison.
+	* recog.h (insn_data_d::insn_output_u): New union, replacing the
+	anonymous one and its non-designated fallback.  Add a constructor
+	per member.
+	* genoutput.cc (output_operand_data): Emit one row per line.
+	(output_insn_data): Likewise, and initialise the output member
+	directly rather than through a designated initialiser.
+
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-loop-im.cc (can_sm_ref_p): Reject a trapping store when
+	non-call exceptions are enabled.
+
+2026-09-09  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-phiopt.cc (hoist_adjacent_loads): Clear the range
+	info of the hoisted loads.
+
+2026-09-09  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc (back_threader::m_visited_bbs):
+	Replace with...
+	(back_threader::m_visited_flag): ...this.
+	(back_threader::back_threader): Initialize it.
+	(back_threader::find_paths_to_names): Adjust.
+	(back_threader::maybe_thread_block): Drop the reset.
+
+2026-09-09  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.cc (range_from_missing_constructor_part):
+	Allow float types.
+	(range_from_readonly_load): Add the range of a REAL_CST.
+	(fold_using_range::range_from_readonly_var): Allow float types.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127262
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Convert switch label values to the type of the switch index.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.cc (nowrap_type_p): Honor
+	-fwrapv-pointer.
+
+2026-09-09  Sun, Qin  <qin.sun@intel.com>
+
+	* config/i386/sse.md (vec_concatv2df): Restrict the condition
+	to accept only CONST0_RTX as operand 2 when operand 1 is MEM.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126153
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Only
+	reinterpret a known aggregate value into the type of the
+	condition if both types have the same precision.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126153
+	* tree-ssa-sccvn.cc (reverse_storage_order_for_component_p): Take
+	the operands by const reference.
+	(vn_reference_lookup_3): Punt when translating a reference through
+	an aggregate copy consumes all of its operands and either access
+	has reverse storage order.
+
+2026-09-09  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc: Merge NEON_FUNCTION
+	macro instances having the same CLASS and ARGS arguments.
+	* config/aarch64/aarch64-neon-builtins-functions.h
+	(NEON_FUNCTION): Convert to a variadic macro and rename from this ...
+	(NEON_FUNCTION_IMPL): ... to this.
+	(NEON_FUNCTION_COUNT_IMPL): New macro.
+	(NEON_FUNCTION_COUNT): Likewise.
+	(NEON_FUNCTION_N_3): Likewise.
+	(NEON_FUNCTION_N_4): Likewise.
+	(NEON_FUNCTION_N_5): Likewise.
+	(NEON_FUNCTION_N_6): Likewise.
+	(NEON_FUNCTION_N_7): Likewise.
+	(NEON_FUNCTION_N_8): Likewise.
+	(NEON_FUNCTION_N_9): Likewise.
+	(NEON_FUNCTION_N_10): Likewise.
+	(NEON_FUNCTION_N_11): Likewise.
+	(NEON_FUNCTION_N_12): Likewise.
+	(NEON_FUNCTION_2): Likewise.
+	(NEON_FUNCTION_1): Likewise.
+
+2026-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127225
+	* config/i386/i386-expand.cc (ix86_expand_vector_init_v4sf): Use
+	emit_move_insn rather than a bare SET to materialize the V2SFmode
+	zero half, as movv2sf may not be available.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622

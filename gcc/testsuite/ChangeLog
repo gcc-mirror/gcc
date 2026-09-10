@@ -1,3 +1,72 @@
+2026-09-09  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp (natural_alignment_32) Remove
+	Darwin special-casing. (natural_alignment_64) Likewise.
+
+2026-09-09  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127261
+	* gcc.dg/torture/pr127261-1.c: New test.
+
+2026-09-09  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_gnu.cob: Removed.
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_ibm.cob: Removed.
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_iso.cob: Removed.
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_mf.cob: Removed.
+	* cobol.dg/group2/RT3611_-_BY_CONTENT_LENGTH_OF.cob: Removed.
+	* cobol.dg/group2/__define__text_.cob: Removed.
+	* cobol.dg/group2/__define__text_.out: Removed.
+	* cobol.dg/group2/customer_bug_Heuristic_Fail.cob: Removed.
+	* cobol.dg/group2/customer_bug_Heuristic_Fail.out: Removed.
+
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* g++.dg/tree-ssa/noncall-store-1.C: New test.
+
+2026-09-09  Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR target/126866
+	* gcc.target/powerpc/mma-double-test.c (MMA): Swap the vector
+	arguments to __builtin_mma_assemble_pair on big endian.
+
+2026-09-09  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/ssa-thread-27.c: New test.
+
+2026-09-09  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-8.c: New test.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127262
+	* gcc.dg/pr127262.c: New testcase.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/torture/pr113703-3.c: New test.
+	* gcc.dg/torture/pr113703-4.c: Likewise.
+
+2026-09-09  Sun, Qin  <qin.sun@intel.com>
+
+	* gcc.target/i386/vec-concatv2df.c: New test.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126153
+	* gcc.dg/torture/ipa-bitfield-predicate-1.c: New test.
+
+2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126153
+	* gcc.dg/torture/sso-fre-1.c: New test.
+
+2026-09-09  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127225
+	* gcc.target/i386/pr127225.c: New test.
+
 2026-09-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/126964

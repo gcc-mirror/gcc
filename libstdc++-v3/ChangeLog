@@ -1,3 +1,19 @@
+2026-09-09  Sammy Al Hashemi  <sammy@salh.xyz>
+
+	PR libstdc++/122071
+	* include/decimal/decimal.h (make_decimal32): Make inline
+	instead of static.
+	(make_decimal64): Likewise.
+	(make_decimal128): Likewise.
+
+2026-09-09  Steven Sudit  <stevensudit@gmail.com>
+
+	PR libstdc++/127219
+	* include/std/format
+	(basic_format_parse_context::__valid_types_for_check_dynamic_spec):
+	Make static, so that the static_assert in check_dynamic_spec does
+	not use this.
+
 2026-09-07  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/118665

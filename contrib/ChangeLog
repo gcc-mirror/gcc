@@ -1,3 +1,8 @@
+2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* filter-clang-warnings.py (skip_warning): Match insn-emit rather
+	than insn-emit.cc.
+
 2026-09-04  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/125507

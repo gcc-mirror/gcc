@@ -1,3 +1,13 @@
+2026-09-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/122205
+	* testsuite/libgomp.c/usm_env_handling-2.c: Improve debug printf.
+	* testsuite/libgomp.c/usm_env_handling-1.c: likewise; add
+	'#ifdef USE_SELF_MAPS'.
+	* testsuite/libgomp.c/usm_env_handling-1-self.c: New test.
+	* testsuite/libgomp.c/usm_env_handling-2-self.c: New test.
+	* testsuite/libgomp.c/usm_env_handling-3-self.c: New test.
+
 2026-09-08  Chung-Lin Tang  <cltang@baylibre.com>
 
 	PR middle-end/122205

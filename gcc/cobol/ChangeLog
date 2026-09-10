@@ -1,3 +1,23 @@
+2026-09-09  Robert Dubner  <rdubner@symas.com>
+
+	* genmath.cc (all_results_integer): Formatting.
+	(determine_excess_rdigits): New function: determines scaling factor for
+	two or more additive terms.
+	(add_phase_1): New function for efficient addition.
+	(ordinary_add_format_1): Use add_phase_1().
+	(ordinary_subtract_format_1): Likewise.
+	(add_litN_to_numdisp): Formatting.
+	(add_format_2): Use add_phase_1().
+	(subtract_format_2): Likewise.
+	* parse_ante.h (yylocation_print): Formatting.
+	(struct arith_t): Likewise.
+	(struct ast_op_t): Likewise.
+	(cbl_field_t::blank_initial): Switch to charmap_t::memset to fill
+	initialized memory.
+	(parser_move_carefully): Formatting.
+	(ast_enter_exit_section): Likewise.
+	* symbols.cc (symbol_file): Mollify cppcheck.
+
 2026-09-08  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse_ante.h (by_content_ok): Add test for literal.
