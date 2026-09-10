@@ -2606,7 +2606,7 @@ address_reload_context::emit_autoinc (rtx value, poly_int64 inc_amount)
 {
   /* Since we're going to call recog, and might be called within recog,
      we need to ensure we save and restore recog_data.  */
-  recog_data_saver recog_save;
+  recog_state_saver recog_save;
 
   /* REG or MEM to be copied and incremented.  */
   rtx incloc = XEXP (value, 0);

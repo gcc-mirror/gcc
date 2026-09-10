@@ -12257,7 +12257,7 @@ sh_recog_treg_set_expr (rtx op, machine_mode mode)
 
   /* We are going to invoke recog in a re-entrant way and thus
      have to capture its current state and restore it afterwards.  */
-  recog_data_d prev_recog_data = recog_data;
+  recog_state_saver recog_save;
 
   /* Note we can't use insn_raw here since that increases the uid
      and could cause debug compare differences; this insn never leaves
@@ -12297,7 +12297,6 @@ sh_recog_treg_set_expr (rtx op, machine_mode mode)
     }
 
   PUT_MODE (op, prev_op_mode);
-  recog_data = prev_recog_data;
   return result >= 0;
 }
 
@@ -12418,47 +12417,46 @@ sh_split_treg_set_expr (rtx x, rtx_insn* curr_insn)
      a nott.  */
   bool append_nott = false;
 
-  /* We are going to invoke recog/split_insns in a re-entrant way and thus
-     have to capture its current state and restore it afterwards.  */
-  recog_data_d prev_recog_data = recog_data;
+  std::pair<rtx_insn*, rtx_insn*> insnlist;
+  {
+    /* We are going to invoke recog/split_insns in a re-entrant way and thus
+       have to capture its current state and restore it afterwards.  */
+    recog_state_saver recog_save;
 
-  if (negt_reg_operand (x, GET_MODE (x)))
-    {
-      /* This is a normal movt followed by a nott.  It will be converted
-	 into a movrt after initial expansion.  */
-      XEXP (PATTERN (i), 1) = get_t_reg_rtx ();
-      append_nott = true;
-    }
-  else
-    {
-      /* If the comparison op doesn't have a mode set, set it to SImode.  */
-      if (COMPARISON_P (x) && GET_MODE (x) == VOIDmode)
-	PUT_MODE (x, SImode);
+    if (negt_reg_operand (x, GET_MODE (x)))
+      {
+	/* This is a normal movt followed by a nott.  It will be converted
+	   into a movrt after initial expansion.  */
+	XEXP (PATTERN (i), 1) = get_t_reg_rtx ();
+	append_nott = true;
+      }
+    else
+      {
+	/* If the comparison op doesn't have a mode set, set it to SImode.  */
+	if (COMPARISON_P (x) && GET_MODE (x) == VOIDmode)
+	  PUT_MODE (x, SImode);
 
-      int insn_code = recog (PATTERN (i), i, 0);
+	int insn_code = recog (PATTERN (i), i, 0);
 
-      if (insn_code < 0 && COMPARISON_P (x))
-	{
-	  machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
-	  if (cmp_mode == VOIDmode)
-	    cmp_mode = GET_MODE (XEXP (x, 1));
+	if (insn_code < 0 && COMPARISON_P (x))
+	  {
+	    machine_mode cmp_mode = GET_MODE (XEXP (x, 0));
+	    if (cmp_mode == VOIDmode)
+	      cmp_mode = GET_MODE (XEXP (x, 1));
 
-	  PUT_CODE (x, reverse_condition (GET_CODE (x)));
-	  insn_code = recog (PATTERN (i), i, 0);
-	  append_nott = true;
-	}
+	    PUT_CODE (x, reverse_condition (GET_CODE (x)));
+	    insn_code = recog (PATTERN (i), i, 0);
+	    append_nott = true;
+	  }
 
-      gcc_assert (insn_code >= 0);
-    }
+	gcc_assert (insn_code >= 0);
+      }
 
-  /* Try to recursively split the insn.  Some insns might refuse to split
-     any further while we are in the treg_set_expr splitting phase.  They
-     will be emitted as part of the outer insn and then split again.  */
-  std::pair<rtx_insn*, rtx_insn*> insnlist =
-	sh_try_split_insn_simple (i, curr_insn);
-
-  /* Restore recog state.  */
-  recog_data = prev_recog_data;
+    /* Try to recursively split the insn.  Some insns might refuse to split
+       any further while we are in the treg_set_expr splitting phase.  They
+       will be emitted as part of the outer insn and then split again.  */
+    insnlist = sh_try_split_insn_simple (i, curr_insn);
+  }
 
   rtx_insn* nott_insn = sh_is_nott_insn (insnlist.second)
 			? insnlist.second

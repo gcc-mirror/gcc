@@ -11227,12 +11227,11 @@
   rtx_insn* i = emit_insn (gen_rtx_SET (operands[2],
 		    sh_remove_overlapping_post_inc (operands[2], operands[3])));
 
-  recog_data_d prev_recog_data = recog_data;
-  bool i_invalid = insn_invalid_p (i, false); 
-  recog_data = prev_recog_data;
-  
-  if (i_invalid)
-    FAIL;
+  {
+    recog_state_saver recog_save;
+    if (insn_invalid_p (i, false))
+      FAIL;
+  }
     
   sh_check_add_incdec_notes (i);
 
@@ -11267,12 +11266,11 @@
   rtx_insn* i = emit_insn (gen_rtx_SET (operands[2],
 		    sh_remove_overlapping_post_inc (operands[2], operands[3])));
 
-  recog_data_d prev_recog_data = recog_data;
-  bool i_invalid = insn_invalid_p (i, false); 
-  recog_data = prev_recog_data;
-  
-  if (i_invalid)
-    FAIL;
+  {
+    recog_state_saver recog_save;
+    if (insn_invalid_p (i, false))
+      FAIL;
+  }
     
   sh_check_add_incdec_notes (i);
   

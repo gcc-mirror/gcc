@@ -1752,8 +1752,9 @@ assemble_asm (tree asm_str)
 	}
       constraints = XALLOCAVEC (const char *, noutputs + ninputs);
       ops = XALLOCAVEC (rtx, noutputs + ninputs);
-      memset (&recog_data, 0, sizeof (recog_data));
       recog_data.n_operands = ninputs + noutputs;
+      recog_data.n_dups = 0;
+      recog_data.n_alternatives = 0;
       recog_data.is_asm = true;
       reload_completed = 0;
       cse_not_expected = 1;
@@ -1857,8 +1858,11 @@ assemble_asm (tree asm_str)
 	    recog_data.n_alternatives += (*p++ == ',');
 	}
       for (i = 0; i < recog_data.n_operands; i++)
-	recog_data.operand_type[i]
-	  = recog_data.constraints[i][0] == '=' ? OP_OUT : OP_IN;
+	{
+	  recog_data.operand_type[i]
+	    = recog_data.constraints[i][0] == '=' ? OP_OUT : OP_IN;
+	  recog_data.is_operator[i] = false;
+	}
       reload_completed = 1;
       constrain_operands (1, ALL_ALTERNATIVES);
       if (which_alternative < 0)

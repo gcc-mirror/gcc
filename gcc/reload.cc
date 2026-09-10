@@ -884,7 +884,6 @@ can_reload_into (rtx in, int regno, machine_mode mode)
   rtx dst;
   rtx_insn *test_insn;
   int r = 0;
-  struct recog_data_d save_recog_data;
 
   /* For matching constraints, we often get notional input reloads where
      we want to use the original register as the reload register.  I.e.
@@ -905,13 +904,12 @@ can_reload_into (rtx in, int regno, machine_mode mode)
      be fine.  */
   dst =  gen_rtx_REG (mode, regno);
   test_insn = make_insn_raw (gen_rtx_SET (dst, in));
-  save_recog_data = recog_data;
+  recog_state_saver recog_save;
   if (recog_memoized (test_insn) >= 0)
     {
       extract_insn (test_insn);
       r = constrain_operands (1, get_enabled_alternatives (test_insn));
     }
-  recog_data = save_recog_data;
   return r;
 }
 

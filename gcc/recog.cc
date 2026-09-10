@@ -71,7 +71,8 @@ struct target_recog *this_target_recog = &default_target_recog;
 
 int volatile_ok;
 
-struct recog_data_d recog_data;
+static struct recog_data_d main_recog_data;
+struct recog_data_d *recog_data_ptr = &main_recog_data;
 
 /* Contains a vector of operand_alternative structures, such that
    operand OP of alternative A is at index A * n_operands + OP.
