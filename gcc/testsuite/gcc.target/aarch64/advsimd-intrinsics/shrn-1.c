@@ -10,6 +10,6 @@ uint8x16_t foo (uint32x4_t a, uint32x4_t b)
   return vrshrn_high_n_u16 (vrshrn_n_u16 (b1, 8), b1, 8);
 }
 
-/* { dg-final { scan-assembler-times {\tmovi\t} 1 } } */
-/* { dg-final { scan-assembler-times {\traddhn\t} 2 } } */
-/* { dg-final { scan-assembler-times {\traddhn2\t} 2 } } */
+/* { dg-final { scan-assembler-not {\tmovi\t} } } */
+/* { dg-final { scan-assembler-times {\trshrn\t} 2 } } */
+/* { dg-final { scan-assembler-times {\trshrn2\t} 2 } } */

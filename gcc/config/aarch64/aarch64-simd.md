@@ -7609,6 +7609,20 @@
   }
 )
 
+(define_insn "*aarch64_<sra_op>rshrn_n<mode>_insn<vczle><vczbe>"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
+	(truncate:<VNARROWQ>
+	  (SHIFTRT:VQN
+	    (plus:VQN
+	      (match_operand:VQN 1 "register_operand" "w")
+	      (match_operand:VQN 3 "aarch64_int_rnd_operand"))
+	    (match_operand:VQN 2 "aarch64_simd_shift_imm_vec_<vn_mode>"))))]
+  "TARGET_SIMD
+   && aarch64_const_vec_rnd_cst_p (operands[3], operands[2])"
+  "rshrn\t%<vn2>0<Vmntype>, %<v>1<Vmtype>, %2"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
 (define_insn "*aarch64_sqshrun_n<mode>_insn<vczle><vczbe>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(us_truncate:<VNARROWQ>
@@ -7819,6 +7833,38 @@
   "TARGET_SIMD && BYTES_BIG_ENDIAN
    && aarch64_const_vec_rnd_cst_p (operands[4], operands[3])"
   "<shrn_op>rshrn2\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<sra_op>rshrn2_n<mode>_insn_le"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN
+	      (plus:VQN
+		(match_operand:VQN 2 "register_operand" "w")
+		(match_operand:VQN 4 "aarch64_int_rnd_operand"))
+	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))))]
+  "TARGET_SIMD && !BYTES_BIG_ENDIAN
+   && aarch64_const_vec_rnd_cst_p (operands[4], operands[3])"
+  "rshrn2\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
+  [(set_attr "type" "neon_shift_imm_narrow_q")]
+)
+
+(define_insn "*aarch64_<sra_op>rshrn2_n<mode>_insn_be"
+  [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
+	(vec_concat:<VNARROWQ2>
+	  (truncate:<VNARROWQ>
+	    (SHIFTRT:VQN
+	      (plus:VQN
+		(match_operand:VQN 2 "register_operand" "w")
+		(match_operand:VQN 4 "aarch64_int_rnd_operand"))
+	      (match_operand:VQN 3 "aarch64_simd_shift_imm_vec_<vn_mode>")))
+	  (match_operand:<VNARROWQ> 1 "register_operand" "0")))]
+  "TARGET_SIMD && BYTES_BIG_ENDIAN
+   && aarch64_const_vec_rnd_cst_p (operands[4], operands[3])"
+  "rshrn2\t%<vn2>0.<V2ntype>, %<v>2.<Vtype>, %3"
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
