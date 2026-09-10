@@ -100,11 +100,14 @@ DeriveOrd::cmp_fn (std::unique_ptr<BlockExpr> &&block, Identifier type_name)
     }
 
   // &self, other: &Self
-  auto params = vec (
-    builder.self_ref_param (),
-    builder.function_param (builder.identifier_pattern ("other"),
-			    builder.reference_type (ptrify (
-			      builder.type_path (type_name.as_string ())))));
+  //
+  // this must be Self for a generic type Wrapping<T> the bare struct name has
+  // no type arguments
+  auto params
+    = vec (builder.self_ref_param (),
+	   builder.function_param (builder.identifier_pattern ("other"),
+				   builder.reference_type (
+				     ptrify (builder.type_path ("Self")))));
 
   auto function_name = fn (ordering);
 
