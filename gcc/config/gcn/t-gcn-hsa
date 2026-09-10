@@ -42,8 +42,8 @@ empty :=
 space := $(empty) $(empty)
 comma := ,
 multilib_list := $(subst $(comma),$(space),$(TM_MULTILIB_CONFIG)) 
-MULTILIB_OPTIONS = $(subst $(space),/,$(addprefix march=,$(multilib_list)))
-MULTILIB_DIRNAMES = $(multilib_list)
+MULTILIB_OPTIONS = $(subst $(space),/,$(addprefix march=,$(multilib_list))) msimt
+MULTILIB_DIRNAMES = $(multilib_list) simt
 
 gcn-tree.o: $(srcdir)/config/gcn/gcn-tree.cc
 	$(COMPILE) $<

@@ -346,6 +346,34 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
     {
       error ("too many arguments passed in sgpr registers");
     }
+
+  /* Ensure that the SIMD vs SIMT modes are in agreement.
+     Ideally, this would sit in gcn_option_override, but that runs before
+     LTO stream-in loads the values from the host compiler.   */
+  static bool gpu_mode_warned = false;
+  if (flag_openmp && !gpu_mode_warned)
+    switch (param_offload_gpu_mode)
+      {
+      case OFFLOAD_GPU_MODE_AUTO:
+      case OFFLOAD_GPU_MODE_SIMD:
+	if (flag_simt_mode)
+	  {
+	    gpu_mode_warned = 1;
+	    error ("%<--param=offload-gpu-mode=auto|simd%> is incompatible "
+		   "with %<-msimt%>");
+	  }
+	break;
+      case OFFLOAD_GPU_MODE_SIMT_DIRECTED:
+      case OFFLOAD_GPU_MODE_SIMT:
+	if (!flag_simt_mode)
+	  {
+	    gpu_mode_warned = 1;
+	    error ("%<--param=offload-gpu-mode=simt-directed|simt%> is "
+		   "incompatible with %<-mno-simt%>");
+	  }
+	break;
+      }
+
   return err;
 }
 
@@ -5276,6 +5304,9 @@ gcn_vectorize_vec_perm_const (machine_mode vmode, machine_mode op_mode,
 static bool
 gcn_vector_mode_supported_p (machine_mode mode)
 {
+  if (flag_simt_mode)
+    return false;
+
   return (mode == V64QImode || mode == V64HImode
 	  || mode == V64SImode || mode == V64DImode
 	  || mode == V64SFmode || mode == V64DFmode
@@ -5309,6 +5340,9 @@ gcn_vector_mode_supported_p (machine_mode mode)
 static machine_mode
 gcn_vectorize_preferred_simd_mode (scalar_mode mode)
 {
+  if (flag_simt_mode)
+    return word_mode;
+
   bool v32;
   if (gcn_preferred_vectorization_factor == 32)
     v32 = true;

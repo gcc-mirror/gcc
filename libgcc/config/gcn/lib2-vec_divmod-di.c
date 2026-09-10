@@ -20,6 +20,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef __SIMT__
+
 #include "lib2-gcn.h"
 
 /* 64-bit V64SI divide and modulo as used in gcn.
@@ -116,3 +118,5 @@ DEF_VARIANTS_B (__divmod, di4, uti, di)
 DEF_VARIANTS (__udiv, di3, udi)
 DEF_VARIANTS (__umod, di3, udi)
 DEF_VARIANTS_B (__udivmod, di4, uti, udi)
+
+#endif

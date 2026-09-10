@@ -119,3 +119,7 @@ Target Var(fake_exceptions) Init(0) Undocumented
 ; 'sorry, unimplemented: exception handling not supported' is skipped, code
 ; generation proceeds, and instead, exception handling constructs 'abort' at
 ; run time.  (..., or don't, if they're in dead code.)
+
+msimt
+Target Var(flag_simt_mode) Init(0) Undocumented
+Switch from SIMD mode to SIMT mode.
