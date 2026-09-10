@@ -2808,6 +2808,16 @@ users:
   roles:
   - WriteAfter
   account: tkaminsk
+- sn: Kapelli
+  cn: Rohith Kapelli
+  email:
+  - kapellirohith@gmail.com
+  - kapellirohith@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: kapellirohith
+  DCO:
+  - kapellirohith@gmail.com
 - sn: Kaplansky
   cn: Victor Kaplansky
   email:
