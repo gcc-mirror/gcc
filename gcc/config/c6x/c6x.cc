@@ -4822,23 +4822,15 @@ find_last_same_clock (rtx_insn *insn)
 static void
 reorg_split_calls (rtx_code_label **call_labels)
 {
-  unsigned int reservation_mask = 0;
   rtx_insn *insn = get_insns ();
   gcc_assert (NOTE_P (insn));
   insn = next_real_insn (insn);
   while (insn)
     {
-      int uid;
       rtx_insn *next = next_real_insn (insn);
 
       if (DEBUG_INSN_P (insn))
 	goto done;
-
-      if (GET_MODE (insn) == TImode)
-	reservation_mask = 0;
-      uid = INSN_UID (insn);
-      if (c6x_flag_schedule_insns2 && recog_memoized (insn) >= 0)
-	reservation_mask |= 1 << INSN_INFO_ENTRY (uid).reservation;
 
       if (returning_call_p (insn))
 	{
@@ -5492,7 +5484,7 @@ hwloop_optimize (hwloop_info loop)
   int n_execute_packets;
   edge entry_edge;
   unsigned ix;
-  int max_uid_before, delayed_splits;
+  int max_uid_before;
   int i, sp_ii, min_ii, max_ii, max_parallel, n_insns, n_real_insns, stages;
   rtx_insn **orig_vec;
   rtx_insn **copies;
@@ -5538,14 +5530,13 @@ hwloop_optimize (hwloop_info loop)
      safe and beneficial to split them.  If any multi-cycle operations
      remain after splitting (because we don't handle them yet), we
      cannot pipeline the loop.  */
-  delayed_splits = 0;
   FOR_BB_INSNS (bb, insn)
     {
       if (NONDEBUG_INSN_P (insn))
 	{
 	  recog_memoized (insn);
 	  if (split_delayed_nonbranch (insn))
-	    delayed_splits++;
+	    ;
 	  else if (INSN_CODE (insn) >= 0
 		   && get_attr_cycles (insn) > 1)
 	    goto undo_splits;
