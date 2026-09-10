@@ -179,6 +179,53 @@ jt_path_registry::~jt_path_registry ()
   m_paths.release ();
 }
 
+/* Drop path PATHNO, which started on FIRST, keeping the first-edge
+   counts in step.  For callers whose path has already been released.  */
+
+void
+jt_path_registry::remove_path (unsigned pathno, edge first)
+{
+  drop_first_edge (first);
+  m_paths.unordered_remove (pathno);
+}
+
+/* Drop path PATHNO, keeping the first-edge counts in step.  */
+
+void
+jt_path_registry::remove_path (unsigned pathno)
+{
+  remove_path (pathno, (*m_paths[pathno])[0]->e);
+}
+
+/* Note that one more registered path starts on E.  */
+
+void
+jt_path_registry::add_first_edge (edge e)
+{
+  ++m_first_edge_counts.get_or_insert (e);
+}
+
+/* Note that one fewer registered path starts on E.  */
+
+void
+jt_path_registry::drop_first_edge (edge e)
+{
+  unsigned *count = m_first_edge_counts.get (e);
+  gcc_checking_assert (*count > 0);
+  if (--*count == 0)
+    m_first_edge_counts.remove (e);
+}
+
+/* How many registered paths start on E.  */
+
+unsigned
+jt_path_registry::first_edge_count (edge e)
+{
+  unsigned *count = m_first_edge_counts.get (e);
+  gcc_checking_assert (*count > 0);
+  return *count;
+}
+
 fwd_jt_path_registry::fwd_jt_path_registry ()
   : jt_path_registry (/*backedge_threads=*/false)
 {
@@ -2010,7 +2057,7 @@ fwd_jt_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 	    }
 	  else
 	    {
-	      m_paths.unordered_remove (i);
+	      remove_path (i);
 	      cancel_thread (path);
 	    }
 	}
@@ -2045,7 +2092,7 @@ fwd_jt_path_registry::mark_threaded_blocks (bitmap threaded_blocks)
 	  else
 	    {
 	      e->aux = NULL;
-	      m_paths.unordered_remove (i);
+	      remove_path (i);
 	      cancel_thread (path);
 	    }
 	}
@@ -2305,8 +2352,8 @@ back_jt_path_registry::adjust_one_path (vec<jump_thread_edge *> *curr_path,
      there's nothing left to do.  */
   if (j == cand_path->length ())
     {
+      remove_path (cand_path_num);
       cancel_thread (cand_path, "Adjusted candidate is EMPTY");
-      m_paths.unordered_remove (cand_path_num);
       return false;
     }
 
@@ -2314,15 +2361,22 @@ back_jt_path_registry::adjust_one_path (vec<jump_thread_edge *> *curr_path,
      of the copy.  */
   if (!rewire_first_differing_edge (cand_path_num, j))
     {
+      remove_path (cand_path_num);
       cancel_thread (cand_path, "Candidate could not be rewired");
-      m_paths.unordered_remove (cand_path_num);
       return false;
     }
 
   /* Chop off from the candidate path any prefix it shares with the
      recently threaded path.  */
   if (cand_path->length () - j > 1)
-    cand_path->block_remove (0, j);
+    {
+      cand_path->block_remove (0, j);
+      /* The candidate started on the edge the threaded path did, and no
+	 longer does, so remove it from the count.  */
+      drop_first_edge ((*curr_path)[0]->e);
+      /* However the candidate path still must be accounted for.  */
+      add_first_edge ((*cand_path)[0]->e);
+    }
   else if (dump_file && (dump_flags & TDF_DETAILS))
     fprintf (dump_file, "Not chopping prefix: candidate would be too short.\n");
 
@@ -2356,6 +2410,11 @@ back_jt_path_registry::adjust_paths_after_duplication (unsigned curr_path_num)
 {
   vec<jump_thread_edge *> *curr_path = m_paths[curr_path_num];
   edge curr_first = (*curr_path)[0]->e;
+
+  /* CURR_PATH is itself registered, so a count of one means nothing else
+     starts here and the scan below won't find a candidate.  */
+  if (first_edge_count (curr_first) == 1)
+    return;
 
   /* Adjust every other path starting on the edge this one did.  */
   for (unsigned i = 0; i < m_paths.length (); )
@@ -2667,8 +2726,8 @@ back_jt_path_registry::update_cfg (bool /*peel_loop_headers*/)
 	  || !valid_jump_thread_path (path))
 	{
 	  /* Remove invalid jump-thread paths.  */
+	  remove_path (0);
 	  cancel_thread (path, "Avoiding threading twice from same edge");
-	  m_paths.unordered_remove (0);
 	  continue;
 	}
 
@@ -2693,7 +2752,8 @@ back_jt_path_registry::update_cfg (bool /*peel_loop_headers*/)
       else
 	cancel_thread (path, failure_reason);
 
-      m_paths.unordered_remove (0);
+      /* Both arms above release PATH, so name the edge it started on.  */
+      remove_path (0, entry);
       free (region);
     }
   return retval;
@@ -2726,8 +2786,8 @@ fwd_jt_path_registry::update_cfg (bool may_peel_loop_headers)
 
 	if (j != path->length ())
 	  {
+	    remove_path (i);
 	    cancel_thread (path, "Thread references removed edge");
-	    m_paths.unordered_remove (i);
 	    continue;
 	  }
 	i++;
@@ -2924,6 +2984,7 @@ jt_path_registry::register_jump_thread (vec<jump_thread_edge *> *path)
     dump_jump_thread_path (dump_file, *path, true);
 
   m_paths.safe_push (path);
+  add_first_edge ((*path)[0]->e);
   return true;
 }
 
