@@ -795,12 +795,9 @@ lm32_build_builtin_va_list (void)
 static void
 lm32_builtin_va_start (tree valist, rtx nextarg)
 {
-  const CUMULATIVE_ARGS *cum;
   tree ap_field, ap_reg_field;
   tree ap, ap_reg;
-  tree t;
   int pretend_args_size = crtl->args.pretend_args_size;
-  cum = &crtl->args.info;
 
   ap_field = TYPE_FIELDS(TREE_TYPE (valist));
   ap = build3 (COMPONENT_REF, TREE_TYPE (ap_field), valist,
