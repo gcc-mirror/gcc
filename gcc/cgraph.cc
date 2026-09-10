@@ -2583,6 +2583,8 @@ cgraph_node::dump (FILE *f)
     fprintf (f, " calls_comdat_local");
   if (icf_merged)
     fprintf (f, " icf_merged");
+  if (assume_function)
+    fprintf (f, " assume_function");
   if (merged_comdat)
     fprintf (f, " merged_comdat");
   if (merged_extern_inline)

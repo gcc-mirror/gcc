@@ -939,8 +939,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       only_called_at_startup (false), only_called_at_exit (false),
       tm_clone (false), dispatcher_function (false),
       dispatcher_resolver_function (false), is_target_clone (false),
-      calls_comdat_local (false),
-      icf_merged (false), nonfreeing_fn (false), merged_comdat (false),
+      calls_comdat_local (false), icf_merged (false), assume_function (false),
+      nonfreeing_fn (false), merged_comdat (false),
       merged_extern_inline (false), parallelized_function (false),
       split_part (false), indirect_call_target (false), local (false),
       versionable (false), can_change_signature (false),
@@ -1400,8 +1400,10 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      API breaking optimizations are performed on it).
 
      Main work done by this function is to enqueue the function for later
-     processing to avoid need the passes to be re-entrant.  */
-  static void add_new_function (tree fndecl, bool lowered);
+     processing to avoid need the passes to be re-entrant.
+
+     Returns the created node.  */
+  static cgraph_node *add_new_function (tree fndecl, bool lowered);
 
   /* Return callgraph node for given symbol and check it is a function. */
   static inline cgraph_node *get (const_tree decl)
@@ -1413,8 +1415,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
      logic in effect.  If NO_COLLECT is true, then our caller cannot stand to
      have the garbage collector run at the moment.  We would need to either
-     create a new GC context, or just not compile right now.  */
-  static void finalize_function (tree, bool);
+     create a new GC context, or just not compile right now.  Returns the
+     created node.  */
+  static cgraph_node *finalize_function (tree, bool);
 
   /* Return cgraph node assigned to DECL.  Create new one when needed.  */
   static cgraph_node * create (tree decl);
@@ -1536,6 +1539,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned calls_comdat_local : 1;
   /* True if node has been created by merge operation in IPA-ICF.  */
   unsigned icf_merged: 1;
+  /* True if node has been created by lowering an [[assume(...)]] statement.  */
+  unsigned assume_function : 1;
   /* True if call to node can't result in a call to free, munmap or
      other operation that could make previously non-trapping memory
      accesses trapping.  */

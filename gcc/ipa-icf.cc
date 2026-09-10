@@ -295,6 +295,7 @@ sem_function::get_hash (void)
       hstate.add_flag (DECL_CXX_CONSTRUCTOR_P (decl));
       hstate.add_flag (DECL_CXX_DESTRUCTOR_P (decl));
       hstate.add_flag (DECL_STATIC_CHAIN (decl));
+      hstate.add_flag (as_a<cgraph_node *> (node)->assume_function);
 
       set_hash (hstate.end ());
     }
@@ -538,6 +539,8 @@ sem_function::equals_wpa (sem_item *item,
       || cnode->must_remain_in_tu_body || cnode2->must_remain_in_tu_body)
     return return_false_with_msg ("must remain in TU");
 
+  if (cnode->assume_function != cnode2->assume_function)
+    return return_false_with_msg ("assume_function mismatch");
   if (cnode->thunk != cnode2->thunk)
     return return_false_with_msg ("thunk mismatch");
   if (cnode->former_thunk_p () != cnode2->former_thunk_p ())
@@ -889,7 +892,13 @@ sem_function::equals_private (sem_item *item)
  if (DECL_STATIC_CHAIN (decl) != DECL_STATIC_CHAIN (m_compared_func->decl))
     return return_false_with_msg ("static chain mismatch");
 
-  if (!dyn_cast <cgraph_node *> (node)->has_gimple_body_p ())
+  cgraph_node *cnode = as_a<cgraph_node *> (node);
+  cgraph_node *cnode2 = as_a<cgraph_node *> (m_compared_func->node);
+
+  if (cnode->assume_function != cnode2->assume_function)
+    return return_false_with_msg ("assume_function mismatch");
+
+  if (!cnode->has_gimple_body_p ())
     return true;
 
   /* Fill-up label dictionary.  */

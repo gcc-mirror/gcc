@@ -561,6 +561,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->tm_clone, 1);
   bp_pack_value (&bp, node->calls_comdat_local, 1);
   bp_pack_value (&bp, node->icf_merged, 1);
+  bp_pack_value (&bp, node->assume_function, 1);
   bp_pack_value (&bp, node->nonfreeing_fn, 1);
   bp_pack_value (&bp, node->merged_comdat, 1);
   bp_pack_value (&bp, node->merged_extern_inline, 1);
@@ -1299,6 +1300,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->tm_clone = bp_unpack_value (bp, 1);
   node->calls_comdat_local = bp_unpack_value (bp, 1);
   node->icf_merged = bp_unpack_value (bp, 1);
+  node->assume_function = bp_unpack_value (bp, 1);
   node->nonfreeing_fn = bp_unpack_value (bp, 1);
   node->merged_comdat = bp_unpack_value (bp, 1);
   node->merged_extern_inline = bp_unpack_value (bp, 1);

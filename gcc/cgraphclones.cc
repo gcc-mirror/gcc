@@ -452,6 +452,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->tp_first_run = tp_first_run;
   new_node->tm_clone = tm_clone;
   new_node->icf_merged = icf_merged;
+  new_node->assume_function = assume_function;
   new_node->thunk = thunk;
   new_node->unit_id = unit_id;
   new_node->merged_comdat = merged_comdat;

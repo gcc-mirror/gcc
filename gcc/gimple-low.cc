@@ -676,7 +676,8 @@ lower_assumption (gimple_stmt_iterator *gsi, struct lower_data *data)
   /* The body function no longer has var. args, unset stdarg.  */
   DECL_STRUCT_FUNCTION (lad.id.dst_fn)->stdarg = 0;
 
-  cgraph_node::add_new_function (lad.id.dst_fn, false);
+  cgraph_node *dst_node = cgraph_node::add_new_function (lad.id.dst_fn, false);
+  dst_node->assume_function = 1;
 
   for (unsigned i = 0; i < sz; ++i)
     {

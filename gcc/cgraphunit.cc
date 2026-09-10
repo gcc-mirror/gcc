@@ -445,9 +445,10 @@ symtab_node::referred_to_p (bool include_self)
 /* DECL has been parsed.  Take it, queue it, compile it at the whim of the
    logic in effect.  If NO_COLLECT is true, then our caller cannot stand to have
    the garbage collector run at the moment.  We would need to either create
-   a new GC context, or just not compile right now.  */
+   a new GC context, or just not compile right now.  Returns the created
+   node.  */
 
-void
+cgraph_node *
 cgraph_node::finalize_function (tree decl, bool no_collect)
 {
   cgraph_node *node = cgraph_node::get_create (decl);
@@ -511,6 +512,7 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
   if (symtab->state == CONSTRUCTION
       && (node->needed_p () || node->referred_to_p ()))
     enqueue_node (node);
+  return node;
 }
 
 /* Add the function FNDECL to the call graph.
@@ -523,9 +525,11 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
    API breaking optimizations are performed on it).
 
    Main work done by this function is to enqueue the function for later
-   processing to avoid need the passes to be re-entrant.  */
+   processing to avoid need the passes to be re-entrant.
 
-void
+   Returns the created node.  */
+
+cgraph_node *
 cgraph_node::add_new_function (tree fndecl, bool lowered)
 {
   gcc::pass_manager *passes = g->get_passes ();
@@ -550,7 +554,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
   switch (symtab->state)
     {
       case PARSING:
-	cgraph_node::finalize_function (fndecl, false);
+	node = cgraph_node::finalize_function (fndecl, false);
 	break;
       case CONSTRUCTION:
 	/* Just enqueue function to be processed at nearest occurrence.  */
@@ -620,6 +624,7 @@ cgraph_node::add_new_function (tree fndecl, bool lowered)
       && (function_needs_eh_personality (DECL_STRUCT_FUNCTION (fndecl))
 	  == eh_personality_lang))
     DECL_FUNCTION_PERSONALITY (fndecl) = lang_hooks.eh_personality ();
+  return node;
 }
 
 /* Analyze the function scheduled to be output.  */
