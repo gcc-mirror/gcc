@@ -1010,7 +1010,7 @@ rx_gen_move_template (rtx * operands, bool is_movu)
   else
     {
       /* Otherwise, use the smaller size.  */
-      if (GET_MODE (src) == SIGN_EXTEND || GET_MODE (src) == ZERO_EXTEND)
+      if (GET_CODE (src) == SIGN_EXTEND || GET_CODE (src) == ZERO_EXTEND)
 	/* When expanding, the original size will be used. */
 	src_mode = GET_MODE (XEXP (src, 0));
       else
