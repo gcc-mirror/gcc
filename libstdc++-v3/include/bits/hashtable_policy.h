@@ -1074,7 +1074,8 @@ namespace __detail
       { return _M_hash._M_obj; }
 
     protected:
-      [[__no_unique_address__]] _Hashtable_ebo_helper<_Hash> _M_hash{};
+      [[__no_unique_address__]]
+      _Hashtable_ebo_helper<_Hash> _M_hash = _Hashtable_ebo_helper<_Hash>();
 
       using __hash_code = size_t;
 
@@ -1411,7 +1412,8 @@ namespace __detail
       using __hash_code = typename __hash_code_base::__hash_code;
 
     protected:
-      [[__no_unique_address__]] _Hashtable_ebo_helper<_Equal> _M_equal{};
+      [[__no_unique_address__]]
+      _Hashtable_ebo_helper<_Equal> _M_equal = _Hashtable_ebo_helper<_Equal>();
 
       _Hashtable_base() = default;
 
@@ -1491,7 +1493,8 @@ namespace __detail
     struct _Hashtable_alloc
     {
     private:
-      [[__no_unique_address__]] _Hashtable_ebo_helper<_NodeAlloc> _M_alloc{};
+      [[__no_unique_address__]]
+      _Hashtable_ebo_helper<_NodeAlloc> _M_alloc = _Hashtable_ebo_helper<_NodeAlloc>();
 
       template<typename>
 	struct __get_value_type;

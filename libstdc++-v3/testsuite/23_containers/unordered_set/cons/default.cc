@@ -48,3 +48,51 @@ Set4 s4{s};
 Set4 s5{s, a};
 Set4 s6{std::move(s)};
 Set4 s7{std::move(s6), a};
+
+// PR libstdc++/126949
+struct ExplicitHash
+{
+  explicit ExplicitHash(bool = false) { }
+
+  std::size_t operator()(int value) const
+  { return value; }
+};
+
+struct ExplicitEqual
+{
+  explicit ExplicitEqual(bool = false) { }
+
+  bool operator()(int lhs, int rhs) const
+  { return lhs == rhs; }
+};
+
+template<typename T>
+  struct ExplicitAlloc
+  {
+    using value_type = T;
+
+    explicit ExplicitAlloc(bool = false) noexcept { }
+
+    template<typename U>
+      ExplicitAlloc(const ExplicitAlloc<U>&) { }
+
+    T *allocate(std::size_t n)
+    { return std::allocator<T>().allocate(n); }
+
+    void deallocate(T *p, std::size_t n)
+    { std::allocator<T>().deallocate(p, n); }
+
+    bool operator==(const ExplicitAlloc&) const { return true; }
+    bool operator!=(const ExplicitAlloc&) const { return false; }
+  };
+
+void
+test_explicit_hash()
+{
+  std::unordered_set<int, ExplicitHash> set1;
+  std::unordered_set<int, std::hash<int>, ExplicitEqual> set2;
+  std::unordered_set<int, std::hash<int>, std::equal_to<int>,
+			  ExplicitAlloc<int>> set3;
+  std::unordered_set<int, ExplicitHash, ExplicitEqual,
+			  ExplicitAlloc<int>> set4;
+}
