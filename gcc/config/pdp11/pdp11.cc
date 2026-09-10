@@ -1023,8 +1023,6 @@ pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = 2;
       return true;
     }
-  if (GET_RTX_LENGTH (code) > 1)
-    src = XEXP (x, 1);
   dest = XEXP (x, 0);
 
   /* If optimizing for size, claim everything costs 2 per word, plus
@@ -1098,6 +1096,7 @@ pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code,
      continue accordingly to handle the operands.  */
   if (code == SET)
     {
+      src = XEXP (x, 1);
       switch (GET_CODE (src))
 	{
 	case REG:
@@ -1122,6 +1121,7 @@ pdp11_rtx_costs (rtx x, machine_mode mode, int outer_code,
     }
   else if (code == PLUS || code == MINUS)
     {
+      src = XEXP (x, 1);
       if (GET_CODE (src) == CONST_INT &&
 	  (INTVAL (src) == 1 || INTVAL (src) == -1))
 	{
