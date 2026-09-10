@@ -806,6 +806,22 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
   if (! c_parser_require (parser, CPP_EQ, "expected %<=%>"))
     return;
 
+  /* Eat and ignore {v} right after the =, the has_volatile_ops is
+     redundant and re-computed by the operand scanner.  */
+  if (c_parser_next_token_is (parser, CPP_OPEN_BRACE)
+      && !(c_parser_peek_token (parser)->flags & PREV_WHITE)
+      && c_parser_peek_2nd_token (parser)->type == CPP_NAME
+      && !(c_parser_peek_2nd_token (parser)->flags & PREV_WHITE)
+      && strcmp ("v", IDENTIFIER_POINTER
+			(c_parser_peek_2nd_token (parser)->value)) == 0
+      && c_parser_peek_nth_token (parser, 3)->type == CPP_CLOSE_BRACE
+      && !(c_parser_peek_nth_token (parser, 3)->flags & PREV_WHITE))
+    {
+      c_parser_consume_token (parser);
+      c_parser_consume_token (parser);
+      c_parser_consume_token (parser);
+    }
+
   /* Cast expression.  */
   if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
       && c_token_starts_typename (c_parser_peek_2nd_token (parser)))
