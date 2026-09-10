@@ -560,7 +560,7 @@ int gfc_is_intrinsic_libcall (gfc_expr *);
 int gfc_conv_procedure_call (gfc_se *, gfc_symbol *, gfc_actual_arglist *,
 			     gfc_expr *, vec<tree, va_gc> *);
 
-void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent, bool,
+void gfc_conv_subref_array_arg (gfc_se *, gfc_expr *, int, sym_intent,
 				const gfc_symbol *fsym = NULL,
 				const char *proc_name = NULL,
 				gfc_symbol *sym = NULL,

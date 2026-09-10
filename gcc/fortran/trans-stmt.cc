@@ -2064,7 +2064,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
       gfc_se init;
       gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (sym->backend_decl)));
       gfc_init_se (&init, NULL);
-      gfc_conv_subref_array_arg (&init, e, false, INTENT_INOUT, false);
+      gfc_conv_subref_array_arg (&init, e, false, INTENT_INOUT);
       init.expr = build_fold_indirect_ref_loc (input_location, init.expr);
       gfc_add_modify (&init.pre, sym->backend_decl, init.expr);
       gfc_add_init_cleanup (block, gfc_finish_block (&init.pre),
@@ -4162,7 +4162,7 @@ forall_make_variable_temp (gfc_code *c, stmtblock_t *pre, stmtblock_t *post)
   if (old_sym->attr.dimension)
     {
       gfc_init_se (&tse, NULL);
-      gfc_conv_subref_array_arg (&tse, e, 0, INTENT_IN, false);
+      gfc_conv_subref_array_arg (&tse, e, 0, INTENT_IN);
       gfc_add_block_to_block (pre, &tse.pre);
       gfc_add_block_to_block (post, &tse.post);
       tse.expr = build_fold_indirect_ref_loc (input_location, tse.expr);

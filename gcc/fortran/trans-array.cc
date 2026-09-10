@@ -9462,7 +9462,7 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 	{
 	  gfc_conv_subref_array_arg (se, expr, g77,
 				     fsym ? fsym->attr.intent : INTENT_INOUT,
-				     false, fsym, proc_name, sym, true);
+				     fsym, proc_name, sym, true);
 	  return;
 	}
 
