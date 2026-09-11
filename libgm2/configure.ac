@@ -44,7 +44,7 @@ AC_SUBST(target_alias)
 
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
-  GLIBCXX_IS_NATIVE=false
+  GLIBGM2_IS_NATIVE=false
   case "$host","$target" in
     # Darwin crosses can use the host system's libraries and headers,
     # because of the fat library support.  Of course, it must be the
@@ -55,7 +55,7 @@ if test "$build" != "$host"; then
 	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
 	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
 	if test $hostos = $targetos || test $targetos = darwin ; then
-	  GLIBCXX_IS_NATIVE=true
+	  GLIBGM2_IS_NATIVE=true
 	fi
 	;;
 
@@ -64,18 +64,18 @@ if test "$build" != "$host"; then
 	;;
   esac
 else
-  GLIBCXX_IS_NATIVE=true
+  GLIBGM2_IS_NATIVE=true
 fi
 
 # Runs configure.host, and assorted other critical bits.  Sets
 # up critical shell variables.
-GLIBCXX_CONFIGURE
+GLIBGM2_CONFIGURE
 
 # For gettimeofday support.
-GLIBCXX_CHECK_GETTIMEOFDAY
+GLIBGM2_CHECK_GETTIMEOFDAY
 
 # For clock_gettime, nanosleep and sched_yield support.
-GLIBCXX_ENABLE_LIBSTDCXX_TIME
+GLIBGM2_ENABLE_LIBSTDCXX_TIME
 
 AM_INIT_AUTOMAKE([1.15.1 no-define foreign no-dist -Wall -Wno-portability])
 

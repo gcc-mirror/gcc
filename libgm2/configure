@@ -725,7 +725,7 @@ am__isrc
 INSTALL_DATA
 INSTALL_SCRIPT
 INSTALL_PROGRAM
-GLIBCXX_LIBS
+GLIBGM2_LIBS
 CXXCPP
 ac_ct_CXX
 CXXFLAGS
@@ -739,8 +739,8 @@ AS
 LN_S
 toplevel_srcdir
 toplevel_builddir
-glibcxx_srcdir
-glibcxx_builddir
+glibgm2_srcdir
+glibgm2_builddir
 target_os
 target_vendor
 target_cpu
@@ -811,7 +811,7 @@ with_target_subdir
 with_cross_host
 with_newlib
 enable_maintainer_mode
-enable_libstdcxx_time
+enable_libgm2_time
 enable_dependency_tracking
 enable_silent_rules
 with_build_libsubdir
@@ -1463,7 +1463,7 @@ Optional Features:
   --enable-maintainer-mode
                           enable make rules and dependencies not useful (and
                           sometimes confusing) to the casual installer
-  --enable-libstdcxx-time[=KIND]
+  --enable-libgm2-time[=KIND]
                           use KIND for check type [default=auto]
   --enable-dependency-tracking
                           do not reject slow dependency extractors
@@ -4274,7 +4274,7 @@ target_alias=${target_alias-$host_alias}
 
 if test "$build" != "$host"; then
   # We are being configured with some form of cross compiler.
-  GLIBCXX_IS_NATIVE=false
+  GLIBGM2_IS_NATIVE=false
   case "$host","$target" in
     # Darwin crosses can use the host system's libraries and headers,
     # because of the fat library support.  Of course, it must be the
@@ -4285,7 +4285,7 @@ if test "$build" != "$host"; then
 	hostos=`echo $host | sed 's/.*-darwin/darwin/'`
 	targetos=`echo $target | sed 's/.*-darwin/darwin/'`
 	if test $hostos = $targetos || test $targetos = darwin ; then
-	  GLIBCXX_IS_NATIVE=true
+	  GLIBGM2_IS_NATIVE=true
 	fi
 	;;
 
@@ -4294,7 +4294,7 @@ if test "$build" != "$host"; then
 	;;
   esac
 else
-  GLIBCXX_IS_NATIVE=true
+  GLIBGM2_IS_NATIVE=true
 fi
 
 # Runs configure.host, and assorted other critical bits.  Sets
@@ -4309,13 +4309,13 @@ fi
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
   # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
-  glibcxx_builddir=`${PWDCMD-pwd}`
+  glibgm2_builddir=`${PWDCMD-pwd}`
   case $srcdir in
-    \\/$* | ?:\\/*) glibcxx_srcdir=${srcdir} ;;
-    *) glibcxx_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
+    \\/$* | ?:\\/*) glibgm2_srcdir=${srcdir} ;;
+    *) glibgm2_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
   esac
-  toplevel_builddir=${glibcxx_builddir}/..
-  toplevel_srcdir=${glibcxx_srcdir}/..
+  toplevel_builddir=${glibgm2_builddir}/..
+  toplevel_srcdir=${glibgm2_srcdir}/..
 
 
 
@@ -4706,7 +4706,7 @@ rm -f conftest*
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
 
-  . $glibcxx_srcdir/configure.host
+  . $glibgm2_srcdir/configure.host
   { $as_echo "$as_me:${as_lineno-$LINENO}: CPU config directory is $cpu_include_dir" >&5
 $as_echo "$as_me: CPU config directory is $cpu_include_dir" >&6;}
   { $as_echo "$as_me:${as_lineno-$LINENO}: OS config directory is $os_include_dir" >&5
@@ -5187,7 +5187,7 @@ $as_echo "$ac_has_gettimeofday" >&6; }
 
   if test x"$ac_has_gettimeofday" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_GETTIMEOFDAY 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_GETTIMEOFDAY 1" >>confdefs.h
 
   fi
 
@@ -5203,16 +5203,16 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 # For clock_gettime, nanosleep and sched_yield support.
 
 
-   # Check whether --enable-libstdcxx-time was given.
-if test "${enable_libstdcxx_time+set}" = set; then :
-  enableval=$enable_libstdcxx_time;
+   # Check whether --enable-libgm2-time was given.
+if test "${enable_libgm2_time+set}" = set; then :
+  enableval=$enable_libgm2_time;
       case "$enableval" in
        yes|no|rt) ;;
-       *) as_fn_error $? "Unknown argument to enable/disable libstdcxx-time" "$LINENO" 5 ;;
+       *) as_fn_error $? "Unknown argument to enable/disable libgm2-time" "$LINENO" 5 ;;
 	  	        esac
 
 else
-  enable_libstdcxx_time=auto
+  enable_libgm2_time=auto
 fi
 
 
@@ -5232,7 +5232,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   ac_has_nanosleep=no
   ac_has_sched_yield=no
 
-  if test x"$enable_libstdcxx_time" = x"auto"; then
+  if test x"$enable_libgm2_time" = x"auto"; then
 
     case "${target_os}" in
       cygwin*)
@@ -5351,9 +5351,9 @@ fi
         ac_has_sched_yield=yes
     esac
 
-  elif test x"$enable_libstdcxx_time" != x"no"; then
+  elif test x"$enable_libgm2_time" != x"no"; then
 
-    if test x"$enable_libstdcxx_time" = x"rt"; then
+    if test x"$enable_libgm2_time" = x"rt"; then
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for library containing clock_gettime" >&5
 $as_echo_n "checking for library containing clock_gettime... " >&6; }
 if ${ac_cv_search_clock_gettime+:} false; then :
@@ -5486,11 +5486,11 @@ fi
     fi
 
     case "$ac_cv_search_clock_gettime" in
-      -l*) GLIBCXX_LIBS=$ac_cv_search_clock_gettime
+      -l*) GLIBGM2_LIBS=$ac_cv_search_clock_gettime
       ;;
     esac
     case "$ac_cv_search_nanosleep" in
-      -l*) GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_nanosleep"
+      -l*) GLIBGM2_LIBS="$GLIBGM2_LIBS $ac_cv_search_nanosleep"
       ;;
     esac
 
@@ -5556,8 +5556,8 @@ fi
 
     case "$ac_cv_search_sched_yield" in
       -lrt*)
-      if test x"$enable_libstdcxx_time" = x"rt"; then
-	GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
+      if test x"$enable_libgm2_time" = x"rt"; then
+	GLIBGM2_LIBS="$GLIBGM2_LIBS $ac_cv_search_sched_yield"
         ac_has_sched_yield=yes
       fi
       ;;
@@ -5713,7 +5713,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 $as_echo "$ac_has_clock_gettime_syscall" >&6; }
 	if test x"$ac_has_clock_gettime_syscall" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_CLOCK_GETTIME_SYSCALL 1" >>confdefs.h
 
 	  ac_has_clock_monotonic=yes
 	  ac_has_clock_realtime=yes
@@ -5758,29 +5758,29 @@ $as_echo "$ac_timespec_matches_syscall" >&6; }
 
   if test x"$ac_has_clock_monotonic" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_CLOCK_MONOTONIC 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_CLOCK_MONOTONIC 1" >>confdefs.h
 
   fi
 
   if test x"$ac_has_clock_realtime" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_CLOCK_REALTIME 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_CLOCK_REALTIME 1" >>confdefs.h
 
   fi
 
   if test x"$ac_has_sched_yield" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_SCHED_YIELD 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_SCHED_YIELD 1" >>confdefs.h
 
   fi
 
   if test x"$ac_has_nanosleep" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_NANOSLEEP 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_NANOSLEEP 1" >>confdefs.h
 
   elif test x"$ac_has_win32_sleep" = x"yes"; then
 
-$as_echo "#define _GLIBCXX_USE_WIN32_SLEEP 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_USE_WIN32_SLEEP 1" >>confdefs.h
 
   else
       { $as_echo "$as_me:${as_lineno-$LINENO}: checking for sleep" >&5
@@ -5840,7 +5840,7 @@ $as_echo "$ac_has_usleep" >&6; }
 
   if test x"$ac_has_nanosleep$ac_has_win32_sleep$ac_has_sleep" = x"nonono"; then
 
-$as_echo "#define _GLIBCXX_NO_SLEEP 1" >>confdefs.h
+$as_echo "#define _GLIBGM2_NO_SLEEP 1" >>confdefs.h
 
   fi
 

@@ -4,20 +4,20 @@ dnl This file was derived from libstdc++-v3/acinclude.m4 and heavily pruned.
 dnl Its purpose is to check for glibc time, gettimeofday and
 dnl float128 availability.
 dnl
-dnl GLIBCXX_CONDITIONAL (NAME, SHELL-TEST)
+dnl GLIBGM2_CONDITIONAL (NAME, SHELL-TEST)
 dnl
 dnl Exactly like AM_CONDITIONAL, but delays evaluation of the test until the
 dnl end of configure.  This lets tested variables be reassigned, and the
 dnl conditional will depend on the final state of the variable.  For a simple
-dnl example of why this is needed, see GLIBCXX_ENABLE_HOSTED.
+dnl example of why this is needed, see GLIBGM2_ENABLE_HOSTED.
 dnl
-m4_define([_m4_divert(glibcxx_diversion)], 8000)dnl
-AC_DEFUN([GLIBCXX_CONDITIONAL], [dnl
-  m4_divert_text([glibcxx_diversion],dnl
+m4_define([_m4_divert(glibgm2_diversion)], 8000)dnl
+AC_DEFUN([GLIBGM2_CONDITIONAL], [dnl
+  m4_divert_text([glibgm2_diversion],dnl
    AM_CONDITIONAL([$1],[$2])
   )dnl
 ])dnl
-AC_DEFUN([GLIBCXX_EVALUATE_CONDITIONALS], [m4_undivert([glibcxx_diversion])])dnl
+AC_DEFUN([GLIBGM2_EVALUATE_CONDITIONALS], [m4_undivert([glibgm2_diversion])])dnl
 
 
 dnl
@@ -25,8 +25,8 @@ dnl Check to see what architecture and operating system we are compiling
 dnl for.  Also, if architecture- or OS-specific flags are required for
 dnl compilation, pick them up here.
 dnl
-AC_DEFUN([GLIBCXX_CHECK_HOST], [
-  . $glibcxx_srcdir/configure.host
+AC_DEFUN([GLIBGM2_CHECK_HOST], [
+  . $glibgm2_srcdir/configure.host
   AC_MSG_NOTICE([CPU config directory is $cpu_include_dir])
   AC_MSG_NOTICE([OS config directory is $os_include_dir])
 ])
@@ -39,37 +39,37 @@ dnl
 dnl Sets:
 dnl  SUBDIRS
 dnl Substs:
-dnl  glibcxx_builddir     (absolute path)
-dnl  glibcxx_srcdir       (absolute path)
+dnl  glibgm2_builddir     (absolute path)
+dnl  glibgm2_srcdir       (absolute path)
 dnl  toplevel_builddir    (absolute path)
 dnl  toplevel_srcdir      (absolute path)
 dnl  with_cross_host
 dnl  with_newlib
 dnl  with_target_subdir
 dnl plus
-dnl  - the variables in GLIBCXX_CHECK_HOST / configure.host
+dnl  - the variables in GLIBGM2_CHECK_HOST / configure.host
 dnl  - default settings for all AM_CONFITIONAL test variables
 dnl  - lots of tools, like CC and CXX
 dnl
-AC_DEFUN([GLIBCXX_CONFIGURE], [
+AC_DEFUN([GLIBGM2_CONFIGURE], [
   # Keep these sync'd with the list in Makefile.am.  The first provides an
   # expandable list at autoconf time; the second provides an expandable list
   # (i.e., shell variable) at configure time.
-  m4_define([glibcxx_SUBDIRS],[])
-  SUBDIRS='glibcxx_SUBDIRS'
+  m4_define([glibgm2_SUBDIRS],[])
+  SUBDIRS='glibgm2_SUBDIRS'
 
   # These need to be absolute paths, yet at the same time need to
   # canonicalize only relative paths, because then amd will not unmount
   # drives. Thus the use of PWDCMD: set it to 'pawd' or 'amq -w' if using amd.
-  glibcxx_builddir=`${PWDCMD-pwd}`
+  glibgm2_builddir=`${PWDCMD-pwd}`
   case $srcdir in
-    [\\/$]* | ?:[\\/]*) glibcxx_srcdir=${srcdir} ;;
-    *) glibcxx_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
+    [\\/$]* | ?:[\\/]*) glibgm2_srcdir=${srcdir} ;;
+    *) glibgm2_srcdir=`cd "$srcdir" && ${PWDCMD-pwd} || echo "$srcdir"` ;;
   esac
-  toplevel_builddir=${glibcxx_builddir}/..
-  toplevel_srcdir=${glibcxx_srcdir}/..
-  AC_SUBST(glibcxx_builddir)
-  AC_SUBST(glibcxx_srcdir)
+  toplevel_builddir=${glibgm2_builddir}/..
+  toplevel_srcdir=${glibgm2_srcdir}/..
+  AC_SUBST(glibgm2_builddir)
+  AC_SUBST(glibgm2_srcdir)
   AC_SUBST(toplevel_builddir)
   AC_SUBST(toplevel_srcdir)
 
@@ -121,12 +121,12 @@ AC_DEFUN([GLIBCXX_CONFIGURE], [
 
   # Find platform-specific directories containing configuration info.
   # Also possibly modify flags used elsewhere, as needed by the platform.
-  GLIBCXX_CHECK_HOST
+  GLIBGM2_CHECK_HOST
 ])
 
 
 dnl
-dnl GLIBCXX_ENABLE
+dnl GLIBGM2_ENABLE
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING)
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, permit a|b|c)
 dnl    (FEATURE, DEFAULT, HELP-ARG, HELP-STRING, SHELL-CODE-HANDLER)
@@ -134,7 +134,7 @@ dnl
 dnl See manual/appendix_porting.html#appendix.porting.build_hacking for
 dnl documentation.
 dnl
-m4_define([GLIBCXX_ENABLE],[dnl
+m4_define([GLIBGM2_ENABLE],[dnl
 m4_define([_g_switch],[--enable-$1])dnl
 m4_define([_g_help],[AS_HELP_STRING([_g_switch$3],[$4 @<:@default=$2@:>@])])dnl
  AC_ARG_ENABLE([$1],m4_dquote(_g_help),
@@ -167,29 +167,29 @@ dnl Check for clock_gettime, nanosleep and sched_yield, used in the
 dnl implementation of 20.11.7 [time.clock], and 30.3.2 [thread.thread.this]
 dnl in the C++11 standard.
 dnl
-dnl --enable-libstdcxx-time
-dnl --enable-libstdcxx-time=yes
+dnl --enable-libgm2-time
+dnl --enable-libgm2-time=yes
 dnl        checks for the availability of monotonic and realtime clocks,
 dnl        nanosleep and sched_yield in libc.
-dnl --enable-libstdcxx-time=rt
+dnl --enable-libgm2-time=rt
 dnl        also searches (and, if needed, links) librt.  Note that this is
 dnl        not always desirable because, in glibc 2.16 and earlier, for
 dnl        example, in turn it triggers the linking of libpthread too,
 dnl        which activates locking,
 dnl        a large overhead for single-thread programs.
-dnl --enable-libstdcxx-time=no
-dnl --disable-libstdcxx-time
+dnl --enable-libgm2-time=no
+dnl --disable-libgm2-time
 dnl        disables the checks completely
 dnl
 dnl N.B. Darwin provides nanosleep but doesn't support the whole POSIX
 dnl Timers option, so doesn't define _POSIX_TIMERS. Because the test
-dnl below fails Darwin unconditionally defines _GLIBCXX_USE_NANOSLEEP in
-dnl os_defines.h and also defines _GLIBCXX_USE_SCHED_YIELD.
+dnl below fails Darwin unconditionally defines _GLIBGM2_USE_NANOSLEEP in
+dnl os_defines.h and also defines _GLIBGM2_USE_SCHED_YIELD.
 dnl
 dnl needed
-AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
+AC_DEFUN([GLIBGM2_ENABLE_LIBSTDCXX_TIME], [
 
-  GLIBCXX_ENABLE(libstdcxx-time,auto,[[[=KIND]]],
+  GLIBGM2_ENABLE(libgm2-time,auto,[[[=KIND]]],
     [use KIND for check type],
     [permit yes|no|rt])
 
@@ -203,7 +203,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   ac_has_nanosleep=no
   ac_has_sched_yield=no
 
-  if test x"$enable_libstdcxx_time" = x"auto"; then
+  if test x"$enable_libgm2_time" = x"auto"; then
 
     case "${target_os}" in
       cygwin*)
@@ -264,9 +264,9 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
         ac_has_sched_yield=yes
     esac
 
-  elif test x"$enable_libstdcxx_time" != x"no"; then
+  elif test x"$enable_libgm2_time" != x"no"; then
 
-    if test x"$enable_libstdcxx_time" = x"rt"; then
+    if test x"$enable_libgm2_time" = x"rt"; then
       AC_SEARCH_LIBS(clock_gettime, [rt])
       AC_SEARCH_LIBS(nanosleep, [rt])
     else
@@ -275,11 +275,11 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
     fi
 
     case "$ac_cv_search_clock_gettime" in
-      -l*) GLIBCXX_LIBS=$ac_cv_search_clock_gettime
+      -l*) GLIBGM2_LIBS=$ac_cv_search_clock_gettime
       ;;
     esac
     case "$ac_cv_search_nanosleep" in
-      -l*) GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_nanosleep"
+      -l*) GLIBGM2_LIBS="$GLIBGM2_LIBS $ac_cv_search_nanosleep"
       ;;
     esac
 
@@ -287,8 +287,8 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 
     case "$ac_cv_search_sched_yield" in
       -lrt*)
-      if test x"$enable_libstdcxx_time" = x"rt"; then
-	GLIBCXX_LIBS="$GLIBCXX_LIBS $ac_cv_search_sched_yield"
+      if test x"$enable_libgm2_time" = x"rt"; then
+	GLIBGM2_LIBS="$GLIBGM2_LIBS $ac_cv_search_sched_yield"
         ac_has_sched_yield=yes
       fi
       ;;
@@ -354,7 +354,7 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
 	  ]])], [ac_has_clock_gettime_syscall=yes], [ac_has_clock_gettime_syscall=no])
 	AC_MSG_RESULT($ac_has_clock_gettime_syscall)
 	if test x"$ac_has_clock_gettime_syscall" = x"yes"; then
-	  AC_DEFINE(_GLIBCXX_USE_CLOCK_GETTIME_SYSCALL, 1,
+	  AC_DEFINE(_GLIBGM2_USE_CLOCK_GETTIME_SYSCALL, 1,
 	  [Defined if clock_gettime syscall has monotonic and realtime clock support. ])
 	  ac_has_clock_monotonic=yes
 	  ac_has_clock_realtime=yes
@@ -384,25 +384,25 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   fi
 
   if test x"$ac_has_clock_monotonic" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_CLOCK_MONOTONIC, 1,
+    AC_DEFINE(_GLIBGM2_USE_CLOCK_MONOTONIC, 1,
       [ Defined if clock_gettime has monotonic clock support. ])
   fi
 
   if test x"$ac_has_clock_realtime" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_CLOCK_REALTIME, 1,
+    AC_DEFINE(_GLIBGM2_USE_CLOCK_REALTIME, 1,
       [ Defined if clock_gettime has realtime clock support. ])
   fi
 
   if test x"$ac_has_sched_yield" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_SCHED_YIELD, 1,
+    AC_DEFINE(_GLIBGM2_USE_SCHED_YIELD, 1,
               [ Defined if sched_yield is available. ])
   fi
 
   if test x"$ac_has_nanosleep" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_NANOSLEEP, 1,
+    AC_DEFINE(_GLIBGM2_USE_NANOSLEEP, 1,
       [ Defined if nanosleep is available. ])
   elif test x"$ac_has_win32_sleep" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_WIN32_SLEEP, 1,
+    AC_DEFINE(_GLIBGM2_USE_WIN32_SLEEP, 1,
       [Defined if Sleep exists.])
   else
       AC_MSG_CHECKING([for sleep])
@@ -425,10 +425,10 @@ AC_DEFUN([GLIBCXX_ENABLE_LIBSTDCXX_TIME], [
   fi
 
   if test x"$ac_has_nanosleep$ac_has_win32_sleep$ac_has_sleep" = x"nonono"; then
-    AC_DEFINE(_GLIBCXX_NO_SLEEP,1, [Defined if no way to sleep is available.])
+    AC_DEFINE(_GLIBGM2_NO_SLEEP,1, [Defined if no way to sleep is available.])
   fi
 
-  AC_SUBST(GLIBCXX_LIBS)
+  AC_SUBST(GLIBGM2_LIBS)
 
   CXXFLAGS="$ac_save_CXXFLAGS"
   LIBS="$ac_save_LIBS"
@@ -440,7 +440,7 @@ dnl Check for gettimeofday, used in the implementation of 20.11.7
 dnl [time.clock] in the C++11 standard.
 dnl
 dnl needed
-AC_DEFUN([GLIBCXX_CHECK_GETTIMEOFDAY], [
+AC_DEFUN([GLIBGM2_CHECK_GETTIMEOFDAY], [
 
   AC_MSG_CHECKING([for gettimeofday])
 
@@ -460,7 +460,7 @@ AC_DEFUN([GLIBCXX_CHECK_GETTIMEOFDAY], [
   fi
 
   if test x"$ac_has_gettimeofday" = x"yes"; then
-    AC_DEFINE(_GLIBCXX_USE_GETTIMEOFDAY, 1,
+    AC_DEFINE(_GLIBGM2_USE_GETTIMEOFDAY, 1,
       [ Defined if gettimeofday is available. ])
   fi
 
@@ -474,8 +474,8 @@ dnl a subdirectory of config/locale.
 dnl
 dnl Default is generic.
 dnl
-AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
-  GLIBCXX_ENABLE(clocale,auto,[[[=MODEL]]],
+AC_DEFUN([GLIBGM2_ENABLE_CLOCALE], [
+  GLIBGM2_ENABLE(clocale,auto,[[[=MODEL]]],
     [use MODEL for target locale package],
     [permit generic|gnu|ieee_1003.1-2001|newlib|yes|no|auto])
 
@@ -525,10 +525,10 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
 
   # Sanity check model, and test for special functionality.
   if test $enable_clocale_flag = gnu; then
-    AC_EGREP_CPP([_GLIBCXX_ok], [
+    AC_EGREP_CPP([_GLIBGM2_ok], [
     #include <features.h>
     #if (__GLIBC__ > 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ >= 3)) && !defined(__UCLIBC__)
-      _GLIBCXX_ok
+      _GLIBGM2_ok
     #endif
     ], enable_clocale_flag=gnu, enable_clocale_flag=generic)
 
@@ -649,11 +649,11 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
       fi
       # Export the build objects.
       for ling in $ALL_LINGUAS; do \
-	glibcxx_MOFILES="$glibcxx_MOFILES $ling.mo"; \
-	glibcxx_POFILES="$glibcxx_POFILES $ling.po"; \
+	glibgm2_MOFILES="$glibgm2_MOFILES $ling.mo"; \
+	glibgm2_POFILES="$glibgm2_POFILES $ling.po"; \
       done
-      AC_SUBST(glibcxx_MOFILES)
-      AC_SUBST(glibcxx_POFILES)
+      AC_SUBST(glibgm2_MOFILES)
+      AC_SUBST(glibgm2_POFILES)
 
       CLOCALE_H=config/locale/gnu/c_locale.h
       CLOCALE_CC=config/locale/gnu/c_locale.cc
@@ -704,8 +704,8 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
 
   # This is where the testsuite looks for locale catalogs, using the
   # -DLOCALEDIR define during testsuite compilation.
-  glibcxx_localedir=${glibcxx_builddir}/po/share/locale
-  AC_SUBST(glibcxx_localedir)
+  glibgm2_localedir=${glibgm2_builddir}/po/share/locale
+  AC_SUBST(glibgm2_localedir)
 
   # A standalone libintl (e.g., GNU libintl) may be in use.
   if test $USE_NLS = yes; then
@@ -713,7 +713,7 @@ AC_DEFUN([GLIBCXX_ENABLE_CLOCALE], [
     AC_SEARCH_LIBS(gettext, intl, [], USE_NLS=no)
   fi
   if test $USE_NLS = yes; then
-    AC_DEFINE(_GLIBCXX_USE_NLS, 1,
+    AC_DEFINE(_GLIBGM2_USE_NLS, 1,
 	      [Define if NLS translations are to be used.])
   fi
 
@@ -741,7 +741,7 @@ dnl
 dnl Defines:
 dnl  ENABLE_FLOAT128
 dnl
-AC_DEFUN([GLIBCXX_ENABLE_FLOAT128], [
+AC_DEFUN([GLIBGM2_ENABLE_FLOAT128], [
 
   AC_LANG_SAVE
   AC_LANG_CPLUSPLUS
@@ -772,7 +772,7 @@ EOF
       enable_float128=no
     fi
     AC_MSG_RESULT($enable_float128)
-    GLIBCXX_CONDITIONAL(ENABLE_FLOAT128, test $enable_float128 = yes)
+    GLIBGM2_CONDITIONAL(ENABLE_FLOAT128, test $enable_float128 = yes)
     rm -f conftest*
 
   AC_LANG_RESTORE

@@ -417,29 +417,29 @@
 #undef WE_HAVE_STRUCT_TM_YEAR
 
 /* Defined if no way to sleep is available. */
-#undef _GLIBCXX_NO_SLEEP
+#undef _GLIBGM2_NO_SLEEP
 
 /* Defined if clock_gettime syscall has monotonic and realtime clock support.
    */
-#undef _GLIBCXX_USE_CLOCK_GETTIME_SYSCALL
+#undef _GLIBGM2_USE_CLOCK_GETTIME_SYSCALL
 
 /* Defined if clock_gettime has monotonic clock support. */
-#undef _GLIBCXX_USE_CLOCK_MONOTONIC
+#undef _GLIBGM2_USE_CLOCK_MONOTONIC
 
 /* Defined if clock_gettime has realtime clock support. */
-#undef _GLIBCXX_USE_CLOCK_REALTIME
+#undef _GLIBGM2_USE_CLOCK_REALTIME
 
 /* Defined if gettimeofday is available. */
-#undef _GLIBCXX_USE_GETTIMEOFDAY
+#undef _GLIBGM2_USE_GETTIMEOFDAY
 
 /* Defined if nanosleep is available. */
-#undef _GLIBCXX_USE_NANOSLEEP
+#undef _GLIBGM2_USE_NANOSLEEP
 
 /* Defined if sched_yield is available. */
-#undef _GLIBCXX_USE_SCHED_YIELD
+#undef _GLIBGM2_USE_SCHED_YIELD
 
 /* Defined if Sleep exists. */
-#undef _GLIBCXX_USE_WIN32_SLEEP
+#undef _GLIBGM2_USE_WIN32_SLEEP
 
 /* Define to 1 if on MINIX. */
 #undef _MINIX

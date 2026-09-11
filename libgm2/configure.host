@@ -128,7 +128,7 @@ case "${host_cpu}" in
     try_cpu=sparc
     ;;
   *)
-    if test -d ${glibcxx_srcdir}/config/cpu/${host_cpu}; then
+    if test -d ${glibgm2_srcdir}/config/cpu/${host_cpu}; then
       try_cpu=${host_cpu}
     fi
 esac
@@ -170,31 +170,31 @@ esac
 
 
 # Set specific CPU overrides for atomicity_dir.
-# This can be over-ridden in GLIBCXX_ENABLE_ATOMIC_BUILTINS.
+# This can be over-ridden in GLIBGM2_ENABLE_ATOMIC_BUILTINS.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
-if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
+if test -f ${glibgm2_srcdir}/config/${cpu_include_dir}/atomicity.h ; then
   atomicity_dir=$cpu_include_dir
 fi
 
 
-if test -f ${glibcxx_srcdir}/config/${cpu_include_dir}/cxxabi_tweaks.h ; then
+if test -f ${glibgm2_srcdir}/config/${cpu_include_dir}/cxxabi_tweaks.h ; then
   abi_tweaks_dir=$cpu_include_dir
 fi
 
 
 # Set directory with CPU-specific optimization
 cpu_opt_dir=${cpu_include_dir}/opt
-test -d ${glibcxx_srcdir}/config/${cpu_include_dir}/opt ||
+test -d ${glibgm2_srcdir}/config/${cpu_include_dir}/opt ||
 cpu_opt_dir=cpu/generic/opt
 # For each header with CPU-specific optimizations check whether it
 # exists in ${cpu_opt_dir}.  If not, point the variable at the
 # appropriate file in the generic directory.
 cpu_opt_ext_random=${cpu_opt_dir}/ext/opt_random.h
-test -f ${glibcxx_srcdir}/config/${cpu_opt_ext_random} ||
+test -f ${glibgm2_srcdir}/config/${cpu_opt_ext_random} ||
 cpu_opt_ext_random=cpu/generic/opt/ext/opt_random.h
 
 cpu_opt_bits_random=${cpu_opt_dir}/bits/opt_random.h
-test -f ${glibcxx_srcdir}/config/${cpu_opt_ext_random} ||
+test -f ${glibgm2_srcdir}/config/${cpu_opt_ext_random} ||
 cpu_opt_ext_random=cpu/generic/opt/bits/opt_random.h
 
 
@@ -347,7 +347,7 @@ case "${host}" in
         else
           try_abi_cpu=$try_cpu
         fi
-        if test -d ${glibcxx_srcdir}/config/abi/post/${try_abi_cpu}-linux-gnu; then
+        if test -d ${glibgm2_srcdir}/config/abi/post/${try_abi_cpu}-linux-gnu; then
           abi_baseline_pair=${try_abi_cpu}-linux-gnu
         fi
     esac
