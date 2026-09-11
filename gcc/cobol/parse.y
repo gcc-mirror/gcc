@@ -15083,16 +15083,17 @@ dialect_words_set( cbl_dialect_t dialect ) {
   typedef bool (current_tokens_t::*wordop_func_t)(const cbl_loc_t& loc,
                           const cbl_name_t keyword,
                           const cbl_name_t alias);
+
   struct wordop_t {
     cbl_dialect_t dialect;
     wordop_func_t op;
     cbl_name_t keyword, alias;
-    bool match(cbl_dialect_t dialect) const { return this->dialect & dialect; }
     
+    bool match(cbl_dialect_t dialect) const { return this->dialect & dialect; }
   };
   const static std::vector<wordop_t> wordops {
-    { dialect_mf_gnu, &current_tokens_t::equate, "BINARY-DOUBLE", "BINARY-C-LONG" },
-    { dialect_gnu_e,  &current_tokens_t::substitute, "CONCAT", "CONCATENATE" },
+    wordop_t{ dialect_mf_gnu, &current_tokens_t::equate, "BINARY-DOUBLE", "BINARY-C-LONG" },
+    wordop_t{ dialect_gnu_e,  &current_tokens_t::substitute, "CONCAT", "CONCATENATE" },
   };
 
   if( dialect != (done & dialect) ) { // if any part of dialect not done
