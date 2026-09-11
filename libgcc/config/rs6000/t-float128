@@ -15,7 +15,8 @@ fp128_softfp_funcs	= addkf3 subkf3 mulkf3 divkf3 negkf2 \
 			  unordkf2 eqkf2 gekf2 lekf2 \
 			  extendsfkf2 extenddfkf2 trunckfsf2 trunckfdf2 \
 			  fixkfsi fixkfdi fixunskfsi fixunskfdi \
-			  floatsikf floatdikf floatunsikf floatundikf
+			  floatsikf floatdikf floatunsikf floatundikf \
+			  floatbitintkf fixkfbitint
 
 fp128_softfp_src	= $(addsuffix -sw.c,$(fp128_softfp_funcs))
 fp128_softfp_static_obj	= $(addsuffix -sw$(objext),$(fp128_softfp_funcs))
@@ -30,14 +31,48 @@ fp128_dec_funcs		= _kf_to_sd _kf_to_dd _kf_to_td \
 ibm128_dec_funcs	= _tf_to_sd _tf_to_dd _tf_to_td \
 			  _sd_to_tf _dd_to_tf _td_to_tf
 
+
 # New functions for software emulation
 fp128_ppc_funcs		= floattikf-sw floatuntikf-sw \
 			  fixkfti-sw fixunskfti-sw \
 			  extendkftf2-sw trunctfkf2-sw \
-			  sfp-exceptions _mulkc3 _divkc3 _powikf2
+			  sfp-exceptions _mulkc3 _divkc3 _powikf2 \
+
+# Plain binary float/double <-> _BitInt conversions.  Unlike the DPD
+# decimal set below, these are unconditional in the generic t-softfp
+# mechanism (softfp_bitint_func_list): every target using t-softfp gets
+# them regardless of decimal_float.  t-softfp is not in the rs6000
+# tmake_file, so wire them up here directly from soft-fp/, matching the
+# LIB2ADD_ST treatment in t-softfp.
+rs6000_bitint_bin_funcs = fixsfbitint floatbitintsf \
+			  fixdfbitint floatbitintdf
+
+rs6000_bitint_bin_src   = $(addprefix $(srcdir)/soft-fp/, \
+			  $(addsuffix .c,$(rs6000_bitint_bin_funcs)))
+
+LIB2ADD += $(rs6000_bitint_bin_src)
 
 ifeq ($(decimal_float),yes)
 fp128_ppc_funcs        += $(fp128_dec_funcs)
+
+# DPD _BitInt <-> decimal floating-point conversions, plus the TImode
+# <-> decimal floating-point conversions _BitInt lowering depends on.
+# t-softfp is not in the rs6000 tmake_file so these are never compiled
+# via the generic softfp_bid_list mechanism.  Wire them up here instead,
+# sourced directly from libgcc/soft-fp/ and added to LIB2ADD_ST (static
+# library only), matching the LIB2ADD_ST treatment in t-softfp.
+rs6000_bitint_dec_funcs = bitintpow10 \
+			  fixsdbitint floatbitintsd \
+                          fixsdti fixunssdti floattisd floatuntisd \
+                          fixddbitint floatbitintdd \
+                          fixddti fixunsddti floattidd floatuntidd \
+                          fixtdbitint floatbitinttd \
+                          fixtdti fixunstdti floattitd floatuntitd
+
+rs6000_bitint_dec_src   = $(addprefix $(srcdir)/soft-fp/, \
+                          $(addsuffix .c,$(rs6000_bitint_dec_funcs)))
+
+LIB2ADD_ST += $(rs6000_bitint_dec_src)
 endif
 
 fp128_ppc_src		= $(addprefix $(srcdir)/config/rs6000/,$(addsuffix \
@@ -99,6 +134,7 @@ IBM128_CFLAGS_DECIMAL	= -mno-gnu-attribute -Wno-psabi -mabi=ibmlongdouble
 
 $(fp128_dec_objs)	: INTERNAL_CFLAGS += $(FP128_CFLAGS_DECIMAL)
 $(ibm128_dec_objs)	: INTERNAL_CFLAGS += $(IBM128_CFLAGS_DECIMAL)
+
 
 $(fp128_softfp_src) : $(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@)) $(fp128_dep)
 	@src="$(srcdir)/soft-fp/$(subst -sw,,$(subst kf,tf,$@))"; \

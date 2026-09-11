@@ -1717,6 +1717,9 @@ static const scoped_attribute_specs *const rs6000_attribute_table[] =
 #undef TARGET_C_MODE_FOR_FLOATING_TYPE
 #define TARGET_C_MODE_FOR_FLOATING_TYPE rs6000_c_mode_for_floating_type
 
+#undef TARGET_C_BITINT_TYPE_INFO
+#define TARGET_C_BITINT_TYPE_INFO rs6000_bitint_type_info
+
 #undef TARGET_INVALID_BINARY_OP
 #define TARGET_INVALID_BINARY_OP rs6000_invalid_binary_op
 
@@ -11560,6 +11563,9 @@ init_float128_ibm (machine_mode mode)
 	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattitf");
 	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntitf");
 	}
+
+      set_optab_libfunc (bitinttofp_optab, mode, "__floatbitinttf");
+      set_optab_libfunc (bitintfromfp_optab, mode, "__fixtfbitint");
     }
 }
 
@@ -11628,6 +11634,9 @@ init_float128_ieee (machine_mode mode)
 	  set_conv_libfunc (sfloat_optab, mode, TImode, "__floattikf_sw");
 	  set_conv_libfunc (ufloat_optab, mode, TImode, "__floatuntikf_sw");
 	}
+
+      set_optab_libfunc (bitinttofp_optab, mode, "__floatbitintkf");
+      set_optab_libfunc (bitintfromfp_optab, mode, "__fixkfbitint");
     }
 
   else
@@ -24207,6 +24216,7 @@ rs6000_function_value (const_tree valtype,
       }
 
   if ((INTEGRAL_TYPE_P (valtype)
+       && !BITINT_TYPE_P (valtype)
        && GET_MODE_BITSIZE (mode) < (TARGET_32BIT ? 32 : 64))
       || POINTER_TYPE_P (valtype))
     mode = TARGET_32BIT ? SImode : DImode;
@@ -24614,6 +24624,46 @@ rs6000_c_mode_for_floating_type (enum tree_index ti)
   if (ti == TI_LONG_DOUBLE_TYPE)
     return rs6000_long_double_type_size == 128 ? TFmode : DFmode;
   return default_mode_for_floating_type (ti);
+}
+
+/* Implement TARGET_C_BITINT_TYPE_INFO for PowerPC.
+
+   Limb mode selection:
+     n <= 8   : QImode
+     n <= 16  : HImode
+     n <= 32  : SImode
+     n > 32   : DImode (64-bit PowerPC) / SImode (32-bit PowerPC)
+
+   The ABI limb mode always equals the internal limb mode, so a _BitInt
+   wider than a single limb is an array of DImode limbs on 64-bit
+   PowerPC and of SImode limbs on 32-bit PowerPC, ordered least to most
+   significant on little-endian and most to least significant on
+   big-endian, like any other multi-word integer.  This is what x86_64
+   and s390x do as well; keeping abi_limb_mode == limb_mode also avoids
+   the abi_limb_mode != limb_mode paths in gimple-lower-bitint.cc,
+   which are not supported on big-endian targets.
+
+   Padding bits above the precision in the most significant limb are
+   unspecified (bitint_ext_undef) on both endiannesses, matching
+   x86_64 and aarch64.  */
+
+static bool
+rs6000_bitint_type_info (int n, struct bitint_info *info)
+{
+  if (n <= 8)
+    info->limb_mode = QImode;
+  else if (n <= 16)
+    info->limb_mode = HImode;
+  else if (n <= 32)
+    info->limb_mode = SImode;
+  else
+    info->limb_mode = TARGET_64BIT ? DImode : SImode;
+
+  info->abi_limb_mode = info->limb_mode;
+  info->big_endian = BYTES_BIG_ENDIAN;
+  info->extended = bitint_ext_undef;
+
+  return true;
 }
 
 /* Target hook for invalid_arg_for_unprototyped_fn. */

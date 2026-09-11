@@ -400,6 +400,21 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
   return false;
 }
 
+/* Return true if a _BitInt with byte size SIZE must be passed or returned
+   by reference rather than in registers.  SIZE < 0 (variable-length) is
+   always large.  ELFv2 threshold is 16 bytes; AIX32/V4 is 8 bytes.
+   Centralises the threshold so rs6000_return_in_memory and
+   rs6000_pass_by_reference stay in sync.  */
+static bool
+rs6000_bitint_large_p (HOST_WIDE_INT size)
+{
+  if (size < 0)
+    return true;
+  if (DEFAULT_ABI == ABI_ELFv2)
+    return (unsigned HOST_WIDE_INT) size > 16;
+  return (unsigned HOST_WIDE_INT) size > (TARGET_64BIT ? 16 : 8);
+}
+
 /* Return a nonzero value to say to return the function value in
    memory, just as large structures are always returned.  TYPE will be
    the data type of the value, and FNTYPE will be the type of the
@@ -452,6 +467,14 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 	     type_class,
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
     }
+
+  /* Handle _BitInt return convention before aggregate classification.
+     Small _BitInt fits in registers; large _BitInt is returned via a
+     hidden pointer.  BITINT_TYPE_P covers both BITINT_TYPE and
+     ENUMERAL_TYPE backed by _BitInt (C2Y bit-precise enums).
+     Must agree with rs6000_pass_by_reference.  */
+  if (BITINT_TYPE_P (type))
+    return rs6000_bitint_large_p (int_size_in_bytes (type));
 
   /* For the Darwin64 ABI, test if we can fit the return value in regs.  */
   if (TARGET_MACHO
@@ -1992,6 +2015,14 @@ rs6000_pass_by_reference (cumulative_args_t, const function_arg_info &arg)
 {
   if (!arg.type)
     return 0;
+
+  /* Handle _BitInt before the generic checks.  Large _BitInt must be
+     passed by reference so the ABI matches gimple-lower-bitint.cc output.
+     BITINT_TYPE_P covers both BITINT_TYPE and ENUMERAL_TYPE backed by
+     _BitInt (C2Y bit-precise enums).  Thresholds mirror
+     rs6000_return_in_memory.  */
+  if (BITINT_TYPE_P (arg.type))
+    return rs6000_bitint_large_p (int_size_in_bytes (arg.type));
 
   if (DEFAULT_ABI == ABI_V4 && TARGET_IEEEQUAD
       && FLOAT128_IEEE_P (TYPE_MODE (arg.type)))

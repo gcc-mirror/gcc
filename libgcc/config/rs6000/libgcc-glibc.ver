@@ -71,3 +71,15 @@ GCC_4.2.0 {
   __gcc_qunord
 %endif
 }
+
+%inherit GCC_17.0.0 GCC_4.2.0
+GCC_17.0.0 {
+  __floatbitintkf
+  __fixkfbitint
+  __floatbitinttf
+  __fixtfbitint
+  __floatbitintsf
+  __fixsfbitint
+  __floatbitintdf
+  __fixdfbitint
+}

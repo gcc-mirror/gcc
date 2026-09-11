@@ -12,6 +12,8 @@ s/__floattitf/__floattikf_sw/g
 s/__floatuntitf/__floatuntikf_sw/g
 s/__fixtfti/__fixkfti_sw/g
 s/__fixunstfti/__fixunskfti_sw/g
+s/__floatbitinttf/__floatbitintkf/g
+s/__fixtfbitint/__fixkfbitint/g
 s/__floatsitf/__floatsikf_sw/g
 s/__floatunditf/__floatundikf_sw/g
 s/__floatunsitf/__floatunsikf_sw/g

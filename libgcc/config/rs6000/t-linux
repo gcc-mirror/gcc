@@ -10,6 +10,31 @@ HOST_LIBGCC2_CFLAGS += -mno-minimal-toc
 # On the modules that deal with IBM 128-bit values, make sure that TFmode uses
 # the IBM extended double format.  Also turn off gnu attributes on the static
 # modules.
+# _BitInt <-> IBM double double (__ibm128) conversions.  These live here
+# rather than in t-float128 because __ibm128 exists on configurations that
+# have no IEEE 128-bit support at all (32-bit, pre-POWER7), and the
+# conversions need nothing beyond DFmode; in particular they must not be
+# built with -mfloat128 or a forced VSX/CPU level.  They use __ibm128
+# explicitly rather than long double, so they do not need
+# -mabi=ibmlongdouble either.
+ibm128_bitint_funcs	= floatbitinttf-ibm128 fixtfbitint-ibm128
+ibm128_bitint_src	= $(addprefix $(srcdir)/config/rs6000/, \
+			    $(addsuffix .c,$(ibm128_bitint_funcs)))
+LIB2ADD			+= $(ibm128_bitint_src)
+
+ibm128_bitint_objs	= $(addsuffix $(objext),$(ibm128_bitint_funcs)) \
+			  $(addsuffix _s$(objext),$(ibm128_bitint_funcs))
+# soft-fp.h, double.h and bitint.h come from libgcc/soft-fp; the files
+# themselves live in config/rs6000.  Deliberately no -mvsx/-mfloat128
+# here: these use only DFmode and must build without IEEE 128-bit
+# support.  -Wno-missing-prototypes/-Wno-type-limits match what
+# t-softfp applies to the soft-fp sources.
+IBM128_BITINT_CFLAGS	= -Wno-psabi -mno-gnu-attribute \
+			  -Wno-missing-prototypes -Wno-type-limits \
+			  -I$(srcdir)/soft-fp \
+			  -I$(srcdir)/config/rs6000
+$(ibm128_bitint_objs)	: INTERNAL_CFLAGS += $(IBM128_BITINT_CFLAGS)
+
 IBM128_STATIC_OBJS	= ibm-ldouble$(objext) _powitf2$(objext) \
 			  ppc64-fp$(objext) _divtc3$(objext) _multc3$(objext) \
 			  _fixtfdi$(objext) _fixunstfdi$(objext) \
