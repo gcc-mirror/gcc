@@ -1,3 +1,8 @@
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc-changelog/git_update_version.py: Remove gcc-13 branch
+	from active branches.
+
 2026-09-09  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* filter-clang-warnings.py (skip_warning): Match insn-emit rather

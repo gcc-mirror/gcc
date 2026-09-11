@@ -1,3 +1,10 @@
+2026-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	P3726R2
+	PR c++/125845
+	* c-cppbuiltin.cc (c_cpp_builtins): For C++26 predefine
+	__cpp_trivial_union to 202603L.
+
 2026-09-03  Josef Melcr  <josef.melcr@suse.com>
 
 	* c-attribs.cc (handle_callback_only_attribute): Add early

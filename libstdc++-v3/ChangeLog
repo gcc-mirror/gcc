@@ -1,3 +1,75 @@
+2026-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/bit: Implement C++29 P3793R2 - Better shifting.
+	(std::__signed_or_unsigned_integer): New concept.
+	(std::shl, std::shr): New function templates.
+	* include/bits/version.def (bitops): Add different value for C++29.
+	* include/bits/version.h: Regenerate.
+	* src/c++23/std.cc.in (std::shl, std::shr): Export for C++29.
+	* testsuite/26_numerics/bit/bit.shift/shl.cc: New test.
+	* testsuite/26_numerics/bit/bit.shift/shr.cc: New test.
+
+2026-09-11  Avi Kivity  <avi@scylladb.com>
+
+	PR libstdc++/127325
+	* include/std/inplace_vector: replace is_trivial_v with
+	is_trivially_default_constructible_v and is_trivially_copyable_v.
+
+2026-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* acinclude.m4: Do not gate the use of 'timespec' with
+	_POSIX_TIMERS > 0.  For the auto case, set ac_has_clock_monotonic
+	and ac_has_clock_realtime for Darwin versions that implement them.
+	* configure: Regenerate.
+
+2026-09-10  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR libstdc++/126807
+	* include/bits/simd_details.h: Make the math_errhandling
+	macro into a default template argument.
+
+2026-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	P3726R2
+	PR c++/125845
+	* include/bits/version.def (start_lifetime): New.
+	* include/bits/version.h: Regenerate.
+	* include/bits/stl_construct.h (std::start_lifetime): New function
+	template.
+	* include/std/memory: Define __glibcxx_want_start_lifetime before
+	including bits/version.h.
+	* src/c++23/std.cc.in: Add export std::start_lifetime.
+
+2026-09-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Marco Falke  <falke.marco@gmail.com>
+
+	PR libstdc++/126949
+	* include/bits/hashtable_policy.h (_Hash_code_base::_M_hash)
+	(_Hashtable_base::_M_equal, _Hashtable_alloc::_M_alloc):
+	Value initialized members in NSDMI.
+	* testsuite/23_containers/unordered_map/cons/default.cc: Check
+	default construction with an hash, equality and allocator with
+	explicit constructor.
+	* testsuite/23_containers/unordered_set/cons/default.cc: Likewise.
+
+2026-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127220
+	* include/std/format (__format::_Arg_t): Move definition
+	earlier.
+	(basic_format_parse_context::check_dynamic_spec): Construct
+	array of _Arg_t from template parameter list.
+	(basic_format_parse_context::check_dynamic_spec_integral):
+	Construct array of _Arg_t based on supported types.
+	(basic_format_parse_context::check_dynamic_spec_string):
+	Likewise.
+	(basic_format_parse_context::__check_dynamic_spec): Replace
+	template parameter list with span<const _Arg_t> function
+	parameter and simplify accordingly. Define in class body.
+	(basic_format_parse_context::_Scan_parse_context): New struct
+	the replaces _Scanner::_Parse_context.
+	(__format::_Scanner::_M_pc): Change type to _Scan_parse_context.
+
 2026-09-09  Sammy Al Hashemi  <sammy@salh.xyz>
 
 	PR libstdc++/122071

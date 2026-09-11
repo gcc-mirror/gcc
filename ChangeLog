@@ -1,3 +1,8 @@
+2026-09-10  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	* MAINTAINERS.yml: Add myself to Write After Approval and DCO.
+	* MAINTAINERS: Regenerate.
+
 2026-09-04  Arthur Cohen  <arthur.cohen@opensrcsec.com>
 
 	* MAINTAINERS.yml: Update my email, add a section for inactive emails.

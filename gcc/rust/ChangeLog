@@ -1,3 +1,483 @@
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): make vector
+	* rust-gcc.cc (struct_field_expression): we use bit field acces for lanes
+	(constructor_expression): special case VECTOR
+	(convert_tree): likewise for canonical main variant
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-constexpr.cc (eval_constant_expression): port over goto
+	(potential_constant_expression_1): likewise
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-expr.h (LlvmInlineAsm::LlvmInlineAsm): Initialize
+	more member variables.
+	(LlvmInlineAsm::get_dialect): Make function const qualified.
+	(LlvmInlineAsm::is_stack_aligned): Likewise.
+	(LlvmInlineAsm::is_volatile): Likewise.
+	* backend/rust-compile-asm.cc
+	(CompileLlvmAsm::construct_operands): Handle llvm-specific "=*m"
+	constraint.
+	(CompileLlvmAsm::tree_codegen_asm): Handle change from multiple
+	template strings to a single template string.
+	* hir/rust-ast-lower-expr.cc (convert_template_str): New
+	function.
+	(check_llvm_asm_support): Remove unnecessary parameters and
+	expand the set of allowed llvm_asm usages.
+	(ASTLoweringExpr::visit (LlvmInlineAsm)): Adjust lowering.
+	* hir/tree/rust-hir-expr.h (LlvmInlineAsm::templates): Remove
+	member variable and replace with...
+	(LlvmInlineAsm::template_str): ...new member variable.
+	(LlvmInlineAsm::LlvmInlineAsm): Handle member variable changes.
+	(LlvmInlineAsm::get_templates): Remove member function and
+	replace with...
+	(LlvmInlineAsm::get_template): ...new member function.
+	* hir/tree/rust-hir-visitor.cc
+	(DefaultHIRVisitor::walk (LlvmInlineAsm)): Visit outer
+	attributes.
+	* typecheck/rust-hir-type-check-expr.cc
+	(TypeCheckExpr::visit (LlvmInlineAsm)): Adjust comments.
+
+2026-09-10  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-lang-item.h (LangItem::Kind): Add lang item declarations for missing
+	lang items required for core 1.49 compilation.
+	* util/rust-lang-item.cc (LangItem::lang_items): Ditto.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust-diagnostics.cc (rust_debug_fmt_at): New function
+	definition.
+	* rust-diagnostics.h (rust_debug_fmt): New function-like macro
+	definition.
+	(rust_debug_fmt_at): New function declaration.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-reference.h: add emit_errors option
+	* typecheck/rust-hir-trait-resolve.cc (AssociatedImplTrait::bind_impl_for_projection): new
+	(AssociatedImplTrait::bind_impl_for_bound): call new validate function
+	* typecheck/rust-type-util.cc (lookup_associated_impl_block): make this more generic
+	* typecheck/rust-tyty-call.cc (validate_call_argument_associated_impl_bounds): new
+	(TypeCheckCallExpr::visit): for each call arg validate and bind
+	(TypeCheckMethodCallExpr::check): likewise
+
+2026-09-10  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/errors/rust-unsafe-checker.cc (check_static_mut)
+	(check_extern_static, check_unsafe_call, check_extern_call)
+	(check_target_attr): Return whether the operation requires unsafe and
+	only error outside of an unsafe context.
+	(UnsafeChecker::mark_unsafe_used): New.
+	(UnsafeChecker::check_use_of_static)
+	(UnsafeChecker::check_function_call)
+	(UnsafeChecker::check_function_attr): Mark the unsafe block as used.
+	(UnsafeChecker::visit): Mark used and warn on unnecessary unsafe block.
+	* checks/errors/rust-unsafe-checker.h (UnsafeChecker): Add
+	mark_unsafe_used and used_unsafe_blocks.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* hir/rust-ast-lower.cc (ASTLoweringBlock::visit): Check if a
+	statement is an item before warning.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-constexpr.cc (maybe_fold_reference_address_to_pointer): port over from cp
+	(eval_binary_expression): likewise
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* parse/rust-parse-impl.hxx:
+	* typecheck/rust-hir-type-check-base.cc:
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* ast/rust-ast-visitor.cc (ContextualASTVisitor::visit): missing visitor
+	* ast/rust-ast-visitor.h: prototype
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Handle Box
+	receivers correctly during dynamic dispatch.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::try_hook):
+	Extract the inner type of a Box to resolve trait methods.
+	* util/rust-lang-item.cc (Rust::LangItem::lang_items): Register
+	dispatch_from_dyn to the BiMap.
+	* util/rust-lang-item.h (class LangItem): Add DISPATCH_FROM_DYN
+	to the Kind enum.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* backend/rust-compile-expr.cc (compile_box): Remove DST guard.
+	(build_box_inner_ptr): Add fat pointer control.
+	(CompileExpr::visit): Add auto-deref for box.
+	(HIRCompileBase::resolve_deref_adjustment): Return fat or thin
+	pointer.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Add auto-deref for box.
+	* typecheck/rust-tyty.cc (ADTType::is_box): New function.
+	* typecheck/rust-tyty.h (class BaseType): New declaration.
+
+2026-09-10  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit):
+	New.
+	* checks/lints/unused/rust-unused-checker.h (UnusedChecker::visit):
+	New.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-collector.cc
+	(TokenCollector::visit (LlvmInlineAsm)): Improve accuracy of
+	token collection.
+	* ast/rust-ast-pointer-visitor.cc
+	(PointerVisitor::visit (LlvmInlineAsm)): Visit outer attributes.
+	* ast/rust-ast-visitor.cc
+	(DefaultASTVisitor::visit (LlvmInlineAsm)): Likewise.
+	* ast/rust-expr.h (LlvmInlineAsm::templates): Remove member
+	variable and replace with...
+	(LlvmInlineAsm::template_str): ...new member variable.
+	(LlvmInlineAsm::LlvmInlineAsm): Initialize template_str.
+	(LlvmInlineAsm::get_templates): Remove member function.
+	(LlvmInlineAsm::set_template): New member function.
+	(LlvmInlineAsm::get_template): Likewise.
+	* expand/rust-macro-builtins-asm.cc (parse_llvm_templates):
+	Rename to...
+	(parse_llvm_template): ...here and adjust to not expect multiple
+	template strings.
+	(parse_llvm_asm): Handle rename of parse_llvm_templates to
+	parse_llvm_template.
+	* hir/rust-ast-lower-expr.cc (check_llvm_asm_support): Handle
+	changes to LlvmInlineAsm.
+	(ASTLoweringExpr::visit (LlvmInlineAsm)): Likewise.
+
+2026-09-10  Lucas Ly Ba  <hi@lucaslyba.com>
+
+	* typecheck/rust-hir-type-check-item.cc
+	(check_repr_c_enum_discriminants): New.
+	(TypeCheckItem::visit): Check repr(C) enum discriminants.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* backend/rust-compile-drop.cc
+	(CompileDrop::build_current_scope_drop_cleanup): Skip definitely
+	dead Drop candidates.
+	* checks/errors/borrowck/rust-bir-drop-analysis.cc
+	(DropAnalysis::get): New function.
+	(DropAnalysis::clear): Likewise.
+	(DropAnalysis::is_definitely_dead): Likewise.
+	(DropAnalysis::analyze): Record dead whole-local HirIds.
+	* checks/errors/borrowck/rust-bir-drop-analysis.h
+	(DropAnalysis::get): New declaration.
+	(DropAnalysis::clear): Likewise.
+	(DropAnalysis::is_definitely_dead): Likewise.
+	(DropAnalysis::definitely_dead): New member.
+	* checks/errors/borrowck/rust-borrow-checker.cc
+	(BorrowChecker::go): Clear old Drop analysis results and analyze
+	each BIR function.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Add
+	indirect field access for DST's and new borrow approach for fat
+	pointers.
+	(resolve_unsized_adt_adjustment): Correct GIMPLE generation for
+	nested unsized ADTs.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Add
+	DST ADT support.
+	(TyTyResolveCompile::create_dyn_adt_record): New function.
+	* backend/rust-compile-type.h (create_dyn_adt_record): New
+	declaration.
+	* backend/rust-intrinsic-handlers.cc (get_inner_dst): New
+	function.
+	(size_of_val_handler): Add DST ADT support.
+	(min_align_of_val_handler): Likewise.
+	* typecheck/rust-coercion.cc
+	(TypeCoercionRules::coerce_unsized_adt): Skip zero-sized fields
+	during coercion.
+	* backend/rust-compile.cc (HIRCompileBase::coerce_to_dyn_object):
+	Remove unnecessary ref wrapping.
+	* typecheck/rust-tyty.cc (ADTType::is_unsized): New function.
+	(ReferenceType::is_dyn_object): Add DST ADT support.
+	(ReferenceType::is_dyn_adt_type): New function.
+	(PointerType::is_dyn_object): Add DST ADT support.
+	(PointerType::is_dyn_adt_type): New function.
+	* typecheck/rust-tyty.h (is_unsized): New declaration.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* backend/rust-compile-base.h (resolve_adjustments): Fix typo.
+	(resolve_unsized_adt_adjustment): New declaration.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Fix typo.
+	(HIRCompileBase::resolve_unsized_adt_adjustment): New function.
+	(HIRCompileBase::resolve_unsized_adjustment): Use it.
+	(CompileExpr::generate_possible_fn_trait_call): Likewise.
+	(HIRCompileBase::coercion_site): Fix typo.
+	* typecheck/rust-coercion.cc
+	(TypeCoercionRules::coerce_unsized): Use helper functions.
+	(TypeCoercionRules::unwrap_ptrs_and_refs): New function.
+	(TypeCoercionRules::coerce_unsized_array_to_slice): Likewise.
+	(TypeCoercionRules::coerce_unsized_dyn): Likewise.
+	(TypeCoercionRules::coerce_unsized_adt): Liksewise.
+	(TypeCoercionRules::apply_reborrow_adjustment): Likewise.
+	* typecheck/rust-coercion.h (struct CoercionSetup): New struct.
+	(coerce_unsized): Add is_inner parameter.
+	(unwrap_ptrs_and_refs): New declaration.
+	(coerce_unsized_array_to_slice): Likewise.
+	(coerce_unsized_dyn): Likewise.
+	(coerce_unsized_adt): Likewise.
+	* util/rust-lang-item.cc (Rust::LangItem::lang_items): Add
+	coerce_unsized to the BiMap.
+	* util/rust-lang-item.h (class LangItem): Add COERCE_UNSIZED to
+	the Kind enum.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* typecheck/rust-coercion.cc
+	(TypeCoercionRules::coerce_unsized): Add array-to-slice coercion
+	support.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* typecheck/rust-tyty.cc (BaseType::unsize_to): New function.
+	(BaseType::satisfies_bound): Use it.
+	* typecheck/rust-tyty.h (class BaseType): New declaration.
+	* util/rust-lang-item.cc (Rust::LangItem::lang_items): Add
+	unsize to the BiMap.
+	* util/rust-lang-item.h (class LangItem): Add UNSIZE to the Kind
+	enum.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-drop-analysis.cc
+	(BasicBlockIdHash): New helper.
+	(DropAnalysis::analyze): Use unordered_set for visited block tracking.
+	* checks/errors/borrowck/rust-bir-drop-analysis.h: Include rust-bir.h
+	directly and remove Function forward declaration.
+	* checks/errors/borrowck/rust-bir-place.h
+	(IndexVec::IndexVec): Add comment for sized constructor.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* Make-lang.in: Add rust-bir-drop-analysis.o.
+	* checks/errors/borrowck/rust-bir.h:
+	(Statement::DropStyle): New enum.
+	(Statement::Kind): Add DROP.
+	(Statement::make_drop): New function.
+	(Statement::get_drop_style): Likewise.
+	(Statement::set_drop_style): Likewise.
+	* checks/errors/borrowck/rust-bir-builder-internal.h:
+	(AbstractBuilder::declare_argument): New function.
+	(AbstractBuilder::push_drop): Likewise.
+	(AbstractBuilder::push_function_argument_drops): Likewise.
+	(AbstractBuilder::pop_scope): Schedule Drop statements.
+	(AbstractBuilder::unwind_until): Likewise.
+	(AbstractBuilder::push_return): Schedule function argument drops.
+	* checks/errors/borrowck/rust-bir-builder.h
+	(Builder::handle_param): Use declare_argument for function
+	parameters.
+	* checks/errors/borrowck/rust-bir-dump.cc (Dump::visit): Dump
+	Drop classifications.
+	* checks/errors/borrowck/rust-bir-fact-collector.h
+	(FactCollector::visit): Handle Drop statements.
+	* checks/errors/borrowck/rust-borrow-checker.cc
+	(BorrowChecker::go): Run BIR Drop analysis.
+	* checks/errors/borrowck/rust-bir-drop-analysis.cc: New file.
+	* checks/errors/borrowck/rust-bir-drop-analysis.h: New file.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-place.h
+	(IndexVec::IndexVec): Create the requested number of elements.
+
+2026-09-10  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* util/rust-hir-map.h (Mappings::insert_extern_crate_id)
+	(Mappings::is_extern_crate): New declaration.
+	(Mappings::extern_crate_ids): New member.
+	* util/rust-hir-map.cc (Mappings::insert_extern_crate_id)
+	(Mappings::is_extern_crate): New function.
+	* resolve/rust-toplevel-name-resolver-2.0.h
+	(TopLevel::visit (ExternCrate)): New declaration.
+	* resolve/rust-toplevel-name-resolver-2.0.cc
+	(TopLevel::check_multiple_insertion_error): Select E0259, E0260 or
+	E0428 based on the colliding declarations.
+	(TopLevel::visit (ExternCrate)): New function definition.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* backend/rust-compile-block.cc (is_control_flow_expr): New helper.
+	(CompileBlock::visit): Emit tail-position break and continue
+	expressions as statements.
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Return the
+	translated expression for unlabeled break instead of emitting it
+	directly.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* backend/rust-compile-pattern.cc
+	(CompilePatternBindings::visit (SlicePattern)): Assert that the
+	rest pattern isn't bound (currently unsupported).
+	* checks/errors/borrowck/rust-bir-builder-pattern.cc
+	(PatternBindingBuilder::visit (SlicePattern)): Handle bound rest
+	pattern.
+	* checks/errors/rust-ast-validation.cc
+	(ASTValidation::visit (AST::SlicePattern)): Likewise.
+	* hir/rust-ast-lower-pattern.cc
+	(ASTLoweringPattern::visit (AST::SlicePattern)): Likewise.
+	* hir/rust-hir-dump.cc (Dump::visit (SlicePatternItemsHasRest)):
+	Likewise.
+	* hir/tree/rust-hir-pattern.h
+	(SlicePatternItemsHasRest::rest_bind): New member variable.
+	(SlicePatternItemsHasRest::SlicePatternItemsHasRest): Initialize
+	rest_bind.
+	(SlicePatternItemsHasRest::operator=): Likewise.
+	(SlicePatternItemsHasRest::has_rest_bind): New member function.
+	(SlicePatternItemsHasRest::get_rest_bind): Likewise.
+	* hir/tree/rust-hir-visitor.cc
+	(DefaultHIRVisitor::walk (SlicePatternItemsHasRest)): Handle
+	bound rest pattern.
+	* hir/tree/rust-hir.cc (SlicePatternItemsHasRest::to_string):
+	Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc
+	(TypeCheckPattern::visit (SlicePattern)): Assert that the rest
+	pattern isn't bound (currently unsupported).
+
+2026-09-10  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-tyty.h (ADTType::ReprKind): Add new SIMD variant.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::parse_repr_options): Parse
+	#[repr(simd)] attribute, rename inline_option to repr_option.
+	* typecheck/rust-hir-type-check-item.h (TypeCheckItem::validate_repr_simd): New
+	function.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::validate_repr_simd):
+	Implement type-checking of #[repr(simd)] structs.
+	(TypeCheckItem::visit (HIR::TupleStruct)): Support type-checking simd representation.
+	(TypeCheckItem::visit (HIR::StructStruct)): Ditto.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc
+	(Early::resolve_rebind_import): Use the final segment's NodeId
+	for 'self' imports instead of the parent's to avoid clashing with
+	glob imports.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* util/rust-lang-item.cc (Rust::LangItem::lang_items): Add pin
+	and unpin lang items to the BiMap.
+	* util/rust-lang-item.h (class LangItem): Add PIN and UNPIN to
+	the Kind enum.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* typecheck/rust-tyty-bounds.cc
+	(TypeBoundsProbe::add_trait_bound): Check all fields of an ADT.
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): Reject
+	trait if there is a negative impl.
+
+2026-09-10  Aiman Najjar  <aiman.najjar@hurranet.com>
+
+	* checks/lints/unused/rust-unused-checker.cc
+	(UnusedChecker::visit): Update logic for checking unused
+	assignments.
+	* checks/lints/unused/rust-unused-context.cc
+	(UnusedContext::add_assign): Use new set to track unused
+	assignments.
+	(UnusedContext::remove_assign): Update to track only last
+	assignment.
+	(UnusedContext::is_variable_assigned): Likewise.
+	(UnusedContext::is_assign_unused): New helper function to
+	check if given id was marked as unused by collector.
+	* checks/lints/unused/rust-unused-context.h:
+	(class UnusedContext): Add new set to track unused assignments and
+	changed current structure to track only last assignment per
+	variable (one to one map).
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-desugar-apit.cc (DesugarApit::visit): Call DefaultASTVisitor::visit
+	on the function we're currently visiting.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* hir/rust-ast-lower-type.h: New enum, change API to use it.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Use the new ImplTrait enum.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLoweringType::ASTLoweringType): Likewise.
+	(ASTLoweringType::translate): Likewise.
+	(ASTLoweringType::visit): Likewise.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-lang-item.h: Add enum value for VaListImpl.
+	* util/rust-lang-item.cc: Register it.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-lang-item.h: Add enum value for Freeze.
+	* util/rust-lang-item.cc: Register it.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* util/rust-attributes.h: Change Attributes::is_known API to return an enum, add
+	AttributeKnowledge result enum.
+	* util/rust-attribute-values.h: Add more known tool attributes.
+	* util/rust-attributes.cc (Attributes::is_known): Check for tool attributes and
+	adapt return type.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_outer_attributes): Use new
+	API and ignore tool attributes.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit): Likewise.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-collect-lang-items.cc (get_lang_item_attr): Remove attribute checking
+	code as this will be done during lowering.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_outer_attributes): Mention
+	the attribute which is unknown.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-builder.h: Add new parameter to Builder::new_type_param to avoid
+	recreating default type parameters when building the new type parameter.
+	* ast/rust-ast-builder.cc: Implement the change.
+	* expand/rust-derive.cc: Use it in setup_impl_generics.
+
+2026-09-10  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit):
+	New.
+	* checks/lints/unused/rust-unused-checker.h (UnusedChecker::visit):
+	New.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-expand-visitor.cc
+	(ExpandVisitor::expand_struct_fields): Remove function
+	definition.
+	(ExpandVisitor::expand_tuple_fields): Likewise.
+	(ExpandVisitor::visit (Function)): Visit outer attributes, add
+	comment about inner attribute visiting.
+	(ExpandVisitor::visit (StructStruct)): Remove function
+	definition.
+	(ExpandVisitor::visit (TupleStruct)): Likewise.
+	(ExpandVisitor::visit (EnumItemTuple)): Likewise.
+	(ExpandVisitor::visit (EnumItemStruct)): Likewise.
+	(ExpandVisitor::visit (Union)): Likewise.
+	(ExpandVisitor::visit (ExternalStaticItem)): Likewise.
+	* expand/rust-expand-visitor.h
+	(ExpandVisitor::visit (StructStruct)): Remove function
+	declaration.
+	(ExpandVisitor::visit (TupleStruct)): Likewise.
+	(ExpandVisitor::visit (EnumItemTuple)): Likewise.
+	(ExpandVisitor::visit (EnumItemStruct)): Likewise.
+	(ExpandVisitor::visit (Union)): Likewise.
+	(ExpandVisitor::visit (ExternalStaticItem)): Likewise.
+	(ExpandVisitor::expand_fields): Likewise.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622

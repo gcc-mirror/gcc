@@ -1,3 +1,8 @@
+2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127273
+	* testsuite/libgomp.c/usm_env_handling-1-self.c: Remove 'dg-ice'.
+
 2026-09-09  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/122205

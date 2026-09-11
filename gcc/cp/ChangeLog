@@ -1,3 +1,53 @@
+2026-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127276
+	* pt.cc (tsubst_splice_expr): Call convert_from_reference if not
+	member access and SPLICE_EXPR is a splice expression.
+
+2026-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	P3726R2
+	PR c++/125845
+	* cp-tree.h: Implement C++26 P3726R2 - Adjustments to Union Lifetime
+	Rules.  Document some generic flags used in C++ specific way on some
+	trees in the toplevel comment.
+	(CONSTRUCTOR_OMITTED_NOT_WITHIN_LIFETIME_P): Define.
+	(enum cp_built_in_function): Add CP_BUILT_IN_START_LIFETIME.
+	(reduced_constant_expression_p): Add a bool argument defaulted to
+	false.
+	* tree.cc (builtin_valid_in_constant_expr_p): Handle
+	CP_BUILT_IN_START_LIFETIME.
+	* decl.cc (cxx_init_decl_processing): Create __builtin_start_lifetime
+	decl.
+	* cp-gimplify.cc (cp_gimplify_expr): Handle
+	CP_BUILT_IN_START_LIFETIME.
+	* semantics.cc (check_frontend_builtin): New function.
+	(finish_call_expr): Use it.
+	* constexpr.cc (is_within_lifetime): New function.
+	(cxx_eval_is_within_lifetime): Use it.  Add fun argument and pass it
+	to that function.
+	(cxx_eval_start_lifetime): New function.
+	(cxx_eval_builtin_function_call): Handle CP_BUILT_IN_START_LIFETIME.
+	Pass fun to cxx_eval_is_within_lifetime.
+	(is_std_allocator_allocate): Only return true for
+	std::allocator<T>::allocate and not for std::allocator<T>::deallocate.
+	(is_std_allocator_allocate_deallocate): New functions.
+	(cxx_eval_call_expression): Use is_std_allocator_allocate_deallocate
+	rather than is_std_allocator_allocate.
+	(reduced_constant_expression_p): Add union_elemental_subobject
+	argument and propagate it to recursive calls.  If set, ignore for
+	C++26 holes in array initializers which aren't within lifetime.
+	(modifying_const_object_p): Change != MODIFY_EXPR test to == INIT_EXPR.
+	(cxx_eval_store_expression): Handle MODOP_EXPR next to INIT_EXPR and
+	MODIFY_EXPR, meaning start_lifetime.  Don't preevaluate init in that
+	case, return void_node early if *valp is already non-NULL/void_node
+	and within lifetime.
+	(cxx_eval_constant_expression): For std::allocator<T>::allocate
+	start lifetime of the created array but not of its subobjects.
+	Use is_std_allocator_allocate_deallocate rather than
+	is_std_allocator_allocate where appropriate.
+	(potential_constant_expression_1): Likewise.
+
 2026-09-09  Léo Hardt  <leom.hardt@inf.ufrgs.br>
 
 	* mangle.cc (write_expression): don't call

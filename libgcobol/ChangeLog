@@ -1,3 +1,20 @@
+2026-09-10  Robert Dubner  <rdubner@symas.com>
+
+	* gmath.cc (__gg__conditional_stash_float): New routine supporting
+	faster GENERIC arithmetic.
+	(__gg__add_fixed_phase1): Remove obsolete function.
+	(__gg__addf1_fixed_phase2): Likewise.
+	(__gg__fixed_phase2_assign_to_c): Likewise.
+	(__gg__add_float_phase1): Likewise.
+	(__gg__addf1_float_phase2): Likewise.
+	(__gg__float_phase2_assign_to_c): Likewise.
+	(__gg__addf3): Likewise.
+	(__gg__subtractf1_fixed_phase2): Likewise.
+	(__gg__subtractf2_fixed_phase1): Likewise.
+	(__gg__subtractf1_float_phase2): Likewise.
+	(__gg__subtractf2_float_phase1): Likewise.
+	(__gg__subtractf3): Likewise.
+
 2026-09-09  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (enum cbl_round_t): Ensure storage is 'int'

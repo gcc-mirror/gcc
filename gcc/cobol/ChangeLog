@@ -1,3 +1,14 @@
+2026-09-10  Robert Dubner  <rdubner@symas.com>
+
+	* compare.cc (digiter): Spelling in comment.
+	* genmath.cc (fast_add): Fix aliasing problem.
+	(get_fbinary_value): New function for converting fixed-format to
+	floating point, with rdigit scaling.
+	(add_floats): Stop using library routines in favor of GENERIC.
+	(add_format_3): Likewise.
+	(subtract_floats): Likewise.
+	(subtract_format_3): Likewise.
+
 2026-09-09  Robert Dubner  <rdubner@symas.com>
 
 	* genmath.cc (all_results_integer): Formatting.

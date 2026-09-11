@@ -1,3 +1,12 @@
+2026-09-10  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127032
+	* libf7-asm.sx (config.h): Include it.
+	(DALIAS) [sizeof(double)==8 && HAVE_AS_AVR_GNU_ATTRIBUTE]:
+	Add .gnu_attribute 8,64.
+	(LALIAS) [sizeof(long double)==8 && HAVE_AS_AVR_GNU_ATTRIBUTE]:
+	Add .gnu_attribute 12,64.
+
 2026-08-25  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/127071

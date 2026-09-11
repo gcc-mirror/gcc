@@ -1,3 +1,238 @@
+2026-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.target/i386/vperm-v4sf-3.c: New test.
+	* gcc.target/i386/vperm-v4si-3.c: New test.
+
+2026-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127276
+	* g++.dg/reflect/pr127276.C: New test.
+
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-61.c: New file.
+
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/gimplefe-60.c: New testcase.
+
+2026-09-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127020
+	* gcc.target/i386/sse2-stv-3.c: Adjusted.
+	* gcc.target/i386/sse2-stv-8.c: New test.
+	* gcc.target/i386/sse2-stv-9.c: Likewise.
+
+2026-09-10  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127052
+	* gcc.dg/tree-ssa/cselim-6.c: New test.
+	* gcc.dg/tree-ssa/cselim-7.c: New test.
+
+2026-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	P3726R2
+	PR c++/125845
+	* g++.dg/cpp26/feat-cxx26.C: Adjust __cpp_trivial_union checking.
+	* g++.dg/cpp26/trivial-union3.C: New test.
+	* g++.dg/cpp26/trivial-union4.C: New test.
+	* g++.dg/cpp26/trivial-union5.C: New test.
+	* g++.dg/cpp26/trivial-union6.C: New test.
+	* g++.dg/cpp26/within-lifetime3.C: Remove #if 0 and #endif.
+	* g++.dg/cpp26/within-lifetime8.C: New test.
+	* g++.dg/cpp26/within-lifetime9.C: New test.
+	* g++.dg/cpp29/feat-cxx29.C: Adjust __cpp_trivial_union checking.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4794.rs: New test.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1553.rs: New test.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-explicit-return.rs: Test parameter drops on explicit
+	return.
+	* rust/execute/drop-function-boundary-moves.rs: New test.
+	* rust/execute/drop-function-params.rs: Test multiple parameter drop
+	order.
+	* rust/execute/drop-if-else-local.rs: New test.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4678.rs: New test.
+
+2026-09-10  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/unused-unsafe_0.rs: New test.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/unreachable.rs: New test.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4631.rs: New test.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4157-1.rs: New test.
+	* rust/compile/issue-4157-2.rs: New test.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4173-1.rs: New test.
+	* rust/compile/issue-4173-2.rs: New test.
+	* rust/compile/issue-4173-3.rs: New test.
+
+2026-09-10  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3585-1.rs: New test.
+	* rust/compile/issue-3585-2.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/execute/box-dispatch-from-dyn.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/execute/box-dispatch-1.rs: New test.
+	* rust/execute/box-dispatch-2.rs: New test.
+	* rust/execute/unsized-adt-size.rs: Format test.
+
+2026-09-10  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/break-with-label-and-loop_0.rs: New test.
+
+2026-09-10  Lucas Ly Ba  <hi@lucaslyba.com>
+
+	* rust/compile/repr-c-enums-larger-than-int_0.rs: New test.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-whole-local-move.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/execute/unsized-adt-nested-coercion.rs: New test.
+	* rust/execute/unsized-adt-size.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/coercion2.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/coercion.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/unsize2.rs: New test.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* rust/borrowck/drop_analysis_whole_move.rs: New test.
+
+2026-09-10  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/link/extern_crate_alias_0.rs: New test.
+	* rust/link/extern_crate_alias_1.rs: New test.
+	* rust/link/extern_crate_dup_0.rs: New test.
+	* rust/link/extern_crate_dup_1.rs: New test.
+	* rust/link/extern_crate_item_conflict_0.rs: New test.
+	* rust/link/extern_crate_item_conflict_1.rs: New test.
+
+2026-09-10  Lishin  <lishin1008@gmail.com>
+
+	* rust/execute/drop-unlabeled-break-continue.rs: New test.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/slice_rest_pattern_2.rs: New test.
+
+2026-09-10  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/repr_simd.rs: New file.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/issue-4689-1.rs: New test.
+	* rust/compile/issue-4689-2.rs: New test.
+
+2026-09-10  Enes Cevik  <enes@nsvke.com>
+
+	* rust/compile/lang-pin-unpin.rs: New test.
+
+2026-09-10  Aiman Najjar  <aiman.najjar@hurranet.com>
+
+	* rust/compile/issue-4747.rs: New test.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/apit-in-inner-fn.rs: New test.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/va_list-lang-item.rs: New test.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/freeze-lang-item.rs: New test.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/tool-attribute1.rs: New test.
+
+2026-09-10  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/derive-with-default-types.rs: New test.
+
+2026-09-10  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/double-negations_0.rs: New test.
+
+2026-09-10  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/doc_macro_2.rs: New test.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sat_u_promoted-1.c: New test.
+	* gcc.target/aarch64/sat_u_promoted-2.c: New test.
+	* gcc.target/aarch64/sat_u_promoted-3.c: New test.
+	* g++.target/aarch64/sat_u_promoted-vector-1.C: New test.
+
+2026-09-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/labeled-unit-1.a68: New test.
+	* algol68/execute/plusab-5.a68: Likewise.
+
+2026-09-10  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/sse4_1-insertps-8.c: New test case.
+	* gcc.target/i386/sse4_1-insertps-9.c: Likewise.
+	* gcc.target/i386/vperm-v4sf-3-sse4.c: Likewise.
+	* gcc.target/i386/vperm-v4sf-3.c: Likewise.
+	* gcc.target/i386/vperm-v4si-3-sse4.c: Likewise.
+	* gcc.target/i386/vperm-v4si-3.c: Likewise.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sat_u_add_not_cmp-1.c: New test.
+	* gcc.target/aarch64/sat_u_add_not_cmp-2.c: New test.
+
+2026-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/vec-concatv2sf.c: New test.
+
+2026-09-10  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/125734
+	* gcc.dg/tree-ssa/pr125734.c: New test.
+
 2026-09-09  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* lib/target-supports.exp (natural_alignment_32) Remove

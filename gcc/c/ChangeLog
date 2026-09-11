@@ -1,3 +1,16 @@
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_statement): Parse
+	but ignore {v} marker on assignments.
+
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-parser.cc (c_parser_gimple_postfix_expression):
+	Add ret_type argument, defaulted to error_mark_node.
+	Add parsing of __CLOBBER.
+	(c_parser_gimple_binary_expression): Pass ret_type down to
+	c_parser_gimple_postfix_expression.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622

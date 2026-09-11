@@ -1,3 +1,413 @@
+2026-09-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-eh.cc (tree_could_trap_1, tree_could_trap_p): Clarify the
+	function comments.
+	(lhs_could_trap_p): Correct the function comment.
+
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.cc (dump_generic_node): Adjust -gimple
+	dumping for clobbers.
+
+2026-09-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127020
+	* config/i386/i386-features.cc
+	(timode_scalar_chain::compute_convert_gain): Add gain of
+	COSTS_N_INSNS (1) for pand/pior/pxor loads.
+
+2026-09-10  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/127308
+	* genmatch.cc (operator==): Move earlier.
+	(c_code_id::gen_checking):  Correct the check for CONVERT_EXPR/NOP_EXPR.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/pdp11/pdp11.cc (pdp11_rtx_costs): Move src assignment
+	into the blocks that need it.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/nds32/nds32-cost.cc (nds32_rtx_costs_speed_prefer): Fix
+	two places that returned a cost directly so that they now store
+	the cost in *total and return true.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/mmix/mmix-protos.h (mmix_eh_return_data_regno): Return
+	unsigned int rather than int.
+	* config/mmix/mmix.cc (mmix_eh_return_data_regno): Likewise.
+	(mmix_initial_elimination_offset): Limit regno variables to
+	their for loops and use unsigned regnos for EH data queries.
+	(mmix_use_simple_return): Likewise.
+	(mmix_expand_prologue): Likewise.
+	(mmix_expand_epilogue): Likewise.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/gcn/gcn.cc (gcn_init_cumulative_args): Start the
+	inform message with a lowercase letter.  Quote the option name.
+
+2026-09-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc (back_threader_profitability):
+	Remove the note on bb_insns.
+	(back_threader_profitability::possibly_profitable_path_p): Dump
+	each block's insn count.
+
+2026-09-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc (back_threader_profitability): Add
+	push_bb, pop_bb, m_loop, unwind_state and m_unwind; add n_insns
+	to path_stats; replace m_n_insns with a net_insns accessor.
+	(back_threader_profitability::back_threader_profitability):
+	Initialize m_loop and m_stats.
+	(back_threader_profitability::account_bb): Return the number of
+	insns in the block.
+	(back_threader_profitability::push_bb): New.
+	(back_threader_profitability::pop_bb): New.
+	(back_threader_profitability::possibly_profitable_path_p): Use
+	the accumulated stats.
+	(back_threader_profitability::profitable_path_p): Likewise.
+	(back_threader::find_paths_to_names): Call push_bb/pop_bb.
+
+2026-09-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc (back_threader_profitability): Add
+	path_stats and m_stats; move m_threaded_through_latch,
+	m_multiway_branch_in_path, m_contains_hot_bb and
+	m_unprofitable_bb into it.
+	(back_threader_profitability::account_bb): Adjust.
+	(back_threader_profitability::possibly_profitable_path_p):
+	Adjust.
+	(back_threader_profitability::profitable_path_p): Adjust.
+
+2026-09-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc (back_threader_profitability): Add
+	account_bb and m_unprofitable_bb.
+	(back_threader_profitability::account_bb): New.
+	(back_threader_profitability::possibly_profitable_path_p): Use it.
+
+2026-09-10  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc
+	(back_threader_profitability::possibly_profitable_path_p): Dump
+	the path after counting it instead of from within the loop.
+
+2026-09-10  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* config/aarch64/aarch64-json-tunings-parser.cc (test_json_integers): Initialize params.
+	(test_json_boolean): Likewise.
+	(test_json_strings): Likewise.
+	(test_json_enums): Likewise.
+
+2026-09-10  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127052
+	* tree-ssa-phiopt.cc (cond_store_replacement_limited): Reject clobbers
+	for the middle bb store.  And Remove the check on ssa name for the rhs
+	of the middle bb store.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genopinit.cc (struct pattern_info): New.
+	(patterns): Use it.
+	(gen_insn): Record the pattern's C test.
+	(pattern_cmp): Use pattern_info.
+	(narrowest_uint_type): New function.
+	(main): Emit a condition-number table and a loop instead of one
+	assignment per pattern, and drop the split into 1000-pattern
+	functions.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/rx/rx.cc (rx_gen_move_template): Fix GET_MODE/GET_CODE typo.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/nds32/nds32.cc (nds32_dwarf_register_span): Remove
+	unused dwarf_single variable.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/lm32/lm32.cc (lm32_builtin_va_start): Remove unused
+	variable.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/c6x/c6x.cc (reorg_split_calls): Remove unused uid
+	and reservation_mask variables.
+	(hwloop_optimize): Remove unused delayed_splits variable.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd ((type) MAX ((wide_type) a - (wide_type) b, 0)): New
+	simplification.
+	((type) MIN ((wide_type) a + (wide_type) b, MAX)): Likewise.
+
+2026-09-10  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* config/i386/predicates.md (insertps_parallel): New predicate.
+	* config/i386/sse.md (sse4_1_insertps_<mode>_perm): New
+	define_insn to implement V4SI or V4SF permute using insertps.
+	(*sse2_insertps_<mode>_perm): Emulate the above insn on SSE2
+	by splitting to one or two of pslldq, psrldq and pshufd.
+
+2026-09-10  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* recog.h (recog_data_d): Delete copy and move constructors.
+	(recog_data_ptr): New variable.
+	(recog_data): Turn into a macro.
+	(recog_data_saver): Rename to...
+	(recog_state_saver): ...this and move into the !GENERATOR_FILE block.
+	Save and restore which_alternative.  Save and restore recog_data_ptr
+	rather than doing a full recog_data_d copy.
+	* varasm.cc (assemble_asm): Explicitly initialize n_dups,
+	n_alternatives, and is_operator.
+	* recog.cc (recog_data): Replace with...
+	(main_recog_data, recog_data_ptr): ...these new variables.
+	* emit-rtl.cc (address_reload_context::emit_autoinc): Update
+	after the rename.
+	* reload.cc (can_reload_into): Use recog_state_saver rather than
+	manually saving and restoring recog_data.
+	* config/i386/i386.cc (ix86_memory_address_reg_class): Likewise.
+	(ix86_lea_outperforms): Likewise.
+	* config/i386/i386-expand.cc (ix86_vector_duplicate_value): Likewise.
+	* config/sh/sh.cc (sh_recog_treg_set_expr): Likewise.
+	(sh_split_treg_set_expr): Likewise.
+	* config/sh/sh.md: Likewise in two peephole2s.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (unsigned_integer_sat_add): Recognise comparisons
+	against the complement of an operand.  Also recognise ADD_OVERFLOW
+	with a separate addition.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genmatch.cc (case_convert_id_p): New function.
+	(same_case_p): Likewise.
+	(operation_has_case_p): Likewise.
+	(operations_overlap_p): Likewise.
+	(function_operation_p): Likewise.
+	(operand_cases_overlap_p): Likewise.
+	(cmp_operand): Handle conversion cases and function iterators.
+	(nodes_overlap_p): New function.
+	(decision_tree::find_node): Do not merge across an overlapping node.
+	(decision_tree::insert_operand): Assert the recursive lookup result.
+	(fns_cmp): Remove.
+	(dt_operand_group): New structure.
+	(add_operation_cases): New function.
+	(find_group): Likewise.
+	(collect_operand_groups): Likewise.
+	(operation_covers_group_p): Likewise.
+	(emit_operation_test): Likewise.
+	(emit_group_labels): Likewise.
+	(emit_expr_group): Likewise.
+	(emit_fn_group): Likewise.
+	(dt_node::gen_kids): Do not sort function nodes.
+	(dt_node::gen_kids_1): Emit groups with unique case labels.
+
+2026-09-10  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (one_cmpldi2): Use s_not_b64.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc: Spell noce_if_info without the struct keyword throughout.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (count_bb_insns, cheap_bb_rtx_cost_p, first_active_insn,
+	last_active_insn, find_active_insn_before, find_active_insn_after,
+	block_fallthru, cond_exec_get_condition, noce_get_condition,
+	find_if_header, block_jumps_and_fallthru, noce_find_if_block,
+	noce_emit_move_insn, noce_emit_store_flag, noce_try_move,
+	noce_try_ifelse_collapse, noce_try_store_flag, noce_try_addcc,
+	noce_try_store_flag_constants, noce_try_shifted_store_flag,
+	noce_try_store_flag_mask, noce_try_cmove, noce_try_cmove_arith,
+	noce_get_alt_condition, noce_try_minmax, noce_try_abs,
+	noce_try_sign_mask): Remove the unused forward declarations.
+	(noce_emit_cmove): Likewise, and give the definition the default
+	arguments.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_can_force_operand): Return a bool rather than an
+	insn_code.
+	(noce_emit_cmove): Remove ATTRIBUTE_UNUSED from local variables.
+	(bbs_ok_for_cmove_arith): Drop braces around single statements.
+	(noce_find_if_block): Value-initialize if_info instead of memsetting it.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_original_region_cost): New function.
+	(noce_process_if_block): Use it for the multiple-set and the
+	single-set estimate.  Rename old_cost to base_cost and compute
+	speed_p once.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (cond_move_process_if_block): Make then_regs and else_regs
+	auto_vec and return directly instead of jumping to a cleanup label.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_seq_clobbers_cc_cmp_p): New function.
+	(noce_convert_multiple_sets_1): Use it for both candidate sequences.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (MAX_CONDITIONAL_EXECUTE): Add a comment.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (cond_exec_changed_p): Rename to...
+	(ifcvt_changed_p): ...this, and correct its comment.  Adjust all uses.
+	(noce_finish_if_conversion): Bump num_updated_if_blocks.
+	(noce_convert_multiple_sets, noce_process_if_block,
+	cond_move_process_if_block): Drop the bump the helper now does.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_try_store_flag_logical): Pass 0, not false, for the
+	normalize argument.
+	(noce_convert_multiple_sets): Use a range-for over insn_info.
+	(merge_if_block, cond_exec_find_if_block): Drop the elaborated struct
+	type.
+	(block_jumps_and_fallthru): Test the insn pointer directly.
+	(cond_exec_find_if_block): Drop a redundant last_test_bb store.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_splat_to_const): New function.
+	(noce_try_sign_bit_splat): Use it for both orientations.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (merge_block_into_combo): New function.
+	(merge_if_block): Use it for the THEN and the ELSE block.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_representable_diff_p): New function.
+	(noce_try_store_flag_constants): Use it.
+	(noce_try_cmove): Likewise.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_reversed_cond): New function.
+	(noce_reversed_cond_code): Use it.
+	(noce_try_addcc, noce_try_cmove_arith, noce_try_cond_arith): Likewise.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.h (struct ce_if_block): Make and_and_p a bool.
+	(struct noce_multiple_sets_info): Correct the unmodified_insn and
+	need_cmov comments.
+	(struct noce_if_info): Correct the insn_a/insn_b, speed_p and
+	original_cost comments.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_process_if_block): Remove a redundant else_bb test.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (IFCVT_MULTIPLE_DUMPS): Remove.
+	(if_convert): Remove its now-vacuous #ifdef guards.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (first_active_insn, find_active_insn_after, block_fallthru,
+	noce_try_move, noce_try_sign_bit_splat, noce_try_store_flag_mask,
+	noce_emit_cmove, noce_try_cmove, get_base_reg_or_constant,
+	noce_try_cond_arith, try_emit_cmove_seq,
+	noce_convert_multiple_sets_1, init_noce_multiple_sets_info,
+	check_cond_move_block, find_if_header, block_jumps_and_fallthru,
+	find_if_case_2, dead_or_predicable): Fix comments.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (dead_or_predicable): Make merge_set, live and return_regs
+	auto_bitmap and drop the manual BITMAP_FREE calls.
+	(bbs_ok_for_cmove_arith): Make bba_sets an auto_bitmap.
+	(bb_valid_for_noce_process_p): Make test_bb_temps an auto_bitmap and
+	return directly instead of jumping to a cleanup label.
+	(noce_convert_multiple_sets): Make set_targets an auto_bitmap.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_convert_multiple_sets_1): Take the condition as a
+	parameter instead of re-decoding it.  Remove the unused cond_earliest
+	local.
+	(noce_convert_multiple_sets): Pass the decoded condition down.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (enum ifcvt_phase): New.
+	(ifcvt_pass_phase): New, replacing...
+	(ifcvt_after_combine): ...this.
+	(cheap_bb_rtx_cost_p): Test ifcvt_pass_phase.
+	(if_convert): Take an ifcvt_phase instead of a bool.
+	(rest_of_handle_if_conversion): Adjust caller.
+	(pass_if_after_combine, pass_if_after_reload): Remove, folding both
+	into...
+	(pass_rtl_ifcvt): ...this, now parameterised on the phase.
+	(make_pass_rtl_ifcvt, make_pass_if_after_combine,
+	make_pass_if_after_reload): Construct it with the matching phase.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_commit_sequence): New function.
+	(noce_try_ifelse_collapse, noce_try_store_flag,
+	noce_try_sign_bit_splat, noce_try_inverse_constants,
+	noce_try_shifted_store_flag, noce_try_store_flag_constants,
+	noce_try_store_flag_logical, noce_try_addcc,
+	noce_try_store_flag_mask, noce_try_cmove, noce_try_cmove_arith,
+	noce_try_cond_arith, noce_try_sign_mask): Use it.
+
+2026-09-10  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* ifcvt.cc (noce_finish_if_conversion): New function.
+	(noce_convert_multiple_sets): Use it.  Remove now-unused locals.
+	(noce_process_if_block): Likewise.
+	(cond_move_process_if_block): Likewise.
+
+2026-09-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/sse.md (*vec_concatv2sf_sse4_1): Restrict the condition
+	to accept only CONST0_RTX as operand 2 when operand 1 is MEM.
+	(*vec_concatv2si_sse4_1): Ditto.
+	(*vec_concatv2sf_sse): Disable the pattern when SSE4.1 is enabled.
+	(*vec_concatv2si_sse): Rename from *vec_concatv2si.
+
+2026-09-10  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	PR tree-optimization/125734
+	* tree-ssa-loop-niter.cc (is_rshift_by_1): Remove TYPE_UNSIGNED restriction.
+	(number_of_iterations_cltz): Use range_on_edge to check non-negativity of
+	signed preheader input.
+	(number_of_iterations_cltz_complement): Likewise.
+
+2026-09-10  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* config/riscv/riscv-protos.h (get_vector_units): New.
+	(get_scalar_units): New.
+	* config/riscv/generic-ooo.md: Update comments for vector issue width.
+	* config/riscv/generic-vector-ooo.md (vxu_ooo_issue): Change to reservation over 2 units.
+	(vxu_ooo_alu): Likewise.
+	(vxu_ooo_multicycle): Likewise.
+	* config/riscv/riscv-vector-costs.cc (costs::scale_vector_cost): New.
+	(costs::add_stmt_cost): Call it.
+	* config/riscv/riscv-vector-costs.h (costs::scale_vector_cost): New.
+	* config/riscv/riscv.cc (riscv_tune_param): Add scalar_units and
+	vector_units.
+	(generic_ooo_tune_info): Set scalar_units to 4 and vector_units to 2.
+
 2026-09-09  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR rtl-optimization/127142

@@ -1,3 +1,16 @@
+2026-09-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-ranges.cc (a68_pop_range): Do not consolidate refs in
+	last unit in the range's statement list, becuase it has already
+	been consolidated.
+	(a68_add_completer): Just call to a68_consolidate_ref and avoid
+	tsi_delink.
+	(a68_pop_serial_clause_range): Likewise.
+	* a68-low-clauses.cc (a68_lower_labeled_unit): Consolidate ref in
+	second componend of compound expr.
+	* a68-low.cc (a68_consolidate_ref): Simplify and do not handle
+	compound expressions in a special way.
+
 2026-07-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	PR algol68/126330
