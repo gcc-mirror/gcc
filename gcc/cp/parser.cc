@@ -35608,15 +35608,21 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	       && dependentish_scope_p (parser->scope))
 	      || dependent_namespace_p (parser->scope)))
 	{
+	  tree scope = parser->scope;
+	  /* The make_* functions below expect something that's a type.  SCOPE
+	     is a NAMESPACE_DECL when we are dealing with a dependent namespace
+	     alias like "namespace A = [:ns:];".  */
+	  if (dependent_namespace_p (scope))
+	    scope = make_splice_scope (ORIGINAL_NAMESPACE (scope),
+				       /*type_p=*/false);
+
 	  if (tag_type)
 	    {
-	      tree type;
-
 	      /* The resolution to Core Issue 180 says that `struct
 		 A::B' should be considered a type-name, even if `A'
 		 is dependent.  */
-	      type = make_typename_type (parser->scope, name, tag_type,
-					 /*complain=*/tf_error);
+	      tree type = make_typename_type (scope, name, tag_type,
+					      /*complain=*/tf_error);
 	      if (type != error_mark_node)
 		decl = TYPE_NAME (type);
 	    }
@@ -35624,8 +35630,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 		   && (cp_parser_next_token_ends_template_argument_p (parser)
 		       || cp_lexer_next_token_is (parser->lexer,
 						  CPP_CLOSE_PAREN)))
-	    decl = make_unbound_class_template (parser->scope,
-						name, NULL_TREE,
+	    decl = make_unbound_class_template (scope, name, NULL_TREE,
 						/*complain=*/tf_error);
 	  else
 	    decl = build_qualified_name (/*type=*/NULL_TREE,
