@@ -37,7 +37,7 @@ if { [check_effective_target_lp64] } {
 		$srcdir/$subdir/alloc/* \
 	]]
 
-	dg-runtest $srcdir/$subdir/alloc/src/lib.rs "-frust-edition=2015 -frust-crate=alloc -frust-compile-until=nameresolution -frust-cfg=target_has_atomic=\"ptr\" -w" ""
+	dg-runtest $srcdir/$subdir/alloc/src/lib.rs "-frust-edition=2018 -frust-crate=alloc -frust-compile-until=nameresolution -frust-cfg=target_has_atomic=\"ptr\" -w" ""
 	set dg-do-what-default ${saved-dg-do-what-default}
 } else {
 	unsupported "alloc crate tests require a 64-bit target "

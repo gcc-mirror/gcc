@@ -106,14 +106,14 @@ pub mod ops {
 
     pub use self::arith::{Add, AddAssign, Sub};
     pub use self::deref::{Deref, DerefMut, Receiver};
-    pub use bit::{BitAnd, BitOr, BitXor};
-    pub use drop::Drop;
-    pub use function::{Fn, FnMut, FnOnce};
-    pub use generator::{Generator, GeneratorState};
-    pub use index::{Index, IndexMut};
-    pub use range::{Bound, Range, RangeBounds};
-    pub use try::Try;
-    pub use unsize::{CoerceUnsized, DispatchFromDyn};
+    pub use self::bit::{BitAnd, BitOr, BitXor};
+    pub use self::drop::Drop;
+    pub use self::function::{Fn, FnMut, FnOnce};
+    pub use self::generator::{Generator, GeneratorState};
+    pub use self::index::{Index, IndexMut};
+    pub use self::range::{Bound, Range, RangeBounds};
+    pub use self::r#try::Try;
+    pub use self::unsize::{CoerceUnsized, DispatchFromDyn};
 
     use super::marker::Sized;
 
@@ -222,7 +222,7 @@ pub mod ops {
             fn index_mut(&mut self, index: Idx) -> &mut Self::Output;
         }
     }
-    pub mod try {
+    pub mod r#try {
         use crate::core::result::Result;
 
         #[lang = "try"]
@@ -855,7 +855,7 @@ pub mod iter {
         use super::Result;
         use super::Sized;
         use crate::core::ops::function::FnMut;
-        use crate::core::ops::try::Try;
+        use crate::core::ops::r#try::Try;
         pub trait IntoIterator {
             type Item;
             type IntoIter: Iterator<Item = Self::Item>;
