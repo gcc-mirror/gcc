@@ -3315,6 +3315,32 @@ group_attr( const cbl_field_t * field ) {
   return p->attr;
 }
 
+/*       
+ * 13.16.3 Syntax rules
+ * a) if the literal is alphanumeric, 'PICTURE X(length)'
+ * b) if the literal is boolean, 'PICTURE 1(length)'
+ * c) if the literal is national, 'PICTURE N(length)'
+ * (We don't support boolean yet.)
+ */
+static void
+update_prior_invalid_field( const cbl_field_t *field = nullptr) {
+  symbol_elem_t *e = field? symbol_at(field->our_index) :  symbols_end();
+  e--;
+  if( e->type == SymDataSection ) e--;
+  if( (e)->type == SymField ) {
+    auto f = cbl_field_of(e);
+    if( ! field ) field = f; // fake it
+    if( field->level <= f->level ) {
+      if( f->type == FldInvalid && f->data.has_initial_value() ) {
+        if( f->has_attr(quoted_e) ) {
+          f->type = FldAlphanumeric;
+          assert(0 < f->char_capacity());
+        }
+      }
+    }
+  }
+}
+
 static struct cbl_field_t *
 field_add( const cbl_loc_t& loc, cbl_field_t *field ) {
   switch(current_data_section) {
@@ -3349,6 +3375,8 @@ field_add( const cbl_loc_t& loc, cbl_field_t *field ) {
       return NULL;
       break;
     }
+  } else {
+    update_prior_invalid_field(field);
   }
   return field;
 }

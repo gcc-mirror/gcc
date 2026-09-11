@@ -2030,8 +2030,10 @@ symbols_update( size_t first, bool parsed_ok ) {
           case FldNumericDisplay:
           case FldNumericEdited:
             if( ! (field->has_attr(register_e) || field->has_attr(hex_encoded_e)) ) {
-              error_msg(symbol_field_location(field_index(field)),
-                        "internal: %qs encoding not defined", field->name);
+              if( ! mode_syntax_only() ) {
+                error_msg(symbol_field_location(field_index(field)),
+                          "internal: %qs encoding not defined", field->name);
+              }
             }
             break;
           case FldClass:
@@ -5132,15 +5134,27 @@ symbol_program_local( const char tgt_name[] ) {
  */
 std::map<char, const char *> currencies;
 
+static bool
+symbol_currency_symbol_ok( const char symbol ) {
+  static std::string never("ABCDEGNPRSUVXZ0-9abcdegnprsuvxz,.*/;()'\"=+-");
+  return std::string::npos == never.find(symbol);
+}
+
 // cppcheck-suppress-begin [nullPointerRedundantCheck]
 bool
 symbol_currency_add( const char symbol[], const char sign[] ) {
+  static const std::string never("ABCDEGNPRSUVXZ0-9abcdegnprsuvxz,.*/;()'\"=+-");
   // In service of CURRENCY sign PICTURE SYMBOL symbol
   // The single-character 'symbol' is replaced with multi-char 'sign'
   // by the NumericEdited processing.
   if( !symbol ) {
     symbol = xasprintf("%c", *sign);
+  } else {
+    if( ! symbol_currency_symbol_ok(symbol[0]) ) {
+      return false;
+    }
   }
+
   currencies[*symbol] = sign;
   return true;
 }

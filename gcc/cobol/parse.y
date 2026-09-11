@@ -3115,7 +3115,10 @@ special_name:   dev_mnemonic {
                     error_msg(@lit, "'%s' has embedded NUL", $lit.data);
                     YYERROR;
                   }
-                symbol_currency_add( $picture_sym, $lit.data );
+                  if( ! symbol_currency_add($picture_sym, $lit.data) ) {
+                    auto ch = $picture_sym[0];
+                    error_msg(@picture_sym, "invalid currency symbol: %qc", ch);
+                  }
                 }
         |       DECIMAL_POINT is COMMA
                 {
@@ -3530,8 +3533,12 @@ data_div:       %empty   { parser_division( data_div_e, NULL, 0, NULL ); }
                 }
                 ;
 
-data_sections:  data_section
-        |       data_sections data_section
+data_sections:  data_section {
+                  update_prior_invalid_field();
+                }
+        |       data_sections data_section {
+                  update_prior_invalid_field();
+                }
                 ;
 
 data_section:   FILE_SECT '.'

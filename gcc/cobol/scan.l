@@ -136,7 +136,17 @@ ALPHED   {ALPHEDREQ}([AX9B0/]{COUNT}?)*
 NUMEDCHAR  [BPVZ90/,]+{COUNT}?
 NUMEDCHARS {NUMEDCHAR}([.]?{NUMEDCHAR})*
 NUMED     ([+-]{NUMEDCHARS}+)|({NUMEDCHARS}+[+-]?)
+                        /* ISO specification 12.3.7.2:
+			 * 27) Literal-8 may be any character from the
+			 * computer's coded character set except for the
+			 * following:
+			 * a) digits 0 through 9;
+			 * b) alphabetic characters A, B, C, D, E, N, P, R, S, V, X, Z, 
+			 *    or their lowercase equivalents; or the space;
+			 * c) characters '+' '–' ',' '.' '*' '/' ';' '(' ')' '"' '='
+			 */
 CURRENCY [A-Zfhijklmoqtuwy\x80-\xFF]{-}[ABCDEGNPRSVXZ]
+xCURRENCY [\x00-\xFF]{-}[ABCDEGNPRSVXZ 0-9 abcdegnprsvxz,.*/;()""=+-]
 NUMEDCUR (([.]?[$0B/Z*+,P9()V+-]|{CURRENCY}+|{COUNT})+([.][$0B/Z*+P9()V+-])*)+
 
 NUMEDITED         {NUMED}|{NUMEDCUR}
