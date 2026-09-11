@@ -1413,6 +1413,7 @@ class CallExpr : public ExprWithoutBlock
 {
   std::unique_ptr<Expr> function;
   std::vector<std::unique_ptr<Expr>> params;
+  std::vector<size_t> const_argument_indexes;
   location_t locus;
 
 public:
@@ -1439,6 +1440,22 @@ public:
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
+
+  void set_const_argument_indexes (const std::vector<size_t> &indexes)
+  {
+    const_argument_indexes = indexes;
+  }
+
+  bool is_const_argument (size_t index) const
+  {
+    for (auto const_index : const_argument_indexes)
+      {
+	if (index == const_index)
+	  return true;
+      }
+
+    return false;
+  }
 
   bool has_fnexpr () const { return function != nullptr; }
   Expr &get_fnexpr () { return *function; }

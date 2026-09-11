@@ -315,6 +315,9 @@ public:
   get_mappings_from_generic_args (HIR::GenericArgs &args,
 				  const std::vector<Region> &regions);
 
+  static BaseType *resolve_const_argument (HIR::Expr &expr,
+					   BaseType *specified_type);
+
   // Recursive substitutions
   // Foo <A,B> { a:A, b: B}; Bar <X,Y,Z>{a:X, b: Foo<Y,Z>}
   //

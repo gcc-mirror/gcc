@@ -823,11 +823,6 @@ SubstitutionRef::get_mappings_from_generic_args (
   for (auto &arg : args.get_const_args ())
     {
       auto &expr = *arg.get_expression ().get ();
-      BaseType *expr_type = Resolver::TypeCheckExpr::Resolve (expr);
-      if (expr_type == nullptr || expr_type->is<ErrorType> ())
-	return SubstitutionArgumentMappings::error ();
-
-      // validate this param is really a const generic
       const auto &param_mapping = substitutions.at (offs);
       const auto &generic = param_mapping.get_generic_param ();
       if (generic.get_kind () != HIR::GenericParam::GenericKind::CONST)
@@ -838,72 +833,12 @@ SubstitutionRef::get_mappings_from_generic_args (
 	  return SubstitutionArgumentMappings::error ();
 	}
 
-      // get the const generic specified type
-      const auto base_generic = param_mapping.get_param_ty ();
-      rust_assert (base_generic->get_kind () == TyTy::TypeKind::CONST);
-      const auto const_param
-	= static_cast<const TyTy::ConstParamType *> (base_generic);
-      auto specified_type = const_param->get_specified_type ();
-
-      // validate this const generic is of the correct type
-      TyTy::BaseType *coereced_type = nullptr;
-      if (expr_type->get_kind () == TyTy::TypeKind::CONST)
-	{
-	  auto const_expr_type = expr_type->as_const_type ();
-	  auto const_value_type = const_expr_type->get_specified_type ();
-	  coereced_type
-	    = Resolver::coercion_site (expr.get_mappings ().get_hirid (),
-				       TyTy::TyWithLocation (specified_type),
-				       TyTy::TyWithLocation (const_value_type,
-							     expr.get_locus ()),
-				       arg.get_locus ());
-	}
-      else
-	{
-	  coereced_type
-	    = Resolver::coercion_site (expr.get_mappings ().get_hirid (),
-				       TyTy::TyWithLocation (specified_type),
-				       TyTy::TyWithLocation (expr_type,
-							     expr.get_locus ()),
-				       arg.get_locus ());
-	}
-
-      if (coereced_type == nullptr || coereced_type->is<ErrorType> ())
+      auto specified_type = param_mapping.get_param_ty ()
+			      ->as_const_type ()
+			      ->get_specified_type ();
+      auto const_value_ty = resolve_const_argument (expr, specified_type);
+      if (const_value_ty->is<ErrorType> ())
 	return SubstitutionArgumentMappings::error ();
-
-      TyTy::BaseType *const_value_ty = nullptr;
-      if (expr_type->get_kind () == TyTy::TypeKind::CONST)
-	const_value_ty = expr_type;
-      else
-	{
-	  // const fold it if available
-	  auto ctx = Compile::Context::get ();
-	  tree folded
-	    = Compile::HIRCompileBase::query_compile_const_expr (ctx,
-								 coereced_type,
-								 expr);
-
-	  if (folded == error_mark_node)
-	    {
-	      rich_location r (line_table, arg.get_locus ());
-	      r.add_range (expr.get_locus ());
-	      rust_error_at (r, "failed to resolve const expression");
-	      return SubstitutionArgumentMappings::error ();
-	    }
-
-	  // Use a fresh HirId to avoid conflicts with the expr's type
-	  auto &global_mappings = Analysis::Mappings::get ();
-	  HirId const_value_id = global_mappings.get_next_hir_id ();
-	  const_value_ty
-	    = new TyTy::ConstValueType (folded, coereced_type, const_value_id,
-					const_value_id, {});
-
-	  // Insert the ConstValueType into the context so it can be looked up
-	  auto context = Resolver::TypeCheckContext::get ();
-	  context->insert_type (
-	    Analysis::NodeMapping (0, 0, const_value_ty->get_ref (), 0),
-	    const_value_ty);
-	}
 
       mappings.emplace_back (&param_mapping, const_value_ty);
       offs++;
@@ -948,6 +883,75 @@ SubstitutionRef::get_mappings_from_generic_args (
 	  false,
 	  false,
 	  constraint_arguments};
+}
+
+BaseType *
+SubstitutionRef::resolve_const_argument (HIR::Expr &expr,
+					 BaseType *specified_type)
+{
+  BaseType *expr_type = Resolver::TypeCheckExpr::Resolve (expr);
+  if (expr_type == nullptr || expr_type->is<ErrorType> ())
+    return new ErrorType (expr.get_mappings ().get_hirid ());
+
+  TyTy::BaseType *coerced_type = nullptr;
+  if (expr_type->get_kind () == TyTy::TypeKind::CONST)
+    {
+      auto const_expr_type = expr_type->as_const_type ();
+      auto const_value_type = const_expr_type->get_specified_type ();
+      coerced_type
+	= Resolver::coercion_site (expr.get_mappings ().get_hirid (),
+				   TyTy::TyWithLocation (specified_type),
+				   TyTy::TyWithLocation (const_value_type,
+							 expr.get_locus ()),
+				   expr.get_locus ());
+    }
+  else
+    {
+      coerced_type
+	= Resolver::coercion_site (expr.get_mappings ().get_hirid (),
+				   TyTy::TyWithLocation (specified_type),
+				   TyTy::TyWithLocation (expr_type,
+							 expr.get_locus ()),
+				   expr.get_locus ());
+    }
+
+  if (coerced_type == nullptr || coerced_type->is<ErrorType> ())
+    return new ErrorType (expr.get_mappings ().get_hirid ());
+
+  TyTy::BaseType *const_value_ty = nullptr;
+  if (expr_type->get_kind () == TyTy::TypeKind::CONST)
+    const_value_ty = expr_type;
+  else
+    {
+      auto ctx = Compile::Context::get ();
+      tree folded
+	= Compile::HIRCompileBase::query_compile_const_expr (ctx, coerced_type,
+							     expr);
+
+      if (folded == error_mark_node)
+	{
+	  rich_location r (line_table, expr.get_locus ());
+	  r.add_range (expr.get_locus ());
+	  rust_error_at (r, "failed to resolve const expression");
+	  return new ErrorType (expr.get_mappings ().get_hirid ());
+	}
+
+      // Use a fresh HirId to avoid conflicts with the expr's type
+      auto &global_mappings = Analysis::Mappings::get ();
+      HirId const_value_id = global_mappings.get_next_hir_id ();
+      const_value_ty
+	= new TyTy::ConstValueType (folded, coerced_type, const_value_id,
+				    const_value_id, {});
+
+      // Insert the ConstValueType into the context so it can be looked up
+      auto context = Resolver::TypeCheckContext::get ();
+      context->insert_type (Analysis::NodeMapping (0, 0,
+						   const_value_ty->get_ref (),
+						   0),
+			    const_value_ty);
+    }
+
+  return const_value_ty;
 }
 
 BaseType *

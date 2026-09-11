@@ -1760,12 +1760,18 @@ CompileExpr::visit (HIR::CallExpr &expr)
     }
 
   std::vector<tree> args;
-  for (size_t i = 0; i < expr.get_arguments ().size (); i++)
+  for (size_t source_argument_index = 0;
+       source_argument_index < expr.get_arguments ().size ();
+       source_argument_index++)
     {
-      auto &argument = expr.get_arguments ().at (i);
+      if (expr.is_const_argument (source_argument_index))
+	continue;
+
+      auto &argument = expr.get_arguments ().at (source_argument_index);
+      size_t runtime_argument_index = args.size ();
       auto rvalue = CompileExpr::Compile (*argument, ctx);
 
-      if (is_variadic && i >= required_num_args)
+      if (is_variadic && runtime_argument_index >= required_num_args)
 	{
 	  args.push_back (rvalue);
 	  continue;
@@ -1775,7 +1781,8 @@ CompileExpr::visit (HIR::CallExpr &expr)
       // necessary
       bool ok;
       TyTy::BaseType *expected = nullptr;
-      ok = get_parameter_tyty_at_index (tyty, i, &expected);
+      ok
+	= get_parameter_tyty_at_index (tyty, runtime_argument_index, &expected);
       rust_assert (ok);
 
       TyTy::BaseType *actual = nullptr;
