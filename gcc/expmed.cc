@@ -2022,14 +2022,16 @@ extract_integral_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
 				   (unsignedp ? 1 : -1), target_part,
 				   mode, word_mode, reverse, fallback_p, NULL);
 
-	  gcc_assert (target_part);
 	  if (!result_part)
 	    {
 	      delete_insns_since (last);
 	      return NULL;
 	    }
 
-	  if (result_part != target_part)
+	  if (!target_part)
+	    store_bit_field (target, BITS_PER_WORD, i * BITS_PER_WORD,
+			     0, 0, word_mode, result_part, false, i == 0);
+	  else if (result_part != target_part)
 	    emit_move_insn (target_part, result_part);
 	}
 
