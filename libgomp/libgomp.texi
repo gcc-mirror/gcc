@@ -4476,6 +4476,37 @@ specification.  In older versions, the type @code{int} was used for the
 @item                   @tab @code{integer :: modifier}
 @end multitable
 
+@item @emph{Note}:
+In Fortran code, an argument can passed to the tool by creating a C wrapper
+function in the user code; however, as in GCC---and likely in most
+implementations---the C/C++ and Fortran use compatible integer kinds/types,
+it is simpler to add an INTERFACE block such as the following one.
+
+@smallexample
+interface
+  ! Or to permit using 'omp_control_tool' for both the two and
+  ! three argument version, use a generic interface; the two-
+  ! argument version comes from the 'omp_lib' module.
+!interface omp_control_tool
+
+  integer(omp_control_tool_result_kind) &
+  function omp_control_tool_arg (command, modifier, arg) &
+      bind(C, name="omp_control_tool")
+    use omp_lib
+    use iso_c_binding
+    integer(kind=omp_control_tool_kind), VALUE :: command
+    integer(c_int) :: modifier
+
+    ! Either
+    type(c_ptr), VALUE :: arg
+    ! or
+    !type(*), dimension(*) :: arg ! Note:
+    ! Avoid type(*) for 'type(c_ptr)' actual arguments as this will pass a
+    ! reference to the C pointer and not the C pointer itself.
+  end
+end interface
+@end smallexample
+
 @c @item @emph{See also}:
 
 @item @emph{Reference}:
