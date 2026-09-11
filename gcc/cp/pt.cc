@@ -17173,6 +17173,8 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
      certain kind of entities.  */
   if (SPLICE_EXPR_MEMBER_ACCESS_P (t))
     gcc_assert (valid_splice_for_member_access_p (op, /*decls_only_p=*/false));
+  else if (SPLICE_EXPR_EXPRESSION_P (t))
+    op = convert_from_reference (op);
 
   return op;
 }
