@@ -873,7 +873,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       append_option (OPT_flibs_, xstrdup (libraries), 1);
     }
   else
-    append_option (OPT_flibs_, xstrdup ("-"), 0); /* no system libs.  */
+    append_option (OPT_flibs_, xstrdup ("-"), 0);  /* No system libs.  */
 
   if (need_plugin)
     append_option (OPT_fplugin_, "m2rte", 1);

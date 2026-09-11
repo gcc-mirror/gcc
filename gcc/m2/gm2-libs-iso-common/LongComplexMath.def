@@ -48,13 +48,13 @@ PROCEDURE ln (z: LONGCOMPLEX): LONGCOMPLEX;
   (* Returns the tangent of z *)
   (* <DEF_TARGET_PROCEDURE(tan,LONGCOMPLEX,LONGCOMPLEX,__builtin_ctanl,cbuiltin.ctanl)> *)
 
-PROCEDURE arcsin (z: LONGCOMPLEX): LONGCOMPLEX;
-  (* Returns the arcsine of z *)
+  (* <DEF_TARGET_PROCEDURE(arcsin,LONGCOMPLEX,LONGCOMPLEX,__builtin_arcsin,cbuiltin.arcsin)> *)
+  (* Returns the arcsine of z *)  
 
-PROCEDURE arccos (z: LONGCOMPLEX): LONGCOMPLEX;
+  (* <DEF_TARGET_PROCEDURE(arccos,LONGCOMPLEX,LONGCOMPLEX,__builtin_arccos,cbuiltin.arccos)> *)
   (* Returns the arccosine of z *)
 
-PROCEDURE arctan (z: LONGCOMPLEX): LONGCOMPLEX;
+  (* <DEF_TARGET_PROCEDURE(arctan,LONGCOMPLEX,LONGCOMPLEX,__builtin_arctan,cbuiltin.arctan)> *)
   (* Returns the arctangent of z *)
 
 PROCEDURE polarToComplex (abs, arg: LONGREAL): LONGCOMPLEX;

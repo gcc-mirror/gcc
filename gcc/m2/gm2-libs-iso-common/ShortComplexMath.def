@@ -63,13 +63,13 @@ PROCEDURE ln (z: SHORTCOMPLEX): SHORTCOMPLEX;
   (* Returns the tangent of z *)
   (* <DEF_TARGET_PROCEDURE(tan,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_ctanf,cbuiltin.ctanf)> *)
 
-PROCEDURE arcsin (z: SHORTCOMPLEX): SHORTCOMPLEX;
-  (* Returns the arcsine of z *)
+  (* <DEF_TARGET_PROCEDURE(arcsin,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_arcsin,cbuiltin.arcsin)> *)
+  (* Returns the arcsine of z *)  
 
-PROCEDURE arccos (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* <DEF_TARGET_PROCEDURE(arccos,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_arccos,cbuiltin.arccos)> *)
   (* Returns the arccosine of z *)
 
-PROCEDURE arctan (z: SHORTCOMPLEX): SHORTCOMPLEX;
+  (* <DEF_TARGET_PROCEDURE(arctan,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_arctan,cbuiltin.arctan)> *)
   (* Returns the arctangent of z *)
 
 PROCEDURE polarToComplex (abs, arg: SHORTREAL): SHORTCOMPLEX;

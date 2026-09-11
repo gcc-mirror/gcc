@@ -53,7 +53,6 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
-        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -251,7 +250,7 @@ SYSTEM.def: Makefile
              -I=$(GM2_SRC)/gm2-libs-iso \
              -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
@@ -279,7 +278,7 @@ ShortComplexMath.def: Makefile
              -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
              -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 ShortComplexMath.def: Makefile
 	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.def $@
@@ -291,7 +290,7 @@ ShortComplexMath.mod: Makefile
              -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
              -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 ShortComplexMath.mod: Makefile
 	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod $@
@@ -304,7 +303,7 @@ ComplexMath.def: Makefile
              -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
              -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 ComplexMath.def: Makefile
 	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.def $@
@@ -316,7 +315,7 @@ ComplexMath.mod: Makefile
              -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
              -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 ComplexMath.mod: Makefile
 	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod $@
@@ -329,7 +328,7 @@ LongComplexMath.def: Makefile
              -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
              -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 LongComplexMath.def: Makefile
 	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.def $@
@@ -341,7 +340,7 @@ LongComplexMath.mod: Makefile
              -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
              -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
              -I=$(GM2_SRC)/gm2-libs-iso-common \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 LongComplexMath.mod: Makefile
 	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod $@

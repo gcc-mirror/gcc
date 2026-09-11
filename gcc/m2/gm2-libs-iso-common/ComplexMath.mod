@@ -94,29 +94,14 @@ END ln ;
 (* Returns the tangent of z *)
 (* <MOD_TARGET_PROCEDURE(tan,COMPLEX,COMPLEX,__builtin_ctan,cbuiltin.ctan)> *)
 
-
 (* Returns the arcsine of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carcsin)) arcsin (z: COMPLEX): COMPLEX;
-BEGIN
-   RETURN cbuiltin.casin (z)
-END arcsin ;
-
+(* <MOD_TARGET_PROCEDURE(arcsin,COMPLEX,COMPLEX,__builtin_carcsin,cbuiltin.casin)> *)
 
 (* Returns the arccosine of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carccos)) arccos (z: COMPLEX): COMPLEX;
-BEGIN
-   RETURN cbuiltin.cacos (z)
-END arccos ;
-
+(* <MOD_TARGET_PROCEDURE(arccos,COMPLEX,COMPLEX,__builtin_carccos,cbuiltin.cacos)> *)
 
 (* Returns the arctangent of z *)
-
-PROCEDURE __ATTRIBUTE__ __BUILTIN__ ((__builtin_carctan)) arctan (z: COMPLEX): COMPLEX;
-BEGIN
-   RETURN cbuiltin.catan (z)
-END arctan ;
+(* <MOD_TARGET_PROCEDURE(arctan,COMPLEX,COMPLEX,__builtin_carctan,cbuiltin.catan)> *)
 
 
 (* Returns the complex number with the specified polar coordinates *)

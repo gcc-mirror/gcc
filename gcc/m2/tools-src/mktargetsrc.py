@@ -213,7 +213,16 @@ list_of_builtins = [builtin_prototype("csinl", "LONGCOMPLEX", ["z"], ["LONGCOMPL
                     builtin_prototype("ccosf", "SHORTCOMPLEX", ["z"], ["SHORTCOMPLEX"]),
                     builtin_prototype("ctanl", "LONGCOMPLEX", ["z"], ["LONGCOMPLEX"]),
                     builtin_prototype("ctan", "COMPLEX", ["z"], ["COMPLEX"]),
-                    builtin_prototype("ctanf", "SHORTCOMPLEX", ["z"], ["SHORTCOMPLEX"])]
+                    builtin_prototype("ctanf", "SHORTCOMPLEX", ["z"], ["SHORTCOMPLEX"]),
+                    builtin_prototype("casinf", "SHORTCOMPLEX", ["z"], ["SHORTCOMPLEX"]),
+                    builtin_prototype("casin", "COMPLEX", ["z"], ["COMPLEX"]),
+                    builtin_prototype("casinl", "LONGCOMPLEX", ["z"], ["LONGCOMPLEX"]),
+                    builtin_prototype("cacosf", "SHORTCOMPLEX", ["z"], ["SHORTCOMPLEX"]),
+                    builtin_prototype("cacos", "COMPLEX", ["z"], ["COMPLEX"]),
+                    builtin_prototype("cacosl", "LONGCOMPLEX", ["z"], ["LONGCOMPLEX"]),
+                    builtin_prototype("catanf", "SHORTCOMPLEX", ["z"], ["SHORTCOMPLEX"]),
+                    builtin_prototype("catan", "COMPLEX", ["z"], ["COMPLEX"]),
+                    builtin_prototype("catanl", "LONGCOMPLEX", ["z"], ["LONGCOMPLEX"])]
 
 gcc_builtins = {element.builtinName: element for element in list_of_builtins}
 
@@ -249,8 +258,7 @@ def process_def_builtin(args, line, key, dictDefs):
         else:
             unavailable(args, funcname)
 
-
-def output_mod_builtin(args, keyname, line):
+def do_output_mod_builtin(args, keyname, line):
     output(args, "(* " + gcc_builtins[keyname].name + " is available on the target.  *)\n")
     output(args, "PROCEDURE __ATTRIBUTE__ __BUILTIN__ ")
     output(args, "((%s)) %s (%s: %s) : %s ;" % (gcc_builtins[keyname].builtinName,
@@ -265,6 +273,13 @@ BEGIN
 END %s ;
 
 """ % (builtin, gcc_builtins[keyname].name))
+
+
+def output_mod_builtin(args, keyname, line):
+    if keyname in gcc_builtins:
+        do_output_mod_builtin(args, keyname, line)
+    else:
+        unavailable(args, keyname)
 
 
 def process_mod_builtin(args, line, key, dictDefs):

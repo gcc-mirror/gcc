@@ -779,7 +779,7 @@ libc.o: $(GM2_SRC)/gm2-libs-min/libc.c
 @HAVE_PYTHON_INTERPRETER_TRUE@             -D=$(GM2_SRC)/gm2-libs-min/SYSTEM.def \
 @HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
 @HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-min -I=$(GM2_SRC)/gm2-libs \
-@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC) -fno-exceptions" -o $@
+@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET) -fno-exceptions" -o $@
 @HAVE_PYTHON_INTERPRETER_FALSE@SYSTEM.def: Makefile
 @HAVE_PYTHON_INTERPRETER_FALSE@	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
 @HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-min/SYSTEM.def \

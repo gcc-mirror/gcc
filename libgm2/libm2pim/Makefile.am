@@ -52,7 +52,6 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
-        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -226,7 +225,7 @@ SYSTEM.def: Makefile
              -M=$(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod \
              -I=$(GM2_SRC)/gm2-libs-pim-common \
              -I=$(GM2_SRC)/gm2-libs \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 SYSTEM.def: Makefile
 	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
@@ -244,7 +243,7 @@ Builtins.def: Makefile
              -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
              -I=$(GM2_SRC)/gm2-libs-pim-common \
              -I=$(GM2_SRC)/gm2-libs \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 Builtins.def: Makefile
 	cp $(GM2_SRC)/gm2-libs-pim-common/Builtins.def $@
@@ -256,7 +255,7 @@ Builtins.mod: Makefile
              -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
              -I=$(GM2_SRC)/gm2-libs-pim-common \
              -I=$(GM2_SRC)/gm2-libs \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 Builtins.mod: Makefile
 	cp $(GM2_SRC)/gm2-libs-pim-common/Builtins.mod $@
@@ -269,7 +268,7 @@ cbuiltin.def: Makefile
              -M=$(GM2_SRC)/gm2-libs-pim-common/Builtins.mod \
              -I=$(GM2_SRC)/gm2-libs-pim-common \
              -I=$(GM2_SRC)/gm2-libs \
-             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+             -C="$(GM2_FOR_TARGET)" -o $@
 else
 cbuiltin.def: Makefile
 	cp $(GM2_SRC)/gm2-libs-pim-common/cbuiltin.def $@

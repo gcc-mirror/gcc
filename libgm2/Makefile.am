@@ -41,9 +41,7 @@ GM2_SRC = $(GCC_DIR)/m2
 toolexeclibdir=@toolexeclibdir@
 toolexecdir=@toolexecdir@
 GM2_FOR_TARGET=@GM2_FOR_TARGET@
-GM2_FOR_TARGET_ESC=$(shell echo $(GM2_FOR_TARGET) | sed 's/ /\\ /g')
 $(info GM2_FOR_TARGET is $(GM2_FOR_TARGET))
-$(info GM2_FOR_TARGET_ESC is $(GM2_FOR_TARGET_ESC))
 
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)
@@ -65,7 +63,6 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
-        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \

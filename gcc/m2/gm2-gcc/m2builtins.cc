@@ -1457,11 +1457,11 @@ dump_available (const char *name)
   printf ("builtin procedure function: %s\n", name);
 }
 
-/* Define a single builtin.  */
+/* Declare the builtin and pushes it to the builtins_macros array.  */
 
 static void
-define_builtin (enum built_in_function val, const char *name, tree prototype,
-                const char *libname, int flags)
+do_define_builtin (enum built_in_function val, const char *name,
+		   tree prototype, const char *libname, int flags)
 {
   tree decl;
   builtin_macro_definition bmd;
@@ -1483,6 +1483,86 @@ define_builtin (enum built_in_function val, const char *name, tree prototype,
   vec_safe_push (builtin_macros, bmd);
   if (M2Options_GetDumpBuiltins ())
     dump_available (libname);
+}
+
+/* Return true if the data type is supported by the target and gm2.  */
+
+static bool
+data_type_supported (tree datatype)
+{
+  if (M2Options_GetIEEELongDouble ())
+    {
+      /* Check to see the data type does not conflict with command
+	 line option -mabi=ieeelongdouble.  */
+      if (datatype == long_double_type_node
+	  && datatype != m2type_GetM2LongRealType ())
+	return false;
+      if (TREE_CODE (datatype) == COMPLEX_TYPE
+	  && (TREE_TYPE (datatype) == long_double_type_node)
+	  && datatype != m2type_GetM2LongRealType ())
+	return false;
+    }
+  return true;
+}
+
+/* Return true if the datatypes in prototype are supported.  */
+
+static bool
+param_data_type_supported (tree prototype)
+{
+  tree t = prototype;
+
+  // debug_tree (t);
+  if (TREE_CODE (t) == FUNCTION_DECL)
+    {
+      tree param_list = DECL_ARGUMENTS (t);
+      tree returnType = TREE_TYPE (TREE_TYPE (t));
+      if (! data_type_supported (returnType))
+	return false;
+      while (param_list != NULL_TREE)
+	{
+	  t = param_list;
+	  if (TREE_CODE (t) == PARM_DECL)
+	    {
+	      if (TREE_TYPE (t)
+		  && (TREE_CODE (TREE_TYPE (t)) == REFERENCE_TYPE))
+		t = TREE_TYPE (TREE_TYPE (t));
+	      else
+		t = TREE_TYPE (t);
+	      if (! data_type_supported (t))
+		return false;
+	    }
+	  param_list = TREE_CHAIN (param_list);
+	}
+    }
+  else if (TREE_CODE (t) == FUNCTION_DECL)
+    {
+      tree param_list = TYPE_ARG_TYPES (t);
+      tree returnType = TREE_TYPE (TREE_TYPE (t));
+      if (! data_type_supported (returnType))
+	return false;
+      while (param_list != NULL_TREE)
+	{
+	  t = param_list;
+	  t = TREE_VALUE (t);
+	  if (! data_type_supported (t))
+	    return false;
+	  param_list = TREE_CHAIN (param_list);
+	}
+    }
+  return true;
+}
+
+/* Check to ensure the parameter and return data types are supported.
+   For example the ppcle64 has multiple 128 bit long double datatypes.
+   But gm2 only supports IEEE 128.  */
+
+static void
+define_builtin (enum built_in_function val, const char *name, tree prototype,
+                const char *libname, int flags)
+{
+  if (param_data_type_supported (prototype))
+    do_define_builtin (val, name, prototype, libname, flags);
 }
 
 /* Define a math type variant of the builtin function.  */
@@ -1545,7 +1625,9 @@ static
 void
 dump_builtin (struct builtin_function_entry *fe)
 {
-  if (M2Options_GetDumpBuiltins () && do_target_support_exists (fe))
+  if (M2Options_GetDumpBuiltins ()
+      && do_target_support_exists (fe)
+      && param_data_type_supported (fe->function_node))
     dump_available (fe->name);
 }
 

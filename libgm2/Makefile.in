@@ -357,7 +357,6 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 TOP_GCCDIR := $(shell cd $(top_srcdir) && cd .. && pwd)
 GCC_DIR = $(TOP_GCCDIR)/gcc
 GM2_SRC = $(GCC_DIR)/m2
-GM2_FOR_TARGET_ESC = $(shell echo $(GM2_FOR_TARGET) | sed 's/ /\\ /g')
 SUBDIRS = libm2min libm2log libm2cor libm2iso libm2pim
 GM2_BUILDDIR := $(shell pwd)
 gm2_cdir = $(libdir)/gcc/$(target_alias)/$(gcc_version)/include
@@ -374,7 +373,6 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
-        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -721,7 +719,6 @@ uninstall-am:
 .PRECIOUS: Makefile
 
 $(info GM2_FOR_TARGET is $(GM2_FOR_TARGET))
-$(info GM2_FOR_TARGET_ESC is $(GM2_FOR_TARGET_ESC))
 
 # GNU Make needs to see an explicit $(MAKE) variable in the command it
 # runs to enable its job server during parallel builds.  Hence the

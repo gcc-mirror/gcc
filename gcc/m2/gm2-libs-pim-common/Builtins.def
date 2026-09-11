@@ -187,19 +187,19 @@ PROCEDURE __BUILTIN__ clnl (z: LONGCOMPLEX) : LONGCOMPLEX ;
 (* <DEF_BUILTIN_PROCEDURE(ctan,COMPLEX,COMPLEX,__builtin_ctan,cbuiltin.ctan)> *)
 (* <DEF_BUILTIN_PROCEDURE(ctanl,LONGCOMPLEX,LONGCOMPLEX,__builtin_ctanl,cbuiltin.ctanl)> *)
 
-PROCEDURE __BUILTIN__ carcsinf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE __BUILTIN__ carcsin (z: COMPLEX) : COMPLEX ;
-PROCEDURE __BUILTIN__ carcsinl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_BUILTIN_PROCEDURE(carsinf,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_carsinf,cbuiltin.carsinf)> *)
+(* <DEF_BUILTIN_PROCEDURE(carsin,COMPLEX,COMPLEX,__builtin_carsin,cbuiltin.carsin)> *)
+(* <DEF_BUILTIN_PROCEDURE(carsinl,LONGCOMPLEX,LONGCOMPLEX,__builtin_carsinl,cbuiltin.carsinl)> *)
 
-PROCEDURE __BUILTIN__ carccosf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE __BUILTIN__ carccos (z: COMPLEX) : COMPLEX ;
-PROCEDURE __BUILTIN__ carccosl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_BUILTIN_PROCEDURE(carcosf,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_carcosf,cbuiltin.carcosf)> *)
+(* <DEF_BUILTIN_PROCEDURE(carcos,COMPLEX,COMPLEX,__builtin_carcos,cbuiltin.carcos)> *)
+(* <DEF_BUILTIN_PROCEDURE(carcosl,LONGCOMPLEX,LONGCOMPLEX,__builtin_carcosl,cbuiltin.carcosl)> *)
 
-PROCEDURE __BUILTIN__ carctanf (z: SHORTCOMPLEX) : SHORTCOMPLEX ;
-PROCEDURE __BUILTIN__ carctan (z: COMPLEX) : COMPLEX ;
-PROCEDURE __BUILTIN__ carctanl (z: LONGCOMPLEX) : LONGCOMPLEX ;
+(* <DEF_BUILTIN_PROCEDURE(cartanf,SHORTCOMPLEX,SHORTCOMPLEX,__builtin_cartanf,cbuiltin.cartanf)> *)
+(* <DEF_BUILTIN_PROCEDURE(cartan,COMPLEX,COMPLEX,__builtin_cartan,cbuiltin.cartan)> *)
+(* <DEF_BUILTIN_PROCEDURE(cartanl,LONGCOMPLEX,LONGCOMPLEX,__builtin_cartanl,cbuiltin.cartanl)> *)
 
-(* memory and string intrincic procedure functions *)
+(* Memory and string intrincic procedure functions.  *)
 
 PROCEDURE __BUILTIN__ alloca (i: CARDINAL) : ADDRESS ;
 PROCEDURE __BUILTIN__ memcpy (dest, src: ADDRESS;
@@ -234,10 +234,9 @@ PROCEDURE __BUILTIN__ clzll (value: LONGCARD) : INTEGER ;
 PROCEDURE __BUILTIN__ ctz (value: CARDINAL) : INTEGER ;
 PROCEDURE __BUILTIN__ ctzll (value: LONGCARD) : INTEGER ;
 
-(*
-   longjmp - this GCC builtin restricts the val to always 1.
-*)
-(* do not use these two builtins, as gcc, only really
+(* The longjmp GCC builtin restricts the val to always 1.  *)
+
+(* Do not use these two builtins, as gcc, only really
    anticipates that the Ada front end should use them
    and it only uses them in its runtime exception handling.
    We leave them here in the hope that someday they will

@@ -452,7 +452,6 @@ AM_MAKEFLAGS = \
 	"CC_FOR_BUILD=$(CC_FOR_BUILD)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
-        "GM2_FOR_TARGET_ESC=$(GM2_FOR_TARGET_ESC)" \
 	"CFLAGS=$(CFLAGS)" \
 	"CXXFLAGS=$(CXXFLAGS)" \
 	"CFLAGS_FOR_BUILD=$(CFLAGS_FOR_BUILD)" \
@@ -964,7 +963,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@SYSTEM.def: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@             $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.def \
@@ -989,7 +988,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ShortComplexMath.def: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.def $@
 
@@ -998,7 +997,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ShortComplexMath.mod: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ShortComplexMath.mod $@
 
@@ -1008,7 +1007,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ComplexMath.def: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.def $@
 
@@ -1017,7 +1016,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@ComplexMath.mod: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/ComplexMath.mod $@
 
@@ -1027,7 +1026,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@LongComplexMath.def: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.def $@
 
@@ -1036,7 +1035,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -M=$(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso -I=$(GM2_SRC)/gm2-libs \
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -I=$(GM2_SRC)/gm2-libs-iso-common \
-@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET_ESC)" -o $@
+@BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_TRUE@             -C="$(GM2_FOR_TARGET)" -o $@
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@LongComplexMath.mod: Makefile
 @BUILD_ISOLIB_TRUE@@HAVE_PYTHON_INTERPRETER_FALSE@	cp $(GM2_SRC)/gm2-libs-iso-common/LongComplexMath.mod $@
 
