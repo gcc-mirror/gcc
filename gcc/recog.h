@@ -468,6 +468,7 @@ inline recog_state_saver::recog_state_saver ()
   : saved_recog_data_ptr (recog_data_ptr),
     saved_alternative (which_alternative)
 {
+  m_tmp_recog_data.insn = nullptr;
   recog_data_ptr = &m_tmp_recog_data;
 }
 
