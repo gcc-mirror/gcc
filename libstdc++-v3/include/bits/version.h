@@ -989,7 +989,12 @@
 #undef __glibcxx_want_bit_cast
 
 #if !defined(__cpp_lib_bitops)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >  202603L)
+#  define __glibcxx_bitops 202606L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bitops)
+#   define __cpp_lib_bitops 202606L
+#  endif
+# elif (__cplusplus >= 202002L)
 #  define __glibcxx_bitops 201907L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bitops)
 #   define __cpp_lib_bitops 201907L

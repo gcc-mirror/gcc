@@ -891,6 +891,10 @@ ftms = {
 ftms = {
   name = bitops;
   values = {
+    v = 202606;
+    cxxmin = 29;
+  };
+  values = {
     v = 201907;
     cxxmin = 20;
   };

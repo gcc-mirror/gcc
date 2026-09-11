@@ -695,6 +695,10 @@ export namespace std
 #if __cpp_lib_byteswap // >= C++23
   using std::byteswap;
 #endif
+#if __cpp_lib_bitops >= 202606L // >= C++29
+  using std::shl;
+  using std::shr;
+#endif
 }
 
 // 22.9 <bitset>
