@@ -93,7 +93,7 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
     // these items as private?
     return true;
 
-  if (auto module = mappings.lookup_module (ref))
+  if (auto module = mappings.hir.module.lookup (ref))
     {
       // Fill in the resolved `DefId`
       id = module.value ()->get_mappings ().get_defid ();

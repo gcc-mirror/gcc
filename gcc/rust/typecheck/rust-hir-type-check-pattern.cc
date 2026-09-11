@@ -74,7 +74,7 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
       rust_assert (definition_id.has_value ());
       HirId def_id = definition_id.value ();
 
-      tl::optional<HIR::Item *> hir_item = mappings.lookup_hir_item (def_id);
+      tl::optional<HIR::Item *> hir_item = mappings.hir.item.lookup (def_id);
       // If the path references an item, it must be constants or structs.
       if (hir_item.has_value ())
 	{

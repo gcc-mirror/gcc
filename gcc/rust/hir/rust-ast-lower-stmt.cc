@@ -39,7 +39,7 @@ ASTLoweringStmt::translate (AST::Stmt *stmt, bool *terminated)
   resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (),
     resolver.translated->get_locus ());
-  resolver.mappings.insert_hir_stmt (resolver.translated);
+  resolver.mappings.hir.stmt.insert (resolver.translated);
 
   return resolver.translated;
 }

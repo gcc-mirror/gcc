@@ -227,7 +227,7 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
       return false;
     }
 
-  auto resolved_item = mappings.lookup_hir_item (hid.value ());
+  auto resolved_item = mappings.hir.item.lookup (hid.value ());
   if (!resolved_item.has_value ())
     {
       rust_error_at (path.get_locus (),

@@ -36,7 +36,7 @@ ASTLoweringPattern::translate (AST::Pattern &pattern, bool is_let_top_level)
 
   rust_assert (resolver.translated != nullptr);
 
-  resolver.mappings.insert_hir_pattern (resolver.translated);
+  resolver.mappings.hir.pattern.insert (resolver.translated);
   resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (), pattern.get_locus ());
 

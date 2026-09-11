@@ -192,7 +192,7 @@ ASTLowerImplItem::visit (AST::Function &function)
   if (fn->is_method ())
     {
       // insert mappings for self
-      mappings.insert_hir_self_param (&fn->get_self_param_unchecked ());
+      mappings.hir.self_param.insert (&fn->get_self_param_unchecked ());
       mappings.insert_location (
 	fn->get_self_param_unchecked ().get_mappings ().get_hirid (),
 	fn->get_self_param_unchecked ().get_locus ());
@@ -201,7 +201,7 @@ ASTLowerImplItem::visit (AST::Function &function)
   // add the mappings for the function params at the end
   for (auto &param : fn->get_function_params ())
     {
-      mappings.insert_hir_param (&param);
+      mappings.hir.function_param.insert (&param);
       mappings.insert_location (mapping.get_hirid (), param.get_locus ());
     }
 
@@ -222,7 +222,7 @@ ASTLowerTraitItem::translate (AST::AssociatedItem &item)
       auto locus = resolver.translated->get_trait_locus ();
 
       resolver.handle_outer_attributes (*resolver.translated);
-      resolver.mappings.insert_hir_trait_item (resolver.translated);
+      resolver.mappings.hir.trait_item.insert (resolver.translated);
       resolver.mappings.insert_location (id, locus);
       resolver.mappings.insert_defid_mapping (defid, resolver.translated);
     }
@@ -285,7 +285,7 @@ ASTLowerTraitItem::visit (AST::Function &func)
     {
       // insert mappings for self
       // TODO: Is this correct ? Looks fishy
-      mappings.insert_hir_self_param (&*self_param);
+      mappings.hir.self_param.insert (&*self_param);
       mappings.insert_location (self_param->get_mappings ().get_hirid (),
 				self_param->get_locus ());
     }
@@ -317,7 +317,7 @@ ASTLowerTraitItem::visit (AST::Function &func)
   // add the mappings for the function params at the end
   for (auto &param : trait_item->get_decl ().get_function_params ())
     {
-      mappings.insert_hir_param (&param);
+      mappings.hir.function_param.insert (&param);
       mappings.insert_location (mapping.get_hirid (), param.get_locus ());
     }
 }

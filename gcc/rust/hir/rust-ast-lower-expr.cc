@@ -50,7 +50,7 @@ ASTLoweringExpr::translate (AST::Expr &expr, bool *terminated)
       return nullptr;
     }
 
-  resolver.mappings.insert_hir_expr (resolver.translated);
+  resolver.mappings.hir.expr.insert (resolver.translated);
   resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (), expr.get_locus ());
 

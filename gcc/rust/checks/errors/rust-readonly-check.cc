@@ -75,7 +75,7 @@ ReadonlyChecker::visit (PathInExpression &expr)
     return;
 
   // Check if the local variable is mutable.
-  auto maybe_pattern = mappings.lookup_hir_pattern (*hir_id);
+  auto maybe_pattern = mappings.hir.pattern.lookup (*hir_id);
   if (maybe_pattern
       && maybe_pattern.value ()->get_pattern_type ()
 	   == HIR::Pattern::PatternType::IDENTIFIER)
@@ -83,7 +83,7 @@ ReadonlyChecker::visit (PathInExpression &expr)
 		    expr.get_locus ());
 
   // Check if the static item is mutable.
-  auto maybe_item = mappings.lookup_hir_item (*hir_id);
+  auto maybe_item = mappings.hir.item.lookup (*hir_id);
   if (maybe_item
       && maybe_item.value ()->get_item_kind () == HIR::Item::ItemKind::Static)
     {

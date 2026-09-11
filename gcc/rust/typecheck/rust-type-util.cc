@@ -70,7 +70,7 @@ query_type (HirId reference, TyTy::BaseType **result)
       return true;
     }
 
-  if (auto item = mappings.lookup_hir_item (reference))
+  if (auto item = mappings.hir.item.lookup (reference))
     {
       rust_debug_loc (item.value ()->get_locus (), "resolved item {%u} to",
 		      reference);
@@ -233,7 +233,7 @@ query_type (HirId reference, TyTy::BaseType **result)
   // is it an extern item?
   if (auto extern_item = mappings.lookup_hir_extern_item (reference))
     {
-      auto block = mappings.lookup_hir_extern_block (extern_item->second);
+      auto block = mappings.hir.extern_block.lookup (extern_item->second);
       rust_assert (block.has_value ());
 
       *result

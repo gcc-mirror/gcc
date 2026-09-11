@@ -1077,7 +1077,7 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 			    extern_block.get_outer_attrs (),
 			    extern_block.get_locus ());
 
-  mappings.insert_hir_extern_block (hir_extern_block);
+  mappings.hir.extern_block.insert (hir_extern_block);
 
   return hir_extern_block;
 }

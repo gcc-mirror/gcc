@@ -406,7 +406,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    break;
 	  }
       }
-    else if (auto trait_item = mappings.lookup_hir_trait_item (hir_id))
+    else if (auto trait_item = mappings.hir.trait_item.lookup (hir_id))
       {
 	switch (trait_item.value ()->get_item_kind ())
 	  {
@@ -428,7 +428,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 	    break;
 	  }
       }
-    else if (auto item = mappings.lookup_hir_item (hir_id))
+    else if (auto item = mappings.hir.item.lookup (hir_id))
       switch (item.value ()->get_item_kind ())
 	{
 	case HIR::Item::ItemKind::Function:
@@ -468,7 +468,7 @@ v0_path (Rust::Compile::Context *ctx, const TyTy::BaseType *ty,
 				  cpath.get ().c_str ());
 	  break;
 	}
-    else if (auto expr = mappings.lookup_hir_expr (hir_id))
+    else if (auto expr = mappings.hir.expr.lookup (hir_id))
       {
 	rust_assert (expr.value ()->get_expression_type ()
 		     == HIR::Expr::ExprType::Closure);

@@ -259,7 +259,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       location_t expr_locus, bool is_qualified_path)
 {
   bool is_fn = lookup->get_kind () == TyTy::TypeKind::FNDEF;
-  if (auto resolved_item = ctx->get_mappings ().lookup_hir_item (ref))
+  if (auto resolved_item = ctx->get_mappings ().hir.item.lookup (ref))
     {
       if (!lookup->has_substitutions_defined ())
 	return CompileItem::compile (*resolved_item, ctx, nullptr, expr_locus);
@@ -303,7 +303,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 						     lookup, expr_locus);
 	}
       else if (auto trait_item
-	       = ctx->get_mappings ().lookup_hir_trait_item (ref))
+	       = ctx->get_mappings ().hir.trait_item.lookup (ref))
 	{
 	  HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
 	    trait_item.value ()->get_mappings ().get_hirid ());

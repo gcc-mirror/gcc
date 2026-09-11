@@ -223,7 +223,7 @@ ASTLoweringType::translate (AST::Type &type, bool default_to_static_lifetime,
   type.accept_vis (resolver);
 
   rust_assert (resolver.translated != nullptr);
-  resolver.mappings.insert_hir_type (resolver.translated);
+  resolver.mappings.hir.type.insert (resolver.translated);
   resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (),
     resolver.translated->get_locus ());
@@ -549,7 +549,7 @@ ASTLowerGenericParam::translate (AST::GenericParam &param)
   rust_assert (resolver.translated != nullptr);
   resolver.mappings.insert_location (
     resolver.translated->get_mappings ().get_hirid (), param.get_locus ());
-  resolver.mappings.insert_hir_generic_param (resolver.translated);
+  resolver.mappings.hir.generic_param.insert (resolver.translated);
 
   return resolver.translated;
 }

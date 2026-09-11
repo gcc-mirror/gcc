@@ -92,7 +92,7 @@ UnsafeChecker::check_use_of_static (HirId node_id, location_t locus)
   bool in_context = unsafe_context.is_in_context ();
   bool unsafe_op = false;
 
-  if (auto maybe_static_mut = mappings.lookup_hir_item (node_id))
+  if (auto maybe_static_mut = mappings.hir.item.lookup (node_id))
     unsafe_op |= check_static_mut (*maybe_static_mut, locus, in_context);
 
   if (auto maybe_extern_static = mappings.lookup_hir_extern_item (node_id))
@@ -198,7 +198,7 @@ UnsafeChecker::check_function_call (HirId node_id, location_t locus)
   bool in_context = unsafe_context.is_in_context ();
   bool unsafe_op = false;
 
-  auto maybe_fn = mappings.lookup_hir_item (node_id);
+  auto maybe_fn = mappings.hir.item.lookup (node_id);
 
   if (maybe_fn
       && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function)
@@ -208,7 +208,7 @@ UnsafeChecker::check_function_call (HirId node_id, location_t locus)
   if (auto maybe_extern = mappings.lookup_hir_extern_item (node_id))
     unsafe_op
       |= check_extern_call (static_cast<ExternalItem *> (maybe_extern->first),
-			    *mappings.lookup_hir_extern_block (
+			    *mappings.hir.extern_block.lookup (
 			      maybe_extern->second),
 			    locus, in_context);
 
@@ -240,7 +240,7 @@ UnsafeChecker::check_function_attr (HirId node_id, location_t locus)
 {
   bool in_context = unsafe_context.is_in_context ();
 
-  auto maybe_fn = mappings.lookup_hir_item (node_id);
+  auto maybe_fn = mappings.hir.item.lookup (node_id);
 
   if (maybe_fn
       && maybe_fn.value ()->get_item_kind () == Item::ItemKind::Function

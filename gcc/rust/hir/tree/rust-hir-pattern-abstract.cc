@@ -58,7 +58,7 @@ PathPattern::is_refutable (const TyTy::BaseType &scrutinee) const
   HirId hir_id = get_final_segment ().get_mappings ().get_hirid ();
   if (hir_id)
     {
-      auto item = mappings.lookup_hir_item (hir_id);
+      auto item = mappings.hir.item.lookup (hir_id);
       if (item && item.value ()->get_item_kind () == Item::ItemKind::Constant)
 	{
 	  return true;

@@ -91,7 +91,7 @@ MarkLive::go (HIR::Crate &)
       worklist.pop_back ();
       scannedSymbols.emplace (hirId);
       liveSymbols.emplace (hirId);
-      if (auto item = mappings.lookup_hir_item (hirId))
+      if (auto item = mappings.hir.item.lookup (hirId))
 	item.value ()->accept_vis (*this);
       else if (auto implItem = mappings.lookup_hir_implitem (hirId))
 	implItem->first->accept_vis (*this);
@@ -125,7 +125,7 @@ MarkLive::visit (HIR::PathInExpression &expr)
   auto ref = hid.value ();
 
   // it must resolve to some kind of HIR::Item or HIR::InheritImplItem
-  if (auto resolved_item = mappings.lookup_hir_item (ref))
+  if (auto resolved_item = mappings.hir.item.lookup (ref))
     mark_hir_id (resolved_item.value ()->get_mappings ().get_hirid ());
   else if (auto resolved_item = mappings.lookup_hir_implitem (ref))
     mark_hir_id (resolved_item->first->get_impl_mappings ().get_hirid ());

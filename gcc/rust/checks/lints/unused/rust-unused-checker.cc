@@ -358,7 +358,7 @@ UnusedChecker::visit (HIR::BorrowExpr &expr)
   if (auto def
       = nr_context.lookup (ast_node_id, Resolver2_0::Namespace::Values))
     if (auto id = mappings.lookup_node_to_hir (*def))
-      if (auto item = mappings.lookup_hir_item (*id))
+      if (auto item = mappings.hir.item.lookup (*id))
 	if (item.value ()->get_item_kind () == HIR::Item::ItemKind::Static)
 	  {
 	    auto &static_item = static_cast<HIR::StaticItem &> (*item.value ());

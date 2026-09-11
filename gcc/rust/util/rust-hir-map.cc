@@ -370,25 +370,6 @@ Mappings::lookup_trait_item_defid (DefId id)
 }
 
 void
-Mappings::insert_hir_item (HIR::Item *item)
-{
-  auto id = item->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_item (id).has_value ());
-
-  hirItemMappings[id] = item;
-  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::Item *>
-Mappings::lookup_hir_item (HirId id)
-{
-  auto it = hirItemMappings.find (id);
-  if (it == hirItemMappings.end ())
-    return tl::nullopt;
-  return it->second;
-}
-
-void
 Mappings::insert_hir_enumitem (HIR::Enum *parent, HIR::EnumItem *item)
 {
   auto id = item->get_mappings ().get_hirid ();
@@ -405,46 +386,6 @@ Mappings::lookup_hir_enumitem (HirId id)
   auto it = hirEnumItemMappings.find (id);
   if (it == hirEnumItemMappings.end ())
     return {nullptr, nullptr};
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_trait_item (HIR::TraitItem *item)
-{
-  auto id = item->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_trait_item (id).has_value ());
-
-  hirTraitItemMappings[id] = item;
-  insert_node_to_hir (item->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::TraitItem *>
-Mappings::lookup_hir_trait_item (HirId id)
-{
-  auto it = hirTraitItemMappings.find (id);
-  if (it == hirTraitItemMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_extern_block (HIR::ExternBlock *block)
-{
-  auto id = block->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_extern_block (id).has_value ());
-
-  hirExternBlockMappings[id] = block;
-  insert_node_to_hir (block->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::ExternBlock *>
-Mappings::lookup_hir_extern_block (HirId id)
-{
-  auto it = hirExternBlockMappings.find (id);
-  if (it == hirExternBlockMappings.end ())
-    return tl::nullopt;
 
   return it->second;
 }
@@ -521,26 +462,6 @@ Mappings::lookup_impl_block_type (HirId id)
 }
 
 void
-Mappings::insert_module (HIR::Module *module)
-{
-  auto id = module->get_mappings ().get_hirid ();
-  rust_assert (!lookup_module (id));
-
-  hirModuleMappings[id] = module;
-  insert_node_to_hir (module->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::Module *>
-Mappings::lookup_module (HirId id)
-{
-  auto it = hirModuleMappings.find (id);
-  if (it == hirModuleMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
 Mappings::insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item)
 {
   auto id = item->get_impl_mappings ().get_hirid ();
@@ -559,188 +480,6 @@ Mappings::lookup_hir_implitem (HirId id)
     return tl::nullopt;
 
   return std::make_pair (it->second.second, it->second.first);
-}
-
-void
-Mappings::insert_hir_expr (HIR::Expr *expr)
-{
-  auto id = expr->get_mappings ().get_hirid ();
-  hirExprMappings[id] = expr;
-
-  insert_node_to_hir (expr->get_mappings ().get_nodeid (), id);
-  insert_location (id, expr->get_locus ());
-}
-
-tl::optional<HIR::Expr *>
-Mappings::lookup_hir_expr (HirId id)
-{
-  auto it = hirExprMappings.find (id);
-  if (it == hirExprMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_path_expr_seg (HIR::PathExprSegment *expr)
-{
-  auto id = expr->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_path_expr_seg (id));
-
-  hirPathSegMappings[id] = expr;
-  insert_node_to_hir (expr->get_mappings ().get_nodeid (), id);
-  insert_location (id, expr->get_locus ());
-}
-
-tl::optional<HIR::PathExprSegment *>
-Mappings::lookup_hir_path_expr_seg (HirId id)
-{
-  auto it = hirPathSegMappings.find (id);
-  if (it == hirPathSegMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_generic_param (HIR::GenericParam *param)
-{
-  auto id = param->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_generic_param (id));
-
-  hirGenericParamMappings[id] = param;
-  insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
-  insert_location (id, param->get_locus ());
-}
-
-tl::optional<HIR::GenericParam *>
-Mappings::lookup_hir_generic_param (HirId id)
-{
-  auto it = hirGenericParamMappings.find (id);
-  if (it == hirGenericParamMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_type (HIR::Type *type)
-{
-  auto id = type->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_type (id));
-
-  hirTypeMappings[id] = type;
-  insert_node_to_hir (type->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::Type *>
-Mappings::lookup_hir_type (HirId id)
-{
-  auto it = hirTypeMappings.find (id);
-  if (it == hirTypeMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_stmt (HIR::Stmt *stmt)
-{
-  auto id = stmt->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_stmt (id));
-
-  hirStmtMappings[id] = stmt;
-  insert_node_to_hir (stmt->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::Stmt *>
-Mappings::lookup_hir_stmt (HirId id)
-{
-  auto it = hirStmtMappings.find (id);
-  if (it == hirStmtMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_param (HIR::FunctionParam *param)
-{
-  auto id = param->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_param (id));
-
-  hirParamMappings[id] = param;
-  insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::FunctionParam *>
-Mappings::lookup_hir_param (HirId id)
-{
-  auto it = hirParamMappings.find (id);
-  if (it == hirParamMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_self_param (HIR::SelfParam *param)
-{
-  auto id = param->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_self_param (id));
-
-  hirSelfParamMappings[id] = param;
-  insert_node_to_hir (param->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::SelfParam *>
-Mappings::lookup_hir_self_param (HirId id)
-{
-  auto it = hirSelfParamMappings.find (id);
-  if (it == hirSelfParamMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_struct_field (HIR::StructExprField *field)
-{
-  auto id = field->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_struct_field (id));
-
-  hirStructFieldMappings[id] = field;
-  insert_node_to_hir (field->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::StructExprField *>
-Mappings::lookup_hir_struct_field (HirId id)
-{
-  auto it = hirStructFieldMappings.find (id);
-  if (it == hirStructFieldMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-void
-Mappings::insert_hir_pattern (HIR::Pattern *pattern)
-{
-  auto id = pattern->get_mappings ().get_hirid ();
-  rust_assert (!lookup_hir_pattern (id));
-
-  hirPatternMappings[id] = pattern;
-  insert_node_to_hir (pattern->get_mappings ().get_nodeid (), id);
-}
-
-tl::optional<HIR::Pattern *>
-Mappings::lookup_hir_pattern (HirId id)
-{
-  auto it = hirPatternMappings.find (id);
-  if (it == hirPatternMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
 }
 
 void
@@ -831,7 +570,7 @@ Mappings::resolve_nodeid_to_stmt (NodeId id)
     return tl::nullopt;
 
   HirId resolved = it->second;
-  return lookup_hir_stmt (resolved);
+  return hir.stmt.lookup (resolved);
 }
 
 void
@@ -877,7 +616,7 @@ Mappings::build_impl_indexes ()
     if (!hir_id.has_value ())
       return nullptr;
 
-    auto item = lookup_hir_item (hir_id.value ());
+    auto item = hir.item.lookup (hir_id.value ());
     return item.has_value () ? item.value () : nullptr;
   };
 
@@ -972,7 +711,7 @@ Mappings::insert_trait_item_mapping (HirId trait_item_id, HIR::Trait *trait)
 	       == hirTraitItemsToTraitMappings.end ());
   hirTraitItemsToTraitMappings[trait_item_id] = trait;
 
-  auto item = lookup_hir_trait_item (trait_item_id);
+  auto item = hir.trait_item.lookup (trait_item_id);
   rust_assert (item.has_value ());
   if (item.value ()->get_item_kind () != HIR::TraitItem::TraitItemKind::FUNC)
     return;

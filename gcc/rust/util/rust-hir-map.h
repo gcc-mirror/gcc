@@ -172,10 +172,58 @@ public:
   void insert (Id id, Item item) { storage.insert ({id, item}); }
 };
 
+enum class InsertionPolicy
+{
+  FORBID_DUPLICATES,
+  ALLOW_DUPLICATES,
+};
+
+enum class InsertLocation
+{
+  YES,
+  NO,
+};
+
+template <typename Item,
+	  InsertionPolicy policy = InsertionPolicy::FORBID_DUPLICATES,
+	  InsertLocation insert_location = InsertLocation::NO>
+class PtrMapping
+{
+  std::unordered_map<HirId, Item *> storage;
+
+public:
+  tl::optional<Item *> lookup (HirId id);
+  void insert (Item *item);
+};
+
 class ASTMappings
 {
 public:
   Mapping<NodeId, Privacy::ModuleVisibility> module_visibility;
+};
+
+class HIRMappings
+{
+public:
+  PtrMapping<HIR::Item> item;
+  PtrMapping<HIR::TraitItem> trait_item;
+  PtrMapping<HIR::ExternBlock> extern_block;
+  PtrMapping<HIR::Module> module;
+  PtrMapping<HIR::Expr, InsertionPolicy::ALLOW_DUPLICATES, InsertLocation::YES>
+    expr;
+  PtrMapping<HIR::PathExprSegment, InsertionPolicy::FORBID_DUPLICATES,
+	     InsertLocation::YES>
+    path_expr_segment;
+  PtrMapping<HIR::GenericParam, InsertionPolicy::FORBID_DUPLICATES,
+	     InsertLocation::YES>
+    generic_param;
+  PtrMapping<HIR::Type> type;
+  PtrMapping<HIR::Stmt> stmt;
+  PtrMapping<HIR::FunctionParam, InsertionPolicy::ALLOW_DUPLICATES>
+    function_param;
+  PtrMapping<HIR::SelfParam> self_param;
+  PtrMapping<HIR::StructExprField> struct_expr_field;
+  PtrMapping<HIR::Pattern> pattern;
 };
 
 class Mappings
@@ -187,6 +235,7 @@ public:
   CrateMappings crate_mapping;
   ProcMacroMappings pmacro_mappings;
   ASTMappings ast;
+  HIRMappings hir;
 
   NodeId get_next_node_id ();
   HirId get_next_hir_id ()
@@ -216,17 +265,8 @@ public:
   tl::optional<HIR::Item *> lookup_local_defid (CrateNum crateNum,
 						LocalDefId id);
 
-  void insert_hir_item (HIR::Item *item);
-  tl::optional<HIR::Item *> lookup_hir_item (HirId id);
-
   void insert_hir_enumitem (HIR::Enum *parent, HIR::EnumItem *item);
   std::pair<HIR::Enum *, HIR::EnumItem *> lookup_hir_enumitem (HirId id);
-
-  void insert_hir_trait_item (HIR::TraitItem *item);
-  tl::optional<HIR::TraitItem *> lookup_hir_trait_item (HirId id);
-
-  void insert_hir_extern_block (HIR::ExternBlock *block);
-  tl::optional<HIR::ExternBlock *> lookup_hir_extern_block (HirId id);
 
   void insert_hir_extern_item (HIR::ExternalItem *item, HirId parent_block);
 
@@ -238,40 +278,10 @@ public:
   tl::optional<HIR::ImplBlock *> lookup_hir_impl_block (HirId id);
   tl::optional<HIR::ImplBlock *> lookup_impl_block_type (HirId id);
 
-  void insert_module (HIR::Module *module);
-  tl::optional<HIR::Module *> lookup_module (HirId id);
-
   void insert_hir_implitem (HirId parent_impl_id, HIR::ImplItem *item);
   // Optional<ImpItem, ParentImpl Hir id>
   tl::optional<std::pair<HIR::ImplItem *, HirId>>
   lookup_hir_implitem (HirId id);
-
-  void insert_hir_expr (HIR::Expr *expr);
-  tl::optional<HIR::Expr *> lookup_hir_expr (HirId id);
-
-  void insert_hir_path_expr_seg (HIR::PathExprSegment *expr);
-  tl::optional<HIR::PathExprSegment *> lookup_hir_path_expr_seg (HirId id);
-
-  void insert_hir_generic_param (HIR::GenericParam *expr);
-  tl::optional<HIR::GenericParam *> lookup_hir_generic_param (HirId id);
-
-  void insert_hir_type (HIR::Type *type);
-  tl::optional<HIR::Type *> lookup_hir_type (HirId id);
-
-  void insert_hir_stmt (HIR::Stmt *stmt);
-  tl::optional<HIR::Stmt *> lookup_hir_stmt (HirId id);
-
-  void insert_hir_param (HIR::FunctionParam *type);
-  tl::optional<HIR::FunctionParam *> lookup_hir_param (HirId id);
-
-  void insert_hir_self_param (HIR::SelfParam *type);
-  tl::optional<HIR::SelfParam *> lookup_hir_self_param (HirId id);
-
-  void insert_hir_struct_field (HIR::StructExprField *type);
-  tl::optional<HIR::StructExprField *> lookup_hir_struct_field (HirId id);
-
-  void insert_hir_pattern (HIR::Pattern *pattern);
-  tl::optional<HIR::Pattern *> lookup_hir_pattern (HirId id);
 
   void walk_local_defids_for_crate (CrateNum crateNum,
 				    std::function<bool (HIR::Item *)> cb);
@@ -552,5 +562,7 @@ private:
 
 } // namespace Analysis
 } // namespace Rust
+
+#include "rust-hir-map.hxx"
 
 #endif // RUST_HIR_MAP_H

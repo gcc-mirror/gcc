@@ -309,7 +309,7 @@ ConstChecker::check_function_call (HirId fn_id, location_t locus)
   if (!const_context.is_in_context ())
     return;
 
-  auto maybe_fn = mappings.lookup_hir_item (fn_id);
+  auto maybe_fn = mappings.hir.item.lookup (fn_id);
   if (maybe_fn
       && maybe_fn.value ()->get_item_kind () != Item::ItemKind::Function)
     return;
