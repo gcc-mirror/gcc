@@ -86,6 +86,7 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::RUSTC_LAYOUT_SCALAR_VALID_RANGE_START, CODE_GENERATION},
      // TODO: be careful about calling functions marked with this?
      {Attrs::RUSTC_ARGS_REQUIRED_CONST, CODE_GENERATION},
+     {Attrs::RUSTC_LEGACY_CONST_GENERICS, TYPE_CHECK},
      {Attrs::COMPILER_BUILTINS, CODE_GENERATION},
      {Attrs::NO_BUILTINS, CODE_GENERATION},
      {Attrs::PRELUDE_IMPORT, NAME_RESOLUTION},

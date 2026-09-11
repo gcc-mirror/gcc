@@ -18,6 +18,7 @@
 
 #include "rust-casts.h"
 #include "rust-tyty-util.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace Resolver {
@@ -70,6 +71,8 @@ TypeCastRules::cast_rules ()
   // https://github.com/rust-lang/rust/blob/7eac88abb2e57e752f3302f02be5f3ce3d7adfb4/compiler/rustc_typeck/src/check/cast.rs#L654
 
   TyTy::BaseType *from_type = from.get_ty ()->destructure ();
+  if (auto c = from_type->try_as<TyTy::ConstParamType> ())
+    from_type = c->get_specified_type ();
 
   rust_debug ("cast_rules from={%s} to={%s}", from_type->debug_str ().c_str (),
 	      to.get_ty ()->debug_str ().c_str ());
