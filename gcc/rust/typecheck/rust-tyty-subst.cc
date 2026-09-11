@@ -224,7 +224,6 @@ SubstitutionParamMapping::fill_param_ty (
 	  bound.handle_substitions (subst_mappings);
 
       param->set_ty_ref (type.get_ref ());
-      subst_mappings.on_param_subst (p, arg);
     }
 
   return true;
@@ -335,20 +334,19 @@ SubstitutionArgumentMappings::get_mut_regions ()
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   std::vector<SubstitutionArg> mappings,
   std::map<std::string, BaseType *> binding_args, RegionParamList regions,
-  location_t locus, ParamSubstCb param_subst_cb, bool trait_item_flag,
-  bool error_flag, std::map<std::string, BaseType *> constraint_args)
+  location_t locus, bool trait_item_flag, bool error_flag,
+  std::map<std::string, BaseType *> constraint_args)
   : mappings (std::move (mappings)), binding_args (binding_args),
     constraint_args (constraint_args), regions (regions), locus (locus),
-    param_subst_cb (param_subst_cb), trait_item_flag (trait_item_flag),
-    error_flag (error_flag)
+    trait_item_flag (trait_item_flag), error_flag (error_flag)
 {}
 
 SubstitutionArgumentMappings::SubstitutionArgumentMappings (
   const SubstitutionArgumentMappings &other)
   : mappings (other.mappings), binding_args (other.binding_args),
     constraint_args (other.constraint_args), regions (other.regions),
-    locus (other.locus), param_subst_cb (nullptr),
-    trait_item_flag (other.trait_item_flag), error_flag (other.error_flag)
+    locus (other.locus), trait_item_flag (other.trait_item_flag),
+    error_flag (other.error_flag)
 {}
 
 SubstitutionArgumentMappings &
@@ -360,7 +358,6 @@ SubstitutionArgumentMappings::operator= (
   constraint_args = other.constraint_args;
   regions = other.regions;
   locus = other.locus;
-  param_subst_cb = nullptr;
   trait_item_flag = other.trait_item_flag;
   error_flag = other.error_flag;
 
@@ -370,15 +367,14 @@ SubstitutionArgumentMappings::operator= (
 SubstitutionArgumentMappings
 SubstitutionArgumentMappings::error ()
 {
-  return SubstitutionArgumentMappings ({}, {}, 0, UNDEF_LOCATION, nullptr,
-				       false, true);
+  return SubstitutionArgumentMappings ({}, {}, 0, UNDEF_LOCATION, false, true);
 }
 
 SubstitutionArgumentMappings
 SubstitutionArgumentMappings::empty (size_t num_regions)
 {
   return SubstitutionArgumentMappings ({}, {}, num_regions, UNDEF_LOCATION,
-				       nullptr, false, false);
+				       false, false);
 }
 
 bool
@@ -494,22 +490,6 @@ SubstitutionArgumentMappings::as_string () const
       buffer += mapping.as_string () + ", ";
     }
   return "<" + buffer + ">";
-}
-
-void
-SubstitutionArgumentMappings::on_param_subst (const ParamType &p,
-					      const SubstitutionArg &a) const
-{
-  if (param_subst_cb == nullptr)
-    return;
-
-  param_subst_cb (p, a);
-}
-
-ParamSubstCb
-SubstitutionArgumentMappings::get_subst_cb () const
-{
-  return param_subst_cb;
 }
 
 bool
@@ -965,7 +945,6 @@ SubstitutionRef::get_mappings_from_generic_args (
 	  RegionParamList::from_subst (used_arguments.get_regions ().size (),
 				       regions),
 	  args.get_locus (),
-	  nullptr,
 	  false,
 	  false,
 	  constraint_arguments};
@@ -1056,10 +1035,12 @@ SubstitutionRef::adjust_mappings_for_this (
   if (resolved_mappings.empty ())
     return SubstitutionArgumentMappings::error ();
 
-  return SubstitutionArgumentMappings (
-    resolved_mappings, mappings.get_binding_args (), mappings.get_regions (),
-    mappings.get_locus (), mappings.get_subst_cb (),
-    mappings.trait_item_mode (), false, mappings.get_constraint_args ());
+  return SubstitutionArgumentMappings (resolved_mappings,
+				       mappings.get_binding_args (),
+				       mappings.get_regions (),
+				       mappings.get_locus (),
+				       mappings.trait_item_mode (), false,
+				       mappings.get_constraint_args ());
 }
 
 bool
@@ -1119,8 +1100,8 @@ SubstitutionRef::solve_mappings_from_receiver_for_self (
   return SubstitutionArgumentMappings (resolved_mappings,
 				       mappings.get_binding_args (),
 				       mappings.get_regions (),
-				       mappings.get_locus (), nullptr, false,
-				       false, mappings.get_constraint_args ());
+				       mappings.get_locus (), false, false,
+				       mappings.get_constraint_args ());
 }
 
 bool

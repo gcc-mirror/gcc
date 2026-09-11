@@ -3841,8 +3841,6 @@ ParamType::handle_substitions (SubstitutionArgumentMappings &subst_mappings)
     return this;
 
   ParamType *p = static_cast<ParamType *> (clone ());
-  subst_mappings.on_param_subst (*p, arg);
-
   const BaseType *resolved = arg.get_tyty ();
   if (resolved->get_kind () == TyTy::TypeKind::PARAM)
     {

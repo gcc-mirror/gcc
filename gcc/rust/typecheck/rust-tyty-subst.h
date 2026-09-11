@@ -170,16 +170,13 @@ private:
   BaseType *argument;
 };
 
-typedef std::function<void (const ParamType &, const SubstitutionArg &)>
-  ParamSubstCb;
 class SubstitutionArgumentMappings
 {
 public:
   SubstitutionArgumentMappings (
     std::vector<SubstitutionArg> mappings,
     std::map<std::string, BaseType *> binding_args, RegionParamList regions,
-    location_t locus, ParamSubstCb param_subst_cb = nullptr,
-    bool trait_item_flag = false, bool error_flag = false,
+    location_t locus, bool trait_item_flag = false, bool error_flag = false,
     std::map<std::string, BaseType *> constraint_args = {});
 
   SubstitutionArgumentMappings (const SubstitutionArgumentMappings &other);
@@ -240,10 +237,6 @@ public:
 
   std::string as_string () const;
 
-  void on_param_subst (const ParamType &p, const SubstitutionArg &a) const;
-
-  ParamSubstCb get_subst_cb () const;
-
   bool trait_item_mode () const;
 
 private:
@@ -252,7 +245,6 @@ private:
   std::map<std::string, BaseType *> constraint_args;
   RegionParamList regions;
   location_t locus;
-  ParamSubstCb param_subst_cb;
   bool trait_item_flag;
   bool error_flag;
 };

@@ -469,7 +469,7 @@ TypeBoundPredicate::TypeBoundPredicate (const TypeBoundPredicate &other)
   used_arguments = SubstitutionArgumentMappings (
     copied_arg_mappings, other.used_arguments.get_binding_args (),
     other.used_arguments.get_regions (), other.used_arguments.get_locus (),
-    nullptr, false, false, other.used_arguments.get_constraint_args ());
+    false, false, other.used_arguments.get_constraint_args ());
 }
 
 TypeBoundPredicate &
@@ -502,7 +502,7 @@ TypeBoundPredicate::operator= (const TypeBoundPredicate &other)
   used_arguments = SubstitutionArgumentMappings (
     copied_arg_mappings, other.used_arguments.get_binding_args (),
     other.used_arguments.get_regions (), other.used_arguments.get_locus (),
-    nullptr, false, false, other.used_arguments.get_constraint_args ());
+    false, false, other.used_arguments.get_constraint_args ());
   super_traits = other.super_traits;
 
   return *this;
@@ -724,7 +724,6 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
   SubstitutionArgumentMappings adjusted (adjusted_mappings, {},
 					 gargs.get_regions (),
 					 gargs.get_locus (),
-					 gargs.get_subst_cb (),
 					 true /* trait-mode-flag */);
   TyTy::BaseType *res
     = Resolver::SubstMapperInternal::Resolve (trait_item_tyty, adjusted);
