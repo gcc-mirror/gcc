@@ -2034,20 +2034,18 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype,
 }
 
 /* Check if the load permutation of NODE only refers to a consecutive
-   subset of the group indices where GROUP_SIZE is the size of the
-   dataref's group.  We also assert that the length of the permutation
-   divides the group size and is a power of two.
+   subset of the group indices.  We also require the length of the
+   permutation to be a power of two.
    Such load permutations can be elided in strided access schemes as
    we can "jump over" the gap they leave.  */
 
-bool
-has_consecutive_load_permutation (slp_tree node, unsigned group_size)
+static bool
+has_consecutive_load_permutation (slp_tree node)
 {
   load_permutation_t perm = SLP_TREE_LOAD_PERMUTATION (node);
   if (!perm.exists ()
       || perm.length () <= 1
-      || !pow2p_hwi (perm.length ())
-      || group_size % perm.length ())
+      || !pow2p_hwi (perm.length ()))
     return false;
 
   return vect_load_perm_consecutive_p (node);
@@ -2159,7 +2157,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       /* If the load permutation is consecutive we can reduce the group to
 	 the elements the permutation accesses.  Then we release the
 	 permutation.  */
-      if (has_consecutive_load_permutation (slp_node, group_size))
+      if (has_consecutive_load_permutation (slp_node))
 	{
 	  ls->subchain_p = true;
 	  group_size = SLP_TREE_LANES (slp_node);
