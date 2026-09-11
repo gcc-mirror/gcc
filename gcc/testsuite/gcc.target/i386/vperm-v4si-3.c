@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-psabi" } */
 
 typedef int v4si __attribute__ ((__vector_size__ (16)));
 
@@ -70,4 +70,3 @@ int main()
   }
   return 0;
 }
-

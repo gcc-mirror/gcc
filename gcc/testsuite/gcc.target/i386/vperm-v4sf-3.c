@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -Wno-psabi" } */
 
 typedef float v4sf __attribute__ ((__vector_size__ (16)));
 
@@ -71,4 +71,3 @@ int main()
   }
   return 0;
 }
-
