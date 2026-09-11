@@ -8259,6 +8259,14 @@ remove_inheritance_pseudos (bitmap remove_pseudos)
   return change_p;
 }
 
+/* Return true if REGNO is an inheritance pseudo.  */
+static bool
+inheritance_pseudo_p (int regno)
+{
+  return (regno >= new_regno_start
+	  && bitmap_bit_p (&lra_inheritance_pseudos, regno));
+}
+
 /* If optional reload pseudos failed to get a hard register or was not
    inherited, it is better to remove optional reloads.  We do this
    transformation after undoing inheritance to figure out necessity to
@@ -8291,19 +8299,22 @@ undo_optional_reloads (void)
 	    insn = lra_insn_recog_data[uid]->insn;
 	    if ((set = single_set (insn)) == NULL_RTX)
 	      continue;
-	    src = SET_SRC (set);
-	    dest = SET_DEST (set);
-	    if ((! REG_P (src) && ! SUBREG_P (src))
-		|| (! REG_P (dest) && ! SUBREG_P (dest)))
+	    int src_regno = get_regno (SET_SRC (set));
+	    int dest_regno = get_regno (SET_DEST (set));
+	    if (src_regno < 0 || dest_regno < 0)
 	      continue;
-	    if (get_regno (dest) == (int) regno
-		/* Ignore insn for optional reloads itself.  */
-		&& (get_regno (lra_reg_info[regno].restore_rtx)
-		    != get_regno (src))
-		/* Check only inheritance on last inheritance pass.  */
-		&& get_regno (src) >= new_regno_start
-		/* Check that the optional reload was inherited.  */
-		&& bitmap_bit_p (&lra_inheritance_pseudos, get_regno (src)))
+	    int restore_regno = get_regno (lra_reg_info[regno].restore_rtx);
+	    if (restore_regno < 0)
+	      continue;
+	    if (((dest_regno == (int) regno
+		  /* Ignore insn for optional reloads itself.  */
+		  && restore_regno != src_regno
+		  /* Check that the optional reload was inherited.  */
+		  && inheritance_pseudo_p (src_regno))
+		 || (src_regno == (int) regno
+		     && restore_regno != dest_regno
+		     /* The optional reload is an inheritance source.  */
+		     && inheritance_pseudo_p (dest_regno))))
 	      {
 		keep_p = true;
 		break;
