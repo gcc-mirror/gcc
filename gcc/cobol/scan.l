@@ -2568,8 +2568,6 @@ USE({SPC}FOR)?		{ return USE; }
   		  if( 0 != (yylval.number = symbol_function_token(name)) ) {
   		    pop_return FUNCTION_UDF;
   		  }
-                  int token = NAME;
-		  if( (token = redefined_token(name)) ) { return token; }
 		  yylval.string = name;
 		  pop_return NAME;
 		}
@@ -2581,8 +2579,6 @@ USE({SPC}FOR)?		{ return USE; }
 		  if( 0 != (yylval.number = symbol_function_token(name)) ) {
   		    pop_return FUNCTION_UDF_0;
   		  }
-                  int token = NAME;
-		  if( (token = redefined_token(name)) ) { return token; }
 		  yylval.string = name;
 		  pop_return NAME;
 	 	}

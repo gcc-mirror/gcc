@@ -260,11 +260,38 @@ namespace cdf {
   bool had_lookahead();
   cbl_loc_t location();
   int last_lexed;
+  bool any_cobol_words = false;
 }
 
 static int next_token() {
-  cdf::last_lexed = lexer();
-  return cdf::last_lexed;
+  int token = cdf::last_lexed = lexer();
+
+  if( cdf::any_cobol_words ) {
+    const char *name = token == NAME? yylval.string : nullptr;
+    token = redefined_token(name, token);
+    if( token != cdf::last_lexed ) {
+      const char *name = 0 < token? keyword_str(token) : "lost";
+      if( cdf::last_lexed == NAME ) {
+        dbgmsg("%s:%d: NAME '%s' became '%s' (%d)", __func__, __LINE__, 
+               yylval.string, name, token);
+      } else {
+        dbgmsg("%s:%d: %s (%d) became %d for '%s'", __func__, __LINE__, 
+               keyword_str(cdf::last_lexed), cdf::last_lexed,
+               token, yytext);
+      }
+    }
+    if( current_tokens_t::is_reserved(token)  ) {
+      error_msg(yylloc, "RESERVED by COBOL-WORDS: %qs", yytext);
+      token = cdf::last_lexed;
+    }
+    if( current_tokens_t::is_undefined(token)  ) {
+      yylval.string = xstrdup(yytext);
+      token = NAME;
+      dbgmsg("%s:%d: UNDEFINED by COBOL-WORDS: %s becomes user-defined name",
+             __func__, __LINE__, yytext? yytext : "yytext is NULL?");
+    }
+  }
+  return token;
 }
 
 // act on CDF tokens

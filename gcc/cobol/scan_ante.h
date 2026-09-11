@@ -1230,8 +1230,6 @@ typed_name( const char name[] ) {
     if( name ) return token;
   }
 
-  if( (token = redefined_token(name)) ) { return token; }
-
   e = symbol_exists( name );
 
   auto type = e && e->type == SymField? cbl_field_of(e)->type : FldInvalid;

@@ -2967,15 +2967,71 @@ void wsclear( uint32_t ch);
 const uint32_t *wsclear();
 
 int keyword_tok( const char * text, bool include_intrinsics = false );
-int redefined_token( const cbl_name_t name );
+int redefined_token( const cbl_name_t name, int token );
 
+/*
+ * The tokenset for any translation can be changed by COBOL-WORDS, which must
+ * appear before IDENTIFICATION SECTION. The directive may add, delete, or
+ * modify reserved words and context-sensitive words, and the names of
+ * intrinsic functions.
+ *
+ * tokens and token_names are defined in a token_names.h, generated from parse.h.
+ * 
+ *  - token_names converts a yytokentype enum to a string form of
+ *    its name as defined in the parser.  It is used by keyword_str.
+ *  - tokens imperfectly maps a lowercase form of the token name to its value.
+ *    It is used by redefined_token.
+ *  - cobol_words enforces the rule that any token name may appear at
+ *    most 1 time in int the COBOL-WORDS directive.
+ *
+ *  EQUATE     adds a new name for a token in tokens.
+ *  UNDEFINE   removes a name from tokens.
+ *  SUBSTITUTE is EQUATE for the first name and UNDEFINE for the second.
+ *  RESERVE    adds a new name to tokens with the invalid value -42. 
+ *
+ * The generated lexer of course uses static strings and is thus unaffected by
+ * COBOL-WORDS. The parser accesses the generated lexer via a mediation layer
+ * that deals with the CDF.  That is where COBOL-WORDS are applied.
+ *
+ * There are unsolved problems.  
+ *  1.  Some tokens are lexed as more than one text word, or depend on context. 
+ *      For example OBJECT COMPUTER and IDENTIFICATION DIVISION. If the user 
+ *      substitutes COMPUTING-MACHINE COMPUTER, lexing will fail. 
+
+ *  2.  Semantic values are known only to the lexer. Some tokens carry a value
+ *      representing their context. For example, both INVALID and NOT INVALID
+ *      are presented to the parser as INVALID, with the semantic value
+ *      representing the presence (or absence) of NOT. If BOGUS is substituted
+ *      for INVALID, the generated lexer will assume BOGUS is a NAME, and
+ *      assign it the value "BOGUS". When that string is found by
+ *      redefined_token and mapped to INVALID (so the parser can parse it) the
+ *      semantic value is lost.
+ * 
+ *  3.  Some names are not NAME tokens, depending on context.  That subtlety is
+ *      also lost.
+ *
+ *  4.  Renamed tokens that trigger changes in Start Condition are either not
+ *      detected by the lexer, or (as names) mistakenly change the SC.
+ *
+ * A robust solution to these problems is tail-wagging-the-dog for this
+ * project. The lexer could be completely rewritten, discarding GNU Flex in
+ * favor of runtime-defined tables. That however represents months of work for
+ * programs that constitute a rounding error in the global COBOL corpus. A
+ * smaller, feasible solution would reject attempts to use COBOL-WORDS that
+ * affect the above problems. The interested reader of this comment is invited
+ * to tackle it.
+ */
+namespace cdf { extern bool any_cobol_words; }
 class current_tokens_t {
   class tokenset_t {
     // token_names is initialized from a generated header file. 
     std::vector<const char *>token_names;  // position indicates token value
     std::map <std::string, int> tokens;    // aliases
-    std::set<std::string> cobol_words;  // Anything in COBOL-WORDS may appear only once. 
+    std::set<std::string> cobol_words;     // COBOL-WORDS may affect a word only once.
+    std::set<int> undefined;               // removed keywords
   public:
+    enum { reserved_e = -42, undefined_e = -77 };
+
     static std::string
     lowercase( const cbl_name_t name ) {
       cbl_name_t lname;
@@ -3001,6 +3057,7 @@ class current_tokens_t {
         error_msg(loc, "COBOL-WORDS %s: %qs may appear but once", verb, name);
         return false;
       }
+      cdf::any_cobol_words = true;
       auto p = tokens.find(lowercase(name));
       bool fOK = p == tokens.end();
       if( fOK ) { // name not already in use
@@ -3024,6 +3081,9 @@ class current_tokens_t {
       auto p = tokens.find(lname);
       bool fOK = p != tokens.end();
       if( fOK ) { // name in use
+        cobol_words.insert(p->first);
+        cdf::any_cobol_words = true;
+        undefined.insert(p->second);
         tokens.erase(p);
       } else {
         error_msg(loc, "%s: not a reserved word: %qs", verb, name);
@@ -3046,18 +3106,32 @@ class current_tokens_t {
         error_msg(loc, "COBOL-WORDS RESERVE: %qs may appear but once", name);
         return false;
       }
-      tokens[lname] = -42;
+      cdf::any_cobol_words = true;
+      tokens[lname] = reserved_e;
       return true;
     }
-    int redefined_as( const cbl_name_t name ) {
+    /*
+     * name may be: 
+     * 1.  just a name, return the input token.
+     * 2.  reserved with -42 token
+     * 3.  a user-defined substitute or alias for a token
+     *
+     * Also the user might have removed the name.  In that case, the generated
+     * lexer (being unaware of the deletion, found it and returned the token
+     * value.  If it is in the undefined list, return 0.
+     */
+    int redefined_as( const cbl_name_t name, int token ) {
+      if( 1 == undefined.count(token) ) return undefined_e;
+      if( ! name ) return token;
+
       auto lname( lowercase(name) );
       if( cobol_words.find(lname) != cobol_words.end() ) {
         auto p = tokens.find(lname);
         if( p != tokens.end() ) {
-          return p->second;
+          return p->second;   // found a token for name
         }
       }
-      return 0;
+      return token;
     }
     const char * name_of( int tok ) const {
       tok -= (255 + 3);
@@ -3068,6 +3142,9 @@ class current_tokens_t {
 
   tokenset_t tokens;
  public:
+  bool static is_reserved( int token )  { return token == tokenset_t::reserved_e; }
+  bool static is_undefined( int token ) { return token == tokenset_t::undefined_e; }
+
   current_tokens_t() {}
   int find( const cbl_name_t name, bool include_intrinsics ) {
     return tokens.find(name, include_intrinsics);
@@ -3115,8 +3192,8 @@ class current_tokens_t {
   bool reserve( const cbl_loc_t& loc, const cbl_name_t name ) {
     return tokens.reserve(loc, name);
   }
-  int redefined_as( const cbl_name_t name ) {
-    return tokens.redefined_as(name);
+  int redefined_as( const cbl_name_t name, int token ) {
+    return tokens.redefined_as(name, token);
   }
   const char * name_of( int tok ) const {
     return tokens.name_of(tok);

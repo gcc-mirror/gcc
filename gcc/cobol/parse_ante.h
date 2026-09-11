@@ -1207,8 +1207,8 @@ teed_up_names() {
 #define cdf_tokens cdf_current_tokens()
 
 int
-redefined_token( const cbl_name_t name ) {
-  return cdf_tokens.redefined_as(name);
+redefined_token( const cbl_name_t name, int token ) {
+  return cdf_tokens.redefined_as(name, token);
 }
 
 static bool
