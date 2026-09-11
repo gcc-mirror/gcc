@@ -216,17 +216,12 @@ int main()
     test_add_to_full<0, Y>();
 
     test_add_to_full<4, int>();
+    test_add_to_full<4, X>();
     test_add_to_full<4, Y>();
 
     test_inserts<int>();
     test_inserts<Y>();
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error enable tests bellow
-#endif
-    if ! consteval {
-      test_add_to_full<4, X>();
-      test_inserts<X>();
-    }
+    test_inserts<X>();
     return true;
   };
 

@@ -67,7 +67,7 @@ struct Z
 template<size_t N, typename T>
   constexpr std::inplace_vector<T, N>
   materialize(std::initializer_list<int> il)
-  { 
+  {
     std::inplace_vector<T, N> res;
     for (int x : il)
       res.emplace_back(x);
@@ -199,13 +199,6 @@ test_ctor()
   auto c5 = materialize<5, int>({1, 2, 3, 4, 5});
   VERIFY( eq(c5, {1, 2, 3, 4, 5}) );
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   auto x0 = materialize<3, X>({});
   VERIFY( x0.empty() );
 
@@ -235,7 +228,7 @@ test_assign()
 
   c = materialize<5, int>({1, 2, 3});
   VERIFY( eq(c, {1, 2, 3}) );
- 
+
   c = materialize<5, int>({1, 2, 3, 4, 5});
   VERIFY( eq(c, {1, 2, 3, 4, 5}) );
 
@@ -245,20 +238,13 @@ test_assign()
   c = materialize<5, int>({});
   VERIFY( c.empty() );
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> x;
   x = materialize<5, X>({});
   VERIFY( x.empty() );
 
   x = materialize<5, X>({1, 2, 3});
   VERIFY( eq(x, {1, 2, 3}) );
- 
+
   x = materialize<5, X>({1, 2, 3, 4, 5});
   VERIFY( eq(x, {1, 2, 3, 4, 5}) );
 
@@ -279,7 +265,7 @@ test_swap()
   e0a.swap(e0b);
   VERIFY( e0a.empty() );
   VERIFY( e0b.empty() );
- 
+
   std::inplace_vector<X, 0> e1a, e1b;
   swap(e1a, e1b);
   VERIFY( e1a.empty() );
@@ -314,13 +300,6 @@ test_swap()
   VERIFY( eq(c3, {1, 2, 3}) );
   VERIFY( eq(c5, {1, 2, 3, 4, 5}) );
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> x0;
   std::inplace_vector<X, 5> x3 = {1, 2, 3};
   std::inplace_vector<X, 5> x5 = {1, 2, 3, 4, 5};
@@ -347,6 +326,10 @@ constexpr auto e2 = materialize<0, Z>({});
 constexpr auto t1 = materialize<3, int>({});
 constexpr auto t2 = materialize<3, int>({1, 2});
 constexpr auto t3 = materialize<3, int>({11, 22, 33});
+
+constexpr auto u1 = materialize<3, X>({});
+constexpr auto u2 = materialize<3, X>({1, 2});
+constexpr auto u3 = materialize<3, X>({11, 22, 33});
 
 int main()
 {

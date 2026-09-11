@@ -2561,6 +2561,16 @@
 #endif /* !defined(__cpp_lib_modules) */
 #undef __glibcxx_want_modules
 
+#if !defined(__cpp_lib_start_lifetime)
+# if (__cplusplus >  202302L) && (__has_builtin(__builtin_start_lifetime))
+#  define __glibcxx_start_lifetime 202603L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime)
+#   define __cpp_lib_start_lifetime 202603L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_start_lifetime) */
+#undef __glibcxx_want_start_lifetime
+
 #if !defined(__cpp_lib_inplace_vector)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_inplace_vector 202603L
@@ -2570,6 +2580,16 @@
 # endif
 #endif /* !defined(__cpp_lib_inplace_vector) */
 #undef __glibcxx_want_inplace_vector
+
+#if !defined(__cpp_lib_constexpr_inplace_vector)
+# if (__cplusplus >  202302L) && (__glibcxx_start_lifetime)
+#  define __glibcxx_constexpr_inplace_vector 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_inplace_vector)
+#   define __cpp_lib_constexpr_inplace_vector 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constexpr_inplace_vector) */
+#undef __glibcxx_want_constexpr_inplace_vector
 
 #if !defined(__cpp_lib_indirect)
 # if (__cplusplus >  202302L) && _GLIBCXX_HOSTED
@@ -2953,15 +2973,5 @@
 # endif
 #endif /* !defined(__cpp_lib_hardened_view_interface) */
 #undef __glibcxx_want_hardened_view_interface
-
-#if !defined(__cpp_lib_start_lifetime)
-# if (__cplusplus >  202302L) && (__has_builtin(__builtin_start_lifetime))
-#  define __glibcxx_start_lifetime 202603L
-#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime)
-#   define __cpp_lib_start_lifetime 202603L
-#  endif
-# endif
-#endif /* !defined(__cpp_lib_start_lifetime) */
-#undef __glibcxx_want_start_lifetime
 
 #undef __glibcxx_want_all

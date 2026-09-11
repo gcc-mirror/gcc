@@ -101,14 +101,10 @@ int main()
     test_erase_all_or_none<0, X>();
 
     test_erase_all_or_none<4, int>();
+    test_erase_all_or_none<4, X>();
 
     test_erase<int>();
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error uncomemnt test_inserts<X>()
-#endif
-    if ! consteval {
-      test_erase_all_or_none<4, X>();
-    }
+    test_erase<X>();
     return true;
   };
 

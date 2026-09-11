@@ -2316,6 +2316,15 @@ ftms = {
 };
 
 ftms = {
+  name = start_lifetime;
+  values = {
+    v = 202603;
+    cxxmin = 26;
+    extra_cond = "__has_builtin(__builtin_start_lifetime)";
+  };
+};
+
+ftms = {
   // 202406 P0843R14 inplace_vector
   // 202603 P3981R2 Better return types in std::inplace_vector and std::exception_ptr_cast
   //        P4022R0 Remove try_append_range from inplace_vector for now
@@ -2323,6 +2332,15 @@ ftms = {
   values = {
     v = 202603;
     cxxmin = 26;
+  };
+};
+
+ftms = {
+  name = constexpr_inplace_vector;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+    extra_cond = "__glibcxx_start_lifetime";
   };
 };
 
@@ -2662,15 +2680,6 @@ ftms = {
   values = {
     v = 202502;
     extra_cond = "defined(__glibcxx_ranges) && defined(_GLIBCXX_ASSERTIONS)";
-  };
-};
-
-ftms = {
-  name = start_lifetime;
-  values = {
-    v = 202603;
-    cxxmin = 26;
-    extra_cond = "__has_builtin(__builtin_start_lifetime)";
   };
 };
 

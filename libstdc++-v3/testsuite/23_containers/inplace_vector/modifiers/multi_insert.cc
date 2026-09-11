@@ -562,11 +562,11 @@ test_iota()
   VERIFY( eq<T>(v, {a, 15}) );
 
 #ifdef __cpp_exceptions
-#ifndef __cpp_lib_constexpr_exceptions
+# ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
-#endif
+# endif
   constexpr T max = std::numeric_limits<T>::max();
   try
   {
@@ -615,7 +615,6 @@ test_iota()
   {
   }
   VERIFY( prefix<T>(vc, {a, 15}) );
-
 #endif
 }
 
@@ -625,15 +624,10 @@ int main()
     test_add_to_full<0, int>();
     test_add_to_full<0, X>();
     test_add_to_full<4, int>();
+    test_add_to_full<4, X>();
 
     test_inserts<int>();
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error uncomemnt test_inserts<X>()
-#endif
-    if !consteval {
-      test_add_to_full<4, X>();
-      test_inserts<X>();
-    }
+    test_inserts<X>();
 
     test_iota<long long>();
 #ifdef __SIZEOF_INT128__

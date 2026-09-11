@@ -407,15 +407,10 @@ int main()
     test_assign_empty<0, int>();
     test_assign_empty<0, X>();
     test_assign_empty<2, int>();
+    test_assign_empty<2, X>();
 
     test_assigns<int>();
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error uncomemnt test_inserts<X>()
-#endif
-    if !consteval {
-      test_assign_empty<2, X>();
-      test_assigns<X>();
-    }
+    test_assigns<X>();
 
     test_iota<long long>();
 #ifdef __SIZEOF_INT128__

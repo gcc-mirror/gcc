@@ -108,13 +108,6 @@ test_default()
   VERIFY( z0.empty() );
   VERIFY( z0.begin() == z0.end() );
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> cx;
   VERIFY( cx.size() == 0 );
   VERIFY( cx.capacity() == 5 );
@@ -192,13 +185,6 @@ test_n()
 #endif
 #endif
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> cx(3);
   VERIFY( cx.size() == 3 );
   VERIFY( cx.capacity() == 5 );
@@ -269,13 +255,6 @@ test_n_val()
 #endif
 #endif
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> cx(4);
   VERIFY( cx.size() == 4 );
   VERIFY( cx.capacity() == 5 );
@@ -320,45 +299,38 @@ test_initializer_list()
   VERIFY( z0.empty() );
   VERIFY( z0.begin() == z0.end() );
 
-#ifdef __cpp_exceptions
-#ifndef __cpp_lib_constexpr_exceptions
-  if not consteval {
-#endif
-    try
-    {
-      std::inplace_vector<int, 2> ct{11, 22, 33};
-      VERIFY(false);
-    }
-    catch (std::bad_alloc const&)
-    {
-    }
-
-    try
-    {
-      std::inplace_vector<int, 0> ct{11, 22};
-      VERIFY(false);
-    }
-    catch (std::bad_alloc const&)
-    {
-    }
-#ifndef __cpp_lib_constexpr_exceptions
-  }
-#endif
-#endif
-
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> cx{X(), X(), X(), X()};
   VERIFY( cx.size() == 4 );
   VERIFY( cx.capacity() == 5 );
   VERIFY( not cx.empty() );
   VERIFY( cx.begin() + 4 == cx.end() );
   (void) cx[3];
+
+#ifdef __cpp_exceptions
+# ifndef __cpp_lib_constexpr_exceptions
+  if consteval {
+    return;
+  }
+# endif
+
+  try
+  {
+    std::inplace_vector<int, 2> ct{11, 22, 33};
+    VERIFY(false);
+  }
+  catch (std::bad_alloc const&)
+  {
+  }
+
+  try
+  {
+    std::inplace_vector<int, 0> ct{11, 22};
+    VERIFY(false);
+  }
+  catch (std::bad_alloc const&)
+  {
+  }
+#endif
 }
 
 constexpr std::inplace_vector<int, 0> e0;
@@ -372,6 +344,16 @@ constexpr std::inplace_vector<int, 5> g4{1, 2, 3};
 constexpr std::inplace_vector<int, 5> g5 = [] {
   std::inplace_vector<int, 5> res;
   res = g3;
+  return res;
+}();
+
+constexpr std::inplace_vector<X, 5> h1;
+constexpr std::inplace_vector<X, 5> h2(2, X());
+constexpr std::inplace_vector<X, 5> h3 = h2;
+constexpr std::inplace_vector<X, 5> h4{X(), X(), X()};
+constexpr std::inplace_vector<X, 5> h5 = [] {
+  std::inplace_vector<X, 5> res;
+  res = h3;
   return res;
 }();
 

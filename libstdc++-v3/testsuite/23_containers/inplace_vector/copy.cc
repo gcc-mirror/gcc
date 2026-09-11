@@ -160,13 +160,6 @@ test_ctor()
   auto c5 = materialize<5, int>({1, 2, 3, 4, 5});
   VERIFY( eq(c5, {1, 2, 3, 4, 5}) );
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   auto x0 = materialize<3, X>({});
   VERIFY( x0.empty() );
 
@@ -206,13 +199,6 @@ test_assign()
   c = materialize<5, int>({});
   VERIFY( c.empty() );
 
-#ifdef __cpp_lib_constexpr_inplace_vector
-#error remove the consteval check
-#endif
-  if consteval {
-    return;
-  }
-
   std::inplace_vector<X, 5> x;
   x = materialize<5, X>({});
   VERIFY( x.empty() );
@@ -237,6 +223,10 @@ constexpr auto e2 = materialize<0, Z>({});
 constexpr auto t1 = materialize<3, int>({});
 constexpr auto t2 = materialize<3, int>({1, 2});
 constexpr auto t3 = materialize<3, int>({11, 22, 33});
+
+constexpr auto u1 = materialize<3, X>({});
+constexpr auto u2 = materialize<3, X>({1, 2});
+constexpr auto u3 = materialize<3, X>({11, 22, 33});
 
 int main()
 {
