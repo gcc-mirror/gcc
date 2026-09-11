@@ -522,6 +522,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_UNDEFINED (type))
   (abs @0)))
 
+#if GIMPLE
+/* x + uMax(x, 1) -> uMax(x+x, 1)
+   if x+x is known not to wrap/overflow.  */
+(simplify
+ (plus:c @0 (max:s@2 @0 integer_onep@1))
+ (if (TYPE_UNSIGNED (type))
+  (with { int_range_max vr0; }
+   (if (gimple_match_range_of_expr (vr0, @0, @2)
+	&& range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr0))
+    (max (plus @0 @0) @1)))))
+#endif
+
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
   (simplify
