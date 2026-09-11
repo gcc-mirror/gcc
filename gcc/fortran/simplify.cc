@@ -7035,7 +7035,8 @@ gfc_simplify_null (gfc_expr *mold)
 
 
 gfc_expr *
-gfc_simplify_num_images (gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
+gfc_simplify_num_images (gfc_expr *team ATTRIBUTE_UNUSED,
+			 gfc_expr *team_number ATTRIBUTE_UNUSED)
 {
   gfc_expr *result;
 
@@ -9227,7 +9228,8 @@ gfc_simplify_trim (gfc_expr *e)
 
 gfc_expr *
 gfc_simplify_image_index (gfc_expr *coarray, gfc_expr *sub,
-			  gfc_expr *team_or_team_number ATTRIBUTE_UNUSED)
+			  gfc_expr *team ATTRIBUTE_UNUSED,
+			  gfc_expr *team_number ATTRIBUTE_UNUSED)
 {
   gfc_expr *result;
   gfc_ref *ref;

@@ -6895,10 +6895,54 @@ gfc_check_stat_sub (gfc_expr *name, gfc_expr *values, gfc_expr *status)
 }
 
 
-bool
-gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub,
-		       gfc_expr *team_or_team_number)
+/* Check the TEAM and TEAM_NUMBER arguments of IMAGE_INDEX and NUM_IMAGES,
+   moving a positional INTEGER argument to TEAM_NUMBER.  N is the formal
+   index of TEAM.  */
+
+static bool
+check_team_or_team_number (gfc_actual_arglist *team_arg,
+			   gfc_actual_arglist *team_number_arg, int n)
 {
+  gfc_expr *team = team_arg->expr, *team_number = team_number_arg->expr;
+
+  if (team && team_number)
+    {
+      gfc_error ("%qs and %qs arguments of %qs intrinsic at %L are mutually "
+		 "exclusive", gfc_current_intrinsic_arg[n]->name,
+		 gfc_current_intrinsic_arg[n + 1]->name, gfc_current_intrinsic,
+		 &team->where);
+      return false;
+    }
+
+  if (team && !team_arg->name && team->ts.type == BT_INTEGER)
+    {
+      team_number_arg->expr = team;
+      team_arg->expr = NULL;
+      team_number = team;
+      team = NULL;
+    }
+
+  if (!team && !team_number)
+    return true;
+
+  if (!gfc_notify_std (GFC_STD_F2018,
+		       "%<team%> or %<team_number%> argument to %qs at %L",
+		       gfc_current_intrinsic,
+		       team ? &team->where : &team_number->where))
+    return false;
+
+  if (team)
+    return scalar_check (team, n) && team_type_check (team, n);
+
+  return type_check (team_number, n + 1, BT_INTEGER)
+	 && scalar_check (team_number, n + 1);
+}
+
+
+bool
+gfc_check_image_index (gfc_actual_arglist *args)
+{
+  gfc_expr *coarray = args->expr, *sub = args->next->expr;
   mpz_t nelems;
 
   if (flag_coarray == GFC_FCOARRAY_NONE)
@@ -6934,23 +6978,12 @@ gfc_check_image_index (gfc_expr *coarray, gfc_expr *sub,
       mpz_clear (nelems);
     }
 
-  if (team_or_team_number)
-    {
-      if (!type_check2 (team_or_team_number, 2, BT_DERIVED, BT_INTEGER)
-	  || !scalar_check (team_or_team_number, 2))
-	return false;
-
-      /* Check team is of team_type.  */
-      if (team_or_team_number->ts.type == BT_DERIVED
-	  && !team_type_check (team_or_team_number, 2))
-	return false;
-    }
-
-  return true;
+  return check_team_or_team_number (args->next->next,
+				    args->next->next->next, 2);
 }
 
 bool
-gfc_check_num_images (gfc_expr *team_or_team_number)
+gfc_check_num_images (gfc_actual_arglist *args)
 {
   if (flag_coarray == GFC_FCOARRAY_NONE)
     {
@@ -6959,23 +6992,7 @@ gfc_check_num_images (gfc_expr *team_or_team_number)
       return false;
     }
 
-  if (!team_or_team_number)
-    return true;
-
-  if (!gfc_notify_std (GFC_STD_F2008,
-		       "%<team%> or %<team_number%> argument to %qs at %L",
-		       gfc_current_intrinsic, &team_or_team_number->where))
-    return false;
-
-  if (!type_check2 (team_or_team_number, 0, BT_DERIVED, BT_INTEGER)
-      || !scalar_check (team_or_team_number, 0))
-    return false;
-
-  if (team_or_team_number->ts.type == BT_DERIVED
-      && !team_type_check (team_or_team_number, 0))
-    return false;
-
-  return true;
+  return check_team_or_team_number (args, args->next, 0);
 }
 
 

@@ -24,8 +24,8 @@ j6 = this_image(dim=1, team=team, coarray=caf)
 
 k1 = num_images() ! ok
 k2 = num_images(team) ! ok
-k3 = num_images(team, 2) !{ dg-error "Too many arguments in call to" }
+k3 = num_images(team, 2) !{ dg-error "are mutually exclusive" }
 k4 = num_images(1) ! ok
-k5 = num_images('abc') !{ dg-error "'team/team_number' argument of 'num_images' intrinsic" }
-k6 = num_images(1, team) !{ dg-error "Too many arguments in call to" }
+k5 = num_images('abc') !{ dg-error "'team' argument of 'num_images' intrinsic" }
+k6 = num_images(1, team) !{ dg-error "are mutually exclusive" }
 end

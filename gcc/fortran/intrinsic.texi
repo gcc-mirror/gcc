@@ -8775,7 +8775,11 @@ GNU extension
 
 @table @asis
 @item @emph{Synopsis}:
-@code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
+@multitable @columnfractions .80
+@item @code{RESULT = IMAGE_INDEX(COARRAY, SUB)}
+@item @code{RESULT = IMAGE_INDEX(COARRAY, SUB, TEAM)}
+@item @code{RESULT = IMAGE_INDEX(COARRAY, SUB, TEAM_NUMBER)}
+@end multitable
 
 @item @emph{Description}:
 Returns the image index belonging to a cosubscript.
@@ -8788,6 +8792,12 @@ Transformational function
 @item @var{COARRAY} @tab Coarray of any type.
 @item @var{SUB}     @tab default integer rank-1 array of a size equal to
 the corank of @var{COARRAY}.
+@item @var{TEAM}    @tab (optional, intent(in)) Scalar of type
+@code{TEAM_TYPE} identifying the current or an ancestor team.  If present,
+the image index is that in the given team.
+@item @var{TEAM_NUMBER} @tab (optional, intent(in)) Integer scalar
+identifying the initial team (@code{-1}) or a sibling team of the current
+team.  @var{TEAM} and @var{TEAM_NUMBER} are mutually exclusive.
 @end multitable
 
 @item @emph{Return value}:
@@ -8802,7 +8812,8 @@ WRITE (*,*) IMAGE_INDEX (array, [2,0,3,1])
 @end smallexample
 
 @item @emph{Standard}:
-Fortran 2008 and later
+Fortran 2008 and later.  With @var{TEAM} or @var{TEAM_NUMBER} argument,
+Fortran 2018 and later.
 
 @item @emph{See also}:
 @ref{THIS_IMAGE}, @*
@@ -11918,11 +11929,13 @@ Transformational function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{TEAM} @tab (optional, intent(in)) If present, return the number of
-images in the given team; if absent, return the number of images in the
-current team.
-@item @var{TEAM_NUMBER} @tab (intent(in)) The number as given in the
-@code{FORM TEAM} statement.
+@item @var{TEAM} @tab (optional, intent(in)) Scalar of type
+@code{TEAM_TYPE} identifying the current or an ancestor team.  If present,
+return the number of images in the given team; if absent, return the number
+of images in the current team.
+@item @var{TEAM_NUMBER} @tab (optional, intent(in)) Integer scalar
+identifying the initial team (@code{-1}) or a sibling team of the current
+team.  @var{TEAM} and @var{TEAM_NUMBER} are mutually exclusive.
 @end multitable
 
 @item @emph{Return value}:
@@ -11939,9 +11952,11 @@ type(team_type) :: t
 ! When running with 4 images
 print *, num_images() ! 4
 
-form team (mod(this_image(), 2), t)
-print *, num_images(t) ! 2
-print *, num_images(-1) ! 4
+form team (2 - mod(this_image(), 2), t)
+change team (t)
+  print *, num_images() ! 2
+  print *, num_images(team_number=-1) ! 4
+end team
 @end smallexample
 
 @item @emph{Standard}:

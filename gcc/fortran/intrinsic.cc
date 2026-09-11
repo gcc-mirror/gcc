@@ -910,6 +910,65 @@ add_sym_3red (const char *name, gfc_isym_id id, enum klass cl, int actual_ok, bt
 }
 
 
+/* Add a symbol with 2 arguments whose check function takes the actual
+   argument list.  */
+
+static void
+add_sym_2red (const char *name, gfc_isym_id id, enum klass cl, int actual_ok,
+	      bt type, int kind, int standard,
+	      bool (*check) (gfc_actual_arglist *),
+	      gfc_expr *(*simplify) (gfc_expr *, gfc_expr *),
+	      void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *),
+	      const char *a1, bt type1, int kind1, int optional1,
+	      const char *a2, bt type2, int kind2, int optional2)
+{
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f3red = check;
+  sf.f2 = simplify;
+  rf.f2 = resolve;
+
+  add_sym (name, id, cl, actual_ok, type, kind, standard, cf, sf, rf,
+	   a1, type1, kind1, optional1, INTENT_IN,
+	   a2, type2, kind2, optional2, INTENT_IN,
+	   (void *) 0);
+}
+
+
+/* Likewise with 4 arguments, for IMAGE_INDEX.  */
+
+static void
+add_sym_4red (const char *name, gfc_isym_id id, enum klass cl, int actual_ok,
+	      bt type, int kind, int standard,
+	      bool (*check) (gfc_actual_arglist *),
+	      gfc_expr *(*simplify) (gfc_expr *, gfc_expr *, gfc_expr *,
+				     gfc_expr *),
+	      void (*resolve) (gfc_expr *, gfc_expr *, gfc_expr *, gfc_expr *,
+			       gfc_expr *),
+	      const char *a1, bt type1, int kind1, int optional1,
+	      const char *a2, bt type2, int kind2, int optional2,
+	      const char *a3, bt type3, int kind3, int optional3,
+	      const char *a4, bt type4, int kind4, int optional4)
+{
+  gfc_check_f cf;
+  gfc_simplify_f sf;
+  gfc_resolve_f rf;
+
+  cf.f3red = check;
+  sf.f4 = simplify;
+  rf.f4 = resolve;
+
+  add_sym (name, id, cl, actual_ok, type, kind, standard, cf, sf, rf,
+	   a1, type1, kind1, optional1, INTENT_IN,
+	   a2, type2, kind2, optional2, INTENT_IN,
+	   a3, type3, kind3, optional3, INTENT_IN,
+	   a4, type4, kind4, optional4, INTENT_IN,
+	   (void *) 0);
+}
+
+
 /* Add a symbol to the subroutine list where the subroutine takes
    3 arguments, specifying the intent of the arguments.  */
 
@@ -1410,7 +1469,7 @@ add_functions (void)
     *s = "s", *set = "set", *sh = "shift", *shp = "shape", *sig = "sig",
     *src = "source", *ssg = "substring", *sta = "string_a", *stb = "string_b",
     *stg = "string", *sub = "sub", *sz = "size", *tg = "target", *team = "team",
-    *team_or_team_number = "team/team_number", *tm = "time", *ts = "tsource",
+    *team_number = "team_number", *tm = "time", *ts = "tsource",
     *ut = "unit", *v = "vector", *va = "vector_a", *vb = "vector_b",
     *vl = "values", *val = "value", *x = "x", *y = "y", *z = "z";
 
@@ -2271,11 +2330,11 @@ add_functions (void)
 
   make_generic ("ierrno", GFC_ISYM_IERRNO, GFC_STD_GNU);
 
-  add_sym_3 ("image_index", GFC_ISYM_IMAGE_INDEX, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008, gfc_check_image_index,
-	     gfc_simplify_image_index, gfc_resolve_image_index, ca, BT_REAL, dr,
-	     REQUIRED, sub, BT_INTEGER, ii, REQUIRED, team_or_team_number,
-	     BT_VOID, di, OPTIONAL);
+  add_sym_4red ("image_index", GFC_ISYM_IMAGE_INDEX, CLASS_TRANSFORMATIONAL,
+		ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008, gfc_check_image_index,
+		gfc_simplify_image_index, gfc_resolve_image_index, ca, BT_REAL,
+		dr, REQUIRED, sub, BT_INTEGER, ii, REQUIRED, team, BT_DERIVED,
+		di, OPTIONAL, team_number, BT_INTEGER, di, OPTIONAL);
 
   add_sym_2 ("image_status", GFC_ISYM_IMAGE_STATUS, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2018, gfc_check_image_status,
@@ -2856,10 +2915,10 @@ add_functions (void)
 
   make_generic ("null", GFC_ISYM_NULL, GFC_STD_F95);
 
-  add_sym_1 ("num_images", GFC_ISYM_NUM_IMAGES, CLASS_TRANSFORMATIONAL,
-	     ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008, gfc_check_num_images,
-	     gfc_simplify_num_images, NULL, team_or_team_number, BT_VOID, di,
-	     OPTIONAL);
+  add_sym_2red ("num_images", GFC_ISYM_NUM_IMAGES, CLASS_TRANSFORMATIONAL,
+		ACTUAL_NO, BT_INTEGER, di, GFC_STD_F2008, gfc_check_num_images,
+		gfc_simplify_num_images, NULL, team, BT_DERIVED, di, OPTIONAL,
+		team_number, BT_INTEGER, di, OPTIONAL);
 
   add_sym_3 ("out_of_range", GFC_ISYM_OUT_OF_RANGE, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_LOGICAL, dl, GFC_STD_F2018,
@@ -5110,6 +5169,12 @@ check_specific (gfc_intrinsic_sym *specific, gfc_expr *expr, int error_flag)
   else if (specific->check.f3red == gfc_check_this_image)
     /* May need to reassign arguments.  */
     t = gfc_check_this_image (*ap);
+  else if (specific->check.f3red == gfc_check_num_images)
+    /* A positional team number has to be moved to its own slot.  */
+    t = gfc_check_num_images (*ap);
+  else if (specific->check.f3red == gfc_check_image_index)
+    /* Likewise.  */
+    t = gfc_check_image_index (*ap);
   else
      {
        if (specific->check.f1 == NULL)
