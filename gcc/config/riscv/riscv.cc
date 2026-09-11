@@ -13145,10 +13145,13 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 /* Implement TARGET_SLOW_UNALIGNED_ACCESS.  */
 
 static bool
-riscv_slow_unaligned_access (machine_mode mode, unsigned int)
+riscv_slow_unaligned_access (machine_mode mode, unsigned int align)
 {
-  return VECTOR_MODE_P (mode) ? TARGET_VECTOR_MISALIGN_SUPPORTED
-			      : riscv_slow_unaligned_access_p;
+  /* This must agree with riscv_support_vector_misalignment.  */
+  if (VECTOR_MODE_P (mode))
+    return align % GET_MODE_UNIT_SIZE (mode);
+  else
+    return riscv_slow_unaligned_access_p;
 }
 
 static bool
