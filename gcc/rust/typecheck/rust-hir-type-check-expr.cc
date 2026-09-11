@@ -1978,16 +1978,8 @@ TypeCheckExpr::visit (HIR::ClosureExpr &expr)
 
   LangItem::Kind lang_item_type = LangItem::Kind::FN_ONCE;
 
-  auto lang_item_defined = mappings.lookup_lang_item (lang_item_type);
-  if (!lang_item_defined)
-    {
-      // FIXME
-      // we need to have a unified way or error'ing when we are missing lang
-      // items that is useful
-      rust_fatal_error (expr.get_locus (), "unable to find lang item: %qs",
-			LangItem::ToString (lang_item_type).c_str ());
-    }
-  DefId &respective_lang_item_id = lang_item_defined.value ();
+  DefId respective_lang_item_id
+    = mappings.get_lang_item (lang_item_type, expr.get_locus ());
 
   // these lang items are always traits
   HIR::Item *item = mappings.lookup_defid (respective_lang_item_id).value ();

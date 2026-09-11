@@ -668,7 +668,7 @@ ClosureParam::ClosureParam (std::unique_ptr<Pattern> param_pattern,
 {}
 
 ClosureParam::ClosureParam (ClosureParam const &other)
-  : pattern (other.pattern->clone_pattern ())
+  : pattern (other.pattern->clone_pattern ()), locus (other.locus)
 {
   // guard to protect from null pointer dereference
   if (other.pattern != nullptr)
@@ -692,6 +692,8 @@ ClosureParam::operator= (ClosureParam const &other)
   else
     type = nullptr;
 
+  locus = other.locus;
+
   return *this;
 }
 
@@ -714,6 +716,7 @@ ClosureExpr::ClosureExpr (ClosureExpr const &other)
   expr = other.expr->clone_expr ();
   params = other.params;
   has_move = other.has_move;
+  locus = other.locus;
 }
 
 ClosureExpr &
@@ -725,6 +728,7 @@ ClosureExpr::operator= (ClosureExpr const &other)
   expr = other.expr->clone_expr ();
   params = other.params;
   has_move = other.has_move;
+  locus = other.locus;
 
   return *this;
 }
