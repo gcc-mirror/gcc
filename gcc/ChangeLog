@@ -1,3 +1,17 @@
+2026-09-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/126463
+	* config/aarch64/aarch64.cc (aarch64_select_cc_mode): Correctly
+	match overflow detection idioms using MINUS and NEG.
+	* config/aarch64/aarch64.md (subv<GPI:mode>4): Re-order the
+	compare into canonical form.
+	(subv<GPI:mode>4_insn): Likewise.
+	(negv<GPI:mode>4): Likewise.
+	(negv<GPI:mode>_insn): Likewise.  Fix typo in output template.
+
 2026-09-08  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
