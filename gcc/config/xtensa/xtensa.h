@@ -249,11 +249,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #define REG_ALLOC_ORDER							\
 {									\
-   8,  9, 10, 11, 12, 13, 14, 15,  7,  6,  5,  4,  3,  2,		\
-  18,									\
+   8,  9, 10, 11, 12, 13, 14, 15,  7,  6,  5,  4,  3,  2, 18,		\
   19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,	\
-   0,  1, 16, 17,							\
-  35,									\
+   0,  1, 16, 17, 35,							\
 }
 #define ADJUST_REG_ALLOC_ORDER xtensa_adjust_reg_alloc_order ()
 

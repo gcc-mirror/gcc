@@ -4471,11 +4471,9 @@ xtensa_adjust_reg_alloc_order (void)
 	REG_ALLOC_ORDER;
   static const int reg_call0_alloc_order[FIRST_PSEUDO_REGISTER] =
   {
-     9, 10, 11,  7,  6,  5,  4,  3,  2,  8,  0, 12, 13, 14, 15,
-    18,
+     9, 10, 11,  7,  6,  5,  4,  3,  2,  8,  0, 12, 13, 14, 15, 18,
     19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34,
-     1, 16, 17,
-    35,
+     1, 16, 17, 35,
   };
 
   memcpy (reg_alloc_order, TARGET_WINDOWED_ABI ?
