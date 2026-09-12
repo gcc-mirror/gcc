@@ -1,3 +1,27 @@
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR middle-end/127256
+	* lower-subreg.cc (interesting_mode_p): Don't consider
+	unsplittable modes as interesting.
+	(simple_move_operand): Don't split subregs whose outer mode
+	can be split but the inner mode cannot.
+	(simplify_subreg_concatn): Don't insist the outer mode is
+	interesting but rather check that its size is constant.
+
+2026-09-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/126463
+	* config/aarch64/aarch64.cc (aarch64_select_cc_mode): Correctly
+	match overflow detection idioms using MINUS and NEG.
+	* config/aarch64/aarch64.md (subv<GPI:mode>4): Re-order the
+	compare into canonical form.
+	(subv<GPI:mode>4_insn): Likewise.
+	(negv<GPI:mode>4): Likewise.
+	(negv<GPI:mode>_insn): Likewise.  Fix typo in output template.
+
 2026-09-08  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
