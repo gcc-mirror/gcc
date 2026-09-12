@@ -262,29 +262,25 @@ along with GCC; see the file COPYING3.  If not see
 /* Internal macros to classify a register number.  */
 
 /* 16 address registers + fake registers */
-#define GP_REG_FIRST 0
-#define GP_REG_LAST  17
-#define GP_REG_NUM   (GP_REG_LAST - GP_REG_FIRST + 1)
+#define GP_REG_FIRST	0
+#define GP_REG_LAST	17
 
 /* Coprocessor registers */
-#define BR_REG_FIRST 18
-#define BR_REG_LAST  18
-#define BR_REG_NUM   (BR_REG_LAST - BR_REG_FIRST + 1)
+#define BR_REG_FIRST	18
+#define BR_REG_LAST	18
 
 /* 16 floating-point registers */
-#define FP_REG_FIRST 19
-#define FP_REG_LAST  34
-#define FP_REG_NUM   (FP_REG_LAST - FP_REG_FIRST + 1)
+#define FP_REG_FIRST	19
+#define FP_REG_LAST	34
 
 /* MAC16 accumulator */
-#define ACC_REG_FIRST 35
-#define ACC_REG_LAST 35
-#define ACC_REG_NUM  (ACC_REG_LAST - ACC_REG_FIRST + 1)
+#define ACC_REG_FIRST	35
+#define ACC_REG_LAST	35
 
-#define GP_REG_P(REGNO) ((unsigned) ((REGNO) - GP_REG_FIRST) < GP_REG_NUM)
-#define BR_REG_P(REGNO) ((unsigned) ((REGNO) - BR_REG_FIRST) < BR_REG_NUM)
-#define FP_REG_P(REGNO) ((unsigned) ((REGNO) - FP_REG_FIRST) < FP_REG_NUM)
-#define ACC_REG_P(REGNO) ((unsigned) ((REGNO) - ACC_REG_FIRST) < ACC_REG_NUM)
+#define GP_REG_P(REGNO)  (IN_RANGE ((REGNO), GP_REG_FIRST, GP_REG_LAST))
+#define BR_REG_P(REGNO)  (IN_RANGE ((REGNO), BR_REG_FIRST, BR_REG_LAST))
+#define FP_REG_P(REGNO)  (IN_RANGE ((REGNO), FP_REG_FIRST, FP_REG_LAST))
+#define ACC_REG_P(REGNO) (IN_RANGE ((REGNO), ACC_REG_FIRST, ACC_REG_LAST))
 
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 1)
