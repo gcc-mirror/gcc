@@ -269,7 +269,7 @@ find . -name '*.html' | while read f; do
 done
 
 # Then build a gzipped copy of each of the resulting .html, .ps and .tar files
-for file in */*.html *.ps *.pdf *.tar; do
+for file in */*.html *.ps *.tar; do
   cat $file | gzip --best > $file.gz
 done
 
