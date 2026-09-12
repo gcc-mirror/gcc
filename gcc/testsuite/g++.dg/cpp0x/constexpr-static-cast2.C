@@ -1,0 +1,72 @@
+// { dg-do compile { target c++11 } }
+
+struct A { int a; };
+struct B : A { int b; };
+struct C : A { int c; };
+struct D { int d; };
+struct E { int e; };
+struct F : A, D, E { int f; };
+struct G {};
+struct H {};
+struct I {};
+struct J : G, H, I {};
+struct K { F k; J l[2]; };
+struct L : G {};
+struct M : G {};
+struct N : L, M {};
+constexpr A a = {};
+constexpr B b = {};
+constexpr C c = {};
+constexpr auto &d = static_cast <const B &> (a);	// { dg-error "'const A' operand is not a base class subobject of a 'const B' object" }
+constexpr auto &e = static_cast <const A &> (a);
+constexpr auto &f = static_cast <const A &> (b);
+constexpr auto &g = static_cast <const B &> (b);
+constexpr auto &h = static_cast <const B &> (f);
+constexpr auto &m = static_cast <const A &> (c);
+constexpr auto &n = static_cast <const B &> (m);	// { dg-error "'const A' operand \\\(of dynamic type 'const C'\\\) is not a base class subobject of a 'const B' object" }
+constexpr auto &o = static_cast <const C &> (m);
+constexpr F p = {};
+constexpr auto &q = static_cast <const A &> (p);
+constexpr auto &r = static_cast <const F &> (q);
+constexpr auto &s = static_cast <const D &> (r);
+constexpr auto &t = static_cast <const F &> (s);
+constexpr auto &u = static_cast <const E &> (t);
+constexpr auto &v = static_cast <const F &> (u);
+constexpr J y = {};
+constexpr auto &z = static_cast <const G &> (y);
+constexpr auto &aa = static_cast <const J &> (z);
+constexpr auto &ab = static_cast <const H &> (aa);
+constexpr auto &ac = static_cast <const J &> (ab);
+constexpr auto &ad = static_cast <const I &> (ac);
+constexpr auto &ae = static_cast <const J &> (ad);
+constexpr H af = {};
+constexpr auto &ag = static_cast <const J &> (af);	// { dg-error "'const H' operand is not a base class subobject of a 'const J' object" }
+constexpr F ah[1] = {};
+constexpr auto &ai = static_cast <const A &> (ah[0]);
+constexpr auto &aj = static_cast <const F &> (ai);
+constexpr auto &ak = static_cast <const D &> (aj);
+constexpr auto &al = static_cast <const F &> (ak);
+constexpr auto &am = static_cast <const E &> (al);
+constexpr auto &an = static_cast <const F &> (am);
+constexpr K ao = {};
+constexpr auto &ap = static_cast <const A &> (ao.k);
+constexpr auto &aq = static_cast <const F &> (ap);
+constexpr auto &ar = static_cast <const D &> (aq);
+constexpr auto &as = static_cast <const F &> (ar);
+constexpr auto &at = static_cast <const E &> (as);
+constexpr auto &au = static_cast <const F &> (at);
+constexpr auto &av = static_cast <const G &> (ao.l[0]);
+constexpr auto &aw = static_cast <const J &> (av);
+constexpr auto &ax = static_cast <const H &> (aw);
+constexpr auto &ay = static_cast <const J &> (ax);
+constexpr auto &az = static_cast <const I &> (ay);
+constexpr auto &ba = static_cast <const J &> (az);
+constexpr auto &bb = static_cast <const G &> (ao.l[1]);
+constexpr auto &bc = static_cast <const J &> (bb);
+constexpr auto &bd = static_cast <const H &> (bc);
+constexpr auto &be = static_cast <const J &> (bd);
+constexpr auto &bf = static_cast <const I &> (be);
+constexpr auto &bg = static_cast <const J &> (bf);
+constexpr N bh = {};
+constexpr const G &bi = static_cast <const M &> (bh);
+constexpr auto &bj = static_cast <const L &> (bi);	// { dg-error "'const G' operand is not a base class subobject of a 'const L' object" }

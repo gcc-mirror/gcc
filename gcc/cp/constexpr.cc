@@ -5671,6 +5671,38 @@ cxx_eval_binary_expression (const constexpr_ctx *ctx, tree t,
   tree orig_lhs = TREE_OPERAND (t, 0);
   tree orig_rhs = TREE_OPERAND (t, 1);
   tree lhs, rhs;
+
+  if (TREE_CODE (t) == POINTER_PLUS_EXPR
+      && CONVERT_EXPR_P (orig_lhs)
+      && (lhs = TREE_OPERAND (orig_lhs, 0))
+      && INDIRECT_TYPE_P (TREE_TYPE (lhs))
+      && (TREE_CODE (orig_lhs) != NOP_EXPR || !REINTERPRET_CAST_P (orig_lhs))
+      && is_properly_derived_from (TREE_TYPE (TREE_TYPE (orig_lhs)),
+				   TREE_TYPE (TREE_TYPE (lhs))))
+    /* fold_unary_loc and match.pd can optimize
+       (type *) (ptr p+ off) into ((type *) ptr) p+ off, which can break
+       static_cast constexpr diagnostics, because ptr before the p+
+       cast to type * can be invalid while the original valid.
+       Evaluate it as (type *) (ptr p+ off) instead.  */
+    {
+      tree cast = copy_node (orig_lhs);
+      tree pplus = copy_node (t);
+      TREE_OPERAND (cast, 0) = pplus;
+      TREE_OPERAND (pplus, 0) = lhs;
+      TREE_TYPE (pplus) = TREE_TYPE (lhs);
+      lhs = cxx_eval_constant_expression (ctx, cast, vc_prvalue,
+					  non_constant_p, overflow_p,
+					  jump_target);
+      if (lhs != cast)
+	{
+	  ggc_free (cast);
+	  ggc_free (pplus);
+	}
+      if (*non_constant_p)
+	return t;
+      return lhs;
+    }
+
   lhs = cxx_eval_constant_expression (ctx, orig_lhs, vc_prvalue,
 				      non_constant_p, overflow_p,
 				      jump_target);
@@ -10763,6 +10795,53 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 		  error_at (loc, "cast from %qT is not allowed in a "
 			    "constant expression before C++26",
 			    TREE_TYPE (op));
+		*non_constant_p = true;
+		return t;
+	      }
+	  }
+
+	/* [expr.static.cast]/10: A prvalue of type "pointer to cv1 B", where
+	   B is a class type, can be converted to a prvalue of type
+	   "pointer to cv2 D", where D is a complete class derived from B, ...
+	   If the prvalue of type "pointer to cv1 B" points to a B that is
+	   actually a base class subobject of an object of type D, the
+	   resulting pointer points to the enclosing object of type D.
+	   Otherwise, the behavior is undefined.
+	   Similarly [expr.static.cast]/2 for references. */
+	if (INDIRECT_TYPE_P (type)
+	    && INDIRECT_TYPE_P (TREE_TYPE (op))
+	    && COMPLETE_TYPE_P (TREE_TYPE (type))
+	    && !integer_zerop (op)
+	    && is_properly_derived_from (TREE_TYPE (type),
+					 TREE_TYPE (TREE_TYPE (op))))
+	  {
+	    tree sop = tree_strip_nop_conversions (op);
+	    if (cxx_fold_indirect_ref (ctx, loc, TREE_TYPE (type), sop,
+				       NULL, jump_target) == NULL_TREE)
+	      {
+		tree dyntype = NULL_TREE;
+		if (!ctx->quiet && TREE_CODE (sop) == ADDR_EXPR)
+		  {
+		    sop = TREE_OPERAND (sop, 0);
+		    while (TREE_CODE (sop) == COMPONENT_REF
+			   && DECL_FIELD_IS_BASE (TREE_OPERAND (sop, 1)))
+		      sop = TREE_OPERAND (sop, 0);
+		    dyntype = strip_array_types (TREE_TYPE (sop));
+		    if (same_type_p (dyntype, TREE_TYPE (TREE_TYPE (op))))
+		      dyntype = NULL_TREE;
+		  }
+		if (!ctx->quiet)
+		  {
+		    if (dyntype)
+		      error_at (loc, "%qT operand (of dynamic type %qT) is "
+				"not a base class subobject of a %qT object",
+				TREE_TYPE (TREE_TYPE (op)), dyntype,
+				TREE_TYPE (type));
+		    else
+		      error_at (loc, "%qT operand is not a base class "
+				"subobject of a %qT object",
+				TREE_TYPE (TREE_TYPE (op)), TREE_TYPE (type));
+		  }
 		*non_constant_p = true;
 		return t;
 	      }
