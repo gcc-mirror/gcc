@@ -532,6 +532,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (gimple_match_range_of_expr (vr0, @0, @2)
 	&& range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr0))
     (max (plus @0 @0) @1)))))
+/* minmax (a - c, b) + c -> minmax (a, b + c) if b+c don't overflow.  */
+(for minmax (min max)
+ (simplify
+  (plus:c @0 (minmax:cs@3 (minus @1 @0) @2))
+  (with { int_range_max vr0, vr2; }
+   (if (TYPE_UNSIGNED (type)
+	&& gimple_match_range_of_expr (vr0, @0)
+	&& gimple_match_range_of_expr (vr2, @2, @3)
+	&& range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr2))
+    (minmax @1 (plus @2 @0))))))
+
 #endif
 
 /* X * 1, X / 1 -> X.  */
