@@ -2640,7 +2640,8 @@
    (set_attr "length"	"3")])
 
 (define_insn "return"
-  [(return)]
+  [(return)
+   (use (reg:SI A0_REG))]
   "TARGET_WINDOWED_ABI
    || compute_frame_size (get_frame_size ()) == 0
    || epilogue_completed"
@@ -2707,6 +2708,7 @@
   "!TARGET_WINDOWED_ABI"
 {
   xtensa_expand_epilogue ();
+  emit_use (gen_rtx_REG (SImode, A0_REG));
   DONE;
 })
 
