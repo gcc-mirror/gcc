@@ -112,6 +112,9 @@ struct GTY(()) machine_function
   bool postreload_completed;
 };
 
+/* Referenced by the REGNO_REG_CLASS() macro.  */
+enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
+
 static void xtensa_option_override (void);
 static void xtensa_option_override_after_change (void);
 static enum internal_test map_test_to_internal_test (enum rtx_code);
@@ -5365,7 +5368,7 @@ xtensa_reorg (void)
 static void
 xtensa_conditional_register_usage (void)
 {
-  unsigned i, c_mask;
+  unsigned int i, c_mask, cl;
 
   c_mask = TARGET_WINDOWED_ABI ? (1 << 1) : (1 << 2);
 
@@ -5391,30 +5394,20 @@ xtensa_conditional_register_usage (void)
     fixed_regs[A0_REG] = 0;
   else
     CLEAR_HARD_REG_BIT (reg_class_contents[RL_REGS], A0_REG);
-}
 
-/* Map hard register number to register class */
+  /* Generate the contents of the reverse-lookup array from the currently
+     active register class definitions.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+    for (cl = NO_REGS + 1; cl < ALL_REGS; ++cl)
+      if (TEST_HARD_REG_BIT (reg_class_contents[cl], i))
+	{
+	  xtensa_regno_to_class[i] = (enum reg_class)cl;
+	  break;
+	}
 
-enum reg_class xtensa_regno_to_class (int regno)
-{
-  static const enum reg_class regno_to_class[FIRST_PSEUDO_REGISTER] =
-    {
-      RL_REGS,	SP_REG,		RL_REGS,	RL_REGS,
-      RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
-      RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
-      RL_REGS,	RL_REGS,	RL_REGS,	RL_REGS,
-      AR_REGS,	AR_REGS,	BR_REGS,
-      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-      FP_REGS,	FP_REGS,	FP_REGS,	FP_REGS,
-      ACC_REG,
-    };
-
-  if (regno == HARD_FRAME_POINTER_REGNUM)
-    return GR_REGS;
-  else
-    return regno_to_class[regno];
+  /* Verify the generated mapping for any omissions.  */
+  for (i = 0; i < FIRST_PSEUDO_REGISTER; ++i)
+    gcc_assert (xtensa_regno_to_class[i] != NO_REGS);
 }
 
 /* Implement TARGET_CONSTANT_ALIGNMENT.  Align string constants and

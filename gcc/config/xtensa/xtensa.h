@@ -408,7 +408,8 @@ enum reg_class
    register REGNO.  In general there is more that one such class;
    choose a class which is "minimal", meaning that no smaller class
    also contains the register.  */
-#define REGNO_REG_CLASS(REGNO) xtensa_regno_to_class (REGNO)
+extern enum reg_class xtensa_regno_to_class[FIRST_PSEUDO_REGISTER];
+#define REGNO_REG_CLASS(REGNO) xtensa_regno_to_class[REGNO]
 
 /* Use the Xtensa AR register file for base registers.
    No index registers.  */
