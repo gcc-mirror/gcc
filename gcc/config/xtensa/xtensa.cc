@@ -581,27 +581,17 @@ xtensa_valid_move (machine_mode mode, rtx *operands)
 
   if (register_operand (operands[0], mode))
     {
-      int dst_regnum = xt_true_regnum (operands[0]);
-
       if (xtensa_tls_referenced_p (operands[1]))
 	return FALSE;
 
-      /* The stack pointer can only be assigned with a MOVSP opcode.  */
-      if (dst_regnum == STACK_POINTER_REGNUM)
-	return !TARGET_WINDOWED_ABI
-	  || (mode == SImode
-	      && register_operand (operands[1], mode)
-	      && !ACC_REG_P (xt_true_regnum (operands[1])));
+      if (!ACC_REG_P (xt_true_regnum (operands[0])))
+	return TRUE;
+    }
 
-      if (!ACC_REG_P (dst_regnum))
-	return true;
-    }
-  if (register_operand (operands[1], mode))
-    {
-      int src_regnum = xt_true_regnum (operands[1]);
-      if (!ACC_REG_P (src_regnum))
-	return true;
-    }
+  if (register_operand (operands[1], mode)
+      && !ACC_REG_P (xt_true_regnum (operands[1])))
+    return TRUE;
+
   return FALSE;
 }
 
