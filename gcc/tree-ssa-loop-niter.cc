@@ -2488,6 +2488,7 @@ number_of_iterations_cltz (loop_p loop, edge exit,
       int_range_max r (TREE_TYPE (src));
       edge e = loop_preheader_edge (loop);
       if (!get_range_query (cfun)->range_on_edge (r, e, src)
+	  || r.undefined_p ()
 	  || !r.nonnegative_p ())
 	return false;
     }
@@ -2659,6 +2660,7 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
       int_range_max r (TREE_TYPE (src));
       edge e = loop_preheader_edge (loop);
       if (!get_range_query (cfun)->range_on_edge (r, e, src)
+	  || r.undefined_p ()
 	  || !r.nonnegative_p ())
 	return false;
     }
