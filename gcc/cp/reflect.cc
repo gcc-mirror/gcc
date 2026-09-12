@@ -8782,12 +8782,14 @@ splice (tree refl)
       return error_mark_node;
     }
 
+  reflect_kind kind = REFLECT_EXPR_KIND (refl);
+  refl = REFLECT_EXPR_HANDLE (refl);
+
   /* We are bringing some entity from the unevaluated expressions world
      to possibly outside of that, mark it used.  */
-  if (!mark_used (REFLECT_EXPR_HANDLE (refl)))
+  if (!mark_used (refl))
     return error_mark_node;
 
-  refl = REFLECT_EXPR_HANDLE (refl);
   /* Function templates are wrapped in OVERLOAD from name lookup
      and a lot of places assume that.  Furthermore, if reflection comes
      from ^^fntmpl, it is wrapped with OVERLOAD already, only when
@@ -8799,6 +8801,10 @@ splice (tree refl)
      class for the access path.  */
   if (is_overloaded_fn (refl))
     refl = baselink_for_fns (refl, /*ignore_current_class_p=*/true);
+  /* For [:reflect_object(var):] wrap var into a VCE, so that it is an lvalue,
+     but not the var itself.  */
+  if (kind == REFLECT_OBJECT && DECL_P (refl))
+    refl = build1_loc (loc, VIEW_CONVERT_EXPR, TREE_TYPE (refl), refl);
 
   return refl;
 }
