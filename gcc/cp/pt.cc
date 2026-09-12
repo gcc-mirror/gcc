@@ -10399,7 +10399,12 @@ lookup_template_class (tree d1, tree arglist, tree in_decl, tree context,
   if (! templ)
     {
       if (complain & tf_error)
-	error ("%qT is not a template", d1);
+	{
+	  if (TYPE_P (d1))
+	    error ("%qT is not a template", d1);
+	  else
+	    error ("%qE is not a template", d1);
+	}
       return error_mark_node;
     }
 
@@ -17935,30 +17940,40 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	   a type.  */
 	if (TREE_CODE (ctx) == NAMESPACE_DECL)
 	  {
+	    tree id;
+	    tree targs = NULL_TREE;
 	    if (TREE_CODE (f) == TEMPLATE_ID_EXPR)
 	      {
-		tree d = TREE_OPERAND (f, 0);
-		tree n = TREE_OPERAND (f, 1);
-		f = lookup_template_class (d, n, in_decl, ctx, complain);
+		id = TREE_OPERAND (f, 0);
+		targs = TREE_OPERAND (f, 1);
+	      }
+	    else
+	      id = f;
+
+	    gcc_checking_assert (identifier_p (id));
+	    tree decl = lookup_qualified_name (ctx, id);
+	    if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
+	      {
+		if (complain & tf_error)
+		  qualified_name_lookup_error (ctx, id, decl, input_location);
+		return error_mark_node;
+	      }
+	    if (targs)
+	      {
+		f = lookup_template_class (decl, targs, in_decl, NULL_TREE,
+					   complain);
 		if (f == error_mark_node)
 		  return error_mark_node;
 	      }
+	    else if (TREE_CODE (decl) == NAMESPACE_DECL)
+	      return decl;
+	    else if (TREE_CODE (decl) == TYPE_DECL)
+	      f = TREE_TYPE (decl);
 	    else
 	      {
-		gcc_assert (TREE_CODE (f) == IDENTIFIER_NODE);
-		tree decl = lookup_qualified_name (ctx, f);
-		if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
-		  {
-		    qualified_name_lookup_error (ctx, f, decl, input_location);
-		    return error_mark_node;
-		  }
-		if (TREE_CODE (decl) == NAMESPACE_DECL)
-		  return decl;
-		else
-		  {
-		    gcc_checking_assert (TREE_CODE (decl) == TYPE_DECL);
-		    f = TREE_TYPE (decl);
-		  }
+		if (complain & tf_error)
+		  error ("%qD is not a type", decl);
+		return error_mark_node;
 	      }
 	    return cp_build_qualified_type
 		    (f, cp_type_quals (f) | cp_type_quals (t), complain);
