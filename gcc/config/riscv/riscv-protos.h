@@ -828,6 +828,8 @@ bool splat_to_scalar_move_p (rtx *);
 rtx get_fp_rounding_coefficient (machine_mode);
 bool riscv_v_widen_constraint_ok (unsigned int, machine_mode, unsigned int,
 				  machine_mode);
+bool riscv_v_widen_non_overlap_constraint_ok (unsigned int, machine_mode,
+					      unsigned int, machine_mode);
 }
 
 /* We classify builtin types into two classes:

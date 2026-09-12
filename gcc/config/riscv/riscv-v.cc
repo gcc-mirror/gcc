@@ -6521,6 +6521,22 @@ splat_to_scalar_move_p (rtx *ops)
 	 && known_ge (GET_MODE_SIZE (Pmode), GET_MODE_SIZE (GET_MODE (ops[3])));
 }
 
+static inline bool
+riscv_v_reg_group_overlap_p (unsigned int regno, machine_mode mode,
+			     unsigned int ref_regno, machine_mode ref_mode)
+{
+  gcc_checking_assert (V_REG_P (regno));
+  gcc_checking_assert (V_REG_P (ref_regno));
+
+  gcc_checking_assert (riscv_vector_mode_p (mode));
+  gcc_checking_assert (riscv_vector_mode_p (ref_mode));
+
+  unsigned int nregs = riscv_hard_regno_nregs (regno, mode);
+  unsigned int ref_nregs = riscv_hard_regno_nregs (ref_regno, ref_mode);
+
+  return !(regno + nregs <= ref_regno || ref_regno + ref_nregs <= regno);
+}
+
 /* Return true if REGNO in MODE can be used as source in a widening
    instruction with destination WIDE_REGNO in WIDE_MODE.
    This is true if either there is no overlap at all, or the overlap
@@ -6560,7 +6576,7 @@ riscv_v_widen_constraint_ok (unsigned int regno, machine_mode mode,
   gcc_checking_assert ((wide_nregs % nregs) == 0);
 
   /* No overlap.  */
-  if (regno + nregs <= wide_regno || wide_regno + wide_nregs <= regno)
+  if (!riscv_v_reg_group_overlap_p (regno, mode, wide_regno, wide_mode))
     return true;
 
   if (is_frac_vlmul_p (mode)) /* Source LMUL < 1.  */
@@ -6569,6 +6585,33 @@ riscv_v_widen_constraint_ok (unsigned int regno, machine_mode mode,
   unsigned int highest_num = wide_nregs - nregs;
 
   return (regno % wide_nregs) == highest_num;
+}
+
+/* Return true if REGNO in MODE does not overlap the vector register group
+   starting at REF_REGNO in REF_MODE.
+
+   The widening reductions vwredsum[u].vs / vfwred[o|u]sum.vs read vs1 with
+   EEW = 2 * SEW (EMUL = 1) and vs2 with EEW = SEW (EMUL = LMUL).  Section 5.2
+   of the vector spec reserves any encoding in which one vector register
+   supplies source operands with two or more different EEWs, so vs1 must not
+   fall inside the vs2 group.  See
+   https://github.com/riscv/riscv-isa-manual/issues/2350.  */
+
+bool
+riscv_v_widen_non_overlap_constraint_ok (unsigned int regno, machine_mode mode,
+					 unsigned int ref_regno,
+					 machine_mode ref_mode)
+{
+  if (ref_regno == INVALID_REGNUM)
+    return true;
+
+  if (!V_REG_P (regno) || !V_REG_P (ref_regno))
+    return false;
+
+  if (riscv_tuple_mode_p (mode) || ref_mode == mode)
+    return false;
+
+  return !riscv_v_reg_group_overlap_p (regno, mode, ref_regno, ref_mode);
 }
 
 } // namespace riscv_vector

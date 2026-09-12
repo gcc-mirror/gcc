@@ -243,6 +243,17 @@
   "riscv_vector::riscv_v_widen_constraint_ok (regno, mode, ref_regno, ref_mode)"
   "0")
 
+;; The scalar operand vs1 of a widening reduction (vwredsum[u].vs,
+;; vfwred[o|u]sum.vs) is read with EEW = 2 * SEW while the vector operand vs2
+;; (operand 3) is read with EEW = SEW.  A vector register may not supply
+;; source operands with two different EEWs, so vs1 must not fall inside the
+;; vs2 register group.
+;; Therefore, we take Wn3 indicates widen non-overlap to operand 3.
+(define_register_constraint "Wn3" "TARGET_VECTOR ? V_REGS : NO_REGS"
+  "Vector reg not overlapping the operand 3 register group"
+  "riscv_vector::riscv_v_widen_non_overlap_constraint_ok (regno, mode, ref_regno, ref_mode)"
+  "3")
+
 ;; This constraint is used to match instruction "csrr %0, vlenb" which is generated in "mov<mode>".
 ;; VLENB is a run-time constant which represent the vector register length in bytes.
 ;; BYTES_PER_RISCV_VECTOR represent runtime invariant of vector register length in bytes.
