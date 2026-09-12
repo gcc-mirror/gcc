@@ -1240,6 +1240,54 @@
     ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
     ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
 
+/* A widening reduction reads vs1 with EEW = 2 * SEW while vs2 is read with
+   EEW = SEW, thus vs1 must not fall inside the vs2 register group.  Taking vs1
+   out of the vs2 register group itself is the only way the two can be asked to
+   overlap: RI_F reinterprets the narrowed vector as the widened element type
+   and GET_F extracts its IDX-th LMUL1 piece, which lives in the vs2 register
+   group.  */
+#define LOOP_WIDEN_REDUCE_BODY_OVERLAP_X2(NT, WT, WNT, LD_NF, RI_F, GET_F,  \
+					  IDX, OUT_F, ST_F, OUT, START, VL) \
+    NT vs0 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WNT vr0 = RI_F (vs0);                                                   \
+    WNT vr1 = RI_F (vs1);                                                   \
+                                                                            \
+    WT vt0 = GET_F (vr0, IDX);                                              \
+    WT vt1 = GET_F (vr1, IDX);                                              \
+                                                                            \
+    WT vd0 = OUT_F (vs0, vt0, VL);                                          \
+    WT vd1 = OUT_F (vs1, vt1, VL);                                          \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+
+/* Like LOOP_WIDEN_REDUCE_BODY_OVERLAP_X2 but vs2 is a LMUL1 register group
+   already, thus reinterpreting it as the widened element type is enough to ask
+   for vs1 and vs2 to be the very same register.  */
+#define LOOP_WIDEN_REDUCE_BODY_OVERLAP_LMUL1_X2(NT, WT, LD_NF, RI_F, OUT_F, \
+						ST_F, OUT, START, VL)       \
+    NT vs0 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WT vt0 = RI_F (vs0);                                                    \
+    WT vt1 = RI_F (vs1);                                                    \
+                                                                            \
+    WT vd0 = OUT_F (vs0, vt0, VL);                                          \
+    WT vd1 = OUT_F (vs1, vt1, VL);                                          \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+
 #define DEF_GROUP_OVERLAP_UNARY_0(VL_F, NT, WT, LD_F, OUT_F, ST_F, NAME, \
 				  LOOP_BODY)                             \
   void test_group_overlap_##NAME##_##NT##_unary_0(uint8_t *data,         \
@@ -1430,6 +1478,37 @@
     while (start < end) {                                                   \
       LOOP_BODY (NUT, WT, WNUT, LD_WF, RI_UF, RI_NUF, GET_UF, OUT_F, ST_F,  \
 		 out, start, x, vl);                                        \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_REDUCE_0(VL_F, NT, WT, WNT, LD_NF, RI_F, GET_F,   \
+				   IDX, OUT_F, ST_F, NAME, LOOP_BODY)       \
+  void test_group_overlap_##NAME##_##NT##_reduce_0(uint8_t *data,           \
+						   uint8_t *out,            \
+						   size_t limit)            \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, WT, WNT, LD_NF, RI_F, GET_F, IDX, OUT_F, ST_F, out,    \
+		 start, vl);                                                \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_REDUCE_1(VL_F, NT, WT, LD_NF, RI_F, OUT_F, ST_F,  \
+				   NAME, LOOP_BODY)                         \
+  void test_group_overlap_##NAME##_##NT##_reduce_1(uint8_t *data,           \
+						   uint8_t *out,            \
+						   size_t limit)            \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, WT, LD_NF, RI_F, OUT_F, ST_F, out, start, vl);         \
     }                                                                       \
   }
 
