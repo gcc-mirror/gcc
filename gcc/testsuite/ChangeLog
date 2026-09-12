@@ -1,3 +1,11 @@
+2026-09-11  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-09-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/126463
+	* gcc.target/aarch64/negv.c: New test.
+
 2026-09-08  Jin Ma  <jinma@linux.alibaba.com>
 
 	Backported from master:
