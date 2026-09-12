@@ -782,6 +782,17 @@ get_zhaoxin_cpu (struct __processor_model *cpu_model,
   return cpu;
 }
 
+#ifdef __APPLE__
+#include <sys/sysctl.h>
+/* Will return false if the queried state is either absent or 0.  */
+static inline int
+darwin_get_kernel_bool (const char *name)
+{
+  int val = 0; size_t len = sizeof (val);
+  return sysctlbyname (name, &val, &len, NULL, 0) == 0 && val != 0;
+}
+#endif
+
 /* ECX and EDX are output of CPUID at level one.  */
 static inline void
 get_available_features (struct __processor_model *cpu_model,
@@ -840,8 +851,14 @@ get_available_features (struct __processor_model *cpu_model,
       if ((xcrlow & XCR_AVX_ENABLED_MASK) == XCR_AVX_ENABLED_MASK)
 	{
 	  avx_usable = 1;
+#ifdef __APPLE__
+	  /* Darwin enables the avx512 XSAVE state lazily, so a constructor
+	     that reads XCR0 is not reliable - query the kernel instead.  */
+	  avx512_usable = darwin_get_kernel_bool ("hw.optional.avx512f");
+#else
 	  avx512_usable = ((xcrlow & XCR_AVX512F_ENABLED_MASK)
 			   == XCR_AVX512F_ENABLED_MASK);
+#endif
 	}
       amx_usable = ((xcrlow & XCR_AMX_ENABLED_MASK)
 		    == XCR_AMX_ENABLED_MASK);
