@@ -1,3 +1,26 @@
+2026-09-11  Manjunath Matti  <mmatti@linux.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117584
+	* config/rs6000/float128-sed: Add __floatbitinttf/__floatbitintkf
+	and __fixtfbitint/__fixkfbitint substitution rules.
+	* config/rs6000/float128-sed-hw: Likewise.
+	* config/rs6000/libgcc-glibc.ver (GCC_17.0.0): New version node
+	inheriting GCC_4.2.0; export __floatbitintkf, __fixkfbitint,
+	__floatbitinttf, __fixtfbitint, __floatbitintsf, __fixsfbitint,
+	__floatbitintdf and __fixdfbitint.
+	* config/rs6000/t-float128 (fp128_softfp_funcs): Add floatbitintkf
+	and fixkfbitint.
+	(rs6000_bitint_bin_funcs, rs6000_bitint_bin_src): New; add to
+	LIB2ADD unconditionally.
+	(rs6000_bitint_dec_funcs, rs6000_bitint_dec_src): New; add to
+	LIB2ADD_ST when decimal float is enabled.
+	* config/rs6000/t-linux (ibm128_bitint_funcs, ibm128_bitint_src):
+	New; add to LIB2ADD.
+	(ibm128_bitint_objs, IBM128_BITINT_CFLAGS): New.
+	* config/rs6000/floatbitinttf-ibm128.c: New file.
+	* config/rs6000/fixtfbitint-ibm128.c: New file.
+
 2026-09-04  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/t-avr (FUNCS_notiny): Add _divsq3, _udivusq3.

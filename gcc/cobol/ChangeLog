@@ -1,3 +1,45 @@
+2026-09-11  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Add wordop_t to each element.
+
+2026-09-11  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse_ante.h (redefined_token): Add token parameter.
+	* scan.l: Do not use redefined_token in the scanner.
+	* scan_ante.h (typed_name): Same.
+	* scan_post.h (next_token): Use redefined_token in the lexer wrapper.
+	* symbols.h (redefined_token): Declaration matches definition.
+	(class current_tokens_t): Document, and use enumerated constants.
+
+2026-09-11  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Construct arith_t by value.
+	* parse_ante.h (struct arith_t): Use const reference for constructor.
+	(struct refer_list_t): Prefer initialization to std::copy.
+
+2026-09-11  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Introduce MfHexNumeric.
+	* cobol1.cc (cobol_langhook_handle_option): Handle Whex-numeric.
+	* gcobol.1: Document Whex-numeric.
+	* lang-specs.h: Add Whex-numeric to spec string.
+	* lang.opt: Define Whex-numeric.
+	* messages.cc: Add Whex-numeric to mf and gnu dialects.
+	Make Wcontent-expr available in all dialects outside ISO.
+	Finer distinctions remain to be drawn.
+	* parse.y: (dialect_words_set): New function for per-dialect keywords.
+	* scan.l: New rule for hexadecimal numeric notation.
+	* symbols.cc (dimensions): Rewrite for REDEFINES table.
+	* symbols.h (hex2numstr): Declare new function.
+	(class current_tokens_t): Refine to recognize COBOL-WORDS.
+	* util.cc (literal_subscript_oob): Rewrite to avoid UB.
+	(hex2numstr): New function.
+
+2026-09-11  James K. Lowden  <jklowden@cobolworx.com>
+
+	* genapi.cc (parser_file_write): Use RETURN_IF_PARSE_ONLY.
+	* parse.y: Diagnose ADD CORRESPONDING operand count.
+
 2026-09-10  Robert Dubner  <rdubner@symas.com>
 
 	* compare.cc (digiter): Spelling in comment.

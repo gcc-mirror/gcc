@@ -1,3 +1,80 @@
+2026-09-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/127306
+	* gcc.target/riscv/pr127306.c: New test.
+
+2026-09-11  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/vect/vect-reduc-sad-10.c: New test.
+	* gcc.target/aarch64/sad-halfpel-1.c: New test.
+	* gcc.target/aarch64/sad-halfpel-2.c: New file.
+
+2026-09-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/127244
+	* gcc.target/i386/pr127244.c: New
+
+2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/run/pass/testclock2.mod: Remove ability to
+	change the system clock.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* g++.target/riscv/rvv/autovec/pr127323.C: New test.
+
+2026-09-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/evrp-trans3.c: New.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* gcc.target/riscv/setmem-nolibcall.c: New test.
+	* gcc.target/riscv/setmem-scalar-32.c: New test.
+	* gcc.target/riscv/setmem-scalar-64.c: New test.
+	* gcc.target/riscv/setmem-scalar-run.c: New test.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* gcc.target/riscv/movmem-scalar-32.c: New test.
+	* gcc.target/riscv/movmem-scalar-64.c: New test.
+	* gcc.target/riscv/movmem-scalar-run.c: New test.
+
+2026-09-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* c-c++-common/strub-mem-notrap.c: New test.
+	* g++.dg/tree-ssa/cselim-ref-1.C: New test.
+	* g++.dg/tree-ssa/cselim-ref-2.C: New test.
+	* g++.dg/tree-ssa/lim-ref-1.C: New test.
+	* g++.dg/tree-ssa/lim-ref-2.C: New test.
+	* g++.dg/tree-ssa/lim-ref-3.C: New test.
+	* g++.dg/tree-ssa/lim-ref-4.C: New test.
+	* g++.dg/tree-ssa/lim-this-1.C: New test.
+	* g++.dg/tree-ssa/noncall-store-builtin.C: New test.
+
+2026-09-11  Manjunath Matti  <mmatti@linux.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117584
+	* gcc.target/powerpc/bitint-abi-call.c: New test.
+	* gcc.target/powerpc/bitint-alignments-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-args-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-arith-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-bitint-to-ibm128.c: New test.
+	* gcc.target/powerpc/bitint-bitwise-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-compare-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-conversions-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-endian-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-ibm128-to-bitint.c: New test.
+	* gcc.target/powerpc/bitint-sizes-powerpc.c: New test.
+	* gcc.target/powerpc/bitint-struct-layout.c: New test.
+	* gcc.target/powerpc/bitint-varargs.c: New test.
+
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127310
+	* gcc.dg/vect/vect-pr127310.c: New testcase.
+
 2026-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.target/i386/vperm-v4sf-3.c: New test.

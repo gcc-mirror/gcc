@@ -1,3 +1,8 @@
+2026-09-11  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (omp_control_tool): Add example interface for calling
+	the tool with a passed argument from Fortran
+
 2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/127273

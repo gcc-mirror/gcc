@@ -1,3 +1,17 @@
+2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* Makefile.am (GM2_FOR_TARGET_ESC): Remove.
+	* Makefile.in: Rebuild.
+	* libm2iso/Makefile.am (GM2_FOR_TARGET_ESC): Remove
+	and replace with "$(GM2_FOR_TARGET)".
+	* libm2iso/Makefile.in: Rebuild.
+	* libm2min/Makefile.am (GM2_FOR_TARGET_ESC): Remove
+	and replace with "$(GM2_FOR_TARGET)".
+	* libm2min/Makefile.in: Rebuild.
+	* libm2pim/Makefile.am (GM2_FOR_TARGET_ESC): Remove
+	and replace with "$(GM2_FOR_TARGET)".
+	* libm2pim/Makefile.in: Rebuild.
+
 2026-08-27  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* ax_python_interpreter.m4 (AC_PYTHON_INTERPRETER): Add

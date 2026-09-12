@@ -1,3 +1,147 @@
+2026-09-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/127306
+	* config/riscv/riscv-bclr-lowest-set-bit.cc (find_later_ctz): Fix
+	off-by-one error for scan to verify ctz input isn't modified.
+	(pass_bclr_lowest_bit_set::execute): Remove original AND in case
+	where the CTZ is found after the AND.
+
+2026-09-11  Dominic P  <gcc@gcc.dp11.uk>
+
+	* tree-vect-stmts.cc (has_consecutive_load_permutation): Remove
+	the group_size parameter and the requirement that the permutation
+	length divides the group size.  Make static.
+	(get_load_store_type): Adjust caller.
+
+2026-09-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/127244
+	* lra-constraints.cc (inheritance_pseudo_p): New function.
+	(undo_optional_reloads): Keep optional reload for output
+	operand if it is inherited.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv.cc (riscv_slow_unaligned_access):
+	Return the same as riscv_support_vector_misalignment.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR middle-end/127323
+	* expmed.cc (extract_integral_bit_field): Use store_bit_field if
+	operand_subword fails.
+
+2026-09-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (rr_transitive_table): Update.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_block_clear):
+	Remove.
+	(expand_vec_setmem): Add testing param.
+	(riscv_expand_setmem): Likewise.
+	* config/riscv/riscv-string.cc (riscv_expand_block_clear_zicboz_zic64b):
+	Likewise.
+	(riscv_expand_block_clear): Make static.
+	(expand_scalar_setmem): New function.
+	(riscv_expand_setmem): New function.
+	(expand_vec_setmem): Add testing param.
+	* config/riscv/riscv.cc (riscv_use_by_pieces_infrastructure_p):
+	Query riscv_expand_setmem for support.
+	* config/riscv/riscv.md: Use riscv_expand_setmem.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv-protos.h (riscv_expand_block_move):
+	Declare.
+	* config/riscv/riscv-string.cc (riscv_block_move_straight):
+	Handle overlap.
+	(riscv_block_move_loop): Pass "no overlap" to
+	riscv_block_move_straight.
+	(riscv_expand_block_move_scalar): Add overlap param.
+	(riscv_expand_block_move): Likewise.
+	(expand_block_move): Likewise.
+	* config/riscv/riscv.md: Use riscv_expand_block_move.
+
+2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_regmode_natural_size):
+	Set REGMODE_NATURAL_SIZE to the size of one vector.
+
+2026-09-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/generic.texi (REFERENCE_TYPE): Document the object contract
+	for reference parameters.
+	(METHOD_TYPE): Document the object contract for the this parameter.
+	* tree-eh.cc (parm_decl_from_ptr): New function.
+	(whole_object_param_size): New function.
+	(tree_could_trap_1): Use whole-object parameter bounds for loads.
+
+2026-09-11  Manjunath Matti  <mmatti@linux.ibm.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/117584
+	* config/rs6000/rs6000-call.cc (rs6000_bitint_large_p): New
+	function.
+	(rs6000_return_in_memory): Return large _BitInt values, and enums
+	backed by _BitInt, via a hidden pointer.
+	(rs6000_pass_by_reference): Pass large _BitInt values, and enums
+	backed by _BitInt, by reference.
+	* config/rs6000/rs6000.cc (TARGET_C_BITINT_TYPE_INFO): Define.
+	(init_float128_ibm): Set bitinttofp_optab and bitintfromfp_optab
+	libfuncs to __floatbitinttf and __fixtfbitint.
+	(init_float128_ieee): Set bitinttofp_optab and bitintfromfp_optab
+	libfuncs to __floatbitintkf and __fixkfbitint.
+	(rs6000_function_value): Exclude BITINT_TYPE from sub-word integer
+	return value promotion.
+	(rs6000_bitint_type_info): New function.
+
+2026-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127310
+	* tree-vect-loop.cc (vectorizable_lane_reducing): Apply
+	costing after registering loop masks.
+
+2026-09-11  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	PR middle-end/127330
+	* recog.h (recog_state_saver::recog_state_saver): Initialize
+	m_tmp_recog_data.insn.
+
+2026-09-11  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadupdate.cc (jt_path_registry::remove_path): New,
+	and an overload taking the path's first edge.
+	(jt_path_registry::add_first_edge): New.
+	(jt_path_registry::drop_first_edge): New.
+	(jt_path_registry::first_edge_count): New.
+	(back_jt_path_registry::adjust_one_path): Move the candidate's
+	count when its first edge changes; remove before cancelling.
+	(back_jt_path_registry::adjust_paths_after_duplication): Return
+	early when no other path starts on the same edge.
+	(fwd_jt_path_registry::mark_threaded_blocks): Use remove_path.
+	(back_jt_path_registry::update_cfg): Remove the threaded path by
+	the edge it started on.
+	(fwd_jt_path_registry::update_cfg): Use remove_path.
+	(jt_path_registry::register_jump_thread): Count the new first edge.
+	* tree-ssa-threadupdate.h (jt_path_registry::m_first_edge_counts): New.
+	(jt_path_registry::remove_path, add_first_edge, drop_first_edge)
+	(jt_path_registry::first_edge_count): Declare.
+
+2026-09-11  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadupdate.cc (back_jt_path_registry::adjust_one_path):
+	Fix the dump messages.
+
+2026-09-11  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadupdate.cc (back_jt_path_registry::adjust_one_path):
+	New, split out of ...
+	(back_jt_path_registry::adjust_paths_after_duplication): ... here.
+	* tree-ssa-threadupdate.h (back_jt_path_registry::adjust_one_path):
+	Declare.
+
 2026-09-11  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* tree-eh.cc (tree_could_trap_1, tree_could_trap_p): Clarify the

@@ -1,3 +1,72 @@
+2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-gcc/m2builtins.cc (define_builtin): Reimplement.
+	(do_define_builtin): New function.
+	(data_type_supported): Ditto.
+	(param_data_type_supported): Ditto.
+	(dump_builtin): Call dump_available if
+	param_data_type_supported.
+	* gm2-libs-iso-common/ComplexMath.def (arcsin): Replace
+	with template tag.
+	(arccos): Ditto.
+	(arctan): Ditto.
+	* gm2-libs-iso-common/ComplexMath.mod (arcsin): Replace
+	with template tag.
+	(arccos): Ditto.
+	(arctan): Ditto.
+	* gm2-libs-iso-common/LongComplexMath.def (arcsin): Replace
+	with template tag.
+	(arccos): Ditto.
+	(arctan): Ditto.
+	* gm2-libs-iso-common/LongComplexMath.mod (arcsin): Replace
+	with template tag.
+	(arccos): Ditto.
+	(arctan): Ditto.
+	* gm2-libs-iso-common/ShortComplexMath.def (arcsin): Replace
+	with template tag.
+	(arccos): Ditto.
+	(arctan): Ditto.
+	* gm2-libs-iso-common/ShortComplexMath.mod (arcsin): Replace
+	with template tag.
+	(arccos): Ditto.
+	(arctan): Ditto.
+	* gm2-libs-pim-common/Builtins.def (carcsinf): Replace
+	with template tag.
+	(carcsin): Ditto.
+	(carcsinl): Ditto.
+	(carccosf): Ditto.
+	(carccos): Ditto.
+	(carccosl): Ditto.
+	(carctanf): Ditto.
+	(carctan): Ditto.
+	(carctanl): Ditto.
+	* gm2-libs-pim-common/Builtins.mod: (carcsinf): Replace
+	with template tag.
+	(carcsin): Ditto.
+	(carcsinl): Ditto.
+	(carccosf): Ditto.
+	(carccos): Ditto.
+	(carccosl): Ditto.
+	(carctanf): Ditto.
+	(carctan): Ditto.
+	(carctanl): Ditto.
+	* gm2-libs-pim-common/cbuiltin.def (casinf): Replace
+	with template tag.
+	(casin): Ditto.
+	(casinl): Ditto.
+	(cacosf): Ditto.
+	(cacos): Ditto.
+	(cacosl): Ditto.
+	(catanf): Ditto.
+	(catan): Ditto.
+	(catanl): Ditto.
+	* gm2spec.cc (lang_specific_driver): Comment formatting.
+	* tools-src/mktargetsrc.py (do_output_mod_builtin): New
+	function.
+	(output_mod_builtin): Ditto.
+	(list_of_builtins): Add casin, casinf, casinl, cacos, cacosf,
+	cacosl, catan, catanf and catanl.
+
 2026-09-07  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/126847

@@ -1,3 +1,31 @@
+2026-09-11  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/125845
+	PR libstdc++/124121
+	* include/bits/version.def (start_lifetime): Move before
+	inplace_vector.
+	(constexpr_inplace_vector): Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/inplace_vector (__cpp_lib_constexpr_inplace_vector):
+	Define.
+	(inplace_vector::_M_init): Use std::start_lifetime instead of
+	std::start_lifetime_as, when available. Emit error using
+	__builtin_constexpr_diag.
+	* testsuite/23_containers/inplace_vector/cons/1.cc: Enable and
+	andd compile time tests for non-trivial types.
+	* testsuite/23_containers/inplace_vector/copy.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/assign.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/erase.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/multi_insert.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/single_insert.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/move.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/version.cc: Test value of
+	__cpp_lib_constexpr_inplace_vector.
+
 2026-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/std/bit: Implement C++29 P3793R2 - Better shifting.
