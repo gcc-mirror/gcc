@@ -985,8 +985,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AVR Options} (@ref{AVR Options})
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args -masm-len-notes
--mcvt  -mbranch-cost=@var{cost}  -mfuse-add=@var{level}  -mfuse-ifelse
--mfuse-move=@var{level}  -mfuse-move2
+-mbranch-cost=@var{cost}  -mcvt  -mdemote-switch  -mfuse-add=@var{level}
+-mfuse-ifelse  -mfuse-move=@var{level}  -mfuse-move2
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
@@ -24608,6 +24608,14 @@ integers. The default branch cost is 0.
 @item -mcall-prologues
 Functions prologues/epilogues are expanded as calls to appropriate
 subroutines.  Code size is smaller.
+
+@opindex mdemote-switch
+@item -mdemote-switch
+Without this option, the compiler will treat @code{switch} variables
+as 32-bit values at least.  When this option is on, an AVR-specific
+pass will try to demote such @code{switch} variables to the widths
+as actually used in the program.  This option is on per default when
+optimization is on.
 
 @opindex mfuse-add
 @item -mfuse-add

@@ -3951,7 +3951,7 @@ public:
 
   bool gate (function *) final override
   {
-    return optimize > 0;
+    return optimize > 0 && avropt_demote_switch;
   }
 
   unsigned int execute (function *) final override;

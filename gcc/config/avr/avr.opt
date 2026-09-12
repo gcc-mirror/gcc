@@ -136,6 +136,10 @@ msp8
 Target RejectNegative Var(avropt_sp8) Init(0)
 This option is used internally for multilib generation and selection. The device has no SPH special function register.
 
+mdemote-switch
+Target Var(avropt_demote_switch) Init(0) Optimization
+Optimization. Demote switch values to the size as used in the program.
+
 mfuse-add
 Target Alias(mfuse-add=, 2, 0) Optimization
 Optimization. Split register additions from load/store instructions. Most useful on Reduced Tiny.
