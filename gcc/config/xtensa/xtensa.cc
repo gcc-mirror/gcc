@@ -541,7 +541,7 @@ xtensa_fp_const (const REAL_VALUE_TYPE *rval)
 /* This is just like the standard true_regnum() function except that it
    works even when reg_renumber is not initialized.  */
 
-int
+static int
 xt_true_regnum (rtx x)
 {
   if (REG_P (x))

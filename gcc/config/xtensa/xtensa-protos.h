@@ -34,7 +34,6 @@ extern bool xtensa_mem_offset (unsigned, machine_mode);
 
 /* Functions within xtensa.cc that we reference.  */
 #ifdef RTX_CODE
-extern int xt_true_regnum (rtx);
 extern int xtensa_valid_move (machine_mode, rtx *);
 extern bool smalloffset_address_p (const_rtx);
 extern bool constantpool_address_p (const_rtx);
