@@ -6946,12 +6946,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        tree type1;
        if ((eqne == EQ_EXPR) ^ (wi::to_wide (@1) == min))
          std::swap (arg0, arg1);
-       if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
+       if (TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type)
+           // Prefer unsigned type if the two has the same precision.
+           || (TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (type)
+		&& !TYPE_UNSIGNED (type)))
 	 type1 = TREE_TYPE (@0);
        else
 	 type1 = type;
        auto prec = TYPE_PRECISION (type1);
        auto unsign = TYPE_UNSIGNED (type1);
+       // For boolean types, use an integer type for the plus/minus.
        if (TREE_CODE (type1) == BOOLEAN_TYPE)
 	type1 = build_nonstandard_integer_type (prec, unsign);
        min = wide_int::from (min, prec,
