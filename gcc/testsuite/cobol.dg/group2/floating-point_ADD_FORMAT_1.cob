@@ -20,6 +20,13 @@
         01 D5            FLOAT-SHORT    .
         01 D6            FLOAT-LONG     .
         01 D7            FLOAT-EXTENDED .
+        01 D1D PIC 999999v99.
+        01 D2D PIC 999999v99.
+        01 D3D PIC 999999v99.
+        01 D4D PIC 999999v99.
+        01 D5D PIC 999999v99.
+        01 D6D PIC 999999v99.
+        01 D7D PIC 999999v99.
         PROCEDURE DIVISION.
             MOVE S1 TO D1 ADD S1 TO D1
             MOVE S2 TO D2 ADD S2 TO D2
@@ -79,13 +86,21 @@
             PERFORM DISPLAY-D.
             GOBACK.
         DISPLAY-D.
-            DISPLAY D1 SPACE
-                    D2 SPACE
-                    D3 SPACE
-                    D4 SPACE
-                    D5 SPACE
-                    D6 SPACE
-                    D7 .
+            ADD D1 TO D1D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            ADD D2 TO D2D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            ADD D3 TO D3D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            ADD D4 TO D4D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            ADD D5 TO D5D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            ADD D6 TO D6D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            ADD D7 TO D7D ROUNDED MODE IS NEAREST-AWAY-FROM-ZERO
+            DISPLAY D1D SPACE
+                    D2D SPACE
+                    D3D SPACE
+                    D4D SPACE
+                    D5D SPACE
+                    D6D SPACE
+                    D7D .
             MOVE 0 TO D1 D2 D3 D4 D5 D6 D7.
+            MOVE 0 TO D1D D2D D3D D4D D5D D6D D7D.
         END PROGRAM float-arith1.
 

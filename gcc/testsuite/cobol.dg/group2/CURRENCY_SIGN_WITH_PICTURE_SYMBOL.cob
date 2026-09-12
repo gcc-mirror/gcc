@@ -7,15 +7,15 @@
        CONFIGURATION SECTION.
        SPECIAL-NAMES.
            *> note the space after EUR / before ct.
-           CURRENCY SIGN IS "EUR "      WITH PICTURE SYMBOL "U",
-           CURRENCY SIGN IS " ct (EUR)" WITH PICTURE SYMBOL "c",
+           CURRENCY SIGN IS "EUR "      WITH PICTURE SYMBOL "@",
+           CURRENCY SIGN IS " ct (EUR)" WITH PICTURE SYMBOL "&",
            Currency Sign is "$US" with Picture Symbol "$".
 
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        77  euro-val pic 99v99.
-       77  EUROS    PIC U99v99.
-       77  cents    PIC 9,999c.
+       77  EUROS    PIC @99v99.
+       77  cents    PIC 9,999&.
        77  DOLLARS  Pic $$,$$9.99.
 
        PROCEDURE DIVISION.
