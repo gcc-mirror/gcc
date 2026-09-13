@@ -1,3 +1,8 @@
+2026-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* update_web_docs_git: Stop generating .pdf.gz copies of
+	.pdf files.
+
 2026-09-04  Richard Biener  <rguenther@suse.de>
 
 	* crontab: Remove entry for gcc-13 branch snapshots.

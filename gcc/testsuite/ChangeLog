@@ -1,3 +1,45 @@
+2026-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	P3598R0
+	PR c++/125840
+	* g++.dg/reflect/contract1.C: New test.
+	* g++.dg/reflect/contract2.C: New test.
+	* g++.dg/reflect/contract3.C: New test.
+	* g++.dg/reflect/contract4.C: New test.
+	* g++.dg/reflect/contract5.C: New test.
+	* g++.dg/reflect/reflect_object2.C (g): Add test for setting of
+	splice expr of an object reflection.
+
+2026-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp0x/constexpr-static-cast1.C: New test.
+	* g++.dg/cpp0x/constexpr-static-cast2.C: New test.
+	* g++.dg/cpp1y/constexpr-static-cast1.C: New test.
+	* g++.dg/cpp1y/constexpr-static-cast2.C: New test.
+	* g++.dg/cpp1y/constexpr-static-cast3.C: New test.
+	* g++.dg/cpp1y/constexpr-static-cast4.C: New test.
+
+2026-09-12  Pan Li  <pan2.li@intel.com>
+
+	PR target/127269
+	* gcc.target/riscv/rvv/base/pr127269-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-2.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-3.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-4.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-5.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-6.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-7.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-8.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-9.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-10.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-11.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-12.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-13.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-14.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-15.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-16.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-17.c: New test.
+
 2026-09-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR target/127306

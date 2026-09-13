@@ -1,3 +1,24 @@
+2026-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	P3598R0
+	PR c++/125840
+	* reflect.cc: Implement C++26 CWG 3158 - const-ification of Splice
+	Expressions.
+	(splice): Remember REFLECT_EXPR_KIND of REFLECT_EXPR.  Set refl to
+	REFLECT_EXPR_HANDLE earlier.  For REFLECT_OBJECT wrap decls into
+	a VCE to differentiate it from corresponding variables.
+	* pt.cc (tsubst_splice_expr): Call constify_contract_access if
+	needed.
+
+2026-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (cxx_eval_binary_expression): For POINTER_PLUS_EXPR
+	with pointer cast in orig_lhs operand evaluate it as if it was
+	cast of POINTER_PLUS_EXPR with cast operand.
+	(cxx_eval_constant_expression) <case CONVERT_EXPR>:
+	Set *non_constant_p and optionally diagnose if a static_cast downcast
+	results in undefined behavior.
+
 2026-09-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/127276

@@ -1,3 +1,44 @@
+2026-09-12  Shivam Gupta  <shivam98.tkg@gmail.com>
+
+	* tree-ssa-loop-niter.cc (number_of_iterations_cltz): Reject
+	undefined ranges returned by Ranger.
+	(number_of_iterations_cltz_complement): Likewise.
+
+2026-09-12  Georg-Johann Lay  <avr@gjlay.de>
+
+	* common/config/avr/avr-common.cc
+	(avr_option_optimization_table) [OPT_LEVELS_1_PLUS]: Set
+	-mdemote-switch.
+	* config/avr/avr-passes.cc (avr_pass_casesi::gate):
+	Require avropt_demote_switch to be on.
+	* config/avr/avr.opt (mdemote-switch): New option.
+	* config/avr/avr.opt.urls (mdemote-switch): Add UrlSuffix.
+	* doc/invoke.texi (AVR Options): Document -mdemote-switch.
+
+2026-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Downloading the source): Drop note on
+	more finely grained source code archives.
+
+2026-09-12  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genoutput.cc (data): Add output_code.
+	(output_def): New structure.
+	(output_codes): New variable.
+	(process_template): Determine the output format before emitting
+	anything and test that rather than the template.  Reuse an identical
+	definition emitted earlier, recording output_code, and check the
+	number of alternatives against the count recorded with it.
+	(output_insn_data): Use output_code.
+
+2026-09-12  Pan Li  <pan2.li@intel.com>
+
+	PR target/127269
+	* config/riscv/riscv-v.cc (riscv_v_widen_constraint_ok): Return
+	false instead of assertion when the nregs of dest and src are
+	the same but greater than 1.
+
 2026-09-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR target/127306
