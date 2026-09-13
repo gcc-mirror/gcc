@@ -4503,6 +4503,11 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      c2->param_list->next = NULL;
 	    }
 
+	  /* Initializer expressions in PDT templates, such as character_kinds(1),
+	     can end up being mutilated when use associated. Simplify now.  */
+	  if (c1->initializer && c1->initializer->expr_type != EXPR_CONSTANT)
+	    gfc_simplify_expr (c1->initializer, 1);
+
 	  if (!c2->initializer && c1->initializer)
 	    c2->initializer = gfc_copy_expr (c1->initializer);
 
@@ -4654,6 +4659,18 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      goto error_return;
 	    }
 	  gfc_simplify_expr (c2->initializer, 1);
+	}
+
+      /* Pick up any remaining initializers that could be simplified.  */
+      if (c1->initializer)
+	{
+	  if (!c2->initializer)
+	    c2->initializer = gfc_copy_expr (c1->initializer);
+	  if (gfc_derived_parameter_expr (c2->initializer))
+	    gfc_insert_parameter_exprs (c2->initializer, type_param_spec_list);
+	  c2->initializer->ts = c2->ts;
+	  if (!!gfc_is_constant_expr (c2->initializer))
+	    gfc_simplify_expr (c2->initializer, 1);
 	}
     }
 
