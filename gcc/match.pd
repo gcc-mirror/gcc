@@ -2482,6 +2482,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (if (!FIXED_POINT_TYPE_P (type))
  (plus @0 (negate @1))))
 
+/* A - MIN (B, C) -> A + MAX (-B, -C)
+   A - MAX (B, C) -> A + MIN (-B, -C)  if B and C are easily negatable.  */
+(for minmax (min max)
+     maxmin (max min)
+ (simplify
+  (minus @0 (minmax:s negate_expr_p@1 negate_expr_p@2))
+  (if (ANY_INTEGRAL_TYPE_P (type) && TYPE_OVERFLOW_UNDEFINED (type))
+   (plus @0 (maxmin (negate @1) (negate @2))))))
+
 /* 1 - a is a ^ 1 if a had a bool range. */
 /* This is only enabled for gimple as sometimes
    cfun is not set for the function which contains
