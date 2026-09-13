@@ -5099,6 +5099,65 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (cmp (op:c @0 tree_expr_nonnegative_p@1) integer_zerop@2)
         (cmp @0 @2))))
 
+#if GIMPLE
+/* ((X + C1) | (C2 - X)) < 0 -> (unsigned) (X + C1) > C1 + C2, also spelled
+   (X | (C2 - X)) < 0, ((X + C1) | -X) < 0 and (X | -X) < 0, and with the
+   sign bit extracted by a shift rather than compared.  */
+(match (ior_range_test @0 @1 @2)
+ (bit_ior:c@3 (plus@0 @4 INTEGER_CST@1) (minus INTEGER_CST@2 @4))
+ (if (single_use (@3)
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+      && wi::ge_p (wi::to_wide (@1) + wi::to_wide (@2), 0, SIGNED))))
+(match (ior_range_test_1 @0 @1)
+ (bit_ior:c@2 @0 (minus INTEGER_CST@1 @0))
+ (if (single_use (@2)
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+      && wi::ge_p (wi::to_wide (@1), 0, SIGNED))))
+(match (ior_range_test_1 @0 @1)
+ (bit_ior:c@2 (plus@0 @3 INTEGER_CST@1) (negate @3))
+ (if (single_use (@2)
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+      && wi::ge_p (wi::to_wide (@1), 0, SIGNED))))
+(match (ior_range_test_0 @0)
+ (bit_ior:c@1 @0 (negate @0))
+ (if (single_use (@1)
+      && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0)))))
+(for cmp (lt ge)
+     out (gt le)
+ (simplify
+  (cmp (nop_convert?@5 (ior_range_test @0 @1 @2)) integer_zerop)
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@5)))
+   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+    (out (convert:utype @0)
+	 { wide_int_to_tree (utype, wi::to_wide (@1) + wi::to_wide (@2)); }))))
+ (simplify
+  (cmp (nop_convert?@3 (ior_range_test_1 @0 @1)) integer_zerop)
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@3)))
+   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+    (out (convert:utype @0) (convert:utype @1)))))
+ (simplify
+  (cmp (nop_convert?@2 (ior_range_test_0 @0)) integer_zerop@3)
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@2)))
+   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+    (out (convert:utype @0) (convert:utype @3))))))
+(simplify
+ (rshift (nop_convert? (ior_range_test @0 @1 @2)) INTEGER_CST@5)
+ (if (TYPE_UNSIGNED (type)
+      && wi::to_wide (@5) == element_precision (type) - 1)
+  (convert (gt (convert:type @0)
+	       { wide_int_to_tree (type, wi::to_wide (@1) + wi::to_wide (@2)); }))))
+(simplify
+ (rshift (nop_convert? (ior_range_test_1 @0 @1)) INTEGER_CST@2)
+ (if (TYPE_UNSIGNED (type)
+      && wi::to_wide (@2) == element_precision (type) - 1)
+  (convert (gt (convert:type @0) (convert:type @1)))))
+(simplify
+ (rshift (nop_convert? (ior_range_test_0 @0)) INTEGER_CST@1)
+ (if (TYPE_UNSIGNED (type)
+      && wi::to_wide (@1) == element_precision (type) - 1)
+  (convert (ne @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+#endif
+
 /* Undo fancy ways of writing max/min or other ?: expressions, like
    a - ((a - b) & -(a < b))  and  a - (a - b) * (a < b) into (a < b) ? b : a.
    People normally use ?: and that is what we actually try to optimize.  */
@@ -8598,6 +8657,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (eqne (op @0) zerop@1)
    (eqne @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
+#if GIMPLE
+/* ABS_EXPR <X> > C -> (unsigned) (X + C) > 2 * C, and the same for <= and
+   for ABSU_EXPR.  */
+(for op (abs absu)
+ (for cmp (gt le)
+  (simplify
+   (cmp (op@2 @0) INTEGER_CST@1)
+   (if ((op == ABSU_EXPR || TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+	&& !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+	&& single_use (@2)
+	&& wi::ge_p (wi::to_wide (@1), 0, SIGNED)
+	&& !tree_int_cst_equal (@1, TYPE_MAX_VALUE (TREE_TYPE (@0))))
+    (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
+     (cmp (plus (convert:utype @0) (convert:utype @1))
+	  { wide_int_to_tree (utype, wi::to_wide (@1) * 2); }))))))
+#endif
 
 /* From fold_sign_changed_comparison and fold_widened_comparison.
    FIXME: the lack of symmetry is disturbing.  */
