@@ -1,3 +1,12 @@
+2026-09-12  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	Backported from master:
+	2026-09-08  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR target/126932
+	* config/riscv/autovec.md: Rewrite vector FMA patterns.
+	* config/riscv/autovec-opt.md: Likewise and add new patterns.
+
 2026-09-11  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
