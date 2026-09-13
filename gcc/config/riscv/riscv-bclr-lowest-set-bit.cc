@@ -193,12 +193,19 @@ pass_bclr_lowest_set_bit::execute (function *fn)
 	  rtx dec_src = SET_SRC (dec_set);
 	  rtx dec_dest = SET_DEST (dec_set);
 
-	  /* For a 32 bit object on rv64, the decrement will
-	     be wrapped by a SIGN_EXTEND.  Strip it.  */
-	  if (GET_CODE (dec_src) == SIGN_EXTEND)
-	    dec_src = XEXP (dec_src, 0);
+	  /* Verify it's res = x - 1, if not proceed to the next insn.
+	     It seems like we ought to be able to handle the rv64 addiw form
+	     for the subtraction step, but that's unsafe.
 
-	  /* Verify it's res = x - 1, if not proceed to the next insn.  */
+	     Consider if x has the value like 0x0000000200000004.  The
+	     original sequence would produce 0x0.  ctz+bclr would produce
+	     0x0000000200000000.
+
+	     If we sign extended the result the previous case works, but
+	     others do not (consider 0x1234567800000008).
+
+	     And there's the added complexity of ctzw when the low 32 bits are
+	     zero. The would result in changing bit 32 inadvertently.  */
 	  if (!dec_set
 	      || !REG_P (dec_dest)
 	      || GET_CODE (dec_src) != PLUS
