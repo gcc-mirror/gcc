@@ -1,3 +1,11 @@
+2026-09-12  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	Backported from master:
+	2026-09-08  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR target/126932
+	* gcc.target/riscv/rvv/autovec/ternop/pr126932.c: New test.
+
 2026-09-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR middle-end/127256
