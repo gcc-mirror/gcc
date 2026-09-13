@@ -5624,6 +5624,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (rresult @0 { build_int_cst (type, bitop == BIT_IOR_EXPR ? -1 : 0); }))))
 #endif
 
+/* Complete the branchless min and max the rules above leave half folded,
+   and the same identity with the addition inside the select:
+
+     Y + MIN (X - Y, 0) -> MIN (X, Y)    X - MIN (X - Y, 0) -> MAX (X, Y)
+     Y + MAX (X - Y, 0) -> MAX (X, Y)    X - MAX (X - Y, 0) -> MIN (X, Y)
+     MIN (X + Y, Y) - Y -> MIN (X, 0)    MAX (X + Y, Y) - Y -> MAX (X, 0)  */
+(for minmax (min max)
+     maxmin (max min)
+ (simplify
+  (plus:c (minmax (minus@3 @0 @1) integer_zerop) @1)
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && gimple_match_no_overflow_p (MINUS_EXPR, type, @0, @1, @3))
+   (minmax @0 @1)))
+ (simplify
+  (minus @0 (minmax (minus@3 @0 @1) integer_zerop))
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && gimple_match_no_overflow_p (MINUS_EXPR, type, @0, @1, @3))
+   (maxmin @0 @1)))
+ (simplify
+  (minus (minmax:c (plus:c@3 @0 @1) @1) @1)
+  (if (ANY_INTEGRAL_TYPE_P (type)
+       && gimple_match_no_overflow_p (PLUS_EXPR, type, @0, @1, @3))
+   (minmax @0 { build_zero_cst (type); }))))
+
 /* Fold `1 >> a` into `a == 0` for scalar integral types. */
 (simplify
  (rshift integer_onep @2)

@@ -535,3 +535,20 @@ gimple_match_range_of_expr (vrange &r, tree op, tree ctx = NULL_TREE)
     return false;
   return !r.undefined_p ();
 }
+
+/* Return true if CODE applied to OP0 and OP1 in TYPE cannot overflow,
+   either because TYPE says so or because their ranges prove it.  CTX is
+   a capture passed on to gimple_match_range_of_expr.  */
+
+static inline bool
+gimple_match_no_overflow_p (tree_code code, tree type, tree op0, tree op1,
+			    tree ctx)
+{
+  if (TYPE_OVERFLOW_UNDEFINED (type))
+    return true;
+
+  int_range_max vr0, vr1;
+  return (gimple_match_range_of_expr (vr0, op0, ctx)
+	  && gimple_match_range_of_expr (vr1, op1, ctx)
+	  && range_op_handler (code).overflow_free_p (vr0, vr1));
+}

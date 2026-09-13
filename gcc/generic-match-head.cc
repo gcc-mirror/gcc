@@ -209,3 +209,12 @@ gimple_match_ctx (tree)
 {
   return NULL;
 }
+
+/* Return true if CODE applied to OP0 and OP1 in TYPE cannot overflow.
+   On GENERIC there is no range query, so only TYPE can say so.  */
+
+static inline bool
+gimple_match_no_overflow_p (tree_code, tree type, tree, tree, tree)
+{
+  return TYPE_OVERFLOW_UNDEFINED (type);
+}
