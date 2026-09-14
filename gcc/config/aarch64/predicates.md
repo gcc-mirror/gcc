@@ -280,9 +280,9 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_shift_imm_di")))
 
-;; The imm3 field is a 3-bit field that only accepts immediates in the
+;; The aarch64_shift_imm3 field is a 3-bit field that only accepts immediates in the
 ;; range 0..4.
-(define_predicate "aarch64_imm3"
+(define_predicate "aarch64_shift_imm3"
   (and (match_code "const_int")
        (match_test "UINTVAL (op) <= 4")))
 
@@ -294,7 +294,7 @@
 
 ;; The imm3 field is a 3-bit field that only accepts immediates in the
 ;; range 0..7.
-(define_predicate "aarch64_lane_imm3"
+(define_predicate "aarch64_imm3"
   (and (match_code "const_int")
        (match_test "UINTVAL (op) <= 7")))
 

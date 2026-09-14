@@ -3216,7 +3216,7 @@
 	 (plus:GPI (ashift:GPI
 		    (ANY_EXTEND:GPI
 		     (match_operand:ALLX 1 "register_operand" "r"))
-		    (match_operand 2 "aarch64_imm3" "Ui3"))
+		    (match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		   (match_operand:GPI 3 "register_operand" "rk"))
 	 (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=rk")
@@ -3235,7 +3235,7 @@
 		    (ashift:GPI
 		     (ANY_EXTEND:GPI
 		      (match_operand:ALLX 2 "register_operand" "r"))
-		     (match_operand 3 "aarch64_imm3" "Ui3")))
+		     (match_operand 3 "aarch64_shift_imm3" "Ui3")))
 	 (const_int 0)))
    (set (match_operand:GPI 0 "register_operand" "=rk")
 	(minus:GPI (match_dup 1)
@@ -3327,7 +3327,7 @@
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(plus:GPI (ashift:GPI (ANY_EXTEND:GPI
 			       (match_operand:ALLX 1 "register_operand" "r"))
-			      (match_operand 2 "aarch64_imm3" "Ui3"))
+			      (match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		  (match_operand:GPI 3 "register_operand" "r")))]
   ""
   "add\\t%<GPI:w>0, %<GPI:w>3, %w1, <su>xt<ALLX:extsize> %2"
@@ -3340,7 +3340,7 @@
 	(zero_extend:DI
 	 (plus:SI (ashift:SI (ANY_EXTEND:SI
 			      (match_operand:SHORT 1 "register_operand" "r"))
-			     (match_operand 2 "aarch64_imm3" "Ui3"))
+			     (match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		  (match_operand:SI 3 "register_operand" "r"))))]
   ""
   "add\\t%w0, %w3, %w1, <su>xt<SHORT:extsize> %2"
@@ -3520,7 +3520,7 @@
   [(set (match_operand:GPI 0 "register_operand" "=rk")
 	(plus:GPI (and:GPI
 		   (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
-			       (match_operand 2 "aarch64_imm3" "Ui3"))
+			       (match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		   (match_operand 3 "const_int_operand" "n"))
 		  (match_operand:GPI 4 "register_operand" "r")))]
   "aarch64_uxt_size (INTVAL (operands[2]), INTVAL (operands[3])) != 0"
@@ -3537,7 +3537,7 @@
 	(zero_extend:DI
 	 (plus:SI (and:SI
 		   (ashift:SI (match_operand:SI 1 "register_operand" "r")
-			      (match_operand 2 "aarch64_imm3" "Ui3"))
+			      (match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		   (match_operand 3 "const_int_operand" "n"))
 		  (match_operand:SI 4 "register_operand" "r"))))]
   "aarch64_uxt_size (INTVAL (operands[2]), INTVAL (operands[3])) != 0"
@@ -3980,7 +3980,7 @@
 	(minus:GPI (match_operand:GPI 1 "register_operand" "rk")
 		   (ashift:GPI (ANY_EXTEND:GPI
 				(match_operand:ALLX 2 "register_operand" "r"))
-			       (match_operand 3 "aarch64_imm3" "Ui3"))))]
+			       (match_operand 3 "aarch64_shift_imm3" "Ui3"))))]
   ""
   "sub\\t%<GPI:w>0, %<GPI:w>1, %w2, <su>xt<ALLX:extsize> %3"
   [(set_attr "type" "alu_ext")]
@@ -3993,7 +3993,7 @@
          (minus:SI (match_operand:SI 1 "register_operand" "rk")
 		   (ashift:SI (ANY_EXTEND:SI
 			       (match_operand:SHORT 2 "register_operand" "r"))
-			      (match_operand 3 "aarch64_imm3" "Ui3")))))]
+			      (match_operand 3 "aarch64_shift_imm3" "Ui3")))))]
   ""
   "sub\\t%w0, %w1, %w2, <su>xt<SHORT:extsize> %3"
   [(set_attr "type" "alu_ext")]
@@ -4227,7 +4227,7 @@
 	(minus:GPI (match_operand:GPI 4 "register_operand" "rk")
 		   (and:GPI
 		    (ashift:GPI (match_operand:GPI 1 "register_operand" "r")
-				(match_operand 2 "aarch64_imm3" "Ui3"))
+				(match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		    (match_operand 3 "const_int_operand" "n"))))]
   "aarch64_uxt_size (INTVAL (operands[2]),INTVAL (operands[3])) != 0"
   "*
@@ -4244,7 +4244,7 @@
 	 (minus:SI (match_operand:SI 4 "register_operand" "rk")
 		   (and:SI
 		    (ashift:SI (match_operand:SI 1 "register_operand" "r")
-			       (match_operand 2 "aarch64_imm3" "Ui3"))
+			       (match_operand 2 "aarch64_shift_imm3" "Ui3"))
 		    (match_operand 3 "const_int_operand" "n")))))]
   "aarch64_uxt_size (INTVAL (operands[2]),INTVAL (operands[3])) != 0"
   "*
@@ -4723,7 +4723,7 @@
 	(compare:CC_SWP (ashift:GPI
 			 (ANY_EXTEND:GPI
 			  (match_operand:ALLX 0 "register_operand" "r"))
-			 (match_operand 1 "aarch64_imm3" "Ui3"))
+			 (match_operand 1 "aarch64_shift_imm3" "Ui3"))
 	(match_operand:GPI 2 "register_operand" "r")))]
   ""
   "cmp\\t%<GPI:w>2, %w0, <su>xt<ALLX:extsize> %1"

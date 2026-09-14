@@ -10364,7 +10364,7 @@
 	(unspec:V4SF [(match_operand:V4SF 1 "register_operand")
 			   (match_operand:V8HF 2 "register_operand")
 			   (match_operand:V8HF 3 "register_operand")
-			   (match_operand:SI 4 "aarch64_lane_imm3")]
+			   (match_operand:SI 4 "aarch64_imm3")]
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
@@ -10384,7 +10384,7 @@
 	(unspec:V4SF [(match_operand:V4SF 1 "register_operand")
 			   (match_operand:V8HF 2 "register_operand")
 			   (match_operand:V8HF 3 "register_operand")
-			   (match_operand:SI 4 "aarch64_lane_imm3")]
+			   (match_operand:SI 4 "aarch64_imm3")]
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
@@ -10410,7 +10410,7 @@
 	  (vec_duplicate:V4HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V4SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlal\\t%0.4s, %2.4h, %3.h[%5]"
@@ -10429,7 +10429,7 @@
 	  (vec_duplicate:V4HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V4SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlsl\\t%0.4s, %2.4h, %3.h[%5]"
@@ -10447,7 +10447,7 @@
 	  (vec_duplicate:V4HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V4SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlal2\\t%0.4s, %2.4h, %3.h[%5]"
@@ -10466,7 +10466,7 @@
 	  (vec_duplicate:V4HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V4SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlsl2\\t%0.4s, %2.4h, %3.h[%5]"
@@ -10478,7 +10478,7 @@
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand")
 		      (match_operand:V4HF 2 "register_operand")
 		      (match_operand:V8HF 3 "register_operand")
-		      (match_operand:SI 4 "aarch64_lane_imm3")]
+		      (match_operand:SI 4 "aarch64_imm3")]
 	 VFMLA16_LOW))]
   "TARGET_F16FML"
 {
@@ -10499,7 +10499,7 @@
 	(unspec:V2SF [(match_operand:V2SF 1 "register_operand")
 		      (match_operand:V4HF 2 "register_operand")
 		      (match_operand:V8HF 3 "register_operand")
-		      (match_operand:SI 4 "aarch64_lane_imm3")]
+		      (match_operand:SI 4 "aarch64_imm3")]
 	 VFMLA16_HIGH))]
   "TARGET_F16FML"
 {
@@ -10526,7 +10526,7 @@
 	  (vec_duplicate:V2HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V2SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlal\\t%0.2s, %2.2h, %3.h[%5]"
@@ -10545,7 +10545,7 @@
 	  (vec_duplicate:V2HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V2SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlsl\\t%0.2s, %2.2h, %3.h[%5]"
@@ -10563,7 +10563,7 @@
 	  (vec_duplicate:V2HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V2SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlal2\\t%0.2s, %2.2h, %3.h[%5]"
@@ -10582,7 +10582,7 @@
 	  (vec_duplicate:V2HF
 	   (vec_select:HF
 	    (match_operand:V8HF 3 "register_operand" "x")
-	    (parallel [(match_operand:SI 5 "aarch64_lane_imm3" "Ui7")]))))
+	    (parallel [(match_operand:SI 5 "aarch64_imm3" "Ui7")]))))
 	 (match_operand:V2SF 1 "register_operand" "0")))]
   "TARGET_F16FML"
   "fmlsl2\\t%0.2s, %2.2h, %3.h[%5]"
