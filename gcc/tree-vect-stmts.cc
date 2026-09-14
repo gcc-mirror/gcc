@@ -6086,10 +6086,16 @@ vectorizable_assignment (vec_info *vinfo,
   /* Arguments are ready. create the new vector stmt.  */
   FOR_EACH_VEC_ELT (vec_oprnds, i, vop)
     {
-      if (CONVERT_EXPR_CODE_P (code)
-	  || code == VIEW_CONVERT_EXPR)
-	vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
-      gassign *new_stmt = gimple_build_assign (vec_dest, vop);
+      gassign *new_stmt;
+      if (code == PAREN_EXPR)
+	new_stmt = gimple_build_assign (vec_dest, PAREN_EXPR, vop);
+      else
+	{
+	  if (CONVERT_EXPR_CODE_P (code)
+	      || code == VIEW_CONVERT_EXPR)
+	    vop = build1 (VIEW_CONVERT_EXPR, vectype, vop);
+	  new_stmt = gimple_build_assign (vec_dest, vop);
+	}
       new_temp = make_ssa_name (vec_dest, new_stmt);
       gimple_assign_set_lhs (new_stmt, new_temp);
       vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
