@@ -734,9 +734,10 @@ TypeCheckType::visit (HIR::ArrayType &type)
 
 	  const_type = new TyTy::ConstValueType (capacity_expr, expected_ty,
 						 size_id, size_id);
-	  context->insert_type (type.get_size_expr ().get_mappings (),
-				const_type->as_base_type ());
 	}
+
+      context->insert_type (type.get_size_expr ().get_mappings (),
+			    const_type->as_base_type ());
     }
 
   translated

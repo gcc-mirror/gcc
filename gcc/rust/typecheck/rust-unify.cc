@@ -987,7 +987,10 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 	auto capacity_type_unify = capacity_unify->as_const_type ();
 	if (capacity_type_unify->const_kind ()
 	    == TyTy::BaseConstType::ConstKind::Error)
-	  return unify_error_type_node ();
+	  {
+	    emit_error = false;
+	    return unify_error_type_node ();
+	  }
 
 	return new TyTy::ArrayType (
 	  type.get_ref (), type.get_ty_ref (), type.get_ident ().locus,
