@@ -2,6 +2,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mthumb -mrestrict-it" } */
 /* { dg-require-effective-target arm_thumb2_ok } */
+/* { dg-skip-if "-mrestrict-it does not apply to M-profile" arm_cortex_m } */
 
 int
 f1(int x, int y, int z)
@@ -18,4 +19,4 @@ f1(int x, int y, int z)
     }
   return x + y + z;
 }
-/* { dg-final { scan-assembler "b(gt|le)" } } */
+/* { dg-final { scan-assembler {\tb(gt|le|lt|ge)(\.[nw])?\s} } } */
