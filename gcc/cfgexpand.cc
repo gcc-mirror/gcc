@@ -3781,7 +3781,10 @@ expand_asm_stmt (gasm *stmt)
       if (GET_CODE (op) == CONCAT)
 	op = force_reg (GET_MODE (op), op);
       else if (MEM_P (op))
-	op = validize_mem (op);
+	{
+	  op = validize_mem (op);
+	  MEM_NOTRAP_P (op) = !tree_could_trap_p (val);
+	}
 
       if (asm_operand_ok (op, constraint, NULL) <= 0)
 	{

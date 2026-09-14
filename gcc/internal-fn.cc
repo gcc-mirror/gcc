@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "tree-eh.h"
 #include "gimple.h"
 #include "predict.h"
 #include "stringpool.h"
@@ -3144,8 +3145,9 @@ expand_partial_load_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
     icode = convert_optab_handler (optab, TYPE_MODE (type),
 				   TYPE_MODE (TREE_TYPE (maskt)));
 
-  mem = expand_expr (rhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  mem = expand_expr (rhs, NULL_RTX, VOIDmode, EXPAND_MEMORY);
   gcc_assert (MEM_P (mem));
+  MEM_NOTRAP_P (mem) = !tree_could_trap_p (rhs);
   /* The built MEM_REF does not accurately reflect that the load
      is only partial.  Clear it.  */
   set_mem_expr (mem, NULL_TREE);
