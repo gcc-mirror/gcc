@@ -509,6 +509,7 @@ HIRCompileBase::setup_abi_options (tree fndecl, ABI abi)
     {
     case Rust::ABI::RUST:
     case Rust::ABI::INTRINSIC:
+    case Rust::ABI::PLATFORM_INTRINSIC:
     case Rust::ABI::C:
     case Rust::ABI::CDECL:
       // `decl_attributes` function (not the macro) has the side-effect of

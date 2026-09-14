@@ -86,7 +86,8 @@ TypeCheckExpr::ResolveOpOverload (LangItem::Kind lang_item_type,
 void
 TypeCheckExpr::visit (HIR::TupleIndexExpr &expr)
 {
-  auto resolved = TypeCheckExpr::Resolve (expr.get_tuple_expr ());
+  auto resolved
+    = TypeCheckExpr::Resolve (expr.get_tuple_expr ())->destructure ();
   if (resolved->get_kind () == TyTy::TypeKind::ERROR)
     {
       rust_error_at (expr.get_tuple_expr ().get_locus (),

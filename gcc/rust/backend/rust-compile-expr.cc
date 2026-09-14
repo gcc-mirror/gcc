@@ -28,6 +28,7 @@
 #include "rust-compile-block.h"
 #include "rust-compile-drop.h"
 #include "rust-compile-implitem.h"
+#include "rust-compile-platform-intrinsic.h"
 #include "rust-constexpr.h"
 #include "rust-compile-type.h"
 #include "rust-finalized-name-resolution-context.h"
@@ -1696,6 +1697,23 @@ CompileExpr::visit (HIR::CallExpr &expr)
     return true;
   };
 
+  // special check for platform-intrinsic functions
+  TyTy::FnType *platform_intrinsic = nullptr;
+  if (tyty->get_kind () == TyTy::TypeKind::FNDEF)
+    {
+      auto *fn_ty = static_cast<TyTy::FnType *> (tyty);
+      if (fn_ty->get_abi () == ABI::PLATFORM_INTRINSIC)
+	platform_intrinsic = fn_ty;
+    }
+
+  if (ctx->const_context_p () && platform_intrinsic != nullptr)
+    {
+      rust_sorry_at (
+	expr.get_locus (),
+	"platform intrinsic calls in consts are not supported yet");
+      return;
+    }
+
   auto fn_address = CompileExpr::Compile (expr.get_fnexpr (), ctx);
   if (ctx->const_context_p ())
     {
@@ -1774,6 +1792,13 @@ CompileExpr::visit (HIR::CallExpr &expr)
 
       // add it to the list
       args.push_back (rvalue);
+    }
+
+  if (platform_intrinsic != nullptr)
+    {
+      translated = PlatformIntrinsic::compile_call (ctx, platform_intrinsic,
+						    args, expr.get_locus ());
+      return;
     }
 
   // must be a regular call to a function

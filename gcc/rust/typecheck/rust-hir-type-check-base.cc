@@ -669,7 +669,8 @@ TypeCheckBase::resolve_generic_params (
 
 	case HIR::GenericParam::GenericKind::CONST:
 	  {
-	    if (is_foreign && abi != Rust::ABI::INTRINSIC)
+	    if (is_foreign && abi != Rust::ABI::INTRINSIC
+		&& abi != Rust::ABI::PLATFORM_INTRINSIC)
 	      {
 		rust_error_at (generic_param->get_locus (), ErrorCode::E0044,
 			       "foreign items may not have const parameters");
@@ -747,7 +748,8 @@ TypeCheckBase::resolve_generic_params (
 
 	case HIR::GenericParam::GenericKind::TYPE:
 	  {
-	    if (is_foreign && abi != Rust::ABI::INTRINSIC)
+	    if (is_foreign && abi != Rust::ABI::INTRINSIC
+		&& abi != Rust::ABI::PLATFORM_INTRINSIC)
 	      {
 		rust_error_at (generic_param->get_locus (), ErrorCode::E0044,
 			       "foreign items may not have type parameters");

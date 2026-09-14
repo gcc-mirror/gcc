@@ -229,6 +229,7 @@ GRS_OBJS = \
     rust/rust-compile-type.o \
     rust/rust-compile-block.o \
     rust/rust-compile-struct-field-expr.o \
+    rust/rust-compile-platform-intrinsic.o \
     rust/rust-constexpr.o \
     rust/rust-compile-base.o \
     rust/rust-compile-drop-builder.o \
