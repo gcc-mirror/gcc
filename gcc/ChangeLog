@@ -1,3 +1,23 @@
+2026-09-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-09-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/127318
+	* config/riscv/riscv.cc (riscv_v_adjust_scalable_frame): Attach
+	REG_CFA_DEF_CFA note to the copy from the stack pointer.
+
+2026-09-13  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2026-09-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/127153
+	* config/loongarch/loongarch.md (both_non_zero): Defer the split
+	post reload and add constraint to ensure operands[0] and
+	operands[2] are in different hard registers.
+	(both_non_zero_subreg): Likewise.
+
 2026-09-12  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
 
 	Backported from master:

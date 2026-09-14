@@ -1,3 +1,19 @@
+2026-09-13  Zhou Qiankang  <wszqkzqk@qq.com>
+
+	Backported from master:
+	2026-06-08  Zhou Qiankang  <wszqkzqk@qq.com>
+
+	PR c++/125642
+	* g++.dg/pr125642.C: New test.
+
+2026-09-13  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2026-09-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/127153
+	* c-c++-common/pr127153.c: New test.
+
 2026-09-12  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
 
 	Backported from master:
