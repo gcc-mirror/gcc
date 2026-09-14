@@ -631,7 +631,26 @@ along with GCC; see the file COPYING3.  If not see
 	     && wi::eq_p (int_cst_2, limit_2))
 	 || (wi::eq_p (int_cst_1, offset) && wi::eq_p (int_cst_2, limit_2))
 	 || (wi::eq_p (int_cst_1, otype_max_in_range)
-	     && wi::eq_p (int_cst_2, limit_1))))))))
+	     && wi::eq_p (int_cst_2, limit_1)))))))
+ (match (signed_integer_sat_trunc @0)
+  /* SAT_S_TRUNC = (NT)MAX (MIN (X, NT_MAX), NT_MIN).  */
+  (convert (integer_constant_clamp@3 @0 @1 @2))
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& single_use (@3))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int otype_min = wi::mask (otype_precision - 1, true,
+				    itype_precision);
+     wide_int otype_max = wi::mask (otype_precision - 1, false,
+				    itype_precision);
+     wide_int lo_cst = wi::to_wide (@1, itype_precision);
+     wide_int hi_cst = wi::to_wide (@2, itype_precision);
+    }
+    (if (otype_precision < itype_precision
+	 && wi::eq_p (lo_cst, otype_min)
+	 && wi::eq_p (hi_cst, otype_max)))))))
 
 /* An arithmetic right shift preserves the sign of its signed input.  The
    saturation value can therefore use the input sign while the range check
