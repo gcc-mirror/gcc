@@ -76,6 +76,7 @@
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_LIST
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -104,9 +105,6 @@ namespace minipools {
 
   struct minipool_node
   {
-    /* Doubly linked chain of entries.  */
-    Mnode * next;
-    Mnode * prev;
     /* The maximum offset into the code that this entry can be placed.  While
        pushing fixes for forward references, all entries are sorted in order
        of increasing max_address.  */
@@ -147,21 +145,21 @@ namespace minipools {
     minipool () { reset (); }
     void reset()
       {
-	vector_head = NULL;
-	vector_tail = NULL;
+	elements.clear();
 	vector_label = NULL;
       }
-    Mnode *head () { return vector_head; }
+    Mnode *head () { return elements.front (); }
     rtx_code_label *label () { return vector_label; }
     Mnode *add_forward_ref (Mfix *);
     Mnode *add_backward_ref (Mfix *);
     void assign_offsets (Mfix *);
     void dump (rtx_insn *);
   private:
-    Mnode *move_fix_forward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
-    Mnode *move_fix_backward_ref (Mnode *, Mnode *, HOST_WIDE_INT);
-    Mnode *vector_head;
-    Mnode *vector_tail;
+    Mnode *move_fix_forward_ref (std::list<Mnode *>::iterator,
+				 std::list<Mnode *>::iterator, HOST_WIDE_INT);
+    Mnode *move_fix_backward_ref (std::list<Mnode *>::iterator,
+				  std::list<Mnode *>::iterator, HOST_WIDE_INT);
+    std::list<Mnode *> elements;
     rtx_code_label *vector_label;
   };
 
@@ -346,56 +344,46 @@ namespace minipools {
      If MAX_MP is NULL, then MP doesn't need moving, but the addressing
      constraints may need updating.  */
   Mnode *
-  minipool::move_fix_forward_ref (Mnode *mp, Mnode *max_mp,
+  minipool::move_fix_forward_ref (std::list<Mnode *>::iterator mpi,
+				  std::list<Mnode *>::iterator max_mpi,
 				  HOST_WIDE_INT max_address)
   {
     /* The code below assumes these are different.  */
-    gcc_assert (mp != max_mp);
+    gcc_assert (mpi != max_mpi);
 
-    if (max_mp == NULL)
+    Mnode *mp = *mpi;
+
+    if (max_mpi == elements.end ())
       {
 	if (max_address < mp->max_address)
 	  mp->max_address = max_address;
       }
     else
       {
+	Mnode *max_mp = *max_mpi;
+
 	if (max_address > max_mp->max_address - mp->fix_size)
 	  mp->max_address = max_mp->max_address - mp->fix_size;
 	else
 	  mp->max_address = max_address;
 
-	/* Unlink MP from its current position.  Since max_mp is non-null,
-	   mp->prev must be non-null.  */
-	mp->prev->next = mp->next;
-	if (mp->next != NULL)
-	  mp->next->prev = mp->prev;
-	else
-	  vector_tail = mp->prev;
-
-	/* Re-insert it before MAX_MP.  */
-	mp->next = max_mp;
-	mp->prev = max_mp->prev;
-	max_mp->prev = mp;
-
-	if (mp->prev != NULL)
-	  mp->prev->next = mp;
-	else
-	  vector_head = mp;
+	elements.splice (max_mpi, elements, mpi);
       }
 
-    /* Save the new entry.  */
-    max_mp = mp;
+    Mnode *result = mp;
 
     /* Scan over the preceding entries and adjust their addresses as
        required.  */
-    while (mp->prev != NULL
-	   && mp->prev->max_address > mp->max_address - mp->prev->fix_size)
+    Mnode *pmp;
+    for (; mpi != elements.begin (); mp = pmp, mpi--)
       {
-	mp->prev->max_address = mp->max_address - mp->prev->fix_size;
-	mp = mp->prev;
+	pmp = *std::prev (mpi);
+	if (pmp->max_address <= mp->max_address - pmp->fix_size)
+	  break;
+	pmp->max_address = mp->max_address - pmp->fix_size;
       }
 
-    return max_mp;
+    return result;
   }
 
   /* Add a constant to the minipool for a forward reference.  Returns the
@@ -403,27 +391,28 @@ namespace minipools {
   Mnode *
   minipool::add_forward_ref (Mfix *fix)
   {
-    /* If set, max_mp is the first pool_entry that has a lower
-       constraint than the one we are trying to add.  */
-    Mnode *       max_mp = NULL;
     HOST_WIDE_INT max_address = fix->address + fix->forwards - minipool_pad;
-    Mnode *       mp;
 
     /* If the minipool starts before the end of FIX->INSN then this FIX
        cannot be placed into the current pool.  Furthermore, adding the
        new constant pool entry may cause the pool to start FIX_SIZE bytes
        earlier.  */
-    if (vector_head &&
+    if (!elements.empty () &&
 	(fix->address + get_attr_length (fix->insn)
-	 >= vector_head->max_address - fix->fix_size))
+	 >= elements.front ()->max_address - fix->fix_size))
       return NULL;
 
+    /* If valid, max_mp is the first pool_entry that has a lower
+       constraint than the one we are trying to add.  */
+    std::list<Mnode *>::iterator max_mpi = elements.end ();
     /* Scan the pool to see if a constant with the same value has
        already been added.  While we are doing this, also note the
        location where we must insert the constant if it doesn't already
        exist.  */
-    for (mp = vector_head; mp != NULL; mp = mp->next)
+    std::list<Mnode *>::iterator mpi = elements.begin ();
+    for (; mpi != elements.end (); mpi++)
       {
+	Mnode *mp = *mpi;
 	if (GET_CODE (fix->value) == GET_CODE (mp->value)
 	    && fix->mode == mp->mode
 	    && (!LABEL_P (fix->value)
@@ -433,24 +422,24 @@ namespace minipools {
 	  {
 	    /* More than one fix references this entry.  */
 	    mp->refcount++;
-	    return move_fix_forward_ref (mp, max_mp, max_address);
+	    return move_fix_forward_ref (mpi, max_mpi, max_address);
 	  }
 
 	/* Note the insertion point if necessary.  */
-	if (max_mp == NULL
+	if (max_mpi == elements.end ()
 	    && mp->max_address > max_address)
-	  max_mp = mp;
+	  max_mpi = mpi;
 
 	/* If we are inserting an 8-bytes aligned quantity and
 	   we have not already found an insertion point, then
 	   make sure that all such 8-byte aligned quantities are
 	   placed at the start of the pool.  */
 	if (ARM_DOUBLEWORD_ALIGN
-	    && max_mp == NULL
+	    && max_mpi == elements.end ()
 	    && fix->fix_size >= 8
 	    && mp->fix_size < 8)
 	  {
-	    max_mp = mp;
+	    max_mpi = mpi;
 	    max_address = mp->max_address;
 	  }
       }
@@ -461,7 +450,7 @@ namespace minipools {
        any existing entry.  Otherwise, we insert the new fix before
        MAX_MP and, if necessary, adjust the constraints on the other
        entries.  */
-    mp = XNEW (Mnode);
+    Mnode *mp = XNEW (Mnode);
     mp->fix_size = fix->fix_size;
     mp->mode = fix->mode;
     mp->value = fix->value;
@@ -469,104 +458,83 @@ namespace minipools {
     /* Not yet required for a backwards ref.  */
     mp->min_address = -65536;
 
-    if (max_mp == NULL)
+    if (max_mpi == elements.end ())
       {
 	mp->max_address = max_address;
-	mp->next = NULL;
-	mp->prev = vector_tail;
-
-	if (mp->prev == NULL)
-	  {
-	    vector_head = mp;
-	    vector_label = gen_label_rtx ();
-	  }
-	else
-	  mp->prev->next = mp;
-
-	vector_tail = mp;
+	if (elements.empty ())
+	  vector_label = gen_label_rtx ();
+	mpi = elements.insert (elements.end (), mp);
       }
     else
       {
-	if (max_address > max_mp->max_address - mp->fix_size)
-	  mp->max_address = max_mp->max_address - mp->fix_size;
+	if (max_address > (*max_mpi)->max_address - mp->fix_size)
+	  mp->max_address = (*max_mpi)->max_address - mp->fix_size;
 	else
 	  mp->max_address = max_address;
 
-	mp->next = max_mp;
-	mp->prev = max_mp->prev;
-	max_mp->prev = mp;
-	if (mp->prev != NULL)
-	  mp->prev->next = mp;
-	else
-	  vector_head = mp;
+	mpi = elements.insert (max_mpi, mp);
       }
-
-    /* Save the new entry.  */
-    max_mp = mp;
+    Mnode *result = mp;
 
     /* Scan over the preceding entries and adjust their addresses as
        required.  */
-    while (mp->prev != NULL
-	   && mp->prev->max_address > mp->max_address - mp->prev->fix_size)
+    Mnode *pmp;
+    for (; mpi != elements.begin (); mp = pmp, mpi--)
       {
-	mp->prev->max_address = mp->max_address - mp->prev->fix_size;
-	mp = mp->prev;
+	pmp = *std::prev (mpi);
+	if (pmp->max_address <= mp->max_address - pmp->fix_size)
+	  break;
+	pmp->max_address = mp->max_address - pmp->fix_size;
       }
 
-    return max_mp;
+    return result;
   }
 
   Mnode *
-  minipool::move_fix_backward_ref (Mnode *mp, Mnode *min_mp,
+  minipool::move_fix_backward_ref (std::list<Mnode *>::iterator mpi,
+				   std::list<Mnode *>::iterator min_mpi,
 				   HOST_WIDE_INT  min_address)
   {
     HOST_WIDE_INT offset;
 
     /* The code below assumes these are different.  */
-    gcc_assert (mp != min_mp);
+    gcc_assert (std::next (mpi) != min_mpi);
 
-    if (min_mp == NULL)
+    Mnode *result = *mpi;
+
+    if (min_mpi == elements.begin ())
       {
-	if (min_address > mp->min_address)
-	  mp->min_address = min_address;
+	if (min_address > result->min_address)
+	  result->min_address = min_address;
       }
     else
       {
 	/* We will adjust this below if it is too loose.  */
-	mp->min_address = min_address;
-
-	/* Unlink MP from its current position.  Since min_mp is non-null,
-	   mp->next must be non-null.  */
-	mp->next->prev = mp->prev;
-	if (mp->prev != NULL)
-	  mp->prev->next = mp->next;
-	else
-	  vector_head = mp->next;
-
-	/* Reinsert it after MIN_MP.  */
-	mp->prev = min_mp;
-	mp->next = min_mp->next;
-	min_mp->next = mp;
-	if (mp->next != NULL)
-	  mp->next->prev = mp;
-	else
-	  vector_tail = mp;
+	result->min_address = min_address;
+	/* Insert before min_mpi.  */
+	elements.splice (min_mpi, elements, mpi);
       }
 
-    min_mp = mp;
-
     offset = 0;
-    for (mp = vector_head; mp != NULL; mp = mp->next)
+    mpi = elements.begin ();
+    std::list<Mnode *>::iterator next;
+    for (; mpi != elements.end (); mpi = next)
       {
+	Mnode *mp = *mpi;
 	mp->offset = offset;
 	if (mp->refcount > 0)
 	  offset += mp->fix_size;
 
-	if (mp->next && mp->next->min_address < mp->min_address + mp->fix_size)
-	  mp->next->min_address = mp->min_address + mp->fix_size;
+	next = std::next (mpi);
+	if (next != elements.end ())
+	  {
+	    Mnode *nmp = *next;
+	    if (nmp->min_address < mp->min_address + mp->fix_size)
+	      nmp->min_address = mp->min_address + mp->fix_size;
+	  }
       }
 
-    return min_mp;
+    return result;
   }
 
   /* Add a constant to the minipool for a backward reference.  Returns the
@@ -581,17 +549,15 @@ namespace minipools {
   {
     /* If set, min_mp is the last pool_entry that has a lower constraint
        than the one we are trying to add.  */
-    Mnode *min_mp = NULL;
     /* This can be negative, since it is only a constraint.  */
     HOST_WIDE_INT  min_address = fix->address - fix->backwards;
-    Mnode *mp;
 
     /* If we can't reach the current pool from this insn, or if we can't
        insert this entry at the end of the pool without pushing other
        fixes out of range, then we don't try.  This ensures that we
        can't fail later on.  */
     if (min_address >= minipool_barrier->address
-	|| (vector_tail->min_address + fix->fix_size
+	|| (elements.back ()->min_address + fix->fix_size
 	    >= minipool_barrier->address))
       return NULL;
 
@@ -599,8 +565,11 @@ namespace minipools {
        already been added.  While we are doing this, also note the
        location where we must insert the constant if it doesn't already
        exist.  */
-    for (mp = vector_tail; mp != NULL; mp = mp->prev)
+    std::list<Mnode *>::reverse_iterator rmpi = elements.rbegin ();
+    std::list<Mnode *>::reverse_iterator min_rmpi = elements.rend ();
+    for (; rmpi != elements.rend (); rmpi++)
       {
+	Mnode *mp = *rmpi;
 	if (GET_CODE (fix->value) == GET_CODE (mp->value)
 	    && fix->mode == mp->mode
 	    && (!LABEL_P (fix->value)
@@ -611,14 +580,15 @@ namespace minipools {
 	       end of the table (this is conservative).  */
 	    && (mp->max_address
 		> (minipool_barrier->address
-		   + vector_tail->offset
-		   + vector_tail->fix_size)))
+		   + elements.back ()->offset
+		   + elements.back ()->fix_size)))
 	  {
 	    mp->refcount++;
-	    return move_fix_backward_ref (mp, min_mp, min_address);
+	    return move_fix_backward_ref (std::prev (rmpi.base ()),
+					  min_rmpi.base (), min_address);
 	  }
 
-	if (min_mp != NULL)
+	if (min_rmpi != elements.rend ())
 	  mp->min_address += fix->fix_size;
 	else
 	  {
@@ -631,7 +601,7 @@ namespace minipools {
 		    && fix->fix_size >= 8 && mp->fix_size < 8)
 		  return NULL;
 		else
-		  min_mp = mp;
+		  min_rmpi = rmpi;
 	      }
 	    else if (mp->max_address
 		     < minipool_barrier->address + mp->offset + fix->fix_size)
@@ -645,7 +615,7 @@ namespace minipools {
 		  return NULL;
 		else
 		  {
-		    min_mp = mp;
+		    min_rmpi = rmpi;
 		    min_address = mp->min_address + fix->fix_size;
 		  }
 	      }
@@ -655,14 +625,14 @@ namespace minipools {
 		     && fix->fix_size < 8
 		     && mp->fix_size >= 8)
 	      {
-		min_mp = mp;
+		min_rmpi = rmpi;
 		min_address = mp->min_address + fix->fix_size;
 	      }
 	  }
       }
 
     /* We need to create a new entry.  */
-    mp = XNEW (Mnode);
+    Mnode *mp = XNEW (Mnode);
     mp->fix_size = fix->fix_size;
     mp->mode = fix->mode;
     mp->value = fix->value;
@@ -671,68 +641,51 @@ namespace minipools {
 
     mp->min_address = min_address;
 
-    if (min_mp == NULL)
+    std::list<Mnode *>::iterator mpi;
+
+    if (min_rmpi == elements.rend ())
       {
-	mp->prev = NULL;
-	mp->next = vector_head;
-
-	if (mp->next == NULL)
-	  {
-	    vector_tail = mp;
-	    vector_label = gen_label_rtx ();
-	  }
-	else
-	  mp->next->prev = mp;
-
-	vector_head = mp;
+	gcc_assert (!elements.empty ());
+	mpi = elements.insert (elements.begin (), mp);
       }
     else
-      {
-	mp->next = min_mp->next;
-	mp->prev = min_mp;
-	min_mp->next = mp;
+      mpi = elements.insert (min_rmpi.base (), mp);
 
-	if (mp->next != NULL)
-	  mp->next->prev = mp;
-	else
-	  vector_tail = mp;
-      }
+    Mnode *result = mp;
 
-    /* Save the new entry.  */
-    min_mp = mp;
-
-    if (mp->prev)
-      mp = mp->prev;
+    if (mpi != elements.begin ())
+      mp = *--mpi;
     else
       mp->offset = 0;
 
     /* Scan over the following entries and adjust their offsets.  */
-    while (mp->next != NULL)
+    Mnode *nmp;
+    for (mpi++; mpi != elements.end (); mp = nmp, mpi++)
       {
-	if (mp->next->min_address < mp->min_address + mp->fix_size)
-	  mp->next->min_address = mp->min_address + mp->fix_size;
+	nmp = *mpi;
+	if (nmp->min_address < mp->min_address + mp->fix_size)
+	  nmp->min_address = mp->min_address + mp->fix_size;
 
 	if (mp->refcount)
-	  mp->next->offset = mp->offset + mp->fix_size;
+	  nmp->offset = mp->offset + mp->fix_size;
 	else
-	  mp->next->offset = mp->offset;
-
-	mp = mp->next;
+	  nmp->offset = mp->offset;
       }
 
-    return min_mp;
+    return result;
   }
 
   void
   minipool::assign_offsets (Mfix *barrier)
   {
     HOST_WIDE_INT offset = 0;
-    Mnode *mp;
 
     minipool_barrier = barrier;
 
-    for (mp = vector_head; mp != NULL; mp = mp->next)
+    std::list<Mnode *>::iterator mpi = elements.begin ();
+    for (; mpi != elements.end (); mpi++)
       {
+	Mnode *mp = *mpi;
 	mp->offset = offset;
 
 	if (mp->refcount > 0)
@@ -744,17 +697,19 @@ namespace minipools {
   void
   minipool::dump (rtx_insn *scan)
   {
-    Mnode * mp;
-    Mnode * nmp;
     int align64 = 0;
 
+    std::list<Mnode *>::iterator mpi = elements.begin ();
     if (ARM_DOUBLEWORD_ALIGN)
-      for (mp = vector_head; mp != NULL; mp = mp->next)
-	if (mp->refcount > 0 && mp->fix_size >= 8)
-	  {
-	    align64 = 1;
-	    break;
-	  }
+      for (; mpi != elements.end (); mpi++)
+	{
+	  Mnode *mp = *mpi;
+	  if (mp->refcount > 0 && mp->fix_size >= 8)
+	    {
+	      align64 = 1;
+	      break;
+	    }
+	}
 
     if (dump_file)
       fprintf (dump_file,
@@ -767,8 +722,9 @@ namespace minipools {
     scan = emit_insn_after (align64 ? gen_align_8 () : gen_align_4 (), scan);
     scan = emit_label_after (vector_label, scan);
 
-    for (mp = vector_head; mp != NULL; mp = nmp)
+    for (mpi = elements.begin (); mpi != elements.end (); mpi++)
       {
+	Mnode *mp = *mpi;
 	if (mp->refcount > 0)
 	  {
 	    if (dump_file)
@@ -820,8 +776,6 @@ namespace minipools {
 		gcc_unreachable ();
 	      }
 	  }
-
-	nmp = mp->next;
 	free (mp);
       }
 
