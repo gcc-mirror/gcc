@@ -23,6 +23,13 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 
+/* Clamp @0 between the constant bounds @1 and @2.  The source can put the
+   MIN or the MAX first.  */
+(match (integer_constant_clamp @0 @1 @2)
+ (max (min @0 INTEGER_CST@2) INTEGER_CST@1))
+(match (integer_constant_clamp @0 @1 @2)
+ (min (max @0 INTEGER_CST@1) INTEGER_CST@2))
+
 /* Saturation add for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (usadd_overflow_mask @0 @1)
@@ -293,7 +300,21 @@ along with GCC; see the file COPYING3.  If not see
 	 && wi::eq_p (trunc_max, int_cst_1)
 	 && cmp >= 0
 	 && expr_not_equal_to (@0, wi::min_value (itype_precision,
-						  SIGNED))))))))
+						  SIGNED)))))))
+ (match (unsigned_integer_narrow_clip @0)
+  /* SAT_US_TRUNC = (NT)MAX (MIN (X, NT_MAX), 0).  */
+  (convert (integer_constant_clamp@3 @0 integer_zerop@1 @2))
+  (if (!TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& single_use (@3))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int hi_cst = wi::to_wide (@2, itype_precision);
+    }
+    (if (otype_precision < itype_precision
+	 && wi::eq_p (hi_cst, trunc_max)))))))
 
 /* Saturation truncate for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
