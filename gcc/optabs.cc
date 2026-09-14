@@ -7354,10 +7354,17 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
 
   if (can_compare_and_swap_p (mode, true))
     {
+      rtx_insn *start = get_last_insn ();
+      /* Force val into a register if it could change value when the
+	 atomic insn updates mem.  */
+      if (reg_overlap_mentioned_p (mem, val))
+	val = force_reg (mode, val);
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
       if (expand_compare_and_swap_loop (mem, target, val, NULL_RTX))
 	return target;
+      else
+	delete_insns_since (start);
     }
 
   return NULL_RTX;
@@ -8153,6 +8160,12 @@ expand_atomic_fetch_op_no_fallback (rtx target, rtx mem, rtx val,
      try that operation.  */
   if (after || unused_result || optab.reverse_code != UNKNOWN)
     {
+      rtx_insn *start = get_last_insn ();
+      /* Force val into a register if it could change value when the
+	 atomic insn updates mem.  */
+      if (!unused_result && reg_overlap_mentioned_p (mem, val))
+	val = force_reg (mode, val);
+
       /* Try the __atomic version, then the older __sync version.  */
       result = maybe_emit_op (&optab, target, mem, val, true, model, !after);
       if (!result)
@@ -8179,6 +8192,8 @@ expand_atomic_fetch_op_no_fallback (rtx target, rtx mem, rtx val,
 					  true, OPTAB_LIB_WIDEN);
 	  return result;
 	}
+      else
+	delete_insns_since (start);
     }
 
   /* No direct opcode can be generated.  */
@@ -8278,6 +8293,11 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
     {
       rtx_insn *insn;
       rtx t0 = gen_reg_rtx (mode), t1;
+      rtx_insn *start = get_last_insn ();
+      /* Force val into a register if it could change value when the
+	 atomic insn updates mem.  */
+      if (reg_overlap_mentioned_p (mem, val))
+	val = force_reg (mode, val);
 
       start_sequence ();
 
@@ -8311,6 +8331,8 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 
       if (t1 != NULL && expand_compare_and_swap_loop (mem, t0, t1, insn))
         return target;
+      else
+	delete_insns_since (start);
     }
 
   return NULL_RTX;
