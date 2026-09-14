@@ -1,3 +1,38 @@
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* acinclude.m4: Rename configure variables to match the
+	library.
+	* configure.ac: Likewise.
+	* configure.host: Likewise.
+	* libm2iso/wrapclock.cc: Likewise.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libm2iso/wrapclock.cc (GetTimeRealtime): Provide a fallback when
+	clock_gettime is not available.
+
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* acinclude.m4:  Do not gate the use of 'timespec' with
+	_POSIX_TIMERS > 0. For the auto case, set ac_has_clock_monotonic
+	and ac_has_clock_realtime for Darwin versions that implement them.
+	* configure: Regenerate.
+
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* libm2iso/wrapclock.cc: Use stdlib.h instead of
+	malloc.h.
+	* libm2iso/wrapsock.c: Likewise.
+	* libm2iso/wraptime.cc: Likewise.
+
 2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* Makefile.am (GM2_FOR_TARGET_ESC): Remove.

@@ -1,3 +1,44 @@
+2026-09-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/103474
+	* simplify.cc (simplify_cobound): Take the array spec from the
+	base symbol, using its class data for a CLASS coarray, so that a
+	subobject of a coarray finds the codimensions.  Return NULL for a
+	symbol already flagged as erroneous and in place of the two
+	gcc_unreachable calls reached on invalid code.
+	* resolve.cc (gfc_expression_rank): Track the reference carrying
+	the codimensions and take the corank from it rather than from the
+	last array reference.  Clear it at an allocatable or pointer
+	component selector, which ends the coarray.
+	* trans-intrinsic.cc (strip_subobject_of_coarray): New function.
+	Return a copy of the expression cut back to the reference carrying
+	the codimensions.
+	(conv_intrinsic_cobound, trans_this_image, trans_image_index): Use
+	it, so that the descriptor queried for the cobounds is that of the
+	coarray and not that of a component of it.
+
+2026-09-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126781
+	* check.cc (check_team_or_team_number): New function.
+	(gfc_check_image_index, gfc_check_num_images): Take the actual
+	argument list and use it.
+	* intrinsic.cc (add_sym_2red, add_sym_4red): New functions.
+	(add_functions): Give NUM_IMAGES and IMAGE_INDEX separate TEAM
+	and TEAM_NUMBER arguments.
+	(check_specific): Pass the actual argument list to
+	gfc_check_num_images and gfc_check_image_index.
+	* intrinsic.h (gfc_check_num_images, gfc_check_image_index,
+	gfc_simplify_image_index, gfc_simplify_num_images,
+	gfc_resolve_image_index): Update prototypes.
+	* intrinsic.texi (IMAGE_INDEX, NUM_IMAGES): Document TEAM and
+	TEAM_NUMBER as separate arguments.  Fix the NUM_IMAGES example.
+	* iresolve.cc (gfc_resolve_image_index): Add TEAM_NUMBER argument.
+	* simplify.cc (gfc_simplify_num_images, gfc_simplify_image_index):
+	Likewise.
+	* trans-intrinsic.cc (trans_image_index, trans_num_images): Take
+	the team number from the TEAM_NUMBER argument.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622

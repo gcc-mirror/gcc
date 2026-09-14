@@ -1,3 +1,137 @@
+2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/torture/minmax-swar-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-2.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-3.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-4.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-5.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-6.c: New test.
+	* gcc.dg/tree-ssa/minmax-swar-7.c: New test.
+
+2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/torture/minmax-negate-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-negate-1.c: New test.
+	* gcc.dg/tree-ssa/minmax-negate-2.c: New test.
+	* gcc.dg/tree-ssa/minmax-negate-3.c: New test.
+
+2026-09-13  Jeff Law  <jeffreyalaw@gmail.com>
+	    Sun Yuechi  <sunyuechi@iscas.ac.cn
+
+	* gcc.target/riscv/bclr-lowest-set-bit-1.c: Update expected output.
+	* gcc.target/riscv/bclr-lowest-set-bit-2.c: New test.
+
+2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/torture/abs-gt-1.c: New test.
+	* gcc.dg/torture/ior-range-test-1.c: New test.
+	* gcc.dg/tree-ssa/ior-range-test-1.c: New test.
+	* gcc.dg/tree-ssa/ior-range-test-2.c: New test.
+	* gcc.dg/tree-ssa/ior-range-test-3.c: New test.
+
+2026-09-13  Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* gcc.target/riscv/crc-builtin-zbc32.c: Add reversed crc32 tests.
+
+2026-09-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/103474
+	* gfortran.dg/coarray_52.f90: New test.
+	* gfortran.dg/coarray/cobounds_subobject_1.f90: New test.
+
+2026-09-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126781
+	* gfortran.dg/coarray_this_image_3.f90: Update expected errors.
+	* gfortran.dg/coarray/num_images_team_1.f90: New test.
+	* gfortran.dg/coarray/num_images_team_2.f90: New test.
+	* gfortran.dg/coarray_team_kw_1.f90: New test.
+	* gfortran.dg/coarray_team_std_1.f90: New test.
+
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/126811
+	* g++.dg/cpp0x/nsdmi-template27.C: New test.
+
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.c-torture/compile/pr106433.c: Require avx512 support from the
+	assembler.
+	* gcc.c-torture/compile/pr113322-1.c: Likewise.
+	* gcc.c-torture/compile/pr116348.c: Likewise.
+	* gcc.c-torture/compile/pr97576.c: Likewise.
+
+2026-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125820
+	PR c++/124249
+	PR c++/124414
+	* g++.dg/cpp2a/concepts-uneval3.C: Add a dg-error.
+	* g++.dg/gcov/gcov-24.C: Adjust expected output.
+	* g++.dg/reflect/bit_cast.C: Remove dg-error.  Extend.
+	* g++.dg/reflect/crash12.C: Remove dg-error.
+	* g++.dg/reflect/crash18.C: Likewise.
+	* g++.dg/reflect/diag3.C: Adjust expected output.
+	* g++.dg/reflect/expr11.C: Likewise.
+	* g++.dg/reflect/expr12.C: Likewise.
+	* g++.dg/reflect/init10.C: Likewise.
+	* g++.dg/reflect/init11.C: Likewise.
+	* g++.dg/reflect/init12.C: Remove dg-error.
+	* g++.dg/reflect/init16.C: Adjust expected output.
+	* g++.dg/reflect/init19.C: Remove dg-error.
+	* g++.dg/reflect/init4.C: Add an XFAIL.
+	* g++.dg/reflect/init5.C: Remove dg-error.
+	* g++.dg/reflect/init6.C: Adjust expected output.
+	* g++.dg/reflect/init7.C: Likewise.
+	* g++.dg/reflect/init9.C: Likewise.
+	* g++.dg/reflect/override1.C: Likewise.
+	* g++.dg/reflect/p2996-15.C: Remove dg-error.
+	* g++.dg/reflect/parm3.C: Adjust expected output.
+	* g++.dg/reflect/parm4.C: Likewise.
+	* g++.dg/reflect/pr124012.C: Remove dg-error.
+	* g++.dg/reflect/type12.C: Likewise.
+	* g++.dg/reflect/type2.C: Adjust expected output.
+	* g++.dg/reflect/bit_cast2.C: New test.
+	* g++.dg/reflect/expr19.C: New test.
+	* g++.dg/reflect/null7.C: New test.
+	* g++.dg/reflect/type_trait19.C: New test.
+	* g++.dg/reflect/typeinfo1.C: New test.
+	* g++.dg/reflect/value1.C: New test.
+	* g++.dg/reflect/value2.C: New test.
+	* g++.dg/reflect/value3.C: New test.
+	* g++.dg/reflect/value4.C: New test.
+	* g++.dg/reflect/value5.C: New test.
+	* g++.dg/reflect/value6.C: New test.
+	* g++.dg/reflect/value7.C: New test.
+	* g++.dg/reflect/value8.C: New test.
+	* g++.dg/reflect/vector2.C: New test.
+
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/avx512bw-pr103750-2.c: Add -mtune=generic.
+	* gcc.target/i386/avx512bw-pr88465.c: Likewise.
+	* gcc.target/i386/avx512dq-pr88465.c: Likewise.
+	* gcc.target/i386/avx512f-pr103750-2.c: Likewise.
+	* gcc.target/i386/avx512f-pr88465.c: Likewise.
+	* gcc.target/i386/avx512fp16-pr103750-2.c: Likewise.
+	* gcc.target/i386/sse2-stv-2.c: Likewise.
+	* gcc.target/i386/sse2-stv-3.c: Likewise.
+	* gcc.target/i386/sse2-stv-4.c: Likewise.
+	* gcc.target/i386/sse2-stv-5.c: Likewise.
+	* gcc.target/i386/sse2-stv-6.c: Likewise.
+	* gcc.target/i386/sse2-stv-7.c: Likewise.
+
+2026-09-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127358
+	* gcc.dg/torture/pr127358-1.c: New test.
+
+2026-09-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/127153
+	* c-c++-common/pr127153.c: New test.
+
 2026-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	P3598R0

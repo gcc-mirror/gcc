@@ -1,3 +1,67 @@
+2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
+
+	* generic-match-head.cc (gimple_match_no_overflow_p): New.
+	* gimple-match-head.cc (gimple_match_no_overflow_p): New.
+	* match.pd (Y + MIN (X - Y, 0), X - MIN (X - Y, 0), Y + MAX (X - Y, 0),
+	X - MAX (X - Y, 0), MIN (X + Y, Y) - Y, MAX (X + Y, Y) - Y): New
+	patterns.
+
+2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
+
+	* match.pd (A - MIN (B, C), A - MAX (B, C)): New patterns.
+
+2026-09-13  Jeff Law  <jeffreyalaw@gmail.com>
+	    Sun Yuechi  <sunyuechi@iscas.ac.cn
+
+	* config/riscv/riscv-bclr-lowest-set-bit.cc
+	(pass_bclr_lowest_set_bit::execute): Do not handle addiw forms.
+
+2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
+
+	* match.pd (ior_range_test, ior_range_test_1, ior_range_test_0):
+	New matchers.
+	(((X + C1) | (C2 - X)) < 0): New simplification.
+	((unsigned) ((X + C1) | (C2 - X)) >> (prec - 1)): Likewise.
+	(ABS_EXPR <X> > C): Likewise.
+
+2026-09-13  Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* config/riscv/bitmanip.md (crc_rev<ANYI1:mode><ANYI:mode>4):
+	Use the clmul expansion for a word-sized crc on rv32 with Zbc.
+	* config/riscv/riscv.cc (expand_reversed_crc_using_clmul): Use
+	clmulr with the unshifted reflected polynomial when the crc is
+	word-sized.
+	(riscv_optab_supported_p): Allow crc_rev for a word-sized result
+	on rv32 with Zbc when optimizing for size.
+
+2026-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125820
+	PR c++/124249
+	PR c++/124414
+	* expr.cc (count_type_elements) <case LANG_TYPE>: Return 1.
+	* tree.cc (wide_int_to_tree_1) <case LANG_TYPE>: New.
+	(cache_integer_cst) <case LANG_TYPE>: New.
+
+2026-09-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/127318
+	* config/riscv/riscv.cc (riscv_v_adjust_scalable_frame): Attach
+	REG_CFA_DEF_CFA note to the copy from the stack pointer.
+
+2026-09-13  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127358
+	* match.pd (two_value cond): Prefer unsigned types.
+
+2026-09-13  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/127153
+	* config/loongarch/loongarch.md (both_non_zero): Defer the split
+	post reload and add constraint to ensure operands[0] and
+	operands[2] are in different hard registers.
+	(both_non_zero_subreg): Likewise.
+
 2026-09-12  Shivam Gupta  <shivam98.tkg@gmail.com>
 
 	* tree-ssa-loop-niter.cc (number_of_iterations_cltz): Reject

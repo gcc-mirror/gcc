@@ -1,3 +1,107 @@
+2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/126811
+	* typeck2.cc (store_init_value): Skip folding CONSTRUCTORs
+	when handling template decls.
+
+2026-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125820
+	PR c++/124249
+	PR c++/124414
+	* constexpr.cc (cxx_eval_binary_expression): Check
+	REFLECTION_TYPE_P instead of REFLECT_EXPR_P.
+	(check_bit_cast_type): Also detect REFLECTION_TYPE_P.
+	(cxx_eval_outermost_constant_expr): Delete consteval-only
+	smuggling detection code.
+	(potential_constant_expression_1) <case CONVERT_EXPR>: Recurse
+	with want_rval=false for discarded-value expressions.
+	* constraint.cc (satisfy_atom): Check require_constant_expression
+	before calling cxx_constant_value.  Set result to error_mark_node
+	otherwise.
+	* cp-gimplify.cc (cp_gimplify_expr) <case CALL_EXPR>: Don't call
+	consteval_only_p and check_out_of_consteval_use.
+	(wipe_consteval_only_r): Remove.
+	(cp_fold_immediate_r): Don't detect invalid uses of consteval-only
+	types here.  Set *stmt_p to error_mark_node if the consteval call
+	was invalid.
+	<case IF_STMT>: Don't call wipe_consteval_only_r.
+	(cp_fold_r) <case CONVERT_EXPR>: New, remove discarded-value
+	expressions.
+	(cp_genericize_r) <case ADDR_EXPR>: Call check_out_of_consteval_use.
+	<case BIND_EXPR>: Call rewrite_null_reflection before pruning.
+	<case REFLECT_EXPR>: Detect invalid uses of consteval-only
+	expressions.
+	* cp-objcp-common.cc (cp_common_init_ts): Remove the META_TYPE
+	marking.
+	* cp-tree.def (META_TYPE): Remove.
+	* cp-tree.h (REFLECTION_TYPE_P): Adjust to check if TYPE is
+	meta_info_type_node.
+	(rewrite_null_reflection): Declare.
+	(consteval_only_p): No longer pure.
+	(check_consteval_only_fn): Remove.
+	* cvt.cc (convert_to_void): Don't call check_out_of_consteval_use
+	here.  Don't remove discarded-value expressions here.  Use a
+	location when building the CONVERT_EXPR.
+	* cxx-pretty-print.cc (cxx_pretty_printer::simple_type_specifier)
+	<case META_TYPE>: Remove.
+	<case LANG_TYPE>: New.
+	(cxx_pretty_printer::type_id) <case META_TYPE>: Remove.
+	<case LANG_TYPE>: New.
+	* decl.cc (wrapup_namespace_globals): Call
+	rewrite_null_reflection on each element of statics.
+	(cp_finish_decl): Don't call check_out_of_consteval_use.  Assert
+	!consteval_only_p.
+	(grokfndecl): Don't call check_consteval_only_fn.
+	* decl2.cc (maybe_make_one_only): Don't return early for
+	consteval_only_p.
+	(mark_needed): Likewise.
+	(prune_vars_needing_no_initialization): Don't prune
+	consteval_only_p variables.
+	(c_parse_final_cleanups): Call rewrite_null_reflection.
+	* error.cc (dump_type) <case LANG_TYPE>: Handle
+	REFLECTION_TYPE_P.
+	<case META_TYPE>: Remove.
+	(dump_type_prefix) <case META_TYPE>: Remove.
+	(dump_type_suffix) <case META_TYPE>: Remove.
+	(dump_expr): Use REFLECTION_TYPE_P.
+	* init.cc (perform_member_init): Don't call
+	check_out_of_consteval_use.
+	* mangle.cc (write_type) <case META_TYPE>: Remove.
+	<case LANG_TYPE>: Handle REFLECTION_TYPE_P.
+	* module.cc (trees_out::type_node) <case META_TYPE>: Remove.
+	<case LANG_TYPE>: New.
+	(trees_in::tree_node) <case META_TYPE>: Remove.
+	<case LANG_TYPE>: New.
+	* name-lookup.cc (name_lookup::adl_type): Move the
+	REFLECTION_TYPE_P handling to case LANG_TYPE.
+	* pt.cc (tsubst) <case META_TYPE>: Remove.
+	(unify) <case META_TYPE>: Remove.
+	<case LANG_TYPE>: New.
+	(instantiate_body): Don't call check_consteval_only_fn.
+	* reflect.cc (init_reflection): Use LANG_TYPE instead of
+	META_TYPE for meta_info_type_node.
+	(null_reflection_p): Also accept the rewritten form.
+	(rewrite_null_reflection): New.
+	(consteval_only_p): Rewrite for P4101.
+	(struct consteval_only_p_walker): Remove.
+	(consteval_only_value_p): New.
+	(consteval_only_p_walker::walk): Remove.
+	(check_out_of_consteval_use_r): Walk INIT_EXPR.  Handle EXPR_STMT
+	specially.
+	(check_out_of_consteval_use): Remove the special VAR_P handling.
+	(compare_reflections): Deal with null reflections first.
+	(check_consteval_only_fn): Remove.
+	* search.cc (check_final_overrider): Don't check
+	consteval_only_p.
+	* semantics.cc (cp_build_bit_cast): Likewise.
+	* tree.cc (type_has_unique_obj_representations) <case LANG_TYPE>:
+	New, handle REFLECTION_TYPE_P.
+	* typeck.cc (cp_build_binary_op): Use REFLECTION_TYPE_P.
+	(check_return_expr): Don't call check_out_of_consteval_use.
+	* typeck2.cc (store_init_value): Check that an immediate object
+	is associated with a constexpr variable.
+
 2026-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	P3598R0

@@ -1,3 +1,11 @@
+2026-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125820
+	PR c++/124249
+	PR c++/124414
+	* include/std/meta (std::meta::exception::what): Change it to
+	constexpr.
+
 2026-09-11  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/125845
