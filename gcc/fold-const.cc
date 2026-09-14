@@ -80,7 +80,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "selftest.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "tree-vector-builder.h"
 #include "vec-perm-indices.h"

@@ -205,7 +205,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-nested.h"
 #include "dbgcnt.h"
 #include "lto-section-names.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "ipa-inline.h"
 #include "omp-offload.h"

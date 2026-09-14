@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "dojump.h"
 #include "expr.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
 #include "ubsan.h"

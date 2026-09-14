@@ -63,7 +63,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "value-prof.h"
 #include "builtins.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
 #include "internal-fn.h"

@@ -77,7 +77,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "gimple.h"
 #include "options.h"

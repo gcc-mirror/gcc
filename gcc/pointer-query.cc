@@ -31,7 +31,6 @@
 #include "tree-object-size.h"
 #include "tree-ssa-strlen.h"
 #include "langhooks.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "gimple-iterator.h"
 #include "gimple-fold.h"

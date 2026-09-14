@@ -38,7 +38,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "omp-offload.h"
 #include "omp-general.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "alloc-pool.h"
 #include "symbol-summary.h"

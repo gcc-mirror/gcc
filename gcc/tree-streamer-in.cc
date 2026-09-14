@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "builtins.h"
 #include "gomp-constants.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "asan.h"
 #include "opts.h"

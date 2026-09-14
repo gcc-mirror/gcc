@@ -50,7 +50,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vrp.h"
 #include "tree-ssanames.h"
 #include "intl.h"
-#include "stringpool.h"
 #include "hash-map.h"
 #include "hash-traits.h"
 #include "attribs.h"
