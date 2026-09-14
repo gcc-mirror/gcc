@@ -400,8 +400,7 @@ namespace __debug
 	constexpr iterator
 	emplace(const_iterator __position, _Args&&... __args)
 	{
-	  if consteval
-	    {
+	  if consteval {
 	      return iterator(_Base::emplace(__position.base(),
 					     std::forward<_Args>(__args)...),
 			      this);
@@ -426,8 +425,7 @@ namespace __debug
       constexpr iterator
       insert(const_iterator __position, size_type __n, const _Tp& __x)
       {
-	if consteval
-	  {
+	if consteval {
 	    return iterator(_Base::insert(__position.base(), __n, __x), this);
 	  }
 
@@ -443,8 +441,7 @@ namespace __debug
 	insert(const_iterator __position, _InputIterator __first,
 	       _InputIterator __last)
 	{
-	  if consteval
-	    {
+	  if consteval {
 	      return iterator(_Base::insert(__position.base(),
 					    __gnu_debug::__unsafe(__first),
 					    __gnu_debug::__unsafe(__last)),
@@ -483,8 +480,7 @@ namespace __debug
       constexpr iterator
       insert(const_iterator __position, initializer_list<_Tp> __il)
       {
-	if consteval
-	  {
+	if consteval {
 	    return iterator(_Base::insert(__position.base(), __il), this);
 	  }
 
@@ -500,8 +496,7 @@ namespace __debug
       constexpr iterator
       erase(const_iterator __position)
       {
-	if consteval
-	  {
+	if consteval {
 	    return iterator(_Base::erase(__position.base()), this);
 	  }
 
@@ -515,8 +510,7 @@ namespace __debug
       constexpr iterator
       erase(const_iterator __first, const_iterator __last)
       {
-	if consteval
-	  {
+	if consteval {
 	    return iterator(_Base::erase(__first.base(), __last.base()),
 			    this);
 	  }
