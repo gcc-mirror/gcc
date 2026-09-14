@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "memmodel.h"
 #include "gimple.h"
+#include "tree-eh.h"
 #include "predict.h"
 #include "tm_p.h"
 #include "stringpool.h"
@@ -5617,7 +5618,9 @@ expand_builtin_strub_update (tree exp)
 			     build_int_cst (TREE_TYPE (wmptr), 0));
   rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
 
-  rtx wmarkr = force_reg (ptr_mode, wmark);
+  rtx wmark_load = shallow_copy_rtx (wmark);
+  MEM_NOTRAP_P (wmark_load) = !tree_could_trap_p (wmtree);
+  rtx wmarkr = force_reg (ptr_mode, wmark_load);
 
   rtx_code_label *lab = gen_label_rtx ();
   do_compare_rtx_and_jump (stktop, wmarkr, STACK_TOPS, STACK_UNSIGNED,
@@ -5642,7 +5645,9 @@ expand_builtin_strub_update (tree exp)
       wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
 			    build_int_cst (TREE_TYPE (wmptr), 0));
       wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
-      wmarkr = force_reg (ptr_mode, wmark);
+      wmark_load = shallow_copy_rtx (wmark);
+      MEM_NOTRAP_P (wmark_load) = !tree_could_trap_p (wmtree);
+      wmarkr = force_reg (ptr_mode, wmark_load);
 
       do_compare_rtx_and_jump (stktop, wmarkr, STACK_TOPS, STACK_UNSIGNED,
 			       ptr_mode, NULL_RTX, lab, NULL,
@@ -5677,6 +5682,7 @@ expand_builtin_strub_leave (tree exp)
       tree wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
 				 build_int_cst (TREE_TYPE (wmptr), 0));
       rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+      MEM_NOTRAP_P (wmark) = !tree_could_trap_p (wmtree);
       stktop = force_reg (ptr_mode, wmark);
     }
 
@@ -5688,6 +5694,7 @@ expand_builtin_strub_leave (tree exp)
   tree wmtree = fold_build2 (MEM_REF, wmtype, wmptr,
 			     build_int_cst (TREE_TYPE (wmptr), 0));
   rtx wmark = expand_expr (wmtree, NULL_RTX, ptr_mode, EXPAND_MEMORY);
+  MEM_NOTRAP_P (wmark) = !tree_could_trap_p (wmtree);
 
   rtx wmarkr = force_reg (ptr_mode, wmark);
 

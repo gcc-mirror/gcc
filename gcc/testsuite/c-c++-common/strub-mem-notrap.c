@@ -16,6 +16,7 @@ scrubbed (int value)
   return sink;
 }
 
-/* The watermark load is nontrapping.  The conditional store can trap.  */
-/* { dg-final { scan-rtl-dump {\(mem/f/c:[^\n]*watermark_ptr} "expand" } } */
-/* { dg-final { scan-rtl-dump {\(mem/f:[^\n]*watermark_ptr} "expand" } } */
+// The watermark load is nontrapping.  The conditional store can trap.
+// { dg-final { scan-rtl-dump {\(set[ \t\n]+\(reg(?:/[a-z])*:[^\n\r]*\)[ \t\n]+\(mem(?:/[a-z])*/c(?:/[a-z])*:[^\n\r]*[*][.]strub[.]watermark_ptr} "expand" } }
+// { dg-final { scan-rtl-dump {\(set[ \t\n]+\(mem(?:/[a-z])*:[^\n\r]*[*][.]strub[.]watermark_ptr} "expand" } }
+// { dg-final { scan-rtl-dump-not {\(set[ \t\n]+\(mem(?:/[a-z])*/c(?:/[a-z])*:[^\n\r]*[*][.]strub[.]watermark_ptr} "expand" } }
