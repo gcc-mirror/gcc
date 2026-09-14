@@ -1,4 +1,4 @@
-// P3450R1 - Extend std::is_within_lifetime
+// P2641R4 - Checking if a union alternative is active
 // { dg-do compile { target c++20 } }
 
 namespace std {

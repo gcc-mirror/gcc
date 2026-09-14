@@ -4401,11 +4401,15 @@ template<typename _Ret, typename _Fn, typename... _Args>
     };
 #endif // C++11
 
-#if __cpp_lib_within_lifetime >= 202306L // C++ >= 26
-  template<typename _Tp>
+#if __cpp_lib_within_lifetime >= 202603L // C++ >= 26
+  template<typename _Up = void, typename _Tp>
     consteval bool
     is_within_lifetime(const _Tp* __p) noexcept
-    { return __builtin_is_within_lifetime (__p); }
+    {
+      return (__builtin_is_within_lifetime (__p)
+	      && __builtin_constant_p(static_cast<const volatile _Up*>(__p)
+				      && true));
+    }
 #endif
 
   /// @} group metaprogramming

@@ -2520,8 +2520,10 @@ ftms = {
 
 ftms = {
   name = within_lifetime;
+  // 202306 P2641R4 Checking if a union alternative is active
+  // 202603 P3450R1 Extend std::is_within_lifetime
   values = {
-    v = 202306;
+    v = 202603;
     cxxmin = 26;
     extra_cond = "__has_builtin(__builtin_is_within_lifetime)";
   };
