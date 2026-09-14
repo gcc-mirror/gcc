@@ -30,7 +30,6 @@
 #define _GLIBCXX_SRCLOC 1
 
 #define __glibcxx_want_source_location
-#include <bits/version.h>
 
 #if __cpp_lib_source_location // C++ >= 20 && builtin_source_location
 #include <bits/c++config.h>
