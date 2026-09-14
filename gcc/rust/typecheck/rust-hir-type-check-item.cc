@@ -644,7 +644,7 @@ TypeCheckItem::visit (HIR::ConstantItem &constant)
   TyTy::BaseType *expr_type = TypeCheckExpr::Resolve (constant.get_expr ());
   context->pop_const_context ();
 
-  TyTy::BaseType *unified = unify_site (
+  TyTy::BaseType *unified = coercion_site (
     constant.get_mappings ().get_hirid (),
     TyTy::TyWithLocation (type, constant.get_type ().get_locus ()),
     TyTy::TyWithLocation (expr_type, constant.get_expr ().get_locus ()),

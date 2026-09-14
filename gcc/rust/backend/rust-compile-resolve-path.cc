@@ -81,7 +81,11 @@ ResolvePathRef::attempt_constructor_expression_lookup (
 
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
   if (adt->is_unit ())
-    return unit_expression (expr_locus);
+    {
+      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
+      return Backend::constructor_expression (compiled_adt_type, false, {}, -1,
+					      expr_locus);
+    }
 
   if (!adt->is_enum ())
     return error_mark_node;

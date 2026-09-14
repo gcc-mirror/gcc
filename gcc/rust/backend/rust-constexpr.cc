@@ -1584,6 +1584,13 @@ adjust_temp_type (tree type, tree temp)
   if (same_type_p (TREE_TYPE (temp), type))
     return temp;
 
+  if (TREE_CODE (temp) == CONSTRUCTOR)
+    {
+      tree t = copy_node (temp);
+      TREE_TYPE (t) = type;
+      return t;
+    }
+
   gcc_assert (scalarish_type_p (type));
   /* Now we know we're dealing with a scalar, and a prvalue of non-class
      type is cv-unqualified.  */
