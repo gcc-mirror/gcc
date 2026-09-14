@@ -1,3 +1,12 @@
+2026-09-13  Zhou Qiankang  <wszqkzqk@qq.com>
+
+	Backported from master:
+	2026-06-08  Zhou Qiankang  <wszqkzqk@qq.com>
+
+	PR c++/125642
+	* c-cppbuiltin.cc (c_cpp_builtins): Don't define __FRACT_FBIT__
+	in C++.
+
 2026-06-12  Release Manager
 
 	* GCC 15.3.0 released.
