@@ -1298,7 +1298,9 @@ public:
 /* Helper class for constexpr_global_ctx.  In some cases we want to avoid
    side-effects from evaluation of a particular subexpression of a
    constant-expression.  In such cases we use modifiable_tracker to prevent
-   modification of variables created outside of that subexpression.
+   modification of variables created outside of that subexpression.  Keep and
+   then restore the original value of global->modifiable so that tracker
+   instantiations can nest.
 
    ??? We could change the hash_set to a hash_map, allow and track external
    modifications, and roll them back in the destructor.  It's not clear to me
@@ -1308,8 +1310,10 @@ class modifiable_tracker
 {
   hash_set<tree> set;
   constexpr_global_ctx *global;
+  hash_set<tree> *previous_set;
 public:
-  modifiable_tracker (constexpr_global_ctx *g): global(g)
+  modifiable_tracker (constexpr_global_ctx *g)
+    : global (g), previous_set (g->modifiable)
   {
     global->modifiable = &set;
   }
@@ -1317,7 +1321,7 @@ public:
   {
     for (tree t: set)
       global->clear_value (t);
-    global->modifiable = nullptr;
+    global->modifiable = previous_set;
   }
 };
 
