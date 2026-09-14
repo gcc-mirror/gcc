@@ -1865,6 +1865,30 @@ function_expander::result_mode () const
   T (za64, s16, u16), \
   T (za64, u16, s16)
 
+/* _za32 x { _s8_s8 _u8_u8
+	     _s8_u8 _u8_s8
+	     _s16_s16 _u16_u16
+	     _bf16_bf16 _f16_f16
+	     _f32_f32 }.  */
+#define TYPES_tmop_base(S, D, T) \
+  T (za32, s8, s8), T (za32, u8, u8), \
+  T (za32, s8, u8), T (za32, u8, s8), \
+  T (za32, s16, s16), T (za32, u16, u16), \
+  T (za32, bf16, bf16), T (za32, f16, f16), \
+  T (za32, f32, f32)
+
+#define TYPES_tmop_h_bfloat(S, D, T) \
+  T (za16, bf16, bf16)
+
+#define TYPES_tmop_h_float(S, D, T) \
+  T (za16, f16, f16)
+
+#define TYPES_tmop_h_mf8(S, D, T) \
+  T (za16, mf8, mf8)
+
+#define TYPES_tmop_s_mf8(S, D, T) \
+  T (za32, mf8, mf8)
+
 /* _za.  */
 #define TYPES_za(S, D, T) \
   S (za)
@@ -2164,6 +2188,11 @@ DEF_SVE_TYPES_ARRAY (mop4_f64f64);
 DEF_SVE_TYPES_ARRAY (mop4_i16i64);
 DEF_SVE_TYPES_ARRAY (mop4_f8f16);
 DEF_SVE_TYPES_ARRAY (mop4_f8f32);
+DEF_SVE_TYPES_ARRAY (tmop_base);
+DEF_SVE_TYPES_ARRAY (tmop_h_float);
+DEF_SVE_TYPES_ARRAY (tmop_h_bfloat);
+DEF_SVE_TYPES_ARRAY (tmop_h_mf8);
+DEF_SVE_TYPES_ARRAY (tmop_s_mf8);
 DEF_SVE_TYPES_ARRAY (za);
 
 DEF_SVE_TYPES_ARRAY (b_float);

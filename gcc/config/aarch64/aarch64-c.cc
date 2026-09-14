@@ -324,6 +324,8 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   aarch64_def_or_undef (TARGET_SME2p2, "__ARM_FEATURE_SME2p2", pfile);
   aarch64_def_or_undef (TARGET_FAMINMAX, "__ARM_FEATURE_FAMINMAX", pfile);
   aarch64_def_or_undef (TARGET_PCDPHINT, "__ARM_FEATURE_PCDPHINT", pfile);
+  aarch64_def_or_undef (AARCH64_HAVE_ISA (SME_TMOP),
+			"__ARM_FEATURE_SME_TMOP", pfile);
   aarch64_def_or_undef (AARCH64_HAVE_ISA (SSVE_FEXPA),
 			"__ARM_FEATURE_SSVE_FEXPA", pfile);
   builtin_define ("__ARM_PREFETCH_RANGE");

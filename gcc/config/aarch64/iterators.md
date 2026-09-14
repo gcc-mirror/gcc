@@ -898,6 +898,13 @@
 	VNx4SI
 ])
 
+(define_mode_iterator SME_TMOPA_BHSF [(VNx8HF "TARGET_STREAMING_SME_F16F16")
+				      (VNx8BF "TARGET_STREAMING_SME_B16B16")
+				      VNx4SF])
+
+(define_mode_iterator SME_TMOPA_FP8 [(VNx8HI "TARGET_STREAMING_SME_F8F16")
+				     (VNx4SI "TARGET_STREAMING_SME_F8F32")])
+
 ;; ------------------------------------------------------------------
 ;; Unspec enumerations for Advance SIMD. These could well go into
 ;; aarch64.md but for their use in int_iterators here.
@@ -1408,6 +1415,8 @@
     UNSPEC_SME_FMOPA
     UNSPEC_SME_FMOPS
     UNSPEC_SME_FSUB
+    UNSPEC_SME_FTMOPA
+    UNSPEC_SME_FTMOPA_FP8
     UNSPEC_SME_LD1_HOR
     UNSPEC_SME_LD1_VER
     UNSPEC_SME_READ
@@ -1426,6 +1435,7 @@
     UNSPEC_SME_SMOPS
     UNSPEC_SME_ST1_HOR
     UNSPEC_SME_ST1_VER
+    UNSPEC_SME_STMOPA
     UNSPEC_SME_SUB
     UNSPEC_SME_SUB_WRITE
     UNSPEC_SME_SUDOT
@@ -1434,6 +1444,7 @@
     UNSPEC_SME_SUMOP4S
     UNSPEC_SME_SUMOPA
     UNSPEC_SME_SUMOPS
+    UNSPEC_SME_SUTMOPA
     UNSPEC_SME_UDOT
     UNSPEC_SME_UVDOT
     UNSPEC_SME_UMLA
@@ -1448,6 +1459,8 @@
     UNSPEC_SME_USMOP4S
     UNSPEC_SME_USMOPA
     UNSPEC_SME_USMOPS
+    UNSPEC_SME_USTMOPA
+    UNSPEC_SME_UTMOPA
     UNSPEC_SME_WRITE
     UNSPEC_SME_WRITE_HOR
     UNSPEC_SME_WRITE_VER
@@ -3035,6 +3048,12 @@
 (define_mode_attr za32_last_offset [(VNx16QI "3") (VNx32QI "3") (VNx64QI "3")
 				    (VNx8HI "1") (VNx16HI "1") (VNx32HI "1")])
 
+;; The number of bits required to specify a ZA tile of a certain element size.
+(define_mode_attr za_imm_bits [(VNx8HI "1") (VNx4SI "2") (VNx2DI "3")
+			       (VNx1TI "4")
+			       (VNx8BF "1")
+			       (VNx8HF "1") (VNx4SF "2") (VNx2DF "3")])
+
 (define_mode_attr vg_modifier [(VNx16QI "")
 			       (VNx32QI ", vgx2")
 			       (VNx64QI ", vgx4")
@@ -4421,6 +4440,11 @@
 	UNSPEC_SME_FVDOTT_FP8
 ])
 
+(define_int_iterator SME_TMOP_INT [UNSPEC_SME_STMOPA UNSPEC_SME_UTMOPA])
+(define_int_iterator SME_TMOP_INT_CROSS [UNSPEC_SME_SUTMOPA UNSPEC_SME_USTMOPA])
+(define_int_iterator SME_TMOP_FP [UNSPEC_SME_FTMOPA])
+(define_int_iterator SME_TMOP_FP8 [UNSPEC_SME_FTMOPA_FP8])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -4583,6 +4607,8 @@
 			(UNSPEC_SME_FMOPA "fmopa")
 			(UNSPEC_SME_FMOPS "fmops")
 			(UNSPEC_SME_FSUB "fsub")
+			(UNSPEC_SME_FTMOPA "ftmopa")
+			(UNSPEC_SME_FTMOPA_FP8 "ftmopa")
 			(UNSPEC_SME_LD1_HOR "ld1_hor")
 			(UNSPEC_SME_LD1_VER "ld1_ver")
 			(UNSPEC_SME_READ_HOR "read_hor")
@@ -4599,6 +4625,8 @@
 			(UNSPEC_SME_SMOPS "smops")
 			(UNSPEC_SME_ST1_HOR "st1_hor")
 			(UNSPEC_SME_ST1_VER "st1_ver")
+			(UNSPEC_SME_STMOPA "stmopa")
+			(UNSPEC_SME_SUTMOPA "sutmopa")
 			(UNSPEC_SME_SUB "sub")
 			(UNSPEC_SME_SUB_WRITE "sub_write")
 			(UNSPEC_SME_SUDOT "sudot")
@@ -4616,11 +4644,13 @@
 			(UNSPEC_SME_UMOPA "umopa")
 			(UNSPEC_SME_UMOPS "umops")
 			(UNSPEC_SME_USDOT "usdot")
+			(UNSPEC_SME_USTMOPA "ustmopa")
 			(UNSPEC_SME_USVDOT "usvdot")
 			(UNSPEC_SME_USMOP4A "usmop4a")
 			(UNSPEC_SME_USMOP4S "usmop4s")
 			(UNSPEC_SME_USMOPA "usmopa")
 			(UNSPEC_SME_USMOPS "usmops")
+			(UNSPEC_SME_UTMOPA "utmopa")
 			(UNSPEC_SME_WRITE_HOR "write_hor")
 			(UNSPEC_SME_WRITE_VER "write_ver")
 			(UNSPEC_SQCADD90 "sqcadd90")

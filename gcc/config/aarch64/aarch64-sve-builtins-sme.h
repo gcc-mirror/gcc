@@ -72,6 +72,7 @@ namespace aarch64_acle
     extern const function_base *const svsuvdot_lane_za;
     extern const function_base *const svsumopa_za;
     extern const function_base *const svsumops_za;
+    extern const function_base *const svtmopa_lane_za;
     extern const function_base *const svusdot_za;
     extern const function_base *const svusdot_lane_za;
     extern const function_base *const svusvdot_lane_za;

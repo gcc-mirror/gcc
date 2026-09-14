@@ -75,6 +75,10 @@
   "@internal The first register in a tuple of 4 strided FPRs."
   "(regno & 0xc) == 0")
 
+(define_register_constraint "Uwo" "FP_REGS"
+  "@internal Control Vector Register (One of Z20-Z23 or Z28-Z31)."
+  "(regno & 0x14) == 0x14")
+
 (define_register_constraint "Upa" "PR_REGS"
   "SVE predicate registers p0 - p15.")
 

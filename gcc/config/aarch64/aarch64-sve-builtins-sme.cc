@@ -461,6 +461,41 @@ public:
   }
 };
 
+class svtmopa_lane_za_impl : public read_write_za<function_base>
+{
+public:
+  int
+  unspec_for (const function_instance &instance) const
+  {
+    if (instance.fpm_mode == FPM_set)
+      return UNSPEC_SME_FTMOPA_FP8;
+    const auto &suffix1 = instance.type_suffix (1);
+    if (!suffix1.integer_p)
+      return UNSPEC_SME_FTMOPA;
+    const auto &suffix2 = instance.type_suffix (2);
+    if (suffix1.unsigned_p && suffix2.unsigned_p)
+      return UNSPEC_SME_UTMOPA;
+    else if (!suffix1.unsigned_p && !suffix2.unsigned_p)
+      return UNSPEC_SME_STMOPA;
+    else if (suffix1.unsigned_p && !suffix2.unsigned_p)
+      return UNSPEC_SME_USTMOPA;
+    else
+      return UNSPEC_SME_SUTMOPA;
+  }
+
+  rtx
+  expand (function_expander &e) const override
+  {
+    machine_mode za_mode = e.vector_mode (0);
+    machine_mode v_mode = e.tuple_mode (1);
+    if (GET_MODE_UNIT_BITSIZE (za_mode) == GET_MODE_UNIT_BITSIZE (v_mode))
+      za_mode = v_mode;
+    insn_code icode
+      = code_for_aarch64_sme_lane (unspec_for (e), za_mode, v_mode);
+    return e.use_exact_insn (icode);
+  }
+};
+
 class svundef_za_impl : public write_za<function_base>
 {
 public:
@@ -681,6 +716,7 @@ FUNCTION (svsudot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUDOT))
 FUNCTION (svsuvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUVDOT))
 FUNCTION (svsumopa_za, sme_2mode_function, (UNSPEC_SME_SUMOPA))
 FUNCTION (svsumops_za, sme_2mode_function, (UNSPEC_SME_SUMOPS))
+FUNCTION (svtmopa_lane_za, svtmopa_lane_za_impl,)
 FUNCTION (svundef_za, svundef_za_impl, )
 FUNCTION (svusdot_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USDOT))
 FUNCTION (svusdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USDOT))

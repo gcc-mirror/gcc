@@ -1099,7 +1099,7 @@ function_resolver::lookup_form (mode_suffix_index mode, sve_type type)
 }
 
 /* Resolve the function to one with the mode suffix given by MODE, the
-   type suffixes given by TYPE0 and TYPE1, and group suffix given by
+   type suffixes given by TYPE0, TYPE1 and TYPE2, and group suffix given by
    GROUP.  Return its function decl on success, otherwise report an
    error and return error_mark_node.  */
 tree

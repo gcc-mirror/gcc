@@ -46,11 +46,13 @@
 ;; ---- [INT] Dot product
 ;; ---- [INT] Ternary widening arithmetic on ZA slice
 ;; ---- [INT] Sum of outer products
+;; ---- [INT] Sparse outer product
 ;; ---- [FP] Dot product
 ;; ---- [FP8] Dot product
 ;; ---- [FP] Ternary arithmetic on ZA slice
 ;; ---- [FP] Ternary widening arithmetic on ZA slice
 ;; ---- [FP] Sum of outer products
+;; ---- [FP] Sparse outer product
 ;;
 ;; == Table lookup
 ;; ---- Table lookup
@@ -1864,6 +1866,53 @@
 )
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT] Sparse outer product
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - STMOPA
+;; - UTMOPA
+;; - SUTMOPA
+;; - USTMOPA
+;; -------------------------------------------------------------------------
+;; svtmopa_lane_za32[_s16_s16]
+;; svtmopa_lane_za32[_u16_u16]
+;; svtmopa_lane_za32[_s8_s8]
+;; svtmopa_lane_za32[_u8_u8]
+(define_insn "@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SVE_FULL_BHI:mode>"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "aarch64_imm2")
+	   (match_operand:<SVE_FULL_BHI:VDOUBLE> 1 "aligned_register_operand" "Uw2")
+	   (match_operand:SVE_FULL_BHI 2 "register_operand" "w")
+	   (match_operand:VNx16QI 3 "register_operand" "Uwo")
+	   (match_operand:DI 4 "aarch64_imm2")
+	  ]
+	  SME_TMOP_INT))]
+  "TARGET_STREAMING_SME_TMOP"
+  "<optab>\tza%0.s, %1, %2.<SVE_FULL_BHI:Vetype>, %3[%4]"
+)
+
+;; svtmopa_lane_za32[_s8_u8]
+;; svtmopa_lane_za32[_u8_s8]
+(define_insn "@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><VNx16QI_ONLY:mode>"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "aarch64_imm2")
+	   (match_operand:<VNx16QI_ONLY:VDOUBLE> 1 "aligned_register_operand" "Uw2")
+	   (match_operand:VNx16QI_ONLY 2 "register_operand" "w")
+	   (match_operand:VNx16QI 3 "register_operand" "Uwo")
+	   (match_operand:DI 4 "aarch64_imm2")
+	  ]
+	  SME_TMOP_INT_CROSS))]
+  "TARGET_STREAMING_SME_TMOP"
+  "<optab>\tza%0.s, %1, %2.<VNx16QI_ONLY:Vetype>, %3[%4]"
+)
+
+;; -------------------------------------------------------------------------
 ;; ---- [FP] Dot product
 ;; -------------------------------------------------------------------------
 ;; Includes:
@@ -2868,6 +2917,69 @@
 	  SME_FP8_MOP4))]
   "TARGET_SME_MOP4"
   "<optab>\tza%0.<SME_ZA_MF8:Vetype>, %1<SVE_FULL_BIx12:z_suffix>, %2<SVE_FULL_BIx12_2:z_suffix>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Sparse outer product
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - BFTMOPA (SME_TMOP)
+;; - FTMOPA (SME_TMOP)
+;; -------------------------------------------------------------------------
+;; svtmopa_lane_za16[_bf16_bf16]
+;; svtmopa_lane_za16[_f16_f16]
+;; svtmopa_lane_za32[_f32_f32]
+(define_insn "@aarch64_sme_lane_<optab><mode><mode>"
+  [(set (reg:SME_TMOPA_BHSF ZA_REGNUM)
+	(unspec:SME_TMOPA_BHSF
+	  [(reg:SME_TMOPA_BHSF ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "aarch64_imm<za_imm_bits>")
+	   (match_operand:<VDOUBLE> 1 "aligned_register_operand" "Uw2")
+	   (match_operand:SME_TMOPA_BHSF 2 "register_operand" "w")
+	   (match_operand:VNx16QI 3 "register_operand" "Uwo")
+	   (match_operand:DI 4 "aarch64_imm2")
+	  ]
+	  SME_TMOP_FP))]
+  "TARGET_STREAMING_SME_TMOP"
+  "<b><optab>\tza%0.<Vetype>, %1, %2.<Vetype>, %3[%4]"
+)
+
+;; svtmopa_lane_za32[_bf16_bf16]
+;; svtmopa_lane_za32[_f16_f16]
+(define_insn "@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SVE_FULL_HF:mode>"
+  [(set (reg:SVE_FULL_HF ZA_REGNUM)
+	(unspec:SVE_FULL_HF
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "aarch64_imm2")
+	   (match_operand:<SVE_FULL_HF:VDOUBLE> 1 "aligned_register_operand" "Uw2")
+	   (match_operand:SVE_FULL_HF 2 "register_operand" "w")
+	   (match_operand:VNx16QI 3 "register_operand" "Uwo")
+	   (match_operand:DI 4 "aarch64_imm2")
+	  ]
+	  SME_TMOP_FP))]
+  "TARGET_STREAMING_SME_TMOP"
+  "<SVE_FULL_HF:b><optab>\tza%0.s, %1, %2.<SVE_FULL_HF:Vetype>, %3[%4]"
+)
+
+;; svtmopa_lane_za16[_mf8_mf8]_fpm
+;; svtmopa_lane_za32[_mf8_mf8]_fpm
+(define_insn "@aarch64_sme_lane_<optab><SME_TMOPA_FP8:mode><VNx16QI_ONLY:mode>"
+  [(set (reg:SME_TMOPA_FP8 ZA_REGNUM)
+	(unspec:SME_TMOPA_FP8
+	  [(reg:SME_TMOPA_FP8 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "aarch64_imm<SME_TMOPA_FP8:za_imm_bits>")
+	   (match_operand:<VNx16QI_ONLY:VDOUBLE> 1 "aligned_register_operand" "Uw2")
+	   (match_operand:VNx16QI_ONLY 2 "register_operand" "w")
+	   (match_operand:VNx16QI 3 "register_operand" "Uwo")
+	   (match_operand:DI 4 "aarch64_imm2")
+	   (reg:DI FPM_REGNUM)
+	  ]
+	  SME_TMOP_FP8))]
+  "TARGET_STREAMING_SME_TMOP"
+  "<optab>\tza%0.<SME_TMOPA_FP8:Vetype>, %1, %2.b, %3[%4]"
 )
 
 ;; =========================================================================

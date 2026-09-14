@@ -4985,6 +4985,45 @@ struct ternary_uintq_intq_opt_n_def
 };
 SHAPE (ternary_uintq_intq_opt_n);
 
+/* void svfoo_t0[_t1_t2](uint64_t, sv<t1>x2_t, sv<t2>_t, svuint8_t, uint64_t)
+   where the first argument is a ZA tile.
+   and the fifth argument is a control index (0-3)  */
+struct ternary_za_uint_dual_single_def : public overloaded_base<1>
+{
+  void
+  build (function_builder &b, const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "_,su64,u1,v2,vu8,su64", group, MODE_none);
+  }
+
+  bool
+  check (function_checker &c) const override
+  {
+    return (c.require_immediate_range (0, 0, c.num_za_tiles () - 1)
+	    && c.require_immediate_range (4, 0, 3));
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    sve_type type1;
+    type_suffix_index type2;
+    if (!r.check_num_arguments (r.fpm_mode == FPM_set ? 6: 5)
+	|| !r.require_integer_immediate (0)
+	|| (type1 = r.infer_vector_or_tuple_type (1, 2)) == NUM_TYPE_SUFFIXES
+	|| (type2 = r.infer_vector_type (2)) == NUM_TYPE_SUFFIXES
+	|| !r.require_vector_type (3, VECTOR_TYPE_svuint8_t)
+	|| !r.require_integer_immediate (4)
+	|| (r.fpm_mode == FPM_set && !r.require_scalar_type (5, "uint64_t")))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, r.type_suffix_ids[0],
+			 type1.type, type2);
+  }
+};
+SHAPE (ternary_za_uint_dual_single);
+
 /* svbool_t svfoo[_<t0>](sv<t0>_t, sv<t0>_t, uint64_t)
 
    where the final argument is an integer constant expression in the

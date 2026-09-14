@@ -121,4 +121,22 @@
     INVOKE (CODE1, CODE2);					\
   }
 
+#define TEST_ZA_TMOP(NAME, TYPE1, TYPE2, CODE1, CODE2)		\
+  PROTO (NAME, void, (fpm_t fpm0))				\
+  {								\
+    register TYPE1 z0 __asm ("z0");				\
+    register TYPE1 z1 __asm ("z1");				\
+    register TYPE1 z2 __asm ("z2");				\
+    register TYPE2 z4 __asm ("z4");				\
+    register svuint8_t z19 __asm ("z19");			\
+    register svuint8_t z20 __asm ("z20");			\
+    register svuint8_t z24 __asm ("z24");			\
+    register svuint8_t z27 __asm ("z27");			\
+    register svuint8_t z28 __asm ("z28");			\
+    __asm volatile ("" : "=w" (z0), "=w" (z1), "=w" (z2),	\
+		    "=w" (z4), "=w" (z19), "=w" (z20),		\
+		    "=w" (z24), "=w" (z27), "=w" (z28));	\
+    INVOKE (CODE1, CODE2);					\
+  }
+
 #endif

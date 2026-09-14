@@ -378,6 +378,29 @@ DEF_SME_ZA_FUNCTION_GS_FPM (svmop4a, mop4, mop4_f8f16, none, none, set)
 					  | AARCH64_FL_SME_MOP4 \
 					  | AARCH64_FL_SME_F8F32)
 DEF_SME_ZA_FUNCTION_GS_FPM (svmop4a, mop4, mop4_f8f32, none, none, set)
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_TMOP)
+DEF_SME_ZA_FUNCTION_GS (svtmopa_lane, ternary_za_uint_dual_single, tmop_base, none, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_TMOP \
+					    | AARCH64_FL_SME_F16F16)
+DEF_SME_ZA_FUNCTION_GS (svtmopa_lane, ternary_za_uint_dual_single, tmop_h_float, none, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_TMOP \
+					    | AARCH64_FL_SME_B16B16)
+DEF_SME_ZA_FUNCTION_GS (svtmopa_lane, ternary_za_uint_dual_single, tmop_h_bfloat, none, none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_TMOP \
+					    | AARCH64_FL_SME_F8F16)
+DEF_SME_ZA_FUNCTION_GS_FPM (svtmopa_lane, ternary_za_uint_dual_single, tmop_h_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_TMOP \
+					    | AARCH64_FL_SME_F8F32)
+DEF_SME_ZA_FUNCTION_GS_FPM (svtmopa_lane, ternary_za_uint_dual_single, tmop_s_mf8, none, none, set)
 #undef REQUIRED_EXTENSIONS
 
 #undef DEF_SME_ZA_FUNCTION
