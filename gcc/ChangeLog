@@ -1,3 +1,23 @@
+2026-09-14  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-09-13  Jeff Law  <jeffreyalaw@gmail.com>
+		    Sun Yuechi  <sunyuechi@iscas.ac.cn
+
+	* config/riscv/riscv-bclr-lowest-set-bit.cc
+	(pass_bclr_lowest_set_bit::execute): Do not handle addiw forms.
+
+2026-09-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-09-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/127306
+	* config/riscv/riscv-bclr-lowest-set-bit.cc (find_later_ctz): Fix
+	off-by-one error for scan to verify ctz input isn't modified.
+	(pass_bclr_lowest_bit_set::execute): Remove original AND in case
+	where the CTZ is found after the AND.
+
 2026-09-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	Backported from master:

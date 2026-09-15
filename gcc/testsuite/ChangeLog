@@ -1,3 +1,20 @@
+2026-09-14  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-09-13  Jeff Law  <jeffreyalaw@gmail.com>
+		    Sun Yuechi  <sunyuechi@iscas.ac.cn
+
+	* gcc.target/riscv/bclr-lowest-set-bit-1.c: Update expected output.
+	* gcc.target/riscv/bclr-lowest-set-bit-2.c: New test.
+
+2026-09-14  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	Backported from master:
+	2026-09-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/127306
+	* gcc.target/riscv/pr127306.c: New test.
+
 2026-09-13  Zhou Qiankang  <wszqkzqk@qq.com>
 
 	Backported from master:
