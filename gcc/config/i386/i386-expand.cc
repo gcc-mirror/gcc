@@ -162,8 +162,13 @@ split_double_mode (machine_mode mode, rtx operands[],
 					 GET_MODE (op) == VOIDmode
 					 ? mode : GET_MODE (op), byte);
 	  /* simplify_gen_subreg will return NULL RTX for the
-	     high half of the paradoxical subreg. */
-	  hi_half[num] = tmp ? tmp : gen_reg_rtx (half_mode);
+	     high half of the paradoxical subreg.  */
+	  if (tmp)
+	    hi_half[num] = tmp;
+	  else if (can_create_pseudo_p ())
+	    hi_half[num] = gen_reg_rtx (half_mode);
+	  else
+	    hi_half[num] = CONST0_RTX (half_mode);
 	}
     }
 }
