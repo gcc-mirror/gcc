@@ -1935,6 +1935,15 @@ public:
      edge.  */
   cgraph_edge *make_callback (cgraph_node *n2, unsigned fn_idx, tree attr);
 
+  /* Create a callback edge, representing an indirect call to target
+     passed to an internal function by argument.  As internal calls are not
+     represented in the callgraph, the created edge won't have any associated
+     dispatching edge.  The created callback edge will be attached to the
+     internal call statement STMT.  Returns created callback edge.  */
+  static cgraph_edge *make_callback_internal (cgraph_node *caller,
+					      cgraph_node *target,
+					      gcall *call_stmt);
+
   /* Returns the callback-carrying edge of a callback edge or NULL, if such edge
      cannot be found.  An edge is considered callback-carrying, if it has it's
      has_callback flag set and shares it's call statement with the edge

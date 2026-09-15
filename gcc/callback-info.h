@@ -60,6 +60,10 @@ public:
 
   /* Initializes the summary.  */
   void init (cgraph_edge *e, unsigned fn_idx, tree attr);
+
+  /* Create the summary for a callback call CBE of internal function IFN. */
+  static callback_info *create_internal_summary (cgraph_edge *cbe,
+						 internal_fn ifn);
 };
 
 class callback_info_sum_t : public call_summary<callback_info *>

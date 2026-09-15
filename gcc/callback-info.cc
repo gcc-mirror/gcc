@@ -118,6 +118,30 @@ callback_info::init (cgraph_edge *e, unsigned fn_idx, tree attr)
   redirected = false;
 }
 
+/* Initialize the summary for a callback call CBE of internal function IFN.  */
+callback_info *
+callback_info::create_internal_summary (cgraph_edge *cbe, internal_fn ifn)
+{
+  callback_info_sum_t::check_create_info_sum ();
+  callback_info *ci = callback_info_sum->get_create (cbe);
+  switch (ifn)
+    {
+    case IFN_ASSUME:
+      {
+	ci->fn_idx = 0;
+	unsigned n = gimple_call_num_args (cbe->call_stmt);
+	for (unsigned i = 0; i < n - 1; i++)
+	  ci->arg_mapping.safe_push (i + 1);
+	invert_arg_mapping (cbe, ci);
+	break;
+      }
+    default:
+      gcc_unreachable ();
+    }
+  ci->redirected = false;
+  return ci;
+}
+
 /* Populates the callback_info_sum if it's NULL.  */
 void
 callback_info_sum_t::check_create_info_sum (void)
