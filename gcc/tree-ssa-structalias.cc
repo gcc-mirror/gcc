@@ -1898,21 +1898,18 @@ ipa_pta_execute (void)
 	 arguments to recursive invocations.  */
       else if (fi->is_global_var)
 	{
-	  for (varinfo_t ai = fi; ai; ai = vi_next (ai))
+	  varinfo_t vi = get_varinfo (var_rep[fi->id]);
+	  bitmap_iterator bi;
+	  unsigned j;
+	  EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
 	    {
-	      varinfo_t vi = get_varinfo (var_rep[ai->id]);
-	      bitmap_iterator bi;
-	      unsigned j;
-	      EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, j, bi)
+	      varinfo_t pt = get_varinfo (j);
+	      if (pt->shadow_var_uid == 0
+		  && pt->decl
+		  && auto_var_p (pt->decl))
 		{
-		  varinfo_t pt = get_varinfo (j);
-		  if (pt->shadow_var_uid == 0
-		      && pt->decl
-		      && auto_var_p (pt->decl))
-		    {
-		      pt->shadow_var_uid = allocate_decl_uid ();
-		      shadow_var_cnt++;
-		    }
+		  pt->shadow_var_uid = allocate_decl_uid ();
+		  shadow_var_cnt++;
 		}
 	    }
 	}
