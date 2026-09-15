@@ -1,3 +1,161 @@
+2026-09-14  Jean-Didier Pailleux  <jean-didier.pailleux@sipearl.com>
+
+	* config/aarch64/aarch64-sve-builtins-sme.def (REQUIRED_EXTENSIONS): Add
+	missing #undef.
+
+2026-09-14  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/127379
+	* match.pd (ior_range_test_0): Require an integral type.
+
+2026-09-14  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.h (TARGET_SVE_PREFER_ZEROING_MOVIMM): New
+	define.
+	* config/aarch64/aarch64-sve.md (*vcond_mask_<mode><vpred>): Add a
+	split condition for zero predicate.
+	* config/aarch64/aarch64-tuning-flags.def: Add AVOID_MOVIMM_Z tune.
+	* config/aarch64/tuning_models/neoversev1.h (tune_flags): Update.
+	* config/aarch64/tuning_models/neoversev2.h (tune_flags): Update.
+
+2026-09-14  xiezhiheng  <xiezhiheng@huawei.com>
+
+	* haifa-sched.cc (max_issue): Cap max_lookahead_tries
+
+2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127336
+	* optabs.cc (maybe_emit_compare_and_swap_exchange_loop,
+	expand_atomic_fetch_op_no_fallback, expand_atomic_fetch_op): Force
+	val into a pseduo if it updates to mem could change its value
+	and when using val after the atomic op or inside of a loop.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genemit.cc (main): Choose an output file for each overloaded name.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* rtl.h (note_split): Declare.
+	* emit-rtl.cc (note_split): New function.
+	* genemit.cc (gen_split): Call it rather than emitting the test and
+	the fprintf.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genrecog.cc (md_conditions, md_condition_ids): New variables.
+	(md_condition_id, print_md_conditions): New functions.
+	(print_test): Call a helper for a C test rather than emitting the
+	condition.
+	(main): Write the helpers to the header.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genextract.cc (MISSING_OPERAND_CHAR): New macro.
+	(pathpool, dupnums): New variables.
+	(add_path, print_string_literal, print_extractions): New functions.
+	(print_path): Remove.
+	(print_header): Only emit the prologue.
+	(main): Call print_extractions.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (unsigned_integer_sat_sub): Accept commuted
+	comparison operand orders and the arm order from a two-return source.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (unsigned_integer_sat_sub): Add the
+	X - MIN (X, Y) form.
+	* tree-ssa-math-opts.cc
+	(build_saturation_binary_arith_call_and_replace): Return whether a
+	replacement was made.
+	(match_saturation_add_with_assign): Likewise.
+	(match_unsigned_saturation_sub): Likewise.
+	(math_opts_dom_walker::after_dom_children): Check MINUS_EXPR for
+	saturation, and use the assign recognizer results.
+
+2026-09-14  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.cc:
+	(function_resolver::resolve_to): Fix documentation comment.
+	* config/aarch64/aarch64-acle-builtins.h: (TYPES_tmop_base,
+	TYPES_tmop_h_bfloat, TYPES_tmop_h_float, TYPES_tmop_h_mf8,
+	TYPES_tmop_s_mf8): Add new DEF_SVE_TYPES_ARRAYs.
+	* config/aarch64/aarch64-c.cc: (__ARM_FEATURE_SME_TMOP): Add define.
+	* config/aarch64/aarch64-sme.md:
+	(@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SVE_FULL_BHI:mode>): Add
+	new insn.
+	(@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><VNx16QI_ONLY:mode>):
+	Likewise.
+	(@aarch64_sme_lane_<optab><mode><mode>):
+	Likewise.
+	(@aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SVE_FULL_HF:mode>):
+	Likewise.
+	(@aarch64_sme_lane_<optab><SME_TMOPA_FP8:mode><VNx16QI_ONLY:mode>):
+	Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc:
+	(ternary_za_uint_dual_single): Add new shape.
+	* config/aarch64/aarch64-sve-builtins-shapes.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.cc: (svtmopa_lane_za_impl):
+	Add new function impl class.
+	(svtmopa_lane_za): Add new FUNCTION.
+	* config/aarch64/aarch64-sve-builtins-sme.def: (svtmopa_lane): Add new
+	DEF_SME_ZA_FUNCTION_GS entries.
+	* config/aarch64/aarch64-sve-builtins-sme.h: (svtmopa_lane_za): Add new.
+	* config/aarch64/aarch64.h: (TARGET_STREAMING_SME_TMOP): Add new define.
+	* config/aarch64/constraints.md (Uwo): Add new constraint for Control
+	Vector Register in TMOP operations.
+	* config/aarch64/iterators.md: (SME_TMOPA_BHSF, SME_TMOPA_FP8): Add new mode
+	iterators.
+	(UNSPEC_SME_FTMOPA, UNSPEC_SME_FTMOPA_FP8, UNSPEC_SME_STMOPA,
+	UNSPEC_SME_SUTMOPA, UNSPEC_SME_USTMOPA, UNSPEC_SME_UTMOPA): Add new
+	unspecs.
+	(SME_TMOP_INT, SME_TMOP_INT_CROSS, SME_TMOP_FP, SME_TMOP_FP8): Add new
+	iterators.
+	(za_imm_bits): Add new mode_attr.
+	(optab): Update with new unspecs.
+	* config/aarch64/predicates.md: (aarch64_imm1, aarch64_imm4): Add new
+	predicates.
+
+2026-09-14  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64.md: Rename aarch64_imm3 as aarch64_shift_imm3.
+	* config/aarch64/aarch64-simd.md: Rename aarch64_lane_imm3 as aarch64_imm3.
+	* config/aarch64/predicates.md: Rename aarch64_imm3 as aarch64_shift_imm3
+	and	aarch64_lane_imm3 to aarch64_imm3.
+
+2026-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127377
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def):
+	Properly consider the padding before the object when
+	pruning the size.
+
+2026-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127363
+	* tree-vect-stmts.cc (vectorizable_assignment): Properly
+	code-generate PAREN_EXPRs.
+
+2026-09-14  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR target/126983
+	* config/aarch64/aarch64-simd.md (*aarch64_combinez<mode>):
+	Split into VS32_I_SUB64_F_CONDFP16 and HFBF variants.  Change
+	uxtw to uxt<extsize>.
+	(*aarch64_combinez_be<mode>): Likewise.
+	* config/aarch64/iterators.md (VSSUB64_F): Remove iterator.
+	(VS32_I_SUB64_F): Amend by explicitly listing all modes.
+	(VS32_I_SUB64_F_CONDFP16): New iterator.
+
+2026-09-14  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR ipa/123227
+	* ipa-icf.cc (sem_function::equals_wpa): Compare TYPE_ATTRIBUTES
+	as a list rather than through comp_type_attributes.  Reject a
+	METHOD_TYPE compared against a FUNCTION_TYPE.
+
 2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
 
 	* generic-match-head.cc (gimple_match_no_overflow_p): New.

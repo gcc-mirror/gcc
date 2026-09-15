@@ -1,3 +1,35 @@
+2026-09-14  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/inplace_vector: Apply proper coding style on all
+	'if consteval' expressions.
+
+2026-09-14  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/inplace_vector
+	(inplace_vector::emplace): Replace usages of std::is_constant_evaluated
+	by consteval.
+	(inplace_vector::insert): Likewise.
+	(inplace_vector::erase): Likewise.
+
+2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (within_lifetime): Change value from 202306
+	to 202603.
+	* include/bits/version.h: Regenerate.
+	* include/std/type_traits: Implement C++26 P3450R1: Extend
+	std::is_within_lifetime paper.
+	(std::is_within_lifetime): Add _Up template argument defaulted to void
+	and verify static_cast<const volatile _Up*>(__p) is a constant
+	expression.
+
+2026-09-14  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/ranges_algo.h (ranges::__for_each): Add
+	segemented iterators logic. Split out naive for-loop from ...
+	(__for_each_fn::operator()): ... here.
+	* testsuite/performance/25_algorithms/for_each.cc: Add
+	benchmark for ranges::for_each.
+
 2026-09-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/125820

@@ -1,3 +1,13 @@
+2026-09-14  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Emit diagnostic if symbol_currency_add fails.
+	* parse_ante.h (update_prior_invalid_field): New function.
+	(field_add): Use update_prior_invalid_field to validate prior field.
+	* scan.l: Document currency-symbol domain.
+	* symbols.cc (symbols_update): Quell redundant diagnostic.
+	(symbol_currency_symbol_ok): Validate currency symbol.
+	(symbol_currency_add): Use symbol_currency_symbol_ok.
+
 2026-09-11  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse.y: Add wordop_t to each element.

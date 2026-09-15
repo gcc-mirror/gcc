@@ -1,3 +1,27 @@
+2026-09-14  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/127282
+	* constexpr.cc (modifiable_tracker::modifiable_tracker): Save the
+	current global pointer to the modifiable set.
+	(modifiable_tracker::~modifiable_tracker): Restore the original
+	pointer to the modifiable set instead of clearing it.
+
+2026-09-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127349
+	* pt.cc (lookup_template_class): Print %qE if d1 is not a type.
+	(tsubst) <case TYPENAME_TYPE>: Do lookup_qualified_name first
+	before lookup_template_class.  Guard qualified_name_lookup_error
+	with a complain check.  Use gcc_checking_assert instead of
+	gcc_assert.  Use identifier_p.  Give an error if we didn't get
+	a type.
+
+2026-09-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126970
+	* cp-gimplify.cc (immediate_escalating_function_p): Check
+	!user_provided_p.
+
 2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/126811

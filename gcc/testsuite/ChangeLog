@@ -1,3 +1,126 @@
+2026-09-14  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.cob: Use @ not U.
+	* cobol.dg/group2/floating-point_ADD_FORMAT_1.cob: Test NEAREST-AWAY-FROM-ZERO.
+	* cobol.dg/group2/floating-point_ADD_FORMAT_1.out: Test DISPLAY.
+
+2026-09-14  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/127282
+	* g++.dg/cpp23/attr-assume10.C: Add a case with a nested assumption.
+
+2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/within-lifetime1.C: Fix up C++26 paper number and name.
+	* g++.dg/cpp26/within-lifetime2.C: Likewise.
+	* g++.dg/cpp26/within-lifetime3.C: Likewise.
+	* g++.dg/cpp26/within-lifetime4.C: Likewise.
+	* g++.dg/cpp26/within-lifetime5.C: Likewise.
+	* g++.dg/cpp26/within-lifetime6.C: Likewise.
+	* g++.dg/cpp26/within-lifetime7.C: Likewise.
+	* g++.dg/cpp26/within-lifetime8.C: Likewise.
+	* g++.dg/cpp26/within-lifetime9.C: Likewise.
+	* g++.dg/cpp26/within-lifetime10.C: New test.
+	* g++.dg/cpp26/within-lifetime11.C: New test.
+	* g++.dg/cpp26/within-lifetime12.C: New test.
+
+2026-09-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127349
+	* g++.dg/reflect/ns7.C: New test.
+
+2026-09-14  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126970
+	* g++.dg/reflect/cwg3153-2.C: New test.
+
+2026-09-14  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/127379
+	* gcc.dg/torture/pr127379.c: New test.
+
+2026-09-14  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/sve/zeroing_mov_z.c: New test.
+
+2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127336
+	* gcc.dg/pr127336.c: New test.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/arm/short-it-ifcvt-2.c: Skip M-profile targets.
+	Match complete conditional branch mnemonics and allow lt and ge.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sat_u_sub_swapped-1.c: New test.
+
+2026-09-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sat_u_sub_minmax-1.c: New test.
+	* gcc.target/aarch64/sat_u_sub_minmax-2.c: New test.
+	* gcc.target/aarch64/sat_u_sub_minmax-3.c: New test.
+
+2026-09-14  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_6.c: Add tests checking that the
+	sme-tmop prefef is off by default, and checks for feature dependencies.
+	* gcc.target/aarch64/sme2/acle-asm/test_sme2_acle.h: (TEST_ZA_TMOP) Add
+	testing macro.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za16_bf16_bf16.c:
+	New test.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za16_f16_f16.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za16_mf8_mf8.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_bf16_bf16.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_f16_f16.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_f32_f32.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_mf8_mf8.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_s8_s8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_s8_u8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_s16_s16.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_u8_s8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_u8_u8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/tmopa_lane_za32_u16_u16.c:
+	Likewise.
+	* gcc.target/aarch64/sve/acle/general-c/ternary_za_uint_dual_single_1.c:
+	Likewise.
+	* lib/target-supports.exp: Add check_effective_target support for
+	sme-tmop.
+
+2026-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127377
+	* gcc.dg/torture/pr127377.c: New testcase.
+
+2026-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127363
+	* gcc.dg/vect/vect-pr127363.c: New testcase.
+
+2026-09-14  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR target/126983
+	* gcc.target/aarch64/vec-init-23-nofp16.c: New test.
+
+2026-09-14  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR ipa/123227
+	* gcc.dg/ipa/pr123227.c: New test.
+	* g++.dg/ipa/pr123227.C: New test.
+	* gcc.dg/lto/pr123227_0.c: New test.
+	* gcc.dg/lto/pr123227_1.c: New test.
+	* g++.dg/lto/pr123227_0.C: New test.
+	* g++.dg/lto/pr123227_1.C: New test.
+
 2026-09-13  Dominic P  <gcc@gcc.dp11.uk>
 
 	* gcc.dg/torture/minmax-swar-1.c: New test.
