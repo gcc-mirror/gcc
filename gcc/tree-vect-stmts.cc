@@ -5389,6 +5389,17 @@ vectorizable_conversion (vec_info *vinfo,
       return false;
     }
 
+  /* _BitInt values are not sign-/zero-extended to mode precision.  */
+  if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
+      && TREE_CODE (rhs_type) == BITINT_TYPE
+      && !type_has_mode_precision_p (rhs_type))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "type conversion from _BitInt unsupported\n");
+      return false;
+    }
+
   if (op_type == binary_op)
     {
       gcc_assert (code == WIDEN_MULT_EXPR
