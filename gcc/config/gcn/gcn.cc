@@ -860,7 +860,7 @@ gcn_spill_class (reg_class_t c, machine_mode mode)
       || c == VCC_CONDITIONAL_REG || c == EXEC_MASK_REG)
     return SGPR_REGS;
   else if (c == VGPR_REGS && !VECTOR_MODE_P (mode))
-    return SGPR_REGS;
+    return SCALAR_SPILL_REGS;
   else if (c == VGPR_REGS && TARGET_AVGPRS)
     return AVGPR_REGS;
   else
@@ -4075,6 +4075,7 @@ gcn_memory_move_cost (machine_mode mode, reg_class_t regclass, bool in)
       return (STORE_COST + (TARGET_CDNA2_MEM_COSTS ? 0 : 2)) * nregs;
     case ALL_REGS:
     case ALL_GPR_REGS:
+    case SCALAR_SPILL_REGS:
     case SRCDST_REGS:
       if (in)
 	return (LOAD_COST + 2) * nregs;

@@ -415,6 +415,7 @@ enum reg_class
   AVGPR_REGS,
   ALL_VGPR_REGS,
   ALL_GPR_REGS,
+  SCALAR_SPILL_REGS,
   SRCDST_REGS,
   AFP_REGS,
   ALL_REGS,
@@ -443,6 +444,7 @@ enum reg_class
    "AVGPR_REGS",	    \
    "ALL_VGPR_REGS",	    \
    "ALL_GPR_REGS",	    \
+   "SCALAR_SPILL_REGS",	    \
    "SRCDST_REGS",	    \
    "AFP_REGS",		    \
    "ALL_REGS"		    \
@@ -579,6 +581,12 @@ enum reg_class
      0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff,			   \
      0xffffffff, 0, 0, 0,						   \
      0, 0, 0, 0, 0, 0},							   \
+    /* SCALAR_SPILL_REGS.  */						   \
+    {0xffffffff, 0xffffffff, 0xffffffff, 0xf1,				   \
+     0, 0, 0, 0,							   \
+     0, 0, 0, 0,							   \
+     0,		 0xffffffff, 0xffffffff, 0xffffffff,			   \
+     0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff, 0},	   \
     /* SRCDST_REGS.  */							   \
     {0xffffffff, 0xffffffff, 0xffffffff,				   \
      0xffffffff-NAMED_REG_MASK (VCCZ_REG),				   \
