@@ -82,6 +82,8 @@ tree gfc_conv_descriptor_cosize (tree, int, int);
 /* Shift lower bound of descriptor, updating ubound and offset.  */
 void gfc_conv_shift_descriptor_lbound (stmtblock_t*, tree, int, tree);
 
+void gfc_copy_coarray_desc_part (stmtblock_t *, tree, tree);
+
 void gfc_copy_descriptor (stmtblock_t *, tree, tree, int);
 
 void gfc_grow_array (stmtblock_t *, tree, tree);

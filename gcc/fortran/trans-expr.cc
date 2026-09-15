@@ -761,38 +761,6 @@ gfc_get_vptr_from_expr (tree expr)
   return NULL_TREE;
 }
 
-static void
-copy_coarray_desc_part (stmtblock_t *block, tree dest, tree src)
-{
-  tree src_type = TREE_TYPE (src);
-  if (TYPE_LANG_SPECIFIC (src_type) && TYPE_LANG_SPECIFIC (src_type)->corank)
-    {
-      struct lang_type *lang_specific = TYPE_LANG_SPECIFIC (src_type);
-      for (int c = 0; c < lang_specific->corank; ++c)
-	{
-	  int dim = lang_specific->rank + c;
-	  tree codim = gfc_rank_cst[dim];
-
-	  if (lang_specific->lbound[dim])
-	    gfc_conv_descriptor_lbound_set (block, dest, codim,
-					    lang_specific->lbound[dim]);
-	  else
-	    gfc_conv_descriptor_lbound_set (
-	      block, dest, codim, gfc_conv_descriptor_lbound_get (src, codim));
-	  if (dim + 1 < lang_specific->corank)
-	    {
-	      if (lang_specific->ubound[dim])
-		gfc_conv_descriptor_ubound_set (block, dest, codim,
-						lang_specific->ubound[dim]);
-	      else
-		gfc_conv_descriptor_ubound_set (
-		  block, dest, codim,
-		  gfc_conv_descriptor_ubound_get (src, codim));
-	    }
-	}
-    }
-}
-
 void
 gfc_class_array_data_assign (stmtblock_t *block, tree lhs_desc, tree rhs_desc,
 			     bool lhs_type)
@@ -821,7 +789,7 @@ gfc_class_array_data_assign (stmtblock_t *block, tree lhs_desc, tree rhs_desc,
   gfc_add_modify (block, lhs_dim, rhs_dim);
 
   /* The corank dimensions are not copied by the ARRAY_RANGE_REF.  */
-  copy_coarray_desc_part (block, lhs_desc, rhs_desc);
+  gfc_copy_coarray_desc_part (block, lhs_desc, rhs_desc);
 }
 
 /* Takes a derived type expression and returns the address of a temporary
@@ -937,7 +905,7 @@ gfc_conv_derived_to_class (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym,
 							     gfc_expr_attr (e));
 	      gfc_conv_descriptor_dtype_set (&parmse->pre, ctree,
 					     gfc_get_dtype (type));
-	      copy_coarray_desc_part (&parmse->pre, ctree, parmse->expr);
+	      gfc_copy_coarray_desc_part (&parmse->pre, ctree, parmse->expr);
 	      if (optional)
 		parmse->expr = build3_loc (input_location, COND_EXPR,
 					   TREE_TYPE (parmse->expr),

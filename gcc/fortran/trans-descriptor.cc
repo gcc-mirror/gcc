@@ -951,6 +951,46 @@ gfc_conv_shift_descriptor_lbound (stmtblock_t* block, tree desc,
 }
 
 
+/* Add code to BLOCK copying the cobounds from array descriptor SRC to array
+   descriptor DEST.  The values are picked from SRC's type if they are
+   set there.  Otherwise the runtime values are used with references to SRC's
+   fields.  The type of DEST is not enriched with the cobounds; only
+   assignments setting DEST's fields at runtime are generated.  If SRC is not a
+   coarray, no code is generated.  */
+
+void
+gfc_copy_coarray_desc_part (stmtblock_t *block, tree dest, tree src)
+{
+  tree src_type = TREE_TYPE (src);
+  if (TYPE_LANG_SPECIFIC (src_type) && TYPE_LANG_SPECIFIC (src_type)->corank)
+    {
+      struct lang_type *lang_specific = TYPE_LANG_SPECIFIC (src_type);
+      for (int c = 0; c < lang_specific->corank; ++c)
+	{
+	  int dim = lang_specific->rank + c;
+	  tree codim = gfc_rank_cst[dim];
+
+	  if (lang_specific->lbound[dim])
+	    gfc_conv_descriptor_lbound_set (block, dest, codim,
+					    lang_specific->lbound[dim]);
+	  else
+	    gfc_conv_descriptor_lbound_set (
+	      block, dest, codim, gfc_conv_descriptor_lbound_get (src, codim));
+	  if (dim + 1 < lang_specific->corank)
+	    {
+	      if (lang_specific->ubound[dim])
+		gfc_conv_descriptor_ubound_set (block, dest, codim,
+						lang_specific->ubound[dim]);
+	      else
+		gfc_conv_descriptor_ubound_set (
+		  block, dest, codim,
+		  gfc_conv_descriptor_ubound_get (src, codim));
+	    }
+	}
+    }
+}
+
+
 void
 gfc_copy_descriptor (stmtblock_t *block, tree dst, tree src, int rank)
 {
