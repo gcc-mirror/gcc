@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "backend.h"
 #include "rtl.h"
+#include "tree-core.h"
 #include "tree.h"
 #include "gimple.h"
 #include "tree-pass.h"
@@ -41,6 +42,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "symbol-summary.h"
 #include "symtab-thunks.h"
+#include "attr-callback.h"
+#include "callback-info.h"
 
 /* Return true when TYPE contains an polymorphic type and thus is interesting
    for devirtualization machinery.  */
@@ -1582,6 +1585,11 @@ ipa_polymorphic_call_context::get_dynamic_type (tree instance,
   tree instance_outer_type = outer_type;
 
   if (!instance)
+    return false;
+
+  /* Bail to avoid segfaults for IFN_ASSUME internal calls.  They are not
+     polymorphic anyway.  */
+  if (is_gimple_call (call) && gimple_call_internal_p (call, IFN_ASSUME))
     return false;
 
   if (otr_type)

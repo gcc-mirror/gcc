@@ -2492,7 +2492,8 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   ipa_node_params *info = ipa_node_params_sum->get (cs->caller);
   ipa_edge_args *args = ipa_edge_args_sum->get_create (cs);
   gcall *call = cs->call_stmt;
-  int n, arg_num = gimple_call_num_args (call);
+  callback_info *ci = callback_info_sum->get (cs);
+  int n, arg_num = callback_call_num_args_summary (call, ci);
   bool useful_context = false;
 
   if (arg_num == 0 || args->jump_functions)
@@ -2508,7 +2509,17 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   for (n = 0; n < arg_num; n++)
     {
       struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, n);
-      tree arg = gimple_call_arg (call, n);
+      tree arg;
+      if (cs->callback)
+	{
+	  gcc_assert (cs->callee->assume_function);
+	  int remapped_idx = ci->arg_mapping[n];
+	  if (remapped_idx == ARG_MAPPING_UNKNOWN_IDX)
+	    continue;
+	  arg = gimple_call_arg (call, remapped_idx);
+	}
+      else
+	arg = gimple_call_arg (call, n);
       tree param_type = ipa_get_callee_param_type (cs, n);
       if (flag_devirtualize && POINTER_TYPE_P (TREE_TYPE (arg)))
 	{
