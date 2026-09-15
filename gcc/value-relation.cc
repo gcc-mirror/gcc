@@ -45,9 +45,10 @@ print_relation (FILE *f, relation_kind rel)
 }
 
 // This table is used to negate the operands.  op1 REL op2 -> !(op1 REL op2).
+// Partial equivalence can't be negated, so VARYING is correct.
 static const unsigned char rr_negate_table[VREL_LAST] = {
   VREL_VARYING, VREL_UNDEFINED, VREL_GE, VREL_GT, VREL_LE, VREL_LT, VREL_NE,
-  VREL_EQ };
+  VREL_EQ, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING };
 
 // Negate the relation, as in logical negation.
 
@@ -58,9 +59,10 @@ relation_negate (relation_kind r)
 }
 
 // This table is used to swap the operands.  op1 REL op2 -> op2 REL op1.
+// Partial equivalences swap to themselves as the low N bits are equal.
 static const unsigned char rr_swap_table[VREL_LAST] = {
   VREL_VARYING, VREL_UNDEFINED, VREL_GT, VREL_GE, VREL_LT, VREL_LE, VREL_EQ,
-  VREL_NE };
+  VREL_NE, VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 };
 
 // Return the relation as if the operands were swapped.
 
@@ -71,32 +73,58 @@ relation_swap (relation_kind r)
 }
 
 // This table is used to perform an intersection between 2 relations.
+// EQ is a full equivalency, and thus replaces any partial equivalence.
+// Likewise, the higher bit PE is more "equivalent" than the lower bit version
+// and thus more restrictive.
 
 static const unsigned char rr_intersect_table[VREL_LAST][VREL_LAST] = {
 // VREL_VARYING
   { VREL_VARYING, VREL_UNDEFINED, VREL_LT, VREL_LE, VREL_GT, VREL_GE, VREL_EQ,
-    VREL_NE },
+    VREL_NE, VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 },
 // VREL_UNDEFINED
   { VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED,
+    VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED,
     VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED },
 // VREL_LT
   { VREL_LT, VREL_UNDEFINED, VREL_LT, VREL_LT, VREL_UNDEFINED, VREL_UNDEFINED,
-    VREL_UNDEFINED, VREL_LT },
+    VREL_UNDEFINED, VREL_LT,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_LE
   { VREL_LE, VREL_UNDEFINED, VREL_LT, VREL_LE, VREL_UNDEFINED, VREL_EQ,
-    VREL_EQ, VREL_LT },
+    VREL_EQ, VREL_LT,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_GT
   { VREL_GT, VREL_UNDEFINED, VREL_UNDEFINED, VREL_UNDEFINED, VREL_GT, VREL_GT,
-    VREL_UNDEFINED, VREL_GT },
+    VREL_UNDEFINED, VREL_GT,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_GE
   { VREL_GE, VREL_UNDEFINED, VREL_UNDEFINED, VREL_EQ, VREL_GT, VREL_GE,
-    VREL_EQ, VREL_GT },
+    VREL_EQ, VREL_GT,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_EQ
   { VREL_EQ, VREL_UNDEFINED, VREL_UNDEFINED, VREL_EQ, VREL_UNDEFINED, VREL_EQ,
-    VREL_EQ, VREL_UNDEFINED },
+    VREL_EQ, VREL_UNDEFINED,
+    VREL_EQ, VREL_EQ, VREL_EQ, VREL_EQ },
 // VREL_NE
   { VREL_NE, VREL_UNDEFINED, VREL_LT, VREL_LT, VREL_GT, VREL_GT,
-    VREL_UNDEFINED, VREL_NE } };
+    VREL_UNDEFINED, VREL_NE,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
+// VREL_PE8
+  { VREL_PE8, VREL_UNDEFINED, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_EQ, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 },
+// VREL_PE16
+  { VREL_PE16, VREL_UNDEFINED, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_EQ, VREL_VARYING,
+    VREL_PE16, VREL_PE16, VREL_PE32, VREL_PE64 },
+// VREL_PE32
+  { VREL_PE32, VREL_UNDEFINED, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_EQ, VREL_VARYING,
+    VREL_PE32, VREL_PE32, VREL_PE32, VREL_PE64 },
+// VREL_PE64
+  { VREL_PE64, VREL_UNDEFINED, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_EQ, VREL_VARYING,
+    VREL_PE64, VREL_PE64, VREL_PE64, VREL_PE64 } };
 
 
 // Intersect relation R1 with relation R2 and return the resulting relation.
@@ -109,32 +137,54 @@ relation_intersect (relation_kind r1, relation_kind r2)
 
 
 // This table is used to perform a union between 2 relations.
+// EQ unions with a PE to produce the same PE, and likewise whichever PE
+// has the least common bits forms the union.
 
 static const unsigned char rr_union_table[VREL_LAST][VREL_LAST] = {
 // VREL_VARYING
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
-    VREL_VARYING, VREL_VARYING, VREL_VARYING },
+    VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_UNDEFINED
   { VREL_VARYING, VREL_UNDEFINED, VREL_LT, VREL_LE, VREL_GT, VREL_GE,
-    VREL_EQ, VREL_NE },
+    VREL_EQ, VREL_NE, VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 },
 // VREL_LT
   { VREL_VARYING, VREL_LT, VREL_LT, VREL_LE, VREL_NE, VREL_VARYING, VREL_LE,
-    VREL_NE },
+    VREL_NE, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_LE
   { VREL_VARYING, VREL_LE, VREL_LE, VREL_LE, VREL_VARYING, VREL_VARYING,
-    VREL_LE, VREL_VARYING },
+    VREL_LE, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_GT
   { VREL_VARYING, VREL_GT, VREL_NE, VREL_VARYING, VREL_GT, VREL_GE, VREL_GE,
-    VREL_NE },
+    VREL_NE, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_GE
   { VREL_VARYING, VREL_GE, VREL_VARYING, VREL_VARYING, VREL_GE, VREL_GE,
-    VREL_GE, VREL_VARYING },
+    VREL_GE, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_EQ
   { VREL_VARYING, VREL_EQ, VREL_LE, VREL_LE, VREL_GE, VREL_GE, VREL_EQ,
-    VREL_VARYING },
+    VREL_VARYING, VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 },
 // VREL_NE
   { VREL_VARYING, VREL_NE, VREL_NE, VREL_VARYING, VREL_NE, VREL_VARYING,
-    VREL_VARYING, VREL_NE } };
+    VREL_VARYING, VREL_NE,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
+// VREL_PE8
+  { VREL_VARYING, VREL_PE8, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE8, VREL_VARYING,
+    VREL_PE8, VREL_PE8, VREL_PE8, VREL_PE8 },
+// VREL_PE16
+  { VREL_VARYING, VREL_PE16, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE16, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE16, VREL_PE16 },
+// VREL_PE32
+  { VREL_VARYING, VREL_PE32, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE32, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE32 },
+// VREL_PE64
+  { VREL_VARYING, VREL_PE64, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE64, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 } };
 
 // Union relation R1 with relation R2 and return the result.
 
@@ -147,32 +197,57 @@ relation_union (relation_kind r1, relation_kind r2)
 
 // This table is used to determine transitivity between 2 relations.
 // (A relation0 B) and (B relation1 C) implies  (A result C)
+// Chaining two partial equivalences leaves only the bits both agree on, ie
+// the narrower of the two.
 
 static const unsigned char rr_transitive_table[VREL_LAST][VREL_LAST] = {
 // VREL_VARYING
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
-    VREL_VARYING, VREL_VARYING, VREL_VARYING },
+    VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_UNDEFINED
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
-    VREL_VARYING, VREL_VARYING, VREL_VARYING },
+    VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_LT
   { VREL_VARYING, VREL_VARYING, VREL_LT, VREL_LT, VREL_VARYING, VREL_VARYING,
-    VREL_LT, VREL_VARYING },
+    VREL_LT, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_LE
   { VREL_VARYING, VREL_VARYING, VREL_LT, VREL_LE, VREL_VARYING, VREL_VARYING,
-    VREL_LE, VREL_VARYING },
+    VREL_LE, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_GT
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_GT, VREL_GT,
-    VREL_GT, VREL_VARYING },
+    VREL_GT, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_GE
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_GT, VREL_GE,
-    VREL_GE, VREL_VARYING },
+    VREL_GE, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
 // VREL_EQ
   { VREL_VARYING, VREL_VARYING, VREL_LT, VREL_LE, VREL_GT, VREL_GE, VREL_EQ,
-    VREL_NE },
+    VREL_NE, VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 },
 // VREL_NE
   { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
-    VREL_VARYING, VREL_NE, VREL_VARYING } };
+    VREL_VARYING, VREL_NE, VREL_VARYING,
+    VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING },
+// VREL_PE8
+  { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE8, VREL_VARYING,
+    VREL_PE8, VREL_PE8, VREL_PE8, VREL_PE8 },
+// VREL_PE16
+  { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE16, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE16, VREL_PE16 },
+// VREL_PE32
+  { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE32, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE32 },
+// VREL_PE64
+  { VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING, VREL_VARYING,
+    VREL_VARYING, VREL_PE64, VREL_VARYING,
+    VREL_PE8, VREL_PE16, VREL_PE32, VREL_PE64 } };
 
 // Apply transitive operation between relation R1 and relation R2, and
 // return the resulting relation, if any.
@@ -2201,15 +2276,48 @@ relation_tests ()
 {
   // rr_*_table tables use unsigned char rather than relation_kind.
   ASSERT_LT (VREL_LAST, UCHAR_MAX);
-  // Verify commutativity of relation_intersect and relation_union.
-  for (relation_kind r1 = VREL_VARYING; r1 < VREL_PE8;
+  for (relation_kind r1 = VREL_VARYING; r1 < VREL_LAST;
        r1 = relation_kind (r1 + 1))
-    for (relation_kind r2 = VREL_VARYING; r2 < VREL_PE8;
-	 r2 = relation_kind (r2 + 1))
-      {
-	ASSERT_EQ (relation_intersect (r1, r2), relation_intersect (r2, r1));
-	ASSERT_EQ (relation_union (r1, r2), relation_union (r2, r1));
-      }
+    {
+      // Swapping the operands twice is a no-op.
+      ASSERT_EQ (relation_swap (relation_swap (r1)), r1);
+
+      // VARYING intersect X is X.
+      // UNDEFINED intersect X is UNDEFINED.
+      ASSERT_EQ (relation_intersect (VREL_VARYING, r1), r1);
+      ASSERT_EQ (relation_intersect (VREL_UNDEFINED, r1), VREL_UNDEFINED);
+
+      // UNDEFINED union X is X.
+      // VARYING union X is VARYING.
+      ASSERT_EQ (relation_union (VREL_UNDEFINED, r1), r1);
+      ASSERT_EQ (relation_union (VREL_VARYING, r1), VREL_VARYING);
+
+      // Verify commutativity of relation_intersect and relation_union.
+      for (relation_kind r2 = VREL_VARYING; r2 < VREL_LAST;
+	   r2 = relation_kind (r2 + 1))
+	{
+	  ASSERT_EQ (relation_intersect (r1, r2), relation_intersect (r2, r1));
+	  ASSERT_EQ (relation_union (r1, r2), relation_union (r2, r1));
+	}
+    }
+
+  // Verify partial equivalence properties.
+  for (relation_kind r1 = VREL_PE8; r1 <= VREL_PE64;
+       r1 = relation_kind (r1 + 1))
+    {
+      ASSERT_EQ (relation_swap (r1), r1);
+      ASSERT_EQ (relation_intersect (VREL_EQ, r1), VREL_EQ);
+      ASSERT_EQ (relation_union (VREL_EQ, r1), r1);
+      ASSERT_EQ (relation_transitive (VREL_EQ, r1), r1);
+      ASSERT_EQ (relation_transitive (r1, VREL_EQ), r1);
+      for (relation_kind r2 = VREL_PE8; r2 <= VREL_PE64;
+	   r2 = relation_kind (r2 + 1))
+	{
+	  ASSERT_EQ (relation_intersect (r1, r2), MAX (r1, r2));
+	  ASSERT_EQ (relation_union (r1, r2), pe_min (r1, r2));
+	  ASSERT_EQ (relation_transitive (r1, r2), pe_min (r1, r2));
+	}
+    }
 }
 
 } // namespace selftest
