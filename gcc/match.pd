@@ -11994,7 +11994,7 @@ and,
   (if ((INTEGRAL_TYPE_P (type)
        || (!flag_trapping_math && SCALAR_FLOAT_TYPE_P (type)))
        && ((INTEGRAL_TYPE_P (TREE_TYPE (@2))
-	    && INTEGRAL_TYPE_P (TREE_TYPE (@3)))
+	    && tree_nop_conversion_p (TREE_TYPE (@2), TREE_TYPE (@3)))
 	   || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@2))
 	       && types_match (TREE_TYPE (@2), TREE_TYPE (@3))))
        && !operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (@0)))
