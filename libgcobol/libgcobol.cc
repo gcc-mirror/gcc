@@ -11625,6 +11625,12 @@ __gg__module_name_pop()
   module_name_stack.pop_back();
   }
 
+const std::vector<std::string> &
+__gg__get_module_names()
+  {
+  return module_name_stack;
+  }
+
 extern "C"
 void
 __gg__module_name(cblc_field_t *dest, module_type_t type)
