@@ -20,7 +20,7 @@
 SARIF support
 =============
 
-`SARIF <https://www.sarif.info/>`_ is a machine-readable format, originally
+`SARIF <https://sarif.info>`_ is a machine-readable format, originally
 designed for the output of static analysis tools, but which can be used
 for diagnostics in general.
 
