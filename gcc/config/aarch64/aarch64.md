@@ -3756,8 +3756,8 @@
 })
 
 (define_expand "negvti3"
-  [(match_operand:TI 0 "register_operand")
-   (match_operand:TI 1 "register_operand")
+  [(match_operand:TI 0 "pure_register_operand")
+   (match_operand:TI 1 "pure_register_operand")
    (label_ref (match_operand 2 "" ""))]
   ""
   {

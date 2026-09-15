@@ -20,6 +20,13 @@
 
 (include "../arm/common.md")
 
+;; Similar to register_operand, but don't allow subregs.  This is needed
+;; if we want to use operations like gen_highpart while expanding
+;; a pattern.
+(define_predicate "pure_register_operand"
+  (and (match_code "reg")
+       (match_operand 0 "register_operand")))
+
 (define_predicate "aarch64_sysreg_string"
   (and (match_code "const_string")
        (match_test "aarch64_valid_sysreg_name_p (XSTR (op, 0))")))
