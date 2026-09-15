@@ -76,4 +76,9 @@ bool callback_edge_useful_p (cgraph_edge *e);
    takes.  */
 size_t callback_num_args (tree attr);
 
+/* Redirect call statement of E to the callee of E.  Used in
+   cgraph_edge::redirect_call_stmt_to_callee.  Edge E must be a callback
+   edge.  */
+void callback_redirect_edge (cgraph_edge *e);
+
 #endif /* ATTR_CALLBACK_H  */

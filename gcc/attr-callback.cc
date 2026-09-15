@@ -24,6 +24,7 @@
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
+#include "fold-const.h"
 #include "alloc-pool.h"
 #include "cgraph.h"
 #include "diagnostic.h"
@@ -182,4 +183,17 @@ callback_num_args (tree attr)
   for (it = TREE_CHAIN (args); it != NULL_TREE; it = TREE_CHAIN (it), ++res)
     ;
   return res;
+}
+
+/* Redirect call statement of E to the callee of E.  Used in
+   cgraph_edge::redirect_call_stmt_to_callee.  Edge E must be a callback
+   edge.  */
+void
+callback_redirect_edge (cgraph_edge *e)
+{
+  callback_info *ci = callback_info_sum->get (e);
+  tree previous_arg = gimple_call_arg (e->call_stmt, ci->fn_idx);
+  location_t loc = EXPR_LOCATION (previous_arg);
+  tree new_addr = build_fold_addr_expr_loc (loc, e->callee->decl);
+  gimple_call_set_arg (e->call_stmt, ci->fn_idx, new_addr);
 }

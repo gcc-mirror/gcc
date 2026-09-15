@@ -1870,11 +1870,7 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
 	   signature, as the indices wouldn't be correct anymore.  These edges
 	   will get cleaned up later, ignore their redirection for now.  */
 	return e->call_stmt;
-      callback_info *ci = callback_info_sum->get (e);
-      tree previous_arg = gimple_call_arg (e->call_stmt, ci->fn_idx);
-      location_t loc = EXPR_LOCATION (previous_arg);
-      tree new_addr = build_fold_addr_expr_loc (loc, e->callee->decl);
-      gimple_call_set_arg (e->call_stmt, ci->fn_idx, new_addr);
+      callback_redirect_edge (e);
       return e->call_stmt;
     }
 
