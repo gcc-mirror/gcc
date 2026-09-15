@@ -3421,7 +3421,7 @@ function_summary (const coverage_info *coverage)
   else
     fnotice (stdout, "No branches\n");
 
-  if (coverage->calls && coverage->calls == 0)
+  if (coverage->calls && coverage->calls_suppressed == 0)
     fnotice (stdout, "Calls executed:%s of %d\n",
 	     format_gcov (coverage->calls_executed, coverage->calls, 2),
 	     coverage->calls);
