@@ -472,10 +472,22 @@ void
 TraitItemReference::resolve_item (const TraitReference *tref,
 				  HIR::TraitItemType &type)
 {
+  auto lifetime_pin = context->push_clean_lifetime_resolver ();
+  for (auto &param : tref->get_hir_trait_ref ()->get_generic_params ())
+    {
+      if (param->get_kind () == HIR::GenericParam::GenericKind::LIFETIME)
+	{
+	  auto &lifetime_param = static_cast<HIR::LifetimeParam &> (*param);
+	  context->intern_and_insert_lifetime (lifetime_param.get_lifetime ());
+	}
+    }
+
   auto substitutions = inherited_substitutions;
+  tl::optional<TypeCheckContext::LifetimeResolverGuard> binder_pin;
   if (type.has_generics ())
     {
-      auto binder_pin = context->push_lifetime_binder ();
+      binder_pin.emplace (*context,
+			  TypeCheckContext::LifetimeResolverGuard::BINDER);
       TypeCheckBase::ResolveGenericParams (HIR::Item::ItemKind::TypeAlias,
 					   type.get_locus (),
 					   type.get_generic_params (),
