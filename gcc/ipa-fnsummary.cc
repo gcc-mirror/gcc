@@ -90,6 +90,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "symtab-clones.h"
 #include "gimple-range.h"
 #include "tree-dfa.h"
+#include "attr-callback.h"
+#include "callback-info.h"
 
 /* Summaries.  */
 fast_function_summary <ipa_fn_summary *, va_gc> *ipa_fn_summaries;
@@ -3057,10 +3059,12 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		       this_time);
 	    }
 
+	  struct cgraph_edge *edge;
 	  if (is_gimple_call (stmt)
-	      && !gimple_call_internal_p (stmt))
+	      && (!gimple_call_internal_p (stmt)
+		  || gimple_call_internal_fn (stmt) == IFN_ASSUME)
+	      && (edge = node->get_edge (stmt)))
 	    {
-	      struct cgraph_edge *edge = node->get_edge (stmt);
 	      ipa_call_summary *es = ipa_call_summaries->get_create (edge);
 
 	      /* Special case: results of BUILT_IN_CONSTANT_P will be always
@@ -3146,6 +3150,15 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		      es2->call_stmt_size = 0;
 		      es2->call_stmt_time = 0;
 		    }
+		}
+	      /* Internal calls are not in the callgraph, so edges pointing to
+		 .ASSUME bodies are not covered by the above branch, as the
+		 dispatching edge doesn't exist.  */
+	      else if (edge->callback)
+		{
+		  gcc_checking_assert (edge->callee->assume_function);
+		  es->call_stmt_size = 0;
+		  es->call_stmt_time = 0;
 		}
 	    }
 
