@@ -253,7 +253,7 @@ SYSTEM.def: Makefile
              -C="$(GM2_FOR_TARGET)" -o $@
 else
 SYSTEM.def: Makefile
-	bash $(GM2_SRC)/tools-src/makeSystem -fiso \
+	sh $(GM2_SRC)/tools-src/makeSystem -fiso \
              $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-iso-common/SYSTEM.mod \
              -I$(GM2_SRC)/gm2-libs-iso \

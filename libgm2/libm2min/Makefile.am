@@ -141,7 +141,7 @@ SYSTEM.def: Makefile
              -C="$(GM2_FOR_TARGET) -fno-exceptions" -o $@
 else
 SYSTEM.def: Makefile
-	bash $(GM2_SRC)/tools-src/makeSystem -fpim \
+	sh $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-min/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-min/SYSTEM.mod \
              -I$(GM2_SRC)/gm2-libs-min -I$(GM2_SRC)/gm2-libs \
