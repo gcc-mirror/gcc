@@ -844,6 +844,29 @@ gfc_create_null_actual_descriptor (stmtblock_t *block, gfc_typespec *ts,
 }
 
 
+/* Add code to BLOCK initializing the zero-rank array descriptor DESCR, so that
+   it represents the same data as the class descriptor reference SCALAR
+   corresponding to the scalar polymorphic expression SCALAR_EXPR.  This is used
+   to implement the argument association between the actual argument SCALAR_EXPR
+   and an assumed-rank dummy argument.  */
+
+void
+gfc_set_descriptor_from_scalar_class (stmtblock_t *block, tree descr,
+				      tree scalar, gfc_expr *scalar_expr)
+{
+  tree type = gfc_get_scalar_to_descriptor_type (TREE_TYPE (scalar),
+						 gfc_expr_attr (scalar_expr));
+  gfc_conv_descriptor_dtype_set (block, descr,
+				 gfc_get_dtype (type));
+
+  tree tmp = gfc_class_data_get (scalar);
+  if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
+    tmp = gfc_build_addr_expr (NULL_TREE, tmp);
+
+  gfc_conv_descriptor_data_set (block, descr, tmp);
+}
+
+
 /* For an array descriptor, get the total number of elements.  This is just
    the product of the extents along from_dim to to_dim.  */
 

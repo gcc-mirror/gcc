@@ -1373,19 +1373,7 @@ gfc_conv_class_to_class (gfc_se *parmse, gfc_expr *e, gfc_typespec class_ts,
       && e->rank != class_ts.u.derived->components->as->rank)
     {
       if (e->rank == 0)
-	{
-	  tree type;
-	  type = gfc_get_scalar_to_descriptor_type (TREE_TYPE (parmse->expr),
-						    gfc_expr_attr (e));
-	  gfc_conv_descriptor_dtype_set (&block, ctree,
-					 gfc_get_dtype (type));
-
-	  tmp = gfc_class_data_get (parmse->expr);
-	  if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
-	    tmp = gfc_build_addr_expr (NULL_TREE, tmp);
-
-	  gfc_conv_descriptor_data_set (&block, ctree, tmp);
-	}
+	gfc_set_descriptor_from_scalar_class (&block, ctree, parmse->expr, e);
       else
 	gfc_class_array_data_assign (&block, ctree, parmse->expr, false);
     }
