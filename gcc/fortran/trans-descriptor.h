@@ -73,6 +73,8 @@ tree gfc_create_unallocated_library_result_descriptor (stmtblock_t *, tree,
 tree gfc_create_null_actual_descriptor (stmtblock_t *, gfc_typespec *,
 					symbol_attribute, int);
 
+void gfc_set_descriptor_from_scalar (stmtblock_t *, tree, tree, gfc_expr *,
+				     tree);
 void gfc_set_descriptor_from_scalar_class (stmtblock_t *, tree, tree,
 					   gfc_expr *);
 

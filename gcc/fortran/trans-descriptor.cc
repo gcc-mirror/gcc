@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-types.h"
 #include "trans-array.h"
+#include "trans-descriptor.h"
 
 
 /* Array descriptor low level access routines.
@@ -841,6 +842,34 @@ gfc_create_null_actual_descriptor (stmtblock_t *block, gfc_typespec *ts,
 				gfc_conv_descriptor_elem_len_get (desc));
 
   return desc;
+}
+
+
+/* Add code to BLOCK initializing the zero-rank array descriptor DESCR, so that
+   it represents the same data as the pointer-typed middle-end expression SCALAR
+   corresponding to the scalar front-end expression SCALAR_EXPR.  If
+   COND_PRESENCE is set, make the value assigned to the data field either SCALAR
+   or nullptr depending on COND_PRESENCE; otherwise SCALAR unconditionally.
+   This is used to implement the argument association between the actual
+   argument SCALAR_EXPR and an assumed-rank dummy argument.  */
+
+void
+gfc_set_descriptor_from_scalar (stmtblock_t *block, tree descr,
+				tree scalar, gfc_expr *scalar_expr,
+				tree cond_presence)
+{
+  tree type = gfc_get_scalar_to_descriptor_type (TREE_TYPE (scalar),
+						 gfc_expr_attr (scalar_expr));
+  gfc_conv_descriptor_dtype_set (block, descr,
+				 gfc_get_dtype (type));
+  gfc_copy_coarray_desc_part (block, descr, scalar);
+  if (cond_presence)
+    scalar = build3_loc (input_location, COND_EXPR,
+			 TREE_TYPE (scalar),
+			 cond_presence, scalar,
+			 fold_convert (TREE_TYPE (scalar),
+				       null_pointer_node));
+  gfc_conv_descriptor_data_set (block, descr, scalar);
 }
 
 
