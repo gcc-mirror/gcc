@@ -1235,6 +1235,21 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
+(define_expand "<su>sadv8qi"
+  [(use (match_operand:V2SI 0 "register_operand"))
+   (USMAX:V8QI (match_operand:V8QI 1 "register_operand")
+		(match_operand:V8QI 2 "register_operand"))
+   (use (match_operand:V2SI 3 "register_operand"))]
+  "TARGET_DOTPROD"
+  {
+    rtx ones = force_reg (V8QImode, CONST1_RTX (V8QImode));
+    rtx abd = gen_reg_rtx (V8QImode);
+    emit_insn (gen_aarch64_<su>abdv8qi (abd, operands[1], operands[2]));
+    emit_insn (gen_udot_prodv2siv8qi (operands[0], abd, ones, operands[3]));
+    DONE;
+  }
+)
+
 ;; Emit a sequence to produce a sum-of-absolute-differences of the V16QI
 ;; inputs in operands 1 and 2.  The sequence also has to perform a widening
 ;; reduction of the difference into a V4SI vector and accumulate that into
