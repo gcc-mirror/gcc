@@ -72,6 +72,18 @@ is_undef (tree val)
   return false;
 }
 
+/* Emit the notional FFR update for an LDFF1 or LDNF1 instruction.
+   Use the load expression rather than the load result, so that later RTL
+   optimizers can still treat the load result as single-use.  */
+static void
+emit_ldf1_ffr_update (rtx_insn *load_insn)
+{
+  rtx set = single_set (load_insn);
+  gcc_assert (set && GET_CODE (SET_SRC (set)) == UNSPEC);
+  emit_insn (gen_aarch64_update_ffr (GET_MODE (SET_SRC (set)),
+				       copy_rtx (SET_SRC (set))));
+}
+
 /* Return the UNSPEC_CMLA* unspec for rotation amount ROT.  */
 static unspec
 unspec_cmla (int rot)
@@ -2028,7 +2040,7 @@ public:
 
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr (mem_mode, res));
+    emit_ldf1_ffr_update (get_last_insn ());
 
     return res;
   }
@@ -2055,7 +2067,7 @@ public:
     rtx res = e.use_exact_insn (icode);
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr (e.vector_mode (0), res));
+    emit_ldf1_ffr_update (get_last_insn ());
     return res;
   }
 };
@@ -2100,7 +2112,7 @@ public:
     rtx res = e.use_contiguous_load_insn (icode);
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr (mode, res));
+    emit_ldf1_ffr_update (get_last_insn ());
     return res;
   }
 
@@ -2131,7 +2143,7 @@ public:
     rtx res = e.use_contiguous_load_insn (icode);
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
-    emit_insn (gen_aarch64_update_ffr (mode, res));
+    emit_ldf1_ffr_update (get_last_insn ());
     return res;
   }
 

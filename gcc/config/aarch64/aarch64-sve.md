@@ -1155,7 +1155,7 @@
 	(unspec:VNx16BI
 	 [(reg:VNx16BI FFRT_REGNUM)
 	  (reg:VNx16BI FFR_REGNUM)
-	  (match_operand:SVE_ALL 0 "register_operand" "w")
+	  (match_operand:SVE_ALL 0 "" "X")
 	 ] UNSPEC_UPDATE_FFR))]
   "TARGET_SVE"
   ""
