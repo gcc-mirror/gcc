@@ -12456,6 +12456,13 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
       && (VECTOR_BOOLEAN_TYPE_P (vectype1) ^ VECTOR_BOOLEAN_TYPE_P (vectype2)))
     return false;
 
+  /* We cannot compare non-mode precision _BitInt types.  Unlike bool
+     or bit-precision INTEGER_TYPE the padding bit values are target
+     dependent and possibly undefined.  */
+  if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE
+      && !type_has_mode_precision_p (TREE_TYPE (rhs1)))
+    return false;
+
   /* Boolean values may have another representation in vectors
      and therefore we prefer bit operations over comparison for
      them (which also works for scalar masks).  We store opcodes
