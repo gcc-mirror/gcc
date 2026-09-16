@@ -17,15 +17,59 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-compile-item.h"
+#include "rust-attribute-values.h"
 #include "rust-compile-implitem.h"
 #include "rust-compile-extern.h"
 #include "rust-rib.h"
 #include "rust-substitution-mapper.h"
 #include "rust-type-util.h"
 #include "rust-finalized-name-resolution-context.h"
+#include "tree.h"
+#include "stringpool.h"
+#include "target.h"
 
 namespace Rust {
 namespace Compile {
+
+static void
+handle_used_attr (HIR::StaticItem &var, tree decl)
+{
+  auto used_compiler = false; /* equivalent to C's used attribute */
+  auto used_linker = false;   /* equivalent to C's retain attribute */
+
+  // If the attribute has no argument, then it is equivalent to `used(compiler)`
+  for (const auto &attr : var.get_outer_attrs ())
+    {
+      if (attr.as_string () == Values::Attributes::USED)
+	used_compiler = true;
+
+      // We've already checked that the attribute was used properly, so just
+      // fetch the information we need
+      if (attr.has_attr_input ())
+	{
+	  auto input
+	    = static_cast<const AST::DelimTokenTree &> (attr.get_attr_input ())
+		.parse_to_meta_item ();
+
+	  for (const auto &item : input->get_items ())
+	    if (item->as_string () == "linker")
+	      used_linker = true;
+	}
+    }
+
+  if (used_compiler)
+    {
+      DECL_PRESERVE_P (decl) = 1;
+      DECL_READ_P (decl) = 1;
+    }
+
+  // Check that the linker supports the attribute, and then add it
+  if (SUPPORTS_SHF_GNU_RETAIN && used_linker)
+    {
+      DECL_ATTRIBUTES (decl)
+	= tree_cons (get_identifier ("retain"), NULL, DECL_ATTRIBUTES (decl));
+    }
+}
 
 void
 CompileItem::visit (HIR::StaticItem &var)
@@ -71,23 +115,13 @@ CompileItem::visit (HIR::StaticItem &var)
   bool is_hidden = false;
   bool in_unique_section = true;
 
-  // NOTE: We currently compile global variables and always mark them as "used"
-  // with TREE_USED(tree). I'm not sure this is correct - they should be marked
-  // as used only if the `MarkLive` pass reaches them and flags them. However,
-  // the `#[used]` built-in attribute can be used here to *force* a static
-  // variable to be used by the compiler so that it isn't deleted.
-  // We should probably be doing something along the lines of:
-  //
-  // - Removing the `TREE_USED (decl) = 1` line in `Backend::global_variable`
-  // - Check if the static item has a `used` attribute
-  // - If it does, check whether it's the default `used` version, or the version
-  // with an argument - `used(compiler)` or `used(linker)`
-  // - If we have the attribute or the `compiler` version of the attribute, then
-  // we `TREE_USED` the decl.
-
   Bvariable *static_global
     = Backend::global_variable (name, asm_name, type, is_external, is_hidden,
 				in_unique_section, var.get_locus ());
+
+  // Static items are concerned by the #[used] attribute which needs to be
+  // handled here
+  handle_used_attr (var, static_global->get_decl ());
 
   tree init = value == error_mark_node ? error_mark_node : DECL_INITIAL (value);
   Backend::global_variable_set_init (static_global, init);
