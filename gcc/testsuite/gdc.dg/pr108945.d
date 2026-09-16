@@ -9,4 +9,4 @@ auto pr108945(f4 a, f4 b)
     return a < b;
 }
 
-// { dg-final { scan-tree-dump-not "VEC_COND_EXPR" "gimple" } }
+// { dg-final { scan-tree-dump-not "1\.0e\+0" "gimple" } }

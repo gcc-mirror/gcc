@@ -1514,41 +1514,61 @@ warn_for_null_address (tree arg)
 	     TREE_OPERAND (arg, 0));
 }
 
+static tree
+build_vec_cmp (location_t loc, tree_code code, tree type,
+	       tree arg0, tree arg1)
+{
+  tree zero_vec = build_zero_cst (type);
+  tree minus_one_vec = build_minus_one_cst (type);
+  tree cmp_type = truth_type_for (TREE_TYPE (arg0));
+  tree cmp = fold_build2_loc (loc, code, cmp_type, arg0, arg1);
+  return fold_build3_loc (loc, VEC_COND_EXPR, type, cmp, minus_one_vec, zero_vec);
+}
+
 /* Build a boolean ARG0 op ARG1 expression.  */
 
 tree
 build_boolop (tree_code code, tree arg0, tree arg1)
 {
+  tree type0 = TREE_TYPE (arg0);
+  tree type1 = TREE_TYPE (arg1);
   /* Aggregate comparisons may get lowered to a call to builtin memcmp,
      so need to remove all side effects in case its address is taken.  */
-  if (AGGREGATE_TYPE_P (TREE_TYPE (arg0)))
+  if (AGGREGATE_TYPE_P (type0))
     arg0 = d_save_expr (arg0);
-  if (AGGREGATE_TYPE_P (TREE_TYPE (arg1)))
+  if (AGGREGATE_TYPE_P (type1))
     arg1 = d_save_expr (arg1);
 
-  if (VECTOR_TYPE_P (TREE_TYPE (arg0)) && VECTOR_TYPE_P (TREE_TYPE (arg1)))
+  tree res_type = type0;
+  if (VECTOR_TYPE_P (type0) && VECTOR_TYPE_P (type1))
     {
-      /* Build a vector comparison.
-	 VEC_COND_EXPR <e1 op e2, { -1, -1, -1, -1 }, { 0, 0, 0, 0 }>; */
-      tree cmptype = truth_type_for (TREE_TYPE (arg0));
-      tree cmp = fold_build2_loc (input_location, code, cmptype, arg0, arg1);
-
-      return fold_build3_loc (input_location, VEC_COND_EXPR, cmptype, cmp,
-			      build_minus_one_cst (cmptype),
-			      build_zero_cst (cmptype));
+      if (!VECTOR_BOOLEAN_TYPE_P (type0) || !VECTOR_BOOLEAN_TYPE_P (type1))
+	{
+	  tree intt = lang_hooks.types.type_for_size
+	    (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type0))), 0);
+	  if (intt == NULL_TREE)
+	    {
+	      error_at (input_location, "could not find an integer type "
+			"of the same size as %qT", TREE_TYPE (type0));
+	      return error_mark_node;
+	    }
+	  res_type
+	    = build_opaque_vector_type (intt, TYPE_VECTOR_SUBPARTS (type0));
+	}
+      return build_vec_cmp (input_location, code, res_type, arg0, arg1);
     }
 
   if (code == EQ_EXPR || code == NE_EXPR)
     {
       /* Check if comparing the address of a variable to null.  */
-      if (POINTER_TYPE_P (TREE_TYPE (arg0)) && integer_zerop (arg1))
+      if (POINTER_TYPE_P (type0) && integer_zerop (arg1))
 	warn_for_null_address (arg0);
       if (POINTER_TYPE_P (TREE_TYPE (arg1)) && integer_zerop (arg0))
 	warn_for_null_address (arg1);
     }
 
   return fold_build2_loc (input_location, code, d_bool_type,
-			  arg0, d_convert (TREE_TYPE (arg0), arg1));
+			  arg0, d_convert (type0, arg1));
 }
 
 /* Return a COND_EXPR.  ARG0, ARG1, and ARG2 are the three
