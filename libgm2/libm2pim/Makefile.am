@@ -228,7 +228,7 @@ SYSTEM.def: Makefile
              -C="$(GM2_FOR_TARGET)" -o $@
 else
 SYSTEM.def: Makefile
-	sh $(GM2_SRC)/tools-src/makeSystem -fpim \
+	$(SHELL) $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-pim-common/SYSTEM.mod \
              -I$(GM2_SRC)/gm2-libs-pim-common \

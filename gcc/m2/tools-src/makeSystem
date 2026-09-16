@@ -70,22 +70,22 @@ displayExportedTypes () {
    for i in ${types} ; do
       if [ $n -eq 1 ] ; then
           n=0
-          echo -n "                 " >> ${OUTPUTFILE}
+          printf "                 " >> ${OUTPUTFILE}
       fi
-      echo -n "$i, " >> ${OUTPUTFILE}
+      printf "$i, " >> ${OUTPUTFILE}
       if [ $c -eq 4 ] ; then
-          echo " " >> ${OUTPUTFILE}
+          printf "\n" >> ${OUTPUTFILE}
           n=1
           c=0
       fi
       c=`expr $c + 1`
    done
-   echo " " >> ${OUTPUTFILE}
+   printf "\n" >> ${OUTPUTFILE}
 }
 
 displayBuiltinTypes () {
    for i in ${types} ; do
-      echo "   $i ; " >> ${OUTPUTFILE}
+      printf "   $i ; " >> ${OUTPUTFILE}
    done
 }
 

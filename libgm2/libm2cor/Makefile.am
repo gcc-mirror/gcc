@@ -143,7 +143,7 @@ CLEANFILES = SYSTEM.def
 M2LIBDIR = /m2/m2cor/
 
 SYSTEM.def: Makefile
-	sh $(GM2_SRC)/tools-src/makeSystem -fpim \
+	$(SHELL) $(GM2_SRC)/tools-src/makeSystem -fpim \
              $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.def \
              $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.mod \
              -I$(GM2_SRC)/gm2-libs-cor-common \

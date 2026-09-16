@@ -824,7 +824,7 @@ uninstall-am: uninstall-toolexeclibLTLIBRARIES
 
 
 @BUILD_CORLIB_TRUE@SYSTEM.def: Makefile
-@BUILD_CORLIB_TRUE@	sh $(GM2_SRC)/tools-src/makeSystem -fpim \
+@BUILD_CORLIB_TRUE@	$(SHELL) $(GM2_SRC)/tools-src/makeSystem -fpim \
 @BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.def \
 @BUILD_CORLIB_TRUE@             $(GM2_SRC)/gm2-libs-cor-common/SYSTEM.mod \
 @BUILD_CORLIB_TRUE@             -I$(GM2_SRC)/gm2-libs-cor-common \
