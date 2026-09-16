@@ -1,3 +1,15 @@
+2026-09-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127359
+	* libm2cor/Makefile.am: Replace bash with sh.
+	* libm2iso/Makefile.am: Ditto.
+	* libm2min/Makefile.am: Ditto.
+	* libm2pim/Makefile.am: Ditto.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2cor/Makefile.in: Ditto.
+	* libm2min/Makefile.in: Ditto.
+	* libm2pim/Makefile.in:	Ditto.
+
 2026-09-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* acinclude.m4: Rename configure variables to match the

@@ -1,3 +1,83 @@
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/MOVSP.c: New test.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/regA0-allocatability.c: New test.
+
+2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127390
+	* gcc.dg/vect/vect-pr127390.c: New testcase.
+
+2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126760
+	PR tree-optimization/127391
+	* gcc.dg/vect/vect-pr126760.c: New testcase.
+	* gcc.dg/vect/vect-pr127391.c: Likewise.
+
+2026-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127352
+	* gcc.target/i386/pr127352.c: New test.
+
+2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113703
+	* gcc.dg/tree-ssa/ivopts-lt.c: Use unsigned int counters,
+	restrict to lp64.
+	* gcc.dg/tree-ssa/ivopts-lt-2.c: Restrict to lp64.
+	* gcc.dg/torture/pr113703-1.c: New test.
+	* gcc.dg/torture/pr113703-2.c: New test.
+
+2026-09-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127264
+	* gcc.target/i386/pr127264.c: New test.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* c-c++-common/strub-mem-notrap.c: Tighten the load and store scans.
+	* c-c++-common/strub-mem-notrap-leave.c: New test.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* g++.dg/opt/mem-notrap-load-asm.C: New test.
+	* gcc.target/i386/mem-notrap-mask-load.c: New test.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* g++.dg/opt/mem-notrap-load-builtin.C: New test.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* g++.dg/eh/noncall-store-2.C: New test.
+	* g++.dg/opt/mem-notrap-store-asm.C: New test.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127184
+	* g++.dg/eh/noncall-store-call.C: New test.
+
+2026-09-15  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	* gcc.target/aarch64/sadv8qi-dotprod.c: New test.
+
+2026-09-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/127177
+	* gcc.target/i386/pr127177-1.c: New test.
+	* gcc.target/i386/pr127177-2.c: Likewise.
+	* gcc.target/i386/pr127177-3.c: Likewise.
+	* gcc.target/i386/pr127177-4.c: Likewise.
+	* gcc.target/i386/pr127177-5.c: Likewise.
+
 2026-09-14  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.cob: Use @ not U.

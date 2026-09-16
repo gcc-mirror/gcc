@@ -1,3 +1,276 @@
+2026-09-15  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/libgdiagnostics/topics/sarif.rst: Update SARIF website URL.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_valid_move):
+	Remove code that rejects non-register sources when the destination
+	is the stack pointer.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h
+	(GP_REG_NUM, BR_REG_NUM, FP_REG_NUM, ACC_REG_NUM): Remove.
+	(GP_REG_P, BR_REG_P, FP_REG_P, ACC_REG_P):
+	Change to use the IN_RANGE() macro.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xt_true_regnum): Remove.
+	* config/xtensa/xtensa.cc (xt_true_regnum):
+	Specify as a static function.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_regno_to_class):
+	Remove.
+	* config/xtensa/xtensa.h (xtensa_regno_to_class):
+	Declaration of a new global array.
+	(REGNO_REG_CLASS):
+	Change to reference the xtensa_regno_to_class array.
+	* config/xtensa/xtensa.cc (xtensa_regno_to_class):
+	Remove the original function definition and define it as a new global
+	array.
+	(xtensa_conditional_register_usage):
+	Append code to the end that records a map in xtensa_regno_to_class
+	showing which of the current regclass definitions each hardware
+	register belongs to.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_adjust_reg_alloc_order):
+	Reformat the "reg_call0_alloc_order" array.
+	* config/xtensa/xtensa.h (REG_ALLOC_ORDER): Reformat.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_conditional_register_usage):
+	Clear the bit corresponding to the A0 register from the
+	HARD_REG_SET associated with RL_REGS, if TARGET_WINDOWED_ABI
+	is enabled.
+
+2026-09-15  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.h (EPILOGUE_USES): Remove.
+	* config/xtensa/xtensa.md (return):
+	Resurrect '(use (reg:SI A0_REG))' to the template description.
+	(sibcall_epilogue): Revive emitting '(use (reg:SI A0_REG))'.
+
+2026-09-15  Jørgen Kvalsvik  <j@lambda.is>
+
+	PR gcov-profile/127408
+	* gcov.cc (function_summary): Check calls_suppressed, not calls.
+
+2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127390
+	* tree-vect-stmts.cc (vectorizable_comparison_1): Reject
+	bit-precision integer comparisons.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* Makefile.in (NUM_INSNRECOG_SPLITS): New variable.
+	(INSNRECOG_SPLITS_SEQ): Use it.
+	(NUM_INSNATTRTAB_SPLITS): New variable.
+	(INSNATTRTAB_SPLITS_SEQ): Use it.
+	(MOSTLYCLEANFILES): Remove all numbered generator sources.
+	(s-tmp-emit, s-tmp-recog): Stop when an output move fails.
+	(s-tmp-emit, s-tmp-recog, s-attrtab): Depend on Makefile.
+	* config.gcc (default_md_generator_partitions): New variable.
+	Document its scalar and tuple forms.
+	(aarch64*-*-*): Set the target default.
+	* configure.ac (--with-md-generator-partitions): New option.
+	(--with-insnemit-partitions): Keep as a deprecated alias.
+	Use the target default when no option is specified.  Validate and
+	substitute all three counts.
+	* configure: Regenerate.
+	* doc/install.texi (--with-md-generator-partitions): Document.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* Makefile.in (INSNATTRTAB_SPLITS_SEQ, INSNATTRTAB_SEQ_SRC)
+	(INSNATTRTAB_SEQ_TMP, INSNATTRTAB_SEQ_O): New variables.
+	(OBJS): Replace insn-attrtab.o with $(INSNATTRTAB_SEQ_O).
+	(MOSTLYCLEANFILES): Add $(INSNATTRTAB_SEQ_SRC), retaining the legacy
+	unnumbered source for cleanup.
+	(.PRECIOUS): Use $(INSNATTRTAB_SEQ_SRC).
+	(s-attrtab): Generate and move numbered attribute files.  Stop when a
+	move fails.
+	* configure.ac (--with-insnemit-partitions): Document all generators
+	which use the option.
+	* configure: Regenerate.
+	* genattrtab.cc (attr_file_name, attr_file, open_outfile): Remove.
+	(output_files): New variable.
+	(dfa_file_name, latency_file_name): Retain output names.
+	(make_automaton_attrs): Write to the first attribute partition.
+	(handle_arg): Register repeatable attribute outputs.
+	(attr_output_size, cmp_attr_output_size): New functions.
+	(main): Register fixed outputs and use the common output helpers.
+	Distribute attribute, delay, and length functions, largest first.
+	* final.cc (length_unit_log): Update comment for partitioned output.
+	* config/arc/arc-protos.h (regno_clobbered_p): Likewise.
+	* config/ia64/ia64.cc (bundling): Likewise.
+	* config/ia64/t-ia64 (insn-attrtab.o-warn): Replace with per-partition
+	warning variables.
+	* config/sh/sh.h (code_for_indirect_jump_scratch): Update comment for
+	partitioned output.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gensupport.h (generator_output): New structure.
+	(add_generator_output, open_generator_outputs): Declare.
+	(close_generator_outputs): Likewise.
+	(choose_output): Accept generator_output records.  Remove the output
+	index parameter.
+	* gensupport.cc (add_generator_output): New function.
+	(open_generator_outputs, close_generator_outputs): Likewise.
+	(choose_output): Select only partition records.  Remove the output index
+	and disabled round-robin implementation.
+	(SIZED_BASED_CHUNKS): Remove.
+	* genemit.cc (output_files): Use generator_output records.
+	(handle_arg): Register output names.
+	(main): Use the common open, selection, and close helpers.
+	* genrecog.cc (print_subroutine_group): Accept generator_output records.
+	(header_name): Change to a pointer.
+	(header): Remove global variable.
+	(output_files): Use generator_output records.
+	(handle_arg): Register output names and validate -H.
+	(main): Validate and register the header output.  Use the common open,
+	selection, and close helpers.  Remove an unused output selection.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genattrtab.cc (attr_value): Add enum_index.
+	(attr_desc): Add num_values, derived_from and derived_table.
+	(get_attr_value, add_attr_value, find_attr): Maintain them.
+	(attr_value_index, eq_attr_value_set, simple_enum_attr_p)
+	(sole_tested_attr, find_derived_attrs, write_derived_attr_get): New
+	functions.
+	(write_attr_get): Use write_derived_attr_get where it applies.
+	(main): Call find_derived_attrs before optimize_attrs.
+
+2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126760
+	PR tree-optimization/127391
+	* tree-if-conv.cc (if_convertible_stmt_p): Delay switch
+	validation to ...
+	(if_convertible_loop_p_1): ... the loop iterating over
+	PHIs.
+
+2026-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127352
+	* config/i386/i386-expand.cc (split_double_mode): For high halves of
+	paradoxical subregs after RA use CONST0_RTX (half_mode) instead of
+	ICE.
+
+2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/113703
+	* tree-ssa-loop-ivopts.cc: Include gimple-range.h.
+	(nonneg_scaled_offset_p): New function.
+	(iv_elimination_compare_lt): Add USE and BOUND_P parameters.  Bail
+	out if the exit test does not come after the increment of the
+	candidate, if the comparison in the number of iterations is signed
+	or if the offsets are not known to be non-negative and to not
+	overflow.  Recompute the bound and store it in BOUND_P.
+	(may_eliminate_iv): Adjust the call to iv_elimination_compare_lt
+	and move the expensiveness check on the bound after it.
+
+2026-09-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/126629
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(emit_ldf1_ffr_update): New.
+	(svldff1_gather_impl, svldff1_gather_extend, svldxf1_impl,
+	svldxf1_extend_impl): Use it.
+	* config/aarch64/aarch64-sve.md (aarch64_update_ffr<mode>): Update insn.
+
+2026-09-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127264
+	* config/i386/i386-expand.cc (ix86_expand_ace_builtin):
+	Revise logic to avoid INTVAL check for non-constant
+	operands.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* builtins.cc (expand_builtin_strub_update): Use a separate MEM with
+	load trap semantics for each watermark load.
+	(expand_builtin_strub_leave): Use load trap semantics for watermark
+	MEMs.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* cfgexpand.cc (expand_asm_stmt): Restore load MEM_NOTRAP for memory
+	inputs.
+	* internal-fn.cc: Include tree-eh.h.
+	(expand_partial_load_optab_fn): Expand the source as memory and
+	restore load MEM_NOTRAP.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* builtins.cc (get_memory_rtx): Add STORE_P.  Pass it to
+	set_mem_attributes.
+	(expand_builtin_memory_copy_args): Mark the destination as a store
+	and the source as a load.
+	(expand_movstr): Likewise.
+	(expand_builtin_strncpy): Mark the destination as a store.
+	(expand_builtin_memset_args): Likewise.
+	(expand_builtin_memcmp): Mark both memory operands as loads.
+	(expand_builtin_strcmp): Likewise.
+	(expand_builtin_strncmp): Likewise.
+	(inline_string_cmp): Mark the memory operand as a load.
+	* builtins.h (get_memory_rtx): Add STORE_P.
+	* internal-fn.cc (expand_RAWMEMCHR): Mark the memory operand as a
+	load.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127185
+	* emit-rtl.cc (set_mem_attributes_minus_bitpos): Add MAY_STORE_P.
+	Use lhs_could_trap_p when it is true.
+	(set_mem_attributes): Add MAY_STORE_P and pass it through.
+	* emit-rtl.h (set_mem_attributes): Add MAY_STORE_P with a
+	conservative default.
+	(set_mem_attributes_minus_bitpos): Likewise.
+	* expr.cc (expand_assignment): Mark the destination as a store.
+	(expand_expr_real_1): Treat only EXPAND_NORMAL as a known load.
+	Set MEM_NOTRAP from the access direction.
+
+2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/127184
+	* gimple.cc (gimple_could_trap_p_1): Check a memory LHS with
+	lhs_could_trap_p.  Do not inspect an LHS as an rvalue.
+	(test_could_trap): New self-test.
+	(gimple_cc_tests): Run it.
+	* tree-eh.cc (stmt_could_throw_p): Check a nothrow call's memory LHS.
+
+2026-09-15  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	* config/aarch64/aarch64-simd.md: Add define_expand <su>sadv8qi
+	guarded by TARGET_DOTPROD.
+
+2026-09-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/127177
+	* config/i386/i386-expand.cc (ix86_fp_cmp_code_to_pcmp_immediate):
+	Return the _UQ predicate immediates for UNLE, UNLT, UNGE, UNGT and
+	UNEQ.
+	* config/i386/i386.cc (ix86_print_operand):Likewise to print the
+	_uq suffixed AVX predicates for these codes.
+	* config/i386/predicates.md (ix86_fp_vec_cmp_operator): New
+	predicate.
+	* config/i386/sse.md (vec_cmp<mode><sseintvecmodelower>): Use the
+	new predicate for the VF_128 compare.
+	* config/i386/mmx.md (vec_cmpv2sfv2si): Likewise.
+
 2026-09-14  Jean-Didier Pailleux  <jean-didier.pailleux@sipearl.com>
 
 	* config/aarch64/aarch64-sve-builtins-sme.def (REQUIRED_EXTENSIONS): Add

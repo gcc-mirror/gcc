@@ -1,3 +1,63 @@
+2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (gfc_conv_scalar_to_descriptor): Move scalar
+	descriptor initialization code ...
+	* trans-descriptor.cc (gfc_set_descriptor_from_scalar): ... here as
+	a new function.
+	* trans-descriptor.h (gfc_set_descriptor_from_scalar): New
+	declaration.
+
+2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (gfc_conv_derived_to_class): Move scalar descriptor
+	initialization code ...
+	* trans-descriptor.cc (gfc_set_descriptor_from_scalar): ... here as
+	a new function.
+	* trans-descriptor.h (gfc_set_descriptor_from_scalar): New
+	declaration.
+
+2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-descriptor.h (gfc_copy_coarray_desc_part): New declaration.
+	* trans-descriptor.cc (gfc_copy_coarray_desc_part): New function,
+	moved from...
+	* trans-expr.cc (copy_coarray_desc_part): ... here.
+	(gfc_class_array_data_assign, gfc_conv_derived_to_class): Update
+	function name in callers.
+
+2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (gfc_conv_class_to_class): Move descriptor
+	initialization...
+	* trans-descriptor.cc (gfc_set_descriptor_from_scalar_class):
+	... here as a new function.
+	* trans-descriptor.h (gfc_set_descriptor_from_scalar_class): New
+	declaration.
+
+2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-types.h (gfc_get_scalar_to_descriptor_type): New
+	declaration.
+	* trans-types.cc (gfc_get_scalar_to_descriptor_type): New
+	function, moved from ...
+	* trans-expr.cc (get_scalar_to_descriptor_type): ... here.
+	(gfc_conv_scalar_to_descriptor, gfc_conv_derived_to_class,
+	gfc_conv_class_to_class): Update function name in callers.
+
+2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/122521
+	* trans-expr.cc (get_scalar_to_descriptor_type): Remove argument
+	`scalar'; add argument `scalar_type'.  Replace `TREE_TYPE (scalar)'
+	with `scalar_type'.
+	(gfc_conv_scalar_to_descriptor, gfc_conv_derived_to_class,
+	gfc_conv_class_to_class): Only pass the type as argument in callers.
+
 2026-09-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/103474
