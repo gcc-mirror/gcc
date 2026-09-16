@@ -2024,7 +2024,10 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
     : volatile_insn_p;
 
   for (p = NEXT_INSN (insn); p != i3; p = NEXT_INSN (p))
-    if (INSN_P (p) && p != succ && p != succ2 && is_volatile_p (PATTERN (p)))
+    if (NONDEBUG_INSN_P (p)
+	&& p != succ
+	&& p != succ2
+	&& is_volatile_p (PATTERN (p)))
       return false;
 
   /* If INSN contains an autoincrement or autodecrement, make sure that
