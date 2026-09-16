@@ -44,5 +44,5 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "\.FMA" 1 "widening_mul" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump-times "\.FMA" 1 "widening_mul" } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loop" 1 "vect" } } */

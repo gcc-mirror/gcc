@@ -26922,14 +26922,14 @@ aarch64_convert_mult_to_shift (rtx value, rtx_code &code)
   return builder.build ();
 }
 
-/* Prepare for an integer SVE multiply-add or multiply-subtract pattern;
+/* Prepare for an integer vector multiply-add or multiply-subtract pattern.
    CODE is PLUS for the former and MINUS for the latter.  OPERANDS is the
    operands array, in the same order as for fma_optab.  Return true if
    the function emitted all the necessary instructions, false if the caller
    should generate the pattern normally with the new OPERANDS array.  */
 
 bool
-aarch64_prepare_sve_int_fma (rtx *operands, rtx_code code)
+aarch64_prepare_int_fma (rtx *operands, rtx_code code)
 {
   machine_mode mode = GET_MODE (operands[0]);
   if (rtx shifts = aarch64_convert_mult_to_shift (operands[2], code))

@@ -7530,7 +7530,7 @@
 	  (match_operand:SVE_I 3 "register_operand")))]
   "TARGET_SVE"
   {
-    if (aarch64_prepare_sve_int_fma (operands, PLUS))
+    if (aarch64_prepare_int_fma (operands, PLUS))
       DONE;
     operands[4] = aarch64_ptrue_reg (<VPRED>mode);
   }
@@ -7676,7 +7676,7 @@
 	    UNSPEC_PRED_X)))]
   "TARGET_SVE"
   {
-    if (aarch64_prepare_sve_int_fma (operands, MINUS))
+    if (aarch64_prepare_int_fma (operands, MINUS))
       DONE;
     operands[4] = aarch64_ptrue_reg (<VPRED>mode);
   }

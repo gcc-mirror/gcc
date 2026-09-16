@@ -36,4 +36,4 @@ g3 (vec a, vec b, vec c)
   return a * b + c;
 }
 
-/* { dg-final { scan-tree-dump-times {\.FMA } 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times {\.FMA } 2 "optimized" } } */

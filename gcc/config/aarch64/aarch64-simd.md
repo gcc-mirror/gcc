@@ -1959,6 +1959,21 @@
   DONE;
 })
 
+;; Integer addition of product, preserving shifts for power-of-two factors.
+(define_expand "fma<mode>4"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(plus:VDQ_BHSI
+	  (mult:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand")
+	    (match_operand:VDQ_BHSI 2 "nonmemory_operand"))
+	  (match_operand:VDQ_BHSI 3 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    if (aarch64_prepare_int_fma (operands, PLUS))
+      DONE;
+  }
+)
+
 (define_insn "aarch64_mla<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (plus:VDQ_BHSI (mult:VDQ_BHSI
@@ -2017,6 +2032,21 @@
  "TARGET_SIMD"
  "mla\t%0.<Vtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
+)
+
+;; Integer subtraction of product.
+(define_expand "fnma<mode>4"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(minus:VDQ_BHSI
+	  (match_operand:VDQ_BHSI 3 "register_operand")
+	  (mult:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand")
+	    (match_operand:VDQ_BHSI 2 "nonmemory_operand"))))]
+  "TARGET_SIMD"
+  {
+    if (aarch64_prepare_int_fma (operands, MINUS))
+      DONE;
+  }
 )
 
 (define_insn "aarch64_mls<mode><vczle><vczbe>"
