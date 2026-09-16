@@ -87,6 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "sreal.h"
 #include "ipa-cp.h"
 #include "ipa-prop.h"
+#include "attr-callback.h"
+#include "callback-info.h"
 
 static void ipa_sra_summarize_function (cgraph_node *);
 
@@ -689,6 +691,19 @@ ipa_sra_preliminary_function_checks (cgraph_node *node)
       return false;
     }
 
+  /* A special case.  If the callback edge pointing to the assume body is not
+     created before ipa-sra analysis is run, the newly created edge won't be
+     analyzed and will thus lack the appropriate summaries.  Be conservative and
+     skip the function entirely.  We aren't missing anything, because we can't
+     use an unsummarized call anyway.  */
+  if (node->assume_function && !node->callers)
+    {
+      if (dump_file)
+	fprintf (dump_file,
+		 "Assume body without a callback edge, skipping. \n");
+      return false;
+    }
+
   return true;
 }
 
@@ -1120,10 +1135,11 @@ ptr_parm_has_nonarg_uses (cgraph_node *node, function *fun, tree parm,
 	}
       else if (is_gimple_call (stmt))
 	{
-	  gcall *call = as_a <gcall *> (stmt);
-	  unsigned arg_count;
-	  if (gimple_call_internal_p (call)
-	      || (arg_count = gimple_call_num_args (call)) == 0)
+	  gcall *call = as_a<gcall *> (stmt);
+	  unsigned arg_count = gimple_call_num_args (call);
+	  if ((gimple_call_internal_p (call)
+	       && !callback_ifn_assume_call_with_edge_p (node, stmt))
+	      || arg_count == 0)
 	    {
 	      ret = true;
 	      break;
@@ -2056,7 +2072,8 @@ scan_function (cgraph_node *node, struct function *fun)
 		unsigned argument_count = gimple_call_num_args (stmt);
 		isra_scan_context ctx = ISRA_CTX_ARG;
 		scan_call_info call_info, *call_info_p = &call_info;
-		if (gimple_call_internal_p (stmt))
+		if (gimple_call_internal_p (stmt)
+		    && !callback_ifn_assume_call_with_edge_p (node, stmt))
 		  {
 		    call_info_p = NULL;
 		    ctx = ISRA_CTX_LOAD;
@@ -2248,6 +2265,11 @@ isra_analyze_call (cgraph_edge *cs)
 	  BITMAP_FREE (analyzed);
 	}
     }
+
+  /* The return value of an ASSUME body is not ignored, but we cannot detect
+     this, as the function is never called directly.  */
+  else if (cs->callee && cs->callee->assume_function)
+    csum->m_return_ignored = false;
   /* Don't set m_return_ignored for musttail calls.  The tailc/musttail passes
      compare the returned value against the IPA-VRP return value range if
      it is a singleton, but if the call is changed to something which doesn't
@@ -2778,6 +2800,7 @@ ipa_sra_generate_summary (void)
     = (new (ggc_alloc_no_dtor <ipa_sra_function_summaries> ())
        ipa_sra_function_summaries (symtab, true));
   call_sums = new ipa_sra_call_summaries (symtab);
+  callback_info_sum_t::check_create_info_sum ();
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     ipa_sra_summarize_function (node);
@@ -3120,7 +3143,9 @@ ipa_sra_dump_all_summaries (FILE *f, bool hints)
 static bool
 ipa_sra_ipa_function_checks (cgraph_node *node)
 {
-  if (!node->can_be_local_p ())
+  /* Assume bodies cannot be local, because their address is taken, but we want
+     to consider them anyway.  */
+  if (!node->can_be_local_p () && !node->assume_function)
     {
       if (dump_file)
 	fprintf (dump_file, "Function %s disqualified because it cannot be "
@@ -3395,11 +3420,21 @@ param_removal_cross_scc_edge (cgraph_edge *cs)
 
   for (unsigned i = 0; i < args_count; i++)
     {
-      bool unused_in_callee;
-      if (i < param_count)
-	unused_in_callee = (*to_ifs->m_parameters)[i].locally_unused;
-      else
-	unused_in_callee = false;
+      bool unused_in_callee = false;
+
+      isra_param_desc *descriptor = NULL;
+      if (cs->callback)
+	{
+	  callback_info *ci = callback_info_sum->get (cs);
+	  int remapped_idx = ci->inverted_mapping[i];
+	  if (remapped_idx != ARG_MAPPING_UNKNOWN_IDX)
+	    descriptor = &(*to_ifs->m_parameters)[remapped_idx];
+	}
+      else if (i < param_count)
+	descriptor = &(*to_ifs->m_parameters)[i];
+
+      if (descriptor)
+	unused_in_callee = descriptor->locally_unused;
 
       if (!unused_in_callee)
 	{
@@ -3514,7 +3549,22 @@ propagate_param_hints_accross_call (cgraph_edge *cs, isra_func_summary *to_ifs)
 
       if (desc->by_ref)
 	{
-	  isra_param_flow *ipf = &csum->m_arg_flow[i];
+	  unsigned idx = i;
+	  if (cs->callback)
+	    {
+	      gcc_assert (cs->callee->assume_function);
+	      callback_info *ci = callback_info_sum->get (cs);
+	      int remapped = ci->arg_mapping[i];
+	      if (remapped == ARG_MAPPING_UNKNOWN_IDX)
+		/* In the case of assume outlined functions, the only skipped
+		   argument is the address to be called, which is fine.  In
+		   other cases, if they ever arise, processing of the call to
+		   callback dispatching functions will need to handle unmapped
+		   arguments as necessary.  */
+		continue;
+	      idx = (unsigned) remapped;
+	    }
+	  isra_param_flow *ipf = &csum->m_arg_flow[idx];
 
 	  if (!ipf->constructed_for_calls)
 	    desc->not_specially_constructed = true;
@@ -3554,7 +3604,11 @@ propagate_hints_to_all_callees (cgraph_node *node, isra_func_summary *from_ifs,
       enum availability availability;
       cgraph_node *callee = cs->callee->function_symbol (&availability);
       isra_func_summary *to_ifs = func_sums->get (callee);
-      if (!from_ifs)
+      /* Skip over regular callbacks, as we cannot perform SRA on them.  We
+	 don't zap them early on, because the callback call might get optimized
+	 out, so don't want to miss that opportunity.  Skipping them here is OK,
+	 as they will get disqualified later on in the IPA stage.  */
+      if (!from_ifs || (cs->callback && !cs->callee->assume_function))
 	{
 	  if (flip_all_param_hints_pessimistic (to_ifs)
 	      && ipa_edge_within_scc (cs))
@@ -3589,8 +3643,25 @@ propagate_used_across_scc_edge (cgraph_edge *cs, vec<cgraph_node *> *stack)
     ? vec_safe_length (to_ifs->m_parameters) : 0;
   for (unsigned i = 0; i < args_count; i++)
     {
-      if (i < param_count
-	  && (*to_ifs->m_parameters)[i].locally_unused)
+      unsigned idx = i;
+
+      if (cs->callback)
+	{
+	  gcc_assert (cs->callee->assume_function);
+	  callback_info *ci = callback_info_sum->get (cs);
+	  int remapped = ci->inverted_mapping[i];
+	  if (remapped == ARG_MAPPING_UNKNOWN_IDX)
+	    /* In the case of assume outlined functions, the only skipped
+	       argument is the address to be called, which is fine.  In other
+	       cases, if they ever arise, processing of the call to callback
+	       dispatching functions will need to handle unmapped arguments as
+	       necessary.  */
+	    continue;
+	  idx = (unsigned) remapped;
+	}
+
+      if (idx < param_count
+	  && (*to_ifs->m_parameters)[idx].locally_unused)
 	    continue;
 
       /* The argument is needed in the callee it, we must mark the parameter as
@@ -3810,7 +3881,14 @@ param_splitting_across_edge (cgraph_edge *cs)
     = ipcp_get_transformation_summary (cs->caller);
 
   isra_call_summary *csum = call_sums->get (cs);
-  gcc_checking_assert (csum);
+  /* The summary may not exist if the edge is a callback edge created after SRA
+     summaries are generated (when ipa-cp is disabled for example).  Bail if
+     that happens.  */
+  if (!csum)
+    {
+      gcc_checking_assert (callback_ifn_assume_call_p (cs->call_stmt));
+      return false;
+    }
   unsigned args_count = csum->m_arg_flow.length ();
   isra_func_summary *to_ifs = func_sums->get (callee);
   unsigned param_count
@@ -3826,7 +3904,22 @@ param_splitting_across_edge (cgraph_edge *cs)
   for (i = 0; (i < args_count) && (i < param_count); i++)
     {
       isra_param_desc *arg_desc = &(*to_ifs->m_parameters)[i];
-      isra_param_flow *ipf = &csum->m_arg_flow[i];
+      unsigned ipf_idx = i;
+      if (cs->callback)
+	{
+	  gcc_assert (cs->callee->assume_function);
+	  callback_info *ci = callback_info_sum->get (cs);
+	  int remapped = ci->arg_mapping[i];
+	  if (remapped == ARG_MAPPING_UNKNOWN_IDX)
+	    /* In the case of assume outlined functions, the only skipped
+	       argument is the address to be called, which is fine.  In other
+	       cases, if they ever arise, processing of the call to callback
+	       dispatching functions will need to handle unmapped arguments as
+	       necessary.  */
+	    continue;
+	  ipf_idx = (unsigned) remapped;
+	}
+      isra_param_flow *ipf = &csum->m_arg_flow[ipf_idx];
 
       if (arg_desc->locally_unused)
 	{
@@ -4027,6 +4120,11 @@ retval_used_p (cgraph_node *node, void *)
 	  && !from_ifs->m_return_ignored)
 	    return true;
     }
+
+  /* Keep the return value, even though it's not used in the code directly,
+     because it's used by vrp later.  */
+  if (node->assume_function)
+    return true;
 
   return false;
 }
