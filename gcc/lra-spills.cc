@@ -146,8 +146,9 @@ assign_mem_slot (int i)
   x = slots[slot_num].mem;
   if (!x)
     {
-      x = assign_stack_local (BLKmode, slots[slot_num].size,
-			      slots[slot_num].align);
+      x = assign_stack_local_1 (BLKmode, slots[slot_num].size,
+				slots[slot_num].align,
+				ASLK_RECORD_PAD | ASLK_REDUCE_ALIGN);
       slots[slot_num].mem = x;
     }
 

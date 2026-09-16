@@ -1478,9 +1478,9 @@ sjlj_build_landing_pads (void)
 					TYPE_MODE (sjlj_fc_type_node),
 					TYPE_ALIGN (sjlj_fc_type_node));
       crtl->eh.sjlj_fc
-	= assign_stack_local (TYPE_MODE (sjlj_fc_type_node),
-			      int_size_in_bytes (sjlj_fc_type_node),
-			      align);
+	= assign_stack_local_1 (TYPE_MODE (sjlj_fc_type_node),
+				int_size_in_bytes (sjlj_fc_type_node),
+				align, ASLK_RECORD_PAD | ASLK_REDUCE_ALIGN);
 
       sjlj_mark_call_sites ();
       sjlj_emit_function_enter (dispatch_label);
@@ -1496,9 +1496,9 @@ sjlj_build_landing_pads (void)
 					TYPE_MODE (sjlj_fc_type_node),
 					TYPE_ALIGN (sjlj_fc_type_node));
       crtl->eh.sjlj_fc
-	= assign_stack_local (TYPE_MODE (sjlj_fc_type_node),
-			      int_size_in_bytes (sjlj_fc_type_node),
-			      align);
+	= assign_stack_local_1 (TYPE_MODE (sjlj_fc_type_node),
+				int_size_in_bytes (sjlj_fc_type_node),
+				align, ASLK_RECORD_PAD | ASLK_REDUCE_ALIGN);
 
       sjlj_mark_call_sites ();
       sjlj_emit_function_enter (NULL);
