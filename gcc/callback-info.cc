@@ -147,3 +147,47 @@ callback_info_sum_t::duplicate (cgraph_edge *, cgraph_edge *,
   dst_s->inverted_mapping = src_s->inverted_mapping.copy ();
   dst_s->redirected = src_s->redirected;
 }
+
+/* Return the argument at IDX if CI is null, otherwise use the mapping in CI and
+   return the remapped argument.  Presumes that the remapped index is not
+   ARG_MAPPING_UNKNOWN_IDX.  */
+tree
+callback_call_arg_summary (const gimple *stmt, int idx, callback_info *ci)
+{
+  if (ci)
+    idx = ci->arg_mapping[idx];
+  gcc_checking_assert (idx != ARG_MAPPING_UNKNOWN_IDX);
+  return gimple_call_arg (stmt, idx);
+}
+
+/* Return the number of arguments of STMT if CI is null,
+   ci->arg_mapping.length() otherwise.  */
+unsigned
+callback_call_num_args_summary (const gcall *stmt, callback_info *ci)
+{
+  if (ci)
+    return ci->arg_mapping.length ();
+  return gimple_call_num_args (stmt);
+}
+
+/* Returns TRUE iff STMT is an internal call statement to IFN_ASSUME.  */
+bool
+callback_ifn_assume_call_p (const gimple *stmt)
+{
+  return is_gimple_call (stmt) && gimple_call_internal_p (stmt)
+	 && (gimple_call_internal_fn (stmt) == IFN_ASSUME);
+}
+
+/* Returns TRUE iff STMT is an internal call statement to IFN_ASSUME with a
+   callback edge pointing to the outlined body.  */
+bool
+callback_ifn_assume_call_with_edge_p (cgraph_node *caller, gimple *stmt)
+{
+  /* Fast path for most cases.  */
+  if (!callback_ifn_assume_call_p (stmt))
+    return false;
+
+  cgraph_edge *cbei = caller->get_edge (stmt);
+
+  return cbei != nullptr;
+}

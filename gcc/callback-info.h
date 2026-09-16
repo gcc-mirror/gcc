@@ -82,4 +82,20 @@ public:
 
 extern callback_info_sum_t *callback_info_sum;
 
+/* Return the argument of STMT at IDX if CI is null, otherwise use the mapping
+   in CI and return the remapped argument.  Presumes that the remapped index is
+   not ARG_MAPPING_UNKNOWN_IDX.  */
+tree callback_call_arg_summary (const gimple *stmt, int idx, callback_info *ci);
+
+/* Return the number of arguments of STMT if CI is null,
+   ci->arg_mapping.length() otherwise.  */
+unsigned callback_call_num_args_summary (const gcall *stmt, callback_info *ci);
+
+/* Returns TRUE iff STMT is an internal call statement to IFN_ASSUME.  */
+bool callback_ifn_assume_call_p (const gimple *stmt);
+
+/* Returns TRUE iff STMT is an internal call statement to IFN_ASSUME with a
+   callback edge pointing to the outlined body.  */
+bool callback_ifn_assume_call_with_edge_p (cgraph_node *caller, gimple *stmt);
+
 #endif /* CALLBACK_INFO_H  */
