@@ -443,6 +443,7 @@ fido-*-*)
         ;;
 i[34567]86-*-* | x86_64-*-*)
 	cpu_type=i386
+	default_md_generator_partitions=6:6:1
 	c_target_objs="i386-c.o"
 	cxx_target_objs="i386-c.o"
 	d_target_objs="i386-d.o"
