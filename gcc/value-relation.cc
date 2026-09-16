@@ -1880,17 +1880,17 @@ dom_oracle::query (basic_block bb, tree ssa1, tree ssa2)
   if (bitmap_bit_p (equiv1, v2) && bitmap_bit_p (equiv2, v1))
     return VREL_EQ;
 
-  kind = partial_equiv (ssa1, ssa2);
-  if (kind != VREL_VARYING)
-    return kind;
-
-  // Initially look for a direct relationship and just return that.
+  // A statement such as c = a & 0xff makes a partial equivalence between
+  // c and a, and an ordinary comparison can then relate the same pair.
+  // If both exist, prefer the relation, so look for that first.
   kind = find_relation_dom (bb, ssa1, ssa2);
-  if (kind != VREL_VARYING)
-    return kind;
+  // If no direct relation exists, try the query using the equivalence sets.
+  if (kind == VREL_VARYING)
+    kind = query (bb, equiv1, equiv2);
 
-  // Query using the equivalence sets.
-  kind = query (bb, equiv1, equiv2);
+  // Finally look for partial equivalences.
+  if (kind == VREL_VARYING)
+    kind = partial_equiv (ssa1, ssa2);
   return kind;
 }
 
@@ -2078,8 +2078,16 @@ path_oracle::record (basic_block bb, relation_kind k, tree ssa1, tree ssa2)
   if (ssa1 == ssa2)
     return false;
 
+  // Partial equivalences are tracked in the root equivalence oracle rather
+  // than on the path.  Registering a partial equivalence in the path would
+  // cause normal relations to collapse to VARYING.
+  if (relation_partial_equiv_p (k))
+    return false;
+
   relation_kind curr = query (bb, ssa1, ssa2);
-  if (curr != VREL_VARYING)
+  // Likewise, a partial equivalency result should not be combined with K
+  // or the result drops to VARYING.
+  if (curr != VREL_VARYING && !relation_partial_equiv_p (curr))
     k = relation_intersect (curr, k);
 
   // Do not register an impossible relation.
