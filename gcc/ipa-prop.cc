@@ -3214,6 +3214,19 @@ ipa_analyze_call_uses (struct ipa_func_body_info *fbi, gcall *call)
 {
   tree target = gimple_call_fn (call);
 
+  /* Internal .ASSUME call.  Create a callback edge to its body, calculate its
+     jump functions and return.  This is done here as the main creation route in
+     ipa_compute_jump_functions_for_edge doesn't analyze call statements.  */
+  if (callback_ifn_assume_call_p (call))
+    {
+      tree callee_decl = TREE_OPERAND (gimple_call_arg (call, 0), 0);
+      cgraph_node *target = cgraph_node::get_create (callee_decl);
+      cgraph_edge *cbei
+	= cgraph_edge::make_callback_internal (fbi->node, target, call);
+      ipa_compute_jump_functions_for_edge (fbi, cbei);
+      return;
+    }
+
   if (!target
       || (TREE_CODE (target) != SSA_NAME
           && !virtual_method_call_p (target)))
