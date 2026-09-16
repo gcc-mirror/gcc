@@ -51,7 +51,7 @@ public:
 
     HIR::BlockExpr *block
       = ASTLoweringBlock::translate (expr.get_block_expr (), terminated);
-    auto crate_num = resolver.mappings.get_current_crate ();
+    auto crate_num = resolver.mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				   resolver.mappings.get_next_hir_id (
 				     crate_num),
@@ -199,7 +199,7 @@ public:
     if (expr.has_loop_label ())
       loop_label = lower_loop_label (expr.get_loop_label ());
 
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   UNKNOWN_LOCAL_DEFID);

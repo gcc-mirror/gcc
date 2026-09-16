@@ -238,11 +238,11 @@ SubstitutionParamMapping::override_context ()
   auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
-  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
-					       UNKNOWN_NODEID,
-					       param->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			param->resolve ());
+  context->insert_type (
+    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
+			   UNKNOWN_NODEID, param->get_ref (),
+			   UNKNOWN_LOCAL_DEFID),
+    param->resolve ());
 }
 
 SubstitutionArg::SubstitutionArg (const SubstitutionParamMapping *param,

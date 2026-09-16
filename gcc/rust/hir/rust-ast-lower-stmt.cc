@@ -49,7 +49,7 @@ ASTLoweringStmt::visit (AST::ExprStmt &stmt)
 {
   HIR::Expr *expr = ASTLoweringExpr::translate (stmt.get_expr (), &terminated);
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -87,7 +87,7 @@ ASTLoweringStmt::visit (AST::LetStmt &stmt)
     else_expr = std::unique_ptr<HIR::Expr> (
       ASTLoweringExpr::translate (stmt.get_else_expr ()));
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, stmt.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -125,7 +125,7 @@ ASTLoweringStmt::visit (AST::Enum &enum_decl)
 void
 ASTLoweringStmt::visit (AST::EmptyStmt &empty)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, empty.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));

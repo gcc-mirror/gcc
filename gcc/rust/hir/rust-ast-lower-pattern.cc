@@ -46,7 +46,7 @@ ASTLoweringPattern::translate (AST::Pattern &pattern, bool is_let_top_level)
 void
 ASTLoweringPattern::visit (AST::IdentifierPattern &pattern)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -124,7 +124,7 @@ ASTLoweringPattern::visit (AST::TupleStructPattern &pattern)
       break;
     }
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -152,7 +152,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	    auto &tuple
 	      = static_cast<AST::StructPatternFieldTuplePat &> (*field);
 
-	    auto crate_num = mappings.get_current_crate ();
+	    auto crate_num = mappings.crate_mapping.get_current_crate ();
 	    Analysis::NodeMapping mapping (crate_num, tuple.get_node_id (),
 					   mappings.get_next_hir_id (crate_num),
 					   UNKNOWN_LOCAL_DEFID);
@@ -173,7 +173,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	    AST::StructPatternFieldIdentPat &ident
 	      = static_cast<AST::StructPatternFieldIdentPat &> (*field);
 
-	    auto crate_num = mappings.get_current_crate ();
+	    auto crate_num = mappings.crate_mapping.get_current_crate ();
 	    Analysis::NodeMapping mapping (crate_num, ident.get_node_id (),
 					   mappings.get_next_hir_id (crate_num),
 					   UNKNOWN_LOCAL_DEFID);
@@ -194,7 +194,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 	    AST::StructPatternFieldIdent &ident
 	      = static_cast<AST::StructPatternFieldIdent &> (*field.get ());
 
-	    auto crate_num = mappings.get_current_crate ();
+	    auto crate_num = mappings.crate_mapping.get_current_crate ();
 	    Analysis::NodeMapping mapping (crate_num, ident.get_node_id (),
 					   mappings.get_next_hir_id (crate_num),
 					   UNKNOWN_LOCAL_DEFID);
@@ -217,7 +217,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
       fields.emplace_back (f);
     }
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -230,7 +230,7 @@ ASTLoweringPattern::visit (AST::StructPattern &pattern)
 void
 ASTLoweringPattern::visit (AST::WildcardPattern &pattern)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -261,7 +261,7 @@ ASTLoweringPattern::visit (AST::TuplePattern &pattern)
       break;
     }
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -273,7 +273,7 @@ ASTLoweringPattern::visit (AST::TuplePattern &pattern)
 void
 ASTLoweringPattern::visit (AST::LiteralPattern &pattern)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -290,7 +290,7 @@ ASTLoweringPattern::visit (AST::RangePattern &pattern)
   auto upper_bound = lower_range_pattern_bound (pattern.get_upper_bound ());
   auto lower_bound = lower_range_pattern_bound (pattern.get_lower_bound ());
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -312,7 +312,7 @@ ASTLoweringPattern::visit (AST::GroupedPattern &pattern)
 void
 ASTLoweringPattern::visit (AST::ReferencePattern &pattern)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -360,7 +360,7 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 
   // need this earlier than usual
   // since we might need to produce rest_bind
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
 
   for (size_t i = 0; i < sub_patterns.size (); i++)
     {
@@ -424,7 +424,7 @@ ASTLoweringPattern::visit (AST::SlicePattern &pattern)
 void
 ASTLoweringPattern::visit (AST::AltPattern &pattern)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, pattern.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);

@@ -1371,11 +1371,11 @@ InferType::clone () const
     = new InferType (mappings.get_next_hir_id (), get_infer_kind (),
 		     default_hint, get_ident ().locus, get_combined_refs ());
 
-  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
-					       UNKNOWN_NODEID,
-					       clone->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			clone);
+  context->insert_type (
+    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
+			   UNKNOWN_NODEID, clone->get_ref (),
+			   UNKNOWN_LOCAL_DEFID),
+    clone);
   mappings.insert_location (clone->get_ref (),
 			    mappings.lookup_location (get_ref ()));
 
@@ -4212,11 +4212,11 @@ ConstInferType::clone () const
     = new ConstInferType (specified_type, mappings.get_next_hir_id (),
 			  get_ty_ref (), get_combined_refs ());
 
-  context->insert_type (Analysis::NodeMapping (mappings.get_current_crate (),
-					       UNKNOWN_NODEID,
-					       clone->get_ref (),
-					       UNKNOWN_LOCAL_DEFID),
-			clone);
+  context->insert_type (
+    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
+			   UNKNOWN_NODEID, clone->get_ref (),
+			   UNKNOWN_LOCAL_DEFID),
+    clone);
   mappings.insert_location (clone->get_ref (),
 			    mappings.lookup_location (get_ref ()));
 

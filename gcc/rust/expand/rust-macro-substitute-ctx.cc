@@ -30,7 +30,7 @@ SubstituteCtx::substitute_dollar_crate (
   auto &mappings = Analysis::Mappings::get ();
 
   auto def_crate = mappings.lookup_macro_def_crate (definition.get_node_id ());
-  auto current_crate = mappings.get_current_crate ();
+  auto current_crate = mappings.crate_mapping.get_current_crate ();
 
   rust_assert (def_crate);
 
@@ -44,7 +44,7 @@ SubstituteCtx::substitute_dollar_crate (
     }
   else
     {
-      auto name = mappings.get_crate_name (*def_crate);
+      auto name = mappings.crate_mapping.get_crate_name (*def_crate);
 
       rust_assert (name);
 

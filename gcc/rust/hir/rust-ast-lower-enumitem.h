@@ -54,7 +54,7 @@ public:
 
   void visit (AST::EnumItem &item) override
   {
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));
@@ -69,7 +69,7 @@ public:
 
   void visit (AST::EnumItemTuple &item) override
   {
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));
@@ -87,7 +87,7 @@ public:
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
-	auto crate_num = mappings.get_current_crate ();
+	auto crate_num = mappings.crate_mapping.get_current_crate ();
 	Analysis::NodeMapping field_mapping (
 	  crate_num, field.get_node_id (), mappings.get_next_hir_id (crate_num),
 	  mappings.get_next_localdef_id (crate_num));
@@ -104,7 +104,7 @@ public:
 
   void visit (AST::EnumItemStruct &item) override
   {
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));
@@ -120,7 +120,7 @@ public:
 	HIR::Visibility vis = translate_visibility (field.get_visibility ());
 	HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
-	auto crate_num = mappings.get_current_crate ();
+	auto crate_num = mappings.crate_mapping.get_current_crate ();
 	Analysis::NodeMapping field_mapping (
 	  crate_num, field.get_node_id (), mappings.get_next_hir_id (crate_num),
 	  mappings.get_next_localdef_id (crate_num));
@@ -145,7 +145,7 @@ public:
 
   void visit (AST::EnumItemDiscriminant &item) override
   {
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));

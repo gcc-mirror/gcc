@@ -596,7 +596,7 @@ ASTLoweringBase::lower_lifetime (AST::Lifetime &lifetime,
       lifetime_type = AST::Lifetime::STATIC;
     }
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, lifetime.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -611,7 +611,7 @@ ASTLoweringBase::lower_loop_label (AST::LoopLabel &loop_label)
 {
   HIR::Lifetime life = lower_lifetime (loop_label.get_lifetime ());
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, loop_label.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -636,7 +636,7 @@ ASTLoweringBase::lower_generic_params (
 HIR::PathExprSegment
 ASTLoweringBase::lower_path_expr_seg (AST::PathExprSegment &s)
 {
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, s.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
@@ -717,7 +717,7 @@ ASTLoweringBase::lower_self (AST::Param &param)
   rust_assert (param.is_self ());
 
   auto self = static_cast<AST::SelfParam &> (param);
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, self.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -1043,7 +1043,7 @@ ASTLoweringBase::lower_extern_block (AST::ExternBlock &extern_block)
 {
   HIR::Visibility vis = translate_visibility (extern_block.get_visibility ());
 
-  auto crate_num = mappings.get_current_crate ();
+  auto crate_num = mappings.crate_mapping.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, extern_block.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));

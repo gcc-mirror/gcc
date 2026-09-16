@@ -108,7 +108,7 @@ TypeCheckTopLevelExternItem::visit (HIR::ExternalFunctionItem &function)
       auto param_tyty = TypeCheckType::Resolve (param.get_type ());
 
       // these are implicit mappings and not used
-      auto crate_num = mappings.get_current_crate ();
+      auto crate_num = mappings.crate_mapping.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
@@ -273,7 +273,7 @@ TypeCheckImplItem::resolve_function_signature (HIR::Function &function)
   if (function.is_method ())
     {
       // these are implicit mappings and not used
-      auto crate_num = mappings.get_current_crate ();
+      auto crate_num = mappings.crate_mapping.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);

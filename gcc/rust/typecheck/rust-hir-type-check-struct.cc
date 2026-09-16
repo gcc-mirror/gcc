@@ -191,7 +191,7 @@ TypeCheckStructExpr::resolve (HIR::StructExprStructFields &struct_expr)
 	      HIR::StructExprField *implicit_field = nullptr;
 
 	      AST::AttrVec outer_attribs;
-	      auto crate_num = mappings.get_current_crate ();
+	      auto crate_num = mappings.crate_mapping.get_current_crate ();
 	      Analysis::NodeMapping mapping (crate_num,
 					     struct_expr.get_struct_base ()
 					       .get_base ()

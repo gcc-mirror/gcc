@@ -71,11 +71,21 @@ private:
   LocalDefId localDefId;
 };
 
-class Mappings
+class CrateMappings
 {
+  std::map<CrateNum, AST::Crate *> ast_crate_mappings;
+
+  // crate names
+  std::map<CrateNum, std::string> crate_names;
+
+  CrateNum crateNumItr;
+
+  CrateNum currentCrateNum;
+
+  std::map<NodeId, CrateNum> crate_node_to_crate_num;
+
 public:
-  static Mappings &get ();
-  ~Mappings ();
+  CrateMappings ();
 
   CrateNum get_next_crate_num (const std::string &name);
   void set_current_crate (CrateNum crateNum);
@@ -90,19 +100,35 @@ public:
   tl::optional<NodeId> crate_num_to_nodeid (const CrateNum &crate_num) const;
   bool node_is_crate (NodeId node_id) const;
 
+  AST::Crate &insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
+				CrateNum crate_num);
+
+  AST::Crate &get_ast_crate (CrateNum crateNum);
+
+  AST::Crate *get_ast_crate_by_node_id_raw (NodeId id);
+};
+
+class Mappings
+{
+public:
+  static Mappings &get ();
+  ~Mappings ();
+
+  CrateMappings crate_mapping;
+
   NodeId get_next_node_id ();
-  HirId get_next_hir_id () { return get_next_hir_id (get_current_crate ()); }
+  HirId get_next_hir_id ()
+  {
+    return get_next_hir_id (crate_mapping.get_current_crate ());
+  }
   HirId get_next_hir_id (CrateNum crateNum);
   LocalDefId get_next_localdef_id ()
   {
-    return get_next_localdef_id (get_current_crate ());
+    return get_next_localdef_id (crate_mapping.get_current_crate ());
   }
   LocalDefId get_next_localdef_id (CrateNum crateNum);
 
-  AST::Crate &get_ast_crate (CrateNum crateNum);
   AST::Crate &get_ast_crate_by_node_id (NodeId id);
-  AST::Crate &insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
-				CrateNum crate_num);
   HIR::Crate &insert_hir_crate (std::unique_ptr<HIR::Crate> &&crate);
   HIR::Crate &get_hir_crate (CrateNum crateNum);
   bool is_local_hirid_crate (HirId crateNum);
@@ -403,17 +429,11 @@ public:
 private:
   Mappings ();
 
-  CrateNum crateNumItr;
-  CrateNum currentCrateNum;
   HirId hirIdIter;
   NodeId nodeIdIter;
   std::map<CrateNum, LocalDefId> localIdIter;
   HIR::ImplBlock *builtinMarker;
 
-  AST::Crate *get_ast_crate_by_node_id_raw (NodeId id);
-
-  std::map<NodeId, CrateNum> crate_node_to_crate_num;
-  std::map<CrateNum, AST::Crate *> ast_crate_mappings;
   std::map<CrateNum, HIR::Crate *> hir_crate_mappings;
   std::map<DefId, HIR::Item *> defIdMappings;
   std::map<DefId, HIR::TraitItem *> defIdTraitItemMappings;
@@ -484,9 +504,6 @@ private:
   std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveInvocations;
   std::map<NodeId, BangProcMacro> procmacroBangInvocations;
   std::map<NodeId, AttributeProcMacro> procmacroAttributeInvocations;
-
-  // crate names
-  std::map<CrateNum, std::string> crate_names;
 
   // Low level visibility map for each DefId
   std::map<NodeId, Privacy::ModuleVisibility> visibility_map;

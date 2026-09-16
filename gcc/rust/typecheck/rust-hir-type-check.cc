@@ -206,7 +206,7 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
     {
       // these are implicit mappings and not used
       auto &mappings = Analysis::Mappings::get ();
-      auto crate_num = mappings.get_current_crate ();
+      auto crate_num = mappings.crate_mapping.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, mappings.get_next_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);

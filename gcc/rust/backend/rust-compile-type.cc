@@ -178,8 +178,8 @@ TyTyResolveCompile::get_unit_type (Context *ctx)
   static tree unit_type;
   if (unit_type == nullptr)
     {
-      auto cn = ctx->get_mappings ().get_current_crate ();
-      auto &c = ctx->get_mappings ().get_ast_crate (cn);
+      auto cn = ctx->get_mappings ().crate_mapping.get_current_crate ();
+      auto &c = ctx->get_mappings ().crate_mapping.get_ast_crate (cn);
       location_t locus = BUILTINS_LOCATION;
       if (c.items.size () > 0)
 	{

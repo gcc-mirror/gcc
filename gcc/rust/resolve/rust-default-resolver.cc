@@ -41,11 +41,11 @@ DefaultResolver::visit (AST::Crate &crate)
     AST::DefaultASTVisitor::visit (crate);
   };
 
-  auto &mappings = Analysis::Mappings::get ();
+  auto &crate_mappings = Analysis::Mappings::get ().crate_mapping;
 
-  auto crate_num = mappings.lookup_crate_num (crate.get_node_id ());
+  auto crate_num = crate_mappings.lookup_crate_num (crate.get_node_id ());
   rust_assert (crate_num.has_value ());
-  auto crate_name = mappings.get_crate_name (*crate_num);
+  auto crate_name = crate_mappings.get_crate_name (*crate_num);
   rust_assert (crate_name.has_value ());
 
   ctx.canonical_ctx.scope_crate (crate.get_node_id (), *crate_name, inner_fn);
@@ -482,11 +482,12 @@ void
 DefaultResolver::visit (AST::ExternCrate &crate)
 {
   auto &mappings = Analysis::Mappings::get ();
+  auto &crate_mappings = mappings.crate_mapping;
   tl::optional<CrateNum> num_opt;
   if (crate.get_referenced_crate () == "self")
-    num_opt = mappings.get_current_crate ();
+    num_opt = crate_mappings.get_current_crate ();
   else
-    num_opt = mappings.lookup_crate_name (crate.get_referenced_crate ());
+    num_opt = crate_mappings.lookup_crate_name (crate.get_referenced_crate ());
 
   if (!num_opt)
     {
@@ -497,7 +498,7 @@ DefaultResolver::visit (AST::ExternCrate &crate)
 
   CrateNum num = *num_opt;
 
-  AST::Crate &referenced_crate = mappings.get_ast_crate (num);
+  AST::Crate &referenced_crate = mappings.crate_mapping.get_ast_crate (num);
 
   auto sub_visitor_1
     = [&, this] () { visit_extern_crate (crate, referenced_crate, num); };
@@ -505,7 +506,7 @@ DefaultResolver::visit (AST::ExternCrate &crate)
   auto sub_visitor_2 = [&] () {
     ctx.canonical_ctx.scope_crate (referenced_crate.get_node_id (),
 				   crate.get_referenced_crate () == "self"
-				     ? mappings.get_current_crate_name ()
+				     ? crate_mappings.get_current_crate_name ()
 				     : crate.get_referenced_crate (),
 				   std::move (sub_visitor_1));
   };

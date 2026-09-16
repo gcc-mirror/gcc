@@ -53,7 +53,7 @@ public:
     HIR::Visibility vis = translate_visibility (item.get_visibility ());
     HIR::Type *static_type = ASTLoweringType::translate (item.get_type ());
 
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, item.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));
@@ -103,7 +103,7 @@ public:
 
 	HIR::Type *param_type = ASTLoweringType::translate (param.get_type ());
 
-	auto crate_num = mappings.get_current_crate ();
+	auto crate_num = mappings.crate_mapping.get_current_crate ();
 	Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
 				       mappings.get_next_hir_id (crate_num),
 				       mappings.get_next_localdef_id (
@@ -113,7 +113,7 @@ public:
 				      std::unique_ptr<HIR::Type> (param_type));
       }
 
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, function.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));
@@ -127,7 +127,7 @@ public:
 
   void visit (AST::ExternalTypeItem &type) override
   {
-    auto crate_num = mappings.get_current_crate ();
+    auto crate_num = mappings.crate_mapping.get_current_crate ();
     Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
 				   mappings.get_next_hir_id (crate_num),
 				   mappings.get_next_localdef_id (crate_num));

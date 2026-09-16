@@ -316,7 +316,7 @@ TypeCheckBase::get_predicate_from_bound (
 
 	// we need to make implicit generic args which must be an implicit
 	// Tuple
-	auto crate_num = mappings.get_current_crate ();
+	auto crate_num = mappings.crate_mapping.get_current_crate ();
 	HirId implicit_args_id = mappings.get_next_hir_id ();
 	Analysis::NodeMapping mapping (crate_num,
 				       final_seg.get_mappings ().get_nodeid (),

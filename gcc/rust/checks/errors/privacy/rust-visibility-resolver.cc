@@ -82,7 +82,8 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
   rust_assert (hid.has_value ());
   auto ref = hid.value ();
 
-  auto crate = mappings.get_ast_crate (mappings.get_current_crate ());
+  auto crate = mappings.crate_mapping.get_ast_crate (
+    mappings.crate_mapping.get_current_crate ());
 
   // we may be dealing with pub(crate)
   if (ref_node_id == crate.get_node_id ())

@@ -98,9 +98,12 @@ static const HirId kDefaultNodeIdBegin = 1;
 static const HirId kDefaultHirIdBegin = 1;
 static const HirId kDefaultCrateNumBegin = 0;
 
+CrateMappings::CrateMappings ()
+  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CRATENUM)
+{}
+
 Mappings::Mappings ()
-  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CRATENUM),
-    hirIdIter (kDefaultHirIdBegin), nodeIdIter (kDefaultNodeIdBegin),
+  : hirIdIter (kDefaultHirIdBegin), nodeIdIter (kDefaultNodeIdBegin),
     hirImplIndexesBuilt (false)
 {
   Analysis::NodeMapping node (0, 0, 0, 0);
@@ -121,7 +124,7 @@ Mappings::get ()
 }
 
 CrateNum
-Mappings::get_next_crate_num (const std::string &name)
+CrateMappings::get_next_crate_num (const std::string &name)
 {
   auto id = crateNumItr;
   crateNumItr++;
@@ -130,19 +133,19 @@ Mappings::get_next_crate_num (const std::string &name)
 }
 
 void
-Mappings::set_current_crate (CrateNum crateNum)
+CrateMappings::set_current_crate (CrateNum crateNum)
 {
   currentCrateNum = crateNum;
 }
 
 CrateNum
-Mappings::get_current_crate () const
+CrateMappings::get_current_crate () const
 {
   return currentCrateNum;
 }
 
 tl::optional<const std::string &>
-Mappings::get_crate_name (CrateNum crate_num) const
+CrateMappings::get_crate_name (CrateNum crate_num) const
 {
   auto it = crate_names.find (crate_num);
   if (it == crate_names.end ())
@@ -152,7 +155,7 @@ Mappings::get_crate_name (CrateNum crate_num) const
 }
 
 tl::optional<CrateNum>
-Mappings::lookup_crate_num (NodeId node_id) const
+CrateMappings::lookup_crate_num (NodeId node_id) const
 {
   auto it = crate_node_to_crate_num.find (node_id);
   if (it == crate_node_to_crate_num.end ())
@@ -162,19 +165,19 @@ Mappings::lookup_crate_num (NodeId node_id) const
 }
 
 void
-Mappings::set_crate_name (CrateNum crate_num, const std::string &name)
+CrateMappings::set_crate_name (CrateNum crate_num, const std::string &name)
 {
   crate_names[crate_num] = name;
 }
 
 const std::string &
-Mappings::get_current_crate_name () const
+CrateMappings::get_current_crate_name () const
 {
   return get_crate_name (get_current_crate ()).value ();
 }
 
 tl::optional<CrateNum>
-Mappings::lookup_crate_name (const std::string &crate_name) const
+CrateMappings::lookup_crate_name (const std::string &crate_name) const
 {
   for (const auto &it : crate_names)
     {
@@ -185,7 +188,7 @@ Mappings::lookup_crate_name (const std::string &crate_name) const
 }
 
 tl::optional<NodeId>
-Mappings::crate_num_to_nodeid (const CrateNum &crate_num) const
+CrateMappings::crate_num_to_nodeid (const CrateNum &crate_num) const
 {
   auto it = ast_crate_mappings.find (crate_num);
   if (it == ast_crate_mappings.end ())
@@ -195,7 +198,7 @@ Mappings::crate_num_to_nodeid (const CrateNum &crate_num) const
 }
 
 bool
-Mappings::node_is_crate (NodeId node_id) const
+CrateMappings::node_is_crate (NodeId node_id) const
 {
   return lookup_crate_num (node_id).has_value ();
 }
@@ -244,7 +247,7 @@ Mappings::get_next_localdef_id (CrateNum crateNum)
 }
 
 AST::Crate &
-Mappings::get_ast_crate (CrateNum crateNum)
+CrateMappings::get_ast_crate (CrateNum crateNum)
 {
   auto it = ast_crate_mappings.find (crateNum);
   rust_assert (it != ast_crate_mappings.end ());
@@ -254,11 +257,11 @@ Mappings::get_ast_crate (CrateNum crateNum)
 AST::Crate &
 Mappings::get_ast_crate_by_node_id (NodeId id)
 {
-  return *get_ast_crate_by_node_id_raw (id);
+  return *crate_mapping.get_ast_crate_by_node_id_raw (id);
 }
 
 AST::Crate *
-Mappings::get_ast_crate_by_node_id_raw (NodeId id)
+CrateMappings::get_ast_crate_by_node_id_raw (NodeId id)
 {
   CrateNum crateNum = lookup_crate_num (id).value ();
   auto it = ast_crate_mappings.find (crateNum);
@@ -267,8 +270,8 @@ Mappings::get_ast_crate_by_node_id_raw (NodeId id)
 }
 
 AST::Crate &
-Mappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
-			    CrateNum crate_num)
+CrateMappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
+				 CrateNum crate_num)
 {
   auto it = ast_crate_mappings.find (crate_num);
   rust_assert (it == ast_crate_mappings.end ());
@@ -1074,7 +1077,8 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
   auto it = macroMappings.find (macro->get_node_id ());
   rust_assert (it == macroMappings.end ());
 
-  macroMappings[macro->get_node_id ()] = {macro, currentCrateNum};
+  macroMappings[macro->get_node_id ()]
+    = {macro, crate_mapping.get_current_crate ()};
 }
 
 tl::optional<AST::MacroRulesDefinition *>
@@ -1349,7 +1353,7 @@ Mappings::insert_glob_container (NodeId id, AST::GlobContainer *container)
 
   // Crates have different memory managements that regular items
   if (container->get_glob_container_kind () == AST::GlobContainer::Kind::Crate)
-    glob_containers[id] = get_ast_crate_by_node_id_raw (id);
+    glob_containers[id] = crate_mapping.get_ast_crate_by_node_id_raw (id);
   else
     glob_containers[id] = container;
 }
