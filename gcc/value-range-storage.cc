@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple.h"
 #include "gimplify.h"
 #include "ssa.h"
-#include "tree-pretty-print.h"
 #include "fold-const.h"
 #include "gimple-range.h"
 #include "value-range-storage.h"

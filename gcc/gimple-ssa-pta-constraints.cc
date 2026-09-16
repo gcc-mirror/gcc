@@ -29,7 +29,6 @@
 #include "tree-pass.h"
 #include "ssa.h"
 #include "cgraph.h"
-#include "tree-pretty-print.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
 #include "stor-layout.h"

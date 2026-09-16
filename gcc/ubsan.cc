@@ -31,7 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "ssa.h"
 #include "cgraph.h"
-#include "tree-pretty-print.h"
+#include "pretty-print.h"
 #include "stor-layout.h"
 #include "cfganal.h"
 #include "gimple-iterator.h"

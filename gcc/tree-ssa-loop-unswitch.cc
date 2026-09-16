@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree-ssa-loop-manip.h"
 #include "tree-vectorizer.h"
-#include "tree-pretty-print.h"
 #include "gimple-range.h"
 #include "dbgcnt.h"
 #include "cfganal.h"

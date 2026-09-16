@@ -26,7 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "gimple.h"
 #include "ssa.h"
-#include "tree-pretty-print.h"
+#include "pretty-print.h"
 #include "value-range-pretty-print.h"
 #include "value-range-storage.h"
 #include "fold-const.h"
