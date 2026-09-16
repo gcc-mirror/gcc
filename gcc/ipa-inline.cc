@@ -293,11 +293,16 @@ report_inline_failed_reason (struct cgraph_edge *e)
 			   e->caller->lto_file_data->file_name,
 			   e->callee->ultimate_alias_target ()->lto_file_data->file_name);
 	}
-      if (e->inline_failed == CIF_TARGET_OPTION_MISMATCH)
-	if (dump_file)
-	  cl_target_option_print_diff
-	    (dump_file, 2, target_opts_for_fn (e->caller->decl),
-	     target_opts_for_fn (e->callee->ultimate_alias_target ()->decl));
+      if (e->inline_failed == CIF_TARGET_OPTION_MISMATCH
+	  && dump_file)
+	{
+	  struct cl_target_option *opt_caller
+	    = target_opts_for_fn (e->caller->decl);
+	  struct cl_target_option *opt_callee
+	    = target_opts_for_fn (e->callee->ultimate_alias_target ()->decl);
+	  if (opt_caller != NULL && opt_callee != NULL)
+	    cl_target_option_print_diff (dump_file, 2, opt_caller, opt_callee);
+	}
       if (e->inline_failed == CIF_OPTIMIZATION_MISMATCH)
 	if (dump_file)
 	  cl_optimization_print_diff
