@@ -303,7 +303,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __basic_file<char>::is_open() const throw ()
   { return _M_cfile != 0; }
 
-#ifndef _GLIBCCXX_USE_STDIO_PURE
+#ifndef _GLIBCXX_USE_STDIO_PURE
   int
   __basic_file<char>::fd() throw ()
   { return fileno(_M_cfile); }
