@@ -1,5 +1,6 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
+// { dg-require-sysv-or-posix-semaphore "" }
 
 // 2001-05-21 Benjamin Kosnik  <bkoz@redhat.com>
 
@@ -31,6 +32,7 @@
 #include <sys/stat.h>
 
 #include <testsuite_hooks.h>
+#include <testsuite_semaphore.h>
 
 class UnderBuf : public std::filebuf
 {

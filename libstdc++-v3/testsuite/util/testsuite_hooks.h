@@ -335,30 +335,6 @@ namespace __gnu_test
       }
     };
 
-  // A binary semaphore for use across multiple processes.
-  class semaphore
-  {
-  public:
-    // Creates a binary semaphore.  The semaphore is initially in the
-    // unsignaled state.
-    semaphore();
-
-    // Destroy the semaphore.
-    ~semaphore();
-
-    // Signal the semaphore.  If there are processes blocked in
-    // "wait", exactly one will be permitted to proceed.
-    void signal();
-
-    // Wait until the semaphore is signaled.
-    void wait();
-
-  private:
-    int sem_set_;
-
-    pid_t pid_;
-  };
-
   // For use in 22_locale/time_get and time_put.
   std::tm test_tm(int sec, int min, int hour, int mday, int mon,
 		  int year, int wday, int yday, int isdst);

@@ -1,6 +1,7 @@
 // { dg-require-namedlocale "en_US.ISO8859-1" }
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
+// { dg-require-sysv-or-posix-semaphore "" }
 
 // 2004-04-16  Petur Runolfsson  <peturr02@ru.is>
 
@@ -31,6 +32,7 @@
 #include <sys/stat.h>
 
 #include <testsuite_hooks.h>
+#include <testsuite_semaphore.h>
 
 // libstdc++/14975
 bool test01()

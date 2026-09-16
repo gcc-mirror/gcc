@@ -1,5 +1,6 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
+// { dg-require-sysv-or-posix-semaphore "" }
 
 // Copyright (C) 2001-2026 Free Software Foundation, Inc.
 //
@@ -32,6 +33,7 @@
 #include <sys/stat.h>
 
 #include <testsuite_hooks.h>
+#include <testsuite_semaphore.h>
 
 // libstdc++/9964
 bool test_07()

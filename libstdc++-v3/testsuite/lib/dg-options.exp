@@ -286,6 +286,15 @@ proc dg-require-cpp-feature-test { n args } {
     return
 }
 
+proc dg-require-sysv-or-posix-semaphore { args } {
+    if { ![ check_v3_target_posix_or_sysv_semaphore ] } {
+	upvar dg-do-what dg-do-what
+	set dg-do-what [list [lindex ${dg-do-what} 0] "N" "P"]
+	return
+    }
+    return
+}
+
 proc add_options_for_no_pch { flags } {
     # Remove any inclusion of bits/stdc++.h from the options.
     regsub -all -- "-include bits/stdc...h" $flags "" flags

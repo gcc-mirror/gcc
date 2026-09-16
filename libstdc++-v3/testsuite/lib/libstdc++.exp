@@ -835,6 +835,7 @@ proc v3-build_support { } {
     # Build the support objects.
     set source_files [list testsuite_abi.cc testsuite_allocator.cc \
 			  testsuite_character.cc testsuite_hooks.cc \
+			  testsuite_semaphore.cc \
 			  io/verified_cmd_line_input.cc \
 			  io/prog_bar.cc performance/time/elapsed_timer.cc ]
     foreach f $source_files {
@@ -1438,6 +1439,16 @@ proc check_v3_target_nprocs { } {
 	set cond "$cond || defined _GLIBCXX_USE_SC_NPROC_ONLN"
 	return [v3_check_preprocessor_condition nprocs $cond]
     }]
+}
+
+# Return 1 if the POSIX Semaphores option or the XSI option is supported
+# for the current target, 0 otherwise.
+proc check_v3_target_posix_or_sysv_semaphore { } {
+    set name "posix_or_sysv_semaphore"
+    set inc "#include <unistd.h>"
+    set cond "_POSIX_SEMAPHORES > 0 || _XOPEN_UNIX > 0"
+    set result [v3_check_preprocessor_condition $name $cond $inc]
+    return $result
 }
 
 # Return 1 if linking with -static-libstdc++ works, 0 otherwise.

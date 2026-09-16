@@ -1,5 +1,6 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
+// { dg-require-sysv-or-posix-semaphore "" }
 
 // 2003-05-01 Petur Runolfsson  <peturr02@ru.is>
 
@@ -32,6 +33,7 @@
 #include <sys/stat.h>
 
 #include <testsuite_hooks.h>
+#include <testsuite_semaphore.h>
 
 // Check that wcout.flush() is called when last ios_base::Init is destroyed.
 bool test07()

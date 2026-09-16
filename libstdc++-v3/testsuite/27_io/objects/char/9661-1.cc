@@ -1,5 +1,6 @@
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
+// { dg-require-sysv-or-posix-semaphore "" }
 
 // 2003-04-30  Petur Runolfsson <peturr02@ru.is>
 
@@ -21,6 +22,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <testsuite_hooks.h>
+#include <testsuite_semaphore.h>
 #include <cstdio>
 #include <cstdlib>
 #include <iostream>

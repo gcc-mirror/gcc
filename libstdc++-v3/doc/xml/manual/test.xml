@@ -1081,6 +1081,14 @@ only default variables.
 	 <listitem><para>report_performance</para></listitem>
       </itemizedlist>
      </listitem>
+     <listitem>
+       <para>
+	 <emphasis>testsuite_semaphore.h</emphasis>
+       </para>
+       <para>
+       A simple binary semaphore used for some multi-process I/O tests.
+       </para>
+     </listitem>
   </itemizedlist>
 </section>
 

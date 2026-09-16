@@ -2,6 +2,7 @@
 // { dg-require-namedlocale "en_US.ISO8859-1" }
 // { dg-require-fork "" }
 // { dg-require-mkfifo "" }
+// { dg-require-sysv-or-posix-semaphore "" }
 
 // Copyright (C) 2003-2026 Free Software Foundation, Inc.
 //
@@ -30,6 +31,7 @@
 #include <sys/stat.h>
 
 #include <testsuite_hooks.h>
+#include <testsuite_semaphore.h>
 
 // libstdc++/13171
 bool test01()
