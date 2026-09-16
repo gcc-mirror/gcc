@@ -1155,7 +1155,14 @@ a68_get_node_location (NODE_T *p)
 
   const char *start_pos = CHAR_IN_LINE (INFO (p));
   location_t start_loc = a68_get_line_location (line, start_pos);
-  return start_loc;
+
+  if (NSYMBOL (p) == NO_TEXT)
+    return start_loc;
+
+  const char *end_pos = start_pos + strlen (NSYMBOL (p)) - 1;
+  location_t end_loc = a68_get_line_location (line, end_pos);
+
+  return make_location (start_loc, start_loc, end_loc);
 }
 
 /* Get the location of POS inside LINE as a GCC location.  */
