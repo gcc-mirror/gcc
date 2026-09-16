@@ -33,7 +33,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define alignof _Alignof
 #endif
 
-/* These are defined for C++, but deprecated in C++23.  */
+/* Added in C99, removed in C23.
+   Also defined in C++ since C++11, deprecated in C++23 and gone in C++26.  */
 #define __alignas_is_defined 1
 #define __alignof_is_defined 1
 
