@@ -4063,6 +4063,22 @@ cond_if_else_store_replacement (basic_block then_bb, basic_block else_bb,
   return ok;
 }
 
+/* Returns true when P is based on an induction variable
+   inside MERGE's inner most loop.  */
+static bool
+induction_based (tree p, basic_block merge)
+{
+  if (TREE_CODE (p) != SSA_NAME)
+    return false;
+  tree ev = analyze_scalar_evolution (merge->loop_father, p);
+  if (chrec_contains_undetermined (ev)
+      || chrec_contains_symbols_defined_in_loop (ev, merge->loop_father->num))
+    return false;
+  if (tree_does_not_contain_chrecs (ev))
+    return false;
+  return true;
+}
+
 /* If PHI at MERGE is a "load PHI", PHI <*P, *Q> whose two arguments are
    single-use, non-volatile scalar MEM_REF loads reading the same memory state
    (same VUSE), factor the load out: introduce P' = PHI <P, Q> and a single
@@ -4078,15 +4094,6 @@ static bool
 factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
 			     bool early_p, bool before_vect)
 {
-  /* Factoring out a load during the first phi means we can't
-     trust if this is inside a loop or not; due to before inlining.  */
-  if (early_p)
-    return false;
-
-  /* Before vectorization, we don't want to factor out loads unless not inside a loop.  */
-  if (before_vect && bb_loop_depth (merge) != 0)
-    return false;
-
   /* Not a virtual operand. */
   if (virtual_operand_p (gimple_phi_result (phi))
       /* can only handle the merge bb having 2 predecessors.  */
@@ -4203,6 +4210,23 @@ factor_out_conditional_load (edge e0, edge e1, basic_block merge, gphi *phi,
   tree newindex;
   gimple_stmt_iterator gsi;
   gsi = gsi_after_labels (merge);
+
+  // factoring of the same pointer should be allowed
+  // irrespect to loops.
+  if (p0 == p1 && operand_equal_p (index0, index1))
+    ;
+  // Before inlining, we can't tell if different
+  // pointers are going to be induction variable based
+  // or not.
+  else if (early_p)
+    return false;
+  // Before vectorization, don't factor out
+  // pointers which are based on induction variables.
+  else if (before_vect
+	   && bb_loop_depth (merge) != 0
+	   && (induction_based (p0, merge)
+	       || induction_based (p1, merge)))
+    return false;
 
   /* Try to handle different indices.  */
   if (operand_equal_p (index0, index1))
@@ -4354,6 +4378,11 @@ factor_out_all (edge e1, edge e2, basic_block merge,
 {
   bool changed = false;
   bool do_over;
+  bool before_vect = !fold_before_rtl_expansion_p ();
+  // If vectorization is disable, then we are never before the vectorizer.
+  if (!flag_tree_loop_vectorize
+      && !merge->loop_father->force_vectorize)
+    before_vect = false;
   basic_block bb1 = e1->src;
   basic_block bb2 = e2->src;
   do
@@ -4385,7 +4414,7 @@ factor_out_all (edge e1, edge e2, basic_block merge,
 	  /* Conditional load elimination can only be on a diamond.  */
 	  if ((diamond_p
 	       && factor_out_conditional_load (e1, e2, merge, phi, early_p,
-					       !fold_before_rtl_expansion_p ()))
+					       before_vect))
 	      || factor_out_conditional_operation (e1, e2, merge, phi,
 						   cond_stmt, early_p))
 	    {
@@ -4973,6 +5002,18 @@ pass_phiopt::execute (function *)
 {
   bool do_hoist_loads = !early_p ? gate_hoist_loads () : false;
   bool cfgchanged = false;
+  bool need_loop_finalize = false;
+
+  if (!early_p
+      && !fold_before_rtl_expansion_p ()
+      && (flag_tree_loop_vectorize
+	  || cfun->has_force_vectorize_loops)
+      && number_of_loops (cfun) > 1)
+  {
+    loop_optimizer_init (LOOPS_NORMAL);
+    scev_initialize ();
+    need_loop_finalize = true;
+  }
 
   calculate_dominance_info (CDI_DOMINATORS);
   mark_ssa_maybe_undefs ();
@@ -5063,6 +5104,11 @@ pass_phiopt::execute (function *)
 
   execute_over_cond_phis (phiopt_exec);
 
+  if (need_loop_finalize)
+    {
+      loop_optimizer_finalize ();
+      scev_finalize ();
+    }
   if (replicate_conds_over_phis ())
     {
       free_dominance_info (CDI_DOMINATORS);

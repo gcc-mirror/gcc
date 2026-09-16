@@ -46,6 +46,6 @@ advance (const uint8_t *ip, size_t tag, const uint8_t *end)
 
 /* The mismatched alias types are merged to the alias-everything type, so the
    loads are commoned and the diamond is if-converted.  */
-/* { dg-final { scan-tree-dump-times "changed to factor out load from" 1 "phiopt4" } } */
-/* { dg-final { scan-tree-dump-times "changed to factor operation out from" 1 "phiopt4" } } */
+/* { dg-final { scan-tree-dump-times "changed to factor out load from" 1 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times "changed to factor operation out from" 1 "phiopt2" } } */
 /* { dg-final { scan-tree-dump-times "changed to factor operation out from" 2 "phiopt1" } } */

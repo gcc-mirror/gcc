@@ -35,6 +35,6 @@ advance (const uint8_t *ip, size_t tag, const uint8_t *end)
 }
 
 /* The diamond is if-converted (branchless): one selected-offset load remains.  */
-/* { dg-final { scan-tree-dump-times "changed to factor out load from" 1 "phiopt4" } } */
-/* { dg-final { scan-tree-dump-times "changed to factor operation out from" 1 "phiopt4" } } */
+/* { dg-final { scan-tree-dump-times "changed to factor out load from" 1 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times "changed to factor operation out from" 1 "phiopt2" } } */
 /* { dg-final { scan-tree-dump-times "changed to factor operation out from" 2 "phiopt1" } } */
