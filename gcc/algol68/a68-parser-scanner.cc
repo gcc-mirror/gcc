@@ -285,38 +285,6 @@ unworthy (LINE_T *u, char *v, char ch)
   a68_scan_error (u, v, A68 (edit_line));
 }
 
-/* Concatenate lines that terminate in '\' with next line.  */
-
-static void
-concatenate_lines (LINE_T * top)
-{
-  LINE_T *q;
-  /* Work from bottom backwards.  */
-  for (q = top; q != NO_LINE && NEXT (q) != NO_LINE; FORWARD (q))
-    ;
-
-  for (; q != NO_LINE; BACKWARD (q))
-    {
-      char *z = STRING (q);
-      size_t len = strlen (z);
-
-      if (len >= 2
-	  && z[len - 2] == BACKSLASH_CHAR
-	  && z[len - 1] == NEWLINE_CHAR
-	  && NEXT (q) != NO_LINE
-	  && STRING (NEXT (q)) != NO_TEXT)
-	{
-	  z[len - 2] = '\0';
-	  len += (int) strlen (STRING (NEXT (q)));
-	  z = (char *) xmalloc (len + 1);
-	  a68_bufcpy (z, STRING (q), len + 1);
-	  a68_bufcat (z, STRING (NEXT (q)), len + 1);
-	  STRING (NEXT (q))[0] = '\0';
-	  STRING (q) = z;
-	}
-    }
-}
-
 /* Read source file FILENAME and make internal copy.  */
 
 static bool
@@ -400,9 +368,6 @@ read_source_file (const char *filename)
 		  ? upper_postlude : supper_postlude,
 		  &ref_l, &line_num, "postlude");
 
-  /* Concatenate lines that end with \.  */
-  concatenate_lines (TOP_LINE (&A68_JOB));
-
   /* Include files.  */
   include_files (TOP_LINE (&A68_JOB));
 
@@ -438,6 +403,13 @@ next_char (LINE_T **ref_l, char **ref_s, bool allow_typo,
     }
   else
     (*ref_s)++;
+
+  /* Skip backslash at the end of lines.  */
+  if ((*ref_s)[0] == BACKSLASH_CHAR && (*ref_s)[1] == NEWLINE_CHAR)
+    {
+      (*ref_s)++;
+      return next_char (ref_l, ref_s, allow_typo, allow_one_under, found_under);
+    }
 
   /* Deliver next char.  */
   ch = (*ref_s)[0];
@@ -1133,7 +1105,6 @@ include_files (LINE_T *top)
 	      /* Conclude and go find another include directive, if any.  */
 	      NEXT (t) = s;
 	      PREVIOUS (s) = t;
-	      concatenate_lines (top);
 	      if (fclose (fp) != 0)
 		gcc_unreachable ();
 	      make_pass = true;

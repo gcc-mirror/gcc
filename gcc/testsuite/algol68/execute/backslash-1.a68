@@ -1,0 +1,6 @@
+begin
+    string foobar = "foo bar";
+    string fubar = "foo \
+bar";
+    assert (foobar = fubar)
+end
