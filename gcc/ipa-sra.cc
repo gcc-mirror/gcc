@@ -2575,8 +2575,11 @@ process_scan_results (cgraph_node *node, struct function *fun,
 	       * param_size_limit);
 	}
 
-      if (nonarg_acc_size > optimistic_limit
-	  || (!desc->by_ref && nonarg_acc_size == param_size_limit))
+      /* Assume functions have no real replacements, no calls to them will make
+	 it into the binary, so limits don't matter.  */
+      if (!node->assume_function
+	  && (nonarg_acc_size > optimistic_limit
+	      || (!desc->by_ref && nonarg_acc_size == param_size_limit)))
 	{
 	  disqualify_split_candidate (desc, "Would result into a too big set "
 				      "of replacements even in best "
@@ -4462,7 +4465,10 @@ adjust_parameter_descriptions (cgraph_node *node, isra_func_summary *ifs)
 			      param_ipa_sra_ptrwrap_growth_factor);
 	      desc->param_size_limit = extra_factor * desc->param_size_limit;
 	    }
-	  if (size_would_violate_limit_p (desc, desc->size_reached))
+	  /* Don't disqualify assume bodies, as they don't make into the final
+	     binary anyway.  */
+	  if (!node->assume_function
+	      && size_would_violate_limit_p (desc, desc->size_reached))
 	    desc->split_candidate = false;
 	}
 

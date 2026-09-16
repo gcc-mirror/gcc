@@ -3459,15 +3459,35 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
   gcc_assert (count_sum.ipa () == count_sum);
   if (count_sum.quality () == AFDO)
     count_sum = count_sum.force_nonzero ();
+  if (!opt_for_fn (node->decl, flag_ipa_cp_clone))
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file,
+		 "     good_cloning_opportunity_p (time: %g, "
+		 "size: %i): Cloning is prohibited.\n",
+		 time_benefit.to_double (), size_cost);
+      return false;
+    }
+
+  /* Assume bodies don't make it into the final binary, so they have no real
+     size.  Special case them, as cloning them is always a good idea.  */
+  if (node->assume_function)
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	fprintf (dump_file, "     good_cloning_opportunity_p: Always clone "
+			    "assume body functions.\n");
+      return true;
+    }
+
   if (time_benefit == 0
-      || !opt_for_fn (node->decl, flag_ipa_cp_clone)
       /* If there is no call which was executed in profiling or where
 	 profile is missing, we do not want to clone.  */
       || (!called_without_ipa_profile && !count_sum.nonzero_p ()))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "     good_cloning_opportunity_p (time: %g, "
-		 "size: %i): Definitely not good or prohibited.\n",
+	fprintf (dump_file,
+		 "     good_cloning_opportunity_p (time: %g, "
+		 "size: %i): Definitely not good.\n",
 		 time_benefit.to_double (), size_cost);
       return false;
     }
