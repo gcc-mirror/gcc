@@ -92,6 +92,9 @@ static int num_true_changes;
    successful conversion sets it, not only the conditional-execution one.  */
 static bool ifcvt_changed_p;
 
+/* Blocks that are inside a loop at the start of this pass.  */
+static bitmap_head bbs_in_loops;
+
 /* Forward references.  */
 static bool noce_operand_ok (const_rtx);
 static void merge_if_block (ce_if_block *);
@@ -5514,6 +5517,7 @@ noce_find_if_block (basic_block test_bb, edge then_edge, edge else_edge,
   if_info.jump = jump;
   if_info.then_else_reversed = then_else_reversed;
   if_info.speed_p = speed_p;
+  if_info.in_loop = bitmap_bit_p (&bbs_in_loops, test_bb->index);
   if_info.max_seq_cost
     = targetm.max_noce_ifcvt_seq_cost (then_edge);
   /* We'll add in the cost of THEN_BB and ELSE_BB later, when we check
@@ -6377,6 +6381,9 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
      block we removed.  */
   if (new_bb)
     {
+      /* NEW_BB takes the index, and so the bbs_in_loops bit, of THEN_BB.
+	 That bit is only read for a block that ends in a conditional jump.  */
+      gcc_checking_assert (single_succ_p (new_bb));
       df_bb_replace (then_bb_index, new_bb);
       /* This should have been done above via force_nonfallthru_and_redirect
          (possibly called from redirect_edge_and_branch_force).  */
@@ -6810,6 +6817,10 @@ if_convert (ifcvt_phase phase)
 
   loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
   mark_loop_exit_edges ();
+  bitmap_initialize (&bbs_in_loops, &bitmap_default_obstack);
+  FOR_EACH_BB_FN (bb, cfun)
+    if (bb_loop_depth (bb) != 0)
+      bitmap_set_bit (&bbs_in_loops, bb->index);
   loop_optimizer_finalize ();
   free_dominance_info (CDI_DOMINATORS);
 
@@ -6850,6 +6861,8 @@ if_convert (ifcvt_phase phase)
     fprintf (dump_file, "\n\n========== no more changes\n");
 
   free_dominance_info (CDI_POST_DOMINATORS);
+
+  bitmap_release (&bbs_in_loops);
 
   if (dump_file)
     fflush (dump_file);

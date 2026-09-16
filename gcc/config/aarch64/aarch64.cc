@@ -2405,13 +2405,10 @@ static bool
 aarch64_noce_conversion_profitable_p (rtx_insn *seq,
 				      struct noce_if_info *if_info)
 {
-  /* If not in a loop, just accept all if-conversion as the branch predictor
-     won't have anything to train on.  So assume sequences are essentially
-     unpredictable.  ce1 is in CFG mode still while ce2 is outside.  For ce2
-     accept limited if-conversion based on the shape of the instruction.  */
-  if (current_loops
-      && (!if_info->test_bb->loop_father
-	  || !if_info->test_bb->loop_father->header))
+  /* Outside loops the branch predictor has little history to train on, so
+     treat the branch as unpredictable and accept the sequence when
+     optimizing for speed.  */
+  if (if_info->speed_p && !if_info->in_loop)
     return true;
 
   /* For now we only care about csel speciifcally.  */
