@@ -55,7 +55,7 @@ bool test07()
   if (child == 0)
     {
       filebuf fbout;
-      fbout.open(name, ios_base::in|ios_base::out);
+      fbout.open(name, ios_base::out);
       test &= bool( fbout.is_open() );
       s1.wait();
       cout.rdbuf(&fbout);

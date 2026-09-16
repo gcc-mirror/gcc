@@ -55,7 +55,7 @@ bool test01()
 
   if (child == 0)
     {
-      FILE* file = fopen(name, "r+");
+      FILE* file = fopen(name, "w");
       test &= bool( file != 0 );
       fputs("Whatever\n", file);
       fflush(file);

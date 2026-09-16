@@ -64,15 +64,18 @@ bool test_07()
     }
   
   filebuf fb;
-  filebuf* ret = fb.open(name, ios_base::in | ios_base::out);
+  filebuf* ret = fb.open(name, ios_base::out);
   test &= bool( ret != 0 );
   test &= bool( fb.is_open() );
   s1.signal();
   s2.wait();
   fb.sputc('a');
 
+  // The child has closed the only read end of the fifo, so flushing the
+  // pending 'a' fails with EPIPE.  close() must report that failure by
+  // returning null, but must close the file all the same.
   ret = fb.close();
-  test &= bool( ret != 0 );
+  test &= bool( ret == 0 );
   test &= bool( !fb.is_open() );
 
   return test;
