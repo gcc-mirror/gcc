@@ -4204,6 +4204,67 @@ cgraph_node::verify_node (void)
 	  && verify_speculative_call (e->caller, e->call_stmt, e->lto_stmt_uid,
 				      NULL))
 	error_found = true;
+      if (e->callback && e->has_callback)
+	{
+	  error ("edge has both callback and has_callback set");
+	  error_found = true;
+	}
+      if (e->callback)
+	{
+	  cgraph_edge *carrying = e->get_callback_carrying_edge ();
+	  if (!carrying && !e->callee->assume_function)
+	    {
+	      error ("callback edge %s->%s has no callback-carrying edge",
+		     identifier_to_locale (e->caller->dump_name ()),
+		     identifier_to_locale (e->callee->dump_name ()));
+	      error_found = true;
+	    }
+	  else if (carrying && e->callee->assume_function)
+	    {
+	      error ("internal callback edge %s->%s should not have a "
+		     "callback-carrying edge",
+		     identifier_to_locale (e->caller->dump_name ()),
+		     identifier_to_locale (e->callee->dump_name ()));
+	      error_found = true;
+	    }
+	}
+      if (e->has_callback
+	  && !callback_is_special_cased (e->callee->decl, e->call_stmt)
+	  && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	{
+	  int ncallbacks = 0;
+	  int nfound_edges = 0;
+	  for (tree cb = lookup_attribute ("callback_only",
+					   DECL_ATTRIBUTES (e->callee->decl));
+	       cb; cb = lookup_attribute ("callback_only", TREE_CHAIN (cb)),
+		    ncallbacks++)
+	    ;
+	  for (cgraph_edge *cbe = callees; cbe; cbe = cbe->next_callee)
+	    {
+	      if (cbe->callback && cbe->call_stmt == e->call_stmt
+		  && cbe->lto_stmt_uid == e->lto_stmt_uid)
+		{
+		  nfound_edges++;
+		}
+	    }
+	  if (ncallbacks < nfound_edges)
+	    {
+	      error ("callback edge %s->%s callback edge count mismatch, "
+		     "expected at most %d, found %d",
+		     identifier_to_locale (e->caller->name ()),
+		     identifier_to_locale (e->callee->name ()), ncallbacks,
+		     nfound_edges);
+	    }
+	}
+      if (e->has_callback
+	  && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	for (cgraph_edge *cbe = e->first_callback_edge (); cbe;
+	     cbe = cbe->next_callback_edge ())
+	  if (!fndecl_built_in_p (cbe->callee->decl, BUILT_IN_UNREACHABLE))
+	    error ("callback-carrying edge is pointing towards "
+		   "__builtin_unreachable, but its callback edge %s -> %s "
+		   "is not",
+		   cbe->caller->name (), cbe->callee->name ());
     }
   for (e = indirect_calls; e; e = e->next_callee)
     {
@@ -4429,63 +4490,6 @@ cgraph_node::verify_node (void)
 
       for (e = callees; e; e = e->next_callee)
 	{
-	  if (e->callback && e->has_callback)
-	    {
-	      error ("edge has both callback and has_callback set");
-	      error_found = true;
-	    }
-
-	  if (e->callback)
-	    {
-	      if (!e->get_callback_carrying_edge ())
-		{
-		  error ("callback edge %s->%s has no callback-carrying",
-			 identifier_to_locale (e->caller->name ()),
-			 identifier_to_locale (e->callee->name ()));
-		  error_found = true;
-		}
-	    }
-
-	  if (e->has_callback
-	      && !callback_is_special_cased (e->callee->decl, e->call_stmt)
-	      && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
-	    {
-	      int ncallbacks = 0;
-	      int nfound_edges = 0;
-	      for (tree cb
-		   = lookup_attribute ("callback_only",
-				       DECL_ATTRIBUTES (e->callee->decl));
-		   cb; cb = lookup_attribute ("callback_only", TREE_CHAIN (cb)),
-		       ncallbacks++)
-		;
-	      for (cgraph_edge *cbe = callees; cbe; cbe = cbe->next_callee)
-		{
-		  if (cbe->callback && cbe->call_stmt == e->call_stmt
-		      && cbe->lto_stmt_uid == e->lto_stmt_uid)
-		    {
-		      nfound_edges++;
-		    }
-		}
-	      if (ncallbacks < nfound_edges)
-		{
-		  error ("callback edge %s->%s callback edge count mismatch, "
-			 "expected at most %d, found %d",
-			 identifier_to_locale (e->caller->name ()),
-			 identifier_to_locale (e->callee->name ()), ncallbacks,
-			 nfound_edges);
-		}
-	    }
-
-	  if (e->has_callback
-	      && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
-	    for (cgraph_edge *cbe = e->first_callback_edge (); cbe;
-		 cbe = cbe->next_callback_edge ())
-	      if (!fndecl_built_in_p (cbe->callee->decl, BUILT_IN_UNREACHABLE))
-		error ("callback-carrying edge is pointing towards "
-		       "__builtin_unreachable, but its callback edge %s -> %s "
-		       "is not",
-		       cbe->caller->name (), cbe->callee->name ());
-
 	  if (!e->aux && !e->speculative && !e->callback && !e->has_callback)
 	    {
 	      error ("edge %s->%s has no corresponding call_stmt",
