@@ -926,6 +926,21 @@ smallest_int_mode_for_size (poly_uint64 size)
   return dyn_cast <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
 }
 
+/* Parses a machine mode from NAME.  If successful the machine mode is stored
+   into RESULT and true is returned.  Otherwise false is returned.  */
+
+inline bool
+parse_machine_mode (const char *name, machine_mode *result)
+{
+  for (unsigned i = 0; i < NUM_MACHINE_MODES; i++)
+    if (strcmp (GET_MODE_NAME (i), name) == 0)
+      {
+	*result = (machine_mode) i;
+	return true;
+      }
+  return false;
+}
+
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
 extern opt_machine_mode mode_for_vector (scalar_mode, poly_uint64);

@@ -3068,13 +3068,11 @@ autovectorize_vector_modes (vector_modes *modes, bool)
       ms.safe_splice (*modes);
       modes->truncate (0);
 
-      for (machine_mode mode : ms)
+      machine_mode mode;
+      if (parse_machine_mode (riscv_autovec_mode, &mode))
 	{
-	  if (!strcmp (GET_MODE_NAME (mode), riscv_autovec_mode))
-	    {
-	      modes->safe_push (mode);
-	      return 0;
-	    }
+	  modes->safe_push (mode);
+	  return 0;
 	}
 
       /* Nothing found, fall back to regular handling.  */

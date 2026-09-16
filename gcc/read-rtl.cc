@@ -197,13 +197,11 @@ atoll (const char *p)
 static HOST_WIDE_INT
 find_mode (const char *name)
 {
-  int i;
+  machine_mode mode;
+  if (!parse_machine_mode (name, &mode))
+    fatal_with_file_and_line ("unknown mode `%s'", name);
 
-  for (i = 0; i < NUM_MACHINE_MODES; i++)
-    if (strcmp (GET_MODE_NAME (i), name) == 0)
-      return i;
-
-  fatal_with_file_and_line ("unknown mode `%s'", name);
+  return (HOST_WIDE_INT) mode;
 }
 
 static void

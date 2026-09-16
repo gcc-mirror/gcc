@@ -2429,7 +2429,6 @@ handle_mode_attribute (tree *node, tree name, tree args,
     warning (OPT_Wattributes, "%qE attribute ignored", name);
   else
     {
-      int j;
       const char *p = IDENTIFIER_POINTER (ident);
       int len = strlen (p);
       machine_mode mode = VOIDmode;
@@ -2461,12 +2460,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
       else if (!strcmp (p, "unwind_word"))
 	mode = targetm.unwind_word_mode ();
       else
-	for (j = 0; j < NUM_MACHINE_MODES; j++)
-	  if (!strcmp (p, GET_MODE_NAME (j)))
-	    {
-	      mode = (machine_mode) j;
-	      break;
-	    }
+	parse_machine_mode (p, &mode);
 
       if (mode == VOIDmode)
 	{
