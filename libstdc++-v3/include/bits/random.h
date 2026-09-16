@@ -3500,9 +3500,10 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       param(const param_type& __param)
       {
 	_M_param = __param;
-	typedef typename std::gamma_distribution<result_type>::param_type
-	  param_type;
-	_M_gd.param(param_type{__param.n() / 2});
+
+	using param_type
+	  = typename std::gamma_distribution<result_type>::param_type;
+	_M_gd.param(param_type(__param.n() / 2));
       }
 
       /**
@@ -3956,7 +3957,14 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
        */
       void
       param(const param_type& __param)
-      { _M_param = __param; }
+     {
+	_M_param = __param;
+
+	using param_type
+	  = typename std::gamma_distribution<result_type>::param_type;
+	_M_gd_x.param(param_type(__param.m() / 2));
+	_M_gd_y.param(param_type(__param.n() / 2));
+      }
 
       /**
        * @brief Returns the greatest lower bound value of the distribution.
@@ -4185,7 +4193,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
        */
       void
       param(const param_type& __param)
-      { _M_param = __param; }
+      {
+	_M_param = __param;
+
+	using param_type
+	  = typename std::gamma_distribution<result_type>::param_type;
+	_M_gd.param(param_type(__param.n() / 2, 2));
+      }
 
       /**
        * @brief Returns the greatest lower bound value of the distribution.
@@ -5116,7 +5130,13 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
        */
       void
       param(const param_type& __param)
-      { _M_param = __param; }
+      {
+	_M_param = __param;
+
+	using param_type
+	  = typename std::gamma_distribution<double>::param_type;
+	_M_gd.param(param_type(__param.k(), (1.0 - __param.p()) / __param.p()));
+      }
 
       /**
        * @brief Returns the greatest lower bound value of the distribution.
