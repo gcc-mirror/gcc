@@ -1369,6 +1369,10 @@ dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
   if (op1 == op2)
     return false;
 
+  // Do not register an impossible relation.
+  if (k == VREL_UNDEFINED)
+    return false;
+
   // Equivalencies are handled by the equivalence oracle.
   if (relation_equiv_p (k))
     return equiv_oracle::record (bb, k, op1, op2);
@@ -1456,7 +1460,9 @@ relation_chain *
 dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
 				       tree op1, tree op2)
 {
-  gcc_checking_assert (k != VREL_VARYING && k != VREL_EQ);
+  // Check for invalid relations to register.
+  gcc_checking_assert (k != VREL_VARYING && k != VREL_UNDEFINED
+		       && k != VREL_EQ);
 
   relation_chain *ptr;
   relation_kind curr = find_relation_block (bb->index, op1, op2, &ptr);
@@ -1464,6 +1470,11 @@ dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
   // If there is an existing relation in this block, just intersect with it.
   if (curr != VREL_VARYING)
     {
+      // If K contradicts what is already recorded, the block is unreachable.
+      // Leave the existing relation alone rather than replacing it with
+      // UNDEFINED, matching what the dominator merge below does.
+      if (relation_intersect (curr, k) == VREL_UNDEFINED)
+	return NULL;
       // If there was no change, return no record.
       value_relation vr (k, op1, op2);
       if (!ptr->intersect (vr))
@@ -2070,6 +2081,10 @@ path_oracle::record (basic_block bb, relation_kind k, tree ssa1, tree ssa2)
   relation_kind curr = query (bb, ssa1, ssa2);
   if (curr != VREL_VARYING)
     k = relation_intersect (curr, k);
+
+  // Do not register an impossible relation.
+  if (k == VREL_UNDEFINED)
+    return false;
 
   bool ret;
   if (k == VREL_EQ)
