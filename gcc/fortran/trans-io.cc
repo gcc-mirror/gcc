@@ -2655,6 +2655,9 @@ gfc_trans_transfer (gfc_code * code)
 		 && gfc_expr_attr (expr).target)))
 	goto scalarize;
 
+      if (gfc_expr_attr (expr).pdt_string)
+	goto scalarize;
+
       /* With array-bounds checking enabled, force scalarization in some
 	 situations, e.g., when an array index depends on a function
 	 evaluation or an expression and possibly has side-effects.  */

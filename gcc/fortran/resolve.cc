@@ -1435,8 +1435,8 @@ resolve_structure_cons (gfc_expr *expr, int init)
       /* For strings, the length of the constructor should be the same as
 	 the one of the structure, ensure this if the lengths are known at
  	 compile time and when we are dealing with PARAMETER or structure
-	 constructors.  */
-      if (cons->expr->ts.type == BT_CHARACTER
+	 constructors. Skip for PDT types which have type parameters.  */
+      if (!IS_PDT (expr) && cons->expr->ts.type == BT_CHARACTER
 	  && comp->ts.type == BT_CHARACTER
 	  && comp->ts.u.cl && comp->ts.u.cl->length
 	  && comp->ts.u.cl->length->expr_type == EXPR_CONSTANT
@@ -9531,14 +9531,14 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
   if (code->ext.alloc.ts.type == BT_CHARACTER && !e->ts.deferred
       && !UNLIMITED_POLY (e))
     {
-      int cmp;
+      int cmp = 0;
 
       if (!e->ts.u.cl->length)
 	goto failure;
 
       cmp = gfc_dep_compare_expr (e->ts.u.cl->length,
 				  code->ext.alloc.ts.u.cl->length);
-      if (cmp == 1 || cmp == -1 || cmp == -3)
+      if (cmp == 1 || cmp == -1)
 	{
 	  gfc_error ("Allocating %s at %L with type-spec requires the same "
 		     "character-length parameter as in the declaration",

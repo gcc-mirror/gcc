@@ -4591,6 +4591,10 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    gfc_free_expr (e);
 	  if (c2->ts.u.cl->length->expr_type != EXPR_CONSTANT)
 	    c2->attr.pdt_string = 1;
+	  if (c1->as && c1->as->type == AS_EXPLICIT)
+	    c2->attr.pdt_array = 1;
+	  else if (c1->attr.allocatable)
+	    c2->ts.deferred = 1;
 	}
 
       /* Recurse into this function for PDT components.  */
