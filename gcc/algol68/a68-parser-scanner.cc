@@ -219,8 +219,7 @@ new_source_line (void)
 
   MARKER (z)[0] = '\0';
   STRING (z) = NO_TEXT;
-  FILENAME (z) = NO_TEXT;
-  NUMBER (z) = 0;
+  LOCATION (z) = UNKNOWN_LOCATION;
   NEXT (z) = NO_LINE;
   PREVIOUS (z) = NO_LINE;
   return z;
@@ -229,15 +228,15 @@ new_source_line (void)
 /* Append a source line to the internal source file.  */
 
 static void
-append_source_line (const char *str, LINE_T **ref_l, int *line_num,
-		    const char *filename)
+append_source_line (const char *str, LINE_T **ref_l, int *line_num)
 {
   LINE_T *z = new_source_line ();
 
   /* Link line into the chain.  */
   STRING (z) = xstrdup (str);
-  FILENAME (z) = ggc_strdup (filename);
-  NUMBER (z) = (*line_num)++;
+  LOCATION (z) = linemap_line_start (line_table,
+				     (*line_num)++,
+				     80 /* max_column_hint */);
   NEXT (z) = NO_LINE;
   PREVIOUS (z) = *ref_l;
   if (TOP_LINE (&A68_JOB) == NO_LINE)
@@ -250,14 +249,15 @@ append_source_line (const char *str, LINE_T **ref_l, int *line_num,
 /* Append environment source lines.  */
 
 static void
-append_environ (const char *str[], LINE_T **ref_l, int *line_num, const char *name)
+append_environ (const char *str[], LINE_T **ref_l, const char *name)
 {
+  linemap_add (line_table, LC_ENTER, 1 /* sys_p */, name, 0 /* to_line */);
   for (int k = 0; str[k] != NO_TEXT; k++)
     {
-      int zero_line_num = 0;
-      (*line_num)++;
-      append_source_line (str[k], ref_l, &zero_line_num, name);
+      int line_num = 1;
+      append_source_line (str[k], ref_l, &line_num);
     }
+  linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
 }
 
 /*
@@ -292,7 +292,7 @@ read_source_file (const char *filename)
 {
   struct stat statbuf;
   LINE_T *ref_l = NO_LINE;
-  int line_num = 0;
+  int line_num;
   size_t k;
   size_t bytes_read;
   ssize_t l;
@@ -328,13 +328,14 @@ read_source_file (const char *filename)
   /* Prelude.  */
   append_environ (OPTION_STROPPING (&A68_JOB) == UPPER_STROPPING
 		  ? upper_prelude_start : supper_prelude_start,
-		  &ref_l, &line_num, "prelude");
+		  &ref_l, "prelude");
 
   /* Read the file into a single buffer, so we save on system calls.  */
   line_num = 1;
   buffer = (char *) xmalloc (8 + source_file_size);
   bytes_read = a68_file_read (fileno (f), buffer, source_file_size);
   gcc_assert (bytes_read == source_file_size);
+  linemap_add (line_table, LC_ENTER, 0 /* sys_p */, filename, 0 /* to_line */);
 
   /* Link all lines into the list.  */
   k = 0;
@@ -357,19 +358,26 @@ read_source_file (const char *filename)
       A68_PARSER (scan_buf)[l] = '\0';
       if (k < source_file_size)
 	k++;
-      append_source_line (A68_PARSER (scan_buf), &ref_l, &line_num,
-			  FILE_SOURCE_NAME (&A68_JOB));
+      append_source_line (A68_PARSER (scan_buf), &ref_l, &line_num);
       SCAN_ERROR (l != (ssize_t) strlen (A68_PARSER (scan_buf)),
 		  NO_LINE, NO_TEXT, "invalid characters in source file");
     }
 
+  /* Extra line before adding postlude.  */
+  linemap_line_start (line_table,
+		      line_num,
+		      80 /* max_column_hint */);
+
   /* Postlude.  */
   append_environ (OPTION_STROPPING (&A68_JOB) == UPPER_STROPPING
 		  ? upper_postlude : supper_postlude,
-		  &ref_l, &line_num, "postlude");
+		  &ref_l, "postlude");
 
   /* Include files.  */
   include_files (TOP_LINE (&A68_JOB));
+
+  linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
+  linemap_check_files_exited (line_table);
 
   if (fclose (FILE_SOURCE_FD (&A68_JOB)) != 0)
     gcc_unreachable ();
@@ -1060,6 +1068,8 @@ include_files (LINE_T *top)
 	      SCAN_ERROR ((size_t) bytes_read != fsize, start_l, start_c,
 			  "error while reading file");
 
+	      linemap_add (line_table, LC_ENTER, 0 /* sys_p */, fn,
+			   0 /* to_line */);
 	      /* Buffer still usable?.  */
 	      if (fsize > A68_PARSER (max_scan_buf_length))
 		{
@@ -1077,7 +1087,7 @@ include_files (LINE_T *top)
 		  /* If file is empty, insert single empty line.  */
 		  A68_PARSER (scan_buf)[0] = NEWLINE_CHAR;
 		  A68_PARSER (scan_buf)[1] = NULL_CHAR;
-		  append_source_line (A68_PARSER (scan_buf), &t, &linum, fn);
+		  append_source_line (A68_PARSER (scan_buf), &t, &linum);
 		}
 	      else
 		{
@@ -1098,11 +1108,12 @@ include_files (LINE_T *top)
 		      A68_PARSER (scan_buf)[n] = NULL_CHAR;
 		      if (k < fsize)
 			k++;
-		      append_source_line (A68_PARSER (scan_buf), &t, &linum, fn);
+		      append_source_line (A68_PARSER (scan_buf), &t, &linum);
 		    }
 		}
 
 	      /* Conclude and go find another include directive, if any.  */
+	      linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
 	      NEXT (t) = s;
 	      PREVIOUS (s) = t;
 	      if (fclose (fp) != 0)

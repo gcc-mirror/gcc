@@ -89,7 +89,7 @@ a68_char_repr (NODE_T *p, tree val)
 					    range1, range2));
 
   /* Call to the runtime run-time error handler.  */
-  unsigned int lineno = NUMBER (LINE (INFO (p)));
+  unsigned int lineno = LINE_NUMBER (p);
   const char *filename_str = FILENAME (LINE (INFO (p)));
   tree filename = build_string_literal (strlen (filename_str) + 1,
 					    filename_str);

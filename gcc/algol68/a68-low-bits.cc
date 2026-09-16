@@ -216,7 +216,7 @@ a68_bits_elem (NODE_T *p, tree pos, tree bits)
   /* Do bounds checking if requested.  */
   if (OPTION_BOUNDS_CHECKING (&A68_JOB))
     {
-      unsigned int lineno = NUMBER (LINE (INFO (p)));
+      unsigned int lineno = LINE_NUMBER (p);
       const char *filename_str = FILENAME (LINE (INFO (p)));
       tree filename = build_string_literal (strlen (filename_str) + 1,
 					    filename_str);

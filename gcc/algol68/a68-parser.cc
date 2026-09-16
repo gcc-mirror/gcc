@@ -1153,18 +1153,9 @@ a68_get_node_location (NODE_T *p)
   if (line == NO_LINE)
     return UNKNOWN_LOCATION;
 
-  unsigned line_number = NUMBER (line);
-  unsigned column_number = CHAR_IN_LINE (INFO (p)) - STRING (line) + 1;
-  const char *filename = FILENAME (line);
-
-  location_t gcc_location;
-
-  linemap_add (line_table, LC_ENTER, 0, filename, line_number);
-  linemap_line_start (line_table, line_number, 0);
-  gcc_location = linemap_position_for_column (line_table, column_number);
-  linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
-
-  return gcc_location;
+  const char *start_pos = CHAR_IN_LINE (INFO (p));
+  location_t start_loc = a68_get_line_location (line, start_pos);
+  return start_loc;
 }
 
 /* Get the location of POS inside LINE as a GCC location.  */
@@ -1172,11 +1163,9 @@ a68_get_node_location (NODE_T *p)
 location_t
 a68_get_line_location (LINE_T *line, const char *pos)
 {
-  location_t loc;
-
-  linemap_add (line_table, LC_ENTER, 0, FILENAME (line), NUMBER (line));
-  linemap_line_start (line_table, NUMBER (line), 0);
-  loc = linemap_position_for_column (line_table, pos - STRING (line) + 1);
-  linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
+  unsigned column_number = pos - STRING (line) + 1;
+  location_t loc = linemap_position_for_loc_and_offset (line_table,
+							LOCATION(line),
+							column_number);
   return loc;
 }

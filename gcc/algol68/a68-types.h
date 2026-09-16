@@ -537,8 +537,7 @@ struct GTY((chain_next ("%h.next"))) LINE_T
 {
   char marker[6];
   char * GTY((skip)) string;
-  const char *filename;
-  int number;
+  location_t location;
   LINE_T *next, *previous;
 };
 #define NO_LINE ((LINE_T *) 0)
@@ -949,7 +948,6 @@ struct GTY(()) A68_T
 #define EXTRACT_VARIABLE(p) ((p)->variable)
 #define WARNING_COUNT(p) ((p)->warning_count)
 #define F(p) ((p)->f)
-#define FILENAME(p) ((p)->filename)
 #define FILE_SOURCE_FD(p) ((p)->file_source_fd)
 #define FILE_SOURCE_NAME(p) ((p)->file_source_name)
 #define FLEXO(p) ((p).flexo)
@@ -996,10 +994,11 @@ struct GTY(()) A68_T
 #define LEX_LEVEL(p) (LEVEL (TABLE (p)))
 #define LINBUF(p) ((p)->linbuf)
 #define LINE(p) ((p)->line)
+#define LOCATION(p) ((p)->location)
 #define LINE_APPLIED(p) ((p)->line_applied)
 #define LINE_DEFINED(p) ((p)->line_defined)
 #define LINE_END_MENDED(p) ((p)->line_end_mended)
-#define LINE_NUMBER(p) (NUMBER (LINE (INFO (p))))
+#define LINE_NUMBER(p) (LINE_NO (LINE (INFO (p))))
 #define LINSIZ(p) ((p)->linsiz)
 #define LIST(p) ((p)->list)
 #define ln(x) (log (x))

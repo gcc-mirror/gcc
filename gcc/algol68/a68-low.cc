@@ -673,7 +673,7 @@ a68_checked_indirect_ref (NODE_T *p, tree exp, MOID_T *exp_mode)
       tree consolidated_exp = a68_consolidate_ref (exp_mode, exp);
 
       /* Check whether we are dereferencing NIL.  */
-      unsigned int lineno = NUMBER (LINE (INFO (p)));
+      unsigned int lineno = LINE_NUMBER (p);
       const char *filename_str = FILENAME (LINE (INFO (p)));
       tree filename = build_string_literal (strlen (filename_str) + 1,
 					    filename_str);

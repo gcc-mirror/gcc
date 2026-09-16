@@ -64,7 +64,8 @@ const char *
 a68_phrase_to_text (NODE_T * p, NODE_T ** w)
 {
 #define MAX_TERMINALS 8
-  int count = 0, line = -1;
+  int count = 0;
+  unsigned int line = 0;
   static BUFFER buffer;
 
   for (buffer[0] = '\0'; p != NO_NODE && count < MAX_TERMINALS; FORWARD (p))

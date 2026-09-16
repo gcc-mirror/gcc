@@ -117,7 +117,7 @@ a68_lower_uniting (NODE_T *p, LOW_CTX_T ctx)
 
 	  /* This should not be reached.  Emit run-time error.  */
 	  {
-	    unsigned int lineno = NUMBER (LINE (INFO (p)));
+	    unsigned int lineno = LINE_NUMBER (p);
 	    const char *filename_str = FILENAME (LINE (INFO (p)));
 	    tree filename = build_string_literal (strlen (filename_str) + 1,
 						  filename_str);

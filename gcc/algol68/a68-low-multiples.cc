@@ -525,7 +525,7 @@ a68_multiple_slice (NODE_T *p,
       if (OPTION_BOUNDS_CHECKING (&A68_JOB))
 	{
 	  tree upper_bound = a68_multiple_upper_bound (multiple, size_int (idx));
-	  unsigned int lineno = NUMBER (LINE (INFO (p)));
+	  unsigned int lineno = LINE_NUMBER (p);
 	  const char *filename_str = FILENAME (LINE (INFO (p)));
 	  tree filename = build_string_literal (strlen (filename_str) + 1,
 						    filename_str);
@@ -858,7 +858,7 @@ a68_multiple_single_bound_check (NODE_T *p, tree dim,
 			    : A68_LIBCALL_ARRAYLOWERBOUND);
 
   /* Build the call to ARRAY*BOUNDS. */
-  unsigned int lineno = NUMBER (LINE (INFO (p)));
+  unsigned int lineno = LINE_NUMBER (p);
   const char *filename_str = FILENAME (LINE (INFO (p)));
   tree filename = build_string_literal (strlen (filename_str) + 1,
 					filename_str);
@@ -897,7 +897,7 @@ a68_boundable_dim_check (NODE_T *p, tree boundable_dim, tree dim)
   dim = save_expr (dim);
 
   /* Build the call to ARRAYDIM. */
-  unsigned int lineno = NUMBER (LINE (INFO (p)));
+  unsigned int lineno = LINE_NUMBER (p);
   const char *filename_str = FILENAME (LINE (INFO (p)));
   tree filename = build_string_literal (strlen (filename_str) + 1,
 					filename_str);
@@ -965,7 +965,7 @@ a68_multiple_bounds_check (NODE_T *p, tree dim,
   tree lower_bound = a68_multiple_lower_bound (multiple, dim);
 
   /* Build the call to ARRAYBOUNDS. */
-  unsigned int lineno = NUMBER (LINE (INFO (p)));
+  unsigned int lineno = LINE_NUMBER (p);
   const char *filename_str = FILENAME (LINE (INFO (p)));
   tree filename = build_string_literal (strlen (filename_str) + 1,
 					filename_str);
@@ -1043,7 +1043,7 @@ a68_multiple_bounds_check_equal (NODE_T *p, tree m1, tree m2)
 				       fold_build2 (EQ_EXPR, boolean_type_node,
 						    ub1, ub2));
 
-      unsigned int lineno = NUMBER (LINE (INFO (p)));
+      unsigned int lineno = LINE_NUMBER (p);
       const char *filename_str = FILENAME (LINE (INFO (p)));
       tree filename = build_string_literal (strlen (filename_str) + 1,
 					    filename_str);

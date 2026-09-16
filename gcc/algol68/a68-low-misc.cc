@@ -54,7 +54,7 @@ a68_lower_assertion (NODE_T *p, LOW_CTX_T ctx)
     return a68_get_empty();
 
   /* Build the call to the assert run-time function.  */
-  unsigned int lineno = NUMBER (LINE (INFO (p)));
+  unsigned int lineno = LINE_NUMBER (p);
   const char *filename_str = FILENAME (LINE (INFO (p)));
   tree filename = build_string_literal (strlen (filename_str) + 1,
 					filename_str);

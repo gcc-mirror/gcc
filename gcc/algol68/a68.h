@@ -107,6 +107,30 @@ enum
 
 #include "a68-types.h"
 
+/* Location-tracking functions.  */
+
+/* Get the file name that LINE belongs to.  */
+
+inline const char *
+FILENAME (LINE_T *line)
+{
+  const line_map_ordinary * ord_map;
+  ord_map = (const line_map_ordinary *)(linemap_lookup (line_table,
+							LOCATION (line)));
+  return LINEMAP_FILE (ord_map);
+}
+
+/* Get the 1-based line number of LINE.  */
+
+inline unsigned int
+LINE_NO (LINE_T *line)
+{
+  location_t loc = LOCATION (line);
+  const line_map_ordinary * ord_map;
+  ord_map = (const line_map_ordinary *)(linemap_lookup (line_table, loc));
+  return SOURCE_LINE (ord_map, loc);
+}
+
 /* Front-end global state.  */
 
 extern GTY(()) A68_T a68_common;
