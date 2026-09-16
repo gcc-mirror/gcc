@@ -18,7 +18,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <functional>
-#include <testsuite_hooks.cc>
+#include <testsuite_hooks.h>
 
 // DR 660. Missing Bitwise Operations.
 void test01()
