@@ -1903,6 +1903,27 @@ cgraph_edge::redirect_call_stmt_to_callee (cgraph_edge *e,
       callback_redirect_edge (e);
       return e->call_stmt;
     }
+  /* Callback calls to .ASSUME bodies might need to have their statement
+     rebuilt.  */
+  else if (e->callback && e->callee->assume_function)
+    {
+      ipa_param_adjustments *padjs
+	= callee_info ? callee_info->param_adjustments : NULL;
+
+      /* If there are no param adjustments, replace the address in the call
+	 statement.  */
+      if (!padjs)
+	callback_redirect_edge (e);
+      else
+	{
+	  new_stmt = padjs->modify_call (e, false, killed_ssas);
+	  gcc_checking_assert (callback_ifn_assume_call_p (new_stmt));
+	  e->caller->set_call_stmt_including_clones (e->call_stmt, new_stmt,
+						     false);
+	}
+      return e->call_stmt;
+    }
+  gcc_checking_assert (!e->callback);
 
   if (decl && ipa_saved_clone_sources)
     {
