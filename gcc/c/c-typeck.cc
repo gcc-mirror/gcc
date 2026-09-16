@@ -2907,7 +2907,17 @@ default_conversion (tree exp)
     return convert (promoted_type, exp);
 
   if (INTEGRAL_TYPE_P (type))
-    return perform_integral_promotions (exp);
+    {
+      /* Avoid performing integral promotion of bit-precise integer
+	 type bit-field to its corresponding bit-precise integer if
+	 orig_exp is a cast to it to its underlying type.  */
+      if (orig_exp != exp
+	  && TREE_CODE (exp) == COMPONENT_REF
+	  && DECL_C_BIT_FIELD (TREE_OPERAND (exp, 1))
+	  && BITINT_TYPE_P (DECL_BIT_FIELD_TYPE (TREE_OPERAND (exp, 1))))
+	return perform_integral_promotions (orig_exp);
+      return perform_integral_promotions (exp);
+    }
 
   return exp;
 }
@@ -7673,7 +7683,12 @@ build_c_cast (location_t loc, tree type, tree expr)
     }
 
   /* Don't let a cast be an lvalue.  */
-  if (lvalue_p (value))
+  if (lvalue_p (value)
+      /* Also, don't let a cast be a bit-field of a bit-precise integer type,
+	 otherwise it could be incorrectly subject of integer promotions.  */
+      || (TREE_CODE (value) == COMPONENT_REF
+	  && DECL_C_BIT_FIELD (TREE_OPERAND (value, 1))
+	  && BITINT_TYPE_P (DECL_BIT_FIELD_TYPE (TREE_OPERAND (value, 1)))))
     value = non_lvalue_loc (loc, value);
 
   /* Don't allow the results of casting to floating-point or complex
