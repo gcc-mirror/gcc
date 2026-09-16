@@ -408,3 +408,4 @@ DEF_SME_ZA_FUNCTION_GS_FPM (svtmopa_lane, ternary_za_uint_dual_single, tmop_s_mf
 #undef DEF_SME_ZA_FUNCTION_GS
 #undef DEF_SME_ZA_FUNCTION_GS_FPM
 #undef DEF_SME_FUNCTION
+#undef DEF_SME_FUNCTION_GS
