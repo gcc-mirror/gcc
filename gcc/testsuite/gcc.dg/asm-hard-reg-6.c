@@ -36,8 +36,8 @@
 #elif defined (__s390__)
 # define GPR1 "{r0}"
 # define GPR2 "{r1}"
-# define GPR3 "{r2}"
-/* { dg-final { scan-assembler-times "foo\t%r0,%r2" 1 { target { s390*-*-* } } } } */
+# define GPR3 "{r4}"
+/* { dg-final { scan-assembler-times "foo\t%r0,%r4" 1 { target { s390*-*-* } } } } */
 /* { dg-final { scan-assembler-times "bar\t%r1,0\\(%r3\\)" 1 { target { s390*-*-* } } } } */
 #elif defined (__x86_64__)
 # define GPR1 "{eax}"

@@ -75,8 +75,8 @@ test_out_1 (void)
 ** test_out_2:
 **     lgr	(%r[0-9]+),%r2
 **     foo	%r2
-**     ark	(%r[0-9]+),\1,%r2
-**     lgfr	%r2,\2
+**     ar	%r2,\1
+**     lgfr	%r2,%r2
 **     br	%r14
 */
 
