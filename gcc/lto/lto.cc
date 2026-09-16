@@ -458,27 +458,29 @@ static void
 offload_handle_link_vars (void)
 {
 #ifdef ACCEL_COMPILER
+  size_t i;
   varpool_node *var;
+  auto_vec <varpool_node *>temp_link_vars;
   FOR_EACH_VARIABLE (var)
     if (lookup_attribute ("omp declare target link",
 			  DECL_ATTRIBUTES (var->decl)))
-      {
-	if (DECL_HAS_VALUE_EXPR_P (var->decl))
-	  continue;
-	tree type = build_pointer_type (TREE_TYPE (var->decl));
-	tree link_ptr_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+      temp_link_vars.safe_push (var);
+  FOR_EACH_VEC_ELT (temp_link_vars, i, var)
+    {
+      tree type = build_pointer_type (TREE_TYPE (var->decl));
+      tree link_ptr_var = build_decl (UNKNOWN_LOCATION, VAR_DECL,
 					clone_function_name (var->decl,
 							     "linkptr"), type);
-	TREE_USED (link_ptr_var) = 1;
-	TREE_STATIC (link_ptr_var) = 1;
-	TREE_PUBLIC (link_ptr_var) = TREE_PUBLIC (var->decl);
-	DECL_ARTIFICIAL (link_ptr_var) = 1;
-	SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
-	SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
-	DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
-	varpool_node::finalize_decl (link_ptr_var);
-	varpool_node::get (link_ptr_var)->force_output = var->force_output;
-      }
+      TREE_USED (link_ptr_var) = 1;
+      TREE_STATIC (link_ptr_var) = 1;
+      TREE_PUBLIC (link_ptr_var) = TREE_PUBLIC (var->decl);
+      DECL_ARTIFICIAL (link_ptr_var) = 1;
+      SET_DECL_ASSEMBLER_NAME (link_ptr_var, DECL_NAME (link_ptr_var));
+      SET_DECL_VALUE_EXPR (var->decl, build_simple_mem_ref (link_ptr_var));
+      DECL_HAS_VALUE_EXPR_P (var->decl) = 1;
+      varpool_node::finalize_decl (link_ptr_var);
+      varpool_node::get (link_ptr_var)->force_output = var->force_output;
+    }
 #endif
 }
 
@@ -670,8 +672,6 @@ lto_main (void)
 
   if (!seen_error ())
     {
-      offload_handle_link_vars ();
-
       /* If WPA is enabled analyze the whole call graph and create an
 	 optimization plan.  Otherwise, read in all the function
 	 bodies and continue with optimization.  */
