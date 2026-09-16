@@ -102,7 +102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && ((sizeof(_Tp) == 4 && alignof(_Tp) >= 4)
 		|| (sizeof(_Tp) == 8 && alignof(_Tp) >= 8));
 #else
-// define _GLIBCX_HAVE_PLATFORM_WAIT and implement __platform_wait()
+// define _GLIBCXX_HAVE_PLATFORM_WAIT and implement __platform_wait()
 // and __platform_notify() if there is a more efficient primitive supported
 // by the platform (e.g. __ulock_wait()/__ulock_wake()) which is better than
 // a mutex/condvar based wait.
