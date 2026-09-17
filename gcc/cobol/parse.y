@@ -13059,6 +13059,24 @@ bad_arg( const char name[],
   return ok;
 }  
 
+static const char *
+passby_str(int mask)
+{
+  switch( mask ) {
+  case by_default_e:
+  case by_reference_e:
+    return "BY REFERENCE";
+  case by_content_e:
+    return "BY CONTENT";
+  case by_value_e:
+    return "BY VALUE";
+  default:
+    break;
+  }
+
+  return "UNKNOWN PASSING METHOD";
+}
+
 // Verify provided actual parameters against formals.
 static void
 verify_args( const YYLTYPE& loc, 
@@ -13079,14 +13097,16 @@ verify_args( const YYLTYPE& loc,
      */
     if( ord < narg ) {
       if( ord < formals.size() ) {
-        error_msg( loc, "parameter %zu %qs (%s, capacity %u, %s) "
-                   "invalid for %qs parameter %qs (%s, capacity %u, %s)",
+        error_msg( loc, "parameter %zu %s %qs (%s, capacity %u, %s) "
+                   "invalid for %qs parameter %s %qs (%s, capacity %u, %s)",
                    1 + ord,
+                   passby_str(parg->crv),
                    nice_name_of(parg->field()),
                     cbl_field_type_name(parg->field()->type),
                     parg->field()->data.capacity(),
                     parg->field()->attr & signable_e ? "signed" : "unsigned",
                    name, 
+                   passby_str(formals[ord].crv),
                    nice_name_of(formals[ord].refer.field),
                    cbl_field_type_name(formals[ord].refer.field->type),
                    formals[ord].refer.field->data.capacity(),
