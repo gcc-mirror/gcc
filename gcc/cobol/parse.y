@@ -10953,6 +10953,7 @@ ffi_by_val:     by_value_arg
                 {
                   const char *s = $1.s? $1.s : string_of($1.r);
                   auto r = new_reference(new_literal(@1, s));
+                  r->loc = @1;
                   $$ = new cbl_ffi_arg_t(by_value_e, r);
                 }
         |       ADDRESS OF scalar
