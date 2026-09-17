@@ -3273,7 +3273,8 @@ by_content_ok( const cbl_loc_t& loc,
     if( arg.by_content() && field->has_attr(intermediate_e) ) {
       auto e = symbol_program( 0, field->name, true ); // seek prototoype
       if( ! e ) {
-        dialect_ok(loc, IbmContentExpr, "BY CONTENT expression");
+        auto argloc = symbol_temporary_location(arg.field());
+        dialect_ok(argloc, IbmContentExpr, "BY CONTENT expression");
       }
     }
     if( arg.crv == by_value_e &&
