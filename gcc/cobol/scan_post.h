@@ -87,7 +87,7 @@ datetime_format_of( const char input[] ) {
   static const char date_fmt_e[] = "YYYY-MM-DD|YYYY-DDD|YYYY-Www-D";
 
   static const char time_fmt_b[] =
-    "hhmmss([.,]s+)?|hhmmss([.,]s+)?Z|hhmmss([.,]s+)?[+]hhmm|";
+    "hhmmss([.,]s+)?|hhmmss([.,]s+)?Z|hhmmss([.,]s+)?[+]hhmm";
   static const char time_fmt_e[] =
     "hh:mm:ss([.,]s+)?|hh:mm:ss([.,]s+)?Z|hh:mm:ss([.,]s+)?[+]hh:mm";
 
