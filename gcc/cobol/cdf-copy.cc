@@ -280,14 +280,21 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
       dbgmsg("could not open %s: %s", path, xstrerror(errno));
       return fd;
     }
+    struct stat sb;
+    if (fstat(fd, &sb)) {
+      error_msg(source.loc, "fstat %qs failed: %s", path, xstrerror(errno));
+      goto failure;
+    }
+    else if (S_ISDIR(sb.st_mode)) {
+      error_msg(source.loc, "copybook %qs is a directory", path);
+      goto failure;
+    }
     this->source.name = path;
     if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
       error_msg(source.loc, "recursive copybook: '%s' includes itself", path);
-      (void)! close(fd);
-      fd = -1;
-    } else {
-      cbl_message(LexInputN, "opening %qs for input", source.name);
+      goto failure;
     }
+    cbl_message(LexInputN, "opening %qs for input", source.name);
     return fd;
   }
   gcc_assert( ! literally );
@@ -314,16 +321,31 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
     auto filename = pattern.c_str();
     
     if( (this->fd = open(filename, O_RDONLY)) != -1 ) {
+      struct stat sb;
+      if (fstat(fd, &sb)) {
+        error_msg(source.loc, "fstat %qs failed: %s", filename,
+                  xstrerror(errno));
+        goto failure;
+      }
+      else if (S_ISDIR(sb.st_mode)) {
+        error_msg(source.loc, "copybook %qs is a directory", filename);
+        goto failure;
+      }
       this->source.name = xstrdup(filename);
       if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
         error_msg(source.loc, "recursive copybook: '%s' includes itself",
                   this->source.name);
-        (void)! close(fd);
-        fd = -1;
+
+        goto failure;
       }
       dbgmsg("%s: opened %s as fd %d", __func__, source.name, fd);
       return fd;
     }
+  }
+
+failure:
+  if (fd >= 0) {
+    (void)! close(fd);
   }
 
   return -1;
