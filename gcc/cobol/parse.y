@@ -12991,7 +12991,7 @@ cbl_ffi_arg_t::matches( const cbl_ffi_arg_t& that ) const {
             return true;
           }
         }
-        else if (actual->attr & any_length_e)
+        else if (actual->attr & any_length_e || formal->attr & any_length_e)
           return true;
       }
     }
