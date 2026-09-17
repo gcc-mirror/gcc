@@ -65,7 +65,7 @@
 
            MOVE st_size TO cblte-fe-filesize.
 
-           MOVE FUNCTION posix-localtime(address of st_ctime, TM-BUFFER)
+           MOVE FUNCTION posix-localtime(address of st_mtime, TM-BUFFER)
             TO FUNC-RETURN-VALUE.
 
            IF FUNC-RETURN-VALUE <> ZERO
