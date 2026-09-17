@@ -1981,6 +1981,19 @@ function_expander::result_mode () const
 #define TYPES_b_neon(S, D, T) \
   S (p8), S (s8), S (u8)
 
+/* _s8 _s16 _s32
+   _u8 _u16 _u32
+	    _f32 _f64.  */
+#define TYPES_neon_mla(S, D, T) \
+  TYPES_bhs_integer (S, D, T), \
+  TYPES_sd_float (S, D, T)
+
+/* _s16 _u16
+   _s32 _u32 _f32.  */
+#define TYPES_neon_mla_lane(S, D, T) \
+  TYPES_hs_integer (S, D, T), \
+  TYPES_s_float (S, D, T)
+
 /* _p8 _s8 _u8 _mf8.  */
 #define TYPES_neon_rev16(S, D, T) \
   S (p8), S (s8), S (u8), S (mf8)
@@ -2246,6 +2259,8 @@ DEF_SVE_TYPES_ARRAY (bhdq_poly);
 DEF_SVE_TYPES_ARRAY (bhs_neon);
 DEF_SVE_TYPES_ARRAY (bhsd_neon);
 DEF_SVE_TYPES_ARRAY (neon_copy_lane);
+DEF_SVE_TYPES_ARRAY (neon_mla_lane);
+DEF_SVE_TYPES_ARRAY (neon_mla);
 DEF_SVE_TYPES_ARRAY (neon_rev16);
 DEF_SVE_TYPES_ARRAY (neon_rev32);
 DEF_SVE_TYPES_ARRAY (neon_rev64);

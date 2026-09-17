@@ -233,20 +233,6 @@
   BUILTIN_VQN (UNOP, xtn, 0, DEFAULT)
   BUILTIN_VQN (UNOPU, xtn, 0, DEFAULT)
 
-  /* Implemented by aarch64_mla<mode>.  */
-  BUILTIN_VDQ_BHSI (TERNOP, mla, 0, DEFAULT)
-  BUILTIN_VDQ_BHSI (TERNOPU, mla, 0, DEFAULT)
-  /* Implemented by aarch64_mla_n<mode>.  */
-  BUILTIN_VDQHS (TERNOP, mla_n, 0, DEFAULT)
-  BUILTIN_VDQHS (TERNOPU, mla_n, 0, DEFAULT)
-
-  /* Implemented by aarch64_mls<mode>.  */
-  BUILTIN_VDQ_BHSI (TERNOP, mls, 0, DEFAULT)
-  BUILTIN_VDQ_BHSI (TERNOPU, mls, 0, DEFAULT)
-  /* Implemented by aarch64_mls_n<mode>.  */
-  BUILTIN_VDQHS (TERNOP, mls_n, 0, DEFAULT)
-  BUILTIN_VDQHS (TERNOPU, mls_n, 0, DEFAULT)
-
   BUILTIN_VQN (SHIFTIMM, shrn_n, 0, DEFAULT)
   BUILTIN_VQN (USHIFTIMM, shrn_n, 0, DEFAULT)
 
@@ -689,14 +675,6 @@
   BUILTIN_VHSDF (TERNOP, fnma, 4, FP)
   VAR1 (TERNOP, fnma, 4, FP, hf)
 
-  BUILTIN_VDQF_DF (TERNOP, float_mla, 0, FP)
-  BUILTIN_VDQF_DF (TERNOP, float_mls, 0, FP)
-  BUILTIN_VDQSF (TERNOP, float_mla_n, 0, FP)
-  BUILTIN_VDQSF (TERNOP, float_mls_n, 0, FP)
-  BUILTIN_VDQSF (QUADOP_LANE, float_mla_lane, 0, FP)
-  BUILTIN_VDQSF (QUADOP_LANE, float_mls_lane, 0, FP)
-  BUILTIN_VDQSF (QUADOP_LANE, float_mla_laneq, 0, FP)
-  BUILTIN_VDQSF (QUADOP_LANE, float_mls_laneq, 0, FP)
  /* Implemented by aarch64_crypto_pmull<mode>.  */
   VAR1 (BINOPP, crypto_pmull, 0, DEFAULT, di)
   VAR1 (BINOPP, crypto_pmull, 0, DEFAULT, v2di)

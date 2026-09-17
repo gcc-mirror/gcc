@@ -276,6 +276,26 @@ DEF_NEON_FUNCTION (vrndx,  h_float, ("D0,D0"))
 DEF_NEON_FUNCTION (vrndxq, h_float, ("Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
+// Multiply-accumulate
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vmla,	neon_mla,       ("D0,D0,D0,D0"))
+DEF_NEON_FUNCTION (vmlaq,       neon_mla,       ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vmla_n,      neon_mla_lane,  ("D0,D0,D0,s0"))
+DEF_NEON_FUNCTION (vmlaq_n,     neon_mla_lane,  ("Q0,Q0,Q0,s0"))
+DEF_NEON_FUNCTION (vmla_lane,   neon_mla_lane,  ("D0,D0,D0,D0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmla_laneq,  neon_mla_lane,  ("D0,D0,D0,Q0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmlaq_lane,  neon_mla_lane,  ("Q0,Q0,Q0,D0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmlaq_laneq, neon_mla_lane,  ("Q0,Q0,Q0,Q0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmls,	neon_mla,       ("D0,D0,D0,D0"))
+DEF_NEON_FUNCTION (vmlsq,       neon_mla,       ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vmls_n,      neon_mla_lane,  ("D0,D0,D0,s0"))
+DEF_NEON_FUNCTION (vmlsq_n,     neon_mla_lane,  ("Q0,Q0,Q0,s0"))
+DEF_NEON_FUNCTION (vmls_lane,   neon_mla_lane,  ("D0,D0,D0,D0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmls_laneq,  neon_mla_lane,  ("D0,D0,D0,Q0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmlsq_lane,  neon_mla_lane,  ("Q0,Q0,Q0,D0,ss32", lane<3>))
+DEF_NEON_FUNCTION (vmlsq_laneq, neon_mla_lane,  ("Q0,Q0,Q0,Q0,ss32", lane<3>))
+#undef REQUIRED_EXTENSIONS
+
 // Bitwise operations
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
 DEF_NEON_FUNCTION (vand,   all_integer, ("D0,D0,D0"))
@@ -455,6 +475,7 @@ DEF_NEON_FUNCTION (vsm3partw2q, s_unsigned, ("Q0,Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsm4eq,    s_unsigned, ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsm4ekeyq, s_unsigned, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
+
 // FP16 matrix-multiply accumulate (widening)
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_F16F32MM)
 DEF_NEON_FUNCTION (vmmlaq, cvt_f32_f16, ("Q0,Q0,Q1,Q1"))

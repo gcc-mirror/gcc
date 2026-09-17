@@ -1140,6 +1140,69 @@ public:
   }
 };
 
+// vmla (acc, lhs, rhs) = acc + lhs * rhs
+// vmls (acc, lhs, rhs) = acc - lhs * rhs
+template <arith_kind kind, bool negate>
+struct multiply_accumulate : public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    tree acc = gimple_call_arg (f.call, 0);
+    tree lhs = gimple_call_arg (f.call, 1);
+    tree rhs = gimple_call_arg (f.call, 2);
+    tree lane_index;
+    tree ret_type = TREE_TYPE (f.lhs);
+
+    switch (kind)
+      {
+      case arith_kind::normal:
+	break;
+
+      case arith_kind::dup:
+	rhs = f.force_val (build_vec_dup (TREE_TYPE (lhs), rhs));
+	break;
+
+      case arith_kind::lane:
+	lane_index = gimple_call_arg (f.call, 3);
+	rhs = f.force_val (build_lane_get (rhs, lane_index));
+	if (VECTOR_TYPE_P (ret_type))
+	  rhs = f.force_val (build_vec_dup (TREE_TYPE (lhs), rhs));
+	break;
+      }
+
+    tree_code code = negate ? MINUS_EXPR : PLUS_EXPR;
+    if (FLOAT_TYPE_P (ret_type))
+      {
+	/* Use a PAREN_EXPR (equivalent to C's `__builtin_assoc_barrier`) to
+	   prevent floating-point add and mul being transformed to an FMA.  */
+	auto mul = f.force_val (fold_build2 (MULT_EXPR, ret_type, lhs, rhs));
+	auto paren = f.force_val (fold_build1 (PAREN_EXPR, ret_type, mul));
+	auto addsub = f.force_val (fold_build2 (code, ret_type, acc, paren));
+	return this->maybe_optimization_barrier (f, addsub);
+      }
+    else if (!TYPE_UNSIGNED (ret_type))
+      {
+	/* Convert signed inputs to unsigned first, to avoid undefined behaviour
+	   on overflow.  */
+	auto signed_type = ret_type;
+	auto unsigned_type = unsigned_type_for (signed_type);
+	lhs = f.force_val (build_cast (unsigned_type, lhs));
+	rhs = f.force_val (build_cast (unsigned_type, rhs));
+	acc = f.force_val (build_cast (unsigned_type, acc));
+	auto mul = f.force_val (fold_build2 (MULT_EXPR, unsigned_type, lhs, rhs));
+	auto addsub = f.force_val (fold_build2 (code, unsigned_type, acc, mul));
+	return gimple_build_assign (f.lhs, build_cast (signed_type, addsub));
+      }
+    else
+      {
+	auto mul = f.force_val (fold_build2 (MULT_EXPR, ret_type, lhs, rhs));
+	return gimple_build_assign (f.lhs, code, acc, mul);
+      }
+  }
+};
+template <arith_kind kind> using gimple_mla = multiply_accumulate<kind, false>;
+template <arith_kind kind> using gimple_mls = multiply_accumulate<kind, true>;
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1169,6 +1232,17 @@ NEON_FUNCTION (vmul_lane, vmul_laneq,
 	       vmulh_lane, vmulh_laneq,
 	       vmuls_lane, vmuls_laneq,
 	       vmuld_lane, vmuld_laneq, gimple_arith_lane, (MULT_EXPR))
+
+// Multiply-accumulate
+NEON_FUNCTION (vmla, vmlaq, gimple_mla<arith_kind::normal>,)
+NEON_FUNCTION (vmla_n, vmlaq_n, gimple_mla<arith_kind::dup>,)
+NEON_FUNCTION (vmla_lane, vmla_laneq, vmlaq_lane, vmlaq_laneq,
+	       gimple_mla<arith_kind::lane>,)
+
+NEON_FUNCTION (vmls, vmlsq, gimple_mls<arith_kind::normal>,)
+NEON_FUNCTION (vmls_n, vmlsq_n, gimple_mls<arith_kind::dup>,)
+NEON_FUNCTION (vmls_lane, vmls_laneq, vmlsq_lane, vmlsq_laneq,
+	       gimple_mls<arith_kind::lane>,)
 
 // Saturating arithmetic
 NEON_FUNCTION (vqaddb, vqaddh, vqadds, vqaddd, vqadd, vqaddq, gimple_ifn, (IFN_SAT_ADD))
