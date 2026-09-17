@@ -3182,7 +3182,9 @@ gimple_folder::force_val (tree expr)
     return expr;
 
   auto type = TREE_TYPE (expr);
-  auto var = create_tmp_var (type);
+  auto var = gimple_in_ssa_p (cfun) && is_gimple_reg_type (type)
+	       ? make_ssa_name (type)
+	       : create_tmp_var (type);
   auto stmt = gimple_build_assign (var, expr);
   gimple_seq_add_stmt_without_update (&stmts, stmt);
   return var;

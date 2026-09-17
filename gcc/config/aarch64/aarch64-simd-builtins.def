@@ -669,10 +669,8 @@
   BUILTIN_VALLP_NO_DI (STORE1_P, st1, 0, STORE)
 
   /* Implemented by fma<mode>4.  */
-  BUILTIN_VHSDF (TERNOP, fma, 4, FP)
   VAR1 (TERNOP, fma, 4, FP, hf)
   /* Implemented by fnma<mode>4.  */
-  BUILTIN_VHSDF (TERNOP, fnma, 4, FP)
   VAR1 (TERNOP, fnma, 4, FP, hf)
 
  /* Implemented by aarch64_crypto_pmull<mode>.  */

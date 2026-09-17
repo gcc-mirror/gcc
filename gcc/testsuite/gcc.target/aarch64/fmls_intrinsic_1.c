@@ -19,16 +19,9 @@ test_vfms##q1##_lane##q2##_f##size (float##size##_t * res,		\
   float##size##x##in1_lanes##_t a = vld1##q1##_f##size (res);		\
   float##size##x##in1_lanes##_t b = vld1##q1##_f##size (in1);		\
   float##size##x##in2_lanes##_t c;					\
-  if (in2_lanes > 1)							\
-    {									\
-      c = vld1##q2##_f##size (in2);					\
-      a = vfms##q1##_lane##q2##_f##size (a, b, c, 1);			\
-    }									\
-  else									\
-    {									\
-      c = vld1##q2##_f##size (in2 + 1);					\
-      a = vfms##q1##_lane##q2##_f##size (a, b, c, 0);			\
-    }									\
+  const int lane_no = in2_lanes > 1 ? 1 : 0;				\
+  c = vld1##q2##_f##size (in2 + (in2_lanes == 1));			\
+  a = vfms##q1##_lane##q2##_f##size (a, b, c, lane_no);			\
   vst1##q1##_f##size (res, a);						\
 }
 
@@ -100,20 +93,20 @@ main (int argc, char **argv)
 
 /* vfms_laneq_f32.
    vfms_lane_f32.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2s, v\[0-9\]+\.2s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times {fmls	v[0-9]+.2s, v[0-9]+.2s, v[0-9]+.s\[[0-9]+\]} 2 } } */
 
 /* vfmsq_lane_f32.
    vfmsq_laneq_f32.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[\[0-9\]+\\\]" 2 } } */
+/* { dg-final { scan-assembler-times {fmls	v[0-9]+.4s, v[0-9]+.4s, v[0-9]+.s\[[0-9]+\]} 2 } } */
 
 /* vfms_lane_f64.
    vfms_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmsub\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 1 { target aarch64_big_endian } } } */
-/* { dg-final { scan-assembler-times "fmsub\\td\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+\, d\[0-9\]+" 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {fmsub	d[0-9]+, d[0-9]+, d[0-9]+, d[0-9]+} 1 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {fmsub	d[0-9]+, d[0-9]+, d[0-9]+, d[0-9]+} 2 { target aarch64_little_endian } } } */
 
 /* vfmsq_lane_f64.
    vfmsq_laneq_f64.  */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 3 { target aarch64_big_endian } } } */
-/* { dg-final { scan-assembler-times "fmls\\tv\[0-9\]+\.2d, v\[0-9\]+\.2d, v\[0-9\]+\.d\\\[\[0-9\]+\\\]" 2 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {fmls	v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.d\[[0-9]+\]} 3 { target aarch64_big_endian } } } */
+/* { dg-final { scan-assembler-times {fmls	v[0-9]+.2d, v[0-9]+.2d, v[0-9]+.d\[[0-9]+\]} 2 { target aarch64_little_endian } } } */
 
 

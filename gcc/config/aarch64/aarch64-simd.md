@@ -2962,9 +2962,9 @@
 )
 
 ;; FP vector operations.
-;; AArch64 AdvSIMD supports single-precision (32-bit) and 
+;; AArch64 AdvSIMD supports single-precision (32-bit) and
 ;; double-precision (64-bit) floating-point data types and arithmetic as
-;; defined by the IEEE 754-2008 standard.  This makes them vectorizable 
+;; defined by the IEEE 754-2008 standard.  This makes them vectorizable
 ;; without the need for -ffast-math or -funsafe-math-optimizations.
 ;;
 ;; Floating-point operations can raise an exception.  Vectorizing such
@@ -3059,78 +3059,95 @@
   [(set_attr "type" "neon_fp_abs_<stype><q>")]
 )
 
+;; vfma_f16, vfmaq_f16
+;; vfma_f32, vfmaq_f32
+;; vfmaq_f64
 (define_insn "fma<mode>4<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
-       (fma:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
-		  (match_operand:VHSDF 2 "register_operand" "w")
-		  (match_operand:VHSDF 3 "register_operand" "0")))]
+	(fma:VHSDF (match_operand:VHSDF 1 "register_operand" "w")
+		   (match_operand:VHSDF 2 "register_operand" "w")
+		   (match_operand:VHSDF 3 "register_operand" "0")))]
   "TARGET_SIMD"
  "fmla\\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
   [(set_attr "type" "neon_fp_mla_<stype><q>")]
 )
 
+;; vfma_lane_f16, vfmaq_laneq_f16
+;; vfma_lane_f32, vfmaq_laneq_f32
+;; vfmaq_laneq_f64
 (define_insn "*aarch64_fma4_elt<mode><vczle><vczbe>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-    (fma:VDQF
-      (vec_duplicate:VDQF
-	(vec_select:<VEL>
-	  (match_operand:VDQF 1 "register_operand" "<h_con>")
-	  (parallel [(match_operand:SI 2 "immediate_operand")])))
-      (match_operand:VDQF 3 "register_operand" "w")
-      (match_operand:VDQF 4 "register_operand" "0")))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(fma:VHSDF
+	  (vec_duplicate:VHSDF
+	    (vec_select:<VEL>
+	      (match_operand:VHSDF 1 "register_operand" "<h_con>")
+	      (parallel [(match_operand:SI 2 "immediate_operand")])))
+	  (match_operand:VHSDF 3 "register_operand" "w")
+	  (match_operand:VHSDF 4 "register_operand" "0")))]
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
     return "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon_fp_mla_<stype>_scalar<q>")]
 )
 
+;; vfma_laneq_f16, vfmaq_lane_f16
+;; vfma_laneq_f32, vfmaq_lane_f32
 (define_insn "*aarch64_fma4_elt_<vswap_width_name><mode><vczle><vczbe>"
-  [(set (match_operand:VDQSF 0 "register_operand" "=w")
-    (fma:VDQSF
-      (vec_duplicate:VDQSF
-	(vec_select:<VEL>
-	  (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
-	  (parallel [(match_operand:SI 2 "immediate_operand")])))
-      (match_operand:VDQSF 3 "register_operand" "w")
-      (match_operand:VDQSF 4 "register_operand" "0")))]
+  [(set (match_operand:VDQHSF 0 "register_operand" "=w")
+	(fma:VDQHSF
+	  (vec_duplicate:VDQHSF
+	    (vec_select:<VEL>
+	      (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+	      (parallel [(match_operand:SI 2 "immediate_operand")])))
+	  (match_operand:VDQHSF 3 "register_operand" "w")
+	  (match_operand:VDQHSF 4 "register_operand" "0")))]
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
     return "fmla\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon_fp_mla_<stype>_scalar<q>")]
 )
 
+;; vfma_n_f16, vfmaq_n_f16
+;; vfma_n_f32, vfmaq_n_f64
+;; vfmaq_n_f64 vfmaq_lane_f64
 (define_insn "*aarch64_fma4_elt_from_dup<mode><vczle><vczbe>"
   [(set (match_operand:VMUL 0 "register_operand" "=w")
-    (fma:VMUL
-      (vec_duplicate:VMUL
-	  (match_operand:<VEL> 1 "register_operand" "<h_con>"))
-      (match_operand:VMUL 2 "register_operand" "w")
-      (match_operand:VMUL 3 "register_operand" "0")))]
+	(fma:VMUL
+	  (vec_duplicate:VMUL
+	    (match_operand:<VEL> 1 "register_operand" "<h_con>"))
+	  (match_operand:VMUL 2 "register_operand" "w")
+	  (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
   "fmla\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
   [(set_attr "type" "neon<fp>_mla_<stype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fma4_elt_to_64v2df"
-  [(set (match_operand:DF 0 "register_operand" "=w")
-    (fma:DF
-	(vec_select:DF
-	  (match_operand:V2DF 1 "register_operand" "w")
-	  (parallel [(match_operand:SI 2 "immediate_operand")]))
-      (match_operand:DF 3 "register_operand" "w")
-      (match_operand:DF 4 "register_operand" "0")))]
+;; vfmah_lane_f16, vfmah_laneq_f16
+;; vfmas_lane_f32, vfmas_laneq_f32
+;; vfma_laneq_f64, vfmad_laneq_f64
+(define_insn "*aarch64_fma<mode>4_elt_to_scalar"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+	(fma:<VEL>
+	  (vec_select:<VEL>
+	    (match_operand:VHSDF 1 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 2 "immediate_operand")]))
+	  (match_operand:<VEL> 3 "register_operand" "w")
+	  (match_operand:<VEL> 4 "register_operand" "0")))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (V2DFmode, INTVAL (operands[2]));
-    return "fmla\\t%0.2d, %3.2d, %1.d[%2]";
+    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    return "fmla\\t%<Vetype>0, %<Vetype>3, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon_fp_mla_d_scalar_q")]
+  [(set_attr "type" "neon_fp_mla_<stype>_q")]
 )
 
+;; vfms_f16, vfmsq_f16
+;; vfms_f32, vfmsq_f32
+;; vfmsq_f64
 (define_insn "fnma<mode>4<vczle><vczbe>"
   [(set (match_operand:VHSDF 0 "register_operand" "=w")
 	(fma:VHSDF
@@ -3142,70 +3159,143 @@
   [(set_attr "type" "neon_fp_mla_<stype><q>")]
 )
 
+;; vfms_lane_f16, vfmsq_laneq_f16,
+;; vfms_lane_f32, vfmsq_laneq_f32
+;; vfmsq_laneq_f64
 (define_insn "*aarch64_fnma4_elt<mode><vczle><vczbe>"
-  [(set (match_operand:VDQF 0 "register_operand" "=w")
-    (fma:VDQF
-      (neg:VDQF
-        (match_operand:VDQF 3 "register_operand" "w"))
-      (vec_duplicate:VDQF
-	(vec_select:<VEL>
-	  (match_operand:VDQF 1 "register_operand" "<h_con>")
-	  (parallel [(match_operand:SI 2 "immediate_operand")])))
-      (match_operand:VDQF 4 "register_operand" "0")))]
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(fma:VHSDF
+	  (neg:VHSDF
+	    (vec_duplicate:VHSDF
+	      (vec_select:<VEL>
+		(match_operand:VHSDF 1 "register_operand" "<h_con>")
+		(parallel [(match_operand:SI 2 "immediate_operand")]))))
+	  (match_operand:VHSDF 3 "register_operand" "w")
+	  (match_operand:VHSDF 4 "register_operand" "0")))]
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
     return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon_fp_mla_<stype>_scalar<q>")]
+)
+(define_insn "*aarch64_fnma4_elt<mode><vczle><vczbe>_alt"
+  [(set (match_operand:VHSDF 0 "register_operand" "=w")
+	(fma:VHSDF
+	  (neg:VHSDF
+	    (match_operand:VHSDF 3 "register_operand" "w"))
+	  (vec_duplicate:VHSDF
+	    (vec_select:<VEL>
+	      (match_operand:VHSDF 1 "register_operand" "<h_con>")
+	      (parallel [(match_operand:SI 2 "immediate_operand")])))
+	  (match_operand:VHSDF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  {
+    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
+  }
+  [(set_attr "type" "neon_fp_mla_<stype>_scalar<q>")]
 )
 
+;; vfms_laneq_f16, vfmsq_lane_f16
+;; vfms_laneq_f32, vfmsq_lane_f32
 (define_insn "*aarch64_fnma4_elt_<vswap_width_name><mode><vczle><vczbe>"
-  [(set (match_operand:VDQSF 0 "register_operand" "=w")
-    (fma:VDQSF
-      (neg:VDQSF
-        (match_operand:VDQSF 3 "register_operand" "w"))
-      (vec_duplicate:VDQSF
-	(vec_select:<VEL>
-	  (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
-	  (parallel [(match_operand:SI 2 "immediate_operand")])))
-      (match_operand:VDQSF 4 "register_operand" "0")))]
+  [(set (match_operand:VDQHSF 0 "register_operand" "=w")
+	(fma:VDQHSF
+	  (neg:VDQHSF
+	    (vec_duplicate:VDQHSF
+	      (vec_select:<VEL>
+		(match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+		(parallel [(match_operand:SI 2 "immediate_operand")]))))
+	  (match_operand:VDQHSF 3 "register_operand" "w")
+	  (match_operand:VDQHSF 4 "register_operand" "0")))]
   "TARGET_SIMD"
   {
     operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
     return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon_fp_mla_<Vetype>_scalar<q>")]
+  [(set_attr "type" "neon_fp_mla_<stype>_scalar<q>")]
+)
+(define_insn "*aarch64_fnma4_elt_<vswap_width_name><mode><vczle><vczbe>_alt"
+  [(set (match_operand:VDQHSF 0 "register_operand" "=w")
+	(fma:VDQHSF
+	  (neg:VDQHSF
+	    (match_operand:VDQHSF 3 "register_operand" "w"))
+	  (vec_duplicate:VDQHSF
+	    (vec_select:<VEL>
+	      (match_operand:<VSWAP_WIDTH> 1 "register_operand" "<h_con>")
+	      (parallel [(match_operand:SI 2 "immediate_operand")])))
+	  (match_operand:VDQHSF 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  {
+    operands[2] = aarch64_endian_lane_rtx (<VSWAP_WIDTH>mode, INTVAL (operands[2]));
+    return "fmls\\t%0.<Vtype>, %3.<Vtype>, %1.<Vetype>[%2]";
+  }
+  [(set_attr "type" "neon_fp_mla_<stype>_scalar<q>")]
 )
 
+;; vfms_n_f16, vfmsq_n_f16
+;; vfms_n_f32, vfmsq_n_f32
+;; vfmsq_n_f64, vfmq_lane_f64
 (define_insn "*aarch64_fnma4_elt_from_dup<mode><vczle><vczbe>"
   [(set (match_operand:VMUL 0 "register_operand" "=w")
-    (fma:VMUL
-      (neg:VMUL
-        (match_operand:VMUL 2 "register_operand" "w"))
-      (vec_duplicate:VMUL
-	(match_operand:<VEL> 1 "register_operand" "<h_con>"))
-      (match_operand:VMUL 3 "register_operand" "0")))]
+	(fma:VMUL
+	  (neg:VMUL
+	    (vec_duplicate:VMUL
+	      (match_operand:<VEL> 1 "register_operand" "<h_con>")))
+	  (match_operand:VMUL 2 "register_operand" "w")
+	  (match_operand:VMUL 3 "register_operand" "0")))]
+  "TARGET_SIMD"
+  "fmls\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
+  [(set_attr "type" "neon<fp>_mla_<stype>_scalar<q>")]
+)
+(define_insn "*aarch64_fnma4_elt_from_dup<mode><vczle><vczbe>_alt"
+  [(set (match_operand:VMUL 0 "register_operand" "=w")
+	(fma:VMUL
+	  (neg:VMUL
+	    (match_operand:VMUL 2 "register_operand" "w"))
+	  (vec_duplicate:VMUL
+	    (match_operand:<VEL> 1 "register_operand" "<h_con>"))
+	  (match_operand:VMUL 3 "register_operand" "0")))]
   "TARGET_SIMD"
   "fmls\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
   [(set_attr "type" "neon<fp>_mla_<stype>_scalar<q>")]
 )
 
-(define_insn "*aarch64_fnma4_elt_to_64v2df"
-  [(set (match_operand:DF 0 "register_operand" "=w")
-    (fma:DF
-      (vec_select:DF
-	(match_operand:V2DF 1 "register_operand" "w")
-	(parallel [(match_operand:SI 2 "immediate_operand")]))
-      (neg:DF
-        (match_operand:DF 3 "register_operand" "w"))
-      (match_operand:DF 4 "register_operand" "0")))]
+;; vfmsh_lane_f16, vfmsh_laneq_f16
+;; vfmss_lane_f32, vfmss_laneq_f32
+;; vfms_laneq_f64, vfmsd_laneq_f64
+(define_insn "*aarch64_fnma<mode>4_elt_to_scalar"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+	(fma:<VEL>
+	  (neg:<VEL>
+	    (vec_select:<VEL>
+	      (match_operand:VHSDF 1 "register_operand" "<h_con>")
+	      (parallel [(match_operand:SI 2 "immediate_operand")])))
+	  (match_operand:<VEL> 3 "register_operand" "w")
+	  (match_operand:<VEL> 4 "register_operand" "0")))]
   "TARGET_SIMD"
   {
-    operands[2] = aarch64_endian_lane_rtx (V2DFmode, INTVAL (operands[2]));
-    return "fmls\\t%0.2d, %3.2d, %1.d[%2]";
+    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    return "fmls\\t%<Vetype>0, %<Vetype>3, %1.<Vetype>[%2]";
   }
-  [(set_attr "type" "neon_fp_mla_d_scalar_q")]
+  [(set_attr "type" "neon_fp_mla_<stype>_q")]
+)
+(define_insn "*aarch64_fnma<mode>4_elt_to_scalar_alt"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+	(fma:<VEL>
+	  (neg:<VEL>
+	    (match_operand:<VEL> 3 "register_operand" "w"))
+	  (vec_select:<VEL>
+	    (match_operand:VHSDF 1 "register_operand" "<h_con>")
+	    (parallel [(match_operand:SI 2 "immediate_operand")]))
+	  (match_operand:<VEL> 4 "register_operand" "0")))]
+  "TARGET_SIMD"
+  {
+    operands[2] = aarch64_endian_lane_rtx (<MODE>mode, INTVAL (operands[2]));
+    return "fmls\\t%<Vetype>0, %<Vetype>3, %1.<Vetype>[%2]";
+  }
+  [(set_attr "type" "neon_fp_mla_<stype>_q")]
 )
 
 ;; Vector versions of the floating-point frint patterns.

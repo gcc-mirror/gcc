@@ -3,7 +3,7 @@
     the top half of the vector register and no explicit zeroing instructions
     are emitted.  */
 /* { dg-do compile } */
-/* { dg-options "-O" } */
+/* { dg-options "-O -fno-trapping-math" } */
 
 #include <arm_neon.h>
 
@@ -65,4 +65,3 @@ OPTHREE (float32, 2, 4, f32, mla_lane, fma_lane, fms_lane)
 
 /* { dg-final { scan-assembler-not {\tfmov\t} } }  */
 /* { dg-final { scan-assembler-not {\tmov\t} } }  */
-

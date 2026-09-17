@@ -177,6 +177,44 @@ one_element_vector_type_p (tree type)
   return VECTOR_TYPE_P (type) && known_eq (TYPE_VECTOR_SUBPARTS (type), 1U);
 }
 
+tree
+build_var (tree type)
+{
+  return gimple_in_ssa_p (cfun) && is_gimple_reg_type (type)
+	   ? make_ssa_name (type)
+	   : create_tmp_var (type);
+}
+
+/* Build a call to the internal function IFN.
+   Handles singleton vector arguments specially: they are cast to their
+   inner element type before the function is called, and then the return value
+   is cast back to the expected singleton vector type.  */
+tree
+build_ifn_call (gimple_folder &f, internal_fn ifn, tree ret_type,
+		vec<tree> &args)
+{
+  for (auto &arg : args)
+    if (one_element_vector_type_p (TREE_TYPE (arg)))
+      arg = f.force_val (build_cast (TREE_TYPE (TREE_TYPE (arg)), arg));
+
+  auto call = gimple_build_call_internal_vec (ifn, args);
+  gimple_seq_add_stmt_without_update (&f.stmts, call);
+
+  if (!one_element_vector_type_p (ret_type))
+    {
+      auto ret = build_var (ret_type);
+      gimple_call_set_lhs (call, ret);
+      return ret;
+    }
+  else
+    {
+      auto elem_type = TREE_TYPE (ret_type);
+      auto ret = build_var (elem_type);
+      gimple_call_set_lhs (call, ret);
+      return build_vec_dup (ret_type, ret);
+    }
+}
+
 /* Base class for all function expanders.
    At least one of `expand` or `fold` must be overriden by derived classes.  */
 class gimple_function_base : public function_base
@@ -645,44 +683,19 @@ public:
   gimple *fold (gimple_folder &f) const override
   {
     tree lhs_type = TREE_TYPE (f.lhs);
-    /* There are no instructions that handle V1DI or V1DF modes for these
-       operations.  They need to be specially handled by casting the vector to
-       its element type and using it to feed the scalar version of the
-       operation.  The scalar result is then cast back to a vector and returned.
-       This matches the prior implementation that arm_neon.h used for these
-       operations.  */
-    bool scalar_lhs = one_element_vector_type_p (lhs_type);
-
-    vec<tree> args{};
+    auto_vec<tree> args{};
     for (unsigned i = 0; i < gimple_call_num_args (f.call); i++)
       {
 	tree arg = gimple_call_arg (f.call, i);
-	/* Convert V1DI/V1DF arguments to corresponding scalar modes.  */
-	if (scalar_lhs && one_element_vector_type_p (TREE_TYPE (arg)))
-	  arg = f.force_val (build_cast (TREE_TYPE (lhs_type), arg));
 	/* .CLZ and .POPCOUNT take an unsigned argument.  */
-	else if ((m_ifn == IFN_CLZ || m_ifn == IFN_POPCOUNT)
-		 && !TYPE_UNSIGNED (TREE_TYPE (arg)))
+	if ((m_ifn == IFN_CLZ || m_ifn == IFN_POPCOUNT)
+	    && !TYPE_UNSIGNED (TREE_TYPE (arg)))
 	  arg = f.force_val (build_cast (unsigned_type_for (TREE_TYPE (arg)),
 					 arg));
 	args.safe_push (arg);
       }
-
-    auto call = gimple_build_call_internal_vec (this->m_ifn, args);
-    args.release ();
-
-    if (!scalar_lhs)
-      {
-	gimple_call_set_lhs (call, f.lhs);
-	return call;
-      }
-
-    /* Temporary scalar to hold the result.  */
-    tree res = create_tmp_var (TREE_TYPE (lhs_type));
-    gimple_call_set_lhs (call, res);
-    gimple_seq_add_stmt_without_update (&f.stmts, call);
-    /* Build the actual vector that the call's result gets assigned to.  */
-    return gimple_build_assign (f.lhs, build_vec_dup (lhs_type, res));
+    return gimple_build_assign (f.lhs, build_ifn_call (f, this->m_ifn, lhs_type,
+						       args));
   }
 };
 
@@ -736,7 +749,7 @@ public:
     gcc_assert (types_compatible_p (arg_type, TREE_TYPE (b)));
 
     auto tuple_type = TREE_TYPE (f.lhs);
-    auto tuple = create_tmp_var (tuple_type);
+    auto tuple = build_var (tuple_type);
     f.assign (tuple, build_clobber (tuple_type));
     for (auto i = 0; i < 2; i++)
       {
@@ -1104,8 +1117,7 @@ build_abs_diff (gimple_folder &f, tree lhs, tree rhs)
     return fold_build1 (ABS_EXPR, type,
 			f.force_val (fold_build2 (MINUS_EXPR, type, lhs, rhs)));
 
-  auto ret
-    = is_gimple_reg_type (type) ? make_ssa_name (type) : create_tmp_var (type);
+  auto ret = build_var (type);
   auto call = gimple_build_call_internal (IFN_ABD, 2, lhs, rhs);
   gimple_seq_add_stmt_without_update (&f.stmts, call);
   gimple_call_set_lhs (call, ret);
@@ -1203,6 +1215,45 @@ struct multiply_accumulate : public gimple_function_base
 template <arith_kind kind> using gimple_mla = multiply_accumulate<kind, false>;
 template <arith_kind kind> using gimple_mls = multiply_accumulate<kind, true>;
 
+template <arith_kind kind, bool negate>
+struct gimple_fused_mla : public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    tree acc = gimple_call_arg (f.call, 0);
+    tree lhs = gimple_call_arg (f.call, 1);
+    tree rhs = gimple_call_arg (f.call, 2);
+    tree lane_index;
+    tree ret_type = TREE_TYPE (f.lhs);
+
+    switch (kind)
+      {
+      case arith_kind::normal:
+	break;
+
+      case arith_kind::dup:
+	rhs = f.force_val (build_vec_dup (TREE_TYPE (lhs), rhs));
+	break;
+
+      case arith_kind::lane:
+	lane_index = gimple_call_arg (f.call, 3);
+	rhs = f.force_val (build_lane_get (rhs, lane_index));
+	if (VECTOR_TYPE_P (ret_type))
+	  rhs = f.force_val (build_vec_dup (TREE_TYPE (lhs), rhs));
+	break;
+      }
+
+    auto_vec<tree> args{};
+    args.safe_push (lhs);
+    args.safe_push (rhs);
+    args.safe_push (acc);
+    auto ret = build_ifn_call (f, negate ? IFN_FNMA : IFN_FMA, ret_type, args);
+    return this->maybe_optimization_barrier (f, ret);
+  }
+};
+template <arith_kind kind> using gimple_fma = gimple_fused_mla<kind, false>;
+template <arith_kind kind> using gimple_fms = gimple_fused_mla<kind, true>;
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1243,6 +1294,25 @@ NEON_FUNCTION (vmls, vmlsq, gimple_mls<arith_kind::normal>,)
 NEON_FUNCTION (vmls_n, vmlsq_n, gimple_mls<arith_kind::dup>,)
 NEON_FUNCTION (vmls_lane, vmls_laneq, vmlsq_lane, vmlsq_laneq,
 	       gimple_mls<arith_kind::lane>,)
+
+// Multiply-accumulate (fused)
+NEON_FUNCTION (vfma,   vfmaq,   gimple_fma<arith_kind::normal>,);
+NEON_FUNCTION (vfma_n, vfmaq_n, gimple_fma<arith_kind::dup>,);
+NEON_FUNCTION (vfmah_lane, vfmah_laneq,
+	       vfmas_lane, vfmas_laneq,
+	       vfmad_lane, vfmad_laneq,
+	       vfma_lane,  vfma_laneq,
+	       vfmaq_lane, vfmaq_laneq,
+	       gimple_fma<arith_kind::lane>,);
+
+NEON_FUNCTION (vfms,   vfmsq,   gimple_fms<arith_kind::normal>,);
+NEON_FUNCTION (vfms_n, vfmsq_n, gimple_fms<arith_kind::dup>,);
+NEON_FUNCTION (vfmsh_lane, vfmsh_laneq,
+	       vfmss_lane, vfmss_laneq,
+	       vfmsd_lane, vfmsd_laneq,
+	       vfms_lane,  vfms_laneq,
+	       vfmsq_lane, vfmsq_laneq,
+	       gimple_fms<arith_kind::lane>,);
 
 // Saturating arithmetic
 NEON_FUNCTION (vqaddb, vqaddh, vqadds, vqaddd, vqadd, vqaddq, gimple_ifn, (IFN_SAT_ADD))

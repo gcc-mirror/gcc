@@ -215,6 +215,13 @@
 ;; Advanced SIMD single Float modes.
 (define_mode_iterator VDQSF [V2SF V4SF])
 
+;; Advanced SIMD half and single Float modes.
+(define_mode_iterator VDQHSF [
+	(V4HF "TARGET_SIMD_F16INST")
+	(V8HF "TARGET_SIMD_F16INST")
+	V2SF V4SF
+])
+
 ;; Quad vector float modes with half/bfloat elements.
 (define_mode_iterator VQ_BHF [V8HF V8BF])
 
