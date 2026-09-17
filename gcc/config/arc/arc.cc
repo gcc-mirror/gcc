@@ -1794,7 +1794,7 @@ arc_init_reg_tables (void)
 	  /* mode_class hasn't been initialized yet for EXTRA_CC_MODES, so
 	     we must explicitly check for them here.  */
 	  if (i == (int) CCmode || i == (int) CC_ZNmode || i == (int) CC_Zmode
-	      || i == (int) CC_Cmode
+	      || i == (int) CC_Cmode || i == (int) CC_Vmode
 	      || i == CC_FP_GTmode || i == CC_FP_GEmode || i == CC_FP_ORDmode
 	      || i == CC_FPUmode || i == CC_FPUEmode || i == CC_FPU_UNEQmode)
 	    arc_mode_class[i] = 1 << (int) C_MODE;
