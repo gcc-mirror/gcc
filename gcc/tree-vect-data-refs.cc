@@ -465,6 +465,9 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
 					       "between data-refs %T and %T\n",
 					       DR_REF (dra), DR_REF (drb));
 	    }
+	  if (!vect_preserves_scalar_order_p (dr_info_a, dr_info_b))
+	    return opt_result::failure_at (stmtinfo_a->stmt,
+					   "dependence in interleaving.\n");
 	  /* Record a negative dependence distance to later limit the
 	     amount of stmt copying / unrolling we can perform.
 	     Only need to handle read-after-write dependence.  */
