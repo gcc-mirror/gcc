@@ -49,8 +49,8 @@
        77  errno-val            Binary-Long.
        01  ws-access-mode PIC 9(8) comp-5.
        LINKAGE SECTION.
-       01  RETCODE     PIC X(2) COMP-5 VALUE 0.
-       01  REDEFINES RETCODE.
+       01  FILE-STATUS     PIC X(2) COMP-5 VALUE 0.
+       01  REDEFINES FILE-STATUS.
         03 MSB PIC X.
         03 LSB BINARY-CHAR.
        01  filename 	 PIC X ANY LENGTH.
@@ -63,8 +63,7 @@
                        By Reference access-mode,
                        By Reference deny-mode,
                        By Reference device,
-                       By Reference file-handle
-                RETURNING RETCODE.
+                       By Reference file-handle.
 
            MOVE access-mode TO ws-access-mode.
 
@@ -85,19 +84,20 @@
                  MOVE "9" TO MSB
                  *> COBRT022 Illegal or impossible access mode for OPEN
                  MOVE 22 TO LSB
+                 MOVE FILE-STATUS TO RETURN-CODE
                  GOBACK
             END-EVALUATE.
 
            MOVE FUNCTION posix-open(filename, ws-access-mode, deny-mode)
                TO errno-val.
-      D     Display 'CBL_OPEN_FILE: RETCODE: ' RETCODE.
+      D     Display 'CBL_OPEN_FILE: RETURN-CODE: ' RETURN-CODE.
            If errno-val is < 0
            then
-               Move Function COBRT-FILE-STATUS() to RETCODE
-      D        Display 'COBRT-FILE-STATUS returned: ' RETCODE
+               Move Function COBRT-FILE-STATUS() to RETURN-CODE
+      D        Display 'COBRT-FILE-STATUS returned: ' RETURN-CODE
            else
                Move errno-val to file-handle
-               Move 0 to RETCODE
+               Move 0 to RETURN-CODE
            end-if.
 
            END PROGRAM CBL_OPEN_FILE.

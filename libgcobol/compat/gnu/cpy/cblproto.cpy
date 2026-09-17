@@ -33,13 +33,11 @@
        01 deny-mode pic x comp-x.
        01 device pic x comp-x.
        01 file-handle pic x(4) comp-5.
-       77 status-code pic x(2) comp-5.
        procedure division using filename
                                 access-mode
                                 deny-mode
                                 device
-                                file-handle
-                                returning status-code.
+                                file-handle.
        end program CBL_CREATE_FILE.
 
        identification division.
@@ -61,13 +59,11 @@
        01 deny-mode pic x comp-x.
        01 device pic x comp-x.
        01 file-handle pic x(4) comp-5.
-       77 retcode pic x(2) comp-5.
        procedure division using filename
                                 access-mode
                                 deny-mode
                                 device
-                                file-handle
-                                returning retcode.
+                                file-handle.
        end program CBL_OPEN_FILE.
 
        identification division.
@@ -79,13 +75,11 @@
        01 byte-count pic x(4) comp-x.
        01 flags pic x comp-x.
        01 buffer pic x any length.
-       77 retcode pic x(2) comp-5.
        procedure division using file-handle
                                 file-offset
                                 byte-count
                                 flags
-                                buffer
-                                returning retcode.
+                                buffer.
        end program CBL_READ_FILE.
 
        identification division.
@@ -97,13 +91,11 @@
        01 byte-count pic x(4) comp-x.
        01 flags pic x comp-x.
        01 buffer pic x any length.
-       77 retcode pic x(2) comp-5.
        procedure division using file-handle
                                 file-offset
                                 byte-count
                                 flags
-                                buffer
-                                returning retcode.
+                                buffer.
        end program CBL_WRITE_FILE.
 
        identification division.
@@ -111,9 +103,7 @@
        data division.
        linkage section.
        01 file-handle pic x(4) comp-5.
-       77 retcode pic x(2) comp-5.
-       procedure division using file-handle
-                          returning retcode.
+       procedure division using file-handle.
        end program CBL_CLOSE_FILE.
 
        identification division.

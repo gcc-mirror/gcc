@@ -51,7 +51,6 @@
        01  ws-access-mode       PIC 9(8) COMP-5.
 
        LINKAGE SECTION.
-       77  RETCODE              PIC X(2) COMP-5.
        01  filename  	          PIC X ANY LENGTH.
        01  access-mode          PIC x COMP-x.
        01  deny-mode            PIC x comp-x.  *>  Not supported (must be 0).
@@ -62,8 +61,7 @@
                        By Reference access-mode,
                        By Reference deny-mode,
                        By Reference device,
-                       By Reference file-handle
-                RETURNING RETCODE.
+                       By Reference file-handle.
 
            MOVE access-mode TO ws-access-mode.
 
@@ -86,7 +84,7 @@
                  Move O_RDWR to ws-access-mode
              WHEN OTHER
                  Display 'CBL_CREATE_FILE invalid mode: ' ws-access-mode
-                 Move -1 to RETCODE
+                 Move -1 to RETURN-CODE
                  GOBACK
             END-EVALUATE.
 
@@ -99,11 +97,11 @@
 
            If func-ret is < 0
            Then
-               Move Function COBRT-FILE-STATUS() to RETCODE
-      D        Display 'COBRT-FILE-STATUS returned: ' RETCODE
+               Move Function COBRT-FILE-STATUS() to RETURN-CODE
+      D        Display 'COBRT-FILE-STATUS returned: ' RETURN-CODE
            else
                Move func-ret to file-handle
-               Move 0 to RETCODE
+               Move 0 to RETURN-CODE
            end-if.
 
            END PROGRAM CBL_CREATE_FILE.

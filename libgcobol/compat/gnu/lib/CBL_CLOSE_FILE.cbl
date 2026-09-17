@@ -47,20 +47,18 @@
        77  errno-val            Binary-Long.
 
        LINKAGE SECTION.
-       77  RETCODE			PIC X(2) COMP-5.
        01  file-handle    	PIC X(4) COMP-5.
 
        PROCEDURE DIVISION USING
-                   By Reference file-handle
-                RETURNING RETCODE.
+                   By Reference file-handle.
 
            MOVE FUNCTION posix-close(file-handle)
              TO FUNC-RETURN-VALUE.
 
            IF FUNC-RETURN-VALUE < 0
-             Move Function COBRT-FILE-STATUS() to RETCODE
+             Move Function COBRT-FILE-STATUS() to RETURN-CODE
            ELSE
-             MOVE 0 TO RETCODE
+             MOVE 0 TO RETURN-CODE
            END-IF.
 
       D     Display 'CBL_CLOSE_FILE fd: ' file-handle ', rc: ' RETCODE.

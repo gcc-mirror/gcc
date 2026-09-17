@@ -55,7 +55,6 @@
         COPY statbuf.
 
        LINKAGE SECTION.
-       01  RETCODE     PIC X(2) COMP-5 VALUE 0.
        01  file-handle    	PIC X(4) COMP-5.
        01  file-offset    	PIC X(8) COMP-5.
        01  byte-count     	pic x(4) comp-x.
@@ -67,8 +66,7 @@
                    By Reference file-offset,
                    By Reference byte-count,
                    By Reference flags,
-                   By Reference buffer
-                RETURNING RETCODE.
+                   By Reference buffer.
         MAIN SECTION.
 
            IF flags = 0
@@ -95,7 +93,7 @@
             IF FUNC-RETURN-VALUE = 0
             THEN
               MOVE st_size OF statbuf TO file-offset
-              MOVE 0 TO RETCODE
+              MOVE 0 TO RETURN-CODE
             ELSE
               PERFORM RETURN-ERROR
               GOBACK
@@ -125,11 +123,11 @@
              END-IF
            END-PERFORM.
 
-           MOVE 0 TO RETCODE.
+           MOVE 0 TO RETURN-CODE.
            EXIT.
 
        RETURN-ERROR SECTION.
-           Move Function COBRT-FILE-STATUS() to RETCODE.
+           Move Function COBRT-FILE-STATUS() to RETURN-CODE.
            EXIT PARAGRAPH.
 
            END PROGRAM CBL_READ_FILE.

@@ -18,8 +18,6 @@ using
 .Ar byte-count
 .Ar flags
 .Ar buffer
-returning
-.Ar status
 .
 .Sh DESCRIPTION
 Parameters:
@@ -57,10 +55,10 @@ bytes.
 .El
 .
 .Sh RETURN STATUS
-.Nm
-returns
-.Sy "PIC X(2) COMP-5" .
-The return status is 0 on success, else nonzero.  
+The return status is 0 on success, else nonzero,
+and can be checked by reading the
+.Sy RETURN-CODE
+register.
 .
 .Sh SEE ALSO
 .Xr CBL_CHECK_FILE_EXIST
