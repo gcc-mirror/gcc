@@ -10802,6 +10802,7 @@ end_call:       %empty %prec CALL
 
 call_body:      ffi_name
                 { statement_begin(@1, CALL);
+                  $$.loc = @1;
                   $$.ffi_name = $ffi_name;
                   $$.using_params = NULL;
                   $$.ffi_returning = cbl_refer_t::empty();
@@ -10809,6 +10810,7 @@ call_body:      ffi_name
 
         |       ffi_name USING parameters
                 { statement_begin(@1, CALL);
+                  $$.loc = @1;
                   $$.ffi_name = $ffi_name;
                   $$.using_params = $parameters;
                   $$.ffi_returning = cbl_refer_t::empty();
@@ -10816,12 +10818,14 @@ call_body:      ffi_name
                 }
         |       ffi_name call_returning scalar[ret]
                 { statement_begin(@1, CALL);
+                  $$.loc = @1;
                   $$.ffi_name = $ffi_name;
                   $$.using_params = NULL;
                   $$.ffi_returning = $ret;
                 }
         |       ffi_name USING parameters call_returning scalar[ret]
                 { statement_begin(@1, CALL);
+                  $$.loc = @1;
                   $$.ffi_name = $ffi_name;
                   $$.using_params = $parameters;
                   $$.ffi_returning = $ret;
