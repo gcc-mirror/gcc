@@ -1243,16 +1243,29 @@ tree_transform_and_unroll_loop (class loop *loop, unsigned factor,
 
       /* The epilog loop latch executes at most factor - 1 times.
 	 Since the epilog is entered unconditionally it will need to handle
-	 up to factor executions of its body.  */
-      new_loop->any_upper_bound = true;
-      new_loop->nb_iterations_upper_bound = factor - 1;
-      /* We do not really know estimate on number of iterations, since we do not
-	 track any estimates modulo unroll factor.
-	 Drop estimate from loop_info and scale loop profile.
-	 It may be more realistic to scale loop profile to factor / 2 - 1,
-	 but vectorizer also uses factor - 1.  */
+	 up to factor executions of its body.
+
+	 That however relies on ENTER_MAIN_COND being false implying that
+	 less than factor iterations are left.  determine_exit_conditions
+	 derives ENTER_MAIN_COND from a LT_EXPR/GT_EXPR comparison of the
+	 control IV, which for a NE_EXPR exit test is only valid if that IV
+	 does not wrap.  When it may wrap the main loop can be skipped (the
+	 condition may even be constant false) while the epilog still runs
+	 all iterations of the original loop, so keep the bound we inherited
+	 from it.  */
+      if (desc->cmp != NE_EXPR || desc->control.no_overflow)
+	{
+	  new_loop->any_upper_bound = true;
+	  new_loop->nb_iterations_upper_bound = factor - 1;
+	  /* We do not really know estimate on number of iterations, since we
+	     do not track any estimates modulo unroll factor.
+	     Scale loop profile.  It may be more realistic to scale loop
+	     profile to factor / 2 - 1, but vectorizer also uses factor - 1.  */
+	  scale_loop_profile (new_loop, profile_probability::always (),
+			      factor - 1);
+	}
+      /* Drop estimate from loop_info, see above.  */
       new_loop->any_estimate = false;
-      scale_loop_profile (new_loop, profile_probability::always (), factor - 1);
     }
   else
     new_exit = single_dom_exit (loop);
