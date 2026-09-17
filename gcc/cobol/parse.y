@@ -10907,7 +10907,8 @@ ffi_by_ref:     scalar_arg[refer]
         |       num_literal
                 {
                   cbl_message(@1, MfCallLiteral,
-                              "cannot pass %qs BY REFERENCE", $1->data.initial);
+                              "cannot pass %qs BY REFERENCE",
+                              $1->data.original());
                   cbl_refer_t *r = new_reference($1);
                   $$ = new cbl_ffi_arg_t(by_content_e, r);
                 }
