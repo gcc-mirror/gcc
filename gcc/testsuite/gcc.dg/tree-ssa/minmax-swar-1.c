@@ -1,47 +1,49 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-forwprop1 -fdump-tree-optimized" } */
-/* { dg-require-effective-target int32 } */
+
+#define SHIFT (sizeof (int) * __CHAR_BIT__ - 1)
 
 /* The branchless min and max that x264's x264_median writes.  The existing
-   rule turns x & (x >> 31) into MIN <x, 0>; these have to finish the job.  */
+   rule turns x & (x >> (precision - 1)) into MIN <x, 0>; these have to finish
+   the job.  */
 
 int
 swar_min (int a, int b)
 {
   int t = a - b;
-  return b + (t & (t >> 31));
+  return b + (t & (t >> SHIFT));
 }
 
 int
 swar_max (int a, int b)
 {
   int t = a - b;
-  return a - (t & (t >> 31));
+  return a - (t & (t >> SHIFT));
 }
 
 int
 swar_min_not (int a, int b)
 {
   int t = a - b;
-  return a - (t & ~(t >> 31));
+  return a - (t & ~(t >> SHIFT));
 }
 
 int
 swar_max_not (int a, int b)
 {
   int t = a - b;
-  return b + (t & ~(t >> 31));
+  return b + (t & ~(t >> SHIFT));
 }
 
 /* Both uses of the one difference have to fold.  */
 int
 swar_median (int a, int b, int c)
 {
-  int t = (a - b) & ((a - b) >> 31);
+  int t = (a - b) & ((a - b) >> SHIFT);
   a -= t;
   b += t;
-  b -= (b - c) & ((b - c) >> 31);
-  b += (a - b) & ((a - b) >> 31);
+  b -= (b - c) & ((b - c) >> SHIFT);
+  b += (a - b) & ((a - b) >> SHIFT);
   return b;
 }
 

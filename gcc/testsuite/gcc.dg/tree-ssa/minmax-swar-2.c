@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fwrapv -fdump-tree-optimized" } */
-/* { dg-require-effective-target int32 } */
+
+#define SHIFT (sizeof (int) * __CHAR_BIT__ - 1)
 
 /* With a wrapping difference the identity fails: for a = INT_MIN, b = 1 the
    difference wraps positive and the branchless form returns b.  The inner
@@ -11,14 +12,14 @@ int
 swar_min (int a, int b)
 {
   int t = a - b;
-  return b + (t & (t >> 31));
+  return b + (t & (t >> SHIFT));
 }
 
 int
 swar_max (int a, int b)
 {
   int t = a - b;
-  return a - (t & (t >> 31));
+  return a - (t & (t >> SHIFT));
 }
 
 /* { dg-final { scan-tree-dump-times "MIN_EXPR <\[^,\]*, 0>" 2 "optimized" } } */
