@@ -82,6 +82,7 @@ ALGOL68_OBJS = algol68/a68-lang.o \
                algol68/a68-parser-scanner.o \
                algol68/a68-parser-scope.o \
                algol68/a68-parser-serial-dsa.o \
+               algol68/a68-parser-sprops.o \
                algol68/a68-parser-taxes.o \
                algol68/a68-parser-top-down.o \
                algol68/a68-parser-victal.o \

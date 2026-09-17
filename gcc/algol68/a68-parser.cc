@@ -298,6 +298,82 @@ a68_is_loop_keyword (NODE_T *p)
     }
 }
 
+/* Whether the construct denoted by P is a declaration that introduces some
+   defining identifier or indicant.  */
+
+bool
+a68_is_declaration (NODE_T *p)
+{
+  switch (ATTRIBUTE (p))
+    {
+    case IDENTITY_DECLARATION:
+    case VARIABLE_DECLARATION:
+    case PROCEDURE_DECLARATION:
+    case PROCEDURE_VARIABLE_DECLARATION:
+    case PRIORITY_DECLARATION:
+    case BRIEF_OPERATOR_DECLARATION:
+    case OPERATOR_DECLARATION:
+    case MODE_DECLARATION:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Whether the construct denoted by P yields a value.  */
+
+bool
+a68_yields_value (NODE_T *p)
+{
+  switch (ATTRIBUTE (p))
+    {
+    case ACCESS_CLAUSE:
+    case ASSERTION:
+    case UNIT:
+    case ROUTINE_TEXT:
+    case ASSIGNATION:
+    case TERTIARY:
+    case MONADIC_FORMULA:
+    case FORMULA:
+    case SECONDARY:
+    case SLICE:
+    case SELECTION:
+    case PRIMARY:
+    case GENERATOR:
+    case CALL:
+    case CAST:
+    case AND_FUNCTION:
+    case OR_FUNCTION:
+    case FORMAL_HOLE:
+    case IDENTITY_RELATION:
+    case EMPTY_SYMBOL:
+    case NIHIL:
+    case SKIP:
+    case PARALLEL_CLAUSE:
+    case SERIAL_CLAUSE:
+    case CLOSED_CLAUSE:
+    case ENCLOSED_CLAUSE:
+    case LOOP_CLAUSE:
+    case CONDITIONAL_CLAUSE:
+    case CASE_CLAUSE:
+    case CONFORMITY_CLAUSE:
+    case COLLATERAL_CLAUSE:
+    case DENOTATION:
+    case IDENTIFIER:
+    case DEREFERENCING:
+    case DEPROCEDURING:
+    case PROCEDURING:
+    case WIDENING:
+    case UNITING:
+    case ROWING:
+    case VOIDING:
+    case JUMP:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Get good attribute.  */
 
 enum a68_attribute
@@ -599,6 +675,15 @@ a68_parser (const char *filename)
       a68_serial_dsa (TOP_NODE (&A68_JOB));
     }
 
+  /* Static properties.  */
+  if (ERROR_COUNT (&A68_JOB) == 0)
+    {
+      a68_sprops (TOP_NODE (&A68_JOB));
+    }
+
+  // XXX
+  //  a68_dump_parse_tree (TOP_NODE (&A68_JOB), false, false, true);
+
   /* Finalise syntax tree.  */
   if (ERROR_COUNT (&A68_JOB) == 0)
     {
@@ -671,6 +756,8 @@ a68_new_node (void)
   DYNAMIC_STACK_ALLOCS (z) = false;
   PUBLICIZED (z) = false;
   NEGATED (z) = false;
+  ORIGIN (z) = NO_ORIGIN;
+  ACCESS (z) = ACCESS_DIR;
   return z;
 }
 
@@ -791,6 +878,8 @@ a68_new_tag (void)
   PUBLICIZED (z) = false;
   ASCRIBED_ROUTINE_TEXT (z) = false;
   LOWERER (z) = NO_LOWERER;
+  ORIGIN (z) = NO_ORIGIN;
+  ACCESS (z) = ACCESS_DIR;
   TAX_TREE_DECL (z) = NULL_TREE;
   MOIF (z) = NO_MOIF;
   EXTERN_SYMBOL (z) = NO_TEXT;

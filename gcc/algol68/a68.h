@@ -340,6 +340,8 @@ char *a68_new_string (const char *t, ...);
 const char *a68_attribute_name (enum a68_attribute attr);
 location_t a68_get_node_location (NODE_T *p);
 location_t a68_get_line_location (LINE_T *line, const char *pos);
+bool a68_yields_value (NODE_T *p);
+bool a68_is_declaration (NODE_T *p);
 
 /* a68-parser-top-down.cc  */
 
@@ -522,6 +524,10 @@ void a68_scope_checker (NODE_T *p);
 /* a68-parser-serial-dsa.cc  */
 
 void a68_serial_dsa (NODE_T *p);
+
+/* a68-parser-sprops.cc  */
+
+void a68_sprops (NODE_T *p);
 
 /* a68-parser-pragmat.cc */
 
@@ -1096,7 +1102,8 @@ char *a68_find_archive_export_data (const char *filename, int fd, size_t *size);
 
 /* a68-parser-debug.cc  */
 
-void a68_dump_parse_tree (NODE_T *p, bool tables = false, bool levels = false);
+void a68_dump_parse_tree (NODE_T *p, bool tables = false, bool levels = false,
+			  bool sprops = false);
 void a68_dump_modes (MOID_T *m);
 void a68_dump_moif (MOIF_T *moif);
 

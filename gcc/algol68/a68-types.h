@@ -69,6 +69,28 @@ enum a68_tree_index
   ATI_MAX
 };
 
+enum a68_access
+{
+  /* Access.  See a68-parser-sprops.cc.  */
+  NO_ACCESS = 0,
+  ACCESS_NIL,
+  ACCESS_DIR,
+  ACCESS_IND,
+  ACCESS_VAR
+};
+
+typedef enum a68_access ACCESS_T;
+
+enum a68_kindo
+{
+  /* Kind of origin. See a68-parser-sprops.cc.  */
+  KINDO_NIL = 0,
+  KINDO_CST,
+  KINDO_IDE,
+  KINDO_VAR,
+  KINDO_GEN
+};
+
 /*
  * Type definitions.
  */
@@ -318,52 +340,25 @@ struct GTY(()) OPTIONS_T
   bool nil_checking;
 };
 
-/* The access class static property of a stored value determines how the value
-   can be reached at run-time.  It is used by the lowering pass in order to
-   minimize copies at run-time.
+/* An ORIGIN_T is a set of static properties that keep track of the story of
+   the value represented by an AST node, i.e. the way it has been obtained.
 
-   CONSTANT is for constant literals.  At run-time these literals will either
-   reside in operand instructions or in space allocated in CONSTAB%.
+   KINDO is the kind of the origin.
+   BNO is the block number of the origin.
+   DEREFO is the flag dereferencing of the origin.
+   GENO is the flag local generator of the origin.
+   DIAGO is the location of the origin.  */
 
-   DIRIDEN (direct identifier) means that the value is stored on IDST% at some
-   static address.  This is the access class used for values ascribed to
-   identifiers as long as the block in hich they are declared has not been
-   left.  It is also used for values resulting from actions such as the
-   selection from a value possessed by an identifier or the dereferencing fo a
-   name corespodning to a variable.
+#define NO_ORIGIN ((ORIGIN_T *) 0)
 
-   VARIDEN (variable identifier) is used for values which are names/variables.
-   The name is stored on IDST%.  The static elaboration of the dereferencing of
-   a variable with access VARIDEN results in a value with access DIRIDEN, not
-   requiring any run-time action.  Same happens with selections of variables of
-   access VARIDEN.
-
-   INDIDEN (indirect identifier) is used for values that are stored in a memory
-   location in IDST%.  The static elaboration of a dereferencing applied to a
-   value of access DIRIDEN.
-
-   DIRWOST (direct working stack) is very much like DIRIDEN, except that the
-   value is stored in WOST% rather than in IDST%.  This access is used for the
-   result of an action when this result does not preexist in memory and hence
-   has to be constructed in WOST%.
-
-   INDWOST (indirect working stack) is very similar to INDIDEN.  Such an access
-   can be obtained for example through the static elaboration of the
-   dereferencing of a name the access of which is DIRWOST.
-
-   NIHIL is used to characterize the absence of value.  This is used in the
-   static elaboration of a jump, a voiding and a call ith a void result.
-
-   Note that in all these classes we assume as run-time the intermediate
-   language level we are lowering to, i.e. GENERIC.  A DIRIDEN value, for
-   example, can very well stored in a register depending on further compiler
-   optimizations.  */
-
-#define ACCESS_NIHIL 0
-#define ACCESS_CONSTANT 1
-#define ACCESS_DIRIDEN 2
-#define ACCESS_INDIDEN 3
-#define ACCESS_DIRWOST 4
+struct GTY(()) ORIGIN_T
+{
+  enum a68_kindo kindo;
+  int bno;
+  bool derefo;
+  bool geno;
+  location_t diago;
+};
 
 /* A NODE_T is a node in the A68 Syntax tree produced by the lexer-scanner and
    later expanded by the Mailloux parser.
@@ -424,7 +419,11 @@ struct GTY(()) OPTIONS_T
    pass.
 
    ORIGIN is a static property that describes the history of the entity denoted
-   by the node.  This is only used in nodes denoting values.
+   by the node.  This is only used in nodes denoting constructs that yield a
+   value, i.e. units.
+
+   ACCESS is a static property that describes how to compute the value yielded
+   by the node given the GENERIC tree it lowers to.
 
    DYNAMIC_STACK_ALLOCS is a flag used in serial clause nodes.  It determines
    whether the elaboration of the phrases in the serial clause may involve
@@ -459,6 +458,8 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) NODE_T
   bool dynamic_stack_allocs;
   bool publicized;
   bool negated;
+  ORIGIN_T *origin;
+  enum a68_access access;
 };
 
 #define NO_NODE ((NODE_T *) 0)
@@ -620,7 +621,13 @@ struct GTY(()) TABLE_T
    module declaration.  This is only used in entries where MOIF is not NO_MOIF.
 
    LOWERER is a lowering routine defined in a68-low-prelude.cc.  These are used
-   in taxes that denote some pre-defined operator.  */
+   in taxes that denote some pre-defined operator.
+
+   ORIGIN is a static property that describes the history of the value being
+   ascribed to the identifier.
+
+   ACCESS is a static property that describes how to compute the value yielded
+   by the identifier given the GENERIC tree it lowers to.  */
 
 struct GTY((chain_next ("%h.next"))) TAG_T
 {
@@ -635,6 +642,8 @@ struct GTY((chain_next ("%h.next"))) TAG_T
   tree tree_decl;
   MOIF_T *moif;
   LOWERER_T lowerer;
+  ORIGIN_T *origin;
+  enum a68_access access;
   TAG_T *next, *body;
   const char *extern_symbol;
 };
@@ -911,16 +920,16 @@ struct GTY(()) A68_T
  * in order to achieve a nice ALGOL-like field OF struct style.
  */
 
+#define ACCESS(p) ((p)->access)
 #define ASM_LABEL(m) ((m)->asm_label)
 #define BACKWARD(p) (p = PREVIOUS (p))
-#define DEFLEX(p) (DEFLEXED (p) != NO_MOID ? DEFLEXED(p) : (p))
-#define FORWARD(p) ((p) = NEXT (p))
 #define A(p) ((p)->a)
 #define ANNOTATION(p) ((p)->annotation)
 #define ANONYMOUS(p) ((p)->anonymous)
 #define ATTRIBUTE(p) ((p)->attribute)
 #define ASCRIBED_ROUTINE_TEXT(p) ((p)->ascribed_routine_text)
 #define B(p) ((p)->b)
+#define BNO(p) ((p)->origin->bno)
 #define BODY(p) ((p)->body)
 #define CAST(p) ((p)->cast)
 #define CHAR_IN_LINE(p) ((p)->char_in_line)
@@ -931,9 +940,11 @@ struct GTY(()) A68_T
 #define COMMENT_LINE(p) ((p)->comment_line)
 #define COMMENT_TYPE(p) ((p)->comment_type)
 #define CTYPE(p) ((p)->ctype)
+#define DEFLEX(p) (DEFLEXED (p) != NO_MOID ? DEFLEXED(p) : (p))
 #define DEFLEXED(p) ((p)->deflexed_mode)
-#define DEREFO(p) ((p).derefo)
+#define DEREFO(p) ((p)->origin->derefo)
 #define DERIVATE(p) ((p)->derivate)
+#define DIAGO(p) ((p)->origin->diago)
 #define DIM(p) ((p)->dim)
 #define DYNAMIC_STACK_ALLOCS(p) ((p)->dynamic_stack_allocs)
 #define EQUIVALENT(p) ((p)->equivalent_mode)
@@ -950,11 +961,10 @@ struct GTY(()) A68_T
 #define F(p) ((p)->f)
 #define FILE_SOURCE_FD(p) ((p)->file_source_fd)
 #define FILE_SOURCE_NAME(p) ((p)->file_source_name)
-#define FLEXO(p) ((p).flexo)
-#define FLEXO_KNOWN(p) ((p).flexo_known)
+#define FORWARD(p) ((p) = NEXT (p))
 #define G(p) ((p)->g)
 #define GINFO(p) ((p)->genie)
-#define GENO(p) ((p).geno)
+#define GENO(p) ((p)->origin->geno)
 #define GET(p) ((p)->get)
 #define GPARENT(p) (PARENT (GINFO (p)))
 #define GREEN(p) ((p)->green)
@@ -986,6 +996,7 @@ struct GTY(()) A68_T
 #define JUMP_STAT(p) ((p)->jump_stat)
 #define JUMP_TO(p) ((p)->jump_to)
 #define K(q) ((q)->k)
+#define KINDO(p) ((p)->origin->kindo)
 #define LABELS(p) ((p)->labels)
 #define LAST(p) ((p)->last)
 #define LAST_LINE(p) ((p)->last_line)
@@ -1059,6 +1070,7 @@ struct GTY(()) A68_T
 #define OPTION_LIST(p) (OPTIONS (p).list)
 #define OPTION_LOCAL(p) (OPTIONS (p).local)
 #define OPTION_NODEMASK(p) (OPTIONS (p).nodemask)
+#define ORIGIN(p) ((p)->origin)
 #define OUT(p) ((p)->out)
 #define OUTER(p) ((p)->outer)
 #define P(q) ((q)->p)

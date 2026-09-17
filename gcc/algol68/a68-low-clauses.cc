@@ -164,10 +164,9 @@ a68_lower_completer (NODE_T *p ATTRIBUTE_UNUSED, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 
    Parse tree:
 
-   initialiser series : serial clause, semi symbol, declaration list;
-                        initialiser series, declaration list;
-			initialiser series, semi symbol, unit;
-			initialiser series, semi symbol, labeled unit;
+   initialiser series : declaration list;
+                        serial clause, semi symbol, declaration list;
+			enquiry clause, semi symbol, declaration list;
 			initialiser series, semi symbol, declaration list.
 
    GENERIC:
@@ -196,7 +195,6 @@ a68_lower_initialiser_series (NODE_T *p, LOW_CTX_T ctx)
                      unit;
 		     serial clause, semi symbol, unit;
 		     serial clause, exit symbol, labeled unit;
-		     serial clause, semi_symbol, declaration list;
 		     initialiser series, semi symbol, unit;
 		     initialiser series, semi symbol, labeled unit.
 
@@ -230,8 +228,7 @@ a68_lower_serial_clause (NODE_T *p, LOW_CTX_T ctx)
 	}
       else
 	{
-	  /* Append the result of either the unit or the declarations list in
-	     the current statements list.  */
+	  /* Append the result of the unit in the current statements list.  */
 	  a68_add_stmt (a68_lower_tree (NEXT (NEXT (SUB (p))), ctx));
 	}
     }
@@ -240,8 +237,8 @@ a68_lower_serial_clause (NODE_T *p, LOW_CTX_T ctx)
       /* Traverse down for side-effects.  */
       (void) a68_lower_tree (SUB (p), ctx);
 
-      /* Append the result of either the unit or the declarations list in the
-	 current statements list.  */
+      /* Append the result of the unit or labeled unit in the current
+	 statements list.  */
       a68_add_stmt (a68_lower_tree (NEXT (NEXT (SUB (p))), ctx));
     }
   else
@@ -1369,9 +1366,7 @@ a68_lower_parallel_clause (NODE_T *p ATTRIBUTE_UNUSED,
 /* Lower a closed clause.
 
      closed clause : open symbol, serial clause, close symbol;
-                     open symbol, initialiser series, close symbol;
-		     begin symbol, serial clause, end symbol;
-		     begin symbol, initialiser series, end symbol;
+		     begin symbol, serial clause, end symbol.
 
   This function returns a BIND_EXPR.  */
 

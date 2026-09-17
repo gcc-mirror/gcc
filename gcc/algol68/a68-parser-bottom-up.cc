@@ -2416,6 +2416,7 @@ reduce_enquiry_clauses (NODE_T *p)
 		      ENQUIRY_CLAUSE, ENQUIRY_CLAUSE, SEMI_SYMBOL, UNIT, STOP);
 	      reduce (q, NO_NOTE, &siga,
 		      INITIALISER_SERIES, ENQUIRY_CLAUSE, SEMI_SYMBOL, DECLARATION_LIST, STOP);
+	      /* Errors  */
 	      reduce (q, strange_separator, &siga,
 		      ENQUIRY_CLAUSE, ENQUIRY_CLAUSE, COMMA_SYMBOL, UNIT, STOP);
 	      reduce (q, strange_separator, &siga,
@@ -2435,6 +2436,7 @@ reduce_enquiry_clauses (NODE_T *p)
 		      ENQUIRY_CLAUSE, INITIALISER_SERIES, SEMI_SYMBOL, UNIT, STOP);
 	      reduce (q, NO_NOTE, &siga,
 		      INITIALISER_SERIES, INITIALISER_SERIES, SEMI_SYMBOL, DECLARATION_LIST, STOP);
+	      /* Errors  */
 	      reduce (q, strange_separator, &siga,
 		      ENQUIRY_CLAUSE, INITIALISER_SERIES, COMMA_SYMBOL, UNIT, STOP);
 	      reduce (q, strange_separator, &siga,

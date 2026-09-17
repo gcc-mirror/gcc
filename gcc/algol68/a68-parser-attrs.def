@@ -20,6 +20,9 @@
    messages and debug dumps.  Please make sure to write them in a way you would
    expect to be used in statements like "[...] near ATT".  */
 
+/* If you add a new entry, please update the a68_is_* classifier functions in
+   a68-parser.cc.  */
+
 A68_ATTR(A68_PATTERN, "transput pattern")
 A68_ATTR(ACCESS_CLAUSE, "access clause")
 A68_ATTR(ACCESS_SYMBOL, "access-symbol")

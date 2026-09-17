@@ -36,7 +36,8 @@
 
 static void
 a68_dump_parse_tree_1 (NODE_T *p, const text_art::dump_widget_info &dwi,
-		       text_art::tree_widget &widget, bool tables, bool levels)
+		       text_art::tree_widget &widget, bool tables, bool levels,
+		       bool sprops)
 {
   for (; p != NO_NODE; FORWARD (p))
     {
@@ -63,6 +64,40 @@ a68_dump_parse_tree_1 (NODE_T *p, const text_art::dump_widget_info &dwi,
       else
 	levelsinfo = xstrdup ("");
 
+      char *spropsinfo;
+      if (sprops && a68_yields_value (p))
+	{
+	  const char *kindo, *access;
+
+	  switch (KINDO (p))
+	    {
+	    case KINDO_NIL: kindo = "nil"; break;
+	    case KINDO_CST: kindo = "cst"; break;
+	    case KINDO_IDE: kindo = "ide"; break;
+	    case KINDO_VAR: kindo = "var"; break;
+	    case KINDO_GEN: kindo = "gen"; break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  switch (ACCESS (p))
+	    {
+	    case NO_ACCESS:  access = "voided"; break;
+	    case ACCESS_DIR: access = "dir"; break;
+	    case ACCESS_IND: access = "ind"; break;
+	    case ACCESS_VAR: access = "var"; break;
+	    default:
+	      gcc_unreachable ();
+	    }
+
+	  spropsinfo = xasprintf ("(%s,%d,%d,%d) %s",
+				  kindo, BNO (p),
+				  DEREFO (p), GENO (p),
+				  access);
+	}
+      else
+	spropsinfo = xstrdup ("");
+
       char mode[BUFFER_SIZE];
       mode[0] = '\0';
       if (MOID (p) != NO_MOID)
@@ -87,7 +122,7 @@ a68_dump_parse_tree_1 (NODE_T *p, const text_art::dump_widget_info &dwi,
       location_t loc = a68_get_node_location (p);
       std::unique_ptr<text_art::tree_widget> cwidget
 	= text_art::tree_widget::from_fmt (dwi, nullptr,
-					   "%s:%d:%d [%d] %s%s%s%s%s",
+					   "%s:%d:%d [%d] %s%s%s%s%s%s",
 					   LOCATION_FILE (loc),
 					   LOCATION_LINE (loc),
 					   LOCATION_COLUMN (loc),
@@ -96,18 +131,20 @@ a68_dump_parse_tree_1 (NODE_T *p, const text_art::dump_widget_info &dwi,
 					   symbol,
 					   mode,
 					   tableinfo,
-					   levelsinfo);
+					   levelsinfo,
+					   spropsinfo);
       free (symbol);
       free (tableinfo);
       free (levelsinfo);
+      free (spropsinfo);
 
-      a68_dump_parse_tree_1 (SUB (p), dwi, *cwidget, tables, levels);
+      a68_dump_parse_tree_1 (SUB (p), dwi, *cwidget, tables, levels, sprops);
       widget.add_child (std::move (cwidget));
     }
 }
 
 void
-a68_dump_parse_tree (NODE_T *p, bool tables, bool levels)
+a68_dump_parse_tree (NODE_T *p, bool tables, bool levels, bool sprops)
 {
   text_art::style_manager sm;
   text_art::style::id_t default_style_id (sm.get_or_create_id (text_art::style ()));
@@ -116,7 +153,7 @@ a68_dump_parse_tree (NODE_T *p, bool tables, bool levels)
   std::unique_ptr<text_art::tree_widget> widget
     = text_art::tree_widget::from_fmt (dwi, nullptr, "Parse Tree");
 
-  a68_dump_parse_tree_1 (p, dwi, *widget, tables, levels);
+  a68_dump_parse_tree_1 (p, dwi, *widget, tables, levels, sprops);
 
   text_art::canvas c (widget->to_canvas (sm));
   pretty_printer *const pp = global_dc->get_reference_printer ();

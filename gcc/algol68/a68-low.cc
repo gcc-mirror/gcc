@@ -1051,7 +1051,7 @@ a68_low_assignation (NODE_T *p,
 	  else
 	    {
 	      /* The name at the lhs is either a variable or a component ref as
-		 a l-value.  It is ok to evaluate it as an r-value as well as
+		 an l-value.  It is ok to evaluate it as an r-value as well as
 		 doing so introduces no side-effects.  */
 	      effective_lhs = lhs;
 	    }
