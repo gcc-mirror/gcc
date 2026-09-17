@@ -168,6 +168,7 @@ LP_COPYBOOKS = \
 	$(LP_COPYDIR_BUILD)/posix-localtime.cpy \
 	$(LP_COPYDIR_BUILD)/posix-lseek.cpy \
 	$(LP_COPYDIR_BUILD)/posix-mkdir.cpy \
+	$(LP_COPYDIR_BUILD)/posix-close.cpy \
 	$(LP_COPYDIR_BUILD)/posix-open.cpy \
 	$(LP_COPYDIR_BUILD)/posix-read.cpy \
 	$(LP_COPYDIR_BUILD)/posix-stat.cpy \
