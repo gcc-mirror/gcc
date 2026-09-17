@@ -5908,9 +5908,11 @@ make_prologue_seq (void)
 }
 
 /* Emit a sequence of insns to zero the call-used registers before RET
-   according to ZERO_REGS_TYPE.  */
+   according to ZERO_REGS_TYPE.  Return true if a sequence was emitted, in
+   which case crtl->must_be_zero_on_return has grown and the caller has to
+   refresh the data flow information.  */
 
-static void
+static bool
 gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 {
   bool only_gpr = true;
@@ -5919,12 +5921,12 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
 
   /* No need to zero call-used-regs in main ().  */
   if (MAIN_NAME_P (DECL_NAME (current_function_decl)))
-    return;
+    return false;
 
   /* No need to zero call-used-regs if __builtin_eh_return is called
      since it isn't a normal function return.  */
   if (crtl->calls_eh_return)
-    return;
+    return false;
 
   /* If only_gpr is true, only zero call-used registers that are
      general-purpose registers; if only_used is true, only zero
@@ -5988,7 +5990,7 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
     }
 
   if (hard_reg_set_empty_p (selected_hardregs))
-    return;
+    return false;
 
   /* Now that we have a hard register set that needs to be zeroed, pass it to
      target to generate zeroing sequence.  */
@@ -6005,21 +6007,20 @@ gen_call_used_regs_seq (rtx_insn *ret, unsigned int zero_regs_type)
   gcc_assert (hard_reg_set_subset_p (zeroed_hardregs, all_call_used_regs));
 
   rtx_insn *seq = end_sequence ();
-  if (seq)
-    {
-      /* Emit the memory blockage and register clobber asm volatile before
-	 the whole sequence.  */
-      start_sequence ();
-      expand_asm_reg_clobber_mem_blockage (zeroed_hardregs);
-      rtx_insn *seq_barrier = end_sequence ();
+  if (!seq)
+    return false;
 
-      emit_insn_before (seq_barrier, ret);
-      emit_insn_before (seq, ret);
+  /* Emit the memory blockage and register clobber asm volatile before
+     the whole sequence.  */
+  start_sequence ();
+  expand_asm_reg_clobber_mem_blockage (zeroed_hardregs);
+  rtx_insn *seq_barrier = end_sequence ();
 
-      /* Update the data flow information.  */
-      crtl->must_be_zero_on_return |= zeroed_hardregs;
-      df_update_exit_block_uses ();
-    }
+  emit_insn_before (seq_barrier, ret);
+  emit_insn_before (seq, ret);
+
+  crtl->must_be_zero_on_return |= zeroed_hardregs;
+  return true;
 }
 
 
@@ -6846,12 +6847,20 @@ pass_zero_call_used_regs::execute (function *fun)
   /* Iterate over the function's return instructions and insert any
      register zeroing required by the -fzero-call-used-regs command-line
      option or the "zero_call_used_regs" function attribute.  */
+  bool zeroed = false;
   FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
     {
       rtx_insn *insn = BB_END (e->src);
       if (JUMP_P (insn) && ANY_RETURN_P (JUMP_LABEL (insn)))
-	gen_call_used_regs_seq (insn, zero_regs_type);
+	zeroed |= gen_call_used_regs_seq (insn, zero_regs_type);
     }
+
+  /* The registers in must_be_zero_on_return are uses of the exit block, see
+     df_epilogue_uses_p.  Growing that set also changes which registers a
+     sibling call is recorded as clobbering, see df_get_call_refs, so the
+     calls have to be rescanned as well.  */
+  if (zeroed)
+    df_update_entry_exit_and_calls ();
 
   return 0;
 }
