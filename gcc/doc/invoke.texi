@@ -16946,6 +16946,12 @@ file if the target supports arbitrary sections.  The name of the
 function or the name of the data item determines the section's name
 in the output file.
 
+With link-time optimization, an implicitly generated function section name is
+derived from the final assembler name unless the compiler deliberately places
+related functions, such as a thunk and its target, in the same section.  The
+final assembler name may include a compiler-generated suffix that distinguishes
+identically named internal-linkage items from different translation units.
+
 Use these options on systems where the linker can perform optimizations to
 improve locality of reference in the instruction space.  Most systems using the
 ELF object format have linkers with such optimizations.  On AIX, the linker

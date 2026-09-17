@@ -363,7 +363,8 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
 
       current_function_decl = thunk_fndecl;
 
-      /* Ensure thunks are emitted in their correct sections.  */
+      /* This thunk is emitted directly and bypasses cfgexpand, so resolve
+	 its section here.  */
       resolve_unique_section (thunk_fndecl, 0,
 			      flag_function_sections);
 
@@ -431,10 +432,6 @@ expand_thunk (cgraph_node *node, bool output_asm_thunks,
       a = DECL_ARGUMENTS (thunk_fndecl);
 
       current_function_decl = thunk_fndecl;
-
-      /* Ensure thunks are emitted in their correct sections.  */
-      resolve_unique_section (thunk_fndecl, 0,
-			      flag_function_sections);
 
       bitmap_obstack_initialize (NULL);
 

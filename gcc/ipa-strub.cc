@@ -3124,10 +3124,6 @@ pass_ipa_strub::execute (function *)
 
 	    current_function_decl = thunk_fndecl;
 
-	    /* Ensure thunks are emitted in their correct sections.  */
-	    resolve_unique_section (thunk_fndecl, 0,
-				    flag_function_sections);
-
 	    bitmap_obstack_initialize (NULL);
 
 	    /* Build the return declaration for the function.  */
