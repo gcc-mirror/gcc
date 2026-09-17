@@ -1176,7 +1176,7 @@ proc v3_check_preprocessor_condition { name cond { inc "" } } {
 	"
     set flags "$cxxflags $DEFAULT_CXXFLAGS -Werror"
 
-    return [v3_try_preprocess name $code $flags]
+    return [v3_try_preprocess $name $code $flags]
 }
 
 # Return 1 if libstdc++ defines macro for the current target, 0 otherwise.
