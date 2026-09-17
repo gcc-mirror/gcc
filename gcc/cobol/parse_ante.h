@@ -3333,7 +3333,7 @@ update_prior_invalid_field( const cbl_field_t *field = nullptr) {
     if( ! field ) field = f; // fake it
     if( field->level <= f->level ) {
       if( f->type == FldInvalid && f->data.has_initial_value() ) {
-        if( f->has_attr(quoted_e) ) {
+        if( f->has_attr(quoted_e) || is_figconst(f) ) {
           f->type = FldAlphanumeric;
           assert(0 < f->char_capacity());
         }
@@ -3376,9 +3376,10 @@ field_add( const cbl_loc_t& loc, cbl_field_t *field ) {
       return NULL;
       break;
     }
-  } else {
-    update_prior_invalid_field(field);
-  }
+  } 
+
+  update_prior_invalid_field(field);
+
   return field;
 }
 
