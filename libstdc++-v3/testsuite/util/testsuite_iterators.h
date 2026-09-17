@@ -47,6 +47,9 @@
 #define ITERATOR_VERIFY(x) VERIFY(x)
 #endif
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // deleted functions
+
 namespace __gnu_test
 {
   /**
@@ -193,24 +196,14 @@ namespace __gnu_test
       return tmp;
     }
 
-#if __cplusplus >= 201103L
     template<typename U>
       void operator,(const U&) const = delete;
 
     void operator&() const = delete;
-#else
-  private:
-    template<typename U>
-      void operator,(const U&) const;
-
-    void operator&() const;
-#endif
   };
 
-#if __cplusplus >= 201103L
   template<typename T, typename U>
     void operator,(const T&, const output_iterator_wrapper<U>&) = delete;
-#endif
 
 #if __cplusplus >= 201103L
   using std::remove_cv;
@@ -331,24 +324,14 @@ namespace __gnu_test
       return tmp;
     }
 
-#if __cplusplus >= 201103L
     template<typename U>
       void operator,(const U&) const = delete;
 
     void operator&() const = delete;
-#else
-  private:
-    template<typename U>
-      void operator,(const U&) const;
-
-    void operator&() const;
-#endif
   };
 
-#if __cplusplus >= 201103L
   template<typename T, typename U>
     void operator,(const T&, const input_iterator_wrapper<U>&) = delete;
-#endif
 
   /**
    * @brief forward_iterator wrapper for pointer
@@ -607,11 +590,11 @@ namespace __gnu_test
     T& operator[](std::ptrdiff_t n) const
     { return *(*this + n); }
 
-#if __cplusplus >= 201103L
     // Ensure that the iterator's difference_type is always used.
     template<typename D> void operator+=(D) = delete;
     template<typename D> void operator-=(D) = delete;
     template<typename D> void operator[](D) const = delete;
+#if __cplusplus >= 201103L
     template<typename D>
       typename std::enable_if<std::is_integral<D>::value>::type
       operator-(D) const = delete;
@@ -655,13 +638,11 @@ namespace __gnu_test
     operator+(std::ptrdiff_t n, random_access_iterator_wrapper<T> it)
     { return it += n; }
 
-#if __cplusplus >= 201103L
     // Ensure that the iterator's difference_type is always used.
     template<typename T, typename D>
       void operator+(random_access_iterator_wrapper<T>, D) = delete;
     template<typename T, typename D>
       void operator+(D, random_access_iterator_wrapper<T>) = delete;
-#endif
 
 
   template<typename T>
@@ -809,11 +790,11 @@ namespace __gnu_test
       return tmp;
     }
 
-#if __cplusplus >= 201103L
     // Ensure that the iterator's difference_type is always used.
     template<typename D> void operator+=(D) = delete;
     template<typename D> void operator-=(D) = delete;
     template<typename D> void operator[](D) const = delete;
+#if __cplusplus >= 201103L
     template<typename D>
       typename std::enable_if<std::is_integral<D>::value>::type
       operator-(D) const = delete;
@@ -857,13 +838,11 @@ namespace __gnu_test
     operator+(std::ptrdiff_t n, proxy_random_access_iterator_wrapper<T> it)
     { return it += n; }
 
-#if __cplusplus >= 201103L
     // Ensure that the iterator's difference_type is always used.
     template<typename T, typename D>
       void operator+(proxy_random_access_iterator_wrapper<T>, D) = delete;
     template<typename T, typename D>
       void operator+(D, proxy_random_access_iterator_wrapper<T>) = delete;
-#endif
 
   /**
    * @brief A container-type class for holding iterator wrappers
@@ -1292,4 +1271,5 @@ namespace __gnu_test
 
 #endif // C++20
 } // namespace __gnu_test
+#pragma GCC diagnostic pop
 #endif // _TESTSUITE_ITERATORS

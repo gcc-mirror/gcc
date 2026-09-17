@@ -87,16 +87,14 @@ namespace __gnu_test
       ~scope()
       { counter::get()._M_count = _M_count; }
 
-    private:
-      std::size_t _M_count;
-
-#if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
       scope(const scope&) = delete;
       scope& operator=(const scope&) = delete;
-#else
-      scope(const scope&);
-      scope& operator=(const scope&);
-#endif
+#pragma GCC diagnostic pop
+
+    private:
+      std::size_t _M_count;
     };
   };
 

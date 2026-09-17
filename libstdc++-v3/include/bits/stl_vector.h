@@ -173,6 +173,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
 #if _GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions" // deleted functions
 	template<typename = _Tp_alloc_type>
 	  struct _Asan
 	  {
@@ -249,10 +251,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 	      _Vector_impl& _M_impl;
 
-#if __cplusplus >= 201103L
 	      _Reinit(const _Reinit&) = delete;
 	      _Reinit& operator=(const _Reinit&) = delete;
-#endif
 	    };
 
 	    // Tell ASan when unused capacity is initialized to be valid.
@@ -269,15 +269,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      _GLIBCXX20_CONSTEXPR
 	      void _M_grew(size_type __n) { _M_n -= __n; }
 
-#if __cplusplus >= 201103L
 	      _Grow(const _Grow&) = delete;
 	      _Grow& operator=(const _Grow&) = delete;
-#endif
+
 	    private:
 	      _Vector_impl& _M_impl;
 	      size_type _M_n;
 	    };
 	  };
+#pragma GCC diagnostic pop
 
 #define _GLIBCXX_ASAN_ANNOTATE_REINIT \
   typename _Base::_Vector_impl::template _Asan<>::_Reinit const \

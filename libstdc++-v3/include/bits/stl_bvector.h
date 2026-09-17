@@ -1763,12 +1763,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // DR 464. Suggestion for new member functions in standard containers.
       // N.B. DR 464 says nothing about vector<bool> but we need something
       // here due to the using-declaration in __gnu_debug::vector.
-      // vector class.
-#if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
       void data() = delete;
-#else
-      void data() { }
-#endif
+#pragma GCC diagnostic pop
     };
 
 _GLIBCXX_END_NAMESPACE_CONTAINER

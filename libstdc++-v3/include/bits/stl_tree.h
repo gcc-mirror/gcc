@@ -1057,9 +1057,10 @@ namespace __rb_tree
 	    _M_nodes = _Base_ptr();
 	}
 
-#if __cplusplus >= 201103L
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
 	_Reuse_or_alloc_node(const _Reuse_or_alloc_node&) = delete;
-#endif
+#pragma GCC diagnostic pop
 
 	~_Reuse_or_alloc_node()
 	{
