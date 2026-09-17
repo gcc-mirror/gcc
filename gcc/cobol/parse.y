@@ -13103,7 +13103,7 @@ verify_args( const YYLTYPE& loc,
      */
     if( ord < narg ) {
       if( ord < formals.size() ) {
-        error_msg( loc, "parameter %zu %s %qs (%s, capacity %u, %s) "
+        error_msg( parg->refer.loc, "parameter %zu %s %qs (%s, capacity %u, %s) "
                    "invalid for %qs parameter %s %qs (%s, capacity %u, %s)",
                    1 + ord,
                    passby_str(parg->crv),
