@@ -1504,6 +1504,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename _Del>
 	using _UniqAssignable = _UniqCompatible<_Yp, _Del, __shared_ptr&>;
 
+      // Constraint for well-formedness of deleter expression d(p):
+      template<typename _Deleter, typename _Up>
+	using _ValidDeleter = __enable_if_t<
+	  __is_invocable<_Deleter&, _Up&>::value>;
+
     public:
 
 #if __cplusplus > 201402L
@@ -1524,24 +1529,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_enable_shared_from_this_with(__p);
 	}
 
-      template<typename _Yp, typename _Deleter, typename = _SafeConv<_Yp>>
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4110. shared_ptr(nullptr_t, Deleter) is overconstrained, breaking some
+      //       sensible deleters
+
+      template<typename _Yp, typename _Deleter, typename = _SafeConv<_Yp>,
+	       typename = _ValidDeleter<_Deleter, _Yp*>>
 	__shared_ptr(_Yp* __p, _Deleter __d)
 	: _M_ptr(__p), _M_refcount(__p, std::move(__d))
-	{
-	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
-	      "deleter expression d(p) is well-formed");
-	  _M_enable_shared_from_this_with(__p);
-	}
+	{ _M_enable_shared_from_this_with(__p); }
 
       template<typename _Yp, typename _Deleter, typename _Alloc,
-	       typename = _SafeConv<_Yp>>
+	       typename = _SafeConv<_Yp>, typename = _ValidDeleter<_Deleter, _Yp*>>
 	__shared_ptr(_Yp* __p, _Deleter __d, _Alloc __a)
 	: _M_ptr(__p), _M_refcount(__p, std::move(__d), std::move(__a))
-	{
-	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
-	      "deleter expression d(p) is well-formed");
-	  _M_enable_shared_from_this_with(__p);
-	}
+	{ _M_enable_shared_from_this_with(__p); }
 
       template<typename _Deleter>
 	__shared_ptr(nullptr_t __p, _Deleter __d)
@@ -1704,12 +1706,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Yp, typename _Deleter>
 	_SafeConv<_Yp>
 	reset(_Yp* __p, _Deleter __d)
-	{ __shared_ptr(__p, std::move(__d)).swap(*this); }
+	{
+	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
+	    "deleter expression d(p) is well-formed");
+
+	  __shared_ptr(__p, std::move(__d)).swap(*this);
+	}
 
       template<typename _Yp, typename _Deleter, typename _Alloc>
 	_SafeConv<_Yp>
 	reset(_Yp* __p, _Deleter __d, _Alloc __a)
-        { __shared_ptr(__p, std::move(__d), std::move(__a)).swap(*this); }
+	{
+	  static_assert(__is_invocable<_Deleter&, _Yp*&>::value,
+	    "deleter expression d(p) is well-formed");
+
+	  __shared_ptr(__p, std::move(__d), std::move(__a)).swap(*this);
+	}
 
       /// Return the stored pointer.
       element_type*

@@ -102,6 +102,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// @cond undocumented
 
+  // Used as parameter type when constraining nullptr constructor
+  struct __shared_nullptr_ctor_tag
+  {
+    constexpr explicit
+    __shared_nullptr_ctor_tag(__shared_nullptr_ctor_tag*)
+    { }
+  };
+
   // Constraint for overloads taking non-array types.
 #if __cpp_concepts && __glibcxx_type_trait_variable_templates
   template<typename _Tp>
@@ -166,6 +174,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  is_assignable<__shared_ptr<_Tp>&, _Arg>::value, shared_ptr&
 	>::type;
 
+      template<typename _Deleter>
+	using _NullptrDeleter = __enable_if_t<
+	  __is_invocable<_Deleter&, nullptr_t&>::value,
+	  __shared_nullptr_ctor_tag>;
+
     public:
 
       /// The type pointed to by the stored pointer, remove_extent_t<_Tp>
@@ -212,6 +225,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	shared_ptr(_Yp* __p, _Deleter __d)
         : __shared_ptr<_Tp>(__p, std::move(__d)) { }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4110. shared_ptr(nullptr_t, Deleter) is overconstrained...
+
       /**
        *  @brief  Construct a %shared_ptr that owns a null pointer
        *          and the deleter @a __d.
@@ -226,7 +242,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The last owner will call __d(__p)
        */
       template<typename _Deleter>
-	shared_ptr(nullptr_t __p, _Deleter __d)
+	shared_ptr(nullptr_t __p, _Deleter __d,
+		   _NullptrDeleter<_Deleter> = __shared_nullptr_ctor_tag(nullptr))
         : __shared_ptr<_Tp>(__p, std::move(__d)) { }
 
       /**
@@ -265,7 +282,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
        *  The last owner will call __d(__p)
        */
       template<typename _Deleter, typename _Alloc>
-	shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a)
+	shared_ptr(nullptr_t __p, _Deleter __d, _Alloc __a,
+		   _NullptrDeleter<_Deleter> = __shared_nullptr_ctor_tag(nullptr))
 	: __shared_ptr<_Tp>(__p, std::move(__d), std::move(__a)) { }
 
       // Aliasing constructor
