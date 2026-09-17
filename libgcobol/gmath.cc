@@ -2167,7 +2167,7 @@ __gg__int128_to_int128_rounded( cbl_round_t rounded,
     case prohibited_e:
       {
       __int128 fpart = value % factor;
-      if( fpart != 0 )
+      if( fpart != 0 && compute_error)
         {
         *compute_error |= compute_error_truncate;
         }

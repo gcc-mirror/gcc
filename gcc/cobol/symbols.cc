@@ -3093,7 +3093,8 @@ symbol_file( size_t program, const char name[] ) {
       key.program = symbol_at(key.program)->program;
       p = symbols.files.find(key);
       if( p != symbols.files.end() ) {
-        const cbl_file_t *f = cbl_file_of(symbol_at(p->second));
+        // cppcheck-suppress constVariablePointer
+        auto f = cbl_file_of(symbol_at(p->second));
         if( f->attr & global_e ) break;
       }
     }
@@ -4793,88 +4794,120 @@ floating_char_in_string(const char *expanded_picture) {
 
 char *
 expand_picture(const char *picture)
+  {
+  // The caller should free() the return value.
+  assert(strlen(picture) < PICTURE_MAX); // guaranteed by picset() in scanner
+  size_t retval_length = PICTURE_MAX;
+  char *retval = static_cast<char *>(xmalloc(retval_length));
+
+  int ch;
+  int prior_ch = NULLCH;
+  char *d = retval;
+  const char *p = picture;
+  long repeat;
+  int currency_symbol = NULLCH;
+
+  while( (ch = (*p++ & 0xFF) ) )
     {
-    assert(strlen(picture) < PICTURE_MAX); // guaranteed by picset() in scanner
-    size_t retval_length = PICTURE_MAX;
-    char *retval = static_cast<char *>(xmalloc(retval_length));
-    size_t index = 0;
+    if( ch == ascii_oparen )
+      {
+      // Pick up the number after the left parenthesis
+      char *endchar;
+      repeat = strtol(p, &endchar, 10);
 
-    int ch;
-    int prior_ch = '\0';
-    const char *p = picture;
+      // We subtract one because we know that the character just before
+      // the parenthesis was already placed in retval
+      repeat -= 1;
 
-    long repeat;
-
-    int currency_symbol = currency_char_in_string(picture);
-
-    while( (ch = (*p++ & 0xFF) ) )
+      // Update p to the character after the right parenthesis
+      p = endchar + 1;
+      while(repeat--)
         {
-        if( ch == '(' )
-            {
-            // Pick up the number after the left parenthesis
-            char *endchar;
-            repeat = strtol(p, &endchar, 10);
-
-            // We subtract one because we know that the character just before
-            // the parenthesis was already placed in dest
-            repeat -= 1;
-
-            // Update p to the character after the right parenthesis
-            p = endchar + 1;
-
-            if( index + repeat >= retval_length )
-                {
-                retval_length <<= 1;
-                retval = static_cast<char *>(xrealloc(retval, retval_length));
-                }
-
-            while(repeat--)
-                {
-                retval[index++] = prior_ch;
-                }
-            }
-        else
-            {
-            if( index >= retval_length )
-                {
-                retval_length <<= 1;
-                retval = static_cast<char *>(xrealloc(retval, retval_length));
-                }
-            retval[index++] = ch;
-            }
-        prior_ch = ch;
+        *d++ = prior_ch;
         }
-    if( index >= retval_length )
-        {
-        retval_length <<= 1;
-        retval = static_cast<char *>(xrealloc(retval, retval_length));
-        }
-    retval[index++] = '\0';
+      }
+    else
+      {
+      prior_ch = ch;
+      *d++ = ch;
+      }
 
-    size_t dest_length = strlen(retval);
-
-    // We have to take into account the possibility that the currency symbol
-    // mapping might be to a string of more than one character:
-
-    if( currency_symbol )
-        {
-        size_t sign_length = strlen(symbol_currency(currency_symbol)) - 1;
-        if( sign_length )
-            {
-            char *pcurrency = strchr(retval, currency_symbol);
-            assert(pcurrency);
-            memmove(    pcurrency + sign_length,
-                        pcurrency,
-                        dest_length+1 - (pcurrency-retval));
-            for(size_t i=0; i<sign_length; i++)
-                {
-                pcurrency[i] = 'B';
-                }
-            }
-        }
-
-    return retval;
+    if( ! __gg__currency_signs[ch].empty() )
+      {
+      // We are going to be mapping ch to a string in the final result:
+      prior_ch = ch;
+      currency_symbol = ch;
+      }
     }
+
+  size_t dest_length = d-retval;
+
+  // We have to take into account the possibility that the currency symbol
+  // mapping might be to a string of more than one character:
+
+  if( currency_symbol )
+    {
+    size_t sign_length = __gg__currency_signs[currency_symbol].size();
+    assert(0 < sign_length);    
+    if( --sign_length )
+      {
+      char *pcurrency = strchr(retval, currency_symbol);
+      assert(pcurrency);
+      memmove(    pcurrency + sign_length,
+                  pcurrency,
+                  dest_length - (pcurrency-retval));
+      for(size_t i=0; i<sign_length; i++)
+        {
+        pcurrency[i] = ascii_B;
+        }
+      dest_length += sign_length;
+      }
+    }
+  retval[dest_length++] = NULLCH;
+
+  // To ease the workload on interpreting the PICTURE string at run time, we
+  // are going to convert everything we can to upper case.  We also convert
+  // V to decimal point, for the same reason.  Characters that might be
+  // currency symbols have to be left in their uppercase or lowercase original
+  // state.
+  for(size_t i=0; i<dest_length; i++)
+    {
+    switch(retval[i])
+      {
+      case ascii_a:
+      case ascii_c:
+      case ascii_e:
+      case ascii_n:
+      case ascii_p:
+      case ascii_r:
+      case ascii_s:
+      case ascii_x:
+      case ascii_z:
+        retval[i] = TOUPPER(retval[i]);
+        break;
+      case ascii_V:
+      case ascii_v:
+        retval[i] = __gg__decimal_point;
+        break;
+
+      // We need special processing for DB.  When they appear as the final two
+      // characters, they are the accounting sign "DB" indicator and we have to
+      // leave the case as the programmer established it.  Otherwise we have to 
+      // make the 'B' uppercase.
+      
+      case ascii_B:
+      case ascii_b:
+      if( i < dest_length-1 )
+        {
+        retval[i] = TOUPPER(retval[i]);
+        }
+
+
+
+      }
+    }
+  return retval;
+  }
 
 int
 length_of_picture(const char *picture)

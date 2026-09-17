@@ -2138,12 +2138,11 @@ int128_to_field(cblc_field_t   *var,
               ach[var->digits] = NULLCH;
 
               // Convert that string according to the PICTURE clause
-              size_error |= __gg__string_to_numeric_edited(
-                                 as_chars( location),
-                                ach,
-                                target_rdigits,
-                                is_negative,
-                                var->picture);
+              __gg__string_to_numeric_edited(as_chars(location),
+                                             ach,
+                                             target_rdigits,
+                                             is_negative,
+                                             var->picture);
               size_t outlength;
               const char *converted = __gg__iconverter(
                                      DEFAULT_SOURCE_ENCODING,
@@ -2284,6 +2283,38 @@ int128_to_field(cblc_field_t   *var,
       break;
       }
     }
+  }
+
+extern "C"
+int
+__gg__int128_to_ascii_numeric_display(const cblc_field_t  *var,
+                                      unsigned char       *location,
+                                      __int128             value)
+  {
+  bool size_error = false;
+  if( value == 0 && (var->attr & blank_zero_e) )
+    {
+    memset(location, ascii_space, var->capacity);
+    }
+  else
+    {
+    char ach[512];
+    bool is_negative = value < 0;
+
+    // At this point, value is scaled to the target's rdigits
+    size_error |= __gg__binary_to_string_ascii(ach,
+                                               var->digits,
+                                               value);
+    ach[var->digits] = NULLCH;
+
+    // Convert that string according to the PICTURE clause
+    __gg__string_to_numeric_edited(as_chars(location),
+                                       ach,
+                                       var->rdigits,
+                                       is_negative,
+                                       var->picture);
+    }
+  return size_error;
   }
 
 #pragma GCC diagnostic ignored "-Wformat-overflow"

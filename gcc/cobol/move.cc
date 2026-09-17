@@ -15,7 +15,7 @@
  *   contributors may be used to endorse or promote products derived from
  *   this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORSdf
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
@@ -201,7 +201,8 @@ mh_source_is_literalN(cbl_refer_t &destref,
                       tree         size_error)
   {
   bool moved = false;
-  if( sourceref.field->type == FldLiteralN )
+  if(    sourceref.field->type == FldLiteralN
+      && destref.field->type != FldNumericEdited )
     {
     Analyze();
     switch( destref.field->type )
@@ -348,7 +349,6 @@ mh_source_is_literalN(cbl_refer_t &destref,
 
       case FldNumericDisplay:
       case FldNumericBinary:
-      case FldNumericEdited:
       case FldPacked:
         {
         SHOW_PARSE1
@@ -1651,6 +1651,109 @@ mh_binary_to_packed(const cbl_refer_t &destref,
       }
 
     moved = true;
+    }
+
+  return moved;
+  }
+
+static bool
+mh_to_numeric_edited(const cbl_refer_t &destref,
+                     const cbl_refer_t &sourceref,
+                           cbl_round_t  rounded,
+                           tree         size_error)
+  {
+  bool moved = false;
+
+  if(      destref.field->type  == FldNumericEdited
+      &&   destref.field->codeset.stride() == 1
+      && !(destref.field->attr   & scaled_e)
+      && (!(sourceref.field->attr & intermediate_e) || sourceref.field->type == FldLiteralN)
+
+      &&  (    sourceref.field->type == FldNumericBinary
+            || sourceref.field->type == FldNumericBin5
+            || sourceref.field->type == FldNumericDisplay
+            || sourceref.field->type == FldLiteralN
+            || sourceref.field->type == FldIndex
+            || sourceref.field->type == FldPointer ) )
+    {
+    const charmap_t *charmap = __gg__get_charmap(destref.field->codeset.encoding);
+    if( !charmap->is_like_ebcdic() )
+      {
+      tree value = get_binary_value(sourceref, INT128);
+
+      int scaler  = 0;
+      int rdigits = sourceref.field->data.rdigits;
+      if( sourceref.field->attr & scaled_e)
+        {
+        if( sourceref.field->data.rdigits < 0 )
+          {
+          // This is like 9999PPP, where rdigits = -3
+          scaler = sourceref.field->data.rdigits;
+          rdigits = 0;
+          }
+        else
+          {
+          // This is like PPP9999, where rdigits=3 and digits=4
+          rdigits =   sourceref.field->data.digits
+                    + sourceref.field->data.rdigits;
+          }
+        }
+      // We have to make the source decimal point position line up with that of
+      // the destination.
+      scaler = destref.field->data.rdigits - rdigits - scaler;
+
+      // To line up the decimal points we multiply value by 10**scaler
+      if( scaler > 0 )
+        {
+        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( scaler );
+        tree pot = wide_int_to_tree(INT128, power_of_ten);
+        value = gg_multiply(value, pot);
+        }
+      else if( scaler < 0 )
+        {
+        FIXED_WIDE_INT(128) power_of_ten = get_power_of_ten( -scaler );
+        tree pot = wide_int_to_tree(INT128, power_of_ten);
+        value =   gg_call_expr(INT128,
+                               "__gg__int128_to_int128_rounded",
+                               build_int_cst_type(INT, rounded),
+                               value,
+                               pot,
+                               NULL_TREE);
+        }
+      // The decimal points are lined up.
+      if( size_error )
+        {
+        FIXED_WIDE_INT(128) power_of_ten =
+                              get_power_of_ten( destref.field->data.digits );
+        tree mask = wide_int_to_tree(INT128, power_of_ten);
+        IF( gg_abs(value), ge_op, mask )
+          {
+          gg_assign(gg_indirect(size_error),
+                    gg_bitwise_or(gg_indirect(size_error),
+                                  integer_one_node));
+          }
+        ELSE
+          {
+          gg_call(INT,
+                  "__gg__int128_to_ascii_numeric_display",
+                  gg_get_address_of(destref.field->var_decl_node),
+                  get_location(destref),
+                  value,
+                  NULL_TREE);
+          }
+        ENDIF
+        }
+      else
+        {
+        gg_call(INT,
+                "__gg__int128_to_ascii_numeric_display",
+                gg_get_address_of(destref.field->var_decl_node),
+                get_location(destref),
+                value,
+                NULL_TREE);
+        }
+      moved = true;
+      }
     }
 
   return moved;
@@ -3632,6 +3735,14 @@ move_helper(tree size_error,        // This is an INT
                                 sourceref,
                                 rounded,
                                 size_error);
+    }
+
+  if( !moved )
+    {
+    moved = mh_to_numeric_edited(destref,
+                                 sourceref,
+                                 rounded,
+                                 size_error);
     }
 
   if( !moved )

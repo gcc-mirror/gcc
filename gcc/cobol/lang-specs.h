@@ -34,7 +34,7 @@
     {".CBL", "@cobol", 0, 0, 0},
     {"@cobol",
         "cobol1 %i %(cc1_options) "
-        "%{B*} %{D*} %{E} %{I*} %{M} %{fmax-errors*} %{fsyntax-only*} "
+        "%{I*} %{B*} %{D*} %{E} %{M} %{fmax-errors*} %{fsyntax-only*} "
         "%{idirafter}"
         "%{fcobol-exceptions*} "
         "%{copyext} "

@@ -18,6 +18,7 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
  * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
@@ -59,15 +60,15 @@
 #include "cobol-endian.h"
 #include "charmaps.h"
 #include "exceptl.h"
-static char
-TOUPPER(char ch)
-  {
-  if(ch >= 'a' && ch <= 'z' )
-    {
-    return 'A' + ch - 'a';
-    }
-  return ch;
-  }
+////static char
+////TOUPPER(char ch)
+////  {
+////  if(ch >= 'a' && ch <= 'z' )
+////    {
+////    return 'A' + ch - 'a';
+////    }
+////  return ch;
+////  }
 #endif
 
 std::unordered_map<size_t, alphabet_state> __gg__alphabet_states;
@@ -135,117 +136,11 @@ __gg__alphabet_create(  cbl_encoding_t encoding,
   return;
   }
 
-static int
-expand_picture(char *dest, const char *picture)
-  {
-  // 'dest' must be of adequate length to hold the expanded picture string,
-  // including any extra characters due to a CURRENCY SIGN expansion.
-
-  int ch;
-  int prior_ch = NULLCH;
-  char *d = dest;
-  const char *p = picture;
-
-  long repeat;
-
-  int currency_symbol = NULLCH;
-
-  while( (ch = (*p++ & 0xFF) ) )
-    {
-    if( ch == ascii_oparen )
-      {
-      // Pick up the number after the left parenthesis
-      char *endchar;
-      repeat = strtol(p, &endchar, 10);
-
-      // We subtract one because we know that the character just before
-      // the parenthesis was already placed in dest
-      repeat -= 1;
-
-      // Update p to the character after the right parenthesis
-      p = endchar + 1;
-      while(repeat--)
-        {
-        *d++ = prior_ch;
-        }
-      }
-    else
-      {
-      prior_ch = ch;
-      *d++ = ch;
-      }
-
-    if( ! __gg__currency_signs[ch].empty() )
-      {
-      // We are going to be mapping ch to a string in the final result:
-      prior_ch = ch;
-      currency_symbol = ch;
-      }
-    }
-
-  size_t dest_length = d-dest;
-
-  // We have to take into account the possibility that the currency symbol
-  // mapping might be to a string of more than one character:
-
-  if( currency_symbol )
-    {
-    size_t sign_length = __gg__currency_signs[currency_symbol].size();
-    assert(0 < sign_length);    
-    if( --sign_length )
-      {
-      char *pcurrency = strchr(dest, currency_symbol);
-      assert(pcurrency);
-      memmove(    pcurrency + sign_length,
-                  pcurrency,
-                  dest_length - (pcurrency-dest));
-      for(size_t i=0; i<sign_length; i++)
-        {
-        pcurrency[i] = ascii_B;
-        }
-      dest_length += sign_length;
-      }
-    }
-
-  return (int)(dest_length);
-  }
-
-static int
-Lindex(const char *dest, int length, char ch)
-  {
-  int retval = -1;
-  for(int i=0; i<length; i++)
-    {
-    if( dest[i] == ch )
-      {
-      // Finds the leftmost
-      retval = i;
-      break;
-      }
-    }
-  return retval;
-  }
-
-static int
-Rindex(const char *dest, int length, char ch)
-  {
-  int retval = -1;
-  for(int i=0; i<length; i++)
-    {
-    if( dest[i] == ch )
-      {
-      // Finds the rightmost
-      retval = i;
-      }
-    }
-  return retval;
-  }
-
 extern "C"
-bool
+void
 __gg__string_to_numeric_edited( char * const dest,
                                 const char *source,     // In source characters
-                                int rdigits,
+                                int /*rdigits*/,
                                 int is_negative,
                                 const char *picture)
   {
@@ -253,998 +148,461 @@ __gg__string_to_numeric_edited( char * const dest,
   // to do this in EBCDIC, too.  So, 'source' and 'picture' are assumed to be
   // CP1252
 
-  // We need to expand the picture string.  We assume that the caller left
-  // enough room in dest to take the expanded picture string.
+  // It is required that the source string's implied decimal point line up with
+  // the decimal point specified in the picture.
+
+  // We assume that the caller left enough room in dest to take the expanded
+  // picture string.
 
   // Note that we do not put on a nul terminator, so if you need one, it's
-  // your job to put it there.
+  // the caller's job to put it there.
 
-  int dlength = expand_picture(dest, picture);
+  // Make a copy of the PICTURE string in the destination space.  The picture
+  // is supposed to be the same length as the char_capacity of the variable.
+  const int length_s = strlen(source);
+  const int length_d = strlen(picture);
+  memcpy(dest, picture, length_d);
+  /* We have two kinds of floating insertion:  currency and sign.
 
-  // We need to treat 'V' as a decimal point in order to handle
-  //    01 foo pic 999v999 BLANK WHEN ZERO.
-  // The "BLANK WHEN ZERO" turns the field into a numeric-edited type, but the
-  // 'V' is still in the picture string.
+     We have two kinds of zero suppression replacement: the 'Z' character is
+     replaced with a space, and a '*' character is replaced with a '*'.
 
-  for(int i=0; i<dlength; i++)
-    {
-    if( dest[i] == ascii_v || dest[i] == ascii_V )
-      {
-      dest[i] = __gg__decimal_point;
-      }
-    }
+     Within the leading-zero range of floating insertion, the characters
+     B Z 0 / comma are replaced with space.
 
-  // This is the length of the source string, which is all digits, and has
-  // an implied decimal point at the rdigits place.  We assume that any
-  // source_period or ascii_V in the picture is in the right place
-  const int slength = (int)strlen(source);
+     Within the leading-zero range of zero suppression, those characters take
+     on the replacement character.
 
-  // As a setting up exercise, let's deal with the possibility of a CR/DB:
-  if( dlength >= 2 )
-    {
-    // It's a positive number, so we might have to get rid of a CR or DB:
-    char ch1 = TOUPPER((unsigned char)dest[dlength-2]);
-    char ch2 = TOUPPER((unsigned char)dest[dlength-1]);
-    if(     (ch1 == ascii_D && ch2 == ascii_B)
-            ||  (ch1 == ascii_C && ch2 == ascii_R) )
-      {
-      if( !is_negative )
-        {
-        // Per the spec, because the number is positive, those two
-        // characters become blank:
-        dest[dlength-2] = ascii_space;
-        dest[dlength-1] = ascii_space;
-        }
-      // Trim the dlength by two to reflect those two positions at the
-      // right edge, and from here on out we can ignore them.
-      dlength -= 2;
-      }
-    }
+     We accomplish through two passes of the data.  The first pass scans the
+     'dest' and replaces any possible digit position with the actual data from
+     the 'source'.  While doing that, it finds the left/right limits for
+     possible floating insertion and possible zero suppression.
+
+     During a second pass, the limits of floating insertion and zero
+     suppression are applied.  */
 
   // We need to know if we have a currency picture symbol in this string:
   // This is the currency character in the PICTURE
-  unsigned char currency_picture = NULLCH;
-  const char *currency_sign = NULL;   // This is the text we output when
+  unsigned char currency_char = NULLCH;
+  const char *currency_text = NULL;   // This is the text we output when
   //                                  // encountering the currency_picture
   //                                  // character
-  // Note that the currency_picture can be upper- or lower-case, which is why
-  // we can't treat dest[] to toupper.  That makes me sad, because I have
-  // to do some tests for upper- and lower-case Z, and so on.
-  for(int i=0; i<dlength; i++)
+  // Note that the currency_picture can be upper- or lower-case, and mean
+  // separate things in IBM.  In ISO COBOL, the comparison is case-insensitive.
+
+  // This is the character for a floating sign
+  char sign_char;
+
+  // In the following limits, all of the rightmosts are past-the-end indexes
+
+  int leftmost_currency = -1;
+  int rightmost_currency = -1;
+
+  int leftmost_sign = -1;
+  int rightmost_sign = -1;
+
+  int leftmost_asterisk = -1;
+  int rightmost_asterisk = -1;
+  int zeroed_asterisk = 0;
+
+  int leftmost_z = -1;
+  int rightmost_z = -1;
+  int zeroed_z = 0;
+
+  int leftmost_nonzero = -1;
+
+  int decimal_position = -1;
+
+  // This is the first pass.  Because the currency
+  int index_s = 0;
+  for(int i=0; i<length_d; i++)
     {
     int ch = (unsigned int)dest[i] & 0xFF;
     if( ! __gg__currency_signs[ch].empty() )
       {
-      currency_picture = ch;
-      currency_sign = __gg__currency_signs[ch].c_str();
-      break;
-      }
-    }
-
-  // Calculate the position of the decimal point:
-  int decimal_point_index = slength - rdigits;
-
-  // Find the source position of the leftmost non-zero digit in source
-  int nonzero_index;
-  for(nonzero_index=0; nonzero_index<slength; nonzero_index++)
-    {
-    if( source[nonzero_index] != ascii_zero )
-      {
-      break;
-      }
-    }
-
-  bool is_zero = (nonzero_index == slength);
-
-  // Push nonzero_index to the left to account for explicit ascii_nine
-  // characters:
-  int non_native_zeros = slength - nonzero_index;
-
-  // Count up the number of nines
-  int nines = 0;
-  for(int i=0; i<dlength; i++)
-    {
-    if( dest[i] == ascii_nine )
-      {
-      nines += 1;
-      }
-    }
-  if( nines > non_native_zeros )
-    {
-    non_native_zeros = nines;
-    nonzero_index = slength - non_native_zeros;
-    if( nonzero_index < 0 )
-      {
-      nonzero_index = 0;
-      }
-    }
-  // nonzero_index is now the location of the leftmost digit that we will
-  // output as a digit.  Everything to its left is a leading zero, and might
-  // get replaced with a floating replacement.
-
-  // We are now in a position to address specific situations:
-
-  // This is the case of leading zero suppression
-  if( (strchr(picture, ascii_Z)) || (strchr(picture, ascii_z)) )
-    {
-    int leftmost_indexA = Lindex(dest, dlength, ascii_Z);
-    int leftmost_indexB = Lindex(dest, dlength, ascii_z);
-    if( leftmost_indexA == -1 )
-      {
-      leftmost_indexA = leftmost_indexB;
-      }
-    if( leftmost_indexB == -1 )
-      {
-      leftmost_indexB = leftmost_indexA;
-      }
-
-    int rightmost_indexA = Lindex(dest, dlength, ascii_Z);
-    int rightmost_indexB = Lindex(dest, dlength, ascii_z);
-    if( rightmost_indexA == -1 )
-      {
-      rightmost_indexA = leftmost_indexB;
-      }
-    if( rightmost_indexB == -1 )
-      {
-      rightmost_indexB = leftmost_indexA;
-      }
-
-    int leftmost_index  = std::min(leftmost_indexA,  leftmost_indexB);
-    int rightmost_index = std::max(rightmost_indexA, rightmost_indexB);
-
-    // We are doing replacement editing: leading zeroes get replaced with
-    // spaces.
-    if( is_zero && nines == 0 )
-      {
-      // Corner case:  The value is zero, and all numeric positions
-      // are suppressed.  The result is all spaces:
-      memset(dest, ascii_space, dlength);
-      }
-    else
-      {
-      int index_s = slength-1;    // Index into source string of digits
-      int index_d = dlength-1;    // Index into the destination
-      bool reworked_string = false;
-
-      while(index_d >=0)
+      currency_char = ch;
+      currency_text = __gg__currency_signs[ch].c_str();
+      if( leftmost_currency == -1 )
         {
-        // Pick up the destination character that we will replace:
-        char ch_d = dest[index_d];
-
-        if( ch_d == currency_picture )
-          {
-          // We are going to lay down the currency string.  Keep
-          // in mind that our caller nicely left room for it
-          size_t sign_len = strlen(currency_sign);
-          while(sign_len > 0)
-            {
-            dest[index_d--] = currency_sign[--sign_len];
-            }
-          continue;
-          }
-
-        char ch_s;
-        if( index_s < 0 )
-          {
-          // I don't think this can happen, but just in case:
-          ch_s = ascii_zero;
-          }
-        else
-          {
-          ch_s = source[index_s];
-          }
-
-        if( index_s <= nonzero_index && !reworked_string)
-          {
-          reworked_string = true;
-          // index_s is the location of the leftmost non-zero
-          // digit.
-
-          // So, we are about to enter the world of leading
-          // zeroes.
-
-          // The specification says, at this point, that
-          // all B 0 / , and . inside the floating string
-          // are to be considered part of the floating string:
-
-          // So, we edit dest[] to make that true:
-          int rlim = rightmost_index > index_d ? index_d : rightmost_index;
-
-          for(int i=leftmost_index; i<rlim; i++)
-            {
-            if(     dest[i] == ascii_b
-                    ||  dest[i] == ascii_B
-                    ||  dest[i] == ascii_slash
-                    ||  dest[i] == ascii_zero
-                    ||  dest[i] == __gg__decimal_separator )
-              {
-              dest[i] = ascii_space;
-              }
-            }
-          // Any B 0 / , immediately to the right are
-          // also part of the floating_character string
-
-          for(int i=rlim+1; i<index_d; i++)
-            {
-            if( !(      dest[i] == ascii_b
-                        ||  dest[i] == ascii_B
-                        ||  dest[i] == ascii_slash
-                        ||  dest[i] == ascii_zero
-                        ||  dest[i] == __gg__decimal_separator))
-              {
-              break;
-              }
-            dest[i] = ascii_space;
-            }
-          }
-
-        if( index_s >= decimal_point_index )
-          {
-          // We are to the right of the decimal point, and so we
-          // don't do any replacement.  We either insert a character,
-          // or we replace with a digit:
-          switch(ch_d)
-            {
-            // We are to the right of the decimal point, so Z is
-            // a character position
-            case ascii_z:
-            case ascii_Z:
-            case ascii_nine:
-              index_s -= 1;
-              break;
-            case ascii_b:
-            case ascii_B:
-              ch_s = ascii_space;
-              break;
-            case ascii_plus:
-              if( !is_negative )
-                {
-                ch_s = ascii_plus;
-                }
-              else
-                {
-                ch_s = ascii_minus;
-                }
-              break;
-            case ascii_minus:
-              if( !is_negative )
-                {
-                ch_s = ascii_space;
-                }
-              else
-                {
-                ch_s = ascii_minus;
-                }
-              break;
-            case ascii_P:
-            case ascii_p:
-              // P-scaling has been handled by changing the value
-              // and the number of rdigits, so these characters
-              // are ignored here:
-              break;
-            default:
-              // Valid possibilities are  0  /  ,
-              // Just leave them be
-              ch_s = ch_d;
-              break;
-            }
-          dest[index_d] = ch_s;
-          }
-        else
-          {
-          // We are to the left of the decimal point:
-          if( ch_d == __gg__decimal_point )
-            {
-            // Do this assignment to handle the situation where
-            // period and comma have been swapped.  It's necessary
-            // because the case statement can't take a variable
-            ch_s = __gg__decimal_point;
-            }
-          else
-            {
-            switch(ch_d)
-              {
-              case ascii_nine:
-                index_s -= 1;
-                break;
-              case ascii_v:
-              case ascii_V:
-                ch_s = __gg__decimal_point;
-                break;
-              case ascii_plus:
-                if( !is_negative )
-                  {
-                  ch_s = ascii_plus;
-                  }
-                else
-                  {
-                  ch_s = ascii_minus;
-                  }
-                break;
-              case ascii_minus:
-                if( !is_negative )
-                  {
-                  ch_s = ascii_space;
-                  }
-                else
-                  {
-                  ch_s = ascii_minus;
-                  }
-                break;
-
-              case ascii_z:
-              case ascii_Z:
-                if( index_s < nonzero_index)
-                  {
-                  // We are in the leading zeroes, so they are
-                  // replaced with a space
-                  ch_s = ascii_space;
-                  }
-                index_s -= 1;
-                break;
-
-              case ascii_b:
-              case ascii_B:
-                ch_s = ascii_space;
-                break;
-
-              default:
-                // Valid possibilities are  0 / , which
-                // at this point all get replaced with spaces:
-                if( index_s < nonzero_index)
-                  {
-                  // We are in the leading zeroes, so they are
-                  // replaced with a space
-                  ch_s = ascii_space;
-                  }
-                else
-                  {
-                  // We still have digits to send out, so the output
-                  // is a copy of the PICTURE string
-                  ch_s = ch_d;
-                  }
-              }
-            }
-          dest[index_d] = ch_s;
-          }
-
-        index_d -= 1;
-        }
-      }
-    }
-
-  // This is the case of leading zero replacement:
-  else if( strchr(picture, ascii_asterisk) )
-    {
-    int leftmost_index  = Lindex(dest, dlength, ascii_asterisk);
-    int rightmost_index = Rindex(dest, dlength, ascii_asterisk);
-    // We are doing replacement editing: leading zeroes get replaced with
-    // asterisks, except that any decimal point is put into place:
-    if( is_zero && nines == 0 )
-      {
-      // We need to re-initialize dest, because of the possibility
-      // of a CR/DB at the end of the line
-      dlength = expand_picture(dest, picture);
-
-      for(int i=0; i<dlength; i++)
-        {
-        if(     dest[i] == ascii_v
-                ||  dest[i] == ascii_V
-                ||  dest[i] == __gg__decimal_point )
-          {
-          dest[i] = __gg__decimal_point;
-          }
-        else
-          {
-          dest[i] = ascii_asterisk;
-          }
-        }
-      }
-    else
-      {
-      int index_s = slength-1;    // Index into source string of digits
-      int index_d = dlength-1;    // Index into the destination
-      bool reworked_string = false;
-
-      while(index_d >=0)
-        {
-        // Pick up the destination character that we will replace:
-        char ch_d = dest[index_d];
-
-        if( ch_d == currency_picture )
-          {
-          // We are going to lay down the currency string.  Keep
-          // in mind that our caller nicely left room for it
-          size_t sign_len = strlen(currency_sign);
-          while(sign_len > 0)
-            {
-            dest[index_d--] = currency_sign[--sign_len];
-            }
-          continue;
-          }
-
-        char ch_s;
-        if( index_s < 0 )
-          {
-          // I don't think this can happen, but just in case:
-          ch_s = ascii_zero;
-          }
-        else
-          {
-          ch_s = source[index_s];
-          }
-
-        if( index_s <= nonzero_index && !reworked_string)
-          {
-          reworked_string = true;
-          // index_s is the location of the leftmost non-zero
-          // digit.
-
-          // So, we are about to enter the world of leading
-          // zeroes.
-
-          // The specification says, at this point, that
-          // all B 0 / , and . inside the floating string
-          // are to be considered part of the floating string:
-
-          // So, we edit dest[] to make that true:
-          int rlim = rightmost_index > index_d ? index_d : rightmost_index;
-
-          for(int i=leftmost_index; i<rlim; i++)
-            {
-            if(     dest[i] == ascii_b
-                    ||  dest[i] == ascii_B
-                    ||  dest[i] == ascii_slash
-                    ||  dest[i] == ascii_zero
-                    ||  dest[i] == __gg__decimal_separator )
-              {
-              dest[i] = ascii_asterisk;
-              }
-            }
-          // Any B 0 / , immediately to the right are
-          // also part of the floating_character string
-
-          for(int i=rlim+1; i<index_d; i++)
-            {
-            if( !(      dest[i] == ascii_b
-                        ||  dest[i] == ascii_B
-                        ||  dest[i] == ascii_slash
-                        ||  dest[i] == ascii_zero
-                        ||  dest[i] == __gg__decimal_separator))
-              {
-              break;
-              }
-            dest[i] = ascii_asterisk;
-            }
-          }
-
-        if( index_s >= decimal_point_index )
-          {
-          // We are to the right of the decimal point, and so we
-          // don't do any replacement.  We either insert a character,
-          // or we replace with a digit:
-          switch(ch_d)
-            {
-            // We are to the right of the decimal point, so asterisk
-            // is a a character position
-            case ascii_asterisk:
-            case ascii_nine:
-              index_s -= 1;
-              break;
-            case ascii_b:
-            case ascii_B:
-              ch_s = ascii_space;
-              break;
-            case ascii_plus:
-              if( !is_negative )
-                {
-                ch_s = ascii_plus;
-                }
-              else
-                {
-                ch_s = ascii_minus;
-                }
-              break;
-            case ascii_minus:
-              if( !is_negative )
-                {
-                ch_s = ascii_space;
-                }
-              else
-                {
-                ch_s = ascii_minus;
-                }
-              break;
-            default:
-              // Valid possibilities are  0  /  ,
-              // Just leave them be
-              ch_s = ch_d;
-              break;
-            }
-          dest[index_d] = ch_s;
-          }
-        else
-          {
-          // We are to the left of the decimal point:
-          if( ch_d == __gg__decimal_point )
-            {
-            ch_s = __gg__decimal_point;
-            }
-          else
-            {
-            switch(ch_d)
-              {
-              case ascii_nine:
-                index_s -= 1;
-                break;
-              case ascii_v:
-              case ascii_V:
-                ch_s = __gg__decimal_point;
-                break;
-              case ascii_plus:
-                if( !is_negative )
-                  {
-                  ch_s = ascii_plus;
-                  }
-                else
-                  {
-                  ch_s = ascii_minus;
-                  }
-                break;
-              case ascii_minus:
-                if( !is_negative )
-                  {
-                  ch_s = ascii_space;
-                  }
-                else
-                  {
-                  ch_s = ascii_minus;
-                  }
-                break;
-
-              case ascii_asterisk:
-                if( index_s < nonzero_index)
-                  {
-                  // We are in the leading zeroes, so they are
-                  // replaced with an asterisk
-                  ch_s = ascii_asterisk;
-                  }
-                index_s -= 1;
-                break;
-
-              case ascii_b:
-              case ascii_B:
-                ch_s = ascii_space;
-                break;
-
-              default:
-                // Valid possibilities are  0 / , which
-                // at this point all get replaced with spaces:
-                if( index_s < nonzero_index)
-                  {
-                  // We are in the leading zeroes, so they are
-                  // replaced with our suppression character
-                  ch_s = ascii_asterisk;
-                  }
-                else
-                  {
-                  // We still have digits to send out, so the output
-                  // is a copy of the PICTURE string
-                  ch_s = ch_d;
-                  }
-              }
-            }
-          dest[index_d] = ch_s;
-          }
-
-        index_d -= 1;
-        }
-      }
-    }
-  else
-    {
-    // At this point, we check for a floating $$, ++, or --
-    unsigned char floating_character = 0;
-
-    int leftmost_index;
-    int rightmost_index;
-
-    leftmost_index  = Lindex(dest, dlength, ascii_plus);
-    rightmost_index = Rindex(dest, dlength, ascii_plus);
-    if( rightmost_index > leftmost_index)
-      {
-      floating_character = ascii_plus;
-      goto got_float;
-      }
-
-    leftmost_index  = Lindex(dest, dlength, ascii_minus);
-    rightmost_index = Rindex(dest, dlength, ascii_minus);
-    if( rightmost_index > leftmost_index)
-      {
-      floating_character = ascii_minus;
-      goto got_float;
-      }
-
-    leftmost_index  = Lindex(dest, dlength, currency_picture);
-    rightmost_index = Rindex(dest, dlength, currency_picture);
-    if( rightmost_index > leftmost_index)
-      {
-      floating_character = currency_picture;
-      goto got_float;
-      }
-got_float:
-
-    if( floating_character )
-      {
-      if( is_zero && nines == 0 )
-        {
-        // Special case:
-        memset(dest, ascii_space, dlength);
+        leftmost_currency = i;
         }
       else
         {
-        const char *decimal_location = strchr(dest, __gg__decimal_point);
-        if( !decimal_location )
+        // This is not the leftmost currency character, so it is where a digit
+        // goes.
+        dest[i] = source[index_s++];
+        if( leftmost_nonzero == -1 && dest[i] != ascii_zero )
           {
-          decimal_location = strchr(dest, ascii_v);
-          }
-        if( !decimal_location )
-          {
-          decimal_location = strchr(dest, ascii_V);
-          }
-        if( !decimal_location )
-          {
-          decimal_location = dest + dlength;
-          }
-        int decimal_index = (int)(decimal_location - dest);
-
-        if( rightmost_index > decimal_index )
-          {
-          rightmost_index = decimal_index -1;
-          }
-
-        int index_s = slength-1;    // Index into source string of digits
-        int index_d = dlength-1;    // Index into the destination
-        bool in_float_string = false;
-        bool reworked_string = false;
-
-        while(index_d >=0)
-          {
-          // Pick up the destination character that we will replace:
-          unsigned char ch_d = dest[index_d];
-          char ch_s = ascii_caret;   // Flag this as being replaced
-
-          if( index_d == leftmost_index )
-            {
-            // At this point ch_d is the leftmost floating_character,
-            // which means it *must* go into the output stream,
-            // and that means we are truncating any remaining input.
-
-            // Setting nonzero_index to be one character to the right
-            // means that the following logic will think that any
-            // source characters from here on out are zeroes
-            nonzero_index = index_s+1;
-            }
-
-          if( ch_d != floating_character && ch_d == currency_picture )
-            {
-            // This is a non-floating currency_picture characger
-            // We are going to lay down the currency string.  Keep
-            // in mind that our caller nicely left room for it
-            size_t sign_len = strlen(currency_sign);
-            while(sign_len > 0)
-              {
-              dest[index_d--] = currency_sign[--sign_len];
-              }
-            continue;
-            }
-          if( ch_d != floating_character && ch_d == ascii_plus )
-            {
-            // This is a non-floating plus sign
-            if( !is_negative )
-              {
-              ch_s = ascii_plus;
-              }
-            else
-              {
-              ch_s = ascii_minus;
-              }
-            dest[index_d--] = ch_s;
-            continue;
-            }
-          if( ch_d != floating_character && ch_d == ascii_minus )
-            {
-            // This is a non-floating minus sign
-            if( !is_negative )
-              {
-              ch_s = ascii_space;
-              }
-            else
-              {
-              ch_s = ascii_minus;
-              }
-            dest[index_d--] = ch_s;
-            continue;
-            }
-
-          if( index_s < 0 )
-            {
-            // I don't think this can happen, but just in case:
-            ch_s = ascii_zero;
-            }
-          else
-            {
-            ch_s = source[index_s];
-            if( index_s <= nonzero_index && !reworked_string)
-              {
-              reworked_string = true;
-              // index_s is the location of the leftmost non-zero
-              // digit.
-
-              // So, we are about to enter the world of leading
-              // zeroes.
-
-              // The specification says, at this point, that
-              // all B 0 / , and . inside the floating string
-              // are to be considered part of the floating string:
-
-              // So, we edit dest[] to make that true:
-              int rlim = rightmost_index > index_d ? index_d : rightmost_index;
-
-              for(int i=leftmost_index; i<rlim; i++)
-                {
-                if(     dest[i] == ascii_b
-                        ||  dest[i] == ascii_B
-                        ||  dest[i] == ascii_slash
-                        ||  dest[i] == ascii_zero
-                        ||  dest[i] == __gg__decimal_separator
-                        ||  dest[i] == __gg__decimal_point )
-                  {
-                  dest[i] = floating_character;
-                  }
-                }
-              // Any B 0 / , immediately to the right are
-              // also part of the floating_character string
-
-              for(int i=rlim+1; i<index_d; i++)
-                {
-                if( !(      dest[i] == ascii_b
-                            ||  dest[i] == ascii_B
-                            ||  dest[i] == ascii_slash
-                            ||  dest[i] == ascii_zero
-                            ||  dest[i] == __gg__decimal_separator))
-                  {
-                  break;
-                  }
-                dest[i] = floating_character;
-                }
-              }
-            }
-          if( index_s >= decimal_point_index )
-            {
-            // We are to the right of the decimal point, and so we
-            // don't do any replacement.  We either insert a character,
-            // or we replace with a digit:
-            switch(ch_d)
-              {
-              case ascii_nine:
-                index_s -= 1;
-                break;
-              case ascii_b:
-              case ascii_B:
-                ch_s = ascii_space;
-                break;
-              default:
-                if( ch_d == floating_character )
-                  {
-                  // We are laying down a digit
-                  index_s -= 1;
-                  }
-                else
-                  {
-                  // Valid possibilities are  0  /  ,
-                  // Just leave them be
-                  ch_s = ch_d;
-                  }
-                break;
-              }
-            dest[index_d] = ch_s;
-            }
-          else
-            {
-            // We are to the left of the decimal point:
-
-            if( ch_d == __gg__decimal_point )
-              {
-              ch_s = __gg__decimal_point;
-              }
-            else if (ch_d == floating_character)
-              {
-              if( index_s < nonzero_index )
-                {
-                // We are in the leading zeroes.
-                if( !in_float_string )
-                  {
-                  in_float_string = true;
-                  // We have arrived at the rightmost floating
-                  // character in the leading zeroes
-
-                  if( floating_character == currency_picture )
-                    {
-                    size_t sign_len = strlen(currency_sign);
-                    while(sign_len > 0)
-                      {
-                      dest[index_d--] = currency_sign[--sign_len];
-                      }
-                    continue;
-                    }
-                  if( floating_character  == ascii_plus )
-                    {
-                    if( !is_negative )
-                      {
-                      ch_s = ascii_plus;
-                      }
-                    else
-                      {
-                      ch_s = ascii_minus;
-                      }
-                    dest[index_d--] = ch_s;
-                    continue;
-                    }
-                  if( floating_character == ascii_minus )
-                    {
-                    if( !is_negative )
-                      {
-                      ch_s = ascii_space;
-                      }
-                    else
-                      {
-                      ch_s = ascii_minus;
-                      }
-                    dest[index_d--] = ch_s;
-                    continue;
-                    }
-                  }
-                else
-                  {
-                  // We are in the leading zeros and the
-                  // floating character location is to our
-                  // right.  So, we put down a space:
-                  dest[index_d--] = ascii_space;
-                  continue;
-                  }
-                }
-              else
-                {
-                // We hit a floating character, but we aren't
-                // yet in the leading zeroes
-                index_s -= 1;
-                dest[index_d--] = ch_s;
-                continue;
-                }
-              }
-
-            if( ch_d == __gg__decimal_point)
-              {
-              ch_s = __gg__decimal_point;
-              }
-            else
-              {
-              switch(ch_d)
-                {
-                case ascii_nine:
-                  index_s -= 1;
-                  break;
-                case ascii_v:
-                case ascii_V:
-                  ch_s = __gg__decimal_point;
-                  break;
-                case ascii_b:
-                case ascii_B:
-                  ch_s = ascii_space;
-                  break;
-
-                default:
-                  // Valid possibilities are  0 / , which
-                  // at this point all get replaced with spaces:
-                  if( index_s < nonzero_index)
-                    {
-                    // We are in the leading zeroes, so they are
-                    // replaced with our suppression character
-                    ch_s = ascii_space;
-                    }
-                  else
-                    {
-                    // We still have digits to send out, so the output
-                    // is a copy of the PICTURE string
-                    ch_s = ch_d;
-                    }
-                }
-              }
-            dest[index_d] = ch_s;
-            }
-
-          index_d -= 1;
+          leftmost_nonzero = i;
           }
         }
+      rightmost_currency = i+1;
       }
-    else
+    if( ch == currency_char )
       {
-      // Simple replacement editing
-      int index_s = slength-1;    // Index into source string of digits
-      int index_d = dlength-1;    // Index into the destination
-
-      while(index_d >=0)
+      // We have already handled the currency char.
+      continue;
+      }
+    switch(ch)
+      {
+      case ascii_minus:
+      case ascii_plus:
         {
-        // Pick up the destination character that we will replace:
-        char ch_d = dest[index_d];
-
-        if( ch_d == currency_picture )
+        if( is_negative )
           {
-          // We are going to lay down the currency string.  Keep
-          // in mind that our caller nicely left room for it
-          size_t sign_len = strlen(currency_sign);
-          while(sign_len > 0)
-            {
-            dest[index_d--] = currency_sign[--sign_len];
-            }
-          continue;
-          }
-
-        char ch_s;
-        if( index_s < 0 )
-          {
-          // I don't think this can happen, but just in case:
-          ch_s = ascii_zero;
+          sign_char = ascii_minus;
           }
         else
           {
-          ch_s = source[index_s];
+          if( ch == ascii_plus )
+            {
+            sign_char = ascii_plus;
+            }
+          else
+            {
+            sign_char = ascii_space;
+            }
           }
-        switch(ch_d)
+        dest[i] = sign_char;
+
+        if( leftmost_sign == -1 )
           {
-          // We are to the right of the decimal point, so Z is
-          // a character position
-          case ascii_nine:
-            index_s -= 1;
-            break;
-          case ascii_b:
-          case ascii_B:
-            ch_s = ascii_space;
-            break;
-          case ascii_plus:
-            if( !is_negative )
-              {
-              ch_s = ascii_plus;
-              }
-            else
-              {
-              ch_s = ascii_minus;
-              }
-            break;
-          case ascii_minus:
-            if( !is_negative )
-              {
-              ch_s = ascii_space;
-              }
-            else
-              {
-              ch_s = ascii_minus;
-              }
-            break;
-          default:
-            // Valid possibilities are  0  /  ,
-            // Just leave whatever is here alone
-            ch_s = ch_d;
-            break;
+          leftmost_sign = i;
           }
-        dest[index_d--] = ch_s;
+        else
+          {
+          // This is not the leftmost sign character, so it is where a digit
+          // goes.
+          dest[i] = source[index_s++];
+          if( leftmost_nonzero == -1 && dest[i] != ascii_zero )
+            {
+            leftmost_nonzero = i;
+            }
+          }
+        rightmost_sign = i+1;
+        break;
+        }
+
+      case ascii_comma:
+      case ascii_period:
+        if( ch == __gg__decimal_point )
+          {
+          decimal_position = i;
+          }
+      break;
+
+      case ascii_slash:
+      case ascii_d:
+      case ascii_D:
+      case ascii_b:
+      case ascii_c:
+      case ascii_C:
+      case ascii_r:
+      case ascii_R:
+      case ascii_0:
+        // These are left where they are
+        break;
+
+      case ascii_B:
+        // This needs some special attention, because a DB at the end is not
+        // the same as a B on its own at the end.
+        if( i < length_d-1 )
+          {
+          dest[i] = ascii_space;
+          }
+        else if( length_d >= 1 )
+          {
+          if( dest[i-1] != ascii_D && dest[i-1] != ascii_d )
+            {
+            // This is an isolated B at the very end of the string
+            dest[i] = ascii_space;
+            }
+          // Otherwise, that final B is part of a DB, and is left alone.
+          }
+        break;
+
+      case ascii_9:
+        // These are positions that hold digits
+        dest[i] = source[index_s++];
+        if( leftmost_nonzero == -1 && dest[i] != ascii_zero )
+          {
+          leftmost_nonzero = i;
+          }
+        break;
+
+      case ascii_asterisk:
+        // These are positions that hold digits
+        if( leftmost_asterisk == -1 )
+          {
+          leftmost_asterisk = i;
+          }
+        rightmost_asterisk = i+1;
+
+        dest[i] = source[index_s++];
+        if( dest[i] == ascii_zero )
+          {
+          zeroed_asterisk += 1;
+          }
+        else
+          {
+          if( leftmost_nonzero == -1 )
+            {
+            leftmost_nonzero = i;
+            }
+          }
+        break;
+
+      case ascii_Z:
+        // These are positions that hold digits
+        if( leftmost_z == -1 )
+          {
+          leftmost_z = i;
+          }
+        rightmost_z = i+1;
+
+        dest[i] = source[index_s++];
+        if( dest[i] == ascii_zero )
+          {
+          zeroed_z += 1;
+          }
+        else
+          {
+          if( leftmost_nonzero == -1 )
+            {
+            leftmost_nonzero = i;
+            }
+          }
+        break;
+
+      default:
+        abort();
+      }
+    }
+
+  // Do currency replacement
+  if( leftmost_currency >= 0 )
+    {
+    if( leftmost_currency == rightmost_currency-1 )
+      {
+      // This is a solo currency symbol
+      memcpy(dest + leftmost_currency - (strlen(currency_text)-1),
+             currency_text,
+             strlen(currency_text));
+      }
+    else
+      {
+      // This is a floating currency symbol.  We need to start at
+      // leftmost_currency, and walk to the lesser of rightmost_currency and
+      // leftmost_nonzero.  We blank every character we encounter.
+      int left = leftmost_currency;
+      int right;
+      if( leftmost_nonzero >= 0 )
+        {
+        right = std::min(leftmost_nonzero, rightmost_currency);
+        if( decimal_position >= 0 )
+          {
+          right = std::min(right, decimal_position);
+          }
+        }
+      else
+        {
+        right = rightmost_currency;
+        }
+      // blank out that range
+      memset(dest+left, ascii_space, right-left);
+
+      // To handle situations like PIC $$$,999, where the currency sign has to
+      // overwrite the comma, we walk from here until we hit the column just to
+      // the left of a digit
+      while( right < length_d )
+        {
+      if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
+          || right == decimal_position ) 
+          {
+          break;
+          }
+        dest[right] = ascii_space;
+        right += 1;
+        }
+      if( right < length_d )
+        {
+        right -= 1;
+        memcpy(dest + right - (strlen(currency_text)-1),
+               currency_text,
+               strlen(currency_text));
         }
       }
     }
 
-  bool retval = false;
-  return retval;
+  // Do sign replacement
+  if( leftmost_sign >= 0 )
+    {
+    if( leftmost_sign == rightmost_sign-1 )
+      {
+      // This is a solo sign symbol
+      dest[leftmost_sign] = sign_char;
+      }
+    else
+      {
+      // This is a floating sign symbol.  We need to start at
+      // leftmost_sign, and walk to the lesser of rightmost_sign and
+      // leftmost_nonzero.  We blank every character we encounter.
+      int left = leftmost_sign;
+      int right;
+      if( leftmost_nonzero >= 0 )
+        {
+        right = std::min(leftmost_nonzero, rightmost_sign);
+        if( decimal_position >= 0 )
+          {
+          right = std::min(right, decimal_position);
+          }
+        }
+      else
+        {
+        right = rightmost_sign;
+        }
+      // blank out that range
+      memset(dest+left, ascii_space, right-left);
+
+      // To handle situations like PIC $$$,999, where the sign char has to
+      // overwrite the comma, we walk from here until we hit the column just to
+      // the left of a digit
+      while( right < length_d )
+        {
+        if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
+            || right == decimal_position ) 
+          {
+          break;
+          }
+        dest[right] = ascii_space;
+        right += 1;
+        }
+      if( right < length_d )
+        {
+        right -= 1;
+        dest[right] = sign_char;
+        }
+      }
+    }
+
+  // Do '*' zero suppression
+  if( leftmost_asterisk >= 0 )
+    {
+    // This is a floating zero suppression.  
+
+    int left = leftmost_asterisk;
+    int right;
+    if( leftmost_nonzero >= 0 )
+      {
+      // The value being formatted is non-zero, so make sure 'right' is no more
+      // than the decimal position.
+      right = std::min(leftmost_nonzero, rightmost_asterisk);
+      if( decimal_position >= 0 && decimal_position > leftmost_asterisk )
+        {
+        right = std::min(right, decimal_position);
+        }
+      }
+    else
+      {
+      // The value being formatted is zero
+      if( zeroed_asterisk == length_s )
+        {
+        // Every numeric position was a zero on asterisk, so the whole thing
+        // is starred.
+        left = 0;
+        right = length_d;
+        }
+      else
+        {
+        right = rightmost_asterisk;
+        }
+      }
+    // blank out that range
+    memset(dest+left, ascii_asterisk, right-left);
+
+    // To handle situations like PIC ZZZ,999, where the suppression char has to
+    // overwrite the comma, we walk from here until we hit the column just to
+    // the left of a digit
+    while( right < length_d )
+      {
+      if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
+          || right == decimal_position ) 
+        {
+        break;
+        }
+      dest[right] = ascii_asterisk;
+      right += 1;
+      }
+    // One final fillip:  The nature of '*' zero suppression is that the
+    // decimal point is always visible.  Sending zero to ***,***.** results in
+    // "*******.***"
+    if( decimal_position >= 0 )
+      {
+      dest[decimal_position] = __gg__decimal_point;
+      }
+    }
+
+  // Do 'Z' zero suppression
+  if( leftmost_z >= 0 )
+    {
+    // This is a floating zero suppression.  
+
+    int left = leftmost_z;
+    int right;
+    if( leftmost_nonzero >= 0 )
+      {
+      // The value being formatted is non-zero, so make sure 'right' is no more
+      // than the decimal position.
+      right = std::min(leftmost_nonzero, rightmost_z);
+      if( decimal_position >= 0 && decimal_position > leftmost_asterisk )
+        {
+        right = std::min(right, decimal_position);
+        }
+      }
+    else
+      {
+      if( zeroed_z == length_s )
+        {
+        // Every numeric position was a zero on asterisk, so the whole thing
+        // is blanked.
+        left = 0;
+        right = length_d;
+        }
+      else
+        {
+        right = rightmost_z;
+        }
+      }
+    // blank out that range
+    memset(dest+left, ascii_space, right-left);
+
+    // To handle situations like PIC ZZZ,999, where the suppression char has to
+    // overwrite the comma, we walk from here until we hit the column just to
+    // the left of a digit
+    while( right < length_d )
+      {
+      if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
+          || right == decimal_position ) 
+        {
+        break;
+        }
+      dest[right] = ascii_space;
+      right += 1;
+      }
+    }
+
+  // Any final DB/CR needs to be addressed:
+  if(    !is_negative
+      && length_d >= 2 
+      && (   dest[length_d-2] == ascii_D 
+          || dest[length_d-2] == ascii_d
+          || dest[length_d-2] == ascii_C
+          || dest[length_d-2] == ascii_c ) )
+    {
+    dest[length_d-2] = dest[length_d-1] = ascii_space;
+    }
+
+  return;
   }
 
 extern "C"
@@ -1266,7 +624,8 @@ __gg__string_to_alpha_edited(   char *dest,
 
   charmap_t *charmap_dest = __gg__get_charmap(dest_encoding);
 
-  int destlength = expand_picture(dest, picture);
+  int destlength = strlen(picture);
+  memcpy(dest, picture, destlength);
 
   int dindex = 0;
   int sindex = 0;
@@ -1307,10 +666,10 @@ __gg__string_to_alpha_edited(   char *dest,
     dindex += 1;
     }
   }
-  
+
 extern "C"
 void
-__gg__currency_sign_init() // This duplicates the constructor. 
+__gg__currency_sign_init() // This duplicates the constructor.
   {
   for( auto str : __gg__currency_signs ) {
     str.clear();

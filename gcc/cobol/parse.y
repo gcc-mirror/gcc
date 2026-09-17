@@ -15090,7 +15090,6 @@ dialect_words_set( cbl_dialect_t dialect ) {
   typedef bool (current_tokens_t::*wordop_func_t)(const cbl_loc_t& loc,
                           const cbl_name_t keyword,
                           const cbl_name_t alias);
-
   struct wordop_t {
     cbl_dialect_t dialect;
     wordop_func_t op;
