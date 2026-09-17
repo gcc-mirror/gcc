@@ -297,7 +297,7 @@ for file in */*.html *.ps *.pdf *.tar; do
     :
   else
     cp $file $DOCSDIR/$file
-    cp $file.gz $DOCSDIR/$file.gz
+    [ -f $file.gz ] && cp $file.gz $DOCSDIR/$file.gz
   fi
 done
 
