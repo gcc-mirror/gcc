@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
-/* { dg-additional-options "-msse2" { target ia32 } } */
+/* { dg-additional-options "-fdump-tree-optimized" } */
 
 /* The rule reaching vector code.  It matches the scalar loop body, so what is
    left to vectorize is a vector MAX or MIN of the unnegated loads and a vector

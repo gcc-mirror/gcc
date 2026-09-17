@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
-/* { dg-additional-options "-msse2" { target ia32 } } */
+/* { dg-additional-options "-fdump-tree-optimized" } */
 
 /* The two difference pairs reaching vector code through the loop vectorizer:
    the fold is on the scalar loop body, so what is left to vectorize is a

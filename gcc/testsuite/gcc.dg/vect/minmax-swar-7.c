@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_int } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
-/* { dg-additional-options "-msse2" { target ia32 } } */
+/* { dg-additional-options "-fdump-tree-optimized" } */
 
 /* MINMAX (X + Y, Y) - Y through the loop vectorizer: the vector add and the
    vector subtract both go, leaving the clamp against zero.  */
