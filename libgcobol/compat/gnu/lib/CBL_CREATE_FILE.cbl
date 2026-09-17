@@ -47,7 +47,6 @@
        77  func-ret             Binary-Long.
        77  errno-val            Binary-Long.
        77  lk-mode              PIC 9(8) COMP-5.
-       77  filename-len         PIC 9(4) BINARY VALUE ZERO.
        01  ws-access-mode       PIC 9(8) COMP-5.
 
        LINKAGE SECTION.
@@ -69,9 +68,6 @@
                SUBTRACT 64 FROM ws-access-mode *> Remove large file bit if set
            END-IF.
 
-           COMPUTE filename-len =
-                FUNCTION LENGTH(FUNCTION TRIM(filename)).
-           MOVE X"00" TO filename(filename-len + 1:1).
       D     Display 'CBL_CREATE_FILE: filename: [' filename ']'
       D     Display               'ws-access-mode: ' ws-access-mode ', '
       D     Display                 'deny-mode: ' deny-mode.
