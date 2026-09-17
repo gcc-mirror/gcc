@@ -1883,7 +1883,7 @@
   [(set (match_operand:V2SI 0 "register_operand" "=r")
 	(EMUVEC:V2SI (match_operand:V2SI 1 "register_operand" "r")
 		     (match_operand:V2SI 2 "nonmemory_operand" "ri")))]
-  ""
+  "TARGET_PLUS_QMACW"
   "#"
   "reload_completed"
   [(const_int 0)]
