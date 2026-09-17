@@ -10914,6 +10914,7 @@ ffi_by_ref:     scalar_arg[refer]
                               "cannot pass %qs BY REFERENCE",
                               $1->data.original());
                   cbl_refer_t *r = new_reference($1);
+                  r->loc = @1;
                   $$ = new cbl_ffi_arg_t(by_content_e, r);
                 }
         |       ADDRESS OF scalar_arg[refer]
