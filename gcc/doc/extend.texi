@@ -3685,7 +3685,8 @@ may appear to work, they cannot be depended upon to work reliably and
 are not supported.
 
 Not all targets support this attribute.  Those that do include ARC, ARM,
-AVR, BPF, C-SKY, MCORE, MSP430, NDS32, RISC-V, RL78, RX, and x86.
+AVR, BPF, C-SKY, LoongArch, MCORE, MSP430, NDS32, RISC-V, RL78,
+RX, and x86.
 
 @atindex @code{no_icf}
 @item no_icf

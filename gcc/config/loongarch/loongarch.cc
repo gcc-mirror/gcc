@@ -899,23 +899,28 @@ loongarch_compute_frame_info (void)
   frame = &cfun->machine->frame;
   memset (frame, 0, sizeof (*frame));
 
-  /* Find out which GPRs we need to save.  */
-  for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
-    if (loongarch_save_reg_p (regno))
-      frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
+  /* Naked functions do not save any registers: the asm body manages the
+     register and stack state itself.  */
+  if (!cfun->machine->naked_p)
+    {
+      /* Find out which GPRs we need to save.  */
+      for (regno = GP_REG_FIRST; regno <= GP_REG_LAST; regno++)
+	if (loongarch_save_reg_p (regno))
+	  frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
 
-  /* If this function calls eh_return, we must also save and restore the
-     EH data registers.  */
-  if (crtl->calls_eh_return)
-    for (i = 0; (regno = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM; i++)
-      frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
+      /* If this function calls eh_return, we must also save and restore the
+	 EH data registers.  */
+      if (crtl->calls_eh_return)
+	for (i = 0; (regno = EH_RETURN_DATA_REGNO (i)) != INVALID_REGNUM; i++)
+	  frame->mask |= 1 << (regno - GP_REG_FIRST), num_x_saved++;
 
-  /* Find out which FPRs we need to save.  This loop must iterate over
-     the same space as its companion in loongarch_for_each_saved_reg.  */
-  if (TARGET_HARD_FLOAT)
-    for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
-      if (loongarch_save_reg_p (regno))
-	frame->fmask |= 1 << (regno - FP_REG_FIRST), num_f_saved++;
+      /* Find out which FPRs we need to save.  This loop must iterate over
+	 the same space as its companion in loongarch_for_each_saved_reg.  */
+      if (TARGET_HARD_FLOAT)
+	for (regno = FP_REG_FIRST; regno <= FP_REG_LAST; regno++)
+	  if (loongarch_save_reg_p (regno))
+	    frame->fmask |= 1 << (regno - FP_REG_FIRST), num_f_saved++;
+    }
 
   /* At the bottom of the frame are any outgoing stack arguments.  */
   offset = LARCH_STACK_ALIGN (crtl->outgoing_args_size);
@@ -1283,6 +1288,16 @@ loongarch_output_probe_stack_range (rtx reg1, rtx reg2, rtx reg3)
   return "";
 }
 
+/* Return true if FUNC is a naked function.  */
+
+static bool
+loongarch_naked_function_p (tree func)
+{
+  if (func == NULL_TREE)
+    func = current_function_decl;
+  return lookup_attribute ("naked", DECL_ATTRIBUTES (func)) != NULL;
+}
+
 /* Expand the "prologue" pattern.  */
 
 void
@@ -1294,6 +1309,15 @@ loongarch_expand_prologue (void)
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
+
+  /* Naked functions have no prologue: the asm body takes care of the
+     stack itself.  */
+  if (loongarch_naked_function_p (current_function_decl))
+    {
+      if (flag_stack_usage_info)
+	current_function_static_stack_size = 0;
+      return;
+    }
 
   /* Save the registers.  */
   if ((frame->mask | frame->fmask) != 0)
@@ -1447,6 +1471,16 @@ loongarch_expand_epilogue (int style)
   /* We need to add memory barrier to prevent read from deallocated stack.  */
   bool need_barrier_p
     = (get_frame_size () + cfun->machine->frame.arg_pointer_offset) != 0;
+
+  /* Naked functions have no epilogue either.  The compiler still needs
+     a return insn to terminate the RTL, but its assembly output is
+     suppressed below so the asm body fully controls the return.  */
+  if (loongarch_naked_function_p (current_function_decl))
+    {
+      gcc_assert (style == NORMAL_RETURN);
+      emit_jump_insn (gen_return ());
+      return;
+    }
 
   /* Handle simple returns.  */
   if (style == NORMAL_RETURN && loongarch_can_use_return_insn ())
@@ -6115,8 +6149,31 @@ static bool
 loongarch_function_ok_for_sibcall (tree decl ATTRIBUTE_UNUSED,
 				   tree exp ATTRIBUTE_UNUSED)
 {
+  /* Don't use sibcall for naked functions.  */
+  if (loongarch_naked_function_p (current_function_decl))
+    return false;
+
   /* Always OK.  */
   return true;
+}
+
+/* Implement TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS.  */
+
+static bool
+loongarch_allocate_stack_slots_for_args (void)
+{
+  /* Naked functions should not allocate stack slots for arguments.  */
+  return !loongarch_naked_function_p (current_function_decl);
+}
+
+/* Implement TARGET_WARN_FUNC_RETURN.  */
+
+static bool
+loongarch_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return !loongarch_naked_function_p (decl);
 }
 
 static machine_mode
@@ -8394,6 +8451,11 @@ loongarch_set_current_function (tree fndecl)
 
   loongarch_previous_fndecl = fndecl;
 
+  /* Only query decl attributes for real functions; during error
+     recovery the hook can be invoked with an error_mark_node.  */
+  if (fndecl != error_mark_node && cfun && cfun->machine)
+    cfun->machine->naked_p = loongarch_naked_function_p (fndecl);
+
   if (new_tree != old_tree)
     /* According to the settings of the functions attribute and pragma,
        the options is corrected.  */
@@ -8668,6 +8730,25 @@ loongarch_expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
   return loongarch_expand_vselect (target, x, perm, nelt, testing_p);
 }
 
+/* Handle an attribute requiring a FUNCTION_DECL;
+   arguments as in struct attribute_spec.handler.  */
+
+static tree
+loongarch_handle_fndecl_attribute (tree *node, tree name,
+				   tree args ATTRIBUTE_UNUSED,
+				   int flags ATTRIBUTE_UNUSED,
+				   bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute only applies to functions",
+	       name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
 static tree
 loongarch_handle_model_attribute (tree *node, tree name, tree arg, int,
 				  bool *no_add_attrs)
@@ -8741,6 +8822,9 @@ TARGET_GNU_ATTRIBUTES (loongarch_attribute_table,
 {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
+  /* The attribute telling no prologue/epilogue.  */
+  { "naked", 0, 0, true, false, false, false,
+    loongarch_handle_fndecl_attribute, NULL },
   { "model", 1, 1, true, false, false, false,
     loongarch_handle_model_attribute, NULL }
 });
@@ -12267,6 +12351,11 @@ loongarch_output_asm_load_canary (rtx reg, rtx canary, rtx tmp)
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL loongarch_function_ok_for_sibcall
+#undef TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS \
+  loongarch_allocate_stack_slots_for_args
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN loongarch_warn_func_return
 
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE loongarch_valid_pointer_mode

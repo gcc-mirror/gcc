@@ -4033,6 +4033,11 @@
   [(any_return)]
   ""
 {
+  /* Naked functions must provide their own return sequence, so make
+     the compiler-generated return emit no assembly.  */
+  if (cfun->machine->naked_p)
+    return "";
+
   operands[0] = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   return "jr\t%0";
 }

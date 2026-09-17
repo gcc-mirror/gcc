@@ -1254,6 +1254,9 @@ struct GTY (()) machine_function
      This area is allocated by the callee at the very top of the frame.  */
   int varargs_size;
 
+  /* True if current function is a naked function.  */
+  bool naked_p;
+
   /* The current frame information, calculated by loongarch_compute_frame_info.
    */
   struct loongarch_frame_info frame;
