@@ -4672,7 +4672,8 @@ archs4x, archs4xd"
 
 (define_insn "flag"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand" "rL,I,Cal")]
-		   VUNSPEC_ARC_FLAG)]
+		   VUNSPEC_ARC_FLAG)
+   (clobber (reg:CC CC_REG))]
   ""
   "@
     flag%?\\t%0
@@ -5136,7 +5137,8 @@ archs4x, archs4xd"
 		    (pc)))
 	      (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))
 	      (unspec:SI [(const_int 0)] UNSPEC_ARC_LP)
-	      (clobber (match_dup 2))])]
+	      (clobber (match_dup 2))
+	      (clobber (reg:CC CC_REG))])]
   ""
 {
  if (GET_MODE (operands[0]) != SImode)
@@ -5166,7 +5168,8 @@ archs4x, archs4xd"
 		      (pc)))
    (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))
    (unspec:SI [(const_int 0)] UNSPEC_ARC_LP)
-   (clobber (match_scratch:SI 2 "=X,&r"))]
+   (clobber (match_scratch:SI 2 "=X,&r"))
+   (clobber (reg:CC CC_REG))]
   ""
   "@
    ; ZOL_END, begins @%l1
@@ -5213,7 +5216,8 @@ archs4x, archs4xd"
    (set (match_dup 0)
 	(plus:SI (match_dup 0)
 		 (const_int -1)))
-   (clobber (match_scratch:SI 2 "=X,r"))]
+   (clobber (match_scratch:SI 2 "=X,r"))
+   (clobber (reg:CC CC_REG))]
   "TARGET_DBNZ"
   "@
    dbnz%*\\t%0,%l1
@@ -5625,7 +5629,8 @@ archs4x, archs4xd"
 
 (define_insn "kflag"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand" "rL,I,Cal")]
-		   VUNSPEC_ARC_KFLAG)]
+		   VUNSPEC_ARC_KFLAG)
+   (clobber (reg:CC CC_REG))]
   "TARGET_V2"
   "@
     kflag%?\\t%0
