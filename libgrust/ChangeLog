@@ -1,3 +1,81 @@
+2026-09-16  Enes Cevik  <enes@nsvke.com>
+
+	* rustc-lib/version-info:
+	* rustc-lib/alloc/Cargo.toml: New file.
+	* rustc-lib/alloc/benches/binary_heap.rs: New file.
+	* rustc-lib/alloc/benches/btree/map.rs: New file.
+	* rustc-lib/alloc/benches/btree/mod.rs: New file.
+	* rustc-lib/alloc/benches/btree/set.rs: New file.
+	* rustc-lib/alloc/benches/lib.rs: New file.
+	* rustc-lib/alloc/benches/linked_list.rs: New file.
+	* rustc-lib/alloc/benches/slice.rs: New file.
+	* rustc-lib/alloc/benches/str.rs: New file.
+	* rustc-lib/alloc/benches/string.rs: New file.
+	* rustc-lib/alloc/benches/vec.rs: New file.
+	* rustc-lib/alloc/benches/vec_deque.rs: New file.
+	* rustc-lib/alloc/benches/vec_deque_append.rs: New file.
+	* rustc-lib/alloc/src/alloc.rs: New file.
+	* rustc-lib/alloc/src/alloc/tests.rs: New file.
+	* rustc-lib/alloc/src/borrow.rs: New file.
+	* rustc-lib/alloc/src/boxed.rs: New file.
+	* rustc-lib/alloc/src/collections/binary_heap.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/append.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/borrow.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/borrow/tests.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/map.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/map/entry.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/map/tests.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/mem.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/merge_iter.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/mod.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/navigate.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/node.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/node/tests.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/remove.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/search.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/set.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/set/tests.rs: New file.
+	* rustc-lib/alloc/src/collections/btree/split.rs: New file.
+	* rustc-lib/alloc/src/collections/linked_list.rs: New file.
+	* rustc-lib/alloc/src/collections/linked_list/tests.rs: New file.
+	* rustc-lib/alloc/src/collections/mod.rs: New file.
+	* rustc-lib/alloc/src/collections/vec_deque.rs: New file.
+	* rustc-lib/alloc/src/collections/vec_deque/drain.rs: New file.
+	* rustc-lib/alloc/src/collections/vec_deque/tests.rs: New file.
+	* rustc-lib/alloc/src/fmt.rs: New file.
+	* rustc-lib/alloc/src/lib.rs: New file.
+	* rustc-lib/alloc/src/macros.rs: New file.
+	* rustc-lib/alloc/src/prelude/mod.rs: New file.
+	* rustc-lib/alloc/src/prelude/v1.rs: New file.
+	* rustc-lib/alloc/src/raw_vec.rs: New file.
+	* rustc-lib/alloc/src/raw_vec/tests.rs: New file.
+	* rustc-lib/alloc/src/rc.rs: New file.
+	* rustc-lib/alloc/src/rc/tests.rs: New file.
+	* rustc-lib/alloc/src/slice.rs: New file.
+	* rustc-lib/alloc/src/str.rs: New file.
+	* rustc-lib/alloc/src/string.rs: New file.
+	* rustc-lib/alloc/src/sync.rs: New file.
+	* rustc-lib/alloc/src/sync/tests.rs: New file.
+	* rustc-lib/alloc/src/task.rs: New file.
+	* rustc-lib/alloc/src/tests.rs: New file.
+	* rustc-lib/alloc/src/vec.rs: New file.
+	* rustc-lib/alloc/tests/arc.rs: New file.
+	* rustc-lib/alloc/tests/binary_heap.rs: New file.
+	* rustc-lib/alloc/tests/borrow.rs: New file.
+	* rustc-lib/alloc/tests/boxed.rs: New file.
+	* rustc-lib/alloc/tests/btree_set_hash.rs: New file.
+	* rustc-lib/alloc/tests/cow_str.rs: New file.
+	* rustc-lib/alloc/tests/fmt.rs: New file.
+	* rustc-lib/alloc/tests/heap.rs: New file.
+	* rustc-lib/alloc/tests/lib.rs: New file.
+	* rustc-lib/alloc/tests/linked_list.rs: New file.
+	* rustc-lib/alloc/tests/rc.rs: New file.
+	* rustc-lib/alloc/tests/slice.rs: New file.
+	* rustc-lib/alloc/tests/str.rs: New file.
+	* rustc-lib/alloc/tests/string.rs: New file.
+	* rustc-lib/alloc/tests/vec.rs: New file.
+	* rustc-lib/alloc/tests/vec_deque.rs: New file.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

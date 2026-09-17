@@ -1,3 +1,652 @@
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* Make-lang.in: Compile the new rust-compile-platform-intrinsic files.
+	* backend/rust-compile-base.cc (HIRCompileBase::setup_abi_options): Make the
+	PLATFORM_INTRINSIC case use the `cdecl` ABI.
+	* backend/rust-compile-platform-intrinsic.cc: New file to handle compilation of
+	'platform-intrinsic' extern functions.
+	* backend/rust-compile-platform-intrinsic.h: Header file for the formentioned file.
+	* backend/rust-compile-expr.cc (CompileExpr::visit (HIR::CallExpr)): Add new
+	conditions to compile platform-intrinsic extern functions.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::resolve_generic_params):
+	Check 'platform-intrinsic' extern functions for const parameters.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit (HIR::TupleIndexExpr)):
+	Fix resolved tuple expression not destructuring.
+
+2026-09-16  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* checks/errors/feature/rust-feature-defs-rfl.h: Add cfi_encoding RfL feature.
+	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::visit): Add visitor
+	for attributes in general, and warn on cfi_encoding being used.
+	* checks/errors/feature/rust-feature-gate.h: Declare the attribute visitor.
+	* util/rust-attribute-values.h: Add #[cfi_encoding].
+	* util/rust-attributes.cc: Likewise.
+
+2026-09-16  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::gate): Move into public
+	methods, use GateResult enum.
+	* checks/errors/feature/rust-feature-gate.h: Add new GateResult enum.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-casts.cc (TypeCastRules::cast_rules): fix bad const cast
+	* util/rust-attribute-values.h: add attribute
+	* util/rust-attributes.cc: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::TypeBoundPredicate): remove.
+	(TypeBoundPredicate::operator=): Likewise.
+	(TypeBoundPredicateItem::get_tyty_for_receiver): Likewise.
+	* typecheck/rust-tyty-subst.cc (SubstitutionArgumentMappings::error): Likewise.
+	(SubstitutionArgumentMappings::empty): Likewise.
+	(SubstitutionArgumentMappings::on_param_subst): Likewise.
+	(SubstitutionArgumentMappings::get_subst_cb): Likewise.
+	* typecheck/rust-tyty-subst.h (std::function<void): Likewise.
+	* typecheck/rust-tyty.cc (ParamType::handle_substitions): Likewise.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* expand/rust-derive-ord.cc (DeriveOrd::cmp_fn): use Self
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-type-util.cc (query_type): dont query non const candidates
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments):
+	use probe expr on last seg
+
+2026-09-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* hir/tree/rust-hir-expr.cc
+	(ClosureParam::ClosureParam): Set locus.
+	(ClosureParam::operator=): Likewise.
+	(ClosureExpr::ClosureExpr): Likewise.
+	(ClosureExpr::operator=): Likewise.
+	* typecheck/rust-hir-type-check-expr.cc
+	(TypeCheckExpr::visit (ClosureExpr)): Use
+	Mappings::get_lang_item.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): make addressable
+	* backend/rust-constexpr.cc (eval_store_expression): port over missing cp/constexpr.cc
+
+2026-09-16  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Change extern type codegen from
+	empty struct to the void type node.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/tree/rust-hir-item.h: missing non const helper.
+	* typecheck/rust-hir-type-check-base.h: new defer_bindings.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit): new helper
+	(TypeCheckImplItem::resolve_function_signature): Likewise.
+	(TypeCheckImplItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):  Likewise.
+	(TypeCheckItem::resolve_function_signature):  Likewise.
+	(TypeCheckItem::resolve_impl_block_substitutions):  Likewise.
+	* typecheck/rust-hir-type-check-type.cc (ResolveWhereClauseItem::Resolve): new helper
+	(ResolveWhereClauseItem::visit): support defer.
+	* typecheck/rust-hir-type-check-type.h: update header.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn): call new helper
+	* typecheck/rust-tyty-bounds.cc: defer flag
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc: check candidate self
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc: walk type bindings
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn): grab lifetimes
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): add missing checks
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::select): stop on ParamTypes
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::pop_return_type):
+	push expected null
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): update
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::resolve_impl_block_substitutions):
+	likewise
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit): likewise
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): likewise
+	* typecheck/rust-hir-type-check.h: likewise
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::insert_resolved_predicate):
+	likewise
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::TypeBoundPredicate): likewise
+	(TypeBoundPredicate::operator=): remove deadcode
+	(TypeBoundsMappings::add_bound): use ref
+	* typecheck/rust-tyty-call.cc (validate_call_argument_associated_impl_bounds): use ref
+	* typecheck/rust-tyty.cc (BaseType::BaseType): likewise
+	(BaseType::inherit_bound): likewise
+	(ParamType::ParamType): likewiase
+	* typecheck/rust-tyty.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* checks/errors/privacy/rust-reachability.cc: dont need to assert
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): push const ctx
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItem::visit): likewise
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): likewise
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): likewse
+	* typecheck/rust-hir-type-check.h: likewise
+	* typecheck/rust-type-util.cc (query_type): check const_context_p
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-substitution-mapper.cc (SubstMapper::valid_type): check for dyn object
+	(SubstMapper::visit): substitution on it
+	* typecheck/rust-substitution-mapper.h: add impl
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-pattern.cc (CompilePatternCheckExpr::visit): handle non ADT
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::Select): optional result type
+	* typecheck/rust-hir-dot-operator.h: likewise
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::ResolveOpOverload): defer flag
+	(TypeCheckExpr::visit): pass throw the borrow
+	* typecheck/rust-hir-type-check-expr.h: likewise
+	* typecheck/rust-hir-type-check.h (struct DeferredOpOverload): new
+	* typecheck/rust-type-util.cc (unify_site): like parameter ordering
+	(unify_site_and): likewise
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::compute_ambigious_op_overload): new
+	(TypeCheckContext::compute_inference_variables): likewise
+	(TypeCheckContext::compute_infer_var): likewise
+	* typecheck/rust-unify.cc (UnifyRules::Resolve): fix arguments
+	(UnifyRules::resolve_subtype):likewise
+	* typecheck/rust-unify.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-ast-lower-item.cc (register_adt_impl): remove
+	(ASTLoweringItem::visit): likewise
+	* rust-session-manager.cc (Session::compile_crate): call new indexer
+	* typecheck/rust-hir-dot-operator.cc
+	(MethodResolver::try_select_predicate_candidates): use indexes
+	* typecheck/rust-hir-path-probe-expr.cc (PathProbeExpr::probe_adt_impls): likewise
+	* typecheck/rust-hir-path-probe-impl-trait.cc
+	(PathProbeImplTrait::process_trait_impl_items_for_candidates): likewise
+	* typecheck/rust-hir-path-probe-type.cc (TypePathProbe::probe_adt): likewise
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): likewise
+	* util/rust-hir-map.cc (Mappings::Mappings): new indexer
+	(Mappings::insert_hir_impl_block): likewise
+	(Mappings::insert_adt_impl_mapping): likewise
+	(Mappings::build_impl_indexes): likewise
+	(Mappings::insert_trait_impl_mapping): likewise
+	(Mappings::insert_trait_item_mapping): likewise
+	* util/rust-hir-map.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc: use item name indexes
+	* util/rust-hir-map.cc (Mappings::insert_hir_impl_block): new index
+	(Mappings::insert_trait_item_mapping): likewise
+	* util/rust-hir-map.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): use trait index
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::select): use sperate index
+	* util/rust-hir-map.cc (Mappings::insert_hir_impl_block): new indexes
+	* util/rust-hir-map.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::select): look at predicates first
+
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust-lang.cc (grs_langhook_pushdecl): Remove rust_unreachable().
+
+2026-09-16  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit): Return on
+	error.
+
+2026-09-16  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::finalize_rebind_import):
+	Use a reverse iterator instead of an index.
+
+2026-09-16  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* util/rust-hir-map.cc (Mappings::get_ast_crate_by_node_id_raw): Use
+	appropriate getter.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc: remove old hack
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* ast/rust-path.cc (GenericArgsBinding::as_string): new format
+	* ast/rust-path.h (struct GenericArgsBinding): new kinds for bindings
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_binding): new
+	* hir/tree/rust-hir-path.cc (GenericArgsBinding::GenericArgsBinding): likewise
+	(GenericArgsBinding::operator=): likewise
+	* hir/tree/rust-hir-path.h (class GenericArgsBinding): likewise
+	* hir/tree/rust-hir.cc (GenericArgsBinding::to_string): likewise
+	* parse/rust-parse-impl.hxx: peek for both types
+	* typecheck/rust-type-util.cc (normalize_projection): track constrains
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::TypeBoundPredicate): new ctor
+	(TypeBoundPredicate::operator=): likewise
+	* typecheck/rust-tyty-subst.cc (SubstitutionArgumentMappings::get_constraint_args): new
+	* typecheck/rust-tyty-subst.h: new
+	* typecheck/rust-unify.cc (UnifyRules::expect_projection): fix loop
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::Resolve): new mode
+	(TypeCheckType::visit): likewise
+	(ResolveWhereClauseItem::visit): remove nr usage
+	* typecheck/rust-hir-type-check-type.h: new mode
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-variance-analysis.cc (GenericTyPerCrateCtx::debug_print_solutions):
+	we can switch into a substitutionref base class to make this generic
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-bounds.cc: handle assertion
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-variance-analysis.cc (GenericTyVisitorCtx::lookup_or_add_type):
+	handle the other tyty types
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-ast-lower-implitem.cc (ASTLowerTraitItem::visit): lower where clauses
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (walk_type_to_constrain): prototype
+	(walk_types_to_constrain): make sure to walk the argument too
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-path-probe-expr.cc (PathProbeExpr::probe_adt_impls): check impls first
+	(PathProbeExpr::probe_fallback_impls): likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-extern.h: compile it down
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): make empty struct
+	* checks/errors/rust-hir-pattern-analysis.cc (PlaceInfo::specialize): add missng case
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit): create adt
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::assemble_marker_builtins): not sized
+	* typecheck/rust-tyty.h: new kind
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitItemReference::resolve_item): can be recusive
+
+2026-09-16  Lishin  <lishin1008@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc
+	(ExprStmtBuilder::visit): Pass the struct expression HIR ID.
+	* checks/errors/borrowck/rust-bir-builder-internal.h
+	(AbstractBuilder::push_tmp_assignment): Propagate move sites.
+	(AbstractBuilder::move_place): Likewise.
+	(AbstractBuilder::move_all): Likewise.
+	* checks/errors/borrowck/rust-bir-drop-analysis.cc
+	(annotate_drop_statements): Reject multiple move sources.
+
+2026-09-16  Lishin  <lishin1008@gmail.com>
+
+	* backend/rust-compile-context.h
+	(Context::insert_drop_flag): New function.
+	(Context::lookup_drop_flag): Likewise.
+	(Context::drop_flags): New member.
+	* backend/rust-compile-drop-builder.cc
+	(DropBuilder::maybe_create_drop_flag): New function.
+	(DropBuilder::drop_flag_assignment): Likewise.
+	* backend/rust-compile-drop-builder.h
+	(DropBuilder::maybe_create_drop_flag): New declaration.
+	(DropBuilder::drop_flag_assignment): Likewise.
+	* backend/rust-compile-drop.cc
+	(CompileDrop::build_current_scope_drop_cleanup): Check Drop flags before
+	running conditional Drops.
+	* backend/rust-compile-pattern.cc
+	(CompilePatternLet::visit): Set the Drop flag after initialization.
+	* backend/rust-compile-stmt.cc
+	(CompileStmt::visit): Create Drop flags and clear them after moves.
+	* checks/errors/borrowck/rust-bir-builder-expr-stmt.cc
+	(ExprStmtBuilder::visit): Pass expression HirIds to BIR.
+	* checks/errors/borrowck/rust-bir-builder-internal.h
+	(AbstractBuilder::push_assignment): Pass move-site HirIds.
+	(AbstractExprBuilder::return_place): Likewise.
+	* checks/errors/borrowck/rust-bir-drop-analysis.cc
+	(is_straight_line): Remove.
+	(record_drop_for_backend): Rename from
+	record_drop_for_straight_line_backend.
+	(annotate_drop_statements): Record conditional Drops and move
+	sources.
+	(DropAnalysis::clear): Clear the new analysis results.
+	(DropAnalysis::needs_drop_flag): New function.
+	(DropAnalysis::lookup_move_source): Likewise.
+	(DropAnalysis::analyze): Record results for the backend.
+	* checks/errors/borrowck/rust-bir-drop-analysis.h
+	(DropAnalysis::needs_drop_flag): New declaration.
+	(DropAnalysis::lookup_move_source): Likewise.
+	(DropAnalysis::conditionally_dropped): New member.
+	(DropAnalysis::move_sources): Likewise.
+	* checks/errors/borrowck/rust-bir.h
+	(Statement::make_assignment): Accept a move-site HirId.
+	(Statement::Statement): Likewise.
+	(Statement::get_move_site): New function.
+	(Statement::move_site): New member.
+
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::register_llvm_to_gcc_builtin): Add entries
+	for vcvtph2ps & vcvtps2ph cases (currently unused due to the reason mentioned above).
+	* backend/rust-compile-extern.h (CompileExternItem::visit(HIR::ExternalFunctionItem)):
+	Remove placeholder function in the FORWARD_ARGUMENTS case under compilation of UNADJUSTED
+	ABI.
+	(CompileExternItem::compile_x86_forwarding_adapter): New function to adapt LLVM's addcarryx
+	function signatures by simply forwarding the parameters and return var without changes.
+
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-builtins.h (LlvmBuiltinMappingResult): New enum.
+	(LlvmBuiltinAdapter): New enum.
+	(LlvmBuiltinMapping): New enum.
+	(BuiltinsContext::map_llvm_to_gcc_builtin): New function for LLVM built-in mapping.
+	(BuiltinsContext::register_builtin): New function for registering built-ins.
+	(BuiltinsContext::register_llvm_to_gcc_builtin): New function.
+	(BuiltinsContext::llvm_to_gcc_builtin): New map to translate function names.
+	* backend/rust-builtins.cc (BuiltinsContext::map_llvm_to_gcc_builtin): Implementation.
+	(BuiltinsContext::register_llvm_to_gcc_builtin): Implementation.
+	(BuiltinsContext::register_builtin): Implementation.
+	(BuiltinsContext::setup): Call register_llvm_to_gcc_builtin during setup.
+	* rust-lang.cc (grs_langhook_builtin_function): Register GCC built-in functions.
+	* backend/rust-compile-extern.h (CompileExternItem::OutputTupleOrder): New enum to denote
+	the tuple field order of the LLVM built-in's return type.
+	(CompileExternItem::compile_x86_output_pointer_adapter): New function to adapt LLVM's
+	rdseed, rdrand, addcarry, subborrow function signatures to GCC's equivalents.
+	(CompileExternItem::visit (HIR::ExternalFunctionItem)): Handle UNADJUSTED ABI case by
+	properly resolving LLVM intrinsic function names.
+
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-builtins.h (BuiltinsContext::SetupState): New enum.
+	* backend/rust-builtins.cc (BuiltinsContext::get): Ensure that BuiltinsContext is only
+	initialized once.
+	(BuiltinsContext::BuiltinsContext): Likewise.
+	(BuiltinsContext::setup): Call targetm.init_builtins to make GCC builtins available
+	to the frontend.
+	* rust-gcc.cc (init): Eagerly initialize BuiltinsContext.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-reference.cc (TraitItemReference::get_tyty): early guard
+	(TraitReference::resolve_default_function_bodies): new body resolver
+	* typecheck/rust-hir-trait-reference.h: new prototypes
+	* typecheck/rust-hir-trait-resolve.cc (TraitItemReference::on_resolved): resolve body
+	(TraitItemReference::resolve_default_function_body): likewise
+	(TraitItemReference::resolve_item): clearing pending
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::ResolveTraitSignature): new
+	(TypeCheckItem::resolve_trait): likewise
+	(TypeCheckItem::visit): likewise
+	* typecheck/rust-hir-type-check-item.h: likewise
+	* typecheck/rust-type-util.cc (query_type): get signiture
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItem::visit):
+	check need to resolve body
+	* typecheck/rust-hir-type-check-implitem.h: new resolve sig
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::Resolve): check recursion
+	(TypeCheckItem::ResolveFunctionSignature): new helper
+	(TypeCheckItem::ResolveImplBlockSelf): missing lifetime pin
+	(TypeCheckItem::visit): likewise
+	* typecheck/rust-hir-type-check-item.h: new helper
+	* typecheck/rust-hir-type-check.h: track function body pending
+	* typecheck/rust-type-util.cc (query_type): track associated self
+	(normalize_projection): check compatable
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::mark_function_body_pending):
+	marker to make sure body gets resolved later
+	(TypeCheckContext::clear_function_body_pending): clear market
+	(TypeCheckContext::function_body_pending): new set
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItem::visit): seperate
+	(TypeCheckImplItem::resolve_function_signature): likewise
+	* typecheck/rust-hir-type-check-implitem.h: seperate
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): likewise
+	(TypeCheckItem::resolve_function_signature): likewise
+	* typecheck/rust-hir-type-check-item.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc:
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-path-probe-expr.cc (PathProbeExpr::Probe): simpler interface
+	(PathProbeExpr::probe): based of the receiver
+	(PathProbeExpr::visit): no longer needed
+	(PathProbeExpr::probe_adt_impls): new probe
+	(PathProbeExpr::probe_fallback_impls): fallback to iterate impls
+	(PathProbeExpr::process_enum_item_for_candiates): removed
+	(PathProbeExpr::process_enum_item_for_candidates): likewise
+	(PathProbeExpr::process_impl_items_for_candidates): likewise
+	(PathProbeExpr::process_impl_item_candidate): likewise
+	(PathProbeExpr::probe_bounds): fall back to the impl iter
+	(PathProbeExpr::insert_candidate): acumulate
+	* typecheck/rust-hir-path-probe-expr.h (class PathProbeExpr): new interface
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::TypeCheckExpr): likewise
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments): likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* Make-lang.in: new object
+	* typecheck/rust-hir-path-probe.cc (PathProbeType::PathProbeType): refactor
+	(PathProbeType::Probe): likewise
+	(PathProbeType::visit): likewise
+	(PathProbeType::process_enum_item_for_candiates): likewise
+	(PathProbeType::process_impl_items_for_candidates): likewise
+	(PathProbeType::process_impl_item_candidate): likewise
+	(PathProbeType::is_receiver_generic): likewise
+	* typecheck/rust-hir-path-probe.h (class PathProbeType): likewise
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments): likewise
+	* typecheck/rust-hir-path-probe-expr.cc: New file.
+	* typecheck/rust-hir-path-probe-expr.h: New file.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* Make-lang.in: new object
+	* backend/rust-compile-base.cc: refactor
+	* backend/rust-compile-drop.cc: likewise
+	* backend/rust-compile-resolve-path.cc: likewise
+	* typecheck/rust-hir-path-probe.cc (PathProbeImplTrait::PathProbeImplTrait): likewise
+	(PathProbeImplTrait::Probe): likewise
+	(PathProbeImplTrait::process_trait_impl_items_for_candidates): likewise
+	* typecheck/rust-hir-path-probe.h (class PathProbeImplTrait): likewise
+	* typecheck/rust-hir-path-probe-impl-trait.cc: New file.
+	* typecheck/rust-hir-path-probe-impl-trait.h: New file.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* Make-lang.in: new object
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_associated_type): helper
+	* typecheck/rust-hir-type-check-type.h: new interface
+	* typecheck/rust-hir-path-probe-type.cc: New file.
+	* typecheck/rust-hir-path-probe-type.h: New file.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-ast-lower-item.cc (register_adt_impl): new mappings
+	(ASTLoweringItem::visit): tracker function
+	* typecheck/rust-hir-path-probe.cc (PathProbeType::process_impl_items_for_candidates):
+	iterator
+	* util/rust-hir-map.cc (Mappings::insert_adt_impl_mapping): helper
+	* util/rust-hir-map.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-path-probe.cc (PathProbeType::Probe): filter
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-type-util.cc (lookup_associated_impl_block): add filter
+	(normalize_projection): likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit): dp trait lookup
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): add filter
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::validate_type_implements_this): filter
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-bounds.h: optional trait arg
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::TypeBoundsProbe): likewise
+	(TypeBoundsProbe::Probe): likewise
+	(TypeBoundsProbe::is_bound_satisfied_for_type): use specified trait
+	(TypeBoundsProbe::scan): try to scan for indexed traits
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::MethodResolver): new optional filter
+	(MethodResolver::Probe): likewise
+	(MethodResolver::try_select_predicate_candidates): likewise
+	(MethodResolver::select): likewise
+	* typecheck/rust-hir-dot-operator.h: likewise
+	* typecheck/rust-hir-type-check-expr.cc: pass lang item trait
+	* util/rust-hir-map.cc: new helper to scan implblocks
+	* util/rust-hir-map.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): add mapping
+	* rust-session-manager.cc (Session::compile_crate): make sure nr context is ready
+	* typecheck/rust-hir-path-probe.cc
+	(PathProbeImplTrait::process_trait_impl_items_for_candidates): use the new filter
+	* util/rust-hir-map.cc (Mappings::insert_trait_impl_mapping): new helper
+	* util/rust-hir-map.h: likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-hir-dump.cc (Dump::do_typepathfunction): add guard
+
+2026-09-16  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-tyty.h: Rename FN_VARADIC_FLAG -> FN_VARIADIC_FLAG.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit): Use
+	the new name.
+
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-var-decl.h (CompileVarDecl::visit (StructPattern)): Compile
+	variable declarations for use within CompilePatternLet::visit(StructPattern).
+	* backend/rust-compile-pattern.h (CompilePatternLet::visit (StructPattern)):
+	Remove rust_sorry_at.
+	* backend/rust-compile-pattern.cc (CompilePatternLet::visit (StructPattern)):
+	Compile bindings for struct fields.
+
+2026-09-16  Lishin  <lishin1008@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-drop-analysis.cc
+	(struct BlockInitializationState): New struct.
+	(is_straight_line): New function.
+	(set_initialized): Likewise.
+	(set_uninitialized): Likewise.
+	(merge_state): Likewise.
+	(update_state_for_statement): Likewise.
+	(classify_drop): Likewise.
+	(compute_entry_states): Likewise.
+	(record_drop_for_straight_line_backend): Likewise.
+	(annotate_drop_statements): Likewise.
+	(DropAnalysis::analyze): Propagate initialization state across the
+	CFG and classify Drop statements.
+	* checks/errors/borrowck/rust-bir-drop-analysis.h: Update class
+	comment.
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (AssociatedImplTrait::bind_impl_for_projection):
+	switch between generics
+	(AssociatedImplTrait::bind_impl_for_bound): likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust-diagnostics.cc (rust_debug_loc): rename
+	(rust_debug_loc_internal): no longer check if debug is enabled
+	* rust-diagnostics.h (rust_debug): new wrapper
+	(rust_debug_loc): likewise
+	(rust_debug_loc_internal): likewise
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (walk_type_to_constrain): walk const generics
+
+2026-09-16  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-type-util.cc (normalize_projection): add check
+
+2026-09-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-default-resolver.cc
+	(DefaultResolver::visit (Function)): Don't pass a path parameter
+	to function NameResolutionContext::scoped.
+
+2026-09-16  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* parse/rust-parse-impl-path.hxx (Parser::parse_path_in_expression):
+	Report an error when the initial segment of a scoped path fails to
+	parse.
+	* parse/rust-parse-impl.hxx (Parser::parse_stmt_or_expr): Remove the
+	redundant expected-identifier error guard.
+
+2026-09-16  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc
+	(TypeCheckExpr::visit (BoxExpr)): Attempt to resolve lang item,
+	instead of just looking it up.
+	(TypeCheckExpr::visit (RangeFromToExpr)): Likewise.
+	(TypeCheckExpr::visit (RangeFromExpr)): Likewise.
+	(TypeCheckExpr::visit (RangeToExpr)): Likewise.
+	(TypeCheckExpr::visit (RangeFullExpr)): Likewise.
+
+2026-09-16  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-abi.h (ABI): Add PLATFORM_INTRINSIC and UNADJUSTED variants.
+	* util/rust-abi.cc (ABI::get_abi_from_string): Implement cases for PLATFORM_INTRINSIC &
+	UNADJUSTED.
+	(ABI::get_string_from_abi): Ditto.
+
 2026-09-10  Philip Herron  <herron.philip@googlemail.com>
 
 	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): make vector

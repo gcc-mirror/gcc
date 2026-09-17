@@ -1,3 +1,8 @@
+2026-09-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127359
+	* tools-src/makeSystem: Replace echo with printf equivalent.
+
 2026-09-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2-gcc/m2builtins.cc (define_builtin): Reimplement.

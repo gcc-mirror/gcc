@@ -1,3 +1,49 @@
+2026-09-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-parser.cc (a68_get_node_location): Return a location
+	that covers the whole span of the node.
+
+2026-09-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-low-bits.cc (a68_bits_elem): Use LINE_NUMBER (p) instead
+	of NUMBER (LINE (INFO (p))).
+	* a68-low-chars.cc (a68_char_repr): Likewise.
+	* a68-low-coercions.cc (a68_lower_uniting): Likewise.
+	* a68-low-misc.cc (a68_lower_assertion): Likewise.
+	* a68-low-multiples.cc (a68_multiple_slice): Likewise.
+	(a68_multiple_single_bound_check): Likewise.
+	(a68_boundable_dim_check): Likewise.
+	(a68_multiple_bounds_check): Likewise.
+	(a68_multiple_bounds_check_equal): Likewise.
+	* a68-low.cc (a68_checked_indirect_ref): Likewise.
+	* a68-parser-scanner.cc (new_source_line): Adjust the fields
+	when creating a LINE_T.
+	(append_source_line): Add a location_t to the new line.
+	(append_environ): Track the locations of pre/post-lude.
+	(read_source_file): Create a linemap for the source file.
+	(include_files):  Create a linemap for included source files.
+	* a68-parser-top-down.cc (a68_phrase_to_text): Use unsigned
+	for line numbers.
+	* a68-parser.cc (a68_get_node_location): Return the location of
+	the node info line.
+	(a68_get_line_location): Return the location of the line.
+	* a68-pretty-print.h (a68_line_format_token): Use the line's
+	filename to check if it's part of the standard environment.
+	* a68-types.h (struct LINE_T): Remove filename and number
+	fields from LINE_T and add location.
+	(FILENAME): Delete macro.
+	(LOCATION): New macro.
+	(LINE_NUMBER): Adjust to use LINE_NO (line).
+	* a68.h (FILENAME): New function.
+	(LINE_NO): Likewise.
+
+2026-09-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-parser-scanner.cc (concatenate_lines): Delete.
+	(read_source_file): Stop calling concatenate_lines.
+	(next_char): Skip backslash at the end of lines.
+	(include_files): Stop calling concatenate_lines.
+
 2026-09-10  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-low-ranges.cc (a68_pop_range): Do not consolidate refs in

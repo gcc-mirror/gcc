@@ -1,3 +1,15 @@
+2026-09-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127359
+	* libm2cor/Makefile.am: Use $(SHELL) to invoke makeSystem.
+	* libm2iso/Makefile.am: Ditto.
+	* libm2min/Makefile.am: Ditto.
+	* libm2pim/Makefile.am: Ditto.
+	* libm2pim/Makefile.in:	Rebuild.
+	* libm2cor/Makefile.in:	Ditto.
+	* libm2iso/Makefile.in:	Ditto.
+	* libm2min/Makefile.in:	Ditto.
+
 2026-09-15  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127359

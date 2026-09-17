@@ -1,3 +1,55 @@
+2026-09-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* lto-wrapper.cc (run_gcc): Make saved parallel LTRANS outputs phony.
+
+2026-09-16  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* ipa-inline.cc (report_inline_failed_reason): Check for NULL
+	before calling cl_target_option_print_diff.
+
+2026-09-16  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* asan.cc: Remove duplicate stringpool includes.
+	* builtins.cc: Likewise.
+	* calls.cc: Likewise.
+	* cgraphunit.cc: Likewise.
+	* dwarf2out.cc: Likewise.
+	* fold-const.cc: Likewise.
+	* function.cc: Likewise.
+	* gimple-expr.cc: Likewise.
+	* internal-fn.cc: Likewise.
+	* ipa.cc: Likewise.
+	* lto-cgraph.cc: Likewise.
+	* pointer-query.cc: Likewise.
+	* tree-streamer-in.cc: Likewise.
+	* varasm.cc: Likewise.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_conversion): Prevent
+	conversions from non-mode-precision _BitInt.
+
+2026-09-16  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-sme.def (DEF_SME_FUNCTION_GS): Undef
+	at end.
+
+2026-09-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* ira-lives.cc (single_reg_class): Compute regno in case of
+	single reg class constraint or hard register constraint, and
+	rename to ...
+	(single_reg_class_regno): ... this.
+	(single_reg_operand_class): Similarly as before and rename
+	to ...
+	(single_reg_operand_class_regno): ... this.
+	(process_single_reg_class_operands): Utilize
+	single_reg_operand_class_regno() and deal with regnos directly
+	instead of single reg classes.
+	(process_single_reg_class_operands): Rename to ...
+	(process_single_reg_constrained_operands): ... this.
+	(process_bb_node_lives): Refer to renamed function.
+
 2026-09-15  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/libgdiagnostics/topics/sarif.rst: Update SARIF website URL.

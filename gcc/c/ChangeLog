@@ -1,3 +1,12 @@
+2026-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/127383
+	* c-typeck.cc (default_conversion): If orig_expr is different
+	from exp and exp is a bit-field of bit-precise integer type, call
+	perform_integral_promotions on orig_exp rather than exp.
+	(build_c_cast): Wrap in NON_LVALUE_EXPR not just lvalues, but
+	also non-lvalue bit-fields of bit-precise integer type.
+
 2026-09-11  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_gimple_statement): Parse
