@@ -291,7 +291,7 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
     }
     this->source.name = path;
     if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
-      error_msg(source.loc, "recursive copybook: '%s' includes itself", path);
+      error_msg(source.loc, "recursive copybook: %qs includes itself", path);
       goto failure;
     }
     cbl_message(LexInputN, "opening %qs for input", source.name);
