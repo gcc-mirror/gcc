@@ -53,6 +53,67 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+namespace picture_validation {
+  enum state_t {
+    none_e, 
+    alphabetic_e   = 1, 
+    alphanumeric_e, 
+    alpha_ed_e,
+    national_e,
+    national_ed_e,
+    numeric_e,
+    numeric_ed_e,
+    invalid_e = 0x80,
+    alpha_pending_e, 
+    c_need_r_e,
+    crdb_e, 
+    d_need_b_e,
+    postdec_e,
+    antedec_e,
+    exponent_e,
+    accept_e,
+  };
+}
+
+std::pair<const char *, picture_validation::state_t>
+is_valid_picture( const char picture[] );
+
+static const char *
+crdb_maybe( const char *p )  {
+  char candidate[3] = { TOUPPER(p[-1]), TOUPPER(p[0]) };
+  static const std::set<std::string> endings{ "CR", "DB" };
+  return 1 == endings.count(candidate)? --p : p;
+}
+
+static size_t
+is_valid_picture() {
+    std::reverse_iterator<const char*> end(yytext), beg(yytext + yyleng);
+    auto pos = std::find(beg, end, 0x20);
+    auto picture = pos.base();
+    dbgmsg("%s: picture is '%s'", __func__, picture);
+    
+    auto result = is_valid_picture(picture);
+
+    if( 0 != (result.second & picture_validation::invalid_e) ) {
+      assert(yytext < result.first);
+      auto p = crdb_maybe(result.first);
+      auto loc(yylloc);
+      if( loc.first_line == loc.last_line ) {
+        auto error_col = p - yytext;
+        if( p == yytext + yyleng ) error_col = picture - yytext;
+        if( loc.first_column + error_col < loc.last_column )
+          loc.first_column += error_col;
+      }
+      if( *p ) {
+        unsigned int pos = p - picture;
+        error_msg(loc, "invalid PICTURE character %qc at offset %u", *p, pos);
+      } else {
+        error_msg(loc, "invalid picture");
+      }
+    }
+    dbgmsg("%s: returning '%u'", __func__, unsigned(picture - yytext));
+    return picture - yytext;
+}
 %}
 
     /* C99 floating point constant, per flex(1) appendix "common patterns" */
@@ -1236,9 +1297,10 @@ USE({SPC}FOR)?		{ return USE; }
 			}
 
   PIC(TURE)?({SPC}IS)?{SPC}{PICTURE} {
-				  auto pos = validate_picture();
+				  auto pos = is_valid_picture();
 				  myless(pos);
-				  yy_push_state(picture); return PIC; }
+				  yy_push_state(picture); return PIC;
+                                }
 
   ANY				{ return ANY; }
   LENGTH			{ return LENGTH; }

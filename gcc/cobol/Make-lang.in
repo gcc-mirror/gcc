@@ -74,6 +74,7 @@ cobol1_OBJS =    \
  cobol/lexio.o      \
  cobol/move.o       \
  cobol/messages.o   \
+ cobol/picture.o    \
  cobol/parse.o      \
  cobol/scan.o       \
  cobol/structs.o    \
@@ -89,11 +90,10 @@ cobol1_OBJS =    \
 # libgcobol/valconv.cc that needs to be compiled into both libgcobol
 # and cobol1.  We copy those two source code files from libgcobol to
 # build/gcc/cobol to avoid the nightmare of one file appearing in more
-# than one place.  For simplicity, we make those compilations dependent
-# on all of the libgcobol/*.h files, which might lead to the occasional
-# unnecessary compilation.  The impact of that is negligible.
+# than one place.  For simplicity, we make those compilations
+# dependent on all of the libgcobol/*.h files, which might lead to the
+# occasional unnecessary compilation.
 #
-
 cobol/charmaps.cc cobol/valconv.cc: cobol/%.cc: $(LIB_SOURCE)/%.cc
 	cp $^ $@
 
@@ -239,15 +239,15 @@ cobol/scan.o: cobol/scan.cc			\
 	cobol/parse.cc
 
 # As opposed to other objects, gcobc is a shell script and therefore
-# is only installed. In other words,no build step is necessary.
-# However, some tests rely on gcobc being available from the build tree.
+# is only installed. Although no build step is necessary, some tests
+# rely on gcobc being available from the build tree.
 gcobc$(exeext): $(srcdir)/cobol/gcobc
 	cp $< $@
 
 cobol: gcobc$(exeext)
 
-# Update token names if the generator script is installed
-# (by a developer) and there's been a change. 
+# Update token names if the generator script is installed (by a
+# developer) and there's been a change.
 $(srcdir)/cobol/token_names.h: cobol/parse.cc
 	@if [ -f $@.gen ]; then			\
 		$@.gen $(subst .cc,.h,$^)	\
