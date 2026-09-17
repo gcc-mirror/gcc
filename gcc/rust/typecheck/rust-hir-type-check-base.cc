@@ -166,6 +166,10 @@ walk_type_to_constrain (std::set<HirId> &constrained_symbols, TyTy::BaseType &r)
     default:
       break;
     }
+
+  if (r.has_substitutions_defined ())
+    walk_types_to_constrain (constrained_symbols,
+			     r.get_subst_argument_mappings ());
 }
 
 bool
