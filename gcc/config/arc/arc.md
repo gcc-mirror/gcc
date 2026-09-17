@@ -335,88 +335,6 @@
 	(const_string "yes")))
 
 (define_attr "predicable" "no,yes" (const_string "no"))
-;; if 'predicable' were not so brain-dead, we would specify:
-;; (cond [(eq_attr "cond" "!canuse") (const_string "no")
-;;        (eq_attr "iscompact" "maybe") (const_string "no")]
-;;       (const_string "yes"))
-;; and then for everything but calls, we could just set the cond attribute.
-
-;; Condition codes: this one is used by final_prescan_insn to speed up
-;; conditionalizing instructions.  It saves having to scan the rtl to see if
-;; it uses or alters the condition codes.
-
-;; USE: This insn uses the condition codes (eg: a conditional branch).
-;; CANUSE: This insn can use the condition codes (for conditional execution).
-;; SET: All condition codes are set by this insn.
-;; SET_ZN: the Z and N flags are set by this insn.
-;; SET_ZNC: the Z, N, and C flags are set by this insn.
-;; CLOB: The condition codes are set to unknown values by this insn.
-;; NOCOND: This insn can't use and doesn't affect the condition codes.
-
-(define_attr "cond" "use,canuse,canuse_limm,canuse_limm_add,set,set_zn,clob,nocond"
-  (cond
-    [(and (eq_attr "predicable" "yes")
-	  (eq_attr "is_sfunc" "no")
-	  (eq_attr "delay_slot_filled" "no"))
-     (const_string "canuse")
-
-     (eq_attr "type" "call")
-     (cond [(eq_attr "delay_slot_filled" "yes") (const_string "nocond")
-	    (match_test "!flag_pic") (const_string "canuse_limm")]
-	   (const_string "nocond"))
-
-     (eq_attr "iscompact" "maybe,false")
-     (cond [ (and (eq_attr "type" "move")
-		  (match_operand 1 "immediate_operand" ""))
-	     (if_then_else
-		(ior (match_operand 1 "u6_immediate_operand" "")
-		     (match_operand 1 "long_immediate_operand" ""))
-		(const_string "canuse")
-		(const_string "canuse_limm"))
-
-	     (eq_attr "type" "binary")
-	     (cond [(ne (symbol_ref "REGNO (operands[0])")
-			(symbol_ref "REGNO (operands[1])"))
-		    (const_string "nocond")
-		    (match_operand 2 "register_operand" "")
-		    (const_string "canuse")
-		    (match_operand 2 "u6_immediate_operand" "")
-		    (const_string "canuse")
-		    (match_operand 2 "long_immediate_operand" "")
-		    (const_string "canuse")
-		    (match_operand 2 "const_int_operand" "")
-		    (const_string "canuse_limm")]
-		   (const_string "nocond"))
-
-	     (eq_attr "type" "compare")
-	     (const_string "set")
-
-	     (eq_attr "type" "cmove,branch")
-	     (const_string "use")
-
-	     (eq_attr "is_sfunc" "yes")
-	     (cond [(match_test "(TARGET_MEDIUM_CALLS
-				  && !TARGET_LONG_CALLS_SET
-				  && flag_pic)")
-		    (const_string "canuse_limm_add")
-		    (match_test "(TARGET_MEDIUM_CALLS
-				  && !TARGET_LONG_CALLS_SET)")
-		    (const_string "canuse_limm")]
-		   (const_string "canuse"))
-
-	    ]
-
-	    (const_string "nocond"))]
-
-      (cond [(eq_attr "type" "compare")
-	     (const_string "set")
-
-	     (eq_attr "type" "cmove,branch")
-	     (const_string "use")
-
-	    ]
-
-	    (const_string "nocond"))))
 
 /* ??? Having all these patterns gives ifcvt more freedom to generate
    inefficient code.  It seem to operate on the premise that
@@ -502,8 +420,7 @@
 ;;
 (define_asm_attributes
   [(set_attr "length" "8")
-   (set_attr "type" "multi")
-   (set_attr "cond" "clob") ])
+   (set_attr "type" "multi") ])
 
 ;; Delay slots.
 ;; The first two cond clauses and the default are necessary for correctness;
@@ -851,8 +768,7 @@ archs4x, archs4xd"
 		       (const_int 0)))]
   ""
   "<SEZ_prefix><SQH_postfix>.f\\t0,%1"
-  [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")])
+  [(set_attr "type" "compare") ])
 
 (define_insn "*<SEZ_prefix>xt<SQH_postfix>_cmp0"
   [(set (match_operand 0 "cc_set_register" "")
@@ -862,8 +778,7 @@ archs4x, archs4xd"
 	(SEZ:SI (match_dup 1)))]
   ""
   "<SEZ_prefix><SQH_postfix>.f\\t%2,%1"
-  [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")])
+  [(set_attr "type" "compare") ])
 
 (define_insn "*xbfu_cmp0_noout"
   [(set (match_operand 0 "cc_set_register" "")
@@ -882,8 +797,7 @@ archs4x, archs4xd"
   [(set_attr "type"       "shift")
    (set_attr "iscompact"  "false")
    (set_attr "length"     "4,8")
-   (set_attr "predicable" "no")
-   (set_attr "cond"       "set_zn")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "*xbfu_cmp0"
   [(set (match_operand 4 "cc_set_register" "")
@@ -904,8 +818,7 @@ archs4x, archs4xd"
   [(set_attr "type"       "shift")
    (set_attr "iscompact"  "false")
    (set_attr "length"     "4,8,8")
-   (set_attr "predicable" "yes,no,yes")
-   (set_attr "cond"       "set_zn")])
+   (set_attr "predicable" "yes,no,yes") ])
 
 ; splitting to 'tst' allows short insns and combination into brcc.
 (define_insn_and_split "*movsi_set_cc_insn"
@@ -922,7 +835,6 @@ archs4x, archs4xd"
   ""
   [(set_attr "type" "compare")
    (set_attr "predicable" "yes,no,yes")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,4,8")])
 
 (define_insn "unary_comparison"
@@ -933,8 +845,7 @@ archs4x, archs4xd"
 	   (const_int 0)]))]
   ""
   "%O2.f 0,%1"
-  [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")])
+  [(set_attr "type" "compare") ])
 
 
 ; this pattern is needed by combiner for cases like if (c=(~b)) { ... }
@@ -949,7 +860,6 @@ archs4x, archs4xd"
   ""
   "%O3.f\\t%0,%1"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4")])
 
 ; reload is too stingy with reloads for Rrq/Cbf/Rrq when it sees
@@ -1006,8 +916,7 @@ archs4x, archs4xd"
   [(set_attr "iscompact" "maybe,maybe,false,false,false,false,false,false")
    (set_attr "type" "compare,compare,compare,compare,compare,compare,binary,compare")
    (set_attr "length" "*,*,4,4,4,4,4,8")
-   (set_attr "predicable" "no,yes,no,yes,no,no,no,yes")
-   (set_attr "cond" "set_zn")])
+   (set_attr "predicable" "no,yes,no,yes,no,no,no,yes") ])
 
 ; ??? Sometimes, if an AND with a constant can be expressed as a zero_extract,
 ; combine will do that and not try the AND.
@@ -1031,7 +940,6 @@ archs4x, archs4xd"
 	   && INTVAL (operands[3]) + INTVAL (operands[2]) == 32))"
   "tst\\t%1,((1<<%2)-1)<<%3"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4")])
 
 ; Likewise for asr.f.
@@ -1047,7 +955,6 @@ archs4x, archs4xd"
    && INTVAL (operands[3]) + INTVAL (operands[2]) == 32"
   "asr.f 0,%1,%3"
   [(set_attr "type" "shift")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4")])
 
 (define_insn "*tst_bitfield"
@@ -1068,7 +975,6 @@ archs4x, archs4xd"
    and.f\\t0,%1,((1<<%2)-1)<<%3"
   [(set_attr "iscompact" "maybe,false,false,false,false")
    (set_attr "type" "compare,compare,compare,shift,compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "*,4,4,4,8")])
 
 (define_expand "<su_optab>mulvsi4"
@@ -1138,7 +1044,6 @@ archs4x, archs4xd"
   ""
   "%O3.f\\t0,%1,%2"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,8")])
 
 (define_insn "*commutative_binary_cmp0"
@@ -1153,7 +1058,6 @@ archs4x, archs4xd"
   ""
   "%O4.f\\t%0,%1,%2"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "predicable" "yes,yes,no,no")
    (set_attr "length" "4,4,4,8")])
 
@@ -1166,8 +1070,7 @@ archs4x, archs4xd"
 		       (match_operand:SI 1 "register_operand"  "r")))]
   ""
   "add.f\\t0,%0,%1"
-  [(set_attr "cond" "set")
-   (set_attr "type" "compare")
+  [(set_attr "type" "compare")
    (set_attr "length" "4")])
 
 (define_insn "addsi_compare_2"
@@ -1177,8 +1080,7 @@ archs4x, archs4xd"
                      (match_dup 0)))]
   ""
   "add.f\\t0,%0,%1"
-  [(set_attr "cond" "set")
-   (set_attr "type" "compare")
+  [(set_attr "type" "compare")
    (set_attr "length" "4,8")])
 
 (define_insn "*addsi_compare_3"
@@ -1188,8 +1090,7 @@ archs4x, archs4xd"
                      (match_dup 1)))]
   ""
   "add.f\\t0,%0,%1"
-  [(set_attr "cond" "set")
-   (set_attr "type" "compare")
+  [(set_attr "type" "compare")
    (set_attr "length" "4")])
 
 ; this pattern is needed by combiner for cases like if (c=a+b) { ... }
@@ -1207,7 +1108,6 @@ archs4x, archs4xd"
   ""
   "%O4.f\\t%0,%1,%2 ; non-mult commutative"
   [(set_attr "type" "compare,compare,compare")
-   (set_attr "cond" "set_zn,set_zn,set_zn")
    (set_attr "length" "4,4,8")])
 
 ; a MULT-specific version of this pattern to avoid touching the
@@ -1225,7 +1125,6 @@ archs4x, archs4xd"
   "!TARGET_ARC600_FAMILY"
   "%O4.f\\t%0,%1,%2 ; mult commutative"
   [(set_attr "type" "compare,compare,compare")
-   (set_attr "cond" "set_zn,set_zn,set_zn")
    (set_attr "length" "4,4,8")])
 
 (define_insn "*noncommutative_binary_cmp0"
@@ -1240,7 +1139,6 @@ archs4x, archs4xd"
   ""
   "%O4%?.f\\t%0,%1,%2"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "predicable" "yes,no,no,yes,no")
    (set_attr "length" "4,4,4,8,8")])
 
@@ -1254,7 +1152,6 @@ archs4x, archs4xd"
   ""
   "%O4.f\\t0,%1,%2"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,8")])
 
 ;;rsub variants
@@ -1270,7 +1167,6 @@ archs4x, archs4xd"
   ""
   "rsub.f\\t%0,%2,%1"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,8")])
 
 (define_insn "*rsub_cmp0_noout"
@@ -1283,7 +1179,6 @@ archs4x, archs4xd"
   ""
   "rsub.f\\t0,%2,%1"
   [(set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,8")])
 
 (define_expand "bic_f_zn"
@@ -1309,7 +1204,6 @@ archs4x, archs4xd"
   ""
   "bic.f\\t%0,%1,%2"
   [(set_attr "type" "compare,compare,compare")
-   (set_attr "cond" "set_zn,set_zn,set_zn")
    (set_attr "length" "4,4,8")])
 
 (define_insn "*bic_cmp0_noout"
@@ -1322,7 +1216,6 @@ archs4x, archs4xd"
    || register_operand (operands[2], SImode)"
   "bic.f\\t0,%2,%1"
   [(set_attr "type" "unary")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,8,8")])
 
 (define_insn "*bic_cmp0"
@@ -1337,7 +1230,6 @@ archs4x, archs4xd"
    || register_operand (operands[2], SImode)"
   "bic.f\\t%3,%2,%1"
   [(set_attr "type" "unary")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4,8,8")])
 
 (define_expand "movdi"
@@ -2094,7 +1986,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "mul16_em")
    (set_attr "predicable" "yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")
    ])
 
 (define_insn "mulhisi3_reg"
@@ -2107,7 +1998,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "maybe,false,false")
    (set_attr "type" "mul16_em")
    (set_attr "predicable" "yes,yes,no")
-   (set_attr "cond" "canuse,canuse,nocond")
    ])
 
 (define_expand "umulhisi3"
@@ -2134,7 +2024,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "mul16_em")
    (set_attr "predicable" "yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond")
    ])
 
 (define_insn "umulhisi3_reg"
@@ -2147,7 +2036,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "maybe,false,false")
    (set_attr "type" "mul16_em")
    (set_attr "predicable" "yes,yes,no")
-   (set_attr "cond" "canuse,canuse,nocond")
    ])
 
 ;; ARC700/ARC600/V2 multiply
@@ -2216,8 +2104,7 @@ archs4x, archs4xd"
   "mululw\\t0,%0,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "mac_600"
   [(set (match_operand:SI 2 "acc2_operand" "")
@@ -2234,8 +2121,7 @@ archs4x, archs4xd"
   "machlw%?\\t0,%0,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600, mulmac_600, mulmac_600")
-   (set_attr "predicable" "no, no, yes")
-   (set_attr "cond" "nocond, canuse_limm, canuse")])
+   (set_attr "predicable" "no, no, yes") ])
 
 ; The gcc-internal representation may differ from the hardware
 ; register number in order to allow the generic code to correctly
@@ -2269,8 +2155,7 @@ archs4x, archs4xd"
   [(set_attr "length" "*,4,4,8")
    (set_attr "iscompact" "maybe,false,false,false")
    (set_attr "type" "multi,multi,multi,multi")
-   (set_attr "predicable" "yes,yes,no,yes")
-   (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
+   (set_attr "predicable" "yes,yes,no,yes") ])
 
 (define_insn_and_split "mulsidi_600"
   [(set (match_operand:DI 0 "register_operand"                           "=r,r,  r")
@@ -2304,8 +2189,7 @@ archs4x, archs4xd"
   [(set_attr "length" "*,4,4,8")
    (set_attr "iscompact" "maybe,false,false,false")
    (set_attr "type" "multi,multi,multi,multi")
-   (set_attr "predicable" "yes,yes,no,yes")
-   (set_attr "cond" "canuse,canuse,canuse_limm,canuse")])
+   (set_attr "predicable" "yes,yes,no,yes") ])
 
 (define_insn_and_split "umulsidi_600"
   [(set (match_operand:DI 0 "register_operand"                            "=r,r, r")
@@ -2339,8 +2223,7 @@ archs4x, archs4xd"
   [(set_attr "length" "4,4,8")
    (set_attr "iscompact" "false")
    (set_attr "type" "umulti")
-   (set_attr "predicable" "yes,no,yes")
-   (set_attr "cond" "canuse,canuse_limm,canuse")])
+   (set_attr "predicable" "yes,no,yes") ])
 
 ; ARC700 mpy* instructions: This is a multi-cycle extension, and thus 'w'
 ; may not be used as destination constraint.
@@ -2358,8 +2241,7 @@ archs4x, archs4xd"
   "mpyu%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,4,8,8")
    (set_attr "type" "umulti")
-   (set_attr "predicable" "yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,canuse,nocond")])
+   (set_attr "predicable" "yes,no,no,yes,no") ])
 
 ; ARCv2 has no penalties between mpy and mpyu. So, we use mpy because of its
 ; short variant. LP_COUNT constraints are still valid.
@@ -2379,8 +2261,7 @@ archs4x, archs4xd"
  [(set_attr "length" "*,*,4,4,4,8,8")
   (set_attr "iscompact" "maybe,maybe,false,false,false,false,false")
   (set_attr "type" "umulti")
-  (set_attr "predicable" "no,no,yes,no,no,yes,no")
-  (set_attr "cond" "nocond,nocond,canuse,nocond,canuse_limm,canuse,nocond")])
+  (set_attr "predicable" "no,no,yes,no,no,yes,no") ])
 
 (define_expand "mulsidi3"
   [(set (match_operand:DI 0 "register_operand" "")
@@ -2462,8 +2343,7 @@ archs4x, archs4xd"
   "mullw%?\\t0,%0,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600")
-   (set_attr "predicable" "no,no,yes")
-   (set_attr "cond" "nocond, canuse_limm, canuse")])
+   (set_attr "predicable" "no,no,yes") ])
 
 
 ;; ??? check if this is canonical rtl
@@ -2490,8 +2370,7 @@ archs4x, archs4xd"
   "machlw%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600")
-   (set_attr "predicable" "no,no,yes")
-   (set_attr "cond" "nocond, canuse_limm, canuse")])
+   (set_attr "predicable" "no,no,yes") ])
 
 
 ;; DI <- DI(signed SI) * DI(signed SI)
@@ -2527,8 +2406,7 @@ archs4x, archs4xd"
   "mpy%+%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse,nocond")])
+   (set_attr "predicable" "yes,no,yes,no") ])
 
 ; Note that mpyhu has the same latency as mpy / mpyh,
 ; thus we use the type multi.
@@ -2544,8 +2422,7 @@ archs4x, archs4xd"
   "mpy%+u%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse,nocond")])
+   (set_attr "predicable" "yes,no,yes,no") ])
 
 ;; (zero_extend:DI (const_int)) leads to internal errors in combine, so we
 ;; need a separate pattern for immediates
@@ -2562,8 +2439,7 @@ archs4x, archs4xd"
   "mpy%+u%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,4,8,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,canuse,nocond")])
+   (set_attr "predicable" "yes,no,no,yes,no") ])
 
 (define_expand "umulsi3_highpart"
   [(set (match_operand:SI 0 "general_operand"  "")
@@ -2677,8 +2553,7 @@ archs4x, archs4xd"
   "mululw\\t0,%0,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 
 (define_insn "umac64_600"
@@ -2704,8 +2579,7 @@ archs4x, archs4xd"
   "machulw%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "mulmac_600")
-   (set_attr "predicable" "no,no,yes")
-   (set_attr "cond" "nocond, canuse_limm, canuse")])
+   (set_attr "predicable" "no,no,yes") ])
 
 ;; DI <- DI(unsigned SI) * DI(unsigned SI)
 (define_insn_and_split "umulsidi3_700"
@@ -2804,8 +2678,7 @@ archs4x, archs4xd"
 			      (sign_extend:DI (match_dup 2)))))]
  ""
  "add.f\\t%0,%1,%2"
- [(set_attr "cond"   "set")
-  (set_attr "type"   "compare")
+ [(set_attr "type"   "compare")
   (set_attr "length" "4,4,4,8")])
 
 (define_expand "addvsi4"
@@ -2828,8 +2701,7 @@ archs4x, archs4xd"
 		     (match_dup 1)))]
  ""
  "add.f\\t%0,%1,%2"
- [(set_attr "cond"   "set")
-  (set_attr "type"   "compare")
+ [(set_attr "type"   "compare")
   (set_attr "length" "4,4,4,8")])
 
 (define_expand "uaddvsi4"
@@ -2860,8 +2732,7 @@ archs4x, archs4xd"
   add.f\\t%0,%2,%1
   add.f\\t%0,%2,%1
   add.f\\t%0,%1,%2"
-  [(set_attr "cond" "set")
-   (set_attr "type" "compare")
+  [(set_attr "type" "compare")
    (set_attr "length" "4,4,4,4,8,8")])
 
 (define_insn "*add_f_2"
@@ -2874,8 +2745,7 @@ archs4x, archs4xd"
 	(plus:SI (match_dup 1) (match_dup 2)))]
   ""
   "add.f\\t%0,%1,%2"
-  [(set_attr "cond" "set")
-   (set_attr "type" "compare")
+  [(set_attr "type" "compare")
    (set_attr "length" "4,4,8")])
 
 (define_insn "adc"
@@ -2894,8 +2764,7 @@ archs4x, archs4xd"
     adc\\t%0,%1,%2
     adc\\t%0,%1,%2
     adc\\t%0,%1,%2"
-  [(set_attr "cond" "use")
-   (set_attr "type" "cc_arith")
+  [(set_attr "type" "cc_arith")
    (set_attr "length" "4,4,4,4,8,8")])
 
 (define_insn "adc_f"
@@ -2918,8 +2787,7 @@ archs4x, archs4xd"
 	  (match_dup 2)))]
   ""
   "adc.f\\t%0,%1,%2"
-  [(set_attr "cond" "set")
-   (set_attr "predicable" "no")
+  [(set_attr "predicable" "no")
    (set_attr "type" "cc_arith")
    (set_attr "length" "4")])
 
@@ -2958,7 +2826,6 @@ archs4x, archs4xd"
 ;		 (match_operand:SI 1 "register_operand" "c")))]
 ;  ""
 ;  "adc\\t%0,%1,0"
-;  [(set_attr "cond" "use")
 ;   (set_attr "type" "cc_arith")
 ;   (set_attr "length" "4")])
 ;
@@ -3019,7 +2886,6 @@ archs4x, archs4xd"
   [(set_attr "iscompact" "maybe,maybe,false,false,false,false,false,false,false, false")
   (set_attr "length" "*,*,4,4,4,4,4,8,8,8")
   (set_attr "predicable" "yes,no,yes,yes,no,no,no,yes,no,no")
-  (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond,canuse_limm,canuse,nocond,nocond")
   (set_attr "cpu_facility" "*,cd,*,*,*,*,*,*,*,*")
   ])
 
@@ -3034,8 +2900,7 @@ archs4x, archs4xd"
 				(sign_extend:DI (match_dup 2)))))]
    ""
    "sub.f\\t%0,%1,%2"
-   [(set_attr "cond"	"set")
-    (set_attr "type"	"compare")
+   [(set_attr "type"	"compare")
     (set_attr "length"	"4,4,4,8")])
 
 (define_expand "subvsi4"
@@ -3057,8 +2922,7 @@ archs4x, archs4xd"
 		      (match_dup 2)))]
    ""
    "sub.f\\t%0,%1,%2"
-   [(set_attr "cond"	"set")
-    (set_attr "type"	"compare")
+   [(set_attr "type"	"compare")
     (set_attr "length"	"4,4,4,8")])
 
 (define_expand "usubvsi4"
@@ -3112,8 +2976,7 @@ archs4x, archs4xd"
 			  (const_int 0))))]
   ""
   "sbc\\t%0,%1,0"
-  [(set_attr "cond" "use")
-   (set_attr "type" "cc_arith")
+  [(set_attr "type" "cc_arith")
    (set_attr "length" "4")])
 
 (define_insn "sbc"
@@ -3132,8 +2995,7 @@ archs4x, archs4xd"
     sbc\\t%0,%1,%2
     sbc\\t%0,%1,%2
     sbc\\t%0,%1,%2"
-  [(set_attr "cond" "use")
-   (set_attr "type" "cc_arith")
+  [(set_attr "type" "cc_arith")
    (set_attr "length" "4,4,4,4,8,8")])
 
 (define_insn "sub_f"
@@ -3193,7 +3055,6 @@ archs4x, archs4xd"
   [(set_attr "type" "shift")
    (set_attr "length" "*,4,8")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")
    (set_attr "iscompact" "maybe,false,false")])
 
 ;; N.B. sub[123] has the operands of the MINUS in the opposite order from
@@ -3208,7 +3069,6 @@ archs4x, archs4xd"
   [(set_attr "type" "shift")
    (set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")
    (set_attr "iscompact" "false")])
 
 (define_insn "*sub_n"
@@ -3221,7 +3081,6 @@ archs4x, archs4xd"
   [(set_attr "type" "shift")
    (set_attr "length" "4,4,8")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")
    (set_attr "iscompact" "false")])
 
 ; ??? check if combine matches this.
@@ -3233,8 +3092,7 @@ archs4x, archs4xd"
   ""
   "bset%?\\t%0,%2,%1"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ; ??? check if combine matches this.
@@ -3246,8 +3104,7 @@ archs4x, archs4xd"
   ""
   "bxor%?\\t%0,%2,%1"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ; ??? check if combine matches this.
@@ -3259,8 +3116,7 @@ archs4x, archs4xd"
   ""
   "bclr%?\\t%0,%2,%1"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ; ??? FIXME: find combine patterns for bmsk.
@@ -3279,8 +3135,7 @@ archs4x, archs4xd"
      bset\\t%0,%1,%2 ;;peep2, constr 2
      bset\\t%0,%1,%2 ;;peep2, constr 3"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ; see also xorsi3 for use with constant bit number.
@@ -3295,8 +3150,7 @@ archs4x, archs4xd"
      bxor\\t%0,%1,%2
      bxor\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ; see also andsi3 for use with constant bit number.
@@ -3311,8 +3165,7 @@ archs4x, archs4xd"
      bclr\\t%0,%1,%2
      bclr\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ; see also andsi3 for use with constant bit number.
@@ -3329,8 +3182,7 @@ archs4x, archs4xd"
      bmsk\\t%0,%1,%2
      bmsk\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no") ]
 )
 
 ;;Instructions added for peephole2s end
@@ -3409,8 +3261,7 @@ archs4x, archs4xd"
   [(set_attr "iscompact" "maybe,maybe,maybe,maybe,true,false,false,false,false,false,false,false,false,false,false,false,false,false,false,false")
    (set_attr "type" "binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,binary,shift,binary,binary,binary,load")
    (set_attr "length" "*,*,*,*,*,4,4,4,4,4,4,4,4,4,4,4,4,8,8,*")
-   (set_attr "predicable" "no,no,no,no,no,yes,yes,yes,yes,yes,no,no,no,no,no,no,no,yes,no,no")
-   (set_attr "cond" "canuse,canuse,canuse,canuse,nocond,canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,nocond,nocond,nocond,canuse_limm,canuse,nocond,nocond")])
+   (set_attr "predicable" "no,no,no,no,no,yes,yes,yes,yes,yes,no,no,no,no,no,no,no,yes,no,no") ])
 
 ; combiner splitter, pattern found in ldtoa.c .
 ; and op3,op0,op1 / cmp op3,op2 -> add op3,op0,op4 / bmsk.f 0,op3,op1
@@ -3444,8 +3295,7 @@ archs4x, archs4xd"
    bic\\t%0,%2,%1    ;;constraint 6"
   [(set_attr "length" "*,4,4,8,4,8,8")
   (set_attr "iscompact" "maybe, false, false, false, false, false, false")
-  (set_attr "predicable" "no,yes,no,yes,no,no,no")
-  (set_attr "cond" "canuse,canuse,canuse_limm,canuse,nocond,nocond,nocond")])
+  (set_attr "predicable" "no,yes,no,yes,no,no,no") ])
 
 (define_insn_and_split "iorsi3"
   [(set (match_operand:SI 0 "dest_reg_operand"          "=q,q,  q, r,r,  r,r, r,  r,r,  q,  r,  r")
@@ -3478,8 +3328,7 @@ archs4x, archs4xd"
   "
   [(set_attr "iscompact" "maybe,maybe,maybe,false,false,false,false,false,false,false,false,false,false")
    (set_attr "length" "*,*,*,4,4,4,4,4,4,4,*,8,8")
-   (set_attr "predicable" "no,no,no,yes,yes,yes,no,no,no,no,no,yes,no")
-   (set_attr "cond" "canuse,canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,canuse_limm,nocond,canuse,nocond")])
+   (set_attr "predicable" "no,no,no,yes,yes,yes,no,no,no,no,no,yes,no") ])
 
 (define_insn "xorsi3"
   [(set (match_operand:SI 0 "dest_reg_operand"         "=q,q, r,r,  r,r, r,  r,r,  r,  r")
@@ -3502,8 +3351,7 @@ archs4x, archs4xd"
   [(set_attr "iscompact" "maybe,maybe,false,false,false,false,false,false,false,false,false")
    (set_attr "type" "binary")
    (set_attr "length" "*,*,4,4,4,4,4,4,4,8,8")
-   (set_attr "predicable" "no,no,yes,yes,yes,no,no,no,no,yes,no")
-   (set_attr "cond" "canuse,canuse,canuse,canuse,canuse,canuse_limm,nocond,nocond,canuse_limm,canuse,nocond")])
+   (set_attr "predicable" "no,no,yes,yes,yes,no,no,no,no,yes,no") ])
 
 (define_insn "negsi2"
   [(set (match_operand:SI 0 "dest_reg_operand" "=q,q,r,r")
@@ -3539,7 +3387,6 @@ archs4x, archs4xd"
   operands[5] = operand_subword (operands[1], 1-swap, 0, DImode);
 }
   [(set_attr "type" "unary,unary")
-   (set_attr "cond" "nocond,nocond")
    (set_attr "length" "4,8")])
 
 ;; Shift instructions.
@@ -3580,8 +3427,7 @@ archs4x, archs4xd"
   "asl%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
-   (set_attr "predicable" "no,no,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
+   (set_attr "predicable" "no,no,no,yes,no,no") ])
 
 (define_insn "*ashrsi3_insn"
   [(set (match_operand:SI 0 "dest_reg_operand"                   "=q,q, q, r, r,   r")
@@ -3593,8 +3439,7 @@ archs4x, archs4xd"
   "asr%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,maybe,false,false,false")
-   (set_attr "predicable" "no,no,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse,canuse,nocond,nocond")])
+   (set_attr "predicable" "no,no,no,yes,no,no") ])
 
 (define_insn "*lshrsi3_insn"
   [(set (match_operand:SI 0 "dest_reg_operand"               "=q, q, r, r,   r")
@@ -3611,8 +3456,7 @@ archs4x, archs4xd"
    lsr%?\\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "iscompact" "maybe,maybe,false,false,false")
-   (set_attr "predicable" "no,no,yes,no,no")
-   (set_attr "cond" "nocond,canuse,canuse,nocond,nocond")])
+   (set_attr "predicable" "no,no,yes,no,no") ])
 
 (define_insn "<insn>si2_cnt16"
   [(set (match_operand:SI 0 "register_operand" "=r")
@@ -3938,7 +3782,6 @@ archs4x, archs4xd"
   [(set_attr "type" "compare")
    (set_attr "iscompact" "true,true,true,false,false,true_limm,false")
    (set_attr "predicable" "no,no,no,no,yes,no,yes")
-   (set_attr "cond" "set")
    (set_attr "length" "*,*,*,4,4,*,8")
    (set_attr "cpu_facility" "av1,av2,*,*,*,*,*")])
 
@@ -3951,7 +3794,6 @@ archs4x, archs4xd"
   [(set_attr "type" "compare,compare")
    (set_attr "iscompact" "true,false")
    (set_attr "predicable" "no,yes")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "*,4")])
 
 ; combiner pattern observed for unwind-dw2-fde.c:linear_search_fdes.
@@ -3966,7 +3808,6 @@ archs4x, archs4xd"
   "btst%?\\t%0,%1"
   [(set_attr "iscompact" "true,false")
    (set_attr "predicable" "no,yes")
-   (set_attr "cond" "set")
    (set_attr "type" "compare")
    (set_attr "length" "*,4")])
 
@@ -3980,7 +3821,6 @@ archs4x, archs4xd"
 	bxor.f\\t0,%0,%z1"
   [(set_attr "type" "compare,compare")
    (set_attr "iscompact" "true,false")
-   (set_attr "cond" "set,set_zn")
    (set_attr "length" "*,4")])
 
 (define_insn "*cmpsi_cc_c_insn"
@@ -3991,7 +3831,6 @@ archs4x, archs4xd"
   "cmp%?\\t%0,%1"
   [(set_attr "type" "compare")
    (set_attr "iscompact" "true,true,true,false,true_limm,false")
-   (set_attr "cond" "set")
    (set_attr "length" "*,*,*,4,*,8")
    (set_attr "cpu_facility" "av1,av2,*,*,*,*")])
 
@@ -4115,8 +3954,7 @@ archs4x, archs4xd"
   arc_output_commutative_cond_exec (operands, true);
   return "";
 }
-  [(set_attr "cond" "use")
-   (set_attr "type" "cmove")
+  [(set_attr "type" "cmove")
    (set_attr_alternative "length"
      [(const_int 4)
       (cond
@@ -4137,8 +3975,7 @@ archs4x, archs4xd"
 	sub.%d4\\t%0,%1,%2
 	rsub.%d4\\t%0,%2,%1
 	rsub.%d4\\t%0,%2,%1"
-  [(set_attr "cond" "use")
-   (set_attr "type" "cmove")
+  [(set_attr "type" "cmove")
    (set_attr "length" "4,4,8")])
 
 (define_insn "*noncommutative_cond_exec"
@@ -4151,8 +3988,7 @@ archs4x, archs4xd"
 	     (match_operand:SI 2 "nonmemory_operand" "cL,Cal")])))]
   ""
   "%O3.%d5\\t%0,%1,%2"
-  [(set_attr "cond" "use")
-   (set_attr "type" "cmove")
+  [(set_attr "type" "cmove")
    (set_attr "length" "4,8")])
 
 ;; These control RTL generation for conditional jump insns
@@ -4265,7 +4101,6 @@ archs4x, archs4xd"
    (set (attr "iscompact")
 	(if_then_else (match_test "get_attr_length (insn) == 2")
 		      (const_string "true") (const_string "false")))
-   (set_attr "cond" "canuse")
    (set (attr "length")
 	(cond [
 	  ; In arc_reorg we just guesstimate; might be more or less than 4.
@@ -4295,8 +4130,7 @@ archs4x, archs4xd"
    j%!%*\\t[%0]
    j%!%*\\t[%0]"
   [(set_attr "type" "jump")
-   (set_attr "iscompact" "false,false,false,maybe,false")
-   (set_attr "cond" "canuse,canuse_limm,canuse,canuse,canuse")])
+   (set_attr "iscompact" "false,false,false,maybe,false") ])
 
 ;; Implement a switch statement.
 (define_expand "casesi"
@@ -4423,8 +4257,7 @@ archs4x, archs4xd"
   ""
   "j%!%* [%0]"
   [(set_attr "type" "jump")
-   (set_attr "iscompact" "false,maybe,false")
-   (set_attr "cond" "canuse")])
+   (set_attr "iscompact" "false,maybe,false") ])
 
 (define_expand "call"
   ;; operands[1] is stack_size_rtx
@@ -4532,7 +4365,6 @@ archs4x, archs4xd"
   "nop%?"
   [(set_attr "type" "misc")
    (set_attr "iscompact" "true")
-   (set_attr "cond" "canuse")
    (set_attr "length" "2")])
 
 (define_insn "nopv"
@@ -4848,8 +4680,7 @@ archs4x, archs4xd"
     flag%?\\t%0"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "misc,misc,misc")
-   (set_attr "predicable" "yes,no,yes")
-   (set_attr "cond" "clob,clob,clob")])
+   (set_attr "predicable" "yes,no,yes") ])
 
 (define_insn "brk"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
@@ -4865,8 +4696,7 @@ archs4x, archs4xd"
   "!TARGET_ARC600_FAMILY"
   "rtie"
   [(set_attr "length" "4")
-   (set_attr "type" "rtie")
-   (set_attr "cond" "clob")])
+   (set_attr "type" "rtie") ])
 
 (define_insn "sync"
   [(unspec_volatile [(match_operand:SI 0 "immediate_operand" "N")]
@@ -5148,7 +4978,6 @@ archs4x, archs4xd"
   ""
   "j%!%*\\t[blink]"
   [(set_attr "type" "return")
-   (set_attr "cond" "canuse")
    (set_attr "iscompact" "maybe")
    (set_attr "length" "*")])
 
@@ -5159,8 +4988,7 @@ archs4x, archs4xd"
   "TARGET_ARC600_FAMILY"
   "j.f\\t[%0]"
   [(set_attr "length" "4")
-   (set_attr "type" "rtie")
-   (set_attr "cond" "clob")])
+   (set_attr "type" "rtie") ])
 
 (define_insn "p_return_i"
   [(set (pc)
@@ -5170,7 +4998,6 @@ archs4x, archs4xd"
   "reload_completed"
   "j%d0%!%*\\t[blink]"
   [(set_attr "type" "return")
-   (set_attr "cond" "use")
    (set_attr "iscompact" "maybe" )
    (set (attr "length")
 	(cond [(not (match_operand 0 "equality_comparison_operator" ""))
@@ -5217,8 +5044,7 @@ archs4x, archs4xd"
        default: fprintf (stderr, \"unexpected length %d\\n\", get_attr_length (insn)); fflush (stderr); gcc_unreachable ();
      }
    "
-  [(set_attr "cond" "clob, clob, clob")
-   (set (attr "type")
+  [(set (attr "type")
 	(if_then_else
 	  (match_test "valid_brcc_with_delay_p (operands)")
 	  (const_string "brcc")
@@ -5282,7 +5108,6 @@ archs4x, archs4xd"
     }
 }
   [(set_attr "type" "brcc")
-   (set_attr "cond" "clob")
    (set (attr "length")
 	(cond [(and (ge (minus (match_dup 0) (pc)) (const_int -254))
 		    (le (minus (match_dup 0) (pc))
@@ -5374,7 +5199,6 @@ archs4x, archs4xd"
   "sub.f%?\\tlp_count,lp_count,1"
   [(set_attr "iscompact" "false")
    (set_attr "type" "compare")
-   (set_attr "cond" "set_zn")
    (set_attr "length" "4")
    (set_attr "predicable" "yes")])
 
@@ -5557,7 +5381,6 @@ archs4x, archs4xd"
 ;;  [(set_attr "type" "unary,unary,dpfp_addsub,dpfp_addsub")
 ;;   (set_attr "iscompact" "false,false,false,false")
 ;;   (set_attr "length" "4,4,8,12")
-;;   (set_attr "cond" "canuse,nocond,nocond,nocond")])
 ;; and this suffers from always requiring a long immediate when using
 ;; the floating point hardware.
 ;; We then want the sub[sd]f patterns to be used, so that we can load the
@@ -5639,7 +5462,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "div_rem")
    (set_attr "predicable" "yes,no,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 (define_insn "udivsi3"
@@ -5652,7 +5474,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "div_rem")
    (set_attr "predicable" "yes,no,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 (define_insn "modsi3"
@@ -5665,7 +5486,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "div_rem")
    (set_attr "predicable" "yes,no,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 (define_insn "umodsi3"
@@ -5678,7 +5498,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "div_rem")
    (set_attr "predicable" "yes,no,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 ;; SETcc instructions
@@ -5694,7 +5513,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "compare")
    (set_attr "predicable" "yes,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 (define_insn "arcsetltu"
@@ -5707,7 +5525,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "compare")
    (set_attr "predicable" "yes,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 (define_insn "arcsetgeu"
@@ -5720,7 +5537,6 @@ archs4x, archs4xd"
    (set_attr "iscompact" "false")
    (set_attr "type" "compare")
    (set_attr "predicable" "yes,no,yes,no,no,yes,no")
-   (set_attr "cond" "canuse,nocond,canuse,nocond,nocond,canuse,nocond")
    ])
 
 ;; Special cases of SETCC
@@ -5743,8 +5559,7 @@ archs4x, archs4xd"
  [(set_attr "length" "4,4,4,8")
    (set_attr "iscompact" "false")
    (set_attr "type" "compare")
-   (set_attr "predicable" "yes,no,no,no")
-   (set_attr "cond" "canuse,nocond,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no,no") ]
 )
 
 (define_insn_and_split "arcsetls"
@@ -5766,8 +5581,7 @@ archs4x, archs4xd"
  [(set_attr "length" "4,4,4,8")
    (set_attr "iscompact" "false")
    (set_attr "type" "compare")
-   (set_attr "predicable" "yes,no,no,no")
-   (set_attr "cond" "canuse,nocond,nocond,nocond")]
+   (set_attr "predicable" "yes,no,no,no") ]
 )
 
 ; Any mode that needs to be solved by secondary reload
@@ -5807,8 +5621,7 @@ archs4x, archs4xd"
   [(set_attr "type"       "shift")
    (set_attr "iscompact"  "false")
    (set_attr "length"     "4,4,8,8")
-   (set_attr "predicable" "yes,no,no,yes")
-   (set_attr "cond"       "canuse,nocond,nocond,canuse_limm")])
+   (set_attr "predicable" "yes,no,no,yes") ])
 
 (define_insn "kflag"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand" "rL,I,Cal")]
@@ -5820,8 +5633,7 @@ archs4x, archs4xd"
     kflag%?\\t%0"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "misc,misc,misc")
-   (set_attr "predicable" "yes,no,yes")
-   (set_attr "cond" "clob,clob,clob")])
+   (set_attr "predicable" "yes,no,yes") ])
 
 (define_insn "clri"
   [(set (match_operand:SI  0 "dest_reg_operand" "=r")
@@ -6474,8 +6286,7 @@ archs4x, archs4xd"
   "dmach\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 ; The same for the unsigned variant, but using VMAC2HU instruction.
 (define_expand "umaddhisi4"
@@ -6503,8 +6314,7 @@ archs4x, archs4xd"
   "dmachu\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_expand "maddsidi4"
   [(match_operand:DI 0 "register_operand" "")
@@ -6562,8 +6372,7 @@ archs4x, archs4xd"
  "macd\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")])
+   (set_attr "predicable" "yes,no,no") ])
 
 (define_insn "mac"
   [(set (reg:DI ARCV2_ACC)
@@ -6575,8 +6384,7 @@ archs4x, archs4xd"
  "mac 0,%0,%1"
   [(set_attr "length" "4,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_peephole2
   [(set (reg:DI ARCV2_ACC)
@@ -6605,8 +6413,7 @@ archs4x, archs4xd"
  "mac\\t%0,%1,%2"
   [(set_attr "length" "4,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_expand "umaddsidi4"
   [(match_operand:DI 0 "register_operand" "")
@@ -6664,8 +6471,7 @@ archs4x, archs4xd"
  "macdu\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond")])
+   (set_attr "predicable" "yes,no,no") ])
 
 (define_insn "macu"
   [(set (reg:DI ARCV2_ACC)
@@ -6677,8 +6483,7 @@ archs4x, archs4xd"
  "macu 0,%0,%1"
   [(set_attr "length" "4,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_peephole2
   [(set (reg:DI ARCV2_ACC)
@@ -6707,8 +6512,7 @@ archs4x, archs4xd"
  "macu\\t%0,%1,%2"
   [(set_attr "length" "4,8")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "mpyd<su_optab>_arcv2hs"
   [(set (match_operand:DI 0 "even_register_operand"	       "=r")
@@ -6779,8 +6583,7 @@ archs4x, archs4xd"
   "add%2%?\\t%0,%3,%1"
   [(set_attr "length" "*,4,8")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "iscompact" "maybe,false,false")
-   (set_attr "cond" "canuse,nocond,nocond")])
+   (set_attr "iscompact" "maybe,false,false") ])
 
 (define_insn "*add_shift2"
   [(set (match_operand:SI 0 "register_operand" "=q,r,r")
@@ -6791,8 +6594,7 @@ archs4x, archs4xd"
   "add%3%?\\t%0,%1,%2"
   [(set_attr "length" "*,4,8")
    (set_attr "predicable" "yes,no,no")
-   (set_attr "iscompact" "maybe,false,false")
-   (set_attr "cond" "canuse,nocond,nocond")])
+   (set_attr "iscompact" "maybe,false,false") ])
 
 (define_insn "*sub_shift"
   [(set (match_operand:SI 0"register_operand" "=r,r,r")
@@ -6802,7 +6604,6 @@ archs4x, archs4xd"
   ""
   "sub%3\\t%0,%1,%2"
   [(set_attr "length" "4,4,8")
-   (set_attr "cond" "canuse,nocond,nocond")
    (set_attr "predicable" "yes,no,no")])
 
 (define_insn "*sub_shift_cmp0_noout"

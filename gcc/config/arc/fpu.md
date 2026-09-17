@@ -17,7 +17,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes,no,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond,nocond")
    ])
 
 ;; Subtraction
@@ -33,7 +32,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes,no,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,nocond,canuse_limm,nocond,nocond")
    ])
 
 ;; Multiplication
@@ -49,7 +47,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    ])
 
 ;; Multiplication with addition/subtraction
@@ -96,7 +93,6 @@
   "fsmadd%? %0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "predicable" "yes,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu_fuse")])
 
@@ -111,7 +107,6 @@
   "fsmsub%?\\t%0,%1,%2"
   [(set_attr "length" "4,4,8,8,8")
    (set_attr "predicable" "yes,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu_fuse")])
 
@@ -181,7 +176,6 @@
   "fdmadd%?\\t%0,%1,%2"
   [(set_attr "length" "4,4")
    (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu_fuse")])
 
@@ -194,7 +188,6 @@
   "fdmsub%?\\t%0,%1,%2"
   [(set_attr "length" "4,4")
    (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu_fuse")])
 
@@ -211,7 +204,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu_sdiv")
    (set_attr "predicable" "yes,no,yes,no,no")
-   (set_attr "cond" "canuse,nocond,canuse_limm,nocond,nocond")
    ])
 
 ;; Negation
@@ -238,7 +230,6 @@
   "fscmp%?\\t%0,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "iscompact" "false")
-   (set_attr "cond" "set")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes")])
 
@@ -250,7 +241,6 @@
   "fscmpf%?\\t%0,%1"
   [(set_attr "length" "4,4,8")
    (set_attr "iscompact" "false")
-   (set_attr "cond" "set")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes")])
 
@@ -263,7 +253,6 @@
   "fscmp\\t%0,%1\\n\\tmov.v.f\\t0,0\\t;set Z flag"
   [(set_attr "length" "8,8,12")
    (set_attr "iscompact" "false")
-   (set_attr "cond" "set")
    (set_attr "type" "fpu")])
 
 ;; ::::::::::::::::::::
@@ -283,7 +272,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")
    ])
 
 ;; Subtraction
@@ -297,7 +285,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")
    ])
 
 ;; Multiplication
@@ -311,7 +298,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")
    ])
 
 ;; Division
@@ -325,7 +311,6 @@
    (set_attr "iscompact" "false")
    (set_attr "type" "fpu_ddiv")
    (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")
    ])
 
 ;; Square root
@@ -346,7 +331,6 @@
   "fdcmp%? %0, %1"
   [(set_attr "length" "4")
    (set_attr "iscompact" "false")
-   (set_attr "cond" "set")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes")])
 
@@ -358,7 +342,6 @@
   "fdcmpf%? %0, %1"
   [(set_attr "length" "4")
    (set_attr "iscompact" "false")
-   (set_attr "cond" "set")
    (set_attr "type" "fpu")
    (set_attr "predicable" "yes")])
 
@@ -371,7 +354,6 @@
   "fdcmp %0, %1\\n\\tmov.v.f 0,0\\t;set Z flag"
   [(set_attr "length" "8")
    (set_attr "iscompact" "false")
-   (set_attr "cond" "set")
    (set_attr "type" "fpu")])
 
 ;; ::::::::::::::::::::

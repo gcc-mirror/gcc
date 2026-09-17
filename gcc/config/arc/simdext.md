@@ -176,8 +176,7 @@
  "TARGET_SIMD_SET"
  "vld128\\t%0,[i%2,%3]"
  [(set_attr "type" "simd_vload128")
-  (set_attr "length" "4")
-  (set_attr "cond" "nocond")]
+  (set_attr "length" "4") ]
 )
 
 (define_insn "vst128_insn"
@@ -188,8 +187,7 @@
  "TARGET_SIMD_SET"
  "vst128\\t%3,[i%1,%2]"
  [(set_attr "type" "simd_vstore")
-  (set_attr "length" "4")
-  (set_attr "cond" "nocond")]
+  (set_attr "length" "4") ]
 )
 
 (define_insn "vst64_insn"
@@ -206,8 +204,7 @@
  "TARGET_SIMD_SET"
  "vst64\\t%3,[i%1,%2]"
  [(set_attr "type" "simd_vstore")
-  (set_attr "length" "4")
-  (set_attr "cond" "nocond")]
+  (set_attr "length" "4") ]
 )
 
 (define_insn "movv8hi_insn"
@@ -219,8 +216,7 @@
     vst128r\\t%1,%0
     vmvzw\\t%0,%1,0xffff"
   [(set_attr "type" "simd_vload128,simd_vstore,simd_vmove_else_zero")
-   (set_attr "length" "8,8,4")
-   (set_attr "cond" "nocond, nocond, nocond")])
+   (set_attr "length" "8,8,4") ])
 
 (define_insn "movti_insn"
   [(set (match_operand:TI 0 "vector_register_or_memory_operand" "=v,m,v")
@@ -231,8 +227,7 @@
     vst128r\\t%1,%0
     vmvzw\\t%0,%1,0xffff"
   [(set_attr "type" "simd_vload128,simd_vstore,simd_vmove_else_zero")
-   (set_attr "length" "8,8,4")
-   (set_attr "cond" "nocond, nocond, nocond")])
+   (set_attr "length" "8,8,4") ])
 
 ;; V V V Insns
 (define_insn "vaddaw_insn"
@@ -243,8 +238,7 @@
   "TARGET_SIMD_SET"
   "vaddaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vaddw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -254,8 +248,7 @@
   "TARGET_SIMD_SET"
   "vaddw\\t%0,%1,2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vavb_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -265,8 +258,7 @@
   "TARGET_SIMD_SET"
   "vavb\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vavrb_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -276,8 +268,7 @@
   "TARGET_SIMD_SET"
   "vavrb\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vdifaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -287,8 +278,7 @@
   "TARGET_SIMD_SET"
   "vdifaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vdifw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -298,8 +288,7 @@
   "TARGET_SIMD_SET"
   "vdifw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmaxaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -309,8 +298,7 @@
   "TARGET_SIMD_SET"
   "vmaxaw\\t%0,%1,2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmaxw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -320,8 +308,7 @@
   "TARGET_SIMD_SET"
   "vmaxw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vminaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -331,8 +318,7 @@
   "TARGET_SIMD_SET"
   "vminaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vminw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -342,8 +328,7 @@
   "TARGET_SIMD_SET"
   "vminw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmulaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -353,8 +338,7 @@
   "TARGET_SIMD_SET"
   "vmulaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmulfaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -364,8 +348,7 @@
   "TARGET_SIMD_SET"
   "vmulfaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmulfw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -375,8 +358,7 @@
   "TARGET_SIMD_SET"
   "vmulfw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmulw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -386,8 +368,7 @@
   "TARGET_SIMD_SET"
   "vmulw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsubaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -397,8 +378,7 @@
   "TARGET_SIMD_SET"
   "vsubaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsubw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -408,8 +388,7 @@
   "TARGET_SIMD_SET"
   "vsubw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsummw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -419,8 +398,7 @@
   "TARGET_SIMD_SET"
   "vsummw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vand_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -430,8 +408,7 @@
   "TARGET_SIMD_SET"
   "vand\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vandaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -441,8 +418,7 @@
   "TARGET_SIMD_SET"
   "vandaw\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbic_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -452,8 +428,7 @@
   "TARGET_SIMD_SET"
   "vbic\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbicaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -463,8 +438,7 @@
   "TARGET_SIMD_SET"
   "vbicaw\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vor_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -474,8 +448,7 @@
   "TARGET_SIMD_SET"
   "vor\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vxor_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -485,8 +458,7 @@
   "TARGET_SIMD_SET"
   "vxor\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vxoraw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -496,8 +468,7 @@
   "TARGET_SIMD_SET"
   "vxoraw\\t%0,%1,%2"
   [(set_attr "type" "simd_vlogic_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "veqw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -507,8 +478,7 @@
   "TARGET_SIMD_SET"
   "veqw\\t%0,%1,%2"
   [(set_attr "type" "simd_vcompare")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vlew_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -518,8 +488,7 @@
   "TARGET_SIMD_SET"
   "vlew\\t%0,%1,%2"
   [(set_attr "type" "simd_vcompare")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vltw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -529,8 +498,7 @@
   "TARGET_SIMD_SET"
   "vltw\\t%0,%1,%2"
   [(set_attr "type" "simd_vcompare")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vnew_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -540,8 +508,7 @@
   "TARGET_SIMD_SET"
   "vnew\\t%0,%1,%2"
   [(set_attr "type" "simd_vcompare")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr1aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -551,8 +518,7 @@
   "TARGET_SIMD_SET"
   "vmr1aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr1w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -562,8 +528,7 @@
   "TARGET_SIMD_SET"
   "vmr1w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr2aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -573,8 +538,7 @@
   "TARGET_SIMD_SET"
   "vmr2aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr2w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -584,8 +548,7 @@
   "TARGET_SIMD_SET"
   "vmr2w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr3aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -595,8 +558,7 @@
   "TARGET_SIMD_SET"
   "vmr3aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr3w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -606,8 +568,7 @@
   "TARGET_SIMD_SET"
   "vmr3w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr4aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -617,8 +578,7 @@
   "TARGET_SIMD_SET"
   "vmr4aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr4w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -628,8 +588,7 @@
   "TARGET_SIMD_SET"
   "vmr4w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr5aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -639,8 +598,7 @@
   "TARGET_SIMD_SET"
   "vmr5aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr5w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -650,8 +608,7 @@
   "TARGET_SIMD_SET"
   "vmr5w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr6aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -661,8 +618,7 @@
   "TARGET_SIMD_SET"
   "vmr6aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr6w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -672,8 +628,7 @@
   "TARGET_SIMD_SET"
   "vmr6w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr7aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -683,8 +638,7 @@
   "TARGET_SIMD_SET"
   "vmr7aw\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmr7w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -694,8 +648,7 @@
   "TARGET_SIMD_SET"
   "vmr7w\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmrb_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -705,8 +658,7 @@
   "TARGET_SIMD_SET"
   "vmrb\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vh264f_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -716,8 +668,7 @@
   "TARGET_SIMD_SET"
   "vh264f\\t%0,%1,%2"
   [(set_attr "type" "simd_vspecial_3cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vh264ft_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -727,8 +678,7 @@
   "TARGET_SIMD_SET"
   "vh264ft\\t%0,%1,%2"
   [(set_attr "type" "simd_vspecial_3cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vh264fw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -738,8 +688,7 @@
   "TARGET_SIMD_SET"
   "vh264fw\\t%0,%1,%2"
   [(set_attr "type" "simd_vspecial_3cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vvc1f_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -749,8 +698,7 @@
   "TARGET_SIMD_SET"
   "vvc1f\\t%0,%1,%2"
   [(set_attr "type" "simd_vspecial_3cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vvc1ft_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -760,8 +708,7 @@
   "TARGET_SIMD_SET"
   "vvc1ft\\t%0,%1,%2"
   [(set_attr "type" "simd_vspecial_3cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 
 
@@ -775,8 +722,7 @@
   "TARGET_SIMD_SET"
   "vbaddw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbmaxw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -786,8 +732,7 @@
   "TARGET_SIMD_SET"
   "vbmaxw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbminw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -797,8 +742,7 @@
   "TARGET_SIMD_SET"
   "vbminw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbmulaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -808,8 +752,7 @@
   "TARGET_SIMD_SET"
   "vbmulaw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbmulfw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -819,8 +762,7 @@
   "TARGET_SIMD_SET"
   "vbmulfw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbmulw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -830,8 +772,7 @@
   "TARGET_SIMD_SET"
   "vbmulw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbrsubw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -841,8 +782,7 @@
   "TARGET_SIMD_SET"
   "vbrsubw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vbsubw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -852,8 +792,7 @@
   "TARGET_SIMD_SET"
   "vbsubw\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 ; Va, Vb, Ic instructions
 
 ; Va, Vb, u6 instructions
@@ -865,8 +804,7 @@
   "TARGET_SIMD_SET"
   "vasrrwi\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vasrsrwi_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -876,8 +814,7 @@
   "TARGET_SIMD_SET"
   "vasrsrwi\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_2cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vasrwi_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -887,8 +824,7 @@
   "TARGET_SIMD_SET"
   "vasrwi\\t%0,%1,%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vasrpwbi_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -898,8 +834,7 @@
   "TARGET_SIMD_SET"
   "vasrpwbi\\t%0,%1,%2"
   [(set_attr "type" "simd_vpack")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vasrrpwbi_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -909,8 +844,7 @@
   "TARGET_SIMD_SET"
   "vasrrpwbi\\t%0,%1,%2"
   [(set_attr "type" "simd_vpack")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsr8awi_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -920,8 +854,7 @@
   "TARGET_SIMD_SET"
   "vsr8awi\\t%0,%1,%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsr8i_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -931,8 +864,7 @@
   "TARGET_SIMD_SET"
   "vsr8i\\t%0,%1,%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 ;; Va, Vb, u8 (simm) insns
 
@@ -944,8 +876,7 @@
   "TARGET_SIMD_SET"
   "vmvaw\\t%0,%1,%2"
   [(set_attr "type" "simd_vmove_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmvw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -955,8 +886,7 @@
   "TARGET_SIMD_SET"
   "vmvw\\t%0,%1,%2"
   [(set_attr "type" "simd_vmove")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmvzw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -966,8 +896,7 @@
   "TARGET_SIMD_SET"
   "vmvzw\\t%0,%1,%2"
   [(set_attr "type" "simd_vmove_else_zero")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vd6tapf_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -977,8 +906,7 @@
   "TARGET_SIMD_SET"
   "vd6tapf\\t%0,%1,%2"
   [(set_attr "type" "simd_vspecial_4cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 ;; Va, rlimm, u8 (simm) insns
 (define_insn "vmovaw_insn"
@@ -989,8 +917,7 @@
   "TARGET_SIMD_SET"
   "vmovaw\\t%0,%1,%2"
   [(set_attr "type" "simd_vmove_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmovw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -1000,8 +927,7 @@
   "TARGET_SIMD_SET"
   "vmovw\\t%0,%1,%2"
   [(set_attr "type" "simd_vmove")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vmovzw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -1011,8 +937,7 @@
   "TARGET_SIMD_SET"
   "vmovzw\\t%0,%1,%2"
   [(set_attr "type" "simd_vmove_else_zero")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 ;; Va, rlimm, Ic insns
 (define_insn "vsr8_insn"
@@ -1024,8 +949,7 @@
   "TARGET_SIMD_SET"
   "vsr8\\t%0,%1,i%2"
   [(set_attr "type" "simd_valign")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vasrw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -1036,8 +960,7 @@
   "TARGET_SIMD_SET"
   "vasrw\\t%0,%1,i%2"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsr8aw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"           "=v")
@@ -1048,8 +971,7 @@
   "TARGET_SIMD_SET"
   "vsr8aw\\t%0,%1,i%2"
   [(set_attr "type" "simd_valign_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 ;; Va, Vb insns
 (define_insn "vabsaw_insn"
@@ -1059,8 +981,7 @@
   "TARGET_SIMD_SET"
   "vabsaw\\t%0,%1"
   [(set_attr "type" "simd_varith_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vabsw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1069,8 +990,7 @@
   "TARGET_SIMD_SET"
   "vabsw\\t%0,%1"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vaddsuw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1079,8 +999,7 @@
   "TARGET_SIMD_SET"
   "vaddsuw\\t%0,%1"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vsignw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1089,8 +1008,7 @@
   "TARGET_SIMD_SET"
   "vsignw\\t%0,%1"
   [(set_attr "type" "simd_varith_1cycle")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vexch1_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1099,8 +1017,7 @@
   "TARGET_SIMD_SET"
   "vexch1\\t%0,%1"
   [(set_attr "type" "simd_vpermute")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vexch2_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1109,8 +1026,7 @@
   "TARGET_SIMD_SET"
   "vexch2\\t%0,%1"
   [(set_attr "type" "simd_vpermute")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vexch4_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1119,8 +1035,7 @@
   "TARGET_SIMD_SET"
   "vexch4\\t%0,%1"
   [(set_attr "type" "simd_vpermute")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vupbaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1129,8 +1044,7 @@
   "TARGET_SIMD_SET"
   "vupbaw\\t%0,%1"
   [(set_attr "type" "simd_vpack_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vupbw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1139,8 +1053,7 @@
   "TARGET_SIMD_SET"
   "vupbw\\t%0,%1"
   [(set_attr "type" "simd_vpack")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vupsbaw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1149,8 +1062,7 @@
   "TARGET_SIMD_SET"
   "vupsbaw\\t%0,%1"
   [(set_attr "type" "simd_vpack_with_acc")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vupsbw_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand"  "=v")
@@ -1159,8 +1071,7 @@
   "TARGET_SIMD_SET"
   "vupsbw\\t%0,%1"
   [(set_attr "type" "simd_vpack")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 ; DMA setup instructions
 (define_insn "vdirun_insn"
@@ -1171,8 +1082,7 @@
   "TARGET_SIMD_SET"
   "vdirun\\t%1,%2"
   [(set_attr "type" "simd_dma")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vdorun_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"              "=d")
@@ -1182,8 +1092,7 @@
   "TARGET_SIMD_SET"
   "vdorun\\t%1,%2"
   [(set_attr "type" "simd_dma")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vdiwr_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"           "=d,d")
@@ -1192,8 +1101,7 @@
   "TARGET_SIMD_SET"
   "vdiwr\\t%0,%1"
   [(set_attr "type" "simd_dma")
-   (set_attr "length" "4,8")
-   (set_attr "cond" "nocond,nocond")])
+   (set_attr "length" "4,8") ])
 
 (define_insn "vdowr_insn"
   [(set (match_operand:SI 0 "arc_simd_dma_register_operand"           "=d,d")
@@ -1202,8 +1110,7 @@
   "TARGET_SIMD_SET"
   "vdowr\\t%0,%1"
   [(set_attr "type" "simd_dma")
-   (set_attr "length" "4,8")
-   (set_attr "cond" "nocond,nocond")])
+   (set_attr "length" "4,8") ])
 
 ;; vector record and run instructions
 (define_insn "vrec_insn"
@@ -1212,8 +1119,7 @@
   "TARGET_SIMD_SET"
   "vrec\\t%0"
   [(set_attr "type" "simd_vcontrol")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vrun_insn"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand"  "r")]
@@ -1221,8 +1127,7 @@
   "TARGET_SIMD_SET"
   "vrun\\t%0"
   [(set_attr "type" "simd_vcontrol")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vrecrun_insn"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand"  "r")]
@@ -1230,8 +1135,7 @@
   "TARGET_SIMD_SET"
   "vrecrun\\t%0"
   [(set_attr "type" "simd_vcontrol")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vendrec_insn"
   [(unspec_volatile [(match_operand:SI 0 "nonmemory_operand"  "r")]
@@ -1239,8 +1143,7 @@
   "TARGET_SIMD_SET"
   "vendrec\\t%0"
   [(set_attr "type" "simd_vcontrol")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vld32wh_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
@@ -1260,8 +1163,7 @@
   "TARGET_SIMD_SET"
   "vld32wh\\t%0,[i%3,%1]"
   [(set_attr "type" "simd_vload")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vld32wl_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
@@ -1281,8 +1183,7 @@
   "TARGET_SIMD_SET"
   "vld32wl\\t%0,[i%3,%1]"
   [(set_attr "type" "simd_vload")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vld64w_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
@@ -1296,8 +1197,7 @@
  "TARGET_SIMD_SET"
  "vld64w\\t%0,[i%2,%3]"
  [(set_attr "type" "simd_vload")
-  (set_attr "length" "4")
-  (set_attr "cond" "nocond")]
+  (set_attr "length" "4") ]
 )
 
 (define_insn "vld64_insn"
@@ -1317,8 +1217,7 @@
   "TARGET_SIMD_SET"
   "vld64\\t%0,[i%3,%1]"
   [(set_attr "type" "simd_vload")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vld32_insn"
   [(set (match_operand:V8HI 0 "vector_register_operand" "=v")
@@ -1340,8 +1239,7 @@
   "TARGET_SIMD_SET"
   "vld32\\t%0,[i%3,%1]"
   [(set_attr "type" "simd_vload")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 (define_insn "vst16_n_insn"
   [(set (mem:HI
@@ -1355,8 +1253,7 @@
  "TARGET_SIMD_SET"
  "vst16_%4\\t%3,[i%2,%0]"
  [(set_attr "type" "simd_vstore")
-  (set_attr "length" "4")
-  (set_attr "cond" "nocond")])
+  (set_attr "length" "4") ])
 
 (define_insn "vst32_n_insn"
   [(set (mem:SI
@@ -1371,8 +1268,7 @@
  "TARGET_SIMD_SET"
  "vst32_%4\\t%3,[i%2,%0]"
  [(set_attr "type" "simd_vstore")
-  (set_attr "length" "4")
-  (set_attr "cond" "nocond")])
+  (set_attr "length" "4") ])
 
 ;; SIMD unit interrupt
 (define_insn "vinti_insn"
@@ -1381,8 +1277,7 @@
   "TARGET_SIMD_SET"
   "vinti\\t%0"
   [(set_attr "type" "simd_vcontrol")
-   (set_attr "length" "4")
-   (set_attr "cond" "nocond")])
+   (set_attr "length" "4") ])
 
 ;; New ARCv2 SIMD extensions
 
@@ -1516,8 +1411,7 @@
   "vadd<V_suffix>%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "sub<mode>3"
   [(set (match_operand:VCT 0 "register_operand"           "=r,r")
@@ -1527,8 +1421,7 @@
   "vsub<V_suffix>%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 ;; Combined arithmetic ops
 (define_insn "addsub<mode>3"
@@ -1546,8 +1439,7 @@
   "vaddsub<V_addsub_suffix>%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "subadd<mode>3"
   [(set (match_operand:VDV 0 "register_operand" "=r,r")
@@ -1564,8 +1456,7 @@
   "vsubadd<V_addsub_suffix>%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "addsubv4hi3"
   [(set (match_operand:V4HI 0 "even_register_operand" "=r,r")
@@ -1588,8 +1479,7 @@
   "vaddsub4h%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "subaddv4hi3"
   [(set (match_operand:V4HI 0 "even_register_operand" "=r,r")
@@ -1612,8 +1502,7 @@
   "vsubadd4h%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 ;; Multiplication
 (define_insn "dmpyh<V_US_suffix>"
@@ -1642,8 +1531,7 @@
   "dmpyh<V_US_suffix>%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 ;; We can use dmac as well here.  To be investigated which version
 ;; brings more.
@@ -1731,8 +1619,7 @@
   "vmpy2h<V_US_suffix>%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "arc_vec_<V_US>multacc_lo_v4hi"
   [(set (reg:V2SI ARCV2_ACC)
@@ -1747,8 +1634,7 @@
   "vmpy2h<V_US_suffix>%?\\t0,%0,%1"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_expand "vec_widen_<V_US>mult_lo_v4hi"
  [(set (match_operand:V2SI 0 "even_register_operand"                 "")
@@ -1787,8 +1673,7 @@
   "vmpy2h<V_US_suffix>%?\\t%0,%R1,%R2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_expand "vec_widen_<V_US>mult_hi_v4hi"
  [(set (match_operand:V2SI 0 "even_register_operand")
@@ -1852,8 +1737,7 @@
   "dmach%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "dmachu"
   [(set (match_operand:SI 0 "register_operand" "=r,r")
@@ -1866,8 +1750,7 @@
   "dmachu%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "dmacwh"
   [(set (match_operand:DI 0 "even_register_operand" "=r,r")
@@ -1880,8 +1763,7 @@
   "dmacwh%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "dmacwhu"
   [(set (match_operand:DI 0 "register_operand" "=r,r")
@@ -1894,8 +1776,7 @@
   "dmacwhu%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "vmac2h"
   [(set (match_operand:V2SI 0 "even_register_operand" "=r,r")
@@ -1908,8 +1789,7 @@
   "vmac2h%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "vmac2hu"
   [(set (match_operand:V2SI 0 "even_register_operand" "=r,r")
@@ -1922,8 +1802,7 @@
   "vmac2hu%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "vmpy2h"
   [(set (match_operand:V2SI 0 "even_register_operand" "=r,r")
@@ -1935,8 +1814,7 @@
   "vmpy2h%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "vmpy2hu"
   [(set (match_operand:V2SI 0 "even_register_operand" "=r,r")
@@ -1948,8 +1826,7 @@
   "vmpy2hu%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "qmach"
   [(set (match_operand:DI 0 "even_register_operand" "=r,r")
@@ -1962,8 +1839,7 @@
   "qmach%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "qmachu"
   [(set (match_operand:DI 0 "even_register_operand" "=r,r")
@@ -1976,8 +1852,7 @@
   "qmachu%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "qmpyh"
   [(set (match_operand:DI 0 "even_register_operand" "=r,r")
@@ -1989,8 +1864,7 @@
   "qmpyh%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 (define_insn "qmpyhu"
   [(set (match_operand:DI 0 "even_register_operand" "=r,r")
@@ -2002,8 +1876,7 @@
   "qmpyhu%?\\t%0,%1,%2"
   [(set_attr "length" "4")
    (set_attr "type" "multi")
-   (set_attr "predicable" "yes,no")
-   (set_attr "cond" "canuse,nocond")])
+   (set_attr "predicable" "yes,no") ])
 
 ;; Emulated vector instructions.
 (define_insn_and_split "<voptab>v2si3"

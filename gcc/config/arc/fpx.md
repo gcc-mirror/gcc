@@ -634,9 +634,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_cmp\\t%2,%0,%1\\n\\trsub.f\\t0,%2,7\\n\\tcmp.nc\\t%2,1\\n\\tcmp.hi\\t%2,3"
   [(set_attr "length" "16")
-   (set_attr "cond" "set")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "*cmpsf_quark_ord"
   [(set (reg:CC_FP_ORD CC_REG)
@@ -646,9 +644,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_cmp\\t%2,%0,%1\\n\\tadd.f\\t%2,%2,-8"
   [(set_attr "length" "8")
-   (set_attr "cond" "set")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "*cmpsf_quark_uneq"
   [(set (reg:CC_FP_UNEQ CC_REG)
@@ -658,9 +654,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_cmp\\t%2,%0,%1\\n\\ttst\\t%2,6"
   [(set_attr "length" "8")
-   (set_attr "cond" "set")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "*cmpsf_quark_eq"
   [(set (reg:CC_Z CC_REG)
@@ -670,9 +664,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_cmp\\t%2,%0,%1\\n\\ttst\\t%2,0x0E"
   [(set_attr "length" "8")
-   (set_attr "cond" "set")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "*divsf3_quark"
   [(set (match_operand:SF 0 "register_operand"        "=r")
@@ -681,8 +673,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_div\\t%0,%1,%2"
   [(set_attr "length" "4")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 (define_insn "*sqrtsf2_quark"
   [(set (match_operand:SF 0 "register_operand"          "=r")
@@ -690,8 +681,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_sqrt\\t%0,%1"
   [(set_attr "length" "4")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 ;; SF->SI (using rounding towards zero)
 (define_insn "*fix_truncsfsi2_quark"
@@ -700,8 +690,7 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_flt2i\\t%0,%1"
   [(set_attr "length" "4")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
 ;; SI->SF
 (define_insn "*floatsisf2_quark"
@@ -710,6 +699,5 @@
   "TARGET_FPX_QUARK"
   "dsp_fp_i2flt\\t%0,%1"
   [(set_attr "length" "4")
-   (set_attr "predicable" "no")
-   (set_attr "cond" "nocond")])
+   (set_attr "predicable" "no") ])
 
