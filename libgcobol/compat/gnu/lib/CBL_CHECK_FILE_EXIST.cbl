@@ -76,6 +76,7 @@
            ADD 1900 TO tm_year.
            MOVE tm_year TO cblte-fe-year.
            MOVE tm_mon TO cblte-fe-month.
+           ADD 1 TO cblte-fe-month.
            MOVE tm_mday TO cblte-fe-day.
 
            MOVE tm_hour TO cblte-fe-hours.
