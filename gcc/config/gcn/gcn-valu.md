@@ -500,13 +500,14 @@
 	  (match_operand:DI 3 "register_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length]
-  [v,vA,U0,e ,X ;vop1 ,4 ] v_mov_b32\t%0, %1
-  [v,B ,U0,e ,X ;vop1 ,8 ] v_mov_b32\t%0, %1
-  [v,v ,vA,cV,X ;vop2 ,4 ] v_cndmask_b32\t%0, %2, %1, vcc
-  [v,vA,vA,Sv,X ;vop3a,8 ] v_cndmask_b32\t%0, %2, %1, %3
-  [v,m ,U0,e ,&v;*    ,16] #
-  [m,v ,U0,e ,&v;*    ,16] #
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, xnack]
+  [v ,vA,U0,e ,X ;vop1 ,4 ,*  ] v_mov_b32\t%0, %1
+  [v ,B ,U0,e ,X ;vop1 ,8 ,*  ] v_mov_b32\t%0, %1
+  [v ,v ,vA,cV,X ;vop2 ,4 ,*  ] v_cndmask_b32\t%0, %2, %1, vcc
+  [v ,vA,vA,Sv,X ;vop3a,8 ,*  ] v_cndmask_b32\t%0, %2, %1, %3
+  [v ,m ,U0,e ,&v;*    ,16,off] #
+  [&v,m ,U0,e ,&v;*    ,16,on ] #
+  [m ,v ,U0,e ,&v;*    ,16,*  ] #
   })
 
 (define_insn "*mov<mode>"
@@ -529,12 +530,13 @@
 	  (match_operand:DI 3 "register_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length]
-  [v,vDB,U0  ,e ,X ;vmult,16] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
-  [v,v0 ,vDA0,cV,X ;vmult,16] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc
-  [v,v0 ,vDA0,Sv,X ;vmult,16] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3
-  [v,m  ,U0  ,e ,&v;*    ,16] #
-  [m,v  ,U0  ,e ,&v;*    ,16] #
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, xnack]
+  [v ,vDB,U0  ,e ,X ;vmult,16,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v ,v0 ,vDA0,cV,X ;vmult,16,*  ] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc
+  [v ,v0 ,vDA0,Sv,X ;vmult,16,*  ] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3
+  [v ,m  ,U0  ,e ,&v;*    ,16,off] #
+  [&v,m  ,U0  ,e ,&v;*    ,16,on ] #
+  [m ,v  ,U0  ,e ,&v;*    ,16,*  ] #
   })
 
 (define_insn "*mov<mode>_4reg"
@@ -556,12 +558,13 @@
 	  (match_operand:DI 3 "register_operand")))
    (clobber (match_scratch:<VnDI> 4))]
   "!MEM_P (operands[0]) || REG_P (operands[1])"
-  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length]
-  [v,vDB,U0  ,e ,X ;vmult,32] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
-  [v,v0 ,vDA0,cV,X ;vmult,32] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc\;v_cndmask_b32\t%J0, %J2, %J1, vcc\;v_cndmask_b32\t%K0, %K2, %K1, vcc
-  [v,v0 ,vDA0,Sv,X ;vmult,32] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3\;v_cndmask_b32\t%J0, %J2, %J1, %3\;v_cndmask_b32\t%K0, %K2, %K1, %3
-  [v,m  ,U0  ,e ,&v;*    ,32] #
-  [m,v  ,U0  ,e ,&v;*    ,32] #
+  {@ [cons: =0, 1, 2, 3, =4; attrs: type, length, xnack]
+  [v ,vDB,U0  ,e ,X ;vmult,32,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
+  [v ,v0 ,vDA0,cV,X ;vmult,32,*  ] v_cndmask_b32\t%L0, %L2, %L1, vcc\;v_cndmask_b32\t%H0, %H2, %H1, vcc\;v_cndmask_b32\t%J0, %J2, %J1, vcc\;v_cndmask_b32\t%K0, %K2, %K1, vcc
+  [v ,v0 ,vDA0,Sv,X ;vmult,32,*  ] v_cndmask_b32\t%L0, %L2, %L1, %3\;v_cndmask_b32\t%H0, %H2, %H1, %3\;v_cndmask_b32\t%J0, %J2, %J1, %3\;v_cndmask_b32\t%K0, %K2, %K1, %3
+  [v ,m  ,U0  ,e ,&v;*    ,32,off] #
+  [&v,m  ,U0  ,e ,&v;*    ,32,on ] #
+  [m ,v  ,U0  ,e ,&v;*    ,32,*  ] #
   })
 
 ; A SGPR-base load looks like:
@@ -583,13 +586,15 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  {@ [cons: =0, 1, =2; attrs: type, length, cdna]
-  [v,vA,&v;vop1,4 ,*    ] v_mov_b32\t%0, %1
-  [v,vB,&v;vop1,8 ,*    ] ^
-  [v,m ,&v;*   ,12,*    ] #
-  [m,v ,&v;*   ,12,*    ] #
-  [a,m ,&v;*   ,12,cdna2] #
-  [m,a ,&v;*   ,12,cdna2] #
+  {@ [cons: =0, 1, =2; attrs: type, length, cdna, xnack]
+  [v ,vA,&v;vop1,4 ,*    ,*  ] v_mov_b32\t%0, %1
+  [v ,vB,&v;vop1,8 ,*    ,*  ] ^
+  [v ,m ,&v;*   ,12,*    ,off] #
+  [&v,m ,&v;*   ,12,*    ,on ] #
+  [m ,v ,&v;*   ,12,*    ,*  ] #
+  [a ,m ,&v;*   ,12,cdna2,off] #
+  [&a,m ,&v;*   ,12,cdna2,on ] #
+  [m ,a ,&v;*   ,12,cdna2,*  ] #
   })
 
 (define_insn "@mov<mode>_sgprbase"
@@ -599,12 +604,14 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  {@ [cons: =0, 1, =2; attrs: type, length, cdna]
-  [v,vDB,&v;vmult,8 ,*    ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
-  [v,m  ,&v;*    ,12,*    ] #
-  [m,v  ,&v;*    ,12,*    ] #
-  [a,m  ,&v;*    ,12,cdna2] #
-  [m,a  ,&v;*    ,12,cdna2] #
+  {@ [cons: =0, 1, =2; attrs: type, length, cdna, xnack]
+  [v ,vDB,&v;vmult,8 ,*    ,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1
+  [v ,m  ,&v;*    ,12,*    ,off] #
+  [&v,m  ,&v;*    ,12,*    ,on ] #
+  [m ,v  ,&v;*    ,12,*    ,*  ] #
+  [a ,m  ,&v;*    ,12,cdna2,off] #
+  [&a,m  ,&v;*    ,12,cdna2,on ] #
+  [m ,a  ,&v;*    ,12,cdna2,*  ] #
   })
 
 (define_insn "@mov<mode>_sgprbase"
@@ -614,10 +621,11 @@
 	  UNSPEC_SGPRBASE))
    (clobber (match_operand:<VnDI> 2 "register_operand"))]
   "lra_in_progress || reload_completed"
-  {@ [cons: =0, 1, =2; attrs: type, length]
-  [v,vDB,&v;vmult,8 ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
-  [v,m  ,&v;*    ,12] #
-  [m,v  ,&v;*    ,12] #
+  {@ [cons: =0, 1, =2; attrs: type, length, xnack]
+  [v ,vDB,&v;vmult,8 ,*  ] v_mov_b32\t%L0, %L1\;v_mov_b32\t%H0, %H1\;v_mov_b32\t%J0, %J1\;v_mov_b32\t%K0, %K1
+  [v ,m  ,&v;*    ,12,off] #
+  [&v,m  ,&v;*    ,12,on ] #
+  [m ,v  ,&v;*    ,12,*  ] #
   })
 
 ; Expand scalar addresses into gather/scatter patterns
