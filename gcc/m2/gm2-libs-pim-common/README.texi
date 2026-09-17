@@ -1,0 +1,6 @@
+These library modules contain access to functionality which is enabled
+if there is support in the GCC builtins.  The module
+@code{Builtins} contains access to many of the instrinsic
+procedure functions supported by GCC.  The @code{SYSTEM} module
+has been extended to include target supported data types (for example
+fixed sized @code{CARDINAL}, @code{INTEGER} and @code{REAL} types).
