@@ -1,3 +1,133 @@
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127390
+	* tree-vect-stmts.cc (vectorizable_comparison_1): Reject
+	bit-precision integer comparisons.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127377
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def):
+	Properly consider the padding before the object when
+	pruning the size.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127262
+	* gimple-predicate-analysis.cc (predicate::init_from_control_deps):
+	Convert switch label values to the type of the switch index.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127130
+	* tree-scalar-evolution.cc (simplify_peeled_chrec):
+	Guard against signed integer overflow UB.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127049
+	* tree-vect-data-refs.cc (vect_analyze_data_refs): Build
+	a MEM_REF of the DR_REF type for analyzing the innermost
+	loop behavior for outer loop vectorization.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127000
+	* match.pd ((T *)(ptr - ptr_cst)): Canonicalize directly
+	to (T *)ptr p+ cst.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127000
+	* match.pd ((T *)(ptr - ptr_cst)): Use build1 to build
+	an ADDR_EXPR.
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Avoid
+	creating GIMPLE_SINGLE_RHS to insert stmts.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126760
+	PR tree-optimization/127391
+	* tree-if-conv.cc (if_convertible_stmt_p): Delay switch
+	validation to ...
+	(if_convertible_loop_p_1): ... the loop iterating over
+	PHIs.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-08-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126658
+	* gimple.cc (check_loadstore): Restrict TARGET_MEM_REF
+	handling.
+	* gimple-ssa-isolate-paths.cc (check_loadstore): Likewise.
+	* gimple-range-infer.cc (non_null_loadstore): Likewise.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126153
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Only
+	reinterpret a known aggregate value into the type of the
+	condition if both types have the same precision.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126153
+	* tree-ssa-sccvn.cc (reverse_storage_order_for_component_p): Take
+	the operands by const reference.
+	(vn_reference_lookup_3): Punt when translating a reference through
+	an aggregate copy consumes all of its operands and either access
+	has reverse storage order.
+
+2026-09-16  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-02  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/126153
+	* ipa-fnsummary.cc (evaluate_conditions_for_known_args): Do not
+	look up an aggregate value for a condition whose offset is not
+	byte aligned.
+
+2026-09-16  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-09-02  Peter Bergner  <bergner@gcc.gnu.org>
+
+	* doc/install.texi: Remove incorrect mention of --with-long-double-64.
+	Co-authored-by: Kishan Parmar <kishan@linux.ibm.com>
+
 2026-09-14  Jeff Law  <jeffreyalaw@gmail.com>
 
 	Backported from master:
