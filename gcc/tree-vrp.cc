@@ -1241,9 +1241,8 @@ execute_fast_vrp (struct function *fun, bool final_p)
 {
   calculate_dominance_info (CDI_DOMINATORS);
   dom_ranger dr;
-  // Create a relation oracle without transitives.  It will automatically
-  // be destroyed when the destructor for 'dr' runs.
-  dr.create_relation_oracle (false);
+  // The relation oracle will be destroyed when the destructor for 'dr' runs.
+  dr.create_relation_oracle ();
   fvrp_folder folder (&dr, final_p);
 
   set_all_edges_as_executable (fun);

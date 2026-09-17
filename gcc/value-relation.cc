@@ -1204,11 +1204,62 @@ relation_chain_head::find_relation (const_bitmap b1, const_bitmap b2) const
   return VREL_VARYING;
 }
 
+// ------------------------------------------------------------------------
+// frontier_data methods - what one side of a bidirectional search knows.
+
+// Construct frontier data allocating the bitmap from OBSTACK and side flag RHS.
+
+frontier_data::frontier_data (bitmap_obstack *obstack, bool rhs)
+{
+  m_known.create (0);
+  m_visited = BITMAP_ALLOC (obstack);
+  m_root = NULL_TREE;
+  m_rhs = rhs;
+}
+
+// Record that the root of this search is related to ssa version V by REL.
+
+void
+frontier_data::set_known (unsigned v, relation_kind rel)
+{
+  if (m_known.length () <= v)
+    m_known.safe_grow_cleared (num_ssa_names + 1);
+  m_known[v] = rel;
+}
+
+// Return what the root of this search is known to be relative to ssa version V.
+
+relation_kind
+frontier_data::known_relation (unsigned v) const
+{
+  if (v < m_known.length ())
+    return m_known[v];
+  return VREL_VARYING;
+}
+
+// Reset for the next search.  Only the entries which were actually set need
+// to be put back, and m_visited lists exactly those.
+
+void
+frontier_data::clear_search ()
+{
+  unsigned i;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (m_visited, 0, i, bi)
+    {
+      if (i < m_known.length ())
+	m_known[i] = VREL_VARYING;
+    }
+  bitmap_clear (m_visited);
+  m_root = NULL_TREE;
+}
+
+// ------------------------------------------------------------------------
 // Instantiate a relation oracle.
 
-dom_oracle::dom_oracle (bool do_trans_p)
+dom_oracle::dom_oracle () : m_lhs_search (&m_bitmaps, false),
+			    m_rhs_search (&m_bitmaps, true)
 {
-  m_do_trans_p = do_trans_p;
   m_relations.create (0);
   m_relations.safe_grow_cleared (last_basic_block_for_fn (cfun) + 1);
   m_relation_set = BITMAP_ALLOC (&m_bitmaps);
@@ -1216,12 +1267,17 @@ dom_oracle::dom_oracle (bool do_trans_p)
   m_block_list.safe_grow_cleared (num_ssa_names + 1);
   m_tmp = BITMAP_ALLOC (&m_bitmaps);
   m_tmp2 = BITMAP_ALLOC (&m_bitmaps);
+  m_near.create (0);
+  m_worklist.create (0);
+  m_wl_ix = 0;
 }
 
 // Destruct a relation oracle.
 
 dom_oracle::~dom_oracle ()
 {
+  m_worklist.release ();
+  m_near.release ();
   m_block_list.release ();
   m_relations.release ();
 }
@@ -1378,15 +1434,7 @@ dom_oracle::record (basic_block bb, relation_kind k, tree op1, tree op2)
     return equiv_oracle::record (bb, k, op1, op2);
   else
     {
-      // if neither op1 nor op2 are in a relation before this is registered,
-      // there will be no transitive.
-      bool check = bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op1))
-		   || bitmap_bit_p (m_relation_set, SSA_NAME_VERSION (op2));
       relation_chain *ptr = search_and_merge_relation (bb, k, op1, op2);
-      if (ptr && check
-	  && (m_relations[bb->index].m_num_relations
-	      < param_relation_block_limit))
-	register_transitives (bb, *ptr);
       return ptr != NULL;
     }
 }
@@ -1501,119 +1549,6 @@ dom_oracle::search_and_merge_relation (basic_block bb, relation_kind k,
 	}
     }
   return ptr;
-}
-
-// Starting at ROOT_BB search the DOM tree  looking for relations which
-// may produce transitive relations to RELATION.  EQUIV1 and EQUIV2 are
-// bitmaps for op1/op2 and any of their equivalences that should also be
-// considered.
-
-void
-dom_oracle::register_transitives (basic_block root_bb,
-				  const value_relation &relation)
-{
-  // Only register transitives if they are requested.
-  if (!m_do_trans_p)
-    return;
-  basic_block bb;
-  // Only apply transitives to certain kinds of operations.
-  switch (relation.kind ())
-    {
-      case VREL_LE:
-      case VREL_LT:
-      case VREL_GT:
-      case VREL_GE:
-	break;
-      default:
-	return;
-    }
-
-  const_bitmap equiv1 = equiv_set (relation.op1 (), root_bb);
-  const_bitmap equiv2 = equiv_set (relation.op2 (), root_bb);
-
-  const unsigned work_budget = param_transitive_relations_work_bound;
-  unsigned avail_budget = work_budget;
-  for (bb = root_bb; bb;
-       /* Advancing to the next immediate dominator eats from the budget,
-	  if none is left after that there's no point to continue.  */
-       bb = (--avail_budget > 0
-	     ? get_immediate_dominator (CDI_DOMINATORS, bb) : nullptr))
-    {
-      int bbi = bb->index;
-      if (bbi >= (int)m_relations.length())
-	continue;
-      const_bitmap bm = m_relations[bbi].m_names;
-      if (!bm)
-	continue;
-      if (!bitmap_intersect_p (bm, equiv1) && !bitmap_intersect_p (bm, equiv2))
-	continue;
-      // At least one of the 2 ops has a relation in this block.
-      relation_chain *ptr;
-      for (ptr = m_relations[bbi].m_head; ptr ; ptr = ptr->m_next)
-	{
-	  // In the presence of an equivalence, 2 operands may do not
-	  // naturally match. ie  with equivalence a_2 == b_3
-	  // given c_1 < a_2 && b_3 < d_4
-	  // convert the second relation (b_3 < d_4) to match any
-	  // equivalences to found in the first relation.
-	  // ie convert b_3 < d_4 to a_2 < d_4, which then exposes the
-	  // transitive operation:  c_1 < a_2 && a_2 < d_4 -> c_1 < d_4
-
-	  tree r1, r2;
-	  tree p1 = ptr->op1 ();
-	  tree p2 = ptr->op2 ();
-	  // Find which equivalence is in the first operand.
-	  if (bitmap_bit_p (equiv1, SSA_NAME_VERSION (p1)))
-	    r1 = p1;
-	  else if (bitmap_bit_p (equiv1, SSA_NAME_VERSION (p2)))
-	    r1 = p2;
-	  else
-	    r1 = NULL_TREE;
-
-	  // Find which equivalence is in the second operand.
-	  if (bitmap_bit_p (equiv2, SSA_NAME_VERSION (p1)))
-	    r2 = p1;
-	  else if (bitmap_bit_p (equiv2, SSA_NAME_VERSION (p2)))
-	    r2 = p2;
-	  else
-	    r2 = NULL_TREE;
-
-	  // Ignore if both NULL (not relevant relation) or the same,
-	  if (r1 == r2)
-	    ;
-
-	  else
-	    {
-	      // Any operand not an equivalence, just take the real operand.
-	      if (!r1)
-		r1 = relation.op1 ();
-	      if (!r2)
-		r2 = relation.op2 ();
-
-	      value_relation nr (relation.kind (), r1, r2);
-	      if (nr.apply_transitive (*ptr))
-		{
-		  // If the new relation is already present we know any
-		  // further processing is already reflected above it.
-		  // When we ran into the limit of relations on root_bb
-		  // we can give up as well.
-		  if (!search_and_merge_relation (root_bb, nr.kind (),
-						  nr.op1 (), nr.op2 ()))
-		    return;
-		  if (dump_file && (dump_flags & TDF_DETAILS))
-		    {
-		      fprintf (dump_file,
-			       "   Registering transitive relation ");
-		      nr.dump (dump_file);
-		      fputc ('\n', dump_file);
-		    }
-		}
-	    }
-	  /* Processed one relation, abort if we've eaten up our budget.  */
-	  if (--avail_budget == 0)
-	    return;
-	}
-    }
 }
 
 // Find the relation between any ssa_name in B1 and any name in B2 in block BB.
@@ -1821,8 +1756,8 @@ dom_oracle::recomputed_relation (basic_block orig_bb, edge e, tree ssa1,
   return VREL_VARYING;
 }
 
-// Find a relation between SSA version V1 and V2 in the dominator tree
-// starting with block BB
+// Find a relation between SSA1 and SSA2 in the dominator tree starting with
+// block BB
 
 relation_kind
 dom_oracle::find_relation_dom (basic_block start_bb, tree ssa1, tree ssa2) const
@@ -1833,27 +1768,281 @@ dom_oracle::find_relation_dom (basic_block start_bb, tree ssa1, tree ssa2) const
   // IF either name does not occur in a relation anywhere, there isn't one.
   if (!bitmap_bit_p (m_relation_set, v1) || !bitmap_bit_p (m_relation_set, v2))
     return VREL_VARYING;
-  edge outgoing_edge = NULL;
   for (basic_block bb = start_bb;
        bb;
        bb = get_immediate_dominator (CDI_DOMINATORS, bb))
     {
       r = find_relation_block (bb->index, ssa1, ssa2);
-      // Now check if recomputed values on the outgoing edge might create
-      // a relation.
-      if (r == VREL_VARYING && outgoing_edge)
-	{
-	  gcc_checking_assert (outgoing_edge->src == bb);
-	  r = recomputed_relation (start_bb, outgoing_edge, ssa1, ssa2);
-	}
       if (r != VREL_VARYING)
 	return r;
-
-      // If the dominator is not the only predecessor to this block, there is
-      // unlikely to be a viable relation available.
-      outgoing_edge = single_pred_p (bb) ? single_pred_edge (bb) : NULL;
     }
   return VREL_VARYING;
+}
+
+// Starting with basic block BB, look for the next block in the dominator
+// tree which contains a relation involving NAME.  There can be more than one,
+// and they are returned in the class local m_near vector.  The block in which
+// the relations are found are returned.  If no relations are found, NULL is
+// returned and the m_near vector is empty.
+
+basic_block
+dom_oracle::nearest_relations (tree name, basic_block bb)
+{
+  if (TREE_CODE (name) != SSA_NAME)
+    return NULL;
+
+  unsigned v = SSA_NAME_VERSION (name);
+  if (!bitmap_bit_p (m_relation_set, v))
+    return NULL;
+
+  // A relation involving NAME can only be registered in a block
+  // dominated by NAME's definition.  Relations occurring *in* the def block
+  // are attached to the def block itself, so once that block has been
+  // examined there is nothing left to find and the walk can terminate.
+  basic_block def_bb = gimple_bb (SSA_NAME_DEF_STMT (name));
+  bool at_def = false;
+
+  m_near.truncate (0);
+  for (; bb && !at_def; bb = get_immediate_dominator (CDI_DOMINATORS, bb))
+    {
+      at_def = (bb == def_bb);
+
+      if (bb->index >= (int) m_relations.length ())
+	continue;
+
+      const_bitmap bm = m_relations[bb->index].m_names;
+      if (!bm || !bitmap_bit_p (bm, v))
+	continue;
+
+      for (relation_chain *ptr = m_relations[bb->index].m_head;
+	   ptr; ptr = ptr->m_next)
+	{
+	  if (v == SSA_NAME_VERSION (ptr->op1 ()))
+	    m_near.safe_push ({ ptr->kind (), ptr->op2 (), bb });
+	  else if (v == SSA_NAME_VERSION (ptr->op2 ()))
+	    m_near.safe_push ({ relation_swap (ptr->kind ()),
+				ptr->op1 (), bb });
+	}
+
+      if (!m_near.is_empty ())
+	return bb;
+    }
+
+  return NULL;
+}
+
+// Record relation K between OP1 and OP2, discovered by a search in block BB,
+// so subsequent queries in BB or anything it dominates find it directly.
+// Use SEARCH_AND_MERGE_RELATION rather than CREATE_RELATION_IN_BB.  The pair
+// may already have a record in BB from an earlier query, in which case the
+// two must be intersected rather than a second record created.
+
+void
+dom_oracle::cache_relation (basic_block bb, relation_kind k, tree op1,
+			    tree op2)
+{
+  if (!bb || op1 == op2)
+    return;
+  // There is nothing useful to record for VARYING or UNDEFINED and
+  // Equivalences belong to the equivalence oracle.
+  if (k == VREL_VARYING || k == VREL_UNDEFINED || relation_equiv_p (k))
+    return;
+  search_and_merge_relation (bb, k, op1, op2);
+}
+
+// Begin the search for SIDE at its root ROOT, whose equivalence set is
+// EQUIV, in block BB.  Every name equivalent to ROOT is an equally good
+// starting point, so seed them all.
+
+void
+dom_oracle::start_search (frontier_data &side, tree root, const_bitmap equiv,
+			  basic_block bb)
+{
+  side.m_root = root;
+
+  unsigned root_v = SSA_NAME_VERSION (root);
+  m_worklist.safe_push ({ VREL_EQ, root, bb, side.m_rhs });
+  bitmap_set_bit (side.m_visited, root_v);
+  side.set_known (root_v, VREL_EQ);
+
+  unsigned i;
+  bitmap_iterator bi;
+  EXECUTE_IF_SET_IN_BITMAP (equiv, 0, i, bi)
+    {
+      if (i == root_v)
+	continue;
+      m_worklist.safe_push ({ VREL_EQ, ssa_name (i), bb, side.m_rhs });
+      bitmap_set_bit (side.m_visited, i);
+      side.set_known (i, VREL_EQ);
+    }
+}
+
+// SIDE's root has been shown to be related to NAME by REL.  Queue NAME for
+// expansion starting at block BB.
+
+void
+dom_oracle::add_to_frontier (frontier_data &side, tree name, relation_kind rel,
+			     basic_block bb)
+{
+  unsigned v = SSA_NAME_VERSION (name);
+  if (!side.visited_p (v))
+    {
+      bitmap_set_bit (side.m_visited, v);
+      side.set_known (v, rel);
+      m_worklist.safe_push ({ rel, name, bb, side.m_rhs });
+      return;
+    }
+
+  // NAME already had a relation, so intersect the two and requeue NAME if
+  // there is an improvement.
+  relation_kind curr = side.known_relation (v);
+  relation_kind k = relation_intersect (curr, rel);
+  if (k != curr && k != VREL_UNDEFINED)
+    {
+      side.set_known (v, k);
+      m_worklist.safe_push ({ k, name, bb, side.m_rhs });
+    }
+}
+
+// Expand worklist entry W, looking for a name the other side of the search
+// has already reached.  BB is the block the query was made in.  Return true
+// and set RESULT if a match was found.  W is passed by value as
+// add_to_frontier may realloc the vector.
+
+bool
+dom_oracle::expand_frontier (frontier_element w, basic_block bb,
+			     relation_kind &result)
+{
+  frontier_data &self = w.rhs ? m_rhs_search : m_lhs_search;
+  frontier_data &other = w.rhs ? m_lhs_search : m_rhs_search;
+
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_RELATION))
+    {
+      fprintf (dump_file, "  %s frontier expanding: ", w.rhs ? "RHS" : "LHS");
+      print_generic_expr (dump_file, w.name, TDF_SLIM);
+      fprintf (dump_file, " (rel: %d)\n", w.rel);
+    }
+
+  basic_block found = nearest_relations (w.name, w.bb);
+  if (!found)
+    return false;
+
+  for (unsigned i = 0; i < m_near.length (); ++i)
+    {
+      // nearest_relations sets m_near[i].rel as "w.name <rel> m_near.name",
+      // so composing it with "root <w.rel> w.name" gives "root <kind> next".
+      value_relation path (w.rel, self.m_root, w.name);
+      value_relation near_rel (m_near[i].rel, w.name, m_near[i].name);
+
+      if (!path.apply_transitive (near_rel))
+	continue;
+
+      relation_kind kind = path.kind ();
+      tree next = path.op2 ();
+      unsigned nv = SSA_NAME_VERSION (next);
+
+      // If the other side has reached NEXT it knows "other_root <rel> next",
+      // which composes with what is known here to relate the two roots.
+      if (other.visited_p (nv))
+	{
+	  relation_kind k
+	    = relation_transitive (kind,
+				   relation_swap (other.known_relation (nv)));
+	  // If the result is not VARYING, we have a match.
+	  if (k != VREL_VARYING)
+	    {
+	      result = w.rhs ? relation_swap (k) : k;
+	      if (dump_file && (param_ranger_debug & RANGER_DEBUG_RELATION))
+		{
+		  fprintf (dump_file, "  %s frontier found connection at: ",
+			   w.rhs ? "RHS" : "LHS");
+		  print_generic_expr (dump_file, next, TDF_SLIM);
+		  fprintf (dump_file, ", combined relation: ");
+		  print_relation (dump_file, result);
+		  fputc ('\n', dump_file);
+		}
+	      return true;
+	    }
+	}
+
+      // Add to this side's frontier if it has not visited NEXT yet.
+      add_to_frontier (self, next, kind, bb);
+    }
+
+  // Keep searching for NAME in the dominator tree.  Do not search past
+  // the def block as that is pointless.  Do search the def block however
+  // as relations within the body of the block are stored there.
+  // Use whatever the latest known relation value is.
+  basic_block idom = get_immediate_dominator (CDI_DOMINATORS, found);
+  if (idom && gimple_bb (SSA_NAME_DEF_STMT (w.name)) != found)
+    m_worklist.safe_push ({ self.known_relation (SSA_NAME_VERSION (w.name)),
+			  w.name, idom, w.rhs });
+
+  return false;
+}
+
+// Search for a relation between LHS and RHS in block BB or one of its
+// dominators, expanding a frontier from both names until the two meet.
+// LHS_EQUIV and RHS_EQUIV are the equivalence sets of LHS and RHS.
+
+relation_kind
+dom_oracle::relation_search (basic_block bb, tree lhs, const_bitmap lhs_equiv,
+			     tree rhs, const_bitmap rhs_equiv)
+{
+  // Initialize both search frontiers.
+  start_search (m_lhs_search, lhs, lhs_equiv, bb);
+  start_search (m_rhs_search, rhs, rhs_equiv, bb);
+
+  relation_kind result = VREL_VARYING;
+
+  // Each expansion walks the dominator tree looking for the next block with
+  // a relation.
+  unsigned budget = param_transitive_relations_work_bound;
+
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_RELATION))
+    {
+      fprintf (dump_file, "Bidirectional relation search: ");
+      print_generic_expr (dump_file, lhs, TDF_SLIM);
+      fprintf (dump_file, " vs ");
+      print_generic_expr (dump_file, rhs, TDF_SLIM);
+      fprintf (dump_file, " in bb%d\n", bb ? bb->index : -1);
+    }
+
+  // Expand until exhausted or until a connection is found.
+  while (m_wl_ix < m_worklist.length ())
+    {
+      if (!budget--)
+	{
+	  if (dump_file && (param_ranger_debug & RANGER_DEBUG_RELATION))
+	    fprintf (dump_file, "  search budget exhausted\n");
+	  break;
+	}
+
+      if (expand_frontier (m_worklist[m_wl_ix++], bb, result))
+	break;
+    }
+
+  // Clear search state for reuse.
+  m_worklist.truncate (0);
+  m_wl_ix = 0;
+  m_lhs_search.clear_search ();
+  m_rhs_search.clear_search ();
+
+  // Record whatever was found so the next query for this pair is a direct
+  // lookup rather than another search.
+  cache_relation (bb, result, lhs, rhs);
+
+  if (dump_file && (param_ranger_debug & RANGER_DEBUG_RELATION)
+      && result != VREL_VARYING)
+    {
+      fprintf (dump_file, "  relation_search returning: ");
+      print_generic_expr (dump_file, lhs, TDF_SLIM);
+      print_relation (dump_file, result);
+      print_generic_expr (dump_file, rhs, TDF_SLIM);
+      fprintf (dump_file, "\n");
+    }
+
+  return result;
 }
 
 // Query if there is a relation between SSA1 and SS2 in block BB or a
@@ -1883,10 +2072,7 @@ dom_oracle::query (basic_block bb, tree ssa1, tree ssa2)
   // A statement such as c = a & 0xff makes a partial equivalence between
   // c and a, and an ordinary comparison can then relate the same pair.
   // If both exist, prefer the relation, so look for that first.
-  kind = find_relation_dom (bb, ssa1, ssa2);
-  // If no direct relation exists, try the query using the equivalence sets.
-  if (kind == VREL_VARYING)
-    kind = query (bb, equiv1, equiv2);
+  kind = relation_search (bb, ssa1, equiv1, ssa2, equiv2);
 
   // Finally look for partial equivalences.
   if (kind == VREL_VARYING)

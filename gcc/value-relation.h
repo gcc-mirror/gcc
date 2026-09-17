@@ -227,6 +227,32 @@ public:
   void clear (tree name);
 };
 
+
+// This class tracks what is known on one side of a frontier search.
+// It represents the relation that root has to each other name.
+// All relations are M_ROOT <REL> ssa_name (v).
+// The m_rhs flag indicates if this is the LHS or RHS of a relation search.
+// This is used to determine if the relation needs to be swapped in order
+// to perform a transitive operation:  TRANS (LHS op X , X op RHS).
+// m_visited is also used to efficiently clear the structure.
+// All relations default to VREL_VARYING.
+
+class frontier_data {
+public:
+  frontier_data (bitmap_obstack *obstack, bool rhs);
+  ~frontier_data () { m_known.release (); }
+
+  void clear_search ();
+  bool visited_p (unsigned v) const { return bitmap_bit_p (m_visited, v); }
+  relation_kind known_relation (unsigned v) const;
+  void set_known (unsigned v, relation_kind rel);
+
+  bitmap m_visited;
+  vec<relation_kind> m_known;
+  tree m_root;
+  bool m_rhs;		// True if rooted at the RHS of the query.
+};
+
 // A relation oracle maintains a set of relations between ssa_names using the
 // dominator tree structures.  Equivalencies are considered a subset of
 // a general relation and maintained by an equivalence oracle by transparently
@@ -240,7 +266,7 @@ public:
 class dom_oracle : public equiv_oracle
 {
 public:
-  dom_oracle (bool do_trans_p = true);
+  dom_oracle ();
   ~dom_oracle ();
 
   bool record (basic_block bb, relation_kind k, tree op1, tree op2)
@@ -257,7 +283,6 @@ public:
 protected:
   virtual relation_chain *next_relation (basic_block, relation_chain *,
 					 tree) const override;
-  bool m_do_trans_p;
   bitmap m_tmp, m_tmp2;
   bitmap m_relation_set;  // Index by ssa-name. True if a relation exists
   vec <relation_chain_head> m_relations;  // Index by BB, list of relations.
@@ -272,8 +297,46 @@ protected:
   relation_chain *search_and_merge_relation (basic_block bb, relation_kind k,
 					     tree op1, tree op2);
   void record_relation_block (unsigned v, unsigned bbi);
-  void register_transitives (basic_block, const class value_relation &);
   relation_kind recomputed_relation (basic_block, edge, tree, tree) const;
+  basic_block nearest_relations (tree name, basic_block bb);
+  relation_kind relation_search (basic_block, tree, const_bitmap, tree,
+				 const_bitmap);
+  void cache_relation (basic_block, relation_kind, tree, tree);
+
+  // NAME is related to the requested ssa name via REL in block BB
+  // nearest_relations () calls will fill this vector.
+  struct related {
+    relation_kind rel;
+    tree name;
+    basic_block bb;
+  };
+  vec<struct related> m_near;
+
+  frontier_data m_lhs_search;
+  frontier_data m_rhs_search;
+
+  // One element waiting to be expanded from the frontier.
+  // "implied root <REL> NAME" is the known relation, found in BB.
+  // RHS indicates if root is the LHS or RHS operand of the original request.
+  struct frontier_element {
+    relation_kind rel;
+    tree name;
+    basic_block bb;
+    bool rhs;
+  };
+
+  // Both LHS and RHS frontiers share a single worklist, so whichever side
+  // has work outstanding is processed.
+  // M_WL_IX is the next entry to expand; everything before it is done.
+  vec<struct frontier_element> m_worklist;
+  unsigned m_wl_ix;
+
+  void start_search (frontier_data &side, tree root, const_bitmap equiv,
+		     basic_block bb);
+  void add_to_frontier (frontier_data &side, tree name, relation_kind rel,
+			basic_block bb);
+  bool expand_frontier (frontier_element w, basic_block bb,
+			relation_kind &result);
 };
 
 // A path_oracle implements relations in a list.  The only sense of ordering

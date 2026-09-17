@@ -83,7 +83,7 @@ public:
   virtual void reset_range_info (tree name);
 
   inline class relation_oracle &relation () const  { return *m_relation; }
-  void create_relation_oracle (bool do_trans_p = true);
+  void create_relation_oracle ();
   void destroy_relation_oracle ();
 
   inline class infer_range_oracle &infer_oracle () const { return *m_infer; }

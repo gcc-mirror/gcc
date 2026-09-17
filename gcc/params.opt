@@ -980,7 +980,7 @@ Use internal function id in profile lookup.
 
 -param=ranger-debug=
 Common Joined Var(param_ranger_debug) Enum(ranger_debug) Init(RANGER_DEBUG_NONE) Param Optimization
---param=ranger-debug=[none|trace|gori|cache|tracegori|all] Specifies the output mode for debugging ranger.
+--param=ranger-debug=[none|trace|gori|cache|relation|all] Specifies the output mode for debugging ranger.
 
 Enum
 Name(ranger_debug) Type(enum ranger_debug) UnknownError(unknown ranger debug mode %qs)
@@ -995,10 +995,10 @@ EnumValue
 Enum(ranger_debug) String(cache) Value(RANGER_DEBUG_TRACE_CACHE)
 
 EnumValue
-Enum(ranger_debug) String(gori) Value(RANGER_DEBUG_GORI)
+Enum(ranger_debug) String(gori) Value(RANGER_DEBUG_TRACE_GORI)
 
 EnumValue
-Enum(ranger_debug) String(tracegori) Value(RANGER_DEBUG_TRACE_GORI)
+Enum(ranger_debug) String(relation) Value(RANGER_DEBUG_TRACE_RELATION)
 
 EnumValue
 Enum(ranger_debug) String(all) Value(RANGER_DEBUG_ALL)
