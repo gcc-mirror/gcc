@@ -283,11 +283,9 @@ copybook_elem_t::open_file( const char directory[], bool literally ) {
     struct stat sb;
     if (fstat(fd, &sb)) {
       error_msg(source.loc, "fstat %qs failed: %s", path, xstrerror(errno));
-      goto failure;
     }
     else if (S_ISDIR(sb.st_mode)) {
       error_msg(source.loc, "copybook %qs is a directory", path);
-      goto failure;
     }
     this->source.name = path;
     if( ! cobol_filename(this->source.name, inode_of(fd)) ) {
