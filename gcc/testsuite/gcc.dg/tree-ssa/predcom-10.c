@@ -20,12 +20,9 @@ test (unsigned long n, int *a, int *b)
     a[i + 2] = b[i + 2] - a[i + 3] - a[i + 5] + (int) (i + 2);
 }
 
-int
-main (int argc, char **argv)
+int __attribute__ ((noipa))
+check (unsigned long n)
 {
-  /* N is 6, but not known to the compiler.  */
-  unsigned long n = argc + 5;
-
   for (int i = 0; i < 12; i++)
     {
       a[i] = 0;
@@ -39,4 +36,10 @@ main (int argc, char **argv)
     abort ();
 
   return 0;
+}
+
+int
+main ()
+{
+  return check (6);
 }
