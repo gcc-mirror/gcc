@@ -64,7 +64,7 @@ print("""
 """)
 print("#ifndef _GLIBCXX_GET_UNICODE_DATA")
 print('# error "This is not a public header, do not include it directly"')
-print("#elif _GLIBCXX_GET_UNICODE_DATA != 160000")
+print("#elif _GLIBCXX_GET_UNICODE_DATA != 180000")
 print('# error "Version mismatch for Unicode static data"')
 print("#endif\n")
 

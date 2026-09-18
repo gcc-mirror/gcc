@@ -69,7 +69,7 @@ struct entry { const char *name; unsigned long codepoint; };
 static struct entry *entries;
 static unsigned long num_allocated, num_entries;
 
-/* Unicode 16.0 Table 4-8.  */
+/* Unicode 18.0 Table 4-8.  */
 struct generated {
   const char *prefix;
   /* max_high is a workaround for UnicodeData.txt inconsistencies
@@ -84,7 +84,7 @@ static struct generated generated_ranges[] =
   { "CJK UNIFIED IDEOGRAPH-", 0x4e00, 0x9fff, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x20000, 0x2a6df, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2a700, 0x2b73f, 0, 1, 0 },
-  { "CJK UNIFIED IDEOGRAPH-", 0x2b740, 0x2b81d, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x2b740, 0x2b81e, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2b820, 0x2cead, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2ceb0, 0x2ebe0, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2ebf0, 0x2ee5d, 0, 1, 0 },
@@ -93,12 +93,14 @@ static struct generated generated_ranges[] =
   { "CJK UNIFIED IDEOGRAPH-", 0x323b0, 0x33479, 0, 1, 0 },
   { "EGYPTIAN HIEROGLYPH-", 0x13460, 0x143fa, 0, 2, 0 },
   { "TANGUT IDEOGRAPH-", 0x17000, 0x187ff, 0, 3, 0 },
-  { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d1e, 0, 3, 0 },
-  { "KHITAN SMALL SCRIPT CHARACTER-", 0x18b00, 0x18cd5, 0, 4, 0 },
-  { "NUSHU CHARACTER-", 0x1b170, 0x1b2fb, 0, 5, 0 },
-  { "CJK COMPATIBILITY IDEOGRAPH-", 0xf900, 0xfa6d, 0, 6, 0 },
-  { "CJK COMPATIBILITY IDEOGRAPH-", 0xfa70, 0xfad9, 0, 6, 0 },
-  { "CJK COMPATIBILITY IDEOGRAPH-", 0x2f800, 0x2fa1d, 0, 6, 0 }
+  { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d20, 0, 3, 0 },
+  { "KHITAN SMALL SCRIPT CHARACTER-", 0x18b00, 0x18cda, 0, 4, 0 },
+  { "JURCHEN CHARACTER-", 0x18e00, 0x19191, 0, 5, 0 },
+  { "NUSHU CHARACTER-", 0x1b170, 0x1b2fb, 0, 6, 0 },
+  { "SMALL SEAL CHARACTER-", 0x3d000, 0x3fc3f, 0, 7, 0 },
+  { "CJK COMPATIBILITY IDEOGRAPH-", 0xf900, 0xfa6d, 0, 8, 0 },
+  { "CJK COMPATIBILITY IDEOGRAPH-", 0xfa70, 0xfad9, 0, 8, 0 },
+  { "CJK COMPATIBILITY IDEOGRAPH-", 0x2f800, 0x2fa1d, 0, 8, 0 }
 };
 
 struct node {
@@ -665,7 +667,7 @@ write_copyright (void)
    <http://www.gnu.org/licenses/>.\n\
 \n\
 \n\
-   Copyright (C) 1991-2025 Unicode, Inc.  All rights reserved.\n\
+   Copyright (C) 1991-2026 Unicode, Inc.  All rights reserved.\n\
    Distributed under the Terms of Use in\n\
    http://www.unicode.org/copyright.html.\n\
 \n\

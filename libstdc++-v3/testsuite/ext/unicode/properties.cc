@@ -53,7 +53,7 @@ static_assert( uc::__field_width(U'\U0001FA00') == 1 );
 static_assert( uc::__field_width(U'\U0001FA69') == 1 );
 static_assert( uc::__field_width(U'\U0001FA70') == 2 );
 static_assert( uc::__field_width(U'\U0001FAF8') == 2 );
-static_assert( uc::__field_width(U'\U0001FAF9') == 1 );
+static_assert( uc::__field_width(U'\U0001FAF9') == 2 );
 
 using enum uc::_Gcb_property;
 static_assert( uc::__grapheme_cluster_break_property(U'\0') == _Gcb_Control );
