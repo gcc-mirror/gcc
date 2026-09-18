@@ -2560,7 +2560,7 @@ pru_insert_loop_label_last (rtx_insn *last_insn, rtx_code_label *label,
 	if (code == CALL_INSN || code == CODE_LABEL || code == BARRIER)
 	  break;
 
-	if (INSN_P (prev))
+	if (NONDEBUG_INSN_P (prev))
 	  {
 	    if (GET_CODE (PATTERN (prev)) == SEQUENCE)
 	      prev = as_a <rtx_insn *> (XVECEXP (PATTERN (prev), 0, 1));
