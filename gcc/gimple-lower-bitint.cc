@@ -3271,15 +3271,18 @@ bitint_large_huge::lower_mergeable_stmt (gimple *stmt, tree_code &cmp_code,
 				       bitint_big_endian
 				       ? size_int (-1) : size_one_node);
 	      insert_before (g);
-	      if (bitint_big_endian && rem != 0)
-		g = gimple_build_cond (NE_EXPR, idx,
-				       size_int (bo_idx + 1),
+	      /* For big-endian, if bo_idx + total - 1 - end is all ones, then
+		 compare idx (which is equal to idx_next + 1) against 0
+		 instead.  */
+	      if (bitint_big_endian && bo_idx + total - end == 0)
+		g = gimple_build_cond (NE_EXPR, idx, size_zero_node,
 				       NULL_TREE, NULL_TREE);
 	      else
 		g = gimple_build_cond (NE_EXPR, idx_next,
 				       size_int (bo_idx
 						 + (bitint_big_endian
-						    ? 0 : end)),
+						    ? total - 1 - end
+						    : end)),
 				       NULL_TREE, NULL_TREE);
 	      insert_before (g);
 	      m_gsi = gsi_for_stmt (stmt);
