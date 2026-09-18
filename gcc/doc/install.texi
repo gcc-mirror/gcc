@@ -129,7 +129,7 @@ Free Documentation License}''.
 @c ***Installing GCC**********************************************************
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Installing GCC, Binaries, , Top
+@node    Installing GCC, Specific, , Top
 @end ifnothtml
 @ifset indexhtml
 @ifnothtml
@@ -3873,75 +3873,10 @@ If you find a bug, please report it following the
 @end ifhtml
 @end ifset
 
-@c ***Binaries****************************************************************
-@ifnothtml
-@comment node-name,     next,          previous, up
-@node    Binaries, Specific, Installing GCC, Top
-@end ifnothtml
-@ifset binarieshtml
-@ifnothtml
-@chapter Installing GCC: Binaries
-@end ifnothtml
-@cindex Binaries
-@cindex Installing GCC: Binaries
-
-We are often asked about pre-compiled versions of GCC@.  While we cannot
-provide these for all platforms, below you'll find links to binaries for
-various platforms where creating them by yourself is not easy due to various
-reasons.
-
-Please note that we did not create these binaries, nor do we
-support them.  If you have any problems installing them, please
-contact their makers.
-
-@itemize
-@item
-AIX:
-@itemize
-@item
-@uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
-AIX 7.1)}.
-@end itemize
-
-@item
-DOS---@uref{https://www.delorie.com/djgpp/,,DJGPP}.
-
-@item
-macOS:
-@itemize
-@item
-The @uref{https://brew.sh,,Homebrew} package manager;
-@item
-@uref{https://www.macports.org,,MacPorts}.
-@end itemize
-
-@item
-Microsoft Windows:
-@itemize
-@item
-The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
-@item
-the @uref{https://www.mingw-w64.org/,,mingw-w64} project.
-@end itemize
-
-@item
-The @uref{https://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
-links to GNU Fortran binaries for several platforms.
-@end itemize
-
-@html
-<hr />
-<p>
-@end html
-@ifhtml
-@uref{./index.html,,Return to the GCC Installation page}
-@end ifhtml
-@end ifset
-
 @c ***Specific****************************************************************
 @ifnothtml
 @comment node-name,     next,          previous, up
-@node    Specific, GNU Free Documentation License, Binaries, Top
+@node    Specific, Binaries, Installing GCC, Top
 @end ifnothtml
 @ifset specifichtml
 @ifnothtml
@@ -5312,6 +5247,70 @@ GNU linker; duplicate copies of
 inlines, vtables and template instantiations will be discarded
 automatically.
 
+@html
+<hr />
+<p>
+@end html
+@ifhtml
+@uref{./index.html,,Return to the GCC Installation page}
+@end ifhtml
+@end ifset
+
+@c ***Binaries****************************************************************
+@ifnothtml
+@comment node-name,     next,          previous, up
+@node    Binaries, GNU Free Documentation License, Specific, Top
+@end ifnothtml
+@ifset binarieshtml
+@ifnothtml
+@chapter Installing GCC: Binaries
+@end ifnothtml
+@cindex Binaries
+@cindex Installing GCC: Binaries
+
+We are often asked about pre-compiled versions of GCC@.  While we cannot
+provide these for all platforms, below you'll find links to binaries for
+various platforms where creating them by yourself is not easy due to various
+reasons.
+
+Please note that we did not create these binaries, nor do we
+support them.  If you have any problems installing them, please
+contact their makers.
+
+@itemize
+@item
+AIX:
+@itemize
+@item
+@uref{http://www.perzl.org/aix/,,AIX Open Source Packages (AIX5L AIX 6.1
+AIX 7.1)}.
+@end itemize
+
+@item
+DOS---@uref{https://www.delorie.com/djgpp/,,DJGPP}.
+
+@item
+macOS:
+@itemize
+@item
+The @uref{https://brew.sh,,Homebrew} package manager;
+@item
+@uref{https://www.macports.org,,MacPorts}.
+@end itemize
+
+@item
+Microsoft Windows:
+@itemize
+@item
+The @uref{https://sourceware.org/cygwin/,,Cygwin} project;
+@item
+the @uref{https://www.mingw-w64.org/,,mingw-w64} project.
+@end itemize
+
+@item
+The @uref{https://gcc.gnu.org/wiki/GFortranBinaries,,GFortran Wiki} has
+links to GNU Fortran binaries for several platforms.
+@end itemize
 
 @html
 <hr />
