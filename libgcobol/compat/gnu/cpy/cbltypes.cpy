@@ -16,4 +16,11 @@
             05 cblte-fe-seconds   PIC X COMP-X.
             05 cblte-fe-hundreths PIC X COMP-X.
 
+         01 cblt-prog-info-params typedef.
+          03 cblte-gpi-size       pic x(4) comp-5.
+          03 cblte-gpi-flags      pic x(4) comp-5.
+          03 cblte-gpi-handle     usage pointer.
+          03 cblte-gpi-prog-id    usage pointer.
+          03 cblte-gpi-attrs      pic x(4) comp-5.
+
         >> POP source format

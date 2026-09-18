@@ -118,6 +118,24 @@
                                 file-details
                                 returning status-code.
        end program CBL_CHECK_FILE_EXIST.
+
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. CBL_GET_PROGRAM_INFO PROTOTYPE.
+       DATA DIVISION.
+       LINKAGE SECTION.
+       COPY "cbltypes.cpy".
+       01 fn pic x(4) comp-5.
+       01 param-block type cblt-prog-info-params.
+       01 return-buf pic x any length.
+       01 return-buf-len pic x(4) comp-5.
+       77 status-code pic x(2) comp-5.
+       procedure division using by value fn
+                                by reference param-block
+                                by reference return-buf
+                                by reference return-buf-len
+                                returning status-code.
+
+       END PROGRAM CBL_GET_PROGRAM_INFO.
        >>POP SOURCE FORMAT
 
        >>PUSH SOURCE FORMAT

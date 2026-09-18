@@ -201,9 +201,11 @@ libgcobol_compat_gnu_la_LIBADD =
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CREATE_FILE.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_DELETE_FILE.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_FREE_MEM.lo \
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_GET_PROGRAM_INFO.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_OPEN_FILE.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_READ_FILE.lo \
-@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_WRITE_FILE.lo
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_WRITE_FILE.lo \
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/cbl_gpi.lo
 libgcobol_compat_gnu_la_OBJECTS =  \
 	$(am_libgcobol_compat_gnu_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_compat_gnu_la_rpath = -rpath \
@@ -504,9 +506,11 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CREATE_FILE.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_DELETE_FILE.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_FREE_MEM.cbl		\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_GET_PROGRAM_INFO.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_OPEN_FILE.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_READ_FILE.cbl	\
-@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_WRITE_FILE.cbl
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_WRITE_FILE.cbl	\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/cbl_gpi.cc
 
 @BUILD_LIBGCOBOL_TRUE@libgcobol_posix_la_SOURCES = \
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-close.cbl		\
@@ -764,11 +768,16 @@ compat/gnu/lib/CBL_DELETE_FILE.lo: compat/gnu/lib/$(am__dirstamp) \
 	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/CBL_FREE_MEM.lo: compat/gnu/lib/$(am__dirstamp) \
 	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
+compat/gnu/lib/CBL_GET_PROGRAM_INFO.lo:  \
+	compat/gnu/lib/$(am__dirstamp) \
+	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/CBL_OPEN_FILE.lo: compat/gnu/lib/$(am__dirstamp) \
 	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/CBL_READ_FILE.lo: compat/gnu/lib/$(am__dirstamp) \
 	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/CBL_WRITE_FILE.lo: compat/gnu/lib/$(am__dirstamp) \
+	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
+compat/gnu/lib/cbl_gpi.lo: compat/gnu/lib/$(am__dirstamp) \
 	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 
 libgcobol_compat_gnu.la: $(libgcobol_compat_gnu_la_OBJECTS) $(libgcobol_compat_gnu_la_DEPENDENCIES) $(EXTRA_libgcobol_compat_gnu_la_DEPENDENCIES) 
@@ -835,6 +844,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/unstring.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/valconv.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlparse.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@compat/gnu/lib/$(DEPDIR)/cbl_gpi.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/errno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/fstat.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/localtime.Plo@am__quote@
@@ -1034,7 +1044,7 @@ clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR) posix/shim/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) compat/gnu/lib/$(DEPDIR) posix/shim/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -1083,7 +1093,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR) posix/shim/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) compat/gnu/lib/$(DEPDIR) posix/shim/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

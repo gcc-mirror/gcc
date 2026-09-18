@@ -80,9 +80,11 @@ libgcobol_compat_gnu_la_SOURCES =		\
 	compat/gnu/lib/CBL_CREATE_FILE.cbl	\
 	compat/gnu/lib/CBL_DELETE_FILE.cbl	\
 	compat/gnu/lib/CBL_FREE_MEM.cbl		\
+	compat/gnu/lib/CBL_GET_PROGRAM_INFO.cbl	\
 	compat/gnu/lib/CBL_OPEN_FILE.cbl	\
 	compat/gnu/lib/CBL_READ_FILE.cbl	\
-	compat/gnu/lib/CBL_WRITE_FILE.cbl
+	compat/gnu/lib/CBL_WRITE_FILE.cbl	\
+	compat/gnu/lib/cbl_gpi.cc
 
 libgcobol_posix_la_SOURCES =			\
 	posix/udf/posix-close.cbl		\
