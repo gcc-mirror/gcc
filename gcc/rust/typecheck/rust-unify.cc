@@ -253,15 +253,18 @@ UnifyRules::go ()
     }
   if (infer_flag)
     {
+      // an impl parameter can infer to Split<T, P> without requiring T and P to
+      // be concrete
       bool rgot_param = rtype->get_kind () == TyTy::TypeKind::PARAM;
       bool lhs_is_infer_var = ltype->get_kind () == TyTy::TypeKind::INFER;
       bool lhs_is_general_infer_var
 	= lhs_is_infer_var
 	  && static_cast<TyTy::InferType *> (ltype)->get_infer_kind ()
 	       == TyTy::InferType::GENERAL;
-      bool expected_is_concrete
-	= ltype->is_concrete () && !lhs_is_general_infer_var;
-      bool rneeds_infer = expected_is_concrete && (rgot_param);
+      bool expected_can_infer_param
+	= (ltype->is_concrete () || ltype->get_kind () == TyTy::TypeKind::ADT)
+	  && !lhs_is_general_infer_var;
+      bool rneeds_infer = expected_can_infer_param && rgot_param;
 
       bool lgot_param = ltype->get_kind () == TyTy::TypeKind::PARAM;
       bool rhs_is_infer_var = rtype->get_kind () == TyTy::TypeKind::INFER;
@@ -269,9 +272,10 @@ UnifyRules::go ()
 	= rhs_is_infer_var
 	  && static_cast<TyTy::InferType *> (rtype)->get_infer_kind ()
 	       == TyTy::InferType::GENERAL;
-      bool receiver_is_concrete
-	= rtype->is_concrete () && !rhs_is_general_infer_var;
-      bool lneeds_infer = receiver_is_concrete && (lgot_param);
+      bool receiver_can_infer_param
+	= (rtype->is_concrete () || rtype->get_kind () == TyTy::TypeKind::ADT)
+	  && !rhs_is_general_infer_var;
+      bool lneeds_infer = receiver_can_infer_param && lgot_param;
 
       if (rneeds_infer)
 	{

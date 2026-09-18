@@ -335,12 +335,20 @@ TypeCheckContext::find_matching_impl_trait_frame (
 	    unresolved_trait_self = param->is_implicit_self_trait ();
 	}
 
-      bool compatible_self
-	= unresolved_trait_self
-	  || types_compatable (TyTy::TyWithLocation (i.self),
-			       TyTy::TyWithLocation (resolved_self),
-			       UNDEF_LOCATION, false /* emit_errors */,
-			       false /* check_bounds */);
+      // Select an existing impl context without inferring a new Self
+      // binding
+      bool compatible_self = unresolved_trait_self;
+      if (!compatible_self)
+	{
+	  auto res
+	    = unify_site_and (UNKNOWN_HIRID, TyTy::TyWithLocation (i.self),
+			      TyTy::TyWithLocation (resolved_self),
+			      UNDEF_LOCATION, false /* emit_errors */,
+			      false /* commit */, false /* infer */,
+			      true /* cleanup */, false /* check_bounds */);
+	  compatible_self = res->get_kind () != TyTy::TypeKind::ERROR;
+	}
+
       if (compatible_self)
 	{
 	  *find = i;

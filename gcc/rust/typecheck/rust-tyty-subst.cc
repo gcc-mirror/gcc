@@ -1021,7 +1021,26 @@ SubstitutionRef::adjust_mappings_for_this (
 	  if (subst.needs_substitution ())
 	    {
 	      // get from passed in mappings
-	      mappings.get_argument_for_symbol (subst.get_param_ty (), &arg);
+	      bool found
+		= mappings.get_argument_for_symbol (subst.get_param_ty (),
+						    &arg);
+	      if (!found)
+		{
+		  // This type can already be partially instantiated from an
+		  // outer scope
+		  SubstitutionArg bound_arg = SubstitutionArg::error ();
+		  bool have_binding = used_arguments.get_argument_for_symbol (
+		    subst.get_param_ty (), &bound_arg);
+
+		  if (have_binding && !bound_arg.is_error ())
+		    {
+		      BaseType *resolved
+			= Resolver::SubstMapperInternal::Resolve (
+			  bound_arg.get_tyty (), mappings);
+		      if (resolved->get_kind () != TypeKind::ERROR)
+			arg = SubstitutionArg (&subst, resolved);
+		    }
+		}
 	    }
 	  else
 	    {

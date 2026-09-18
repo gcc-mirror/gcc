@@ -688,17 +688,28 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
 	{
 	  for (auto &bound : self->get_specified_bounds ())
 	    {
-	      if (!bound.get ()->is_equal (*proj->get_trait_ref ()))
+	      // The associated type can be declared on a supertrait of
+	      // a bound: see issue-4884
+	      //
+	      //    I: SplitIter<Item = T> binds Iterator2::Item,
+
+	      auto item = bound.lookup_associated_item (assoc_name);
+	      if (!item.has_value ())
 		continue;
 
-	      auto &binding
-		= bound.get_substitution_arguments ().get_binding_args ();
+	      auto &item_val = item.value ();
+	      const auto raw_item = item_val.get_raw_item ();
+	      if (raw_item->get_mappings ().get_defid () != item_defid)
+		continue;
+
+	      const auto parent = item_val.get_parent ();
+	      const auto &arguments = parent->get_substitution_arguments ();
+	      const auto &binding = arguments.get_binding_args ();
 	      auto it = binding.find (assoc_name);
 	      if (it != binding.end ())
 		return it->second;
 
-	      const auto &constraints
-		= bound.get_substitution_arguments ().get_constraint_args ();
+	      const auto &constraints = arguments.get_constraint_args ();
 	      auto constraint = constraints.find (assoc_name);
 	      if (constraint != constraints.end ())
 		{
@@ -847,18 +858,28 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
   if (unify_self)
     {
       TyTy::BaseType *proj_self = proj->get_self ();
-      TyTy::BaseType *impl_self = frame.self;
-      TyTy::BaseType *self
-	= unify_site_and (/*id*/ 0, TyTy::TyWithLocation (proj_self, locus),
-			  TyTy::TyWithLocation (impl_self, locus), locus,
-			  /*emit_errors*/ false,
-			  /*commit*/ false,
-			  /*infer*/ false,
-			  /*cleanup*/ true,
-			  /*check_bounds*/ false);
+      bool proj_self_is_unresolved_trait_self = false;
+      if (auto *param = proj_self->try_as<TyTy::ParamType> ())
+	{
+	  proj_self_is_unresolved_trait_self
+	    = !param->can_resolve () && param->is_implicit_self_trait ();
+	}
 
-      if (self->get_kind () == TyTy::TypeKind::ERROR)
-	return self;
+      if (!proj_self_is_unresolved_trait_self)
+	{
+	  TyTy::BaseType *impl_self = frame.self;
+	  TyTy::BaseType *self = unify_site_and (
+	    /*id*/ 0, TyTy::TyWithLocation (proj_self, locus),
+	    TyTy::TyWithLocation (impl_self, locus), locus,
+	    /*emit_errors*/ false,
+	    /*commit*/ false,
+	    /*infer*/ false,
+	    /*cleanup*/ true,
+	    /*check_bounds*/ false);
+
+	  if (self->get_kind () == TyTy::TypeKind::ERROR)
+	    return self;
+	}
     }
 
   // Lookup the trait item -> impl type mapping (key = trait item DefId).
