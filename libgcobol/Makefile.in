@@ -580,6 +580,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-localtime.cpy \
 @BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-lseek.cpy \
 @BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-mkdir.cpy \
+@BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-close.cpy \
 @BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-open.cpy \
 @BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-read.cpy \
 @BUILD_LIBGCOBOL_TRUE@	$(LP_COPYDIR_BUILD)/posix-stat.cpy \
