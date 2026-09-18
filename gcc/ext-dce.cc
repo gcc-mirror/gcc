@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "diagnostic-core.h"
 #include "target.h"
+#include "regs.h"
 
 /* These should probably move into a C++ class.  */
 static vec<bitmap_head> livein;
@@ -1028,7 +1029,16 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
       /* If we have a register reference that is not otherwise handled,
 	 just assume all the chunks are live.  */
       else if (REG_P (x))
-	bitmap_set_range (livenow, REGNO (x) * 4, group_limit (x));
+	{
+	  if (HARD_REGISTER_P (x))
+	    {
+	      unsigned int end = end_hard_regno (GET_MODE (x), REGNO (x));
+	      for (unsigned int r = REGNO (x); r < end; r++)
+		bitmap_set_range (livenow, r * 4, 4);
+	    }
+	  else
+	    bitmap_set_range (livenow, REGNO (x) * 4, group_limit (x));
+	}
     }
 }
 
