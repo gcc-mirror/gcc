@@ -1,3 +1,18 @@
+2026-09-17  Robert Dubner  <rdubner@symas.com>
+
+	* gmath.cc (__gg__int128_to_int128_rounded): Change error handling.
+	* libgcobol.cc (int128_to_field): Likewise.
+	(__gg__int128_to_ascii_numeric_display): New routine for increased
+	speed.
+	* valconv.cc (TOUPPER): Remove.
+	(expand_picture): Remove; it's being done in another routine.
+	(Lindex): Remove.
+	(Rindex): Remove.
+	(__gg__string_to_numeric_edited): Refactor for speed.
+	(__gg__string_to_alpha_edited): Eliminate call to expand_picture().
+	(__gg__currency_sign_init): Formatting.
+	* valconv.h: Change __gg__string_to_numeric_edited() return type.
+
 2026-09-10  Robert Dubner  <rdubner@symas.com>
 
 	* gmath.cc (__gg__conditional_stash_float): New routine supporting

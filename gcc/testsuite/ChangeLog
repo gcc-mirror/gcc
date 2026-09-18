@@ -1,3 +1,73 @@
+2026-09-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-rel3.c: New.
+
+2026-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/125690
+	* gfortran.dg/pdt_95.f03: New test.
+
+2026-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104776
+	* gfortran.dg/pdt_94.f03: New test.
+
+2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127405
+	* gcc.dg/tree-ssa/predcom-10.c: New test.
+
+2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127407
+	* gcc.dg/vect/vect-pr127407.c: New testcase.
+
+2026-09-17  Andrew Stubbs  <ams@baylibre.com>
+
+	* gcc.target/gcn/avgpr-spill-int.c: Increase register pressure.
+	* gcc.target/gcn/sgpr-spill-double.c: Allow some AVGPR spills.
+	* gcc.target/gcn/sgpr-spill-int.c: Likewise.
+	* gcc.target/gcn/sgpr-spill-long.c: Likewise.
+	* gcc.target/gcn/sgpr-spill-short.c: Likewise.
+
+2026-09-17  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	PR target/127191
+	* gcc.target/arc/pr127191-1.c: New test.
+	* gcc.target/arc/pr127191-2.c: New test.
+
+2026-09-17  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR lto/126841
+	* gcc.dg/lto/pr126841-strub_0.c: New test.
+	* gcc.dg/lto/pr126841-strub_1.c: New test.
+	* gcc.dg/lto/pr126841_0.c: New test.
+	* gcc.dg/lto/pr126841_1.c: New test.
+	* gcc.dg/lto/pr126841_2.c: New test.
+	* gcc.dg/lto/pr126841_3.c: New test.
+
+2026-09-17  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_gnu.cob: New test.
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_ibm.cob: New test.
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_iso.cob: New test.
+	* cobol.dg/group2/PR126612_-_Ignore_TRACE_-_mf.cob: New test.
+	* cobol.dg/group2/RT3611_-_BY_CONTENT_LENGTH_OF.cob: New test.
+	* cobol.dg/group2/__define__text_.cob: New test.
+	* cobol.dg/group2/__define__text_.out: New test.
+	* cobol.dg/group2/customer_bug_Heuristic_Fail.cob: New test.
+	* cobol.dg/group2/customer_bug_Heuristic_Fail.out: New test.
+
+2026-09-17  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127103
+	* gcc.dg/tree-ssa/minmax-plus-1.c: New test.
+
+2026-09-17  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127103
+	* gcc.dg/tree-ssa/max1-plus-1.c: New test.
+
 2026-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/127383

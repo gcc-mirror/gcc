@@ -1,3 +1,75 @@
+2026-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (v3_check_preprocessor_condition):
+	Use argument as filename for preprocessing.
+
+2026-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (check_v3_target_cpp_feature_test):
+	Use $v3_max_std variable instead of hardcoding the latest -std
+	option.
+
+2026-09-17  Gökbey Keskin  <gokbeykeskin@gmail.com>
+
+	PR libstdc++/127424
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Only open
+	filebuf for output and expect close() to return null.
+	* testsuite/27_io/basic_filebuf/seekoff/char/26777.cc: Only open
+	filebuf for output.
+	* testsuite/27_io/basic_filebuf/showmanyc/char/9533-1.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc:
+	Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Only open FILE for
+	output.
+
+2026-09-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127425
+	* doc/xml/manual/test.xml: Document new testsuite header.
+	* doc/html/manual/test.html: Regenerate.
+	* testsuite/27_io/basic_filebuf/close/char/4879.cc: Use new
+	dg-require-sysv-or-posix-semaphore directive.
+	* testsuite/27_io/basic_filebuf/close/char/9964.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/char/13171-2.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/imbue/wchar_t/14975-2.cc:
+	Likewise.
+	* testsuite/27_io/basic_filebuf/seekoff/char/26777.cc: Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/10097.cc:
+	Likewise.
+	* testsuite/27_io/objects/char/7.cc: Likewise.
+	* testsuite/27_io/objects/char/9661-1.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/7.cc: Likewise.
+	* testsuite/27_io/objects/wchar_t/9661-1.cc: Likewise.
+	* testsuite/lib/dg-options.exp
+	(dg-require-sysv-or-posix-semaphore): New proc.
+	* testsuite/lib/libstdc++.exp (v3-build_support): Add new file
+	to list of testsuite source files.
+	(check_v3_target_posix_or_sysv_semaphore): New proc.
+	* testsuite/util/testsuite_hooks.cc (semaphore): Move to new
+	file.
+	* testsuite/util/testsuite_hooks.h (semaphore): Likewise.
+	* testsuite/util/testsuite_semaphore.cc: Move definition of
+	semaphore member functions here. Fix resource leak in
+	constructor if semctl fails. Add fallback using mmap+sem_init
+	instead of semget+semctl.
+	* testsuite/util/testsuite_semaphore.h: Move definition of
+	semaphore to here. Replace sem_set_ data member with anonymous
+	union. Add deleted copy operations.
+
+2026-09-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/123409
+	* include/bits/random.h (negative_binomial_distribution::param)
+	(fisher_f_distribution::param, student_t_distribution::param):
+	Updated underlying gamma distributions, by calling param.
+	(chi_squared_distribution::param): Use type alias and parenthesis
+	for consistency.
+	* testsuite/26_numerics/random/distribution_param.cc: New test.
+	* testsuite/26_numerics/random/chi_squared_distribution/83833.cc:
+	Removed, covered by above.
+
 2026-09-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/html/manual/status.html: Regenerate.

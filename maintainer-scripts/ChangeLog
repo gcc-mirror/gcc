@@ -1,3 +1,8 @@
+2026-09-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* update_web_docs_git: Ignore installation of $file.gz files
+	which don't exist.
+
 2026-09-12  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* update_web_docs_git: Stop generating .pdf.gz copies of

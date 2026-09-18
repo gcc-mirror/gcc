@@ -1,3 +1,132 @@
+2026-09-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (dom_oracle::query): Prefer a normal
+	relation over a partial equivalency.
+	(path_oracle::record): Do not record partial equivalences, nor
+	intersect one with the relation being recorded.
+
+2026-09-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (dom_oracle::record): Do not record
+	VREL_UNDEFINED.
+	(dom_oracle::search_and_merge_relation): Likewise.
+	(path_oracle::record): Likewise.
+
+2026-09-17  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (rr_negate_table): Fill PE slots.
+	(rr_swap_table): Likewise.
+	(rr_intersect_table): Likewise.
+	(rr_union_table): Likewise.
+	(rr_transitive_table): Likewise.
+	(relation_tests): Also confirm partial equivalency entries.
+
+2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127405
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop): Only
+	set nb_iterations_upper_bound of the epilogue loop and scale its
+	profile when the control IV is known not to wrap.
+
+2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_instance): Pick the
+	largest isomorphic subset when vectorizing a BB reduction.
+
+2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (match_elt_t): New.
+	(_slp_tree::failed): Make a match_elt_t *.
+	* tree-vect-slp.cc (vect_build_slp_tree_3): Make
+	re-startable at start_i, change representation of
+	matches[] to match_elt_t[].
+	(vect_build_slp_tree_1): Iteratively resolve not matched lanes.
+	Retain isomorphism of BB unrolling failed tail.
+	(vect_build_slp_tree_2): Adjust for s/bool/match_elt_t/
+	(vect_build_slp_tree): Likewise.
+	(optimize_load_redistribution_1): Likewise.
+	(vect_build_slp_instance): Likewise.
+	(vect_analyze_slp_reduc_chain): Likewise.
+	(vect_analyze_slp_reduction): Likewise.
+	(vect_analyze_slp_reduction_group): Likewise.
+	(vect_analyze_slp_reductions): Likewise.
+	(vect_analyze_slp_instance): Likewise.
+	(vect_lower_load_permutations): Likewise.
+
+2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127407
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_dependence):
+	Also call vect_preserves_scalar_order_p for negative dependence
+	distance.
+
+2026-09-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config.gcc (i[34567]86-*-* | x86_64-*-*): Set
+	default_md_generator_partitions target default to 6:6:1.
+
+2026-09-17  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_spill_class): Spill scalars in VGPRs to
+	SCALAR_SPILL_REGS.
+	(gcn_memory_move_cost): Handle SCALAR_SPILL_REGS.
+	* config/gcn/gcn.h (enum reg_class): Add SCALAR_SPILL_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+
+2026-09-17  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	PR target/127191
+	* config/arc/arc.md (doloop_end): Clobber CC.
+	(loop_end): Likewise.
+	(dbnz): Likewise.
+	(flag): Likewise.
+	(kflag): Likewise.
+
+2026-09-17  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	* config/arc/arc.cc (arc_init_reg_tables): Set the mode class of
+	CC_Vmode to C_MODE.
+
+2026-09-17  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	PR target/126243
+	* config/arc/simdext.md (<voptab>v2si3): Require TARGET_PLUS_QMACW.
+
+2026-09-17  Claudiu Zissulescu  <claziss@gmail.com>
+
+	* config/arc/arc.md: Remove the "cond" attribute definition, all
+	its uses and the comments describing it.
+	* config/arc/fpu.md: Likewise.
+	* config/arc/fpx.md: Likewise.
+	* config/arc/simdext.md: Likewise.
+
+2026-09-17  Longjun Luo  <luolongjuna@gmail.com>
+
+	PR lto/126841
+	* doc/invoke.texi (-ffunction-sections): Document implicit function
+	section names under LTO.
+	* ipa-strub.cc (pass_ipa_strub::execute): Let cfgexpand resolve the
+	GIMPLE wrapper section.
+	* symtab-thunks.cc (expand_thunk): Likewise for generic GIMPLE thunks.
+	Clarify the direct-assembler case.
+
+2026-09-17  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127103
+	* match.pd (`minmax (a - c, b) + c`): New pattern.
+
+2026-09-17  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127103
+	* match.pd (`x+umax(x,1)`): New pattern.
+
+2026-09-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126174
+	* doc/gm2.texi (Using GNU Modula-2): Move Unbounded by reference after
+	Exception handling in the menu.
+
 2026-09-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* lto-wrapper.cc (run_gcc): Make saved parallel LTRANS outputs phony.

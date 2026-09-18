@@ -1,3 +1,20 @@
+2026-09-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/126174
+	* Make-lang.in (m2/gm2-libs.texi): Add test for
+	m2/gm2-libs-pim-common and create if necessary.
+	Add test for m2/gm2-libs-iso-common and create if necessary.
+	Add test for m2/gm2-libs-cor-common and create if necessary.
+	* tools-src/def2doc.py (Base_Libs): Change section heading name.
+	(library_classifications): Add PIM_Common, ISO_Common and
+	COR_Common.
+	(PIM_Common): New list.
+	(ISO_Common): New list.
+	(COR_Common): New list.
+	* gm2-libs-cor-common/README.texi: New file.
+	* gm2-libs-iso-common/README.texi: New file.
+	* gm2-libs-pim-common/README.texi: New file.
+
 2026-09-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127359

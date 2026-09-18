@@ -1,3 +1,34 @@
+2026-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/125690
+	* decl.cc (gfc_get_pdt_instance): PDT strings with explicit
+	array specifications are also PDT arrays. If the component is
+	allocatable, the typespec must be marked deferred.
+	* resolve.cc (resolve_structure_cons): Skip the string length
+	check for PDT types.
+	(resolve_allocate_expr): Initialize cmp to 0. Do not emit error
+	if cmp = -3 since different variable could have the same value.
+	* trans-array.cc (gfc_conv_scalarized_array_ref): Force pointer
+	arithmetic by setting 'decl' for PDT strings.
+	(gfc_conv_array_ref): Likewise.
+	(structure_alloc_comps ): Move the declaraion of 'strlen' up.
+	Evaluate the bounds and offset for pdt_strings as well as pdt
+	arrays. If non-null, use strlen to obtain the size for malloc.
+	Set the span to strlen.
+	If the component type is a descriptor, rather than just a PDT
+	array, use its data forboth the non-null condition and setting
+	to null.
+	* trans-io.cc (gfc_trans_transfer): PDT string arrays must be
+	scalarized.
+
+2026-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104776
+	* decl.cc (gfc_get_pdt_instance): Simplify the initializers of
+	KIND components in PDT templates since they must be integer
+	constants. Catch any remaining component initializers for
+	parameter substitution, if necessary, and simplification.
+
 2026-09-15  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/122521

@@ -1,3 +1,45 @@
+2026-09-17  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (actually_create_the_static_field): Use expanded PICTURE
+	string.
+	* lang-specs.h: Updated cc1_options formatting string.
+	* move.cc (mh_source_is_literalN): Use new numeric-edited routine.
+	(mh_to_numeric_edited): Likewise.
+	(move_helper): Likewise.
+	* parse.y: Formatting.
+	* symbols.cc (symbol_file): Mollify cppcheck.
+	(expand_picture): Modified for numeric-editing.
+	* symbols.h (cbl_dialect_str): Formatting.
+	(enum dspc_t): Formatting.
+	(MAXIMUM_ALPHA_LENGTH): Formatting.
+	(is_elementary): Formatting.
+	(struct cbl_field_t): Formatting.
+	(struct cbl_refer_t): Formatting.
+	(struct parameter_t): Formatting.
+	(struct cbl_label_t): Formatting.
+	(class temporaries_t): Formatting.
+	(struct cbl_locale_t): Formatting.
+	(hex2numstr): Formatting.
+	(struct cbl_file_key_t): Formatting.
+	(struct cbl_file_t): Formatting.
+	(struct symbol_elem_t): Formatting.
+	(redefine_field): Formatting.
+	(is_prototypical): Formatting.
+	(struct cbl_prog_hier_t): Formatting.
+	(keyword_alias_add): Formatting.
+	(class current_tokens_t): Formatting.
+	(expand_picture): Formatting.
+	* util.cc (cbl_prototype_ok): Formatting.
+	(cdf_file): Formatting.
+	(repeat_count): Formatting.
+	(cbl_field_t::encode_numeric): Formatting; use new numeric-edited
+	routine.
+	(cbl_field_t::report_invalid_initial_value): Formatting.
+	(valid_move): Formatting.
+	(cobol_filename): Formatting.
+	(gcc_location_set): Formatting.
+	(parse_file): Formatting.
+
 2026-09-14  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse.y: Emit diagnostic if symbol_currency_add fails.
