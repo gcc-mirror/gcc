@@ -698,7 +698,8 @@ static int
 vect_get_and_check_slp_defs (vec_info *vinfo, tree vectype, unsigned char swap,
 			     bool *skip_args,
 			     vec<stmt_vec_info> stmts, unsigned stmt_num,
-			     vec<slp_oprnd_info> *oprnds_info)
+			     vec<slp_oprnd_info> *oprnds_info,
+			     bool soft_fail)
 {
   stmt_vec_info stmt_info = stmts[stmt_num];
   tree oprnd;
@@ -991,7 +992,8 @@ vect_get_and_check_slp_defs (vec_info *vinfo, tree vectype, unsigned char swap,
 
 	  if (is_a <bb_vec_info> (vinfo)
 	      && !oprnd_info->any_pattern
-	      && number_of_oprnds > 1)
+	      && number_of_oprnds > 1
+	      && !soft_fail)
 	    {
 	      /* Now for commutative ops we should see whether we can
 		 make the other operand matching.  */
@@ -1730,24 +1732,22 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   /* Check nunits required but continue analysis, producing matches[]
      as if nunits was not an issue.  This allows splitting of groups
      to happen.  */
-  bool maybe_soft_fail = false;
   unsigned HOST_WIDE_INT const_nunits = 0;
   if (vectype
       && is_a <bb_vec_info> (vinfo)
       && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)))
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Build SLP failed: unrolling required "
-			 "in basic block SLP\n");
       if (!TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
 	  || const_nunits > group_size)
 	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Build SLP failed: unrolling required "
+			     "in basic block SLP\n");
 	  /* Fatal mismatch.  */
 	  matches[0] = -1;
 	  return false;
 	}
-      maybe_soft_fail = true;
     }
 
   gcc_assert (vectype || !gimple_get_lhs (first_stmt_info->stmt));
@@ -1780,16 +1780,6 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
       res = false;
   if (!res)
     return false;
-
-  if (maybe_soft_fail)
-    {
-      /* With constant vector elements simulate a mismatch at the
-	 point we need to split.  But indicate the tail is isomorphic.  */
-      unsigned tail = group_size & (const_nunits - 1);
-      for (unsigned i = group_size - tail; i < group_size; ++i)
-	matches[i] = (int)(group_size - tail);
-      return false;
-    }
 
   return true;
 }
@@ -2084,6 +2074,25 @@ vect_slp_build_two_operator_nodes (slp_tree perm, tree vectype,
   SLP_TREE_CHILDREN (perm).quick_push (child2);
 }
 
+/* For isomorphic matches[], indicate a splitting point according to
+   CONST_NUNITS.  */
+
+static void
+force_split_matches (match_elt_t *matches, unsigned group_size,
+		     unsigned const_nunits)
+{
+  if (dump_enabled_p ())
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		     "Build SLP failed: unrolling required "
+		     "in basic block SLP\n");
+
+  /* With constant vector elements simulate a mismatch at the
+     point we need to split.  But indicate the tail is isomorphic.  */
+  unsigned tail = group_size & (const_nunits - 1);
+  for (unsigned i = group_size - tail; i < group_size; ++i)
+    matches[i] = (int)(group_size - tail);
+}
+
 /* Recursively build an SLP tree starting from NODE.
    Fail (and return a value not equal to zero) if def-stmts are not
    isomorphic, require data permutation or are of unsupported types of
@@ -2185,10 +2194,20 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 			      &vectype))
     return NULL;
 
+  bool soft_fail
+    = (is_a <bb_vec_info> (vinfo)
+       && !multiple_p (group_size, TYPE_VECTOR_SUBPARTS (vectype)));
+
   /* If the SLP node is a load, terminate the recursion unless masked.  */
   if (STMT_VINFO_DATA_REF (stmt_info)
       && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)))
     {
+      if (soft_fail)
+	{
+	  force_split_matches (matches, group_size,
+			       TYPE_VECTOR_SUBPARTS (vectype).to_constant ());
+	  return NULL;
+	}
       if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	gcc_assert (DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info)));
       else
@@ -2319,6 +2338,12 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 	   && !gimple_vuse (stmt_info->stmt)
 	   && gimple_assign_rhs_code (stmt_info->stmt) == BIT_FIELD_REF)
     {
+      if (soft_fail)
+	{
+	  force_split_matches (matches, group_size,
+			       TYPE_VECTOR_SUBPARTS (vectype).to_constant ());
+	  return NULL;
+	}
       /* vect_build_slp_tree_2 determined all BIT_FIELD_REFs reference
 	 the same SSA name vector of a compatible type to vectype.  */
       vec<std::pair<unsigned, unsigned> > lperm = vNULL;
@@ -2766,7 +2791,8 @@ out:
     {
       int res = vect_get_and_check_slp_defs (vinfo, vectype,
 					     swap[i], skip_args,
-					     stmts, i, &oprnds_info);
+					     stmts, i, &oprnds_info,
+					     soft_fail);
       if (res != 0)
 	/* ???  This puts -1 back into matches[] and the cache.  */
 	matches[(res == -1) ? 0 : i] = -1;
@@ -2780,6 +2806,15 @@ out:
 	return NULL;
       }
   swap = NULL;
+
+  /* Perform delayed soft-failing only here so we can factor in mismatches
+     determined by vect_get_and_check_slp_defs.  */
+  if (soft_fail)
+    {
+      force_split_matches (matches, group_size,
+			   TYPE_VECTOR_SUBPARTS (vectype).to_constant ());
+      return NULL;
+    }
 
   bool has_two_operators_perm = false;
   auto_vec<unsigned> two_op_perm_indices[2];
