@@ -381,7 +381,6 @@ libcompat_copybook(const char *dir)
       {
           concat(gnu, dir_separator, "lib", NULL),
           concat(gnu, dir_separator, "cpy", NULL),
-          concat(gnu, dir_separator, "udf", NULL)
       };
 
   for (size_t i = 0; i < sizeof paths / sizeof *paths; i++)

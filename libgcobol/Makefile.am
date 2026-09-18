@@ -72,8 +72,8 @@ libgcobol_la_SOURCES =      \
     xmlparse.cc
 
 libgcobol_compat_gnu_la_SOURCES =		\
-	compat/gnu/udf/cobrt-file-status.cbl	\
-	compat/gnu/udf/stored-char-length.cbl	\
+	compat/gnu/lib/cobrt-file-status.cbl	\
+	compat/gnu/lib/stored-char-length.cbl	\
 	compat/gnu/lib/CBL_ALLOC_MEM.cbl	\
 	compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl	\
 	compat/gnu/lib/CBL_CLOSE_FILE.cbl	\

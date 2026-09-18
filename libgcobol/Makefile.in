@@ -193,8 +193,8 @@ libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 libgcobol_compat_gnu_la_LIBADD =
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_compat_gnu_la_OBJECTS =  \
-@BUILD_LIBGCOBOL_TRUE@	compat/gnu/udf/cobrt-file-status.lo \
-@BUILD_LIBGCOBOL_TRUE@	compat/gnu/udf/stored-char-length.lo \
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/cobrt-file-status.lo \
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/stored-char-length.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_ALLOC_MEM.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CHECK_FILE_EXIST.lo \
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CLOSE_FILE.lo \
@@ -498,8 +498,8 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@    xmlparse.cc
 
 @BUILD_LIBGCOBOL_TRUE@libgcobol_compat_gnu_la_SOURCES = \
-@BUILD_LIBGCOBOL_TRUE@	compat/gnu/udf/cobrt-file-status.cbl	\
-@BUILD_LIBGCOBOL_TRUE@	compat/gnu/udf/stored-char-length.cbl	\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/cobrt-file-status.cbl	\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/stored-char-length.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_ALLOC_MEM.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl	\
 @BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CLOSE_FILE.cbl	\
@@ -739,22 +739,16 @@ posix/shim/stat.lo: posix/shim/$(am__dirstamp) \
 
 libgcobol.la: $(libgcobol_la_OBJECTS) $(libgcobol_la_DEPENDENCIES) $(EXTRA_libgcobol_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgcobol_la_LINK) $(am_libgcobol_la_rpath) $(libgcobol_la_OBJECTS) $(libgcobol_la_LIBADD) $(LIBS)
-compat/gnu/udf/$(am__dirstamp):
-	@$(MKDIR_P) compat/gnu/udf
-	@: > compat/gnu/udf/$(am__dirstamp)
-compat/gnu/udf/$(DEPDIR)/$(am__dirstamp):
-	@$(MKDIR_P) compat/gnu/udf/$(DEPDIR)
-	@: > compat/gnu/udf/$(DEPDIR)/$(am__dirstamp)
-compat/gnu/udf/cobrt-file-status.lo: compat/gnu/udf/$(am__dirstamp) \
-	compat/gnu/udf/$(DEPDIR)/$(am__dirstamp)
-compat/gnu/udf/stored-char-length.lo: compat/gnu/udf/$(am__dirstamp) \
-	compat/gnu/udf/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/$(am__dirstamp):
 	@$(MKDIR_P) compat/gnu/lib
 	@: > compat/gnu/lib/$(am__dirstamp)
 compat/gnu/lib/$(DEPDIR)/$(am__dirstamp):
 	@$(MKDIR_P) compat/gnu/lib/$(DEPDIR)
 	@: > compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
+compat/gnu/lib/cobrt-file-status.lo: compat/gnu/lib/$(am__dirstamp) \
+	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
+compat/gnu/lib/stored-char-length.lo: compat/gnu/lib/$(am__dirstamp) \
+	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/CBL_ALLOC_MEM.lo: compat/gnu/lib/$(am__dirstamp) \
 	compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 compat/gnu/lib/CBL_CHECK_FILE_EXIST.lo:  \
@@ -822,8 +816,6 @@ mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
 	-rm -f compat/gnu/lib/*.$(OBJEXT)
 	-rm -f compat/gnu/lib/*.lo
-	-rm -f compat/gnu/udf/*.$(OBJEXT)
-	-rm -f compat/gnu/udf/*.lo
 	-rm -f posix/shim/*.$(OBJEXT)
 	-rm -f posix/shim/*.lo
 	-rm -f posix/udf/*.$(OBJEXT)
@@ -882,7 +874,6 @@ mostlyclean-libtool:
 clean-libtool:
 	-rm -rf .libs _libs
 	-rm -rf compat/gnu/lib/.libs compat/gnu/lib/_libs
-	-rm -rf compat/gnu/udf/.libs compat/gnu/udf/_libs
 	-rm -rf posix/shim/.libs posix/shim/_libs
 	-rm -rf posix/udf/.libs posix/udf/_libs
 
@@ -1027,8 +1018,6 @@ distclean-generic:
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
 	-rm -f compat/gnu/lib/$(DEPDIR)/$(am__dirstamp)
 	-rm -f compat/gnu/lib/$(am__dirstamp)
-	-rm -f compat/gnu/udf/$(DEPDIR)/$(am__dirstamp)
-	-rm -f compat/gnu/udf/$(am__dirstamp)
 	-rm -f posix/shim/$(DEPDIR)/$(am__dirstamp)
 	-rm -f posix/shim/$(am__dirstamp)
 	-rm -f posix/udf/$(DEPDIR)/$(am__dirstamp)
