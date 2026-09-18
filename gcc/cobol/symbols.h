@@ -1444,6 +1444,12 @@ protected:
     if( crv == by_reference_e ) return false;
     return refer.field != NULL;
   }
+  static bool capacity_ok( const cbl_field_t *formal, const cbl_field_t *actual ) {
+    if( formal->data.capacity() == actual->data.capacity() ) return true;
+    if( formal->data.capacity() == 1 && formal->has_attr(any_length_e) ) return true;
+    if( actual->data.capacity() == 1 && actual->has_attr(any_length_e) ) return true;
+    return false;
+  }
 };
 
 // In support of serial/linear search:
