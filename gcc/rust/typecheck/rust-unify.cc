@@ -39,12 +39,13 @@ UnifyRules::UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 			bool check_bounds, bool infer,
 			std::vector<CommitSite> &commits,
 			std::vector<InferenceSite> &infers,
-			ActiveADTs &active_adts)
+			ActiveADTs &active_adts, bool allow_never_coercion)
   : lhs (lhs), rhs (rhs), locus (locus), commit_flag (commit_flag),
     emit_error (emit_error), infer_flag (infer),
-    check_bounds_flag (check_bounds), commits (commits), infers (infers),
-    active_adts (active_adts), mappings (Analysis::Mappings::get ()),
-    context (*TypeCheckContext::get ())
+    check_bounds_flag (check_bounds),
+    allow_never_coercion (allow_never_coercion), commits (commits),
+    infers (infers), active_adts (active_adts),
+    mappings (Analysis::Mappings::get ()), context (*TypeCheckContext::get ())
 {}
 
 TyTy::BaseType *
@@ -53,14 +54,14 @@ UnifyRules::Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		     bool check_bounds, bool infer,
 		     std::vector<CommitSite> &commits,
 		     std::vector<InferenceSite> &infers,
-		     ActiveADTs *active_adts)
+		     ActiveADTs *active_adts, bool allow_never_coercion)
 {
   ActiveADTs root_active_adts;
   if (active_adts == nullptr)
     active_adts = &root_active_adts;
 
   UnifyRules r (lhs, rhs, locus, commit_flag, emit_error, check_bounds, infer,
-		commits, infers, *active_adts);
+		commits, infers, *active_adts, allow_never_coercion);
 
   TyTy::BaseType *result = r.go ();
   bool failed = result->get_kind () == TyTy::TypeKind::ERROR;
@@ -84,7 +85,7 @@ UnifyRules::resolve_subtype (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs)
   TyTy::BaseType *result
     = UnifyRules::Resolve (lhs, rhs, locus, commit_flag, emit_error,
 			   check_bounds_flag, infer_flag, commits, infers,
-			   &active_adts);
+			   &active_adts, allow_never_coercion);
 
   // If the recursive call resulted in an error and would have emitted an error
   // message, disable error emission for the current level to avoid duplicate
@@ -1835,8 +1836,15 @@ UnifyRules::expect_never (TyTy::NeverType *ltype, TyTy::BaseType *rtype)
       }
       break;
 
+    case TyTy::NEVER:
+      return ltype;
+
     default:
-      return rtype;
+      {
+	if (allow_never_coercion)
+	  return rtype;
+      }
+      break;
     }
   return unify_error_type_node ();
 }

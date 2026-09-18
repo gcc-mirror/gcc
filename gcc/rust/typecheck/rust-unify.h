@@ -90,7 +90,7 @@ public:
   Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs, location_t locus,
 	   bool commit_flag, bool emit_error, bool check_bounds, bool infer,
 	   std::vector<CommitSite> &commits, std::vector<InferenceSite> &infers,
-	   ActiveADTs *active_adts = nullptr);
+	   ActiveADTs *active_adts = nullptr, bool allow_never_coercion = true);
 
   static void commit (TyTy::BaseType *base, TyTy::BaseType *other,
 		      TyTy::BaseType *resolved);
@@ -135,7 +135,8 @@ private:
   UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 	      location_t locus, bool commit_flag, bool emit_error, bool infer,
 	      bool check_bounds, std::vector<CommitSite> &commits,
-	      std::vector<InferenceSite> &infers, ActiveADTs &active_adts);
+	      std::vector<InferenceSite> &infers, ActiveADTs &active_adts,
+	      bool allow_never_coercion);
 
   TyTy::BaseType *resolve_subtype (TyTy::TyWithLocation lhs,
 				   TyTy::TyWithLocation rhs);
@@ -156,6 +157,7 @@ private:
   bool emit_error;
   bool infer_flag;
   bool check_bounds_flag;
+  bool allow_never_coercion;
   std::vector<CommitSite> &commits;
   std::vector<InferenceSite> &infers;
 

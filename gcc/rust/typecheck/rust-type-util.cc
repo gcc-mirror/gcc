@@ -281,7 +281,8 @@ unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 TyTy::BaseType *
 unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		location_t unify_locus, bool emit_errors, bool commit_if_ok,
-		bool implicit_infer_vars, bool cleanup, bool check_bounds)
+		bool implicit_infer_vars, bool cleanup, bool check_bounds,
+		bool allow_never_coercion)
 {
   TypeCheckContext &context = *TypeCheckContext::get ();
 
@@ -301,7 +302,7 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   TyTy::BaseType *result
     = UnifyRules::Resolve (lhs, rhs, unify_locus, false /*commit inline*/,
 			   emit_errors, check_bounds, implicit_infer_vars,
-			   commits, infers);
+			   commits, infers, nullptr, allow_never_coercion);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
 
   rust_debug_loc (unify_locus,

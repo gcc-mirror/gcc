@@ -364,7 +364,9 @@ MethodResolver::try_select_predicate_candidates (TyTy::BaseType &receiver)
 
       auto res
 	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
-					false /*allow-autoderef*/);
+					false /*allow-autoderef*/,
+					false /*is_cast_site*/,
+					false /*allow_never_coercion*/);
       bool ok = !res.is_error ();
       if (ok)
 	{
@@ -415,7 +417,9 @@ MethodResolver::try_select_inherent_impl_candidates (
 
       auto res
 	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
-					false /*allow-autoderef*/);
+					false /*allow-autoderef*/,
+					false /*is_cast_site*/,
+					false /*allow_never_coercion*/);
       bool ok = !res.is_error ();
       if (ok)
 	{
@@ -451,7 +455,9 @@ MethodResolver::try_select_trait_impl_candidates (
 
       auto res
 	= TypeCoercionRules::TryCoerce (&receiver, fn_self, UNDEF_LOCATION,
-					false /*allow-autoderef*/);
+					false /*allow-autoderef*/,
+					false /*is_cast_site*/,
+					false /*allow_never_coercion*/);
       bool ok = !res.is_error ();
       if (ok)
 	{
