@@ -254,6 +254,12 @@
   "riscv_vector::riscv_v_widen_non_overlap_constraint_ok (regno, mode, ref_regno, ref_mode)"
   "3")
 
+;; Same as Wn3 but target operand 4, aka ref_regno and ref_mode come from operand 4.
+(define_register_constraint "Wn4" "TARGET_VECTOR ? V_REGS : NO_REGS"
+  "Vector reg not overlapping the operand 4 register group"
+  "riscv_vector::riscv_v_widen_non_overlap_constraint_ok (regno, mode, ref_regno, ref_mode)"
+  "4")
+
 ;; This constraint is used to match instruction "csrr %0, vlenb" which is generated in "mov<mode>".
 ;; VLENB is a run-time constant which represent the vector register length in bytes.
 ;; BYTES_PER_RISCV_VECTOR represent runtime invariant of vector register length in bytes.
