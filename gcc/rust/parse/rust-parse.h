@@ -896,12 +896,6 @@ public:
   // Get a reference to the list of errors encountered
   std::vector<Error> &get_errors () { return error_table; }
 
-  std::vector<std::pair<Feature::Name, Error>> &
-  get_potential_feature_gate_errors ()
-  {
-    return gating_errors;
-  }
-
   const ManagedTokenSource &get_token_source () const { return lexer; }
 
   const_TokenPtr peek_current_token () { return lexer.peek_token (0); }
@@ -913,7 +907,6 @@ private:
   // The error list.
   std::vector<Error> error_table;
 
-  std::vector<std::pair<Feature::Name, Error>> gating_errors;
   // The names of inline modules while parsing.
   std::vector<std::string> inline_module_stack;
 
