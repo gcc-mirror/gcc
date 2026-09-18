@@ -283,6 +283,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   TyTy::BaseType *self = nullptr;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 
+  auto lifetime_pin = context->push_clean_lifetime_resolver ();
+
   // this needs to be special cased for the sized trait to not auto implemented
   // Sized on Self
   for (auto &generic_param : trait_reference->get_generic_params ())
@@ -290,6 +292,14 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
       switch (generic_param.get ()->get_kind ())
 	{
 	case HIR::GenericParam::GenericKind::LIFETIME:
+	  {
+	    auto &lifetime_param
+	      = static_cast<HIR::LifetimeParam &> (*generic_param);
+	    context->intern_and_insert_lifetime (
+	      lifetime_param.get_lifetime ());
+	  }
+	  break;
+
 	case HIR::GenericParam::GenericKind::CONST:
 	  // FIXME: Skipping Lifetime and Const completely until better
 	  // handling.
