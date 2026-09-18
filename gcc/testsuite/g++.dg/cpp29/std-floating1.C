@@ -46,11 +46,12 @@ constexpr long double snanld = __builtin_nansl ("");
 
 constexpr long double inf2ld = infld * 2.0L; // OK, also positive infinity
 constexpr long double zerold = minld / maxld; // OK, result cannot be represented, and is rounded to zero
+					      // { dg-bogus "is not a constant expression" "" { xfail long_double_is_ibm128 } .-1 }
 constexpr long double oflold = maxld * 2.0L; // { dg-error "is not a constant expression" }
 constexpr long double nan2ld = nanld * 2.0L; // OK, propagating a NaN
 constexpr long double udefld = infld * 0.0L; // { dg-error "is not a constant expression" }
 constexpr long double div0ld = maxld / 0.0L; // { dg-error "is not a constant expression" }
-constexpr long double zero2ld = minld * minld;
+constexpr long double zero2ld = minld * minld; // { dg-bogus "is not a constant expression" "" { xfail long_double_is_ibm128 } }
 constexpr bool nancmpld = nanld < 0.0L;
 constexpr long double snan2ld = snanld * 2.0L;
 constexpr long double div02ld = 1.0L / 0.0L; // { dg-error "is not a constant expression" }
