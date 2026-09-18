@@ -1200,7 +1200,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* "X+N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
 	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
-	   || (vr0.nonpositive_p () && vr4.nonpositive_p ())))
+	   || (vr0.nonpositive_p () && vr4.nonpositive_p ()
+	       /* X = INT_MIN and N = -1 causes overflow.  */
+	       && (!vr0.contains_p (wi::min_value (TYPE_PRECISION (type), SIGNED))
+	           || !vr2.contains_p (wi::minus_one (TYPE_PRECISION (type)))))))
   (plus (div @0 @2) @1))))
 
  /* Simplify (X - M*N) / N -> X / N - M.  */
@@ -1220,7 +1223,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* "X-N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
 	   || (vr0.nonnegative_p () && vr4.nonnegative_p ())
-	   || (vr0.nonpositive_p () && vr4.nonpositive_p ())))
+	   || (vr0.nonpositive_p () && vr4.nonpositive_p ()
+	       /* X = INT_MIN and N = -1 causes overflow.  */
+	       && (!vr0.contains_p (wi::min_value (TYPE_PRECISION (type), SIGNED))
+	           || !vr2.contains_p (wi::minus_one (TYPE_PRECISION (type)))))))
   (minus (div @0 @2) @1)))))
 
 /* Simplify
