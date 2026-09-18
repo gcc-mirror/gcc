@@ -1530,7 +1530,7 @@ vect_build_slp_tree_3 (vec_info *vinfo, vec<stmt_vec_info> stmts,
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: not all stmts in same "
 				     "BB but possibly trapping operation in %G",
-				     trapping_stmt);
+				     trapping_stmt ? trapping_stmt : stmt);
 		  continue;
 		}
 	    }
