@@ -5065,7 +5065,7 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
 				   stmt);
 
   auto_vec<data_reference_p, 2> refs;
-  opt_result res = find_data_references_in_stmt (loop, stmt, &refs);
+  opt_result res = find_data_references_in_stmt (loop, stmt, &refs, true);
   if (!res)
     return res;
 
@@ -5122,7 +5122,8 @@ vect_find_stmt_data_reference (loop_p loop, gimple *stmt,
     {
       struct data_reference *newdr
 	= create_data_ref (NULL, loop_containing_stmt (stmt), DR_REF (dr), stmt,
-			   DR_IS_READ (dr), DR_IS_CONDITIONAL_IN_STMT (dr));
+			   DR_IS_READ (dr), DR_IS_CONDITIONAL_IN_STMT (dr),
+			   true);
       if (DR_BASE_ADDRESS (newdr)
 	  && DR_OFFSET (newdr)
 	  && DR_INIT (newdr)

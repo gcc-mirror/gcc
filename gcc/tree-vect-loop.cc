@@ -718,11 +718,28 @@ bb_in_loop_p (const_basic_block bb, const void *data)
   return false;
 }
 
+/* Get and return the basic blocks of LOOP in DFS order.  Store the number of
+   BBs in NBBS.  */
+
+static basic_block *
+vect_get_loop_dfs_bbs (class loop *loop, unsigned int *nbbs)
+{
+  /* CHECKME: We want to visit all BBs before their successors (except for
+     latch blocks, for which this assertion wouldn't hold).  In the simple
+     case of the loop forms we allow, a dfs order of the BBs would the same
+     as reversed postorder traversal, so we are safe.  */
+  basic_block *bbs = XCNEWVEC (basic_block, loop->num_nodes);
+  *nbbs = dfs_enumerate_from (loop->header, 0, bb_in_loop_p, bbs,
+			      loop->num_nodes, loop);
+  gcc_assert (*nbbs == loop->num_nodes);
+  return bbs;
+}
 
 /* Create and initialize a new loop_vec_info struct for LOOP_IN, as well as
    stmt_vec_info structs for all the stmts in LOOP_IN.  */
 
-_loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
+_loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared,
+				basic_block *bbs_in)
   : vec_info (vec_info::loop, shared),
     loop (loop_in),
     num_itersm1 (NULL_TREE),
@@ -780,15 +797,9 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     early_break_needs_epilogue (false),
     early_break_niters_var (NULL)
 {
-  /* CHECKME: We want to visit all BBs before their successors (except for
-     latch blocks, for which this assertion wouldn't hold).  In the simple
-     case of the loop forms we allow, a dfs order of the BBs would the same
-     as reversed postorder traversal, so we are safe.  */
-
-  bbs = XCNEWVEC (basic_block, loop->num_nodes);
-  nbbs = dfs_enumerate_from (loop->header, 0, bb_in_loop_p, bbs,
-			     loop->num_nodes, loop);
-  gcc_assert (nbbs == loop->num_nodes);
+  nbbs = loop->num_nodes;
+  bbs = XNEWVEC (basic_block, nbbs);
+  memcpy (bbs, bbs_in, nbbs * sizeof (basic_block));
 
   for (unsigned int i = 0; i < nbbs; i++)
     {
@@ -1474,22 +1485,21 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 		       exit_e->src->index, exit_e->dest->index, exit_e->aux);
 
   /* Check if we have any control flow that doesn't leave the loop.  */
-  basic_block *bbs = get_loop_body (loop);
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    if (EDGE_COUNT (bbs[i]->succs) != 1
-	&& (EDGE_COUNT (bbs[i]->succs) != 2
-	    || !loop_exits_from_bb_p (bbs[i]->loop_father, bbs[i])))
-      {
-	free (bbs);
-	return opt_result::failure_at (vect_location,
-				       "not vectorized:"
-				       " unsupported control flow in loop.\n");
-      }
+  unsigned int nbbs;
+  info->bbs = vect_get_loop_dfs_bbs (loop, &nbbs);
+  for (unsigned i = 0; i < nbbs; i++)
+    if (EDGE_COUNT (info->bbs[i]->succs) != 1
+	&& (EDGE_COUNT (info->bbs[i]->succs) != 2
+	    || !loop_exits_from_bb_p (info->bbs[i]->loop_father,
+				      info->bbs[i])))
+      return opt_result::failure_at (vect_location,
+				     "not vectorized:"
+				     " unsupported control flow in loop.\n");
 
   /* Check if we have any control flow that doesn't leave the loop.  */
   bool has_phi = false;
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    if (!gimple_seq_empty_p (phi_nodes (bbs[i])))
+  for (unsigned i = 0; i < nbbs; i++)
+    if (!gimple_seq_empty_p (phi_nodes (info->bbs[i])))
       {
 	has_phi = true;
 	break;
@@ -1498,8 +1508,6 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
     return opt_result::failure_at (vect_location,
 				   "not vectorized:"
 				   " no scalar evolution detected in loop.\n");
-
-  free (bbs);
 
   /* Different restrictions apply when we are considering an inner-most loop,
      vs. an outer (nested) loop.
@@ -1659,17 +1667,6 @@ vect_analyze_loop_form (class loop *loop, gimple *loop_vectorized_call,
 	}
     }
 
-  if (!integer_onep (info->assumptions))
-    {
-      if (dump_enabled_p ())
-	{
-	  dump_printf_loc (MSG_NOTE, vect_location,
-			   "Loop to be versioned with niter assumption ");
-	  dump_generic_expr (MSG_NOTE, TDF_SLIM, info->assumptions);
-	  dump_printf (MSG_NOTE, "\n");
-	}
-    }
-
   return opt_result::success ();
 }
 
@@ -1681,7 +1678,7 @@ vect_create_loop_vinfo (class loop *loop, vec_info_shared *shared,
 			const vect_loop_form_info *info,
 			loop_vec_info orig_loop_info)
 {
-  loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared);
+  loop_vec_info loop_vinfo = new _loop_vec_info (loop, shared, info->bbs);
   LOOP_VINFO_NITERSM1 (loop_vinfo) = info->number_of_iterationsm1;
   LOOP_VINFO_NITERS (loop_vinfo) = info->number_of_iterations;
   LOOP_VINFO_NITERS_UNCHANGED (loop_vinfo) = info->number_of_iterations;
@@ -2062,6 +2059,101 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
   return opt_result::success ();
 }
 
+/* Gather no-wrap bounds from SHARED's datarefs and accumulate them in
+   one assumption.  Validate this assumption, as well as INFO's niter
+   assumption and return an error on failure.
+   If the assumptions are valid, reset loop properties as well as
+   scev's hashtable and return success.  */
+
+static opt_result
+vect_build_assumptions (class loop *loop, vec_info_shared *shared,
+			vect_loop_form_info *info)
+{
+  tree niter = info->number_of_iterations;
+  bool niter_known = niter && !chrec_contains_undetermined (niter);
+
+  tree nowrap_assum = NULL_TREE;
+  tree bound_min = NULL_TREE;
+
+  unsigned int i;
+  struct data_reference *dr;
+
+  /* Build the minimum over all nowrap bounds.  */
+  FOR_EACH_VEC_ELT (shared->datarefs, i, dr)
+    {
+      tree bound = DR_NOWRAP_BOUND (dr);
+      if (!bound)
+	continue;
+
+      /* Use scev's function to MIN two bounds.  */
+      scev_combine_nowrap_bounds (&bound_min, bound);
+    }
+
+  /* Build "NITER < BOUND_MIN".  */
+  if (niter_known && bound_min)
+    {
+      unsigned prec = MAX (TYPE_PRECISION (TREE_TYPE (niter)),
+			   TYPE_PRECISION (TREE_TYPE (bound_min)));
+      tree t = build_nonstandard_integer_type (prec, 1);
+      nowrap_assum = fold_build2 (LE_EXPR, boolean_type_node,
+				  fold_convert (t, niter),
+				  fold_convert (t, bound_min));
+
+      /* Try to simplify the assumption with ranger.  */
+      value_range vr (TREE_TYPE (nowrap_assum));
+      tree better_assum;
+      if (get_range_query (cfun)->range_on_edge
+	  (vr, loop_preheader_edge (loop), nowrap_assum)
+	  && vr.singleton_p (&better_assum))
+	nowrap_assum = better_assum;
+    }
+
+  /* Combine nowrap assumptions and niter assumption.  */
+  if (nowrap_assum)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "adding no-wrap assumption: %T\n", nowrap_assum);
+
+      if (info->assumptions && !integer_onep (info->assumptions))
+	nowrap_assum = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				    info->assumptions, nowrap_assum);
+      info->assumptions = nowrap_assum;
+    }
+
+  if (integer_zerop (info->assumptions))
+    return opt_result::failure_at
+      (vect_location,
+       "not vectorized: number of iterations cannot be computed.\n");
+
+  if (!integer_onep (info->assumptions))
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "Loop to be versioned with assumption ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, info->assumptions);
+	  dump_printf (MSG_NOTE, "\n");
+	}
+
+      /* We consider to vectorize this loop by versioning it under
+	 some assumptions.  In order to do this, we need to clear
+	 existing information computed by scev and niter analyzer.  */
+      scev_reset_htab ();
+      free_numbers_of_iterations_estimates (loop);
+      /* Also set flag for this loop so that following scev and niter
+	 analysis are done under the assumptions.  */
+      loop_constraint_set (loop, LOOP_C_FINITE);
+    }
+  else
+    /* Clear the existing niter information to make sure the nonwrapping flag
+       will be calculated and set propriately.  */
+    free_numbers_of_iterations_estimates (loop);
+
+  return opt_result::success ();
+}
+
+
 /* Determine if operating on full vectors for LOOP_VINFO might leave
    some scalar iterations still to do.  If so, decide how we should
    handle those scalar iterations.  The possibilities are:
@@ -2194,25 +2286,8 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, int masked_p, bool &fatal,
 
   loop_p loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  /* Gather the data references.  */
-  if (!LOOP_VINFO_DATAREFS (loop_vinfo).exists ())
-    {
-      opt_result res
-	= vect_get_datarefs_in_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
-				     &LOOP_VINFO_DATAREFS (loop_vinfo));
-      if (!res)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "not vectorized: loop contains function "
-			     "calls or data references that cannot "
-			     "be analyzed\n");
-	  return res;
-	}
-      loop_vinfo->shared->save_datarefs ();
-    }
-  else
-    loop_vinfo->shared->check_datarefs ();
+  /* Check the data references.  */
+  loop_vinfo->shared->check_datarefs ();
 
   /* Analyze the data references and also adjust the minimal
      vectorization factor according to the loads and stores.  */
@@ -2961,21 +3036,23 @@ vect_analyze_loop (class loop *loop, gimple *loop_vectorized_call,
 			 "bad loop form.\n");
       return opt_loop_vec_info::propagate_failure (res);
     }
-  if (!integer_onep (loop_form_info.assumptions))
+
+  res = vect_get_datarefs_in_loop (loop, loop_form_info.bbs,
+				   &shared->datarefs);
+  if (!res)
     {
-      /* We consider to vectorize this loop by versioning it under
-	 some assumptions.  In order to do this, we need to clear
-	 existing information computed by scev and niter analyzer.  */
-      scev_reset_htab ();
-      free_numbers_of_iterations_estimates (loop);
-      /* Also set flag for this loop so that following scev and niter
-	 analysis are done under the assumptions.  */
-      loop_constraint_set (loop, LOOP_C_FINITE);
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "not vectorized: loop contains function "
+			 "calls or data references that cannot "
+			 "be analyzed\n");
+      return opt_loop_vec_info::propagate_failure (res);
     }
-  else
-    /* Clear the existing niter information to make sure the nonwrapping flag
-       will be calculated and set propriately.  */
-    free_numbers_of_iterations_estimates (loop);
+  shared->save_datarefs ();
+
+  res = vect_build_assumptions (loop, shared, &loop_form_info);
+  if (!res)
+    return opt_loop_vec_info::propagate_failure (res);
 
   auto_vector_modes vector_modes;
   /* Autodetect first vector size we try.  */

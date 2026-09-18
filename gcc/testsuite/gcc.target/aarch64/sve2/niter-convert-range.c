@@ -64,5 +64,5 @@ niter_convert_range_wrap (unsigned char *buf, uint8_t len)
 
 /* { dg-final { scan-tree-dump-times {bounds on difference of bases: 0 [.][.][.] 126} 3 "vect" } } */
 /* { dg-final { scan-tree-dump-times {bounds on difference of bases: 0 [.][.][.] 254} 9 "vect" } } */
-/* { dg-final { scan-tree-dump-times {bounds on difference of bases: -1 [.][.][.] 4294967294} 3 "vect" } } */
+/* { dg-final { scan-tree-dump-times {bounds on difference of bases: -1 [.][.][.] 4294967294} 4 "vect" } } */
 /* { dg-final { scan-tree-dump-times "loop vectorized using variable length vectors" 5 "vect" } } */

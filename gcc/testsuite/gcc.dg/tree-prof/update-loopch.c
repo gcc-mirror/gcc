@@ -5,6 +5,8 @@ int
 main ()
 {
   int i;
+/* If we vectorize this, the block count changes which defies the test.  */
+#pragma GCC novector
   for (i = 0; i < max; i++)
     {
       a[i % 8]++;

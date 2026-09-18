@@ -960,7 +960,7 @@ struct vect_reusable_accumulator {
 /*-----------------------------------------------------------------*/
 typedef class _loop_vec_info : public vec_info {
 public:
-  _loop_vec_info (class loop *, vec_info_shared *);
+  _loop_vec_info (class loop *, vec_info_shared *, basic_block *);
   ~_loop_vec_info ();
 
   /* The loop to which this info struct refers to.  */
@@ -2719,6 +2719,8 @@ struct vect_loop_form_info
   auto_vec<gcond *> conds;
   gcond *inner_loop_cond;
   edge loop_exit;
+  basic_block *bbs = nullptr;
+  ~vect_loop_form_info () { free (bbs); }
 };
 extern opt_result vect_analyze_loop_form (class loop *, gimple *,
 					  vect_loop_form_info *);
