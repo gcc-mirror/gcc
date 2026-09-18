@@ -1129,11 +1129,15 @@ canonicalize_base_object_address (tree addr)
    dummy outermost loop.  In other cases perform loop analysis.
 
    Return true if the analysis succeeded and store the results in DRB if so.
-   BB analysis can only fail for bitfield or reversed-storage accesses.  */
+   BB analysis can only fail for bitfield or reversed-storage accesses.
+
+   If NOWRAP_BOUND is nonzero, allow simple_iv to record no-wrap bounds.
+   Then, store non-trivial bounds in NOWRAP_BOUND.  */
 
 opt_result
 dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
-		      class loop *loop, const gimple *stmt)
+		      class loop *loop, const gimple *stmt,
+		      tree *nowrap_bound)
 {
   poly_int64 pbitsize, pbitpos;
   tree base, poffset;
@@ -1195,9 +1199,12 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
       base = build_fold_addr_expr (base);
     }
 
+  bool record_nowrap_assumptions_p = (nowrap_bound != nullptr);
+
   if (in_loop)
     {
-      if (!simple_iv (loop, loop, base, &base_iv, true))
+      if (!simple_iv (loop, loop, base, &base_iv, true,
+		      record_nowrap_assumptions_p))
 	return opt_result::failure_at
 	  (stmt, "failed: evolution of base is not affine.\n");
     }
@@ -1206,23 +1213,35 @@ dr_analyze_innermost (innermost_loop_behavior *drb, tree ref,
       base_iv.base = base;
       base_iv.step = ssize_int (0);
       base_iv.no_overflow = true;
+      base_iv.nowrap_bound = NULL_TREE;
     }
 
   if (!poffset)
     {
       offset_iv.base = ssize_int (0);
       offset_iv.step = ssize_int (0);
+      offset_iv.nowrap_bound = NULL_TREE;
     }
   else
     {
       if (!in_loop)
-        {
-          offset_iv.base = poffset;
-          offset_iv.step = ssize_int (0);
-        }
-      else if (!simple_iv (loop, loop, poffset, &offset_iv, true))
+	{
+	  offset_iv.base = poffset;
+	  offset_iv.step = ssize_int (0);
+	  offset_iv.nowrap_bound = NULL_TREE;
+	}
+      else if (!simple_iv (loop, loop, poffset, &offset_iv, true,
+			   record_nowrap_assumptions_p))
 	return opt_result::failure_at
 	  (stmt, "failed: evolution of offset is not affine.\n");
+    }
+
+  /* simple_iv might store bounds for BASE_IV and OFFSET_IV.  Combine them
+     and store the result in NOWRAP_BOUND.  */
+  if (nowrap_bound)
+    {
+      *nowrap_bound = base_iv.nowrap_bound;
+      scev_combine_nowrap_bounds (nowrap_bound, offset_iv.nowrap_bound);
     }
 
   init = ssize_int (pbytepos);
@@ -1322,10 +1341,14 @@ base_supports_access_fn_components_p (tree base)
 }
 
 /* Determines the base object and the list of indices of memory reference
-   DR, analyzed in LOOP and instantiated before NEST.  */
+   DR, analyzed in LOOP and instantiated before NEST.
+
+   If NOWRAP_BOUND is nonzero, pass it to scev which will then store
+   the bound under which we do not wrap.  */
 
 static void
-dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop)
+dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop,
+		    tree *nowrap_bound = nullptr)
 {
   /* If analyzing a basic-block there are no indices to analyze
      and thus no access functions.  */
@@ -1360,7 +1383,7 @@ dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop)
       if (TREE_CODE (ref) == ARRAY_REF)
 	{
 	  tree op = TREE_OPERAND (ref, 1);
-	  tree access_fn = analyze_scalar_evolution (loop, op);
+	  tree access_fn = analyze_scalar_evolution (loop, op, nowrap_bound);
 	  access_fn = instantiate_scev (nest, loop, access_fn);
 	  access_fns.safe_push (access_fn);
 	}
@@ -1402,7 +1425,7 @@ dr_analyze_indices (struct indices *dri, tree ref, edge nest, loop_p loop)
   if (TREE_CODE (ref) == MEM_REF)
     {
       tree op = TREE_OPERAND (ref, 0);
-      tree access_fn = analyze_scalar_evolution (loop, op);
+      tree access_fn = analyze_scalar_evolution (loop, op, nowrap_bound);
       access_fn = instantiate_scev (nest, loop, access_fn);
       STRIP_NOPS (access_fn);
       if (TREE_CODE (access_fn) == POLYNOMIAL_CHREC)
@@ -1508,11 +1531,16 @@ free_data_ref (data_reference_p dr)
 
    Return the data_reference description of MEMREF.  NEST is the outermost
    loop in which the reference should be instantiated, LOOP is the loop
-   in which the data reference should be analyzed.  */
+   in which the data reference should be analyzed.
+
+   If RECORD_NOWRAP_ASSUMPTIONS is true, pass an empty no-wrap bound to
+   scev and have it store its assumptions there.  If we got a nontrivial
+   assumption, save it in DR's DR_NOWRAP_BOUND.  */
 
 struct data_reference *
 create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
-		 bool is_read, bool is_conditional_in_stmt)
+		 bool is_read, bool is_conditional_in_stmt,
+		 bool record_nowrap_assumptions)
 {
   struct data_reference *dr;
 
@@ -1529,10 +1557,24 @@ create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
   DR_IS_READ (dr) = is_read;
   DR_IS_CONDITIONAL_IN_STMT (dr) = is_conditional_in_stmt;
 
+  tree nowrap_bound = NULL_TREE;
   dr_analyze_innermost (&DR_INNERMOST (dr), memref,
-			nest != NULL ? loop : NULL, stmt);
-  dr_analyze_indices (&dr->indices, DR_REF (dr), nest, loop);
+			nest != NULL ? loop : NULL, stmt,
+			record_nowrap_assumptions ? &nowrap_bound : nullptr);
+  dr_analyze_indices (&dr->indices, DR_REF (dr), nest, loop,
+		      record_nowrap_assumptions ? &nowrap_bound : nullptr);
   dr_analyze_alias (dr);
+
+  if (nowrap_bound)
+    {
+      /* If there is a bound but it is zero, the assumption we build with it
+	 would never hold and we would always fall back to the scalar loop.
+	 Reset the DR so we can still get gather/scatter.  */
+      if (integer_zerop (nowrap_bound))
+	dr_reset (dr);
+      else
+	DR_NOWRAP_BOUND (dr) = nowrap_bound;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -1553,6 +1595,11 @@ create_data_ref (edge nest, loop_p loop, tree memref, gimple *stmt,
       fprintf (dump_file, "\n\tstep alignment: %d", DR_STEP_ALIGNMENT (dr));
       fprintf (dump_file, "\n\tbase_object: ");
       print_generic_expr (dump_file, DR_BASE_OBJECT (dr), TDF_SLIM);
+      if (DR_NOWRAP_BOUND (dr))
+	{
+	  fprintf (dump_file, "\n\tnowrap bound: ");
+	  print_generic_expr (dump_file, DR_NOWRAP_BOUND (dr), TDF_SLIM);
+	}
       fprintf (dump_file, "\n");
       for (i = 0; i < DR_NUM_DIMENSIONS (dr); i++)
 	{
@@ -6049,11 +6096,14 @@ loop_nest_has_data_refs (loop_p loop)
 
 /* Stores the data references in STMT to DATAREFS.  If there is an unanalyzable
    reference, returns false, otherwise returns true.  NEST is the outermost
-   loop of the loop nest in which the references should be analyzed.  */
+   loop of the loop nest in which the references should be analyzed.
+   RECORD_NOWRAP_ASSUMPTIONS determines whether or not no-wrap assumptions
+   are allowed and recorded.  */
 
 opt_result
 find_data_references_in_stmt (class loop *nest, gimple *stmt,
-			      vec<data_reference_p> *datarefs)
+			      vec<data_reference_p> *datarefs,
+			      bool record_nowrap_assumptions)
 {
   auto_vec<data_ref_loc, 2> references;
   data_reference_p dr;
@@ -6066,7 +6116,8 @@ find_data_references_in_stmt (class loop *nest, gimple *stmt,
     {
       dr = create_data_ref (nest ? loop_preheader_edge (nest) : NULL,
 			    loop_containing_stmt (stmt), ref.ref,
-			    stmt, ref.is_read, ref.is_conditional_in_stmt);
+			    stmt, ref.is_read, ref.is_conditional_in_stmt,
+			    record_nowrap_assumptions);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }
@@ -6417,6 +6468,16 @@ free_data_refs (vec<data_reference_p>& datarefs)
   for (data_reference *dr : datarefs)
     free_data_ref (dr);
   datarefs.release ();
+}
+
+/* Reset DR_INNERMOST, DR_NOWRAP_BOUND, and access functions of DR.  */
+
+void
+dr_reset (data_reference *dr)
+{
+  DR_INNERMOST (dr) = innermost_loop_behavior ();
+  DR_NOWRAP_BOUND (dr) = NULL_TREE;
+  dr->indices.access_fns.release ();
 }
 
 /* Common routine implementing both dr_direction_indicator and

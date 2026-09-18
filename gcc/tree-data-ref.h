@@ -172,6 +172,10 @@ struct data_reference
   /* Behavior of the memory reference in the innermost loop.  */
   struct innermost_loop_behavior innermost;
 
+  /* Upper bound for the number of loop iterations for which this DR's
+     IV does not wrap.  */
+  tree nowrap_bound;
+
   /* Subscripts of this data reference.  */
   struct indices indices;
 
@@ -201,6 +205,7 @@ struct data_reference
 #define DR_OFFSET_ALIGNMENT(DR)    (DR)->innermost.offset_alignment
 #define DR_STEP_ALIGNMENT(DR)      (DR)->innermost.step_alignment
 #define DR_INNERMOST(DR)           (DR)->innermost
+#define DR_NOWRAP_BOUND(DR)        (DR)->nowrap_bound
 
 typedef struct data_reference *data_reference_p;
 
@@ -520,7 +525,8 @@ typedef struct data_dependence_relation *ddr_p;
 
 
 opt_result dr_analyze_innermost (innermost_loop_behavior *, tree,
-				 class loop *, const gimple *);
+				 class loop *, const gimple *,
+				 tree * = nullptr);
 extern bool compute_data_dependences_for_loop (class loop *, bool,
 					       vec<loop_p> *,
 					       vec<data_reference_p> *,
@@ -542,14 +548,16 @@ extern void free_dependence_relation (struct data_dependence_relation *);
 extern void free_dependence_relations (vec<ddr_p>& );
 extern void free_data_ref (data_reference_p);
 extern void free_data_refs (vec<data_reference_p>& );
+void dr_reset (data_reference *);
 extern opt_result find_data_references_in_stmt (class loop *, gimple *,
-						vec<data_reference_p> *);
+						vec<data_reference_p> *,
+						bool = false);
 extern bool graphite_find_data_references_in_stmt (edge, loop_p, gimple *,
 						   vec<data_reference_p> *);
 tree find_data_references_in_loop (class loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
 struct data_reference *create_data_ref (edge, loop_p, tree, gimple *, bool,
-					bool);
+					bool, bool = false);
 extern bool find_loop_nest (class loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, vec<loop_p>);
