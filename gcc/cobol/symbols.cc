@@ -4807,7 +4807,7 @@ expand_picture(const char *picture)
   long repeat;
   int currency_symbol = NULLCH;
 
-  while( (ch = (*p++ & 0xFF) ) )
+  while( (ch = ((*p++) & 0xFF) ) )
     {
     if( ch == ascii_oparen )
       {
@@ -4863,7 +4863,7 @@ expand_picture(const char *picture)
       dest_length += sign_length;
       }
     }
-  retval[dest_length++] = NULLCH;
+  retval[dest_length] = NULLCH;
 
   // To ease the workload on interpreting the PICTURE string at run time, we
   // are going to convert everything we can to upper case.  We also convert
@@ -4875,11 +4875,9 @@ expand_picture(const char *picture)
     switch(retval[i])
       {
       case ascii_a:
-      case ascii_c:
       case ascii_e:
       case ascii_n:
       case ascii_p:
-      case ascii_r:
       case ascii_s:
       case ascii_x:
       case ascii_z:
@@ -4897,13 +4895,18 @@ expand_picture(const char *picture)
       
       case ascii_B:
       case ascii_b:
-      if( i < dest_length-1 )
-        {
-        retval[i] = TOUPPER(retval[i]);
-        }
-
-
-
+        if( i < dest_length-1 )
+          {
+          retval[i] = ascii_B;
+          }
+        else
+          {
+          if( i>=1 && retval[i-1] != ascii_D && retval[i-1] != ascii_d )
+            {
+            retval[i] = ascii_B;
+            }
+          }
+        break;
       }
     }
   return retval;

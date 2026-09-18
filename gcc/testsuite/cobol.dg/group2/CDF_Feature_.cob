@@ -1,6 +1,6 @@
       *> Do not edit this generated file.  See README.txt
       *> { dg-do run }
-       *> { dg-options "-fexec-charset=cp1140 -dialect ibm" }
+       *> { dg-options "-fexec-charset=ibm1140 -dialect ibm" }
        *> { dg-output-file "group2/CDF_Feature_.out" }
 
        id division.

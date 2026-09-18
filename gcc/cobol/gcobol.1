@@ -1954,22 +1954,22 @@ precisely match the behavior of other \*[lang] compilers.
 You have been warned.
 .
 .Sh ENVIRONMENT
-.Bl -tag -width COBPATH
-.It Ev COBPATH
+.Bl -tag -width GCOBOL_LIBRARY_PATH
+.It Ev GCOBOL_LIBRARY_PATH
 If defined, specifies the directory paths to be used by the
 .Nm
 runtime library,
 .Pa libgcobol.so ,
-to locate shared objects.
+to locate entry points in shared objects.
 Like
 .Ev LD_LIBRARY_PATH ,
 it may contain several directory names separated by a colon
 .Pq Ql \&: .
-.Ev COBPATH
+.Ev GCOBOL_LIBRARY_PATH
 is searched first, followed by
 .Ev LD_LIBRARY_PATH .
 Note that
-.Ev COBPATH does not change where the runtime linker looks for
+.Ev GCOBOL_LIBRARY_PATH does not change where the runtime linker looks for
 .Pa libgcobol.so
 itself.
 How the runtime linker searches for
@@ -1978,16 +1978,19 @@ when the executable loads is controlled by
 .Xr ld.so 8 ,
 not libgcobol.
 .Pp
-Each directory is searched for files whose name ends in
-.Ql ".so" .
-For each such file,
+Each directory is searched for a file whose name is based on the desired
+symbol.  The literal name, with
+.Ql ".so"
+appended, is tried first.  For each such file,
 .Xr dlopen 3
-is attempted, and, if successful
-.Xr dlsym 3 .
-No relationship is defined between the symbol's name and the filename.
+is attempted, and if successful,
+.Xr dlsym 3 is used to search for the 
+symbol.  If either fails, a second attempt is made after converting
+the desired symbol to lowercase.
 .Pp
-Without
-.Ev COBPATH ,
+When 
+.Ev GCOBOL_LIBRARY_PATH and 
+.Ev LD_LIBRARY_PATH are not explicitly used, 
 binaries produced by
 .Nm
 behave as one might expect of any program compiled with gcc.  Any

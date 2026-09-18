@@ -10901,12 +10901,60 @@ __gg__set_program_list( int program_id,
   }
 
 static std::unordered_map<std::string, void *> already_found;
+static void *
+do_the_dl_thing(const char *directory,
+                const char *unmangled_name,
+                const char *mangled_name)
+  {
+  // Using the GnuCOBOL convention, this code looks first for a file
+  // named unmangled_name.so.  It checks for a function unmangled_name
+  // in that file.  When not found, it checks for mangled_name.
+  void *retval = NULL;
+  void *handle;
+  std::string file;
+  if( directory )
+    {
+    file = directory;
+    file += '/';
+    }
+  file += unmangled_name;
+  file += ".so";
+  handle = dlopen(file.c_str(), RTLD_LAZY|RTLD_NODELETE );
+  if( handle )
+    {
+    retval = dlsym(handle, unmangled_name);
+    if( retval )
+      {
+      already_found[unmangled_name] = retval;
+      }
+    }
+  if( !retval )
+    {
+    file.clear();
+    if( directory )
+      {
+      file = directory;
+      file += '/';
+      }
+    file += mangled_name;
+    file += ".so";
+    handle = dlopen(file.c_str(), RTLD_LAZY|RTLD_NODELETE );
+    if( handle )
+      {
+      retval = dlsym(handle, mangled_name);
+      if( retval )
+        {
+        already_found[mangled_name] = retval;
+        }
+      }
+    }
+  return retval;
+  }
 
 static
 void *
 find_in_dirs(const char *dirs, char *unmangled_name, char *mangled_name)
   {
-
   std::unordered_map<std::string, void *>::const_iterator it =
                     already_found.find(unmangled_name);
 
@@ -10923,64 +10971,35 @@ find_in_dirs(const char *dirs, char *unmangled_name, char *mangled_name)
   void *retval = NULL;
   if( dirs )
     {
-    char directory[1024];
-    char file[1024];
+    std::string directory;
     const char *p = dirs;
     while( !retval && *p )
       {
-      size_t index = 0;
-      while( index < sizeof(directory)-1 && *p && *p != ':' )
+      directory.clear();
+      while( *p && *p != ':' )
         {
-        directory[index++] = *p++;
+        directory += *p++;
         }
-      directory[index++] = '\0';
       if( *p == ':' )
         {
         p += 1;
         }
       // directory is the next one for us to check:
-      DIR *dir = opendir(directory);
+      DIR *dir = opendir(directory.c_str());
       if( dir )
         {
-        while( !retval )
-          {
-          const dirent *entry = readdir(dir);
-          if( !entry )
-            {
-            break;
-            }
-          size_t len = strlen(entry->d_name);
-          if(    len > 3
-              && entry->d_name[len-3] == '.'
-              && entry->d_name[len-2] == 's'
-              && entry->d_name[len-1] == 'o'
-              )
-            {
-            strcpy(file, directory);
-            strcat(file, "/");
-            strcat(file, entry->d_name);
-            void *handle = dlopen(file, RTLD_LAZY|RTLD_NODELETE );
-            if( handle )
-              {
-              retval = dlsym(handle, unmangled_name);
-              if( retval )
-                {
-                already_found[unmangled_name] = retval;
-                break;
-                }
-              retval = dlsym(handle, mangled_name);
-              if( retval )
-                {
-                already_found[mangled_name] = retval;
-                break;
-                }
-              dlclose(handle);
-              }
-            }
-          }
+        retval = do_the_dl_thing(directory.c_str(),
+                                 unmangled_name,
+                                 mangled_name);
         closedir(dir);
         }
       }
+    }
+  else
+    {
+    retval = do_the_dl_thing(nullptr,
+                             unmangled_name,
+                             mangled_name);
     }
   return retval;
   }
@@ -10993,7 +11012,8 @@ __gg__function_handle_from_cobpath( char *unmangled_name, char *mangled_name)
 
   // We search for a function.  We check first for the unmangled name, and then
   // the mangled name.  We do this first for the executable, then for .so
-  // files in COBPATH, and then for files in LD_LIBRARY_PATH
+  // files in GCOBOL_LIBRARY_PATH, and then we allow dlopen to use its default
+  // behavior.
 
   static void *handle_executable = NULL;
   if( !handle_executable )
@@ -11012,8 +11032,12 @@ __gg__function_handle_from_cobpath( char *unmangled_name, char *mangled_name)
     }
   if( !retval )
     {
-    const char *LD_LIBRARY_PATH = getenv("LD_LIBRARY_PATH");
-    retval = find_in_dirs(LD_LIBRARY_PATH, unmangled_name, mangled_name);
+    const char *COBPATH = getenv("LD_LIBRARY_PATH");
+    retval = find_in_dirs(COBPATH, unmangled_name, mangled_name);
+    }
+  if( !retval )
+    {
+    retval = find_in_dirs(nullptr, unmangled_name, mangled_name);
     }
 
   return retval;

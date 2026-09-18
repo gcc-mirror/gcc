@@ -12986,7 +12986,7 @@ cbl_ffi_arg_t::matches( const cbl_ffi_arg_t& that ) const {
   case by_reference_e:
     if( crv == by_reference_e ) {
       if( (formal->attr & mask) == (actual->attr & mask) ) {
-        if( capacity_ok(formal, actual) ) {
+        if( formal->data.capacity() == actual->data.capacity() ) {
           if( formal->type == actual->type ) { // captures USAGE except COMP-X
             return true;
           }
@@ -12995,17 +12995,13 @@ cbl_ffi_arg_t::matches( const cbl_ffi_arg_t& that ) const {
           return true;
       }
     }
-    // If actual is by reference, so must the formal be.
-    dbgmsg("%s:%d: failed, reference feature mismatch", __func__, __LINE__);
+    // If actual is by reference, so must the formal be. 
     return false;
     break;
   case by_content_e:
     break;
   case by_value_e:
-    if( crv != by_value_e ) {
-      dbgmsg("%s:%d: failed, actual %s not by value", __func__, __LINE__, actual->name);
-      return false;
-    }
+    if( crv != by_value_e ) return false;
     if( formal->type == FldPointer && that.refer.is_pointer() ) return true;
     break;
   }
@@ -13022,7 +13018,6 @@ cbl_ffi_arg_t::matches( const cbl_ffi_arg_t& that ) const {
     return actual->data.capacity() == formal->data.capacity()
         && actual->codeset.encoding == formal->codeset.encoding;
   }          
-  dbgmsg("%s:%d: failed, for some reason", __func__, __LINE__);
   return false;
 }
 
@@ -13070,6 +13065,24 @@ bad_arg( const char name[],
   }
   return ok;
 }  
+
+static const char *
+passby_str(int mask)
+{
+  switch( mask ) {
+  case by_default_e:
+  case by_reference_e:
+    return "BY REFERENCE";
+  case by_content_e:
+    return "BY CONTENT";
+  case by_value_e:
+    return "BY VALUE";
+  default:
+    break;
+  }
+
+  return "UNKNOWN PASSING METHOD";
+}
 
 // Verify provided actual parameters against formals.
 static void

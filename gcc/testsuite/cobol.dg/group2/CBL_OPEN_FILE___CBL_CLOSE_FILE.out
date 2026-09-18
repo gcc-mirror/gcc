@@ -1,6 +1,6 @@
 Opening /dev/null as read-only
-Opening /tmp/thisfileshouldneverexist.txt as read-only
-Expected failure when opening /tmp/thisfileshouldneverexist.txt
+Opening thisfileshouldneverexist.txt as read-only
+Expected failure when opening thisfileshouldneverexist.txt
 File status MSB: 9
 File status LSB: 013
 

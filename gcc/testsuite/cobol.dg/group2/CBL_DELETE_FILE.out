@@ -1,4 +1,4 @@
-Expected failure when deleting /tmp/thisfileshouldnotexist.txt
+Expected failure when deleting thisfileshouldnotexist.txt
 File status MSB: 9
 File status LSB: 013
 

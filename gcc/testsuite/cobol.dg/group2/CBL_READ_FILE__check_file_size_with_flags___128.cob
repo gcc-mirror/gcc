@@ -15,7 +15,7 @@
           object-computer. Posix.
 
         data division.
-        >>define filename as "/tmp/test_file_size.cbl.txt"
+        >>define filename as "test_file_size.cbl.txt"
         >>define buffer as "hi, this text is exactly 38 bytes long"
         working-storage section.
           01 file-handle pic x(4) comp-5.

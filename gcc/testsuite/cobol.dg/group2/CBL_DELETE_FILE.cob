@@ -6,8 +6,8 @@
         identification division.
         program-id. test_delete_file.
         data division.
-        >>define filename as "/tmp/test_delete_file.cbl.txt"
-        >>define invalid-path as "/tmp/thisfileshouldnotexist.txt"
+        >>define filename as "test_delete_file.cbl.txt"
+        >>define invalid-path as "thisfileshouldnotexist.txt"
         working-storage section.
         01 file-status pic x(2) comp-5.
         01 fs redefines file-status.
@@ -47,10 +47,10 @@
           exit paragraph.
 
         delete-file section.
-          call "CBL_DELETE_FILE" using filename.
+          call "CBL_DELETE_FILE" using filename returning file-status.
 
           if file-status <> 0
-            display "CBL_DELETE_FILE failed with " return-code
+            display "CBL_DELETE_FILE failed with " file-status
           end-if.
 
           exit paragraph.

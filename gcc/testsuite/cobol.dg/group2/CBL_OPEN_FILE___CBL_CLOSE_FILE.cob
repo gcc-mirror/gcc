@@ -15,7 +15,7 @@
         .
           object-computer. Posix.
 
-        >>define FILE_NAME as "/tmp/thisfileshouldneverexist.txt"
+        >>define FILE_NAME as "thisfileshouldneverexist.txt"
 
         data division.
         working-storage section.
@@ -65,9 +65,9 @@
                                      access-mode
                                      deny-mode
                                      device
-                                     file-handle
-                                     returning file-status.
-          if file-status <> 0
+                                     file-handle.
+          if return-code <> 0
+            move return-code to file-status
             display "Expected failure when opening " FILE_NAME
             display "File status MSB: " msb
             display "File status LSB: " lsb

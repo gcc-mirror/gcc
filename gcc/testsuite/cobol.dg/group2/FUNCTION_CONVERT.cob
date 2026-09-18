@@ -7,7 +7,7 @@
         configuration       section.
         special-names.
             locale sbc  is "cp1252"
-            locale ebcd is "cp1140".
+            locale ebcd is "ibm1140".
         object-computer.
             gnu-linux
                 classification
