@@ -5394,24 +5394,15 @@ nowrap_type_p (tree type)
   return false;
 }
 
-/* Return true if we can prove LOOP is exited before evolution of induction
-   variable {BASE, STEP} overflows with respect to its type bound.  */
+/* Return an upper bound on the number of times the affine IV {BASE, +, STEP}
+   of type TYPE can step while staying within TYPE's range.  */
 
-static bool
-loop_exits_before_overflow (tree base, tree step,
-			    gimple *at_stmt, class loop *loop)
+tree
+get_niter_type_bound (tree type, tree base, tree step)
 {
-  widest_int niter;
-  struct control_iv *civ;
-  class nb_iter_bound *bound;
-  tree e, delta, step_abs, unsigned_base;
-  tree type = TREE_TYPE (step);
-  tree unsigned_type, valid_niter;
-
-  /* Compute the number of iterations before we reach the bound of the
-     type, and verify that the loop is exited before this occurs.  */
-  unsigned_type = unsigned_type_for (type);
-  unsigned_base = fold_convert (unsigned_type, base);
+  tree unsigned_type = unsigned_type_for (type);
+  tree unsigned_base = fold_convert (unsigned_type, base);
+  tree delta, step_abs;
 
   if (tree_int_cst_sign_bit (step))
     {
@@ -5429,7 +5420,26 @@ loop_exits_before_overflow (tree base, tree step,
       step_abs = fold_convert (unsigned_type, step);
     }
 
-  valid_niter = fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
+  return fold_build2 (FLOOR_DIV_EXPR, unsigned_type, delta, step_abs);
+}
+
+/* Return true if we can prove LOOP is exited before evolution of induction
+   variable {BASE, STEP} overflows with respect to its type bound.  */
+
+static bool
+loop_exits_before_overflow (tree base, tree step,
+			    gimple *at_stmt, class loop *loop)
+{
+  widest_int niter;
+  struct control_iv *civ;
+  class nb_iter_bound *bound;
+  tree e;
+  tree type = TREE_TYPE (step);
+  tree valid_niter;
+
+  /* Compute the number of iterations before we reach the bound of the
+     type, and verify that the loop is exited before this occurs.  */
+  valid_niter = get_niter_type_bound (type, base, step);
 
   estimate_numbers_of_iterations (loop);
 

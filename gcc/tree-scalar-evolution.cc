@@ -3259,22 +3259,10 @@ derive_simple_iv_with_niters (tree ev, tree *niters)
      folded only if inner iv won't overflow.  We compute the maximum
      number the inner iv can iterate before overflowing and return the
      simplified affine iv.  */
-  tree delta;
-  init = fold_convert (type, init);
-  step = fold_convert (type, step);
-  ev = build_polynomial_chrec (CHREC_VARIABLE (inner_ev), init, step);
-  if (tree_int_cst_sign_bit (step))
-    {
-      tree bound = lower_bound_in_type (inner_type, inner_type);
-      delta = fold_build2 (MINUS_EXPR, type, init, fold_convert (type, bound));
-      step = fold_build1 (NEGATE_EXPR, type, step);
-    }
-  else
-    {
-      tree bound = upper_bound_in_type (inner_type, inner_type);
-      delta = fold_build2 (MINUS_EXPR, type, fold_convert (type, bound), init);
-    }
-  *niters = fold_build2 (FLOOR_DIV_EXPR, type, delta, step);
+  ev = build_polynomial_chrec (CHREC_VARIABLE (inner_ev),
+			       fold_convert (type, init),
+			       fold_convert (type, step));
+  *niters = get_niter_type_bound (inner_type, init, step);
   return ev;
 }
 

@@ -52,6 +52,7 @@ extern void estimate_numbers_of_iterations (function *);
 extern void estimate_numbers_of_iterations (class loop *);
 extern bool stmt_dominates_stmt_p (gimple *, gimple *);
 extern bool nowrap_type_p (tree);
+extern tree get_niter_type_bound (tree, tree, tree);
 extern bool scev_probably_wraps_p (tree, tree, tree, gimple *,
 				   class loop *, bool);
 extern void free_numbers_of_iterations_estimates (class loop *);
