@@ -4225,7 +4225,8 @@ gfc_match_rvalue (gfc_expr **result)
 		{
 		  if (c->attr.pdt_kind || c->attr.pdt_len)
 		    continue;
-		  tmp->name = c->name;
+		  if (!tmp->name)
+		    tmp->name = c->name;
 		  tmp = tmp->next;
 		}
 
@@ -4251,7 +4252,8 @@ gfc_match_rvalue (gfc_expr **result)
 		  /* Can now add all the component names.  */
 		  for (c = pdt_sym->components; c && tmp; c = c->next)
 		    {
-		      tmp->name = c->name;
+		      if (!tmp->name)
+			tmp->name = c->name;
 		      tmp = tmp->next;
 		    }
 		}
