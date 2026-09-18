@@ -30,7 +30,7 @@ extern bool scev_initialized_p (void);
 extern void scev_reset (void);
 extern void scev_reset_htab (void);
 extern void scev_finalize (void);
-extern tree analyze_scalar_evolution (class loop *, tree);
+extern tree analyze_scalar_evolution (class loop *, tree, tree * = nullptr);
 extern tree instantiate_scev (edge, class loop *, tree);
 extern tree resolve_mixers (class loop *, tree, bool *);
 extern void gather_stats_on_scev_database (void);
@@ -38,13 +38,16 @@ extern bool final_value_replacement_loop (class loop *);
 extern unsigned int scev_const_prop (void);
 extern bool expression_expensive_p (tree, bool *);
 extern bool simple_iv_with_niters (class loop *, class loop *, tree,
-				   struct affine_iv *, tree *, bool);
+				   struct affine_iv *, tree *, bool,
+				   bool = false);
 extern bool simple_iv (class loop *, class loop *, tree, struct affine_iv *,
-		       bool);
+		       bool, bool = false);
 extern bool iv_can_overflow_p (class loop *, tree, tree, tree);
 extern tree compute_overall_effect_of_inner_loop (class loop *, tree);
 extern void record_nonwrapping_chrec (tree);
 extern bool nonwrapping_chrec_p (tree);
+
+extern void scev_combine_nowrap_bounds (tree *, tree);
 
 /* Returns the basic block preceding LOOP, or the CFG entry block when
    the loop is function's body.  */

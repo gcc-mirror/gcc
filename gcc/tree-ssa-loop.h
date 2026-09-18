@@ -30,6 +30,10 @@ struct affine_iv
 
   /* True if this iv does not overflow.  */
   bool no_overflow;
+
+  /* Upper bound for the number of loop iterations for which this IV
+     does not wrap.  */
+  tree nowrap_bound;
 };
 
 /* Description of number of iterations of a loop.  All the expressions inside

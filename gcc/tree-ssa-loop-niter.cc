@@ -5641,12 +5641,16 @@ scev_var_range_cant_overflow (tree var, tree step, class loop *loop)
    arithmetics in C does not overflow).
 
    If VAR is a ssa variable, this function also returns false if VAR can
-   be proven not overflow with value range info.  */
+   be proven not overflow with value range info.
+
+   If NOWRAP_BOUND is nonzero and we can't prove it differently, get
+   STEP's type bound, build a bound MIN (NOWRAP_BOUND, STEP_TYPE_BOUND)
+   and store it in NOWRAP_BOUND.  */
 
 bool
 scev_probably_wraps_p (tree var, tree base, tree step,
 		       gimple *at_stmt, class loop *loop,
-		       bool use_overflow_semantics)
+		       bool use_overflow_semantics, tree *nowrap_bound)
 {
   /* FIXME: We really need something like
      http://gcc.gnu.org/ml/gcc-patches/2005-06/msg02025.html.
@@ -5693,6 +5697,14 @@ scev_probably_wraps_p (tree var, tree base, tree step,
      above loop exits before overflow).  */
   if (var && nonwrapping_chrec_p (analyze_scalar_evolution (loop, var)))
     return false;
+
+  /* If we can use a bound to guarantee no wrapping, save it.  */
+  if (nowrap_bound)
+    {
+      tree b = get_niter_type_bound (TREE_TYPE (step), base, step);
+      scev_combine_nowrap_bounds (nowrap_bound, b);
+      return false;
+    }
 
   /* At this point we still don't have a proof that the iv does not
      overflow: give up.  */
