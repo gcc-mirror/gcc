@@ -26,7 +26,7 @@ main ()
   B f[16] = { 8, 0, 1, 0, 2, 0, 1, 0, 3, 0, 1, 0, 2, 0, 1, 0 };
   for (unsigned i = 0; i < 16; ++i)
     x[i] = i;
-  z = ~0;
+  __builtin_memset (&z, ~0, sizeof (z));
   __builtin_clear_padding (&z);
   for (unsigned i = 0; i < 16; ++i)
     ((unsigned char *) &x[0])[i] |= ~*(unsigned char *) &z;
