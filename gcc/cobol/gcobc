@@ -86,31 +86,6 @@ then
     copydir="-I$COB_COPY_DIR"
 fi
 
-# TODO: this file likely needs to query gcobol for its shared path instead
-udf_default="${0%/*}/../share/gcobol/udf"
-if [ ! -d "$udfdir" ]
-then
-   # the one above is the installed one from the packages this one was previously used
-   udf_default="${0%/*}/../share/cobol/udf"
-fi
-udfdir="${GCOBCUDF:-$udf_default}"
-
-if [ -d "$udfdir" ]
-then
-    for F in "$udfdir"/*
-    do
-        if [ -f "$F" ]
-        then
-            includes="$includes -include $F "
-        fi
-    done
-else
-    if [ "${GCOBCUDF:-none}" != "none" ]
-    then
-        echo warning: no such directory: "'$GCOBCUDF'"
-    fi
-fi
-
 exit_status=0
 skip_arg=
 opts="$copydir $includes"
