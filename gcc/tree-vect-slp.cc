@@ -1301,6 +1301,29 @@ vect_build_slp_tree_3 (vec_info *vinfo, vec<stmt_vec_info> stmts,
 	  return false;
 	}
 
+      /* Non-grouped store or load.  */
+      if (ldst_p
+	  && !STMT_VINFO_GROUPED_ACCESS (stmt_info)
+	  && DR_IS_READ (STMT_VINFO_DATA_REF (stmt_info))
+	  && rhs_code != CFN_GATHER_LOAD
+	  && rhs_code != CFN_MASK_GATHER_LOAD
+	  && rhs_code != CFN_MASK_LEN_GATHER_LOAD
+	  && rhs_code != CFN_SCATTER_STORE
+	  && rhs_code != CFN_MASK_SCATTER_STORE
+	  && rhs_code != CFN_MASK_LEN_SCATTER_STORE
+	  && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
+	  /* Not grouped loads are handled as externals for BB
+	     vectorization.  Treat them as not vectorizable.  */
+	  && is_a <bb_vec_info> (vinfo))
+	{
+	  /* Not grouped load.  */
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Build SLP failed: not grouped load %G", stmt);
+	  matches[i] = -2;
+	  continue;
+	}
+
       if (!ldst_p && rhs_code == BIT_FIELD_REF)
 	{
 	  tree vec = TREE_OPERAND (gimple_assign_rhs1 (stmt), 0);
@@ -1581,25 +1604,24 @@ vect_build_slp_tree_3 (vec_info *vinfo, vec<stmt_vec_info> stmts,
 	      && rhs_code != CFN_SCATTER_STORE
 	      && rhs_code != CFN_MASK_SCATTER_STORE
 	      && rhs_code != CFN_MASK_LEN_SCATTER_STORE
-	      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
-	      /* Not grouped loads are handled as externals for BB
-		 vectorization.  For loop vectorization we can handle
-		 splats the same we handle single element interleaving.
-		 Likewise we can handle a collection of invariant refs.  */
-	      && (is_a <bb_vec_info> (vinfo)
-		  || (stmt_info != first_stmt_info
-		  && !(integer_zerop (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
-		      && integer_zerop (DR_STEP (STMT_VINFO_DATA_REF
-							 (first_stmt_info)))))))
+	      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
 	    {
-	      /* Not grouped load.  */
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-				 "Build SLP failed: not grouped load %G", stmt);
-
-	      if (is_a <bb_vec_info> (vinfo))
-		matches[i] = -2;
-	      continue;
+	      gcc_assert (!is_a <bb_vec_info> (vinfo));
+	      /* For loop vectorization we can handle splats the same we
+		 handle single element interleaving.  Likewise we can handle
+		 a collection of invariant refs.  */
+	      if (stmt_info != first_stmt_info
+		  && !(integer_zerop (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
+		       && integer_zerop (DR_STEP (STMT_VINFO_DATA_REF
+							(first_stmt_info)))))
+		{
+		  /* Not grouped load.  */
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "Build SLP failed: not grouped load %G",
+				     stmt);
+		  continue;
+		}
 	    }
 	}
       /* Not memory operation.  */
