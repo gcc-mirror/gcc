@@ -170,6 +170,15 @@ walk_type_to_constrain (std::set<HirId> &constrained_symbols, TyTy::BaseType &r)
   if (r.has_substitutions_defined ())
     walk_types_to_constrain (constrained_symbols,
 			     r.get_subst_argument_mappings ());
+
+  for (const auto &bound : r.get_specified_bounds ())
+    {
+      const auto &args = bound.get_substitution_arguments ();
+      for (const auto &binding : args.get_binding_args ())
+	walk_type_to_constrain (constrained_symbols, *binding.second);
+      for (const auto &constraint : args.get_constraint_args ())
+	walk_type_to_constrain (constrained_symbols, *constraint.second);
+    }
 }
 
 bool
@@ -209,6 +218,8 @@ TypeCheckBase::check_for_unconstrained (
 	  const auto &args = bound.get_substitution_arguments ();
 	  for (const auto &binding : args.get_binding_args ())
 	    walk_type_to_constrain (constrained_symbols, *binding.second);
+	  for (const auto &constraint : args.get_constraint_args ())
+	    walk_type_to_constrain (constrained_symbols, *constraint.second);
 	}
     }
 
