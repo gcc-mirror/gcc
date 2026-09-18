@@ -28,12 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * This file supports parsing without requiring access to the symbol
- * table definition.  Unlike the Bison input, this file brings in gcc
- * header files.
- */
-
 #include "cobol-system.h"
 #include <coretypes.h>
 #include <tree.h>
@@ -2182,7 +2176,7 @@ literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
   for( isub=0; isub < ndim; isub++ ) {
     const auto& subscript = r.subscripts[isub];
     const auto& occurs = dims[isub]->occurs;
-    
+
     if( ! occurs.subscript_ok(subscript.field) ) {
       break; // found one
     }
@@ -2550,7 +2544,7 @@ hex2numstr( const char input[] ) {
 
   int n = sscanf(++input, "%c%" GCC_PRISZ "x%c", &q, &value, &q);
   assert(n == 3 && (q == '\'' || q == '"'));
-         
+
   return xasprintf("%lu", value);
 }
 
@@ -4672,4 +4666,3 @@ iso_cobol_word( const std::string& name, bool include_context ) {
   }
   return ok;
 }
-

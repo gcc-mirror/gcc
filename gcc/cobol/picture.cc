@@ -1,3 +1,33 @@
+/*
+ * Copyright (c) 2021-2026 Symas Corporation
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *   notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above
+ *   copyright notice, this list of conditions and the following disclaimer
+ *   in the documentation and/or other materials provided with the
+ *   distribution.
+ * * Neither the name of the Symas Corporation nor the names of its
+ *   contributors may be used to endorse or promote products derived from
+ *   this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
 #include <cassert>
 #include <cctype>
 #include <cstdint>
@@ -6,23 +36,34 @@
 #include <unistd.h>
 
 #include <algorithm>
-#include <fstream>
 #include <array>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
-#ifdef COBOL_PICTURE
-const char * symbol_currency( char sign ) {
-  static const char mock_signs[] = "@ŁY&";
-  return strchr(mock_signs, sign);
-}
-void cbl_internal_error(const char *format_string, ...) { assert(false); }
-#else
-void cbl_internal_error(const char *format_string, ...);
-const char * symbol_currency( char sign );
-#endif
+#include "cobol-system.h"
+#include <coretypes.h>
+#include <tree.h>
+#include <fold-const.h>
+#undef yy_flex_debug
+
+#include <langinfo.h>
+
+#include <version.h>
+#include <demangle.h>
+#include <intl.h>
+#include <backtrace.h>
+#include <diagnostic.h>
+#include <opts.h>
+
+#include "util.h"
+#include "cbldiag.h"
+#include "cdfval.h"
+#include "lexio.h"
+
+#include "../../libgcobol/ec.h"
+#include "../../libgcobol/common-defs.h"
+#include "symbols.h"
 
 namespace picture_validation {
 
@@ -151,226 +192,6 @@ namespace picture_validation {
     /* CR/DB */ { { postdec_e,     'D' }, {""  "B"} },
   };
   
-  /*
-   * As the picture string is validated, constraint_t captures what has been
-   * seen: the preceding character and what characters have appeared that
-   * signify alphanumeric-edited or numeric-edited.
-   */
-  static constexpr uint64_t hiword(char ch) { 
-    return (1ULL << (ch - 'A')) << 32; 
-  }
-  class constraint_t {
-    // Domain of symbols in a picture string.
-    enum picsym_t : uint64_t {
-      p_plus  = 0x0010,    // +
-      p_minus = 0x0020,    // -
-      p_dot   = 0x0040,    // .
-      p_comma = 0x0080,    // ,
-      p_slash = 0x0100,    // /
-      p_cs    = 0x0200,    // $
-      p_star  = 0x0400,    // *
-      p_zero  = 0x0800,    // 0
-      p_one   = 0x1000,    // 1
-      p_nine  = 0x0009,    // 9, claim the whole nybble
-      // Bits 0-15:  punctuation, currency, and 0, 1, and 9.
-      // Bits 32-58: A-Z
-      p_A     = hiword('A'), 
-      p_B     = hiword('B'), 
-      p_C     = hiword('C'), 
-      p_D     = hiword('D'), 
-      p_E     = hiword('E'), 
-      p_N     = hiword('N'), 
-      p_P     = hiword('P'), 
-      p_S     = hiword('S'), 
-      p_U     = hiword('U'), 
-      p_V     = hiword('V'), 
-      p_X     = hiword('X'), 
-      p_Z     = hiword('Z'), 
-
-      p_boolean_e = p_one, 
-      p_alphabetic_e = p_A, 
-      p_alphanumeric_e = (p_A | p_X | p_nine),
-      p_b_0_slash_e = (p_B | p_zero | p_slash),
-      p_alpha_ed_e = (p_alphanumeric_e | p_b_0_slash_e),
-      p_national_e = p_N,
-      p_national_ed_e = (p_N | p_b_0_slash_e),
-      p_numeric_e = (p_nine | p_P | p_S | p_V),
-      // B P V Z 9 0 / , . + - CR DB * cs (CR/DB not in mask because at end)
-      p_numeric_ed2_e = (p_b_0_slash_e | p_comma | p_dot | p_plus | p_minus), 
-      p_numeric_ed_e = ( p_P | p_V | p_Z | p_nine | p_b_0_slash_e | 
-                       p_comma | p_dot | p_plus | p_minus | p_star | p_cs),
-    };
-    uint64_t symbol_mask;
-    
-    bool is_boolean() const {
-      return 0 == (symbol_mask & ~p_boolean_e)
-        &&   0 != (symbol_mask &  p_boolean_e);
-    }
-    bool is_alphabetic() const {
-      return 0 == (symbol_mask & ~p_alphabetic_e)
-        &&   0 != (symbol_mask &  p_alphabetic_e);
-    }
-    bool is_alphanumeric() const {
-      return 0 == (symbol_mask & ~p_alphanumeric_e)
-        &&   0 != (symbol_mask &  p_alphanumeric_e);
-    }
-    bool is_alpha_ed() const {
-      return 0 == (symbol_mask & ~p_alpha_ed_e)
-        &&   0 != (symbol_mask & p_alphanumeric_e)
-        &&   0 != (symbol_mask & p_b_0_slash_e);
-    }
-    bool is_national() const {
-      return 0 == (symbol_mask & ~p_national_e)
-        &&   0 != (symbol_mask &  p_national_e);
-    }
-    bool is_national_ed() const {
-      return 0 == (symbol_mask & ~p_national_ed_e)
-        &&   0 != (symbol_mask & p_national_e)
-        &&   0 != (symbol_mask & p_b_0_slash_e);
-    }
-    bool is_numeric() const {
-      return 0 == (symbol_mask & ~p_numeric_e)
-        &&   0 != (symbol_mask &  p_nine)
-        &&   0 != (symbol_mask &  p_numeric_e);
-    }
-    bool is_numeric9_ed() const {
-      return 0 == (symbol_mask & ~p_numeric_ed_e)
-        &&   0 != (symbol_mask & p_nine)
-        &&   0 != (symbol_mask & p_numeric_ed2_e);
-    }
-    bool is_numeric_ed() const {
-      return 0 == (symbol_mask & ~p_numeric_ed_e)
-        && ( 0 != (symbol_mask & (p_Z | p_star))
-             || two_signs()
-             || is_numeric9_ed() );
-    }
-
-    state_t decimal_state; // to lookup sequence validity
-
-    uint64_t picsym_set( char ch ) {
-      switch(ch) {
-      case '+': return symbol_mask |= p_plus;
-      case '-': return symbol_mask |= p_minus;
-      case '.': return symbol_mask |= p_dot;
-      case ',': return symbol_mask |= p_comma;
-      case '/': return symbol_mask |= p_slash;
-      case '$': return symbol_mask |= p_cs;
-      case '0': return symbol_mask |= p_zero;
-      case '1': return symbol_mask |= p_one;
-      case '9': return symbol_mask |= p_nine;
-      case 'A': return symbol_mask |= p_A;
-      case 'B': return symbol_mask |= p_B;
-      case 'C': return symbol_mask |= p_C;
-      case 'D': return symbol_mask |= p_D;
-      case 'E': return symbol_mask |= p_E;
-      case 'N': return symbol_mask |= p_N;
-      case 'P': return symbol_mask |= p_P;
-      case 'S': return symbol_mask |= p_S;
-      case 'U': return symbol_mask |= p_U;
-      case 'V': return symbol_mask |= p_V;
-      case 'X': return symbol_mask |= p_X;
-      case 'Z': return symbol_mask |= p_Z;
-      }
-      return symbol_mask;
-    }
-
-    bool picsym_seen( char ch ) const {
-      switch(ch) {
-      case '+': return 0 < (symbol_mask & p_plus);
-      case '-': return 0 < (symbol_mask & p_minus);
-      case '.': return 0 < (symbol_mask & p_dot);
-      case ',': return 0 < (symbol_mask & p_comma);
-      case '/': return 0 < (symbol_mask & p_slash);
-      case '$': return 0 < (symbol_mask & p_cs);
-      case '0': return 0 < (symbol_mask & p_zero);
-      case '1': return 0 < (symbol_mask & p_one);
-      case '9': return 0 < (symbol_mask & p_nine);
-      case 'A': return 0 < (symbol_mask & p_A);
-      case 'B': return 0 < (symbol_mask & p_B);
-      case 'C': return 0 < (symbol_mask & p_C);
-      case 'D': return 0 < (symbol_mask & p_D);
-      case 'E': return 0 < (symbol_mask & p_E);
-      case 'N': return 0 < (symbol_mask & p_N);
-      case 'P': return 0 < (symbol_mask & p_P);
-      case 'S': return 0 < (symbol_mask & p_S);
-      case 'U': return 0 < (symbol_mask & p_U);
-      case 'V': return 0 < (symbol_mask & p_V);
-      case 'X': return 0 < (symbol_mask & p_X);
-      case 'Z': return 0 < (symbol_mask & p_Z);
-      }
-    }
-
-    /*
-     * 1) Every character except V adds to the capacity, with the caveat that
-     *    the first CURRENCY PICTURE character adds the length of the CURRENCY
-     *    SIGN string.
-     * 2) data.digits has to be the count of 9 + count of Z + count of asterisk
-     *    + (count of $ minus 1) + (count of - minus one) + (count of + minus 1)
-     * 3) data.rdigits is the subset of 2 that is to the right of either V or
-     *    . (edited) 
-     * 
-     * For the moment, break out the fact that V should add zero.  Right now
-     * all of the regression tests assume that V, if there, adds one.  I would
-     * really rather attack the V change when everything is working.
-     */
-
-    char prior_ch;
-   public:
-    int nplus, nminus;
-
-    constraint_t()
-      : symbol_mask(0)
-      , decimal_state(none_e)
-      , prior_ch('\0')
-      , nplus(0), nminus(0)
-    {}
-    constraint_t& operator=( char ch ) {
-      picsym_set(ch);
-      prior_ch = ch;
-      if( ch == '+' ) nplus++;
-      if( ch == '-' ) nminus++;
-      observe_the_dot(ch);
-      return *this;
-    }
-    char prior() const { return prior_ch; }
-
-    state_t automaton(state_t state) { return decimal_state = state; }
-    state_t automaton() const { return decimal_state; }
-
-
-    state_t state() const {
-      if( is_alphabetic() )   return alphabetic_e;
-      if( is_alphanumeric() ) return alphanumeric_e;
-      if( is_alpha_ed() )     return alpha_ed_e;
-      if( is_national() )     return national_e;
-      if( is_national_ed() )  return national_ed_e;
-      if( is_numeric() )      return numeric_e;
-      if( is_numeric_ed() )   return numeric_ed_e;
-      return invalid_e;
-    }
-
-    bool two_signs() const { return 1 < nplus || 1 < nminus; }
-
-    /*
-     * The followers table is sensitive to whether we've seen decimal point, and
-     * whether we're in an exponent.  That reflects the duplicate column
-     * headings in ISO Table 10.
-     */
-    bool day_follows_night( char ch ) {
-      auto p = followers.find( follow_key_t {decimal_state, prior_ch} );
-      if( p != followers.end() ) {
-        const auto& candidates(p->second);
-        auto pnext = std::find( candidates.begin(), candidates.end(), ch );
-        return pnext != candidates.end();
-      }
-      return false;    
-    }
-  protected:
-    void observe_the_dot( char ch ) {
-      if( decimal_state == none_e ) decimal_state = antedec_e;
-      if( ch == '.' || ch == 'V' ) decimal_state = postdec_e;    }
-  } constraint;
-
   ////////////////////////////////////////////////////////////////
 
   struct transition_t {
@@ -527,7 +348,7 @@ namespace picture_validation {
     { d_need_b_e,      'B',  numeric_ed_e },
   };
   
-  typedef std::array<unsigned char, 256> automaton_elem_t;
+  typedef std::array<state_t, 256> automaton_elem_t;
   typedef std::vector<automaton_elem_t> automaton_matrix_t;
 
   const automaton_matrix_t& prepare_automaton() {
@@ -558,40 +379,250 @@ namespace picture_validation {
     ready = true;
     return matrix;
   }
-  
-  void sort_rules() {
-#ifdef COBOL_PICTURE
-    // During development, verify the ruleset is unique. 
-    std::set<transition_t> U;
-    int i=0;
-    for( const auto& r : picture_validation::picture_rules ) {
-      auto result = U.insert(r);
-      if( ! result.second ) {
-        auto extra = result.first;
-        fprintf(stderr, "%s: redundant rule: #%d { %s '%c' %s }\n",
-                __func__, i, 
-                state_str(extra->state),
-                extra->ch, 
-                state_str(extra->next_state));
-      }
-      i++;
-    }
-#endif
-    std::sort( picture_validation::picture_rules.begin(),
-               picture_validation::picture_rules.end() );
-    auto extra = std::unique( picture_validation::picture_rules.begin(),
-                              picture_validation::picture_rules.end() );
-    if( extra != picture_validation::picture_rules.end() ) {
-#ifndef COBOL_PICTURE
-      cbl_internal_error("%s: redundant rule: { %s %qc %s }", __func__, 
-                         state_str(extra->state),
-                         extra->ch, 
-                         state_str(extra->next_state));
-#endif
-      assert(false && "Redundant rules detected"); 
-    }
+
+  /*
+   * As the picture string is validated, constraint_t captures what has been
+   * seen: the preceding character and what characters have appeared that
+   * signify alphanumeric-edited or numeric-edited.
+   */
+  static constexpr uint64_t hiword(char ch) { 
+    return (1ULL << (ch - 'A')) << 32; 
   }
-}
+  class constraint_t {
+    // Domain of symbols in a picture string.
+    enum picsym_t : uint64_t {
+      p_plus  = 0x0010,    // +
+      p_minus = 0x0020,    // -
+      p_dot   = 0x0040,    // .
+      p_comma = 0x0080,    // ,
+      p_slash = 0x0100,    // /
+      p_cs    = 0x0200,    // $
+      p_star  = 0x0400,    // *
+      p_zero  = 0x0800,    // 0
+      p_one   = 0x1000,    // 1
+      p_nine  = 0x0009,    // 9, claim the whole nybble
+      // Bits 0-15:  punctuation, currency, and 0, 1, and 9.
+      // Bits 32-58: A-Z
+      p_A     = hiword('A'), 
+      p_B     = hiword('B'), 
+      p_C     = hiword('C'), 
+      p_D     = hiword('D'), 
+      p_E     = hiword('E'), 
+      p_N     = hiword('N'), 
+      p_P     = hiword('P'), 
+      p_S     = hiword('S'), 
+      p_U     = hiword('U'), 
+      p_V     = hiword('V'), 
+      p_X     = hiword('X'), 
+      p_Z     = hiword('Z'), 
+
+      p_boolean_e = p_one, 
+      p_alphabetic_e = p_A, 
+      p_alphanumeric_e = (p_A | p_X | p_nine),
+      p_b_0_slash_e = (p_B | p_zero | p_slash),
+      p_alpha_ed_e = (p_alphanumeric_e | p_b_0_slash_e),
+      p_national_e = p_N,
+      p_national_ed_e = (p_N | p_b_0_slash_e),
+      p_numeric_e = (p_nine | p_P | p_S | p_V),
+      // B P V Z 9 0 / , . + - CR DB * cs (CR/DB not in mask because at end)
+      p_numeric_ed2_e = (p_b_0_slash_e | p_comma | p_dot | p_plus | p_minus), 
+      p_numeric_ed_e = ( p_P | p_V | p_Z | p_nine | p_b_0_slash_e | 
+                       p_comma | p_dot | p_plus | p_minus | p_star | p_cs),
+    };
+    uint64_t symbol_mask;
+    
+    bool is_boolean() const {
+      return 0 == (symbol_mask & ~p_boolean_e)
+        &&   0 != (symbol_mask &  p_boolean_e);
+    }
+    bool is_alphabetic() const {
+      return 0 == (symbol_mask & ~p_alphabetic_e)
+        &&   0 != (symbol_mask &  p_alphabetic_e);
+    }
+    bool is_alphanumeric() const {
+      return 0 == (symbol_mask & ~p_alphanumeric_e)
+        &&   0 != (symbol_mask &  p_alphanumeric_e);
+    }
+    bool is_alpha_ed() const {
+      return 0 == (symbol_mask & ~p_alpha_ed_e)
+        &&   0 != (symbol_mask & p_alphanumeric_e)
+        &&   0 != (symbol_mask & p_b_0_slash_e);
+    }
+    bool is_national() const {
+      return 0 == (symbol_mask & ~p_national_e)
+        &&   0 != (symbol_mask &  p_national_e);
+    }
+    bool is_national_ed() const {
+      return 0 == (symbol_mask & ~p_national_ed_e)
+        &&   0 != (symbol_mask & p_national_e)
+        &&   0 != (symbol_mask & p_b_0_slash_e);
+    }
+    bool is_numeric() const {
+      return 0 == (symbol_mask & ~p_numeric_e)
+        &&   0 != (symbol_mask &  p_nine)
+        &&   0 != (symbol_mask &  p_numeric_e);
+    }
+    bool is_numeric9_ed() const {
+      return 0 == (symbol_mask & ~p_numeric_ed_e)
+        &&   0 != (symbol_mask & p_nine)
+        &&   0 != (symbol_mask & p_numeric_ed2_e);
+    }
+    bool is_numeric_ed() const {
+      return 0 == (symbol_mask & ~p_numeric_ed_e)
+        && ( 0 != (symbol_mask & (p_Z | p_star))
+             || two_signs()
+             || is_numeric9_ed() );
+    }
+
+    state_t pic_state; // to lookup sequence validity
+
+    uint64_t picsym_set( char ch ) {
+      switch(ch) {
+      case '+': return symbol_mask |= p_plus;
+      case '-': return symbol_mask |= p_minus;
+      case '.': return symbol_mask |= p_dot;
+      case ',': return symbol_mask |= p_comma;
+      case '/': return symbol_mask |= p_slash;
+      case '$': return symbol_mask |= p_cs;
+      case '0': return symbol_mask |= p_zero;
+      case '1': return symbol_mask |= p_one;
+      case '9': return symbol_mask |= p_nine;
+      case 'A': return symbol_mask |= p_A;
+      case 'B': return symbol_mask |= p_B;
+      case 'C': return symbol_mask |= p_C;
+      case 'D': return symbol_mask |= p_D;
+      case 'E': return symbol_mask |= p_E;
+      case 'N': return symbol_mask |= p_N;
+      case 'P': return symbol_mask |= p_P;
+      case 'S': return symbol_mask |= p_S;
+      case 'U': return symbol_mask |= p_U;
+      case 'V': return symbol_mask |= p_V;
+      case 'X': return symbol_mask |= p_X;
+      case 'Z': return symbol_mask |= p_Z;
+      }
+      return symbol_mask;
+    }
+
+    bool picsym_seen( char ch ) const {
+      switch(ch) {
+      case '+': return 0 < (symbol_mask & p_plus);
+      case '-': return 0 < (symbol_mask & p_minus);
+      case '.': return 0 < (symbol_mask & p_dot);
+      case ',': return 0 < (symbol_mask & p_comma);
+      case '/': return 0 < (symbol_mask & p_slash);
+      case '$': return 0 < (symbol_mask & p_cs);
+      case '0': return 0 < (symbol_mask & p_zero);
+      case '1': return 0 < (symbol_mask & p_one);
+      case '9': return 0 < (symbol_mask & p_nine);
+      case 'A': return 0 < (symbol_mask & p_A);
+      case 'B': return 0 < (symbol_mask & p_B);
+      case 'C': return 0 < (symbol_mask & p_C);
+      case 'D': return 0 < (symbol_mask & p_D);
+      case 'E': return 0 < (symbol_mask & p_E);
+      case 'N': return 0 < (symbol_mask & p_N);
+      case 'P': return 0 < (symbol_mask & p_P);
+      case 'S': return 0 < (symbol_mask & p_S);
+      case 'U': return 0 < (symbol_mask & p_U);
+      case 'V': return 0 < (symbol_mask & p_V);
+      case 'X': return 0 < (symbol_mask & p_X);
+      case 'Z': return 0 < (symbol_mask & p_Z);
+      }
+    }
+
+    char prior_ch;
+    const char decimal_point;
+    int nplus, nminus;
+    cbl_field_data_t field_data;
+   public:
+    const char *bad_repeat;
+
+    constraint_t()
+      : symbol_mask(0)
+      , pic_state(none_e)
+      , prior_ch('\0')
+      , decimal_point(symbol_decimal_point())
+      , nplus(0), nminus(0)
+      , bad_repeat(nullptr)
+    {}
+    constraint_t& append( char ch, size_t len ) {
+      picsym_set(ch);
+      prior_ch = ch;
+      if( ch == '+' ) nplus++;
+      if( ch == '-' ) nminus++;
+      update_capacity(1 + len);
+      observe_the_dot(ch);
+      return *this;
+    }
+    char prior() const { return prior_ch; }
+
+    state_t picture_state(state_t state) { return pic_state = state; }
+    state_t picture_state() const { return pic_state; }
+
+    state_t state() const {
+      if( is_alphabetic() )   return alphabetic_e;
+      if( is_alphanumeric() ) return alphanumeric_e;
+      if( is_alpha_ed() )     return alpha_ed_e;
+      if( is_national() )     return national_e;
+      if( is_national_ed() )  return national_ed_e;
+      if( is_numeric() )      return numeric_e;
+      if( is_numeric_ed() )   return numeric_ed_e;
+      return invalid_e;
+    }
+
+    bool two_signs() const { return 1 < nplus || 1 < nminus; }
+
+    /*
+     * The followers table is sensitive to whether we've seen decimal point, and
+     * whether we're in an exponent.  That reflects the duplicate column
+     * headings in ISO Table 10.
+     */
+    bool day_follows_night( char ch ) {
+      auto p = followers.find( follow_key_t {pic_state, prior_ch} );
+      if( p != followers.end() ) {
+        const auto& candidates(p->second);
+        auto pnext = std::find( candidates.begin(), candidates.end(), ch );
+        return pnext != candidates.end();
+      }
+      return false;    
+    }
+
+    void prior_repeats( int n ) {
+      if( prior_ch != 'P' ) {
+        update_capacity(n);
+      }
+    }
+
+  protected:
+    void observe_the_dot( char ch ) {
+      if( pic_state == none_e ) pic_state = antedec_e;
+      if( ch == decimal_point || ch == 'V' ) pic_state = postdec_e;
+    }
+    /*
+     * 1) Every character except V adds to the capacity, with the caveat that
+     *    the first CURRENCY PICTURE character adds the length of the CURRENCY
+     *    SIGN string.
+     * 2) data.digits has to be the count of 9 + count of Z + count of asterisk
+     *    + (count of $ minus 1) + (count of - minus one) + (count of + minus 1)
+     * 3) data.rdigits is the subset of 2 that is to the right of either V or
+     *    . (edited) 
+     * 
+     * For the moment, break out the fact that V should add zero.  Right now
+     * all of the regression tests assume that V, if there, adds one.  I would
+     * really rather attack the V change when everything is working.
+     */
+    void update_capacity( int n = 1) {
+      static const std::string nonsize( "PVCRDB" );
+      
+      if( std::string::npos == nonsize.find(prior_ch) ) {
+        field_data.add_capacity(n);
+        if( pic_state == postdec_e ) {
+          field_data.rdigits += n;
+        }
+      }
+    }
+
+  };
+} // end namespace
 
 using picture_validation::transition_t;
 using picture_validation::state_t;
@@ -603,7 +634,7 @@ using picture_validation::state_t;
 static const char *
 seek_paren( const char *p, const char *epicture ) {
   for( p++; p < epicture; p++ ) {
-    if( ! isalnum(*p) ) {
+    if( ! ISALNUM(*p) ) {
       switch(*p) {
       case '-':
       case '_':
@@ -632,16 +663,9 @@ end_of_picture( const char *p, const char *epicture ) {
 
 std::pair<const char *, state_t>
 is_valid_picture(const char picture[]) {
-  static bool sorted = false;
-  if( ! sorted ) {
-    picture_validation::sort_rules();
-    sorted = true;
-  }
-  
-  const auto& rules( picture_validation::picture_rules );
-  // reset the global constraint structure. 
-  auto& constraint(picture_validation::constraint);
-  constraint = picture_validation::constraint_t();
+  picture_validation::constraint_t constraint;
+  const picture_validation::automaton_matrix_t&
+    automaton = picture_validation::prepare_automaton();
 
   if( ! picture ) {
     return {picture, picture_validation::invalid_e};
@@ -653,6 +677,7 @@ is_valid_picture(const char picture[]) {
     // Advance lookahead past any count, which might be name.
     // No picture begins with a '('. 
     if( picture < p && *p == '(' && p+1 < epicture  ) {
+      const char *paren = p;
       p = seek_paren(p, epicture);
       if( *p != ')' ) {
         return {p, picture_validation::invalid_e};
@@ -661,47 +686,48 @@ is_valid_picture(const char picture[]) {
         return {p, picture_validation::invalid_e};
       }
       p++;
+      auto result = repeat_count(--paren);
+      int len = result.first;
+      if( len == 0 ) {
+        dbgmsg("%s: odd zero repeat_count for '%s'", __func__, paren);
+        constraint.bad_repeat = paren;
+        return {paren, picture_validation::invalid_e};
+      }
+      constraint.prior_repeats(len);
     }
 
-    // Dot as last character is period separator because the lexer defines
-    // end-of-picture as a space.
     if( end_of_picture(p, epicture) ) break;
 
     // Now p is fixed, but ch might be a currency symbol
-    char ch = toupper(*p);
+    char ch = TOUPPER(*p);
     
     // Is the current character ever allowed to follow the prior? 
+    size_t currency_len = 0;
     if( ! constraint.day_follows_night(ch) ) {
-      if( symbol_currency(ch) ) {
+      const char *currency = symbol_currency(ch);
+      if( currency ) {
         ch = '$';
+        currency_len = strlen(currency);
       } else {
         if( verbose ) 
           fprintf(stderr,  "no %2zu: %c -> %c (%s)\n",
                   p - picture, constraint.prior(), ch,
-                  picture_validation::state_str(constraint.automaton()) );
+                  picture_validation::state_str(constraint.picture_state()) );
         return {p, picture_validation::invalid_e};
       }
     }
 
-    // Consult the rules.
-    picture_validation::transition_t query { state, ch, state };
-    
-    auto prule = std::lower_bound(rules.begin(), rules.end(), query);
+    // Update constraint record and advance to the next state.
+    constraint.append(ch, currency_len);
+    state = automaton[state][ch];
 
-    if( prule == rules.end() || *prule != query ) {
-      state_t state = p == epicture?
-        constraint.state() : picture_validation::invalid_e;
-      return {p, state};
+    if( verbose ) {
+      fprintf(stderr,  "ok %2zu: %c (next: %s)\n",
+              p - picture, ch, picture_validation::state_str(state));
     }
-
-    if( verbose ) 
-      fprintf(stderr,  "ok %2zu: %c (%s)\n",
-              p - picture, ch,
-              picture_validation::state_str(prule->next_state) );
-
-    // Advance to the next state.
-    constraint = ch;
-    state = prule->next_state;
+    if( state == picture_validation::invalid_e ) {
+      return {p, picture_validation::invalid_e};
+    }
   }
 
   return {epicture, constraint.state()};

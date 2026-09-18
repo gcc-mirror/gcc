@@ -45,6 +45,8 @@ void cobol_filename_restore();
 const char * cobol_lineno( int );
 int cobol_lineno(void);
 
+std::pair<int, int> repeat_count(const char picture[]);
+
 unsigned long gb4( size_t input );
 
 template <typename P>

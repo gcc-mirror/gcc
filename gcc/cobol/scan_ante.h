@@ -58,8 +58,6 @@ int repository_function_tok( const char name[] );
 
 void next_sentence_label(cbl_label_t*);
 
-std::pair<int, int> repeat_count(const char picture[]);
-
 size_t program_level();
 
 static int ydfparse(void);
