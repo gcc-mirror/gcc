@@ -743,14 +743,14 @@ enum aarch64_builtins
   AARCH64_BUILTIN_GCSPOPM,
   AARCH64_BUILTIN_GCSSS,
   /* Armv9.6-A builtins.  */
-  AARCH64_BUILTIN_STSHH,
-  AARCH64_BUILTIN_STSHH_QI,
-  AARCH64_BUILTIN_STSHH_HI,
-  AARCH64_BUILTIN_STSHH_SI,
-  AARCH64_BUILTIN_STSHH_DI,
-  AARCH64_BUILTIN_STSHH_SF,
-  AARCH64_BUILTIN_STSHH_DF,
-  AARCH64_BUILTIN_STSHH_PTR,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_QI,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_HI,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SI,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DI,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SF,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DF,
+  AARCH64_BUILTIN_ATOMIC_HINTS_STORE_PTR,
   /* System Hint Operation builtins.  */
   AARCH64_BUILTIN_YIELD,
   AARCH64_BUILTIN_WFE,
@@ -2287,10 +2287,10 @@ aarch64_init_gcs_builtins (void)
 				   AARCH64_BUILTIN_GCSSS);
 }
 
-/* Add builtins for FEAT_PCDPHINT.  */
+/* Add builtins for atomic hints.  */
 
 static void
-aarch64_init_pcdphint_builtins (void)
+aarch64_init_atomic_hints_builtins (void)
 {
   tree ftype;
 
@@ -2298,65 +2298,72 @@ aarch64_init_pcdphint_builtins (void)
 				    void_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh", ftype,
-				   AARCH64_BUILTIN_STSHH);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store",
+				   ftype, AARCH64_BUILTIN_ATOMIC_HINTS_STORE);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    unsigned_char_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_QI]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_qi", ftype,
-				   AARCH64_BUILTIN_STSHH_QI);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_QI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_qi",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_QI);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    short_unsigned_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_HI]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_hi", ftype,
-				   AARCH64_BUILTIN_STSHH_HI);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_HI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_hi",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_HI);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SI]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_si", ftype,
-				   AARCH64_BUILTIN_STSHH_SI);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_si",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SI);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    long_long_unsigned_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DI]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_di", ftype,
-				   AARCH64_BUILTIN_STSHH_DI);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DI]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_di",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DI);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    float_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SF]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_sf", ftype,
-				   AARCH64_BUILTIN_STSHH_SF);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SF]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_sf",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SF);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    double_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DF]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_df", ftype,
-				   AARCH64_BUILTIN_STSHH_DF);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DF]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_df",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DF);
 
   ftype = build_function_type_list (void_type_node, ptr_type_node,
 				    ptr_type_node,
 				    unsigned_type_node,
 				    unsigned_type_node, NULL_TREE);
-  aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_PTR]
-    = aarch64_general_add_builtin ("__builtin_aarch64_stshh_ptr", ftype,
-				   AARCH64_BUILTIN_STSHH_PTR);
+  aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_PTR]
+    = aarch64_general_add_builtin ("__builtin_aarch64_atomic_hints_store_ptr",
+				   ftype,
+				   AARCH64_BUILTIN_ATOMIC_HINTS_STORE_PTR);
 
 }
 
@@ -2407,7 +2414,7 @@ aarch64_general_init_builtins (void)
 				   AARCH64_BUILTIN_CHKFEAT);
 
   aarch64_init_gcs_builtins ();
-  aarch64_init_pcdphint_builtins ();
+  aarch64_init_atomic_hints_builtins ();
 
   if (in_lto_p)
     handle_arm_acle_h ();
@@ -3940,27 +3947,27 @@ aarch64_expand_tbl_tbx (vec<expand_operand> &ops, unspec unspec)
 }
 
 void
-aarch64_expand_stshh_builtin (tree exp, int fcode)
+aarch64_expand_atomic_hints_builtins (tree exp, int fcode)
 {
   machine_mode mode = TYPE_MODE (TREE_TYPE (CALL_EXPR_ARG (exp, 1)));
   rtx val = expand_normal (CALL_EXPR_ARG (exp, 1));
   rtx mem_order = expand_normal (CALL_EXPR_ARG (exp, 2));
-  rtx ret = expand_normal (CALL_EXPR_ARG (exp, 3));
+  rtx hint = expand_normal (CALL_EXPR_ARG (exp, 3));
 
-  require_const_argument (exp, 3, 0, 2);
+  require_const_argument (exp, 3, 0, 5);
   require_const_argument (exp, 2, 0, 6);
   if (seen_error ())
     return;
 
   switch (fcode)
     {
-      case AARCH64_BUILTIN_STSHH_SF:
+      case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SF:
 	{
 	  val = force_lowpart_subreg (SImode, val, SFmode);
 	  mode = SImode;
 	  break;
 	}
-      case AARCH64_BUILTIN_STSHH_DF:
+      case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DF:
 	{
 	  val = force_lowpart_subreg (DImode, val, DFmode);
 	  mode = DImode;
@@ -3980,12 +3987,12 @@ aarch64_expand_stshh_builtin (tree exp, int fcode)
   set_mem_align (mem, GET_MODE_ALIGNMENT (mode));
 
   expand_operand ops[4];
-  enum insn_code icode = code_for_aarch64_atomic_store_stshh (mode);
+  enum insn_code icode;
   create_output_operand (&ops[0], mem, mode);
   create_input_operand (&ops[1], val, mode);
   create_input_operand (&ops[2], mem_order, SImode);
-  create_input_operand (&ops[3], ret, SImode);
-
+  create_input_operand (&ops[3], hint, SImode);
+  icode = code_for_aarch64_atomic_hints_store (mode);
   expand_insn (icode, 4, ops);
 }
 
@@ -4457,14 +4464,14 @@ aarch64_general_expand_builtin (unsigned int fcode, tree exp, rtx target,
     case AARCH64_BUILTIN_GCSSS:
       return aarch64_expand_gcs_builtin (exp, target, fcode, ignore);
 
-    case AARCH64_BUILTIN_STSHH_QI:
-    case AARCH64_BUILTIN_STSHH_HI:
-    case AARCH64_BUILTIN_STSHH_SI:
-    case AARCH64_BUILTIN_STSHH_DI:
-    case AARCH64_BUILTIN_STSHH_SF:
-    case AARCH64_BUILTIN_STSHH_DF:
-    case AARCH64_BUILTIN_STSHH_PTR:
-      aarch64_expand_stshh_builtin (exp, fcode);
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_QI:
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_HI:
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SI:
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DI:
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SF:
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DF:
+    case AARCH64_BUILTIN_ATOMIC_HINTS_STORE_PTR:
+      aarch64_expand_atomic_hints_builtins (exp, fcode);
       return target;
   }
 
@@ -5442,11 +5449,9 @@ aarch64_resolve_overloaded_memtag (location_t loc,
 }
 
 static tree
-aarch64_resolve_overloaded_builtin_stshh (void *pass_params)
+aarch64_resolve_overloaded_builtin_atomic_hints (void *pass_params)
 {
   vec<tree, va_gc> *params = static_cast<vec<tree, va_gc> *> (pass_params);
-  if (vec_safe_length (params) != 4)
-    return NULL_TREE;
 
   tree addr = (*params)[0];
   tree val = (*params)[1];
@@ -5459,23 +5464,25 @@ aarch64_resolve_overloaded_builtin_stshh (void *pass_params)
 
   tree ptr_type = TYPE_MAIN_VARIANT (TREE_TYPE (addr_type));
 
+  if (vec_safe_length (params) != 4)
+    return NULL_TREE;
   if (POINTER_TYPE_P (ptr_type))
-    return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_PTR];
+    return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_PTR];
 
   switch (TYPE_MODE (ptr_type))
     {
     case QImode:
-      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_QI];
+      return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_QI];
     case HImode:
-      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_HI];
+      return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_HI];
     case SImode:
-      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SI];
+      return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SI];
     case DImode:
-      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DI];
+      return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DI];
     case SFmode:
-      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_SF];
+      return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_SF];
     case DFmode:
-      return aarch64_builtin_decls[AARCH64_BUILTIN_STSHH_DF];
+      return aarch64_builtin_decls[AARCH64_BUILTIN_ATOMIC_HINTS_STORE_DF];
     default:
       return NULL_TREE;
     }
@@ -5492,8 +5499,8 @@ aarch64_resolve_overloaded_builtin_general (location_t loc, tree function,
       && fcode <= AARCH64_MEMTAG_BUILTIN_END)
     return aarch64_resolve_overloaded_memtag(loc, function, pass_params);
 
-  if (fcode == AARCH64_BUILTIN_STSHH)
-    return aarch64_resolve_overloaded_builtin_stshh (pass_params);
+  if (fcode == AARCH64_BUILTIN_ATOMIC_HINTS_STORE)
+    return aarch64_resolve_overloaded_builtin_atomic_hints (pass_params);
 
   return NULL_TREE;
 }

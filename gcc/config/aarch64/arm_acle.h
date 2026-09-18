@@ -102,9 +102,9 @@ __sqrtf (float __x)
   return __builtin_aarch64_sqrtsf (__x);
 }
 
-#define __atomic_store_with_stshh(__addr, __value, __memory_order, __ret) \
-  __builtin_aarch64_stshh ((__addr), (__value), \
-					     (__memory_order), (__ret))
+#define __arm_atomic_store_with_hint(__addr, __value, __memory_order, __hint) \
+  __builtin_aarch64_atomic_hints_store ((__addr), (__value), \
+					     (__memory_order), (__hint))
 
 #pragma GCC push_options
 #pragma GCC target ("+nothing+jscvt")

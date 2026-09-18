@@ -7,7 +7,7 @@
 /*
 ** testFun1:
 ** ...
-**	stshh	keep
+**	stcph
 **	strb	w[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -18,13 +18,13 @@ testFun1 ()
   char* ptr1 = &item1;
   char test1 = 1;
 
-  __arm_atomic_store_with_hint (ptr1, test1, __ATOMIC_RELAXED, 0);
+  __arm_atomic_store_with_hint (ptr1, test1, __ATOMIC_RELAXED, 2);
 }
 
 /*
 ** testFun2:
 ** ...
-**	stshh	keep
+**	stcph
 **	stlrh	w[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -34,13 +34,13 @@ testFun2 ()
   short item2 = 10;
   short* ptr2 = &item2;
   short test2 = 11;
-  __arm_atomic_store_with_hint (ptr2, test2, __ATOMIC_RELEASE, 0);
+  __arm_atomic_store_with_hint (ptr2, test2, __ATOMIC_RELEASE, 2);
 }
 
 /*
 ** testFun3:
 ** ...
-**	stshh	strm
+**	stcph
 **	stlr	w[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -50,13 +50,13 @@ testFun3 ()
   unsigned int item3 = 10;
   unsigned int* ptr3 = &item3;
   unsigned int test3 = 11;
-  __arm_atomic_store_with_hint (ptr3, test3, __ATOMIC_SEQ_CST, 1);
+  __arm_atomic_store_with_hint (ptr3, test3, __ATOMIC_SEQ_CST, 2);
 }
 
 /*
 ** testFun4:
 ** ...
-**	stshh	strm
+**	stcph
 **	str	x[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -66,13 +66,13 @@ testFun4 ()
   long item4 = 10;
   long* ptr4 = &item4;
   long test4 = 11;
-  __arm_atomic_store_with_hint (ptr4, test4, __ATOMIC_RELAXED, 1);
+  __arm_atomic_store_with_hint (ptr4, test4, __ATOMIC_RELAXED, 2);
 }
 
 /*
 ** testFun5:
 ** ...
-**	stshh	keep
+**	stcph
 **	stlr	x[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -84,13 +84,13 @@ testFun5 ()
   long **ptr5 = &ptritem;
   long test5item = 11;
   long *test5 = &test5item;
-  __arm_atomic_store_with_hint (ptr5, test5, __ATOMIC_SEQ_CST, 0);
+  __arm_atomic_store_with_hint (ptr5, test5, __ATOMIC_SEQ_CST, 2);
 }
 
 /*
 ** testFun6:
 ** ...
-**	stshh	keep
+**	stcph
 **	stlr	w[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -100,13 +100,13 @@ testFun6 ()
   float item6 = 10;
   float* ptr6 = &item6;
   float test6 = 11;
-  __arm_atomic_store_with_hint (ptr6, test6, __ATOMIC_SEQ_CST, 0);
+  __arm_atomic_store_with_hint (ptr6, test6, __ATOMIC_SEQ_CST, 2);
 }
 
 /*
 ** testFun7:
 ** ...
-**	stshh	strm
+**	stcph
 **	str	x[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -116,13 +116,13 @@ testFun7 ()
   double item7 = 10;
   double* ptr7 = &item7;
   double test7 = 11;
-  __arm_atomic_store_with_hint (ptr7, test7, __ATOMIC_RELAXED, 1);
+  __arm_atomic_store_with_hint (ptr7, test7, __ATOMIC_RELAXED, 2);
 }
 
 /*
 ** testFun8:
 ** ...
-**	stshh	keep
+**	stcph
 **	strb	w[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -133,13 +133,13 @@ testFun8 ()
   char* ptr8 = &item8;
   long test8 = 1;
 
-  __arm_atomic_store_with_hint (ptr8, test8, __ATOMIC_RELAXED, 0);
+  __arm_atomic_store_with_hint (ptr8, test8, __ATOMIC_RELAXED, 2);
 }
 
 /*
 ** testFun9:
 ** ...
-**	stshh	strm
+**	stcph
 **	str	w[0-9]+, \[x[0-9]+\]
 ** ...
 */
@@ -150,7 +150,7 @@ testFun9 ()
   int* ptr9 = &item9;
   float test9 = 1;
 
-  __arm_atomic_store_with_hint (ptr9, test9, __ATOMIC_RELAXED, 1);
+  __arm_atomic_store_with_hint (ptr9, test9, __ATOMIC_RELAXED, 2);
 }
 
 /*
@@ -158,7 +158,7 @@ testFun9 ()
 ** ...
 **	add	(x[0-9]+), \1, 1
 **	mov	(w[0-9]+), 7
-**	stshh	strm
+**	stcph
 **	strb	\2, \[\1\]
 ** ...
 */
@@ -166,13 +166,13 @@ static char buf[8];
 void
 testFun10 (void)
 {
-  __arm_atomic_store_with_hint((buf + 1), (char)7, __ATOMIC_RELAXED, 1);
+  __arm_atomic_store_with_hint((buf + 1), (char)7, __ATOMIC_RELAXED, 2);
 }
 
 /*
 ** testFun11:
 ** ...
-**	stshh	strm
+**	stcph
 **	str	wzr, \[x[0-9]+\]
 ** ...
 */
@@ -182,5 +182,5 @@ testFun11 ()
   int item11 = 10;
   int* ptr11 = &item11;
 
-  __arm_atomic_store_with_hint (ptr11, 0, __ATOMIC_RELAXED, 1);
+  __arm_atomic_store_with_hint (ptr11, 0, __ATOMIC_RELAXED, 2);
 }
