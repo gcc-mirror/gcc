@@ -4134,8 +4134,23 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   /* Requires loop versioning with niter checks.  */
   if (LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo))
     {
-      /*  FIXME: Make cost depend on complexity of individual check.  */
-      (void) add_stmt_cost (target_cost_data, 1, vector_stmt,
+      tree assum = LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo);
+
+      /* Count all involved statements in the assumption.
+	 ??? This might over-count in case we CSE later.  */
+      auto count_stmts = [] (tree *t, int *walk, void *nstmts) -> tree
+	{
+	  if (!EXPR_P (*t) || is_gimple_val (*t))
+	    *walk = 0;
+	  else
+	    (*(int *) nstmts)++;
+	  return NULL_TREE;
+	};
+
+      int nstmts = 0;
+      walk_tree_without_duplicates (&assum, count_stmts, &nstmts);
+
+      (void) add_stmt_cost (target_cost_data, nstmts, scalar_stmt,
 			    NULL, NULL, NULL_TREE, 0, vect_prologue);
       if (dump_enabled_p ())
 	dump_printf (MSG_NOTE,
