@@ -1,4 +1,4 @@
-/* { dg-skip-if "fcntl,unistd" { avr-*-* } } */
+/* { dg-skip-if "fcntl,unistd" { avr-*-* *-*-hpux* } } */
 
 /* Tests for fd leak and errno handling of mktemp-family functions.  */
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */

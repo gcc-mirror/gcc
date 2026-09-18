@@ -1,6 +1,6 @@
 /* { dg-additional-options "-Wno-analyzer-null-argument" } */
 /* { dg-prune-output "leak of file descriptor" } */
-/* { dg-skip-if "incomplete stdio" { avr-*-* } } */
+/* { dg-skip-if "incomplete stdio" { avr-*-* *-*-hpux* } } */
 
 #include <stdio.h>
 #include <stdlib.h>

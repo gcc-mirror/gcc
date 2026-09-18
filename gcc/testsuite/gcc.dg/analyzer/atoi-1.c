@@ -22,7 +22,7 @@ void test_valid_atol(void) {
     long val = atol("123"); /* Should be fine. */
 }
 
-#ifndef __AVR__
+#if !defined(__AVR__) && !defined(__hpux__)
 void test_valid_atoll(void) {
     long long val = atoll("123"); /* Should be fine. */
 }
