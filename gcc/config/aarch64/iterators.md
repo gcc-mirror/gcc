@@ -1479,6 +1479,8 @@
     UNSPECV_LDAP		; Represent an atomic acquire load with RCpc semantics.
     UNSPECV_STL			; Represent an atomic store or store-release.
     UNSPECV_ATOMIC_HINTS_STORE	; Represent an atomic store with a hint.
+    UNSPECV_ATOMIC_HINTS_FETCH	; Represent an atomic fetch with a hint.
+    UNSPECV_HINTS_FETCH		; Likewise.
     UNSPECV_ATOMIC_CMPSW	; Represent an atomic compare swap.
     UNSPECV_ATOMIC_EXCHG	; Represent an atomic exchange.
     UNSPECV_ATOMIC_CAS		; Represent an atomic CAS.

@@ -46,6 +46,15 @@ NAME (TYPE __value, uint32_t __rotate)					  \
   return __value >> __rotate | __value << ((__size - __rotate) % __size); \
 }
 
+enum atomic_fetch
+{
+  FETCH_ADD,
+  FETCH_SUB,
+  FETCH_AND,
+  FETCH_XOR,
+  FETCH_OR,
+};
+
 _GCC_ARM_ACLE_ROR_FN (__ror, uint32_t)
 _GCC_ARM_ACLE_ROR_FN (__rorl, unsigned long)
 _GCC_ARM_ACLE_ROR_FN (__rorll, uint64_t)
@@ -105,6 +114,36 @@ __sqrtf (float __x)
 #define __arm_atomic_store_with_hint(__addr, __value, __memory_order, __hint) \
   __builtin_aarch64_atomic_hints_store ((__addr), (__value), \
 					     (__memory_order), (__hint))
+
+#define __arm_atomic_fetch_add_with_hint(__addr, __value, __memory_order, \
+					 __hint) \
+  __builtin_aarch64_atomic_hints_fetch ((__addr), (__value), \
+					(__memory_order), (__hint), \
+					(FETCH_ADD))
+
+#define __arm_atomic_fetch_sub_with_hint(__addr, __value, __memory_order, \
+					 __hint) \
+  __builtin_aarch64_atomic_hints_fetch ((__addr), (__value), \
+					(__memory_order), (__hint), \
+					(FETCH_SUB))
+
+#define __arm_atomic_fetch_and_with_hint(__addr, __value, __memory_order, \
+					 __hint) \
+  __builtin_aarch64_atomic_hints_fetch ((__addr), (__value), \
+					(__memory_order), (__hint), \
+					(FETCH_AND))
+
+#define __arm_atomic_fetch_xor_with_hint(__addr, __value, __memory_order, \
+					 __hint) \
+  __builtin_aarch64_atomic_hints_fetch ((__addr), (__value), \
+					(__memory_order), (__hint), \
+					(FETCH_XOR))
+
+#define __arm_atomic_fetch_or_with_hint(__addr, __value, __memory_order, \
+					 __hint) \
+  __builtin_aarch64_atomic_hints_fetch ((__addr), (__value), \
+					(__memory_order), (__hint), \
+					(FETCH_OR))
 
 #pragma GCC push_options
 #pragma GCC target ("+nothing+jscvt")

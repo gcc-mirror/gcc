@@ -791,6 +791,83 @@
   [(set_attr "arch" "*,rcpc8_4")]
 )
 
+(define_insn "aarch64_atomic_fetch_<atomic_ldoptab><mode>_atomic_hint"
+  [(set (match_operand:ALLI 0 "register_operand" "=r")
+	(match_operand:ALLI 1 "aarch64_sync_memory_operand" "+Q"))
+   (set (match_dup 1)
+	(unspec_volatile:ALLI
+	  [(match_dup 1)
+	   (match_operand:ALLI 2 "register_operand" "r")
+	   (match_operand:SI 3 "const_int_operand")
+	   (match_operand:SI 4 "const_int_operand")]
+	  ATOMIC_LDOP))]
+  "TARGET_LSE"
+  {
+    switch (INTVAL (operands[4]))
+    {
+      case 0:
+	output_asm_insn ("shuh", operands);
+	break;
+      case 1:
+	output_asm_insn ("shuh\tph", operands);
+	break;
+      default:
+	gcc_unreachable ();
+    }
+    enum memmodel model = memmodel_from_int (INTVAL (operands[3]));
+    if (is_mm_relaxed (model))
+      return "ld<atomic_ldop><atomic_sfx>\t%<w>2, %<w>0, %1";
+    else if (is_mm_acquire (model) || is_mm_consume (model))
+      return "ld<atomic_ldop>a<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else if (is_mm_release (model))
+      return "ld<atomic_ldop>l<atomic_sfx>\t%<w>2, %<w>0, %1";
+    else
+      return "ld<atomic_ldop>al<atomic_sfx>\t%<w>2, %<w>0, %1";
+  }
+)
+
+(define_expand "@aarch64_atomic_hints_fetch<mode>"
+[(set (match_operand:ALLI 0 "register_operand")
+	(unspec_volatile:ALLI
+	  [(match_operand:ALLI 1 "aarch64_sync_memory_operand")
+	   (match_operand:ALLI 2 "aarch64_reg_or_zero")
+	   (match_operand:SI 3 "const_int_operand")   ;; model
+	   (match_operand:SI 4 "const_int_operand")   ;; hint
+	   (match_operand:SI 5 "const_int_operand")]  ;; fetch_type
+	  UNSPECV_ATOMIC_HINTS_FETCH))]
+  "TARGET_LSE"
+  {
+    rtx (*gen) (rtx, rtx, rtx, rtx, rtx);
+    switch (INTVAL (operands[5]))
+    {
+      case 1:
+	operands[2] = expand_simple_unop (<MODE>mode, NEG, operands[2],
+					  NULL, 1);
+	/* fallthrough.  */
+      case 0:
+	gen = gen_aarch64_atomic_fetch_add<mode>_atomic_hint;
+	break;
+      case 2:
+	operands[2] = expand_simple_unop (<MODE>mode, NOT, operands[2],
+					  NULL, 1);
+	gen = gen_aarch64_atomic_fetch_bic<mode>_atomic_hint;
+	break;
+      case 3:
+	gen = gen_aarch64_atomic_fetch_xor<mode>_atomic_hint;
+	break;
+      case 4:
+	gen = gen_aarch64_atomic_fetch_ior<mode>_atomic_hint;
+	break;
+      default:
+	gcc_unreachable ();
+    }
+    operands[2] = force_reg (<MODE>mode, operands[2]);
+    emit_insn (gen (operands[0], operands[1], operands[2], operands[3],
+		    operands[4]));
+    DONE;
+  }
+)
+
 (define_insn "@aarch64_load_exclusive<mode>"
   [(set (match_operand:SI 0 "register_operand" "=r")
     (zero_extend:SI
