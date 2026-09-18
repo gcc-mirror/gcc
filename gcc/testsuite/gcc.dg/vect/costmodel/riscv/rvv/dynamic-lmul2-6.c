@@ -48,4 +48,4 @@ foo (int32_t *__restrict a, int32_t *__restrict b, int32_t *__restrict c,
 /* { dg-final { scan-assembler {e32,m2} } } */
 /* { dg-final { scan-assembler {e8,m8} } } */
 /* { dg-final { scan-assembler-not {csrr} } } */
-/* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "Preferring smaller LMUL loop because it has unexpected spills" 1 "vect" } } */

@@ -28,7 +28,7 @@ f3 (uint8_t *restrict a, uint8_t *restrict b,
     }
 }
 
-/* { dg-final { scan-assembler {e8,m4} } } */
+/* { dg-final { scan-assembler {e8,m1} } } */
 /* { dg-final { scan-assembler-not {jr} } } */
 /* { dg-final { scan-assembler-times {ret} 1 } } */
 /* { dg-final { scan-tree-dump-not "Preferring smaller LMUL loop because it has unexpected spills" "vect" } } */
