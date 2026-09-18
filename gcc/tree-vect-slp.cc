@@ -2052,6 +2052,10 @@ vect_build_slp_tree (vec_info *vinfo,
       gcc_assert (res_ == res);
       /* Keep a reference for the bst_map use.  */
       SLP_TREE_REF_COUNT (res)++;
+      /* For BB vectorization nodes that need splitting should be failed.  */
+      gcc_assert (!is_a <bb_vec_info> (vinfo)
+		  || multiple_p (group_size,
+				 TYPE_VECTOR_SUBPARTS (res->vectype)));
     }
   return res_;
 }
