@@ -660,6 +660,134 @@ proc verify-prime-paths { testname testcase file } {
     return $failed
 }
 
+# Verify function summaries (--function-summaries/-f).  The function
+# summaries are printed to stdout, so we take it (or rather, the
+# [lindex result 1] from remote_exec in addition to the .gcov file.
+# We scan the gcov file for a comment with the expected rows of the
+# function summaries output, which should look like this:
+#
+#  Function 'fn1'
+#  Lines executed:88.89% of 9
+#  Branches executed:100.00% of 4
+#  Taken at least once:50.00% of 4
+#  Calls executed:50.00% of 2
+#  Condition outcomes covered:50.00% of 4
+#  Prime paths covered:33.33% of 3
+#
+# The order of fields is important and should match what gcov prints.
+proc verify-function-summaries { testname testcase file stdout } {
+    set failed 0
+    set fd [open $file r]
+    set expected [dict create]
+    set funcname ""
+
+    while { [gets $fd line] >= 0 } {
+	if {[regexp "Function '(.+)'" $line all fname]} {
+	    set funcname $fname
+	}
+	if {[regexp "(Lines executed:.*)" $line _ ln]} {
+	    dict set expected $funcname "lines" $ln
+	}
+	if {[regexp "(Branches executed:.*)" $line _ ln]} {
+	    dict set expected $funcname "branches" $ln
+	}
+	if {[regexp "(No branches)" $line _ ln]} {
+	    dict set expected $funcname "branches" $ln
+	}
+	if {[regexp "(Taken at least once:.*)" $line _ ln]} {
+	    dict set expected $funcname "taken" $ln
+	}
+	if {[regexp "(Calls executed:.*)" $line _ ln]} {
+	    dict set expected $funcname "calls" $ln
+	}
+	if {[regexp "(No calls)" $line _ ln]} {
+	    dict set expected $funcname "calls" $ln
+	}
+	if {[regexp "(Condition outcomes covered:.*)" $line _ ln]} {
+	    dict set expected $funcname "conditions" $ln
+	}
+	if {[regexp "(No conditions)" $line _ ln]} {
+	    dict set expected $funcname "conditions" $ln
+	}
+	if {[regexp "(Prime paths covered:.*)" $line _ ln]} {
+	    dict set expected $funcname "paths" $ln
+	}
+    }
+
+    set records [split $stdout "\n"]
+    for {set i 0} {$i < [llength $records]} {incr i} {
+	set line [string trimright [lindex $records $i]]
+
+	if {[regexp "Function '(.+)'" $line _ fname]} {
+	    # Skip if we haven't recorded expected summaries for this function
+	    if {![dict exists $expected $fname]} {
+		continue
+	    }
+
+	    set rows [dict get $expected $fname]
+	    dict with rows {
+		if {[info exists lines]} {
+		    incr i
+		    set line [string trimright [lindex $records $i]]
+		    if {![string equal $lines $line]} {
+			incr failed
+			fail "$fname: Expected '$lines',  was '$line'"
+		    }
+		}
+		if {[info exists branches]} {
+		    incr i
+		    set line [string trimright [lindex $records $i]]
+		    if {![string equal $branches $line]} {
+			incr failed
+			fail "$fname: Expected '$branches',  was '$line'"
+		    }
+		}
+		if {[info exists taken]} {
+		    incr i
+		    set line [string trimright [lindex $records $i]]
+		    if {![string equal $taken $line]} {
+			incr failed
+			fail "$fname: Expected '$taken',  was '$line'"
+		    }
+		}
+		if {[info exists calls]} {
+		    incr i
+		    set line [string trimright [lindex $records $i]]
+		    if {![string equal $calls $line]} {
+			incr failed
+			fail "$fname: Expected '$calls',  was '$line'"
+		    }
+		}
+		if {[info exists conditions]} {
+		    incr i
+		    set line [string trimright [lindex $records $i]]
+		    if {![string equal $conditions $line]} {
+			incr failed
+			fail "$fname: Expected '$conditions',  was '$line'"
+		    }
+		}
+		if {[info exists paths]} {
+		    incr i
+		    set line [string trimright [lindex $records $i]]
+		    if {![string equal $paths $line]} {
+			incr failed
+			fail "$fname: Expected '$paths',  was '$line'"
+		    }
+		}
+	    }
+	    dict unset expected $fname
+	}
+    }
+
+    if {[dict size $expected] > 0} {
+	incr failed
+	fail "Did not see summary for all functions, missing [dict keys $expected]"
+    }
+
+    close $fd
+    return $failed
+}
+
 proc gcov-pytest-format-line { args } {
     global subdir
 
@@ -741,6 +869,7 @@ proc run-gcov { args } {
     set gcov_verify_lines 1
     set gcov_verify_intermediate 0
     set gcov_verify_filters 0
+    set gcov_verify_function_summaries 0
     set gcov_remove_gcda 0
     set xfailed 0
 
@@ -757,6 +886,8 @@ proc run-gcov { args } {
 	  set verify_filters_unexpected [lindex $a 2]
 	} elseif { $a == "prime-paths" } {
 	  set gcov_verify_prime_paths 1
+	} elseif { $a == "function-summaries" } {
+	    set gcov_verify_function_summaries 1
 	} elseif { $a == "intermediate" } {
 	  set gcov_verify_intermediate 1
 	  set gcov_verify_calls 0
@@ -764,6 +895,7 @@ proc run-gcov { args } {
 	  set gcov_verify_conditions 0
 	  set gcov_verify_lines 0
 	  set gcov_verify_filters 0
+	  set gcov_verify_function_summaries 0
 	} elseif { $a == "remove-gcda" } {
 	  set gcov_remove_gcda 1
 	} elseif { $gcov_args == "" } {
@@ -866,15 +998,20 @@ proc run-gcov { args } {
     } else {
 	set ffailed 0
     }
+    if { $gcov_verify_function_summaries } {
+	set fsfailed [verify-function-summaries $testname $testcase $testcase.gcov [lindex $result 1]]
+    } else {
+	set fsfailed 0
+    }
 
     # Report whether the gcov test passed or failed.  If there were
     # multiple failures then the message is a summary.
-    set tfailed [expr $lfailed + $bfailed + $cdfailed + $ppfailed + $cfailed + $ifailed + $ffailed]
+    set tfailed [expr $lfailed + $bfailed + $cdfailed + $ppfailed + $cfailed + $ifailed + $ffailed + $fsfailed]
     if { $xfailed } {
 	setup_xfail "*-*-*"
     }
     if { $tfailed > 0 } {
-	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $ppfailed in prime-paths, $cfailed in return percentages, $ifailed in intermediate format, $ffailed failed in filters"
+	fail "$testname gcov: $lfailed failures in line counts, $bfailed in branch percentages, $cdfailed in condition/decision, $ppfailed in prime-paths, $cfailed in return percentages, $ifailed in intermediate format, $ffailed failed in filters, $fsfailed in summaries"
 	if { $xfailed } {
 	    clean-gcov $testcase
 	}
