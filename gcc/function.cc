@@ -2728,6 +2728,16 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
       if (offset_align != 0)
 	align = MIN (align, offset_align);
     }
+
+  /* If part of the argument is passed in registers and the rest on the
+     stack, the value is reconstructed by spilling the register part just
+     below the aligned stack slot.  The full value therefore starts at an
+     address that is only aligned to the largest power of two dividing the
+     size of the register part, not to FUNCTION_ARG_BOUNDARY.  */
+  if (data->partial)
+    align = MIN (align,
+		 least_bit_hwi (data->partial) * BITS_PER_UNIT);
+
   set_mem_align (stack_parm, align);
 
   if (data->entry_parm)
