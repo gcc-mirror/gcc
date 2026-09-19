@@ -11,7 +11,7 @@ bool isValidAncestorType(int type) {
 
 
 
-/* { dg-final { scan-assembler "czero.nez\t" } } */
-/* { dg-final { scan-assembler "sgtu\t" } } */
+/* { dg-final { scan-assembler "czero.eqz\t" } } */
+/* { dg-final { scan-assembler "sltiu\t" } } */
 /* { dg-final { scan-assembler-not "bgtu\t" } } */
 

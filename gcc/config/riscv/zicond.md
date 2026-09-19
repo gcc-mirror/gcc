@@ -487,3 +487,37 @@
   [(set (match_dup 4) (any_le:X (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (ashift:X (match_dup 4) (match_dup 5)))]
   { operands[5] = GEN_INT (exact_log2 (INTVAL (operands[3]))); })
+
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+	(if_then_else:GPR
+	  (any_le:X (match_operand:X 1 "register_operand")
+		    (match_operand:X 2 "sle<u>_operand"))
+	  (match_operand:GPR 3 "register_operand")
+	  (const_int 0)))]
+  "TARGET_ZICOND_LIKE && can_create_pseudo_p ()"
+  [(set (match_dup 4) (any_le:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(if_then_else:GPR (ne:X (match_dup 4) (const_int 0))
+			  (match_dup 3)
+			  (const_int 0)))]
+{
+  operands[4] = gen_reg_rtx (<X:MODE>mode);
+})
+
+(define_split
+  [(set (match_operand:GPR 0 "register_operand")
+	(if_then_else:GPR
+	  (any_gt:X (match_operand:X 1 "register_operand")
+		    (match_operand:X 2 "sle<u>_operand"))
+	  (match_operand:GPR 3 "register_operand")
+	  (const_int 0)))]
+  "TARGET_ZICOND_LIKE && can_create_pseudo_p ()"
+  [(set (match_dup 4) (<gt_to_le>:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0)
+	(if_then_else:GPR (eq:X (match_dup 4) (const_int 0))
+			  (match_dup 3)
+			  (const_int 0)))]
+{
+  operands[4] = gen_reg_rtx (<X:MODE>mode);
+})

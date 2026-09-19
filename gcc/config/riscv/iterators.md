@@ -268,6 +268,9 @@
 (define_code_iterator any_le [le leu])
 (define_code_iterator any_eq [eq ne])
 
+;; Maps GT/GTU to LE/LE.
+(define_code_attr gt_to_le [(gt "le") (gtu "leu")])
+
 ;; Iterators for conditions we can emit a sCC against 0 or a reg directly
 (define_code_iterator scc_0  [any_eq any_gt any_lt])
 
