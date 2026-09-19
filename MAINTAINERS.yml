@@ -1337,6 +1337,17 @@ users:
   inactive: true
   inactive_email:
   - jdennett@google.com
+- sn: Derhaeg
+  cn: Michiel Derhaeg
+  email:
+  - michiel.derhaeg@globalfoundries.com
+  - michiel@derhaeg.be
+  - michiel@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: michiel
+  inactive_email:
+  - michiel@synopsys.com
 - sn: Deshpande
   cn: Sameera Deshpande
   email:
