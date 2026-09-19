@@ -272,7 +272,7 @@ f) *NEST range :
   "variables".  The former are either a denotation or an identifier of
   some mode.  The second are identifiers of a "reference to" mode. }
 
-{ The rule f introduces a paranotion for all the constructs that
+{ The rule {f} introduces a paranotion for all the constructs that
   introduce new ranges.  }
 
 3.1 Closed clauses
@@ -539,7 +539,7 @@ i) WHETHER NEST filters EMPTY out of EMPTY{h} : WHETHER true.
     d) A
        PUB B  }
 
-{ In rule b, the 'invoke TAU's enveloped by 'INKS' represent those
+{ In rule {b}, the 'invoke TAU's enveloped by 'INKS' represent those
   modules which might need to be invoked at any module-call whose
   applied-module-indication identified a particular
   defining-module-indication, whereas those enveloped by 'INKSETY'
@@ -550,13 +550,13 @@ i) WHETHER NEST filters EMPTY out of EMPTY{h} : WHETHER true.
   that all modules now invoked will never be invoked again within
   those descendents.  }
 
-{ Rule f ensures the independence of declarations revealed by one
+{ Rule {f} ensures the independence of declarations revealed by one
   revelation; thus
 
     MODULE A = DEF PUB REAL x FED, B = DEF PUB REAL x FED;
     ACCESS A, B (x)
 
-  is not produced.  However, rule e allows a given declaration to be
+  is not produced.  However, rule {e} allows a given declaration to be
   revealed by two public accesses of the same module, as in
 
     MODULE A = DEF PUB REAL x FED;
@@ -634,11 +634,11 @@ e) NEST declaration with DECSETY without DECSETY1{49e} :
        and also{94f} token,
        NEST declaration with DECSETY3 without DECSETY1{e}.
 
-{ Rule e determines how a "NEST declaration with DECSETY without
+{ Rule {e} determines how a "NEST declaration with DECSETY without
   DECSETY1" results into two groups of declarations.  The declarations
   in 'DECSETY' are public and syntactically preceded by PUB.  The
-  declarations in 'DECSETY1 are non-public and are not marked by
-  PUB.  }
+  declarations in 'DECSETY1 are non-public and are not marked by PUB.
+  }
 
 4.2 Mode declarations
 
@@ -838,12 +838,12 @@ g) WHETHER MOIDS ravels to MOODS{g,46s} :
   mode if they have the same number of fields with the same tags and
   their modes deflex.  }
 
-{ The hyperrule f) implements a predicate that determines whether two
+{ The hyperrule {f} implements a predicate that determines whether two
   provided sets of moods are incestuous, i.e. whether they contain
   modes which are firmly related.  }
 
-{ The hyperrule g) determines whether a set of moods and
-  united modes may be ravelled.  }
+{ The hyperrule {g} determines whether a set of moods and united modes
+  may be ravelled.  }
 
 4.8 Indicators and field selectors
 
@@ -968,11 +968,11 @@ g) *module text :
 
     f) POSTLUDE close (f) }
 
-{ Note that the EMPTY (for PROPSETY) in rule f enforces that a module
-  postlude cannot contain declarations, labels or module accesses.
-  Only units are allowed.  }
+{ Note that the EMPTY (for PROPSETY) in rule {f} enforces that a
+  module postlude cannot contain declarations, labels or module
+  accesses.  Only units are allowed.  }
 
-{ Rule b ensures that a unique 'TAU' is associated with each
+{ Rule {b} ensures that a unique 'TAU' is associated with each
   module-text accessible from any given point in the program.  This is
   used to ensure that an invoke ATU' can be identified in the nest of
   all descendent constructs of any access-clause or module-text which
@@ -1391,7 +1391,7 @@ b) widened to{61A} structured with SIZETY real field letter r letter e
            SIZETY real field letter i letter m mode FORM :
      MEEK{61C} SIZETY real FORM ;
      widened to{a} SIZETY real FORM.
-c) widened to{61A} row of boolean FORM : MEEK{61C} BIT FORM.
+c) widened to{61A} row of boolean FORM : MEEK{61C} BITS FORM.
 d) widened to{61A} row of character FORM : MEEK{61C} BYTES FORM.
 
 { Examples:
@@ -1631,6 +1631,12 @@ d) WHETHER (procedure with) shields SAFE to yin yang SAFE{73c} :
 
 8 Denotations
 
+8.0.1 Syntax
+
+a) MOID NEST denoter{5D,A341i} :
+     pragment{92a} sequence option,
+       MOID denotation{810a,811a,812a,813a,814a,815a,82a,b,c,83a,-}.
+
 8.1 Plain denotations
 
 8.1.0.1 Syntax
@@ -1640,13 +1646,17 @@ B) *NUMERAL :: fixed point numeral ; variable point numeral ;
                floating point numeral.
 
 a) SIZE INTREAL denotation{a,80a} :
-     SIZE symbol{94d}, INTREAL, denotation{a,811a,812a}.
+     SIZE symbol{94d}, INTREAL denotation{a,811a,812a}.
 
 b) *plain denotation :
      PLAIN denotation{a,811a,812a,813a,814a} ; void denotation{815a}.
 
 { Example:
     a) LONG 0 }
+
+{ Note how rule {a} might lead to situations like `long short integral
+  denotation' but these will eventually result in a blind alley
+  in {80a} due to MOID not generating `long short integral'. }
 
 8.1.1 Integral denotations
 
@@ -1700,7 +1710,7 @@ j) plusminus{i} : plus symbol{94c} ; mius symbol{94c}.
 
 8.1.3.1 Syntax
 
-a) boolean denotation{80a} : true{94b} symbol ; false{94b} smbol.
+a) boolean denotation{80a} : true{94b} symbol ; false{94b} symbol.
 
 { Examples:
     a) TRUE
@@ -1754,7 +1764,7 @@ a) structured with row of boolean field
      long{94d} symbol, structured with row of boolean field
                                   LENGTHETY letter aleph mode denotation{a,c}.
 b) structured with row of boolean field
-              SHORT SHORTHTETY letter aleph mode denotation{b,80a} :
+              SHORT SHORTHETY letter aleph mode denotation{b,80a} :
      short{94d} symbol,
        structured with row of boolean field SHORTHETY letter aleph mode denotation{b,c}.
 c) structured wih row of boolean field
@@ -1974,12 +1984,12 @@ k) *digit symbol : DIGIT symbol{94b}.
   packets when taken in conjunction with the particular-program BEGIN
   NEST "abc" END }
 
-{ In rule a above, 'MODSETY' envelops the 'MOD's defined by al the
+{ In rule {a} above, 'MODSETY' envelops the 'MOD's defined by al the
   definition-module-packets that are being stuffed along with the
   stuffing-packet.
 
-  In rules c and d, 'MODSETY1' need only envelop the 'MOD's for those
-  modules actually accessed from within that packet.
+  In rules {c} and {d}, 'MODSETY1' need only envelop the 'MOD's for
+  those modules actually accessed from within that packet.
 
   The semantics related to packets are only defined if, for a
   collection of packets being stuffed together, all the 'MOD's
