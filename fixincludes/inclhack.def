@@ -1806,7 +1806,7 @@ fix = {
 fix = {
     hackname  = darwin_flt_eval_method;
     mach      = "*-*-darwin*";
-    files     = math.h;
+    files     = math.h, architecture/i386/math.h, architecture/ppc/math.h;
     select    = "^#if __FLT_EVAL_METHOD__ == 0( \\|\\| __FLT_EVAL_METHOD__ == -1)?$";
     c_fix     = format;
     c_fix_arg = "%0 || __FLT_EVAL_METHOD__ == 16";
