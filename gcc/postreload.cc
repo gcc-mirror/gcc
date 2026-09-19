@@ -249,18 +249,22 @@ reload_cse_regs_1 (void)
 	      if (!condjump || ! any_condjump_p (condjump))
 		break;
 
+	      /* get_condition reverses the condition only when the else arm
+		 is a LABEL_REF, so a jump that returns in one arm would give
+		 the condition of the other edge.  */
+	      if (!JUMP_LABEL (condjump) || !LABEL_P (JUMP_LABEL (condjump)))
+		break;
+
 	      /* This predecessor ends with a possible equivalence
 		 producing conditional branch.  Extract the condition
 		 and try to use it to create an equivalence.  */
-	      rtx pat = pc_set (condjump);
-	      rtx i_t_e = SET_SRC (pat);
-	      gcc_assert (GET_CODE (i_t_e) == IF_THEN_ELSE);
-	      rtx cond = XEXP (i_t_e, 0);
+	      rtx cond = get_condition (condjump, NULL, false, true);
+	      if (!cond)
+		break;
 
-	      if ((((e->flags & EDGE_FALLTHRU) != 0)
-		   == (XEXP (i_t_e, 1) == pc_rtx))
-		  ? GET_CODE (cond) == EQ
-		  : GET_CODE (cond) == NE)
+	      if ((e->flags & EDGE_FALLTHRU) != 0
+		  ? GET_CODE (cond) == NE
+		  : GET_CODE (cond) == EQ)
 		{
 		  /* If this is the first time through record
 		     the source and destination.  */
@@ -300,7 +304,27 @@ reload_cse_regs_1 (void)
 	     It will be entered into the cselib tables before
 	     we process the first real insn in this block.  */
 	  if (dest && ei_end_p (ei))
-	    implicit_set = make_insn_raw (gen_rtx_SET (dest, src));
+	    {
+	      rtx_insn *i;
+	      bool useful = false;
+	      FOR_BB_INSNS (bb, i)
+		{
+		  if (!NONDEBUG_INSN_P (i))
+		    continue;
+		  rtx s = single_set (i);
+		  if (s
+		      && rtx_equal_p (SET_DEST (s), dest)
+		      && rtx_equal_p (SET_SRC (s), src))
+		    {
+		      useful = true;
+		      break;
+		    }
+		  if (reg_set_p (dest, i))
+		    break;
+		}
+	      if (useful)
+		implicit_set = make_insn_raw (gen_rtx_SET (dest, src));
+	    }
 	}
 
       FOR_BB_INSNS (bb, insn)
