@@ -3315,7 +3315,7 @@ add_condition_counts (coverage_info *coverage, const block_info *block)
 static void
 add_path_counts (coverage_info &coverage, const function_info &fn)
 {
-  coverage.paths += fn.paths.path_count ();
+  coverage.paths += fn.paths.paths.size ();
   coverage.paths_covered += fn.paths.covered_paths ();
   coverage.paths_suppressed += fn.paths.suppressed_count ();
 }
@@ -3441,7 +3441,7 @@ function_summary (const coverage_info *coverage)
 		 format_gcov (coverage->conditions_covered,
 			      coverage->conditions, 2),
 		 coverage->conditions);
-      if (coverage->conditions && coverage->conditions_suppressed > 0)
+      else if (coverage->conditions && coverage->conditions_suppressed > 0)
 	fnotice (stdout, "Condition outcomes covered:%s of %d"
 		 " (%d of %d suppressed)\n",
 		 format_gcov (coverage->conditions_covered,
