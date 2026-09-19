@@ -569,12 +569,20 @@ struct GTY(()) TABLE_T
 
    NODE is the defining identifier associated to the declaration.
 
-   SCOPE is the lexical depth of the tag.  Zero corresponds to the primal
-   scope.  It is set by the static scope checker.
+   SCOPE is the lexical depth of the scope of the value ascribed to the tag.
+   Zero corresponds to the primal scope.  Only valid when SCOPE_ASSIGNED is
+   set.  This field is set by the static scope checker.
 
    SCOPE_ASSIGNED determines whether a SCOPE has been actually assigned to the
-   tag.  It is set by the static scope checker.  The entities which get
-   assigned scopes are identities of format texts and routine texts.
+   tag.  This field is set by the static scope checker.
+
+   YOUNGEST_ENVIRON is used when NODE is either a ROUTINE_TEXT or a
+   FORMAT_TEXT, and contains the youngest (higher) lexical level of any object
+   directly declared in the routine or format body.  This is filled in and used
+   by the scope checker.
+
+   LEVEL is the lexical depth of the declaration in which tag was introduced.
+   It is set by the symbol table management.
 
    PORTABLE determines whether the construction associated with the tag is
    Algol 68 or some extension.
@@ -604,11 +612,6 @@ struct GTY(()) TABLE_T
    identity-declaration of a proc mode with a formal hole as actual parameter.
    These declarations are optimized in a similar way than variable declarations
    in order to avoid indirect addressing.
-
-   YOUNGEST_ENVIRON is used when NODE is either a ROUTINE_TEXT or a
-   FORMAT_TEXT, and contains the youngest (higher) lexical level of any object
-   directly declared in the routine or format body.  This is filled in and used
-   by the scope checker.
 
    TREE_DECL is the GENERIC declaration for the definition of this symbol.
    This is set and used by the lower pass.  For mode indicants, it contains a
