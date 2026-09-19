@@ -1,3 +1,11 @@
+2026-09-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2026-09-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/aarch64/acle/hint-1.c: New test.
+	* gcc.target/aarch64/acle/hint-2.c: Likewise.
+
 2026-09-13  Zhou Qiankang  <wszqkzqk@qq.com>
 
 	Backported from master:

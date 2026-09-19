@@ -1,3 +1,22 @@
+2026-09-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	Backported from master:
+	2026-09-01  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc (enum aarch64_builtins): Add
+	AARCH64_BUILTIN_YIELD, AARCH64_BUILTIN_WFE, AARCH64_BUILTIN_WFI,
+	AARCH64_BUILTIN_SEV and AARCH64_BUILTIN_SEVL.
+	(aarch64_init_syshintop_builtins): New function.
+	(handle_arm_acle_h): Call aarch64_init_syshintop_builtins.
+	(aarch64_general_expand_builtin): Expand the system hint builtins.
+	* config/aarch64/aarch64.md (unspecv): Add UNSPECV_YIELD, UNSPECV_WFE,
+	UNSPECV_WFI, UNSPECV_SEV and UNSPECV_SEVL.
+	(aarch64_yield): New insn pattern.
+	(aarch64_wfe): Likewise.
+	(aarch64_wfi): Likewise.
+	(aarch64_sev): Likewise.
+	(aarch64_sevl): Likewise.
+
 2026-09-13  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	Backported from master:
