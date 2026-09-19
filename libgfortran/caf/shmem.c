@@ -311,11 +311,9 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 
 	allocator_lock (&local->ai.alloc);
 	mem = alloc_get_memory_by_id_created (
-	  &local->ai, size * caf_current_team->u.image_info->image_count.count,
-	  next_memid, &created);
+	  &local->ai, size * local->total_num_images, next_memid, &created);
 	if (created)
-	  memset (mem, 0,
-		  size * caf_current_team->u.image_info->image_count.count);
+	  memset (mem, 0, size * local->total_num_images);
 	allocator_unlock (&local->ai.alloc);
       }
       break;
@@ -333,9 +331,9 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
        */
       break;
     default:
-      mem = alloc_get_memory_by_id (
-	&local->ai, size * caf_current_team->u.image_info->image_count.count,
-	next_memid);
+      /* Each image's part is at its index among all images.  */
+      mem = alloc_get_memory_by_id (&local->ai, size * local->total_num_images,
+				    next_memid);
       break;
     }
 
