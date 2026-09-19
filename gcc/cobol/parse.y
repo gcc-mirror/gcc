@@ -13066,6 +13066,7 @@ bad_arg( const char name[],
   return ok;
 }  
 
+#if 0
 static const char *
 passby_str(int mask)
 {
@@ -13083,6 +13084,8 @@ passby_str(int mask)
 
   return "UNKNOWN PASSING METHOD";
 }
+#endif
+
 
 // Verify provided actual parameters against formals.
 static void
