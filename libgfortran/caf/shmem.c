@@ -483,7 +483,9 @@ _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)
   __asm__ __volatile__ ("":::"memory");
   HEALTH_CHECK (stat, errmsg, errmsg_len);
   CHECK_TEAM_INTEGRITY (caf_current_team);
-  sync_all ();
+  /* With a stopped image, SYNC ALL only has the effect of SYNC MEMORY.  */
+  if (!sync_all ())
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 
@@ -543,7 +545,7 @@ _gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
 		if (mapped_images[c] == mapped_images[i])
 		  {
 		    caf_internal_error ("SYNC IMAGES: Duplicate image %d in "
-					"images at position %d and &d.",
+					"images at position %d and %d.",
 					stat, errmsg, errmsg_len, images[c],
 					i + 1, c + 1);
 		    /* There is no official error code for this, but 3 is what
@@ -565,7 +567,10 @@ _gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
 
   __asm__ __volatile__ ("" ::: "memory");
   sync_table (&local->si, mapped_images, count);
-  HEALTH_CHECK (stat, errmsg, errmsg_len);
+  if (count > 0)
+    check_health (mapped_images, count, stat, errmsg, errmsg_len);
+  else
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 extern void _gfortran_report_exception (void);
@@ -585,7 +590,7 @@ mark_stopped (void)
 	= IMAGE_SUCCESS;
       atomic_fetch_add (&this_image.supervisor->finished_images, 1);
     }
-  leave_teams ();
+  leave_teams (true);
 }
 
 /* Tell the supervisor that this image error stopped, so that it can terminate
@@ -650,7 +655,7 @@ _gfortran_caf_fail_image (void)
   fputs ("IMAGE FAILED!\n", stderr);
   this_image.supervisor->images[this_image.image_num].status = IMAGE_FAILED;
   atomic_fetch_add (&this_image.supervisor->failed_images, 1);
-  leave_teams ();
+  leave_teams (false);
   exit (0);
 }
 
@@ -847,6 +852,9 @@ _gfortran_caf_co_broadcast (gfc_descriptor_t *desc, int source_image, int *stat,
   if (stat)
     *stat = 0;
 
+  if (HEALTH_CHECK (stat, errmsg, errmsg_len))
+    return;
+
   if (!check_map_team (&mapped_index, &this_image_index, source_image, NULL,
 		       NULL, stat))
     return;
@@ -942,6 +950,9 @@ _gfortran_caf_co_sum (gfc_descriptor_t *desc, int result_image, int *stat,
   if (stat)
     *stat = 0;
 
+  if (HEALTH_CHECK (stat, errmsg, errmsg_len))
+    return;
+
   /* If result_image == 0 then allreduce is wanted, i.e. mapped_index = -1.  */
   if (result_image
       && !check_map_team (&mapped_index, &this_image_index, result_image, NULL,
@@ -964,6 +975,9 @@ _gfortran_caf_co_min (gfc_descriptor_t *desc, int result_image, int *stat,
 
   if (stat)
     *stat = 0;
+
+  if (HEALTH_CHECK (stat, errmsg, errmsg_len))
+    return;
   /* If result_image == 0 then allreduce is wanted, i.e. mapped_index = -1.  */
   if (result_image
       && !check_map_team (&mapped_index, &this_image_index, result_image, NULL,
@@ -986,6 +1000,9 @@ _gfortran_caf_co_max (gfc_descriptor_t *desc, int result_image, int *stat,
 
   if (stat)
     *stat = 0;
+
+  if (HEALTH_CHECK (stat, errmsg, errmsg_len))
+    return;
   /* If result_image == 0 then allreduce is wanted, i.e. mapped_index = -1.  */
   if (result_image
       && !check_map_team (&mapped_index, &this_image_index, result_image, NULL,
@@ -1007,6 +1024,9 @@ _gfortran_caf_co_reduce (gfc_descriptor_t *desc, void *(*opr) (void *, void *),
 
   if (stat)
     *stat = 0;
+
+  if (HEALTH_CHECK (stat, errmsg, errmsg_len))
+    return;
 
   /* If result_image == 0 then allreduce is wanted, i.e. mapped_index = -1.  */
   if (result_image
@@ -1936,7 +1956,10 @@ _gfortran_caf_sync_team (caf_team_t team, int *stat, char *errmsg,
       return;
     }
 
-  sync_team (team_to_sync);
+  TEAM_HEALTH_CHECK (team_to_sync, stat, errmsg, errmsg_len);
+  /* With a stopped image, SYNC TEAM only has the effect of SYNC MEMORY.  */
+  if (!sync_team_unless_stopped (team_to_sync))
+    TEAM_HEALTH_CHECK (team_to_sync, stat, errmsg, errmsg_len);
 }
 
 int

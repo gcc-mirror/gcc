@@ -88,12 +88,27 @@ void update_teams_images (caf_shmem_team_t);
 
 /* Drop this image, which terminated, from the barriers of all teams it is a
    member of.  The number of finished or failed images has to be updated
-   before the call for it to have any effect.  */
+   before the call for it to have any effect.  When STOPPED, image control
+   statements and collective subroutines no longer synchronize with the other
+   images of these teams.  Otherwise only collective subroutines do not.  */
 
-void leave_teams (void);
+void leave_teams (bool stopped);
 
-void check_health (int *, char *, size_t);
+/* Set STAT for the stopped or failed images among the COUNT images in MAP.
+   Returns the stat value.  */
 
-#define HEALTH_CHECK(stat, errmsg, errlen) check_health (stat, errmsg, errlen)
+int check_health (const int *map, int count, int *stat, char *errmsg,
+		  size_t errmsg_len);
+
+/* Perform the health check on the specified team.  */
+
+#define TEAM_HEALTH_CHECK(team, stat, errmsg, errlen)                          \
+  check_health ((team)->u.image_info->image_map,                               \
+		(team)->u.image_info->image_map_size, stat, errmsg, errlen)
+
+/* Perform the health check on the current team.  */
+
+#define HEALTH_CHECK(stat, errmsg, errlen)                                     \
+  TEAM_HEALTH_CHECK (caf_current_team, stat, errmsg, errlen)
 
 #endif

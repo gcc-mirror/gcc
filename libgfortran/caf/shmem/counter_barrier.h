@@ -27,6 +27,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "thread_support.h"
 
+#include <stdbool.h>
+#include <stdint.h>
+
 /* Usable as counter barrier and as waitable counter.
    This "class" allows to sync all images acting as a barrier.  For this the
    counter_barrier is to be initialized by the number of images and then later
@@ -44,7 +47,14 @@ typedef struct
   caf_shmem_mutex mutex;
   caf_shmem_condvar cond;
   volatile int wait_count;
-  volatile int curr_wait_group;
+  /* The number of the current round of the barrier, and of the last round
+     that was aborted.  */
+  volatile uint64_t curr_wait_group;
+  volatile uint64_t aborted_round;
+  /* The number of abortable arrivals in the current round.  */
+  volatile int abortable_arrivals;
+  /* Set once abortable arrivals are no longer to be synchronized.  */
+  volatile bool aborting;
   volatile int count;
 } counter_barrier;
 
@@ -73,8 +83,19 @@ void counter_barrier_init_add (counter_barrier *, int);
 
 int counter_barrier_get_count (counter_barrier *);
 
-/* Wait for the count in the barrier drop to or below 0.  */
+/* Wait for the count in the barrier drop to or below 0.  When the round is
+   aborted, take part in the next one.  */
 
 void counter_barrier_wait (counter_barrier *);
+
+/* Like counter_barrier_wait, but return false without waiting when the
+   barrier is aborting, or when the round is aborted.  */
+
+bool counter_barrier_wait_abortable (counter_barrier *);
+
+/* Abort the current round when it has an abortable arrival, and every later
+   abortable arrival.  The barrier's lock has to be held.  */
+
+void counter_barrier_abort_locked (counter_barrier *);
 
 #endif

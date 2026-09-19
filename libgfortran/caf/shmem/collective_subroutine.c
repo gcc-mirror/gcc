@@ -22,6 +22,7 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "../caf_error.h"
 #include "collective_subroutine.h"
 #include "supervisor.h"
 #include "teams_mgmt.h"
@@ -219,12 +220,17 @@ get_collsub_buf (size_t size)
 }
 
 /* This function syncs all images with one another.  It will only return once
-   all images have called it.  */
+   all images have called it.  The reduction is laid out over a fixed set of
+   images, so it cannot be completed once an image of the team terminated.  */
 
 static void
 collsub_sync (void)
 {
-  counter_barrier_wait (&caf_current_team->u.image_info->collsub.barrier);
+  counter_barrier *barrier = &caf_current_team->u.image_info->collsub.barrier;
+
+  if (!counter_barrier_wait_abortable (barrier))
+    caf_runtime_error ("Image terminated while executing a collective "
+		       "subroutine");
 }
 
 typedef void *(*red_op) (void *, void *);

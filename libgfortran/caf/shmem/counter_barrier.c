@@ -48,35 +48,80 @@ unlock_counter_barrier (counter_barrier *b)
 void
 counter_barrier_init (counter_barrier *b, int val)
 {
-  *b = (counter_barrier) {CAF_SHMEM_MUTEX_INITIALIZER,
-			  CAF_SHMEM_COND_INITIALIZER, val, 0, val};
+  *b = (counter_barrier) {.mutex = CAF_SHMEM_MUTEX_INITIALIZER,
+			  .cond = CAF_SHMEM_COND_INITIALIZER,
+			  .wait_count = val,
+			  .curr_wait_group = 1,
+			  .aborted_round = 0,
+			  .abortable_arrivals = 0,
+			  .aborting = false,
+			  .count = val};
   initialize_shared_condition (&b->cond, val);
   initialize_shared_mutex (&b->mutex);
+}
+
+/* Start the next round of the barrier and wake the images waiting in the
+   current one.  */
+
+static void
+next_round (counter_barrier *b, bool abort)
+{
+  if (abort)
+    b->aborted_round = b->curr_wait_group;
+  ++b->curr_wait_group;
+  b->wait_count = b->count;
+  b->abortable_arrivals = 0;
+  caf_shmem_cond_broadcast (&b->cond);
+}
+
+/* Take part in the current round of the barrier, with its lock held.  Returns
+   false, when the round was aborted.  */
+
+static bool
+wait_round (counter_barrier *b, bool abortable)
+{
+  const uint64_t round = b->curr_wait_group;
+
+  if (abortable)
+    ++b->abortable_arrivals;
+  --b->wait_count;
+  while (b->wait_count > 0 && b->curr_wait_group == round)
+    caf_shmem_cond_wait (&b->cond, &b->mutex);
+
+  /* The last image to arrive, or to be woken after the count dropped, ends
+     the round.  */
+  if (b->curr_wait_group == round)
+    next_round (b, false);
+
+  return b->aborted_round != round;
 }
 
 void
 counter_barrier_wait (counter_barrier *b)
 {
-  int wait_group_beginning;
+  lock_counter_barrier (b);
+  while (!wait_round (b, false))
+    ;
+  unlock_counter_barrier (b);
+}
+
+bool
+counter_barrier_wait_abortable (counter_barrier *b)
+{
+  bool completed;
 
   lock_counter_barrier (b);
-  wait_group_beginning = b->curr_wait_group;
-
-  if ((--b->wait_count) <= 0)
-    caf_shmem_cond_broadcast (&b->cond);
-  else
-    {
-      while (b->wait_count > 0 && b->curr_wait_group == wait_group_beginning)
-	caf_shmem_cond_wait (&b->cond, &b->mutex);
-    }
-
-  if (b->wait_count <= 0)
-    {
-      b->curr_wait_group = !wait_group_beginning;
-      b->wait_count = b->count;
-    }
-
+  completed = !b->aborting && wait_round (b, true);
   unlock_counter_barrier (b);
+  return completed;
+}
+
+void
+counter_barrier_abort_locked (counter_barrier *b)
+{
+  b->aborting = true;
+  if (b->abortable_arrivals)
+    next_round (b, true);
 }
 
 static inline void

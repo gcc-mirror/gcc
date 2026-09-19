@@ -51,7 +51,10 @@ void sync_init (sync_t *, shared_memory);
 
 void sync_init_supervisor (sync_t *, alloc *);
 
-void sync_all (void);
+/* Synchronize the images of the current team.  Returns false without
+   synchronizing when a stopped image is a member of the team.  */
+
+bool sync_all (void);
 
 /* Prototype for circular dependency break.  */
 
@@ -59,6 +62,10 @@ struct caf_shmem_team;
 typedef struct caf_shmem_team *caf_shmem_team_t;
 
 void sync_team (caf_shmem_team_t team);
+
+/* Like sync_all for TEAM.  */
+
+bool sync_team_unless_stopped (caf_shmem_team_t team);
 
 void sync_table (sync_t *, int *, int);
 

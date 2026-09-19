@@ -128,16 +128,22 @@ sync_table (sync_t *si, int *images, int size)
   unlock_table (si);
 }
 
-void
+bool
 sync_all (void)
 {
-  counter_barrier_wait (&caf_current_team->u.image_info->image_count);
+  return sync_team_unless_stopped (caf_current_team);
 }
 
 void
 sync_team (caf_shmem_team_t team)
 {
   counter_barrier_wait (&team->u.image_info->image_count);
+}
+
+bool
+sync_team_unless_stopped (caf_shmem_team_t team)
+{
+  return counter_barrier_wait_abortable (&team->u.image_info->image_count);
 }
 
 void
