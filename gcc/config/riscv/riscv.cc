@@ -1580,6 +1580,42 @@ riscv_build_integer_1 (struct riscv_integer_op codes[RISCV_MAX_INTEGER_OPS],
 	   memcpy (codes, alt_codes, sizeof (alt_codes));
 	   cost = alt_cost;
 	}
+      if (cost > 2 && mode == DImode)
+	{
+	  unsigned HOST_WIDE_INT uval = value;
+
+	  if (uval < (HOST_WIDE_INT_UC (1) << 35))
+	    {
+	      unsigned HOST_WIDE_INT d = uval + (HOST_WIDE_INT_UC (1) << 32);
+
+	      for (int n = 1; n <= 3; n++)
+		{
+		  unsigned HOST_WIDE_INT mult = (HOST_WIDE_INT_UC (1) << n) + 1;
+
+		  if (d % mult)
+		    continue;
+		  unsigned HOST_WIDE_INT u = d / mult;
+
+		  /* With bit 31 clear there is no sign extension, the result
+		     is u * (2^N + 1), and the plain shNadd case above already
+		     handles it.  */
+		  if (u >= (HOST_WIDE_INT_UC (1) << 32)
+		      || (u & HOST_WIDE_INT_UC (0x80000000)) == 0)
+		    continue;
+		  alt_cost = 1 + riscv_build_integer_1 (alt_codes,
+							sext_hwi (u, 32), mode);
+
+		  if (alt_cost >= cost)
+		    continue;
+		  alt_codes[alt_cost - 1].code = FMA;
+		  alt_codes[alt_cost - 1].value = mult;
+		  alt_codes[alt_cost - 1].use_uw = true;
+		  alt_codes[alt_cost - 1].save_temporary = false;
+		  memcpy (codes, alt_codes, sizeof (alt_codes));
+		  cost = alt_cost;
+		}
+	    }
+	}
     }
 
   /* We might be able to generate a constant close to our target
@@ -3616,6 +3652,24 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value)
 	      /* UNKNOWN means load the constant value into X.  */
 	      x = GEN_INT (codes[i].value);
 	    }
+	  else if (codes[i].code == FMA)
+	    {
+	      int value = exact_log2 (codes[i].value - 1);
+	      rtx t = can_create_pseudo_p () ? gen_reg_rtx (mode) : temp;
+	      rtx op;
+	      gcc_assert (value >= 1 && value <= 3);
+
+	      /* This case is for shNadd.uw.  */
+	      if (codes[i].use_uw)
+		op = gen_rtx_AND (mode,
+				  gen_rtx_ASHIFT (mode, x, GEN_INT (value)),
+				  GEN_INT (HOST_WIDE_INT_UC (0xffffffff)
+				  << value));
+	      else
+		op = gen_rtx_ASHIFT (mode, x, GEN_INT (value));
+
+	      x = riscv_emit_set (t, gen_rtx_PLUS (mode, op, x));
+	    }
 	  else if (codes[i].use_uw)
 	    {
 	      /* If the sequence requires using a "uw" form of an insn, we're
@@ -3634,14 +3688,6 @@ riscv_move_integer (rtx temp, rtx dest, HOST_WIDE_INT value)
 	      x = gen_rtx_fmt_ee (codes[i].code, mode,
 				  x, GEN_INT (codes[i].value));
 	      x = gen_rtx_fmt_ee (AND, mode, x, GEN_INT (value));
-	      x = riscv_emit_set (t, x);
-	    }
-	  else if (codes[i].code == FMA)
-	    {
-	      HOST_WIDE_INT value = exact_log2 (codes[i].value - 1);
-	      rtx ashift = gen_rtx_fmt_ee (ASHIFT, mode, x, GEN_INT (value));
-	      x = gen_rtx_fmt_ee (PLUS, mode, ashift, x);
-	      rtx t = can_create_pseudo_p () ? gen_reg_rtx (mode) : temp;
 	      x = riscv_emit_set (t, x);
 	    }
 	  else if (codes[i].code == CONCAT || codes[i].code == VEC_MERGE)
