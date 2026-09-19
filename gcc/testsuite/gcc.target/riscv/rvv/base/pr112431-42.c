@@ -21,7 +21,7 @@ reduc_plus_float (float *__restrict a, int n)
   return r;
 }
 
-/* { dg-final { scan-assembler-not {vmv1r} { xfail riscv*-*-* } } } */
+/* { dg-final { scan-assembler-not {vmv1r} } } */
 /* { dg-final { scan-assembler-not {vmv2r} } } */
 /* { dg-final { scan-assembler-not {vmv4r} } } */
 /* { dg-final { scan-assembler-not {vmv8r} } } */
