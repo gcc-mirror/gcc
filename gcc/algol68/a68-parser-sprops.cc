@@ -73,12 +73,21 @@
     ───
 
      Its meaning for a particular construct is to be interpreted along with its
-     kindo.  For KINDO_IDE and KINDO_VAR, bno indicates the depth number of
-     the block where the identifier or the variable is declared.  For
-     KINDO_GEN, when it corresponds to a local generator, bno indicates the
-     depth number of the block where the generator appears.  For
-     KINDO_CONSTANT, and for KINDO_GEN when it corresponds to a heap generator,
-     bno is always zero.
+     kindo.
+
+     ● For KINDO_IDE and KINDO_VAR, bno indicates the depth number of the block
+       where the identifier or the variable is declared.  This is not to be
+       confused with the scope of the value ascribed to the identifier or
+       stored in the variable.
+
+     ● For KINDO_GEN, when it corresponds to a local generator, bno indicates
+       the depth number of the block where the generator appears.
+
+     ● For KINDO_CST, and for KINDO_GEN when it corresponds to a heap
+       generator, bno is always zero.
+
+     ● For KINDO_NIL, bno indicates the depth number of the construct issuing
+       the value.
 
     derefo is the "flag dereferencing of the origin".
     ──────
@@ -345,7 +354,7 @@ sprops_for_deproceduring (NODE_T *p)
   ORIGIN (p) = make_origin ();
   KINDO (p) = KINDO_NIL;
   DIAGO (p) = a68_get_node_location (p);
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   ACCESS (p) = ACCESS_DIR;
 }
@@ -362,7 +371,7 @@ sprops_for_proceduring (NODE_T *p)
   ORIGIN (p) = make_origin ();
   KINDO (p) = KINDO_NIL;
   DIAGO (p) = a68_get_node_location (p);
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   ACCESS (p) = ACCESS_DIR;
 }
@@ -408,7 +417,7 @@ sprops_for_loop_clause (NODE_T *p)
   ORIGIN (p) = make_origin ();
   KINDO (p) = KINDO_NIL;
   DIAGO (p) = a68_get_node_location (p);
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   ACCESS (p) = ACCESS_NIL;
 }
@@ -514,7 +523,7 @@ sprops_for_serial_clause (NODE_T *p)
 	  KINDO (p) = KINDO_NIL;
 	  DEREFO (p) = found_derefo;
 	  GENO (p) = found_geno;
-	  BNO (p) = 0;
+	  BNO (p) = LEX_LEVEL (p);
 	}
 
       /* Balance access.  */
@@ -536,7 +545,7 @@ sprops_for_parallel_clause (NODE_T *p)
 {
   ORIGIN (p) = make_origin ();
   KINDO (p) = KINDO_NIL;
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   GENO (p) = false;
   ACCESS (p) = ACCESS_NIL;
@@ -605,7 +614,7 @@ sprops_for_conditional_clause (NODE_T *p)
 	  KINDO (p) = KINDO_NIL;
 	  DEREFO (p) = found_derefo;
 	  GENO (p) = found_geno;
-	  BNO (p) = 0;
+	  BNO (p) = LEX_LEVEL (p);
 	}
 
       /* Balance access.  */
@@ -703,7 +712,7 @@ sprops_for_case_clause (NODE_T *p)
       KINDO (p) = KINDO_NIL;
       DEREFO (p) = found_derefo;
       GENO (p) = found_geno;
-      BNO (p) = 0;
+      BNO (p) = LEX_LEVEL (p);
     }
 
   /* Balance access.  */
@@ -730,7 +739,7 @@ static void
 sprops_for_collateral_clause (NODE_T *p)
 {
   ORIGIN (p) = make_origin ();
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   GENO (p) = 0;
   DEREFO (p) = 0;
 
@@ -839,7 +848,7 @@ sprops_for_conformity_clause (NODE_T *p)
       KINDO (p) = KINDO_NIL;
       DEREFO (p) = found_derefo;
       GENO (p) = found_geno;
-      BNO (p) = 0;
+      BNO (p) = LEX_LEVEL (p);
     }
 
   /* Balance access.  */
@@ -860,7 +869,7 @@ sprops_for_identity_relation (NODE_T *p)
 {
   ORIGIN (p) = make_origin ();
   KINDO (p) = KINDO_NIL;
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   GENO (p) = false;
   ACCESS (p) = ACCESS_DIR;
@@ -933,7 +942,7 @@ sprops_for_logical_function (NODE_T *p)
   ORIGIN (p) = make_origin ();
   DIAGO (p) = a68_get_node_location (p);
   KINDO (p) = KINDO_NIL;
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   ACCESS (p) = ACCESS_DIR;
 }
@@ -965,7 +974,7 @@ sprops_for_call (NODE_T *p)
   ORIGIN (p) = make_origin ();
   DIAGO (p) = a68_get_node_location (p);
   KINDO (p) = KINDO_NIL;
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
 }
 
@@ -984,7 +993,7 @@ sprops_for_generator (NODE_T *p)
   DEREFO (p) = false;
   if (IS (SUB (p), LOC_SYMBOL))
     {
-      BNO (p) = 0; /* XXX */
+      BNO (p) = LEX_LEVEL (p);
       GENO (p) = true;
     }
   else
@@ -1033,7 +1042,7 @@ sprops_for_formula (NODE_T *p)
 	  DIAGO (p) = a68_get_node_location (p);
 	  KINDO (p) = KINDO_NIL;
 	  DEREFO (p) = 0;
-	  BNO (p) = 0;
+	  BNO (p) = LEX_LEVEL (p);
 	  GENO (p) = false;
 	}
     }
@@ -1070,7 +1079,7 @@ sprops_for_assertion (NODE_T *p)
   ORIGIN (p) = make_origin ();
   DIAGO (p) = a68_get_node_location (p);
   KINDO (p) = KINDO_NIL;
-  BNO (p) = 0;
+  BNO (p) = LEX_LEVEL (p);
   DEREFO (p) = false;
   ACCESS (p) = ACCESS_NIL;
 }
@@ -1182,6 +1191,7 @@ sprops_for_decl (NODE_T *p)
 	      ORIGIN (tax) = make_origin ();
 	    DIAGO (tax) = a68_get_node_location (p);
 	    KINDO (tax) = KINDO_IDE;
+	    BNO (tax) = LEX_LEVEL (defining_identifier);
 	    ACCESS (tax) = ACCESS_DIR;
 	    break;
 	  }
@@ -1193,6 +1203,7 @@ sprops_for_decl (NODE_T *p)
 	      ORIGIN (tax) = make_origin ();
 	    DIAGO (tax) = a68_get_node_location (p);
 	    KINDO (tax) = KINDO_VAR;
+	    BNO (tax) = LEX_LEVEL (defining_identifier);
 	    ACCESS (tax) = ACCESS_VAR;
 	    break;
 	  }
@@ -1234,7 +1245,7 @@ sprops_for_unit (NODE_T *p)
       DIAGO (p) = a68_get_node_location (p);
       KINDO (p) = KINDO_NIL;
       DEREFO (p) = false;
-      BNO (p) = 0;
+      BNO (p) = LEX_LEVEL (p);
       ACCESS (p) = ACCESS_DIR;
       break;
     case DENOTATION:
