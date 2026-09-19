@@ -46,6 +46,10 @@
   [DR] This is the GNU68-2026-003-decimal-radices GNU extension.  It
        adds support for using ten radix in bits denotations.
 
+  [FI] This is the GNU68-2026-004-fixed-sized-modes GNU extension.  It
+       adds support for non-cummulative sizetys of some fixed sizes
+       like `word', `single', `double', etc.
+
   The metaproduction rules, hyper-rules and hyper-alternatives
   introduced by each extension are clearly marked in the sections
   below.  You can easily search for them using the extensions tags in
@@ -85,15 +89,19 @@
 
 1.2 General metaproduction rules
 
+{ Extensions:
+  [FI] fixed sized modes. }
+
 1.2.1 Metaproduction rules of modes
 
 A) MODE :: PLAIN ; STOWED ; REF to MODE ; PROCEDURE ;
            UNITED ; MU definition of MODE ; MU application.
 B) PLAIN :: INTREAL ; boolean ; character.
 C) INTREAL :: SIZETY integral ; SIZETY real.
-D) SIZETY :: long LONGSETY ; short SHORTSETY ; EMPTY.
+D) SIZETY :: long LONGSETY ; short SHORTSETY ; FIXETY ; EMPTY.
 E) LONGSETY :: long LONGSETY ; EMPTY.
 F) SHORTSETY :: short SHORTSETY ; EMPTY.
+I) FIXETY :: word ; EMPTY.
 G) EMPTY :: .
 H) STOWED :: structured with FIELDS mode ;
              FLEXETY ROWS of MODE.
@@ -1373,17 +1381,21 @@ b) WHETHER MOID1 unites to MOID2{a,34i,71m} :
 
 6.5 Widening
 
+{ Extensions:
+  [FI] fixed sized modes. }
+
 6.5.1 Syntax
 
 A) BITS :: structured with
                       row of boolean field SITHETY letter aleph mode.
 B) BYTES :: structured with
                        row of character field SITHETY letter aleph mode.
-C) SITHETY :: LENGTH LENGTHETY ; SHORT SHORTHETY ; EMPTY.
+C) SITHETY :: LENGTH LENGTHETY ; SHORT SHORTHETY ; WORD ; EMPTY.
 D) LENGTH :: letter l letter o letter n letter g.
 E) SHORT :: letter s letter h letter o letter r letter t.
 F) LENGTHETY :: LENGTH LENGTHETY ; EMPTY.
 G) SHORTHETY :: SHORT SHORTHETY ; EMPTY.
+H) WORD :: letter w letter o letter r letter d.
 
 a) widened to{b,61A} SIZETY real FORM :
      MEEK{61C} SIZETY integral FORM.
@@ -1639,9 +1651,12 @@ a) MOID NEST denoter{5D,A341i} :
 
 8.1 Plain denotations
 
+{ Extensions:
+  [FI] fixed sized modes. }
+
 8.1.0.1 Syntax
 
-A) SIZE:: long ; short.
+A) SIZE :: long ; short ; word.
 B) *NUMERAL :: fixed point numeral ; variable point numeral ;
                floating point numeral.
 
@@ -1655,8 +1670,9 @@ b) *plain denotation :
     a) LONG 0 }
 
 { Note how rule {a} might lead to situations like `long short integral
-  denotation' but these will eventually result in a blind alley
-  in {80a} due to MOID not generating `long short integral'. }
+  denotation' or `word word integral denotation' but these will
+  eventually result in a blind alley in {80a} due to MOID not
+  generating `long short integral' nor `word word integral'. }
 
 8.1.1 Integral denotations
 
@@ -1753,7 +1769,9 @@ a) void denotation{80a} : empty{94b} symbol.
 
 8.2 Bits denotations
 
-{ Extensions: [DR] }
+{ Extensions:
+  [DR] decimal radix.
+  [FI] fixed sized modes. }
 
 8.2.1 Syntax
 
@@ -1767,7 +1785,11 @@ b) structured with row of boolean field
               SHORT SHORTHETY letter aleph mode denotation{b,80a} :
      short{94d} symbol,
        structured with row of boolean field SHORTHETY letter aleph mode denotation{b,c}.
-c) structured wih row of boolean field
+o) structured with row of boolean field
+              WORD letter aleph mode denotation{a,c} :
+     word{94d} symbol,
+       structured with row of boolean field letter aleph mode denotation{c}.
+c) structured with row of boolean field
               letter aleph mode denotation{a,b,80a} :
      RADIX{d,e,f,g}, letter r symbol{94a}, RADIX digit{h,i,j,k,n} sequence.
 d) radix two{c,A347b} : digit two{94b} symbol.
@@ -1890,7 +1912,8 @@ f) STYLE nestable comment item{e} :
   [MR] access symbol, module symbol, def symbol, public symbol,
        postlude symbol, formal nest symbol, egg symbol
   [US] unsafe symbol
-  [SS] brief of symbol }
+  [SS] brief of symbol
+  [FI] fixed sized modes }
 
 { This section of the Report doesn't describe syntax, but lists all
   the different symbols along with their representation in the
@@ -1909,6 +1932,7 @@ d) module symbol{49a}                   MODULE
    postlude symbol{49f}                 POSTLUDE
    formal nest symbol{56b}              NEST
    egg symbol{A6a,c}                    EGG
+   word symbol{82o}                     WORD
 f) unsafe symbol{37a}                   UNSAFE
    bold of symbol{53a}                  OF
    brief of symbol{53a}                 '
