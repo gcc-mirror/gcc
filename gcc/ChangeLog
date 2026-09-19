@@ -1,3 +1,165 @@
+2026-09-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/125945
+	* tree-ssa-phiopt.cc (induction_based): New function.
+	(factor_out_conditional_load): Allow some factoring out
+	with early and/or before_vect.
+	(factor_out_all): Set before_vect to false when not vectorizing.
+	(pass_phiopt::execute): Initialize scev in some cases.
+
+2026-09-18  Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* config/riscv/riscv.cc (synthesize_add): Do not form shNadd
+	when the base register is a virtual register.
+
+2026-09-18  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR rtl-optimization/127367
+	* ext-dce.cc: Include regs.h.
+	(ext_dce_process_uses): Handle multi-register hard regs.
+
+2026-09-18  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv-vector-costs.cc (costs::better_main_loop_than_p):
+	Compare VLA costs under -mrvv-max-lmul=dynamic.
+
+2026-09-18  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum aarch64_builtins): Add new builtins.
+	(aarch64_init_atomic_hints_builtins): Likewise.
+	(aarch64_expand_atomic_hints_builtins_fetch): Handle Fetch intrinsics.
+	(aarch64_general_expand_builtin): Add call for new builtins.
+	(aarch64_resolve_overloaded_builtin_atomic_hint_fetch): Handle Fetch intrinsics.
+	(aarch64_resolve_overloaded_builtin_general): Add new call.
+	* config/aarch64/arm_acle.h
+	(enum atomic_fetch): Store different Fetch types.
+	(__arm_atomic_fetch_add_with_hint): Add new builtin.
+	(__arm_atomic_fetch_sub_with_hint): Likewise.
+	(__arm_atomic_fetch_and_with_hint): Likewise.
+	(__arm_atomic_fetch_xor_with_hint): Likewise.
+	(__arm_atomic_fetch_or_with_hint):  Likewise.
+	* config/aarch64/atomics.md
+	(aarch64_atomic_fetch_<atomic_ldoptab><mode>_atomic_hint): New pattern for atomic_fetch.
+	(@aarch64_atomic_hints_fetch<mode>): Likewise.
+	* config/aarch64/iterators.md: New unspecs.
+
+2026-09-18  Richard Ball  <Richard.Ball@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(enum aarch64_builtins): Change Function/Builtin names.
+	(aarch64_init_pcdphint_builtins): Likewise.
+	(aarch64_init_atomic_hints_builtins): Likewise.
+	(aarch64_general_init_builtins): Likewise.
+	(aarch64_expand_stshh_builtin): Likewise.
+	(aarch64_expand_atomic_hints_builtins): Likewise.
+	(aarch64_general_expand_builtin): Likewise.
+	(aarch64_resolve_overloaded_builtin_stshh): Likewise.
+	(aarch64_resolve_overloaded_builtin_atomic_hint_store): Likewise
+	(aarch64_resolve_overloaded_builtin_general): Likewise.
+	* config/aarch64/arm_acle.h
+	(__atomic_store_with_stshh): Likewise.
+	(__arm_atomic_store_with_hint): Likewise.
+	* config/aarch64/atomics.md
+	(@aarch64_atomic_store_stshh<mode>): Add new hints to pattern
+	(@aarch64_atomic_hints_store<mode>): Likewise.
+	* config/aarch64/iterators.md: Add Unspec for new hints.
+
+2026-09-18  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree): Assert successful
+	discovered nodes do not require splitting.
+
+2026-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127473
+	* tree-vect-slp.cc (vect_build_slp_tree_3): Duplicate the BB
+	case of rejecting a not grouped load early to avoid assiging
+	the first_match to it.
+
+2026-09-18  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (mov<mode>_exec): Add xnack alternatives.
+	(@mov<mode>_sgprbase): Likewise.
+
+2026-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127468
+	* tree-vect-slp.cc (vect_build_slp_tree_3): Print the correct
+	trapping stmt.
+
+2026-09-18  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* asan.cc: Remove include that already came from ssa.h.
+	* gimple-ssa-pta-constraints.cc: Remove unused include.
+	* tree-ssa-loop-unswitch.cc: Likewise.
+	* ubsan.cc: Change an include to a more specific file.
+	* value-query.cc: Remove unused import.
+	* value-range-storage.cc: Likewise.
+	* value-range.cc: Change an include to a more specific file.
+
+2026-09-18  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/127406
+	* match.pd: Restrict (X {+,-} M*N) / N optimization.
+
+2026-09-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* machmode.h (parse_machine_mode): New function.
+	* read-rtl.cc (find_mode): Use parse_machine_mode.
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Likewise.
+
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+	    Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR middle-end/127378
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt): On
+	big endian, compare idx_next in separate_ext loop against
+	bo_idx + total - 1 - end, and if that wraps around, compare idx
+	against 0 instead.
+
+2026-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126306
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Remove soft-failing.
+	(vect_build_slp_tree_2): Add soft-failing here, delayed
+	to after vect_get_and_check_slp_defs.
+	(vect_get_and_check_slp_defs): When we'll soft-fail do not
+	fall back to vect_external_def on mismatches.
+
+2026-09-18  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/constraints.md (Wn3): New constraint for the
+	vector register which doesn't overlap the register group of
+	the operand 3.
+	* config/riscv/riscv-protos.h (riscv_v_widen_non_overlap_constraint_ok):
+	New function declaration.
+	* config/riscv/riscv-v.cc (riscv_v_reg_group_overlap_p): New
+	function to tell if two vector register groups overlap.
+	(riscv_v_widen_constraint_ok): Leverage the above function for
+	the register group overlap check.
+	(riscv_v_widen_non_overlap_constraint_ok): New function to tell
+	if the register doesn't overlap the reference register group.
+	* config/riscv/vector.md: Take the Wn3 constraint for the
+	operand 4 of the widening integer reduction.
+
+2026-09-18  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127421
+	* reorg.cc (redundant_insn): Use NONDEBUG_INSN_P in both bounded
+	backward walks.  Remove redundant debug-instruction checks.
+
+2026-09-18  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127422
+	* combine.cc (can_combine_p): Ignore debug instructions when scanning
+	for intervening volatile references.
+
+2026-09-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (bitreverseqi2): Disable on
+	LA32R.
+
 2026-09-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* value-relation.cc (dom_oracle::query): Prefer a normal

@@ -1,3 +1,10 @@
+2026-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/127146
+	* primary.cc (gfc_match_rvalue): At two points: if the entry in
+	the parameter list has a name, use that in preference to the
+	component name.
+
 2026-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/125690

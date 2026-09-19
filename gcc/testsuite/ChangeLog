@@ -1,3 +1,171 @@
+2026-09-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/125945
+	* gcc.dg/tree-ssa/scc-diamond-1.c: Update to look at phiopt2
+	rather than phiopt4.
+	* gcc.dg/tree-ssa/scc-diamond-3.c: Likewise.
+	* gcc.dg/tree-ssa/factor_op_phi-load-vect-1.c: New test.
+
+2026-09-18  Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* gcc.target/riscv/zba-shNadd-11.c: New test.
+
+2026-09-18  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR rtl-optimization/127367
+	* gcc.dg/torture/pr127367.c: New test.
+
+2026-09-18  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul-mixed-1.c: Update
+	expectation.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-2.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul1-7.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-1.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-3.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-4.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-5.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul2-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-6.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-12.c: Ditto.
+	* gcc.dg/vect/costmodel/riscv/rvv/pr111848.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/slp-16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_zip.c: Ditto.
+
+2026-09-18  Michiel Derhaeg  <michiel@derhaeg.be>
+
+	* gcc.dg/tree-ssa/predcom-10.c: Pass in expected value
+	explicitly instead of deriving it from argc.
+
+2026-09-18  Robert Dubner  <rdubner@symas.com>
+
+	PR cobol/127412
+	* cobol.dg/group2/CBL_DELETE_FILE.cob: Minor logic change.
+	* cobol.dg/group2/CBL_DELETE_FILE.out: Likewise.
+	* cobol.dg/group2/CBL_OPEN_FILE___CBL_CLOSE_FILE.cob: Likewise.
+	* cobol.dg/group2/CBL_OPEN_FILE___CBL_CLOSE_FILE.out: Likewise.
+	* cobol.dg/group2/CBL_READ_FILE__check_file_size_with_flags___128.cob:
+	Likewise.
+	* cobol.dg/group2/CDF_Feature_.cob: Switch to "ibm1140".
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_EBCDIC.cob:
+	Likewise.
+	* cobol.dg/group2/FIND-STRING__forward_.cob: Likewise.
+	* cobol.dg/group2/FIND-STRING__reverse_.cob: Likewise.
+	* cobol.dg/group2/FUNCTION_CONVERT.cob: Likewise.
+	* cobol.dg/group2/CBL_CHECK_FILE_EXIST__known_timestamp_.cob: New test.
+	* cobol.dg/group2/MF__identifier_as_PIC_X_ANY_LENGTH.cob: New test.
+
+2026-09-18  Richard Ball  <Richard.Ball@arm.com>
+
+	* gcc.target/aarch64/atomic_fetch_add_with_shuh.c: New test.
+	* gcc.target/aarch64/atomic_fetch_and_with_shuh.c: New test.
+	* gcc.target/aarch64/atomic_fetch_or_with_shuh.c: New test.
+	* gcc.target/aarch64/atomic_fetch_sub_with_shuh.c: New test.
+	* gcc.target/aarch64/atomic_fetch_xor_with_shuh.c: New test.
+
+2026-09-18  Richard Ball  <Richard.Ball@arm.com>
+
+	* g++.target/aarch64/atomic_store_with_stshh.C: Change Function name.
+	* gcc.target/aarch64/atomic_store_with_stshh.c: Likewise.
+	* gcc.target/aarch64/atomic_store_with_shuh.c: New test.
+	* gcc.target/aarch64/atomic_store_with_stcph.c: New test.
+
+2026-09-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/analyzer/atoi-1.c: Skip atoll hunk on hpux.
+	* gcc.dg/analyzer/fd-mktemp-family.c: Skip on hpux.
+	* gcc.dg/analyzer/mkdtemp-1.c: Likewise.
+	* gcc.dg/analyzer/mkostemp-1.c: Likewise.
+	* gcc.dg/analyzer/mkostemps-1.c: Likewise.
+	* gcc.dg/analyzer/mkstemps-1.c: Likewise.
+
+2026-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/127146
+	* gfortran.dg/pdt_96.f03: New test.
+
+2026-09-18  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/127406
+	* gcc.dg/torture/pr127406.c: New test.
+
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/bitint-142.c (main): Don't set z to ~0, instead memset
+	it to ~0.
+
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp29/std-floating1.C: Add 2 dg-bogus directives xfailed
+	for long_double_is_ibm128 effective targets.
+
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+	    Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR middle-end/127378
+	* gcc.dg/bitint-145.c: New test.
+
+2026-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126306
+	* gcc.dg/vect/bb-slp-pr126306-1.c: New testcase.
+
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/named-universal-char-escape-1.c: Add tests
+	for some Unicode 18.0 characters, both normal and generated.
+
+2026-09-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u32-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsumu_vs-u8-m8.c: New test.
+
+2026-09-18  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i32-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwredsum_vs-i8-m8.c: New test.
+
+2026-09-18  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127421
+	* gcc.target/sparc/pr127421.c: New test.
+
+2026-09-18  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127422
+	* gcc.dg/pr127422.c: New test.
+
+2026-09-18  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/bitreverse-la32r.c: New test.
+
 2026-09-17  Andrew MacLeod  <amacleod@redhat.com>
 
 	* gcc.dg/tree-ssa/vrp-rel3.c: New.

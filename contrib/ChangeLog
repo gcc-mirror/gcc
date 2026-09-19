@@ -1,3 +1,17 @@
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Replace Unicode 17 version with 18.
+	* unicode/gen_libstdcxx_unicode_data.py: Use 180000 instead of
+	160000 in _GLIBCXX_GET_UNICODE_DATA test.
+	* unicode/DerivedCoreProperties.txt: Updated from Unicode 18.0.
+	* unicode/emoji-data.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+	* unicode/HangulSyllableType.txt: Likewise.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/NameAliases.txt: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+	* unicode/EastAsianWidth.txt: Likewise.
+
 2026-09-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	* filter-clang-warnings.py (skip_warning): Match numbered attribute

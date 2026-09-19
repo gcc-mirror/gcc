@@ -1,3 +1,7 @@
+2026-09-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-attribs.cc (handle_mode_attribute): Use parse_machine_mode.
+
 2026-09-10  Jakub Jelinek  <jakub@redhat.com>
 
 	P3726R2

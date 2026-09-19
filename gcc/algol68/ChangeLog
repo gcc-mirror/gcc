@@ -1,3 +1,39 @@
+2026-09-18  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68.h: Add prototypes for a68_sprops, a68_yields_value and
+	a68_is_declaration.
+	* a68-types.h (a68_access): New type.
+	(a68_kindo): Likewise.
+	(ORIGIN_T): Likewise.
+	(ACCESS_T): Likewise.
+	(NODE_T): Add fields origin and access.
+	(TAG_T): Likewise.
+	(ACCESS_NIHIL): Remove.
+	(ACCESS_CONSTANT): Likewise.
+	(ACCESS_DIRIDEN): Likewise.
+	(ACCESS_INDIDEN): Likewise.
+	(ACCESS_DIRWOST): Likewise.
+	(DEFLEX): Likewise.
+	(FLEXO): Likewise.
+	(BNO): Define.
+	(DEFLEX): Likewise.
+	(DIAGO): Likewise.
+	* a68-parser-sprops.cc: New file.
+	* a68-parser-attrs.def: New comment.
+	* a68-parser-bottom-up.cc (reduce_enquiry_clauses): Add a few
+	comments to improve readability.
+	* a68-parser.cc (a68_is_declaration): New function.
+	(a68_yields_value): Likewise.
+	(a68_parser): Run the sprops pass.
+	(a68_new_node): Initialize ORIGIN and ACCESS.
+	(a68_new_tag): Likewise, for tags.
+	* Make-lang.in (ALGOL68_OBJS): Build algol68/a68-parser-sprops.o.
+	* a68-parser-debug.cc (a68_dump_parse_tree_1): Show static
+	properties whenever requested.
+	* a68-low-clauses.cc: Fix grammar for initialiser series and
+	closed clause in comments.
+	* a68-low.cc (a68_low_assignation): Fix comment.
+
 2026-09-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* a68-parser.cc (a68_get_node_location): Return a location

@@ -1,3 +1,13 @@
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/unicode.h (std::__unicode::__v16_0_0): Rename inline
+	namespace to ...
+	(std::__unicode::__v18_0_0): ... this.
+	(_GLIBCXX_GET_UNICODE_DATA): Change from 160000 to 180000.
+	* testsuite/ext/unicode/properties.cc: Expect 2 rather than 1 for
+	uc::__field_width(U'\U0001FAF9').
+	* include/bits/unicode-data.h: Regenerated.
+
 2026-09-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/lib/libstdc++.exp (v3_check_preprocessor_condition):

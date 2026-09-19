@@ -1,3 +1,14 @@
+2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Update Unicode Copyright years.
+	* makeuname2c.cc (generated_ranges): Adjust Unicode version from 17.0
+	to 18.0.  Add JURCHEN CHARACTER- and SMALL SEAL CHARACTER- generated
+	ranges, adjust indexes in following entries.
+	(write_copyright): Update Unicode Copyright years.
+	* generated_cpp_wcwidth.h: Regenerated.
+	* ucnid.h: Regenerated.
+	* uname2c.h: Regenerated.
+
 2026-09-02  Wilco Dijkstra  <wilco.dijkstra@arm.com>
 
 	* lex.cc (search_line_fast): Optimized Arm implementation.

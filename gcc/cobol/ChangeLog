@@ -1,3 +1,80 @@
+2026-09-18  Robert Dubner  <rdubner@symas.com>
+
+	* gcobol.1: Documentation for the .so search.
+	* move.cc: Fix typo.
+	* parse.y: Data capacity test.
+	* symbols.cc (expand_picture): Fix off-by-one error; handle corner
+	case where 'B' is the final character of a numeric-edited PICTURE
+	string.
+	* symbols.h: Remove unnecessary test.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol1.cc (libcompat_copybook): Remove "udf" from the search list.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cdf-copy.cc (copybook_elem_t::open_file): Do not error out on failure.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Reapply.
+	* symbols.h: Likewise.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Replace redundant passby_str with cbl_ffi_crv_str.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Accept arbitrarily-sized PIC X for ANY LENGTH.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Set loc for numeric literals BY VALUE.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Show location for invalid arg in CALL.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Set loc also for numeric literals BY REFERENCE.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Fix undefined loc for CALL args.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse_ante.h (by_content_ok): Use temporary symbol location.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cdf-copy.cc (copybook_elem_t::open_file): Use %qs.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cdf-copy.cc (copybook_elem_t::open_file): Use fstat(2).
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Fix wrong diagnostic on numeric literals.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Print passing method on error.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	PR cobol/127074
+	* scan_post.h (datetime_format_of): Remove trailing pipe.
+
+2026-09-18  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* parse.y: Revert.
+	* symbols.h: Likewise.
+
 2026-09-17  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (actually_create_the_static_field): Use expanded PICTURE
