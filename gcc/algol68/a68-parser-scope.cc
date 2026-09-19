@@ -20,7 +20,7 @@
    <http://www.gnu.org/licenses/>.  */
 
 /* A static scope checker inspects the source. Note that ALGOL 68 also needs
-   dynamic scope checking. This phase concludes the parser.  */
+   dynamic scope checking. */
 
 #include "config.h"
 #include "system.h"
