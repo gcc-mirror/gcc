@@ -343,7 +343,7 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
   this_image_size_bytes = elem_size * pi.num_elem;
 
   buffer = get_collsub_buf (
-    this_image_size_bytes * caf_current_team->u.image_info->image_count.count);
+    this_image_size_bytes * caf_current_team->u.image_info->image_map_size);
   this_image_buf = buffer + this_image_size_bytes * this_img_id;
 
   if (packed)
@@ -356,12 +356,12 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
     return false;
 
   for (; ((this_img_id >> cbit) & 1) == 0
-	 && (caf_current_team->u.image_info->image_count.count >> cbit) != 0;
+	 && (caf_current_team->u.image_info->image_map_size >> cbit) != 0;
        cbit++)
     {
       imoffset = 1 << cbit;
       if (this_img_id + imoffset
-	  < caf_current_team->u.image_info->image_count.count)
+	  < caf_current_team->u.image_info->image_map_size)
 	{
 	  /* Reduce arrays elementwise.  */
 	  roll_iter = this_image_buf;
@@ -373,7 +373,7 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
       if (!collsub_sync ())
 	return false;
     }
-  for (; (caf_current_team->u.image_info->image_count.count >> cbit) != 0;
+  for (; (caf_current_team->u.image_info->image_map_size >> cbit) != 0;
        cbit++)
     if (!collsub_sync ())
       return false;

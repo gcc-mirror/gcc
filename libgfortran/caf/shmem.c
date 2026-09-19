@@ -176,13 +176,12 @@ _gfortran_caf_num_images (caf_team_t team, int32_t *team_number)
   while (cur)                                                                  \
     {                                                                          \
       if (cur->u.image_info->team_id == *team_number)                          \
-	return counter_barrier_get_count (&cur->u.image_info->image_count);    \
+	return cur->u.image_info->image_map_size;                              \
       cur = cur->parent;                                                       \
     }
 
   if (team)
-    return counter_barrier_get_count (
-      &((caf_shmem_team_t) team)->u.image_info->image_count);
+    return ((caf_shmem_team_t) team)->u.image_info->image_map_size;
 
   if (team_number)
     {
@@ -194,8 +193,7 @@ _gfortran_caf_num_images (caf_team_t team, int32_t *team_number)
       CHECK_TEAMS
     }
 
-  return counter_barrier_get_count (
-    &caf_current_team->u.image_info->image_count);
+  return caf_current_team->u.image_info->image_map_size;
 }
 
 
@@ -676,7 +674,7 @@ _gfortran_caf_image_status (int image, caf_team_t *team)
   if (team)
     t = *(caf_shmem_team_t *) team;
 
-  if (image > t->u.image_info->image_count.count)
+  if (image > t->u.image_info->image_map_size)
     return CAF_STAT_STOPPED_IMAGE;
 
   image_index = t->u.image_info->image_map[image - 1];
@@ -1760,7 +1758,7 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
 
   if (new_index
       && (*new_index <= 0
-	  || *new_index > caf_current_team->u.image_info->image_count.count))
+	  || *new_index > caf_current_team->u.image_info->image_map_size))
     {
       caf_internal_error (new_index_out_of_range, stat, errmsg, errmsg_len);
       return;
@@ -1795,7 +1793,7 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
     {alloc_get_memory_by_id_created (
       &local->ai,
       sizeof (struct shmem_image_info)
-	+ caf_current_team->u.image_info->image_count.count * sizeof (int),
+	+ caf_current_team->u.image_info->image_map_size * sizeof (int),
       -tmemid, &created)}};
 
   if (created)
@@ -1810,8 +1808,7 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
       t->u.image_info->lastmemid = tmemid;
       register_team (t);
       /* Initialize a freshly created image_map with -1.  */
-      for (int i = 0; i < caf_current_team->u.image_info->image_count.count;
-	   ++i)
+      for (int i = 0; i < caf_current_team->u.image_info->image_map_size; ++i)
 	t->u.image_info->image_map[i] = -1;
     }
   counter_barrier_init_add (&t->u.image_info->image_count, 1);
@@ -1854,7 +1851,7 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
 	 New team: 1 1 1 2 2 2
       */
       im = caf_current_team->index * cnt
-	   / caf_current_team->u.image_info->image_count.count;
+	   / caf_current_team->u.image_info->image_map_size;
       /* Map our old index into the domain of the new team's size.  */
       do
 	{
