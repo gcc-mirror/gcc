@@ -169,6 +169,10 @@ a68_build_a68_type_nodes (void)
   else
     a68_long_long_int_type = a68_long_int_type;
 
+  /* WORD INT */
+  a68_word_int_type
+    = build_nonstandard_integer_type (POINTER_SIZE, 0);
+
   /* SHORT SHORT BITS
      SHORT BITS
      BITS */
@@ -196,10 +200,22 @@ a68_build_a68_type_nodes (void)
   else
     a68_long_long_bits_type = a68_long_bits_type;
 
+  /* WORD BITS */
+  /* WORD INT */
+  a68_word_bits_type
+    = build_nonstandard_integer_type (POINTER_SIZE, 1);
+
+  a68_word_bits_type = long_unsigned_type_node;
+
   /* BYTES
      LONG BYTES */
   a68_bytes_type = unsigned_type_node;
   a68_long_bytes_type = long_unsigned_type_node;
+
+
+  /* WORD BYTES */
+  a68_word_bytes_type
+    = build_nonstandard_integer_type (POINTER_SIZE, 1);
 
   /* REAL
      LONG REAL
@@ -207,6 +223,21 @@ a68_build_a68_type_nodes (void)
   a68_real_type = float_type_node;
   a68_long_real_type = double_type_node;
   a68_long_long_real_type = long_double_type_node;
+
+  /* WORD REAL */
+  if (TYPE_PRECISION (a68_real_type) == POINTER_SIZE)
+    a68_word_real_type = a68_real_type;
+  else if (TYPE_PRECISION (a68_long_real_type) == POINTER_SIZE)
+    a68_word_real_type = a68_long_real_type;
+  else if (TYPE_PRECISION (a68_long_long_real_type) == POINTER_SIZE)
+    a68_word_real_type = a68_long_long_real_type;
+  else if (float16_type_node && TYPE_PRECISION (float16_type_node) == POINTER_SIZE)
+    a68_word_real_type = float16_type_node;
+  else if (bfloat16_type_node && TYPE_PRECISION (bfloat16_type_node) == POINTER_SIZE)
+    a68_word_real_type = bfloat16_type_node;
+  else
+    /* This should not happen for 16-, 32- and 64- bit targets.  */
+    gcc_unreachable ();
 }
 
 /* Language hooks data structures.  This is the main interface between
@@ -282,6 +313,9 @@ a68_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (a68_long_long_bits_type))
     return unsignedp ? a68_long_long_bits_type : a68_long_long_int_type;
 
+  if (mode == TYPE_MODE (a68_word_bits_type))
+    return unsignedp ? a68_word_bits_type : a68_word_int_type;
+
   if (mode == TYPE_MODE (a68_real_type))
     return a68_real_type;
 
@@ -290,6 +324,9 @@ a68_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (mode == TYPE_MODE (a68_long_long_real_type))
     return a68_long_long_real_type;
+
+  if (mode == TYPE_MODE (a68_word_real_type))
+    return a68_word_real_type;
 
   if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
     return build_pointer_type (char_type_node);
@@ -529,7 +566,7 @@ a68_handle_option (size_t scode,
 	if (file == NULL)
 	  fatal_error (UNKNOWN_LOCATION,
 		       "cannot open modules map file %<%s%>", arg);
-	
+
 	ssize_t ssize = a68_file_size (fileno (file));
 	if (ssize < 0)
 	  fatal_error (UNKNOWN_LOCATION,

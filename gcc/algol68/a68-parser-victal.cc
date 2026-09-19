@@ -261,7 +261,7 @@ victal_check_declarer (NODE_T *p, int x)
     return false;
   else if (IS (p, DECLARER))
     return victal_check_declarer (SUB (p), x);
-  else if (a68_is_one_of (p, LONGETY, SHORTETY, STOP))
+  else if (a68_is_one_of (p, LONGETY, SHORTETY, FIXETY, STOP))
     return true;
   else if (a68_is_one_of (p, VOID_SYMBOL, INDICANT, STANDARD, STOP))
     return true;

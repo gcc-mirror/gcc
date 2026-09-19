@@ -95,6 +95,7 @@ static void moid_to_string_2 (char *b, MOID_T *n, size_t *w, NODE_T *idf,
   const char *strop_compl = supper_stropping ? "compl" : "COMPL";
   const char *strop_long_compl = supper_stropping ? "long compl" : "LONG COMPL";
   const char *strop_long_long_compl = supper_stropping ? "long long compl" : "LONG LONG COMPL";
+  const char *strop_word_compl = supper_stropping ? "word compl" : "WORD COMPL";
   const char *strop_string = supper_stropping ? "string" : "STRING";
   const char *strop_collitem = supper_stropping ? "collitem" : "COLLITEM";
   const char *strop_simplin = supper_stropping ? "%%<simplin%%>" : "%%<SIMPLIN%%>";
@@ -103,6 +104,7 @@ static void moid_to_string_2 (char *b, MOID_T *n, size_t *w, NODE_T *idf,
   const char *strop_vacuum = supper_stropping ? "%%<vacuum%%>" : "%%<VACUUM%%>";
   const char *strop_long = supper_stropping ? "long" : "LONG";
   const char *strop_short = supper_stropping ? "short" : "SHORT";
+  const char *strop_word = supper_stropping ? "word" : "WORD";
   const char *strop_ref = supper_stropping ? "ref" : "REF";
   const char *strop_flex = supper_stropping ? "flex" : "FLEX";
   const char *strop_struct = supper_stropping ? "struct" : "STRUCT";
@@ -153,6 +155,8 @@ static void moid_to_string_2 (char *b, MOID_T *n, size_t *w, NODE_T *idf,
     add_to_moid_text (b, strop_long_compl, w);
   else if (n == M_LONG_LONG_COMPLEX)
     add_to_moid_text (b, strop_long_long_compl, w);
+  else if (n == M_WORD_COMPLEX)
+    add_to_moid_text (b, strop_word_compl, w);
   else if (n == M_STRING)
     add_to_moid_text (b, strop_string, w);
   else if (n == M_COLLITEM)
@@ -167,7 +171,19 @@ static void moid_to_string_2 (char *b, MOID_T *n, size_t *w, NODE_T *idf,
     add_to_moid_text (b, strop_vacuum, w);
   else if (IS (n, VOID_SYMBOL) || IS (n, STANDARD) || IS (n, INDICANT))
     {
-      if (DIM (n) > 0)
+      if (DIM (n) == 100 /* special DIM value for word */)
+	{
+	  if ((*w) >= strlen ("WORD ") + strlen (NSYMBOL (NODE (n))))
+	    {
+	      add_to_moid_text (b, strop_word, w);
+	      add_to_moid_text (b, " ", w);
+	      const char *strop_symbol = a68_strop_keyword (NSYMBOL (NODE (n)));
+	      add_to_moid_text (b, strop_symbol, w);
+	    }
+	  else
+	    add_to_moid_text (b, "..", w);
+	}
+      else if (DIM (n) > 0)
 	{
 	  size_t k = DIM (n);
 

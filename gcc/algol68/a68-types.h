@@ -55,16 +55,20 @@ enum a68_tree_index
   ATI_BITS_TYPE,
   ATI_LONG_BITS_TYPE,
   ATI_LONG_LONG_BITS_TYPE,
+  ATI_WORD_BITS_TYPE,
   ATI_BYTES_TYPE,
   ATI_LONG_BYTES_TYPE,
+  ATI_WORD_BYTES_TYPE,
   ATI_SHORT_SHORT_INT_TYPE,
   ATI_SHORT_INT_TYPE,
   ATI_INT_TYPE,
   ATI_LONG_INT_TYPE,
   ATI_LONG_LONG_INT_TYPE,
+  ATI_WORD_INT_TYPE,
   ATI_REAL_TYPE,
   ATI_LONG_REAL_TYPE,
   ATI_LONG_LONG_REAL_TYPE,
+  ATI_WORD_REAL_TYPE,
   /* Sentinel.  */
   ATI_MAX
 };
@@ -294,6 +298,8 @@ struct MODES_T
     *C_STRING, *ERROR, *FILE, *FORMAT, *HEX_NUMBER, *HIP, *INT, *LONG_BITS, *LONG_BYTES,
     *LONG_COMPL, *LONG_COMPLEX, *LONG_INT, *LONG_LONG_BITS, *LONG_LONG_COMPL,
     *LONG_LONG_COMPLEX, *LONG_LONG_INT, *LONG_LONG_REAL, *LONG_REAL, *NUMBER,
+    *WORD_INT, *WORD_BITS, *WORD_BYTES, *WORD_REAL, *REF_WORD_INT, *REF_WORD_REAL,
+    *WORD_COMPLEX, *REF_WORD_COMPLEX,
     *PROC_REAL_REAL, *PROC_LONG_REAL_LONG_REAL, *PROC_REF_FILE_BOOL, *PROC_REF_FILE_VOID, *PROC_ROW_CHAR,
     *PROC_STRING, *PROC_VOID, *REAL, *REF_BITS, *REF_BOOL, *REF_BYTES,
     *REF_CHAR, *REF_COMPL, *REF_COMPLEX, *REF_FILE, *REF_INT,
@@ -1152,23 +1158,27 @@ struct GTY(()) A68_T
    || (m) == M_LONG_INT					  \
    || (m) == M_LONG_LONG_INT				  \
    || (m) == M_SHORT_INT				  \
-   || (m) == M_SHORT_SHORT_INT)
+   || (m) == M_SHORT_SHORT_INT				  \
+   || (m) == M_WORD_INT)
 #define IS_BITS(m)						  \
   ((m) == M_BITS						  \
    || (m) == M_LONG_BITS					  \
    || (m) == M_LONG_LONG_BITS					  \
    || (m) == M_SHORT_BITS					  \
-   || (m) == M_SHORT_SHORT_BITS)
+   || (m) == M_SHORT_SHORT_BITS					  \
+   || (m) == M_WORD_BITS)
 #define IS_BYTES(m)				\
-  ((m) == M_BYTES || (m) == M_LONG_BYTES)
+  ((m) == M_BYTES || (m) == M_LONG_BYTES || (m) == M_WORD_BYTES)
 #define IS_COMPLEX(m)				\
   ((m) == M_COMPLEX				\
    || (m) == M_LONG_COMPLEX			\
-   || (m) == M_LONG_LONG_COMPLEX)
+   || (m) == M_LONG_LONG_COMPLEX		\
+   || (m) == M_WORD_COMPLEX)
 #define IS_REAL(m)				\
   ((m) == M_REAL				\
    || (m) == M_LONG_REAL			\
-   || (m) == M_LONG_LONG_REAL)
+   || (m) == M_LONG_LONG_REAL                   \
+   || (m) == M_WORD_REAL)
 #define IS_ROW(m) IS ((m), ROW_SYMBOL)
 #define IS_STRUCT(m) IS ((m), STRUCT_SYMBOL)
 #define IS_UNION(m) IS ((m), UNION_SYMBOL)

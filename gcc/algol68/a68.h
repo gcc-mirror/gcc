@@ -174,6 +174,14 @@ extern GTY(()) A68_T a68_common;
 #define M_LONG_LONG_INT (MODE (LONG_LONG_INT))
 #define M_LONG_LONG_REAL (MODE (LONG_LONG_REAL))
 #define M_LONG_REAL (MODE (LONG_REAL))
+#define M_WORD_INT (MODE (WORD_INT))
+#define M_WORD_BITS (MODE (WORD_BITS))
+#define M_WORD_BYTES (MODE (WORD_BYTES))
+#define M_WORD_REAL (MODE (WORD_REAL))
+#define M_WORD_COMPLEX (MODE (WORD_COMPLEX))
+#define M_REF_WORD_INT (MODE (REF_WORD_INT))
+#define M_REF_WORD_REAL (MODE (REF_WORD_REAL))
+#define M_REF_WORD_COMPLEX (MODE (REF_WORD_COMPLEX))
 #define M_NIL (MODE (NIL))
 #define M_NUMBER (MODE (NUMBER))
 #define M_PROC_LONG_REAL_LONG_REAL (MODE (PROC_LONG_REAL_LONG_REAL))
@@ -276,16 +284,20 @@ uint32_t *a68_u8_to_u32 (const uint8_t *s, size_t n, uint32_t *resultbuf, size_t
 #define a68_bits_type               A68_GLOBAL_TREES[ATI_BITS_TYPE]
 #define a68_long_bits_type          A68_GLOBAL_TREES[ATI_LONG_BITS_TYPE]
 #define a68_long_long_bits_type     A68_GLOBAL_TREES[ATI_LONG_LONG_BITS_TYPE]
+#define a68_word_bits_type          A68_GLOBAL_TREES[ATI_WORD_BITS_TYPE]
 #define a68_bytes_type              A68_GLOBAL_TREES[ATI_BYTES_TYPE]
 #define a68_long_bytes_type         A68_GLOBAL_TREES[ATI_LONG_BYTES_TYPE]
+#define a68_word_bytes_type         A68_GLOBAL_TREES[ATI_WORD_BYTES_TYPE]
 #define a68_short_short_int_type    A68_GLOBAL_TREES[ATI_SHORT_SHORT_INT_TYPE]
 #define a68_short_int_type          A68_GLOBAL_TREES[ATI_SHORT_INT_TYPE]
 #define a68_int_type                A68_GLOBAL_TREES[ATI_INT_TYPE]
 #define a68_long_int_type           A68_GLOBAL_TREES[ATI_LONG_INT_TYPE]
 #define a68_long_long_int_type      A68_GLOBAL_TREES[ATI_LONG_LONG_INT_TYPE]
+#define a68_word_int_type           A68_GLOBAL_TREES[ATI_WORD_INT_TYPE]
 #define a68_real_type               A68_GLOBAL_TREES[ATI_REAL_TYPE]
 #define a68_long_real_type          A68_GLOBAL_TREES[ATI_LONG_REAL_TYPE]
 #define a68_long_long_real_type     A68_GLOBAL_TREES[ATI_LONG_LONG_REAL_TYPE]
+#define a68_word_real_type          A68_GLOBAL_TREES[ATI_WORD_REAL_TYPE]
 
 struct lang_type *a68_build_lang_type (MOID_T *moid);
 struct lang_decl *a68_build_lang_decl (NODE_T *node);
@@ -1036,39 +1048,51 @@ tree a68_lower_maxabschar (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_sqrt (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_sqrt (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_sqrt (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_sqrt (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_tan (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_tan (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_tan (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_tan (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_sin (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_sin (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_sin (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_sin (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_cos (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_cos (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_cos (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_cos (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_acos (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_acos (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_acos (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_acos (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_asin (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_asin (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_asin (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_asin (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_atan (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_atan (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_atan (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_atan (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_ln (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_ln (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_ln (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_ln (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_log (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_log (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_log (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_log (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_exp (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_exp (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_long_long_exp (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_word_exp (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_reali (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longreali (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longlongreali (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_wordreali (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_inti (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longinti (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longlonginti (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_wordinti (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_re2 (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_im2 (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_conj2 (NODE_T *p, LOW_CTX_T ctx);

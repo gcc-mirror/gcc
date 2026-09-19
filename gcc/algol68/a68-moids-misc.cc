@@ -439,11 +439,15 @@ a68_is_transput_mode (MOID_T *p, char rw)
     return true;
   else if (p == M_LONG_LONG_INT)
     return true;
+  else if (p == M_WORD_INT)
+    return true;
   else if (p == M_REAL)
     return true;
   else if (p == M_LONG_REAL)
     return true;
   else if (p == M_LONG_LONG_REAL)
+    return true;
+  else if (p == M_WORD_REAL)
     return true;
   else if (p == M_BOOL)
     return true;
@@ -459,11 +463,15 @@ a68_is_transput_mode (MOID_T *p, char rw)
     return true;
   else if (p == M_LONG_LONG_BITS)
     return true;
+  else if (p == M_WORD_BITS)
+    return true;
   else if (p == M_COMPLEX)
     return true;
   else if (p == M_LONG_COMPLEX)
     return true;
   else if (p == M_LONG_LONG_COMPLEX)
+    return true;
+  else if (p == M_WORD_COMPLEX)
     return true;
   else if (p == M_ROW_CHAR)
     return true;
@@ -745,6 +753,13 @@ a68_widens_to (MOID_T *p, MOID_T *q)
       else
 	return NO_MOID;
     }
+  else if (p == M_WORD_INT)
+    {
+      if (q == M_WORD_REAL)
+	return M_WORD_REAL;
+      else
+	return NO_MOID;
+    }
   else if (p == M_REAL)
     {
       if (q == M_COMPLEX)
@@ -767,6 +782,13 @@ a68_widens_to (MOID_T *p, MOID_T *q)
     {
       if (q == M_LONG_LONG_COMPLEX)
 	return M_LONG_LONG_COMPLEX;
+      else
+	return NO_MOID;
+    }
+  else if (p == M_WORD_REAL)
+    {
+      if (q == M_WORD_COMPLEX)
+	return M_WORD_COMPLEX;
       else
 	return NO_MOID;
     }
@@ -815,13 +837,26 @@ a68_widens_to (MOID_T *p, MOID_T *q)
       else
 	return NO_MOID;
     }
+  else if (p == M_WORD_BITS)
+    {
+      if (q == M_ROW_BOOL)
+	return M_ROW_BOOL;
+      else if (q == M_FLEX_ROW_BOOL)
+	return M_FLEX_ROW_BOOL;
+      else
+	return NO_MOID;
+    }
   else if (p == M_BYTES && q == M_ROW_CHAR)
     return M_ROW_CHAR;
   else if (p == M_LONG_BYTES && q == M_ROW_CHAR)
     return M_ROW_CHAR;
+  else if (p == M_WORD_BYTES && q == M_ROW_CHAR)
+    return M_ROW_CHAR;
   else if (p == M_BYTES && q == M_FLEX_ROW_CHAR)
     return M_FLEX_ROW_CHAR;
   else if (p == M_LONG_BYTES && q == M_FLEX_ROW_CHAR)
+    return M_FLEX_ROW_CHAR;
+  else if (p == M_WORD_BYTES && q == M_FLEX_ROW_CHAR)
     return M_FLEX_ROW_CHAR;
   else
     return NO_MOID;

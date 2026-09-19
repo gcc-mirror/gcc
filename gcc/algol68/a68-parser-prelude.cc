@@ -171,6 +171,11 @@ stand_moids (void)
   a68_mode (0, "COMPL", &M_COMPLEX);
   a68_mode (0, "BITS", &M_BITS);
   a68_mode (0, "BYTES", &M_BYTES);
+  /* Non-cummulative precision. */
+  a68_mode (100, "INT", &M_WORD_INT);
+  a68_mode (100, "BITS", &M_WORD_BITS);
+  a68_mode (100, "BYTES", &M_WORD_BYTES);
+  a68_mode (100, "REAL", &M_WORD_REAL);
   /* Multiple precision.  */
   a68_mode (-2, "INT", &M_SHORT_SHORT_INT);
   a68_mode (-2, "BITS", &M_SHORT_SHORT_BITS);
