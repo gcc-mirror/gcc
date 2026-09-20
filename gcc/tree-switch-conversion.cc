@@ -1803,8 +1803,9 @@ bit_test_cluster::find_bit_tests (vec<cluster *> &clusters, int max_c)
      Out: List of simple clusters and bit test clusters such that each bit test
      cluster can_be_handled() and is_beneficial()
 
-     Tries to merge consecutive clusters into bigger (bit test) ones.  Tries to
-     end up with as few clusters as possible.  */
+     Merges consecutive clusters into bigger (bit test) clusters.  Produces the
+     optimal solution -- the number of clusters in the output list is
+     minimal.  */
 
   unsigned l = clusters.length ();
 
