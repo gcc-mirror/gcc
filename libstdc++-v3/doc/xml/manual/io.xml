@@ -192,7 +192,7 @@
       excellent books:
       <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://angelikalanger.com/iostreams.html">Standard C++
       IOStreams and Locales</link> by Langer and Kreft, ISBN 0-201-18395-1, and
-      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.josuttis.com/libbook/">The C++ Standard Library</link>
+      <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.cppstdlib.com">The C++ Standard Library</link>
       by Nicolai Josuttis, ISBN 0-201-37926-0.  Both are published by
       Addison-Wesley, who isn't paying us a cent for saying that, honest.
    </para>
