@@ -1390,7 +1390,18 @@ maybe_apply_function_contracts (tree fndecl)
     }
 
   /* Now add the pre and post conditions to the existing function body.
-     This copies the approach used for function try blocks.  */
+     This approach mostly copies that of function try blocks, but also stops
+     maybe_splice_retval_cleanup from acting on sk_function_parms again and
+     introducing another DECL_EXPR for the same sentinel, or a second cleanup
+     statement, both of which would be broken.
+
+     FIXME: This means no cleanup statement will be emitted to clean up the
+     return object if the postcondition evaluations themselves throw an
+     exception (from the contract-violation handler), and this suppression
+     might need to be removed when that is addressed (PR c++/127414).  */
+  auto retval_sentinel_ovr = make_temp_override (current_retval_sentinel,
+						 NULL_TREE);
+
   tree compound_stmt = begin_compound_stmt (0);
   current_binding_level->artificial = true;
 
