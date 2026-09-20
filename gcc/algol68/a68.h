@@ -1028,6 +1028,7 @@ tree a68_lower_longbitswidth (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_longlongbitswidth (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_shortbitswidth (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_shortshortbitswidth (NODE_T *p, LOW_CTX_T ctx);
+tree a68_lower_wordbitswidth (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_pi (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_nullcharacter (NODE_T *p, LOW_CTX_T ctx);
 tree a68_lower_flip (NODE_T *p, LOW_CTX_T ctx);

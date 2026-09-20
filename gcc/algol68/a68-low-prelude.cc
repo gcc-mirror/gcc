@@ -1457,6 +1457,16 @@ a68_lower_long_long_sqrt (NODE_T *p ATTRIBUTE_UNUSED,
 }
 
 tree
+a68_lower_word_sqrt (NODE_T *p ATTRIBUTE_UNUSED,
+		     LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_sqrt (a68_word_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
 a68_lower_tan (NODE_T *p ATTRIBUTE_UNUSED,
 	       LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
@@ -1481,6 +1491,16 @@ a68_lower_long_long_tan (NODE_T *p ATTRIBUTE_UNUSED,
 			 LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_real_tan (a68_long_long_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
+a68_lower_word_tan (NODE_T *p ATTRIBUTE_UNUSED,
+		    LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_tan (a68_word_real_type);
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, a68_get_node_location (p));
   return t;
@@ -1517,6 +1537,16 @@ a68_lower_long_long_sin (NODE_T *p ATTRIBUTE_UNUSED,
 }
 
 tree
+a68_lower_word_sin (NODE_T *p ATTRIBUTE_UNUSED,
+		    LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_sin (a68_word_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
 a68_lower_cos (NODE_T *p ATTRIBUTE_UNUSED,
 	       LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
@@ -1541,6 +1571,16 @@ a68_lower_long_long_cos (NODE_T *p ATTRIBUTE_UNUSED,
 			 LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_real_cos (a68_long_long_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
+a68_lower_word_cos (NODE_T *p ATTRIBUTE_UNUSED,
+		    LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_cos (a68_word_real_type);
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, a68_get_node_location (p));
   return t;
@@ -1577,6 +1617,16 @@ a68_lower_long_long_acos (NODE_T *p ATTRIBUTE_UNUSED,
 }
 
 tree
+a68_lower_word_acos (NODE_T *p ATTRIBUTE_UNUSED,
+		     LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_acos (a68_word_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
 a68_lower_asin (NODE_T *p ATTRIBUTE_UNUSED,
 		LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
@@ -1601,6 +1651,16 @@ a68_lower_long_long_asin (NODE_T *p ATTRIBUTE_UNUSED,
 			  LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_real_asin (a68_long_long_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
+a68_lower_word_asin (NODE_T *p ATTRIBUTE_UNUSED,
+		     LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_asin (a68_word_real_type);
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, a68_get_node_location (p));
   return t;
@@ -1637,6 +1697,16 @@ a68_lower_long_long_atan (NODE_T *p ATTRIBUTE_UNUSED,
 }
 
 tree
+a68_lower_word_atan (NODE_T *p ATTRIBUTE_UNUSED,
+		     LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_atan (a68_word_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
 a68_lower_ln (NODE_T *p ATTRIBUTE_UNUSED,
 	      LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
@@ -1661,6 +1731,16 @@ a68_lower_long_long_ln (NODE_T *p ATTRIBUTE_UNUSED,
 			LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_real_ln (a68_long_long_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
+a68_lower_word_ln (NODE_T *p ATTRIBUTE_UNUSED,
+		   LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_ln (a68_word_real_type);
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, a68_get_node_location (p));
   return t;
@@ -1697,6 +1777,16 @@ a68_lower_long_long_log (NODE_T *p ATTRIBUTE_UNUSED,
 }
 
 tree
+a68_lower_word_log (NODE_T *p ATTRIBUTE_UNUSED,
+		    LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_log (a68_word_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
 a68_lower_exp (NODE_T *p ATTRIBUTE_UNUSED,
 	       LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
@@ -1721,6 +1811,16 @@ a68_lower_long_long_exp (NODE_T *p ATTRIBUTE_UNUSED,
 			 LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 {
   tree t = a68_real_exp (a68_long_long_real_type);
+  if (CAN_HAVE_LOCATION_P (t))
+    SET_EXPR_LOCATION (t, a68_get_node_location (p));
+  return t;
+}
+
+tree
+a68_lower_word_exp (NODE_T *p ATTRIBUTE_UNUSED,
+		    LOW_CTX_T ctx ATTRIBUTE_UNUSED)
+{
+  tree t = a68_real_exp (a68_word_real_type);
   if (CAN_HAVE_LOCATION_P (t))
     SET_EXPR_LOCATION (t, a68_get_node_location (p));
   return t;
