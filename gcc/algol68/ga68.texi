@@ -2970,8 +2970,10 @@ which is the default.
 @menu
 * Extended priorities::                Priorities of extended operators.
 * Extended environment enquiries::     Information about the implementation.
+* Extended standard modes::            Modes defined by the extended standard prelude.
 * Extended rows operators::            Rows and associated operations.
 * Extended boolean operators::         Operations on boolean operands.
+* Extended integral operators::        Operations on integral operands.
 * Extended bits operators::            Bits and associated operations.
 * Extended real operators::            Operations on real operands.
 * Extended math procedures::           Mathematical constants and functions.
@@ -3004,8 +3006,24 @@ the architecture and operating system targeted by the compiler.
 The most negative integral value.
 @end deftypevr
 
+@deftypevr Constant @B{int} {word bits width}
+The number of bits in a @code{@B{word} @B{bits}} value.
+@end deftypevr
+
+@deftypevr Constant @B{int} {word bytes width}
+The number of chars in a @code{@B{word} @B{bytes}} value.
+@end deftypevr
+
 @deftypevr Constant {@B{l} @B{real}} {L min real}
 The most negative real value.
+@end deftypevr
+
+@deftypevr Constant {@B{word} @B{real}} {word max real}
+The largest word real value.
+@end deftypevr
+
+@deftypevr Constant {@B{word} @B{real}} {word min real}
+The most negative word real value.
 @end deftypevr
 
 @deftypevr Constant {@B{l} @B{real}} {L infinity}
@@ -3014,6 +3032,10 @@ Positive infinity expressed in a real value.
 
 @deftypevr Constant {@B{l} @B{real}} {L minus infinity}
 Negative infinity expressed in a real value.
+@end deftypevr
+
+@deftypevr Constant {@B{word} @B{real}} {word pi}
+The number pi as a word real.
 @end deftypevr
 
 @deftypevr Constant @B{char} {replacement char}
@@ -3025,6 +3047,30 @@ Unicode.
 @B{char} value that doesn't denote an actual char, but an end-of-file
 situation.
 @end deftypevr
+
+@node Extended standard modes
+@section Extended standard modes
+
+@deftp Mode {@B{word} @B{int}}
+Modes for signed integral values of the same width than a word
+(address) in the target machine.
+@end deftp
+
+@deftp Mode {@B{word} @B{bits}}
+Compact and efficient representation of a row of boolean values, with
+as many bits as they fit in a word (address) in the target machine.
+@end deftp
+
+@deftp Mode {@B{word} @B{bytes}}
+Compact and efficient representation of a row of character values,
+with as many chars as they fit in a word (address) in the target
+machine.
+@end deftp
+
+@deftp Mode {@B{word} @B{real}}
+Modes for signed real values of the same with than a word (address) in
+the target machine.
+@end deftp
 
 @node Extended rows operators
 @section Extended rows operators
@@ -3050,27 +3096,267 @@ Dyadic operator that yields the exclusive-or operation of the given
 boolean arguments.
 @end deftypefn
 
+@node Extended integral operators
+@section Extended integral operators
+
+@subsection Arithmetic
+
+@deftypefn Operator {} {+} {= (@B{word} @B{int} a) @B{word} @B{int}}
+Monadic operator that yields the affirmation of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{word} @B{int} a) @B{word} @B{int}}
+Monadic operator that yields the negative of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{abs}} {= (@B{word} @B{int} a) @B{word} @B{int}}
+Monadic operator that yields the absolute value of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{sign}} {= (@B{word} @B{int} a) @B{int}}
+Monadic operator that yields -1 if @code{a} if negative, 0 if @code{a}
+is zero and 1 if @code{a} is positive.
+@end deftypefn
+
+@deftypefn Operator {} {@B{odd}} {= (@B{word} @B{int} a) @B{bool}}
+Monadic operator that yields @code{@B{true}} if its operand is odd,
+@code{@B{false}} otherwise.
+@end deftypefn
+
+@deftypefn Operator {} {+} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+Dyadic operator that yields the addition of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+Dyadic operator that yields @code{b} subtracted from @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {*} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+Dyadic operator that yields the multiplication of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {@B{over}} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+@deftypefnx Operator {} {%} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+Dyadic operator that yields the integer division of @code{a} by
+@code{b}, rounding the quotient toward zero.
+@end deftypefn
+
+@deftypefn Operator {} {@B{mod}} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+@deftypefnx Operator {} {%*} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields the remainder of the division of @code{a}
+by @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {/} {= (@B{word} @B{int} a, b) @B{word} @B{real}}
+Dyadic operator that yields the integer division with real result of
+@code{a} by @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {**} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+@deftypefnx Operator {} {^} {= (@B{word} @B{int} a, b) @B{word} @B{int}}
+Dyadic operator that yields @code{a} raised to the exponent @code{b}.
+@end deftypefn
+
+@subsection Arithmetic combined with assignation
+
+@deftypefn Operator {} {@B{plusab}} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+@deftypefnx Operator {} {+:=} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+@dfn{Plus and become}.  Dyadic operator that calculates @code{a + b},
+assigns the result of the operation to the name @code{a} and then
+yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{minusab}} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+@deftypefnx Operator {} {-:=} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+Dyadic operator that calculates @code{a - b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{timesab}} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+@deftypefnx Operator {} {*:=} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+Dyadic operator that calculates @code{a * b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{overab}} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+@deftypefnx Operator {} {%:=} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+Dyadic operator that calculates @code{a % b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{modab}} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+@deftypefnx Operator {} {%*:=} {= (@B{ref} @B{word} @B{int} a, @B{word} @B{int} b) @B{ref} @B{word} @B{int}}
+Dyadic operator that calculates @code{a %* b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{word} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{word} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{word} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{word} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{word} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{word} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{word} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{word} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than, or equal to
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{word} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{word} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{word} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than, or equal
+to @code{b}.
+@end deftypefn
+
 @node Extended bits operators
 @section Extended bits operators
 
+@subsection Logical
+
+@deftypefn Operator {} {@B{NOT}} {= (@B{word} @B{bits} a, b) @B{word} @B{bits}}
+@deftypefnx Operator {} {~} {= (@B{word} @B{bits} a, b) @B{word} @B{bits}}
+Monadic operator that yields the element-wise not logical operation in
+the elements of the given bits operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{AND}} {= (@B{word} @B{bits} a, b) @B{word} @B{bits}}
+@deftypefnx Operator {} {&} {= (@B{word} @B{bits} a, b) @B{word} @B{bits}}
+Dyadic operator that yields the element-wise and logical operation in
+the elements of the given bits operands.
+@end deftypefn
+
+@deftypefn Operator {} {@B{OR}} {= (@B{word} @B{bits} a, b) @B{word} @B{bits}}
+Dyadic operator that yields the element-wise ``or'' logical operation
+in the elements of the given bits operands.
+@end deftypefn
+
 @deftypefn Operator {} {@B{xor}} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+@deftypefnx Operator {} {@B{xor}} {= (@B{word} @B{bits} a, b) @B{word} @B{bits}}
 Dyadic operator that yields the bit exclusive-or operation of the
 given bits arguments.
 @end deftypefn
 
+@subsection Shifting
+
+@deftypefn Operator {} {@B{SHL}} {= (@B{word} @B{bits} a, @B{int} n) @B{word} @B{bits}}
+@deftypefnx Operator {} {@B{UP}} {= (@B{word} @B{bits} a, @B{int} n) @B{word} @B{bits}}
+Dyadic operator that yields the given bits operand shifted @code{ABS
+n} positions to the left if @code{n >= 0} or @code{ABS n} positions to
+the right if @code{n < 0}.  Extra elements introduced on the right or
+left are initialized to @code{@B{false}}.  If @code{ABS n >
+L_bits_width} then the resulting bits value has all bits set to
+@code{false}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{SHR}} {= (@B{word} @B{bits} a, @B{int} n) @B{word} @B{bits}}
+@deftypefnx Operator {} {@B{DOWN}} {= (@B{word} @B{bits} a, @B{int} n) @B{word} @B{bits}}
+Dyadic operator that yields the given bits operand shifted @code{ABS
+n} positions to the right if @code{n >= 0} or @code{ABS n} positions
+to the left if @code{n < 0}.  Extra elements introduced on the right
+or left are initialized to @code{@B{false}}.  If @code{ABS n >
+L_bits_width} then the resulting bits value has all bits set to
+@code{false}.
+@end deftypefn
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{word} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{word} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.  Two
+bits are equal if they contain the same sequence of booleans.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{word} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{word} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{word} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{word} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is less than
+the bits @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{word} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{word} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is less than,
+or equal to bits @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{word} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{word} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is greater than
+the bits @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{word} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{word} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is greater
+than, or equal to the bits @code{b}.
+@end deftypefn
+
+@subsection Conversions
+
+@deftypefn Operator {} {@B{abs}} {= (@B{word} @B{bits} a) @B{word} @B{int}}
+Monadic operator that yields the integral value whose constituent bits
+correspond to the booleans stored in @code{a}. @xref{@code{@B{bin}}
+and @code{@B{abs}} of negative integral values}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{bin}} {= (@B{word} @B{int} a) @B{word} @B{bits}}
+Monadic operator that yields the bits value whose boolean elements map
+the bits in the given integral operand. @xref{@code{@B{bin}} and
+@code{@B{abs}} of negative integral values}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{shorten}} {= (@B{long} @B{bits} a) @B{bits}}
+@deftypefnx Operator {} {@B{shorten}} {= (@B{long} @B{long} @B{bits} a) @B{long} @B{bits}}
+Monadic operator that yields the bits value that can be lengthened to
+the value of @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{leng}} {= (@B{bits} a) @B{long} @B{bits}}
+@deftypefnx Operator {} {@B{leng}} {= (@B{long} @B{bits} a) @B{long} @B{long} @B{bits}}
+Monadic operator that yields the bits value lengthened from the value
+of @code{a}.  The lengthened value features @code{@B{false}} in the
+extra left positions added to match the lengthened size.
+@end deftypefn
+
+@subsection Manipulating elements
+
 @deftypefn Operator {} {@B{set}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
+@deftypefnx Operator {} {@B{set}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
 Dyadic operator that sets the @code{n}th least significant bit in
 @code{@B{b}}, where @code{n} is zero based.  If @code{n} is not in the
 range @code{[0,L_bits_width)} then the operator yields @B{b}.
 @end deftypefn
 
 @deftypefn Operator {} {@B{clear}} {= (@B{l} @B{bits} b, @B{int} n) @B{l} @B{bits}}
+@deftypefnx Operator {} {@B{clear}} {= (@B{word} @B{bits} b, @B{int} n) @B{word} @B{bits}}
 Dyadic operator that clears the @code{n}th least significant bit in
 @code{@B{b}}, where @code{n} is zero based.  If @code{n} is not in the
 range @code{[0,L_bits_width)} then the operator yields @B{b}.
 @end deftypefn
 
 @deftypefn Operator {} {@B{test}} {= (@B{l} @B{bits} b, @B{int} n) @B{bool}}
+@deftypefnx Operator {} {@B{test}} {= (@B{word} @B{bits} b, @B{int} n) @B{bool}}
 Dyadic operator that tests whether the @code{n}th least significant
 bit in @code{@B{b}} is set, where @code{n} is zero based. If @code{n}
 is not in the range @code{0,L_bits_width)} then the operator yields
@@ -3080,7 +3366,130 @@ is not in the range @code{0,L_bits_width)} then the operator yields
 @node Extended real operators
 @section Extended real operators
 
-@deftypefn Operator {} {@B{floor}} {= (@B{l} @B{real} a) @B{l} @B{int}}
+@subsection Arithmetic
+
+@deftypefn Operator {} {+} {= (@B{word} @B{real} a) @B{word} @B{real}}
+Monadic operator that yields the affirmation of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{word} @B{real} a) @B{word} @B{real}}
+Monadic operator that yields the negative of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{abs}} {= (@B{word} @B{real} a) @B{word} @B{real}}
+Monadic operator that yields the absolute value of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{sign}} {= (@B{word} @B{real} a) @B{int}}
+Monadic operator that yields -1 if @code{a} if negative, 0 if @code{a}
+is zero and 1 if @code{a} is positive.
+@end deftypefn
+
+@deftypefn Operator {} {+} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
+Dyadic operator that yields the addition of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
+Dyadic operator that yields @code{b} subtracted from @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {*} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
+Dyadic operator that yields the multiplication of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {/} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
+Dyadic operator that yields the realeger division with real result of
+@code{a} by @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {**} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
+@deftypefnx Operator {} {^} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
+Dyadic operator that yields @code{a} raised to the real exponent @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {**} {= (@B{word} @B{real} a, @B{int} b) @B{word} @B{real}}
+@deftypefnx Operator {} {^} {= (@B{word} @B{real} a, @B{int} b) @B{word} @B{real}}
+Dyadic operator that yields @code{a} raised to the integral exponent
+@code{b}.
+@end deftypefn
+
+@subsection Arithmetic combined with assignation
+
+@deftypefn Operator {} {@B{plusab}} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+@deftypefnx Operator {} {+:=} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+@dfn{Plus and become}.  Dyadic operator that calculates @code{a + b},
+assigns the result of the operation to the name @code{a} and then
+yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{minusab}} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+@deftypefnx Operator {} {-:=} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+Dyadic operator that calculates @code{a - b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{timesab}} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+@deftypefnx Operator {} {*:=} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+Dyadic operator that calculates @code{a * b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{divab}} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+@deftypefnx Operator {} {/:=} {= (@B{ref} @B{word} @B{real} a, @B{word} @B{real} b) @B{ref} @B{word} @B{real}}
+Dyadic operator that calculates @code{a / b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{word} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{word} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{word} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{word} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{word} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{word} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{word} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{word} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than, or equal to
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{word} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{word} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{word} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{word} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than, or equal
+to @code{b}.
+@end deftypefn
+
+@subsection Conversions
+
+@deftypefn Operator {} {@B{round}} {= (@B{word} @B{real} a) @B{int}}
+Monadic operator that yields the nearest integer to its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{entier}} {= (@B{word} @B{real} a) @B{word} @B{int}}
+Monadic operator that yields the integer equal to @code{a}, or the
+next integer below (more negative than) @code{a}.
+
+Selecting the @option{gnu68} dialect provides the @B{floor}
+operator as a synonym for @B{entier}.  @xref{Extended real operators}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{floor}} {= (@B{word} @B{real} a) @B{word} @B{int}}
 Monadic operator that yields the integer equal to @code{a} rounded
 towards negative infinity.
 
@@ -3093,6 +3502,7 @@ An alias for operator @B{entier}.  @xref{Real operators}.
 @subsection Logarithms
 
 @deftypefn Procedure {} {@B{log}} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+@deftypefnx Procedure {} {@B{log}} {= (@B{word} @B{real} a, b) @B{word} @B{real}}
 Procedure that calculates the base ten logarithm of the given arguments.
 @end deftypefn
 
