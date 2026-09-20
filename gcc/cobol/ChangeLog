@@ -1,3 +1,7 @@
+2026-09-19  Robert Dubner  <rdubner@symas.com>
+
+	* parse.y: Comment out unused passby_str() function.
+
 2026-09-18  Robert Dubner  <rdubner@symas.com>
 
 	* gcobol.1: Documentation for the .so search.

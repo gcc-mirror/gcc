@@ -1,3 +1,53 @@
+2026-09-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/pr125734.c: xfail on hppa*-*-hpux*.
+
+2026-09-19  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127053
+	* g++.dg/tree-ssa/cselim-2.C: New test.
+	* gcc.dg/torture/cselim-1.c: New test.
+
+2026-09-19  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/tree-ssa/cswtch-6.c: xfail on hppa*-*-hpux*.
+	* gcc.dg/tree-ssa/cswtch-7.c: Likewise.
+
+2026-09-19  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR target/127460
+	* gcc.target/pru/pr127460.c: New test.
+
+2026-09-19  panciyan  <panciyan@eswincomputing.com>
+
+	* gcc.target/riscv/zilsd-align-split-arg-1.c: New test.
+	* gcc.target/riscv/zilsd-align-split-arg-2.c: New test.
+	* gcc.target/riscv/zilsd-align-split-arg-3.c: New test.
+	* gcc.target/riscv/zilsd-align-split-arg-4.c: New test.
+
+2026-09-19  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	PR target/127374
+	* gcc.target/riscv/czero-bext.c: Change scan assembler
+	* gcc.target/riscv/pr127374.c: New test.
+
+2026-09-19  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/aarch64/postreload-implicit-set-1.c: New test.
+	* gcc.target/arm/postreload-implicit-set-1.c: New test.
+	* gcc.target/arm/postreload-implicit-set-2.c: New test.
+	* gcc.target/i386/postreload-implicit-set-1.c: New test.
+
+2026-09-19  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/sat/vec_sat_u_sub_trunc-1-u8.c: Update
+	test expectations.
+
+2026-09-19  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	PR target/126074
+	* gcc.target/riscv/pr126074.c: New test.
+
 2026-09-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/125945

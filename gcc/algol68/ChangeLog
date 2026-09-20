@@ -1,3 +1,64 @@
+2026-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.vw: Typos fixed, section 8.0.1 added, consistent {x} style
+	to refer to rules within pragmatics.
+
+2026-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-sprops.cc (make_origin): Initialize properties of the
+	new origin from a parse node.
+	(sprops_for_denotation): Pass parse node to make_origin and remove
+	now superfluous code.
+	(sprops_for_deproceduring): Likewise.
+	(sprops_for_proceduring): Likewise.
+	(sprops_for_loop_clause): Likewise.
+	(sprops_for_serial_clause): Likewise.
+	(sprops_for_parallel_clause): Likewise.
+	(sprops_for_conditional_clause): Likewise.
+	(sprops_for_case_clause): Likewise.
+	(sprops_for_collateral_clause): Likewise.
+	(sprops_for_conformity_clause): Likewise.
+	(sprops_for_identity_relation): Likewise.
+	(sprops_for_logical_function): Likewise.
+	(sprops_for_call): Likewise.
+	(sprops_for_generator): Likewise.
+	(sprops_for_formula): Likewise.
+	(sprops_for_applied_identifier): Likewise.
+	(sprops_for_assertion): Likewise.
+	(sprops_for_decl): Likewise.
+	(sprops_for_unit): Likewise.
+
+2026-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-sprops.cc (sprops_for_deproceduring): Set BNO.
+	(sprops_for_proceduring): Likewise.
+	(sprops_for_loop_clause): Likewise.
+	(sprops_for_serial_clause): Likewise.
+	(sprops_for_parallel_clause): Likewise.
+	(sprops_for_conditional_clause): Likewise.
+	(sprops_for_case_clause): Likewise.
+	(sprops_for_collateral_clause): Likewise.
+	(sprops_for_conformity_clause): Likewise.
+	(sprops_for_identity_relation): Likewise.
+	(sprops_for_logical_function): Likewise.
+	(sprops_for_call): Likewise.
+	(sprops_for_generator): Likewise.
+	(sprops_for_formula): Likewise.
+	(sprops_for_assertion): Likewise.
+	(sprops_for_decl): Likewise.
+	(sprops_for_decl): Likewise.
+	(sprops_for_unit): Likewise.
+
+2026-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-types.h: Clarify roles of field set by the scope checker in
+	TAG_T.
+
+2026-09-19  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-scope.cc: Do not claim the scope pass finishes the
+	parser.
+
 2026-09-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68.h: Add prototypes for a68_sprops, a68_yields_value and

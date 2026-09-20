@@ -1,3 +1,52 @@
+2026-09-19  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcov.cc (add_path_counts): Read the right field paths.size.
+	(function_summary): Add missing else.
+
+2026-09-19  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127053
+	* tree-ssa-phiopt.cc (trailing_store_in_bb): Rename vphi to
+	vuse_only.
+	(cond_if_else_store_replacement_limited): Add case if
+	cond_if_else_store_replacement_1 failed, allowing
+	for skipping one store on each side.
+	(trailing_store_in_bb): Require the store stmt
+	to be a gimple simple assign.
+
+2026-09-19  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR target/127460
+	* config/pru/pru.cc (pru_insert_loop_label_last): Ignore debug
+	instructions while counting final loop opcodes.
+
+2026-09-19  panciyan  <panciyan@eswincomputing.com>
+
+	* function.cc (assign_parm_find_stack_rtl): When data->partial is
+	nonzero, limit the stack slot alignment to the largest power of
+	two dividing the partial size.
+
+2026-09-19  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	PR target/127374
+	* config/riscv/iterators.md (leu): Map gt to le
+	* config/riscv/zicond.md: Add define_split patterns
+
+2026-09-19  Dominic P  <gcc@gcc.dp11.uk>
+
+	* postreload.cc (reload_cse_regs_1): Find the condition of the
+	predecessor's conditional branch with get_condition, so a comparison
+	held in the condition-code register is seen.  Reject a jump whose
+	target is not a label.  Record the implicit set only where the block
+	sets the register to that value.
+
+2026-09-19  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	PR target/126074
+	* config/riscv/riscv.cc (riscv_build_integer_1): Add logic to
+	synthesize constants using shNadd.uw.
+	(riscv_move_integer): Handle FMA with use_uw for RTL emission.
+
 2026-09-18  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/125945
