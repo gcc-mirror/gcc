@@ -13589,3 +13589,28 @@ and,
  (if (INTEGRAL_TYPE_P (type))
    (with { tree itype = TREE_TYPE (@2); }
     (convert (minus @2 (convert:itype @1))))))
+
+#if GIMPLE
+/* Replace (x == C) ? y : MIN (x, y) -> MIN (x, y) when C >= upper_bound (y),
+   and (x == C) ? y : MAX (x, y) -> MAX (x, y) when C <= lower_bound (y),
+   because in both cases the guarded arm equals the min/max expression.  */
+(for minmax (min max)
+ (simplify
+  (cond (eq @0 INTEGER_CST@1) @2 (minmax:c@3 @0 @2))
+  (if (INTEGRAL_TYPE_P (type))
+   (with {
+     int_range_max r;
+     if (!gimple_match_range_of_expr (r, @2, @2))
+       r.set_varying (TREE_TYPE (@2));
+     wide_int bound;
+     if (minmax == MIN_EXPR)
+       bound = r.upper_bound ();
+     else
+       bound = r.lower_bound ();
+    }
+   (if ((minmax == MIN_EXPR
+	 && wi::ge_p (wi::to_wide (@1), bound, TYPE_SIGN (type)))
+	|| (minmax == MAX_EXPR
+	    && wi::le_p (wi::to_wide (@1), bound, TYPE_SIGN (type))))
+    @3)))))
+#endif
