@@ -3038,7 +3038,8 @@ noce_get_alt_condition (noce_if_info *if_info, rtx target,
 
   /* X may not be mentioned in the range (cond_earliest, jump].  */
   for (insn = if_info->jump; insn != *earliest; insn = PREV_INSN (insn))
-    if (INSN_P (insn) && reg_overlap_mentioned_p (if_info->x, PATTERN (insn)))
+    if (NONDEBUG_INSN_P (insn)
+	&& reg_overlap_mentioned_p (if_info->x, PATTERN (insn)))
       return NULL;
 
   /* A and B may not be modified in the range [cond_earliest, jump).  */
