@@ -208,7 +208,10 @@ a68_lower_string_denotation (NODE_T *p, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
 		  longety, bits denotation;
 		  shortety, int denotation;
 		  shortety, real denotation;
-		  shortety, bits denotation.
+		  shortety, bits denotation;
+		  word symbol, int denotation;
+		  word symbol, real denotation;
+		  word symbol, bits denotation.
 
    Denotations lower into GENERIC cst expressions.  */
 
@@ -239,13 +242,16 @@ a68_lower_denotation (NODE_T *p, LOW_CTX_T ctx)
 	   || moid == M_LONG_INT
 	   || moid == M_LONG_LONG_INT
 	   || moid == M_SHORT_INT
-	   || moid == M_SHORT_SHORT_INT)
+	   || moid == M_SHORT_SHORT_INT
+	   || moid == M_WORD_INT)
     {
       /* SIZETY INT */
       tree type;
       char *end;
       NODE_T *s = NO_NODE;
-      if (IS (SUB (p), LONGETY) || IS (SUB (p), SHORTETY))
+      if (IS (SUB (p), LONGETY)
+	  || IS (SUB (p), SHORTETY)
+	  || IS (SUB (p), FIXETY))
 	s = NEXT (SUB (p));
       else
 	s = SUB (p);
@@ -274,14 +280,17 @@ a68_lower_denotation (NODE_T *p, LOW_CTX_T ctx)
       || moid == M_LONG_BITS
       || moid == M_LONG_LONG_BITS
       || moid == M_SHORT_BITS
-      || moid == M_SHORT_SHORT_BITS)
+      || moid == M_SHORT_SHORT_BITS
+      || moid == M_WORD_BITS)
     {
       /* SIZETY BITS */
 
       tree type;
       char *end;
       NODE_T *s = NO_NODE;
-      if (IS (SUB (p), LONGETY) || IS (SUB (p), SHORTETY))
+      if (IS (SUB (p), LONGETY)
+	  || IS (SUB (p), SHORTETY)
+	  || IS (SUB (p), FIXETY))
 	s = NEXT (SUB (p));
       else
 	s = SUB (p);
@@ -313,12 +322,15 @@ a68_lower_denotation (NODE_T *p, LOW_CTX_T ctx)
     }
   else if (moid == M_REAL
 	   || moid == M_LONG_REAL
-	   || moid == M_LONG_LONG_REAL)
+	   || moid == M_LONG_LONG_REAL
+	   || moid == M_WORD_REAL)
     {
       /* SIZETY REAL */
       tree type;
       NODE_T *s = NO_NODE;
-      if (IS (SUB (p), LONGETY) || IS (SUB (p), SHORTETY))
+      if (IS (SUB (p), LONGETY)
+	  || IS (SUB (p), SHORTETY)
+	  || IS (SUB (p), FIXETY))
 	s = NEXT (SUB (p));
       else
 	s = SUB (p);
@@ -329,6 +341,8 @@ a68_lower_denotation (NODE_T *p, LOW_CTX_T ctx)
 	type = a68_long_real_type;
       else if (moid == M_LONG_LONG_REAL)
 	type = a68_long_long_real_type;
+      else if (moid == M_WORD_REAL)
+	type = a68_word_real_type;
       else
 	gcc_unreachable ();
 

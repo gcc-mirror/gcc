@@ -190,7 +190,8 @@ lower_hip_mode (MOID_T *m)
 /* Lower a standard mode to a GENERIC tree.
 
    Note that this function only has to handle the standard modes that have not
-   been resolved to some equivalent.  */
+   been resolved to some equivalent.  In particular, this excludes the complex
+   modes, for which equivalent modes are declared in a68-parser-prelude.cc.  */
 
 static tree
 lower_standard_mode (MOID_T *m)
@@ -213,12 +214,16 @@ lower_standard_mode (MOID_T *m)
     type = a68_long_int_type;
   else if (m == M_LONG_LONG_INT)
     type = a68_long_long_int_type;
+  else if (m == M_WORD_INT)
+    type = a68_word_int_type;
   else if (m == M_REAL)
     type = a68_real_type;
   else if (m == M_LONG_REAL)
     type = a68_long_real_type;
   else if (m == M_LONG_LONG_REAL)
     type = a68_long_long_real_type;
+  else if (m == M_WORD_REAL)
+    type = a68_word_real_type;
   else if (m == M_SHORT_SHORT_BITS)
     type = a68_short_short_bits_type;
   else if (m == M_SHORT_BITS)
@@ -229,10 +234,14 @@ lower_standard_mode (MOID_T *m)
     type = a68_long_bits_type;
   else if (m == M_LONG_LONG_BITS)
     type = a68_long_long_bits_type;
+  else if (m == M_WORD_BITS)
+    type = a68_word_bits_type;
   else if (m == M_BYTES)
     type = a68_bytes_type;
   else if (m == M_LONG_BYTES)
     type = a68_long_bytes_type;
+  else if (m == M_WORD_BYTES)
+    type = a68_word_bytes_type;
   else if (m == M_FILE)
     /* XXX for now this is a file descriptor.  */
     type = integer_type_node;

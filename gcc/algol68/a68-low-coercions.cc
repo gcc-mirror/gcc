@@ -315,30 +315,32 @@ a68_lower_rowing (NODE_T *p, LOW_CTX_T ctx)
 
    Widening allows the following conversions of mode:
 
-   LONGSETY INT to LONGSETY REAL
-   LONGSETY REAL to LONGSETY COMPL
-   LONGSETY BITS to []BOOL
-   LONGSETY BYTES to []CHAR  */
+   SIZETY INT to LONGSETY REAL
+   SIZETY REAL to LONGSETY COMPL
+   SIZETY BITS to []BOOL
+   SIZETY BYTES to []CHAR  */
 
 tree
 a68_lower_widening (NODE_T *p, LOW_CTX_T ctx)
 {
   if (MOID (p) == M_REAL
       || MOID (p) == M_LONG_REAL
-      || MOID (p) == M_LONG_LONG_REAL)
+      || MOID (p) == M_LONG_LONG_REAL
+      || MOID (p) == M_WORD_REAL)
     {
       return convert_to_real (CTYPE (MOID (p)), a68_lower_tree (SUB (p), ctx));
     }
   if (MOID (p) == M_COMPLEX
       || MOID (p) == M_LONG_COMPLEX
-      || MOID (p) == M_LONG_LONG_COMPLEX)
+      || MOID (p) == M_LONG_LONG_COMPLEX
+      || MOID (p) == M_WORD_COMPLEX)
     {
       return a68_complex_widen_from_real (MOID (p),
 					  a68_lower_tree (SUB (p), ctx));
     }
   else if (MOID (p) == M_ROW_BOOL)
     {
-      /* Widen a LONGSETY BITS to a row of BOOLs.  */
+      /* Widen a SIZETY BITS to a row of BOOLs.  */
       tree coercend = a68_lower_tree (SUB (p), ctx);
       tree coercend_type = TREE_TYPE (coercend);
       HOST_WIDE_INT bits_size = int_size_in_bytes (coercend_type);

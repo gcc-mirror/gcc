@@ -59,6 +59,8 @@ a68_get_int_skip_tree (MOID_T *m)
     type = a68_short_int_type;
   else if (m == M_SHORT_SHORT_INT)
     type = a68_short_short_int_type;
+  else if (m == M_WORD_INT)
+    type = a68_word_int_type;
   else
     gcc_unreachable ();
 

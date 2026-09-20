@@ -492,6 +492,7 @@ a68_lower_identity_declaration (NODE_T *p, LOW_CTX_T ctx)
      declarer : indicant;
      		longety, indicant;
      		shortety, indicant;
+		fixety, indicant;
 		flex symbol, declarer;
 		flex symbol, bounds, declarer;
 		flex symbol, formal bounds, declarer;

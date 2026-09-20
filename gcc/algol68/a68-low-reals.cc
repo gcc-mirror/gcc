@@ -65,6 +65,11 @@ a68_get_real_skip_tree (MOID_T *m)
       int_type = a68_long_long_int_type;
       real_type = a68_long_long_real_type;
     }
+  else if (m == M_WORD_REAL)
+    {
+      int_type = a68_word_int_type;
+      real_type = a68_word_real_type;
+    }
   else
     gcc_unreachable ();
 
@@ -410,6 +415,20 @@ a68_real_entier (tree val, MOID_T *to_mode, MOID_T *from_mode)
       else
 	gcc_unreachable ();
     }
+  else if (from_mode == M_WORD_REAL)
+    {
+      if (to_type == integer_type_node)
+	fn = builtin_decl_explicit (BUILT_IN_IFLOOR);
+      else if (to_type == long_integer_type_node)
+	fn = builtin_decl_explicit (BUILT_IN_LFLOOR);
+      else if (to_type == long_long_integer_type_node)
+	fn = builtin_decl_explicit (BUILT_IN_LLFLOOR);
+      else if (to_type == a68_word_int_type)
+	/* XXX */
+	fn = builtin_decl_explicit (BUILT_IN_LFLOOR);
+      else
+	gcc_unreachable ();
+    }
   else
     gcc_unreachable ();
 
@@ -455,6 +474,20 @@ a68_real_round (tree val, MOID_T *to_mode, MOID_T *from_mode)
 	fn = builtin_decl_explicit (BUILT_IN_LROUNDL);
       else if (to_type == long_long_integer_type_node)
 	fn = builtin_decl_explicit (BUILT_IN_LLROUNDL);
+      else
+	gcc_unreachable ();
+    }
+  else if (from_mode == M_WORD_REAL)
+    {
+      if (to_type == integer_type_node)
+	fn = builtin_decl_explicit (BUILT_IN_IROUND);
+      else if (to_type == long_integer_type_node)
+	fn = builtin_decl_explicit (BUILT_IN_LROUND);
+      else if (to_type == long_long_integer_type_node)
+	fn = builtin_decl_explicit (BUILT_IN_LLROUND);
+      else if (to_type == a68_word_int_type)
+	/* XXX */
+	fn = builtin_decl_explicit (BUILT_IN_LROUND);
       else
 	gcc_unreachable ();
     }
@@ -583,6 +616,12 @@ a68_real_pow (MOID_T *m, MOID_T *a_mode, MOID_T *b_mode,
     {
       gcc_assert (a_mode == M_LONG_LONG_REAL);
       built_in = b_mode == M_LONG_LONG_REAL ? BUILT_IN_POWL : BUILT_IN_POWIL;
+    }
+  else if (m == M_WORD_REAL)
+    {
+      /* XXX */
+      gcc_assert (a_mode == M_WORD_REAL);
+      built_in = b_mode == M_WORD_REAL ? BUILT_IN_POW : BUILT_IN_POWI;
     }
   else
     gcc_unreachable ();
