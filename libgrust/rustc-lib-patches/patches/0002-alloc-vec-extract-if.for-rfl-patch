@@ -1,0 +1,150 @@
+diff --git a/libgrust/rustc-lib/alloc/src/vec.rs b/libgrust/rustc-lib/alloc/src/vec.rs
+index 2c8bc3d53ef..e17be0e431c 100644
+--- a/libgrust/rustc-lib/alloc/src/vec.rs
++++ b/libgrust/rustc-lib/alloc/src/vec.rs
+@@ -2500,6 +2500,15 @@ impl<T> Vec<T> {
+ 
+         DrainFilter { vec: self, idx: 0, del: 0, old_len, pred: filter, panic_flag: false }
+     }
++
++    #[stable(feature = "extract_if", since = "1.87.0")]
++    pub fn extract_if<F, R>(&mut self, range: R, filter: F) -> ExtractIf<'_, T, F>
++    where
++        F: FnMut(&mut T) -> bool,
++        R: RangeBounds<usize>,
++    {
++        ExtractIf::new(self, filter, range)
++    }
+ }
+ 
+ /// Extend implementation that copies elements out of references before pushing them onto the Vec.
+@@ -3437,3 +3446,129 @@ where
+         }
+     }
+ }
++
++// Backported minimal implementation of extract_if
++// Note that the allocator-related code removed for 1.49 compatibility
++
++/// An iterator which uses a closure to determine if an element should be removed.
++///
++/// This struct is created by [`Vec::extract_if`].
++/// See its documentation for more.
++///
++/// # Example
++///
++/// ```
++/// let mut v = vec![0, 1, 2];
++/// let iter: std::vec::ExtractIf<'_, _, _> = v.extract_if(.., |x| *x % 2 == 0);
++/// ```
++#[stable(feature = "extract_if", since = "1.87.0")]
++pub struct ExtractIf<
++    'a,
++    T,
++    F
++> {
++    vec: &'a mut Vec<T>,
++    /// The index of the item that will be inspected by the next call to `next`.
++    idx: usize,
++    /// Elements at and beyond this point will be retained. Must be equal or smaller than `old_len`.
++    end: usize,
++    /// The number of items that have been drained (removed) thus far.
++    del: usize,
++    /// The original length of `vec` prior to draining.
++    old_len: usize,
++    /// The filter test predicate.
++    pred: F,
++}
++
++#[stable(feature = "extract_if", since = "1.87.0")]
++impl<'a, T, F> ExtractIf<'a, T, F> {
++    pub(super) fn new<R: RangeBounds<usize>>(vec: &'a mut Vec<T>, pred: F, range: R) -> Self {
++        let old_len = vec.len();
++        // BACKPORT: updated slice::range to range.assert_len for 1.49 compatibility
++        let Range { start, end } = range.assert_len(old_len);
++
++        // Guard against the vec getting leaked (leak amplification)
++        // SAFETY: Setting length to 0 is always okay.
++        unsafe {
++            vec.set_len(0);
++        }
++        ExtractIf { vec, idx: start, del: 0, end, old_len, pred }
++    }
++}
++
++#[stable(feature = "extract_if", since = "1.87.0")]
++impl<T, F> Iterator for ExtractIf<'_, T, F>
++where
++    F: FnMut(&mut T) -> bool,
++{
++    type Item = T;
++
++    fn next(&mut self) -> Option<T> {
++        while self.idx < self.end {
++            let i = self.idx;
++            // SAFETY:
++            //  We know that `i < self.end` from the if guard and that `self.end <= self.old_len` from
++            //  the validity of `Self`. Therefore `i` points to an element within `vec`.
++            //
++            //  Additionally, the i-th element is valid because each element is visited at most once
++            //  and it is the first time we access vec[i].
++            //
++            //  Note: we can't use `vec.get_unchecked_mut(i)` here since the precondition for that
++            //  function is that i < vec.len(), but we've set vec's length to zero.
++            let cur = unsafe { &mut *self.vec.as_mut_ptr().add(i) };
++            let drained = (self.pred)(cur);
++            // Update the index *after* the predicate is called. If the index
++            // is updated prior and the predicate panics, the element at this
++            // index would be leaked.
++            self.idx += 1;
++            if drained {
++                self.del += 1;
++                // SAFETY: We never touch this element again after returning it.
++                return Some(unsafe { ptr::read(cur) });
++            } else if self.del > 0 {
++                // SAFETY: `self.del` > 0, so the hole slot must not overlap with current element.
++                // We use copy for move, and never touch this element again.
++                unsafe {
++                    let hole_slot = self.vec.as_mut_ptr().add(i - self.del);
++                    ptr::copy_nonoverlapping(cur, hole_slot, 1);
++                }
++            }
++        }
++        None
++    }
++
++    fn size_hint(&self) -> (usize, Option<usize>) {
++        (0, Some(self.end - self.idx))
++    }
++}
++
++#[stable(feature = "extract_if", since = "1.87.0")]
++impl<T, F> Drop for ExtractIf<'_, T, F> {
++    fn drop(&mut self) {
++        if self.del > 0 {
++            // SAFETY: Trailing unchecked items must be valid since we never touch them.
++            unsafe {
++                ptr::copy(
++                    self.vec.as_ptr().add(self.idx),
++                    self.vec.as_mut_ptr().add(self.idx - self.del),
++                    self.old_len - self.idx,
++                );
++            }
++        }
++        // SAFETY: After filling holes, all items are in contiguous memory.
++        unsafe {
++            self.vec.set_len(self.old_len - self.del);
++        }
++    }
++}
++
++// BACKPORT: minimized Debug impl to also reduce chance of compilation error
++#[stable(feature = "extract_if", since = "1.87.0")]
++impl<T, F> fmt::Debug for ExtractIf<'_, T, F>
++where
++    T: fmt::Debug,
++{
++    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
++        f.write_str("ExtractIf { .. }")
++    }
++}

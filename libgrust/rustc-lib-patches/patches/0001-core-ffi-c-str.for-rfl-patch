@@ -1,0 +1,55 @@
+diff --git a/libgrust/rustc-lib/core/src/ffi.rs b/libgrust/rustc-lib/core/src/ffi.rs
+index 4b303acfd3b..9638b8faa1a 100644
+--- a/libgrust/rustc-lib/core/src/ffi.rs
++++ b/libgrust/rustc-lib/core/src/ffi.rs
+@@ -405,3 +405,49 @@ extern "rust-intrinsic" {
+     /// argument `ap` points to.
+     fn va_arg<T: sealed_trait::VaArgSafe>(ap: &mut VaListImpl<'_>) -> T;
+ }
++
++/// Minimal implementation of CStr to make CStr parsing work on 1.49.0
++crate::cfg_select! {
++    all(
++        not(windows),
++        not(target_vendor = "apple"),
++        not(target_os = "vita"),
++        any(
++            target_arch = "aarch64",
++            target_arch = "arm",
++            target_arch = "csky",
++            target_arch = "hexagon",
++            target_arch = "msp430",
++            target_arch = "powerpc",
++            target_arch = "powerpc64",
++            target_arch = "riscv32",
++            target_arch = "riscv64",
++            target_arch = "s390x",
++            target_arch = "xtensa",
++        )
++    ) => {
++        pub type c_char = u8;
++    }
++    // On every other target, c_char is signed.
++    _ => {
++        pub type c_char = i8;
++    }
++}
++
++#[derive(PartialEq, Eq, Hash)]
++#[stable(feature = "core_c_str", since = "1.64.0")]
++#[rustc_diagnostic_item = "cstr_type"]
++#[lang = "CStr"]
++#[repr(transparent)]
++pub struct CStr {
++    inner: [c_char],
++}
++
++#[stable(feature = "cstr_default", since = "1.10.0")]
++#[rustc_const_unstable(feature = "const_default", issue = "143894")]
++impl Default for &CStr {
++    #[inline]
++    fn default() -> Self {
++        c""
++    }
++}
+\ No newline at end of file
