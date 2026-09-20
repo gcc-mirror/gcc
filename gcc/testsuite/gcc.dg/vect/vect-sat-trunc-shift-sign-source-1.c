@@ -1,4 +1,4 @@
-/* { dg-do run { target bitint } } */
+/* { dg-require-effective-target bitint } */
 /* { dg-additional-options "-O3 -fvect-cost-model=unlimited" } */
 
 typedef __INT8_TYPE__ int8_t;
