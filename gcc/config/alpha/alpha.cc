@@ -2471,7 +2471,7 @@ alpha_expand_mov_safe_bwa (machine_mode mode, rtx *operands)
 }
 
 /* Implement the movmisalign patterns.  One of the operands is a memory
-   that is not naturally aligned.  Emit instructions to load it.  */
+   that is not naturally aligned.  Emit instructions to load or store it.  */
 
 void
 alpha_expand_movmisalign (machine_mode mode, rtx *operands)
@@ -2486,7 +2486,8 @@ alpha_expand_movmisalign (machine_mode mode, rtx *operands)
       else
 	tmp = gen_reg_rtx (mode);
 
-      alpha_expand_unaligned_load (tmp, operands[1], 8, 0, 0);
+      alpha_expand_unaligned_load (tmp, operands[1], GET_MODE_SIZE (mode),
+				   0, 0);
       if (tmp != operands[0])
 	emit_move_insn (operands[0], tmp);
     }
@@ -2496,9 +2497,11 @@ alpha_expand_movmisalign (machine_mode mode, rtx *operands)
 	operands[1] = force_reg (mode, operands[1]);
       if (TARGET_SAFE_PARTIAL)
 	alpha_expand_unaligned_store_safe_partial (operands[0], operands[1],
-						   8, 0, BITS_PER_UNIT);
+						   GET_MODE_SIZE (mode), 0,
+						   BITS_PER_UNIT);
       else
-	alpha_expand_unaligned_store (operands[0], operands[1], 8, 0);
+	alpha_expand_unaligned_store (operands[0], operands[1],
+				      GET_MODE_SIZE (mode), 0);
     }
   else
     gcc_unreachable ();

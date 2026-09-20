@@ -4674,9 +4674,15 @@
 })
 
 
+; Modes for which we implement misaligned accesses with the ldq_u/stq_u
+; and extract/insert/mask instruction sequences.  QImode is excluded as
+; a byte can never be misaligned.
+
+(define_mode_iterator MISALIGN [HI SI DI V8QI V4HI V2SI])
+
 (define_expand "movmisalign<mode>"
-  [(set (match_operand:VEC 0 "nonimmediate_operand")
-        (match_operand:VEC 1 "general_operand"))]
+  [(set (match_operand:MISALIGN 0 "nonimmediate_operand")
+        (match_operand:MISALIGN 1 "general_operand"))]
   ""
 {
   alpha_expand_movmisalign (<MODE>mode, operands);
