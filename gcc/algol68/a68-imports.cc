@@ -744,6 +744,7 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
 	case 2: em->moid = M_LONG_LONG_INT; break;
 	case -1: em->moid = M_SHORT_INT; break;
 	case -2: em->moid = M_SHORT_SHORT_INT; break;
+	case 100: em->moid = M_WORD_INT; break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -756,6 +757,7 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
 	case 2: em->moid = M_LONG_LONG_BITS; break;
 	case -1: em->moid = M_SHORT_BITS; break;
 	case -2: em->moid = M_SHORT_SHORT_BITS; break;
+	case 100: em->moid = M_WORD_BITS; break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -765,6 +767,7 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
 	{
 	case 0: em->moid = M_BYTES; break;
 	case 1: em->moid = M_LONG_BYTES; break;
+	case 100: em->moid = M_WORD_BYTES; break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -775,6 +778,7 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
 	case 0: em->moid = M_REAL; break;
 	case 1: em->moid = M_LONG_REAL; break;
 	case 2: em->moid = M_LONG_LONG_REAL; break;
+	case 100: em->moid = M_WORD_REAL; break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -785,6 +789,7 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
 	case 0: em->moid = M_COMPLEX; break;
 	case 1: em->moid = M_LONG_COMPLEX; break;
 	case 2: em->moid = M_LONG_LONG_COMPLEX; break;
+	case 100: em->moid = M_WORD_COMPLEX; break;
 	default:
 	  gcc_unreachable ();
 	}
