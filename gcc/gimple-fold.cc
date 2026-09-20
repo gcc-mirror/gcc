@@ -10960,10 +10960,12 @@ arith_code_with_undefined_signed_overflow (tree_code code)
    integer types involves undefined behavior on overflow and the
    operation can be expressed with unsigned arithmetic.
    Also returns true if STMT is a VCE that needs to be rewritten
-   if moved to be executed unconditionally.   */
+   if moved to be executed unconditionally.
+   SHIFT_COUNT additionally asks for a shift or rotate whose count may be
+   out of range; rewrite_to_defined_unconditional reduces such a count.  */
 
 bool
-gimple_needing_rewrite_undefined (gimple *stmt)
+gimple_needing_rewrite_undefined (gimple *stmt, bool shift_count)
 {
   if (!is_gimple_assign (stmt))
     return false;
@@ -10998,10 +11000,22 @@ gimple_needing_rewrite_undefined (gimple *stmt)
       && TYPE_PRECISION (lhs_type)
 	  < TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (rhs, 0))))
     return true;
+  /* A shift or rotate by a count that may be out of range; the count can
+     be reduced into range.  */
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  if (shift_count
+      && (code == LSHIFT_EXPR
+	  || code == RSHIFT_EXPR
+	  || code == LROTATE_EXPR
+	  || code == RROTATE_EXPR)
+      && INTEGRAL_TYPE_P (lhs_type)
+      && (TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST
+	  || wi::geu_p (wi::to_wide (gimple_assign_rhs2 (stmt)),
+			TYPE_PRECISION (lhs_type))))
+    return true;
   if (!TYPE_OVERFLOW_UNDEFINED (lhs_type))
     return false;
-  if (!arith_code_with_undefined_signed_overflow
-	(gimple_assign_rhs_code (stmt)))
+  if (!arith_code_with_undefined_signed_overflow (code))
     return false;
   return true;
 }
@@ -11020,7 +11034,7 @@ static gimple_seq
 rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
 				  bool in_place)
 {
-  gcc_assert (gimple_needing_rewrite_undefined (stmt));
+  gcc_assert (gimple_needing_rewrite_undefined (stmt, true));
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "rewriting stmt for being unconditional defined");
@@ -11097,6 +11111,36 @@ rewrite_to_defined_unconditional (gimple_stmt_iterator *gsi, gimple *stmt,
 	  gimple_set_modified (stmt, true);
 	  gimple_seq_add_stmt (&stmts, stmt);
 	}
+      return stmts;
+    }
+  /* Reduce a shift or rotate count into range.  The mask keeps the count's
+     own type where that holds PREC - 1, so that a SHIFT_COUNT_TRUNCATED
+     target folds it away; MIN needs an unsigned count so a negative one
+     clamps.  */
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  if (code == LSHIFT_EXPR
+      || code == RSHIFT_EXPR
+      || code == LROTATE_EXPR
+      || code == RROTATE_EXPR)
+    {
+      unsigned prec = TYPE_PRECISION (TREE_TYPE (lhs));
+      bool pow2 = pow2p_hwi (prec);
+      tree count = gimple_assign_rhs2 (stmt);
+      tree type = TREE_TYPE (count);
+      if (!pow2 || wi::ltu_p (wi::max_value (type), prec - 1))
+	type = unsigned_type_node;
+      count = gimple_convert (&stmts, type, count);
+      count = gimple_build (&stmts, pow2 ? BIT_AND_EXPR : MIN_EXPR, type,
+			    count, build_int_cst (type, prec - 1));
+      gimple_assign_set_rhs2 (stmt, count);
+      gimple_set_modified (stmt, true);
+      if (in_place)
+	{
+	  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	  update_stmt (stmt);
+	  return NULL;
+	}
+      gimple_seq_add_stmt (&stmts, stmt);
       return stmts;
     }
   tree type = unsigned_type_for (TREE_TYPE (lhs));

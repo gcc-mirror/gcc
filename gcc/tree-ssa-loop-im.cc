@@ -416,9 +416,9 @@ movement_possibility_1 (gimple *stmt)
     {
       auto code = gimple_assign_rhs_code (stmt);
       tree type = TREE_TYPE (gimple_assign_rhs1 (stmt));
-      /* For shifts and rotates and possibly out-of-bound shift operands
-	 we currently cannot rewrite them into something unconditionally
-	 well-defined.  */
+      /* A shift or rotate by a possibly out-of-bound count moves only where
+	 rewrite_to_defined_unconditional can reduce the count, and not at
+	 all when optimizing for size.  */
       if ((code == LSHIFT_EXPR
 	   || code == RSHIFT_EXPR
 	   || code == LROTATE_EXPR
@@ -426,7 +426,9 @@ movement_possibility_1 (gimple *stmt)
 	  && (TREE_CODE (gimple_assign_rhs2 (stmt)) != INTEGER_CST
 	      /* We cannot use ranges at 'stmt' here.  */
 	      || wi::geu_p (wi::to_wide (gimple_assign_rhs2 (stmt)),
-			    element_precision (type))))
+			    element_precision (type)))
+	  && (!gimple_needing_rewrite_undefined (stmt, true)
+	      || optimize_loop_for_size_p (loop_containing_stmt (stmt))))
 	ret = MOVE_PRESERVE_EXECUTION;
     }
 
@@ -780,6 +782,26 @@ extract_true_false_args_from_phi (basic_block dom, gphi *phi,
   return true;
 }
 
+/* Return true if STMT is a shift or rotate whose count would have to be
+   masked when moved out of LOOP, because STMT is not always executed
+   when LOOP is entered.  An out-of-range constant count folds instead.  */
+
+static bool
+shift_needs_mask_p (gimple *stmt, class loop *loop)
+{
+  if (!gimple_needing_rewrite_undefined (stmt, true))
+    return false;
+  enum tree_code code = gimple_assign_rhs_code (stmt);
+  if ((code != LSHIFT_EXPR
+       && code != RSHIFT_EXPR
+       && code != LROTATE_EXPR
+       && code != RROTATE_EXPR)
+      || TREE_CODE (gimple_assign_rhs2 (stmt)) == INTEGER_CST)
+    return false;
+  class loop *always = get_lim_data (stmt)->always_executed_in;
+  return !always || !(always == loop || flow_loop_nested_p (always, loop));
+}
+
 /* Determine the outermost loop to that it is possible to hoist a statement
    STMT and store it to LIM_DATA (STMT)->max_loop.  To do this we determine
    the outermost loop in that the value computed by STMT is invariant.
@@ -929,7 +951,11 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
 	return false;
     }
 
-  lim_data->cost += stmt_cost (stmt);
+  /* A shift that needs its count masked is not worth moving on its own.  */
+  unsigned cost = stmt_cost (stmt);
+  if (cost >= LIM_EXPENSIVE && shift_needs_mask_p (stmt, lim_data->max_loop))
+    cost = 1;
+  lim_data->cost += cost;
 
   return true;
 }
@@ -1427,7 +1453,7 @@ move_computations_worker (basic_block bb)
          when the target loop header is executed and the stmt may
 	 invoke undefined integer or pointer overflow rewrite it to
 	 unsigned arithmetic.  */
-      if (gimple_needing_rewrite_undefined (stmt)
+      if (gimple_needing_rewrite_undefined (stmt, true)
 	  && (!ALWAYS_EXECUTED_IN (bb)
 	      || !(ALWAYS_EXECUTED_IN (bb) == level
 		   || flow_loop_nested_p (ALWAYS_EXECUTED_IN (bb), level))))
