@@ -507,6 +507,11 @@ public:
 
   int get_compat_version () const { return options.get_compat_version (); }
 
+  bool should_support_cstr_parsing () const
+  {
+    return get_compat_version () >= 64;
+  }
+
   bool should_support_offset_of () const { return get_compat_version () >= 71; }
 
   bool should_support_cfg_select () const

@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-parse-utils.h"
 #include "rust-feature.h"
 #include "rust-feature-store.h"
+#include "rust-session-manager.h"
 
 #include "expected.h"
 #include "options.h"

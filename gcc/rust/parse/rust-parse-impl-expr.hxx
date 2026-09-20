@@ -344,7 +344,7 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
       break;
     case C_STRING_LITERAL:
       {
-	if (flag_c_style_string_literals)
+	if (Session::get_instance ().should_support_cstr_parsing ())
 	  {
 	    type = AST::Literal::C_STRING;
 	    literal_value = t->get_str ();
@@ -356,7 +356,7 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
 	      Error (t->get_locus (),
 		     "unexpected token %qs when parsing literal expression - "
 		     "C-style string literals require "
-		     "%<-frust-c-style-string-literals%> to be enabled",
+		     "%<-frust-compat-version%> to be set to least 1.64",
 		     t->get_token_description ()));
 	    return tl::unexpected<Parse::Error::Node> (
 	      Parse::Error::Node::MALFORMED);
@@ -2134,7 +2134,7 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 	new AST::LiteralExpr (tok->get_str (), AST::Literal::RAW_STRING,
 			      tok->get_type_hint (), {}, tok->get_locus ()));
     case C_STRING_LITERAL:
-      if (flag_c_style_string_literals)
+      if (Session::get_instance ().should_support_cstr_parsing ())
 	{
 	  return std::unique_ptr<AST::LiteralExpr> (
 	    new AST::LiteralExpr (tok->get_str (), AST::Literal::C_STRING,
@@ -2145,7 +2145,7 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 	{
 	  Error error (tok->get_locus (),
 		       "C-style string literals require "
-		       "%<-frust-c-style-string-literals%> to be enabled");
+		       "%<-frust-compat-version%> to be set to least 1.64");
 	  add_error (std::move (error));
 	  return tl::unexpected<Parse::Error::Expr> (
 	    Parse::Error::Expr::MALFORMED);
