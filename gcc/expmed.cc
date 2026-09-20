@@ -3633,7 +3633,9 @@ expand_mult (machine_mode mode, rtx op0, rtx op1, rtx target,
       else if (CONST_DOUBLE_AS_INT_P (scalar_op1))
 #endif
 	{
-	  int shift = wi::exact_log2 (rtx_mode_t (scalar_op1, mode));
+	  machine_mode scalar_mode = VECTOR_MODE_P (mode)
+				     ? GET_MODE_INNER (mode) : mode;
+	  int shift = wi::exact_log2 (rtx_mode_t (scalar_op1, scalar_mode));
 	  /* Perfect power of 2 (other than 1, which is handled above).  */
 	  if (shift > 0)
 	    return expand_shift (LSHIFT_EXPR, mode, op0,
