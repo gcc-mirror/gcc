@@ -1,0 +1,3 @@
+begin word bits foo = long 16r0; { dg-error "coerced" }
+      skip
+end

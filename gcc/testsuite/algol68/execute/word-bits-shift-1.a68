@@ -1,0 +1,7 @@
+begin word bits address = word 16rfff0ffff;
+      assert (address SHL 4 = word 16rfff0ffff0);
+      assert (address UP 4 = word 16rfff0ffff0);
+      assert (address SHR 4 = word 16rfff0fff);
+      assert (address DOWN 4 = word 16rfff0fff);
+      skip
+end

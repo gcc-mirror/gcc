@@ -2,7 +2,9 @@
 BEGIN REAL r = 1.0;
       LONG REAL rr = LONG 2.0;
       LONG LONG REAL rrr = LONG LONG 60.0;
+      WORD REAL w = WORD 1.0;
       ASSERT (ln (r) = 0.0);
       long ln (rr);
-      long long ln (rrr)
+      long long ln (rrr);
+      ASSERT (word ln (w) = WORD 0.0)
 END

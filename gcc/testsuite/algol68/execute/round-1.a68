@@ -2,7 +2,9 @@
 BEGIN REAL x = 3.14, y = 3.80;
       LONG REAL xx = LONG 3.14, yy = LONG 3.80;
       LONG LONG REAL xxx = LONG LONG 3.14, yyy = LONG LONG 3.80;
+      WORD REAL wx = WORD 3.14, wy = WORD 3.80;
       ASSERT (ROUND x = 3 AND ROUND y = 4);
       ASSERT (ROUND xx = LONG 3 AND ROUND yy = LONG 4);
-      ASSERT (ROUND xxx = LONG LONG 3 AND ROUND yyy = LONG LONG 4)
+      ASSERT (ROUND xxx = LONG LONG 3 AND ROUND yyy = LONG LONG 4);
+      ASSERT (ROUND wx = WORD 3 AND ROUND wy = WORD 4)
 END

@@ -31,5 +31,12 @@ begin (short short bits a = short short 16r0;
        assert (a SET -1 = a);
        assert (a SET long_long_bits_width = a);
        assert (a SET (long_long_bits_width-1) = long long 16r1 SHL (long_long_bits_width-1));
-       assert (a SET 0 SET 1 = BIN long long 3))
+       assert (a SET 0 SET 1 = BIN long long 3));
+
+      (word bits a = word 16r0;
+       assert (a SET (word_bits_width + 1) = a);
+       assert (a SET -1 = a);
+       assert (a SET word_bits_width = a);
+       assert (a SET (word_bits_width-1) = word 16r1 SHL (word_bits_width-1));
+       assert (a SET 0 SET 1 = BIN word 3));
 end

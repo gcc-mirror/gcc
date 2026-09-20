@@ -1,0 +1,4 @@
+begin word bits address = word 16rffffffff;
+      assert (address = short 16rffffffff); { dg-error "word bits" }
+      skip
+end

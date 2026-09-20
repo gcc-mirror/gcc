@@ -2,9 +2,12 @@
 BEGIN INT i = 2;
       LONG INT ii = LONG 2, LONG LONG INT iii = LONG LONG 2;
       SHORT INT ss = SHORT 2, SHORT SHORT INT sss = SHORT SHORT 2;
+      WORD INT w = WORD 2;
       ASSERT (i ** 2 = 4);
       ASSERT (ii ** 2 = LONG 4);
       ASSERT (iii ** 2 = LONG LONG 4);
       ASSERT (ss ** 2 = SHORT 4);
-      ASSERT (sss ** 2 = SHORT SHORT 4)
+      ASSERT (sss ** 2 = SHORT SHORT 4);
+      ASSERT (w ** 2 = WORD 4);
+      ASSERT (w ^ 2 = WORD 4)
 END

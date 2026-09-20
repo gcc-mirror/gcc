@@ -4,5 +4,7 @@ BEGIN COMPL z = 4.0I5.0;
       LONG COMPL zz = LONG 4.0 I LONG 6.0;
       ASSERT (RE zz = LONG 4.0 AND IM zz = LONG 6.0);
       LONG LONG COMPL zzz = LONG LONG 4.0 I LONG LONG 7.0;
-      ASSERT (RE zzz = LONG LONG 4.0 AND IM zzz = LONG LONG 7.0)
+      ASSERT (RE zzz = LONG LONG 4.0 AND IM zzz = LONG LONG 7.0);
+      WORD COMPL w = WORD 4.0 I WORD 7.0;
+      ASSERT (RE w = WORD 4.0 AND IM w = WORD 7.0)
 END
