@@ -2083,7 +2083,8 @@ grok_contract (tree contract_spec, tree mode, tree result, cp_expr condition,
 
   tree_code code;
   contract_assertion_kind kind = CAK_INVALID;
-  if (id_equal (contract_spec, "contract_assert"))
+  if (IDENTIFIER_KEYWORD_P (contract_spec)
+      && C_RID_CODE (contract_spec) == RID_CONTASSERT)
     {
       code = ASSERTION_STMT;
       kind = CAK_ASSERT;

@@ -11,6 +11,8 @@ int main()
 {
   int x;
 
+  __contract_assert( x >= 0);
+
   contract_assert( x >= 0);
   contract_assert( x < 0);
   contract_assert( x == 0);

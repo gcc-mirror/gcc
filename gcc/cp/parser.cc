@@ -33897,15 +33897,15 @@ cp_parser_late_contracts (cp_parser *parser, tree fndecl)
 static tree
 cp_parser_contract_assert (cp_parser *parser, cp_token *token)
 {
+  tree cont_assert = token->u.value;
+
   if (!flag_contracts)
     {
-      error_at (token->location, "%qs is only available with %qs",
-		"contract_assert", "-fcontracts");
+      error_at (token->location, "%qE is only available with %qs",
+		cont_assert, "-fcontracts");
       cp_parser_skip_to_end_of_statement (parser);
       return error_mark_node;
     }
-
-  tree cont_assert = token->u.value;
 
   token = cp_lexer_consume_token (parser->lexer);
   location_t loc = token->location;
@@ -33915,8 +33915,8 @@ cp_parser_contract_assert (cp_parser *parser, cp_token *token)
   if (std_attrs)
     {
       attrs_loc = make_location (attrs_loc, attrs_loc, input_location);
-      warning_at (attrs_loc, OPT_Wattributes, "attributes are ignored on %qs",
-		  "contract_assert");
+      warning_at (attrs_loc, OPT_Wattributes, "attributes are ignored on %qE",
+		  cont_assert);
       std_attrs = NULL_TREE;
     }
 

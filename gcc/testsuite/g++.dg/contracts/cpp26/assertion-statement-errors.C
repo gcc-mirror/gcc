@@ -36,6 +36,7 @@ int main()
     g();
 
     contract_assert [[deprecated]] (i == 3);  // { dg-warning {attributes are ignored on 'contract_assert'} }
+    __contract_assert [[deprecated]] (i == 3);  // { dg-warning {attributes are ignored on '__contract_assert'} }
 
     return 0;
 }
