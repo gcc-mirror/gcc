@@ -301,8 +301,7 @@ a68_lower_denotation (NODE_T *p, LOW_CTX_T ctx)
 #else
       uint64_t val = strtoull (end, &end, radix);
 #endif
-      gcc_assert (errno == 0 && end[0] == '\0');
-
+      gcc_assert (end[0] == '\0');
       uint64_t max_positive = uint64_t (wi::max_value (type).to_uhwi ());
       if (errno == ERANGE || val > max_positive)
 	{
