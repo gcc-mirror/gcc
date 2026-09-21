@@ -2,6 +2,10 @@
 /* { dg-do run { target { c || c++11 } } } */
 /* { dg-options "-O2" } */
 
+#if !__has_builtin(__builtin_bswapg)
+#error __builtin_bswapg unsupported
+#endif
+
 #if __CHAR_BIT__ == 8
 #if __SIZEOF_INT__ == 4
 static_assert (__builtin_bswapg (0x12345678U) == 0x78563412U, "");

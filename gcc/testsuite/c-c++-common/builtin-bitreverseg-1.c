@@ -2,6 +2,10 @@
 /* { dg-do run { target { c || c++11 } } } */
 /* { dg-options "-O2" } */
 
+#if !__has_builtin(__builtin_bitreverseg)
+#error __builtin_bitreverseg unsupported
+#endif
+
 #if __CHAR_BIT__ == 8
 #if __SIZEOF_INT__ == 4
 static_assert (__builtin_bitreverseg (0x2fa889a7U) == 0xe59115f4U, "");
