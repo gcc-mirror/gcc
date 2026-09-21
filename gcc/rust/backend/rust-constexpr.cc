@@ -22,6 +22,7 @@
 #include "realmpfr.h"
 #include "convert.h"
 #include "print-tree.h"
+#include "tree-pretty-print.h"
 #include "gimplify.h"
 #include "tree-iterator.h"
 #include "timevar.h"
@@ -548,6 +549,9 @@ static tree eval_unary_expression (const constexpr_ctx *ctx, tree t,
 static bool eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
 				enum tree_code code, tree type, tree lhs,
 				tree rhs);
+static bool eval_check_overflow_p (location_t loc, const constexpr_ctx *ctx,
+				   enum tree_code code, tree type, tree lhs,
+				   tree rhs);
 static tree fold_pointer_plus_expression (const constexpr_ctx *ctx, tree t,
 					  tree lhs, tree rhs,
 					  bool *non_constant_p,
@@ -3249,6 +3253,16 @@ eval_binary_expression (const constexpr_ctx *ctx, tree t, bool lval,
     }
   else if (eval_check_shift_p (loc, ctx, code, type, lhs, rhs))
     *non_constant_p = true;
+  else if (eval_check_overflow_p (loc, ctx, code, type, lhs, rhs))
+    {
+      *non_constant_p = true;
+      /* The overflow has been diagnosed here, with a location.  Clear the
+	 flag so that the generic TREE_OVERFLOW check in
+	 eval_constant_expression does not report it a second time against
+	 the folded constant, which carries no location.  */
+      if (r != NULL_TREE && CONSTANT_CLASS_P (r))
+	TREE_OVERFLOW (r) = false;
+    }
   /* Don't VERIFY_CONSTANT if this might be dealing with a pointer to
      a local array in a constexpr function.  */
   bool ptr = INDIRECT_TYPE_P (TREE_TYPE (lhs));
@@ -6838,6 +6852,69 @@ eval_check_shift_p (location_t loc, const constexpr_ctx *ctx,
 	}
     }
   return false;
+}
+
+/* Rust rejects arithmetic overflow during constant evaluation for both signed
+   and unsigned types, unlike C where unsigned wraparound is well defined, so
+   TREE_OVERFLOW alone is not enough: GCC only sets it for signed operations.
+
+   Operations built in a constant context are left unfolded by
+   Backend::arithmetic_or_logical_expression, so that we still see the
+   operation and its operands here rather than an INTEGER_CST which would
+   carry neither a location nor, for unsigned types, any trace of the
+   overflow.
+
+   Returns true when the operation overflows, in which case the expression is
+   not a constant.  */
+
+static bool
+eval_check_overflow_p (location_t loc, const constexpr_ctx *ctx,
+		       enum tree_code code, tree type, tree lhs, tree rhs)
+{
+  if ((code != PLUS_EXPR && code != MINUS_EXPR && code != MULT_EXPR)
+      || TREE_CODE (lhs) != INTEGER_CST || TREE_CODE (rhs) != INTEGER_CST
+      || !INTEGRAL_TYPE_P (type)
+      || TYPE_PRECISION (TREE_TYPE (lhs)) != TYPE_PRECISION (type)
+      || TYPE_PRECISION (TREE_TYPE (rhs)) != TYPE_PRECISION (type))
+    return false;
+
+  /* Note we deliberately do not check TYPE_OVERFLOW_WRAPS here: it is set for
+     unsigned types because wrapping is defined in C, but Rust rejects it.  */
+  signop sgn = TYPE_SIGN (type);
+  wide_int lw = wi::to_wide (lhs);
+  wide_int rw = wi::to_wide (rhs);
+  wi::overflow_type ovf = wi::OVF_NONE;
+
+  switch (code)
+    {
+    case PLUS_EXPR:
+      wi::add (lw, rw, sgn, &ovf);
+      break;
+    case MINUS_EXPR:
+      wi::sub (lw, rw, sgn, &ovf);
+      break;
+    case MULT_EXPR:
+      wi::mul (lw, rw, sgn, &ovf);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+
+  if (ovf == wi::OVF_NONE)
+    return false;
+
+  /* Unlike the shift checks above this is a hard error, not a permerror:
+     overflow in a constant is always rejected by Rust.  */
+  if (!ctx->quiet)
+    {
+      char *expr_str
+	= print_generic_expr_to_str (build2_loc (loc, code, type, lhs, rhs));
+      rust_error_at (loc, ErrorCode::E0080,
+		     "attempt to compute %qs, which would overflow", expr_str);
+      free (expr_str);
+    }
+
+  return true;
 }
 
 /* Helper function for cxx_eval_binary_expression.  Try to optimize
