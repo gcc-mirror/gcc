@@ -392,8 +392,11 @@ builtin_has_include_1 (cpp_reader *pfile, const char *name, bool *paren,
 		       bool *bracket, location_t *loc)
 {
   if (!pfile->state.in_directive)
-    cpp_error (pfile, CPP_DL_ERROR,
-	       "%qs used outside of preprocessing directive", name);
+    {
+      cpp_error (pfile, CPP_DL_ERROR,
+		 "%qs used outside of preprocessing directive", name);
+      return NULL;
+    }
 
   pfile->state.angled_headers = true;
   const auto sav_padding = pfile->state.directive_wants_padding;
