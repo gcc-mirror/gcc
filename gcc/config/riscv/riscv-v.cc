@@ -3069,7 +3069,8 @@ autovectorize_vector_modes (vector_modes *modes, bool)
       modes->truncate (0);
 
       machine_mode mode;
-      if (parse_machine_mode (riscv_autovec_mode, &mode))
+      if (parse_machine_mode (riscv_autovec_mode, &mode)
+	  && ms.contains (mode))
 	{
 	  modes->safe_push (mode);
 	  return 0;
