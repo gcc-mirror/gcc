@@ -497,11 +497,11 @@ is_pointer_array (tree expr)
    either a descriptor or the local decl of a descriptorless dummy array,
    which keeps the descriptor it was built from as the saved one.  */
 
-static tree
-span_addressed_array (tree expr)
+static bool
+is_span_addressed_array (tree expr)
 {
   if (is_pointer_array (expr))
-    return expr;
+    return true;
 
   if (VAR_P (expr)
       && GFC_DECL_PTR_ARRAY_P (expr)
@@ -509,9 +509,9 @@ span_addressed_array (tree expr)
       && GFC_ARRAY_TYPE_P (TREE_TYPE (expr))
       && DECL_LANG_SPECIFIC (expr)
       && GFC_DECL_SAVED_DESCRIPTOR (expr))
-    return expr;
+    return true;
 
-  return NULL_TREE;
+  return false;
 }
 
 
@@ -658,7 +658,7 @@ gfc_get_array_span (tree desc, gfc_expr *expr)
   if (tree span = GFC_DECL_GET_SPAN (desc))
     /* A span addressed dummy loaded its span on entry.  */
     tmp = span;
-  else if (span_addressed_array (desc)
+  else if (is_span_addressed_array (desc)
 	   || (get_CFI_desc (NULL, expr, &desc, NULL)
 	       && (POINTER_TYPE_P (TREE_TYPE (desc))
 		   ? GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (TREE_TYPE (desc)))
@@ -4063,7 +4063,7 @@ gfc_conv_scalarized_array_ref (gfc_se * se, gfc_array_ref * ar,
   /* A pointer array component can be detected from its field decl. Fix
      the descriptor, mark the resulting variable decl and pass it to
      gfc_build_array_ref.  */
-  if (span_addressed_array (info->descriptor)
+  if (is_span_addressed_array (info->descriptor)
       || (expr && ((expr->ts.deferred && info->descriptor
 		    && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (info->descriptor)))
 		   || (expr && gfc_expr_attr (expr).pdt_string))))
@@ -4317,7 +4317,7 @@ gfc_conv_array_ref (gfc_se * se, gfc_array_ref * ar, gfc_expr *expr,
   if (get_CFI_desc (sym, expr, &decl, ar))
     decl = build_fold_indirect_ref_loc (input_location, decl);
   if (!expr->ts.deferred && !sym->attr.codimension
-      && span_addressed_array (se->expr))
+      && is_span_addressed_array (se->expr))
     {
       if (INDIRECT_REF_P (se->expr))
 	decl = TREE_OPERAND (se->expr, 0);
@@ -7736,7 +7736,8 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 
   /* An array whose elements are spaced by the span needs pointer arithmetic
      to reference an element.  */
-  tmp = build_array_ref (desc, offset, span_addressed_array (desc), NULL);
+  tree decl = is_span_addressed_array (desc) ? desc : NULL_TREE;
+  tmp = build_array_ref (desc, offset, decl, NULL);
 
   /* Offset the data pointer for pointer assignments from arrays with
      subreferences; e.g. my_integer => my_type(:)%integer_component.  */
