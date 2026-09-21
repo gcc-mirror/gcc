@@ -6210,12 +6210,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
     /* If we are converting an integer to a floating-point that can
        represent it exactly and back to an integer, we can skip the
-       floating-point conversion.  */
-    (if (GIMPLE /* PR66211 */
+       floating-point conversion.  PR66211, PR98984.  */
+    (if (GIMPLE
 	 && inside_int && inter_float && final_int
 	 && ! is_vec
-	 && ((unsigned) significand_size (TYPE_MODE (inter_type))
-	     >= inside_prec - !inside_unsignedp))
+	 && (((unsigned) significand_size (TYPE_MODE (inter_type))
+	      >= inside_prec - !inside_unsignedp)
+	     || (! flag_trapping_math
+		 && ((unsigned) significand_size (TYPE_MODE (inter_type))
+		     >= final_prec))))
      (convert @0)))))))
 
 /* (float_type)(integer_type) x -> trunc (x) if the type of x matches
