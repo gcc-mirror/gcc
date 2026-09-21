@@ -442,7 +442,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 
 @multitable @columnfractions .60 .10 .25
 @headitem Description @tab Status @tab Comments
-@item For Fortran, optional comma between directive and clause @tab N @tab
+@item For Fortran, optional comma between directive and clause @tab Y @tab
 @item Conforming device numbers and @code{omp_initial_device} and
       @code{omp_invalid_device} enum/PARAMETER @tab Y @tab
 @item Initial value of @var{default-device-var} ICV with
