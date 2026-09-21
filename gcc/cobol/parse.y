@@ -13066,27 +13066,6 @@ bad_arg( const char name[],
   return ok;
 }  
 
-#if 0
-static const char *
-passby_str(int mask)
-{
-  switch( mask ) {
-  case by_default_e:
-  case by_reference_e:
-    return "BY REFERENCE";
-  case by_content_e:
-    return "BY CONTENT";
-  case by_value_e:
-    return "BY VALUE";
-  default:
-    break;
-  }
-
-  return "UNKNOWN PASSING METHOD";
-}
-#endif
-
-
 // Verify provided actual parameters against formals.
 static void
 verify_args( const YYLTYPE& loc, 
