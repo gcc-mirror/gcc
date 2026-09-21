@@ -788,7 +788,7 @@ gnat_get_array_descr_info (const_tree const_type,
 {
   tree type = const_cast<tree> (const_type);
   tree first_dimen, dimen;
-  bool is_array;
+  bool is_array, reverse_storage_order;
   int i;
 
   /* Temporaries created in the first pass and used in the second one for thin
@@ -877,15 +877,19 @@ gnat_get_array_descr_info (const_tree const_type,
 		    : array_descr_ordering_row_major);
   info->rank = NULL_TREE;
 
-  /* Count the number of dimensions and determine the element type.  */
+  /* Count the number of dimensions, determine the element type and whether
+     it is stored in reverse storage order.  */
   i = 1;
+  reverse_storage_order = TYPE_REVERSE_STORAGE_ORDER (first_dimen);
   dimen = TREE_TYPE (first_dimen);
   while (TREE_CODE (dimen) == ARRAY_TYPE && TYPE_MULTI_ARRAY_P (dimen))
     {
       i++;
+      reverse_storage_order = TYPE_REVERSE_STORAGE_ORDER (dimen);
       dimen = TREE_TYPE (dimen);
     }
   info->ndimensions = i;
+  info->reverse_storage_order = reverse_storage_order;
   info->element_type = dimen;
 
   /* Too many dimensions?  Give up generating proper description: yield instead

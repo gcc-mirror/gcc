@@ -461,6 +461,7 @@ struct array_descr_info
   tree associated;
   tree stride;
   tree rank;
+  bool reverse_storage_order;
   bool stride_in_bits;
   struct array_descr_dimen
     {
