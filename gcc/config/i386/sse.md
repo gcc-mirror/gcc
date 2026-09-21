@@ -28458,7 +28458,7 @@
 	(any_rotate:VI1_AVX512_3264
 	  (match_operand:VI1_AVX512_3264 1 "register_operand")
 	  (match_operand:SI 2 "const_int_operand")))]
-  "TARGET_GFNI"
+  "TARGET_GFNI && TARGET_AVX2"
 {
   rtx matrix = ix86_vgf2p8affine_shift_matrix (operands[0], operands[2], <CODE>);
   emit_insn (gen_vgf2p8affineqb_<mode> (operands[0], operands[1], matrix,
