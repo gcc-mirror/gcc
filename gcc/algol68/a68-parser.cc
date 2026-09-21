@@ -421,7 +421,6 @@ a68_dont_mark_here (NODE_T *p)
     case CLOSE_SYMBOL:
     case COLON_SYMBOL:
     case COMMA_SYMBOL:
-    case COMPLEX_SYMBOL:
     case COMPL_SYMBOL:
     case DO_SYMBOL:
     case ELIF_SYMBOL:

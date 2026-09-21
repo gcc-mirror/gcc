@@ -773,7 +773,6 @@ reduce_declarers (NODE_T *p, enum a68_attribute expect)
       reduce (q, NO_NOTE, NO_TICK, INDICANT, REAL_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, INDICANT, BITS_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, INDICANT, BYTES_SYMBOL, STOP);
-      reduce (q, NO_NOTE, NO_TICK, INDICANT, COMPLEX_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, INDICANT, COMPL_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, INDICANT, BOOL_SYMBOL, STOP);
       reduce (q, NO_NOTE, NO_TICK, INDICANT, CHAR_SYMBOL, STOP);
@@ -801,8 +800,7 @@ reduce_declarers (NODE_T *p, enum a68_attribute expect)
 	      a = ATTRIBUTE (SUB_NEXT (q));
 
 	      if (a == INT_SYMBOL || a == REAL_SYMBOL || a == BITS_SYMBOL
-		  || a == BYTES_SYMBOL || a == COMPLEX_SYMBOL
-		  || a == COMPL_SYMBOL)
+		  || a == BYTES_SYMBOL || a == COMPL_SYMBOL)
 		{
 		  reduce (q, NO_NOTE, NO_TICK, DECLARER, LONGETY, INDICANT, STOP);
 		}
@@ -826,14 +824,14 @@ reduce_declarers (NODE_T *p, enum a68_attribute expect)
 	    {
 	      a = ATTRIBUTE (SUB_NEXT (q));
 	      if (a == INT_SYMBOL || a == REAL_SYMBOL || a == BITS_SYMBOL
-		  || a == BYTES_SYMBOL || a == COMPLEX_SYMBOL || a == COMPL_SYMBOL)
+		  || a == BYTES_SYMBOL || a == COMPL_SYMBOL)
 		{
 		  reduce (q, NO_NOTE, NO_TICK, DECLARER, SHORTETY, INDICANT, STOP);
 		}
 	      else
 		{
 		  a68_error (NEXT (q), "appropriate declarer expected");
-		  reduce (q, NO_NOTE, NO_TICK, DECLARER, LONGETY, INDICANT, STOP);
+		  reduce (q, NO_NOTE, NO_TICK, DECLARER, SHORTETY, INDICANT, STOP);
 		}
 	    }
 	}
