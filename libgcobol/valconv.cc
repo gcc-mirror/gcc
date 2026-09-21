@@ -138,12 +138,12 @@ __gg__alphabet_create(  cbl_encoding_t encoding,
 
 extern "C"
 void
-__gg__string_to_numeric_edited( char * const dest,
+__gg__string_to_numeric_edited( char * const dest_,
                                 const char *source,     // In source characters
-                                int /*rdigits*/,
                                 int is_negative,
                                 const char *picture)
   {
+  unsigned char *dest = reinterpret_cast<unsigned char *>(dest_);
   // This routine operates in ASCII space.  Life is hard enough without trying
   // to do this in EBCDIC, too.  So, 'source' and 'picture' are assumed to be
   // CP1252
@@ -159,8 +159,14 @@ __gg__string_to_numeric_edited( char * const dest,
 
   // Make a copy of the PICTURE string in the destination space.  The picture
   // is supposed to be the same length as the char_capacity of the variable.
-  const int length_s = strlen(source);
-  const int length_d = strlen(picture);
+
+  // We subtract the length of the extra characters that were appended to the
+  // adjusted PICTURE string.
+
+  static const int MAX_POSSIBLE = 64 + 6; // See PICTURE_MAX in symbols.h
+
+  const int length_d = strlen(picture) - 6;
+  assert(length_d < MAX_POSSIBLE && length_d >= 0);
   memcpy(dest, picture, length_d);
   /* We have two kinds of floating insertion:  currency and sign.
 
@@ -183,141 +189,78 @@ __gg__string_to_numeric_edited( char * const dest,
 
   // We need to know if we have a currency picture symbol in this string:
   // This is the currency character in the PICTURE
-  unsigned char currency_char = NULLCH;
+  unsigned char currency_char;
   const char *currency_text = NULL;   // This is the text we output when
   //                                  // encountering the currency_picture
   //                                  // character
   // Note that the currency_picture can be upper- or lower-case, and mean
   // separate things in IBM.  In ISO COBOL, the comparison is case-insensitive.
 
-  // This is the character for a floating sign
-  char sign_char;
-
-  // In the following limits, all of the rightmosts are past-the-end indexes
-
-  int leftmost_currency = -1;
-  int rightmost_currency = -1;
-
-  int leftmost_sign = -1;
-  int rightmost_sign = -1;
-
-  int leftmost_asterisk = -1;
-  int rightmost_asterisk = -1;
-  int zeroed_asterisk = 0;
-
-  int leftmost_z = -1;
-  int rightmost_z = -1;
-  int zeroed_z = 0;
-
+  unsigned char floating_char;
+  int leftmost_float = -1;
+  int rightmost_float = -1;  // This is a one-past-the-end index
+  bool got_nines = false;
   int leftmost_nonzero = -1;
-
   int decimal_position = -1;
 
-  // This is the first pass.  Because the currency
+  unsigned const char *extra =
+                    reinterpret_cast<unsigned const char *>(picture+length_d);
+  currency_char = extra[0];
+  currency_text = __gg__currency_signs[currency_char].c_str();
+
+  floating_char = extra[1] != ascii_space ? extra[1] : NULLCH;
+  if( floating_char != ascii_space )
+    {
+    leftmost_float  = (extra[2] & 0xF) * 10 + (extra[3] & 0xF);
+    rightmost_float = (extra[4] & 0xF) * 10 + (extra[5] & 0xF);
+    }
+  got_nines = !!(extra[2] & 0x40);
+
   int index_s = 0;
   for(int i=0; i<length_d; i++)
     {
-    int ch = (unsigned int)dest[i] & 0xFF;
-    if( ! __gg__currency_signs[ch].empty() )
-      {
-      currency_char = ch;
-      currency_text = __gg__currency_signs[ch].c_str();
-      if( leftmost_currency == -1 )
-        {
-        leftmost_currency = i;
-        }
-      else
-        {
-        // This is not the leftmost currency character, so it is where a digit
-        // goes.
-        dest[i] = source[index_s++];
-        if( leftmost_nonzero == -1 && dest[i] != ascii_zero )
-          {
-          leftmost_nonzero = i;
-          }
-        }
-      rightmost_currency = i+1;
-      }
+    unsigned char ch = dest[i];
+
     if( ch == currency_char )
       {
-      // We have already handled the currency char.
-      continue;
+      // Arriving here means we have hit a singleton currency character.  Since
+      // it is not part of a floating currency stream, the currency text goes
+      // here.
+      memcpy(dest + i - (strlen(currency_text)-1),
+             currency_text,
+             strlen(currency_text));
       }
+
     switch(ch)
       {
       case ascii_minus:
       case ascii_plus:
-        {
+        // Arriving here means we have hit a singleton sign character
+        unsigned char sign_char;
         if( is_negative )
           {
           sign_char = ascii_minus;
           }
         else
           {
-          if( ch == ascii_plus )
-            {
-            sign_char = ascii_plus;
-            }
-          else
+          if( ch == ascii_minus )
             {
             sign_char = ascii_space;
             }
-          }
-        dest[i] = sign_char;
-
-        if( leftmost_sign == -1 )
-          {
-          leftmost_sign = i;
-          }
-        else
-          {
-          // This is not the leftmost sign character, so it is where a digit
-          // goes.
-          dest[i] = source[index_s++];
-          if( leftmost_nonzero == -1 && dest[i] != ascii_zero )
+          else
             {
-            leftmost_nonzero = i;
+            sign_char = ascii_plus;
             }
           }
-        rightmost_sign = i+1;
+
+        dest[i] = sign_char;
         break;
-        }
 
       case ascii_comma:
       case ascii_period:
         if( ch == __gg__decimal_point )
           {
           decimal_position = i;
-          }
-      break;
-
-      case ascii_slash:
-      case ascii_d:
-      case ascii_D:
-      case ascii_b:
-      case ascii_c:
-      case ascii_C:
-      case ascii_r:
-      case ascii_R:
-      case ascii_0:
-        // These are left where they are
-        break;
-
-      case ascii_B:
-        // This needs some special attention, because a DB at the end is not
-        // the same as a B on its own at the end.
-        if( i < length_d-1 )
-          {
-          dest[i] = ascii_space;
-          }
-        else if( length_d >= 1 )
-          {
-          if( dest[i-1] != ascii_D && dest[i-1] != ascii_d )
-            {
-            // This is an isolated B at the very end of the string
-            dest[i] = ascii_space;
-            }
-          // Otherwise, that final B is part of a DB, and is left alone.
           }
         break;
 
@@ -329,175 +272,130 @@ __gg__string_to_numeric_edited( char * const dest,
           leftmost_nonzero = i;
           }
         break;
-
-      case ascii_asterisk:
-        // These are positions that hold digits
-        if( leftmost_asterisk == -1 )
-          {
-          leftmost_asterisk = i;
-          }
-        rightmost_asterisk = i+1;
-
-        dest[i] = source[index_s++];
-        if( dest[i] == ascii_zero )
-          {
-          zeroed_asterisk += 1;
-          }
-        else
-          {
-          if( leftmost_nonzero == -1 )
-            {
-            leftmost_nonzero = i;
-            }
-          }
-        break;
-
-      case ascii_Z:
-        // These are positions that hold digits
-        if( leftmost_z == -1 )
-          {
-          leftmost_z = i;
-          }
-        rightmost_z = i+1;
-
-        dest[i] = source[index_s++];
-        if( dest[i] == ascii_zero )
-          {
-          zeroed_z += 1;
-          }
-        else
-          {
-          if( leftmost_nonzero == -1 )
-            {
-            leftmost_nonzero = i;
-            }
-          }
-        break;
-
-      default:
-        abort();
       }
     }
 
   // Do currency replacement
-  if( leftmost_currency >= 0 )
+  if( floating_char == currency_char )
     {
-    if( leftmost_currency == rightmost_currency-1 )
+    // This is a floating currency symbol.  We need to start at
+    // leftmost_float, and walk to the lesser of rightmost_float and
+    // leftmost_nonzero.  We blank every character we encounter until we
+    // reach the first non-zero character.
+    int left = leftmost_float;
+    int right;
+    if( leftmost_nonzero >= 0 )
       {
-      // This is a solo currency symbol
-      memcpy(dest + leftmost_currency - (strlen(currency_text)-1),
-             currency_text,
-             strlen(currency_text));
+      right = std::min(leftmost_nonzero, rightmost_float);
+      if( decimal_position >= 0 )
+        {
+        right = std::min(right, decimal_position);
+        }
       }
     else
       {
-      // This is a floating currency symbol.  We need to start at
-      // leftmost_currency, and walk to the lesser of rightmost_currency and
-      // leftmost_nonzero.  We blank every character we encounter.
-      int left = leftmost_currency;
-      int right;
-      if( leftmost_nonzero >= 0 )
-        {
-        right = std::min(leftmost_nonzero, rightmost_currency);
-        if( decimal_position >= 0 )
-          {
-          right = std::min(right, decimal_position);
-          }
-        }
-      else
-        {
-        right = rightmost_currency;
-        }
-      // blank out that range
-      memset(dest+left, ascii_space, right-left);
+      right = rightmost_float;
+      }
+    // blank out that range
+    assert(right-left < MAX_POSSIBLE && right-left >= 0);
+    memset(dest+left, ascii_space, right-left);
 
-      // To handle situations like PIC $$$,999, where the currency sign has to
-      // overwrite the comma, we walk from here until we hit the column just to
-      // the left of a digit
-      while( right < length_d )
-        {
+    // To handle situations like PIC $$$,999, where the currency sign has to
+    // overwrite the comma, we walk from here until we hit the column just to
+    // the left of a digit
+    while( right < length_d )
+      {
       if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
-          || right == decimal_position ) 
-          {
-          break;
-          }
-        dest[right] = ascii_space;
-        right += 1;
-        }
-      if( right < length_d )
+        || right == decimal_position )
         {
-        right -= 1;
-        memcpy(dest + right - (strlen(currency_text)-1),
-               currency_text,
-               strlen(currency_text));
+        break;
         }
+      dest[right] = ascii_space;
+      right += 1;
+      }
+    if( right < length_d )
+      {
+      right -= 1;
+      memcpy(dest + right - (strlen(currency_text)-1),
+             currency_text,
+             strlen(currency_text));
       }
     }
 
   // Do sign replacement
-  if( leftmost_sign >= 0 )
+  if( floating_char == ascii_plus || floating_char == ascii_minus )
     {
-    if( leftmost_sign == rightmost_sign-1 )
+    // This is a floating sign symbol.  We need to start at
+    // leftmost_float, and walk to the lesser of rightmost_float and
+    // leftmost_nonzero.  We blank every character we encounter.
+    unsigned char sign_char;
+    if( is_negative )
       {
-      // This is a solo sign symbol
-      dest[leftmost_sign] = sign_char;
+      sign_char = ascii_minus;
       }
     else
       {
-      // This is a floating sign symbol.  We need to start at
-      // leftmost_sign, and walk to the lesser of rightmost_sign and
-      // leftmost_nonzero.  We blank every character we encounter.
-      int left = leftmost_sign;
-      int right;
-      if( leftmost_nonzero >= 0 )
+      if( floating_char == ascii_minus )
         {
-        right = std::min(leftmost_nonzero, rightmost_sign);
-        if( decimal_position >= 0 )
-          {
-          right = std::min(right, decimal_position);
-          }
+        sign_char = ascii_space;
         }
       else
         {
-        right = rightmost_sign;
+        sign_char = ascii_plus;
         }
-      // blank out that range
-      memset(dest+left, ascii_space, right-left);
+      }
 
-      // To handle situations like PIC $$$,999, where the sign char has to
-      // overwrite the comma, we walk from here until we hit the column just to
-      // the left of a digit
-      while( right < length_d )
+    int left = leftmost_float;
+    int right;
+    if( leftmost_nonzero >= 0 )
+      {
+      right = std::min(leftmost_nonzero, rightmost_float);
+      if( decimal_position >= 0 )
         {
-        if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
-            || right == decimal_position ) 
-          {
-          break;
-          }
-        dest[right] = ascii_space;
-        right += 1;
+        right = std::min(right, decimal_position);
         }
-      if( right < length_d )
+      }
+    else
+      {
+      right = rightmost_float;
+      }
+    // blank out that range
+    assert(right-left < MAX_POSSIBLE && right-left >= 0);
+    memset(dest+left, ascii_space, right-left);
+
+    // To handle situations like PIC $$$,999, where the sign char has to
+    // overwrite the comma, we walk from here until we hit the column just to
+    // the left of a digit
+    while( right < length_d )
+      {
+      if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
+          || right == decimal_position )
         {
-        right -= 1;
-        dest[right] = sign_char;
+        break;
         }
+      dest[right] = ascii_space;
+      right += 1;
+      }
+    if( right < length_d )
+      {
+      right -= 1;
+      dest[right] = sign_char;
       }
     }
 
   // Do '*' zero suppression
-  if( leftmost_asterisk >= 0 )
+  if( floating_char == ascii_asterisk )
     {
-    // This is a floating zero suppression.  
+    // This is a floating zero suppression.
 
-    int left = leftmost_asterisk;
+    int left = leftmost_float;
     int right;
     if( leftmost_nonzero >= 0 )
       {
       // The value being formatted is non-zero, so make sure 'right' is no more
       // than the decimal position.
-      right = std::min(leftmost_nonzero, rightmost_asterisk);
-      if( decimal_position >= 0 && decimal_position > leftmost_asterisk )
+      right = std::min(leftmost_nonzero, rightmost_float);
+      if( decimal_position >= 0 && decimal_position > leftmost_float )
         {
         right = std::min(right, decimal_position);
         }
@@ -505,19 +403,19 @@ __gg__string_to_numeric_edited( char * const dest,
     else
       {
       // The value being formatted is zero
-      if( zeroed_asterisk == length_s )
+      if( leftmost_nonzero == -1 && !got_nines )
         {
-        // Every numeric position was a zero on asterisk, so the whole thing
-        // is starred.
+        // Every numeric position was a zero, and there were no explicit nines
         left = 0;
         right = length_d;
         }
       else
         {
-        right = rightmost_asterisk;
+        right = rightmost_float;
         }
       }
-    // blank out that range
+    // Fill that range with stars
+    assert(right-left < MAX_POSSIBLE && right-left >= 0);
     memset(dest+left, ascii_asterisk, right-left);
 
     // To handle situations like PIC ZZZ,999, where the suppression char has to
@@ -526,7 +424,7 @@ __gg__string_to_numeric_edited( char * const dest,
     while( right < length_d )
       {
       if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
-          || right == decimal_position ) 
+          || right == decimal_position )
         {
         break;
         }
@@ -543,37 +441,38 @@ __gg__string_to_numeric_edited( char * const dest,
     }
 
   // Do 'Z' zero suppression
-  if( leftmost_z >= 0 )
+  if( floating_char == ascii_Z )
     {
-    // This is a floating zero suppression.  
+    // This is a floating zero suppression.
 
-    int left = leftmost_z;
+    int left = leftmost_float;
     int right;
     if( leftmost_nonzero >= 0 )
       {
       // The value being formatted is non-zero, so make sure 'right' is no more
       // than the decimal position.
-      right = std::min(leftmost_nonzero, rightmost_z);
-      if( decimal_position >= 0 && decimal_position > leftmost_asterisk )
+      right = std::min(leftmost_nonzero, rightmost_float);
+      if( decimal_position >= 0 && decimal_position > leftmost_float )
         {
         right = std::min(right, decimal_position);
         }
       }
     else
       {
-      if( zeroed_z == length_s )
+      if( leftmost_nonzero == -1 && !got_nines )
         {
-        // Every numeric position was a zero on asterisk, so the whole thing
+        // Every numeric position was a zero on 'Z', so the whole thing
         // is blanked.
         left = 0;
         right = length_d;
         }
       else
         {
-        right = rightmost_z;
+        right = rightmost_float;
         }
       }
     // blank out that range
+    assert(right-left < MAX_POSSIBLE && right-left >= 0);
     memset(dest+left, ascii_space, right-left);
 
     // To handle situations like PIC ZZZ,999, where the suppression char has to
@@ -582,7 +481,7 @@ __gg__string_to_numeric_edited( char * const dest,
     while( right < length_d )
       {
       if(    (dest[right] >= ascii_zero && dest[right] <= ascii_nine)
-          || right == decimal_position ) 
+          || right == decimal_position )
         {
         break;
         }
@@ -591,10 +490,11 @@ __gg__string_to_numeric_edited( char * const dest,
       }
     }
 
-  // Any final DB/CR needs to be addressed:
-  if(    !is_negative
-      && length_d >= 2 
-      && (   dest[length_d-2] == ascii_D 
+  // Any final DB/CR needs to be addressed.  If the number is positive, or
+  // all the digits were zeroes, then blank any CR/DB at the end:
+  if(     (!is_negative || leftmost_nonzero < 0)
+      && length_d >= 2
+      && (   dest[length_d-2] == ascii_D
           || dest[length_d-2] == ascii_d
           || dest[length_d-2] == ascii_C
           || dest[length_d-2] == ascii_c ) )

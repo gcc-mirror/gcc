@@ -1936,9 +1936,12 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc ) {
             // By the time you read this, this next statement ought to be
             // obsolete.  See RT issue 3682.
             expanded[char_capacity()] = '\0';
+            if( type == FldNumericEdited )
+              {
+              expand_expanded(expanded);
+              }
             __gg__string_to_numeric_edited( reinterpret_cast<char *>(retval),
                                             ach,
-                                            data.rdigits,
                                             negative,
                                             expanded);
             free(expanded);

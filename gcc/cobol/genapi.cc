@@ -14431,7 +14431,12 @@ actually_create_the_static_field( cbl_field_t *new_var,
     }
   tree offset = build_int_cst_type(SIZE_T, new_var->offset);
   tree name = gg_string_literal(new_var->name);
+
   char *expanded = expand_picture(new_var->data.picture);
+  if( new_var->type == FldNumericEdited )
+    {
+    expand_expanded(expanded);
+    }
   tree picture = gg_string_literal(expanded);
   free(expanded);
   tree initial;

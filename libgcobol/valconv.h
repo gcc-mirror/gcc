@@ -55,7 +55,6 @@ extern "C"
                               int high_char );
   void __gg__string_to_numeric_edited(char * const dest,
                                       const char *source,       // ASCII
-                                      int rdigits,
                                       int is_negative,
                                       const char *picture);
   void __gg__string_to_alpha_edited(char *dest,

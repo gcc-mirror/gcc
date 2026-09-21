@@ -46,6 +46,7 @@
 #include <string>
 #include <vector>
 
+// The ISO spec says there is a
 #define PICTURE_MAX 64
 
 extern const char *numed_message;
@@ -2970,7 +2971,7 @@ int redefined_token( const cbl_name_t name, int token );
  * intrinsic functions.
  *
  * tokens and token_names are defined in a token_names.h, generated from parse.h.
- * 
+ *
  *  - token_names converts a yytokentype enum to a string form of
  *    its name as defined in the parser.  It is used by keyword_str.
  *  - tokens imperfectly maps a lowercase form of the token name to its value.
@@ -2981,16 +2982,16 @@ int redefined_token( const cbl_name_t name, int token );
  *  EQUATE     adds a new name for a token in tokens.
  *  UNDEFINE   removes a name from tokens.
  *  SUBSTITUTE is EQUATE for the first name and UNDEFINE for the second.
- *  RESERVE    adds a new name to tokens with the invalid value -42. 
+ *  RESERVE    adds a new name to tokens with the invalid value -42.
  *
  * The generated lexer of course uses static strings and is thus unaffected by
  * COBOL-WORDS. The parser accesses the generated lexer via a mediation layer
  * that deals with the CDF.  That is where COBOL-WORDS are applied.
  *
- * There are unsolved problems.  
- *  1.  Some tokens are lexed as more than one text word, or depend on context. 
- *      For example OBJECT COMPUTER and IDENTIFICATION DIVISION. If the user 
- *      substitutes COMPUTING-MACHINE COMPUTER, lexing will fail. 
+ * There are unsolved problems.
+ *  1.  Some tokens are lexed as more than one text word, or depend on context.
+ *      For example OBJECT COMPUTER and IDENTIFICATION DIVISION. If the user
+ *      substitutes COMPUTING-MACHINE COMPUTER, lexing will fail.
 
  *  2.  Semantic values are known only to the lexer. Some tokens carry a value
  *      representing their context. For example, both INVALID and NOT INVALID
@@ -3000,7 +3001,7 @@ int redefined_token( const cbl_name_t name, int token );
  *      assign it the value "BOGUS". When that string is found by
  *      redefined_token and mapped to INVALID (so the parser can parse it) the
  *      semantic value is lost.
- * 
+ *
  *  3.  Some names are not NAME tokens, depending on context.  That subtlety is
  *      also lost.
  *
@@ -3105,7 +3106,7 @@ class current_tokens_t {
       return true;
     }
     /*
-     * name may be: 
+     * name may be:
      * 1.  just a name, return the input token.
      * 2.  reserved with -42 token
      * 3.  a user-defined substitute or alias for a token
@@ -3144,7 +3145,7 @@ class current_tokens_t {
     return tokens.find(name, include_intrinsics);
   }
   bool equate( const cbl_loc_t& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
-    int token; 
+    int token;
 
     if( 0 == (token = keyword_tok(keyword, true)) ) {
       if( 0 == (token = binary_integer_usage_of(keyword)) ) {
@@ -3165,7 +3166,7 @@ class current_tokens_t {
     return tokens.undefine(loc, keyword);
   }
   bool substitute( const cbl_loc_t& loc, const cbl_name_t keyword, const cbl_name_t alias ) {
-    int token; 
+    int token;
     if( 0 == (token = keyword_tok(keyword, true)) ) {
       if( 0 == (token = binary_integer_usage_of(keyword)) ) {
 	error_msg(loc, "SUBSTITUTE: not a reserved word: %qs", keyword);
@@ -3293,6 +3294,7 @@ cbl_field_t *new_alphanumeric(const cbl_name_t name=nullptr,
                               cbl_encoding_t encoding=no_encoding_e );
 
 char *expand_picture(const char *picture);
+void expand_expanded(char *picture);
 
 // ENABLE_HIJACKING allows for code generation to be "hijacked" when the
 // program-id is "dubner_h" or "hijack_h".  See the mainline code in genapi.cc.

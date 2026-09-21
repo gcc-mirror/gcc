@@ -4798,6 +4798,12 @@ expand_picture(const char *picture)
   // The caller should free() the return value.
   assert(strlen(picture) < PICTURE_MAX); // guaranteed by picset() in scanner
   size_t retval_length = PICTURE_MAX;
+
+  // In the expand_expanded routine, we are going to tack on some additional
+  // characters in order to speed up compile-time processin.
+  static const int PICTURE_EXTRA = 6;
+  retval_length += PICTURE_EXTRA;
+
   char *retval = static_cast<char *>(xmalloc(retval_length));
 
   int ch;
@@ -4909,7 +4915,224 @@ expand_picture(const char *picture)
         break;
       }
     }
+
+  // AD HOC FIX for an improper trailing space
+  char *pspace = strchr(retval, ascii_space);
+  if( pspace )
+    {
+    *pspace = NULLCH;
+    }
+
   return retval;
+  }
+
+void
+expand_expanded(char *expanded)
+  {
+  if(strlen(expanded) == 0)
+    {
+    return;
+    }
+
+  unsigned char *dest = reinterpret_cast<unsigned char *>(expanded);
+
+  /* In order to make __gg__string_to_numeric_edited() run quickly, we are
+     going to process the expanded picture string especially for it.  What we
+     do here:
+     
+     Convert B to space, taking care not to touch a final 'DB'
+
+     Find the currency picture symbol
+     
+     Find the span of any '$$', '++', '--' 'Z', and '*' runs.
+
+     For any '$$', '++' and '--' runs, replace the first such char with a
+     space, and all the others with '9'
+     
+     For any 'Z' and '*' runs, replace all the characters with '9'.
+     
+     Figure out if any of the original picture characters are '9'.
+     
+     That information gets encoded into six characters that are appended to
+     the modified string.  
+     
+     Offset 0:   The currency character
+     Offset 1:   The floating character (space if empty)
+     Offset 2-3: The starting index of the float.
+     Offset 3-4: The one-past-the-end index of the float.
+
+     When there are '9' characters in the original, the 0x40 bit of offset 2
+     is turned on, turning '0'-'9' into 'q'-'y'
+     
+     Is everybody ready?  Then we'll begin.    */
+
+  int length_d = strlen(expanded);
+
+  unsigned char currency_char = ascii_space;
+  // Note that the currency_picture can be upper- or lower-case, and mean
+  // separate things in IBM.  In ISO COBOL, the comparison is case-insensitive.
+
+  unsigned floating_char = ascii_space;
+  int leftmost_float = -1;
+  int rightmost_float = -1;  // This is a one-past-the-end index
+
+  bool got_nines = false;
+
+  for(int i=0; i<length_d; i++)
+    {
+    int ch = (unsigned int)dest[i] & 0xFF;
+    if( !__gg__currency_signs[ch].empty() )
+      {
+      currency_char = ch;
+      break;
+      }
+    }
+
+  for(int i=0; i<length_d; i++)
+    {
+    if( dest[i] == ascii_9 )
+      {
+      got_nines = true;
+      break;
+      }
+    }
+
+  if( dest[0] == ascii_B )
+    {
+    dest[0] = ascii_space;
+    }
+  for(int i=1; i<length_d; i++)
+    {
+    if( dest[i] == ascii_B && dest[i-1] != ascii_D && dest[i-1] != ascii_d )
+      {
+      dest[i] = ascii_space;
+      }
+    }
+
+  if( currency_char != ascii_space )
+    {
+    leftmost_float =
+      static_cast<unsigned char *>(memchr(dest, currency_char, length_d)) - dest;
+    rightmost_float =
+      static_cast<unsigned char *>(memrchr(dest, currency_char, length_d)) - dest + 1;
+    if( rightmost_float > leftmost_float+1 )
+      {
+      floating_char = currency_char;
+      // Turn the first floating character into a space
+      dest[leftmost_float] = ascii_space;
+      for(int i=leftmost_float+1; i<rightmost_float; i++)
+        {
+        // Of the remainder, turn all floating characters into '9', so that
+        // they will be filled with numerical data from 'source'.
+        if( dest[i] == floating_char )
+          {
+          dest[i] = ascii_9;
+          }
+        }
+      }
+    else
+      {
+      leftmost_float = rightmost_float = -1;
+      }
+    }
+
+  if( memchr(dest, ascii_minus, length_d) )
+    {
+    int leftmost =
+      static_cast<unsigned char *>(memchr(dest, ascii_minus, length_d)) - dest;
+    int rightmost =
+      static_cast<unsigned char *>(memrchr(dest, ascii_minus, length_d)) - dest + 1;
+    if( rightmost > leftmost+1 )
+      {
+      floating_char = ascii_minus;
+      leftmost_float = leftmost;
+      rightmost_float = rightmost;
+      for(int i=leftmost_float+1; i<rightmost_float; i++)
+        {
+        // Of the remainder, turn all floating characters into '9', so that
+        // they will be filled with numerical data from 'source'.
+        if( dest[i] == floating_char )
+          {
+          dest[i] = ascii_9;
+          }
+        }
+      }
+    }
+
+  if( memchr(dest, ascii_plus, length_d) )
+    {
+    int leftmost =
+      static_cast<unsigned char *>(memchr(dest, ascii_plus, length_d)) - dest;
+    int rightmost =
+      static_cast<unsigned char *>(memrchr(dest, ascii_plus, length_d)) - dest + 1;
+    if( rightmost > leftmost+1 )
+      {
+      floating_char = ascii_plus;
+      leftmost_float = leftmost;
+      rightmost_float = rightmost;
+      for(int i=leftmost_float+1; i<rightmost_float; i++)
+        {
+        // Of the remainder, turn all floating characters into '9', so that
+        // they will be filled with numerical data from 'source'.
+        if( dest[i] == floating_char )
+          {
+          dest[i] = ascii_9;
+          }
+        }
+      }
+    }
+
+  if( memchr(dest, ascii_asterisk, length_d) )
+    {
+    floating_char = ascii_asterisk;
+    leftmost_float =
+      static_cast<unsigned char *>(memchr(dest, ascii_asterisk, length_d)) - dest;
+    rightmost_float =
+      static_cast<unsigned char *>(memrchr(dest, ascii_asterisk, length_d)) - dest + 1;
+    for(int i=leftmost_float; i<rightmost_float; i++)
+      {
+      // Turn all floating characters into '9', so that
+      // they will be filled with numerical data from 'source'.
+      if( dest[i] == floating_char )
+        {
+        dest[i] = ascii_9;
+        }
+      }
+    }
+
+  if( memchr(dest, ascii_Z, length_d) )
+    {
+    floating_char = ascii_Z;
+    leftmost_float =
+      static_cast<unsigned char *>(memchr(dest, ascii_Z, length_d)) - dest;
+    rightmost_float =
+      static_cast<unsigned char *>(memrchr(dest, ascii_Z, length_d)) - dest + 1;
+    for(int i=leftmost_float; i<rightmost_float; i++)
+      {
+      // Turn all floating characters into '9', so that
+      // they will be filled with numerical data from 'source'.
+      if( dest[i] == floating_char )
+        {
+        dest[i] = ascii_9;
+        }
+      }
+    }
+
+  char extra[7] = "      ";
+  extra[0] = currency_char;
+  if( floating_char != ascii_space )
+    {
+    extra[1] = floating_char;
+    extra[2] = leftmost_float  / 10 + ascii_0;
+    extra[3] = leftmost_float  % 10 + ascii_0;
+    extra[4] = rightmost_float / 10 + ascii_0;
+    extra[5] = rightmost_float % 10 + ascii_0;
+    if( got_nines )
+      {
+      extra[2] |= 0x40;
+      }
+    }
+  strcat(expanded, extra);
   }
 
 int

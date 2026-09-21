@@ -2140,7 +2140,6 @@ int128_to_field(cblc_field_t   *var,
               // Convert that string according to the PICTURE clause
               __gg__string_to_numeric_edited(as_chars(location),
                                              ach,
-                                             target_rdigits,
                                              is_negative,
                                              var->picture);
               size_t outlength;
@@ -2309,10 +2308,9 @@ __gg__int128_to_ascii_numeric_display(const cblc_field_t  *var,
 
     // Convert that string according to the PICTURE clause
     __gg__string_to_numeric_edited(as_chars(location),
-                                       ach,
-                                       var->rdigits,
-                                       is_negative,
-                                       var->picture);
+                                   ach,
+                                   is_negative,
+                                   var->picture);
     }
   return size_error;
   }
