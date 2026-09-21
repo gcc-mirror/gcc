@@ -1921,6 +1921,7 @@ loop_distribution::classify_partition (loop_p loop,
 
   /* Perform general partition disqualification for builtins.  */
   if (volatiles_p
+      || has_nonaddressable_dataref_p
       || !flag_tree_loop_distribute_patterns)
     return has_reduction;
 
