@@ -138,4 +138,6 @@ struct noce_if_info
   const char *transform_name;
 };
 
+extern unsigned int noce_parallel_seq_cost (rtx_insn *, bool);
+
 #endif /* GCC_IFCVT_H */

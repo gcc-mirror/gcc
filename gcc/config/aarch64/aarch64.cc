@@ -2466,7 +2466,7 @@ aarch64_noce_conversion_profitable_p (rtx_insn *seq,
 	   most cases.  */
   if (if_info->speed_p)
     {
-      unsigned cost = seq_cost (seq, true);
+      unsigned cost = noce_parallel_seq_cost (seq, true);
       return cost <= if_info->max_seq_cost;
     }
 

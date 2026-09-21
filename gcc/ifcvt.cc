@@ -891,7 +891,7 @@ noce_dependency_level (noce_ready_map &ready,
      0.2 < ratio <= 0.4   0.91 percent
      0.0 < ratio <= 0.2   0.00 percent.  */
 
-static unsigned int
+unsigned int
 noce_parallel_seq_cost (rtx_insn *seq, bool speed_p)
 {
   unsigned int serial_cost = seq_cost (seq, speed_p);
