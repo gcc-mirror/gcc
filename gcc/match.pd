@@ -1611,6 +1611,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
             { wide_int_to_tree (type,
 				wi::lshift (wone, wi::to_wide (@2))); }))))
 
+/* PR126644: A << N >> N -> A, for signed type A
+
+   For signed types we need to preserve the existing sign bit for
+   all possible values A might have.  Otherwise we can have an
+   originally positive A (no sign bit), A << N ends up setting
+   the sign bit (i.e. it's a negative number now) and now
+   (A << N) >> N becomes an arithmetic shift that will preserve
+   the sign bit.  And vice-versa if A has a sign bit and we ended
+   up clearing it.
+
+   We're not covering the unsigned case because it is already
+   covered by the existing "(x << c) >> c -> x & ((unsigned)-1 >> c)"
+   pattern, transforming it into a bit_and during 'original'.  */
+(simplify
+ (rshift (lshift@0 @A INTEGER_CST@N) @N)
+  (if (INTEGRAL_TYPE_P (type)
+       && !TYPE_UNSIGNED (type)
+       && tree_fits_uhwi_p (@N)
+       && tree_to_uhwi (@N) < TYPE_PRECISION (type)
+       && single_use (@0))
+   (with {
+      unsigned int prec = TYPE_PRECISION (type);
+      wide_int mask = wi::mask (prec - (tree_to_uhwi (@N) + 1),
+				true, prec);
+    }
+    /* get_nonzero_bits returns '0' for each bit we are certain
+       to be zero.  get_known_nonzero_bits returns '1' for each
+       bit we know to be one.  */
+    (if ((get_nonzero_bits (@A) & mask) == 0
+	 || (get_known_nonzero_bits (@A) & mask) == mask)
+     @A))))
+
 /* Fold (-x >> C) into -(x > 0) where C = precision(type) - 1.  */
 (for cst (INTEGER_CST VECTOR_CST)
  (simplify
