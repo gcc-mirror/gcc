@@ -1839,7 +1839,10 @@ BEGIN
       RETURN( FALSE )
    ELSE
       WITH e^.econvert DO
-         IF isTypeResolved(totype)
+         IF totype = NulSym
+         THEN
+            RETURN( FALSE )
+         ELSIF isTypeResolved(totype)
          THEN
             assignType(e, totype) ;
             RETURN( TRUE )
