@@ -39,8 +39,13 @@
 
 struct gpi_priv
   {
-  gpi_priv(const std::string &name) : name(name){}
-  std::string name;
+  gpi_priv(const std::vector<std::string> &callstack) :
+    callstack(callstack),
+    it(this->callstack.crbegin())
+    {
+    }
+  const std::vector<std::string> callstack;
+  std::vector<std::string>::const_reverse_iterator it;
   };
 
 /* From the COBOL side, we add no padding bytes at all for groups. */
@@ -98,13 +103,13 @@ enum cbl_backtrace_flags
   CBL_BACKTRACE_DATA31      = 1 << 24
   };
 
-static std::string
-getlastprog()
+static std::vector<std::string>
+callstack()
   {
   const std::vector<std::string> &__gg__get_module_names(),
     &names = __gg__get_module_names();
   const char *s = NULL;
-  std::string ret;
+  std::vector<std::string> ret;
 
   for (const auto &name : names)
     {
@@ -113,13 +118,10 @@ getlastprog()
     const char *cname = name.c_str() + 1;
 
     if (strcasecmp(cname, "CBL_GET_PROGRAM_INFO"))
-      s = cname;
+      ret.push_back(cname);
     else
       break;
     }
-
-  if (s)
-    ret = s;
 
   return ret;
   }
@@ -141,15 +143,15 @@ setbasename(const std::string &src, const gpi_param_t &p, char *dst, unsigned n)
 int16_t
 cbl_gpi_cur_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
   {
-  std::string prog = getlastprog();
+  std::vector<std::string> cs = callstack();
 
-  if (prog.empty())
+  if (cs.empty())
     return -1;
   else if (params.flags & GPI_PARAM_RET_BASENAME)
-    setbasename(prog, params, buf.basename, buflen);
+    setbasename(cs.back(), params, buf.basename, buflen);
 
   if (params.flags & GPI_PARAM_RET_HANDLE)
-    params.handle = new gpi_priv(prog);
+    params.handle = new gpi_priv(cs);
 
   /* TODO: set status bits */
   return 0;
@@ -165,12 +167,14 @@ cbl_gpi_named_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
   }
 
 int16_t
-cbl_gpi_handle_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_parent_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
   {
-  const gpi_priv *prv = static_cast<const struct gpi_priv *>(params.handle);
+  gpi_priv *prv = params.handle;
 
-  if (params.flags & GPI_PARAM_RET_BASENAME)
-    setbasename(prv->name.c_str(), params, buf.basename, buflen);
+  if (prv->it + 1 >= prv->callstack.crend())
+    return -1;
+  else if (params.flags & GPI_PARAM_RET_BASENAME)
+    setbasename(*++prv->it, params, buf.basename, buflen);
 
   /* TODO: set status bits */
   return 0;
@@ -179,7 +183,7 @@ cbl_gpi_handle_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
 int16_t
 cbl_gpi_close_handle(gpi_param_t &params, union retbuf buf, unsigned buflen)
   {
-  delete static_cast<gpi_priv *>(params.handle);
+  delete params.handle;
   /* TODO: set status bits */
   return 0;
   }
@@ -254,7 +258,7 @@ static const struct func
     },
 
     {
-    cbl_gpi_handle_status,
+    cbl_gpi_parent_status,
     GPI_PARAM_RET_BASENAME | GPI_PARAM_RET_PRGATTR | GPI_PARAM_NULL_TERM
       | GPI_PARAM_ALL_PROG,
     GPI_PARAM_RET_HANDLE

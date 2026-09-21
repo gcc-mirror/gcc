@@ -1,3 +1,7 @@
-buf is 'prog'
-buf from handle is 'prog'
+calling a from prog
+calling b from a
+buf from b is 'b'
+calling c from prog
+buf from c is 'a'
+buf from c is 'prog'
 
