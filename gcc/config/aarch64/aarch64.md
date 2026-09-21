@@ -2666,10 +2666,10 @@
   [(set (match_operand:GPI 0 "register_operand")
         (sign_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand")))]
   ""
-  {@ [ cons: =0 , 1 ; attrs: type , arch ]
-     [ r        , r ; extend      , *    ] sxt<SHORT:extsize>\t%<GPI:w>0, %w1
-     [ r        , m ; load_4      , *    ] ldrs<SHORT:extsize>\t%<GPI:w>0, %1
-     [ r        , w ; neon_to_gp  , fp   ] smov\t%<GPI:w>0, %1.<SHORT:size>[0]
+  {@ [ cons: =0 , 1 ; attrs: type , arch      ]
+     [ r        , r ; extend      , *         ] sxt<SHORT:extsize>\t%<GPI:w>0, %w1
+     [ r        , m ; load_4      , *         ] ldrs<SHORT:extsize>\t%<GPI:w>0, %1
+     [ r        , w ; neon_to_gp  , base_simd ] smov\t%<GPI:w>0, %1.<SHORT:size>[0]
   }
 )
 
@@ -2677,11 +2677,11 @@
   [(set (match_operand:GPI 0 "register_operand")
         (zero_extend:GPI (match_operand:SHORT 1 "nonimmediate_operand")))]
   ""
-  {@ [ cons: =0 , 1 ; attrs: type , arch ]
-     [ r        , r ; logic_imm   , *    ] and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
-     [ r        , m ; load_4      , *    ] ldr<SHORT:size>\t%w0, %1
-     [ w        , m ; f_loads     , fp   ] ldr\t%<SHORT:size>0, %1
-     [ r        , w ; neon_to_gp  , fp   ] umov\t%w0, %1.<SHORT:size>[0]
+  {@ [ cons: =0 , 1 ; attrs: type , arch      ]
+     [ r        , r ; logic_imm   , *         ] and\t%<GPI:w>0, %<GPI:w>1, <SHORT:short_mask>
+     [ r        , m ; load_4      , *         ] ldr<SHORT:size>\t%w0, %1
+     [ w        , m ; f_loads     , fp        ] ldr\t%<SHORT:size>0, %1
+     [ r        , w ; neon_to_gp  , base_simd ] umov\t%w0, %1.<SHORT:size>[0]
   }
 )
 
