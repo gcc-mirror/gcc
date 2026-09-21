@@ -24721,7 +24721,17 @@ ix86_split_stlf_stall_load ()
 	     register.  */
 	  || GET_MODE (src) != E_V2DFmode
 	  || !MEM_EXPR (src)
-	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL)
+	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL
+	  /* Avoid invalid memory address.
+	     i.e.
+	     (mem/c:V2DF (plus:DI (reg/f:DI 7 sp)
+				  (const_int 2147483640 [0x7ffffff8])))
+	     Adjusting it by 8 puts the displacement at 0x80000000, out of
+	     range for the signed 32-bit field an x86 address can encode.  */
+	  || !memory_address_addr_space_p (DFmode,
+					   XEXP (adjust_address_nv (src, DFmode,
+								    8), 0),
+					   MEM_ADDR_SPACE (src)))
 	continue;
 
       rtx zero = CONST0_RTX (V2DFmode);
