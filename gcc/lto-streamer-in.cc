@@ -1113,25 +1113,25 @@ input_cfg (class lto_input_block *ib, class data_in *data_in,
 	bb = make_new_block (fn, index);
 
       edge_count = streamer_read_uhwi (ib);
+      vec_safe_reserve (bb->preds, edge_count);
 
       /* Connect up the CFG.  */
       for (i = 0; i < edge_count; i++)
 	{
 	  bitpack_d bp = streamer_read_bitpack (ib);
-	  unsigned int dest_index = bp_unpack_var_len_unsigned (&bp);
+	  unsigned int src_index = bp_unpack_var_len_unsigned (&bp);
 	  unsigned int edge_flags = bp_unpack_var_len_unsigned (&bp);
-	  basic_block dest = BASIC_BLOCK_FOR_FN (fn, dest_index);
+	  basic_block src = BASIC_BLOCK_FOR_FN (fn, src_index);
 
-	  if (dest == NULL)
-	    dest = make_new_block (fn, dest_index);
+	  if (src == NULL)
+	    src = make_new_block (fn, src_index);
 
-	  edge e = make_edge (bb, dest, edge_flags);
+	  edge e = make_edge (src, bb, edge_flags);
 	  data_in->location_cache.input_location_and_block (&e->goto_locus,
 							    &bp, ib, data_in);
 	  e->probability = profile_probability::stream_in (ib);
 	  if (!e->probability.initialized_p ())
 	    full_profile = false;
-
 	}
 
       index = streamer_read_hwi (ib);

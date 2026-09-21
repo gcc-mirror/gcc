@@ -2334,12 +2334,15 @@ output_cfg (struct output_block *ob, struct function *fn)
 
       streamer_write_hwi (ob, bb->index);
 
-      /* Output the successors and the edge flags.  */
-      streamer_write_uhwi (ob, EDGE_COUNT (bb->succs));
-      FOR_EACH_EDGE (e, ei, bb->succs)
+      /* Output the predecessors and the edge flags.  We output
+	 predecessors instead of successors so PHI argument order
+	 is preserved when we reconstruct the CFG greedily in
+	 input_cfg.  */
+      streamer_write_uhwi (ob, EDGE_COUNT (bb->preds));
+      FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  bitpack_d bp = bitpack_create (ob->main_stream);
-	  bp_pack_var_len_unsigned (&bp, e->dest->index);
+	  bp_pack_var_len_unsigned (&bp, e->src->index);
 	  bp_pack_var_len_unsigned (&bp, e->flags);
 	  stream_output_location_and_block (ob, &bp, e->goto_locus);
 	  e->probability.stream_out (ob);
