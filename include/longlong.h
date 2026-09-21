@@ -1595,40 +1595,6 @@ extern UHItype __stormy16_count_leading_zeros (UHItype);
 #define COUNT_LEADING_ZEROS_0 W_TYPE_SIZE
 #endif
 
-#if defined (__z8000__) && W_TYPE_SIZE == 16
-#define add_ssaaaa(sh, sl, ah, al, bh, bl) \
-  __asm__ ("add	%H1,%H5\n\tadc	%H0,%H3"				\
-	   : "=r" ((unsigned int)(sh)),					\
-	     "=&r" ((unsigned int)(sl))					\
-	   : "%0" ((unsigned int)(ah)),					\
-	     "r" ((unsigned int)(bh)),					\
-	     "%1" ((unsigned int)(al)),					\
-	     "rQR" ((unsigned int)(bl)))
-#define sub_ddmmss(sh, sl, ah, al, bh, bl) \
-  __asm__ ("sub	%H1,%H5\n\tsbc	%H0,%H3"				\
-	   : "=r" ((unsigned int)(sh)),					\
-	     "=&r" ((unsigned int)(sl))					\
-	   : "0" ((unsigned int)(ah)),					\
-	     "r" ((unsigned int)(bh)),					\
-	     "1" ((unsigned int)(al)),					\
-	     "rQR" ((unsigned int)(bl)))
-#define umul_ppmm(xh, xl, m0, m1) \
-  do {									\
-    union {long int __ll;						\
-	   struct {unsigned int __h, __l;} __i;				\
-	  } __xx;							\
-    unsigned int __m0 = (m0), __m1 = (m1);				\
-    __asm__ ("mult	%S0,%H3"					\
-	     : "=r" (__xx.__i.__h),					\
-	       "=r" (__xx.__i.__l)					\
-	     : "%1" (__m0),						\
-	       "rQR" (__m1));						\
-    (xh) = __xx.__i.__h; (xl) = __xx.__i.__l;				\
-    (xh) += ((((signed int) __m0 >> 15) & __m1)				\
-	     + (((signed int) __m1 >> 15) & __m0));			\
-  } while (0)
-#endif /* __z8000__ */
-
 #endif /* __GNUC__ */
 
 /* If this machine has no inline assembler, use C macros.  */
