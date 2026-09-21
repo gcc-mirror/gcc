@@ -845,6 +845,30 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
   return true;
 }
 
+static bool
+s390_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fndecl = gimple_call_fndecl (stmt);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+  gimple *new_stmt;
+  tree arg0, arg1, arg2;
+
+  if (fcode == S390_BUILTIN_s390_vperm)
+    {
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      arg2 = gimple_call_arg (stmt, 2);
+      new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				      VEC_PERM_EXPR,
+				      arg0, arg1, arg2);
+      gimple_set_location (new_stmt, gimple_location (stmt));
+      gsi_replace (gsi, new_stmt, false);
+      return true;
+    }
+  return false;
+}
+
 /* Expand an expression EXP that calls a built-in function,
    with result going to TARGET if that's convenient
    (and in mode MODE if that's convenient).
@@ -18439,6 +18463,8 @@ s390_bitint_type_info (int n, struct bitint_info *info)
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS s390_init_builtins
+#undef  TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN s390_gimple_fold_builtin
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN s390_expand_builtin
 #undef  TARGET_BUILTIN_DECL
