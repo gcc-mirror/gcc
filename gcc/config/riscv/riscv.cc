@@ -6807,7 +6807,6 @@ riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 
     case ARRAY_TYPE:
       {
-	HOST_WIDE_INT n_elts;
 	riscv_aggregate_field subfields[8];
 	tree index = TYPE_DOMAIN (type);
 	tree elt_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
@@ -6828,9 +6827,9 @@ riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
-	    || !tree_fits_uhwi_p (TYPE_MAX_VALUE (index))
+	    || TREE_CODE (TYPE_MAX_VALUE (index)) != INTEGER_CST
 	    || !TYPE_MIN_VALUE (index)
-	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
+	    || TREE_CODE (TYPE_MIN_VALUE (index)) != INTEGER_CST
 	    || !tree_fits_uhwi_p (elt_size))
 	  return -1;
 
@@ -6843,11 +6842,12 @@ riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 	if (n_subfields <= 0)
 	  return -1;
 
-	n_elts = 1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
-		   - tree_to_uhwi (TYPE_MIN_VALUE (index));
-	gcc_assert (n_elts >= 0);
+	const wide_int max = wi::to_wide (TYPE_MAX_VALUE (index));
+	const wide_int min = wi::to_wide (TYPE_MIN_VALUE (index));
+	const wide_int n_elts = max - min + 1;
+	gcc_assert (wi::fits_uhwi_p (n_elts));
 
-	for (HOST_WIDE_INT i = 0; i < n_elts; i++)
+	for (unsigned HOST_WIDE_INT i = 0; i < n_elts.to_uhwi (); i++)
 	  for (int j = 0; j < n_subfields; j++)
 	    {
 	      if (n >= max_aggregate_field)
