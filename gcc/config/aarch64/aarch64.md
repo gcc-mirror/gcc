@@ -7900,6 +7900,35 @@
 }
 )
 
+;; A number is normal iff its exponent field E is neither 0 nor all ones,
+;; i.e. (unsigned) (E - 1) < EXP_MAX - 1.
+(define_expand "isnormal<mode>2"
+ [(match_operand:SI 0 "register_operand")
+  (match_operand:GPF_HF_BF 1 "register_operand")]
+ "TARGET_FLOAT"
+{
+  scalar_int_mode imode = <V_INT_EQUIV>mode;
+  int exp_bits = GET_MODE_BITSIZE (<MODE>mode) - <mantissa_bits> - 1;
+  HOST_WIDE_INT exp_max = (HOST_WIDE_INT_1 << exp_bits) - 1;
+  rtx op = force_lowpart_subreg (imode, operands[1], <MODE>mode);
+  /* There is no 16-bit arithmetic, so work on the encoding of the 16-bit
+     formats in a word.  */
+  if (imode == HImode)
+    imode = SImode;
+  op = convert_to_mode (imode, op, 1);
+  op = expand_simple_binop (imode, LSHIFTRT, op, GEN_INT (<mantissa_bits>),
+			    NULL_RTX, 1, OPTAB_DIRECT);
+  op = expand_simple_binop (imode, AND, op, GEN_INT (exp_max),
+			    NULL_RTX, 1, OPTAB_DIRECT);
+  op = expand_simple_binop (imode, PLUS, op, constm1_rtx,
+			    NULL_RTX, 1, OPTAB_DIRECT);
+  rtx cc_reg = aarch64_gen_compare_reg (LTU, op, GEN_INT (exp_max - 1));
+  rtx cmp = gen_rtx_fmt_ee (LTU, SImode, cc_reg, const0_rtx);
+  emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
+  DONE;
+}
+)
+
 ;; -------------------------------------------------------------------
 ;; Reload support
 ;; -------------------------------------------------------------------

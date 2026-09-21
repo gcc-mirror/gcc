@@ -65,6 +65,9 @@
 ;; Iterator for all 16-bit scalar floating point modes (HF, BF)
 (define_mode_iterator HFBF [HF BF])
 
+;; Iterator for all scalar floating point modes (HF, BF, SF, DF)
+(define_mode_iterator GPF_HF_BF [HF BF SF DF])
+
 ;; Iterator for all integer modes (up to 64-bit) plus all General Purpose
 ;; Floating-point registers (32- and 64-bit modes).
 (define_mode_iterator ALLI_GPF [ALLI GPF])
@@ -1522,7 +1525,7 @@
 
 (define_mode_attr half_mask [(HI "255") (SI "65535") (DI "4294967295")])
 
-(define_mode_attr mantissa_bits [(SF "23") (DF "52")])
+(define_mode_attr mantissa_bits [(HF "10") (BF "7") (SF "23") (DF "52")])
 
 ;; For constraints used in scalar immediate vector moves
 (define_mode_attr hq [(HI "h") (QI "q")])
@@ -2502,7 +2505,7 @@
 			       (V2SF "V2SI") (V4SF  "V4SI")
 			       (DF   "DI")   (V2DF  "V2DI")
 			       (SF   "SI")   (SI    "SI")
-			       (HF    "HI")
+			       (HF    "HI")  (BF    "HI")
 			       (VNx16QI "VNx16QI")
 			       (VNx8HI  "VNx8HI") (VNx8HF "VNx8HI")
 			       (VNx8BF  "VNx8HI")
