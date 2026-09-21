@@ -23,6 +23,10 @@ union U {};
 static_assert (source_location_of (^^U).line () == std::source_location::current ().line () - 1);
 void foo (int, int) {}
 static_assert (source_location_of (^^foo).line () == std::source_location::current ().line () - 1);
+struct G { void foo (int, int) {} };
+static_assert (source_location_of (^^G::foo).line () == std::source_location::current ().line () - 1);
+struct H { template <typename T> void foo (T, T) {} };
+static_assert (source_location_of (^^H::foo).line () == std::source_location::current ().line () - 1);
 namespace N { namespace O {} }
 static_assert (source_location_of (^^N).line () == std::source_location::current ().line () - 1);
 static_assert (source_location_of (^^N::O).line () == std::source_location::current ().line () - 2);

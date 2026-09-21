@@ -2715,6 +2715,8 @@ eval_source_location_of (location_t loc, tree r, reflect_kind kind,
        for now use location_t of the base parent (i.e. the derived
        class).  */
     r = direct_base_derived (r);
+  else
+    r = maybe_get_first_fn (r);
   if (OVERLOAD_TYPE_P (r) || (TYPE_P (r) && typedef_variant_p (r)))
     rloc = DECL_SOURCE_LOCATION (TYPE_NAME (r));
   else if (DECL_P (r) && r != global_namespace)

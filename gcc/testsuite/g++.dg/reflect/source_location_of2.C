@@ -38,7 +38,6 @@ struct ImplicitEq
   auto operator<=> (const ImplicitEq&) const = default;
 };
 
-// Would expect either class head, or operator<=> line
-static_assert (source_location_of (^^ImplicitEq::operator==).line () == 0);
+static_assert (source_location_of (^^ImplicitEq::operator==).line () == implicitEqLine);
 static_assert (source_location_of (select_mem (^^ImplicitEq, is_operator (op_equals_equals))).line () == implicitEqLine);
 static_assert (source_location_of (select_mem (^^ImplicitEq, is_operator (op_spaceship))).line () == implicitEqLine);
