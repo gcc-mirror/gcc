@@ -3147,7 +3147,7 @@
    (set (attr "enabled")
 	(cond [(and (eq_attr "alternative" "0")
 		    (and (match_test "TARGET_PARTIAL_REG_STALL")
-			 (not (match_test "optimize_function_for_size_p (cfun)"))))
+			 (not (match_test "optimize_size"))))
 		(symbol_ref "false")
 	      ]
 	      (const_string "*")))])
@@ -3254,7 +3254,7 @@
    (set (attr "enabled")
 	(cond [(and (eq_attr "alternative" "0")
 		    (and (match_test "TARGET_PARTIAL_REG_STALL")
-			 (not (match_test "optimize_function_for_size_p (cfun)"))))
+			 (not (match_test "optimize_size"))))
 		(symbol_ref "false")
 	      ]
 	      (const_string "*")))])
