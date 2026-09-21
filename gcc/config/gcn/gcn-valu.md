@@ -2789,7 +2789,7 @@
 	(bitunop:V_INT_1REG
 	  (match_operand:V_INT_1REG 1 "gcn_valu_src0_operand" "vSvB")))]
   ""
-  "v_<mnemonic>0\t%0, %1"
+  "v_<mnemonic>0\t%0, %1<popcount_extra_op>"
   [(set_attr "type" "vop1")
    (set_attr "length" "8")])
 
