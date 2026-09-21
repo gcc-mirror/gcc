@@ -9650,7 +9650,9 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       return false;
     }
   tree stept = TREE_TYPE (step_expr);
-  tree step_vectype = get_same_sized_vectype (stept, vectype);
+  tree step_vectype
+    = (!INTEGRAL_TYPE_P (stept) ? vectype
+       : signed_or_unsigned_type_for (TYPE_UNSIGNED (stept), vectype));
   stept = TREE_TYPE (step_vectype);
 
   /* Check for target support of the vectorized arithmetic used here.  */
