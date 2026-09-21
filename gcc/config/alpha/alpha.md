@@ -2855,6 +2855,50 @@
     FAIL;
 })
 
+;; Floating-point classification.  Defining these patterns also stops
+;; fold_builtin_interclass_mathfn from rewriting the built-ins into FP
+;; comparisons, which are unusable here; see alpha_expand_fp_classify.
+
+(define_expand "isfinite<mode>2"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:FMODE 1 "register_operand")]
+  "TARGET_FP && !TARGET_FLOAT_VAX
+   && (alpha_fptm < ALPHA_FPTM_SU || flag_signaling_nans)"
+{
+  alpha_expand_fp_classify (operands[0], operands[1], ALPHA_FPCLASS_FINITE);
+  DONE;
+})
+
+(define_expand "isinf<mode>2"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:FMODE 1 "register_operand")]
+  "TARGET_FP && !TARGET_FLOAT_VAX
+   && (alpha_fptm < ALPHA_FPTM_SU || flag_signaling_nans)"
+{
+  alpha_expand_fp_classify (operands[0], operands[1], ALPHA_FPCLASS_INF);
+  DONE;
+})
+
+(define_expand "isnan<mode>2"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:FMODE 1 "register_operand")]
+  "TARGET_FP && !TARGET_FLOAT_VAX
+   && (alpha_fptm < ALPHA_FPTM_SU || flag_signaling_nans)"
+{
+  alpha_expand_fp_classify (operands[0], operands[1], ALPHA_FPCLASS_NAN);
+  DONE;
+})
+
+(define_expand "isnormal<mode>2"
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:FMODE 1 "register_operand")]
+  "TARGET_FP && !TARGET_FLOAT_VAX
+   && (alpha_fptm < ALPHA_FPTM_SU || flag_signaling_nans)"
+{
+  alpha_expand_fp_classify (operands[0], operands[1], ALPHA_FPCLASS_NORMAL);
+  DONE;
+})
+
 (define_expand "cstoretf4"
   [(use (match_operator:DI 1 "alpha_cbranch_operator"
          [(match_operand:TF 2 "general_operand")

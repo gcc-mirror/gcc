@@ -2806,6 +2806,77 @@ alpha_emit_setcc (rtx operands[], machine_mode cmp_mode)
 }
 
 
+/* Expand a floating-point classification of OP, storing 0 or 1 into
+   TARGET.  KIND selects the test performed.
+
+   The FP comparison instructions cannot be used for this.  Without
+   software completion -- which the compiler only arranges for -mieee,
+   i.e. alpha_fptm >= ALPHA_FPTM_SU -- a subnormal operand is either
+   flushed to zero, which makes it indistinguishable from a zero, or
+   traps with no completion information, which is fatal.  They also
+   raise an invalid-operation exception for a signaling NaN.  Examine
+   the encoding in an integer register instead.  */
+
+void
+alpha_expand_fp_classify (rtx target, rtx op, enum alpha_fp_class kind)
+{
+  machine_mode mode = GET_MODE (op);
+  const struct real_format *fmt = REAL_MODE_FORMAT (mode);
+  int width = GET_MODE_BITSIZE (as_a <scalar_float_mode> (mode));
+  int mant_bits = fmt->p - 1;
+  int exp_bits = width - mant_bits - 1;
+  HOST_WIDE_INT exp_max = (HOST_WIDE_INT_1 << exp_bits) - 1;
+  rtx bits, mag, exp, mant, res, tmp;
+
+  /* Move the raw encoding into an integer register, zero extended to
+     DImode so that the shifts below are independent of MODE.  */
+  bits = force_lowpart_subreg (int_mode_for_mode (mode).require (), op, mode);
+  bits = convert_to_mode (DImode, bits, 1);
+
+  /* Shifting out the sign bit leaves the magnitude left justified.  */
+  mag = expand_shift (LSHIFT_EXPR, DImode, bits, 65 - width, NULL_RTX, 1);
+  exp = expand_shift (RSHIFT_EXPR, DImode, mag, 64 - exp_bits, NULL_RTX, 1);
+
+  switch (kind)
+    {
+    case ALPHA_FPCLASS_FINITE:
+      /* The exponent field is not all ones.  */
+      res = emit_store_flag_force (NULL_RTX, NE, exp, GEN_INT (exp_max),
+				   DImode, 0, 1);
+      break;
+
+    case ALPHA_FPCLASS_NORMAL:
+      /* The exponent field is neither zero nor all ones, i.e.
+	 (unsigned) (exp - 1) < exp_max - 1.  */
+      tmp = expand_binop (DImode, sub_optab, exp, const1_rtx, NULL_RTX,
+			  1, OPTAB_LIB_WIDEN);
+      res = emit_store_flag_force (NULL_RTX, LTU, tmp, GEN_INT (exp_max - 1),
+				   DImode, 1, 1);
+      break;
+
+    case ALPHA_FPCLASS_INF:
+    case ALPHA_FPCLASS_NAN:
+      /* The exponent field is all ones, and the significand field is zero
+	 for an infinity, nonzero for a NaN.  */
+      mant = expand_shift (LSHIFT_EXPR, DImode, bits, 64 - mant_bits,
+			   NULL_RTX, 1);
+      tmp = emit_store_flag_force (NULL_RTX, EQ, exp, GEN_INT (exp_max),
+				   DImode, 0, 1);
+      res = emit_store_flag_force (NULL_RTX,
+				   kind == ALPHA_FPCLASS_NAN ? NE : EQ,
+				   mant, const0_rtx, DImode, 0, 1);
+      res = expand_binop (DImode, and_optab, tmp, res, NULL_RTX,
+			  1, OPTAB_LIB_WIDEN);
+      break;
+
+    default:
+      gcc_unreachable ();
+    }
+
+  emit_move_insn (target, gen_lowpart (GET_MODE (target), res));
+}
+
+
 /* Rewrite a comparison against zero CMP of the form
    (CODE (cc0) (const_int 0)) so it can be written validly in
    a conditional move (if_then_else CMP ...).

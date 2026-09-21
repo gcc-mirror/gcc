@@ -48,6 +48,17 @@ extern bool alpha_expand_mov_nobwx (machine_mode, rtx *);
 extern void alpha_expand_movmisalign (machine_mode, rtx *);
 extern void alpha_emit_floatuns (rtx[]);
 extern rtx alpha_emit_conditional_move (rtx, machine_mode);
+
+/* Selects the test performed by alpha_expand_fp_classify.  */
+enum alpha_fp_class
+{
+  ALPHA_FPCLASS_FINITE,
+  ALPHA_FPCLASS_INF,
+  ALPHA_FPCLASS_NAN,
+  ALPHA_FPCLASS_NORMAL
+};
+
+extern void alpha_expand_fp_classify (rtx, rtx, enum alpha_fp_class);
 extern void alpha_split_tmode_pair (rtx[], machine_mode, bool);
 extern void alpha_split_tfmode_frobsign (rtx[], rtx (*)(rtx, rtx, rtx));
 extern void alpha_expand_unaligned_load (rtx, rtx, HOST_WIDE_INT,
