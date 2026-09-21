@@ -1,4 +1,4 @@
-;; DFA scheduling description of the Synopsys RMX-100 cpu
+;; DFA scheduling description of the ARC-V RMX-100 cpu
 ;; for GNU C compiler
 ;; Copyright (C) 2026 Free Software Foundation, Inc.
 
@@ -51,9 +51,9 @@
        (eq_attr "type" "imul"))
   "arcv_rmx100_MPY")
 
-(define_insn_reservation "arcv_rmx100_load_insn" 3
+(define_insn_reservation "arcv_rmx100_load_insn" 1
   (and (eq_attr "tune" "arcv_rmx100")
-       (eq_attr "type" "load"))
+       (eq_attr "type" "load,fpload"))
   "arcv_rmx100_DMP")
 
 (define_insn_reservation "arcv_rmx100_store_insn" 1
@@ -62,11 +62,6 @@
   "arcv_rmx100_DMP")
 
 ;; FPU scheduling.  This is based on the "fast" unit for now.
-
-(define_insn_reservation "arcv_rmx100_fpload_insn" 3
-  (and (eq_attr "tune" "arcv_rmx100")
-       (eq_attr "type" "fpload"))
-  "arcv_rmx100_DMP")
 
 (define_insn_reservation "arcv_rmx100_farith_insn" 2
   (and (eq_attr "tune" "arcv_rmx100")
