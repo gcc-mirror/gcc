@@ -5370,23 +5370,20 @@ riscv_subword (rtx op, bool high_p)
   return simplify_gen_subreg (word_mode, op, mode, byte);
 }
 
-/* Same as riscv_subword, just only for OImode.  */
+/* Similar to riscv_subword, but gets sub-part PART_IDX of mode PART_MODE
+   from OP (of mode MODE).  */
 
 static rtx
-riscv_subpart (rtx op, bool high_p)
+riscv_subpart (rtx op, machine_mode mode, scalar_mode part_mode,
+	       poly_uint64 part_idx)
 {
-  unsigned int byte = (high_p != BYTES_BIG_ENDIAN) ? 16 : 0;
-  machine_mode mode = GET_MODE (op);
+  gcc_assert (multiple_p (GET_MODE_SIZE (mode), GET_MODE_SIZE (part_mode)));
 
-  if (mode == VOIDmode)
-    mode = OImode;
-
-  gcc_assert (mode == OImode);
-
+  poly_uint64 byte = part_idx * GET_MODE_SIZE (part_mode);
   if (MEM_P (op))
-    return adjust_address (op, TImode, byte);
+    return adjust_address (op, part_mode, byte);
 
-  return simplify_gen_subreg (TImode, op, mode, byte);
+  return simplify_gen_subreg (part_mode, op, mode, byte);
 }
 
 /* Return true if OP is a subreg that we cannot split into words or false
@@ -5418,14 +5415,12 @@ spill_subreg_move (rtx dest, rtx src)
   if (spill_src)
     {
       /* Get a stack slot of inner mode, move the inner reg to it and
-	 "view" in outer mode.  We can only get here when handling
-	 subreg-punned registers for which the subreg byte is 0.  */
+	 "view" in outer mode.  */
       rtx inner = SUBREG_REG (src);
-      gcc_assert (known_eq (SUBREG_BYTE (src), 0));
       machine_mode mode_inner = GET_MODE (inner);
       rtx mem = assign_stack_temp (mode_inner, GET_MODE_SIZE (mode_inner));
       emit_move_insn (mem, inner);
-      tmp_src = adjust_address (mem, GET_MODE (src), 0);
+      tmp_src = adjust_address (mem, GET_MODE (src), SUBREG_BYTE (src));
     }
 
   if (!spill_dest)
@@ -5438,10 +5433,9 @@ spill_subreg_move (rtx dest, rtx src)
      Then, view it as outer mode and move the source to it.
      Finally, store it in the inner subreg.  */
   rtx inner = SUBREG_REG (dest);
-  gcc_assert (known_eq (SUBREG_BYTE (dest), 0));
   machine_mode mode_inner = GET_MODE (inner);
   rtx mem = assign_stack_temp (mode_inner, GET_MODE_SIZE (mode_inner));
-  rtx mem_outer = adjust_address (mem, GET_MODE (dest), 0);
+  rtx mem_outer = adjust_address (mem, GET_MODE (dest), SUBREG_BYTE (dest));
   if (maybe_gt (GET_MODE_SIZE (mode_inner), GET_MODE_SIZE (GET_MODE (dest))))
     emit_move_insn (mem, inner);
   emit_move_insn (mem_outer, tmp_src);
@@ -5619,14 +5613,15 @@ riscv_split_doubleword_move (rtx dest, rtx src)
 void
 riscv_split_quadword_move (rtx dest, rtx src)
 {
-  gcc_assert (GET_MODE (dest) == OImode);
+  gcc_assert (GET_MODE (dest) == OImode || GET_MODE (dest) == TFmode);
   gcc_assert (!BYTES_BIG_ENDIAN);
 
   /* Nothing to do for highwords of paradoxical subregs.  */
   if (paradoxical_subreg_p (dest) || paradoxical_subreg_p (src))
     {
-      riscv_split_doubleword_move (riscv_subpart (dest, false),
-				   riscv_subpart (src, false));
+      gcc_assert (GET_MODE (dest) == OImode);
+      riscv_split_doubleword_move (riscv_subpart (dest, OImode, TImode, 0),
+				   riscv_subpart (src, OImode, TImode, 0));
       return;
     }
 
@@ -5638,22 +5633,43 @@ riscv_split_quadword_move (rtx dest, rtx src)
       return;
     }
 
-  /* Split into TImode hi/lo parts and hand off to
-     riscv_split_doubleword_move.  */
-  rtx src_lo = riscv_subpart (src, false);
-  rtx dest_lo = riscv_subpart (dest, false);
-  rtx src_hi = riscv_subpart (src, true);
-  rtx dest_hi = riscv_subpart (dest, true);
-
-  if (reg_overlap_mentioned_p (dest_lo, src))
+  if (GET_MODE (dest) == OImode)
     {
-      riscv_split_doubleword_move (dest_hi, src_hi);
-      riscv_split_doubleword_move (dest_lo, src_lo);
+      /* Split into TImode hi/lo parts and hand off to
+	 riscv_split_doubleword_move.  */
+      rtx src_lo = riscv_subpart (src, OImode, TImode, 0);
+      rtx dest_lo = riscv_subpart (dest, OImode, TImode, 0);
+      rtx src_hi = riscv_subpart (src, OImode, TImode, 1);
+      rtx dest_hi = riscv_subpart (dest, OImode, TImode, 1);
+
+      if (reg_overlap_mentioned_p (dest_lo, src))
+	{
+	  riscv_split_doubleword_move (dest_hi, src_hi);
+	  riscv_split_doubleword_move (dest_lo, src_lo);
+	}
+      else
+	{
+	  riscv_split_doubleword_move (dest_lo, src_lo);
+	  riscv_split_doubleword_move (dest_hi, src_hi);
+	}
     }
   else
     {
-      riscv_split_doubleword_move (dest_lo, src_lo);
-      riscv_split_doubleword_move (dest_hi, src_hi);
+      /* Once we are here, we can work with SRC and DEST by
+	 either building a subreg or adjusting the memory slot.  */
+      gcc_assert (GET_MODE (dest) == TFmode && !TARGET_64BIT);
+      rtx first_part = riscv_subpart (dest, TFmode, word_mode, 0);
+      bool overlap_p = REG_P (first_part)
+	&& reg_overlap_mentioned_p (first_part, src);
+
+      if (!overlap_p)
+	for (int i = 0; i < 4; i++)
+	  emit_move_insn (riscv_subpart (dest, TFmode, word_mode, i),
+			  riscv_subpart (src, TFmode, word_mode, i));
+      else
+	for (int i = 3; i >= 0; i--)
+	  emit_move_insn (riscv_subpart (dest, TFmode, word_mode, i),
+			  riscv_subpart (src, TFmode, word_mode, i));
     }
 }
 
@@ -13211,6 +13227,7 @@ static bool
 riscv_can_change_mode_class (machine_mode from, machine_mode to,
 			     reg_class_t rclass)
 {
+  /* ??? TODO prohibit scalar-vector pun e.g. (subreg:TI (reg:V4SI )).  */
   /* We have RVV VLS modes and VLA modes sharing same REG_CLASS.
      In 'cprop_hardreg' stage, we will try to do hard reg copy propagation
      between wider mode (FROM) and narrow mode (TO).

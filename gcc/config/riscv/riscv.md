@@ -2903,6 +2903,19 @@
   DONE;
 })
 
+;; And TFmode.
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "nonimmediate_operand")
+	(match_operand:TF 1 "general_operand"))]
+  ""
+{
+  if (TARGET_64BIT)
+    riscv_split_doubleword_move (operands[0], operands[1]);
+  else
+    riscv_split_quadword_move (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "cmpmemsi"
   [(parallel [(set (match_operand:SI 0)
                (compare:SI (match_operand:BLK 1)
