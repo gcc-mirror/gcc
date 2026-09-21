@@ -440,8 +440,8 @@ PACK_T *a68_absorb_union_pack (PACK_T * u);
 void a68_add_mode_to_pack (PACK_T **p, MOID_T *m, const char *text, NODE_T *node);
 void a68_add_mode_to_pack_end (PACK_T **p, MOID_T *m, const char *text, NODE_T *node);
 void a68_make_moid_list (MODULE_T *mod);
-
 void a68_renumber_moids (MOID_T *p, int n);
+void a68_resolve_equivalent (MOID_T **m);
 
 /* a68-moids-to-string.cc  */
 

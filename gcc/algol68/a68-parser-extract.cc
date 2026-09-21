@@ -341,9 +341,16 @@ a68_extract_revelation (NODE_T *q, const char *module, const char *filename,
       NCHAR_IN_LINE (n) = STRING (LINE (INFO (n)));
       TABLE (n) = TABLE (q);
 
+      /* It is necessary to resolve equivalences because the dummy declarer is
+	 not in the parse tree and therefore it is not handled by the call to
+	 computed_derived_modes in a68_make_moid_list.  */
+      a68_resolve_equivalent (&EXTRACT_MODE (e));
+
+      MOID (n) = EXTRACT_MODE (e);
       TAG_T *tag = a68_add_tag (TABLE (q), IDENTIFIER,
 				n, EXTRACT_MODE (e), NORMAL_IDENTIFIER);
       gcc_assert (tag != NO_TAG);
+
       EXTERN_SYMBOL (tag) = ggc_strdup (EXTRACT_SYMBOL (e));
       VARIABLE (tag) = VARIABLE (e);
       IN_PROC (tag) = IN_PROC (e);

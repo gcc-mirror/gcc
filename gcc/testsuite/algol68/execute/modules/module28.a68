@@ -1,0 +1,7 @@
+module Module28 =
+def
+    pub compl c = 10.0;
+    pub long compl lc = long 20.0;
+    pub long long compl llc = long long 30.0;
+    skip
+fed

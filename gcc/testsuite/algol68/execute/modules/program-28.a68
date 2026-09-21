@@ -1,0 +1,8 @@
+{ dg-modules "module28" }
+
+access Module28
+begin assert (IM c < 100.0 AND RE c > 0.0);
+      assert (IM lc < long 100.0 AND RE lc > long 0.0);
+      assert (IM llc < long long 100.0 AND RE llc > long long 0.0);
+      skip
+end

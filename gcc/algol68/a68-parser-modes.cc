@@ -87,8 +87,8 @@ a68_count_pack_members (PACK_T *u)
 
 /* Replace a mode by its equivalent mode.  */
 
-static void
-resolve_equivalent (MOID_T **m)
+void
+a68_resolve_equivalent (MOID_T **m)
 {
   while ((*m) != NO_MOID
 	 && EQUIVALENT ((*m)) != NO_MOID
@@ -888,15 +888,15 @@ is_well_formed (MOID_T *def, MOID_T *z, bool yin, bool yang, int video)
 static void
 resolve_eq_members (MOID_T *q)
 {
-  resolve_equivalent (&SUB (q));
-  resolve_equivalent (&DEFLEXED (q));
-  resolve_equivalent (&MULTIPLE (q));
-  resolve_equivalent (&NAME (q));
-  resolve_equivalent (&SLICE (q));
-  resolve_equivalent (&TRIM (q));
-  resolve_equivalent (&ROWED (q));
+  a68_resolve_equivalent (&SUB (q));
+  a68_resolve_equivalent (&DEFLEXED (q));
+  a68_resolve_equivalent (&MULTIPLE (q));
+  a68_resolve_equivalent (&NAME (q));
+  a68_resolve_equivalent (&SLICE (q));
+  a68_resolve_equivalent (&TRIM (q));
+  a68_resolve_equivalent (&ROWED (q));
   for (PACK_T *p = PACK (q); p != NO_PACK; FORWARD (p))
-    resolve_equivalent (&MOID (p));
+    a68_resolve_equivalent (&MOID (p));
 }
 
 /* Track equivalent tags.  */
@@ -907,7 +907,7 @@ resolve_eq_tags (TAG_T *z)
   for (; z != NO_TAG; FORWARD (z))
     {
       if (MOID (z) != NO_MOID)
-	resolve_equivalent (&MOID (z));
+	a68_resolve_equivalent (&MOID (z));
     }
 }
 
@@ -918,7 +918,7 @@ bind_modes (NODE_T *p)
 {
   for (; p != NO_NODE; FORWARD (p))
     {
-      resolve_equivalent (&MOID (p));
+      a68_resolve_equivalent (&MOID (p));
 
       if (SUB (p) != NO_NODE && a68_is_new_lexical_level (p))
 	{
@@ -927,7 +927,7 @@ bind_modes (NODE_T *p)
 	    {
 	      if (NODE (z) != NO_NODE)
 		{
-		  resolve_equivalent (&MOID (NEXT_NEXT (NODE (z))));
+		  a68_resolve_equivalent (&MOID (NEXT_NEXT (NODE (z))));
 		  MOID (z) = MOID (NEXT_NEXT (NODE (z)));
 		  MOID (NODE (z)) = MOID (z);
 		}
@@ -1181,11 +1181,11 @@ compute_derived_modes (MODULE_T *mod)
       resolve_eq_tags (INDICANTS (A68_STANDENV));
       resolve_eq_tags (IDENTIFIERS (A68_STANDENV));
       resolve_eq_tags (OPERATORS (A68_STANDENV));
-      resolve_equivalent (&M_STRING);
-      resolve_equivalent (&M_COMPLEX);
-      resolve_equivalent (&M_LONG_COMPLEX);
-      resolve_equivalent (&M_LONG_LONG_COMPLEX);
-      resolve_equivalent (&M_SEMA);
+      a68_resolve_equivalent (&M_STRING);
+      a68_resolve_equivalent (&M_COMPLEX);
+      a68_resolve_equivalent (&M_LONG_COMPLEX);
+      a68_resolve_equivalent (&M_LONG_LONG_COMPLEX);
+      a68_resolve_equivalent (&M_SEMA);
       /* UNION members could be resolved.  */
       absorb_unions (TOP_MOID (mod));
       contract_unions (TOP_MOID (mod));
