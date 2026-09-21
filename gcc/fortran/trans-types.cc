@@ -3167,8 +3167,9 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       if (class_coarray_flag || !c->backend_decl || c->attr.caf_token)
 	c->backend_decl = field;
 
-      if (c->attr.pointer && (c->attr.dimension || c->attr.codimension)
-	  && !(c->ts.type == BT_DERIVED && strcmp (c->name, "_data") == 0))
+      if ((c->attr.dimension || c->attr.codimension)
+	  && ((derived->attr.is_class && c->attr.class_pointer)
+	      || (!derived->attr.is_class && c->attr.pointer)))
 	GFC_DECL_PTR_ARRAY_P (c->backend_decl) = 1;
     }
 

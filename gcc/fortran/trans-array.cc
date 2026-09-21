@@ -484,8 +484,7 @@ is_pointer_array (tree expr)
 
   /* The field declaration is marked as a pointer array.  */
   if (TREE_CODE (expr) == COMPONENT_REF
-      && GFC_DECL_PTR_ARRAY_P (TREE_OPERAND (expr, 1))
-      && !GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 1))))
+      && GFC_DECL_PTR_ARRAY_P (TREE_OPERAND (expr, 1)))
     return true;
 
   return false;
@@ -501,7 +500,30 @@ static bool
 is_span_addressed_array (tree expr)
 {
   if (is_pointer_array (expr))
-    return true;
+    {
+      /* For classes, index arrays using the size from the virtual pointer if
+	 the array is contiguous.  Otherwise use the span.  */
+      if (TREE_CODE (expr) == COMPONENT_REF
+	  && GFC_CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (expr, 0)))
+	  && TYPE_LANG_SPECIFIC (TREE_TYPE (expr)))
+	{
+	  switch (GFC_TYPE_ARRAY_AKIND (TREE_TYPE (expr)))
+	    {
+	    case GFC_ARRAY_ASSUMED_SHAPE_CONT:
+	    case GFC_ARRAY_ASSUMED_RANK_CONT:
+	    case GFC_ARRAY_ASSUMED_RANK_ALLOCATABLE:
+	    case GFC_ARRAY_ASSUMED_RANK_POINTER_CONT:
+	    case GFC_ARRAY_ALLOCATABLE:
+	    case GFC_ARRAY_POINTER_CONT:
+	      return false;
+
+	    default:
+	      break;
+	    }
+	}
+
+      return true;
+    }
 
   if (VAR_P (expr)
       && GFC_DECL_PTR_ARRAY_P (expr)
