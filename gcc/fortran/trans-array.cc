@@ -4151,6 +4151,10 @@ build_array_ref (tree desc, tree offset, tree decl, tree vptr)
 	}
     }
 
+  if (decl == NULL_TREE
+      && is_span_addressed_array (desc))
+    decl = desc;
+
   tmp = gfc_conv_array_data (desc);
   tmp = build_fold_indirect_ref_loc (input_location, tmp);
   tmp = gfc_build_array_ref (tmp, offset, decl,
@@ -7736,8 +7740,7 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
 
   /* An array whose elements are spaced by the span needs pointer arithmetic
      to reference an element.  */
-  tree decl = is_span_addressed_array (desc) ? desc : NULL_TREE;
-  tmp = build_array_ref (desc, offset, decl, NULL);
+  tmp = build_array_ref (desc, offset, NULL, NULL);
 
   /* Offset the data pointer for pointer assignments from arrays with
      subreferences; e.g. my_integer => my_type(:)%integer_component.  */
