@@ -7738,10 +7738,6 @@ gfc_get_dataptr_offset (stmtblock_t *block, tree parm, tree desc, tree offset,
      to reference an element.  */
   tmp = build_array_ref (desc, offset, span_addressed_array (desc), NULL);
 
-  /* A spanned character element is referenced by a pointer.  */
-  if (POINTER_TYPE_P (TREE_TYPE (tmp)) && span_addressed_array (desc))
-    tmp = build_fold_indirect_ref_loc (input_location, tmp);
-
   /* Offset the data pointer for pointer assignments from arrays with
      subreferences; e.g. my_integer => my_type(:)%integer_component.  */
   if (subref)
