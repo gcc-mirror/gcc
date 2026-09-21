@@ -5290,33 +5290,44 @@ nonneg_scaled_offset_p (tree val, HOST_WIDE_INT step, tree off_type)
        bla (*p);
        p++;
      }
-   while (p < p_0 - a + b);
+   while (p < p_0 - (a + 1) + (b + 1));
 
-   Note that the bound has to be computed as p_0 - a + b and not from the
-   number of iterations as p_0 + (b - a): the latter is only equivalent if
-   b - a does not wrap, which is not the case when the loop rolls zero times.
+   Note that the bound has to be computed as p_0 - (a + 1) + (b + 1) and not
+   from the number of iterations as p_0 + (b - a): the latter is only
+   equivalent if b - a does not wrap, which is not the case when the loop
+   rolls zero times.
+
+   Note also that a + 1 must be used as the offset it is, i.e. converted to
+   the type of the offsets as a whole, and not rewritten into a and 1, since
+   it may wrap around in the type of a: this is precisely the case where the
+   loop rolls but b - a is not the number of iterations either.  Conversely
+   b + 1 must be computed in the type of the offsets, where it cannot wrap
+   around, since nothing constrains b when the loop rolls zero times.
 
    For this to preserve correctness, we need to know that the values compared
    in the transformed loop are ordered the same way as i and b are.  Since the
    comparison of the pointers is performed modulo the size of the address
    space, this needs a + 1 > b to be an unsigned comparison, and the offsets
-   a and b scaled by the step of the candidate to be non-negative and to not
-   overflow.  Then:
+   a, b, a + 1 and b + 1 scaled by the step of the candidate to be
+   non-negative and to not overflow.  Then:
 
-   1) if a + 1 <= b, then p_0 - a + b is the final value of p, hence there is no
+   1) if a + 1 <= b, then the loop rolls b - (a + 1) times, so that (b + 1)
+      - (a + 1) computed on the offsets is its number of iterations, and
+      p_0 - (a + 1) + (b + 1) is the final value of p, hence there is no
       overflow in computing it or the values of p, and the pointers increase
       monotonically together with i.
-   2) if a + 1 > b, then the loop exits at the first test, and b <= a implies
-      that p_0 - a + b lies between the valid addresses p_0 - a and p_0, so
-      the test indeed fails.  Here we also need to verify that the expression
-      p_0 - a does not overflow, which we prove using p_0 = base + a.  */
+   2) if a + 1 > b, then the loop exits at the first test and a + 1 does not
+      wrap around, so b <= a implies that p_0 - (a + 1) + (b + 1) = p_0 - a
+      + b lies between the valid addresses p_0 - a and p_0, so the test indeed
+      fails.  Here we also need to verify that the expression p_0 - a does not
+      overflow, which we prove using p_0 = base + a.  */
 
 static bool
 iv_elimination_compare_lt (struct ivopts_data *data, struct iv_use *use,
 			   struct iv_cand *cand, enum tree_code *comp_p,
 			   class tree_niter_desc *niter, tree *bound_p)
 {
-  tree cand_type, a, b, mbz, nit_type = TREE_TYPE (niter->niter);
+  tree cand_type, a, a1, b, b1, mbz, nit_type = TREE_TYPE (niter->niter);
   tree off_type, offset, bound;
   class aff_tree nit, tmpa, tmpb;
   enum tree_code comp;
@@ -5356,6 +5367,7 @@ iv_elimination_compare_lt (struct ivopts_data *data, struct iv_use *use,
       tree op0 = TREE_OPERAND (mbz, 0);
       if (TREE_CODE (op0) == PLUS_EXPR && integer_onep (TREE_OPERAND (op0, 1)))
 	{
+	  a1 = op0;
 	  a = TREE_OPERAND (op0, 0);
 	  b = TREE_OPERAND (mbz, 1);
 	}
@@ -5369,6 +5381,7 @@ iv_elimination_compare_lt (struct ivopts_data *data, struct iv_use *use,
       /* Handle b < a + 1.  */
       if (TREE_CODE (op1) == PLUS_EXPR && integer_onep (TREE_OPERAND (op1, 1)))
 	{
+	  a1 = op1;
 	  a = TREE_OPERAND (op1, 0);
 	  b = TREE_OPERAND (mbz, 0);
 	}
@@ -5402,11 +5415,21 @@ iv_elimination_compare_lt (struct ivopts_data *data, struct iv_use *use,
   if (!difference_cannot_overflow_p (data, cand->iv->base, offset))
     return false;
 
+  /* Convert A + 1 as a whole, since it may wrap around in the type of A, but
+     compute B + 1 in OFF_TYPE, where it cannot wrap around.  */
+  a1 = fold_convert (off_type, a1);
+  b1 = fold_build2 (PLUS_EXPR, off_type, fold_convert (off_type, b),
+		    build_one_cst (off_type));
+
   /* The candidate is compared as an unsigned quantity, so the offsets by
-     which A and B move it away from CAND->IV->BASE - CAND->IV->STEP * A have
-     to be ordered the same way as A and B themselves.  */
+     which A + 1 and B + 1 move it away from CAND->IV->BASE - CAND->IV->STEP
+     * (A + 1) have to be ordered the same way as A + 1 and B + 1 themselves.
+     The same is required of A and B, in terms of which the bound is
+     expressed when the loop rolls zero times.  */
   if (!nonneg_scaled_offset_p (a, step, off_type)
-      || !nonneg_scaled_offset_p (b, step, off_type))
+      || !nonneg_scaled_offset_p (b, step, off_type)
+      || !nonneg_scaled_offset_p (a1, step, off_type)
+      || !nonneg_scaled_offset_p (b1, step, off_type))
     return false;
 
   /* Determine the new comparison operator.  */
@@ -5418,15 +5441,14 @@ iv_elimination_compare_lt (struct ivopts_data *data, struct iv_use *use,
   else
     gcc_unreachable ();
 
-  /* Recompute the bound as CAND->IV->BASE - CAND->IV->STEP * A
-     + CAND->IV->STEP * B.  Deriving it from the number of iterations, as
-     cand_value_at does, is not correct here: B - A is computed in NIT_TYPE
+  /* Recompute the bound as CAND->IV->BASE - CAND->IV->STEP * (A + 1)
+     + CAND->IV->STEP * (B + 1).  Deriving it from the number of iterations,
+     as cand_value_at does, is not correct here: B - A is computed in NIT_TYPE
      and converting it to OFF_TYPE is not value preserving when the loop
      rolls zero times and B - A is thus negative.  */
   bound = fold_build2 (MINUS_EXPR, off_type,
-		       fold_build2 (MULT_EXPR, off_type, cand->iv->step,
-				    fold_convert (off_type, b)),
-		       offset);
+		       fold_build2 (MULT_EXPR, off_type, cand->iv->step, b1),
+		       fold_build2 (MULT_EXPR, off_type, cand->iv->step, a1));
   cand_type = TREE_TYPE (cand->iv->base);
   if (POINTER_TYPE_P (cand_type))
     *bound_p = fold_build_pointer_plus (cand->iv->base, bound);
