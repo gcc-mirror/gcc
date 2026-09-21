@@ -1,3 +1,120 @@
+2026-09-20  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/alpha/movmisalign-si.c: New test.
+	* gcc.target/alpha/movmisalign-si-bwx.c: New test.
+	* gcc.target/alpha/movmisalign-hi-bwx.c: New test.
+	* gcc.target/alpha/movmisalign-run.c: New test.
+
+2026-09-20  Samarth Tandale  <samarth.tandale@oss.qualcomm.com>
+
+	PR tree-optimization/125700
+	* gcc.dg/tree-ssa/pr125700.c: New test.
+	* gcc.dg/tree-ssa/pr125700-int-width.c: New test.
+	* gcc.dg/tree-ssa/pr125700-negative.c: New test.
+	* gcc.dg/tree-ssa/pr125700-range.c: New test.
+
+2026-09-20  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/127281
+	* g++.dg/contracts/cpp26/dcl.contract.res.p1-NT.C: Added runtime
+	testing, along with tests of NRVO and exceptions from local
+	variables.
+
+2026-09-20  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/127295
+	* g++.dg/contracts/cpp26/assertion-statement.C: Add use of
+	__contract_assert.
+	* g++.dg/contracts/cpp26/assertion-statement-errors.C: Test
+	attribute warning with __contract_assert.
+	* g++.dg/contracts/cpp26/no_contracts.C: Check keyword errors with
+	-fno-contracts.
+
+2026-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* lib/target-supports.exp (check_avx512_os_support_available):
+	Query the kernel for avx512 availability on Darwin.
+
+2026-09-20  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127423
+	* gcc.target/riscv/pr127423.c: New test.
+
+2026-09-20  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/127042
+	* gcc.target/arm/pr127042.c: New test.
+	* gcc.target/avr/mmcu/pr127042.c: New test.
+
+2026-09-20  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/tree-ssa/loop-im-shift-2.c: Expect every chain but a lone
+	shift's to move; check the masks.
+	* gcc.dg/tree-ssa/loop-im-shift-3.c: New test.
+	* gcc.dg/tree-ssa/loop-im-shift-4.c: New test.
+	* gcc.dg/tree-ssa/loop-im-shift-5.c: New test.
+	* gcc.dg/tree-ssa/loop-im-shift-6.c: New test.
+
+2026-09-20  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/126412
+	* gcc.target/arm/pr126412.c: New test.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/sat-trunc-signed-cmp-2.c: New test.
+	* gcc.dg/vect/vect-sat-trunc-complement-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-complement-1.c: Likewise.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/vect-sat-trunc-clamp-2.c: New test.
+	* gcc.target/aarch64/vect-sat-trunc-clamp-s-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-clamp-s-negative-1.c: Likewise.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/vect-sat-trunc-clamp-1.c: New test.
+	* gcc.target/aarch64/vect-sat-trunc-clamp-inner-use-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-clamp-multi-use-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-clamp-u-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-clamp-u-negative-1.c: Likewise.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/vect-sat-trunc-shift-sign-source-1.c: New test.
+	* gcc.target/aarch64/sat_s_val_ashr-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-shift-sign-source-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-shift-sign-source-negative-1.c:
+	Likewise.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sat_u_add_widen_lt-1.c: New test.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sat_s_clamp-1.c: New test.
+	* gcc.target/aarch64/sat_s_clamp-2.c: New test.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/vect-sat-trunc-range-precision-1.c: New test.
+	* gcc.target/aarch64/vect-sat-trunc-range-precision-1.c: Likewise.
+	* gcc.target/aarch64/vect-sat-trunc-range-precision-negative-1.c:
+	Likewise.
+
+2026-09-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/127474
+	* gcc.dg/torture/pr127474.c: New test.
+
+2026-09-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/error-bits-denotation-1.a68: Test for overflow
+	of bits and long bits.
+
 2026-09-19  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/tree-ssa/pr125734.c: xfail on hppa*-*-hpux*.

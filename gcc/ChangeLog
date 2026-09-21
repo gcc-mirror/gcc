@@ -1,3 +1,143 @@
+2026-09-20  Matt Turner  <mattst88@gmail.com>
+
+	* config/alpha/alpha.cc (alpha_expand_movmisalign): Derive the
+	access size from MODE rather than assuming 8 bytes.
+	* config/alpha/alpha.md (MISALIGN): New mode iterator.
+	(movmisalign<mode>): Use it in place of VEC.
+
+2026-09-20  Samarth Tandale  <samarth.tandale@oss.qualcomm.com>
+
+	PR tree-optimization/125700
+	* match.pd: Fold type-bound guarded min/max expressions.
+
+2026-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* common/config/i386/cpuinfo.h (darwin_get_kernel_bool): New.
+	(get_available_features): Query kernel for avx512 availability
+	on Darwin.
+
+2026-09-20  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127423
+	* ifcvt.cc (noce_get_alt_condition): Ignore debug instructions when
+	checking whether if_info->x is mentioned in the interval.
+
+2026-09-20  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* tree-ssa-math-opts.cc (build_long_mul_partial_operand): New
+	function.
+	(build_long_mul_partials): Use it.
+
+2026-09-20  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/127042
+	* tree-ssa-math-opts.cc (build_long_mul_partials): Emit zero
+	high-half partial products, and skip the high-half split and
+	the low-half mask, for an operand that provably fits the half
+	width.
+
+2026-09-20  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gimple-fold.h (gimple_needing_rewrite_undefined): Add a
+	SHIFT_COUNT parameter defaulting to false.
+	* gimple-fold.cc (gimple_needing_rewrite_undefined): Return true
+	for a shift or rotate whose count may be out of range, only when
+	SHIFT_COUNT.
+	(rewrite_to_defined_unconditional): Reduce such a count into range.
+	* tree-ssa-loop-im.cc (shift_needs_mask_p): New function.
+	(determine_max_movement): Cost a shift whose count would need
+	masking as cheap.
+	(movement_possibility_1): Require preserved execution for a
+	possibly out-of-range count only when the rewrite cannot reduce it
+	or the loop is optimized for size.
+
+2026-09-20  Filip Kastl  <fkastl@suse.cz>
+
+	* tree-switch-conversion.cc (bit_test_cluster::find_bit_tests):
+	State that the bit test algorithm is optimal.
+
+2026-09-20  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (`((VCE (a cmp b ? -1 : 0)) < 0) ? c : d`): Remove
+	`(a cmp b)` match part.
+
+2026-09-20  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (`CMP * a`): Use tcc_comparison directly.
+	(`(type)CMP * a`): Likewise.
+
+2026-09-20  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (maybe_cmp): Use tcc_comparison directly instead
+	of for loop.
+
+2026-09-20  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR rtl-optimization/126412
+	* fold-mem-offsets.cc (change_in_vec_p): Move before fold_groups.
+	(changes_map_t): New type.
+	(class fold_groups): New class.
+	(struct regno_changes): Remove.
+	(sort_pairs): Likewise.
+	(cancel_changes_for_group): Take the fold group to cancel.
+	(find_groups_to_cancel): Rename from find_keys_to_remove.
+	(update_insns): Group the changes by fold group instead of by the
+	register defined by the last fold insn of the def-chain.
+	(fold_mem_offsets_1): Use fold_groups and commit all groups in a
+	single change_insns call.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (unsigned_integer_narrow_clip): Add the complement
+	form.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (signed_integer_sat_trunc): Add the constant-clamp
+	form.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (integer_constant_clamp): New match.
+	(unsigned_integer_narrow_clip): Add the constant-clamp form.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (signed_integer_sat_val): Recognize an arithmetic
+	sign shift.
+	(signed_integer_sat_trunc): Use signed_integer_sat_val in the existing
+	form.  Recognize a shifted value with an equivalent pre-shift sign
+	source.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (unsigned_integer_sat_add): Accept a compare
+	against MAX - 1 in the widened form.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (signed_integer_sat_add): Add the two sided
+	clamp on a wider intermediate, in both nesting orders.
+	(signed_integer_sat_sub): Likewise.
+	* tree-ssa-math-opts.cc (match_unsigned_saturation_sub): Rename
+	to ...
+	(match_saturation_sub_with_assign): ... this, and ask the signed
+	predicate as well.
+	(math_opts_dom_walker::after_dom_children): Update the callers,
+	and call it for NOP_EXPR.
+
+2026-09-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match-sat-alu.pd (signed_integer_sat_trunc): Allow a wider lossless
+	unsigned range type.  Continue to require a narrowing result.  Construct
+	the expected constants at the range precision.
+
+2026-09-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/127474
+	* expmed.cc (expand_mult): Look through vector mode.
+
 2026-09-19  Jørgen Kvalsvik  <j@lambda.is>
 
 	* gcov.cc (add_path_counts): Read the right field paths.size.

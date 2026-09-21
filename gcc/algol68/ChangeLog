@@ -1,3 +1,8 @@
+2026-09-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-units.cc (a68_lower_denotation): strtoul can return
+	errno /= 0 in overflow.
+
 2026-09-19  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* ga68.vw: Typos fixed, section 8.0.1 added, consistent {x} style

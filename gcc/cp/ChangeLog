@@ -1,3 +1,18 @@
+2026-09-20  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/127281
+	* contracts.cc (maybe_apply_function_contracts): Override
+	current_retval_sentinel for the artificial block containing
+	contracts.
+
+2026-09-20  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/127295
+	* contracts.cc (grok_contract): Identify assertion statements
+	by keyword and not string comparison.
+	* parser.cc (cp_parser_contract_assert): Include keyword used
+	on token in diagnostics.
+
 2026-09-14  Joshua Berne  <berne@notadragon.com>
 
 	PR c++/127282

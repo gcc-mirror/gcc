@@ -1,3 +1,8 @@
+2026-09-20  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* fixincl.x: Regenerate.
+	* inclhack.def: Allow for math.h in architecture/<arch> in SDKs.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

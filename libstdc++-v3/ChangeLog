@@ -1,3 +1,9 @@
+2026-09-20  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/io.xml: New URL for Josuttis' "The C++ Standard
+	Library".
+	* doc/html/manual/streambufs.html: Regenerate.
+
 2026-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/unicode.h (std::__unicode::__v16_0_0): Rename inline
