@@ -36,8 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #define W_TYPE_SIZE HOST_BITS_PER_WIDE_INT
-/* Do not include longlong.h when compiler is clang-based. See PR61146.  */
-#if GCC_VERSION >= 3000 && (W_TYPE_SIZE == 32 || defined (__SIZEOF_INT128__)) && !defined(__clang__)
+#if GCC_VERSION >= 3000 && (W_TYPE_SIZE == 32 || defined (__SIZEOF_INT128__))
 typedef unsigned HOST_HALF_WIDE_INT UHWtype;
 typedef unsigned HOST_WIDE_INT UWtype;
 typedef unsigned int UQItype __attribute__ ((mode (QI)));
