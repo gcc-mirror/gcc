@@ -236,6 +236,7 @@ extern void gimple_range_tests ();
 extern void graphviz_cc_tests ();
 extern void hash_map_tests_cc_tests ();
 extern void hash_set_tests_cc_tests ();
+extern void ifcvt_cc_tests ();
 extern void input_cc_tests ();
 extern void ipa_modref_tree_cc_tests ();
 extern void json_cc_tests ();

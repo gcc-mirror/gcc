@@ -96,6 +96,7 @@ selftest::run_tests ()
   convert_cc_tests ();
   gimple_cc_tests ();
   rtl_tests_cc_tests ();
+  ifcvt_cc_tests ();
   read_rtl_function_cc_tests ();
   digraph_cc_tests ();
   tristate_cc_tests ();

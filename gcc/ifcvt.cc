@@ -45,7 +45,9 @@
 #include "dbgcnt.h"
 #include "shrink-wrap.h"
 #include "rtl-iter.h"
+#include "rtlanal.h"
 #include "ifcvt.h"
+#include "selftest.h"
 
 /* The number of instructions this pass may make run unconditionally in place
    of a branch.  The conditional-execution path uses it as the number of insns
@@ -815,47 +817,62 @@ noce_reversed_cond_code (noce_if_info *if_info)
   return code;
 }
 
-/* A register definition and its dependency level.  */
-
-struct noce_parallel_cost_node
-{
-  rtx dest;
-  unsigned int level;
-};
-
 /* Return true if INSN is a unit-cost register SET supported by the parallel
-   cost model.  Store the SET in *SET.  */
+   cost model when optimizing for SPEED_P.  */
 
 static bool
-noce_parallel_costed_insn_p (rtx_insn *insn, bool speed_p, rtx *set)
+noce_parallel_costed_insn_p (rtx_insn *insn, bool speed_p)
 {
-  *set = single_set (insn);
-  if (!*set)
+  rtx set = single_set (insn);
+  if (!set || multiple_sets (insn))
     return false;
 
-  rtx dest = SET_DEST (*set);
-  rtx src = SET_SRC (*set);
+  rtx dest = SET_DEST (set);
+  rtx pat = PATTERN (insn);
 
   return (REG_P (dest)
-	  && !contains_mem_rtx_p (src)
-	  && !side_effects_p (src)
-	  && !may_trap_p (src)
-	  && set_rtx_cost (*set, speed_p) == COSTS_N_INSNS (1));
+	  && !contains_mem_rtx_p (pat)
+	  && !side_effects_p (pat)
+	  && !may_trap_p (pat)
+	  && set_rtx_cost (set, speed_p) == COSTS_N_INSNS (1));
 }
 
-/* Return the dependency level for an instruction reading SRC.  A use of a
-   register defined at level N requires level N + 1.  */
+/* Map from a register number to the dependency level at which the current
+   value of the register is available.  */
 
-static unsigned int
-noce_dependency_level (const vec<noce_parallel_cost_node> &defs, rtx src)
+typedef hash_map<int_hash<unsigned int, -1U>, unsigned int> noce_ready_map;
+
+/* Store in *LEVEL the dependency level of the instruction that PROPERTIES
+   describes, using the register availability in READY, then update READY
+   for its definitions.  Return false, leaving READY unchanged, if PROPERTIES
+   has a non-register reference, otherwise return true.  The caller must
+   check that every register the instruction sets is set as a whole.  */
+
+static bool
+noce_dependency_level (noce_ready_map &ready,
+		       const vec_rtx_properties &properties,
+		       unsigned int *level)
 {
-  unsigned int level = 0;
+  *level = 0;
+  for (auto ref : properties.refs ())
+    {
+      if (!ref.is_reg ())
+	return false;
+      if (ref.is_read ())
+	if (unsigned int *time = ready.get (ref.regno))
+	  *level = MAX (*level, *time);
+    }
 
-  for (unsigned int i = 0; i < defs.length (); ++i)
-    if (reg_overlap_mentioned_p (defs[i].dest, src))
-      level = MAX (level, defs[i].level + 1);
-
-  return level;
+  /* Read all inputs before recording the definitions.  A SET of a register
+     defines every register number it covers, and a clobber produces no
+     value.  */
+  for (auto ref : properties.refs ())
+    if (ref.is_write () && !ref.is_clobber ())
+      {
+	gcc_checking_assert (!ref.in_subreg ());
+	ready.put (ref.regno, *level + 1);
+      }
+  return true;
 }
 
 /* Estimate the cost of SEQ using the target issue rate.  Unit-cost register
@@ -884,28 +901,29 @@ noce_parallel_seq_cost (rtx_insn *seq, bool speed_p)
 
   unsigned int issue_rate = MAX (targetm.sched.issue_rate (), 1);
 
-  /* Track prior definitions and instruction counts per dependency level.  */
-  auto_vec<noce_parallel_cost_node> defs;
+  /* Track register availability and instruction counts per level.  */
+  noce_ready_map ready;
   auto_vec<unsigned int> insns_per_level;
 
   for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
     {
-      rtx set;
-
       if (!NONDEBUG_INSN_P (insn))
 	continue;
 
-      if (!noce_parallel_costed_insn_p (insn, speed_p, &set))
+      if (!noce_parallel_costed_insn_p (insn, speed_p))
 	return serial_cost;
 
-      unsigned int level = noce_dependency_level (defs, SET_SRC (set));
+      vec_rtx_properties properties;
+      properties.add_insn (insn, false);
+      if (properties.has_asm)
+	return serial_cost;
 
+      unsigned int level;
+      if (!noce_dependency_level (ready, properties, &level))
+	return serial_cost;
       if (insns_per_level.length () <= level)
 	insns_per_level.safe_grow_cleared (level + 1, true);
       ++insns_per_level[level];
-
-      noce_parallel_cost_node node = { SET_DEST (set), level };
-      defs.safe_push (node);
     }
 
   unsigned int parallel_cost = 0;
@@ -7028,3 +7046,157 @@ make_pass_if_after_reload (gcc::context *ctxt)
   return new pass_rtl_ifcvt (ctxt, pass_data_if_after_reload,
 			     IFCVT_AFTER_RELOAD);
 }
+
+#if CHECKING_P
+
+namespace selftest {
+
+/* Return the dependency level of PAT and update READY.  */
+
+static unsigned int
+test_noce_level (noce_ready_map &ready, rtx pat)
+{
+  vec_rtx_properties properties;
+  properties.add_pattern (pat);
+  unsigned int level;
+  ASSERT_TRUE (noce_dependency_level (ready, properties, &level));
+  return level;
+}
+
+/* Check read-before-write handling and replacement of complete definitions.  */
+
+static void
+test_noce_pseudo_dependencies ()
+{
+  noce_ready_map ready;
+  rtx a = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 1);
+  rtx b = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 2);
+  rtx increment = gen_rtx_SET (a, gen_rtx_PLUS (SImode, a, const1_rtx));
+
+  ASSERT_EQ (0U, test_noce_level (ready, gen_rtx_SET (a, const0_rtx)));
+  ASSERT_EQ (1U, test_noce_level (ready, increment));
+  ASSERT_EQ (2U, test_noce_level (ready, increment));
+  ASSERT_EQ (0U, test_noce_level (ready, gen_rtx_SET (a, const0_rtx)));
+  ASSERT_EQ (1U, test_noce_level (ready, gen_rtx_SET (b, a)));
+}
+
+/* Check references outside the SET and rejection before updating READY.  */
+
+static void
+test_noce_parallel_references ()
+{
+  noce_ready_map ready;
+  rtx a = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 1);
+  rtx b = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 2);
+  rtx c = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 3);
+  ready.put (REGNO (a), 4);
+  ready.put (REGNO (c), 7);
+  rtx pat = gen_rtx_PARALLEL (VOIDmode,
+			      gen_rtvec (3, gen_rtx_SET (b, const0_rtx),
+					 gen_rtx_USE (VOIDmode, a),
+					 gen_rtx_CLOBBER (VOIDmode, c)));
+  ASSERT_EQ (4U, test_noce_level (ready, pat));
+  ASSERT_EQ (5U, *ready.get (REGNO (b)));
+  ASSERT_EQ (7U, *ready.get (REGNO (c)));
+
+  rtx addr = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 4);
+  vec_rtx_properties properties;
+  properties.add_pattern (gen_rtx_SET (b, gen_rtx_MEM (SImode, addr)));
+  unsigned int level;
+  ASSERT_FALSE (noce_dependency_level (ready, properties, &level));
+  ASSERT_EQ (5U, *ready.get (REGNO (b)));
+}
+
+/* Check that each register number of a hard register that spans several is
+   tracked on its own.  */
+
+static void
+test_noce_hard_register_dependencies ()
+{
+  for (unsigned int regno = 0; regno < FIRST_PSEUDO_REGISTER; ++regno)
+    {
+      if (!targetm.hard_regno_mode_ok (regno, TImode)
+	  || !targetm.hard_regno_mode_ok (regno, QImode))
+	continue;
+      rtx wide = gen_raw_REG (TImode, regno);
+      unsigned int end = END_REGNO (wide);
+      if (end > FIRST_PSEUDO_REGISTER || end <= regno + 1
+	  || (regno <= STACK_POINTER_REGNUM && STACK_POINTER_REGNUM < end))
+	continue;
+
+      noce_ready_map ready;
+      ready.put (end - 1, 4);
+      ASSERT_EQ (0U, test_noce_level (ready, gen_rtx_SET (wide, const0_rtx)));
+      for (unsigned int i = regno; i < end; ++i)
+	ASSERT_EQ (1U, *ready.get (i));
+      rtx dest = gen_raw_REG (TImode, LAST_VIRTUAL_REGISTER + 1);
+      ASSERT_EQ (1U, test_noce_level (ready, gen_rtx_SET (dest, wide)));
+
+      ready.put (end - 1, 6);
+      rtx narrow = gen_raw_REG (QImode, regno);
+      ASSERT_EQ (0U, test_noce_level (ready, gen_rtx_SET (narrow, const0_rtx)));
+      ASSERT_EQ (6U, test_noce_level (ready, gen_rtx_SET (dest, wide)));
+      return;
+    }
+}
+
+/* Check full-pattern rejection before target costing.  */
+
+static void
+test_noce_parallel_cost_gates ()
+{
+  rtx a = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 1);
+  rtx b = gen_raw_REG (SImode, LAST_VIRTUAL_REGISTER + 2);
+  rtx set = gen_rtx_SET (a, const0_rtx);
+  ASSERT_FALSE (side_effects_p (set));
+  rtx pat = gen_rtx_PARALLEL (VOIDmode,
+			      gen_rtvec (2, set, gen_rtx_USE (VOIDmode, b)));
+  if (set_rtx_cost (set, true) == COSTS_N_INSNS (1))
+    {
+      ASSERT_TRUE (noce_parallel_costed_insn_p (make_insn_raw (set), true));
+      ASSERT_TRUE (noce_parallel_costed_insn_p (make_insn_raw (pat), true));
+    }
+
+  /* A partial write is not a unit-cost set.  The lowpart of a narrower mode
+     does not sit at offset zero on a big-endian target, and a target need not
+     accept the subreg at all, so ask before building it.  */
+  poly_uint64 byte = subreg_lowpart_offset (QImode, SImode);
+  if (validate_subreg (QImode, SImode, a, byte))
+    {
+      rtx partial = gen_rtx_SUBREG (QImode, a, byte);
+      rtx_insn *part_insn = make_insn_raw (gen_rtx_SET (partial, const0_rtx));
+      ASSERT_FALSE (noce_parallel_costed_insn_p (part_insn, true));
+    }
+
+  pat = gen_rtx_PARALLEL (VOIDmode,
+			  gen_rtvec (2, set, gen_rtx_SET (b, const0_rtx)));
+  rtx_insn *insn = make_insn_raw (pat);
+  add_reg_note (insn, REG_UNUSED, b);
+  ASSERT_TRUE (multiple_sets (insn));
+  ASSERT_FALSE (noce_parallel_costed_insn_p (insn, true));
+
+  rtx addr = gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 3);
+  rtx mem_use = gen_rtx_USE (VOIDmode, gen_rtx_MEM (SImode, addr));
+  pat = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set, mem_use));
+  ASSERT_FALSE (noce_parallel_costed_insn_p (make_insn_raw (pat), true));
+
+  rtx vol = gen_rtx_UNSPEC_VOLATILE (SImode, gen_rtvec (1, b), 0);
+  pat = gen_rtx_PARALLEL (VOIDmode,
+			  gen_rtvec (2, set, gen_rtx_USE (VOIDmode, vol)));
+  ASSERT_FALSE (noce_parallel_costed_insn_p (make_insn_raw (pat), true));
+}
+
+/* Run the selftests in this file.  */
+
+void
+ifcvt_cc_tests ()
+{
+  test_noce_pseudo_dependencies ();
+  test_noce_parallel_references ();
+  test_noce_hard_register_dependencies ();
+  test_noce_parallel_cost_gates ();
+}
+
+} // namespace selftest
+
+#endif /* CHECKING_P.  */
