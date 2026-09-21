@@ -4697,7 +4697,7 @@
   [(set_attr "type" "fcmp<stype>")]
 )
 
-(define_insn "cmp_swp_<shift>_reg<mode>"
+(define_insn "@cmp_swp_<shift>_reg<mode>"
   [(set (reg:CC_SWP CC_REGNUM)
 	(compare:CC_SWP (ASHIFT:GPI
 			 (match_operand:GPI 0 "register_operand" "r")
@@ -7854,14 +7854,23 @@
 
 (define_expand "isinf<mode>2"
  [(match_operand:SI 0 "register_operand")
-  (match_operand:GPF 1 "register_operand")]
+  (match_operand:GPF_HF_BF 1 "register_operand")]
  "TARGET_FLOAT"
 {
-  rtx op = force_lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
-  rtx tmp = gen_reg_rtx (<V_INT_EQUIV>mode);
-  emit_move_insn (tmp, GEN_INT (HOST_WIDE_INT_M1U << (<mantissa_bits> + 1)));
+  scalar_int_mode imode = <V_INT_EQUIV>mode;
+  rtx op = force_lowpart_subreg (imode, operands[1], <MODE>mode);
+  /* There is no 16-bit arithmetic, so zero-extend the encoding of the
+     16-bit formats into a word and shift the sign bit out of the top of
+     that instead.  */
+  if (imode == HImode)
+    imode = SImode;
+  op = convert_to_mode (imode, op, 1);
+  int pad = GET_MODE_BITSIZE (imode) - GET_MODE_BITSIZE (<MODE>mode);
+  rtx tmp = gen_reg_rtx (imode);
+  emit_move_insn (tmp, gen_int_mode (HOST_WIDE_INT_M1U
+				     << (<mantissa_bits> + 1 + pad), imode));
   rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
-  emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
+  emit_insn (gen_cmp_swp_reg (ASHIFT, imode, op, GEN_INT (1 + pad), tmp));
   rtx cmp = gen_rtx_fmt_ee (EQ, SImode, cc_reg, const0_rtx);
   emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
   DONE;
@@ -7870,14 +7879,23 @@
 
 (define_expand "isfinite<mode>2"
  [(match_operand:SI 0 "register_operand")
-  (match_operand:GPF 1 "register_operand")]
+  (match_operand:GPF_HF_BF 1 "register_operand")]
  "TARGET_FLOAT"
 {
-  rtx op = force_lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
-  rtx tmp = gen_reg_rtx (<V_INT_EQUIV>mode);
-  emit_move_insn (tmp, GEN_INT (HOST_WIDE_INT_M1U << (<mantissa_bits> + 1)));
+  scalar_int_mode imode = <V_INT_EQUIV>mode;
+  rtx op = force_lowpart_subreg (imode, operands[1], <MODE>mode);
+  /* There is no 16-bit arithmetic, so zero-extend the encoding of the
+     16-bit formats into a word and shift the sign bit out of the top of
+     that instead.  */
+  if (imode == HImode)
+    imode = SImode;
+  op = convert_to_mode (imode, op, 1);
+  int pad = GET_MODE_BITSIZE (imode) - GET_MODE_BITSIZE (<MODE>mode);
+  rtx tmp = gen_reg_rtx (imode);
+  emit_move_insn (tmp, gen_int_mode (HOST_WIDE_INT_M1U
+				     << (<mantissa_bits> + 1 + pad), imode));
   rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
-  emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
+  emit_insn (gen_cmp_swp_reg (ASHIFT, imode, op, GEN_INT (1 + pad), tmp));
   rtx cmp = gen_rtx_fmt_ee (LTU, SImode, cc_reg, const0_rtx);
   emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
   DONE;
@@ -7886,14 +7904,23 @@
 
 (define_expand "isnan<mode>2"
  [(match_operand:SI 0 "register_operand")
-  (match_operand:GPF 1 "register_operand")]
+  (match_operand:GPF_HF_BF 1 "register_operand")]
  "TARGET_FLOAT && flag_signaling_nans"
 {
-  rtx op = force_lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
-  rtx tmp = gen_reg_rtx (<V_INT_EQUIV>mode);
-  emit_move_insn (tmp, GEN_INT (HOST_WIDE_INT_M1U << (<mantissa_bits> + 1)));
+  scalar_int_mode imode = <V_INT_EQUIV>mode;
+  rtx op = force_lowpart_subreg (imode, operands[1], <MODE>mode);
+  /* There is no 16-bit arithmetic, so zero-extend the encoding of the
+     16-bit formats into a word and shift the sign bit out of the top of
+     that instead.  */
+  if (imode == HImode)
+    imode = SImode;
+  op = convert_to_mode (imode, op, 1);
+  int pad = GET_MODE_BITSIZE (imode) - GET_MODE_BITSIZE (<MODE>mode);
+  rtx tmp = gen_reg_rtx (imode);
+  emit_move_insn (tmp, gen_int_mode (HOST_WIDE_INT_M1U
+				     << (<mantissa_bits> + 1 + pad), imode));
   rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
-  emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
+  emit_insn (gen_cmp_swp_reg (ASHIFT, imode, op, GEN_INT (1 + pad), tmp));
   rtx cmp = gen_rtx_fmt_ee (GTU, SImode, cc_reg, const0_rtx);
   emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
   DONE;
