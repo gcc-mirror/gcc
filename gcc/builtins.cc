@@ -10019,6 +10019,79 @@ fold_builtin_fpclassify (location_t loc, tree *args, int nargs)
   arg = args[5];
   type = TREE_TYPE (arg);
   mode = TYPE_MODE (type);
+
+  /* A target defines the classification optabs when FP comparisons are
+     unsuitable for classification, for instance because they raise
+     FE_INVALID for a signaling NaN (PR middle-end/66462).  Build on the
+     built-ins in that case rather than on comparisons.  */
+  if (optab_handler (isnan_optab, mode) != CODE_FOR_nothing
+      && optab_handler (isinf_optab, mode) != CODE_FOR_nothing
+      && optab_handler (isnormal_optab, mode) != CODE_FOR_nothing)
+    {
+      tree isnan_fn = builtin_decl_explicit (BUILT_IN_ISNAN);
+      tree isinf_fn = builtin_decl_explicit (BUILT_IN_ISINF);
+      tree isnormal_fn = builtin_decl_explicit (BUILT_IN_ISNORMAL);
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
+      tree itype = NULL_TREE;
+      scalar_int_mode imode;
+
+      /* The remaining zero versus subnormal test must not use a comparison
+	 either.  Testing the magnitude of the encoding for zero works
+	 whenever the format is binary, has a matching integer mode and
+	 stores its sign in the high bit of it; that excludes e.g. XFmode,
+	 whose encoding is narrower than its integer mode, and the composite
+	 formats, whose sign is not a single bit that can be shifted out.  */
+      if (fmt->b == 2
+	  && int_mode_for_mode (mode).exists (&imode)
+	  && fmt->signbit_rw == fmt->signbit_ro
+	  && fmt->signbit_rw == (int) GET_MODE_PRECISION (imode) - 1)
+	{
+	  itype = lang_hooks.types.type_for_mode (imode, 1);
+	  if (itype && TYPE_PRECISION (itype) != GET_MODE_PRECISION (imode))
+	    itype = NULL_TREE;
+	}
+
+      if (isnan_fn && isinf_fn && isnormal_fn && itype)
+	{
+	  arg = builtin_save_expr (arg);
+
+	  /* Shifting the sign bit out leaves zero iff ARG is +-0.  */
+	  tmp = fold_build1_loc (loc, VIEW_CONVERT_EXPR, itype, arg);
+	  tmp = fold_build2_loc (loc, LSHIFT_EXPR, itype, tmp,
+				 build_int_cst (integer_type_node, 1));
+	  tmp = fold_build2_loc (loc, EQ_EXPR, integer_type_node, tmp,
+				 build_int_cst (itype, 0));
+	  res = fold_build3_loc (loc, COND_EXPR, integer_type_node,
+				 tmp, fp_zero, fp_subnormal);
+
+	  tmp = build_call_expr_loc (loc, isnormal_fn, 1, arg);
+	  tmp = fold_build2_loc (loc, NE_EXPR, integer_type_node, tmp,
+				 integer_zero_node);
+	  res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
+				 fp_normal, res);
+
+	  if (tree_expr_maybe_infinite_p (arg))
+	    {
+	      tmp = build_call_expr_loc (loc, isinf_fn, 1, arg);
+	      tmp = fold_build2_loc (loc, NE_EXPR, integer_type_node, tmp,
+				     integer_zero_node);
+	      res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
+				     fp_infinite, res);
+	    }
+
+	  if (tree_expr_maybe_nan_p (arg))
+	    {
+	      tmp = build_call_expr_loc (loc, isnan_fn, 1, arg);
+	      tmp = fold_build2_loc (loc, NE_EXPR, integer_type_node, tmp,
+				     integer_zero_node);
+	      res = fold_build3_loc (loc, COND_EXPR, integer_type_node, tmp,
+				     fp_nan, res);
+	    }
+
+	  return res;
+	}
+    }
+
   arg = builtin_save_expr (fold_build1_loc (loc, ABS_EXPR, type, arg));
 
   /* fpclassify(x) ->
