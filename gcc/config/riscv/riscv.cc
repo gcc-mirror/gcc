@@ -10563,7 +10563,7 @@ riscv_expand_prologue (void)
       if (fmask)
 	{
 	  unsigned mask_fprs_push
-	    = get_multi_push_fpr_mask (multi_push_additional / UNITS_PER_WORD);
+	    = get_multi_push_fpr_mask (multi_push_additional / UNITS_PER_FP_REG);
 	  frame->fmask &= mask_fprs_push;
 	  riscv_for_each_saved_reg (remaining_size, riscv_save_reg, false,
 				    false, false);
@@ -10969,7 +10969,7 @@ riscv_expand_epilogue (int style)
       if (fmask)
 	{
 	  mask_fprs_push = get_multi_push_fpr_mask (frame->multi_push_adj_addi
-						    / UNITS_PER_WORD);
+						    / UNITS_PER_FP_REG);
 	  frame->fmask &= ~mask_fprs_push; /* FPRs not saved by cm.push  */
 	}
     }
