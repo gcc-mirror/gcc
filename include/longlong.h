@@ -1,9 +1,9 @@
 /* longlong.h -- definitions for mixed size 32/64 bit arithmetic.
    Copyright (C) 1991-2026 Free Software Foundation, Inc.
 
-   This file is part of the GNU C Library.
+   This file is part of GCC.
 
-   The GNU C Library is free software; you can redistribute it and/or
+   GCC is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
    version 2.1 of the License, or (at your option) any later version.
@@ -17,13 +17,13 @@
    other respects; for example, they cover modification of the file,
    and distribution when not linked into a combine executable.)
 
-   The GNU C Library is distributed in the hope that it will be useful,
+   GCC is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    Lesser General Public License for more details.
 
    You should have received a copy of the GNU Lesser General Public
-   License along with the GNU C Library; if not, see
+   License along with GCC; if not, see
    <http://www.gnu.org/licenses/>.  */
 
 /* You have to define the following before including this file:
@@ -52,7 +52,8 @@
 #define UDWtype		UDItype
 #endif
 
-/* Used in glibc only.  */
+/* Define attribute_hidden before including this file to give __clz_tab
+   hidden visibility.  */
 #ifndef attribute_hidden
 #define attribute_hidden
 #endif
