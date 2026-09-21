@@ -38,7 +38,7 @@ along with GCC; see the file COPYING3.  If not see
    the same assumption (and uses the same representation) and it is currently
    true.  */
 
-typedef char *locstr;
+typedef unsigned char *locstr;
 
 struct extraction
 {
@@ -76,27 +76,29 @@ public:
   auto_vec<locstr> oplocs;
   auto_vec<locstr> duplocs;
   auto_vec<int> dupnums;
-  auto_vec<char> pathstr;
+  auto_vec<unsigned char> pathstr;
 };
 
 /* Forward declarations.  */
 static void walk_rtx (md_rtx_info *, rtx, class accum_extract *);
 
-#define UPPER_OFFSET ('A' - ('z' - 'a' + 1))
+/* A path is a sequence of steps down a pattern, one byte each.  A step
+   down XEXP (x, INDEX) is 2 * INDEX + 1 and a step down XVECEXP (x, 0,
+   INDEX) is 2 * INDEX + 2, which leaves zero free to terminate a path and
+   MISSING_OPERAND_STEP free to mark an operand number that the pattern
+   does not use.  */
+#define ENCODE_PATH_STEP(INDEX, IS_VECTOR) (2 * (INDEX) + (IS_VECTOR) + 1)
+#define MISSING_OPERAND_STEP 255
+#define MAX_PATH_INDEX ((MISSING_OPERAND_STEP - 2) / 2)
 
-/* Convert integer OPERAND into a character - either into [a-zA-Z] for vector
-   operands or [0-9] for integer operands - and push onto the end of the path
-   in ACC.  */
+/* Encode the step to OPERAND, a vector element if IS_VECTOR, and push it
+   onto the end of the path in ACC.  */
 static void
 push_pathstr_operand (int operand, bool is_vector,
 		     class accum_extract *acc)
 {
-  if (is_vector && 'a' + operand > 'z')
-    acc->pathstr.safe_push (operand + UPPER_OFFSET);
-  else if (is_vector)
-    acc->pathstr.safe_push (operand + 'a');
-  else
-    acc->pathstr.safe_push (operand + '0');
+  gcc_assert (IN_RANGE (operand, 0, MAX_PATH_INDEX));
+  acc->pathstr.safe_push (ENCODE_PATH_STEP (operand, is_vector));
 }
 
 static void
@@ -138,9 +140,10 @@ gen_insn (md_rtx_info *info)
 
       for (j = 0; j < op_count; j++)
 	{
-	  char *a = p->oplocs[j];
-	  char *b = acc.oplocs[j];
-	  if (a != b && (!a || !b || strcmp (a, b)))
+	  locstr a = p->oplocs[j];
+	  locstr b = acc.oplocs[j];
+	  if (a != b
+	      && (!a || !b || strcmp ((const char *) a, (const char *) b)))
 	    break;
 	}
 
@@ -149,7 +152,8 @@ gen_insn (md_rtx_info *info)
 
       for (j = 0; j < dup_count; j++)
 	if (p->dupnums[j] != acc.dupnums[j]
-	    || strcmp (p->duplocs[j], acc.duplocs[j]))
+	    || strcmp ((const char *) p->duplocs[j],
+		       (const char *) acc.duplocs[j]))
 	  break;
 
       if (j != dup_count)
@@ -175,7 +179,7 @@ gen_insn (md_rtx_info *info)
   p->insns = link;
   link->next = 0;
 
-  p->oplocs = (char **)((char *)p + sizeof (struct extraction));
+  p->oplocs = (locstr *)((char *)p + sizeof (struct extraction));
   p->duplocs = p->oplocs + op_count;
   p->dupnums = (int *)(p->duplocs + dup_count);
 
@@ -191,7 +195,7 @@ gen_insn (md_rtx_info *info)
    containing define_* expression.  */
 static void
 VEC_safe_set_locstr (md_rtx_info *info, vec<locstr> *vp,
-		     unsigned int ix, char *str)
+		     unsigned int ix, locstr str)
 {
   if (ix < (*vp).length ())
     {
@@ -211,15 +215,16 @@ VEC_safe_set_locstr (md_rtx_info *info, vec<locstr> *vp,
     }
 }
 
-/* Another helper subroutine of walk_rtx: given a vec<char>, convert it
-   to a NUL-terminated string in malloc memory.  */
-static char *
-VEC_char_to_string (const vec<char> &v)
+/* Another helper subroutine of walk_rtx: given a vec of path steps,
+   convert it to a zero-terminated path in malloc memory.  No step is
+   zero, so the result can be handled as a string.  */
+static unsigned char *
+VEC_char_to_string (const vec<unsigned char> &v)
 {
   size_t n = v.length ();
-  char *s = XNEWVEC (char, n + 1);
+  unsigned char *s = XNEWVEC (unsigned char, n + 1);
   memcpy (s, v.address (), n);
-  s[n] = '\0';
+  s[n] = 0;
   return s;
 }
 
@@ -304,11 +309,7 @@ walk_rtx (md_rtx_info *info, rtx x, class accum_extract *acc)
     }
 }
 
-/* The character that marks an operand number that a pattern does not use.
-   It cannot clash with a path step, which is always a digit or a letter.  */
-#define MISSING_OPERAND_CHAR '!'
-
-/* The paths of all extraction methods, concatenated.  Each path is NUL
+/* The paths of all extraction methods, concatenated.  Each path is zero
    terminated; the paths of one method are adjacent, operands first and
    dups second.  */
 static struct obstack pathpool;
@@ -320,13 +321,13 @@ static vec<int> dupnums;
    to the path pool.  */
 
 static void
-add_path (const char *path)
+add_path (const unsigned char *path)
 {
   if (path)
-    obstack_grow (&pathpool, path, strlen (path));
+    obstack_grow (&pathpool, path, strlen ((const char *) path));
   else
-    obstack_1grow (&pathpool, MISSING_OPERAND_CHAR);
-  obstack_1grow (&pathpool, '\0');
+    obstack_1grow (&pathpool, MISSING_OPERAND_STEP);
+  obstack_1grow (&pathpool, 0);
 }
 
 static void
@@ -353,27 +354,6 @@ print_header (void)
 /* This variable is used as the \"location\" of any missing operand\n\
    whose numbers are skipped by a given pattern.  */\n\
 static rtx junk ATTRIBUTE_UNUSED;\n");
-}
-
-/* Print STR as a C string literal, broken into chunks so that no output
-   line gets excessively long.  */
-
-static void
-print_string_literal (const char *str, unsigned int len)
-{
-  printf ("  \"");
-  for (unsigned int i = 0; i < len; i++)
-    {
-      if (str[i] == '\0')
-	/* Spell the terminator with all three octal digits: the next
-	   character may be a digit, which a shorter escape would absorb.  */
-	printf ("\\000");
-      else
-	putchar (str[i]);
-      if ((i % 60) == 59 && i + 1 < len)
-	printf ("\"\n  \"");
-    }
-  printf ("\"");
 }
 
 /* Print the tables that drive insn_extract, and insn_extract itself.  */
@@ -428,20 +408,20 @@ print_extractions (void)
   path_start.safe_push (obstack_object_size (&pathpool));
 
   unsigned int pool_len = obstack_object_size (&pathpool);
-  const char *pool = XOBFINISH (&pathpool, const char *);
+  const unsigned char *pool = XOBFINISH (&pathpool, const unsigned char *);
 
   printf ("/* The paths that locate the operands and the dups of each\n"
 	  "   extraction method.  A path is a sequence of steps down the\n"
-	  "   pattern: a digit D selects XEXP (x, D - '0'), a lower-case\n"
-	  "   letter L selects XVECEXP (x, 0, L - 'a') and an upper-case\n"
-	  "   letter U selects XVECEXP (x, 0, U - %d).  An empty path denotes\n"
-	  "   the pattern itself and '%c' an operand number that the pattern\n"
-	  "   does not use.  */\n", UPPER_OFFSET, MISSING_OPERAND_CHAR);
-  printf ("#define UPPER_OFFSET %d\n", UPPER_OFFSET);
-  printf ("#define MISSING_OPERAND_CHAR '%c'\n\n", MISSING_OPERAND_CHAR);
-  printf ("static const char extract_paths[] =\n");
-  print_string_literal (pool, pool_len);
-  printf (";\n\n");
+	  "   pattern, one byte each: an even step S selects\n"
+	  "   XVECEXP (x, 0, S / 2 - 1) and an odd step S selects\n"
+	  "   XEXP (x, S / 2).  A zero terminates a path, an empty path\n"
+	  "   denotes the pattern itself, and %d marks an operand number\n"
+	  "   that the pattern does not use.  */\n", MISSING_OPERAND_STEP);
+  printf ("#define MISSING_OPERAND_STEP %d\n\n", MISSING_OPERAND_STEP);
+  printf ("static const unsigned char extract_paths[] = {");
+  for (i = 0; i < pool_len; i++)
+    printf ("%s%d,", (i % 20) == 0 ? "\n  " : " ", pool[i]);
+  printf ("\n};\n\n");
 
   printf ("static const unsigned char extract_dup_num[] = {");
   for (i = 0; i < dupnums.length (); i++)
@@ -469,21 +449,22 @@ print_extractions (void)
   printf ("\n};\n\n");
 
   puts ("\
-/* Follow one NUL-terminated path in extract_paths from *PP, starting at\n\
+/* Follow one zero-terminated path in extract_paths from *PP, starting at\n\
    the pattern *ROOT, and return the location it selects.  *PP is left\n\
    just after the path's terminator.  */\n\
 \n\
 static inline rtx *\n\
-follow_extract_path (const char **pp, rtx *root)\n{\n\
-  const char *p = *pp;\n\
+follow_extract_path (const unsigned char **pp, rtx *root)\n{\n\
+  const unsigned char *p = *pp;\n\
   rtx *loc = root;\n\
   for (; *p; p++)\n\
-    if (ISDIGIT (*p))\n\
-      loc = &XEXP (*loc, *p - '0');\n\
-    else if (ISLOWER (*p))\n\
-      loc = &XVECEXP (*loc, 0, *p - 'a');\n\
-    else\n\
-      loc = &XVECEXP (*loc, 0, *p - UPPER_OFFSET);\n\
+    {\n\
+      unsigned int step = *p - 1;\n\
+      if (step & 1)\n\
+	loc = &XVECEXP (*loc, 0, step >> 1);\n\
+      else\n\
+	loc = &XEXP (*loc, step >> 1);\n\
+    }\n\
   *pp = p + 1;\n\
   return loc;\n\
 }\n");
@@ -526,9 +507,9 @@ insn_extract (rtx_insn *insn)\n{\n\
     }\n\
 \n\
   const struct extract_method_d *m = &extract_methods[method];\n\
-  const char *p = extract_paths + m->paths;\n\
+  const unsigned char *p = extract_paths + m->paths;\n\
   for (unsigned int i = 0; i < m->n_operands; i++)\n\
-    if (*p == MISSING_OPERAND_CHAR)\n\
+    if (*p == MISSING_OPERAND_STEP)\n\
       {\n\
 	ro[i] = const0_rtx;\n\
 	ro_loc[i] = &junk;\n\
