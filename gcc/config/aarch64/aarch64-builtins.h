@@ -47,8 +47,6 @@ enum aarch64_type_qualifiers
   qualifier_poly = 1 << 8,
   /* Lane indices - must be in range, and flipped for bigendian.  */
   qualifier_lane_index = 1 << 9,
-  /* Lane indices for single lane structure loads and stores.  */
-  qualifier_struct_load_store_lane_index = 1 << 10,
   /* Lane indices selected in pairs. - must be in range, and flipped for
      bigendian.  */
   qualifier_lane_pair_index = 1 << 11,

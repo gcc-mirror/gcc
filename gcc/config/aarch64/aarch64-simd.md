@@ -8405,38 +8405,6 @@
   [(set_attr "type" "neon_fp_sqrt_<stype><q>")]
 )
 
-;; Patterns for vector struct loads and stores.
-
-(define_insn "@aarch64_simd_ld2r<vstruct_elt>"
-  [(set (match_operand:VSTRUCT_2QD 0 "register_operand" "=w")
-	(unspec:VSTRUCT_2QD [
-	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-          UNSPEC_LD2_DUP))]
-  "TARGET_SIMD"
-  "ld2r\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load2_all_lanes<q>")]
-)
-
-(define_insn "@aarch64_simd_ld3r<vstruct_elt>"
-  [(set (match_operand:VSTRUCT_3QD 0 "register_operand" "=w")
-	(unspec:VSTRUCT_3QD [
-	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-          UNSPEC_LD3_DUP))]
-  "TARGET_SIMD"
-  "ld3r\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load3_all_lanes<q>")]
-)
-
-(define_insn "@aarch64_simd_ld4r<vstruct_elt>"
-  [(set (match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
-	(unspec:VSTRUCT_4QD [
-	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-          UNSPEC_LD4_DUP))]
-  "TARGET_SIMD"
-  "ld4r\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load4_all_lanes<q>")]
-)
-
 ;; Patterns for rcpc3 vector lane loads and stores.
 
 (define_insn "aarch64_vec_stl1_lanes<mode>_lane<Vel>"
@@ -8859,17 +8827,23 @@
     FAIL;
 })
 
-(define_expand "aarch64_ld<nregs>r<vstruct_elt>"
-  [(match_operand:VSTRUCT_QD 0 "register_operand")
-   (match_operand:DI 1 "register_operand")]
+(define_insn "@aarch64_simd_load_dup<mode>"
+  [(set (match_operand:VSTRUCT_QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_QD [
+	  (match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
+	UNSPEC_LOAD_DUP))]
   "TARGET_SIMD"
-{
-  rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
-  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) * <nregs>);
-
-  emit_insn (gen_aarch64_simd_ld<nregs>r<vstruct_elt> (operands[0], mem));
-  DONE;
-})
+  {
+    switch (<nregs>)
+    {
+      case 2: return "ld2r\t{%S0.<Vtype> - %T0.<Vtype>}, %1";
+      case 3: return "ld3r\t{%S0.<Vtype> - %U0.<Vtype>}, %1";
+      case 4: return "ld4r\t{%S0.<Vtype> - %V0.<Vtype>}, %1";
+      default: gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "neon_load<nregs>_all_lanes<q>")]
+)
 
 (define_insn "@aarch64_simd_load_lane<mode>"
   [(set (match_operand:VSTRUCT_QD 0 "register_operand" "=w")

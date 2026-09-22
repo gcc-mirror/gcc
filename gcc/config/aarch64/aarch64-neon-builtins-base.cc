@@ -144,6 +144,22 @@ build_shift_right (tree type, tree val, tree amount)
 		      build_int_cst (TREE_TYPE (amount), bits - 1));
 }
 
+/* Get the number of vectors in TUPLE, which can either be a type or an
+   expression.
+   For convenience, a vector is treated as a single-element tuple.  */
+unsigned int
+tuple_len (tree tuple)
+{
+  tree type = TYPE_P (tuple) ? tuple : TREE_TYPE (tuple);
+
+  if (VECTOR_TYPE_P (type))
+    return 1;
+
+  auto field = tuple_type_field (type);
+  auto array_type = TREE_TYPE (field);
+  return int_cst_value (TYPE_MAX_VALUE (TYPE_DOMAIN (array_type))) + 1;
+}
+
 /* Build `TUPLE.val`.  */
 tree
 build_tuple_get_array (tree tuple)
@@ -1748,6 +1764,43 @@ public:
   gimple *fold (gimple_folder &) const override { return nullptr; }
 };
 
+struct gimple_load_dup : public gimple_function_base
+{
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_MEMORY;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    auto tuple_mode = e.result_mode ();
+    auto &ptr_arg = e.args[0];
+    ptr_arg = gen_rtx_MEM (BLKmode, e.convert_to_pmode (ptr_arg));
+    set_mem_size (ptr_arg, GET_MODE_SIZE (GET_MODE_INNER (tuple_mode))
+			     * targetm.hard_regno_nregs (V0_REGNUM, tuple_mode));
+    auto icode = code_for_aarch64_simd_load_dup (tuple_mode);
+    gcc_assert (icode != CODE_FOR_nothing);
+    return e.use_exact_insn (icode);
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto ptr = gimple_call_arg (f.call, 0);
+    auto ret_type = TREE_TYPE (f.lhs);
+    auto elem_type = this->memory_scalar_type (f);
+    auto vec_count = tuple_len (ret_type);
+
+    if (vec_count == 1)
+      {
+	/* lhs = dup (*ptr)  */
+	auto load = f.force_val (aarch64_dereference (ptr, elem_type));
+	return gimple_build_assign (f.lhs, build_vec_dup (ret_type, load));
+      }
+
+    return nullptr;
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1980,6 +2033,10 @@ NEON_FUNCTION (vst1_lane, vst1q_lane, vst2_lane, vst2q_lane,
 	       vst3_lane, vst3q_lane, vst4_lane, vst4q_lane, gimple_load_store_lane<false>,)
 NEON_FUNCTION (vldap1_lane, vldap1q_lane, gimple_load_store_lane_atomic<true>,)
 NEON_FUNCTION (vstl1_lane,  vstl1q_lane,  gimple_load_store_lane_atomic<false>,)
+
+// Load and broadcast
+NEON_FUNCTION (vld1_dup, vld1q_dup, vld2_dup, vld2q_dup,
+	       vld3_dup, vld3q_dup, vld4_dup, vld4q_dup, gimple_load_dup,)
 
 // AES
 NEON_FUNCTION (vaeseq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_aesev16qi>,)

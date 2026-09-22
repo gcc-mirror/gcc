@@ -30,10 +30,6 @@
 #define ENTRY_BINARY_TWO_LANES(N, T0, T1, T2, U, F)	\
   ENTRY (N, binary_two_lanes, T0, T1, T2, none, U, F)
 
-#undef ENTRY_LOAD
-#define ENTRY_LOAD(N, T0, T1, U)			\
-  ENTRY (N, load, T0, T1, none, none, U, LOAD)
-
 #undef ENTRY_TERNARY
 #define ENTRY_TERNARY(N, T0, T1, T2, T3, U, F)	\
   ENTRY (N, ternary, T0, T1, T2, T3, U, F)
@@ -138,24 +134,6 @@ ENTRY_FMA_FPM (vmlallbb, f32, UNSPEC_FMLALLBB_FP8)
 ENTRY_FMA_FPM (vmlallbt, f32, UNSPEC_FMLALLBT_FP8)
 ENTRY_FMA_FPM (vmlalltb, f32, UNSPEC_FMLALLTB_FP8)
 ENTRY_FMA_FPM (vmlalltt, f32, UNSPEC_FMLALLTT_FP8)
-#undef REQUIRED_EXTENSIONS
-
-// ld1
-#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_LOAD (vld1_dup_mf8, mf8, mf8_scalar_const_ptr, UNSPEC_DUP)
-ENTRY_LOAD (vld1q_dup_mf8, mf8q, mf8_scalar_const_ptr, UNSPEC_DUP)
-#undef REQUIRED_EXTENSIONS
-
-// ld<n>
-#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_LOAD (vld2_dup_mf8, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD2_DUP)
-ENTRY_LOAD (vld2q_dup_mf8, mf8qx2, mf8_scalar_const_ptr, UNSPEC_LD2_DUP)
-
-ENTRY_LOAD (vld3_dup_mf8, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD3_DUP)
-ENTRY_LOAD (vld3q_dup_mf8, mf8qx3, mf8_scalar_const_ptr, UNSPEC_LD3_DUP)
-
-ENTRY_LOAD (vld4_dup_mf8, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD4_DUP)
-ENTRY_LOAD (vld4q_dup_mf8, mf8qx4, mf8_scalar_const_ptr, UNSPEC_LD4_DUP)
 #undef REQUIRED_EXTENSIONS
 
 // mmla f16 mf8

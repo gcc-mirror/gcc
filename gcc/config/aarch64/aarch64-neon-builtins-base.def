@@ -628,6 +628,16 @@ DEF_NEON_FUNCTION (vld3_lane,  all_neon, ("D0x3,al,D0x3,ss32", lane<2>))
 DEF_NEON_FUNCTION (vld3q_lane, all_neon, ("Q0x3,al,Q0x3,ss32", lane<2>))
 DEF_NEON_FUNCTION (vld4_lane,  all_neon, ("D0x4,al,D0x4,ss32", lane<2>))
 DEF_NEON_FUNCTION (vld4q_lane, all_neon, ("Q0x4,al,Q0x4,ss32", lane<2>))
+
+// Load and broadcast
+DEF_NEON_FUNCTION (vld1_dup,  all_neon, ("D0,al"))
+DEF_NEON_FUNCTION (vld1q_dup, all_neon, ("Q0,al"))
+DEF_NEON_FUNCTION (vld2_dup,  all_neon, ("D0x2,al"))
+DEF_NEON_FUNCTION (vld2q_dup, all_neon, ("Q0x2,al"))
+DEF_NEON_FUNCTION (vld3_dup,  all_neon, ("D0x3,al"))
+DEF_NEON_FUNCTION (vld3q_dup, all_neon, ("Q0x3,al"))
+DEF_NEON_FUNCTION (vld4_dup,  all_neon, ("D0x4,al"))
+DEF_NEON_FUNCTION (vld4q_dup, all_neon, ("Q0x4,al"))
 #undef REQUIRED_EXTENSIONS
 
 // Stores
