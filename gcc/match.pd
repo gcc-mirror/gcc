@@ -8164,6 +8164,78 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        wide_int_to_tree (itype, wi::mul (i, wi::to_wide (@2)));
      })))))
 
+/* abs (X) >= X -> true.  */
+/* abs (X) < X -> false.  */
+(for cmp (ge lt)
+ (simplify
+  (cmp:c (abs @0) @0)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0)))
+   { constant_boolean_node (cmp == GE_EXPR, type); })))
+
+/* abs (X) >  X -> X < 0.  */
+/* abs (X) != X -> X < 0.  */
+/* abs (X) <= X -> X >= 0.  */
+/* abs (X) == X -> X >= 0.  */
+/* When signed overflow wraps, abs (INT_MIN) == INT_MIN.  */
+(for cmp (gt ne le eq)
+     out (lt lt ge ge)
+ (simplify
+  (cmp:c (abs @0) @0)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0)))
+   (switch
+    (if (TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+     (out @0 { build_zero_cst (TREE_TYPE (@0)); }))
+    (if (TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0)))
+     (with
+      {
+        tree utype = unsigned_type_for (TREE_TYPE (@0));
+        wide_int min = wi::min_value (TREE_TYPE (@0));
+      }
+      (if (cmp == LE_EXPR || cmp == EQ_EXPR)
+       (lt (convert:utype @0) { wide_int_to_tree (utype, min + 1); })
+       (gt (convert:utype @0) { wide_int_to_tree (utype, min); }))))))))
+
+/* (unsigned) abs (X) <= (unsigned) X -> true.  */
+/* (unsigned) abs (X) > (unsigned) X -> false.  */
+(for cmp (le gt)
+ (simplify
+  (cmp:c (convert@1 (abs @0)) (convert@2 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_UNSIGNED (TREE_TYPE (@1))
+       && types_match (TREE_TYPE (@1), TREE_TYPE (@2))
+       && element_precision (TREE_TYPE (@0)) == element_precision (TREE_TYPE (@1))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0)))
+   { constant_boolean_node (cmp == LE_EXPR, type); })))
+
+/* (unsigned) abs (X) <  (unsigned) X -> X < 0.  */
+/* (unsigned) abs (X) != (unsigned) X -> X < 0.  */
+/* (unsigned) abs (X) >= (unsigned) X -> X >= 0.  */
+/* (unsigned) abs (X) == (unsigned) X -> X >= 0.  */
+/* TODO: Add wrapping-overflow variants for these four cases.  */
+(for cmp (lt ne ge eq)
+     out (lt lt ge ge)
+ (simplify
+  (cmp:c (convert@1 (abs @0)) (convert@2 @0))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_UNSIGNED (TREE_TYPE (@1))
+       && types_match (TREE_TYPE (@1), TREE_TYPE (@2))
+       && element_precision (TREE_TYPE (@0)) == element_precision (TREE_TYPE (@1))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_SANITIZED (TREE_TYPE (@0))
+       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0)))
+   (out @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
 /* Simplify comparison of something with itself.  For IEEE
    floating-point, we can only do some of these simplifications.  */
 (for cmp (eq ge le)
