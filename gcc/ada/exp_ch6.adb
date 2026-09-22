@@ -7408,7 +7408,7 @@ package body Exp_Ch6 is
             --    [Constraint_Error when not (Exp in R_Type)]
 
             In_Test : constant Node_Id :=
-              Make_Not_In
+              Make_In
                 (Loc,
                  Duplicate_Subexpr (Exp),
                  New_Occurrence_Of (R_Type, Loc));
