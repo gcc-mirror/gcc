@@ -8145,9 +8145,9 @@ package body Sem_Ch13 is
 
                   --  check (B)
 
-                  if Type_Access_Level (Ent)
+                  if Static_Type_Access_Level (Ent)
                        > Static_Accessibility_Level
-                           (Pool, Object_Decl_Level)
+                           (Pool, Object_Decl_Level => True)
                   then
                      Error_Msg_N
                        ("subpool access type has deeper accessibility "

@@ -12208,8 +12208,8 @@ package body Sem_Attr is
                     and then
                       (Ekind (Btyp) = E_Access_Subprogram_Type
                         or else Is_Local_Anonymous_Access (Btyp))
-                    and then Subprogram_Access_Level (Entity (P)) >
-                               Type_Access_Level (Btyp)
+                    and then Static_Subprogram_Access_Level (Entity (P))
+                               > Static_Type_Access_Level (Btyp)
                   then
                      Error_Msg_F
                        ("subprogram must not be deeper than access type", P);
@@ -12266,8 +12266,8 @@ package body Sem_Attr is
                     and then Enclosing_Generic_Body (N) /=
                                Enclosing_Generic_Body
                                  (Enclosing_Generic_Unit (Entity (P)))
-                    and then Subprogram_Access_Level (Entity (P)) =
-                               Type_Access_Level (Btyp)
+                    and then Static_Subprogram_Access_Level (Entity (P)) =
+                               Static_Type_Access_Level (Btyp)
                     and then Ekind (Btyp) /=
                                E_Anonymous_Access_Subprogram_Type
                     and then Ekind (Btyp) /=
@@ -12667,8 +12667,8 @@ package body Sem_Attr is
                           or else No_Dynamic_Acc_Checks)
 
                        and then
-                         Static_Accessibility_Level (P, Zero_On_Dynamic_Level)
-                           > Deepest_Type_Access_Level (Btyp)
+                         Static_Accessibility_Level (P)
+                           > Static_Type_Access_Level (Btyp, Deepest => True)
                      then
                         Accessibility_Message (N, Typ);
                      end if;
@@ -12688,8 +12688,8 @@ package body Sem_Attr is
                --  anonymous_access_to_protected, there are no accessibility
                --  checks either. Omit check entirely for Unrestricted_Access.
 
-               elsif Static_Accessibility_Level (P, Zero_On_Dynamic_Level)
-                       > Deepest_Type_Access_Level (Btyp)
+               elsif Static_Accessibility_Level (P)
+                       > Static_Type_Access_Level (Btyp, Deepest => True)
                  and then Comes_From_Source (N)
                  and then Ekind (Btyp) = E_Access_Protected_Subprogram_Type
                  and then Attr_Id /= Attribute_Unrestricted_Access

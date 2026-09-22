@@ -5076,7 +5076,7 @@ package body Sem_Util is
            and then Is_Public_Operation
            and then Scope_Depth (Pref_Encl_Typ)
                       >= Static_Accessibility_Level
-                           (Context, Object_Decl_Level)
+                           (Context, Object_Decl_Level => True)
          then
             Error_Msg_N
               ("??possible unprotected access to protected data", Expr);

@@ -1830,8 +1830,8 @@ package body Exp_Ch6 is
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (
                         Extra_Accessibility (Entity (Lhs)), Loc),
-                      Expression => Make_Integer_Literal (Loc,
-                        Type_Access_Level (E_Formal))));
+                      Expression =>
+                        Dynamic_Type_Access_Level (E_Formal)));
 
                else
                   if Is_Access_Type (E_Formal)
@@ -2982,10 +2982,8 @@ package body Exp_Ch6 is
                     Make_Assignment_Statement (Loc,
                       Name       => New_Occurrence_Of (Lvl, Loc),
                       Expression =>
-                        Accessibility_Level
-                          (Expr            => Expression (Res_Assn),
-                           Level           => Dynamic_Level,
-                           Allow_Alt_Model => False)));
+                        Dynamic_Accessibility_Level
+                          (Expression (Res_Assn), Allow_Alt_Model => False)));
                end if;
             end Expand_Branch;
 
@@ -3415,10 +3413,8 @@ package body Exp_Ch6 is
                   end if;
 
                   Add_Extra_Actual
-                    (Expr => Accessibility_Level
-                               (Expr            => Parm_Ent,
-                                Level           => Dynamic_Level,
-                                Allow_Alt_Model => False),
+                    (Expr => Dynamic_Accessibility_Level
+                               (Parm_Ent, Allow_Alt_Model => False),
                      EF   => Extra_Accessibility (Formal));
                end;
 
@@ -3458,9 +3454,8 @@ package body Exp_Ch6 is
                   end if;
 
                   Add_Extra_Actual
-                    (Expr => Accessibility_Level
-                               (Expr            => Expression (Parent (Ent)),
-                                Level           => Dynamic_Level,
+                    (Expr => Dynamic_Accessibility_Level
+                               (Expression (Parent (Ent)),
                                 Allow_Alt_Model => False),
                      EF   => Extra_Accessibility (Formal));
                end;
@@ -3469,10 +3464,8 @@ package body Exp_Ch6 is
 
             else
                Add_Extra_Actual
-                 (Expr => Accessibility_Level
-                            (Expr            => Prev,
-                             Level           => Dynamic_Level,
-                             Allow_Alt_Model => False),
+                 (Expr => Dynamic_Accessibility_Level
+                            (Prev, Allow_Alt_Model => False),
                   EF   => Extra_Accessibility (Formal));
             end if;
          end if;
@@ -3515,10 +3508,8 @@ package body Exp_Ch6 is
             --  Otherwise get the level normally based on the call node
 
             else
-               Level := Accessibility_Level
-                          (Expr            => Call_Node,
-                           Level           => Dynamic_Level,
-                           Allow_Alt_Model => False);
+               Level := Dynamic_Accessibility_Level
+                          (Call_Node, Allow_Alt_Model => False);
             end if;
 
             --  It may be possible that we are re-expanding an already

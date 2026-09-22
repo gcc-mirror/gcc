@@ -7211,9 +7211,9 @@ package body Exp_Ch4 is
               and then Ekind (Ltyp) = E_Anonymous_Access_Type
             then
                declare
-                  New_N       : Node_Id;
-                  Param_Level : Node_Id;
-                  Type_Level  : Node_Id;
+                  New_N      : Node_Id;
+                  Expr_Level : Node_Id;
+                  Type_Level : Node_Id;
 
                begin
                   --  When restriction No_Dynamic_Accessibility_Checks is in
@@ -7224,9 +7224,9 @@ package body Exp_Ch4 is
                      Rewrite (N,
                        New_Occurrence_Of
                          (Boolean_Literals
-                            (Static_Accessibility_Level
-                               (Lop, Object_Decl_Level) <=
-                                        Type_Access_Level (Rtyp)),
+                           (Static_Accessibility_Level
+                             (Lop, Object_Decl_Level => True)
+                               <= Static_Type_Access_Level (Rtyp)),
                           Loc));
                      Analyze_And_Resolve (N, Restyp);
 
@@ -7239,28 +7239,23 @@ package body Exp_Ch4 is
                      Rewrite (N, New_Occurrence_Of (Standard_False, Loc));
                      Analyze_And_Resolve (N, Restyp);
 
-                  --  Apply an accessibility check if the access object has an
-                  --  associated access level and when the level of the type is
-                  --  less deep than the level of the access parameter. This
-                  --  can only occur for access parameters and stand-alone
-                  --  objects of an anonymous access type.
+                  --  Otherwise perform a dynamic accessibility test
 
                   else
-                     Param_Level := Accessibility_Level (Lop, Dynamic_Level);
-
-                     Type_Level :=
-                       Make_Integer_Literal (Loc, Type_Access_Level (Rtyp));
+                     Expr_Level := Dynamic_Accessibility_Level (Lop);
+                     Type_Level := Dynamic_Type_Access_Level (Rtyp);
 
                      --  Return True only if the accessibility level of the
                      --  expression entity is not deeper than the level of
-                     --  the tested access type.
+                     --  the tested access type (RM 4.5.2(30.3)).
 
                      Rewrite (N,
                        Make_And_Then (Loc,
                          Left_Opnd  => Relocate_Node (N),
-                         Right_Opnd => Make_Op_Le (Loc,
-                                         Left_Opnd  => Param_Level,
-                                         Right_Opnd => Type_Level)));
+                         Right_Opnd =>
+                           Make_Op_Le (Loc,
+                             Left_Opnd  => Expr_Level,
+                             Right_Opnd => Type_Level)));
 
                      Analyze_And_Resolve (N);
 

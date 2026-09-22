@@ -2789,7 +2789,7 @@ package body Exp_Ch3 is
              Selector_Name             =>
                Make_Identifier (Loc, Name_uInit_Level),
              Explicit_Actual_Parameter =>
-               Accessibility_Level (Id_Ref, Dynamic_Level)));
+               Dynamic_Accessibility_Level (Id_Ref)));
       end if;
 
       Append_To (Res,
@@ -3352,7 +3352,10 @@ package body Exp_Ch3 is
          --  Create an extra accessibility parameter to capture the level of
          --  the object being initialized when its type is a limited record.
 
-         if Is_Limited_Record (Rec_Type) then
+         if Is_Limited_Record (Rec_Type)
+           and then not Is_RTE (Rec_Type, RE_Activation_Chain)
+           and then not Is_RTE (Rec_Type, RE_Finalization_Master)
+         then
             Append_To (Parameters,
               Make_Parameter_Specification (Loc,
                 Defining_Identifier => Make_Defining_Identifier
@@ -8753,7 +8756,7 @@ package body Exp_Ch3 is
             --  General case
 
             else
-               Level_Expr := Accessibility_Level (Expr, Dynamic_Level);
+               Level_Expr := Dynamic_Accessibility_Level (Expr);
             end if;
 
             Level_Decl :=
@@ -10062,8 +10065,9 @@ package body Exp_Ch3 is
                   if Is_Part_Of_Formal
                     or else Is_Part_Of_Dereference
                     or else
-                      Type_Access_Level (Def_Id)
-                        > Static_Accessibility_Level (Pool, Object_Decl_Level)
+                      Static_Type_Access_Level (Def_Id)
+                        > Static_Accessibility_Level
+                            (Pool, Object_Decl_Level => True)
                   then
                      --  Generate:
                      --    if RSP'Class?(Def_Id) in RSPWS'Class then

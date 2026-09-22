@@ -1280,6 +1280,18 @@ package Einfo is
 --       and the Extra_Accessibility_Of_Result field of the function points to
 --       the entity for this extra formal.
 
+--    Extra_Accessibility_Of_Subprogram
+--       Defined in (non-generic) subprograms. Normally Empty, but if expansion
+--       is active, and the subprogram has either at least one formal parameter
+--       with Extra_Accessibility_Of_Object, or Extra_Accessibility_Of_Result,
+--       or its parent subprogram has Extra_Accessibility_Of_Subprogram, then
+--       a local constant of type Natural is created in the subprogram, whose
+--       initialization expression is the maximum of all the values mentioned
+--       above, and the Extra_Accessibility_Of_Subprogram points to the entity.
+--       It is used to offset the static nesting depth of the local entities,
+--       both objects, subprograms, and types declared in the subprogram, for
+--       the computation of the dynamic accessibility level of these entities.
+
 --    Extra_Constrained
 --       Defined in formal parameters in the non-generic case. Normally Empty,
 --       but if expansion is active and a parameter is one for which a dynamic
@@ -3725,14 +3737,6 @@ package Einfo is
 --       is also set (to the default value of zero = Default_Mechanism) in a
 --       subprogram body entity but not used in this context.
 
---    Minimum_Accessibility
---       Defined in formal parameters in the non-generic case. Normally Empty,
---       but if expansion is active, and a parameter exists for which a
---       dynamic accessibility check is required, then an object is generated
---       within such a subprogram representing the accessibility level of the
---       subprogram or the formal's Extra_Accessibility - whichever one is
---       lesser. The Minimum_Accessibility field then points to this object.
-
 --    Modulus [implementation base type only]
 --       Defined in modular types. Contains the modulus. For the binary case,
 --       this will be a power of 2, but if Non_Binary_Modulus is set, then it
@@ -5611,7 +5615,6 @@ package Einfo is
    --    Alias                                (non-generic case only)
    --    Renamed_Entity
    --    Renamed_Object $$$
-   --    Extra_Accessibility_Of_Result        (non-generic case only)
    --    Last_Entity
    --    Interface_Name
    --    Scope_Depth_Value
@@ -5625,6 +5628,8 @@ package Einfo is
    --    Overridden_Inherited_Operation
    --    Overridden_Operation
    --    Wrapped_Entity                       (non-generic case only)
+   --    Extra_Accessibility_Of_Result        (non-generic case only)
+   --    Extra_Accessibility_Of_Subprogram    (non-generic case only)
    --    Extra_Formals
    --    Extra_Formals_Known                  (non-generic case only)
    --    Anonymous_Collections                (non-generic case only)
@@ -5760,7 +5765,6 @@ package Einfo is
    --    Default_Value
    --    Protected_Formal
    --    Extra_Constrained
-   --    Minimum_Accessibility
    --    Last_Assignment                      (OUT, IN-OUT only)
    --    Activation_Record_Component
    --    Has_Initial_Value
@@ -5829,13 +5833,14 @@ package Einfo is
    --  E_Operator
    --    First_Entity
    --    Alias
-   --    Extra_Accessibility_Of_Result
    --    Last_Entity
    --    Subps_Index
    --    Overridden_Inherited_Operation
    --    Overridden_Operation
    --    Linker_Section_Pragma
    --    Contract
+   --    Extra_Accessibility_Of_Result
+   --    Extra_Accessibility_Of_Subprogram
    --    Extra_Formals
    --    Extra_Formals_Known
    --    Import_Pragma
@@ -5992,6 +5997,7 @@ package Einfo is
    --    Overridden_Inherited_Operation
    --    Overridden_Operation                 (never for init proc)
    --    Wrapped_Entity                       (non-generic case only)
+   --    Extra_Accessibility_Of_Subprogram    (non-generic case only)
    --    Extra_Formals
    --    Extra_Formals_Known                  (non-generic case only)
    --    Anonymous_Collections                (non-generic case only)

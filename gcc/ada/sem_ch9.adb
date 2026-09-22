@@ -2388,8 +2388,6 @@ package body Sem_Ch9 is
       It          : Interp;
       Enclosing   : Entity_Id;
       Target_Obj  : Node_Id := Empty;
-      Req_Scope   : Entity_Id;
-      Outer_Ent   : Entity_Id;
       Synch_Type  : Entity_Id := Empty;
 
    --  Start of processing for Analyze_Requeue
@@ -2456,38 +2454,18 @@ package body Sem_Ch9 is
          end;
       end if;
 
-      --  If an explicit target object is given then we have to check the
-      --  restrictions of 9.5.4(6).
+      --  If an explicit target object is specified then we have to check the
+      --  restrictions of 9.5.4(6), unless it is a parameter of the innermost
+      --  enclosing accept statement or entry body.
 
-      if Present (Target_Obj) then
-
-         --  Locate containing concurrent unit and determine enclosing entry
-         --  body or outermost enclosing accept statement within the unit.
-
-         Outer_Ent := Empty;
-         for S in reverse 0 .. Scope_Stack.Last loop
-            Req_Scope := Scope_Stack.Table (S).Entity;
-
-            exit when Is_Concurrent_Type (Req_Scope);
-
-            if Is_Entry (Req_Scope) then
-               Outer_Ent := Req_Scope;
-            end if;
-         end loop;
-
-         pragma Assert (Present (Outer_Ent));
-
-         --  Check that the accessibility level of the target object is not
-         --  greater or equal to the outermost enclosing accept statement (or
-         --  entry body) unless it is a parameter of the innermost enclosing
-         --  accept statement (or entry body).
-
-         if Static_Accessibility_Level (Target_Obj, Zero_On_Dynamic_Level)
-              >= Scope_Depth (Outer_Ent)
-           and then
-             (not Is_Entity_Name (Target_Obj)
-               or else not Is_Formal (Entity (Target_Obj))
-               or else Enclosing /= Scope (Entity (Target_Obj)))
+      if Present (Target_Obj)
+        and then
+          (not Is_Entity_Name (Target_Obj)
+            or else not Is_Formal (Entity (Target_Obj))
+            or else Enclosing /= Scope (Entity (Target_Obj)))
+      then
+         if Static_Accessibility_Level (Target_Obj)
+              > Static_Local_Access_Level (Enclosing)
          then
             Error_Msg_N
               ("target object has invalid level for requeue", Target_Obj);

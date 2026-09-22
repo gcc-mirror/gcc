@@ -2868,7 +2868,7 @@ package body Exp_Ch5 is
       --  when the Lhs denotes a container cursor and the Next function employs
       --  an access type, because this can never result in a dangling pointer.
 
-      if Is_Access_Type (Typ)
+      if Ekind (Typ) = E_Anonymous_Access_Type
         and then Is_Entity_Name (Lhs)
         and then Ekind (Entity (Lhs)) /= E_Loop_Parameter
         and then Present (Extra_Accessibility (Entity (Lhs)))
@@ -2879,9 +2879,9 @@ package body Exp_Ch5 is
                 Condition =>
                   Make_Op_Gt (Loc,
                     Left_Opnd  =>
-                      Accessibility_Level (Rhs, Dynamic_Level),
+                      Dynamic_Accessibility_Level (Rhs),
                     Right_Opnd =>
-                      Accessibility_Level (Lhs, Object_Decl_Level)),
+                      Dynamic_Type_Access_Level (Typ, Deepest => True)),
                 Reason => PE_Accessibility_Check_Failed));
          end if;
 
@@ -2890,10 +2890,7 @@ package body Exp_Ch5 is
              Name       =>
                New_Occurrence_Of (Extra_Accessibility (Entity (Lhs)), Loc),
              Expression =>
-               Accessibility_Level
-                 (Expr            => Rhs,
-                  Level           => Dynamic_Level,
-                  Allow_Alt_Model => False)));
+               Dynamic_Accessibility_Level (Rhs, Allow_Alt_Model => False)));
       end if;
 
       --  Case of assignment to a bit packed array element. If there is a

@@ -130,8 +130,7 @@ package Sem_Res is
 
    procedure Resolve_Entry (Entry_Name : Node_Id);
    --  Find name of entry being called, and resolve prefix of name with its
-   --  own type. For now we assume that the prefix cannot be overloaded and
-   --  the name of the entry plays no role in the resolution.
+   --  own type.
 
    procedure Resolve_Implicit_Dereference (P : Node_Id);
    --  Called when P is the prefix of an indexed component, or of a selected

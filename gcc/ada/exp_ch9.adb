@@ -9612,13 +9612,14 @@ package body Exp_Ch9 is
    --    end;
 
    procedure Expand_N_Requeue_Statement (N : Node_Id) is
-      Loc      : constant Source_Ptr := Sloc (N);
-      Conc_Typ : Entity_Id;
-      Concval  : Node_Id;
-      Ename    : Node_Id;
-      Enc_Subp : Entity_Id;
-      Index    : Node_Id;
-      Old_Typ  : Entity_Id;
+      Loc : constant Source_Ptr := Sloc (N);
+
+      Conc_Typ  : Entity_Id;
+      Concval   : Node_Id;
+      Ename     : Node_Id;
+      Enclosing : Entity_Id;
+      Index     : Node_Id;
+      Old_Typ   : Entity_Id;
 
       function Build_Dispatching_Call_Equivalent return Node_Id;
       --  Ada 2012 (AI05-0030): N denotes a dispatching requeue statement of
@@ -10128,38 +10129,40 @@ package body Exp_Ch9 is
       --  type. This will constitute our invocation source.
 
       Old_Typ := Current_Scope;
-      while Present (Old_Typ)
-        and then not Is_Concurrent_Type (Old_Typ)
-      loop
+      while Present (Old_Typ) and then not Is_Concurrent_Type (Old_Typ) loop
          Old_Typ := Scope (Old_Typ);
       end loop;
 
       --  Obtain the innermost enclosing callable construct for use in
-      --  generating a dynamic accessibility check.
+      --  generating a dynamic accessibility check per RM 9.5.4(7.2).
 
-      Enc_Subp := Current_Scope;
+      Enclosing := Empty;
+      for J in reverse 0 .. Scope_Stack.Last loop
+         Enclosing := Scope_Stack.Table (J).Entity;
+         exit when Is_Entry (Enclosing);
+      end loop;
 
-      if Ekind (Enc_Subp) not in Entry_Kind | Subprogram_Kind then
-         Enc_Subp := Enclosing_Subprogram (Enc_Subp);
+      --  Generate a dynamic accessibility check on the target object, unless
+      --  it is a parameter of the innermost enclosing callable construct.
+
+      if not Is_Entity_Name (Original_Node (Concval))
+        or else not Is_Formal (Entity (Original_Node (Concval)))
+        or else Enclosing /= Scope (Entity (Original_Node (Concval)))
+      then
+         Insert_Before_And_Analyze (N,
+           Make_Raise_Program_Error (Loc,
+             Condition =>
+               Make_Op_Gt (Loc,
+                 Left_Opnd  => Dynamic_Accessibility_Level (Name (N)),
+                 Right_Opnd => Dynamic_Local_Access_Level (Enclosing)),
+             Reason    => PE_Accessibility_Check_Failed));
       end if;
-
-      --  Generate a dynamic accessibility check on the target object
-
-      Insert_Before_And_Analyze (N,
-        Make_Raise_Program_Error (Loc,
-          Condition =>
-            Make_Op_Gt (Loc,
-              Left_Opnd  => Accessibility_Level (Name (N), Dynamic_Level),
-              Right_Opnd => Make_Integer_Literal (Loc,
-                              Scope_Depth (Enc_Subp))),
-          Reason    => PE_Accessibility_Check_Failed));
 
       --  Ada 2012 (AI05-0030): We have a dispatching requeue of the form
       --  Concval.Ename where the type of Concval is class-wide concurrent
       --  interface.
 
       if Ada_Version >= Ada_2012
-        and then Present (Concval)
         and then Is_Class_Wide_Type (Conc_Typ)
         and then Is_Concurrent_Interface (Conc_Typ)
       then

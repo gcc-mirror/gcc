@@ -411,7 +411,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Only_Out_Parameter, Flag),
         Sm (Linker_Section_Pragma, Node_Id),
         Sm (Mechanism, Mechanism_Type),
-        Sm (Minimum_Accessibility, Node_Id),
         Sm (Protected_Formal, Node_Id),
         Sm (Spec_Entity, Node_Id),
         Sm (Unset_Reference, Node_Id)));
@@ -977,6 +976,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Dynamic_Call_Helper, Node_Id),
         Sm (Elaboration_Entity, Node_Id),
         Sm (Elaboration_Entity_Required, Flag),
+        Sm (Extra_Accessibility_Of_Subprogram, Node_Id),
         Sm (First_Entity, Node_Id),
         Sm (Has_Expanded_Contract, Flag),
         Sm (Has_Nested_Subprogram, Flag),

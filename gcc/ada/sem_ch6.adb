@@ -1098,8 +1098,8 @@ package body Sem_Ch6 is
          if Ada_Version >= Ada_2005
            and then Is_Class_Wide_Type (R_Type)
          then
-            if Type_Access_Level (Etype (Expr)) >
-                 Subprogram_Access_Level (Scope_Id)
+            if Static_Type_Access_Level (Etype (Expr))
+                 > Static_Subprogram_Access_Level (Scope_Id)
             then
                Error_Msg_N
                  ("level of return expression type is deeper than "
@@ -1122,8 +1122,8 @@ package body Sem_Ch6 is
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Inherently_Limited_Type (Etype (Scope_Id))
-           and then Static_Accessibility_Level (Expr, Zero_On_Dynamic_Level)
-                      > Subprogram_Access_Level (Scope_Id)
+           and then Static_Accessibility_Level (Expr)
+                      > Static_Subprogram_Access_Level (Scope_Id)
          then
             --  Suppress the message in a generic, where the rewriting
             --  is irrelevant.
@@ -1158,8 +1158,8 @@ package body Sem_Ch6 is
       --  has no initializing expression.
 
       elsif Ada_Version > Ada_2005 and then Is_Class_Wide_Type (R_Type) then
-         if Type_Access_Level (Etype (Defining_Identifier (Obj_Decl))) >
-              Subprogram_Access_Level (Scope_Id)
+         if Static_Type_Access_Level (Etype (Defining_Identifier (Obj_Decl)))
+              > Static_Subprogram_Access_Level (Scope_Id)
          then
             Error_Msg_N
               ("level of return expression type is deeper than "
@@ -2398,7 +2398,7 @@ package body Sem_Ch6 is
       --  means that it is equivalent to Is_Expression_Function_Or_Completion
       --  invoked on Spec_Id declared below and not to Is_Expression_Function.
 
-      Acc_Objs   : List_Id   := No_List;
+      Acc_Decl   : Node_Id   := Empty;
       Desig_View : Entity_Id := Empty;
       Exch_Views : Elist_Id  := No_Elist;
       Prot_Typ   : Entity_Id := Empty;
@@ -2464,6 +2464,13 @@ package body Sem_Ch6 is
       --  Checks for a function with a no return statements, and also performs
       --  the warning checks implemented by Check_Returns.
 
+      procedure Compute_Extra_Accessibility
+        (Subp_Id         : Entity_Id;
+         Extra_Access_Id : Entity_Id);
+      --  Update the value of the Extra_Accessibility_Of_Subprogram object of
+      --  Subp_Id given the value of an Extra_Accessibility formal by taking
+      --  the maximum of the two values.
+
       function Disambiguate_Spec return Entity_Id;
       --  When a primitive is declared between the private view and the full
       --  view of a concurrent type which implements an interface, a special
@@ -2475,13 +2482,6 @@ package body Sem_Ch6 is
       --  incomplete types coming from a limited context and replace their
       --  limited views with the non-limited ones. Return the list of changes
       --  to be used to undo the transformation.
-
-      procedure Generate_Minimum_Accessibility
-        (Extra_Access : Entity_Id;
-         Related_Form : Entity_Id := Empty);
-      --  Generate a minimum accessibility object for a given extra
-      --  accessibility formal (Extra_Access) and its related formal if it
-      --  exists.
 
       function Is_Private_Concurrent_Primitive
         (Subp_Id : Entity_Id) return Boolean;
@@ -3052,6 +3052,41 @@ package body Sem_Ch6 is
          end if;
       end Check_Missing_Return;
 
+      ---------------------------------
+      -- Compute_Extra_Accessibility --
+      ---------------------------------
+
+      procedure Compute_Extra_Accessibility
+        (Subp_Id         : Entity_Id;
+         Extra_Access_Id : Entity_Id)
+      is
+         Acc_Id : Entity_Id;
+
+      begin
+         if Present (Extra_Accessibility_Of_Subprogram (Subp_Id)) then
+            Set_Expression (Acc_Decl,
+              Make_Attribute_Reference (Loc,
+                Prefix         => New_Occurrence_Of (Standard_Natural, Loc),
+                Attribute_Name => Name_Max,
+                Expressions    => New_List (
+                  New_Occurrence_Of (Extra_Access_Id, Loc),
+                  Expression (Acc_Decl))));
+
+         else
+            Acc_Id := Make_Temporary (Loc, 'A', Extra_Access_Id);
+            Acc_Decl :=
+              Make_Object_Declaration (Loc,
+               Defining_Identifier => Acc_Id,
+               Constant_Present    => True,
+               Object_Definition   =>
+                  New_Occurrence_Of (Standard_Natural, Loc),
+               Expression          =>
+                  New_Occurrence_Of (Extra_Access_Id, Loc));
+
+            Set_Extra_Accessibility_Of_Subprogram (Subp_Id, Acc_Id);
+         end if;
+      end Compute_Extra_Accessibility;
+
       -----------------------
       -- Disambiguate_Spec --
       -----------------------
@@ -3224,60 +3259,6 @@ package body Sem_Ch6 is
 
          return Result;
       end Exchange_Limited_Views;
-
-      ------------------------------------
-      -- Generate_Minimum_Accessibility --
-      ------------------------------------
-
-      procedure Generate_Minimum_Accessibility
-        (Extra_Access : Entity_Id;
-         Related_Form : Entity_Id := Empty)
-      is
-         Loc : constant Source_Ptr := Sloc (N);
-
-         Decl : Node_Id;
-         Form : Entity_Id;
-
-      begin
-         --  When no related formal exists then we are dealing with an
-         --  extra accessibility formal for a function result.
-
-         if No (Related_Form) then
-            Form := Extra_Access;
-         else
-            Form := Related_Form;
-         end if;
-
-         --  Declare the minimum accessibility object
-
-         Decl :=
-           Make_Object_Declaration (Loc,
-            Defining_Identifier => Make_Temporary (Loc, 'A', Extra_Access),
-            Object_Definition   => New_Occurrence_Of (Standard_Natural, Loc),
-            Expression          =>
-              Make_Attribute_Reference (Loc,
-                Prefix         => New_Occurrence_Of (Standard_Natural, Loc),
-                Attribute_Name => Name_Min,
-                Expressions    => New_List (
-                  Make_Integer_Literal (Loc, Scope_Depth (Body_Id)),
-                  New_Occurrence_Of (Extra_Access, Loc))));
-
-         --  Add the new local object to the Minimum_Acc_Obj to be later
-         --  prepended to the subprogram's list of declarations after we
-         --  are sure all expansion is done.
-
-         if Present (Acc_Objs) then
-            Prepend (Decl, Acc_Objs);
-         else
-            Acc_Objs := New_List (Decl);
-         end if;
-
-         --  Register the object and analyze it
-
-         Set_Minimum_Accessibility (Form, Defining_Identifier (Decl));
-
-         Analyze (Decl);
-      end Generate_Minimum_Accessibility;
 
       -------------------------------------
       -- Is_Private_Concurrent_Primitive --
@@ -4437,69 +4418,60 @@ package body Sem_Ch6 is
          end;
       end if;
 
-      --  Generate minimum accessibility local objects to correspond with
-      --  any extra formal added for anonymous access types. This new local
-      --  object can then be used instead of the formal in case it is used
-      --  in an actual to a call to a nested subprogram.
+      --  Compute the value of the Extra_Accessibility_Of_Subprogram object if
+      --  there are extra formals added for anonymous access types. This value
+      --  is used as an offset in the computation of the dynamic accessibility
+      --  level of the entities declared in the subprogram.
 
-      --  This method is used to supplement our "small integer model" for
-      --  accessibility check generation (for more information see
-      --  Accessibility_Level).
+      --  This method supplements our "small integer" model for the generation
+      --  of dynamic accessibility checks. It ensures that the local objects of
+      --  the subprogram have a deeper dynamic accessibility level than any of
+      --  the nonlocal objects the subprogram may access indirectly.
 
-      --  Because we allow accessibility values greater than our expected value
-      --  passing along the same extra accessibility formal as an actual
-      --  to a nested subprogram becomes a problem because high values mean
-      --  different things to the callee even though they are the same to the
-      --  caller. So, as described in the first section, we create a local
-      --  object representing the minimum of the accessibility level value that
-      --  is passed in and the accessibility level of the callee's parameter
-      --  and locals and use it in the case of a call to a nested subprogram.
-      --  This generated object is referred to as a "minimum accessibility
-      --  level."
-
-      --  Loop through formals if the subprogram is capable of accepting
-      --  a generated local object. If it is not, then it is also not
-      --  capable of having local subprograms meaning it would not need
-      --  a minimum accessibility level object anyway.
-
-      if Has_Declarations (N) then
+      if Nkind (N) = N_Subprogram_Body
+         and then not No_Dynamic_Accessibility_Checks_Enabled (N)
+         and then (No (Spec_Id)
+                    or else No (Extra_Accessibility_Of_Subprogram (Spec_Id)))
+      then
          declare
             Subp_Id : constant Entity_Id := Subprogram_Entity;
+            Par_Id  : constant Entity_Id := Enclosing_Subprogram (Subp_Id);
 
             Formal : Node_Id;
 
          begin
             Formal := First_Formal (Subp_Id);
             while Present (Formal) loop
-               --  Generate the minimum accessibility level object:
-
-               --    Ann : constant natural := natural'min(1, paramL);
-
-               if Present (Extra_Accessibility (Formal)) then
-                  Generate_Minimum_Accessibility
-                    (Extra_Accessibility (Formal), Formal);
+               if Present (Extra_Accessibility_Of_Object (Formal)) then
+                  Compute_Extra_Accessibility
+                    (Subp_Id, Extra_Accessibility_Of_Object (Formal));
                end if;
 
                Next_Formal (Formal);
             end loop;
 
-            --  Generate the minimum accessibility level object for the
-            --  function's Extra_Accessibility_Of_Result:
-
-            --    Ann : constant natural := natural'min (1, funcL);
-
             if Ekind (Subp_Id) = E_Function
               and then Present (Extra_Accessibility_Of_Result (Subp_Id))
             then
-               Generate_Minimum_Accessibility
-                 (Extra_Accessibility_Of_Result (Subp_Id));
+               Compute_Extra_Accessibility
+                 (Subp_Id, Extra_Accessibility_Of_Result (Subp_Id));
+            end if;
 
-               --  Replace the Extra_Accessibility_Of_Result with the new
-               --  minimum accessibility object.
+            --  For nested subprograms present in the source code, also take
+            --  into account the extra accessibility of the parent; generated
+            --  subprograms are not supposed to perform accessibility checks.
 
-               Set_Extra_Accessibility_Of_Result
-                 (Subp_Id, Minimum_Accessibility
-                             (Extra_Accessibility_Of_Result (Subp_Id)));
+            if Comes_From_Source (Subp_Id)
+              and then Present (Par_Id)
+              and then Present (Extra_Accessibility_Of_Subprogram (Par_Id))
+            then
+               Compute_Extra_Accessibility
+                 (Subp_Id, Extra_Accessibility_Of_Subprogram (Par_Id));
+            end if;
+
+            if Present (Acc_Decl) then
+               Prepend_To (Declarations (N), Acc_Decl);
+               Analyze (Acc_Decl);
             end if;
          end;
       end if;
@@ -4645,11 +4617,6 @@ package body Sem_Ch6 is
       Inspect_Deferred_Constant_Completion (Declarations (N));
       Analyze (Handled_Statement_Sequence (N));
 
-      --  Prepend the declaration of minimum accessibility objects to the list
-      --  of declarations after analysis of the statements and contracts.
-
-      Prepend_List (Acc_Objs, Declarations (N));
-
       --  Deal with end of scope processing for the body
 
       Process_End_Label
@@ -4683,23 +4650,6 @@ package body Sem_Ch6 is
                end loop;
             end;
          end if;
-      end if;
-
-      --  Restore the Extra_Accessibility_Of_Result object that was clobbered
-      --  earlier, so that the name of the local temporary does not leak.
-
-      if Has_Declarations (N) then
-         declare
-            Subp_Id : constant Entity_Id := Subprogram_Entity;
-
-         begin
-            if Ekind (Subp_Id) = E_Function
-              and then Present (Extra_Accessibility_Of_Result (Subp_Id))
-            then
-               Set_Extra_Accessibility_Of_Result (Subp_Id,
-                 Related_Expression (Extra_Accessibility_Of_Result (Subp_Id)));
-            end if;
-         end;
       end if;
 
       --  If we are compiling an entry wrapper, remove the enclosing
@@ -8902,14 +8852,14 @@ package body Sem_Ch6 is
       --  On access-to-subprogram types it is used to determine if the target
       --  function might return an object with tasks.
 
-      function Needs_Accessibility_Check_Extra
+      function Needs_Extra_Accessibility
         (E      : Entity_Id;
          Formal : Node_Id) return Boolean;
       --  Determines whether the given formal of E needs an extra formal for
       --  supporting accessibility checking. Returns True for both anonymous
       --  access formals and formals of named access types that are marked as
       --  controlling formals. The latter case can occur when the subprogram
-      --  Expand_Dispatching_Call creates a subprogram-type and substitutes
+      --  Expand_Dispatching_Call creates a subprogram type and substitutes
       --  the types of access-to-class-wide actuals for the anonymous access-
       --  to-specific-type of controlling formals.
 
@@ -9025,13 +8975,43 @@ package body Sem_Ch6 is
              (Collect_Ancestors_With_No_Task_Parts (Original));
       end Might_Need_BIP_Task_Actuals;
 
-      -------------------------------------
-      -- Needs_Accessibility_Check_Extra --
-      -------------------------------------
+      -------------------------------
+      -- Needs_Extra_Accessibility --
+      -------------------------------
 
-      function Needs_Accessibility_Check_Extra
+      function Needs_Extra_Accessibility
         (E      : Entity_Id;
-         Formal : Node_Id) return Boolean is
+         Formal : Node_Id) return Boolean
+      is
+         Btyp : constant Entity_Id := Base_Type (Etype (Formal));
+         --  Base_Type is applied to handle cases where there is a null
+         --  exclusion and the formal may have an access subtype.
+
+         function Profile_Needs_Extra (Typ : Entity_Id) return Boolean;
+         --  Return True if the profile of Typ, a subprogram type, needs at
+         --  least one extra formal for supporting accessibility checking.
+
+         -------------------------
+         -- Profile_Needs_Extra --
+         -------------------------
+
+         function Profile_Needs_Extra (Typ : Entity_Id) return Boolean is
+            Formal : Entity_Id;
+
+         begin
+            Formal := First_Formal (Typ);
+            while Present (Formal) loop
+               if Needs_Extra_Accessibility (E, Formal) then
+                  return True;
+               end if;
+
+               Next_Formal (Formal);
+            end loop;
+
+            return False;
+         end Profile_Needs_Extra;
+
+      --  Start of processing for Needs_Extra_Accessibility
 
       begin
          --  For dispatching operations this extra formal is not suppressed
@@ -9053,15 +9033,13 @@ package body Sem_Ch6 is
             return False;
          end if;
 
-         --  Base_Type is applied to handle cases where there is a null
-         --  exclusion the formal may have an access subtype.
-
          return
-           Ekind (Base_Type (Etype (Formal))) = E_Anonymous_Access_Type
-             or else
-               (Is_Controlling_Formal (Formal)
-                  and then Is_Access_Type (Base_Type (Etype (Formal))));
-      end Needs_Accessibility_Check_Extra;
+           Ekind (Btyp) = E_Anonymous_Access_Type
+             or else (Ekind (Btyp) = E_Anonymous_Access_Subprogram_Type
+                       and then Profile_Needs_Extra (Designated_Type (Btyp)))
+             or else (Is_Access_Type (Btyp)
+                       and then Is_Controlling_Formal (Formal));
+      end Needs_Extra_Accessibility;
 
       -----------------------
       -- Parent_Subprogram --
@@ -9554,7 +9532,7 @@ package body Sem_Ch6 is
 
          --  Extra formal for supporting accessibility checking
 
-         if Needs_Accessibility_Check_Extra (Ref_E, Formal) then
+         if Needs_Extra_Accessibility (Ref_E, Formal) then
             pragma Assert (No (Parent_Formal)
               or else Present (Extra_Accessibility (Parent_Formal)));
             pragma Assert (No (Alias_Formal)

@@ -2145,8 +2145,8 @@ package body Sem_Ch3 is
             --  (Ada 2005: AI-230): Accessibility check for anonymous
             --  components
 
-            if Type_Access_Level (Etype (E)) >
-               Deepest_Type_Access_Level (T)
+            if Static_Type_Access_Level (Etype (E))
+                 > Static_Type_Access_Level (T, Deepest => True)
             then
                Error_Msg_N
                  ("expression has deeper access level than component " &
@@ -9820,8 +9820,8 @@ package body Sem_Ch3 is
          if Ada_Version >= Ada_2005 then
             Check_Generic_Ancestors;
 
-         elsif Type_Access_Level (Derived_Type) /=
-                 Type_Access_Level (Parent_Type)
+         elsif Static_Type_Access_Level (Derived_Type)
+                 /= Static_Type_Access_Level (Parent_Type)
            and then not Is_Generic_Type (Derived_Type)
          then
             if Is_Controlled (Parent_Type) then
@@ -18422,8 +18422,9 @@ package body Sem_Ch3 is
                --  of the type.
 
                if Scope (Root_Class_Typ) /= Scope (T)
-                 and then Deepest_Type_Access_Level (Root_Class_Typ)
-                            < Deepest_Type_Access_Level (T)
+                 and then
+                   Static_Type_Access_Level (Root_Class_Typ, Deepest => True)
+                     < Static_Type_Access_Level (T)
                then
                   Error_Msg_NE
                     ("descendant of mutably tagged type cannot be deeper than"

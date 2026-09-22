@@ -3774,8 +3774,8 @@ package body Sem_Res is
             elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type
               and then Nkind (Parent (N)) = N_Type_Conversion
               and then
-                Type_Access_Level (Etype (Parent (N)))
-                  < Static_Accessibility_Level (A, Zero_On_Dynamic_Level)
+                Static_Type_Access_Level (Etype (Parent (N)))
+                  < Static_Accessibility_Level (A)
             then
                Accessibility_Error ("conversion");
 
@@ -3783,25 +3783,25 @@ package body Sem_Res is
               and then Nkind (Parent (N)) = N_Assignment_Statement
               and then
                 Static_Accessibility_Level
-                  (Name (Parent (N)), Object_Decl_Level)
-                    < Static_Accessibility_Level (A, Zero_On_Dynamic_Level)
+                  (Name (Parent (N)), Object_Decl_Level => True)
+                    < Static_Accessibility_Level (A)
             then
                Accessibility_Error ("assignment");
 
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
               and then
-                Type_Access_Level (Etype (Parent (Parent (N))))
-                  < Static_Accessibility_Level (A, Zero_On_Dynamic_Level)
+                Static_Type_Access_Level (Etype (Parent (Parent (N))))
+                  < Static_Accessibility_Level (A)
             then
                Accessibility_Error ("allocator");
 
             elsif In_Return_Value (N)
               and then Comes_From_Source (N)
               and then
-                Subprogram_Access_Level (Current_Subprogram)
+                Static_Subprogram_Access_Level (Current_Subprogram)
                   < Static_Accessibility_Level
-                      (A, Zero_On_Dynamic_Level, In_Return_Context => True)
+                      (A, In_Return_Context => True)
             then
                Accessibility_Error ("return");
             end if;
@@ -5410,8 +5410,8 @@ package body Sem_Res is
             return;
          end if;
 
-         if Static_Accessibility_Level (Disc_Exp, Zero_On_Dynamic_Level)
-              > Deepest_Type_Access_Level (Alloc_Typ)
+         if Static_Accessibility_Level (Disc_Exp)
+              > Static_Type_Access_Level (Alloc_Typ, Deepest => True)
          then
             Accessibility_Error (Disc_Exp);
          end if;
@@ -5653,8 +5653,9 @@ package body Sem_Res is
             elsif Has_Anonymous_Access_Discriminant (Subtyp)
               and then Is_Entity_Name (Exp)
               and then Is_Formal (Entity (Exp))
-              and then Static_Accessibility_Level (Exp, Zero_On_Dynamic_Level)
-                         > Deepest_Type_Access_Level (Typ)
+              and then
+                Static_Accessibility_Level (Exp)
+                  > Static_Type_Access_Level (Typ, Deepest => True)
             then
                Accessibility_Error (Exp);
             end if;
@@ -5733,8 +5734,8 @@ package body Sem_Res is
                Exp_Typ := Entity (E);
             end if;
 
-            if Type_Access_Level (Exp_Typ) >
-                 Deepest_Type_Access_Level (Typ)
+            if Static_Type_Access_Level (Exp_Typ)
+                 > Static_Type_Access_Level (Typ, Deepest => True)
             then
                if In_Instance_Body then
                   Error_Msg_Warn := SPARK_Mode /= On;
@@ -8322,11 +8323,14 @@ package body Sem_Res is
             end if;
          end loop;
 
+         --  Mark it now since it is going to be rewritten below
+
+         Set_Analyzed (E_Name);
+
          New_N :=
            Make_Selected_Component (Loc,
-             Prefix => New_Occurrence_Of (S, Loc),
-             Selector_Name =>
-               New_Occurrence_Of (Entity (E_Name), Loc));
+             Prefix        => New_Occurrence_Of (S, Loc),
+             Selector_Name => New_Occurrence_Of (Entity (E_Name), Loc));
          Rewrite (E_Name, New_N);
          Analyze (E_Name);
 
@@ -13860,8 +13864,8 @@ package body Sem_Res is
               and then
                 Subtypes_Statically_Match (Target_Comp_Type, Opnd_Comp_Type)
             then
-               if Type_Access_Level (Target_Type) <
-                    Deepest_Type_Access_Level (Opnd_Type)
+               if Static_Type_Access_Level (Opnd_Type)
+                    > Static_Type_Access_Level (Target_Type, Deepest => True)
                then
                   if In_Instance_Body then
                      Error_Msg_Warn := SPARK_Mode /= On;
@@ -14122,8 +14126,9 @@ package body Sem_Res is
                   --  not deeper than the target type.
 
                   if No_Dynamic_Accessibility_Checks_Enabled (N) then
-                     if Type_Access_Level (Opnd_Type)
-                          > Deepest_Type_Access_Level (Target_Type)
+                     if Static_Type_Access_Level (Opnd_Type)
+                          > Static_Type_Access_Level
+                              (Target_Type, Deepest => True)
                      then
                         Report_Error_N
                           ("operand has deeper level than target", Operand,
@@ -14172,8 +14177,9 @@ package body Sem_Res is
                   --  statically less deep than that of the target type, else
                   --  implicit conversion is disallowed (by RM12-8.6(27.1/3)).
 
-                  elsif Type_Access_Level (Opnd_Type) >
-                    Deepest_Type_Access_Level (Target_Type)
+                  elsif Static_Type_Access_Level (Opnd_Type)
+                          > Static_Type_Access_Level
+                              (Target_Type, Deepest => True)
                   then
                      Report_Error_N
                        ("implicit conversion of anonymous access value "
@@ -14197,8 +14203,8 @@ package body Sem_Res is
             --  master of the call to the enclosing function (RM 3.10.2(10.3),
             --  3.10.2(14) and 3.10.2(10.5)).
 
-            elsif Type_Access_Level (Opnd_Type, Assoc_Ent => Operand)
-                    > Deepest_Type_Access_Level (Target_Type)
+            elsif Static_Type_Access_Level (Opnd_Type, Assoc_Node => Operand)
+                    > Static_Type_Access_Level (Target_Type, Deepest => True)
               and then (Nkind (Associated_Node_For_Itype (Opnd_Type))
                           /= N_Function_Specification
                         or else Ekind (Target_Type) in Anonymous_Access_Kind
@@ -14249,9 +14255,9 @@ package body Sem_Res is
                --  checking the prefix of the operand for this case).
 
                if Nkind (Operand) = N_Selected_Component
-                 and then Static_Accessibility_Level
-                            (Operand, Zero_On_Dynamic_Level)
-                              > Deepest_Type_Access_Level (Target_Type)
+                 and then
+                   Static_Accessibility_Level (Operand)
+                     > Static_Type_Access_Level (Target_Type, Deepest => True)
                then
                   --  In an instance, this is a run-time check, but one we know
                   --  will fail, so generate an appropriate warning.
@@ -14432,8 +14438,8 @@ package body Sem_Res is
 
          --  Check the static accessibility rule of 4.6(20)
 
-         if Type_Access_Level (Opnd_Type) >
-            Deepest_Type_Access_Level (Target_Type)
+         if Static_Type_Access_Level (Opnd_Type)
+              > Static_Type_Access_Level (Target_Type, Deepest => True)
          then
             Report_Error_N
               ("operand type has deeper accessibility level than target",

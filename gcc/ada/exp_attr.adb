@@ -2613,9 +2613,7 @@ package body Exp_Attr is
                                 Name_Req => True)),
                           Attribute_Name => Name_Tag)),
 
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc,
-                        Type_Access_Level (P_Type))),
+                    Right_Opnd => Dynamic_Type_Access_Level (P_Type)),
 
                 Then_Statements =>
                   New_List (Make_Raise_Statement (Loc,

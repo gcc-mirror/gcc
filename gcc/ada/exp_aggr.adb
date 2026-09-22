@@ -23,6 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
+with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
@@ -4059,19 +4060,6 @@ package body Exp_Aggr is
 
          function Check_Component (C : Node_Id; T_OK : Boolean) return Boolean
          is
-
-            function SDO (E : Entity_Id) return Uint;
-            --  Return the Scope Depth Of the enclosing dynamic scope of E
-
-            ---------
-            -- SDO --
-            ---------
-
-            function SDO (E : Entity_Id) return Uint is
-            begin
-               return Scope_Depth (Enclosing_Dynamic_Scope (E));
-            end SDO;
-
          --  Start of processing for Check_Component
 
          begin
@@ -4149,7 +4137,9 @@ package body Exp_Aggr is
                         else
                            return Present (Target_Object)
                              and then not Is_Formal (Target_Object)
-                             and then SDO (Target_Object) >= SDO (Entity (C));
+                             and then
+                               Static_Local_Access_Level (Target_Object)
+                                 >= Static_Local_Access_Level (Entity (C));
                         end if;
 
                      --  For a renamed object, recurse
@@ -4175,7 +4165,9 @@ package body Exp_Aggr is
                      --  is at most as deeply nested as the component.
 
                      elsif Is_Formal (Target_Object) then
-                        return SDO (Target_Object) <= SDO (Entity (C));
+                        return
+                          Static_Local_Access_Level (Target_Object)
+                            <= Static_Local_Access_Level (Entity (C));
 
                      --  For distinct stand-alone objects, this is safe
 

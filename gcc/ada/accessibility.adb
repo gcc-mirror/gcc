@@ -57,6 +57,61 @@ package body Accessibility is
    -- Local Subprograms --
    -----------------------
 
+   type Accessibility_Level_Kind is
+     (Dynamic_Level, Object_Decl_Level, Library_On_Dynamic_Level);
+   --  Captures the different modes in which an accessibility level could be
+   --  obtained for a given expression. In the context of Accessibility_Level
+   --  function, Accessibility_Level_Kind signals what type of accessibility
+   --  level to obtain.
+
+   --  When Level is Dynamic_Level, a defining identifier associated with an
+   --  access parameter, an access result, or an SAOOAAAT, may be returned,
+   --  and an N_Integer_Literal node in the other cases.
+
+   --  When Level is Object_Decl_Level, an N_Integer_Literal node whose value
+   --  is the level of the declaration of the object is returned in the cases
+   --  where Dynamic_Level returns a defining identifier; in the other cases,
+   --  an N_Integer_Literal is returned like for Dynamic_Level.
+
+   --  When Level is Library_On_Dynamic_Level, an N_Integer_Literal node whose
+   --  value is the library level is returned in the cases where Dynamic_Level
+   --  returns a defining identifier; in the other cases, an N_Integer_Literal
+   --  is returned like for Dynamic_Level.
+
+   --  Note that this description does not take into account the dynamic offset
+   --  that may be added by Offset_Static_Level to an N_Integer_Literal node.
+
+   type Level_T (S : Boolean := False) is record
+      case S is
+         when False => N : Node_Id;
+         when True  => U : Uint;
+      end case;
+   end record;
+   --  Result type of the Accessibility_Level function, containing an integer
+   --  when Static is True or a Node_Id when Static is False, see below.
+
+   function Accessibility_Level
+     (Expr              : Node_Id;
+      Level             : Accessibility_Level_Kind;
+      Static            : Boolean := False;
+      In_Return_Context : Boolean := False;
+      Allow_Alt_Model   : Boolean := True) return Level_T;
+   --  Centralized accessibility level calculation routine for finding the
+   --  accessibility level of a given expression Expr. Level is as described
+   --  above. If Static is True, the result is meant for a static context,
+   --  typically a static accessibility check, and is therefore required to
+   --  be a value of Level_T (S => True) subtype (which also means that Level
+   --  cannot be Dynamic_Level in this case); otherwise, the result is meant
+   --  for a dynamic context, typically a dynamic accessibility check, and is
+   --  therefore required to be a value of Level_T (S => False) subtype.
+
+   --  In_Return_Context forces the level calculation to be carried out as if
+   --  Expr was an operative constituent of a return value; when it is False,
+   --  the function computes whether that is the case or not.
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
+
    procedure Apply_Accessibility_Check_For_Anonymous_Return
      (Exp         : Node_Id;
       Func        : Entity_Id;
@@ -85,6 +140,43 @@ package body Accessibility is
    --  checks that the accessibility level of each entity designated by an
    --  access discriminant of the result is not deeper than the level of the
    --  master of the call. Exp is an expression being returned from Func.
+
+   function Offset_Static_Level
+     (Level : Uint;
+      Subp  : Entity_Id) return Node_Id;
+   --  Apply the offset scheme described for Extra_Accessibility_Of_Subprogram
+   --  in Einfo to Level computed within subprogram Subp and return the result.
+   --  The function must be invoked for every static accessibility level, both
+   --  for entities declared, and master constructs present, within Subp, when
+   --  a dynamic accessibility level is being computed.
+
+   type Type_Level_T is record
+      Base   : Entity_Id;
+      Offset : Uint;
+   end record;
+   --  Result type of the Type_Access_Level function, containing a base entity
+   --  and an offset. The static accessibility level of the input type is the
+   --  sum of the local accessibility level of the base entity and the offset.
+
+   function Type_Access_Level
+     (Typ             : Entity_Id;
+      Deepest         : Boolean := False;
+      Allow_Alt_Model : Boolean := True;
+      Assoc_Node      : Node_Id := Empty) return Type_Level_T;
+   --  Return the static accessibility level of Typ
+
+   --  When Deepest is True, and Typ is that of an Ada 2012 stand-alone object
+   --  of an anonymous access type, then return the static accessibility level
+   --  of the declaration of the object instead of the library level; moreover,
+   --  in the case of a descendant of a generic formal type, return Int'Last
+   --  instead of the library level.
+
+   --  The Allow_Alt_Model parameter allows the alternative level calculation
+   --  under the restriction No_Dynamic_Accessibility_Checks to be performed.
+
+   --  Assoc_Node allows for the optional specification of a node associated
+   --  with Typ. This is used only for anonymous access types where the context
+   --  matters in interpreting Typ's level.
 
    ---------------------------
    -- Accessibility_Message --
@@ -146,53 +238,76 @@ package body Accessibility is
    function Accessibility_Level
      (Expr              : Node_Id;
       Level             : Accessibility_Level_Kind;
+      Static            : Boolean := False;
       In_Return_Context : Boolean := False;
-      Allow_Alt_Model   : Boolean := True) return Node_Id
+      Allow_Alt_Model   : Boolean := True) return Level_T
    is
       Loc : constant Source_Ptr := Sloc (Expr);
 
-      function Accessibility_Level (Expr : Node_Id) return Node_Id is
+      function Accessibility_Level (Expr : Node_Id) return Level_T is
         (Accessibility_Level
-          (Expr, Level, In_Return_Context, Allow_Alt_Model));
+          (Expr, Level, Static, In_Return_Context, Allow_Alt_Model));
       --  Renaming of the enclosing function to facilitate recursive calls
+
+      function Enclosing_Master_Level (N : Node_Id) return Level_T;
+      --  Return the accessibility level of the innermost enclosing master
+
+      function Function_Call_Or_Allocator_Level (N : Node_Id) return Level_T;
+      --  Centralized processing of subprogram calls which may appear in prefix
+      --  notation.
+
+      function Library_Level return Level_T;
+      --  Return the library level
+
+      function Local_Access_Level (E : Entity_Id) return Level_T is
+        (if Static
+         then (S => True,  U => Static_Local_Access_Level (E))
+         else (S => False, N => Dynamic_Local_Access_Level (E)));
+      --  Local renaming to select the appropriate variant for entities
 
       function Make_Level_Literal (Level : Uint) return Node_Id;
       --  Construct an integer literal representing an accessibility level with
       --  its type set to Natural.
 
-      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint;
-      --  Returns the scope depth of the given node's innermost enclosing scope
-      --  (effectively the accessibility level of the innermost enclosing
-      --  master).
+      function Make_Level_Value (Level : Uint) return Level_T;
+      --  Construct an accessibility level value with from static Level
 
-      function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id;
-      --  Centralized processing of subprogram calls which may appear in prefix
-      --  notation.
+      function Subprogram_Access_Level (Subp : Entity_Id) return Level_T is
+        (if Static
+         then (S => True,  U => Static_Subprogram_Access_Level (Subp))
+         else (S => False, N => Dynamic_Subprogram_Access_Level (Subp)));
+      --  Local renaming to select the appropriate variant for subprograms
 
-      function Typ_Access_Level (Typ : Entity_Id) return Uint
-        is (Type_Access_Level (Typ, Allow_Alt_Model));
-      --  Renaming of Type_Access_Level with Allow_Alt_Model specified to avoid
-      --  passing the parameter specifically in every call.
+      function Type_Access_Level (Typ : Entity_Id) return Level_T is
+        (if Static
+         then (S => True,
+               U => Static_Type_Access_Level
+                      (Typ, Allow_Alt_Model => Allow_Alt_Model))
+         else (S => False,
+               N => Dynamic_Type_Access_Level
+                      (Typ, Allow_Alt_Model => Allow_Alt_Model)));
+      --  Local renaming to select the appropriate variant for types
 
-      ----------------------------------
-      -- Innermost_Master_Scope_Depth --
-      ----------------------------------
+      ----------------------------
+      -- Enclosing_Master_Level --
+      ----------------------------
 
-      function Innermost_Master_Scope_Depth (N : Node_Id) return Uint is
-         Encl_Scop           : Entity_Id;
-         Ent                 : Entity_Id;
-         Node_Par            : Node_Id := Parent (N);
-         Master_Lvl_Modifier : Int     := 0;
+      function Enclosing_Master_Level (N : Node_Id) return Level_T is
+         Encl_Scop      : Entity_Id;
+         Ent            : Entity_Id;
+         Level_Modifier : Int := 0;
+         Node_Par       : Node_Id;
 
       begin
          --  Locate the nearest enclosing node (by traversing Parents)
          --  that Defining_Entity can be applied to, and return the
-         --  depth of that entity's nearest enclosing dynamic scope.
+         --  level of that entity's nearest enclosing dynamic scope.
 
          --  The RM 7.6.1(3) definition of "master" includes statements
          --  and conditions for loops among other things. Are these cases
          --  detected properly ???
 
+         Node_Par := Parent (N);
          while Present (Node_Par) loop
             Ent := Defining_Entity_Or_Empty (Node_Par);
 
@@ -208,25 +323,43 @@ package body Accessibility is
                  or else (Nkind (Node_Par) = N_Object_Renaming_Declaration
                            and then Comes_From_Iterator (Node_Par))
                then
+                  --  Note that in some rare cases the scope depth may not be
+                  --  set, for example, when we are in the middle of analyzing
+                  --  a type and the enclosing scope is said type. In that case
+                  --  simply return the library level.
+
+                  if not Scope_Depth_Set (Encl_Scop) then
+                     return Library_Level;
+                  end if;
+
                   --  Handle the case of expressions within library level
                   --  subprograms here by adding one to the level modifier.
 
                   if Encl_Scop = Standard_Standard
                     and then Nkind (Node_Par) = N_Subprogram_Body
                   then
-                     Master_Lvl_Modifier := Master_Lvl_Modifier + 1;
+                     Level_Modifier := Level_Modifier + 1;
                   end if;
 
-                  --  Note that in some rare cases the scope depth may not be
-                  --  set, for example, when we are in the middle of analyzing
-                  --  a type and the enclosing scope is said type. In that case
-                  --  simply return zero for the outermost scope.
+                  declare
+                     Subp : constant Entity_Id :=
+                       (if Is_Subprogram (Encl_Scop)
+                        then Encl_Scop
+                        else Enclosing_Subprogram (Encl_Scop));
+                     Static_Level : constant Uint :=
+                        Scope_Depth (Encl_Scop) + Level_Modifier;
 
-                  if Scope_Depth_Set (Encl_Scop) then
-                     return Scope_Depth (Encl_Scop) + Master_Lvl_Modifier;
-                  else
-                     return Uint_0;
-                  end if;
+                  begin
+                     if Static then
+                        return (S => True, U => Static_Level);
+                     elsif No (Subp) then
+                        return (S => False,
+                                N => Make_Level_Literal (Static_Level));
+                     else
+                        return (S => False,
+                                N => Offset_Static_Level (Static_Level, Subp));
+                     end if;
+                  end;
                end if;
 
             --  For a return statement within a function, return
@@ -238,7 +371,19 @@ package body Accessibility is
             elsif Nkind (Node_Par) in N_Extended_Return_Statement
                                     | N_Simple_Return_Statement
             then
-               return Scope_Depth (Enclosing_Subprogram (Node_Par));
+               declare
+                  Subp : constant Entity_Id :=
+                    Enclosing_Subprogram (Node_Par);
+                  Static_Level : constant Uint := Scope_Depth (Subp);
+
+               begin
+                  if Static then
+                     return (S => True, U => Static_Level);
+                  else
+                     return (S => False,
+                             N => Offset_Static_Level (Static_Level, Subp));
+                  end if;
+               end;
 
             --  Non-package bodies and statements are counted as masters
 
@@ -247,8 +392,7 @@ package body Accessibility is
                                     | N_Task_Body
               or else Is_Statement (Node_Par)
             then
-               Master_Lvl_Modifier := Master_Lvl_Modifier + 1;
-
+               Level_Modifier := Level_Modifier + 1;
             end if;
 
             Node_Par := Parent (Node_Par);
@@ -258,8 +402,17 @@ package body Accessibility is
 
          pragma Assert (False);
 
-         return Scope_Depth (Current_Scope) + 1;
-      end Innermost_Master_Scope_Depth;
+         return Make_Level_Value (Scope_Depth (Current_Scope) + 1);
+      end Enclosing_Master_Level;
+
+      -------------------
+      -- Library_Level --
+      -------------------
+
+      function Library_Level return Level_T is
+      begin
+         return Make_Level_Value (Scope_Depth (Standard_Standard));
+      end Library_Level;
 
       ------------------------
       -- Make_Level_Literal --
@@ -273,11 +426,24 @@ package body Accessibility is
          return Result;
       end Make_Level_Literal;
 
+      ----------------------
+      -- Make_Level_Value --
+      ----------------------
+
+      function Make_Level_Value (Level : Uint) return Level_T is
+      begin
+         if Static then
+            return (S => True, U => Level);
+         else
+            return (S => False, N => Make_Level_Literal (Level));
+         end if;
+      end Make_Level_Value;
+
       --------------------------------------
       -- Function_Call_Or_Allocator_Level --
       --------------------------------------
 
-      function Function_Call_Or_Allocator_Level (N : Node_Id) return Node_Id is
+      function Function_Call_Or_Allocator_Level (N : Node_Id) return Level_T is
          Prev_Par : Node_Id := Expr;
          Par      : Node_Id := Parent (Expr);
          --  Par and Prev_Par will be used for traversing the AST, while
@@ -296,19 +462,17 @@ package body Accessibility is
             if Is_Entity_Name (Name (N))
               and then Is_Inherently_Limited_Type (Etype (N))
             then
-               return Make_Level_Literal
-                        (Subprogram_Access_Level (Entity (Name (N))));
+               return Subprogram_Access_Level (Entity (Name (N)));
 
             elsif Nkind (Name (N)) = N_Explicit_Dereference
               and then Is_Inherently_Limited_Type (Etype (N))
             then
-               return Make_Level_Literal
-                        (Typ_Access_Level (Etype (Prefix (Name (N)))));
+               return Type_Access_Level (Etype (Prefix (Name (N))));
 
             --  Otherwise the accessibility level of the innermost master
 
             else
-               return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+               return Enclosing_Master_Level (Expr);
             end if;
 
          --  We ignore coextensions as they cannot be implemented under the
@@ -318,12 +482,12 @@ package body Accessibility is
            and then (Is_Static_Coextension (N)
                       or else Is_Dynamic_Coextension (N))
          then
-            return Make_Level_Literal (Scope_Depth (Standard_Standard));
+            return Library_Level;
 
          --  Objects of a named access type get their level from their type
 
          elsif Is_Named_Access_Type (Etype (N)) then
-            return Make_Level_Literal (Typ_Access_Level (Etype (N)));
+            return Type_Access_Level (Etype (N));
 
          --  Function calls in Ada 2005 and later, and anonymous allocators
 
@@ -339,7 +503,8 @@ package body Accessibility is
                --  designated type.
 
                if Debug_Flag_Underscore_B then
-                  return Make_Level_Literal (Typ_Access_Level (Etype (N)));
+                  return
+                    Make_Level_Value (Static_Type_Access_Level (Etype (N)));
 
                --  For function calls the level is that of the innermost
                --  master; otherwise, for allocators we get the level of
@@ -347,8 +512,7 @@ package body Accessibility is
                --  calculated through the normal path of execution.
 
                elsif Nkind (N) = N_Function_Call then
-                  return
-                    Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+                  return Enclosing_Master_Level (Expr);
                end if;
             end if;
 
@@ -360,15 +524,15 @@ package body Accessibility is
               and then Nkind (N) = N_Function_Call
               and then Is_Scalar_Type (Etype (N))
             then
-               return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+               return Enclosing_Master_Level (Expr);
             end if;
 
-            --  Dynamic checks are generated when we are within a return
-            --  value or we are in a function call within an anonymous
-            --  access discriminant constraint of a return object (signified
-            --  by In_Return_Context) on the side of the callee.
+            --  RM 3.10.2(10.5): If the call itself defines the result of a
+            --  function F, or has an accessibility level that is tied to the
+            --  result of such a function F, then the master of the call is
+            --  that of the master of the call invoking F.
 
-            if In_Return_Value (N) or else In_Return_Context then
+            if In_Return_Context or In_Return_Value (N) then
                declare
                   Extra_Formal : constant Entity_Id :=
                     Extra_Accessibility_Of_Result (Current_Subprogram);
@@ -382,14 +546,14 @@ package body Accessibility is
                   --  "passed along".
 
                   if Present (Extra_Formal) and then Level = Dynamic_Level then
-                     return New_Occurrence_Of (Extra_Formal, Loc);
+                     return (S => False,
+                             N => New_Occurrence_Of (Extra_Formal, Loc));
 
                   --  Otherwise, return accessibility level of the enclosing
                   --  subprogram.
 
                   else
-                     return Make_Level_Literal
-                              (Subprogram_Access_Level (Current_Subprogram));
+                     return Subprogram_Access_Level (Current_Subprogram);
                   end if;
                end;
             end if;
@@ -434,17 +598,17 @@ package body Accessibility is
 
                   when N_Type_Conversion  =>
                      if Is_Named_Access_Type (Etype (Par)) then
-                        return
-                          Make_Level_Literal (Typ_Access_Level (Etype (Par)));
+                        return Type_Access_Level (Etype (Par));
                      end if;
 
                   --  For the (static) declaration of an object, return the
                   --  accessibility level of the master of the object.
 
                   when N_Object_Declaration =>
-                     return
-                       Accessibility_Level
-                         (Defining_Identifier (Par), Object_Decl_Level);
+                     return Accessibility_Level
+                              (Expr   => Defining_Identifier (Par),
+                               Level  => Object_Decl_Level,
+                               Static => Static);
 
                   --  For the dynamic allocation of an object, return the
                   --  accessibility level of the allocator.
@@ -471,6 +635,7 @@ package body Accessibility is
                      return Accessibility_Level
                               (Expr              => Name (Par),
                                Level             => Object_Decl_Level,
+                               Static            => Static,
                                In_Return_Context => In_Return_Context);
 
                   when others =>
@@ -486,7 +651,7 @@ package body Accessibility is
 
             --  Return the accessibility level of the innermost master
 
-            return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+            return Enclosing_Master_Level (Expr);
          end if;
       end Function_Call_Or_Allocator_Level;
 
@@ -498,6 +663,10 @@ package body Accessibility is
    --  Start of processing for Accessibility_Level
 
    begin
+      --  Make sure that we are not passed contradictory input
+
+      pragma Assert (not (Level = Dynamic_Level and then Static));
+
       --  We could be looking at a reference to a formal due to the expansion
       --  of entries and other cases, so obtain the renaming if necessary.
 
@@ -537,13 +706,13 @@ package body Accessibility is
          --  The accessibility level of the literal null is the library level
 
          when N_Null =>
-            return Make_Level_Literal (Scope_Depth (Standard_Standard));
+            return Library_Level;
 
          --  The level of an aggregate is that of the innermost master that
          --  evaluates it as defined in RM 3.10.2 (10/4).
 
          when N_Aggregate =>
-            return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+            return Enclosing_Master_Level (Expr);
 
          --  The accessibility level is that of the access type, except for
          --  anonymous allocators which have special rules defined in RM 3.10.2
@@ -579,9 +748,8 @@ package body Accessibility is
 
                --  Return the level of the enclosing declaration
 
-               return Make_Level_Literal
-                        (Innermost_Master_Scope_Depth
-                          (Enclosing_Declaration (Expr)));
+               return
+                 Enclosing_Master_Level (Enclosing_Declaration (Expr));
 
             --  Return the library level to null out the check for the Address,
             --  Deref, Unchecked_Access and Unrestricted_Access attributes.
@@ -591,7 +759,7 @@ package body Accessibility is
                                       | Name_Unchecked_Access
                                       | Name_Unrestricted_Access
             then
-               return Make_Level_Literal (Scope_Depth (Standard_Standard));
+               return Library_Level;
 
             --  For 'Old return the level of the associated entity, if any
 
@@ -617,18 +785,19 @@ package body Accessibility is
                --  Named access types
 
                if Is_Named_Access_Type (Etype (Pre)) then
-                  return Make_Level_Literal (Typ_Access_Level (Etype (Pre)));
+                  return Type_Access_Level (Etype (Pre));
 
                --  Anonymous access types
 
                elsif Is_Entity_Name (Pre)
                  and then Ekind (Entity (Pre)) not in Subprogram_Kind
-                 and then Present (Get_Dynamic_Accessibility (Entity (Pre)))
+                 and then Present (Extra_Accessibility (Entity (Pre)))
                  and then Level = Dynamic_Level
                then
                   pragma Assert (Is_Anonymous_Access_Type (Etype (Pre)));
-                  return New_Occurrence_Of
-                           (Get_Dynamic_Accessibility (Entity (Pre)), Loc);
+                  return (S => False,
+                          N => New_Occurrence_Of
+                                 (Extra_Accessibility (Entity (Pre)), Loc));
 
                --  Otherwise the level is treated in a similar way as
                --  aggregates according to RM 6.1.1 (35.1/4) which concerns
@@ -637,8 +806,7 @@ package body Accessibility is
                --  declaration.
 
                else
-                  return Make_Level_Literal
-                           (Innermost_Master_Scope_Depth (Expr));
+                  return Enclosing_Master_Level (Expr);
                end if;
 
             else
@@ -671,48 +839,45 @@ package body Accessibility is
                                    and then
                                      Wrapped_Statements (Scope (E)) =
                                                            Current_Subprogram))
-              and then (In_Return_Value (Expr) or else In_Return_Context)
+              and then (In_Return_Context or else In_Return_Value (Expr))
             then
-               return Make_Level_Literal (Scope_Depth (Standard_Standard));
+               return Library_Level;
 
             --  Formal parameters with an extra accessibility formal, as well
             --  as stand-alone objects of an anonymous access type (SAOOAAAT).
 
             elsif (Is_Formal (E) or else Ekind (E) in E_Constant | E_Variable)
-              and then Present (Get_Dynamic_Accessibility (E))
-              and then Level in Dynamic_Level | Zero_On_Dynamic_Level
+              and then Present (Extra_Accessibility (E))
+              and then Level in Dynamic_Level | Library_On_Dynamic_Level
             then
-               if Level = Zero_On_Dynamic_Level then
-                  return Make_Level_Literal (Scope_Depth (Standard_Standard));
-               end if;
+               --  Return the library level if explicitly requested
+
+               if Level = Library_On_Dynamic_Level then
+                  return Library_Level;
 
                --  No_Dynamic_Accessibility_Checks restriction override for
                --  alternative accessibility model.
 
-               if Allow_Alt_Model
+               elsif Allow_Alt_Model
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
                then
                   --  In the alternative model the level is that of the
                   --  designated type entity's context.
 
                   if Debug_Flag_Underscore_B then
-                     return Make_Level_Literal (Typ_Access_Level (Etype (E)));
-
-                  --  Otherwise the level depends on the entity's context
-
-                  elsif Is_Formal (E) then
-                     return Make_Level_Literal
-                              (Subprogram_Access_Level
-                                (Enclosing_Subprogram (E)));
+                     return Make_Level_Value
+                              (Static_Type_Access_Level (Etype (E)));
                   else
-                     return Make_Level_Literal
-                              (Scope_Depth (Enclosing_Dynamic_Scope (E)));
+                     return Make_Level_Value (Static_Local_Access_Level (E));
                   end if;
-               end if;
 
                --  Return the dynamic level in the normal case
 
-               return New_Occurrence_Of (Get_Dynamic_Accessibility (E), Loc);
+               else
+                  return
+                    (S => False,
+                     N => New_Occurrence_Of (Extra_Accessibility (E), Loc));
+               end if;
 
             --  Return the library level for formal parameters or stand-alone
             --  objects of an anonymous access type without extra accessibility
@@ -723,21 +888,24 @@ package body Accessibility is
             elsif (Is_Formal (E) or else Ekind (E) in E_Constant | E_Variable)
               and then Is_Anonymous_Access_Type (Etype (E))
               and then not Is_Local_Anonymous_Access (Etype (E))
-              and then Level in Dynamic_Level | Zero_On_Dynamic_Level
+              and then Level in Dynamic_Level | Library_On_Dynamic_Level
             then
-               return Make_Level_Literal (Scope_Depth (Standard_Standard));
+               return Library_Level;
 
             --  Initialization procedures have a special extra accessibility
             --  parameter associated with the level at which the object
             --  being initialized exists
 
-            elsif Ekind (E) = E_Record_Type
+            elsif Level = Dynamic_Level
+              and then Ekind (E) = E_Record_Type
               and then Is_Limited_Record (E)
               and then Current_Scope = Init_Proc (E)
               and then Present (Init_Proc_Level_Formal (Current_Scope))
             then
-               return New_Occurrence_Of
-                        (Init_Proc_Level_Formal (Current_Scope), Loc);
+               return
+                 (S => False,
+                  N => New_Occurrence_Of
+                         (Init_Proc_Level_Formal (Current_Scope), Loc));
 
             --  Current instance of the type is deeper than that of the type
             --  according to RM 3.10.2 (21).
@@ -750,12 +918,20 @@ package body Accessibility is
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
                  and then Debug_Flag_Underscore_B
                then
-                  return Make_Level_Literal (Typ_Access_Level (E));
+                  return Make_Level_Value (Static_Type_Access_Level (E));
                end if;
 
                --  Normal path
 
-               return Make_Level_Literal (Typ_Access_Level (E) + 1);
+               if Static then
+                  return (S => True, U => Static_Type_Access_Level (E) + 1);
+               else
+                  return
+                    (S => False,
+                     N => Make_Op_Add (Loc,
+                            Left_Opnd  => Dynamic_Type_Access_Level (E),
+                            Right_Opnd => Make_Level_Literal (Uint_1)));
+               end if;
 
             --  Move up the renamed entity or object if it came from source
             --  since expansion may have created a dummy renaming under
@@ -773,7 +949,7 @@ package body Accessibility is
             --  Objects of a named access type get their level from their type
 
             elsif Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (E)));
+               return Type_Access_Level (Etype (E));
 
             --  Check if E is an expansion-generated renaming of an iterator
             --  by examining Related_Expression. If so, determine the
@@ -789,20 +965,21 @@ package body Accessibility is
                and then Is_Subprogram (Scope (E))
                and then Present (Init_Proc_Level_Formal (Scope (E)))
             then
-               return New_Occurrence_Of
-                        (Init_Proc_Level_Formal (Scope (E)), Loc);
+               return
+                 (S => False,
+                  N => New_Occurrence_Of
+                         (Init_Proc_Level_Formal (Scope (E)), Loc));
 
             --  Formal object of generic subprogram - get the level of the
             --  subprogram
 
             elsif Is_Formal_Object (E) and then Is_Subprogram (Scope (E)) then
-               return Make_Level_Literal (Subprogram_Access_Level (Scope (E)));
+               return Subprogram_Access_Level (Scope (E));
 
-            --  Normal object - get the depth of the enclosing dynamic scope
+            --  Normal object - get the local access level
 
             else
-               return Make_Level_Literal
-                        (Scope_Depth (Enclosing_Dynamic_Scope (E)));
+               return Local_Access_Level (E);
             end if;
 
          --  Handle indexed and selected components including the special cases
@@ -836,14 +1013,14 @@ package body Accessibility is
             --  of the named access type in the prefix.
 
             elsif Is_Named_Access_Type (Etype (Pre)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (Pre)));
+               return Type_Access_Level (Etype (Pre));
 
             --  The current expression is a named access type, so there is no
             --  reason to look at the prefix. Instead obtain the level of E's
             --  named access type.
 
             elsif Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (E)));
+               return Type_Access_Level (Etype (E));
 
             --  A nondiscriminant selected component where the component
             --  is an anonymous access type means that its associated
@@ -885,13 +1062,13 @@ package body Accessibility is
                  and then No_Dynamic_Accessibility_Checks_Enabled (E)
                  and then Debug_Flag_Underscore_B
                then
-                  return Make_Level_Literal (Typ_Access_Level (Etype (E)));
+                  return
+                    Make_Level_Value (Static_Type_Access_Level (Etype (E)));
                end if;
 
                --  Otherwise proceed normally
 
-               return
-                 Make_Level_Literal (Typ_Access_Level (Etype (Prefix (E))));
+               return Type_Access_Level (Etype (Prefix (E)));
 
             --  The accessibility calculation routine that handles function
             --  calls (Function_Call_Or_Allocator_Level) assumes, in the case
@@ -915,12 +1092,12 @@ package body Accessibility is
 
                if (Ekind (Etype (Pre)) = E_Anonymous_Access_Type
                     or else Has_Implicit_Dereference (Etype (Pre)))
-                 and then (In_Return_Value (E) or else In_Return_Context)
+                 and then (In_Return_Context or else In_Return_Value (E))
                then
                   return Function_Call_Or_Allocator_Level (Prefix (E));
                end if;
 
-               return Make_Level_Literal (Innermost_Master_Scope_Depth (Expr));
+               return Enclosing_Master_Level (Expr);
 
             --  Otherwise, continue recursing over the expression prefixes
 
@@ -932,7 +1109,7 @@ package body Accessibility is
 
          when N_Qualified_Expression =>
             if Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (E)));
+               return Type_Access_Level (Etype (E));
             else
                return Accessibility_Level (Expression (E));
             end if;
@@ -951,7 +1128,7 @@ package body Accessibility is
             --  its type.
 
             if Is_Named_Access_Type (Etype (Pre)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (Pre)));
+               return Type_Access_Level (Etype (Pre));
 
             --  Otherwise, recurse deeper
 
@@ -977,13 +1154,13 @@ package body Accessibility is
             --  access type.
 
             elsif Is_Named_Access_Type (Etype (E)) then
-               return Make_Level_Literal (Typ_Access_Level (Etype (E)));
+               return Type_Access_Level (Etype (E));
 
             --  In section RM 3.10.2 (10/4) the accessibility rules for
             --  aggregates and value conversions are outlined. Are these
             --  followed in the case of initialization of an object ???
 
-            --  Should use Innermost_Master_Scope_Depth ???
+            --  Should use Enclosing_Master_Level ???
 
             else
                return Accessibility_Level (Current_Scope);
@@ -993,7 +1170,7 @@ package body Accessibility is
          --  expression's entity.
 
          when others =>
-            return Make_Level_Literal (Typ_Access_Level (Etype (E)));
+            return Type_Access_Level (Etype (E));
       end case;
    end Accessibility_Level;
 
@@ -1024,7 +1201,8 @@ package body Accessibility is
         and then not Scope_Suppress.Suppress (Accessibility_Check)
         and then not No_Dynamic_Accessibility_Checks_Enabled (Ref)
         and then
-          (Type_Access_Level (Etype (Exp)) > Type_Access_Level (PtrT)
+          (Static_Type_Access_Level (Etype (Exp))
+             > Static_Type_Access_Level (PtrT)
             or else
               (Is_Class_Wide_Type (Etype (Exp))
                 and then Scope (PtrT) /= Current_Scope))
@@ -1173,7 +1351,7 @@ package body Accessibility is
          Cond :=
            Make_Op_Gt (Loc,
              Left_Opnd  => Cond,
-             Right_Opnd => Accessibility_Level (N, Dynamic_Level));
+             Right_Opnd => Dynamic_Accessibility_Level (N));
 
          --  Due to the complexity and side effects of the check, utilize an if
          --  statement instead of the regular Program_Error circuitry.
@@ -1251,8 +1429,8 @@ package body Accessibility is
              Condition =>
                Make_Op_Gt (Loc,
                  Left_Opnd  =>
-                   Accessibility_Level
-                     (Exp, Dynamic_Level, In_Return_Context => True),
+                   Dynamic_Accessibility_Level
+                     (Exp, In_Return_Context => True),
                  Right_Opnd => New_Occurrence_Of
                    (Extra_Accessibility_Of_Result (Func), Loc)),
              Reason    => PE_Accessibility_Check_Failed),
@@ -1283,8 +1461,8 @@ package body Accessibility is
                       N_Type_Conversion | N_Unchecked_Type_Conversion
             or else (Is_Entity_Name (Exp)
                       and then Is_Formal (Entity (Exp)))
-            or else Scope_Depth (Enclosing_Dynamic_Scope (Etype (Exp))) >
-                      Subprogram_Access_Level (Func))
+            or else Static_Type_Access_Level (Etype (Exp))
+                      > Static_Subprogram_Access_Level (Func))
       then
          declare
             Tag_Node : Node_Id;
@@ -1364,9 +1542,7 @@ package body Accessibility is
                 Condition =>
                   Make_Op_Gt (Loc,
                     Left_Opnd  => Build_Get_Access_Level (Loc, Tag_Node),
-                    Right_Opnd =>
-                      Make_Integer_Literal (Loc,
-                        Subprogram_Access_Level (Func))),
+                    Right_Opnd => Dynamic_Subprogram_Access_Level (Func)),
                 Reason    => PE_Accessibility_Check_Failed),
               Suppress => Access_Check);
          end;
@@ -1426,8 +1602,8 @@ package body Accessibility is
            Make_Raise_Program_Error (Loc,
              Condition =>
                Make_Op_Gt (Loc,
-                 Left_Opnd  => Accessibility_Level (Exp, Dynamic_Level),
-                 Right_Opnd => Accessibility_Level (N, Dynamic_Level)),
+                 Left_Opnd  => Dynamic_Accessibility_Level (Exp),
+                 Right_Opnd => Dynamic_Accessibility_Level (N)),
              Reason    => PE_Accessibility_Check_Failed),
            Suppress => Access_Check);
 
@@ -1456,9 +1632,8 @@ package body Accessibility is
                  Make_Raise_Program_Error (Loc,
                    Condition =>
                      Make_Op_Gt (Loc,
-                       Left_Opnd  =>
-                         Accessibility_Level (Discr_Exp, Dynamic_Level),
-                       Right_Opnd => Accessibility_Level (N, Dynamic_Level)),
+                       Left_Opnd  => Dynamic_Accessibility_Level (Discr_Exp),
+                       Right_Opnd => Dynamic_Accessibility_Level (N)),
                    Reason    => PE_Accessibility_Check_Failed),
                  Suppress => Access_Check);
             end if;
@@ -1648,14 +1823,14 @@ package body Accessibility is
       --  extra access level object and when accessibility checks are enabled.
 
       if Present (Param_Ent)
-        and then Present (Get_Dynamic_Accessibility (Param_Ent))
+        and then Present (Extra_Accessibility (Param_Ent))
         and then not Accessibility_Checks_Suppressed (Param_Ent)
         and then not Accessibility_Checks_Suppressed (Typ)
       then
          --  Obtain the parameter's accessibility level
 
          Param_Level :=
-           New_Occurrence_Of (Get_Dynamic_Accessibility (Param_Ent), Loc);
+           New_Occurrence_Of (Extra_Accessibility (Param_Ent), Loc);
 
          --  Use the dynamic accessibility parameter for the function's result
          --  when one has been created instead of statically referring to the
@@ -1684,8 +1859,7 @@ package body Accessibility is
          --  Otherwise get the type's accessibility level normally
 
          else
-            Type_Level :=
-              Make_Integer_Literal (Loc, Deepest_Type_Access_Level (Typ));
+            Type_Level := Dynamic_Type_Access_Level (Typ, Deepest => True);
          end if;
 
          --  Raise Program_Error if the accessibility level of the access
@@ -1964,9 +2138,8 @@ package body Accessibility is
       --  Apply the RM 3.10.2(12.4) rule to formal parameters
 
       elsif Is_Entity_Name (Unqual) and then Is_Formal (Entity (Unqual)) then
-         if Static_Accessibility_Level
-              (Unqual, Zero_On_Dynamic_Level, In_Return_Context => True)
-                > Subprogram_Access_Level (Scope_Id)
+         if Static_Accessibility_Level (Unqual, In_Return_Context => True)
+              > Static_Subprogram_Access_Level (Scope_Id)
          then
             Accessibility_Error;
          end if;
@@ -2216,8 +2389,8 @@ package body Accessibility is
            and then Ekind (Etype (Disc)) = E_Anonymous_Access_Type
            and then
              Static_Accessibility_Level
-               (Assoc_Expr, Zero_On_Dynamic_Level, In_Return_Context => True)
-                 > Subprogram_Access_Level (Scope_Id)
+               (Assoc_Expr, In_Return_Context => True)
+                 > Static_Subprogram_Access_Level (Scope_Id)
          then
             Accessibility_Error;
          end if;
@@ -2240,46 +2413,89 @@ package body Accessibility is
       end loop;
    end Check_Return_Construct_Accessibility;
 
-   -------------------------------
-   -- Deepest_Type_Access_Level --
-   -------------------------------
+   ---------------------------------
+   -- Dynamic_Accessibility_Level --
+   ---------------------------------
 
-   function Deepest_Type_Access_Level
-     (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean := True) return Uint
+   function Dynamic_Accessibility_Level
+     (Expr              : Node_Id;
+      In_Return_Context : Boolean := False;
+      Allow_Alt_Model   : Boolean := True) return Node_Id
    is
    begin
-      if Ekind (Typ) = E_Anonymous_Access_Type
-        and then not Is_Local_Anonymous_Access (Typ)
-        and then Nkind (Associated_Node_For_Itype (Typ)) = N_Object_Declaration
-      then
-         --  No_Dynamic_Accessibility_Checks override for alternative
-         --  accessibility model.
+      return
+        Accessibility_Level (Expr              => Expr,
+                             Level             => Dynamic_Level,
+                             Static            => False,
+                             In_Return_Context => In_Return_Context,
+                             Allow_Alt_Model   => Allow_Alt_Model).N;
+   end Dynamic_Accessibility_Level;
 
-         if Allow_Alt_Model
-           and then No_Dynamic_Accessibility_Checks_Enabled (Typ)
-         then
-            return Type_Access_Level (Typ, Allow_Alt_Model);
-         end if;
+   --------------------------------
+   -- Dynamic_Local_Access_Level --
+   --------------------------------
 
-         --  Typ is the type of an Ada 2012 stand-alone object of an anonymous
-         --  access type.
+   function Dynamic_Local_Access_Level (E : Entity_Id) return Node_Id is
+      Loc          : constant Source_Ptr := Sloc (E);
+      Static_Level : constant Uint       := Static_Local_Access_Level (E);
+      Subp         : constant Entity_Id  := Enclosing_Subprogram (E);
 
-         return
-           Scope_Depth (Enclosing_Dynamic_Scope
-                         (Defining_Identifier
-                           (Associated_Node_For_Itype (Typ))));
+   begin
+      if Present (Subp) then
+         return Offset_Static_Level (Static_Level, Subp);
+      else
+         return Make_Integer_Literal (Loc, Static_Level);
+      end if;
+   end Dynamic_Local_Access_Level;
 
-      --  For generic formal type, return Int'Last (infinite).
-      --  See comment preceding Is_Generic_Type call in Type_Access_Level.
+   -------------------------------------
+   -- Dynamic_Subprogram_Access_Level --
+   -------------------------------------
 
-      elsif Is_Generic_Type (Root_Type (Typ)) then
-         return UI_From_Int (Int'Last);
+   function Dynamic_Subprogram_Access_Level (Subp : Entity_Id) return Node_Id
+   is
+   begin
+      if Present (Alias (Subp)) then
+         return Dynamic_Subprogram_Access_Level (Alias (Subp));
+      else
+         return Dynamic_Local_Access_Level (Subp);
+      end if;
+   end Dynamic_Subprogram_Access_Level;
+
+   -------------------------------
+   -- Dynamic_Type_Access_Level --
+   -------------------------------
+
+   function Dynamic_Type_Access_Level
+     (Typ             : Entity_Id;
+      Deepest         : Boolean := False;
+      Allow_Alt_Model : Boolean := True) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Typ);
+      Val : constant Type_Level_T :=
+              Type_Access_Level (Typ, Deepest, Allow_Alt_Model, Empty);
+
+   begin
+      if Present (Val.Base) then
+         declare
+            Dynamic_Level : constant Node_Id :=
+              Dynamic_Local_Access_Level (Val.Base);
+
+         begin
+            if Val.Offset /= Uint_0 then
+               return
+                 Make_Op_Add (Loc,
+                   Left_Opnd  => Dynamic_Level,
+                   Right_Opnd => Make_Integer_Literal (Loc, Val.Offset));
+            else
+               return Dynamic_Level;
+            end if;
+         end;
 
       else
-         return Type_Access_Level (Typ, Allow_Alt_Model);
+         return Make_Integer_Literal (Loc, Val.Offset);
       end if;
-   end Deepest_Type_Access_Level;
+   end Dynamic_Type_Access_Level;
 
    -------------------------
    -- Extra_Accessibility --
@@ -2299,30 +2515,6 @@ package body Accessibility is
          return Empty;
       end if;
    end Extra_Accessibility;
-
-   -------------------------------
-   -- Get_Dynamic_Accessibility --
-   -------------------------------
-
-   function Get_Dynamic_Accessibility (E : Entity_Id) return Entity_Id is
-   begin
-      --  When minimum accessibility is set for E then we utilize it - except
-      --  in a few edge cases like the expansion of select statements where
-      --  generated subprogram may attempt to unnecessarily use a minimum
-      --  accessibility object declared outside of scope.
-
-      --  To avoid these situations where expansion may get complex we verify
-      --  that the minimum accessibility object is within scope.
-
-      if Is_Formal (E)
-        and then Present (Minimum_Accessibility (E))
-        and then In_Open_Scopes (Scope (Minimum_Accessibility (E)))
-      then
-         return Minimum_Accessibility (E);
-      end if;
-
-      return Extra_Accessibility (E);
-   end Get_Dynamic_Accessibility;
 
    -----------------------
    -- Has_Access_Values --
@@ -2592,6 +2784,41 @@ package body Accessibility is
       end if;
    end Needs_Result_Accessibility_Level;
 
+   -------------------------
+   -- Offset_Static_Level --
+   -------------------------
+
+   --  An alternate, more sophisticated formula could be:
+   --
+   --    if Extra_Accessibility (Subp) > Static_Accessibility (Subp)
+   --    then Level + Extra_Accessibility (Subp) - Static_Accessibility (Subp)
+   --    else Level
+   --
+   --  and would yield more progressive dynamic levels in call chains, but it
+   --  would complicate the run-time computation and not really buy anything.
+
+   function Offset_Static_Level
+     (Level : Uint;
+      Subp  : Entity_Id) return Node_Id
+   is
+      Loc : constant Source_Ptr := Sloc (Subp);
+
+   begin
+      pragma Assert (Is_Subprogram (Subp));
+
+      if Present (Extra_Accessibility_Of_Subprogram (Subp)) then
+         return
+           Make_Op_Add (Loc,
+             Left_Opnd  =>
+               New_Occurrence_Of
+                 (Extra_Accessibility_Of_Subprogram (Subp), Loc),
+             Right_Opnd => Make_Integer_Literal (Loc, Level));
+
+      else
+         return Make_Integer_Literal (Loc, Level);
+      end if;
+   end Offset_Static_Level;
+
    ------------------------------------------
    -- Prefix_With_Safe_Accessibility_Level --
    ------------------------------------------
@@ -2664,31 +2891,70 @@ package body Accessibility is
       return True;
    end Prefix_With_Safe_Accessibility_Level;
 
-   -----------------------------
-   -- Subprogram_Access_Level --
-   -----------------------------
-
-   function Subprogram_Access_Level (Subp : Entity_Id) return Uint is
-   begin
-      if Present (Alias (Subp)) then
-         return Subprogram_Access_Level (Alias (Subp));
-      else
-         return Scope_Depth (Enclosing_Dynamic_Scope (Subp));
-      end if;
-   end Subprogram_Access_Level;
-
    --------------------------------
    -- Static_Accessibility_Level --
    --------------------------------
 
    function Static_Accessibility_Level
      (Expr              : Node_Id;
-      Level             : Static_Accessibility_Level_Kind;
+      Object_Decl_Level : Boolean := False;
       In_Return_Context : Boolean := False) return Uint
    is
+      Level : constant Accessibility_Level_Kind :=
+                (if Object_Decl_Level
+                 then Accessibility.Object_Decl_Level
+                 else Library_On_Dynamic_Level);
+
    begin
-      return Intval (Accessibility_Level (Expr, Level, In_Return_Context));
+      return
+        Accessibility_Level (Expr              => Expr,
+                             Level             => Level,
+                             Static            => True,
+                             In_Return_Context => In_Return_Context).U;
    end Static_Accessibility_Level;
+
+   -------------------------------
+   -- Static_Local_Access_Level --
+   -------------------------------
+
+   function Static_Local_Access_Level (E : Entity_Id) return Uint is
+   begin
+      return Scope_Depth (Enclosing_Dynamic_Scope (E));
+   end Static_Local_Access_Level;
+
+   ------------------------------------
+   -- Static_Subprogram_Access_Level --
+   ------------------------------------
+
+   function Static_Subprogram_Access_Level (Subp : Entity_Id) return Uint is
+   begin
+      if Present (Alias (Subp)) then
+         return Static_Subprogram_Access_Level (Alias (Subp));
+      else
+         return Static_Local_Access_Level (Subp);
+      end if;
+   end Static_Subprogram_Access_Level;
+
+   ------------------------------
+   -- Static_Type_Access_Level --
+   ------------------------------
+
+   function Static_Type_Access_Level
+     (Typ             : Entity_Id;
+      Deepest         : Boolean := False;
+      Allow_Alt_Model : Boolean := True;
+      Assoc_Node      : Node_Id := Empty) return Uint
+   is
+      Val : constant Type_Level_T :=
+              Type_Access_Level (Typ, Deepest, Allow_Alt_Model, Assoc_Node);
+
+   begin
+      if Present (Val.Base) then
+         return Static_Local_Access_Level (Val.Base) + Val.Offset;
+      else
+         return Val.Offset;
+      end if;
+   end Static_Type_Access_Level;
 
    -----------------------
    -- Type_Access_Level --
@@ -2696,13 +2962,31 @@ package body Accessibility is
 
    function Type_Access_Level
      (Typ             : Entity_Id;
-      Allow_Alt_Model : Boolean   := True;
-      Assoc_Ent       : Entity_Id := Empty) return Uint
+      Deepest         : Boolean := False;
+      Allow_Alt_Model : Boolean := True;
+      Assoc_Node      : Node_Id := Empty) return Type_Level_T
    is
       Btyp    : Entity_Id := Base_Type (Typ);
       Def_Ent : Entity_Id;
 
    begin
+      if Ekind (Typ) = E_Anonymous_Access_Type
+        and then not Is_Local_Anonymous_Access (Typ)
+        and then Nkind (Associated_Node_For_Itype (Typ)) = N_Object_Declaration
+        and then Deepest
+
+         --  No_Dynamic_Accessibility_Checks override for alternative
+         --  accessibility model.
+
+        and then not (Allow_Alt_Model
+                       and then No_Dynamic_Accessibility_Checks_Enabled (Typ))
+      then
+         --  Typ is the type of an Ada 2012 stand-alone object of an anonymous
+         --  access type.
+
+         return
+           (Defining_Identifier (Associated_Node_For_Itype (Typ)), Uint_0);
+
       --  Ada 2005 (AI-230): For most cases of anonymous access types, we
       --  simply use the level where the type is declared. This is true for
       --  stand-alone object declarations, and for anonymous access types
@@ -2711,7 +2995,7 @@ package body Accessibility is
       --  the cases of access parameters, return objects of an anonymous access
       --  type, and, in Ada 95, access discriminants of limited types.
 
-      if Is_Access_Type (Btyp) then
+      elsif Is_Access_Type (Btyp) then
          if Ekind (Btyp) = E_Anonymous_Access_Type then
             --  No_Dynamic_Accessibility_Checks restriction override for
             --  alternative accessibility model.
@@ -2727,16 +3011,18 @@ package body Accessibility is
                            (Designated_Type (Btyp), Allow_Alt_Model);
                end if;
 
-               --  When an anonymous access type's Assoc_Ent is specified,
+               --  When an anonymous access type's Assoc_Node is specified,
                --  calculate the result based on the general accessibility
                --  level routine.
 
                --  We would like to use Associated_Node_For_Itype here instead,
                --  but in some cases it is not fine grained enough ???
 
-               if Present (Assoc_Ent) then
-                  return Static_Accessibility_Level
-                           (Assoc_Ent, Object_Decl_Level);
+               if Present (Assoc_Node) then
+                  return
+                    (Empty,
+                     Static_Accessibility_Level
+                       (Assoc_Node, Object_Decl_Level => True));
                end if;
 
                --  Otherwise take the context of the anonymous access type into
@@ -2749,10 +3035,9 @@ package body Accessibility is
                             (Associated_Node_For_Itype (Typ));
 
                if Present (Def_Ent) then
-                  --  When the defining entity is a subprogram then we know the
-                  --  anonymous access type Typ has been generated to either
-                  --  describe an anonymous access type formal or an anonymous
-                  --  access result type.
+                  --  When the defining entity is a subprogram, then we know
+                  --  that the anonymous access type Typ has been generated
+                  --  for either an access formal or an access result.
 
                   --  Since we are only interested in the formal case, avoid
                   --  the anonymous access result type.
@@ -2762,20 +3047,23 @@ package body Accessibility is
                                    and then Etype (Def_Ent) = Typ)
                   then
                      --  When the type comes from an anonymous access
-                     --  parameter, the level is that of the subprogram
-                     --  declaration.
+                     --  parameter, the level is that of the parameter
+                     --  in the called subprogram.
 
-                     return Scope_Depth (Def_Ent);
+                     if In_Open_Scopes (Def_Ent) then
+                        return (First_Formal (Def_Ent), Uint_0);
+
+                     --  The level is the deepest possible in the caller
+
+                     else
+                        return (Empty, UI_From_Int (Int'Last));
+                     end if;
 
                   --  When the type is an access discriminant, the level is
                   --  that of the type.
 
                   elsif Ekind (Def_Ent) = E_Discriminant then
-                     return Scope_Depth
-                       (if Present (Full_View (Scope (Def_Ent))) then
-                           Full_View (Scope (Def_Ent))
-                        else
-                           Scope (Def_Ent));
+                     return (Scope (Def_Ent), Uint_0);
                   end if;
                end if;
 
@@ -2785,7 +3073,7 @@ package body Accessibility is
             --  fail static accessibility checks.
 
             elsif not Is_Local_Anonymous_Access (Typ) then
-               return Scope_Depth (Standard_Standard);
+               return (Empty, Scope_Depth (Standard_Standard));
 
             --  If this is a return object, the accessibility level is that of
             --  the result subtype of the enclosing function. The test here is
@@ -2829,30 +3117,30 @@ package body Accessibility is
            and then Nkind (Associated_Node_For_Itype (Typ)) =
                                                  N_Discriminant_Specification
          then
-            return Scope_Depth (Enclosing_Dynamic_Scope (Btyp)) + 1;
+            return (Btyp, Uint_1);
          end if;
       end if;
 
       --  Return library level for a generic formal type. This is done because
-      --  RM(10.3.2) says that "The statically deeper relationship does not
-      --  apply to ... a descendant of a generic formal type". Rather than
+      --  RM 3.10.2(19.4) says that "The statically deeper relationship does
+      --  not apply to ... a descendant of a generic formal type". Rather than
       --  checking at each point where a static accessibility check is
       --  performed to see if we are dealing with a formal type, this rule is
-      --  implemented by having Type_Access_Level and Deepest_Type_Access_Level
-      --  return extreme values for a formal type; Deepest_Type_Access_Level
-      --  returns Int'Last. By calling the appropriate function from among the
-      --  two, we ensure that the static accessibility check will pass if we
-      --  happen to run into a formal type. More specifically, we should call
-      --  Deepest_Type_Access_Level instead of Type_Access_Level whenever the
-      --  call occurs as part of a static accessibility check and the error
-      --  case is the case where the type's level is too shallow (as opposed
-      --  to too deep).
+      --  implemented by returning extreme values for a formal type depending
+      --  on the Deepest parameter. More specifically, Deepest should be passed
+      --  as True whenever the call occurs as part of a static accessibility
+      --  check and the error case is the case where the type's level is too
+      --  shallow (as opposed to too deep).
 
       if Is_Generic_Type (Root_Type (Btyp)) then
-         return Scope_Depth (Standard_Standard);
+         if Deepest then
+            return (Empty, UI_From_Int (Int'Last));
+         else
+            return (Empty, Scope_Depth (Standard_Standard));
+         end if;
       end if;
 
-      return Scope_Depth (Enclosing_Dynamic_Scope (Btyp));
+      return (Btyp, Uint_0);
    end Type_Access_Level;
 
 end Accessibility;
