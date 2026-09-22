@@ -5592,6 +5592,53 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (ntype && type_has_mode_precision_p (ntype))
     (convert (convert:ntype @0))))))
 
+/* (x ^ CST) - CST -> sign_extend<N> (x) where CST is (1 << (N - 1)), for
+   an x with no bits above bit N - 1 possibly set.  */
+(simplify
+ (plus (convert? (bit_xor @0 integer_pow2p@1)) INTEGER_CST@2)
+ (if (INTEGRAL_TYPE_P (type))
+  (with {
+    unsigned int prec = TYPE_PRECISION (type);
+    int width = wi::exact_log2 (wi::to_wide (@1)) + 1;
+    tree ntype = NULL_TREE;
+
+    if (tree_int_cst_sgn (@1) > 0 && width < (int) prec
+	&& wi::to_wide (@2) == wi::shifted_mask (0, width - 1, true, prec)
+	&& wi::bit_and_not (wide_int::from (get_nonzero_bits (@0), prec,
+					    TYPE_SIGN (TREE_TYPE (@0))),
+			    wi::mask (width, false, prec)) == 0)
+      {
+	if (width <= MAX_FIXED_MODE_SIZE)
+	  {
+	    ntype = build_nonstandard_integer_type (width, SIGNED);
+	    if (width != 1 && !type_has_mode_precision_p (ntype))
+	      ntype = NULL_TREE;
+	  }
+	/* Above that the target does no arithmetic in the width, but a
+	   _BitInt operand is still worth narrowing: the bitint lowering
+	   handles it, a plain integer type of that width it cannot.  */
+	else if (TREE_CODE (type) == BITINT_TYPE)
+	  ntype = build_bitint_type (width, 0);
+      }
+   }
+   (if (ntype)
+    (convert (convert:ntype @0))))))
+
+/* (signed:N) x < 0 ? (T) x - CST : (T) x -> (T) (signed:N) x where CST is
+   (1 << N), for an x with no bits above bit N - 1 possibly set.  */
+(simplify
+ (cond (lt (convert@2 @0) integer_zerop) (plus (convert@1 @0) INTEGER_CST@3) @1)
+ (if (INTEGRAL_TYPE_P (type) && INTEGRAL_TYPE_P (TREE_TYPE (@2))
+      && !TYPE_UNSIGNED (TREE_TYPE (@2)))
+  (with { unsigned int prec = TYPE_PRECISION (type);
+	  unsigned int width = TYPE_PRECISION (TREE_TYPE (@2)); }
+   (if (width < prec
+	&& wi::to_wide (@3) == wi::shifted_mask (0, width, true, prec)
+	&& wi::bit_and_not (wide_int::from (get_nonzero_bits (@0), prec,
+					    TYPE_SIGN (TREE_TYPE (@0))),
+			    wi::mask (width, false, prec)) == 0)
+    (convert @2)))))
+
 /* Optimize x >> x into 0 */
 (simplify
  (rshift @0 @0)
