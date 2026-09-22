@@ -1746,7 +1746,7 @@ codeview_start_source_file (const char *filename)
   sf->string_offset = string_offset;
   sf->filename = xstrdup (filename);
 
-  f = fopen (filename, "r");
+  f = fopen (filename, "rb");
   if (!f)
     internal_error ("could not open %s for reading", filename);
 
