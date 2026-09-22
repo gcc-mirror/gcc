@@ -10324,10 +10324,8 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 		}
 	    }
 	}
-      /* ???  Enable for loop costing as well.  */
-      if (!loop_vinfo)
-	record_stmt_cost (cost_vec, 1, vec_to_scalar, slp_node,
-			  0, vect_epilogue);
+      record_stmt_cost (cost_vec, 1, vec_to_scalar, slp_node,
+			0, loop_vinfo ? vect_epilogue : vect_body);
       SLP_TREE_LIVE_LANES (slp_node).safe_push (slp_index);
       return true;
     }
