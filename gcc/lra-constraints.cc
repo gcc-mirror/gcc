@@ -2776,9 +2776,11 @@ process_alt_operands (int only_alternative)
 				  break;
 			      }
 			  }
-			/* Both operands must allow a reload register,
-			   otherwise we cannot make them match.  */
-			if (curr_alt[m] == NO_REGS)
+			/* Both operands must allow a reload register or the
+			   matched operand accepts memory (e.g. 'g' with a mode
+			   that fits no hard reg), in which case the operands
+			   can be matched in memory.  */
+			if (curr_alt[m] == NO_REGS && !curr_alt_offmemok[m])
 			  break;
 			/* Retroactively mark the operand we had to
 			   match as a loser, if it wasn't already and
@@ -2858,6 +2860,11 @@ process_alt_operands (int only_alternative)
 		    this_alternative_set = curr_alt_set[m];
 		    this_alternative_exclude_start_hard_regs
 			= curr_alt_exclude_start_hard_regs[m];
+		    /* If the matched operand permits memory (e.g. 'g'),
+		       so does this one -- they share the same location.
+		       This lets a matching reload go to memory when no
+		       hard reg of the class can hold the operand mode.  */
+		    offmemok = curr_alt_offmemok[m];
 		    winreg = this_alternative != NO_REGS;
 		    break;
 		  }
@@ -3053,6 +3060,21 @@ process_alt_operands (int only_alternative)
 		       [all_this_alternative][this_alternative]);
 		}
 	      this_alternative_win = true;
+	      /* If reg and memory is acceptable here (e.g. 'g') but no hard
+		 reg of the operand class can hold the operand mode, resolve
+		 the operand to memory.  Mark it so that an operand matching
+		 this one can also fall back to memory, otherwise the matched
+		 operand would try to reload into an impossible hard reg and
+		 LRA would cycle (e.g. TDmode "+g" asm on 32-bit x86).  */
+	      if (offmemok && this_alternative != NO_REGS
+		  && hard_reg_set_subset_p (reg_class_contents[this_alternative],
+					    ira_prohibited_class_mode_regs
+					    [this_alternative][mode]
+					    | lra_no_alloc_regs))
+		{
+		  this_alternative = NO_REGS;
+		  this_alternative_offmemok = true;
+		}
 	      if (class_change_p)
 		{
 		  curr_alt_class_change_p = true;
@@ -3204,6 +3226,19 @@ process_alt_operands (int only_alternative)
 				     " a bad mode: reject+=2\n",
 				     nop);
 			  reject += 2;
+			}
+		      else if (!prefer_memory_p)
+			{
+			  /* No hard reg of the operand class can hold the
+			     operand mode, but the constraint may still permit
+			     memory (e.g. 'g').  Prefer memory for the operands
+			     before refusing.  */
+			  prefer_memory_p = true;
+			  if (lra_dump_file != NULL)
+			    fprintf (lra_dump_file,
+				     "            Trying now memory for"
+				     " operands\n");
+			  goto repeat;
 			}
 		      else
 			{
