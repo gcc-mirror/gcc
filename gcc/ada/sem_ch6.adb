@@ -443,7 +443,7 @@ package body Sem_Ch6 is
             --  with the function body.
 
             Ghost_Context_Checks_Disabled := True;
-            Freeze_Expr_Types_Before
+            Freeze_Full_Expression_Before
               (N      => N,
                Expr   => Expr,
                Def_Id => Def_Id,

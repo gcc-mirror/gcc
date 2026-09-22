@@ -96,7 +96,7 @@ package Freeze is
 
    --    Objects with dynamic address clauses
    --
-   --      These have a delayed freeze. Gigi will generate code to evaluate
+   --      These have delayed freezing. Gigi will generate code to evaluate
    --      the initialization expression if present and store it in a temp.
    --      The actual object is created at the point of the freeze, and if
    --      necessary initialized by copying the value of this temporary.
@@ -183,19 +183,6 @@ package Freeze is
    --  If Initialization_Statements (E) is an N_Compound_Statement, insert its
    --  actions at the appropriate point and clear the attribute.
 
-   function Freeze_Entity
-     (E                 : Entity_Id;
-      N                 : Node_Id;
-      Do_Freeze_Profile : Boolean := True) return List_Id;
-   --  Freeze an entity, and return Freeze nodes, to be inserted at the point
-   --  of call. N is a node whose source location corresponds to the freeze
-   --  point. This is used in placing warning messages in the situation where
-   --  it appears that a type has been frozen too early, e.g. when a primitive
-   --  operation is declared after the freezing point of its tagged type.
-   --  Returns No_List if no freeze nodes needed. Parameter Do_Freeze_Profile
-   --  is used when E is a subprogram, and determines whether the profile of
-   --  the subprogram should be frozen as well.
-
    procedure Freeze_All (From : Entity_Id; After : in out Node_Id);
    --  Before a non-instance body, or at the end of a declarative part,
    --  freeze all entities therein that are not yet frozen. Calls itself
@@ -212,28 +199,44 @@ package Freeze is
 
    procedure Freeze_Before
      (N                 : Node_Id;
-      T                 : Entity_Id;
+      E                 : Entity_Id;
       Do_Freeze_Profile : Boolean := True);
-   --  Freeze T then Insert the generated Freeze nodes before the node N. Flag
-   --  Do_Freeze_Profile is used when T is an overloadable entity and indicates
-   --  whether its profile should be frozen at the same time.
+   --  Freeze entity E and Insert the generated Freeze nodes before the node N.
+   --  The Flag Do_Freeze_Profile is used when T is an overloadable entity and
+   --  indicates whether its profile should be frozen at the same time.
+
+   function Freeze_Entity
+     (E                 : Entity_Id;
+      N                 : Node_Id;
+      Do_Freeze_Profile : Boolean := True) return List_Id;
+   --  Freeze entity E, and return Freeze nodes, to be inserted at the point
+   --  of call. N is a node whose source location corresponds to the freeze
+   --  point. This is used in placing warning messages in the situation where
+   --  it appears that a type has been frozen too early, e.g. when a primitive
+   --  operation is declared after the freezing point of its tagged type.
+   --  Returns No_List if no freeze nodes needed. Parameter Do_Freeze_Profile
+   --  is used when E is a subprogram, and determines whether the profile of
+   --  the subprogram should be frozen as well.
 
    procedure Freeze_Expression (N : Node_Id);
-   --  Freezes the required entities when the Expression N causes freezing.
+   --  Freezes the required entities when subexpression N causes freezing.
    --  The node N here is either a subexpression node (a "real" expression)
    --  or a subtype mark, or a subtype indication. The latter two cases are
    --  not really expressions, but they can appear within expressions and
-   --  so need to be similarly treated. Freeze_Expression takes care of
-   --  determining the proper insertion point for generated freeze actions.
+   --  so need to be similarly treated. Freeze_Expression must be invoked
+   --  on every subexpression along the normal processing of an expression,
+   --  and will take care of determining the proper insertion point of the
+   --  generated freeze actions.
 
-   procedure Freeze_Expr_Types_Before
+   procedure Freeze_Full_Expression_Before
      (N      : Node_Id;
       Expr   : Node_Id;
       Def_Id : Entity_Id;
       Typ    : Entity_Id := Empty);
-   --  This procedure freezes before N all the types referenced in Expr,
-   --  which is either the expression of the expression function Def_Id,
-   --  or the expression in a pre/post aspect that applies to Def_Id.
+   --  Freezes before N all the required entities when expression Expr causes
+   --  freezing, which is either the expression of the expression function
+   --  Def_Id, or the expression in a pre/post aspect that applies to Def_Id.
+   --  Freeze_Full_Expression_Before must be invoked once for an expression.
 
    --  If Typ is present, it is the type used to preanalyze and resolve a
    --  copy of Expr; if it is not, Expr is assumed to be already analyzed.

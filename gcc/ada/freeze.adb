@@ -149,14 +149,14 @@ package body Freeze is
    --  that if a foreign convention is specified, and no specific size
    --  is given, then the size must be at least Integer'Size.
 
-   procedure Freeze_Expr_Types
+   procedure Freeze_Full_Expression
      (Expr   : Node_Id;
       N      : Node_Id;
       Def_Id : Entity_Id;
       Result : in out List_Id;
       Before : Boolean := False;
       Typ    : Entity_Id := Empty);
-   --  Same as Freeze_Expr_Types_Before if Before is True, but appends the
+   --  Same as Freeze_Full_Expression_Before if Before is True, but appends the
    --  resulting list of nodes to Result if Before is False, modifying Result
    --  from No_List if necessary.
 
@@ -2746,16 +2746,12 @@ package body Freeze is
 
    procedure Freeze_Before
      (N                 : Node_Id;
-      T                 : Entity_Id;
+      E                 : Entity_Id;
       Do_Freeze_Profile : Boolean := True)
    is
-      --  Freeze T, then insert the generated Freeze nodes before the node N.
-      --  Flag Freeze_Profile is used when T is an overloadable entity, and
-      --  indicates whether its profile should be frozen at the same time.
-
       Freeze_Nodes : constant List_Id :=
-                       Freeze_Entity (T, N, Do_Freeze_Profile);
-      Pack         : constant Entity_Id := Scope (T);
+                       Freeze_Entity (E, N, Do_Freeze_Profile);
+      Scop         : constant Entity_Id := Scope (E);
 
    begin
       if Is_Non_Empty_List (Freeze_Nodes) then
@@ -2766,12 +2762,12 @@ package body Freeze is
          --  which may include generated subprograms such as predicate
          --  functions, etc.
 
-         if Is_Type (T) and then From_Nested_Package (T) then
-            Push_Scope (Pack);
-            Install_Visible_Declarations (Pack);
-            Install_Private_Declarations (Pack);
+         if Is_Type (E) and then From_Nested_Package (E) then
+            Push_Scope (Scop);
+            Install_Visible_Declarations (Scop);
+            Install_Private_Declarations (Scop);
             Insert_Actions (N, Freeze_Nodes);
-            End_Package_Scope (Pack);
+            End_Package_Scope (Scop);
 
          else
             Insert_Actions (N, Freeze_Nodes);
@@ -8274,7 +8270,7 @@ package body Freeze is
                      if Is_Expression_Function (Subp) then
                         Freeze_And_Append
                           (Subp, N, Result, Do_Freeze_Profile => False);
-                        Freeze_Expr_Types
+                        Freeze_Full_Expression
                           (Expr   => Expression_Of_Expression_Function (Subp),
                            N      => N,
                            Def_Id => Subp,
@@ -9227,7 +9223,7 @@ package body Freeze is
          --  Freeze types in expression function (RM 13.14(10.1, 10.2, 10.3))
 
          if Is_Expression_Function (Nam) then
-            Freeze_Expr_Types_Before
+            Freeze_Full_Expression_Before
               (N      => P,
                Expr   => Expression_Of_Expression_Function (Nam),
                Def_Id => Nam);
@@ -9239,11 +9235,11 @@ package body Freeze is
       In_Spec_Expression := In_Spec_Exp;
    end Freeze_Expression;
 
-   -----------------------
-   -- Freeze_Expr_Types --
-   -----------------------
+   ----------------------------
+   -- Freeze_Full_Expression --
+   ----------------------------
 
-   procedure Freeze_Expr_Types
+   procedure Freeze_Full_Expression
      (Expr   : Node_Id;
       N      : Node_Id;
       Def_Id : Entity_Id;
@@ -9526,7 +9522,7 @@ package body Freeze is
 
       procedure Freeze_References is new Traverse_Proc (Freeze_Type_Refs);
 
-   --  Start of processing for Freeze_Expr_Types
+   --  Start of processing for Freeze_Full_Expression
 
    begin
       --  Preanalyze a duplicate of the expression to have available the
@@ -9577,13 +9573,13 @@ package body Freeze is
       else
          Freeze_References (Expr);
       end if;
-   end Freeze_Expr_Types;
+   end Freeze_Full_Expression;
 
-   ------------------------------
-   -- Freeze_Expr_Types_Before --
-   ------------------------------
+   -----------------------------------
+   -- Freeze_Full_Expression_Before --
+   -----------------------------------
 
-   procedure Freeze_Expr_Types_Before
+   procedure Freeze_Full_Expression_Before
      (N      : Node_Id;
       Expr   : Node_Id;
       Def_Id : Entity_Id;
@@ -9592,14 +9588,14 @@ package body Freeze is
       Dummy : List_Id := No_List;
 
    begin
-      Freeze_Expr_Types
+      Freeze_Full_Expression
         (Expr   => Expr,
          N      => N,
          Def_Id => Def_Id,
          Result => Dummy,
          Before => True,
          Typ    => Typ);
-   end Freeze_Expr_Types_Before;
+   end Freeze_Full_Expression_Before;
 
    -----------------------------
    -- Freeze_Fixed_Point_Type --

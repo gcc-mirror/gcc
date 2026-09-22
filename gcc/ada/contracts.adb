@@ -755,7 +755,7 @@ package body Contracts is
                   if Freeze_Types
                     and then Present (Corresponding_Aspect (Prag))
                   then
-                     Freeze_Expr_Types_Before
+                     Freeze_Full_Expression_Before
                        (N      => Bod,
                         Expr   =>
                           Expression
@@ -3119,7 +3119,7 @@ package body Contracts is
                      if Freeze_T
                        and then Present (Corresponding_Aspect (Prag))
                      then
-                        Freeze_Expr_Types_Before
+                        Freeze_Full_Expression_Before
                           (N      => Body_Decl,
                            Expr   =>
                              Expression
