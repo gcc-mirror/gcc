@@ -19270,13 +19270,19 @@ results in @option{-ftrapv} being effective.
 This option instructs the compiler to assume that pointer arithmetic
 overflow on addition and subtraction wraps around using twos-complement
 representation.  This flag disables some optimizations which assume
-pointer overflow is invalid.
+pointer overflow is invalid.  @strong{Warning:} this option exists because
+of the Linux Kernel's view of what C is.  It does @strong{not} turn pointers
+into twos-complement numbers or eliminates all rules and guarantees the C
+standard has on pointers.  @strong{Do not use} this option but rather write
+conforming C.
 
 @opindex fstrict-overflow
 @opindex fno-strict-overflow
 @item -fstrict-overflow
 This option implies @option{-fno-wrapv} @option{-fno-wrapv-pointer} and when
-negated implies @option{-fwrapv} @option{-fwrapv-pointer}.
+negated implies @option{-fwrapv} @option{-fwrapv-pointer}.  You should
+consider using @code{-fwrapv} instead of @code{-fstrict-overflow},
+the (implicit) use of @code{-fwrapv-pointer} is discouraged.
 
 @opindex fexceptions
 @opindex fno-exceptions
