@@ -3683,7 +3683,7 @@ package body Sem_Ch4 is
             Analyze (N);
             return;
 
-         else
+         elsif Nkind (R) not in N_Raise_xxx_Error then
             --  In all versions of the language, if we reach this point there
             --  is a previous error that will be diagnosed below.
 
