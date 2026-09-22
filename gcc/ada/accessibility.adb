@@ -2137,11 +2137,14 @@ package body Accessibility is
                                           | N_Simple_Return_Statement);
 
       --  Only perform checks on record types with access discriminants and
-      --  functions present in the source.
+      --  functions present in the source, but no checks are needed for the
+      --  return synthesized in a function whose body has been wrapped in a
+      --  nested _Wrapped_Statements function.
 
       if not Is_Record_Type (R_Type)
         or else not Has_Anonymous_Access_Discriminant (R_Type)
         or else not Comes_From_Source (Scope_Id)
+        or else Present (Wrapped_Statements (Scope_Id))
       then
          return;
       end if;
