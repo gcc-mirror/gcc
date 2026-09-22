@@ -3274,6 +3274,14 @@ rest_of_insert_endbr_and_patchable_area (bool need_endbr,
 		  dest_blk = e->dest;
 		  insn = BB_HEAD (dest_blk);
 		  gcc_assert (LABEL_P (insn));
+
+		  /* Reuse existing ENDBR.  */
+		  rtx_insn *next = next_nonnote_nondebug_insn (insn);
+		  if (next && NONJUMP_INSN_P (next)
+		      && GET_CODE (PATTERN (next)) == UNSPEC_VOLATILE
+		      && XINT (PATTERN (next), 1) == UNSPECV_NOP_ENDBR)
+		    continue;
+
 		  endbr = gen_nop_endbr ();
 		  emit_insn_after (endbr, insn);
 		}
