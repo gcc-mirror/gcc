@@ -7350,6 +7350,25 @@ package body Sem_Ch13 is
                   Set_Biased (New_Ctyp, N, "component size clause");
                end if;
 
+               --  If a different component size has been inherited and
+               --  no clause size has been given, then reset the size.
+
+               if Known_Component_Size (Btype)
+                 and then Component_Size (Btype) /= Csize
+               then
+                  if Known_RM_Size (U_Ent)
+                    and then not Has_Size_Clause (U_Ent)
+                  then
+                     Set_RM_Size (U_Ent, No_Uint);
+                  end if;
+
+                  if Known_Esize (U_Ent)
+                    and then not Has_Object_Size_Clause (U_Ent)
+                  then
+                     Set_Esize (U_Ent, No_Uint);
+                  end if;
+               end if;
+
                Set_Component_Size (Btype, Csize);
 
                --  Deal with warning on overridden size

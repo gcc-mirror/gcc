@@ -497,28 +497,24 @@ package body Layout is
             Set_Alignment (E, Alignment (Component_Type (E)));
          end if;
 
-         --  If packing was requested, the one-dimensional array is constrained
-         --  with static bounds, the component size was set explicitly, and
-         --  the alignment is known, we can set (if not set explicitly) the
-         --  RM_Size and the Esize of the array type, as RM_Size is equal to
-         --  (arr'length * arr'component_size) and Esize is the same value
-         --  rounded to the next multiple of arr'alignment. This is not
-         --  applicable to packed arrays that are implemented specially
-         --  in GNAT, i.e. when Packed_Array_Impl_Type is set.
+         --  For a constrained 1-dimensional array type with known bounds and
+         --  known component size, we can set (if not already set) the RM_Size
+         --  and, if the alignment is additionally known, also the Esize of the
+         --  type, as RM_Size is equal to (Arr'Length * Arr'Component_Size) and
+         --  Esize is the same value rounded up to a multiple of Arr'Alignment.
+         --  But this is not applicable to packed arrays that are implemented
+         --  specially by GNAT, i.e. when Packed_Array_Impl_Type is set.
 
          if Is_Array_Type (E)
-           and then Present (First_Index (E))  --  Skip types in error
-           and then Number_Dimensions (E) = 1
-           and then No (Packed_Array_Impl_Type (E))
-           and then Has_Pragma_Pack (E)
            and then Is_Constrained (E)
+           and then Number_Dimensions (E) = 1
            and then Compile_Time_Known_Bounds (E)
            and then Known_Component_Size (E)
-           and then Known_Alignment (E)
+           and then No (Packed_Array_Impl_Type (E))
          then
             declare
-               Abits : constant Int := UI_To_Int (Alignment (E)) * SSU;
-               Lo, Hi : Node_Id;
+               Hi  : Node_Id;
+               Lo  : Node_Id;
                Siz : Uint;
 
             begin
@@ -531,8 +527,9 @@ package body Layout is
                if Compile_Time_Known_Value (Lo)
                  and then Compile_Time_Known_Value (Hi)
                then
-                  Siz := (Expr_Value (Hi) - Expr_Value (Lo) + 1)
-                    * Component_Size (E);
+                  Siz :=
+                    UI_Max (Expr_Value (Hi) - Expr_Value (Lo) + 1, 0)
+                      * Component_Size (E);
 
                   --  Do not overwrite a different value of 'Size specified
                   --  explicitly by the user. In that case, also do not set
@@ -541,9 +538,14 @@ package body Layout is
                   if not Known_RM_Size (E) or else RM_Size (E) = Siz then
                      Set_RM_Size (E, Siz);
 
-                     if not Known_Esize (E) then
-                        Siz := ((Siz + (Abits - 1)) / Abits) * Abits;
-                        Set_Esize (E, Siz);
+                     if not Known_Esize (E) and then Known_Alignment (E) then
+                        declare
+                           Abits : constant Int :=
+                                     UI_To_Int (Alignment (E)) * SSU;
+                        begin
+                           Siz := ((Siz + (Abits - 1)) / Abits) * Abits;
+                           Set_Esize (E, Siz);
+                        end;
                      end if;
                   end if;
                end if;

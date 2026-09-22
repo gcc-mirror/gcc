@@ -13925,6 +13925,12 @@ package body Sem_Res is
    begin
       Check_Parameterless_Call (Operand);
 
+      --  Prevent spurious errors coming from failed checks
+
+      if Nkind (Operand) in N_Raise_xxx_Error then
+         return True;
+      end if;
+
       if Is_Overloaded (Operand)
         and then Is_Ambiguous_Operand (Operand)
       then

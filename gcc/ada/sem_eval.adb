@@ -1791,6 +1791,12 @@ package body Sem_Eval is
             return False;
          end if;
 
+         --  Never look at junk bounds of a broken type
+
+         if Error_Posted (Scalar_Range (Typ)) then
+            return False;
+         end if;
+
          --  Otherwise check bounds for compile-time-known
 
          if not Compile_Time_Known_Value (Type_Low_Bound (Typ)) then

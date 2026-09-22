@@ -197,6 +197,10 @@ package body Exp_Ch4 is
    --  associated storage pool is derived from Checked_Pool, generate a
    --  call to the 'Dereference' primitive operation.
 
+   function Is_Copy_Type (Typ : Entity_Id) return Boolean;
+   --  Return True if we can copy objects of this type when expanding an EWA
+   --  or a conditional expression.
+
    function Make_Array_Comparison_Op
      (Typ : Entity_Id;
       Nod : Node_Id) return Node_Id;
@@ -5141,21 +5145,6 @@ package body Exp_Ch4 is
       Scop : constant Entity_Id  := Current_Scope;
       Typ  : constant Entity_Id  := Etype (N);
 
-      function Is_Copy_Type (Typ : Entity_Id) return Boolean;
-      --  Return True if we can copy objects of this type when expanding a case
-      --  expression.
-
-      ------------------
-      -- Is_Copy_Type --
-      ------------------
-
-      function Is_Copy_Type (Typ : Entity_Id) return Boolean is
-      begin
-         return Is_Elementary_Type (Underlying_Type (Typ));
-      end Is_Copy_Type;
-
-      --  Local variables
-
       Acts       : List_Id;
       Alt        : Node_Id;
       Case_Stmt  : Node_Id;
@@ -5597,37 +5586,6 @@ package body Exp_Ch4 is
       Loc  : constant Source_Ptr := Sloc (N);
       Typ  : constant Entity_Id  := Etype (N);
 
-      function Is_Copy_Type (Typ : Entity_Id) return Boolean;
-      --  Return True if we can copy objects of this type when expanding the
-      --  node. The function must return False for limited types for semantic
-      --  reasons, and more generally should do so for all by-reference types.
-      --  Of course the run-time performance of the copy operation should also
-      --  be taken into account, but the expansion of conditional expressions
-      --  may choose to create EWA nodes instead of conditional statements to
-      --  deal with the actions, in which case these EWA nodes also need to be
-      --  preserved for semantic reasons. In practice, this means that the
-      --  subset of types accepted by this Is_Copy_Type predicate must contain
-      --  the union of the subsets of types accepted by its homonyms in the
-      --  Expand_N_Case_Expression and Expand_N_If_Expression procedures, in
-      --  other words must return True when at least one of them returns true.
-      --  This implementation is that of Expand_N_If_Expression.Is_Copy_Type,
-      --  which already accepts a superset of the types accepted by its twin
-      --  Expand_N_Case_Expression.Is_Copy_Type predicate.
-
-      ------------------
-      -- Is_Copy_Type --
-      ------------------
-
-      function Is_Copy_Type (Typ : Entity_Id) return Boolean is
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         return Is_Definite_Subtype (Utyp)
-           and then not Is_By_Reference_Type (Utyp);
-      end Is_Copy_Type;
-
-      --  Local variables
-
       Temp_Decl : Node_Id;
       Temp_Id   : Entity_Id;
       Temp_Ref  : Node_Id;
@@ -5763,26 +5721,10 @@ package body Exp_Ch4 is
       --  accessibility level temp associated with the saooaaat also needs
       --  to be updated as part of the assignment).
 
-      function Is_Copy_Type (Typ : Entity_Id) return Boolean;
-      --  Return True if we can copy objects of this type when expanding an if
-      --  expression.
-
       function OK_For_Single_Subtype (T1, T2 : Entity_Id) return Boolean;
       --  Return true if it is acceptable to use a single subtype for two
       --  dependent expressions of subtype T1 and T2 respectively, which are
       --  unidimensional arrays whose index bounds are known at compile time.
-
-      ------------------
-      -- Is_Copy_Type --
-      ------------------
-
-      function Is_Copy_Type (Typ : Entity_Id) return Boolean is
-         Utyp : constant Entity_Id := Underlying_Type (Typ);
-
-      begin
-         return Is_Definite_Subtype (Utyp)
-           and then not Is_By_Reference_Type (Utyp);
-      end Is_Copy_Type;
 
       ---------------------------
       -- OK_For_Single_Subtype --
@@ -13840,6 +13782,44 @@ package body Exp_Ch4 is
                       N_Op_Abs   | N_Op_Add      | N_Op_Divide | N_Op_Expon |
                       N_Op_Minus | N_Op_Multiply | N_Op_Subtract;
    end Integer_Promotion_Possible;
+
+   ------------------
+   -- Is_Copy_Type --
+   ------------------
+
+   function Is_Copy_Type (Typ : Entity_Id) return Boolean is
+   begin
+      --  Objects of a by-copy type can always be copied
+
+      if Is_By_Copy_Type (Typ) then
+         return True;
+
+      --  Objects of a by-reference type can never be (easily) copied
+
+      elsif Is_By_Reference_Type (Typ) then
+         return False;
+
+      --  For other objects, we consider that we can copy them if they
+      --  are small enough, the main case being small arrays of scalars.
+
+      else
+         declare
+            Utyp : constant Entity_Id := Underlying_Type (Typ);
+
+         begin
+            --  If the Object_Size is not set in the source code, then it
+            --  cannot be much larger than the Value_Size in the end.
+
+            if Known_Esize (Utyp) then
+               return Esize (Utyp) <= System_Max_Integer_Size;
+            elsif Known_RM_Size (Utyp) then
+               return RM_Size (Utyp) <= System_Max_Integer_Size;
+            else
+               return False;
+            end if;
+         end;
+      end if;
+   end Is_Copy_Type;
 
    ------------------------------
    -- Make_Array_Comparison_Op --

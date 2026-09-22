@@ -914,20 +914,23 @@ package body Sem_Attr is
               ("prefix of % attribute cannot be enumeration literal");
          end if;
 
-         --  Preserve relevant elaboration-related attributes of the context
-         --  which are no longer available or very expensive to recompute once
-         --  analysis, resolution, and expansion are over.
+         if Nkind (N) not in N_Raise_xxx_Error then
 
-         Mark_Elaboration_Attributes
-           (N_Id     => N,
-            Checks   => True,
-            Modes    => True,
-            Warnings => True);
+            --  Preserve relevant elaboration-related attributes of the context
+            --  which are no longer available or very expensive to recompute
+            --  once analysis, resolution, and expansion are over.
 
-         --  Save the scenario for later examination by the ABE Processing
-         --  phase.
+            Mark_Elaboration_Attributes
+              (N_Id     => N,
+               Checks   => True,
+               Modes    => True,
+               Warnings => True);
 
-         Record_Elaboration_Scenario (N);
+            --  Save the scenario for later examination by the ABE Processing
+            --  phase.
+
+            Record_Elaboration_Scenario (N);
+         end if;
 
          --  Case of access to subprogram
 
