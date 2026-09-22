@@ -436,8 +436,6 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
   /* If there is no backend_decl for the common block, build it.  */
   if (decl == NULL_TREE)
     {
-      tree omp_clauses = NULL_TREE;
-
       if (com->is_bind_c == 1 && com->binding_label)
 	decl = build_decl (input_location, VAR_DECL, identifier, union_type);
       else
@@ -469,47 +467,51 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 
       gfc_set_decl_location (decl, &com->where);
 
+      tree arg_list = NULL_TREE;
       if (com->omp_device_type != OMP_DEVICE_TYPE_UNSET)
 	{
-	  tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
+	  const char *arg_str = NULL;
 	  switch (com->omp_device_type)
 	    {
 	    case OMP_DEVICE_TYPE_HOST:
-	      OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_HOST;
+	      arg_str = "device_type(host)";
 	      break;
 	    case OMP_DEVICE_TYPE_NOHOST:
-	      OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_NOHOST;
+	      arg_str = "device_type(nohost)";
 	      break;
 	    case OMP_DEVICE_TYPE_ANY:
-	      OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_ANY;
+	      arg_str = "device_type(any)";
 	      break;
 	    default:
 	      gcc_unreachable ();
 	    }
-	  omp_clauses = c;
+	  arg_list = tree_cons (NULL_TREE, get_identifier (arg_str), arg_list);
 	}
+
       /* Also check trans-decl.cc when updating/removing the following;
 	 also update f95.c's gfc_gnu_attributes.  */
       if (com->omp_groupprivate)
 	gfc_error ("Sorry, OMP GROUPPRIVATE not implemented, used by common "
 		   "block %</%s/%> declared at %L", com->name, &com->where);
-      else if (com->omp_declare_target_local)
-	/* Use 'else if' as groupprivate implies 'local'.  */
-	gfc_error ("Sorry, OMP DECLARE TARGET with LOCAL clause not implemented"
-		   ", used by common block %</%s/%> declared at %L",
-		   com->name, &com->where);
 
       if (com->omp_declare_target_link)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target link"),
-		       omp_clauses, DECL_ATTRIBUTES (decl));
+		       arg_list, DECL_ATTRIBUTES (decl));
       else if (com->omp_declare_target)
 	DECL_ATTRIBUTES (decl)
 	  = tree_cons (get_identifier ("omp declare target"),
-		       omp_clauses, DECL_ATTRIBUTES (decl));
+		       arg_list, DECL_ATTRIBUTES (decl));
+      else if (com->omp_declare_target_local)
+	{
+	  arg_list = tree_cons (NULL_TREE, get_identifier ("local"), arg_list);
+	  DECL_ATTRIBUTES (decl)
+	    = tree_cons (get_identifier ("omp declare target"),
+			 arg_list, DECL_ATTRIBUTES (decl));
+	}
 
       if (com->omp_declare_target_link || com->omp_declare_target
-	  /* FIXME: || com->omp_declare_target_local */)
+	  || com->omp_declare_target_local)
 	{
 	  /* Add to offload_vars; get_create does so for omp_declare_target
 	     and omp_declare_target_local, omp_declare_target_link requires

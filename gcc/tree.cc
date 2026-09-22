@@ -318,6 +318,7 @@ unsigned const char omp_clause_num_ops[] =
   1, /* OMP_CLAUSE_UNIFORM  */
   1, /* OMP_CLAUSE_ENTER  */
   1, /* OMP_CLAUSE_LINK  */
+  1, /* OMP_CLAUSE_LOCAL */
   1, /* OMP_CLAUSE_DETACH  */
   1, /* OMP_CLAUSE_USE_DEVICE_PTR  */
   1, /* OMP_CLAUSE_USE_DEVICE_ADDR  */
@@ -424,6 +425,7 @@ const char * const omp_clause_code_name[] =
   "uniform",
   "enter",
   "link",
+  "local",
   "detach",
   "use_device_ptr",
   "use_device_addr",

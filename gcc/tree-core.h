@@ -330,6 +330,9 @@ enum omp_clause_code {
   /* OpenMP clause: link (variable-list).  */
   OMP_CLAUSE_LINK,
 
+  /* OpenMP clause: local (variable-list).  */
+  OMP_CLAUSE_LOCAL,
+
   /* OpenMP clause: detach (event-handle).  */
   OMP_CLAUSE_DETACH,
 

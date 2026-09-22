@@ -6999,25 +6999,27 @@ gfc_match_omp_declare_target (void)
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L is an "
 			   "element of a COMMON block", &n->where);
 	  else if (n->sym->attr.omp_groupprivate && list != OMP_LIST_LOCAL)
-	    gfc_error_now ("List item %qs at %L not appear in the %qs clause "
-			   "as it was previously specified in a GROUPPRIVATE "
-			   "directive", n->sym->name, &n->where,
+	    gfc_error_now ("List item %qs at %L should not appear in the %qs "
+			   "clause, as it was previously specified in a "
+			   "GROUPPRIVATE directive", n->sym->name, &n->where,
 			   list == OMP_LIST_LINK
 			   ? "link" : list == OMP_LIST_TO ? "to" : "enter");
 	  else if (n->sym->mark)
 	    gfc_error_now ("Variable at %L mentioned multiple times in "
 			   "clauses of the same OMP DECLARE TARGET directive",
 			   &n->where);
-	  else if ((n->sym->attr.omp_declare_target_link
-		    || n->sym->attr.omp_declare_target_local)
-		   && list != OMP_LIST_LINK
-		   && list != OMP_LIST_LOCAL)
+	  else if ((list != OMP_LIST_LINK
+		    && n->sym->attr.omp_declare_target_link)
+		   || (list != OMP_LIST_LOCAL
+		       && n->sym->attr.omp_declare_target_local))
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
 			   "mentioned in %s clause and later in %s clause",
 			   &n->where,
 			   n->sym->attr.omp_declare_target_link ? "LINK"
 								: "LOCAL",
-			   list == OMP_LIST_TO ? "TO" : "ENTER");
+			   (list == OMP_LIST_LOCAL ? "LOCAL"
+			    : list == OMP_LIST_LINK ? "LINK"
+			    : list == OMP_LIST_TO ? "TO" : "ENTER"));
 	  else if (n->sym->attr.omp_declare_target
 		   && (list == OMP_LIST_LINK || list == OMP_LIST_LOCAL))
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "

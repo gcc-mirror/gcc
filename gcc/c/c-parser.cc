@@ -16592,6 +16592,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_LINEAR;
 	  else if (!strcmp ("link", p))
 	    result = PRAGMA_OMP_CLAUSE_LINK;
+	  else if (!strcmp ("local", p))
+	    result = PRAGMA_OMP_CLAUSE_LOCAL;
 	  break;
 	case 'm':
 	  if (!strcmp ("map", p))
@@ -22529,6 +22531,11 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  clauses
 	    = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_LINK, clauses);
 	  c_name = "link";
+	  break;
+	case PRAGMA_OMP_CLAUSE_LOCAL:
+	  clauses
+	    = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_LOCAL, clauses);
+	  c_name = "local";
 	  break;
 	case PRAGMA_OMP_CLAUSE_TO:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)) != 0)
@@ -28877,6 +28884,7 @@ c_maybe_parse_omp_decl (tree decl, tree d)
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_TO)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ENTER)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LOCAL)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_INDIRECT))
 
@@ -28946,6 +28954,11 @@ c_parser_omp_declare_target (c_parser *parser)
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "%qD specified both in declare target %<link%> and %qs"
 		      " clauses", t, OMP_CLAUSE_ENTER_TO (c) ? "to" : "enter");
+	  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LOCAL
+		   || value_member (get_identifier ("local"), TREE_VALUE (at2)))
+	    error_at (OMP_CLAUSE_LOCATION (c),
+		      "%qD specified both in declare target %<link%> and "
+		      "%<local%> clauses", t);
 	  else
 	    error_at (OMP_CLAUSE_LOCATION (c),
 		      "%qD specified both in declare target %<link%> and "
@@ -28955,6 +28968,11 @@ c_parser_omp_declare_target (c_parser *parser)
       if (!at1)
 	{
 	  DECL_ATTRIBUTES (t) = tree_cons (id, NULL_TREE, DECL_ATTRIBUTES (t));
+	  if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LOCAL)
+	    TREE_VALUE (DECL_ATTRIBUTES (t))
+	      = tree_cons (NULL_TREE, get_identifier ("local"),
+			   TREE_VALUE (DECL_ATTRIBUTES (t)));
+
 	  if (TREE_CODE (t) != FUNCTION_DECL && !is_global_var (t))
 	    continue;
 
@@ -28965,9 +28983,30 @@ c_parser_omp_declare_target (c_parser *parser)
 	      if (ENABLE_OFFLOADING)
 		{
 		  g->have_offload = true;
-		  if (is_a <varpool_node *> (node))
+		  if (is_a <varpool_node *> (node)
+		      && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_LOCAL)
 		    vec_safe_push (offload_vars, t);
 		}
+	    }
+	}
+      else
+	{
+	  bool saw_local = value_member (get_identifier ("local"),
+					 TREE_VALUE (at1));
+	  if (saw_local && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD specified both in declare target %<local%> and "
+			"%qs clauses", t,
+			OMP_CLAUSE_ENTER_TO (c) ? "to" : "enter");
+	      continue;
+	    }
+	  else if (!saw_local && OMP_CLAUSE_CODE (c) == OMP_CLAUSE_LOCAL)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qD specified both in declare target %<local%> and "
+			"%<to%> or %<enter%> clauses", t);
+	      continue;
 	    }
 	}
       if (TREE_CODE (t) != FUNCTION_DECL)

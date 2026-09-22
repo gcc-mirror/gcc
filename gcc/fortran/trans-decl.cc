@@ -1584,27 +1584,27 @@ add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
 
   /* FIXME: 'declare_target_link' permits both any and host, but
      will fail if one sets OMP_CLAUSE_DEVICE_TYPE_KIND.  */
+  tree arg_list = NULL_TREE;
   if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
       && !sym_attr.omp_declare_target_link
       && !sym_attr.omp_declare_target_indirect /* implies 'any' */)
     {
-      tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
+      const char *arg_str = NULL;
       switch (sym_attr.omp_device_type)
 	{
 	case OMP_DEVICE_TYPE_HOST:
-	  OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_HOST;
+	  arg_str = "device_type(host)";
 	  break;
 	case OMP_DEVICE_TYPE_NOHOST:
-	  OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_NOHOST;
+	  arg_str = "device_type(nohost)";
 	  break;
 	case OMP_DEVICE_TYPE_ANY:
-	  OMP_CLAUSE_DEVICE_TYPE_KIND (c) = OMP_CLAUSE_DEVICE_TYPE_ANY;
+	  arg_str = "device_type(any)";
 	  break;
 	default:
 	  gcc_unreachable ();
 	}
-      OMP_CLAUSE_CHAIN (c) = clauses;
-      clauses = c;
+      arg_list = tree_cons (NULL_TREE, get_identifier (arg_str), arg_list);
     }
 
   /* Also check trans-common.cc when updating/removing the following;
@@ -1612,23 +1612,48 @@ add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
   if (sym_attr.omp_groupprivate)
     gfc_error ("Sorry, OMP GROUPPRIVATE not implemented, "
 	       "used by %qs declared at %L", sym->name, &sym->declared_at);
-  else if (sym_attr.omp_declare_target_local)
-    /* Use 'else if' as groupprivate implies 'local'.  */
-    gfc_error ("Sorry, OMP DECLARE TARGET with LOCAL clause not implemented, "
-	       "used by %qs declared at %L", sym->name, &sym->declared_at);
 
   bool has_declare = true;
-  if (sym_attr.omp_declare_target_link
-      || sym_attr.oacc_declare_link)
-    list = tree_cons (get_identifier ("omp declare target link"),
-		      clauses, list);
-  else if (sym_attr.omp_declare_target
-	   || sym_attr.oacc_declare_create
-	   || sym_attr.oacc_declare_copyin
-	   || sym_attr.oacc_declare_deviceptr
-	   || sym_attr.oacc_declare_device_resident)
-    list = tree_cons (get_identifier ("omp declare target"),
-		      clauses, list);
+
+  if (flag_openmp)
+    {
+      if (sym_attr.omp_declare_target_link)
+	list = tree_cons (get_identifier ("omp declare target link"),
+			  arg_list, list);
+      else if (sym_attr.omp_declare_target)
+	list = tree_cons (get_identifier ("omp declare target"),
+			  arg_list, list);
+      else if (sym_attr.omp_declare_target_local)
+	{
+	  /* The OpenMP local clause is encoded as an identifier in the
+	     TREE_VALUE of the attribute, itself as a TREE_LIST. This is because
+	     local has very similar handling to normal "enter", just not added
+	     to offload_vars.  */
+	  arg_list = tree_cons (NULL_TREE, get_identifier ("local"), arg_list);
+	  list = tree_cons (get_identifier ("omp declare target"),
+			    arg_list, list);
+	}
+      else
+	has_declare = false;
+    }
+  else if (flag_openacc)
+    {
+      /* OpenACC has the routine clause list saved in TREE_VALUE of attribute.
+	 This appears consistent with C/C++. Whether OpenMP/OpenACC handling
+	 should be further unified is TBD.  */
+      if (sym_attr.oacc_declare_link)
+	list = tree_cons (get_identifier ("omp declare target link"),
+			  clauses, list);
+      else if (sym_attr.omp_declare_target
+	       || sym_attr.oacc_declare_create
+	       || sym_attr.oacc_declare_copyin
+	       || sym_attr.oacc_declare_deviceptr
+	       || sym_attr.oacc_declare_device_resident)
+	list = tree_cons (get_identifier ("omp declare target"),
+			  clauses, list);
+      else
+	has_declare = false;
+    }
   else
     has_declare = false;
 

@@ -17807,6 +17807,22 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 		remove = true;
 		break;
 	      }
+
+	    tree attr;
+	    if (DECL_P (t)
+		&& OMP_CLAUSE_CODE (c) == OMP_CLAUSE_MAP
+		&& (attr = lookup_attribute ("omp declare target",
+					     DECL_ATTRIBUTES (t)))
+		&& value_member (get_identifier ("local"),
+				 TREE_VALUE (attr)))
+	      {
+		error_at (OMP_CLAUSE_LOCATION (c),
+			  "device-local variable %qD cannot appear "
+			  "in map clause", t);
+		remove = true;
+		break;
+	      }
+
 	    /* OpenACC attach / detach clauses must be pointers.  */
 	    if (c_oacc_check_attachments (c))
 	      {
@@ -18001,6 +18017,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 
 	case OMP_CLAUSE_ENTER:
 	case OMP_CLAUSE_LINK:
+	case OMP_CLAUSE_LOCAL:
 	  t = OMP_CLAUSE_DECL (c);
 	  const char *cname;
 	  cname = omp_clause_code_name[OMP_CLAUSE_CODE (c)];
