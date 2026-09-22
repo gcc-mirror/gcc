@@ -735,7 +735,7 @@
 (define_insn "atomic_store<mode>"
   [(set (match_operand:ALLI 0 "aarch64_rcpc_memory_operand" "=Q,Ust")
     (unspec_volatile:ALLI
-      [(match_operand:ALLI 1 "general_operand" "rZ,rZ")
+      [(match_operand:ALLI 1 "aarch64_reg_or_zero" "rZ,rZ")
        (match_operand:SI 2 "const_int_operand")]			;; model
       UNSPECV_STL))]
   ""
