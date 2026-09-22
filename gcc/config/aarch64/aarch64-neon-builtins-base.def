@@ -604,6 +604,22 @@ DEF_NEON_FUNCTION_GS (vluti4q_lane,  neon_luti2_h, x2, ("Q0,Q0x2,Du8,ss32", rang
 DEF_NEON_FUNCTION_GS (vluti4q_laneq, neon_luti2_h, x2, ("Q0,Q0x2,Qu8,ss32", range<2, 0, 3>))
 #undef REQUIRED_EXTENSIONS
 
+// Loads
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+// Load without interleaving
+DEF_NEON_FUNCTION_GS (vld1,  all_neon, x1234, ("D0xt,al"))
+DEF_NEON_FUNCTION_GS (vld1q, all_neon, x1234, ("Q0xt,al"))
+DEF_NEON_FUNCTION    (vldrq, p128,	      ("s0,al"))
+#undef REQUIRED_EXTENSIONS
+
+// Stores
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+// Store without interleaving
+DEF_NEON_FUNCTION_GS (vst1,  all_neon, x1234, ("_,as,D0xt"))
+DEF_NEON_FUNCTION_GS (vst1q, all_neon, x1234, ("_,as,Q0xt"))
+DEF_NEON_FUNCTION    (vstrq, p128,	      ("_,as,s0"))
+#undef REQUIRED_EXTENSIONS
+
 // AES
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_AES)
 DEF_NEON_FUNCTION (vaeseq,   b_unsigned, ("Q0,Q0,Q0"))

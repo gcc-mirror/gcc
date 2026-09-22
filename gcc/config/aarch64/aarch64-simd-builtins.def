@@ -67,32 +67,6 @@
   BUILTIN_VSDQ_I (BINOP_SSU, suqadd, 0, DEFAULT)
   BUILTIN_VSDQ_I (BINOP_UUS, usqadd, 0, DEFAULT)
 
-  /* Implemented by aarch64_ld1x2<vstruct_elt>. */
-  BUILTIN_VALLDIF (LOADSTRUCT, ld1x2, 0, LOAD)
-  BUILTIN_VSDQ_I_DI (LOADSTRUCT_U, ld1x2, 0, LOAD)
-  BUILTIN_VALLP (LOADSTRUCT_P, ld1x2, 0, LOAD)
-  /* Implemented by aarch64_ld1x3<vstruct_elt>.  */
-  BUILTIN_VALLDIF (LOADSTRUCT, ld1x3, 0, LOAD)
-  BUILTIN_VSDQ_I_DI (LOADSTRUCT_U, ld1x3, 0, LOAD)
-  BUILTIN_VALLP (LOADSTRUCT_P, ld1x3, 0, LOAD)
-  /* Implemented by aarch64_ld1x4<vstruct_elt>.  */
-  BUILTIN_VALLDIF (LOADSTRUCT, ld1x4, 0, LOAD)
-  BUILTIN_VSDQ_I_DI (LOADSTRUCT_U, ld1x4, 0, LOAD)
-  BUILTIN_VALLP (LOADSTRUCT_P, ld1x4, 0, LOAD)
-
-  /* Implemented by aarch64_st1x2<vstruct_elt>.  */
-  BUILTIN_VALLDIF (STORESTRUCT, st1x2, 0, STORE)
-  BUILTIN_VSDQ_I_DI (STORESTRUCT_U, st1x2, 0, STORE)
-  BUILTIN_VALLP (STORESTRUCT_P, st1x2, 0, STORE)
-  /* Implemented by aarch64_st1x3<vstruct_elt>.  */
-  BUILTIN_VALLDIF (STORESTRUCT, st1x3, 0, STORE)
-  BUILTIN_VSDQ_I_DI (STORESTRUCT_U, st1x3, 0, STORE)
-  BUILTIN_VALLP (STORESTRUCT_P, st1x3, 0, STORE)
-  /* Implemented by aarch64_st1x4<vstruct_elt>.  */
-  BUILTIN_VALLDIF (STORESTRUCT, st1x4, 0, STORE)
-  BUILTIN_VSDQ_I_DI (STORESTRUCT_U, st1x4, 0, STORE)
-  BUILTIN_VALLP (STORESTRUCT_P, st1x4, 0, STORE)
-
   /* Implemented by aarch64_ld<nregs><vstruct_elt>.  */
   BUILTIN_VALLDIF (LOADSTRUCT, ld2, 0, LOAD)
   BUILTIN_VSDQ_I_DI (LOADSTRUCT_U, ld2, 0, LOAD)
@@ -571,16 +545,6 @@
   VAR1 (UNOP, float_trunc_rodd_, 0, FP, df)
   VAR1 (UNOP, float_trunc_rodd_lo_, 0, FP, v2sf)
   VAR1 (BINOP, float_trunc_rodd_hi_, 0, FP, v4sf)
-
-  /* Implemented by aarch64_ld1<VALL_F16:mode>.  */
-  BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
-  BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
-  BUILTIN_VALLP_NO_DI (LOAD1_P, ld1, 0, LOAD)
-
-  /* Implemented by aarch64_st1<VALL_F16:mode>.  */
-  BUILTIN_VALL_F16 (STORE1, st1, 0, STORE)
-  BUILTIN_VDQ_I (STORE1_U, st1, 0, STORE)
-  BUILTIN_VALLP_NO_DI (STORE1_P, st1, 0, STORE)
 
   /* Implemented by fma<mode>4.  */
   VAR1 (TERNOP, fma, 4, FP, hf)

@@ -154,8 +154,6 @@ ENTRY_FMA_FPM (vmlalltt, f32, UNSPEC_FMLALLTT_FP8)
 
 // ld1
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_LOAD (vld1_mf8, mf8, mf8_scalar_const_ptr, UNSPEC_LD1)
-ENTRY_LOAD (vld1q_mf8, mf8q, mf8_scalar_const_ptr, UNSPEC_LD1)
 ENTRY_LOAD (vld1_dup_mf8, mf8, mf8_scalar_const_ptr, UNSPEC_DUP)
 ENTRY_LOAD (vld1q_dup_mf8, mf8q, mf8_scalar_const_ptr, UNSPEC_DUP)
 
@@ -167,8 +165,6 @@ ENTRY_LOAD_LANE (vld1q_lane_mf8, mf8q, mf8_scalar_const_ptr, mf8q,
 
 // ld<n>
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_LOAD (vld1_mf8_x2, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD1x2)
-ENTRY_LOAD (vld1q_mf8_x2, mf8qx2, mf8_scalar_const_ptr, UNSPEC_LD1x2)
 ENTRY_LOAD (vld2_mf8, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD2)
 ENTRY_LOAD (vld2q_mf8, mf8qx2, mf8_scalar_const_ptr, UNSPEC_LD2)
 ENTRY_LOAD (vld2_dup_mf8, mf8x2, mf8_scalar_const_ptr, UNSPEC_LD2_DUP)
@@ -178,8 +174,6 @@ ENTRY_LOAD_LANE (vld2_lane_mf8, mf8x2, mf8_scalar_const_ptr, mf8x2,
 ENTRY_LOAD_LANE (vld2q_lane_mf8, mf8qx2, mf8_scalar_const_ptr, mf8qx2,
 		 UNSPEC_LD2_LANE)
 
-ENTRY_LOAD (vld1_mf8_x3, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD1x3)
-ENTRY_LOAD (vld1q_mf8_x3, mf8qx3, mf8_scalar_const_ptr, UNSPEC_LD1x3)
 ENTRY_LOAD (vld3_mf8, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD3)
 ENTRY_LOAD (vld3q_mf8, mf8qx3, mf8_scalar_const_ptr, UNSPEC_LD3)
 ENTRY_LOAD (vld3_dup_mf8, mf8x3, mf8_scalar_const_ptr, UNSPEC_LD3_DUP)
@@ -189,8 +183,6 @@ ENTRY_LOAD_LANE (vld3_lane_mf8, mf8x3, mf8_scalar_const_ptr, mf8x3,
 ENTRY_LOAD_LANE (vld3q_lane_mf8, mf8qx3, mf8_scalar_const_ptr, mf8qx3,
 		 UNSPEC_LD3_LANE)
 
-ENTRY_LOAD (vld1_mf8_x4, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD1x4)
-ENTRY_LOAD (vld1q_mf8_x4, mf8qx4, mf8_scalar_const_ptr, UNSPEC_LD1x4)
 ENTRY_LOAD (vld4_mf8, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD4)
 ENTRY_LOAD (vld4q_mf8, mf8qx4, mf8_scalar_const_ptr, UNSPEC_LD4)
 ENTRY_LOAD (vld4_dup_mf8, mf8x4, mf8_scalar_const_ptr, UNSPEC_LD4_DUP)
@@ -213,9 +205,6 @@ ENTRY_TERNARY (vmmlaq_f32_mf8, f32q, f32q, mf8q, mf8q, UNSPEC_FMMLA, FP8)
 
 // st1
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_STORE (vst1_mf8, mf8_scalar_ptr, mf8, UNSPEC_ST1)
-ENTRY_STORE (vst1q_mf8, mf8_scalar_ptr, mf8q, UNSPEC_ST1)
-
 ENTRY_STORE_LANE (vst1_lane_mf8, mf8_scalar_ptr, mf8, UNSPEC_ST1_LANE)
 ENTRY_STORE_LANE (vst1q_lane_mf8, mf8_scalar_ptr, mf8q, UNSPEC_ST1_LANE)
 #undef REQUIRED_EXTENSIONS
@@ -224,22 +213,16 @@ ENTRY_STORE_LANE (vst1q_lane_mf8, mf8_scalar_ptr, mf8q, UNSPEC_ST1_LANE)
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
 ENTRY_STORE (vst2_mf8, mf8_scalar_ptr, mf8x2, UNSPEC_ST2)
 ENTRY_STORE (vst2q_mf8, mf8_scalar_ptr, mf8qx2, UNSPEC_ST2)
-ENTRY_STORE (vst1_mf8_x2, mf8_scalar_ptr, mf8x2, UNSPEC_ST1x2)
-ENTRY_STORE (vst1q_mf8_x2, mf8_scalar_ptr, mf8qx2, UNSPEC_ST1x2)
 ENTRY_STORE_LANE (vst2_lane_mf8, mf8_scalar_ptr, mf8x2, UNSPEC_ST2_LANE)
 ENTRY_STORE_LANE (vst2q_lane_mf8, mf8_scalar_ptr, mf8qx2, UNSPEC_ST2_LANE)
 
 ENTRY_STORE (vst3_mf8, mf8_scalar_ptr, mf8x3, UNSPEC_ST3)
 ENTRY_STORE (vst3q_mf8, mf8_scalar_ptr, mf8qx3, UNSPEC_ST3)
-ENTRY_STORE (vst1_mf8_x3, mf8_scalar_ptr, mf8x3, UNSPEC_ST1x3)
-ENTRY_STORE (vst1q_mf8_x3, mf8_scalar_ptr, mf8qx3, UNSPEC_ST1x3)
 ENTRY_STORE_LANE (vst3_lane_mf8, mf8_scalar_ptr, mf8x3, UNSPEC_ST3_LANE)
 ENTRY_STORE_LANE (vst3q_lane_mf8, mf8_scalar_ptr, mf8qx3, UNSPEC_ST3_LANE)
 
 ENTRY_STORE (vst4_mf8, mf8_scalar_ptr, mf8x4, UNSPEC_ST4)
 ENTRY_STORE (vst4q_mf8, mf8_scalar_ptr, mf8qx4, UNSPEC_ST4)
-ENTRY_STORE (vst1_mf8_x4, mf8_scalar_ptr, mf8x4, UNSPEC_ST1x4)
-ENTRY_STORE (vst1q_mf8_x4, mf8_scalar_ptr, mf8qx4, UNSPEC_ST1x4)
 ENTRY_STORE_LANE (vst4_lane_mf8, mf8_scalar_ptr, mf8x4, UNSPEC_ST4_LANE)
 ENTRY_STORE_LANE (vst4q_lane_mf8, mf8_scalar_ptr, mf8qx4, UNSPEC_ST4_LANE)
 #undef REQUIRED_EXTENSIONS

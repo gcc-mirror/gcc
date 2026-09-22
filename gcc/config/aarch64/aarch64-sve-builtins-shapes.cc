@@ -215,6 +215,8 @@ parse_element_type (const function_instance &instance, const char *&format)
    Q<elt>  - a 128 bit neon vector
    D<elt>x<n>  - an n-tuple of 64 bit neon vectors
    Q<elt>x<n>  - an n-tuple of 128 bit neon vectors
+   D<elt>xt    - a tuple of 64 bit neon vectors [*4]
+   Q<elt>xt    - a tuple of 128 bit neon vectors [*4]
 
    where <elt> has the format described above parse_element_type
 
@@ -222,6 +224,7 @@ parse_element_type (const function_instance &instance, const char *&format)
 	be a tuple, and if so, how many vectors it should contain.
    [*2] same as for [*1], but the tuple contains half as many vectors.
    [*3] same as for [*1], but the tuple contains twice as many vectors.
+   [*4] the vectors_per_tuple function indicates how many vectors are in the tuple.
 */
 static tree
 parse_type (const function_instance &instance, const char *&format)
@@ -342,8 +345,13 @@ parse_type (const function_instance &instance, const char *&format)
 	{
 	  int ch = format[1];
 	  format += 2;
-	  gcc_assert (IN_RANGE (ch, '1', '4'));
-	  num_vectors = ch - '0';
+	  if (ch == 't')
+	    num_vectors = instance.vectors_per_tuple ();
+	  else
+	    {
+	      gcc_assert (IN_RANGE (ch, '1', '4'));
+	      num_vectors = ch - '0';
+	    }
 	}
       return num_vectors == 1
 	       ? aarch64_simd_types_trees[neon_index].itype

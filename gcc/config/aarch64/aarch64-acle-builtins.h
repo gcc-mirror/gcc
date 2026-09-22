@@ -1951,6 +1951,10 @@ function_expander::result_mode () const
 #define TYPES_h_poly(S, D, T) \
   S (p16)
 
+/* _p128.  */
+#define TYPES_p128(S, D, T) \
+  S (p128)
+
 /* _p8 _p16 _p64 _p128.  */
 #define TYPES_bhdq_poly(S, D, T) \
   S (p8), S (p16), S (p64), S (p128)
@@ -2266,6 +2270,7 @@ DEF_SVE_TYPES_ARRAY (h_poly);
 DEF_SVE_TYPES_ARRAY (bh_poly);
 DEF_SVE_TYPES_ARRAY (bhd_poly);
 DEF_SVE_TYPES_ARRAY (bhdq_poly);
+DEF_SVE_TYPES_ARRAY (p128);
 DEF_SVE_TYPES_ARRAY (bhs_neon);
 DEF_SVE_TYPES_ARRAY (bhsd_neon);
 DEF_SVE_TYPES_ARRAY (neon_copy_lane);

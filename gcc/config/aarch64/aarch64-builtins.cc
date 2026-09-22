@@ -4241,22 +4241,6 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 	gcc_unreachable ();
       break;
 
-    case UNSPEC_LD1:
-      icode = code_for_aarch64_ld1 (ops[0].mode);
-      break;
-
-    case UNSPEC_LD1x2:
-      icode = code_for_aarch64_ld1x2 (ops[0].mode);
-      break;
-
-    case UNSPEC_LD1x3:
-      icode = code_for_aarch64_ld1x3 (ops[0].mode);
-      break;
-
-    case UNSPEC_LD1x4:
-      icode = code_for_aarch64_ld1x4 (ops[0].mode);
-      break;
-
     case UNSPEC_LD2:
     case UNSPEC_LD3:
     case UNSPEC_LD4:
@@ -4301,28 +4285,12 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
       icode = code_for_aarch64_simd_vec_set (ops[0].mode);
       break;
 
-    case UNSPEC_ST1:
-      icode = code_for_aarch64_st1 (ops[1].mode);
-      break;
-
     case UNSPEC_ST1_LANE:
       aarch64_dereference_pointer (&ops[0], GET_MODE_INNER (ops[1].mode));
       /* Reinterpret ops[0] as an output.  */
       create_fixed_operand (&ops[0], ops[0].value);
       aarch64_canonicalize_lane (&ops[2], ops[1].mode);
       icode = code_for_aarch64_get_lane (ops[1].mode);
-      break;
-
-    case UNSPEC_ST1x2:
-      icode = code_for_aarch64_st1x2 (ops[1].mode);
-      break;
-
-    case UNSPEC_ST1x3:
-      icode = code_for_aarch64_st1x3 (ops[1].mode);
-      break;
-
-    case UNSPEC_ST1x4:
-      icode = code_for_aarch64_st1x4 (ops[1].mode);
       break;
 
     case UNSPEC_ST2:
@@ -4732,98 +4700,9 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
   return NULL_TREE;
 }
 
-enum aarch64_simd_type
-get_mem_type_for_load_store (unsigned int fcode)
-{
-  switch (fcode)
-  {
-    VAR1 (LOAD1, ld1, 0, LOAD, v8qi)
-    VAR1 (STORE1, st1, 0, STORE, v8qi)
-      return Int8x8_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v16qi)
-    VAR1 (STORE1, st1, 0, STORE, v16qi)
-      return Int8x16_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v4hi)
-    VAR1 (STORE1, st1, 0, STORE, v4hi)
-      return Int16x4_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v8hi)
-    VAR1 (STORE1, st1, 0, STORE, v8hi)
-      return Int16x8_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v2si)
-    VAR1 (STORE1, st1, 0, STORE, v2si)
-      return Int32x2_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v4si)
-    VAR1 (STORE1, st1, 0, STORE, v4si)
-      return Int32x4_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v2di)
-    VAR1 (STORE1, st1, 0, STORE, v2di)
-      return Int64x2_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v8qi)
-    VAR1 (STORE1_U, st1, 0, STORE, v8qi)
-      return Uint8x8_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v16qi)
-    VAR1 (STORE1_U, st1, 0, STORE, v16qi)
-      return Uint8x16_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v4hi)
-    VAR1 (STORE1_U, st1, 0, STORE, v4hi)
-      return Uint16x4_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v8hi)
-    VAR1 (STORE1_U, st1, 0, STORE, v8hi)
-      return Uint16x8_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v2si)
-    VAR1 (STORE1_U, st1, 0, STORE, v2si)
-      return Uint32x2_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v4si)
-    VAR1 (STORE1_U, st1, 0, STORE, v4si)
-      return Uint32x4_t;
-    VAR1 (LOAD1_U, ld1, 0, LOAD, v2di)
-    VAR1 (STORE1_U, st1, 0, STORE, v2di)
-      return Uint64x2_t;
-    VAR1 (LOAD1_P, ld1, 0, LOAD, v8qi)
-    VAR1 (STORE1_P, st1, 0, STORE, v8qi)
-      return Poly8x8_t;
-    VAR1 (LOAD1_P, ld1, 0, LOAD, v16qi)
-    VAR1 (STORE1_P, st1, 0, STORE, v16qi)
-      return Poly8x16_t;
-    VAR1 (LOAD1_P, ld1, 0, LOAD, v4hi)
-    VAR1 (STORE1_P, st1, 0, STORE, v4hi)
-      return Poly16x4_t;
-    VAR1 (LOAD1_P, ld1, 0, LOAD, v8hi)
-    VAR1 (STORE1_P, st1, 0, STORE, v8hi)
-      return Poly16x8_t;
-    VAR1 (LOAD1_P, ld1, 0, LOAD, v2di)
-    VAR1 (STORE1_P, st1, 0, STORE, v2di)
-      return Poly64x2_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v4hf)
-    VAR1 (STORE1, st1, 0, STORE, v4hf)
-      return Float16x4_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v8hf)
-    VAR1 (STORE1, st1, 0, STORE, v8hf)
-      return Float16x8_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v4bf)
-    VAR1 (STORE1, st1, 0, STORE, v4bf)
-      return Bfloat16x4_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v8bf)
-    VAR1 (STORE1, st1, 0, STORE, v8bf)
-      return Bfloat16x8_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v2sf)
-    VAR1 (STORE1, st1, 0, STORE, v2sf)
-      return Float32x2_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v4sf)
-    VAR1 (STORE1, st1, 0, STORE, v4sf)
-      return Float32x4_t;
-    VAR1 (LOAD1, ld1, 0, LOAD, v2df)
-    VAR1 (STORE1, st1, 0, STORE, v2df)
-      return Float64x2_t;
-    default:
-      gcc_unreachable ();
-      break;
-  }
-}
-
 /* We've seen a vector load from address ADDR.  Record it in
    vector_load_decls, if appropriate.  */
-static void
+void
 aarch64_record_vector_load_arg (tree addr)
 {
   tree decl = aarch64_vector_load_decl (addr);
@@ -4870,7 +4749,7 @@ aarch64_fold_to_val (gcall *stmt, gimple_stmt_iterator *gsi,
 }
 
 /* Dereference pointer ADDR, giving a memory reference of type TYPE.  */
-static tree
+tree
 aarch64_dereference (tree addr, tree type)
 {
   tree elt_type = (VECTOR_TYPE_P (type) ? TREE_TYPE (type) : type);
@@ -4911,40 +4790,6 @@ aarch64_set_lane (tree lhs, tree elt, tree vec, tree lane)
   return gimple_build_assign (lhs, BIT_INSERT_EXPR, vec, elt, bit);
 }
 
-/* Fold a call to vld1, given that it loads something of type TYPE.  */
-static gimple *
-aarch64_fold_load (gcall *stmt, tree type)
-{
-  /* Punt until after inlining, so that we stand more chance of
-     recording something meaningful in vector_load_decls.  */
-  if (!cfun->after_inlining)
-    return nullptr;
-  tree addr = gimple_call_arg (stmt, 0);
-  aarch64_record_vector_load_arg (addr);
-  if (!BYTES_BIG_ENDIAN)
-    {
-      tree mem = aarch64_dereference (addr, type);
-      auto *new_stmt = gimple_build_assign (gimple_get_lhs (stmt), mem);
-      return aarch64_copy_vops (new_stmt, stmt);
-    }
-  return nullptr;
-}
-
-/* Fold a call to vst1, given that it loads something of type TYPE.  */
-static gimple *
-aarch64_fold_store (gcall *stmt, tree type)
-{
-  tree addr = gimple_call_arg (stmt, 0);
-  tree data = gimple_call_arg (stmt, 1);
-  if (!BYTES_BIG_ENDIAN)
-    {
-      tree mem = aarch64_dereference (addr, type);
-      auto *new_stmt = gimple_build_assign (mem, data);
-      return aarch64_copy_vops (new_stmt, stmt);
-    }
-  return nullptr;
-}
-
 /* Try to fold STMT (at GSI), given that it is a call to the builtin
    described by BUILTIN_DATA.  Return the new statement on success,
    otherwise return null.  */
@@ -4969,9 +4814,6 @@ aarch64_gimple_fold_pragma_builtin
 	return aarch64_fold_to_val (stmt, gsi, nullptr, dup);
       }
 
-    case UNSPEC_LD1:
-      return aarch64_fold_load (stmt, types[0].type ());
-
     case UNSPEC_SET_LANE:
       {
 	tree elt = gimple_call_arg (stmt, 0);
@@ -4984,9 +4826,6 @@ aarch64_gimple_fold_pragma_builtin
 				 gimple_call_arg (stmt, 1),
 				 gimple_call_arg (stmt, 2));
       }
-
-    case UNSPEC_ST1:
-      return aarch64_fold_store (stmt, types[1].type ());
 
     case UNSPEC_ST1_LANE:
       {
@@ -5209,31 +5048,6 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 					       1, args[0]);
 	gimple_call_set_lhs (new_stmt, gimple_call_lhs (stmt));
 	break;
-
-     /*lower store and load neon builtins to gimple.  */
-     BUILTIN_VALL_F16 (LOAD1, ld1, 0, LOAD)
-     BUILTIN_VDQ_I (LOAD1_U, ld1, 0, LOAD)
-     BUILTIN_VALLP_NO_DI (LOAD1_P, ld1, 0, LOAD)
-       {
-	 enum aarch64_simd_type mem_type
-	   = get_mem_type_for_load_store (fcode);
-	 aarch64_simd_type_info_trees simd_type
-	   = aarch64_simd_types_trees[mem_type];
-	 new_stmt = aarch64_fold_load (stmt, simd_type.itype);
-	 break;
-       }
-
-      BUILTIN_VALL_F16 (STORE1, st1, 0, STORE)
-      BUILTIN_VDQ_I (STORE1_U, st1, 0, STORE)
-      BUILTIN_VALLP_NO_DI (STORE1_P, st1, 0, STORE)
-	{
-	  enum aarch64_simd_type mem_type
-	    = get_mem_type_for_load_store (fcode);
-	  aarch64_simd_type_info_trees simd_type
-	    = aarch64_simd_types_trees[mem_type];
-	  new_stmt = aarch64_fold_store (stmt, simd_type.itype);
-	  break;
-	}
 
       /* lower saturating add/sub neon builtins to gimple.  */
       BUILTIN_VSDQ_I (BINOP, ssadd, 3, DEFAULT)

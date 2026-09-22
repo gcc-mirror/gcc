@@ -1,6 +1,8 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O2 -std=gnu++11 -w" } */
 
+#include <arm_neon.h>
+
 namespace c {
 typedef int d;
 template <typename e> struct f { typedef e g; };
@@ -40,7 +42,7 @@ typedef struct {
   ai aj[2];
 } ak;
 typedef int al;
-void am(p *a, ai b) { __builtin_aarch64_st1v4si(a, b); }
+void am (p *a, ai b) { vst1q_s32 (a, b); }
 namespace an {
 class ao {
 public:

@@ -42,3 +42,6 @@
 
 #define TEST_UNIFORM_TERNARY(NAME, TYPE)                                       \
   TEST_TERNARY (NAME, TYPE, TYPE, TYPE, TYPE)
+
+#define TEST_STORE(NAME, PTR_TYPE, VEC_TYPE)                                   \
+  void test_##NAME (VEC_TYPE vec, PTR_TYPE ptr) { NAME (ptr, vec); }
