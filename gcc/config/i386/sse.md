@@ -27081,6 +27081,15 @@
    (set_attr "prefix" "orig,orig,vex,evex")
    (set_attr "mode" "<MODE>")])
 
+(define_expand "roundeven<mode>2"
+  [(set (match_operand:VFH 0 "register_operand")
+	(unspec:VFH
+	  [(match_operand:VFH 1 "vector_operand")
+	   (match_dup 2)]
+	  UNSPEC_ROUND))]
+  "TARGET_SSE4_1"
+  "operands[2] = GEN_INT (ROUND_ROUNDEVEN | ROUND_NO_EXC);")
+
 (define_expand "floor<mode>2"
   [(set (match_operand:VFH 0 "register_operand")
 	(unspec:VFH
