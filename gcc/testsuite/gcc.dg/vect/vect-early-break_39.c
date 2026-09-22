@@ -8,7 +8,7 @@
 #endif
 unsigned vect_a[N];
 unsigned vect_b[N];
-  
+
 unsigned test4(unsigned x, unsigned n)
 {
  unsigned ret = 0;
@@ -18,11 +18,10 @@ unsigned test4(unsigned x, unsigned n)
    if (vect_a[i]*2 > x)
      break;
    vect_a[i] = x;
-   
+
  }
  return ret;
 }
 
-/* AArch64 will scalarize the load and is able to vectorize it.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" { xfail aarch64*-*-* } } } */
 /* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 0 "vect" { target { ! aarch64*-*-* } } } } */

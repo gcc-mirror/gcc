@@ -610,6 +610,14 @@ DEF_NEON_FUNCTION_GS (vluti4q_laneq, neon_luti2_h, x2, ("Q0,Q0x2,Qu8,ss32", rang
 DEF_NEON_FUNCTION_GS (vld1,  all_neon, x1234, ("D0xt,al"))
 DEF_NEON_FUNCTION_GS (vld1q, all_neon, x1234, ("Q0xt,al"))
 DEF_NEON_FUNCTION    (vldrq, p128,	      ("s0,al"))
+
+// Load interleaved tuples
+DEF_NEON_FUNCTION (vld2,  all_neon, ("D0x2,al"))
+DEF_NEON_FUNCTION (vld2q, all_neon, ("Q0x2,al"))
+DEF_NEON_FUNCTION (vld3,  all_neon, ("D0x3,al"))
+DEF_NEON_FUNCTION (vld3q, all_neon, ("Q0x3,al"))
+DEF_NEON_FUNCTION (vld4,  all_neon, ("D0x4,al"))
+DEF_NEON_FUNCTION (vld4q, all_neon, ("Q0x4,al"))
 #undef REQUIRED_EXTENSIONS
 
 // Stores
@@ -618,6 +626,14 @@ DEF_NEON_FUNCTION    (vldrq, p128,	      ("s0,al"))
 DEF_NEON_FUNCTION_GS (vst1,  all_neon, x1234, ("_,as,D0xt"))
 DEF_NEON_FUNCTION_GS (vst1q, all_neon, x1234, ("_,as,Q0xt"))
 DEF_NEON_FUNCTION    (vstrq, p128,	      ("_,as,s0"))
+
+// Store interleaved tuples
+DEF_NEON_FUNCTION (vst2,  all_neon, ("_,as,D0x2"))
+DEF_NEON_FUNCTION (vst2q, all_neon, ("_,as,Q0x2"))
+DEF_NEON_FUNCTION (vst3,  all_neon, ("_,as,D0x3"))
+DEF_NEON_FUNCTION (vst3q, all_neon, ("_,as,Q0x3"))
+DEF_NEON_FUNCTION (vst4,  all_neon, ("_,as,D0x4"))
+DEF_NEON_FUNCTION (vst4q, all_neon, ("_,as,Q0x4"))
 #undef REQUIRED_EXTENSIONS
 
 // AES

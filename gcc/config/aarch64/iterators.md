@@ -456,6 +456,8 @@
 (define_mode_iterator VSTRUCT_4DNX [V4x8QI V4x4HI V4x2SI V4x4HF
 				    V4x2SF V4x4BF])
 
+(define_mode_iterator VSTRUCT_DNX [VSTRUCT_2DNX VSTRUCT_3DNX VSTRUCT_4DNX])
+
 ;; Advanced SIMD 64-bit structure modes with 64-bit elements.
 (define_mode_iterator VSTRUCT_DX [V2x1DI V2x1DF V3x1DI V3x1DF V4x1DI V4x1DF])
 
@@ -496,6 +498,8 @@
 
 ;; Advanced SIMD vector structure modes.
 (define_mode_iterator VSTRUCT_QD [VSTRUCT_D VSTRUCT_Q])
+(define_mode_iterator VSTRUCT_QDNX [VSTRUCT_DNX VSTRUCT_Q])
+(define_mode_iterator VSTRUCT_INTERLEAVED [(VSTRUCT_DNX "!BYTES_BIG_ENDIAN") VSTRUCT_Q])
 
 ;; Double scalar modes
 (define_mode_iterator DX [DI DF DD])

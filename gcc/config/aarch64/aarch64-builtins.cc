@@ -377,27 +377,6 @@ aarch64_types_loadstruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_poly, qualifier_struct_load_store_lane_index };
 #define TYPES_LOADSTRUCT_LANE_P (aarch64_types_loadstruct_lane_p_qualifiers)
 
-/* The first argument (return type) of a store should be void type,
-   which we represent with qualifier_void.  Their first operand will be
-   a DImode pointer to the location to store to, so we must use
-   qualifier_map_mode | qualifier_pointer to build a pointer to the
-   element type of the vector.  */
-static enum aarch64_type_qualifiers
-aarch64_types_store1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode, qualifier_none };
-#define TYPES_STORE1 (aarch64_types_store1_qualifiers)
-#define TYPES_STORESTRUCT (aarch64_types_store1_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_store1_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode, qualifier_unsigned };
-#define TYPES_STORE1_U (aarch64_types_store1_u_qualifiers)
-#define TYPES_STORESTRUCT_U (aarch64_types_store1_u_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_store1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode, qualifier_poly };
-#define TYPES_STORE1_P (aarch64_types_store1_p_qualifiers)
-#define TYPES_STORESTRUCT_P (aarch64_types_store1_p_qualifiers)
-
 static enum aarch64_type_qualifiers
 aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_void, qualifier_pointer_map_mode,
@@ -4241,12 +4220,6 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 	gcc_unreachable ();
       break;
 
-    case UNSPEC_LD2:
-    case UNSPEC_LD3:
-    case UNSPEC_LD4:
-      icode = code_for_aarch64_ld (ops[0].mode, ops[0].mode);
-      break;
-
     case UNSPEC_LD2_DUP:
       aarch64_dereference_pointer (&ops[1], GET_MODE_INNER (ops[0].mode), 2);
       icode = code_for_aarch64_simd_ld2r (ops[0].mode);
@@ -4291,12 +4264,6 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
       create_fixed_operand (&ops[0], ops[0].value);
       aarch64_canonicalize_lane (&ops[2], ops[1].mode);
       icode = code_for_aarch64_get_lane (ops[1].mode);
-      break;
-
-    case UNSPEC_ST2:
-    case UNSPEC_ST3:
-    case UNSPEC_ST4:
-      icode = code_for_aarch64_st (ops[1].mode, ops[1].mode);
       break;
 
     case UNSPEC_ST2_LANE:
@@ -4752,7 +4719,9 @@ aarch64_fold_to_val (gcall *stmt, gimple_stmt_iterator *gsi,
 tree
 aarch64_dereference (tree addr, tree type)
 {
-  tree elt_type = (VECTOR_TYPE_P (type) ? TREE_TYPE (type) : type);
+  tree elt_type = VECTOR_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE
+		    ? TREE_TYPE (type)
+		    : type;
   tree elt_ptr_type = build_pointer_type_for_mode (elt_type, VOIDmode, true);
   tree zero = build_zero_cst (elt_ptr_type);
   /* Use element type alignment.  */
