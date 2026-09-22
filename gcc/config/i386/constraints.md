@@ -98,6 +98,8 @@
 ;;  z	First SSE register.
 ;;  d	any EVEX encodable SSE register for AVX512DQ target or
 ;;	any SSE register for SSE4_1 target.
+;;  D	any EVEX encodable SSE register for AVX512DQ target or
+;;	any SSE register for SSE2 target.
 ;;  p	Integer register when TARGET_PARTIAL_REG_STALL is disabled
 ;;  a	Integer register when zero extensions with AND are disabled
 ;;  b	Any register that can be used as the GOT base when calling
@@ -120,6 +122,10 @@
 (define_register_constraint "Yd"
  "TARGET_AVX512DQ ? ALL_SSE_REGS : TARGET_SSE4_1 ? SSE_REGS : NO_REGS"
  "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE4_1 target.")
+
+(define_register_constraint "YD"
+ "TARGET_AVX512DQ ? ALL_SSE_REGS : TARGET_SSE2 ? SSE_REGS : NO_REGS"
+ "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE2 target.")
 
 (define_register_constraint "Yp"
  "TARGET_PARTIAL_REG_STALL ? NO_REGS : GENERAL_REGS"

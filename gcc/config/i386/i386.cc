@@ -21436,6 +21436,11 @@ inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
 	  && (TARGET_64BIT ? mode == TImode : mode == DImode))
 	return false;
 
+      /* Moves from SSE_REGS to GENERAL_REGS need only SSE2:
+	 *movti_internal splits them into movq + shufpd + movq.  */
+      if (TARGET_64BIT && mode == TImode && SSE_CLASS_P (class1))
+	return false;
+
       int msize = GET_MODE_SIZE (mode);
 
       /* Between SSE and general, we have moves no larger than word size.  */

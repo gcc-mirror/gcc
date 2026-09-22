@@ -8,9 +8,9 @@
 **.LFB0:
 **	.cfi_startproc
 **	movdqa	load\(%rip\), %xmm0
-**	movaps	%xmm0, -24\(%rsp\)
-**	movq	-24\(%rsp\), %rax
-**	movq	-16\(%rsp\), %rdx
+**	movq	%xmm0, %rax
+**	shufpd	\$1, %xmm0, %xmm0
+**	movq	%xmm0, %rdx
 **	ret
 **	.cfi_endproc
 **...
