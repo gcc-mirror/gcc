@@ -6456,6 +6456,17 @@ package body Exp_Ch3 is
             Set_CPP_Constructors (Typ);
 
          else
+            --  If the type is derived from an untagged private type whose
+            --  full view is tagged, the type is marked tagged for layout
+            --  reasons, but it has no dispatch table.
+
+            if Is_Derived_Type (Typ)
+              and then not Is_Tagged_Type (Etype (Typ))
+            then
+               pragma Assert (Is_Private_Type (Etype (Typ)));
+               return;
+            end if;
+
             if not Building_Static_DT (Typ) then
 
                --  Usually inherited primitives are not delayed but the first
@@ -6547,17 +6558,6 @@ package body Exp_Ch3 is
             end if;
 
             Set_Is_Frozen (Typ);
-
-            --  If the type is derived from an untagged private type whose
-            --  full view is tagged, the type is marked tagged for layout
-            --  reasons, but it has no dispatch table.
-
-            if Is_Derived_Type (Typ)
-              and then not Is_Tagged_Type (Etype (Typ))
-            then
-               pragma Assert (Is_Private_Type (Etype (Typ)));
-               return;
-            end if;
 
             Set_All_DT_Position (Typ);
 
