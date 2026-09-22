@@ -12351,7 +12351,7 @@ package body Exp_Ch3 is
       --  Set to True if Tag_Typ has a primitive that renames the predefined
       --  equality operator. Used to implement (RM 8-5-4(8)).
 
-   --  Start of processing for Make_Predefined_Primitive_Specs
+   --  Start of processing for Make_Predefined_Primitive_Eq_Spec
 
    begin
       Renamed_Eq := Empty;

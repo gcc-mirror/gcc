@@ -11656,6 +11656,7 @@ package body Sem_Ch6 is
          Set_Has_Completion (Op_Name);
          Set_Corresponding_Equality (Op_Name, S);
          Set_Is_Abstract_Subprogram (Op_Name, Is_Abstract_Subprogram (S));
+         Set_Is_Primitive (Op_Name, Is_Primitive (S));
       end;
    end Make_Inequality_Operator;
 
@@ -13274,23 +13275,22 @@ package body Sem_Ch6 is
          --  operation was dispatching), so Check_Dispatching_Operation is not
          --  called in that case.
 
-         if No (Derived_Type)
-           or else Is_Tagged_Type (Derived_Type)
-         then
+         if No (Derived_Type) or else Is_Tagged_Type (Derived_Type) then
             Check_Dispatching_Operation (S, Empty);
          end if;
       end if;
 
-      --  If this is a user-defined equality operator that is not a derived
-      --  subprogram, create the corresponding inequality. If the operation is
-      --  dispatching, the expansion is done elsewhere, and we do not create
-      --  an explicit inequality operation.
-
       <<Check_Inequality>>
+         --  If this is an equality operator whose result type is Boolean and
+         --  that is not a derived subprogram, create the implicit inequality
+         --  operator (RM 6.6(6)), but not if it is a dispatching user-defined
+         --  equality operator because those are handled specially.
+
          if Chars (S) = Name_Op_Eq
            and then Base_Type (Etype (S)) = Standard_Boolean
-           and then Present (Parent (S))
-           and then not Is_Dispatching_Operation (S)
+           and then No (Alias (S))
+           and then not (Is_Dispatching_Operation (S)
+                          and then Is_User_Defined_Equality (S))
          then
             Make_Inequality_Operator (S);
 
@@ -13302,6 +13302,48 @@ package body Sem_Ch6 is
             then
                Check_Untagged_Equality (S);
             end if;
+
+         --  If this is an inherited implicit inequality operator, set its
+         --  Corresponding_Equality to the inherited equality operator.
+
+         elsif Chars (S) = Name_Op_Ne
+           and then Base_Type (Etype (S)) = Standard_Boolean
+           and then Present (Alias (S))
+           and then Present (Corresponding_Equality (Alias (S)))
+         then
+            declare
+               Eq : constant Entity_Id := Prev_Entity (S);
+
+               function Check_Correspondence return Boolean;
+               --  Check that the Corresponding_Equality of the immediate
+               --  ancestor of S is an ancestor of Eq. Note that we cannot
+               --  be more specific for Eq since Sem_Ch3.Derive_Subprogram
+               --  does not set the Alias field of derived subprograms the
+               --  same way for intrinsic and nonintrinsic subprograms.
+
+               --------------------------
+               -- Check_Correspondence --
+               --------------------------
+
+               function Check_Correspondence return Boolean is
+                  A : Entity_Id := Alias (Eq);
+
+               begin
+                  while Present (A) loop
+                     if Corresponding_Equality (Alias (S)) = A then
+                        return True;
+                     end if;
+
+                     A := Alias (A);
+                  end loop;
+
+                  return False;
+               end Check_Correspondence;
+
+            begin
+               pragma Assert (Check_Correspondence);
+               Set_Corresponding_Equality (S, Eq);
+            end;
          end if;
    end New_Overloaded_Entity;
 

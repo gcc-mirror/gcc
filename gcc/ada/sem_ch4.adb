@@ -11440,10 +11440,6 @@ package body Sem_Ch4 is
       E  : Elmt_Id;
 
    begin
-      if not Is_Tagged_Type (T) then
-         return;
-      end if;
-
       E := First_Elmt (Primitive_Operations (Base_Type (T)));
       while Present (E) loop
          Op := Node (E);

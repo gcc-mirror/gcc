@@ -53,6 +53,7 @@ with Sem_Util;       use Sem_Util;
 with Snames;         use Snames;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
+with Stand;          use Stand;
 with Tbuild;         use Tbuild;
 with Uintp;          use Uintp;
 with Warnsw;         use Warnsw;
@@ -1286,9 +1287,19 @@ package body Sem_Disp is
       then
          return;
 
-      --  Wrappers of access to subprograms are not primitive subprograms.
+      --  Wrappers of access to subprograms are not dispatching operations
 
       elsif Is_Access_To_Subprogram_Wrapper (Subp) then
+         return;
+
+      --  Inequality operators whose result type is Boolean are not dispatching
+      --  operations because they are always implicitly declared as giving the
+      --  complementary result of the sibling equality operator (RM 6.6(5-6)).
+
+      elsif Ekind (Subp) = E_Function
+        and then Chars (Subp) = Name_Op_Ne
+        and then Base_Type (Etype (Subp)) = Standard_Boolean
+      then
          return;
       end if;
 
