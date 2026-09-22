@@ -5,9 +5,11 @@ int foo (void), bar (void);
 extern int a;
 int b;
 char d;
+double e;
 #pragma omp declare target
 long c;
 #pragma omp end declare target
 
 #pragma omp declare target (bar, a)
 #pragma omp declare target to (b) link (d) enter (foo)
+#pragma omp declare target local (e)

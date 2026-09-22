@@ -14,14 +14,17 @@ subroutine bar
   !$omp declare target
   integer, save :: var_9
   !$omp declare target link (var_8) to (baz, var_7) link (var_9) to (var_10)
-  integer, save :: var_7, var_8, var_10
-  integer :: var_11, var_12, var_13, var_14
+  integer, save :: var_7, var_8, var_10, var_16
+  integer :: var_11, var_12, var_13, var_14, var_15
   common /c1/ var_11, var_12
   common /c2/ var_13
   common /c3/ var_14
+  common /c4/ var_15
   !$omp declare target (baz, var_7, var_10, /c1/)
   !$omp declare target to (/c2/)
   !$omp declare target link (/c3/)
   !$omp declare target (bar)
+  !$omp declare target local (var_16)
+  !$omp declare target local (/c4/)
   call baz
 end subroutine

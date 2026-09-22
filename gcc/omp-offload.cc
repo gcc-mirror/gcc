@@ -394,10 +394,13 @@ omp_discover_implicit_declare_target (void)
       & (OMP_REQUIRES_SELF_MAPS | OMP_REQUIRES_UNIFIED_SHARED_MEMORY))
     FOR_EACH_VARIABLE (vnode)
       {
+	tree attr;
 	/* If 'self_maps' or 'unified_shared_memory' is enabled,
-	   remove 'enter/to' and add 'link'. */
-	if (lookup_attribute ("omp declare target",
-			      DECL_ATTRIBUTES (vnode->decl)))
+	   remove 'enter/to' and add 'link'.
+	   Note that "declare target local" is preserved and not converted.  */
+	if ((attr = lookup_attribute ("omp declare target",
+				      DECL_ATTRIBUTES (vnode->decl)))
+	    && !value_member (get_identifier ("local"), TREE_VALUE (attr)))
 	  {
 	    DECL_ATTRIBUTES (vnode->decl)
 	      = remove_attribute ("omp declare target",
