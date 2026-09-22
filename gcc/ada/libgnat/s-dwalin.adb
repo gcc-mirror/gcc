@@ -283,6 +283,10 @@ package body System.Dwarf_Lines is
          Close (C.Abbrev);
          Close (C.Info);
          Close (C.Aranges);
+
+         if C.Has_Line_Str then
+            Close (C.Line_Str);
+         end if;
       end if;
 
       Close (C.Obj.all);
@@ -516,6 +520,9 @@ package body System.Dwarf_Lines is
 
       if Line_Str /= Null_Section then
          C.Line_Str := Create_Stream (C.Obj.all, Line_Str);
+         C.Has_Line_Str := True;
+      else
+         C.Has_Line_Str := False;
       end if;
 
       --  All operations are successful, context is valid
