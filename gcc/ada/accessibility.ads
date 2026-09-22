@@ -156,14 +156,6 @@ package Accessibility is
    --  Returns True if the given subtype is unconstrained and has one or more
    --  access discriminants.
 
-   function Needs_Accessibility_Level_Temp_Or_Check
-     (Conditional_Expr : Node_Id) return Boolean;
-   --  Determine whether a conditional expression occurs in a context that
-   --  requires either an associated accessibility-level-valued temp (which
-   --  is assigned to in each arm of the conditional expression) or an
-   --  accessibility level check (which is pushed down into each arm of the
-   --  conditional expression).
-
    function Needs_Result_Accessibility_Level
      (Func_Id : Entity_Id) return Boolean;
    --  Ada 2012 (AI05-0234): Return True if the function needs an implicit

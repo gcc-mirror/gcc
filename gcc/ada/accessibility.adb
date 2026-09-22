@@ -43,6 +43,7 @@ with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Eval;       use Sem_Eval;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
 with Sinfo.Nodes;    use Sinfo.Nodes;
@@ -65,18 +66,22 @@ package body Accessibility is
    --  level to obtain.
 
    --  When Level is Dynamic_Level, a defining identifier associated with an
-   --  access parameter, an access result, or an SAOOAAAT, may be returned,
-   --  and an N_Integer_Literal node in the other cases.
+   --  access parameter, an access result, or an SAOOAAAT, may be returned.
+   --  For a conditional expression, another conditional expression may be
+   --  returned. An N_Integer_Literal node is returned in the other cases.
 
    --  When Level is Object_Decl_Level, an N_Integer_Literal node whose value
    --  is the level of the declaration of the object is returned in the cases
-   --  where Dynamic_Level returns a defining identifier; in the other cases,
-   --  an N_Integer_Literal is returned like for Dynamic_Level.
+   --  where Dynamic_Level returns a defining identifier. For a conditional
+   --  expression whose dependent expression is *not* statically selected, an
+   --  assertion failure is raised. In the other cases, an N_Integer_Literal
+   --  node is returned like for Dynamic_Level.
 
    --  When Level is Library_On_Dynamic_Level, an N_Integer_Literal node whose
    --  value is the library level is returned in the cases where Dynamic_Level
-   --  returns a defining identifier; in the other cases, an N_Integer_Literal
-   --  is returned like for Dynamic_Level.
+   --  returns a defining identifier. Likewise for a conditional expression
+   --  whose dependent expression is *not* statically selected. In the other
+   --  cases, an N_Integer_Literal node is returned like for Dynamic_Level.
 
    --  Note that this description does not take into account the dynamic offset
    --  that may be added by Offset_Static_Level to an N_Integer_Literal node.
@@ -674,10 +679,20 @@ package body Accessibility is
          E := Param_Entity (Expr);
 
       --  Use the original node unless it is an unanalyzed identifier, as we
-      --  don't want to reason on unanalyzed expressions from predicates.
+      --  don't want to reason on unanalyzed expressions from predicates, or
+      --  a folded conditional expression, since its level is ultimately that
+      --  of the dependent expression evaluated statically in this case.
 
-      elsif Nkind (Original_Node (Expr)) /= N_Identifier
-        or else Analyzed (Original_Node (Expr))
+      elsif not (Nkind (Original_Node (Expr)) = N_Identifier
+                  and then not Analyzed (Original_Node (Expr)))
+        and then not (Nkind (Original_Node (Expr)) = N_Case_Expression
+                       and then
+                         Is_Static_Expression
+                           (Expression (Original_Node (Expr))))
+        and then not (Nkind (Original_Node (Expr)) = N_If_Expression
+                       and then
+                         Is_Static_Expression
+                           (First (Expressions (Original_Node (Expr)))))
       then
          E := Original_Node (Expr);
 
@@ -1104,6 +1119,103 @@ package body Accessibility is
             else
                return Accessibility_Level (Prefix (E));
             end if;
+
+         --  Conditional expressions: the accessibility level is the level of
+         --  the evaluated dependent expression (RM 3.10.2(9.1)).
+
+         when N_Case_Expression =>
+            --  If the expression is static, perform a static computation
+
+            if Is_Static_Expression (Expression (E)) then
+               declare
+                  Alt : Node_Id;
+
+               begin
+                  Alt := First (Alternatives (E));
+                  while Present (Alt) loop
+                     if Choices_Match (Expression (E), Discrete_Choices (Alt))
+                       = Match
+                     then
+                        return Accessibility_Level (Expression (Alt));
+                     end if;
+
+                     Next (Alt);
+                  end loop;
+
+                  raise Program_Error;
+               end;
+
+            --  Or else, the expression is dynamic so, if the level is also
+            --  dynamic, we can perform a dynamic computation.
+
+            elsif Level = Dynamic_Level then
+               declare
+                  New_Alts : constant List_Id := New_List;
+                  New_Case : constant Node_Id :=
+                    Make_Case_Expression (Loc,
+                      Expression   => Duplicate_Subexpr (Expression (E)),
+                      Alternatives => New_Alts);
+
+                  Alt : Node_Id;
+
+               begin
+                  Alt := First (Alternatives (E));
+                  while Present (Alt) loop
+                     Append_To (New_Alts,
+                       Make_Case_Expression_Alternative (Sloc (Alt),
+                         Discrete_Choices => Discrete_Choices (Alt),
+                         Expression       =>
+                           Accessibility_Level (Expression (Alt)).N));
+
+                     Next (Alt);
+                  end loop;
+
+                  return (S => False, N => New_Case);
+               end;
+
+            --  Otherwise, the expression is dynamic but the level is static,
+            --  so return the library level to null out the check.
+
+            else
+               pragma Assert (Level = Library_On_Dynamic_Level);
+               return Library_Level;
+            end if;
+
+         when N_If_Expression =>
+            declare
+               Condition  : constant Node_Id := First (Expressions (E));
+               Then_Expr  : constant Node_Id := Next (Condition);
+               Else_Expr  : constant Node_Id := Next (Then_Expr);
+
+            begin
+               --  If the condition is static, perform a static computation
+
+               if Is_Static_Expression (Condition) then
+                  return
+                    (if Is_True (Expr_Value (Condition))
+                     then Accessibility_Level (Then_Expr)
+                     else Accessibility_Level (Else_Expr));
+
+               --  Or else, the condition is dynamic so, if the level is also
+               --  dynamic, we can perform a dynamic computation.
+
+               elsif Level = Dynamic_Level then
+                  return
+                    (S => False,
+                     N => Make_If_Expression (Loc,
+                            Expressions => New_List (
+                              Duplicate_Subexpr (Condition),
+                              Accessibility_Level (Then_Expr).N,
+                              Accessibility_Level (Else_Expr).N)));
+
+               --  Otherwise, the condition is dynamic but the level is static,
+               --  so return the library level to null out the check.
+
+               else
+                  pragma Assert (Level = Library_On_Dynamic_Level);
+                  return Library_Level;
+               end if;
+            end;
 
          --  Qualified expressions
 
@@ -2620,31 +2732,6 @@ package body Accessibility is
 
       return False;
    end Has_Unconstrained_Access_Discriminants;
-
-   ---------------------------------------------
-   -- Needs_Accessibility_Level_Temp_Or_Check --
-   ---------------------------------------------
-
-   function Needs_Accessibility_Level_Temp_Or_Check
-     (Conditional_Expr : Node_Id) return Boolean
-   is
-      Par : Node_Id;
-   begin
-      if Ekind (Etype (Conditional_Expr)) /= E_Anonymous_Access_Type then
-         return False;
-      end if;
-
-      Par := Parent (Conditional_Expr);
-      while Present (Par)
-        and then Nkind (Par) in N_Case_Expression
-                              | N_If_Expression
-                              | N_Parameter_Association
-      loop
-         Par := Parent (Par);
-      end loop;
-
-      return Nkind (Par) in N_Subprogram_Call | N_Assignment_Statement;
-   end Needs_Accessibility_Level_Temp_Or_Check;
 
    --------------------------------------
    -- Needs_Result_Accessibility_Level --

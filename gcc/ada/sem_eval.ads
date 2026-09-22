@@ -168,9 +168,20 @@ package Sem_Eval is
    --  Returns True if the checking for potentially static expressions is
    --  enabled; otherwise returns False.
 
-   procedure Set_Checking_Potentially_Static_Expression (Value : Boolean);
-   --  Enables checking for potentially static expressions if Value is True,
-   --  and disables such checking if Value is False.
+   type Match_Result is (Match, No_Match, Non_Static);
+   --  Result returned from functions that test for a matching result. If the
+   --  operands are not OK_Static then Non_Static will be returned. Otherwise
+   --  Match/No_Match is returned depending on whether the match succeeds.
+
+   function Choices_Match
+     (Expr    : Node_Id;
+      Choices : List_Id) return Match_Result;
+   --  This function applies Choice_Matches to each element of Choices. If the
+   --  result is No_Match, then it continues and checks the next element. If
+   --  the result is Match or Non_Static, this result is immediately given
+   --  as the result without checking the rest of the list. Expr can be of
+   --  discrete, real, or string type and must be a compile-time-known value
+   --  (it is an error to make the call if these conditions are not met).
 
    type Compare_Result is (LT, LE, EQ, GT, GE, NE, Unknown);
    subtype Compare_GE is Compare_Result range EQ .. GE;
@@ -478,6 +489,10 @@ package Sem_Eval is
    --  as well. This function performs the required check that predicates
    --  match. Separated out from Subtypes_Statically_Match so that it can
    --  be used in specializing error messages.
+
+   procedure Set_Checking_Potentially_Static_Expression (Value : Boolean);
+   --  Enables checking for potentially static expressions if Value is True,
+   --  and disables such checking if Value is False.
 
    function Subtypes_Statically_Compatible
      (T1                      : Entity_Id;

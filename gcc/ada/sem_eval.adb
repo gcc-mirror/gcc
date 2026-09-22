@@ -124,11 +124,6 @@ package body Sem_Eval is
       V : Uint;
    end record;
 
-   type Match_Result is (Match, No_Match, Non_Static);
-   --  Result returned from functions that test for a matching result. If the
-   --  operands are not OK_Static then Non_Static will be returned. Otherwise
-   --  Match/No_Match is returned depending on whether the match succeeds.
-
    type CV_Cache_Array is array (CV_Range) of CV_Entry;
 
    CV_Cache : CV_Cache_Array;
@@ -178,16 +173,6 @@ package body Sem_Eval is
    --  Note: if Choice_Matches finds that a choice raises Constraint_Error, e.g
    --  a reference to a type, one of whose bounds raises Constraint_Error, then
    --  it also sets the Raises_Constraint_Error flag on the Choice itself.
-
-   function Choices_Match
-     (Expr    : Node_Id;
-      Choices : List_Id) return Match_Result;
-   --  This function applies Choice_Matches to each element of Choices. If the
-   --  result is No_Match, then it continues and checks the next element. If
-   --  the result is Match or Non_Static, this result is immediately given
-   --  as the result without checking the rest of the list. Expr can be of
-   --  discrete, real, or string type and must be a compile-time-known value
-   --  (it is an error to make the call if these conditions are not met).
 
    procedure Eval_Intrinsic_Call (N : Node_Id; E : Entity_Id);
    --  Evaluate a call N to an intrinsic subprogram E
@@ -2242,8 +2227,7 @@ package body Sem_Eval is
    --  expressions raise CE, except for the one that will be selected.
 
    procedure Eval_Case_Expression (N : Node_Id) is
-      Alt    : Node_Id;
-      Choice : Node_Id;
+      Alt : Node_Id;
 
    begin
       Set_Is_Static_Expression (N, False);
@@ -2298,44 +2282,35 @@ package body Sem_Eval is
 
       if Raises_Constraint_Error (Expression (N)) then
          Set_Raises_Constraint_Error (N);
+         return;
+      end if;
 
       --  Otherwise we need to check the alternatives to find the matching
       --  one. CE's in other than the matching one are not relevant. But we
       --  do need to check the matching one. Unlike the first loop, we do not
       --  have to go all the way through, when we find the matching one, quit.
 
-      else
-         Alt := First (Alternatives (N));
-         Search : loop
+      Alt := First (Alternatives (N));
+      loop
+         --  We must find a match among the alternatives. If not, this must
+         --  be due to other errors, so just ignore, leaving as non-static.
 
-            --  We must find a match among the alternatives. If not, this must
-            --  be due to other errors, so just ignore, leaving as non-static.
+         if No (Alt) then
+            Set_Is_Static_Expression (N, False);
+            return;
+         end if;
 
-            if No (Alt) then
-               Set_Is_Static_Expression (N, False);
-               return;
-            end if;
+         --  If we find a matching choice, then the Expression of this
+         --  alternative replaces N (Raises_Constraint_Error flag is
+         --  included, so we don't have to special case that).
 
-            --  Otherwise loop through choices of this alternative
+         if Choices_Match (Expression (N), Discrete_Choices (Alt)) = Match then
+            Rewrite (N, Relocate_Node (Expression (Alt)));
+            return;
+         end if;
 
-            Choice := First (Discrete_Choices (Alt));
-            while Present (Choice) loop
-
-               --  If we find a matching choice, then the Expression of this
-               --  alternative replaces N (Raises_Constraint_Error flag is
-               --  included, so we don't have to special case that).
-
-               if Choice_Matches (Expression (N), Choice) = Match then
-                  Rewrite (N, Relocate_Node (Expression (Alt)));
-                  return;
-               end if;
-
-               Next (Choice);
-            end loop;
-
-            Next (Alt);
-         end loop Search;
-      end if;
+         Next (Alt);
+      end loop;
    end Eval_Case_Expression;
 
    ------------------------

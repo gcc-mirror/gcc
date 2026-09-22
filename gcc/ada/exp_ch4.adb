@@ -5700,8 +5700,6 @@ package body Exp_Ch4 is
    -- Expand_N_If_Expression --
    ----------------------------
 
-   --  Deal with limited types and condition actions
-
    procedure Expand_N_If_Expression (N : Node_Id) is
       Cond  : constant Node_Id    := First (Expressions (N));
       Loc   : constant Source_Ptr := Sloc (N);
@@ -5709,17 +5707,6 @@ package body Exp_Ch4 is
       Elsex : constant Node_Id    := Next (Thenx);
       Par   : constant Node_Id    := Parent (N);
       Typ   : constant Entity_Id  := Etype (N);
-
-      Force_Expand : constant Boolean
-        := Needs_Accessibility_Level_Temp_Or_Check (N);
-      --  Determine if we are dealing with a special case of a conditional
-      --  expression used as an actual for an anonymous access type which
-      --  forces us to transform the if expression into an expression with
-      --  actions in order to create a temporary to capture the level of the
-      --  expression in each branch. Also True if the conditional
-      --  expression is the RHS of an assignment to a saooaaat (so the
-      --  accessibility level temp associated with the saooaaat also needs
-      --  to be updated as part of the assignment).
 
       function OK_For_Single_Subtype (T1, T2 : Entity_Id) return Boolean;
       --  Return true if it is acceptable to use a single subtype for two
@@ -6428,16 +6415,9 @@ package body Exp_Ch4 is
                 Prefix => New_Occurrence_Of (Target, Loc));
          end;
 
-      --  For other types, we only need to expand if there are other actions
-      --  associated with either branch or we need to force expansion to deal
-      --  with if expressions used as an actual of an anonymous access type.
+      --  For other types,  we just wrap the actions into an EWA node, if any
 
-      elsif Present (Then_Actions (N))
-        or else Present (Else_Actions (N))
-        or else Force_Expand
-      then
-         --  We now wrap the actions into the appropriate expression
-
+      elsif Present (Then_Actions (N)) or else Present (Else_Actions (N)) then
          --  We do not need to call Process_Transients_In_Expression on
          --  the list of actions in this case, because the expansion of
          --  Expression_With_Actions will do it.
@@ -6460,62 +6440,6 @@ package body Exp_Ch4 is
 
             Set_Else_Actions (N, No_List);
             Analyze_And_Resolve (Elsex, Typ);
-         end if;
-
-         --  We must force expansion into an expression with actions when
-         --  an if expression gets used directly as an actual for an
-         --  anonymous access type.
-
-         if Force_Expand then
-            declare
-               Cnn  : constant Entity_Id := Make_Temporary (Loc, 'C');
-               Acts : List_Id;
-            begin
-               Acts := New_List;
-
-               --  Generate:
-               --    Cnn : Ann;
-
-               Decl :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Cnn,
-                   Object_Definition   => New_Occurrence_Of (Typ, Loc));
-               Append_To (Acts, Decl);
-
-               Set_No_Initialization (Decl);
-
-               --  Generate:
-               --    if Cond then
-               --       Cnn := <Thenx>;
-               --    else
-               --       Cnn := <Elsex>;
-               --    end if;
-
-               If_Stmt :=
-                 Make_Implicit_If_Statement (N,
-                   Condition       => Relocate_Node (Cond),
-                   Then_Statements => New_List (
-                     Make_Assignment_Statement (Sloc (Thenx),
-                       Name       => New_Occurrence_Of (Cnn, Sloc (Thenx)),
-                       Expression => Relocate_Node (Thenx))),
-
-                   Else_Statements => New_List (
-                     Make_Assignment_Statement (Sloc (Elsex),
-                       Name       => New_Occurrence_Of (Cnn, Sloc (Elsex)),
-                       Expression => Relocate_Node (Elsex))));
-               Append_To (Acts, If_Stmt);
-
-               --  Generate:
-               --    do
-               --       ...
-               --    in Cnn end;
-
-               Rewrite (N,
-                 Make_Expression_With_Actions (Loc,
-                   Expression => New_Occurrence_Of (Cnn, Loc),
-                   Actions    => Acts));
-               Analyze_And_Resolve (N, Typ);
-            end;
          end if;
 
          return;
@@ -6567,11 +6491,11 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Fall through here for either the limited expansion, or the case of
-      --  inserting actions for nonlimited types. In both these cases, we must
-      --  move the SLOC of the parent If statement to the newly created one and
-      --  change it to the SLOC of the expression which, after expansion, will
-      --  correspond to what is being evaluated.
+      --  Fall through here when the if_expression is to be replaced with an
+      --  if_statement. If the parent itself is an if_statement, we move the
+      --  SLOC of the parent to the newly created one, and replace it by the
+      --  SLOC of the expression which, after expansion, will correspond to
+      --  what is being evaluated.
 
       if Present (Par) and then Nkind (Par) = N_If_Statement then
          Set_Sloc (If_Stmt, Sloc (Par));
@@ -6588,7 +6512,7 @@ package body Exp_Ch4 is
          Prepend_List (Else_Actions (N), Else_Statements (If_Stmt));
       end if;
 
-      --  Rewrite the parent statement as an if statement
+      --  Rewrite the parent statement as an if statement in specific cases
 
       if Optimize_Assignment_Stmt or else Optimize_Return_Stmt then
          Rewrite (Par, If_Stmt);
