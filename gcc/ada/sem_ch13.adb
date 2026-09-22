@@ -17357,34 +17357,21 @@ package body Sem_Ch13 is
          Dummy : Traverse_Result;
 
       begin
-         if Nkind (N) = N_Selected_Component then
-            if Nkind (Prefix (N)) = N_Identifier
-              and then Chars (Prefix (N)) /= Chars (E)
-            then
-               Find_Selected_Component (N);
+         --  Resolve identifiers that are not selector names, because the
+         --  latter are not resolved by visibility.
 
-               --  Reset the Entity if N is overloaded since the entity might
-               --  not be the correct one; allow later resolution to set it
-               --  properly.
-
-               if Is_Overloaded (N) then
-                  Set_Entity (N, Empty);
-               end if;
-            end if;
-
-            return Skip;
-
-         --  Resolve identifiers, but not selectors in parameter associations;
-         --  such selectors are never resolved by visibility.
-
-         elsif Nkind (N) = N_Identifier
+         if Nkind (N) = N_Identifier
            and then Chars (N) /= Chars (E)
-           and then (Nkind (Parent (N)) /= N_Parameter_Association
-                      or else N /= Selector_Name (Parent (N)))
+           and then not (Nkind (Parent (N)) in N_Expanded_Name
+                                             | N_Generic_Association
+                                             | N_Parameter_Association
+                                             | N_Selected_Component
+                          and then N = Selector_Name (Parent (N)))
          then
             Find_Direct_Name (N);
 
-            --  Reset the Entity as above for selected_components
+            --  Reset Entity if N is overloaded, since the entity might not
+            --  be the correct one, to allow resolution to set it properly.
 
             if Is_Overloaded (N) then
                Set_Entity (N, Empty);
@@ -17395,6 +17382,8 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Component_Association then
             Dummy := Resolve_Name (Expression (N));
             return Skip;
+
+         --  See above for the rationale
 
          elsif Nkind (N) = N_Quantified_Expression then
             return Skip;

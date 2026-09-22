@@ -2320,12 +2320,6 @@ package body Sem_Ch3 is
       --  contract expression. Full analysis of the expression is done when
       --  the contract is processed.
 
-      function Contains_Lib_Incomplete_Type (Pkg : Entity_Id) return Boolean;
-      --  Check if a nested package has entities within it that rely on library
-      --  level private types where the full view has not been completed for
-      --  the purposes of checking if it is acceptable to freeze an expression
-      --  function at the point of declaration.
-
       procedure Handle_Late_Controlled_Primitive (Body_Decl : Node_Id);
       --  Determine whether Body_Decl denotes the body of a late controlled
       --  primitive (either Initialize, Adjust or Finalize). If this is the
@@ -2528,40 +2522,6 @@ package body Sem_Ch3 is
             Next_Entity (Ent);
          end loop;
       end Check_Entry_Contracts;
-
-      ----------------------------------
-      -- Contains_Lib_Incomplete_Type --
-      ----------------------------------
-
-      function Contains_Lib_Incomplete_Type (Pkg : Entity_Id) return Boolean is
-         Curr : Entity_Id;
-
-      begin
-         --  Avoid looking through scopes that do not meet the precondition of
-         --  Pkg not being within a library unit spec.
-
-         if not Is_Compilation_Unit (Pkg)
-           and then not Is_Generic_Instance (Pkg)
-           and then not In_Package_Body (Enclosing_Lib_Unit_Entity (Pkg))
-         then
-            --  Loop through all entities in the current scope to identify
-            --  an entity that depends on a private type.
-
-            Curr := First_Entity (Pkg);
-            loop
-               if Nkind (Curr) in N_Entity
-                 and then Depends_On_Private (Curr)
-               then
-                  return True;
-               end if;
-
-               exit when Last_Entity (Current_Scope) = Curr;
-               Next_Entity (Curr);
-            end loop;
-         end if;
-
-         return False;
-      end Contains_Lib_Incomplete_Type;
 
       --------------------------------------
       -- Handle_Late_Controlled_Primitive --
@@ -2806,10 +2766,6 @@ package body Sem_Ch3 is
                Check_Entry_Contracts;
 
             elsif Nkind (Parent (L)) /= N_Package_Specification then
-               if Nkind (Parent (L)) = N_Package_Body then
-                  Freeze_From := First_Entity (Current_Scope);
-               end if;
-
                --  There may have been several freezing points previously,
                --  for example object declarations or subprogram bodies, but
                --  at the end of a declarative part we check freezing from
@@ -2881,7 +2837,7 @@ package body Sem_Ch3 is
                Resolve_Aspects;
             end if;
 
-         --  If next node is a body then freeze all types before the body.
+         --  If next node is a body, then freeze all entities before the body.
          --  An exception occurs for some expander-generated bodies. If these
          --  are generated at places where in general language rules would not
          --  allow a freeze point, then we assume that the expander has
@@ -2892,25 +2848,11 @@ package body Sem_Ch3 is
 
          --  In all other cases (bodies that come from source, and expander
          --  generated bodies that have not been analyzed yet), freeze all
-         --  types now. Note that in the latter case, the expander must take
-         --  care to attach the bodies at a proper place in the tree so as to
-         --  not cause unwanted freezing at that point. The exception is the
-         --  generated body of an expression function, which does not freeze.
+         --  entities now. Note that in the latter case, the expander must
+         --  take care to attach the bodies at a proper place in the tree,
+         --  so as not to cause unwanted freezing at that point.
 
-         --  It is also necessary to check for a case where both an expression
-         --  function is used and the current scope depends on an incomplete
-         --  private type from a library unit, otherwise premature freezing of
-         --  the private type will occur.
-
-         elsif not Analyzed (Next_Decl)
-           and then Is_Body (Next_Decl)
-           and then ((Nkind (Next_Decl) /= N_Subprogram_Body
-                      or else not Was_Expression_Function (Next_Decl))
-                     or else (not Is_Ignored_Ghost_Entity_In_Codegen
-                                    (Current_Scope)
-                              and then not Contains_Lib_Incomplete_Type
-                                             (Current_Scope)))
-         then
+         elsif Is_Body (Next_Decl) and then not Analyzed (Next_Decl) then
             --  When a controlled type is frozen, the expander generates stream
             --  and controlled-type support routines. If the freeze is caused
             --  by the stand-alone body of Initialize, Adjust, or Finalize, the

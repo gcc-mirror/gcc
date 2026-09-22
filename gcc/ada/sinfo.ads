@@ -2255,8 +2255,11 @@ package Sinfo is
    --    to the expander.
 
    --  Selector_Name
-   --    Present in N_Expanded_Name N_Selected_Component,
-   --    N_Generic_Association, and N_Parameter_Association nodes.
+   --    Present in N_Expanded_Name and N_Selected_Component nodes, where it
+   --    references a name that denotes an entity declared in the prefix, as
+   --    well as in N_Generic_Association and N_Parameter_Association nodes,
+   --    where it references a name that denotes a formal parameter of the
+   --    generic unit or callable entity.
 
    --  Shift_Count_OK
    --    A flag present in shift nodes to indicate that the shift count is
