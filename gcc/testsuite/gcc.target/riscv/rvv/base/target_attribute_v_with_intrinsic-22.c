@@ -7,7 +7,7 @@ vfloat16m1_t
 __attribute__((target("arch=+zve32f")))
 test_1 (vfloat16m1_t a, vfloat16m1_t b, size_t vl)
 {
-  return __riscv_vfadd_vv_f16m1 (a, b, vl);
+  return __riscv_vfadd_vv_f16m1 (a, b, vl); /* { dg-error "built-in function '__riscv_vfadd_vv_f16m1' requires the zvfhmin or zvfh ISA extension" } */
 }
 
 /* { dg-error "return type 'vfloat16m1_t' requires the zvfhmin or zvfh ISA extension" "" { target { "riscv*-*-*" } } 0 } */

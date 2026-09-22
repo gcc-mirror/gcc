@@ -7,7 +7,7 @@
 
 vfloat16m1_t f0 (vfloat16m1_t vs2, vfloat16m1_t vs1, size_t vl)
 {
-  return __riscv_vfadd_vv_f16m1_rm (vs2, vs1, 0, vl); 
+  return __riscv_vfadd_vv_f16m1_rm (vs2, vs1, 0, vl); /* { dg-error "built-in function '__riscv_vfadd_vv_f16m1_rm' requires the zvfhmin or zvfh ISA extension" } */
 }
 
 /* { dg-error "return type 'vfloat16m1_t' requires the zvfhmin or zvfh ISA extension" "" { target { "riscv*-*-*" } } 0 } */

@@ -7,7 +7,7 @@ vint32m1_t
 __attribute__((target("arch=+zbb")))
 test_1 (vint32m1_t a, vint32m1_t b, size_t vl)
 {
-  return __riscv_vadd_vv_i32m1 (a, b, vl);
+  return __riscv_vadd_vv_i32m1 (a, b, vl); /* { dg-error "built-in function '__riscv_vadd_vv_i32m1' requires the 'v' ISA extension" } */
 }
 
 /* { dg-error "return type 'vint32m1_t' requires the V ISA extension" "" { target { "riscv*-*-*" } } 0 } */

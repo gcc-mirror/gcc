@@ -5724,56 +5724,56 @@ gimple_fold_builtin (unsigned int code, gimple_stmt_iterator *gsi, gcall *stmt)
 
 static bool
 validate_instance_type_required_extensions (const rvv_type_info type,
-					    tree exp)
+					    location_t location, tree fndecl)
 {
   uint64_t exts = type.required_extensions;
 
   if ((exts & RVV_REQUIRE_ELEN_BF_16)
       && !TARGET_VECTOR_ELEN_BF_16_P (riscv_vector_elen_flags))
     {
-      error_at (EXPR_LOCATION (exp),
+      error_at (location,
 		"built-in function %qE requires the "
 		"zvfbfmin or zvfbfwma ISA extension",
-		exp);
+		fndecl);
       return false;
     }
 
   if ((exts & RVV_REQUIRE_ELEN_FP_16)
     && !TARGET_VECTOR_ELEN_FP_16_P (riscv_vector_elen_flags))
     {
-      error_at (EXPR_LOCATION (exp),
+      error_at (location,
 		"built-in function %qE requires the "
 		"zvfhmin or zvfh ISA extension",
-		exp);
+		fndecl);
       return false;
     }
 
   if ((exts & RVV_REQUIRE_ELEN_FP_32)
     && !TARGET_VECTOR_ELEN_FP_32_P (riscv_vector_elen_flags))
     {
-      error_at (EXPR_LOCATION (exp),
+      error_at (location,
 		"built-in function %qE requires the "
 		"zve32f, zve64f, zve64d or v ISA extension",
-		exp);
+		fndecl);
       return false;
     }
 
   if ((exts & RVV_REQUIRE_ELEN_FP_64)
     && !TARGET_VECTOR_ELEN_FP_64_P (riscv_vector_elen_flags))
     {
-      error_at (EXPR_LOCATION (exp),
+      error_at (location,
 		"built-in function %qE requires the zve64d or v ISA extension",
-		exp);
+		fndecl);
       return false;
     }
 
   if ((exts & RVV_REQUIRE_ELEN_64)
     && !TARGET_VECTOR_ELEN_64_P (riscv_vector_elen_flags))
     {
-      error_at (EXPR_LOCATION (exp),
+      error_at (location,
 		"built-in function %qE requires the "
 		"zve64x, zve64f, zve64d or v ISA extension",
-		exp);
+		fndecl);
       return false;
     }
 
@@ -5797,12 +5797,14 @@ expand_builtin (unsigned int code, tree exp, rtx target)
     {
       error_at (EXPR_LOCATION (exp),
 		"built-in function %qE requires the %qs ISA extension",
-		exp,
+		rfn->decl,
 		required_ext_to_isa_name (rfn->required));
       return target;
     }
 
-  if (!validate_instance_type_required_extensions (rfn->instance.type, exp))
+  if (!validate_instance_type_required_extensions (rfn->instance.type,
+						   EXPR_LOCATION (exp),
+						   rfn->decl))
     return target;
 
   return function_expander (rfn->instance, rfn->decl, exp, target).expand ();
@@ -5822,6 +5824,24 @@ check_builtin_call (location_t location, vec<location_t>, unsigned int code,
   registered_function *rfn = lookup_registered_function (code);
   if (!rfn)
     return false;
+
+  /* Only check resolved functions.  */
+  if (!rfn->overloaded_p)
+    {
+      if (!required_extensions_specified (rfn->required))
+	{
+	  error_at (location,
+		    "built-in function %qE requires the %qs ISA extension",
+		    fndecl,
+		    required_ext_to_isa_name (rfn->required));
+	  return false;
+	}
+
+      if (!validate_instance_type_required_extensions (rfn->instance.type,
+						       location, fndecl))
+	return false;
+    }
+
   return function_checker (location, rfn->instance, fndecl,
 			   TREE_TYPE (rfn->decl), nargs, args).check ();
 }
