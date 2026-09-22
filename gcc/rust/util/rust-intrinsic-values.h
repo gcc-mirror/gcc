@@ -97,12 +97,25 @@ public:
   static constexpr auto &PREFETCH_READ_DATA = "prefetch_read_data";
   static constexpr auto &PREFETCH_WRITE_DATA = "prefetch_write_data";
 
+  static constexpr auto &ATOMIC_STORE = "atomic_store";
+  // atomic_store is renamed to atomic_store_seqcst from 1.64.0, the latter is
+  // left in for compatibility
+  // https://github.com/rust-lang/rust/commit/4982a59986f7393ace98f63c10e6c435ffba1420
   static constexpr auto &ATOMIC_STORE_SEQCST = "atomic_store_seqcst";
+  static constexpr auto &ATOMIC_STORE_REL = "atomic_store_rel";
+  // atomic_store_rel is nenamed to atomic_store_release from 1.64.0, the
+  // latter is left in for compatibility
   static constexpr auto &ATOMIC_STORE_RELEASE = "atomic_store_release";
   static constexpr auto &ATOMIC_STORE_RELAXED = "atomic_store_relaxed";
   static constexpr auto &ATOMIC_STORE_UNORDERED = "atomic_store_unordered";
 
+  static constexpr auto &ATOMIC_LOAD = "atomic_load";
+  // atomic_load is renamed to atomic_load_seqcst from 1.64.0, the latter is
+  // left in for compatibility
   static constexpr auto &ATOMIC_LOAD_SEQCST = "atomic_load_seqcst";
+  static constexpr auto &ATOMIC_LOAD_ACQ = "atomic_load_acq";
+  // atomic_load_acq is renamed to atomic_load_acquire from 1.64.0, the latter
+  // is left in for compatibility
   static constexpr auto &ATOMIC_LOAD_ACQUIRE = "atomic_load_acquire";
   static constexpr auto &ATOMIC_LOAD_RELAXED = "atomic_load_relaxed";
   static constexpr auto &ATOMIC_LOAD_UNORDERED = "atomic_load_unordered";
