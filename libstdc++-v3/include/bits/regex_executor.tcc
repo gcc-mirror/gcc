@@ -165,7 +165,7 @@ namespace __detail
       _M_has_sol = false;
       *_M_get_sol_pos() = _BiIter();
       _M_cur_results = _M_results;
-      _M_dfs(__match_mode, _M_start);
+      _M_dfs<_Search_mode::_Dfs>(__match_mode, _M_start);
       return _M_has_sol;
     }
 
@@ -208,7 +208,7 @@ namespace __detail
 	  for (auto& __task : __old_queue)
 	    {
 	      _M_cur_results = _ResultsVec(std::move(__task.second), __alloc);
-	      _M_dfs(__match_mode, __task.first);
+	      _M_dfs<_Search_mode::_Bfs>(__match_mode, __task.first);
 	    }
 	  if (__match_mode == _Match_mode::_Prefix)
 	    __ret |= _M_has_sol;
@@ -288,6 +288,7 @@ namespace __detail
   // mean the same thing, and we need to choose the correct order under
   // given greedy mode.
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
@@ -298,7 +299,7 @@ namespace __detail
       // Greedy.
       if (!__state._M_neg)
 	{
-	  if (_M_search_mode == _Search_mode::_DFS)
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
 	    // If it's DFS executor and already accepted, we're done.
 	    _M_frames.emplace_back(_S_fopcode_fallback_next, __state._M_next,
 				   _M_current);
@@ -308,7 +309,7 @@ namespace __detail
 	}
       else // Non-greedy mode
 	{
-	  if (_M_search_mode == _Search_mode::_DFS)
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
 	    {
 	      // vice-versa.
 	      _M_frames.emplace_back(_S_fopcode_fallback_rep_once_more, __i,
@@ -334,6 +335,7 @@ namespace __detail
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
@@ -344,7 +346,7 @@ namespace __detail
       auto& __res = _M_cur_results[__state._M_subexpr];
       if (_M_nfa._M_has_backref
 	  || __state._M_subexpr != 0
-	  || _M_search_mode != _Search_mode::_DFS)
+	  || __search_mode != _Search_mode::_Dfs)
 	_M_frames.emplace_back(_S_fopcode_restore_cur_results,
 			       static_cast<_StateIdT>(__state._M_subexpr),
 			       __res.first);
@@ -353,6 +355,7 @@ namespace __detail
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
@@ -363,7 +366,7 @@ namespace __detail
       auto& __res = _M_cur_results[__state._M_subexpr];
       if (_M_nfa._M_has_backref
 	  || __state._M_subexpr != 0
-	  || _M_search_mode != _Search_mode::_DFS)
+	  || __search_mode != _Search_mode::_Dfs)
 	{
 	  _M_frames.emplace_back(_S_fopcode_restore_cur_results,
 				 static_cast<_StateIdT>(__state._M_subexpr),
@@ -420,6 +423,7 @@ namespace __detail
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
@@ -429,7 +433,7 @@ namespace __detail
       const auto& __state = _M_nfa[__i];
       if (_M_current == _M_end)
 	return _S_invalid_state_id;
-      if (_M_search_mode == _Search_mode::_DFS)
+      if constexpr (__search_mode == _Search_mode::_Dfs)
 	{
 	  if (__state._M_matches(*_M_current))
 	    {
@@ -500,7 +504,7 @@ namespace __detail
     _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_backref(_Match_mode, _StateIdT __i)
     {
-      __glibcxx_assert(_M_search_mode == _Search_mode::_DFS);
+      __glibcxx_assert(_M_search_mode == _Search_mode::_Dfs);
 
       const auto& __state = _M_nfa[__i];
       auto& __submatch = _M_cur_results[__state._M_backref_index];
@@ -524,13 +528,14 @@ namespace __detail
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
     inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_handle_accept(_Match_mode __match_mode, _StateIdT)
     {
-      if (_M_search_mode == _Search_mode::_DFS)
+      if constexpr (__search_mode == _Search_mode::_Dfs)
 	{
 	  __glibcxx_assert(!_M_has_sol);
 	  if (__match_mode == _Match_mode::_Exact)
@@ -606,6 +611,7 @@ namespace __detail
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
 #ifdef __OPTIMIZE__
     [[__gnu__::__always_inline__]]
 #endif
@@ -614,7 +620,7 @@ namespace __detail
     {
       // DFS has no _M_visited implementation as such don't even have the branch
       // or the check in the call graph.
-      if (_M_search_mode == _Search_mode::_BFS)
+      if constexpr (__search_mode == _Search_mode::_Bfs)
 	if (_M_visited(__i))
 	  return _S_invalid_state_id;
 
@@ -622,12 +628,12 @@ namespace __detail
       switch (_M_nfa[__i]._M_opcode())
 	{
 	case _S_opcode_repeat:
-	  __next = _M_handle_repeat(__match_mode, __i); break;
+	  __next = _M_handle_repeat<__search_mode>(__match_mode, __i); break;
 	case _S_opcode_subexpr_begin:
-	  __next = _M_handle_subexpr_begin(__match_mode, __i);
+	  __next = _M_handle_subexpr_begin<__search_mode>(__match_mode, __i);
 	  break;
 	case _S_opcode_subexpr_end:
-	  __next = _M_handle_subexpr_end(__match_mode, __i);
+	  __next = _M_handle_subexpr_end<__search_mode>(__match_mode, __i);
 	  break;
 	case _S_opcode_line_begin_assertion:
 	  __next = _M_handle_line_begin_assertion(__match_mode, __i); break;
@@ -638,15 +644,15 @@ namespace __detail
 	case _S_opcode_subexpr_lookahead:
 	  __next = _M_handle_subexpr_lookahead(__match_mode, __i); break;
 	case _S_opcode_match:
-	  __next = _M_handle_match(__match_mode, __i); break;
+	  __next = _M_handle_match<__search_mode>(__match_mode, __i); break;
 	case _S_opcode_backref:
-	  if (_M_search_mode == _Search_mode::_DFS)
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
 	    __next = _M_handle_backref(__match_mode, __i);
 	  else
 	    __builtin_unreachable();
 	  break;
 	case _S_opcode_accept:
-	  __next = _M_handle_accept(__match_mode, __i); break;
+	  __next = _M_handle_accept<__search_mode>(__match_mode, __i); break;
 	case _S_opcode_alternative:
 	  __next = _M_handle_alternative(__match_mode, __i); break;
 	default:
@@ -656,6 +662,7 @@ namespace __detail
     }
 
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
+  template<_Search_mode __search_mode>
     void _Executor<_BiIter, _Alloc, _TraitsT>::
     _M_dfs(_Match_mode __match_mode, _StateIdT __start)
     {
@@ -667,7 +674,7 @@ namespace __detail
 	  // loop until we fail.  This avoids the needless state save and
 	  // restore through memory.
 	  while (__next != _S_invalid_state_id)
-	    __next = _M_node(__match_mode, __next);
+	    __next = _M_node<__search_mode>(__match_mode, __next);
 
 	  if (_M_frames.empty())
 	    break;
@@ -680,7 +687,7 @@ namespace __detail
 	    case _S_fopcode_fallback_next:
 	      if (_M_has_sol)
 		break;
-	      if (_M_search_mode == _Search_mode::_DFS)
+	      if constexpr (__search_mode == _Search_mode::_Dfs)
 		_M_current = __frame._M_pos;
 	      [[__fallthrough__]];
 	    case _S_fopcode_next:
@@ -690,7 +697,7 @@ namespace __detail
 	    case _S_fopcode_fallback_rep_once_more:
 	      if (_M_has_sol)
 		break;
-	      if (_M_search_mode == _Search_mode::_DFS)
+	      if constexpr (__search_mode == _Search_mode::_Dfs)
 		_M_current = __frame._M_pos;
 	      [[__fallthrough__]];
 	    case _S_fopcode_rep_once_more:
@@ -700,7 +707,7 @@ namespace __detail
 	    case _S_fopcode_posix_alternative:
 	      _M_frames.emplace_back(_S_fopcode_merge_sol, 0, _M_has_sol);
 	      __next = __frame._M_state_id;
-	      if (_M_search_mode == _Search_mode::_DFS)
+	      if constexpr (__search_mode == _Search_mode::_Dfs)
 		_M_current = __frame._M_pos;
 	      _M_has_sol = false;
 	      break;

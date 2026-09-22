@@ -51,10 +51,11 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
    * The %_Executor class has two modes: DFS mode and BFS mode, controlled
    * by the function parameter %__search_mode.
    */
+  enum class _Search_mode : unsigned char { _Bfs = 0, _Dfs = 1 };
+
   template<typename _BiIter, typename _Alloc, typename _TraitsT>
     class _Executor
     {
-      enum class _Search_mode : unsigned char { _BFS = 0, _DFS = 1 };
       enum class _Match_mode : unsigned char { _Exact, _Prefix };
 
     public:
@@ -82,12 +83,12 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 	_M_start(_M_nfa._M_start()),
 	_M_visited_states(nullptr),
 	_M_flags(__flags),
-	_M_search_mode(__use_dfs ? _Search_mode::_DFS : _Search_mode::_BFS)
+	_M_search_mode(__use_dfs ? _Search_mode::_Dfs : _Search_mode::_Bfs)
       {
 	using namespace regex_constants;
 	if (__flags & match_prev_avail) // ignore not_bol and not_bow
 	  _M_flags &= ~(match_not_bol | match_not_bow);
-	if (_M_search_mode == _Search_mode::_BFS)
+	if (_M_search_mode == _Search_mode::_Bfs)
 	  _M_visited_states = new bool[_M_nfa.size()];
       }
 
@@ -117,13 +118,16 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       _StateIdT
       _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
 
+      template<_Search_mode __search_mode>
       _StateIdT
       _M_handle_repeat(_Match_mode, _StateIdT);
 
-      _StateIdT
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_subexpr_begin(_Match_mode, _StateIdT);
 
-      _StateIdT
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_subexpr_end(_Match_mode, _StateIdT);
 
       _StateIdT
@@ -138,28 +142,32 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       _StateIdT
       _M_handle_subexpr_lookahead(_Match_mode, _StateIdT);
 
-      _StateIdT
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_match(_Match_mode, _StateIdT);
 
       _StateIdT
       _M_handle_backref(_Match_mode, _StateIdT);
 
-      _StateIdT
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_handle_accept(_Match_mode, _StateIdT);
 
       _StateIdT
       _M_handle_alternative(_Match_mode, _StateIdT);
 
-      _StateIdT
+      template<_Search_mode __search_mode>
+	_StateIdT
       _M_node(_Match_mode, _StateIdT);
 
-      void
+      template<_Search_mode __search_mode>
+	void
       _M_dfs(_Match_mode __match_mode, _StateIdT __start);
 
       bool
       _M_main(_Match_mode __match_mode)
       {
-	if (_M_search_mode == _Search_mode::_DFS)
+	if (_M_search_mode == _Search_mode::_Dfs)
 	  return _M_main_dfs(__match_mode);
 	else
 	  return _M_main_bfs(__match_mode);
