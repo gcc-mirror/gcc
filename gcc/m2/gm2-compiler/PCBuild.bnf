@@ -47,7 +47,7 @@ IMPLEMENTATION MODULE PCBuild ;
 FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
                      InsertTokenAndRewind, GetTokenNo, MakeVirtualTok ;
 
-FROM M2MetaError IMPORT MetaErrorStringT0 ;
+FROM M2MetaError IMPORT MetaErrorStringT0, MetaErrorT1 ;
 FROM NameKey IMPORT NulName, Name, makekey ;
 FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatChar ;
 FROM M2Printf IMPORT printf0 ;
@@ -120,7 +120,7 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         IsRecord, IsProcType,
                         GetCurrentModule, IsInnerModule, IsImported,
                         RequestSym,
-                        GetSym, GetLocalSym ;
+                        GetSym, GetLocalSym, MakeError, UnknownReported ;
 
 FROM M2Batch IMPORT IsModuleKnown ;
 
@@ -474,6 +474,78 @@ BEGIN
       PushTFQualident (tok, tokstart, init)
    END
 END CheckModuleQualident ;
+
+
+(*
+   CreateQualident - push the qualident symbol building it
+                     component at a time.
+*)
+
+PROCEDURE CreateQualident (stopset0: SetOfStop0;
+                	   stopset1: SetOfStop1;
+			   stopset2: SetOfStop2) ;
+VAR
+   name    : Name ;
+   sym,
+   init,
+   ip1     : CARDINAL ;
+   tok,
+   tokstart: CARDINAL ;
+BEGIN
+   PopTtok (name, tokstart) ;
+   tok := tokstart ;
+   init := GetSym (name) ;
+   IF init=NulSym
+   THEN
+      PushTFntok (NulSym, NulSym, name, tok)
+   ELSE
+      WHILE IsDefImp (init) OR IsModule (init) DO
+         IF currenttoken # periodtok
+         THEN
+            ErrorArrayAt ("expecting '.' after module in the construction of a qualident", tok) ;
+            IF tok#tokstart
+            THEN
+               tok := MakeVirtualTok (tokstart, tokstart, tok)
+            END ;
+            PushTtok (init, tok) ;
+            RETURN
+         ELSE
+            Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
+            StartScope (init) ;
+            Ident (stopset0, stopset1, stopset2) ;
+            PopTtok (name, tok) ;
+            ip1 := GetSym (name) ;
+            IF ip1 = NulSym
+            THEN
+               ErrorArrayAt ("unknown ident in the construction of a qualident", tok) ;
+               EndScope ;
+               IF tok#tokstart
+               THEN
+                  tok := MakeVirtualTok (tokstart, tokstart, tok)
+               END ;
+               PushTFntok (NulSym, NulSym, name, tok) ;
+               RETURN
+            ELSE
+               PutIncluded (ip1)
+            END ;
+            EndScope ;
+            CheckCanBeImported (init, ip1) ;
+            init := ip1
+         END
+      END ;
+      IF tok#tokstart
+      THEN
+         tok := MakeVirtualTok (tokstart, tokstart, tok)
+      END ;
+      IF IsProcedure (init) OR IsProcType (init)
+      THEN
+         PushTtok (init, tok)
+      ELSE
+         PushTFtok (init, GetType(init), tok)
+      END
+   END
+END CreateQualident ;
+
 
 % module PCBuild end
 BEGIN
@@ -1002,70 +1074,18 @@ Term := Factor { MulOperator Factor } =:
 Factor := Number | string | SetOrDesignatorOrFunction |
           "(" Expression ")" | "NOT" ( Factor | ConstAttribute ) =:
 
-PushQualident :=                                                           % VAR name         : Name ;
-                                                                                 init, ip1    : CARDINAL ;
-                                                                                 tok, tokstart: CARDINAL ; %
-                                                                           % PushAutoOn %
-             Ident                                                         % IF IsAutoPushOn()
+PushQualident :=                                                           % PushAutoOn %
+                 Ident                                                     % IF IsAutoPushOn()
                                                                              THEN
-                                                                                PopTtok (name, tokstart) ;
-                                                                                tok := tokstart ;
-                                                                                init := GetSym (name) ;
-                                                                                IF init=NulSym
-                                                                                THEN
-                                                                                   PushTFntok (NulSym, NulSym, name, tok)
-                                                                                ELSE
-                                                                                   WHILE IsDefImp (init) OR IsModule (init) DO
-                                                                                      IF currenttoken # periodtok
-                                                                                      THEN
-                                                                                         ErrorArrayAt ("expecting '.' after module in the construction of a qualident", tok) ;
-                                                                                         IF tok#tokstart
-                                                                                         THEN
-                                                                                            tok := MakeVirtualTok (tokstart, tokstart, tok)
-                                                                                         END ;
-                                                                                         PushTtok (init, tok) ;
-                                                                                         PopAuto ;
-                                                                                         RETURN
-                                                                                      ELSE
-                                                                                         Expect (periodtok, stopset0, stopset1, stopset2 + SetOfStop2{identtok}) ;
-                                                                                         StartScope (init) ;
-                                                                                         Ident (stopset0, stopset1, stopset2) ;
-                                                                                         PopTtok (name, tok) ;
-                                                                                         ip1 := GetSym (name) ;
-                                                                                         IF ip1 = NulSym
-                                                                                         THEN
-                                                                                            ErrorArrayAt ("unknown ident in the construction of a qualident", tok) ;
-                                                                                            EndScope ;
-                                                                                            IF tok#tokstart
-                                                                                            THEN
-                                                                                               tok := MakeVirtualTok (tokstart, tokstart, tok)
-                                                                                            END ;
-                                                                                            PushTFntok (NulSym, NulSym, name, tok) ;
-                                                                                            PopAuto ;
-                                                                                            RETURN
-                                                                                         ELSE
-                                                                                            PutIncluded (ip1)
-                                                                                         END ;
-                                                                                         EndScope ;
-                                                                                         CheckCanBeImported (init, ip1) ;
-                                                                                         init := ip1
-                                                                                      END
-                                                                                   END ;
-                                                                                   IF tok#tokstart
-                                                                                   THEN
-                                                                                      tok := MakeVirtualTok (tokstart, tokstart, tok)
-                                                                                   END ;
-                                                                                   IF IsProcedure (init) OR IsProcType (init)
-                                                                                   THEN
-                                                                                      PushTtok (init, tok)
-                                                                                   ELSE
-                                                                                      PushTFtok (init, GetType(init), tok)
-                                                                                   END
-                                                                                END
-                                                                             ELSE %
-             { "." Ident }                                                 % END %
-                                                                           % PopAuto %
-           =:
+                                                                                CreateQualident (stopset0, stopset1, stopset2)
+                                                                             ELSE
+									        (* Although this code is not executed the grammar is
+										   processed by pge to generate first and follow sets.  *)
+							                   %
+                       { "." Ident }
+                                                                           % END ;
+                                                                             PopAuto %
+               =:
 
 ConstructorOrSimpleDes := Constructor |                                    % PopNothing %
                                           SimpleDes [ ActualParameters ]
