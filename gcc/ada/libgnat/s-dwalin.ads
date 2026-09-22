@@ -192,6 +192,9 @@ private
       Has_Debug : Boolean;
       --  True if all debug sections are available
 
+      Has_Line_Str : Boolean;
+      --  True if the .debug_line_str section is available
+
       Cache : Search_Array_Access;
       --  Quick access to symbol and debug info (when present).
 
