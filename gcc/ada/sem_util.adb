@@ -23824,9 +23824,19 @@ package body Sem_Util is
          return False;
 
       --  Class-wide types are treated as controlled because derivations from
-      --  the root type may introduce controlled components.
+      --  the root type may introduce controlled components, unless the root
+      --  type is declared with the No_Controlled_Parts aspect.
 
-      elsif Is_Class_Wide_Type (Typ) then
+      elsif (Is_Class_Wide_Type (Typ)
+              and then not
+                Has_Enabled_Aspect
+                  (Root_Type (Typ), Aspect_No_Controlled_Parts))
+        or else (Is_Mutably_Tagged_CW_Equivalent_Type (Typ)
+                  and then not
+                    Has_Enabled_Aspect
+                      (Root_Type (Corresponding_Mutably_Tagged_Type (Typ)),
+                       Aspect_No_Controlled_Parts))
+      then
          return True;
 
       --  Concurrent types are controlled as long as their corresponding record

@@ -15720,8 +15720,8 @@ package body Sem_Ch12 is
                Gen_T);
 
          elsif not Is_Definite_Subtype (Act_T)
+            and then not Is_Mutably_Tagged_Type (Act_T)
             and then Is_Definite_Subtype (A_Gen_T)
-            and then No (Class_Wide_Equivalent_Type (Act_T))
             and then Ada_Version >= Ada_95
          then
             Error_Msg_NE
@@ -15763,10 +15763,10 @@ package body Sem_Ch12 is
 
       Act_T := Entity (Actual);
 
-      --  Obtain the class-wide equivalent type and use it for the
+      --  Obtain the class-wide equivalent type, if any, and use it for the
       --  instantiation instead of a mutably tagged type.
 
-      if Present (Class_Wide_Equivalent_Type (Act_T)) then
+      if Is_Mutably_Tagged_Type (Act_T) then
          Act_T := Class_Wide_Equivalent_Type (Act_T);
       end if;
 

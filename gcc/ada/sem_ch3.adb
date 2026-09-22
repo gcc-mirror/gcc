@@ -18866,7 +18866,6 @@ package body Sem_Ch3 is
             Set_Full_View (Prev, Id);
             Append_Entity (Id, Current_Scope);
             Set_Is_Public (Id, Is_Public (Prev));
-            Set_Is_Internal (Id);
             New_Id := Prev;
 
             --  If the incomplete view is tagged, a class_wide type has been
@@ -23436,8 +23435,8 @@ package body Sem_Ch3 is
 
    procedure Record_Type_Definition (Def : Node_Id; Prev_T : Entity_Id) is
       Component            : Entity_Id;
-      Final_Storage_Only   : Boolean := True;
-      Relaxed_Finalization : Boolean := True;
+      Final_Storage_Only   : Boolean;
+      Relaxed_Finalization : Boolean;
       T                    : Entity_Id;
 
    begin
@@ -23445,6 +23444,17 @@ package body Sem_Ch3 is
          T := Full_View (Prev_T);
       else
          T := Prev_T;
+      end if;
+
+      --  Initialize Final_Storage_Only and Relaxed_Finalization from the
+      --  current state if we have inherited controlled components.
+
+      if Has_Controlled_Component (T) then
+         Final_Storage_Only := Finalize_Storage_Only (T);
+         Relaxed_Finalization := Has_Relaxed_Finalization (T);
+      else
+         Final_Storage_Only := True;
+         Relaxed_Finalization := True;
       end if;
 
       Set_Is_Not_Self_Hidden (T);
@@ -23511,13 +23521,12 @@ package body Sem_Ch3 is
          if Ekind (Component) /= E_Component then
             null;
 
-         --  Do not set Has_Controlled_Component on a class-wide equivalent
-         --  type. See Make_CW_Equivalent_Type.
+         --  Do not set Has_Controlled_Component on a CW equivalent type,
+         --  see Exp_Util.Make_CW_Equivalent_Type.
 
          elsif not Is_Class_Wide_Equivalent_Type (T)
-           and then (Has_Controlled_Component (Etype (Component))
-                      or else (Chars (Component) /= Name_uParent
-                                and then Is_Controlled (Etype (Component))))
+           and then Chars (Component) /= Name_uParent
+           and then Needs_Finalization (Etype (Component))
          then
             Set_Has_Controlled_Component (T);
             Final_Storage_Only :=
@@ -23534,7 +23543,7 @@ package body Sem_Ch3 is
       --  For a type that is not directly controlled but has controlled
       --  components, Finalize_Storage_Only is set if all the controlled
       --  components are Finalize_Storage_Only. The same processing is
-      --  appled to Has_Relaxed_Finalization.
+      --  applied to Has_Relaxed_Finalization.
 
       if not Is_Controlled (T) and then Has_Controlled_Component (T) then
          Set_Finalize_Storage_Only    (T, Final_Storage_Only);

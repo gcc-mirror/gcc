@@ -9682,8 +9682,8 @@ package body Exp_Ch6 is
         and then (Has_Task (Typ)
                     or else (Is_Class_Wide_Type (Typ)
                                and then Is_Limited_Record (Typ)
-                               and then not Has_Aspect
-                                 (Etype (Typ), Aspect_No_Task_Parts)));
+                               and then not Has_Enabled_Aspect
+                                 (Root_Type (Typ), Aspect_No_Task_Parts)));
    end Might_Have_Tasks;
 
    ----------------------------

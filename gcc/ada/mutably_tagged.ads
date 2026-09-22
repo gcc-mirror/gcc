@@ -77,12 +77,11 @@ package Mutably_Tagged is
 
    function Get_Corresponding_Tagged_Type_If_Present
      (Typ : Entity_Id) return Entity_Id;
-   --  Obtain the corresponding tag type associated with Typ when
-   --  Typ is a mutably tagged class-wide equivalent type. Otherwise, Just
-   --  return Typ.
+   --  Obtain the corresponding tagged type associated with Typ when Typ is
+   --  a mutably tagged class-wide equivalent type. Otherwise, just return Typ.
 
    --  This function is mostly used when we need a concrete type to generate
-   --  initialization for mutably tagged types.
+   --  initialization/adjustment/finalization for mutably tagged types.
 
    function Is_Mutably_Tagged_Conversion (N : Node_Id) return Boolean;
    --  Return True if expression N is an object of a mutably tagged class-wide

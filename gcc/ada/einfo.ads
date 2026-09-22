@@ -650,9 +650,9 @@ package Einfo is
 --       the corresponding implicitly declared class-wide type. For a
 --       class-wide type, returns itself. Set to Empty for untagged types.
 
---    Class_Wide_Equivalent_Type
---       Defined in all type entities. Used to store an internally generated
---       class-wide equivalent type for an associated mutably tagged type.
+--    Class_Wide_Equivalent_Type [base type only]
+--       Defined in class-wide types. Used to store an internally generated
+--       class-wide equivalent type for a mutably tagged type.
 
 --    Cloned_Subtype
 --       Defined in E_Record_Subtype and E_Class_Wide_Subtype entities.
@@ -2603,17 +2603,16 @@ package Einfo is
 --       that the constructed subtype itself will be constrained.
 
 --    Is_Controlled_Active [base type only]
---       Defined in all type entities. Indicates that the type is controlled,
---       i.e. has been declared with the Finalizable or the Destructor aspect
---       or has inherited the aspect from an ancestor. Can only be set for
---       record types, tagged or untagged.
---       System.Finalization_Root.Root_Controlled is an example of the former
---       case while Ada.Finalization.Controlled and
+--       Defined in all types. Set only for record types, tagged or untagged.
+--       Indicates that the type is controlled, i.e. has been declared with
+--       the Finalizable or the Destructor aspect, or has inherited one of the
+--       aspects from an ancestor. System.Finalization_Root.Root_Controlled is
+--       an example of the former case, while Ada.Finalization.Controlled and
 --       Ada.Finalization.Limited_Controlled are examples of the latter.
 
 --    Is_Controlled (synth) [base type only]
---       Defined in all type entities. Set if Is_Controlled_Active is set for
---       the type, and Disable_Controlled is not set.
+--       Defined in all type entities. Set if both Is_Controlled_Active is set
+--       and Disable_Controlled is not set for the type.
 
 --    Is_Controlling_Formal
 --       Defined in all Formal_Kind entities. Marks the controlling parameters
@@ -3117,8 +3116,8 @@ package Einfo is
 --    Is_Modular_Integer_Type (synthesized)
 --       Applies to all entities. True if entity is a modular integer type
 
---    Is_Mutably_Tagged_Type
---       Defined in all type entities. Used to signify that a given type is a
+--    Is_Mutably_Tagged_Type [base type only]
+--       Defined in all types and subtypes. Set to indicate that the type is a
 --       "mutably tagged" class-wide type where 'Size'Class has been specified.
 
 --    Is_Non_Static_Subtype
@@ -5173,6 +5172,7 @@ package Einfo is
    --    Is_Frozen
    --    Is_Generic_Actual_Type
    --    Is_Independent
+   --    Is_Mutably_Tagged_Type               (base type only)
    --    Is_Non_Static_Subtype
    --    Is_Packed                            (base type only)
    --    Is_Private_Composite
@@ -5354,6 +5354,7 @@ package Einfo is
    --    Direct_Primitive_Operations
    --    Cloned_Subtype                        (subtype case only)
    --    First_Entity
+   --    Class_Wide_Equivalent_Type            (base type only)
    --    Equivalent_Type                       (always Empty for type)
    --    Non_Limited_View
    --    Last_Entity

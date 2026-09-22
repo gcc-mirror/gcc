@@ -2480,7 +2480,7 @@ package body Exp_Ch5 is
          begin
             --  Handle chains of renamings
 
-            Ent := Name (N);
+            Ent := Lhs;
             while Nkind (Ent) in N_Has_Entity
               and then Present (Entity (Ent))
               and then Is_Object (Entity (Ent))
@@ -2967,18 +2967,18 @@ package body Exp_Ch5 is
 
             --  If dispatching assignment, we need to dispatch to _assign
 
-            if Is_Class_Wide_Type (Typ)
+            if (Is_Class_Wide_Type (Typ) and then Expand_Ctrl_Actions)
 
                --  If the type is tagged, we may as well use the predefined
                --  primitive assignment. This avoids inlining a lot of code
                --  and in the class-wide case, the assignment is replaced
                --  by a dispatching call to _assign. It is suppressed in the
                --  case of assignments created by the expander that correspond
-               --  to initializations, where we do want to copy the tag
-               --  (Expand_Ctrl_Actions flag is set False in this case). It is
-               --  also suppressed if restriction No_Dispatching_Calls is in
-               --  force because in that case predefined primitives are not
-               --  generated.
+               --  to initializations, where we do not want to finalize the
+               --  target (Expand_Ctrl_Actions is set to False in this case).
+               --  It is also suppressed if restriction No_Dispatching_Calls
+               --  is in force because in that case predefined primitives are
+               --  not generated.
 
                or else (Is_Tagged_Type (Typ)
                          and then Chars (Current_Scope) /= Name_uAssign
@@ -3015,13 +3015,70 @@ package body Exp_Ch5 is
 
                   L := New_List;
 
-                  --  In case of assignment to a class-wide tagged type, before
-                  --  the assignment we generate run-time check to ensure that
-                  --  the tags of source and target match.
+                  --  Handle assignment of a mutably tagged type
 
-                  if not Tag_Checks_Suppressed (Typ)
+                  if Is_Mutably_Tagged_Type (Typ) then
+                     declare
+                        Lhs_Tag : constant Node_Id :=
+                          Make_Selected_Component (Loc,
+                            Prefix        => Duplicate_Subexpr (Lhs),
+                            Selector_Name =>
+                              Make_Identifier (Loc, Name_uTag));
+
+                        Rhs_Tag : constant Node_Id :=
+                          Make_Selected_Component (Loc,
+                            Prefix        => Duplicate_Subexpr (Rhs),
+                            Selector_Name =>
+                             Make_Identifier (Loc, Name_uTag));
+
+                     begin
+                        --  Create a tag check when we have the extra
+                        --  constrained formal and it is true (meaning we
+                        --  are not dealing with a mutably tagged object).
+
+                        if not Tag_Checks_Suppressed (Typ)
+                          and then Is_Entity_Name (Lhs)
+                          and then Is_Formal (Entity (Lhs))
+                          and then Present (Extra_Constrained (Entity (Lhs)))
+                        then
+                           Append_To (L,
+                             Make_If_Statement (Loc,
+                               Condition       =>
+                                 New_Occurrence_Of
+                                   (Extra_Constrained (Entity (Lhs)), Loc),
+                               Then_Statements => New_List (
+                                 Make_Raise_Constraint_Error (Loc,
+                                   Condition =>
+                                     Make_Op_Ne (Loc,
+                                       Left_Opnd  => Lhs_Tag,
+                                       Right_Opnd => Rhs_Tag),
+                                   Reason    => CE_Tag_Check_Failed))));
+                        end if;
+
+                        --  Generate a tag assignment before the actual
+                        --  assignment so we dispatch to the proper
+                        --  assign version.
+
+                        Append_To (L,
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                            Make_Selected_Component (Loc,
+                              Prefix        => Duplicate_Subexpr (Lhs),
+                              Selector_Name =>
+                                Make_Identifier (Loc, Name_uTag)),
+                          Expression =>
+                            Make_Selected_Component (Loc,
+                              Prefix        => Duplicate_Subexpr (Rhs),
+                              Selector_Name =>
+                                Make_Identifier (Loc, Name_uTag))));
+                     end;
+
+                  --  For the assignment of a regular class-wide type, generate
+                  --  a run-time check to ensure that the tag of the source and
+                  --  that of the target match.
+
+                  elsif not Tag_Checks_Suppressed (Typ)
                     and then Is_Class_Wide_Type (Typ)
-                    and then Is_Tagged_Type (Typ)
                     and then Is_Tagged_Type (Underlying_Type (Etype (Rhs)))
                   then
                      declare
@@ -3029,18 +3086,7 @@ package body Exp_Ch5 is
                         Rhs_Tag : Node_Id;
 
                      begin
-                        if not Is_Interface (Typ) then
-                           Lhs_Tag :=
-                             Make_Selected_Component (Loc,
-                               Prefix        => Duplicate_Subexpr (Lhs),
-                               Selector_Name =>
-                                 Make_Identifier (Loc, Name_uTag));
-                           Rhs_Tag :=
-                             Make_Selected_Component (Loc,
-                               Prefix        => Duplicate_Subexpr (Rhs),
-                               Selector_Name =>
-                                 Make_Identifier (Loc, Name_uTag));
-                        else
+                        if Is_Interface (Typ) then
                            --  Displace the pointer to the base of the objects
                            --  applying 'Address, which is later expanded into
                            --  a call to RE_Base_Address.
@@ -3059,66 +3105,26 @@ package body Exp_Ch5 is
                                    Make_Attribute_Reference (Loc,
                                      Prefix         => Duplicate_Subexpr (Rhs),
                                      Attribute_Name => Name_Address)));
-                        end if;
-
-                        --  Handle assignment to a mutably tagged type
-
-                        if Is_Mutably_Tagged_Conversion (Lhs)
-                          or else Is_Mutably_Tagged_Type (Typ)
-                          or else Is_Mutably_Tagged_Type (Etype (Lhs))
-                        then
-                           --  Create a tag check when we have the extra
-                           --  constrained formal and it is true (meaning we
-                           --  are not dealing with a mutably tagged object).
-
-                           if Is_Entity_Name (Name (N))
-                             and then Is_Formal (Entity (Name (N)))
-                             and then Present
-                                        (Extra_Constrained (Entity (Name (N))))
-                           then
-                              Append_To (L,
-                                Make_If_Statement (Loc,
-                                  Condition       =>
-                                    New_Occurrence_Of
-                                      (Extra_Constrained
-                                        (Entity (Name (N))), Loc),
-                                  Then_Statements => New_List (
-                                    Make_Raise_Constraint_Error (Loc,
-                                      Condition =>
-                                        Make_Op_Ne (Loc,
-                                          Left_Opnd  => Lhs_Tag,
-                                          Right_Opnd => Rhs_Tag),
-                                      Reason    => CE_Tag_Check_Failed))));
-                           end if;
-
-                           --  Generate a tag assignment before the actual
-                           --  assignment so we dispatch to the proper
-                           --  assign version.
-
-                           Append_To (L,
-                             Make_Assignment_Statement (Loc,
-                               Name       =>
-                               Make_Selected_Component (Loc,
-                                 Prefix        => Duplicate_Subexpr (Lhs),
-                                 Selector_Name =>
-                                   Make_Identifier (Loc, Name_uTag)),
-                             Expression =>
-                               Make_Selected_Component (Loc,
-                                 Prefix        => Duplicate_Subexpr (Rhs),
-                                 Selector_Name =>
-                                   Make_Identifier (Loc, Name_uTag))));
-
-                        --  Otherwise generate a normal tag check
-
                         else
-                           Append_To (L,
-                             Make_Raise_Constraint_Error (Loc,
-                               Condition =>
-                                 Make_Op_Ne (Loc,
-                                   Left_Opnd  => Lhs_Tag,
-                                   Right_Opnd => Rhs_Tag),
-                               Reason    => CE_Tag_Check_Failed));
+                           Lhs_Tag :=
+                             Make_Selected_Component (Loc,
+                               Prefix        => Duplicate_Subexpr (Lhs),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uTag));
+                           Rhs_Tag :=
+                             Make_Selected_Component (Loc,
+                               Prefix        => Duplicate_Subexpr (Rhs),
+                               Selector_Name =>
+                                 Make_Identifier (Loc, Name_uTag));
                         end if;
+
+                        Append_To (L,
+                          Make_Raise_Constraint_Error (Loc,
+                            Condition =>
+                              Make_Op_Ne (Loc,
+                                Left_Opnd  => Lhs_Tag,
+                                Right_Opnd => Rhs_Tag),
+                            Reason    => CE_Tag_Check_Failed));
                      end;
                   end if;
 
@@ -3147,7 +3153,7 @@ package body Exp_Ch5 is
                   end;
                end;
 
-            --  Untagged case
+            --  Untagged case, or initialization in tagged case
 
             else
                declare
@@ -6494,13 +6500,16 @@ package body Exp_Ch5 is
       Ctrl_Act : constant Boolean := Needs_Finalization (T)
                                        and then not No_Ctrl_Actions (N)
                                        and then not No_Finalize_Actions (N);
+      Mute_Tag : constant Boolean := Is_Mutably_Tagged_CW_Equivalent_Type (T);
       Save_Tag : constant Boolean := Is_Tagged_Type (T)
                                        and then not Comp_Asn
+                                       and then not Mute_Tag
                                        and then not No_Ctrl_Actions (N)
                                        and then not No_Finalize_Actions (N)
                                        and then Tagged_Type_Expansion;
       Set_Tag  : constant Boolean := Is_Tagged_Type (T)
                                        and then not Comp_Asn
+                                       and then not Mute_Tag
                                        and then not No_Ctrl_Actions (N)
                                        and then Tagged_Type_Expansion;
       Adj_Call : Node_Id;
@@ -6580,6 +6589,17 @@ package body Exp_Ch5 is
       if Comp_Asn then
          Set_Analyzed (New_N, False);
          Set_Componentwise_Assignment (New_N, True);
+
+      --  If this is an assignment of a mutably tagged type, we need to assign
+      --  only the bits present in the source, so we strip a conversion to the
+      --  mutably tagged type so as to expose the source to the code generator.
+
+      elsif Mute_Tag
+        and then Nkind (Expression (N)) in N_Type_Conversion
+                                         | N_Unchecked_Type_Conversion
+        and then Etype (Expression (N)) = Corresponding_Mutably_Tagged_Type (T)
+      then
+         Rewrite (Expression (New_N), Expression (Expression (N)));
       end if;
 
       Append_To (Res, New_N);

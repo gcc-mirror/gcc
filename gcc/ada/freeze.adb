@@ -5035,7 +5035,7 @@ package body Freeze is
          --  Accumulates total Esize values of all elementary components. Used
          --  for processing of Implicit_Packing.
 
-         Final_Storage_Only : Boolean := True;
+         Final_Storage_Only : Boolean;
          --  Used to compute the Finalize_Storage_Only flag
 
          Placed_Component : Boolean := False;
@@ -5043,7 +5043,7 @@ package body Freeze is
          --  clause (used to warn about useless Bit_Order pragmas, and also
          --  to detect cases where Implicit_Packing may have an effect).
 
-         Relaxed_Finalization : Boolean := True;
+         Relaxed_Finalization : Boolean;
          --  Used to compute the Has_Relaxed_Finalization flag
 
          Sized_Component_Total_RM_Size : Uint := Uint_0;
@@ -5830,6 +5830,17 @@ package body Freeze is
                Freeze_And_Append (Corresponding_Remote_Type (Rec), N, Result);
             end if;
 
+            --  Initialize Final_Storage_Only and Relaxed_Finalization from the
+            --  current state if we have inherited controlled components.
+
+            if Has_Controlled_Component (Rec) then
+               Final_Storage_Only := Finalize_Storage_Only (Rec);
+               Relaxed_Finalization := Has_Relaxed_Finalization (Rec);
+            else
+               Final_Storage_Only := True;
+               Relaxed_Finalization := True;
+            end if;
+
             --  Check for tasks, protected and controlled components, unchecked
             --  unions, and type invariants.
 
@@ -5837,22 +5848,12 @@ package body Freeze is
             while Present (Comp) loop
                Propagate_Concurrent_Flags (Rec, Etype (Comp));
 
-               --  Do not set Has_Controlled_Component on a class-wide
-               --  equivalent type. See Make_CW_Equivalent_Type.
+               --  Do not set Has_Controlled_Component on a CW equivalent type,
+               --  see Exp_Util.Make_CW_Equivalent_Type.
 
                if not Is_Class_Wide_Equivalent_Type (Rec)
-                 and then
-                   (Has_Controlled_Component (Etype (Comp))
-                     or else
-                       (Chars (Comp) /= Name_uParent
-                         and then Is_Controlled (Etype (Comp)))
-                     or else
-                       (Is_Protected_Type (Etype (Comp))
-                         and then
-                           Present (Corresponding_Record_Type (Etype (Comp)))
-                         and then
-                           Has_Controlled_Component
-                             (Corresponding_Record_Type (Etype (Comp)))))
+                 and then Chars (Comp) /= Name_uParent
+                 and then Needs_Finalization (Etype (Comp))
                then
                   Set_Has_Controlled_Component (Rec);
                   Final_Storage_Only :=
@@ -5896,7 +5897,7 @@ package body Freeze is
             --  For a type that is not directly controlled but has controlled
             --  components, Finalize_Storage_Only is set if all the controlled
             --  components are Finalize_Storage_Only. The same processing is
-            --  appled to Has_Relaxed_Finalization.
+            --  applied to Has_Relaxed_Finalization.
 
             if not Is_Controlled (Rec) and then Has_Controlled_Component (Rec)
             then

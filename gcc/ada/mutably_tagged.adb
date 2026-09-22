@@ -186,13 +186,13 @@ package body Mutably_Tagged is
         and then not Error_Posted (Typ)
 
         --  Finally check Typ is a class-wide equivalent type which has an
-        --  associated mutably tagged class-wide type (e.g. it is a class-wide
-        --  type with a size clause).
+        --  associated mutably tagged class-wide type.
 
         and then Is_Class_Wide_Equivalent_Type (Typ)
         and then Present (Parent_Subtype (Typ))
         and then Present (Class_Wide_Type (Parent_Subtype (Typ)))
-        and then Has_Size_Clause (Corresponding_Mutably_Tagged_Type (Typ));
+        and then
+          Is_Mutably_Tagged_Type (Class_Wide_Type (Parent_Subtype (Typ)));
    end Is_Mutably_Tagged_CW_Equivalent_Type;
 
    --------------------------------

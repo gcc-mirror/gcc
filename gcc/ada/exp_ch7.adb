@@ -46,6 +46,7 @@ with Freeze;         use Freeze;
 with GNAT_CUDA;      use GNAT_CUDA;
 with Inline;         use Inline;
 with Lib;            use Lib;
+with Mutably_Tagged; use Mutably_Tagged;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
 with Opt;            use Opt;
@@ -5508,7 +5509,7 @@ package body Exp_Ch7 is
       if Is_Class_Wide_Type (Typ) then
          Utyp := Root_Type (Typ);
       else
-         Utyp := Typ;
+         Utyp := Get_Corresponding_Tagged_Type_If_Present (Typ);
       end if;
 
       Utyp := Underlying_Type (Base_Type (Utyp));
@@ -7892,7 +7893,7 @@ package body Exp_Ch7 is
          Ref  := Convert_Concurrent (Ref, Underlying_Type (Typ));
 
       else
-         Utyp := Typ;
+         Utyp := Get_Corresponding_Tagged_Type_If_Present (Typ);
          Atyp := Typ;
       end if;
 
@@ -8469,7 +8470,7 @@ package body Exp_Ch7 is
 
       else
          Is_Conc := False;
-         Utyp    := Typ;
+         Utyp    := Get_Corresponding_Tagged_Type_If_Present (Typ);
       end if;
 
       Utyp := Underlying_Type (Base_Type (Utyp));
@@ -8500,22 +8501,28 @@ package body Exp_Ch7 is
       --  [Deep_]Initialize primitive to call.
       --  If Typ is protected then no additional processing is needed either.
 
-      if No (Utyp)
-        or else Is_Protected_Type (Typ)
-      then
+      if No (Utyp) or else Is_Protected_Type (Typ) then
          return Empty;
       end if;
 
-      --  Select the appropriate version of initialize
+      --  Select the appropriate version of Initialize
 
       if Has_Controlled_Component (Utyp) then
          Proc := TSS (Utyp, TSS_Deep_Initialize);
-      elsif Is_Mutably_Tagged_Type (Utyp) then
-         Proc := Find_Controlled_Prim_Op (Etype (Utyp), Name_Initialize);
-         Check_Visibly_Controlled (Initialize_Case, Etype (Typ), Proc, Ref);
-      else
+
+      --  Derivations from [Limited_]Controlled
+
+      elsif Is_Controlled (Utyp) then
          Proc := Find_Controlled_Prim_Op (Utyp, Name_Initialize);
          Check_Visibly_Controlled (Initialize_Case, Typ, Proc, Ref);
+
+      --  Mutably tagged types without controlled parts in the root type
+
+      elsif Is_Mutably_Tagged_CW_Equivalent_Type (Typ) then
+         return Empty;
+
+      else
+         raise Program_Error;
       end if;
 
       --  If initialization procedure for an array of controlled objects is

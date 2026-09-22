@@ -6994,8 +6994,7 @@ package body Exp_Ch3 is
             if Ekind (Etype (Comp)) /= E_Void
               and then Is_Mutably_Tagged_Type (Etype (Comp))
             then
-               Set_Etype
-                 (Comp, Class_Wide_Equivalent_Type (Etype (Comp)));
+               Set_Etype (Comp, Class_Wide_Equivalent_Type (Etype (Comp)));
             end if;
             Next_Entity (Comp);
          end loop;
@@ -8672,6 +8671,28 @@ package body Exp_Ch3 is
                               and then OK_To_Rename_Ref (Prefix (Expr_Q))
                               and then not Special_Ret_Obj));
 
+            --  If the object is of a mutably tagged type and is initialized
+            --  by something other than a function call, do the initialization
+            --  as an assignment so that only the bits present in the initial
+            --  value are copied.
+
+            if Is_Mutably_Tagged_CW_Equivalent_Type (Typ)
+              and then Nkind (Expr_Q) /= N_Function_Call
+              and then not Rewrite_As_Renaming
+            then
+               declare
+                  Stat : constant Node_Id :=
+                           Make_Assignment_Statement (Loc,
+                             Name       => New_Occurrence_Of (Def_Id, Loc),
+                             Expression => Relocate_Node (Expr));
+               begin
+                  Set_Assignment_OK (Name (Stat));
+                  Set_No_Finalize_Actions (Stat);
+                  Insert_Action_After (Init_After, Stat);
+                  Set_Expression (N, Empty);
+                  Set_No_Initialization (N);
+               end;
+
             --  If the type needs finalization and is not inherently limited,
             --  then the target is adjusted after the copy and attached to the
             --  finalization list. However, no adjustment is needed in the case
@@ -8683,7 +8704,7 @@ package body Exp_Ch3 is
             --  Similarly, no adjustment is needed if we are going to rewrite
             --  the object declaration into a renaming declaration.
 
-            if Needs_Finalization (Typ)
+            elsif Needs_Finalization (Typ)
               and then not Is_Inherently_Limited_Type (Typ)
               and then Nkind (Expr_Q) /= N_Function_Call
               and then not Is_Two_Pass_Aggregate (Expr_Q)
