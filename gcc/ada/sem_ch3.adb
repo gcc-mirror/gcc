@@ -2142,15 +2142,15 @@ package body Sem_Ch3 is
                  ("access to specific tagged type required (RM 3.9.2(9))", E);
             end if;
 
-            --  (Ada 2005: AI-230): Accessibility check for anonymous
+            --  Ada 2005 (AI-230): Accessibility check for anonymous
             --  components
 
             if Static_Type_Access_Level (Etype (E))
                  > Static_Type_Access_Level (T, Deepest => True)
             then
                Error_Msg_N
-                 ("expression has deeper access level than component " &
-                  "(RM 3.10.2 (12.2))", E);
+                 ("expression has deeper accessibility level than component"
+                  & " (RM 3.10.2(12.2))", E);
             end if;
 
             --  The initialization expression is a reference to an access
@@ -2163,8 +2163,8 @@ package body Sem_Ch3 is
               and then Present (Discriminal_Link (Entity (E)))
             then
                Error_Msg_N
-                 ("discriminant has deeper accessibility level than target",
-                  E);
+                 ("access discriminant has deeper accessibility level than"
+                  & " component (RM 3.10.2(12.2))", E);
             end if;
          end if;
       end if;
@@ -9762,31 +9762,37 @@ package body Sem_Ch3 is
          if Ada_Version >= Ada_2005 then
             Check_Generic_Ancestors;
 
+         --  In Ada 95, the accessibility level of a record extension cannot
+         --  be deeper than that of its parent type.
+
          elsif Static_Type_Access_Level (Derived_Type)
-                 /= Static_Type_Access_Level (Parent_Type)
+                 > Static_Type_Access_Level (Parent_Type)
            and then not Is_Generic_Type (Derived_Type)
          then
             if Is_Controlled (Parent_Type) then
                Error_Msg_N
-                 ("controlled type must be declared at the library level",
-                  Indic);
+                 ("controlled type must be declared at the library level"
+                  & " (RM 3.9.1(3))", Indic);
             else
                Error_Msg_N
-                 ("type extension at deeper accessibility level than parent",
-                  Indic);
+                 ("type extension at deeper accessibility level than parent"
+                  & " (RM 3.9.1(3))", Indic);
             end if;
+
+         --  In Ada 95, a type extension cannot be declared in a generic body
+         --  if the parent type is declared outside that body.
 
          else
             declare
                GB : constant Node_Id := Enclosing_Generic_Body (Derived_Type);
+
             begin
                if Present (GB)
                  and then GB /= Enclosing_Generic_Body (Parent_Base)
                then
                   Error_Msg_NE
                     ("parent type of& must not be outside generic body"
-                       & " (RM 3.9.1(4))",
-                         Indic, Derived_Type);
+                     & " (RM 3.9.1(4))", Indic, Derived_Type);
                end if;
             end;
          end if;

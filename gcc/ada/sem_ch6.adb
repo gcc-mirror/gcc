@@ -1094,17 +1094,15 @@ package body Sem_Ch6 is
 
          --  If the result type is class-wide, then check that the return
          --  expression's type is not declared at a deeper level than the
-         --  function (RM05-6.5(5.6/2)).
+         --  function (RM 6.5(5.8)).
 
-         if Ada_Version >= Ada_2005
-           and then Is_Class_Wide_Type (R_Type)
-         then
+         if Ada_Version >= Ada_2005 and then Is_Class_Wide_Type (R_Type) then
             if Static_Type_Access_Level (Etype (Expr))
                  > Static_Subprogram_Access_Level (Scope_Id)
             then
                Error_Msg_N
-                 ("level of return expression type is deeper than "
-                  & "class-wide function!", Expr);
+                 ("type of return expression has deeper accessibility level"
+                  & " than class-wide function (RM 6.5(5.8))", Expr);
             end if;
          end if;
 
@@ -1117,9 +1115,8 @@ package body Sem_Ch6 is
                Related_Nod => N);
          end if;
 
-         --  Perform static accessibility checks for cases involving
-         --  dereferences of access parameters. Runtime accessibility checks
-         --  get generated elsewhere.
+         --  Perform a static accessibility check for return-by-reference
+         --  of limited types in Ada 95 or if -gnatd.l is in effect.
 
          if (Ada_Version < Ada_2005 or else Debug_Flag_Dot_L)
            and then Is_Inherently_Limited_Type (Etype (Scope_Id))
@@ -1155,16 +1152,16 @@ package body Sem_Ch6 is
                Reason => CE_Null_Not_Allowed);
          end if;
 
-      --  RM 6.5 (5.4/3): accessibility checks also apply if the return object
-      --  has no initializing expression.
+      --  The above accessibility check in Ada 2005 also applies if the return
+      --  object has no initializing expression (RM 6.5(5.5)).
 
       elsif Ada_Version > Ada_2005 and then Is_Class_Wide_Type (R_Type) then
          if Static_Type_Access_Level (Etype (Defining_Identifier (Obj_Decl)))
               > Static_Subprogram_Access_Level (Scope_Id)
          then
             Error_Msg_N
-              ("level of return expression type is deeper than "
-               & "class-wide function!", Obj_Decl);
+              ("type of return object has deeper accessibility level"
+               & " than class-wide function (RM 6.5(5.5))", Obj_Decl);
          end if;
       end if;
    end Analyze_Function_Return;

@@ -3716,8 +3716,9 @@ package body Sem_Res is
 
          procedure Accessibility_Error (S : String) is
          begin
-            Error_Msg_NE ("actual for aliased formal& has wrong accessibility"
-                          & " in " & S & " (RM 6.4.1(6.4))", A, F);
+            Error_Msg_NE
+              ("accessibility level of actual is too deep for aliased formal&"
+               & " in " & S & " (RM 6.4.1(6.4))", A, F);
          end Accessibility_Error;
 
       begin
@@ -5366,9 +5367,11 @@ package body Sem_Res is
          Prefix : constant String :=
            (if Nkind (Exp) = N_Attribute_Reference
             then "prefix of attribute"
-            else "type of access discriminant");
+            else "access discriminant");
          Message : constant String :=
-           Prefix & " has deeper level than allocator type";
+           Prefix
+           & " has deeper accessibility level than allocator type"
+           & " (RM 4.8(5.3))";
 
       begin
          --  In an instance, this is a runtime check, but one we know will fail
@@ -5719,10 +5722,12 @@ package body Sem_Res is
       --  the case of an initialized allocator with a class-wide argument (see
       --  Expand_Allocator_Expression).
 
-      if Ada_Version >= Ada_2005
-        and then Is_Class_Wide_Type (Desig_T)
-      then
+      if Ada_Version >= Ada_2005 and then Is_Class_Wide_Type (Desig_T) then
          declare
+            Message : constant String :=
+              "allocated type has deeper accessibility level than allocator"
+              & " type (RM 4.8(5.2))";
+
             Exp_Typ : Entity_Id;
 
          begin
@@ -5739,9 +5744,7 @@ package body Sem_Res is
             then
                if In_Instance_Body then
                   Error_Msg_Warn := SPARK_Mode /= On;
-                  Error_Msg_N
-                    ("type in allocator has deeper level than designated "
-                     & "class-wide type<<", E);
+                  Error_Msg_N (Message & "<<", E);
                   Error_Msg_N ("\Program_Error [<<", E);
 
                   Rewrite (N,
@@ -5757,9 +5760,7 @@ package body Sem_Res is
                elsif not Is_Generic_Type (Exp_Typ)
                  and then not In_Generic_Formal_Package (Exp_Typ)
                then
-                  Error_Msg_N
-                    ("type in allocator has deeper level than designated "
-                     & "class-wide type", E);
+                  Error_Msg_N (Message, E);
                end if;
             end if;
          end;
@@ -13621,9 +13622,9 @@ package body Sem_Res is
       Operand     : Node_Id;
       Report_Errs : Boolean := True) return Boolean
    is
-      Target_Type  : constant Entity_Id := Base_Type (Target);
-      Opnd_Type    : Entity_Id;
-      Inc_Ancestor : Entity_Id;
+      Message     : constant String :=
+        " has deeper accessibility level than target type (RM 4.6(24.21))";
+      Target_Type : constant Entity_Id := Base_Type (Target);
 
       function Conversion_Check
         (Valid : Boolean;
@@ -13648,7 +13649,7 @@ package body Sem_Res is
       --  discriminant selected from a dereference of another such "bad"
       --  conversion argument.
 
-      function Valid_Array_Conversion return Boolean;
+      function Valid_Array_Conversion (Opnd_Type : Entity_Id) return Boolean;
       --  Check index and component conformance, and accessibility levels if
       --  the component types are anonymous access types (Ada 2005).
 
@@ -13790,7 +13791,7 @@ package body Sem_Res is
       -- Valid_Array_Conversion --
       ----------------------------
 
-      function Valid_Array_Conversion return Boolean is
+      function Valid_Array_Conversion (Opnd_Type : Entity_Id) return Boolean is
          Opnd_Comp_Type : constant Entity_Id := Component_Type (Opnd_Type);
          Opnd_Comp_Base : constant Entity_Id := Base_Type (Opnd_Comp_Type);
 
@@ -13870,8 +13871,8 @@ package body Sem_Res is
                   if In_Instance_Body then
                      Error_Msg_Warn := SPARK_Mode /= On;
                      Report_Error_N
-                       ("source array type has deeper accessibility "
-                        & "level than target<<", Operand, Report_Errs);
+                       ("operand array type" & Message & "<<",
+                        Operand, Report_Errs);
                      Report_Error_N
                        ("\Program_Error [<<", Operand, Report_Errs);
                      Rewrite (N,
@@ -13884,13 +13885,9 @@ package body Sem_Res is
 
                   else
                      Report_Error_N
-                       ("source array type has deeper accessibility "
-                        & "level than target", Operand, Report_Errs);
+                       ("operand array type" & Message, Operand, Report_Errs);
                      return False;
                   end if;
-
-               else
-                  null;
                end if;
 
             --  All other cases where component base types do not match
@@ -13919,6 +13916,11 @@ package body Sem_Res is
 
          return True;
       end Valid_Array_Conversion;
+
+      --  Local variables
+
+      Inc_Ancestor : Entity_Id;
+      Opnd_Type    : Entity_Id;
 
    --  Start of processing for Valid_Conversion
 
@@ -14015,7 +14017,7 @@ package body Sem_Res is
             return False;
 
          else
-            return Valid_Array_Conversion;
+            return Valid_Array_Conversion (Opnd_Type);
          end if;
 
       --  Ada 2005 (AI-251): Internally generated conversions of access to
@@ -14083,15 +14085,13 @@ package body Sem_Res is
             end if;
          end;
 
-         --  Check the static accessibility rule of 4.6(17). Note that the
-         --  check is not enforced when within an instance body, since the
-         --  RM requires such cases to be caught at run time.
-
-         --  If the operand is a rewriting of an allocator no check is needed
+         --  If the operand is a rewriting of an allocator, no check is needed
          --  because there are no accessibility issues.
 
          if Nkind (Original_Node (N)) = N_Allocator then
             null;
+
+         --  Otherwise, check the static accessibility rules of 4.6(24.11-21)
 
          elsif Ekind (Target_Type) /= E_Anonymous_Access_Type
            or else Is_Local_Anonymous_Access (Target_Type)
@@ -14137,8 +14137,7 @@ package body Sem_Res is
                               (Target_Type, Deepest => True)
                      then
                         Report_Error_N
-                          ("operand has deeper level than target", Operand,
-                           Report_Errs);
+                          ("operand type" & Message, Operand, Report_Errs);
                         return False;
                      end if;
 
@@ -14151,7 +14150,8 @@ package body Sem_Res is
                   then
                      Report_Error_N
                        ("implicit conversion of stand-alone anonymous "
-                        & "access object not allowed", Operand, Report_Errs);
+                        & "access object not allowed (RM 8.6(27.1))",
+                        Operand, Report_Errs);
                      return False;
 
                   --  Implicit conversions aren't allowed for anonymous access
@@ -14166,7 +14166,7 @@ package body Sem_Res is
                   then
                      Report_Error_N
                        ("implicit conversion of anonymous access parameter "
-                        & "not allowed", Operand, Report_Errs);
+                        & "not allowed (RM 8.6(27.1))", Operand, Report_Errs);
                      return False;
 
                   --  Detect access discriminant values that are illegal
@@ -14176,20 +14176,19 @@ package body Sem_Res is
                   then
                      Report_Error_N
                        ("implicit conversion of anonymous access value "
-                        & "not allowed", Operand, Report_Errs);
+                        & "not allowed (RM 8.6(27.1))", Operand, Report_Errs);
                      return False;
 
-                  --  In other cases, the level of the operand's type must be
-                  --  statically less deep than that of the target type, else
-                  --  implicit conversion is disallowed (by RM12-8.6(27.1/3)).
+                  --  In other cases, the level of the operand type must not
+                  --  be statically deeper than that of the target type.
 
                   elsif Static_Type_Access_Level (Opnd_Type)
                           > Static_Type_Access_Level
                               (Target_Type, Deepest => True)
                   then
                      Report_Error_N
-                       ("implicit conversion of anonymous access value "
-                        & "violates accessibility", Operand, Report_Errs);
+                       ("anonymous access type" & Message,
+                        Operand, Report_Errs);
                      return False;
                   end if;
                end if;
@@ -14227,7 +14226,7 @@ package body Sem_Res is
                if In_Instance_Body then
                   Error_Msg_Warn := SPARK_Mode /= On;
                   Report_Error_N
-                    ("cannot convert local pointer to non-local access type<<",
+                    ("operand type" & Message & "<<",
                      Operand, Report_Errs);
                   Report_Error_N ("\Program_Error [<<", Operand, Report_Errs);
                   Rewrite (N,
@@ -14243,8 +14242,7 @@ package body Sem_Res is
 
                   if not Error_Posted (N) then
                      Report_Error_N
-                      ("cannot convert local pointer to non-local access type",
-                       Operand, Report_Errs);
+                       ("operand type" & Message, Operand, Report_Errs);
                   end if;
                   return False;
                end if;
@@ -14271,8 +14269,8 @@ package body Sem_Res is
                   if In_Instance_Body then
                      Error_Msg_Warn := SPARK_Mode /= On;
                      Report_Error_N
-                       ("cannot convert access discriminant to non-local "
-                        & "access type<<", Operand, Report_Errs);
+                       ("access discriminant" & Message & "<<",
+                        Operand, Report_Errs);
                      Report_Error_N
                        ("\Program_Error [<<", Operand, Report_Errs);
                      Rewrite (N,
@@ -14285,8 +14283,7 @@ package body Sem_Res is
 
                   else
                      Report_Error_N
-                       ("cannot convert access discriminant to non-local "
-                        & "access type", Operand, Report_Errs);
+                       ("access discriminant" & Message, Operand, Report_Errs);
                      return False;
                   end if;
                end if;
@@ -14303,8 +14300,7 @@ package body Sem_Res is
                  and then Present (Discriminal_Link (Entity (Operand)))
                then
                   Report_Error_N
-                    ("discriminant has deeper accessibility level than target",
-                     Operand, Report_Errs);
+                    ("access discriminant" & Message, Operand, Report_Errs);
                   return False;
                end if;
             end if;

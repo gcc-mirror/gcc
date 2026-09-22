@@ -19,7 +19,7 @@ begin
          if I = 1 then
             X := 0;
          end if;
-         A := R.Element.all'Access; -- { dg-error "non-local pointer" }
+         A := R.Element.all'Access; -- { dg-error "nonlocal access" }
          X := I;
       end;
    end loop;

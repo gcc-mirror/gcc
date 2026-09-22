@@ -188,9 +188,12 @@ package body Accessibility is
    ---------------------------
 
    procedure Accessibility_Message (N : Node_Id; Typ : Entity_Id) is
-      Loc   : constant Source_Ptr := Sloc (N);
-      P     : constant Node_Id    := Prefix (N);
-      Indic : Node_Id             := Parent (Parent (N));
+      Loc : constant Source_Ptr := Sloc (N);
+      P   : constant Node_Id    := Prefix (N);
+      Msg : constant String     :=
+        "nonlocal access value cannot designate local object (RM 3.10.2(28))";
+
+      Indic : Node_Id;
 
    begin
       --  In an instance, this is a runtime check, but one we know will fail,
@@ -201,8 +204,7 @@ package body Accessibility is
          Error_Msg_Warn := SPARK_Mode /= On
                              and then not
                                No_Dynamic_Accessibility_Checks_Enabled (P);
-         Error_Msg_F
-           ("non-local pointer cannot point to local object<<", P);
+         Error_Msg_F (Msg & "<<", P);
          Error_Msg_F ("\Program_Error [<<", P);
          Rewrite (N,
            Make_Raise_Program_Error (Loc,
@@ -210,7 +212,7 @@ package body Accessibility is
          Set_Etype (N, Typ);
 
       else
-         Error_Msg_F ("non-local pointer cannot point to local object", P);
+         Error_Msg_F (Msg, P);
 
          --  Check for case where we have a missing access definition
 
@@ -2071,10 +2073,11 @@ package body Accessibility is
       procedure Accessibility_Error is
          Suffix : constant String :=
            (if Is_Expression_Function_Or_Completion (Scope_Id)
-            then "in expression function"
-            else "in return");
+            then " in expression function (RM 6.8(5))"
+            else " in return (RM 6.5(5.9))");
          Message : constant String :=
-           "level of type of access discriminant is too deep " & Suffix;
+           "accessibility level of access discriminant is too deep"
+           & Suffix;
 
       begin
          --  In an instance, this is a runtime check, but one we know will fail

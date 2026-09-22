@@ -12215,7 +12215,8 @@ package body Sem_Attr is
                                > Static_Type_Access_Level (Btyp)
                   then
                      Error_Msg_F
-                       ("subprogram must not be deeper than access type", P);
+                       ("nonlocal access value cannot designate local"
+                        & " subprogram (RM 3.10.2(32))", P);
 
                   --  Check the restriction of 3.10.2(32) that disallows the
                   --  access attribute within a generic body when the ultimate

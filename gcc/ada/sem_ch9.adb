@@ -2468,7 +2468,8 @@ package body Sem_Ch9 is
               > Static_Local_Access_Level (Enclosing)
          then
             Error_Msg_N
-              ("target object has invalid level for requeue", Target_Obj);
+              ("accessibility level of target object is too deep for requeue"
+               & " (RM 9.5.4(6))", Target_Obj);
          end if;
       end if;
 

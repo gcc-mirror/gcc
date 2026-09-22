@@ -8170,7 +8170,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("subpool access type has deeper accessibility "
-                        & "level than pool", Ent);
+                        & "level than pool (RM 13.11.4(23))", Ent);
                      return;
                   end if;
 
