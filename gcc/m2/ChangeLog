@@ -1,3 +1,12 @@
+2026-09-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127469
+	* gm2-compiler/M2Quads.mod (BuildConstructor): Check for
+	tok UnknownTokenNo and if not equal generate an error message
+	at tok stating the type is unknown.
+	* gm2-compiler/PCSymBuild.mod (WalkConvert): Check totype for
+	NulSym and if so return FALSE.
+
 2026-09-17  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/126174

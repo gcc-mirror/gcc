@@ -1,3 +1,151 @@
+2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/riscv/riscv.cc (riscv_flatten_aggregate_field) <ARRAY_TYPE>:
+	Perform the computation of the number of elements using the precision
+	of the index type instead of using HOST_WIDE_INT.
+
+2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-loop-distribution.cc (loop_distribution::classify_partition):
+	Disqualify the partition for builtins it it contains nonaddressable
+	data references.
+
+2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* dwarf2out.h (struct array_descr_info): Add reverse_storage_order.
+	* dwarf2out.cc (gen_descr_array_type_die): Pass it in the call to
+	add_type_attribute instead of using TYPE_REVERSE_STORAGE_ORDER.
+
+2026-09-21  Ancheng.Qiao  <ancheng.qiao@corelabtech.com>
+
+	* config/riscv/riscv.cc (riscv_expand_prologue): Fold into the
+	cm.push reserve only as many callee-saved FPRs as it can hold by
+	dividing the additional reserve by UNITS_PER_FP_REG.
+	(riscv_expand_epilogue): Likewise.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* builtins.cc (fold_builtin_fpclassify): Expand using the
+	classification built-ins when their optabs are available.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* config/aarch64/aarch64.md (cmp_swp_<shift>_reg<mode>): Add a
+	parameterized name.
+	(isinf<mode>2): Use GPF_HF_BF and handle the 16-bit formats.
+	(isfinite<mode>2): Likewise.
+	(isnan<mode>2): Likewise.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* config/aarch64/aarch64.md (isnormal<mode>2): Add new expander.
+	* config/aarch64/iterators.md (GPF_HF_BF): New mode iterator.
+	(mantissa_bits): Add HF and BF.
+	(V_INT_EQUIV): Add BF.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	* config/aarch64/aarch64.md (*extend<SHORT:mode><GPI:mode>2_aarch64):
+	Guard the smov alternative with base_simd rather than fp.
+	(*zero_extend<SHORT:mode><GPI:mode>2_aarch64): Likewise for umov.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* config/alpha/alpha-protos.h (enum alpha_fp_class): New.
+	(alpha_expand_fp_classify): Declare.
+	* config/alpha/alpha.cc (alpha_expand_fp_classify): New function.
+	* config/alpha/alpha.md (isfinite<mode>2, isinf<mode>2)
+	(isnan<mode>2, isnormal<mode>2): New expanders.
+
+2026-09-21  Richard Biener  <rguenther@suse.de>
+	    Claude Opus 5  <noreply@anthropic.com>
+
+	PR tree-optimization/113703
+	PR tree-optimization/127515
+	* tree-ssa-loop-ivopts.cc (iv_elimination_compare_lt): Also record
+	A + 1 when matching the number of iterations.  Convert it to OFF_TYPE
+	as a whole, compute B + 1 in OFF_TYPE and require both to be
+	non-negative scaled offsets that do not overflow.  Build the bound
+	out of them instead of A and B.
+
+2026-09-21  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/127494
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes):
+	Restore previous behaviour.
+
+2026-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127475
+	* tree-vect-loop.cc (vectorizable_induction): Use
+	signed_or_unsigned_type_for to get the step vectype.
+
+2026-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/127479
+	* lto-streamer-out.cc (output_cfg): Output predecessor edges.
+	* lto-streamer-in.cc (input_cfg): Input predecessor edges.
+
+2026-09-21  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/127104
+	* internal-fn.def (ASSUME): Downgrade from const to pure.
+
+2026-09-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genextract.cc (locstr): Make it a string of bytes.
+	(UPPER_OFFSET, MISSING_OPERAND_CHAR): Remove.
+	(ENCODE_PATH_STEP, MISSING_OPERAND_STEP, MAX_PATH_INDEX): New macros.
+	(accum_extract::pathstr): Hold bytes.
+	(push_pathstr_operand): Encode the step as a number and check that
+	the index fits.
+	(VEC_safe_set_locstr, VEC_char_to_string, add_path, gen_insn): Update
+	for the byte paths.
+	(print_string_literal): Remove.
+	(print_extractions): Emit the paths as an array of numbers and walk
+	them without the character ranges.
+
+2026-09-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* configure.ac: Replace 'ret' with '$insn'.
+	* configure: Regenerate.
+
+2026-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127461
+	* config/i386/mmx.md (negv2qi2): Use optimize_size instead of
+	optimize_function_for_size_p (cfun) in the enabled attribute.
+	(<plusminus:insn>v2qi3): Ditto.
+
+2026-09-21  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* match.pd: New rule to fold ((X >> C1) & C2) << C3.
+
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127498
+	* config/i386/sse.md (<insn><mode>3 any_rotate:VI1_AVX512_3264): Add
+	TARGET_AVX2 to condition.
+
+2026-09-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/127445
+	* function.cc (gen_call_used_regs_seq): Return whether a zeroing
+	sequence was emitted.  Do not update the exit block uses here.
+	(pass_zero_call_used_regs::execute): Call
+	df_update_entry_exit_and_calls once when a sequence was emitted.
+
+2026-09-21  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/98984
+	* match.pd: Fold integer-float-integer conversions when the
+	intermediate floating-point significand covers the final integer
+	precision under -fno-trapping-math.
+
 2026-09-20  Matt Turner  <mattst88@gmail.com>
 
 	* config/alpha/alpha.cc (alpha_expand_movmisalign): Derive the

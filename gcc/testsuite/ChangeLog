@@ -1,3 +1,126 @@
+2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/array44.adb: New test.
+
+2026-09-21  Ancheng.Qiao  <ancheng.qiao@corelabtech.com>
+
+	* gcc.target/riscv/zcmp_fpr_save_below_sp.c: New test.  Compile an
+	FP-register-heavy function at -Os with Zcmp and check that no
+	callee-saved FPR is saved at a negative offset of SP.
+
+2026-09-21  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__get_program_name_-_functions_0_and_2_.cob: New test.
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__get_program_name_-_functions_0_and_2_.out: New test.
+
+2026-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/modules/program-28.a68: New test.
+	* algol68/execute/modules/module28.a68: New file.
+
+2026-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127448
+	* gfortran.dg/pointer_assign_17.f90: New test.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* gcc.target/aarch64/pr66462-2.c: New test.
+	* gcc.target/alpha/fp-classify-5.c: New test.
+	* gcc.target/alpha/fp-classify-6.c: New test.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* gcc.target/aarch64/pr66462.c: Add _Float16 and __bf16 tests for
+	isinf, isfinite and isnan.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* gcc.target/aarch64/pr66462.c: Add tests for isnormal, including
+	_Float16 and __bf16.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/aarch64/nosimd-extend.c: New test.
+
+2026-09-21  Matt Turner  <mattst88@gmail.com>
+
+	PR middle-end/66462
+	* gcc.target/alpha/fp-classify-1.c: New test.
+	* gcc.target/alpha/fp-classify-2.c: New test.
+	* gcc.target/alpha/fp-classify-3.c: New test.
+	* gcc.target/alpha/fp-classify-4.c: New test.
+
+2026-09-21  Richard Biener  <rguenther@suse.de>
+	    Claude Opus 5  <noreply@anthropic.com>
+
+	PR tree-optimization/113703
+	PR tree-optimization/127515
+	* gcc.dg/torture/pr113703-5.c: New test.
+	* gcc.dg/torture/pr113703-6.c: New test.
+
+2026-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127475
+	* gcc.dg/vect/vect-pr127475.c: New testcase.
+
+2026-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/127479
+	* gcc.dg/lto/pr127479_0.c: New testcase.
+
+2026-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127461
+	* gcc.target/i386/pr127461.c: New test.
+
+2026-09-21  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* gcc.dg/tree-ssa/match-bit-extract-shift.c: New test.
+
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127493
+	* g++.dg/reflect/source_location_of1.C (struct G, struct H): New
+	types.  Add asserts for source_location_of of member function and
+	member function template.
+	* g++.dg/reflect/source_location_of2.C: Expect implicitEqLine rather
+	than 0 for line of ^^ImplicitEq::operator==.
+
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127498
+	* gcc.target/i386/gfni-pr127498.c: New test.
+	* gcc.target/i386/shift-gf2p8affine-5.c: Use -mavx2 in dg-options
+	instead of -mavx.  Expect 46 insns instead of 31.
+
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/builtin-bswapg-1.c: Test
+	__has_builtin(__builtin_bswapg).
+	* c-c++-common/builtin-bitreverseg-1.c: Test
+	__has_builtin(__builtin_bitreverseg).
+
+2026-09-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR rtl-optimization/127445
+	* gcc.target/aarch64/pr127445.c: New test.
+
+2026-09-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/vect-sat-trunc-range-precision-1.c: Do not force
+	execution.
+	* gcc.dg/vect/vect-sat-trunc-shift-sign-source-1.c: Likewise.
+
+2026-09-21  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/98984
+	* gcc.dg/tree-ssa/pr98984.c: New test.
+	* gcc.dg/tree-ssa/pr98984-2.c: New test.
+
 2026-09-20  Matt Turner  <mattst88@gmail.com>
 
 	* gcc.target/alpha/movmisalign-si.c: New test.

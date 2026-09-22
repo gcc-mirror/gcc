@@ -1,3 +1,8 @@
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-decl.cc (names_builtin_p): Return 1 for
+	RID_BUILTIN_BITREVERSEG and RID_BUILTIN_BSWAPG.
+
 2026-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/127383

@@ -1,3 +1,10 @@
+2026-09-21  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	PR preprocessor/121508
+	PR preprocessor/123339
+	* macro.cc (builtin_has_include_1): Bail early if
+	not on a preprocessor directive.
+
 2026-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* makeucnid.cc (write_copyright): Update Unicode Copyright years.

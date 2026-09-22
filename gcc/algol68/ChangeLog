@@ -1,3 +1,24 @@
+2026-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-modes.cc (a68_resolve_equivalent): Rename from
+	resolve_equivalent and made global.
+	(resolve_eq_members): Adapt calls to resolve_equivalent
+	accordingly.
+	(resolve_eq_tags): Likewise.
+	(bind_modes): Likewise.
+	(compute_derived_modes): Likewise.
+	* a68.h: Add prototype for a68_resolve_equivalent.
+	* a68-parser-extract.cc (a68_extract_revelation): Resolve
+	equivalences in imported modes.
+
+2026-09-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-attrs.def (COMPLEX_SYMBOL): Remove.
+	* a68-parser-bottom-up.cc (reduce_declarers): Remove reduction of
+	COMPLEX_SYMBOL.
+	(reduce_declarers): Do not handle COMPLEX_SYMBOL.
+	* a68-parser.cc (a68_dont_mark_here): Likewise.
+
 2026-09-20  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-low-units.cc (a68_lower_denotation): strtoul can return

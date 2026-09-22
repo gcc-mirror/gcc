@@ -1,3 +1,8 @@
+2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/misc.cc (gnat_get_array_descr_info): Return the
+	TYPE_REVERSE_STORAGE_ORDER flag of the underlying array type.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622

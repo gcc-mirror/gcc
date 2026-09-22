@@ -1,3 +1,76 @@
+2026-09-21  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/82749
+	PR libstdc++/125548
+	* doc/xml/manual/using.xml
+	(_GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS)
+	(_GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES): Replace with...
+	(_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS): Add entry.
+	* doc/html/manual/using_macros.html: Regenrate.
+	* include/bits/c++config (_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS)
+	[__cplusplus >= 201103L]: Define to the value 1 if not already defined.
+	* include/bits/random.h
+	(__detail::__piecewise_distributions_storage)
+	(__detail::__piecewise_distributions_storage_t): Adjust to depend
+	on _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS value.
+	(piecewise_constant_distribution::_CalcType)
+	(piecewise_linear_distribution::_CalcType)
+	(piecewise_constant_distribution::param_type::densities)
+	(piecewise_linear_distribution::param_type::densities):
+	Check for non-zero value of _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS
+	instead of defintion of _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS and
+	reorder branches.
+	* include/bits/random.tcc
+	(piecewise_constant_distribution::param_type::param_type)
+	(piecewise_constant_distribution::param_type::param_type): Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/operators/accessors.cc:
+	Replace checks for _GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS
+	_GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES defintions
+	with checks of _GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS values.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/operators/accessors.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/pr125548.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/operators/accessors_fallback.cc:
+	Replace -D_GLIBCXX_USE_OLD_PIECEWISE_DISTRIBUTIONS with
+	-D_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS=0.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/operators/accessors_fallback.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/pr125548_fallback.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/cons/input_type_fallback_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/input_type_fallback_neg.cc:
+	Likewise.
+	* testsuite/26_numerics/random/piecewise_constant_distribution/operators/accessors_exact.cc:
+	Replace -D_GLIBCXX_USE_RESULT_TYPE_FOR_PIECEWISE_DENSITIES with
+	-D_GLIBCXX_USE_NEW_PIECEWISE_DISTRIBUTIONS=2.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/operators/accessors_exact.cc:
+	Likewise.
+
+2026-09-21  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/random.h (_Select_uint_least_t): Move primary
+	template and most of partial specializations to...
+	* include/bits/uniform_int_dist.h (_Select_uint_least_t):
+	Extracted from bits/random.h.
+	(uniform_int_distribution::_S_nd): Replace _Up and _Wp template
+	paramteters with Select_uint_least_t of _Bits and 2 * _Bits
+	respectively.
+	(uniform_int_distribution::operator()): Adjust calls to _S_nd
+	to pass only _Bits, and remove checks for presence of
+	__UINT64_TYPE__ and __UINT32_TYPE__ types.
+
+2026-09-21  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/uniform_int_dist.h
+	(uniform_int_distribution::operator()): Use _S_nd (Lemire's
+	algorithm) if __urngrange is power of two.
+	(uniform_int_distribution::_S_nd): Add _Bits parameter. Mask
+	the result of conversion of __product to _Up to lowest _Bits.
+	* testsuite/26_numerics/random/uniform_int_distribution/operators/values.cc:
+	Add testDiscreteDist for ranlux24 and ranlux48 engines.
+
 2026-09-20  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/io.xml: New URL for Josuttis' "The C++ Standard

@@ -1,3 +1,52 @@
+2026-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127448
+	* trans-array.cc (is_pointer_array): Remove redundant condition.
+	(is_span_addressed_array): For polymorphic arrays, return false if
+	the array is known to be contiguous.
+	* trans-types.cc (gfc_get_derived_type): Also set the
+	GFC_DECL_PTR_ARRAY_P flag for _data fields of class containers
+	corresponding to polymorphic array pointers.
+
+2026-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (gfc_get_dataptr_offset): Move guess of decl
+	for span from function argument...
+	(build_array_ref): ... to function body.  Only set the decl if it
+	was empty on input and wasn't set by a previous guess.
+
+2026-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc (span_addressed_array): Change return type to bool
+	and rename to ...
+	(is_span_addressed_array): ... this.
+	(gfc_get_dataptr_offset): Separate the predicate from the choice
+	between NULL_TREE and the input array.
+	(gfc_get_array_span, gfc_conv_scalarized_array_ref,
+	gfc_conv_array_ref): Update callers.
+
+2026-09-21  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans.cc (gfc_build_spanned_array_ref): Remove condition guarding
+	pointer dereference generation.
+	* trans-array.cc (gfc_get_dataptr_offset): Remove now redundant
+	pointer dereference generation.
+
+2026-09-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clauses): Rename argument 'first'
+	to first_no_comma for clarity.
+	(match_omp, gfc_match_omp_allocate, gfc_match_omp_assume,
+	gfc_match_omp_assumes, gfc_match_omp_critical,
+	gfc_match_omp_depobj, gfc_match_omp_flush,
+	gfc_match_omp_declare_simd, gfc_match_omp_declare_mapper,
+	gfc_match_omp_declare_reduction, gfc_match_omp_declare_target,
+	gfc_match_omp_thread_group_private, gfc_match_omp_requires,
+	gfc_match_omp_scan, gfc_match_omp_atomic,
+	gfc_match_omp_cancel_kind, gfc_match_omp_end_nowait,
+	gfc_match_omp_end_single): Permit comma between directive name
+	and clause name.
+
 2026-09-18  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/127146

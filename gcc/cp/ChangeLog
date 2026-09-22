@@ -1,3 +1,13 @@
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127493
+	* reflect.cc (eval_source_location_of): Call maybe_get_first_fn.
+
+2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.cc (names_builtin_p): Return 1 for
+	RID_BUILTIN_BITREVERSEG and RID_BUILTIN_BSWAPG.
+
 2026-09-20  Joshua Berne  <berne@notadragon.com>
 
 	PR c++/127281

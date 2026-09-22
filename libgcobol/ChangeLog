@@ -1,3 +1,12 @@
+2026-09-21  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (int128_to_field): Remove rdigits formal parameter.
+	(__gg__int128_to_ascii_numeric_display): Likewise.
+	* valconv.cc (__gg__string_to_numeric_edited): Complete rewrite to
+	use parameters appended by expand_expanded().
+	* valconv.h: Remove rdigits format parameter from
+	__gg__int128_to_ascii_numeric_display.
+
 2026-09-18  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (do_the_dl_thing): New .so policy.

@@ -1,3 +1,24 @@
+2026-09-21  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (actually_create_the_static_field): Use the
+	new expand_expanded routine.
+	* symbols.cc (expand_picture): Add space to accommodate the six
+	additional pre-processing characters.
+	(expand_expanded): Append compile-time data to the end of numeric-
+	edited PICTURE strings.
+	* symbols.h (redefined_token): Formatting.
+	(class current_tokens_t): Formatting.
+	(expand_expanded): New declaration.
+	* util.cc (cbl_field_t::encode_numeric): Use expand_expanded().
+
+2026-09-21  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: Remove unused function.
+
+2026-09-21  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobc: Remove stale logic.
+
 2026-09-19  Robert Dubner  <rdubner@symas.com>
 
 	* parse.y: Comment out unused passby_str() function.
