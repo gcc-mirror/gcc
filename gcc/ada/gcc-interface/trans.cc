@@ -2886,7 +2886,8 @@ can_equal_min_or_max_val_p (tree val, tree type, bool max)
   if (TREE_CODE (min_or_max_val) != INTEGER_CST)
     return true;
 
-  if (TREE_CODE (val) == NOP_EXPR)
+  if (TREE_CODE (val) == NOP_EXPR
+      && INTEGRAL_TYPE_P (TREE_TYPE (TREE_OPERAND (val, 0))))
     val = (max
 	   ? TYPE_MAX_VALUE (TREE_TYPE (TREE_OPERAND (val, 0)))
 	   : TYPE_MIN_VALUE (TREE_TYPE (TREE_OPERAND (val, 0))));
