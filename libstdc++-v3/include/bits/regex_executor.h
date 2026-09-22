@@ -44,6 +44,7 @@ namespace __detail
   template<typename _BiIter, bool _Trivial = is_trivially_copyable<_BiIter>::value>
     struct _ExecutorFrame;
 
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
   /**
    * @brief Takes a regex and an input string and does the matching.
    *
@@ -113,43 +114,43 @@ namespace __detail
       _M_search();
 
     private:
-      void
+      _StateIdT
       _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_repeat(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_subexpr_begin(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_subexpr_end(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_line_begin_assertion(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_line_end_assertion(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_word_boundary(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_subexpr_lookahead(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_match(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_backref(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_accept(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_handle_alternative(_Match_mode, _StateIdT);
 
-      void
+      _StateIdT
       _M_node(_Match_mode, _StateIdT);
 
       void
@@ -247,7 +248,7 @@ namespace __detail
 	return (_M_re._M_automaton->_M_options() & __m) == __m;
       }
 
-      bool
+      inline bool
       _M_visited(_StateIdT __i)
       {
 	if (_M_visited_states)
@@ -283,6 +284,7 @@ namespace __detail
       // Do we have a solution so far?
       bool                                                  _M_has_sol;
     };
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
  ///@} regex-detail
 } // namespace __detail
