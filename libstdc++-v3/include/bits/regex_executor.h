@@ -140,6 +140,9 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       _StateIdT
       _M_rep_once_more(_Match_mode __match_mode, _StateIdT);
 
+      _StateIdT
+      _M_match_simple_repeat_body(_StateIdT, _StateIdT);
+
       template<_Search_mode __search_mode>
       _StateIdT
       _M_handle_repeat(_Match_mode, _StateIdT);
