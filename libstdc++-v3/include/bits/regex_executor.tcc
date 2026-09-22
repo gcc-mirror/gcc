@@ -169,6 +169,101 @@ namespace __detail
       return _M_has_sol;
     }
 
+  // Return whether a prefix search at _M_current might still match after
+  // looking only through the non-consuming front of the NFA.
+  //
+  // This is not a general implementation.  It is deliberately small and
+  // conservative: when it reaches a construct whose first consuming character
+  // is hard to know cheaply, it returns true and lets the normal executor run.
+  // The important fast paths are the common negative cases.
+  //
+  // Examples:
+  // * Pattern "[0-9]+" at input 'x': the first _S_opcode_match rejects 'x',
+  //   so a full DFS search would only allocate/pop frames to fail.  Return
+  //   false and let regex_search advance the starting position.
+  //
+  // * Pattern "[01]?[0-9]" at input '9': the optional [01] branch rejects,
+  //   but the skip branch can consume '9'.  Return true and let DFS decide
+  //   the full match.
+  //
+  // * Pattern "foo|bar" at input 'b': one alternative rejects, the other can
+  //   start with 'b'.  Return true.
+  template<typename _BiIter, typename _Alloc, typename _TraitsT>
+    bool _Executor<_BiIter, _Alloc, _TraitsT>::
+    _M_maybe_start_match(_StateIdT __i, size_t __depth)
+    {
+      // Depth is bounded by the NFA size so epsilon cycles cannot make the
+      // precheck recurse forever.  Hitting the bound means "unknown", not
+      // "no match", so stay conservative and run the real executor.  This is
+      // important for patterns such as "(a*)*" where epsilon paths can cycle
+      // before a consuming state is reached.
+      if (__depth > _M_nfa.size())
+	return true;
+
+      // An invalid edge is a real dead end for the explored path.
+      if (__i == _S_invalid_state_id)
+	return false;
+
+      const auto& __state = _M_nfa[__i];
+      switch (__state._M_opcode())
+	{
+	case _S_opcode_match:
+	  return __state._M_matches(*_M_current);
+
+	case _S_opcode_accept:
+	  // Empty matches are possible, so the full executor must decide.
+	  return true;
+
+	case _S_opcode_subexpr_begin:
+	case _S_opcode_subexpr_end:
+	case _S_opcode_dummy:
+	  // Captures and dummy states do not consume input, so they cannot
+	  // affect the first-character decision.  Continue along the only
+	  // successor.
+	  return _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_line_begin_assertion:
+	  // Assertions do not consume characters, but they can reject the
+	  // current position.  For "^abc" at a non-begin position, there is no
+	  // need to run DFS merely to discover that ^ fails.
+	  return _M_at_begin()
+		 && _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_line_end_assertion:
+	  // Same idea for "$": if the assertion does not hold here, this
+	  // starting position cannot match via this path.
+	  return _M_at_end()
+		 && _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_word_boundary:
+	  // Word-boundary assertions are also checked before the first
+	  // consuming state.  For "\bfoo" in the middle of "xfoo", this path
+	  // rejects before testing 'f'.
+	  return _M_word_boundary() == !__state._M_neg
+		 && _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_alternative:
+	  // A branch might match if either arm can start with *_M_current.
+	  // Example: "foo|bar" at 'b' rejects the "foo" arm but keeps the
+	  // search because the "bar" arm is viable.
+	  return _M_maybe_start_match(__state._M_alt, __depth + 1)
+		 || _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_repeat:
+	  // Repeats can either enter the body or skip to the exit, so inspect
+	  // both paths.  This matters for constructs such as "[01]?[0-9]": at
+	  // '9' the optional first digit can be skipped, while at 'x' both
+	  // paths reject.
+	  return _M_maybe_start_match(__state._M_alt, __depth + 1)
+		 || _M_maybe_start_match(__state._M_next, __depth + 1);
+
+	case _S_opcode_backref:
+	case _S_opcode_subexpr_lookahead:
+	default:
+	  return true;
+	}
+    }
+
   // ------------------------------------------------------------
   //
   // BFS mode:

@@ -108,6 +108,28 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
       _M_search_from_first()
       {
 	_M_current = _M_begin;
+	// Fast reject for DFS prefix search.  regex_search and
+	// regex_token_iterator try the pattern at each possible starting
+	// position.  If the regex can only start with a digit, running the full
+	// DFS executor at a space, letter, or punctuation character only builds
+	// frames to discover the first match state rejects that character.
+	//
+	// Example: for the IPv4 pattern
+	//   (?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\.){3}...
+	// a current input character of 'x' cannot match any first consuming
+	// state.  _M_maybe_start_match returns false and this starting position
+	// is skipped.  At '2' it returns true, because at least one branch
+	// might match, so the normal executor still decides the complete
+	// result.
+	//
+	// This is intentionally disabled for backreferences.  Pruning the
+	// search space for DFS reduces the number of frames we build and the
+	// time to find an actual match.
+	if (_M_search_mode == _Search_mode::_Dfs
+	    && !_M_nfa._M_has_backref
+	    && _M_current != _M_end
+	    && !_M_maybe_start_match(_M_start, 0))
+	  return false;
 	return _M_main(_Match_mode::_Prefix);
       }
 
@@ -175,6 +197,9 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
       bool
       _M_main_dfs(_Match_mode __match_mode);
+
+      bool
+      _M_maybe_start_match(_StateIdT, size_t);
 
       bool
       _M_main_bfs(_Match_mode __match_mode);
