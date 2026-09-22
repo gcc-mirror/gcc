@@ -1318,6 +1318,7 @@ lower_module_text (NODE_T *p, LOW_CTX_T ctx)
   DECL_EXTERNAL (prelude_decl) = 0;
   TREE_PUBLIC (prelude_decl) = 1;
   TREE_STATIC (prelude_decl) = 1;
+  DECL_ARTIFICIAL (prelude_decl) = 1;
 
   a68_push_function_range (prelude_decl,
 			   void_type_node /* result_type */, true /* top_level */);
@@ -1376,6 +1377,7 @@ lower_module_text (NODE_T *p, LOW_CTX_T ctx)
   DECL_EXTERNAL (postlude_decl) = 0;
   TREE_PUBLIC (postlude_decl) = 1;
   TREE_STATIC (postlude_decl) = 1;
+  DECL_ARTIFICIAL (postlude_decl) = 1;
 
   a68_push_function_range (postlude_decl,
 			   void_type_node /* result_type */, true /* top_level */);

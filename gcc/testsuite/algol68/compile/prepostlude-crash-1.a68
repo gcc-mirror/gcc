@@ -1,0 +1,16 @@
+{ This program triggers the gcc_assert at dwarf2out.cc:31161 unless
+  the prelude and postlude functions of the module are marked with
+  DECL_ARTIFICIAL.  This happens only with -O2 and I am not sure why
+  this happens (it is related to the fact the synthesized prelude
+  function is the parent of the resulting typedef that defines
+  CPNM_value). }
+
+module CPNMA68 = def
+
+     mode CPNM_value = real;
+
+     pub proc cpnm_export_value = (real value) int:
+        skip;
+
+     skip
+fed
