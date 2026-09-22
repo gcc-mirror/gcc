@@ -1767,10 +1767,6 @@ package Sem_Util is
    --  the return value and have its accessibility level tied to that of the
    --  result of the enclosing function.
 
-   function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
-   --  Returns True if N denotes a component in an array or a record that has
-   --  Reverse_Storage_Order.
-
    function In_Same_Declarative_Part
      (Context : Node_Id;
       N       : Node_Id) return Boolean;
@@ -2500,6 +2496,11 @@ package Sem_Util is
 
    function Is_Renamed_Entry (Proc_Nam : Entity_Id) return Boolean;
    --  Return True if Proc_Nam is a procedure renaming of an entry
+
+   function Is_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
+   --  Return True if N denotes an elementary component of an array or record
+   --  that has Reverse_Storage_Order set, or an unchecked conversion to an
+   --  elementary type of such an array or record.
 
    function Is_Reversible_Iterator (Typ : Entity_Id) return Boolean;
    --  AI05-0139-2: Check whether Typ is derived from the predefined interface
