@@ -378,6 +378,31 @@ namespace __detail
       return _S_invalid_state_id;
     }
 
+  // Try to consume the common repeat body shape
+  //   repeat -> match -> repeat
+  // without going through the generic state dispatch again.
+  template<typename _BiIter, typename _Alloc, typename _TraitsT>
+#ifdef __OPTIMIZE__
+    [[__gnu__::__always_inline__]]
+#endif
+    inline _StateIdT _Executor<_BiIter, _Alloc, _TraitsT>::
+    _M_match_simple_repeat_body(_StateIdT __next, _StateIdT __repeat)
+    {
+      if (__next == _S_invalid_state_id)
+	return _S_invalid_state_id;
+
+      const auto& __state = _M_nfa[__next];
+      if (__state._M_opcode() != _S_opcode_match
+	  || __state._M_next != __repeat)
+	return __next;
+
+      if (_M_current == _M_end || !__state._M_matches(*_M_current))
+	return _S_invalid_state_id;
+
+      ++_M_current;
+      return __repeat;
+    }
+
   // _M_alt branch is "match once more", while _M_next is "get me out
   // of this quantifier". Executing _M_next first or _M_alt first don't
   // mean the same thing, and we need to choose the correct order under
@@ -400,7 +425,11 @@ namespace __detail
 				   _M_current);
 	  else
 	    _M_frames.emplace_back(_S_fopcode_next, __state._M_next);
-	  return _M_rep_once_more(__match_mode, __i);
+	  _StateIdT __next = _M_rep_once_more(__match_mode, __i);
+	  if constexpr (__search_mode == _Search_mode::_Dfs)
+	    return _M_match_simple_repeat_body(__next, __i);
+	  else
+	    return __next;
 	}
       else // Non-greedy mode
 	{
