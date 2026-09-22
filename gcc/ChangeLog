@@ -1,3 +1,11 @@
+2026-09-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-09-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* configure.ac: Replace 'ret' with '$insn'.
+	* configure: Regenerate.
+
 2026-09-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:
