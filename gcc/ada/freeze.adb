@@ -9254,9 +9254,6 @@ package body Freeze is
       procedure Explain_Error;
       --  Output an explanation of the error as continuation messages
 
-      procedure Find_Incomplete_Constant (Node : Node_Id);
-      --  Search for a deferred constant without completion
-
       function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result;
       --  Freeze all types referenced in the subtree rooted at Node
 
@@ -9344,41 +9341,6 @@ package body Freeze is
          end if;
       end Explain_Error;
 
-      ------------------------------
-      -- Find_Incomplete_Constant --
-      ------------------------------
-
-      procedure Find_Incomplete_Constant (Node : Node_Id) is
-      begin
-         --  When a constant is initialized with the result of a dispatching
-         --  call, the constant declaration is rewritten as a renaming of the
-         --  displaced function result. This scenario is not a premature use of
-         --  a constant even though the Has_Completion flag is not set.
-
-         if Is_Entity_Name (Node)
-           and then Present (Entity (Node))
-           and then Ekind (Entity (Node)) = E_Constant
-           and then Scope (Entity (Node)) = Current_Scope
-           and then Nkind (Declaration_Node (Entity (Node))) =
-                                                         N_Object_Declaration
-           and then not Is_Imported (Entity (Node))
-           and then not Has_Completion (Entity (Node))
-           and then not
-             (Present (Full_View (Entity (Node)))
-               and then (Has_Completion (Full_View (Entity (Node)))
-                          or else
-                            Declaration_Node (Full_View (Entity (Node))) = N))
-         then
-            Error_Msg_NE
-              ("deferred constant& is frozen before completion",
-               N, Entity (Node));
-
-            Explain_Error;
-
-            Set_Is_Frozen (Entity (Node));
-         end if;
-      end Find_Incomplete_Constant;
-
       ----------------------
       -- Freeze_Type_Refs --
       ----------------------
@@ -9437,22 +9399,59 @@ package body Freeze is
          --  Check that a type referenced by an entity can be frozen
 
          if Is_Entity_Name (Node) and then Present (Entity (Node)) then
-            --  The entity itself may be a type, as in a membership test
-            --  or an attribute reference. Freezing its own type would be
-            --  incomplete if the entity is derived or an extension.
+            declare
+               E : constant Entity_Id := Entity (Node);
 
-            if Is_Type (Entity (Node)) then
-               Check_And_Freeze_Type (Entity (Node));
+            begin
+               --  The entity itself may be a type, as in a membership test
+               --  or an attribute reference. Freezing its own type would be
+               --  incomplete if the entity is derived or an extension.
 
-            else
-               Check_And_Freeze_Type (Etype (Entity (Node)));
-            end if;
+               if Is_Type (E) then
+                  Check_And_Freeze_Type (E);
+               else
+                  Check_And_Freeze_Type (Etype (E));
+               end if;
 
-            --  Check that the enclosing record type can be frozen
+               --  Check that the enclosing record type can be frozen
 
-            if Ekind (Entity (Node)) in E_Component | E_Discriminant then
-               Check_And_Freeze_Type (Scope (Entity (Node)));
-            end if;
+               if Ekind (E) in E_Component | E_Discriminant then
+                  Check_And_Freeze_Type (Scope (E));
+               end if;
+
+               --  Freeze stand-alone objects declared in the current scope
+
+               if Ekind (E) in E_Constant | E_Variable
+                 and then Nkind (Declaration_Node (E)) = N_Object_Declaration
+                 and then Scope (E) = Current_Scope
+                 and then not Is_Frozen (E)
+               then
+                  --  The completion of a deferred constant declaration must
+                  --  occur before the constant is frozen (RM 7.4(9)). Give a
+                  --  better error message here than at the completion point.
+
+                  if Ekind (E) = E_Constant
+                    and then not Is_Imported (E)
+                    and then not Has_Completion (E)
+                    and then not (Present (Full_View (E))
+                                   and then Has_Completion (Full_View (E)))
+                  then
+                     Error_Msg_NE
+                       ("deferred constant& is frozen before completion",
+                        N, E);
+
+                     Explain_Error;
+
+                     Set_Is_Frozen (E);
+
+                  elsif Before then
+                     Freeze_Before (N, E);
+
+                  else
+                     Freeze_And_Append (E, N, Result);
+                  end if;
+               end if;
+            end;
 
          --  Freezing an access type does not freeze the designated type, but
          --  freezing conversions between access to interfaces requires that
@@ -9509,15 +9508,9 @@ package body Freeze is
             end;
          end if;
 
-         Find_Incomplete_Constant (Node);
-
          --  No point in posting several errors on the same expression
 
-         if Serious_Errors_Detected > 0 then
-            return Abandon;
-         else
-            return OK;
-         end if;
+         return (if Serious_Errors_Detected > 0 then Abandon else OK);
       end Freeze_Type_Refs;
 
       procedure Freeze_References is new Traverse_Proc (Freeze_Type_Refs);

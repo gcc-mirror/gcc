@@ -712,6 +712,7 @@ package body Sem_Ch6 is
 
       if Present (Def_Id)
         and then Is_Tagged_Type (Typ)
+        and then not Error_Posted (N)
       then
          Check_Dynamically_Tagged_Expression
            (Expr        => Expr,
