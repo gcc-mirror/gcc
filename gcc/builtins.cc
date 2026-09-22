@@ -6949,8 +6949,7 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
 {
   rtx val, mem, ret;
   enum memmodel model;
-  tree fndecl;
-  tree addr;
+  tree fndecl, addr, oldval;
 
   model = get_memmodel (CALL_EXPR_ARG (exp, 2));
 
@@ -6977,6 +6976,13 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
 
   gcc_assert (TREE_OPERAND (addr, 0) == fndecl);
   TREE_OPERAND (addr, 0) = builtin_decl_explicit (ext_call);
+  oldval = CALL_EXPR_ARG (exp, 1);
+
+  if (!ignore && reg_overlap_mentioned_p (mem, val))
+    {
+      val = force_reg (mode, val);
+      CALL_EXPR_ARG (exp, 1) = make_tree (TREE_TYPE (oldval), val);
+    }
 
   /* If we will emit code after the call, the call cannot be a tail call.
      If it is emitted as a tail call, a barrier is emitted after it, and
@@ -6993,6 +6999,7 @@ expand_builtin_atomic_fetch_op (machine_mode mode, tree exp, rtx target,
   /* Then issue the arithmetic correction to return the right result.  */
   if (!ignore)
     {
+      CALL_EXPR_ARG (exp, 1) = oldval;
       if (code == NOT)
 	{
 	  ret = expand_simple_binop (mode, AND, ret, val, NULL_RTX, true,
@@ -7071,6 +7078,9 @@ expand_ifn_atomic_bit_test_and (gcall *call)
   create_integer_operand (&ops[4], integer_onep (flag));
   if (maybe_expand_insn (icode, 5, ops))
     return;
+
+  if (reg_overlap_mentioned_p (mem, val))
+    val = force_reg (mode, val);
 
   rtx bitval = val;
   val = expand_simple_binop (mode, ASHIFT, const1_rtx,
