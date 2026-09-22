@@ -1676,6 +1676,78 @@ struct gimple_load_store_interleaved : public gimple_function_base
   }
 };
 
+template <bool load_p>
+struct gimple_load_store_lane : public gimple_function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return load_p ? CP_READ_MEMORY : CP_WRITE_MEMORY;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    auto tuple_mode = load_p ? e.result_mode () : e.args[1]->mode;
+    auto &ptr_arg = e.args[0];
+    ptr_arg = gen_rtx_MEM (BLKmode, e.convert_to_pmode (ptr_arg));
+    set_mem_size (ptr_arg, GET_MODE_SIZE (GET_MODE_INNER (tuple_mode))
+			     * targetm.hard_regno_nregs (V0_REGNUM, tuple_mode));
+    auto icode = load_p ? code_for_aarch64_simd_load_lane (tuple_mode)
+			: code_for_aarch64_simd_store_lane (tuple_mode);
+    gcc_assert (icode != CODE_FOR_nothing);
+    return e.use_exact_insn (icode);
+  }
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto ptr = gimple_call_arg (f.call, 0);
+    auto tuple = gimple_call_arg (f.call, 1);
+    auto index = gimple_call_arg (f.call, 2);
+
+    auto tuple_type = TREE_TYPE (tuple);
+    auto elem_type = this->memory_scalar_type (f);
+
+    if (VECTOR_TYPE_P (tuple_type))
+      {
+	auto deref = aarch64_dereference (ptr, elem_type);
+	if (load_p)
+	  /* tuple[lane] = *ptr;  */
+	  return gimple_build_assign (f.lhs,
+				      build_lane_set (tuple, index,
+						      f.force_val (deref)));
+	else
+	  /* *ptr = tuple[lane];  */
+	  return gimple_build_assign (deref, f.force_val (
+					       build_lane_get (tuple, index)));
+      }
+
+    return nullptr;
+  }
+};
+
+template <bool load_p>
+struct gimple_load_store_lane_atomic : public gimple_function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return load_p ? CP_READ_MEMORY : CP_WRITE_MEMORY;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    auto tuple_mode = load_p ? e.result_mode () : e.args[1]->mode;
+    auto &ptr_arg = e.args[0];
+    ptr_arg = e.convert_to_pmode (ptr_arg);
+    auto icode = load_p ? code_for_aarch64_vec_ldap1_lane (tuple_mode)
+			: code_for_aarch64_vec_stl1_lane (tuple_mode);
+    gcc_assert (icode != CODE_FOR_nothing);
+    return e.use_exact_insn (icode);
+  }
+
+  gimple *fold (gimple_folder &) const override { return nullptr; }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -1900,6 +1972,14 @@ NEON_FUNCTION (vst1, vst1q, vstrq, gimple_load_store_multiple<false>,)
 // Load/Store interleaved tuples
 NEON_FUNCTION (vld2, vld2q, vld3, vld3q, vld4, vld4q, gimple_load_store_interleaved<true>,)
 NEON_FUNCTION (vst2, vst2q, vst3, vst3q, vst4, vst4q, gimple_load_store_interleaved<false>,)
+
+// Load/Store lanes
+NEON_FUNCTION (vld1_lane, vld1q_lane, vld2_lane, vld2q_lane,
+	       vld3_lane, vld3q_lane, vld4_lane, vld4q_lane, gimple_load_store_lane<true>,)
+NEON_FUNCTION (vst1_lane, vst1q_lane, vst2_lane, vst2q_lane,
+	       vst3_lane, vst3q_lane, vst4_lane, vst4q_lane, gimple_load_store_lane<false>,)
+NEON_FUNCTION (vldap1_lane, vldap1q_lane, gimple_load_store_lane_atomic<true>,)
+NEON_FUNCTION (vstl1_lane,  vstl1q_lane,  gimple_load_store_lane_atomic<false>,)
 
 // AES
 NEON_FUNCTION (vaeseq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_aesev16qi>,)

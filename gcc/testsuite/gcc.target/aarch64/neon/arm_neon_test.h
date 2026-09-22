@@ -43,5 +43,29 @@
 #define TEST_UNIFORM_TERNARY(NAME, TYPE)                                       \
   TEST_TERNARY (NAME, TYPE, TYPE, TYPE, TYPE)
 
+#define TEST_LOAD_LANE(NAME, PTR_TYPE, VEC_TYPE)                               \
+  VEC_TYPE test_##NAME (PTR_TYPE ptr, VEC_TYPE vec)                            \
+  {                                                                            \
+    return NAME (ptr, vec, VEC_LEN (vec) - 1);                                 \
+  }
+
+#define TEST_LOAD_LANE_TUPLE(NAME, PTR_TYPE, VEC_TYPE)                         \
+  VEC_TYPE test_##NAME (PTR_TYPE ptr, VEC_TYPE vec)                            \
+  {                                                                            \
+    return NAME (ptr, vec, VEC_LEN (vec.val[0]) - 1);                          \
+  }
+
 #define TEST_STORE(NAME, PTR_TYPE, VEC_TYPE)                                   \
   void test_##NAME (VEC_TYPE vec, PTR_TYPE ptr) { NAME (ptr, vec); }
+
+#define TEST_STORE_LANE(NAME, PTR_TYPE, VEC_TYPE)                              \
+  void test_##NAME (PTR_TYPE ptr, VEC_TYPE vec)                                \
+  {                                                                            \
+    NAME (ptr, vec, VEC_LEN (vec) - 1);                                        \
+  }
+
+#define TEST_STORE_LANE_TUPLE(NAME, PTR_TYPE, VEC_TYPE)                        \
+  void test_##NAME (PTR_TYPE ptr, VEC_TYPE vec)                                \
+  {                                                                            \
+    NAME (ptr, vec, VEC_LEN (vec.val[0]) - 1);                                 \
+  }

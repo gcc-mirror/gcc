@@ -210,9 +210,6 @@ const unsigned int FLAG_AUTO_FP = 1U << 6;
 const unsigned int FLAG_QUIET = 0;
 const unsigned int FLAG_DEFAULT = FLAG_AUTO_FP;
 const unsigned int FLAG_FP = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS;
-const unsigned int FLAG_ALL = FLAG_READ_FPCR | FLAG_RAISE_FP_EXCEPTIONS
-  | FLAG_READ_MEMORY | FLAG_PREFETCH_MEMORY | FLAG_WRITE_MEMORY;
-const unsigned int FLAG_STORE = FLAG_WRITE_MEMORY;
 const unsigned int FLAG_LOAD = FLAG_READ_MEMORY;
 const unsigned int FLAG_FP8 = FLAG_FP | FLAG_USES_FPMR;
 
@@ -348,50 +345,15 @@ aarch64_types_fcvt_from_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_const_pointer_map_mode };
-#define TYPES_LOAD1 (aarch64_types_load1_qualifiers)
 #define TYPES_LOADSTRUCT (aarch64_types_load1_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_load1_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_const_pointer_map_mode };
-#define TYPES_LOAD1_U (aarch64_types_load1_u_qualifiers)
 #define TYPES_LOADSTRUCT_U (aarch64_types_load1_u_qualifiers)
 static enum aarch64_type_qualifiers
 aarch64_types_load1_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_poly, qualifier_const_pointer_map_mode };
-#define TYPES_LOAD1_P (aarch64_types_load1_p_qualifiers)
 #define TYPES_LOADSTRUCT_P (aarch64_types_load1_p_qualifiers)
-
-static enum aarch64_type_qualifiers
-aarch64_types_loadstruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_const_pointer_map_mode,
-      qualifier_none, qualifier_struct_load_store_lane_index };
-#define TYPES_LOADSTRUCT_LANE (aarch64_types_loadstruct_lane_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_loadstruct_lane_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_const_pointer_map_mode,
-      qualifier_unsigned, qualifier_struct_load_store_lane_index };
-#define TYPES_LOADSTRUCT_LANE_U (aarch64_types_loadstruct_lane_u_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_loadstruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_poly, qualifier_const_pointer_map_mode,
-      qualifier_poly, qualifier_struct_load_store_lane_index };
-#define TYPES_LOADSTRUCT_LANE_P (aarch64_types_loadstruct_lane_p_qualifiers)
-
-static enum aarch64_type_qualifiers
-aarch64_types_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode,
-      qualifier_none, qualifier_struct_load_store_lane_index };
-#define TYPES_STORESTRUCT_LANE (aarch64_types_storestruct_lane_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_storestruct_lane_u_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode,
-      qualifier_unsigned, qualifier_struct_load_store_lane_index };
-#define TYPES_STORESTRUCT_LANE_U (aarch64_types_storestruct_lane_u_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_storestruct_lane_p_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_void, qualifier_pointer_map_mode,
-      qualifier_poly, qualifier_struct_load_store_lane_index };
-#define TYPES_STORESTRUCT_LANE_P (aarch64_types_storestruct_lane_p_qualifiers)
 
 constexpr insn_code CODE_FOR_aarch64_sdot_prodv8qi
   = CODE_FOR_sdot_prodv2siv8qi;
@@ -1406,9 +1368,7 @@ enum class aarch64_builtin_signatures
   binary_lane,
   binary_two_lanes,
   load,
-  load_lane,
   store,
-  store_lane,
   ternary,
   ternary_lane,
   unary,
@@ -1502,7 +1462,6 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
     {
     case aarch64_builtin_signatures::binary:
     case aarch64_builtin_signatures::binary_lane:
-    case aarch64_builtin_signatures::load_lane:
       return_type = builtin_data.types[0].type ();
       for (int i = 1; i <= 2; ++i)
 	arg_types.quick_push (builtin_data.types[i].type ());
@@ -1526,7 +1485,6 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
       break;
 
     case aarch64_builtin_signatures::store:
-    case aarch64_builtin_signatures::store_lane:
       return_type = void_type_node;
       for (int i = 0; i <= 1; ++i)
 	arg_types.quick_push (builtin_data.types[i].type ());
@@ -1542,8 +1500,6 @@ aarch64_fntype (const aarch64_pragma_builtins_data &builtin_data)
   switch (builtin_data.signature)
     {
     case aarch64_builtin_signatures::binary_lane:
-    case aarch64_builtin_signatures::load_lane:
-    case aarch64_builtin_signatures::store_lane:
     case aarch64_builtin_signatures::ternary_lane:
     case aarch64_builtin_signatures::unary_lane:
       arg_types.quick_push (integer_type_node);
@@ -2749,16 +2705,6 @@ aarch64_pragma_builtins_checker::check ()
 
   switch (builtin_data.unspec)
     {
-    case UNSPEC_LD2_LANE:
-    case UNSPEC_LD3_LANE:
-    case UNSPEC_LD4_LANE:
-    case UNSPEC_SET_LANE:
-    case UNSPEC_ST1_LANE:
-    case UNSPEC_ST2_LANE:
-    case UNSPEC_ST3_LANE:
-    case UNSPEC_ST4_LANE:
-      return require_immediate_lane_index (nargs - 1, nargs - 2);
-
     case UNSPEC_FDOT_LANE_FP8:
       return require_immediate_lane_index (nargs - 2, nargs - 3, 0);
 
@@ -3847,15 +3793,6 @@ aarch64_canonicalize_lane (expand_operand *op, machine_mode vec_mode)
 			    SImode);
 }
 
-/* OP contains an integer index into a vector or tuple of mode VEC_MODE.
-   Convert OP from an architectural lane number to a vec_merge mask.  */
-static void
-aarch64_convert_to_lane_mask (expand_operand *op, machine_mode vec_mode)
-{
-  auto nunits = aarch64_num_lanes (vec_mode);
-  create_integer_operand (op, 1 << ENDIAN_LANE_N (nunits, INTVAL (op->value)));
-}
-
 /* If OP is a 128-bit vector, convert it to the equivalent 64-bit vector.
    Do nothing otherwise.  */
 static void
@@ -4235,42 +4172,11 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
       icode = code_for_aarch64_simd_ld4r (ops[0].mode);
       break;
 
-    case UNSPEC_LD2_LANE:
-    case UNSPEC_LD3_LANE:
-    case UNSPEC_LD4_LANE:
-      aarch64_canonicalize_lane (&ops[3], ops[2].mode);
-      icode = code_for_aarch64_ld_lane (ops[0].mode, ops[0].mode);
-      break;
-
     case UNSPEC_LUTI2:
     case UNSPEC_LUTI4:
       create_integer_operand (ops.safe_push ({}),
 			      builtin_data.unspec == UNSPEC_LUTI2 ? 2 : 4);
       icode = code_for_aarch64_lut (ops[1].mode, ops[2].mode);
-      break;
-
-    case UNSPEC_SET_LANE:
-      if (builtin_data.signature == aarch64_builtin_signatures::load_lane)
-	aarch64_dereference_pointer (&ops[1], GET_MODE_INNER (ops[0].mode));
-      /* The vec_set operand order is: dest, scalar, mask, vector.  */
-      std::swap (ops[2], ops[3]);
-      aarch64_convert_to_lane_mask (&ops[2], ops[3].mode);
-      icode = code_for_aarch64_simd_vec_set (ops[0].mode);
-      break;
-
-    case UNSPEC_ST1_LANE:
-      aarch64_dereference_pointer (&ops[0], GET_MODE_INNER (ops[1].mode));
-      /* Reinterpret ops[0] as an output.  */
-      create_fixed_operand (&ops[0], ops[0].value);
-      aarch64_canonicalize_lane (&ops[2], ops[1].mode);
-      icode = code_for_aarch64_get_lane (ops[1].mode);
-      break;
-
-    case UNSPEC_ST2_LANE:
-    case UNSPEC_ST3_LANE:
-    case UNSPEC_ST4_LANE:
-      aarch64_canonicalize_lane (&ops[2], ops[1].mode);
-      icode = code_for_aarch64_st_lane (ops[1].mode, ops[1].mode);
       break;
 
     case UNSPEC_TBL:
@@ -4694,15 +4600,6 @@ aarch64_force_gimple_val (gimple_stmt_iterator *gsi, tree val)
   return tmp;
 }
 
-/* Copy vops from FROM to TO and return TO.  */
-static gimple *
-aarch64_copy_vops (gimple *to, gimple *from)
-{
-  gimple_set_vuse (to, gimple_vuse (from));
-  gimple_set_vdef (to, gimple_vdef (from));
-  return to;
-}
-
 /* Fold STMT (at GSI) to VAL, with SEQ setting up the value of VAL.
    Return the replacement statement.  */
 static gimple *
@@ -4729,36 +4626,6 @@ aarch64_dereference (tree addr, tree type)
   return fold_build2 (MEM_REF, access_type, addr, zero);
 }
 
-/* LANE is a lane index into VEC.  Return the associated bit index
-   (counting from the first byte in memory order).  */
-static tree
-aarch64_get_lane_bit_index (tree vec, tree lane)
-{
-  auto vec_mode = TYPE_MODE (TREE_TYPE (vec));
-  auto nunits = aarch64_num_lanes (vec_mode);
-  auto idx = ENDIAN_LANE_N (nunits, tree_to_uhwi (lane));
-  return bitsize_int (idx * GET_MODE_UNIT_BITSIZE (vec_mode));
-}
-
-/* LANE is a lane index into VEC.  Return a BIT_FIELD_REF for the
-   selected element.  */
-static tree
-aarch64_get_lane (tree vec, tree lane)
-{
-  auto elt_type = TREE_TYPE (TREE_TYPE (vec));
-  return fold_build3 (BIT_FIELD_REF, elt_type, vec, TYPE_SIZE (elt_type),
-		      aarch64_get_lane_bit_index (vec, lane));
-}
-
-/* LANE is a lane index into VEC.  Return a BIT_INSERT_EXPR that replaces
-   that index with ELT and stores the result in LHS.  */
-static gimple *
-aarch64_set_lane (tree lhs, tree elt, tree vec, tree lane)
-{
-  tree bit = aarch64_get_lane_bit_index (vec, lane);
-  return gimple_build_assign (lhs, BIT_INSERT_EXPR, vec, elt, bit);
-}
-
 /* Try to fold STMT (at GSI), given that it is a call to the builtin
    described by BUILTIN_DATA.  Return the new statement on success,
    otherwise return null.  */
@@ -4782,30 +4649,6 @@ aarch64_gimple_fold_pragma_builtin
 	tree dup = build_vector_from_val (type, arg);
 	return aarch64_fold_to_val (stmt, gsi, nullptr, dup);
       }
-
-    case UNSPEC_SET_LANE:
-      {
-	tree elt = gimple_call_arg (stmt, 0);
-	if (builtin_data.signature == aarch64_builtin_signatures::load_lane)
-	  {
-	    elt = aarch64_dereference (elt, TREE_TYPE (types[0].type ()));
-	    elt = aarch64_force_gimple_val (gsi, elt);
-	  }
-	return aarch64_set_lane (gimple_call_lhs (stmt), elt,
-				 gimple_call_arg (stmt, 1),
-				 gimple_call_arg (stmt, 2));
-      }
-
-    case UNSPEC_ST1_LANE:
-      {
-	tree val = aarch64_get_lane (gimple_call_arg (stmt, 1),
-				     gimple_call_arg (stmt, 2));
-	tree mem = aarch64_dereference (gimple_call_arg (stmt, 0),
-					TREE_TYPE (types[0].type ()));
-	val = aarch64_force_gimple_val (gsi, val);
-	return aarch64_copy_vops (gimple_build_assign (mem, val), stmt);
-      }
-
     default:
       return nullptr;
     }

@@ -8417,37 +8417,6 @@
   [(set_attr "type" "neon_load2_all_lanes<q>")]
 )
 
-(define_insn "@aarch64_vec_load_lanes<mode>_lane<vstruct_elt>"
-  [(set (match_operand:VSTRUCT_2QD 0 "register_operand" "=w")
-	(unspec:VSTRUCT_2QD [
-		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		(match_operand:VSTRUCT_2QD 2 "register_operand" "0")
-		(match_operand:SI 3 "immediate_operand" "i")]
-		UNSPEC_LD2_LANE))]
-  "TARGET_SIMD"
-  {
-    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
-					   INTVAL (operands[3]));
-    return "ld2\\t{%S0.<Vetype> - %T0.<Vetype>}[%3], %1";
-  }
-  [(set_attr "type" "neon_load2_one_lane")]
-)
-
-;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "aarch64_vec_store_lanes<mode>_lane<vstruct_elt>"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:VSTRUCT_2QD 1 "register_operand" "w")
-		     (match_operand:SI 2 "immediate_operand" "i")]
-		     UNSPEC_ST2_LANE))]
-  "TARGET_SIMD"
-  {
-    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
-					   INTVAL (operands[2]));
-    return "st2\\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0";
-  }
-  [(set_attr "type" "neon_store2_one_lane<q>")]
-)
-
 (define_insn "@aarch64_simd_ld3r<vstruct_elt>"
   [(set (match_operand:VSTRUCT_3QD 0 "register_operand" "=w")
 	(unspec:VSTRUCT_3QD [
@@ -8458,37 +8427,6 @@
   [(set_attr "type" "neon_load3_all_lanes<q>")]
 )
 
-(define_insn "aarch64_vec_load_lanes<mode>_lane<vstruct_elt>"
-  [(set (match_operand:VSTRUCT_3QD 0 "register_operand" "=w")
-	(unspec:VSTRUCT_3QD [
-		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		(match_operand:VSTRUCT_3QD 2 "register_operand" "0")
-		(match_operand:SI 3 "immediate_operand" "i")]
-		UNSPEC_LD3_LANE))]
-  "TARGET_SIMD"
-{
-    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
-					   INTVAL (operands[3]));
-    return "ld3\\t{%S0.<Vetype> - %U0.<Vetype>}[%3], %1";
-}
-  [(set_attr "type" "neon_load3_one_lane")]
-)
-
-;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "aarch64_vec_store_lanes<mode>_lane<vstruct_elt>"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:VSTRUCT_3QD 1 "register_operand" "w")
-		     (match_operand:SI 2 "immediate_operand" "i")]
-		     UNSPEC_ST3_LANE))]
-  "TARGET_SIMD"
-  {
-    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
-					   INTVAL (operands[2]));
-    return "st3\\t{%S1.<Vetype> - %U1.<Vetype>}[%2], %0";
-  }
-  [(set_attr "type" "neon_store3_one_lane<q>")]
-)
-
 (define_insn "@aarch64_simd_ld4r<vstruct_elt>"
   [(set (match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
 	(unspec:VSTRUCT_4QD [
@@ -8497,37 +8435,6 @@
   "TARGET_SIMD"
   "ld4r\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "type" "neon_load4_all_lanes<q>")]
-)
-
-(define_insn "aarch64_vec_load_lanes<mode>_lane<vstruct_elt>"
-  [(set (match_operand:VSTRUCT_4QD 0 "register_operand" "=w")
-	(unspec:VSTRUCT_4QD [
-		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
-		(match_operand:VSTRUCT_4QD 2 "register_operand" "0")
-		(match_operand:SI 3 "immediate_operand" "i")]
-		UNSPEC_LD4_LANE))]
-  "TARGET_SIMD"
-{
-    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
-					   INTVAL (operands[3]));
-    return "ld4\\t{%S0.<Vetype> - %V0.<Vetype>}[%3], %1";
-}
-  [(set_attr "type" "neon_load4_one_lane")]
-)
-
-;; RTL uses GCC vector extension indices, so flip only for assembly.
-(define_insn "aarch64_vec_store_lanes<mode>_lane<vstruct_elt>"
-  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
-	(unspec:BLK [(match_operand:VSTRUCT_4QD 1 "register_operand" "w")
-		     (match_operand:SI 2 "immediate_operand" "i")]
-		     UNSPEC_ST4_LANE))]
-  "TARGET_SIMD"
-  {
-    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode,
-					   INTVAL (operands[2]));
-    return "st4\\t{%S1.<Vetype> - %V1.<Vetype>}[%2], %0";
-  }
-  [(set_attr "type" "neon_store4_one_lane<q>")]
 )
 
 ;; Patterns for rcpc3 vector lane loads and stores.
@@ -8546,7 +8453,7 @@
   [(set_attr "type" "neon_store2_one_lane")]
 )
 
-(define_expand "aarch64_vec_stl1_lane<mode>"
+(define_expand "@aarch64_vec_stl1_lane<mode>"
  [(match_operand:DI 0 "register_operand")
   (match_operand:V12DIF 1 "register_operand")
   (match_operand:SI 2 "immediate_operand")]
@@ -8555,8 +8462,6 @@
   rtx mem = gen_rtx_MEM (BLKmode, operands[0]);
   set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)));
 
-  aarch64_simd_lane_bounds (operands[2], 0,
-			    GET_MODE_NUNITS (<MODE>mode).to_constant (), NULL);
   emit_insn (gen_aarch64_vec_stl1_lanes<mode>_lane<Vel> (mem,
 					operands[1], operands[2]));
   DONE;
@@ -8578,7 +8483,7 @@
   [(set_attr "type" "neon_load2_one_lane")]
 )
 
-(define_expand "aarch64_vec_ldap1_lane<mode>"
+(define_expand "@aarch64_vec_ldap1_lane<mode>"
   [(match_operand:V12DIF 0 "register_operand")
 	(match_operand:DI 1 "register_operand")
 	(match_operand:V12DIF 2 "register_operand")
@@ -8588,8 +8493,6 @@
   rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
   set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)));
 
-  aarch64_simd_lane_bounds (operands[3], 0,
-			    GET_MODE_NUNITS (<MODE>mode).to_constant (), NULL);
   emit_insn (gen_aarch64_vec_ldap1_lanes<mode>_lane<Vel> (operands[0],
 				mem, operands[2], operands[3]));
   DONE;
@@ -8968,22 +8871,26 @@
   DONE;
 })
 
-(define_expand "@aarch64_ld<nregs>_lane<vstruct_elt>"
-  [(match_operand:VSTRUCT_QD 0 "register_operand")
-	(match_operand:DI 1 "register_operand")
-	(match_operand:VSTRUCT_QD 2 "register_operand")
-	(match_operand:SI 3 "immediate_operand")]
+(define_insn "@aarch64_simd_load_lane<mode>"
+  [(set (match_operand:VSTRUCT_QD 0 "register_operand" "=w")
+	(unspec:VSTRUCT_QD [
+		(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		(match_operand:VSTRUCT_QD 2 "register_operand" "0")
+		(match_operand:SI 3 "immediate_operand" "i")]
+		UNSPEC_LOAD_LANE))]
   "TARGET_SIMD"
-{
-  rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
-  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) * <nregs>);
-
-  aarch64_simd_lane_bounds (operands[3], 0,
-		GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>, NULL);
-  emit_insn (gen_aarch64_vec_load_lanes<mode>_lane<vstruct_elt> (operands[0],
-				mem, operands[2], operands[3]));
-  DONE;
-})
+  {
+    operands[3] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode, INTVAL (operands[3]));
+    switch (<nregs>)
+    {
+      case 2: return "ld2\t{%S0.<Vetype> - %T0.<Vetype>}[%3], %1";
+      case 3: return "ld3\t{%S0.<Vetype> - %U0.<Vetype>}[%3], %1";
+      case 4: return "ld4\t{%S0.<Vetype> - %V0.<Vetype>}[%3], %1";
+      default: gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "neon_load<nregs>_one_lane")]
+)
 
 ;; Permuted-store expanders for neon intrinsics.
 
@@ -9180,21 +9087,24 @@
   [(set_attr "type" "neon_rev<q>")]
 )
 
-(define_expand "@aarch64_st<nregs>_lane<vstruct_elt>"
- [(match_operand:DI 0 "register_operand")
-  (match_operand:VSTRUCT_QD 1 "register_operand")
-  (match_operand:SI 2 "immediate_operand")]
+(define_insn "@aarch64_simd_store_lane<mode>"
+  [(set (match_operand:BLK 0 "aarch64_simd_struct_operand" "=Utv")
+	(unspec:BLK [(match_operand:VSTRUCT_QD 1 "register_operand" "w")
+		     (match_operand:SI 2 "immediate_operand" "i")]
+		     UNSPEC_STORE_LANE))]
   "TARGET_SIMD"
-{
-  rtx mem = gen_rtx_MEM (BLKmode, operands[0]);
-  set_mem_size (mem, GET_MODE_SIZE (GET_MODE_INNER (<MODE>mode)) * <nregs>);
-
-  aarch64_simd_lane_bounds (operands[2], 0,
-		GET_MODE_NUNITS (<MODE>mode).to_constant () / <nregs>, NULL);
-  emit_insn (gen_aarch64_vec_store_lanes<mode>_lane<vstruct_elt> (mem,
-					operands[1], operands[2]));
-  DONE;
-})
+  {
+    operands[2] = aarch64_endian_lane_rtx (<VSTRUCT_ELT>mode, INTVAL (operands[2]));
+    switch (<nregs>)
+    {
+      case 2: return "st2\t{%S1.<Vetype> - %T1.<Vetype>}[%2], %0";
+      case 3: return "st3\t{%S1.<Vetype> - %U1.<Vetype>}[%2], %0";
+      case 4: return "st4\t{%S1.<Vetype> - %V1.<Vetype>}[%2], %0";
+      default: gcc_unreachable ();
+    }
+  }
+  [(set_attr "type" "neon_store<nregs>_one_lane<q>")]
+)
 
 ;; Standard pattern name vec_init<mode><Vel>.
 

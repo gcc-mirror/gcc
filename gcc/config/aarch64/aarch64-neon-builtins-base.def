@@ -618,6 +618,16 @@ DEF_NEON_FUNCTION (vld3,  all_neon, ("D0x3,al"))
 DEF_NEON_FUNCTION (vld3q, all_neon, ("Q0x3,al"))
 DEF_NEON_FUNCTION (vld4,  all_neon, ("D0x4,al"))
 DEF_NEON_FUNCTION (vld4q, all_neon, ("Q0x4,al"))
+
+// Load lanes
+DEF_NEON_FUNCTION (vld1_lane,  all_neon, ("D0,al,D0,ss32",     lane<2>))
+DEF_NEON_FUNCTION (vld1q_lane, all_neon, ("Q0,al,Q0,ss32",     lane<2>))
+DEF_NEON_FUNCTION (vld2_lane,  all_neon, ("D0x2,al,D0x2,ss32", lane<2>))
+DEF_NEON_FUNCTION (vld2q_lane, all_neon, ("Q0x2,al,Q0x2,ss32", lane<2>))
+DEF_NEON_FUNCTION (vld3_lane,  all_neon, ("D0x3,al,D0x3,ss32", lane<2>))
+DEF_NEON_FUNCTION (vld3q_lane, all_neon, ("Q0x3,al,Q0x3,ss32", lane<2>))
+DEF_NEON_FUNCTION (vld4_lane,  all_neon, ("D0x4,al,D0x4,ss32", lane<2>))
+DEF_NEON_FUNCTION (vld4q_lane, all_neon, ("Q0x4,al,Q0x4,ss32", lane<2>))
 #undef REQUIRED_EXTENSIONS
 
 // Stores
@@ -634,6 +644,24 @@ DEF_NEON_FUNCTION (vst3,  all_neon, ("_,as,D0x3"))
 DEF_NEON_FUNCTION (vst3q, all_neon, ("_,as,Q0x3"))
 DEF_NEON_FUNCTION (vst4,  all_neon, ("_,as,D0x4"))
 DEF_NEON_FUNCTION (vst4q, all_neon, ("_,as,Q0x4"))
+
+// Store lanes
+DEF_NEON_FUNCTION (vst1_lane,  all_neon, ("_,as,D0,ss32",   lane<2>))
+DEF_NEON_FUNCTION (vst1q_lane, all_neon, ("_,as,Q0,ss32",   lane<2>))
+DEF_NEON_FUNCTION (vst2_lane,  all_neon, ("_,as,D0x2,ss32", lane<2>))
+DEF_NEON_FUNCTION (vst2q_lane, all_neon, ("_,as,Q0x2,ss32", lane<2>))
+DEF_NEON_FUNCTION (vst3_lane,  all_neon, ("_,as,D0x3,ss32", lane<2>))
+DEF_NEON_FUNCTION (vst3q_lane, all_neon, ("_,as,Q0x3,ss32", lane<2>))
+DEF_NEON_FUNCTION (vst4_lane,  all_neon, ("_,as,D0x4,ss32", lane<2>))
+DEF_NEON_FUNCTION (vst4q_lane, all_neon, ("_,as,Q0x4,ss32", lane<2>))
+#undef REQUIRED_EXTENSIONS
+
+// Load/store lanes atomically
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_RCPC3)
+DEF_NEON_FUNCTION (vldap1_lane,  d_neon, ("D0,al,D0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vldap1q_lane, d_neon, ("Q0,al,Q0,ss32", lane<2>))
+DEF_NEON_FUNCTION (vstl1_lane,   d_neon, ("_,as,D0,ss32",  lane<2>))
+DEF_NEON_FUNCTION (vstl1q_lane,  d_neon, ("_,as,Q0,ss32",  lane<2>))
 #undef REQUIRED_EXTENSIONS
 
 // AES

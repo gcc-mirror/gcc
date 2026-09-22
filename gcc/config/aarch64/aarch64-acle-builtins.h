@@ -1923,6 +1923,10 @@ function_expander::result_mode () const
 #define TYPES_h_neon(S, D, T) \
   S (p16), S (s16), S (u16), S (f16), S (bf16)
 
+/* _p64 _s64 _u64 _f64.  */
+#define TYPES_d_neon(S, D, T) \
+  S (p64), S (s64), S (u64), S (f64)
+
 /* _p8  _s8  _u8  _mf8
    _p16 _s16 _u16 _f16 _bf16
 	_s32 _u32 _f32
@@ -2265,6 +2269,7 @@ DEF_SVE_TYPES_ARRAY (b_float);
 DEF_SVE_TYPES_ARRAY (all_neon);
 DEF_SVE_TYPES_ARRAY (b_neon);
 DEF_SVE_TYPES_ARRAY (h_neon);
+DEF_SVE_TYPES_ARRAY (d_neon);
 DEF_SVE_TYPES_ARRAY (b_poly);
 DEF_SVE_TYPES_ARRAY (h_poly);
 DEF_SVE_TYPES_ARRAY (bh_poly);
