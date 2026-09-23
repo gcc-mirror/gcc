@@ -10080,9 +10080,13 @@ vectorizable_load (vec_info *vinfo,
 	    }
 	  enum vect_cost_model_location cost_loc
 	    = hoist_p ? vect_prologue : vect_body;
-	  unsigned int cost = record_stmt_cost (cost_vec, 1, scalar_load,
+	  unsigned int cost = record_stmt_cost (cost_vec,
+						uniform_p
+						? 1 : SLP_TREE_LANES (slp_node),
+						scalar_load,
 						slp_node, 0, cost_loc);
-	  cost += record_stmt_cost (cost_vec, 1, scalar_to_vec,
+	  cost += record_stmt_cost (cost_vec, 1,
+				    uniform_p ? scalar_to_vec : vec_construct,
 				    slp_node, 0, cost_loc);
 	  unsigned int prologue_cost = hoist_p ? cost : 0;
 	  unsigned int inside_cost = hoist_p ? 0 : cost;
