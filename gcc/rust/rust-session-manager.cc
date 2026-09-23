@@ -543,7 +543,7 @@ Session::handle_crate_name (const char *filename,
   if (saw_errors ())
     return;
 
-  auto &crate_mappings = Analysis::Mappings::get ().crate_mapping;
+  auto &crate_mappings = Analysis::Mappings::get ().crate;
 
   CrateNum crate_num
     = crate_mappings.get_next_crate_num (options.get_crate_name ());
@@ -669,10 +669,9 @@ Session::compile_crate (const char *filename)
     }
 
   // setup the mappings for this AST
-  CrateNum current_crate = mappings.crate_mapping.get_current_crate ();
+  CrateNum current_crate = mappings.crate.get_current_crate ();
   AST::Crate &parsed_crate
-    = mappings.crate_mapping.insert_ast_crate (std::move (ast_crate),
-					       current_crate);
+    = mappings.crate.insert_ast_crate (std::move (ast_crate), current_crate);
 
   /* basic pipeline:
    *  - lex
@@ -1256,7 +1255,7 @@ Session::dump_hir_pretty (HIR::Crate &crate) const
 tl::expected<Session::LoadedCrate, Session::LoadingError>
 Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
-  auto &crate_mapping = mappings.crate_mapping;
+  auto &crate_mapping = mappings.crate;
   // has it already been loaded?
   if (auto crate_num = crate_mapping.lookup_crate_name (crate_name))
     {
@@ -1334,8 +1333,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   std::unique_ptr<AST::Crate> metadata_crate = parser.parse_crate ();
 
   AST::Crate &parsed_crate
-    = mappings.crate_mapping.insert_ast_crate (std::move (metadata_crate),
-					       crate_num);
+    = mappings.crate.insert_ast_crate (std::move (metadata_crate), crate_num);
 
   auto ctx = Resolver2_0::NameResolutionContext ();
   Resolver2_0::Builtins::setup_lang_prelude (ctx);
@@ -1366,10 +1364,9 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 	}
     }
 
-  mappings.pmacro_mappings.insert_attribute_proc_macros (crate_num,
-							 attribute_macros);
-  mappings.pmacro_mappings.insert_bang_proc_macros (crate_num, bang_macros);
-  mappings.pmacro_mappings.insert_derive_proc_macros (crate_num, derive_macros);
+  mappings.pmacro.insert_attribute_proc_macros (crate_num, attribute_macros);
+  mappings.pmacro.insert_bang_proc_macros (crate_num, bang_macros);
+  mappings.pmacro.insert_derive_proc_macros (crate_num, derive_macros);
 
   // always restore the crate_num
   crate_mapping.set_current_crate (saved_crate_num);

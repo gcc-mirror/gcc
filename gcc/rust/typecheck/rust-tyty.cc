@@ -1372,9 +1372,8 @@ InferType::clone () const
 		     default_hint, get_ident ().locus, get_combined_refs ());
 
   context->insert_type (
-    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
-			   UNKNOWN_NODEID, clone->get_ref (),
-			   UNKNOWN_LOCAL_DEFID),
+    Analysis::NodeMapping (mappings.crate.get_current_crate (), UNKNOWN_NODEID,
+			   clone->get_ref (), UNKNOWN_LOCAL_DEFID),
     clone);
   mappings.insert_location (clone->get_ref (),
 			    mappings.lookup_location (get_ref ()));
@@ -4213,9 +4212,8 @@ ConstInferType::clone () const
 			  get_ty_ref (), get_combined_refs ());
 
   context->insert_type (
-    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
-			   UNKNOWN_NODEID, clone->get_ref (),
-			   UNKNOWN_LOCAL_DEFID),
+    Analysis::NodeMapping (mappings.crate.get_current_crate (), UNKNOWN_NODEID,
+			   clone->get_ref (), UNKNOWN_LOCAL_DEFID),
     clone);
   mappings.insert_location (clone->get_ref (),
 			    mappings.lookup_location (get_ref ()));

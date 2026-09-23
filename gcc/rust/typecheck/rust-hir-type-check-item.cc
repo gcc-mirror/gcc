@@ -1132,7 +1132,7 @@ TypeCheckItem::visit (HIR::ExternCrate &extern_crate)
   if (extern_crate.references_self ())
     return;
 
-  auto &crate_mappings = Analysis::Mappings::get ().crate_mapping;
+  auto &crate_mappings = Analysis::Mappings::get ().crate;
   CrateNum num
     = crate_mappings.lookup_crate_name (extern_crate.get_referenced_crate ())
 	.value ();

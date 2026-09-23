@@ -232,20 +232,20 @@ public:
   static Mappings &get ();
   ~Mappings ();
 
-  CrateMappings crate_mapping;
-  ProcMacroMappings pmacro_mappings;
+  CrateMappings crate;
+  ProcMacroMappings pmacro;
   ASTMappings ast;
   HIRMappings hir;
 
   NodeId get_next_node_id ();
   HirId get_next_hir_id ()
   {
-    return get_next_hir_id (crate_mapping.get_current_crate ());
+    return get_next_hir_id (crate.get_current_crate ());
   }
   HirId get_next_hir_id (CrateNum crateNum);
   LocalDefId get_next_localdef_id ()
   {
-    return get_next_localdef_id (crate_mapping.get_current_crate ());
+    return get_next_localdef_id (crate.get_current_crate ());
   }
   LocalDefId get_next_localdef_id (CrateNum crateNum);
 

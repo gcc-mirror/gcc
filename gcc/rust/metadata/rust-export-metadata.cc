@@ -95,9 +95,9 @@ PublicInterface::ExportTo (HIR::Crate &crate, const std::string &output_path)
 void
 PublicInterface::gather_export_data ()
 {
-  auto crate_num = mappings.crate_mapping.lookup_crate_num (
-    crate.get_mappings ().get_nodeid ());
-  auto &ast_crate = mappings.crate_mapping.get_ast_crate (crate_num.value ());
+  auto crate_num
+    = mappings.crate.lookup_crate_num (crate.get_mappings ().get_nodeid ());
+  auto &ast_crate = mappings.crate.get_ast_crate (crate_num.value ());
   context.emit_crate (ast_crate);
 
   for (auto &macro : mappings.get_exported_macros ())
@@ -121,7 +121,7 @@ PublicInterface::write_to_object_file () const
 
   // MAGIC MD5 DLIM  DLIM buffer-size DELIM contents
   const std::string current_crate_name
-    = mappings.crate_mapping.get_current_crate_name ();
+    = mappings.crate.get_current_crate_name ();
 
   // extern void
   rust_write_export_data (kMagicHeader, sizeof (kMagicHeader));
@@ -164,7 +164,7 @@ PublicInterface::write_to_path (const std::string &path) const
 
   // MAGIC MD5 DLIM  DLIM buffer-size DELIM contents
   const std::string current_crate_name
-    = mappings.crate_mapping.get_current_crate_name ();
+    = mappings.crate.get_current_crate_name ();
 
   // write to path
   FILE *nfd = fopen (path.c_str (), "wb");
@@ -267,7 +267,7 @@ PublicInterface::expected_metadata_filename ()
   auto &mappings = Analysis::Mappings::get ();
 
   const std::string current_crate_name
-    = mappings.crate_mapping.get_current_crate_name ();
+    = mappings.crate.get_current_crate_name ();
   return current_crate_name + extension_path;
 }
 

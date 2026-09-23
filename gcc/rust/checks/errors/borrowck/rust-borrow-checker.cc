@@ -55,7 +55,7 @@ BorrowChecker::go (HIR::Crate &crate)
     {
       mkdir ("bir_dump", 0755);
       auto &mappings = Analysis::Mappings::get ();
-      crate_name = *mappings.crate_mapping.get_crate_name (
+      crate_name = *mappings.crate.get_crate_name (
 	crate.get_mappings ().get_crate_num ());
       mkdir ("nll_facts_gccrs", 0755);
     }

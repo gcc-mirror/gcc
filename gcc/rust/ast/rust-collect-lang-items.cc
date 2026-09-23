@@ -131,7 +131,7 @@ CollectLangItems::visit (AST::EnumItemDiscriminant &item)
 void
 CollectLangItems::visit (AST::ExternCrate &extern_crate)
 {
-  auto &crate_mappings = Analysis::Mappings::get ().crate_mapping;
+  auto &crate_mappings = Analysis::Mappings::get ().crate;
   auto crate_num
     = crate_mappings.lookup_crate_name (extern_crate.get_referenced_crate ());
   if (crate_num)

@@ -239,9 +239,8 @@ SubstitutionParamMapping::override_context ()
   auto context = Resolver::TypeCheckContext::get ();
 
   context->insert_type (
-    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
-			   UNKNOWN_NODEID, param->get_ref (),
-			   UNKNOWN_LOCAL_DEFID),
+    Analysis::NodeMapping (mappings.crate.get_current_crate (), UNKNOWN_NODEID,
+			   param->get_ref (), UNKNOWN_LOCAL_DEFID),
     param->resolve ());
 }
 

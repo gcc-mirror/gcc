@@ -2696,8 +2696,8 @@ HIRCompileBase::resolve_unsized_adt_adjustment (
       TyTy::BaseType *cloned_target = target_adt->clone ();
       cloned_target->set_ref (t_tyvar.get_ref ());
       Analysis::NodeMapping pseudo_mapping (
-	ctx->get_mappings ().crate_mapping.get_current_crate (), 0,
-	t_tyvar.get_ref (), 0);
+	ctx->get_mappings ().crate.get_current_crate (), 0, t_tyvar.get_ref (),
+	0);
       ctx->get_tyctx ()->insert_type (pseudo_mapping, cloned_target);
 
       const TyTy::ReferenceType r (ctx->get_mappings ().get_next_hir_id (),

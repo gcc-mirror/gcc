@@ -257,7 +257,7 @@ CrateMappings::get_ast_crate (CrateNum crateNum)
 AST::Crate &
 Mappings::get_ast_crate_by_node_id (NodeId id)
 {
-  return *crate_mapping.get_ast_crate_by_node_id_raw (id);
+  return *crate.get_ast_crate_by_node_id_raw (id);
 }
 
 AST::Crate *
@@ -816,8 +816,7 @@ Mappings::insert_macro_def (AST::MacroRulesDefinition *macro)
   auto it = macroMappings.find (macro->get_node_id ());
   rust_assert (it == macroMappings.end ());
 
-  macroMappings[macro->get_node_id ()]
-    = {macro, crate_mapping.get_current_crate ()};
+  macroMappings[macro->get_node_id ()] = {macro, crate.get_current_crate ()};
 }
 
 tl::optional<AST::MacroRulesDefinition *>
@@ -1076,7 +1075,7 @@ Mappings::insert_glob_container (NodeId id, AST::GlobContainer *container)
 
   // Crates have different memory managements that regular items
   if (container->get_glob_container_kind () == AST::GlobContainer::Kind::Crate)
-    glob_containers[id] = crate_mapping.get_ast_crate_by_node_id_raw (id);
+    glob_containers[id] = crate.get_ast_crate_by_node_id_raw (id);
   else
     glob_containers[id] = container;
 }

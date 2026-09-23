@@ -386,7 +386,7 @@ TypeCheckBase::resolve_literal (const Analysis::NodeMapping &expr_mappings,
 	auto ok = context->lookup_builtin ("u8", &u8);
 	rust_assert (ok);
 
-	auto crate_num = mappings.crate_mapping.get_current_crate ();
+	auto crate_num = mappings.crate.get_current_crate ();
 	Analysis::NodeMapping capacity_mapping (crate_num, UNKNOWN_NODEID,
 						mappings.get_next_hir_id (
 						  crate_num),

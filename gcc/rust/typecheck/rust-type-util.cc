@@ -77,7 +77,7 @@ query_type (HirId reference, TyTy::BaseType **result)
 
       DefId item_defid = item.value ()->get_mappings ().get_defid ();
       bool is_local
-	= item_defid.crateNum == mappings.crate_mapping.get_current_crate ();
+	= item_defid.crateNum == mappings.crate.get_current_crate ();
       bool is_fn
 	= item.value ()->get_item_kind () == HIR::Item::ItemKind::Function;
       bool is_const_fn = false;
@@ -166,7 +166,7 @@ query_type (HirId reference, TyTy::BaseType **result)
 
       DefId item_defid = impl_item->first->get_impl_mappings ().get_defid ();
       bool is_local
-	= item_defid.crateNum == mappings.crate_mapping.get_current_crate ();
+	= item_defid.crateNum == mappings.crate.get_current_crate ();
       bool is_fn
 	= impl_item->first->get_impl_item_type () == HIR::ImplItem::FUNCTION;
       bool is_const_fn = false;

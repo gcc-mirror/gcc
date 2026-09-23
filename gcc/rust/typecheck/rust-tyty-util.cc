@@ -121,8 +121,8 @@ TyVar::monomorphized_clone () const
 
   // insert it
   context->insert_type (
-    Analysis::NodeMapping (mappings.crate_mapping.get_current_crate (),
-			   UNKNOWN_NODEID, c->get_ref (), UNKNOWN_LOCAL_DEFID),
+    Analysis::NodeMapping (mappings.crate.get_current_crate (), UNKNOWN_NODEID,
+			   c->get_ref (), UNKNOWN_LOCAL_DEFID),
     c);
 
   return TyVar (c->get_ref ());

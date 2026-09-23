@@ -253,11 +253,9 @@ public:
   CanonicalPathRecordCrateRoot (NodeId node_id, std::string seg)
     : node_id (node_id), seg (std::move (seg))
   {
-    rust_assert (
-      Analysis::Mappings::get ().crate_mapping.node_is_crate (node_id));
-    crate_num = Analysis::Mappings::get ()
-		  .crate_mapping.lookup_crate_num (node_id)
-		  .value ();
+    rust_assert (Analysis::Mappings::get ().crate.node_is_crate (node_id));
+    crate_num
+      = Analysis::Mappings::get ().crate.lookup_crate_num (node_id).value ();
   }
 
   Resolver::CanonicalPath as_path (const NameResolutionContext &,
@@ -279,8 +277,7 @@ public:
     : CanonicalPathRecordWithParent (parent_node_id), node_id (node_id),
       seg (std::move (seg))
   {
-    rust_assert (
-      !Analysis::Mappings::get ().crate_mapping.node_is_crate (node_id));
+    rust_assert (!Analysis::Mappings::get ().crate.node_is_crate (node_id));
   }
 
   Resolver::CanonicalPath as_path (const NameResolutionContext &,

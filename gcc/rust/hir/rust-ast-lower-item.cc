@@ -56,7 +56,7 @@ ASTLoweringItem::translate (AST::Item &item)
 void
 ASTLoweringItem::visit (AST::Module &module)
 {
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, module.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -106,7 +106,7 @@ ASTLoweringItem::visit (AST::TypeAlias &alias)
   HIR::Type *existing_type
     = ASTLoweringType::translate (alias.get_type_aliased ());
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, alias.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -151,7 +151,7 @@ ASTLoweringItem::visit (AST::TupleStruct &struct_decl)
       HIR::Visibility vis = translate_visibility (field.get_visibility ());
       HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
-      auto crate_num = mappings.crate_mapping.get_current_crate ();
+      auto crate_num = mappings.crate.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     mappings.get_next_localdef_id (crate_num));
@@ -160,7 +160,7 @@ ASTLoweringItem::visit (AST::TupleStruct &struct_decl)
 			   field.get_locus (), field.get_outer_attrs ());
     }
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, struct_decl.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -204,7 +204,7 @@ ASTLoweringItem::visit (AST::StructStruct &struct_decl)
       HIR::Visibility vis = translate_visibility (field.get_visibility ());
       HIR::Type *type = ASTLoweringType::translate (field.get_field_type ());
 
-      auto crate_num = mappings.crate_mapping.get_current_crate ();
+      auto crate_num = mappings.crate.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, field.get_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     mappings.get_next_localdef_id (crate_num));
@@ -220,7 +220,7 @@ ASTLoweringItem::visit (AST::StructStruct &struct_decl)
       fields.push_back (std::move (translated_field));
     }
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, struct_decl.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -265,7 +265,7 @@ ASTLoweringItem::visit (AST::Enum &enum_decl)
       items.emplace_back (ASTLoweringEnumItem::translate (variant.get ()));
     }
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, enum_decl.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -310,7 +310,7 @@ ASTLoweringItem::visit (AST::Union &union_decl)
       HIR::Visibility vis = translate_visibility (variant.get_visibility ());
       HIR::Type *type = ASTLoweringType::translate (variant.get_field_type ());
 
-      auto crate_num = mappings.crate_mapping.get_current_crate ();
+      auto crate_num = mappings.crate.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, variant.get_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     mappings.get_next_localdef_id (crate_num));
@@ -326,7 +326,7 @@ ASTLoweringItem::visit (AST::Union &union_decl)
       variants.push_back (std::move (translated_variant));
     }
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, union_decl.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -346,7 +346,7 @@ ASTLoweringItem::visit (AST::StaticItem &var)
   HIR::Type *type = ASTLoweringType::translate (var.get_type (), true);
   HIR::Expr *expr = ASTLoweringExpr::translate (var.get_expr ());
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, var.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -369,7 +369,7 @@ ASTLoweringItem::visit (AST::ConstantItem &constant)
   if (constant.has_expr ())
     expr = ASTLoweringExpr::translate (constant.get_expr ());
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, constant.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -418,7 +418,7 @@ ASTLoweringItem::visit (AST::Function &function)
   std::vector<HIR::FunctionParam> function_params;
   function_params.reserve (function.get_function_params ().size ());
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   for (auto &p : function.get_function_params ())
     {
       if (p->is_variadic ())
@@ -470,7 +470,7 @@ ASTLoweringItem::visit (AST::Function &function)
       auto translated_type = std::unique_ptr<HIR::Type> (
 	ASTLoweringType::translate (param.get_type ()));
 
-      auto crate_num = mappings.crate_mapping.get_current_crate ();
+      auto crate_num = mappings.crate.get_current_crate ();
       Analysis::NodeMapping mapping (crate_num, param.get_node_id (),
 				     mappings.get_next_hir_id (crate_num),
 				     UNKNOWN_LOCAL_DEFID);
@@ -565,7 +565,7 @@ ASTLoweringItem::visit (AST::InherentImpl &impl_block)
 
   HIR::Type *impl_type = ASTLoweringType::translate (impl_block.get_type ());
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -649,7 +649,7 @@ ASTLoweringItem::visit (AST::Trait &trait)
       trait_items.emplace_back (lowered);
     }
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, trait.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -729,7 +729,7 @@ ASTLoweringItem::visit (AST::TraitImpl &impl_block)
   HIR::TypePath *trait_ref
     = ASTLowerTypePath::translate (impl_block.get_trait_path ());
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, impl_block.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 mappings.get_next_localdef_id (crate_num));
@@ -791,14 +791,14 @@ ASTLoweringItem::visit (AST::ExternCrate &extern_crate)
     return;
 
   auto &mappings = Analysis::Mappings::get ();
-  auto &crate_mapping = mappings.crate_mapping;
+  auto &crate_mapping = mappings.crate;
 
   CrateNum num
     = crate_mapping.lookup_crate_name (extern_crate.get_referenced_crate ())
 	.value ();
-  AST::Crate &crate = mappings.crate_mapping.get_ast_crate (num);
+  AST::Crate &crate = mappings.crate.get_ast_crate (num);
 
-  auto saved_crate_num = mappings.crate_mapping.get_current_crate ();
+  auto saved_crate_num = mappings.crate.get_current_crate ();
   crate_mapping.set_current_crate (num);
   auto lowered = ASTLowering::Resolve (crate);
   mappings.insert_hir_crate (std::move (lowered));
@@ -816,7 +816,7 @@ ASTLoweringSimplePath::translate (const AST::SimplePath &path)
 HIR::SimplePathSegment
 ASTLoweringSimplePath::lower (const AST::SimplePathSegment &segment)
 {
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   auto node_id = segment.get_node_id ();
 
   auto mapping = Analysis::NodeMapping (crate_num, node_id,
@@ -838,7 +838,7 @@ ASTLoweringSimplePath::lower (const AST::SimplePath &path)
   for (auto &segment : path.get_segments ())
     segments.emplace_back (lower (segment));
 
-  auto crate_num = mappings.crate_mapping.get_current_crate ();
+  auto crate_num = mappings.crate.get_current_crate ();
   auto node_id = path.get_node_id ();
 
   auto mapping = Analysis::NodeMapping (crate_num, node_id,

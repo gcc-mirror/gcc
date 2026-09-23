@@ -597,7 +597,7 @@ public:
 
     // TODO: Should we be using the forever stack root as the crate scope?
     // TODO: Is this how we should be getting the crate node id?
-    auto &crate_mappings = Analysis::Mappings::get ().crate_mapping;
+    auto &crate_mappings = Analysis::Mappings::get ().crate;
     root.id = *crate_mappings.crate_num_to_nodeid (
       crate_mappings.get_current_crate ());
   }
