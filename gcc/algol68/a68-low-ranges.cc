@@ -253,6 +253,27 @@ a68_add_stmt (tree exp)
 				  &current_range->stmt_list);
 }
 
+/* Add a new declaration to the global range.  */
+
+void
+a68_add_global_decl (tree decl)
+{
+  gcc_assert (current_range != NULL);
+
+  tree n = global_range->names;
+  while (n != decl && n != NULL)
+    n = TREE_CHAIN (n);
+  if (n != decl)
+    {
+      if (decl != current_function_decl)
+	DECL_CONTEXT (decl) = global_range->context;
+      /* Note this list needs to be in reverse order for compatibility with
+	 GCC.  */
+      TREE_CHAIN (decl) = global_range->names;
+      global_range->names = decl;
+    }
+}
+
 /* Add a new declaration to the current range.  */
 
 void
@@ -330,6 +351,14 @@ a68_range_context (void)
 {
   gcc_assert (current_range != NULL);
   return current_range->context;
+}
+
+/* Get the global context.  */
+
+tree
+a68_global_context (void)
+{
+  return global_range->context;
 }
 
 /* Get the list of declarations in the current range.  */

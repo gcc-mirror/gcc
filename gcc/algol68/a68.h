@@ -748,10 +748,12 @@ void a68_push_serial_clause_range (MOID_T *clause_mode,
 				   bool save_restore_stack = false);
 tree a68_pop_serial_clause_range (void);
 void a68_add_stmt (tree exp);
+void a68_add_global_decl (tree decl);
 void a68_add_decl (tree decl);
 void a68_add_decl_expr (tree decl_expr);
 void a68_add_completer (void);
 tree a68_range_context (void);
+tree a68_global_context (void);
 tree a68_range_names (void);
 tree a68_range_stmt_list (void);
 
