@@ -1,6 +1,7 @@
       *> Do not edit this generated file.  See README.txt
       *> { dg-do run }
        *> { dg-options "-fexec-charset=ibm1140" }
+       *> { dg-require-iconv "ibm1140" }
        *> { dg-output-file "group2/FIND-STRING__reverse_.out" }
         IDENTIFICATION  DIVISION.
         PROGRAM-ID.     prog.

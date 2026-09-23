@@ -31,6 +31,7 @@
           perform write-file.
           perform check-file-size.
           move zero to return-code.
+          call "CBL_DELETE_FILE" using filename
           goback.
 
         write-file section.

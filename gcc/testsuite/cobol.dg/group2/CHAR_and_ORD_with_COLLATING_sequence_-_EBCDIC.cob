@@ -1,6 +1,7 @@
       *> Do not edit this generated file.  See README.txt
       *> { dg-do run }
        *> { dg-options "-fexec-charset=ibm1140" }
+       *> { dg-require-iconv "ibm1140" }
        *> { dg-output-file "group2/CHAR_and_ORD_with_COLLATING_sequence_-_EBCDIC.out" }
         IDENTIFICATION      DIVISION.
         PROGRAM-ID.         prog.
