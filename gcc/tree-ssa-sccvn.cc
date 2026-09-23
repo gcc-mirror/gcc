@@ -2081,7 +2081,7 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 	  pd.offset += o;
 	}
       if (pd.size + pd.offset > offseti + maxsizei)
-	pd.size = maxsizei + ((pd.size + pd.offset - offseti - maxsizei)
+	pd.size = maxsizei + ((pd.size + pd.offset - (offseti + maxsizei))
 			      % BITS_PER_UNIT);
     }
 
