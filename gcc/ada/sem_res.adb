@@ -4350,23 +4350,24 @@ package body Sem_Res is
                end if;
             end if;
 
-            --  If the formal is Out or In_Out, do not resolve and expand the
-            --  conversion, because it is subsequently expanded into explicit
-            --  temporaries and assignments. However, the object of the
-            --  conversion can be resolved. An exception is the case of tagged
-            --  type conversion with a class-wide actual. In that case we want
-            --  the tag check to occur and no temporary will be needed (no
-            --  representation change can occur) and the parameter is passed by
-            --  reference, so we go ahead and resolve the type conversion.
-            --  Another exception is the case of reference to component or
-            --  subcomponent of a bit-packed array, in which case we want to
-            --  defer expansion to the point the in and out assignments are
-            --  performed.
+            --  If the formal is Out or In Out, do not resolve and expand a
+            --  type conversion if it is to an elementary type, or an array
+            --  type, or if it involves a change of representation, because
+            --  it will be subsequently expanded into explicit temporaries
+            --  and assignments (see Exp_Ch6.Expand_Actuals). However, the
+            --  expression of the conversion needs to be resolved, except
+            --  in the case of a reference to a component or subcomponent
+            --  of a bit-packed array, in which case we want to defer the
+            --  expansion to the point the assignments are performed.
 
             if Ekind (F) /= E_In_Parameter
               and then Nkind (A) = N_Type_Conversion
-              and then not Is_Class_Wide_Type (Etype (Expression (A)))
-              and then not Is_Interface (Etype (A))
+              and then (Is_Elementary_Type (Etype (A))
+                         or else Is_Array_Type (Etype (A))
+                         or else not
+                           Has_Compatible_Representation
+                             (Target_Typ  => Etype (A),
+                              Operand_Typ => Etype (Expression (A))))
             then
                declare
                   Expr_Typ : constant Entity_Id := Etype (Expression (A));
@@ -4374,9 +4375,7 @@ package body Sem_Res is
                begin
                   --  Check RM 4.6 (24.2/2)
 
-                  if Is_Array_Type (Etype (F))
-                    and then Is_View_Conversion (A)
-                  then
+                  if Is_Array_Type (Etype (F)) then
                      --  In a view conversion, the conversion must be legal in
                      --  both directions, and thus both component types must be
                      --  aliased, or neither (4.6 (8)).

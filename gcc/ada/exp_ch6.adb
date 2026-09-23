@@ -3156,8 +3156,10 @@ package body Exp_Ch6 is
                goto Skip_Extra_Actual_Generation;
 
             else
-               --  If the actual is a type conversion, then the constrained
-               --  test applies to the actual, not the target type.
+               --  If the actual is a type conversion and the target type is
+               --  constrained, then the view is constrained (RM 4.6(54)).
+               --  Otherwise, the test needs to be applied to the operand of
+               --  the conversion.
 
                declare
                   Act_Prev : Node_Id;
@@ -3170,6 +3172,9 @@ package body Exp_Ch6 is
                   while Nkind (Act_Prev) in N_Type_Conversion
                                           | N_Unchecked_Type_Conversion
                   loop
+                     exit when Nkind (Act_Prev) = N_Type_Conversion
+                       and then Is_Constrained (Etype (Act_Prev));
+
                      Act_Prev := Expression (Act_Prev);
                   end loop;
 
@@ -3185,6 +3190,11 @@ package body Exp_Ch6 is
                   then
                      Add_Extra_Actual
                        (Expr => New_Occurrence_Of (Standard_False, Loc),
+                        EF   => Extra_Constrained (Formal));
+
+                  elsif Nkind (Act_Prev) = N_Type_Conversion then
+                     Add_Extra_Actual
+                       (Expr => New_Occurrence_Of (Standard_True, Loc),
                         EF   => Extra_Constrained (Formal));
 
                   else
