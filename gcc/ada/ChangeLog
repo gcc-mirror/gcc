@@ -1,3 +1,15 @@
+2026-09-22  Andrew Teylu  <Andrew.Teylu@vector.com>
+
+	* libgnat/s-dwalin.ads (Dwarf_Context): Add Has_Line_Str.
+	* libgnat/s-dwalin.adb (Open): Set Has_Line_Str when creating the
+	line-string stream.
+	(Close): Close the line-string stream if it was created.
+
+2026-09-22  Viljar Indus  <indus@adacore.com>
+
+	* gcc-interface/trans.cc (can_equal_min_Or_max_val_p): Add guard
+	for integral types.
+
 2026-06-26  Release Manager
 
 	* GCC 14.4.0 released.

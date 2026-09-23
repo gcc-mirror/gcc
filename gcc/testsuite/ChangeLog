@@ -1,3 +1,11 @@
+2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127500
+	* gcc.target/i386/pr127500.c: New test.
+
 2026-09-13  Zhou Qiankang  <wszqkzqk@qq.com>
 
 	Backported from master:
