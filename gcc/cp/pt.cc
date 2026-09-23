@@ -26293,14 +26293,14 @@ unify_array_domain (tree tparms, tree targs,
      by adding one to the other bound.  */
   if (parm_cst && !arg_cst)
     parm_max = fold_build2_loc (input_location, PLUS_EXPR,
-				integer_type_node,
+				TREE_TYPE (parm_max),
 				parm_max,
-				integer_one_node);
+				build_int_cst (TREE_TYPE (parm_max), 1));
   else if (arg_cst && !parm_cst)
     arg_max = fold_build2_loc (input_location, PLUS_EXPR,
-			       integer_type_node,
+			       TREE_TYPE (arg_max),
 			       arg_max,
-			       integer_one_node);
+			       build_int_cst (TREE_TYPE (arg_max), 1));
 
   return unify (tparms, targs, parm_max, arg_max,
 		UNIFY_ALLOW_INTEGER, explain_p);
