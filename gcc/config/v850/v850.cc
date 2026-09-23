@@ -623,6 +623,11 @@ v850_print_operand (FILE * file, rtx x, int code)
 	  fprintf (file, HOST_WIDE_INT_PRINT_HEX, CONST_DOUBLE_LOW (x));
 	  break;
 
+	case HIGH:
+	  /* Strip off the HIGH and fall through to print the address.  */
+	  x = XEXP (x, 0);
+	  /* Fall through.  */
+
 	case CONST_INT:
 	case SYMBOL_REF:
 	case CONST:
