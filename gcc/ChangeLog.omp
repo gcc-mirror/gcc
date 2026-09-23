@@ -1,3 +1,97 @@
+2026-09-23  Chung-Lin Tang  <cltang@baylibre.com>
+
+	Backported from master:
+	2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* omp-offload.cc (omp_discover_implicit_declare_target):
+	For self_maps/unified_shared_memory case, adjust to not convert
+	'omp declare target local' variables to 'link'.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_LOCAL.
+	* tree.cc (omp_clause_num_ops): Add entry for OMP_CLAUSE_LOCAL.
+	(omp_clause_code_name): Likewise.
+	* varpool.cc (varpool_node::get_create): Do not add variable to
+	offload_vars if "local" argument is present in "omp declare target".
+
+2026-09-18  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-18  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (mov<mode>_exec): Add xnack alternatives.
+	(@mov<mode>_sgprbase): Likewise.
+
+2026-09-17  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-17  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_spill_class): Spill scalars in VGPRs to
+	SCALAR_SPILL_REGS.
+	(gcn_memory_move_cost): Handle SCALAR_SPILL_REGS.
+	* config/gcn/gcn.h (enum reg_class): Add SCALAR_SPILL_REGS.
+	(REG_CLASS_NAMES): Likewise.
+	(REG_CLASS_CONTENTS): Likewise.
+
+2026-09-16  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_spill_class): Spill scalars to SGPRs.
+
+2026-09-16  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-10  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (one_cmpldi2): Use s_not_b64.
+
+2026-09-16  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (vnhi): New mode attribute.
+	(VnHI): Likewise.
+	(<u>mul<mode><vnsi>3<exec>): New.
+	(<u>mul<mode><vnhi>3<exec>): New.
+	* config/gcn/gcn.md (<u>mulqihi3_scalar): Rename this ...
+	(<u>mulqihi3): ... to this.
+
+2026-09-16  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-opts.h (TARGET_RDNA3_PLUS): New.
+	* config/gcn/gcn-valu.md (<expander><mode>2<exec>): New.
+	(<expander><mode>2): New.
+	(<expander><mode>2_natural): New.
+	* config/gcn/gcn.md (rnda): Add n3 and 3p values.
+	(enabled): Handle rdna n3 and 3p.
+	(mnemonic): Add clz and ctz.
+	(rdna_mnemonic): New code attribute.
+
+2026-09-11  Chung-Lin Tang  <cltang@baylibre.com>
+
+	Backported from master:
+	2026-09-08  Chung-Lin Tang  <cltang@baylibre.com>
+
+	PR middle-end/122205
+	* omp-offload.cc (omp_discover_implicit_declare_target): For variables,
+	under 'OMP_REQUIRES_SELF_MAPS | OMP_REQUIRES_UNIFIED_SHARED_MEMORY',
+	remove "omp declare target" attribute and add "omp declare target link".
+
+2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/mkoffload.cc (main): Pass -L<dir> on to the
+	device compiler.
+
+2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def (gfx9-4-generic): Set sram-ecc
+	default to HSACO_ATTR_ANY.
+
 2026-07-09  Chung-Lin Tang  <cltang@baylibre.com>
 	    Sandra Loosemore  <sloosemore@baylibre.com>
 

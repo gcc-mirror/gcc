@@ -1,3 +1,210 @@
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127273
+	* testsuite/libgomp.c/usm_env_handling-1-self.c: Remove 'dg-ice'.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/122205
+	* testsuite/libgomp.c/usm_env_handling-2.c: Improve debug printf.
+	* testsuite/libgomp.c/usm_env_handling-1.c: likewise; add
+	'#ifdef USE_SELF_MAPS'.
+	* testsuite/libgomp.c/usm_env_handling-1-self.c: New test.
+	* testsuite/libgomp.c/usm_env_handling-2-self.c: New test.
+	* testsuite/libgomp.c/usm_env_handling-3-self.c: New test.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 6.0 implementation status): Mark
+	'need_device_addr' as supported.
+	(GOMP_RUNTIME_USM): Improve wording of the unsupported part.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/127186
+	* libgomp.texi (GOMP_RUNTIME_USM): Update caveat section.
+	* target.c (gomp_target_enter_exit_data_usm): Handle GOMP_MAP_ATTACH.
+	* testsuite/libgomp.c/usm_env_handling-3.c: New test.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-02  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/127186
+	* target.c (GOMP_target_ext): Fix comment related to
+	GOMP_RUNTIME_USM.
+	* testsuite/libgomp.c/usm_env_handling-2.c: New test.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	* target.c (gomp_load_image_to_device): With shared memory, do not
+	add 'link' variables to the splay tree.
+	(GOMP_target_update_ext): For OFFLOAD_CAP_SHARED_MEM, still call
+	gomp_update unless requires self_maps/USM is set.
+	(gomp_update): For OFFLOAD_CAP_SHARED_MEM, only handle global
+	static variables (other than 'link').
+	(GOMP_target_ext, GOMP_target_data_ext): For OFFLOAD_CAP_SHARED_MEM
+	without 'requires self_maps/USM', abort with a 'sorry' for
+	global static variables other than 'link' as the MAP clause would
+	otherwise be ignored.
+	(gomp_target_enter_exit_data_usm): New; handle global static variables
+	other than 'link' with OFFLOAD_CAP_SHARED_MEM.
+	(GOMP_target_enter_exit_data): Call it in that case, unless there
+	is a 'requires self_maps/USM'.
+	* testsuite/libgomp.c/usm_env_handling-1.c: New test.
+
+2026-09-23  Chung-Lin Tang  <cltang@baylibre.com>
+
+	Backported from master:
+	2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* testsuite/libgomp.c-c++-common/declare-target-local-1.c: New test.
+	* testsuite/libgomp.c-c++-common/declare-target-local-2.c: New test.
+	* testsuite/libgomp.c-c++-common/declare-target-local-3.c: New test.
+	* testsuite/libgomp.c-c++-common/declare-target-local-4.c: New test.
+	* testsuite/libgomp.fortran/declare-target-local-1.f90: New test.
+
+2026-09-16  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-07  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/time.c (omp_get_wtime): Use "=Sg".
+
+2026-09-11  Chung-Lin Tang  <cltang@baylibre.com>
+
+	Backported from master:
+	2026-09-08  Chung-Lin Tang  <cltang@baylibre.com>
+
+	PR middle-end/122205
+	* testsuite/libgomp.c/omp_target_is_present.c: Adjust tests for self_maps.
+	* testsuite/libgomp.c-c++-common/requires-8.c: New test.
+	* testsuite/libgomp.fortran/requires-2.f90: New test.
+
+2026-09-10  supers1ngular  <supers1ngular@baylibre.com>
+
+	* env.c (enum gomp_runtime_usm_t): New variable.
+	(parse_rt_usm): New function to parse environment variable.
+	(initialize_env): Enforce default 'disabled'.
+	* libgomp.h (struct gomp_team_state): Whitespace.
+	(enum gomp_device_num): Ditto.
+	(enum gomp_runtime_usm_t): New enum.
+	(gomp_init_device): Update signature.
+	* libgomp.texi: Add relevant documentation.
+	* oacc-init.c (acc_init_1): Update function call.
+	(goacc_attach_host_thread_to_device): Whitespace.
+	(acc_init): Ditto.
+	(acc_set_device_type): Update function call.
+	(acc_set_device_num): Ditto.
+	(get_property_any): Ditto.
+	(goacc_restore_bind): Whitespace.
+	* target.c (resolve_device): Update function call.
+	(gomp_load_image_to_device): Allow copying if the device
+	capability is set.
+	(gomp_init_device): Update signature, and add capability logic.
+	Also add a debugging output.
+	(gomp_page_locked_host_alloc): Update function call.
+
+2026-09-10  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* target.c (gomp_target_init): Fix OpenMP reverse offload
+	capability checking.
+
+2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+	    supers1ngular  <supers1ngular@baylibre.com>
+
+	* libgomp-plugin.h (GOMP_OFFLOAD_CAP_APU_SHARED_MEM,
+	GOMP_OFFLOAD_CAP_UNIFIED_ADDR, GOMP_OFFLOAD_CAP_REV_OFFLOAD): Add.
+	(GOMP_OFFLOAD_get_dev_caps): New prototype.
+	(GOMP_OFFLOAD_get_num_devices): Remove requirement argument.
+	* libgomp.h (struct gomp_device_descr): Add get_dev_caps_func.
+	* libgomp.texi (nvptx, AMD Radeon): Update for by-device
+	USM support.
+	* oacc-host.c (host_get_num_devices,
+	host_openacc_get_property): Update call.
+	* oacc-init.c (resolve_device, acc_init_1, acc_shutdown_1,
+	goacc_attach_host_thread_to_device, acc_get_num_devices,
+	acc_set_device_num, get_property_any): Likewise.
+	* plugin/plugin-gcn.c (is_integrated_apu): Remove.
+	(GOMP_OFFLOAD_get_caps): Mark unified address and
+	reverse offload as supported.
+	(GOMP_OFFLOAD_get_dev_caps): New.
+	(GOMP_OFFLOAD_get_num_devices): Remove requirements arg.
+	* plugin/plugin-nvptx.c (using_usm): Init with -1.
+	(GOMP_OFFLOAD_get_caps): Mark unified address and
+	reverse offload as supported.
+	(GOMP_OFFLOAD_get_dev_caps): New.
+	(GOMP_OFFLOAD_get_num_devices): Remove requirements arg.
+	(GOMP_OFFLOAD_is_accessible_ptr): Check for using_usm > 0.
+	* target.c (gomp_load_plugin_for_device): Load get_dev_caps.
+	(gomp_target_init): Change to by-device capabilities, skip
+	only those devices not devices types that do not support a
+	capability.
+
+2026-09-10  supers1ngular  <supers1ngular@baylibre.com>
+
+	Revert:
+	2026-07-14  supers1ngular  <supers1ngular@baylibre.com>
+
+	* env.c (enum gomp_runtime_usm_t): New environment variable.
+	(parse_rt_usm): Parse new environment variable.
+	(initialize_env): Behavior handling for new variable.
+	* libgomp-plugin.h (GOMP_OFFLOAD_CAP_AUTO_USM): New capability.
+	(GOMP_OFFLOAD_get_dev_caps): New function for enumeration.
+	* libgomp.h (enum gomp_device_num): Fix whitespace.
+	(enum gomp_runtime_usm_t): Define.
+	(struct gomp_device_descr): Add 'get_dev_caps_func'.
+	* libgomp.texi: Update documentation.
+	* plugin/plugin-gcn.c (get_memory_region): Fix whitespace.
+	(process_reverse_offload): Ditto.
+	(gcn_exec): Remove preprocessor elision.
+	(is_apu_with_xnack): New function.
+	(GCN_DEVICE): Query XNACK support.
+	(GOMP_OFFLOAD_get_dev_caps): New function.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_dev_caps): Ditto.
+	* target.c (gomp_init_device): Logic for deciding USM behavior.
+	(gomp_load_plugin_for_device): Get symbol.
+	(gomp_target_init): New comment, and fix style.
+
+2026-07-14  supers1ngular  <supers1ngular@baylibre.com>
+
+	* env.c (enum gomp_runtime_usm_t): New environment variable.
+	(parse_rt_usm): Parse new environment variable.
+	(initialize_env): Behavior handling for new variable.
+	* libgomp-plugin.h (GOMP_OFFLOAD_CAP_AUTO_USM): New capability.
+	(GOMP_OFFLOAD_get_dev_caps): New function for enumeration.
+	* libgomp.h (enum gomp_device_num): Fix whitespace.
+	(enum gomp_runtime_usm_t): Define.
+	(struct gomp_device_descr): Add 'get_dev_caps_func'.
+	* libgomp.texi: Update documentation.
+	* plugin/plugin-gcn.c (get_memory_region): Fix whitespace.
+	(process_reverse_offload): Ditto.
+	(gcn_exec): Remove preprocessor elision.
+	(is_apu_with_xnack): New function.
+	(GCN_DEVICE): Query XNACK support.
+	(GOMP_OFFLOAD_get_dev_caps): New function.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_dev_caps): Ditto.
+	* target.c (gomp_init_device): Logic for deciding USM behavior.
+	(gomp_load_plugin_for_device): Get symbol.
+	(gomp_target_init): New comment, and fix style.
+
 2026-07-09  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 	    Andrew Stubbs  <ams@baylibre.com>
 

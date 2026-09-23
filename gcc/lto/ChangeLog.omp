@@ -1,0 +1,18 @@
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127273
+	* lto.cc (offload_handle_link_vars): Remove has-value-expr check;
+	store link vars and processing them after walking the varpool.
+	(lto_main): Remove duplicated offload_handle_link_vars call.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-10  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127273
+	* lto.cc (offload_handle_link_vars): Create node and force_output;
+	avoid creating the same '...$linkptr' var multiple times.
