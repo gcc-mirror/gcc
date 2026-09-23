@@ -1954,8 +1954,8 @@ precisely match the behavior of other \*[lang] compilers.
 You have been warned.
 .
 .Sh ENVIRONMENT
-.Bl -tag -width GCOBOL_LIBRARY_PATH
-.It Ev GCOBOL_LIBRARY_PATH
+.Bl -tag -width COBPATH
+.It Ev COBPATH
 If defined, specifies the directory paths to be used by the
 .Nm
 runtime library,
@@ -1965,11 +1965,11 @@ Like
 .Ev LD_LIBRARY_PATH ,
 it may contain several directory names separated by a colon
 .Pq Ql \&: .
-.Ev GCOBOL_LIBRARY_PATH
+.Ev COBPATH
 is searched first, followed by
 .Ev LD_LIBRARY_PATH .
 Note that
-.Ev GCOBOL_LIBRARY_PATH does not change where the runtime linker looks for
+.Ev COBPATH does not change where the runtime linker looks for
 .Pa libgcobol.so
 itself.
 How the runtime linker searches for
@@ -1978,18 +1978,21 @@ when the executable loads is controlled by
 .Xr ld.so 8 ,
 not libgcobol.
 .Pp
-Each directory is searched for a file whose name is based on the desired
-symbol.  The literal name, with
-.Ql ".so"
-appended, is tried first.  For each such file,
+Each directory is searched for files whose names are based on the desired
+symbol.  As an example, consider a CALL to the program-id "FooBar". When the
+.Sy CALL-CONVENTION COBOL
+is operative, the symbol is forced to lowercase and an attempt is made to find
+"FOOBAR.so", followed by an attempt to find "foobar.so".  When
+.Sy CALL-CONVENTION VERBATIM
+is operative, attempts are made to find "FOOBAR.so", then "FooBar.so, and finally
+"foobar.so".  For each such file,
 .Xr dlopen 3
 is attempted, and if successful,
 .Xr dlsym 3 is used to search for the 
-symbol.  If either fails, a second attempt is made after converting
-the desired symbol to lowercase.
+symbol.
 .Pp
 When 
-.Ev GCOBOL_LIBRARY_PATH and 
+.Ev COBPATH and 
 .Ev LD_LIBRARY_PATH are not explicitly used, 
 binaries produced by
 .Nm

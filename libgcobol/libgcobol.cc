@@ -10901,70 +10901,39 @@ __gg__set_program_list( int program_id,
 static std::unordered_map<std::string, void *> already_found;
 static void *
 do_the_dl_thing(const char *directory,
-                const char *unmangled_name,
-                const char *mangled_name)
+                const std::string &file,
+                const std::string &name)
   {
-  // Using the GnuCOBOL convention, this code looks first for a file
-  // named unmangled_name.so.  It checks for a function unmangled_name
-  // in that file.  When not found, it checks for mangled_name.
   void *retval = NULL;
-  void *handle;
-  std::string file;
+  std::string path;
   if( directory )
     {
-    file = directory;
-    file += '/';
+    path = directory;
+    path += '/';
     }
-  file += unmangled_name;
-  file += ".so";
-  handle = dlopen(file.c_str(), RTLD_LAZY|RTLD_NODELETE );
+  path += file;
+  void * handle = dlopen(path.c_str(), RTLD_NOW|RTLD_NODELETE );
   if( handle )
     {
-    retval = dlsym(handle, unmangled_name);
-    if( retval )
-      {
-      already_found[unmangled_name] = retval;
-      }
-    }
-  if( !retval )
-    {
-    file.clear();
-    if( directory )
-      {
-      file = directory;
-      file += '/';
-      }
-    file += mangled_name;
-    file += ".so";
-    handle = dlopen(file.c_str(), RTLD_LAZY|RTLD_NODELETE );
-    if( handle )
-      {
-      retval = dlsym(handle, mangled_name);
-      if( retval )
-        {
-        already_found[mangled_name] = retval;
-        }
-      }
+    retval = dlsym(handle, name.c_str());
+    dlclose(handle);
     }
   return retval;
   }
 
 static
 void *
-find_in_dirs(const char *dirs, char *unmangled_name, char *mangled_name)
+find_in_dirs( const char *dirs,
+              const std::string &fileUPPER,
+              const std::string &fileMiddle,
+              const std::string &filelower,
+              const std::string &unmangled_name,
+              const std::string &mangled_name)
   {
-  std::unordered_map<std::string, void *>::const_iterator it =
-                    already_found.find(unmangled_name);
-
-  if( it != already_found.end() )
-    {
-    return it->second;
-    }
-  it = already_found.find(mangled_name);
-  if( it != already_found.end() )
-    {
-    return it->second;
-    }
+  // We know fileUPPER and unmangled_name are not empty.
+  // The others might be empty.
+  assert( !fileUPPER.empty() );
+  assert( !unmangled_name.empty() );
 
   void *retval = NULL;
   if( dirs )
@@ -10982,62 +10951,272 @@ find_in_dirs(const char *dirs, char *unmangled_name, char *mangled_name)
         {
         p += 1;
         }
-      // directory is the next one for us to check:
-      DIR *dir = opendir(directory.c_str());
-      if( dir )
+      if( directory.empty() )
+        {
+        break;
+        }
+
+      retval = do_the_dl_thing(directory.c_str(),
+                               fileUPPER,
+                               unmangled_name);
+      if( retval )
+        {
+        goto bugout;
+        }
+      if( !mangled_name.empty() )
         {
         retval = do_the_dl_thing(directory.c_str(),
-                                 unmangled_name,
+                                 fileUPPER,
                                  mangled_name);
-        closedir(dir);
+        if( retval )
+          {
+          goto bugout;
+          }
+        }
+
+      if( !fileMiddle.empty() )
+        {
+        retval = do_the_dl_thing(directory.c_str(),
+                                 fileMiddle,
+                                 unmangled_name);
+        if( retval )
+          {
+          goto bugout;
+          }
+        if( !mangled_name.empty() )
+          {
+          retval = do_the_dl_thing(directory.c_str(),
+                                   fileMiddle,
+                                   mangled_name);
+          if( retval )
+            {
+            goto bugout;
+            }
+          }
+        }
+      if( !filelower.empty() )
+        {
+        retval = do_the_dl_thing(directory.c_str(),
+                                 filelower,
+                                 unmangled_name);
+        if( retval )
+          {
+          goto bugout;
+          }
+        if( !mangled_name.empty() )
+          {
+          retval = do_the_dl_thing(directory.c_str(),
+                                   filelower,
+                                   mangled_name);
+          if( retval )
+            {
+            goto bugout;
+            }
+          }
         }
       }
     }
   else
     {
     retval = do_the_dl_thing(nullptr,
-                             unmangled_name,
-                             mangled_name);
+                             fileUPPER,
+                             unmangled_name);
+    if( retval )
+      {
+      goto bugout;
+      }
+    if( !mangled_name.empty() )
+      {
+      retval = do_the_dl_thing(nullptr,
+                               fileUPPER,
+                               mangled_name);
+      if( retval )
+        {
+        goto bugout;
+        }
+      }
+    if( !fileMiddle.empty() )
+      {
+      retval = do_the_dl_thing(nullptr,
+                               fileMiddle,
+                               unmangled_name);
+      if( retval )
+        {
+        goto bugout;
+        }
+      if( !mangled_name.empty() )
+        {
+        retval = do_the_dl_thing(nullptr,
+                                 fileMiddle,
+                                 mangled_name);
+        if( retval )
+          {
+          goto bugout;
+          }
+        }
+      }
+    if( !filelower.empty() )
+      {
+      retval = do_the_dl_thing(nullptr,
+                               filelower,
+                               unmangled_name);
+      if( retval )
+        {
+        goto bugout;
+        }
+      if( !mangled_name.empty() )
+        {
+        retval = do_the_dl_thing(nullptr,
+                                 filelower,
+                                 mangled_name);
+        if( retval )
+          {
+          goto bugout;
+          }
+        }
+      }
     }
+  bugout:
   return retval;
   }
 
-extern "C"
-void *
-__gg__function_handle_from_cobpath( char *unmangled_name, char *mangled_name)
+static void *
+function_handle_from_cobpath( const char *unmangled_name_,
+                              const char *mangled_name_,
+                              int         call_convention)
   {
-  void *retval;
+  void *retval = NULL;
 
-  // We search for a function.  We check first for the unmangled name, and then
-  // the mangled name.  We do this first for the executable, then for .so
-  // files in GCOBOL_LIBRARY_PATH, and then we allow dlopen to use its default
-  // behavior.
+  /* We attempt to look up a function FooBar.
+     We first look for FooBar in the function.
+     We then look for foobar in the function.
+     We then scan the directories in COBPATH.  In each directory, we look for
+     the function name in 
+        FOOBAR.so
+        FooBar.so
+        foobar.so
+     We then allow dlopen to use its defaults to find
+        FooBar
+        foobar
+     We then return NULL, indicating failure. */
 
-  static void *handle_executable = NULL;
-  if( !handle_executable )
+  std::string unmangled_name = unmangled_name_;
+  std::string mangled_name   = mangled_name_;
+
+  if( call_convention == 'N' )
     {
-    handle_executable = dlopen(NULL, RTLD_NOW);
+    // This is Native COBOL
+    // Use the mangled, lowercase name.
+    unmangled_name = mangled_name;
+    mangled_name.clear();
     }
-  retval = dlsym(handle_executable, unmangled_name);
-  if( !retval )
+  else 
     {
-    retval = dlsym(handle_executable, mangled_name);
-    }
-  if( !retval )
-    {
-    const char *COBPATH = getenv("GCOBOL_LIBRARY_PATH");
-    retval = find_in_dirs(COBPATH, unmangled_name, mangled_name);
-    }
-  if( !retval )
-    {
-    const char *COBPATH = getenv("LD_LIBRARY_PATH");
-    retval = find_in_dirs(COBPATH, unmangled_name, mangled_name);
-    }
-  if( !retval )
-    {
-    retval = find_in_dirs(nullptr, unmangled_name, mangled_name);
+    // This is Verbatim, C-style.
+    mangled_name.clear();
     }
 
+  std::string fileUPPER;
+  std::string fileMiddle;
+  std::string filelower;
+  const char *COBPATH;
+
+  static std::unordered_map<std::string, void *> already_searched;
+  std::unordered_map<std::string, void *>::const_iterator it =
+                          already_searched.find(unmangled_name);
+  if( it != already_searched.end() )
+    {
+    // We've already searched for this one, so return the result from the
+    // original attempt.
+    retval = it->second;
+    }
+  else
+    {
+    // Look for unmangled in the executable
+    static void *handle_executable = NULL;
+    if( !handle_executable )
+      {
+      handle_executable = dlopen(NULL, RTLD_NOW);
+      }
+
+    retval = dlsym(handle_executable, unmangled_name.c_str());
+    if( retval )
+      {
+      goto bugout;
+      }
+
+    // Look for mangled_name in the executable, provided it is not the same as
+    // unmangled name:
+    if( mangled_name == unmangled_name )
+      {
+      mangled_name.clear();
+      }
+    else
+      {
+      retval = dlsym(handle_executable, mangled_name.c_str());
+      if( retval )
+        {
+        goto bugout;
+        }
+      }
+
+    // We are going to be looking for a .so file with our entry point in it.
+    // Build up the three filename roots:
+    fileUPPER.clear();
+    for(size_t i=0; i<unmangled_name.size(); i++)
+      {
+      char ch = unmangled_name[i];
+      fileUPPER += (ch >= 'a' && ch <= 'z') ? ch - 'a' + 'A' : ch;
+      }
+    fileUPPER += ".so";
+
+    fileMiddle = unmangled_name;
+    fileMiddle += ".so";
+
+    filelower.clear();
+    for(size_t i=0; i<unmangled_name.size(); i++)
+      {
+      char ch = unmangled_name[i];
+      filelower += (ch >= 'A' && ch <= 'Z') ? ch - 'A' + 'a' : ch;
+      }
+    filelower += ".so";
+
+    // Do some extra work here to avoid extra work later.
+    if( fileMiddle == fileUPPER )
+      {
+      fileMiddle.clear();
+      }
+    if( filelower == fileMiddle )
+      {
+      filelower.clear();
+      }
+
+    // We need to search through the COBPATH directories:
+
+    COBPATH = getenv("COBPATH");
+    if( COBPATH )
+      {
+
+      retval = find_in_dirs(COBPATH,
+                            fileUPPER,
+                            fileMiddle,
+                            filelower,
+                            unmangled_name,
+                            mangled_name);
+      if( retval )
+        {
+        goto bugout;
+        }
+      }
+    retval = find_in_dirs(nullptr,
+                          fileUPPER,
+                          fileMiddle,
+                          filelower,
+                          unmangled_name,
+                          mangled_name);
+    bugout:
+    already_searched[unmangled_name] = retval;
+    }
   return retval;
   }
 
@@ -11106,7 +11285,8 @@ __gg__just_mangle_name( const cblc_field_t  *field,
 extern "C"
 void *
 __gg__function_handle_from_literal(int         program_id,
-                                   const char *literal)
+                                   const char *literal,
+                                   int         call_convention )
   {
   void *retval = NULL;
   static char ach_unmangled[1024];
@@ -11138,7 +11318,9 @@ __gg__function_handle_from_literal(int         program_id,
     }
   else
     {
-    retval = __gg__function_handle_from_cobpath(ach_unmangled, ach_mangled);
+    retval = function_handle_from_cobpath(ach_unmangled,
+                                          ach_mangled,
+                                          call_convention);
     }
 
   return retval;
@@ -11149,7 +11331,8 @@ void *
 __gg__function_handle_from_name(int                 program_id,
                                 const cblc_field_t *field,
                                 size_t              offset,
-                                size_t              length )
+                                size_t              length,
+                                int                 call_convention )
   {
   void *retval = NULL;
   static char ach_name[1024];
@@ -11198,7 +11381,9 @@ __gg__function_handle_from_name(int                 program_id,
     }
   else
     {
-    retval = __gg__function_handle_from_cobpath(ach_unmangled, ach_mangled);
+    retval = function_handle_from_cobpath(ach_unmangled,
+                                          ach_mangled,
+                                          call_convention);
     }
 
   return retval;
