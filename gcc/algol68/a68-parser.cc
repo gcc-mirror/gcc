@@ -882,6 +882,7 @@ a68_new_tag (void)
   TAX_TREE_DECL (z) = NULL_TREE;
   MOIF (z) = NO_MOIF;
   EXTERN_SYMBOL (z) = NO_TEXT;
+  CTYPE (z) = NULL_TREE;
   NUMBER (z) = ++A68_PARSER (tag_number);
   return z;
 }

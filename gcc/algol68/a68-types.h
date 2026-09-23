@@ -630,7 +630,14 @@ struct GTY(()) TABLE_T
    ascribed to the identifier.
 
    ACCESS is a static property that describes how to compute the value yielded
-   by the identifier given the GENERIC tree it lowers to.  */
+   by the identifier given the GENERIC tree it lowers to.
+
+   CTYPE is either NULL_TREE or a GENERIC type.  This is currently used for
+   declarers that are applied indicants, and is the type that is created in
+   a68_lower_mode_declaration, a variant derived from the actual ctype of the
+   MOID of the applied indicant.  The lowerers for identity declarations,
+   variable declarations etc must use this type if it exists in the declaration
+   declarer.  */
 
 struct GTY((chain_next ("%h.next"))) TAG_T
 {
@@ -642,7 +649,7 @@ struct GTY((chain_next ("%h.next"))) TAG_T
   bool ascribed_routine_text, is_recursive, publicized;
   int priority, heap, scope, youngest_environ, number;
   STATUS_MASK_T status;
-  tree tree_decl;
+  tree tree_decl, ctype;
   MOIF_T *moif;
   LOWERER_T lowerer;
   ORIGIN_T *origin;

@@ -617,19 +617,24 @@ a68_pop_serial_clause_range (void)
      same than the type corresponding to the clause mode.  */
   {
     tree_stmt_iterator si = tsi_last (range->stmt_list);
-    if (TREE_TYPE (tsi_stmt (si)) != clause_type
+    tree last_stmt_type = TREE_TYPE (tsi_stmt (si));
+
+    /* We need original type to compare below.  */
+    if (typedef_variant_p (last_stmt_type))
+      last_stmt_type = DECL_ORIGINAL_TYPE (TYPE_NAME (last_stmt_type));
+
+    if (last_stmt_type != clause_type
 	/* But NIL can appear in a context expecting VOID with no widening.  */
 	&& !(clause_type == a68_void_type
-	     && POINTER_TYPE_P (TREE_TYPE (tsi_stmt (si)))
+	     && POINTER_TYPE_P (last_stmt_type)
 	     && TREE_CODE (tsi_stmt (si)) == INTEGER_CST
 	     && tree_to_shwi (tsi_stmt (si)) == 0)
 	/* And any row type is valid when M_ROWS is expected.  */
-	&& !(A68_ROWS_TYPE_P (clause_type)
-	     && A68_ROWS_TYPE_P (TREE_TYPE (tsi_stmt (si))))
+	&& !(A68_ROWS_TYPE_P (clause_type) && A68_ROWS_TYPE_P (last_stmt_type))
 	/* Do not rely on comparing pointer types, as the equality fails in
 	   that case.  We need a better way of comparing types, either using
 	   TYPE_CANONICAL or caching.  */
-	&& !(POINTER_TYPE_P (TREE_TYPE (tsi_stmt (si))) && POINTER_TYPE_P (clause_type)))
+	&& !(POINTER_TYPE_P (last_stmt_type) && POINTER_TYPE_P (clause_type)))
       {
 	printf ("last statement:\n");
 	debug_tree (tsi_stmt (si));
