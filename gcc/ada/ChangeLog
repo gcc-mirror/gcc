@@ -1,3 +1,36 @@
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Valid>:
+	Call Is_Reverse_Storage_Order_Object to detect cases where a copy
+	needs to be created for the prefix.
+	* sem_util.ads (In_Reverse_Storage_Order_Object): Delete.
+	(Is_Reverse_Storage_Order_Object): New predicate.
+	* sem_util.adb (In_Reverse_Storage_Order_Object): Delete.
+	(Is_Reverse_Storage_Order_Object): New predicate subsuming original
+	In_Reverse_Storage_Order_Object predicate.
+
+2026-09-22  Andrew Teylu  <Andrew.Teylu@vector.com>
+
+	* libgnat/s-dwalin.ads (Dwarf_Context): Add Has_Line_Str.
+	* libgnat/s-dwalin.adb (Open): Set Has_Line_Str when creating the
+	line-string stream.
+	(Close): Close the line-string stream if it was created.
+
+2026-09-22  Viljar Indus  <indus@adacore.com>
+
+	* gcc-interface/trans.cc (can_equal_min_Or_max_val_p): Add guard
+	for integral types.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (allocatable_size_p): Add INTERFACE_P
+	parameter and return true for any fixed size when it is true.
+	(gnat_to_gnu_entity): Add EXPORTED_P local variable and use it
+	throughout.
+	<E_Variable>: Adjust calls to allocatable_size_p by passing true
+	for INTERFACE_P if the object is exported or imported.  Remove
+	unreachable code giving a warning for too large imported objects.
+
 2026-08-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/127026

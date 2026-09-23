@@ -1,3 +1,11 @@
+2026-09-22  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127461
+	* gcc.target/i386/pr127461.c: New test.
+
 2026-09-18  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
 
 	Backported from master:
