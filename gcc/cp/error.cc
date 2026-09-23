@@ -2472,8 +2472,23 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
 	pp_cxx_ws_string (pp, M_("<unknown>"));
       break;
 
-    case VOID_CST:
     case INTEGER_CST:
+      if (TYPE_PTRDATAMEM_P (TREE_TYPE (t)) && integer_all_onesp (t))
+	{
+	  /* OFFSET_TYPE -1 is a null pointer to member.  */
+	  if (flags & TFF_EXPR_IN_PARENS)
+	    pp_cxx_left_paren (pp);
+	  pp_cxx_left_paren (pp);
+	  dump_type (pp, TREE_TYPE (t), flags);
+	  pp_cxx_right_paren (pp);
+	  pp->constant (cxx_dialect < cxx11 ? null_pointer_node : nullptr_node);
+	  if (flags & TFF_EXPR_IN_PARENS)
+	    pp_cxx_right_paren (pp);
+	  break;
+	}
+      /* FALLTHRU */
+
+    case VOID_CST:
     case REAL_CST:
     case STRING_CST:
     case COMPLEX_CST:

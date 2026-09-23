@@ -135,6 +135,8 @@ foo (int a, const long b, T c, int d[4], T &e)
   static_assert (display_string_of (members_of (^^V4, ctx)[0]) == "V4& V4::operator+=(const V4&)");
   static_assert (display_string_of (members_of (^^V5, ctx)[0]) == "V5::operator int()");
   static_assert (display_string_of (^^operator""_a) == "int operator\"\"_a(const char*)");
+  static_assert (display_string_of (reflect_constant ((int U::*)nullptr)) == "(int U::*)nullptr");
+  static_assert (display_string_of (reflect_constant (&U::u)) == "&U::u");
 }
 
 namespace NS5 {
