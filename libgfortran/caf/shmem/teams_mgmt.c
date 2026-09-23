@@ -56,6 +56,15 @@ update_teams_images (caf_shmem_team_t team)
 }
 
 void
+leave_teams (void)
+{
+  for (caf_shmem_team_t t = caf_current_team; t; t = t->parent)
+    update_teams_images (t);
+  for (caf_shmem_team_t t = caf_teams_formed; t; t = t->parent)
+    update_teams_images (t);
+}
+
+void
 check_health (int *stat, char *errmsg, size_t errmsg_len)
 {
   if (this_image.supervisor->finished_images

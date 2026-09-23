@@ -86,6 +86,12 @@ extern caf_shmem_team_t caf_teams_formed;
 
 void update_teams_images (caf_shmem_team_t);
 
+/* Drop this image, which terminated, from the barriers of all teams it is a
+   member of.  The number of finished or failed images has to be updated
+   before the call for it to have any effect.  */
+
+void leave_teams (void);
+
 void check_health (int *, char *, size_t);
 
 #define HEALTH_CHECK(stat, errmsg, errlen) check_health (stat, errmsg, errlen)

@@ -570,6 +570,24 @@ _gfortran_caf_sync_images (int count, int images[], int *stat, char *errmsg,
 
 extern void _gfortran_report_exception (void);
 
+/* Tell the supervisor that this image terminated normally and drop it from
+   the barriers of its teams.  */
+
+static void
+mark_stopped (void)
+{
+  if (!this_image.supervisor || this_image.image_num < 0)
+    return;
+
+  if (this_image.supervisor->images[this_image.image_num].status == IMAGE_OK)
+    {
+      this_image.supervisor->images[this_image.image_num].status
+	= IMAGE_SUCCESS;
+      atomic_fetch_add (&this_image.supervisor->finished_images, 1);
+    }
+  leave_teams ();
+}
+
 /* Tell the supervisor that this image error stopped, so that it can terminate
    all other images.  */
 
@@ -589,6 +607,7 @@ _gfortran_caf_stop_numeric (int stop_code, bool quiet)
       _gfortran_report_exception ();
       fprintf (stderr, "STOP %d\n", stop_code);
     }
+  mark_stopped ();
   exit (stop_code);
 }
 
@@ -603,6 +622,7 @@ _gfortran_caf_stop_str (const char *string, size_t len, bool quiet)
 	fputc (*(string++), stderr);
       fputs ("\n", stderr);
     }
+  mark_stopped ();
   exit (0);
 }
 
@@ -630,6 +650,7 @@ _gfortran_caf_fail_image (void)
   fputs ("IMAGE FAILED!\n", stderr);
   this_image.supervisor->images[this_image.image_num].status = IMAGE_FAILED;
   atomic_fetch_add (&this_image.supervisor->failed_images, 1);
+  leave_teams ();
   exit (0);
 }
 

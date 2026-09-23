@@ -94,53 +94,36 @@ sync_table (sync_t *si, int *images, int size)
      command is completed.
      */
   volatile int *table = si->table;
+  /* The table is allocated for all images, so the row stride is the total
+     number of images and not the (shrinking) number of images in a team.  */
+  const size_t img_c = local->total_num_images;
   int i;
 
-  lock_table (si);
-  if (size > 0)
+  if (size <= 0)
     {
-      const size_t img_c = caf_current_team->u.image_info->image_map_size;
-      for (i = 0; i < size; ++i)
-	{
-	  ++table[images[i] + img_c * this_image.image_num];
-	  caf_shmem_cond_signal (&si->triggers[images[i]]);
-	}
-      for (;;)
-	{
-	  for (i = 0; i < size; ++i)
-	    if (this_image.supervisor->images[images[i]].status == IMAGE_OK
-		&& table[images[i] + this_image.image_num * img_c]
-		     > table[this_image.image_num + images[i] * img_c])
-	      break;
-	  if (i == size)
-	    break;
-	  caf_shmem_cond_wait (&si->triggers[this_image.image_num],
-			     &si->cis->sync_images_table_lock);
-	}
+      images = caf_current_team->u.image_info->image_map;
+      size = caf_current_team->u.image_info->image_map_size;
     }
-  else
+
+  lock_table (si);
+  for (i = 0; i < size; ++i)
     {
-      int *map = caf_current_team->u.image_info->image_map;
-      size = caf_current_team->u.image_info->image_count.count;
+      if (this_image.supervisor->images[images[i]].status != IMAGE_OK)
+	continue;
+      ++table[images[i] + img_c * this_image.image_num];
+      caf_shmem_cond_signal (&si->triggers[images[i]]);
+    }
+  for (;;)
+    {
       for (i = 0; i < size; ++i)
-	{
-	  if (this_image.supervisor->images[map[i]].status != IMAGE_OK)
-	    continue;
-	  ++table[map[i] + size * this_image.image_num];
-	  caf_shmem_cond_signal (&si->triggers[map[i]]);
-	}
-      for (;;)
-	{
-	  for (i = 0; i < size; ++i)
-	    if (this_image.supervisor->images[map[i]].status == IMAGE_OK
-		&& table[map[i] + size * this_image.image_num]
-		     > table[this_image.image_num + map[i] * size])
-	      break;
-	  if (i == size)
-	    break;
-	  caf_shmem_cond_wait (&si->triggers[this_image.image_num],
-			     &si->cis->sync_images_table_lock);
-	}
+	if (this_image.supervisor->images[images[i]].status == IMAGE_OK
+	    && table[images[i] + img_c * this_image.image_num]
+		 > table[this_image.image_num + img_c * images[i]])
+	  break;
+      if (i == size)
+	break;
+      caf_shmem_cond_wait (&si->triggers[this_image.image_num],
+			   &si->cis->sync_images_table_lock);
     }
   unlock_table (si);
 }

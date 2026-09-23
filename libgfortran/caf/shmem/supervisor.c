@@ -478,8 +478,13 @@ supervisor_main_loop (int *argc __attribute__ ((unused)),
 			   WTERMSIG (chstatus), finished_pid);
 		  continue;
 		}
-	      m->images[j].status = IMAGE_FAILED;
-	      atomic_fetch_add (&m->failed_images, 1);
+	      /* Only set the status, when it has not been set by the image
+		 already, e.g. by a STOP with a non-zero stop code.  */
+	      if (m->images[j].status == IMAGE_OK)
+		{
+		  m->images[j].status = IMAGE_FAILED;
+		  atomic_fetch_add (&m->failed_images, 1);
+		}
 	      if (*exit_code < WTERMSIG (chstatus))
 		*exit_code = WTERMSIG (chstatus);
 	      else if (*exit_code == 0)
