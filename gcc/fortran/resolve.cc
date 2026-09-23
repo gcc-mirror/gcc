@@ -6337,7 +6337,7 @@ resolve_variable (gfc_expr *e)
     {
       gfc_ref *ref;
       for (ref = e->ref; ref; ref = ref->next)
-	if (ref->type == REF_SUBSTRING)
+	if (ref->type == REF_SUBSTRING || ref->type == REF_INQUIRY)
 	  break;
       if (ref == NULL)
 	e->ts = sym->ts;

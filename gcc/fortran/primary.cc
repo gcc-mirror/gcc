@@ -2746,6 +2746,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		  return MATCH_ERROR;
 		}
 	      primary->ts.u.cl = NULL;
+	      primary->ts.deferred = false;
 	      primary->ts.type = BT_INTEGER;
 	      primary->ts.kind = gfc_default_integer_kind;
 	      break;
@@ -2760,6 +2761,11 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		  gfc_error ("The KIND part_ref at %C must be applied "
 			     "to an expression of intrinsic type");
 		  return MATCH_ERROR;
+		}
+	      if (primary->ts.type == BT_CHARACTER)
+		{
+		  primary->ts.u.cl = NULL;
+		  primary->ts.deferred = false;
 		}
 	      primary->ts.type = BT_INTEGER;
 	      primary->ts.kind = gfc_default_integer_kind;
