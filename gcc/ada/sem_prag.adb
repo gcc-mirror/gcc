@@ -14785,12 +14785,19 @@ package body Sem_Prag is
             Check_Arg_Order (Names);
             Mark_Ghost_Pragma (N, Current_Scope);
 
+            --  Diagnose the case of a quantified expression being mistaken
+            --  for an iterated component association, because the user has
+            --  forgotten the "all" or "some" keyword after "for".
+
+            if Nkind (Arg_Check) = N_Iterated_Component_Association then
+               Malformed_Quantified_Expression (Arg_Check);
+
             --  Special processing for Loop_Invariant, Loop_Variant or for
             --  other cases where a Loop_Entry attribute is present. If the
             --  assertion pragma contains attribute Loop_Entry, ensure that
             --  the related pragma is within a loop.
 
-            if Prag_Id = Pragma_Loop_Invariant
+            elsif Prag_Id = Pragma_Loop_Invariant
               or else Prag_Id = Pragma_Loop_Variant
               or else Contains_Loop_Entry (Arg_Check)
             then
@@ -15982,10 +15989,17 @@ package body Sem_Prag is
                Preanalyze_And_Resolve (Arg_Message, Standard_String);
             end if;
 
+            --  Diagnose the case of a quantified expression being mistaken
+            --  for an iterated component association, because the user has
+            --  forgotten the "all" or "some" keyword after "for".
+
+            if Nkind (Arg_Check) = N_Iterated_Component_Association then
+               Malformed_Quantified_Expression (Arg_Check);
+
             --  When expansion is active but check is not, only preanalyze the
             --  boolean to avoid pulling useless dependencies.
 
-            if Expander_Active and Is_Ignored_In_Codegen (N) then
+            elsif Expander_Active and Is_Ignored_In_Codegen (N) then
                In_Assertion_Expr := In_Assertion_Expr + 1;
                Preanalyze_And_Resolve (Arg_Check, Any_Boolean);
                In_Assertion_Expr := In_Assertion_Expr - 1;

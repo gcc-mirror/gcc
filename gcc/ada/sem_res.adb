@@ -1976,6 +1976,28 @@ package body Sem_Res is
       end if;
    end Make_Call_Into_Operator;
 
+   -------------------------------------
+   -- Malformed_Quantified_Expression --
+   -------------------------------------
+
+   procedure Malformed_Quantified_Expression (N : Node_Id) is
+   begin
+      --  Because the error message starts with "missing ALL", we automatically
+      --  benefit from the associated CODEFIX, which requires that the message
+      --  is located on the identifier following "for" in order for the CODEFIX
+      --  to insert "all" in the right place.
+
+      if Present (Iterator_Specification (N)) then
+         Error_Msg_N -- CODEFIX
+           ("missing ALL or SOME in quantified expression",
+            Defining_Identifier (Iterator_Specification (N)));
+      else
+         Error_Msg_N -- CODEFIX
+           ("missing ALL or SOME in quantified expression",
+            Defining_Identifier (N));
+      end if;
+   end Malformed_Quantified_Expression;
+
    -------------------
    -- Operator_Kind --
    -------------------
@@ -3221,35 +3243,18 @@ package body Sem_Res is
                      Error_Msg_N ("\use -gnatf for details", N);
                   end if;
 
-               --  Recognize the case of a quantified expression being mistaken
-               --  for an iterated component association because the user
-               --  forgot the "all" or "some" keyword after "for". Because the
-               --  error message starts with "missing ALL", we automatically
-               --  benefit from the associated CODEFIX, which requires that
-               --  the message is located on the identifier following "for"
-               --  in order for the CODEFIX to insert "all" in the right place.
+               --  Diagnose the case of a quantified expression being mistaken
+               --  for an iterated component association, because the user has
+               --  forgotten the "all" or "some" keyword after "for".
 
                elsif Nkind (N) = N_Aggregate
+                 and then Is_Boolean_Type (Typ)
                  and then List_Length (Component_Associations (N)) = 1
                  and then Nkind (First (Component_Associations (N)))
                    = N_Iterated_Component_Association
-                 and then Is_Boolean_Type (Typ)
                then
-                  if Present
-                       (Iterator_Specification
-                         (First (Component_Associations (N))))
-                  then
-                     Error_Msg_N -- CODEFIX
-                       ("missing ALL or SOME in quantified expression",
-                        Defining_Identifier
-                          (Iterator_Specification
-                            (First (Component_Associations (N)))));
-                  else
-                     Error_Msg_N -- CODEFIX
-                       ("missing ALL or SOME in quantified expression",
-                        Defining_Identifier
-                          (First (Component_Associations (N))));
-                  end if;
+                  Malformed_Quantified_Expression
+                    (First (Component_Associations (N)));
 
                --  For an operator with no interpretation, check whether one of
                --  its operands may be a user-defined literal.

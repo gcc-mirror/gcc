@@ -95,6 +95,10 @@ package Sem_Res is
    --  interpolated expression; used to improve the clarity of reported
    --  error messages.
 
+   procedure Malformed_Quantified_Expression (N : Node_Id);
+   --  N is an N_Iterated_Component_Association in a boolean context. Give an
+   --  error about a malformed quantified expression.
+
    procedure Preanalyze_And_Resolve (N : Node_Id; T : Entity_Id);
    --  Performs a preanalysis of expression node N. During preanalysis, N is
    --  analyzed and then resolved against type T, but no expansion is carried
@@ -159,11 +163,5 @@ package Sem_Res is
       Opnd_Type   : Entity_Id;
       Report_Errs : Boolean := True) return Boolean;
    --  Specific version of Valid_Conversion for when Target_Type is tagged
-
-private
-   procedure Resolve_Implicit_Type (N : Node_Id) renames Resolve;
-   pragma Inline (Resolve_Implicit_Type);
-   --  We use this renaming to make the application of Inline very explicit to
-   --  this version, since other versions of Resolve are not inlined.
 
 end Sem_Res;
