@@ -26045,7 +26045,12 @@ ix86_default_vector_cost (enum vect_cost_for_stmt type_of_cost,
         return COSTS_N_INSNS (ix86_cost->sse_store[index]) / 2;
 
       case vec_to_scalar:
+	/* This is a lane extraction, possibly from lane zero.  */
+	return (ix86_vec_cost (mode, ix86_cost->sse_op)
+		+ (fp ? 0 : COSTS_N_INSNS (ix86_cost->sse_to_integer) / 2));
+
       case scalar_to_vec:
+	/* This is always a full splat from scalar, not a lane insertion.  */
         return ix86_vec_cost (mode, ix86_cost->sse_op);
 
       /* We should have separate costs for unaligned loads and gather/scatter.
