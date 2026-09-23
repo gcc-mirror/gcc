@@ -12777,9 +12777,24 @@ package body Sem_Elab is
             if Present (Body_Id)
               and then Save_Invocation_Graph_Of_Body (Cunit (Main_Unit))
             then
-               Process_Declarations
-                 (Decls    => Declarations (Unit_Declaration_Node (Body_Id)),
-                  In_State => In_State);
+               declare
+                  Decl : constant Node_Id := Declaration_Node (Body_Id);
+
+               begin
+                  --  Prevent infinite recursion for broken subunit
+
+                  if Nkind (Decl) = N_Package_Body_Stub
+                    and then No (Stub_Subunit (Decl))
+                  then
+                     null;
+
+                  else
+                     Process_Declarations
+                       (Decls    =>
+                          Declarations (Unit_Declaration_Node (Body_Id)),
+                        In_State => In_State);
+                  end if;
+               end;
             end if;
          end if;
       end Process_Package_Declaration;
