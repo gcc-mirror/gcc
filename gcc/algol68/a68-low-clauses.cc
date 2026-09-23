@@ -375,7 +375,7 @@ a68_lower_loop_clause (NODE_T *p ATTRIBUTE_UNUSED,
       to_part = a68_lower_tmpvar ("to_part%", TREE_TYPE (to_part), to_part);
 
       /* We need to detect overflow/underflow of the iterator.  */
-      overflow = a68_lower_tmpvar ("overflow%", boolean_type_node,
+      overflow = a68_lower_tmpvar ("overflow%", a68_bool_type,
 				   boolean_false_node);
     }
 
@@ -403,7 +403,7 @@ a68_lower_loop_clause (NODE_T *p ATTRIBUTE_UNUSED,
 	tree exit_condition = NULL_TREE;
 	/* IF overflow OREL (by_part < 0 THEN iterator < to_part ELSE iterator > to_part) FI */
 	if (has_iterator)
-	  exit_condition = fold_build2 (TRUTH_ORIF_EXPR, boolean_type_node,
+	  exit_condition = fold_build2 (TRUTH_ORIF_EXPR, a68_bool_type,
 					overflow,
 					fold_build3 (COND_EXPR,
 						     a68_bool_type,
@@ -449,9 +449,9 @@ a68_lower_loop_clause (NODE_T *p ATTRIBUTE_UNUSED,
 	tree a = iterator;
 	tree b = save_expr (by_part);
 	tree sum = fold_build2 (PLUS_EXPR, type, a, b);
-	a68_add_stmt (fold_build2 (MODIFY_EXPR, boolean_type_node,
+	a68_add_stmt (fold_build2 (MODIFY_EXPR, a68_bool_type,
 				   overflow,
-				   fold_build2 (LT_EXPR, boolean_type_node,
+				   fold_build2 (LT_EXPR, a68_bool_type,
 						fold_build2 (BIT_AND_EXPR, type,
 							     fold_build1 (BIT_NOT_EXPR, type,
 									  fold_build2 (BIT_XOR_EXPR, type,
@@ -537,14 +537,14 @@ lower_unite_case_unit (NODE_T *p,
 		{
 		  int index = a68_united_mode_index (enquiry_mode, MOID (pack));
 		  tree expr = fold_build2 (EQ_EXPR,
-					   boolean_type_node,
+					   a68_bool_type,
 					   overhead,
 					   build_int_cst (TREE_TYPE (overhead), index));
 		  if (entry_selected == NULL_TREE)
 		    entry_selected = expr;
 		  else
 		    entry_selected = fold_build2 (TRUTH_OR_EXPR,
-						  boolean_type_node,
+						  a68_bool_type,
 						  entry_selected,
 						  expr);
 		}

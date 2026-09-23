@@ -916,13 +916,13 @@ a68_low_dup (tree expr, bool use_heap)
 	  a68_add_decl (continue_label_decl);
 
 	  a68_add_stmt (fold_build2 (TRUTH_ORIF_EXPR,
-				     integer_type_node,
+				     a68_int_type,
 				     fold_build2 (EQ_EXPR,
-						  integer_type_node,
+						  a68_int_type,
 						  a68_union_overhead (dup),
 						  size_int (a68_united_mode_index (union_mode, MOID (pack)))),
 				     fold_build2 (COMPOUND_EXPR,
-						  integer_type_node,
+						  a68_int_type,
 						  build1 (GOTO_EXPR, void_type_node, continue_label_decl),
 						  integer_zero_node)));
 	  a68_add_stmt (fold_build2 (MODIFY_EXPR, type,

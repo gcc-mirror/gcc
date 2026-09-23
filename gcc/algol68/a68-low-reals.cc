@@ -140,11 +140,11 @@ a68_real_sign (tree val)
   val = save_expr (val);
   return fold_build3 (COND_EXPR,
 		      a68_int_type,
-		      build2 (EQ_EXPR, integer_type_node, val, zero),
+		      build2 (EQ_EXPR, a68_int_type, val, zero),
 		      build_int_cst (a68_int_type, 0),
 		      fold_build3 (COND_EXPR,
 				   a68_int_type,
-				   fold_build2 (GT_EXPR, integer_type_node, val, zero),
+				   fold_build2 (GT_EXPR, a68_int_type, val, zero),
 				   build_int_cst (a68_int_type, 1),
 				   build_int_cst (a68_int_type, -1)));
 }
@@ -507,7 +507,7 @@ a68_real_div (MOID_T *m, tree a, tree b, location_t loc)
 tree
 a68_real_eq (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, EQ_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, EQ_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two real values of mode M, build an expression that calculates whether
@@ -516,7 +516,7 @@ a68_real_eq (tree a, tree b, location_t loc)
 tree
 a68_real_ne (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, NE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, NE_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two real values of mode M, build an expression that calculates whether
@@ -525,7 +525,7 @@ a68_real_ne (tree a, tree b, location_t loc)
 tree
 a68_real_lt (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, LT_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, LT_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two real values of mode M, build an expression that calculates
@@ -534,7 +534,7 @@ a68_real_lt (tree a, tree b, location_t loc)
 tree
 a68_real_le (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, LE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, LE_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two real values of mode M, build an expression that calculates whether
@@ -543,7 +543,7 @@ a68_real_le (tree a, tree b, location_t loc)
 tree
 a68_real_gt (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, GT_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, GT_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two real values of mode M, build an expression that calculates whether
@@ -552,7 +552,7 @@ a68_real_gt (tree a, tree b, location_t loc)
 tree
 a68_real_ge (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, GE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, GE_EXPR, a68_bool_type, a, b);
 }
 
 /* Exponentiation involving real values.

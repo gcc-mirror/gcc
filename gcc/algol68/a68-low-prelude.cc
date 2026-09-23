@@ -731,7 +731,7 @@ elems (NODE_T *p, tree boundable, tree dim)
 			       size_one_node);
 
   tree elems = fold_build3 (COND_EXPR, sizetype,
-			    fold_build2 (LT_EXPR, boolean_type_node,
+			    fold_build2 (LT_EXPR, a68_bool_type,
 					 upper_bound, lower_bound),
 			    size_zero_node,
 			    non_flat);

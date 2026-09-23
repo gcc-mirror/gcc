@@ -64,7 +64,7 @@ a68_bool_abs (tree val)
 tree
 a68_bool_eq (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, EQ_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, EQ_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two boolean values, build an expression that calculates whether A /=
@@ -73,5 +73,5 @@ a68_bool_eq (tree a, tree b, location_t loc)
 tree
 a68_bool_ne (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, NE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, NE_EXPR, a68_bool_type, a, b);
 }

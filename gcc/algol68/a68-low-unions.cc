@@ -126,7 +126,7 @@ a68_union_translate_overhead (MOID_T *from, tree from_overhead,
       if (a68_union_contains_mode (to, mode))
 	{
 	  to_overhead = fold_build3 (COND_EXPR, sizetype,
-				     fold_build2 (EQ_EXPR, boolean_type_node,
+				     fold_build2 (EQ_EXPR, a68_bool_type,
 						  from_overhead,
 						  size_int (i)),
 				     size_int (a68_united_mode_index (to, mode)),

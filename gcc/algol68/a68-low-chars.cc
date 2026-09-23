@@ -72,20 +72,20 @@ a68_char_repr (NODE_T *p, tree val)
   tree val_type = TREE_TYPE (val);
 
   /* (c >= 0 && c < 0xd800) */
-  tree range1 = fold_build2 (TRUTH_AND_EXPR, integer_type_node,
-			     fold_build2 (GE_EXPR, integer_type_node,
+  tree range1 = fold_build2 (TRUTH_AND_EXPR, a68_int_type,
+			     fold_build2 (GE_EXPR, a68_int_type,
 					  c, fold_convert (val_type, integer_zero_node)),
-			     fold_build2 (LT_EXPR, integer_type_node,
+			     fold_build2 (LT_EXPR, a68_int_type,
 					  c, build_int_cst (val_type, 0xd800)));
   /* (c >= 0xe000 && c < 0x110000) */
-  tree range2 = fold_build2 (TRUTH_AND_EXPR, integer_type_node,
-			     fold_build2 (GE_EXPR, integer_type_node,
+  tree range2 = fold_build2 (TRUTH_AND_EXPR, a68_int_type,
+			     fold_build2 (GE_EXPR, a68_int_type,
 					  c, build_int_cst (val_type, 0xe000)),
-			     fold_build2 (LT_EXPR, integer_type_node,
+			     fold_build2 (LT_EXPR, a68_int_type,
 					  c, build_int_cst (val_type, 0x110000)));
   tree notvalid = fold_build1 (TRUTH_NOT_EXPR,
-			       integer_type_node,
-			       fold_build2 (TRUTH_OR_EXPR, integer_type_node,
+			       a68_int_type,
+			       fold_build2 (TRUTH_OR_EXPR, a68_int_type,
 					    range1, range2));
 
   /* Call to the runtime run-time error handler.  */
@@ -101,7 +101,7 @@ a68_char_repr (NODE_T *p, tree val)
 
   /* Return the REPR of the given integer value, or raise run-time error.  */
   return fold_build2 (COMPOUND_EXPR, a68_char_type,
-		      fold_build3 (COND_EXPR, integer_type_node,
+		      fold_build3 (COND_EXPR, a68_int_type,
 				   notvalid,
 				   call, integer_zero_node),
 		      fold_convert (a68_char_type, c));
@@ -121,7 +121,7 @@ a68_char_abs (tree val)
 tree
 a68_char_eq (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, EQ_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, EQ_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two characters, build an expression that calculates whether A /=
@@ -130,7 +130,7 @@ a68_char_eq (tree a, tree b, location_t loc)
 tree
 a68_char_ne (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, NE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, NE_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two characters, build an expression that calculates
@@ -139,7 +139,7 @@ a68_char_ne (tree a, tree b, location_t loc)
 tree
 a68_char_lt (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, LT_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, LT_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two characters, build an expression that calculates
@@ -148,7 +148,7 @@ a68_char_lt (tree a, tree b, location_t loc)
 tree
 a68_char_le (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, LE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, LE_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two characters, build an expression that calculates
@@ -157,7 +157,7 @@ a68_char_le (tree a, tree b, location_t loc)
 tree
 a68_char_gt (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, GT_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, GT_EXPR, a68_bool_type, a, b);
 }
 
 /* Given two characters, build an expression that calculates
@@ -166,5 +166,5 @@ a68_char_gt (tree a, tree b, location_t loc)
 tree
 a68_char_ge (tree a, tree b, location_t loc)
 {
-  return fold_build2_loc (loc, GE_EXPR, boolean_type_node, a, b);
+  return fold_build2_loc (loc, GE_EXPR, a68_bool_type, a, b);
 }
