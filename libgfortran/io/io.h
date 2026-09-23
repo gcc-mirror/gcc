@@ -534,7 +534,7 @@ typedef struct st_parameter_dt
 	     character string is being read so don't use commas to shorten a
 	     formatted field width.  */
 	  unsigned sf_read_comma : 1;
-	  /* A namelist specific flag used to enable reading input from 
+	  /* A namelist specific flag used to enable reading input from
 	     line_buffer for logical reads.  */
 	  unsigned line_buffer_enabled : 1;
 	  /* An internal unit specific flag used to identify that the associated
@@ -648,7 +648,7 @@ typedef struct gfc_unit
 {
   int unit_number;
   stream *s;
-  
+
   /* Treap links.  */
   struct gfc_unit *left, *right;
   int priority;
@@ -705,10 +705,10 @@ typedef struct gfc_unit
 
   /* The format hash table.  */
   struct format_hash_entry format_hash_table[FORMAT_HASH_SIZE];
-  
+
   /* Formatting buffer.  */
   struct fbuf *fbuf;
-  
+
   /* Function pointer, points to list_read worker functions.  */
   int (*next_char_fn_ptr) (st_parameter_dt *);
   void (*push_char_fn_ptr) (st_parameter_dt *, int);
@@ -718,6 +718,9 @@ typedef struct gfc_unit
   gfc_charlen_type internal_unit_len;
   gfc_array_char *string_unit_desc;
   int internal_unit_kind;
+
+  /* Track when a gfc_unit is reserved for an internal unit.  */
+  bool internal_reserved;
 
   /* DTIO Parent/Child procedure, 0 = parent, >0 = child level.  */
   int child_dtio;
@@ -1013,7 +1016,7 @@ predec_waiting_locked (gfc_unit *u)
 
      if (predec_waiting_locked (u) == 0)
          // destroy u
-	 
+
      could be further optimized by making this be an __ATOMIC_RELEASE,
      and then inserting a
 

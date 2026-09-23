@@ -1193,7 +1193,11 @@ public:
   auto_vec<tree, 16> heap_vars;
   /* Vector of caught exceptions, including exceptions still not active at
      the start of a handler (those are immediately followed up by HANDLER_TYPE
-     until __cxa_begin_catch finishes).  */
+     until __cxa_begin_catch finishes).  If __cxa_begin_catch or
+     __cxa_get_exception_ptr need to create temporaries, the VAR_DECL of the
+     exception object is wrapped in the vector into a TREE_LIST where
+     TREE_VALUE of it is the VAR_DECL of the exception object and TREE_PURPOSE
+     one of the temporaries, others chained through DECL_CHAIN.  */
   auto_vec<tree, 2> caught_exceptions;
   /* Cleanups that need to be evaluated at the end of CLEANUP_POINT_EXPR.  */
   vec<tree> *cleanups;
@@ -1939,10 +1943,13 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	     VAR_DECL after __cxa_begin_catch serves as the current exception
 	     and is then popped in __cxa_end_catch evaluation.  */
 	  tree handler_type = ctx->global->caught_exceptions.last ();
-	  if (handler_type && VAR_P (handler_type))
+	  if (handler_type && (VAR_P (handler_type)
+			       || TREE_CODE (handler_type) == TREE_LIST))
 	    goto no_caught_exceptions;
 	  unsigned idx = ctx->global->caught_exceptions.length () - 2;
 	  arg = ctx->global->caught_exceptions[idx];
+	  if (TREE_CODE (arg) == TREE_LIST)
+	    arg = TREE_VALUE (arg);
 	  gcc_assert (VAR_P (arg));
 	  if (kind == CXA_BEGIN_CATCH)
 	    {
@@ -1970,18 +1977,56 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	    {
 	      /* Used for catch of a non-pointer type.  */
 	      tree exc_type = strip_array_types (TREE_TYPE (arg));
-	      tree exc_ptr_type = build_pointer_type (exc_type);
-	      arg = build_fold_addr_expr_with_type (arg, exc_ptr_type);
-	      if (CLASS_TYPE_P (handler_type))
+	      if (TYPE_PTRMEM_P (handler_type)
+		  && !same_type_ignoring_top_level_qualifiers_p
+				(handler_type, exc_type))
 		{
-		  tree ptr_type = build_pointer_type (handler_type);
-		  arg = cp_convert (ptr_type, arg,
+		  if (TREE_CODE (TREE_TYPE (arg)) == ARRAY_TYPE)
+		    arg = build4 (ARRAY_REF, TREE_TYPE (TREE_TYPE (arg)), arg,
+				  size_zero_node, NULL_TREE, NULL_TREE);
+		  arg = cp_convert (handler_type, arg,
 				    ctx->quiet ? tf_none
 				    : tf_warning_or_error);
 		  if (arg == error_mark_node)
 		    {
 		      *non_constant_p = true;
 		      return call;
+		    }
+		  tree var = build_decl (loc, VAR_DECL, heap_identifier,
+					 handler_type);
+		  DECL_ARTIFICIAL (var) = 1;
+		  ctx->global->heap_vars.safe_push (var);
+		  ctx->global->put_value (var, NULL_TREE);
+		  tree init = build2_loc (loc, INIT_EXPR, handler_type,
+					  var, arg);
+		  arg = ctx->global->caught_exceptions[idx];
+		  if (TREE_CODE (arg) == TREE_LIST)
+		    {
+		      DECL_CHAIN (var) = TREE_PURPOSE (arg);
+		      TREE_PURPOSE (arg) = var;
+		    }
+		  else
+		    ctx->global->caught_exceptions[idx]
+		      = build_tree_list (var, arg);
+		  arg = cp_build_addr_expr (var, tf_none);
+		  arg = build2_loc (loc, COMPOUND_EXPR, TREE_TYPE (arg),
+				    init, arg);
+		}
+	      else
+		{
+		  tree exc_ptr_type = build_pointer_type (exc_type);
+		  arg = build_fold_addr_expr_with_type (arg, exc_ptr_type);
+		  if (CLASS_TYPE_P (handler_type))
+		    {
+		      tree ptr_type = build_pointer_type (handler_type);
+		      arg = cp_convert (ptr_type, arg,
+					ctx->quiet ? tf_none
+					: tf_warning_or_error);
+		      if (arg == error_mark_node)
+			{
+			  *non_constant_p = true;
+			  return call;
+			}
 		    }
 		}
 	    }
@@ -2066,8 +2111,20 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
       else
 	{
 	  arg = ctx->global->caught_exceptions.pop ();
-	  if (arg == NULL_TREE || !VAR_P (arg))
+	  if (arg == NULL_TREE
+	      || (!VAR_P (arg) && TREE_CODE (arg) != TREE_LIST))
 	    goto no_active_exc;
+	  if (TREE_CODE (arg) == TREE_LIST)
+	    {
+	      for (tree aux = TREE_PURPOSE (arg); aux; aux = DECL_CHAIN (aux))
+		{
+		  DECL_NAME (aux) = heap_deleted_identifier;
+		  ctx->global->destroy_value (aux);
+		  ctx->global->heap_dealloc_count++;
+		}
+	      arg = TREE_VALUE (arg);
+	    }
+	  DECL_CHAIN (arg) = NULL_TREE;
 	free_except:
 	  DECL_EXCEPTION_REFCOUNT (arg)
 	    = size_binop (MINUS_EXPR, DECL_EXCEPTION_REFCOUNT (arg),
@@ -2103,7 +2160,7 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	goto invalid_nargs;
       unsigned idx;
       FOR_EACH_VEC_ELT_REVERSE (ctx->global->caught_exceptions, idx, arg)
-	if (arg == NULL_TREE || !VAR_P (arg))
+	if (arg == NULL_TREE || (!VAR_P (arg) && TREE_CODE (arg) != TREE_LIST))
 	  --idx;
 	else
 	  break;
@@ -2115,9 +2172,14 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	  *non_constant_p = true;
 	  return call;
 	}
+      if (TREE_CODE (arg) == TREE_LIST)
+	arg = TREE_VALUE (arg);
       DECL_EXCEPTION_REFCOUNT (arg)
 	= size_binop (PLUS_EXPR, DECL_EXCEPTION_REFCOUNT (arg), size_one_node);
       ++ctx->global->uncaught_exceptions;
+      /* Don't cache calls which rethrow, they depend on the current
+	 exception which might be caught in the caller.  */
+      ctx->global->metafns_called = true;
       *jump_target = arg;
       return void_node;
     case CXA_BAD_CAST:
@@ -2196,6 +2258,10 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	  *non_constant_p = true;
 	  return call;
 	}
+      /* Don't cache calls which call __builtin_uncaught_exceptions (),
+	 they depend on the current uncaught exceptions which might
+	 be the state from their caller.  */
+      ctx->global->metafns_called = true;
       return build_int_cst (integer_type_node,
 			    ctx->global->uncaught_exceptions);
     case BUILTIN_CURRENT_EXCEPTION:
@@ -2223,7 +2289,8 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	      return call;
 	    }
 	  FOR_EACH_VEC_ELT_REVERSE (ctx->global->caught_exceptions, idx, arg)
-	    if (arg == NULL_TREE || !VAR_P (arg))
+	    if (arg == NULL_TREE
+		|| (!VAR_P (arg) && TREE_CODE (arg) != TREE_LIST))
 	      --idx;
 	    else
 	      break;
@@ -2242,11 +2309,17 @@ cxx_eval_cxa_builtin_fn (const constexpr_ctx *ctx, tree call,
 	    arg = build_zero_cst (TREE_TYPE (fld));
 	  else
 	    {
+	      if (TREE_CODE (arg) == TREE_LIST)
+		arg = TREE_VALUE (arg);
 	      DECL_EXCEPTION_REFCOUNT (arg)
 		= size_binop (PLUS_EXPR, DECL_EXCEPTION_REFCOUNT (arg),
 			      size_one_node);
 	      arg = fold_convert (ptr_type_node, build_address (arg));
 	    }
+	  /* Don't cache calls which call __builtin_current_exception (),
+	     they depend on the current exception which might be caught
+	     in the caller.  */
+	  ctx->global->metafns_called = true;
 	  return build_constructor_single (TREE_TYPE (decl), fld, arg);
 	}
     case STD_RETHROW_EXCEPTION:
@@ -2771,8 +2844,12 @@ unshare_constructor (tree t MEM_STAT_DECL)
       vec<constructor_elt, va_gc> *v = CONSTRUCTOR_ELTS (n);
       constructor_elt *ce;
       for (HOST_WIDE_INT i = 0; vec_safe_iterate (v, i, &ce); ++i)
-	if (ce->value && TREE_CODE (ce->value) == CONSTRUCTOR)
-	  ptrs.safe_push (&ce->value);
+	{
+	  if (ce->index && TREE_CODE (ce->index) == RANGE_EXPR)
+	    ce->index = copy_node (ce->index PASS_MEM_STAT);
+	  if (ce->value && TREE_CODE (ce->value) == CONSTRUCTOR)
+	    ptrs.safe_push (&ce->value);
+	}
     }
   return t;
 }
@@ -3772,16 +3849,9 @@ replace_decl_r (tree *tp, int *walk_subtrees, void *data)
   if (TREE_CODE (*tp) == ADDR_EXPR)
     {
       d->pset->add (*tp);
-      auto save_changed = d->changed;
-      d->changed = false;
       cp_walk_tree (&TREE_OPERAND (*tp, 0), replace_decl_r, d, nullptr);
-      if (d->changed)
-	{
-	  cxx_mark_addressable (*tp);
-	  recompute_tree_invariant_for_addr_expr (*tp);
-	}
-      else
-	d->changed = save_changed;
+      cxx_mark_addressable (*tp);
+      recompute_tree_invariant_for_addr_expr (*tp);
       *walk_subtrees = 0;
     }
   else if (*tp == d->decl)

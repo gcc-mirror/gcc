@@ -2778,6 +2778,9 @@ inner_loop_may_be_skipped (int loop_index, gfc_symbol *outer_sym, mpz_t outer_va
       if (loop == NULL || loop->ext.iterator == NULL || loop->ext.iterator->var == NULL)
 	return true;
 
+      if (loop->ext.iterator->var->symtree->n.sym->ts.type != BT_INTEGER)
+	return true;
+
       if (!evaluate_loop_bound (loop->ext.iterator->step, outer_sym, outer_val, do_step))
 	return true;
 
@@ -3566,7 +3569,7 @@ matmul_lhs_realloc (gfc_expr *c, gfc_expr *a, gfc_expr *b,
       ar->start[0] = get_array_inq_function (GFC_ISYM_SIZE, a, 1);
       cond = build_logical_expr (INTRINSIC_NE,
 				 get_array_inq_function (GFC_ISYM_SIZE, c, 1),
-				 get_array_inq_function (GFC_ISYM_SIZE, a, 2));
+				 get_array_inq_function (GFC_ISYM_SIZE, a, 1));
       break;
 
     case A1B2:

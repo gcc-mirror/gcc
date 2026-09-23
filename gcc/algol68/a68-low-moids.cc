@@ -275,7 +275,7 @@ lower_struct_mode (MOID_T *m)
   TYPE_FIELDS (struct_type) = NULL_TREE;
   TYPE_CXX_ODR_P (struct_type) = 0;
   CTYPE (m) = struct_type;
-  TYPE_LANG_SPECIFIC (struct_type) = a68_build_lang_type (m); /* XXX this will get overrided. */
+  TYPE_LANG_SPECIFIC (struct_type) = a68_build_lang_type (m); /* XXX this will get overridden. */
 
   /* Add field declarations.  */
   chain_struct_fields (PACK (m), struct_type);
@@ -723,6 +723,7 @@ a68_lower_moids (MOID_T *mode)
   /* Sanity check.  */
   for (MOID_T *m = mode; m != NO_MOID; FORWARD (m))
     {
+      gcc_assert (CTYPE (m) != NULL_TREE);
       gcc_assert (COMPLETE_TYPE_P (CTYPE (m)));
       if (IS_UNION (m))
 	{

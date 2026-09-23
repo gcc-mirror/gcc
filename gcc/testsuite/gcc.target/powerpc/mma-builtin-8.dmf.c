@@ -1,0 +1,12 @@
+/* { dg-do compile } */
+/* { dg-require-effective-target powerpc_future_compile_ok } */
+/* { dg-options "-mdejagnu-cpu=future -O2" } */
+
+#include "mma-builtin-8.h"
+
+/* { dg-final { scan-assembler-not {\mlxv\M} } } */
+/* { dg-final { scan-assembler-not {\mstxv\M} } } */
+/* { dg-final { scan-assembler-times {\mlxvp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mstxvp\M} 3 } } */
+/* { dg-final { scan-assembler-times {\mstxvpx\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mpstxvp\M} 1 } } */

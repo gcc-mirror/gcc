@@ -2480,18 +2480,6 @@ skip_a_safe_conversion_op (tree t)
   return t;
 }
 
-/* Initializes ipa_edge_args summary of CBE given its callback-carrying edge.
-   This primarily means allocating the correct amount of jump functions.  */
-
-static inline void
-init_callback_edge_summary (struct cgraph_edge *cbe, tree attr)
-{
-  ipa_edge_args *cb_args = ipa_edge_args_sum->get_create (cbe);
-  size_t jf_vec_length = callback_num_args(attr);
-  vec_safe_grow_cleared (cb_args->jump_functions,
-			 jf_vec_length, true);
-}
-
 /* Compute jump function for all arguments of callsite CS and insert the
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
@@ -2632,7 +2620,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 		    }
 
 		  /* If a callback attribute describing this pointer is found,
-			   create a callback edge to the pointee function to
+		     create a callback edge to the pointee function to
 		     allow for further optimizations.  */
 		  if (callback_attr)
 		    {
@@ -2641,7 +2629,6 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 		      unsigned callback_id = n;
 		      cgraph_edge *cbe
 			= cs->make_callback (kernel_node, callback_id);
-		      init_callback_edge_summary (cbe, callback_attr);
 		      callback_edges.safe_push (cbe);
 		    }
 		}
@@ -5152,6 +5139,18 @@ ipa_edge_args_sum_t::duplicate (cgraph_edge *src, cgraph_edge *dst,
       new_args->jump_functions = NULL;
       return;
     }
+
+  if (src->has_callback && dst->callback)
+    {
+      gcc_assert (src->caller == dst->caller);
+      tree attr = callback_fetch_attr_by_edge (dst, src);
+      unsigned arg_count = callback_num_args (attr);
+      vec_safe_grow_cleared (new_args->jump_functions, arg_count, true);
+      /* Duplication of jump functions is handled separately for callback
+	 pairs.  */
+      return;
+    }
+
   vec_safe_grow_cleared (new_args->jump_functions,
 			 old_args->jump_functions->length (), true);
 

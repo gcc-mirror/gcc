@@ -140,6 +140,8 @@ obj-c++.tags: force
 	$(ETAGS) --include TAGS.sub --include ../TAGS.sub
 
 lang_checks += check-obj-c++
+lang_checks_parallelized += check-obj-c++
+check_obj-c++_parallelize = 6
 
 # No objc-c++-specific selftests
 selftest-obj-c++:

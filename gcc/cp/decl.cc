@@ -4925,8 +4925,12 @@ struct typename_hasher : ggc_ptr_hash<tree_node>
   hash (tree context, tree fullname)
   {
     hashval_t hash = 0;
-    hash = iterative_hash_object (context, hash);
-    hash = iterative_hash_object (fullname, hash);
+    hash = iterative_hash_hashval_t (TYPE_HASH (context), hash);
+    /* FULLNAME could be a template-id, so use iterative_hash_template_arg here.
+       And might as well set comparing_specializations for stronger hashing.  */
+    ++comparing_specializations;
+    hash = iterative_hash_template_arg (fullname, hash);
+    --comparing_specializations;
     return hash;
   }
 
@@ -5901,18 +5905,15 @@ cp_make_fname_decl (location_t loc, tree id, int type_dep)
       if (!release_name)
 	{
 	  cpp_string cstr = { 0, 0 }, strname;
-	  size_t len = strlen (name) + 3; /* Two for '"'s.  One for NULL.  */
-	  char *namep = XNEWVEC (char, len);
-	  snprintf (namep, len, "\"%s\"", name);
-	  strname.text = (unsigned char *) namep;
-	  strname.len = len - 1;
-	  if (cpp_interpret_string (parse_in, &strname, 1, &cstr, CPP_STRING))
+	  strname.text
+	    = const_cast <unsigned char *> ((const unsigned char *) name);
+	  strname.len = strlen (name) + 1;
+	  if (cpp_translate_string (parse_in, &strname, &cstr, CPP_STRING,
+				    false))
 	    {
 	      name = (const char *) cstr.text;
 	      release_name = true;
 	    }
-
-	  XDELETEVEC (namep);
 	}
 
       size_t length = strlen (name);
@@ -10777,7 +10778,7 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	    }
 	  first = DECL_CHAIN (first);
 	}
-      if (DECL_P (decl) && DECL_NAMESPACE_SCOPE_P (decl))
+      if (DECL_P (decl) && TREE_STATIC (decl))
 	SET_DECL_ASSEMBLER_NAME (decl, get_identifier ("<decomp>"));
       return false;
     }
@@ -20430,7 +20431,7 @@ maybe_prepare_return_this (tree cdtor)
   if (targetm.cxx.cdtor_returns_this ())
     if (tree val = DECL_ARGUMENTS (cdtor))
       {
-	suppress_warning (val, OPT_Wuse_after_free);
+	suppress_warning (val, OPT_Wuse_after_free_);
 	return val;
       }
 

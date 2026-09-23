@@ -86,28 +86,28 @@ struct test_one_policy
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specializations to skip testing in case of broken configuration
     template <typename BiDirIt, typename Size, typename UnaryOp, typename Generator>
     void
-    operator()(__pstl::execution::unsequenced_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first, BiDirIt exp_last,
+    operator()(std::execution::unsequenced_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first, BiDirIt exp_last,
                Size n, UnaryOp unary_op, Generator generator)
     {
     }
 
     template <typename BiDirIt, typename Size, typename UnaryOp, typename Generator>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first,
+    operator()(std::execution::parallel_unsequenced_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first,
                BiDirIt exp_last, Size n, UnaryOp unary_op, Generator generator)
     {
     }
 #elif defined(_PSTL_ICC_16_VC14_TEST_PAR_TBB_RT_RELEASE_64_BROKEN) //dummy specializations to skip testing in case of broken configuration
     template <typename BiDirIt, typename Size, typename UnaryOp, typename Generator>
     void
-    operator()(__pstl::execution::parallel_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first, BiDirIt exp_last,
+    operator()(std::execution::parallel_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first, BiDirIt exp_last,
                Size n, UnaryOp unary_op, Generator generator)
     {
     }
 
     template <typename BiDirIt, typename Size, typename UnaryOp, typename Generator>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first,
+    operator()(std::execution::parallel_unsequenced_policy, BiDirIt first, BiDirIt last, BiDirIt exp_first,
                BiDirIt exp_last, Size n, UnaryOp unary_op, Generator generator)
     {
     }

@@ -362,7 +362,7 @@ bool riscv_registering_builtins;
 /* Index R is the smallest register class that contains register R.  */
 const enum reg_class riscv_regno_to_class[FIRST_PSEUDO_REGISTER] = {
   GR_REGS,	GR_REGS,	GR_REGS,	GR_REGS,
-  GR_REGS,	GR_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
+  GR_REGS,	GR_REGS,	JALR_REGS,	SIBCALL_REGS,
   JALR_REGS,	JALR_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
   SIBCALL_REGS,	SIBCALL_REGS,	SIBCALL_REGS,	SIBCALL_REGS,
   SIBCALL_REGS,	SIBCALL_REGS,	JALR_REGS,	JALR_REGS,
@@ -9577,9 +9577,8 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
 	     very wrong) we tie the old and new stack pointer together.
 	     The tie will expand to nothing but the optimizers will not touch
 	     the instruction.  */
-	  insn = get_last_insn ();
 	  rtx stack_ptr_copy = gen_rtx_REG (Pmode, RISCV_STACK_CLASH_VECTOR_CFA_REGNUM);
-	  emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
+	  insn = emit_move_insn (stack_ptr_copy, stack_pointer_rtx);
 	  riscv_emit_stack_tie (stack_ptr_copy);
 
 	  /* We want the CFA independent of the stack pointer for the

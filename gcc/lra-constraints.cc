@@ -1865,6 +1865,36 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
     }
   else if (REG_P (reg) && REGNO (reg) < FIRST_PSEUDO_REGISTER)
     {
+      /* A narrowing subreg of a hard register that is not representable as a
+	 hard register (its offset does not fall on a register boundary) cannot
+	 be turned into one, and would otherwise be resolved to the wrong part
+	 of the register.  Reload it through memory so that the correct bytes
+	 are accessed, as is done for pseudos below.  Leave the frame, arg and
+	 stack pointers alone: simplify_subreg_regno can reject them simply
+	 because reload is not finished yet.  */
+      if (partial_subreg_p (mode, innermode)
+	  && REGNO (reg) != FRAME_POINTER_REGNUM
+	  && REGNO (reg) != ARG_POINTER_REGNUM
+	  && REGNO (reg) != STACK_POINTER_REGNUM
+	  && simplify_subreg_regno (REGNO (reg), innermode,
+				    SUBREG_BYTE (operand), mode) < 0)
+	{
+	  if (get_reload_reg (type, innermode, reg, NO_REGS, NULL,
+			      true, false, "non-representable subreg", &new_reg))
+	    {
+	      bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
+	      bool insert_before = (type != OP_OUT
+				    || read_modify_subreg_p (operand));
+	      bool insert_after = (type != OP_IN);
+	      insert_move_for_subreg (insert_before ? &before : NULL,
+				      insert_after ? &after : NULL,
+				      reg, new_reg);
+	    }
+	  SUBREG_REG (operand) = new_reg;
+	  lra_process_new_insns (curr_insn, before, after,
+				 "Inserting non-representable subreg reload");
+	  return true;
+	}
       alter_subreg (curr_id->operand_loc[nop], false);
       return true;
     }

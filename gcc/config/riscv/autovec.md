@@ -1241,10 +1241,9 @@
 
 (define_insn_and_split "fma<mode>4"
   [(set (match_operand:V_VLSF 0 "register_operand")
-        (plus:V_VLSF
-	  (mult:V_VLSF
-	    (match_operand:V_VLSF 1 "register_operand")
-	    (match_operand:V_VLSF 2 "register_operand"))
+	(fma:V_VLSF
+	  (match_operand:V_VLSF 1 "register_operand")
+	  (match_operand:V_VLSF 2 "register_operand")
 	  (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
@@ -1269,11 +1268,10 @@
 
 (define_insn_and_split "fnma<mode>4"
   [(set (match_operand:V_VLSF 0 "register_operand")
-        (minus:V_VLSF
-          (match_operand:V_VLSF 3 "register_operand")
-	  (mult:V_VLSF
-	    (match_operand:V_VLSF 1 "register_operand")
-	    (match_operand:V_VLSF 2 "register_operand"))))]
+	(fma:V_VLSF
+	  (neg:V_VLSF (match_operand:V_VLSF 1 "register_operand"))
+	  (match_operand:V_VLSF 2 "register_operand")
+	  (match_operand:V_VLSF 3 "register_operand")))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1297,11 +1295,10 @@
 
 (define_insn_and_split "fms<mode>4"
   [(set (match_operand:V_VLSF 0 "register_operand")
-        (minus:V_VLSF
-	  (mult:V_VLSF
-	    (match_operand:V_VLSF 1 "register_operand")
-	    (match_operand:V_VLSF 2 "register_operand"))
-	  (match_operand:V_VLSF 3 "register_operand")))]
+	(fma:V_VLSF
+	  (match_operand:V_VLSF 1 "register_operand")
+	  (match_operand:V_VLSF 2 "register_operand")
+	  (neg:V_VLSF (match_operand:V_VLSF 3 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1325,12 +1322,10 @@
 
 (define_insn_and_split "fnms<mode>4"
   [(set (match_operand:V_VLSF 0 "register_operand")
-        (minus:V_VLSF
-          (neg:V_VLSF
-	    (mult:V_VLSF
-	      (match_operand:V_VLSF 1 "register_operand")
-	      (match_operand:V_VLSF 2 "register_operand")))
-	  (match_operand:V_VLSF 3 "register_operand")))]
+	(fma:V_VLSF
+	  (neg:V_VLSF (match_operand:V_VLSF 1 "register_operand"))
+	  (match_operand:V_VLSF 2 "register_operand")
+	  (neg:V_VLSF (match_operand:V_VLSF 3 "register_operand"))))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"
   "&& 1"
@@ -1383,7 +1378,7 @@
 
       /* Here we set VL = offset + 1.  */
       rtx length = gen_reg_rtx (Pmode);
-      operands[2] = gen_lowpart (Pmode, operands[2]);
+      operands[2] = convert_to_mode (Pmode, operands[2], true);
       if (CONST_INT_P (operands[2]))
 	  emit_move_insn (length, GEN_INT (INTVAL (operands[2]) + 1));
       else
@@ -1439,7 +1434,7 @@
 
     /* Emit the slide down to index 0 in a new vector.  */
     tmp = gen_reg_rtx (<MODE>mode);
-    operands[2] = gen_lowpart (Pmode, operands[2]);
+    operands[2] = convert_to_mode (Pmode, operands[2], true);
     rtx ops[] = {tmp, operands[1], operands[2]};
     riscv_vector::emit_vlmax_insn
       (code_for_pred_slide (UNSPEC_VSLIDEDOWN, <MODE>mode),

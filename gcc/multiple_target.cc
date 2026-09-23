@@ -190,7 +190,7 @@ create_dispatcher_calls (struct cgraph_node *node)
 		}
 
 	      symtab_node *source = ref->referring;
-	      source->create_reference (inode, IPA_REF_ADDR);
+	      source->create_reference (inode, IPA_REF_ADDR, ref->stmt);
 	    }
 	  else if (ref->use == IPA_REF_ALIAS)
 	    {

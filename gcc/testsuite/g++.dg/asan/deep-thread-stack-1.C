@@ -1,5 +1,5 @@
 // { dg-do run { target pthread } }
-// { dg-options "-lasan -lpthread" }
+// { dg-options "-lasan -lpthread" { target { ! *-*-darwin* } } }
 // { dg-shouldfail "asan" }
 
 #include <pthread.h>

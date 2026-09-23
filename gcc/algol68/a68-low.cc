@@ -207,7 +207,7 @@ a68_demangle_symbol (const char *mname, const char *symbol,
 	{
 	  switch (symbol[i])
 	    {
-	    case 'p': demangled[o++] = '+'; break;
+	    case 'p': demangled[o++] = '%'; break;
 	    case 'c': demangled[o++] = '^'; break;
 	    case 'a': demangled[o++] = '&'; break;
 	    case 'u': demangled[o++] = '+'; break;
@@ -1005,7 +1005,7 @@ a68_low_assignation (NODE_T *p,
     {
       /* Make a deep copy of the rhs.  Note that we have to use the heap
 	 because the scope of the lhs may be older than the scope of the rhs.
-	 XXX this can be ommitted if a68_multiple_copy_elems below supports
+	 XXX this can be omitted if a68_multiple_copy_elems below supports
 	 overlapping multiples.  */
       if (HAS_ROWS (mode_rhs))
 	rhs = a68_low_dup (rhs, true /* use_heap */);
@@ -1016,7 +1016,7 @@ a68_low_assignation (NODE_T *p,
 	{
 	  /* Assigning to a flexible name updates descriptor with new bounds
 	     and also sets the elements to the dup of the rhs.  No boundscheck
-	     is peformed.  XXX but bound checking in contained values may be
+	     is performed.  XXX but bound checking in contained values may be
 	     necessary, ghost elements.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (lhs))
 	      && TREE_TYPE (TREE_TYPE (lhs)) == TREE_TYPE (rhs))

@@ -33,12 +33,12 @@ struct test_one_policy
 
     template <typename Iterator1, typename Predicate>
     void
-    operator()(__pstl::execution::unsequenced_policy, Iterator1 begin1, Iterator1 end1, Predicate pred)
+    operator()(std::execution::unsequenced_policy, Iterator1 begin1, Iterator1 end1, Predicate pred)
     {
     }
     template <typename Iterator1, typename Predicate>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, Iterator1 begin1, Iterator1 end1, Predicate pred)
+    operator()(std::execution::parallel_unsequenced_policy, Iterator1 begin1, Iterator1 end1, Predicate pred)
     {
     }
 #endif

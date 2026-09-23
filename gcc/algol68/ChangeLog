@@ -1,3 +1,304 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-07-20  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/126330
+	* a68-low-chars.cc (a68_char_max): abscharmax is an int, not a
+	char.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-07-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68-coding-guidelines.texi (Conditional clauses): Fix typo
+	if-parts -> else-parts.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-moids-sorting.cc (packs_ordering): Do not rely on pointer
+	comparison when comparing pack element names.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports.cc (complete_encoded_mode): Fix comment on ordering
+	of union packs entries.
+
+2026-07-21  Kanishka Solanki  <kanishkasolanki456s@gmail.com>
+
+	Backported from master:
+	2026-06-22  Kanishka Solanki  <kanishkasolanki456s@gmail.com>
+
+	* a68-lang.cc (a68_get_alias_set): New function.
+	(LANG_HOOKS_GET_ALIAS_SET): Define to a68_get_alias_set.
+
+2026-07-21  Kanishka Solanki  <kanishkasolanki456s@gmail.com>
+
+	Backported from master:
+	2026-06-19  Kanishka Solanki  <kanishkasolanki456s@gmail.com>
+
+	* a68-low-clauses.cc (a68_lower_collateral_clause): Do not check
+	for rows before calling a68_low_dup.
+	* a68-low-units.cc (collect_call_arguments): Likewise.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-16  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports.cc (a68_replace_equivalent_mode): Get a moif and
+	check extracts.
+	(a68_open_packet): Fix deduplication of in-moif modes and move
+	extract replacement code to a68_replace_equivalent_mode.
+	* a68-low-moids.cc (a68_lower_moids): Check that all known modes
+	have an associated ctype as part of the sanity checks.
+
+2026-07-21  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	Backported from master:
+	2026-06-16  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* README: Avoid redirect for web link to Algol 68 Jargon File.
+	* ga68-coding-guidelines.texi (Top): Ditto.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-taxes.cc (attr_descr): New function.
+	(already_declared): Use attr_descr for diagnostic.
+	(already_declared_hidden): Likewise.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports.cc (INCLUDE_VECTOR): Define.
+	(a68_open_packet): Deduplicate within-moif modes while importing.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-15  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-extract.cc (a68_extract_indicants): Set PUBLICIZED in
+	the new tags for mode indicants.
+	* a68-parser.cc (a68_new_tag): Initialize PUBLICIZED to false.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-brackets.cc (INCLUDE_STRING): Define.
+	Do not include <string.
+	* a68-parser-bottom-up.cc (INCLUDE_STRING): Define.
+	Do not include <string>.
+	* a68-moids-diagnostics.cc (INCLUDE_STRING): Define.
+	Do not include <string>.
+	* a68-imports.cc (INCLUDE_STRING): Define.
+	Do not include <string>.
+	* a68-imports-archive.cc (INCLUDE_MAP): Define.
+	(INCLUDE_STRING): Likewise.
+	Do not include <string> nor <map>.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports.cc (struct encoded_mode): Type of flex.sub_offset
+	shall be uint64_t.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-14  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-brackets.cc (bracket_check_error): Escape %< and
+	%> in call to printf.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-brackets.cc: Include <string>.
+	(bracket_check_error): Get additional argument `item'.
+	(bracket_check_diagnose): Likewise.
+	(bracket_check_parse): Fix call to a68_error passing the `item'.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low.cc (a68_demangle_symbol): Fix typo, 'p' is the mangling
+	of '%', not of '+'.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-generator.cc (a68_low_generator): Wrap the resulting
+	stmt_list into a nop_expr.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-clauses.cc (a68_lower_collateral_clause): Check that
+	a68_lower_tree on the units list return NULL_TREE.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-13  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-units.cc (a68_lower_formula): Consolidate operands of
+	formula before call.
+	(a68_lower_monadic_formula): Likewise.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-08  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-pretty-print.h (a68_attr_format_token): Get diagnostic
+	string from a68_attribute_name.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.texi (Worthy characters): Remove spurious @ entry in the
+	list of worthy characters.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.vw (Modes and nests): Incorporate syntax from the RR
+	chapter 7.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-03  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-bottom-up.cc (recover_from_error): Use the output of
+	a68_phrase_to_text as format string so format tags are honored.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-06-02  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-modes.cc (WELL): Define.
+	(NO_YIN): Likewise.
+	(NO_YANG): Likewise.
+	(UNWELL): Likewise.
+	(is_well_formed): Discriminate reason for the given mode to not be
+	well formed.
+	(a68_make_moid_list): Emit note explaining why a mode is not well
+	formed.
+
+2026-07-21  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	Backported from master:
+	2026-05-30  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* a68-imports-archive.cc (struct Archive_fl_header): Fix typos.
+	* a68-imports.cc (encoded_mode_free): Likewise.
+	* a68-low-chars.cc (a68_char_repr): Likewise.
+	* a68-low-clauses.cc (a68_lower_label): Likewise.
+	(a68_lower_labeled_unit): Likewise.
+	(a68_lower_completer): Likewise.
+	(a68_lower_initialiser_series): Likewise.
+	(a68_lower_case_clause): Likewise.
+	* a68-low-decls.cc (a68_lower_variable_declaration): Likewise.
+	(a68_lower_procedure_variable_declaration): Likewise.
+	* a68-low-ints.cc (a68_get_int_skip_tree): Likewise.
+	(a68_int_maxval): Likewise.
+	* a68-low-moids.cc (lower_struct_mode): Likewise.
+	* a68-low-multiples.cc (a68_multiple_single_bound_check): Likewise.
+	* a68-low-prelude.cc (a68_lower_divab3): Likewise.
+	(a68_lower_upb3): Likewise.
+	(a68_lower_lwb3): Likewise.
+	* a68-low-procs.cc (a68_get_proc_skip_tree): Likewise.
+	* a68-low-reals.cc (a68_real_maxval): Likewise.
+	(a68_real_minval): Likewise.
+	* a68-low-units.cc (a68_lower_identifier): Likewise.
+	* a68-low.cc (a68_low_assignation): Likewise.
+	* a68-moids-misc.cc (a68_is_firm): Likewise.
+	(a68_is_coercible_series): Likewise.
+	* a68-parser-bottom-up.cc (strange_separator): Likewise.
+	(a68_bottom_up_parser): Likewise.
+	* a68-parser-prelude.cc (stand_prelude): Likewise.
+	* a68-parser-scanner.cc (a68_lexical_analyser): Likewise.
+	* a68-parser-scope.cc (a68_scope_checker): Likewise.
+	* a68-parser-serial-dsa.cc (serial_dsa_check_serial_clause): Likewise.
+	* a68-parser-taxes.cc (test_firmly_related_ops_local): Likewise.
+	* a68-parser.cc: Likewise.
+	* a68-types.h (struct KEYWORD_T): Likewise.
+	(struct OPTIONS_T): Likewise.
+	(struct NODE_T): Likewise.
+	(struct MODE_CACHE_T): Likewise.
+	* ga68-coding-guidelines.texi: Likewise.
+	* ga68.texi: Likewise.
+
+2026-07-21  Peter Damianov  <peter0x44@disroot.org>
+
+	Backported from master:
+	2026-05-24  Peter Damianov  <peter0x44@disroot.org>
+
+	* a68-lang.cc (a68_handle_option): Open file in binary mode.
+	* a68-parser-scanner.cc (read_source_file): Open file in binary mode.
+	(include_files): Likewise.
+
+2026-07-21  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	Backported from master:
+	2026-05-20  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-parser-prelude.cc (gnu_prelude): Map FLOOR(L real):L int
+	to ENTIER(L real):L int.
+	* ga68.texi: Add a section for real operators in the Extended
+	prelude chapter and document FLOOR.
+
+2026-07-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	Backported from master:
+	2026-05-10  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-taxes.cc (is_mappable_routine): Remove handling of
+	non-implemented math functions.
+
+2026-07-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	Backported from master:
+	2026-06-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* a68-imports.cc (a68_try_suffixes): Use .dylib suffix on Darwin.
+	Use .dll suffix and optional lib prefix on Windows.
+
 2026-05-01  Peter Damianov  <peter0x44@disroot.org>
 
 	Backported from master:

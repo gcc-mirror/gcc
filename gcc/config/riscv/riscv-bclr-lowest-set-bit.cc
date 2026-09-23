@@ -138,8 +138,8 @@ find_later_ctz (rtx_insn *start, rtx src, int limit)
 		 we need to verify its input doesn't change between
 		 START and NEXT.  We also have to verify that its
 		 destination is unused between those points.  */
-	      if (reg_set_between_p (XEXP (SET_SRC (set), 0), start, next)
-		  || reg_used_between_p (SET_DEST (set), start, next))
+	      if (reg_set_between_p (XEXP (SET_SRC (set), 0), PREV_INSN (start), next)
+		  || reg_used_between_p (SET_DEST (set), PREV_INSN (start), next))
 		return NULL;
 
 	      return next;
@@ -193,12 +193,19 @@ pass_bclr_lowest_set_bit::execute (function *fn)
 	  rtx dec_src = SET_SRC (dec_set);
 	  rtx dec_dest = SET_DEST (dec_set);
 
-	  /* For a 32 bit object on rv64, the decrement will
-	     be wrapped by a SIGN_EXTEND.  Strip it.  */
-	  if (GET_CODE (dec_src) == SIGN_EXTEND)
-	    dec_src = XEXP (dec_src, 0);
+	  /* Verify it's res = x - 1, if not proceed to the next insn.
+	     It seems like we ought to be able to handle the rv64 addiw form
+	     for the subtraction step, but that's unsafe.
 
-	  /* Verify it's res = x - 1, if not proceed to the next insn.  */
+	     Consider if x has the value like 0x0000000200000004.  The
+	     original sequence would produce 0x0.  ctz+bclr would produce
+	     0x0000000200000000.
+
+	     If we sign extended the result the previous case works, but
+	     others do not (consider 0x1234567800000008).
+
+	     And there's the added complexity of ctzw when the low 32 bits are
+	     zero. The would result in changing bit 32 inadvertently.  */
 	  if (!dec_set
 	      || !REG_P (dec_dest)
 	      || GET_CODE (dec_src) != PLUS
@@ -275,7 +282,7 @@ pass_bclr_lowest_set_bit::execute (function *fn)
 	  if (later_ctz)
 	    {
 	      /* Remove the CTZ from the stream and reemit it immediately
-		 after NEXT.  XXX FIXME.  Need to prove this is safe.  */
+		 after NEXT.  */
 	      df_insn_delete (later_ctz);
 	      remove_insn (later_ctz);
 	      SET_PREV_INSN (later_ctz) = NULL;
@@ -290,6 +297,12 @@ pass_bclr_lowest_set_bit::execute (function *fn)
 	      pat = gen_rtx_AND (GET_MODE (dec_dest), pat, dec_src);
 	      pat = gen_rtx_SET (and_dest, pat);
 	      df_insn_rescan (emit_insn_after (pat, NEXT_INSN (next)));
+
+	      /* And remove the original AND.  */
+	      df_insn_delete (next);
+	      remove_insn (next);
+	      SET_PREV_INSN (next) = NULL;
+	      SET_NEXT_INSN (next) = NULL;
 	    }
 	}
     }

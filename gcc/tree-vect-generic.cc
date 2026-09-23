@@ -1640,75 +1640,19 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 	mask = gimple_assign_rhs1 (def_stmt);
     }
 
-  vec_perm_builder sel_int;
 
+  vec_perm_indices indices;
   if (TREE_CODE (mask) == VECTOR_CST
-      && tree_to_vec_perm_builder (&sel_int, mask))
+      && tree_to_vec_perm_indices (&indices, vec0, vec1, mask))
     {
-      vec_perm_indices indices (sel_int, 2, in_elements);
       machine_mode vmode = TYPE_MODE (vect_type);
       tree lhs_type = TREE_TYPE (gimple_assign_lhs (stmt));
       machine_mode lhs_mode = TYPE_MODE (lhs_type);
-      if (can_vec_perm_const_p (lhs_mode, vmode, indices))
+      if (can_vec_perm_const_p (lhs_mode, vmode, indices, true))
 	{
 	  gimple_assign_set_rhs3 (stmt, mask);
 	  update_stmt (stmt);
 	  return;
-	}
-      /* Also detect vec_shr pattern - VEC_PERM_EXPR with zero
-	 vector as VEC1 and a right element shift MASK.  */
-      if (can_implement_p (vec_shr_optab, TYPE_MODE (vect_type))
-	  && TREE_CODE (vec1) == VECTOR_CST
-	  && initializer_zerop (vec1)
-	  && maybe_ne (indices[0], 0)
-	  && known_lt (poly_uint64 (indices[0]), elements))
-	{
-	  bool ok_p = indices.series_p (0, 1, indices[0], 1);
-	  if (!ok_p)
-	    {
-	      for (i = 1; i < elements; ++i)
-		{
-		  poly_uint64 actual = indices[i];
-		  poly_uint64 expected = i + indices[0];
-		  /* Indices into the second vector are all equivalent.  */
-		  if (maybe_lt (actual, elements)
-		      ? maybe_ne (actual, expected)
-		      : maybe_lt (expected, elements))
-		    break;
-		}
-	      ok_p = i == elements;
-	    }
-	  if (ok_p)
-	    {
-	      gimple_assign_set_rhs3 (stmt, mask);
-	      update_stmt (stmt);
-	      return;
-	    }
-	}
-      /* And similarly vec_shl pattern.  */
-      if (can_implement_p (vec_shl_optab, TYPE_MODE (vect_type))
-	  && TREE_CODE (vec0) == VECTOR_CST
-	  && initializer_zerop (vec0))
-	{
-	  unsigned int first = 0;
-	  for (i = 0; i < elements; ++i)
-	    if (known_eq (poly_uint64 (indices[i]), elements))
-	      {
-		if (i == 0 || first)
-		  break;
-		first = i;
-	      }
-	    else if (first
-		     ? maybe_ne (poly_uint64 (indices[i]),
-					      elements + i - first)
-		     : maybe_ge (poly_uint64 (indices[i]), elements))
-	      break;
-	  if (first && i == elements)
-	    {
-	      gimple_assign_set_rhs3 (stmt, mask);
-	      update_stmt (stmt);
-	      return;
-	    }
 	}
     }
   else if (can_vec_perm_var_p (TYPE_MODE (vect_type)))

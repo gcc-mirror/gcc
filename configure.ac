@@ -244,6 +244,17 @@ if test x$with_gnu_as = xno ; then
   noconfigdirs="$noconfigdirs gas"
 fi
 
+# Catch an invalid use of --with-long-double-64 early.
+AC_ARG_WITH(long-double-64,
+[],
+[
+if test x$with_long_double_64 = xyes ; then
+  AC_MSG_ERROR([found --with-long-double-64 but use --without-long-double-128 instead])
+else
+  AC_MSG_ERROR([found --without-long-double-64 but use --with-long-double-128 instead])
+fi
+])
+
 use_included_zlib=
 AC_ARG_WITH(system-zlib,
 [AS_HELP_STRING([--with-system-zlib], [use installed libz])])

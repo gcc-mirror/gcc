@@ -2252,10 +2252,20 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		   && !TREE_SIDE_EFFECTS (tree_value)
 		   && immediate_const_ctor_p (DECL_INITIAL (tree_value)))
 	    {
+	      HOST_WIDE_INT size = int_expr_size (DECL_INITIAL (tree_value));
 	      rtx target = gen_reg_rtx (word_mode);
 	      store_constructor (DECL_INITIAL (tree_value), target, 0,
-				 int_expr_size (DECL_INITIAL (tree_value)),
-				 false);
+				 size, false);
+	      /* On big-endian targets, store_constructor places fields
+		 from the MSB, which places any padding bits in the least
+		 significant bytes.  If required, use a logical right shift
+		 to place things where expected in a register parameter.  */
+	      if (BYTES_BIG_ENDIAN
+		  && size < UNITS_PER_WORD
+		  && args[i].locate.where_pad == PAD_DOWNWARD)
+		target = expand_shift (RSHIFT_EXPR, word_mode, target,
+				       (UNITS_PER_WORD - size) * BITS_PER_UNIT,
+				       NULL_RTX, 1);
 	      reg = gen_rtx_REG (word_mode, REGNO (reg));
 	      emit_move_insn (reg, target);
 	    }

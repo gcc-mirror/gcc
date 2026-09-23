@@ -8,5 +8,6 @@ int main() {
   __shared_ptr<double> s2;
 }
 
-// { dg-final { scan-assembler-not {_ZNW1M12__shared_ptrIiEC[1-4]Ev:} } }
-// { dg-final { scan-assembler {_ZNW1M12__shared_ptrIdEC2Ev:} } }
+// { dg-final { scan-assembler-not {_?_ZNW1M12__shared_ptrIiEC[1-4]Ev:} } }
+// { dg-final { scan-assembler {_?_ZNW1M12__shared_ptrIdEC2Ev:} { target alias } } }
+// { dg-final { scan-assembler {_?_ZNW1M12__shared_ptrIdEC1Ev:} { target { ! alias } } } }

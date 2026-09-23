@@ -1,8 +1,8 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=x86-64 -mmemset-strategy=vector_loop:256:noalign,libcall:-1:noalign" } */
-/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
-/* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "**" "*#" "" { target { lp64 && { ! *-*-darwin* } } } {^\t?\.} } } */
+/* { dg-final { check-function-bodies "*D" "*E" "" { target { lp64 && *-*-darwin* } } {^\t?\.} } } */
 
 /*
 **foo:
@@ -26,6 +26,28 @@
 **	movd	%xmm0, dest\+175\(%rip\)
 **	ret
 **...
+*#
+
+*Dfoo:
+*D	movd	%edi, %xmm0
+*D	punpcklbw	%xmm0, %xmm0
+*D	punpcklwd	%xmm0, %xmm0
+*D	pshufd	\$0, %xmm0, %xmm0
+*D	movaps	%xmm0, 160\+_dest\(%rip\)
+*D	movaps	%xmm0, _dest\(%rip\)
+*D	movaps	%xmm0, 16\+_dest\(%rip\)
+*D	movaps	%xmm0, 32\+_dest\(%rip\)
+*D	movaps	%xmm0, 48\+_dest\(%rip\)
+*D	movaps	%xmm0, 64\+_dest\(%rip\)
+*D	movaps	%xmm0, 80\+_dest\(%rip\)
+*D	movaps	%xmm0, 96\+_dest\(%rip\)
+*D	movaps	%xmm0, 112\+_dest\(%rip\)
+*D	movaps	%xmm0, 128\+_dest\(%rip\)
+*D	movaps	%xmm0, 144\+_dest\(%rip\)
+*D	movd	%xmm0, 175\+_dest\(%rip\)
+*D	ret
+*D...
+*E
 */
 
 char dest[179];

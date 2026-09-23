@@ -164,13 +164,13 @@ struct GTY((chain_next ("%h.more"), chain_prev ("%h.less"))) KEYWORD_T
 /* A MOID_T represents a mode indicator.
 
    NUMBER is an unique number assigned to the moid when it gets created.  A
-   renumber_moids function exists in a68-parser-modes.cc but it dosn't seem to
+   renumber_moids function exists in a68-parser-modes.cc but it doesn't seem to
    be used at all.
 
    ATTRIBUTE characterizes the kind of mode and is one of the values defined in
    a68-parser-attrs.def.  Valid values are:
 
-     PROC_SYMBOL for procecure modes.
+     PROC_SYMBOL for procedure modes.
      ROWS_SYMBOL for row modes.
      REF_SYMBOL for reference modes.
      FLEX_SYMBOL for flexible reference modes.
@@ -200,7 +200,7 @@ struct GTY((chain_next ("%h.more"), chain_prev ("%h.less"))) KEYWORD_T
    The interpretation of DIM depends on the kind of mode:
    - In VOID_SYMBOL, STANDARD or INDICANT mode, if DIM is positive it
      specifies the size of the longsety of the mode.  If DIM is negative then
-     abs (DIM) is the size of hte shortsety of the mode.
+     abs (DIM) is the size of the shortsety of the mode.
    - In ROW modes, DIM is the number of dimensions.
    - In STRUCT modes, DIM is the number of fields.
    - In UNION modes, DIM is the number of united modes.
@@ -343,7 +343,7 @@ struct GTY(()) OPTIONS_T
    value of access DIRIDEN.
 
    DIRWOST (direct working stack) is very much like DIRIDEN, except that the
-   value is stored in WOST% rathern than in IDST%.  This access is used for the
+   value is stored in WOST% rather than in IDST%.  This access is used for the
    result of an action when this result does not preexist in memory and hence
    has to be constructed in WOST%.
 
@@ -470,7 +470,7 @@ struct GTY((chain_next ("%h.next"), chain_prev ("%h.previous"))) NODE_T
    routine texts.  This attribute is set for all the nodes in the syntax tree
    by the taxes collector and originally used by ALGOL 68 Genie's monitor.
    Even if at the moment this is not used by GCC, this field and the
-   correponding machinery is still here in case it is useful in the future.
+   corresponding machinery is still here in case it is useful in the future.
 
    PRIORITY (accessed as PRIO) is used by operator tree nodes and specifies the
    priority of the operator denoted by the node.  This is set tree wide by the
@@ -768,7 +768,7 @@ struct MODE_CACHE_T
    buffer is known to be big enough to hold any substring from the source file.
    It is initialized in read_source_file.
 
-   MAX_SCAN_BUF_LENGTH is the useable size of SCAN_BUF.  This is used by the
+   MAX_SCAN_BUF_LENGTH is the usable size of SCAN_BUF.  This is used by the
    scanner to grow SCAN_BUF as it includes other files.
 
    TAG_NUMBER is a global counter used by the parser to assign an unique number

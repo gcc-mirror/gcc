@@ -432,19 +432,24 @@ rs6000_discover_homogeneous_aggregate (machine_mode mode, const_tree type,
 bool
 rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 {
-  /* We do not allow MMA types being used as return values.  Only report
-     the invalid return value usage the first time we encounter it.  */
+  /* We do not allow Dense Math/MMA types being used as return values.  Only
+     report the invalid return value usage the first time we encounter it.  */
   if (cfun
       && !cfun->machine->mma_return_type_error
       && TREE_TYPE (cfun->decl) == fntype
-      && (TYPE_MODE (type) == OOmode || TYPE_MODE (type) == XOmode))
+      && (TYPE_MODE (type) == OOmode
+	   || TYPE_MODE (type) == XOmode
+	   || TYPE_MODE (type) == TDOmode))
     {
       /* Record we have now handled function CFUN, so the next time we
 	 are called, we do not re-report the same error.  */
       cfun->machine->mma_return_type_error = true;
       if (TYPE_CANONICAL (type) != NULL_TREE)
 	type = TYPE_CANONICAL (type);
-      error ("invalid use of MMA type %qs as a function return value",
+      const char *type_class =
+	 (TYPE_MODE (type) == TDOmode) ? "Dense Math" : "MMA";
+      error ("invalid use of %s type %qs as a function return value",
+	     type_class,
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
     }
 
@@ -1631,12 +1636,15 @@ rs6000_function_arg (cumulative_args_t cum_v, const function_arg_info &arg)
   machine_mode elt_mode;
   int n_elts;
 
-  /* We do not allow MMA types being used as function arguments.  */
-  if (mode == OOmode || mode == XOmode)
+  /* We do not allow Dense Math/MMA types being used as function arguments.  */
+  if (mode == OOmode || mode == XOmode || mode == TDOmode)
     {
       if (TYPE_CANONICAL (type) != NULL_TREE)
 	type = TYPE_CANONICAL (type);
-      error ("invalid use of MMA operand of type %qs as a function parameter",
+      const char *type_class =
+	 (mode == TDOmode) ? "Dense Math" : "MMA";
+      error ("invalid use of %s operand of type %qs as a function parameter",
+	     type_class,
 	     IDENTIFIER_POINTER (DECL_NAME (TYPE_NAME (type))));
       return NULL_RTX;
     }

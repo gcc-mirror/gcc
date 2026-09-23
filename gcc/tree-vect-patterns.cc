@@ -2258,6 +2258,11 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 
   bool supported
     = direct_internal_fn_supported_p (ifn, vec_type, OPTIMIZE_FOR_SPEED);
+  /* We cannot rely on the reduction check in vect_recog_ctz_ffs_pattern
+     because we do not set up the temporary pattern stmt finally for
+     the recursive analysis.  */
+  if (!supported && vect_is_reduction (stmt_vinfo))
+    return NULL;
   if (!supported)
     switch (ifn)
       {

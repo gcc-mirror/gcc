@@ -509,6 +509,9 @@ a68_low_generator (NODE_T *declarer,
       tree_stmt_iterator bounds_iter = tsi_start (bounds);
       tree gen = gen_mode (mode, &bounds_iter,
 			   heap ? a68_lower_malloc : a68_lower_alloca);
+      /* XXX ugly hack to avoid the resulting stmt_list to be coalesced
+	 on the current stmt_list in a68_lower_unit_list.  */
+      gen = build1 (NOP_EXPR, TREE_TYPE (gen), gen);
       return gen;
     }
 }

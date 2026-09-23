@@ -5914,7 +5914,7 @@ foo:
 	.file 1 \"foo.c\"
 	$insn
 	.file 2 \"foo.h\"
-	ret
+	$insn
 "
    dwarf4_success=no
    gcc_GAS_CHECK_FEATURE([--gdwarf-4 with the APP marker],

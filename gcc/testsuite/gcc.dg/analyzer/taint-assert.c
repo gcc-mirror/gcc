@@ -322,8 +322,8 @@ test_switch_bogus_case_unreachable (int n)
     case 2:
       return -1;
     case 42:
-      /* This case gets optimized away before we see it.  */
-      __builtin_unreachable ();
+      /* The wording is rather inaccurate here.  */
+      __builtin_unreachable (); /* { dg-warning "use of attacked-controlled value in condition for assertion" } */
     }
 }
 

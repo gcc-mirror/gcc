@@ -1,6 +1,8 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target arm_arch_v8m_main_ok } */
 /* Make sure FPCXT is not enabled.  */
-/* { dg-options "-mcmse -fdump-rtl-final -march=armv8-m.main+fp" } */
+/* { dg-options "-mcmse -fdump-rtl-final" } */
+/* { dg-add-options arm_arch_v8m_main } */
 
 typedef void (*f)(int) __attribute__((cmse_nonsecure_call));
 

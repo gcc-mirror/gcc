@@ -292,7 +292,8 @@ enum rs6000_reg_type {
   ALTIVEC_REG_TYPE,
   FPR_REG_TYPE,
   SPR_REG_TYPE,
-  CR_REG_TYPE
+  CR_REG_TYPE,
+  DMR_REG_TYPE
 };
 
 /* Map register class to register type.  */
@@ -313,6 +314,7 @@ enum rs6000_reload_reg_type {
   RELOAD_REG_GPR,			/* General purpose registers.  */
   RELOAD_REG_FPR,			/* Traditional floating point regs.  */
   RELOAD_REG_VMX,			/* Altivec (VMX) registers.  */
+  RELOAD_REG_DMR,			/* Dense Math Facility registers.  */
   RELOAD_REG_ANY,			/* OR of GPR, FPR, Altivec masks.  */
   N_RELOAD_REG
 };
@@ -321,7 +323,7 @@ enum rs6000_reload_reg_type {
    into real registers, and skip the ANY class, which is just an OR of the
    bits.  */
 #define FIRST_RELOAD_REG_CLASS	RELOAD_REG_GPR
-#define LAST_RELOAD_REG_CLASS	RELOAD_REG_VMX
+#define LAST_RELOAD_REG_CLASS	RELOAD_REG_DMR
 
 /* Map reload register type to a register in the register class.  */
 struct reload_reg_map_type {
@@ -333,6 +335,7 @@ static const struct reload_reg_map_type reload_reg_map[N_RELOAD_REG] = {
   { "Gpr",	FIRST_GPR_REGNO },	/* RELOAD_REG_GPR.  */
   { "Fpr",	FIRST_FPR_REGNO },	/* RELOAD_REG_FPR.  */
   { "VMX",	FIRST_ALTIVEC_REGNO },	/* RELOAD_REG_VMX.  */
+  { "DMR",      FIRST_DMR_REGNO },      /* RELOAD_REG_DMR.  */
   { "Any",	-1 },			/* RELOAD_REG_ANY.  */
 };
 
@@ -1226,6 +1229,8 @@ char rs6000_reg_names[][8] =
       "0",  "1",  "2",  "3",  "4",  "5",  "6",  "7",
   /* vrsave vscr sfp */
       "vrsave", "vscr", "sfp",
+  /* DMRs */
+      "0", "1", "2", "3", "4", "5", "6", "7",
 };
 
 #ifdef TARGET_REGNAMES
@@ -1252,6 +1257,8 @@ static const char alt_reg_names[][8] =
   "%cr0",  "%cr1", "%cr2", "%cr3", "%cr4", "%cr5", "%cr6", "%cr7",
   /* vrsave vscr sfp */
   "vrsave", "vscr", "sfp",
+  /* DMRs */
+  "%dm0", "%dm1", "%dm2", "%dm3", "%dm4", "%dm5", "%dm6", "%dm7",
 };
 #endif
 
@@ -1842,6 +1849,9 @@ rs6000_hard_regno_nregs_internal (int regno, machine_mode mode)
   else if (ALTIVEC_REGNO_P (regno))
     reg_size = UNITS_PER_ALTIVEC_WORD;
 
+  else if (DMR_REGNO_P (regno))
+    reg_size = UNITS_PER_DMR_WORD;
+
   else
     reg_size = UNITS_PER_WORD;
 
@@ -1858,14 +1868,33 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
   if (COMPLEX_MODE_P (mode))
     mode = GET_MODE_INNER (mode);
 
+  /* No other types other than XOmode or TDOmode can go in DMRs.  */
+  if (DMR_REGNO_P (regno) && !(mode ==XOmode || mode == TDOmode))
+    return 0;
+
+  /* TDOmode value can be held in either 1 DMR register or 8 VSX
+     registers.  */
+  if (mode == TDOmode)
+    {
+      if (TARGET_DMF)
+	return (DMR_REGNO_P (regno)
+		|| (VSX_REGNO_P (regno)
+		    && VSX_REGNO_P (last_regno)
+		    && (regno & 1) == 0));
+      else
+	return 0;
+    }
+
   /* Vector pair modes need even/odd VSX register pairs.  Only allow vector
      registers.  */
   if (mode == OOmode)
-    return (TARGET_MMA && VSX_REGNO_P (regno) && (regno & 1) == 0);
+    return ((TARGET_MMA || TARGET_DMF) && VSX_REGNO_P (regno) && (regno & 1) == 0);
 
-  /* MMA accumulator modes need FPR registers divisible by 4.  */
+  /* MMA accumulator modes need FPR registers divisible by 4.
+     If TARGET_DMF is true, XOmode value can be held in a DMR register.  */
   if (mode == XOmode)
-    return (TARGET_MMA && FP_REGNO_P (regno) && (regno & 3) == 0);
+    return ((TARGET_DMF && DMR_REGNO_P (regno))
+	     || (TARGET_MMA && FP_REGNO_P (regno) && (regno & 3) == 0));
 
   /* PTImode can only go in GPRs.  Quad word memory operations require even/odd
      register combinations, and use PTImode where we need to deal with quad
@@ -1982,7 +2011,8 @@ static bool
 rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (mode1 == PTImode || mode1 == OOmode || mode1 == XOmode
-      || mode2 == PTImode || mode2 == OOmode || mode2 == XOmode)
+      || mode1 == TDOmode || mode2 == PTImode || mode2 == OOmode
+      || mode2 == XOmode || mode2 == TDOmode)
     return mode1 == mode2;
 
   if (ALTIVEC_OR_VSX_VECTOR_MODE (mode1))
@@ -2273,6 +2303,7 @@ rs6000_debug_reg_global (void)
     V4DFmode,
     OOmode,
     XOmode,
+    TDOmode,
     CCmode,
     CCUNSmode,
     CCEQmode,
@@ -2308,6 +2339,7 @@ rs6000_debug_reg_global (void)
   rs6000_debug_reg_print (FIRST_ALTIVEC_REGNO,
 			  LAST_ALTIVEC_REGNO,
 			  "vs");
+  rs6000_debug_reg_print (FIRST_DMR_REGNO, LAST_DMR_REGNO, "dmr");
   rs6000_debug_reg_print (LR_REGNO, LR_REGNO, "lr");
   rs6000_debug_reg_print (CTR_REGNO, CTR_REGNO, "ctr");
   rs6000_debug_reg_print (CR0_REGNO, CR7_REGNO, "cr");
@@ -2328,6 +2360,7 @@ rs6000_debug_reg_global (void)
 	   "wr reg_class = %s\n"
 	   "wx reg_class = %s\n"
 	   "wA reg_class = %s\n"
+	   "wD reg_class = %s\n"
 	   "\n",
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_d]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_v]],
@@ -2335,7 +2368,8 @@ rs6000_debug_reg_global (void)
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_we]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wr]],
 	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wx]],
-	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]]);
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wA]],
+	   reg_class_names[rs6000_constraints[RS6000_CONSTRAINT_wD]]);
 
   nl = "\n";
   for (m = 0; m < NUM_MACHINE_MODES; ++m)
@@ -2632,6 +2666,20 @@ rs6000_setup_reg_addr_masks (void)
 	  addr_mask = 0;
 	  reg = reload_reg_map[rc].reg;
 
+	  if (rc == RELOAD_REG_DMR)
+	    {
+	      if (TARGET_DMF && (m2 == XOmode || m2 == TDOmode))
+		{
+		  addr_mask = RELOAD_REG_VALID;
+		  reg_addr[m].addr_mask[rc] = addr_mask;
+		  any_addr_mask |= addr_mask;
+		}
+	      else
+		reg_addr[m].addr_mask[rc] = 0;
+
+	      continue;
+	    }
+
 	  /* Can mode values go in the GPR/FPR/Altivec registers?  */
 	  if (reg >= 0 && rs6000_hard_regno_mode_ok_p[m][reg])
 	    {
@@ -2727,10 +2775,12 @@ rs6000_setup_reg_addr_masks (void)
 
 	  /* Vector pairs can do both indexed and offset loads if the
 	     instructions are enabled, otherwise they can only do offset loads
-	     since it will be broken into two vector moves.  Vector quads can
-	     only do offset loads.  */
-	  else if ((addr_mask != 0) && TARGET_MMA
-		   && (m2 == OOmode || m2 == XOmode))
+	     since it will be broken into two vector moves.  Vector quads and
+	     dmr1024 type can only do offset loads.  */
+	  else if ((addr_mask != 0)
+		   && ((TARGET_MMA && (m2 == OOmode || m2 == XOmode))
+			|| (TARGET_DMF
+			    && (m2 == TDOmode || m2 == OOmode || m2 == XOmode))))
 	    {
 	      addr_mask |= RELOAD_REG_OFFSET;
 	      if (rc == RELOAD_REG_FPR || rc == RELOAD_REG_VMX)
@@ -2778,6 +2828,9 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   for (r = FIRST_ALTIVEC_REGNO; r <= LAST_ALTIVEC_REGNO; ++r)
     rs6000_regno_regclass[r] = ALTIVEC_REGS;
 
+  for (r = FIRST_DMR_REGNO; r <= LAST_DMR_REGNO; ++r)
+    rs6000_regno_regclass[r] = DMR_REGS;
+
   rs6000_regno_regclass[CR0_REGNO] = CR0_REGS;
   for (r = CR1_REGNO; r <= CR7_REGNO; ++r)
     rs6000_regno_regclass[r] = CR_REGS;
@@ -2806,6 +2859,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   reg_class_to_reg_type[(int)LINK_OR_CTR_REGS] = SPR_REG_TYPE;
   reg_class_to_reg_type[(int)CR_REGS] = CR_REG_TYPE;
   reg_class_to_reg_type[(int)CR0_REGS] = CR_REG_TYPE;
+  reg_class_to_reg_type[(int)DMR_REGS] = DMR_REG_TYPE;
 
   if (TARGET_VSX)
     {
@@ -2970,7 +3024,8 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	wc - Reserved to represent individual CR bits (used in LLVM).
 	wn - always NO_REGS.
 	wr - GPR if 64-bit mode is permitted.
-	wx - Float register if we can do 32-bit int stores.  */
+	wx - Float register if we can do 32-bit int stores.
+	wD - Dense math register if TARGET_DMF is enabled, else float register.  */
 
   if (TARGET_HARD_FLOAT)
     rs6000_constraints[RS6000_CONSTRAINT_d] = FLOAT_REGS;
@@ -2978,6 +3033,10 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     rs6000_constraints[RS6000_CONSTRAINT_v] = ALTIVEC_REGS;
   if (TARGET_VSX)
     rs6000_constraints[RS6000_CONSTRAINT_wa] = VSX_REGS;
+  if (TARGET_DMF)
+    rs6000_constraints[RS6000_CONSTRAINT_wD] = DMR_REGS;
+  else if (TARGET_MMA)
+    rs6000_constraints[RS6000_CONSTRAINT_wD] = FLOAT_REGS;
 
   if (TARGET_POWERPC64)
     {
@@ -3160,6 +3219,12 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	}
     }
 
+  if (TARGET_DMF)
+    {
+      reg_addr[TDOmode].reload_load = CODE_FOR_reload_tdo_load;
+      reg_addr[TDOmode].reload_store = CODE_FOR_reload_tdo_store;
+    }
+
   /* Precalculate HARD_REGNO_NREGS.  */
   for (r = 0; HARD_REGISTER_NUM_P (r); ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
@@ -3185,6 +3250,9 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
       else if (c == FLOAT_REGS)
 	reg_size = UNITS_PER_FP_WORD;
+
+      else if (c == DMR_REGS)
+	reg_size = UNITS_PER_DMR_WORD;
 
       else
 	reg_size = UNITS_PER_WORD;
@@ -4358,12 +4426,15 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags_explicit & OPTION_MASK_PCREL) == 0)
     rs6000_isa_flags |= OPTION_MASK_PCREL;
 
-  /* -mpcrel requires -mcmodel=medium, but we can't check TARGET_CMODEL until
-      after the subtarget override options are done.  */
-  else if (TARGET_PCREL && TARGET_CMODEL != CMODEL_MEDIUM)
+  /* -mpcrel requires medium or large code models, but we can't check
+      TARGET_CMODEL until after the subtarget override options are done.  */
+  else if (TARGET_PCREL
+	   && TARGET_CMODEL != CMODEL_MEDIUM
+	   && TARGET_CMODEL != CMODEL_LARGE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_PCREL) != 0)
-	error ("%qs requires %qs", "-mpcrel", "-mcmodel=medium");
+	error ("%qs requires %qs or %qs", "-mpcrel", "-mcmodel=medium",
+	       "-mcmodel=large");
 
       rs6000_isa_flags &= ~OPTION_MASK_PCREL;
     }
@@ -4379,6 +4450,19 @@ rs6000_option_override_internal (bool global_init_p)
 	error ("%qs requires %qs", "-mmma", "-mcpu=power10");
 
       rs6000_isa_flags &= ~OPTION_MASK_MMA;
+    }
+
+  /* Enable -mdense_math by default on future systems.  */
+  if (TARGET_FUTURE && (rs6000_isa_flags_explicit & OPTION_MASK_DMF) == 0)
+    rs6000_isa_flags |= OPTION_MASK_DMF;
+
+  /* Turn off DMF options on non-future systems.  */
+  else if (!TARGET_FUTURE && TARGET_DMF)
+    {
+      if ((rs6000_isa_flags_explicit & OPTION_MASK_DMF) != 0)
+	error ("%qs requires %qs", "-mdense_math", "-mcpu=future");
+
+      rs6000_isa_flags &= ~OPTION_MASK_DMF;
     }
 
   /* Enable power10 fusion if we are tuning for power10, even if we aren't
@@ -5911,7 +5995,7 @@ rs6000_machine_from_flags (void)
 
   /* Disable the flags that should never influence the .machine selection.  */
   flags &= ~(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_PPC_GPOPT | OPTION_MASK_ISEL
-	     | OPTION_MASK_ALTIVEC);
+	     | OPTION_MASK_ALTIVEC | OPTION_MASK_BLOCK_OPS_VECTOR_PAIR);
 
   if ((flags & (FUTURE_MASKS_SERVER & ~POWER11_MASKS_SERVER)) != 0)
     return "future";
@@ -8668,7 +8752,10 @@ reg_offset_addressing_ok_p (machine_mode mode)
 	 underlying vectors support offset addressing.  */
     case E_OOmode:
     case E_XOmode:
-      return TARGET_MMA;
+      return TARGET_MMA || TARGET_DMF;
+
+    case E_TDOmode:
+      return TARGET_DMF;
 
     case E_SDmode:
       /* If we can do direct load/stores of SDmode, restrict it to reg+reg
@@ -11223,6 +11310,12 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
 	       (mode == OOmode) ? "__vector_pair" : "__vector_quad");
       break;
 
+    case E_TDOmode:
+      if (CONST_INT_P (operands[1]))
+	error ("%qs is an opaque type, and you cannot set it to constants",
+	       "__dmr1024");
+      break;
+
     case E_SImode:
     case E_DImode:
       /* Use default pattern for address of ELF small data */
@@ -12351,6 +12444,15 @@ rs6000_secondary_reload_memory (rtx addr,
     addr_mask = (reg_addr[mode].addr_mask[RELOAD_REG_VMX]
 		 & ~RELOAD_REG_AND_M16);
 
+  /* DMR registers have no load/store instructions; memory access goes
+     through an intermediate VSX stage: DMR registers are first copied to
+     VSX registers which are then stored to memory, or value in memory is
+     first loaded into VSX registers which are then copied ot DMR registers.
+     Use the DMR addr_mask so the address-code checks below can determine
+     whether a scratch GPR is needed to simplify the address.  */
+  else if (rclass == DMR_REGS)
+    addr_mask = reg_addr[mode].addr_mask[RELOAD_REG_DMR];
+
   /* If the register allocator hasn't made up its mind yet on the register
      class to use, settle on defaults to use.  */
   else if (rclass == NO_REGS)
@@ -12677,6 +12779,12 @@ rs6000_secondary_reload_simple_move (enum rs6000_reg_type to_type,
   else if ((size == 4 || (TARGET_POWERPC64 && size == 8))
 	   && ((to_type == GPR_REG_TYPE && from_type == SPR_REG_TYPE)
 	       || (to_type == SPR_REG_TYPE && from_type == GPR_REG_TYPE)))
+    return true;
+
+  /* DMRs can be copied to VSX register, and vice versa.  */
+  if (TARGET_DMF && (mode == XOmode || mode == TDOmode)
+      && ((to_type == DMR_REG_TYPE && from_type == VSX_REG_TYPE)
+	   || (to_type == VSX_REG_TYPE && from_type == DMR_REG_TYPE)))
     return true;
 
   return false;
@@ -13373,6 +13481,10 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
   machine_mode mode = GET_MODE (x);
   bool is_constant = CONSTANT_P (x);
 
+  /* Values cannot be loaded into DMR registers.  */
+  if (rclass == DMR_REGS)
+    return NO_REGS;
+
   /* If a mode can't go in FPR/ALTIVEC/VSX registers, don't return a preferred
      reload class for it.  */
   if ((rclass == ALTIVEC_REGS || rclass == VSX_REGS)
@@ -13469,7 +13581,10 @@ rs6000_preferred_reload_class (rtx x, enum reg_class rclass)
 	return VSX_REGS;
 
       if (mode == XOmode)
-	return FLOAT_REGS;
+	return (TARGET_DMF ? VSX_REGS : FLOAT_REGS);
+
+      if (mode == TDOmode)
+	return VSX_REGS;
 
       if (GET_MODE_CLASS (mode) == MODE_INT)
 	return GENERAL_REGS;
@@ -13631,6 +13746,26 @@ rs6000_secondary_reload_class (enum reg_class rclass, machine_mode mode,
   /* We can copy among the CR registers.  */
   if ((rclass == CR_REGS || rclass == CR0_REGS)
       && regno >= 0 && CR_REGNO_P (regno))
+    return NO_REGS;
+
+  /* DMR registers can only be moved to/from VSX registers.
+     - DMR -> VSX or VSX -> DMR: direct, no scratch register needed.
+     - DMR -> memory or memory -> DMR: must route through VSX; request
+     VSX_REGS as the intermediate scratch class.
+     - DMR -> DMR: direct move, no scratch needed.  */
+  if (rclass == DMR_REGS)
+    {
+      /* VSX register or another DMR register: direct move, no scratch.  */
+      if (regno >= 0 && (VSX_REGNO_P (regno) || DMR_REGNO_P (regno)))
+	return NO_REGS;
+
+      /* Memory (regno == -1) or unresolved pseudo: need a VSX intermediate.  */
+      return VSX_REGS;
+    }
+
+  /* Copying into a VSX register from a DMR register: direct.  */
+  if ((rclass == VSX_REGS || rclass == FLOAT_REGS || rclass == ALTIVEC_REGS)
+      && regno >= 0 && DMR_REGNO_P (regno))
     return NO_REGS;
 
   /* Otherwise, we need GENERAL_REGS.  */
@@ -14125,6 +14260,15 @@ print_operand (FILE *file, rtx x, int code)
 	 output_operand.  */
 
     case 'A':
+      /* Use dense math register if TARGET_DMF enabled.  */
+      if (TARGET_DMF)
+	{
+	  if (!REG_P (x) || !DMR_REGNO_P (REGNO (x)))
+	    output_operand_lossage ("invalid %%A value");
+	  else
+	    fprintf (file, "%d", REGNO (x) - FIRST_DMR_REGNO);
+	  return;
+	}
       /* Write the MMA accumulator number associated with VSX register X.  */
       if (!REG_P (x) || !FP_REGNO_P (REGNO (x)) || (REGNO (x) % 4) != 0)
 	output_operand_lossage ("invalid %%A value");
@@ -14500,6 +14644,30 @@ print_operand (FILE *file, rtx x, int code)
 	fprintf (file, HOST_WIDE_INT_PRINT_DEC, sext_hwi (INTVAL (x), 16));
       else
 	print_operand (file, x, 0);
+      return;
+
+    case 'W':
+      /* Like '%x', but prints the VSX register number +2.
+	  TODO: Validate %W operands (e.g. reject V30/V31 to avoid referencing
+	  invalid registers). Ensure GET_MODE_SIZE (GET_MODE (x)) >= 64
+	  before using %W.  */
+      if (!REG_P (x) || !VSX_REGNO_P (REGNO (x)))
+	output_operand_lossage ("invalid %%W value");
+      else
+	{
+	  int reg = REGNO (x);
+	  int vsx_reg = (FP_REGNO_P (reg)
+			 ? reg - 32
+			 : reg - FIRST_ALTIVEC_REGNO + 32);
+	  vsx_reg += 2;
+
+#ifdef TARGET_REGNAMES
+	  if (TARGET_REGNAMES)
+	    fprintf (file, "%%vs%d", vsx_reg);
+	  else
+#endif
+	    fprintf (file, "%d", vsx_reg);
+	}
       return;
 
     case 'x':
@@ -20635,6 +20803,8 @@ rs6000_mangle_type (const_tree type)
     return "u13__vector_pair";
   if (type == vector_quad_type_node)
     return "u13__vector_quad";
+  if (type == dmr1024_type_node)
+    return "u9__dmr1024";
 
   /* For all other types, use the default mangling.  */
   return NULL;
@@ -21360,7 +21530,7 @@ rs6000_elf_declare_function_name (FILE *file, const char *name, tree decl)
   ASM_OUTPUT_TYPE_DIRECTIVE (file, name, "function");
   ASM_DECLARE_RESULT (file, DECL_RESULT (decl));
 
-  if (TARGET_CMODEL == CMODEL_LARGE
+  if (TARGET_CMODEL == CMODEL_LARGE && !TARGET_PCREL
       && rs6000_global_entry_point_prologue_needed_p ())
     {
       char buf[256];
@@ -22747,6 +22917,31 @@ rs6000_debug_address_cost (rtx x, machine_mode mode,
 }
 
 
+static int
+rs6000_dmr_register_move_cost (machine_mode mode, reg_class_t rclass)
+{
+  const int base_cost = 2;
+  HARD_REG_SET vsx_set = (reg_class_contents[rclass]
+			  & reg_class_contents[VSX_REGS]);
+
+  if (TARGET_DMF && !hard_reg_set_empty_p (vsx_set))
+    {
+      /* XOmode can be copied in 1 instruction.  */
+      if (mode == XOmode)
+	return base_cost;
+
+      /* TDOmode can be copied in 2 instructions.  */
+      else if (mode == TDOmode)
+	return base_cost * 2;
+
+      else
+	return base_cost * 2 * hard_regno_nregs (FIRST_DMR_REGNO, mode);
+    }
+
+  return 1000 * 2 * hard_regno_nregs (FIRST_DMR_REGNO, mode);
+}
+
+
 /* A C expression returning the cost of moving data from a register of class
    CLASS1 to one of CLASS2.  */
 
@@ -22767,10 +22962,20 @@ rs6000_register_move_cost (machine_mode mode,
   HARD_REG_SET to_vsx, from_vsx;
   to_vsx = reg_class_contents[to] & reg_class_contents[VSX_REGS];
   from_vsx = reg_class_contents[from] & reg_class_contents[VSX_REGS];
-  if (!hard_reg_set_empty_p (to_vsx)
-      && !hard_reg_set_empty_p (from_vsx)
-      && (TARGET_VSX
-	  || hard_reg_set_intersect_p (to_vsx, from_vsx)))
+
+  if ((mode == TDOmode || mode==XOmode) && from == DMR_REGS && to == DMR_REGS)
+    ret = 2 * hard_regno_nregs (FIRST_DMR_REGNO, mode);
+
+  else if (from == DMR_REGS)
+    ret = rs6000_dmr_register_move_cost (mode, to);
+
+  else if (to == DMR_REGS)
+    ret = rs6000_dmr_register_move_cost (mode, from);
+
+  else if (!hard_reg_set_empty_p (to_vsx)
+	   && !hard_reg_set_empty_p (from_vsx)
+	   && (TARGET_VSX
+	       || hard_reg_set_intersect_p (to_vsx, from_vsx)))
     {
       int reg = FIRST_FPR_REGNO;
       if (TARGET_VSX
@@ -22866,6 +23071,9 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
     ret = 4 * hard_regno_nregs (32, mode);
   else if (reg_classes_intersect_p (rclass, ALTIVEC_REGS))
     ret = 4 * hard_regno_nregs (FIRST_ALTIVEC_REGNO, mode);
+  else if (reg_classes_intersect_p (rclass, DMR_REGS))
+    ret = (rs6000_dmr_register_move_cost (mode, VSX_REGS)
+	   + rs6000_memory_move_cost (mode, VSX_REGS, false));
   else
     ret = 4 + rs6000_register_move_cost (mode, rclass, GENERAL_REGS);
 
@@ -24074,6 +24282,8 @@ rs6000_compute_pressure_classes (enum reg_class *pressure_classes)
       if (TARGET_HARD_FLOAT)
 	pressure_classes[n++] = FLOAT_REGS;
     }
+  if (TARGET_DMF)
+    pressure_classes[n++] = DMR_REGS;
   pressure_classes[n++] = CR_REGS;
   pressure_classes[n++] = SPECIAL_REGS;
 
@@ -24238,6 +24448,11 @@ rs6000_debugger_regno (unsigned int regno, unsigned int format)
     return 67;
   if (regno == 64)
     return 64;
+
+  /* Note that the debug format register numbers may be changed
+     later.  */
+  if (DMR_REGNO_P (regno))
+    return regno - FIRST_DMR_REGNO + 112;
 
   gcc_unreachable ();
 }
@@ -24469,6 +24684,7 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "power10",			OPTION_MASK_POWER10,		false, true  },
   { "power11",			OPTION_MASK_POWER11,		false, false },
   { "future",			OPTION_MASK_FUTURE,		false, false },
+  { "dense-math",		OPTION_MASK_DMF,		false, true  },
   { "hard-dfp",			OPTION_MASK_DFP,		false, true  },
   { "htm",			OPTION_MASK_HTM,		false, true  },
   { "isel",			OPTION_MASK_ISEL,		false, true  },
@@ -27405,9 +27621,10 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   mode = GET_MODE (dst);
   nregs = hard_regno_nregs (reg, mode);
 
-  /* If we have a vector quad register for MMA, and this is a load or store,
-     see if we can use vector paired load/stores.  */
-  if (mode == XOmode && TARGET_MMA
+  /* If we have a vector quad register for MMA or DMR register for Dense Math,
+     and this is a load or store, see if we can use vector paired
+     load/stores.  */
+  if ((mode == XOmode || mode == TDOmode) && (TARGET_MMA || TARGET_DMF)
       && (MEM_P (dst) || MEM_P (src)))
     {
       reg_mode = OOmode;
@@ -27415,7 +27632,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
     }
   /* If we have a vector pair/quad mode, split it into two/four separate
      vectors.  */
-  else if (mode == OOmode || mode == XOmode)
+  else if (mode == OOmode || mode == XOmode || mode == TDOmode)
     reg_mode = V1TImode;
   else if (FP_REGNO_P (reg))
     reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode :
@@ -27461,13 +27678,13 @@ rs6000_split_multireg_move (rtx dst, rtx src)
       return;
     }
 
-  /* The __vector_pair and __vector_quad modes are multi-register
+  /* The __vector_pair, __vector_quad and __dmr1024 modes are multi-register
      modes, so if we have to load or store the registers, we have to be
      careful to properly swap them if we're in little endian mode
      below.  This means the last register gets the first memory
      location.  We also need to be careful of using the right register
      numbers if we are splitting XO to OO.  */
-  if (mode == OOmode || mode == XOmode)
+  if (mode == OOmode || mode == XOmode || mode == TDOmode)
     {
       nregs = hard_regno_nregs (reg, mode);
       int reg_mode_nregs = hard_regno_nregs (reg, reg_mode);
@@ -27477,8 +27694,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  unsigned size = GET_MODE_SIZE (reg_mode);
 
 	  /* If we are reading an accumulator register, we have to
-	     deprime it before we can access it.  */
-	  if (TARGET_MMA
+	     deprime it before we can access it, unless we have dense math
+	     registers, which do not need priming/depriming.  */
+	  if (TARGET_MMA && !TARGET_DMF
 	      && GET_MODE (src) == XOmode && FP_REGNO_P (REGNO (src)))
 	    emit_insn (gen_mma_xxmfacc (src, src));
 
@@ -27511,8 +27729,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	    }
 
 	  /* If we are writing an accumulator register, we have to
-	     prime it after we've written it.  */
-	  if (TARGET_MMA
+	     prime it after we've written it, unless we have dense math
+	     registers, which do not need priming/depriming.  */
+	  if (TARGET_MMA && !TARGET_DMF
 	      && GET_MODE (dst) == XOmode && FP_REGNO_P (REGNO (dst)))
 	    emit_insn (gen_mma_xxmtacc (dst, dst));
 
@@ -27580,8 +27799,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	    }
 
 	  /* We are writing an accumulator register, so we have to
-	     prime it after we've written it.  */
-	  if (GET_MODE (src) == XOmode)
+	     prime it after we've written it, unless we have dense math
+	     registers, which do not need priming/depriming.  */
+	  if (GET_MODE (src) == XOmode && !TARGET_DMF)
 	    emit_insn (gen_mma_xxmtacc (dst, dst));
 
 	  return;
@@ -27593,16 +27813,17 @@ rs6000_split_multireg_move (rtx dst, rtx src)
   if (REG_P (src) && REG_P (dst) && (REGNO (src) < REGNO (dst)))
     {
       /* If we are reading an accumulator register, we have to
-	 deprime it before we can access it.  */
-      if (TARGET_MMA
+	 deprime it before we can access it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF
 	  && GET_MODE (src) == XOmode && FP_REGNO_P (REGNO (src)))
 	emit_insn (gen_mma_xxmfacc (src, src));
 
       /* Move register range backwards, if we might have destructive
 	 overlap.  */
       int i;
-      /* XO/OO are opaque so cannot use subregs. */
-      if (mode == OOmode || mode == XOmode )
+      /* XO/OO/TDO are opaque so cannot use subregs. */
+      if (mode == OOmode || mode == XOmode || mode == TDOmode)
 	{
 	  for (i = nregs - 1; i >= 0; i--)
 	    {
@@ -27621,8 +27842,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       /* If we are writing an accumulator register, we have to
-	 prime it after we've written it.  */
-      if (TARGET_MMA
+	 prime it after we've written it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF
 	  && GET_MODE (dst) == XOmode && FP_REGNO_P (REGNO (dst)))
 	emit_insn (gen_mma_xxmtacc (dst, dst));
     }
@@ -27758,8 +27980,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       /* If we are reading an accumulator register, we have to
-	 deprime it before we can access it.  */
-      if (TARGET_MMA && REG_P (src)
+	 deprime it before we can access it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF && REG_P (src)
 	  && GET_MODE (src) == XOmode && FP_REGNO_P (REGNO (src)))
 	emit_insn (gen_mma_xxmfacc (src, src));
 
@@ -27775,8 +27998,8 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	  if (j == 0 && used_update)
 	    continue;
 
-	  /* XO/OO are opaque so cannot use subregs. */
-	  if (mode == OOmode || mode == XOmode )
+	  /* XO/OO/TDO are opaque so cannot use subregs. */
+	  if (mode == OOmode || mode == XOmode || mode == TDOmode)
 	    {
 	      rtx dst_i = gen_rtx_REG (reg_mode, REGNO (dst) + j);
 	      rtx src_i = gen_rtx_REG (reg_mode, REGNO (src) + j);
@@ -27790,8 +28013,9 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 	}
 
       /* If we are writing an accumulator register, we have to
-	 prime it after we've written it.  */
-      if (TARGET_MMA && REG_P (dst)
+	 prime it after we've written it, unless we have dense math
+	 registers, which do not need priming/depriming.  */
+      if (TARGET_MMA && !TARGET_DMF && REG_P (dst)
 	  && GET_MODE (dst) == XOmode && FP_REGNO_P (REGNO (dst)))
 	emit_insn (gen_mma_xxmtacc (dst, dst));
 
@@ -28804,7 +29028,8 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 
   if (frommode != tomode)
     {
-      /* Do not allow conversions to/from XOmode and OOmode types.  */
+      /* Do not allow conversions to/from XOmode, OOmode and TDOmode
+	 types.  */
       if (frommode == XOmode)
 	return N_("invalid conversion from type %<__vector_quad%>");
       if (tomode == XOmode)
@@ -28813,6 +29038,10 @@ rs6000_invalid_conversion (const_tree fromtype, const_tree totype)
 	return N_("invalid conversion from type %<__vector_pair%>");
       if (tomode == OOmode)
 	return N_("invalid conversion to type %<__vector_pair%>");
+      if (frommode == TDOmode)
+	return N_("invalid conversion from type %<__dmr1024%>");
+      if (tomode == TDOmode)
+	return N_("invalid conversion to type %<__dmr1024%>");
     }
 
   /* Conversion allowed.  */
@@ -29294,33 +29523,44 @@ constant_generates_xxspltidp (vec_const_128bit_type *vsx_const)
   return sf_value;
 }
 
-/* Now we have only two opaque types, they are __vector_quad and
-   __vector_pair built-in types.  They are target specific and
-   only available when MMA is supported.  With MMA supported, it
-   simply returns true, otherwise it checks if the given gimple
-   STMT is an assignment, asm or call stmt and uses either of
-   these two opaque types unexpectedly, if yes, it would raise
-   an error message and returns true, otherwise it returns false.  */
+/* Now we have three opaque types: the __vector_quad, __vector_pair and
+   __dmr1024 built-in types.  They are target specific and each one is
+   only available when its required ISA support is enabled:
+   __vector_pair requires MMA or DMF (vector pairs are used by both),
+   __vector_quad requires MMA, and __dmr1024 requires DMF.  Note that
+   DMF does not imply MMA (e.g. -mcpu=future -mno-mma).  With both MMA
+   and DMF enabled, all three types are usable and this simply returns
+   false, otherwise it checks if the given gimple STMT is an
+   assignment, asm or call stmt and uses one of these opaque types
+   whose ISA support is missing, if yes, it would raise an error
+   message and returns true, otherwise it returns false.  */
 
 bool
 rs6000_opaque_type_invalid_use_p (gimple *stmt)
 {
-  if (TARGET_MMA)
+  if (TARGET_MMA && TARGET_DMF)
     return false;
 
-  /* If the given TYPE is one MMA opaque type, emit the corresponding
-     error messages and return true, otherwise return false.  */
+  /* If the given TYPE is one MMA/DMF opaque type whose required ISA
+     support is missing, emit the corresponding error message and
+     return true, otherwise return false.  */
   auto check_and_error_invalid_use = [](tree type)
   {
     tree mv = TYPE_MAIN_VARIANT (type);
-    if (mv == vector_quad_type_node)
+    if (!TARGET_MMA && mv == vector_quad_type_node)
       {
 	error ("type %<__vector_quad%> requires the %qs option", "-mmma");
 	return true;
       }
-    else if (mv == vector_pair_type_node)
+    else if (!TARGET_MMA && !TARGET_DMF && mv == vector_pair_type_node)
       {
-	error ("type %<__vector_pair%> requires the %qs option", "-mmma");
+	error ("type %<__vector_pair%> requires the %qs or %qs option", "-mmma"
+	       , "-mdense-math");
+	return true;
+      }
+    else if (!TARGET_DMF && mv == dmr1024_type_node)
+      {
+	error ("type %<__dmr1024%> requires the %qs option", "-mdense-math");
 	return true;
       }
     return false;

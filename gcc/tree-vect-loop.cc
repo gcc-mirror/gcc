@@ -7224,6 +7224,16 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* We'll verify the reduction operation only later - avoid
+     all operations that mismatch on the number of SLP children.  */
+  if (op.num_ops != SLP_TREE_CHILDREN (slp_for_stmt_info).length ())
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "unsupported reduction operation.\n");
+      return false;
+    }
+
   /* All uses but the last are expected to be defined in the loop.
      The last use is the reduction variable.  In case of nested cycle this
      assumption is not true: we use reduc_index to record the index of the
@@ -9511,6 +9521,39 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
   return true;
 }
 
+/* Return true if the scalar initial values and steps of the SLP induction
+   lanes allow the first CANDIDATE_NIVS IVs to be reused circularly for the
+   remaining lanes.  */
+static bool
+vect_slp_induction_reuse_p (tree *steps, tree *inits, unsigned group_size,
+			  unsigned HOST_WIDE_INT const_nunits,
+			  unsigned candidate_nivs, unsigned nivs)
+{
+  gcc_assert (candidate_nivs > 0);
+  gcc_assert (candidate_nivs < nivs);
+
+  /* This function compares only STEPS and INITS, so all checked lanes must
+     precede the first wrap of the SLP group.  */
+  gcc_assert (nivs * const_nunits <= group_size);
+
+  for (unsigned ivn = candidate_nivs; ivn < nivs; ++ivn)
+    {
+      unsigned reuse_ivn = ivn % candidate_nivs;
+      for (unsigned HOST_WIDE_INT eltn = 0; eltn < const_nunits; ++eltn)
+	{
+	  unsigned HOST_WIDE_INT elt = ivn * const_nunits + eltn;
+	  unsigned HOST_WIDE_INT reused_elt
+	    = reuse_ivn * const_nunits + eltn;
+
+	  if (!operand_equal_p (steps[elt], steps[reused_elt], 0)
+	      || !operand_equal_p (inits[elt], inits[reused_elt], 0))
+	    return false;
+	}
+    }
+
+  return true;
+}
+
 /* Function vectorizable_induction
 
    Check if STMT_INFO performs an induction computation that can be vectorized.
@@ -9745,13 +9788,28 @@ vectorizable_induction (loop_vec_info loop_vinfo,
     nivs = nvects;
   else if (nunits.is_constant (&const_nunits))
     {
-      /* Compute the number of distinct IVs we need.  First reduce
-	 group_size if it is a multiple of const_nunits so we get
-	 one IV for a group_size of 4 but const_nunits 2.  */
+      gcc_assert (!init_node);
+      /* Compute the number of distinct IVs we need.  We can reduce the
+	 number when later vector chunks are equal to earlier chunks.  */
+      nivs = least_common_multiple (group_size, const_nunits) / const_nunits;
       unsigned group_sizep = group_size;
       if (group_sizep % const_nunits == 0)
-	group_sizep = group_sizep / const_nunits;
-      nivs = least_common_multiple (group_sizep, const_nunits) / const_nunits;
+	{
+	  group_sizep = group_sizep / const_nunits;
+	  unsigned candidate_nivs
+	    = least_common_multiple (group_sizep, const_nunits) / const_nunits;
+	  if (candidate_nivs < nivs
+	      && vect_slp_induction_reuse_p (steps, inits, group_size,
+					   const_nunits, candidate_nivs, nivs))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "reusing %u SLP induction IVs for %u "
+				 "vector chunks\n",
+				 candidate_nivs, nivs);
+	      nivs = candidate_nivs;
+	    }
+	}
     }
   else
     {
@@ -9978,10 +10036,13 @@ vectorizable_induction (loop_vec_info loop_vinfo,
       else
 	nivs = 1;
       vec_steps.reserve (nivs-ivn);
+      unsigned generated_nivs = ivn;
+      gcc_assert (generated_nivs > 0);
       for (; ivn < nivs; ++ivn)
 	{
-	  slp_node->push_vec_def (SLP_TREE_VEC_DEFS (slp_node)[0]);
-	  vec_steps.quick_push (vec_steps[0]);
+	  unsigned reuse_ivn = ivn % generated_nivs;
+	  slp_node->push_vec_def (SLP_TREE_VEC_DEFS (slp_node)[reuse_ivn]);
+	  vec_steps.quick_push (vec_steps[reuse_ivn]);
 	}
     }
 

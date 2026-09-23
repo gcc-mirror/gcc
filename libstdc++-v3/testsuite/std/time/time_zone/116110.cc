@@ -65,8 +65,8 @@ test_apia()
   auto* tz = locate_zone("Pacific/Apia");
   local_seconds t = local_days(2011y/December/29) + 24h;
 
-  // FIXME: this should be + 10h but we do not account for DST yet, so + 11h.
-  sys_seconds ut(t.time_since_epoch() + 11h );
+  // The wall UNTIL is interpreted in the prior offset (-11h + 1h)
+  sys_seconds ut(t.time_since_epoch() + 10h);
   sys_info info;
   info = tz->get_info(ut - 1s);
   VERIFY( info.offset == (-11h + info.save) );
@@ -78,9 +78,50 @@ test_apia()
   VERIFY( info.abbrev == "+14" );
 }
 
+void
+test_dawson()
+{
+  /* 1945 August rule change changes letters (abbrev)
+     and remains in DST:
+  R Y 1942 o - F 9 2 1 W
+  R Y 1945 o - Au 14 23u 1 P
+  R Y 1945 o - S 30 2 0 S
+  Z America/Dawson -9:17:40 - LMT 1900 Au 20
+  -9 Y Y%sT 1965
+  -9 Yu Y%sT 1973 O 28
+  */
+
+  auto* tz = locate_zone("America/Dawson");
+  
+  // Triggers rule transitions from the start.
+  sys_info info = tz->get_info(sys_days(1900y/August/20) + 10h);
+  VERIFY( info.offset == -9h );
+  VERIFY( info.save == 0min );
+  VERIFY( info.abbrev == "YST" );
+
+  // Check YWT transition at 02:00 + 9h UT, that is DST
+  info = tz->get_info(sys_days(1942y/February/9) + 11h);
+  VERIFY( info.offset == -8h );
+  VERIFY( info.save == 60min );
+  VERIFY( info.abbrev == "YWT" );
+
+  // Check YPT transition at 23:00 UT, remains DST
+  info = tz->get_info(sys_days(1945y/August/14) + 23h);
+  VERIFY( info.offset == -8h );
+  VERIFY( info.save == 60min );
+  VERIFY( info.abbrev == "YPT" );
+
+  // Check YST transition at 02:00 + 8h UT, switches to STD
+  info = tz->get_info(sys_days(1945y/September/30) + 10h);
+  VERIFY( info.offset == -9h );
+  VERIFY( info.save == 0min );
+  VERIFY( info.abbrev == "YST" );
+}
+
 int main()
 {
   test_broken_hill();
   test_kiritimati();
   test_apia();
+  test_dawson();
 }

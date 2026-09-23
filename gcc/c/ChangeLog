@@ -1,3 +1,16 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/125935
+	* c-decl.cc (c_init_decl_processing): Use "bool" rather than "_Bool"
+	as the name of boolean_type_node for C23+.
+
 2026-07-05  Kees Cook  <kees@kernel.org>
 
 	Backported from master:

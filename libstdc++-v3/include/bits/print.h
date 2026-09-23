@@ -80,19 +80,24 @@ namespace __format
 	    ::funlockfile(__f);
 	    __throw_system_error(EACCES);
 	  }
-	// Allocate buffer if needed:
-	if (_M_write_buf().empty())
-	  if (::__overflow(__f, EOF) == EOF)
-	    {
-	      const int __err = errno;
-	      ::funlockfile(__f);
-	      __throw_system_error(__err);
-	    }
       }
 
       ~_File() { ::funlockfile(_M_file); }
 
       _File(_File&&) = delete;
+
+      // Allocate FILE's output buffer if needed, and return a span
+      // viewing unused portion of it.
+      std::span<char>
+      _M_init_write_buf()
+      {
+	// After setvbuf glibc pre-allocates the buffer but _IO_write_ptr
+	// remains null until the first write.
+	if (!_M_file->_IO_write_ptr || _M_write_buf().empty())
+	  if (::__overflow(_M_file, EOF) == EOF)
+	    __throw_system_error(errno);
+	return _M_write_buf();
+      }
 
       // A span viewing the unused portion of the stream's output buffer.
       std::span<char>
@@ -158,8 +163,8 @@ namespace __format
     : _M_file(__f), _M_add_newline(__add_newline)
     {
       if (!_M_file._M_unbuffered())
-	// Write directly to the FILE's output buffer.
-	this->_M_reset(_M_file._M_write_buf());
+	// Allocate FILE's output buffer if needed, and write directly to it.
+	this->_M_reset(_M_file._M_init_write_buf());
     }
 
     // This calls I/O functions which are cancellation points, so they

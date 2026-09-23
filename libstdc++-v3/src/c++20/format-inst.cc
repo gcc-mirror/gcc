@@ -27,6 +27,25 @@
 namespace std
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  template<typename _Context>
+    typename basic_format_arg<_Context>::handle
+    basic_format_arg<_Context>::_M_handle_unrecognized() const
+    {
+      // If _M_type corresponds to a new value of _Arg_t introduced after GCC 16,
+      // this function should return a handle that refers to the union member of
+      // _M_val corresponding to that _Arg_t value.	    
+      __throw_format_error("format error: unrecognized argument type");
+    }
+
+ template basic_format_arg<format_context>::handle
+   basic_format_arg<format_context>::_M_handle_unrecognized() const;
+
+# ifdef _GLIBCXX_USE_WCHAR_T
+ template basic_format_arg<wformat_context>::handle
+   basic_format_arg<wformat_context>::_M_handle_unrecognized() const;
+# endif
+
 namespace __format
 {
 

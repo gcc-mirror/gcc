@@ -1,0 +1,5 @@
+begin mode Set = struct (string class, ref[]int elems);
+      Set empty_set
+         = ("", heap[1:0]Elems); { dg-error "collateral clause" }
+      skip
+end

@@ -1,0 +1,11 @@
+{ This tests that names are passed properly to monadic operators. }
+
+begin mode Foo = struct (int i,j);
+      Foo f;
+      i'f := 10;
+      j'f := 20;
+      op + = (ref Foo f) int: (i'f +:= 2; j'f +:= 2; i'f + j'f);
+      assert (+f = 34);
+      assert (i'f = 12);
+      assert (j'f = 22)
+end

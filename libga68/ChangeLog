@@ -1,3 +1,31 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-21  chris hermansen  <clhermansen@gmail.com>
+
+	Backported from master:
+	2026-07-20  chris hermansen  <clhermansen@gmail.com>
+
+	* standard.a68.in (Integer): New mode.
+	(whole_max_entry): New variable.
+	(whole_p10): Likewise.
+	(whole_stop_after): Likewise.
+	(whole_powers_of_10): Likewise.
+	(WHOLEDIGITS): New operator.
+	(whole): Rewrite.
+	(subwhole): Likewise.
+
+2026-07-21  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	Backported from master:
+	2026-05-30  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* ga68-error.c: Fix typos.
+	* ga68-unistr.c (_libga68_u32_cmp): Likewise.
+	(_libga68_u8_uctomb): Likewise.
+	(_libga68_u32_to_u8): Likewise.
+
 2026-04-30  Release Manager
 
 	* GCC 16.1.0 released.

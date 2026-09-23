@@ -164,7 +164,7 @@ a68_lower_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
 	{
 	  /* The qualifier determines what kind of generator is used in the
 	     variable declaration.  This is already annotated in the tax entry
-	     for the definining identifier.  */
+	     for the defining identifier.  */
 	  declarer = NEXT (q);
 	  defining_identifier = NEXT (NEXT (q));
 	}
@@ -576,7 +576,7 @@ a68_lower_procedure_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
       else if (IS (q, QUALIFIER))
 	/* The qualifier determines what kind of generator is used in the
 	   variable declaration.  This is already annotated in the tax entry
-	   for the definining identifier.  */
+	   for the defining identifier.  */
 	defining_identifier = NEXT (NEXT (q));
       else
 	gcc_unreachable ();

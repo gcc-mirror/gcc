@@ -602,14 +602,37 @@ bpf_legitimate_address_p (machine_mode mode,
    `rtx_cost' should recurse.  */
 
 static bool
-bpf_rtx_costs (rtx x ATTRIBUTE_UNUSED,
+bpf_rtx_costs (rtx x,
 	       enum machine_mode mode ATTRIBUTE_UNUSED,
 	       int outer_code ATTRIBUTE_UNUSED,
 	       int opno ATTRIBUTE_UNUSED,
-               int *total ATTRIBUTE_UNUSED,
+	       int *total,
 	       bool speed ATTRIBUTE_UNUSED)
 {
-  /* To be written.  */
+  switch (GET_CODE (x))
+    {
+    case MULT:
+    case DIV:
+    case UDIV:
+    case MOD:
+    case UMOD:
+      /* BPF implements these as a single instruction, so keep the native
+	 operation cheaper than synthesized sequence.
+	 Only influences choice between actually available alternatives;
+	 if the operation has no insn (e.g. a 64-bit signed divide before
+	 -mcpu=v4) expand_divmod () still falls back to a libcall.
+	 Return false so caller rtx_cost keeps recursing for operands.  */
+      *total = COSTS_N_INSNS (1);
+      return false;
+
+    case CONST_INT:
+      /* Signed 32-bit imm is free, wider needs an extra LD_IMM64.  */
+      *total = BPF_IMM32_P (x) ? 0 : COSTS_N_INSNS (1);
+      return true;
+
+    default:
+      return false;
+    }
   return false;
 }
 
@@ -625,7 +648,7 @@ bpf_insn_cost (rtx_insn *insn, bool speed ATTRIBUTE_UNUSED)
      && XINT (XEXP (pat, 1), 1) == UNSPEC_CORE_RELOC)
     return COSTS_N_INSNS (100);
 
-  return COSTS_N_INSNS (1);
+  return pattern_cost (pat, speed);
 }
 
 #undef TARGET_INSN_COST
@@ -1245,7 +1268,7 @@ bpf_asm_named_section (const char *name, unsigned int flags,
      characters.  This includes for example names like /foo//bar/baz.
      This makes it necessary to quote section names to make sure the
      assembler doesn't get confused.  For example, the example above
-     would be interpreted unqouted as a section name "/foo" followed
+     would be interpreted unquoted as a section name "/foo" followed
      by a line comment "//bar/baz".
 
      Note that we only quote the section name if it contains any

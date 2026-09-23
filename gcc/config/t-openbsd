@@ -1,5 +1,6 @@
-# We don't need GCC's own include files.
-USER_H = $(EXTRA_HEADERS)
+# We need stdatomic.h from GCC's include files.
+USER_H = $(srcdir)/ginclude/stdatomic.h \
+	$(EXTRA_HEADERS)
 
 # OpenBSD-specific D support.
 openbsd-d.o: $(srcdir)/config/openbsd-d.cc

@@ -1,0 +1,5 @@
+begin mode Node = struct (int i, Node n); { dg-error "" }
+                                          { dg-message "infinite" "" { target *-*-* } .-1 }
+      skip
+end
+

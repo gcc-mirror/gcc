@@ -33,28 +33,28 @@ struct run_unique
     defined(_PSTL_ICC_16_VC14_TEST_SIMD_LAMBDA_DEBUG_32_BROKEN) //dummy specialization by policy type, in case of broken configuration
     template <typename ForwardIt, typename Generator>
     void
-    operator()(__pstl::execution::unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
+    operator()(std::execution::unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
                ForwardIt last2, Generator generator)
     {
     }
 
     template <typename ForwardIt, typename Generator>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
+    operator()(std::execution::parallel_unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
                ForwardIt last2, Generator generator)
     {
     }
 
     template <typename ForwardIt, typename BinaryPred, typename Generator>
     void
-    operator()(__pstl::execution::unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
+    operator()(std::execution::unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
                ForwardIt last2, BinaryPred pred, Generator generator)
     {
     }
 
     template <typename ForwardIt, typename BinaryPred, typename Generator>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
+    operator()(std::execution::parallel_unsequenced_policy, ForwardIt first1, ForwardIt last1, ForwardIt first2,
                ForwardIt last2, BinaryPred pred, Generator generator)
     {
     }

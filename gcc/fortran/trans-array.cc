@@ -6495,7 +6495,13 @@ gfc_array_init_size (tree descriptor, int rank, int corank, tree * poffset,
   gfc_se se;
   int n;
 
-  type = TREE_TYPE (descriptor);
+  if (expr->ts.type == BT_CLASS
+      && expr3_desc != NULL_TREE
+      && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (expr3_desc)))
+    type = TREE_TYPE (expr3_desc);
+  else
+    type = TREE_TYPE (descriptor);
+
 
   stride = gfc_index_one_node;
   offset = gfc_index_zero_node;
@@ -9738,14 +9744,10 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 	{
 	  tmp = build_fold_indirect_ref_loc (input_location, desc);
 
-	  gfc_ss * ss = gfc_walk_expr (expr);
-	  if (!transposed_dims (ss) && expr->rank != -1)
+	  if (!ctree)
 	    {
-	      if (!ctree)
-		gfc_conv_descriptor_data_set (&se->pre, tmp, ptr);
-	    }
-	  else if (!ctree)
-	    {
+	      /* The original descriptor may have transposed dims so we
+		 can't reuse it directly; we have to create a new one.  */
 	      tree old_field, new_field;
 	      tree old_desc = tmp;
 	      tree new_desc = gfc_create_var (TREE_TYPE (old_desc), "arg_desc");
@@ -9810,19 +9812,55 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 		}
 	      else
 		{
-		  /* The original descriptor has transposed dims so we can't
-		     reuse it directly; we have to create a new one.  */
-		  old_field = gfc_conv_descriptor_offset_get (old_desc);
-		  gfc_conv_descriptor_offset_set (&se->pre, new_desc, old_field);
+		  tree offset = gfc_index_zero_node;
+
+		  tree stride = gfc_index_one_node;
 
 		  for (int i = 0; i < expr->rank; i++)
 		    {
-		      old_field = gfc_conv_descriptor_dimension (old_desc,
-			gfc_rank_cst[get_array_ref_dim_for_loop_dim (ss, i)]);
-		      new_field = gfc_conv_descriptor_dimension (new_desc,
-			gfc_rank_cst[i]);
-		      gfc_add_modify (&se->pre, new_field, old_field);
+		      tree dim = gfc_rank_cst[i];
+
+		      tree lbound = gfc_conv_descriptor_lbound_get (old_desc,
+								    dim);
+		      lbound = gfc_evaluate_now (lbound, &se->pre);
+		      gfc_conv_descriptor_lbound_set (&se->pre, new_desc, dim,
+						      lbound);
+
+		      tree ubound = gfc_conv_descriptor_ubound_get (old_desc,
+								    dim);
+		      ubound = gfc_evaluate_now (ubound, &se->pre);
+		      gfc_conv_descriptor_ubound_set (&se->pre, new_desc, dim,
+						      ubound);
+
+		      gfc_conv_descriptor_stride_set (&se->pre, new_desc, dim,
+						      stride);
+
+		      tree tmp = fold_build2_loc (input_location, MULT_EXPR,
+						  gfc_array_index_type,
+						  stride, lbound);
+		      offset = fold_build2_loc (input_location, MINUS_EXPR,
+						gfc_array_index_type,
+						offset, tmp);
+		      offset = gfc_evaluate_now (offset, &se->pre);
+
+		      /* Now calculate the stride for next dimension, unless the
+			 current dimension is the last one.  */
+		      if (i == expr->rank - 1)
+			break;
+
+		      tmp = fold_build2_loc (input_location, MINUS_EXPR,
+					     gfc_array_index_type,
+					     lbound, gfc_index_one_node);
+		      tree extent = fold_build2_loc (input_location, MINUS_EXPR,
+						     gfc_array_index_type,
+						     ubound, tmp);
+		      stride = fold_build2_loc (input_location, MULT_EXPR,
+						gfc_array_index_type,
+						stride, extent);
+		      stride = gfc_evaluate_now (stride, &se->pre);
 		    }
+
+		  gfc_conv_descriptor_offset_set (&se->pre, new_desc, offset);
 		}
 
 	      if (flag_coarray == GFC_FCOARRAY_LIB
@@ -9838,7 +9876,6 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 	      gfc_conv_descriptor_data_set (&se->pre, new_desc, ptr);
 	      se->expr = gfc_build_addr_expr (NULL_TREE, new_desc);
 	    }
-	  gfc_free_ss (ss);
 	}
 
       if (gfc_option.rtcheck & GFC_RTCHECK_ARRAY_TEMPS)
@@ -11234,7 +11271,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	 runtime helpers to avoid compile-time infinite recursion.  Generate
 	 a call to _gfortran_cfi_deep_copy_array with an element copy
 	 wrapper.  When inside a wrapper, reuse current_function_decl.  */
-      else if (c->attr.allocatable && c->as && cmp_has_alloc_comps && same_type
+      else if (c->attr.allocatable && cmp_has_alloc_comps && same_type
 	       && purpose == COPY_ALLOC_COMP && !c->attr.proc_pointer
 	       && !c->attr.codimension && !caf_in_coarray (caf_mode)
 	       && c->ts.type == BT_DERIVED && c->ts.u.derived != NULL)
@@ -11252,6 +11289,8 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		elem_type = gfc_get_element_type (ctype);
 	      else if (TREE_CODE (ctype) == ARRAY_TYPE)
 		elem_type = TREE_TYPE (ctype);
+	      else if (!c->as)
+		elem_type = TREE_TYPE (TREE_TYPE (comp));
 
 	      helper_ptr_type = get_copy_helper_pointer_type ();
 
@@ -11272,16 +11311,31 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 						   purpose, caf_mode);
 	      copy_wrapper = fold_convert (helper_ptr_type, copy_wrapper);
 
-	      /* Build addresses of descriptors.  */
-	      dest_addr = gfc_build_addr_expr (pvoid_type_node, dcmp);
-	      src_addr = gfc_build_addr_expr (pvoid_type_node, comp);
+	      if (c->as)
+		{
+		  /* Build addresses of descriptors.  */
+		  dest_addr = gfc_build_addr_expr (pvoid_type_node, dcmp);
+		  src_addr = gfc_build_addr_expr (pvoid_type_node, comp);
+		}
+	      else
+		{
+		  /* For scalars, create separate descriptors for source and
+		     dest, then pass their addresses.  */
+		  gfc_se se;
+		  gfc_init_se (&se, NULL);
+		  tmp = gfc_conv_scalar_to_descriptor (&se, dcmp, c->attr);
+		  dest_addr = gfc_build_addr_expr (pvoid_type_node, tmp);
+		  tmp = gfc_conv_scalar_to_descriptor (&se, comp, c->attr);
+		  src_addr = gfc_build_addr_expr (pvoid_type_node, tmp);
+		  gfc_add_block_to_block (&fnblock, &se.pre);
+		}
 
-	      /* Build call: _gfortran_cfi_deep_copy_array (&dcmp, &comp,
-		 wrapper).  */
+	      /* Build call: _gfortran_cfi_deep_copy_array (&dcmp, &comp, wrapper).  */
 	      call = build_call_expr_loc (input_location,
 					  gfor_fndecl_cfi_deep_copy_array, 3,
 					  dest_addr, src_addr,
 					  copy_wrapper);
+
 	      gfc_add_expr_to_block (&fnblock, call);
 	    }
 	  /* For allocatable arrays with nested allocatable components,

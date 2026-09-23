@@ -1203,7 +1203,9 @@ package body Exp_Disp is
          Set_SCIL_Node (SCIL_Related_Node, SCIL_Node);
       end if;
 
-      Analyze_And_Resolve (Call_Node, Call_Typ);
+      --  Suppress null access checks during the analysis of the expanded code
+
+      Analyze_And_Resolve (Call_Node, Call_Typ, Suppress => Access_Check);
 
       Set_Is_Expanded_Dispatching_Call (Call_Node);
    end Expand_Dispatching_Call;

@@ -987,11 +987,9 @@ public:
 
 protected:
   partitioner_base (int64_t min_partition_size, int64_t max_partition_size):
-    min_partition_size (min_partition_size),
-    max_partition_size (max_partition_size)
+    min_partition_size (std::max<int64_t>(min_partition_size, 1)),
+    max_partition_size (std::max<int64_t>(max_partition_size, 1))
   {
-    gcc_assert (min_partition_size != 0);
-    gcc_assert (max_partition_size != 0);
   }
   virtual ~partitioner_base ()
   {}

@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper -std=algol68" } #
+BEGIN # FLOOR is a GNU extension #
+      FLOOR 1.2 # { dg-error "indicant FLOOR has not been declared properly" } #
+END

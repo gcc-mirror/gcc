@@ -123,6 +123,8 @@ void foo12(unsigned long x)
   foo12_res2 = tz;
 }
 
-/* { dg-final { scan-assembler-not "\\sand\\s" } } */
-/* { dg-final { scan-assembler-times "\\sbclr\\s" 12 } } */
+/* { dg-final { scan-assembler-not "\\sand\\s" { target rv32 } } } */
+/* { dg-final { scan-assembler-times "\\sbclr\\s" 12 { target rv32 } } } */
+/* { dg-final { scan-assembler-times "\\sand\\s" 6 { target rv64 } } } */
+/* { dg-final { scan-assembler-times "\\sbclr\\s" 6 { target rv64 } } } */
 

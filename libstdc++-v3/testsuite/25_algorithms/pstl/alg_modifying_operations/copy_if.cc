@@ -33,7 +33,7 @@ struct run_copy_if
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Predicate, typename T>
     void
-    operator()(__pstl::execution::parallel_policy, InputIterator first, InputIterator last, OutputIterator out_first,
+    operator()(std::execution::parallel_policy, InputIterator first, InputIterator last, OutputIterator out_first,
                OutputIterator out_last, OutputIterator2 expected_first, OutputIterator2 expected_last, Size n,
                Predicate pred, T trash)
     {
@@ -41,7 +41,7 @@ struct run_copy_if
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename Size,
               typename Predicate, typename T>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
+    operator()(std::execution::parallel_unsequenced_policy, InputIterator first, InputIterator last,
                OutputIterator out_first, OutputIterator out_last, OutputIterator2 expected_first,
                OutputIterator2 expected_last, Size n, Predicate pred, T trash)
     {

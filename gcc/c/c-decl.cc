@@ -4953,7 +4953,8 @@ c_init_decl_processing (void)
   truthvalue_false_node = integer_zero_node;
 
   /* Even in C99, which has a real boolean type.  */
-  pushdecl (build_decl (UNKNOWN_LOCATION, TYPE_DECL, get_identifier ("_Bool"),
+  pushdecl (build_decl (UNKNOWN_LOCATION, TYPE_DECL,
+			get_identifier (flag_isoc23 ? "bool" : "_Bool"),
 			boolean_type_node));
 
   /* C-specific nullptr initialization.  */

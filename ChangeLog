@@ -1,3 +1,21 @@
+2026-09-16  Kishan Parmar  <kishan@linux.ibm.com>
+
+	Backported from master:
+	2026-09-02  Peter Bergner  <bergner@gcc.gnu.org>
+
+	PR target/122535
+	* configure.ac: Error out on --with-long-double-64.
+	* configure: Regenerate.
+
+2026-08-27  Michael Meissner  <meissner@linux.ibm.com>
+
+	* MAINTAINERS: Update Michael Meissner's information.
+	Backported from master from 2026-08-07.1
+
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
 2026-04-30  Release Manager
 
 	* GCC 16.1.0 released.

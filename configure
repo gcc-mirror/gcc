@@ -818,6 +818,7 @@ ospace_frag'
 ac_user_opts='
 enable_option_checking
 with_build_libsubdir
+with_long_double_64
 with_system_zlib
 with_zstd
 enable_as_accelerator_for
@@ -3025,6 +3026,20 @@ if test x$with_gnu_as = xno ; then
   use_gnu_as=no
   noconfigdirs="$noconfigdirs gas"
 fi
+
+# Catch an invalid use of --with-long-double-64 early.
+
+# Check whether --with-long-double-64 was given.
+if test "${with_long_double_64+set}" = set; then :
+  withval=$with_long_double_64;
+if test x$with_long_double_64 = xyes ; then
+  as_fn_error $? "found --with-long-double-64 but use --without-long-double-128 instead" "$LINENO" 5
+else
+  as_fn_error $? "found --without-long-double-64 but use --with-long-double-128 instead" "$LINENO" 5
+fi
+
+fi
+
 
 use_included_zlib=
 

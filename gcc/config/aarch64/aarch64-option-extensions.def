@@ -359,8 +359,6 @@ AARCH64_OPT_EXTENSION("tlbid", TLBID, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("gcie", GCIE, (), (), (), "")
 
-AARCH64_OPT_EXTENSION("mpamv2", MPAMv2, (), (), (), "")
-
 AARCH64_OPT_EXTENSION("lscp", LSCP, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("mops-go", MOPS_GO, (MOPS, MEMTAG), (), (), "")

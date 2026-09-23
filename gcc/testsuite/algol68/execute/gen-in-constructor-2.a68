@@ -1,0 +1,7 @@
+begin mode Foo = struct (bool sign, ref[]int lala);
+      Foo zero = (false, heap[0:-1]int);
+      assert(sign'zero = false);
+      assert(UPB lala'zero = -1);
+      assert(LWB lala'zero = 0);
+      skip
+end

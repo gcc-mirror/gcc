@@ -4,6 +4,6 @@
 void
 g ()
 {
-  constexpr decltype(nullptr) dm = nullptr; // { dg-message ".constexpr std::nullptr_t dm. previously declared here" }
-  constexpr decltype(nullptr) dm = nullptr; // { dg-error "redeclaration of .constexpr std::nullptr_t dm." }
+  constexpr decltype(nullptr) dm = nullptr; // { dg-message ".constexpr std::nullptr_t const dm. previously declared here" }
+  constexpr decltype(nullptr) dm = nullptr; // { dg-error "redeclaration of .constexpr std::nullptr_t const dm." }
 }

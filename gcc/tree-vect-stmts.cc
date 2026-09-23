@@ -8337,7 +8337,8 @@ vectorizable_store (vec_info *vinfo,
 
   /* Transform.  */
 
-  ensure_base_align (dr_info);
+  if (!costing_p)
+    ensure_base_align (dr_info);
 
   if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) >= 3)
     {
@@ -9977,7 +9978,8 @@ vectorizable_load (vec_info *vinfo,
   /* Transform.  */
 
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info), *first_dr_info = NULL;
-  ensure_base_align (dr_info);
+  if (!costing_p)
+    ensure_base_align (dr_info);
 
   if (memory_access_type == VMAT_INVARIANT)
     {
@@ -12658,6 +12660,13 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
   /* Can't compare mask and non-mask types.  */
   if (vectype1 && vectype2
       && (VECTOR_BOOLEAN_TYPE_P (vectype1) ^ VECTOR_BOOLEAN_TYPE_P (vectype2)))
+    return false;
+
+  /* We cannot compare non-mode precision _BitInt types.  Unlike bool
+     or bit-precision INTEGER_TYPE the padding bit values are target
+     dependent and possibly undefined.  */
+  if (TREE_CODE (TREE_TYPE (rhs1)) == BITINT_TYPE
+      && !type_has_mode_precision_p (TREE_TYPE (rhs1)))
     return false;
 
   /* Boolean values may have another representation in vectors

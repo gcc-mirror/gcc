@@ -112,5 +112,5 @@ TEST_LOOP (double, uint64_t)
 /* { dg-final { scan-tree-dump-not " \.GATHER_LOAD" "vect" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_GATHER_LOAD" "vect" } } */
 /* { dg-final { scan-assembler-not "vluxei64\.v" } } */
-/* { dg-final { scan-assembler-not "vsuxei64\.v" } } */
+/* { dg-final { scan-assembler-not "vsoxei64\.v" } } */
 /* { dg-final { scan-assembler-not {vlse64\.v\s+v[0-9]+,\s*0\([a-x0-9]+\),\s*zero} } } */

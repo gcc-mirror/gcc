@@ -770,8 +770,10 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	      new_base = build_fold_addr_expr (*def_rhs_basep);
 	      new_offset = TREE_OPERAND (lhs, 1);
 	    }
-	  *def_rhs_basep = build2 (MEM_REF, TREE_TYPE (*def_rhs_basep),
-				   new_base, new_offset);
+	  tree atype = TREE_TYPE (*def_rhs_basep);
+	  if (TYPE_ALIGN (TREE_TYPE (lhs)) < TYPE_ALIGN (atype))
+	    atype = build_aligned_type (atype, TYPE_ALIGN (TREE_TYPE (lhs)));
+	  *def_rhs_basep = build2 (MEM_REF, atype, new_base, new_offset);
 	  TREE_THIS_VOLATILE (*def_rhs_basep) = TREE_THIS_VOLATILE (lhs);
 	  TREE_SIDE_EFFECTS (*def_rhs_basep) = TREE_SIDE_EFFECTS (lhs);
 	  TREE_THIS_NOTRAP (*def_rhs_basep) = TREE_THIS_NOTRAP (lhs);
@@ -856,8 +858,10 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 	      new_base = build_fold_addr_expr (*def_rhs_basep);
 	      new_offset = TREE_OPERAND (rhs, 1);
 	    }
-	  *def_rhs_basep = build2 (MEM_REF, TREE_TYPE (*def_rhs_basep),
-				   new_base, new_offset);
+	  tree atype = TREE_TYPE (*def_rhs_basep);
+	  if (TYPE_ALIGN (TREE_TYPE (rhs)) < TYPE_ALIGN (atype))
+	    atype = build_aligned_type (atype, TYPE_ALIGN (TREE_TYPE (rhs)));
+	  *def_rhs_basep = build2 (MEM_REF, atype, new_base, new_offset);
 	  TREE_THIS_VOLATILE (*def_rhs_basep) = TREE_THIS_VOLATILE (rhs);
 	  TREE_SIDE_EFFECTS (*def_rhs_basep) = TREE_SIDE_EFFECTS (rhs);
 	  TREE_THIS_NOTRAP (*def_rhs_basep) = TREE_THIS_NOTRAP (rhs);
@@ -5254,8 +5258,7 @@ optimize_unreachable (basic_block bb)
 	}
       else
 	{
-	  /* Todo: handle other cases.  Note that unreachable switch case
-	     statements have already been removed.  */
+	  /* Todo: handle other cases.  e.g. switch.  */
 	  continue;
 	}
 

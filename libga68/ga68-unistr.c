@@ -54,7 +54,7 @@
 # define MIN(a,b) ((a) < (b) ? (a) : (b))
 #endif
 
-/* Compare two UCS-4 strings of same lenght, lexicographically.
+/* Compare two UCS-4 strings of same length, lexicographically.
    Return -1, 0 or 1.  */
 
 static int
@@ -83,7 +83,7 @@ _libga68_u32_cmp (const uint32_t *s1, size_t stride1,
   return 0;
 }
 
-/* Compare two UCS-4 strings of perhaps different lenghts, lexicographically.
+/* Compare two UCS-4 strings of perhaps different lengths, lexicographically.
    Return -1, 0 or 1.  */
 
 int
@@ -307,7 +307,7 @@ _libga68_u8_uctomb (uint8_t *s, uint32_t uc, ptrdiff_t n)
 
 /* Convert S of size N with stride STRIDE UCS-4 to UTF-8.
    Returns a pointer to the converted string with a traiiling '\0'.
-   The string length, not counting the trailling '\0', is returned on LENGTHP.
+   The string length, not counting the trailing '\0', is returned on LENGTHP.
    Returns NULL on error.
    Callers *must* call _libga68_free_internal on a non-null result.  */
 
@@ -380,7 +380,7 @@ _libga68_u32_to_u8 (const uint32_t *s, size_t n, size_t stride, size_t *lengthp)
     {
       if (length + 1 != allocated)
 	{
-	  /* Resize the allocated memory to fit the string plus the trailling NULL.  */
+	  /* Resize the allocated memory to fit the string plus the trailing NULL.  */
 	  uint8_t *memory;
 
 	  memory =

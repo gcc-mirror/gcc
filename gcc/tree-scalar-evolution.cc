@@ -607,8 +607,7 @@ private:
 					   tree *evolution_of_loop, int limit);
   t_bool follow_ssa_edge_inner_loop_phi (gphi *loop_phi_node,
 					 tree *evolution_of_loop, int limit);
-  tree add_to_evolution (tree chrec_before, enum tree_code code,
-			 tree to_add, gimple *at_stmt);
+  tree add_to_evolution (tree chrec_before, tree to_add, gimple *at_stmt);
   tree add_to_evolution_1 (tree chrec_before, tree to_add, gimple *at_stmt);
 
   class loop *loop;
@@ -853,10 +852,8 @@ scev_dfs::add_to_evolution_1 (tree chrec_before, tree to_add, gimple *at_stmt)
 */
 
 tree
-scev_dfs::add_to_evolution (tree chrec_before, enum tree_code code,
-			    tree to_add, gimple *at_stmt)
+scev_dfs::add_to_evolution (tree chrec_before, tree to_add, gimple *at_stmt)
 {
-  tree type = chrec_type (to_add);
   tree res = NULL_TREE;
 
   if (to_add == NULL_TREE)
@@ -877,25 +874,6 @@ scev_dfs::add_to_evolution (tree chrec_before, enum tree_code code,
       fprintf (dump_file, ")\n  (to_add = ");
       print_generic_expr (dump_file, to_add);
       fprintf (dump_file, ")\n");
-    }
-
-  if (code == MINUS_EXPR)
-    {
-      if (INTEGRAL_TYPE_P (type)
-	  && TYPE_OVERFLOW_UNDEFINED (type)
-	  && !expr_not_equal_to (to_add,
-				 wi::to_wide (TYPE_MIN_VALUE (type))))
-	{
-	  tree utype = unsigned_type_for (type);
-	  to_add = chrec_convert_rhs (utype, to_add);
-	  to_add = chrec_fold_multiply (utype, to_add,
-					build_int_cst_type (utype, -1));
-	  to_add = chrec_convert_rhs (type, to_add);
-	}
-      else
-	to_add = chrec_fold_multiply (type, to_add, SCALAR_FLOAT_TYPE_P (type)
-				      ? build_real (type, dconstm1)
-				      : build_int_cst_type (type, -1));
     }
 
   res = add_to_evolution_1 (chrec_before, to_add, at_stmt);
@@ -942,7 +920,7 @@ scev_dfs::follow_ssa_edge_binary (gimple *at_stmt, tree type, tree rhs0,
 	      res = follow_ssa_edge_expr (at_stmt, rhs0, &evol, limit);
 	      if (res == t_true)
 		*evolution_of_loop = add_to_evolution
-		    (chrec_convert (type, evol, at_stmt), code, rhs1, at_stmt);
+		    (chrec_convert (type, evol, at_stmt), rhs1, at_stmt);
 	      else if (res == t_false)
 		{
 		  res = follow_ssa_edge_expr
@@ -950,7 +928,7 @@ scev_dfs::follow_ssa_edge_binary (gimple *at_stmt, tree type, tree rhs0,
 		  if (res == t_true)
 		    *evolution_of_loop = add_to_evolution
 			(chrec_convert (type, *evolution_of_loop, at_stmt),
-			 code, rhs0, at_stmt);
+			 rhs0, at_stmt);
 		}
 	    }
 
@@ -966,23 +944,12 @@ scev_dfs::follow_ssa_edge_binary (gimple *at_stmt, tree type, tree rhs0,
 	  if (res == t_true)
 	    *evolution_of_loop = add_to_evolution
 		(chrec_convert (type, *evolution_of_loop, at_stmt),
-		 code, rhs0, at_stmt);
+		 rhs0, at_stmt);
 	}
 
       else
 	/* Otherwise, match an assignment under the form:
 	   "a = ... + ...".  */
-	/* And there is nothing to do.  */
-	res = t_false;
-      break;
-
-    case MINUS_EXPR:
-      /* This case is under the form "opnd0 = rhs0 - rhs1".  */
-      if (TREE_CODE (rhs0) == SSA_NAME)
-	gcc_unreachable (); /* Handled in caller.  */
-      else
-	/* Otherwise, match an assignment under the form:
-	   "a = ... - ...".  */
 	/* And there is nothing to do.  */
 	res = t_false;
       break;
@@ -1283,10 +1250,8 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
       /* Fallthru.  */
     case POINTER_PLUS_EXPR:
     case PLUS_EXPR:
-    case MINUS_EXPR:
       /* This case is under the form "rhs0 +- rhs1".  */
-      if (TREE_CODE (rhs0) == SSA_NAME
-	  && (TREE_CODE (rhs1) != SSA_NAME || code == MINUS_EXPR))
+      if (TREE_CODE (rhs0) == SSA_NAME && TREE_CODE (rhs1) != SSA_NAME)
 	{
 	  /* Match an assignment under the form:
 	     "a = b +- ...".  */
@@ -1295,12 +1260,55 @@ scev_dfs::follow_ssa_edge_expr (gimple *at_stmt, tree expr,
 	  if (res == t_true)
 	    *evolution_of_loop = add_to_evolution
 		(chrec_convert (type, *evolution_of_loop, at_stmt),
-		 code, rhs1, at_stmt);
+		 rhs1, at_stmt);
 	  return res;
 	}
       /* Else search for the SCC in both rhs0 and rhs1.  */
       return follow_ssa_edge_binary (at_stmt, type, rhs0, code, rhs1,
 				     evolution_of_loop, limit);
+
+
+    case MINUS_EXPR:
+      /* This case is under the form "rhs0 - rhs1".  */
+      if (TREE_CODE (rhs0) == SSA_NAME)
+	{
+	  /* Match an assignment under the form:
+	     "a = b +- ...".  */
+	  t_bool res = follow_ssa_edge_expr (at_stmt, rhs0,
+					     evolution_of_loop, limit);
+	  if (res != t_true)
+	    return res;
+	  /* We have to avoid negating INT_MIN given that a) invokes UB,
+	     b) results in a wrong scev_direction.  See PR126171.  */
+	  if (INTEGRAL_TYPE_P (type)
+	      && TYPE_OVERFLOW_UNDEFINED (type)
+	      && !expr_not_equal_to (rhs1,
+				     wi::to_wide (TYPE_MIN_VALUE (type))))
+	    {
+	      tree utype = unsigned_type_for (type);
+	      tree to_add = chrec_convert_rhs (utype, rhs1);
+	      to_add = chrec_fold_multiply (utype, to_add,
+					    build_int_cst_type (utype, -1));
+	      *evolution_of_loop
+		= chrec_convert (utype, *evolution_of_loop, at_stmt);
+	      *evolution_of_loop = add_to_evolution (*evolution_of_loop,
+						     to_add, at_stmt);
+	      *evolution_of_loop
+		= chrec_convert (type, *evolution_of_loop, at_stmt);
+	    }
+	  else
+	    {
+	      tree to_add = chrec_fold_multiply (type, rhs1,
+						 build_minus_one_cst (type));
+	      *evolution_of_loop
+		= add_to_evolution (chrec_convert (type, *evolution_of_loop,
+						   at_stmt),
+				    to_add, at_stmt);
+	    }
+	  return res;
+	}
+      /* There is nothing to do.  */
+      return t_false;
 
     default:
       return t_false;
@@ -1417,7 +1425,13 @@ simplify_peeled_chrec (class loop *loop, tree arg, tree init_cond)
 
   /* Transform (init, {left, right}_LOOP)_LOOP to {init, right}_LOOP
      if "left" equals to "init + right".  */
-  if (operand_equal_p (left, step_val, 0))
+  if (operand_equal_p (left, step_val, 0)
+      && ((!POINTER_TYPE_P (type) && !INTEGRAL_TYPE_P (type))
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  /* When overflow in the type doesn't wrap, make sure the
+	     resulting CHREC does not either.  */
+	  || !scev_probably_wraps_p (NULL_TREE, init_cond, right, NULL,
+				     loop, false)))
     {
       if (dump_file && (dump_flags & TDF_SCEV))
 	fprintf (dump_file, "Simplify PEELED_CHREC into POLYNOMIAL_CHREC.\n");
@@ -1439,7 +1453,13 @@ simplify_peeled_chrec (class loop *loop, tree arg, tree init_cond)
 
   /* Transform (init, {left, right}_LOOP)_LOOP to {init, right}_LOOP
      if "left" equals to "init + right".  */
-  if (aff_combination_zero_p (&aff1))
+  if (aff_combination_zero_p (&aff1)
+      && ((!POINTER_TYPE_P (type) && !INTEGRAL_TYPE_P (type))
+	  || TYPE_OVERFLOW_WRAPS (type)
+	  /* When overflow in the type doesn't wrap, make sure the
+	     resulting CHREC does not either.  */
+	  || !scev_probably_wraps_p (NULL_TREE, init_cond, right, NULL,
+				     loop, false)))
     {
       if (dump_file && (dump_flags & TDF_SCEV))
 	fprintf (dump_file, "Simplify PEELED_CHREC into POLYNOMIAL_CHREC.\n");

@@ -148,7 +148,7 @@ a68_lower_identifier (NODE_T *p, LOW_CTX_T ctx)
 	}
 
       /* If the identifier refers to a FUNCTION_DECL, this means the
-	 declaration was made by a procecure-identity-dclaration or a
+	 declaration was made by a procedure-identity-dclaration or a
 	 proc-identity-declaration of a formal hole.  The applied identifier in
 	 that case refers to the address of the corresponding function.  */
       if (TREE_CODE (id_decl) == FUNCTION_DECL)
@@ -1017,6 +1017,9 @@ a68_lower_formula (NODE_T *p, LOW_CTX_T ctx)
 	  tree op = a68_lower_tree (NEXT (SUB (p)), ctx);
 	  tree arg2 = a68_lower_tree (NEXT (NEXT (SUB (p))), ctx);
 
+	  arg1 = a68_consolidate_ref (MOID (SUB (p)), arg1);
+	  arg2 = a68_consolidate_ref (MOID (NEXT (NEXT (SUB (p)))), arg2);
+
 	  if (POINTER_TYPE_P (TREE_TYPE (op)))
 	    op = fold_build1 (INDIRECT_REF,
 			      TREE_TYPE (TREE_TYPE (op)),
@@ -1049,6 +1052,7 @@ a68_lower_monadic_formula (NODE_T *p, LOW_CTX_T ctx)
       tree op = a68_lower_tree (SUB (p), ctx);
       tree secondary = a68_lower_tree (NEXT (SUB (p)), ctx);
 
+      secondary = a68_consolidate_ref (MOID (NEXT (SUB (p))), secondary);
       if (POINTER_TYPE_P (TREE_TYPE (op)))
 	op = fold_build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (op)), op);
       return build_call_expr_loc (a68_get_node_location (p), op, 1, secondary);
@@ -1129,8 +1133,7 @@ collect_call_arguments (NODE_T *p, vec<tree, va_gc> *args, LOW_CTX_T ctx)
 	  /* In Algol 68 parameters are passed via an identity declaration, so
 	     this must implement same semantics.  */
 	  tree arg = a68_lower_tree (p, ctx);
-	  if (HAS_ROWS (MOID (p)))
-	    arg = a68_low_dup (arg);
+	  arg = a68_low_dup (arg);
 	  arg = a68_consolidate_ref (MOID (p), arg);
 	  args->quick_push (arg);
 	}

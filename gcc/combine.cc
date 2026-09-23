@@ -8437,6 +8437,12 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 
 	tem = make_compound_operation (inner, subreg_code);
 
+	/* TEM's code might be CLOBBER if combine_simplify_rtx
+	   could not transform a subexpression, e.g. a volatile MEM.
+	   simplify_subreg cannot be called with clobber, so bail out.  */
+	if (GET_CODE (tem) == CLOBBER)
+	  return NULL_RTX;
+
 	simplified
 	  = simplify_subreg (mode, tem, GET_MODE (inner), SUBREG_BYTE (x));
 	if (simplified)

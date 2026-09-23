@@ -47,6 +47,6 @@
 tree
 a68_get_proc_skip_tree (MOID_T *m)
 {
-  /* A SKIP for a procecure mode lowers to a NULL pointer to a function.  */
+  /* A SKIP for a procedure mode lowers to a NULL pointer to a function.  */
   return build_int_cst (CTYPE (m), 0);
 }

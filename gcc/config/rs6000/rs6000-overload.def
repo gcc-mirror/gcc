@@ -5027,6 +5027,53 @@
   vd __builtin_vsx_xxsldwi (vd, vd, const int);
     XXSLDWI_2DF  XXSLDWI_VD2
 
+[VEC_UCMPRHN, vec_uncompresshn, __builtin_vec_uncompresshn]
+  vus __builtin_vec_uncompresshn (vuc, vui);
+    VUCMPRHN
+
+[VEC_UCMPRHB, vec_uncompresshb, __builtin_vec_uncomresshb]
+  vui __builtin_vec_uncomresshb (vus, vus);
+    VUCMPRHB
+
+[VEC_UCMPRHH, vec_uncompresshh, __builtin_vec_uncomresshh]
+  vull __builtin_vec_uncomresshh (vui, vuc);
+    VUCMPRHH
+
+[VEC_UCMPRLN, vec_uncompressln, __builtin_vec_uncomressln]
+  vus __builtin_vec_uncomressln (vuc, vui);
+    VUCMPRLN
+
+[VEC_UCMPRLB, vec_uncompresslb, __builtin_vec_uncomresslb]
+  vui __builtin_vec_uncomresslb (vus, vus);
+    VUCMPRLB
+
+[VEC_UCMPRLH, vec_uncompresslh, __builtin_vec_uncomresslh]
+  vull __builtin_vec_uncomresslh (vui, vuc);
+    VUCMPRLH
+
+[VEC_UNPACK_HSN_TO_BYTE, vec_unpack_hsn_to_byte, __builtin_vec_unpack_hsn_to_byte]
+  vsc __builtin_vec_unpack_hsn_to_byte (vull);
+    VUPKHSNTOB
+
+[VEC_UNPACK_LSN_TO_BYTE, vec_unpack_lsn_to_byte, __builtin_vec_unpack_lsn_to_byte]
+  vsc __builtin_vec_unpack_lsn_to_byte (vull);
+    VUPKLSNTOB
+
+[VEC_UNPACK_INT4_TO_BF16, vec_unpack_int4_to_bf16, __builtin_vec_unpack_int4_to_bf16]
+  vuc __builtin_vec_unpack_int4_to_bf16 (vus, const int<2>);
+    VUPKINT4TOBF16
+
+[VEC_UNPACK_INT8_TO_BF16, vec_unpack_int8_to_bf16, __builtin_vec_unpack_int8_to_bf16]
+  vuc __builtin_vec_unpack_int8_to_bf16 (vus, const int<1>);
+    VUPKINT8TOBF16
+
+[VEC_UNPACK_INT4_TO_FP32, vec_unpack_int4_to_fp32, __builtin_vec_unpack_int4_to_fp32]
+  vf __builtin_vec_unpack_int4_to_fp32 (vui, const int<3>);
+    VUPKINT4TOFP32
+
+[VEC_UNPACK_INT8_TO_FP32, vec_unpack_int8_to_fp32, __builtin_vec_unpack_int8_to_fp32]
+  vf __builtin_vec_unpack_int8_to_fp32 (vui, const int<2>);
+    VUPKINT8TOFP32
 
 ; **************************************************************************
 ; **************************************************************************

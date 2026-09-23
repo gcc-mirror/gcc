@@ -92,7 +92,7 @@
        does not check VICTAL correctness of declarers. This is done separately.
 
   The parser sets up symbol tables and populates them as far as needed to parse
-  the source. After the bottom-up parser terminates succesfully, the symbol tables
+  the source. After the bottom-up parser terminates successfully, the symbol tables
   are completed.
 
    (4) Next, modes are collected and rules for well-formedness and structural
@@ -788,7 +788,7 @@ a68_new_tag (void)
   PORTABLE (z) = true;
   VARIABLE (z) = false;
   IS_RECURSIVE (z) = false;
-  PUBLICIZED (z) = true; /* XXX */
+  PUBLICIZED (z) = false;
   ASCRIBED_ROUTINE_TEXT (z) = false;
   LOWERER (z) = NO_LOWERER;
   TAX_TREE_DECL (z) = NULL_TREE;

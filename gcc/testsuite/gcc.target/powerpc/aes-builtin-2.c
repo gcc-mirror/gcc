@@ -1,4 +1,6 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target powerpc_future_compile_ok } */
+/* { dg-require-effective-target lp64 } */
 /* { dg-options "-mdejagnu-cpu=future -O2" } */
 
 typedef unsigned char vec_t __attribute__((vector_size(16)));

@@ -1368,17 +1368,19 @@ export namespace std
 #endif
   using std::formatter;
   using std::make_format_args;
-  using std::make_wformat_args;
 #if __cpp_lib_format >= 202603L // >= C++26
   using std::dynamic_format;
 #endif
   using std::vformat;
   using std::vformat_to;
   using std::visit_format_arg;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  using std::make_wformat_args;
   using std::wformat_args;
   using std::wformat_context;
   using std::wformat_parse_context;
   using std::wformat_string;
+#endif
 #ifdef __cpp_lib_format_ranges
   using std::format_kind;
   using std::range_format;
@@ -1416,10 +1418,12 @@ export namespace std
   using std::ifstream;
   using std::ofstream;
   using std::swap;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wfilebuf;
   using std::wfstream;
   using std::wifstream;
   using std::wofstream;
+#endif
 }
 
 // <functional>
@@ -1620,7 +1624,9 @@ export namespace std
   using std::streamsize;
   using std::unitbuf;
   using std::uppercase;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wios;
+#endif
 }
 
 // <iosfwd>
@@ -1639,8 +1645,10 @@ export namespace std
   using std::basic_syncbuf;
   using std::osyncstream;
   using std::syncbuf;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wosyncstream;
   using std::wsyncbuf;
+#endif
 #endif
 }
 
@@ -1651,10 +1659,12 @@ export namespace std
   using std::cin;
   using std::clog;
   using std::cout;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wcerr;
   using std::wcin;
   using std::wclog;
   using std::wcout;
+#endif
 }
 
 // <istream>
@@ -1664,8 +1674,10 @@ export namespace std
   using std::basic_istream;
   using std::iostream;
   using std::istream;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wiostream;
   using std::wistream;
+#endif
   using std::ws;
   using std::operator>>;
 }
@@ -2487,7 +2499,9 @@ export namespace std
   using std::ends;
   using std::flush;
   using std::ostream;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wostream;
+#endif
   using std::operator<<;
 #ifdef __cpp_lib_syncbuf
   using std::emit_on_flush;
@@ -2916,9 +2930,11 @@ export namespace std
   using std::ssub_match;
   using std::sub_match;
   using std::swap;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wcsub_match;
   using std::wregex;
   using std::wssub_match;
+#endif
   using std::operator==;
   using std::operator<=>;
   using std::operator<<;
@@ -2934,20 +2950,24 @@ export namespace std
   using std::smatch;
   using std::sregex_iterator;
   using std::sregex_token_iterator;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wcmatch;
   using std::wcregex_iterator;
   using std::wcregex_token_iterator;
   using std::wsmatch;
   using std::wsregex_iterator;
   using std::wsregex_token_iterator;
+#endif
   namespace pmr
   {
 #if _GLIBCXX_USE_CXX11_ABI
     using std::pmr::cmatch;
     using std::pmr::match_results;
     using std::pmr::smatch;
+#ifdef _GLIBCXX_USE_WCHAR_T
     using std::pmr::wcmatch;
     using std::pmr::wsmatch;
+#endif
 #endif
   }
 }
@@ -3020,17 +3040,19 @@ export namespace std
 export namespace std
 {
   using std::basic_spanbuf;
-  using std::spanbuf;
-  using std::wspanbuf;
   using std::basic_ispanstream;
-  using std::ispanstream;
-  using std::wispanstream;
   using std::basic_ospanstream;
-  using std::ospanstream;
-  using std::wospanstream;
   using std::basic_spanstream;
+  using std::spanbuf;
+  using std::ispanstream;
+  using std::ospanstream;
   using std::spanstream;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  using std::wspanbuf;
+  using std::wispanstream;
+  using std::wospanstream;
   using std::wspanstream;
+#endif
 }
 #endif
 
@@ -3046,10 +3068,12 @@ export namespace std
   using std::stringbuf;
   using std::stringstream;
   using std::swap;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wistringstream;
   using std::wostringstream;
   using std::wstringbuf;
   using std::wstringstream;
+#endif
 }
 
 // <stack>
@@ -3144,7 +3168,9 @@ export namespace std
 {
   using std::basic_streambuf;
   using std::streambuf;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wstreambuf;
+#endif
 }
 
 // <string>
@@ -3171,7 +3197,9 @@ export namespace std
   using std::stoull;
   using std::string;
   using std::to_string;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::to_wstring;
+#endif
   using std::u16string;
   using std::u32string;
   using std::u8string;
@@ -3236,8 +3264,10 @@ export namespace std
   using std::basic_osyncstream;
   using std::osyncstream;
   using std::syncbuf;
+#ifdef _GLIBCXX_USE_WCHAR_T
   using std::wosyncstream;
   using std::wsyncbuf;
+#endif
 #endif
 }
 

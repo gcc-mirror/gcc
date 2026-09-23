@@ -1,3 +1,15 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-21  Martin Jambor  <mjambor@suse.cz>
+
+	Backported from master:
+	2026-07-09  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/125207
+	* testsuite/libgomp.c/ipcp-cb-spec1.c (test): Rework.
+
 2026-04-30  Release Manager
 
 	* GCC 16.1.0 released.

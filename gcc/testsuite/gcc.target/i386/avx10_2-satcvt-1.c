@@ -220,21 +220,21 @@
 /* { dg-final { scan-assembler-times "vcvttps2uqqs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttps2uqqs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1  }  } */
 /* { dg-final { scan-assembler-times "vcvttps2uqqs\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%xmm\[0-9\]+\{%k\[0-9\]\}\{z\}(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 2  }  } */
 /* { dg-final { scan-assembler-times "vcvttsd2usis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 2  }  } */
 /* { dg-final { scan-assembler-times "vcvttss2usis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 2  }  } */
 /* { dg-final { scan-assembler-times "vcvttsd2usis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
+/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 2  }  } */
 /* { dg-final { scan-assembler-times "vcvttss2usis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%e.x+(?:\n|\[ \\t\]+#)" 1  }  } */
-/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vcvttsd2usis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vcvttss2usis\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttsd2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vcvttsd2usis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "vcvttss2sis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 2 { target { ! ia32 } } } } */
 /* { dg-final { scan-assembler-times "vcvttss2usis\[ \\t\]+\{sae\}\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%r.x+(?:\n|\[ \\t\]+#)" 1 { target { ! ia32 } } } } */
 
 #include <immintrin.h>
@@ -553,23 +553,31 @@ avx10_2_test (void)
   hxi = _mm_mask_cvtts_ps_epu64 (hxi, m8, hx);
   hxi = _mm_maskz_cvtts_ps_epu64 (m8, hx);
 
-  i = _mm_cvtts_sd_epi32 (hxd);
-  ui = _mm_cvtts_sd_epu32 (hxd);
-  i = _mm_cvtts_ss_epi32 (hx);
-  ui = _mm_cvtts_ss_epu32 (hx);
-  i = _mm_cvtts_roundsd_epi32 (hxd, 8);
-  ui = _mm_cvtts_roundsd_epu32 (hxd, 8);
-  i = _mm_cvtts_roundss_epi32 (hx, 8);
-  ui = _mm_cvtts_roundss_epu32 (hx, 8);
+  i = _mm_cvtts_sd_i32 (hxd);
+  i = _mm_cvtts_sd_si32 (hxd);
+  ui = _mm_cvtts_sd_u32 (hxd);
+  i = _mm_cvtts_ss_i32 (hx);
+  i = _mm_cvtts_ss_si32 (hx);
+  ui = _mm_cvtts_ss_u32 (hx);
+  i = _mm_cvtts_roundsd_i32 (hxd, 8);
+  i = _mm_cvtts_roundsd_si32 (hxd, 8);
+  ui = _mm_cvtts_roundsd_u32 (hxd, 8);
+  i = _mm_cvtts_roundss_i32 (hx, 8);
+  i = _mm_cvtts_roundss_si32 (hx, 8);
+  ui = _mm_cvtts_roundss_u32 (hx, 8);
 
 #ifdef __x86_64__
-  ll = _mm_cvtts_sd_epi64 (hxd);
-  ull = _mm_cvtts_sd_epu64 (hxd);
-  ll = _mm_cvtts_ss_epi64 (hx);
-  ull = _mm_cvtts_ss_epu64 (hx);
-  ll = _mm_cvtts_roundsd_epi64 (hxd, 8);
-  ull = _mm_cvtts_roundsd_epu64 (hxd, 8);
-  ll = _mm_cvtts_roundss_epi64 (hx, 8);
-  ull = _mm_cvtts_roundss_epu64 (hx, 8);
+  ll = _mm_cvtts_sd_i64 (hxd);
+  ll = _mm_cvtts_sd_si64 (hxd);
+  ull = _mm_cvtts_sd_u64 (hxd);
+  ll = _mm_cvtts_ss_i64 (hx);
+  ll = _mm_cvtts_ss_si64 (hx);
+  ull = _mm_cvtts_ss_u64 (hx);
+  ll = _mm_cvtts_roundsd_i64 (hxd, 8);
+  ll = _mm_cvtts_roundsd_si64 (hxd, 8);
+  ull = _mm_cvtts_roundsd_u64 (hxd, 8);
+  ll = _mm_cvtts_roundss_i64 (hx, 8);
+  ll = _mm_cvtts_roundss_si64 (hx, 8);
+  ull = _mm_cvtts_roundss_u64 (hx, 8);
 #endif
 }

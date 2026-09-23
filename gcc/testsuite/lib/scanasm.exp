@@ -4,12 +4,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -35,6 +35,21 @@ proc append_encoding_arg { args enc } {
     # Add encoding ENC.
     lappend args $enc
     return $args
+}
+
+# Remove LTO-prefixed sections from TEXT.
+
+proc remove_lto_sections { text } {
+    set p1 {(^|\n)[[:space:]]*\.section[[:space:]]*"?}
+    set lto_sect_prefix {\.gnu\.lto_}
+    set p3 {(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n}
+    if { [istarget *-*-darwin*] } {
+        # Darwin/Mach-O LTO sections are in the __GNU_LTO segment.
+        set lto_sect_prefix {__GNU_LTO}
+    }
+    set patt ${p1}${lto_sect_prefix}${p3}
+    regsub -all ${patt} $text {\1} text
+    return $text
 }
 
 # Scan the OUTPUT_FILE for a pattern.  If it is present and POSITIVE
@@ -80,10 +95,8 @@ proc dg-scan { name positive testcase output_file orig_args } {
     set text [read $fd]
     close $fd
     if { [string compare -length 14 $name scan-assembler] == 0 } {
-      # Remove LTO sections.
-      # ??? Somehow, .*? is still greedy.
-      # regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_.*?\n(?=[[:space:]]*\.text\n)} $text {\1} text
-      regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+        # Remove LTO sections.
+        set text [remove_lto_sections $text]
     }
 
     set match [regexp -- $pattern $text]
@@ -138,7 +151,7 @@ proc scan-assembler-not { args } {
 
 set_required_options_for scan-assembler-not
 
-# Return the scan for the assembly for hidden visibility. 
+# Return the scan for the assembly for hidden visibility.
 
 proc hidden-scan-for { symbol } {
 
@@ -550,8 +563,8 @@ proc scan-assembler-times { args } {
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
-
+    # Remove LTO sections.
+    set text [remove_lto_sections $text]
     set result_count [regexp -all -- $pattern $text]
     if {$result_count == $times} {
 	pass "$testcase scan-assembler-times $pp_pattern $times"
@@ -563,7 +576,7 @@ proc scan-assembler-times { args } {
 
 set_required_options_for scan-assembler-times
 
-# Call pass if pattern is present within a lower or upper bound, 
+# Call pass if pattern is present within a lower or upper bound,
 # otherwise fail.
 # ex /* { dg-final { scan-assembler-bound {RE} > 3 } }
 proc scan-assembler-bound { args } {
@@ -610,11 +623,11 @@ proc scan-assembler-bound { args } {
         error "scan-assembler-bound: illegal argument: $bound"
         return
     }
-    
+
     set fd [open $output_file r]
     set text [read $fd]
     close $fd
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    set text [remove_lto_sections $text]
 
     set result_count [regexp -all -- $pattern $text]
     if [expr $result_count $cmp $bound] {
@@ -676,7 +689,7 @@ proc scan-assembler-dem { args } {
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    set text [remove_lto_sections $text]
 
     if [regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem $pp_pattern"
@@ -733,7 +746,7 @@ proc scan-assembler-dem-not { args } {
 
     set output [remote_exec host "$cxxfilt" "" "$output_file"]
     set text [lindex $output 1]
-    regsub -all {(^|\n)[[:space:]]*\.section[[:space:]]*"?\.gnu\.lto_(?:[^\n]*\n(?![[:space:]]*\.(section|text|data|bss)))*[^\n]*\n} $text {\1} text
+    set text [remove_lto_sections $text]
 
     if ![regexp -- $pattern $text] {
 	pass "$testcase scan-assembler-dem-not $pp_pattern"
@@ -921,7 +934,7 @@ proc configure_check-function-bodies { config } {
     } elseif { [istarget *-*-darwin*] } {
 	set up_config(start) {
 	    {^_([a-zA-Z_]\S*):$}
-	    {^LFB[0-9]+:}
+	    {^LFS?B[0-9]+:$}
 	}
     } else {
 	set up_config(start) {{^([a-zA-Z_]\S*):$}}
@@ -931,7 +944,7 @@ proc configure_check-function-bodies { config } {
     if { [istarget nvptx*-*-*] } {
 	set up_config(end) {^\}$}
     } elseif { [istarget *-*-darwin*] } {
-	set up_config(end) {^LFE[0-9]+}
+	set up_config(end) {^LFE[0-9]+:$}
     } elseif { [istarget aarch64*-*-mingw32] } {
 	set up_config(end) {seh_endproc}
     } else {
@@ -944,7 +957,7 @@ proc configure_check-function-bodies { config } {
 	# example).
 	set up_config(fluff) {^\s*(?://)}
     } elseif { [istarget *-*-darwin*] } {
-	set up_config(fluff) {^\s*(?:\.|//|@)|^L[0-9ABCESV]}
+	set up_config(fluff) {^\s*(?:\.|//|@|#)|^L[ABCESV]}
     } elseif { [istarget s390*-*-*] } {
 	# Additionally to the defaults skip lines beginning with a # resulting
 	# from inline asm.
@@ -966,6 +979,86 @@ proc configure_check-function-bodies { config } {
 	set up_config(line_prefix) {\t*}
     } else {
 	set up_config(line_prefix) {\t}
+    }
+
+    # Set up regex lines that should be skipped for a given object format
+    set up_config(skip_regex_cases) ""
+    if { [istarget *-*-darwin*] } {
+        # Darwin already matches .LF* as part of start/end.
+        # Currently, .cfi_xxx instructions are not used.
+	set up_config(skip_regex_cases) {
+	    {^\\?\.LF.*$}
+	    {^.*\.cfi_.*$}
+	}
+    }
+
+    # Set up regex lines that should be copied verbatim for a given object
+    # format
+    if { [istarget *-*-darwin*] } {
+        # Lines starting with a label, for Darwin we accept ELF local labels
+        # (starting with .L) and Mach-O (starting with L).  We also accept
+        # numeric assembler labels.
+	set up_config(verbatim_regex_cases) {
+	    {^\\?\.?L\[?[0-9].*:$}
+	    {^[0-9]+:.*$}
+	}
+    } else {
+        # Lines starting with a local code label ".L" (which are usually the
+        # only entries on a line -  or numeric assembler labels, which are
+        # often followed by some instruction.
+        set up_config(verbatim_regex_cases) {
+	    {^\\?\.L}
+	    {^[0-9]+:.*$}
+	}
+    }
+
+    set up_config(regex_substitutions) ""
+    if { [istarget *-*-darwin*] } {
+        # Setup substitution pairs for body regexes
+        # the first entry is what should be matched, the second is what should
+        # replace it.
+	set up_config(regex_substitutions) {
+	    { {\\?\.LC} {[lL]C} }
+	    { {\\?\.L} "L" }
+	}
+    }
+
+}
+
+# Sometimes the function match regex might include directives that are not
+# used by a given binary format.  Allow these to be skipped.
+proc target_regex_skip_line { config line } {
+    upvar $config up_config
+    foreach check $up_config(skip_regex_cases) {
+        if { [regexp $check $line] } {
+            return 1
+        }
+    }
+    return 0
+}
+
+# Some regex lines (mostly ones starting with a label) should be copied
+# verbatim (i.e. without prepending config(line_prefix)).
+
+proc target_regex_verbatim_line { config line } {
+    upvar $config up_config
+    foreach check $up_config(verbatim_regex_cases) {
+        if { [regexp $check $line] } {
+            return 1
+        }
+    }
+    return 0
+}
+
+# Apply global substitutions to the function body regex as needed by the
+# target ABI / assembler syntax.
+
+proc target_substitute_func_regex { config func_regex } {
+    upvar $config up_config
+    upvar $func_regex up_func_regex
+    foreach subs $up_config(regex_substitutions) {
+        regsub -all [lindex $subs 0] $up_func_regex [lindex $subs 1] up_func_regex
+        incr item
     }
 }
 
@@ -1002,7 +1095,7 @@ proc parse_function_bodies { config filename result } {
 		set function_name $maybe_function_name
 		set in_function 1
 	    } elseif { [regexp $up_config(end) $line] } {
-		verbose "parse_function_bodies: $function_name:\n$function_body"
+		verbose "parse_function_bodies: found end marker for $function_name:\n$function_body"
 		set up_result($function_name) $function_body
 		set in_function 0
 	    } elseif { $up_config(matched) ne "" \
@@ -1188,14 +1281,19 @@ proc check-function-bodies { args } {
 		append function_regexp ")"
 	    } elseif { [string equal $line "..."] } {
 		append function_regexp ".*"
-	    } elseif { [regexp {^\.L} $line] } {
-		append function_regexp $line "\n"
-	    } elseif { [regexp {^[0-9]+:} $line] } {
-		append function_regexp $line "\n"
+	    } elseif { [target_regex_skip_line config $line] } {
+	        # Drop this line.
+	        continue
+	    } elseif { [target_regex_verbatim_line config $line] } {
+	        # Copy this through.
+	        append function_regexp $line "\n"
 	    } else {
+	        # Copy but with a prefix (typically \t).
 		append function_regexp $config(line_prefix) $line "\n"
 	    }
 	} elseif { [string equal -length $terminator_len $line $terminator] } {
+	    # Do any global substitutions the target ABI/asm syntax needs.
+	    target_substitute_func_regex config function_regexp
 	    if { ![string equal $selector "N"] } {
 		if { $xfail_all || [string equal $selector "F"] } {
 		    setup_xfail "*-*-*"

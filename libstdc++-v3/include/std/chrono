@@ -131,6 +131,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       leap_second_info
       get_leap_second_info(const utc_time<_Duration>& __ut);
 
+    /// @cond undocumented
+    namespace __detail
+    {
+      bool __recent_leap_second_info(leap_second_info&, unsigned);
+    }
+    /// @endcond
+
     /** A clock that measures Universal Coordinated Time (UTC).
      *
      * The epoch is 1970-01-01 00:00:00.
@@ -2818,6 +2825,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class leap_second;
       friend struct time_zone::_Impl;
       friend class time_zone_link;
+
+      friend bool
+      __detail::__recent_leap_second_info(leap_second_info&, unsigned);
     };
 
     class time_zone_link
@@ -2943,15 +2953,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ return __x.date() <=> __y; }
 
     private:
-      explicit leap_second(seconds::rep __s) : _M_s(__s) { }
+      constexpr explicit leap_second(seconds::rep __s) : _M_s(__s) { }
 
       friend struct tzdb_list::_Node;
 
       friend const tzdb& reload_tzdb();
-
-      template<typename _Duration>
-	friend leap_second_info
-	get_leap_second_info(const utc_time<_Duration>&);
 
       seconds _M_s; // == date().time_since_epoch() * value().count()
     };
@@ -3217,6 +3223,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 namespace __detail
 {
+    // This function is inline to support fast conversions between utc_time
+    // and sys_time when possible, without requiring a chrono::tzdb object
+    // to be constructed.
     inline leap_second_info
     __get_leap_second_info(sys_seconds __ss, bool __is_utc)
     {
@@ -3252,65 +3261,56 @@ namespace __detail
 	1435708800, // 1 Jul 2015
 	1483228800, // 1 Jan 2017
       };
+
+      // The default result for times after the last leap year.
+      constexpr leap_second_info __after_last{
+	.is_leap_second = false,
+	.elapsed = seconds(std::size(__leaps))
+      };
+
       // The list above is known to be valid until (at least) this date
       // and only contains positive leap seconds.
       constexpr sys_seconds __expires(1798416000s); // 2026-12-28 00:00:00 UTC
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
       if (__ss > __expires)
 	{
-	  // Use updated leap_seconds from tzdb.
-	  size_t __n = std::size(__leaps);
+#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI // use chrono::tzdb
+	  // Call into the library because it might have knowledge of new
+	  // leap seconds loaded at runtime from the tzdata files.
 
-	  auto __db = get_tzdb_list().begin();
-	  auto __first = __db->leap_seconds.begin() + __n;
-	  auto __last = __db->leap_seconds.end();
-	  auto __pos = std::upper_bound(__first, __last, __ss);
-	  seconds __elapsed(__n);
-	  for (auto __i = __first; __i != __pos; ++__i)
-	    __elapsed += __i->value();
-
-	  if (__is_utc)
-	    {
-	      // Convert utc_time to sys_time:
-	      __ss -= __elapsed;
-	      // See if that sys_time is before (or during) previous leap sec:
-	      if (__pos != __first && __ss < __pos[-1])
-		{
-		  if ((__ss + 1s) >= __pos[-1])
-		    return {true, __elapsed};
-		  __elapsed -= __pos[-1].value();
-		}
-	    }
-	  return {false, __elapsed};
-	}
-      else
+	  // We misuse leap_second_info here to pass {bool, seconds} inputs:
+	  leap_second_info __info{ .is_leap_second = __is_utc,
+				   .elapsed = __ss.time_since_epoch() };
+	  // If this returns true, then __info holds the output result:
+	  if (__detail::__recent_leap_second_info(__info, std::size(__leaps)))
+	    return __info;
 #endif
-	{
-	  seconds::rep __s = __ss.time_since_epoch().count();
-	  const seconds::rep* __first = std::begin(__leaps);
-	  const seconds::rep* __last = std::end(__leaps);
-
-	  // Don't bother searching the list if we're after the last one.
-	  if (__s > (__last[-1] + (__last - __first) + 1))
-	    return { false, seconds(__last - __first) };
-
-	  auto __pos = std::upper_bound(__first, __last, __s);
-	  seconds __elapsed{__pos - __first};
-	  if (__is_utc)
-	    {
-	      // Convert utc_time to sys_time:
-	      __s -= __elapsed.count();
-	      // See if that sys_time is before (or during) previous leap sec:
-	      if (__pos != __first && __s < __pos[-1])
-		{
-		  if ((__s + 1) >= __pos[-1])
-		    return {true, __elapsed};
-		  --__elapsed;
-		}
-	    }
-	  return {false, __elapsed};
+	  return __after_last;
 	}
+
+      seconds::rep __s = __ss.time_since_epoch().count();
+      const seconds::rep* __first = std::begin(__leaps);
+      const seconds::rep* __last = std::end(__leaps);
+
+      // Don't bother searching the list if we're after the last one.
+      if (__s > (__last[-1] + (__last - __first) + 1))
+	return __after_last;
+
+      auto __pos = std::upper_bound(__first, __last, __s);
+      seconds __elapsed{__pos - __first};
+      if (__is_utc)
+	{
+	  // Convert utc_time to sys_time:
+	  __s -= __elapsed.count();
+	  // See if that sys_time is before (or during) previous leap sec:
+	  if (__pos != __first && __s < __pos[-1])
+	    {
+	      if ((__s + 1) >= __pos[-1])
+		return {true, __elapsed};
+	      --__elapsed;
+	    }
+	}
+      return {false, __elapsed};
     }
 } // namespace __detail
 

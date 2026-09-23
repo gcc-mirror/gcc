@@ -295,7 +295,9 @@
   /* cr0..cr7 */							\
     "cr0", "cr1", "cr2", "cr3", "cr4", "cr5", "cr6", "cr7",		\
   /* vrsave vscr sfp */							\
-    "vrsave", "vscr", "sfp"						\
+    "vrsave", "vscr", "sfp",						\
+  /* DMRs */								\
+      "dm0", "dm1", "dm2", "dm3", "dm4", "dm5", "dm6", "dm7"	\
 }
 
 /* This outputs NAME to FILE.  */

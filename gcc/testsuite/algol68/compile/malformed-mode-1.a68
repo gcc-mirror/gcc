@@ -1,0 +1,6 @@
+begin mode Set = ref[]Elem, { dg-error "" }
+                            { dg-message "coercible to itself" "" { target *-*-* } .-1 }
+           Elem = union (int,Set); { dg-error "" }
+                                   { dg-message "coercible to itself" "" { target *-*-* } .-1 }
+      skip
+end

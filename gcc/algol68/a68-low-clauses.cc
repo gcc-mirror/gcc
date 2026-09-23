@@ -107,7 +107,7 @@ a68_lower_label (NODE_T *p, LOW_CTX_T ctx)
 
   a68_add_decl (label_decl);
 
-  /* Return the accummulated LABEL_EXPRs.  */
+  /* Return the accumulated LABEL_EXPRs.  */
   tree label_expr = build1 (LABEL_EXPR, void_type_node, label_decl);
   if (expr)
     return fold_build2_loc (a68_get_node_location (p),
@@ -147,7 +147,7 @@ a68_lower_labeled_unit (NODE_T *p, LOW_CTX_T ctx)
    that a completer can only appear inside a serial clause.
 
    This function always returns NULL_TREE, so the traversing code shall always
-   be careful to travese on these nodes explicitly and ignore the returned
+   be careful to traverse on these nodes explicitly and ignore the returned
    value.  */
 
 tree
@@ -173,7 +173,7 @@ a68_lower_completer (NODE_T *p ATTRIBUTE_UNUSED, LOW_CTX_T ctx ATTRIBUTE_UNUSED)
    BLOCK.
 
    This function always returns NULL_TREE, so the traversing code shall always
-   be careful to travese on these nodes explicitly and ignore the returned
+   be careful to traverse on these nodes explicitly and ignore the returned
    value.  */
 
 tree
@@ -205,7 +205,7 @@ a68_lower_initialiser_series (NODE_T *p, LOW_CTX_T ctx)
    See the function body to see the lowering actions.
 
    This function always returns NULL_TREE, so the traversing code shall always
-   be careful to travese on these nodes explicitly and ignore the returned
+   be careful to traverse on these nodes explicitly and ignore the returned
    value.  */
 
 tree
@@ -858,7 +858,7 @@ a68_lower_case_clause (NODE_T *p ATTRIBUTE_UNUSED,
    clause.
 
    This function always returns NULL_TREE, so the traversing code shall always
-   be careful to travese on these nodes explicitly and ignore the returned
+   be careful to traverse on these nodes explicitly and ignore the returned
    value.  */
 
 tree
@@ -1072,7 +1072,12 @@ a68_lower_collateral_clause (NODE_T *p ATTRIBUTE_UNUSED,
   /* Lower the constituent units into a statements list.  */
   a68_push_stmt_list (mode);
   if (!clause_is_empty)
-    (void) a68_lower_tree (NEXT (SUB (p)), ctx);
+    {
+      if (a68_lower_tree (NEXT (SUB (p)), ctx) != NULL_TREE)
+	/* unit lists always lower to NULL_TREE and, as a side-effect,
+	   append the units to the current statements list.  */
+	gcc_unreachable ();
+    }
   tree units = a68_pop_stmt_list ();
 
   /* The collateral clause lowers to different constructions depending on its
@@ -1132,8 +1137,7 @@ a68_lower_collateral_clause (NODE_T *p ATTRIBUTE_UNUSED,
 	  for (tree_stmt_iterator si = tsi_start (units); !tsi_end_p (si); tsi_next (&si))
 	    {
 	      tree unit = tsi_stmt (si);
-	      if (A68_TYPE_HAS_ROWS_P (TREE_TYPE (unit)))
-		unit = a68_low_dup (unit);
+	      unit = a68_low_dup (unit);
 	      CONSTRUCTOR_APPEND_ELT (ve, size_int (num_units), unit);
 	      num_units += 1;
 	    }

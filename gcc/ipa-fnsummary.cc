@@ -417,7 +417,11 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 
 	  if (tree sval = avals->safe_sval_at (c->operand_num))
 	    val = ipa_find_agg_cst_from_init (sval, c->offset, c->by_ref);
-	  if (!val)
+	  /* ipa_argagg_value_list is indexed by byte offsets, so a condition
+	     which does not start at a byte boundary (a bit-field) cannot be
+	     looked up in it; the containing byte would be reinterpreted as
+	     the whole field below.  */
+	  if (!val && (c->offset % BITS_PER_UNIT) == 0)
 	    {
 	      ipa_argagg_value_list avs (avals);
 	      val = avs.get_value (c->operand_num, c->offset / BITS_PER_UNIT,
@@ -452,7 +456,16 @@ evaluate_conditions_for_known_args (struct cgraph_node *node,
 	  continue;
 	}
 
-      if (val && TYPE_SIZE (c->type) == TYPE_SIZE (TREE_TYPE (val)))
+      if (val
+	  && (c->type == TREE_TYPE (val)
+	      || (TYPE_SIZE (c->type) == TYPE_SIZE (TREE_TYPE (val))
+		  /* Avoid precision mismatch like with bit-fields where the
+		     VIEW_CONVERT_EXPR does not truncate excess bits
+		     appropriately.  */
+		  && ((!INTEGRAL_TYPE_P (c->type)
+		       || type_has_mode_precision_p (c->type))
+		      && (!INTEGRAL_TYPE_P (TREE_TYPE (val))
+			  || type_has_mode_precision_p (TREE_TYPE (val)))))))
 	{
 	  if (c->type != TREE_TYPE (val))
 	    val = fold_unary (VIEW_CONVERT_EXPR, c->type, val);

@@ -141,7 +141,7 @@ get_reflection (location_t loc, tree t, reflect_kind kind/*=REFLECT_UNDEF*/)
 
   /* Constant template parameters and pack-index-expressions cannot
      appear as operands of the reflection operator.  */
-  if (PACK_INDEX_P (t))
+  if (TREE_CODE (t) == PACK_INDEX_EXPR)
     {
       error_at (loc, "%<^^%> cannot be applied to a pack index");
       return error_mark_node;
@@ -685,6 +685,12 @@ get_range_elts (location_t loc, const constexpr_ctx *ctx, tree call, int n,
       }
     if (kind == REFLECT_CONSTANT_ARRAY && sz == 0)
       {
+	/* Don't call finish_compound_literal in a template.  */
+	if (processing_template_decl)
+	  {
+	    *non_constant_p = true;
+	    return NULL_TREE;
+	  }
 	/* Return std::array <valuet, 0> {}.  */
 	tree args = make_tree_vec (2);
 	TREE_VEC_ELT (args, 0) = valuet;
@@ -1822,11 +1828,13 @@ eval_is_data_member_spec (const_tree r, reflect_kind kind)
    object parameter.  Otherwise, false.  */
 
 static tree
-eval_is_explicit_object_parameter (const_tree r, reflect_kind kind)
+eval_is_explicit_object_parameter (tree r, reflect_kind kind)
 {
-  if (eval_is_function_parameter (r, kind) == boolean_true_node
-      && r == DECL_ARGUMENTS (DECL_CONTEXT (r))
-      && DECL_XOBJ_MEMBER_FUNCTION_P (DECL_CONTEXT (r)))
+  if (eval_is_function_parameter (r, kind) == boolean_false_node)
+    return boolean_false_node;
+  r = maybe_update_function_parm (r);
+  tree fn = DECL_CONTEXT (r);
+  if (r == DECL_ARGUMENTS (fn) && DECL_XOBJ_MEMBER_FUNCTION_P (fn))
     return boolean_true_node;
   else
     return boolean_false_node;
@@ -8007,6 +8015,14 @@ process_metafunction (const constexpr_ctx *ctx, tree fun, tree call,
   if (check_metafn_return_type (loc, METAFN_KIND_RET (minfo), rettype,
 				non_constant_p))
     return NULL_TREE;
+  /* Don't call get_vector_of_info_elts (for any metafn which returns
+     vector<info>) in a template.  */
+  if (processing_template_decl
+      && METAFN_KIND_RET (minfo) == METAFN_KIND_RET_VECTOR_INFO)
+    {
+      *non_constant_p = true;
+      return NULL_TREE;
+    }
   for (int argno = 0; argno < 3; ++argno)
     switch (METAFN_KIND_ARG (minfo, argno))
       {
@@ -8762,6 +8778,11 @@ splice (tree refl)
      it comes from e.g. members_of it is not.  */
   if (DECL_FUNCTION_TEMPLATE_P (refl))
     refl = ovl_make (refl, NULL_TREE);
+  /* Also add a BASELINK so that we handle &[:R:].  Since R was already
+     resolved (e.g. via members_of), we don't want to consider the enclosing
+     class for the access path.  */
+  if (is_overloaded_fn (refl))
+    refl = baselink_for_fns (refl, /*ignore_current_class_p=*/true);
 
   return refl;
 }
@@ -9228,6 +9249,12 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
 		   bool address_p, bool member_access_p, bool template_p,
 		   bool targs_p, bool complain_p)
 {
+  t = MAYBE_BASELINK_FUNCTIONS (t);
+  tree expr = t;
+  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+    t = TREE_OPERAND (t, 0);
+  t = OVL_FIRST (t);
+
   /* We may not have gotten an expression.  */
   if (TREE_CODE (t) == TYPE_DECL
       || TREE_CODE (t) == NAMESPACE_DECL
@@ -9263,7 +9290,7 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
   /* [expr.prim.splice]/2 For a splice-expression of the form
      splice-specifier, the expression is ill-formed if it is:  */
   /* -- a constructor or a destructor  */
-  if (TREE_CODE (t) == FUNCTION_DECL
+  if (TREE_CODE (STRIP_TEMPLATE (t)) == FUNCTION_DECL
       && (DECL_CONSTRUCTOR_P (t) || DECL_DESTRUCTOR_P (t)))
     {
       if (complain_p)
@@ -9302,7 +9329,7 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
     }
 
   if (member_access_p
-      && !valid_splice_for_member_access_p (t, /*decls_only_p=*/false))
+      && !valid_splice_for_member_access_p (expr, /*decls_only_p=*/false))
     {
       if (complain_p)
 	error_at (loc, "cannot use %qE to access a class member", t);
@@ -9400,8 +9427,8 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
 	  return false;
 	}
       gcc_checking_assert (reflection_function_template_p (t)
-			   || get_template_info (t)
-			   || TREE_CODE (t) == TEMPLATE_ID_EXPR
+			   || get_template_info (expr)
+			   || TREE_CODE (expr) == TEMPLATE_ID_EXPR
 			   || variable_template_p (t)
 			   || dependent_splice_p (t));
     }

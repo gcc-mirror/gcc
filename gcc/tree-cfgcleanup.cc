@@ -464,6 +464,28 @@ move_debug_stmts_from_forwarder (basic_block src,
     }
 }
 
+/* Returns true if a phi of the basic block BB has an
+   use of a ssa name that is used in an abnormal edge.  */
+
+static bool
+bb_phis_references_abnormal_uses (basic_block bb)
+{
+  auto phis = phi_nodes (bb);
+  gimple_stmt_iterator i;
+  for (i = gsi_start (phis); !gsi_end_p (i); gsi_next (&i))
+    {
+      gphi *phi = as_a<gphi*>(*i);
+      for (unsigned indx = 0; indx < gimple_phi_num_args (phi); indx++)
+	{
+	  tree value = gimple_phi_arg_def (phi, indx);
+	  if (TREE_CODE (value) == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (value))
+	    return true;
+	}
+    }
+  return false;
+}
+
 /* Return true if basic block BB does nothing except pass control
    flow to another block and that we can safely insert a label at
    the start of the successor block and was removed.
@@ -548,6 +570,11 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
   /* When we have a phi, we have to feed into another
      basic block with PHI nodes.  */
   if (has_phi && gimple_seq_empty_p (phi_nodes (dest)))
+    return false;
+
+  /* When we have phi, make sure the phi does not have any uses of
+     names used in abnormal phis.  */
+  if (has_phi && bb_phis_references_abnormal_uses (bb))
     return false;
 
   /* Now walk through the statements backward.  We can ignore labels,

@@ -7425,8 +7425,8 @@ HOOK_VECTOR (TARGET_TOGGLE_, mode_switching)
 DEFHOOK
 (emit,
  "Generate one or more insns to set @var{entity} to @var{mode}.\n\
-@var{hard_reg_live} is the set of hard registers live at the point where\n\
-the insn(s) are to be inserted. @var{prev_moxde} indicates the mode\n\
+@var{regs_live} is the set of hard registers live at the point where\n\
+the insn(s) are to be inserted. @var{prev_mode} indicates the mode\n\
 to switch from, or is the number of modes if the previous mode is not\n\
 known.  Sets of a lower numbered entity will be emitted before\n\
 sets of a higher numbered entity to a mode of the same or lower priority.",

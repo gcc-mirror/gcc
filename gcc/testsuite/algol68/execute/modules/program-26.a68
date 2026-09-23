@@ -1,0 +1,6 @@
+{ dg-modules "module26" }
+access Module_26
+begin
+      Baz x = 10, y = false, z = 3.14;
+      skip
+end

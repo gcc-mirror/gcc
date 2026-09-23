@@ -298,10 +298,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { __x.swap(__y); }
 
   using syncbuf = basic_syncbuf<char>;
-  using wsyncbuf = basic_syncbuf<wchar_t>;
-
   using osyncstream = basic_osyncstream<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
+  using wsyncbuf = basic_syncbuf<wchar_t>;
   using wosyncstream = basic_osyncstream<wchar_t>;
+#endif
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_syncbuf

@@ -4021,11 +4021,24 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
       /* Get all live caller-saved registers for TLS_GD and TLS_LD_BASE
 	 instructions.  */
       if (kind != X86_CSE_TLSDESC)
-	for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	  if (call_used_regs[i]
-	      && !fixed_regs[i]
-	      && bitmap_bit_p (in, i))
-	    bitmap_set_bit (live_caller_saved_regs, i);
+	{
+	  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
+	    if (call_used_regs[i]
+		&& !fixed_regs[i]
+		&& bitmap_bit_p (in, i))
+	      bitmap_set_bit (live_caller_saved_regs, i);
+	  if (df_live && crtl->drap_reg)
+	    {
+	      /* DRAP has no reaching definition at this point, so df_live drops
+		 it above.  Its hard register can also go dead mid-function once
+		 copied elsewhere (e.g. right after the prologue), so query
+		 DF_LR_IN per-block rather than treating it as live whenever
+		 crtl->drap_reg is set.  */
+	      i = REGNO (crtl->drap_reg);
+	      if (bitmap_bit_p (DF_LR_IN (bb), i))
+		bitmap_set_bit (live_caller_saved_regs, i);
+	    }
+	}
 
       if (bitmap_empty_p (live_caller_saved_regs))
 	{

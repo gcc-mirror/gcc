@@ -335,7 +335,7 @@ proc check_weak_available { } {
 
     # VxWorks supports it only since VxWorks 7 (assumed >= r2) for RTPs.
     # Kernel mode works fine as well for our testsuite's purposes.
- 
+
     if { [istarget *-*-vxworks*] } {
 	return [istarget *-*-vxworks7*]
     }
@@ -554,6 +554,16 @@ proc check_effective_target_alias { } {
 
 proc check_effective_target_elf { } {
     if { [gcc_target_object_format] == "elf" } {
+	return 1;
+    } else {
+	return 0;
+    }
+}
+
+# Returns 1 if the target uses the Mach-O object format, 0 otherwise.
+
+proc check_effective_target_macho { } {
+    if { [gcc_target_object_format] == "mach-o" } {
 	return 1;
     } else {
 	return 0;
@@ -986,6 +996,10 @@ proc add_options_for_check_function_bodies { flags } {
 	# off on Solaris/x86 with as and ld.  Similarly it also expects
 	# the .LFB/.LFE labels, which aren't emitted for 32-bit.
 	return "-fdwarf2-cfi-asm -fasynchronous-unwind-tables $flags "
+    } elseif { [istarget *-*-darwin*] } {
+        # Darwin does not currently use .cfi_ instructions and also requires
+        # unwind tables to be forced on for 32bit.
+	return "-fno-dwarf2-cfi-asm -fasynchronous-unwind-tables $flags "
     }
     return $flags
 }
@@ -6005,6 +6019,29 @@ proc check_effective_target_arm_fp16_alternative_ok { } {
 		check_effective_target_arm_fp16_alternative_ok_nocache]
 }
 
+# Return 1 if the target supports executing FP16 alternative format
+# instructions selected by arm_fp16_alternative_ok.
+
+proc check_effective_target_arm_fp16_alternative_hw { } {
+    if { ! [check_effective_target_arm_fp16_alternative_ok] } {
+	return 0
+    }
+
+    global et_arm_fp16_alternative_flags
+    check_runtime arm_fp16_alternative_hw {
+	int
+	main (int argc, char **argv)
+	{
+	  __fp16 a = 1.0;
+	  float r;
+	  asm ("vcvtb.f32.f16 %0, %1"
+	       : "=w" (r) : "w" (a)
+	       : /* No clobbers.  */);
+	  return (r == 1.0) ? 0 : 1;
+	}
+    } "$et_arm_fp16_alternative_flags"
+}
+
 # Return 1 if this is an ARM target supports specifying the FP16 none
 # format.  Some multilibs may be incompatible with the options needed.
 
@@ -6268,6 +6305,7 @@ foreach { armfunc armflag armdefs } {
 		__ARM_ARCH_8M_BASE__
 	v8m_main "-march=armv8-m.main+fp -mthumb" __ARM_ARCH_8M_MAIN__
 	v8_1m_main "-march=armv8.1-m.main+fp -mthumb" __ARM_ARCH_8M_MAIN__
+	v8_1m_main_mve "-march=armv8.1-m.main+mve -mthumb" __ARM_ARCH_8M_MAIN__
 	v8_1m_main_pacbti "-march=armv8.1-m.main+pacbti+fp -mthumb"
 		"__ARM_ARCH_8M_MAIN__ && __ARM_FEATURE_BTI && __ARM_FEATURE_PAUTH"
 	v8_1m_main_fp_hard "-march=armv8.1-m.main+pacbti+fp -mthumb -mfpu=auto -mfloat-abi=hard" "__ARM_ARCH_8M_MAIN__ && (__ARM_FP & 2)"
@@ -6318,7 +6356,7 @@ foreach { armfunc armflag armdefs } {
 #        /* { dg-add-options arm_cpu_xscale } */
 #	 /* { dg-require-effective-target arm_xscale_multilib } */
 
-# NOTE: -mcpu does not override -mtune, so to ensure the tuning is consistent 
+# NOTE: -mcpu does not override -mtune, so to ensure the tuning is consistent
 # for tests using these flags all entries should set -mcpu and -mtune explicitly
 
 # This table should only be used to set -mcpu= (and associated
@@ -7089,6 +7127,23 @@ proc check_effective_target_arm_v8_1m_mve_ok_nocache { } {
 proc check_effective_target_arm_v8_1m_mve_ok { } {
     return [check_cached_effective_target arm_v8_1m_mve_ok \
 		check_effective_target_arm_v8_1m_mve_ok_nocache]
+}
+
+# Return 1 if the target can link ARMv8.1-M MVE code using the
+# options selected by arm_v8_1m_mve_ok, 0 otherwise.
+
+proc check_effective_target_arm_v8_1m_mve_link { } {
+    if { ![check_effective_target_arm_v8_1m_mve_ok] } {
+	return 0
+    }
+
+    return [check_no_compiler_messages arm_v8_1m_mve_link executable {
+	int
+	main (void)
+	{
+	  return 0;
+	}
+    } [add_options_for_arm_v8_1m_mve ""]]
 }
 
 proc add_options_for_arm_v8_1m_mve { flags } {
@@ -13719,7 +13774,7 @@ proc check_effective_target_autoincdec { } {
 #
 proc check_effective_target_supports_stack_clash_protection { } {
 
-    if { [check_effective_target_x86] 
+    if { [check_effective_target_x86]
 	  || [istarget powerpc*-*-*] || [istarget rs6000*-*-*]
 	  || [istarget aarch64*-**] || [istarget s390*-*-*]
 	  || [istarget loongarch64*-**] || [istarget riscv64*-**] } {
@@ -14734,7 +14789,7 @@ proc check_nvptx_default_ptx_isa_version_at_least { major minor } {
 	     "#error unsupported" \
 	     "#endif"]
     set src [join $src "\n"]
-    
+
     set res [check_no_compiler_messages $name assembly $src ""]
 
     return $res
@@ -14769,7 +14824,7 @@ proc check_nvptx_default_ptx_isa_target_architecture_at_least { ta } {
 	     "#error unsupported" \
 	     "#endif"]
     set src [join $src "\n"]
-    
+
     set res [check_no_compiler_messages $name assembly $src ""]
 
     return $res
@@ -14884,7 +14939,7 @@ proc check_effective_target_alarm { } {
 	#include <stdlib.h>
 	#include <unistd.h>
 	void do_exit(int i) { exit (0); }
-	int main (void) { 
+	int main (void) {
 	  struct sigaction s;
 	  sigemptyset (&s.sa_mask);
 	  s.sa_handler = exit;
@@ -15017,4 +15072,24 @@ proc check_effective_target_memtag_exec {} {
 	return 0;
       }
     return 1;
+}
+
+# Return 1 if the target runtime can deref null, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_can_deref_null { } {
+    return [check_runtime can_deref_null {
+	char __attribute__((noipa))
+	read_mem (volatile char *p)
+	{
+	  return *p;
+	}
+
+	int
+	main ()
+	{
+	  read_mem ((char *)0);
+	  return 0;
+	}
+      } "-O0 -fno-delete-null-pointer-checks -Wno-null-dereference"]
 }

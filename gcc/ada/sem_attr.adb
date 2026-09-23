@@ -3373,6 +3373,7 @@ package body Sem_Attr is
         and then Aname /= Name_Code_Address
         and then Aname /= Name_Result
         and then Aname /= Name_Unchecked_Access
+        and then Aname /= Name_Unrestricted_Access
       then
          --  The prefix must be resolvable by itself, without reference to the
          --  attribute. One case that requires special handling is a prefix
@@ -12879,11 +12880,6 @@ package body Sem_Attr is
                function Is_Reducer_Subprogram (E : Entity_Id) return Boolean;
                --  Return whether E is a reducer subprogram (RM 4.5.10(11-13))
 
-               function Make_Array_Type
-                 (Index, Value : Entity_Id) return Entity_Id;
-               --  This function returns a simple array type to resolve the
-               --  array aggregate.
-
                -----------------------
                -- Get_Value_Subtype --
                -----------------------
@@ -12915,6 +12911,10 @@ package body Sem_Attr is
                      It         : Interp;
 
                   begin
+                     if not Is_Overloaded (Reducer_N) then
+                        return;
+                     end if;
+
                      Get_First_Interp (Reducer_N, I, It);
                      while Present (It.Nam) loop
                         if Is_Reducer_Subprogram (It.Nam) then
@@ -13007,29 +13007,13 @@ package body Sem_Attr is
                   Copy_Reducer_N : constant Node_Id :=
                                      Copy_Separate_Tree (Reducer_N);
 
-                  Copy_Aggr_Expr : Node_Id;
+                  Expr           : Node_Id;
                   Loop_Var       : Entity_Id;
                   Reducer_Call   : Node_Id;
 
                --  Start of processing for Get_Value_Subtype
 
                begin
-                  --  In case the reducer is not overloaded, check directly
-                  --  its second formal for the value subtype.
-
-                  if not Is_Overloaded (Reducer_N) then
-                     if Is_Reducer_Subprogram (Entity (Reducer_N)) then
-                        return Etype (Next_Formal
-                                       (First_Formal (Entity (Reducer_N))));
-
-                     --  Return any type to signal the caller that no proper
-                     --  reducer subprogram was found.
-
-                     else
-                        return Any_Type;
-                     end if;
-                  end if;
-
                   --  RM 4.5.10(11/5): the reducer subprogram is required to be
                   --  subtype conformant with one of the following profiles:
 
@@ -13074,7 +13058,6 @@ package body Sem_Attr is
                      Init_Var : constant Entity_Id :=
                                   Make_Temporary (Loc, 'B');
 
-                     Aggr_Expr  : Node_Id;
                      Dummy_Loop : Node_Id;
                      Init_Nam   : Node_Id;
                      Iter_Spec  : Node_Id;
@@ -13095,39 +13078,40 @@ package body Sem_Attr is
 
                      if Nkind (P) = N_Aggregate then
                         declare
-                           Stream, Stream_It : Node_Id;
+                           Assoc, Spec : Node_Id;
+
                         begin
-                           Stream := First (Component_Associations (P));
-                           Stream_It := Iterator_Specification (Stream);
-                           Aggr_Expr := Expression (Stream);
+                           Assoc := First (Component_Associations (P));
+                           Spec := Iterator_Specification (Assoc);
+                           Expr := Copy_Separate_Tree (Expression (Assoc));
 
-                           --  Case [for I of It => Aggr_Expr]
+                           --  Case [for I of It => Expr]
 
-                           if Nkind (Stream) = N_Iterated_Component_Association
-                             and then Present (Stream_It)
-                             and then Of_Present (Stream_It)
+                           if Nkind (Assoc) = N_Iterated_Component_Association
+                             and then Present (Spec)
+                             and then Of_Present (Spec)
                            then
                               Iter_Spec :=
                                 Make_Iteration_Scheme (Loc,
                                   Iterator_Specification =>
-                                    Relocate_Node (Stream_It));
+                                    Copy_Separate_Tree (Spec));
                               Loop_Var :=
                                 Defining_Identifier
                                   (Iterator_Specification (Iter_Spec));
 
-                           --  Case [for I in Range => Aggr_Expr]
+                           --  Case [for I in Range => Expr]
 
                            else
+                              Assoc := Copy_Separate_Tree (Assoc);
                               Iter_Spec :=
                                 Make_Iteration_Scheme (Loc,
                                   Loop_Parameter_Specification =>
                                     Make_Loop_Parameter_Specification  (Loc,
                                       Defining_Identifier =>
-                                        Defining_Identifier
-                                          (Copy_Separate_Tree (Stream)),
+                                        Defining_Identifier (Assoc),
                                       Discrete_Subtype_Definition =>
-                                        Relocate_Node (First (Discrete_Choices
-                                                               (Stream)))));
+                                        Relocate_Node
+                                          (First (Discrete_Choices (Assoc)))));
                               Loop_Var :=
                                 Defining_Identifier
                                   (Loop_Parameter_Specification (Iter_Spec));
@@ -13138,7 +13122,7 @@ package body Sem_Attr is
 
                      else
                         Loop_Var := Make_Temporary (Loc, 'I');
-                        Aggr_Expr := Make_Identifier (Loc, Chars (Loop_Var));
+                        Expr := Make_Identifier (Loc, Chars (Loop_Var));
                         Iter_Spec := Make_Iteration_Scheme (Loc,
                           Iterator_Specification =>
                             Make_Iterator_Specification (Loc,
@@ -13162,22 +13146,20 @@ package body Sem_Attr is
                      pragma Assert (Present (Etype (Loop_Var)));
                      pragma Assert (Etype (Loop_Var) /= Any_Type);
 
-                     Copy_Aggr_Expr := Copy_Separate_Tree (Aggr_Expr);
-
                      case Reducer_Call_Statement_Kind is
                         when E_Procedure =>
                            Reducer_Call :=
                              Make_Procedure_Call_Statement (Sloc (Reducer_N),
                                Name => Copy_Reducer_N,
                                Parameter_Associations =>
-                                 New_List (Init_Nam, Copy_Aggr_Expr));
+                                 New_List (Init_Nam, Expr));
 
                         when E_Function | E_Operator =>
                            Reducer_Call :=
                              Make_Function_Call (Sloc (Reducer_N),
                                Name => Copy_Reducer_N,
                                Parameter_Associations =>
-                                 New_List (Init_Nam, Copy_Aggr_Expr));
+                                 New_List (Init_Nam, Expr));
                            Set_Etype (Reducer_Call, Accum_Typ);
 
                         when others =>
@@ -13217,13 +13199,13 @@ package body Sem_Attr is
 
                   elsif not Is_Overloaded (Reducer_Call) then
                      pragma Assert (Present (Entity (Copy_Reducer_N)));
-                     pragma Assert (Present (Etype (Copy_Aggr_Expr)));
+                     pragma Assert (Present (Etype (Expr)));
 
                      --  Set the correct reducer entity and then return the
                      --  value subtype.
 
                      Set_Entity (Reducer_N, Entity (Copy_Reducer_N));
-                     return Etype (Copy_Aggr_Expr);
+                     return Etype (Expr);
                   end if;
 
                   return Empty;
@@ -13307,31 +13289,6 @@ package body Sem_Attr is
                      end if;
                   end if;
                end Is_Reducer_Subprogram;
-
-               ---------------------
-               -- Make_Array_Type --
-               ---------------------
-
-               function Make_Array_Type
-                 (Index, Value : Entity_Id) return Entity_Id
-               is
-                  Array_Type : constant Entity_Id := Make_Temporary (Loc, 'A');
-                  Range_N    : constant Node_Id :=
-                    Make_Range (Loc,
-                      Low_Bound  => Type_Low_Bound (Index),
-                      High_Bound => Type_High_Bound (Index));
-               begin
-                  Set_In_List (Range_N);
-                  Set_Etype (Range_N, Index);
-
-                  Set_Etype (Array_Type, Array_Type);
-                  Set_Scope (Array_Type, Find_Enclosing_Scope (N));
-                  Mutate_Ekind (Array_Type, E_Array_Type);
-                  Set_Component_Type (Array_Type, Value);
-                  Set_First_Index (Array_Type, Range_N);
-
-                  return Array_Type;
-               end Make_Array_Type;
 
                --  Local variables
 
@@ -13460,15 +13417,13 @@ package body Sem_Attr is
                end if;
 
                --  Complete the resolution of the reduction expression by
-               --  resolving the initial expression and array aggregate.
+               --  resolving the initial expression, and the prefix if it
+               --  is not an aggregate, since the aggregate is only meant
+               --  to be a placeholder for the iterated association.
 
                Resolve (Init_Value_Expr, Accum_Typ);
 
-               if Nkind (P) = N_Aggregate then
-                  Resolve_Aggregate (P,
-                    Make_Array_Type (Index => Standard_Positive,
-                                     Value => Value_Typ));
-               else
+               if Nkind (P) /= N_Aggregate then
                   Resolve (P);
                end if;
             end;

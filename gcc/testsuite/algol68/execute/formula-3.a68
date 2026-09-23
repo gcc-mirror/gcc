@@ -1,0 +1,11 @@
+{ This tests that names are passed properly to dyadic operators. }
+
+begin mode Foo = struct (int i,j);
+      Foo f;
+      i'f := 10;
+      j'f := 20;
+      op +:= = (ref Foo f, int i) int: (i'f +:= i; j'f +:= i; i + 1);
+      assert ((f +:= 1) = 2);
+      assert (i'f = 11);
+      assert (j'f = 21)
+end

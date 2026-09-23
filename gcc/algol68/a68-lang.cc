@@ -538,7 +538,7 @@ a68_handle_option (size_t scode,
     case OPT_fmodules_map_file:
     case OPT_fmodules_map_file_:
       {
-	FILE *file = fopen (arg, "r");
+	FILE *file = fopen (arg, "rb");
 	if (file == NULL)
 	  fatal_error (UNKNOWN_LOCATION,
 		       "cannot open modules map file %<%s%>", arg);
@@ -785,6 +785,19 @@ a68_types_compatible_p (tree x, tree y)
 
 #undef LANG_HOOKS_TYPES_COMPATIBLE_P
 #define LANG_HOOKS_TYPES_COMPATIBLE_P a68_types_compatible_p
+
+/* Implements the lang_hooks.get_alias_set routine for Algol 68.  */
+
+static alias_set_type
+a68_get_alias_set (tree)
+{
+  /* For now in Algol 68, assume everything aliases everything else,
+     until aliasing rules are defined more precisely.  */
+  return 0;
+}
+
+#undef LANG_HOOKS_GET_ALIAS_SET
+#define LANG_HOOKS_GET_ALIAS_SET a68_get_alias_set
 
 /* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property.  Algol
    68 is not yet listed in SARIF v2.1.0 Appendix J, but if/when it does, it

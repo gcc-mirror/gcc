@@ -4237,7 +4237,7 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
   do
     {
       stmt_vec_info stmt = next_stmt;
-      gimple_match_op op;
+      gimple_match_op op, orig_op;
       if (!gimple_extract_op (STMT_VINFO_STMT (stmt), &op))
 	gcc_unreachable ();
       tree reduc_def = gimple_arg (STMT_VINFO_STMT (stmt),
@@ -4245,14 +4245,15 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       next_stmt = vect_stmt_to_vectorize (vinfo->lookup_def (reduc_def));
       gcc_assert (is_a <gphi *> (STMT_VINFO_STMT (next_stmt))
 		  || STMT_VINFO_REDUC_IDX (next_stmt) != -1);
-      if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)), &op))
+      if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)),
+			      &orig_op))
 	gcc_unreachable ();
       if (CONVERT_EXPR_CODE_P (op.code)
 	  && tree_nop_conversion_p (op.type, TREE_TYPE (op.ops[0]))
 	  && (first
 	      || is_a <gphi *> (STMT_VINFO_STMT (next_stmt))))
 	;
-      else if (code != op.code)
+      else if (code != orig_op.code)
 	{
 	  fail = true;
 	  break;
@@ -4265,9 +4266,6 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
   if (fail)
     return false;
 
-  /* Remember a stmt with the actual reduction operation.  */
-  stmt_vec_info reduc_scalar_stmt = scalar_stmts[0];
-
   /* When the SSA def chain through reduc-idx does not form a natural
      reduction chain try to linearize an associative operation manually.  */
   if (scalar_stmts.length () == 1
@@ -4275,9 +4273,11 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       && associative_tree_code ((tree_code)code)
       /* We may not associate if a fold-left reduction is required.  */
       && !needs_fold_left_reduction_p (TREE_TYPE (gimple_get_lhs
-						    (reduc_scalar_stmt->stmt)),
+						    (scalar_stmts[0]->stmt)),
 				       code))
     {
+      /* Remember a stmt with the actual reduction operation.  */
+      stmt_vec_info reduc_scalar_stmt = scalar_stmts[0];
       auto_vec<chain_op_t> chain;
       auto_vec<std::pair<tree_code, gimple *> > worklist;
       gimple *op_stmt = NULL, *other_op_stmt = NULL;
@@ -12197,19 +12197,17 @@ vect_remove_slp_scalar_calls (vec_info *vinfo, slp_tree node)
 void
 vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance instance)
 {
-  gassign *rstmt = NULL;
-
   if (instance->kind == slp_inst_kind_ctor)
     {
+      tree new_def;
       if (SLP_TREE_VEC_DEFS (node).length () == 1)
 	{
-	  tree vect_lhs = SLP_TREE_VEC_DEFS (node)[0];
+	  new_def = SLP_TREE_VEC_DEFS (node)[0];
 	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
 	  if (!useless_type_conversion_p (TREE_TYPE (root_lhs),
-					  TREE_TYPE (vect_lhs)))
-	    vect_lhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
-			       vect_lhs);
-	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
+					  TREE_TYPE (new_def)))
+	    new_def = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (root_lhs),
+			       new_def);
 	}
       else
 	{
@@ -12224,12 +12222,15 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 	     do not match.  */
 	  FOR_EACH_VEC_ELT (SLP_TREE_VEC_DEFS (node), j, child_def)
 	    CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, child_def);
-	  tree lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
 	  tree rtype
 	    = TREE_TYPE (gimple_assign_rhs1 (instance->root_stmts[0]->stmt));
-	  tree r_constructor = build_constructor (rtype, v);
-	  rstmt = gimple_build_assign (lhs, r_constructor);
+	  new_def = build_constructor (rtype, v);
 	}
+
+      gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
+      gimple_assign_set_rhs_from_tree (&rgsi, new_def);
+      update_stmt (gsi_stmt (rgsi));
+      return;
     }
   else if (instance->kind == slp_inst_kind_bb_reduc)
     {
@@ -12315,11 +12316,6 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
     }
   else
     gcc_unreachable ();
-
-  gcc_assert (rstmt);
-
-  gimple_stmt_iterator rgsi = gsi_for_stmt (instance->root_stmts[0]->stmt);
-  gsi_replace (&rgsi, rstmt, true);
 }
 
 struct slp_scc_info

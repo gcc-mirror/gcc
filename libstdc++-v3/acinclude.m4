@@ -261,8 +261,8 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
       rm -f conftest.c
       touch conftest.c
       if $CC -c conftest.c; then
-	if $LD --gc-sections -o conftest conftest.o 2>&1 | \
-	   grep "Warning: gc-sections option ignored" > /dev/null; then
+	if LC_ALL=C $LD --gc-sections -o conftest conftest.o 2>&1 | \
+	   grep "[[Ww]]arning: gc-sections option ignored" > /dev/null; then
 	  ac_gcsections=no
 	fi
       fi
@@ -4096,7 +4096,7 @@ changequote([,])dnl
 fi
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
-libtool_VERSION=6:35:0
+libtool_VERSION=6:36:0
 
 # Everything parsed; figure out what files and settings to use.
 case $enable_symvers in

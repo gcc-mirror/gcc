@@ -17,4 +17,6 @@ foo (void)
 }
 
 /* tls_model should be tls-initial-exec due to common attribute.  */
-/* { dg-final { scan-ipa-dump "Varpool flags: tls-initial-exec" "whole-program" } } */
+/* { dg-final { scan-ipa-dump "Varpool flags: tls-emulated" "whole-program" { target { ! tls_native } } } } */
+/* { dg-final { scan-ipa-dump "Varpool flags: tls-global-dynamic" "whole-program" { target { ! tls_native } } } } */
+/* { dg-final { scan-ipa-dump "Varpool flags: tls-initial-exec" "whole-program" { target tls_native } } } */

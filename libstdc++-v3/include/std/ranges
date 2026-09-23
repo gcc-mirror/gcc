@@ -7347,22 +7347,51 @@ namespace views::__adaptor
 #ifdef __cpp_lib_ranges_join_with // C++ >= 23
   namespace __detail
   {
-    template<typename _Range, typename _Pattern>
-      concept __compatible_joinable_ranges
-	= common_with<range_value_t<_Range>, range_value_t<_Pattern>>
-	  && common_reference_with<range_reference_t<_Range>,
-				   range_reference_t<_Pattern>>
-	  && common_reference_with<range_rvalue_reference_t<_Range>,
-				   range_rvalue_reference_t<_Pattern>>;
-
     template<typename _Range>
       concept __bidirectional_common = bidirectional_range<_Range> && common_range<_Range>;
+
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4074. compatible-joinable-ranges is underconstrained
+    template<typename... _Rs>
+      using __concat_reference_t = common_reference_t<range_reference_t<_Rs>...>;
+
+    template<typename... _Rs>
+      using __concat_value_t = common_type_t<range_value_t<_Rs>...>;
+
+    template<typename... _Rs>
+      using __concat_rvalue_reference_t
+	= common_reference_t<range_rvalue_reference_t<_Rs>...>;
+
+    template<typename _Ref, typename _RRef, typename _It>
+      concept __concat_indirectly_readable_impl = requires(const _It __it) {
+	{ *__it } -> convertible_to<_Ref>;
+	{ ranges::iter_move(__it) } -> convertible_to<_RRef>;
+      };
+
+    template<typename... _Rs>
+      concept __concat_indirectly_readable
+	= common_reference_with<__concat_reference_t<_Rs...>&&, __concat_value_t<_Rs...>&>
+	  && common_reference_with<__concat_reference_t<_Rs...>&&,
+				   __concat_rvalue_reference_t<_Rs...>&&>
+	  && common_reference_with<__concat_rvalue_reference_t<_Rs...>&&,
+				   __concat_value_t<_Rs...> const&>
+	  && (__concat_indirectly_readable_impl<__concat_reference_t<_Rs...>,
+						__concat_rvalue_reference_t<_Rs...>,
+						iterator_t<_Rs>>
+	      && ...);
+
+    template<typename... _Rs>
+      concept __concatable = requires {
+	typename __concat_reference_t<_Rs...>;
+	typename __concat_value_t<_Rs...>;
+	typename __concat_rvalue_reference_t<_Rs...>;
+      } && __concat_indirectly_readable<_Rs...>;
   }
 
   template<input_range _Vp, forward_range _Pattern>
     requires view<_Vp> && view<_Pattern>
       && input_range<range_reference_t<_Vp>>
-      && __detail::__compatible_joinable_ranges<range_reference_t<_Vp>, _Pattern>
+      && __detail::__concatable<range_reference_t<_Vp>, _Pattern>
   class join_with_view : public view_interface<join_with_view<_Vp, _Pattern>>
   {
     using _InnerRange = range_reference_t<_Vp>;
@@ -7479,6 +7508,7 @@ namespace views::__adaptor
 	&& forward_range<const _Pattern>
 	&& is_reference_v<range_reference_t<const _Vp>>
 	&& input_range<range_reference_t<const _Vp>>
+	&& __detail::__concatable<range_reference_t<const _Vp>, const _Pattern>
     { return _Iterator<true>{*this, ranges::begin(_M_base)}; }
 
     constexpr auto
@@ -7500,6 +7530,7 @@ namespace views::__adaptor
 	&& forward_range<const _Pattern>
 	&& is_reference_v<range_reference_t<const _Vp>>
 	&& input_range<range_reference_t<const _Vp>>
+	&& __detail::__concatable<range_reference_t<const _Vp>, const _Pattern>
     {
       using _InnerConstRange = range_reference_t<const _Vp>;
       if constexpr (forward_range<_InnerConstRange>
@@ -7523,7 +7554,7 @@ namespace views::__adaptor
   template<input_range _Vp, forward_range _Pattern>
     requires view<_Vp> && view<_Pattern>
       && input_range<range_reference_t<_Vp>>
-      && __detail::__compatible_joinable_ranges<range_reference_t<_Vp>, _Pattern>
+      && __detail::__concatable<range_reference_t<_Vp>, _Pattern>
   template<bool _Const>
   class join_with_view<_Vp, _Pattern>::_Iterator : public __iter_cat<_Const>
   {
@@ -7812,7 +7843,7 @@ namespace views::__adaptor
   template<input_range _Vp, forward_range _Pattern>
     requires view<_Vp> && view<_Pattern>
       && input_range<range_reference_t<_Vp>>
-      && __detail::__compatible_joinable_ranges<range_reference_t<_Vp>, _Pattern>
+      && __detail::__concatable<range_reference_t<_Vp>, _Pattern>
   template<bool _Const>
   class join_with_view<_Vp, _Pattern>::_Sentinel
   {
@@ -7902,14 +7933,17 @@ namespace views::__adaptor
     requires copy_constructible<_Tp>
     : _M_value(__value), _M_bound(__bound)
     {
-      if constexpr (!same_as<_Bound, unreachable_sentinel_t>)
+      if constexpr (__detail::__is_signed_integer_like<_Bound>)
 	__glibcxx_assert(__bound >= 0);
     }
 
     constexpr explicit
     repeat_view(_Tp&& __value, _Bound __bound = _Bound())
     : _M_value(std::move(__value)), _M_bound(__bound)
-    { }
+    {
+      if constexpr (__detail::__is_signed_integer_like<_Bound>)
+	__glibcxx_assert(__bound >= 0);
+    }
 
     template<typename... _Args, typename... _BoundArgs>
       requires constructible_from<_Tp, _Args...>
@@ -7920,7 +7954,10 @@ namespace views::__adaptor
 		tuple<_BoundArgs...> __bound_args = tuple<>{})
     : _M_value(std::make_from_tuple<_Tp>(std::move(__args))),
       _M_bound(std::make_from_tuple<_Bound>(std::move(__bound_args)))
-    { }
+    {
+      if constexpr (__detail::__is_signed_integer_like<_Bound>)
+	__glibcxx_assert(_M_bound >= 0);
+    }
 
     constexpr _Iterator
     begin() const
@@ -9785,41 +9822,6 @@ namespace ranges
 {
   namespace __detail
   {
-    template<typename... _Rs>
-      using __concat_reference_t = common_reference_t<range_reference_t<_Rs>...>;
-
-    template<typename... _Rs>
-      using __concat_value_t = common_type_t<range_value_t<_Rs>...>;
-
-    template<typename... _Rs>
-      using __concat_rvalue_reference_t
-	= common_reference_t<range_rvalue_reference_t<_Rs>...>;
-
-    template<typename _Ref, typename _RRef, typename _It>
-      concept __concat_indirectly_readable_impl = requires(const _It __it) {
-	{ *__it } -> convertible_to<_Ref>;
-	{ ranges::iter_move(__it) } -> convertible_to<_RRef>;
-      };
-
-    template<typename... _Rs>
-      concept __concat_indirectly_readable
-	= common_reference_with<__concat_reference_t<_Rs...>&&, __concat_value_t<_Rs...>&>
-	  && common_reference_with<__concat_reference_t<_Rs...>&&,
-				   __concat_rvalue_reference_t<_Rs...>&&>
-	  && common_reference_with<__concat_rvalue_reference_t<_Rs...>&&,
-				   __concat_value_t<_Rs...> const&>
-	  && (__concat_indirectly_readable_impl<__concat_reference_t<_Rs...>,
-						__concat_rvalue_reference_t<_Rs...>,
-						iterator_t<_Rs>>
-	      && ...);
-
-    template<typename... _Rs>
-      concept __concatable = requires {
-	typename __concat_reference_t<_Rs...>;
-	typename __concat_value_t<_Rs...>;
-	typename __concat_rvalue_reference_t<_Rs...>;
-      } && __concat_indirectly_readable<_Rs...>;
-
     template<bool _Const, typename _Range, typename... _Rs>
       struct __all_but_last_common
       {

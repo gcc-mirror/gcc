@@ -18581,6 +18581,7 @@ instructions, but allow the compiler to schedule those calls.
 * PowerPC Hardware Transactional Memory Built-in Functions::
 * PowerPC Atomic Memory Operation Functions::
 * PowerPC Matrix-Multiply Assist Built-in Functions::
+* PowerPC Dense Math Facility Built-in Functions::
 * PRU Built-in Functions::
 * RISC-V Built-in Functions::
 * RISC-V Vector Intrinsics::
@@ -26717,6 +26718,105 @@ int vec_any_le (vector signed __int128, vector signed __int128);
 int vec_any_le (vector unsigned __int128, vector unsigned __int128);
 @end smallexample
 
+@subsubheading PowerPC Elliptic Curve Cryptography Assist Built-in-Functions
+
+The following additional built-in functions may be available for the
+PowerPC family of processors, on Future ISA.
+These instructions provide hardware acceleration for Elliptic Curve
+Cryptography (ECC) operations, specifically optimized for P-256 and P-384
+elliptic curves.
+
+The ECC built-in functions are organized into five categories:
+multiply-multiply operations, scaled multiply-sum operations,
+quadword add/subtract operations, merge operations and rebase operations.
+
+@smallexample
+vector unsigned __int128
+__builtin_vsx_xxmulmul (vector unsigned long long ,
+                        vector unsigned long long ,
+                        const int);
+vector unsigned __int128
+__builtin_vsx_xxmulmulhiadd (vector unsigned __int128 ,
+                             vector unsigned long long ,
+                             vector unsigned long long ,
+                             const int ,
+                             const int ,
+                             const int);
+vector unsigned __int128
+__builtin_vsx_xxmulmulloadd (vector unsigned __int128 ,
+                             vector unsigned long long ,
+                             vector unsigned long long ,
+                             const int ,
+                             const int);
+vector unsigned __int128
+__builtin_vsx_xxssumudm (vector unsigned __int128 ,
+                         vector unsigned long long ,
+                         vector unsigned long long ,
+                         const int);
+vector unsigned __int128
+__builtin_vsx_xxssumudmc (vector unsigned __int128 ,
+                          vector unsigned long long ,
+                          vector unsigned long long ,
+                          const int);
+vector unsigned __int128
+__builtin_vsx_xxssumudmcext (vector unsigned long long ,
+                             vector unsigned long long ,
+                             vector unsigned __int128 ,
+                             const int);
+vector unsigned __int128
+__builtin_vsx_xsaddadduqm (vector unsigned __int128 ,
+                           vector unsigned __int128 ,
+                           vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsaddaddsuqm (vector unsigned __int128 ,
+                            vector unsigned __int128 ,
+                            vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsaddsubuqm (vector unsigned __int128 ,
+                           vector unsigned __int128 ,
+                           vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsaddsubsuqm (vector unsigned __int128 ,
+                            vector unsigned __int128 ,
+                            vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsmerge2t1uqm (vector unsigned __int128 ,
+                             vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsmerge2t2uqm (vector unsigned __int128 ,
+                             vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsmerge2t3uqm (vector unsigned __int128 ,
+                             vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsmerge3t1uqm (vector unsigned __int128 ,
+                             vector unsigned __int128 ,
+                             vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase2t1uqm (vector unsigned __int128 ,
+                              vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase2t2uqm (vector unsigned __int128 ,
+                              vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase2t3uqm (vector unsigned __int128 ,
+                              vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase2t4uqm (vector unsigned __int128 ,
+                              vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase3t1uqm (vector unsigned __int128 ,
+                              vector unsigned __int128 ,
+                              vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase3t2uqm (vector unsigned __int128 ,
+                              vector unsigned __int128 ,
+                              vector unsigned __int128);
+vector unsigned __int128
+__builtin_vsx_xsrebase3t3uqm (vector unsigned __int128 ,
+                              vector unsigned __int128 ,
+                              vector unsigned __int128);
+@end smallexample
 
 The following instances are extension of the existing overloaded built-ins
 @code{vec_sld}, @code{vec_sldw}, @code{vec_slo}, @code{vec_sro}, @code{vec_srl}
@@ -26758,6 +26858,8 @@ vector unsigned char);
 
 The following additional built-in functions are available for the
 PowerPC family of processors, starting with Future ISA.
+
+@subsubheading PowerPC Advanced Encryption Standard (AES) Acceleration Built-in Functions
 
 Future ISA of the PowerPC may add new instructions for accelerating AES
 algorithm. GCC provides support for these new instructions through the
@@ -27232,6 +27334,69 @@ vec_t __builtin_vsx_xvcvbf16spn (vec_t);
 
 __vector_pair __builtin_vsx_lxvp (size_t, __vector_pair *);
 void __builtin_vsx_stxvp (__vector_pair, size_t, __vector_pair *);
+@end smallexample
+
+Future ISA of PowerPC may add new Matrix-Multiply Assist Plus (MMA+)
+instructions.  GCC provides support for these instructions through the
+following built-in functions which are enabled with the @code{-mmma} option.
+The vec_t type below is defined to be a normal vector unsigned char type.
+The uint2, uint4 and uint8 parameters are 2-bit, 4-bit and 8-bit unsigned
+integer constants respectively.  The compiler will verify that they are
+constants and that their values are within range.  The __dmr1024 type is a
+1024-bit integer type.
+
+The built-in functions supported are:
+
+@smallexample
+void __builtin_mma_dmxvi8gerx4 (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvi8gerx4pp (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvi8gerx4spp (__dmr1024 *, __vector_pair, vec_t);
+
+void __builtin_mma_pmdmxvi8gerx4 (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint4);
+void __builtin_mma_pmdmxvi8gerx4pp (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint4);
+void __builtin_mma_pmdmxvi8gerx4spp (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint4);
+
+void __builtin_mma_dmxvbf16gerx2 (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvbf16gerx2pp (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvbf16gerx2pn (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvbf16gerx2np (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvbf16gerx2nn (__dmr1024 *, __vector_pair, vec_t);
+
+void __builtin_mma_pmdmxvbf16gerx2 (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvbf16gerx2pp (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvbf16gerx2pn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvbf16gerx2np (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvbf16gerx2nn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+
+void __builtin_mma_dmxvf16gerx2 (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2pp (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2pn (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2np (__dmr1024 *, __vector_pair, vec_t);
+void __builtin_mma_dmxvf16gerx2nn (__dmr1024 *, __vector_pair, vec_t);
+
+void __builtin_mma_pmdmxvf16gerx2 (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2pp (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2pn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2np (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+void __builtin_mma_pmdmxvf16gerx2nn (__dmr1024 *, __vector_pair, vec_t, uint8, uint4, uint2);
+@end smallexample
+
+@node PowerPC Dense Math Facility Built-in Functions
+@subsection PowerPC Dense Math Facility Built-in Functions
+
+A future PowerPC processor may provide Dense Math Facility (DMF)
+instructions.  GCC provides support for these instructions through the
+following built-in functions which are enabled with the @code{-mdense-math}
+option.  The vec_t type below is defined to be a normal vector unsigned char
+type.  The __dmr1024 type is a 1024 bit integer type.
+
+The built-in functions supported are:
+
+@smallexample
+void __builtin_dmsetdmrz (__dmr1024 *);
+void __builtin_dmmr (__dmr1024 *, __dmr1024 *);
+void __builtin_dmxor (__dmr1024 *, __dmr1024 *);
+void __builtin_build_dmr (__dmr1024 *, vec_t, vec_t, vec_t, vec_t, vec_t, vec_t, vec_t, vec_t);
 @end smallexample
 
 @node PRU Built-in Functions

@@ -156,5 +156,5 @@ namespace llvm
   void bm::bl() { bk->bl(); }
 }
 
-/* The t1 register is to initial symbol reference for call instruction.  */
-/* { dg-final { scan-assembler "la\tt1,.*FrequencyData.*_M_default_append.*" } } */
+/* A register in SIBCALL_REGS is used for the call address.  */
+/* { dg-final { scan-assembler {la\t(t[2-6]|a[0-7]),.*FrequencyData.*_M_default_append.*} } } */

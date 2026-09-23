@@ -78,6 +78,9 @@ gimple_ranger::const_query ()
   return m_cache.const_query ();
 }
 
+// Implement range of EXPR on stmt S, and return it in R.
+// Return false if no range can be calculated.
+
 bool
 gimple_ranger::range_of_expr (vrange &r, tree expr, gimple *stmt)
 {
@@ -98,8 +101,9 @@ gimple_ranger::range_of_expr (vrange &r, tree expr, gimple *stmt)
 	fputs ("\n", dump_file);
     }
 
-  // If there is no statement, just get the global value.
-  if (!stmt)
+  // If there is no statement or stmt happens to be not in the IL,
+  // just get the global value.
+  if (!stmt || !gimple_bb (stmt))
     {
       value_range tmp (TREE_TYPE (expr));
       // If there is no global range for EXPR yet, try to evaluate it.

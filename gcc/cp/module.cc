@@ -1506,6 +1506,7 @@ class elf_out : public elf, public data::allocator {
 private:
   ptr_int_hash_map identtab;	/* Map of IDENTIFIERS to strtab offsets. */
   unsigned pos;			/* Write position in file.  */
+  bool began;			/* True if begin initialized output state.  */
 #if MAPPED_WRITING
   unsigned offset;		/* Offset of the mapping.  */
   unsigned extent;		/* Length of mapping.  */
@@ -1514,7 +1515,7 @@ private:
 
 public:
   elf_out (int fd, int e)
-    :parent (fd, e), identtab (500), pos (0)
+    :parent (fd, e), identtab (500), pos (0), began (false)
   {
 #if MAPPED_WRITING
     offset = extent = 0;
@@ -2226,7 +2227,10 @@ elf_out::begin ()
   memset (h, 0, sizeof (header));
   hdr.pos = hdr.size;
   write (hdr);
-  return !get_error ();
+  if (get_error ())
+    return false;
+  began = true;
+  return true;
 }
 
 /* Finish writing the file.  Write out the string & section tables.
@@ -2235,7 +2239,7 @@ elf_out::begin ()
 bool
 elf_out::end ()
 {
-  if (fd >= 0)
+  if (fd >= 0 && began)
     {
       /* Write the string table.  */
       unsigned strnam = name (".strtab");
@@ -8367,6 +8371,7 @@ trees_out::decl_value (tree decl, depset *dep)
       int use_tpl = -1;
       if (tree ti = node_template_info (decl, use_tpl))
 	gcc_checking_assert (TREE_CODE (TI_TEMPLATE (ti)) == OVERLOAD
+			     || TREE_CODE (TI_TEMPLATE (ti)) == IDENTIFIER_NODE
 			     || TREE_CODE (TI_TEMPLATE (ti)) == FIELD_DECL
 			     || (DECL_TEMPLATE_RESULT (TI_TEMPLATE (ti))
 				 != decl));
@@ -15187,6 +15192,12 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
   for (tree udir : NAMESPACE_LEVEL (ns)->using_directives)
     if (TREE_CODE (udir) == USING_DECL && DECL_MODULE_PURVIEW_P (udir))
       {
+	/* Unless it's a (TU-local) anonymous namespace.
+
+	   FIXME instead of checking here, they should be
+	   is_tu_local_entity.  */
+	if (!TREE_PUBLIC (USING_DECL_DECLS (udir)))
+	  continue;
 	make_dependency (USING_DECL_DECLS (udir), depset::EK_NAMESPACE);
 	if (DECL_MODULE_EXPORT_P (udir))
 	  count++;
@@ -21892,7 +21903,7 @@ get_originating_module_decl (tree decl)
 	  if (TREE_CODE (decl) != TEMPLATE_DECL)
 	    {
 	      /* A friend template specialization.  */
-	      gcc_checking_assert (OVL_P (decl));
+	      gcc_checking_assert (OVL_P (decl) || identifier_p (decl));
 	      return global_namespace;
 	    }
 	}
@@ -22389,7 +22400,7 @@ transfer_defining_module (tree olddecl, tree newdecl)
 
   if (DECL_LANG_SPECIFIC (new_inner))
     {
-      gcc_checking_assert (DECL_LANG_SPECIFIC (old_inner));
+      retrofit_lang_decl (old_inner);
       if (DECL_MODULE_PURVIEW_P (new_inner))
 	DECL_MODULE_PURVIEW_P (old_inner) = true;
       if (!DECL_MODULE_IMPORT_P (new_inner))

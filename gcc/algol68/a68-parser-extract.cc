@@ -485,8 +485,10 @@ a68_extract_indicants (NODE_T *p)
 		  /* Store in the symbol table, but also in the moid list.
 		     Position of definition (q) connects to this lexical
 		     level!  */
-		  if (a68_add_tag (TABLE (p), INDICANT, q, NO_MOID, STOP) == NO_TAG)
+		  TAG_T *t = a68_add_tag (TABLE (p), INDICANT, q, NO_MOID, STOP);
+		  if (t == NO_TAG)
 		    gcc_unreachable ();
+		  PUBLICIZED (t) = is_public;
 		  if (a68_add_mode (&TOP_MOID (&A68_JOB), INDICANT, 0, q, NO_MOID, NO_PACK) == NO_MOID)
 		    gcc_unreachable ();
 		  ATTRIBUTE (q) = DEFINING_INDICANT;

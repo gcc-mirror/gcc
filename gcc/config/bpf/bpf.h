@@ -526,4 +526,9 @@ enum reg_class
 
 #define ASSEMBLER_DIALECT ((int) asm_dialect)
 
+/*** Utilitiy/helpers.  */
+
+#define BPF_IMM32_P(X)				\
+  (CONST_INT_P (X) && (INTVAL (X) == (HOST_WIDE_INT) (int32_t) INTVAL (X)))
+
 #endif /* ! GCC_BPF_H */

@@ -1,0 +1,1 @@
+(assert(maxabschar = ABS 16r10ffff))

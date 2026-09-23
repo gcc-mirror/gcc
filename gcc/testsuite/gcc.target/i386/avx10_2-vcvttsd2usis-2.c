@@ -19,7 +19,7 @@ TEST (void)
 
   s.a[0] = 2.46;
 
-  res1 = _mm_cvtts_roundsd_epu32 (s.x, 8);
+  res1 = _mm_cvtts_roundsd_u32 (s.x, 8);
 
   if (s.a[0] > UINT_MAX)
     res1_ref = UINT_MAX;
@@ -31,7 +31,7 @@ TEST (void)
   if (res1 != res1_ref)
     abort();
 
-  res1 = _mm_cvtts_sd_epu32 (s.x);
+  res1 = _mm_cvtts_sd_u32 (s.x);
 
   if (s.a[0] > UINT_MAX)
     res1_ref = UINT_MAX;
@@ -44,7 +44,7 @@ TEST (void)
     abort();
 
 #ifdef __x86_64__
-  res2 = _mm_cvtts_roundsd_epu64 (s.x, 8);
+  res2 = _mm_cvtts_roundsd_u64 (s.x, 8);
 
   if (s.a[0] > ULONG_MAX)
     res2_ref = ULONG_MAX;
@@ -56,7 +56,7 @@ TEST (void)
   if (res2 != res2_ref)
     abort();
 
-  res2 = _mm_cvtts_sd_epu64 (s.x);
+  res2 = _mm_cvtts_sd_u64 (s.x);
 
   if (s.a[0] > ULONG_MAX)
     res2_ref = ULONG_MAX;

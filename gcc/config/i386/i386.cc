@@ -8625,18 +8625,23 @@ struct stack_access_data
   unsigned int *stack_alignment;
 };
 
-/* Return true if OP references an argument passed on stack.  */
+/* Return true if OP is a stack argument set up by the caller.  */
 
 static bool
 ix86_argument_passed_on_stack_p (const_rtx op)
 {
   tree mem_expr = MEM_EXPR (op);
-  if (mem_expr)
-    {
-      tree var = get_base_address (mem_expr);
-      return TREE_CODE (var) == PARM_DECL;
-    }
-  return false;
+  if (!mem_expr)
+    return false;
+
+  tree var = get_base_address (mem_expr);
+  if (TREE_CODE (var) != PARM_DECL)
+    return false;
+
+  /* For PARM_DECL, DECL_INCOMING_RTL holds an RTL for the stack slot
+     or register where the data was actually passed.  Return true if
+     OP is passed in memory.  */
+  return DECL_INCOMING_RTL (var) && MEM_P (DECL_INCOMING_RTL (var));
 }
 
 /* Update the maximum stack slot alignment from memory alignment in PAT.  */
@@ -24716,7 +24721,17 @@ ix86_split_stlf_stall_load ()
 	     register.  */
 	  || GET_MODE (src) != E_V2DFmode
 	  || !MEM_EXPR (src)
-	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL)
+	  || TREE_CODE (get_base_address (MEM_EXPR (src))) != PARM_DECL
+	  /* Avoid invalid memory address.
+	     i.e.
+	     (mem/c:V2DF (plus:DI (reg/f:DI 7 sp)
+				  (const_int 2147483640 [0x7ffffff8])))
+	     Adjusting it by 8 puts the displacement at 0x80000000, out of
+	     range for the signed 32-bit field an x86 address can encode.  */
+	  || !memory_address_addr_space_p (DFmode,
+					   XEXP (adjust_address_nv (src, DFmode,
+								    8), 0),
+					   MEM_ADDR_SPACE (src)))
 	continue;
 
       rtx zero = CONST0_RTX (V2DFmode);

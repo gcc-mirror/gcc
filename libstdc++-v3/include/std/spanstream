@@ -224,7 +224,9 @@ template<typename _CharT, typename _Traits>
   { __x.swap(__y); }
 
 using spanbuf = basic_spanbuf<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
 using wspanbuf = basic_spanbuf<wchar_t>;
+#endif
 
 template<typename _CharT, typename _Traits>
   class basic_ispanstream
@@ -318,7 +320,9 @@ template<typename _CharT, typename _Traits>
   { __x.swap(__y); }
 
 using ispanstream = basic_ispanstream<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
 using wispanstream = basic_ispanstream<wchar_t>;
+#endif
 
 template<typename _CharT, typename _Traits>
   class basic_ospanstream
@@ -338,7 +342,7 @@ template<typename _CharT, typename _Traits>
     basic_ospanstream(std::span<_CharT> __s,
 		      ios_base::openmode __which = ios_base::out)
     : __ostream_type(std::__addressof(_M_sb)),
-      _M_sb(__s, __which | ios_base::in)
+      _M_sb(__s, __which | ios_base::out)
     { }
 
     basic_ospanstream(const basic_ospanstream&) = delete;
@@ -388,7 +392,9 @@ template<typename _CharT, typename _Traits>
   { __x.swap(__y); }
 
 using ospanstream = basic_ospanstream<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
 using wospanstream = basic_ospanstream<wchar_t>;
+#endif
 
 template<typename _CharT, typename _Traits>
   class basic_spanstream
@@ -458,7 +464,9 @@ template<typename _CharT, typename _Traits>
   { __x.swap(__y); }
 
 using spanstream = basic_spanstream<char>;
+#ifdef _GLIBCXX_USE_WCHAR_T
 using wspanstream = basic_spanstream<wchar_t>;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

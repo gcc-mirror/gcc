@@ -2623,6 +2623,17 @@ GLIBCXX_3.4.35 {
 
 } GLIBCXX_3.4.34;
 
+# GCC 16.2.0
+GLIBCXX_3.4.36 {
+
+    _ZNSt6chrono8__detail25__recent_leap_second_infoERNS_16leap_second_infoEj;
+
+    # basic_format_arg<format_context>::handle basic_format_arg<format_context>::_M_handle_unrecognized() const;
+    # basic_format_arg<wformat_context>::handle basic_format_arg<wformat_context>::_M_handle_unrecognized() const;
+    _ZNKSt16basic_format_argISt20basic_format_contextINSt8__format10_Sink_iterI[cw]EE[cw]EE22_M_handle_unrecognizedEv;
+
+} GLIBCXX_3.4.35;
+
 # Symbols in the support library (libsupc++) have their own tag.
 CXXABI_1.3 {
 

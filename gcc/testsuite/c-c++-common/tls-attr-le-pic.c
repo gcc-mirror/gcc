@@ -12,4 +12,5 @@ foo (void)
 }
 
 /* tls_model should be local-exec due to tls_model attribute.  */
+/* { dg-final { scan-ipa-dump "Varpool flags: initialized tls-emulated" "whole-program" { target { ! tls_native } } } } */
 /* { dg-final { scan-ipa-dump "Varpool flags: tls-local-exec" "whole-program" } } */

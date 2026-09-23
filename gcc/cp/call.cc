@@ -1546,12 +1546,16 @@ standard_conversion (tree to, tree from, tree expr, bool c_cast_p,
 
       if (!same_type_p (fbase, tbase))
 	{
-	  from = build_memfn_type (fstat,
-				   tbase,
-				   cp_type_quals (tbase),
-				   type_memfn_rqual (tofn));
-	  from = build_ptrmemfunc_type (build_pointer_type (from));
-	  conv = build_conv (ck_pmem, from, conv);
+	  tree first = to;
+	  if (!same_type_p (tstat, fstat))
+	    {
+	      first = build_memfn_type (fstat,
+					tbase,
+					cp_type_quals (tbase),
+					type_memfn_rqual (tofn));
+	      first = build_ptrmemfunc_type (build_pointer_type (first));
+	    }
+	  conv = build_conv (ck_pmem, first, conv);
 	  conv->base_p = true;
 	}
       if (fnptr_conv_p (tstat, fstat))
@@ -1745,13 +1749,15 @@ handler_match_for_exception_type (tree handler, tree except_type)
       if (binfo && binfo != error_mark_node)
 	return true;
     }
-  if (TYPE_PTR_P (handler_type) || TYPE_PTRDATAMEM_P (handler_type))
+  if (TYPE_PTR_P (handler_type) || TYPE_PTRMEM_P (handler_type))
     {
       if (TREE_CODE (except_type) == NULLPTR_TYPE)
 	return true;
       if ((TYPE_PTR_P (handler_type) && TYPE_PTR_P (except_type))
 	  || (TYPE_PTRDATAMEM_P (handler_type)
-	      && TYPE_PTRDATAMEM_P (except_type)))
+	      && TYPE_PTRDATAMEM_P (except_type))
+	  || (TYPE_PTRMEMFUNC_P (handler_type)
+ 	      && TYPE_PTRMEMFUNC_P (except_type)))
 	{
 	  conversion *conv
 	    = standard_conversion (handler_type, except_type, NULL_TREE,

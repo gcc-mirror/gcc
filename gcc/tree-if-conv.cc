@@ -1170,7 +1170,8 @@ if_convertible_stmt_p (gimple *stmt, vec<data_reference_p> refs)
       return true;
 
     case GIMPLE_SWITCH:
-      return if_convertible_switch_p (as_a <gswitch *> (stmt));
+      /* Checked elsewhere.  */
+      return true;
 
     case GIMPLE_ASSIGN:
       return if_convertible_gimple_assign_stmt_p (stmt, refs);
@@ -1702,7 +1703,9 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
     }
 
   /* Checking PHIs needs to be done after stmts, as the fact whether there
-     are any masked loads or stores affects the tests.  */
+     are any masked loads or stores affects the tests.  Also check switch
+     stmts for supported shape as that cannot be skipped for always
+     executed blocks.  */
   for (i = 0; i < loop->num_nodes; i++)
     {
       basic_block bb = ifc_bbs[i];
@@ -1710,6 +1713,9 @@ if_convertible_loop_p_1 (class loop *loop, vec<data_reference_p> *refs)
 
       for (itr = gsi_start_phis (bb); !gsi_end_p (itr); gsi_next (&itr))
 	if (!if_convertible_phi_p (loop, bb, itr.phi ()))
+	  return false;
+      if (gswitch *s = safe_dyn_cast <gswitch *> (*gsi_last_bb (bb)))
+	if (!if_convertible_switch_p (s))
 	  return false;
     }
 

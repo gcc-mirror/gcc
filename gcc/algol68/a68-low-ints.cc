@@ -65,7 +65,7 @@ a68_get_int_skip_tree (MOID_T *m)
   return build_int_cst (type, 0);
 }
 
-/* Given an integral type, build the maximum value expressable in that
+/* Given an integral type, build the maximum value expressible in that
    type.  */
 
 tree
@@ -74,7 +74,7 @@ a68_int_maxval (tree type)
   return fold_convert (type, TYPE_MAX_VALUE (type));
 }
 
-/* Given an integral type, build the minimum value expressable in that
+/* Given an integral type, build the minimum value expressible in that
    type.  */
 
 tree

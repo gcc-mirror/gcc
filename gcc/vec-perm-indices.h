@@ -55,7 +55,12 @@ public:
   vec_perm_indices ();
   vec_perm_indices (const vec_perm_builder &, unsigned int, poly_uint64);
 
-  void new_vector (const vec_perm_builder &, unsigned int, poly_uint64);
+  void new_vector (const vec_perm_builder &b, unsigned int ni, poly_uint64 ne)
+  {
+    new_vector (b, ni, false, false, ne);
+  }
+  void new_vector (const vec_perm_builder &, unsigned int, bool, bool,
+		   poly_uint64);
   void new_expanded_vector (const vec_perm_indices &, unsigned int);
   bool new_shrunk_vector (const vec_perm_indices &, unsigned int);
   void rotate_inputs (int delta);
@@ -69,6 +74,13 @@ public:
 
   /* Return the number of input vectors being permuted.  */
   unsigned int ninputs () const { return m_ninputs; }
+
+  /* Return whether the input N is known bitwise zero.  */
+  bool input_bitwise_zero_p (unsigned n) const
+  {
+    return (n == 0 ? m_input0_bitwise_zero_p
+	    : (n == 1 ? m_input1_bitwise_zero_p : false));
+  }
 
   /* Return the number of elements in each input vector.  */
   poly_uint64 nelts_per_input () const { return m_nelts_per_input; }
@@ -87,16 +99,21 @@ private:
 
   vec_perm_builder m_encoding;
   unsigned int m_ninputs;
+  bool m_input0_bitwise_zero_p;
+  bool m_input1_bitwise_zero_p;
   poly_uint64 m_nelts_per_input;
 };
 
 bool tree_to_vec_perm_builder (vec_perm_builder *, tree);
+bool tree_to_vec_perm_indices (vec_perm_indices *, tree, tree, tree);
 tree vec_perm_indices_to_tree (tree, const vec_perm_indices &);
 rtx vec_perm_indices_to_rtx (machine_mode, const vec_perm_indices &);
 
 inline
 vec_perm_indices::vec_perm_indices ()
   : m_ninputs (0),
+    m_input0_bitwise_zero_p (false),
+    m_input1_bitwise_zero_p (false),
     m_nelts_per_input (0)
 {
 }
@@ -110,7 +127,7 @@ vec_perm_indices::vec_perm_indices (const vec_perm_builder &elements,
 				    unsigned int ninputs,
 				    poly_uint64 nelts_per_input)
 {
-  new_vector (elements, ninputs, nelts_per_input);
+  new_vector (elements, ninputs, false, false, nelts_per_input);
 }
 
 /* Return the canonical value for permutation vector element ELT,

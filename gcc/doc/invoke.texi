@@ -1403,7 +1403,7 @@ See RS/6000 and PowerPC Options.
 -mgnu-attribute
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}  -mprefixed
--mpcrel  -mmma  -mrop-protect  -mprivileged
+-mpcrel  -mmma  -mdense-math  -mrop-protect  -mprivileged
 -mno-splat-word-constant  -mno-splat-float-constant
 -mno-ieee128-constant  -mno-warn-altivec-long}
 
@@ -8446,6 +8446,7 @@ Warn about uses of pointers to dynamically allocated objects that have
 been rendered indeterminate by a call to a deallocation function.
 The warning is enabled at all optimization levels but may yield different
 results with optimization than without.
+@option{-Wuse-after-free} is equivalent to @option{-Wuse-after-free=1}.
 
 @table @gcctabopt
 @item -Wuse-after-free=1
@@ -21526,7 +21527,7 @@ performance of the code.  Permissible values for this option are:
 @samp{neoverse-512tvb}, @samp{neoverse-e1}, @samp{neoverse-n1},
 @samp{neoverse-n2}, @samp{neoverse-v1}, @samp{neoverse-v2}, @samp{grace},
 @samp{neoverse-v3}, @samp{neoverse-v3ae}, @samp{armagicpu}, @samp{neoverse-n3},
-@samp{olympus}, @samp{cortex-a725}, @samp{cortex-x925},
+@samp{olympus}, @samp{rigel}, @samp{cortex-a725}, @samp{cortex-x925},
 @samp{qdf24xx}, @samp{saphira}, @samp{phecda}, @samp{xgene1}, @samp{vulcan},
 @samp{octeontx}, @samp{octeontx81},  @samp{octeontx83},
 @samp{octeontx2}, @samp{octeontx2t98}, @samp{octeontx2t96}
@@ -21939,8 +21940,6 @@ Enable the TIndex Exception-like Vector Extension.
 Enable the TLBI Domains Extension.
 @item gcie
 Enable the GICv5 (Generic Interrupt Controller) CPU Interface Extension.
-@item mpamv2
-Enable MPAMv2 system registers.
 @item lscp
 Enable the load acquire and store release pair extension.
 @item mops-go
@@ -31621,7 +31620,7 @@ following options:
 -mcrypto  -mhtm  -mpower8-fusion
 -mquad-memory  -mquad-memory-atomic  -mfloat128
 -mfloat128-hardware  -mprefixed  -mpcrel  -mmma
--mrop-protect}
+-mdense-math -mrop-protect}
 
 The particular options set for any particular CPU varies between
 compiler versions, depending on what setting seems to produce optimal
@@ -32717,6 +32716,14 @@ the option @option{-mcpu=power10} (or later) is enabled.
 Generate (do not generate) the MMA instructions.  The @option{-mma}
 option requires that the option @option{-mcpu=power10} (or later)
 is enabled.
+
+@opindex mdense-math
+@opindex mno-dense-math
+@item -mdense-math
+@itemx -mno-dense-math
+Generate (do not generate) Dense Math Facility (DMF) instructions.
+The @option{-mdense-math} option requires that the option
+@option{-mcpu=future} (or later) is enabled.
 
 @opindex mrop-protect
 @opindex mno-rop-protect

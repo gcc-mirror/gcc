@@ -781,9 +781,12 @@ package body Exp_Attr is
          if Field_Nam in Name_uObject | Name_uParent | Name_uTag then
             null;
 
-         --  Do not process fields without any scalar components
+         --  Do not process fields without any scalar components, or whose type
+         --  is an unchecked union since we cannot know where they are.
 
-         elsif not Scalar_Part_Present (Field_Typ) then
+         elsif not Scalar_Part_Present (Field_Typ)
+           or else Is_Unchecked_Union (Field_Typ)
+         then
             null;
 
          --  Otherwise the field needs to be validated. Use Make_Identifier
@@ -8167,7 +8170,7 @@ package body Exp_Attr is
             begin
                Find_Fat_Info (PBtyp, Ftp, Pkg);
 
-               --  If the prefix is a reverse SSO component, or is possibly
+               --  If the prefix is a reverse SSO object, or is possibly
                --  unaligned, first create a temporary copy that is in
                --  native SSO, and properly aligned. Make it Volatile to
                --  prevent folding in the back-end. Note that we use an
@@ -8176,7 +8179,7 @@ package body Exp_Attr is
                --  that case it cannot be copied using a floating point
                --  register.
 
-               if In_Reverse_Storage_Order_Object (Pref)
+               if Is_Reverse_Storage_Order_Object (Pref)
                  or else Is_Possibly_Unaligned_Object (Pref)
                then
                   declare

@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-Os -mtune=generic" } */
-/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.} } } */
 
@@ -8,7 +7,7 @@
 **foo:
 **.LFB0:
 **	.cfi_startproc
-**	jmp	memmove
+**	jmp	_?memmove
 **	.cfi_endproc
 **...
 */

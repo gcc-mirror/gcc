@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "cfganal.h"
 #include "tree-dfa.h"
+#include "fold-const.h"
 
 // Create the global oracle.
 
@@ -61,9 +62,17 @@ private:
 // stmt range inference instance.
 
 static bool
-non_null_loadstore (gimple *, tree op, tree, void *data)
+non_null_loadstore (gimple *stmt, tree op, tree, void *data)
 {
-  if (TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+  if (TREE_CODE (op) == MEM_REF
+      || (TREE_CODE (op) == TARGET_MEM_REF
+	  && !TMR_INDEX2 (op)
+	  && (!TMR_INDEX (op)
+	      || (TMR_STEP (op)
+		  && expr_not_equal_to (TMR_STEP (op),
+					wi::one (TYPE_PRECISION (TREE_TYPE
+							(TMR_STEP (op)))),
+					stmt)))))
     {
       /* Some address spaces may legitimately dereference zero.  */
       addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (op));

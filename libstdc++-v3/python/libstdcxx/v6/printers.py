@@ -908,8 +908,9 @@ class StdMapPrinter(printer_base):
         node = lookup_node_type('_Rb_tree_node', self._val.type).pointer()
         return self._iter(RbtreeIterator(self._val), node)
 
-    def num_children(slf):
-        return len(RbtreeIterator(self._val))
+    def num_children(self):
+        # Each element produces two children, the key and the value.
+        return 2 * len(RbtreeIterator(self._val))
 
     def display_hint(self):
         return 'map'
@@ -950,7 +951,7 @@ class StdSetPrinter(printer_base):
         node = lookup_node_type('_Rb_tree_node', self._val.type).pointer()
         return self._iter(RbtreeIterator(self._val), node)
 
-    def num_children(slf):
+    def num_children(self):
         return len(RbtreeIterator(self._val))
 
 class StdBitsetPrinter(printer_base):
@@ -1301,7 +1302,8 @@ class Tr1UnorderedMapPrinter(printer_base):
         return izip(counter, data)
 
     def num_children(self):
-        return int(self._hashtable()['_M_element_count'])
+        # Each element produces two children, the key and the value.
+        return 2 * int(self._hashtable()['_M_element_count'])
 
     def display_hint(self):
         return 'map'

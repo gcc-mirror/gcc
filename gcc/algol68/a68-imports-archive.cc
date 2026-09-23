@@ -19,13 +19,12 @@
    <http://www.gnu.org/licenses/>.  */
 
 #define INCLUDE_MEMORY
+#define INCLUDE_MAP
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
 #include "vec.h"
-
-#include <map>
-#include <string>
 
 #include "a68.h"
 
@@ -74,7 +73,7 @@ struct Archive_fl_header
 };
 
 // The header of an entry in an archive.  This is all readable text,
-// padded with spaces where necesary.
+// padded with spaces where necessary.
 
 struct Archive_header
 {

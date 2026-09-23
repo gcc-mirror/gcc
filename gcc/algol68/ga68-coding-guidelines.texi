@@ -99,7 +99,7 @@ Jargon File provides definitions for many of the terms used in the
 context of the Algol 68 programming language and associated
 technologies.  If you find yourself wondering about "frobyts" or
 "enclosed clauses", please look them up in the jargon
-file@footnote{@url{https://jemarch.net/a68-jargon}}.  The file is
+file@footnote{@url{https://jemarch.net/a68-jargon/}}.  The file is
 available online in the www and, in Gentoo, as manpages once you
 install the app-doc/a68-jargon package. Just type @command{man 7algol
 frobyt} in the terminal, for example.
@@ -317,7 +317,7 @@ int i = -10;
 @{ Always a space after bold monadic operator @}
 int i = ABS (base + offset)
 
-@{ Spaces in dyadic opeator @}
+@{ Spaces in dyadic operator @}
 total := a + b;
 index := cnt +:= 1;
 total := (a + b);
@@ -362,7 +362,7 @@ mode MyString = [1:10@@]MyChar,
 While indexing and trimming a multiple, never put a space between the
 indexed tertiary and the SUB symbol.
 
-Do not put spaces direcly within indexers and trimmers, unless for
+Do not put spaces directly within indexers and trimmers, unless for
 indentation purposes.  As an exception to this rule, you can put a
 single space before the "at" operator @code{@@} if desired.
 
@@ -557,11 +557,11 @@ when written on a single line, just do it.
 Start the enquiry clause in the if-part of a conditional clause right
 after the @code{if} symbol, not in the next line.
 
-The serial clauses in the then- and if-parts of the conditional clause
+The serial clauses in the then- and else-parts of the conditional clause
 shall be indented five positions right, which is the length of both
 the @code{then} and @code{else} symbols plus one.
 
-The first declaration or unit in the then- and if-parts shall be
+The first declaration or unit in the then- and else-parts shall be
 placed in the same line than the @code{then} and @code{else} symbols,
 respectively.
 

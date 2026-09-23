@@ -7,7 +7,15 @@ extern int asm_var;
 asm("%cc0:" :: ":" (&asm_var));
 
 static int a;
+#if __APPLE__
+#if __LP64__
+asm ("%cc0: .quad 0" :: ":"(&a));
+#else
+asm ("%cc0: .long 0" :: ":"(&a));
+#endif
+#else
 asm (".local %cc0\n %cc0: .long 0" :: ":"(&a));
+#endif
 
 int use_statics () {
   static_asm_fn ();

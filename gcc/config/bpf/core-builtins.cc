@@ -264,7 +264,7 @@ remove_parser_plugin ()
 
 /* Helper compare functions used to verify if multiple builtin calls contain
    the same argument as input.  In that case the builtin calls can be optimized
-   out by identifying redundat calls.  This happen since the internal
+   out by identifying redundant calls.  This happen since the internal
    __core_reloc builtin is marked as PURE.  */
 
 static inline bool
@@ -1063,13 +1063,13 @@ bpf_require_core_support ()
 
 /* BPF Compile Once - Run Everywhere (CO-RE) support.  Construct a CO-RE
    relocation record in DATA to be emitted in the .BTF.ext
-   section.  Does nothing if we are not targetting BPF CO-RE, or if the
+   section.  Does nothing if we are not targeting BPF CO-RE, or if the
    constructed relocation would be a no-op.  */
 
 static void
 make_core_relo (struct cr_final *data, rtx_code_label *label)
 {
-  /* If we are not targetting BPF CO-RE, do not make a relocation.  We
+  /* If we are not targeting BPF CO-RE, do not make a relocation.  We
      might not be generating any debug info at all.  */
   if (!bpf_require_core_support ())
     return;
@@ -1207,7 +1207,7 @@ bpf_handle_plugin_finish_type (void *event_data,
 
 /* Initializes support information to process CO-RE builtins.
    Defines information for the builtin processing, such as helper functions to
-   support the builtin convertion.  */
+   support the builtin conversion.  */
 
 void
 bpf_init_core_builtins (void)
@@ -1660,7 +1660,7 @@ void
 bpf_output_core_reloc (rtx *operands, int nr_ops)
 {
   /* Search for an UNSPEC_CORE_RELOC within the operands of the emitting
-     intructions.  */
+     instructions.  */
   rtx unspec_exp = NULL_RTX;
   for (int i = 0; i < nr_ops; i++)
     {
@@ -1910,7 +1910,7 @@ core_make_builtins (tree *tp, int *walk_subtrees, void *data)
 
       tree new_expr = core_expr_with_field_expr_plus_base (base, expr, true);
 
-      /* Abort convertion if it is just a pointer or a reference to an
+      /* Abort conversion if it is just a pointer or a reference to an
 	 attributed type.  */
       if (new_expr != expr)
 	{

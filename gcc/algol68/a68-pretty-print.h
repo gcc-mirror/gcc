@@ -129,11 +129,9 @@ struct a68_attr_format_token : public a68_format_token
 public:
   a68_attr_format_token (enum a68_attribute a)
   {
-    KEYWORD_T *nt = a68_find_keyword_from_attribute (A68 (top_keyword), a);
-    if (nt != NO_KEYWORD)
-      m_str = xstrdup (a68_strop_keyword (TEXT (nt)));
-    else
-      m_str = xstrdup ("keyword");
+    const char *attr_name = a68_attribute_name (a);
+    gcc_assert (attr_name != NULL);
+    m_str = xstrdup (attr_name);
   }
 };
 

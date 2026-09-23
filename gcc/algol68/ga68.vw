@@ -1434,6 +1434,198 @@ b) voided to{61A} void COMORF :
     b) PROC VOID (pp) (in PROC PROC VOID pp = PROC VOID : (print (1);
             VOID : print (2)); PROC VOID (pp);) }
 
+7 Modes and nests
+
+{ The syntax in this chapter formalizes the notion of indepencence
+  that all properties contained in a given reach must hold in order to
+  avoid ambiguity in applied indicators, the identification process
+  that assures every applied indicator corresponds to an existing
+  property, the structural equivalence of modes, and finally the
+  well-formedness of modes. }
+
+7.1 Independence of properties
+
+7.1.1 Syntax
+
+A) PREF :: procedure yielding : REF to.
+B) NONPREF :: PLAIN ; STOWED ;
+              procedure with PARAMETERS yielding MOID ; UNITD ; void.
+C) *PREFSETY :: PREF PREFSETY ; EMPTY.
+
+a) WHETHER PROP1 independent PROPS2 PROP2{a,48a,c,72a} :
+     WHETHER PROP1 independent PROPS2{a,c}
+             and PROP1 independent PROP2{c}.
+b) WHETHER PROP independent EMPTY{48a,c,72a} : WHETHER true.
+c) WHETHER QUALITY1 TAX1
+           independent QUALITY2 TAX2{a,48a,c,72a} :
+     unless (TAX1) is (TAX2), WHETHER true ;
+     where (TAX1) is (TAX2) and (TAX1) is (TAO),
+       WHETHER QUALITY1 independent QUALITY2{d}.
+d) WHETHER QUALITY1 independent QUALITY2{c} :
+     where QUALITY1 related QUALITY2{e,f,g,h,i,j,-},
+       WHETHER false ;
+     unless QUALITY1 related QUALITY2{e,f,g,h,i,j,-},
+       WHETHER true.
+
+e) WHETHER MONO related DUO{d} : WHETHER false.
+f) WHETHER DUO related MONO{d} : WHETHER false.
+g) WHETHER PRAM related DYADIC{d} : WHETHER false.
+h) WHETHER DYADIC related PRAM{d} : WHETHER false.
+i) WHETHER procedure with MODE1 parameter MODE2 parameter
+           yielding MOID1 related
+           procedure with MODE3 parameter MODE4 parameter
+           yielding MOID2{d} :
+     WHETHER MODE1 firmly related MODE3{k}
+             and MODE2 firmly related MODE4{k}.
+j) WHETHER procedure with MODE1 parameter yielding MOID1
+           related procedure with MODE2 parameter yielding
+           MOID2{d} :
+     WHETHER MOD1 firmly related MODE2{k}.
+
+k) WHETHER MOID1 firmly related MOID2{i,j} :
+     WHETHER MOODS1 is firm MOID2{l,m}
+             or MOODS2 is firm MOID1{l,m},
+       where (MOODS1) is (MOID1)
+             or (union of MOODS1 mode) is (MOID1),
+       where (MOODS2) is (MOID2)
+             or (union of MOODS2 mode) is (MOID2).
+l) WHETHER MOODS MOOD is firm MOID{k,l} :
+     WHETHER MOODS is firm MOID{l,m}
+             or MOOD is firm MOID{m}.
+m) WHETHER MOID1 is firm MOID2{k,l,n,47f} :
+     WHETHER MOID1 equivalent MOID2{73a}
+             or MOID1 unites to MOID2{64b}
+             or MOID1 deprefs to firm MOID2{n}.
+n) WHETHER MOID1 deprefs to firm MOID2{m} :
+     where (MOID1) is (PREF MOID3),
+       WHETHER MOID5 is firm MOID2{m},
+       where MOID3 deflexes to MOID5{47a,b,c} ;
+     where (MOID1) is (NONPREF), WHETHER false.
+
+7.2 Identification in nests
+
+7.2.1 Syntax
+
+a) WHETHER PROP identified in NEST new PROPSETY{a,48b,542a} :
+     where PROP resides in PROPSETY{b,c,-}, WHETHER true ;
+     where PROP independent PROPSETY{71a,b,c},
+       WHETHER PROP identified in NEST{a,-}.
+
+b) WHETHER PROP1 resides in PROPS2 PROP2{a,b,48d} :
+     WHETHER PROP1 resides in PROP2{c,-}
+             or PROP1 resides in PROP2{b,c,-}.
+c) WHETHER QUALITY1 TAX resides in QUALITY2 TAX{a,b,48d} :
+     where (QUALITY1) is (label) or (QUALITY1) is (DYADIC)
+           or (QUALITY1) is (MODE field),
+       WHETHER (QUALITY1) is (QUALITY2) ;
+     where (QUALITY1) is (MOID1 TALLETY)
+           and (QUALITY2) is (MOID2 TALLETY),
+       WHETHER MOID1 equivalent MOID2{73a}.
+
+7.3 Equivalence of modes
+
+7.3.1 Syntax
+
+A) SAFE :: safe ; MU has MODE SAFE ; yin SAFE ; yang SAFE ;
+           remember MOID1 MOID2 SAFE.
+B) HEAD :: PLAIN ; PREF{71A} ; structured with ;
+           FLEXETY ROWS of ; proecedure with ; union of ; void.
+C) TAILETY :: MOID ; FIELDS mode ; PARAMETERS yielding MOID ;
+              MOODS mode ; EMPTY.
+D) PARTS :: PART ; PARTS PART.
+E) PART :: FIELD ; PARAMETER.
+
+a) WHETHER MOID1 equivalent MOID2{64b,71m,72c} :
+     WHETHER safe MOID1 equivalent safe MOID2{b}.
+b) WHETHER SAFE1 MOID1 equivalent SAFE2 MOID2{a,b,e,i,j,n} :
+     where (SAFE1) contains (remember MOID1 MOID2)
+           or (SAFE2) contains (remember MOID2 MOID1),
+       WHETHER true ;
+     unless (SAFE1) contains (remember MOID1 MOID2)
+            or (SAFE2) contains (remember MOID2 MOID1),
+       WEHTHER (HEAD3) is (HEAD4)
+               and remember MOID1 MOID2 SAFE3 TAILETY3
+               equivalent SAFE4 TAILETY4{b,d,e,k,q,-},
+       where SAFE3 HEAD3 TAILETY3 develops from
+             SAFE1 MOID1{c}
+             and SAFE4 HEAD4 TAILETY4 develops from
+             SAFE2 MOID2{c}.
+c) WHETHER SAFE2 HEAD TAILETY develops from SAFE1 MOID{b,c} :
+     where (MOID) is (HEAD TAILETY),
+       WHETHER (HEAD) shields SAFE1 to SAFE2{74a,b,c,d,-} ;
+     where (MOID) is (MU definition of MODE),
+       unless (SAFE1) contains (MU has),
+       WHETHER SAFE2 HEAD TAILETY develops from
+               MU has MODE SAFE1 MODE{c} ;
+     where (MOID) is (MU application)
+           and (SAFE1) is (NOTION MU has MODE SAFE3)
+           and (NOTION) contains (yin) and (NOTION) contains (yang),
+       WHETHER SAFE2 HEAD TEILETY develops from
+               SAFE1 MODE{c}.
+d) WHETHER SAFE1 FIELDS1 mode
+           equivalent SAFE2 FIELDS2 mode{b} :
+     WHETHER SAFE1 FIELDS1 equivalent SAFE2 FIELDS2{f,g,h,i}.
+e) WHETHER SAFE1 PARAMETERS1 yielding MOID1
+           equivalent SAFE2 PARAMETERS2 yielding MOID2{b} :
+     WHETHER SAFE1 PARAMETERS1
+             equivalent SAFE2 PARAMETERS2{f,g,h,j}
+             and SAFE1 MOID1 equivalent SAFE2 MOID2{b}.
+f) WHETHER SAFE1 PARTS1 PART1
+           equivalent SAFE2 PARTS2 PART2{d,e,f} :
+     WHETHER SAFE1 PARTS1 equivalent SAFE2 PARTS2{f,g,h,i,j}
+             and SAFE1 PART1 equivalent SAFE2 PART2{i,j}.
+g) WHETHER SAFE1 PARTS1 PART1 equivalent
+           SAFE2 PART2{d,e,f} :
+     WHETHER false.
+h) WHETHER SAFE1 PART1 equivalent
+           SAFE2 PARTS2 PART2{d,e,f} :
+     WHETHER false.
+i) WHETHER SAFE1 MODE1 field TAG1
+           equivalent SAFE2 MODE2 field TAG2{d,f} :
+     WHETHER (TAG1) is (TAG2)
+             and SAFE1 MODE1 equivalent SAFE2 MODE2{b}.
+j) WHETHER SAFE1 MODE1 parameter
+           equivalent SAFE2 MODE2 parameter{e,f} :
+     WHETHER SAFE1 MODE1 equivalent SAFE2 MODE2{b}.
+k) WHETHER SAFE1 MOODS1 mode equivalent
+           SAFE2 MOODS2 mode{b} :
+     WHETHER SAFE1 MOODS1 subset of SAFE2 MOODS2{l,m,n}
+             and SAFE2 MOODS2 subset of SAFE1 MOODS1{l,m,n}
+             and MOODS1 number equals MOODS2 number{o,p}.
+l) WHETHER SAFE1 MOODS1 MOOD1
+           subset of SAFE2 MOODS2{k.l,46s,64b} :
+     WHETHER SAFE1 MOODS1 subset of SAFE2 MOODS2{l,m,n}
+             and SAFE1 MOOD1 subset of SAFE2 MOODS2{m,n}.
+m) WHETHER SAFE1 MOOD1
+           subset of SAFE2 MOODS2 MOOD2{k.l,m,46s,64b} :
+     WHETHER SAFE1 MOOD1 subset of SAFE2 MOODS2{m,n}
+             or SAFE1 MOOD1 subset of SAFE2 MOOD2{n}.
+n) WHETHER SAFE1 MOOD1 subset of SAFE2 MOOD2{k,l,m,64b} :
+     WHETHER SAFE1 MOOD1 equivalent SAFE2 MOOD2{b}.
+o) WHETHER MOODS1 MOOD1 number equals
+           MOODS2 MOOD2 number{k,o} :
+     WHETHER MOODS1 number equals MOODS2 number{o,p,-}.
+p) WHETHER MOOD1 number equals MOOD2 number{k.o} :
+     WHETHER true.
+q) WHETHER SAFE1 EMPTY equivalent SAFE2 EMPTY{b} :
+     WHETHER true.
+
+7.4 Well-formedness
+
+7.4.1 Syntax
+
+a) WHETHER (NOTION) shields SAFE to SAFE{73c} :
+     where (NOTION) is (PLAIN)
+           or (NOTION) is (FLEXETY ROWS of)
+           or (NOTION) is (union of) or (NOTION) is (void),
+       WHETHER true.
+b) WHETHER (PREF) shields SAFE to yin SAFE{73c} :
+     WHETHER true.
+c) WHETHER (structured with) shields SAFE to yang SAFE{73c} :
+     WHETHER true.
+d) WHETHER (procedure with) shields SAFE to yin yang SAFE{73c} :
+     WHETHER true.
+
 8 Denotations
 
 8.1 Plain denotations

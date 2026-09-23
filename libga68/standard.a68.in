@@ -58,28 +58,95 @@ def
                      {reti {,}}
                   );
 
+    { The definition of mode Integer used by both the RR subwhole and this one.  }
+    
+    mode Integer = union (
+                      {iter L {long long } {long } {} {short } {short short }}
+                      {L}int
+                      {reti {,}}
+                   );
+    
+    { The whole_powers_of_10 row is used to look up the appropriate power of 10 for
+      each integer division required to select the leading in the conversion
+      process, for each integer multiplication to eliminate the leading digit,
+      and in the lookup operator WHOLEDIGITS to determine the number of digits in
+      the integer to be converted.  }
+    
+    int whole_max_entry := 1;
+    long long int whole_p10 := long long 1;
+    long long int whole_stop_after = long_long_max_int % long long 10;
+    while whole_p10 < whole_stop_after
+    do
+       whole_p10 *:= long long 10;
+       whole_max_entry +:= 1
+    od;
+    heap [1:whole_max_entry]long long int whole_powers_of_10;
+    while whole_max_entry > 0
+    do
+       whole_powers_of_10[whole_max_entry] := whole_p10;
+       whole_p10 %:= long long 10;
+       whole_max_entry -:= 1
+    od;
+    
+    { The WHOLEDIGITS operator is used to determine the number of decimal digits in a
+      number.  We convert the operand to long long and make it negative if
+      necessary, to allow for twos-complement minimum (negative) integer.  }
+    
+    op WHOLEDIGITS = (Integer number) int:
+    begin
+          long long int work =
+             case number in
+                {iter L {long long } {long } {} {short } {short short }}
+                {iter K {} {LENG } {LENG LENG } {LENG LENG LENG } {LENG LENG LENG LENG }}
+                ({L}int x):
+                   {K}(x > {L} 0 | -x | x)
+                {reti {,}}
+             esac;
+          int num_digits := 1;
+          for i from (LWB whole_powers_of_10) + 1 to UPB whole_powers_of_10
+              while work <= -whole_powers_of_10[i]
+          do num_digits +:= 1 od;
+          num_digits
+    end { WHOLEDIGITS };
+    
+    { proc whole checks for a too-small width, returning a string of the error
+      character if so; it left-pads the result with blanks as necessary and the
+      sign as necessary; and it relies on subwhole to do the actual digit
+      conversion.  The [] result returned is either exactly the number of chars
+      needed (width = 0) to hold the converted integer and negative sign if < 0
+      or width characters (width ≠ 0).  }
+    
+    
     pub proc whole = (Number v, int width) string:
        case v in
-          {iter L  {short short}  {short}  {} {long}  {long long}}
-          {iter L_ {short_short_} {short_} {} {long_} {long_long_}}
-          ({L} int x):
-             (int length := ABS width - (x < {L} 0 OR width > 0 | 1 | 0),
-                            {L} int n := ABS x;
-              if width = 0
-              then {L} int m := n; length := 0;
-                   while m %:= {L} 10; length +:= 1; m /= {L} 0
-                   do ~ od
-              fi;
-              string s := subwhole (n, length);
-              if length = 0 OR char_in_string (errorchar, loc int, s)
-              then ABS width * errorchar
-              else (x < {L} 0 | "-" |: width > 0 | "+" | "") +=: s;
-                   (width /= 0 | (ABS width - UPB s) * " " +=: s);
-                   s
-              fi),
-          ({L} real x): fixed (x, width, 0)
+          {iter L {long long } {long } {} {short } {short short }}
+          ({L}int x):
+             if int digits_required = WHOLEDIGITS x;
+                bool negative = x < {L}0;
+                int signs_required = (negative OR width > 0 | 1 | 0);
+                int chars_required = signs_required + digits_required;
+                int chars_available = (width = 0 | chars_required | ABS width);
+                chars_available < chars_required
+             then chars_available * "*"
+             else [1:chars_available]char buffer;
+                  int spaces_required = chars_available - chars_required;
+                  int buf_ch := 1;
+                  while buf_ch <= spaces_required
+                  do buffer[buf_ch] := " ";
+                     buf_ch +:= 1
+                  od;
+                  if signs_required > 0
+                  then buffer[buf_ch] := (negative | "-" | "+");
+                       buf_ch +:= 1
+                  fi;
+                  subwhole(x, buffer, buf_ch);
+                  buffer
+             fi
           {reti {,}}
-       esac;
+       out
+          fixed(v, width, 0)
+       esac { whole };
+
 
     pub proc fixed = (Number v, int width, after) string:
        case v in
@@ -137,22 +204,42 @@ def
            {reti {,}}
         esac;
 
-    { Returns a string of maximum length `width' containing a decimal
-      representation of the positive integer `v'. }
-
-    proc subwhole = (Number v, int width) string:
-       case v in
-          {iter L {short short} {short} {} {long}    {long long}}
-          {iter S {LENG LENG}   {LENG}  {} {SHORTEN} {SHORTEN SHORTEN}}
-          ({L} int x):
-             begin string s, {L} int n := x;
-                   while dig_char ({S} (n MOD {L} 10)) +=: s;
-                         n %:= {L} 10; n /= {L} 0
-                   do ~ od;
-                   (UPB s > width | width * errorchar | s)
-             end
+    { The RR proc subwhole looks like
+    
+      proc ℵ₀ subwhole = (number v, int width) string: { implementation };
+    
+      We deviate from that design below.  This means that, should someone copy
+      proc putf from the RR, they must recognize that the subwhole mentioned
+      there is no longer defined here, and make adjustments.
+    
+      I considered calling this subwhole something else (whole_do_conv for example)
+      but that would mean anyone else calling subwhole hoping to get the new
+      version would silently get the old subwhole instead.
+    
+      This subwhole converts digit by digit from left to right.  It relies on the
+      caller having padded out the buffer with spaces and sign as required and
+      begins filling digits starting at the value passed in buf_ch.  The final
+      []char array and final value of buf_ch are returned.  }
+    
+    proc subwhole = (Integer v, ref []char buffer, ref int buf_ch) void:
+       case int char_zero = ABS "0"; v in
+          {iter L {long long } {long } {} {short } {short short }}
+          {iter K {LENG LENG } {LENG } {} {SHORTEN } {SHORTEN SHORTEN }}
+          {iter S {SHORTEN SHORTEN } {SHORTEN } {} {LENG } {LENG LENG }}k
+          {iter T {} {SHORTEN } {SHORTEN SHORTEN } {SHORTEN SHORTEN SHORTEN } {SHORTEN SHORTEN SHORTEN SHORTEN }}
+          ({L}int number_to_convert):
+          begin {L}int work := number_to_convert;
+                while buf_ch <= UPB buffer
+                do int digit_number = UPB buffer - buf_ch + 1;
+                   {L}int p10 = {T}whole_powers_of_10[digit_number];
+                   int digit = {S} (work % p10);
+                   buffer[buf_ch] := REPR (ABS digit + char_zero);
+                   buf_ch +:= 1;
+                   work -:= {K}digit * p10
+                od
+          end
           {reti {,}}
-       esac;
+       esac { subwhole };
 
     { Returns a string of maximum length `width' containing a rounded
       decimal representation of the positive real number `v'; if

@@ -64,6 +64,8 @@ by particular CPU name. Permissible values for this option are:
 
 @samp{tt-ascalon-d8},
 
+@samp{tt-ascalon-xg},
+
 @samp{xiangshan-nanhu},
 
 @samp{xiangshan-kunminghu},

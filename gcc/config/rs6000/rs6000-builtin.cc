@@ -150,6 +150,9 @@ rs6000_invalid_builtin (enum rs6000_gen_builtins fncode)
       error ("%qs requires the %qs and %qs options", name, "-mcpu=future",
 	     "-mvsx");
       break;
+    case ENB_DM:
+      error ("%qs requires the %qs option", name, "-mdense-math");
+      break;
     default:
     case ENB_ALWAYS:
       gcc_unreachable ();
@@ -211,6 +214,8 @@ rs6000_builtin_is_supported (enum rs6000_gen_builtins fncode)
       return TARGET_FUTURE && TARGET_ALTIVEC;
     case ENB_FUTURE_VSX:
       return TARGET_FUTURE && TARGET_VSX;
+    case ENB_DM:
+      return TARGET_DMF;
     default:
       gcc_unreachable ();
     }
@@ -512,6 +517,8 @@ const char *rs6000_type_string (tree type_node)
     return "__vector_pair";
   else if (type_node == vector_quad_type_node)
     return "__vector_quad";
+  else if (type_node == dmr1024_type_node)
+    return "__dmr1024";
 
   return "unknown";
 }
@@ -813,6 +820,21 @@ rs6000_init_builtins (void)
   t = build_qualified_type (vector_quad_type_node, TYPE_QUAL_CONST);
   ptr_vector_quad_type_node = build_pointer_type (t);
 
+  /* For TDOmode (1024-bit dense math registers), don't use an alignment
+     of 1024, use 512.  TDOmode loads and stores are always broken up
+     into two vector pair loads or stores.  In addition, we don't have
+     support for aligning the stack to 1024 bits.  */
+  dmr1024_type_node = make_node (OPAQUE_TYPE);
+  SET_TYPE_MODE (dmr1024_type_node, TDOmode);
+  TYPE_SIZE (dmr1024_type_node) = bitsize_int (GET_MODE_BITSIZE (TDOmode));
+  TYPE_PRECISION (dmr1024_type_node) = GET_MODE_BITSIZE (TDOmode);
+  TYPE_SIZE_UNIT (dmr1024_type_node) = size_int (GET_MODE_SIZE (TDOmode));
+  SET_TYPE_ALIGN (dmr1024_type_node, 512);
+  TYPE_USER_ALIGN (dmr1024_type_node) = 0;
+  lang_hooks.types.register_builtin_type (dmr1024_type_node, "__dmr1024");
+  t = build_qualified_type (dmr1024_type_node, TYPE_QUAL_CONST);
+  ptr_dmr1024_type_node = build_pointer_type (t);
+
   tdecl = add_builtin_type ("__bool char", bool_char_type_node);
   TYPE_NAME (bool_char_type_node) = tdecl;
 
@@ -1099,7 +1121,8 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
   gimple *stmt = gsi_stmt (*gsi);
   size_t fncode = (size_t) fn_code;
 
-  if (!bif_is_mma (rs6000_builtin_info[fncode]))
+  if (!bif_is_mma (rs6000_builtin_info[fncode])
+      && !bif_is_dm (rs6000_builtin_info[fncode]))
     return false;
 
   /* Each call that can be gimple-expanded has an associated built-in
@@ -1107,14 +1130,83 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
      already expanded it!  Exceptions: lxvp and stxvp.  */
   if (rs6000_builtin_info[fncode].assoc_bif == RS6000_BIF_NONE
       && fncode != RS6000_BIF_LXVP
-      && fncode != RS6000_BIF_STXVP)
+      && fncode != RS6000_BIF_STXVP
+      && fncode != RS6000_BIF_DMMR
+      && fncode != RS6000_BIF_DISASSEMBLE_DMR)
     return false;
 
   bifdata *bd = &rs6000_builtin_info[fncode];
-  unsigned nopnds = bd->nargs;
   gimple_seq new_seq = NULL;
   gimple *new_call;
   tree new_decl;
+
+  if (fncode == RS6000_BIF_DMF_EXTRACT512
+      || fncode == RS6000_BIF_DISASSEMBLE_DMR)
+    {
+      unsigned num_extract512;
+      push_gimplify_context (true);
+      tree dst_ptr = gimple_call_arg (stmt, 0);
+      tree src_ptr = gimple_call_arg (stmt, 1);
+      tree src_type = build_pointer_type (dmr1024_type_node);
+
+      if (TREE_TYPE (src_ptr) != src_type)
+       src_ptr = build1 (NOP_EXPR, src_type, src_ptr);
+
+      /* The following code will ensure we are sending *src as parameter.  */
+      tree src = make_ssa_name (TREE_TYPE (src_type));
+      gimplify_assign (src, build_simple_mem_ref (src_ptr), &new_seq);
+
+      /* Now we should call the internal builtin RS6000_BIF_DMF_EXTRACT512_INTERNAL.  */
+      if (fncode == RS6000_BIF_DISASSEMBLE_DMR)
+       num_extract512 = 2;
+      else
+       num_extract512 = 1;
+
+      tree extract_decl = rs6000_builtin_decls[RS6000_BIF_DMF_EXTRACT512_INTERNAL];
+
+      for (unsigned i = 0; i < num_extract512; i++)
+	{
+	  tree const_arg;
+	  if (fncode == RS6000_BIF_DISASSEMBLE_DMR)
+	    const_arg = build_int_cstu (uint16_type_node, i);
+	  else
+	    const_arg = gimple_call_arg (stmt, 2);
+
+	  /* Create call.  */
+	  new_call = gimple_build_call (extract_decl, 2, src, const_arg);
+	  /* Create a tmp reg to denote lhs of call.  */
+	  tree lhs = make_ssa_name (vector_quad_type_node);
+
+	  /* lhs = new_call  */
+	  gimple_call_set_lhs (new_call, lhs);
+
+	  /* Add gimple stmt to gimple sequence.  */
+	  gimple_seq_add_stmt (&new_seq, new_call);
+
+	  /* Now lhs contains the 512-bit value in vector_quad. We have to now
+	     split up the vector_quad into individual vectors.  */
+
+	  new_decl = rs6000_builtin_decls[RS6000_BIF_DISASSEMBLE_ACC_INTERNAL];
+	  tree dst_type = build_pointer_type_for_mode (unsigned_V16QI_type_node,
+						       ptr_mode, true);
+
+	  tree dst_base = build1 (NOP_EXPR, dst_type, dst_ptr);
+	  for (unsigned j = 0; j < 4; j++)
+	    {
+	      tree dst = build2 (MEM_REF, unsigned_V16QI_type_node, dst_base,
+				 build_int_cst (dst_type, j * 16 + i * 64));
+	      tree dstssa = make_ssa_name (unsigned_V16QI_type_node);
+	      new_call = gimple_build_call (new_decl, 2, lhs,
+					    build_int_cstu (uint16_type_node, j));
+	      gimple_call_set_lhs (new_call, dstssa);
+	      gimple_seq_add_stmt (&new_seq, new_call);
+	      gimplify_assign (dst, dstssa, &new_seq);
+	    }
+	}
+      pop_gimplify_context (NULL);
+      gsi_replace_with_seq (gsi, new_seq, true);
+      return true;
+    }
 
   /* Compatibility built-ins; we used to call these
      __builtin_mma_{dis,}assemble_pair, but now we call them
@@ -1158,7 +1250,7 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 
       /* If we're disassembling an accumulator into a different type, we need
 	 to emit a xxmfacc instruction now, since we cannot do it later.  */
-      if (fncode == RS6000_BIF_DISASSEMBLE_ACC)
+      if (fncode == RS6000_BIF_DISASSEMBLE_ACC && !TARGET_DMF)
 	{
 	  new_decl = rs6000_builtin_decls[RS6000_BIF_XXMFACC_INTERNAL];
 	  new_call = gimple_build_call (new_decl, 1, src);
@@ -1227,27 +1319,49 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
 
   /* Convert this built-in into an internal version that uses pass-by-value
      arguments.  The internal built-in is found in the assoc_bif field.  */
-  new_decl = rs6000_builtin_decls[rs6000_builtin_info[fncode].assoc_bif];
+  size_t new_fncode = rs6000_builtin_info[fncode].assoc_bif;
+  new_decl = rs6000_builtin_decls[new_fncode];
   tree lhs, op[MAX_MMA_OPERANDS];
+  tree lhs_type = NULL_TREE;
   tree acc = gimple_call_arg (stmt, 0);
   push_gimplify_context (true);
 
-  if (bif_is_quad (*bd))
+  switch (insn_data[rs6000_builtin_info[new_fncode].icode].operand[0].mode)
     {
-      /* This built-in has a pass-by-reference accumulator input, so load it
-	 into a temporary accumulator for use as a pass-by-value input.  */
-      op[0] = make_ssa_name (vector_quad_type_node);
-      for (unsigned i = 1; i < nopnds; i++)
-	op[i] = gimple_call_arg (stmt, i);
-      gimplify_assign (op[0], build_simple_mem_ref (acc), &new_seq);
+    case TDOmode:
+      lhs_type = dmr1024_type_node;
+      break;
+    case XOmode:
+      lhs_type = vector_quad_type_node;
+      break;
+    case OOmode:
+      lhs_type = vector_pair_type_node;
+      break;
+    default:
+      gcc_unreachable ();
     }
-  else
+
+  unsigned nopnds = 0;
+  for (int i = 0; i < bd->nargs; i++)
     {
-      /* This built-in does not use its pass-by-reference accumulator argument
-	 as an input argument, so remove it from the input list.  */
-      nopnds--;
-      for (unsigned i = 0; i < nopnds; i++)
-	op[i] = gimple_call_arg (stmt, i + 1);
+      tree arg = gimple_call_arg (stmt, i);
+      if (i == 0 && !bif_is_dmr (*bd) && !bif_is_quad (*bd))
+	continue;
+      /* If this is another DMR operand, it is passed in by reference.
+	 The internal built-ins use pass-by-value, so load this operand
+	 into a variable and pass that in as our operand.  */
+      if (POINTER_TYPE_P (TREE_TYPE (arg))
+	  && types_compatible_p (TREE_TYPE (TREE_TYPE (arg)), lhs_type))
+       {
+	 tree op_mem = build_simple_mem_ref (build1 (NOP_EXPR,
+					     TREE_TYPE (arg),
+					     arg));
+	 op[nopnds] = make_ssa_name (lhs_type);
+	 gimplify_assign (op[nopnds], op_mem, &new_seq);
+       }
+      else
+	op[nopnds] = arg;
+      nopnds++;
     }
 
   switch (nopnds)
@@ -1279,14 +1393,19 @@ rs6000_gimple_fold_mma_builtin (gimple_stmt_iterator *gsi,
       new_call = gimple_build_call (new_decl, 7, op[0], op[1], op[2], op[3],
 				    op[4], op[5], op[6]);
       break;
+    case 8:
+      new_call = gimple_build_call (new_decl, 8, op[0], op[1], op[2], op[3],
+				    op[4], op[5], op[6], op[7]);
+      break;
+    case 9:
+      new_call = gimple_build_call (new_decl, 9, op[0], op[1], op[2], op[3],
+				    op[4], op[5], op[6], op[7], op[8]);
+      break;
     default:
       gcc_unreachable ();
     }
 
-  if (fncode == RS6000_BIF_BUILD_PAIR || fncode == RS6000_BIF_ASSEMBLE_PAIR_V)
-    lhs = make_ssa_name (vector_pair_type_node);
-  else
-    lhs = make_ssa_name (vector_quad_type_node);
+  lhs = make_ssa_name (lhs_type);
   gimple_call_set_lhs (new_call, lhs);
   gimple_seq_add_stmt (&new_seq, new_call);
   gimplify_assign (build_simple_mem_ref (acc), lhs, &new_seq);
@@ -3003,6 +3122,14 @@ mma_expand_builtin (tree exp, rtx target, insn_code icode,
     case 7:
       pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5], op[6]);
       break;
+    case 8:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5], op[6],
+			     op[7]);
+      break;
+    case 9:
+      pat = GEN_FCN (icode) (op[0], op[1], op[2], op[3], op[4], op[5], op[6],
+			     op[7], op[8]);
+      break;
     default:
       gcc_unreachable ();
     }
@@ -3377,6 +3504,10 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 
       // 0: Boolean return (Output)
       struct expand_operand ops[8];
+      // Make sure we always have a place for bool operand.
+      if (target == const0_rtx || !target)
+	target = gen_reg_rtx (SImode);
+
       create_output_operand (&ops[0], target, SImode);
 
       // 1: Old value return (Output)
@@ -3545,7 +3676,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
   /* Position of first argument (0 for void-returning functions, else 1).  */
   int k;
   /* Modes for the return value, if any, and arguments.  */
-  const int MAX_BUILTIN_ARGS = 6;
+  const int MAX_BUILTIN_ARGS = 8;
   machine_mode mode[MAX_BUILTIN_ARGS + 1];
 
   if (void_func)
@@ -3680,7 +3811,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
   if (bif_is_lxvrze (*bifaddr))
     return lxvrze_expand_builtin (target, icode, op, mode[0], mode[1]);
 
-  if (bif_is_mma (*bifaddr))
+  if (bif_is_mma (*bifaddr) || bif_is_dm (*bifaddr))
     return mma_expand_builtin (exp, target, icode, fcode);
 
   if (TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node)

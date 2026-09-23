@@ -97,7 +97,7 @@ a68_real_maxval (tree type)
   return build_real (type, max);
 }
 
-/* Given a real type, build the minimum value expressable with that type.  */
+/* Given a real type, build the minimum value expressible with that type.  */
 
 tree
 a68_real_minval (tree type)
@@ -108,7 +108,7 @@ a68_real_minval (tree type)
 }
 
 /* Given a real type, build the smallest value which can be meaningfully added
-   to or substracted from 1.  */
+   to or subtracted from 1.  */
 
 tree
 a68_real_smallval (tree type)

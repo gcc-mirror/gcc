@@ -39,7 +39,7 @@ serial_dsa_check_serial_clause (NODE_T *p, bool *dsa)
     {
       if (IS (p, GENERATOR))
 	{
-	  /* LOC generators always result in dyamic stack allocation regardless
+	  /* LOC generators always result in dynamic stack allocation regardless
 	     of the mode of the allocated value.  */
 	  if (IS (SUB (p), LOC_SYMBOL))
 	    {

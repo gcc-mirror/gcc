@@ -19,6 +19,7 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_STRING
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -26,8 +27,6 @@
 
 #include "a68.h"
 #include "a68-pretty-print.h"
-
-#include <string>
 
 /* Give accurate error message.  */
 

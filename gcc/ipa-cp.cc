@@ -1818,21 +1818,22 @@ ipa_vr_intersect_with_arith_jfunc (vrange &vr,
 	  if (!ipa_vr_operation_and_type_effects (op_res, src_vr, operation,
 						  operation_type, src_type))
 	    return;
-	  if (src_type == dst_type)
-	    {
-	      vr.intersect (op_res);
-	      return;
-	    }
 	  inter_vr = &op_res;
 	  src_type = operation_type;
 	}
       else
 	inter_vr = &src_vr;
 
-      value_range tmp_res (dst_type);
-      if (ipa_vr_operation_and_type_effects (tmp_res, *inter_vr, NOP_EXPR,
-					     dst_type, src_type))
-	vr.intersect (tmp_res);
+      if (src_type != dst_type)
+	{
+	  value_range tmp_res (dst_type);
+	  if (!ipa_vr_operation_and_type_effects (tmp_res, *inter_vr, NOP_EXPR,
+						  dst_type, src_type))
+	    return;
+	  vr.intersect (tmp_res);
+	}
+      else
+	vr.intersect (*inter_vr);
       return;
     }
 
@@ -5962,7 +5963,7 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
 	   > get_max_overall_size (node, cur_sweep))
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "   Ignoring candidate value because "
+	fprintf (dump_file, " - ignoring candidate value because "
 		 "maximum unit size would be reached with %li.\n",
 		 val->local_size_cost + overall_size);
       return false;
@@ -5970,7 +5971,19 @@ decide_about_value (struct cgraph_node *node, int index, HOST_WIDE_INT offset,
   else if (!get_info_about_necessary_edges (val, node, &freq_sum, &caller_count,
 					    &rec_count_sum, &count_sum,
 					    &called_without_ipa_profile))
-    return false;
+    {
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, " - skipping candidate value ");
+	  print_ipcp_constant_value (dump_file, val->value);
+	  fprintf (dump_file, " for ");
+	  ipa_dump_param (dump_file, ipa_node_params_sum->get (node), index);
+	  if (offset != -1)
+	    fprintf (dump_file, ", offset: " HOST_WIDE_INT_PRINT_DEC, offset);
+	  fprintf (dump_file, ": no relevant callers\n");
+	}
+      return false;
+    }
 
   if (!dbg_cnt (ipa_cp_values))
     return false;
@@ -6172,22 +6185,33 @@ decide_whether_version_node (struct cgraph_node *node, int cur_sweep)
   if (info->node_dead || count == 0)
     return false;
 
+  bool clone_for_all_contexts = node->local;
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "\nEvaluating opportunities for %s.\n",
-	     node->dump_name ());
+    {
+      fprintf (dump_file, "\nEvaluating opportunities for %s.",
+	       node->dump_name ());
+      if (clone_for_all_contexts)
+	fprintf (dump_file, "  Will try to create a special all-context "
+		 "clone.\n");
+      fprintf (dump_file, "\n");
+    }
 
   auto_vec <cloning_opportunity_ranking, 32> opp_ranking;
   for (int i = 0; i < count;i++)
     {
       if (!ipa_is_param_used (info, i))
-	continue;
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file, " - ignoring unused parameter %i.\n", i);
+	  continue;
+	}
 
       class ipcp_param_lattices *plats = ipa_get_parm_lattices (info, i);
       ipcp_lattice<tree> *lat = &plats->itself;
       ipcp_lattice<ipa_polymorphic_call_context> *ctxlat = &plats->ctxlat;
 
       if (!lat->bottom
-	  && !lat->is_single_const ())
+	  && (!clone_for_all_contexts || !lat->is_single_const ()))
 	{
 	  ipcp_value<tree> *val;
 	  for (val = lat->values; val; val = val->next)
@@ -6229,9 +6253,10 @@ decide_whether_version_node (struct cgraph_node *node, int cur_sweep)
 	  ipcp_value<tree> *val;
 	  for (aglat = plats->aggs; aglat; aglat = aglat->next)
 	    if (!aglat->bottom && aglat->values
-		/* If the following is false, the one value has been considered
+		/* If the following is false, the one value will be considered
 		   for cloning for all contexts.  */
-		&& (plats->aggs_contain_variable
+		&& (!clone_for_all_contexts
+		    || plats->aggs_contain_variable
 		    || !aglat->is_single_const ()))
 	      for (val = aglat->values; val; val = val->next)
 		{
@@ -6245,7 +6270,7 @@ decide_whether_version_node (struct cgraph_node *node, int cur_sweep)
 	}
 
       if (!ctxlat->bottom
-	  && !ctxlat->is_single_const ())
+	  && (!clone_for_all_contexts || !ctxlat->is_single_const ()))
 	{
 	  ipcp_value<ipa_polymorphic_call_context> *val;
 	  for (val = ctxlat->values; val; val = val->next)
@@ -6288,19 +6313,21 @@ decide_whether_version_node (struct cgraph_node *node, int cur_sweep)
 	}
     }
 
+  if (!clone_for_all_contexts)
+    return ret;
+
   struct caller_statistics stats;
   init_caller_stats (&stats);
   node->call_for_symbol_thunks_and_aliases (gather_caller_stats, &stats,
 						false);
   if (!stats.n_calls)
     {
-      if (dump_file)
+      if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "   Not cloning for all contexts because "
 		 "there are no callers of the original node (any more).\n");
       return ret;
     }
 
-  bool do_clone_for_all_contexts = false;
   ipa_auto_call_arg_values avals;
   int removable_params_cost;
   bool ctx_independent_const
@@ -6309,60 +6336,10 @@ decide_whether_version_node (struct cgraph_node *node, int cur_sweep)
   if (ctx_independent_const || devirt_bonus > 0
       || (removable_params_cost && clone_for_param_removal_p (node)))
     {
-       ipa_call_estimates estimates;
+      if (!dbg_cnt (ipa_cp_values))
+	return ret;
 
-      estimate_ipcp_clone_size_and_time (node, &avals, &estimates);
-      sreal time = estimates.nonspecialized_time - estimates.time;
-      time += devirt_bonus;
-      time += hint_time_bonus (node, estimates);
-      time += removable_params_cost;
-      int size = estimates.size - stats.n_calls * removable_params_cost;
-
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, " - context independent values, size: %i, "
-		 "time_benefit: %f\n", size, (time).to_double ());
-
-      if (size <= 0 || node->local)
-	{
-	  if (!dbg_cnt (ipa_cp_values))
-	    return ret;
-
-	  do_clone_for_all_contexts = true;
-	  if (dump_file)
-	    fprintf (dump_file, "   Decided to specialize for all "
-		     "known contexts, code not going to grow.\n");
-	}
-      else if (good_cloning_opportunity_p (node, time, stats.freq_sum,
-					   stats.count_sum, size,
-					   stats.called_without_ipa_profile,
-					   cur_sweep))
-	{
-	  if (size + overall_size <= get_max_overall_size (node, cur_sweep))
-	    {
-	      if (!dbg_cnt (ipa_cp_values))
-		return ret;
-
-	      do_clone_for_all_contexts = true;
-	      overall_size += size;
-	      if (dump_file)
-		fprintf (dump_file, "   Decided to specialize for all "
-			 "known contexts, growth (to %li) deemed "
-			 "beneficial.\n", overall_size);
-	    }
-	  else if (dump_file && (dump_flags & TDF_DETAILS))
-	    fprintf (dump_file, "   Not cloning for all contexts because "
-		     "maximum unit size would be reached with %li.\n",
-		     size + overall_size);
-	}
-      else if (dump_file && (dump_flags & TDF_DETAILS))
-	fprintf (dump_file, "   Not cloning for all contexts because "
-		 "!good_cloning_opportunity_p.\n");
-    }
-
-  if (do_clone_for_all_contexts)
-    {
       auto_vec<cgraph_edge *> callers = node->collect_callers ();
-
       for (int i = callers.length () - 1; i >= 0; i--)
 	{
 	  cgraph_edge *cs = callers[i];

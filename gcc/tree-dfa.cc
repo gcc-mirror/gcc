@@ -530,30 +530,41 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 		   index.  */
 		seen_variable_array_ref = true;
 
-		int_range_max vr;
-		range_query *query;
-		query = get_range_query (cfun);
+		/* Try to constrain the access range by using the range of the
+		   index expression when we know it.  Extra care must be taken
+		   when the low bound of the array is not zero, because it may
+		   be very large and the index expression may be unsigned and
+		   wrap around; in this case, the correct range is that of the
+		   difference between the index expression and the low bound,
+		   see get_inner_reference for the model computation.  */
+		range_query *query = get_range_query (cfun);
+		range_op_handler minus_op (MINUS_EXPR);
+		int_range_max vr_idx, vr_lb, vr;
 
 		if (TREE_CODE (index) == SSA_NAME
 		    && (low_bound = array_ref_low_bound (exp),
-			poly_int_tree_p (low_bound))
+			TREE_CODE (low_bound) == INTEGER_CST)
 		    && (unit_size = array_ref_element_size (exp),
 			TREE_CODE (unit_size) == INTEGER_CST)
 		    && query->range_of_expr (vr, index)
+		    && (integer_zerop (low_bound)
+			|| ((vr_idx = vr,
+			     query->range_of_expr (vr_lb, low_bound))
+			    && minus_op.fold_range (vr, TREE_TYPE (index),
+						    vr_idx, vr_lb)))
 		    && !vr.varying_p ()
 		    && !vr.undefined_p ())
 		  {
 		    wide_int min = vr.lower_bound ();
 		    wide_int max = vr.upper_bound ();
-		    poly_offset_int lbound = wi::to_poly_offset (low_bound);
 		    /* Try to constrain maxsize with range information.  */
 		    offset_int omax
 		      = offset_int::from (max, TYPE_SIGN (TREE_TYPE (index)));
 		    if (wi::get_precision (max) <= ADDR_MAX_BITSIZE
-			&& known_lt (lbound, omax))
+			&& omax >= 0)
 		      {
-			poly_offset_int rmaxsize;
-			rmaxsize = (omax - lbound + 1)
+			offset_int rmaxsize
+			  = (omax + 1)
 			    * wi::to_offset (unit_size) << LOG2_BITS_PER_UNIT;
 			if (!known_size_p (maxsize)
 			    || known_lt (rmaxsize, maxsize))
@@ -569,11 +580,10 @@ get_ref_base_and_extent (tree exp, poly_int64 *poffset,
 		    offset_int omin
 		      = offset_int::from (min, TYPE_SIGN (TREE_TYPE (index)));
 		    if (wi::get_precision (min) <= ADDR_MAX_BITSIZE
-			&& known_le (lbound, omin))
+			&& omin > 0)
 		      {
-			poly_offset_int woffset
-			  = wi::sext (omin - lbound,
-				      TYPE_PRECISION (sizetype));
+			offset_int woffset
+			  = wi::sext (omin, TYPE_PRECISION (sizetype));
 			woffset *= wi::to_offset (unit_size);
 			woffset <<= LOG2_BITS_PER_UNIT;
 			bit_offset += woffset;

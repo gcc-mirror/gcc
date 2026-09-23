@@ -4844,7 +4844,7 @@ find_symtree0 (gfc_symtree *root, gfc_symbol *sym)
 {
   gfc_symtree * st;
 
-  if (root->n.sym == sym)
+  if (root == NULL || root->n.sym == sym)
     return root;
 
   st = NULL;
@@ -4877,6 +4877,14 @@ gfc_find_sym_in_symtree (gfc_symbol *sym)
       st = find_symtree0 (ns->sym_root, sym);
       if (st)
 	return st;
+
+      /* Search user-defined operators.  */
+      if (ns->uop_root && sym->attr.function)
+	{
+	  st = find_symtree0 (ns->uop_root, sym);
+	  if (st)
+	    return st;
+	}
     }
   gfc_internal_error ("Unable to find symbol %qs", sym->name);
   /* Not reached.  */

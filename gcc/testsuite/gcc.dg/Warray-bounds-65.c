@@ -31,11 +31,11 @@ test_note (int (*pia3)[3])    // { dg-message "while referencing 'pia3'" }
 void test_a1_cst (_Bool (*pba0)[0], char (*pca1)[1],
 		  short (*psa2)[2], int (*pia3)[3])
 {
-  T ((*pba0)[-1]);            // { dg-warning "array subscript -1 is (above|outside) array bounds of '_Bool\\\[0]'" }
-  T ((*pba0)[0]);             // { dg-warning "array subscript 0 is (above|outside) array bounds of '_Bool\\\[0]'" }
-  T ((*pba0)[1]);             // { dg-warning "array subscript 1 is (above|outside) array bounds of '_Bool\\\[0]'" }
-  T ((*pba0)[2]);             // { dg-warning "array subscript 2 is (above|outside) array bounds of '_Bool\\\[0]'" }
-  T ((*pba0)[12]);            // { dg-warning "array subscript 12 is (above|outside) array bounds of '_Bool\\\[0]'" }
+  T ((*pba0)[-1]);            // { dg-warning "array subscript -1 is (above|outside) array bounds of 'bool\\\[0]'" }
+  T ((*pba0)[0]);             // { dg-warning "array subscript 0 is (above|outside) array bounds of 'bool\\\[0]'" }
+  T ((*pba0)[1]);             // { dg-warning "array subscript 1 is (above|outside) array bounds of 'bool\\\[0]'" }
+  T ((*pba0)[2]);             // { dg-warning "array subscript 2 is (above|outside) array bounds of 'bool\\\[0]'" }
+  T ((*pba0)[12]);            // { dg-warning "array subscript 12 is (above|outside) array bounds of 'bool\\\[0]'" }
 
   T ((*pca1)[-1]);            // { dg-warning "array subscript -1 is (below|outside) array bounds of 'char\\\[1]'" }
   T ((*pca1)[0]);
@@ -61,20 +61,20 @@ void test_a1_cst (_Bool (*pba0)[0], char (*pca1)[1],
 void test_a2_cst (_Bool (*pba0_1)[0][1], char (*pca1_2)[1][2],
 		  short (*psa2_3)[2][3], int (*pia3_4)[3][4])
 {
-  T ((*pba0_1)[-1][-1]);        // { dg-warning "array subscript -1 is (below|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[-1][0]);         // { dg-warning "array subscript -1 is (above|outside) array bounds of '_Bool\\\[0]\\\[1]'" }
+  T ((*pba0_1)[-1][-1]);        // { dg-warning "array subscript -1 is (below|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[-1][0]);         // { dg-warning "array subscript -1 is (above|outside) array bounds of 'bool\\\[0]\\\[1]'" }
 
-  T ((*pba0_1)[0][-1]);         // { dg-warning "array subscript -1 is (below|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[0][0]);          // { dg-warning "array subscript 0 is (above|outside) array bounds of '_Bool\\\[0]\\\[1]'" }
-  T ((*pba0_1)[0][1]);          // { dg-warning "array subscript 1 is (above|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[0][2]);          // { dg-warning "array subscript 2 is (above|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[0][12]);         // { dg-warning "array subscript 12 is (above|outside) array bounds of '_Bool\\\[1]'" }
+  T ((*pba0_1)[0][-1]);         // { dg-warning "array subscript -1 is (below|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[0][0]);          // { dg-warning "array subscript 0 is (above|outside) array bounds of 'bool\\\[0]\\\[1]'" }
+  T ((*pba0_1)[0][1]);          // { dg-warning "array subscript 1 is (above|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[0][2]);          // { dg-warning "array subscript 2 is (above|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[0][12]);         // { dg-warning "array subscript 12 is (above|outside) array bounds of 'bool\\\[1]'" }
 
-  T ((*pba0_1)[1][-1]);         // { dg-warning "array subscript -1 is (below|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[1][0]);          // { dg-warning "array subscript 1 is (above|outside) array bounds of '_Bool\\\[0]\\\[1]'" }
-  T ((*pba0_1)[1][1]);          // { dg-warning "array subscript 1 is (above|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[1][2]);          // { dg-warning "array subscript 2 is (above|outside) array bounds of '_Bool\\\[1]'" }
-  T ((*pba0_1)[1][12]);         // { dg-warning "array subscript 12 is (above|outside) array bounds of '_Bool\\\[1]'" }
+  T ((*pba0_1)[1][-1]);         // { dg-warning "array subscript -1 is (below|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[1][0]);          // { dg-warning "array subscript 1 is (above|outside) array bounds of 'bool\\\[0]\\\[1]'" }
+  T ((*pba0_1)[1][1]);          // { dg-warning "array subscript 1 is (above|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[1][2]);          // { dg-warning "array subscript 2 is (above|outside) array bounds of 'bool\\\[1]'" }
+  T ((*pba0_1)[1][12]);         // { dg-warning "array subscript 12 is (above|outside) array bounds of 'bool\\\[1]'" }
 
 
   T ((*pca1_2)[0][0]);

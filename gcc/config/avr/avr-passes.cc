@@ -28,6 +28,7 @@
 #include "backend.h"
 #include "target.h"
 #include "rtl.h"
+#include "rtl-iter.h"
 #include "tree.h"
 #include "diagnostic-core.h"
 #include "cfghooks.h"
@@ -83,8 +84,7 @@ namespace
 {
 
 /////////////////////////////////////////////////////////////////////////////
-// Before we start with the very code, introduce some helpers that are
-// quite generic, though up to now only avr-fuse-add makes use of them.
+// Before we start with the very code, introduce some generic helpers.
 
 /* Get the next / previous NONDEBUG_INSN_P after INSN in basic block BB.
    This assumes we are in CFG layout mode so that BLOCK_FOR_INSN()
@@ -1053,6 +1053,28 @@ struct insninfo_t
     else
       gcc_unreachable ();
   }
+
+  gprmask_t scratch_mask () const
+  {
+    gprmask_t mask = m_scratch
+      ? regmask (m_scratch, 1)
+      : 0;
+
+    if (m_insn)
+      {
+	subrtx_iterator::array_type array;
+	FOR_EACH_SUBRTX (iter, array, PATTERN (m_insn), NONCONST)
+	  {
+	    rtx scratch_reg;
+	    if (GET_CODE (*iter) == CLOBBER
+		&& REG_P (scratch_reg = XEXP (*iter, 0))
+		&& END_REGNO (scratch_reg) <= REG_32)
+	      mask |= regmask (scratch_reg);
+	  }
+      }
+
+    return mask;
+  }
 }; // insninfo_t
 
 
@@ -1186,6 +1208,7 @@ optimize_data_t::emit_sequence (basic_block bb, rtx_insn *insns)
 	  avr_dump ("INCOMPLETE APPLICATION:\n");
 	  m2.dump ("regs old route=%s\n\n");
 	  n2.dump ("regs new route=%s\n\n");
+	  avr_dump ("ignore_mask = %08x\n\n", (unsigned) ignore_mask);
 	  avr_dump ("The new insns are:\n%L", insns);
 
 	  fatal_insn ("incomplete application of insn", insns);
@@ -2714,8 +2737,7 @@ optimize_data_t::try_split_ldi (bbinfo_t *bbi)
 
       n_new_insns = bbinfo_t::fpd->solution.emit_insns (curr.ii, curr.regs);
 
-      if (curr.ii.m_scratch)
-	ignore_mask = regmask (curr.ii.m_scratch, 1);
+      ignore_mask = curr.ii.scratch_mask ();
     }
 
   return found;
@@ -3056,8 +3078,7 @@ optimize_data_t::try_split_any (bbinfo_t *)
 	return fail ("too expensive");
     }
 
-  if (ii.m_scratch)
-    ignore_mask = regmask (ii.m_scratch, 1);
+  ignore_mask = ii.scratch_mask ();
 
   return true;
 }
@@ -4897,18 +4918,19 @@ bool
 avr_pass_2moves::optimize_2moves_bb (basic_block bb)
 {
   bool changed = false;
-  rtx_insn *insn1 = nullptr;
-  rtx_insn *insn2 = nullptr;
-  rtx_insn *curr;
+  rtx_insn *insn1 = next_nondebug_insn_bb (bb, BB_HEAD (bb));
 
-  FOR_BB_INSNS (bb, curr)
+  while (insn1)
     {
-      if (insn1 && INSN_P (insn1)
-	  && insn2 && INSN_P (insn2))
-	changed |= optimize_2moves (insn1, insn2);
+      rtx_insn *insn2 = next_nondebug_insn_bb (bb, insn1);
+      if (!insn2)
+	break;
 
-      insn1 = insn2;
-      insn2 = curr;
+      rtx_insn *next = next_nondebug_insn_bb (bb, insn2);
+
+      bool change = optimize_2moves (insn1, insn2);
+      changed |= change;
+      insn1 = change ? next : insn2;
     }
 
   return changed;
@@ -4948,7 +4970,10 @@ avr_pass_2moves::optimize_2moves (rtx_insn *insn1, rtx_insn *insn2)
       for (; use; use = DF_REF_NEXT_REG (use))
 	{
 	  rtx_insn *user = DF_REF_INSN (use);
-	  avr_dump (" %d", INSN_UID (user));
+	  bool debug_p = DEBUG_INSN_P (user);
+	  avr_dump (" %d%s", INSN_UID (user), debug_p ? "=debug_insn" : "");
+	  if (debug_p)
+	    continue;
 	  good |= INSN_UID (user) == INSN_UID (insn2);
 	  bad |= INSN_UID (user) != INSN_UID (insn2);
 	}

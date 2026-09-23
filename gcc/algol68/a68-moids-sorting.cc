@@ -52,7 +52,10 @@ packs_ordering (PACK_T *a, PACK_T *b, bool compare_names = true)
 		return 1;
 	      if (TEXT (b) == NO_TEXT)
 		return -1;
-	      return -strcmp (TEXT (a), TEXT (b));
+
+	      int cmp = strcmp (TEXT (a), TEXT (b));
+	      if (cmp != 0)
+		return -cmp;
 	    }
 	}
     }

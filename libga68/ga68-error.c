@@ -28,7 +28,7 @@
 
 /* Run-time error handling.
 
-   Please use the following format when outputing runtime error messages:
+   Please use the following format when outputting runtime error messages:
 
      FILE:LINE:[COLUMN:] TEXT
 

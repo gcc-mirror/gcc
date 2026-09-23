@@ -1897,7 +1897,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _M_extents(__exts)
 	{
 	  for (size_t __i = 0; __i < extents_type::rank(); ++__i)
-	    _M_strides[__i] = index_type(as_const(__strides[__i]));
+	    _M_strides[__i] =
+	      __mdspan::__index_type_cast<index_type>(as_const(__strides[__i]));
 	}
 
       template<typename _OIndexType>

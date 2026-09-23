@@ -1,3 +1,38 @@
+2026-09-13  Zhou Qiankang  <wszqkzqk@qq.com>
+
+	Backported from master:
+	2026-06-08  Zhou Qiankang  <wszqkzqk@qq.com>
+
+	PR c++/125642
+	* c-cppbuiltin.cc (c_cpp_builtins): Don't define __FRACT_FBIT__
+	in C++.
+
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126309
+	* c-lex.cc: Implement CWG3020 - Missing specification for
+	__has_cpp_attribute(indeterminate).
+	(c_common_has_attribute): Handle __has_cpp_attribute (indeterminate).
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/124948
+	* c-common.cc (sync_resolve_size): Return -1 for fetch ops
+	on _BitInt types with padding bits where the target requires
+	extension into the padding bits.
+	(atomic_bitint_fetch_using_cas_loop): Handle also __sync_*
+	fetch builtins.
+
 2026-07-05  Martin Uecker  <uecker@tugraz.at>
 
 	Backported from master:

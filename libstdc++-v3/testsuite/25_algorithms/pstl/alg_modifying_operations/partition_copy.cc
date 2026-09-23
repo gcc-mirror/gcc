@@ -51,7 +51,7 @@ struct test_partition_copy
 #if defined(_PSTL_ICC_1800_TEST_MONOTONIC_RELEASE_64_BROKEN)
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename UnaryOp>
     void
-    operator()(__pstl::execution::unsequenced_policy, std::reverse_iterator<InputIterator> first,
+    operator()(std::execution::unsequenced_policy, std::reverse_iterator<InputIterator> first,
                std::reverse_iterator<InputIterator> last, std::reverse_iterator<OutputIterator> true_first,
                std::reverse_iterator<OutputIterator> true_last, std::reverse_iterator<OutputIterator2> false_first,
                OutputIterator2 false_last, UnaryOp unary_op)
@@ -59,7 +59,7 @@ struct test_partition_copy
     }
     template <typename InputIterator, typename OutputIterator, typename OutputIterator2, typename UnaryOp>
     void
-    operator()(__pstl::execution::parallel_unsequenced_policy, std::reverse_iterator<InputIterator> first,
+    operator()(std::execution::parallel_unsequenced_policy, std::reverse_iterator<InputIterator> first,
                std::reverse_iterator<InputIterator> last, std::reverse_iterator<OutputIterator> true_first,
                std::reverse_iterator<OutputIterator> true_last, std::reverse_iterator<OutputIterator2> false_first,
                OutputIterator2 false_last, UnaryOp unary_op)

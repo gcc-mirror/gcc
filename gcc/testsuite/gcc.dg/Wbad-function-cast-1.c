@@ -40,12 +40,12 @@ foo(void)
      types.  */
   (float)if1(); /* { dg-warning "cast from function call of type 'int' to non-matching type 'float'" } */
   (double)if2(); /* { dg-warning "cast from function call of type 'char' to non-matching type 'double'" } */
-  (_Bool)if3(); /* { dg-warning "cast from function call of type 'long int' to non-matching type '_Bool'" } */
+  (_Bool)if3(); /* { dg-warning "cast from function call of type 'long int' to non-matching type 'bool'" } */
   (int)rf1(); /* { dg-warning "cast from function call of type 'float' to non-matching type 'int'" } */
   (long)rf2(); /* { dg-warning "cast from function call of type 'double' to non-matching type 'long int'" } */
   (double)cf(); /* { dg-warning "cast from function call of type 'complex double' to non-matching type 'double'" } */
   (int)ef(); /* { dg-warning "cast from function call of type 'enum e' to non-matching type 'int'" } */
-  (int)bf(); /* { dg-warning "cast from function call of type '_Bool' to non-matching type 'int'" } */
+  (int)bf(); /* { dg-warning "cast from function call of type 'bool' to non-matching type 'int'" } */
   (__SIZE_TYPE__)pf1(); /* { dg-warning "cast from function call of type 'char \\*' to non-matching type '\[^\\n\]*'" } */
   (__PTRDIFF_TYPE__)pf2(); /* { dg-warning "cast from function call of type 'int \\*' to non-matching type '\[^\\n\]*'" } */
 }

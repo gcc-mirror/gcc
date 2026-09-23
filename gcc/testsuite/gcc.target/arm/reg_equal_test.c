@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fgimple -O1 -fdump-rtl-expand" } */
-/* { dg-skip-if "" { ! { arm_thumb2_ok || arm_thumb1_movt_ok } } } */
+/* { dg-require-effective-target arm_cpu_cortex_a53_ok } */
+/* { dg-add-options arm_cpu_cortex_a53 } */
 
 void __GIMPLE (ssa,startwith ("expand"))
 x ()

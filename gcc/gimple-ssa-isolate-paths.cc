@@ -51,7 +51,15 @@ static bool cfg_altered;
 static bool
 check_loadstore (gimple *stmt, tree op, tree, void *data)
 {
-  if ((TREE_CODE (op) == MEM_REF || TREE_CODE (op) == TARGET_MEM_REF)
+  if ((TREE_CODE (op) == MEM_REF
+       || (TREE_CODE (op) == TARGET_MEM_REF
+	   && !TMR_INDEX2 (op)
+	   && (!TMR_INDEX (op)
+	       || (TMR_STEP (op)
+		   && expr_not_equal_to (TMR_STEP (op),
+					 wi::one (TYPE_PRECISION (TREE_TYPE
+							(TMR_STEP (op)))),
+					 stmt)))))
       && operand_equal_p (TREE_OPERAND (op, 0), (tree)data, 0))
     {
       TREE_THIS_VOLATILE (op) = 1;

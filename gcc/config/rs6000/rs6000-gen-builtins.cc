@@ -94,6 +94,9 @@ along with GCC; see the file COPYING3.  If not see
      ibmld    Restrict usage to the case when TFmode is IBM-128
      ibm128   Restrict usage to the case where __ibm128 is supported or
               if ibmld
+     dm       Needs special handling for DMF/MMA+ instructions
+     dmint    DMF/MMA+ instruction expanding to internal call at GIMPLE time
+     dmr      MMA+ instruction using a dmr register as an input operand
 
    An example stanza might look like this:
 
@@ -235,6 +238,7 @@ enum bif_stanza
  BSTZ_FUTURE,
  BSTZ_FUTURE_ALTIVEC,
  BSTZ_FUTURE_VSX,
+ BSTZ_DM,
  NUMBIFSTANZAS
 };
 
@@ -271,7 +275,8 @@ static stanza_entry stanza_map[NUMBIFSTANZAS] =
     { "mma",		BSTZ_MMA	},
     { "future",	BSTZ_FUTURE	},
     { "future-altivec", BSTZ_FUTURE_ALTIVEC },
-    { "future-vsx",	BSTZ_FUTURE_VSX	}
+    { "future-vsx",	BSTZ_FUTURE_VSX	},
+    { "dm",		BSTZ_DM		}
   };
 
 static const char *enable_string[NUMBIFSTANZAS] =
@@ -299,7 +304,8 @@ static const char *enable_string[NUMBIFSTANZAS] =
     "ENB_MMA",
     "ENB_FUTURE",
     "ENB_FUTURE_ALTIVEC",
-    "ENB_FUTURE_VSX"
+    "ENB_FUTURE_VSX",
+    "ENB_DM"
   };
 
 /* Function modifiers provide special handling for const, pure, and fpmath
@@ -333,7 +339,8 @@ enum basetype
   BT_DECIMAL128,
   BT_IBM128,
   BT_VPAIR,
-  BT_VQUAD
+  BT_VQUAD,
+  BT_DMR
 };
 
 /* Ways in which a const int value can be restricted.  RES_BITS indicates
@@ -401,6 +408,9 @@ struct attrinfo
   bool isendian;
   bool isibmld;
   bool isibm128;
+  bool isdm;
+  bool isdmint;
+  bool isdmr;
 };
 
 /* Fields associated with a function prototype (bif or overload).  */
@@ -552,6 +562,7 @@ static typemap type_map[] =
     { "pv16qi",		"ptr_V16QI" },
     { "pv1poi",		"ptr_vector_pair" },
     { "pv1pxi",		"ptr_vector_quad" },
+    { "pv1tdoi",	"ptr_dmr1024" },
     { "pv1ti",		"ptr_V1TI" },
     { "pv2df",		"ptr_V2DF" },
     { "pv2di",		"ptr_V2DI" },
@@ -582,6 +593,7 @@ static typemap type_map[] =
     { "v16qi",		"V16QI" },
     { "v1poi",		"vector_pair" },
     { "v1pxi",		"vector_quad" },
+    { "v1tdoi",	"dmr1024" },
     { "v1ti",		"V1TI" },
     { "v2df",		"V2DF" },
     { "v2di",		"V2DI" },
@@ -1067,6 +1079,7 @@ match_type (typeinfo *typedata, int voidok)
        vd	vector double
        v256	__vector_pair
        v512	__vector_quad
+       dmr1024	__dmr1024
 
      For simplicity, We don't support "short int" and "long long int".
      We don't currently support a <basetype> of "_Float16".  "signed"
@@ -1245,6 +1258,13 @@ match_type (typeinfo *typedata, int voidok)
     {
       typedata->isvector = 1;
       typedata->base = BT_VQUAD;
+      handle_pointer (typedata);
+      return 1;
+    }
+  else if (!strcmp (token, "dmr1024"))
+    {
+      typedata->isvector = 1;
+      typedata->base = BT_DMR;
       handle_pointer (typedata);
       return 1;
     }
@@ -1446,6 +1466,12 @@ parse_bif_attrs (attrinfo *attrptr)
 	  attrptr->isibmld = 1;
 	else if (!strcmp (attrname, "ibm128"))
 	  attrptr->isibm128 = 1;
+       else if (!strcmp (attrname, "dm"))
+	  attrptr->isdm = 1;
+       else if (!strcmp (attrname, "dmint"))
+	  attrptr->isdmint = 1;
+       else if (!strcmp (attrname, "dmr"))
+	  attrptr->isdmr = 1;
 	else
 	  {
 	    diag (oldpos, "unknown attribute.\n");
@@ -1479,14 +1505,15 @@ parse_bif_attrs (attrinfo *attrptr)
 	"pred = %d, htm = %d, htmspr = %d, htmcr = %d, mma = %d, "
 	"quad = %d, pair = %d, mmaint = %d, no32bit = %d, 32bit = %d, "
 	"cpu = %d, ldstmask = %d, lxvrse = %d, lxvrze = %d, endian = %d, "
-	"ibmdld = %d, ibm128 = %d.\n",
+	"ibmdld = %d, ibm128 = %d, dm = %d, dmint = %d, dmr = %d.\n",
 	attrptr->isextract, attrptr->isnosoft,attrptr->isldvec,
 	attrptr->isstvec, attrptr->isreve, attrptr->ispred, attrptr->ishtm,
 	attrptr->ishtmspr, attrptr->ishtmcr, attrptr->ismma,
 	attrptr->isquad, attrptr->ispair, attrptr->ismmaint,
 	attrptr->isno32bit, attrptr->is32bit, attrptr->iscpu,
 	attrptr->isldstmask, attrptr->islxvrse,	attrptr->islxvrze,
-	attrptr->isendian, attrptr->isibmld, attrptr->isibm128);
+	attrptr->isendian, attrptr->isibmld, attrptr->isibm128,
+	attrptr->isdm, attrptr->isdmint, attrptr->isdmr);
 #endif
 
   return PC_OK;
@@ -1546,6 +1573,10 @@ complete_vector_type (typeinfo *typeptr, char *buf, int *bufi)
     case BT_VQUAD:
       memcpy (&buf[*bufi], "1pxi", 4);
       *bufi += 4;
+      break;
+    case BT_DMR:
+      memcpy (&buf[*bufi], "1tdoi", 5);
+      *bufi += 5;
       break;
     default:
       diag (pos, "unhandled basetype %d.\n", typeptr->base);
@@ -2261,7 +2292,8 @@ write_decls (void)
   fprintf (header_file, "  ENB_MMA,\n");
   fprintf (header_file, "  ENB_FUTURE,\n");
   fprintf (header_file, "  ENB_FUTURE_ALTIVEC,\n");
-  fprintf (header_file, "  ENB_FUTURE_VSX\n");
+  fprintf (header_file, "  ENB_FUTURE_VSX,\n");
+  fprintf (header_file, "  ENB_DM\n");
   fprintf (header_file, "};\n\n");
 
   fprintf (header_file, "#define PPC_MAXRESTROPNDS 3\n");
@@ -2303,6 +2335,9 @@ write_decls (void)
   fprintf (header_file, "#define bif_endian_bit\t\t(0x00200000)\n");
   fprintf (header_file, "#define bif_ibmld_bit\t\t(0x00400000)\n");
   fprintf (header_file, "#define bif_ibm128_bit\t\t(0x00800000)\n");
+  fprintf (header_file, "#define bif_dm_bit\t\t(0x02000000)\n");
+  fprintf (header_file, "#define bif_dmint_bit\t\t(0x04000000)\n");
+  fprintf (header_file, "#define bif_dmr_bit\t\t(0x08000000)\n");
   fprintf (header_file, "\n");
   fprintf (header_file,
 	   "#define bif_is_extract(x)\t((x).bifattrs & bif_extract_bit)\n");
@@ -2348,6 +2383,12 @@ write_decls (void)
 	   "#define bif_is_ibmld(x)\t((x).bifattrs & bif_ibmld_bit)\n");
   fprintf (header_file,
 	   "#define bif_is_ibm128(x)\t((x).bifattrs & bif_ibm128_bit)\n");
+  fprintf (header_file,
+	   "#define bif_is_dm(x)\t((x).bifattrs & bif_dm_bit)\n");
+  fprintf (header_file,
+	   "#define bif_is_dmint(x)\t((x).bifattrs & bif_dmint_bit)\n");
+  fprintf (header_file,
+	   "#define bif_is_dmr(x)\t((x).bifattrs & bif_dmr_bit)\n");
   fprintf (header_file, "\n");
 
   fprintf (header_file,
@@ -2547,6 +2588,12 @@ write_bif_static_init (void)
 	fprintf (init_file, " | bif_ibmld_bit");
       if (bifp->attrs.isibm128)
 	fprintf (init_file, " | bif_ibm128_bit");
+      if (bifp->attrs.isdm)
+	fprintf (init_file, " | bif_dm_bit");
+      if (bifp->attrs.isdmint)
+	fprintf (init_file, " | bif_dmint_bit");
+      if (bifp->attrs.isdmr)
+	fprintf (init_file, " | bif_dmr_bit");
       fprintf (init_file, ",\n");
       fprintf (init_file, "      /* restr_opnd */\t{%d, %d, %d},\n",
 	       bifp->proto.restr_opnd[0], bifp->proto.restr_opnd[1],
@@ -2580,8 +2627,8 @@ write_bif_static_init (void)
 		   : (bifp->kind == FNK_FPMATH ? "= fp, const"
 		      : ""))));
       fprintf (init_file, "      /* assoc_bif */\tRS6000_BIF_%s%s\n",
-	       bifp->attrs.ismmaint ? bifp->idname : "NONE",
-	       bifp->attrs.ismmaint ? "_INTERNAL" : "");
+	       (bifp->attrs.ismmaint || bifp->attrs.isdmint) ? bifp->idname : "NONE",
+	       (bifp->attrs.ismmaint || bifp->attrs.isdmint) ? "_INTERNAL" : "");
       fprintf (init_file, "    },\n");
     }
   fprintf (init_file, "  };\n\n");

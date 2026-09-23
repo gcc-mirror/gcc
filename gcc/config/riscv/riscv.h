@@ -426,10 +426,11 @@ ARCH_UNSET_CLEANUP_SPECS \
 
 /* Registers used as temporaries in prologue/epilogue code.
 
-   The prologue registers mustn't conflict with any
-   incoming arguments, the static chain pointer, or the frame pointer.
-   The epilogue temporary mustn't conflict with the return registers,
-   the frame pointer, the EH stack adjustment, or the EH data registers. */
+   The prologue temporaries mustn't conflict with any incoming arguments,
+   the static chain pointer, or the frame pointer.
+   The epilogue temporaries mustn't conflict with the return registers,
+   the frame pointer, the EH stack adjustment, the EH data registers, or
+   any register in SIBCALL_REGS.  */
 
 #define RISCV_PROLOGUE_TEMP_REGNUM (GP_TEMP_FIRST)
 #define RISCV_PROLOGUE_TEMP(MODE) gen_rtx_REG (MODE, RISCV_PROLOGUE_TEMP_REGNUM)
@@ -568,7 +569,7 @@ enum reg_class
 #define REG_CLASS_CONTENTS						\
 {									\
   { 0x00000000, 0x00000000, 0x00000000, 0x00000000 },	/* NO_REGS */		\
-  { 0xf003fcc0, 0x00000000, 0x00000000, 0x00000000 },	/* SIBCALL_REGS */	\
+  { 0xf003fc80, 0x00000000, 0x00000000, 0x00000000 },	/* SIBCALL_REGS */	\
   { 0x0000ff00, 0x00000000, 0x00000000, 0x00000000 },	/* RVC_GR_REGS */	\
   { 0xffffffc0, 0x00000000, 0x00000000, 0x00000000 },	/* JALR_REGS */		\
   { 0xffffffff, 0x00000000, 0x00000000, 0x00000000 },	/* GR_REGS */		\

@@ -582,6 +582,8 @@ FUNC:_ZNKSt15basic_streambufIwSt11char_traitsIwEE6getlocEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_stringbufIcSt11char_traitsIcESaIcEE3strEv@@GLIBCXX_3.4
 FUNC:_ZNKSt15basic_stringbufIwSt11char_traitsIwESaIwEE3strEv@@GLIBCXX_3.4
 FUNC:_ZNKSt16bad_array_length4whatEv@@CXXABI_1.3.8
+FUNC:_ZNKSt16basic_format_argISt20basic_format_contextINSt8__format10_Sink_iterIcEEcEE22_M_handle_unrecognizedEv@@GLIBCXX_3.4.36
+FUNC:_ZNKSt16basic_format_argISt20basic_format_contextINSt8__format10_Sink_iterIwEEwEE22_M_handle_unrecognizedEv@@GLIBCXX_3.4.36
 FUNC:_ZNKSt17bad_function_call4whatEv@@GLIBCXX_3.4.18
 FUNC:_ZNKSt18basic_stringstreamIcSt11char_traitsIcESaIcEE3strEv@@GLIBCXX_3.4
 FUNC:_ZNKSt18basic_stringstreamIcSt11char_traitsIcESaIcEE5rdbufEv@@GLIBCXX_3.4
@@ -3169,6 +3171,7 @@ FUNC:_ZNSt6chrono13get_tzdb_listEv@@GLIBCXX_3.4.31
 FUNC:_ZNSt6chrono14remote_versionB5cxx11Ev@@GLIBCXX_3.4.31
 FUNC:_ZNSt6chrono3_V212steady_clock3nowEv@@GLIBCXX_3.4.19
 FUNC:_ZNSt6chrono3_V212system_clock3nowEv@@GLIBCXX_3.4.19
+FUNC:_ZNSt6chrono8__detail25__recent_leap_second_infoERNS_16leap_second_infoEj@@GLIBCXX_3.4.36
 FUNC:_ZNSt6chrono8get_tzdbEv@@GLIBCXX_3.4.31
 FUNC:_ZNSt6chrono9gps_clock3nowEv@@GLIBCXX_3.4.35
 FUNC:_ZNSt6chrono9tai_clock3nowEv@@GLIBCXX_3.4.35
@@ -4689,6 +4692,7 @@ OBJECT:0:GLIBCXX_3.4.32
 OBJECT:0:GLIBCXX_3.4.33
 OBJECT:0:GLIBCXX_3.4.34
 OBJECT:0:GLIBCXX_3.4.35
+OBJECT:0:GLIBCXX_3.4.36
 OBJECT:0:GLIBCXX_3.4.4
 OBJECT:0:GLIBCXX_3.4.5
 OBJECT:0:GLIBCXX_3.4.6

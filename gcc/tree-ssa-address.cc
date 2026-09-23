@@ -546,10 +546,15 @@ add_to_parts (struct mem_address *parts, tree elt)
       return;
     }
 
-  /* Add ELT to base.  */
+  /* Add ELT to base.  As we have arbitrarily associated address parts
+     make sure to use unsigned arithmetic.  */
   type = TREE_TYPE (parts->base);
   if (POINTER_TYPE_P (type))
-    parts->base = fold_build_pointer_plus (parts->base, elt);
+    parts->base
+      = fold_convert (TREE_TYPE (parts->base),
+		      fold_build2 (PLUS_EXPR, sizetype,
+				   fold_convert (sizetype, parts->base),
+				   fold_convert (sizetype, elt)));
   else
     parts->base = fold_build2 (PLUS_EXPR, type, parts->base, elt);
 }

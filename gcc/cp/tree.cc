@@ -280,7 +280,7 @@ lvalue_kind (const_tree ref)
     case MODOP_EXPR:
       /* We expect to see unlowered MODOP_EXPRs only during
 	 template processing.  */
-      gcc_assert (processing_template_decl);
+      gcc_checking_assert (processing_template_decl);
       if (CLASS_TYPE_P (TREE_TYPE (TREE_OPERAND (ref, 0))))
 	goto default_;
       else
@@ -4907,7 +4907,25 @@ trivial_type_p (const_tree t)
     return scalarish_type_p (t);
 }
 
-/* Returns 1 iff type T is an implicit-lifetime type, as defined in
+/* Returns true iff FN (which is a special member function) is
+   an eligible special member function, as defined in [special]/6.
+   The "no special member function of the same kind whose associated
+   constraints, if any, are satisfied is more constrained" condition
+   is not checked, this is checked during add_method instead.  */
+
+static bool
+eligible_special_member_function_p (tree fn)
+{
+  /* The function is not deleted.  */
+  if (DECL_DELETED_FN (fn))
+    return false;
+  /* The associated constraints, if any, are satisfied.  */
+  if (!constraints_satisfied_p (fn))
+    return false;
+  return true;
+}
+
+/* Returns true iff type T is an implicit-lifetime type, as defined in
    [basic.types.general] and [class.prop].  */
 
 bool
@@ -4922,6 +4940,7 @@ implicit_lifetime_type_p (tree t)
   if (!CLASS_TYPE_P (t))
     return false;
   t = TYPE_MAIN_VARIANT (t);
+  /* It is an aggregate whose destructor is not user-provided.  */
   if (CP_AGGREGATE_TYPE_P (t)
       && (!CLASSTYPE_DESTRUCTOR (t)
 	  || !user_provided_p (CLASSTYPE_DESTRUCTOR (t))))
@@ -4934,6 +4953,8 @@ implicit_lifetime_type_p (tree t)
     return false;
   if (CLASSTYPE_LAZY_DESTRUCTOR (t))
     lazily_declare_fn (sfk_destructor, t);
+  /* It has at least one trivial eligible constructor and a trivial,
+     non-deleted destructor.  */
   tree fn = CLASSTYPE_DESTRUCTOR (t);
   if (!fn || DECL_DELETED_FN (fn))
     return false;
@@ -4943,7 +4964,7 @@ implicit_lifetime_type_p (tree t)
       fn = *iter;
       if ((default_ctor_p (fn) || copy_fn_p (fn) || move_fn_p (fn))
 	  && trivial_fn_p (fn)
-	  && !DECL_DELETED_FN (fn))
+	  && eligible_special_member_function_p (fn))
 	return true;
     }
   return false;
@@ -5226,7 +5247,7 @@ record_has_unique_obj_representations (const_tree t, const_tree sz,
 	    inform (DECL_SOURCE_LOCATION (last_named_field),
 		    "padding occurs after %qD", last_named_field);
 	  else
-	    inform (DECL_SOURCE_LOCATION (t),
+	    inform (location_of (const_cast <tree> (t)),
 		    "%qT has padding and no data fields", t);
 	}
       return false;

@@ -1,3 +1,227 @@
+2026-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-31  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127128
+	* resolve.cc (replace_forall_var): New function.
+	(replace_in_expr_recursive): Traverse with gfc_traverse_expr
+	instead of walking the expression by hand.
+	(replace_in_code_recursive): Substitute in the whole branch chain
+	of IF and WHERE constructs, in the allocate-objects of ALLOCATE
+	and DEALLOCATE, and in SELECT TYPE and SELECT RANK case lists.
+
+2026-08-25  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/98573
+	* trans-array.cc (gfc_array_init_size): If the expr3_desc is an
+	array descriptor, use it for 'type'.
+	* trans-stmt.cc (gfc_trans_allocate): Use trans_assignment to
+	assign the source for class sources.
+
+2026-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-06-03  Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/105594
+	* module.cc (gfc_use_module): Suppress bogus warning for a missing
+	ONLY clause on a submodule.
+
+2026-08-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-06-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/88632
+	PR fortran/104630
+	* module.cc (write_symtree): Do not filter out private symbols
+	when writing a submodule interface file (.smod).  Submodules are
+	descendants of their ancestor module and access private symbols
+	in the module's contains section via host association per
+	Fortran 2018 section 14.2.2.
+
+2026-08-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126872
+	* trans-decl.cc (gfc_finish_var_decl): Drop the unreachable
+	hidden-visibility case in the BIND(C) block.  Do not give hidden
+	visibility to a PRIVATE module variable with a binding label.
+	(build_function_decl): Do not give hidden visibility to a PRIVATE
+	module procedure with a binding label.
+
+2026-08-16  Christopher Albert  <albert@tugraz.at>
+
+	Backported from master:
+	2026-08-16  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/110626
+	* gfortran.h : Add finalize_only bitfield to gfc_expr.
+	* resolve.cc (generate_component_assignments): If the lhs has
+	no pointer or allocatable components, set use_finalize_only to
+	false. Otherwise it equals finalizable_lhs. Use the value to
+	set the expr1 finalize_only field and add the assignment to the
+	chain. If use_finalize_only is false, free the statements and
+	transfer the value to the final result.
+	* trans-expr.cc (gfc_trans_assignment_1): If expr1 is finalize_
+	only emit an empty statement.
+
+2026-08-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-08-14  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104048
+	* trans-array.cc (structure_alloc_comps): Extend the wrapper
+	mechanism for same type allocatable arrays to scalars, creating
+	descriptors for them and passing to the deep copy library fcn..
+
+2026-08-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-05-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/125263
+	* trans-expr.cc (gfc_trans_assignment_1): Pass scalar class to
+	derived type assignment expressions to gfc_trans_scalar_assign.
+
+2026-08-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/126205
+	* gfortran.h: Add prototype for deallocate_allocated_coarrays.
+	hash_map team_allocated_coarrays, vector team_context_stack and
+	prototype for get_current_team_context.
+	* match.cc (gfc_match_allocate): Capture allocate expressions
+	of allocatable coarrays and stash in team_allocated_coarrays.
+	* parse.cc (parse_change_team): Push team context. When end is
+	seen, create the code to deallocate allocated coarrays in this
+	context, using deallocate_allocated_coarrays.
+	* st.cc (get_guarded_dealloc): Generate code to produce
+	IF (ALLOCATED (expr)) DEALLOCATE (expr).
+	(deallocate_allocated_coarrays): Modify the final array ref of
+	the allocate expressions and call get_guarded_dealloc.
+
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125866
+	* expr.cc (is_CFI_desc): Add check for proc_name.
+
+2026-07-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/126386
+	* frontend-passes.cc (matmul_lhs_realloc):  Fix size calculation of
+	A2B1 case.
+
+2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR fortran/126303
+	* frontend-passes.cc (inner_loop_may_be_skipped): If inner loop iterator
+	is not integral, return true.
+
+2026-07-20  Mikael Morin  <mikael@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/97592
+	PR fortran/125998
+	* trans-array.cc (gfc_conv_array_parameter): Always create a new
+	descriptor.  Copy lbound and ubound from the original descriptor
+	using matching dimension indexes.  Recalculate stride and
+	offset.
+
+2026-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-14  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126234
+	* module.cc (read_module): Walk the symtree instead of
+	using gfc_find_symbol.
+
+2026-07-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	Backported from master:
+	2026-05-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/125172
+	* resolve.cc (gfc_fixup_inferred_type_refs): Update kind for
+	INQUIRY_RE and INQUIRY_IM references on inferred complex
+	associate-name.
+	(resolve_variable): For an inferred-type associate-name with
+	no subobject ref, refresh e->ts from sym->ts.
+	(resolve_assoc_var): For an inferred-type complex/character
+	associate-name, refresh sym->ts from the resolved target when
+	only the kind differs.
+
+2026-07-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126210
+	* module.cc (read_module): Only skip re-importing a symbol
+	already visible via host association from the same module
+	when that symbol is a derived type.
+
+2026-07-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126170
+	* class.cc (gfc_find_derived_vtab): Fix up a stale
+	non-use-associated duplicate vtab symbol.
+	(gfc_is_finalizable): Same fix-up, for the finalizer wrapper
+	symbol.
+	* module.cc (read_module): Skip re-importing a symbol already
+	visible via host association from the same module.
+
+2026-07-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-07-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/126127
+	* interface.cc (find_symtree0): Check for NULL pointer.
+	(gfc_find_sym_in_symtree): Also search user-defined operator list
+	when the symbol refers to a function.
+
+2026-07-09  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-07  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/103367
+	* expr.cc (simplify_const_ref): Hoist the call to
+	remove_subobject_ref up a level.
+	* primary.cc (gfc_match_rvalue): Don't copy the value expr
+	if the type is an EXPR_VARIABLE.
+	* trans-array.cc (gfc_conv_array_initializer): Only copy the expr
+	value if it does not have a ref.
+
 2026-07-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

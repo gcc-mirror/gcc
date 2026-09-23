@@ -36,6 +36,7 @@
 #include <memory>     // atomic<shared_ptr<T>>
 #include <mutex>      // mutex
 #include <iomanip>    // quoted
+#include <span>
 #if defined __GTHREADS && ! defined _GLIBCXX_HAS_GTHREADS
 # include <ext/concurrence.h> // __gnu_cxx::__mutex
 #endif
@@ -66,6 +67,7 @@
 #endif
 
 #if USE_ATOMIC_SHARED_PTR && ! USE_ATOMIC_LIST_HEAD
+// Cannot use atomic<shared_ptr<T>> without lock-free atomic<T*>.
 # error Unsupported combination
 #endif
 
@@ -196,6 +198,13 @@ namespace std::chrono
     static const tzdb& _S_replace_head(shared_ptr<_Node>, shared_ptr<_Node>);
 
     static pair<vector<leap_second>, bool> _S_read_leap_seconds();
+
+    // This is here because _Node is a friend so can call private constructor.
+    static const leap_second fixed_leaps[];
+
+    // This is a member so that it can access fixed_leaps.
+    struct NumLeapSeconds;
+    static NumLeapSeconds num_leap_seconds;
   };
 
   // Implementation of the private constructor used for the singleton object.
@@ -214,7 +223,7 @@ namespace std::chrono
   constinit atomic<tzdb_list::_Node*> tzdb_list::_Node::_S_head_cache{nullptr};
 #endif
 
-  // The data structures defined in this file (Rule, on_day, at_time etc.)
+  // The data structures defined in this file (Rule, on_month_day, at_time etc.)
   // are used to represent the information parsed from the tzdata.zi file
   // described at https://man7.org/linux/man-pages/man8/zic.8.html#FILES
 
@@ -258,14 +267,20 @@ namespace std::chrono
 	switch (c)
 	{
 	  case 's':
+	  case 'S':
 	    return {Standard, true};
 	  case 'u':
+	  case 'U':
 	  case 'g':
+	  case 'G':
 	  case 'z':
+	  case 'Z':
 	    return {Universal, true};
 	  case 'w':
+	  case 'W':
 	    return {Wall, true};
 	  case 'd':
+	  case 'D':
 	    return {Daylight, true};
 	  default:
 	    return {Wall, false};
@@ -303,7 +318,7 @@ namespace std::chrono
     };
 
     // The IN and ON fields of a RULE record, e.g. "March lastSunday".
-    struct on_day
+    struct on_month_day
     {
       using rep = uint_least16_t;
       // Equivalent to Kind, chrono::month, chrono::day, chrono::weekday,
@@ -367,7 +382,8 @@ namespace std::chrono
 	return ymd;
       }
 
-      friend istream& operator>>(istream&, on_day&);
+
+      friend istream& operator>>(istream&, on_month_day&);
     };
 
     // Wrapper for two chrono::year values, which reads the FROM and TO
@@ -384,7 +400,7 @@ namespace std::chrono
       {
 	string s;
 	auto c = ws(in).peek();
-	if (c == 'm') [[unlikely]] // keyword "minimum"
+	if (c == 'm' || c == 'M') [[unlikely]] // keyword "minimum"
 	  {
 	    in >> s; // extract the rest of the word
 	    yy.from = year(1900);
@@ -393,12 +409,12 @@ namespace std::chrono
 	  yy.from = year{num};
 
 	c = ws(in).peek();
-	if (c == 'm') // keyword "maximum"
+	if (c == 'm' || c == 'M') // keyword "maximum"
 	  {
 	    in >> s; // extract the rest of the word
 	    yy.to = year::max();
 	  }
-	else if (c == 'o') // keyword "only"
+	else if (c == 'o' || c == 'O') // keyword "only"
 	  {
 	    in >> s; // extract the rest of the word
 	    yy.to = yy.from;
@@ -468,6 +484,8 @@ namespace std::chrono
 	select_std_or_dst_abbrev(info.abbrev, info.save);
     }
 
+    struct Rule;
+
     // A time zone information record.
     // Zone  NAME        STDOFF  RULES   FORMAT  [UNTIL]
     // Zone  Asia/Amman  2:00    Jordan  EE%sT   2017 Oct 27 01:00
@@ -477,13 +495,14 @@ namespace std::chrono
       ZoneInfo() = default;
 
       ZoneInfo(sys_info&& info)
-      : m_buf(std::move(info.abbrev)), m_expanded(true), m_save(info.save),
-	m_offset(info.offset), m_until(info.end)
+      : m_buf(std::move(info.abbrev)), m_state(Expanded), m_save(info.save),
+	m_offset(info.offset - seconds(info.save)), m_until(info.end)
       { }
 
       ZoneInfo(const pair<sys_info, string_view>& info)
-      : m_expanded(true), m_save(info.first.save), m_offset(info.first.offset),
-	m_until(info.first.end)
+      : m_state(Expanded), m_save(info.first.save),
+	m_offset(info.first.offset - seconds(info.first.save)),
+       	m_until(info.first.end)
       {
 	if (info.second.size())
 	  {
@@ -494,7 +513,7 @@ namespace std::chrono
 	m_buf += info.first.abbrev;
       }
 
-      // STDOFF: Seconds from UTC during standard time.
+      // STDOFF: Seconds from UTC during standard time (without any save).
       seconds
       offset() const noexcept { return m_offset; }
 
@@ -517,17 +536,28 @@ namespace std::chrono
       sys_seconds
       until() const noexcept { return m_until; }
 
+      // For non-expanded zone (using rules) computes the value
+      // of 'save' at the time of transitions, caches it in m_save.
+      // Returns true if until value was changed in the process.
+      bool
+      calc_save(span<const Rule> all_rules) noexcept;
+
+      // save value at the transition boundary, usable if expanded()
+      // is true or after calc_save() was called.
+      seconds
+      save() const noexcept { return m_save; }
+
       friend istream& operator>>(istream&, ZoneInfo&);
 
       bool
       expanded() const noexcept
-      { return m_expanded; }
+      { return m_state == Expanded; }
 
       // For an expanded ZoneInfo this returns the LETTERS that apply to the
       // **next** sys_info after this one.
       string_view
       next_letters() const noexcept
-      { return m_expanded ? rules() : string_view{}; }
+      { return (m_state == Expanded) ? rules() : string_view{}; }
 
 
       bool
@@ -535,11 +565,11 @@ namespace std::chrono
       {
 	// If this object references a named Rule then we can't populate
 	// a sys_info yet.
-	if (!m_expanded)
+	if (m_state != Expanded)
 	  return false;
 
 	info.end = until();
-	info.offset = offset();
+	info.offset = offset() + seconds(m_save);
 	info.save = minutes(m_save);
 	info.abbrev = format();
 	format_abbrev_str(info); // expand %z
@@ -549,12 +579,16 @@ namespace std::chrono
     private:
       friend class time_zone;
 
+      enum class State : uint_least16_t
+      { Expanded, SaveKnown, SavePending, UntilPending };
+      using enum State;
+
       void
       set_abbrev(string abbrev)
       {
 	m_buf = std::move(abbrev);
 	m_pos = 0;
-	m_expanded = true;
+	m_state = Expanded;
       }
 
       void
@@ -570,8 +604,8 @@ namespace std::chrono
       }
 
       string m_buf;     // rules() + ' ' + format() OR letters + ' ' + format()
-      uint_least16_t m_pos : 15 = 0; // offset of format() in m_buf
-      uint_least16_t m_expanded : 1 = 0;
+      uint_least16_t m_pos : 14 = 0; // offset of format() in m_buf
+      State m_state : 2 = SavePending;
       duration<int_least16_t, ratio<60>> m_save{};
       sec32_t m_offset{};
       sys_seconds m_until{};
@@ -589,9 +623,9 @@ namespace std::chrono
     // A RULE record from the tzdata.zi timezone info file.
     struct Rule
     {
-      // This allows on_day to reuse padding of at_time.
+      // This allows on_month_day to reuse padding of at_time.
       // This keeps the size to 8 bytes and the alignment to 4 bytes.
-      struct datetime : at_time { on_day day; };
+      struct datetime : at_time { on_month_day day; };
 
       // TODO combining name+letters into a single string (like in ZoneInfo)
       // would save sizeof(string) and make Rule fit in a single cacheline.
@@ -653,17 +687,17 @@ namespace std::chrono
 	    << ' ' << r.when.day.get_month() << ' ';
 	switch (r.when.day.kind)
 	{
-	case on_day::DayOfMonth:
+	case on_month_day::DayOfMonth:
 	  out << (unsigned)r.when.day.get_day();
 	  break;
-	case on_day::LastWeekday:
+	case on_month_day::LastWeekday:
 	  out << "last" << weekday(r.when.day.day_of_week);
 	  break;
-	case on_day::LessEq:
+	case on_month_day::LessEq:
 	  out << weekday(r.when.day.day_of_week) << " <= "
 	    << r.when.day.day_of_month;
 	  break;
-	case on_day::GreaterEq:
+	case on_month_day::GreaterEq:
 	  out << weekday(r.when.day.day_of_week) << " >= "
 	    << r.when.day.day_of_month;
 	  break;
@@ -678,6 +712,233 @@ namespace std::chrono
       }
 #endif
     };
+
+    struct Transitions
+    {
+      struct Entry
+      {
+	const Rule* rule;
+	sys_seconds when;
+      };
+
+      Entry prev{nullptr, sys_seconds::min()};
+      Entry curr{nullptr, sys_seconds::min()};
+      Entry next{nullptr, sys_seconds::max()};
+    };
+
+    // Collect transitions of rules surrounding specified time t:
+    // * .curr - rule active directly before or at t,
+    // * .prev - rule transition before trans.curr
+    // * .next - rule transition directly after t
+    Transitions
+    find_surrounding_transitions(span<const Rule> rules, sys_seconds t,
+				 seconds std_offset)
+    {
+      const year_month_day date(chrono::floor<days>(t));
+      // Expand the search window for a time near the end
+      // of the year which can be pushed to next/previous
+      // year by 'offset'. This assumes that 'offset' is
+      // never greater than 24h.
+      year first_year = date.year(), last_year = date.year();
+      if (std_offset.count() > 0)
+	if (date.month() == December && date.day() == day(31))
+	  ++last_year;
+      if (std_offset.count() < 0)
+	if (date.month() == January && date.day() == day(1))
+	  --first_year;
+
+      Transitions trans;
+      for (const auto& rule : rules)
+	{
+	  if (last_year < rule.from) // Rule doesn't apply yet at time t.
+	    break; // Rules are ordered by 'from' in ascending order.
+
+	  seconds offset{}; // appropriate for at_time::Universal
+	  if (rule.when.indicator == at_time::Wall
+	      || rule.when.indicator == at_time::Standard)
+	    offset = std_offset;
+
+	  // Times at which rule takes affect before (or equal) t,
+	  // and after t, respectively.
+	  sys_seconds start_before = sys_seconds::min();
+	  sys_seconds start_after = sys_seconds::max();
+	  auto for_year = [&](year y)
+	  {
+	    // Time the rule takes effect on year y:
+	    const sys_seconds rule_start = rule.start_time(y, offset);
+	    if (rule_start <= t)
+	      {
+		start_before = rule_start;
+		if (y == last_year && rule.to > y)
+		  start_after = rule.start_time(++y, offset);
+	      }
+	    // Do not override start_after set for first_year
+	    else if (rule_start < start_after)
+	      {
+		start_after = rule_start;
+		if (y == first_year && rule.from < y)
+		  start_before = rule.start_time(--y, offset);
+	      }
+	  };
+
+	  if (first_year > rule.to)
+	    // Rule no longer applies at time t, record last transition
+	    start_before = rule.start_time(rule.to, offset);
+	  else if (first_year == last_year)
+	    for_year(first_year);
+	  else
+	   {
+	     // Local time may of t may be in prev/next year.
+	     if (first_year >= rule.from)
+	       for_year(first_year);
+	     if (last_year <= rule.to)
+	       for_year(last_year);
+	   }
+
+	  if (trans.curr.when < start_before)
+	    {
+	      trans.prev = trans.curr;
+	      trans.curr = {&rule, start_before};
+	    }
+	  else if (trans.prev.when < start_before)
+	    trans.prev = {&rule, start_before};
+
+	  if (start_after < trans.next.when)
+	    trans.next = {&rule, start_after};
+	}
+      return trans;
+    }
+
+    const Rule*
+    find_active_rule(span<const Rule> rules, sys_seconds t, seconds std_offset)
+    {
+      // Rule specifying start time as Wall time, should apply
+      // running 'save' accumulated by earlier rules. To handle
+      // that we firstly collect transitions surrounding specified
+      // time t:
+      auto trans = find_surrounding_transitions(rules, t, std_offset);
+
+      // No rule was active at the time of t, running 'save'
+      // cannot change this output, as we have no save to apply.
+      if (!trans.curr.rule)
+	return nullptr;
+
+      auto cascade_save = [](const Rule* from, Transitions::Entry& to)
+      {
+	if (!from || from->save == seconds(0))
+	  return false;
+	if (!to.rule || to.rule->when.indicator != at_time::Wall)
+	   return false;
+	to.when -= from->save;
+	return true;
+      };
+
+      if (cascade_save(trans.curr.rule, trans.next))
+	// Running save moved what we considered trans.next to time
+	// before or at t, in that case trans.next is active rule.
+	if (trans.next.when <= t)
+	  return trans.next.rule;
+
+      if (cascade_save(trans.prev.rule, trans.curr))
+	// Running save moved what we consider trans.curr to
+	// time after t, in that case trans.prev is active rule.
+	if (trans.curr.when > t)
+	  return trans.prev.rule;
+
+      return trans.curr.rule;
+    }
+
+    const Rule*
+    find_active_rule(span<const Rule> rules, local_seconds t, seconds std_offset)
+    {
+      // UNTIL or START time in local time should take a 'save' from
+      // active rule. To handle tapproximate system time at, and
+      // collect transitions surrounding it:
+      const sys_seconds at(t.time_since_epoch() - std_offset);
+      const auto trans = find_surrounding_transitions(rules, at, std_offset);
+
+      auto to_local = [&](const Transitions::Entry& tran, const Rule* before)
+      {
+	local_seconds ls(tran.when.time_since_epoch());
+	if (!tran.rule)
+	  // 'when' is either min() or max(), and applying std_offset overflows.
+	  return ls;
+
+	ls += std_offset;
+	if (!before || tran.rule->when.indicator == at_time::Wall)
+	  // no active rule or 'when' was converted from local time without
+	  // considering running 'save' in first place
+	  return ls;
+
+	return ls + before->save;
+      };
+
+      // Translate the transitions time to local time, taking 'save'
+      // into consideration, and recheck active rule.
+      if (to_local(trans.next, trans.curr.rule) <= t)
+	return trans.next.rule;
+      if (to_local(trans.curr, trans.prev.rule) > t)
+	return trans.prev.rule;
+      return trans.curr.rule;
+    }
+
+    const Rule*
+    find_first_std(span<const Rule> rules)
+    {
+      auto is_std = [](const Rule& rule) { return !rule.save.count(); };
+      // Rules with same name are sorted by 'from' and then 'save' in ascending order.
+      auto it = ranges::find_if(rules, is_std);
+      if (it == rules.end())
+	return nullptr;
+
+      const Rule* first = &*it;
+      const year y = first->from;
+      for (const Rule& next : span<const Rule>(++it, rules.end()))
+	{
+	  if (!is_std(next) || next.from > y)
+	    break;
+	  if (next.start_time(y, {}) < first->start_time(y, {}))
+	    first = &next;
+	}
+      return first;
+    }
+
+    bool
+    ZoneInfo::calc_save(span<const Rule> all_rules) noexcept
+    {
+      // Expanded rule, or the save value was already computed.
+      if (m_state < SavePending)
+	return false;
+
+      // Find the rules named by rules()
+      span<const Rule> sel_rules
+	= ranges::equal_range(all_rules, rules(), ranges::less{}, &Rule::name);
+      if (sel_rules.empty())
+	__throw_runtime_error("std::chrono::time_zone::get_info: invalid data");
+
+      if (m_state == UntilPending)
+	{
+	  // UNTIL was specified in Wall time, so it is affected by 'save'.
+	  // Convert it back to local time, and find active rule using that.
+	  const local_seconds lu(m_until.time_since_epoch() + m_offset);
+	  if (const Rule* rule = find_active_rule(sel_rules, lu - seconds(1), m_offset))
+	    if (rule->save.count() != 0)
+	      {
+		m_state = SaveKnown;
+		m_save = duration_cast<minutes>(rule->save);
+		m_until -= rule->save;
+		return true;
+	      }
+	 }
+      else
+	// UNTIL was either specified in Universal time, or Standard
+	// time (known total offset). m_until is corresponding sys_time point.
+	if (const Rule* rule = find_active_rule(sel_rules, m_until - seconds(1), m_offset))
+	  m_save = duration_cast<minutes>(rule->save);
+
+      m_state = SaveKnown;
+      return false;
+    }
   } // namespace
 #endif // TZDB_DISABLED
 
@@ -814,7 +1075,7 @@ namespace std::chrono
 	if (infos.empty())
 	  __throw_runtime_error("std::chrono::time_zone::get_info: invalid data");
 	tp = (--i)->until();
-    }
+      }
 
     sys_info info;
 
@@ -833,10 +1094,10 @@ namespace std::chrono
     const ZoneInfo& ri = *i;
 
     // Find the rules named by ri.rules()
-    auto rules = ranges::equal_range(node->rules, ri.rules(),
-				     ranges::less{}, &Rule::name);
+    span<const Rule> rules = ranges::equal_range(node->rules, ri.rules(),
+						 ranges::less{}, &Rule::name);
 
-    if (ranges::empty(rules))
+    if (rules.empty())
       __throw_runtime_error("std::chrono::time_zone::get_info: invalid data");
 
     vector<pair<sys_info, string_view>> new_infos;
@@ -851,12 +1112,9 @@ namespace std::chrono
     // This is true by construction, because this function always tries to
     // finish so that the last ZoneInfo object expanded is for daylight time.
     // This means that i[-1] is either an expanded ZoneInfo for a DST sys_info
-    // or is an unexpanded (rule-based) ZoneInfo for a different rule, and
-    // rule changes always occur between periods of standard time.
+    // or is an unexpanded (rule-based) ZoneInfo for a different rule.
     info.offset = ri.offset();
     info.save = 0min;
-    // XXX The ri.until() time point should be
-    // "interpreted using the rules in effect just before the transition"
     info.end = ri.until();
     info.abbrev = ri.format();
 
@@ -866,71 +1124,30 @@ namespace std::chrono
 
     if (letters.empty())
       {
-	sys_seconds t = info.begin - seconds(1);
-	const year_month_day date(chrono::floor<days>(t));
-
 	// Try to find a Rule active before this time, to get initial
 	// SAVE and LETTERS values. There may not be a Rule for the period
 	// before the first DST transition, so find the earliest DST->STD
 	// transition and use the LETTERS from that.
-	const Rule* active_rule = nullptr;
-	sys_seconds active_rule_start = sys_seconds::min();
-	const Rule* first_std = nullptr;
-	for (const auto& rule : rules)
-	  {
-	    if (rule.save == minutes(0))
-	      {
-		if (!first_std)
-		  first_std = &rule;
-		else if (rule.from < first_std->from)
-		  first_std = &rule;
-		else if (rule.from == first_std->from)
-		  {
-		    if (rule.start_time(rule.from, {})
-			  < first_std->start_time(first_std->from, {}))
-		      first_std = &rule;
-		  }
-	      }
-
-	    year y = date.year();
-
-	    if (y > rule.to) // rule no longer applies at time t
-	      continue;
-	    if (y < rule.from) // rule doesn't apply yet at time t
-	      continue;
-
-	    sys_seconds rule_start;
-
-	    seconds offset{}; // appropriate for at_time::Universal
-	    if (rule.when.indicator == at_time::Wall)
-	      offset = info.offset;
-	    else if (rule.when.indicator == at_time::Standard)
-	      offset = ri.offset();
-
-	    // Time the rule takes effect this year:
-	    rule_start = rule.start_time(y, offset);
-
-	    if (rule_start >= t && rule.from < y)
-	      {
-		// Try this rule in the previous year.
-		rule_start = rule.start_time(--y, offset);
-	      }
-
-	    if (active_rule_start < rule_start && rule_start < t)
-	      {
-		active_rule_start = rule_start;
-		active_rule = &rule;
-	      }
-	  }
-
-	if (active_rule)
+	if (const Rule* active_rule = find_active_rule(rules, info.begin, ri.offset()))
 	  {
 	    info.offset = ri.offset() + active_rule->save;
 	    info.save = chrono::duration_cast<minutes>(active_rule->save);
 	    letters = active_rule->letters;
 	  }
-	else if (first_std)
+	else if (const Rule* first_std = find_first_std(rules))
 	  letters = first_std->letters;
+      }
+
+    // For transitions, that leads to backward jump in the local time,
+    // and window of duplicated local time, the rule transition occurring
+    // during that window are considered to apply immediately at the boundary.
+    // This window is [info.begin, info.begin + merge_window].
+    seconds merge_window(0);
+    if (i != infos.begin())
+      {
+	const auto prev_offset = i[-1].offset() + i[-1].save();
+	if (prev_offset > info.offset)
+	  merge_window = prev_offset - info.offset;
       }
 
     const Rule* curr_rule = nullptr;
@@ -978,9 +1195,6 @@ namespace std::chrono
 
 	    if (t < rule_start && rule_start < info.end)
 	      {
-		if (rule_start - t < days(1)) // XXX shouldn't be needed!
-		  continue;
-
 		// Found a closer transition than the previous info.end.
 		info.end = rule_start;
 		next_rule = &rule;
@@ -989,41 +1203,34 @@ namespace std::chrono
 
 	format_abbrev_str(info, letters);
 
-	bool merged = false;
-#if 0
-	if (!new_infos.empty())
-	  {
-	    auto& back = new_infos.back();
-	    if (back.offset == info.offset && back.abbrev == info.abbrev
-		  && back.save == info.save)
-	      {
-		// This is a continuation of the previous sys_info.
-		back.end = info.end;
-		merged = true;
-	      }
-	  }
-#endif
-
 	if (next_rule)
 	  letters = next_rule->letters;
 	else
 	  letters = {};
 
-	if (!merged)
-	  new_infos.emplace_back(info, letters);
-
-	if (info.begin <= tp && tp < info.end) // Found the result.
-	  result_index = new_infos.size() - 1;
-	else if (result_index >= 0 && !merged)
+	// Transitions occuring in the backward jump time window occuring
+	// on zone transitions should be folded into zone change.
+	if (info.end - t <= merge_window)
+	  info.begin = t;
+	else
 	  {
-	    // Finish on a DST sys_info if possible, so that if we resume
-	    // generating sys_info objects after this time point, save=0
-	    // should be correct for the next sys_info.
-	    if (num_after > 1 || info.save != 0min)
-	      --num_after;
-	  }
+	    new_infos.emplace_back(info, letters);
 
-	info.begin = info.end;
+	    if (info.begin <= tp && tp < info.end) // Found the result.
+	      result_index = new_infos.size() - 1;
+	    else if (result_index >= 0)
+	      {
+		// Finish before a STD sys_info if possible, so that if we resume
+		// generating sys_info objects after this time point, save=0
+		// should be correct for the next sys_info.
+		if (num_after > 1 || !next_rule || next_rule->save == 0s)
+		  --num_after;
+	      }
+
+	    info.begin = info.end;
+	  }
+	merge_window = seconds(0);
+
 	if (next_rule)
 	  {
 	    info.end = ri.until();
@@ -1251,56 +1458,240 @@ namespace std::chrono
   }
 #endif // TZDB_DISABLED
 
+// These are the same values as the array in the <chrono> header, but might
+// contain additional leap seconds if the libstdc++.so used at runtime is
+// newer than the <chrono> header used to compile parts of the application.
+constexpr leap_second tzdb_list::_Node::fixed_leaps[] {
+#define LS leap_second
+  LS(  78796800), // 1 Jul 1972
+  LS(  94694400), // 1 Jan 1973
+  LS( 126230400), // 1 Jan 1974
+  LS( 157766400), // 1 Jan 1975
+  LS( 189302400), // 1 Jan 1976
+  LS( 220924800), // 1 Jan 1977
+  LS( 252460800), // 1 Jan 1978
+  LS( 283996800), // 1 Jan 1979
+  LS( 315532800), // 1 Jan 1980
+  LS( 362793600), // 1 Jul 1981
+  LS( 394329600), // 1 Jul 1982
+  LS( 425865600), // 1 Jul 1983
+  LS( 489024000), // 1 Jul 1985
+  LS( 567993600), // 1 Jan 1988
+  LS( 631152000), // 1 Jan 1990
+  LS( 662688000), // 1 Jan 1991
+  LS( 709948800), // 1 Jul 1992
+  LS( 741484800), // 1 Jul 1993
+  LS( 773020800), // 1 Jul 1994
+  LS( 820454400), // 1 Jan 1996
+  LS( 867715200), // 1 Jul 1997
+  LS( 915148800), // 1 Jan 1999
+  LS(1136073600), // 1 Jan 2006
+  LS(1230768000), // 1 Jan 2009
+  LS(1341100800), // 1 Jul 2012
+  LS(1435708800), // 1 Jul 2015
+  LS(1483228800), // 1 Jan 2017
+  // If new leap seconds get defined they should be added here.
+  // Negative leap seconds are represented as -1 * timestamp.
+#undef LS
+};
+
+namespace
+{
+  // The expiry date corresponding to the list above.
+  // tzdata 2026a leapseconds list expires at 2026-12-28 00:00:00 UTC
+  constexpr seconds fixed_expiry{1798416000u};
+}
+
+// This holds the most up-to-date number of leap seconds known at runtime.
+// Initially zero, updated when _S_read_leap_seconds() is called.
+struct tzdb_list::_Node::NumLeapSeconds
+{
+  // Called by __recent_leap_second_info to read num_leap_seconds.
+  unsigned
+  get()
+  {
+#if ATOMIC_INT_LOCK_FREE == 2
+    atomic_ref<unsigned> ref(count);
+    auto num = ref.load(memory_order::relaxed);
+
+    if (num == std::size(_Node::fixed_leaps))
+      // A leapseconds file has been read and has no new leap seconds.
+      return num;
+
+    if (num == 0)
+      // No leapseconds file has been read yet.
+      return 0;
+
+    // The tzdb_list has been initialized and contains a tzdb object with
+    // new leap seconds, which the caller is going to use.
+    // The relaxed load above does not synchronize with anything, so to
+    // ensure that the get_tzdb_list() in the caller will see a tzdb object
+    // set by _S_replace_head, we load num_leap_seconds again with acquire
+    // ordering:
+    return ref.load(memory_order::acquire);
+#else
+    lock_guard<mutex> l(list_mutex()); // This ensures acquire ordering.
+    return count;
+#endif
+  }
+
+  // Called by __recent_leap_second_info to set num_leap_seconds when
+  // we have determined there are no new leap seconds in a leapseconds file.
+  void
+  set_to_fixed_size()
+  {
+#if ATOMIC_INT_LOCK_FREE == 2
+    atomic_ref<unsigned> ref(count);
+    unsigned expected = 0;
+    ref.compare_exchange_strong(expected, std::size(_Node::fixed_leaps),
+				memory_order::relaxed);
+#else
+    lock_guard<mutex> l(list_mutex());
+    if (count == 0)
+      count = std::size(_Node::fixed_leaps);
+#endif
+  }
+
+  // Called by _Node::_S_replace_head
+  // The two versions are named differently so that caller has to be explicit
+  // about which version it calls, based on whether the mutex is held.
+  void
+  set(unsigned val)
+  {
+#if ATOMIC_INT_LOCK_FREE == 2
+    atomic_ref<unsigned> ref(count);
+    // The release op here synchronizes with the acquire op in get().
+    ref.store(val, memory_order::release);
+#else
+    lock_guard<mutex> l(list_mutex());
+    count = val;
+#endif
+  }
+
+  void
+  set_locked(unsigned val, const lock_guard<mutex>&)
+  {
+#if ATOMIC_INT_LOCK_FREE == 2
+    // Even though the caller locked the mutex, we still need to use an
+    // atomic store in this case, because there could be concurrent loads.
+    set(val);
+#else
+    // The only caller of this function locks list_mutex() so we would
+    // deadlock if we locked it again here.
+    count = val;
+#endif
+  }
+
+private:
+  unsigned count = 0;
+};
+
+constinit tzdb_list::_Node::NumLeapSeconds tzdb_list::_Node::num_leap_seconds;
+
+  namespace __detail
+  {
+    // Called by chrono::__detail::__get_leap_second_info in <chrono>
+    // to get leap_second_info for times after the expiry date in the header.
+    // The caller provides the time being queried in `info.elapsed` and
+    // whether that is a UTC time in `info.is_leap_second`.
+    // If it returns true, this function did the lookup and updated `info`.
+    // If this returns false, it means the hardcoded list of leap seconds
+    // in the header should be used for the lookup.
+    bool
+    __recent_leap_second_info(leap_second_info& info,
+			      unsigned num_positive_leaps)
+    {
+      // Extract the input args from info:
+      const auto [is_utc, secs] = info;
+      // And then reuse info for the output result:
+      info.is_leap_second = false;
+      info.elapsed = seconds(num_positive_leaps);
+
+      auto update_info = [&](span<const leap_second> leaps)
+      {
+	if (leaps.size() == num_positive_leaps)
+	  return false; // No new leap seconds, use the array in the header.
+
+	// info.elapsed already contains the first N leap seconds,
+	// so we only search the end of the span.
+	auto first = leaps.begin() + num_positive_leaps;
+	auto pos = std::upper_bound(first, leaps.end(), sys_seconds(secs));
+	for (auto i = first; i != pos; ++i)
+	  info.elapsed += i->value();
+
+	if (is_utc)
+	  {
+	    // This should never happen, but check it so that pos[-1] is valid:
+	    if (num_positive_leaps == 0) [[unlikely]]
+	      return false;
+
+	    // Convert utc_time to sys_time:
+	    sys_seconds ss(secs - info.elapsed);
+	    // See if that sys_time is before (or during) previous leap sec:
+	    if (ss < pos[-1])
+	      {
+		if ((ss + 1s) >= pos[-1])
+		  info.is_leap_second = true;
+		else
+		  info.elapsed -= pos[-1].value();
+	      }
+	  }
+	return true;
+      };
+
+      using _Node = tzdb_list::_Node;
+
+      // If the caller was compiled using an older GCC with an older expiry
+      // time in the header than the `fixed_expiry` defined above, we might
+      // be able to answer the query easily using the static `fixed_leaps`.
+      if (secs <= fixed_expiry)
+	return update_info(_Node::fixed_leaps);
+
+      constexpr auto num_fixed_leaps = std::size(_Node::fixed_leaps);
+
+      auto num_leaps = _Node::num_leap_seconds.get();
+      if (num_leaps == num_fixed_leaps)
+	// A leapseconds file has been read and has no new leap seconds:
+	return update_info(_Node::fixed_leaps);
+      else if (num_leaps == 0)
+	{
+	  // The tzdb_list has not been initialized yet, so we don't know
+	  // the correct number of leap seconds.
+	  // We use _S_read_leap_seconds() to read the leapseconds file.
+	  // If that tells us there are no new leapseconds, we don't need
+	  // to parse all of tzdata.zi and initialize a whole tzdb object.
+	  if (_Node::_S_read_leap_seconds().first.size() == num_fixed_leaps)
+	    {
+	      // There are no new leap seconds. Remember that so that the next
+	      // call to this function can just use fixed_leaps.
+	      _Node::num_leap_seconds.set_to_fixed_size();
+	      return update_info(_Node::fixed_leaps);
+	    }
+	  // else there are new leap seconds. We init tzdb_list so that the
+	  // new leap seconds are persisted in a tzdb object.
+	}
+
+      // Use updated leap_seconds from tzdb.
+      return update_info(get_tzdb_list().begin()->leap_seconds);
+    }
+  }
+
   // Return leap_second values, and a bool indicating whether the values are
   // current (true), or potentially out of date (false).
   pair<vector<leap_second>, bool>
   tzdb_list::_Node::_S_read_leap_seconds()
   {
-    // This list is valid until at least 2026-12-28 00:00:00 UTC.
-    constexpr auto expires = sys_days{2026y/12/28};
-    vector<leap_second> leaps
-    {
-      (leap_second)  78796800, // 1 Jul 1972
-      (leap_second)  94694400, // 1 Jan 1973
-      (leap_second) 126230400, // 1 Jan 1974
-      (leap_second) 157766400, // 1 Jan 1975
-      (leap_second) 189302400, // 1 Jan 1976
-      (leap_second) 220924800, // 1 Jan 1977
-      (leap_second) 252460800, // 1 Jan 1978
-      (leap_second) 283996800, // 1 Jan 1979
-      (leap_second) 315532800, // 1 Jan 1980
-      (leap_second) 362793600, // 1 Jul 1981
-      (leap_second) 394329600, // 1 Jul 1982
-      (leap_second) 425865600, // 1 Jul 1983
-      (leap_second) 489024000, // 1 Jul 1985
-      (leap_second) 567993600, // 1 Jan 1988
-      (leap_second) 631152000, // 1 Jan 1990
-      (leap_second) 662688000, // 1 Jan 1991
-      (leap_second) 709948800, // 1 Jul 1992
-      (leap_second) 741484800, // 1 Jul 1993
-      (leap_second) 773020800, // 1 Jul 1994
-      (leap_second) 820454400, // 1 Jan 1996
-      (leap_second) 867715200, // 1 Jul 1997
-      (leap_second) 915148800, // 1 Jan 1999
-      (leap_second)1136073600, // 1 Jan 2006
-      (leap_second)1230768000, // 1 Jan 2009
-      (leap_second)1341100800, // 1 Jul 2012
-      (leap_second)1435708800, // 1 Jul 2015
-      (leap_second)1483228800, // 1 Jan 2017
-    };
+    // Populate the vector with the leap seconds we already know about:
+    vector<leap_second> leaps(fixed_leaps, std::end(fixed_leaps));
 
-#if 0
-    // This optimization isn't valid if the file has additional leap seconds
-    // defined since the library was compiled, but the system clock has been
-    // set to a time before the hardcoded expiration date.
-    if (system_clock::now() < expires)
-      return {std::move(leaps), true};
-#endif
+    bool read_leaps_file = false;
 
 #ifndef TZDB_DISABLED
     if (ifstream ls{zoneinfo_file(leaps_file)})
       {
-	auto exp_year = year_month_day(expires).year();
+	constexpr year exp_year
+	  = year_month_day(sys_days(duration_cast<days>(fixed_expiry))).year();
+
 	std::string s, w;
 	s.reserve(80); // Avoid later reallocations.
 	while (std::getline(ls, s))
@@ -1309,6 +1700,7 @@ namespace std::chrono
 
 	    if (!s.starts_with("Leap"))
 	      continue;
+
 	    istringstream li(std::move(s));
 	    li.exceptions(ios::failbit);
 	    li.ignore(4);
@@ -1339,12 +1731,14 @@ namespace std::chrono
 		      leaps.push_back(ls);
 		  }
 	      }
-	    s = std::move(li).str(); // return storage to s
+	    s = std::move(li).str(); // give allocated storage back to s
 	  }
-	return {std::move(leaps), true};
+
+	read_leaps_file = true;
       }
 #endif
-    return {std::move(leaps), false};
+
+    return {std::move(leaps), read_leaps_file};
   }
 
 #ifndef TZDB_DISABLED
@@ -1402,8 +1796,13 @@ namespace std::chrono
 	new_head_ptr->next = curr;
       }
     // XXX small window here where _S_head_cache still points to previous tzdb.
+    _S_cache_list_head(new_head_ptr);
+
+    // This allows __recent_leap_second_info() to know that it can use
+    // get_tzdb_list()->begin()->leap_seconds to get new leap seconds.
+    num_leap_seconds.set(new_head_ptr->db.leap_seconds.size());
 #else
-    lock_guard<mutex> l(list_mutex());
+    lock_guard<mutex> lock(list_mutex());
     if (const _Node* h = _S_head_owner.get())
       {
 	if (h->db.version == new_head_ptr->db.version)
@@ -1411,8 +1810,11 @@ namespace std::chrono
 	new_head_ptr->next = _S_head_owner;
       }
     _S_head_owner = std::move(new_head);
-#endif
     _S_cache_list_head(new_head_ptr);
+
+    num_leap_seconds.set_locked(new_head_ptr->db.leap_seconds.size(), lock);
+#endif
+
     return new_head_ptr->db;
   }
 
@@ -1566,28 +1968,37 @@ namespace std::chrono
 	    {
 	      case '#':
 		break;
+	      case 'r':
 	      case 'R':
 	      {
 		// Rule  NAME  FROM  TO  TYPE  IN  ON  AT  SAVE  LETTER/S
 		is >> type; // extract the "Rule" or "R" marker
+		type[0] = 'R';
+
 		Rule rule;
 		is >> rule;
 		node->rules.push_back(std::move(rule));
 		break;
 	      }
+	      case 'l':
 	      case 'L':
 	      {
 		// Link  TARGET           LINK-NAME
 		is >> type; // extract the "Link" or "L" marker
+		type[0] = 'L';
+
 		time_zone_link link(nullptr);
 		is >> quoted(link._M_target) >> quoted(link._M_name);
 		node->db.links.push_back(std::move(link));
 		break;
 	      }
+	      case 'z':
 	      case 'Z':
 	      {
 		// Zone  NAME        STDOFF  RULES   FORMAT  [UNTIL]
 		is >> type; // extract the "Zone" or "Z" marker
+		type[0] = 'Z';
+
 		time_zone tz(std::make_unique<time_zone::_Impl>(node));
 		is >> quoted(tz._M_name);
 		node->db.zones.push_back(time_zone(std::move(tz)));
@@ -1622,7 +2033,19 @@ namespace std::chrono
 
     ranges::sort(node->db.zones, {}, &time_zone::name);
     ranges::sort(node->db.links, {}, &time_zone_link::name);
-    ranges::stable_sort(node->rules, {}, &Rule::name);
+    ranges::sort(node->rules, [](const Rule& lhs, const Rule& rhs)
+    {
+      if (auto result = lhs.name <=> rhs.name; result != 0)
+	return result < 0;
+      if (auto result = lhs.from <=> rhs.from; result != 0)
+	return result < 0;
+      return lhs.save < rhs.save;
+    });
+
+    // Calculate the SAVE value at UNTIL, and adjust it if necessary.
+    for (time_zone& tz : node->db.zones)
+      for (ZoneInfo& info : tz._M_impl->infos)
+	info.calc_save(node->rules);
 
     return Node::_S_replace_head(std::move(head), std::move(node));
 #else
@@ -2067,60 +2490,76 @@ namespace std::chrono
       in >> s;
       switch (s[0])
       {
+      case 'j':
       case 'J':
 	switch (s[1])
 	{
 	case 'a':
+	case 'A':
 	  am.m = January;
 	  return in;
 	case 'u':
+	case 'U':
 	  switch (s[2])
 	  {
 	  case 'n':
+	  case 'N':
 	    am.m = June;
 	    return in;
 	  case 'l':
+	  case 'L':
 	    am.m = July;
 	    return in;
 	  }
 	  break;
 	}
 	break;
+      case 'f':
       case 'F':
 	am.m = February;
 	return in;
+      case 'm':
       case 'M':
-	if (s[1] == 'a') [[likely]]
+	if (s[1] == 'a' || s[1] == 'A') [[likely]]
 	  switch (s[2])
 	  {
 	  case 'r':
+	  case 'R':
 	    am.m = March;
 	    return in;
 	  case 'y':
+	  case 'Y':
 	    am.m = May;
 	    return in;
 	  }
 	break;
+      case 'a':
       case 'A':
 	switch (s[1])
 	{
 	case 'p':
+	case 'P':
 	  am.m = April;
 	  return in;
 	case 'u':
+	case 'U':
 	  am.m = August;
 	  return in;
 	}
 	break;
+      case 's':
       case 'S':
 	am.m = September;
 	return in;
+      case 'o':
       case 'O':
 	am.m = October;
 	return in;
+      case 'n':
       case 'N':
 	am.m = November;
 	return in;
+      case 'd':
       case 'D':
 	am.m = December;
 	return in;
@@ -2144,37 +2583,46 @@ namespace std::chrono
 	// Just peek at one char at a time.
 	switch (in.peek())
 	{
+	case 'm':
 	case 'M':
 	  aw.wd = Monday;
 	  break;
+	case 't':
 	case 'T':
 	  in.ignore(1); // Discard the 'T'
 	  switch (in.peek())
 	  {
 	  case 'u':
+	  case 'U':
 	    aw.wd = Tuesday;
 	    break;
 	  case 'h':
+	  case 'H':
 	    aw.wd = Thursday;
 	    break;
 	  default:
 	    in.setstate(ios::failbit);
 	  }
 	  break;
+	case 'w':
 	case 'W':
 	  aw.wd = Wednesday;
 	  break;
+	case 'f':
 	case 'F':
 	  aw.wd = Friday;
 	  break;
+	case 's':
 	case 'S':
 	  in.ignore(1); // Discard the 'S'
 	  switch (in.peek())
 	  {
 	  case 'a':
+	  case 'A':
 	    aw.wd = Saturday;
 	    break;
 	  case 'u':
+	  case 'U':
 	    aw.wd = Sunday;
 	    break;
 	  default:
@@ -2187,7 +2635,7 @@ namespace std::chrono
 	in.ignore(1); // Discard whichever char we just looked at.
 
 	// Discard any remaining chars from weekday, e.g. "onday".
-	string_view day_chars = "ondayesritu";
+	string_view day_chars = "ondayesrituONDAYESRITU";
 	auto is_day_char = [&day_chars](int c) {
 	  return c != char_traits<char>::eof()
 		   && day_chars.find((char)c) != day_chars.npos;
@@ -2199,55 +2647,49 @@ namespace std::chrono
       }
     };
 
-    istream& operator>>(istream& in, on_day& to)
+    // Read the MONTH DAY. Three forms are accepted for DAY:
+    // * a plain day-of-month number (DayOfMonth),
+    // * "lastWww" where Www is a weekday name (LastWeekday),
+    // * "Www<=N" or "Www>=N" (LessEq / GreaterEq).
+    // On failure to read either MONTH or DAY this function sets
+    // failbit. If DAY is not parsed, only `on.month` is modified,
+    // otherwise `on` is left unchanged.
+    istream& operator>>(istream& in, on_month_day& on)
     {
-      on_day on{};
-      abbrev_month m{};
-      in >> m;
-      on.month = static_cast<unsigned>(m.m);
-      int c = ws(in).peek();
-      if ('0' <= c && c <= '9')
+      using enum on_month_day::Kind;
+      if (abbrev_month m{}; in >> m)
 	{
-	  on.kind = on_day::DayOfMonth;
-	  unsigned d;
-	  in >> d;
-	  if (d <= 31) [[likely]]
+ 	  on.month = static_cast<unsigned>(m.m);
+	  if (int c = ws(in).peek(); '0' <= c && c <= '9')
 	    {
-	      on.day_of_month = d;
-	      to = on;
-	      return in;
-	    }
-	}
-      else if (c == 'l') // lastSunday, lastWed, ...
-	{
-	  in.ignore(4);
-	  if (abbrev_weekday w{}; in >> w) [[likely]]
-	    {
-	      on.kind = on_day::LastWeekday;
-	      on.day_of_week = w.wd.c_encoding();
-	      to = on;
-	      return in;
-	    }
-	}
-      else
-	{
-	  abbrev_weekday w;
-	  in >> w;
-	  if (auto c = in.get(); c == '<' || c == '>')
-	    {
-	      if (in.get() == '=')
+	      if (unsigned d; (in >> d) && (d <= 31)) [[likely]]
 		{
-		  on.kind = c == '<' ? on_day::LessEq : on_day::GreaterEq;
+		  on.kind = DayOfMonth;
+		  on.day_of_month = d;
+		  return in;
+		}
+	    }
+	  else if (c == 'l' || c == 'L') // lastSunday, lastWed, ...
+	    {
+	      in.ignore(4);
+	      if (abbrev_weekday w{}; in >> w) [[likely]]
+		{
+		  on.kind = LastWeekday;
 		  on.day_of_week = w.wd.c_encoding();
-		  unsigned d;
-		  in >> d;
-		  if (d <= 31) [[likely]]
+		  return in;
+		}
+	    }
+	  else if (abbrev_weekday w; in >> w) [[likely]]
+	    {
+	      if (c = in.get(); c == '<' || c == '>')
+		if (in.get() == '=')
+		  if (unsigned d; (in >> d) && (d <= 31)) [[likely]]
 		    {
+		      on.kind = c == '<' ? LessEq : GreaterEq;
+		      on.day_of_week = w.wd.c_encoding();
 		      on.day_of_month = d;
-		      to = on;
 		      return in;
 		    }
-		}
 	    }
 	}
       in.setstate(ios::failbit);
@@ -2335,6 +2777,7 @@ namespace std::chrono
 	  if (rules == "-")
 	    {
 	      // Standard time always applies, no DST.
+	      inf.m_save = minutes(0);
 	    }
 	  else
 	    {
@@ -2356,26 +2799,32 @@ namespace std::chrono
       in.exceptions(ios::goodbit); // Don't throw ios::failure if YEAR absent.
       if (int y = int(year::max()); in >> y)
 	{
-	  abbrev_month m{January};
-	  int d = 1;
+	  on_month_day on{ .kind = on_month_day::DayOfMonth,
+			   .month = 1, .day_of_month = 1 };
 	  at_time t{};
-	  // XXX DAY should support ON format, e.g. lastSun or Sun>=8
-	  in >> m >> d >> t;
-	  inf.m_until = sys_days(year(y)/m.m/day(d)) + seconds(t.time);
+	  in >> on >> t;
+	  year_month_day ymd = on.pin(year(y));
+	  inf.m_until = sys_days(ymd) + seconds(t.time);
 	  if (t.indicator != at_time::Universal)
 	    { // UNTIL uses "the rules in effect just before the transition"
 	      // adjust by STDOFF
 	      inf.m_until -= seconds(inf.m_offset);
 	      if (t.indicator != at_time::Standard)
 		{
-		  if (inf.m_expanded) // Not a named Rule, SAVE is known now.
+		  if (inf.expanded()) // Not a named Rule, SAVE is known now.
 		    inf.m_until -= inf.m_save;
-		  // else Named Rule, SAVE is unknown. FIXME: PR 116110
+		  else // else Named Rule, SAVE is unknown, mark as pending
+		    inf.m_state = ZoneInfo::UntilPending;
 		}
 	    }
 	}
       else
-	inf.m_until = sys_days(year::max()/December/31);
+	{
+	  inf.m_until = sys_days(year::max()/December/31);
+	  // The line does not define UNTIL, so it is not affected by save
+	  if (!inf.expanded())
+	    inf.m_state = ZoneInfo::SaveKnown;
+	}
 
       in.clear(in.rdstate() & ios::eofbit);
       in.exceptions(ex);

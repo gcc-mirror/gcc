@@ -2523,6 +2523,15 @@ gfc_find_derived_vtab (gfc_symbol *derived)
       if (vtab == NULL && module_ns != ns)
 	gfc_find_symbol (name, module_ns, 0, &vtab);
 
+      /* Fix up a stale non-use-associated duplicate vtab.  */
+      if (vtab
+	  && (derived->attr.use_assoc || derived->attr.used_in_submodule)
+	  && !vtab->attr.use_assoc && !vtab->module)
+	{
+	  vtab->attr.use_assoc = 1;
+	  vtab->module = derived->module;
+	}
+
       if (vtab == NULL)
 	{
 	  gfc_get_symbol (name, ns, &vtab);
@@ -2860,6 +2869,19 @@ yes:
       gcc_assert (final->initializer
 		  && final->initializer->expr_type != EXPR_NULL);
       *final_expr = final->initializer;
+
+      /* Fix up a stale non-use-associated duplicate vtab.  */
+      if ((derived->attr.use_assoc || derived->attr.used_in_submodule)
+	  && (*final_expr)->expr_type == EXPR_VARIABLE
+	  && (*final_expr)->symtree)
+	{
+	  gfc_symbol *final_sym = (*final_expr)->symtree->n.sym;
+	  if (final_sym && !final_sym->attr.use_assoc && !final_sym->module)
+	    {
+	      final_sym->attr.use_assoc = 1;
+	      final_sym->module = derived->module;
+	    }
+	}
     }
   return true;
 }

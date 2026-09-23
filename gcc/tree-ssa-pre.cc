@@ -2140,22 +2140,38 @@ static void
 clean (bitmap_set_t set1, bitmap_set_t set2 = NULL)
 {
   vec<pre_expr> exprs = sorted_array_from_bitmap_set (set1, false);
-  pre_expr expr;
-  int i;
+  bool changed;
 
-  FOR_EACH_VEC_ELT (exprs, i, expr)
+  do
     {
-      if (!valid_in_sets (set1, set2, expr))
+      unsigned j = 0;
+      changed = false;
+      for (unsigned i = 0; i < exprs.length (); ++i)
 	{
-	  unsigned int val  = get_expr_value_id (expr);
-	  bitmap_clear_bit (&set1->expressions, get_expression_id (expr));
-	  /* We are entered with possibly multiple expressions for a value
-	     so before removing a value from the set see if there's an
-	     expression for it left.  */
-	  if (! bitmap_find_leader (set1, val))
-	    bitmap_clear_bit (&set1->values, val);
+	  pre_expr expr = exprs[i];
+	  if (!valid_in_sets (set1, set2, expr))
+	    {
+	      unsigned int val = get_expr_value_id (expr);
+	      bitmap_clear_bit (&set1->expressions, get_expression_id (expr));
+	      /* We are entered with possibly multiple expressions for a value
+		 so before removing a value from the set see if there's an
+		 expression for it left.  */
+	      if (! bitmap_find_leader (set1, val))
+		{
+		  bitmap_clear_bit (&set1->values, val);
+		  changed = true;
+		}
+	    }
+	  else
+	    {
+	      exprs[j] = expr;
+	      ++j;
+	    }
 	}
+      exprs.truncate (j);
     }
+  /* As the value graph can have cycles we have to iterate here.  */
+  while (changed);
   exprs.release ();
 
   if (flag_checking)

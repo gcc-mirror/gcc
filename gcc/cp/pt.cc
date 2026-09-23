@@ -223,6 +223,7 @@ static bool uses_outer_template_parms (tree);
 static tree alias_ctad_tweaks (tree, tree);
 static tree inherited_ctad_tweaks (tree, tree, tsubst_flags_t);
 static tree deduction_guides_for (tree, bool&, tsubst_flags_t);
+static void mark_template_arguments_used_1 (tree);
 
 /* Make the current scope suitable for access checking when we are
    processing T.  T can be FUNCTION_DECL for instantiated function
@@ -14376,33 +14377,40 @@ tsubst_pack_expansion (tree t, tree args, tsubst_flags_t complain,
       else if (DECL_DECOMPOSITION_P (parm_pack))
 	{
 	  orig_arg = retrieve_local_specialization (parm_pack);
-	expand_sb_pack:
-	  gcc_assert (DECL_DECOMPOSITION_P (orig_arg));
-	  if (TREE_TYPE (orig_arg) == error_mark_node)
-	    return error_mark_node;
-	  gcc_assert (DECL_HAS_VALUE_EXPR_P (orig_arg));
-	  arg_pack = DECL_VALUE_EXPR (orig_arg);
-	  if (TREE_CODE (arg_pack) != ARRAY_REF)
+	  if (DECL_DECOMPOSITION_P (orig_arg))
 	    {
-	      /* Structured binding packs when initializer is non-dependent
-		 should have their DECL_VALUE_EXPR set to a TREE_VEC.  See
-		 cp_finish_decomp comment above the packv variable for
-		 details.  */
-	      tree vec = make_tree_vec (TREE_VEC_LENGTH (arg_pack) - 2);
-	      if (TREE_VEC_LENGTH (vec))
-		memcpy (TREE_VEC_BEGIN (vec), &TREE_VEC_ELT (arg_pack, 2),
-			TREE_VEC_LENGTH (vec) * sizeof (tree));
-	      arg_pack = make_node (NONTYPE_ARGUMENT_PACK);
-	      ARGUMENT_PACK_ARGS (arg_pack) = vec;
+	    expand_sb_pack:
+	      if (TREE_TYPE (orig_arg) == error_mark_node)
+		return error_mark_node;
+	      gcc_assert (DECL_HAS_VALUE_EXPR_P (orig_arg));
+	      arg_pack = DECL_VALUE_EXPR (orig_arg);
+	      if (TREE_CODE (arg_pack) != ARRAY_REF)
+		{
+		  /* Structured binding packs when initializer is non-dependent
+		     should have their DECL_VALUE_EXPR set to a TREE_VEC.  See
+		     cp_finish_decomp comment above the packv variable for
+		     details.  */
+		  tree vec = make_tree_vec (TREE_VEC_LENGTH (arg_pack) - 2);
+		  if (TREE_VEC_LENGTH (vec))
+		    memcpy (TREE_VEC_BEGIN (vec), &TREE_VEC_ELT (arg_pack, 2),
+			    TREE_VEC_LENGTH (vec) * sizeof (tree));
+		  arg_pack = make_node (NONTYPE_ARGUMENT_PACK);
+		  ARGUMENT_PACK_ARGS (arg_pack) = vec;
+		}
+	      else
+		{
+		  /* If the structured binding pack has type dependent
+		     base, we can't expand it yet.  */
+		  tree base = TREE_OPERAND (arg_pack, 0);
+		  gcc_assert (VAR_P (base)
+			      && type_dependent_expression_p (base));
+		  arg_pack = NULL_TREE;
+		}
 	    }
 	  else
 	    {
-	      /* If the structured binding pack has type dependent
-		 base, we can't expand it yet.  */
-	      tree base = TREE_OPERAND (arg_pack, 0);
-	      gcc_assert (VAR_P (base)
-			  && type_dependent_expression_p (base));
-	      arg_pack = NULL_TREE;
+	      gcc_assert (TREE_CODE (orig_arg) == ARGUMENT_PACK_SELECT);
+	      arg_pack = orig_arg;
 	    }
 	}
       else
@@ -16141,11 +16149,26 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain,
 	    cp_apply_type_quals_to_decl (cp_type_quals (type), r);
 
 	    if (DECL_C_BIT_FIELD (r))
-	      /* For bit-fields, DECL_BIT_FIELD_REPRESENTATIVE gives the
-		 number of bits.  */
-	      DECL_BIT_FIELD_REPRESENTATIVE (r)
-		= tsubst_expr (DECL_BIT_FIELD_REPRESENTATIVE (t), args,
-			       complain, in_decl);
+	      {
+		/* For bit-fields, DECL_BIT_FIELD_REPRESENTATIVE gives the
+		   number of bits.  */
+		tree width
+		  = tsubst_expr (DECL_BIT_FIELD_REPRESENTATIVE (t), args,
+				 complain, in_decl);
+		if (width
+		    && width != error_mark_node
+		    && !type_dependent_expression_p (width)
+		    && !INTEGRAL_OR_UNSCOPED_ENUMERATION_TYPE_P
+			 (TREE_TYPE (width)))
+		  {
+		    if (complain & tf_error)
+		      error_at (DECL_SOURCE_LOCATION (t),
+		      		"width of bit-field %qD has non-integral "
+				"type %qT", r, TREE_TYPE (width));
+		    RETURN (error_mark_node);
+		  }
+		DECL_BIT_FIELD_REPRESENTATIVE (r) = width;
+	      }
 	    if (DECL_INITIAL (t))
 	      {
 		/* Set up DECL_TEMPLATE_INFO so that we can get at the
@@ -17062,7 +17085,34 @@ tsubst_splice_scope (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 static tree
 tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 {
-  tree op = tsubst_expr (TREE_OPERAND (t, 0), args, complain, in_decl);
+  tree template_id = NULL_TREE;
+  auto apply_template = [&](tree templ)
+    {
+      if (!template_id)
+	return templ;
+      template_id = copy_node (template_id);
+      tree ret = template_id;
+
+      /* follow the example of lookup_template_function, but for all
+	 templates.  */
+      if (BASELINK_P (templ))
+	{
+	  ret = copy_node (templ);
+	  BASELINK_FUNCTIONS (ret) = template_id;
+	  templ = BASELINK_FUNCTIONS (templ);
+	}
+      TREE_OPERAND (template_id, 0) = templ;
+      return ret;
+    };
+
+  if (TREE_CODE (t) == TEMPLATE_ID_EXPR)
+    {
+      template_id = t;
+      t = TREE_OPERAND (t, 0);
+    }
+
+  tree op = tsubst_expr (TREE_OPERAND (t, 0), args,
+			 (complain & ~tf_no_name_lookup), in_decl);
   if (op == error_mark_node)
     return error_mark_node;
   op = splice (op);
@@ -17080,8 +17130,12 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	SET_SPLICE_EXPR_TEMPLATE_P (op, true);
       if (SPLICE_EXPR_TARGS_P (t))
 	SET_SPLICE_EXPR_TARGS_P (op, true);
-      return op;
+      return apply_template (op);
     }
+
+  /* We have to form a template-id for checking too.  */
+  op = apply_template (op);
+
   if (SPLICE_EXPR_EXPRESSION_P (t)
       && !check_splice_expr (input_location, UNKNOWN_LOCATION, op,
 			     SPLICE_EXPR_ADDRESS_P (t),
@@ -17090,6 +17144,11 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			     SPLICE_EXPR_TARGS_P (t),
 			     (complain & tf_error)))
     return error_mark_node;
+
+  /* For the template-id case, we have to substitute only after checking, to
+     reject the case where the template part is a type.  */
+  if (template_id)
+    op = tsubst_expr (op, args, complain, in_decl);
 
   if (SPLICE_EXPR_ADDRESS_P (t))
     {
@@ -19922,7 +19981,15 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			if (tsubst_decomp_names (decl, pattern_decl, args,
 						 complain, in_decl, decomp)
 			    == error_mark_node)
-			  decomp = NULL;
+			  {
+			    decomp = NULL;
+			    /* As in cp_finish_decomp.  */
+			    if (TREE_STATIC (decl))
+			      {
+				tree id = get_identifier ("<decomp>");
+				SET_DECL_ASSEMBLER_NAME (decl, id);
+			      }
+			  }
 		      }
 
 		    init = tsubst_init (init, decl, args, complain, in_decl);
@@ -20090,9 +20157,12 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    TEMPLATE_FOR_INIT_STMT (stmt) = pop_stmt_list (init);
 	    add_stmt (stmt);
 	    TEMPLATE_FOR_BODY (stmt) = do_pushlevel (sk_block);
+	    auto save_in_expansion_stmt = in_expansion_stmt;
+	    in_expansion_stmt = true;
 	    bool prev = note_iteration_stmt_body_start ();
 	    RECUR (TEMPLATE_FOR_BODY (t));
 	    note_iteration_stmt_body_end (prev);
+	    in_expansion_stmt = save_in_expansion_stmt;
 	    TEMPLATE_FOR_BODY (stmt)
 	      = do_poplevel (TEMPLATE_FOR_BODY (stmt));
 	  }
@@ -21640,11 +21710,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	tree object;
 	tree templ = TREE_OPERAND (t, 0);
 	tree targs = TREE_OPERAND (t, 1);
+	tsubst_flags_t complain_lookup = complain | no_name_lookup_flag;
 
-	if (no_name_lookup_flag)
-	  templ = tsubst_name (templ, args, complain, in_decl);
-	else
-	  templ = tsubst_expr (templ, args, complain, in_decl);
+	if (TREE_CODE (templ) == SPLICE_EXPR)
+	  return tsubst_splice_expr (t, args, complain_lookup, in_decl);
+
+	templ = tsubst_expr (templ, args, complain_lookup, in_decl);
 
 	if (targs)
 	  targs = tsubst_template_args (targs, args, complain, in_decl);
@@ -23047,12 +23118,12 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (TYPE_P (operand_0))
 	  {
 	    operand_0 = tsubst (operand_0, args, complain, in_decl);
-	    RETURN (get_typeid (operand_0, complain));
+	    RETURN (get_typeid (operand_0, complain, TREE_TYPE (t)));
 	  }
 	else
 	  {
 	    operand_0 = RECUR (operand_0);
-	    RETURN (build_typeid (operand_0, complain));
+	    RETURN (build_typeid (operand_0, complain, TREE_TYPE (t)));
 	  }
       }
 
@@ -23306,7 +23377,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case TARGET_EXPR:
       /* TARGET_EXPR represents temporary objects and should not appear in
 	 templated trees.  */
-      gcc_unreachable ();
+      if (flag_checking)
+	gcc_unreachable ();
+      RETURN (t);
 
     case OFFSET_REF:
       {
@@ -23705,6 +23778,14 @@ mark_template_arguments_used (tree tmpl, tree args)
   /* We already marked outer arguments when specializing the context.  */
   args = INNERMOST_TEMPLATE_ARGS (args);
 
+  mark_template_arguments_used_1 (args);
+}
+
+/* Main recursive part of the above.  */
+
+static void
+mark_template_arguments_used_1 (tree args)
+{
   for (tree arg : tree_vec_range (args))
     {
       /* A (pointer/reference to) function or variable NTTP argument.  */
@@ -23745,6 +23826,8 @@ mark_template_arguments_used (tree tmpl, tree args)
 	  cp_walk_tree_without_duplicates (&DECL_INITIAL (arg),
 					   mark_used_r, nullptr);
 	}
+      else if (TREE_CODE (arg) == NONTYPE_ARGUMENT_PACK)
+	mark_template_arguments_used_1 (ARGUMENT_PACK_ARGS (arg));
     }
 }
 
@@ -25608,6 +25691,8 @@ resolve_nondeduced_context (tree orig_expr, tsubst_flags_t complain)
 	}
       if (good == 1)
 	{
+	  if (!mark_used (goodfn, complain) && !(complain & tf_error))
+	    return error_mark_node;
 	  expr = goodfn;
 	  if (baselink)
 	    expr = build_baselink (BASELINK_BINFO (baselink),
@@ -33803,6 +33888,7 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       DECL_NAME (decl) = NULL_TREE;
     }
 
+  tree stmt_list = push_stmt_list ();
   expansion_stmt_bc bc_data = { NULL_TREE, NULL_TREE, NULL, loc, false };
 
   for (unsigned HOST_WIDE_INT i = 0; i < n; ++i)
@@ -34002,7 +34088,19 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	}
     }
   if (bc_data.break_label)
-    add_stmt (build1 (LABEL_EXPR, void_type_node, bc_data.break_label));
+    {
+      /* If break; is seen, wrap all the expansion stmt bodies in
+	 a single artificial do ... while (0); statement, so that
+	 constant evaluation handles break; correctly.  */
+      tree do_stmt
+	= build_stmt (loc, DO_STMT, NULL_TREE, NULL_TREE, NULL_TREE);
+      DO_COND (do_stmt) = boolean_false_node;
+      DO_BODY (do_stmt) = pop_stmt_list (stmt_list);
+      add_stmt (do_stmt);
+      add_stmt (build1 (LABEL_EXPR, void_type_node, bc_data.break_label));
+    }
+  else
+    add_stmt (pop_stmt_list (stmt_list));
   if (args == NULL_TREE)
     {
       TREE_TYPE (range_decl) = error_mark_node;

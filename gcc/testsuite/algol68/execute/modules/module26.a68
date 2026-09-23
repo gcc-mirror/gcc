@@ -1,0 +1,15 @@
+{ The way union unraveling works in parser-modes, the union(Foo,Bar)
+  below triggers the emission of two entries with the same modes in
+  the resulting module interface. }
+
+module Module_26 =
+def
+    pub int public;
+    int private;
+    pub mode Baz = union(Foo,Bar);
+    pub mode Foo = union (int,bool,real);
+    mode Bar = union (int,bool);
+    mode Je = struct (int lele);
+
+    skip
+fed

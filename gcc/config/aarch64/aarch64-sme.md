@@ -1067,8 +1067,10 @@
 ;;      __arm_streaming __arm_out ("zt0");
 (define_insn "@aarch64_sme_write_zt<SVE_FULL:mode>"
   [(set (reg:V8DI ZT0_REGNUM)
-	(unspec_volatile:V8DI
-	  [(match_operand:SVE_FULL 0 "register_operand" "w")
+	(unspec:V8DI
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SVE_FULL 0 "register_operand" "w")
 	   (match_operand:DI       1 "const_int_operand")]
 	  UNSPEC_SME_WRITE))]
   "TARGET_SME_LUTv2 && TARGET_STREAMING"

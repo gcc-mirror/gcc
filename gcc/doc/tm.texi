@@ -10696,8 +10696,8 @@ mode or ``no mode'', depending on context.
 
 @deftypefn {Target Hook} void TARGET_MODE_EMIT (int @var{entity}, int @var{mode}, int @var{prev_mode}, HARD_REG_SET @var{regs_live})
 Generate one or more insns to set @var{entity} to @var{mode}.
-@var{hard_reg_live} is the set of hard registers live at the point where
-the insn(s) are to be inserted. @var{prev_moxde} indicates the mode
+@var{regs_live} is the set of hard registers live at the point where
+the insn(s) are to be inserted. @var{prev_mode} indicates the mode
 to switch from, or is the number of modes if the previous mode is not
 known.  Sets of a lower numbered entity will be emitted before
 sets of a higher numbered entity to a mode of the same or lower priority.

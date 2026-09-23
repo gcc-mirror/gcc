@@ -6,6 +6,7 @@
 #include <utility>
 #include <functional>
 #include <compare>
+#include <exception>
 #include <testsuite_hooks.h>
 
 struct Y;
@@ -20,11 +21,12 @@ struct X {
 
 struct Y {
   std::string s;
+  mutable bool copied_from = false;  // [PR126800]
   Y() = default;
   Y(Y&& y) : s(std::move(y.s)) { y.s.clear(); }
-  Y(const Y& y) = default;
+  Y(const Y& y) : s(y.s) { y.copied_from = true; }
   Y& operator=(Y&& y) { s = std::move(y.s); y.s.clear(); return *this; }
-  Y& operator=(const Y& y) = default;
+  Y& operator=(const Y& y) { s = y.s; y.copied_from = true; return *this; }
   Y(std::string_view sv) : s(sv) {}
   Y(int n) : s(std::string('a', n)) {}
   Y(const Y& a, const Y& b) : s(a.s + "1" + b.s) { }
@@ -36,7 +38,7 @@ struct Y {
 };
 
 X::X(Y&& y) : s(std::move(y.s)) { y.s.clear(); }
-X::X(const Y& y) : s(y.s) {}
+X::X(const Y& y) : s(y.s) { y.copied_from = true; }
 
 struct Hash {
   using is_transparent = void;
@@ -52,22 +54,33 @@ void test_op_bracket()
   std::unordered_map<X, Y, Hash, Equal> amap;
   amap.insert({{X{"abc"}, 1}, {X{"def"}, 2}, {X{"ghi"}, 3}});
 
-  Y x{"dei"}, y{"deh"}, z{"deg"};
-  amap[z] = 4;
+  Y z{"deg"};
+  amap[z] = Y{4};
   VERIFY(amap.size() == 4);
   VERIFY(z.s.size() == 3);  // not moved from.
+  VERIFY(z.copied_from);
+  VERIFY(amap[Y{"deg"}] == Y{4});
 
-  amap[std::move(z)] = 5;
+  Y zz{"deg"};
+  amap[std::move(zz)] = Y{5};
   VERIFY(amap.size() == 4);
-  VERIFY(z.s.size() == 3);  // not moved from.
+  VERIFY(zz.s.size() == 3);  // not moved from.
+  VERIFY(!zz.copied_from);
+  VERIFY(amap[Y{"deg"}] == Y{5});
 
-  VERIFY(amap[std::move(y)] == Y{});
+  Y y{"deh"};
+  amap[y] = Y{6};
   VERIFY(amap.size() == 5);
-  VERIFY(y.s.empty());      // moved from.
+  VERIFY(y.s.size() == 3);      // not moved from.
+  VERIFY(y.copied_from);
+  VERIFY(amap[Y{"deh"}] == Y{6});
 
-  amap[std::move(x)] = 7;
+  Y x{"dei"};
+  amap[std::move(x)] = Y{7};
   VERIFY(amap.size() == 6);
   VERIFY(x.s.empty());      // moved from
+  VERIFY(!x.copied_from);
+  VERIFY(amap[Y{"dei"}] == Y{7});
 }
 
 void test_at()
@@ -81,21 +94,24 @@ void test_at()
       VERIFY(2 == amap.at(x));
       VERIFY(amap.size() == 3);
       VERIFY(x.s.size() == 3);   // not moved from
+      VERIFY(!x.copied_from);
       VERIFY(4 == (amap.at(x) = 4));
       VERIFY(amap.size() == 3);
       VERIFY(x.s.size() == 3);   // not moved from
+      VERIFY(!x.copied_from);
     }
   catch(...) { VERIFY(false); }
 
   Y z{"deg"};
   try
   {
-    amap.at(z) = 4;
+    amap.at(z) = Y{1};
     VERIFY(false);  // Should have thrown.
   }
   catch (std::out_of_range&) { VERIFY(amap.size() == 3); }
   catch (...) { VERIFY(false); } // Wrong exception.
   VERIFY(z.s.size() == 3);   // not moved from
+  VERIFY(!z.copied_from);
 
   Y y{"deh"};
   auto const& amapr{amap};
@@ -108,6 +124,7 @@ void test_at()
   catch (...) { VERIFY(false); } // Wrong exception.
   VERIFY(amapr.size() == 3);
   VERIFY(y.s.size() == 3);  // not moved from
+  VERIFY(!y.copied_from);
 }
 
 void test_try_emplace()
@@ -117,10 +134,15 @@ void test_try_emplace()
 
   { // Fail, already there
     auto a = amap;
-    auto [it, res] = a.try_emplace(Y{"def"}, Y{"xyz"});
+    Y y{"def"}, z{"xyz"};
+    auto [it, res] = a.try_emplace(std::move(y), z);
     VERIFY(!res);
     VERIFY(a.size() == 3);
     VERIFY(a.at(Y{"def"}) == Y{2});
+    VERIFY(y.s.size() == 3); // not moved from
+    VERIFY(!y.copied_from);
+    VERIFY(z.s.size() == 3); // not moved from
+    VERIFY(!z.copied_from);
   }
   { // Fail, already there, move
     auto a = amap;
@@ -130,13 +152,16 @@ void test_try_emplace()
     VERIFY(a.size() == 3);
     VERIFY(a.at(Y{"def"}) == Y{2});
     VERIFY(y.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.size() == 3);  // not moved from
+    VERIFY(!z.copied_from);
   }
   { // Succeed, construct
     auto a = amap;
-    Y m("m"), n("n"), o("o"), p("p"), dek("dek");
+    Y m("m"), n("n"), o("o"), p("p");
     {
-      auto [it, res] = a.try_emplace(Y{"deg"}, m, n);
+      Y y{"deg"};
+      auto [it, res] = a.try_emplace(std::move(y), m, n);
       VERIFY(res);
       VERIFY(a.size() == 4);
       VERIFY(it->first == X{"deg"});
@@ -145,39 +170,47 @@ void test_try_emplace()
       VERIFY(n.s.size() == 1);
     }
     {
-      auto [it, res] = a.try_emplace(Y{"deh"}, m, std::move(n));
+      Y y{"deh"};
+      auto [it, res] = a.try_emplace(std::move(y), m, std::move(n));
       VERIFY(res);
       VERIFY(a.size() == 5);
       VERIFY(it->first == X{"deh"});
       VERIFY(it->second == Y{"m2n"});
       VERIFY(m.s.size() == 1);
       VERIFY(n.s.empty());
+      VERIFY(!y.copied_from);
     }
     {
-      auto [it, res] = a.try_emplace(Y{"dei"}, std::move(m), o);
+      Y y{"dei"};
+      auto [it, res] = a.try_emplace(std::move(y), std::move(m), o);
       VERIFY(res);
       VERIFY(a.size() == 6);
       VERIFY(it->first == X{"dei"});
       VERIFY(it->second == Y{"m3o"});
       VERIFY(m.s.empty());
       VERIFY(o.s.size() == 1);
+      VERIFY(!y.copied_from);
     }
     {
-      auto [it, res] = a.try_emplace(Y{"dej"}, std::move(o), std::move(p));
+      Y y{"dej"};
+      auto [it, res] = a.try_emplace(std::move(y), std::move(o), std::move(p));
       VERIFY(res);
       VERIFY(a.size() == 7);
       VERIFY(it->first == X{"dej"});
       VERIFY(it->second == Y{"o4p"});
       VERIFY(o.s.empty());
       VERIFY(p.s.empty());
+      VERIFY(!y.copied_from);
     }
     {
-      auto [it, res] = a.try_emplace(std::move(dek), Y("q"), Y("r"));
+      Y y{"dek"};
+      auto [it, res] = a.try_emplace(std::move(y), Y("q"), Y("r"));
       VERIFY(res);
       VERIFY(a.size() == 8);
-      VERIFY(dek.s.empty());
+      VERIFY(y.s.empty());
       VERIFY(it->first == X{"dek"});
       VERIFY(it->second == Y{"q4r"});
+      VERIFY(!y.copied_from);
     }
   }
   { // Succeed, move
@@ -190,16 +223,20 @@ void test_try_emplace()
     VERIFY(a.size() == 4);
     VERIFY(y.s.empty()); // moved from
     VERIFY(z.s.empty()); // moved from
+    VERIFY(!y.copied_from);
+    VERIFY(!z.copied_from);
   }
   { // Hinted, fail
     auto a = amap;
     Y y{"def"}, z{"xyz"};
-    auto it = a.try_emplace(a.begin(), std::move(y), std::move(z));
+    auto it = a.try_emplace(a.begin(), std::move(y), z);
     VERIFY(a.size() == 3);
     VERIFY(it->first == X{"def"});
     VERIFY(it->second == Y{2});
     VERIFY(y.s.size() == 3);  // not moved from
     VERIFY(z.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
+    VERIFY(!z.copied_from);
   }
   { // Hinted, fail, move
     auto a = amap;
@@ -210,48 +247,66 @@ void test_try_emplace()
     VERIFY(it->second == Y{2});
     VERIFY(y.s.size() == 3);  // not moved from
     VERIFY(z.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
+    VERIFY(!z.copied_from);
   }
   { // Hinted, succeed, construct
     auto a = amap;
-    Y m("m"), n("n"), o("o"), p("p"), dek("dek");
+    Y m("m"), n("n"), o("o"), p("p");
     {
-      auto it = a.try_emplace(a.begin(), Y{"deg"}, m, n);
+      Y y{"deg"};
+      auto it = a.try_emplace(a.begin(), y, m, n);
       VERIFY(a.size() == 4);
       VERIFY(it->first == X{"deg"});
       VERIFY(it->second == Y{"m1n"});
       VERIFY(m.s.size() == 1);
       VERIFY(n.s.size() == 1);
+      VERIFY(y.s.size() == 3);
+      VERIFY(y.copied_from);
     }
     {
-      auto it = a.try_emplace(a.begin(), Y{"deh"}, m, std::move(n));
+      Y y{"deh"};
+      auto it = a.try_emplace(a.begin(), y, m, std::move(n));
       VERIFY(a.size() == 5);
       VERIFY(it->first == X{"deh"});
       VERIFY(it->second == Y{"m2n"});
       VERIFY(m.s.size() == 1);
       VERIFY(n.s.empty());
+      VERIFY(y.s.size() == 3);
+      VERIFY(y.copied_from);
     }
     {
-      auto it = a.try_emplace(a.begin(), Y{"dei"}, std::move(m), o);
+      Y y{"dei"};
+      auto it = a.try_emplace(a.begin(), y, std::move(m), o);
       VERIFY(a.size() == 6);
       VERIFY(it->first == X{"dei"});
       VERIFY(it->second == Y{"m3o"});
       VERIFY(m.s.empty());
       VERIFY(o.s.size() == 1);
+      VERIFY(y.s.size() == 3);
+      VERIFY(y.copied_from);
     }
     {
-      auto it = a.try_emplace(a.begin(), Y{"dej"}, std::move(o), std::move(p));
+      Y y{"dej"};
+      auto it = a.try_emplace(a.begin(), y, std::move(o), std::move(p));
       VERIFY(a.size() == 7);
       VERIFY(it->first == X{"dej"});
       VERIFY(it->second == Y{"o4p"});
       VERIFY(o.s.empty());
       VERIFY(p.s.empty());
+      VERIFY(y.s.size() == 3);
+      VERIFY(y.copied_from);
     }
     {
-      auto it = a.try_emplace(a.begin(), std::move(dek), Y("q"), Y("r"));
+      Y y{"dek"};
+      auto it = a.try_emplace(a.begin(), std::move(y), Y("q"), Y("r"));
       VERIFY(a.size() == 8);
-      VERIFY(dek.s.empty());
+      VERIFY(y.s.empty());
       VERIFY(it->first == X{"dek"});
       VERIFY(it->second == Y{"q4r"});
+      VERIFY(it->second == Y{"q4r"});
+      VERIFY(y.s.empty()); // moved from
+      VERIFY(!y.copied_from);
     }
   }
   {  // Hinted, succeed, move
@@ -262,7 +317,9 @@ void test_try_emplace()
     VERIFY(it->second == Y{"xyz"});
     VERIFY(a.size() == 4);
     VERIFY(y.s.empty()); // moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.empty());  // moved from
+    VERIFY(!z.copied_from);
   }
 }
 
@@ -279,7 +336,9 @@ void test_insert_or_assign()
     VERIFY(a.size() == 3);
     VERIFY(a.at(Y{"def"}) == Y{"xyz"});
     VERIFY(y.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.size() == 3);  // not moved from
+    VERIFY(z.copied_from);
   }
   { // Already there, move
     auto a = amap;
@@ -289,7 +348,9 @@ void test_insert_or_assign()
     VERIFY(a.size() == 3);
     VERIFY(a.at(Y{"def"}) == Y{"xyz"});
     VERIFY(y.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.empty());      // moved from
+    VERIFY(!z.copied_from);
   }
   { // Succeed, move
     auto a = amap;
@@ -300,7 +361,9 @@ void test_insert_or_assign()
     VERIFY(it->second == Y{"xyz"});
     VERIFY(a.size() == 4);
     VERIFY(y.s.empty()); // moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.empty()); // moved from
+    VERIFY(!z.copied_from);
   }
   { // Hinted, already there, replace
     auto a = amap;
@@ -310,7 +373,9 @@ void test_insert_or_assign()
     VERIFY(it->first == X{"def"});
     VERIFY(it->second == Y{"xyz"});
     VERIFY(y.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.size() == 3);  // not moved from
+    VERIFY(z.copied_from);
   }
   { // Hinted, already there, move
     auto a = amap;
@@ -320,7 +385,9 @@ void test_insert_or_assign()
     VERIFY(it->first == X{"def"});
     VERIFY(it->second == Y{"xyz"});
     VERIFY(y.s.size() == 3);  // not moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.empty());      // moved from
+    VERIFY(!z.copied_from);
   }
   {  // Hinted, succeed
     auto a = amap;
@@ -330,7 +397,9 @@ void test_insert_or_assign()
     VERIFY(it->second == Y{"xyz"});
     VERIFY(a.size() == 4);
     VERIFY(y.s.size() == 3);  // not moved from
+    VERIFY(y.copied_from);
     VERIFY(z.s.size() == 3);  // not moved from
+    VERIFY(z.copied_from);
   }
   {  // Hinted, succeed, move
     auto a = amap;
@@ -340,7 +409,9 @@ void test_insert_or_assign()
     VERIFY(it->second == Y{"xyz"});
     VERIFY(a.size() == 4);
     VERIFY(y.s.empty());  // moved from
+    VERIFY(!y.copied_from);
     VERIFY(z.s.empty());  // moved from
+    VERIFY(!z.copied_from);
   }
 }
 

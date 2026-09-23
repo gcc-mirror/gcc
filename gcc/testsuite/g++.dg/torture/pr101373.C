@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-xfail-run-if "PR100409" { *-*-* } }
+// { dg-skip-if "PR126261" { can_deref_null } }
 
 int __attribute__((const,noipa)) foo (int j)
 {

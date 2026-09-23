@@ -142,41 +142,17 @@ is_mappable_routine (const char *z)
 
   /* Math routines.  */
   ACCEPT (z, "arccos");
-  ACCEPT (z, "arccosdg");
   ACCEPT (z, "arccot");
-  ACCEPT (z, "arccotdg");
   ACCEPT (z, "arcsin");
-  ACCEPT (z, "arcsindg");
   ACCEPT (z, "arctan");
-  ACCEPT (z, "arctandg");
-  ACCEPT (z, "beta");
-  ACCEPT (z, "betainc");
-  ACCEPT (z, "cbrt");
   ACCEPT (z, "cos");
-  ACCEPT (z, "cosdg");
-  ACCEPT (z, "cospi");
-  ACCEPT (z, "cot");
-  ACCEPT (z, "cot");
-  ACCEPT (z, "cotdg");
-  ACCEPT (z, "cotpi");
-  ACCEPT (z, "curt");
-  ACCEPT (z, "erf");
-  ACCEPT (z, "erfc");
   ACCEPT (z, "exp");
-  ACCEPT (z, "gamma");
-  ACCEPT (z, "gammainc");
-  ACCEPT (z, "gammaincg");
-  ACCEPT (z, "gammaincgf");
   ACCEPT (z, "ln");
   ACCEPT (z, "log");
   ACCEPT (z, "pi");
   ACCEPT (z, "sin");
-  ACCEPT (z, "sindg");
-  ACCEPT (z, "sinpi");
   ACCEPT (z, "sqrt");
   ACCEPT (z, "tan");
-  ACCEPT (z, "tandg");
-  ACCEPT (z, "tanpi");
   /* Random generator.  */
   ACCEPT (z, "nextrandom");
   ACCEPT (z, "random");
@@ -611,7 +587,7 @@ test_firmly_related_ops_local (NODE_T *p, TAG_T *s)
 			    }
 			}
 
-		      /* Report only one level of hidding or it gets messy.  */
+		      /* Report only one level of hiding or it gets messy.  */
 		      break;
 		    }
 		}
@@ -659,13 +635,29 @@ a68_collect_taxes (NODE_T *p)
   test_firmly_related_ops_local (NO_NODE, OPERATORS (A68_STANDENV));
 }
 
+/* Get a description text for attribute passed as the second argument to
+   already_declared and already-declared_hidden.  To be used in
+   diagnostics.  */
+
+static const char *
+attr_descr (int a)
+{
+  return (a == OP_SYMBOL ? "operator"
+	  : a == PRIO_SYMBOL ? "priority for operator"
+	  : a == INDICANT ? "mode indicant"
+	  : a == LABEL ? "label"
+	  : a == IDENTIFIER ? "identifier"
+	  : "tag");
+}
+
 /* Whether tag has already been declared in this range.  */
 
 static void
 already_declared (NODE_T *n, int a)
 {
   if (find_tag_local (TABLE (n), a, NSYMBOL (n)) != NO_TAG)
-    a68_error (n, "multiple declaration of tag %qs", NSYMBOL (n));
+    a68_error (n, "multiple declaration of %s %qs",
+	       attr_descr (a), NSYMBOL (n));
 }
 
 /* Whether tag has already been declared in this range.  */
@@ -674,7 +666,8 @@ static void
 already_declared_hidden (NODE_T *n, int a)
 {
   if (find_tag_local (TABLE (n), a, NSYMBOL (n)) != NO_TAG)
-    a68_error (n, "multiple declaration of tag %qs", NSYMBOL (n));
+    a68_error (n, "multiple declaration of %s %qs",
+	       attr_descr (a), NSYMBOL (n));
 
   TAG_T *s = a68_find_tag_global (PREVIOUS (TABLE (n)), a, NSYMBOL (n));
 
@@ -986,7 +979,7 @@ tax_variable_dec (NODE_T *p, int *q, MOID_T **m, bool e)
 	    HEAP (entry) = STATIC_SYMBOL;
 	  else
 	    HEAP (entry) = *q;
-	  
+
 	  if (HEAP (entry) == LOC_SYMBOL)
 	    {
 	      TAG_T *z = a68_add_tag (TABLE (p), ANONYMOUS, p, SUB (*m), GENERATOR);
@@ -1722,7 +1715,7 @@ a68_mark_auxilliary (NODE_T *p)
 
 	  if (TAX (p) != NO_TAG)
 	    USE (TAX (p)) = true;
-	  
+
 	  if ((z = a68_find_tag_global (TABLE (p), PRIO_SYMBOL, NSYMBOL (p))) != NO_TAG)
 	    USE (z) = true;
 	}

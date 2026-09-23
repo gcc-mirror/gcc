@@ -876,9 +876,9 @@ included, in this file you should guard declarations using these types
 inside appropriate @code{#ifdef RTX_CODE} or @code{#ifdef TREE_CODE}
 conditional code segments.
 
-If the backend uses shared data structures that require @code{GTY} markers 
+If the backend uses shared data structures that require @code{GTY} markers
 for garbage collection (@pxref{Type Information}), you must declare those
-in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.  
+in @file{@var{machine}.h} rather than @file{@var{machine}-protos.h}.
 Any definitions required for building libgcc must also go in
 @file{@var{machine}.h}.
 
@@ -1506,6 +1506,25 @@ By convention, keywords ending in @code{_nocache} can also include options
 specified for the particular test in an earlier @code{dg-options} or
 @code{dg-add-options} directive.
 
+@subsubsection Object file format
+
+This identifies the object file format emitted by the compiler. Matching
+assembler output often depends on content that differs between file formats.
+
+@table @code
+
+@item elf
+Target uses the ELF file format (note that ELFv2 is matched specifically for
+the powerpc platform, below).
+
+@item macho
+Target uses the Mach-O file format (currently applies only to Darwin / macOS).
+
+@item pe
+Target uses the PE/COFF file format (e.g. for Windows).
+
+@end table
+
 @subsubsection Endianness
 
 @table @code
@@ -2098,11 +2117,16 @@ options, including @code{-mfp16-format=ieee} if necessary to obtain the
 
 @item arm_neon_fp16_hw
 Test system supports executing Neon half-precision float instructions.
-(Implies previous.)
+(Implies @code{arm_neon_fp16_ok}.)
 
 @item arm_fp16_alternative_ok
 ARM target supports the ARM FP16 alternative format.  Some multilibs
 may be incompatible with the options needed.
+
+@item arm_fp16_alternative_hw
+Test system supports executing VFP half-precision floating-point
+instructions in the ARM FP16 alternative format.  (Implies
+@code{arm_fp16_alternative_ok}.)
 
 @item arm_fp16_none_ok
 ARM target supports specifying none as the ARM FP16 format.
@@ -2215,6 +2239,11 @@ incompatible with these options.
 ARM target supports options to generate instructions from ARMv8.1-M with
 the M-Profile Vector Extension (MVE). Some multilibs may be incompatible
 with these options.
+
+@item arm_v8_1m_mve_link
+ARM target supports linking programs using the options selected by
+@code{arm_v8_1m_mve_ok}. Some multilibs may be incompatible with these
+options.
 
 @item arm_v8_1m_mve_fp_ok
 ARM target supports options to generate instructions from ARMv8.1-M with
@@ -2717,6 +2746,10 @@ Target supports the execution of @code{amx-tf32} instructions.
 
 @item amx_fp8
 Target supports the execution of @code{amx-fp8} instructions.
+
+@item can_deref_null
+Target runtime permits dereferencing a null pointer without trapping, for
+example because address zero is mapped and readable.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -3391,6 +3424,12 @@ locally when using pic/PIC passes in the testsuite.
 Add the target-specific flags needed to use
 @code{check-function-bodies} from @code{dg-final}.
 
+These options are also added automatically by:
+
+@smallexample
+/* @{ dg-final @{ check-function-bodies @dots{} @} @dots{} @} */
+@end smallexample
+
 @item float@var{n}
 Add the target-specific flags needed to use the @code{_Float@var{n}} type.
 
@@ -3731,6 +3770,15 @@ A line containing just:
 
 stands for zero or more unmatched lines; the whitespace after
 @var{prefix} is again not significant.
+
+@code{check-function-bodies} automatically adds the same options as:
+
+@smallexample
+/* @{ dg-add-options check_function_bodies @} */
+@end smallexample
+
+For this reason, @code{check-function-bodies} must come after the final
+@code{dg-options} directive.
 
 @end table
 

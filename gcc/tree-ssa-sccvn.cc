@@ -1725,7 +1725,7 @@ contains_storage_order_barrier_p (vec<vn_reference_op_s> ops)
 /* Return true if OPS represent an access with reverse storage order.  */
 
 static bool
-reverse_storage_order_for_component_p (vec<vn_reference_op_s> ops)
+reverse_storage_order_for_component_p (const vec<vn_reference_op_s> &ops)
 {
   unsigned i = 0;
   if (ops[i].opcode == REALPART_EXPR || ops[i].opcode == IMAGPART_EXPR)
@@ -2078,8 +2078,9 @@ vn_walk_cb_data::push_partial_def (pd_data pd,
 	  pd.size -= o;
 	  pd.offset += o;
 	}
-      if (pd.size > maxsizei)
-	pd.size = maxsizei + ((pd.size - maxsizei) % BITS_PER_UNIT);
+      if (pd.size + pd.offset > offseti + maxsizei)
+	pd.size = maxsizei + ((pd.size + pd.offset - offseti - maxsizei)
+			      % BITS_PER_UNIT);
     }
 
   pd.offset -= offseti;
@@ -2569,8 +2570,12 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
       tree val = vn_lookup_simplify_result (res_op);
       /* ???  In weird cases we can end up with internal-fn calls,
 	 but this isn't expected so throw the result away.  See
-	 PR123040 for an example.  */
-      if (!val && insert && res_op->code.is_tree_code ())
+	 PR123040 for an example.  Likewise we can end up with
+	 &MEM[ptr_1 + CST] which would be a vn_reference (PR127000).  */
+      if (!val
+	  && insert
+	  && res_op->code.is_tree_code ()
+	  && (tree_code) res_op->code != ADDR_EXPR)
 	{
 	  gimple_seq stmts = NULL;
 	  result = maybe_push_res_to_seq (res_op, &stmts);
@@ -3772,6 +3777,17 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
       /* Now re-write REF to be based on the rhs of the assignment.  */
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
       copy_reference_ops_from_ref (rhs1, &rhs);
+
+      /* When none of the original operands survives the storage order of
+	 the translated reference is the one of the RHS of the copy.  The
+	 operands we folded into a constant offset above may well have
+	 specified a reverse storage order, which is a property of the
+	 component and not of its position, so it is not recoverable from
+	 that offset.  Punt unless both accesses are in natural order.  */
+      if (i < 0
+	  && (reverse_storage_order_for_component_p (vr->operands)
+	      || reverse_storage_order_for_component_p (rhs)))
+	return (void *)-1;
 
       /* Apply an extra offset to the inner MEM_REF of the RHS.  */
       bool force_no_tbaa = false;

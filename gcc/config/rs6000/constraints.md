@@ -99,6 +99,10 @@
   "@internal Like @code{b}, if @option{-mpowerpc64} is used; otherwise,
    @code{NO_REGS}.")
 
+(define_register_constraint "wD" "rs6000_constraints[RS6000_CONSTRAINT_wD]"
+  "@internal Floating point register @code{FPR} if TARGET_MMA is enabled.
+  1024 bit Dense math register @code{DMR} if TARGET_DMF is enabled.")
+
 ;; wB needs ISA 2.07 VUPKHSW
 (define_constraint "wB"
   "@internal Signed 5-bit constant integer that can be loaded into an

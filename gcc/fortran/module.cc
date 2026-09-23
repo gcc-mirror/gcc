@@ -6062,6 +6062,29 @@ read_module (void)
 				module_name, 0))
 	    continue;
 
+	  /* Skip re-importing a derived type already visible via host
+	     association from the same module.  Walk the symtree since
+	     using gfc_find_symbol can give a wrong error.  */
+	  if (!only_flag && !info->u.rsym.renamed
+		&& strcmp (name, module_name) != 0
+		&& gfc_current_ns->parent)
+	    {
+	      gfc_symbol *host_sym = NULL;
+	      for (gfc_namespace *pns = gfc_current_ns; pns; pns = pns->parent)
+		{
+		  gfc_symtree *host_st = gfc_find_symtree (pns->sym_root, name);
+		  if (host_st)
+		    {
+		      host_sym = host_st->n.sym;
+		      break;
+		    }
+		}
+	      if (host_sym && host_sym->attr.flavor == FL_DERIVED
+		  && host_sym->module
+		  && strcmp (host_sym->module, module_name) == 0)
+		continue;
+	    }
+
 	  st = gfc_find_symtree (gfc_current_ns->sym_root, p);
 
 	  if (st != NULL
@@ -6891,7 +6914,8 @@ write_symtree (gfc_symtree *st)
 	&& sym->ns->proc_name->attr.if_source == IFSRC_IFBODY)
     return;
 
-  if (!gfc_check_symbol_access (sym)
+  if ((!gfc_check_symbol_access (sym)
+       && (!sym->attr.public_used || submodule_name == NULL))
       || (sym->attr.flavor == FL_PROCEDURE && sym->attr.generic
 	  && !sym->attr.subroutine && !sym->attr.function))
     return;
@@ -7924,7 +7948,7 @@ gfc_use_module (gfc_use_list *module)
   only_flag = module->only_flag;
   current_intmod = INTMOD_NONE;
 
-  if (!only_flag)
+  if (!only_flag && gfc_state_stack->state != COMP_SUBMODULE)
     gfc_warning_now (OPT_Wuse_without_only,
 		     "USE statement at %C has no ONLY qualifier");
 

@@ -60,6 +60,8 @@ if !$skip_lto {
 # created, and thus fail.  Configuring the compiler --with-gnu-ld
 # fixes this.
 set gld [check_effective_target_gld]
+# Darwin's linker is not silent about missing -L values.
+set ld64 [istarget *-*-darwin*]
 
 # Prepare additional options to be used for linking.
 # We do not compile to an executable, because that requires naming an output.
@@ -185,7 +187,7 @@ proc outest { test sources opts dirs outputs } {
 	foreach og $olist {
 	    if { [string index $og 0] == "!" } {
 		global gspd ltop
-		global gld
+		global gld ld64
 		set cond [expr $og]
 		continue
 	    }
@@ -371,7 +373,12 @@ if !$skip_atsave {
 outest "$b-22 exe savetmp namedb-2" $sing "@$devnull -o $b.exe -save-temps" {} {{--0.i --0.s --0.o .args.0 !!$gld .ld1_args !0 .exe}}
 outest "$b-23 exe savetmp named2-2" $mult "@$devnull -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o .args.0 !!$gld .ld1_args !0 .exe}}
 outest "$b-24 exe savetmp named2-3" $mult "@$devnull -I dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!$gld .ld1_args !0 .exe}}
-outest "$b-25 exe savetmp named2-4" $mult "@$devnull -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
+  if $ld64 {
+    # Darwin's linker warns about missing args to -L.
+    outest "$b-25 exe savetmp named2-4" $mult "@$devnull -I dummy -L dummy -o $b.exe -save-temps -Wl,-w" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 !!0 .args.3 !!$gld .ld1_args !0 .exe}}
+  } else {
+    outest "$b-25 exe savetmp named2-4" $mult "@$devnull -I dummy -L dummy -o $b.exe -save-temps" {} {{--1.i --1.s --1.o --2.i --2.s --2.o -args.0 -args.1 .args.2 .args.3 !!$gld .ld1_args !0 .exe}}
+  }
 }
 
 # Setting the main output to a dir selects it as the default aux&dump

@@ -1,3 +1,27 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-10  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-07-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/126116
+	* io/io.h (struct gfc_unit): Add bool for tracking.
+	Fix some white space problems.
+	* io/unit.c (close_unit_1): Add a declaration for this
+	function so it can be called before it has been defined.
+	Use the new bool.
+	(is_internal_reserved): New helper function. Returns true
+	only if the unit is not null and the internal unit kind is zero
+	meaning its not a character string.
+	(find_unit): Use the new helper function
+	(find_or_create_unit): Use the new helper.
+	(get_unit): Set the new bool.
+	(close_unit): Update the close_unit_1 argument list.
+	(close_units): Likewise.
+
 2026-05-22  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:

@@ -3942,7 +3942,90 @@
   void __builtin_vsx_stxvp (v256, unsigned long, const v256 *);
     STXVP nothing {mma,pair}
 
-[future]
+[future-vsx]
+  const vus __builtin_vsx_xvmulhuh (vus, vus);
+    XVMULHUH umulv8hi3_highpart {}
+
+  const vss __builtin_vsx_xvmulhsh (vss, vss);
+    XVMULHSH smulv8hi3_highpart {}
+
+  const vuq __builtin_vsx_xxmulmul (vull, vull, const int<0,6>);
+    XXMULMUL vsx_xxmulmul {}
+
+  const vuq __builtin_vsx_xxmulmulhiadd (vuq, vull, vull, const int<1>, \
+                                          const int<1>, const int<1>);
+    XXMULMULHIADD vsx_xxmulmulhiadd {}
+
+  const vuq __builtin_vsx_xxmulmulloadd (vuq, vull, vull, const int<1>, \
+                                          const int<1>);
+    XXMULMULLOADD vsx_xxmulmulloadd {}
+
+  const vuq __builtin_vsx_xxssumudm (vuq, vull, vull, const int<1>);
+    XXSSUMUDM vsx_xxssumudm {}
+
+  const vuq __builtin_vsx_xxssumudmc (vuq, vull, vull, const int<1>);
+    XXSSUMUDMC vsx_xxssumudmc {}
+
+  const vuq __builtin_vsx_xxssumudmcext (vull, vull, vuq, const int<1>);
+    XXSSUMUDMCEXT vsx_xxssumudmcext {}
+
+  const vuq __builtin_vsx_xsaddadduqm (vuq, vuq, vuq);
+    XSADDADDUQM vsx_xsaddadduqm {}
+
+  const vuq __builtin_vsx_xsaddaddsuqm (vuq, vuq, vuq);
+    XSADDADDSUQM vsx_xsaddaddsuqm {}
+
+  const vuq __builtin_vsx_xsaddsubuqm (vuq, vuq, vuq);
+    XSADDSUBUQM vsx_xsaddsubuqm {}
+
+  const vuq __builtin_vsx_xsaddsubsuqm (vuq, vuq, vuq);
+    XSADDSUBSUQM vsx_xsaddsubsuqm {}
+
+  const vuq __builtin_vsx_xsmerge2t1uqm (vuq, vuq);
+    XSMERGE2T1UQM vsx_xsmerge2t1uqm {}
+
+  const vuq __builtin_vsx_xsmerge2t2uqm (vuq, vuq);
+    XSMERGE2T2UQM vsx_xsmerge2t2uqm {}
+
+  const vuq __builtin_vsx_xsmerge2t3uqm (vuq, vuq);
+    XSMERGE2T3UQM vsx_xsmerge2t3uqm {}
+
+  const vuq __builtin_vsx_xsmerge3t1uqm (vuq, vuq, vuq);
+    XSMERGE3T1UQM vsx_xsmerge3t1uqm {}
+
+  const vuq __builtin_vsx_xsrebase2t1uqm (vuq, vuq);
+    XSREBASE2T1UQM vsx_xsrebase2t1uqm {}
+
+  const vuq __builtin_vsx_xsrebase2t2uqm (vuq, vuq);
+    XSREBASE2T2UQM vsx_xsrebase2t2uqm {}
+
+  const vuq __builtin_vsx_xsrebase2t3uqm (vuq, vuq);
+    XSREBASE2T3UQM vsx_xsrebase2t3uqm {}
+
+  const vuq __builtin_vsx_xsrebase2t4uqm (vuq, vuq);
+    XSREBASE2T4UQM vsx_xsrebase2t4uqm {}
+
+  const vuq __builtin_vsx_xsrebase3t1uqm (vuq, vuq, vuq);
+    XSREBASE3T1UQM vsx_xsrebase3t1uqm {}
+
+  const vuq __builtin_vsx_xsrebase3t2uqm (vuq, vuq, vuq);
+    XSREBASE3T2UQM vsx_xsrebase3t2uqm {}
+
+  const vuq __builtin_vsx_xsrebase3t3uqm (vuq, vuq, vuq);
+    XSREBASE3T3UQM vsx_xsrebase3t3uqm {}
+
+  const vull __builtin_altivec_uncompresshh (vui, vuc);
+    VUCMPRHH altivec_vucmprhh {}
+
+  const vull __builtin_altivec_uncompresslh (vui, vuc);
+    VUCMPRLH altivec_vucmprlh {}
+
+  const vsc __builtin_altivec_unpack_hsn_to_byte (vull);
+    VUPKHSNTOB altivec_vupkhsntob {}
+
+  const vsc __builtin_altivec_unpack_lsn_to_byte (vull);
+    VUPKLSNTOB altivec_vupklsntob {}
+
   const v256 __builtin_aes_encrypt_paired (v256, v256, const int<2>);
     XXAESENCP xxaesencp {}
 
@@ -3988,9 +4071,245 @@
   const vuc __builtin_galois_field_mult_xts (vuc, vuc);
     XXGFMUL128XTS xxgfmul128xts {}
 
-[future-vsx]
-  const vus __builtin_vsx_xvmulhuh (vus, vus);
-    XVMULHUH umulv8hi3_highpart {}
+[future-altivec]
+  const vus __builtin_altivec_uncompresshn (vuc, vui);
+    VUCMPRHN altivec_vucmprhn {}
 
-  const vss __builtin_vsx_xvmulhsh (vss, vss);
-    XVMULHSH smulv8hi3_highpart {}
+  const vui __builtin_altivec_uncompresshb (vus, vus);
+    VUCMPRHB altivec_vucmprhb {}
+
+  const vus __builtin_altivec_uncompressln (vuc, vui);
+    VUCMPRLN altivec_vucmprln {}
+
+  const vui __builtin_altivec_uncompresslb (vus, vus);
+    VUCMPRLB altivec_vucmprlb {}
+
+  const vuc __builtin_altivec_unpack_int4_to_bf16 (vus, const int<2>);
+    VUPKINT4TOBF16 altivec_vupkint4tobf16 {}
+
+  const vuc __builtin_altivec_unpack_int8_to_bf16 (vus, const int<1>);
+    VUPKINT8TOBF16 altivec_vupkint8tobf16 {}
+
+  const vf __builtin_altivec_unpack_int4_to_fp32 (vui, const int<3>);
+    VUPKINT4TOFP32 altivec_vupkint4tofp32 {}
+
+  const vf __builtin_altivec_unpack_int8_to_fp32 (vui, const int<2>);
+    VUPKINT8TOFP32 altivec_vupkint8tofp32 {}
+
+[dm]
+  void __builtin_dmsetdmrz (dmr1024 *);
+    DMSETDMRZ nothing {dm,dmint}
+
+  dmr1024 __builtin_dmsetdmrz_internal ();
+    DMSETDMRZ_INTERNAL dmf_dmsetdmrz {dm}
+
+  void __builtin_dmmr (dmr1024 *, dmr1024 *);
+    DMMR nothing {dm,dmint}
+
+  dmr1024 __builtin_dmmr_internal (dmr1024);
+    DMMR_INTERNAL movtdo {dm}
+
+  void __builtin_dmxor (dmr1024 *, dmr1024 *);
+    DMXOR nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_dmxor_internal (dmr1024, dmr1024);
+    DMXOR_INTERNAL dmf_dmxor {dm}
+
+  void __builtin_build_dmr (dmr1024 *, vuc, vuc, vuc, vuc, vuc, vuc, vuc, vuc);
+    BUILD_DMR nothing {dm,dmint}
+
+  dmr1024 __builtin_build_dmr_internal (vuc, vuc, vuc, vuc, vuc, vuc, vuc, vuc);
+    BUILD_DMR_INTERNAL dmf_build_dmr {dm}
+
+  void __builtin_dmr_extract512 (void *, dmr1024 *, const int<2>);
+    DMF_EXTRACT512 nothing {dm,dmint}
+
+  v512 __builtin_dmr_extract512_internal (dmr1024, const int<2>);
+    DMF_EXTRACT512_INTERNAL dm_extract512 {dm}
+
+  void __builtin_disassemble_dmr (void *, dmr1024 *);
+    DISASSEMBLE_DMR nothing {dm}
+
+  void __builtin_mma_dmxvi8gerx4 (dmr1024 *, v256, vuc);
+    DMXVI8GERX4 nothing {dm,dmint}
+
+  dmr1024 __builtin_mma_dmxvi8gerx4_internal (v256, vuc);
+    DMXVI8GERX4_INTERNAL dmf_dmxvi8gerx4 {dm}
+
+  void __builtin_mma_dmxvi8gerx4pp (dmr1024 *, v256, vuc);
+    DMXVI8GERX4PP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvi8gerx4pp_internal (dmr1024, v256, vuc);
+    DMXVI8GERX4PP_INTERNAL dmf_dmxvi8gerx4pp {dm}
+
+  void __builtin_mma_dmxvi8gerx4spp (dmr1024 *, v256, vuc);
+    DMXVI8GERX4SPP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvi8gerx4spp_internal (dmr1024, v256, vuc);
+    DMXVI8GERX4SPP_INTERNAL dmf_dmxvi8gerx4spp {dm}
+
+  void __builtin_mma_pmdmxvi8gerx4 (dmr1024 *, v256, vuc, const int<8>, \
+                                   const int<4>, const int<4>);
+    PMDMXVI8GERX4 nothing {dm,pair,dmint}
+
+  dmr1024 __builtin_mma_pmdmxvi8gerx4_internal (v256, vuc, const int<8>, \
+                                              const int<4>, const int<4>);
+    PMDMXVI8GERX4_INTERNAL dmf_pmdmxvi8gerx4 {dm,pair}
+
+  void __builtin_mma_pmdmxvi8gerx4pp (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<4>);
+    PMDMXVI8GERX4PP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvi8gerx4pp_internal (dmr1024, v256, vuc, \
+                                                const int<8>, const int<4>, \
+                                                const int<4>);
+    PMDMXVI8GERX4PP_INTERNAL dmf_pmdmxvi8gerx4pp {dm,pair}
+
+  void __builtin_mma_pmdmxvi8gerx4spp (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<4>);
+    PMDMXVI8GERX4SPP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvi8gerx4spp_internal (dmr1024, v256, vuc, \
+                                                const int<8>, const int<4>, \
+                                                const int<4>);
+    PMDMXVI8GERX4SPP_INTERNAL dmf_pmdmxvi8gerx4spp {dm,pair}
+
+  void __builtin_mma_dmxvbf16gerx2 (dmr1024 *, v256, vuc);
+    DMXVBF16GERX2 nothing {dm,dmint}
+
+  dmr1024 __builtin_mma_dmxvbf16gerx2_internal (v256, vuc);
+    DMXVBF16GERX2_INTERNAL dmf_dmxvbf16gerx2 {dm}
+
+  void __builtin_mma_dmxvbf16gerx2pp (dmr1024 *, v256, vuc);
+    DMXVBF16GERX2PP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvbf16gerx2pp_internal (dmr1024, v256, vuc);
+    DMXVBF16GERX2PP_INTERNAL dmf_dmxvbf16gerx2pp {dm}
+
+  void __builtin_mma_dmxvbf16gerx2pn (dmr1024 *, v256, vuc);
+    DMXVBF16GERX2PN nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvbf16gerx2pn_internal (dmr1024, v256, vuc);
+    DMXVBF16GERX2PN_INTERNAL dmf_dmxvbf16gerx2pn {dm}
+
+  void __builtin_mma_dmxvbf16gerx2np (dmr1024 *, v256, vuc);
+    DMXVBF16GERX2NP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvbf16gerx2np_internal (dmr1024, v256, vuc);
+    DMXVBF16GERX2NP_INTERNAL dmf_dmxvbf16gerx2np {dm}
+
+  void __builtin_mma_dmxvbf16gerx2nn (dmr1024 *, v256, vuc);
+    DMXVBF16GERX2NN nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvbf16gerx2nn_internal (dmr1024, v256, vuc);
+    DMXVBF16GERX2NN_INTERNAL dmf_dmxvbf16gerx2nn {dm}
+
+  void __builtin_mma_pmdmxvbf16gerx2 (dmr1024 *, v256, vuc, const int<8>, \
+                                   const int<4>, const int<2>);
+    PMDMXVBF16GERX2 nothing {dm,pair,dmint}
+
+  dmr1024 __builtin_mma_pmdmxvbf16gerx2_internal (v256, vuc, const int<8>, \
+                                              const int<4>, const int<2>);
+    PMDMXVBF16GERX2_INTERNAL dmf_pmdmxvbf16gerx2 {dm,pair}
+
+  void __builtin_mma_pmdmxvbf16gerx2pp (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<2>);
+    PMDMXVBF16GERX2PP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvbf16gerx2pp_internal (dmr1024, v256, vuc, const int<8>, \
+                                                const int<4>, const int<2>);
+    PMDMXVBF16GERX2PP_INTERNAL dmf_pmdmxvbf16gerx2pp {dm,pair}
+
+  void __builtin_mma_pmdmxvbf16gerx2pn (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<2>);
+    PMDMXVBF16GERX2PN nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvbf16gerx2pn_internal (dmr1024, v256, vuc, const int<8>, \
+                                                const int<4>, const int<2>);
+    PMDMXVBF16GERX2PN_INTERNAL dmf_pmdmxvbf16gerx2pn {dm,pair}
+
+  void __builtin_mma_pmdmxvbf16gerx2np (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<2>);
+    PMDMXVBF16GERX2NP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvbf16gerx2np_internal (dmr1024, v256, vuc, const int<8>, \
+                                                const int<4>, const int<2>);
+    PMDMXVBF16GERX2NP_INTERNAL dmf_pmdmxvbf16gerx2np {dm,pair}
+
+  void __builtin_mma_pmdmxvbf16gerx2nn (dmr1024 *, v256, vuc, const int<8>, \
+                                     const int<4>, const int<2>);
+    PMDMXVBF16GERX2NN nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvbf16gerx2nn_internal (dmr1024, v256, vuc, const int<8>, \
+                                                const int<4>, const int<2>);
+    PMDMXVBF16GERX2NN_INTERNAL dmf_pmdmxvbf16gerx2nn {dm,pair}
+
+  void __builtin_mma_dmxvf16gerx2 (dmr1024 *, v256, vuc);
+    DMXVF16GERX2 nothing {dm,dmint}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2_internal (v256, vuc);
+    DMXVF16GERX2_INTERNAL dmf_dmxvf16gerx2 {dm}
+
+  void __builtin_mma_dmxvf16gerx2pp (dmr1024 *, v256, vuc);
+    DMXVF16GERX2PP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2pp_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2PP_INTERNAL dmf_dmxvf16gerx2pp {dm}
+
+  void __builtin_mma_dmxvf16gerx2pn (dmr1024 *, v256, vuc);
+    DMXVF16GERX2PN nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2pn_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2PN_INTERNAL dmf_dmxvf16gerx2pn {dm}
+
+  void __builtin_mma_dmxvf16gerx2np (dmr1024 *, v256, vuc);
+    DMXVF16GERX2NP nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2np_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2NP_INTERNAL dmf_dmxvf16gerx2np {dm}
+
+  void __builtin_mma_dmxvf16gerx2nn (dmr1024 *, v256, vuc);
+    DMXVF16GERX2NN nothing {dm,dmint,dmr}
+
+  dmr1024 __builtin_mma_dmxvf16gerx2nn_internal (dmr1024, v256, vuc);
+    DMXVF16GERX2NN_INTERNAL dmf_dmxvf16gerx2nn {dm}
+
+  void __builtin_mma_pmdmxvf16gerx2 (dmr1024 *, v256, vuc, const int<8>, \
+				    const int<4>, const int<2>);
+    PMDMXVF16GERX2 nothing {dm,pair,dmint}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2_internal (v256, vuc, const int<8>, \
+					       const int<4>, const int<2>);
+    PMDMXVF16GERX2_INTERNAL dmf_pmdmxvf16gerx2 {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2pp (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2PP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2pp_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2PP_INTERNAL dmf_pmdmxvf16gerx2pp {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2pn (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2PN nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2pn_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2PN_INTERNAL dmf_pmdmxvf16gerx2pn {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2np (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2NP nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2np_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2NP_INTERNAL dmf_pmdmxvf16gerx2np {dm,pair}
+
+  void __builtin_mma_pmdmxvf16gerx2nn (dmr1024 *, v256, vuc, const int<8>, \
+				      const int<4>, const int<2>);
+    PMDMXVF16GERX2NN nothing {dm,pair,dmint,dmr}
+
+  dmr1024 __builtin_mma_pmdmxvf16gerx2nn_internal (dmr1024, v256, vuc, const int<8>, \
+						 const int<4>, const int<2>);
+    PMDMXVF16GERX2NN_INTERNAL dmf_pmdmxvf16gerx2nn {dm,pair}

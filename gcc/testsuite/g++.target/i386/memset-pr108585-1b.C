@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=x86-64 -std=c++20 -mno-stackrealign -fomit-frame-pointer" } */
-/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
 
@@ -18,7 +17,7 @@
 **	movaps	%xmm0, 48\(%rsp\)
 **	movaps	%xmm0, 64\(%rsp\)
 **	movaps	%xmm0, 80\(%rsp\)
-**	call	_Z3fooPSt4byte
+**	call	_?_Z3fooPSt4byte
 **	addq	\$104, %rsp
 **	.cfi_def_cfa_offset 8
 **	ret

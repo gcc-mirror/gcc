@@ -1,3 +1,15 @@
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	Backported from master:
+	2026-06-10  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* simple-object-mach-o.c (MACH_O_MH_DYLIB): New definition.
+	(simple_object_mach_o_match): Accept dylibs as well as object files.
+
 2026-04-30  Release Manager
 
 	* GCC 16.1.0 released.

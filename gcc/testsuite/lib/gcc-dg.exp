@@ -122,6 +122,9 @@ proc dg-final { args } {
 	gdb-test {
 	    set code [linsert $code 1 $line]
 	}
+	check-function-bodies {
+	    uplevel 1 [list dg-add-options $line check_function_bodies]
+	}
     }
     append final-code "$code\n"
 }

@@ -5789,7 +5789,7 @@ partial_load_store_mask_state (gcall *call, tree vectype)
   if (len && poly_int_tree_p (len))
     {
       gcc_assert (TREE_CODE (bias) == INTEGER_CST);
-      wlen = wi::to_poly_widest (len) + wi::to_widest (bias);
+      wlen = wi::to_poly_widest (len) - wi::to_widest (bias);
 
       if (known_eq (wlen, 0))
 	return MASK_ALL_INACTIVE;

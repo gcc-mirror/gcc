@@ -1,3 +1,392 @@
+2026-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-09-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/127207
+	* module.cc (trees_out::decl_value): Relax checking assert
+	to accept IDENTIFIER_NODE as TI_TEMPLATE.
+	(get_originating_module_decl): Likewise.
+
+2026-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/123495
+	PR c++/126860
+	* cvt.cc (cp_get_fndecl_from_callee): Use fold_non_dependent_expr
+	instead of maybe_constant_init.
+
+2026-09-03  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	Backported from master:
+	2026-08-20  Odysseas Georgoudis  <odygrd@hotmail.com>
+		    Jason Merrill  <jason@redhat.com>
+
+	PR c++/124983
+	* search.cc (lookup_member): Skip access checks for declarations
+	from dependent scope.
+
+2026-08-30  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
+
+	Backported from master:
+	2026-08-29  Vincenzo Calabretta  <vincenzo.cal.main@gmail.com>
+
+	PR c++/127046
+	* constexpr.cc (unshare_constructor): Copy RANGE_EXPR indexes.
+
+2026-08-24  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-08-22  Jason Merrill  <jason@redhat.com>
+
+	PR c++/124888
+	* pt.cc (tsubst_expr): Pass type to {get,build}_typeid.
+	* rtti.cc (build_typeid, get_typeid): Take it.
+	(type_info_ptr_type): Remove.
+	(get_tinfo_ptr): Take tinfo_ptr_type instead of voidp.
+	(get_tinfo_ptr_dynamic): Likewise.
+	(get_void_tinfo_ptr): Pass const_ptr_type_node.
+	* cp-tree.h (build_typeid, get_typeid): Adjust.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-07-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126335
+	* typeck2.cc (split_nonconstant_init): Assert that DECL_INITIAL
+	is initially null.  Don't clear DECL_INITIAL if build_vec_init
+	set it.  Only clear TREE_READONLY if CODE has side-effects.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/124794
+	* cp-tree.h (baselink_for_fns): Adjust declaration.
+	* parser.cc (cp_parser_reflect_expression): Adjust the call to
+	baselink_for_fns.
+	* reflect.cc (splice): Call baselink_for_fns.
+	* semantics.cc (baselink_for_fns): Add a bool parameter.  If
+	it's true, ignore currently_open_derived_class.
+
+2026-08-20  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-08-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126546
+	* reflect.cc (get_reflection): Check PACK_INDEX_EXPR instead of
+	PACK_INDEX_P.
+
+2026-08-19  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-12  Patrick Palka  <ppalka@redhat.com>
+		    Bernhard M. Wiedemann  <bwiedemann@suse.de>
+
+	PR c++/124811
+	* decl.cc (typename_hasher::hash): Instead of pointer hashing,
+	hash TYPE_HASH of context and use iterative_hash_template_arg
+	to hash fullname.
+
+2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126918
+	* constexpr.cc (class constexpr_global_ctx): Extend description of
+	caught_exceptions vector.
+	(cxx_eval_cxa_builtin_fn): When catching a pointer-to-member and
+	the current exception is nullptr or pointer-to-member with different
+	type, create a temporary, initialize it from the exception value and
+	return address of it.  Make sure to free these temporaries at
+	__cxa_end_catch time.
+	* call.cc (handler_match_for_exception_type): Allow NULLPTR_TYPE
+	exception type or different pointer-to-member type even for
+	TYPE_PTRMEMFUNC_P types, not just TYPE_PTRDATAMEM_P types.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126867
+	* tree.cc (record_has_unique_obj_representations): Use
+	location_of (const_cast <tree> (t)) rather than
+	DECL_SOURCE_LOCATION (t).
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126752
+	* init.cc (build_vec_init): Assert TREE_PURPOSE of the
+	last *cleanup_flags element is rval rather than iterator.
+
+2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126093
+	* mangle.cc (write_reflection): Call write_unqualified_name on
+	STRIP_TEMPLATE (arg) rather than just arg.
+
+2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126483
+	* typeck2.cc (store_init_value): Check maybe_constexpr_fn
+	instead of DECL_DECLARED_CONSTEXPR_P of the function scope.
+
+2026-08-14  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126754
+	* pt.cc (tsubst_expr) <case TARGET_EXPR>: Only unreachable
+	when checking.
+
+2026-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-08-13  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126783
+	* module.cc (transfer_defining_module): Call retrofit_lang_decl
+	instead of assuming the old declaration already has
+	DECL_LANG_SPECIFIC allocated.
+
+2026-08-12  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	Backported from master:
+	2026-06-17  Wang Jinghao  <zheng.xianyuwang@gmail.com>
+
+	* reflect.cc (eval_is_explicit_object_parameter): Call
+	maybe_update_function_parm before checking the parameter
+	against DECL_ARGUMENTS.
+
+2026-08-12  feedable  <feedabl3@gmail.com>
+
+	Backported from master:
+	2026-06-03  feedable  <feedabl3@gmail.com>
+
+	PR c++/124794
+	PR c++/125069
+	* parser.cc (cp_parser_splice_specifier): Do not strip BASELINKs.
+	(cp_parser_splice_expression): Add parsing for member function
+	template specializations without the "template" keyword.
+	* pt.cc (tsubst_splice_expr): Handle TEMPLATE_ID_EXPR where the
+	template part is a SPLICE_EXPR.
+	(tsubst_expr): Defer to tsubst_splice_expr when the template part of
+	TEMPLATE_ID_EXPR is a SPLICE_EXPR.
+	* reflect.cc (check_splice_expr): Add handling for BASELINKs.
+
+2026-08-10  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-31  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR c++/124806
+	* module.cc (elf_out::began): New data member.
+	(elf_out::begin): Set it after successful initialization.
+	(elf_out::end): Do not finalize output that never began.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125541
+	* mangle.cc (write_reflection): Mangle empty anonymous union/struct
+	data members as "da" rather than "dm" and use index of such a data
+	member instead of name.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125680
+	* mangle.cc (write_reflection): For type aliases use maybe_write_module
+	and write_source_name instead of write_unqualified_name.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125601
+	* pt.cc (finish_expansion_stmt): If break; was seen in any of the
+	expansion stmt bodies, wrap all the bodies in an artificial
+	do ... while (0); stmt.
+
+2026-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125591
+	* pt.cc (tsubst_pack_expansion): Don't require
+	retrieve_local_specialization on structured binding to
+	always return structured binding, instead handle if it returns
+	ARGUMENT_PACK_SELECT.
+
+2026-08-07  Release Manager
+
+	* GCC 16.2.0 released.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126508
+	* constexpr.cc (cxx_eval_cxa_builtin_fn): Avoid caching
+	calls which rethrow or call __builtin_uncaught_exceptions
+	or __builtin_current_exception.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126420
+	PR c++/126423
+	* typeck.cc (check_return_expr): If in_expansion_stmt, goto
+	dependent before even setting current_function_returns_value.
+	* pt.cc (tsubst_stmt): Temporarily set in_expansion_stmt around
+	partial instantiation of expansion statement body.
+
+2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126343
+	* error.cc (dump_type) <case NULLPTR_TYPE>: Call
+	pp_c_type_qualifier_list.
+	(dump_type) <case META_TYPE>: Likewise.
+	(dump_expr) <case REFLECT_EXPR>: For REFLECT_EXPR on
+	non-typedef META_TYPE or NULLPTR_TYPE print
+	decltype(^^int) or decltype(nullptr).
+
+2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-31  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126406
+	PR c++/119343
+	* pt.cc (resolve_nondeduced_context): Revert r16-5967 change.
+
+2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-07-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126209
+	* module.cc (depset::hash::add_namespace_entities): Don't
+	force out anonymous namespaces.
+
+2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2026-07-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/126310
+	* call.cc (standard_conversion): Don't build a mixed METHOD_TYPE if
+	it isn't needed.
+
+2026-07-26  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2026-07-25  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/126280
+	* pt.cc (mark_template_arguments_used): Split out loop into ...
+	(mark_template_arguments_used_1): ... here. Recurse into
+	argument packs.
+
+2026-07-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126215
+	* constexpr.cc (replace_decl_r): Recompute the flags
+	unconditionally.
+
+2026-07-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	Backported from master:
+	2026-07-13  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR driver/124058
+	* decl.cc (maybe_prepare_return_this): Use OPT_Wuse_after_free_.
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126057
+	* decl.cc (cp_finish_decomp): Set assembler name to
+	<decomp> during error recovery whenever TREE_STATIC
+	rather than just DECL_NAMESPACE_SCOPE_P.
+	* pt.cc (tsubst_stmt): If tsubst_decomp_names fails,
+	set assembler name to <decomp>.
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-07-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126036
+	* reflect.cc (get_range_elts): Avoid calling finish_compound_literal
+	when processing_template_decl, instead set *non_constant_p and
+	return NULL_TREE.
+	(process_metafunction): Likewise.
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126007
+	* tree.cc (eligible_special_member_function_p): New function.
+	(implicit_lifetime_type_p): Use true instead of 1 in function comment.
+	Add some further comments.  Use eligible_special_member_function_p
+	instead of !DECL_DELETED_FN.
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-06-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125674
+	* pt.cc (tsubst_decl): Diagnose bit-field widths
+	with invalid type.
+
+2026-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-06-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91155
+	* decl.cc (cp_make_fname_decl): Use cpp_translate_string instead of
+	cpp_interpret_string, don't prefix name strname.text with " and suffix
+	with " and NUL.
+
+2026-07-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126066
+	* tree.cc (lvalue_kind) <case MODOP_EXPR>: Use
+	gcc_checking_assert instead of gcc_assert.
+
 2026-07-08  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

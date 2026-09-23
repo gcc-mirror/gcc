@@ -1,7 +1,9 @@
 /* { dg-do compile } */
-/* This is a duplicate of cmse-18.c, targetting arm_v8_1m_mve, to make sure
-   FPCXT is enabled.  */
-/* { dg-options "-mcmse -fdump-rtl-final -march=armv8.1-m.main+mve" } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_mve_ok } */
+/* This is a duplicate of cmse-18.c, targetting arm_v8_1m_main_mve, to make
+   sure FPCXT is enabled.  */
+/* { dg-options "-mcmse -fdump-rtl-final" } */
+/* { dg-add-options arm_arch_v8_1m_main_mve } */
 
 typedef void (*f)(int) __attribute__((cmse_nonsecure_call));
 

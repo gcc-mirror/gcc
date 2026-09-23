@@ -13305,13 +13305,19 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
        && !CLASS_DATA (expr2)->attr.class_pointer
        && !CLASS_DATA (expr2)->attr.allocatable);
 
+  /* What can be sent to trans_class_assignment includes all the obvious
+     candidates but scalar assignment of a class expression to a derived type
+     must be done using gfc_trans_scalar_assign; partly because it is simpler
+     and partly because some cases fail, eg. class assignment to derived_type
+     select type temporaries.  */
   is_poly_assign
     = (use_vptr_copy
        || ((lhs_attr.pointer || lhs_attr.allocatable) && !lhs_attr.dimension))
       && (expr1->ts.type == BT_CLASS || gfc_is_class_array_ref (expr1, NULL)
 	  || gfc_is_class_scalar_expr (expr1)
 	  || gfc_is_class_array_ref (expr2, NULL)
-	  || gfc_is_class_scalar_expr (expr2))
+	  || (gfc_is_class_scalar_expr (expr2)
+	      && !(expr1->ts.type == BT_DERIVED && !lhs_attr.dimension)))
       && lhs_attr.flavor != FL_PROCEDURE;
 
   assoc_assign = is_assoc_assign (expr1, expr2);
@@ -13662,6 +13668,11 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
   if (flag_coarray != GFC_FCOARRAY_NONE && expr1->ts.type == BT_CHARACTER
       && assoc_assign)
     tmp = gfc_trans_pointer_assignment (expr1, expr2);
+
+  /* The finalization above is all that is wanted: the structure copy is done
+     component by component in generate_component_assignments.  */
+  if (expr1->finalize_only)
+    tmp = build_empty_stmt (input_location);
 
   /* If nothing else works, do it the old fashioned way!  */
   if (tmp == NULL_TREE)

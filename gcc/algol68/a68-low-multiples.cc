@@ -64,7 +64,7 @@
    There is a triplet per dimension in the multiple.  The number of dimensions
    in a row mode is static and is determined at compile-time.
 
-   The infomation stored for each triplet is:
+   The information stored for each triplet is:
 
      lb%     is the lower bound of the dimension.
      ub%     is the upper bound of the dimension.
@@ -882,7 +882,7 @@ a68_multiple_single_bound_check (NODE_T *p, tree dim,
 
 /* Return a tree that checks whether the given DIM is a valid dimension/rank of
    a boundable object with dimension BOUNDABLE_DIM.  If the provided DIM is not
-   a valid dimention then a call to the run-time function ARRAYDIM is
+   a valid dimension then a call to the run-time function ARRAYDIM is
    performed.
 
    BOUNDABLE_DIM and DIM must be of type sizetype.  They are both one-based.

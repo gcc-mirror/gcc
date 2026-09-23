@@ -92,28 +92,19 @@ baz ()
   static_assert (s.a <43> == 43);
   static_assert (s.template [:members_of (^^A, uctx)[0]:] <44> == 44);
   static_assert (s.template [:members_of (^^A, uctx)[0]:] <45> == 45);
-#if 0
-  // TODO: This doesn't work yet.
   static_assert (s.template [:^^A::a:] <44> == 44);
   static_assert (s.template [:^^A::a:] <45> == 45);
-#endif
   constexpr T t;
   static_assert (t.a <42> == 142);
   static_assert (t.a <43> == 143);
   static_assert (t.template [:members_of (^^A, uctx)[0]:] <44> == 44);
   static_assert (t.template [:members_of (^^A, uctx)[0]:] <45> == 45);
-#if 0
-  // TODO: This doesn't work yet.
   static_assert (t.template [:^^A::a:] <44> == 44);
   static_assert (t.template [:^^A::a:] <45> == 45);
-#endif
   static_assert (t.template [:members_of (^^B, uctx)[0]:] <44> == 144);
   static_assert (t.template [:members_of (^^B, uctx)[0]:] <45> == 145);
-#if 0
-  // TODO: This doesn't work yet.
   static_assert (t.template [:^^B::a:] <44> == 144);
   static_assert (t.template [:^^B::a:] <45> == 145);
-#endif
 }
 
 template <typename A, typename B>
@@ -125,28 +116,19 @@ qux ()
   static_assert (s.template a <43> == 43);
   static_assert (s.template [:members_of (^^A, uctx)[0]:] <44> == 44);
   static_assert (s.template [:members_of (^^A, uctx)[0]:] <45> == 45);
-#if 0
-  // TODO: This doesn't work yet.
   static_assert (s.template [:^^A::a:] <44> == 44);
   static_assert (s.template [:^^A::a:] <45> == 45);
-#endif
   constexpr B t;
   static_assert (t.template a <42> == 142);
   static_assert (t.template a <43> == 143);
   static_assert (t.template [:members_of (^^A, uctx)[0]:] <44> == 44);
   static_assert (t.template [:members_of (^^A, uctx)[0]:] <45> == 45);
-#if 0
-  // TODO: This doesn't work yet.
   static_assert (t.template [:^^A::a:] <44> == 44);
   static_assert (t.template [:^^A::a:] <45> == 45);
-#endif
   static_assert (t.template [:members_of (^^B, uctx)[0]:] <44> == 144);
   static_assert (t.template [:members_of (^^B, uctx)[0]:] <45> == 145);
-#if 0
-  // TODO: This doesn't work yet.
   static_assert (t.template [:^^B::a:] <44> == 144);
   static_assert (t.template [:^^B::a:] <45> == 145);
-#endif
 }
 
 void

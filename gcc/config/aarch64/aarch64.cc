@@ -12204,7 +12204,8 @@ aarch64_start_call_args (cumulative_args_t ca_v)
     emit_insn (gen_aarch64_start_private_za_call ());
 
   /* If this is a call to a shared-ZA function that doesn't share ZT0,
-     save and restore ZT0 around the call.  */
+     save and restore ZT0 around the call.  If ZA is not shared, then the
+     save/restore is instead emitted by aarch64_mode_emit_local_sme_state.  */
   if (aarch64_cfun_has_state ("zt0")
       && (ca->isa_mode & AARCH64_ISA_MODE_ZA_ON)
       && ca->shared_zt0_flags == 0)
@@ -12562,11 +12563,13 @@ aarch64_select_cc_mode (RTX_CODE code, rtx x, rtx y)
 	      << (GET_MODE_BITSIZE (mode_x).to_constant () / 2))))
     return CC_ADCmode;
 
-  /* A test for signed overflow.  */
+  /* Tests for signed overflow.  */
   if ((mode_x == DImode || mode_x == TImode)
-      && code == NE
-      && code_x == PLUS
-      && GET_CODE (y) == SIGN_EXTEND)
+      && (code == NE || code == EQ)
+      && (code_x == PLUS || code_x == MINUS || code_x == NEG)
+      && GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+      && GET_CODE (y) == SIGN_EXTEND
+      && GET_CODE (XEXP (y, 0)) == code_x)
     return CC_Vmode;
 
   /* For everything else, return CCmode.  */
@@ -31984,7 +31987,8 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
       emit_insn (gen_aarch64_tpidr2_save ());
       emit_insn (gen_aarch64_clear_tpidr2 ());
       if (mode == aarch64_local_sme_state::ACTIVE_LIVE
-	  || mode == aarch64_local_sme_state::ACTIVE_DEAD)
+	  || mode == aarch64_local_sme_state::ACTIVE_DEAD
+	  || mode == aarch64_local_sme_state::INACTIVE_LOCAL)
 	{
 	  if (aarch64_cfun_has_state ("za"))
 	    emit_insn (gen_aarch64_initial_zero_za ());
@@ -32066,6 +32070,16 @@ aarch64_mode_emit_local_sme_state (aarch64_local_sme_state mode,
 
   if (mode == aarch64_local_sme_state::INACTIVE_LOCAL)
     {
+      if (prev_mode == aarch64_local_sme_state::INACTIVE_CALLER)
+	/* Enable ZA (if it wasn't already enabled on entry).  Enabling ZA has
+	   the side-effect of zeroing ZA.
+
+	   A functionally correct alternative would be to leave TPIDR2_EL0 null
+	   and zero the save buffer.  However, zeroing the save buffer would require
+	   more code and would optimize for the case in which a callee also
+	   initialises private ZA state (which should be a rare event).  */
+	emit_insn (gen_aarch64_smstart_za ());
+
       if (prev_mode == aarch64_local_sme_state::ACTIVE_LIVE
 	  || prev_mode == aarch64_local_sme_state::ACTIVE_DEAD
 	  || prev_mode == aarch64_local_sme_state::INACTIVE_CALLER)
@@ -32395,7 +32409,7 @@ aarch64_mode_confluence (int entity, int mode1, int mode2)
 }
 
 /* Implement TARGET_MODE_BACKPROP for an entity that either stays
-   NO throughput, or makes one transition from NO to YES.  */
+   NO throughout, or makes one transition from NO to YES.  */
 
 static aarch64_tristate_mode
 aarch64_one_shot_backprop (aarch64_tristate_mode mode1,

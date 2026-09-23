@@ -78,6 +78,7 @@ struct mach_o_header_64
 /* For filetype field in header.  */
 
 #define MACH_O_MH_OBJECT		0x01
+#define MACH_O_MH_DYLIB			0x06
 
 /* A Mach-O file is a list of load commands.  This is the header of a
    load command.  */
@@ -312,9 +313,9 @@ simple_object_mach_o_match (
   b = &buf[0];
 
   filetype = (*fetch_32) (b + offsetof (struct mach_o_header_32, filetype));
-  if (filetype != MACH_O_MH_OBJECT)
+  if (!(filetype == MACH_O_MH_OBJECT || filetype == MACH_O_MH_DYLIB))
     {
-      *errmsg = "Mach-O file is not object file";
+      *errmsg = "Mach-O file is neither object file nor dylib";
       *err = 0;
       return NULL;
     }

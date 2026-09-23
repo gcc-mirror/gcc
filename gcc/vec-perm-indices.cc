@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "rtx-vector-builder.h"
 
+
 /* Switch to a new permutation vector that selects between NINPUTS vector
    inputs that have NELTS_PER_INPUT elements each.  Take the elements of the
    new permutation vector from ELEMENTS, clamping each one to be in range.  */
@@ -38,10 +39,14 @@ along with GCC; see the file COPYING3.  If not see
 void
 vec_perm_indices::new_vector (const vec_perm_builder &elements,
 			      unsigned int ninputs,
+			      bool input0_bitwise_zero_p,
+			      bool input1_bitwise_zero_p,
 			      poly_uint64 nelts_per_input)
 {
   m_ninputs = ninputs;
   m_nelts_per_input = nelts_per_input;
+  m_input0_bitwise_zero_p = input0_bitwise_zero_p;
+  m_input1_bitwise_zero_p = input1_bitwise_zero_p;
   /* If the vector has a constant number of elements, expand the
      encoding and clamp each element.  E.g. { 0, 2, 4, ... } might
      wrap halfway if there is only one vector input, and we want
@@ -87,6 +92,8 @@ vec_perm_indices::new_expanded_vector (const vec_perm_indices &orig,
 				       unsigned int factor)
 {
   m_ninputs = orig.m_ninputs;
+  m_input0_bitwise_zero_p = orig.m_input0_bitwise_zero_p;
+  m_input1_bitwise_zero_p = orig.m_input1_bitwise_zero_p;
   m_nelts_per_input = orig.m_nelts_per_input * factor;
   m_encoding.new_vector (orig.m_encoding.full_nelts () * factor,
 			 orig.m_encoding.npatterns () * factor,
@@ -300,6 +307,24 @@ tree_to_vec_perm_builder (vec_perm_builder *builder, tree cst)
     builder->quick_push (tree_to_poly_int64 (VECTOR_CST_ENCODED_ELT (cst, i)));
   return true;
 }
+
+/* Try to read the contents of VECTOR_CST PERM_CST as a constant permutation
+   vector permuting OP0 and OP1.  Return true and populate INDICES on success,
+   otherwise return false without modifying INDICES.  */
+
+bool
+tree_to_vec_perm_indices (vec_perm_indices *indices, tree op0, tree op1,
+			  tree perm_cst)
+{
+  vec_perm_builder builder;
+  if (!tree_to_vec_perm_builder (&builder, perm_cst))
+    return false;
+  indices->new_vector (builder, op0 == op1 ? 1 : 2,
+		       initializer_zerop (op0), initializer_zerop (op1),
+		       TYPE_VECTOR_SUBPARTS (TREE_TYPE (op0)));
+  return true;
+}
+
 
 /* Return a VECTOR_CST of type TYPE for the permutation vector in INDICES.  */
 

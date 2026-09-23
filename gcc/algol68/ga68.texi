@@ -1519,7 +1519,7 @@ a b c d e f g h i j k l m n o p q r s t u v w x y z
 A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
 0 1 2 3 4 5 6 7 8 9
 space tab " # $ % & ' ( ) * + , - . / : ; < = >  @@ [ \ ]
-^ _ | @ ! ? ~ @{ @}
+^ _ | ! ? ~ @{ @}
 @end example
 
 Some of the characters above were considered unworthy by the original
@@ -2084,7 +2084,7 @@ values of these enquiries are also determined by the architecture and
 operating system targeted by the compiler.
 
 @deftypevr Constant @B{int} {int lengths}
-1 plus the number of extra lenghts of integers which are meaningful.
+1 plus the number of extra lengths of integers which are meaningful.
 @end deftypevr
 
 @deftypevr Constant @B{int} {int shorths}
@@ -2096,7 +2096,7 @@ The largest integral value.
 @end deftypevr
 
 @deftypevr Constant @B{int} {real lengths}
-1 plus the number of extra lenghts of real numbers which are
+1 plus the number of extra lengths of real numbers which are
 meaningful.
 @end deftypevr
 
@@ -2631,9 +2631,12 @@ to @code{b}.
 Monadic operator that yields the nearest integer to its operand.
 @end deftypefn
 
-@deftypefn Operator {} {@B{entier}} {= (@B{l} @B{real} a) @B{int}}
+@deftypefn Operator {} {@B{entier}} {= (@B{l} @B{real} a) @B{l} @B{int}}
 Monadic operator that yields the integer equal to @code{a}, or the
 next integer below (more negative than) @code{a}.
+
+Selecting the @option{gnu68} dialect provides the @B{floor}
+operator as a synonym for @B{entier}.  @xref{Extended real operators}.
 @end deftypefn
 
 @deftypefn Operator {} {@B{shorten}} {= (@B{long} @B{real} a) @B{real}}
@@ -2692,7 +2695,7 @@ to @code{b}.
 @subsection Conversions
 
 @deftypefn Operator {} {@B{ABS}} {= (@B{char} a) @B{int}}
-Monadic operator that yields an unique integer for each permissable
+Monadic operator that yields an unique integer for each permissible
 value of @code{@B{char}}.
 @end deftypefn
 
@@ -2970,6 +2973,7 @@ which is the default.
 * Extended rows operators::            Rows and associated operations.
 * Extended boolean operators::         Operations on boolean operands.
 * Extended bits operators::            Bits and associated operations.
+* Extended real operators::            Operations on real operands.
 * Extended math procedures::           Mathematical constants and functions.
 @end menu
 
@@ -3071,6 +3075,16 @@ Dyadic operator that tests whether the @code{n}th least significant
 bit in @code{@B{b}} is set, where @code{n} is zero based. If @code{n}
 is not in the range @code{0,L_bits_width)} then the operator yields
 @B{false}.
+@end deftypefn
+
+@node Extended real operators
+@section Extended real operators
+
+@deftypefn Operator {} {@B{floor}} {= (@B{l} @B{real} a) @B{l} @B{int}}
+Monadic operator that yields the integer equal to @code{a} rounded
+towards negative infinity.
+
+An alias for operator @B{entier}.  @xref{Real operators}.
 @end deftypefn
 
 @node Extended math procedures

@@ -580,7 +580,7 @@ a68_lower_divab3 (NODE_T *p, LOW_CTX_T ctx)
 /* UPB comes in two flavors.
 
    The unary operator returns the upper bound of the first dimension of the
-   operand multple.
+   operand multiple.
 
    The binary operator returns the upper bound of the given dimension of the
    operand multiple.  The dimension is one-based.  If the specified dimension
@@ -630,7 +630,7 @@ a68_lower_upb3 (NODE_T *p, LOW_CTX_T ctx)
 /* LWB comes in two flavors.
 
    The unary operator returns the lower bound of the first dimension of the
-   operand multple.
+   operand multiple.
 
    The binary operator returns the lower bound of the given dimension of the
    operand multiple.  The dimension is one-based.  If the specified dimension
@@ -681,7 +681,7 @@ a68_lower_lwb3 (NODE_T *p, LOW_CTX_T ctx)
 /* ELEMS comes in two flavors.
 
    The unary operator returns the number of elements in the first dimension of
-   the operand multple.
+   the operand multiple.
 
    DIM must be a size.
 

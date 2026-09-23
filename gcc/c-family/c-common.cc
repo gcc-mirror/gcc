@@ -7749,7 +7749,23 @@ sync_resolve_size (tree function, vec<tree, va_gc> *params, bool fetch,
     }
 
   if (size == 1 || size == 2 || size == 4 || size == 8 || size == 16)
-    return size;
+    {
+      /* For _BitInt with padding bits where the ABI mandates sign or
+	 zero extension into the padding bits, force a CAS loop so that
+	 the extension is properly performed.  */
+      if (fetch
+	  && BITINT_TYPE_P (type)
+	  && (TYPE_PRECISION (type)
+	      != GET_MODE_PRECISION (SCALAR_TYPE_MODE (type))))
+	{
+	  struct bitint_info info;
+	  bool ok = targetm.c.bitint_type_info (TYPE_PRECISION (type), &info);
+	  gcc_assert (ok);
+	  if (info.extended != bitint_ext_undef)
+	    return -1;
+	}
+      return size;
+    }
 
   if (fetch && !orig_format && TREE_CODE (type) == BITINT_TYPE)
     return -1;
@@ -8408,7 +8424,8 @@ resolve_overloaded_atomic_store (location_t loc, tree function,
 }
 
 /* Emit __atomic*fetch* on _BitInt which doesn't have a size of
-   1, 2, 4, 8 or 16 bytes using __atomic_compare_exchange loop.
+   1, 2, 4, 8 or 16 bytes (or if it has padding bits and they
+   need to be extended) using __atomic_compare_exchange loop.
    ORIG_CODE is the DECL_FUNCTION_CODE of ORIG_FUNCTION and
    ORIG_PARAMS arguments of the call.  */
 
@@ -8420,6 +8437,7 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
 {
   enum tree_code code = ERROR_MARK;
   bool return_old_p = false;
+  bool sync_p = false;
   switch (orig_code)
     {
     case BUILT_IN_ATOMIC_ADD_FETCH_N:
@@ -8462,13 +8480,65 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
       code = BIT_IOR_EXPR;
       return_old_p = true;
       break;
+    case BUILT_IN_SYNC_ADD_AND_FETCH_N:
+      code = PLUS_EXPR;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_SUB_AND_FETCH_N:
+      code = MINUS_EXPR;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_OR_AND_FETCH_N:
+      code = BIT_IOR_EXPR;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_AND_AND_FETCH_N:
+      code = BIT_AND_EXPR;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_XOR_AND_FETCH_N:
+      code = BIT_XOR_EXPR;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_NAND_AND_FETCH_N:
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_FETCH_AND_ADD_N:
+      code = PLUS_EXPR;
+      return_old_p = true;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_FETCH_AND_SUB_N:
+      code = MINUS_EXPR;
+      return_old_p = true;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_FETCH_AND_OR_N:
+      code = BIT_IOR_EXPR;
+      return_old_p = true;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_FETCH_AND_AND_N:
+      code = BIT_AND_EXPR;
+      return_old_p = true;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_FETCH_AND_XOR_N:
+      code = BIT_XOR_EXPR;
+      return_old_p = true;
+      sync_p = true;
+      break;
+    case BUILT_IN_SYNC_FETCH_AND_NAND_N:
+      return_old_p = true;
+      sync_p = true;
+      break;
     default:
       gcc_unreachable ();
     }
 
-  if (orig_params->length () != 3)
+  if (orig_params->length () != (sync_p ? 2 : 3))
     {
-      if (orig_params->length () < 3)
+      if (orig_params->length () < (sync_p ? 2 : 3))
 	error_at (loc, "too few arguments to function %qE", orig_function);
       else
 	error_at (loc, "too many arguments to function %qE", orig_function);
@@ -8483,12 +8553,14 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
 
   tree lhs_addr = (*orig_params)[0];
   tree val = convert (nonatomic_lhs_type, (*orig_params)[1]);
-  tree model = convert (integer_type_node, (*orig_params)[2]);
+  tree model
+    = sync_p ? NULL_TREE : convert (integer_type_node, (*orig_params)[2]);
   if (!c_dialect_cxx ())
     {
       lhs_addr = c_fully_fold (lhs_addr, false, NULL);
       val = c_fully_fold (val, false, NULL);
-      model = c_fully_fold (model, false, NULL);
+      if (model)
+	model = c_fully_fold (model, false, NULL);
     }
   if (TREE_SIDE_EFFECTS (lhs_addr))
     {
@@ -8504,7 +8576,7 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
 		    NULL_TREE);
       add_stmt (val);
     }
-  if (TREE_SIDE_EFFECTS (model))
+  if (model && TREE_SIDE_EFFECTS (model))
     {
       tree var = create_tmp_var_raw (integer_type_node);
       model = build4 (TARGET_EXPR, integer_type_node, var, model, NULL_TREE,
@@ -8521,6 +8593,8 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
   tree newval_addr = build_unary_op (loc, ADDR_EXPR, newval, false);
   TREE_ADDRESSABLE (newval) = 1;
   suppress_warning (newval);
+
+  tree retval = NULL_TREE;
 
   tree loop_decl = create_artificial_label (loc);
   tree loop_label = build1 (LABEL_EXPR, void_type_node, loop_decl);
@@ -8585,21 +8659,43 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
 
   /* if (__atomic_compare_exchange (addr, &old, &new, false, model, model))
        goto done;  */
-  fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_COMPARE_EXCHANGE);
-  params->quick_push (lhs_addr);
-  params->quick_push (old_addr);
-  params->quick_push (newval_addr);
-  params->quick_push (integer_zero_node);
-  params->quick_push (model);
-  if (tree_fits_uhwi_p (model)
-      && (tree_to_uhwi (model) == MEMMODEL_RELEASE
-	  || tree_to_uhwi (model) == MEMMODEL_ACQ_REL))
-    params->quick_push (build_int_cst (integer_type_node, MEMMODEL_RELAXED));
+  if (sync_p)
+    fndecl = builtin_decl_explicit (BUILT_IN_SYNC_VAL_COMPARE_AND_SWAP_N);
   else
-    params->quick_push (model);
+    fndecl = builtin_decl_explicit (BUILT_IN_ATOMIC_COMPARE_EXCHANGE);
+  params->quick_push (lhs_addr);
+  if (sync_p)
+    {
+      params->quick_push (old);
+      params->quick_push (newval);
+    }
+  else
+    {
+      params->quick_push (old_addr);
+      params->quick_push (newval_addr);
+      params->quick_push (integer_zero_node);
+      params->quick_push (model);
+      if (tree_fits_uhwi_p (model)
+	  && (tree_to_uhwi (model) == MEMMODEL_RELEASE
+	      || tree_to_uhwi (model) == MEMMODEL_ACQ_REL))
+	params->quick_push (build_int_cst (integer_type_node,
+					   MEMMODEL_RELAXED));
+      else
+	params->quick_push (model);
+    }
   func_call = resolve_overloaded_builtin (loc, fndecl, params);
   if (func_call == NULL_TREE)
     func_call = build_function_call_vec (loc, vNULL, fndecl, params, NULL);
+  if (sync_p)
+    {
+      if (return_old_p)
+	retval = create_tmp_var_raw (nonatomic_lhs_type);
+      else
+	retval = old;
+      func_call = build2 (MODIFY_EXPR, void_type_node, retval, func_call);
+      tree cmp = build2 (EQ_EXPR, boolean_type_node, retval, newval);
+      func_call = build2 (COMPOUND_EXPR, boolean_type_node, func_call, cmp);
+    }
 
   tree goto_stmt = build1 (GOTO_EXPR, void_type_node, done_decl);
   SET_EXPR_LOCATION (goto_stmt, loc);
@@ -8608,6 +8704,12 @@ atomic_bitint_fetch_using_cas_loop (location_t loc,
     = build3 (COND_EXPR, void_type_node, func_call, goto_stmt, NULL_TREE);
   SET_EXPR_LOCATION (stmt, loc);
   add_stmt (stmt);
+
+  if (sync_p && return_old_p)
+    {
+      stmt = build2_loc (loc, MODIFY_EXPR, void_type_node, old, retval);
+      add_stmt (stmt);
+    }
 
   /* goto loop;  */
   goto_stmt = build1 (GOTO_EXPR, void_type_node, loop_decl);
