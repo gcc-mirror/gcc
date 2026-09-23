@@ -2665,6 +2665,8 @@ is_within_lifetime (location_t loc, const constexpr_ctx *ctx, tree t, tree fun,
 	      }
 	    else if (val == val_uninit)
 	      return boolean_false_node;
+	    else if (val == error_mark_node)
+	      return val;
 	    else
 	      {
 		gcc_assert (TREE_CODE (val) == CONSTRUCTOR);
@@ -2693,6 +2695,8 @@ is_within_lifetime (location_t loc, const constexpr_ctx *ctx, tree t, tree fun,
 	  }
 	if (val == val_zero_init || val == val_uninit)
 	  continue;
+	if (val == error_mark_node)
+	  return val;
 	gcc_assert (TREE_CODE (val) == CONSTRUCTOR);
 	unsigned int j;
 	tree field, value;
@@ -2726,6 +2730,8 @@ is_within_lifetime (location_t loc, const constexpr_ctx *ctx, tree t, tree fun,
 	  return t;
 	if (val == val_zero_init || val == val_uninit)
 	  continue;
+	if (val == error_mark_node)
+	  return val;
 	if (TREE_CODE (val) == STRING_CST)
 	  return boolean_true_node;
 	gcc_assert (TREE_CODE (val) == CONSTRUCTOR);
