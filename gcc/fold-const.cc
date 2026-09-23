@@ -1948,22 +1948,14 @@ const_unop (enum tree_code code, tree type, tree arg0)
     case VEC_UNPACK_FIX_TRUNC_LO_EXPR:
     case VEC_UNPACK_FIX_TRUNC_HI_EXPR:
       {
-	unsigned HOST_WIDE_INT out_nelts, in_nelts, i;
+	poly_uint64 out_nelts = TYPE_VECTOR_SUBPARTS (type);
+	unsigned HOST_WIDE_INT npatterns, nelts_per_pattern, i, offset = 0;
 	enum tree_code subcode;
 
 	if (TREE_CODE (arg0) != VECTOR_CST)
 	  return NULL_TREE;
 
-	if (!VECTOR_CST_NELTS (arg0).is_constant (&in_nelts))
-	  return NULL_TREE;
-	out_nelts = in_nelts / 2;
-	gcc_assert (known_eq (out_nelts, TYPE_VECTOR_SUBPARTS (type)));
-
-	unsigned int offset = 0;
-	if ((!BYTES_BIG_ENDIAN) ^ (code == VEC_UNPACK_LO_EXPR
-				   || code == VEC_UNPACK_FLOAT_LO_EXPR
-				   || code == VEC_UNPACK_FIX_TRUNC_LO_EXPR))
-	  offset = out_nelts;
+	gcc_assert (known_eq (VECTOR_CST_NELTS (arg0), out_nelts * 2));
 
 	if (code == VEC_UNPACK_LO_EXPR || code == VEC_UNPACK_HI_EXPR)
 	  subcode = NOP_EXPR;
@@ -1973,8 +1965,40 @@ const_unop (enum tree_code code, tree type, tree arg0)
 	else
 	  subcode = FIX_TRUNC_EXPR;
 
-	tree_vector_builder elts (type, out_nelts, 1);
-	for (i = 0; i < out_nelts; i++)
+	bool low_p = (code == VEC_UNPACK_LO_EXPR
+		      || code == VEC_UNPACK_FLOAT_LO_EXPR
+		      || code == VEC_UNPACK_FIX_TRUNC_LO_EXPR);
+
+	npatterns = VECTOR_CST_NPATTERNS (arg0);
+	nelts_per_pattern = VECTOR_CST_NELTS_PER_PATTERN (arg0);
+	if (nelts_per_pattern <= 2 && multiple_p (out_nelts, npatterns))
+	  /* The input is:
+
+		{ a1,...,an,b1,...,bn,b1,...,bn,b1,...,bn,... }
+
+	     where N == NPATTERNS and where ai == bi for NELTS_PER_PATTERN == 1
+	     but not necessarily for NELTS_PER_PATTERN == 2.
+
+	     When unpacking the first half, the shape of the output is the same
+	     as the input.  That shape would also work for the second half,
+	     but setting the output nelts_per_patterns to 1 is always enough
+	     in that case (since the output always starts on b1).  */
+	  ;
+	else
+	  {
+	    if (!out_nelts.is_constant (&npatterns))
+	      return NULL_TREE;
+	    nelts_per_pattern = 1;
+	  }
+
+	if ((!BYTES_BIG_ENDIAN) ^ low_p)
+	  {
+	    offset = npatterns;
+	    nelts_per_pattern = 1;
+	  }
+
+	tree_vector_builder elts (type, npatterns, nelts_per_pattern);
+	for (i = 0; i < npatterns * nelts_per_pattern; i++)
 	  {
 	    tree elt = fold_convert_const (subcode, TREE_TYPE (type),
 					   VECTOR_CST_ELT (arg0, i + offset));
@@ -17752,6 +17776,175 @@ test_vec_duplicate_folding ()
   ASSERT_TRUE (operand_equal_p (dup5_expr, dup5_cst, 0));
 }
 
+/* Verify folding of VEC_UNPACK_{LO,HI}_EXPRs.  */
+
+static void
+test_vec_unpack_folding ()
+{
+  machine_mode vmode;
+  FOR_EACH_MODE_IN_CLASS (vmode, MODE_VECTOR_INT)
+    {
+      poly_uint64 in_nelts = GET_MODE_NUNITS (vmode);
+      if (!test_fold_vec_perm_cst::is_simple_vla_size (in_nelts)
+	  || in_nelts.coeffs[0] < 2
+	  || !targetm.vector_mode_supported_p (vmode))
+	continue;
+
+      unsigned int in_bits = GET_MODE_UNIT_BITSIZE (vmode);
+      if (in_bits >= HOST_BITS_PER_WIDE_INT)
+	continue;
+
+      unsigned int min_out_nelts = in_nelts.coeffs[0] / 2;
+      tree in_inner_type = lang_hooks.types.type_for_mode
+	(GET_MODE_INNER (vmode), 1);
+      tree out_inner_type = build_nonstandard_integer_type (in_bits * 2, 1);
+      tree in_type = build_vector_type_for_mode (in_inner_type, vmode);
+      poly_uint64 out_nelts = exact_div (in_nelts, 2);
+      tree out_type = build_vector_type (out_inner_type, out_nelts);
+
+      tree_vector_builder builder (in_type, in_nelts.coeffs[0], 2);
+      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+	builder.quick_push (build_int_cst (in_inner_type, i + 1));
+      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+	builder.quick_push (build_int_cst (in_inner_type,
+					   i < min_out_nelts ? 100 + i : 77));
+      tree arg = builder.build ();
+
+      /* Check integer unpacking with a duplicated scalable high half.  */
+      tree lo = const_unop (VEC_UNPACK_LO_EXPR, out_type, arg);
+      ASSERT_TRUE (lo != NULL_TREE);
+      tree hi = const_unop (VEC_UNPACK_HI_EXPR, out_type, arg);
+      ASSERT_TRUE (hi != NULL_TREE);
+
+      tree prefix = (!BYTES_BIG_ENDIAN ? lo : hi);
+      tree dup = (!BYTES_BIG_ENDIAN ? hi : lo);
+
+      ASSERT_EQ (VECTOR_CST, TREE_CODE (prefix));
+      ASSERT_EQ (VECTOR_CST, TREE_CODE (dup));
+      ASSERT_KNOWN_EQ (TYPE_VECTOR_SUBPARTS (out_type),
+		       VECTOR_CST_NELTS (prefix));
+      ASSERT_KNOWN_EQ (TYPE_VECTOR_SUBPARTS (out_type),
+		       VECTOR_CST_NELTS (dup));
+      ASSERT_EQ (min_out_nelts, VECTOR_CST_NPATTERNS (prefix));
+      ASSERT_EQ (2, VECTOR_CST_NELTS_PER_PATTERN (prefix));
+      ASSERT_EQ (1, VECTOR_CST_NPATTERNS (dup));
+      ASSERT_EQ (1, VECTOR_CST_NELTS_PER_PATTERN (dup));
+
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
+	{
+	  tree elt = build_int_cst (out_inner_type, i + 1);
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (prefix, i),
+					elt, 0));
+	  tree fill = build_int_cst (out_inner_type, 77);
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT
+					  (prefix, min_out_nelts + i),
+					fill, 0));
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (dup, i),
+					fill, 0));
+	}
+
+      /* Check int-to-float unpacking with the same scalable shape.  */
+      tree float_out_type = build_vector_type (float_type_node, out_nelts);
+      tree float_lo = const_unop (VEC_UNPACK_FLOAT_LO_EXPR, float_out_type,
+				  arg);
+      ASSERT_TRUE (float_lo != NULL_TREE);
+      tree float_hi = const_unop (VEC_UNPACK_FLOAT_HI_EXPR, float_out_type,
+				  arg);
+      ASSERT_TRUE (float_hi != NULL_TREE);
+
+      tree float_prefix = (!BYTES_BIG_ENDIAN ? float_lo : float_hi);
+      tree float_dup = (!BYTES_BIG_ENDIAN ? float_hi : float_lo);
+      ASSERT_EQ (VECTOR_CST, TREE_CODE (float_prefix));
+      ASSERT_EQ (VECTOR_CST, TREE_CODE (float_dup));
+      ASSERT_EQ (min_out_nelts, VECTOR_CST_NPATTERNS (float_prefix));
+      ASSERT_EQ (2, VECTOR_CST_NELTS_PER_PATTERN (float_prefix));
+      ASSERT_EQ (1, VECTOR_CST_NPATTERNS (float_dup));
+      ASSERT_EQ (1, VECTOR_CST_NELTS_PER_PATTERN (float_dup));
+
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
+	{
+	  tree elt = fold_convert_const (FLOAT_EXPR, float_type_node,
+					 build_int_cst (in_inner_type, i + 1));
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (float_prefix, i),
+					elt, 0));
+	  tree fill = fold_convert_const (FLOAT_EXPR, float_type_node,
+					  build_int_cst (in_inner_type, 77));
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT
+					  (float_prefix, min_out_nelts + i),
+					fill, 0));
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (float_dup, i),
+					fill, 0));
+	}
+
+      /* Check float-to-int unpacking with the same scalable shape.  */
+      tree float_in_type = build_vector_type (float_type_node, in_nelts);
+      tree_vector_builder fix_builder (float_in_type, in_nelts.coeffs[0], 2);
+      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+	fix_builder.quick_push
+	  (build_real_from_int_cst (float_type_node,
+				    build_int_cst (integer_type_node, i + 1)));
+      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+	fix_builder.quick_push
+	  (build_real_from_int_cst (float_type_node,
+				    build_int_cst (integer_type_node,
+						   i < min_out_nelts
+						   ? 100 + i : 77)));
+      tree fix_arg = fix_builder.build ();
+      tree fix_out_type = build_vector_type (integer_type_node, out_nelts);
+      tree fix_lo = const_unop (VEC_UNPACK_FIX_TRUNC_LO_EXPR, fix_out_type,
+				fix_arg);
+      ASSERT_TRUE (fix_lo != NULL_TREE);
+      tree fix_hi = const_unop (VEC_UNPACK_FIX_TRUNC_HI_EXPR, fix_out_type,
+				fix_arg);
+      ASSERT_TRUE (fix_hi != NULL_TREE);
+
+      tree fix_prefix = (!BYTES_BIG_ENDIAN ? fix_lo : fix_hi);
+      tree fix_dup = (!BYTES_BIG_ENDIAN ? fix_hi : fix_lo);
+      ASSERT_EQ (VECTOR_CST, TREE_CODE (fix_prefix));
+      ASSERT_EQ (VECTOR_CST, TREE_CODE (fix_dup));
+      ASSERT_EQ (min_out_nelts, VECTOR_CST_NPATTERNS (fix_prefix));
+      ASSERT_EQ (2, VECTOR_CST_NELTS_PER_PATTERN (fix_prefix));
+      ASSERT_EQ (1, VECTOR_CST_NPATTERNS (fix_dup));
+      ASSERT_EQ (1, VECTOR_CST_NELTS_PER_PATTERN (fix_dup));
+
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
+	{
+	  tree elt = build_int_cst (integer_type_node, i + 1);
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (fix_prefix, i),
+					elt, 0));
+	  tree fill = build_int_cst (integer_type_node, 77);
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT
+					  (fix_prefix, min_out_nelts + i),
+					fill, 0));
+	  ASSERT_TRUE (operand_equal_p (VECTOR_CST_ELT (fix_dup, i),
+					fill, 0));
+	}
+
+      /* Reject scalable constants whose high half is not duplicated.  */
+      tree_vector_builder varied (in_type, in_nelts.coeffs[0], 2);
+      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+	varied.quick_push (build_int_cst (in_inner_type, i + 1));
+      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+	varied.quick_push (build_int_cst (in_inner_type, 100 + i));
+      ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, out_type,
+					varied.build ()));
+
+      /* Reject stepped scalable constants.  */
+      tree_vector_builder stepped (in_type, 1, 3);
+      stepped.quick_push (build_int_cst (in_inner_type, 1));
+      stepped.quick_push (build_int_cst (in_inner_type, 2));
+      stepped.quick_push (build_int_cst (in_inner_type, 3));
+      ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, out_type,
+					stepped.build ()));
+
+      /* Reject result types with the wrong number of elements.  */
+      tree wrong_out_type = build_vector_type (out_inner_type, in_nelts);
+      ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, wrong_out_type,
+					arg));
+      return;
+    }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -17760,6 +17953,7 @@ fold_const_cc_tests ()
   test_arithmetic_folding ();
   test_vector_folding ();
   test_vec_duplicate_folding ();
+  test_vec_unpack_folding ();
   test_fold_vec_perm_cst::test ();
   test_operand_equality::test ();
 }
