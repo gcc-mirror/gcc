@@ -37,7 +37,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings.hir.expr.insert (resolver.translated);
+	resolver.mappings.hir.exprs.insert (resolver.translated);
       }
 
     *terminated = resolver.terminated;
@@ -62,7 +62,7 @@ public:
 				  std::unique_ptr<HIR::BlockExpr> (block),
 				  expr.get_outer_attrs (), expr.get_locus ());
 
-    resolver.mappings.hir.expr.insert (translated);
+    resolver.mappings.hir.exprs.insert (translated);
 
     return translated;
   }
@@ -89,7 +89,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings.hir.expr.insert (resolver.translated);
+	resolver.mappings.hir.exprs.insert (resolver.translated);
       }
     *terminated = resolver.terminated;
     return resolver.translated;
@@ -121,7 +121,7 @@ public:
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
       {
-	resolver.mappings.hir.expr.insert (resolver.translated);
+	resolver.mappings.hir.exprs.insert (resolver.translated);
       }
     return resolver.translated;
   }
@@ -152,7 +152,7 @@ public:
     ASTLoweringExprWithBlock resolver;
     expr.accept_vis (resolver);
     if (resolver.translated != nullptr)
-      resolver.mappings.hir.expr.insert (resolver.translated);
+      resolver.mappings.hir.exprs.insert (resolver.translated);
 
     *terminated = resolver.terminated;
     return resolver.translated;

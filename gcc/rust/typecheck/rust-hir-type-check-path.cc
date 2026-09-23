@@ -208,7 +208,7 @@ TypeCheckExpr::visit (HIR::PathInExpression &expr)
       else
 	{
 	  TyTy::BaseType *resolved = nullptr;
-	  auto trait_item = mappings.hir.trait_item.lookup (*hir_id);
+	  auto trait_item = mappings.hir.trait_items.lookup (*hir_id);
 	  if (trait_item.has_value ())
 	    {
 	      HIR::Trait *trait = mappings.lookup_trait_item_mapping (*hir_id);
@@ -308,9 +308,9 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	}
       auto ref = hid.value ();
 
-      auto seg_is_module = mappings.hir.module.lookup (ref).has_value ();
+      auto seg_is_module = mappings.hir.modules.lookup (ref).has_value ();
       auto seg_is_crate = mappings.is_local_hirid_crate (ref);
-      auto seg_is_pattern = mappings.hir.pattern.lookup (ref).has_value ();
+      auto seg_is_pattern = mappings.hir.patterns.lookup (ref).has_value ();
       auto seg_is_self = is_root && !have_more_segments
 			 && seg.get_segment ().to_string () == "self";
       if (seg_is_module || seg_is_crate)

@@ -570,7 +570,7 @@ Mappings::resolve_nodeid_to_stmt (NodeId id)
     return tl::nullopt;
 
   HirId resolved = it->second;
-  return hir.stmt.lookup (resolved);
+  return hir.stmts.lookup (resolved);
 }
 
 void
@@ -616,7 +616,7 @@ Mappings::build_impl_indexes ()
     if (!hir_id.has_value ())
       return nullptr;
 
-    auto item = hir.item.lookup (hir_id.value ());
+    auto item = hir.items.lookup (hir_id.value ());
     return item.has_value () ? item.value () : nullptr;
   };
 
@@ -711,7 +711,7 @@ Mappings::insert_trait_item_mapping (HirId trait_item_id, HIR::Trait *trait)
 	       == hirTraitItemsToTraitMappings.end ());
   hirTraitItemsToTraitMappings[trait_item_id] = trait;
 
-  auto item = hir.trait_item.lookup (trait_item_id);
+  auto item = hir.trait_items.lookup (trait_item_id);
   rust_assert (item.has_value ());
   if (item.value ()->get_item_kind () != HIR::TraitItem::TraitItemKind::FUNC)
     return;

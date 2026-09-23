@@ -487,7 +487,7 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings.hir.path_expr_segment.insert (lowered_seg);
+      mappings.hir.path_expr_segments.insert (lowered_seg);
     }
 
   translated = new HIR::PathInExpression (mapping, std::move (path_segments),
@@ -531,7 +531,7 @@ ASTLowerQualPathInExpression::visit (AST::QualifiedPathInExpression &expr)
 
       // insert the mappings for the segment
       HIR::PathExprSegment *lowered_seg = &path_segments.back ();
-      mappings.hir.path_expr_segment.insert (lowered_seg);
+      mappings.hir.path_expr_segments.insert (lowered_seg);
     }
 
   auto crate_num = mappings.crate.get_current_crate ();

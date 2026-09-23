@@ -45,7 +45,7 @@ ASTLoweringItem::translate (AST::Item &item)
 
       resolver.handle_outer_attributes (*resolver.translated);
       resolver.mappings.insert_ast_item (&item);
-      resolver.mappings.hir.item.insert (resolver.translated);
+      resolver.mappings.hir.items.insert (resolver.translated);
       resolver.mappings.insert_location (id, locus);
       resolver.mappings.insert_defid_mapping (defid, resolver.translated);
     }
@@ -83,7 +83,7 @@ ASTLoweringItem::visit (AST::Module &module)
     = new HIR::Module (mapping, module.get_name (), module.get_locus (),
 		       std::move (items), std::move (vis),
 		       std::move (inner_attrs), std::move (outer_attrs));
-  mappings.hir.module.insert (static_cast<Module *> (translated));
+  mappings.hir.modules.insert (static_cast<Module *> (translated));
 }
 
 void
@@ -507,7 +507,7 @@ ASTLoweringItem::visit (AST::Function &function)
   // add the mappings for the function params at the end
   for (auto &param : fn->get_function_params ())
     {
-      mappings.hir.function_param.insert (&param);
+      mappings.hir.function_params.insert (&param);
       mappings.insert_location (mapping.get_hirid (), param.get_locus ());
     }
 

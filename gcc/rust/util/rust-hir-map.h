@@ -205,25 +205,25 @@ public:
 class HIRMappings
 {
 public:
-  PtrMapping<HIR::Item> item;
-  PtrMapping<HIR::TraitItem> trait_item;
-  PtrMapping<HIR::ExternBlock> extern_block;
-  PtrMapping<HIR::Module> module;
+  PtrMapping<HIR::Item> items;
+  PtrMapping<HIR::TraitItem> trait_items;
+  PtrMapping<HIR::ExternBlock> extern_blocks;
+  PtrMapping<HIR::Module> modules;
   PtrMapping<HIR::Expr, InsertionPolicy::ALLOW_DUPLICATES, InsertLocation::YES>
-    expr;
+    exprs;
   PtrMapping<HIR::PathExprSegment, InsertionPolicy::FORBID_DUPLICATES,
 	     InsertLocation::YES>
-    path_expr_segment;
+    path_expr_segments;
   PtrMapping<HIR::GenericParam, InsertionPolicy::FORBID_DUPLICATES,
 	     InsertLocation::YES>
-    generic_param;
-  PtrMapping<HIR::Type> type;
-  PtrMapping<HIR::Stmt> stmt;
+    generic_params;
+  PtrMapping<HIR::Type> types;
+  PtrMapping<HIR::Stmt> stmts;
   PtrMapping<HIR::FunctionParam, InsertionPolicy::ALLOW_DUPLICATES>
-    function_param;
-  PtrMapping<HIR::SelfParam> self_param;
-  PtrMapping<HIR::StructExprField> struct_expr_field;
-  PtrMapping<HIR::Pattern> pattern;
+    function_params;
+  PtrMapping<HIR::SelfParam> self_params;
+  PtrMapping<HIR::StructExprField> struct_expr_fields;
+  PtrMapping<HIR::Pattern> patterns;
 };
 
 class Mappings
