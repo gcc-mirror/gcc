@@ -18986,6 +18986,29 @@ aarch64_external_adjust_stmt_cost (vect_cost_for_stmt kind, slp_tree node,
   return stmt_cost;
 }
 
+/* Get the effecive VF to use for the loop in LOOP_VINFO.  This is the VF that
+   should be used for costing purposes only.  */
+static inline unsigned int
+aarch64_vect_vf_for_cost (loop_vec_info loop_vinfo)
+{
+  unsigned int estimated_vf = vect_vf_for_cost (loop_vinfo);
+
+  /* If we know we have a single partial vector iteration, cap the VF
+     to the number of scalar iterations for costing purposes.  */
+  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
+    {
+      auto niters = LOOP_VINFO_INT_NITERS (loop_vinfo);
+      if (niters < estimated_vf && dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Scalar loop iterates at most %wd times.  Capping VF "
+			 " from %d to %wd\n", niters, estimated_vf, niters);
+
+      estimated_vf = MIN (estimated_vf, niters);
+    }
+
+  return estimated_vf;
+}
+
 unsigned
 aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				     stmt_vec_info stmt_info, slp_tree node,
@@ -19349,26 +19372,13 @@ adjust_body_cost (loop_vec_info loop_vinfo,
 
   const auto &scalar_ops = scalar_costs->m_ops[0];
   const auto &vector_ops = m_ops[0];
-  unsigned int estimated_vf = vect_vf_for_cost (loop_vinfo);
+  unsigned int estimated_vf = aarch64_vect_vf_for_cost (loop_vinfo);
   unsigned int orig_body_cost = body_cost;
   bool should_disparage = false;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Original vector body cost = %d\n", body_cost);
-
-  /* If we know we have a single partial vector iteration, cap the VF
-     to the number of scalar iterations for costing purposes.  */
-  if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))
-    {
-      auto niters = LOOP_VINFO_INT_NITERS (loop_vinfo);
-      if (niters < estimated_vf && dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "Scalar loop iterates at most %wd times.  Capping VF "
-			 " from %d to %wd\n", niters, estimated_vf, niters);
-
-      estimated_vf = MIN (estimated_vf, niters);
-    }
 
   fractional_cost scalar_cycles_per_iter
     = scalar_ops.min_cycles_per_iter () * estimated_vf;
@@ -19561,14 +19571,16 @@ better_main_loop_than_p (const vector_costs *uncast_other) const
 
   auto this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
   auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
+  auto this_loop_vf = aarch64_vect_vf_for_cost (this_loop_vinfo);
+  auto other_loop_vf = aarch64_vect_vf_for_cost (other_loop_vinfo);
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "Comparing two main loops (%s at VF %d vs %s at VF %d)\n",
 		     GET_MODE_NAME (this_loop_vinfo->vector_mode),
-		     vect_vf_for_cost (this_loop_vinfo),
+		     this_loop_vf,
 		     GET_MODE_NAME (other_loop_vinfo->vector_mode),
-		     vect_vf_for_cost (other_loop_vinfo));
+		     other_loop_vf);
 
   /* Apply the unrolling heuristic described above
      m_unrolled_advsimd_niters.  */
@@ -19604,10 +19616,8 @@ better_main_loop_than_p (const vector_costs *uncast_other) const
 	  other->m_ops[i].dump ();
 	}
 
-      auto this_estimated_vf = (vect_vf_for_cost (this_loop_vinfo)
-				* this->m_ops[i].vf_factor ());
-      auto other_estimated_vf = (vect_vf_for_cost (other_loop_vinfo)
-				 * other->m_ops[i].vf_factor ());
+      auto this_estimated_vf = (this_loop_vf * this->m_ops[i].vf_factor ());
+      auto other_estimated_vf = (other_loop_vf * other->m_ops[i].vf_factor ());
 
       /* If it appears that one loop could process the same amount of data
 	 in fewer cycles, prefer that loop over the other one.  */
