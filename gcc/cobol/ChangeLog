@@ -1,3 +1,8 @@
+2026-09-22  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse_ante.h (update_prior_invalid_field): Use is_figconst.
+	(field_add): Always call update_prior_invalid_field.
+
 2026-09-21  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (actually_create_the_static_field): Use the

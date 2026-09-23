@@ -1,3 +1,87 @@
+2026-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/io/basic_file_stdio.h (__basic_file): Define copy
+	constructor and copy assignment operator as deleted for C++98.
+	* include/bits/stl_bvector.h (vector<bool, A>::data): Define as
+	deleted for C++98.
+	* include/bits/stl_tree.h (_Reuse_or_alloc_node): Define copy
+	constructor as deleted for C++98.
+	* include/bits/stl_vector.h (_Asan<allocator<T>>::_Reinit):
+	Define copy constructor and copy assignment operator as deleted
+	for C++98.
+	(_Asan<allocator<T>>::_Grow): Likewise.
+	* testsuite/util/replacement_memory_operators.h
+	(__gnu_test::counter::scope): Likewise.
+	* testsuite/util/testsuite_iterators.h (operator,, operator&)
+	(operator+=, operator-=, operator[]): Define deleted operators
+	for C++98.
+
+2026-09-22  Patrick Palka  <ppalka@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/126120
+	* include/bits/shared_ptr.h (std::__shared_nullptr_ctor_tag):
+	Define.
+	(shared_ptr::shared_ptr(nullptr_t, ...)): Constrain _Deleter
+	via _NullptrDeleter parameter.
+	* include/bits/shared_ptr_base.h (__shared_ptr::_ValidDeleter):
+	New __enable_if_t constraint.
+	(__shared_ptr::__shared_ptr(Yp*, _Deleter, ...)): Add _ValidDeleter
+	constraint. Move static_assert checking deleter invocability
+	to corresponding reset functions.
+	(__shared_ptr::reset): Add static_assert checks for deleter
+	invocability.
+	* testsuite/20_util/shared_ptr/cons/126120.cc: New test.
+
+2026-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/126274
+	* include/bits/regex_executor.h (_M_match_simple_repeat_body): New.
+	* include/bits/regex_executor.tcc (_M_dfs_next): Inline consume matches
+	on _S_opcode_repeat.
+	(_M_match_simple_repeat_body): New.
+
+2026-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/126274
+	PR libstdc++/88947
+	* include/bits/regex_executor.h (_M_search_from_first): Avoid needless
+	recursions.
+	(_M_maybe_start_match): New.
+	* include/bits/regex_executor.tcc (_M_maybe_start_match): New.
+
+2026-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/126274
+	* include/bits/regex_executor.h (_Search_mode): Move to top level.
+	(_M_handle_repeat, _M_handle_match, _M_handle_accept, _M_node, _M_dfs):
+	Add template parameter.
+	(_M_visited): Add inline keyword.
+	* include/bits/regex_executor.tcc (_M_handle_repeat, _M_handle_match,
+	_M_handle_accept, _M_node, _M_dfs): Use template parameter.
+
+2026-09-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR libstdc++/126274
+	* include/bits/regex_executor.h (_Executor): Reserve frame space.
+	(_M_rep_once_more, _M_handle_repeat, _M_handle_subexpr_begin,
+	_M_handle_subexpr_end, _M_handle_line_begin_assertion,
+	_M_handle_line_end_assertion, _M_handle_word_boundary,
+	_M_handle_subexpr_lookahead, _M_handle_match, _M_handle_backref,
+	_M_node): return StateIdT.
+	(_M_visited): Mark inline.
+	* include/bits/regex_executor.tcc (_M_rep_once_more, _M_handle_repeat,
+	_M_handle_subexpr_begin, _M_handle_subexpr_end,
+	_M_handle_line_begin_assertion, _M_handle_line_end_assertion,
+	_M_handle_word_boundary, _M_handle_subexpr_lookahead, _M_handle_match,
+	_M_handle_backref): Return state, mark always inline.
+	(_M_node): Return StateIdT and also decide what to do with the value
+	after return.
+	(_M_dfs): Traverse states iteratively for _S_fopcode_next,
+	_S_fopcode_fallback_next, _S_fopcode_fallback_rep_once_more
+	and _S_fopcode_rep_once_more.
+	* include/bits/regex.h (class _Executor): Move to V2 ABI.
+
 2026-09-21  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/82749

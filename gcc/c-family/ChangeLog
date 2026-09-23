@@ -1,3 +1,7 @@
+2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_LOCAL.
+
 2026-09-18  Alfie Richards  <alfie.richards@arm.com>
 
 	* c-attribs.cc (handle_mode_attribute): Use parse_machine_mode.

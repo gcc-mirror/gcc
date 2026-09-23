@@ -1,3 +1,8 @@
+2026-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low.cc (lower_module_text): Mark prelude_decl an
+	postlude_decl as artificial.
+
 2026-09-21  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-parser-modes.cc (a68_resolve_equivalent): Rename from

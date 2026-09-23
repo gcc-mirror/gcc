@@ -1,3 +1,25 @@
+2026-09-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127554
+	* gm2-compiler/M2MetaError.mod (SpellHint): Allow error symbols to
+	be spell checked.
+	* gm2-compiler/M2Quads.mod (BuildConstructor): Generate a spelling
+	hint error message if the name is set and an error is seen.
+	(PopTntok): New procedure.
+	* gm2-compiler/PCBuild.bnf (CreateQualident): New procedure.
+	(PushQualident): Reimplement.
+	* gm2-compiler/PCSymBuild.mod (PCStartBuildDefModule): Push
+	module to spelling stack.
+	(PCStartBuildImpModule): Ditto.
+	(PCStartBuildInnerModule): Ditto.
+	(PCEndBuildDefModule): Pop top of spell stack.
+	(PCEndBuildImpModule): Ditto.
+	(PCEndBuildProgModule): Ditto.
+	(PCEndBuildInnerModule): Ditto.
+	(PCEndBuildProcedure): Ditto.
+	(PCBuildProcedureHeading): Ditto.
+	(PCEndBuildForward): Reimplement.
+
 2026-09-21  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127469

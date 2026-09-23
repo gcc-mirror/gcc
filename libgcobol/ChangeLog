@@ -1,3 +1,13 @@
+2026-09-22  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/lib/cbl_gpi.cc (struct gpi_priv): Fix flawed logic.
+	(getlastprog): Likewise.
+	(callstack): Likewise.
+	(cbl_gpi_cur_status): Likewise.
+	(cbl_gpi_handle_status): Likewise.
+	(cbl_gpi_parent_status): Likewise.
+	(cbl_gpi_close_handle): Likewise.
+
 2026-09-21  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (int128_to_field): Remove rdigits formal parameter.

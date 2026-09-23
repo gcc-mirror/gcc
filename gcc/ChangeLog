@@ -1,3 +1,144 @@
+2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* omp-offload.cc (omp_discover_implicit_declare_target):
+	For self_maps/unified_shared_memory case, adjust to not convert
+	'omp declare target local' variables to 'link'.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_LOCAL.
+	* tree.cc (omp_clause_num_ops): Add entry for OMP_CLAUSE_LOCAL.
+	(omp_clause_code_name): Likewise.
+	* varpool.cc (varpool_node::get_create): Do not add variable to
+	offload_vars if "local" argument is present in "omp declare target".
+
+2026-09-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/127326
+	* lra-constraints.cc (process_alt_operands): Ignore register if
+	constraint describes memory and register which can not hold the
+	mode value.
+
+2026-09-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	PR target/114544
+	* config/i386/constraints.md (YD): New constraint, like Yd but
+	allows SSE_REGS on TARGET_SSE2.
+	* config/i386/i386.cc (inline_secondary_memory_needed): Update
+	that TImode moves to GENERAL_REGS don't need to use memory.
+	* config/i386/i386.md (*movti_internal): Change Yd constraint to YD.
+	(define_split): On TARGET_64BIT && TARGET_SSE2 && !TARGET_SSE4_1,
+	split *movti_internal into movq+shufpd+movq+shufpd.
+
+2026-09-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/predicates.md (pure_register_operand): New predicate.
+	* config/aarch64/aarch64.md (negvti3): Use it.
+
+2026-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* builtins.cc (expand_builtin_atomic_fetch_op): Force val into a
+	pseudo if updates to mem could change its value.
+	(expand_ifn_atomic_bit_test_and): Likewise.
+
+2026-09-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_live_operation): Cost
+	the lane extract in vect_body for BB vectorization and
+	in vect_epilog for loop vectorization.
+
+2026-09-22  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (fwrapv-pointer): Add disclaimer.
+	(fno-strict-overflow): Discourage, suggest fwrapv.
+
+2026-09-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* target.def (base_reg_class): New target hook.
+	* targhooks.h (default_base_reg_class): Declare.
+	* targhooks.cc (default_base_reg_class): New function, implementing
+	the previous BASE_REG_CLASS/MODE_BASE_REG_CLASS/
+	MODE_BASE_REG_REG_CLASS/MODE_CODE_BASE_REG_CLASS macro fallback
+	chain as the hook's default.
+	* addresses.h (base_reg_class): Rewrite to call the
+	TARGET_BASE_REG_CLASS hook instead of dispatching through
+	INSN_BASE_REG_CLASS and the other macros by hand; add a MEM
+	parameter.
+	* rtl.h (address_info): Add mem field.
+	* rtlanal.cc (decompose_mem_address): Set it.
+	* lra-constraints.cc (simplify_operand_subreg, process_alt_operands,
+	base_to_reg, base_plus_disp_to_reg, process_address_1,
+	curr_insn_transform): Pass the enclosing MEM, and INSN where
+	previously omitted, to base_reg_class.
+	* reload.cc (find_reloads, find_reloads_address,
+	find_reloads_address_1, find_reloads_subreg_address): Likewise.
+	* reload1.cc (maybe_fix_stack_asms): Likewise.
+	* regcprop.cc: Include target.h.
+	(replace_oldest_value_addr, replace_oldest_value_mem): Pass MEM to
+	base_reg_class.
+	* regrename.cc (base_reg_class_for_rename): Add a MEM parameter.
+	(scan_rtx_address, scan_rtx): Pass it.
+	* caller-save.cc: Include target.h.
+	* config/i386/i386.h (INSN_BASE_REG_CLASS): Delete.
+	* config/i386/i386-protos.h (ix86_insn_base_reg_class): Delete
+	declaration.
+	* config/i386/i386.cc (ix86_insn_base_reg_class): Rename to...
+	(ix86_base_reg_class): ...this, adjust the signature, and implement
+	TARGET_BASE_REG_CLASS instead of INSN_BASE_REG_CLASS.
+	(TARGET_BASE_REG_CLASS): Define.
+	* doc/tm.texi.in: Add TARGET_BASE_REG_CLASS.  Mark BASE_REG_CLASS,
+	MODE_BASE_REG_CLASS, MODE_BASE_REG_REG_CLASS and
+	MODE_CODE_BASE_REG_CLASS as obsolete in favor of the new hook, and
+	remove the now-unused INSN_BASE_REG_CLASS.
+	* doc/tm.texi: Regenerate.
+
+2026-09-22  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/atomics.md (atomic_store<mode>): Use aarch64_reg_or_zero.
+
+2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/126486
+	* tree-affine.cc: Include vr-values.h.
+	(aff_combination_convert): Accept and propagate range context.
+	(expr_to_aff_combination): Likewise.  Fold sign-changing conversions
+	and negative unsigned offsets.
+	(tree_to_aff_combination): Accept and propagate range context.
+	* tree-affine.h (aff_combination_convert): Update declaration.
+	(tree_to_aff_combination): Likewise.
+	* tree-ssa-loop-ivopts.cc: Include gimple-range.h.
+	(get_computation_aff_1): Pass the use statement.
+	(tree_ssa_iv_optimize): Enable ranger.
+
+2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127500
+	* config/i386/i386.cc (ix86_split_stlf_stall_load): Don't split
+	the load when the address adjusted by 8 is not a valid memory
+	address.
+
+2026-09-22  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/112626
+	* match.pd: Fold comparisons between abs (x) and x including
+	unsigned conversions of both operands.
+
+2026-09-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/127269
+	* config/riscv/riscv-v.cc (riscv_v_widen_constraint_ok): Return
+	false instead of assertion when the nregs of the dest is less
+	than that of the src.
+
+2026-09-22  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/constraints.md (Wn4): New constraint for the
+	vector register which doesn't overlap the register group of
+	the operand 4.
+	* config/riscv/vector.md: Take the Wn4 constraint for the
+	operand 3 and the Wvr constraint for the operand 4 of the
+	vfwadd.wv.
+
 2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/riscv/riscv.cc (riscv_flatten_aggregate_field) <ARRAY_TYPE>:

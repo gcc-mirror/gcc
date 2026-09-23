@@ -1,3 +1,12 @@
+2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_name): Add "local" case.
+	(c_parser_omp_all_clauses): Add PRAGMA_OMP_CLAUSE_LOCAL case.
+	(OMP_DECLARE_TARGET_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_LOCAL.
+	( c_parser_omp_declare_target): Handle OMP_CLAUSE_LOCAL.
+	* c-typeck.cc (c_finish_omp_clauses): Handle OMP_CLAUSE_LOCAL.
+	Emit error if local clause variable appears in map clause.
+
 2026-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-decl.cc (names_builtin_p): Return 1 for

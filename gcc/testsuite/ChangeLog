@@ -1,3 +1,106 @@
+2026-09-22  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/prepostlude-crash-1.a68: New test.
+
+2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
+
+	* c-c++-common/gomp/declare-target-1.c: Add local clause test.
+	* c-c++-common/gomp/declare-target-8.c: New testcase.
+	* gfortran.dg/gomp/declare-target-1.f90: Add local clause test.
+	* gfortran.dg/gomp/declare-target-7.f90: New testcase.
+	* gfortran.dg/gomp/groupprivate-2.f90: Adjust test.
+
+2026-09-22  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__get_program_name_-_functions_0_and_2_.cob:
+		Update test to new behaviour.
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__get_program_name_-_functions_0_and_2_.out: Likewise.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/access12.adb: Adjust error message.
+	* gnat.dg/aliased3.adb: Likewise.
+
+2026-09-22  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/127326
+	* gcc.target/i386/pr127326.c: New.
+
+2026-09-22  Joshua Berne  <berne@notadragon.com>
+
+	PR c++/125459
+	* g++.dg/contracts/cpp26/pr125459.C: New test.
+
+2026-09-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127554
+	* gm2.dg/spell/iso/fail/constaggregate.mod: New test.
+
+2026-09-22  Roger Sayle  <roger@nextmovesoftware.com>
+	    Hongtao Liu  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr126293-15.c: Update test case.
+	* gcc.target/i386/pr126293-5.c: Likewise.
+
+2026-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* gcc.dg/pr127492.c: New test.
+
+2026-09-22  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/atomic-store2.c: New test.
+
+2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/126486
+	* gcc.dg/tree-ssa/pr126486.c: New test.
+	* gcc.dg/tree-ssa/pr19210-1.c: Remove obsolete missed diagnostic.
+	* gcc.target/i386/kortest_ccz-1.c: Restrict no-kmov scan to non-ia32.
+	Assisted-by: openai.gpt-5.6-sol xhigh <noreply@openai.com>
+
+2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127500
+	* gcc.target/i386/pr127500.c: New test.
+
+2026-09-22  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/112626
+	PR tree-optimization/112626
+	* gcc.dg/tree-ssa/pr112626.c: New test.
+	* gcc.dg/tree-ssa/pr112626-wrap.c: New test.
+
+2026-09-22  Pan Li  <pan2.li@intel.com>
+
+	PR target/127269
+	* gcc.target/riscv/rvv/base/pr127269-18.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-19.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-20.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-21.c: New test.
+	* gcc.target/riscv/rvv/base/pr127269-22.c: New test.
+
+2026-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-42.c: Remove the xfail
+	of the vmv1r check.
+
+2026-09-22  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_wv-f32-mf2.c: New test.
+
+2026-09-22  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* c-c++-common/gomp/has-include-1.c: Add second dg-error.
+
 2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/array44.adb: New test.

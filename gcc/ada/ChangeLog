@@ -1,3 +1,288 @@
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* accessibility.adb (Accessibility_Message): Adjust wording.
+	(Check_Return_Construct_Accessibility.Accessibility_Error): Ditto.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Access>: Likewise for
+	the specific error message given for subprograms.
+	* sem_ch3.adb (Analyze_Component_Declaration): Likewise for the
+	specific error message given for access components.
+	(Build_Derived_Record_Type): Add references to Ada 95 rules.
+	* sem_ch6.adb (Analyze_Function_Return): Adjust wording for the
+	error messages given for class-wide returns.
+	* sem_ch9.adb (Analyze_Requeue): Likewise for requeue statements.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Storage_Pool>:
+	Add reference to Ada 2012 accessibility rule.
+	* sem_res.adb (Resolve_Actuals.Check_Aliased_Parameter): Adjust
+	wording for the error messages for actuals of aliased parameters.
+	(Resolve_Allocator): Likewise for allocators.
+	(Valid_Conversion): Likewise for conversions.
+	(Valid_Array_Conversion): Add Opnd_Type parameter instead of using
+	an up-level reference.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Valid>:
+	Call Is_Reverse_Storage_Order_Object to detect cases where a copy
+	needs to be created for the prefix.
+	* sem_util.ads (In_Reverse_Storage_Order_Object): Delete.
+	(Is_Reverse_Storage_Order_Object): New predicate.
+	* sem_util.adb (In_Reverse_Storage_Order_Object): Delete.
+	(Is_Reverse_Storage_Order_Object): New predicate subsuming original
+	In_Reverse_Storage_Order_Object predicate.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch4.adb (Analyze_Membership_Op): Do not force an error to be
+	given if the right operand is a Raise_Error node.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* accessibility.adb (Check_Return_Construct_Accessibility): Bail
+	out for the return synthesized in a function whose body has been
+	wrapped in a  nested _Wrapped_Statements function.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Make_Predefined_Primitive_Eq_Spec): Fix pasto.
+	* sem_ch4.adb (wpo): Also accept untagged types.
+	* sem_ch6.adb (Make_Inequality_Operator): Also copy Is_Primitive.
+	(New_Overloaded_Entity): Create the implicit inequality operator
+	only for nonderived subprograms, but create it in the asymmetric
+	case even for tagged types.  Deal with the inheritance of such an
+	implicit inequality operator.
+	* sem_disp.adb: Add clauses for Stand.
+	(Check_Dispatching_Operation): Bail out for inequality operators
+	whose result type is Boolean.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-gen-gen_entities.adb (Type_Kind): Set Base_Type_Only for
+	Is_Mutably_Tagged_Type flag. Move Class_Wide_Equivalent_Type to...
+	(Class_Wide_Kind): ...here.
+	* einfo.ads (Class_Wide_Equivalent_Type): Adjust description.
+	(Is_Controlled_Active): Likewise.
+	(Is_Controlled): Likewise.
+	(Is_Mutably_Tagged_Type): Likewise.
+	* exp_ch3.adb (Expand_N_Full_Type_Declaration): Use an assignment to
+	initialize an object of a mutably tagged type whose initial value is
+	not the result of a function call.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Do not dispatch to an
+	_assign primitive for an initialization even in the class-wide case.
+	For mutably tagged types, assign the tag unconditionally.
+	(Make_Tag_Ctrl_Assignment): Deal with mutably tagged types.
+	* exp_ch6.adb (Might_Have_Tasks): Invoke Has_Enabled_Aspect on the
+	root type for a class-wide type.
+	* exp_ch7.adb: Add clauses for Mutably_Tagged package.
+	(Make_Adjust_Call): Deal with mutably tagged types.
+	(Make_Final_Call): Likewise.
+	(Make_Init_Call): Likewise.
+	* exp_util.adb: Add clauses for Mutably_Tagged package.
+	(Finalize_Address): Deal with mutably tagged types.
+	(Make_CW_Equivalent_Type): Adjust comment.
+	* freeze.adb (Freeze_Record_Type): Invoke Needs_Finalization on the
+	type of the components to compute the Has_Controlled_Component flag.
+	* mutably_tagged.ads (Get_Corresponding_Tagged_Type_If_Present):
+	Adjust description.
+	* mutably_tagged.adb (Is_Mutably_Tagged_CW_Equivalent_Type): Test
+	Is_Mutably_Tagged_Type on the class-wide type of the parent subtype.
+	* sem_ch3.adb (Find_Type_Name): Do not set the Is_Internal flag on
+	the completion of an incomplete type.
+	(Record_Type_Definition): Invoke Needs_Finalization on the type of
+	the components to compute the Has_Controlled_Component flag.
+	* sem_ch12.adb (Validate_Private_Type_Instance): Test the
+	Is_Mutably_Tagged_Type flag instead of Class_Wide_Equivalent_Type.
+	(Instantiate_Type): Likewise.
+	* sem_util.adb (Needs_Finalization): Return False for a class-wide
+	type if the root type has the No_Controlled_Parts aspect, and return
+	True for a mutably tagged class-wide equivalent type unless the root
+	type has the No_Controlled_Parts aspect.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Full_Expression): Also freeze the stand-alone
+	objects of the current scope when they are referenced.
+	* sem_ch6.adb (Analyze_Expression_Function): Do not check the use
+	of a dynamically tagged expression if an error has been posted.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.ads (Freeze_Entity): Move around.
+	(Freeze_Before): Rename T parameter to E.
+	(Freeze_Expression): Improve description.
+	(Freeze_Expr_Types_Before): Rename to...
+	(Freeze_Full_Expression_Before): ...this.
+	* freeze.adb (Freeze_Expr_Types): Rename to...
+	(Freeze_Full_Expression): ...this.
+	(Freeze_Before): Rename T parameter to E and Pack variable to Scop.
+	(Freeze_Entity): Adjust to above renaming.
+	(Freeze_Expression): Likewise.
+	(Freeze_Expr_Types_Before): Rename to...
+	(Freeze_Full_Expression_Before): ...this.
+	* contracts.adb (Analyze_Entry_Or_Subprogram_Contract): Adjust to
+	above renaming.
+	(Expand_Subprogram_Contract): Likewise.
+	* sem_ch6.adb (Analyze_Expression_Function): Likewise.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sinfo.ads (Selector_Name): Beef up description.
+	* sem_ch3.adb (Contains_Lib_Incomplete_Type): Delete.
+	(Analyze_Declarations): Remove obsolete code.
+	* sem_ch13.adb (Resolve_Aspect_Expressions.Resolve_Name): Resolve
+	only names that are not selector names.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return): Fix typo.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* accessibility.ads (Needs_Accessibility_Level_Temp_Or_Check):
+	Delete.
+	* accessibility.adb: Add clauses for Sem_Eval.
+	(Accessibility_Level): Add support for conditional expressions.
+	(Needs_Accessibility_Level_Temp_Or_Check): Delete.
+	* exp_ch4.adb (Expand_N_If_Expression): Do not force expansion for
+	the sake of accessibility checks.
+	* exp_ch6.adb (Create_Extra_Actuals): Remove specific support of
+	extra accessibility formal for conditional expressions.
+	* sem_eval.ads (Match_Result): New enumeration type moved from...
+	(Choices_Match): New function declaration moved from...
+	(Set_Checking_Potentially_Static_Expression): Alphabetize.
+	* sem_eval.adb (Match_Result): ...here.
+	(Choices_Match): ...here.
+	(Eval_Case_Expression): Replace loop with call to Choices_Match.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Is_Copy_Type): New global predicate.
+	(Expand_N_Case_Expression.Is_Copy_Type): Delete.
+	(Expand_N_Expression_With_Actions.Is_Copy_Type): Likewise.
+	(Expand_N_If_Expression.Is_Copy_Type): Likewise.
+	* layout.adb (Layout_Type): Compute the size(s) of a 1-dimensional
+	array type in more cases.
+	* sem_attr.adb (Analyze_Access_Attribute): Add guard.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause)
+	<Component_Size>: Reset the size(s) if the clause is not confirming.
+	* sem_eval.adb (Compile_Time_Known_Bounds): Bail out if an error has
+	been posted on the range node.
+	* sem_res.adb (Valid_Conversion): Return early on N_Raise_xxx_Error.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-fields.ads (Opt_Field_Enum): Remove Minimum_Accessibility
+	and add Extra_Accessibility_Of_Subprogram.
+	* gen_il-gen-gen_entities.adb (Formal_Kind): Likewise.
+	(Subprogram_Kind): Likewise.
+	* einfo.ads (Extra_Accessibility_Of_Subprogram): Add description.
+	(Minimum_Accessibility): Remove description.
+	* accessibility.ads (Accessibility_Level_Kind): Move to...
+	(Accessibility_Level): Move to...
+	(Dynamic_Accessibility_Level): New function declaration.
+	(Dynamic_Local_Access_Level): Likewise.
+	(Dynamic_Subprogram_Access_Level): Likewise.
+	(Get_Dynamic_Accessibility): Delete.
+	(Static_Accessibility_Level_Kind): Likewise.
+	(Deepest_Type_Access_Level): Likewise.
+	(Static_Accessibility_Level): Replace second formal parameter.
+	(Static_Local_Access_Level): New function declaration.
+	(Static_Type_Access_Level): Likewise.
+	(Subprogram_Access_Level): Delete.
+	(Type_Access_Level): Move to...
+	* accessibility.adb (Accessibility_Level_Kind): ...here.
+	(Accessibility_Level): ...here.
+	(Type_Access_Level): ...here.
+	(Offset_Static_Level): New function declaration.
+	(Accessibility_Level): Add Static formal parameter and change the
+	result type.  Change the result type of most nested functions and
+	ultimately call Offset_Static_Level if Static is set to False.
+	(Apply_Accessibility_Check_For_Class_Wide_Allocator): Use explicit
+	static or dynamic variant of level computation functions.
+	(Apply_Accessibility_Check_For_Anonymous_Return): Likewise.
+	(Apply_Accessibility_Check_For_Class_Wide_Return): Likewise.
+	(Apply_Accessibility_Check_For_Discriminated_Allocator): Likewise.
+	(Apply_Accessibility_Check_For_Conversion): Likewise.
+	(Check_Return_Construct_Accessibility): Likewise.
+	(Apply_Accessibility_Check_For_Return): Fix typo in comment.
+	(Dynamic_Accessibility_Level): New function body.
+	(Dynamic_Local_Access_Level): Likewise.
+	(Dynamic_Subprogram_Access_Level): Likewise.
+	(Dynamic_Type_Access_Level): Likewise.
+	(Get_Dynamic_Accessibility): Delete.
+	(Offset_Static_Level): New function body.
+	(Static_Accessibility_Level): Adjust.
+	(Static_Local_Access_Level): New function body.
+	(Static_Subprogram_Access_Level): Likewise.
+	(Static_Type_Access_Level): Likewise.
+	(Deepest_Type_Access_Level): Merge implementation into...
+	(Type_Access_Level): ...this.  Add Deepest formal parameter and
+	change the result type.  Compute a base entity and an offset.
+	* contracts.adb (Build_Subprogram_Contract_Wrapper): Do not move the
+	declaration of the Extra_Accessibility_Of_Subprogram constant.
+	* exp_aggr.adb: Add clauses for Accessibility.
+	(In_Place_Assign_OK): Call Static_Local_Access_Level instead of
+	doing the level calculation manually.
+	* exp_attr.adb (Expand_N_Attribute_Reference.Write_Controlling_Tag):
+	Call appropriate accessibility level calculation routine.
+	* exp_ch3.adb (Build_Initialization_Call): Likewise.
+	(Expand_N_Object_Declaration): Likewise.
+	(Freeze_Type): Likewise.
+	(Build_Record_Init_Proc): Do not create an extra accessibility
+	parameter for Activation_Chain and Finalization_Master.
+	* exp_ch4.adb (Expand_N_In): Call appropriate acccessibility level
+	calculation routine.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Likewise.
+	* exp_ch6.adb (Expand_Actuals): Likewise.
+	(Create_Extra_Actuals): Likewise.
+	* exp_ch9.adb (Expand_N_Requeue_Statement): Likewise and add missing
+	exception per RM 9.5.4(7.2).
+	* exp_disp.adb (Make_DT): Likewise.
+	* sem_attr.adb (Resolve_Attribute): Likewise.
+	* sem_ch3.adb (Analyze_Component_Declaration): Likewise.
+	(Build_Derived_Record_Type): Likewise.
+	(Derived_Type_Declaration): Likewise.
+	* sem_ch9.adb (Analyze_Requeue): Likewise and remove duplicate code.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Likewise.
+	* sem_res.ads (Resolve_Entry): Remove obsolete comment.
+	* sem_res.adb (Resolve_Actuals): Likewise.
+	(Resolve_Allocator): Likewise.
+	(Valid_Conversion): Likewise.
+	(Resolve_Entry): Set Analyzed on the entry name before rewriting it.
+	* sem_util.adb (Check_Unprotected_Access): Likewise.
+	* sem_ch6.adb (Analyze_Function_Return): Likewise.
+	(Analyze_Subprogram_Body_Helper): Compute the extra accessibility
+	of the subprogram instead of minimum accessibility of parameters.
+	(Create_Extra_Formals): Create an extra accessibility formal for
+	an access-to-subprogram parameter if the profile of the designated
+	type has at least one parameter that needs one.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Move up early return for
+	types derived from an untagged private type.
+
+2026-09-22  Andrew Teylu  <Andrew.Teylu@vector.com>
+
+	* libgnat/s-dwalin.ads (Dwarf_Context): Add Has_Line_Str.
+	* libgnat/s-dwalin.adb (Open): Set Has_Line_Str when creating the
+	line-string stream.
+	(Close): Close the line-string stream if it was created.
+
+2026-09-22  Viljar Indus  <indus@adacore.com>
+
+	* gcc-interface/trans.cc (can_equal_min_Or_max_val_p): Add guard
+	for integral types.
+
+2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.cc (allocatable_size_p): Add INTERFACE_P
+	parameter and return true for any fixed size when it is true.
+	(gnat_to_gnu_entity): Add EXPORTED_P local variable and use it
+	throughout.
+	<E_Variable>: Adjust calls to allocatable_size_p by passing true
+	for INTERFACE_P if the object is exported or imported.  Remove
+	unreachable code giving a warning for too large imported objects.
+
 2026-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/misc.cc (gnat_get_array_descr_info): Return the
