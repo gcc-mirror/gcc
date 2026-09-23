@@ -13088,6 +13088,32 @@ package body Sem_Res is
             Index_Subtype : Entity_Id;
 
          begin
+            --  The back end expects the String_Literal_Subtype to have a
+            --  static lower bound.
+
+            if Is_Integer_Type (Index_Type) then
+               Set_String_Literal_Low_Bound
+                 (Subtype_Id, Make_Integer_Literal (Loc, 1));
+
+            --  If the index type is an enumeration type, build the bound
+            --  expression by means of an attribute.
+
+            else
+               Set_String_Literal_Low_Bound
+                 (Subtype_Id,
+                  Make_Attribute_Reference (Loc,
+                    Attribute_Name => Name_First,
+                    Prefix         =>
+                      New_Occurrence_Of (Base_Type (Index_Type), Loc)));
+            end if;
+
+            Analyze_And_Resolve
+              (String_Literal_Low_Bound (Subtype_Id), Base_Type (Index_Type));
+
+            --  Now build a subtype with the actual bounds and wrap the literal
+            --  in an unchecked conversion to it, after checking that the high
+            --  bound is within the range of the index type if need be.
+
             if Length = 1 then
                High_Bound := New_Copy_Tree (Low_Bound);
 
@@ -13096,6 +13122,9 @@ package body Sem_Res is
                  Make_Op_Add (Loc,
                    Left_Opnd  => New_Copy_Tree (Low_Bound),
                    Right_Opnd => Make_Integer_Literal (Loc, Length - 1));
+               if Length > 0 then
+                  High_Bound := Convert_To (Index_Type, High_Bound);
+               end if;
 
             else
                High_Bound :=
@@ -13115,29 +13144,6 @@ package body Sem_Res is
                        Right_Opnd =>
                          Make_Integer_Literal (Loc, Length - 1))));
             end if;
-
-            if Is_Integer_Type (Index_Type) then
-               Set_String_Literal_Low_Bound
-                 (Subtype_Id, Make_Integer_Literal (Loc, 1));
-
-            else
-               --  If the index type is an enumeration type, build bounds
-               --  expression with attributes.
-
-               Set_String_Literal_Low_Bound
-                 (Subtype_Id,
-                  Make_Attribute_Reference (Loc,
-                    Attribute_Name => Name_First,
-                    Prefix         =>
-                      New_Occurrence_Of (Base_Type (Index_Type), Loc)));
-            end if;
-
-            Analyze_And_Resolve
-              (String_Literal_Low_Bound (Subtype_Id), Base_Type (Index_Type));
-
-            --  Build bona fide subtype for the string, and wrap it in an
-            --  unchecked conversion, because the back end expects the
-            --  String_Literal_Subtype to have a static lower bound.
 
             Index_Subtype :=
               Create_Itype (Subtype_Kind (Ekind (Index_Type)), N);
