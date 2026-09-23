@@ -95,7 +95,7 @@ package body Exp_Ch6 is
    --  front end, or in the back end, or partly in both ends, depending on the
    --  result type.
 
-   --    Result type    |  Return mechanism    |    Front end    |   Back end
+   --    Result type    |  Return mechanism        |  Front end  |   Back end
    --    --------------------------------------------------------------------
 
    --     Limited           Build In Place              All
@@ -106,13 +106,12 @@ package body Exp_Ch6 is
    --     Needs Fin.        Secondary Stack             All
    --     (BERS False)
 
-   --     Needs Fin.        Invisible Parameter         All            All
-   --     (BERS True)                                 (return)        (call)
+   --     Needs Fin.        Invisible Parameter         All
+   --     (BERS True)
 
    --     By Reference      Invisible Parameter                        All
 
-   --     Others            Primary stack/                             All
-   --                       Registers
+   --     Others            Primary stack/Registers                    All
 
    --    Needs Fin.: type needs finalization [RM 7.6(9.1/2-9.6/2)]
    --    BERS: Opt.Back_End_Return_Slot setting
