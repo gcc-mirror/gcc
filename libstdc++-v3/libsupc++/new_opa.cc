@@ -81,12 +81,38 @@ aligned_alloc (std::size_t al, std::size_t sz)
   return nullptr;
 }
 #elif _GLIBCXX_HAVE_ALIGNED_ALLOC
-using ::aligned_alloc;
-#elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+// We have C11 aligned_alloc but we need to satisfy its preconditions.
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
-{ return _aligned_malloc(sz, al); }
+{
+# if defined _AIX || defined __APPLE__
+  /* AIX 7.2.0.0 aligned_alloc incorrectly has posix_memalign's requirement
+   * that alignment is a multiple of sizeof(void*).
+   * OS X 10.15 has the same requirement.  */
+  if (al < sizeof(void*))
+    al = sizeof(void*);
+# endif
+  /* C11: the value of size shall be an integral multiple of alignment.  */
+  if (__builtin_add_overflow(sz, al - 1, &sz)) [[unlikely]]
+    return nullptr;
+  sz &= ~(al - 1);
+  return ::aligned_alloc(al, sz);
+}
+#elif _GLIBCXX_HAVE__ALIGNED_MALLOC
+// Use Windows _aligned_malloc
+static inline void*
+aligned_alloc (std::size_t al, std::size_t sz)
+{
+  // The Wine msvcrt.dll version of _aligned_malloc doesn't detect overflow
+  // so do it ourselves. We know al + 2 * sizeof(void*) won't overflow because
+  // has_single_bit(al) was already checked by the caller.
+  std::size_t check;
+  if (__builtin_add_overflow(sz, al + 2 * sizeof(void*), &check)) [[unlikely]]
+    return nullptr;
+  return _aligned_malloc(sz, al);
+}
 #elif _GLIBCXX_HAVE_MEMALIGN
+// Use memalign (and assume that what it returns can be passed to free).
 static inline void*
 aligned_alloc (std::size_t al, std::size_t sz)
 {
@@ -103,8 +129,10 @@ aligned_alloc (std::size_t al, std::size_t sz)
   // We need extra bytes to store the original value returned by malloc.
   if (al < sizeof(void*))
     al = sizeof(void*);
-  void* const malloc_ptr = malloc(sz + al);
-  if (!malloc_ptr)
+  if (__builtin_add_overflow(sz, al, &sz)) [[unlikely]]
+    return nullptr;
+  void* const malloc_ptr = malloc(sz);
+  if (!malloc_ptr) [[unlikely]]
     return nullptr;
   // Align to the requested value, leaving room for the original malloc value.
   void* const aligned_ptr = (void *) (((uintptr_t) malloc_ptr + al) & -al);
@@ -130,19 +158,6 @@ operator new (std::size_t sz, std::align_val_t al)
   /* malloc (0) is unpredictable; avoid it.  */
   if (__builtin_expect (sz == 0, false))
     sz = 1;
-
-#if _GLIBCXX_HAVE_POSIX_MEMALIGN
-#elif _GLIBCXX_HAVE_ALIGNED_ALLOC
-# if defined _AIX || defined __APPLE__
-  /* AIX 7.2.0.0 aligned_alloc incorrectly has posix_memalign's requirement
-   * that alignment is a multiple of sizeof(void*).
-   * OS X 10.15 has the same requirement.  */
-  if (align < sizeof(void*))
-    align = sizeof(void*);
-# endif
-  /* C11: the value of size shall be an integral multiple of alignment.  */
-  sz = (sz + align - 1) & ~(align - 1);
-#endif
 
   void *p;
 
