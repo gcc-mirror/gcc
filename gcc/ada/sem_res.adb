@@ -8385,7 +8385,7 @@ package body Sem_Res is
          --  Generate a reference for the index when it denotes an entity
 
          if Is_Entity_Name (Index) then
-            Generate_Reference (Entity (Index), Nam);
+            Generate_Reference (Entity (Index), Index);
          end if;
 
          --  Up to this point the expression could have been the actual in a
