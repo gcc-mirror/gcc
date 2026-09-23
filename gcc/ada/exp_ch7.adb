@@ -4385,23 +4385,19 @@ package body Exp_Ch7 is
                =>
                   return Curr;
 
-               --  Statements
+               --  Statements and statement-like constructs
 
-               --  Statements and statement-like constructs act as a boundary
-               --  for a transient scope.
+               --  Expressions of compound statements are master constructs so
+               --  they act as a boundary for a transient scope.
 
                when N_Accept_Alternative
                   | N_Attribute_Definition_Clause
                   | N_Case_Statement
                   | N_Case_Statement_Alternative
-                  | N_Code_Statement
                   | N_Delay_Alternative
-                  | N_Delay_Until_Statement
-                  | N_Delay_Relative_Statement
                   | N_Discriminant_Association
                   | N_Elsif_Part
                   | N_Entry_Body_Formal_Part
-                  | N_Exit_Statement
                   | N_If_Statement
                   | N_Iteration_Scheme
                   | N_Terminate_Alternative
@@ -4409,7 +4405,23 @@ package body Exp_Ch7 is
                   pragma Assert (Present (Prev));
                   return Prev;
 
-               when N_Assignment_Statement =>
+               --  An exit statement only alters the control flow, so there
+               --  is no need to wait until after its completion to finalize
+               --  its expression (which is however not a master construct).
+
+               when N_Exit_Statement =>
+                  pragma Assert (Present (Prev));
+                  return Prev;
+
+               --  Expressions of simple statements are not master constructs
+               --  (except for a simple return), so only the statements act as
+               --  a boundary for a transient scope.
+
+               when N_Assignment_Statement
+                  | N_Code_Statement
+                  | N_Delay_Relative_Statement
+                  | N_Delay_Until_Statement
+               =>
                   return Curr;
 
                when N_Entry_Call_Statement
