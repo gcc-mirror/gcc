@@ -18447,6 +18447,75 @@ aarch64_sve_adjust_stmt_cost (class vec_info *vinfo, vect_cost_for_stmt kind,
   return stmt_cost;
 }
 
+/* Return > 0 if STMT_INFO is the instruction requires additional costing.  The
+   instruction is evaluated as being vectorized as VECTYPE and the return value
+   should be the additional number of instructions that need to be costed.  */
+static unsigned int
+aarch64_ifn_vect_stmt_p (stmt_vec_info stmt_info, tree vectype)
+{
+  stmt_info = vect_stmt_to_vectorize (stmt_info);
+  gcall *call = dyn_cast<gcall *> (STMT_VINFO_STMT (stmt_info));
+  if (!vectype)
+    return 0;
+
+  gassign *assign = dyn_cast <gassign *> (STMT_VINFO_STMT (stmt_info));
+  if (!call && !assign)
+    return 0;
+
+  auto vec_flags = aarch64_classify_vector_mode (TYPE_MODE (vectype));
+  bool advsimd_p = vec_flags & VEC_ADVSIMD;
+  bool is_128bit_p = known_eq (GET_MODE_BITSIZE (TYPE_MODE (vectype)), 128);
+  if (assign)
+    {
+      switch (gimple_assign_rhs_code (assign))
+      {
+	/* SAD for Adv. SIMD is emulated using two instuctions per 64-bit
+	   quantities.  So 128-bit ADB requires 4 INSN.  Account for that.  */
+	case SAD_EXPR:
+	  return advsimd_p && is_128bit_p ? 2 : 0;
+	case WIDEN_SUM_EXPR:
+	  {
+	    tree rhs = gimple_assign_rhs1 (assign);
+	    if (!advsimd_p
+		|| TARGET_DOTPROD
+		|| !vect_is_reduction (stmt_info)
+		|| TREE_CODE (rhs) != SSA_NAME)
+	      return 0;
+
+	    gimple *def_stmt = SSA_NAME_DEF_STMT (rhs);
+	    gassign *def_assign = dyn_cast<gassign *> (def_stmt);
+	    if (def_assign
+		&& CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def_assign))
+		&& TREE_CODE (gimple_assign_rhs1 (def_assign)) == SSA_NAME)
+	      def_stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (def_assign));
+
+	    gcall *def = dyn_cast<gcall *> (def_stmt);
+	    if (!def || gimple_call_combined_fn (def) != CFN_ABD)
+	      return 0;
+
+	    for (unsigned int i = 0; i < 2; ++i)
+	      {
+		tree arg = gimple_call_arg (def, i);
+		if (TREE_CODE (arg) != SSA_NAME
+		    || !gimple_assign_load_p (SSA_NAME_DEF_STMT (arg)))
+		  return 0;
+	      }
+	    return 2;
+	  }
+	default:
+	  break;
+      }
+      return 0;
+    }
+
+  switch (gimple_call_combined_fn (call))
+  {
+    default:
+      break;
+    }
+  return 0;
+}
+
 /* STMT_COST is the cost calculated for STMT_INFO, which has cost kind KIND
    and which when vectorized would operate on vector type VECTYPE.  Add the
    cost of any embedded operations.  */
@@ -18571,6 +18640,13 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       if (aarch64_bool_compound_p (m_vinfo, stmt_info, node, m_vec_flags))
 	return;
     }
+
+  unsigned int n_insn = 0;
+  if (stmt_info
+      && kind == vector_stmt
+      && (n_insn = aarch64_ifn_vect_stmt_p (stmt_info,
+					    STMT_VINFO_VECTYPE (stmt_info))))
+    ops->general_ops += n_insn * count;
 
   /* Detect the case where we are using an emulated gather/scatter.  When a
      target does not support gathers and scatters directly the vectorizer
@@ -19153,6 +19229,14 @@ aarch64_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	 to the base cost calculated above.  */
       stmt_cost = aarch64_adjust_stmt_cost (m_vinfo, kind, stmt_info, node,
 					    vectype, m_vec_flags, stmt_cost);
+      unsigned int n_insn = 0;
+      if (vectype
+	  && kind == vector_stmt
+	  && (n_insn = aarch64_ifn_vect_stmt_p (stmt_info, vectype)))
+	{
+	  const simd_vec_cost *simd_costs = aarch64_simd_vec_costs (vectype);
+	  stmt_cost += count * n_insn * simd_costs->int_stmt_cost;
+	}
 
       /* If we're applying the SVE vs. Advanced SIMD unrolling heuristic,
 	 estimate the number of statements in the unrolled Advanced SIMD
