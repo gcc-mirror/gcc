@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "memmodel.h"
 #include "gimple.h"
+#include "internal-fn.h"
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "df.h"
@@ -2332,6 +2333,40 @@ aarch64_try_widen_mult_by_pow2 (const gassign *convert,
   return true;
 }
 
+/* Try to use the sdiv_pow2 optab for signed vector division by a constant
+   power of two.  */
+static bool
+aarch64_try_sdiv_pow2 (const gassign *assign, gimple_stmt_iterator *gsi)
+{
+  tree lhs = gimple_assign_lhs (assign);
+  tree type = TREE_TYPE (lhs);
+
+  if (!VECTOR_INTEGER_TYPE_P (type)
+      || TYPE_UNSIGNED (type)
+      || !direct_internal_fn_supported_p (IFN_DIV_POW2, type,
+					   OPTIMIZE_FOR_BOTH))
+    return false;
+
+  tree dividend = gimple_assign_rhs1 (assign);
+  tree divisor = uniform_integer_cst_p (gimple_assign_rhs2 (assign));
+
+  /* Check that the divisor is a constant positive power of two.  */
+  if (!divisor
+      || tree_int_cst_sgn (divisor) != 1
+      || !integer_pow2p (divisor))
+    return false;
+
+  tree shift = build_int_cst (TREE_TYPE (type), tree_log2 (divisor));
+  shift = build_vector_from_val (type, shift);
+
+  gcall *call = gimple_build_call_internal (IFN_DIV_POW2, 2,
+					     dividend, shift);
+  gimple_call_set_lhs (call, lhs);
+  gimple_set_location (call, gimple_location (assign));
+  gsi_replace (gsi, call, false);
+  return true;
+}
+
 /* Implement TARGET_MAX_NOCE_IFCVT_SEQ_COST.  If an explicit max was set then
    honor it, otherwise apply a tuning specific scale to branch costs.  */
 
@@ -4551,6 +4586,10 @@ aarch64_instruction_selection (function *fun, gimple_stmt_iterator *gsi)
 
   if (!assign)
     return false;
+
+  if (gimple_assign_rhs_code (assign) == TRUNC_DIV_EXPR
+      && aarch64_try_sdiv_pow2 (assign, gsi))
+    return true;
 
   if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign))
       && aarch64_try_widen_mult_by_pow2 (assign, gsi))
