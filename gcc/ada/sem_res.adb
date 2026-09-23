@@ -10322,6 +10322,7 @@ package body Sem_Res is
         and then (Is_Overloaded (R)
                    or else
                      (not Is_Universal_Numeric_Type (Etype (R))
+                       and then not Is_Generic_Type (Etype (R))
                        and then
                          (not Is_Integer_Type (Etype (R))
                            or else
