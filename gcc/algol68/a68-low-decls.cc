@@ -57,11 +57,9 @@
                         mode declaration, comma symbol,
 			defining indicant, equals symbol, void symbol.
 
-   Each mode declaration lowers into a TYPE_DECL, which are chained in the
-   current block.  This function returns void_node.
-
-   Note that the defining indicant is already annotated with the declared mode
-   so there is no need to go hunting for the declarer in the subtree.  */
+   Each mode declaration lowers into a TYPE_DECL so the mode is reflected in
+   the debug info.  This is done by linking the decl to the type via
+   TYPE_STUB_DECL and by filling in the TYPE_NAME of the base type.  */
 
 tree
 a68_lower_mode_declaration (NODE_T *p, LOW_CTX_T ctx)
@@ -87,19 +85,22 @@ a68_lower_mode_declaration (NODE_T *p, LOW_CTX_T ctx)
 	}
     }
 
-  /* Create a TYPE_DECL declaration for the defined mode and chain it in the
-     current block.  */
-  tree ctype = CTYPE (MOID (defining_indicant));
+  tree type = CTYPE (MOID (defining_indicant));
+
   tree decl_name = a68_get_mangled_indicant (NSYMBOL (defining_indicant),
-					     ctx.module_definition_name);
+						 ctx.module_definition_name);
   tree decl = build_decl (a68_get_node_location (p),
-			  TYPE_DECL, decl_name, ctype);
+			  TYPE_DECL, decl_name, type);
   SET_DECL_ASSEMBLER_NAME (decl, decl_name);
   TREE_PUBLIC (decl) = 1;
-  TYPE_CONTEXT (ctype) = DECL_CONTEXT (decl);
-  TYPE_NAME (ctype) = decl;
-  TYPE_STUB_DECL (ctype) = decl;
-  a68_add_decl (decl);
+
+  if (PUBLIC_RANGE (TABLE (TAX (defining_indicant))))
+    a68_add_global_decl (decl);
+  else
+    a68_add_decl (decl);
+
+  TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
+  TYPE_NAME (type) = decl;
 
   return void_node;
 }
@@ -159,7 +160,7 @@ a68_lower_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
 
       if (IS (q, PUBLIC_SYMBOL))
 	FORWARD (q);
- 
+
       if (IS (q, QUALIFIER))
 	{
 	  /* The qualifier determines what kind of generator is used in the
