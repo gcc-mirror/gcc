@@ -8709,8 +8709,6 @@ package body Sem_Ch3 is
          --  In any case, the primitive operations are inherited from the
          --  parent type, not from the internal full view.
 
-         Set_Etype (Base_Type (Derived_Type), Base_Type (Parent_Type));
-
          if Derive_Subps then
             --  Initialize the list of primitive operations to an empty list,
             --  to cover tagged types as well as untagged types. For untagged
@@ -8722,12 +8720,13 @@ package body Sem_Ch3 is
             Derive_Subprograms (Parent_Type, Derived_Type);
          end if;
 
+         Set_Has_Constrained_Partial_View
+           (Derived_Type, Has_Constrained_Partial_View (Par_Base));
+         Set_Is_Constrained (Derived_Type, Is_Constrained (Parent_Type));
          Set_Stored_Constraint (Derived_Type, No_Elist);
-         Set_Is_Constrained
-           (Derived_Type, Is_Constrained (Available_Full_View (Parent_Type)));
 
       else
-         --  Untagged type, No discriminants on either view
+         --  Untagged type, no discriminants on either view
 
          if Nkind (Subtype_Indication (Type_Definition (N))) =
                                                    N_Subtype_Indication
@@ -10075,6 +10074,8 @@ package body Sem_Ch3 is
       Propagate_Concurrent_Flags (Derived_Type, Parent_Base);
       Propagate_Controlled_Flags (Derived_Type, Parent_Base, Deriv => True);
 
+      Set_Has_Constrained_Partial_View
+        (Derived_Type, Has_Constrained_Partial_View (Parent_Base));
       Set_Has_Non_Standard_Rep
         (Derived_Type, Has_Non_Standard_Rep     (Parent_Base));
       Set_Has_Primitive_Operations
