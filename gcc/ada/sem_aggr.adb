@@ -5507,10 +5507,10 @@ package body Sem_Aggr is
       --  ancestor part.
       --
       --  If the aggregate is in a context with expansion delayed, it will be
-      --  reanalyzed. The inherited discriminant values must not be reinserted
-      --  in the component list to prevent spurious errors, but they must be
-      --  present on first analysis to build the proper subtype indications.
-      --  The flag Inherited_Discriminant is used to prevent the re-insertion.
+      --  reanalyzed. The inherited discriminant values must not be present in
+      --  the component list the second time to prevent spurious errors and,
+      --  therefore, need to be removed at the end of the first processing.
+      --  The flag Inherited_Discriminant is used to implement this scheme.
 
       function Find_Private_Ancestor (Typ : Entity_Id) return Entity_Id;
       --  AI05-0115: Find earlier ancestor in the derivation chain that is
@@ -5599,38 +5599,18 @@ package body Sem_Aggr is
       --------------------------
 
       function Discriminant_Present (Input_Discr : Entity_Id) return Boolean is
-         Regular_Aggr : constant Boolean := Nkind (N) /= N_Extension_Aggregate;
-
+         Ancestor           : Node_Id;
          Ancestor_Is_Subtyp : Boolean;
-
-         Loc : Source_Ptr;
-
-         Ancestor     : Node_Id;
-         Ancestor_Typ : Entity_Id;
-         Comp_Assoc   : Node_Id;
-         Discr        : Entity_Id;
-         Discr_Expr   : Node_Id;
-         Discr_Val    : Elmt_Id := No_Elmt;
-         Orig_Discr   : Entity_Id;
+         Ancestor_Typ       : Entity_Id;
+         Discr              : Entity_Id;
+         Discr_Expr         : Node_Id;
+         Discr_Val          : Elmt_Id;
+         Loc                : Source_Ptr;
+         Orig_Discr         : Entity_Id;
 
       begin
-         if Regular_Aggr then
+         if Nkind (N) /= N_Extension_Aggregate then
             return True;
-         end if;
-
-         --  Check whether inherited discriminant values have already been
-         --  inserted in the aggregate. This will be the case if we are
-         --  re-analyzing an aggregate whose expansion was delayed.
-
-         if Present (Component_Associations (N)) then
-            Comp_Assoc := First (Component_Associations (N));
-            while Present (Comp_Assoc) loop
-               if Inherited_Discriminant (Comp_Assoc) then
-                  return True;
-               end if;
-
-               Next (Comp_Assoc);
-            end loop;
          end if;
 
          Ancestor     := Ancestor_Part (N);
@@ -6982,7 +6962,24 @@ package body Sem_Aggr is
       Step_8 : declare
          New_Aggregate : constant Node_Id := New_Copy (N);
 
+         Assoc      : Node_Id;
+         Next_Assoc : Node_Id;
+
       begin
+         --  If this is an extension aggregate, remove the inherited
+         --  discriminants from the list in case it is reanalyzed.
+
+         if Nkind (N) = N_Extension_Aggregate then
+            Assoc := First (New_Assoc_List);
+            while Present (Assoc) loop
+               Next_Assoc := Next (Assoc);
+               if Inherited_Discriminant (Assoc) then
+                  Remove (Assoc);
+               end if;
+               Assoc := Next_Assoc;
+            end loop;
+         end if;
+
          Set_Expressions            (New_Aggregate, No_List);
          Set_Etype                  (New_Aggregate, Etype (N));
          Set_Component_Associations (New_Aggregate, New_Assoc_List);
