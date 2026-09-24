@@ -179,3 +179,20 @@ DEF_NEON_FUNCTION (vsha512h2q,  d_unsigned, ("Q0,Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsha512su0q, d_unsigned, ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsha512su1q, d_unsigned, ("Q0,Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
+
+// SM3
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SM4)
+DEF_NEON_FUNCTION (vsm3ss1q,    s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsm3tt1aq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3tt1bq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3tt2aq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3tt2bq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3partw1q, s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsm3partw2q, s_unsigned, ("Q0,Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// SM4
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SM4)
+DEF_NEON_FUNCTION (vsm4eq,    s_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsm4ekeyq, s_unsigned, ("Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS

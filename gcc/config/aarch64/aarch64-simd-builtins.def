@@ -831,21 +831,6 @@
   BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2, FP)
   BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2, FP)
 
-  /* Implemented by aarch64_sm3ss1qv4si.  */
-  VAR1 (TERNOPU, sm3ss1q, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm3tt<sm3tt_op>qv4si.  */
-  VAR1 (QUADOPUI, sm3tt1aq, 0, DEFAULT, v4si)
-  VAR1 (QUADOPUI, sm3tt1bq, 0, DEFAULT, v4si)
-  VAR1 (QUADOPUI, sm3tt2aq, 0, DEFAULT, v4si)
-  VAR1 (QUADOPUI, sm3tt2bq, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm3partw<sm3part_op>qv4si.  */
-  VAR1 (TERNOPU, sm3partw1q, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, sm3partw2q, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm4eqv4si.  */
-  VAR1 (BINOPU, sm4eq, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm4ekeyqv4si.  */
-  VAR1 (BINOPU, sm4ekeyq, 0, DEFAULT, v4si)
-
   /* Implemented by aarch64_fml<f16mac1>l<f16quad>_low<mode>.  */
   VAR1 (TERNOP, fmlal_low, 0, FP, v2sf)
   VAR1 (TERNOP, fmlsl_low, 0, FP, v2sf)

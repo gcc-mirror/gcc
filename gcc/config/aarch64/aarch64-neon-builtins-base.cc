@@ -817,4 +817,17 @@ NEON_FUNCTION (vsha512hq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_sha512hqv2
 NEON_FUNCTION (vsha512h2q,  gimple_exact_insn<CODE_FOR_aarch64_crypto_sha512h2qv2di>,)
 NEON_FUNCTION (vsha512su0q, gimple_exact_insn<CODE_FOR_aarch64_crypto_sha512su0qv2di>,)
 NEON_FUNCTION (vsha512su1q, gimple_exact_insn<CODE_FOR_aarch64_crypto_sha512su1qv2di>,)
+
+// SM3
+NEON_FUNCTION (vsm3ss1q,    gimple_exact_insn<CODE_FOR_aarch64_sm3ss1qv4si>,)
+NEON_FUNCTION (vsm3tt1aq,   gimple_exact_insn<CODE_FOR_aarch64_sm3tt1aqv4si>,)
+NEON_FUNCTION (vsm3tt1bq,   gimple_exact_insn<CODE_FOR_aarch64_sm3tt1bqv4si>,)
+NEON_FUNCTION (vsm3tt2aq,   gimple_exact_insn<CODE_FOR_aarch64_sm3tt2aqv4si>,)
+NEON_FUNCTION (vsm3tt2bq,   gimple_exact_insn<CODE_FOR_aarch64_sm3tt2bqv4si>,)
+NEON_FUNCTION (vsm3partw1q, gimple_exact_insn<CODE_FOR_aarch64_sm3partw1qv4si>,)
+NEON_FUNCTION (vsm3partw2q, gimple_exact_insn<CODE_FOR_aarch64_sm3partw2qv4si>,)
+
+// SM4
+NEON_FUNCTION (vsm4eq,    gimple_exact_insn<CODE_FOR_aarch64_sm4eqv4si>,)
+NEON_FUNCTION (vsm4ekeyq, gimple_exact_insn<CODE_FOR_aarch64_sm4ekeyqv4si>,)
 }
