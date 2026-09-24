@@ -712,14 +712,6 @@
   BUILTIN_VDQSF (QUADOP_LANE, float_mla_laneq, 0, FP)
   BUILTIN_VDQSF (QUADOP_LANE, float_mls_laneq, 0, FP)
 
-  /* Implemented by aarch64_crypto_sha1<op><mode>.  */
-  VAR1 (UNOPU, crypto_sha1h, 0, DEFAULT, si)
-  VAR1 (BINOPU, crypto_sha1su1, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1c, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1m, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1p, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1su0, 0, DEFAULT, v4si)
-
   /* Implemented by aarch64_crypto_sha256<op><mode>.  */
   VAR1 (TERNOPU, crypto_sha256h, 0, DEFAULT, v4si)
   VAR1 (TERNOPU, crypto_sha256h2, 0, DEFAULT, v4si)

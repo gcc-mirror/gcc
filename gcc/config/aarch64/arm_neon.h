@@ -16730,48 +16730,6 @@ vrsrad_n_u64 (uint64_t __a, uint64_t __b, const int __c)
 
 __extension__ extern __inline uint32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha1cq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
-{
-  return __builtin_aarch64_crypto_sha1cv4si_uuuu (__hash_abcd, __hash_e, __wk);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha1mq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
-{
-  return __builtin_aarch64_crypto_sha1mv4si_uuuu (__hash_abcd, __hash_e, __wk);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha1pq_u32 (uint32x4_t __hash_abcd, uint32_t __hash_e, uint32x4_t __wk)
-{
-  return __builtin_aarch64_crypto_sha1pv4si_uuuu (__hash_abcd, __hash_e, __wk);
-}
-
-__extension__ extern __inline uint32_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha1h_u32 (uint32_t __hash_e)
-{
-  return __builtin_aarch64_crypto_sha1hsi_uu (__hash_e);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha1su0q_u32 (uint32x4_t __w0_3, uint32x4_t __w4_7, uint32x4_t __w8_11)
-{
-  return __builtin_aarch64_crypto_sha1su0v4si_uuuu (__w0_3, __w4_7, __w8_11);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha1su1q_u32 (uint32x4_t __tw0_3, uint32x4_t __w12_15)
-{
-  return __builtin_aarch64_crypto_sha1su1v4si_uuu (__tw0_3, __w12_15);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vsha256hq_u32 (uint32x4_t __hash_abcd, uint32x4_t __hash_efgh, uint32x4_t __wk)
 {
   return __builtin_aarch64_crypto_sha256hv4si_uuuu (__hash_abcd, __hash_efgh,
