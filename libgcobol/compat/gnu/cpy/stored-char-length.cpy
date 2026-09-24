@@ -30,7 +30,7 @@
       * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
         Identification Division.
-        Function-ID. STORED-CHAR-LENGTH.
+        Function-ID. STORED-CHAR-LENGTH PROTOTYPE.
         Data Division.
         Linkage Section.
         01 Candidate PIC X Any Length.
