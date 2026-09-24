@@ -1,3 +1,22 @@
+2026-09-23  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	Backported from master:
+	2026-09-18  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR rtl-optimization/127367
+	* ext-dce.cc: Include regs.h.
+	(ext_dce_process_uses): Handle multi-register hard regs.
+
+2026-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-09-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127461
+	* config/i386/mmx.md (negv2qi2): Use optimize_size instead of
+	optimize_function_for_size_p (cfun) in the enabled attribute.
+	(<plusminus:insn>v2qi3): Ditto.
+
 2026-09-22  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
