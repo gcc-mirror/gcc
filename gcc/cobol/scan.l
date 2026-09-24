@@ -75,9 +75,6 @@ namespace picture_validation {
   };
 }
 
-std::pair<const char *, picture_validation::state_t>
-is_valid_picture( const char picture[] );
-
 static const char *
 crdb_maybe( const char *p )  {
   char candidate[3] = { TOUPPER(p[-1]), TOUPPER(p[0]) };
@@ -85,18 +82,24 @@ crdb_maybe( const char *p )  {
   return 1 == endings.count(candidate)? --p : p;
 }
 
+static const char *
+picture_at() {
+  std::reverse_iterator<const char*> end(yytext), beg(yytext + yyleng);
+  auto pos = std::find(beg, end, 0x20);
+  auto picture = pos.base();
+  dbgmsg("%s: picture is '%s'", __func__, picture);
+  return picture;
+}
+
 static size_t
-is_valid_picture() {
-    std::reverse_iterator<const char*> end(yytext), beg(yytext + yyleng);
-    auto pos = std::find(beg, end, 0x20);
-    auto picture = pos.base();
+old_valid_picture(){
+    auto picture = picture_at();
     dbgmsg("%s: picture is '%s'", __func__, picture);
     
-    auto result = is_valid_picture(picture);
+    auto result = is_valid_picture(yylloc, picture);
 
-    if( 0 != (result.second & picture_validation::invalid_e) ) {
-      assert(yytext < result.first);
-      auto p = crdb_maybe(result.first);
+    if( result.valid() ) {
+      auto p = crdb_maybe( yytext + result.pos );
       auto loc(yylloc);
       if( loc.first_line == loc.last_line ) {
         auto error_col = p - yytext;
@@ -1297,9 +1300,51 @@ USE({SPC}FOR)?		{ return USE; }
 			}
 
   PIC(TURE)?({SPC}IS)?{SPC}{PICTURE} {
-				  auto pos = is_valid_picture();
-				  myless(pos);
-				  yy_push_state(picture); return PIC;
+				  const auto nerror = parse_error_count();
+                                  auto end_dot = yyleng - 1;
+				  auto p = picture_at();
+                                  auto loc(yylloc);
+                                  loc.first_column += (p - yytext);
+				  const auto& pic = is_valid_picture(loc, p);
+                                  switch( pic.type ) {
+                                  case FldAlphaEdited:
+                                  case FldNumericEdited:
+                                    ////pic.dump();
+                                    yylval.lex_picture = pic;
+                                    if( yytext[end_dot] == '.' )  {
+                                      myless(end_dot);
+                                    }
+                                    return PICTURE;
+                                  case FldInvalid:
+                                    if( nerror == parse_error_count() ) {
+                                      if( *p == '1' ) {
+                                        cbl_unimplemented_at(loc, "BOOLEAN PICTURE %qs", p);
+                                      } else {
+                                        loc += pic.pos;
+                                        error_msg(loc, "invalid %qc at %u in PICTURE %qs",
+                                                  p[pic.pos], unsigned(pic.pos), p);
+                                      }
+                                    }
+                                    if( yytext[end_dot] == '.' )  {
+                                      myless(end_dot);
+                                    }
+                                    return NO_CONDITION;
+                                    break;
+                                  default:
+                                    if( nerror < parse_error_count() ) {
+                                      if( yytext[end_dot] == '.' )  {
+                                        myless(end_dot);
+                                        dbgmsg("picture is %s, %u error",
+                                               cbl_field_type_str(pic.type),
+                                               unsigned(nerror));
+                                        return NO_CONDITION;
+                                      }
+                                    }
+                                    break;
+                                  }
+				  myless(p - yytext);
+				  yy_push_state(picture);
+                                  return PIC;
                                 }
 
   ANY				{ return ANY; }
@@ -1621,6 +1666,7 @@ USE({SPC}FOR)?		{ return USE; }
 			update_location_col(yylval.literal.data, -2);
                         tmpstring = NULL; pop_return LITERAL; }
 }
+
 
   /* These appear only in ISO list of CDF reserved words */
   /* DE-EDITING 		{ return DE_EDITING; } */

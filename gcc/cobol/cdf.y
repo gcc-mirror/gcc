@@ -67,9 +67,9 @@ operator<<( std::ostream& os, cbl_loc_t const& loc ) {
   os << "("
      << loc.first_line
      << ","
-     << loc.first_column 
+     << loc.first_column
      << ") to ("
-     << loc.last_line 
+     << loc.last_line
      << ","
      << loc.last_column
      << ")";
@@ -89,7 +89,7 @@ namespace cdf {
     lookahead_token_kind = token;
     return lookahead_token_kind;
   }
-  
+
   bool had_lookahead() {
     int kind = 0;
     std::swap(kind, lookahead_token_kind);
@@ -99,7 +99,7 @@ namespace cdf {
 
 #define SAVE_LOOKAHEAD cdf::lookahead(yyla.kind())
 %}
-                        
+
 %code requires {
     namespace cdf
     {
@@ -107,7 +107,7 @@ namespace cdf {
     }
 }
 
-%code {    
+%code {
     // https://learnmoderncpp.com/2020/12/17/generating-c-programs-with-flex-and-bison-2/
     namespace cdf
     {
@@ -128,9 +128,9 @@ namespace cdf {
     }
   }
 }
-                        
+
 %define api.location.type {cbl_loc_t}
-                        
+
 %{
 #define COUNT_OF(X) (sizeof(X) / sizeof(X[0]))
 
@@ -206,7 +206,7 @@ void input_file_status_notify();
 	       const cdfval_t& value, bool override = false )
   {
     cdf_values_t& dictionary( cdf_dictionary() );
-    
+
     if( scanner_parsing() ) {
       if( ! override ) {
 	if( dictionary.find(name) != dictionary.end() ) return false;
@@ -218,7 +218,7 @@ void input_file_status_notify();
   static void
   cdfval_off( const char name[] ) {
     cdf_values_t& dictionary( cdf_dictionary() );
-    
+
     if( scanner_parsing() ) {
       auto p = dictionary.find(name);
       if( p == dictionary.end() ) {
@@ -245,7 +245,7 @@ void input_file_status_notify();
   cdfval_t operator/( const cdfval_base_t& lhs, const cdfval_base_t& rhs );
   cdfval_t negate( cdfval_base_t lhs );
 
-  void cdf_unreachable(); 
+  void cdf_unreachable();
   void cdf_field_add( const cbl_loc_t&, const std::string& name, const cdfval_t& value );
   cbl_file_t * cdf_file( size_t program, const cbl_name_t name );
   size_t cdf_file_index( const cbl_file_t *file );
@@ -257,11 +257,11 @@ static char *display_msg;
 const char * keyword_str( int token );
 
 exception_turn_t exception_turn;
-			
+
 bool
 apply_cdf_turn( const exception_turn_t& turn ) {
   cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
-  
+
   for( auto elem : turn.exception_files() ) {
     std::set<size_t> files(elem.second.begin(), elem.second.end());
     enabled_exceptions.turn_on_off(turn.enabled,
@@ -288,16 +288,16 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %printer { fprintf(stderr, "%s '%s'",
 		   keyword_str($$.token),
 		   $$.string? $$.string : "<nil>" ); } <cdfarg>
-// cppcheck-suppress invalidPrintfArgType_sint 
+// cppcheck-suppress invalidPrintfArgType_sint
 %printer { fprintf(stderr, "%ld '%s'",
 		   (long)$$.number, $$.string? $$.string : "" ); } <cdfval>
-                        
+
 %type	<string>	NAME NUMSTR LITERAL PSEUDOTEXT
 %type	<string>	LSUB RSUB SUBSCRIPT
 %type	<cdfarg>	namelit name_any name_one
 %type	<string>	name subscript subscripts inof
 %token <boolean>  BOOL
-%token <number>  FEATURE 400  NUMBER 308  EXCEPTION_NAME 284    "EXCEPTION NAME"
+%token <number>  FEATURE 401  NUMBER 309  EXCEPTION_NAME 284    "EXCEPTION NAME"
 
 %type	<cdfval>	cdf_expr
 %type	<cdfval>	cdf_relexpr cdf_reloper cdf_and cdf_bool_expr
@@ -309,53 +309,53 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 
 %type   <number>        cdf_stackable
 
-%token BY 520
-%token COPY 397
-%token CDF_DISPLAY 418    ">>DISPLAY"
-%token IN 638
+%token BY 521
+%token COPY 398
+%token CDF_DISPLAY 419    ">>DISPLAY"
+%token IN 639
 %token NAME 290
-%token NUMSTR 310    "numeric literal"
-%token OF 721
+%token NUMSTR 311    "numeric literal"
+%token OF 722
 %token PSEUDOTEXT 755
 %token REPLACING 777
-%token READY 405  TRACE 412  RESET 406
-%token LITERAL 303
-%token SUPPRESS 411
+%token READY 406  TRACE 413  RESET 407
+%token LITERAL 304
+%token SUPPRESS 412
 
-%token LSUB 402    "("
-%token SUBSCRIPT 410  RSUB 407    ")"
+%token LSUB 403    "("
+%token SUBSCRIPT 411  RSUB 408    ")"
 
-%token CDF_DEFINE 417    ">>DEFINE"
-%token CDF_IF 419    ">>IF"
-%token CDF_ELSE 420    ">>ELSE"
-%token CDF_END_IF 421    ">>END-IF"
-%token CDF_EVALUATE 422    ">>EVALUATE"
-%token CDF_WHEN 423    ">>WHEN"
-%token CDF_END_EVALUATE 424    ">>END-EVALUATE"
+%token CDF_DEFINE 418    ">>DEFINE"
+%token CDF_IF 420    ">>IF"
+%token CDF_ELSE 421    ">>ELSE"
+%token CDF_END_IF 422    ">>END-IF"
+%token CDF_EVALUATE 423    ">>EVALUATE"
+%token CDF_WHEN 424    ">>WHEN"
+%token CDF_END_EVALUATE 425    ">>END-EVALUATE"
 
-%token ALL 484
-%token CALL_CONVENTION 425    ">>CALL-CONVENTION"
-%token COBOL_WORDS 414    ">>COBOL-WORDS"
-%token CDF_PUSH 428    ">>PUSH"
-%token CDF_POP 429    ">>POP"
-%token SOURCE_FORMAT 430    ">>SOURCE FORMAT"
+%token ALL 485
+%token CALL_CONVENTION 426    ">>CALL-CONVENTION"
+%token COBOL_WORDS 415    ">>COBOL-WORDS"
+%token CDF_PUSH 429    ">>PUSH"
+%token CDF_POP 430    ">>POP"
+%token SOURCE_FORMAT 431    ">>SOURCE FORMAT"
 
-%token AS 502  CONSTANT 396  DEFINED 398
+%token AS 503  CONSTANT 397  DEFINED 399
 %type	<boolean>	     DEFINED
-%token OTHER 733  PARAMETER_kw 403    "PARAMETER"
-%token OFF 722  OVERRIDE 404
+%token OTHER 734  PARAMETER_kw 404    "PARAMETER"
+%token OFF 723  OVERRIDE 405
 %token THRU 979
 %token TRUE_kw 848    "True"
 
-%token CALL_COBOL 426    "CALL"
-%token CALL_VERBATIM 427    "CALL (as C)"
+%token CALL_COBOL 427    "CALL"
+%token CALL_VERBATIM 428    "CALL (as C)"
 
-%token TURN 850  CHECKING 530  LOCATION 682  ON 724  WITH 877
+%token TURN 850  CHECKING 531  LOCATION 683  ON 725  WITH 877
 
 %left OR 980
 %left AND 982
 %right NOT 983
-%left '<'  '>'  _EQ 302    "EQUAL"  _NE 984  _LE 985  _GE 986
+%left '<'  '>'  _EQ 303    "EQUAL"  _NE 984  _LE 985  _GE 986
 %left '-'  '+'
 %left '*'  '/'
 %right NEG 988
@@ -509,7 +509,7 @@ cdf_define:	CDF_DEFINE cdf_constant NAME as cdf_expr[value] override
 		}
 		;
 cdf_constant:	%empty
-	|	CONSTANT 
+	|	CONSTANT
                 ;
 override:	%empty   { $$ = false; }
 	|	OVERRIDE { $$ = true; }
@@ -542,7 +542,7 @@ cdf_push:       CDF_PUSH cdf_stackable {
                   case parser::token::YDF_CDF_DEFINE: 	cdf_push_dictionary(); break;
                   case parser::token::YDF_COBOL_WORDS: 	cdf_push_current_tokens(); break;
                   case parser::token::YDF_SOURCE_FORMAT:
-                  default: cdf_unreachable(); 
+                  default: cdf_unreachable();
                   }
                 }
                 ;
@@ -553,7 +553,7 @@ cdf_pop:        CDF_POP cdf_stackable {
                   case parser::token::YDF_CDF_DEFINE: 	cdf_pop_dictionary(); break;
                   case parser::token::YDF_COBOL_WORDS: 	cdf_pop_current_tokens(); break;
                   case parser::token::YDF_SOURCE_FORMAT:
-                  default: cdf_unreachable(); 
+                  default: cdf_unreachable();
                   }
                 }
                 ;
@@ -624,7 +624,7 @@ cdf_if:		CDF_IF cdf_cond_expr {
 		;
 
 cdf_evaluate:   CDF_EVALUATE cdf_expr
-	|	CDF_EVALUATE TRUE_kw 
+	|	CDF_EVALUATE TRUE_kw
                 ;
 
 cdf_eval_when:	CDF_WHEN cdf_eval_obj
@@ -632,10 +632,10 @@ cdf_eval_when:	CDF_WHEN cdf_eval_obj
 
 cdf_eval_obj:	cdf_cond_expr
         |       cdf_expr THRU cdf_expr
-        |       OTHER 
+        |       OTHER
         ;
 
-cdf_cond_expr:	BOOL 
+cdf_cond_expr:	BOOL
 	|	NAME DEFINED
 		{
                   cdf_values_t& dictionary( cdf_dictionary() );
@@ -868,7 +868,7 @@ namelit:	name
 	|	LITERAL { $$ = cdf_arg_t{parser::token::YDF_LITERAL, $1}; }
 		;
 
-name:		NAME                   
+name:		NAME
 	|	name inof NAME
 		{
                   		  char *s = xasprintf( "%s %s %s", $1, $2, $3 );
@@ -895,7 +895,7 @@ subscripts:	subscript
 		  $$ = s;
 		}
 		;
-subscript:	SUBSCRIPT 
+subscript:	SUBSCRIPT
 	|	LSUB subscript RSUB
 		{
                   		  char *s = xasprintf( "%s%s%s", $1, $2, $3 );
@@ -907,15 +907,15 @@ subscript:	SUBSCRIPT
 		;
 
 as:		%empty
-	|	AS 
+	|	AS
 		;
 
 on:             %empty
-        |       ON 
+        |       ON
                 ;
 
 with:           %empty
-        |       WITH 
+        |       WITH
                 ;
 
 %%
@@ -1088,11 +1088,10 @@ cdfval_base_t::operator()( const cbl_loc_t& loc ) {
   // cppcheck-suppress returnTempReference
   return verify_integer(loc, *this) ? *this : zero;
 }
-  
+
 namespace cdf {
   void
   parser::error(cbl_loc_t const& loc, std::string const& msg) {
       error_msg(loc, msg.c_str());
   }
 }
-

@@ -39,6 +39,7 @@
 #include <cstring>
 
 #include <algorithm>
+#include <array>
 #include <list>
 #include <map>
 #include <set>
@@ -50,6 +51,8 @@
 #define PICTURE_MAX 64
 
 extern const char *numed_message;
+
+typedef std::array<char, 64> tok_name_t;
 
 static inline const char *
 cbl_dialect_str(cbl_dialect_t dialect)  {
@@ -551,6 +554,14 @@ public:
   void original( REAL_VALUE_TYPE value ) {
     orig = orig_t(value);
   }
+
+  void apply_picture( const cbl_field_data_t& that ) {
+    nbyte = that.nbyte;
+    digits = that.digits;
+    rdigits = that.rdigits;
+    picture = that.picture;
+  }
+
  protected:
   cbl_field_data_t& copy_self( const cbl_field_data_t& that ) {
     memsize = that.memsize;

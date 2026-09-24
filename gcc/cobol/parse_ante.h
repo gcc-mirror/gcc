@@ -648,9 +648,11 @@ struct arith_t {
  protected:
   static bool is_numeric( const cbl_loc_t& loc, const cbl_refer_t& r ) {
     if( r.field && ! ::is_numeric(r.field) ) {
-      error_msg(loc, "%qs (%s) is not numeric",
-                nice_name_of(r.field),
-                cbl_field_type_name(r.field->type));
+      if( r.field->type != FldInvalid ) {
+        error_msg(loc, "%qs (%s) is not numeric",
+                  nice_name_of(r.field),
+                  cbl_field_type_name(r.field->type));
+      }
       return false;
     }
     return true;
@@ -3695,6 +3697,11 @@ parser_subtract2(  const cbl_num_result_t& to,
 }
 
 static bool
+valid_operands( const cbl_refer_t& src, const cbl_refer_t& tgt ) {
+  return ! (src.field->type == FldInvalid || tgt.field->type == FldInvalid);
+}
+
+static bool
 parser_move_carefully( const char */*F*/, int /*L*/,
                        tgt_list_t *tgt_list,
                        const cbl_refer_t& src,
@@ -3708,23 +3715,25 @@ parser_move_carefully( const char */*F*/, int /*L*/,
       return false;
     }
 
-    if( is_index ) {
-      if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
-        auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
-                             name_of(tgt.field), cbl_field_type_name(tgt.field->type),
-                             name_of(src.field), cbl_field_type_name(src.field->type));
-        dialect_ok(src.loc, MfSetNumeric, msg);
-        free(msg);
-      }
-    } else {
-      if( ! valid_move( tgt.field, src.field ) ) {
-        if( src.field->type == FldPointer &&
-            tgt.field->type == FldPointer ) {
-          dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
-        } else {
-          error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
-                    nice_name_of(src.field), cbl_field_type_name(src.field->type),
-                    nice_name_of(tgt.field), cbl_field_type_name(tgt.field->type));
+    if( valid_operands(src, tgt) ) {
+      if( is_index ) {
+        if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
+          auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
+                               name_of(tgt.field), cbl_field_type_name(tgt.field->type),
+                               name_of(src.field), cbl_field_type_name(src.field->type));
+          dialect_ok(src.loc, MfSetNumeric, msg);
+          free(msg);
+        }
+      } else {
+        if( ! valid_move( tgt.field, src.field ) ) {
+          if( src.field->type == FldPointer &&
+              tgt.field->type == FldPointer ) {
+            dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
+          } else {
+            error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
+                      nice_name_of(src.field), cbl_field_type_name(src.field->type),
+                      nice_name_of(tgt.field), cbl_field_type_name(tgt.field->type));
+          }
         }
       }
     }
@@ -3737,10 +3746,10 @@ parser_move_carefully( const char */*F*/, int /*L*/,
   delete tgt_list;
   return true;
 }
-#define parser_move2(P, S) \
-        parser_move_carefully(__func__, __LINE__, (P), (S), false)
-#define parser_index(P, S) \
-        parser_move_carefully(__func__, __LINE__, (P), (S), true)
+#define parser_move2(P, S)                                      \
+  parser_move_carefully(__func__, __LINE__, (P), (S), false)
+#define parser_index(P, S)                                      \
+  parser_move_carefully(__func__, __LINE__, (P), (S), true)
 
 static void
 ast_set_pointers( const list<cbl_num_result_t>& tgts, cbl_refer_t src ) {

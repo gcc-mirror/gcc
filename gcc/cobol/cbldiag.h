@@ -130,6 +130,23 @@ struct cbl_loc_t : public cbl_loc_base_t {
     first_column = last_column = 1;
     return *this;
   }
+  cbl_loc_t& operator++() {
+    if( first_column + 1 < last_column ) first_column++;
+    return *this;
+  }
+  cbl_loc_t operator++(int) {
+    auto out(*this);
+    if( first_column + 1 < last_column ) first_column++;
+    return out;
+  }
+  cbl_loc_t& operator+=(int n) {
+    if( first_column + n < last_column ) first_column += n;
+    return *this;
+  }
+  cbl_loc_t& operator+(int n) const {
+    auto out(*this);
+    return out += n;
+  }
 
   // Represent a multi-line location as the first line, so "included from"
   // reflects where the COPY statement appears, not where it ends. 
@@ -141,6 +158,11 @@ struct cbl_loc_t : public cbl_loc_base_t {
   }
 };
 
+std::pair<uint32_t, int> repeat_count(const char picture[]);
+std::pair<uint32_t, int> repeat_count(const cbl_loc_t& loc, const char picture[]);
+
+size_t parse_error_count();
+
 #include <type_traits>
 /* allow relocate stack */
 static_assert(std::is_trivially_copyable<cbl_loc_t>::value,
@@ -148,18 +170,6 @@ static_assert(std::is_trivially_copyable<cbl_loc_t>::value,
 
 const cbl_loc_t& cobol_location();
 
-/*
- * Naming Convention: Names end with a letter that indicates 
- * their kind:
- * F  fatal, "fatal error: "
- * I  ice, "internal compiler error: "
- * E  error, "error: "
- * S  sorry, "sorry, unimplemented: "
- * W  warning, "warning: "
- * A  anachronism, "anachronism: "
- * N  note, "note: "
- * D  debug, "debug: "
- */
 enum cbl_diag_id_t : uint64_t {
   CdfNotFoundW, 
   CdfParameterW,

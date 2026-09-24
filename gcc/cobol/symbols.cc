@@ -1828,7 +1828,6 @@ operator<<( std::ostream& os, const cbl_field_t& field ) {
 #pragma GCC diagnostic pop
 
 static std::map<size_t, std::set<size_t>> same_record_areas;
-size_t parse_error_count();
 
 /*
  * This function produces a zero-filled level number, so 1 becomes "01".  It's

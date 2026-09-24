@@ -28,44 +28,36 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef _UTIL_H_
-#define _UTIL_H_
+#ifndef _SEMANTIC_TOKEN_H_
+#define _SEMANTIC_TOKEN_H_
 
-bool fisdigit(int c);
-bool fisspace(int c);
-int  ftolower(int c);
-int  ftoupper(int c);
-bool fisprint(int c);
+struct lex_picture_t {
+  size_t pos;
+  uint64_t attr;
+  bool blank_when_zero_ok;
+  cbl_field_type_t type;
+  cbl_encoding_t encoding;
+  cbl_field_data_t *data; // NULL if error
 
-void cobol_set_pp_option(int opt);
-void cobol_trunc_binary( int cobol_trunc_binary );
-bool cobol_trunc_binary();
+  bool valid() const { return type != FldInvalid; }
+  void dump( cbl_name_t input ) const {
+    auto len = strlen(input);
+    int pad = len < 20? 20 - len : 0;
+    fprintf( stderr, "%-20s %s: '%s'%*s @ %u of %u (%s)",
+             cbl_field_type_str(type),
+             (attr & all_alpha_e)? "A" : " ",
+             input,
+             pad, "",
+             unsigned(pos), unsigned(strlen(input)),
+             __gg__encoding_iconv_name(encoding) );
+    if( data ) {
+      fprintf( stderr, "%2u{%3u,%u,%d}",
+               data->memsize, data->capacity(), data->digits, data->rdigits );
+    }
+    fprintf(stderr, "\n");
+  }
+};
 
-void cobol_filename_restore();
-const char * cobol_lineno( int );
-int cobol_lineno(void);
-
-unsigned long gb4( size_t input );
-
-template <typename P>
-static inline const void *
-as_voidp( P p ) {
-  return static_cast<const void *>(p);
-}
-
-/*
- * Functions that validate every PERFORM calls a unique reference.
- */
-namespace match_proc {
-  typedef char cbl_name_t[64];
-
-  // Supply each target as it's mentioned.
-  void statement_compose( int iline, size_t isection,
-                          const cbl_name_t para, const cbl_name_t qual );
-  // Add PERFORM to statement list.
-  void statement_add();
-  // Verify all statements and report problems. 
-  bool statements_verify();
-}
+lex_picture_t is_valid_picture(const cbl_loc_t& lock, const char picture[]);
 
 #endif
