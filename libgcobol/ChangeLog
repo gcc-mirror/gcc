@@ -1,3 +1,12 @@
+2026-09-23  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (do_the_dl_thing): Implement the updated policies.
+	(find_in_dirs): Use modified do_the_dl_thing().
+	(__gg__function_handle_from_cobpath): Honor the call_convention.
+	(function_handle_from_cobpath): Likewise.
+	(__gg__function_handle_from_literal): Likewise.
+	(__gg__function_handle_from_name): Likewise.
+
 2026-09-22  Xavier Del Campo Romero  <xdelcampo@symas.com>
 
 	* compat/gnu/lib/cbl_gpi.cc (struct gpi_priv): Fix flawed logic.

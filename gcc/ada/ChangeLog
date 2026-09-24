@@ -1,3 +1,75 @@
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Establish_Transient_Scope.Find_Transient_Context):
+	Add commentary about the distinction between compound and simple
+	statements, and adjust handling for code and delay statements.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Function return mechanisms): Minor tweaks.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Set_String_Literal_Subtype): In the nonstatic case,
+	set String_Literal_Low_Bound first, and check that the actual high
+	bound is not larger than the high bound of the index type.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Create_Extra_Actuals): Pass True for the extra actual
+	of the Constrained attribute when the actual contains a conversion
+	to a constrained subtype.
+	* sem_res.adb (Resolve_Actuals): Skip the resolution of an actual
+	that is a view conversion in fewer cases.  Remove redundant test.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_aggr.adb (Discriminant_Present): Do not return early if the
+	component list already contains an inherited discriminant.
+	(Resolve_Record_Aggregate): For an extension, remove the inherited
+	discriminants from the component list of the rewritten aggregate.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Discriminant_Check): Build the actual subtype of
+	the LHS for a view conversion of a constrained object.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch8.adb (Get_Object_Name): Delete.
+	(Analyze_Object_Renaming): Use Is_Entity_Name to detect names.
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Assert>: Detect ill-formed
+	quantified expressions and give an error.
+	<Pragma_Check>: Likewise.
+	* sem_res.ads (Malformed_Quantified_Expression): New procedure.
+	* sem_res.adb (Malformed_Quantified_Expression): Likewise.
+	(Resolve): Call Malformed_Quantified_Expression to give the error
+	about ill-formed quantified expressions.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Membership_Op): Add guard for generic type
+	to the test on the RM size.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_res.adb (Resolve_Entry): Fix thinko.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_elab.adb (Invocation_Graph.Process_Package_Declaration): Add
+	cut-off for broken subunits.
+
+2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): In the case where the
+	partial view has none but the full view has discriminants, do not
+	set again the Etype, propagate the Has_Constrained_Partial_View
+	flag from the parent base type and the Is_Constrained flag from
+	the partial view of the parent type.
+	(Build_Derived_Record_Type): Propagate Has_Constrained_Partial_View
+	from the parent base type.
+
 2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* accessibility.adb (Accessibility_Message): Adjust wording.

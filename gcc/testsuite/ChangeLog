@@ -1,3 +1,48 @@
+2026-09-23  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/CBL_READ_FILE__check_file_size_with_flags___128.cob:
+	Add dg-require-iconv directive.
+	* cobol.dg/group2/CDF_Feature_.cob: Likewise.
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_EBCDIC.cob:
+	Likewise.
+	* cobol.dg/group2/FIND-STRING__forward_.cob: Likewise.
+	* cobol.dg/group2/FIND-STRING__reverse_.cob: Likewise.
+	* cobol.dg/group2/RT3609_Unexpected_PROCESS.cob: Likewise.
+
+2026-09-23  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/directive-comma-clause.f90: New test.
+
+2026-09-23  Vijay Shankar  <vijay@linux.ibm.com>
+
+	PR target/27479
+	* gcc.target/powerpc/pr27479.c: New Test.
+
+2026-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127506
+	* g++.dg/cpp26/within-lifetime13.C: New test.
+
+2026-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125536
+	* g++.dg/template/unify14.C: New test.
+
+2026-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126599
+	* g++.dg/diagnostic/ptrtomem5.C: New test.
+	* g++.dg/diagnostic/ptrtomem6.C: New test.
+	* g++.dg/reflect/display_string_of1.C: Add 2 new tests.
+	* g++.dg/reflect/u8display_string_of1.C: Likewise.
+
+2026-09-23  Matthias Kretz  <m.kretz@gsi.de>
+
+	* gcc.target/i386/avx-roundeven.c: New test.
+	* gcc.target/i386/avx512f-roundeven.c: New test.
+	* gcc.target/i386/avx512fp16-roundeven.c: New test.
+	* gcc.target/i386/sse4_1-roundeven.c: New test.
+
 2026-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* algol68/compile/prepostlude-crash-1.a68: New test.
