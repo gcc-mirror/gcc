@@ -86,6 +86,34 @@ then
     copydir="-I$COB_COPY_DIR"
 fi
 
+# if not available from the build tree, attempt to search the install directory.
+udf_default="${0%/*}/../$($gcobol -dumpmachine)/libgcobol/compat/gnu/cpy"
+if ! [ -d "$udf_default" ]
+then
+    install_dir="$($gcobol -print-search-dirs | grep '^install:' | awk '{print $2}')"
+    udf_default="$install_dir/cobol/compat/gnu/cpy"
+fi
+udfdir="${GCOBCUDF:-$udf_default}"
+
+if [ -d "$udfdir" ]
+then
+    # Feel free to add more UDFs below.
+    udfs=stored-char-length.cpy
+
+    for F in $udfs
+    do
+        if [ -f "$udfdir/$F" ]
+        then
+            includes="$includes -include $udfdir/$F "
+        fi
+    done
+else
+    if [ "${GCOBCUDF:-none}" != "none" ]
+    then
+        echo warning: no such directory: "'$GCOBCUDF'"
+    fi
+fi
+
 exit_status=0
 skip_arg=
 opts="$copydir $includes"
