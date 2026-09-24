@@ -28509,11 +28509,11 @@ aarch64_evpc_rev64_ext (struct expand_vec_perm_d *d)
   if (!d->perm.series_p (0, 1, nelt - 1, -1))
     return false;
 
-  if (is_bb_in_loop (gimple_bb (currently_expanding_gimple_stmt)))
-    return false;
-
   if (d->testing_p)
     return true;
+
+  if (is_bb_in_loop (gimple_bb (currently_expanding_gimple_stmt)))
+    return false;
 
   rtx tmp1 = gen_reg_rtx (d->vmode);
   rtx tmp2 = gen_reg_rtx (V16QImode);
