@@ -2375,7 +2375,7 @@ may not change or dereference them.  The arguments also may not escape.
 The attribute may be used multiple times per function, though only one
 @code{callback_only} attribute may be used per function parameter.
 Neither the dispatching function nor the callback function may be
-variadic.
+variadic.  Both functions must have a prototype.
 
 The attribute exposes the potentially hidden callsite in the annotated
 function, enabling interprocedural optimizations which may not be

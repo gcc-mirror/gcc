@@ -3951,7 +3951,14 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
     }
 
   tree decl_type = TREE_TYPE (decl);
-  if (stdarg_p (decl_type))
+  if (!prototype_p (decl_type))
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE attribute requires a prototype", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  else if (stdarg_p (decl_type))
     {
       warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
 		  "%qE attribute cannot be used on variadic functions", name);
@@ -4002,7 +4009,14 @@ handle_callback_only_attribute (tree *node, tree name, tree args,
 
   tree type_args = TYPE_ARG_TYPES (cfn_pointee_type);
 
-  if (stdarg_p (cfn_pointee_type))
+  if (!prototype_p (cfn_pointee_type))
+    {
+      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
+		  "%qE callback function must have a prototype", name);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+  else if (stdarg_p (cfn_pointee_type))
     {
       warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wattributes,
 		  "%qE callback function cannot be variadic", name);
