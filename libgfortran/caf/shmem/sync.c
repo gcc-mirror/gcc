@@ -129,9 +129,9 @@ sync_table (sync_t *si, int *images, int size)
 }
 
 bool
-sync_all (void)
+sync_all (int *terminated)
 {
-  return sync_team_unless_stopped (caf_current_team);
+  return sync_team_unless_stopped (caf_current_team, terminated);
 }
 
 void
@@ -141,9 +141,10 @@ sync_team (caf_shmem_team_t team)
 }
 
 bool
-sync_team_unless_stopped (caf_shmem_team_t team)
+sync_team_unless_stopped (caf_shmem_team_t team, int *terminated)
 {
-  return counter_barrier_wait_abortable (&team->u.image_info->image_count);
+  return counter_barrier_wait_abortable (&team->u.image_info->image_count,
+					 terminated);
 }
 
 void

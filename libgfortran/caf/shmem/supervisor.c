@@ -242,6 +242,7 @@ ensure_shmem_initialization (void)
 	  caf_initial_team->u.image_info->lastmemid = 0;
 	  for (int i = 0; i < local->total_num_images; ++i)
 	    caf_initial_team->u.image_info->image_map[i] = i;
+	  register_team (caf_initial_team);
 	}
       allocator_unlock (&local->ai.alloc);
       sync_init (&local->si, &local->sm);
@@ -253,6 +254,7 @@ ensure_shmem_initialization (void)
       thread_support_init_supervisor ();
       counter_barrier_init (&this_image.supervisor->num_active_images,
 			    local->total_num_images);
+      this_image.supervisor->teams = SHMPTR_NULL;
       alloc_init_supervisor (&local->ai, &local->sm);
       sync_init_supervisor (&local->si, &local->ai);
     }
@@ -484,6 +486,9 @@ supervisor_main_loop (int *argc __attribute__ ((unused)),
 		{
 		  m->images[j].status = IMAGE_FAILED;
 		  atomic_fetch_add (&m->failed_images, 1);
+		  /* The image did not leave the barriers of its teams, so do
+		     it for it.  */
+		  update_registered_teams ();
 		}
 	      if (*exit_code < WTERMSIG (chstatus))
 		*exit_code = WTERMSIG (chstatus);

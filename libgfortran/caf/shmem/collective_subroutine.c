@@ -228,7 +228,7 @@ collsub_sync (void)
 {
   counter_barrier *barrier = &caf_current_team->u.image_info->collsub.barrier;
 
-  return counter_barrier_wait_abortable (barrier);
+  return counter_barrier_wait_abortable (barrier, NULL);
 }
 
 typedef void *(*red_op) (void *, void *);

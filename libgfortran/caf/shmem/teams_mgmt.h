@@ -62,6 +62,8 @@ struct caf_shmem_team
 	 this is checked against the global number and the image_count and
 	 image_map is updated.  */
       int num_term_images;
+      /* The next team in the supervisor's list of teams.  */
+      shared_mem_ptr next_team;
       memid lastmemid;
       int image_map[];
     } *image_info;
@@ -85,6 +87,17 @@ extern caf_shmem_team_t caf_teams_formed;
   update_teams_images (team)
 
 void update_teams_images (caf_shmem_team_t);
+
+/* Make TEAM known to the supervisor.  To be called once per team, by the
+   image that created it.  */
+
+void register_team (caf_shmem_team_t);
+
+/* Drop the images that terminated from the barriers of every team known to
+   the supervisor.  For the supervisor, which has no access to the teams an
+   image was a member of.  */
+
+void update_registered_teams (void);
 
 /* Drop this image, which terminated, from the barriers of all teams it is a
    member of.  The number of finished or failed images has to be updated

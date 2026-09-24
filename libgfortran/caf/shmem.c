@@ -87,8 +87,10 @@ _gfortran_caf_init (int *argc, char ***argv)
 
   if (shared_memory_get_env ())
     {
-      /* This is the initialization of a worker.  */
-      _gfortran_caf_sync_all (NULL, NULL, 0);
+      /* This is the initialization of a worker.  Synchronize without the
+	 checks of the SYNC ALL statement: an image terminating right after
+	 this barrier is not an error condition here.  */
+      sync_all (NULL);
       return;
     }
 
@@ -480,12 +482,18 @@ _gfortran_caf_deregister (caf_token_t *token, caf_deregister_t type, int *stat,
 void
 _gfortran_caf_sync_all (int *stat, char *errmsg, size_t errmsg_len)
 {
+  int terminated;
+
   __asm__ __volatile__ ("":::"memory");
-  HEALTH_CHECK (stat, errmsg, errmsg_len);
   CHECK_TEAM_INTEGRITY (caf_current_team);
-  /* With a stopped image, SYNC ALL only has the effect of SYNC MEMORY.  */
-  if (!sync_all ())
+  /* With a stopped image this only has the effect of SYNC MEMORY, with a
+     failed image the active images are synchronized; both are reported
+     (F2023 11.7.11).  An image terminating after the images synchronized
+     was not involved in the statement.  */
+  if (!sync_all (&terminated) || terminated)
     HEALTH_CHECK (stat, errmsg, errmsg_len);
+  else if (stat)
+    *stat = 0;
 }
 
 
@@ -1802,6 +1810,7 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
       t->u.image_info->image_map_size = 0;
       t->u.image_info->num_term_images = 0;
       t->u.image_info->lastmemid = tmemid;
+      register_team (t);
       /* Initialize a freshly created image_map with -1.  */
       for (int i = 0; i < caf_current_team->u.image_info->image_count.count;
 	   ++i)
@@ -1941,6 +1950,7 @@ _gfortran_caf_sync_team (caf_team_t team, int *stat, char *errmsg,
 {
   caf_shmem_team_t team_to_sync = (caf_shmem_team_t) team;
   caf_shmem_team_t active_team = caf_current_team;
+  int terminated;
 
   if (stat)
     *stat = 0;
@@ -1962,10 +1972,14 @@ _gfortran_caf_sync_team (caf_team_t team, int *stat, char *errmsg,
       return;
     }
 
-  TEAM_HEALTH_CHECK (team_to_sync, stat, errmsg, errmsg_len);
-  /* With a stopped image, SYNC TEAM only has the effect of SYNC MEMORY.  */
-  if (!sync_team_unless_stopped (team_to_sync))
+  /* With a stopped image this only has the effect of SYNC MEMORY, with a
+     failed image the active images are synchronized; both are reported
+     (F2023 11.7.11).  An image terminating after the images synchronized
+     was not involved in the statement.  */
+  if (!sync_team_unless_stopped (team_to_sync, &terminated) || terminated)
     TEAM_HEALTH_CHECK (team_to_sync, stat, errmsg, errmsg_len);
+  else if (stat)
+    *stat = 0;
 }
 
 int

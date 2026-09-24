@@ -55,6 +55,8 @@ counter_barrier_init (counter_barrier *b, int val)
 			  .aborted_round = 0,
 			  .abortable_arrivals = 0,
 			  .aborting = false,
+			  .terminated = 0,
+			  .round_terminated = 0,
 			  .count = val};
   initialize_shared_condition (&b->cond, val);
   initialize_shared_mutex (&b->mutex);
@@ -66,8 +68,12 @@ counter_barrier_init (counter_barrier *b, int val)
 static void
 next_round (counter_barrier *b, bool abort)
 {
+  /* Take the images removed so far as the ones that were involved in a
+     completed round; an image removed later did not take part in it.  */
   if (abort)
     b->aborted_round = b->curr_wait_group;
+  else
+    b->round_terminated = b->terminated;
   ++b->curr_wait_group;
   b->wait_count = b->count;
   b->abortable_arrivals = 0;
@@ -78,7 +84,7 @@ next_round (counter_barrier *b, bool abort)
    false, when the round was aborted.  */
 
 static bool
-wait_round (counter_barrier *b, bool abortable)
+wait_round (counter_barrier *b, bool abortable, int *terminated)
 {
   const uint64_t round = b->curr_wait_group;
 
@@ -93,6 +99,11 @@ wait_round (counter_barrier *b, bool abortable)
   if (b->curr_wait_group == round)
     next_round (b, false);
 
+  /* Only an aborted round can end before this image has left a completed
+     one, and it keeps the snapshot of the completed round.  */
+  if (terminated)
+    *terminated = b->round_terminated;
+
   return b->aborted_round != round;
 }
 
@@ -100,18 +111,18 @@ void
 counter_barrier_wait (counter_barrier *b)
 {
   lock_counter_barrier (b);
-  while (!wait_round (b, false))
+  while (!wait_round (b, false, NULL))
     ;
   unlock_counter_barrier (b);
 }
 
 bool
-counter_barrier_wait_abortable (counter_barrier *b)
+counter_barrier_wait_abortable (counter_barrier *b, int *terminated)
 {
   bool completed;
 
   lock_counter_barrier (b);
-  completed = !b->aborting && wait_round (b, true);
+  completed = !b->aborting && wait_round (b, true, terminated);
   unlock_counter_barrier (b);
   return completed;
 }
@@ -136,6 +147,8 @@ int
 counter_barrier_add_locked (counter_barrier *c, int val)
 {
   int ret;
+  if (val < 0)
+    c->terminated -= val;
   ret = (c->count += val);
   change_internal_barrier_count (c, val);
 

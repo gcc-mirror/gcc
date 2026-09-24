@@ -62,6 +62,10 @@ typedef struct supervisor
   atomic_int failed_images;
   atomic_int finished_images;
   counter_barrier num_active_images;
+  /* The teams formed so far, linked through their next_team, so that the
+     supervisor can reach the barriers of an image that terminated without
+     leaving them.  Pushed to without a lock.  */
+  shared_mem_ptr teams;
   caf_shmem_mutex image_tracker_lock;
 #ifdef WIN32
   size_t global_used_handles;
