@@ -119,11 +119,11 @@ public:
 
 class CrateMappings
 {
-  std::map<CrateNum, AST::Crate *> ast_crate_mappings;
+  std::map<CrateNum, AST::Crate *> ast_crate;
 
-  CrateNum crateNumItr;
+  CrateNum crate_num_itr;
 
-  CrateNum currentCrateNum;
+  CrateNum current_crate_num;
 
   std::map<NodeId, CrateNum> crate_node_to_crate_num;
 

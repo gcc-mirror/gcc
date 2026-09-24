@@ -99,7 +99,7 @@ static const HirId kDefaultHirIdBegin = 1;
 static const HirId kDefaultCrateNumBegin = 0;
 
 CrateMappings::CrateMappings ()
-  : crateNumItr (kDefaultCrateNumBegin), currentCrateNum (UNKNOWN_CRATENUM)
+  : crate_num_itr (kDefaultCrateNumBegin), current_crate_num (UNKNOWN_CRATENUM)
 {}
 
 Mappings::Mappings ()
@@ -126,8 +126,8 @@ Mappings::get ()
 CrateNum
 CrateMappings::get_next_crate_num (const std::string &name)
 {
-  auto id = crateNumItr;
-  crateNumItr++;
+  auto id = crate_num_itr;
+  crate_num_itr++;
   crate_names.insert (id, name);
   return id;
 }
@@ -135,13 +135,13 @@ CrateMappings::get_next_crate_num (const std::string &name)
 void
 CrateMappings::set_current_crate (CrateNum crateNum)
 {
-  currentCrateNum = crateNum;
+  current_crate_num = crateNum;
 }
 
 CrateNum
 CrateMappings::get_current_crate () const
 {
-  return currentCrateNum;
+  return current_crate_num;
 }
 
 tl::optional<CrateNum>
@@ -174,8 +174,8 @@ CrateMappings::lookup_crate_name (const std::string &crate_name) const
 tl::optional<NodeId>
 CrateMappings::crate_num_to_nodeid (const CrateNum &crate_num) const
 {
-  auto it = ast_crate_mappings.find (crate_num);
-  if (it == ast_crate_mappings.end ())
+  auto it = ast_crate.find (crate_num);
+  if (it == ast_crate.end ())
     return tl::nullopt;
 
   return it->second->get_node_id ();
@@ -233,8 +233,8 @@ Mappings::get_next_localdef_id (CrateNum crateNum)
 AST::Crate &
 CrateMappings::get_ast_crate (CrateNum crateNum)
 {
-  auto it = ast_crate_mappings.find (crateNum);
-  rust_assert (it != ast_crate_mappings.end ());
+  auto it = ast_crate.find (crateNum);
+  rust_assert (it != ast_crate.end ());
   return *it->second;
 }
 
@@ -248,8 +248,8 @@ AST::Crate *
 CrateMappings::get_ast_crate_by_node_id_raw (NodeId id)
 {
   CrateNum crateNum = lookup_crate_num (id).value ();
-  auto it = ast_crate_mappings.find (crateNum);
-  rust_assert (it != ast_crate_mappings.end ());
+  auto it = ast_crate.find (crateNum);
+  rust_assert (it != ast_crate.end ());
   return it->second;
 }
 
@@ -257,16 +257,16 @@ AST::Crate &
 CrateMappings::insert_ast_crate (std::unique_ptr<AST::Crate> &&crate,
 				 CrateNum crate_num)
 {
-  auto it = ast_crate_mappings.find (crate_num);
-  rust_assert (it == ast_crate_mappings.end ());
+  auto it = ast_crate.find (crate_num);
+  rust_assert (it == ast_crate.end ());
 
   // store it
   crate_node_to_crate_num.insert ({crate->get_node_id (), crate_num});
-  ast_crate_mappings.insert ({crate_num, crate.release ()});
+  ast_crate.insert ({crate_num, crate.release ()});
 
   // return the reference to it
-  it = ast_crate_mappings.find (crate_num);
-  rust_assert (it != ast_crate_mappings.end ());
+  it = ast_crate.find (crate_num);
+  rust_assert (it != ast_crate.end ());
   return *it->second;
 }
 
