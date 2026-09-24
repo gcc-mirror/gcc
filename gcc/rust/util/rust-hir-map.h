@@ -162,35 +162,28 @@ public:
     crate_names;
 };
 
-class ProcMacroMappings
+struct ProcMacroDefinitionMappings
 {
-  std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveMappings;
-  std::map<NodeId, BangProcMacro> procmacroBangMappings;
-  std::map<NodeId, AttributeProcMacro> procmacroAttributeMappings;
-  std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveInvocations;
-  std::map<NodeId, BangProcMacro> procmacroBangInvocations;
-  std::map<NodeId, AttributeProcMacro> procmacroAttributeInvocations;
+  Mapping<NodeId, CustomDeriveProcMacro, InsertionPolicy::FORBID_DUPLICATES>
+    derives;
+  Mapping<NodeId, BangProcMacro, InsertionPolicy::FORBID_DUPLICATES> bangs;
+  Mapping<NodeId, AttributeProcMacro, InsertionPolicy::FORBID_DUPLICATES>
+    attributes;
+};
 
-public:
-  void insert_derive_def (CustomDeriveProcMacro macro);
-  void insert_bang_def (BangProcMacro macro);
-  void insert_attribute_def (AttributeProcMacro macro);
+struct ProcMacroInvocationsMappings
+{
+  Mapping<NodeId, CustomDeriveProcMacro, InsertionPolicy::FORBID_DUPLICATES>
+    derives;
+  Mapping<NodeId, BangProcMacro, InsertionPolicy::FORBID_DUPLICATES> bangs;
+  Mapping<NodeId, AttributeProcMacro, InsertionPolicy::FORBID_DUPLICATES>
+    attributes;
+};
 
-  tl::optional<CustomDeriveProcMacro &> lookup_derive_def (NodeId id);
-  tl::optional<BangProcMacro &> lookup_bang_def (NodeId id);
-  tl::optional<AttributeProcMacro &> lookup_attribute_def (NodeId id);
-
-  tl::optional<CustomDeriveProcMacro &>
-  lookup_derive_invocation (AST::SimplePath &invoc);
-  tl::optional<BangProcMacro &>
-  lookup_bang_invocation (AST::MacroInvocation &invoc_id);
-  tl::optional<AttributeProcMacro &>
-  lookup_attribute_invocation (AST::SimplePath &invoc);
-  void insert_derive_invocation (AST::SimplePath &invoc,
-				 CustomDeriveProcMacro def);
-  void insert_bang_invocation (AST::MacroInvocation &invoc, BangProcMacro def);
-  void insert_attribute_invocation (AST::SimplePath &invoc,
-				    AttributeProcMacro def);
+struct ProcMacroMappings
+{
+  ProcMacroDefinitionMappings definitions;
+  ProcMacroInvocationsMappings invocations;
 };
 
 enum class InsertLocation

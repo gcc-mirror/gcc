@@ -198,19 +198,21 @@ TopLevel::visit_extern_crate (AST::ExternCrate &extern_crate, AST::Crate &crate,
     {
       insert_macros (derive_macros.value (), ctx);
       for (auto &macro : derive_macros.value ())
-	mappings.pmacro.insert_derive_def (macro);
+	mappings.pmacro.definitions.derives.insert (macro.get_node_id (),
+						    macro);
     }
   if (attribute_macros.has_value ())
     {
       insert_macros (attribute_macros.value (), ctx);
       for (auto &macro : attribute_macros.value ())
-	mappings.pmacro.insert_attribute_def (macro);
+	mappings.pmacro.definitions.attributes.insert (macro.get_node_id (),
+						       macro);
     }
   if (bang_macros.has_value ())
     {
       insert_macros (bang_macros.value (), ctx);
       for (auto &macro : bang_macros.value ())
-	mappings.pmacro.insert_bang_def (macro);
+	mappings.pmacro.definitions.bangs.insert (macro.get_node_id (), macro);
     }
 
   // We do *NOT* visit the crate because loaded crates are resolved
