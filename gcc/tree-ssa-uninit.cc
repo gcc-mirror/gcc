@@ -81,6 +81,7 @@ static bool
 has_undefined_value_p (tree t)
 {
   return (ssa_undefined_value_p (t)
+	  || gimple_call_internal_p (SSA_NAME_DEF_STMT (t), IFN_DEFERRED_INIT)
 	  || (possibly_undefined_names
 	      && possibly_undefined_names->contains (t)));
 }

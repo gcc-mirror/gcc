@@ -18,5 +18,5 @@ void foo()
   return;
 }
 
-/* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(2, 1, \&\"temp1\"" "gimple" } } */
+/* { dg-final { scan-tree-dump "temp1 = .DEFERRED_INIT \\(2, \[15], \&\"temp1\"" "gimple" } } */
 /* { dg-final { scan-tree-dump-not "temp2 = .DEFERRED_INIT \\(" "gimple" } } */

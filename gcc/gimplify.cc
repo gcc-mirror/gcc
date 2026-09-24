@@ -2113,7 +2113,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	     since __builtin_clear_padding will take the address of the
 	     variable.  As a result, if a long double/_Complex long double
 	     variable will spilled into stack later, its padding is 0XFE.  */
-	  if (flag_auto_var_init == AUTO_INIT_PATTERN
+	  if ((flag_auto_var_init & ~AUTO_INIT_CXX26) == AUTO_INIT_PATTERN
 	      && !is_gimple_reg (decl)
 	      && clear_padding_type_may_have_padding_p (TREE_TYPE (decl)))
 	    gimple_add_padding_init_for_auto_var (decl, is_vla, seq_p);
@@ -8478,7 +8478,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       if (var_needs_auto_init_p (temp) && VOID_TYPE_P (TREE_TYPE (init)))
 	{
 	  gimple_add_init_for_auto_var (temp, flag_auto_var_init, &init_pre_p);
-	  if (flag_auto_var_init == AUTO_INIT_PATTERN
+	  if ((flag_auto_var_init & ~AUTO_INIT_CXX26) == AUTO_INIT_PATTERN
 	      && !is_gimple_reg (temp)
 	      && clear_padding_type_may_have_padding_p (TREE_TYPE (temp)))
 	    gimple_add_padding_init_for_auto_var (temp, is_vla, &init_pre_p);

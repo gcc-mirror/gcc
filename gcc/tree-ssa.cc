@@ -1348,9 +1348,15 @@ ssa_undefined_value_p (tree t, bool partial)
     return true;
 
   /* The value is undefined if the definition statement is a call
-     to .DEFERRED_INIT function.  */
+     to .DEFERRED_INIT function.  Except for AUTO_INIT_CXX26 which is
+     undefined but needs to have the same value in all uses.  */
   if (gimple_call_internal_p (def_stmt, IFN_DEFERRED_INIT))
-    return true;
+    {
+      if (tree_to_uhwi (gimple_call_arg (def_stmt, 1)) & AUTO_INIT_CXX26)
+	return false;
+      else
+	return true;
+    }
 
   /* The value is partially undefined if the definition statement is
      a REALPART_EXPR or IMAGPART_EXPR and its operand is defined by

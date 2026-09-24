@@ -31,5 +31,5 @@ void VCross(VECTOR a, const VECTOR b, const VECTOR c)
  Assign_Vector(a, tmp);
 }
 
-/* { dg-final { scan-tree-dump-times "tmp = .DEFERRED_INIT \\(24, 2, \&\"tmp\"" 1 "gimple" } } */
-/* { dg-final { scan-tree-dump-times ".DEFERRED_INIT \\(8, 2, \&\"tmp\"" 3 "esra" } } */
+/* { dg-final { scan-tree-dump-times "tmp = .DEFERRED_INIT \\(24, \[26], \&\"tmp\"" 1 "gimple" } } */
+/* { dg-final { scan-tree-dump-times ".DEFERRED_INIT \\(8, \[26], \&\"tmp\"" 3 "esra" } } */

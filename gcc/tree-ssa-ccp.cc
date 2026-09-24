@@ -727,9 +727,16 @@ likely_value (gimple *stmt)
   if (gimple_has_volatile_ops (stmt))
     return VARYING;
 
-  /* .DEFERRED_INIT produces undefined.  */
+  /* .DEFERRED_INIT produces undefined except for AUTO_INIT_CXX26
+     which produces varying because it is undefined that needs to have
+     the same value in all uses.  */
   if (gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
-    return UNDEFINED;
+    {
+      if (tree_to_uhwi (gimple_call_arg (stmt, 1)) & AUTO_INIT_CXX26)
+	return VARYING;
+      else
+	return UNDEFINED;
+    }
 
   /* Arrive here for more complex cases.  */
   has_constant_operand = false;

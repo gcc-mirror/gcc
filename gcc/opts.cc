@@ -1164,8 +1164,10 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
   if (opts->x_flag_hardened)
     {
       if (!opts_set->x_flag_auto_var_init)
-	opts->x_flag_auto_var_init = AUTO_INIT_ZERO;
-      else if (opts->x_flag_auto_var_init != AUTO_INIT_ZERO)
+	opts->x_flag_auto_var_init
+	  = auto_init_type (opts->x_flag_auto_var_init | AUTO_INIT_ZERO);
+      else if ((opts->x_flag_auto_var_init & ~AUTO_INIT_CXX26)
+	       != AUTO_INIT_ZERO)
 	warning_at (loc, OPT_Whardened,
 		    "%<-ftrivial-auto-var-init=zero%> is not enabled by "
 		    "%<-fhardened%> because it was specified on the command "

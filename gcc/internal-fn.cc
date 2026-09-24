@@ -3527,7 +3527,7 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       mark_addressable (lhs);
       tree var_addr = build_fold_addr_expr (lhs);
 
-      tree value = (init_type == AUTO_INIT_PATTERN)
+      tree value = ((init_type & ~AUTO_INIT_CXX26) == AUTO_INIT_PATTERN)
 		    ? build_int_cst (integer_type_node,
 				     INIT_PATTERN_VALUE)
 		    : integer_zero_node;
@@ -3544,7 +3544,7 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
       scalar_int_mode var_mode;
       if (TREE_CODE (TREE_TYPE (lhs)) != BOOLEAN_TYPE
 	  && tree_fits_uhwi_p (var_size)
-	  && (init_type == AUTO_INIT_PATTERN
+	  && ((init_type & ~AUTO_INIT_CXX26) == AUTO_INIT_PATTERN
 	      || !is_gimple_reg_type (var_type))
 	  && int_mode_for_size (tree_to_uhwi (var_size) * BITS_PER_UNIT,
 				0).exists (&var_mode)
@@ -3552,10 +3552,10 @@ expand_DEFERRED_INIT (internal_fn, gcall *stmt)
 	{
 	  unsigned HOST_WIDE_INT total_bytes = tree_to_uhwi (var_size);
 	  unsigned char *buf = XALLOCAVEC (unsigned char, total_bytes);
-	  memset (buf, (init_type == AUTO_INIT_PATTERN
+	  memset (buf, ((init_type & ~AUTO_INIT_CXX26) == AUTO_INIT_PATTERN
 			? INIT_PATTERN_VALUE : 0), total_bytes);
-	  tree itype = build_nonstandard_integer_type
-			 (total_bytes * BITS_PER_UNIT, 1);
+	  tree itype
+	    = build_nonstandard_integer_type (total_bytes * BITS_PER_UNIT, 1);
 	  wide_int w = wi::from_buffer (buf, total_bytes);
 	  init = wide_int_to_tree (itype, w);
 	  /* Pun the LHS to make sure its type has constant size

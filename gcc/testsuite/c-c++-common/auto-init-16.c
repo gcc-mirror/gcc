@@ -10,4 +10,4 @@ void foo(int a)
   g(x);
 }
 
-/* { dg-final { scan-tree-dump ".DEFERRED_INIT \\(D.\\d*, 1, \&\"x\"" "gimple" } } */
+/* { dg-final { scan-tree-dump ".DEFERRED_INIT \\(D.\\d*, \[15], \&\"x\"" "gimple" } } */

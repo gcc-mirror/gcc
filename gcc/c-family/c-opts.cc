@@ -925,8 +925,13 @@ c_common_post_options (const char **pfilename)
     flag_permitted_flt_eval_methods = PERMITTED_FLT_EVAL_METHODS_C11;
 
   if (cxx_dialect >= cxx26)
-    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
-			 flag_auto_var_init, AUTO_INIT_CXX26);
+    {
+      SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			   flag_auto_var_init, AUTO_INIT_CXX26);
+      if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+	flag_auto_var_init
+	  = auto_init_type (flag_auto_var_init | AUTO_INIT_CXX26);
+    }
 
   /* The -Wtrivial-auto-var-init warning is useless for C++, where we always
      add .DEFERRED_INIT calls when some (vacuous) initializers are bypassed
