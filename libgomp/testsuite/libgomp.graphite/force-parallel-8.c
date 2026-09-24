@@ -1,4 +1,5 @@
 /* { dg-additional-options "-fno-thread-jumps --param max-stores-to-sink=0" } */
+/* { dg-additional-options -fno-expensive-optimizations } */
 
 #define N 1500
 
