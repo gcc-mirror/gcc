@@ -6883,9 +6883,9 @@ vectorizable_operation (vec_info *vinfo,
 	  if (n != 0)
 	    {
 	      /* We also need to materialize two large constants.  */
-	      record_stmt_cost (cost_vec, 2, scalar_stmt, stmt_info,
+	      record_stmt_cost (cost_vec, 2, scalar_stmt, slp_node,
 				0, vect_prologue);
-	      record_stmt_cost (cost_vec, n, scalar_stmt, stmt_info,
+	      record_stmt_cost (cost_vec, n, scalar_stmt, slp_node,
 				0, vect_body);
 	    }
 	}

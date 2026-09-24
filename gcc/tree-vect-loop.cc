@@ -5041,6 +5041,7 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
 vect_reduc_info
 info_for_reduction (loop_vec_info loop_vinfo, slp_tree node)
 {
+  gcc_assert (node);
   if (node->cycle_info.id == -1)
     return NULL;
   return loop_vinfo->reduc_infos[node->cycle_info.id];
