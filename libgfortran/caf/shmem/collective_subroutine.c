@@ -22,7 +22,6 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#include "../caf_error.h"
 #include "collective_subroutine.h"
 #include "supervisor.h"
 #include "teams_mgmt.h"
@@ -221,16 +220,15 @@ get_collsub_buf (size_t size)
 
 /* This function syncs all images with one another.  It will only return once
    all images have called it.  The reduction is laid out over a fixed set of
-   images, so it cannot be completed once an image of the team terminated.  */
+   images, so it cannot be completed once an image of the team terminated.
+   Returns false in that case.  */
 
-static void
+static bool
 collsub_sync (void)
 {
   counter_barrier *barrier = &caf_current_team->u.image_info->collsub.barrier;
 
-  if (!counter_barrier_wait_abortable (barrier))
-    caf_runtime_error ("Image terminated while executing a collective "
-		       "subroutine");
+  return counter_barrier_wait_abortable (barrier);
 }
 
 typedef void *(*red_op) (void *, void *);
@@ -321,7 +319,7 @@ gen_reduction (const int type, const size_t sz, const int flags)
 
 /* Having result_image == -1 means allreduce.  */
 
-void
+bool
 collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
 		      void *(*op) (void *, void *), int opr_flags,
 		      int str_len __attribute__ ((unused)))
@@ -339,7 +337,7 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
 
   packed = pack_array_prepare (&pi, desc);
   if (pi.num_elem == 0)
-    return;
+    return true;
 
   elem_size = GFC_DESCRIPTOR_SIZE (desc);
   this_image_size_bytes = elem_size * pi.num_elem;
@@ -354,7 +352,8 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
     pack_array_finish (&pi, desc, this_image_buf);
 
   assign = gen_reduction (GFC_DESCRIPTOR_TYPE (desc), elem_size, opr_flags);
-  collsub_sync ();
+  if (!collsub_sync ())
+    return false;
 
   for (; ((this_img_id >> cbit) & 1) == 0
 	 && (caf_current_team->u.image_info->image_count.count >> cbit) != 0;
@@ -371,11 +370,13 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
 	       ++i, roll_iter += elem_size, src_iter += elem_size)
 	    assign (op, roll_iter, src_iter, elem_size);
 	}
-      collsub_sync ();
+      if (!collsub_sync ())
+	return false;
     }
   for (; (caf_current_team->u.image_info->image_count.count >> cbit) != 0;
        cbit++)
-    collsub_sync ();
+    if (!collsub_sync ())
+      return false;
 
   if (result_image < 0 || result_image == this_image.image_num)
     {
@@ -385,14 +386,14 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
 	unpack_array_finish (&pi, desc, buffer);
     }
 
-  collsub_sync ();
+  return collsub_sync ();
 }
 
 /* Do not use sync_all(), because the program should deadlock in the case that
  * some images are on a sync_all barrier while others are in a collective
  * subroutine.  */
 
-void
+bool
 collsub_broadcast_array (gfc_descriptor_t *desc, int source_image)
 {
   void *buffer;
@@ -403,7 +404,7 @@ collsub_broadcast_array (gfc_descriptor_t *desc, int source_image)
 
   packed = pack_array_prepare (&pi, desc);
   if (pi.num_elem == 0)
-    return;
+    return true;
 
   if (GFC_DESCRIPTOR_TYPE (desc) == BT_CHARACTER)
     {
@@ -423,16 +424,18 @@ collsub_broadcast_array (gfc_descriptor_t *desc, int source_image)
 	memcpy (buffer, GFC_DESCRIPTOR_DATA (desc), size_bytes);
       else
 	pack_array_finish (&pi, desc, buffer);
-      collsub_sync ();
+      if (!collsub_sync ())
+	return false;
     }
   else
     {
-      collsub_sync ();
+      if (!collsub_sync ())
+	return false;
       if (packed)
 	memcpy (GFC_DESCRIPTOR_DATA (desc), buffer, size_bytes);
       else
 	unpack_array_finish (&pi, desc, buffer);
     }
 
-  collsub_sync ();
+  return collsub_sync ();
 }

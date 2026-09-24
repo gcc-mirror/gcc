@@ -42,9 +42,12 @@ typedef struct collsub_shared
 void collsub_init_supervisor (collsub_shared *, allocator *,
 			      const int init_num_images);
 
-void collsub_broadcast_array (gfc_descriptor_t *, int);
+/* Both return false when an image of the current team terminated before the
+   collective could be completed.  */
 
-void collsub_reduce_array (gfc_descriptor_t *, int, void *(*) (void *, void *),
+bool collsub_broadcast_array (gfc_descriptor_t *, int);
+
+bool collsub_reduce_array (gfc_descriptor_t *, int, void *(*) (void *, void *),
 			   int opr_flags, int str_len);
 
 #endif

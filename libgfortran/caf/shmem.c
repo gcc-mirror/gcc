@@ -859,7 +859,9 @@ _gfortran_caf_co_broadcast (gfc_descriptor_t *desc, int source_image, int *stat,
 		       NULL, stat))
     return;
 
-  collsub_broadcast_array (desc, mapped_index);
+  /* A terminated image leaves the collective incomplete (F2023 16.6).  */
+  if (!collsub_broadcast_array (desc, mapped_index))
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 #define GEN_OP(name, op, type)                                                 \
@@ -961,7 +963,8 @@ _gfortran_caf_co_sum (gfc_descriptor_t *desc, int result_image, int *stat,
 
   SWITCH_TYPE_KIND (sum)
 
-  collsub_reduce_array (desc, mapped_index, opr, 0, 0);
+  if (!collsub_reduce_array (desc, mapped_index, opr, 0, 0))
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 void
@@ -986,7 +989,8 @@ _gfortran_caf_co_min (gfc_descriptor_t *desc, int result_image, int *stat,
 
   SWITCH_TYPE_KIND (min)
 
-  collsub_reduce_array (desc, mapped_index, opr, 0, 0);
+  if (!collsub_reduce_array (desc, mapped_index, opr, 0, 0))
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 void
@@ -1011,7 +1015,8 @@ _gfortran_caf_co_max (gfc_descriptor_t *desc, int result_image, int *stat,
 
   SWITCH_TYPE_KIND (max)
 
-  collsub_reduce_array (desc, mapped_index, opr, 0, 0);
+  if (!collsub_reduce_array (desc, mapped_index, opr, 0, 0))
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 void
@@ -1034,7 +1039,8 @@ _gfortran_caf_co_reduce (gfc_descriptor_t *desc, void *(*opr) (void *, void *),
 			  NULL, stat))
     return;
 
-  collsub_reduce_array (desc, mapped_index, opr, opr_flags, desc_len);
+  if (!collsub_reduce_array (desc, mapped_index, opr, opr_flags, desc_len))
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
 }
 
 void
