@@ -45,8 +45,7 @@ build/download.rs: fetch
 $(OUT): build/feature-extract build/download.rs
 	# add copyright header + newline
 	echo | \
-	    cat copyright-stub.h - | \
-	    sed "s/YYYY/$$(date +%Y)/" > build/rust-feature-defs.h
+	    cat copyright-stub.h - > build/rust-feature-defs.h
 	cat build/download.rs | ./$< >> build/rust-feature-defs.h
 	clang-format -i build/rust-feature-defs.h \
 	    --style=file:../../../../../../contrib/clang-format

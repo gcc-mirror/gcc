@@ -40,7 +40,7 @@ void yyerror (char const *);
 %token <str> IDENT STR NUM
 %token SCOPE
 %token K_SOME K_NONE
-%token K_ACTIVE K_ACCEPTED K_REMOVED K_STABLE_REMOVED
+%token K_ACTIVE K_INCOMPLETE K_STATUS_TO_BOOL K_ACCEPTED K_REMOVED K_STABLE_REMOVED
 %token K_E_START K_E_2018
 
 %type <str> issue
@@ -55,11 +55,11 @@ multi_database: multi_database database
 
 database: '(' entry_list ')';
 
-entry_list: entry_list entry ','
-| entry ','
+entry_list: entry_list entry
+| entry
 ;
 
-entry: '(' K_ACTIVE ',' IDENT ',' STR ',' issue ',' edition ')' {
+entry: '(' K_ACTIVE ',' IDENT ',' STR ',' issue ',' edition ')' ',' {
   char *ident_upper = strdup ($4);
   for (size_t i = 0; ident_upper[i]; i++)
     ident_upper[i] = toupper (ident_upper[i]);
@@ -69,7 +69,18 @@ entry: '(' K_ACTIVE ',' IDENT ',' STR ',' issue ',' edition ')' {
   free ($6);
   free ($8);
 }
-| '(' K_ACCEPTED ',' IDENT ',' STR ',' issue ',' K_NONE ')' {
+| '(' K_INCOMPLETE ',' IDENT ',' STR ',' issue ',' edition ')' ',' {
+  char *ident_upper = strdup ($4);
+  for (size_t i = 0; ident_upper[i]; i++)
+    ident_upper[i] = toupper (ident_upper[i]);
+  // TODO: pass incomplete flag to C++?
+  printf ("FEATURE_ACTIVE (\"%s\", %s, %s, %s%s%s, EDITION_%s)\n", $4, ident_upper, $6, UNWRAP_OPT_STR ("ISSUE", $8), $10 ? $10 : "NONE");
+  free ($4);
+  free (ident_upper);
+  free ($6);
+  free ($8);
+}
+| '(' K_ACCEPTED ',' IDENT ',' STR ',' issue ',' K_NONE ')' ',' {
   char *ident_upper = strdup ($4);
   for (size_t i = 0; ident_upper[i]; i++)
     ident_upper[i] = toupper (ident_upper[i]);
@@ -79,7 +90,7 @@ entry: '(' K_ACTIVE ',' IDENT ',' STR ',' issue ',' edition ')' {
   free ($6);
   free ($8);
 }
-| '(' K_REMOVED ',' IDENT ',' STR ',' issue ',' K_NONE ',' reason ')' {
+| '(' K_REMOVED ',' IDENT ',' STR ',' issue ',' K_NONE ',' reason ')' ',' {
   char *ident_upper;
   // HACK: convert no_debug to F_NO_DEBUG instead
   // since NO_DEBUG is used as an unrelated macro
@@ -100,7 +111,7 @@ entry: '(' K_ACTIVE ',' IDENT ',' STR ',' issue ',' edition ')' {
   free ($8);
   free ($12);
 }
-| '(' K_STABLE_REMOVED ',' IDENT ',' STR ',' issue ',' K_NONE ')' {
+| '(' K_STABLE_REMOVED ',' IDENT ',' STR ',' issue ',' K_NONE ')' ',' {
   char *ident_upper = strdup ($4);
   for (size_t i = 0; ident_upper[i]; i++)
     ident_upper[i] = toupper (ident_upper[i]);
@@ -109,6 +120,11 @@ entry: '(' K_ACTIVE ',' IDENT ',' STR ',' issue ',' edition ')' {
   free (ident_upper);
   free ($6);
   free ($8);
+}
+| K_STATUS_TO_BOOL IDENT {
+  // no-op
+  // declare_features! sometimes invokes itself
+  // false positive
 }
 ;
 
