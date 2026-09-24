@@ -2320,8 +2320,6 @@
     emit_insn (gen_add<vnsi>3 (out_hi, out_hi, tmp));
     emit_insn (gen_mul<vnsi>3 (tmp, left_lo, right_hi));
     emit_insn (gen_add<vnsi>3 (out_hi, out_hi, tmp));
-    emit_insn (gen_mul<vnsi>3 (tmp, left_hi, right_hi));
-    emit_insn (gen_add<vnsi>3 (out_hi, out_hi, tmp));
     DONE;
   })
 
@@ -2350,8 +2348,6 @@
     emit_insn (gen_mul<vnsi>3_dup (tmp, left_hi, right_lo));
     emit_insn (gen_add<vnsi>3 (out_hi, out_hi, tmp));
     emit_insn (gen_mul<vnsi>3_dup (tmp, left_lo, right_hi));
-    emit_insn (gen_add<vnsi>3 (out_hi, out_hi, tmp));
-    emit_insn (gen_mul<vnsi>3_dup (tmp, left_hi, right_hi));
     emit_insn (gen_add<vnsi>3 (out_hi, out_hi, tmp));
     DONE;
   })
@@ -2398,8 +2394,6 @@
     emit_insn (gen_mul<vnsi>3_exec (tmp, left_hi, right_lo, undef, exec));
     emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
     emit_insn (gen_mul<vnsi>3_exec (tmp, left_lo, right_hi, undef, exec));
-    emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
-    emit_insn (gen_mul<vnsi>3_exec (tmp, left_hi, right_hi, undef, exec));
     emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
     DONE;
   })
@@ -2448,8 +2442,6 @@
     emit_insn (gen_mul<vnsi>3_dup_exec (tmp, left_hi, right_lo, undef, exec));
     emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
     emit_insn (gen_mul<vnsi>3_dup_exec (tmp, left_lo, right_hi, undef, exec));
-    emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
-    emit_insn (gen_mul<vnsi>3_dup_exec (tmp, left_hi, right_hi, undef, exec));
     emit_insn (gen_add<vnsi>3_exec (out_hi, out_hi, tmp, out_hi, exec));
     DONE;
   })
