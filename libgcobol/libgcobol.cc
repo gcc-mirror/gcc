@@ -10923,7 +10923,7 @@ do_the_dl_thing(const char *directory,
 
 static
 void *
-find_in_dirs( const char *dirs,
+find_in_dirs( const std::vector<std::string> &directories,
               const std::string &fileUPPER,
               const std::string &fileMiddle,
               const std::string &filelower,
@@ -10936,89 +10936,11 @@ find_in_dirs( const char *dirs,
   assert( !unmangled_name.empty() );
 
   void *retval = NULL;
-  if( dirs )
+  for( auto it= directories.begin(); it!=directories.end(); it++)
     {
-    std::string directory;
-    const char *p = dirs;
-    while( !retval && *p )
-      {
-      directory.clear();
-      while( *p && *p != ':' )
-        {
-        directory += *p++;
-        }
-      if( *p == ':' )
-        {
-        p += 1;
-        }
-      if( directory.empty() )
-        {
-        break;
-        }
+    std::string directory = *it;
 
-      retval = do_the_dl_thing(directory.c_str(),
-                               fileUPPER,
-                               unmangled_name);
-      if( retval )
-        {
-        goto bugout;
-        }
-      if( !mangled_name.empty() )
-        {
-        retval = do_the_dl_thing(directory.c_str(),
-                                 fileUPPER,
-                                 mangled_name);
-        if( retval )
-          {
-          goto bugout;
-          }
-        }
-
-      if( !fileMiddle.empty() )
-        {
-        retval = do_the_dl_thing(directory.c_str(),
-                                 fileMiddle,
-                                 unmangled_name);
-        if( retval )
-          {
-          goto bugout;
-          }
-        if( !mangled_name.empty() )
-          {
-          retval = do_the_dl_thing(directory.c_str(),
-                                   fileMiddle,
-                                   mangled_name);
-          if( retval )
-            {
-            goto bugout;
-            }
-          }
-        }
-      if( !filelower.empty() )
-        {
-        retval = do_the_dl_thing(directory.c_str(),
-                                 filelower,
-                                 unmangled_name);
-        if( retval )
-          {
-          goto bugout;
-          }
-        if( !mangled_name.empty() )
-          {
-          retval = do_the_dl_thing(directory.c_str(),
-                                   filelower,
-                                   mangled_name);
-          if( retval )
-            {
-            goto bugout;
-            }
-          }
-        }
-      }
-    }
-  else
-    {
-    retval = do_the_dl_thing(nullptr,
+    retval = do_the_dl_thing(directory.c_str(),
                              fileUPPER,
                              unmangled_name);
     if( retval )
@@ -11027,7 +10949,7 @@ find_in_dirs( const char *dirs,
       }
     if( !mangled_name.empty() )
       {
-      retval = do_the_dl_thing(nullptr,
+      retval = do_the_dl_thing(directory.c_str(),
                                fileUPPER,
                                mangled_name);
       if( retval )
@@ -11035,9 +10957,10 @@ find_in_dirs( const char *dirs,
         goto bugout;
         }
       }
+
     if( !fileMiddle.empty() )
       {
-      retval = do_the_dl_thing(nullptr,
+      retval = do_the_dl_thing(directory.c_str(),
                                fileMiddle,
                                unmangled_name);
       if( retval )
@@ -11046,7 +10969,7 @@ find_in_dirs( const char *dirs,
         }
       if( !mangled_name.empty() )
         {
-        retval = do_the_dl_thing(nullptr,
+        retval = do_the_dl_thing(directory.c_str(),
                                  fileMiddle,
                                  mangled_name);
         if( retval )
@@ -11057,7 +10980,7 @@ find_in_dirs( const char *dirs,
       }
     if( !filelower.empty() )
       {
-      retval = do_the_dl_thing(nullptr,
+      retval = do_the_dl_thing(directory.c_str(),
                                filelower,
                                unmangled_name);
       if( retval )
@@ -11066,13 +10989,73 @@ find_in_dirs( const char *dirs,
         }
       if( !mangled_name.empty() )
         {
-        retval = do_the_dl_thing(nullptr,
+        retval = do_the_dl_thing(directory.c_str(),
                                  filelower,
                                  mangled_name);
         if( retval )
           {
           goto bugout;
           }
+        }
+      }
+    }
+
+  retval = do_the_dl_thing(nullptr,
+                           fileUPPER,
+                           unmangled_name);
+  if( retval )
+    {
+    goto bugout;
+    }
+
+  if( !mangled_name.empty() )
+    {
+    retval = do_the_dl_thing(nullptr,
+                             fileUPPER,
+                             mangled_name);
+    if( retval )
+      {
+      goto bugout;
+      }
+    }
+
+  if( !fileMiddle.empty() )
+    {
+    retval = do_the_dl_thing(nullptr,
+                             fileMiddle,
+                             unmangled_name);
+    if( retval )
+      {
+      goto bugout;
+      }
+    if( !mangled_name.empty() )
+      {
+      retval = do_the_dl_thing(nullptr,
+                               fileMiddle,
+                               mangled_name);
+      if( retval )
+        {
+        goto bugout;
+        }
+      }
+    }
+  if( !filelower.empty() )
+    {
+    retval = do_the_dl_thing(nullptr,
+                             filelower,
+                             unmangled_name);
+    if( retval )
+      {
+      goto bugout;
+      }
+    if( !mangled_name.empty() )
+      {
+      retval = do_the_dl_thing(nullptr,
+                               filelower,
+                               mangled_name);
+      if( retval )
+        {
+        goto bugout;
         }
       }
     }
@@ -11091,7 +11074,7 @@ function_handle_from_cobpath( const char *unmangled_name_,
      We first look for FooBar in the function.
      We then look for foobar in the function.
      We then scan the directories in COBPATH.  In each directory, we look for
-     the function name in 
+     the function name in
         FOOBAR.so
         FooBar.so
         foobar.so
@@ -11110,7 +11093,7 @@ function_handle_from_cobpath( const char *unmangled_name_,
     unmangled_name = mangled_name;
     mangled_name.clear();
     }
-  else 
+  else
     {
     // This is Verbatim, C-style.
     mangled_name.clear();
@@ -11119,7 +11102,6 @@ function_handle_from_cobpath( const char *unmangled_name_,
   std::string fileUPPER;
   std::string fileMiddle;
   std::string filelower;
-  const char *COBPATH;
 
   static std::unordered_map<std::string, void *> already_searched;
   std::unordered_map<std::string, void *>::const_iterator it =
@@ -11192,12 +11174,36 @@ function_handle_from_cobpath( const char *unmangled_name_,
       }
 
     // We need to search through the COBPATH directories:
-
-    COBPATH = getenv("COBPATH");
-    if( COBPATH )
+    static bool initialized = false;
+    static std::vector<std::string> directories;
+    static std::vector<std::string> dummy;
+    if( !initialized )
       {
+      initialized = true;
+      const char *COBPATH = getenv("COBPATH");
+      const char *p = COBPATH;
+      while( p && *p )
+        {
+        std::string directory;
+        while( *p && *p != ':' )
+          {
+          directory += *p++;
+          }
+        if( *p == ':' )
+          {
+          p += 1;
+          }
+        if( directory.empty() )
+          {
+          break;
+          }
+        directories.push_back(directory);
+        }
+      }
 
-      retval = find_in_dirs(COBPATH,
+    if( !directories.empty() )
+      {
+      retval = find_in_dirs(directories,
                             fileUPPER,
                             fileMiddle,
                             filelower,
@@ -11208,7 +11214,7 @@ function_handle_from_cobpath( const char *unmangled_name_,
         goto bugout;
         }
       }
-    retval = find_in_dirs(nullptr,
+    retval = find_in_dirs(dummy,
                           fileUPPER,
                           fileMiddle,
                           filelower,
