@@ -845,14 +845,6 @@
   VAR1 (BINOPU, sm4eq, 0, DEFAULT, v4si)
   /* Implemented by aarch64_sm4ekeyqv4si.  */
   VAR1 (BINOPU, sm4ekeyq, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_crypto_sha512hqv2di.  */
-  VAR1 (TERNOPU, crypto_sha512hq, 0, DEFAULT, v2di)
-  /* Implemented by aarch64_sha512h2qv2di.  */
-  VAR1 (TERNOPU, crypto_sha512h2q, 0, DEFAULT, v2di)
-  /* Implemented by aarch64_crypto_sha512su0qv2di.  */
-  VAR1 (BINOPU, crypto_sha512su0q, 0, DEFAULT, v2di)
-  /* Implemented by aarch64_crypto_sha512su1qv2di.  */
-  VAR1 (TERNOPU, crypto_sha512su1q, 0, DEFAULT, v2di)
 
   /* Implemented by aarch64_fml<f16mac1>l<f16quad>_low<mode>.  */
   VAR1 (TERNOP, fmlal_low, 0, FP, v2sf)

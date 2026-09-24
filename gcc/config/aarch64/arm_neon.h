@@ -20938,34 +20938,6 @@ vsm4ekeyq_u32 (uint32x4_t __a, uint32x4_t __b)
 #pragma GCC push_options
 #pragma GCC target ("+nothing+sha3")
 
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha512hq_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
-{
-  return __builtin_aarch64_crypto_sha512hqv2di_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha512h2q_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
-{
-  return __builtin_aarch64_crypto_sha512h2qv2di_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha512su0q_u64 (uint64x2_t __a, uint64x2_t __b)
-{
-  return __builtin_aarch64_crypto_sha512su0qv2di_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha512su1q_u64 (uint64x2_t __a, uint64x2_t __b, uint64x2_t __c)
-{
-  return __builtin_aarch64_crypto_sha512su1qv2di_uuuu (__a, __b, __c);
-}
-
 #pragma GCC pop_options
 
 /* AdvSIMD Complex numbers intrinsics.  */

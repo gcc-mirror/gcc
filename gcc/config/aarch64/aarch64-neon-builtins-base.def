@@ -171,3 +171,11 @@ DEF_NEON_FUNCTION (vsha256h2q,  s_unsigned, ("Q0,Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsha256su0q, s_unsigned, ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vsha256su1q, s_unsigned, ("Q0,Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
+
+// SHA512
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SHA2)
+DEF_NEON_FUNCTION (vsha512hq,   d_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha512h2q,  d_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha512su0q, d_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha512su1q, d_unsigned, ("Q0,Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
