@@ -9922,7 +9922,7 @@ default_exception_handler( ec_type_t ec )
     case uc_category_fatal_e:
       if( filename ) {
         syslog(priority, "fatal exception: %s:%d: %s %s: %s (%s)",
-               program_name,
+               ec_status.source_file,
                ec_status.lineno,
                ec_status.statement,
                filename, // show affected file before EC name
@@ -9930,7 +9930,7 @@ default_exception_handler( ec_type_t ec )
                pec->description);
       } else {
         syslog(priority, "fatal exception: %s:%d: %s: %s (%s)",
-               program_name,
+               ec_status.source_file,
                ec_status.lineno,
                ec_status.statement,
                pec->name,
@@ -9941,7 +9941,7 @@ default_exception_handler( ec_type_t ec )
     case ec_category_nonfatal_e:
     case uc_category_nonfatal_e:
       syslog(priority, "%s:%d: %s: %s (%s)",
-             program_name,
+             ec_status.source_file,
              ec_status.lineno,
              ec_status.statement,
              pec->name,
@@ -13918,4 +13918,3 @@ __gg__move_stash_release(const unsigned char *stash)
 
   move_stashes.depth -= 1;
   }
-
