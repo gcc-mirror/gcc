@@ -805,4 +805,10 @@ NEON_FUNCTION (vsha1pq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_sha1pv4si>,)
 NEON_FUNCTION (vsha1h,    gimple_exact_insn<CODE_FOR_aarch64_crypto_sha1hsi>,)
 NEON_FUNCTION (vsha1su0q, gimple_exact_insn<CODE_FOR_aarch64_crypto_sha1su0v4si>,)
 NEON_FUNCTION (vsha1su1q, gimple_exact_insn<CODE_FOR_aarch64_crypto_sha1su1v4si>,)
+
+// SHA256
+NEON_FUNCTION (vsha256hq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_sha256hv4si>,)
+NEON_FUNCTION (vsha256h2q,  gimple_exact_insn<CODE_FOR_aarch64_crypto_sha256h2v4si>,)
+NEON_FUNCTION (vsha256su0q, gimple_exact_insn<CODE_FOR_aarch64_crypto_sha256su0v4si>,)
+NEON_FUNCTION (vsha256su1q, gimple_exact_insn<CODE_FOR_aarch64_crypto_sha256su1v4si>,)
 }

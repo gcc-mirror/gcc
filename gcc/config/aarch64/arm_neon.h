@@ -16723,44 +16723,6 @@ vrsrad_n_u64 (uint64_t __a, uint64_t __b, const int __c)
   return __builtin_aarch64_ursra_ndi_uuus (__a, __b, __c);
 }
 
-#pragma GCC push_options
-#pragma GCC target ("+nothing+sha2")
-
-/* vsha1  */
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha256hq_u32 (uint32x4_t __hash_abcd, uint32x4_t __hash_efgh, uint32x4_t __wk)
-{
-  return __builtin_aarch64_crypto_sha256hv4si_uuuu (__hash_abcd, __hash_efgh,
-						     __wk);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha256h2q_u32 (uint32x4_t __hash_efgh, uint32x4_t __hash_abcd, uint32x4_t __wk)
-{
-  return __builtin_aarch64_crypto_sha256h2v4si_uuuu (__hash_efgh, __hash_abcd,
-						      __wk);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha256su0q_u32 (uint32x4_t __w0_3, uint32x4_t __w4_7)
-{
-  return __builtin_aarch64_crypto_sha256su0v4si_uuu (__w0_3, __w4_7);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vsha256su1q_u32 (uint32x4_t __tw0_3, uint32x4_t __w8_11, uint32x4_t __w12_15)
-{
-  return __builtin_aarch64_crypto_sha256su1v4si_uuuu (__tw0_3, __w8_11,
-						       __w12_15);
-}
-
-#pragma GCC pop_options
-
 /* vshl */
 
 __extension__ extern __inline int8x8_t
