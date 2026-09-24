@@ -14,6 +14,8 @@ f (int c)
 {
   int n = hi - lo + 2;
   double t[n], u[n];
+  __builtin_memset(t, 0, sizeof(t));
+  __builtin_memset(u, 0, sizeof(u));
   double *tab[2] = { t, u };
 
   /* Load tab[idx&1] on both arms so PRE hoists it into a pretmp.  */
