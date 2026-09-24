@@ -1,0 +1,7 @@
+begin mode Foo = real;
+      begin mode Foo = int;
+            Foo i;
+            BIN i
+      end;
+      skip
+end

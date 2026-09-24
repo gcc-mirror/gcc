@@ -121,8 +121,7 @@ are_modes_equivalent (MOID_T * a, MOID_T * b)
       if (NODE (a) == NO_NODE || NODE (b) == NO_NODE)
 	return false;
       else
-	return (NODE (a) == NODE (b)
-		|| strcmp (NSYMBOL (NODE (a)), NSYMBOL (NODE (b))) == 0);
+	return NODE (a) == NODE (b);
     }
 
   /* Investigate structure.  */
