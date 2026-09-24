@@ -5661,34 +5661,6 @@ vqrdmlshs_laneq_s32 (int32_t __a, int32_t __b, int32x4_t __c, const int __d)
 #pragma GCC target ("+nothing+aes")
 /* vaes  */
 
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaeseq_u8 (uint8x16_t data, uint8x16_t key)
-{
-  return __builtin_aarch64_crypto_aesev16qi_uuu (data, key);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaesdq_u8 (uint8x16_t data, uint8x16_t key)
-{
-  return __builtin_aarch64_crypto_aesdv16qi_uuu (data, key);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaesmcq_u8 (uint8x16_t data)
-{
-  return __builtin_aarch64_crypto_aesmcv16qi_uu (data);
-}
-
-__extension__ extern __inline uint8x16_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vaesimcq_u8 (uint8x16_t data)
-{
-  return __builtin_aarch64_crypto_aesimcv16qi_uu (data);
-}
-
 __extension__ extern __inline poly128_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_p64 (poly64_t __a, poly64_t __b)

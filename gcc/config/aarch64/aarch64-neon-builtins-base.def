@@ -145,3 +145,11 @@ DEF_NEON_FUNCTION (vzip2,   bhs_neon,   ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vzip2q,  bhsd_neon,  ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vzipq,   bhs_neon,   ("Q0x2,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
+
+// AES
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_AES)
+DEF_NEON_FUNCTION (vaeseq,   b_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vaesdq,   b_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vaesmcq,  b_unsigned, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vaesimcq, b_unsigned, ("Q0,Q0"))
+#undef REQUIRED_EXTENSIONS

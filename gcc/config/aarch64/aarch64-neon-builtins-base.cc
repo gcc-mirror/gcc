@@ -158,6 +158,15 @@ class gimple_function_base : public function_base
   gimple *fold (gimple_folder &) const override { gcc_unreachable (); }
 };
 
+template <insn_code insn> struct gimple_exact_insn : gimple_function_base
+{
+  gimple *fold (gimple_folder &) const override { return nullptr; }
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_exact_insn (insn);
+  }
+};
+
 /* For intrinsics that map to a single GIMPLE expression with no argument
    preparation necessary.  */
 class gimple_expr : public gimple_function_base
@@ -782,4 +791,10 @@ NEON_FUNCTION (vuzp,  vuzpq,  gimple_permute_pair, (uzp_mask<false>, uzp_mask<tr
 NEON_FUNCTION (vzip1, vzip1q, gimple_permute,      (zip_mask<false>))
 NEON_FUNCTION (vzip2, vzip2q, gimple_permute,      (zip_mask<true>))
 NEON_FUNCTION (vzip,  vzipq,  gimple_permute_pair, (zip_mask<false>, zip_mask<true>))
+
+// AES
+NEON_FUNCTION (vaeseq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_aesev16qi>,)
+NEON_FUNCTION (vaesdq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_aesdv16qi>,)
+NEON_FUNCTION (vaesmcq,  gimple_exact_insn<CODE_FOR_aarch64_crypto_aesmcv16qi>,)
+NEON_FUNCTION (vaesimcq, gimple_exact_insn<CODE_FOR_aarch64_crypto_aesimcv16qi>,)
 }
