@@ -379,6 +379,7 @@ static vn_tables_t valid_info;
 static class eliminate_dom_walker *rpo_avail;
 basic_block vn_context_bb;
 int *vn_bb_to_rpo;
+static int *vn_exec_idom;
 
 
 /* Valueization hook for simplify_replace_tree.  Valueize NAME if it is
@@ -4959,7 +4960,7 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 }
 
 static bool
-dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool);
+dominated_by_p_w_unex (basic_block bb1, basic_block bb2);
 
 static tree
 vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb,
@@ -4972,10 +4973,7 @@ vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb,
       {
 	basic_block cand
 	  = BASIC_BLOCK_FOR_FN (cfun, val->valid_dominated_by_p[i]);
-	/* Do not handle backedge executability optimistically since
-	   when figuring out whether to iterate we do not consider
-	   changed predication.
-	   When asking for predicated values on an edge avoid looking
+	/* When asking for predicated values on an edge avoid looking
 	   at edge executability for edges forward in our iteration
 	   as well.  */
 	if (e && (e->flags & EDGE_DFS_BACK))
@@ -4983,7 +4981,7 @@ vn_nary_op_get_predicated_value (vn_nary_op_t vno, basic_block bb,
 	    if (dominated_by_p (CDI_DOMINATORS, bb, cand))
 	      return val->result;
 	  }
-	else if (dominated_by_p_w_unex (bb, cand, false))
+	else if (dominated_by_p_w_unex (bb, cand))
 	  return val->result;
       }
   return NULL_TREE;
@@ -5314,128 +5312,102 @@ vn_phi_insert (gimple *phi, tree result, bool backedges_varying_p)
 }
 
 
-/* Return true if BB1 is dominated by BB2 taking into account edges
-   that are not executable.  When ALLOW_BACK is false consider not
-   executable backedges as executable.  */
+/* Find the nearest common dominator of R1 and R2 in the IDOMS tree
+   using Reverse Postorder (RPO) numbers.  Both walks terminate latest
+   at the root (RPO number 0, whose IDOMS entry is -1) because callers
+   maintain the invariant IDOMS[x] < x for every x they store into
+   IDOMS.  */
 
-static bool
-dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
+static int
+exec_idom_intersect (int *idoms, int r1, int r2)
 {
+  while (r1 != r2)
+    {
+      if (r1 > r2)
+	r1 = idoms[r1];
+      else
+	r2 = idoms[r2];
+    }
+  return r1;
+}
+
+/* Update the immediate dominator of BB based on its executable predecessors.
+
+   This performs one step of a Cooper-Harvey-Kennedy style dominator
+   computation, but unlike the textbook algorithm we do not have the
+   luxury of iterating over a fixed graph to a fixpoint: the executable
+   subgraph is discovered incrementally as the RPO walk proceeds (edges
+   only ever turn executable, never back), and BB can be visited before
+   every one of its predecessors has reached its final executable state.
+
+   We can only trust an edges executable state if it is not a backedge
+   in the RPO order.  Any other predecessor edge is folded in as BB's
+   immediate dominator in the static (whole-graph, CDI_DOMINATORS)
+   dominator tree.  */
+
+static void
+update_exec_idom (basic_block bb)
+{
+  int rpo = vn_bb_to_rpo[bb->index];
+  /* Skip the entry block (RPO number zero) as its predecessors are
+     not covered by the region.  */
+  if (rpo == 0)
+    return;
+
   edge_iterator ei;
   edge e;
+  int idom = -1;
+  FOR_EACH_EDGE (e, ei, bb->preds)
+    {
+      int pred_rpo = vn_bb_to_rpo[e->src->index];
+      /* For backedges fall back to the static immediate dominator.  */
+      if (pred_rpo >= rpo)
+	/* We initialize to the static immediate dominator and this is
+	   never overwritten to another value since we either visit each
+	   block exactly once or iterate in the same order.  */
+	return;
 
+      if (e->flags & EDGE_EXECUTABLE)
+	{
+	  if (idom == -1)
+	    idom = pred_rpo;
+	  else
+	    idom = exec_idom_intersect (vn_exec_idom, idom, pred_rpo);
+	}
+    }
+
+  gcc_checking_assert (idom != -1);
+  vn_exec_idom[rpo] = idom;
+}
+
+/* Return true if BB1 is dominated by BB2 taking into account edges
+   that are known executable, including those that are not executable
+   only because they are backedges not yet proven to be taken (see
+   the commentary on update_exec_idom for why folding those in
+   unconditionally is always sound, and why it used to be handled by
+   a second, separate optimistic/pessimistic pair of trees here).
+
+   Note: It is assumed that both BB1 and BB2 are inside the region
+   currently being value-numbered.  */
+
+static bool
+dominated_by_p_w_unex (basic_block bb1, basic_block bb2)
+{
   if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
     return true;
 
-  /* Before iterating we'd like to know if there exists a
-     (executable) path from bb2 to bb1 at all, if not we can
-     directly return false.  For now simply iterate once.  */
+  if (!vn_exec_idom)
+    return false;
 
-  /* Iterate to the single executable bb1 predecessor.  */
-  if (EDGE_COUNT (bb1->preds) > 1)
-    {
-      edge prede = NULL;
-      FOR_EACH_EDGE (e, ei, bb1->preds)
-	if ((e->flags & EDGE_EXECUTABLE)
-	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
-	  {
-	    if (prede)
-	      {
-		prede = NULL;
-		break;
-	      }
-	    prede = e;
-	  }
-      if (prede)
-	{
-	  bb1 = prede->src;
+  int rpo2 = vn_bb_to_rpo[bb2->index];
+  int rpo1 = vn_bb_to_rpo[bb1->index];
 
-	  /* Re-do the dominance check with changed bb1.  */
-	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
-	    return true;
-	}
-    }
+  int curr = rpo1;
+  int limit = 32;
+  while (curr > rpo2 && limit-- > 0)
+    curr = vn_exec_idom[curr];
 
-  /* Iterate to the single executable bb2 successor.  */
-  if (EDGE_COUNT (bb2->succs) > 1)
-    {
-      edge succe = NULL;
-      FOR_EACH_EDGE (e, ei, bb2->succs)
-	if ((e->flags & EDGE_EXECUTABLE)
-	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
-	  {
-	    if (succe)
-	      {
-		succe = NULL;
-		break;
-	      }
-	    succe = e;
-	  }
-      if (succe
-	  /* Limit the number of edges we check, we should bring in
-	     context from the iteration and compute the single
-	     executable incoming edge when visiting a block.  */
-	  && EDGE_COUNT (succe->dest->preds) < 8)
-	{
-	  /* Verify the reached block is only reached through succe.
-	     If there is only one edge we can spare us the dominator
-	     check and iterate directly.  */
-	  if (EDGE_COUNT (succe->dest->preds) > 1)
-	    {
-	      FOR_EACH_EDGE (e, ei, succe->dest->preds)
-		if (e != succe
-		    && ((e->flags & EDGE_EXECUTABLE)
-			|| (!allow_back && (e->flags & EDGE_DFS_BACK))))
-		  {
-		    succe = NULL;
-		    break;
-		  }
-	    }
-	  if (succe)
-	    {
-	      bb2 = succe->dest;
-
-	      /* Re-do the dominance check with changed bb2.  */
-	      if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
-		return true;
-	    }
-	}
-    }
-  /* Iterate to the single successor of bb2 with only a single executable
-     incoming edge.  */
-  else if (EDGE_COUNT (bb2->succs) == 1
-	   && EDGE_COUNT (single_succ (bb2)->preds) > 1
-	   /* Limit the number of edges we check, we should bring in
-	      context from the iteration and compute the single
-	      executable incoming edge when visiting a block.  */
-	   && EDGE_COUNT (single_succ (bb2)->preds) < 8)
-    {
-      edge prede = NULL;
-      FOR_EACH_EDGE (e, ei, single_succ (bb2)->preds)
-	if ((e->flags & EDGE_EXECUTABLE)
-	    || (!allow_back && (e->flags & EDGE_DFS_BACK)))
-	  {
-	    if (prede)
-	      {
-		prede = NULL;
-		break;
-	      }
-	    prede = e;
-	  }
-      /* We might actually get to a query with BB2 not visited yet when
-	 we're querying for a predicated value.  */
-      if (prede && prede->src == bb2)
-	{
-	  bb2 = prede->dest;
-
-	  /* Re-do the dominance check with changed bb2.  */
-	  if (dominated_by_p (CDI_DOMINATORS, bb1, bb2))
-	    return true;
-	}
-    }
-
-  /* We could now iterate updating bb1 / bb2.  */
-  return false;
+  return curr == rpo2;
 }
 
 /* Set the value number of FROM to TO, return true if it has changed
@@ -8220,7 +8192,7 @@ rpo_elim::eliminate_avail (basic_block bb, tree op)
 	     may also be able to "pre-compute" (bits of) the next immediate
 	     (non-)dominator during the RPO walk when marking edges as
 	     executable.  */
-	  if (dominated_by_p_w_unex (bb, abb, true))
+	  if (dominated_by_p_w_unex (bb, abb))
 	    {
 	      tree leader = ssa_name (av->leader);
 	      /* Prevent eliminations that break loop-closed SSA.  */
@@ -8481,6 +8453,8 @@ process_bb (rpo_elim &avail, basic_block bb,
   edge e;
 
   vn_context_bb = bb;
+
+  update_exec_idom (bb);
 
   /* If we are in loop-closed SSA preserve this state.  This is
      relevant when called on regions from outside of FRE/PRE.  */
@@ -8942,6 +8916,18 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
     bb_to_rpo[rpo[i]] = i;
   vn_bb_to_rpo = bb_to_rpo;
 
+  /* When not iterating we can end up with executable edges from unvisited
+     but backward reachable blocks, so we cannot rely on the idom being
+     up-to-date.  Initialize it with a conservative default.  */
+  vn_exec_idom = XNEWVEC (int, n);
+  vn_exec_idom[0] = -1;
+  for (int i = 1; i < n; ++i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+      vn_exec_idom[i]
+	= bb_to_rpo[get_immediate_dominator (CDI_DOMINATORS, bb)->index];
+    }
+
   unwind_state *rpo_state = XNEWVEC (unwind_state, n);
 
   rpo_avail = &avail;
@@ -9291,6 +9277,9 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
   vn_valueize = NULL;
   rpo_avail = NULL;
   vn_bb_to_rpo = NULL;
+
+  XDELETEVEC (vn_exec_idom);
+  vn_exec_idom = NULL;
 
   XDELETEVEC (rpo);
   XDELETEVEC (rpo_state);
