@@ -445,20 +445,28 @@ struct buffer_t : public bytespan_t {
   }
 };
 
-static inline bool is_p( char ch ) { return TOUPPER(ch) == 'P'; }
+static inline bool is_pf( char ch ) { return TOUPPER(ch) == 'P' || TOUPPER(ch) == 'F'; }
 
 static bool
 is_program_id( const char *p, const char *eol ) {
-  static const std::string program_id("PROGRAM-ID");
-  auto eop = p + program_id.size();
-  if( eop < eol ) {
-    // PROGRAM-ID must be followed by a dot, perhaps with intervening whitespace.
-    for( const char *dot=eop; dot < eol && *dot != '.'; dot++ ) {
-      if( !ISSPACE(*dot) ) return false;
+  static const std::vector<std::string> ids { "PROGRAM-ID", "FUNCTION-ID" };
+  for( const auto& id : ids ) {
+    auto eop = p + id.size();
+    if( eop < eol ) {
+      bool valid = true;
+      // PROGRAM-ID must be followed by a dot, perhaps with intervening whitespace.
+      for( const char *dot=eop; dot < eol && *dot != '.'; dot++ ) {
+        if( !ISSPACE(*dot) ) {
+          valid = false;
+          break;
+        }
+      }
+      if (!valid)
+        continue;
+      std::string line (p, eop);
+      std::transform(line.begin(), line.end(), line.begin(), ::toupper);
+      return line == id;
     }
-    std::string line (p, eop);
-    std::transform(line.begin(), line.end(), line.begin(), ::toupper);
-    return line == program_id;
   }
   return false;
 }
@@ -1689,7 +1697,7 @@ static const char *
 valid_sequence_area( const char *data, const char *eodata ) {
 
   for( const char *p = data; // find every 'P' to try Program-ID
-       (p = std::find_if(p, eodata, is_p)) != eodata;
+       (p = std::find_if(p, eodata, is_pf)) != eodata;
        p++ )
   {
     auto eol = std::find(p, eodata, '\n');
