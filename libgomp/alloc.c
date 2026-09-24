@@ -82,12 +82,22 @@ gomp_aligned_alloc (size_t al, size_t size)
       ret = NULL;
   }
 #elif defined(HAVE__ALIGNED_MALLOC)
-  ret = _aligned_malloc (size, al);
+  /* Mingw64 doesn't perform overflow checking, so do it ourselves.
+     It does power of two checking though.  */
+  if (__builtin_add_overflow_p (size, al + 2 * sizeof (void *), (size_t) 0))
+    ret = NULL;
+  else
+    ret = _aligned_malloc (size, al);
 #else
   ret = NULL;
   if ((al & (al - 1)) == 0 && size)
     {
-      void *p = malloc (size + al);
+      void *p;
+      size_t sz;
+      if (__builtin_add_overflow (size, al, &sz))
+	p = NULL;
+      else
+	p = malloc (sz);
       if (p)
 	{
 	  void *ap = (void *) (((uintptr_t) p + al) & -al);
