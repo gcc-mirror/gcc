@@ -448,6 +448,16 @@ dump_omp_iterators (pretty_printer *pp, tree iter, int spc, dump_flags_t flags)
       pp_colon (pp);
       dump_generic_node (pp, OMP_ITERATOR_STEP (it), spc, flags, false);
     }
+  if (flags & TDF_DETAILS && OMP_ITERATOR_BLOCK (iter))
+    {
+      pp_string (pp, ", block=");
+      pp_left_brace (pp);
+      newline_and_indent (pp, spc + 2);
+      dump_generic_node (pp, BLOCK_SUBBLOCKS (OMP_ITERATOR_BLOCK (iter)),
+			 spc + 2, flags, true);
+      newline_and_indent (pp, spc);
+      pp_right_brace (pp);
+    }
   if (OMP_ITERATOR_EXPANDED_P (iter))
     {
       pp_string (pp, ", loop_label=");
