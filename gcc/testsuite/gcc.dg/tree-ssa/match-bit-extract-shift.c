@@ -6,33 +6,33 @@
 
 uint32_t f (uint64_t x)
 {
-  return (((x >> 32) & 0x1) << 16)
-	  | (((x >> 24) & 0xff) << 8);
+  return (((x >> 32) & 0x1) << 16L)
+	  | (((x >> 24UL) & 0xff) << 8);
 }
 
 uint32_t f2 (uint64_t x)
 {
-  return (((x >> 3) & 0x3) << 16);
+  return (((x >> 3) & 0x3) << 16LL);
 }
 
 uint32_t f3 (uint64_t x)
 {
-  return (((x >> 61) & 0xE) << 16);
+  return (((x >> 61ULL) & 0xE) << 16);
 }
 
 uint32_t f4 (uint64_t x)
 {
-  return (((x >> 62) & 0xE) << 16);
+  return (((x >> 62U) & 0xE) << 16UL);
 }
 
 uint32_t f5 (uint64_t x)
 {
-  return (((x >> 63) & 0xF) << 17);
+  return (((x >> 63L) & 0xF) << 17U);
 }
 
 uint64_t f6 (uint64_t x)
 {
-  return (((x >> 32) & 0xFFFFFF) << 47);
+  return (((x >> 32U) & 0xFFFFFF) << 47ULL);
 }
 
 /* { dg-final { scan-tree-dump-not "<< 16" forwprop1 } } */
