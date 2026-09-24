@@ -232,6 +232,8 @@ do
         -echo) echo="echo"
                ;;
 
+        # note: if warnings on not implemented GC exceptions should be suppressed,
+        # then use -Wno-ec-unknown
         -fec=* | -fno-ec=*)
             opt="$(echo "$opt" | sed -E 's/-f(no-)?ec=/-f\1cobol-exceptions=EC-/g')"
              opts="$opts $opt"
@@ -438,12 +440,16 @@ do
                ;;
         -i | --info) warn "$opt"
                      ;;
-        -include )
-            pending_arg=$opt
+
+        # include a COBOL copybook --> gcobol's -include
+        --copy)
+            pending_arg="-include "  # space-separation needed
             ;;
-        # no-space version: just concatenate
-        -include* )
-            opts="$opts $opt"
+        #
+
+        # include a C header --> no real option in gcobol
+        --include)
+            error "$opt $incomparable"
             ;;
         #
         # Options that may have a space  before the argument, or not
@@ -525,7 +531,8 @@ do
              # opts="$opts --version"
             ;;
         # pass through, -Wall support pending gcc to set for all front ends
-        # cobc does not support all gcc -Wl options
+        # note: while cobc does not support gcc's -Wl options, they
+        # might be passed anyway for different reasons e.g.: -Wl,rpath.
         -w | -W | -Wextra | -Wno-* | -Wl,*) opts="$opts $opt"
              ;;
 
