@@ -568,7 +568,8 @@ done
 # cobc default:
 if [ "$static_used" = "" ]
 then
-    opts="-fno-static-call $opts";
+    # -export-dynamic required if CALLs occur within the same executable.
+    opts="-fno-static-call -export-dynamic $opts";
 fi
 
 if [ "$exit_status" -gt 0 ]
