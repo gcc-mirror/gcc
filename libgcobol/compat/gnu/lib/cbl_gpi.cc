@@ -126,29 +126,41 @@ callstack()
   return ret;
   }
 
-static void
-setbasename(const std::string &src, const gpi_param_t &p, char *dst, unsigned n)
+static int16_t
+setbasename(const std::string &src, const gpi_param_t &p, char *dst,
+  unsigned *buflen)
   {
-  strncpy(dst, src.c_str(), n);
+  int r = snprintf(NULL, 0, "%s", src.c_str());
 
-  if (n)
+  if (r < 0 || !dst || !buflen)
+    return 1009;
+  else if (r >= *buflen)
     {
-    dst[n - 1] = '\0';
+      *buflen = r + 1;
+      return 1013;
+    }
+  else
+    {
+    *buflen = snprintf(dst, *buflen, "%s", src.c_str());
 
     if (!(p.flags & GPI_PARAM_NULL_TERM))
       dst[strlen(dst)] = ' ';
     }
+
+  return 0;
   }
 
 int16_t
-cbl_gpi_cur_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_cur_status(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
+  int16_t ret;
   std::vector<std::string> cs = callstack();
 
   if (cs.empty())
-    return -1;
+    return 1011;
   else if (params.flags & GPI_PARAM_RET_BASENAME)
-    setbasename(cs.back(), params, buf.basename, buflen);
+    if ((ret = setbasename(cs.back(), params, buf.basename, buflen)))
+      return ret;
 
   if (params.flags & GPI_PARAM_RET_HANDLE)
     params.handle = new gpi_priv(cs);
@@ -158,7 +170,7 @@ cbl_gpi_cur_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
   }
 
 int16_t
-cbl_gpi_named_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_named_status(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   /* TODO: how are we supposed to return for a "named program"
    * if no name is given?*/
@@ -167,78 +179,86 @@ cbl_gpi_named_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
   }
 
 int16_t
-cbl_gpi_parent_status(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_parent_status(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
+  int16_t ret;
   gpi_priv *prv = params.handle;
 
-  if (prv->it + 1 >= prv->callstack.crend())
-    return -1;
+  if (!prv)
+    return 1001;
+  else if (prv->it + 1 >= prv->callstack.crend())
+    return 500;
   else if (params.flags & GPI_PARAM_RET_BASENAME)
-    setbasename(*++prv->it, params, buf.basename, buflen);
+    if ((ret = setbasename(*++prv->it, params, buf.basename, buflen)))
+      return ret;
 
   /* TODO: set status bits */
   return 0;
   }
 
 int16_t
-cbl_gpi_close_handle(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_close_handle(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
+  if (!params.handle)
+    return 1001;
+
   delete params.handle;
   /* TODO: set status bits */
   return 0;
   }
 
 int16_t
-cbl_gpi_first_ep(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_first_ep(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 int16_t
-cbl_gpi_next_ep(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_next_ep(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 int16_t
-cbl_gpi_cancel_search_ep(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_cancel_search_ep(gpi_param_t &params, union retbuf buf,
+  unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 int16_t
-cbl_gpi_prg_name(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_prg_name(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 int16_t
-cbl_gpi_nargs(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_nargs(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 int16_t
-cbl_gpi_reserved(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_reserved(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 int16_t
-cbl_gpi_path_prg_name(gpi_param_t &params, union retbuf buf, unsigned buflen)
+cbl_gpi_path_prg_name(gpi_param_t &params, union retbuf buf, unsigned *buflen)
   {
   fprintf(stderr, "%s: TODO\n", __func__);
   return -1;
   }
 
 typedef int16_t (*gpi_func_t)(gpi_param_t &params, union retbuf buf,
-  unsigned buflen);
+  unsigned *buflen);
 
 static const struct func
   {
@@ -324,17 +344,9 @@ static int checkflags(uint32_t fn, uint32_t flags)
     if (flags & mask)
       {
       if (!(f.accept & mask) && !(f.ignore & mask))
-        {
-        fprintf(stderr, "bit %" PRIu32 " not allowed for function %" PRIu32
-          "\n", i, fn);
         return -1;
-        }
       else if (f.unimplemented & mask)
-        {
-        fprintf(stderr, "bit %" PRIu32 " unimplemented for function %" PRIu32
-          "\n", i, fn);
         return -1;
-        }
       }
     }
 
@@ -342,27 +354,14 @@ static int checkflags(uint32_t fn, uint32_t flags)
   }
 
 extern "C"
-int16_t cbl_gpi(uint32_t fn, struct gpi_param_t &params, union retbuf buf,
+int16_t cbl_gpi(uint32_t fn, struct gpi_param_t *params, union retbuf buf,
   uint32_t *buflen)
   {
-  if (fn >= sizeof funcs / sizeof *funcs)
-    {
-    fprintf(stderr, "invalid function number %u\n", fn);
-    return -1;
-    }
+  if (fn >= sizeof funcs / sizeof *funcs
+      || !params
+      || params->size != sizeof *params
+      || checkflags(fn, params->flags))
+    return 1009;
 
-  if (params.size != sizeof params)
-    {
-    fprintf(stderr, "invalid cblte-gpi-size, expected %zu, got %u\n",
-      sizeof params, params.size);
-    assert(params.size == sizeof params);
-    }
-
-  if (checkflags(fn, params.flags))
-    {
-    fprintf(stderr, "invalid bits\n");
-    return -1;
-    }
-
-  return funcs[fn].func(params, buf, *buflen);
+  return funcs[fn].func(*params, buf, buflen);
   }

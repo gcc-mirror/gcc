@@ -41,8 +41,8 @@
         copy "cbltypes.cpy".
         01 param-block type cblt-prog-info-params.
         procedure division using param-block.
-          move length of buf to buflen.
           perform until status-code <> 0
+            move length of buf to buflen
       * retrieve program name from handle
             move 6 to cblte-gpi-flags
             move 2 to fn
@@ -58,6 +58,10 @@
               display "buf from c is '" buf "'"
             end-if
           end-perform.
+
+          if status-code <> 500
+            display "CBL_GET_PROGRAM_INFO failed with " status-code
+          end-if.
 
           close-handle section.
       * close handle
