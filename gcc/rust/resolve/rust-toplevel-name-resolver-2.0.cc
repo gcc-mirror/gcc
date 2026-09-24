@@ -187,11 +187,11 @@ TopLevel::visit_extern_crate (AST::ExternCrate &extern_crate, AST::Crate &crate,
 {
   auto &mappings = Analysis::Mappings::get ();
 
-  auto attribute_macros = mappings.pmacro.lookup_attribute_proc_macros (num);
+  auto attribute_macros = mappings.crate.attributes.lookup (num);
 
-  auto bang_macros = mappings.pmacro.lookup_bang_proc_macros (num);
+  auto bang_macros = mappings.crate.bangs.lookup (num);
 
-  auto derive_macros = mappings.pmacro.lookup_derive_proc_macros (num);
+  auto derive_macros = mappings.crate.derives.lookup (num);
 
   // TODO: Find a way to keep this part clean without the double dispatch.
   if (derive_macros.has_value ())

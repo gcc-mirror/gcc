@@ -44,7 +44,7 @@ SubstituteCtx::substitute_dollar_crate (
     }
   else
     {
-      auto name = mappings.crate.get_crate_name (*def_crate);
+      auto name = mappings.crate.crate_names.lookup (*def_crate);
 
       rust_assert (name);
 

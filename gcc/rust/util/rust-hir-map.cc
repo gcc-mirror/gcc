@@ -128,7 +128,7 @@ CrateMappings::get_next_crate_num (const std::string &name)
 {
   auto id = crateNumItr;
   crateNumItr++;
-  set_crate_name (id, name);
+  crate_names.insert (id, name);
   return id;
 }
 
@@ -144,16 +144,6 @@ CrateMappings::get_current_crate () const
   return currentCrateNum;
 }
 
-tl::optional<const std::string &>
-CrateMappings::get_crate_name (CrateNum crate_num) const
-{
-  auto it = crate_names.find (crate_num);
-  if (it == crate_names.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
 tl::optional<CrateNum>
 CrateMappings::lookup_crate_num (NodeId node_id) const
 {
@@ -164,22 +154,16 @@ CrateMappings::lookup_crate_num (NodeId node_id) const
   return it->second;
 }
 
-void
-CrateMappings::set_crate_name (CrateNum crate_num, const std::string &name)
-{
-  crate_names[crate_num] = name;
-}
-
 const std::string &
 CrateMappings::get_current_crate_name () const
 {
-  return get_crate_name (get_current_crate ()).value ();
+  return crate_names.lookup (get_current_crate ()).value ();
 }
 
 tl::optional<CrateNum>
 CrateMappings::lookup_crate_name (const std::string &crate_name) const
 {
-  for (const auto &it : crate_names)
+  for (const auto &it : crate_names.get_storage ())
     {
       if (it.second.compare (crate_name) == 0)
 	return it.first;
@@ -869,66 +853,6 @@ std::vector<AST::MacroRulesDefinition>
 Mappings::get_exported_macros ()
 {
   return exportedMacros;
-}
-
-void
-ProcMacroMappings::insert_derive_proc_macros (
-  CrateNum num, std::vector<CustomDeriveProcMacro> macros)
-{
-  auto it = deriveMappings.find (num);
-  rust_assert (it == deriveMappings.end ());
-
-  deriveMappings[num] = macros;
-}
-
-void
-ProcMacroMappings::insert_bang_proc_macros (CrateNum num,
-					    std::vector<BangProcMacro> macros)
-{
-  auto it = bangMappings.find (num);
-  rust_assert (it == bangMappings.end ());
-
-  bangMappings[num] = macros;
-}
-
-void
-ProcMacroMappings::insert_attribute_proc_macros (
-  CrateNum num, std::vector<AttributeProcMacro> macros)
-{
-  auto it = attributeMappings.find (num);
-  rust_assert (it == attributeMappings.end ());
-
-  attributeMappings[num] = macros;
-}
-
-tl::optional<std::vector<CustomDeriveProcMacro> &>
-ProcMacroMappings::lookup_derive_proc_macros (CrateNum num)
-{
-  auto it = deriveMappings.find (num);
-  if (it == deriveMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-tl::optional<std::vector<BangProcMacro> &>
-ProcMacroMappings::lookup_bang_proc_macros (CrateNum num)
-{
-  auto it = bangMappings.find (num);
-  if (it == bangMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
-}
-
-tl::optional<std::vector<AttributeProcMacro> &>
-ProcMacroMappings::lookup_attribute_proc_macros (CrateNum num)
-{
-  auto it = attributeMappings.find (num);
-  if (it == attributeMappings.end ())
-    return tl::nullopt;
-
-  return it->second;
 }
 
 void

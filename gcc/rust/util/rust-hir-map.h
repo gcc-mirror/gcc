@@ -71,12 +71,55 @@ private:
   LocalDefId localDefId;
 };
 
+enum class InsertionPolicy
+{
+  FORBID_DUPLICATES,
+  ALLOW_DUPLICATES,
+};
+
+template <typename Id, typename Item,
+	  const InsertionPolicy insertion_policy
+	  = InsertionPolicy::ALLOW_DUPLICATES>
+class Mapping
+{
+  std::unordered_map<Id, Item> storage;
+
+public:
+  tl::optional<Item &> lookup (Id id)
+  {
+    auto it = storage.find (id);
+    if (it == storage.cend ())
+      return tl::nullopt;
+    return it->second;
+  }
+
+  tl::optional<const Item &> lookup (Id id) const
+  {
+    auto it = storage.find (id);
+    if (it == storage.cend ())
+      return tl::nullopt;
+    return it->second;
+  }
+
+  void insert (Id id, Item item)
+  {
+    if (insertion_policy == InsertionPolicy::FORBID_DUPLICATES)
+      {
+	auto it = storage.find (id);
+	rust_assert (it == storage.end ());
+      }
+
+    storage.insert ({id, item});
+  }
+
+  // Required for CrateMappings::lookup_crate_name. Should we make mappings a
+  // bimap instead ?
+  const decltype (storage) &get_storage () const { return storage; }
+};
+
 class CrateMappings
 {
   std::map<CrateNum, AST::Crate *> ast_crate_mappings;
-
-  // crate names
-  std::map<CrateNum, std::string> crate_names;
 
   CrateNum crateNumItr;
 
@@ -90,10 +133,8 @@ public:
   CrateNum get_next_crate_num (const std::string &name);
   void set_current_crate (CrateNum crateNum);
   CrateNum get_current_crate () const;
-  tl::optional<const std::string &> get_crate_name (CrateNum crate_num) const;
 
   tl::optional<CrateNum> lookup_crate_num (NodeId node_id) const;
-  void set_crate_name (CrateNum crate_num, const std::string &name);
   const std::string &get_current_crate_name () const;
   tl::optional<CrateNum>
   lookup_crate_name (const std::string &crate_name) const;
@@ -106,14 +147,23 @@ public:
   AST::Crate &get_ast_crate (CrateNum crateNum);
 
   AST::Crate *get_ast_crate_by_node_id_raw (NodeId id);
+
+  Mapping<CrateNum, std::vector<CustomDeriveProcMacro>,
+	  InsertionPolicy::FORBID_DUPLICATES>
+    derives;
+  Mapping<CrateNum, std::vector<BangProcMacro>,
+	  InsertionPolicy::FORBID_DUPLICATES>
+    bangs;
+  Mapping<CrateNum, std::vector<AttributeProcMacro>,
+	  InsertionPolicy::FORBID_DUPLICATES>
+    attributes;
+
+  Mapping<CrateNum, std::string, InsertionPolicy::FORBID_DUPLICATES>
+    crate_names;
 };
 
 class ProcMacroMappings
 {
-  std::map<CrateNum, std::vector<CustomDeriveProcMacro>> deriveMappings;
-  std::map<CrateNum, std::vector<BangProcMacro>> bangMappings;
-  std::map<CrateNum, std::vector<AttributeProcMacro>> attributeMappings;
-
   std::map<NodeId, CustomDeriveProcMacro> procmacroDeriveMappings;
   std::map<NodeId, BangProcMacro> procmacroBangMappings;
   std::map<NodeId, AttributeProcMacro> procmacroAttributeMappings;
@@ -122,20 +172,6 @@ class ProcMacroMappings
   std::map<NodeId, AttributeProcMacro> procmacroAttributeInvocations;
 
 public:
-  void insert_derive_proc_macros (CrateNum num,
-				  std::vector<CustomDeriveProcMacro> macros);
-  void insert_bang_proc_macros (CrateNum num,
-				std::vector<BangProcMacro> macros);
-  void insert_attribute_proc_macros (CrateNum num,
-				     std::vector<AttributeProcMacro> macros);
-
-  tl::optional<std::vector<CustomDeriveProcMacro> &>
-  lookup_derive_proc_macros (CrateNum num);
-  tl::optional<std::vector<BangProcMacro> &>
-  lookup_bang_proc_macros (CrateNum num);
-  tl::optional<std::vector<AttributeProcMacro> &>
-  lookup_attribute_proc_macros (CrateNum num);
-
   void insert_derive_def (CustomDeriveProcMacro macro);
   void insert_bang_def (BangProcMacro macro);
   void insert_attribute_def (AttributeProcMacro macro);
@@ -155,27 +191,6 @@ public:
   void insert_bang_invocation (AST::MacroInvocation &invoc, BangProcMacro def);
   void insert_attribute_invocation (AST::SimplePath &invoc,
 				    AttributeProcMacro def);
-};
-
-template <typename Id, typename Item> class Mapping
-{
-  std::unordered_map<Id, Item> storage;
-
-public:
-  tl::optional<Item &> lookup (Id id)
-  {
-    auto it = storage.find (id);
-    if (it == storage.cend ())
-      return tl::nullopt;
-    return it->second;
-  }
-  void insert (Id id, Item item) { storage.insert ({id, item}); }
-};
-
-enum class InsertionPolicy
-{
-  FORBID_DUPLICATES,
-  ALLOW_DUPLICATES,
 };
 
 enum class InsertLocation

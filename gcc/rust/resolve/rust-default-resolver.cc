@@ -45,7 +45,7 @@ DefaultResolver::visit (AST::Crate &crate)
 
   auto crate_num = crate_mappings.lookup_crate_num (crate.get_node_id ());
   rust_assert (crate_num.has_value ());
-  auto crate_name = crate_mappings.get_crate_name (*crate_num);
+  auto crate_name = crate_mappings.crate_names.lookup (*crate_num);
   rust_assert (crate_name.has_value ());
 
   ctx.canonical_ctx.scope_crate (crate.get_node_id (), *crate_name, inner_fn);
