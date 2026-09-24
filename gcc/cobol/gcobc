@@ -518,7 +518,7 @@ do
             ;;
          -q | --brief) warn "$opt"
                        ;;
-         -v | --verbose) opts="$opts -V"
+         -v | --verbose) opts="$opts -v"
                          ;;
          # -dumpversion, like all options not handled specifically, is
          # passed by default.
