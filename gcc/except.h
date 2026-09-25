@@ -92,7 +92,7 @@ struct GTY((chain_next("%h.next_lp"))) eh_landing_pad_d
 
 /* A catch handler associated with an ERT_TRY region.  */
 
-struct GTY(()) eh_catch_d
+struct GTY((chain_next("%h.next_catch"), chain_prev("%h.prev_catch"))) eh_catch_d
 {
   /* The double-linked list of all catch handlers for the region.  */
   struct eh_catch_d *next_catch;
