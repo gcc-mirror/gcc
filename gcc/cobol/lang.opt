@@ -436,7 +436,7 @@ Cobol RejectNegative Joined Separate UInteger Var(indicator_column) Init(0) Inte
 -findicator-column=<n>	Column after which Region A begins.
 
 fstatic-call
-Cobol Var(cobol_static_call, 1) Init(1)
+Cobol Var(cobol_static_call) Init(1)
 Enable/disable static linkage for CALL literals.
 
 ftrace-debug

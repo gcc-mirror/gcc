@@ -344,7 +344,7 @@ cobol_option_lang_mask (void) {
   return CL_Cobol;
 }
 
-bool use_static_call( bool yn );
+bool set_use_static_call( bool yn );
 void add_cobol_exception( ec_type_t type, bool );
 
 bool include_file_add(const char input[]);
@@ -517,7 +517,7 @@ cobol_langhook_handle_option (size_t scode,
             return true;
 
         case OPT_fstatic_call:
-            use_static_call( arg? true : false );
+            set_use_static_call( value != 0 );
             return true;
 
         case OPT_fdefaultbyte:

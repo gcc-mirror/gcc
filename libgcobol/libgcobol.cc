@@ -67,6 +67,7 @@
 #include "gcobolio.h"
 #include "cobol-endian.h"
 #include "libgcobol.h"
+#include "literal-call-descriptor.h"
 #include "gfileio.h"
 #include "charmaps.h"
 #include "valconv.h"
@@ -11289,6 +11290,25 @@ __gg__just_mangle_name( const cblc_field_t  *field,
   }
 
 extern "C"
+void
+__gg__call_warning_message(const cblc_field_t *name,
+                           const char *filename,
+                           int line_number)
+  {
+  char *mangled_name = nullptr;
+  __gg__just_mangle_name(name, &mangled_name);
+
+  fprintf(stderr,
+          "WARNING: %s:%d \"CALL %s\" not found"
+          " with no \"CALL ON EXCEPTION\" phrase.\n"
+          "(You might need -rdynamic or --export-dynamic for symbols"
+          " in the executable.)\n",
+          filename,
+          line_number,
+          mangled_name);
+  }
+
+extern "C"
 void *
 __gg__function_handle_from_literal(int         program_id,
                                    const char *literal,
@@ -13695,6 +13715,51 @@ __gg__set_exception_call(const cblc_field_t *field,
                                           field->data + offset,
                                           field->capacity,
                                           &nbytes);
+  }
+
+/* A null warning_filename suppresses the warning, not exception bookkeeping.
+   This wrapper is only for literal CALL statements; other resolver users
+   retain the original resolver interface without CALL exception bookkeeping. */
+extern "C"
+void *
+__gg__resolve_literal_call(int program_id,
+                          const char *literal,
+                          int call_convention,
+                          const cblc_field_t *field,
+                          const char *warning_filename,
+                          int warning_line)
+  {
+  void *target = __gg__function_handle_from_literal(program_id,
+                                                   literal,
+                                                   call_convention);
+
+  if( target == nullptr )
+    {
+    __gg__set_exception_call(field, 0);
+    __gg__set_exception_code(ec_program_not_found_e, 1);
+
+    if( warning_filename != nullptr )
+      {
+      __gg__call_warning_message(field, warning_filename, warning_line);
+      }
+    }
+
+  return target;
+  }
+
+/* Keep the six-argument entry point available for existing generated code. */
+extern "C"
+void *
+__gg__resolve_literal_call_descriptor(
+  const cblc_literal_call_descriptor *descriptor)
+  {
+  return __gg__resolve_literal_call(
+           descriptor->program_id,
+           descriptor->literal,
+           descriptor->call_convention,
+           static_cast<const cblc_field_t *>(descriptor->field),
+           descriptor->warning_filename,
+           descriptor->warning_line);
   }
 
 extern "C"
