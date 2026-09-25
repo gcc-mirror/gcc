@@ -4554,6 +4554,15 @@ users:
   - WriteAfter
   account: chefmax
   inactive: true
+- sn: P
+  cn: Dominic P
+  email:
+  - gcc@gcc.dp11.uk
+  roles:
+  - WriteAfter
+  account: dominicp
+  DCO:
+  - gcc@gcc.dp11.uk
 - sn: Palanisamy
   cn: Jeevitha Palanisamy
   email:
