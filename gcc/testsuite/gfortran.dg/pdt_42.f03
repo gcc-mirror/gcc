@@ -1,4 +1,4 @@
-! { dg-do run )
+! { dg-do run }
 !
 ! Test the fix for PR87669 in which SELECT TYPE was not identifying the difference
 ! between derived types with different type kind parameters, when the selector

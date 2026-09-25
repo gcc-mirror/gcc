@@ -1,4 +1,4 @@
-! { dg-do run )
+! { dg-do run }
 !
 ! Test the fix for PR89707 in which the procedure pointer component
 ! with a parameterized KIND expression caused an ICE in resolution.

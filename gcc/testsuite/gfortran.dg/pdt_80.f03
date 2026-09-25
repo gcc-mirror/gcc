@@ -1,4 +1,4 @@
-! { dg-do run )
+! { dg-do run }
 ! { dg-options "-fdump-tree-original" }
 !
 ! Test the fix for PR90218. The errors that occurred are indicated by the comments below.

@@ -1,4 +1,4 @@
-! { dg-do compile )
+! { dg-do compile }
 !
 ! Test the fix for pr84122
 !

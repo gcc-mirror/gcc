@@ -1,4 +1,4 @@
-! { dg-do compile )
+! { dg-do compile }
 !
 ! Test the fix for PR112460, in which mismatched, constant typespec parameters were
 ! not detected.
