@@ -115,7 +115,7 @@ struct GTY(()) eh_catch_d
 
 /* Describes one exception region.  */
 
-struct GTY(()) eh_region_d
+struct GTY((chain_next("%h.next_peer"))) eh_region_d
 {
   /* The immediately surrounding region.  */
   struct eh_region_d *outer;
