@@ -663,42 +663,15 @@ costs::need_additional_vector_vars_p (stmt_vec_info stmt_info,
 
 /* Return the LMUL of the current analysis.  */
 static int
-compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
+estimate_lmul (loop_vec_info loop_vinfo, machine_mode mode)
 {
   gcc_assert (GET_MODE_BITSIZE (mode).is_constant ());
-  int regno_alignment = riscv_get_v_regno_alignment (loop_vinfo->vector_mode);
-  if (riscv_vls_mode_p (loop_vinfo->vector_mode))
-    return regno_alignment;
-  else
-    {
-      int estimated_vf = vect_vf_for_cost (loop_vinfo);
-      int estimated_lmul = estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
-			   / TARGET_MIN_VLEN;
-      if (estimated_lmul > RVV_M8)
-	return RVV_M8;
-      else
-	return estimated_lmul;
-    }
-  return 0;
-}
-
-/* Compute LMUL based on the ratio of biggest to smallest type size.
-   This is used for RVV_CONV_DYNAMIC.  */
-static int
-compute_lmul_from_conversion_ratio (machine_mode biggest_mode,
-				    machine_mode smallest_mode)
-{
-  gcc_assert (GET_MODE_BITSIZE (biggest_mode).is_constant ());
-  gcc_assert (GET_MODE_BITSIZE (smallest_mode).is_constant ());
-
-  unsigned int biggest_size = GET_MODE_BITSIZE (biggest_mode).to_constant ();
-  unsigned int smallest_size = GET_MODE_BITSIZE (smallest_mode).to_constant ();
-
-  int lmul = biggest_size / smallest_size;
-  lmul = std::min (lmul, (int) RVV_M8);
-  lmul = std::max (lmul, (int) RVV_M1);
-
-  return lmul;
+  int estimated_vf = vect_vf_for_cost (loop_vinfo);
+  int estimated_lmul = estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
+    / TARGET_MIN_VLEN;
+  estimated_lmul = std::min (estimated_lmul, (int) RVV_M8);
+  estimated_lmul = std::max (estimated_lmul, (int) RVV_M1);
+  return estimated_lmul;
 }
 
 /* Update the live ranges according PHI.
@@ -903,12 +876,7 @@ costs::compute_live_ranges_and_lmul (loop_vec_info loop_vinfo,
   update_local_live_ranges (loop_vinfo, program_points_per_bb,
 			    live_ranges_per_bb, &biggest_mode);
 
-  if (rvv_max_lmul == RVV_CONV_DYNAMIC)
-    lmul = compute_lmul_from_conversion_ratio (biggest_mode, smallest_mode);
-  else
-    lmul = compute_estimated_lmul (loop_vinfo, biggest_mode);
-
-  gcc_assert (lmul <= RVV_M8);
+  lmul = estimate_lmul (loop_vinfo, biggest_mode);
 }
 
 /* Helper to clean up live range data structures.  */
@@ -933,30 +901,9 @@ costs::cleanup_live_range_data (hash_map<basic_block, vec<stmt_point>>
   live_ranges_per_bb.empty ();
 }
 
-/* Compute LMUL for RVV_CONV_DYNAMIC mode based on conversion ratio.  */
-void
-costs::compute_conversion_dynamic_lmul (loop_vec_info loop_vinfo)
-{
-  hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
-  hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
-  machine_mode biggest_mode, smallest_mode;
-  int lmul;
-
-  compute_live_ranges_and_lmul (loop_vinfo, program_points_per_bb,
-				live_ranges_per_bb, biggest_mode,
-				smallest_mode, lmul);
-
-  /* Store the computed LMUL and biggest mode for later comparison
-     in cost model.  */
-  m_computed_lmul_from_conv = lmul;
-  m_biggest_mode_for_conv = biggest_mode;
-
-  cleanup_live_range_data (program_points_per_bb, live_ranges_per_bb);
-}
-
-/* Compute the maximum live V_REGS and check for unexpected spills.  */
+/* Compute the maximum live V_REGS and check for spills.  */
 bool
-costs::has_unexpected_spills_p (loop_vec_info loop_vinfo)
+costs::has_spills_p (loop_vec_info loop_vinfo)
 {
   hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
   hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
@@ -1022,18 +969,19 @@ costs::analyze_loop_vinfo (loop_vec_info loop_vinfo)
 void
 costs::record_lmul_spills (loop_vec_info loop_vinfo)
 {
-  /* Detect whether the LOOP has unexpected spills.  */
-  record_potential_unexpected_spills (loop_vinfo);
+  /* Detect whether the LOOP spills.  */
+  record_potential_spills (loop_vinfo);
 }
 
 /* Analyze the vectorized program statements and use dynamic LMUL
-   heuristic to detect whether the loop has unexpected spills.  */
+   heuristic to detect whether the loop spills.  */
 void
-costs::record_potential_unexpected_spills (loop_vec_info loop_vinfo)
+costs::record_potential_spills (loop_vec_info loop_vinfo)
 {
   /* We only want to apply the heuristic if LOOP_VINFO is being
      vectorized for VLA and known NITERS VLS loop.  */
-  if (rvv_max_lmul == RVV_DYNAMIC
+  if ((rvv_max_lmul == RVV_DYNAMIC
+       || rvv_max_lmul == RVV_CONV_DYNAMIC)
       && (m_cost_type == VLA_VECTOR_COST
 	  || (m_cost_type == VLS_VECTOR_COST
 	      && LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo))))
@@ -1041,12 +989,10 @@ costs::record_potential_unexpected_spills (loop_vec_info loop_vinfo)
       bool post_dom_available_p = dom_info_available_p (CDI_POST_DOMINATORS);
       if (!post_dom_available_p)
 	calculate_dominance_info (CDI_POST_DOMINATORS);
-      m_has_unexpected_spills_p = has_unexpected_spills_p (loop_vinfo);
+      m_has_spills_p = has_spills_p (loop_vinfo);
       if (!post_dom_available_p)
 	free_dominance_info (CDI_POST_DOMINATORS);
     }
-  else if (rvv_max_lmul == RVV_CONV_DYNAMIC)
-    compute_conversion_dynamic_lmul (loop_vinfo);
 }
 
 /* Decide whether to use the unrolling heuristic described above
@@ -1181,6 +1127,61 @@ compare_loop_overhead (loop_vec_info this_loop_vinfo,
   return 0;
 }
 
+/* Decide whether the LMUL of this or the OTHER cost is preferable if we are
+   using dynamic LMUL selection.  Return -1 if the current cost is better, 1 if
+   the other is better, and 0 if they are equal.  */
+
+int
+costs::compare_lmul_to (const vector_costs *uncast_other) const
+{
+  auto other = static_cast<const costs *> (uncast_other);
+  auto this_loop_vinfo = as_a<loop_vec_info> (this->m_vinfo);
+  auto other_loop_vinfo = as_a<loop_vec_info> (other->m_vinfo);
+
+  if (rvv_max_lmul != RVV_DYNAMIC
+      && rvv_max_lmul != RVV_CONV_DYNAMIC)
+    return 0;
+
+  /* First, filter out LMULs that exceed the maximum if we have one.  */
+  if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    {
+      int this_vf = vect_vf_for_cost (this_loop_vinfo);
+      int other_vf = vect_vf_for_cost (other_loop_vinfo);
+
+      unsigned int largest_elsz
+	= tree_to_uhwi (TYPE_SIZE (this->m_largest_type));
+
+      /* Estimate LMUL from VF * size of largest type / MIN_VLEN.  */
+      int this_lmul = (this_vf * largest_elsz) / TARGET_MIN_VLEN;
+      int other_lmul = (other_vf * largest_elsz) / TARGET_MIN_VLEN;
+
+      /* Clamp to valid LMUL range.  */
+      this_lmul = MAX (1, MIN (this_lmul, 8));
+      other_lmul = MAX (1, MIN (other_lmul, 8));
+      gcc_assert (this->m_type_ratio_lmul == other->m_type_ratio_lmul);
+
+      if (this_lmul <= this->m_type_ratio_lmul
+	  && other_lmul > this->m_type_ratio_lmul)
+	return -1;
+
+      if (other_lmul <= this->m_type_ratio_lmul
+	  && this_lmul > this->m_type_ratio_lmul)
+	return 1;
+    }
+
+  /* Then filter out spilling modes.  */
+  if (this->m_has_spills_p != other->m_has_spills_p)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_NOTE, vect_location,
+			 "Preferring smaller LMUL loop because"
+			 " it has unexpected spills\n");
+      return !this->m_has_spills_p ? -1 : 1;
+    }
+
+  return 0;
+}
+
 bool
 costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 {
@@ -1195,6 +1196,10 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 		     vect_vf_for_cost (this_loop_vinfo),
 		     GET_MODE_NAME (other_loop_vinfo->vector_mode),
 		     vect_vf_for_cost (other_loop_vinfo));
+
+  int diff = compare_lmul_to (uncast_other);
+  if (diff)
+    return diff < 0;
 
   /* Apply the unrolling heuristic described above m_unrolled_vls_niters.  */
   if (bool (m_unrolled_vls_stmts) != bool (other->m_unrolled_vls_stmts)
@@ -1211,73 +1216,22 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	  return other_prefer_unrolled;
 	}
     }
-  else if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+  else if (riscv_vla_mode_p (other_loop_vinfo->vector_mode))
     {
-      if (this->m_computed_lmul_from_conv > 0
-	  && other->m_computed_lmul_from_conv > 0
-	  && this->m_biggest_mode_for_conv != VOIDmode)
+      /* We don't want modes that would span more scalar iterations than
+	 we actually have.
+	 ??? We might want to revisit this in the light of VLMAX-dependent
+	 vs VL-dependent latency.  */
+      if (LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
 	{
-	  int this_vf = vect_vf_for_cost (this_loop_vinfo);
-	  int other_vf = vect_vf_for_cost (other_loop_vinfo);
-
-	  /* Get element size from the biggest mode.  */
-	  unsigned int element_bits
-	    = GET_MODE_BITSIZE (this->m_biggest_mode_for_conv).to_constant ();
-
-	  /* Estimate LMUL from VF * element_size / MIN_VLEN.  */
-	  int this_lmul = (this_vf * element_bits) / TARGET_MIN_VLEN;
-	  int other_lmul = (other_vf * element_bits) / TARGET_MIN_VLEN;
-
-	  /* Clamp to valid LMUL range.  */
-	  this_lmul = MAX (1, MIN (this_lmul, 8));
-	  other_lmul = MAX (1, MIN (other_lmul, 8));
-
-	  int target_lmul = this->m_computed_lmul_from_conv;
-
-	  /* Prefer the LMUL that exactly matches our computed ratio.  */
-	  if (this_lmul == target_lmul && other_lmul != target_lmul)
+	  if (maybe_gt (LOOP_VINFO_INT_NITERS (this_loop_vinfo),
+			LOOP_VINFO_VECT_FACTOR (this_loop_vinfo)))
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Preferring LMUL=%d loop because it matches"
-				 " conversion ratio (other LMUL=%d)\n",
-				 this_lmul, other_lmul);
-	      return true;
-	    }
-	  else if (this_lmul != target_lmul && other_lmul == target_lmul)
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Preferring other LMUL=%d loop because it"
-				 " matches conversion ratio"
-				 " (this LMUL=%d)\n", other_lmul, this_lmul);
+				 "Keep current LMUL loop because"
+				 " known NITERS exceed the new VF\n");
 	      return false;
-	    }
-	}
-    }
-  else if (rvv_max_lmul == RVV_DYNAMIC)
-    {
-      if (this->m_has_unexpected_spills_p != other->m_has_unexpected_spills_p)
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "Preferring smaller LMUL loop because"
-			     " it has unexpected spills\n");
-	  return !this->m_has_unexpected_spills_p;
-	}
-      else if (riscv_vla_mode_p (other_loop_vinfo->vector_mode))
-	{
-	  if (LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
-	    {
-	      if (maybe_gt (LOOP_VINFO_INT_NITERS (this_loop_vinfo),
-			    LOOP_VINFO_VECT_FACTOR (this_loop_vinfo)))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_NOTE, vect_location,
-				     "Keep current LMUL loop because"
-				     " known NITERS exceed the new VF\n");
-		  return false;
-		}
 	    }
 	}
     }
@@ -1291,7 +1245,7 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
       || !LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
     return vector_costs::better_main_loop_than_p (other);
 
-  int diff = compare_inside_loop_cost (other);
+  diff = compare_inside_loop_cost (other);
   if (diff != 0)
     return diff < 0;
 
@@ -1580,6 +1534,42 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
   return stmt_cost;
 }
 
+/* Record the smallest and largest type for this loop only considering
+   loads and stores.  The ratio of largest/smallest type can then be used
+   as LMUL so the load/store throughput is maximized.  */
+
+void
+costs::record_type_sizes (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
+			  tree vectype)
+{
+  tree type = NULL_TREE;
+  if (vectype && VECTOR_TYPE_P (vectype)
+      && !VECTOR_BOOLEAN_TYPE_P (vectype))
+    type = TREE_TYPE (vectype);
+  else if (tree lhs = gimple_get_lhs (STMT_VINFO_STMT (stmt_info)))
+    type = TREE_TYPE (lhs);
+
+  if (!type
+      || TREE_CODE (type) == BOOLEAN_TYPE
+      || !TYPE_SIZE (type)
+      || !tree_fits_uhwi_p (TYPE_SIZE (type)))
+    return;
+
+  unsigned HOST_WIDE_INT size = tree_to_uhwi (TYPE_SIZE (type));
+  if (!m_largest_type || size > tree_to_uhwi (TYPE_SIZE (m_largest_type)))
+    m_largest_type = type;
+
+  /* ??? What about scalar loads and a vec_construct or similar?  */
+  bool load_p = (kind == vector_load || kind == unaligned_load
+		 || kind == vector_gather_load);
+  bool store_p = (kind == vector_store || kind == unaligned_store
+		  || kind == vector_scatter_store);
+  if ((load_p || store_p)
+      && (!m_smallest_type
+	  || size < tree_to_uhwi (TYPE_SIZE (m_smallest_type))))
+    m_smallest_type = type;
+}
+
 unsigned
 costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 		      stmt_vec_info stmt_info, slp_tree node, tree vectype,
@@ -1593,6 +1583,10 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       if (tree lhs = gimple_get_lhs (STMT_VINFO_STMT (stmt_info)))
 	vectype = TREE_TYPE (lhs);
     }
+
+  if (stmt_info && where == vect_body
+      && m_cost_type != SCALAR_COST)
+    record_type_sizes (kind, stmt_info, vectype);
 
   int stmt_cost
     = targetm.vectorize.builtin_vectorization_cost (kind, vectype, misalign);
@@ -1719,6 +1713,18 @@ costs::finish_cost (const vector_costs *scalar_costs)
 {
   if (loop_vec_info loop_vinfo = dyn_cast<loop_vec_info> (m_vinfo))
     {
+      if (m_largest_type && m_smallest_type)
+	{
+	  unsigned HOST_WIDE_INT ratio
+	    = tree_to_uhwi (TYPE_SIZE (m_largest_type))
+	      / tree_to_uhwi (TYPE_SIZE (m_smallest_type));
+	  ratio = std::min (ratio, (unsigned HOST_WIDE_INT) RVV_M8);
+	  ratio = std::max (ratio, (unsigned HOST_WIDE_INT) RVV_M1);
+	  m_type_ratio_lmul = ratio;
+	}
+      else
+	m_type_ratio_lmul = 1;
+
       record_lmul_spills (loop_vinfo);
 
       adjust_vect_cost_per_loop (loop_vinfo);

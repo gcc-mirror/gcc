@@ -103,13 +103,13 @@ private:
 
      It's true when LMUL of loop vectorization factor > 1 and has unexpected
      V_REGS spills according to the analysis.  */
-  bool m_has_unexpected_spills_p = false;
-  void record_potential_unexpected_spills (loop_vec_info);
+  bool m_has_spills_p = false;
+  void record_potential_spills (loop_vec_info);
 
-  /* For RVV_DYNAMIC_CONV mode, store the LMUL computed from conversion ratio
-     and the biggest mode used in the computation.  */
-  int m_computed_lmul_from_conv = 0;
-  machine_mode m_biggest_mode_for_conv = VOIDmode;
+  tree m_largest_type = NULL_TREE;
+  tree m_smallest_type = NULL_TREE;
+  HOST_WIDE_INT m_type_ratio_lmul = 0;
+  void record_type_sizes (vect_cost_for_stmt, stmt_vec_info, tree);
 
   void compute_local_program_points (vec_info *,
 				     hash_map<basic_block, vec<stmt_point>> &);
@@ -128,8 +128,7 @@ private:
 				     machine_mode &, machine_mode &, int &);
   void cleanup_live_range_data (hash_map<basic_block, vec<stmt_point>> &,
 				hash_map<basic_block, hash_map<tree, pair>> &);
-  bool has_unexpected_spills_p (loop_vec_info);
-  void compute_conversion_dynamic_lmul (loop_vec_info);
+  bool has_spills_p (loop_vec_info);
   bool need_additional_vector_vars_p (stmt_vec_info, slp_tree);
 
   void adjust_vect_cost_per_loop (loop_vec_info);
@@ -143,6 +142,7 @@ private:
 			      tree vectype,
 			      vect_cost_model_location where,
 			      unsigned stmt_cost);
+  int compare_lmul_to (const vector_costs *) const;
 };
 
 } // namespace riscv_vector
