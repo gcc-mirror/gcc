@@ -2140,7 +2140,8 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	  break;
 	}
       /* First search just the GET_CLASS_NARROWEST_MODE to wider modes,
-	 if not found, fallback to all modes.  */
+	 if not found, fallback to all modes.  When found, pass is 3 (2 + 1),
+	 when not found, pass is 2 ('< 2' check + 1).  */
       int pass;
       for (pass = 0; pass < 2; pass++)
 	for (machine_mode mr = pass ? VOIDmode
@@ -2163,8 +2164,19 @@ lto_input_mode_table (struct lto_file_decl_data *file_data)
 	    continue;
 	  else
 	    {
+	      /* Found.  */
 	      table[m] = mr;
-	      pass = 2;
+	      pass = 2;  /* Will be 3 after the outer loop.  */
+#ifdef ACCEL_COMPILER
+	      /* A mode used by the host code - and generally supported by the
+		 offloading-target compiler might not actually be available,
+		 depending e.g. on -march or other other commandline options.
+		 Hence, check again and, if failing, diagnose it below.  */
+	      if (scalar_mode::includes_p (mr)
+		  && !targetm.scalar_mode_supported_p (
+			scalar_mode::from_int (mr)))
+		pass = 1;  /* Such that pass == 2 after the outer loop. */
+#endif
 	      break;
 	    }
       unsigned int mname_len;
