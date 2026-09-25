@@ -2612,7 +2612,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
        gsi_next (&gsi), gsi_next (&gsi1))
     {
       tree init_expr;
-      tree step_expr, off;
+      tree step_expr;
       tree type;
       tree var, ni, ni_name;
 
@@ -2648,17 +2648,19 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 
       if (induction_type == vect_step_op_add)
 	{
-	  tree stype = TREE_TYPE (step_expr);
-	  off = fold_build2 (MULT_EXPR, stype,
-			       fold_convert (stype, niters), step_expr);
-
-	  if (POINTER_TYPE_P (type))
-	    ni = fold_build_pointer_plus (init_expr, off);
-	  else
-	    ni = fold_convert (type,
-			       fold_build2 (PLUS_EXPR, stype,
-					    fold_convert (stype, init_expr),
-					    off));
+	  /* Use an unsigned type because we compute 'off' without
+	     accounting for 'init_expr', thus the computation might
+	     overflow.  Note we can also have FP inductions.  */
+	  tree ctype = (INTEGRAL_TYPE_P (TREE_TYPE (step_expr))
+			? unsigned_type_for (TREE_TYPE (step_expr))
+			: TREE_TYPE (step_expr));
+	  tree off = fold_build2 (MULT_EXPR, ctype,
+				  fold_convert (ctype, niters),
+				  fold_convert (ctype, step_expr));
+	  ni = fold_convert (type,
+			     fold_build2 (PLUS_EXPR, ctype,
+					  fold_convert (ctype, init_expr),
+					  off));
 	}
       /* Don't bother call vect_peel_nonlinear_iv_init.  */
       else if (induction_type == vect_step_op_neg)
