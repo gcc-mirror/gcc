@@ -179,6 +179,13 @@ class swap_web_entry : public web_entry_base
   unsigned int special_handling : 4;
   /* Set if the web represented by this entry cannot be optimized.  */
   unsigned int web_not_optimizable : 1;
+  /* Set if the swappable insns in the web represented by this entry
+     have to be fixed. Swappable insns have to be fixed in:
+       - webs containing permuting loads/stores and the swap insns
+	 in such webs have been marked for removal
+       - webs where non-permuting loads/stores have been converted
+	 to permuting loads/stores  */
+  unsigned int web_requires_special_handling : 1;
   /* Set if this insn should be deleted.  */
   unsigned int will_delete : 1;
 };
@@ -1468,14 +1475,6 @@ handle_special_swappables (swap_web_entry *insn_entry, unsigned i)
       if (dump_file)
 	fprintf (dump_file, "Adjusting subreg in insn %d\n", i);
       break;
-    case SH_NOSWAP_LD:
-      /* Convert a non-permuting load to a permuting one.  */
-      permute_load (insn);
-      break;
-    case SH_NOSWAP_ST:
-      /* Convert a non-permuting store to a permuting one.  */
-      permute_store (insn);
-      break;
     case SH_EXTRACT:
       /* Change the lane on an extract operation.  */
       adjust_extract (insn);
@@ -2401,6 +2400,25 @@ recombine_lvx_stvx_patterns (function *fun)
   free (to_delete);
 }
 
+/* Return true if insn is a non-permuting load/store.  */
+static bool
+non_permuting_mem_insn (swap_web_entry *insn_entry, unsigned int i)
+{
+  return insn_entry[i].special_handling == SH_NOSWAP_LD
+	 || insn_entry[i].special_handling == SH_NOSWAP_ST;
+}
+
+/* Convert a non-permuting load/store insn to a permuting one.  */
+static void
+convert_mem_insn (swap_web_entry *insn_entry, unsigned int i)
+{
+  rtx_insn *insn = insn_entry[i].insn;
+  if (insn_entry[i].special_handling == SH_NOSWAP_LD)
+    permute_load (insn);
+  if (insn_entry[i].special_handling == SH_NOSWAP_ST)
+    permute_store (insn);
+}
+
 /* Main entry point for this pass.  */
 unsigned int
 rs6000_analyze_swaps (function *fun)
@@ -2624,25 +2642,55 @@ rs6000_analyze_swaps (function *fun)
       dump_swap_insn_table (insn_entry);
     }
 
-  /* For each load and store in an optimizable web (which implies
-     the loads and stores are permuting), find the associated
-     register swaps and mark them for removal.  Due to various
-     optimizations we may mark the same swap more than once.  Also
-     perform special handling for swappable insns that require it.  */
+  /* There are two kinds of optimizations that can be performed on an
+     optimizable web:
+     1. Remove the register swaps associated with permuting load/store
+	in an optimizable web
+     2. Convert the vanilla loads/stores (that have not yet been split
+	into a permuting load/store and a swap) into a permuting
+	load/store (which effectively removes the swap)
+     In both the cases, swappable instructions in the webs need
+     special handling to fix them up.  */
   for (i = 0; i < e; ++i)
+    /* For each permuting load/store in an optimizable web, find
+       the associated register swaps and mark them for removal.
+       Due to various optimizations we may mark the same swap more
+       than once.  */
     if ((insn_entry[i].is_load || insn_entry[i].is_store)
 	&& insn_entry[i].is_swap)
       {
 	swap_web_entry* root_entry
 	  = (swap_web_entry*)((&insn_entry[i])->unionfind_root ());
 	if (!root_entry->web_not_optimizable)
-	  mark_swaps_for_removal (insn_entry, i);
+	  {
+	    mark_swaps_for_removal (insn_entry, i);
+	    root_entry->web_requires_special_handling = true;
+	  }
       }
-    else if (insn_entry[i].is_swappable && insn_entry[i].special_handling)
+    /* Convert the non-permuting loads/stores into a permuting
+       load/store.  */
+    else if (insn_entry[i].is_swappable
+	     && non_permuting_mem_insn (insn_entry, i))
       {
 	swap_web_entry* root_entry
 	  = (swap_web_entry*)((&insn_entry[i])->unionfind_root ());
 	if (!root_entry->web_not_optimizable)
+	  {
+	    convert_mem_insn (insn_entry, i);
+	    root_entry->web_requires_special_handling = true;
+	  }
+      }
+
+  /* Now that the webs which require special handling have been
+     identified, modify the instructions that are sensitive to
+     element order.  */
+  for (i = 0; i < e; ++i)
+    if (insn_entry[i].is_swappable && insn_entry[i].special_handling
+	&& !non_permuting_mem_insn (insn_entry, i))
+      {
+	swap_web_entry* root_entry
+	  = (swap_web_entry*)((&insn_entry[i])->unionfind_root ());
+	if (root_entry->web_requires_special_handling)
 	  handle_special_swappables (insn_entry, i);
       }
 
