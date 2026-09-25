@@ -58,7 +58,7 @@ FROM SymbolTable IMPORT NulSym,
                         PutMode,
                         PutFieldEnumeration, PutSubrange, PutVar,
                         IsDefImp, IsModule, IsInnerModule, IsType,
-                        GetCurrentModule,
+                        GetCurrentModule, GetCurrentModuleScope,
                         AddSymToModuleScope,
                         AddNameToImportList,
                         GetSym, RequestSym, IsUnknown, RenameSym,
@@ -609,19 +609,27 @@ END CheckExplicitExported ;
 PROCEDURE BuildImportInnerModule ;
 VAR
    Sym, ModSym,
+   OuterMod,
    i, n       : CARDINAL ;
 BEGIN
    PopT (n) ;       (* n   = # of the Ident List *)
    IF OperandT (n+1) = ImportTok
    THEN
-      (* Ident List contains list of objects *)
+      OuterMod := GetScope (GetCurrentModuleScope ()) ;
+      (* Ident List contains list of objects.  *)
       i := 1 ;
       WHILE i<=n DO
          AddNameToImportList (OperandTok (i), OperandT (i)) ;
+         Assert (OuterMod # NulSym) ;
+         ModSym := GetLocalSym (OuterMod, OperandT (i)) ;
+         IF (ModSym # NulSym) AND (IsDefImp (ModSym) OR IsModule (ModSym))
+         THEN
+            PutImported (ModSym)
+         END ;
          INC (i)
       END
    ELSE
-      (* Ident List contains list of objects *)
+      (* Ident List contains list of objects.  *)
       ModSym := LookupOuterModule (OperandTok(n+1),
                                    OperandT(n+1)) ;
       i := 1 ;
