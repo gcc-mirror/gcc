@@ -1,3 +1,8 @@
+2026-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-moids-equivalence.cc (are_modes_equivalent): Do not
+	string-compare INDICANTs.
+
 2026-09-22  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-low.cc (lower_module_text): Mark prelude_decl an

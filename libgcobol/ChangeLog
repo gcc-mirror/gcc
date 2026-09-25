@@ -1,3 +1,8 @@
+2026-09-24  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (find_in_dirs): Use the cached array.
+	(function_handle_from_cobpath): Create the cached array.
+
 2026-09-23  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (do_the_dl_thing): Implement the updated policies.

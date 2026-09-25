@@ -1,3 +1,66 @@
+2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (_gfortran_caf_sync_all, _gfortran_caf_sync_team):
+	Have the effect of SYNC MEMORY with a stopped image.  Check the
+	images of the team synchronized.
+	(_gfortran_caf_sync_images): Check the images synchronized.  Fix
+	the format of the duplicate image error.
+	(mark_stopped, _gfortran_caf_fail_image): Tell leave_teams whether
+	the image stopped.
+	(_gfortran_caf_co_broadcast, _gfortran_caf_co_sum)
+	(_gfortran_caf_co_min, _gfortran_caf_co_max)
+	(_gfortran_caf_co_reduce): Report terminated images of the team.
+	* caf/shmem/collective_subroutine.c (collsub_sync): Give up when an
+	image of the team terminated.
+	* caf/shmem/counter_barrier.c (counter_barrier_init): Initialize the
+	new fields.
+	(next_round, wait_round): New functions.
+	(counter_barrier_wait): Use wait_round.  Take part in the next round
+	when a round is aborted.
+	(counter_barrier_wait_abortable, counter_barrier_abort_locked): New
+	functions.
+	* caf/shmem/counter_barrier.h (counter_barrier): Make
+	curr_wait_group a round number.  Add aborted_round,
+	abortable_arrivals and aborting.
+	(counter_barrier_wait_abortable, counter_barrier_abort_locked):
+	Declare.
+	* caf/shmem/sync.c (sync_all): Return whether the images were
+	synchronized.
+	(sync_team_unless_stopped): New function.
+	* caf/shmem/sync.h (sync_all): Adjust.
+	(sync_team_unless_stopped): Declare.
+	* caf/shmem/teams_mgmt.c (count_images, team_terminated_images)
+	(update_teams_images_locked, leave_team): New functions.
+	(update_teams_images): Use update_teams_images_locked.
+	(leave_teams): Add stopped argument.  Use leave_team.
+	(check_health): Classify the given images.  Return the stat value.
+	* caf/shmem/teams_mgmt.h (leave_teams, check_health): Adjust.
+	(TEAM_HEALTH_CHECK): New macro.
+	(HEALTH_CHECK): Use it.
+
+2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (mark_stopped): New function.
+	(_gfortran_caf_stop_numeric, _gfortran_caf_stop_str): Call it.
+	(_gfortran_caf_fail_image): Call leave_teams.
+	* caf/shmem/supervisor.c (supervisor_main_loop): Keep the status an
+	image recorded for itself.
+	* caf/shmem/sync.c (sync_table): Use the total number of images as
+	the row stride.  Handle an image list and all images alike.
+	* caf/shmem/teams_mgmt.c (leave_teams): New function.
+	* caf/shmem/teams_mgmt.h (leave_teams): Declare.
+
+2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (mark_error_stopped): New function.
+	(_gfortran_caf_error_stop_str, _gfortran_caf_error_stop): Call it.
+	* caf/shmem/supervisor.c (supervisor_main_loop): Terminate all
+	images when an image error stopped.
+	* caf/shmem/supervisor.h (image_status): Add IMAGE_ERROR_STOP.
+
 2026-09-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/126964

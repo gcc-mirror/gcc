@@ -1,3 +1,80 @@
+2026-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126848
+	* flag-types.h (enum auto_init_type): Change AUTO_INIT_CXX26
+	value from 3 to 4.
+	* gimplify.cc (gimplify_decl_expr): Mask off AUTO_INIT_CXX26 bit
+	before comparing to AUTO_INIT_PATTERN.
+	(gimplify_target_expr): Likewise.
+	* internal-fn.cc (expand_DEFERRED_INIT): Likewise.  Formatting fix.
+	* opts.cc (finish_options): For -fhardened or in AUTO_INIT_CXX26
+	bit from previous value if it was set.  Mask off AUTO_INIT_CXX26 bit
+	before comparing to AUTO_INIT_ZERO.
+	* tree-ssa-ccp.cc (likely_value): Return VARYING rather than UNDEFINED
+	for .DEFERRED_INIT call with AUTO_INIT_CXX26 bit set in the second
+	argument.
+	* tree-ssa.cc (ssa_undefined_value_p): Return false rather than true
+	for .DEFERRED_INIT call with AUTO_INIT_CXX26 bit set in the second
+	argument.
+	* tree-ssa-uninit.cc (has_undefined_value_p): Return true for
+	SSA_NAMEs with .DEFERRED_INIT call as SSA_NAME_DEF_STMT.
+
+2026-09-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* tree-pretty-print.cc (dump_omp_iterators): Print OMP_ITERATOR_BLOCK.
+
+2026-09-24  Andrew Stubbs  <ams@baylibre.com>
+
+	* gdbhooks.py (Rtx): Decode more things.
+	(RtxPrinter): Improve output.
+	(build_pretty_printer): Match more rtx types.
+
+2026-09-24  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/127542
+	* config/gcn/gcn-valu.md (<expander><mode>2<exec>): Add
+	"popcount_extra_op".
+
+2026-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127579
+	* tree-vect-loop.cc (info_for_reduction): Add assert.
+	* tree-vect-stmts.cc (vectorizable_operation): Pass SLP node.
+
+2026-09-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/i386/i386-features.cc
+	(rest_of_insert_endbr_and_patchable_area):
+	Reuse an existing ENDBR.
+
+2026-09-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* doc/install.texi (Installing GCC): Change node pointer from
+	Binaries to Specific.
+	(Specific): Move to directly follow Installing GCC.
+	Update node pointers accordingly.
+	(Binaries): Move to follow Specific.
+	Update node pointers accordingly.
+	* doc/include/fdl.texi (GNU Free Documentation License): Under
+	@ifset gfdlhtml, change node pointer from Specific to Binaries
+	to match install.texi's chapter order.
+
+2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/127268
+	* config/i386/i386.cc (ix86_default_vector_cost): For
+	integer mode vec_to_scalar add sse_to_integer cost.
+
+2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127571
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def):
+	Re-associate offset computation to avoid overflow.
+
+2026-09-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-09-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	* config/v850/v850.cc (v850_print_oprerand): Handle operands

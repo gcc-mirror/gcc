@@ -1,3 +1,111 @@
+2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* gfortran.dg/coarray/stop_sync_1.f90: Check STAT=.
+	* gfortran.dg/coarray/collective_stopped_1.f90: New test.
+	* gfortran.dg/coarray/stop_end_team_1.f90: New test.
+	* gfortran.dg/coarray/stop_sync_team_1.f90: New test.
+	* gfortran.dg/coarray/sync_memory_stopped_1.f90: New test.
+
+2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* gfortran.dg/coarray/fail_image_sync_1.f90: New test.
+	* gfortran.dg/coarray/stop_sync_1.f90: New test.
+	* gfortran.dg/coarray/sync_images_stopped_1.f90: New test.
+
+2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* gfortran.dg/coarray/error_stop_1.f90: New test.
+
+2026-09-24  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/mode-shadow-1.a68: New test.
+
+2026-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126848
+	* c-c++-common/auto-init-1.c: Use [15] instead of 1 or [26] instead of
+	2 in regexps matching second .DEFERRED_INIT arguments.
+	* c-c++-common/auto-init-2.c: Likewise.
+	* c-c++-common/auto-init-3.c: Likewise.
+	* c-c++-common/auto-init-4.c: Likewise.
+	* c-c++-common/auto-init-5.c: Likewise.
+	* c-c++-common/auto-init-6.c: Likewise.
+	* c-c++-common/auto-init-7.c: Likewise.
+	* c-c++-common/auto-init-8.c: Likewise.
+	* c-c++-common/auto-init-9.c: Likewise.
+	* c-c++-common/auto-init-10.c: Likewise.
+	* c-c++-common/auto-init-11.c: Likewise.
+	* c-c++-common/auto-init-12.c: Likewise.
+	* c-c++-common/auto-init-13.c: Likewise.
+	* c-c++-common/auto-init-14.c: Likewise.
+	* c-c++-common/auto-init-15.c: Likewise.
+	* c-c++-common/auto-init-16.c: Likewise.
+	* c-c++-common/auto-init-esra.c: Likewise.
+	* c-c++-common/auto-init-padding-1.c: Likewise.
+	* g++.dg/cpp26/erroneous7.C: New test.
+	* g++.dg/cpp26/erroneous8.C: New test.
+	* g++.dg/cpp26/erroneous9.C: New test.
+
+2026-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127579
+	* gcc.target/aarch64/pr127579.c: New test.
+
+2026-09-24  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/i386/cet-switch-4.c: New test.
+
+2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/127268
+	* gcc.target/i386/vect-bb-reduc-1.c: New testcase.
+
+2026-09-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vv-f32-mf2.c: New test.
+
+2026-09-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vv-f32-mf2.c: New test.
+
+2026-09-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vv-f32-mf2.c: New test.
+
+2026-09-24  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/Passing_ADDRESS_OF_parameter.cob: New test.
+	* cobol.dg/group2/Passing_ADDRESS_OF_parameter.out: New test.
+	* cobol.dg/group2/Repository_uber_alles.cob: New test.
+	* cobol.dg/group2/Repository_uber_alles.out: New test.
+
 2026-09-23  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group2/CBL_READ_FILE__check_file_size_with_flags___128.cob:

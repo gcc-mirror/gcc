@@ -1,3 +1,8 @@
+2026-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* alloc.c (gomp_aligned_alloc): Check for overflows in the
+	_aligned_malloc case and in the last fallback.
+
 2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* testsuite/libgomp.c-c++-common/declare-target-local-1.c: New test.

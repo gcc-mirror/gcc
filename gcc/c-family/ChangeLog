@@ -1,3 +1,14 @@
+2026-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126848
+	* c-opts.cc (c_common_post_options): For -ftrivial-auto-var-init=zero
+	or -ftrivial-auto-var-init=pattern in C++26 or later mode set
+	AUTO_INIT_CXX26 bit in flag_auto_var_init.
+
+2026-09-24  Josef Melcr  <josef.melcr@suse.com>
+
+	* c-attribs.cc (handle_callback_only_attribute): Clean up old code.
+
 2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* c-pragma.h (enum pragma_omp_clause): Add PRAGMA_OMP_CLAUSE_LOCAL.
