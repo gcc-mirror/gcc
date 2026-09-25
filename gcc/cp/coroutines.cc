@@ -4981,8 +4981,9 @@ build_coroutine_frame_delete_expr (tree coro_fp, tree frame_size,
      one with two parameters.  */
   tree del_coro_fr
     = build_coroutine_op_delete_call (DELETE_EXPR, frame_arg, frame_size,
-				      /*global_p=*/false,  /*placement=*/NULL,
-				      /*alloc_fn=*/NULL, tf_warning_or_error);
+				      /*global_p=*/false,
+				      /*alloc_fn=*/NULL_TREE,
+				      tf_warning_or_error);
   if (!del_coro_fr || del_coro_fr == error_mark_node)
     return error_mark_node;
   return del_coro_fr;

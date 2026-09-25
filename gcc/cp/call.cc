@@ -8075,6 +8075,8 @@ usual_deallocation_fn_p (tree fn)
    usual deallocation should be chosen in preference to the single argument
    version in a class context.
    PLACEMENT is the corresponding placement new call, or NULL_TREE.
+   PLACEMENT_ARGS is a pointer to vector containing the original placement
+   arguments, or NULL.
 
    If this call to "operator delete" is being generated as part to
    deallocate memory allocated via a new-expression (as per [expr.new]
@@ -8085,7 +8087,8 @@ usual_deallocation_fn_p (tree fn)
 static tree
 build_op_delete_call_1 (enum tree_code code, tree addr, tree size,
 			bool global_p, bool coro_p, tree placement,
-			tree alloc_fn, tsubst_flags_t complain)
+			vec<tree, va_gc> *placement_args, tree alloc_fn,
+			tsubst_flags_t complain)
 {
   tree fn = NULL_TREE;
   tree fns, fnname, type, t;
@@ -8127,28 +8130,66 @@ build_op_delete_call_1 (enum tree_code code, tree addr, tree size,
 
   if (placement)
     {
-      /* "A declaration of a placement deallocation function matches the
-	 declaration of a placement allocation function if it has the same
-	 number of parameters and, after parameter transformations (8.3.5),
-	 all parameter types except the first are identical."
+      /* For a placement allocation function, the matching deallocation
+	 function is selected as follows:
 
-	 So we build up the function type we want and ask instantiate_type
-	 to get it for us.  */
+	 - Each candidate that is a function template is replaced by the
+	   function template specializations (if any) generated using template
+	   argument deduction with arguments as specified below.
+	 - Each candidate whose parameter-type-list is not identical to that
+	   of the allocation function, ignoring their respective first
+	   parameters, is removed from the set of candidates.
+	 - Each candidate whose associated constraints (if any) are not
+	   satisfied is removed from the set of candidates.
+	 - If exactly one function remains, that function is selected.
+	 - Otherwise, no deallocation function is selected.  */
       t = FUNCTION_ARG_CHAIN (alloc_fn);
-      t = tree_cons (NULL_TREE, ptr_type_node, t);
-      t = build_function_type (void_type_node, t);
+      fn = NULL_TREE;
+      tree *args = NULL;
+      unsigned nargs = 0;
+      for (tree elt : lkp_range (MAYBE_BASELINK_FUNCTIONS (fns)))
+	{
+	  if (TREE_CODE (elt) == TEMPLATE_DECL)
+	    {
+	      tree targs = make_tree_vec (DECL_NTPARMS (elt));
+	      if (args == NULL)
+		{
+		  nargs = vec_safe_length (placement_args);
+		  args = XALLOCAVEC (tree, nargs);
+		  args[0] = addr;
+		  for (unsigned i = 1; i < nargs; ++i)
+		    args[i] = (*placement_args)[i];
+		}
+	      elt = fn_type_unification (elt, NULL_TREE, targs, args,
+					 nargs, NULL_TREE,
+					 DEDUCE_CALL, LOOKUP_NORMAL,
+					 NULL, false, false);
+	      if (elt == error_mark_node)
+		/* Instantiation failed.  */
+		continue;
+	    }
 
-      fn = instantiate_type (t, fns, tf_none);
-      if (fn == error_mark_node)
-	return NULL_TREE;
+	  if (!constraints_satisfied_p (elt))
+	    continue;
 
-      fn = MAYBE_BASELINK_FUNCTIONS (fn);
+	  /* See if there's a match.  */
+	  if (!compparms (t, FUNCTION_ARG_CHAIN (elt)))
+	    continue;
+
+	  if (fn != NULL_TREE)
+	    {
+	      fn = NULL_TREE;
+	      break;
+	    }
+	  else
+	    fn = elt;
+	}
 
       /* "If the lookup finds the two-parameter form of a usual deallocation
 	 function (3.7.4.2) and that function, considered as a placement
 	 deallocation function, would have been selected as a match for the
 	 allocation function, the program is ill-formed."  */
-      if (second_parm_is_size_t (fn))
+      if (fn && second_parm_is_size_t (fn))
 	{
 	  const char *const msg1
 	    = G_("exception cleanup for this placement new selects "
@@ -8372,7 +8413,7 @@ build_op_delete_call_1 (enum tree_code code, tree addr, tree size,
   if (excluded_destroying
       && DECL_NAMESPACE_SCOPE_P (alloc_fn))
     return build_op_delete_call (code, addr, size, true, placement,
-				 alloc_fn, complain);
+				 placement_args, alloc_fn, complain);
 
   /* [expr.new]
 
@@ -8406,21 +8447,24 @@ build_op_delete_call_1 (enum tree_code code, tree addr, tree size,
 
 tree
 build_op_delete_call (enum tree_code code, tree addr, tree size, bool global_p,
-		      tree placement, tree alloc_fn, tsubst_flags_t complain)
+		      tree placement, vec<tree, va_gc> *placement_args,
+		      tree alloc_fn, tsubst_flags_t complain)
 {
   return build_op_delete_call_1 (code, addr, size, global_p, /*coro_p*/false,
-				 placement, alloc_fn, complain);
+				 placement, placement_args, alloc_fn,
+				 complain);
 }
 
 /* Arguments as per build_op_delete_call_1 ().  */
 
 tree
 build_coroutine_op_delete_call (enum tree_code code, tree addr, tree size,
-				bool global_p, tree placement, tree alloc_fn,
+				bool global_p, tree alloc_fn,
 				tsubst_flags_t complain)
 {
   return build_op_delete_call_1 (code, addr, size, global_p, /*coro_p*/true,
-				 placement, alloc_fn, complain);
+				 /*placement*/NULL_TREE,
+				 /*placement_args*/NULL, alloc_fn, complain);
 }
 
 /* Issue diagnostics about a disallowed access of DECL, using DIAG_DECL

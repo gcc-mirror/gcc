@@ -7359,11 +7359,10 @@ extern bool aligned_allocation_fn_p		(tree);
 extern tree destroying_delete_p			(tree);
 extern bool usual_deallocation_fn_p		(tree);
 extern tree build_op_delete_call		(enum tree_code, tree, tree,
-						 bool, tree, tree,
-						 tsubst_flags_t);
+						 bool, tree, vec<tree, va_gc> *,
+						 tree, tsubst_flags_t);
 extern tree build_coroutine_op_delete_call	(enum tree_code, tree, tree,
-						 bool, tree, tree,
-						 tsubst_flags_t complain);
+						 bool, tree, tsubst_flags_t);
 extern bool can_convert				(tree, tree, tsubst_flags_t);
 extern bool can_convert_standard		(tree, tree, tsubst_flags_t);
 extern bool can_convert_arg			(tree, tree, tree, int,

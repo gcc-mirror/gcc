@@ -3898,14 +3898,12 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
       /* The Standard is unclear here, but the right thing to do
 	 is to use the same method for finding deallocation
 	 functions that we use for finding allocation functions.  */
-      cleanup = (build_op_delete_call
-		 (dcode,
-		  alloc_node,
-		  size,
-		  globally_qualified_p,
-		  placement_allocation_fn_p ? alloc_call : NULL_TREE,
-		  alloc_fn,
-		  complain));
+      cleanup
+	= build_op_delete_call (dcode, alloc_node, size, globally_qualified_p,
+				placement_allocation_fn_p
+				? alloc_call : NULL_TREE,
+				placement_allocation_fn_p ? *placement : NULL,
+				alloc_fn, complain);
 
       if (cleanup && init_expr && !processing_template_decl)
 	/* Ack!  First we allocate the memory.  Then we set our sentry
@@ -4380,12 +4378,11 @@ build_vec_delete_1 (location_t loc, tree base, tree maxindex, tree type,
 	  virtual_size = size_binop (PLUS_EXPR, virtual_size, cookie_size);
 	}
 
-      deallocate_expr = build_op_delete_call (VEC_DELETE_EXPR,
-					      base_tbd, virtual_size,
-					      use_global_delete & 1,
-					      /*placement=*/NULL_TREE,
-					      /*alloc_fn=*/NULL_TREE,
-					      complain);
+      deallocate_expr
+	= build_op_delete_call (VEC_DELETE_EXPR, base_tbd, virtual_size,
+				use_global_delete & 1, /*placement=*/NULL_TREE,
+				/*placement_args=*/NULL,
+				/*alloc_fn=*/NULL_TREE, complain);
     }
 
   body = loop;
@@ -5583,13 +5580,11 @@ build_delete (location_t loc, tree otype, tree addr,
     {
       head = get_internal_target_expr (build_headof (addr));
       /* Delete the object.  */
-      do_delete = build_op_delete_call (DELETE_EXPR,
-					head,
-					cxx_sizeof_nowarn (type),
-					/*global_p=*/true,
-					/*placement=*/NULL_TREE,
-					/*alloc_fn=*/NULL_TREE,
-					complain);
+      do_delete
+	= build_op_delete_call (DELETE_EXPR, head, cxx_sizeof_nowarn (type),
+				/*global_p=*/true, /*placement=*/NULL_TREE,
+				/*placement_args=*/NULL,
+				/*alloc_fn=*/NULL_TREE, complain);
       /* Otherwise, treat this like a complete object destructor
 	 call.  */
       auto_delete = sfk_complete_destructor;
@@ -5600,13 +5595,11 @@ build_delete (location_t loc, tree otype, tree addr,
   else if (!virtual_p)
     {
       /* Build the call.  */
-      do_delete = build_op_delete_call (DELETE_EXPR,
-					addr,
-					cxx_sizeof_nowarn (type),
-					/*global_p=*/false,
-					/*placement=*/NULL_TREE,
-					/*alloc_fn=*/NULL_TREE,
-					complain);
+      do_delete
+	= build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
+				/*global_p=*/false, /*placement=*/NULL_TREE,
+				/*placement_args=*/NULL,
+				/*alloc_fn=*/NULL_TREE, complain);
       /* Call the complete object destructor.  */
       auto_delete = sfk_complete_destructor;
       if (do_delete != error_mark_node)
@@ -5616,15 +5609,12 @@ build_delete (location_t loc, tree otype, tree addr,
 	}
     }
   else if (TYPE_GETS_REG_DELETE (type))
-    {
-      /* Make sure we have access to the member op delete, even though
-	 we'll actually be calling it from the destructor.  */
-      build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
-			    /*global_p=*/false,
-			    /*placement=*/NULL_TREE,
-			    /*alloc_fn=*/NULL_TREE,
-			    complain);
-    }
+    /* Make sure we have access to the member op delete, even though
+       we'll actually be calling it from the destructor.  */
+    build_op_delete_call (DELETE_EXPR, addr, cxx_sizeof_nowarn (type),
+			  /*global_p=*/false, /*placement=*/NULL_TREE,
+			  /*placement_args=*/NULL, /*alloc_fn=*/NULL_TREE,
+			  complain);
 
   if (destroying_delete)
     /* The operator delete will call the destructor.  */
