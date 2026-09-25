@@ -3065,8 +3065,11 @@ process_alt_operands (int only_alternative)
 		 the operand to memory.  Mark it so that an operand matching
 		 this one can also fall back to memory, otherwise the matched
 		 operand would try to reload into an impossible hard reg and
-		 LRA would cycle (e.g. TDmode "+g" asm on 32-bit x86).  */
-	      if (offmemok && this_alternative != NO_REGS
+		 LRA would cycle (e.g. TDmode "+g" asm on 32-bit x86).
+		 An operand which is already memory and won implies the
+		 constraint accepts memory too, even if nothing set
+		 OFFMEMOK for it.  */
+	      if ((offmemok || MEM_P (op)) && this_alternative != NO_REGS
 		  && hard_reg_set_subset_p (reg_class_contents[this_alternative],
 					    ira_prohibited_class_mode_regs
 					    [this_alternative][mode]

@@ -15,3 +15,16 @@ test (void)
   __asm ("" : "+g" (u.d)); /* { dg-bogus "inconsistent operand constraints" } */
   return u.d;
 }
+
+/* Here the union is also read as integers, so it stays in memory and the asm
+   operand is MEM.  The matched input operand still has to be resolved in
+   memory.  */
+
+unsigned long long
+test2 (void)
+{
+  union { _Decimal128 d; unsigned long long u[2]; } u;
+  u.d = 1.0DL;
+  __asm ("" : "+g" (u.d)); /* { dg-bogus "inconsistent operand constraints" } */
+  return u.u[0] + u.u[1];
+}
