@@ -2127,17 +2127,6 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
     }
   dr_vec_info *first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 
-  /* True if the vectorized statements would access beyond the last
-     statement in the group.  */
-  bool overrun_p = false;
-
-  /* True if we can cope with such overrun by peeling for gaps, so that
-     there is at least one final scalar iteration after the vector loop.  */
-  bool can_overrun_p = (!masked_p
-			&& vls_type == VLS_LOAD
-			&& loop_vinfo
-			&& !loop->inner);
-
   /* There can only be a gap at the end of the group if the stride is
      known at compile time.  */
   gcc_assert (!STMT_VINFO_STRIDED_P (first_stmt_info) || gap == 0);
@@ -2269,6 +2258,19 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       else
 	*memory_access_type = VMAT_CONTIGUOUS;
 
+      /* True if the vectorized statements would access beyond the last
+	 statement in the group.  */
+      bool overrun_p = false;
+
+      /* True if we can cope with such overrun by peeling for gaps, so that
+	 there is at least one final scalar iteration after the vector loop.  */
+      bool can_overrun_p = (!masked_p
+			    && vls_type == VLS_LOAD
+			    && loop_vinfo
+			    && !loop->inner
+			    && (*memory_access_type != VMAT_STRIDED_SLP
+				|| cmp > 0));
+
       /* If this is single-element interleaving with an element
 	 distance that leaves unused vector loads around fall back
 	 to elementwise access if possible - we otherwise least
@@ -2354,7 +2356,8 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
       unsigned HOST_WIDE_INT tem, num;
       if (overrun_p
 	  && !masked_p
-	  && *memory_access_type != VMAT_LOAD_STORE_LANES
+	  && (*memory_access_type == VMAT_CONTIGUOUS
+	      || *memory_access_type == VMAT_CONTIGUOUS_REVERSE)
 	  && (((alss = vect_supportable_dr_alignment (vinfo, first_dr_info,
 						      vectype, misalign)))
 	      == dr_aligned
@@ -2434,6 +2437,16 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 				 "the end of the access\n");
 	      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
 	    }
+	}
+
+      if (overrun_p)
+	{
+	  gcc_assert (can_overrun_p);
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Data access with gaps requires scalar "
+			     "epilogue loop\n");
+	  LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
 	}
     }
 
@@ -2530,16 +2543,6 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 	  *alignment_support_scheme = dr_unaligned_supported;
 	  *misalignment = DR_MISALIGNMENT_UNKNOWN;
 	}
-    }
-
-  if (overrun_p)
-    {
-      gcc_assert (can_overrun_p);
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Data access with gaps requires scalar "
-			 "epilogue loop\n");
-      LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo) = true;
     }
 
   if ((*memory_access_type == VMAT_ELEMENTWISE
@@ -11370,6 +11373,9 @@ vectorizable_load (vec_info *vinfo,
 	}
       return true;
     }
+
+  gcc_assert (memory_access_type == VMAT_CONTIGUOUS
+	      || memory_access_type == VMAT_CONTIGUOUS_REVERSE);
 
   aggr_type = vectype;
   if (!costing_p)
