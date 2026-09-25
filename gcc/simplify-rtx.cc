@@ -5082,11 +5082,53 @@ simplify_ashift:
       return 0;
 
     case SMUL_HIGHPART:
-    case UMUL_HIGHPART:
-      /* Simplify x * 0 to 0, if possible.  */
+      /* Simplify x h* 0 to 0, if possible.  */
       if (trueop1 == CONST0_RTX (mode)
 	  && !side_effects_p (op0))
 	return op1;
+      /* Simplify x h* 1 to sign(x).  */
+      if (trueop1 == const1_rtx
+	  && is_a <scalar_int_mode> (mode, &int_mode))
+	{
+	  HOST_WIDE_INT bits = GET_MODE_PRECISION (int_mode) - 1;
+	  return simplify_gen_binary (ASHIFTRT, mode, op0,
+				      gen_int_shift_amount (mode, bits));
+	}
+      /* Simplify SMUL_HIGHPART by power of two as ASHIFRT.  */
+      if (CONST_INT_P (trueop1)
+	  && INTVAL (trueop1) > 1
+	  && is_a <scalar_int_mode> (mode, &int_mode))
+	{
+	  HOST_WIDE_INT prec = GET_MODE_PRECISION (int_mode);
+	  val = wi::exact_log2 (INTVAL (trueop1));
+	  if (val > 0 && val < prec)
+	    return simplify_gen_binary (ASHIFTRT, mode, op0,
+					gen_int_shift_amount (mode,
+							      prec - val));
+	}
+      return 0;
+
+    case UMUL_HIGHPART:
+      /* Simplify x h* 0 to 0, if possible.  */
+      if (trueop1 == CONST0_RTX (mode)
+	  && !side_effects_p (op0))
+	return op1;
+      /* Simplify x h* 1 to 0.  */
+      if (trueop1 == CONST1_RTX (mode)
+	  && !side_effects_p (op1))
+	return CONST0_RTX (mode);
+      /* Simplify UMUL_HIGHPART by power of two as LSHIFRT.  */
+      if (CONST_INT_P (trueop1)
+	  && UINTVAL (trueop1) > 1
+	  && is_a <scalar_int_mode> (mode, &int_mode))
+	{
+	  HOST_WIDE_INT prec = GET_MODE_PRECISION (int_mode);
+	  val = wi::exact_log2 (UINTVAL (trueop1));
+	  if (val > 0 && val < prec)
+	    return simplify_gen_binary (LSHIFTRT, mode, op0,
+					gen_int_shift_amount (mode,
+							      prec - val));
+	}
       return 0;
 
     case SS_DIV:
