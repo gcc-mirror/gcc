@@ -1,3 +1,12 @@
+2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127571
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def):
+	Re-associate offset computation to avoid overflow.
+
 2026-09-23  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
 
 	Backported from master:
