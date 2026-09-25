@@ -990,7 +990,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
--mmain-is-OS_task  -mrelax  -mpmem-wrap-around
+-mmain-is-OS_task  -moptimize  -mrelax  -mpmem-wrap-around
 -mrmw  -mstrict-addr-space-subsets  -mstrict-X  -mtiny-stack
 -mrodata-in-ram  -msplit-bit-shift  -msplit-ldst  -mshort-calls
 -mskip-bug  -muse-nonzero-bits  -nodevicelib  -nodevicespecs
@@ -24659,6 +24659,16 @@ aspect of the optimization.
 @opindex mfuse-move2
 @item -mfuse-move2
 Run a post combine optimization pass that tries to fuse move instructions.
+
+@opindex moptimize
+@item -mno-optimize
+@itemx -moptimize
+Disable / enable AVR-specific optimization passes, all documented in this
+paragraph: @option{-mdemote-switch}, @option{-mfuse-add},
+@option{-mfuse-ifelse}, @option{-mfuse-move}, @option{-mfuse-move2},
+@option{-msplit-ldst}, @option{-msplit-bit-shift}, @option{-muse-nonzero-bits}.
+Usually, you don't need to specify this option because the respective passes
+are activated by default when optimization is on.
 
 @opindex mstrict-X
 @item -mstrict-X

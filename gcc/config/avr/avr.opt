@@ -184,6 +184,10 @@ mfuse-move2
 Target Var(avropt_fuse_move2) Init(0) Optimization
 Optimization. Fuse some move insns after insn combine.
 
+moptimize
+Target Var(avropt_optimize) Init(0) Optimization
+Optimization. Enable avr-specific optimizations.
+
 mabsdata
 Target Mask(ABSDATA)
 Assume that all data in static storage can be accessed by LDS / STS instructions.  This option is only useful for reduced Tiny devices like ATtiny40.

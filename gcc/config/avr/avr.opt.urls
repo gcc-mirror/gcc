@@ -111,6 +111,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mfuse-move)
 mfuse-move2
 UrlSuffix(gcc/AVR-Options.html#index-mfuse-move2)
 
+moptimize
+UrlSuffix(gcc/AVR-Options.html#index-moptimize)
+
 mabsdata
 UrlSuffix(gcc/AVR-Options.html#index-mabsdata)
 
