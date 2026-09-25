@@ -1947,16 +1947,19 @@ ranger_cache::apply_inferred_ranges (gimple *s)
   if (infer.num () == 0)
     return;
 
-  // Do not update the on-entry cache for block ending stmts.
+  // Do not update the on-entry cache for block ending stmts if there is
+  // an outgoing abnormal edge.  Any outgoing abnormal edge makes the
+  // value unsafe to use.
   if (stmt_ends_bb_p (s))
     {
       edge_iterator ei;
       edge e;
       FOR_EACH_EDGE (e, ei, gimple_bb (s)->succs)
-	if (!(e->flags & (EDGE_ABNORMAL|EDGE_EH)))
-	  break;
-      if (e == NULL)
-	update = false;
+	if (e->flags & (EDGE_ABNORMAL|EDGE_EH))
+	  {
+	    update = false;
+	    break;
+	  }
     }
 
   infer_oracle ().add_ranges (s, infer);
