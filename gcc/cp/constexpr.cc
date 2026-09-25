@@ -8649,7 +8649,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool empty_base = false;
   while (!refs->is_empty ())
     {
-      if (*valp == NULL_TREE)
+      if (*valp == NULL_TREE || *valp == void_node)
 	{
 	  *valp = build_constructor (type, NULL);
 	  CONSTRUCTOR_NO_CLEARING (*valp) = no_zero_init;
@@ -8998,7 +8998,7 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
     }
   else if (TREE_CLOBBER_P (init))
     {
-      if (AGGREGATE_TYPE_P (type))
+      if (AGGREGATE_TYPE_P (type) && CLOBBER_KIND (init) < CLOBBER_OBJECT_END)
 	{
 	  if (*valp && TREE_CODE (*valp) == CONSTRUCTOR)
 	    CONSTRUCTOR_ELTS (*valp) = nullptr;
