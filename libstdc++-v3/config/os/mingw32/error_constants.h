@@ -104,9 +104,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
 //    operation_canceled = 			ECANCELED,
 //    operation_in_progress = 			EINPROGRESS,
-#ifdef EPERM
       operation_not_permitted = 		EPERM,
-#endif
 //    operation_not_supported = 		EOPNOTSUPP,
 #ifdef EWOULDBLOCK
       operation_would_block = 			EWOULDBLOCK,
