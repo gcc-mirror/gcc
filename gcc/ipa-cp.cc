@@ -928,7 +928,8 @@ ipcp_bits_lattice::set_to_bottom ()
    when switching state from TOP.  */
 
 bool
-ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
+ipcp_bits_lattice::set_to_constant (const widest_int &value,
+				    const widest_int &mask)
 {
   gcc_assert (top_p ());
   m_lattice_val = IPA_BITS_CONSTANT;
@@ -985,7 +986,8 @@ ipcp_bits_lattice::get_value_and_mask (tree operand, widest_int *valuep, widest_
    DROP_ALL_ONES, mask out any known bits with value one afterwards.  */
 
 bool
-ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
+ipcp_bits_lattice::meet_with_1 (const widest_int &value,
+				const widest_int &mask,
 				unsigned precision, bool drop_all_ones)
 {
   gcc_assert (constant_p ());
@@ -1008,7 +1010,8 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
    described by <value, mask, sgn, precision.  */
 
 bool
-ipcp_bits_lattice::meet_with (widest_int value, widest_int mask,
+ipcp_bits_lattice::meet_with (const widest_int &value,
+			      const widest_int &mask,
 			      unsigned precision)
 {
   if (bottom_p ())

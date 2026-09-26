@@ -199,7 +199,7 @@ public:
   bool top_p () const { return m_lattice_val == IPA_BITS_UNDEFINED; }
   bool constant_p () const { return m_lattice_val == IPA_BITS_CONSTANT; }
   bool set_to_bottom ();
-  bool set_to_constant (widest_int, widest_int);
+  bool set_to_constant (const widest_int &, const widest_int &);
   bool known_nonzero_p () const;
   bool set_recipient_only ();
   bool recipient_only_p () const {return m_recipient_only; }
@@ -210,7 +210,7 @@ public:
   bool meet_with (ipcp_bits_lattice& other, unsigned, signop,
 		  enum tree_code, tree, bool);
 
-  bool meet_with (widest_int, widest_int, unsigned);
+  bool meet_with (const widest_int &, const widest_int &, unsigned);
 
   void print (FILE *);
 
@@ -228,7 +228,7 @@ private:
      value is known to be constant.  */
   widest_int m_value, m_mask;
 
-  bool meet_with_1 (widest_int, widest_int, unsigned, bool);
+  bool meet_with_1 (const widest_int &, const widest_int &, unsigned, bool);
   void get_value_and_mask (tree, widest_int *, widest_int *);
 };
 
