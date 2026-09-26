@@ -1644,6 +1644,7 @@ enum gfc_omp_atomic_op
 enum gfc_omp_requires_kind
 {
   /* Keep gfc_namespace's omp_requires bitfield size in sync.  */
+  OMP_REQ_NONE = 0,  /* unset */
   OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST = 1,  /* 001 */
   OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL = 2,  /* 010 */
   OMP_REQ_ATOMIC_MEM_ORDER_RELAXED = 3,  /* 011 */

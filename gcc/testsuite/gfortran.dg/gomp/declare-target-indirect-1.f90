@@ -23,12 +23,12 @@ contains
   end subroutine
 
   subroutine sub4
-    !$omp declare target to (sub4) indirect (1) ! { dg-error "INDIRECT clause at .1. requires a constant logical expression" }
+    !$omp declare target to (sub4) indirect (1) ! { dg-error "Expected '\\( const-logical-expr \\)'" }
   end subroutine
 
   ! Compile-time non-constant expressions are not allowed.
   subroutine sub5
-    !$omp declare target indirect (a > 0) to (sub5) ! { dg-error "INDIRECT clause at .1. requires a constant logical expression" }
+    !$omp declare target indirect (a > 0) to (sub5) ! { dg-error "Expected '\\( const-logical-expr \\)'" }
   end subroutine
 
   ! Compile-time constant expressions are permissible.
@@ -45,11 +45,11 @@ contains
   end subroutine
 
   subroutine sub9
-    !$omp declare target to (sub9) indirect ("abs") ! { dg-error "INDIRECT clause at .1. requires a constant logical expression" }
+    !$omp declare target to (sub9) indirect ("abs") ! { dg-error "Expected '\\( const-logical-expr \\)'" }
   end subroutine
 
   subroutine sub10
-    !$omp declare target to (sub10) indirect (5.5) ! { dg-error "INDIRECT clause at .1. requires a constant logical expression" }
+    !$omp declare target to (sub10) indirect (5.5)  ! { dg-error "Expected '\\( const-logical-expr \\)'" }
   end subroutine
 
   subroutine sub11
