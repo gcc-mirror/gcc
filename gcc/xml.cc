@@ -116,7 +116,7 @@ node_with_children::add_text (std::string str)
   if (!m_children.empty ())
     if (text *t = m_children.back ()->dyn_cast_text ())
       {
-	t->m_str += std::move (str);
+	t->m_str += str;
 	return;
       }
   add_child (std::make_unique <text> (std::move (str)));

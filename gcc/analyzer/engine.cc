@@ -1498,7 +1498,7 @@ exploded_graph::unwind_from_exception (exploded_node &thrown_enode,
 
 	      exploded_node *after_unwind_enode
 		= get_or_create_node (unwound_point,
-				      std::move (unwound_state),
+				      unwound_state,
 				      iter_enode,
 				      /* Don't add this enode to the
 					 worklist; we will process it
