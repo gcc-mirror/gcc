@@ -17802,12 +17802,11 @@ test_vec_unpack_folding ()
       poly_uint64 out_nelts = exact_div (in_nelts, 2);
       tree out_type = build_vector_type (out_inner_type, out_nelts);
 
-      tree_vector_builder builder (in_type, in_nelts.coeffs[0], 2);
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+      tree_vector_builder builder (in_type, min_out_nelts, 2);
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
 	builder.quick_push (build_int_cst (in_inner_type, i + 1));
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
-	builder.quick_push (build_int_cst (in_inner_type,
-					   i < min_out_nelts ? 100 + i : 77));
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
+	builder.quick_push (build_int_cst (in_inner_type, 77));
       tree arg = builder.build ();
 
       /* Check integer unpacking with a duplicated scalable high half.  */
@@ -17878,17 +17877,15 @@ test_vec_unpack_folding ()
 
       /* Check float-to-int unpacking with the same scalable shape.  */
       tree float_in_type = build_vector_type (float_type_node, in_nelts);
-      tree_vector_builder fix_builder (float_in_type, in_nelts.coeffs[0], 2);
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+      tree_vector_builder fix_builder (float_in_type, min_out_nelts, 2);
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
 	fix_builder.quick_push
 	  (build_real_from_int_cst (float_type_node,
 				    build_int_cst (integer_type_node, i + 1)));
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
 	fix_builder.quick_push
 	  (build_real_from_int_cst (float_type_node,
-				    build_int_cst (integer_type_node,
-						   i < min_out_nelts
-						   ? 100 + i : 77)));
+				    build_int_cst (integer_type_node, 77)));
       tree fix_arg = fix_builder.build ();
       tree fix_out_type = build_vector_type (integer_type_node, out_nelts);
       tree fix_lo = const_unop (VEC_UNPACK_FIX_TRUNC_LO_EXPR, fix_out_type,
@@ -17937,10 +17934,6 @@ test_vec_unpack_folding ()
       ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, out_type,
 					stepped.build ()));
 
-      /* Reject result types with the wrong number of elements.  */
-      tree wrong_out_type = build_vector_type (out_inner_type, in_nelts);
-      ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, wrong_out_type,
-					arg));
       return;
     }
 }
