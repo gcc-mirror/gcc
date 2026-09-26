@@ -26,13 +26,6 @@ FROM NameKey IMPORT Name ;
 
 
 (*
-   GetSpellHint - return a string describing a spelling hint.
-*)
-
-PROCEDURE GetSpellHint (unknown: CARDINAL) : String ;
-
-
-(*
    Push - push a scope onto the spelling stack.
           sym might be a ModSym, DefImpSym or a varsym
           of a record type denoting a with statement.
@@ -67,6 +60,38 @@ PROCEDURE GetRecordField (tokno: CARDINAL;
 *)
 
 PROCEDURE GetDefModuleSpellHint (defimp: CARDINAL) : String ;
+
+
+(*
+   GetSpellHint - return a string describing a spelling hint.
+                  The spell candidates can be filtered using
+                  the attributes below.  Note that the
+                  GetDefModuleSpellHint and GetRecordField
+                  are not filtered.
+*)
+
+PROCEDURE GetSpellHint (unknown: CARDINAL) : String ;
+
+
+(*
+   FilterConst - filter on constants.
+*)
+
+PROCEDURE FilterConst ;
+
+
+(*
+   FilterVariable - filter on variables.
+*)
+
+PROCEDURE FilterVariable ;
+
+
+(*
+   FilterType - filter on types.
+*)
+
+PROCEDURE FilterType ;
 
 
 END M2StackSpell.

@@ -1198,12 +1198,12 @@ END EmitTypeIncompatibleError ;
 *)
 
 PROCEDURE CheckCompatible (tok: CARDINAL;
-                           t1, t2: CARDINAL; kind: Compatability) ;
+                           left, right: CARDINAL; kind: Compatability) ;
 VAR
    s: String ;
    r: Compatible ;
 BEGIN
-   r := IsCompatible (t1, t2, kind) ;
+   r := IsCompatible (left, right, kind) ;
    IF (r#first) AND (r#second)
    THEN
       IF (r=warnfirst) OR (r=warnsecond)
@@ -1212,27 +1212,31 @@ BEGIN
       ELSE
          s := InitString('')
       END ;
-      IF IsUnknown(t1) AND IsUnknown(t2)
+      IF IsUnknown (left) AND IsUnknown (right)
       THEN
-         (* --fixme-- spellcheck.  *)      
-         s := ConCat(s, InitString('two different unknown types {%1a:{%2a:{%1a} and {%2a}}} must either be declared or imported)')) ;
-         MetaErrorStringT2 (tok, s, t1, t2)
-      ELSIF IsUnknown(t1)
+         (* Spellcheck.  *)
+         s := ConCat(s, InitString('two different unknown types'
+                                   + ' {%1a:{%2a:{%1a} and {%2a}}} must either be declared'
+                                   + ' or imported {%1&Ts} {%2&Ts}')) ;
+         MetaErrorStringT2 (tok, s, left, right)
+      ELSIF IsUnknown (left)
       THEN
-         (* --fixme-- spellcheck.  *)      
-         s := ConCat(s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
-         MetaErrorStringT1 (tok, s, t1)
-      ELSIF IsUnknown(t2)
+         (* Spellcheck.  *)
+         s := ConCat(s, InitString('this type {%1a} is currently unknown,'
+                                   + ' it must be declared or imported {%1&Ts}')) ;
+         MetaErrorStringT1 (tok, s, left)
+      ELSIF IsUnknown (right)
       THEN
-         (* --fixme-- spellcheck.  *)      
-         s := ConCat (s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
-         MetaErrorStringT1 (tok, s, t2)
+         (* Spellcheck.  *)
+         s := ConCat (s, InitString('this type {%1a} is currently unknown,'
+                                    + ' it must be declared or imported {%1&Ts}')) ;
+         MetaErrorStringT1 (tok, s, right)
       ELSE
          IF (r=warnfirst) OR (r=warnsecond)
          THEN
-            EmitTypeIncompatibleWarning (tok, kind, t1, t2)
+            EmitTypeIncompatibleWarning (tok, kind, left, right)
          ELSE
-            EmitTypeIncompatibleError (tok, kind, t1, t2)
+            EmitTypeIncompatibleError (tok, kind, left, right)
          END
       END
    END
