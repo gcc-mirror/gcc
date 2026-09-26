@@ -1,3 +1,16 @@
+2026-09-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127567
+	* gm2-compiler/P1SymBuild.mod (BuildImportInnerModule): Call
+	PutImported if sym is a defimp or module.
+	* gm2-compiler/SymbolConversion.def (Gcc2Mod): Correct parameter
+	name.
+	* gm2-compiler/SymbolConversion.mod (Gcc2Mod): Ditto.
+	* gm2-compiler/SymbolTable.mod (IsExternalModule): New procedure
+	function.
+	(AddSymToModuleScope): Only generate an error if the symbol is
+	not an external module.
+
 2026-09-22  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127554

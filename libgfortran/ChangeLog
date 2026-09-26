@@ -1,3 +1,17 @@
+2026-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (_gfortran_caf_co_broadcast, _gfortran_caf_co_sum)
+	(_gfortran_caf_co_min, _gfortran_caf_co_max)
+	(_gfortran_caf_co_reduce): Report a terminated image of the team
+	through STAT.
+	* caf/shmem/collective_subroutine.c (collsub_sync): Return whether
+	the images were synchronized.
+	(collsub_reduce_array, collsub_broadcast_array): Likewise.  Give up
+	when an image of the team terminated.
+	* caf/shmem/collective_subroutine.h (collsub_reduce_array)
+	(collsub_broadcast_array): Adjust.
+
 2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127347

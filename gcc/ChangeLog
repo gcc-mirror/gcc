@@ -1,3 +1,196 @@
+2026-09-26  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR debug/119940
+	* dwarf2codeview.cc (codeview_start_source_file): Open the source file
+	in binary mode.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* config/aarch64/aarch64-simd.md
+	(aarch64_<sra_op>rsra_n<mode>_insn): Take the shift amount in
+	<V2XWIDE> mode.
+	(aarch64_<sra_op>rsra_n<mode>): Build the shift amount vector in
+	that mode.
+	(aarch64_<sra_op>rshr_n<mode><vczle><vczbe>_insn): Take the shift
+	amount in <V2XWIDE> mode.
+	(aarch64_<sra_op>rshr_n<mode>): Build the shift amount vector in
+	that mode.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* config/aarch64/aarch64-simd.md
+	(*aarch64_<sra_op>rshrn_n<mode>_insn<vczle><vczbe>): New pattern.
+	(*aarch64_<sra_op>rshrn2_n<mode>_insn_le): Likewise.
+	(*aarch64_<sra_op>rshrn2_n<mode>_insn_be): Likewise.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* config/aarch64/predicates.md (aarch64_simd_umax_half_mode)
+	(aarch64_simd_umax_quarter_mode): Remove.
+	* config/aarch64/aarch64-simd.md (aarch64_sqmovun<mode>)
+	(*aarch64_sqmovun<mode>_insn<vczle><vczbe>)
+	(aarch64_sqxtun2<mode>_le, aarch64_sqxtun2<mode>_be)
+	(aarch64_sqxtun2<mode>)
+	(*aarch64_sqshrun_n<mode>_insn<vczle><vczbe>)
+	(aarch64_sqshrun_n<mode>)
+	(*aarch64_sqrshrun_n<mode>_insn<vczle><vczbe>)
+	(aarch64_sqrshrun_n<mode>, aarch64_sqshrun2_n<mode>_insn_le)
+	(aarch64_sqshrun2_n<mode>_insn_be, aarch64_sqshrun2_n<mode>)
+	(aarch64_sqrshrun2_n<mode>_insn_le)
+	(aarch64_sqrshrun2_n<mode>_insn_be, aarch64_sqrshrun2_n<mode>):
+	Match an us_truncate of an smax instead of a truncate of an smin
+	of an smax.
+
+2026-09-25  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	* config/riscv/arcv-rmx100.md (arcv_rmx100_load_insn):
+	Update latency.
+	(arcv_rmx100_fpload_insn): Merge with *_load_insn.
+
+2026-09-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/127602
+	* except.h (struct eh_catch_d): Add chain_next and chain_prev
+	GTY.
+
+2026-09-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/127602
+	* except.h (struct eh_region_d): Add chain_next GTY.
+
+2026-09-25  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/127485
+	* range-op-mixed.h (class operator_minus): Add op1_op2_relation.
+	* range-op.cc (operator_minus::op1_op2_relation): New.
+	* gimple-range-fold.cc (fur_source::register_outgoing_edges):
+	Derive relations from any integral export, not just booleans.
+
+2026-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/127326
+	* lra-constraints.cc (process_alt_operands): Resolve the operand
+	to memory when it is a winning MEM and the value can be held in a
+	register.
+
+2026-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR lto/127589
+	* lto-streamer-in.cc (lto_input_mode_table): With ACCEL_COMPILER,
+	check whether found float and int modes are actually enabled/available
+	at runtime.
+
+2026-09-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* simplify-rtx.cc (simplify_binary_operation_1) <SMUL_HIGHPART>:
+	Add transformations for multiplications by one and powers to two.
+	<UMUL_HIGHPART>: Likewise.
+
+2026-09-25  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	PR target/112465
+	* config/aarch64/aarch64.cc (aarch64_override_options_after_change_1):
+	Turn off outline atomics with -mcmodel=large.
+	* doc/invoke.texi (-mcmodel=large): Update description.
+
+2026-09-25  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR target/54412
+	* except.cc (sjlj_build_landing_pads): Pass ASLK_REDUCE_ALIGN.
+	* function.cc (assign_stack_local_2): New function, split from
+	assign_stack_local_1.  Honour an explicit alignment beyond
+	MAX_SUPPORTED_STACK_ALIGNMENT by overallocating the slot and aligning
+	its address at run time.  Optionally return the address before run-time
+	alignment.
+	(assign_stack_local_1): Wrap assign_stack_local_2.
+	(temp_slot): Add base_addr.
+	(assign_stack_temp_for_type): Distinguish required and preferred
+	alignment.  Record the address before run-time alignment and recalculate
+	the aligned address when reusing an over-aligned slot.  Do not split an
+	over-aligned BLKmode slot.
+	(combine_temp_slots): Do not combine over-aligned slots.
+	(assign_parm_setup_block): Let assign_stack_local align the slot.
+	* lra-spills.cc (assign_mem_slot): Pass ASLK_REDUCE_ALIGN.
+
+2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127588
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Use an unsigned type to compute the epilog start value.
+
+2026-09-25  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/106770
+	* config/rs6000/rs6000-p8swap.cc (non_permuting_mem_insn): New function.
+	(handle_non_permuting_mem_insn): New function.
+	(rs6000_analyze_swaps): Handle swappable instructions only in certain
+	webs.
+	(web_requires_special_handling): New instance variable.
+	(handle_special_swappables): Remove handling of non-permuting load/store
+	instructions.
+
+2026-09-25  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (mul<mode>3): Remove erroneous hi*hi step.
+	(mul<mode>3_dup): Likewise.
+	(mul<mode>3_exec): Likewise.
+	(mul<mode>3_dup_exec): Likewise.
+
+2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127601
+	* tree-vect-stmts.cc (get_load_store_type): Move overrun
+	flags and final handling to the relevant section, after
+	determining the step direction and the memory access type.
+	Only elide overrun with half-vector accesses for the
+	memory access types supporting that.  Do not claim
+	VMAT_STRIDED_SLP can handle overruns when the step is
+	negative.
+	(vectorizable_load): For the last memory access type group
+	analysis/transform assert what memory access type that covers.
+
+2026-09-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Fix moptimize link.
+
+2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127600
+	* tree-vect-loop.cc (vect_is_simple_iv_evolution): Explicitly
+	initialize STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE.
+	(is_nonwrapping_integer_induction): Bail out for alternate
+	induction types.
+
+2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127517
+	* internal-fn.cc (expand_mul_overflow): Revert the 2023-09-06
+	changes.  Instead promote arg0 and/or arg1 to a type with
+	uns{0,1}_p signedness and mode precision if they have non-mode
+	precision.  Pass the original arg0/arg1 and their type to
+	ubsan_build_overflow_builtin, instead of passing the promoted
+	ones.
+
+2026-09-25  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt (-moptimize): New target option.
+	* config/avr/avr.opt.urls: Add resprective URL.
+	* common/config/avr/avr-common.cc (avr_enable_optimizations): New
+	static function.
+	(avr_handle_option) [OPT_moptimize]: Call it.
+	* doc/invoke.texi (AVR Options) <-moptimize>: Document it.
+
+2026-09-25  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR tree-optimization/127552
+	* match.pd: Fix constant comparison in ((X >> C1) & C2) << C3.
+
+2026-09-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/127599
+	* config/aarch64/aarch64.cc (aarch64_evpc_rev64_ext): Move
+	the testing_p after the is_bb_in_loop test.
+
 2026-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/126848

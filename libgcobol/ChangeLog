@@ -1,3 +1,10 @@
+2026-09-25  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (__gg__call_warning_message): Moved here from
+	compile time.
+	(__gg__resolve_literal_call): New consolidated function.
+	* literal-call-descriptor.h: New file.
+
 2026-09-24  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (find_in_dirs): Use the cached array.

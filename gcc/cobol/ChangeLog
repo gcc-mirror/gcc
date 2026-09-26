@@ -1,3 +1,24 @@
+2026-09-25  Robert Dubner  <rdubner@symas.com>
+
+	* cobol1.cc (use_static_call): Change name of global function to
+	set_use_static_call.
+	(set_use_static_call): Likewise.
+	(cobol_langhook_handle_option): Use 'value' parameter rather than
+	'arg' parameter.
+	* genapi.cc (use_static_call):  Change name.
+	(set_use_static_call): Likewise.
+	(create_and_call): Call push/pop_program_state in the correct order.
+	(literal_call_descriptor_type): Use common structure definition in
+	both compile-time and run-time code.
+	(GCOBOL_CALL_FIELD_NAME): Likewise.
+	(GCOBOL_CALL_FIELD_TYPE): Likewise.
+	(literal_call_descriptor): Likewise.
+	(GCOBOL_CALL_FIELD_VALUE): Likewise.
+	(function_pointer_for_literal_call): Consolidate several calls to
+	libgcobol.
+	(parser_call): Likewise.
+	* lang.opt: Modify definition of -fstatic-call.
+
 2026-09-23  Robert Dubner  <rdubner@symas.com>
 
 	* gcobol.1: Document the changes.

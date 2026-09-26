@@ -1,3 +1,41 @@
+2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127385
+	* constexpr.cc (cxx_eval_store_expression): Handle the case
+	of *valp == void_node like if *valp is NULL.
+	(cxx_eval_store_expression): For CLOBBER_OBJECT_END or above
+	store *valp = void_node even for aggregate types.
+
+2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	P3769R1
+	PR c++/125848
+	* call.cc (build_op_delete_call_1): Implement C++26
+	P3769R1 - Clarification of placement new deallocation.  Instead of
+	calling instantiate_type to select placement deallocation function
+	iterate over OVERLOAD if any, perform argument deduction for
+	templates, ignore candidates with different parameter type lists
+	or unsatisfied constraints and if only one candidate remains,
+	use it, otherwise don't destruct on throw.  Add placement_args
+	argument, pass it down to build_op_delete_call call and use in
+	template argument deduction.
+	(build_op_delete_call): Add placement_args argument and pass it
+	down to build_op_delete_call_1.
+	(build_coroutine_op_delete_call): Remove placement argument, pass
+	down NULL_TREE and NULL to build_op_delete_call_1 as placement and
+	placement_args.
+	* cp-tree.h (build_op_delete_call): Add placement_args argument.
+	(build_coroutine_op_delete_call): Remove placement argument.
+	* init.cc (build_new_1): Pass down *placement as placement_args
+	to build_op_delete_call for placement new.
+	(build_vec_delete_1): Adjust build_op_delete_call callers.
+	(build_delete): Likewise.  Remove {}s around single statement
+	body.
+	* coroutines.cc (build_coroutine_frame_delete_expr): Don't pass
+	placement to build_coroutine_op_delete_call.
+	* optimize.cc (build_delete_destructor_body): Adjust
+	build_op_delete_call caller.
+
 2026-09-23  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/127506

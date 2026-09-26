@@ -1,3 +1,139 @@
+2026-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/pdt_38.f03: Replace paren with brace.
+	* gfortran.dg/pdt_42.f03: Ditto.
+	* gfortran.dg/pdt_43.f03: Ditto.
+	* gfortran.dg/pdt_80.f03: Ditto.
+	* gfortran.dg/pdt_81.f03: Ditto.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/aarch64/simd_srshr_1.c: New test.
+	* gcc.target/aarch64/simd_srshr_2.c: New test.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-1.c: Expect rshrn
+	and rshrn2 in place of raddhn and raddhn2, and no movi.
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-2.c: Expect rshrn
+	and rshrn2 in place of raddhn and raddhn2.  Skip at -O0.
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-3.c: Likewise.
+	* gcc.target/aarch64/advsimd-intrinsics/shrn-4.c: Likewise.
+	* gcc.target/aarch64/simd_rshrn_1.c: New test.
+	* gcc.target/aarch64/simd_rshrn_2.c: New test.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.target/aarch64/vect-sat-trunc-3.c: New test.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/tree-ssa/minmax-swar-1.c: Derive the shift count from
+	sizeof (int); drop the int32 requirement.
+	* gcc.dg/tree-ssa/minmax-swar-2.c: Likewise.
+
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/tree-ssa/minmax-swar-5.c: Move to...
+	* gcc.dg/vect/minmax-swar-5.c: ...here.  Require vect_int, take the
+	flags from vect.exp, size the vector with sizeof and gate the scans.
+	* gcc.dg/tree-ssa/minmax-swar-6.c: Move to...
+	* gcc.dg/vect/minmax-swar-6.c: ...here.  Take the flags from vect.exp.
+	* gcc.dg/tree-ssa/minmax-swar-7.c: Move to...
+	* gcc.dg/vect/minmax-swar-7.c: ...here.  Likewise.
+	* gcc.dg/tree-ssa/minmax-negate-3.c: Move to...
+	* gcc.dg/vect/minmax-negate-3.c: ...here.  Likewise.
+	* gcc.dg/tree-ssa/vector-alignup-1.c: Move to...
+	* gcc.dg/vect/vector-alignup-1.c: ...here.  Likewise, size the
+	vectors with sizeof and gate the scans.
+
+2026-09-25  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/127485
+	* gcc.dg/tree-ssa/vrp-minus-relation-1.c: New test.
+
+2026-09-25  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/127326
+	* gcc.target/i386/pr127326.c (test2): New test.
+
+2026-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* gfortran.dg/coarray/collective_stopped_2.f90: New test.
+
+2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127385
+	* g++.dg/cpp26/within-lifetime14.C: New test.
+
+2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	P3769R1
+	PR c++/125848
+	* g++.dg/cpp26/placement-new1.C: New test.
+
+2026-09-25  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/nvptx/mul-hi-2.c: New test case.
+
+2026-09-25  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
+
+	PR target/54412
+	* g++.target/i386/pr54412-highpart-extract-rt.C: New test.
+	* gcc.target/i386/pr54412-aligned-struct-byval-temp.c: New test.
+	* gcc.target/i386/pr54412-blkmode-temp-biggest-align.c: New test.
+	* gcc.target/i386/pr54412-escaping-param.c: New test.
+	* gcc.target/i386/pr54412-m256-byval-param.c: New test.
+
+2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127588
+	* gcc.dg/vect/vect-iv-15.c: New testcase.
+
+2026-09-25  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/106770
+	* gcc.target/powerpc/pr106770.c: New test.
+
+2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127601
+	* gcc.dg/vect/vect-pr127601.c: New testcase.
+
+2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127600
+	* gcc.dg/vect/vect-cond-reduc-7.c: New testcase.
+
+2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127517
+	* gcc.dg/torture/bitint-109.c: New test.
+
+2026-09-25  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR tree-optimization/127552
+	* gcc.dg/tree-ssa/match-bit-extract-shift.c: Adjust testcases.
+
+2026-09-25  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127567
+	* gm2/imports/fail/tinybadimport.mod: New test.
+	* gm2/imports/run/pass/tinygoodimport.mod: New test.
+
+2026-09-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/127587
+	* gcc.dg/vect/vect-alias-check-ptr-info-2.c: Clear the arrays
+	before the use of them.
+
+2026-09-25  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/127599
+	* gcc.dg/torture/pr127599-1.c: New testcase.
+	* gcc.target/aarch64/advsimd-intrinsics/pr127599-1.c: New testcase.
+
 2026-09-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127347

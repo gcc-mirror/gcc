@@ -1,3 +1,18 @@
+2026-09-25  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR tree-optimization/127053
+	* testsuite/libgomp.graphite/force-parallel-8.c:
+	'dg-additional-options -fno-expensive-optimizations'.
+
+2026-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR lto/127589
+	* testsuite/libgomp.c/cmplxint-target-1.c: New test.
+	* testsuite/libgomp.c/cmplxint128-target-1.c: New test.
+	* testsuite/libgomp.c/dfp-target-1.c: New test.
+	* testsuite/libgomp.c/float16-target-1.c: New test.
+	* testsuite/libgomp.c/float16-target-2.c: New test.
+
 2026-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	* alloc.c (gomp_aligned_alloc): Check for overflows in the

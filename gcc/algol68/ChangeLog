@@ -1,3 +1,43 @@
+2026-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-types.h (struct TAG_T): Add field ctyp.
+	* a68-parser.cc (a68_new_tag): Initialize CTYPE.
+	* a68-low-decls.cc (fish_declarer_from_tree): New function.
+	(grok_typedef_in_decl): Likewise.
+	(a68_lower_mode_declaration): Install typedef variant type for a
+	defining-indicant in the symtab.
+	(a68_lower_variable_declaration): Call grok_typedef_in_decl.
+	(a68_lower_identity_declaration): Likewise.
+	* a68-low-ranges.cc (a68_pop_serial_clause_range): Compare main
+	variant types in sanity check at block exit.
+	* a68-low.cc (a68_low_assignation): Likewise in assignation.
+
+2026-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-bits.cc: Use front-end type nodes consistently.
+	* a68-low-bools.cc: Likewise.
+	* a68-low-chars.cc: Likewise.
+	* a68-low-clauses.cc: Likewise.
+	* a68-low-ints.cc: Likewise.
+	* a68-low-multiples.cc: Likewise.
+	* a68-low-prelude.cc: Likewise.
+	* a68-low-reals.cc: Likewise.
+	* a68-low-unions.cc: Likewise.
+	* a68-low-units.cc: Likewise.
+	* a68-low.cc: Likewise.
+
+2026-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-decls.cc (a68_lower_mode_declaration): Use
+	a68_add_global_decl for mode declarations in public ranges.
+
+2026-09-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68.h: Add prototypes for a68_add_global_decl and
+	a68_global_context.
+	* a68-low-ranges.cc (a68_add_global_decl): New function.
+	(a68_global_context): Likewise.
+
 2026-09-24  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-parser-moids-equivalence.cc (are_modes_equivalent): Do not

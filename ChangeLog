@@ -1,3 +1,8 @@
+2026-09-25  Dominic P  <gcc@gcc.dp11.uk>
+
+	* MAINTAINERS.yml: Add myself.
+	* MAINTAINERS: Regenerate.
+
 2026-09-19  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
 
 	* MAINTAINERS: Regenerate.
