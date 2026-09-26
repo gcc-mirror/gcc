@@ -3077,6 +3077,14 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
 	    arg = oarg;
 	}
 
+      /* If the argument STRRET refers to didn't end up as the address of a
+	 STRING_CST, the folded result is already relative to it and must not
+	 be re-based on the original argument below.  */
+      if (i == strret - 1
+	  && (TREE_CODE (arg) != ADDR_EXPR
+	      || TREE_CODE (TREE_OPERAND (arg, 0)) != STRING_CST))
+	strret = 0;
+
       args[i] = arg;
     }
   if (bos)
