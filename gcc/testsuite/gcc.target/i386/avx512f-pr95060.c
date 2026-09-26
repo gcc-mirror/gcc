@@ -1,6 +1,6 @@
 /* PR tree-optimization/95060 */
 /* { dg-do compile } */
-/* { dg-options "-O3 -ffast-math -mavx512f" } */
+/* { dg-options "-O3 -ffast-math -mavx512f -mprefer-vector-width=512" } */
 /* { dg-final { scan-assembler "\tvfnmsub" } } */
 /* { dg-final { scan-assembler-not "\tvfmadd" } } */
 

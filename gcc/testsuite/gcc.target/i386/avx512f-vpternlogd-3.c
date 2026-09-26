@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512f" } */
+/* { dg-options "-O2 -mavx512f -mprefer-vector-width=512" } */
 
 typedef unsigned int V __attribute__ ((__vector_size__ (16)));
 

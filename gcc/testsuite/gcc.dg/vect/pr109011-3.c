@@ -1,6 +1,7 @@
 /* PR tree-optimization/109011 */
 /* { dg-do compile } */
 /* { dg-additional-options "-O3 -fno-unroll-loops --param=vect-epilogues-nomask=0 -fdump-tree-optimized" } */
+/* { dg-additional-options "-mprefer-vector-width=512" { target { i?86-*-* x86_64-*-* } } } */
 /* { dg-additional-options "-mno-avx512cd -mbmi -mlzcnt -mavx512vpopcntdq" { target { { { { i?86-*-* x86_64-*-* } && avx512vpopcntdq } && lzcnt } && bmi } } } */
 /* { dg-additional-options "-mdejagnu-cpu=power8" { target powerpc_vsx } } */
 
