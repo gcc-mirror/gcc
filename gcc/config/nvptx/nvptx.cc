@@ -484,7 +484,8 @@ nvptx_encode_section_info (tree decl, rtx rtl, int first)
 
       if (VAR_P (decl))
 	{
-	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl)))
+	  if (lookup_attribute ("shared", DECL_ATTRIBUTES (decl))
+	      || lookup_attribute ("omp groupprivate", DECL_ATTRIBUTES (decl)))
 	    {
 	      area = DATA_AREA_SHARED;
 	      if (DECL_INITIAL (decl))

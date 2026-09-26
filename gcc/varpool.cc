@@ -156,6 +156,33 @@ varpool_node::get_create (tree decl)
 				   DECL_ATTRIBUTES (decl))))
     {
       node->offloadable = 1;
+      if (lookup_attribute ("omp groupprivate", DECL_ATTRIBUTES (decl)))
+	{
+	  if (!value_member (get_identifier ("device_type(nohost)"),
+			     TREE_VALUE (attr))
+	      && !lookup_attribute ("omp declare target nohost",
+				    DECL_ATTRIBUTES (decl)))
+	    /* FIXME: value_member is Fortran, nohost attribute is C/C++.  */
+	    sorry_at (DECL_SOURCE_LOCATION (decl),
+		      "%qD with %<omp groupprivate%> on the host; "
+		      "try %<device_type(nohost)%>", decl);
+	  else
+	    for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
+	      {
+		if (startswith (c, "nvptx"))  /* Supported.  */
+		  {
+		    if ((c = strchr (c, ':')))
+		      c++;
+		  }
+		else
+		  {
+		    sorry_at (DECL_SOURCE_LOCATION (decl),
+			      "%qD with %<omp groupprivate%> on devices other "
+			      "than nvptx; try %<-foffload=nvptx-none%>", decl);
+		    break;
+		  }
+	      }
+	}
       if (ENABLE_OFFLOADING && !DECL_EXTERNAL (decl))
 	{
 	  g->have_offload = true;

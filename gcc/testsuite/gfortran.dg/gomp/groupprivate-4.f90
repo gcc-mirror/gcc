@@ -4,12 +4,14 @@ module m
  integer :: x, y(20), z, v, u, k
 
  common /b_ii/ ii
- common /b_x/ x  ! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by common block '/b_x/' declared at .1." }
- common /b_y/ y  ! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by common block '/b_y/' declared at .1." }
- common /b_z/ z  ! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by common block '/b_z/' declared at .1." }
- common /b_v/ v  ! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by common block '/b_v/' declared at .1." }
- common /b_u/ u  ! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by common block '/b_u/' declared at .1." }
- common /b_k/ k  ! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by common block '/b_k/' declared at .1." }
+ common /b_x/ x  ! { dg-message "sorry, unimplemented: 'b_x' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" }
+ common /b_y/ y ! { dg-message "sorry, unimplemented: 'b_y' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" }
+ common /b_z/ z ! { dg-message "sorry, unimplemented: 'b_z' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" }
+ common /b_v/ v
+ common /b_u/ u ! { dg-message "sorry, unimplemented: 'b_u' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" }
+ common /b_k/ k ! { dg-message "sorry, unimplemented: 'b_k' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" }
+
+ ! { dg-prune-output "sorry, unimplemented: 'b_v' with 'omp groupprivate' on devices other than" }
 
  !$omp groupprivate(/b_x/, /b_z/) device_Type( any )
  !$omp declare target local(/b_x/) device_type ( any )

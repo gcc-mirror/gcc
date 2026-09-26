@@ -1582,12 +1582,13 @@ add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
       clauses = c;
     }
 
-  /* FIXME: 'declare_target_link' permits both any and host, but
-     will fail if one sets OMP_CLAUSE_DEVICE_TYPE_KIND.  */
+  if (sym_attr.omp_groupprivate)
+    list = tree_cons (get_identifier ("omp groupprivate"), NULL_TREE, list);
+
   tree arg_list = NULL_TREE;
   if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
       && !sym_attr.omp_declare_target_link
-      && !sym_attr.omp_declare_target_indirect /* implies 'any' */)
+      && !sym_attr.omp_declare_target_indirect)
     {
       const char *arg_str = NULL;
       switch (sym_attr.omp_device_type)
@@ -1606,12 +1607,6 @@ add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
 	}
       arg_list = tree_cons (NULL_TREE, get_identifier (arg_str), arg_list);
     }
-
-  /* Also check trans-common.cc when updating/removing the following;
-     also update f95.c's gfc_gnu_attributes.  */
-  if (sym_attr.omp_groupprivate)
-    gfc_error ("Sorry, OMP GROUPPRIVATE not implemented, "
-	       "used by %qs declared at %L", sym->name, &sym->declared_at);
 
   bool has_declare = true;
 

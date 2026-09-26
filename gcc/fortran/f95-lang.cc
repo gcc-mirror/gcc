@@ -100,6 +100,8 @@ static const attribute_spec gfc_gnu_attributes[] =
     gfc_handle_omp_declare_target_attribute, NULL },
   { "oacc function", 0, -1, true,  false, false, false,
     gfc_handle_omp_declare_target_attribute, NULL },
+  { "omp groupprivate", 0, 0, true,  false, false, false,
+    gfc_handle_omp_declare_target_attribute, NULL },
 };
 
 static const scoped_attribute_specs gfc_gnu_attribute_table =

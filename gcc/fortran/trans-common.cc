@@ -467,6 +467,9 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 
       gfc_set_decl_location (decl, &com->where);
 
+      if (com->omp_groupprivate)
+	DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("omp groupprivate"),
+					    NULL_TREE, DECL_ATTRIBUTES (decl));
       tree arg_list = NULL_TREE;
       if (com->omp_device_type != OMP_DEVICE_TYPE_UNSET)
 	{
@@ -487,12 +490,6 @@ build_common_decl (gfc_common_head *com, tree union_type, bool is_init)
 	    }
 	  arg_list = tree_cons (NULL_TREE, get_identifier (arg_str), arg_list);
 	}
-
-      /* Also check trans-decl.cc when updating/removing the following;
-	 also update f95.c's gfc_gnu_attributes.  */
-      if (com->omp_groupprivate)
-	gfc_error ("Sorry, OMP GROUPPRIVATE not implemented, used by common "
-		   "block %</%s/%> declared at %L", com->name, &com->where);
 
       if (com->omp_declare_target_link)
 	DECL_ATTRIBUTES (decl)

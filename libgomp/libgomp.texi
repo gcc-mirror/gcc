@@ -533,7 +533,8 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{delete} as delete-modifier not as map type @tab N @tab
 @item For Fortran, the @code{automap} modifier to the @code{enter} clause
       of @code{declare_target} @tab N @tab
-@item @code{groupprivate} directive @tab N @tab
+@item @code{groupprivate} directive @tab P @tab
+      Only Fortran with @code{device_type(nohost)} with only nvptx GPUs
 @item @code{local} clause to @code{declare_target} directive @tab N @tab
 @item @code{part_size} allocator trait for @code{interleaved} allocator
       partitions @tab N @tab

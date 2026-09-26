@@ -2,13 +2,14 @@ module m
  implicit none
  integer :: ii
  integer :: x, y(20), z, v, u, k
-! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by 'x' declared at .1." "" { target *-*-* } .-1 }
-! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by 'y' declared at .1." "" { target *-*-* } .-2 }
-! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by 'z' declared at .1." "" { target *-*-* } .-3 }
-! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by 'v' declared at .1." "" { target *-*-* } .-4 }
-! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by 'u' declared at .1." "" { target *-*-* } .-5 }
-! { dg-error "Sorry, OMP GROUPPRIVATE not implemented, used by 'k' declared at .1." "" { target *-*-* } .-6 }
-!
+ ! { dg-message "sorry, unimplemented: 'k' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" "" { target *-*-* } .-1 }
+ ! { dg-message "sorry, unimplemented: 'u' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" "" { target *-*-* } .-2 }
+ ! { dg-message "sorry, unimplemented: 'x' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" "" { target *-*-* } .-3 }
+ ! { dg-message "sorry, unimplemented: 'y' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" "" { target *-*-* } .-4 }
+ ! { dg-message "sorry, unimplemented: 'z' with 'omp groupprivate' on the host; try 'device_type\\(nohost\\)'" "" { target *-*-* } .-5 }
+
+ ! { dg-prune-output "sorry, unimplemented: 'v' with 'omp groupprivate' on devices other than" }
+
  !$omp groupprivate(x, z) device_Type( any )
  !$omp declare target local(x) device_type ( any )
  !$omp declare target enter( ii) ,local(y), device_type ( host )
