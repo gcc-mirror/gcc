@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1" } */
+/* { dg-options "-O1 -mtune=generic" } */
 /* { dg-final { scan-assembler-times "imull\[ \t\]" "1" } } */
 /* { dg-final { scan-assembler-times "subl\[ \t\]" "1" } } */
 /* { dg-final { scan-assembler-times "add(?:l|q)\[ \t\]" "1" } } */

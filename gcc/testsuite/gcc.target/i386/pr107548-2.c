@@ -1,5 +1,5 @@
 /* { dg-do compile { target { ! ia32 } } } */
-/* { dg-options "-O2 -mstv -mno-stackrealign" } */
+/* { dg-options "-O2 -mstv -mno-stackrealign -mtune=generic" } */
 typedef unsigned long long v2di __attribute__((vector_size(16)));
 
 unsigned long long foo(v2di a, v2di b)

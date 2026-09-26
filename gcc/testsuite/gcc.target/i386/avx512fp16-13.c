@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512fp16 -mavx512vl" } */
+/* { dg-options "-O2 -mavx512fp16 -mavx512vl -mtune=generic" } */
 
 #include <immintrin.h>
 void

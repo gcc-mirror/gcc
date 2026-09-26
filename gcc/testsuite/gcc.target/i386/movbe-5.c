@@ -1,6 +1,6 @@
 /* PR tree-optimization/78821 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -mmovbe" } */
+/* { dg-options "-O2 -mmovbe -mtune=generic" } */
 
 unsigned short
 foo (unsigned short *buf)
