@@ -222,14 +222,15 @@ a68_build_a68_type_nodes (void)
 static bool
 a68_init (void)
 {
+  /* Initialize binding contexts.  */
+  a68_init_ranges ();
+
   build_common_tree_nodes (false);
   a68_build_a68_type_nodes ();
   targetm.init_builtins ();
   build_common_builtin_nodes ();
   a68_install_builtins ();
 
-  /* Initialize binding contexts.  */
-  a68_init_ranges ();
 
   /* Set the type of size_t.  */
   if (TYPE_MODE (long_unsigned_type_node) == ptr_mode)
@@ -399,20 +400,6 @@ a68_getdecls (void)
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS a68_getdecls
 
-/* Return A68_GLOBAL_CONTEXT, but create it first if need be.  */
-
-static tree
-get_global_context (void)
-{
-  if (!A68_GLOBAL_CONTEXT)
-    {
-      A68_GLOBAL_CONTEXT = build_translation_unit_decl (NULL_TREE);
-      debug_hooks->register_main_translation_unit (A68_GLOBAL_CONTEXT);
-    }
-
-  return A68_GLOBAL_CONTEXT;
-}
-
 /* Implements the lang_hooks.decls.pushdecl routine.
    Record DECL as belonging to the current lexical scope.  */
 
@@ -426,7 +413,7 @@ pushdecl (tree decl)
       if (current_function_decl)
 	DECL_CONTEXT (decl) = current_function_decl;
       else
-	DECL_CONTEXT (decl) = get_global_context ();
+	DECL_CONTEXT (decl) = a68_range_context ();
     }
 
   /* Put decls on list in reverse order.  */

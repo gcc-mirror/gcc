@@ -144,7 +144,6 @@ extern GTY(()) A68_T a68_common;
 #define A68_GLOBAL_TREES   A68 (global_trees)
 #define A68_PARSER(Z)      (A68 (parser_state).Z)
 #define A68_MODULE_DEFINITION_DECLS   A68 (module_definition_decls)
-#define A68_GLOBAL_CONTEXT      A68 (global_context)
 #define A68_GLOBAL_DECLARATIONS A68 (global_declarations)
 
 /* Particular pre-defined modes.  */
