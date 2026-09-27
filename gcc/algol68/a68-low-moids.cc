@@ -49,23 +49,6 @@ static tree a68_lower_mode (MOID_T *m);
    This is used for TYPE_STUB_DECL so we can generate debug info for all our
    modes, so the TYPE_DECL has no name.  */
 
-static void
-build_stub_type_decl (tree type, tree context)
-{
-  if (TYPE_STUB_DECL (type))
-    return;
-
-  tree decl = build_decl (UNKNOWN_LOCATION,
-			  TYPE_DECL,
-			  NULL_TREE /* name */,
-			  type);
-  TREE_PUBLIC (decl) = 1;
-  DECL_CONTEXT (decl) = context;
-  TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
-  TYPE_NAME (type) = decl; /* Weird.  This is for typedefs! */
-  TYPE_STUB_DECL (type) = decl;
-}
-
 /* Builds a record type whose name is NAME.  NFIELDS is the number of fields,
    provided as field ident/type pairs.
 
@@ -311,10 +294,6 @@ lower_struct_mode (MOID_T *m)
       compute_record_mode (struct_type);
     }
 
-  /* Finish debugging output for this type.  */
-  build_stub_type_decl (struct_type, NULL_TREE /* context */);
-  rest_of_type_compilation (struct_type, TYPE_FILE_SCOPE_P (struct_type));
-  rest_of_decl_compilation (TYPE_NAME (struct_type), 1 /* file scope p */, 0);
   A68_STRUCT_TYPE_P (struct_type) = 1;
   return struct_type;
 }
@@ -428,11 +407,6 @@ lower_union_mode (MOID_T *m)
 	 set.  */
       compute_record_mode (c_union_type);
     }
-
-  /* Finish debugging output for this type.  */
-  build_stub_type_decl (c_union_type, NULL_TREE /* context */);
-  rest_of_type_compilation (c_union_type, TYPE_FILE_SCOPE_P (c_union_type));
-  rest_of_decl_compilation (TYPE_NAME (c_union_type), 1 /* file scope p */, 0);
 
   /* Now the type with the overhead.  */
   TYPE_NAME (union_type) = get_identifier ("union%");
