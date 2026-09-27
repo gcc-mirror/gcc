@@ -1,3 +1,38 @@
+2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127187
+	PR fortran/127187
+	* primary.cc (gfc_match_varspec): Clear the deferred flag, and
+	for KIND the charlen, of the INTEGER result of a LEN or KIND
+	inquiry.
+	* resolve.cc (resolve_variable): Do not reset the typespec of a
+	deferred-length character associate-name expression that has an
+	inquiry reference.
+
+2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-06-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125324
+	* gfortranspec.cc (lang_specific_driver): Also append -lpthread
+	when need_caf_shmem is set.
+
+2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* lang.opt (fcoarray=): Add shared enum value; update help text.
+	* gfortranspec.cc (CAF_SHMEM_LIBRARY): New macro.
+	(lang_specific_driver): Detect -fcoarray=shared in first pass and
+	set need_caf_shmem flag.  In second pass, transform -fcoarray=shared
+	to -fcoarray=lib for cc1.  Append -lcaf_shmem when need_caf_shmem
+	is set and linking is active.
+
 2026-09-03  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

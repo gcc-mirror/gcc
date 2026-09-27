@@ -1,3 +1,10 @@
+2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* flag-types.h (gfc_fcoarray): Add GFC_FCOARRAY_SHARED.
+
 2026-09-24  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
