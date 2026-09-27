@@ -15,10 +15,11 @@ int b[N] = {0};
 **	cmgt	v[0-9]+\.4s, v[0-9]+\.4s, v[0-9]+\.4s
 **	umaxp	v[0-9]+\.4s, v[0-9]+\.4s, v[0-9]+\.4s
 **	fmov	x[0-9]+, d[0-9]+
-**	cbz	x[0-9]+, \.L[0-9]+
-**	mov	w0, 1
+**	cbn?z	x[0-9]+, \.L[0-9]+
+**	...
+**	mov	w0, [01]
 **	ret
-**	mov	w0, 0
+**	mov	w0, [01]
 **	ret
 */
 __attribute__ ((noipa, noinline))
