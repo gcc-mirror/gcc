@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fdump-tree-optimized" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fno-vect-cost-model -fdump-tree-optimized" } */
 
 #include <stdint.h>
 

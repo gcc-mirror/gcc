@@ -4864,6 +4864,24 @@ vect_recog_sat_sub_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   return NULL;
 }
 
+/* Return the vector type for ITYPE if the target supports the MAX_EXPR
+   and SAT_TRUNC sequence.  */
+
+static tree
+vect_sat_trunc_clip_input_vectype (vec_info *vinfo, tree v_otype,
+				   tree itype)
+{
+  tree v_itype;
+  if (!vect_supportable_direct_optab_p
+	(vinfo, itype, MAX_EXPR, itype, &v_itype)
+      || !direct_internal_fn_supported_p
+	   (IFN_SAT_TRUNC, tree_pair (v_otype, v_itype),
+	    OPTIMIZE_FOR_BOTH))
+    return NULL_TREE;
+
+  return v_itype;
+}
+
 /*
  * Try to detect saturation truncation pattern (SAT_TRUNC), aka below gimple:
  *   overflow_5 = x_4(D) > 4294967295;
@@ -4892,31 +4910,64 @@ vect_recog_sat_trunc_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   if ((gimple_unsigned_integer_narrow_clip (lhs, ops, NULL))
        && type_has_mode_precision_p (otype))
     {
-      tree itype = TREE_TYPE (ops[0]);
-      tree v_itype = get_vectype_for_scalar_type (vinfo, itype);
+      tree input = ops[0];
+      tree itype = TREE_TYPE (input);
       tree v_otype = get_vectype_for_scalar_type (vinfo, otype);
       internal_fn fn = IFN_SAT_TRUNC;
+      tree v_itype = NULL_TREE;
 
-      if (v_itype != NULL_TREE && v_otype != NULL_TREE
-	&& direct_internal_fn_supported_p (fn, tree_pair (v_otype, v_itype),
-					   OPTIMIZE_FOR_BOTH))
+      if (v_otype != NULL_TREE)
 	{
-	  tree temp = vect_recog_temp_ssa_var (itype, NULL);
-	  gimple * max_stmt = gimple_build_assign (temp, build2 (MAX_EXPR, itype, build_zero_cst(itype), ops[0]));
-	  append_pattern_def_seq (vinfo, stmt_vinfo, max_stmt, v_itype);
+	  /* Avoid widening an input only to narrow it again.  A signed
+	     promotion does not affect MAX (X, 0), so use the unpromoted
+	     value when the target can narrow it directly to the output
+	     type.  */
+	  vect_unpromoted_value unprom;
+	  bool single_use_p = true;
+	  if (vect_look_through_possible_promotion (vinfo, input, &unprom,
+						      &single_use_p)
+	      && single_use_p
+	      && INTEGRAL_TYPE_P (unprom.type)
+	      && TYPE_SIGN (unprom.type) == TYPE_SIGN (itype)
+	      && type_has_mode_precision_p (unprom.type)
+	      && TYPE_PRECISION (otype) < TYPE_PRECISION (unprom.type)
+	      && TYPE_PRECISION (unprom.type) < TYPE_PRECISION (itype))
+	    {
+	      tree v_unprom_type
+		= vect_sat_trunc_clip_input_vectype (vinfo, v_otype,
+						       unprom.type);
+	      if (v_unprom_type != NULL_TREE)
+		{
+		  input = unprom.op;
+		  itype = unprom.type;
+		  v_itype = v_unprom_type;
+		}
+	    }
 
-	  gcall *call = gimple_build_call_internal (fn, 1, temp);
-	  tree out_ssa = vect_recog_temp_ssa_var (otype, NULL);
+	  if (v_itype == NULL_TREE)
+	    v_itype
+	      = vect_sat_trunc_clip_input_vectype (vinfo, v_otype, itype);
 
-	  gimple_call_set_lhs (call, out_ssa);
-	  gimple_call_set_nothrow (call, /* nothrow_p */ false);
-	  gimple_set_location (call, gimple_location (last_stmt));
+	  if (v_itype != NULL_TREE)
+	    {
+	      tree temp = vect_recog_temp_ssa_var (itype, NULL);
+	      gimple *max_stmt
+		= gimple_build_assign (temp, MAX_EXPR,
+				       build_zero_cst (itype), input);
+	      append_pattern_def_seq (vinfo, stmt_vinfo, max_stmt, v_itype);
 
-	  *type_out = v_otype;
+	      gcall *call = gimple_build_call_internal (fn, 1, temp);
+	      tree out_ssa = vect_recog_temp_ssa_var (otype, NULL);
 
-	  return call;
+	      gimple_call_set_lhs (call, out_ssa);
+	      gimple_call_set_nothrow (call, false);
+	      gimple_set_location (call, gimple_location (last_stmt));
+
+	      *type_out = v_otype;
+
+	      return call;
+	    }
 	}
-
     }
 
   if ((gimple_unsigned_integer_sat_trunc (lhs, ops, NULL)
