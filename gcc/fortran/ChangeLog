@@ -1,3 +1,33 @@
+2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127187
+	PR fortran/127187
+	* primary.cc (gfc_match_varspec): Clear the deferred flag, and
+	for KIND the charlen, of the INTEGER result of a LEN or KIND
+	inquiry.
+	* resolve.cc (resolve_variable): Do not reset the typespec of a
+	deferred-length character associate-name expression that has an
+	inquiry reference.
+
+2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.h (enum gfc_omp_requires_kind): Add OMP_REQ_NONE.
+	* openmp.cc (gfc_match_boolean_clause): New.
+	(gfc_match_dupl_branch_clause): New.
+	(gfc_match_dupl_check): Remove dupl_msg arg.
+	(gfc_match_dupl_atomic,
+	gfc_match_dupl_memorder,
+	gfc_match_omp_clauses,
+	gfc_match_omp_flush,
+	gfc_match_omp_requires): Accept optional constant logical
+	expression for inarguable clauses.
+
+2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* f95-lang.cc (gfc_gnu_attributes): Add "omp groupprivate".
+	* trans-common.cc (build_common_decl): Enable 'omp groupprivate'.
+	* trans-decl.cc (add_attributes_to_decl): Likewise.
+
 2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* openmp.cc (gfc_match_omp_declare_target): Adjust error handling

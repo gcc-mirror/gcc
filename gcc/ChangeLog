@@ -1,3 +1,16 @@
+2026-09-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127618
+	* fold-const.cc (test_vec_unpack_folding): Update tests
+
+2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/nvptx/nvptx.cc (nvptx_encode_section_info): Handle
+	'omp groupprivate'.
+	* varpool.cc (varpool_node::get_create): Print sorry for
+	'omp groupprivate' variables except for device_type(nohost) and
+	no offloading or nvptx offloading.
+
 2026-09-26  Oleg Tolmatcev  <oleg.tolmatcev@gmail.com>
 
 	PR debug/119940

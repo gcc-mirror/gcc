@@ -1,3 +1,50 @@
+2026-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127622
+	* gm2-compiler/M2Base.mod (CheckCompatible): Rename t1 to left.
+	Rename t2 to right.
+	Add spellcheck hint format specifiers to unknown types.
+	* gm2-compiler/M2MetaError.mod (ConfigureFilter): New procedure.
+	(errorBlock): filterVar new field.
+	filterType new field.
+	filterConst new field.
+	(continuation): Add T V C filter modifiers.
+	(FilterOnType): New procedure.
+	(FilterOnVariable): Ditto.
+	(FilrerOnConst): Ditto.
+	(SpellHint): Call ConfigureFilter.
+	* gm2-compiler/M2StackSpell.def (FilterType): New procedure.
+	(FilterVariable): Ditto.
+	(FilrerConst): Ditto.
+	* gm2-compiler/M2StackSpell.mod (FilterKind): New type.
+	(FilterSet): Ditto.
+	(CurrentFilter): New variable.
+	(PushNameFilter): New procedure.
+	(PushCandidates): Pass PushNameFilter as callback.
+	(GetSpellHintFilter): New procedure.
+	(GetSpellHint): Reimplement.
+	(FilterType): New procedure.
+	(FilterVariable): Ditto.
+	(FilterConst): Ditto.
+	(Init): Initialize CurrentFilter.
+	* gm2-compiler/P3SymBuild.mod (P3StartBuildDefModule): Push base
+	module.
+	(P3EndBuildDefModule): Pop base module.
+	(P3StartBuildImpModule): Push base module.
+	(P3EndBuildImpModule): Pop base module.
+	(P3StartBuildProgModule): Push base module.
+	(P3EndBuildProgModule): Pop base module.
+	(StartBuildInnerModule): Push base module.
+	(EndBuildInnerModule): Pop base module.
+	* gm2-compiler/PCSymBuild.mod (PCEndBuildDefModule): Pop
+	base module.
+	(PCStartBuildImpModule): Push base module.
+	(PCEndBuildImpModule): Pop base module.
+	(PCStartBuildProgModule): Push base module.
+	(PCEndBuildProgModule): Pop base module.
+	(StartBuildInnerModule): Push base module.
+	(EndBuildInnerModule): Pop base module.
+
 2026-09-25  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127567
