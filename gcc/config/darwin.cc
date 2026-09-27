@@ -1839,6 +1839,11 @@ machopic_select_section (tree decl,
       if (TREE_CODE (name) == TYPE_DECL)
         name = DECL_NAME (name);
 
+      /* If the type name ID absent, this cannot be an Objective-C or Core
+	 Foundation string.  */
+      if (!name)
+	return base_section;
+
       if (!strcmp (IDENTIFIER_POINTER (name), "__builtin_ObjCString"))
 	{
 	  if (flag_next_runtime)
