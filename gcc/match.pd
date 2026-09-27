@@ -11508,6 +11508,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
 
+/* (a != 0) | (popcount (a) == n)  ->  (a != 0) | (n == 0)
+   (a == 0) & (popcount (a) != n)  ->  (a == 0) & (n != 0)  */
+(for popcount (POPCOUNT)
+ (for bop (bit_ior bit_and)
+      popcmp (eq ne)
+      zerocmp (ne      eq)
+  (simplify
+   (bop:c (zerocmp@2 @0 integer_zerop)
+	  (popcmp:cs (popcount (convert?@3 @0)) @1))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@3)))
+    (bop @2 (popcmp @1 { build_zero_cst (TREE_TYPE (@1)); }))))))
+
 /* popcount(bswap(x)) is popcount(x).  */
 (for popcount (POPCOUNT)
   (for bswap (BSWAP BITREVERSE)
