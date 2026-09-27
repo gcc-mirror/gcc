@@ -1,6 +1,6 @@
 /* { dg-do run } */
-/* { dg-additional options "-march=rv64gc_zbb_zbs -mabi=lp64d" { target rv64 } } */
-/* { dg-additional options "-march=rv32gc_zbb_zbs -mabi=ilp32" { target rv32 } } */
+/* { dg-additional-options "-std=c99 -march=rv64gc_zbb_zbs -mabi=lp64d" { target rv64 } } */
+/* { dg-additional-options "-std=c99 -march=rv32gc_zbb_zbs -mabi=ilp32" { target rv32 } } */
 
 /* If bclr drops the sign extension, this loop never terminates.  */
 
