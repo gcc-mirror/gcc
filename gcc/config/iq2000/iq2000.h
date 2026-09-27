@@ -629,7 +629,7 @@ enum delay_type
 #define GR_REG_CLASS_P(CLASS)						\
   ((CLASS) == GR_REGS)
 
-#define SMALL_INT(X) ((unsigned HOST_WIDE_INT) (INTVAL (X) + 0x8000) < 0x10000)
+#define SMALL_INT(X) ((unsigned HOST_WIDE_INT) (INTVAL (X)) + 0x8000 < 0x10000)
 #define SMALL_INT_UNSIGNED(X) ((unsigned HOST_WIDE_INT) (INTVAL (X)) < 0x10000)
 
 /* Certain machines have the property that some registers cannot be
