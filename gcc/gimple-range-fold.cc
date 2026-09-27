@@ -2000,6 +2000,12 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
 	      && !r.undefined_p ()
 	      && !r.varying_p ())
 	    {
+	      if (!gori ()->edge_range_p (r1, e0, ssa1, *m_query)
+		  || r1.undefined_p ())
+		r1.set_varying (TREE_TYPE (ssa1));
+	      if (!gori ()->edge_range_p (r2, e0, ssa2, *m_query)
+		  || r2.undefined_p ())
+		r2.set_varying (TREE_TYPE (ssa2));
 	      relation_kind relation = handler.op1_op2_relation (r, r1, r2);
 	      if (relation != VREL_VARYING)
 		register_relation (e0, relation, ssa1, ssa2);
@@ -2008,6 +2014,12 @@ fur_source::register_outgoing_edges (gcond *s, irange &lhs_range,
 	      && !r.undefined_p ()
 	      && !r.varying_p ())
 	    {
+	      if (!gori ()->edge_range_p (r1, e1, ssa1, *m_query)
+		  || r1.undefined_p ())
+		r1.set_varying (TREE_TYPE (ssa1));
+	      if (!gori ()->edge_range_p (r2, e1, ssa2, *m_query)
+		  || r2.undefined_p ())
+		r2.set_varying (TREE_TYPE (ssa2));
 	      relation_kind relation = handler.op1_op2_relation (r, r1, r2);
 	      if (relation != VREL_VARYING)
 		register_relation (e1, relation, ssa1, ssa2);

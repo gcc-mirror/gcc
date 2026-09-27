@@ -2195,10 +2195,12 @@ minus_op1_op2_relation_effect (irange &lhs_range, tree type,
 
 // Check if the LHS range indicates a relation between OP1 and OP2.
 // OP1 - OP2 == 0 implies OP1 == OP2 even with wrapping arithmetic.
+// For signed types, when both OP1 and OP2 are both positive, infer
+// a relationship if there were it is overflow free.
 
 relation_kind
-operator_minus::op1_op2_relation (const irange &lhs, const irange &,
-				  const irange &) const
+operator_minus::op1_op2_relation (const irange &lhs, const irange &rhs1,
+				  const irange &rhs2) const
 {
   if (lhs.undefined_p ())
     return VREL_UNDEFINED;
@@ -2206,7 +2208,20 @@ operator_minus::op1_op2_relation (const irange &lhs, const irange &,
   if (lhs.zero_p ())
     return VREL_EQ;
 
-  if (!lhs.contains_zero_p ())
+  bool contains_z = lhs.contains_zero_p ();
+  // When a - b does not overflow and signed,
+  // we can figure out the relationship between
+  // a and b if the result is non-negative or non-positive.
+  if (!TYPE_UNSIGNED (lhs.type ())
+      && overflow_free_p (rhs1, rhs2))
+    {
+      if (lhs.nonnegative_p ())
+	return contains_z ? VREL_GE : VREL_GT;
+      if (lhs.nonpositive_p ())
+	return contains_z ? VREL_LE : VREL_LT;
+    }
+
+  if (!contains_z)
     return VREL_NE;
 
   return VREL_VARYING;
