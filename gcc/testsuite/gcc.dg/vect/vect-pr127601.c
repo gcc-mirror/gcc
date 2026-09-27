@@ -1,6 +1,9 @@
 /* { dg-require-effective-target mmap } */
 
 #include <sys/mman.h>
+#if defined(__APPLE__) && !defined(MAP_ANONYMOUS)
+#define MAP_ANONYMOUS MAP_ANON
+#endif
 #include "tree-vect.h"
 
 #define PG 4096
