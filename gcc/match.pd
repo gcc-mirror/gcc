@@ -13579,8 +13579,7 @@ and,
    (if (type_has_mode_precision_p (type)
 	&& tree_fits_uhwi_p (@1)
 	&& tree_fits_uhwi_p (@3)
-	&& tree_fits_uhwi_p (@4)
-	&& ((~((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@4)) == 0
+	&& (wi::mask (tree_to_uhwi (@1), true, TYPE_PRECISION (type)) & wi::to_wide (@4)) == 0
         && (tree_to_uhwi (@1) + tree_to_uhwi (@3)) == TYPE_PRECISION (type)
         && TYPE_UNSIGNED (type)
         && @0 == @2)
@@ -13593,9 +13592,8 @@ and,
 	     (rshift @3 INTEGER_CST@4))
    (if (type_has_mode_precision_p (type)
 	&& tree_fits_uhwi_p (@1)
-	&& tree_fits_uhwi_p (@2)
 	&& tree_fits_uhwi_p (@4)
-	&& (((((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@2)) == 0)
+	&& ((wi::mask (tree_to_uhwi (@1), false, TYPE_PRECISION (type)) & wi::to_wide (@2)) == 0)
         && (tree_to_uhwi (@1) + tree_to_uhwi (@4)) == TYPE_PRECISION (type)
         && TYPE_UNSIGNED (type)
         && @0 == @3)
