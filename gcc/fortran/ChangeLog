@@ -1,3 +1,17 @@
+2026-09-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127187
+	PR fortran/127187
+	* primary.cc (gfc_match_varspec): Clear the deferred flag, and
+	for KIND the charlen, of the INTEGER result of a LEN or KIND
+	inquiry.
+	* resolve.cc (resolve_variable): Do not reset the typespec of a
+	deferred-length character associate-name expression that has an
+	inquiry reference.
+
 2026-08-08  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:
