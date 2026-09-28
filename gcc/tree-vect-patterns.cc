@@ -567,6 +567,28 @@ vect_joust_widened_type (tree type, tree new_type, tree *common_type)
   return true;
 }
 
+/* If the range of UNPROM->OP at STMT fits in a narrower element type than
+   UNPROM->TYPE, change UNPROM->TYPE to that type and return true.  */
+
+static bool
+vect_narrow_unprom_to_range (vect_unpromoted_value *unprom, gimple *stmt)
+{
+  int_range_max r;
+  get_range_query (cfun)->range_of_expr (r, unprom->op, stmt);
+  if (r.undefined_p ())
+    return false;
+
+  signop sgn = TYPE_SIGN (unprom->type);
+  unsigned int precision
+    = vect_element_precision (MAX (wi::min_precision (r.lower_bound (), sgn),
+				   wi::min_precision (r.upper_bound (), sgn)));
+  if (precision >= TYPE_PRECISION (unprom->type))
+    return false;
+
+  unprom->type = build_nonstandard_integer_type (precision, sgn == UNSIGNED);
+  return true;
+}
+
 /* Check whether STMT_INFO can be viewed as a tree of integer operations
    in which each node either performs CODE or WIDENED_CODE, and where
    each leaf operand is narrower than the result of STMT_INFO.  MAX_NOPS
@@ -659,7 +681,9 @@ vect_widened_op_tree (vec_info *vinfo, stmt_vec_info stmt_info, tree_code code,
 							  this_unprom))
 	    return 0;
 
-	  if (TYPE_PRECISION (this_unprom->type) == TYPE_PRECISION (type))
+	  if (TYPE_PRECISION (this_unprom->type) == TYPE_PRECISION (type)
+	      && !(this_unprom->dt == vect_external_def
+		   && vect_narrow_unprom_to_range (this_unprom, stmt)))
 	    {
 	      /* The operand isn't widened.  If STMT_INFO has the code
 		 for an unwidened operation, recursively check whether
