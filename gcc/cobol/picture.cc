@@ -563,12 +563,48 @@ namespace picture_validation {
       return false;
     }
 
+    static picsym_t picsym_of( char ch ) {
+      switch(ch) {
+      case '$': return p_cs;
+      case '*': return p_star;
+      case '+': return p_plus;
+      case ',': return p_comma;
+      case '-': return p_minus;
+      case '.': return p_dot;
+      case '/': return p_slash;
+      case '0': return p_zero;
+      case '1': return p_one;
+      case '9': return p_nine;
+      case 'A': return p_A;
+      case 'B': return p_B;
+      case 'C': return p_C;
+      case 'D': return p_D;
+      case 'E': return p_E;
+      case 'N': return p_N;
+      case 'P': return p_P;
+      case 'S': return p_S;
+      case 'U': return p_U;
+      case 'V': return p_V;
+      case 'X': return p_X;
+      case 'Z': return p_Z;
+      }
+      gcc_unreachable();
+      return picsym_t(0);
+    }
+
     bool picsym_settable( char ch ) const {
       switch(ch) {
       case 'V':
         return ! picsym_seen(ch);
       case 'P':
         return ch == prior_ch || ! picsym_seen(ch);
+      }
+      if( picsym_seen('S') ) {
+        if( picsym_of(ch) != (picsym_of(ch) & p_numeric_e) ) {
+          dbgmsg("%s:%d: nonnumeric: '%c', %lx not in %lx", __func__, __LINE__,
+                 ch, picsym_of(ch), p_numeric_e);
+        }
+        return picsym_of(ch) == (picsym_of(ch) & p_numeric_e);
       }
       return true;
     }
