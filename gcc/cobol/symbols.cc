@@ -1907,7 +1907,7 @@ symbols_update( size_t first, bool parsed_ok ) {
     if( !field->is_valid() )
     {
       size_t isym = p - symbols_begin();
-      symbols_dump(symbols.first_program, true);
+      symbols_dump(symbols.first_program + 18, true);
       if( symbol_at(field->parent)->type == SymFile ) {
         assert(field->parent == field_index(field) + 1);
         auto e = std::find_if( symbols_begin(field->parent), symbols_end(),
@@ -2081,7 +2081,7 @@ symbols_update( size_t first, bool parsed_ok ) {
       }
       if( parsed_ok ) {
         parser_file_add(&file);
-        update_symbol_map2(file); // Add FD name as a name for the default record. 
+        update_symbol_map2(file); // Add FD name as a name for the default record.
       }
     } else {
       if( p->type == SymField ) {
@@ -3086,7 +3086,7 @@ struct symbol_elem_t *
 symbol_file( size_t program, const char name[] ) {
   auto key( elem_key_t(program, name) );
   auto p = symbols.files.find(key);
-  
+
   if( p == symbols.files.end() ) { // Look for global FD in containing program.
     while( key.program ) {
       key.program = symbol_at(key.program)->program;
@@ -3105,7 +3105,7 @@ symbol_file( size_t program, const char name[] ) {
            name, (unsigned long)p->second);
     auto e = symbol_at(p->second);
     return e;
-  }    
+  }
 
   dbgmsg("%s:%d: not found: %s", __func__, __LINE__, name);
   return nullptr;
@@ -3700,7 +3700,7 @@ static class program_temporaries_t : private symbol_temporaries_t {
     alphas.clear();
   }
 } program_temporaries;
-        
+
 /*
  * Supply a reference to the current list of temporaries for use by codegen to free
  * the memory if it decides to return to the caller.
@@ -4853,7 +4853,7 @@ expand_picture(const char *picture)
   if( currency_symbol )
     {
     size_t sign_length = __gg__currency_signs[currency_symbol].size();
-    assert(0 < sign_length);    
+    assert(0 < sign_length);
     if( --sign_length )
       {
       char *pcurrency = strchr(retval, currency_symbol);
@@ -4869,6 +4869,9 @@ expand_picture(const char *picture)
       }
     }
   retval[dest_length] = NULLCH;
+
+  // The 'V'
+
 
   // To ease the workload on interpreting the PICTURE string at run time, we
   // are going to convert everything we can to upper case.  We also convert
@@ -4886,18 +4889,15 @@ expand_picture(const char *picture)
       case ascii_s:
       case ascii_x:
       case ascii_z:
-        retval[i] = TOUPPER(retval[i]);
-        break;
-      case ascii_V:
       case ascii_v:
-        retval[i] = __gg__decimal_point;
+        retval[i] = TOUPPER(retval[i]);
         break;
 
       // We need special processing for DB.  When they appear as the final two
       // characters, they are the accounting sign "DB" indicator and we have to
-      // leave the case as the programmer established it.  Otherwise we have to 
+      // leave the case as the programmer established it.  Otherwise we have to
       // make the 'B' uppercase.
-      
+
       case ascii_B:
       case ascii_b:
         if( i < dest_length-1 )
@@ -4913,6 +4913,13 @@ expand_picture(const char *picture)
           }
         break;
       }
+    }
+
+  // The V character is virtual in numeric_editing, so get rid of it
+  char *pV = strchr(retval, ascii_V);
+  if( pV )
+    {
+    memmove(pV, pV+1, strlen(pV));
     }
 
   // AD HOC FIX for an improper trailing space
@@ -4938,23 +4945,23 @@ expand_expanded(char *expanded)
   /* In order to make __gg__string_to_numeric_edited() run quickly, we are
      going to process the expanded picture string especially for it.  What we
      do here:
-     
+
      Convert B to space, taking care not to touch a final 'DB'
 
      Find the currency picture symbol
-     
+
      Find the span of any '$$', '++', '--' 'Z', and '*' runs.
 
      For any '$$', '++' and '--' runs, replace the first such char with a
      space, and all the others with '9'
-     
+
      For any 'Z' and '*' runs, replace all the characters with '9'.
-     
+
      Figure out if any of the original picture characters are '9'.
-     
+
      That information gets encoded into six characters that are appended to
-     the modified string.  
-     
+     the modified string.
+
      Offset 0:   The currency character
      Offset 1:   The floating character (space if empty)
      Offset 2-3: The starting index of the float.
@@ -4962,7 +4969,7 @@ expand_expanded(char *expanded)
 
      When there are '9' characters in the original, the 0x40 bit of offset 2
      is turned on, turning '0'-'9' into 'q'-'y'
-     
+
      Is everybody ready?  Then we'll begin.    */
 
   int length_d = strlen(expanded);
@@ -5804,7 +5811,7 @@ cbl_file_t::filename_of() const {
   if( filename != 0 ) { return cbl_field_of(symbol_at(filename))->name; }
   if( device != 0 ) {
     auto dev = cbl_special_name_of(symbol_at(device));
-    if( dev->os_filename[0] != '\0' ) return dev->os_filename; 
+    if( dev->os_filename[0] != '\0' ) return dev->os_filename;
   }
   return nullptr;
 }

@@ -353,8 +353,8 @@ static bool level_needed() {
 
 /*
  * Return all but the first N characters, to be rescanned by the nexst yylex.
- * IOW, keep N characters as the token, and relinquish the rest. 
- * Must be a macro because it expands yyless. 
+ * IOW, keep N characters as the token, and relinquish the rest.
+ * Must be a macro because it expands yyless.
  */
 #define myless(N)				\
   do {						\
@@ -425,11 +425,11 @@ class enter_leave_t {
 /*
  * The lexer knows the immediate status of the input file and its line number
  * from the PUSH, POP, and LINE directives.  It saves yylineno whenever it
- * encounters a PUSH, and updates it for a POP.  
+ * encounters a PUSH, and updates it for a POP.
  *
  * The line number trickles into the parser by way of location.  Only the
  * parser knows what token it is parsing.  As for the filename, the lexer
- * queues enter/leave notices for the parser.  
+ * queues enter/leave notices for the parser.
  *
  * Whenever the parser fetches a token, it gets the current line number from
  * yylineno, and the current filename by depleting the notification queue, if
@@ -532,8 +532,8 @@ trim_location( int nkeep) {
     yylloc.last_column = 1 + (eokeep - nl);
   }
 
-  gcc_assert( yylloc.first_line <= yylloc.last_line );    
-  gcc_assert( 0 < yylloc.last_column );    
+  gcc_assert( yylloc.first_line <= yylloc.last_line );
+  gcc_assert( 0 < yylloc.last_column );
 
   ////location_dump(__func__, __LINE__, "yylloc", yylloc, true);
 }
@@ -591,7 +591,7 @@ static char *tmpstring = NULL;
 // map of alias => canonical
 static std::map <std::string, std::string> keyword_aliases;
 
-std::pair<std::string, bool> 
+std::pair<std::string, bool>
 keyword_alias_add( const std::string& keyword, const std::string& alias ) {
   auto elem = std::make_pair(alias, keyword);
   auto result = keyword_aliases.insert(elem);
@@ -610,37 +610,37 @@ struct bint_t {
   bool signable;
 };
 static const std::map <std::string, bint_t > binary_integers {
-  { "BINARY",           { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
-  { "COMP",             { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
-  { "COMPUTATIONAL",    { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
-  { "COMP-4",           { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
-  { "COMPUTATIONAL-4",  { COMPUTATIONAL, FldNumericBinary,  0, false } }, 
-  
-  { "BINARY-CHAR",      { _BINARY_INTEGER, FldNumericBin5,   1, true } }, 
-  { "BINARY-SHORT",     { _BINARY_INTEGER, FldNumericBin5,   2, true } }, 
-  { "BINARY-LONG",      { _BINARY_INTEGER, FldNumericBin5,   4, true } }, 
-  { "BINARY-DOUBLE",    { _BINARY_INTEGER, FldNumericBin5,   8, true } }, 
-  { "BINARY-LONG-LONG", { _BINARY_INTEGER, FldNumericBin5,   8, true } }, 
+  { "BINARY",           { COMPUTATIONAL, FldNumericBinary,  0, false } },
+  { "COMP",             { COMPUTATIONAL, FldNumericBinary,  0, false } },
+  { "COMPUTATIONAL",    { COMPUTATIONAL, FldNumericBinary,  0, false } },
+  { "COMP-4",           { COMPUTATIONAL, FldNumericBinary,  0, false } },
+  { "COMPUTATIONAL-4",  { COMPUTATIONAL, FldNumericBinary,  0, false } },
 
-  { "COMP-5",           { COMPUTATIONAL, FldNumericBin5,    0, false } }, 
-  { "COMPUTATIONAL-5",  { COMPUTATIONAL, FldNumericBin5,    0, false } }, 
-  { "COMP-X",           { COMPUTATIONAL, FldNumericBin5, 0xFF, false } }, 
-  { "COMPUTATIONAL-X",  { COMPUTATIONAL, FldNumericBin5, 0xFF, false } }, 
+  { "BINARY-CHAR",      { _BINARY_INTEGER, FldNumericBin5,   1, true } },
+  { "BINARY-SHORT",     { _BINARY_INTEGER, FldNumericBin5,   2, true } },
+  { "BINARY-LONG",      { _BINARY_INTEGER, FldNumericBin5,   4, true } },
+  { "BINARY-DOUBLE",    { _BINARY_INTEGER, FldNumericBin5,   8, true } },
+  { "BINARY-LONG-LONG", { _BINARY_INTEGER, FldNumericBin5,   8, true } },
 
-  { "COMP-1",           { COMPUTATIONAL, FldFloat,  4, false } }, 
-  { "COMPUTATIONAL-1",  { COMPUTATIONAL, FldFloat,  4, false } }, 
-  { "FLOAT-BINARY-32",  { COMPUTATIONAL, FldFloat,  4, false } }, 
-  { "FLOAT-SHORT",      { COMPUTATIONAL, FldFloat,  4, false } }, 
+  { "COMP-5",           { COMPUTATIONAL, FldNumericBin5,    0, false } },
+  { "COMPUTATIONAL-5",  { COMPUTATIONAL, FldNumericBin5,    0, false } },
+  { "COMP-X",           { COMPUTATIONAL, FldNumericBin5, 0xFF, false } },
+  { "COMPUTATIONAL-X",  { COMPUTATIONAL, FldNumericBin5, 0xFF, false } },
 
-  { "COMP-2",           { COMPUTATIONAL, FldFloat,  8, false } }, 
-  { "COMPUTATIONAL-2",  { COMPUTATIONAL, FldFloat,  8, false } }, 
-  { "FLOAT-BINARY-64",  { COMPUTATIONAL, FldFloat,  8, false } }, 
-  { "FLOAT-LONG",       { COMPUTATIONAL, FldFloat,  8, false } }, 
-  { "FLOAT-BINARY-128", { COMPUTATIONAL, FldFloat, 16, false } }, 
-  { "FLOAT-EXTENDED",   { COMPUTATIONAL, FldFloat, 16, false } }, 
+  { "COMP-1",           { COMPUTATIONAL, FldFloat,  4, false } },
+  { "COMPUTATIONAL-1",  { COMPUTATIONAL, FldFloat,  4, false } },
+  { "FLOAT-BINARY-32",  { COMPUTATIONAL, FldFloat,  4, false } },
+  { "FLOAT-SHORT",      { COMPUTATIONAL, FldFloat,  4, false } },
 
-  { "COMP-6",           { COMPUTATIONAL, FldPacked, 0, false } }, 
-  { "COMPUTATIONAL-6",  { COMPUTATIONAL, FldPacked, 0, false } }, 
+  { "COMP-2",           { COMPUTATIONAL, FldFloat,  8, false } },
+  { "COMPUTATIONAL-2",  { COMPUTATIONAL, FldFloat,  8, false } },
+  { "FLOAT-BINARY-64",  { COMPUTATIONAL, FldFloat,  8, false } },
+  { "FLOAT-LONG",       { COMPUTATIONAL, FldFloat,  8, false } },
+  { "FLOAT-BINARY-128", { COMPUTATIONAL, FldFloat, 16, false } },
+  { "FLOAT-EXTENDED",   { COMPUTATIONAL, FldFloat, 16, false } },
+
+  { "COMP-6",           { COMPUTATIONAL, FldPacked, 0, false } },
+  { "COMPUTATIONAL-6",  { COMPUTATIONAL, FldPacked, 0, false } },
 };
 
 static int
@@ -657,10 +657,10 @@ binary_integer_usage( const char name[]) {
   std::string key = uname;
   auto alias = keyword_aliases.find(key);
   if( alias != keyword_aliases.end() ) key = alias->second;
-  
+
   auto p = binary_integers.find(key);
   if( p == binary_integers.end() ) return 0;
-  
+
   yylval.computational.type = p->second.type;
   yylval.computational.capacity = p->second.capacity;
   yylval.computational.signable = p->second.signable;
@@ -669,7 +669,7 @@ binary_integer_usage( const char name[]) {
   free(uname);
   return p->second.token;
 }
-      
+
 static void
 verify_ws( char ch ) {
   if( ! fisspace(ch) ) {
@@ -712,7 +712,7 @@ level_of( const char input[] ) {
 
 /*
  * Input may have leading or trailing V, which is ignored.
- * Return the decoded picture size insofar as possible.  
+ * Return the decoded picture size insofar as possible.
  * If the picture switches from 9s to Ps, say, set pleft to the remainder.
  */
 static int
@@ -721,7 +721,7 @@ ndigit(int len, const char **pleft = nullptr) {
   if( TOUPPER(p[0]) == 'V' ) p++;
   if( p == pend ) return 0; // Only the V
   int n = 0;
-  
+
   for( char model = *p; p < pend; p++ ) {
     assert(*p == model);
     n++;
@@ -729,7 +729,7 @@ ndigit(int len, const char **pleft = nullptr) {
 
     std::pair<uint32_t, int> result = repeat_count(p);
     int count = result.first, pos = result.second;
-    
+
     if( pos == -1 ) {
       if( pleft ) *pleft = ++p;  // because *p at least was ok, per assertion.
       break;
@@ -804,7 +804,7 @@ symbol_exists( const char name[] ) {
   /*
    * Before data division has been defined and the cache populated, or if the
    * map search failes, search the symbol table in case of named literal.
-   */  
+   */
   symbol_elem_t *e = symbol_field( PROGRAM, 0, name );
   return e;
 }
@@ -817,8 +817,8 @@ typed_name( const char name[] ) {
   int token = repository_function_tok(name);
   switch(token) {
   case 0:
-    if(false) // we don't know how to do this yet. 
-    { // Functions in the symbol table may be used without the FUNCTION keyword. 
+    if(false) // we don't know how to do this yet.
+    { // Functions in the symbol table may be used without the FUNCTION keyword.
       cbl_label_t *L = symbol_function_any(0, name);
       if( L ) {
         auto args = prototype_args(L->name);
@@ -952,7 +952,7 @@ static void yyunput(int ch, char yytext_ptr[]);
 static int
 continue_string( char quote ) {
   int ch;
-  
+
   for( ; (ch = yyinput()) != quote; yylloc.last_column++ ) {
     switch(ch) {
     case EOF: case 0:  return ch;
@@ -1077,7 +1077,7 @@ unquote() {
   char *output = xstrdup(yytext), quote = *p;
   char prior = '\0';
 
-  pend = std::copy_if( ++p, --pend, output, 
+  pend = std::copy_if( ++p, --pend, output,
                        [quote, &prior]( char ch ) {
                          if( ch == quote ) {
                            if( ch == prior ) {
@@ -1091,4 +1091,3 @@ unquote() {
   *pend = '\0';
   return output;
 }
-

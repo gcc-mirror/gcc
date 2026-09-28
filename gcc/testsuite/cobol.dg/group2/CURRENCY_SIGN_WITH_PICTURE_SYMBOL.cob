@@ -14,7 +14,7 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        77  euro-val pic 99v99.
-       77  EUROS    PIC @99v99.
+       77  EUROS    PIC @99.99.
        77  cents    PIC 9,999&.
        77  DOLLARS  Pic $$,$$9.99.
 

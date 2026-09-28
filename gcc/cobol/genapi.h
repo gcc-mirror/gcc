@@ -187,7 +187,9 @@ parser_logop( struct cbl_field_t *tgt,
 
 void
 parser_setop( struct cbl_field_t *tgt,
-              struct cbl_field_t *a,  enum setop_t, struct cbl_field_t *b );
+              struct cbl_refer_t &candidate,
+              enum setop_t,
+              struct cbl_field_t *b );
 
 void
 parser_bitop( struct cbl_field_t *tgt,

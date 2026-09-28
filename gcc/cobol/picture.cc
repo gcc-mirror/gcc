@@ -74,11 +74,11 @@ namespace picture_validation {
    */
   enum state_t {
     invalid_e,
-    none_e, 
+    none_e,
     boolean_e,
-    alphabetic_e, 
+    alphabetic_e,
     unicode_e,
-    alphanumeric_e, 
+    alphanumeric_e,
     alpha_ed_e,
     national_e,
     national_ed_e,
@@ -129,18 +129,18 @@ namespace picture_validation {
   /*
    * The followers table enforces the merest of syntax: in a picture string,
    * what character may follow another?  It reproduces ISO table 10 in
-   * programmatic form.  
-   * 
+   * programmatic form.
+   *
    * "The symbol '+' that appears in a column and in a row by itself,
    *  represents its use in the exponent part of character-string-1 for a
-   *  floating-point numeric-edited item.  
+   *  floating-point numeric-edited item.
    *
    *  The symbols '+' and '-' when used as a non-floating insertion symbol
    *  appear in two columns and two rows. The leftmost column and the uppermost
    *  row for these symbols represent their use as the first symbol in
    *  character-string-1. The rightmost column and the lowermost row for these
    *  symbols represent its use as the last or penultimate symbol in
-   *  character-string-1.  
+   *  character-string-1.
    *
    *  The symbol '+' that appears in a column and in a row by itself,
    *  represents its use in the exponent."
@@ -160,7 +160,7 @@ namespace picture_validation {
     /*   B0/ */ { { postdec_e,     '/' }, {""  "B0/,.Z*+-$9AXVPNECD"} }, // ante & post
     /*     + */ { { exponent_e,    '+' }, {""  "9"} },
     /*     , */ { { antedec_e,     com }, {""  "B0/,.Z*+-$9VPE"} },
-    /*     . */ { { antedec_e,     dot }, {""  "B0/,Z*+-$9E"} }, 
+    /*     . */ { { antedec_e,     dot }, {""  "B0/,Z*+-$9E"} },
     /*     . */ { { postdec_e,     dot }, {""  "B0/,Z*+-$9E"} },  // ante & post
     /*    +- */ { { antedec_e,     '+' }, {""  "B0/,.+-Z*$9VPE"} },
     /*    +- */ { { antedec_e,     '-' }, {""  "B0/,.+-Z*$9VPE"} },
@@ -189,7 +189,7 @@ namespace picture_validation {
     /* CR/DB */ { { postdec_e,     'C' }, {""  "R"} },
     /* CR/DB */ { { postdec_e,     'D' }, {""  "B"} },
   };
-  
+
   ////////////////////////////////////////////////////////////////
 
   struct transition_t {
@@ -206,13 +206,13 @@ namespace picture_validation {
     {}
 
     bool operator<(const transition_t& that) const {
-      if (state == that.state) return ch < that.ch;      
+      if (state == that.state) return ch < that.ch;
       return state < that.state;
     }
     bool operator==(const transition_t& that) const { return   match(that); }
     bool operator!=(const transition_t& that) const { return ! match(that); }
 
-   protected: 
+   protected:
     // match verifies that the row returned by std::lower_bound actually
     // matches, and isn't the next "bigger" one.
     bool match(const transition_t& that) const {
@@ -220,7 +220,7 @@ namespace picture_validation {
         &&   ch == that.ch;
     }
   };
-  
+
   static std::vector<transition_t> picture_rules {
     // Alpha and Alphanumeric
     { none_e,          'A',  alphabetic_e },
@@ -233,7 +233,7 @@ namespace picture_validation {
     { none_e,          'P',  antedec_e },
     { none_e,          'S',  antedec_e },
     { none_e,          'V',  postdec_e, },  // V before 9
-                       
+
     { none_e,          '1',  boolean_e },
     { boolean_e,       '1',  boolean_e },
 
@@ -267,7 +267,7 @@ namespace picture_validation {
     { alphanumeric_e,  'B',  alpha_ed_e },
     { alphanumeric_e,  '0',  alpha_ed_e },
     { alphanumeric_e,  '/',  alpha_ed_e },
-    
+
     // National
     { national_e,      'N',  national_e },
     { national_e,      '\0', alphanumeric_e },
@@ -292,7 +292,7 @@ namespace picture_validation {
     { none_e,          '-',  numeric_ed_e },
     { none_e,          '+',  numeric_ed_e },
     { none_e,          '$',  numeric_ed_e },
-                       
+
     { antedec_e,       '9',  antedec_e },
     { antedec_e,       'A',  alphanumeric_e },
     { antedec_e,       'P',  numeric_e },
@@ -311,10 +311,10 @@ namespace picture_validation {
     { antedec_e,       '$',  numeric_ed_e },
     { antedec_e,       dot,  numeric_ed_e },
     { antedec_e,       com,  numeric_ed_e },
-                       
+
     { postdec_e,       '9',  numeric_e },
     { postdec_e,       'P',  numeric_e },
-                       
+
     { numeric_e,       '9',  numeric_e },
     { numeric_e,       'P',  numeric_e },
     { numeric_e,       'V',  numeric_e },
@@ -344,7 +344,7 @@ namespace picture_validation {
     { numeric_ed_e,    '*',  numeric_ed_e },
     { numeric_ed_e,    '$',  numeric_ed_e },
     { numeric_ed_e,    'P',  numeric_ed_e },
-    { numeric_ed_e,    'V',  numeric_ed_e }, // See Table 10 if in doubt. 
+    { numeric_ed_e,    'V',  numeric_ed_e }, // See Table 10 if in doubt.
     { numeric_ed_e,    'C',  c_need_r_e },
     { numeric_ed_e,    'D',  d_need_b_e },
 
@@ -352,7 +352,7 @@ namespace picture_validation {
     { c_need_r_e,      'R',  numeric_ed_e },
     { d_need_b_e,      'B',  numeric_ed_e },
   };
-  
+
   typedef std::array<state_t, 256> automaton_elem_t;
   typedef std::vector<automaton_elem_t> automaton_matrix_t;
 
@@ -369,8 +369,8 @@ namespace picture_validation {
       if( matrix[rule.state][ch] ) {
         nextra++;
         fprintf(stderr, "%s: redundant rule: #%d { %s '%c' %s }\n",
-                __func__, i, 
-                state_str(rule.state), rule.ch, 
+                __func__, i,
+                state_str(rule.state), rule.ch,
                 state_str(rule.next_state));
       }
 #endif
@@ -380,7 +380,7 @@ namespace picture_validation {
     if( nextra ) {
       cbl_internal_error("%s: %d redundant rules", __func__, nextra);
     }
-    
+
     ready = true;
     return matrix;
   }
@@ -390,8 +390,8 @@ namespace picture_validation {
    * seen: the preceding character and what characters have appeared that
    * signify alphanumeric-edited or numeric-edited.
    */
-  static constexpr uint64_t hiword(char ch) { 
-    return (1ULL << (ch - 'A')) << 32; 
+  static constexpr uint64_t hiword(char ch) {
+    return (1ULL << (ch - 'A')) << 32;
   }
   class constraint_t {
     // Domain of symbols in a picture string.
@@ -408,18 +408,18 @@ namespace picture_validation {
       p_nine  = 0x0009,    // 9, claim the whole nybble
       // Bits 0-15:  punctuation, currency, and 0, 1, and 9.
       // Bits 32-58: A-Z
-      p_A     = hiword('A'), 
-      p_B     = hiword('B'), 
-      p_C     = hiword('C'), 
-      p_D     = hiword('D'), 
-      p_E     = hiword('E'), 
-      p_N     = hiword('N'), 
-      p_P     = hiword('P'), 
-      p_S     = hiword('S'), 
-      p_U     = hiword('U'), 
-      p_V     = hiword('V'), 
-      p_X     = hiword('X'), 
-      p_Z     = hiword('Z'), 
+      p_A     = hiword('A'),
+      p_B     = hiword('B'),
+      p_C     = hiword('C'),
+      p_D     = hiword('D'),
+      p_E     = hiword('E'),
+      p_N     = hiword('N'),
+      p_P     = hiword('P'),
+      p_S     = hiword('S'),
+      p_U     = hiword('U'),
+      p_V     = hiword('V'),
+      p_X     = hiword('X'),
+      p_Z     = hiword('Z'),
 
       p_alphanumeric_e = (p_A | p_X | p_nine),
       p_b_0_slash_e = (p_B | p_zero | p_slash),
@@ -427,8 +427,8 @@ namespace picture_validation {
       p_national_ed_e = (p_N | p_b_0_slash_e),
       p_numeric_e = (p_nine | p_P | p_S | p_V),
       // B P V Z 9 0 / , . + - CR DB * cs (CR/DB not in mask because at end)
-      p_numeric_ed2_e = (p_b_0_slash_e | p_comma | p_dot | p_plus | p_minus), 
-      p_numeric_ed_e = ( p_P | p_V | p_Z | p_nine | p_b_0_slash_e | 
+      p_numeric_ed2_e = (p_b_0_slash_e | p_comma | p_dot | p_plus | p_minus),
+      p_numeric_ed_e = ( p_P | p_V | p_Z | p_nine | p_b_0_slash_e |
                        p_comma | p_dot | p_plus | p_minus | p_star | p_cs),
     };
     uint64_t symbol_mask;
@@ -442,7 +442,7 @@ namespace picture_validation {
     }
 
     /*
-     * 13.18.40.3 Syntax rules FORMAT 1 
+     * 13.18.40.3 Syntax rules FORMAT 1
      */
     bool is_allowed( char ch ) const {
       switch( ch ) {
@@ -471,7 +471,7 @@ namespace picture_validation {
     bool is_boolean() const    { return symbol_mask == p_one; }
     bool is_alphabetic() const { return symbol_mask == p_A; }
     bool is_national() const   { return symbol_mask == p_N; }
-    
+
     bool is_alphanumeric() const {
       auto bits = symbol_mask & p_alphanumeric_e;
       return 0 < bits && symbol_mask == bits;
@@ -572,7 +572,7 @@ namespace picture_validation {
       }
       return true;
     }
-    
+
     cbl_loc_t loc;
     char prior_ch;
     const char decimal_point;
@@ -590,7 +590,7 @@ namespace picture_validation {
     // 13.18.40.3 Syntax rules #27 No more than 1 of certain character
     // sequences.  This function misinterprets the rule.  The rule is not that
     // e.g. $$,$$ is invalid.  the rule is that the list items are mutually
-    // exclusive, $$Z is invalid.  Keeping the structure for now in case needed. 
+    // exclusive, $$Z is invalid.  Keeping the structure for now in case needed.
 #if 0
     bool contiguous_ok(char ch) const {
       int n = 0;
@@ -624,7 +624,7 @@ namespace picture_validation {
       }
       return true; // contiguous_ok(ch);
     }
-    
+
    public:
     const char *bad_repeat;
 
@@ -639,7 +639,7 @@ namespace picture_validation {
       , bad_repeat(nullptr)
     {
       // Trim trailing punctuation from picture for later revalidation, because
-      // we do. 
+      // we do.
       auto pic = xstrdup(picture);
       auto pend = pic + strlen(pic);
       if( pic < --pend ) {
@@ -655,7 +655,7 @@ namespace picture_validation {
     bool append( char ch, size_t len ) {
       if( prior_ch == '\0' ) {
         switch(ch) {
-        case 'S': case '+': case '-': 
+        case 'S': case '+': case '-':
           field_attr |= signable_e;
         }
       }
@@ -666,7 +666,7 @@ namespace picture_validation {
       picsym_set(ch);
       // emits message about invalid combinations
       if( ! is_allowed(ch) ) { return false; }
-      
+
       prior_ch = ch;
       add_capacity(len? len : 1);
       observe_the_dot(ch);
@@ -675,7 +675,7 @@ namespace picture_validation {
     }
     inline void move_caret( int n ) { loc += n; }
     bool has_s_star() const { return both(p_S, p_star); }
-    
+
     void extra_dot( size_t pos ) {
       if( field_data.picture[pos] != '\0') {
         assert(field_data.picture[pos+1] == '\0');
@@ -693,12 +693,12 @@ namespace picture_validation {
       case 'U':
       case 'Z': case '*':
       case 'B': case '0': // B and 0 but not slash
-      case '$': case '+': case '-': 
+      case '$': case '+': case '-':
         return true;
       }
       return false;
     }
-    
+
     char prior() const { return prior_ch; }
     cbl_field_data_t data() const { return field_data; }
     uint64_t attr() const { return field_attr; }
@@ -720,7 +720,7 @@ namespace picture_validation {
 
     void maybe_signable( char ch ) {
       switch(TOUPPER(ch)) {
-      case '+': case '-': 
+      case '+': case '-':
         field_attr |= signable_e;
       }
       dbgmsg("%s: '%c', %ssignable", __func__,
@@ -736,7 +736,7 @@ namespace picture_validation {
         break;
       }
     }
-    
+
     /*
      * The followers table is sensitive to whether we've seen decimal point, and
      * whether we're in an exponent.  That reflects the duplicate column
@@ -745,14 +745,14 @@ namespace picture_validation {
     bool day_follows_night( char ch ) const {
       const static std::string domain("*+,-./019ABENPSVXZCRDB");
       return std::string::npos != domain.find(ch);
-      
+
       auto p = followers.find( follow_key_t {pic_state, prior_ch} );
       if( p != followers.end() ) {
         const auto& candidates(p->second);
         auto pnext = std::find( candidates.begin(), candidates.end(), ch );
         return pnext != candidates.end();
       }
-      return false;    
+      return false;
     }
 
     inline bool first_dollar( char ch ) { return ch == '$' && ndollar == 0; }
@@ -765,27 +765,30 @@ namespace picture_validation {
      *    + (count of $ minus 1) + (count of - minus one) + (count of + minus 1)
      * 3) data.rdigits is the subset of 2 that is to the right of either V or
      *    . (edited) 
-     * 
-     * For the moment, break out the fact that V should add zero.  Right now
-     * all of the regression tests assume that V, if there, adds one.  I would
-     * really rather attack the V change when everything is working.
      */
     void add_capacity(int n) {
-      static const std::string nonsize( "P" );  // do not exclude V from capacity for now
-      if( prior_ch == 'P' ) {
+      switch( prior_ch ) {
+      case 'V':
+        n = 0; // only in debug message
+        break;
+      case 'P':
         np += n;
         field_attr |= scaled_e;
         // P in front has positive rdigit less one; P aft is negative rdigit.
-        int ndigit = only(p_P | p_S)? (1 < np? n : n - 1) : -n;
-        field_data.rdigits += ndigit;
-      } else {
+        {
+          int ndigit = only(p_P | p_S)? (1 < np? n : n - 1) : -n;
+          field_data.rdigits += ndigit;
+        }
+        n = 0; // only in debug message
+        break;
+      default:
         field_data.add_capacity(n);
         if( digital() ) {
-          field_data.digits += n; 
+          field_data.digits += n;
           if( pic_state == postdec_e ) {
             field_data.rdigits += n;
           }
-        } else { n = 0; } // for debug
+        }
       }
       dbgmsg("%s: '%c', added %d: {%u, %u,%d}", __func__, prior_ch, n,
              field_data.capacity(), field_data.digits, field_data.rdigits);
@@ -801,7 +804,7 @@ namespace picture_validation {
       case '9': case 'Z': case '*':
         return true;
       case 'V':
-        return true;
+        return false;
       case '+':
         return 0 < nplus++;
       case '-':
@@ -860,7 +863,7 @@ class picture_t : public lex_picture_t {
   {
     attr = none_e;
     pos = 0;
-    blank_when_zero_ok = true; 
+    blank_when_zero_ok = true;
     type = FldInvalid;
     encoding = current_encoding('A');
     data = new cbl_field_data_t;
@@ -926,10 +929,10 @@ class picture_t : public lex_picture_t {
   }
 };
 
-lex_picture_t  
+lex_picture_t
 is_valid_picture(const cbl_loc_t& loc, const char picture[]) {
   picture_validation::constraint_t constraint(loc, picture);
-  
+
   const picture_validation::automaton_matrix_t&
     automaton = picture_validation::prepare_automaton();
 
@@ -944,11 +947,11 @@ is_valid_picture(const cbl_loc_t& loc, const char picture[]) {
    * If a currency has a symbol, width is set to its length until appended,
    * then becomes 1.
    */
-  size_t width = 0; 
+  size_t width = 0;
 
   for( ; p < epicture; p++, output.pos++ ) {
     // Advance lookahead past any count, which might be a name.
-    // No picture begins with a '('. 
+    // No picture begins with a '('.
     if( *p == '(' && p+1 < epicture  ) {
       if( constraint.repeatable() ) {
         const char *paren = p;
@@ -982,15 +985,15 @@ is_valid_picture(const cbl_loc_t& loc, const char picture[]) {
     }
 
     char ch = TOUPPER(*p);
-    
-    // Is the current character ever allowed to follow the prior? 
+
+    // Is the current character ever allowed to follow the prior?
     if( ! constraint.day_follows_night(ch) || constraint.first_dollar(ch)) {
       const char *currency = symbol_currency(ch);
       if( currency ) {
         ch = '$';
         width = width == 0? strlen(currency) : 1;
       } else {
-        dbgmsg("%s:%d: no %2lu: %c -> %c (%s)\n", __func__, __LINE__, 
+        dbgmsg("%s:%d: no %2lu: %c -> %c (%s)\n", __func__, __LINE__,
                (unsigned long)(p - picture), constraint.prior(), ch,
                picture_validation::state_str(constraint.picture_state()));
         return output;
@@ -1009,8 +1012,8 @@ is_valid_picture(const cbl_loc_t& loc, const char picture[]) {
       constraint.maybe_signable(state);
     } else {
       state = picture_validation::invalid_e;
-    } 
-      
+    }
+
     if( state == picture_validation::invalid_e ) {
       dbgmsg("%s:%d: automaton has no transition for %s '%c'",
              __func__, __LINE__, old_state, ch);
@@ -1067,12 +1070,12 @@ process_file(const char* filename) {
       return false;
     }
   }
-  
+
   char *picture = nullptr;
   size_t plen = 0;
   ssize_t len;
   int lineno = 0;
-  
+
   while( (len = getline(&picture, &plen, input)) != -1 ) {
     auto p = std::find(picture, picture + len, '\n');
     if( p < picture + len ) *p = '\0';
@@ -1084,7 +1087,7 @@ process_file(const char* filename) {
 int
 main(int argc, char* argv[]) {
   int opt;
-  bool fOK; 
+  bool fOK;
   const char *picture = nullptr;
 
   while ((opt = getopt(argc, argv, "p:v")) != -1) {
@@ -1109,7 +1112,7 @@ main(int argc, char* argv[]) {
       fOK = process_file(nullptr);
     }
   }
-  
+
   return fOK ? 0 : 1;
 }
 

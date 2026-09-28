@@ -7573,7 +7573,7 @@ parser_label_goto(struct cbl_label_t *label)
 
 void
 parser_setop( struct cbl_field_t *tgt,
-              struct cbl_field_t *candidate,
+              struct cbl_refer_t &candidate,
               enum setop_t op,
               struct cbl_field_t *domain)
   {
@@ -7582,7 +7582,7 @@ parser_setop( struct cbl_field_t *tgt,
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_FIELD(" ", tgt)
-    SHOW_PARSE_FIELD(" = ", candidate)
+    SHOW_PARSE_FIELD(" = ", candidate.field)
     if( op == is_op )
       {
       SHOW_PARSE_TEXT(" is_op ")
@@ -7592,13 +7592,13 @@ parser_setop( struct cbl_field_t *tgt,
     }
 
   CHECK_FIELD(tgt);
-  CHECK_FIELD(candidate);
+  CHECK_FIELD(candidate.field);
   CHECK_FIELD(domain);
 
   TRACE1
     {
     TRACE1_HEADER
-    TRACE1_FIELD("parser_setop: ", candidate, "")
+    TRACE1_REFER("parser_setop: ", candidate, "")
     TRACE1_TEXT(" ")
     TRACE1_TEXT(setop_str(op))
     TRACE1_FIELD(" ", domain, "")
@@ -7610,25 +7610,28 @@ parser_setop( struct cbl_field_t *tgt,
   switch(op)
     {
     case is_op:
-      switch(candidate->type)
+      switch(candidate.field->type)
         {
         case FldGroup:
         case FldAlphanumeric:
-          gg_assign(tgt->var_decl_node, gg_build_relational_expression(
-                      gg_call_expr(INT,
-                                   "__gg__setop_compare",
-                                   gg_get_address_of(candidate->var_decl_node),
-                                   member(domain, "initial"),
-                                   NULL_TREE),
-                      ne_op,
-                      integer_zero_node));
+          gg_assign(tgt->var_decl_node,
+                    gg_build_relational_expression(gg_call_expr(
+                             INT,
+                             "__gg__setop_compare",
+                             gg_get_address_of(candidate.field->var_decl_node),
+                             refer_offset(candidate),
+                             refer_size_source(candidate),
+                             member(domain, "initial"),
+                             NULL_TREE),
+                                                    ne_op,
+                                                    integer_zero_node));
           break;
         default:
           dbgmsg("%10s in %s:%d", __func__, __FILE__, __LINE__ );
           cbl_internal_error("candidate %s has unimplemented %<CVT_type%> %d(%s)",
-                             candidate->name,
-                             candidate->type,
-                             cbl_field_type_str(candidate->type));
+                             candidate.field->name,
+                             candidate.field->type,
+                             cbl_field_type_str(candidate.field->type));
           gcc_unreachable();
           break;
         }

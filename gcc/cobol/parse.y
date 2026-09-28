@@ -4939,7 +4939,11 @@ picture_clause: PIC signed PIC_P[fore] nines
                   }
                   field->set_attr(cbl_field_attr_t($PICTURE.attr));
                   field->data.apply_picture(*picture.data);
-                  field->blank_initial(picture.data->capacity());
+                  /* The following odd construction effectively multiplies the
+                     current capacity, which doesn't take stride() into
+                     account, by stride().  */
+                  field->set_capacity( field->data.capacity());
+                  field->blank_initial(field->data.capacity());
                 }
         |       NO_CONDITION { YYERROR; }
 
@@ -6904,13 +6908,13 @@ simple_cond:    kind_of_name
                   $$ = new_reference(new_temporary(FldConditional));
                   // symbol_find does not find FldClass symbols
                   struct symbol_elem_t *e = symbol_field(PROGRAM, 0, $domain);
-                  parser_setop($$->cond(), $1->field, is_op, cbl_field_of(e));
+                  parser_setop($$->cond(), *$1, is_op, cbl_field_of(e));
                 }
         |       cexpr NOT CLASS_NAME[domain] {
                   $$ = new_reference(new_temporary(FldConditional));
                   // symbol_find does not find FldClass symbols
                   struct symbol_elem_t *e = symbol_field(PROGRAM, 0, $domain);
-                  parser_setop($$->cond(), $1->field, is_op, cbl_field_of(e));
+                  parser_setop($$->cond(), *$1, is_op, cbl_field_of(e));
                   parser_logop($$->cond(), NULL, not_op, $$->cond());
                 }
         |       cexpr is OMITTED
@@ -15140,6 +15144,7 @@ dialect_words_set( cbl_dialect_t dialect ) {
   typedef bool (current_tokens_t::*wordop_func_t)(const cbl_loc_t& loc,
                           const cbl_name_t keyword,
                           const cbl_name_t alias);
+
   struct wordop_t {
     cbl_dialect_t dialect;
     wordop_func_t op;
