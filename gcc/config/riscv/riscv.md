@@ -3504,6 +3504,32 @@
     FAIL;
 })
 
+(define_expand "neg<mode>cc"
+  [(set (match_operand:GPR 0 "register_operand")
+	(if_then_else:GPR (match_operand 1 "comparison_operator")
+			  (neg:GPR (match_operand:GPR 2 "register_operand"))
+			  (match_operand:GPR 3 "register_operand")))]
+  ""
+{
+  rtx cmp = operands[1];
+  rtx cmp0 = XEXP (cmp, 0);
+  rtx cmp1 = XEXP (cmp, 1);
+
+  if (!INTEGRAL_MODE_P (GET_MODE (cmp0))
+      || !rtx_equal_p (operands[2], operands[3]))
+    FAIL;
+
+  rtx cmp_result = gen_reg_rtx (<MODE>mode);
+  riscv_expand_int_scc (cmp_result, GET_CODE (cmp), cmp0, cmp1);
+
+  rtx mask = gen_reg_rtx (<MODE>mode);
+  riscv_emit_unary (NEG, mask, cmp_result);
+  rtx xor_result = gen_reg_rtx (<MODE>mode);
+  riscv_emit_binary (XOR, xor_result, operands[2], mask);
+  riscv_emit_binary (PLUS, operands[0], xor_result, cmp_result);
+  DONE;
+})
+
 (define_expand "add<mode>cc"
   [(match_operand:GPR 0 "register_operand")
    (match_operand     1 "comparison_operator")
