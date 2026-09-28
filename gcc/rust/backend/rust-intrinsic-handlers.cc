@@ -26,6 +26,7 @@
 #include "rust-constexpr.h"
 #include "rust-session-manager.h"
 #include "rust-tree.h"
+#include "rust-tyty.h"
 #include "tree-core.h"
 #include "rust-gcc.h"
 #include "fold-const.h"
@@ -1036,6 +1037,53 @@ cttz_handler (Context *ctx, TyTy::FnType *fntype, bool nonzero)
   return fndecl;
 }
 
+static tree
+fop_fast (Context *ctx, TyTy::FnType *fntype, location_t locus,
+	  ArithmeticOrLogicalOperator op)
+{
+  // fast float ops intrinsics have two parameters
+  rust_assert (fntype->get_params ().size () == 2);
+
+  // and one generic parameter
+  rust_assert (fntype->get_num_substitutions () == 1);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  auto &lhs_param = param_vars.at (0);
+  auto &rhs_param = param_vars.at (1);
+  rust_assert (param_vars.size () == 2);
+
+  if (!Backend::function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  // BUILTIN rotate FN BODY BEGIN
+  tree lhs = Backend::var_expression (lhs_param, UNDEF_LOCATION);
+  tree rhs = Backend::var_expression (rhs_param, UNDEF_LOCATION);
+
+  tree result_expr
+    = Backend::arithmetic_or_logical_expression (op, lhs, rhs, locus);
+
+  auto return_statement
+    = Backend::return_statement (fndecl, result_expr, UNDEF_LOCATION);
+
+  ctx->add_statement (return_statement);
+  // BUILTIN rotate FN BODY END
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
 } // namespace inner
 
 const HandlerBuilder
@@ -1043,6 +1091,14 @@ op_with_overflow (tree_code op)
 {
   return [op] (Context *ctx, TyTy::FnType *fntype, location_t) {
     return inner::op_with_overflow (ctx, fntype, op);
+  };
+}
+
+HandlerBuilder
+fop_fast (ArithmeticOrLogicalOperator op)
+{
+  return [op] (Context *ctx, TyTy::FnType *fntype, location_t locus) {
+    return inner::fop_fast (ctx, fntype, locus, op);
   };
 }
 
