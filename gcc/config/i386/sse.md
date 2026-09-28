@@ -2021,7 +2021,7 @@
   "TARGET_SSE2 && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL
    && ix86_operands_ok_for_move_multiple (operands, true, DFmode)"
   [(set (match_dup 2) (match_dup 5))]
-  "operands[5] = adjust_address (operands[1], V2DFmode, 0);")
+  "operands[5] = widen_memory_access (operands[1], V2DFmode, 0);")
 
 (define_peephole2
   [(set (match_operand:DF 0 "sse_reg_operand")
@@ -2033,7 +2033,7 @@
    && REGNO (operands[4]) == REGNO (operands[2])
    && ix86_operands_ok_for_move_multiple (operands, true, DFmode)"
   [(set (match_dup 2) (match_dup 5))]
-  "operands[5] = adjust_address (operands[1], V2DFmode, 0);")
+  "operands[5] = widen_memory_access (operands[1], V2DFmode, 0);")
 
 ;; Merge movlpd/movhpd to movupd for TARGET_SSE_UNALIGNED_STORE_OPTIMAL targets.
 (define_peephole2
@@ -2046,7 +2046,7 @@
   "TARGET_SSE2 && TARGET_SSE_UNALIGNED_STORE_OPTIMAL
    && ix86_operands_ok_for_move_multiple (operands, false, DFmode)"
   [(set (match_dup 4) (match_dup 1))]
-  "operands[4] = adjust_address (operands[0], V2DFmode, 0);")
+  "operands[4] = widen_memory_access (operands[0], V2DFmode, 0);")
 
 (define_insn "<sse3>_lddqu<avxsizesuffix>"
   [(set (match_operand:VI1 0 "register_operand" "=x,x")

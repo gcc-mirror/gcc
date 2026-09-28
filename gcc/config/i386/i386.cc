@@ -28079,6 +28079,15 @@ ix86_operands_ok_for_move_multiple (rtx *operands, bool load,
     {
       mem_1 = operands[1];
       mem_2 = operands[3];
+      /* Avoid fusing two loads from distinct parameters as that might
+	 cause STLF failure.  */
+      tree base_1;
+      if (MEM_EXPR (mem_1)
+	  && MEM_EXPR (mem_2)
+	  && (TREE_CODE (base_1 = get_base_address (MEM_EXPR (mem_1)))
+	      == PARM_DECL)
+	  && get_base_address (MEM_EXPR (mem_2)) != base_1)
+	return false;
       reg_1 = operands[0];
       reg_2 = operands[2];
     }

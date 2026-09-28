@@ -15,9 +15,9 @@ v2df f0m() { return (v2df){ 0.0, m }; }
 v2df fmm() { return (v2df){ m, m }; }
 v2df fmn() { return (v2df){ m, n }; }
 
-/* { dg-final { scan-assembler-times "movq" 5 } } */
+/* { dg-final { scan-assembler-times "movq" 4 } } */
 /* { dg-final { scan-assembler-times "pslldq" 2 } } */
 /* { dg-final { scan-assembler-times "unpcklpd" 2 } } */
-/* { dg-final { scan-assembler-times "movsd" 3 } } */
+/* { dg-final { scan-assembler-times "movsd" 4 } } */
 /* { dg-final { scan-assembler-times "movhpd" 2 } } */
 
