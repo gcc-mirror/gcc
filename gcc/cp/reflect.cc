@@ -7087,16 +7087,17 @@ class_members_of (location_t loc, const constexpr_ctx *ctx, tree r,
     {
       tree m = field;
       if (TREE_CODE (field) == FIELD_DECL && DECL_ARTIFICIAL (field))
-	continue; /* Ignore bases and the vptr.  */
+	/* Ignore bases and the vptr.  */
+	continue;
+      else if (DECL_CLONED_FUNCTION_P (field))
+	/* Ignore cloned cdtors.  */
+	continue;
       else if (DECL_SELF_REFERENCE_P (field))
 	continue;
       else if (TREE_CODE (field) == TYPE_DECL)
 	m = TREE_TYPE (field);
       else if (TREE_CODE (field) == FUNCTION_DECL)
 	{
-	  /* Ignore cloned cdtors.  */
-	  if (DECL_CLONED_FUNCTION_P (field))
-	    continue;
 	  /* Ignore functions with unsatisfied constraints.  */
 	  if (!constraints_satisfied_p (field))
 	    continue;
