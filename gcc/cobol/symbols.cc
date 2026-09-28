@@ -2185,6 +2185,25 @@ symbol_parent( const struct symbol_elem_t *e ) {
   return p;
 }
 
+void
+update_prior_invalid_field( const cbl_field_t *field) {
+  symbol_elem_t *e = field? symbol_at(field->our_index) :  symbols_end();
+  e--;
+  if( e->type == SymDataSection ) e--;
+  if( (e)->type == SymField ) {
+    auto f = cbl_field_of(e);
+    if( ! field ) field = f; // fake it
+    if( field->level <= f->level ) {
+      if( f->type == FldInvalid && f->data.has_initial_value() ) {
+        if( f->has_attr(quoted_e) || is_figconst(f) ) {
+          f->type = FldAlphanumeric;
+          assert(0 < f->char_capacity());
+        }
+      }
+    }
+  }
+}
+
 static bool
 had_picture( const cbl_field_t *field ) {
   if( is_elementary(field->type) ) {
@@ -2211,7 +2230,7 @@ had_picture( const cbl_field_t *field ) {
 
 void
 name_queue_t::dump( const char tag[] ) const {
-  if( ! (yydebug ) ) return;
+  if( yydebug ) {
     int i=0;
     for( const auto& namelocs : this->c ) {
       static char line[256];
@@ -2227,6 +2246,7 @@ name_queue_t::dump( const char tag[] ) const {
       dbgmsg("name_queue: %s: is empty", tag);
     }
   }
+}
 
 #if 0
 /*

@@ -343,7 +343,8 @@ void
 cdf_field_add( const cbl_loc_t& loc, const std::string& name, const cdfval_t& value ) {
   if( symbols_begin() < symbols_end() ) {
     cbl_field_t field = cdf_literalize(loc, name, value);
-    symbol_field_add(current_program_index(), &field);
+    auto e = symbol_field_add(current_program_index(), &field);
+    update_prior_invalid_field( cbl_field_of(e) );
   }
 }
 

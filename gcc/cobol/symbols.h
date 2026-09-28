@@ -3285,6 +3285,8 @@ enum cbl_field_type_t symbol_field_type( size_t program, const char name[] );
 
 struct symbol_elem_t * symbol_parent( const symbol_elem_t *e );
 
+void update_prior_invalid_field( const cbl_field_t *field = nullptr);
+
 int length_of_picture(const char *picture);
 int rdigits_of_picture(const char *picture);
 int  digits_of_picture(const char *picture, bool for_rdigits);
