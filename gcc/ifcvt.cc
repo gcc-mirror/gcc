@@ -6114,6 +6114,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
 	: recog_memoized (x) < 0)
       return false;
 
+  if (noce_clobbers_live_cc_p (test_bb, seq))
+    return false;
+
   /* Emit the new insns before cond_earliest.  */
   emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATION (trap));
 

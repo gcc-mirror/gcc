@@ -8564,6 +8564,15 @@ proc check_effective_target_ultrasparc_vis3_hw { } {
     } "-mcpu=niagara3"]
 }
 
+# Return 1 if the test environment supports executing SPARC compare-and-branch
+# instructions.  We check this by attempting: "cwbe %g0, %g0, .+4"
+
+proc check_effective_target_cbcond_hw { } {
+    return [check_runtime cbcond_hw {
+	int main() { __asm__(".word 0x12c00020"); return 0; }
+    } "-mcpu=niagara4"]
+}
+
 # Return 1 if this is a SPARC-V9 target.
 
 proc check_effective_target_sparc_v9 { } {

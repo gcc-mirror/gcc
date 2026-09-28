@@ -2758,6 +2758,10 @@ Target supports the execution of @code{avxvnniint16} instructions.
 Target runtime permits dereferencing a null pointer without trapping, for
 example because address zero is mapped and readable.
 
+@item cbcond_hw
+Test system can execute SPARC compare-and-branch (@code{cbcond})
+instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 
