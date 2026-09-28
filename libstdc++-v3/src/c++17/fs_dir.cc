@@ -514,13 +514,23 @@ fs::recursive_directory_iterator::__erase(error_code* ecptr)
 	{
 	  // We did not have a cached type, so it's possible that top.entry
 	  // is actually a directory, and that's why the unlink above failed.
+	  const int err = ec.value();
 #ifdef EPERM
 	  // POSIX.1-2017 says unlink on a directory returns EPERM,
 	  // but LSB allows EISDIR too. Some targets don't even define EPERM.
-	  if (ec.value() == EPERM || ec.value() == EISDIR)
+	  bool is_dir = err == EPERM || err == EISDIR;
 #else
-	  if (ec.value() == EISDIR)
+	  bool is_dir = err == EISDIR;
 #endif
+#if ! _GLIBCXX_HAVE_UNLINKAT
+	  // Without unlinkat, _Dir::unlink uses ::remove, which retries as
+	  // rmdir for a directory. Unlinking a *non-empty* directory then
+	  // reports "directory not empty" instead of the errno for unlink
+	  // on a directory, so treat that as a directory too. POSIX allows
+	  // either ENOTEMPTY or EEXIST for that condition.
+	  is_dir = is_dir || err == ENOTEMPTY || err == EEXIST;
+#endif
+	  if (is_dir)
 	    {
 	      // Retry, treating it as a directory.
 	      top.entry._M_type = file_type::directory;
