@@ -4367,18 +4367,35 @@ cbl_field_t::encode( size_t srclen, cbl_loc_t loc ) {
         gcc_assert(0 < inbytesleft);
         if( loc.first_line == 0 )
           loc = symbol_field_location(field_index(this));
-        if( type == FldNumericEdited ) {
+        switch( type ) {
+        case FldNumericEdited:
           // Tolerate trailing zeros for P-values
           if( data.rdigits < 0 ) {
             if( inbytesleft <= size_t(data.rdigits * -1) ) {
-             bool all_zeros = std::all_of(reinterpret_cast<const char*>(inbuf),
-                                          data.original() + srclen,
-                                          [](char ch) {
-                                            return '0' == ch;
-                                          });
+              bool all_zeros = std::all_of(reinterpret_cast<const char*>(inbuf),
+                                           data.original() + srclen,
+                                           [](char ch) {
+                                             return '0' == ch;
+                                           });
               if( all_zeros ) return nullptr;
             }
           }
+          break;
+        default:
+          if( ! is_numeric(this) ) {
+            bool all_blank = std::all_of(reinterpret_cast<const char*>(inbuf),
+                                         data.original() + srclen,
+                                         [](char ch) {
+                                           return 0x20 == ch;
+                                         });
+            if( all_blank ) {
+              cbl_message(loc, MfValueClause,
+                          "VALUE %qs is too long to initialize %qs, discarded %qs",
+                          data.original(), name, inbuf);
+              return nullptr;
+            }
+          }
+          break;
         }
         error_msg( loc,
                    "VALUE %qs is too long to initialize %qs, discarded %qs",

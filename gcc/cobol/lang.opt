@@ -154,6 +154,11 @@ Wdisplay-screen
 Cobol Warning Var(display_screen, 1) Init(1)
 Warn if DISPLAY WITH screen options is used.
 
+; MfInitialValue
+Wvalue-clause
+Cobol Warning Var(value_clause, 1) Init(1)
+Warn if VALUE has too many trailing blanks.
+
 ; MfTrailing
 Winspect-trailing
 Cobol Warning Var(inspect_trailing, 1) Init(1)

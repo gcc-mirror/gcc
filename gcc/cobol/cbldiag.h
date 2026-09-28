@@ -52,7 +52,7 @@ const char * cobol_filename();
 #endif
 
 /*
- * Enumerations do not depend on anything else. 
+ * Enumerations do not depend on anything else.
  */
 
 enum cbl_gcobol_feature_t {
@@ -74,7 +74,7 @@ cbl_call_convention_t current_call_convention();
 
 
 /*
- * CDF state does not require types that would be defined in another file. 
+ * CDF state does not require types that would be defined in another file.
  */
 void cdf_push();
 void cdf_push_call_convention();
@@ -108,7 +108,7 @@ struct cbl_loc_t : public cbl_loc_base_t {
   cbl_loc_t() = default; // cppcheck-suppress uninitDerivedMemberVar
 
   cbl_loc_t(   int first_line, int first_column,
-               int last_line,  int last_column ) 
+               int last_line,  int last_column )
     : cbl_loc_base_t {
         first_line , first_column,
         last_line, last_column
@@ -116,7 +116,7 @@ struct cbl_loc_t : public cbl_loc_base_t {
   {}
   // cppcheck-suppress noExplicitConstructor
   cbl_loc_t( const cbl_loc_base_t& base )
-    : cbl_loc_base_t(base)   
+    : cbl_loc_base_t(base)
   {}
 
   explicit cbl_loc_t(   int line )
@@ -149,7 +149,7 @@ struct cbl_loc_t : public cbl_loc_base_t {
   }
 
   // Represent a multi-line location as the first line, so "included from"
-  // reflects where the COPY statement appears, not where it ends. 
+  // reflects where the COPY statement appears, not where it ends.
   cbl_loc_t as_first_line() const {
     cbl_loc_t loc(*this);
     loc.last_line = first_line;
@@ -171,10 +171,10 @@ static_assert(std::is_trivially_copyable<cbl_loc_t>::value,
 const cbl_loc_t& cobol_location();
 
 enum cbl_diag_id_t : uint64_t {
-  CdfNotFoundW, 
+  CdfNotFoundW,
   CdfParameterW,
-  
-  EcUnknownW, 
+
+  EcUnknownW,
 
   LexIncludeE,
   LexIncludeOkN,
@@ -190,50 +190,51 @@ enum cbl_diag_id_t : uint64_t {
   IbmContentExpr,
   IbmEjectE,
   IbmEqualAssignE,
-  IbmLengthOf, 
+  IbmLengthOf,
   IbmProcedurePointer,
   IbmSectionNegE,
   IbmSectionRangeE,
   IbmSectionSegmentW,
   IbmStopNumber,
-  IbmVolatileE,  
+  IbmVolatileE,
   IbmVolatileW,  // dialect warning for ignored syntax
 
   IsoAssignFile,
   IsoRedefinesGrow,
   IsoResume,
 
+  MfAnyLength,
   MfAssignExternal,
   MfBinaryLongLong,
   MfCallGiving,
   MfCallLiteral,
-  MfDisplayScreen, 
-  MfCdfDollar, 
+  MfCdfDollar,
   MfComp6,
   MfCompX,
+  MfDisplayScreen,
   MfHexNumeric,
-  MfLevel_1_Occurs, 
   MfLevel78,
-  MfAnyLength, 
-  MfMoveIndex, 
-  MfMovePointer, 
+  MfLevel_1_Occurs,
+  MfMoveIndex,
+  MfMovePointer,
   MfRedefinesFirst,
   MfRedefinesTable,
   MfReturningNum,
   MfSetNumeric,
   MfTrailing,
   MfUsageTypename,
-  
+  MfValueClause,
+
   Par78CdfDefinedW,
   ParDynamicCall,
-  ParIconvE, 
+  ParIconvE,
   ParInfoI,
   ParLangInfoW,
-  ParLiteral2W, 
+  ParLiteral2W,
   ParLocaleW,
   ParNoCorrespondingW,
-  ParNumstrW, 
-  ParUnresolvedProcE, 
+  ParNumstrW,
+  ParUnresolvedProcE,
 
   SynApplyCommit,
   SynFileCodeSet,

@@ -97,6 +97,7 @@
 .Op Fl Wno-redefines-grow
 .Op Fl Wno-set-locale-to
 .Op Fl Wno-set-to-locale
+.Op Fl Wno-value-clause
 .Ar filename Op ...
 .
 .Sh DESCRIPTION
@@ -719,6 +720,8 @@ Warn if SECTION segments are used.
 Warn if SET LOCALE ... TO is used.
 .It Fl Wno-set-to-locale
 Warn if SET ... TO LOCALE is used.
+.It Fl Wno-value-clause
+Warn if VALUE has too many trailing blanks.
 .
 `.\" convert errors to warnings
 Warn if a line directive is malformed (instead of error).

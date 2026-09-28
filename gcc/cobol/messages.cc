@@ -165,6 +165,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { MfSetNumeric, "-Wset-numeric", diagnostics::kind::error, dialect_mf_gnu },
   { MfTrailing, "-Winspect-trailing", diagnostics::kind::error, dialect_mf_gnu },
   { MfUsageTypename, "-Wusage-typename", diagnostics::kind::error, dialect_mf_gnu },
+  { MfValueClause, "-Wvalue-clause", diagnostics::kind::error, dialect_mf_gnu },
 
   { LexIncludeE, "-Winclude-file-not-found", diagnostics::kind::error }, 
   { LexIncludeOkN, "-Winclude-file-found", diagnostics::kind::note }, 

@@ -115,81 +115,6 @@ namespace picture_validation {
     return "???";
   }
 
-  struct follow_key_t {
-    state_t state;
-    char ch;
-    bool operator< (const follow_key_t& that ) const {
-      if( state == that.state ) {
-        return ch < that.ch;
-      }
-      return state < that.state;
-    }
-  };
-
-  /*
-   * The followers table enforces the merest of syntax: in a picture string,
-   * what character may follow another?  It reproduces ISO table 10 in
-   * programmatic form.
-   *
-   * "The symbol '+' that appears in a column and in a row by itself,
-   *  represents its use in the exponent part of character-string-1 for a
-   *  floating-point numeric-edited item.
-   *
-   *  The symbols '+' and '-' when used as a non-floating insertion symbol
-   *  appear in two columns and two rows. The leftmost column and the uppermost
-   *  row for these symbols represent their use as the first symbol in
-   *  character-string-1. The rightmost column and the lowermost row for these
-   *  symbols represent its use as the last or penultimate symbol in
-   *  character-string-1.
-   *
-   *  The symbol '+' that appears in a column and in a row by itself,
-   *  represents its use in the exponent."
-   */
-
-#define dot '.'
-#define com ','
-  typedef std::array<char, 64> follow_t;
-  static const std::map <follow_key_t, follow_t> followers {
-    /* all   */ { { none_e,       '\0' }, {""  "*+,-./$019ABENPSVXZCD"} },
-    /*     1 */ { { antedec_e,     '1' }, {"(" "1"} },
-    /*   B0/ */ { { antedec_e,     'B' }, {""  "B0/,.Z*+-$9AXVPNECD"} },
-    /*   B0/ */ { { postdec_e,     'B' }, {""  "B0/,.Z*+-$9AXVPNECD"} }, // ante & post
-    /*   B0/ */ { { antedec_e,     '0' }, {""  "B0/,.Z*+-$9AXVPNECD"} },
-    /*   B0/ */ { { postdec_e,     '0' }, {""  "B0/,.Z*+-$9AXVPNECD"} }, // ante & post
-    /*   B0/ */ { { antedec_e,     '/' }, {""  "B0/,.Z*+-$9AXVPNECD"} },
-    /*   B0/ */ { { postdec_e,     '/' }, {""  "B0/,.Z*+-$9AXVPNECD"} }, // ante & post
-    /*     + */ { { exponent_e,    '+' }, {""  "9"} },
-    /*     , */ { { antedec_e,     com }, {""  "B0/,.Z*+-$9VPE"} },
-    /*     . */ { { antedec_e,     dot }, {""  "B0/,Z*+-$9E"} },
-    /*     . */ { { postdec_e,     dot }, {""  "B0/,Z*+-$9E"} },  // ante & post
-    /*    +- */ { { antedec_e,     '+' }, {""  "B0/,.+-Z*$9VPE"} },
-    /*    +- */ { { antedec_e,     '-' }, {""  "B0/,.+-Z*$9VPE"} },
-    /*    Z* */ { { antedec_e,     'Z' }, {"(" "B0/,.+-Z*$9VP"} },
-    /*    Z* */ { { postdec_e,     'Z' }, {""  "B0/,+-Z*"} },
-    /*    Z* */ { { antedec_e,     '*' }, {""  "B0/,.+Z*$9VPCD"} },
-    /*    Z* */ { { postdec_e,     '*' }, {""  "B0/,+Z*CD"} },
-    /*     + */ { { antedec_e,     '+' }, {""  "B0/,.+-$9VP"} },
-    /*     + */ { { postdec_e,     '+' }, {""  "B0/,+-"} },
-    /*    cs */ { { antedec_e,     '$' }, {""  "B0/Z*,.+$9VP"} },
-    /*    cs */ { { postdec_e,     '$' }, {""  "B0/Z*,+"} },
-    /*     9 */ { { antedec_e,     '9' }, {"(" "B0/,.+-$9AXVPECD"} },
-    /*     9 */ { { postdec_e,     '9' }, {"(" "B0/,.+-$9AXVPECD"} }, // ante & post
-    /*    AX */ { { antedec_e,     'A' }, {"(" "B0/$9AX"} },
-    /*    AX */ { { antedec_e,     'X' }, {"(" "B0/$9AX"} },
-    /*     S */ { { antedec_e,     'S' }, {""  "9VP"} },
-    /*     V */ { { postdec_e,     'V' }, {""  "B0/,+Z*+-$9P"} },
-    /*     P */ { { antedec_e,     'P' }, {"(" "+V9P"} },
-    /*     P */ { { postdec_e,     'P' }, {"(" "B0/,+Z*$P"} },
-    /*     1 */ { { antedec_e,     '1' }, {""  "1"} },
-    /*     N */ { { antedec_e,     'N' }, {"(" "B0/N"} },
-    /*     E */ { { antedec_e,     'E' }, {""  "+9"} },
-
-    /* CR/DB */ { { antedec_e,     'C' }, {""  "R"} },
-    /* CR/DB */ { { antedec_e,     'D' }, {""  "B"} },
-    /* CR/DB */ { { postdec_e,     'C' }, {""  "R"} },
-    /* CR/DB */ { { postdec_e,     'D' }, {""  "B"} },
-  };
-
   ////////////////////////////////////////////////////////////////
 
   struct transition_t {
@@ -220,6 +145,9 @@ namespace picture_validation {
         &&   ch == that.ch;
     }
   };
+
+#define dot '.'
+#define com ','
 
   static std::vector<transition_t> picture_rules {
     // Alpha and Alphanumeric
@@ -773,22 +701,9 @@ namespace picture_validation {
       }
     }
 
-    /*
-     * The followers table is sensitive to whether we've seen decimal point, and
-     * whether we're in an exponent.  That reflects the duplicate column
-     * headings in ISO Table 10.
-     */
     bool day_follows_night( char ch ) const {
       const static std::string domain("*+,-./019ABENPSVXZCRDB");
       return std::string::npos != domain.find(ch);
-
-      auto p = followers.find( follow_key_t {pic_state, prior_ch} );
-      if( p != followers.end() ) {
-        const auto& candidates(p->second);
-        auto pnext = std::find( candidates.begin(), candidates.end(), ch );
-        return pnext != candidates.end();
-      }
-      return false;
     }
 
     inline bool first_dollar( char ch ) { return ch == '$' && ndollar == 0; }
