@@ -76,6 +76,10 @@ along with GCC; see the file COPYING3.  If not see
 #define LOG_COSTS 0
 #define FORCE_LOWERING 0
 
+/* True if a CONCATN was created by decompose_register.  */
+#define DECOMPOSED_REGISTER_P(x) \
+  (RTL_FLAG_CHECK1 ("DECOMPOSED_REGISTER_P", (x), CONCATN)->volatil)
+
 /* Bit N in this bitmap is set if regno N is used in a context in
    which we can decompose it.  */
 static bitmap decomposable_context;
@@ -650,6 +654,7 @@ decompose_register (unsigned int regno)
     RTVEC_ELT (v, i) = gen_reg_rtx_offset (reg, word_mode, i * UNITS_PER_WORD);
 
   PUT_CODE (reg, CONCATN);
+  DECOMPOSED_REGISTER_P (reg) = true;
   XVEC (reg, 0) = v;
 
   if (dump_file)
@@ -659,6 +664,26 @@ decompose_register (unsigned int regno)
 	fprintf (dump_file, " %u", REGNO (XVECEXP (reg, 0, i)));
       fputc ('\n', dump_file);
     }
+}
+
+/* Return whether we should resolve X into the registers into which it
+   was decomposed.  */
+
+static bool
+resolve_reg_p (rtx x)
+{
+  return GET_CODE (x) == CONCATN && DECOMPOSED_REGISTER_P (x);
+}
+
+/* Return whether X is a SUBREG of a register which we need to
+   resolve.  */
+
+static bool
+resolve_subreg_p (rtx x)
+{
+  if (GET_CODE (x) != SUBREG)
+    return false;
+  return resolve_reg_p (SUBREG_REG (x));
 }
 
 /* Get a SUBREG of a CONCATN.  */
@@ -672,6 +697,8 @@ simplify_subreg_concatn (machine_mode outermode, rtx op, poly_uint64 orig_byte)
   unsigned int final_offset;
   unsigned int byte;
 
+  gcc_assert (resolve_reg_p (op));
+
   innermode = GET_MODE (op);
 
   if (!interesting_mode_p (innermode, &inner_size, &inner_words))
@@ -682,7 +709,6 @@ simplify_subreg_concatn (machine_mode outermode, rtx op, poly_uint64 orig_byte)
 
   /* Must be constant if outer_size is.  */
   byte = orig_byte.to_constant ();
-  gcc_assert (GET_CODE (op) == CONCATN);
   gcc_assert (byte % outer_size == 0);
 
   gcc_assert (byte < inner_size);
@@ -721,7 +747,7 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
      If OP is a SUBREG of a CONCATN, then it must be a simple mode
      change with the same size and offset 0, or it must extract a
      part.  We shouldn't see anything else here.  */
-  if (GET_CODE (op) == SUBREG && GET_CODE (SUBREG_REG (op)) == CONCATN)
+  if (resolve_subreg_p (op))
     {
       rtx op2;
 
@@ -749,7 +775,7 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
       gcc_assert (innermode == GET_MODE (op));
     }
 
-  if (GET_CODE (op) == CONCATN)
+  if (resolve_reg_p (op))
     return simplify_subreg_concatn (outermode, op, byte);
 
   ret = simplify_gen_subreg (outermode, op, innermode, byte);
@@ -763,26 +789,6 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
 
   gcc_assert (ret != NULL_RTX);
   return ret;
-}
-
-/* Return whether we should resolve X into the registers into which it
-   was decomposed.  */
-
-static bool
-resolve_reg_p (rtx x)
-{
-  return GET_CODE (x) == CONCATN;
-}
-
-/* Return whether X is a SUBREG of a register which we need to
-   resolve.  */
-
-static bool
-resolve_subreg_p (rtx x)
-{
-  if (GET_CODE (x) != SUBREG)
-    return false;
-  return resolve_reg_p (SUBREG_REG (x));
 }
 
 /* Look for SUBREGs in *LOC which need to be decomposed.  */
@@ -900,7 +906,7 @@ can_decompose_p (rtx x)
 static rtx
 resolve_operand_for_swap_move_operator (rtx opnd)
 {
-  gcc_assert (GET_CODE (opnd) == CONCATN);
+  gcc_assert (resolve_reg_p (opnd));
   rtx concatn = copy_rtx (opnd);
   rtx op0 = XVECEXP (concatn, 0, 0);
   rtx op1 = XVECEXP (concatn, 0, 1);
@@ -1263,11 +1269,12 @@ resolve_debug (rtx_insn *insn)
 
 	  if (x)
 	    *loc = x;
-	  else
-	    x = copy_rtx (*loc);
 	}
-      if (resolve_reg_p (x))
-	*loc = copy_rtx (x);
+      else if (resolve_reg_p (x))
+	{
+	  *loc = copy_rtx (x);
+	  DECOMPOSED_REGISTER_P (*loc) = false;
+	}
     }
 
   df_insn_rescan (insn);

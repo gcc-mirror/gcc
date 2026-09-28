@@ -361,6 +361,7 @@ struct GTY((desc("0"), tag("0"),
      In a PREFETCH, this flag indicates that it should be considered a
      scheduling barrier.
      1 in a CONCAT is VAL_NEEDS_RESOLUTION in var-tracking.cc.
+     1 in a CONCATN is used internally by lower-subreg.cc.
      Dumped as "/v" in RTL dumps.  */
   unsigned int volatil : 1;
   /* 1 in a REG if the register is used only in exit code a loop.
