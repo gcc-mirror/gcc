@@ -22499,9 +22499,12 @@ Compile for RDNA3 gfx1152 devices (GFX11 series). (Experimental)
 @item gfx1153
 Compile for RDNA3 gfx1153 devices (GFX11 series). (Experimental)
 
+@item gfx1154
+Compile for RDNA3 gfx1154 devices (GFX11 series). (Experimental)
+
 @item gfx11-generic
 Compile generic code for GFX11 devices, executable on gfx1100, gfx1101,
-gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153.
+gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, gfx1153, gfx1154.
 @end table
 
 @opindex mgang-private-size
