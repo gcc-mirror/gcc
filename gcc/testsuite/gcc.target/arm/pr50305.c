@@ -1,7 +1,8 @@
 /* { dg-do compile } */
-/* { dg-skip-if "incompatible options" { arm*-*-* } { "-march=*" } { "-march=armv7-a" } } */
 /* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
-/* { dg-options "-O2 -fno-omit-frame-pointer -marm -march=armv7-a -mfpu=vfp3" } */
+/* { dg-require-effective-target arm_arch_v7a_arm_ok } */
+/* { dg-options "-O2 -fno-omit-frame-pointer -mfpu=vfp3" } */
+/* { dg-add-options arm_arch_v7a_arm } */
 
 struct event {
  unsigned long long id;
