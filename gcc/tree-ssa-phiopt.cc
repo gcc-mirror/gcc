@@ -460,21 +460,63 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
       /* For constants only handle if the phi was the only one. */
       if (single_non_singleton_phi_for_edges (phi_nodes (merge), e0, e1) == NULL)
 	return false;
-      /* TODO: handle more than just casts here. */
-      if (!gimple_assign_cast_p (arg0_def_stmt))
+      /* TODO: handle more than just casts and ~/- here. */
+      if (!gimple_assign_cast_p (arg0_def_stmt)
+	  && arg0_op.code != NEGATE_EXPR
+	  && arg0_op.code != BIT_NOT_EXPR)
 	return false;
       if (!is_factor_profitable (arg0_def_stmt, merge, arg0_op.ops, arg0_op.num_ops))
 	return false;
 
+      // Heuristics for ~/-, is about being able to being able to handle
+      // `if (a) t = -1; else t = -(CMP);`
+      // and the like.  - is usually used for a mask to emulate a
+      // vector.
+      if (arg0_op.code == NEGATE_EXPR
+	  || arg0_op.code == BIT_NOT_EXPR)
+	{
+	  if (TREE_CODE (arg1) != INTEGER_CST
+	      || TREE_CODE (new_arg0) != SSA_NAME)
+	    return false;
+
+	  // For neg, only allow -1, 0 as those
+	  //  the only ones which will reduce.
+	  if (arg0_op.code == NEGATE_EXPR
+	      && !integer_zerop (arg1)
+	      && !integer_minus_onep (arg1))
+	    return false;
+	  // For ~, only allow -2 (~1), -1 (~0) as those
+	  //  the only ones which will reduce.
+	  if (arg0_op.code == BIT_NOT_EXPR
+	      && !integer_minus_onep (arg1)
+	      && ~wi::to_wide (arg1) != 1)
+	    return false;
+
+	  // Look to see if the -/~ comes from a cast from a boolean.
+	  gimple *arg0_def_def_stmt = SSA_NAME_DEF_STMT (new_arg0);
+	  if (gimple_bb (arg0_def_def_stmt) != gimple_bb (arg0_def_stmt))
+	    return false;
+	  if (!gimple_assign_cast_p (arg0_def_def_stmt))
+	    return false;
+	  tree_code ass_code = gimple_assign_rhs_code (arg0_def_def_stmt);
+	  if (!CONVERT_EXPR_CODE_P (ass_code))
+	    return false;
+	  tree rhs_type = TREE_TYPE (gimple_assign_rhs1 (arg0_def_def_stmt));
+	  if (!INTEGRAL_TYPE_P (rhs_type)
+	      || !TYPE_UNSIGNED (rhs_type)
+	      || TYPE_PRECISION (rhs_type) != 1)
+	    return false;
+	}
+
       /* If arg1 is an INTEGER_CST, fold it to new type if it fits, or else
 	 if the bits will not be modified during the conversion, except for
 	 boolean types whose precision is not 1 (see int_fits_type_p).  */
-      if (!INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
-	  || !(int_fits_type_p (arg1, TREE_TYPE (new_arg0))
-	       || (TYPE_PRECISION (TREE_TYPE (new_arg0))
-		   == TYPE_PRECISION (TREE_TYPE (arg1))
-		   && (TREE_CODE (TREE_TYPE (new_arg0)) != BOOLEAN_TYPE
-		       || TYPE_PRECISION (TREE_TYPE (new_arg0)) == 1))))
+      else if (!INTEGRAL_TYPE_P (TREE_TYPE (new_arg0))
+	       || !(int_fits_type_p (arg1, TREE_TYPE (new_arg0))
+		    || (TYPE_PRECISION (TREE_TYPE (new_arg0))
+			 == TYPE_PRECISION (TREE_TYPE (arg1))
+			&& (TREE_CODE (TREE_TYPE (new_arg0)) != BOOLEAN_TYPE
+			    || TYPE_PRECISION (TREE_TYPE (new_arg0)) == 1))))
 	return false;
 
       /* For the INTEGER_CST case, we are just moving the
@@ -488,11 +530,11 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
 	 etc.).  See PR71016.
 	 Note no-op conversions don't have this issue as
 	 it will not generate any zero/sign extend in that case.  */
-      if ((TYPE_PRECISION (TREE_TYPE (new_arg0))
-	   != TYPE_PRECISION (TREE_TYPE (arg1)))
-	  && new_arg0 != gimple_cond_lhs (cond_stmt)
-	  && new_arg0 != gimple_cond_rhs (cond_stmt)
-	  && gimple_bb (arg0_def_stmt) == e0->src)
+      else if ((TYPE_PRECISION (TREE_TYPE (new_arg0))
+		!= TYPE_PRECISION (TREE_TYPE (arg1)))
+	       && new_arg0 != gimple_cond_lhs (cond_stmt)
+	       && new_arg0 != gimple_cond_rhs (cond_stmt)
+	       && gimple_bb (arg0_def_stmt) == e0->src)
 	{
 	  gsi = gsi_for_stmt (arg0_def_stmt);
 	  gsi_prev_nondebug (&gsi);
@@ -531,7 +573,14 @@ factor_out_conditional_operation (edge e0, edge e1, basic_block merge,
 		return false;
 	    }
 	}
-      new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
+
+      // - is still the opposite of -, likewise for ~.
+      if (arg0_op.code == NEGATE_EXPR
+	  || arg0_op.code == BIT_NOT_EXPR)
+	new_arg1 = fold_build1 ((tree_code)arg0_op.code,
+				TREE_TYPE (new_arg0), arg1);
+      else
+	new_arg1 = fold_convert (TREE_TYPE (new_arg0), arg1);
 
       /* Drop the overflow that fold_convert might add. */
       if (TREE_OVERFLOW (new_arg1))
