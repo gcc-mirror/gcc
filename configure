@@ -744,6 +744,7 @@ CPPFLAGS
 LDFLAGS
 CFLAGS
 CC
+SHADOW_CALL_STACK_FLAG
 cpu_type
 target_subdir
 host_subdir
@@ -825,6 +826,7 @@ enable_as_accelerator_for
 enable_offload_targets
 enable_offload_defaulted
 enable_gold
+enable_shadow_call_stack
 enable_ld
 enable_gprofng
 enable_compressed_debug_sections
@@ -1570,6 +1572,9 @@ Optional Features:
 		compilers where those are in separate optional packages.
 
   --enable-gold[=ARG]     build gold [ARG={default,yes,no}]
+  --enable-shadow-call-stack
+                          enable shadow call stack instrumentation for runtime
+                          libraries [--disable-shadow-call-stack]
   --enable-ld[=ARG]       build ld [ARG={default,yes,no}]
   --disable-gprofng       do not build gprofng
   --enable-compressed-debug-sections={all,gas,gold,ld,none}
@@ -3194,6 +3199,35 @@ case "${ENABLE_GOLD}" in
     as_fn_error $? "invalid --enable-gold argument" "$LINENO" 5
     ;;
 esac
+
+# Check whether --enable-shadow-call-stack was given.
+if test "${enable_shadow_call_stack+set}" = set; then :
+  enableval=$enable_shadow_call_stack;
+else
+  enable_shadow_call_stack=no
+
+fi
+
+
+if test "x$enable_shadow_call_stack" != xno; then :
+  SHADOW_CALL_STACK_FLAG=--enable-shadow-call-stack
+
+else
+  SHADOW_CALL_STACK_FLAG=--disable-shadow-call-stack
+
+fi
+
+if test "x$enable_shadow_call_stack" != xno; then :
+
+  case "${target}" in
+    riscv*-*-elf)
+      ;;
+    *)
+      as_fn_error $? "--enable-shadow-call-stack: target not supported: \"${target}\"" "$LINENO" 5
+      ;;
+  esac
+
+fi
 
 # Check whether --enable-ld was given.
 if test "${enable_ld+set}" = set; then :

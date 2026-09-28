@@ -270,7 +270,7 @@ LIB2FUNCS_EXCLUDE =
 
 # List of extra C and assembler files to add to static and shared libgcc2.
 # Assembler files should have names ending in `.S'.
-LIB2ADD = 
+LIB2ADD =
 
 # List of extra C and assembler files to add to static libgcc2.
 # Assembler files should have names ending in `.S'.
@@ -307,7 +307,11 @@ CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   $(INHIBIT_LIBC_CFLAGS) $(USE_TM_CLONE_REGISTRY)
 
 # Extra flags to use when compiling crt{begin,end}.o.
-CRTSTUFF_T_CFLAGS =
+CRTSTUFF_T_CFLAGS = 
+
+# Forcibly add shadow call stack options
+override CFLAGS +=  @SHADOW_CALL_STACK_FLAGS_FOR_TARGET@
+override CRTSTUFF_T_CFLAGS += @SHADOW_CALL_STACK_FLAGS_FOR_TARGET@
 
 MULTIDIR := $(shell $(CC) $(CFLAGS) -print-multi-directory)
 MULTIOSDIR := $(shell $(CC) $(CFLAGS) -print-multi-os-directory)
@@ -869,7 +873,8 @@ endif
 # libgcc_eh.a, only LIB2ADDEH matters.  If we do, only LIB2ADDEHSTATIC and
 # LIB2ADDEHSHARED matter.  (Usually all three are identical.)
 
-c_flags := -fexceptions
+# Manually disable shadow call stack which is incompatible with -fexceptions
+c_flags := -fexceptions -fno-sanitize=shadow-call-stack
 
 ifeq ($(enable_shared),yes)
 

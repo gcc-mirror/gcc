@@ -163,6 +163,8 @@ extern bool riscv_zilsd_valid_mem_p (rtx, machine_mode);
 extern void riscv_set_return_address (rtx, rtx);
 extern rtx riscv_return_addr (int, rtx);
 extern poly_int64 riscv_initial_elimination_offset (int, int);
+extern void riscv_emit_shadow_stack_prologue();
+extern void riscv_emit_shadow_stack_epilogue(int style);
 extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (int);
 extern bool riscv_epilogue_uses (unsigned int);

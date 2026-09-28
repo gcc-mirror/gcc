@@ -324,6 +324,32 @@ else
   multilib_arg=
 fi
 
+AC_ARG_ENABLE(shadow-call-stack,
+	[AS_HELP_STRING([--enable-shadow-call-stack],
+		[enable shadow call stack instrumentation for runtime libraries @<:@--disable-shadow-call-stack@:>@])],
+	[],
+	[enable_shadow_call_stack=no]
+	)
+
+AS_IF([test "x$enable_shadow_call_stack" != xno], [
+  case "${target}" in
+    riscv*-*-elf)
+      ;;
+    *)
+      AC_MSG_ERROR([--enable-shadow-call-stack: target not supported: "${target}"])
+      ;;
+  esac
+])
+
+AS_IF([test "x$enable_shadow_call_stack" != xno], [
+  SHADOW_CALL_STACK_FLAGS_FOR_TARGET="-fsanitize=shadow-call-stack -mno-relax -fno-exceptions"
+], [
+  SHADOW_CALL_STACK_FLAGS_FOR_TARGET=""
+])
+
+AC_SUBST(SHADOW_CALL_STACK_FLAGS_FOR_TARGET)
+
+
 AC_CONFIG_FILES(Makefile testsuite/Makefile)
 AC_CONFIG_FILES(testsuite/libatomic-site-extra.exp)
 AC_OUTPUT

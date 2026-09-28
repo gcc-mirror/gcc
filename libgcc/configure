@@ -657,6 +657,7 @@ build_cpu
 build
 with_aix_soname
 enable_vtable_verify
+SHADOW_CALL_STACK_FLAGS_FOR_TARGET
 enable_shared
 libgcc_topdir
 target_alias
@@ -704,6 +705,7 @@ with_target_subdir
 with_cross_host
 with_ld
 enable_shared
+enable_shadow_call_stack
 enable_vtable_verify
 with_aix_soname
 enable_version_specific_runtime_libs
@@ -1346,6 +1348,9 @@ Optional Features:
   --disable-FEATURE       do not include FEATURE (same as --enable-FEATURE=no)
   --enable-FEATURE[=ARG]  include FEATURE [ARG=yes]
   --disable-shared        don't provide a shared libgcc
+  --enable-shadow-call-stack
+                          enable shadow call stack instrumentation for runtime
+                          libraries [--disable-shadow-call-stack]
   --enable-vtable-verify    Enable vtable verification feature
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
   --enable-maintainer-mode
@@ -2253,6 +2258,39 @@ if test "${enable_shared+set}" = set; then :
 
 else
   enable_shared=yes
+fi
+
+
+
+# Check whether --enable-shadow-call-stack was given.
+if test "${enable_shadow_call_stack+set}" = set; then :
+  enableval=$enable_shadow_call_stack;
+else
+  enable_shadow_call_stack=no
+
+fi
+
+
+if test "x$enable_shadow_call_stack" != xno; then :
+
+  case "${target}" in
+    riscv*-*-elf)
+      ;;
+    *)
+      as_fn_error $? "--enable-shadow-call-stack: target not supported: \"${target}\"" "$LINENO" 5
+      ;;
+  esac
+
+fi
+
+if test "x$enable_shadow_call_stack" != xno; then :
+
+  SHADOW_CALL_STACK_FLAGS_FOR_TARGET="-fsanitize=shadow-call-stack -mno-relax -fno-exceptions"
+
+else
+
+  SHADOW_CALL_STACK_FLAGS_FOR_TARGET=""
+
 fi
 
 

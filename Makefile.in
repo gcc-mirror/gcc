@@ -132,6 +132,8 @@ POSTSTAGE1_LDFLAGS = @poststage1_ldflags@
 # Libraries to use for stage2 and later.
 POSTSTAGE1_LIBS = @poststage1_libs@
 
+SHADOW_CALL_STACK_FLAG = @SHADOW_CALL_STACK_FLAG@
+
 # This is the list of variables to export in the environment when
 # configuring any subdirectory.  It must also be exported whenever
 # recursing into a build directory in case that directory's Makefile

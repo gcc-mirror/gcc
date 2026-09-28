@@ -417,6 +417,10 @@ SUBDIRS = testsuite
 gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 search_path = $(addprefix $(top_srcdir)/config/, $(config_path)) \
 	$(top_srcdir) $(top_builddir)
+  
+# Enable shadow call stack if --enable-shadow-call-stack is passed to configure 
+CFLAGS += @SHADOW_CALL_STACK_FLAGS_FOR_TARGET@
+CCASFLAGS += @SHADOW_CALL_STACK_FLAGS_FOR_TARGET@
 
 DEFAULT_INCLUDES = $(addprefix -I, $(search_path))
 AM_CFLAGS = $(XCFLAGS)

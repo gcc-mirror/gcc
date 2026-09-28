@@ -396,6 +396,27 @@ case "${ENABLE_GOLD}" in
     ;;
 esac
 
+AC_ARG_ENABLE(shadow-call-stack,
+	[AS_HELP_STRING([--enable-shadow-call-stack],
+		[enable shadow call stack instrumentation for runtime libraries @<:@--disable-shadow-call-stack@:>@])],
+	[],
+	[enable_shadow_call_stack=no]
+	)
+
+AS_IF([test "x$enable_shadow_call_stack" != xno],
+        [AC_SUBST(SHADOW_CALL_STACK_FLAG,--enable-shadow-call-stack)],
+	[AC_SUBST(SHADOW_CALL_STACK_FLAG,--disable-shadow-call-stack)])
+
+AS_IF([test "x$enable_shadow_call_stack" != xno], [
+  case "${target}" in
+    riscv*-*-elf)
+      ;;
+    *)
+      AC_MSG_ERROR([--enable-shadow-call-stack: target not supported: "${target}"])
+      ;;
+  esac
+])
+
 AC_ARG_ENABLE(ld,
 [AS_HELP_STRING([[--enable-ld[=ARG]]],
 		[build ld @<:@ARG={default,yes,no}@:>@])],

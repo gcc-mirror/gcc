@@ -68,6 +68,31 @@ AC_ARG_ENABLE(shared,
 ], [enable_shared=yes])
 AC_SUBST(enable_shared)
 
+AC_ARG_ENABLE(shadow-call-stack,
+	[AS_HELP_STRING([--enable-shadow-call-stack],
+		[enable shadow call stack instrumentation for runtime libraries @<:@--disable-shadow-call-stack@:>@])],
+	[],
+	[enable_shadow_call_stack=no]
+	)
+
+AS_IF([test "x$enable_shadow_call_stack" != xno], [
+  case "${target}" in
+    riscv*-*-elf)
+      ;;
+    *)
+      AC_MSG_ERROR([--enable-shadow-call-stack: target not supported: "${target}"])
+      ;;
+  esac
+])
+
+AS_IF([test "x$enable_shadow_call_stack" != xno], [
+  SHADOW_CALL_STACK_FLAGS_FOR_TARGET="-fsanitize=shadow-call-stack -mno-relax -fno-exceptions"
+], [
+  SHADOW_CALL_STACK_FLAGS_FOR_TARGET=""
+])
+
+AC_SUBST(SHADOW_CALL_STACK_FLAGS_FOR_TARGET)
+
 AC_ARG_ENABLE(vtable-verify,
 [  --enable-vtable-verify    Enable vtable verification feature ],
 [case "$enableval" in
