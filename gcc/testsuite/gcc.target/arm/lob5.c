@@ -2,8 +2,9 @@
    instructions.  Innermost loop has no fixed number of iterations
    therefore is not optimizable.  Outer loops are not optimized.  */
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main+fp -mthumb -O3 --save-temps" } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_ok } */
+/* { dg-options "-O3 --save-temps" } */
+/* { dg-add-options arm_arch_v8_1m_main } */
 #include <stdlib.h>
 #include "lob.h"
 

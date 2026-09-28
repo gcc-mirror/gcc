@@ -1,8 +1,9 @@
 /* Check that GCC does not generate Armv8.1-M low over head loop instructions
    if a non-inlineable function call takes place inside the loop.  */
 /* { dg-do compile } */
-/* { dg-skip-if "avoid conflicting multilib options" { *-*-* } { "-marm" "-mcpu=*" } } */
-/* { dg-options "-march=armv8.1-m.main+fp -mthumb -O3 --save-temps" } */
+/* { dg-require-effective-target arm_arch_v8_1m_main_ok } */
+/* { dg-options "-O3 --save-temps" } */
+/* { dg-add-options arm_arch_v8_1m_main } */
 #include <stdlib.h>
 #include "lob.h"
 
