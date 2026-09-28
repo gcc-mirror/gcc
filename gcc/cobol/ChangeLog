@@ -1,3 +1,70 @@
+2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (struct cbl_loc_t): Add operators to increment first_column.
+	(repeat_count): Declare function.
+	(parse_error_count): Same.
+	(cobol_location): Remove obsolete comment.
+	* cdf.y: Update token values.
+	* parse.y: Introduce PICTURE token.
+	(keyword_tok): Exclude CDF tokens to prevent false positives.
+	* parse_ante.h (struct arith_t): Better diagnositic.
+	(valid_operands): New function.
+	(parser_move_carefully): Reject invalid operands.
+	(parser_move2): Whitespace.
+	(parser_index): Same.
+	* picture.cc (picture_rules): Revise automaton.
+	(is_allowed):  Add PICTURE constraints.
+	(seek_paren): Add debug messages.
+	(is_valid_picture): Rewrote function.
+	(class picture_t): Capture PICTURE state to report to lexer.
+	* scan.l: Use is_valid_token for complex pictures.
+	* scan_ante.h (repeat_count): Use uint32_t, consistent with cbl_field_t.
+	* semantic_token.h: New file representing lex_picture_t.
+	* symbols.cc (parse_error_count): Remove declaration.
+	* symbols.h: Use std::array.
+	* symfind.cc (struct funcname): Whitespace.
+	(symbol_match): Use diagnositic quotes.
+	* token_names.h: Regenerate.
+	* util.cc (named_constant): Return type of constant.
+	(repeat_count): Accept location and return uint32_t.
+	(parse_error_count): Remove declaration.
+	* util.h (repeat_count): Same.
+
+2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* words/cdf.h: New file.
+	* words/intrinsic.h: New file.
+	* words/reserved.h: New file.
+
+2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* picture.cc (symbol_currency): Remove test harness mock-up.
+	(cbl_internal_error): Same.
+	(yy_flex_debug): Undefine, per usual.
+	(seek_paren): Use ISALNUM.
+	(is_valid_picture): Use repeat_count to resolve size.
+	* scan_ante.h (repeat_count): Remove declaration.
+	* util.cc (cbl_prototype_ok): Whitespace.
+	(cdf_file): Same.
+	(repeat_count): Same.
+	(cbl_field_t::encode_numeric): Same.
+	(cbl_field_t::report_invalid_initial_value): Same.
+	(literal_subscript_oob): Same.
+	(valid_move): Same.
+	(hex2numstr): Same.
+	(cobol_filename): Same.
+	(gcc_location_set): Same.
+	(parse_file): Same.
+	(iso_cobol_word): Same.
+	* util.h (repeat_count): Declare function.
+
+2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* Make-lang.in: Add gcc/cobol/picture.cc.
+	* scan.l: Replace validate_picture with is_valid_picture.
+	* scan_ante.h: Delete code that was commented out.
+	* picture.cc: New file.
+
 2026-09-25  Robert Dubner  <rdubner@symas.com>
 
 	* cobol1.cc (use_static_call): Change name of global function to

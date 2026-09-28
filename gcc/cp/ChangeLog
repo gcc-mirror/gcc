@@ -1,3 +1,11 @@
+2026-09-27  Steven Sudit  <stevensudit@gmail.com>
+
+	PR c++/127218
+	* constexpr.cc (cxx_eval_builtin_function_call): Clear STRRET
+	when the argument it refers to is not replaced by the address of
+	a STRING_CST, so the folded result is re-based on the original
+	argument only when that replacement happened.
+
 2026-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/127385

@@ -1,3 +1,18 @@
+2026-09-27  Cupertino Miranda  <cupertinomiranda@gmail.com>
+
+	* a68-lang.cc (a68_init): Anticipate the execution of
+	a68_init_ranges.
+	(get_global_context): Removed function.
+	(pushdecl): Replace call to get_global_context by
+	a68_range_context.
+	* a68.h: Remove A68_GLOBAL_CONTEXT macro.
+
+2026-09-27  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-moids.cc (build_stub_type_decl): Remove function.
+	(lower_struct_mode): Do not call build_stub_type_decl.
+	(lower_union_mode): Likewise.
+
 2026-09-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-types.h (struct TAG_T): Add field ctyp.

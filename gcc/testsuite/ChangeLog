@@ -1,3 +1,107 @@
+2026-09-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118407
+	* gcc.target/aarch64/noeffect2.c: Update tests.
+	* gcc.target/aarch64/sve/noeffect2.c: Update test.
+	* gcc.target/aarch64/sve/noeffect3.c: Likewise.
+
+2026-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/vect/pr109011-1.c: Prefer 512b vectors.
+	* gcc.dg/vect/pr109011-2.c: Likewise.
+	* gcc.dg/vect/pr109011-3.c: Likewise.
+	* gcc.dg/vect/pr109011-4.c: Likewise.
+	* gcc.dg/vect/pr109011-5.c: Likewise.
+	* gcc.target/i386/avx512f-ceil-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-ceil-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-ceilf-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-ceilf-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-floor-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-floor-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-floorf-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-floorf-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-pr95060.c: Likewise.
+	* gcc.target/i386/avx512f-rint-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-rintf-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-round-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-roundf-sfix-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-trunc-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-truncf-vec-2.c: Likewise.
+	* gcc.target/i386/avx512f-vpternlogd-3.c: Likewise.
+	* gcc.target/i386/avx512f-vpternlogd-4.c: Likewise.
+	* gcc.target/i386/mask-pack.c: Likewise.
+	* gcc.target/i386/mask-unpack.c: Likewise.
+	* gcc.target/i386/pr80846-1.c: Likewise.
+
+2026-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.target/i386/avx512bw-vmovdqu16-1.c: Specify generic
+	tuning.
+	* gcc.target/i386/avx512fp16-13.c: Likewise.
+	* gcc.target/i386/avx512vl-stv-rotatedi-1.c: Likewise.
+	* gcc.target/i386/movbe-5.c: Likewise.
+	* gcc.target/i386/pieces-memset-11.c: Likewise.
+	* gcc.target/i386/pieces-memset-14.c: Likewise.
+	* gcc.target/i386/pieces-memset-2.c: Likewise.
+	* gcc.target/i386/pieces-memset-20.c: Likewise.
+	* gcc.target/i386/pieces-memset-23.c: Likewise.
+	* gcc.target/i386/pieces-memset-29.c: Likewise.
+	* gcc.target/i386/pieces-memset-30.c: Likewise.
+	* gcc.target/i386/pieces-memset-33.c: Likewise.
+	* gcc.target/i386/pieces-memset-34.c: Likewise.
+	* gcc.target/i386/pieces-memset-37.c: Likewise.
+	* gcc.target/i386/pieces-memset-44.c: Likewise.
+	* gcc.target/i386/pieces-memset-5.c: Likewise.
+	* gcc.target/i386/pr107548-1.c: Likewise.
+	* gcc.target/i386/pr107548-2.c: Likewise.
+	* gcc.target/i386/pr108938-3.c: Likewise.
+	* gcc.target/i386/pr124697-3b.c: Likewise.
+	* gcc.target/i386/pr53533-1.c: Likewise.
+	* gcc.target/i386/pr53533-3.c: Likewise.
+	* gcc.target/i386/pr95483-5.c: Likewise.
+	* gcc.target/i386/pr95483-6.c: Likewise.
+	* gcc.target/i386/sse2-stv-9.c: Likewise.
+	* gcc.target/i386/sse4_1-stv-11.c: Likewise.
+	* gcc.target/i386/sse4_1-stv-12.c: Likewise.
+
+2026-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/bclr-lowest-set-bit-2.c: Fix typos and force c99 mode.
+
+2026-09-27  wangjue  <juewang@linux.alibaba.com>
+
+	* gcc.target/riscv/rvv/autovec/pr120378-3.c: Disable the vector cost
+	model.
+	* gcc.target/riscv/rvv/autovec/pr120378-4.c: Likewise.
+	* gcc.target/riscv/rvv/autovec/sat-trunc-promote-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/sat-trunc-promote-run-1.c: New test.
+
+2026-09-27  Steven Sudit  <stevensudit@gmail.com>
+
+	PR c++/127218
+	* g++.dg/cpp0x/constexpr-memchr2.C: New test.
+
+2026-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gcc.dg/vect/vect-pr127601.c: If MAP_ANONYMOUS is not defined
+	for Darwin, alias it to MAP_ANON.
+
+2026-09-27  Samarth Tandale  <samarth.tandale@oss.qualcomm.com>
+
+	PR tree-optimization/112094
+	* gcc.dg/fold-popcount-12.c: New test.
+	* gcc.dg/fold-popcount-13.c: New test.
+
+2026-09-27  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.out: Do not use /tmp.
+	* cobol.dg/group2/ACCEPT_foo_FROM_COMMAND-LINE_1_.cob: Removed.
+
+2026-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/126462
+	* gcc.dg/torture/pr126462.c: New test.
+
 2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127187

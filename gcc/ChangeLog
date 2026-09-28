@@ -1,3 +1,60 @@
+2026-09-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/118407
+	* tree-vect-loop.cc (vect_update_early_break_profiles): New.
+	(scale_profile_for_vect_loop): Use it and pass loop_vinfo.
+	(vect_transform_loop): Pass loop_vinfo to scale_profile_for_vect_loop.
+
+2026-09-27  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR target/127267
+	* config/iq2000/iq2000.h (SMALL_INT): Fix trivial parenthesis goof.
+	* config/iq2000/iq2000.cc (iq2000_move_1word): Eliminate useless
+	IOR with 0x0 operand.
+	* config/iq2000/iq2000.md (aopsi3): New expander.
+	(32 bit integer move splitter): Turn low part IOR into a copy when
+	the constant is zero.
+
+2026-09-27  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR target/69374
+	* doc/install.texi (Microsoft Windows): Remove the Windows CE
+	subsection.
+
+2026-09-27  wangjue  <juewang@linux.alibaba.com>
+
+	* tree-vect-patterns.cc (vect_sat_trunc_clip_input_vectype): New.
+	(vect_recog_sat_trunc_pattern): Look through promotions and check
+	target support for MAX_EXPR.
+
+2026-09-27  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (machopic_select_section): Do not try to
+	inspect a typename which has no id.
+
+2026-09-27  Samarth Tandale  <samarth.tandale@oss.qualcomm.com>
+
+	PR tree-optimization/112094
+	* match.pd: Add fold for (a != 0) | (popcount(a) == n) and
+	(a == 0) & (popcount(a) != n).
+
+2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* config/avr/avr.opt.urls: Regenerate.
+	* config/nvptx/nvptx.opt.urls: Regenerate.
+
+2026-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/126462
+	* match.pd (reassociate xor to expose rotate patterns): Rewrite using
+	wi:: interfaces for the xor constant operand.
+
+2026-09-27  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	PR target/69374
+	* doc/install.texi (Specific): No longer mention Windows NT on
+	Alpha and PowerPC.
+
 2026-09-26  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/127618
