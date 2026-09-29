@@ -36,9 +36,11 @@
        Linkage Section.
        77 Return-Value Binary-Long.
        01 Error-Msg PIC X ANY LENGTH.
+       77 New-Value Binary-Long.
 
        Procedure Division
            using Error-Msg
+           optional New-Value
            Returning Return-Value.
        END FUNCTION posix-errno.
         >> POP source format

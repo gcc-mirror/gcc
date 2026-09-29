@@ -2,6 +2,9 @@
 
 extern "C"
 int
-posix_errno() {
-  return errno;
+posix_errno(int *newval) {
+  int ret = errno;
+  if (newval)
+    errno = *newval;
+  return ret;
 }
