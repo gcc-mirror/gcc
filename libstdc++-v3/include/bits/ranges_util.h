@@ -850,6 +850,138 @@ namespace ranges
     struct tuple_element<1, const ranges::subrange<_Iter, _Sent, _Kind>>
     { using type = _Sent; };
 
+template<typename _Tp, typename _IndexType>
+  class _Repeat_iterator;
+
+  template<typename _Tp, typename _IndexType>
+    constexpr _Repeat_iterator<_Tp, _IndexType>
+    __make_repeat_iterator(_Tp&, _IndexType);
+
+  template<typename _Tp, typename _IndexType>
+  class _Repeat_iterator
+  {
+    static auto
+    _S_difference_type()
+    {
+      if constexpr (__detail::__is_signed_integer_like<_IndexType>)
+	return _IndexType{};
+      else
+	return ranges::__detail::__to_signed_like(_IndexType{});
+    }
+
+    _Tp* _M_value = nullptr;
+    _IndexType _M_current = _IndexType();
+
+    constexpr explicit
+    _Repeat_iterator(const _Tp* __value, _IndexType __bound = _IndexType())
+    : _M_value(__value), _M_current(__bound)
+    { }
+
+  public:
+    using iterator_concept = random_access_iterator_tag;
+    using iterator_category = random_access_iterator_tag;
+    using value_type = remove_cv_t<_Tp>;
+    using difference_type = decltype(_S_difference_type());
+
+    _Repeat_iterator() = default;
+
+    constexpr _Tp&
+    operator*() const noexcept
+    { return *_M_value; }
+
+    constexpr _Repeat_iterator&
+    operator++()
+    {
+      ++_M_current;
+      return *this;
+    }
+
+    constexpr _Repeat_iterator
+    operator++(int)
+    {
+      auto __tmp = *this;
+      ++*this;
+      return __tmp;
+    }
+
+    constexpr _Repeat_iterator&
+    operator--()
+    {
+      __glibcxx_assert(_M_current > 0);
+      --_M_current;
+      return *this;
+    }
+
+    constexpr _Repeat_iterator
+    operator--(int)
+    {
+      auto __tmp = *this;
+      --*this;
+      return __tmp;
+    }
+
+    constexpr _Repeat_iterator&
+    operator+=(difference_type __n)
+    {
+      __glibcxx_assert(_M_current + __n >= 0);
+      _M_current += __n;
+      return *this;
+    }
+
+    constexpr _Repeat_iterator&
+    operator-=(difference_type __n)
+    {
+      __glibcxx_assert(_M_current - __n >= 0);
+      _M_current -= __n;
+      return *this;
+    }
+
+    constexpr _Tp&
+    operator[](difference_type __n) const noexcept
+    { return *(*this + __n); }
+
+    friend constexpr bool
+    operator==(const _Repeat_iterator& __x, const _Repeat_iterator& __y)
+    { return __x._M_current == __y._M_current; }
+
+    friend constexpr auto
+    operator<=>(const _Repeat_iterator& __x, const _Repeat_iterator& __y)
+    { return __x._M_current <=> __y._M_current; }
+
+    friend constexpr _Repeat_iterator
+    operator+(_Repeat_iterator __i, difference_type __n)
+    {
+      __i += __n;
+      return __i;
+    }
+
+    friend constexpr _Repeat_iterator
+    operator+(difference_type __n, _Repeat_iterator __i)
+    { return __i + __n; }
+
+    friend constexpr _Repeat_iterator
+    operator-(_Repeat_iterator __i, difference_type __n)
+    {
+      __i -= __n;
+      return __i;
+    }
+
+    friend constexpr difference_type
+    operator-(const _Repeat_iterator& __x, const _Repeat_iterator& __y)
+    {
+      return (static_cast<difference_type>(__x._M_current)
+	      - static_cast<difference_type>(__y._M_current));
+    }
+
+    friend constexpr _Repeat_iterator<_Tp, _IndexType>
+    __make_repeat_iterator<_Tp, _IndexType>(_Tp&, _IndexType);
+  };
+
+  template<typename _Tp, typename _IndexType>
+    constexpr _Repeat_iterator<_Tp, _IndexType>
+    __make_repeat_iterator(_Tp& __tp, _IndexType __bound)
+    { return _Repeat_iterator<_Tp, _IndexType>(std::addressof(__tp), __bound); }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // library concepts

@@ -88,6 +88,25 @@ namespace ranges
       using __make_unsigned_like_t
 	= decltype(__detail::__to_unsigned_like(std::declval<_Tp>()));
 
+    template<typename _Wp>
+      constexpr auto __to_signed_like(_Wp __w) noexcept
+      {
+	if constexpr (!integral<_Wp>)
+	  return iter_difference_t<_Wp>();
+	else if constexpr (sizeof(iter_difference_t<_Wp>) > sizeof(_Wp))
+	  return iter_difference_t<_Wp>(__w);
+	else if constexpr (sizeof(ptrdiff_t) > sizeof(_Wp))
+	  return ptrdiff_t(__w);
+	else if constexpr (sizeof(long long) > sizeof(_Wp))
+	  return (long long)(__w);
+#ifdef __SIZEOF_INT128__
+	else if constexpr (__SIZEOF_INT128__ > sizeof(_Wp))
+	  return __int128(__w);
+#endif
+	else
+	  return __max_diff_type(__w);
+      }
+
     // Part of the constraints of ranges::borrowed_range
     template<typename _Tp>
       concept __maybe_borrowed_range
