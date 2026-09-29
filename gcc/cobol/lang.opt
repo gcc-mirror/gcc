@@ -219,6 +219,11 @@ Wbad-numeric
 Cobol Warning Var(bad_numeric, 1) Init(1)
 Warn if numeric string is invalid.
 
+; ParErrno
+Werrno
+Cobol Warning Var(cobol_errno, 1) Init(1)
+Warn errno is used as a data-item name.
+
 ; CdfParameterW
 Wcdf-invalid-parameter
 Cobol Warning Var(cdf_invalid_parameter, 1) Init(1)

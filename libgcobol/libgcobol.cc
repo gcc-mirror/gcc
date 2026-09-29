@@ -9949,6 +9949,20 @@ void open_syslog(int option, int facility)
   }
 }
 
+static int
+ec_priority( ec_disposition_t disposition ) {
+  switch( disposition ) {
+  case ec_category_none_e:
+    break;
+  case ec_category_fatal_e:
+    return LOG_ERR;
+  case ec_category_nonfatal_e:
+  case ec_category_implementor_e:
+    return LOG_WARNING;
+  }
+  return LOG_INFO;
+}
+
 /*
  * The default exception handler is called if:
  *   1.  The EC is enabled and was not handled by a Declarative, or
@@ -9976,6 +9990,8 @@ default_exception_handler( ec_type_t ec )
     } else {
       warnx("logic error: unknown exception %x", ec );
     }
+    const int priority = ec_priority(disposition);
+
     /*
      * An enabled, unhandled fatal EC normally results in termination. But
      * EC-I-O is a special case becase a SELECT statement with FILE STATUS

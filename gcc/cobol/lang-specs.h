@@ -73,6 +73,7 @@
 	"%{Wdynamic-call} %{Wno-dynamic-call} "
 	"%{Wec-unknown} %{Wno-ec-unknown} "
 	"%{Wentry-convention} %{Wno-entry-convention} "
+	"%{Werrno} %{Wno-errno} "
 	"%{Whex-numeric} %{Wno-hex-numeric} "
 	"%{Wibm-cdf} %{Wno-ibm-cdf} "
 	"%{Wiconv-error} %{Wno-iconv-error} "
