@@ -6313,6 +6313,56 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  Minor optimization: make sure that the 3 equivalent constructs
+
+      --    S := (others => C);
+      --    S := (S'Range => C);
+      --    S := (S'First .. S'Last => C);
+
+      --  where S denotes an entity, are handled the same way downstream, in
+      --  particular with regard to sliding, by turning the last 2 constructs
+      --  into the first (the second has already been turned into the third).
+
+      if Nkind (Parent (N)) = N_Assignment_Statement
+        and then Is_Entity_Name (Name (Parent (N)))
+        and then Aggr_Dimension = 1
+        and then Is_Single_Aggregate (N)
+        and then
+          Nkind (First (Component_Associations (N))) = N_Component_Association
+        and then
+          Nkind (First (Choice_List (First (Component_Associations (N))))) =
+                                                                        N_Range
+      then
+         declare
+            Assoc  : constant Node_Id := First (Component_Associations (N));
+            Bounds : constant Range_Nodes :=
+              Get_Index_Bounds (First (Choice_List (Assoc)));
+
+         begin
+            if Nkind (Bounds.First) = N_Attribute_Reference
+              and then Attribute_Name (Bounds.First) = Name_First
+              and then Is_Entity_Name (Prefix (Bounds.First))
+              and then
+                Entity (Prefix (Bounds.First)) = Entity (Name (Parent (N)))
+              and then Nkind (Bounds.Last) = N_Attribute_Reference
+              and then Attribute_Name (Bounds.Last) = Name_Last
+              and then Is_Entity_Name (Prefix (Bounds.Last))
+              and then
+                Entity (Prefix (Bounds.Last)) = Entity (Name (Parent (N)))
+            then
+               Rewrite (N, Make_Aggregate (Sloc (N),
+                 Component_Associations => New_List (
+                   Make_Component_Association (Sloc (Assoc),
+                     Choices     =>
+                       New_List (Make_Others_Choice (Sloc (Assoc))),
+                     Expression  => Relocate_Node (Expression (Assoc)),
+                     Box_Present => Box_Present (Assoc)))));
+               Analyze_And_Resolve (N, Typ);
+               return;
+            end if;
+         end;
+      end if;
+
       --  Otherwise, if a transient scope is required, create it now
 
       if Requires_Transient_Scope (Typ) then
