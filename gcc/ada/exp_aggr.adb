@@ -4439,7 +4439,10 @@ package body Exp_Aggr is
       Max_Others_Replicate : constant Nat := Max_Aggregate_Size (N);
       Ctyp                 : constant Entity_Id := Component_Type (Typ);
 
-      Static_Components : Boolean   := True;
+      Static_Components : Boolean := True;
+      --  Flag to indicate whether all components are compile-time known,
+      --  and the aggregate can be constructed statically and handled by
+      --  the back-end. Set to False by Check_Static_Components.
 
       procedure Check_Static_Components;
       --  Check whether all components of the aggregate are compile-time known
@@ -4975,22 +4978,24 @@ package body Exp_Aggr is
          return;
       end if;
 
+      --  Check whether the components are static
+
       Check_Static_Components;
 
       --  If the size is known, or all the components are static, try to
       --  build a fully positional aggregate.
 
       --  The size of the type may not be known for an aggregate with
-      --  discriminated array components, but if the components are static
+      --  discriminated components, but if the components are static
       --  it is still possible to verify statically that the length is
-      --  compatible with the upper bound of the type, and therefore it is
-      --  worth flattening such aggregates as well.
+      --  compatible with the upper bound of the type, and therefore it
+      --  is worth flattening such aggregates as well.
 
       if Aggr_Size_OK (N)
         and then
           Flatten (N, Dims, First_Index (Typ), First_Index (Base_Type (Typ)))
       then
-         if Static_Components then
+         if Static_Components and then Size_Known_At_Compile_Time (Typ) then
             Set_Compile_Time_Known_Aggregate (N);
             Set_Expansion_Delayed (N, False);
          end if;
@@ -8152,7 +8157,7 @@ package body Exp_Aggr is
             --  If the aggregate is static and can be handled by the back-end,
             --  nothing left to do.
 
-            if Static_Components then
+            if Static_Components and then Size_Known_At_Compile_Time (Typ) then
                Set_Compile_Time_Known_Aggregate (N);
                Set_Expansion_Delayed (N, False);
             end if;
