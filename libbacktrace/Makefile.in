@@ -147,8 +147,8 @@ TESTS = $(am__append_6) $(MAKETESTS) $(am__EXEEXT_18)
 @HAVE_ELF_TRUE@@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_17 = -lz
 @HAVE_ELF_TRUE@@NATIVE_TRUE@am__append_18 = ztest ztest_alloc zstdtest \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest_alloc
-@HAVE_ELF_TRUE@@HAVE_ZSTD_TRUE@@NATIVE_TRUE@am__append_19 = -lzstd
-@HAVE_ELF_TRUE@@HAVE_ZSTD_TRUE@@NATIVE_TRUE@am__append_20 = -lzstd
+@HAVE_ELF_TRUE@@HAVE_ZSTD_TRUE@@NATIVE_TRUE@am__append_19 = $(ZSTD_LIBS)
+@HAVE_ELF_TRUE@@HAVE_ZSTD_TRUE@@NATIVE_TRUE@am__append_20 = $(ZSTD_LIBS)
 @NATIVE_TRUE@am__append_21 = edtest edtest_alloc
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_22 = ttest ttest_alloc
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@@USE_DSYMUTIL_TRUE@am__append_23 =  \
@@ -179,12 +179,14 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/cet.m4 \
 	$(top_srcdir)/../config/lead-dot.m4 \
 	$(top_srcdir)/../config/multi.m4 \
 	$(top_srcdir)/../config/override.m4 \
+	$(top_srcdir)/../config/pkg.m4 \
 	$(top_srcdir)/../config/stdint.m4 \
 	$(top_srcdir)/../config/unwind_ipinfo.m4 \
 	$(top_srcdir)/../config/warnings.m4 \
-	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
-	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
-	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/zstd.m4 $(top_srcdir)/../libtool.m4 \
+	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
+	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -551,8 +553,9 @@ xztest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest-zstdtest.$(OBJEXT) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	zstdtest-testlib.$(OBJEXT)
 zstdtest_OBJECTS = $(am_zstdtest_OBJECTS)
+@HAVE_ELF_TRUE@@HAVE_ZSTD_TRUE@@NATIVE_TRUE@am__DEPENDENCIES_2 = $(am__DEPENDENCIES_1)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_DEPENDENCIES = libbacktrace.la \
-@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_2) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 zstdtest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(zstdtest_CFLAGS) \
@@ -565,7 +568,7 @@ zstdtest_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 zstdtest_alloc_OBJECTS = $(am_zstdtest_alloc_OBJECTS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_alloc_DEPENDENCIES =  \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	libbacktrace_alloc.la \
-@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1) \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_2) \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
 zstdtest_alloc_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
@@ -946,6 +949,9 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PIC_FLAG = @PIC_FLAG@
+PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 PTHREAD_CFLAGS = @PTHREAD_CFLAGS@
 RANLIB = @RANLIB@
 READELF = @READELF@
@@ -957,6 +963,8 @@ VERSION = @VERSION@
 VIEW_FILE = @VIEW_FILE@
 WARN_FLAGS = @WARN_FLAGS@
 XZ = @XZ@
+ZSTD_CFLAGS = @ZSTD_CFLAGS@
+ZSTD_LIBS = @ZSTD_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -1195,7 +1203,9 @@ libbacktrace_testing_ldflags = -no-install
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_CFLAGS = $(ztest_CFLAGS)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@ztest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_SOURCES = zstdtest.c testlib.c
-@HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -DSRCDIR=\"$(srcdir)\"
+@HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_CFLAGS = \
+@HAVE_ELF_TRUE@@NATIVE_TRUE@	$(libbacktrace_TEST_CFLAGS) $(ZSTD_CFLAGS) -DSRCDIR=\"$(srcdir)\"
+
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_LDFLAGS = $(libbacktrace_testing_ldflags)
 @HAVE_ELF_TRUE@@NATIVE_TRUE@zstdtest_LDADD = libbacktrace.la \
 @HAVE_ELF_TRUE@@NATIVE_TRUE@	$(am__append_19) \

@@ -545,9 +545,8 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
 LDFLAGS=$LDFLAGS_hold])
 AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG_ZLIB_GABI, test "$libgo_cv_ld_compress_zlib_gabi" = yes)
 
-AC_CHECK_LIB([zstd], [ZSTD_compress],
-    [AC_DEFINE(HAVE_ZSTD, 1, [Define if -lzstd is available.])])
-AM_CONDITIONAL(HAVE_ZSTD, test "$ac_cv_lib_zstd_ZSTD_compress" = yes)
+AC_ZSTD
+AM_CONDITIONAL(HAVE_ZSTD, test "$zstd_enabled" = yes)
 
 dnl Test whether the linker supports --compress-debug-sections=zstd option.
 AC_CACHE_CHECK([whether --compress-debug-sections=zstd is supported],

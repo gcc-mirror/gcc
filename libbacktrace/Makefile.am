@@ -415,14 +415,15 @@ ztest_alloc_LDFLAGS = $(libbacktrace_testing_ldflags)
 BUILDTESTS += ztest_alloc
 
 zstdtest_SOURCES = zstdtest.c testlib.c
-zstdtest_CFLAGS = $(libbacktrace_TEST_CFLAGS) -DSRCDIR=\"$(srcdir)\"
+zstdtest_CFLAGS = \
+	$(libbacktrace_TEST_CFLAGS) $(ZSTD_CFLAGS) -DSRCDIR=\"$(srcdir)\"
 zstdtest_LDFLAGS = $(libbacktrace_testing_ldflags)
 zstdtest_LDADD = libbacktrace.la
 zstdtest_alloc_LDADD = libbacktrace_alloc.la
 
 if HAVE_ZSTD
-zstdtest_LDADD += -lzstd
-zstdtest_alloc_LDADD += -lzstd
+zstdtest_LDADD += $(ZSTD_LIBS)
+zstdtest_alloc_LDADD += $(ZSTD_LIBS)
 endif
 zstdtest_LDADD += $(CLOCK_GETTIME_LINK)
 zstdtest_alloc_LDADD += $(CLOCK_GETTIME_LINK)
