@@ -40,6 +40,7 @@ static void
 gen_attr (md_rtx_info *info)
 {
   const char *p, *tag;
+  size_t count = 0;
 
   rtx attr = info->def;
   p = XSTR (attr, 1);
@@ -55,8 +56,11 @@ gen_attr (md_rtx_info *info)
 	    putchar (TOUPPER (*tag++));
 	  if (*p == ',')
 	    fputs (", ", stdout);
+	  ++count;
 	}
       fputs ("};\n", stdout);
+      if (strcmp (XSTR (attr, 0), "mnemonic") == 0)
+	printf ("#define ATTR_ENUM_MNEMONIC_COUNT %zu\n", count);
     }
 }
 
