@@ -30,6 +30,7 @@
 #include "fold-const.h"
 #include "stringpool.h"
 #include "stor-layout.h"
+#include "util/optional.h"
 #include "varasm.h"
 #include "tree-iterator.h"
 #include "tm.h"
@@ -1087,6 +1088,55 @@ negation_expression (NegationOperator op, tree expr_tree, location_t location)
   return new_tree;
 }
 
+static tree
+builtin_remainder_float_call (tree lhs, tree rhs, location_t loc)
+{
+  auto builtin_ctx = Rust::Compile::BuiltinsContext::get ();
+  tl::optional<tree> remainder = tl::nullopt;
+
+  if (TYPE_PRECISION (TREE_TYPE (lhs)) == TYPE_PRECISION (float_type_node))
+    remainder = builtin_ctx.lookup_simple_builtin ("__builtin_remainderf");
+  else if (TYPE_PRECISION (TREE_TYPE (lhs))
+	   == TYPE_PRECISION (double_type_node))
+    remainder = builtin_ctx.lookup_simple_builtin ("__builtin_remainder");
+  // For f128, we will need to do the following - but gccrs doesn't handle f128
+  // at the moment AFAIK
+  else if (TYPE_PRECISION (TREE_TYPE (lhs))
+	   == TYPE_PRECISION (long_double_type_node))
+    remainder = builtin_ctx.lookup_simple_builtin ("__builtin_remainderl");
+  else
+    rust_unreachable ();
+
+  rust_assert (remainder);
+
+  return build_call_expr_loc (loc, *remainder, 2, lhs, rhs);
+}
+
+/**
+ * For floating point operations we may need to extend the precision of the
+ * type. For example, a 64-bit machine may not support operations on f32s.
+ *
+ * Returns NULL_TREE if there was no need to extend the type and the extended
+ * type otherwise.
+ */
+static tree
+maybe_extend_precision (bool floating_point, tree &lhs, tree &rhs, tree &ty)
+{
+  auto extended_type = NULL_TREE;
+  if (floating_point)
+    {
+      extended_type = excess_precision_type (ty);
+      if (extended_type != NULL_TREE)
+	{
+	  lhs = convert (extended_type, lhs);
+	  rhs = convert (extended_type, rhs);
+	  ty = extended_type;
+	}
+    }
+
+  return extended_type;
+}
+
 tree
 arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op, tree left,
 				  tree right, location_t location)
@@ -1111,23 +1161,20 @@ arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op, tree left,
      as the lhs operand. */
   auto tree_type = TREE_TYPE (left);
   auto original_type = tree_type;
+  auto extended_type
+    = maybe_extend_precision (floating_point, left, right, tree_type);
+
   auto tree_code = operator_to_tree_code (op, floating_point);
 
-  /* For floating point operations we may need to extend the precision of type.
-     For example, a 64-bit machine may not support operations on float32. */
-  auto extended_type = NULL_TREE;
-  if (floating_point)
-    {
-      extended_type = excess_precision_type (tree_type);
-      if (extended_type != NULL_TREE)
-	{
-	  left = convert (extended_type, left);
-	  right = convert (extended_type, right);
-	  tree_type = extended_type;
-	}
-    }
+  /* In the case of a floating point remainder operation, we have to perform a
+   * call to a builtin function instead as the mod operation is not supported on
+   * floating point values. But for all other operations, this is simply a
+   * build2 */
+  if (floating_point && op == ArithmeticOrLogicalOperator::MODULUS)
+    ret = builtin_remainder_float_call (left, right, location);
+  else
+    ret = build2_loc (location, tree_code, tree_type, left, right);
 
-  ret = build2_loc (location, tree_code, tree_type, left, right);
   TREE_CONSTANT (ret) = TREE_CONSTANT (left) & TREE_CONSTANT (right);
 
   // TODO: How do we handle floating point?
