@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options "-fdump-tree-original" }
 !
 ! PR 127187
 ! %LEN and %KIND inquiries of deferred-length character in ASSOCIATE.
@@ -68,3 +69,4 @@ program assoc_len_kind
   end associate
   deallocate (p)
 end program
+! { dg-final { scan-tree-dump-not "n = &" "original" } }
