@@ -242,7 +242,9 @@ Crate::inject_extern_crate (std::string name)
     AST::ExternCrate (name, AST::Visibility::create_public (UNKNOWN_LOCATION),
 		      {}, UNKNOWN_LOCATION));
   auto node_id = extern_crate->get_node_id ();
-  items.push_back (std::move (extern_crate));
+  // We need to insert the new crate at the top of the file as its
+  // definition must be resolved before any module.
+  items.insert (items.begin (), std::move (extern_crate));
   return node_id;
 }
 

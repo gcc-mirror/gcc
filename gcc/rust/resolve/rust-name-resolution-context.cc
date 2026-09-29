@@ -276,6 +276,15 @@ NameResolutionContext::insert_globbed (Identifier name, NodeId id, Namespace ns)
     }
 }
 
+void
+NameResolutionContext::insert_crate_in_prelude (Identifier name, NodeId id)
+{
+  values.insert_crate_in_prelude (name, id);
+  types.insert_crate_in_prelude (name, id);
+  macros.insert_crate_in_prelude (name, id);
+  labels.insert_crate_in_prelude (name, id);
+}
+
 // TODO: Maybe this should take a NamespacedDefinition as argument?
 void
 NameResolutionContext::map_usage (Usage usage, Definition definition,

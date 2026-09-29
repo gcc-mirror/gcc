@@ -500,6 +500,11 @@ public:
   tl::expected<NodeId, DuplicateNameError>
   insert_globbed (Identifier name, NodeId id, Namespace ns);
 
+  // Crate are supposed to be injected before any other module because we want
+  // the name collision error to be reported on the offending module which has a
+  // real source location, this function should therefore not fail.
+  void insert_crate_in_prelude (Identifier name, NodeId id);
+
   /**
    * Run a lambda in a "scoped" context, meaning that a new `Rib` will be pushed
    * before executing the lambda and then popped. This is useful for all kinds

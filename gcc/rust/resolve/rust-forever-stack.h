@@ -640,6 +640,8 @@ public:
   tl::expected<NodeId, DuplicateNameError> insert_variant (Identifier name,
 							   NodeId id);
 
+  void insert_crate_in_prelude (Identifier crate_name, NodeId crate_id);
+
   /**
    * Insert a new shadowable definition in the innermost `Rib` in this stack
    *

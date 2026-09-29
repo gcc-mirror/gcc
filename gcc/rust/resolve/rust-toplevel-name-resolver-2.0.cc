@@ -146,6 +146,10 @@ TopLevel::visit (AST::ExternCrate &crate)
   insert_or_error_out (name, crate, Namespace::Types);
 
   DefaultResolver::visit (crate);
+
+  // Insert the crate within the extern prelude only after the scope has been
+  // created
+  ctx.insert_crate_in_prelude (name, crate.get_node_id ());
 }
 
 void
