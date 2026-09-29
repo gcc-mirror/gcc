@@ -82,6 +82,7 @@ package body System.Object_Reader is
       EM_X86_64      : constant := 62; --  AMD x86-64 architecture
       EM_AARCH64     : constant := 183; --  Aarch64
       EM_RISCV       : constant := 243; --  RISC-V
+      EM_LOONGARCH   : constant := 258; --  LoongArch
 
       EN_NIDENT  : constant := 16;
 
@@ -656,6 +657,9 @@ package body System.Object_Reader is
 
             when EM_RISCV =>
                Res.Arch := RISCV;
+
+            when EM_LOONGARCH =>
+               Res.Arch := LOONGARCH;
 
             when others =>
                raise Format_Error with "unrecognized architecture";
@@ -2081,7 +2085,7 @@ package body System.Object_Reader is
             Address_64 := Read (S);
             return Address_64;
 
-         when RISCV | S390 =>
+         when RISCV | S390 | LOONGARCH =>
             case Obj.Format is
                when ELF32 =>
                   Address_32 := Read (S);
