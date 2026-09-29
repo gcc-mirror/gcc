@@ -292,6 +292,12 @@ package Sem_Eval is
    --  also be used for the Null access value, as well as for the result of an
    --  unchecked conversion of the aforementioned handled values.
 
+   function Expr_Value_A (N : Node_Id) return Node_Id;
+   --  Returns the folded value of the expression. This function is called
+   --  in instances where it has already been determined that the expression
+   --  is known at compile time. This version is used for composite types and
+   --  returns the corresponding N_Aggregate node.
+
    function Expr_Value_E (N : Node_Id) return Entity_Id;
    --  Returns the folded value of the expression. This function is called in
    --  instances where it has already been determined that the expression is

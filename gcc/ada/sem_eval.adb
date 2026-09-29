@@ -1330,9 +1330,9 @@ package body Sem_Eval is
             end;
 
          --  For string types, we have two string literals and we proceed to
-         --  compare them using the Ada style dictionary string comparison.
+         --  compare them using the lexicographic order (RM 4.5.2(26)).
 
-         elsif not Is_Scalar_Type (Ltyp) then
+         elsif Is_String_Type (Ltyp) then
             declare
                Lstring : constant String_Id := Strval (Expr_Value_S (L));
                Rstring : constant String_Id := Strval (Expr_Value_S (R));
@@ -1359,6 +1359,63 @@ package body Sem_Eval is
                   return GT;
                else
                   return EQ;
+               end if;
+            end;
+
+         --  Likewise for other discrete array types, i.e. 1-dimensional array
+         --  types whose component type is discrete.
+
+         elsif Is_Composite_Type (Ltyp) then
+            declare
+               Laggr : constant Node_Id := Expr_Value_A (L);
+               Raggr : constant Node_Id := Expr_Value_A (R);
+               Lbnds : constant Node_Id := Aggregate_Bounds (Laggr);
+               Rbnds : constant Node_Id := Aggregate_Bounds (Raggr);
+
+               Lexp : Node_Id;
+               Rexp : Node_Id;
+               Llen : Uint;
+               Rlen : Uint;
+               Res  : Compare_Result;
+
+            begin
+               if Is_Array_Type (Ltyp)
+                 and then Number_Dimensions (Ltyp) = 1
+                 and then Is_Discrete_Type (Component_Type (Ltyp))
+                 and then Present (Lbnds)
+                 and then Present (Rbnds)
+               then
+                  Llen := UI_Max (Expr_Value (High_Bound (Lbnds)) -
+                                   Expr_Value (Low_Bound (Lbnds)) + 1, 0);
+                  Rlen := UI_Max (Expr_Value (High_Bound (Rbnds)) -
+                                   Expr_Value (Low_Bound (Rbnds)) + 1, 0);
+
+                  Lexp := First (Expressions (Laggr));
+                  Rexp := First (Expressions (Raggr));
+
+                  for J in 1 .. UI_To_Int (UI_Min (Llen, Rlen)) loop
+                     Res :=
+                       Compile_Time_Compare (Lexp, Rexp, Assume_Valid => True);
+                     case Res is
+                        when LT | GT | NE      => return Res;
+                        when LE | GE | Unknown => return Unknown;
+                        when EQ                => null;
+                     end case;
+
+                     Next (Lexp);
+                     Next (Rexp);
+                  end loop;
+
+                  if Llen < Rlen then
+                     return LT;
+                  elsif Llen > Rlen then
+                     return GT;
+                  else
+                     return EQ;
+                  end if;
+
+               else
+                  return Unknown;
                end if;
             end;
 
@@ -1878,6 +1935,15 @@ package body Sem_Eval is
 
          elsif K in
            N_Character_Literal | N_Real_Literal | N_String_Literal | N_Null
+         then
+            return True;
+
+         --  Compile-time known aggregates, but not for string types since
+         --  we cannot rewrite them as string literals for the time being.
+
+         elsif K = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Op)
+           and then not Is_String_Type (Etype (Op))
          then
             return True;
 
@@ -2986,9 +3052,7 @@ package body Sem_Eval is
             Fold_Uint (N, From_Bits (Left_Bits, Etype (N)), Stat);
          end;
 
-      else
-         pragma Assert (Is_Boolean_Type (Etype (N)));
-
+      elsif Is_Boolean_Type (Etype (N)) then
          if Compile_Time_Known_Value (Left)
            and then Compile_Time_Known_Value (Right)
          then
@@ -3231,7 +3295,8 @@ package body Sem_Eval is
    --  static if the operand is potentially static (RM 4.9(7), 4.9(20)).
 
    procedure Eval_Op_Not (N : Node_Id) is
-      Right : constant Node_Id := Right_Opnd (N);
+      Right : constant Node_Id   := Right_Opnd (N);
+      Typ   : constant Entity_Id := Etype (N);
       Stat  : Boolean;
       Fold  : Boolean;
 
@@ -3244,26 +3309,19 @@ package body Sem_Eval is
          return;
       end if;
 
-      --  Fold not operation
+      --  Negation is equivalent to subtracting from the modulus minus one.
+      --  For a binary modulus this is equivalent to the ones-complement of
+      --  the original value. For a nonbinary modulus this is an arbitrary
+      --  but consistent definition.
 
-      declare
-         Rint : constant Uint      := Expr_Value (Right);
-         Typ  : constant Entity_Id := Etype (N);
-
-      begin
-         --  Negation is equivalent to subtracting from the modulus minus one.
-         --  For a binary modulus this is equivalent to the ones-complement of
-         --  the original value. For a nonbinary modulus this is an arbitrary
-         --  but consistent definition.
-
-         if Has_Modular_Operations (Typ) then
-            Fold_Uint (N, Modulus (Typ) - 1 - Rint, Stat);
-         else pragma Assert (Is_Boolean_Type (Typ));
-            Fold_Uint (N, Test (not Is_True (Rint)), Stat);
-         end if;
-
+      if Has_Modular_Operations (Typ) then
+         Fold_Uint (N, Modulus (Typ) - 1 - Expr_Value (Right), Stat);
          Set_Is_Static_Expression (N, Stat);
-      end;
+
+      elsif Is_Boolean_Type (Typ) then
+         Fold_Uint (N, Test (not Is_True (Expr_Value (Right))), Stat);
+         Set_Is_Static_Expression (N, Stat);
+      end if;
    end Eval_Op_Not;
 
    -------------------------------
@@ -3346,7 +3404,7 @@ package body Sem_Eval is
       elsif Is_Real_Type (Target_Type) then
          Fold_Ureal (N, Expr_Value_R (Operand), Stat);
 
-      else
+      elsif Is_String_Type (Target_Type) then
          Fold_Str (N, Strval (Get_String_Val (Operand)), Stat);
 
          if not Stat then
@@ -3355,6 +3413,9 @@ package body Sem_Eval is
             Check_String_Literal_Length (N, Target_Type);
          end if;
 
+         return;
+
+      else
          return;
       end if;
 
@@ -4664,6 +4725,20 @@ package body Sem_Eval is
       CV_Ent.V := Val;
       return Val;
    end Expr_Value;
+
+   ------------------
+   -- Expr_Value_A --
+   ------------------
+
+   function Expr_Value_A (N : Node_Id) return Node_Id is
+   begin
+      if Nkind (N) = N_Aggregate then
+         return N;
+      else
+         pragma Assert (Ekind (Entity (N)) = E_Constant);
+         return Expr_Value_A (Constant_Value (Entity (N)));
+      end if;
+   end Expr_Value_A;
 
    ------------------
    -- Expr_Value_E --
@@ -7294,6 +7369,7 @@ package body Sem_Eval is
 
          if not Fold
            and then not Has_Modular_Operations (Etype (N))
+           and then not Is_Array_Type (Etype (N))
          then
             case Nkind (N) is
                when N_Op_And =>

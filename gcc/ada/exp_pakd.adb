@@ -1242,7 +1242,9 @@ package body Exp_Pakd is
 
          --  Determine if right side is all 0 bits or all 1 bits
 
-         if Compile_Time_Known_Value (Rhs) then
+         if Compile_Time_Known_Value (Rhs)
+           and then Is_Discrete_Type (Etype (Rhs))
+         then
             Rhs_Val := Expr_Rep_Value (Rhs);
 
          --  The following test catches the case of an unchecked conversion of
