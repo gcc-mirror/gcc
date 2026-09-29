@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "custom-sarif-properties/cfg.h"
 #include "tree-diagnostic-sink-extensions.h"
 #include "tree-logical-location.h"
-#include "tree-pass.h"
 #include "function.h"
 #include "topics/pass-events.h"
 #include "diagnostics/digraphs.h"

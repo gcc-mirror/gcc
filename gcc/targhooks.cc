@@ -89,7 +89,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "function-abi.h"
 #include "attribs.h"
 #include "asan.h"
-#include "emit-rtl.h"
 #include "gimple.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"

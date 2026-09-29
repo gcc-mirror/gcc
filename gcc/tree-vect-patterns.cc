@@ -36,8 +36,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree-eh.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
-#include "gimple-fold.h"
 #include "gimplify-me.h"
 #include "cfgloop.h"
 #include "tree-vectorizer.h"

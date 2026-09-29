@@ -117,7 +117,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfganal.h"
 #include "internal-fn.h"
-#include "fold-const.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-dse.h"

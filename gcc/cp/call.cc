@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "c-family/c-objc.h"
 #include "internal-fn.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "decl.h"
 #include "c-family/c-type-mismatch.h"

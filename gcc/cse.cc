@@ -42,7 +42,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "dbgcnt.h"
 #include "rtl-iter.h"
-#include "regs.h"
 #include "function-abi.h"
 #include "rtlanal.h"
 #include "expr.h"
