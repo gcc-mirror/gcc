@@ -45,7 +45,6 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        77  func-ret             Binary-Long.
-       77  errno-val            Binary-Long.
        77  lk-mode              PIC 9(8) COMP-5.
        01  ws-access-mode       PIC 9(8) COMP-5.
 

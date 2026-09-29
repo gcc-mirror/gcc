@@ -50,7 +50,6 @@
        77  file-size        		Binary-Long.
        77 Lk-whence             PIC S9(9) USAGE COMP-5 VALUE 0.
        77 func-return           Binary-Long.
-       77 errno-val             Binary-Long.
        77 remaining-bytes       Binary-Long.
        77 bytes-written         Binary-Long.
 

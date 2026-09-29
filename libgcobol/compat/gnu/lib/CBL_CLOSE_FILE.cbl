@@ -44,7 +44,6 @@
        DATA DIVISION.
        WORKING-STORAGE SECTION.
        77  FUNC-RETURN-VALUE		Binary-Long.
-       77  errno-val            Binary-Long.
 
        LINKAGE SECTION.
        01  file-handle    	PIC X(4) COMP-5.
