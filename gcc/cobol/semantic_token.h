@@ -40,7 +40,7 @@ struct lex_picture_t {
   cbl_field_data_t *data; // NULL if error
 
   bool valid() const { return type != FldInvalid; }
-  void dump( cbl_name_t input ) const {
+  void dump( const cbl_name_t input ) const {
     auto len = strlen(input);
     int pad = len < 20? 20 - len : 0;
     fprintf( stderr, "%-20s %s: '%s'%*s @ %u of %u (%s)",

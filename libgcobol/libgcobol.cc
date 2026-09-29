@@ -183,7 +183,7 @@ strfromf64 (char *s, size_t n, const char *f, double v)
 #endif
 
 // Enable Declarative tracing via "match_declarative" environment variable.
-#if defined(MATCH_DECLARATIVE) || true
+#if defined(MATCH_DECLARATIVE)
 # undef  MATCH_DECLARATIVE
 # define MATCH_DECLARATIVE getenv("match_declarative")
 #else
@@ -14036,7 +14036,7 @@ __gg__compare_numdisp_alpha(      cblc_field_t  *left,
                                   int            flags)
   {
   // 'left' is numdisp.  We MOVE it to an alphanumeric of the correct size.
-  charmap_t *charmap_left = __gg__get_charmap(left->encoding);
+  const charmap_t *charmap_left = __gg__get_charmap(left->encoding);
   size_t left_size = left->capacity;
   if( left->attr & separate_e )
     {

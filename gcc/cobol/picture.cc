@@ -305,7 +305,7 @@ namespace picture_validation {
       matrix[rule.state][ch] = rule.next_state;
       i++;
     }
-    if( nextra ) {
+    if( nextra ) { // cppcheck-suppress knownConditionTrueFalse
       cbl_internal_error("%s: %d redundant rules", __func__, nextra);
     }
 
@@ -396,7 +396,7 @@ namespace picture_validation {
       return true;
     }
 
-    bool is_boolean() const    { return symbol_mask == p_one; }
+    bool is_boolean() const    { return symbol_mask == p_one; } // cppcheck-suppress unusedPrivateFunction
     bool is_alphabetic() const { return symbol_mask == p_A; }
     bool is_national() const   { return symbol_mask == p_N; }
 
@@ -624,7 +624,7 @@ namespace picture_validation {
         }
       }
       if( prior_ch == '.' && ch == '.' ) return false;
-      if( ! add_contiguous(ch) )         return false;
+      if( ! add_contiguous(ch) )         return false; // cppcheck-suppress knownConditionTrueFalse
 
       if( ! picsym_settable(ch) ) { return false; }
       picsym_set(ch);
@@ -921,6 +921,7 @@ is_valid_picture(const cbl_loc_t& loc, const char picture[]) {
         int count = result.first;
         if( count == 0 ) {
           dbgmsg("%s: odd zero repeat count for '%s'", __func__, paren);
+          // cppcheck-suppress unreadVariable
           constraint.bad_repeat = paren; // pointless, not used
           return output;
         }
@@ -999,7 +1000,7 @@ process_line( const char picture[], int lineno = 1 ) {
   assert(picture);
   unsigned int mask = picture_validation::invalid_e;
   auto result = is_valid_picture(picture);
-  if( 0 == (mask & result.second) ) {
+  if( 0 == (mask & result.second) ) {  // cppcheck-suppress knownConditionTrueFalse
     printf( "valid   : %s (%s)\n",
             picture, picture_validation::state_str(result.second) );
   } else {
@@ -1008,7 +1009,7 @@ process_line( const char picture[], int lineno = 1 ) {
             picture, unsigned(p - picture), *p,
             picture_validation::state_str(result.second), lineno );
   }
-  return result.second & picture_validation::invalid_e;
+  return result.second & picture_validation::invalid_e;  // cppcheck-suppress knownConditionTrueFalse
 }
 
 static bool
@@ -1032,7 +1033,7 @@ process_file(const char* filename) {
     if( p < picture + len ) *p = '\0';
     process_line(picture, ++lineno);
   }
-  return len != -1;
+  return len != -1; // cppcheck-suppress knownConditionTrueFalse
 }
 
 int
@@ -1053,7 +1054,7 @@ main(int argc, char* argv[]) {
   }
 
   if (picture) {
-    fOK = process_line(picture) ? 0 : 1;
+    fOK = process_line(picture) ? 0 : 1; // cppcheck-suppress knownConditionTrueFalse
   } else {
     if (optind < argc) {
       for (int i = optind; i < argc; ++i) {

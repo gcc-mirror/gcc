@@ -4958,14 +4958,6 @@ expand_picture(const char *picture)
     {
     memmove(pV, pV+1, strlen(pV));
     }
-
-  // AD HOC FIX for an improper trailing space
-  char *pspace = strchr(retval, ascii_space);
-  if( pspace )
-    {
-    *pspace = NULLCH;
-    }
-
   return retval;
   }
 

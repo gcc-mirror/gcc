@@ -1964,9 +1964,6 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc ) {
 
             // __gg__string_to_numeric_edited operates in ASCII space:
             char *expanded = expand_picture(data.picture);
-            // By the time you read this, this next statement ought to be
-            // obsolete.  See RT issue 3682.
-            expanded[char_capacity()] = '\0';
             if( type == FldNumericEdited )
               {
               expand_expanded(expanded);
