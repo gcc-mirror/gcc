@@ -992,15 +992,14 @@ fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
   return true;
 }
 
-/* Add zero of TYPE to R and return true.  */
+/* Add zero of TYPE to R.  */
 
-static bool
+static void
 range_from_missing_constructor_part (vrange &r, tree type)
 {
   value_range zero (type);
   zero.set_zero (type);
   r.union_ (zero);
-  return true;
 }
 
 // One step of fold_using_range::range_from_readonly_var.  Process expressions
@@ -1070,7 +1069,10 @@ range_from_readonly_load (vrange &r, tree type, tree cst,
 	  return range_from_readonly_load (r, type, val, comps, i);
 	}
       if (TREE_CODE (TREE_TYPE (cst)) == RECORD_TYPE)
-	return range_from_missing_constructor_part (r, type);
+	{
+	  range_from_missing_constructor_part (r, type);
+	  return true;
+	}
       else
 	/* Missing constructor of a union field just isn't like other missing
 	   constructor parts.  */
@@ -1089,7 +1091,8 @@ range_from_readonly_load (vrange &r, tree type, tree cst,
 	{
 	  if (ctor_idx < CONSTRUCTOR_NELTS (cst))
 	    return false;
-	  return range_from_missing_constructor_part (r, type);
+	  range_from_missing_constructor_part (r, type);
+	  return true;
 	}
       return range_from_readonly_load (r, type, val, comps, i);
     }
@@ -1105,10 +1108,7 @@ range_from_readonly_load (vrange &r, tree type, tree cst,
     = (tree_to_uhwi (TYPE_MAX_VALUE (domain))
        - tree_to_uhwi (TYPE_MIN_VALUE (domain)) + 1);
   if (CONSTRUCTOR_NELTS (cst) < needed_count)
-    {
-      if (!range_from_missing_constructor_part (r, type))
-	return false;
-    }
+    range_from_missing_constructor_part (r, type);
 
   FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (cst), ix, index, val)
     {
