@@ -268,6 +268,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
         need_libgcobol   = false;
         need_libdl       = false;
         need_libstdc     = false;
+        need_libcompat   = false;
+        need_libposix    = false;
         break;
 
       case OPT_static_libgcobol:
