@@ -1344,6 +1344,9 @@ calculate_capacity( struct symbol_elem_t *e) {
     // Stop if field isn't a member of the group.
     if( end_of_group(group, field) ) break;
 
+    // Exclude 78-level entries from groups.
+    if (field->level == 78) continue;
+
     if( field->type == FldGroup ) {
       e = calculate_capacity(e);
       e--; // set e to last symbol processed (not next one, because ++e)
@@ -2291,7 +2294,10 @@ symbol_field_parent_set( cbl_field_t *field )
       case 66: case 88:
         break;
       default:
-        return NULL; // 77/78 cannot be a parent
+        // 77 cannot be a parent
+        if (prior->level == 77) return NULL;
+        // 78 cannot be a parent, try previous element
+        if (prior->level == 78) continue;
       }
     }
 
