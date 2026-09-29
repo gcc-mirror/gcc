@@ -1185,8 +1185,8 @@ GDCFLAGS = @GDCFLAGS@
 # Libs needed (at present) just for jcf-dump.
 LDEXP_LIB = @LDEXP_LIB@
 
-ZSTD_INC = @ZSTD_CPPFLAGS@
-ZSTD_LIB = @ZSTD_LDFLAGS@ @ZSTD_LIB@
+ZSTD_INC = @ZSTD_CFLAGS@
+ZSTD_LIB = @ZSTD_LIBS@
 
 # Likewise, for use in the tools that must run on this machine
 # even if we are cross-building GCC.
