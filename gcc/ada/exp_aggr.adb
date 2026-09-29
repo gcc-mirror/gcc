@@ -214,18 +214,6 @@ package body Exp_Aggr is
    --  defaults. An aggregate for a type with mutable components must be
    --  expanded into individual assignments.
 
-   procedure Initialize_Discriminants (N : Node_Id; Typ : Entity_Id);
-   --  If the type of the aggregate is a type extension with renamed discrimi-
-   --  nants, we must initialize the hidden discriminants of the parent.
-   --  Otherwise, the target object must not be initialized. The discriminants
-   --  are initialized by calling the initialization procedure for the type.
-   --  This is incorrect if the initialization of other components has any
-   --  side effects. We restrict this call to the case where the parent type
-   --  has a variant part, because this is the only case where the hidden
-   --  discriminants are accessed, namely when calling discriminant checking
-   --  functions of the parent type, and when applying a stream attribute to
-   --  an object of the derived type.
-
    ---------------------------------------------------------
    -- Local Subprograms for Container Aggregate Expansion --
    ---------------------------------------------------------
@@ -2282,26 +2270,17 @@ package body Exp_Aggr is
       --  do not provide discriminants for it, check aggregate components for
       --  values of the discriminants.
 
-      procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id);
-      --  If Typ is derived, and constrains discriminants of the parent type,
-      --  these discriminants are not components of the aggregate, and must be
-      --  initialized. The assignments are appended to List. The same is done
-      --  if Typ derives from an already constrained subtype of a discriminated
-      --  parent type.
+      procedure Init_Parent_Discriminants;
+      --  If the type is a tagged extension and constrains discriminants of the
+      --  parent type, these discriminants are not components of the aggregate,
+      --  and must be initialized. Likewise if the type derives from an already
+      --  constrained subtype of a discriminated tagged type.
 
       procedure Init_Stored_Discriminants;
-      --  If the type is derived and has inherited discriminants, generate
-      --  explicit assignments for each, using the store constraint of the
-      --  type. Note that both visible and stored discriminants must be
-      --  initialized in case the derived type has some renamed and some
-      --  constrained discriminants.
-
-      procedure Init_Visible_Discriminants;
-      --  If type has discriminants, retrieve their values from aggregate,
-      --  and generate explicit assignments for each. This does not include
-      --  discriminants inherited from ancestor, which are handled above.
-      --  The type of the aggregate is a subtype created ealier using the
-      --  given values of the discriminant components of the aggregate.
+      --  If the type has discriminants, retrieve the values of the stored ones
+      --  from the type of the aggregate, and generate explicit assignments for
+      --  them. The type of the aggregate is a subtype built earlier using the
+      --  values of the discriminant components in the aggregate.
 
       function Is_Int_Range_Bounds (Bounds : Node_Id) return Boolean;
       --  Check whether Bounds is a range node and its lower and higher bounds
@@ -2570,55 +2549,18 @@ package body Exp_Aggr is
       end Get_Explicit_Discriminant_Value;
 
       -------------------------------
-      -- Init_Hidden_Discriminants --
+      -- Init_Parent_Discriminants --
       -------------------------------
 
-      procedure Init_Hidden_Discriminants (Typ : Entity_Id; List : List_Id) is
-         function Is_Completely_Hidden_Discriminant
-           (Discr : Entity_Id) return Boolean;
-         --  Determine whether Discr is a completely hidden discriminant of
-         --  type Typ.
-
-         ---------------------------------------
-         -- Is_Completely_Hidden_Discriminant --
-         ---------------------------------------
-
-         function Is_Completely_Hidden_Discriminant
-           (Discr : Entity_Id) return Boolean
-         is
-            Item : Entity_Id;
-
-         begin
-            --  Use First/Next_Entity as First/Next_Discriminant do not yield
-            --  completely hidden discriminants.
-
-            Item := First_Entity (Typ);
-            while Present (Item) loop
-               if Ekind (Item) = E_Discriminant
-                 and then Is_Completely_Hidden (Item)
-                 and then Chars (Original_Record_Component (Item)) =
-                          Chars (Discr)
-               then
-                  return True;
-               end if;
-
-               Next_Entity (Item);
-            end loop;
-
-            return False;
-         end Is_Completely_Hidden_Discriminant;
-
-         --  Local variables
-
+      procedure Init_Parent_Discriminants is
          Base_Typ     : Entity_Id;
          Discr        : Entity_Id;
          Discr_Constr : Elmt_Id;
-         Discr_Init   : Node_Id;
          Discr_Val    : Node_Id;
          In_Aggr_Type : Boolean;
          Par_Typ      : Entity_Id;
 
-      --  Start of processing for Init_Hidden_Discriminants
+      --  Start of processing for Init_Parent_Discriminants
 
       begin
          --  The constraints on the hidden discriminants, if present, are kept
@@ -2667,39 +2609,43 @@ package body Exp_Aggr is
             while Present (Discr) and then Present (Discr_Constr) loop
                Discr_Val := Node (Discr_Constr);
 
-               --  The parent discriminant is renamed in the derived type,
-               --  nothing to initialize.
-
-               --    type Deriv_Typ (Discr : ...)
-               --      is new Parent_Typ (Discr => Discr);
+               --  The parent discriminant is renamed in the derived type
 
                if Is_Entity_Name (Discr_Val)
                  and then Ekind (Entity (Discr_Val)) = E_Discriminant
                then
-                  null;
+                  Comp_Expr :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => New_Copy_Tree (Target),
+                      Selector_Name => New_Occurrence_Of (Discr, Loc));
 
-               --  When the parent discriminant is constrained at the type
-               --  extension level, it does not appear in the derived type.
+                  Discr_Val :=
+                    Get_Discriminant_Value
+                      (Entity (Discr_Val),
+                       Typ,
+                       Discriminant_Constraint (N_Typ));
 
-               --    type Deriv_Typ (Discr : ...)
-               --      is new Parent_Typ (Discr        => Discr,
-               --                         Hidden_Discr => Expression);
-
-               elsif Is_Completely_Hidden_Discriminant (Discr) then
-                  null;
-
-               --  Otherwise initialize the discriminant
-
-               else
-                  Discr_Init :=
+                  Instr :=
                     Make_OK_Assignment_Statement (Loc,
-                      Name       =>
-                        Make_Selected_Component (Loc,
-                          Prefix        => New_Copy_Tree (Target),
-                          Selector_Name => New_Occurrence_Of (Discr, Loc)),
+                      Name       => Comp_Expr,
                       Expression => New_Copy_Tree (Discr_Val));
 
-                  Append_To (List, Discr_Init);
+                  Append_To (L, Instr);
+
+               --  The parent discriminant is constrained in the derived type
+
+               else
+                  Comp_Expr :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => New_Copy_Tree (Target),
+                      Selector_Name => New_Occurrence_Of (Discr, Loc));
+
+                  Instr :=
+                    Make_OK_Assignment_Statement (Loc,
+                      Name       => Comp_Expr,
+                      Expression => New_Copy_Tree (Discr_Val));
+
+                  Append_To (L, Instr);
                end if;
 
                Next_Elmt (Discr_Constr);
@@ -2709,38 +2655,7 @@ package body Exp_Aggr is
             In_Aggr_Type := False;
             Base_Typ := Base_Type (Par_Typ);
          end loop;
-      end Init_Hidden_Discriminants;
-
-      --------------------------------
-      -- Init_Visible_Discriminants --
-      --------------------------------
-
-      procedure Init_Visible_Discriminants is
-         Discriminant       : Entity_Id;
-         Discriminant_Value : Node_Id;
-
-      begin
-         Discriminant := First_Discriminant (Typ);
-         while Present (Discriminant) loop
-            Comp_Expr :=
-              Make_Selected_Component (Loc,
-                Prefix        => New_Copy_Tree (Target),
-                Selector_Name => New_Occurrence_Of (Discriminant, Loc));
-
-            Discriminant_Value :=
-              Get_Discriminant_Value
-                (Discriminant, Typ, Discriminant_Constraint (N_Typ));
-
-            Instr :=
-              Make_OK_Assignment_Statement (Loc,
-                Name       => Comp_Expr,
-                Expression => New_Copy_Tree (Discriminant_Value));
-
-            Append_To (L, Instr);
-
-            Next_Discriminant (Discriminant);
-         end loop;
-      end Init_Visible_Discriminants;
+      end Init_Parent_Discriminants;
 
       -------------------------------
       -- Init_Stored_Discriminants --
@@ -2751,7 +2666,7 @@ package body Exp_Aggr is
          Discriminant_Value : Node_Id;
 
       begin
-         Discriminant := First_Stored_Discriminant (Typ);
+         Discriminant := First_Stored_Discriminant (Base_Type (Typ));
          while Present (Discriminant) loop
             Comp_Expr :=
               Make_Selected_Component (Loc,
@@ -2760,7 +2675,7 @@ package body Exp_Aggr is
 
             Discriminant_Value :=
               Get_Discriminant_Value
-                (Discriminant, N_Typ, Discriminant_Constraint (N_Typ));
+                (Discriminant, Typ, Discriminant_Constraint (N_Typ));
 
             Instr :=
               Make_OK_Assignment_Statement (Loc,
@@ -3137,14 +3052,14 @@ package body Exp_Aggr is
                end if;
             end if;
 
-            --  Generate assignments of hidden discriminants. If the base type
+            --  Generate assignments of parent discriminants. If the base type
             --  is an unchecked union, the discriminants are absent from values
             --  of the type, so assignments for them are not emitted.
 
             if Has_Discriminants (Typ)
               and then not Is_Unchecked_Union (Base_Type (Typ))
             then
-               Init_Hidden_Discriminants (Typ, L);
+               Init_Parent_Discriminants;
             end if;
 
             --  If the ancestor part is a subtype mark for a controlled type,
@@ -3174,23 +3089,22 @@ package body Exp_Aggr is
       --  Normal case (not an extension aggregate)
 
       else
-         --  Generate the discriminant expressions, component by component.
-         --  If the base type is an unchecked union, the discriminants are
-         --  absent from values of the type, so assignments for them are not
-         --  emitted.
+         --  Generate assignments of all the discriminants. If the base type
+         --  is an unchecked union, the discriminants are absent from values
+         --  of the type, so assignments for them are not emitted.
 
          if Has_Discriminants (Typ)
            and then not Is_Unchecked_Union (Base_Type (Typ))
          then
-            Init_Hidden_Discriminants (Typ, L);
+            --  Generate assignments of parent discriminants
 
-            --  Generate discriminant init values for the visible discriminants
-
-            Init_Visible_Discriminants;
-
-            if Is_Derived_Type (N_Typ) then
-               Init_Stored_Discriminants;
+            if Is_Tagged_Type (Typ) then
+               Init_Parent_Discriminants;
             end if;
+
+            --  Generate assignments of stored discriminants
+
+            Init_Stored_Discriminants;
          end if;
       end if;
 
@@ -3900,8 +3814,6 @@ package body Exp_Aggr is
 
       Set_No_Initialization (N);
 
-      Initialize_Discriminants (N, Typ);
-
       --  Park the generated statements if the declaration requires it and is
       --  not the node that is wrapped in a transient scope.
 
@@ -4323,6 +4235,7 @@ package body Exp_Aggr is
       then
          declare
             Lhs : constant Node_Id := Name (Parent_Node);
+
          begin
             --  Apply discriminant check if required
 
@@ -4364,7 +4277,6 @@ package body Exp_Aggr is
 
          Set_No_Initialization (Instr);
          Insert_Action (N, Instr);
-         Initialize_Discriminants (Instr, Full_Typ);
 
          Target_Expr := New_Occurrence_Of (Temp, Loc);
          Aggr_Code   := Build_Record_Aggr_Code (N, Full_Typ, Target_Expr);
@@ -9560,37 +9472,6 @@ package body Exp_Aggr is
 
       return False;
    end Has_Mutable_Components;
-
-   ------------------------------
-   -- Initialize_Discriminants --
-   ------------------------------
-
-   procedure Initialize_Discriminants (N : Node_Id; Typ : Entity_Id) is
-      Loc  : constant Source_Ptr := Sloc (N);
-      Bas  : constant Entity_Id  := Base_Type (Typ);
-      Par  : constant Entity_Id  := Etype (Bas);
-      Decl : constant Node_Id    := Parent (Par);
-      Ref  : Node_Id;
-
-   begin
-      if Is_Tagged_Type (Bas)
-        and then Is_Derived_Type (Bas)
-        and then Has_Discriminants (Par)
-        and then Has_Discriminants (Bas)
-        and then Number_Discriminants (Bas) /= Number_Discriminants (Par)
-        and then Nkind (Decl) = N_Full_Type_Declaration
-        and then Nkind (Type_Definition (Decl)) = N_Record_Definition
-        and then
-          Present (Variant_Part (Component_List (Type_Definition (Decl))))
-        and then Nkind (N) /= N_Extension_Aggregate
-      then
-         --   Call init proc to set discriminants.
-         --   There should eventually be a special procedure for this ???
-
-         Ref := New_Occurrence_Of (Defining_Identifier (N), Loc);
-         Insert_Actions_After (N, Build_Initialization_Call (N, Ref, Typ));
-      end if;
-   end Initialize_Discriminants;
 
    ----------------
    -- Must_Slide --
