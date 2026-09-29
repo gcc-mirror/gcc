@@ -1559,11 +1559,12 @@ costs::record_type_sizes (vect_cost_for_stmt kind, stmt_vec_info stmt_info,
   if (!m_largest_type || size > tree_to_uhwi (TYPE_SIZE (m_largest_type)))
     m_largest_type = type;
 
-  /* ??? What about scalar loads and a vec_construct or similar?  */
+  /* We include scalar load and store because strided and gather accesses are
+     costed as scalar loads.  */
   bool load_p = (kind == vector_load || kind == unaligned_load
-		 || kind == vector_gather_load);
+		 || kind == vector_gather_load || kind == scalar_load);
   bool store_p = (kind == vector_store || kind == unaligned_store
-		  || kind == vector_scatter_store);
+		  || kind == vector_scatter_store || kind == scalar_store);
   if ((load_p || store_p)
       && (!m_smallest_type
 	  || size < tree_to_uhwi (TYPE_SIZE (m_smallest_type))))
