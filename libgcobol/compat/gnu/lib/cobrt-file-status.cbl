@@ -1,5 +1,6 @@
         >> PUSH source format
         >>SOURCE format is fixed
+        COPY "cblproto.cpy".
         IDENTIFICATION DIVISION.
         FUNCTION-ID. COBRT-FILE-STATUS.
         DATA DIVISION.
