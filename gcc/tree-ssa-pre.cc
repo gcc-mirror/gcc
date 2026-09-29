@@ -2950,7 +2950,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	    if (!genop2)
 	      return NULL_TREE;
 	  }
-	return build3 (COMPONENT_REF, TREE_TYPE (op1), op0, op1, genop2);
+	return build3 (COMPONENT_REF, currop->type, op0, op1, genop2);
       }
 
     case SSA_NAME:
