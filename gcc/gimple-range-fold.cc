@@ -992,113 +992,163 @@ fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
   return true;
 }
 
-/* Add zero of TYPE to R.  */
+// The range of a load from a read-only aggregate: walk its initializer along
+// the component path of the reference, COMPONENT_PATH, from the aggregate out,
+// unioning into R the constants the load can reach.  For example:
+//
+//   static const struct { int a, b[2]; } tbl[2] = { { 1, { 2, 3 } },
+//                                                   { 4, { 5, 6 } } };
+//   ... = tbl[i].b[1];
+//
+// COMPONENT_PATH is { tbl[i], tbl[i].b, tbl[i].b[1] } and R is [3, 3][6, 6].
+// The methods return false when a range cannot be determined.
 
-static void
-range_from_missing_constructor_part (vrange &r, tree type)
+class ctor_ref_range
 {
-  value_range zero (type);
-  zero.set_zero (type);
-  r.union_ (zero);
-}
+public:
+  ctor_ref_range (vrange &r, tree type, const vec<tree> &component_path)
+    : m_r (r), m_type (type), m_component_path (component_path) { }
+  bool accumulate_range (tree init, unsigned i);
+private:
+  bool accumulate_range_from_scalar (tree init);
+  bool accumulate_range_from_component_ref (tree init, unsigned i, tree fld);
+  bool accumulate_range_from_array_ref (tree init, unsigned i, tree idx);
+  void accumulate_range_from_missing_constructor_elt ();
 
-// One step of fold_using_range::range_from_readonly_var.  Process expressions
-// in COMPS which together load a value of TYPE, from index I to 0 according to
-// the corresponding static initializer in CST which should be either a scalar
-// invariant or a constructor.  Return true if it is possible to add all
-// constants which can be loaded from CST (which must be storable to TYPE) to R
-// and do so.
+  vrange &m_r;
+  tree m_type;
+  const vec<tree> &m_component_path;
+};
 
-static bool
-range_from_readonly_load (vrange &r, tree type, tree cst,
-			  const vec <tree> &comps, unsigned i)
+// Accumulate the range of the load from INIT, the initializer reached after
+// I steps of the component path.
+
+bool
+ctor_ref_range::accumulate_range (tree init, unsigned i)
 {
-  if (i == 0)
-    {
-      if (!useless_type_conversion_p (type, TREE_TYPE (cst)))
-	return false;
-
-      if (POINTER_TYPE_P (type))
-	{
-	  prange elt;
-	  if (integer_zerop (cst))
-	    elt.set_zero (type);
-	  else if (tree_single_nonzero_p (cst))
-	    elt.set_nonzero (type);
-	  else
-	    return false;
-	  r.union_ (elt);
-	  return true;
-	}
-
-      if (TREE_CODE (cst) == REAL_CST)
-	{
-	  const REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (cst);
-	  frange elt;
-	  if (real_isnan (rv))
-	    elt.set_nan (type, real_isneg (rv));
-	  else
-	    elt.set (type, *rv, *rv, nan_state (false));
-	  r.union_ (elt);
-	  return true;
-	}
-
-      if (TREE_CODE (cst) != INTEGER_CST)
-	return false;
-
-      wide_int wi_cst = wi::to_wide (cst);
-      r.union_ (int_range<1> (type, wi_cst, wi_cst));
-      return true;
-    }
+  if (i == m_component_path.length ())
+    return accumulate_range_from_scalar (init);
   /* TODO: Perhaps handle RAW_DATA_CST too.  */
-  if (TREE_CODE (cst) != CONSTRUCTOR)
+  if (TREE_CODE (init) != CONSTRUCTOR)
     return false;
 
-  i--;
-  tree expr = comps[i];
+  tree ref = m_component_path[i];
+  if (TREE_CODE (ref) == COMPONENT_REF)
+    return accumulate_range_from_component_ref (init, i + 1,
+						TREE_OPERAND (ref, 1));
+
+  gcc_assert (TREE_CODE (ref) == ARRAY_REF);
+  return accumulate_range_from_array_ref (init, i + 1, TREE_OPERAND (ref, 1));
+}
+
+// Accumulate the range from the scalar INIT at the end of the component path.
+// For example, for t[1] with static const int t[2] = { 4, 5 }, INIT is 5 and
+// the range is [5, 5].
+
+bool
+ctor_ref_range::accumulate_range_from_scalar (tree init)
+{
+  if (!useless_type_conversion_p (m_type, TREE_TYPE (init)))
+    return false;
+
+  if (POINTER_TYPE_P (m_type))
+    {
+      prange elt;
+      if (integer_zerop (init))
+	elt.set_zero (m_type);
+      else if (tree_single_nonzero_p (init))
+	elt.set_nonzero (m_type);
+      else
+	return false;
+      m_r.union_ (elt);
+      return true;
+    }
+
+  if (TREE_CODE (init) == REAL_CST)
+    {
+      const REAL_VALUE_TYPE *rv = TREE_REAL_CST_PTR (init);
+      frange elt;
+      if (real_isnan (rv))
+	elt.set_nan (m_type, real_isneg (rv));
+      else
+	elt.set (m_type, *rv, *rv, nan_state (false));
+      m_r.union_ (elt);
+      return true;
+    }
+
+  if (TREE_CODE (init) != INTEGER_CST)
+    return false;
+
+  wide_int wi_cst = wi::to_wide (init);
+  m_r.union_ (int_range<1> (m_type, wi_cst, wi_cst));
+  return true;
+}
+
+// Accumulate the range from field FLD of the record or union initializer
+// INIT.  FLD is the field of a COMPONENT_REF in the component path and I the
+// step after it.  For example, when walking s.b in:
+//
+//   static const struct { int a, b; } s = { 1, 2 };
+//
+// INIT is { 1, 2 }, FLD is b, and I is 1, the end of the path, and the range
+// is [2, 2].
+
+bool
+ctor_ref_range::accumulate_range_from_component_ref (tree init, unsigned i,
+						     tree fld)
+{
   unsigned ix;
   tree index, val;
-
-  if (TREE_CODE (expr) == COMPONENT_REF)
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), ix, index, val)
     {
-      tree ref_fld = TREE_OPERAND (expr, 1);
-      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (cst), ix, index, val)
-	{
-	  if (index != ref_fld)
-	    continue;
-	  return range_from_readonly_load (r, type, val, comps, i);
-	}
-      if (TREE_CODE (TREE_TYPE (cst)) == RECORD_TYPE)
-	{
-	  range_from_missing_constructor_part (r, type);
-	  return true;
-	}
-      else
-	/* Missing constructor of a union field just isn't like other missing
-	   constructor parts.  */
-	return false;
+      if (index != fld)
+	continue;
+      return accumulate_range (val, i);
     }
+  if (TREE_CODE (TREE_TYPE (init)) == RECORD_TYPE)
+    {
+      accumulate_range_from_missing_constructor_elt ();
+      return true;
+    }
+  else
+    /* Missing constructor of a union field just isn't like other missing
+       constructor parts.  */
+    return false;
+}
 
-  gcc_assert (TREE_CODE (expr) == ARRAY_REF);
-  tree op1 = TREE_OPERAND (expr, 1);
+// Accumulate the range from the element at IDX of the array initializer INIT,
+// or from every element when IDX is not a constant.  IDX is the index of an
+// ARRAY_REF in the component path and I the step after it.  For example,
+// when walking t[1] or t[n] in:
+//
+//   static const int t[2] = { 4, 5 };
+//
+// INIT is { 4, 5 } and I is 1, the end of the path.  For t[1] the range is
+// [5, 5] and for t[n] it is [4, 5].
 
-  if (TREE_CODE (op1) == INTEGER_CST)
+bool
+ctor_ref_range::accumulate_range_from_array_ref (tree init, unsigned i,
+						 tree idx)
+{
+  if (TREE_CODE (idx) == INTEGER_CST)
     {
       unsigned ctor_idx;
-      val = get_array_ctor_element_at_index (cst, wi::to_offset (op1),
-					     &ctor_idx);
+      tree val = get_array_ctor_element_at_index (init, wi::to_offset (idx),
+						  &ctor_idx);
       if (!val)
 	{
-	  if (ctor_idx < CONSTRUCTOR_NELTS (cst))
+	  // An index the initializer skips over, like t[1] of
+	  //   static const int t[4] = { [2] = 5 };
+	  // is not read as zero, unlike one past its end.
+	  if (ctor_idx < CONSTRUCTOR_NELTS (init))
 	    return false;
-	  range_from_missing_constructor_part (r, type);
+	  accumulate_range_from_missing_constructor_elt ();
 	  return true;
 	}
-      return range_from_readonly_load (r, type, val, comps, i);
+      return accumulate_range (val, i);
     }
 
-  tree arr_type = TREE_TYPE (cst);
-  tree domain = TYPE_DOMAIN (arr_type);
+  tree domain = TYPE_DOMAIN (TREE_TYPE (init));
   if (!TYPE_MIN_VALUE (domain)
       || !TYPE_MAX_VALUE (domain)
       || !tree_fits_uhwi_p (TYPE_MIN_VALUE (domain))
@@ -1107,19 +1157,34 @@ range_from_readonly_load (vrange &r, tree type, tree cst,
   unsigned HOST_WIDE_INT needed_count
     = (tree_to_uhwi (TYPE_MAX_VALUE (domain))
        - tree_to_uhwi (TYPE_MIN_VALUE (domain)) + 1);
-  if (CONSTRUCTOR_NELTS (cst) < needed_count)
-    range_from_missing_constructor_part (r, type);
+  if (CONSTRUCTOR_NELTS (init) < needed_count)
+    accumulate_range_from_missing_constructor_elt ();
 
-  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (cst), ix, index, val)
+  unsigned ix;
+  tree val;
+  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), ix, val)
     {
       /* TODO: If the array index in the expr is an SSA_NAME with a known
 	 range, we could use just values loaded from the corresponding array
 	 elements.  */
-      if (!range_from_readonly_load (r, type, val, comps, i))
+      if (!accumulate_range (val, i))
 	return false;
     }
 
   return true;
+}
+
+// Accumulate [0, 0] for a constructor element the initializer leaves out.
+// For example, when loading t[1] in:
+//
+//   static const int t[2] = { 4 };
+
+void
+ctor_ref_range::accumulate_range_from_missing_constructor_elt ()
+{
+  value_range zero (m_type);
+  zero.set_zero (m_type);
+  m_r.union_ (zero);
 }
 
 // Attempt to calculate the range of value loaded by STMT (which must be an
@@ -1146,14 +1211,16 @@ fold_using_range::range_from_readonly_var (vrange &r, gimple *stmt)
     return false;
   limit *= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (t)));
 
-  unsigned count = 0;
+  // The component path of the reference, from the aggregate out.
+  auto_vec <tree, 4> component_path;
   while (TREE_CODE (t) == ARRAY_REF
 	 || TREE_CODE (t) == COMPONENT_REF)
     {
-      count++;
+      component_path.safe_push (t);
       t = TREE_OPERAND (t, 0);
     }
-  if (!count
+  component_path.reverse ();
+  if (component_path.is_empty ()
       || (TREE_CODE (t) != VAR_DECL
 	  && TREE_CODE (t) != CONST_DECL))
     return false;
@@ -1170,21 +1237,9 @@ fold_using_range::range_from_readonly_var (vrange &r, gimple *stmt)
       || TREE_CODE (ctor) != CONSTRUCTOR)
     return false;
 
-  t = gimple_assign_rhs1 (stmt);
-  auto_vec <tree, 4> comps;
-  comps.safe_grow (count, true);
-  int i = 0;
-  while (TREE_CODE (t) == ARRAY_REF
-	 || TREE_CODE (t) == COMPONENT_REF)
-    {
-      comps[i] = t;
-      t = TREE_OPERAND (t, 0);
-      i++;
-    }
-
   value_range tmp (type);
-  bool res = (range_from_readonly_load (tmp, type, ctor, comps, count)
-	      && !tmp.varying_p ());
+  ctor_ref_range load (tmp, type, component_path);
+  bool res = load.accumulate_range (ctor, 0) && !tmp.varying_p ();
   if (res)
     r = tmp;
   return res;
