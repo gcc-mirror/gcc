@@ -1734,7 +1734,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    error_at (loc, "%qE requires 6 arguments", fndecl);
 	  return error_mark_node;
 	}
-      unsigned HOST_WIDE_INT size;
+      unsigned HOST_WIDE_INT size = 0;
       for (int i=0; i<3; i++) {
 	/* Get the first argument to determine the actual type.  */
 	tree arg0 = (*arglist)[i];
