@@ -1365,11 +1365,11 @@ foo +:= 1; # and so is this.  #
 Unless @option{-std=algol68} is specified in the command line, two
 styles of nestable comments can be also used with UPPER stropping: the
 already explained @code{@{ ... @}} and a ``bold'' style that uses
-@code{@B{code} ... @B{edoc}}.  For example:
+@code{@B{note} ... @B{eton}}.  For example:
 
 @example
 foo := 10; @{ this is a nestable comment in brief style.  @}
-foo +:= 1; @B{note} this is a nestable comment in bold style.  @B{eton}.
+foo +:= 1; @B{note} this is a nestable comment in bold style.  @B{eton}
 @end example
 
 @example
