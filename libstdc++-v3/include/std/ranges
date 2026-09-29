@@ -7976,7 +7976,9 @@ namespace views::__adaptor
 #ifdef __cpp_lib_ranges_repeat // C++ >= 23
   template<move_constructible _Tp, semiregular _Bound = unreachable_sentinel_t>
     requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
-      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
+      && (__detail::__is_signed_integer_like<_Bound>
+	  || (__detail::__is_integer_like<_Bound> && weakly_incrementable<_Bound>)
+	  || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view : public view_interface<repeat_view<_Tp, _Bound>>
   {
     [[no_unique_address]] __detail::__box<_Tp> _M_value;
@@ -8050,11 +8052,22 @@ namespace views::__adaptor
 
   template<move_constructible _Tp, semiregular _Bound>
     requires is_object_v<_Tp> && same_as<_Tp, remove_cv_t<_Tp>>
-      && (__detail::__is_integer_like<_Bound> || same_as<_Bound, unreachable_sentinel_t>)
+      && (__detail::__is_signed_integer_like<_Bound>
+	  || (__detail::__is_integer_like<_Bound> && weakly_incrementable<_Bound>)
+	  || same_as<_Bound, unreachable_sentinel_t>)
   class repeat_view<_Tp, _Bound>::_Iterator
   {
     using __index_type
       = __conditional_t<same_as<_Bound, unreachable_sentinel_t>, ptrdiff_t, _Bound>;
+
+    static auto
+    _S_difference_type()
+    {
+      if constexpr (__detail::__is_signed_integer_like<__index_type>)
+	return __index_type{};
+      else
+	return __detail::__iota_diff_t<__index_type>{};
+    }
 
     const _Tp* _M_value = nullptr;
     __index_type _M_current = __index_type();
@@ -8073,9 +8086,7 @@ namespace views::__adaptor
     using iterator_concept = random_access_iterator_tag;
     using iterator_category = random_access_iterator_tag;
     using value_type = _Tp;
-    using difference_type = __conditional_t<__detail::__is_signed_integer_like<__index_type>,
-					    __index_type,
-					    __detail::__iota_diff_t<__index_type>>;
+    using difference_type = decltype(_S_difference_type());
 
     _Iterator() = default;
 

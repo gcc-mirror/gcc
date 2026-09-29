@@ -172,6 +172,47 @@ test09()
   VERIFY( v[0][0] == 5 );
 }
 
+template<typename T, typename B>
+concept can_repeat = requires (T t, B b) {
+  typename ranges::repeat_view<T, B>;
+  views::repeat(t, b);
+};
+
+void
+test10()
+{
+  // LWG 3875. std::ranges::repeat_view<T, IntegerClass>::iterator may be ill-formed
+#ifdef __SIZEOF_INT128__
+  using max_sint = __int128;
+  using max_uint = unsigned __int128;
+#else
+  using max_sint = long long;
+  using max_uint = unsigned long long;
+#endif
+
+  static_assert( can_repeat<int, max_sint> );
+  ranges::repeat_view<int, max_sint> r1(1, 10);
+  VERIFY( ranges::count(r1, 1) == 10 );
+
+  static_assert( can_repeat<int, max_uint> );
+  ranges::repeat_view<int, max_uint> r2(2, 11);
+  VERIFY( ranges::count(r2, 2) == 11 );
+
+  using iotav = ranges::iota_view<max_sint, max_sint>;
+  using sint_class = ranges::range_difference_t<iotav>;
+  static_assert( !std::is_integral_v<sint_class> );
+
+  static_assert( can_repeat<int, sint_class> );
+  ranges::repeat_view<int, sint_class> r3(3, 12);
+  VERIFY( ranges::count(r3, 3) == 12 );
+
+  using iotas = ranges::subrange<ranges::iterator_t<iotav>>;
+  using uint_class = ranges::range_size_t<iotas>;
+  static_assert( !std::is_integral_v<uint_class> );
+
+  static_assert( !can_repeat<int, uint_class> );
+}
+
 int
 main()
 {
@@ -184,4 +225,5 @@ main()
   test07();
   test08();
   test09();
+  test10();
 }
