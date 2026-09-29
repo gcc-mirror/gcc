@@ -10742,6 +10742,16 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			   && !gfc_has_vector_subscript (target))
 			  || gfc_is_ptr_fcn (target));
 
+  /* A type parameter inquiry is not a variable.  */
+  if (sym->assoc->variable && target->expr_type == EXPR_VARIABLE)
+    for (gfc_ref *ref = target->ref; ref; ref = ref->next)
+      if (ref->type == REF_INQUIRY
+	  && (ref->u.i == INQUIRY_LEN || ref->u.i == INQUIRY_KIND))
+	{
+	  sym->assoc->variable = false;
+	  break;
+	}
+
   /* Finally resolve if this is an array or not.  */
   if (target->expr_type == EXPR_FUNCTION && target->rank == 0
       && (sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED))
