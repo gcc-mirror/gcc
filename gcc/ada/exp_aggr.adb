@@ -3128,7 +3128,7 @@ package body Exp_Aggr is
             --  function call (possibly qualified) or aggregate (definitely
             --  qualified).
 
-            elsif Is_Limited_Type (Etype (Ancestor))
+            elsif Is_Inherently_Limited_Type (Etype (Ancestor))
               and then Nkind (Ancestor_Q) in N_Aggregate
                                            | N_Extension_Aggregate
             then
@@ -3874,7 +3874,7 @@ package body Exp_Aggr is
 
       if Requires_Transient_Scope (Typ)
         and then Ekind (Current_Scope) /= E_Return_Statement
-        and then not Is_Limited_Type (Typ)
+        and then not Is_Inherently_Limited_Type (Typ)
       then
          Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
@@ -4347,7 +4347,7 @@ package body Exp_Aggr is
       --  be built in place, so use the target of the current assignment.
 
       if Nkind (Parent_Node) = N_Assignment_Statement
-        and then Is_Limited_Type (Typ)
+        and then Is_Inherently_Limited_Type (Typ)
       then
          Target_Expr := New_Copy_Tree (Name (Parent_Node));
          Ensure_Defined (Typ, Parent_Node);
@@ -6302,7 +6302,7 @@ package body Exp_Aggr is
          or else (Nkind (Parent_Node) = N_Allocator
                    and then
                      (Aggr_Assignment_OK_For_Backend (N)
-                       or else Is_Limited_Type (Typ)
+                       or else Is_Inherently_Limited_Type (Typ)
                        or else Needs_Finalization (Typ)
                        or else not Must_Slide
                                      (N,
@@ -6316,7 +6316,7 @@ package body Exp_Aggr is
          or else (Nkind (Parent_Node) = N_Object_Declaration
                    and then
                      (Aggr_Assignment_OK_For_Backend (N)
-                       or else Is_Limited_Type (Typ)
+                       or else Is_Inherently_Limited_Type (Typ)
                        or else Needs_Finalization (Typ)
                        or else Is_Special_Return_Object
                                  (Defining_Identifier (Parent_Node))
@@ -6379,7 +6379,7 @@ package body Exp_Aggr is
 
       Maybe_In_Place_OK :=
         Nkind (Parent_Node) = N_Assignment_Statement
-          and then (Is_Limited_Type (Typ)
+          and then (Is_Inherently_Limited_Type (Typ)
                      or else (not Has_Default_Init_Comps (N)
                                and then
                                  In_Place_Assign_OK
