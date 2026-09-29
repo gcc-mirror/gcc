@@ -653,7 +653,7 @@ doc-svg-performance: ${docbook_outdir}/xml
 	${glibcxx_builddir}/testsuite \
 	${glibcxx_builddir}/doc/docbook/xml/images)
 
-.PHONY: doc-doxygen-html doc-doxygen-man doc-performance
+.PHONY: doc-doxygen-html doc-doxygen-man doc-svg-performance
 
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.log stamp*
