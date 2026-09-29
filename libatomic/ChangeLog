@@ -1,3 +1,9 @@
+2026-09-28  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/linux/aarch64/host-config.h (has_lse2): Mark unused arg.
+	(has_lse128): Change to use HWCAPs and check size of struct.
+	(has_rcpc3): Likewise.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

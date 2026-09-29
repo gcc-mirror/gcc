@@ -1,3 +1,85 @@
+2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127075
+	* config/riscv/riscv-vector-costs.cc (compute_estimated_lmul):
+	Rename...
+	(estimate_lmul): ...To this.
+	(compute_lmul_from_conversion_ratio): Remove.
+	(costs::compute_live_ranges_and_lmul): Remove param.
+	(costs::compute_conversion_dynamic_lmul): Remove.
+	(costs::has_unexpected_spills_p): Rename...
+	(costs::has_spills_p): ...To This.
+	(costs::record_lmul_spills): Adjust comment.
+	(costs::record_potential_unexpected_spills): Rename...
+	(costs::record_potential_spills): ...To this.
+	(costs::compare_lmul_to): New function.
+	(costs::better_main_loop_than_p): Call new function.
+	(costs::record_type_sizes): New function.
+	(costs::add_stmt_cost): Call new function.
+	(costs::finish_cost): Compute type ratio for LMUL.
+	* config/riscv/riscv-vector-costs.h: Declare new function.
+
+2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127553
+	* config/riscv/riscv-vector-builtins.cc (validate_instance_type_required_extensions):
+	Add location param for logging.
+	(expand_builtin): Pass location.
+	(check_builtin_call): Likewise.
+
+2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127484
+	PR target/127547
+	* config/riscv/riscv.cc (riscv_subpart): Add parameters and
+	handle more part sizes.
+	(spill_subreg_move): Allow subreg bytes != 0.
+	(riscv_split_quadword_move):  Use riscv_subpart for TFmode.
+	* config/riscv/riscv.md (movtf): Add.
+
+2026-09-28  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.opt.urls: Fix moptimize link.
+	* config/nvptx/nvptx.opt.urls: Same.
+
+2026-09-28  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* config/riscv/riscv-vector-costs.cc (get_pattern_var): New
+	function.
+	(costs::compute_local_live_ranges): Replace the argument with
+	the pattern result when necessary.
+
+2026-09-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126531
+	* gimple-range-cache.cc (ranger_cache::apply_inferred_ranges): Do not
+	update if there are abnormal edges.
+
+2026-09-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/127203
+	* gimple-range-cache.cc (ranger_cache::range_from_dom): Mark both
+	outgoing edges and inferred ranges as "to calculate".
+
+2026-09-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def: Add gfx1154.
+	* config/gcn/gcn-tables.opt: Regenerate.
+	* doc/invoke.texi (-march=): Add gfx1154.
+
+2026-09-28  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR target/126245
+	* config/riscv/riscv.md (neg<mode>cc): Add an expansion for
+	conditional negation of integral values.
+
+2026-09-28  Stian Halseth  <stian@itx.no>
+
+	PR rtl-optimization/127578
+	* doc/sourcebuild.texi (cbcond_hw): Document.
+	* ifcvt.cc (find_cond_trap): Reject a sequence that clobbers a
+	condition-code register live out of TEST_BB.
+
 2026-09-27  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/118407

@@ -1,3 +1,76 @@
+2026-09-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (current_call_convention): Whitespace.
+	(struct cbl_loc_t): Same.
+	(enum cbl_diag_id_t):  Define MfValueClause, and sort.
+	* cobol1.cc (cobol_warning_suppress): Whitespace.
+	(cobol_langhook_handle_option): Handle new option.
+	* gcobol.1: Document new option.
+	* lang-specs.h: Accept new option.
+	* lang.opt: Define new option.
+	* messages.cc: Add new option to dialects.
+	* picture.cc: Remove structures that no longer support picture validation.
+	* symbols.cc (cbl_field_t::encode): Use new option.
+
+2026-09-28  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cdf.y: Synchronize token values.
+	* parse.y: Remove alphanumeric-edited and numeric-edited nonterminals.
+	* picture.cc (picsym_settable): Allow only numeric with 'S' in PICTURE.
+	* scan.l: Remove lexing for alphanumeric-edited and numeric-edited.
+	* token_names.h: Regenerate.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobc: Add -export-dynamic.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobc: Fix -v command-line option.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobc: Fix --various command-line options.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobc: Add stored-char-length.cpy via -include.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* lexio.cc (is_p): Rename function, support 'F'.
+	(is_pf): Likewise.
+	(is_program_id): Support FUNCTION-ID.
+	(valid_sequence_area): Likewise.
+
+2026-09-28  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* compare.cc (numeric_alpha_compare): Numeric-edited handling.
+	* genapi.cc (parser_setop): Likewise.
+	* genapi.h (parser_setop): Likewise.
+	* parse.y: Likewise.
+	* picture.cc (class picture_t): Validate PICTURE.
+	(is_valid_picture): Likewise.
+	(process_file): Likewise.
+	(main): Formatting
+	* scan_ante.h (level_needed): Likewise.
+	(class enter_leave_t): Likewise.
+	(trim_location): Likewise.
+	(binary_integer_usage): Likewise.
+	(level_of): Likewise.
+	(ndigit): Likewise.
+	(symbol_exists): Likewise.
+	(typed_name): Likewise.
+	(yyunput): Likewise.
+	(unquote): Likewise.
+	* symbols.cc (symbols_update): Likewise.
+	(struct symbol_elem_t): Likewise.
+	(symbol_file): Likewise.
+	(expand_picture): Numeric-edited handling.
+	(expand_expanded): Likewise.
+	(cbl_file_t::filename_of): Formatting.
+
 2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
 
 	* cbldiag.h (struct cbl_loc_t): Add operators to increment first_column.

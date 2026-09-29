@@ -1,3 +1,10 @@
+2026-09-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108822
+	* include/bits/stl_pair.h (__glibcxx_no_dangling_refs): Enable
+	for normal mode, not only Debug Mode.
+	* include/std/tuple (__glibcxx_no_dangling_refs): Likewise.
+
 2026-09-27  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/debug_mode.xml: Switch Safe STL link to https.

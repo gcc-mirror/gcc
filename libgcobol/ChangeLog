@@ -1,3 +1,36 @@
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/lib/cbl_get_program_info.3: Update to status quo.
+	* compat/gnu/lib/cbl_gpi.cc (setbasename): Honor return values and
+		return-buf{-len}.
+	(cbl_gpi_cur_status): Likewise.
+	(cbl_gpi_named_status): Likewise.
+	(cbl_gpi_parent_status): Likewise.
+	(cbl_gpi_close_handle): Likewise.
+	(cbl_gpi_first_ep): Update function signature.
+	(cbl_gpi_next_ep): Update function signature.
+	(cbl_gpi_cancel_search_ep): Update function signature.
+	(cbl_gpi_prg_name): Update function signature.
+	(cbl_gpi_nargs): Update function signature.
+	(cbl_gpi_reserved): Update function signature.
+	(cbl_gpi_path_prg_name): Update function signature.
+	(checkflags): Remove old debug messages.
+	(cbl_gpi): Honor return values.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/cpy/stored-char-length.cpy: Add PROTOTYPE.
+	* compat/gnu/lib/stored-char-length.cbl: Add COPY to validate
+		prototype.
+
+2026-09-28  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* libgcobol.cc (format_for_display_internal): Numeric-edited
+	handling.
+	(__gg__move): Likewise.
+	(__gg__compare_numdisp_alpha): Likewise.
+
 2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
 
 	* libgcobol.cc (default_exception_handler): Use ec_status.source_file.

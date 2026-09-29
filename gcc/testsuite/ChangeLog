@@ -1,3 +1,90 @@
+2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127075
+	* gcc.dg/vect/costmodel/riscv/rvv/pr127075.c: New test.
+
+2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127553
+	* gcc.target/riscv/rvv/base/bug-9.c: Adjust test expectation.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114988-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114988-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr120436.c: Ditto.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-17.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-18.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-19.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-20.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-21.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-22.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-23.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-24.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-25.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-26.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-27.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-28.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-29.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-3.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-7.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-8.c:
+	* gcc.target/riscv/pr127553.c: New test.
+
+2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127484
+	PR target/127547
+	* gcc.target/riscv/rvv/autovec/pr127484.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr127547.c: New test.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__get_program_name_-_functions_0_and_2_.cob:
+		Update test according to expected behaviour.
+
+2026-09-28  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-5.c: Remove
+	xfail.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul4-7.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/pr121910.c: Change expectation.
+	* gcc.dg/vect/costmodel/riscv/rvv/dynamic-lmul8-16.c: New test.
+
+2026-09-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/126531
+	* g++.dg/pr126531.C: Add optimization flag.
+
+2026-09-28  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* cobol.dg/group2/ALLOCATE_Rules_6_-_9._Without_OPTION_INITIALIZE_Without_-fdefaultbyte___ASCII_.out:
+	Modified for updated numeric-edited handling.
+	* cobol.dg/group2/ALLOCATE_Rules_6_-_9._Without_OPTION_INITIALIZE_Without_-fdefaultbyte___EBCDIC_.out:
+	Likewise.
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.cob: Likewise.
+	* cobol.dg/group2/CURRENCY_SIGN_WITH_PICTURE_SYMBOL.out: Likewise.
+	* cobol.dg/group2/REDEFINES__chained.out: Likewise.
+
+2026-09-28  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR target/126245
+	* gcc.target/riscv/pr126245-negcc.c: New test.
+
+2026-09-28  Stian Halseth  <stian@itx.no>
+
+	PR rtl-optimization/127578
+	* lib/target-supports.exp (check_effective_target_cbcond_hw): New.
+	* gcc.target/sparc/cbcond-trap-1.c: New test.
+
 2026-09-27  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/118407
