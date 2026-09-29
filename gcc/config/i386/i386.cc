@@ -5271,6 +5271,12 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
   if ((unsigned int) arg_boundary > MAX_SUPPORTED_STACK_ALIGNMENT)
     arg_boundary = MAX_SUPPORTED_STACK_ALIGNMENT;
 
+  /* ARG_BOUNDARY is computed from TYPE_MAIN_VARIANT, so it can be smaller
+     than the alignment of a variant type that carries a user-specified
+     alignment (e.g. a typedef with attribute aligned).  Do not let the
+     access claim more alignment than the argument slot is placed at.  */
+  type_align = MIN (type_align, arg_boundary);
+
   /* Care for on-stack alignment if needed.  */
   if (arg_boundary <= 64 || size == 0)
     t = ovf;
