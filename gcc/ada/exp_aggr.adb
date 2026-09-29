@@ -4635,6 +4635,7 @@ package body Exp_Aggr is
             --  Same data as Vals in list form
 
             Rep_Count : Nat;
+            Rep_Incr  : Nat;
             --  Used to validate Max_Others_Replicate limit
 
             Elmt         : Node_Id;
@@ -4697,10 +4698,38 @@ package body Exp_Aggr is
                   if Nkind (Choice) = N_Others_Choice then
                      Rep_Count := 0;
 
+                     --  If the element is an array aggregate, count its own
+                     --  elements as replicated. Of course, this takes into
+                     --  account only a single nesting level, but arrays with
+                     --  more than two dimensions are rare in practice.
+
+                     if Nkind (Expr) = N_Aggregate
+                       and then Present (Aggregate_Bounds (Expr))
+                       and then
+                         Compile_Time_Known_Value
+                           (High_Bound (Aggregate_Bounds (Expr)))
+                       and then
+                         Compile_Time_Known_Value
+                           (Low_Bound (Aggregate_Bounds (Expr)))
+                     then
+                        declare
+                           Bnds : constant Node_Id := Aggregate_Bounds (Expr);
+                           Incr : constant Uint    :=
+                             UI_Max (Expr_Value (High_Bound (Bnds)) -
+                                       Expr_Value (Low_Bound (Bnds)) + 1,
+                                     Uint_1);
+                        begin
+                           Rep_Incr := UI_To_Int (Incr);
+                        end;
+
+                     else
+                        Rep_Incr := 1;
+                     end if;
+
                      for J in Vals'Range loop
                         if No (Vals (J)) then
                            Vals (J)  := New_Copy_Tree (Expr);
-                           Rep_Count := Rep_Count + 1;
+                           Rep_Count := Rep_Count + Rep_Incr;
 
                            --  Check for maximum others replication. Note that
                            --  we skip this test if either of the restrictions
@@ -4890,17 +4919,16 @@ package body Exp_Aggr is
       begin
          --  In most cases the interesting expressions are unambiguously static
 
-         if Compile_Time_Known_Value (Expr) then
+         if Nkind (Expr) = N_Aggregate
+           and then Compile_Time_Known_Aggregate (Expr)
+         then
+            return not Expansion_Delayed (Expr);
+
+         elsif Compile_Time_Known_Value (Expr) then
             return True;
 
          elsif Nkind (N) = N_Iterated_Component_Association then
             return False;
-
-         elsif Nkind (Expr) = N_Aggregate
-           and then Compile_Time_Known_Aggregate (Expr)
-           and then not Expansion_Delayed (Expr)
-         then
-            return True;
 
          else
             return False;
@@ -8072,14 +8100,6 @@ package body Exp_Aggr is
       procedure Build_Back_End_Aggregate;
       --  Build a proper aggregate to be handled by the back-end
 
-      function Compile_Time_Known_Composite_Value (N : Node_Id) return Boolean;
-      --  Returns true if N is an expression of composite type which can be
-      --  fully evaluated at compile time without raising constraint error.
-      --  Such expressions can be passed as is to Gigi without any expansion.
-      --
-      --  This returns true for N_Aggregate with Compile_Time_Known_Aggregate
-      --  set and constants whose expression is such an aggregate, recursively.
-
       function Component_OK_For_Backend return Boolean;
       --  Check for presence of a component which makes it impossible for the
       --  backend to process the aggregate, thus requiring the use of a series
@@ -8443,45 +8463,6 @@ package body Exp_Aggr is
          end if;
       end Build_Back_End_Aggregate;
 
-      ----------------------------------------
-      -- Compile_Time_Known_Composite_Value --
-      ----------------------------------------
-
-      function Compile_Time_Known_Composite_Value
-        (N : Node_Id) return Boolean
-      is
-      begin
-         --  If we have an entity name, then see if it is the name of a
-         --  constant and if so, test the corresponding constant value.
-
-         if Is_Entity_Name (N) then
-            declare
-               E : constant Entity_Id := Entity (N);
-               V : Node_Id;
-            begin
-               if Ekind (E) /= E_Constant then
-                  return False;
-               else
-                  V := Constant_Value (E);
-                  return Present (V)
-                    and then Compile_Time_Known_Composite_Value (V);
-               end if;
-            end;
-
-         --  We have a value, see if it is compile time known
-
-         else
-            if Nkind (N) = N_Aggregate then
-               return Compile_Time_Known_Aggregate (N);
-            end if;
-
-            --  All other types of values are not known at compile time
-
-            return False;
-         end if;
-
-      end Compile_Time_Known_Composite_Value;
-
       ------------------------------
       -- Component_OK_For_Backend --
       ------------------------------
@@ -8562,14 +8543,8 @@ package body Exp_Aggr is
             elsif Possible_Bit_Aligned_Component (Expr_Q) then
                Static_Components := False;
                return False;
-            end if;
 
-            if Is_Elementary_Type (Etype (Expr_Q)) then
-               if not Compile_Time_Known_Value (Expr_Q) then
-                  Static_Components := False;
-               end if;
-
-            elsif not Compile_Time_Known_Composite_Value (Expr_Q) then
+            elsif not Compile_Time_Known_Value (Expr_Q) then
                Static_Components := False;
 
                if Is_Private_Type (Etype (Expr_Q))

@@ -5206,17 +5206,28 @@ package body Sem_Ch3 is
          Rewrite (Object_Definition (N), New_Occurrence_Of (Act_T, Loc));
          Freeze_Before (N, Act_T);
 
-      --  If this is a constant declaration of an unconstrained type and
-      --  the initialization is an aggregate, we can use the subtype of the
-      --  aggregate for the declared entity because it is immutable.
+      --  If this is the declaration of a constant whose nominal subtype is an
+      --  unconstrained discriminated record type, or a constrained array type
+      --  whose component type is such a type, then we can use the subtype of
+      --  the aggregate for the constant because it is immutable.
 
-      elsif not Is_Constrained (T)
-        and then Has_Discriminants (T)
-        and then Constant_Present (N)
-        and then not Has_Unchecked_Union (T)
-        and then Nkind (E) = N_Aggregate
-      then
-         Act_T := Etype (E);
+      elsif Constant_Present (N) and then Nkind (E) = N_Aggregate then
+         declare
+            function Is_UDR (Typ : Entity_Id) return Boolean is
+              (not Is_Constrained (Typ)
+                and then Has_Discriminants (Typ)
+                and then not Has_Unchecked_Union (Typ));
+            --  Whether Typ is an unconstrained discriminated record type
+
+         begin
+            if Is_UDR (T)
+              or else (Is_Array_Type (T)
+                        and then Is_Constrained (T)
+                        and then Is_UDR (Component_Type (T)))
+            then
+               Act_T := Etype (E);
+            end if;
+         end;
       end if;
 
       --  Check No_Wide_Characters restriction
