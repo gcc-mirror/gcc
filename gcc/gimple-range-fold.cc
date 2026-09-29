@@ -992,16 +992,11 @@ fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
   return true;
 }
 
-/* If TYPE is a pointer, return false.  Otherwise, add zero of TYPE (which must
-   be an integer or a float) to R and return true.  */
+/* Add zero of TYPE to R and return true.  */
 
 static bool
 range_from_missing_constructor_part (vrange &r, tree type)
 {
-  if (POINTER_TYPE_P (type))
-    return false;
-  gcc_checking_assert (irange::supports_p (type)
-		       || frange::supports_p (type));
   value_range zero (type);
   zero.set_zero (type);
   r.union_ (zero);
@@ -1011,11 +1006,9 @@ range_from_missing_constructor_part (vrange &r, tree type)
 // One step of fold_using_range::range_from_readonly_var.  Process expressions
 // in COMPS which together load a value of TYPE, from index I to 0 according to
 // the corresponding static initializer in CST which should be either a scalar
-// invariant or a constructor.  Currently TYPE must be a pointer, an integer
-// or a float.  If TYPE is a pointer, return true if all potentially loaded
-// values are known not to be zero and false if any of them can be zero.
-// Otherwise return true if it is possible to add all constants which can be
-// loaded from CST (which must be storable to TYPE) to R and do so.
+// invariant or a constructor.  Return true if it is possible to add all
+// constants which can be loaded from CST (which must be storable to TYPE) to R
+// and do so.
 
 static bool
 range_from_readonly_load (vrange &r, tree type, tree cst,
@@ -1028,7 +1021,15 @@ range_from_readonly_load (vrange &r, tree type, tree cst,
 
       if (POINTER_TYPE_P (type))
 	{
-	  return tree_single_nonzero_p (cst);
+	  prange elt;
+	  if (integer_zerop (cst))
+	    elt.set_zero (type);
+	  else if (tree_single_nonzero_p (cst))
+	    elt.set_nonzero (type);
+	  else
+	    return false;
+	  r.union_ (elt);
+	  return true;
 	}
 
       if (TREE_CODE (cst) == REAL_CST)
@@ -1182,14 +1183,10 @@ fold_using_range::range_from_readonly_var (vrange &r, gimple *stmt)
     }
 
   value_range tmp (type);
-  bool res = range_from_readonly_load (tmp, type, ctor, comps, count);
+  bool res = (range_from_readonly_load (tmp, type, ctor, comps, count)
+	      && !tmp.varying_p ());
   if (res)
-    {
-      if (POINTER_TYPE_P (type))
-	r.set_nonzero (type);
-      else
-	r = tmp;
-    }
+    r = tmp;
   return res;
 }
 
