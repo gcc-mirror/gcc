@@ -2256,14 +2256,6 @@ package body Exp_Aggr is
       Comp_Expr : Node_Id;
       Expr_Q    : Node_Id;
 
-      Ancestor_Is_Subtype_Mark : Boolean := False;
-
-      Init_Typ : Entity_Id := Empty;
-
-      Finalization_Done : Boolean := False;
-      --  True if Generate_Finalization_Actions has already been called; calls
-      --  after the first do nothing.
-
       function Ancestor_Discriminant_Value (Disc : Entity_Id) return Node_Id;
       --  Returns the value that the given discriminant of an ancestor type
       --  should receive (in the absence of a conflict with the value provided
@@ -2280,10 +2272,6 @@ package body Exp_Aggr is
          Typ_Bounds : Node_Id) return Boolean;
       --  Return true if Agg_Bounds are equal or within Typ_Bounds. It is
       --  assumed that both bounds are integer ranges.
-
-      procedure Generate_Finalization_Actions;
-      --  Deal with the various controlled type data structure initializations
-      --  (but only if it hasn't been done already).
 
       function Get_Constraint_Association (T : Entity_Id) return Node_Id;
       --  Returns the first discriminant association in the constraint
@@ -2516,48 +2504,6 @@ package body Exp_Aggr is
       begin
          return Typ_Lo <= Agg_Lo and then Agg_Hi <= Typ_Hi;
       end Compatible_Int_Bounds;
-
-      -----------------------------------
-      -- Generate_Finalization_Actions --
-      -----------------------------------
-
-      procedure Generate_Finalization_Actions is
-      begin
-         --  Do the work only the first time this is called
-
-         if Finalization_Done then
-            return;
-         end if;
-
-         Finalization_Done := True;
-
-         --  Determine the external finalization list. It is either the
-         --  finalization list of the outer scope or the one coming from an
-         --  outer aggregate. When the target is not a temporary, the proper
-         --  scope is the scope of the target rather than the potentially
-         --  transient current scope.
-
-         if Is_Controlled (Typ) and then Ancestor_Is_Subtype_Mark then
-            Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
-            Set_Assignment_OK (Ref);
-
-            declare
-               Intlz : constant Entity_Id :=
-                 Find_Controlled_Prim_Op (Init_Typ, Name_Initialize);
-            begin
-               if Present (Intlz) then
-                  Append_To
-                    (L,
-                     Make_Procedure_Call_Statement
-                       (Loc,
-                        Name                   =>
-                          New_Occurrence_Of (Intlz, Loc),
-                        Parameter_Associations =>
-                          New_List (New_Copy_Tree (Ref))));
-               end if;
-            end;
-         end if;
-      end Generate_Finalization_Actions;
 
       --------------------------------
       -- Get_Constraint_Association --
@@ -3002,7 +2948,11 @@ package body Exp_Aggr is
             Ancestor   : constant Node_Id := Ancestor_Part (N);
             Ancestor_Q : constant Node_Id := Unqualify (Ancestor);
 
+            Ancestor_Is_Subtype_Mark : Boolean := False;
+            --  True if the ancestor part is a subtype mark
+
             Assign   : List_Id;
+            Init_Typ : Entity_Id;
 
          begin
             --  If the ancestor part is a subtype mark T, we generate
@@ -3026,7 +2976,7 @@ package body Exp_Aggr is
                --  be used to generate the correct default value for the
                --  ancestor part.
 
-               elsif Has_Discriminants (Entity (Ancestor)) then
+               else
                   declare
                      Anc_Typ    : constant Entity_Id := Entity (Ancestor);
                      Anc_Constr : constant List_Id   := New_List;
@@ -3036,6 +2986,8 @@ package body Exp_Aggr is
                      Subt_Decl  : Node_Id;
 
                   begin
+                     pragma Assert (Has_Discriminants (Anc_Typ));
+
                      Discrim := First_Discriminant (Anc_Typ);
                      while Present (Discrim) loop
                         Disc_Value := Ancestor_Discriminant_Value (Discrim);
@@ -3184,26 +3136,48 @@ package body Exp_Aggr is
                   Check_Ancestor_Discriminants (Init_Typ);
                end if;
             end if;
+
+            --  Generate assignments of hidden discriminants. If the base type
+            --  is an unchecked union, the discriminants are absent from values
+            --  of the type, so assignments for them are not emitted.
+
+            if Has_Discriminants (Typ)
+              and then not Is_Unchecked_Union (Base_Type (Typ))
+            then
+               Init_Hidden_Discriminants (Typ, L);
+            end if;
+
+            --  If the ancestor part is a subtype mark for a controlled type,
+            --  and this type comes with an Initialize primitive, then invoke
+            --  the primitive on the ancestor part.
+
+            if Ancestor_Is_Subtype_Mark and then Is_Controlled (Init_Typ) then
+               declare
+                  Init_Id : constant Entity_Id :=
+                    Find_Controlled_Prim_Op (Init_Typ, Name_Initialize);
+
+               begin
+                  if Present (Init_Id) then
+                     Append_To
+                       (L,
+                        Make_Procedure_Call_Statement
+                          (Loc,
+                           Name                   =>
+                             New_Occurrence_Of (Init_Id, Loc),
+                           Parameter_Associations =>
+                             New_List (New_Copy_Tree (Ref))));
+                  end if;
+               end;
+            end if;
          end;
-
-         --  Generate assignments of hidden discriminants. If the base type is
-         --  an unchecked union, the discriminants are unknown to the back-end
-         --  and absent from a value of the type, so assignments for them are
-         --  not emitted.
-
-         if Has_Discriminants (Typ)
-           and then not Is_Unchecked_Union (Base_Type (Typ))
-         then
-            Init_Hidden_Discriminants (Typ, L);
-         end if;
 
       --  Normal case (not an extension aggregate)
 
       else
          --  Generate the discriminant expressions, component by component.
          --  If the base type is an unchecked union, the discriminants are
-         --  unknown to the back-end and absent from a value of the type, so
-         --  assignments for them are not emitted.
+         --  absent from values of the type, so assignments for them are not
+         --  emitted.
 
          if Has_Discriminants (Typ)
            and then not Is_Unchecked_Union (Base_Type (Typ))
@@ -3346,10 +3320,6 @@ package body Exp_Aggr is
 
                Check_Restriction (No_Default_Initialization, N);
 
-               if Ekind (Selector) /= E_Discriminant then
-                  Generate_Finalization_Actions;
-               end if;
-
                --  Ada 2005 (AI-287): If the component type has tasks, then
                --  generate the activation chain entity, except in the case
                --  of an allocator, where it will be created by the call to
@@ -3418,13 +3388,6 @@ package body Exp_Aggr is
            or else Nkind (N) = N_Extension_Aggregate
          then
             --  All the discriminants have now been assigned
-
-            --  This is now a good moment to initialize and attach all the
-            --  controllers. Their position may depend on the discriminants.
-
-            if Ekind (Selector) /= E_Discriminant then
-               Generate_Finalization_Actions;
-            end if;
 
             Comp_Type := Underlying_Type (Etype (Selector));
             Comp_Expr :=
@@ -3709,11 +3672,6 @@ package body Exp_Aggr is
                Init_Tags_List => L);
          end if;
       end if;
-
-      --  If the controllers have not been initialized yet (by lack of non-
-      --  discriminant components), let's do it now.
-
-      Generate_Finalization_Actions;
 
       return L;
    end Build_Record_Aggr_Code;
