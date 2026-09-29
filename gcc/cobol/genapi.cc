@@ -13443,9 +13443,10 @@ parser_call(   cbl_refer_t name,
 
       if( except )
         {
-        // Preserve the existing ON EXCEPTION routing and reset placement.
-        gg_append_statement(except->structs.call_exception->into.go_to);
+        // Set the exception data, but clear the code, because
+        // ON EXCEPTION prevents exception process.
         gg_assign(var_decl_exception_code, integer_zero_node);
+        gg_append_statement(except->structs.call_exception->into.go_to);
         }
       else if( !literal_call && issue_warning )
         {

@@ -2401,6 +2401,7 @@ static class current_t {
     if( enabled_exceptions.size() ) {
       declaratives_evaluate();
     }
+    parser_check_fatal_exception();
 
     assert(!programs.empty());
 

@@ -13105,13 +13105,11 @@ possible_ec() {
  */
 static void
 statement_epilog( int token ) {
-  cbl_enabled_exceptions_t& enabled_exceptions( cdf_enabled_exceptions() );
   if( possible_ec() && token != CONTINUE ) {
-    if( enabled_exceptions.size() ) {
-      current.declaratives_evaluate();
-    }
+    current.declaratives_evaluate();
+  } else {
+    parser_check_fatal_exception();
   }
-  parser_check_fatal_exception();
 }
 
 static inline void
