@@ -10154,6 +10154,8 @@ build_omp_iterators_loops (tree *list_p, gimple_seq *loops_seq_p)
 	{
 	  /* Handle dynamic sizes.  */
 	  sorry ("dynamic iterator sizes not implemented yet");
+	  OMP_CLAUSE_ITERATORS (c) = NULL_TREE;
+	  continue;
 	}
 
       /* BEFORE LOOP:  */
