@@ -5051,6 +5051,13 @@ simplify_ashift:
 	return op1;
       if (rtx_equal_p (trueop0, trueop1) && ! side_effects_p (op0))
 	return op0;
+      if (INTEGRAL_MODE_P (mode))
+	{
+	  if (GET_CODE (op0) == NEG && rtx_equal_p (XEXP (op0, 0), op1))
+	    return simplify_gen_unary (ABS, mode, op1, mode);
+	  else if (GET_CODE (op1) == NEG && rtx_equal_p (XEXP (op1, 0), op0))
+	    return simplify_gen_unary (ABS, mode, op0, mode);
+	}
       tem = simplify_associative_operation (code, mode, op0, op1);
       if (tem)
 	return tem;
