@@ -34,7 +34,7 @@ int main()
   const unsigned lines = 200000;
   const unsigned line_length = 200;
 
-  char* line = new char[line_length + 2];
+  char line[line_length + 2];
 
   // Construct data.
   {
@@ -76,7 +76,6 @@ int main()
     clear_counters(time, resource);
   }
 
-  delete[] line;
   unlink(filename);
   return 0;
 }
