@@ -1406,6 +1406,10 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
 
   GFC_DECL_SAVED_DESCRIPTOR (decl) = dummy;
 
+  bool in_parent_function
+    = sym->ns->proc_name->backend_decl != current_function_decl
+      && !sym->attr.contained;
+
   /* The elements of the actual argument can be spaced by more than the
      element size, in which case they are addressed by the span of the
      descriptor.  Create the variable holding it here, since the body is
@@ -1417,15 +1421,14 @@ gfc_build_dummy_array_decl (gfc_symbol * sym, tree dummy)
       else if (gfc_is_span_addressed_dummy (sym))
 	{
 	  GFC_DECL_PTR_ARRAY_P (decl) = 1;
-	  GFC_DECL_SPAN (decl) = gfc_create_var (gfc_array_index_type, "span");
+	  GFC_DECL_SPAN (decl) = create_index_var ("span", in_parent_function);
 	}
     }
 
-  if (sym->ns->proc_name->backend_decl == current_function_decl
-      || sym->attr.contained)
-    gfc_add_decl_to_function (decl);
-  else
+  if (in_parent_function)
     gfc_add_decl_to_parent_function (decl);
+  else
+    gfc_add_decl_to_function (decl);
 
   return decl;
 }
