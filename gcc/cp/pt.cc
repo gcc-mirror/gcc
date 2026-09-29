@@ -18064,6 +18064,28 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (ctx == error_mark_node)
 	  return error_mark_node;
 
+	/* We had [:X:]::template NAME where X was substituted into
+	   a NAMESPACE_DECL and not a type.  */
+	if (TREE_CODE (ctx) == NAMESPACE_DECL)
+	  {
+	    tree decl = lookup_qualified_name (ctx, name);
+	    if (decl == error_mark_node || TREE_CODE (decl) == TREE_LIST)
+	      {
+		if (complain & tf_error)
+		  qualified_name_lookup_error (ctx, name, decl, input_location);
+		return error_mark_node;
+	      }
+	    /* As in make_unbound_class_template, we want only a class or
+	       alias template.  */
+	    if (!DECL_TYPE_TEMPLATE_P (decl))
+	      {
+		if (complain & tf_error)
+		  error ("%qD is not a class template", decl);
+		return error_mark_node;
+	      }
+	    return decl;
+	  }
+
 	return make_unbound_class_template (ctx, name, parm_list, complain);
       }
 

@@ -9,12 +9,9 @@ namespace N {
   template<class T> using A = X<T>;
   inline namespace I { template<class> struct V {}; }
   using namespace M;
-  template<class, class> struct Z {};
   int v;
   template<class T> void fn ();
 }
-
-template<template<class> class> struct S {};
 
 template<auto ns>
 void
