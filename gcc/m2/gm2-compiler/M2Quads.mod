@@ -9585,7 +9585,7 @@ BEGIN
          (* It is sensible not to try and recover when we dont know the return type.  *)
          MetaErrorT1 (typetok,
                       'undeclared type found in builtin procedure function' +
-                      ' {%AkVAL} {%1ad} {%1&s}', Type) ;
+                      ' {%AkVAL} {%1ad} {%1&Ts}', Type) ;
          (* Non recoverable error.  *)
          UnknownReported (Type)
       ELSIF ConstExprError (ProcSym, Exp, exptok, ConstExpr)
@@ -9595,6 +9595,14 @@ BEGIN
          ReturnVar := MakeTemporary (combinedtok, AreConstant (IsConst (Exp))) ;
          PutVar (ReturnVar, Type) ;
          PushTFtok (ReturnVar, Type, combinedtok)
+      ELSIF IsUnknown (Exp)
+      THEN
+         (* Spellcheck.  *)
+         MetaErrorT1 (exptok,
+                      'undeclared variable or constant expression found in builtin procedure function' +
+                      ' {%AkVAL} {%1ad} {%1&VCs}', Exp) ;
+         (* Non recoverable error.  *)
+         UnknownReported (Exp)
       ELSIF (IsSet (Type) OR IsEnumeration (Type) OR IsSubrange (Type) OR
              IsType (Type) OR IsPointer (Type) OR IsProcType (Type)) AND
              (IsVar (Exp) OR IsConst (Exp) OR IsProcedure (Exp))
