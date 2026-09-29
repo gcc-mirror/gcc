@@ -1687,7 +1687,7 @@ optimize_agr_copyprop_1 (gimple *stmt, gimple *use_stmt,
       print_gimple_stmt (dump_file, use_stmt, 0, dump_flags);
     }
   if (maybe_clean_or_replace_eh_stmt (orig_stmt, use_stmt))
-    bitmap_set_bit (to_purge, gimple_bb (stmt)->index);
+    bitmap_set_bit (to_purge, gimple_bb (use_stmt)->index);
   statistics_counter_event (cfun, "copy prop for aggregate", 1);
 }
 
