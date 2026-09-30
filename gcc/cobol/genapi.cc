@@ -6323,60 +6323,134 @@ parser_arith_error_end(cbl_label_t *arithmetic_label)
   gg_append_statement( arithmetic_label->structs.arith_error->over.label );
   }
 
+// Preserve the existing traversal, including repeated entries from REDEFINES.
 static void
-propogate_linkage_offsets(cbl_field_t *field, tree base)
+collect_linkage_offsets(cbl_field_t *field,
+                        tree base,
+                        std::vector<cbl_field_t *> &fields)
   {
   if( field->level == LEVEL01 || field->level == LEVEL77 )
     {
     field->data_decl_node = base;
-    symbol_elem_t *e = symbol_at(field_index(field));
-    // We already updated the data pointer of the first element:
-    e += 1;
+    symbol_elem_t *e = symbol_at(field_index(field)) + 1;
     while( e < symbols_end() )
       {
-      symbol_elem_t& element = *e++;
+      symbol_elem_t &element = *e++;
       if( element.type == SymField )
         {
         cbl_field_t *this_one = cbl_field_of(&element);
         if( this_one->level == LEVEL01 || this_one->level == LEVEL77 )
           {
-          // We have encountered another level 01/77.  If this LEVEL 01 had a
-          // parent, then we have to assume that this is a redefines of another
-          // level 01/77.
           if( this_one->parent )
             {
-            // And, gloriously and frighteningly, it can be handled by
-            // recursion:
-            propogate_linkage_offsets(this_one, base);
+            collect_linkage_offsets(this_one, base, fields);
             }
           else
             {
-            // Having encountered the next 01 or 77, we are done
             break;
             }
           }
         if( this_one->level == 00 )
           {
-          // Ignore LEVEL00 "INDEXED BY" variables
           continue;
           }
-        tree offset = gg_define_variable(SIZE_T);
-        IF( base, eq_op, gg_cast(UCHAR_P, null_pointer_node) )
-          {
-          gg_assign(offset, size_t_zero_node);
-          }
-        ELSE
-          {
-          gg_assign(offset, member(this_one, "offset"));
-          }
-        ENDIF
         this_one->data_decl_node = base;
-        member( this_one,
-                "data",
-                gg_add(base, offset));
+        fields.push_back(this_one);
         }
       }
     }
+  }
+
+static void
+propagate_linkage_offsets(cbl_field_t *field, tree base)
+  {
+  std::vector<cbl_field_t *> fields;
+  collect_linkage_offsets(field, base, fields);
+  if( fields.empty() )
+    {
+    return;
+    }
+
+  // Both current callers supply an addressable pointer: a local variable
+  // for USING, or a descriptor's data member for SET ADDRESS OF.
+  // Retain the old emission for other expressions or nonstatic descriptors.
+  bool batchable = TREE_TYPE(base) == UCHAR_P
+                   && !TREE_THIS_VOLATILE(base)
+                   && (TREE_CODE(base) == VAR_DECL
+                       || TREE_CODE(base) == PARM_DECL
+                       || TREE_CODE(base) == COMPONENT_REF);
+  for( size_t i = 0; i < fields.size(); ++i )
+    {
+    tree decl = fields[i]->var_decl_node;
+    if( !decl
+        || TREE_CODE(decl) != VAR_DECL
+        || !TREE_STATIC(decl)
+        || DECL_EXTERNAL(decl)
+        || DECL_WEAK(decl)
+        || DECL_THREAD_LOCAL_P(decl)
+        || DECL_HAS_VALUE_EXPR_P(decl)
+        || TREE_THIS_VOLATILE(decl) )
+      {
+      batchable = false;
+      break;
+      }
+    }
+
+  if( !batchable )
+    {
+    for( size_t i = 0; i < fields.size(); ++i )
+      {
+      cbl_field_t *this_one = fields[i];
+      tree offset = gg_define_variable(SIZE_T);
+      IF( base, eq_op, gg_cast(UCHAR_P, null_pointer_node) )
+        {
+        gg_assign(offset, size_t_zero_node);
+        }
+      ELSE
+        {
+        gg_assign(offset, member(this_one, "offset"));
+        }
+      ENDIF
+      member(this_one, "data", gg_add(base, offset));
+      }
+    return;
+    }
+
+  static size_t table_number = 0;
+  char name[96];
+  snprintf(name, sizeof(name),
+           "..linkage_offsets_" HOST_SIZE_T_PRINT_DEC,
+           (fmt_size_t)table_number++);
+
+  tree array_type = build_array_type_nelts(VOID_P, fields.size());
+  vec<constructor_elt, va_gc> *elts = NULL;
+  for( size_t i = 0; i < fields.size(); ++i )
+    {
+    CONSTRUCTOR_APPEND_ELT(
+      elts,
+      build_int_cst_type(SIZE_T, i),
+      gg_cast(VOID_P, gg_get_address_of(fields[i]->var_decl_node)));
+    }
+  tree initializer = build_constructor(array_type, elts);
+  gcc_assert(TREE_CONSTANT(initializer));
+  TREE_STATIC(initializer) = 1;
+
+  tree table = gg_declare_variable(array_type, name, NULL_TREE,
+                                  vs_file_static);
+  DECL_INITIAL(table) = initializer;
+  TREE_READONLY(table) = 1;
+  DECL_ARTIFICIAL(table) = 1;
+  DECL_IGNORED_P(table) = 1;
+  gg_define_from_declaration(table);
+
+  // Pass the location of the base, not a snapshot of its value.  This
+  // preserves repeated reads if a preceding descriptor store changes it.
+  gg_call(VOID,
+          "__gg__propagate_linkage_offsets",
+          gg_pointer_to_array(table),
+          gg_get_address_of(base),
+          build_int_cst_type(SIZE_T, fields.size()),
+          NULL_TREE);
   }
 
 static bool initialized_data = false;
@@ -6663,7 +6737,7 @@ establish_using(size_t nusing,
 
         // We need to apply reference + offset to the LINKAGE variable
         // and all of its children
-        propogate_linkage_offsets( args[i].field(), reference );
+        propagate_linkage_offsets( args[i].field(), reference );
         }
 
       if( crv == by_value_e )
@@ -13790,7 +13864,7 @@ parser_set_pointers( size_t ntgt, cbl_refer_t *tgts, cbl_refer_t source )
         // When SET ADDRESS OF TARGET TO ..., the library call sets
         // tgts[i].field->data.  We need to propagate the data+offset
         // through the level01 variable's children:
-        propogate_linkage_offsets(tgts[i].field,
+        propagate_linkage_offsets(tgts[i].field,
                                   member(tgts[i].field->var_decl_node, "data"));
         }
       }

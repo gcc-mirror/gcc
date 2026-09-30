@@ -11524,6 +11524,28 @@ __gg__function_handle_from_name(int                 program_id,
 
 extern "C"
 void
+__gg__propagate_linkage_offsets(void * const fields[],
+                               unsigned char * const *base_address,
+                               size_t count)
+  {
+  for( size_t i = 0; i < count; ++i )
+    {
+    cblc_field_t *field = static_cast<cblc_field_t *>(fields[i]);
+    unsigned char *base = *base_address;
+    if( base )
+      {
+      field->data = base + field->offset;
+      }
+    else
+      {
+      // Do not read offset, or perform pointer arithmetic, for a null base.
+      field->data = nullptr;
+      }
+    }
+  }
+
+extern "C"
+void
 __gg__variables_to_init(cblc_field_t *array[], const int flag_bits)
   {
   int i=0;

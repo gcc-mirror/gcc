@@ -2359,6 +2359,10 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
      && !sourceref.all
      )
     {
+    charmap_t  *charmap =__gg__get_charmap(destref.field->codeset.encoding);
+    cbl_char_t space = charmap->mapped_character(ascii_space);
+    int stride = charmap->stride();
+
     void (*mover)(tree, tree, tree); // dest, source, count
     mover = have_common_parent(destref, sourceref) ? gg_memmove : gg_memcpy;
 
@@ -2378,26 +2382,41 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
         {
         // This is a tad more complicated.  The source is too short, so we need
         // to copy over what we can...
-        mover(member(  destref.field->var_decl_node, "data"),
-                 member(sourceref.field->var_decl_node, "data"),
-                 build_int_cst_type(SIZE_T, sourceref.field->data.capacity()));
-        // And then space-fill the rest:
-        size_t fill_bytes =
-            destref.field->data.capacity() - sourceref.field->data.capacity();
+        tree source_len = build_int_cst_type(SIZE_T,
+                                             sourceref.field->data.capacity());
+        mover(member(destref.field->var_decl_node, "data"),
+              member(sourceref.field->var_decl_node, "data"),
+              source_len);
 
-        // ...and then create a memory area with the fill spaces...
-        char *spaces = static_cast<char *>(xmalloc(fill_bytes));
-        charmap_t *charmap =__gg__get_charmap(destref.field->codeset.encoding);
-        charmap->memset(spaces,
-                        charmap->mapped_character(ascii_space),
-                        fill_bytes);
-        // ...and then copy those spaces into place.
-        mover(
-          gg_add(member(destref.field->var_decl_node, "data"),
-                 build_int_cst_type(SIZE_T, sourceref.field->data.capacity())),
-          build_string_literal(fill_bytes, spaces),
-          build_int_cst_type(SIZE_T, fill_bytes));
-        free(spaces);
+        // And then space-fill the rest:
+        if( stride == 1 )
+          {
+          tree dest_len = build_int_cst_type(SIZE_T,
+                                               destref.field->data.capacity());
+          gg_memset(gg_add(member(destref.field->var_decl_node, "data"),
+                           source_len),
+                    build_int_cst_type(INT, space),
+                    gg_subtract(dest_len, source_len));
+          }
+        else
+          {
+          // And then space-fill the rest:
+          size_t fill_bytes =
+              destref.field->data.capacity() - sourceref.field->data.capacity();
+
+          // ...and then create a memory area with the fill spaces...
+          char *spaces = static_cast<char *>(xmalloc(fill_bytes));
+          charmap->memset(spaces,
+                          space,
+                          fill_bytes);
+          // ...and then copy those spaces into place.
+          mover(
+            gg_add(member(destref.field->var_decl_node, "data"),
+                   build_int_cst_type(SIZE_T, sourceref.field->data.capacity())),
+            build_string_literal(fill_bytes, spaces),
+            build_int_cst_type(SIZE_T, fill_bytes));
+          free(spaces);
+          }
         moved = true;
         }
       }
@@ -2428,19 +2447,27 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
         // The source data is too short.  We need to copy over what we have...
         mover(dest_data, source_data, source_len);
 
-        // And then right-fill the remainder with spaces. Create a buffer with
-        // more than enough spaces for our purposes:
-        size_t fill_bytes = destref.field->data.capacity();
-        char *spaces = static_cast<char *>(xmalloc(fill_bytes));
-        charmap_t *charmap =__gg__get_charmap(destref.field->codeset.encoding);
-        charmap->memset(spaces,
-                        charmap->mapped_character(ascii_space),
-                        fill_bytes);
-        // And then copy enough of those spaces into place.
-        mover(gg_add(dest_data, source_len),
-                  build_string_literal(fill_bytes, spaces),
-                  gg_subtract(dest_len, source_len));
-        free(spaces);
+        // And then right-fill the remainder with spaces.
+        if( stride == 1 )
+          {
+          gg_memset(gg_add(dest_data, source_len),
+                    build_int_cst_type(INT, space),
+                    gg_subtract(dest_len, source_len));
+          }
+        else
+          {
+          // Create a buffer with more than enough spaces for our purposes:
+          size_t fill_bytes = destref.field->data.capacity();
+          char *spaces = static_cast<char *>(xmalloc(fill_bytes));
+          charmap->memset(spaces,
+                          space,
+                          fill_bytes);
+          // And then copy enough of those spaces into place.
+          mover(gg_add(dest_data, source_len),
+                    build_string_literal(fill_bytes, spaces),
+                    gg_subtract(dest_len, source_len));
+          free(spaces);
+          }
         }
       ENDIF
       moved = true;
@@ -2470,19 +2497,27 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
         // The source data is too short.  We need to copy over what we have...
         mover(dest_data, source_data, source_len);
 
-        // And then right-fill the remainder with spaces. Create a buffer with
-        // more than enough spaces for our purposes:
-        size_t fill_bytes = destref.field->data.capacity();
-        char *spaces = static_cast<char *>(xmalloc(fill_bytes));
-        charmap_t *charmap =__gg__get_charmap(destref.field->codeset.encoding);
-        charmap->memset(spaces,
-                        charmap->mapped_character(ascii_space),
-                        fill_bytes);
-        // And then copy enough of those spaces into place.
-        mover(gg_add(dest_data, source_len),
-                  build_string_literal(fill_bytes, spaces),
-                  gg_subtract(dest_len, source_len));
-        free(spaces);
+        // And then right-fill the remainder with spaces.
+        if( stride == 1 )
+          {
+          gg_memset(gg_add(dest_data, source_len),
+                    build_int_cst_type(INT, space),
+                    gg_subtract(dest_len, source_len));
+          }
+        else
+          {
+          // Create a buffer with more than enough spaces for our purposes:
+          size_t fill_bytes = destref.field->data.capacity();
+          char *spaces = static_cast<char *>(xmalloc(fill_bytes));
+          charmap->memset(spaces,
+                          space,
+                          fill_bytes);
+          // And then copy enough of those spaces into place.
+          mover(gg_add(dest_data, source_len),
+                    build_string_literal(fill_bytes, spaces),
+                    gg_subtract(dest_len, source_len));
+          free(spaces);
+          }
         }
       ENDIF
 
@@ -2516,19 +2551,27 @@ mh_alpha_to_alpha(const cbl_refer_t &destref,
         // The source data is too short.  We need to copy over what we have...
         mover(dest_data, source_data, source_len);
 
-        // And then right-fill the remainder with spaces. Create a buffer with
-        // more than enough spaces for our purposes:
-        size_t fill_bytes = destref.field->data.capacity();
-        char *spaces = static_cast<char *>(xmalloc(fill_bytes));
-        charmap_t *charmap =__gg__get_charmap(destref.field->codeset.encoding);
-        charmap->memset(spaces,
-                        charmap->mapped_character(ascii_space),
-                        fill_bytes);
-        // And then copy enough of those spaces into place.
-        mover(gg_add(dest_data, source_len),
-                  build_string_literal(fill_bytes, spaces),
-                  gg_subtract(dest_len, source_len));
-        free(spaces);
+        // And then right-fill the remainder with spaces.
+        if( stride == 1 )
+          {
+          gg_memset(gg_add(dest_data, source_len),
+                    build_int_cst_type(INT, space),
+                    gg_subtract(dest_len, source_len));
+          }
+        else
+          {
+          // Create a buffer with more than enough spaces for our purposes:
+          size_t fill_bytes = destref.field->data.capacity();
+          char *spaces = static_cast<char *>(xmalloc(fill_bytes));
+          charmap->memset(spaces,
+                          space,
+                          fill_bytes);
+          // And then copy enough of those spaces into place.
+          mover(gg_add(dest_data, source_len),
+                    build_string_literal(fill_bytes, spaces),
+                    gg_subtract(dest_len, source_len));
+          free(spaces);
+          }
         }
       ENDIF
 

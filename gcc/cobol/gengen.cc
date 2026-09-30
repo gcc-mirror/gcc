@@ -2875,6 +2875,251 @@ gg_modify_function_type(tree function_decl, tree return_type)
   DECL_RESULT (function_decl) = resdecl;
   }
 
+/* Batch adjacent clean initializations without moving them across executable
+   statements.  This runs on completed GENERIC, not on the emission stacks.  */
+struct gg_init_batch_stats
+  {
+  unsigned long eligible = 0;
+  unsigned long batches = 0;
+  unsigned long eliminated = 0;
+  };
+
+static bool
+gg_init_batch_candidate(tree stmt, tree &field, tree &flags)
+  {
+  if( TREE_CODE(stmt) != CALL_EXPR || call_expr_nargs(stmt) != 2 )
+    {
+    return false;
+    }
+
+  tree callee = CALL_EXPR_FN(stmt);
+  STRIP_NOPS(callee);
+  if( TREE_CODE(callee) != ADDR_EXPR )
+    {
+    return false;
+    }
+  callee = TREE_OPERAND(callee, 0);
+  if( TREE_CODE(callee) != FUNCTION_DECL
+      || !DECL_NAME(callee)
+      || strcmp(IDENTIFIER_POINTER(DECL_NAME(callee)),
+                "__gg__initialize_variable_clean") != 0 )
+    {
+    return false;
+    }
+
+  flags = CALL_EXPR_ARG(stmt, 1);
+  if( TREE_CODE(flags) != INTEGER_CST )
+    {
+    return false;
+    }
+
+  tree address = CALL_EXPR_ARG(stmt, 0);
+  STRIP_NOPS(address);
+  if( TREE_CODE(address) != ADDR_EXPR )
+    {
+    return false;
+    }
+  field = TREE_OPERAND(address, 0);
+  if( TREE_CODE(field) != VAR_DECL
+      || !TREE_STATIC(field)
+      || DECL_EXTERNAL(field)
+      || DECL_WEAK(field)
+      || DECL_THREAD_LOCAL_P(field)
+      || DECL_HAS_VALUE_EXPR_P(field) )
+    {
+    return false;
+    }
+  return true;
+  }
+
+static bool
+gg_init_batch_static_decl(tree stmt)
+  {
+  if( TREE_CODE(stmt) != DECL_EXPR )
+    {
+    return false;
+    }
+  tree decl = DECL_EXPR_DECL(stmt);
+  if( TREE_CODE(decl) != VAR_DECL
+      || !TREE_STATIC(decl)
+      || DECL_EXTERNAL(decl)
+      || DECL_THREAD_LOCAL_P(decl)
+      || DECL_HAS_VALUE_EXPR_P(decl) )
+    {
+    return false;
+    }
+  tree initial = DECL_INITIAL(decl);
+  return !initial
+         || (initial != error_mark_node
+             && TREE_CONSTANT(initial)
+             && !TREE_SIDE_EFFECTS(initial));
+  }
+
+static tree
+gg_init_batch_call(const std::vector<tree> &fields,
+                   tree flags, location_t location)
+  {
+  static unsigned long serial = 0;
+  char name[80];
+  snprintf(name, sizeof(name), "..initialization_batch_%lu", ++serial);
+
+  /* Match the existing parser_init_list's array of VOID_P.  Only addresses
+     of non-TLS static objects are accepted above, so this needs no runtime
+     table construction.  Keep the null terminator required by the helper.  */
+  tree array_type = build_array_type_nelts(VOID_P, fields.size() + 1);
+  tree initial = make_node(CONSTRUCTOR);
+  TREE_TYPE(initial) = array_type;
+  TREE_CONSTANT(initial) = 1;
+  TREE_STATIC(initial) = 1;
+  for( size_t i = 0; i < fields.size(); ++i )
+    {
+    tree address = build1(ADDR_EXPR,
+                         build_pointer_type(TREE_TYPE(fields[i])),
+                         fields[i]);
+    TREE_ADDRESSABLE(fields[i]) = 1;
+    CONSTRUCTOR_APPEND_ELT(CONSTRUCTOR_ELTS(initial),
+                           build_int_cst_type(SIZE_T, i),
+                           fold_convert(VOID_P, address));
+    }
+  CONSTRUCTOR_APPEND_ELT(CONSTRUCTOR_ELTS(initial),
+                         build_int_cst_type(SIZE_T, fields.size()),
+                         build_int_cst(VOID_P, 0));
+
+  /* File scope is intentional: the function's context stacks are already
+     closed.  Register the fully initialized declaration through the usual
+     file-scope machinery, which does not append a runtime statement.  */
+  tree table = gg_declare_variable(array_type, name, initial, vs_file_static);
+  TREE_READONLY(table) = 1;
+  TREE_ADDRESSABLE(table) = 1;
+  DECL_ARTIFICIAL(table) = 1;
+  DECL_IGNORED_P(table) = 1;
+  gg_define_from_declaration(table);
+
+  tree address = build1(ADDR_EXPR, build_pointer_type(array_type), table);
+  tree pointer = fold_convert(build_pointer_type(VOID_P), address);
+  tree call = gg_call_expr(VOID, "__gg__variables_to_init",
+                          pointer, flags, NULL_TREE);
+  SET_EXPR_LOCATION(call, location);
+  return call;
+  }
+
+static void
+gg_batch_initializations(tree &node, gg_init_batch_stats &stats)
+  {
+  if( !node )
+    {
+    return;
+    }
+  switch( TREE_CODE(node) )
+    {
+    case STATEMENT_LIST:
+      {
+      tree result = alloc_stmt_list();
+      std::vector<tree> pending;
+      std::vector<tree> fields;
+      tree run_flags = NULL_TREE;
+      location_t location = UNKNOWN_LOCATION;
+
+      auto flush = [&]()
+        {
+        if( fields.size() < 2 )
+          {
+          for( tree stmt : pending )
+            {
+            append_to_statement_list_force(stmt, &result);
+            }
+          }
+        else
+          {
+          /* Retain static declarations in their original order.  They have
+             no runtime effects; emit the batch after these declarations.  */
+          for( tree stmt : pending )
+            {
+            if( TREE_CODE(stmt) == DECL_EXPR )
+              {
+              append_to_statement_list_force(stmt, &result);
+              }
+            }
+          append_to_statement_list_force(
+            gg_init_batch_call(fields, run_flags, location), &result);
+          ++stats.batches;
+          stats.eliminated += fields.size() - 1;
+          }
+        pending.clear();
+        fields.clear();
+        run_flags = NULL_TREE;
+        };
+
+      for( tree_stmt_iterator it = tsi_start(node);
+           !tsi_end_p(it); tsi_next(&it) )
+        {
+        tree stmt = tsi_stmt(it);
+        tree field = NULL_TREE;
+        tree flags = NULL_TREE;
+        if( gg_init_batch_candidate(stmt, field, flags) )
+          {
+          ++stats.eligible;
+          if( run_flags
+              && (TREE_TYPE(run_flags) != TREE_TYPE(flags)
+                  || !tree_int_cst_equal(run_flags, flags)) )
+            {
+            flush();
+            }
+          if( fields.empty() )
+            {
+            run_flags = flags;
+            location = EXPR_LOCATION(stmt);
+            }
+          pending.push_back(stmt);
+          fields.push_back(field);
+          }
+        else if( !fields.empty() && gg_init_batch_static_decl(stmt) )
+          {
+          pending.push_back(stmt);
+          }
+        else
+          {
+          flush();
+          gg_batch_initializations(stmt, stats);
+          append_to_statement_list_force(stmt, &result);
+          }
+        }
+      flush();
+      node = result;
+      break;
+      }
+
+    case BIND_EXPR:
+      gg_batch_initializations(BIND_EXPR_BODY(node), stats);
+      break;
+
+    case COND_EXPR:
+      /* Never batch across the condition or between its alternatives.  */
+      gg_batch_initializations(TREE_OPERAND(node, 1), stats);
+      gg_batch_initializations(TREE_OPERAND(node, 2), stats);
+      break;
+
+    case LOOP_EXPR:
+      gg_batch_initializations(LOOP_EXPR_BODY(node), stats);
+      break;
+
+    case SWITCH_EXPR:
+      gg_batch_initializations(SWITCH_BODY(node), stats);
+      break;
+
+    case TRY_FINALLY_EXPR:
+    case TRY_CATCH_EXPR:
+      gg_batch_initializations(TREE_OPERAND(node, 0), stats);
+      gg_batch_initializations(TREE_OPERAND(node, 1), stats);
+      break;
+
+    default:
+      /* In particular, do not walk declarations, initializers, arbitrary
+         value expressions, or nested function declarations.  */
+      break;
+    }
+  }
+
 void
 gg_finalize_function()
   {
@@ -2886,6 +3131,22 @@ gg_finalize_function()
 
   // Finish off the context
   gg_pop_context();
+
+  /* Work on the completed body.  Do not use gg_append_statement here:
+     gg_pop_context has closed the emission stacks.  */
+  if( !getenv("GCOBOL_INIT_BATCH_DISABLE") )
+    {
+    gg_init_batch_stats stats;
+    gg_batch_initializations(
+      DECL_SAVED_TREE(current_function->function_decl), stats);
+    if( getenv("GCOBOL_INIT_BATCH_REPORT") )
+      {
+      fprintf(stderr,
+              "gcobol initialization batching: eligible=%lu batches=%lu "
+              "eliminated=%lu\n",
+              stats.eligible, stats.batches, stats.eliminated);
+      }
+    }
 
   /*  Because COBOL functions can be misleadingly referenced before they
     defined, and because our compiler is single pass, we need to defer
