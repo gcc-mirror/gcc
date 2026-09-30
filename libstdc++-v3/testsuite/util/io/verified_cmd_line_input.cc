@@ -34,7 +34,7 @@
  * Contains definitions for tests - verified command line input.
  */
 
-#include <util/io/verified_cmd_line_input.hpp>
+#include "verified_cmd_line_input.hpp"
 #include <limits.h>
 #include <utility>
 #include <stdlib.h>
