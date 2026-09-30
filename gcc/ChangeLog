@@ -1,3 +1,18 @@
+2026-09-29  Alfie Richards  <alfie.richards@arm.com>
+
+	Backported from master:
+	2026-09-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(emit_ldf1_ffr_update): New.
+	(svldff1_gather_impl::expand): Change ffr update.
+	(svldff1_gather_extend::expand): Likewise.
+	(svldxf1_impl::expand): Likewise.
+	(svldxf1_extend_impl::expand): Likewise.
+	* config/aarch64/aarch64-sve.md (aarch64_update_ffr_for_load):
+	Change to...
+	(@aarch64_update_ffr<mode>): ...this.
+
 2026-09-22  liuhongt  <hongtao.liu@intel.com>
 
 	Backported from master:
