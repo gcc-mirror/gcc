@@ -353,6 +353,7 @@ typedef std::stack<source_format_t> source_format_stack_t;
 class cdftext {
   static bool please_push_filename;
   static int command_line_indicator_column;
+  static bool explicit_format;
 
   friend void cobol_set_indicator_column( int column );
 

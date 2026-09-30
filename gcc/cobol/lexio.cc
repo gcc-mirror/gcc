@@ -1509,7 +1509,7 @@ cdftext::lex_open( const char filename[] ) {
 
   source_format_stack_t source_format;
   source_format_t format;  // free-form by default
-  if( command_line_indicator_column ) {
+  if( command_line_indicator_column || explicit_format ) {
     format.indicator_column_set(command_line_indicator_column);
   }
   source_format.push(format);
@@ -1867,10 +1867,12 @@ cdftext::free_form_reference_format( int input,
 
 bool cdftext::please_push_filename = false;
 int cdftext::command_line_indicator_column = 0;
+bool cdftext::explicit_format = false;
 
 void
 cobol_set_indicator_column( int column ) {
   cdftext::command_line_indicator_column = column;
+  cdftext::explicit_format = true;
   source_format_t local;
   local.indicator_column_set(column);
   dbgmsg("%s: format now %s", __func__, local.description());
