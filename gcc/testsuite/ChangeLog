@@ -1,3 +1,13 @@
+2026-09-29  Alfie Richards  <alfie.richards@arm.com>
+
+	Backported from master:
+	2026-09-15  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/pr126629.c: New test.
+	* gcc.target/aarch64/sve/pr126629_extend.c: New test.
+	* gcc.target/aarch64/sve/pr126629_gather.c: New test.
+	* gcc.target/aarch64/sve/pr126629_gather2.c: New test.
+
 2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
