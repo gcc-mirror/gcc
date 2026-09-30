@@ -4819,6 +4819,7 @@ simplify_phi_result_movdiv (gimple *stmt, tree_code code)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree_code new_code;
+  bool needs_reset = false;
 
   /* Skip complex types (PR127163) */
   if (!INTEGRAL_TYPE_P (TREE_TYPE (rhs1)))
@@ -4828,9 +4829,17 @@ simplify_phi_result_movdiv (gimple *stmt, tree_code code)
     {
       case TRUNC_MOD_EXPR:
       case FLOOR_MOD_EXPR:
-	if (!tree_expr_nonnegative_p (rhs1)
-	    && !use_in_zero_equality (gimple_assign_lhs (stmt), true))
-	  return false;
+	if (!tree_expr_nonnegative_p (rhs1))
+	  {
+	    /* For a negative X, the truncating X % 2^k and X & (2^k - 1)
+	       differ (e.g. -3 % 4 is -3 but -3 & 3 is 1), though both are
+	       zero for the same X.  That is enough when the result is only
+	       compared with zero, but the range recorded for the MOD result
+	       no longer holds for the AND, so reset it.  */
+	    needs_reset = true;
+	    if (!use_in_zero_equality (gimple_assign_lhs (stmt), true))
+	      return false;
+	  }
 
 	new_code = BIT_AND_EXPR;
 	break;
@@ -4889,6 +4898,8 @@ simplify_phi_result_movdiv (gimple *stmt, tree_code code)
 
   gimple_assign_set_rhs2 (stmt, new_phires);
   gimple_assign_set_rhs_code (stmt, new_code);
+  if (needs_reset)
+    reset_flow_sensitive_info (gimple_assign_lhs (stmt));
   update_stmt (stmt);
 
   gsi = gsi_for_phi (phi);
