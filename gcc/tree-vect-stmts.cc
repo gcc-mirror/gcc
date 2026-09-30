@@ -6268,20 +6268,6 @@ vectorizable_shift (vec_info *vinfo,
 	   || dt[1] == vect_external_def
 	   || dt[1] == vect_internal_def)
     {
-      /* In SLP, need to check whether the shift count is the same,
-	 in loops if it is a constant or invariant, it is always
-	 a scalar shift.  */
-      vec<stmt_vec_info> stmts = SLP_TREE_SCALAR_STMTS (slp_node);
-      stmt_vec_info slpstmt_info;
-
-      FOR_EACH_VEC_ELT (stmts, k, slpstmt_info)
-	if (slpstmt_info)
-	  {
-	    gassign *slpstmt = as_a <gassign *> (slpstmt_info->stmt);
-	    if (!operand_equal_p (gimple_assign_rhs2 (slpstmt), op1, 0))
-	      scalar_shift_arg = false;
-	  }
-
       /* For internal SLP defs we have to make sure we see scalar stmts
 	 for all vector elements.
 	 ???  For different vectors we could resort to a different
@@ -6289,14 +6275,26 @@ vectorizable_shift (vec_info *vinfo,
 	 takes the first.  */
       if (dt[1] == vect_internal_def
 	  && maybe_ne (nunits_out * vect_get_num_copies (vinfo, slp_node),
-		       stmts.length ()))
+		       SLP_TREE_LANES (slp_node)))
 	scalar_shift_arg = false;
-
       /* If the shift amount is computed by a pattern stmt we cannot
          use the scalar amount directly thus give up and use a vector
 	 shift.  */
-      if (op1_def_stmt_info && is_pattern_stmt_p (op1_def_stmt_info))
+      else if (op1_def_stmt_info && is_pattern_stmt_p (op1_def_stmt_info))
 	scalar_shift_arg = false;
+      else
+	{
+	  tree l0 = vect_get_slp_scalar_def (slp_op1, 0);
+	  if (!l0)
+	    scalar_shift_arg = false;
+	  else
+	    for (k = 1; k < SLP_TREE_LANES (slp_node); ++k)
+	      if (!operand_equal_p (vect_get_slp_scalar_def (slp_op1, k), l0))
+		{
+		  scalar_shift_arg = false;
+		  break;
+		}
+	}
     }
   else
     {
