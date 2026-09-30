@@ -1,3 +1,15 @@
+2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* posix/cpy/posix-errno.cpy: Add new OPTIONAL arg.
+	* posix/shim/errno.cc (posix_errno): Set errno if required.
+	* posix/udf/posix-errno.cbl: Add new OPTIONAL arg.
+
+2026-09-29  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (defined): Remove always-on MATCH_DECLARATIVE
+	debugging condition.
+	(__gg__compare_numdisp_alpha): Appease cppcheck.
+
 2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
 
 	* compat/gnu/lib/cbl_get_program_info.3: Update to status quo.

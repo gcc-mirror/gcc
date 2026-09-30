@@ -1,3 +1,124 @@
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Use the index of
+	the basic block of USE_STMT instead of STMT to purge EH edges.
+
+2026-09-29  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.cc (range_from_missing_constructor_part): Add
+	zero for pointers too.  Remove assert.
+	(range_from_readonly_load): Add a null or a non-null range for a
+	pointer element.
+	(fold_using_range::range_from_readonly_var): Return the
+	accumulated range for pointers too, and fail if it is varying.
+
+2026-09-29  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	PR target/126157
+	* config/arc/arc.cc (prepare_move_operands): Force the address of
+	an uncached store into a register when it is not a valid store
+	destination.
+	* config/arc/arc.md (stdi<mode>): Use move_dest_operand for the
+	destination operand.
+	(*stdidi_split): Use non_mod_move_dest_operand for the destination
+	operand.
+	* config/arc/predicates.md (non_mod_move_dest_operand): New
+	predicate that disallows PRE/POST_INC/DEC.
+
+2026-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* ginclude/stdalign.h (__alignas_is_defined, __alignof_is_defined):
+	Note that the macros were removed in C23 and C++26.
+	* ginclude/stdbool.h (__bool_true_false_are_defined): Note that
+	the macro is obsolescent since C23 and deprecated since C++23.
+
+2026-09-29  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/2827.md: Remove attributes
+	zEC12_{cracked,expanded,endgroup,groupalone}.
+	* config/s390/2964.md: Remove attributes
+	z13_unit_{fpd,fxa,fxb,fxd,lsu,vfu} and
+	z13_{cracked,expanded,groupalone,endgroup,groupoftwo}.
+	* config/s390/3906.md: Remove attributes
+	z14_unit_{fpd,fxa,fxb,fxd,lsu,vfu} and
+	z14_{cracked,expanded,groupalone,endgroup,groupoftwo}.
+	* config/s390/3931.md: Remove attributes
+	z16_unit_{fpd,fxa,fxb,fxd,lsu,vfu} and
+	z16_{cracked,expanded,groupalone,endgroup,groupoftwo}.
+	* config/s390/8561.md: Remove attributes
+	z15_unit_{fpd,fxa,fxb,fxd,lsu,vfu} and
+	z15_{cracked,expanded,groupalone,endgroup,groupoftwo}.
+	* config/s390/9175.md: Remove attributes
+	z17_unit_{fpd,fxa,fxb,fxd,lsu,vfu} and
+	z17_{cracked,expanded,groupalone,endgroup,groupoftwo}.
+	* config/s390/s390.cc (enum s390_sched_unit): New enum
+	describing the units which should be tracked.
+	(struct s390_sched_insn_descr): New struct describing an
+	instruction.
+	(s390_get_sched_attrmask): Removed.
+	(s390_get_unit_mask): Removed.
+	(s390_is_fpd): Removed.
+	(s390_is_fxd): Removed.
+	(s390_is_longrunning): Removed.
+	(get_sched_insn_descr): New function returning the pipeline
+	description for a particular insn.
+	(s390_sched_score): Use new insn description.
+	(PRINT_SCHED_ATTR): Remove.
+	(s390_sched_variable_issue): Use new insn description.
+	(s390_sched_init_global): New function, set insn description
+	according to current tune level.
+	(TARGET_SCHED_INIT_GLOBAL): Corresponding define.
+	* config/s390/2827.h: New file.
+	* config/s390/2964.h: New file.
+	* config/s390/3906.h: New file.
+	* config/s390/3931.h: New file.
+	* config/s390/8561.h: New file.
+	* config/s390/9175.h: New file.
+
+2026-09-29  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* genattr-common.cc (gen_attr): New preprocessor definition
+	ATTR_ENUM_MNEMONIC_COUNT.
+
+2026-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR target/127633
+	* config/i386/sse.md (movsd/movhpd to movupd): Use
+	widen_memory_access instead of adjust_address to merge
+	the MEMs.
+	* config/i386/i386.cc (ix86_operands_ok_for_move_multiple):
+	Avoid merging loads from different parameters.
+
+2026-09-29  linden  <bestxmg@gmail.com>
+
+	* ipa-cp.h (ipcp_bits_lattice::set_to_constant)
+	(ipcp_bits_lattice::meet_with, ipcp_bits_lattice::meet_with_1):
+	Take widest_int parameters by const reference.
+	* ipa-cp.cc (ipcp_bits_lattice::set_to_constant)
+	(ipcp_bits_lattice::meet_with, ipcp_bits_lattice::meet_with_1):
+	Likewise.
+
+2026-09-29  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	PR target/107549
+	* config/xtensa/xtensa.cc (xt_true_regnum): Don't index
+	reg_renumber before LRA starts.
+
+2026-09-29  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/s390.cc (s390_gimple_fold_builtin): New
+	function.
+
+2026-09-29  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/126891
+	* config/rs6000/rs6000.md (rs6000_set_fpscr_drn): Change operand
+	from DImode to SImode and convert it to DImode before use.
+
+2026-09-29  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
 2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR target/127075

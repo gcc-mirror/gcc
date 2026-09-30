@@ -1,3 +1,158 @@
+2026-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127187
+	* gfortran.dg/associate_90.f90: Add -fdump-tree-original and check
+	that no associate-name points to a string length.
+
+2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol.dg/group2/Hello.cob: New test.
+	* cobol.dg/group2/Hello.out: New test.
+	* cobol.dg/group2/Read_and_write_errno.cob: New test.
+	* cobol.dg/group2/Read_and_write_errno.out: New test.
+
+2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__returned_buffer_length_.cob: New test.
+	* cobol.dg/group2/CBL_GET_PROGRAM_INFO__returned_buffer_length_.out: New test.
+
+2026-09-29  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/armv6-unaligned-load-ice.c: Remove dg-skip-if,
+	fix dg-options and dg-add-options.
+	* gcc.target/arm/attr-unaligned-load-ice.c: Remove dg-skip-if and
+	fix dg-options.
+	* gcc.target/arm/attr_arm-err.c: Remove dg-skip-if.
+	* gcc.target/arm/combine-cmp-shift.c: Remove dg-skip-if, useless
+	-mcpu=cortex-a8 and require arm_arch_v7a.
+	* gcc.target/arm/lob2.c: Remove dg-skip-if, and require
+	arm_arch_v8_1m_main.
+	* gcc.target/arm/lob5.c: Likewise.
+	* gcc.target/arm/pr50305.c: Remove dg-skip-if and require
+	arm_arch_v7a_arm.
+
+2026-09-29  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-12.c: New test.
+
+2026-09-29  Michiel Derhaeg  <michiel.derhaeg@globalfoundries.com>
+
+	PR target/126157
+	* gcc.target/arc/uncached-10.c: New test.
+	* gcc.target/arc/uncached-11.c: New test.
+
+2026-09-29  Jonas Hansen  <jhansen@roku.com>
+
+	PR tree-optimization/127416
+	* g++.dg/warn/Wformat-truncation-nonstring.C: New test.
+	* g++.dg/torture/constexpr-array-string.C: New test.
+
+2026-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127643
+	* g++.dg/reflect/members_of18.C: New test.
+
+2026-09-29  Richard Biener  <rguenther@suse.de>
+
+	PR target/127633
+	* gcc.target/i386/pr127633.c: New testcase.
+	* gcc.target/i386/sse2-init-v2df-2.c: Adjust.
+	* gcc.target/i386/sse4_1-init-v2df-2.c: Likewise.
+
+2026-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127657
+	* gm2.dg/spell/iso/fail/valspell.mod: New test.
+	* gm2.dg/spell/iso/fail/valspell2.mod: New test.
+	* gm2.dg/spell/iso/fail/valspell3.mod: New test.
+
+2026-09-29  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/mma-builtin-1.h: Correct comments.
+	* gcc.target/powerpc/mma-builtin-10-pair.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-10-quad.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-2.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-3.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-4.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-5.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-6.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-7.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-8.h: Likewise.
+	* gcc.target/powerpc/mma-builtin-9.h: Likewise.
+	* gcc.target/powerpc/pr100777.h: Likewise.
+	* gcc.target/powerpc/pr101849.h: Likewise.
+	* gcc.target/powerpc/pr102976.h: Likewise.
+	* gcc.target/powerpc/pr103127.h: Likewise.
+	* gcc.target/powerpc/pr104923.h: Likewise.
+	* gcc.target/powerpc/pr106016.h: Likewise.
+	* gcc.target/powerpc/pr106017.h: Likewise.
+	* gcc.target/powerpc/pr106833.h: Likewise.
+	* gcc.target/powerpc/pr110411-2.h: Likewise.
+	* gcc.target/powerpc/pr96446.h: Likewise.
+	* gcc.target/powerpc/pr96530.h: Likewise.
+	* gcc.target/powerpc/pr96808.h: Likewise.
+	* gcc.target/powerpc/pr97360.h: Likewise.
+	* gcc.target/powerpc/pr98872.h: Likewise.
+
+2026-09-29  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/zvector/vec_perm-1.c: New test.
+
+2026-09-29  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/126891
+	* gcc.target/powerpc/pr126891.c: New test.
+
+2026-09-29  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/Compare_numeric-display_to_alphanumeric.cob: New test.
+	* cobol.dg/group2/Compare_numeric-display_to_alphanumeric.out: New test.
+	* cobol.dg/group2/Test_refmod_against_named-conditional.cob: New test.
+	* cobol.dg/group2/Test_refmod_against_named-conditional.out: New test.
+
+2026-09-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-25.c: Remove the xfail
+	of the csrr check.
+	* gcc.target/riscv/rvv/base/pr112431-26.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr112431-27.c: Ditto.
+
+2026-09-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmul_vf-f32-mf2.c: New test.
+
+2026-09-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_vf-f32-mf2.c: New test.
+
+2026-09-29  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwadd_vf-f32-mf2.c: New test.
+
 2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
 
 	PR target/127075

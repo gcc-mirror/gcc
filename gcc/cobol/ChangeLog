@@ -1,3 +1,45 @@
+2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobolspec.cc (lang_specific_driver): Disable lib{compat,posix}
+		if requested.
+
+2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* gcobolspec.cc (lang_specific_driver): Init need_libposix to true.
+
+2026-09-29  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* genapi.cc (parser_call): Proper handling of the ON EXCEPTION
+	clause.
+	* parse.y: Handle missing target when the CALL is the final
+	statement of the source code module.
+	* parse_ante.h: Likewise.
+
+2026-09-29  Robert Dubner  <rdubner@symas.com>
+
+	* picture.cc (is_valid_picture): Appease cppcheck.
+	(process_line): Likewise.
+	(process_file): Likewise.
+	(main): Likewise. Likewise.
+	* semantic_token.h (struct lex_picture_t): Likewise.
+	* symbols.cc (expand_picture): Remove obsolete PICTURE workaround.
+	* util.cc (cbl_field_t::encode_numeric): Likewise.
+
+2026-09-29  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse_ante.h (struct refer_list_t): Whitespace.
+	(update_prior_invalid_field): Move to symbols.cc.
+	(field_add): Whitespace.
+	* scan_post.h (run_cdf): Better debug messages.
+	(next_token): Same.
+	(prelex): Same.
+	(yylex): Whitespace.
+	* symbols.cc (update_prior_invalid_field): Define with external linkage.
+	(name_queue_t::dump): Tidy up logic.
+	* symbols.h (update_prior_invalid_field): Declare function.
+	* util.cc (cdf_field_add): Use update_prior_invalid_field.
+
 2026-09-28  James K. Lowden  <jklowden@cobolworx.com>
 
 	* cbldiag.h (current_call_convention): Whitespace.

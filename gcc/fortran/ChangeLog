@@ -1,3 +1,9 @@
+2026-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127187
+	* resolve.cc (resolve_assoc_var): A selector with a LEN or KIND
+	inquiry reference is not a variable.
+
 2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127187

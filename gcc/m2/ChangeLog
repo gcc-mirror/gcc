@@ -1,3 +1,9 @@
+2026-09-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127657
+	* gm2-compiler/M2Quads.mod (BuildValFunction): Add filtering
+	spell check for unknown symbols.
+
 2026-09-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127622

@@ -1,3 +1,85 @@
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Initialize_Discriminants): Delete.
+	(Build_Record_Aggr_Code.Init_Visible_Discriminants): Likewise.
+	(Build_Record_Aggr_Code.Init_Hidden_Discriminants): Rename into...
+	(Build_Record_Aggr_Code.Init_Parent_Discriminants): ...this.  Remove
+	the two parameters and initialize all the parent discriminants.
+	(Build_Record_Aggr_Code.Init_Stored_Discriminants): Retrieve the
+	stored discriminants of the base type.
+	(Build_Record_Aggr_Code): Adjust to above changes.
+	(Convert_To_Assignments): Remove calls to Initialize_Discriminants.
+	* sem_aux.ads (First_Stored_Discriminant): Minor tweaks.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Turn an others-equivalent
+	aggregate present in an assignment into an others aggregate.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Remove Finalization_Done
+	variable and Generate_Finalization_Actions procedure.  Generate a
+	call to the Initialize primitive for an extension aggregate with
+	an ancestor part that is a subtype mark for a controlled type.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Build_Record_Aggr_Code): Call Is_Limited_Type in
+	lieu of Is_Inherently_Limited_Type.
+	(Convert_Aggr_In_Object_Decl): Likewise.
+	(Convert_To_Assignments): Likewise.
+	(Expand_Array_Aggregate): Likewise.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional): Adjust commentary.  Do not
+	set Compile_Time_Known_Aggregate on the aggregate if the size of its
+	type is not known at compile time.
+	(Expand_Record_Aggregate.Build_Back_End_Aggregate): Likewise.
+	* sem_aggr.adb (Array_Aggr_Subtype): Set Size_Known_At_Compile_Time
+	on the subtype even if the aggregate does not come from source.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Convert_To_Positional.Flatten): Take into account
+	the elements of a nested array aggregate when deciding to duplicate
+	the element covered by an "others" choice.
+	(Convert_To_Positional.Is_Static_Element): Return again false for
+	a compile-time known aggregate whose expansion has been delayed.
+	(Compile_Time_Known_Composite_Value): Delete.
+	(Expand_Record_Aggregate): Call Compile_Time_Known_Value on the
+	expression whatever its type.
+	* sem_ch3.adb (Analyze_Object_Declaration): Propagate the subtype
+	of an expression, which is a static array aggregate whose nominal
+	component subtype is an unconstrained discriminated record type,
+	to the actual subtype of the object if it is declared as constant.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Check that the type
+	of the RHS is discrete before calling Expr_Rep_Value on it.
+	* sem_eval.ads (Expr_Value_A): New function.
+	* sem_eval.adb (Compile_Time_Compare): Filter string types and deal
+	with other discrete array types.
+	(Compile_Time_Known_Value): Return True for aggregates with the
+	Compile_Time_Known_Aggregate flag set and not of a string type.
+	(Eval_Logical_Op): Filter boolean types.
+	(Eval_Op_Not): Likewise.
+	(Eval_Qualified_Expression): Filter string types.
+	(Expr_Value_A): New function.
+	(Test_Expression_Is_Foldable): Do not apply boolean logic to arrays.
+	* sem_res.adb (Resolve_Expression_With_Actions.Get_Literal): Adjust.
+	(Resolve_Expression_With_Actions): Remove useless assertion and fold
+	local constant.
+
+2026-09-29  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/s-objrea.ads (Object_Arch): Add LOONGARCH.
+	* libgnat/s-objrea.adb (EM_LOONGARCH): New named number.
+	(ELF_Ops.Initialize): Deal with EM_LOONGARCH.
+	(Read_Address): Deal with LOONGARCH.
+
 2026-09-23  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch7.adb (Establish_Transient_Scope.Find_Transient_Context):
