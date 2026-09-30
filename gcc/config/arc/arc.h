@@ -70,9 +70,11 @@ along with GCC; see the file COPYING3.  If not see
 %{G*}								\
 "
 extern const char *arc_cpu_to_as (int argc, const char **argv);
+extern const char *arc_cd_to_as (int argc, const char **argv);
 
 #define EXTRA_SPEC_FUNCTIONS			\
-  { "cpu_to_as", arc_cpu_to_as },
+  { "cpu_to_as", arc_cpu_to_as },		\
+  { "cd_to_as", arc_cd_to_as },
 
 /* This macro defines names of additional specifications to put in the specs
    that can be used in various specifications like CC1_SPEC.  Its definition
@@ -97,8 +99,9 @@ extern const char *arc_cpu_to_as (int argc, const char **argv);
 
 #undef ASM_SPEC
 #define ASM_SPEC  "%{mbig-endian|EB:-EB} %{EL} "			\
-  "%:cpu_to_as(%{mcpu=*:%*}) %{mspfp*} %{mdpfp*} "                      \
-  "%{mfpu=fpuda*:-mfpuda} %{mcode-density}"
+  "%:cpu_to_as(%{mcpu=*:%*}) "						\
+  "%:cd_to_as(%{mcpu=*:%*} %{mno-code-density:no-cd;mcode-density:cd}) " \
+  "%{mspfp*} %{mdpfp*} %{mfpu=fpuda*:-mfpuda}"
 
 /* Support for a compile-time default CPU and FPU.  The rules are:
    --with-cpu is ignored if -mcpu, mARC*, marc*, mA7, mA6 are specified.

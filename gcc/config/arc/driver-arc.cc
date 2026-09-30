@@ -25,6 +25,25 @@
 #include "coretypes.h"
 #include "tm.h"
 
+/* Look up the CPU given by NAME, or the default CPU if NAME is NULL.  */
+
+static const arc_cpu_t *
+arc_lookup_cpu (const char *name)
+{
+  if (name == NULL)
+    return &arc_cpu_types[(int) TARGET_CPU_DEFAULT];
+
+  for (const arc_cpu_t *arc_selected_cpu = arc_cpu_types;
+       arc_selected_cpu->name;
+       arc_selected_cpu++)
+    {
+      if (strcmp (arc_selected_cpu->name, name) == 0)
+	return arc_selected_cpu;
+    }
+
+  gcc_unreachable ();
+}
+
 /* Returns command line parameters to pass to as.  */
 
 const char*
@@ -33,29 +52,12 @@ arc_cpu_to_as (int argc, const char **argv)
   const char *name = NULL;
   const arc_cpu_t *arc_selected_cpu;
 
-  /* No argument, check what is the default cpu.  */
-  if (argc == 0)
-    {
-      arc_selected_cpu = &arc_cpu_types[(int) TARGET_CPU_DEFAULT];
-    }
-  else
-    {
-      name = argv[0];
-      for (arc_selected_cpu = arc_cpu_types; arc_selected_cpu->name;
-	   arc_selected_cpu++)
-	{
-	  if (strcmp (arc_selected_cpu->name, name) == 0)
-	    break;
-	}
-    }
+  arc_selected_cpu = arc_lookup_cpu (argc == 0 ? NULL : argv[0]);
 
   switch (arc_selected_cpu->arch_info->arch_id)
     {
     case BASE_ARCH_em:
-      if (arc_selected_cpu->flags & FL_CD)
-	name = "-mcode-density";
-      else
-	name = "";
+      name = "";
       if (arc_selected_cpu->flags & FL_FPUDA)
 	name = concat ("-mfpuda ", name, NULL);
       if (arc_selected_cpu->flags & FL_SPFP)
@@ -80,4 +82,30 @@ arc_cpu_to_as (int argc, const char **argv)
       gcc_unreachable ();
     }
   return NULL;
+}
+
+/* Returns code density parameters to pass to as.  */
+
+const char *
+arc_cd_to_as (int argc, const char **argv)
+{
+  const char *name = NULL;
+  const arc_cpu_t *arc_selected_cpu;
+
+  for (int i = 0; i < argc; i++)
+    {
+      if (strcmp (argv[i], "no-cd") == 0)
+	return "";
+      else if (strcmp (argv[i], "cd") == 0)
+	return "-mcode-density";
+      else
+	name = argv[i];
+    }
+
+  arc_selected_cpu = arc_lookup_cpu (name);
+  if (arc_selected_cpu->arch_info->arch_id == BASE_ARCH_em
+      && (arc_selected_cpu->flags & FL_CD))
+    return "-mcode-density";
+
+  return "";
 }
