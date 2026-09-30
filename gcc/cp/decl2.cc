@@ -3309,6 +3309,7 @@ constrain_class_visibility (tree type)
 			       type, t, nlt);
 		  }
 		else if (cxx_dialect > cxx98
+			 && OVERLOAD_TYPE_P (ftype)
 			 && !decl_anon_ns_mem_p (ftype))
 		  warning (OPT_Wsubobject_linkage, "\
 %qT has a field %q#D whose type has internal linkage",
