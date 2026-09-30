@@ -1507,13 +1507,6 @@ cdftext::lex_open( const char filename[] ) {
    * redundant.
    */
 
-  source_format_stack_t source_format;
-  source_format_t format;  // free-form by default
-  if( command_line_indicator_column || explicit_format ) {
-    format.indicator_column_set(command_line_indicator_column);
-  }
-  source_format.push(format);
-
   int input = open_input( filename );
   if( input == -1 ) return NULL;
 
@@ -1522,6 +1515,13 @@ cdftext::lex_open( const char filename[] ) {
   
   // Process any files supplied by the -include command-line option.
   for( auto name : included_files ) {
+    source_format_stack_t source_format;
+    source_format_t format;  // free-form by default
+    if( command_line_indicator_column || explicit_format ) {
+      format.indicator_column_set(command_line_indicator_column);
+    }
+    source_format.push(format);
+
     int input; // cppcheck-suppress shadowVariable
     if( -1 == (input = open(name, O_RDONLY)) ) {
       cbl_message(LexIncludeE, "cannot open %<-include%> file %qs", name);
@@ -1537,6 +1537,13 @@ cdftext::lex_open( const char filename[] ) {
     dbgmsg("lex_open: processed %zu of %zu: '%s'", n, included_files.size(), name);
     cobol_filename_restore(); // process_file restores only for COPY
   }
+  source_format_stack_t source_format;
+  source_format_t format;  // free-form by default
+  if( command_line_indicator_column || explicit_format ) {
+    format.indicator_column_set(command_line_indicator_column);
+  }
+  source_format.push(format);
+
   included_files.clear();
   dbgmsg("lex_open: '%s'", filename);
 
