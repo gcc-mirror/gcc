@@ -2566,7 +2566,7 @@ static const struct
 static const struct
 {
   const char *hwcap;
-  int mask;
+  unsigned int mask;
   unsigned int id;
 } cpu_supports_info[] = {
   /* AT_HWCAP masks.  */
