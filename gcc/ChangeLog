@@ -1,3 +1,8 @@
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Use the index of
+	the basic block of USE_STMT instead of STMT to purge EH edges.
+
 2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

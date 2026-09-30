@@ -1,3 +1,10 @@
+2026-09-29  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/s-objrea.ads (Object_Arch): Add LOONGARCH.
+	* libgnat/s-objrea.adb (EM_LOONGARCH): New named number.
+	(ELF_Ops.Initialize): Deal with EM_LOONGARCH.
+	(Read_Address): Deal with LOONGARCH.
+
 2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Valid>:

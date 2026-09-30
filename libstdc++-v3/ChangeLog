@@ -1,3 +1,14 @@
+2026-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-09-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127656
+	* include/ext/pb_ds/detail/binary_heap_/erase_fn_imps.hpp
+	(erase_if): Update m_a_entries after reallocation.
+	* testsuite/ext/pb_ds/regression/priority_queues_erase_if.cc:
+	New test.
+
 2026-09-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
