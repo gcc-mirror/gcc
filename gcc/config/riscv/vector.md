@@ -8371,6 +8371,30 @@
   [(set_attr "type" "vfmovvf")
    (set_attr "mode" "<MODE>")])
 
+;; Concatenate two half-width vectors via vslideup.
+(define_expand "@vec_concat<mode>"
+  [(set (match_operand:V_HAS_HALF 0 "register_operand")
+	(vec_concat:V_HAS_HALF
+	  (match_operand:<V_HALF> 1 "register_operand")
+	  (match_operand:<V_HALF> 2 "register_operand")))]
+  "TARGET_VECTOR
+   && known_le (GET_MODE_SIZE (<MODE>mode),
+		riscv_regmode_natural_size (<MODE>mode))"
+{
+  rtx low = gen_reg_rtx (<MODE>mode);
+  rtx high = gen_reg_rtx (<MODE>mode);
+  emit_clobber (low);
+  emit_move_insn (gen_lowpart (<V_HALF>mode, low), operands[1]);
+  emit_clobber (high);
+  emit_move_insn (gen_lowpart (<V_HALF>mode, high), operands[2]);
+  rtx offset = gen_int_mode (GET_MODE_NUNITS (<V_HALF>mode), Pmode);
+  rtx ops[] = {operands[0], low, high, offset};
+  insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEUP, <MODE>mode);
+  riscv_vector::emit_vlmax_insn (icode,
+				 riscv_vector::SLIDEUP_OP_MERGE, ops);
+  DONE;
+})
+
 ;; vslide instructions
 (define_insn "@pred_slide<ud><mode>"
   [(set (match_operand:V_VLS 0 "register_operand"             "<ud_constraint>")
