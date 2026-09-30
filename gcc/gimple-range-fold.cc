@@ -1124,7 +1124,9 @@ ctor_ref_range::accumulate_range_from_component_ref (tree init, unsigned i,
 //   static const int t[2] = { 4, 5 };
 //
 // INIT is { 4, 5 } and I is 1, the end of the path.  For t[1] the range is
-// [5, 5] and for t[n] it is [4, 5].
+// [5, 5] and for t[n] it is [4, 5].  When every element is loaded, whatever
+// the initializer leaves out reads as zero: take each element's indices out
+// of the domain to see if anything is left.
 
 bool
 ctor_ref_range::accumulate_range_from_array_ref (tree init, unsigned i,
@@ -1154,16 +1156,53 @@ ctor_ref_range::accumulate_range_from_array_ref (tree init, unsigned i,
       || !tree_fits_uhwi_p (TYPE_MIN_VALUE (domain))
       || !tree_fits_uhwi_p (TYPE_MAX_VALUE (domain)))
     return false;
-  unsigned HOST_WIDE_INT needed_count
-    = (tree_to_uhwi (TYPE_MAX_VALUE (domain))
-       - tree_to_uhwi (TYPE_MIN_VALUE (domain)) + 1);
-  if (CONSTRUCTOR_NELTS (init) < needed_count)
-    accumulate_range_from_missing_constructor_elt ();
 
+  // Unsigned bounds that look reversed are signed, as they are for
+  // get_array_ctor_element_at_index: Ada's -1 .. 5 has a lower bound of
+  // SIZE_MAX.
+  tree type = TREE_TYPE (TYPE_MIN_VALUE (domain));
+  if (TYPE_UNSIGNED (type)
+      && tree_int_cst_lt (TYPE_MAX_VALUE (domain), TYPE_MIN_VALUE (domain)))
+    type = signed_type_for (type);
+  wide_int min = wi::to_wide (TYPE_MIN_VALUE (domain));
+  wide_int max = wi::to_wide (TYPE_MAX_VALUE (domain));
+
+  // Ada represents an empty array with reversed bounds.
+  if (wi::gt_p (min, max, TYPE_SIGN (type)))
+    return true;
+
+  unsigned prec = TYPE_PRECISION (type);
+  int_range_max missing (type, min, max);
+  wide_int next = missing.lower_bound ();
   unsigned ix;
-  tree val;
-  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (init), ix, val)
+  tree index, val;
+
+  // Build a range with the entire domain, and take out any elements which are
+  // initialized.  If there's anything left in that range, it means there are
+  // missing elements and we should add a [0, 0] to the final range.
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), ix, index, val)
     {
+      wide_int lo, hi;
+
+      // A null index means the element follows the previous one.
+      if (!index)
+	lo = hi = next;
+      else if (TREE_CODE (index) == RANGE_EXPR)
+	{
+	  lo = wi::to_wide (TREE_OPERAND (index, 0), prec);
+	  hi = wi::to_wide (TREE_OPERAND (index, 1), prec);
+	}
+      else
+	{
+	  gcc_checking_assert (TREE_CODE (index) == INTEGER_CST);
+	  lo = hi = wi::to_wide (index, prec);
+	}
+      // A RAW_DATA_CST holds one element per byte.
+      if (TREE_CODE (val) == RAW_DATA_CST)
+	hi = wi::add (hi, RAW_DATA_LENGTH (val) - 1);
+      missing.intersect (int_range<2> (type, lo, hi, VR_ANTI_RANGE));
+      next = wi::add (hi, 1);
+
       /* TODO: If the array index in the expr is an SSA_NAME with a known
 	 range, we could use just values loaded from the corresponding array
 	 elements.  */
@@ -1171,6 +1210,8 @@ ctor_ref_range::accumulate_range_from_array_ref (tree init, unsigned i,
 	return false;
     }
 
+  if (!missing.undefined_p ())
+    accumulate_range_from_missing_constructor_elt ();
   return true;
 }
 
