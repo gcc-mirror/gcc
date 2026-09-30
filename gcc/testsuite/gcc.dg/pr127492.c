@@ -1,12 +1,10 @@
 /* PR middle-end/127492 */
-/* { dg-do run } */
+/* { dg-do run { target { int128 && { sync_int_128_runtime || libatomic_available } } } } */
 /* { dg-options "-O2" } */
 /* { dg-additional-options "-latomic" { target libatomic_available } } */
 
-#ifdef __SIZEOF_INT128__
+#ifndef T
 #define T __int128
-#else
-#define T long long
 #endif
 T v = 1;
 
