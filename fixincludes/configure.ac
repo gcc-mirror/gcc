@@ -7,6 +7,7 @@ AC_CANONICAL_TARGET
 AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
 AC_PROG_SED
+AC_CONFIG_MACRO_DIRS([.. ../config])
 
 # Figure out what compiler warnings we can enable.
 # See config/warnings.m4 for details.
