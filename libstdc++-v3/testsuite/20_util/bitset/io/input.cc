@@ -42,6 +42,8 @@ void test01()
   VERIFY( ss.rdstate() == ios_base::goodbit ); // LWG 3199
 }
 
+#pragma GCC diagnostic ignored "-Wc++14-extensions" // 0b literals
+
 void
 test02()
 {
