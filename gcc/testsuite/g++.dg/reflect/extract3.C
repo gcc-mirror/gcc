@@ -33,12 +33,16 @@ static_assert (extract<const int &>(^^rj) == j);
 static_assert (&extract<const int &>(^^rj) == &j);
 
 int k = 1;
-static_assert (&extract<int &>(^^k) == &k);
-static_assert (&extract<const int &>(^^k) == &k);
+constexpr auto e1 = extract<int &>(^^k);	  // { dg-error "cannot be extracted" }
+constexpr auto e2 = extract<const int &>(^^k);	  // { dg-error "cannot be extracted" }
+static_assert (&extract<int &> (object_of (^^k)) == &k);
+static_assert (&extract<const int &> (object_of (^^k)) == &k);
 
 int arr[5] {};
-static_assert (&extract<int (&)[5]>(^^arr) == &arr);
-static_assert (&extract<const int (&)[5]>(^^arr) == &arr);
+constexpr auto e3 = extract<int (&)[5]>(^^arr);	      // { dg-error "cannot be extracted" }
+constexpr auto e4 = extract<const int (&)[5]>(^^arr); // { dg-error "cannot be extracted" }
+static_assert (&extract<int (&)[5]>(object_of (^^arr)) == &arr);
+static_assert (&extract<const int (&)[5]>(object_of (^^arr)) == &arr);
 
 struct S { int m; };
 constexpr S s{42};
@@ -54,9 +58,12 @@ same_type<decltype(extract<const S &>(reflect_constant (S{42}))), const S &> st7
 same_type<decltype(&extract<const S &>(reflect_constant (S{42}))), const S *> st8;
 
 S sr{42};
-static_assert (&extract<S&>(^^sr) == &sr);
-static_assert (&extract<const S&>(^^sr) == &sr);
-static_assert (&extract<S&>(^^sr).m == &sr.m);
+constexpr auto e5 = extract<S&>(^^sr);	      // { dg-error "cannot be extracted" }
+constexpr auto e6 = extract<const S&>(^^sr);  // { dg-error "cannot be extracted" }
+constexpr auto e7 = extract<S&>(^^sr).m;      // { dg-error "cannot be extracted" }
+static_assert (&extract<S&>(object_of (^^sr)) == &sr);
+static_assert (&extract<const S&>(object_of (^^sr)) == &sr);
+static_assert (&extract<S&>(object_of (^^sr)).m == &sr.m);
 int &srm = sr.m;
 static_assert (&extract<int&>(^^srm) == &sr.m);
 

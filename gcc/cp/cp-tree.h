@@ -9486,6 +9486,7 @@ extern bool cxx_constexpr_quiet_p		(const constexpr_ctx *);
 extern mce_value cxx_constexpr_manifestly_const_eval (const constexpr_ctx *);
 extern tree cxx_constexpr_caller		(const constexpr_ctx *);
 extern tree cxx_constexpr_consteval_block	(const constexpr_ctx *);
+extern bool cxx_constexpr_in_eval_lifetime_p	(const constexpr_ctx *, tree);
 
 /* An RAII sentinel used to restrict constexpr evaluation so that it
    doesn't do anything that causes extra DECL_UID generation.  */

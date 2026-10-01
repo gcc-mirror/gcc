@@ -7686,18 +7686,25 @@ extract_ref (location_t loc, const constexpr_ctx *ctx, tree T, tree r,
       if (adju != error_mark_node
 	  && adjt != error_mark_node
 	  && is_convertible (adju, adjt)
-	  && (!var_p || is_constant_expression (r)))
+	  && (!var_p
+	      || decl_constant_var_p (r)
+	      || cxx_constexpr_in_eval_lifetime_p (ctx, r)))
 	{
 	  if (TYPE_REF_P (TREE_TYPE (r)))
 	    {
-	      r = DECL_INITIAL (r);
-	      r = maybe_get_reference_referent (r);
-	      gcc_checking_assert (!TYPE_REF_P (TREE_TYPE (r)));
+	      bool nc = false, ovf = false;
+	      tree jt = NULL_TREE;
+	      r = cxx_eval_constant_expression (ctx, convert_from_reference (r),
+						vc_glvalue, &nc, &ovf, &jt);
+	      if (nc || jt)
+		goto throw_;
+	      gcc_checking_assert (!TYPE_P (r));
 	    }
-	  return build_address (r);
+	  return build_nop (T, build_address (r));
 	}
     }
 
+throw_:
   return throw_exception (loc, ctx, "value cannot be extracted", fun,
 			  non_constant_p, jump_target);
 }
