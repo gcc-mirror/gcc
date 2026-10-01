@@ -58,7 +58,7 @@ namespace __gnu_pbds
 #define PB_DS_BRANCH_POLICY_BASE \
   detail::branch_policy<Node_CItr, Node_Itr, _Alloc>
 
-  /// Functor updating ranks of entrees.
+  /// Functor updating ranks of entries.
   template<typename Node_CItr, typename Node_Itr, 
 	   typename Cmp_Fn, typename _Alloc>
   class tree_order_statistics_node_update : private PB_DS_BRANCH_POLICY_BASE

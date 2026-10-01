@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /><title>Using</title><meta name="generator" content="DocBook XSL Stylesheets Vsnapshot" /><meta name="keywords" content="ISO C++, policy, container, data, structure, associated, tree, trie, hash, metaprogramming" /><meta name="keywords" content="ISO C++, library" /><meta name="keywords" content="ISO C++, runtime, library" /><link rel="home" href="../index.html" title="The GNU C++ Library" /><link rel="up" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="prev" href="policy_data_structures.html" title="Chapter 22. Policy-Based Data Structures" /><link rel="next" href="policy_data_structures_design.html" title="Design" /></head><body><div class="navheader"><table width="100%" summary="Navigation header"><tr><th colspan="3" align="center">Using</th></tr><tr><td width="20%" align="left"><a accesskey="p" href="policy_data_structures.html">Prev</a> </td><th width="60%" align="center">Chapter 22. Policy-Based Data Structures</th><td width="20%" align="right"> <a accesskey="n" href="policy_data_structures_design.html">Next</a></td></tr></table><hr /></div><div class="section"><div class="titlepage"><div><div><h2 class="title" style="clear: both"><a id="containers.pbds.using"></a>Using</h2></div></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.prereq"></a>Prerequisites</h3></div></div></div><p>The library contains only header files, and does not require any
-      other libraries except the standard C++ library . All classes are
+      other libraries except the standard C++ library. All classes are
       defined in namespace <code class="code">__gnu_pbds</code>. The library internally
       uses macros beginning with <code class="code">PB_DS</code>, but
       <code class="code">#undef</code>s anything it <code class="code">#define</code>s (except for
@@ -24,7 +24,7 @@
 		associative-containers
 	      </p></li><li class="listitem"><p>
 		<code class="classname">trie</code>
-		is a concrete base class trie-based
+		is a concrete base class for trie-based
 		associative-containers
 	      </p></li></ul></div></li><li class="listitem"><p>
 	    Hash-Based
@@ -62,7 +62,7 @@
 	used to report errors specific to this library's data
 	structures.
       </p><div class="figure"><a id="id-1.3.5.8.3.3.6"></a><p class="title"><strong>Figure 22.7. Exception Hierarchy</strong></p><div class="figure-contents"><div class="mediaobject" align="center"><img src="../images/pbds_exception_hierarchy.png" align="middle" alt="Exception Hierarchy" /></div></div></div><br class="figure-break" /></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="pbds.using.tutorial"></a>Tutorial</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.basic"></a>Basic Use</h4></div></div></div><p>
-	  For the most part, the policy-based containers containers in
+	  For the most part, the policy-based containers in
 	  namespace <code class="literal">__gnu_pbds</code> have the same interface as
 	  the equivalent containers in the standard C++ library, except for
 	  the names used for the container classes themselves. For example,
@@ -106,10 +106,10 @@
 	  <code class="function">clear</code>.
 	</p><p>
 	  This isn't to say that things are exactly as one would expect, given
-	  the container requirments and interfaces in the C++ standard.
+	  the container requirements and interfaces in the C++ standard.
 	</p><p>
 	  The names of containers' policies and policy accessors are
-	  different then the usual. For example, if <span class="type">hash_type</span> is
+	  different than the usual. For example, if <span class="type">hash_type</span> is
 	some type of hash-based container, then</p><pre class="programlisting">
 	  hash_type::hash_fn
 	</pre><p>
@@ -194,13 +194,13 @@
 	  follows:
 	</p><pre class="programlisting">
 	  template&lt;typename Key, typename Mapped, typename Hash,
-	  typename Pred, typename Allocator, bool Cache_Hashe_Code&gt;
+	  typename Pred, typename Allocator, bool Cache_Hash_Code&gt;
 	  class unordered_map;
 	</pre><p>
 	  and so can be configured by key type, mapped type, a functor
 	  that translates keys to unsigned integral types, an equivalence
 	  predicate, an allocator, and an indicator whether to store hash
-	  values with each entry. this library's collision-chaining
+	  values with each entry. This library's collision-chaining
 	  hash-based container is parametrized as
 	</p><pre class="programlisting">
 	  template&lt;typename Key, typename Mapped, typename Hash_Fn,
@@ -241,11 +241,11 @@
 	<code class="classname">__gnu_pbds::priority_queue</code> is not a
 	sequence-adapter; it is a regular container.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="pbds.using.tutorial.traits"></a>
 	    Querying Container Attributes
-	  </h4></div></div></div><p></p><p>A containers underlying data structure
-	affect their performance; Unfortunately, they can also affect
+	  </h4></div></div></div><p></p><p>A container's underlying data structure
+	affects its performance; unfortunately, they can also affect
 	their interface. When manipulating generically associative
 	containers, it is often useful to be able to statically
-	determine what they can support and what the cannot.
+	determine what they can support and what they cannot.
 	</p><p>Happily, the standard provides a good solution to a similar
 	problem - that of the different behavior of iterators. If
 	<code class="classname">It</code> is an iterator, then
@@ -346,7 +346,7 @@
 	  point_iterator find(...);
 	  };
 	</pre><p>For
-	containers whose interface defines sequence order , it
+	containers whose interface defines sequence order, it
 	is very simple: point-type and range-type iterators are exactly
 	the same, which means that the above snippet will compile if it
 	is used for an order-preserving associative container.
@@ -362,7 +362,7 @@
 	</pre><p>
 	  because a range-type iterator can always be converted to a
 	  point-type iterator.
-	</p><p>Distingushing between iterator types also
+	</p><p>Distinguishing between iterator types also
 	raises the point that a container's iterators might have
 	different invalidation rules concerning their de-referencing
 	abilities and movement abilities. This now corresponds exactly

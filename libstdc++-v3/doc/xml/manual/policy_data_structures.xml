@@ -58,7 +58,7 @@
 
       <para>
 	In many cases, the longer names allow capabilities and behaviours
-	controlled by macros to also be unamibiguously emitted as distinct
+	controlled by macros to also be unambiguously emitted as distinct
 	generated names.
       </para>
 
@@ -122,7 +122,7 @@
       </section>
 
       <section xml:id="pbds.intro.issues.priority_queue">
-	<info><title>Priority Que</title></info>
+	<info><title>Priority Queue</title></info>
 
 	<para>
 	  Priority queues are useful when one needs to efficiently access a
@@ -324,7 +324,7 @@
 	  <para>
 	    A shows a collision-chaining hash-table, B shows a probing
 	    hash-table, C shows a red-black tree, D shows a splay tree, E shows
-	    a tree based on an ordered vector(implicit in the order of the
+	    a tree based on an ordered vector (implicit in the order of the
 	    elements), F shows a PATRICIA trie, and G shows a list-based
 	    container with update policies.
 	  </para>
@@ -554,7 +554,7 @@
 	      <function>operator++</function>). Conversely, the little
 	      box marked <classname>iterator</classname> stores both a
 	      pointer to the element, as well as some other
-	      information (the bucket number of the element). the
+	      information (the bucket number of the element). The
 	      second iterator, then, is "heavier" than the first one-
 	      it requires more time and space. If we were to use a
 	      different container to cross-reference into this
@@ -678,7 +678,7 @@
 	    the C++ standard.  A strict public interface of methods that
 	    comprise only operations which depend on the class's internal
 	    structure; other operations are best designed as external
-	    functions. (See <xref linkend="biblio.meyers02both"/>).With this
+	    functions. (See <xref linkend="biblio.meyers02both"/>). With this
 	    rubric, the standard associative containers lack some useful
 	    methods, and provide other methods which would be better
 	    removed.
@@ -701,9 +701,9 @@
 		<para>
 		  which takes an iterator, erases the corresponding
 		  element, and returns an iterator to the following
-		  element. Also standardd hash-based associative
+		  element. Also standard hash-based associative
 		  containers provide this method. This seemingly
-		  increasesgenericity between associative containers,
+		  increases genericity between associative containers,
 		  since it is possible to use
 		</para>
 		<programlisting>
@@ -716,7 +716,7 @@
 
 		<para>
 		  in order to erase from a container object <varname>
-		  c</varname> all element which match a
+		  c</varname> all elements which match a
 		  predicate <classname>pred</classname>. However, in a
 		  different sense this actually decreases genericity: an
 		  integral implication of this method is that tree-based
@@ -732,7 +732,7 @@
 		  provide this method that they cannot downsize when
 		  elements are erased. As a consequence, different code is
 		  needed to manipulate different containers, assuming that
-		  memory should be conserved. Therefor, this library's
+		  memory should be conserved. Therefore, this library's
 		  non-order preserving associative containers omit this
 		  method.
 		</para>
@@ -768,7 +768,7 @@
 		<para>
 		  erasing a range of elements given by a pair of
 		  iterators. For tree-based or trie-based containers, this can
-		  implemented more efficiently as a (small) sequence of split
+		  be implemented more efficiently as a (small) sequence of split
 		  and join operations. For other, unordered, containers, this
 		  method isn't much better than an external loop. Moreover,
 		  if <varname>c</varname> is a hash-based container,
@@ -857,7 +857,7 @@
 	      equivalence, or interchangeability, but the associative
 	      container cannot check for values' equivalence, only keys'
 	      equivalence; also, are two containers considered equivalent if
-	      they store the same values in different order? this is an
+	      they store the same values in different order? This is an
 	      arbitrary decision.
 	    </para>
 	  </section> <!-- compare -->
@@ -878,7 +878,7 @@
 	    container's comparison functor). Their interface
 	    supports <function>push</function>
 	    and <function>pop</function>. The standard
-	    container <classname>std::priorityqueue</classname> indeed support
+	    container <classname>std::priority_queue</classname> indeed supports
 	    these methods, but little else. For algorithmic and
 	    software-engineering purposes, other methods are needed:
 	  </para>
@@ -975,7 +975,7 @@
 		  <para>
 		    In standard-library-like containers, it is natural to specify the
 		    interface of operations for modifying a value or erasing
-		    a value (discussed previously) in terms of a iterators.
+		    a value (discussed previously) in terms of iterators.
 		    It should be noted that the standard
 		    containers also use iterators for accessing and
 		    manipulating a specific value. In hash-based
@@ -1093,7 +1093,7 @@
 		operation (including <function>pop</function>) can render the container
 		useless due to exceptions. Conversely, if one uses
 		<classname>std::priority_queue&lt;std::deque&lt;int&gt; &gt;
-		&gt;</classname>, then each operation uses incurs a logarithmic
+		&gt;</classname>, then each operation incurs a logarithmic
 		number of indirect accesses (through pointers) unnecessarily.
 		It might be better to let the container make a conservative
 		deduction whether to use the structure in the graphic above, labels A1 or A2.
@@ -1123,7 +1123,7 @@
 		<listitem>
 		  <para>
 		    If <varname>p</varname> is a priority queue adapting an
-		    <classname>std::deque</classname>, then the reference return by
+		    <classname>std::deque</classname>, then the reference returned by
 		  </para>
 		  <programlisting>
 		    p.top()
@@ -1167,7 +1167,7 @@
       <info><title>Prerequisites</title></info>
 
       <para>The library contains only header files, and does not require any
-      other libraries except the standard C++ library . All classes are
+      other libraries except the standard C++ library. All classes are
       defined in namespace <code>__gnu_pbds</code>. The library internally
       uses macros beginning with <code>PB_DS</code>, but
       <code>#undef</code>s anything it <code>#define</code>s (except for
@@ -1215,7 +1215,7 @@
 	    <listitem>
 	      <para>
 		<classname>trie</classname>
-		is a concrete base class trie-based
+		is a concrete base class for trie-based
 		associative-containers
 	      </para>
 	    </listitem>
@@ -1322,7 +1322,7 @@
 	<info><title>Basic Use</title></info>
 
 	<para>
-	  For the most part, the policy-based containers containers in
+	  For the most part, the policy-based containers in
 	  namespace <literal>__gnu_pbds</literal> have the same interface as
 	  the equivalent containers in the standard C++ library, except for
 	  the names used for the container classes themselves. For example,
@@ -1379,12 +1379,12 @@
 
 	<para>
 	  This isn't to say that things are exactly as one would expect, given
-	  the container requirments and interfaces in the C++ standard.
+	  the container requirements and interfaces in the C++ standard.
 	</para>
 
 	<para>
 	  The names of containers' policies and policy accessors are
-	  different then the usual. For example, if <type>hash_type</type> is
+	  different than the usual. For example, if <type>hash_type</type> is
 	some type of hash-based container, then</para>
 
 	<programlisting>
@@ -1520,7 +1520,7 @@
 	</para>
 	<programlisting>
 	  template&lt;typename Key, typename Mapped, typename Hash,
-	  typename Pred, typename Allocator, bool Cache_Hashe_Code&gt;
+	  typename Pred, typename Allocator, bool Cache_Hash_Code&gt;
 	  class unordered_map;
 	</programlisting>
 
@@ -1528,7 +1528,7 @@
 	  and so can be configured by key type, mapped type, a functor
 	  that translates keys to unsigned integral types, an equivalence
 	  predicate, an allocator, and an indicator whether to store hash
-	  values with each entry. this library's collision-chaining
+	  values with each entry. This library's collision-chaining
 	  hash-based container is parametrized as
 	</para>
 	<programlisting>
@@ -1592,11 +1592,11 @@
 	</info>
 	<para></para>
 
-	<para>A containers underlying data structure
-	affect their performance; Unfortunately, they can also affect
+	<para>A container's underlying data structure
+	affects its performance; unfortunately, they can also affect
 	their interface. When manipulating generically associative
 	containers, it is often useful to be able to statically
-	determine what they can support and what the cannot.
+	determine what they can support and what they cannot.
 	</para>
 
 	<para>Happily, the standard provides a good solution to a similar
@@ -1738,7 +1738,7 @@
 	</programlisting>
 
 	<para>For
-	containers whose interface defines sequence order , it
+	containers whose interface defines sequence order, it
 	is very simple: point-type and range-type iterators are exactly
 	the same, which means that the above snippet will compile if it
 	is used for an order-preserving associative container.
@@ -1763,7 +1763,7 @@
 	  point-type iterator.
 	</para>
 
-	<para>Distingushing between iterator types also
+	<para>Distinguishing between iterator types also
 	raises the point that a container's iterators might have
 	different invalidation rules concerning their de-referencing
 	abilities and movement abilities. This now corresponds exactly
@@ -2182,9 +2182,8 @@
 	by <classname>null_type</classname>, then
 	the "set" acts very similarly to the standard's sets - it does not
 	map each key to a distinct <classname>null_type</classname> object. Also,
-	, the container's <type>value_type</type> is essentially
-	its <type>key_type</type> - just as with the standard's sets
-	.</para>
+	the container's <type>value_type</type> is essentially
+	its <type>key_type</type> - just as with the standard's sets.</para>
 
 	<para>
 	  The standard's multimaps and multisets allow, respectively,
@@ -2232,7 +2231,7 @@
 	<info><title>Alternatives to <classname>std::multiset</classname> and <classname>std::multimap</classname></title></info>
 
 	<para>
-	  Brace onself: this library does not contain containers like
+	  Brace oneself: this library does not contain containers like
 	  <classname>std::multimap</classname> or
 	  <classname>std::multiset</classname>. Instead, these data
 	  structures can be synthesized via manipulation of the
@@ -2385,7 +2384,7 @@
 	      The underlying data structure embeds the linked lists
 	      according to its own consideration, which means that the
 	      search path for a value might include several different
-	      equivalent-key values. For example, the search path for the
+	      equivalent-key values. For example, the search path for
 	      the black node in either of the first graphic, labels A or B,
 	      includes more than a single gray node.
 	    </para>
@@ -2395,7 +2394,7 @@
 	    <para>
 	      The links of the linked lists are the underlying data
 	      structures' nodes, which typically are quite structured.  In
-	      the case of tree-based containers (the grapic above, label
+	      the case of tree-based containers (the graphic above, label
 	      B), each "link" is actually a node with three pointers (one
 	      to a parent and two to children), and a
 	      relatively-complicated iteration algorithm. The linked
@@ -2458,8 +2457,8 @@
 	      <function>equal_range</function>), the underlying data
 	      structure typically does not. This means that operations such
 	      as erasing from a tree-based container all values whose keys
-	      are equivalent to a a given key can be super-linear in the
-	      size of the tree; this is also true also for several other
+	      are equivalent to a given key can be super-linear in the
+	      size of the tree; this is also true for several other
 	      operations that target a specific list.
 	    </para>
 	  </listitem>
@@ -2508,7 +2507,7 @@
 	  example, one would use an associative container mapping
 	  each <classname>int</classname> to some size-type indicating the
 	  number of times it logically occurs
-	  (see <filename>example/basic_multiset.cc</filename>.
+	  (see <filename>example/basic_multiset.cc</filename>).
 	</para>
 
 	<para>
@@ -2579,11 +2578,11 @@
 	<para>The relationship between these iterator types varies between
 	container types. The figure below
 	shows the most general invariant between point-type and
-	range-type iterators: In <emphasis>A</emphasis> <literal>iterator</literal>, can
-	always be converted to <literal>point_iterator</literal>. In <emphasis>B</emphasis>
+	range-type iterators: In <emphasis>A</emphasis>, <literal>iterator</literal> can
+	always be converted to <literal>point_iterator</literal>. <emphasis>B</emphasis>
 	shows invariants for order-preserving containers: point-type
 	iterators are synonymous with range-type iterators.
-	Orthogonally,  <emphasis>C</emphasis>shows invariants for "set"
+	Orthogonally, <emphasis>C</emphasis> shows invariants for "set"
 	containers: iterators are synonymous with const iterators.</para>
 
 	<figure>
@@ -2608,7 +2607,7 @@
 
 	<para>Typically, one can determine an iterator's movement
 	capabilities using
-	<literal>std::iterator_traits&lt;It&gt;iterator_category</literal>,
+	<literal>std::iterator_traits&lt;It&gt;::iterator_category</literal>,
 	which is a <literal>struct</literal> indicating the iterator's
 	movement capabilities. Unfortunately, none of the standard predefined
 	categories reflect a pointer's <emphasis>not</emphasis> having any
@@ -2711,7 +2710,7 @@
 	correspondingly, its invalidation guarantee (in this case
 	<classname>range_invalidation_guarantee</classname>)
 	can be cast to its base class (in this case <classname>point_invalidation_guarantee</classname>).
-	This means that this this hierarchy can be used easily using
+	This means that this hierarchy can be used easily using
 	standard metaprogramming techniques, by specializing on the
 	type of <literal>invalidation_guarantee</literal>.</para>
 
@@ -2753,7 +2752,7 @@
 	<listitem>
 	  <para>
 	    Which types and methods does <literal>Cntnr</literal> support?
-	    Containers based on hash tables can be queries for the
+	    Containers based on hash tables can be queried for the
 	    hash-functor type and object; this is meaningless for tree-based
 	    containers. Containers based on trees can be split, joined, or
 	    can erase iterators and return the following iterator; this
@@ -3063,7 +3062,7 @@
 	    mapped into a sequence of positions within a table,
 	    e.g., in a probing table. Similar terms apply in this
 	    case: the table requires a ranged probe function,
-	    mapping a key into a sequence of positions withing the table.
+	    mapping a key into a sequence of positions within the table.
 	    This is typically achieved by composing a hash function
 	    mapping the key into a non-negative integral type, a
 	    probe function transforming the hash value into a
@@ -3132,8 +3131,7 @@
 	    m a prime far from a power of 2, g(r, m) is
 	    affected by all the bits of r (minimizing the chance of
 	    collision). It has the disadvantage of using the costly modulo
-	    operation. This method is hard-wired into SGI's implementation
-	    .</para>
+	    operation. This method is hard-wired into SGI's implementation.</para>
 
 	    <para>The &amp; (bit-mask) implementation has the advantage of
 	    relying on the fast bit-wise and operation. It has the
@@ -3156,7 +3154,7 @@
 	    possibly orthogonal considerations.</para>
 
 	    <para>There are two cases where a ranged-hash function can be
-	    superior. The firs is when using perfect hashing: the
+	    superior. The first is when using perfect hashing: the
 	    second is when the values of m can be used to estimate
 	    the "general" number of distinct values required. This is
 	    described in the following.</para>
@@ -3186,7 +3184,7 @@
 	    implementation (with a = 5). Its advantage is that
 	    it takes into account all of the characters of the string.</para>
 
-	    <para>Now assume that s is the string representation of a
+	    <para>Now assume that s is the string representation
 	    of a long DNA sequence (and so S = {'A', 'C', 'G',
 	    'T'}). In this case, scanning the entire string might be
 	    prohibitively expensive. A possible alternative might be to use
@@ -3280,7 +3278,7 @@
 	      </figure>
 
 	      <para>If <classname>cc_hash_table</classname>'s
-	      hash-functor, <classname>Hash_Fn</classname> is instantiated by <classname>null_type</classname> , then <classname>Comb_Hash_Fn</classname> is taken to be
+	      hash-functor, <classname>Hash_Fn</classname> is instantiated by <classname>null_type</classname>, then <classname>Comb_Hash_Fn</classname> is taken to be
 	      a ranged-hash function. The graphic below shows an <function>insert</function> sequence
 	      diagram. The user inserts an element (point A), the container
 	      transforms the key into a position using the combining functor
@@ -3519,7 +3517,7 @@
 	    above in this library. It first describes resize policies and
 	    their decomposition into trigger and size policies, then
 	    describes pre-defined classes, and finally discusses controlled
-	    access the policies' internals.</para>
+	    access to the policies' internals.</para>
 
 	    <section xml:id="resize_policies.impl.decomposition">
 	      <info><title>Decomposition</title></info>
@@ -3632,9 +3630,9 @@
 		with mask range hashing).</para></listitem>
 
 		<listitem><para><classname>hash_prime_size_policy</classname>
-		implementing a size policy based on a sequence of primes
+		implements a size policy based on a sequence of primes
 		(which should
-		be used with mod range hashing</para></listitem>
+		be used with mod range hashing)</para></listitem>
 	      </orderedlist>
 
 	      <para>The graphic below gives an overall picture of the resize-related
@@ -3652,7 +3650,7 @@
 	    </section>
 
 	    <section xml:id="resize_policies.impl.internals">
-	      <info><title>Controling Access to Internals</title></info>
+	      <info><title>Controlling Access to Internals</title></info>
 
 	      <para>There are cases where (controlled) access to resize
 	      policies' internals is beneficial. E.g., it is sometimes
@@ -3891,7 +3889,7 @@
 	  <classname>std::make_pair(10, 41)</classname>.</para>
 
 	  <para>Each of these trees can efficiently support other queries.
-	  The first can efficiently determine that the 2rd key in the
+	  The first can efficiently determine that the 2nd key in the
 	  tree is <constant>0.3</constant>; the second can efficiently determine
 	  whether any of its intervals overlaps
 	  <programlisting>std::make_pair(29,42)</programlisting> (useful in geometric
@@ -4229,7 +4227,7 @@
 
 	  <listitem><para><classname>Mapped</classname> is the mapped-policy.</para></listitem>
 
-	  <listitem><para><classname>E_Access_Traits</classname> is described in below.</para></listitem>
+	  <listitem><para><classname>E_Access_Traits</classname> is described below.</para></listitem>
 
 	  <listitem><para><classname>Tag</classname> specifies which underlying data structure
 	  to use, and is described shortly.</para></listitem>
@@ -4268,7 +4266,7 @@
 
 	  <listitem><para>Internal nodes have the properties that A) each has at
 	  least two children, and B) each shares the same prefix with
-	  any of its descendant.</para></listitem>
+	  any of its descendants.</para></listitem>
 	</orderedlist>
 
 	<para>A (PATRICIA) trie has some useful properties:</para>
@@ -4323,7 +4321,7 @@
 	    iterator iterating over 8-bit (or less) groups.</para></listitem>
 	  </orderedlist>
 
-	  <para>trie is,
+	  <para>A trie is,
 	  consequently, parametrized by <classname>E_Access_Traits</classname> -
 	  traits which instruct how to access sequences' elements.
 	  <classname>string_trie_e_access_traits</classname>
@@ -4346,7 +4344,7 @@
 	  two <classname>typename E_Access_Traits::const_iterator</classname>
 	  objects, indicating the maximal common prefix of all keys in
 	  the sub-tree. For example, the shaded internal node roots a
-	  sub-tree with leafs "a" and "as". The maximal common prefix is
+	  sub-tree with leaves "a" and "as". The maximal common prefix is
 	  "a". The internal node contains, consequently, to const
 	  iterators, one pointing to <varname>'a'</varname>, and the other to
 	  <varname>'s'</varname>.</para>
@@ -4371,7 +4369,7 @@
 
 	  <para>Trie-based containers support node invariants, as do
 	  tree-based containers. There are two minor
-	  differences, though, which, unfortunately, thwart sharing them
+	  differences, though, which, unfortunately, thwart them
 	  sharing the same node-updating policies:</para>
 
 	  <orderedlist>
@@ -4383,7 +4381,7 @@
 
 	    <listitem><para>Tree-based containers store values in all nodes, while
 	    trie-based containers (at least in this implementation) store
-	    values in leafs.</para></listitem>
+	    values in leaves.</para></listitem>
 	  </orderedlist>
 
 	  <para>The graphic below shows the scheme, as well as some predefined
@@ -4570,7 +4568,7 @@
 	<section xml:id="container.list.details.policies">
 	  <info><title>Policies</title></info>
 
-	  <para>this library allows instantiating lists with policies
+	  <para>This library allows instantiating lists with policies
 	  implementing any algorithm moving nodes to the front of the
 	  list (policies implementing algorithms interchanging nodes are
 	  unsupported).</para>
@@ -4612,10 +4610,10 @@
 	  is <classname>lu_counter_policy</classname>, which implements the
 	  counter algorithm described above. The second is
 	  <classname>lu_move_to_front_policy</classname>,
-	  which unconditionally move an accessed element to the front of
+	  which unconditionally moves an accessed element to the front of
 	  the list. The latter type is very useful in this library,
 	  since there is no need to associate metadata with each element.
-	  (See <xref linkend="biblio.andrew04mtf"/>
+	  (See <xref linkend="biblio.andrew04mtf"/>).
 	  </para>
 
 	</section>
@@ -4713,7 +4711,7 @@
 	</orderedlist>
 
 	<para>The <classname>Tag</classname> parameter specifies which underlying
-	data structure to use. Instantiating it by<classname>pairing_heap_tag</classname>,<classname>binary_heap_tag</classname>,
+	data structure to use. Instantiating it by <classname>pairing_heap_tag</classname>, <classname>binary_heap_tag</classname>,
 	<classname>binomial_heap_tag</classname>,
 	<classname>rc_binomial_heap_tag</classname>,
 	or <classname>thin_heap_tag</classname>,
@@ -4740,9 +4738,9 @@
 	insufficient for manipulating priority-queues. </para>
 
 	<para>Different settings require different priority-queue
-	implementations which are described in later; see traits
-	discusses ways to differentiate between the different traits of
-	different implementations.</para>
+	implementations which are described later; see
+	<xref linkend="container.priority_queue.details.traits"/>, which
+	discusses ways to differentiate between implementations.</para>
 
 
       </section>
@@ -4887,12 +4885,12 @@
 	  <orderedlist>
 	    <listitem><para>
 	      Instantiating <classname>Tag = binary_heap_tag</classname> creates
-	      a binary heap of the form in represented in the graphic with labels A1 or A2. The former is internally
+	      a binary heap of the form represented in the graphic with labels A1 or A2. The former is internally
 	      selected by priority_queue
 	      if <classname>Value_Type</classname> is instantiated by a primitive type
 	      (e.g., an <type>int</type>); the latter is
 	      internally selected for all other types (e.g.,
-	      <classname>std::string</classname>). This implementations is relatively
+	      <classname>std::string</classname>). This implementation is relatively
 	      unstructured, and so has good <classname>push</classname> and <classname>pop</classname>
 	      performance; it is the "best-in-kind" for primitive
 	      types, e.g., <type>int</type>s. Conversely, it has
@@ -4901,11 +4899,11 @@
 
 	    <listitem><para>Instantiating <classname>Tag =
 	    pairing_heap_tag</classname> creates a pairing heap of the form
-	    in represented by label B in the graphic above. This
-	    implementations too is relatively unstructured, and so has good
+	    represented by label B in the graphic above. This
+	    implementation too is relatively unstructured, and so has good
 	    <function>push</function> and <function>pop</function>
 	    performance; it is the "best-in-kind" for non-primitive types,
-	    e.g., <classname>std:string</classname>s. It also has very good
+	    e.g., <classname>std::string</classname>s. It also has very good
 	    worst-case <function>push</function> and
 	    <function>join</function> performance (O(1)), but has high
 	    worst-case <function>pop</function>
@@ -4913,8 +4911,8 @@
 
 	    <listitem><para>Instantiating <classname>Tag =
 	    binomial_heap_tag</classname> creates a binomial heap of the
-	    form repsented by label B in the graphic above. This
-	    implementations is more structured than a pairing heap, and so
+	    form represented by label B in the graphic above. This
+	    implementation is more structured than a pairing heap, and so
 	    has worse <function>push</function> and <function>pop</function>
 	    performance. Conversely, it has sub-linear worst-case bounds for
 	    <function>pop</function>, e.g., and so it might be preferred in
@@ -4923,7 +4921,7 @@
 	    <listitem><para>Instantiating <classname>Tag =
 	    rc_binomial_heap_tag</classname> creates a binomial heap of the
 	    form represented in label B above, accompanied by a redundant
-	    counter which governs the trees. This implementations is
+	    counter which governs the trees. This implementation is
 	    therefore more structured than a binomial heap, and so has worse
 	    <function>push</function> and <function>pop</function>
 	    performance. Conversely, it guarantees O(1)
@@ -4934,7 +4932,7 @@
 	    <listitem><para>Instantiating <classname>Tag =
 	    thin_heap_tag</classname> creates a thin heap of the form
 	    represented by the label B in the graphic above. This
-	    implementations too is more structured than a pairing heap, and
+	    implementation too is more structured than a pairing heap, and
 	    so has worse <function>push</function> and
 	    <function>pop</function> performance. Conversely, it has better
 	    worst-case and identical amortized complexities than a Fibonacci
@@ -4960,8 +4958,8 @@
 	  <info><title>Traits</title></info>
 
 	  <para>It would be nice if all priority queues could
-	  share exactly the same behavior regardless of implementation. Sadly, this is not possible. Just one for instance is in join operations: joining
-	  two binary heaps might throw an exception (not corrupt
+	  share exactly the same behavior regardless of implementation. Sadly, this is not possible. Just one example is in join operations: joining
+	  two binary heaps might throw an exception (but not corrupt
 	  any of the heaps on which it operates), but joining two pairing
 	  heaps is exception free.</para>
 
