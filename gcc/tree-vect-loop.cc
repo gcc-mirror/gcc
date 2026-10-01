@@ -1926,6 +1926,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
      things are probably too close to call, and the conservative thing
      would be to stick with the scalar code.  */
   if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
+      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && min_profitable_estimate > (int) vect_vf_for_cost (loop_vinfo))
     {
       if (dump_enabled_p ())
