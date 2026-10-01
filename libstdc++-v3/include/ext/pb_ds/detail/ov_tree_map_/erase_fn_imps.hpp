@@ -93,7 +93,11 @@ erase_if(Pred pred)
   value_vector a_new_values = s_value_alloc.allocate(new_size);
   iterator target_it = a_new_values;
   cond_dtor<size_type> cd(a_new_values, target_it, new_size);
-  _GLIBCXX_DEBUG_ONLY(debug_base::clear());
+  _GLIBCXX_DEBUG_ONLY(
+  struct dbase : debug_base {
+    using debug_base::swap;
+    using debug_base::insert_new;
+  } d);
   for (iterator source_it = begin(); source_it != m_end_it; ++source_it)
     {
       if (!pred(*source_it))
@@ -101,12 +105,13 @@ erase_if(Pred pred)
 	  new (const_cast<void*>(static_cast<const void*>(target_it)))
 	    value_type(*source_it);
 
-	  _GLIBCXX_DEBUG_ONLY(debug_base::insert_new(PB_DS_V2F(*source_it)));
+	  _GLIBCXX_DEBUG_ONLY(d.insert_new(PB_DS_V2F(*source_it)));
 	  ++target_it;
 	}
     }
 
   reallocate_metadata((node_update*)this, new_size);
+  _GLIBCXX_DEBUG_ONLY(d.swap(*this));
   cd.set_no_action();
 
   {
@@ -138,7 +143,9 @@ erase_imp(It it)
 #endif
 
   _GLIBCXX_DEBUG_ASSERT(m_size > 0);
-  value_vector a_values = s_value_alloc.allocate(m_size - 1);
+  value_vector a_values = 0;
+  if (m_size > 1)
+    a_values = s_value_alloc.allocate(m_size - 1);
   iterator source_it = begin();
   iterator source_end_it = end();
   iterator target_it = a_values;

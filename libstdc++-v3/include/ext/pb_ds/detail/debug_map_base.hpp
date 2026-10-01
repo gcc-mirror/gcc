@@ -312,10 +312,7 @@ namespace __gnu_pbds
       iterator it = m_keys.begin();
       while (it != m_keys.end())
 	if (cmp_fn(r_key, *it))
-	  {
-	    other.insert_new(*it);
-	    it = m_keys.erase(it);
-	  }
+	  other.m_keys.splice(other.m_keys.end(), m_keys, it++);
 	else
 	  ++it;
     }
@@ -325,16 +322,12 @@ namespace __gnu_pbds
     PB_DS_CLASS_C_DEC::
     join(PB_DS_CLASS_C_DEC& other, bool with_cleanup)
     {
-      iterator it = other.m_keys.begin();
-      while (it != other.m_keys.end())
-	{
+      if (with_cleanup)
+	m_keys.splice(m_keys.end(), other.m_keys);
+      else
+	for (iterator it = other.m_keys.begin(), e = other.m_keys.end();
+	     it != e; ++it)
 	  insert_new(*it);
-	  if (with_cleanup)
-	    it = other.m_keys.erase(it);
-	  else
-	    ++it;
-	}
-      _GLIBCXX_DEBUG_ASSERT(!with_cleanup || other.m_keys.empty());
     }
 
 #undef PB_DS_CLASS_T_DEC
