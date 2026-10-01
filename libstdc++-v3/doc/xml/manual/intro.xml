@@ -292,7 +292,7 @@ requirements of the license of GCC.
     <varlistentry xml:id="manual.bugs.dr50"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#50">50</link>:
 	<emphasis role="bold">Copy constructor and assignment operator of ios_base</emphasis>
     </term>
-    <listitem><para>These members functions are declared <code>private</code> and are
+    <listitem><para>These member functions are declared <code>private</code> and are
 	thus inaccessible.  Specifying the correct semantics of
 	"copying stream state" was deemed too complicated.
     </para></listitem></varlistentry>
@@ -341,7 +341,7 @@ requirements of the license of GCC.
     <varlistentry xml:id="manual.bugs.dr90"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#90">90</link>:
 	<emphasis role="bold">Incorrect description of operator&gt;&gt; for strings</emphasis>
     </term>
-    <listitem><para>The effect contain <code>isspace(c,getloc())</code> which must be
+    <listitem><para>The effect contains <code>isspace(c,getloc())</code> which must be
 	replaced by <code>isspace(c,is.getloc())</code>.
     </para></listitem></varlistentry>
 
@@ -750,7 +750,7 @@ requirements of the license of GCC.
     <varlistentry xml:id="manual.bugs.dr581"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#581">581</link>:
 	<emphasis role="bold"><code>flush()</code> not unformatted function</emphasis>
     </term>
-    <listitem><para>Change it to be a unformatted output function (i.e. construct a sentry and catch exceptions).
+    <listitem><para>Change it to be an unformatted output function (i.e. construct a sentry and catch exceptions).
     </para></listitem></varlistentry>
 
     <varlistentry xml:id="manual.bugs.dr586"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#586">586</link>:
@@ -1075,7 +1075,7 @@ requirements of the license of GCC.
     <varlistentry xml:id="manual.bugs.dr2415"><term><link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="&DR;#2415">2415</link>:
 	<emphasis role="bold">Inconsistency between <code>unique_ptr</code> and <code>shared_ptr</code></emphasis>
     </term>
-    <listitem><para>Create empty an <code>shared_ptr</code> from an empty
+    <listitem><para>Create an empty <code>shared_ptr</code> from an empty
                     <code>unique_ptr</code>.
     </para></listitem></varlistentry>
 

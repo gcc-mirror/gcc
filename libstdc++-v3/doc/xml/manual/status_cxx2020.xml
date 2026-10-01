@@ -510,7 +510,7 @@ or any notes about the implementation.
     </row>
 
     <row>
-      <entry>  <code>ranges</code> compare algorithm are over-constrained </entry>
+      <entry>  <code>ranges</code> compare algorithms are over-constrained </entry>
       <entry>
         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2019/p1716r3.html">
         P1716R3 </link>

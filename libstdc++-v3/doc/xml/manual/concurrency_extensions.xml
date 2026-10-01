@@ -87,7 +87,7 @@ supporting atomic operations.
 </para>
 
 <para>
-The two functions functions are:
+The two functions are:
 </para>
 
 <programlisting>
@@ -259,7 +259,7 @@ hardware, hand-crafted assembly is selected. This is the case for the following 
   <listitem><para>hppa</para></listitem>
   <listitem><para>i386</para></listitem>
   <listitem><para>i486</para></listitem>
-  <listitem><para>m48k</para></listitem>
+  <listitem><para>m68k</para></listitem>
   <listitem><para>mips</para></listitem>
   <listitem><para>sparc</para></listitem>
 </itemizedlist>

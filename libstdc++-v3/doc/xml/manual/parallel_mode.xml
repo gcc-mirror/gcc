@@ -101,7 +101,7 @@ Therefore, user-defined functors should not have any concurrent side effects.
 
 <para> Since the current GCC OpenMP implementation does not support
 OpenMP parallel regions in concurrent threads,
-it is not possible to call parallel STL algorithm in
+it is not possible to call a parallel STL algorithm in
 concurrent threads, either.
 It might work with other compilers, though.</para>
 
@@ -737,7 +737,7 @@ There exists one global instance of the class <classname>_Settings</classname>,
 i. e. it is a singleton. It can be read and written by calling
 <code>__gnu_parallel::_Settings::get</code> and
 <code>__gnu_parallel::_Settings::set</code>, respectively.
-Please note that the first call return a const object, so direct manipulation
+Please note that the first call returns a const object, so direct manipulation
 is forbidden.
 See <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html">
   <filename class="headerfile">&lt;parallel/settings.h&gt;</filename></link>
@@ -771,7 +771,7 @@ int main()
 <section xml:id="parallel_mode.design.impl" xreflabel="Impl"><info><title>Implementation Namespaces</title></info>
 
 
-<para> One namespace contain versions of code that are always
+<para> One namespace contains versions of code that are always
 explicitly sequential:
 <code>__gnu_serial</code>.
 </para>
@@ -833,7 +833,7 @@ the generated source documentation.
   </screen>
 
   <para>
-    The result file for performance testing are in the
+    The result file for performance testing is in the
     <filename class="directory">testsuite</filename> directory, in the file
     <filename>libstdc++_performance.sum</filename>. In addition, the
     policy-based containers have their own visualizations, which have

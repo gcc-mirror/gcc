@@ -111,7 +111,7 @@ The _S_initialize() function:
   - Initialize the free and used counters of each bin_record:
     - bin_record-&gt;free = An array of size_t. This keeps track of the number
       of blocks on a specific thread's freelist in each bin. I.e., if a thread
-      has 12 32-byte blocks on it's freelists and allocates one of these, this
+      has 12 32-byte blocks on its freelists and allocates one of these, this
       counter would be decreased to 11.
 
     - bin_record-&gt;used = An array of size_t. This keeps track of the number

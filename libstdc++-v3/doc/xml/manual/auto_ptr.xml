@@ -29,7 +29,7 @@
      AP is not meant to be a supersmart solution to all resource
       leaks everywhere.  Neither is it meant to be an effective form
       of garbage collection (although it can help, a little bit).
-      And it can <emphasis>not</emphasis>be used for arrays!
+      And it can <emphasis>not</emphasis> be used for arrays!
    </para>
    <para>
      <acronym>AP</acronym> is meant to prevent nasty leaks in the

@@ -53,7 +53,7 @@
   <answer xml:id="a-why">
     <para>
     The completion of the initial ISO C++ standardization effort gave the C++
-    community a powerful set of reuseable tools in the form of the C++
+    community a powerful set of reusable tools in the form of the C++
     Standard Library.  However, for several years C++ implementations were
     (as the Draft Standard used to say) <quote>incomplet and
     incorrekt</quote>, and many suffered from limitations of the compilers
@@ -527,7 +527,7 @@
   </question>
   <answer xml:id="a-solaris_long_long">
     <note>
-       <para>This answer is old and probably no longer be relevant.</para>
+       <para>This answer is old and probably no longer relevant.</para>
     </note>
     <para>
     By default we try to support the C99 <type>long long</type> type.
@@ -603,7 +603,7 @@
   </question>
   <answer xml:id="a-darwin_ctype">
       <note>
-         <para>This answer is old and probably no longer be relevant.</para>
+         <para>This answer is old and probably no longer relevant.</para>
       </note>
       <para>
          This was a long-standing bug in the OS X support.  Fortunately, the
@@ -622,7 +622,7 @@
   </question>
   <answer xml:id="a-threads_i386">
       <note>
-         <para>This answer is old and probably no longer be relevant.</para>
+         <para>This answer is old and probably no longer relevant.</para>
       </note>
       <para>Support for atomic integer operations was broken on i386
          platforms.  The assembly code accidentally used opcodes that are
@@ -645,7 +645,7 @@
   </question>
   <answer xml:id="a-atomic_mips">
     <note>
-      <para>This answer is old and probably no longer be relevant.</para>
+      <para>This answer is old and probably no longer relevant.</para>
     </note>
     <para>
     The atomic locking routines for MIPS targets requires MIPS II
@@ -690,7 +690,7 @@
   </question>
   <answer xml:id="a-freebsd_wchar">
     <note>
-      <para>This answer is old and probably no longer be relevant.</para>
+      <para>This answer is old and probably no longer relevant.</para>
     </note>
     <para>
     Older versions of FreeBSD's C library do not have sufficient
@@ -809,7 +809,7 @@
   </question>
   <answer xml:id="a-stream_reopening_fails">
     <note>
-      <para>This answer is old and probably no longer be relevant.</para>
+      <para>This answer is old and probably no longer relevant.</para>
     </note>
     <para>
     Prior to GCC 4.0 this was one of the most-reported non-bug reports.
@@ -878,7 +878,7 @@
   </question>
   <answer xml:id="a-ambiguous_overloads">
     <note>
-      <para>This answer is old and probably no longer be relevant.</para>
+      <para>This answer is old and probably no longer relevant.</para>
     </note>
     <para>
     Another problem is the <literal>rel_ops</literal> namespace and the template
@@ -903,7 +903,7 @@
   </question>
   <answer xml:id="a-v2_headers">
     <note>
-      <para>This answer is old and probably no longer be relevant.</para>
+      <para>This answer is old and probably no longer relevant.</para>
     </note>
       <para>
 	If you are using headers in

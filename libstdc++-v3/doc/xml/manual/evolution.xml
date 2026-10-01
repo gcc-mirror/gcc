@@ -271,7 +271,7 @@ Precompiled header support <acronym>PCH</acronym> support.
 </para>
 
 <para>
-Macro guard for changed, from <literal>_GLIBCPP_</literal> to <literal>_GLIBCXX_</literal>.
+Macro guard changed, from <literal>_GLIBCPP_</literal> to <literal>_GLIBCXX_</literal>.
 </para>
 
 <para>
@@ -418,7 +418,7 @@ Header dependency streamlining.
   <listitem><para><filename class="headerfile">&lt;algorithm&gt;</filename> no longer includes <filename class="headerfile">&lt;climits&gt;</filename>, <filename class="headerfile">&lt;cstring&gt;</filename>, or <filename class="headerfile">&lt;iosfwd&gt;</filename> </para></listitem>
   <listitem><para><filename class="headerfile">&lt;bitset&gt;</filename> no longer includes <filename class="headerfile">&lt;istream&gt;</filename> or <filename class="headerfile">&lt;ostream&gt;</filename>, adds <filename class="headerfile">&lt;iosfwd&gt;</filename> </para></listitem>
   <listitem><para><filename class="headerfile">&lt;functional&gt;</filename> no longer includes <filename class="headerfile">&lt;cstddef&gt;</filename></para></listitem>
-  <listitem><para><filename class="headerfile">&lt;iomanip&gt;</filename> no longer includes <filename class="headerfile">&lt;istream&gt;</filename>, <filename class="headerfile">&lt;istream&gt;</filename>, or <filename class="headerfile">&lt;functional&gt;</filename>, adds <filename class="headerfile">&lt;ioswd&gt;</filename> </para></listitem>
+  <listitem><para><filename class="headerfile">&lt;iomanip&gt;</filename> no longer includes <filename class="headerfile">&lt;istream&gt;</filename>, <filename class="headerfile">&lt;ostream&gt;</filename>, or <filename class="headerfile">&lt;functional&gt;</filename>, adds <filename class="headerfile">&lt;iosfwd&gt;</filename> </para></listitem>
   <listitem><para><filename class="headerfile">&lt;numeric&gt;</filename> no longer includes <filename class="headerfile">&lt;iterator&gt;</filename></para></listitem>
   <listitem><para><filename class="headerfile">&lt;string&gt;</filename> no longer includes <filename class="headerfile">&lt;algorithm&gt;</filename> or <filename class="headerfile">&lt;memory&gt;</filename></para></listitem>
 

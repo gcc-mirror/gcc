@@ -1172,7 +1172,7 @@ only default variables.
        <para>
 	 For example, take the test
 	 functor <classname>rand_reg_test</classname> in
-	 in <filename>testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc</filename>. This uses <classname>container_rand_regression_test</classname> in
+	 <filename>testsuite/ext/pb_ds/regression/tree_no_data_map_rand.cc</filename>. This uses <classname>container_rand_regression_test</classname> in
 <filename>testsuite/util/regression/rand/assoc/container_rand_regression_test.h</filename>.
 
        </para>
@@ -1240,7 +1240,7 @@ C++11 Requirements Test Sequence Descriptions
 	 made through the container's <type>allocator_type</type>,
 	 which should be sufficient for container data
 	 structures. Included in these tests are member functions
-	 are <type>iterator</type> and <type>const_iterator</type>
+	 <type>iterator</type> and <type>const_iterator</type>
 	 operations, <function>pop_front</function>, <function>pop_back</function>, <function>push_front</function>, <function>push_back</function>, <function>insert</function>, <function>erase</function>, <function>swap</function>, <function>clear</function>,
 	 and <function>rehash</function>. The container in question is
 	 instantiated with two instrumented template arguments,
@@ -1269,7 +1269,7 @@ C++11 Requirements Test Sequence Descriptions
 	 that container is constructed and all member functions
 	 required to not throw exceptions are exercised. Included in
 	 these tests are member functions
-	 are <type>iterator</type> and <type>const_iterator</type> operations, <function>erase</function>, <function>pop_front</function>, <function>pop_back</function>, <function>swap</function>,
+	 <type>iterator</type> and <type>const_iterator</type> operations, <function>erase</function>, <function>pop_front</function>, <function>pop_back</function>, <function>swap</function>,
 	 and <function>clear</function>. The container in question is
 	 instantiated with two instrumented template arguments,
 	 with <classname>__gnu_cxx::throw_allocator_random</classname>
@@ -1302,7 +1302,7 @@ C++11 Requirements Test Sequence Descriptions
 	 the container's last known good state using such parameters
 	 as size, contents, and iterator references. Included in these
 	 tests are member functions
-	 are <function>push_front</function>, <function>push_back</function>, <function>insert</function>,
+	 <function>push_front</function>, <function>push_back</function>, <function>insert</function>,
 	 and <function>rehash</function>. The container in question is
 	 instantiated with two instrumented template arguments,
 	 with <classname>__gnu_cxx::throw_allocator_limit</classname>
@@ -1313,7 +1313,7 @@ C++11 Requirements Test Sequence Descriptions
        </para>
 
        <para>
-	 The general form demonstrated in
+	 The general form is demonstrated in
 	 <filename>testsuite/23_containers/list/requirements/exception/propagation_coherent.cc
 	 </filename>. The instantiating test object is <classname>__gnu_test::propagation_coherent</classname> and is detailed in <filename>testsuite/util/exception/safety.h</filename>.
        </para>

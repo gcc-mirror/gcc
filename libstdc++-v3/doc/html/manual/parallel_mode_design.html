@@ -172,7 +172,7 @@ There exists one global instance of the class <code class="classname">_Settings<
 i. e. it is a singleton. It can be read and written by calling
 <code class="code">__gnu_parallel::_Settings::get</code> and
 <code class="code">__gnu_parallel::_Settings::set</code>, respectively.
-Please note that the first call return a const object, so direct manipulation
+Please note that the first call returns a const object, so direct manipulation
 is forbidden.
 See <a class="link" href="https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/index.html" target="_top">
   <code class="filename">&lt;parallel/settings.h&gt;</code></a>
@@ -193,7 +193,7 @@ int main()
 
   return 0;
 }
-</pre></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contain versions of code that are always
+</pre></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="parallel_mode.design.impl"></a>Implementation Namespaces</h3></div></div></div><p> One namespace contains versions of code that are always
 explicitly sequential:
 <code class="code">__gnu_serial</code>.
 </p><p> Two namespaces contain the parallel mode:

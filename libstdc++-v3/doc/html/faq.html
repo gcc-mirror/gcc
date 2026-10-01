@@ -121,7 +121,7 @@
       Why should I use libstdc++?
     </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-why"></a></td><td align="left" valign="top"><p>
     The completion of the initial ISO C++ standardization effort gave the C++
-    community a powerful set of reuseable tools in the form of the C++
+    community a powerful set of reusable tools in the form of the C++
     Standard Library.  However, for several years C++ implementations were
     (as the Draft Standard used to say) <span class="quote">“<span class="quote">incomplet and
     incorrekt</span>”</span>, and many suffered from limitations of the compilers
@@ -420,7 +420,7 @@
     C++ compiler.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.solaris_long_long"></a><a id="q-solaris_long_long"></a><p><strong>4.2.</strong></p></td><td align="left" valign="top"><p>
       No '<span class="type">long long</span>' type on Solaris?
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-solaris_long_long"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-solaris_long_long"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
     By default we try to support the C99 <span class="type">long long</span> type.
     This requires that certain functions from your C library be present.
     </p><p>
@@ -465,13 +465,13 @@
          solution, but nobody yet has contributed the time.
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.darwin_ctype"></a><a id="q-darwin_ctype"></a><p><strong>4.4.</strong></p></td><td align="left" valign="top"><p>
       Mac OS X <code class="filename">ctype.h</code> is broken! How can I fix it?
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-darwin_ctype"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-darwin_ctype"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
          This was a long-standing bug in the OS X support.  Fortunately, the
          <a class="link" href="https://gcc.gnu.org/ml/gcc/2002-03/msg00817.html" target="_top">patch</a>
 	 was quite simple, and well-known.
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.threads_i386"></a><a id="q-threads_i386"></a><p><strong>4.5.</strong></p></td><td align="left" valign="top"><p>
       Threading is broken on i386?
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-threads_i386"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>Support for atomic integer operations was broken on i386
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-threads_i386"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>Support for atomic integer operations was broken on i386
          platforms.  The assembly code accidentally used opcodes that are
          only available on the i486 and later.  So if you configured GCC
          to target, for example, i386-linux, but actually used the programs
@@ -480,7 +480,7 @@
       </p><p>This is fixed in 3.2.2.
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.atomic_mips"></a><a id="q-atomic_mips"></a><p><strong>4.6.</strong></p></td><td align="left" valign="top"><p>
       MIPS atomic operations
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-atomic_mips"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-atomic_mips"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
     The atomic locking routines for MIPS targets requires MIPS II
     and later.  A patch went in just after the 3.3 release to
     make mips* use the generic implementation instead.  You can also
@@ -501,7 +501,7 @@
          GCC installation instructions.)
       </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.freebsd_wchar"></a><a id="q-freebsd_wchar"></a><p><strong>4.8.</strong></p></td><td align="left" valign="top"><p>
       Can't use <span class="type">wchar_t</span>/<code class="classname">wstring</code> on FreeBSD
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-freebsd_wchar"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-freebsd_wchar"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
     Older versions of FreeBSD's C library do not have sufficient
     support for wide character functions, and as a result the
     libstdc++ configury decides that <span class="type">wchar_t</span> support should be
@@ -587,7 +587,7 @@
       Aw, that's easy to fix!
     </a></dt></dl></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.stream_reopening_fails"></a><a id="q-stream_reopening_fails"></a><p><strong>6.1.</strong></p></td><td align="left" valign="top"><p>
       Reopening a stream fails
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-stream_reopening_fails"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-stream_reopening_fails"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
     Prior to GCC 4.0 this was one of the most-reported non-bug reports.
     Executing a sequence like this would fail:
     </p><pre class="programlisting">
@@ -630,7 +630,7 @@
     without other drawbacks, send us a patch.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.ambiguous_overloads"></a><a id="q-ambiguous_overloads"></a><p><strong>6.3.</strong></p></td><td align="left" valign="top"><p>
       Ambiguous overloads after including an old-style header
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-ambiguous_overloads"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-ambiguous_overloads"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
     Another problem is the <code class="literal">rel_ops</code> namespace and the template
     comparison operator functions contained therein.  If they become
     visible in the same namespace as other comparison functions
@@ -643,7 +643,7 @@
     types have been fixed for 3.1.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.v2_headers"></a><a id="q-v2_headers"></a><p><strong>6.4.</strong></p></td><td align="left" valign="top"><p>
       The g++-3 headers are <span class="emphasis"><em>not ours</em></span>
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-v2_headers"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer be relevant.</p></div><p>
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-v2_headers"></a></td><td align="left" valign="top"><div class="note" style="margin-left: 0.5in; margin-right: 0.5in;"><h3 class="title">Note</h3><p>This answer is old and probably no longer relevant.</p></div><p>
 	If you are using headers in
 	<code class="filename">${prefix}/include/g++-3</code>, or if
 	the installed library's name looks like

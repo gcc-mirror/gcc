@@ -32,7 +32,7 @@
 <para>
   The GNU C++ library sources have been specially formatted so that
   with the proper invocation of another tool (Doxygen), a set of
-  indexed reference material can generated from the sources files
+  indexed reference material can be generated from the source files
   themselves. The resultant documentation is referred to as the API
   documentation, and is useful for examining the signatures of public
   member functions for the library classes, finding out what is in a

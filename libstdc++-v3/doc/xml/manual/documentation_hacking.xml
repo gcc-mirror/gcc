@@ -289,7 +289,7 @@
 	variable in the configuration file <filename>texmf.cnf</filename> may
 	need to be increased by a minimum factor of two. Alternatively, using
 	<userinput>LATEX_CMD=lualatex</userinput> might allow the docs to be
-	build without running out of memory.
+	built without running out of memory.
       </para>
     </section>
 
@@ -822,7 +822,7 @@
       </para>
 
       <para>
-	Generated files are output into separate sub-directores of
+	Generated files are output into separate sub-directories of
 	<filename class="directory">doc/docbook/</filename> in the
 	build directory, based on the output format. For instance, the
 	HTML docs will be in <filename
@@ -927,7 +927,7 @@ make <literal>XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwalsh"</literal>
 
 	<para>
 	  If the error at hand is not obvious after examination, or if one
-	  encounters the inscruitable <quote>Incomplete
+	  encounters the inscrutable <quote>Incomplete
 	  \ifmmode</quote> error, a fall-back strategy is to start
 	  commenting out parts of the XML document (regardless of what
 	  this does to over-all document validity). Start by

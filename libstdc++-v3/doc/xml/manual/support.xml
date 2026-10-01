@@ -272,9 +272,9 @@
      <function>operator new</function> and <function>operator delete</function>
      but with an additional parameter of type <type>std::align_val_t</type>.
      These new overloads are not interchangeable with the versions without
-     an aligment parameter, so if memory was allocated by an overload of
+     an alignment parameter, so if memory was allocated by an overload of
      <function>operator new</function> taking an alignment parameter,
-     then it must be decallocated by the corresponding overload of
+     then it must be deallocated by the corresponding overload of
      <function>operator delete</function> that takes an alignment parameter.
    </para>
    <para>
@@ -308,7 +308,7 @@
      and the corresponding <function>operator delete</function> functions.
      To support types with extended alignment you may also need to replace
      <function>operator new(size_t, align_val_t)</function> and
-     <function>operator delete(void*, align_val_t)</function>
+     <function>operator delete(void*, align_val_t)</function> and
      <function>operator delete(void*, size_t, align_val_t)</function>
      (which will then be used by the nothrow and array forms for
      extended alignments).

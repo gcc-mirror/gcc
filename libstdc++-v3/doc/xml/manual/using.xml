@@ -605,7 +605,7 @@ Unless specified otherwise below, they are also available in later modes
 
 <para>
 <xref linkend="table.filesystemts_headers"/>,
-shows the additional include file define by the
+shows the additional include file defined by the
 File System Technical Specification, ISO/IEC TS 18822:2015.
 This is available in C++11 and later compilation modes.
 Including this header in earlier modes will not result in
@@ -629,7 +629,7 @@ compilation errors, but will not define anything.
 
 <para>
 <xref linkend="table.libfundts_headers"/>,
-shows the additional include files define by the C++ Extensions for
+shows the additional include files defined by the C++ Extensions for
 Library Fundamentals Technical Specification, ISO/IEC TS 19568:2015,
 ISO/IEC TS 19568:2017, and ISO/IEC TS 19568:2024.
 These are available in C++14 and later compilation modes, except for
@@ -699,7 +699,7 @@ compilation errors, but will not define anything.
 
 <para>
 <xref linkend="table.networkingts_headers"/>,
-shows the additional include files define by the
+shows the additional include files defined by the
 Networking Technical Specification, ISO/IEC TS 19216:2018.
 These are available in C++14 and later compilation modes.
 Including these headers in earlier modes will not result in
@@ -1212,7 +1212,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	from the API.  This macro is dependent on the version of the
 	standard being tracked, and as a result may give different results for
 	different <code>-std</code> options.  This may
-	be useful in updating old C++ code which no longer meet the
+	be useful in updating old C++ code which no longer meets the
 	requirements of the language, or for checking current code
 	against new language standards.
     </para>
@@ -1228,7 +1228,7 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
         When defined to a non-zero value the library headers will use the
         new C++11-conforming ABI introduced in GCC 5, rather than the older
         ABI introduced in GCC 3.4. This changes the definition of several
-        class templates, including <classname>std:string</classname>,
+        class templates, including <classname>std::string</classname>,
         <classname>std::list</classname> and some locale facets.
         For more details see <xref linkend="manual.intro.using.abi"/>.
     </para>
@@ -1661,7 +1661,7 @@ namespace gtk
 	As an added bonus,
 	<code>std::string</code> does not get imported into
 	the global namespace.  Additionally, a more elaborate arrangement can be made for backwards compatibility and portability, whereby the
-	<code>using</code>-declarations can wrapped in macros that
+	<code>using</code>-declarations can be wrapped in macros that
 	are set based on autoconf-tests to either "" or i.e. <code>using
 	  std::string;</code> (depending on whether the system has
 	libstdc++ in <code>std::</code> or not).  (ideas from
@@ -1766,7 +1766,7 @@ namespace gtk
 
       <para>
 	As of GCC 13, libstdc++ implements P1642, which brings in many more
-	headers, as well a quite a few ones not covered by the paper.
+	headers, as well as quite a few ones not covered by the paper.
 
 	In general, if a feature does not require traditionally libc-provided
 	facilities, or dynamic memory allocation, it's enabled in the
@@ -1827,7 +1827,7 @@ namespace gtk
     <para>
       If the only library built is the static library
       (<filename class="libraryfile">libstdc++.a</filename>), or if
-      specifying static linking, this section is can be skipped.  But
+      specifying static linking, this section can be skipped.  But
       if building or using a shared library
       (<filename class="libraryfile">libstdc++.so</filename>), then
       additional location information will need to be provided.
@@ -1973,7 +1973,7 @@ A quick read of the relevant part of the GCC
     <section xml:id="manual.intro.using.concurrency.prereq" xreflabel="Thread Prereq"><info><title>Prerequisites</title></info>
 
 
-   <para>All normal disclaimers aside, multithreaded C++ application are
+   <para>All normal disclaimers aside, multithreaded C++ applications are
       only supported when libstdc++ and all user code was built with
       compilers which report (via <code> gcc/g++ -v </code>) the same thread
       model and that model is not <emphasis>single</emphasis>.  As long as your
@@ -2111,7 +2111,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
 
       <para>All library types are safe to use in a multithreaded program
          if objects are not shared between threads or as
-	 long each thread carefully locks out access by any other
+	 long as each thread carefully locks out access by any other
 	 thread while it modifies any object visible to another thread.
 	 Unless otherwise documented, the only exceptions to these rules
          are atomic operations on the types in
@@ -2329,8 +2329,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       (<emphasis>For most clients...</emphasis>), which points out that
       locking must nearly always be done outside the container, by
       client code (that'd be you, not us).  There is a notable
-      exceptions to this rule.  Allocators called while a container or
-      element is constructed uses an internal lock obtained and
+      exception to this rule.  Allocators called while a container or
+      element is constructed use an internal lock obtained and
       released solely within libstdc++ code (in fact, this is the
       reason STL requires any knowledge of the thread configuration).
    </para>

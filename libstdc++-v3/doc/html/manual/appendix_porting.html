@@ -173,7 +173,7 @@ in the build directory starts the build process. The <code class="literal">all</
     AC_LC_MESSAGES
     libtool bits
 </pre><p>
-  Things which we don't seem to use directly, but just has to be
+  Things which we don't seem to use directly, but just have to be
   present otherwise stuff magically goes wonky.
 </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.enable"></a><code class="constant">GLIBCXX_ENABLE</code>, the <code class="literal">--enable</code> maker</h4></div></div></div><p>
     All the <code class="literal">GLIBCXX_ENABLE_FOO</code> macros use a common
@@ -274,7 +274,7 @@ in the build directory starts the build process. The <code class="literal">all</
   and an error message.
 </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="build_hacking.configure.version"></a>Shared Library Versioning</h4></div></div></div><p>
 The <code class="filename">libstdc++.so</code> shared library must
-be carefully managed to maintain binary compatible with older versions
+be carefully managed to maintain binary compatibility with older versions
 of the library. This ensures a new version of the library is still usable by
 programs that were linked against an older version.
 </p><p>
@@ -362,7 +362,7 @@ directory. Be sure to generate the baseline from a clean build using
 unmodified sources, or you will incorporate your local changes into the
 baseline file.
 </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="build_hacking.make"></a>Make</h3></div></div></div><p>
-    The build process has to make all of object files needed for
+    The build process has to make all of the object files needed for
     static or shared libraries, but first it has to generate some
     include files. The general order is as follows:
   </p><div class="orderedlist"><ol class="orderedlist" type="1"><li class="listitem"><p>
@@ -449,7 +449,7 @@ baseline file.
      make src
    </p><p>
      Generates needed compatibility objects for shared and static
-     libraries. Shared-only code is seggregated at compile-time via
+     libraries. Shared-only code is segregated at compile-time via
      the macro <code class="literal">_GLIBCXX_SHARED</code>.
    </p><p>
      Then, collects all the generated convenience libraries that weren't

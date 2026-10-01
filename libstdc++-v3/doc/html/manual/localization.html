@@ -380,7 +380,7 @@ global C locale is modified if a named C++ locale object is set as the
 global locale" (emphasis Paolo), that is:
 </p><pre class="programlisting">std::locale::global(std::locale(""));</pre><p>affects the C functions as if the following call was made:</p><pre class="programlisting">std::setlocale(LC_ALL, "");</pre><p>
   On the other hand, there is *no* vice versa, that is, calling
-  setlocale has *no* whatsoever on the C++ locale mechanism, in
+  setlocale has *no* effect whatsoever on the C++ locale mechanism, in
   particular on the working of locale(""), which constructs the locale
   object from the environment of the running program, that is, in
   practice, the set of LC_ALL, LANG, etc. variable of the shell.
