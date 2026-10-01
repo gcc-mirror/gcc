@@ -1,3 +1,29 @@
+2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/27_io/ifstream_extract_chars.cc: Use
+	stack array instead of dynamic allocation.
+
+2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Fix header name in
+	pb_ds examples.
+	* doc/xml/manual/using.xml: Fix names for pb_ds headers.
+	* doc/html/*: Regenerate.
+
+2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (resource_counter): Do
+	not use memset to clear non-trivial objects.
+
 2026-09-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

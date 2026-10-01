@@ -1,3 +1,24 @@
+2026-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127187
+	* gfortran.dg/associate_90.f90: Add -fdump-tree-original and check
+	that no associate-name points to a string length.
+
+2026-09-30  Alfie Richards  <alfie.richards@arm.com>
+
+	Backported from master:
+	2026-09-15  Alfie Richards  <alfie.richards@arm.com>
+		    Tamar Christina  <Tamar.Christina@arm.com>
+
+	PR target/126629
+	* gcc.target/aarch64/sve/pr126629.c: New test.
+	* gcc.target/aarch64/sve/pr126629_extend.c: New test.
+	* gcc.target/aarch64/sve/pr126629_gather.c: New test.
+	* gcc.target/aarch64/sve/pr126629_gather2.c: New test.
+
 2026-09-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
