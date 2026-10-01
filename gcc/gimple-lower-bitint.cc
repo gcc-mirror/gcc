@@ -6172,6 +6172,9 @@ bitint_large_huge::lower_bswap_bitreverse (tree obj, gimple *stmt)
   unsigned prec = TYPE_PRECISION (type);
   tree p = build_int_cst (sizetype,
 			  prec / limb_prec - (prec % limb_prec == 0));
+  /* For .BSWAP/.BITREVERSE, we can use handle_operand with non-INTEGER_CST
+     idx even to access the most significant partial limb.  */
+  m_var_msb = true;
   /* For IFN .BSWAP or .BITREVERSE and
      FN corresponding __builtin_bswapN or __builtin_bitreverseN where N
      is limb_prec, lower
