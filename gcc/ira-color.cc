@@ -1820,6 +1820,38 @@ calculate_saved_nregs (int hard_regno, machine_mode mode)
   return nregs;
 }
 
+/* Return the cost of saving and restoring SAVED_NREGS callee-saved
+   registers in the prologue and epilogue if we allocate HARD_REGNO to
+   hold a value of MODE, given the callee-saved registers allocated so
+   far.  The cost is TARGET_CALLEE_SAVE_COST weighted by the entry and
+   exit block frequencies.  */
+static int
+calculate_saved_regs_cost (int hard_regno, machine_mode mode, int saved_nregs)
+{
+  int nregs = hard_regno_nregs (hard_regno, mode);
+  enum reg_class rclass = REGNO_REG_CLASS (hard_regno);
+  bool existing_spills_p = allocated_memory_p || caller_save_needed;
+
+  auto entry_cost = targetm.callee_save_cost
+    (spill_cost_type::SAVE, hard_regno, mode, saved_nregs,
+     ira_memory_move_cost[mode][rclass][0] * saved_nregs / nregs,
+     allocated_callee_save_regs, existing_spills_p);
+  /* In the event of a tie between caller-save and callee-save,
+     prefer callee-save.  We apply this to the entry cost rather
+     than the exit cost since the entry frequency must be at
+     least as high as the exit frequency.  */
+  if (entry_cost > 1)
+    entry_cost -= 1;
+
+  auto exit_cost = targetm.callee_save_cost
+    (spill_cost_type::RESTORE, hard_regno, mode, saved_nregs,
+     ira_memory_move_cost[mode][rclass][1] * saved_nregs / nregs,
+     allocated_callee_save_regs, existing_spills_p);
+
+  return (entry_cost * REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	  + exit_cost * REG_FREQ_FROM_BB (EXIT_BLOCK_PTR_FOR_FN (cfun)));
+}
+
 /* Allocnos A1 and A2 are known to conflict.  Check whether, in some loop L
    that is either the current loop or a nested subloop, the conflict is of
    the following form:
@@ -2016,7 +2048,6 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
   bool dep_filter_p;
   static int costs[FIRST_PSEUDO_REGISTER], full_costs[FIRST_PSEUDO_REGISTER];
   int saved_nregs;
-  enum reg_class rclass;
   int add_cost;
 #ifdef STACK_REGS
   bool no_stack_reg_p;
@@ -2261,28 +2292,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	  /* We need to save/restore the hard register in
 	     epilogue/prologue.  Therefore we increase the cost.  */
 	  {
-	    int nregs = hard_regno_nregs (hard_regno, mode);
-	    add_cost = 0;
-	    rclass = REGNO_REG_CLASS (hard_regno);
-
-	    auto entry_cost = targetm.callee_save_cost
-	      (spill_cost_type::SAVE, hard_regno, mode, saved_nregs,
-	       ira_memory_move_cost[mode][rclass][0] * saved_nregs / nregs,
-	       allocated_callee_save_regs, existing_spills_p);
-	    /* In the event of a tie between caller-save and callee-save,
-	       prefer callee-save.  We apply this to the entry cost rather
-	       than the exit cost since the entry frequency must be at
-	       least as high as the exit frequency.  */
-	    if (entry_cost > 1)
-	      entry_cost -= 1;
-	    add_cost += entry_cost * entry_freq;
-
-	    auto exit_cost = targetm.callee_save_cost
-	      (spill_cost_type::RESTORE, hard_regno, mode, saved_nregs,
-	       ira_memory_move_cost[mode][rclass][1] * saved_nregs / nregs,
-	       allocated_callee_save_regs, existing_spills_p);
-	    add_cost += exit_cost * exit_freq;
-
+	    add_cost = calculate_saved_regs_cost (hard_regno, mode,
+						  saved_nregs);
 	    cost += add_cost;
 	    full_cost += add_cost;
 	  }
@@ -3259,7 +3270,7 @@ improve_allocation (void)
   int j, k, n, hregno, conflict_hregno, base_cost, class_size, word, nwords;
   int check, spill_cost, min_cost, nregs, conflict_nregs, r, best;
   bool try_p;
-  enum reg_class aclass, rclass;
+  enum reg_class aclass;
   machine_mode mode;
   int *allocno_costs;
   int costs[FIRST_PSEUDO_REGISTER];
@@ -3333,15 +3344,8 @@ improve_allocation (void)
 	  if ((saved_nregs = calculate_saved_nregs (hregno, mode)) != 0)
 	  {
 	    /* We need to save/restore the hard register in
-	       epilogue/prologue.  Therefore we increase the cost.
-	       Since the prolog is placed in the entry BB, the frequency
-	       of the entry BB is considered while computing the cost.  */
-	    rclass = REGNO_REG_CLASS (hregno);
-	    add_cost = ((ira_memory_move_cost[mode][rclass][0]
-			 + ira_memory_move_cost[mode][rclass][1])
-			* saved_nregs / hard_regno_nregs (hregno,
-							  mode) - 1)
-		       * REG_FREQ_FROM_BB (ENTRY_BLOCK_PTR_FOR_FN (cfun));
+	       epilogue/prologue.  Therefore we increase the cost.  */
+	    add_cost = calculate_saved_regs_cost (hregno, mode, saved_nregs);
 	    costs[hregno] += add_cost;
 	  }
 
