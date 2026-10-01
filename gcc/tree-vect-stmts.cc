@@ -2318,9 +2318,10 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
 		   && *memory_access_type != VMAT_ELEMENTWISE);
       if (overrun_p && vls_type != VLS_LOAD)
 	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			   "Grouped store with gaps requires"
-			   " non-consecutive accesses\n");
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "Grouped store with gaps requires"
+			     " non-consecutive accesses\n");
 	  return false;
 	}
 
