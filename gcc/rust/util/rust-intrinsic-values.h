@@ -120,6 +120,37 @@ public:
   static constexpr auto &ATOMIC_LOAD_RELAXED = "atomic_load_relaxed";
   static constexpr auto &ATOMIC_LOAD_UNORDERED = "atomic_load_unordered";
 
+  static constexpr auto &ATOMIC_XADD = "atomic_xadd";
+  static constexpr auto &ATOMIC_XADD_ACQ = "atomic_xadd_acq";
+  static constexpr auto &ATOMIC_XADD_REL = "atomic_xadd_rel";
+  static constexpr auto &ATOMIC_XADD_ACQREL = "atomic_xadd_acqrel";
+  static constexpr auto &ATOMIC_XADD_RELAXED = "atomic_xadd_relaxed";
+  static constexpr auto &ATOMIC_XSUB = "atomic_xsub";
+  static constexpr auto &ATOMIC_XSUB_ACQ = "atomic_xsub_acq";
+  static constexpr auto &ATOMIC_XSUB_REL = "atomic_xsub_rel";
+  static constexpr auto &ATOMIC_XSUB_ACQREL = "atomic_xsub_acqrel";
+  static constexpr auto &ATOMIC_XSUB_RELAXED = "atomic_xsub_relaxed";
+  static constexpr auto &ATOMIC_AND = "atomic_and";
+  static constexpr auto &ATOMIC_AND_ACQ = "atomic_and_acq";
+  static constexpr auto &ATOMIC_AND_REL = "atomic_and_rel";
+  static constexpr auto &ATOMIC_AND_ACQREL = "atomic_and_acqrel";
+  static constexpr auto &ATOMIC_AND_RELAXED = "atomic_and_relaxed";
+  static constexpr auto &ATOMIC_NAND = "atomic_nand";
+  static constexpr auto &ATOMIC_NAND_ACQ = "atomic_nand_acq";
+  static constexpr auto &ATOMIC_NAND_REL = "atomic_nand_rel";
+  static constexpr auto &ATOMIC_NAND_ACQREL = "atomic_nand_acqrel";
+  static constexpr auto &ATOMIC_NAND_RELAXED = "atomic_nand_relaxed";
+  static constexpr auto &ATOMIC_OR = "atomic_or";
+  static constexpr auto &ATOMIC_OR_ACQ = "atomic_or_acq";
+  static constexpr auto &ATOMIC_OR_REL = "atomic_or_rel";
+  static constexpr auto &ATOMIC_OR_ACQREL = "atomic_or_acqrel";
+  static constexpr auto &ATOMIC_OR_RELAXED = "atomic_or_relaxed";
+  static constexpr auto &ATOMIC_XOR = "atomic_xor";
+  static constexpr auto &ATOMIC_XOR_ACQ = "atomic_xor_acq";
+  static constexpr auto &ATOMIC_XOR_REL = "atomic_xor_rel";
+  static constexpr auto &ATOMIC_XOR_ACQREL = "atomic_xor_acqrel";
+  static constexpr auto &ATOMIC_XOR_RELAXED = "atomic_xor_relaxed";
+
   static constexpr auto &UNCHECKED_ADD = "unchecked_add";
   static constexpr auto &UNCHECKED_SUB = "unchecked_sub";
   static constexpr auto &UNCHECKED_MUL = "unchecked_mul";

@@ -187,6 +187,96 @@ const std::unordered_map<std::string, IntrinsicRules>
     // pub unsafe fn atomic_load_unordered<T: Copy>(_src: *const T) -> T;
     {IValue::ATOMIC_LOAD_UNORDERED,
      {1, {IRT::ConstPtrFirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xadd<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XADD,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xadd_acq<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XADD_ACQ,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xadd_rel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XADD_REL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xadd_acqrel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XADD_ACQREL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xadd_relaxed<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XADD_RELAXED,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xsub<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XSUB,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xsub_acq<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XSUB_ACQ,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xsub_rel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XSUB_REL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xsub_acqrel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XSUB_ACQREL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xsub_relaxed<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XSUB_RELAXED,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_and<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_AND,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_and_acq<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_AND_ACQ,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_and_rel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_AND_REL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_and_acqrel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_AND_ACQREL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_and_relaxed<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_AND_RELAXED,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_nand<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_NAND,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_nand_acq<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_NAND_ACQ,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_nand_rel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_NAND_REL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_nand_acqrel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_NAND_ACQREL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_nand_relaxed<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_NAND_RELAXED,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_or<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_OR,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_or_acq<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_OR_ACQ,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_or_rel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_OR_REL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_or_acqrel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_OR_ACQREL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_or_relaxed<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_OR_RELAXED,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xor<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XOR,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xor_acq<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XOR_ACQ,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xor_rel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XOR_REL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xor_acqrel<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XOR_ACQREL,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+    // pub unsafe fn atomic_xor_relaxed<T: Copy>(dst: *mut T, val: T) -> T;
+    {IValue::ATOMIC_XOR_RELAXED,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
     // pub fn unchecked_add<T: Copy>(x: T, y: T) -> T;
     {IValue::UNCHECKED_ADD,
      {1, {IRT::FirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
