@@ -1,3 +1,8 @@
+2026-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add two new
+	hashes.
+
 2026-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* unicode/README: Replace Unicode 17 version with 18.

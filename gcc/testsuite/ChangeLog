@@ -1,3 +1,104 @@
+2026-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127671
+	PR fortran/127671
+	* gfortran.dg/target_dummy_span_3.f90: New test.
+
+2026-09-30  Dominic P  <gcc@gcc.dp11.uk>
+
+	* gcc.dg/vect/vect-widen-invariant-1.c: New test.
+	* gcc.dg/vect/vect-widen-invariant-2.c: New test.
+	* gcc.target/aarch64/widen-invariant-1.c: New test.
+
+2026-09-30  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/127103
+	* gcc.dg/torture/pr127103.c: New test.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/arm_neon_test.h: Set `+sm4` target
+	flag.
+	* gcc.target/aarch64/neon/vsm3.c: New test.
+	* gcc.target/aarch64/neon/vsm4.c: New test.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vsha512.c: New test.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vsha256.c: New test.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vsha1.c: New test.
+	* gcc.target/aarch64/neon/arm_neon_test.h: Set `+sha2` target
+	flag.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/arm_neon_test.h: Set `+aes` target
+	flag.
+	* gcc.target/aarch64/neon/vaes.c: New test.
+
+2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* cobol.dg/group2/LENGTH_OF_FILLER_GROUP_with_MF_constants.cob: New test.
+	* cobol.dg/group2/LENGTH_OF_GROUP_with_MF_constants.cob: New test.
+
+2026-09-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* c-c++-common/gomp/target-update-iterators-5.c: New test.
+
+2026-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127349
+	* g++.dg/reflect/ns7.C: Remove unused declarations.
+	* g++.dg/reflect/ns8.C: New test.
+
+2026-09-30  Luis Silva  <luis.silva@globalfoundries.com>
+
+	* gcc.target/arc/mno-code-density-flag.c: New test.
+
+2026-09-30  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/phiopt-neg-bool-mask-1.c: New test.
+	* gcc.dg/tree-ssa/phiopt-neg-bool-mask-2.c: Likewise.
+
+2026-09-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127654
+	* gcc.dg/tree-ssa/ssa-ifcombine-7a.c: New test.
+
+2026-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127670
+	* gcc.dg/vect/bb-slp-pr127670.c: New testcase.
+
+2026-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* gcc.dg/pr127492.c: Require int128 effective target and either
+	sync_int_128_runtime or libatomic_available.  Drop the long long
+	fallback, but define T only if it is not defined already.
+	* gcc.dg/pr127492-2.c: New test.
+
+2026-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127650
+	* gcc.target/i386/pr127650.c: New test.
+
+2026-09-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/asm-hard-reg-5.c: Skip on powerpc64 in case of no
+	altivec support.
+
+2026-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60075
+	* gcc.target/avr/pr60075.c: New testcase.
+
 2026-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127187

@@ -1,3 +1,11 @@
+2026-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127671
+	PR fortran/127671
+	* trans-decl.cc (gfc_build_dummy_array_decl): Create the span
+	variable with create_index_var, in the function that owns the
+	dummy.
+
 2026-09-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127187

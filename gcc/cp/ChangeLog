@@ -1,3 +1,9 @@
+2026-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127349
+	* pt.cc (tsubst) <case UNBOUND_CLASS_TEMPLATE>: Handle the case
+	when the context was substituted into a NAMESPACE_DECL.
+
 2026-09-29  Jonas Hansen  <jhansen@roku.com>
 
 	PR tree-optimization/127416

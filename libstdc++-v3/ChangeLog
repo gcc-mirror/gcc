@@ -1,3 +1,62 @@
+2026-09-30  Gokbey Gazi Keskin  <gokbeykeskin@gmail.com>
+
+	PR libstdc++/127555
+	* src/c++17/fs_dir.cc (recursive_directory_iterator::__erase):
+	Retry as a directory when unlink fails with ENOTEMPTY or EEXIST
+	and unlinkat is not available.
+
+2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/27_io/ifstream_extract_chars.cc: Use
+	stack array instead of dynamic allocation.
+
+2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Fix header name in
+	pb_ds examples.
+	* doc/xml/manual/using.xml: Fix names for pb_ds headers.
+	* doc/html/*: Regenerate.
+
+2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_performance.h (resource_counter): Do
+	not use memset to clear non-trivial objects.
+
+2026-09-30  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/ranges_base.h (ranges::__detail::__to_signed_like):
+	Moved from std/ranges.
+	* include/bits/ranges_util.h (std::_Repeat_iterator)
+	[__glibcxx_ranges]: Extracted from repeat_view::_Iterator.
+	Apply remove_cv_t on value_type (as it is now const). Updated
+	_S_difference_type to use __to_signed_like direclty.
+	(std::__make_repeat_iterator): Define.
+	* include/std/ranges (ranges::__detail::__to_signed_like):
+	Move to bits/ranges_base.h
+	(repeat_view::__index_type): Define.
+	(repeat_view::_Iterator): Extracted to standalone _Repeat_iterator,
+	and replaced with alias to it.
+	(repeat_view::begin, repeat_view::end): Implement using
+	std::__make_repeat_iterator.
+
+2026-09-30  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/ranges (repeat_view::_Iterator::_Iterator):
+	Remove assert, as constructor is used only iternally.
+	(repeat_view::_Iterator::operator--)
+	(repeat_view::_Iterator::operator+=)
+	(repeat_view::_Iterator::operator-=): Unconditionally assert
+	on _M_current having non-negative value.
+
+2026-09-30  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/ranges (std::repeat_view, repeat_view::_Iterator):
+	Update constrains.
+	(repeat_view::_Iterator::_S_difference_type): Define.
+	(repeat_view::_Iterator::difference_type): Define in terms of
+	_S_difference_type.
+	* testsuite/std/ranges/repeat/1.cc: New test case.
+
 2026-09-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/Makefile.am: Fix name in .PHONY target.

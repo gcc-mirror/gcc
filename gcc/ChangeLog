@@ -1,3 +1,140 @@
+2026-09-30  Dominic P  <gcc@gcc.dp11.uk>
+
+	* tree-vect-patterns.cc (vect_narrow_unprom_to_range): New function.
+	(vect_widened_op_tree): Use it for external defs.
+
+2026-09-30  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/127103
+	* match.pd (minmax (a - c, b) + c): Also require that a - c
+	does not overflow.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.def (vsm3ss1q,
+	vsm3tt1aq, vsm3tt1bq, vsm3tt2aq, vsm3tt2bq, vsm3partw1q,
+	vsm3partw2q, vsm4eq, vsm4ekeyq): New function declarations.
+	* config/aarch64/aarch64-neon-builtins-base.cc (vsm3ss1q,
+	vsm3tt1aq, vsm3tt1bq, vsm3tt2aq, vsm3tt2bq, vsm3partw1q,
+	vsm3partw2q, vsm4eq, vsm4ekeyq): New function bases:
+	* config/aarch64/aarch64-simd-builtins.def (sm3ss1q, sm3tt1aq,
+	sm3tt1bq, sm3tt2aq, sm3tt2bq, sm3partw1q, sm3partw2q, sm4eq,
+	sm4ekeyq): Delete builtin functions.
+	* config/aarch64/arm_neon.h (vsm3ss1q_u32,
+	vsm3tt1aq_u32, vsm3tt1bq_u32, vsm3tt2aq_u32, vsm3tt2bq_u32,
+	vsm3partw1q_u32, vsm3partw2q_u32, vsm4eq_u32, vsm4ekeyq_u32):
+	Delete function definitions.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_types_quadopu_imm_qualifiers, TYPES_QUADOPUI): Delete
+	now unused array and macro.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc: New function
+	bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vsha512hq,
+	vsha512h2q, vsha512su0q, vsha512su1q): New function
+	declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	functions.
+	* config/aarch64/arm_neon.h (vsha512hq_u64, vsha512h2q_u64,
+	vsha512su0q_u64, vsha512su1q_u64): Delete functions.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc: New function
+	bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vsha256hq,
+	vsha256h2q, vsha256su0q, vsha256su1q): New function
+	definitions.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	functions
+	* config/aarch64/arm_neon.h (vsha256hq_u32, vsha256h2q_u32,
+	vsha256su0q_u32, vsha256su1q_u32): Delete functions.
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc: New function
+	bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vsha1cq,
+	vsha1mq, vsha1pq, vsha1h, vsha1su0q, vsha1su1q): New function
+	declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	functions.
+	* config/aarch64/arm_neon.h (vsha1cq_u32, vsha1mq_u32,
+	vsha1pq_u32, vsha1h_u32, vsha1su0q_u32, vsha1su1q_u32): Delete
+	function definitions
+
+2026-09-30  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_gimple_fold_builtin): Delete cases for
+	`crypto_aese` and `crypto_aesd`.
+	(aarch64_fold_aes_op): Delete now-unused function.
+	* config/aarch64/aarch64-neon-builtins-base.cc (struct
+	gimple_exact_insn): New struct.
+	* config/aarch64/aarch64-neon-builtins-base.def (vaeseq, vaesdq,
+	vaesmcq, vaesimcq): New function declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete builtin
+	functions.
+	* config/aarch64/arm_neon.h (vaeseq_u8, vaesdq_u8, vaesmcq_u8,
+	vaesimcq_u8): Delete function definitions.
+
+2026-09-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gimplify.cc (build_omp_iterators_loops): Clear
+	OMP_CLAUSE_ITERATORS after sorry.
+
+2026-09-30  Luis Silva  <luis.silva@globalfoundries.com>
+
+	* config/arc/arc.h (arc_cd_to_as): Declare.
+	(EXTRA_SPEC_FUNCTIONS): Register cd_to_as.
+	(ASM_SPEC): Call cd_to_as with the CPU name and code-density
+	markers from -mcode-density/-mno-code-density.
+	* config/arc/driver-arc.cc (arc_lookup_cpu): New helper.
+	(arc_cpu_to_as): Drop code-density handling.
+	(arc_cd_to_as): New spec function; add -mcode-density only when
+	appropriate, and omit it for -mno-code-density.
+
+2026-09-30  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127654
+	* tree-ssa-phiopt.cc (factor_out_conditional_operation): Also
+	allow NEGATE_EXPR and BIT_NOT_EXPR with a constant in some
+	cases.
+
+2026-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127670
+	* tree-vect-stmts.cc (vectorizable_shift): Analyze defs
+	of the shift operand SLP node instead of the scalar stmt
+	operands for uniformity.
+
+2026-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127650
+	* config/i386/i386.cc (ix86_gimplify_va_arg): Limit type_align
+	to arg_boundary.
+
+2026-09-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/60075
+	* tree-ssa-sccvn.cc (copy_reference_ops_from_ref): Do not
+	use the type of the FIELD_DECL for COMPONENT_REF ops.
+	* tree-ssa-pre.cc (create_component_ref_by_pieces_1):
+	Likewise.
+
+2026-09-30  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-builtin.cc (cpu_supports_info): Silence a
+	warning.
+
+2026-09-30  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.cc (range_from_missing_constructor_part): Return
+	void.
+	(range_from_readonly_load): Adjust.
+
 2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Use the index of

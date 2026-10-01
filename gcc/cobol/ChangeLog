@@ -1,3 +1,40 @@
+2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* symbols.cc (calculate_capacity): Exclude 78-level entries.
+	(symbol_field_parent_set): Likewise.
+
+2026-09-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cbldiag.h (enum cbl_diag_id_t): Define ParErrno.
+	* cobol1.cc (cobol_langhook_handle_option): Handle Werrno.
+	* lang-specs.h: Accept Werrno.
+	* lang.opt: Define Werrno.
+	* messages.cc (struct cbl_diag_t): Add Werrno to warning table.
+	(kind_of): Whitespace.
+	(cobol_warning): Same.
+	(option_of): Same.
+	(cbl_message): Same.
+	(dialect_ok): Same.
+	* parse.y: Issue Werrno diagnostic, and handle end-of-program EC.
+
+2026-09-30  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (propogate_linkage_offsets): Spelling fixed.
+	(collect_linkage_offsets): Use tables of offsets into COBOL
+	hierarchical variables.
+	(propagate_linkage_offsets): Likewise.
+	(establish_using): Use corrected spelling.
+	(parser_set_pointers): Likewise.
+	* gengen.cc (struct gg_init_batch_stats): Batch adjacent clean
+	initializations without moving them across executable statements.
+	(gg_init_batch_candidate): Likewise.
+	(gg_init_batch_static_decl): Likewise.
+	(gg_init_batch_call): Likewise.
+	(gg_batch_initializations): Likewise.
+	(gg_finalize_function): Likewise.
+	* move.cc (mh_alpha_to_alpha): Use runtime memset() instead of using
+	build_string_literal on strings of spaces.
+
 2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
 
 	* gcobolspec.cc (lang_specific_driver): Disable lib{compat,posix}

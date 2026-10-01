@@ -1,3 +1,28 @@
+2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/lib/cobrt-file-status.cbl: COPY prototype.
+
+2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/cpy/cblproto.cpy: Remove unused parameter.
+	* compat/gnu/lib/CBL_CLOSE_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_CREATE_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_DELETE_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_READ_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_WRITE_FILE.cbl: Likewise.
+	* compat/gnu/lib/cobrt-file-status.cbl: Likewise.
+
+2026-09-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	* ec.h (enum ec_type_t): Whitespace.
+	* libgcobol.cc (ec_priority): New function.
+	(default_exception_handler): use ec_priority.
+
+2026-09-30  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (__gg__propagate_linkage_offsets): New routine for
+	applying the tables of offsets.
+
 2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
 
 	* posix/cpy/posix-errno.cpy: Add new OPTIONAL arg.
