@@ -28,6 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/* The routines for handling filenames was copied from the GnuCOBOL
+   project.  We thank Simon Sobisch for suggesting that was an easy way
+   of making sure the necessary functionality matches in the two
+   compilers.  Their source code module contained the following notice:
+
+   Copyright (C) 2002-2012, 2014-2025 Free Software Foundation, Inc.
+   Written by Keisuke Nishida, Roger While, Simon Sobisch, Ron Norman
+
+   The GnuCOBOL runtime library is free software: you can redistribute it
+   and/or modify it under the terms of the GNU Lesser General Public License
+   as published by the Free Software Foundation, either version 3 of the
+   License, or (at your option) any later version.
+ */
+
 #include <err.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -190,6 +204,456 @@ handle_errno(cblc_file_t *file, const char *function, const char *msg)
   return retval;
   }
 
+/* Start of copied code ***************************************
+
+   In order to provide compatibility with how GnuCOBOL treats filenames, which
+   in turn was driven by how MicroFocus/RocketSoftware does so, we simply
+   lifted the GnuCOBOL handler and incorporated it here. */
+
+enum {COB_FILE_MAX=4096};
+#define SLASH_CHAR '/'
+#define SLASH_STR "/"
+
+static char file_open_env[COB_FILE_MAX+2];
+static char file_open_buff[COB_FILE_MAX+2];
+static char file_open_name[COB_FILE_MAX+2];
+
+static const char	* const prefix[] = { "DD_", "dd_", "" };
+#define NUM_PREFIX	sizeof (prefix) / sizeof (char *)
+
+typedef struct
+  {
+  bool cob_env_mangle;
+  char *cob_file_path;
+  bool flag_filename_mapping;
+  } COBSET;
+static COBSET cobset{false, nullptr, true};
+static COBSET *cobsetptr = &cobset;
+#define COB_MODULE_PTR cobsetptr
+
+/* Check for DD_xx, dd_xx, xx environment variables for a filename
+   or a part specified with 'src';
+   returns either the value or NULL if not found in the environment
+   Note: MF only checks for xx if the variable started with a $,
+	 ACUCOBOL only checks for xx in general ... */
+static char *
+cob_chk_file_env(const char *src)
+  {
+  char    *p;
+  char    *q;
+  char    *s;
+  size_t   i;
+
+  /* GC-sanity rule: no environment handling if src starts with period */
+  if(*src == '.')
+    {
+    return NULL;
+    }
+
+  /* no mapping if filename begins with a slash [externally checked], hyphen or digits
+     (taken from "Programmer's Guide to File Handling, Chapter 2: File Naming") */
+  switch(*file_open_name)
+    {
+    case '-':
+    case '0':
+    case '1':
+    case '2':
+    case '3':
+    case '4':
+    case '5':
+    case '6':
+    case '7':
+    case '8':
+    case '9':
+      return NULL;
+    default:
+      break;
+    }
+
+  q = strdup(src);
+  s = q;
+  assert(s);
+
+  if(cobsetptr->cob_env_mangle)
+    {
+    for (i = 0; i < strlen(s); ++i)
+      {
+      if(!isalnum ((int)s[i]))
+        {
+        s[i] = '_';
+        }
+      }
+    }
+  else
+    {
+    for (i = 0; i < strlen(s); ++i)
+      {
+      if(s[i] == '.')
+        {
+        s[i] = '_';
+        }
+      }
+    }
+  p = NULL;
+  for (i = 0; i < NUM_PREFIX; ++i)
+    {
+    snprintf(file_open_env, (size_t)COB_FILE_MAX, "%s%s", prefix[i], s);
+    file_open_env[COB_FILE_MAX] = 0;
+    p = getenv (file_open_env);
+    if(p && *p)
+      {
+      /* Drop surrounding quotes, some implementations need those to
+         support filename with embedded spaces (like MF),
+         while others (like GC before 3.2) don't like them */
+      if(p[0] == '"'
+       || p[0] == '\'')
+        {
+        const size_t len = strlen(p) - 1;
+        if(len && p[len] == p[0])
+          {
+          p[len] = 0;
+          p++;
+          }
+        }
+      break;
+      }
+    p = NULL;
+    }
+  free(q);
+  return p;
+  }
+
+/* checks if 'src' containes a / or \ */
+static int
+has_directory_separator (char *src)
+  {
+  for (; *src; src++)
+    {
+    if(*src == '/' || *src == '\\')
+      {
+      return 1;
+      }
+    }
+  return 0;
+  }
+
+/* checks if 'src' looks like starting with name */
+static int
+looks_absolute (const char *src)
+  {
+  /* Ignore surrounding quotes, some implementations need those to
+     support filename with embedded spaces (like MF),
+     while others (like GC before 3.2) don't like them */
+  if(src[0] == '"' || src[0] == '\'')
+    {
+    src++;
+    }
+
+  /* no file path adjustment if filename is absolute
+     because it begins with a slash (or win-disk-drive) */
+  if(src[0] == '/' || src[0] == '\\' )
+    {
+    return 1;
+    }
+  return 0;
+  }
+
+/* checks for special ACUCOBOL-case: file that start with hyphen [note: -P not supported]
+   no translation at all, name starts after first non-space */
+static int
+has_acu_hyphen (const char *src)
+  {
+  if( src[0] == '-'
+      && (src[1] == 'F' || src[1] == 'D' || src[1] == 'f' || src[1] == 'd')
+      && isspace((uint8_t)src[2]))
+    {
+    return 1;
+    }
+  return 0;
+  }
+
+/* do acu translation, 'src' may not be file_open_buff! */
+static void
+do_acu_hyphen_translation (char *src)
+  {
+  size_t len;
+  /* maybe store device type to "adjust locking rules" */
+  /* find first non-space and return it in the original storage  */
+  for (src = src + 3; *src && isspace ((uint8_t)*src); src++);
+
+  len = strlen(src);
+  if(len >= COB_FILE_MAX)
+    {
+    len = COB_FILE_MAX;
+    }
+
+  /* Drop surrounding quotes, some implementations need those to
+     support filename with embedded spaces (like MF),
+     while others (like GC before 3.2) don't like them */
+  if(   (src[0] == '"' || src[0] == '\'')
+     && (src[0] == src[len - 1]))
+    {
+    src++;
+    len -= 2;
+    }
+  memcpy(file_open_buff, src, len);
+  file_open_buff[len + 1] = 0;
+
+  strncpy(file_open_name, file_open_buff, (size_t)COB_FILE_MAX);
+  }
+
+static void
+prepend_file_path (const char *path, const char *name)
+  {
+  size_t path_len = strlen (path);
+  size_t name_len = strlen (name);
+  size_t len = 0;
+
+  if( path_len > COB_FILE_MAX )
+    {
+    path_len = COB_FILE_MAX;
+    }
+
+  memcpy (file_open_buff, path, path_len);
+  len = path_len;
+
+  if( len < COB_FILE_MAX )
+    {
+    file_open_buff[len++] = SLASH_CHAR;
+    }
+
+  if( name_len > COB_FILE_MAX - len )
+    {
+    name_len = COB_FILE_MAX - len;
+    }
+
+  memcpy (file_open_buff + len, name, name_len);
+  len += name_len;
+
+  file_open_buff[len] = '\0';
+
+  memcpy (file_open_name, file_open_buff, len + 1);
+  }
+
+/* adjust static buffer file_open_name per applicable mapping rules */
+static void
+cob_chk_file_mapping (void)
+  {
+  const char    *p;
+  char    *src;
+  char    *dst;
+  char    *saveptr;
+  char    *orig;
+  unsigned int  dollar;
+
+  /* no mapping at all if explicit disabled on compile-time (dialect configuration)*/
+  if( !COB_MODULE_PTR->flag_filename_mapping )
+    {
+    return;
+    }
+
+  /* Special ACUCOBOL-case: file that start with hyphen [note: -P not supported]
+     no translation at all, name starts after first non-space */
+  if(has_acu_hyphen (file_open_name))
+    {
+    do_acu_hyphen_translation(file_open_name);
+    return ;
+    }
+
+  src = file_open_name;
+
+  /* Simple case - No separators [note: this is also the ACU and Fujitsu way] */
+  if(    !looks_absolute (src)
+      && !has_directory_separator (src))
+   {
+    /* Drop surrounding quotes, some implementations need those to
+       support filename with embedded spaces (like MF),
+       while others (like GC before 3.2) don't like them */
+    if(src[0] == '"' || src[0] == '\'')
+      {
+      const size_t len = strlen(src) - 1;
+      if(src[len] == src[0])
+        {
+        src[len] = 0;
+        src++;
+        }
+      }
+
+    /* Ignore leading dollar */
+    if(src[0] == '$')
+      {
+      src++;
+      }
+    /* Check for DD_xx, dd_xx, xx environment variables */
+    /* Note: ACU and Fujitsu would only check for xx */
+    /* If not found, use as is, possibly including the dollar character */
+    if((p = cob_chk_file_env(src)) != NULL)
+      {
+      strncpy (file_open_name, p, (size_t)COB_FILE_MAX);
+      /* Note: ACU specifies: "repeated until variable can't be resolved"
+         we don't apply this and will not in the future
+         [recursion is only one of the problems] */
+      if(looks_absolute (file_open_name))
+        {
+        return;
+        }
+      if(has_acu_hyphen(file_open_name))
+        {
+        do_acu_hyphen_translation(file_open_name);
+        return;
+        }
+      }
+    src = file_open_name; /* ensure it points to the beginning */
+
+    /* apply COB_FILE_PATH if set (similar to ACUCOBOL's FILE-PREFIX)
+       MF and Fujitsu simply don't have that - not set by default,
+       so no compatilibity issue here */
+  if( cobsetptr->cob_file_path )
+    {
+    prepend_file_path (cobsetptr->cob_file_path, src);
+    }
+  return;
+  }
+
+  /* Complex */
+
+  /* Note: ACU and Fujitsu would return the value back and stop here */
+
+  /* Isolate first element (everything before the slash) */
+  /* If it starts with a $, mark and skip over the $ */
+  /* Try mapping on resultant string - DD_xx, dd_xx, xx */
+  /* If successful, use the mapping */
+  /* If not, use original element EXCEPT if we started */
+  /* with a $, in which case we ignore the element AND */
+  /* the following slash */
+
+  dst = file_open_buff;
+  *dst = 0;
+
+  /* Drop surrounding quotes, some implementations need those to
+     support filename with embedded spaces (like MF),
+     while others (like GC before 3.2) don't like them */
+  if(src[0] == '"' || src[0] == '\'')
+    {
+    const size_t len = strlen(src) - 1;
+    if(src[len] == src[0])
+      {
+      src[len] = 0;
+      src++;
+      }
+    }
+
+  if(src[0] != '$')
+    {
+    dollar = 0;
+    }
+  else
+    {
+    dollar = 1;
+    src++;
+    }
+
+  orig = strdup(src);
+  saveptr = orig;
+
+  /* strtok strips leading delimiters */
+  if(*src == '/' || *src == '\\')
+    {
+    strcpy (file_open_buff, SLASH_STR);
+    }
+  else
+    {
+    file_open_buff[COB_FILE_MAX] = 0;
+    p = strtok (orig, "/\\");
+    orig = NULL;
+    if((src = cob_chk_file_env(p)) != NULL)
+      {
+      strncpy (file_open_buff, src, (size_t)COB_FILE_MAX);
+      dollar = 0;
+      }
+    else if(!dollar)
+      {
+      strncpy (file_open_buff, p, (size_t)COB_FILE_MAX);
+      }
+    }
+  file_open_buff[COB_FILE_MAX] = 0;
+  /* First element completed, loop through remaining */
+  /* elements delimited by slash */
+  /* Check only for $ from now on; includes the DD_xx/dd_xx/xx mapping */
+  src = NULL;
+  for(;;)
+    {
+    p = strtok (orig, "/\\");
+    if(!p)
+      {
+      break;
+      }
+    if(!orig)
+      {
+      if(!dollar)
+        {
+        strcat (file_open_buff, SLASH_STR);
+        }
+      }
+    else
+      {
+      orig = NULL;
+      }
+    if(*p != '$')
+      {
+      dollar = 0;
+      }
+    else
+      {
+      dollar = 1;
+      p++;
+      }
+    if(dollar && (src = cob_chk_file_env(p)) != NULL)
+      {
+      strncat (file_open_buff, src, (size_t)COB_FILE_MAX);
+      src = NULL;
+      }
+    else if(!dollar)
+      {
+      strncat (file_open_buff, p, (size_t)COB_FILE_MAX);
+      src = NULL;
+      }
+    else
+      {
+      src = const_cast<char *>(p) - 1;
+      }
+    }
+  /* if we have a final $something that cannot be resolved - use as plain name */
+  if(src)
+    {
+    strncat (file_open_buff, src, (size_t)COB_FILE_MAX);
+    }
+  strcpy(file_open_name, file_open_buff);
+  free(saveptr);
+
+  if(looks_absolute (file_open_name))
+    {
+    return;
+    }
+  /* apply COB_FILE_PATH if set (similar to ACUCOBOL's FILE-PREFIX) */
+  if( cobsetptr->cob_file_path )
+    {
+    prepend_file_path (cobsetptr->cob_file_path, file_open_name);
+    }
+  }
+
+static char *
+cob_setup_filename(const char *fn)
+  {
+  strncpy (file_open_name, fn, COB_FILE_MAX);
+  file_open_name[COB_FILE_MAX] = 0;
+  cob_chk_file_mapping();
+  return file_open_name;
+  }
+
+
+/* End of copied code ***************************************/
+
 static
 void
 establish_filename(       cblc_file_t  *file,
@@ -266,6 +730,7 @@ establish_filename(       cblc_file_t  *file,
       }
     }
   free(file->filename);
+  filename = cob_setup_filename(filename);
   file->filename = strdup(filename);
   free(allocated_here);
   }

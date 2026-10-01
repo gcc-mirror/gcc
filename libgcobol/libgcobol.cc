@@ -9959,8 +9959,10 @@ ec_priority( ec_disposition_t disposition ) {
   case ec_category_nonfatal_e:
   case ec_category_implementor_e:
     return LOG_WARNING;
+  default:
+    return LOG_INFO;
   }
-  return LOG_INFO;
+return LOG_INFO;
 }
 
 /*
@@ -9972,13 +9974,11 @@ ec_priority( ec_disposition_t disposition ) {
 static void
 default_exception_handler( ec_type_t ec )
 {
-  static const int priority = LOG_INFO;
   static const int option   = LOG_PERROR;
   static const int facility = LOG_USER;
   open_syslog(option, facility);
 
   ec_disposition_t disposition = ec_category_fatal_e;
-
 
   if( ec != ec_none_e ) {
     auto pec = std::find_if( __gg__exception_table, __gg__exception_table_end,
