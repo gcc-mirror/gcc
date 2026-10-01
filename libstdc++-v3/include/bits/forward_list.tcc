@@ -468,20 +468,46 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 			__p = __p->_M_next;
 			--__psize;
 		      }
-		    else if (!__comp(*static_cast<_Node&>(*__q)._M_valptr(),
-				     *static_cast<_Node&>(*__p)._M_valptr()))
-		      {
-			// First node of q is not lower; e must come from p.
-			__e = __p;
-			__p = __p->_M_next;
-			--__psize;
-		      }
 		    else
 		      {
-			// First node of q is lower; e must come from q.
-			__e = __q;
-			__q = __q->_M_next;
-			--__qsize;
+			bool __take_q;
+			__try
+			  {
+			    __take_q
+			      = __comp(*static_cast<_Node&>(*__q)._M_valptr(),
+				       *static_cast<_Node&>(*__p)._M_valptr());
+			  }
+			__catch(...)
+			  {
+			    // Reconnect the merged prefix and unmerged nodes
+			    // before propagating.
+			    _Base_ptr __last_p = __p;
+			    for (unsigned long __i = 1; __i < __psize; ++__i)
+			      __last_p = __last_p->_M_next;
+
+			    if (__tail)
+			      __tail->_M_next = __p;
+			    else
+			      __list = __p;
+			    __last_p->_M_next = __q;
+			    this->_M_impl._M_head._M_next = __list;
+			    __throw_exception_again;
+			  }
+
+			if (!__take_q)
+			  {
+			    // First node of q is not lower; e must come from p.
+			    __e = __p;
+			    __p = __p->_M_next;
+			    --__psize;
+			  }
+			else
+			  {
+			    // First node of q is lower; e must come from q.
+			    __e = __q;
+			    __q = __q->_M_next;
+			    --__qsize;
+			  }
 		      }
 
 		    // Add the next node to the merged list.
