@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <vector>
+#include <span>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -50,6 +51,11 @@ test02()
   static_assert( std::same_as<decltype(x | views::to_input),
 			      decltype(x | views::to_input | views::to_input)> );
 }
+
+using Owning = ranges::single_view<int>;
+using Borrowed = std::span<int>;
+static_assert( ! ranges::enable_borrowed_range<ranges::to_input_view<Owning>> );
+static_assert( ranges::enable_borrowed_range<ranges::to_input_view<Borrowed>> );
 
 int
 main()
