@@ -19738,7 +19738,10 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (DECL_DEPENDENT_P (decl))
 	      {
 		scope = tsubst (scope, args, complain, in_decl);
+		if (scope == error_mark_node)
+		  return error_mark_node;
 		if (!MAYBE_CLASS_TYPE_P (scope)
+		    && TREE_CODE (scope) != NAMESPACE_DECL
 		    && TREE_CODE (scope) != ENUMERAL_TYPE)
 		  {
 		    if (complain & tf_error)
