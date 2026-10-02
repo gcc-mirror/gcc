@@ -5567,40 +5567,31 @@ proc add_options_for_arm_fp16_alternative { flags } {
 # ARM only.
 
 proc check_effective_target_arm_fp16_ok_nocache { } {
+    if { ![istarget arm*-*-*] } {
+	return 0
+    }
     global et_arm_fp16_flags
     set et_arm_fp16_flags ""
-    if { ! [check_effective_target_arm32] } {
-	return 0;
-    }
-    if [check-flags \
-	    [list "" { *-*-* } { "-mfpu=*" } \
-		 { "-mfpu=*fp16*" "-mfpu=*fpv[4-9]*" \
-		       "-mfpu=*fpv[1-9][0-9]*" "-mfpu=*fp-armv8*" } ]] {
-	# Multilib flags would override -mfpu.
-	return 0
-    }
-    if [check-flags [list "" { *-*-* } { "-mfloat-abi=soft" } { "" } ]] {
-	# Must generate floating-point instructions.
-	return 0
-    }
-    if [check_effective_target_arm_hf_eabi] {
-	# Use existing float-abi and force an fpu which supports fp16
-	set et_arm_fp16_flags "-mfpu=vfpv4"
-	return 1;
-    }
-    if [check-flags [list "" { *-*-* } { "-mfpu=*" } { "" } ]] {
-        # The existing -mfpu value is OK; use it, but add softfp.
-	set et_arm_fp16_flags "-mfloat-abi=softfp"
-	return 1;
-    }
-    # Add -mfpu for a VFP fp16 variant since there is no preprocessor
-    # macro to check for this support.
-    set flags "-mfpu=vfpv4 -mfloat-abi=softfp"
-    if { [check_no_compiler_messages_nocache arm_fp16_ok assembly {
-	int dummy;
-    } "$flags"] } {
-	set et_arm_fp16_flags "$flags"
-	return 1
+    foreach flags {
+	""
+	"-mfloat-abi=softfp"
+	"-mfpu=auto"
+	"-mfloat-abi=softfp -mfpu=auto"
+	"-mfpu=vfpv4"
+	"-mfloat-abi=softfp -mfpu=vfpv4"
+    } {
+	if { [check_no_compiler_messages_nocache arm_fp16_ok assembly {
+	    #ifndef __ARM_FP
+	    #error __ARM_FP not defined
+	    #endif
+	    #if ((__ARM_FP & 2) == 0)
+	    #error __ARM_FP indicates that half-precision floating point is not supported
+	    #endif
+	    int dummy;
+	} "$flags"] } {
+	    set et_arm_fp16_flags "$flags"
+	    return 1
+	}
     }
 
     return 0
