@@ -2651,6 +2651,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		    {
 			gfc_error ("The RE or IM part_ref at %C must be "
 				   "applied to a COMPLEX expression");
+			gfc_free_ref_list (tmp);
 			return MATCH_ERROR;
 		    }
 		  else if (tmp->u.i == INQUIRY_LEN
@@ -2658,6 +2659,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		    {
 			gfc_error ("The LEN part_ref at %C must be applied "
 				   "to a CHARACTER expression");
+			gfc_free_ref_list (tmp);
 			return MATCH_ERROR;
 		    }
 		}
