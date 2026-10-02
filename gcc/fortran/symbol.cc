@@ -2519,7 +2519,8 @@ gfc_find_derived_types (gfc_symbol *sym, gfc_namespace *ns,
 			const char *name, bool stash)
 {
   gfc_namespace *encompassing = NULL;
-  gcc_assert (sym->assoc);
+  if (sym->assoc == NULL)
+    return 0;
 
   cts = 0;
   while (ns->parent)
