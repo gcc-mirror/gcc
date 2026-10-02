@@ -8959,10 +8959,15 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	break;
       }
 
-  if (is_a <scalar_int_mode> (outermode, &int_outermode)
-      && is_a <scalar_int_mode> (innermode, &int_innermode)
-      && known_eq (byte, subreg_lowpart_offset (int_outermode, int_innermode)))
+  if (is_a <scalar_int_mode> (outermode)
+      && is_a <scalar_int_mode> (innermode)
+      && known_eq (byte,
+		   subreg_lowpart_offset (as_a <scalar_int_mode> (outermode),
+					  as_a <scalar_int_mode> (innermode))))
     {
+      scalar_int_mode int_outermode = as_a <scalar_int_mode> (outermode);
+      scalar_int_mode int_innermode = as_a <scalar_int_mode> (innermode);
+
       /* Handle polynomial integers.  The upper bits of a paradoxical
 	 subreg are undefined, so this is safe regardless of whether
 	 we're truncating or extending.  */
