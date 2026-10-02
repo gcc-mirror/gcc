@@ -3294,10 +3294,7 @@ addr_of_non_const_var (tree *tp, int *walk_subtrees, void *data)
     if (tree var = get_base_address (TREE_OPERAND (*tp, 0)))
       if (VAR_P (var) && TREE_STATIC (var))
 	{
-	  if (DECL_NAME (var) == heap_uninit_identifier
-	      || DECL_NAME (var) == heap_identifier
-	      || DECL_NAME (var) == heap_vec_uninit_identifier
-	      || DECL_NAME (var) == heap_vec_identifier)
+	  if (heap_var_p (var))
 	    return var;
 
 	  constexpr_global_ctx *global = (constexpr_global_ctx *) data;
@@ -8239,10 +8236,7 @@ non_const_var_error (location_t loc, tree r, bool fundef_p)
 {
   auto_diagnostic_group d;
   tree type = TREE_TYPE (r);
-  if (DECL_NAME (r) == heap_uninit_identifier
-      || DECL_NAME (r) == heap_identifier
-      || DECL_NAME (r) == heap_vec_uninit_identifier
-      || DECL_NAME (r) == heap_vec_identifier)
+  if (heap_var_p (r))
     {
       if (constexpr_error (loc, fundef_p, "the content of uninitialized "
 			   "storage is not usable in a constant expression"))
@@ -10807,10 +10801,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    if (decl
 		&& VAR_P (decl)
 		&& DECL_ARTIFICIAL (decl)
-		&& (DECL_NAME (decl) == heap_identifier
-		    || DECL_NAME (decl) == heap_uninit_identifier
-		    || DECL_NAME (decl) == heap_vec_identifier
-		    || DECL_NAME (decl) == heap_vec_uninit_identifier))
+		&& heap_var_p (decl))
 	      /* OK */;
 	    /* P2738 (C++26): a conversion from a prvalue P of type "pointer to
 	       cv void" to a pointer-to-object type T unless P is a null
@@ -11435,12 +11426,7 @@ instantiate_constexpr_fns (tree t)
 static tree
 find_heap_var_refs (tree *tp, int *walk_subtrees, void */*data*/)
 {
-  if (VAR_P (*tp)
-      && (DECL_NAME (*tp) == heap_uninit_identifier
-	  || DECL_NAME (*tp) == heap_identifier
-	  || DECL_NAME (*tp) == heap_vec_uninit_identifier
-	  || DECL_NAME (*tp) == heap_vec_identifier
-	  || DECL_NAME (*tp) == heap_deleted_identifier))
+  if (VAR_P (*tp) && heap_var_p (*tp, /*include_deleted_p=*/true))
     return *tp;
 
   if (TYPE_P (*tp))
@@ -13934,6 +13920,19 @@ fini_constexpr (void)
   /* The contexpr call and fundef copies tables are no longer needed.  */
   constexpr_call_table = NULL;
   fundef_copies_table = NULL;
+}
+
+/* Return true if T is one of the heap vars.  Include "heap deleted" if
+   INCLUDE_DELETED_P.  */
+
+bool
+heap_var_p (tree t, bool include_deleted_p/*=false*/)
+{
+  return (DECL_NAME (t) == heap_uninit_identifier
+	  || DECL_NAME (t) == heap_identifier
+	  || DECL_NAME (t) == heap_vec_uninit_identifier
+	  || DECL_NAME (t) == heap_vec_identifier
+	  || (include_deleted_p && DECL_NAME (t) == heap_deleted_identifier));
 }
 
 #include "gt-cp-constexpr.h"

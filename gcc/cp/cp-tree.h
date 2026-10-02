@@ -9470,6 +9470,7 @@ extern void diagnose_failing_condition		(tree, location_t, bool,
 extern bool replace_decl			(tree *, tree, tree);
 extern tree cxa_allocate_and_throw_exception	(location_t, const constexpr_ctx *,
 						 tree);
+extern bool heap_var_p				(tree, bool = false);
 
 /* Whether our evaluation wants a prvalue (e.g. CONSTRUCTOR or _CST),
    a glvalue (e.g. VAR_DECL or _REF), or nothing.  */

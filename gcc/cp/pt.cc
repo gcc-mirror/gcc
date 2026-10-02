@@ -7559,11 +7559,11 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 			"because %qD has no linkage", expr, type, decl);
 	    return true;
 	  }
-	/* For a constant template parameter of reference or pointer type,
-	   or for each non-static data member of reference or pointer type
-	   in a constant template parameter of class type or subobject thereof,
-	   the reference or pointer value shall not refer or point to
-	   (respectively):
+	/* [temp.arg.nontype]/6: For a constant template parameter of
+	   reference or pointer type, or for each non-static data member of
+	   reference or pointer type in a constant template parameter of class
+	   type or subobject thereof, the reference or pointer value shall not
+	   refer or point to (respectively):
 	   -- a temporary object,
 	   -- a string literal object,
 	   -- the result of a typeid expression,
@@ -7572,9 +7572,15 @@ invalid_tparm_referent_p (tree type, tree expr, tsubst_flags_t complain)
 	else if (VAR_P (decl) && DECL_ARTIFICIAL (decl)
 		 && !DECL_NTTP_OBJECT_P (decl))
 	  {
+	    /* The heap_var_p check doesn't cover any of the bullets above,
+	       but we can get here with an invalid reflect_constant arg.
+	       Heap vars are not constexpr-referenceable, so they're not valid
+	       here either.  */
 	    gcc_checking_assert (DECL_TINFO_P (decl)
 				 || DECL_FNAME_P (decl)
-				 || DECL_IGNORED_P (decl));
+				 || DECL_IGNORED_P (decl)
+				 || heap_var_p (decl,
+						/*include_deleted_p=*/true));
 	    if (complain & tf_error)
 	      error ("the address of %qD is not a valid template argument",
 		     decl);
