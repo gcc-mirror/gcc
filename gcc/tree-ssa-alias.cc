@@ -3792,8 +3792,12 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	  return true;
 	}
 
-      /* Recurse for PHI nodes.  */
-      if (gphi *phi = dyn_cast <gphi *> (def_stmt))
+      /* When we reach the original PHI we are done.  TARGET must be
+	 reached via other edges in the caller.  */
+      if (def_stmt == phi)
+	return true;
+      /* Recurse for other PHI nodes.  */
+      else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
 	{
 	  /* An already visited PHI node ends the walk successfully.  */
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (phi))))
