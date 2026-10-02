@@ -29375,6 +29375,19 @@ $as_echo "$as_me: WARNING: support for avrxmega4_flmap requires Binutils 2.42 or
 $as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
     fi
     rm -f conftest.s conftest.o conftest.elf
+
+    # Check for linker --prune-vectab.
+    gcc_cv_ld_avr_prune_vectab=no
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking linker for --prune-vectab support" >&5
+$as_echo_n "checking linker for --prune-vectab support... " >&6; }
+    if $gcc_cv_ld --help 2>&1 | grep -- '--prune-vectab' > /dev/null; then
+       gcc_cv_ld_avr_prune_vectab=yes
+
+$as_echo "#define HAVE_LD_AVR_PRUNE_VECTAB 1" >>confdefs.h
+
+    fi
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_ld_avr_prune_vectab" >&5
+$as_echo "$gcc_cv_ld_avr_prune_vectab" >&6; }
     ;;
 
   cris-*-*)

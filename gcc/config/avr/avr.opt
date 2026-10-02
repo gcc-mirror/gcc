@@ -99,6 +99,10 @@ mrelax
 Target Optimization
 Optimization. Relax branches.
 
+mprune-vectab
+Target Optimization
+Optimization. Prune AVR-LibC vector table provided relaxation is on.
+
 mpmem-wrap-around
 Target
 Make the linker relaxation machine assume that a program counter wrap-around occurs.

@@ -65,6 +65,7 @@ along with GCC; see the file COPYING3.  If not see
   "%(link_data_start) "                         \
   "%(link_text_start) "                         \
   "%(link_relax) "                              \
+  "%(link_prune_vectab) "                       \
   "%(link_pmem_wrap) "                          \
   "%(link_rodata_in_ram) "                      \
   "%(link_no_call_main) "                       \

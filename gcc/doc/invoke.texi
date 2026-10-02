@@ -990,7 +990,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcall-prologues  -mgas-isr-prologues  -mint8  -mflmap
 -mdouble=@var{bits}  -mlong-double=@var{bits}  -mno-call-main
 -mn_flash=@var{size}  -mfract-convert-truncate  -mno-interrupts
--mmain-is-OS_task  -moptimize  -mrelax  -mpmem-wrap-around
+-mmain-is-OS_task  -moptimize  -mrelax  -mpmem-wrap-around  -mprune-vectab
 -mrmw  -mstrict-addr-space-subsets  -mstrict-X  -mtiny-stack
 -mrodata-in-ram  -msplit-bit-shift  -msplit-ldst  -mshort-calls
 -mskip-bug  -muse-nonzero-bits  -nodevicelib  -nodevicespecs
@@ -24513,6 +24513,29 @@ differ from instructions in the assembly code.
 Relaxing must be turned on if linker stubs are needed, see the
 section on @code{EIND} and linker stubs below.
 
+@opindex mprune-vectab
+@item -mprune-vectab
+Remove unused entries in the AVR-LibC interrupt vector table during relaxing.
+An entry is unused when it targets @code{__bad_interrupt} and all following
+entries are also unused.
+
+Setting @option{-mprune-vectab} just adds the @option{--prune-vectab} option
+to the linker's command line, provided the required GNU Binutils
+support (@w{@uref{https://sourceware.org/PR34679,,PR34679}}) is available.
+Otherwise, or when relaxing is not enabled, the option has no effect.
+
+What is not supported are jumps like
+@example
+   JMP 0x18
+@end example
+that target a vector table entry that is not the reset vector.  Use code like
+@example
+   JMP __vectors + 0x18
+@end example
+instead.
+This option makes it harder to find rogue IRQs that lack an interrupt service
+routine (ISR) and whose IRQ vector is located beyond the last used one.
+
 @opindex mstrict-addr-space-subsets
 @item -mstrict-addr-space-subsets
 Impose strict named address space subset relations.  Without this option,
@@ -24590,7 +24613,8 @@ Enabled by default.
 @subsubsection AVR Optimization Options
 The following options are pure optimization options.
 Options @option{-mgas-isr-prologues}, @option{-mmain-is-OS_task},
-@option{-mno-call-main} and @option{-mrelax} from above are only
+@option{-mno-call-main}, @option{-mrelax} and @option{-mprune-vectab}
+from above are only
 @emph{almost} optimization options, since there are rare occasions
 where their different code generation matters.
 

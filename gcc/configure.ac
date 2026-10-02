@@ -4880,6 +4880,16 @@ EOF
 	AC_MSG_WARN([[see `config.log' for details]])
     fi
     rm -f conftest.s conftest.o conftest.elf
+
+    # Check for linker --prune-vectab.
+    gcc_cv_ld_avr_prune_vectab=no
+    AC_MSG_CHECKING(linker for --prune-vectab support)
+    if $gcc_cv_ld --help 2>&1 | grep -- '--prune-vectab' > /dev/null; then
+       gcc_cv_ld_avr_prune_vectab=yes
+       AC_DEFINE(HAVE_LD_AVR_PRUNE_VECTAB, 1,
+		 [Define if your linker supports --prune-vectab.])
+    fi
+    AC_MSG_RESULT($gcc_cv_ld_avr_prune_vectab)
     ;;
 
   cris-*-*)

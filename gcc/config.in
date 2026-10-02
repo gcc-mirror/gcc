@@ -1726,6 +1726,12 @@
 #endif
 
 
+/* Define if your linker supports --prune-vectab. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_AVR_PRUNE_VECTAB
+#endif
+
+
 /* Define if your linker supports -z bndplt */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_BNDPLT_SUPPORT

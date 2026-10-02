@@ -48,6 +48,9 @@ UrlSuffix(gcc/AVR-Options.html#index-mtiny-stack)
 mrelax
 UrlSuffix(gcc/AVR-Options.html#index-mrelax)
 
+mprune-vectab
+UrlSuffix(gcc/AVR-Options.html#index-mprune-vectab)
+
 mpmem-wrap-around
 UrlSuffix(gcc/AVR-Options.html#index-mpmem-wrap-around)
 
