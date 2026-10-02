@@ -2832,6 +2832,20 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
       *bound = align_in_elems;
     }
 
+  /* Alignment peeling cannot consume more scalar iterations than the loop
+     actually has.  If the requested peel count is larger than the scalar
+     iteration count, limit the peeled iterations to niters.  Otherwise we would
+     model the prologue as executing iterations that the original loop would
+     never execute.  */
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
+      && !LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+    {
+      tree niters = LOOP_VINFO_NITERS (loop_vinfo);
+      if (!types_compatible_p (niters_type, TREE_TYPE (niters)))
+       niters = fold_convert (niters_type, niters);
+      iters = fold_build2 (MIN_EXPR, niters_type, iters, niters);
+    }
+
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "niters for prolog loop: %T\n", iters);
