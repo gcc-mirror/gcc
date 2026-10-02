@@ -31,13 +31,18 @@ public:
 
   std::unique_ptr<Item> go (Item &item);
 
-  bool validate_repr_transparent (const Item &item);
-  bool validate_number_of_fields (const Item &item);
+  void validate (const Item &item);
+  void validate_repr_transparent (const Item &item);
+  void validate_number_of_fields (const Item &item);
+  void validate_non_generic_pointee (const Item &item);
+
+  void error_for_non_supported_objects (const Item &item);
+
 private:
-  virtual void visit_struct (StructStruct &item) override {}
-  virtual void visit_tuple (TupleStruct &item) override {}
-  virtual void visit_enum (Enum &item) override {}
-  virtual void visit_union (Union &item) override {}
+  virtual void visit_struct (StructStruct &item) override;
+  virtual void visit_tuple (TupleStruct &item) override;
+  virtual void visit_enum (Enum &item) override;
+  virtual void visit_union (Union &item) override;
 };
 
 } // namespace AST
