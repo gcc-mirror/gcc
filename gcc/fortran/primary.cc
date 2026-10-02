@@ -3006,7 +3006,7 @@ check_substring:
 
 
 /* Given an expression that is a variable, figure out what the
-   ultimate variable's type and attribute is, traversing the reference
+   ultimate variable's attribute is, traversing the reference
    structures if necessary.
 
    This subroutine is trickier than it looks.  We start at the base
@@ -3023,15 +3023,13 @@ check_substring:
    We can have at most one full array reference.  */
 
 symbol_attribute
-gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
+gfc_variable_attr (gfc_expr *expr)
 {
   int dimension, codimension, pointer, allocatable, target, optional;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
   gfc_component *comp;
-  bool has_inquiry_part;
-  bool has_substring_ref = false;
 
   if (expr->expr_type != EXPR_VARIABLE
       && expr->expr_type != EXPR_FUNCTION
@@ -3077,31 +3075,11 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	target = 0;
     }
 
-  if (ts != NULL && expr->ts.type == BT_UNKNOWN)
-    *ts = sym->ts;
-
-  /* Catch left-overs from match_actual_arg, where an actual argument of a
-     procedure is given a temporary ts.type == BT_PROCEDURE.  The fixup is
-     needed for structure constructors in DATA statements, where a pointer
-     is associated with a data target, and the argument has not been fully
-     resolved yet.  Components references are dealt with further below.  */
-  if (ts != NULL
-      && expr->ts.type == BT_PROCEDURE
-      && expr->ref == NULL
-      && attr.flavor != FL_PROCEDURE
-      && attr.target)
-    *ts = sym->ts;
-
-  has_inquiry_part = false;
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_SUBSTRING)
-      {
-	has_substring_ref = true;
-	optional = false;
-      }
+      optional = false;
     else if (ref->type == REF_INQUIRY)
       {
-	has_inquiry_part = true;
 	optional = false;
 	break;
       }
@@ -3142,14 +3120,6 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	optional = false;
 	comp = ref->u.c.component;
 	attr = comp->attr;
-	if (ts != NULL && !has_inquiry_part)
-	  {
-	    *ts = comp->ts;
-	    /* Don't set the string length if a substring reference
-	       follows.  */
-	    if (ts->type == BT_CHARACTER && has_substring_ref)
-	      ts->u.cl = NULL;
-	  }
 
 	if (comp->ts.type == BT_CLASS)
 	  {
@@ -3201,7 +3171,7 @@ gfc_expr_attr (gfc_expr *e)
   switch (e->expr_type)
     {
     case EXPR_VARIABLE:
-      attr = gfc_variable_attr (e, NULL);
+      attr = gfc_variable_attr (e);
       break;
 
     case EXPR_FUNCTION:
@@ -3223,7 +3193,7 @@ gfc_expr_attr (gfc_expr *e)
 	       && e->ts.type == BT_CLASS)
 	attr = CLASS_DATA (e)->attr;
       else if (e->symtree)
-	attr = gfc_variable_attr (e, NULL);
+	attr = gfc_variable_attr (e);
 
       /* TODO: NULL() returns pointers.  May have to take care of this
 	 here.  */

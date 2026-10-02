@@ -6478,6 +6478,78 @@ gfc_op_rank_conformable (gfc_expr *op1, gfc_expr *op2)
 	     || (!gfc_is_coindexed (op1) && !gfc_is_coindexed (op2)));
 }
 
+
+/* Given an expression EXPR that is a variable, figure out what the ultimate
+   variable's type is and store it in TS, traversing the reference structures
+   if necessary.
+
+   We start at the base symbol and store the type.  Component references
+   overwrite a completely new type.  */
+
+static void
+get_data_ref_type (gfc_expr *expr, gfc_typespec *ts)
+{
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  gfc_component *comp;
+  bool has_inquiry_part;
+  bool has_substring_ref = false;
+
+  if (expr->expr_type != EXPR_VARIABLE
+      && expr->expr_type != EXPR_FUNCTION
+      && !(expr->expr_type == EXPR_NULL && expr->ts.type != BT_UNKNOWN))
+    gfc_internal_error ("get_data_ref_type(): Expression isn't a variable");
+
+  sym = expr->symtree->n.sym;
+
+  if (ts != NULL && expr->ts.type == BT_UNKNOWN)
+    *ts = sym->ts;
+
+  /* Catch left-overs from match_actual_arg, where an actual argument of a
+     procedure is given a temporary ts.type == BT_PROCEDURE.  The fixup is
+     needed for structure constructors in DATA statements, where a pointer
+     is associated with a data target, and the argument has not been fully
+     resolved yet.  Components references are dealt with further below.  */
+  if (ts != NULL
+      && expr->ts.type == BT_PROCEDURE
+      && expr->ref == NULL
+      && sym->attr.flavor != FL_PROCEDURE
+      && sym->attr.target)
+    *ts = sym->ts;
+
+  has_inquiry_part = false;
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_SUBSTRING)
+      has_substring_ref = true;
+    else if (ref->type == REF_INQUIRY)
+      {
+	has_inquiry_part = true;
+	break;
+      }
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_COMPONENT:
+	comp = ref->u.c.component;
+	if (ts != NULL && !has_inquiry_part)
+	  {
+	    *ts = comp->ts;
+	    /* Don't set the string length if a substring reference
+	       follows.  */
+	    if (ts->type == BT_CHARACTER && has_substring_ref)
+	      ts->u.cl = NULL;
+	  }
+	break;
+
+      case REF_ARRAY:
+      case REF_INQUIRY:
+      case REF_SUBSTRING:
+	break;
+      }
+}
+
+
 /* Resolve a variable expression.  */
 
 static bool
@@ -6759,7 +6831,7 @@ resolve_variable (gfc_expr *e)
     }
 
   if (sym->ts.type != BT_UNKNOWN)
-    gfc_variable_attr (e, &e->ts);
+    get_data_ref_type (e, &e->ts);
   else if (sym->attr.flavor == FL_PROCEDURE
 	   && sym->attr.function && sym->result
 	   && sym->result->ts.type != BT_UNKNOWN

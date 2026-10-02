@@ -7299,7 +7299,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      : fsym->attr.allocatable)
 	  && e->symtree
 	  && e->symtree->n.sym
-	  && gfc_variable_attr (e, NULL).allocatable)
+	  && gfc_variable_attr (e).allocatable)
 	{
 	  force_eval_args = true;
 	  break;

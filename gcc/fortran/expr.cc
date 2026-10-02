@@ -6418,8 +6418,8 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
       if (expr->ts.type == BT_UNKNOWN)
 	return true;
       else
-	return (gfc_variable_attr (expr, NULL).contiguous
-		|| gfc_variable_attr (expr, NULL).allocatable);
+	return (gfc_variable_attr (expr).contiguous
+		|| gfc_variable_attr (expr).allocatable);
     }
 
   if (expr->expr_type == EXPR_FUNCTION)
