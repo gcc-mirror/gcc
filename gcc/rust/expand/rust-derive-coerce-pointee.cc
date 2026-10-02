@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-attribute-values.h"
 #include "rust-derive-coerce-pointee.h"
 #include "rust-session-manager.h"
 #include "rust-feature.h"
@@ -32,6 +33,7 @@ DeriveCoercePointee::DeriveCoercePointee (location_t loc,
 std::unique_ptr<AST::Item>
 DeriveCoercePointee::go (Item &item)
 {
+  validate_repr_transparent (item);
   Features::EarlyFeatureGateStore::get ().add (
     Feature::Name::DERIVE_COERCE_POINTEE,
     Error (loc, "use of unstable library feature %<derive_coerce_pointee%>"));
@@ -72,5 +74,34 @@ DeriveCoercePointee::go (Item &item)
   return {};
 }
 
+// CoercePointee requires the Struct or Tuple to have transparent representation
+bool
+DeriveCoercePointee::validate_repr_transparent (const Item &item)
+{
+  const auto &attrs = item.get_outer_attrs ();
+  for (const auto &attr : attrs)
+    {
+      if (attr.get_path ().as_string () != Values::Attributes::REPR)
+	continue;
+      if (attr.empty_input ())
+	continue;
+
+      const auto &attr_input = attr.get_attr_input ();
+      if (attr_input.get_attr_input_type ()
+	  != AST::AttrInput::AttrInputType::TOKEN_TREE)
+	continue;
+
+      auto meta_item = static_cast<const AST::DelimTokenTree &> (attr_input)
+			 .parse_to_meta_item ();
+
+      for (const auto &item : meta_item->get_items ())
+	if (item->as_string () == "transparent")
+	  return true;
+    }
+  rust_error_at (item.get_locus (), ErrorCode::E0802,
+		 "%<CoercePointee%> is only applicable to struct/tuple with "
+		 "repr(transparent) layout");
+  return false;
+}
 } // namespace AST
 } // namespace Rust

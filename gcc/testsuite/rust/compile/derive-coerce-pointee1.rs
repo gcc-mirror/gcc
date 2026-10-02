@@ -9,6 +9,7 @@
 #[lang = "sized"]
 trait Sized {}
 
+#[repr(transparent)]
 #[derive(CoercePointee)] // { dg-warning "no effect" }
                          // { dg-error "use of unstable library feature" "" { target *-*-* } .-1 }
 struct Floop<T> {

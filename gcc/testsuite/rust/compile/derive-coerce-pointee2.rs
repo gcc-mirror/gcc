@@ -8,6 +8,7 @@
 #[lang = "sized"]
 trait Sized {}
 
+#[repr(transparent)]
 #[derive(CoercePointee)]
 // { dg-error "derive.CoercePointee. requires a compatibility mode" "" { target *-*-* } .-1 }
 // { dg-error "could not resolve trait .CoercePointee." "" { target *-*-* } .-2 }

@@ -10,5 +10,6 @@
 #[lang = "sized"]
 trait Sized {}
 
+#[repr(transparent)]
 #[derive(CoercePointee)] // { dg-warning "no effect" }
 pub struct Floop<T>(*const T);
