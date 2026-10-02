@@ -2027,6 +2027,10 @@ An old alias for @option{-mautovec-preference}.  If both
 @option{-mautovec-preference} and @option{--param=aarch64-autovec-preference}
 are passed, the @option{--param} value is used.
 
+@paindex aarch64-autovec-mode
+@item aarch64-autovec-preference
+Force a specific mode to be the only one considered for auto vectorization.
+
 @paindex aarch64-ldp-policy
 @item aarch64-ldp-policy
 Fine-grained policy for load pair (@code{stp}) instructions.

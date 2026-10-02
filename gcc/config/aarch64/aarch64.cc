@@ -24187,6 +24187,12 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
     V2SImode
   };
 
+  if (aarch64_force_autovec_mode != VOIDmode)
+    {
+      modes->safe_push (aarch64_force_autovec_mode);
+      return 0;
+    }
+
   /* Try using N-byte SVE modes only after trying N-byte Advanced SIMD mode.
      This is because:
 

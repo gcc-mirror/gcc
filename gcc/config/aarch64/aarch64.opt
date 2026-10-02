@@ -406,6 +406,40 @@ Enum(aarch64_autovec_preference) String(prefer-asimd) Value(AARCH64_AUTOVEC_PREF
 EnumValue
 Enum(aarch64_autovec_preference) String(prefer-sve) Value(AARCH64_AUTOVEC_PREFER_SVE)
 
+-param=aarch64-autovec-mode=
+Target Joined Var(aarch64_force_autovec_mode) Enum(aarch64_autovec_mode) Init(VOIDmode) Param
+Force a specific mode to be the only one considered for auto vectorization.
+
+If this is specified in addition to --param=aarch64-autovec-preference or
+-mautovec-preference then this takes priority.
+
+Enum
+Name(aarch64_autovec_mode) Type(machine_mode) UnknownError(unknown machine mode %qs)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(VNx16QI) Value(VNx16QImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(VNx8QI) Value(VNx8QImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(VNx4QI) Value(VNx4QImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(VNx2QI) Value(VNx2QImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(V16QI) Value(V16QImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(V8QI) Value(V8QImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(V4HI) Value(V4HImode)
+
+EnumValue
+Enum(aarch64_autovec_mode) String(V2SI) Value(V2SImode)
+
 -param=aarch64-loop-vect-issue-rate-niters=
 Target Joined UInteger Var(aarch64_loop_vect_issue_rate_niters) Init(6) IntegerRange(0, 65536) Param
 
