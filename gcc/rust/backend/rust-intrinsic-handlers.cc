@@ -2316,6 +2316,50 @@ assert_zero_valid_handler (Context *ctx, TyTy::FnType *fntype, location_t)
   return fndecl;
 }
 
+tree
+float_to_int_unchecked (Context *ctx, TyTy::FnType *fntype, location_t loc)
+{
+  rust_assert (fntype->get_params ().size () == 1);
+  rust_assert (fntype->get_num_substitutions () == 2);
+
+  tree lookup = NULL_TREE;
+  if (check_for_cached_intrinsic (ctx, fntype, &lookup))
+    return lookup;
+
+  auto fndecl = compile_intrinsic_function (ctx, fntype);
+
+  auto &dst_param = fntype->get_substs ().at (1);
+  const auto dst_ty = dst_param.get_param_ty ();
+  auto int_ty_resolved = dst_ty->resolve ();
+
+  auto int_ty = TyTyResolveCompile::compile (ctx, int_ty_resolved);
+
+  // setup the params
+  std::vector<Bvariable *> param_vars;
+  compile_fn_params (ctx, fntype, fndecl, &param_vars);
+
+  rust_assert (param_vars.size () == 1);
+
+  auto &float_param = param_vars.at (0);
+
+  if (!Backend::function_set_parameters (fndecl, param_vars))
+    return error_mark_node;
+
+  enter_intrinsic_block (ctx, fndecl);
+
+  tree float_value = Backend::var_expression (float_param, UNDEF_LOCATION);
+
+  auto convert_expr = Backend::convert_expression (int_ty, float_value, loc);
+
+  auto return_statement = Backend::return_statement (fndecl, convert_expr, loc);
+
+  ctx->add_statement (return_statement);
+
+  finalize_intrinsic_block (ctx, fndecl);
+
+  return fndecl;
+}
+
 } // namespace handlers
 } // namespace Compile
 } // namespace Rust

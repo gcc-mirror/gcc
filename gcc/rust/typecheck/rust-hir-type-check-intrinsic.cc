@@ -327,6 +327,11 @@ const std::unordered_map<std::string, IntrinsicRules>
     {IValue::FREM_FAST,
      {1, {IRT::FirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
 
+    // fn float_to_int_unchecked<Float, Int>(x: Float) -> Int
+    //     where Float: FloatPrimitive, Int: Copy
+    {IValue::FLOAT_TO_INT_UNCHECKED,
+     {2, {IRT::FirstGeneric}, IRT::SecondGeneric}},
+
 };
 
 IntrinsicCheckResult

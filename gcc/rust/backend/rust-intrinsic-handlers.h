@@ -112,6 +112,9 @@ tree assert_zero_valid_handler (Context *ctx, TyTy::FnType *fntype,
  */
 HandlerBuilder fop_fast (ArithmeticOrLogicalOperator op);
 
+tree float_to_int_unchecked (Context *ctx, TyTy::FnType *fntype,
+			     location_t loc);
+
 } // namespace handlers
 
 } // namespace Compile

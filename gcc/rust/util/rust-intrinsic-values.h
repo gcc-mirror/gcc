@@ -181,6 +181,8 @@ public:
   static constexpr auto &FMUL_FAST = "fmul_fast";
   static constexpr auto &FDIV_FAST = "fdiv_fast";
   static constexpr auto &FREM_FAST = "frem_fast";
+
+  static constexpr auto &FLOAT_TO_INT_UNCHECKED = "float_to_int_unchecked";
 };
 } // namespace Values
 } // namespace Rust
