@@ -6462,7 +6462,7 @@ gfc_check_c_funloc (gfc_expr *x)
 
   attr = gfc_expr_attr (x);
 
-  if (attr.function && !attr.proc_pointer && x->expr_type == EXPR_VARIABLE
+  if (!attr.proc_pointer && x->expr_type == EXPR_VARIABLE
       && x->symtree->n.sym == x->symtree->n.sym->result)
     for (gfc_namespace *ns = gfc_current_ns; ns; ns = ns->parent)
       if (x->symtree->n.sym == ns->proc_name)

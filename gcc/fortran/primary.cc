@@ -3030,6 +3030,7 @@ gfc_variable_attr (gfc_expr *expr)
   gfc_ref *ref;
   gfc_symbol *sym;
   gfc_component *comp;
+  gfc_typespec *current_ts;
 
   if (expr->expr_type != EXPR_VARIABLE
       && expr->expr_type != EXPR_FUNCTION
@@ -3038,6 +3039,22 @@ gfc_variable_attr (gfc_expr *expr)
 
   sym = expr->symtree->n.sym;
   attr = sym->attr;
+  current_ts = &sym->ts;
+
+  /* If we are in the body of a function, the function name references the
+     function result, not the function itself.  */
+  if (attr.function
+      && sym->result == sym
+      && gfc_current_ns
+      && gfc_current_ns->proc_name == sym)
+    {
+      attr.function = 0;
+      attr.elemental = 0;
+      attr.pure = 0;
+      attr.recursive = 0;
+      attr.flavor = FL_VARIABLE;
+      attr.result = 1;
+    }
 
   optional = attr.optional;
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok && sym->ts.u.derived)
@@ -3117,9 +3134,15 @@ gfc_variable_attr (gfc_expr *expr)
 	break;
 
       case REF_COMPONENT:
-	optional = false;
 	comp = ref->u.c.component;
-	attr = comp->attr;
+	if (!(current_ts->type == BT_CLASS
+	      && current_ts->u.derived->attr.is_class
+	      && strcmp (comp->name, "_data") == 0))
+	  {
+	    optional = false;
+	    attr = comp->attr;
+	  }
+	current_ts = &sym->ts;
 
 	if (comp->ts.type == BT_CLASS)
 	  {

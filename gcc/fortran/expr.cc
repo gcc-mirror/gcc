@@ -4414,16 +4414,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
       const char *name;
 
       attr = gfc_expr_attr (rvalue);
-      if (!((rvalue->expr_type == EXPR_NULL)
-	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
-	    || (rvalue->expr_type == EXPR_VARIABLE && attr.proc_pointer)
-	    || (rvalue->expr_type == EXPR_VARIABLE
-		&& attr.flavor == FL_PROCEDURE)))
-	{
-	  gfc_error ("Invalid procedure pointer assignment at %L",
-		     &rvalue->where);
-	  return false;
-	}
 
       if (rvalue->expr_type == EXPR_VARIABLE && !attr.proc_pointer)
 	{
@@ -4452,6 +4442,18 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 		  }
 	    }
 	}
+
+      if (!((rvalue->expr_type == EXPR_NULL)
+	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
+	    || (rvalue->expr_type == EXPR_VARIABLE && attr.proc_pointer)
+	    || (rvalue->expr_type == EXPR_VARIABLE
+		&& attr.flavor == FL_PROCEDURE)))
+	{
+	  gfc_error ("Invalid procedure pointer assignment at %L",
+		     &rvalue->where);
+	  return false;
+	}
+
       if (attr.abstract)
 	{
 	  gfc_error ("Abstract interface %qs is invalid "
