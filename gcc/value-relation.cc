@@ -1638,122 +1638,162 @@ dom_oracle::find_relation_block (int bb, tree ssa1, tree ssa2,
 // if SSA1 and SSA2 occur in the same statement together.
 
 relation_kind
-dom_oracle::recomputed_relation (basic_block orig_bb, edge e, tree ssa1,
+dom_oracle::recomputed_relation (basic_block orig_bb, tree ssa1,
 				 tree ssa2) const
 {
   if (ssa1 == ssa2)
     return VREL_EQ;
+  if (!orig_bb)
+    return VREL_VARYING;
   gori_map *gori_ssa = get_range_query (cfun)->gori_ssa ();
   if (!gori_ssa)
     return VREL_VARYING;
-
-  // If SSA1 and SSA2 are not BOTH exported from the block, theres no relation.
-  basic_block bb = e->src;
-  if (!gori_ssa->is_export_p (ssa1, bb) || !gori_ssa->is_export_p (ssa2, bb))
-    return VREL_VARYING;
-
-  // Verify the edge is a range generating edge.
   gimple_outgoing_range &gori = get_range_query (cfun)->gori ();
-  int_range_max edge_range;
-  gimple *stmt = gori.edge_range_p (edge_range, e);
-  if (!stmt)
+
+  // Both ssa1 and ssa2 must be exported somewhere.
+  if (!gori_ssa->is_export_p (ssa1) || !gori_ssa->is_export_p (ssa2))
     return VREL_VARYING;
 
-  // Scan back thru the dependency chain recalculating values as if they are
-  // in ORIG_BB, and see if we can find a statement with both op1 and op2
-  // which generates a relation.
+  relation_kind result = VREL_VARYING;
+  use_operand_p use_p;
+  imm_use_iterator iter;
 
-  value_range lhs_range (edge_range);
-
-  while (stmt)
+  // Any statement with both SSA1 and SSA2 as operands may imply a relation
+  // between them, once the range of its LHS at ORIG_BB is known.
+  FOR_EACH_IMM_USE_FAST (use_p, iter, ssa1)
     {
-      bool ret;
-      gimple_range_op_handler handler (stmt);
-      if (!handler)
-	return VREL_VARYING;
+      bool reversed = false;
+      gimple *s = USE_STMT (use_p);
 
-      tree op1 = handler.operand1 ();
-      tree op2 = handler.operand2 ();
-      value_range op1_range (TREE_TYPE (op1));
-      value_range op2_range;
+      // S must be a binary assignment LHS = op1 op2
+      if (!is_gimple_assign (s) || gimple_num_ops (s) != 3)
+	continue;
 
-      // Check if this is the statment we are looking for!
-      bool match = (op1 == ssa1 && op2 == ssa2);
-      bool match_rev = (op2 == ssa1 && op1 == ssa2);
-      if (match || match_rev)
+      // S must strictly dominate ORIG_BB.  DOMINATED_BY_P is block granular,
+      // so the same-block case must be excluded.
+      basic_block sbb = gimple_bb (s);
+      if (!sbb || sbb == orig_bb
+	  || !dominated_by_p (CDI_DOMINATORS, orig_bb, sbb))
+	continue;
+
+      gimple_range_op_handler s_handler (s);
+      if (!s_handler)
+	continue;
+
+      if (s_handler.operand1 () == ssa1)
 	{
-	  gcc_checking_assert (op2);
-	  op2_range.set_range_class (TREE_TYPE (op2));
-	  // Pick up the ranges at ORIG_BB, and see if a relation is generated.
-	  get_range_query (cfun)->range_on_entry (op1_range, orig_bb, op1);
-	  get_range_query (cfun)->range_on_entry (op2_range, orig_bb, op2);
-	  relation_kind relation = handler.op1_op2_relation (lhs_range,
-							      op1_range,
-							      op2_range);
-	  // If the operands are reversed, swap the relation.
-	  if (match_rev)
-	    relation = relation_swap (relation);
-	  return relation;
+	  // op1 == ssa1, move on if op2 != ssa2.
+	  if (s_handler.operand2 () != ssa2)
+	    continue;
 	}
+      // Otherwise only move on if op1 == ssa2 && op2 == ssa1.
+      else if (s_handler.operand1 () != ssa2 || s_handler.operand2 () != ssa1)
+	continue;
+      else
+	reversed = true;
 
-      // Now determine if one of the operands has both SSA1 and SSA2 in
-      // the dependency chain.  Thats the path we want to follow.
-      bool op1_dep = gimple_range_ssa_p (op1)
-		     && gori_ssa->in_chain_p (ssa1, op1)
-		     && gori_ssa->in_chain_p (ssa2, op1);
-      bool op2_dep = gimple_range_ssa_p (op2)
-		     && gori_ssa->in_chain_p (ssa1, op2)
-		     && gori_ssa->in_chain_p (ssa2, op2);
-      // If there are no dependencies with both names, or both sides have
-      // both names, simply bail.
-      if (op1_dep == op2_dep)
-	return VREL_VARYING;
 
-      if (op1_dep)
+      // Find the outgoing edge of SBB which must have been taken to reach
+      // ORIG_BB.  SINGLE_PRED_P is required as well as dominance: if E->dest
+      // has another predecessor, it can dominate ORIG_BB via a path which
+      // never traversed E, and E's range would not apply.
+
+      edge e = NULL, se;
+      edge_iterator ei;
+      FOR_EACH_EDGE (se, ei, sbb->succs)
+      if (single_pred_p (se->dest)
+	  && dominated_by_p (CDI_DOMINATORS, orig_bb, se->dest))
 	{
-	  // If operand 1 is the chain we are interested in, calcualte its
-	  // range based on LHS_RANGE.
-	  if (!op2)
-	    ret = handler.calc_op1 (op1_range, lhs_range);
+	  e = se;
+	  break;
+	}
+      if (!e)
+	continue;
+
+      int_range_max edge_range;
+      gimple *stmt = gori.edge_range_p (edge_range, e);
+      if (!stmt)
+	continue;
+
+      // Walk back from the terminator of SBB towards S, recalculating each
+      // value as it would be in ORIG_BB rather than as it is on E.  This is
+      // the whole point: RANGE_ON_ENTRY cannot supply S's LHS at ORIG_BB
+      // because it evaluates each dominating edge using the values available
+      // at that edge's source.
+      tree lhs_s = s_handler.lhs ();
+      value_range lhs_range (edge_range);
+
+      while (stmt && stmt != s)
+	{
+	  bool ret;
+	  gimple_range_op_handler handler (stmt);
+	  if (!handler)
+	    break;
+
+	  tree op1 = handler.operand1 ();
+	  tree op2 = handler.operand2 ();
+	  value_range op1_range (TREE_TYPE (op1));
+	  value_range op2_range;
+
+	  // Follow the operand whose dependency chain reaches S's LHS.
+	  bool op1_dep = gimple_range_ssa_p (op1)
+			 && (op1 == lhs_s || gori_ssa->in_chain_p (lhs_s, op1));
+	  bool op2_dep = gimple_range_ssa_p (op2)
+			 && (op2 == lhs_s || gori_ssa->in_chain_p (lhs_s, op2));
+	  if (op1_dep == op2_dep)
+	    break;
+
+	  if (op1_dep)
+	    {
+	      if (!op2)
+		ret = handler.calc_op1 (op1_range, lhs_range);
+	      else
+		{
+		  op2_range.set_range_class (TREE_TYPE (op2));
+		  get_range_query (cfun)->range_on_entry (op2_range, orig_bb,
+							  op2);
+		  ret = handler.calc_op1 (op1_range, lhs_range, op2_range);
+		}
+	      if (!ret)
+		break;
+	      lhs_range = op1_range;
+	      stmt = SSA_NAME_DEF_STMT (op1);
+	    }
 	  else
 	    {
-	      // Pick up the range of op2 as it occurs in the original block.
-	      // and calculate a range for op1.
 	      op2_range.set_range_class (TREE_TYPE (op2));
-	      get_range_query (cfun)->range_on_entry (op2_range, orig_bb, op2);
-	      ret = handler.calc_op1 (op1_range, lhs_range, op2_range);
+	      get_range_query (cfun)->range_on_entry (op1_range, orig_bb, op1);
+	      ret = handler.calc_op2 (op2_range, lhs_range, op1_range);
+	      if (!ret)
+		break;
+	      lhs_range = op2_range;
+	      stmt = SSA_NAME_DEF_STMT (op2);
 	    }
-	  // If we failed to calculate a range for op1, bail.
-	  if (!ret)
-	    return VREL_VARYING;
 
-	  // op1_range will now become the LHS_RANGE for the def statement.
-	  lhs_range = op1_range;
-	  stmt = SSA_NAME_DEF_STMT (op1);
+	  // Bail if the chain leaves SBB.
+	  if (!stmt || gimple_bb (stmt) != sbb)
+	    break;
 	}
-      else if (op2_dep)
-	{
-	  // Pick up the range of op1 as it occurs in the original block.
-	  // and calcalute a range for op2.
-	  op2_range.set_range_class (TREE_TYPE (op2));
-	  get_range_query (cfun)->range_on_entry (op1_range, orig_bb, op1);
-	  ret = handler.calc_op2 (op2_range, lhs_range, op1_range);
-	  // If we failed to calculate a range for op1, bail.
-	  if (!ret)
-	    return VREL_VARYING;
 
-	  // op2_range will now become the LHS_RANGE for the def statement.
-	  lhs_range = op2_range;
-	  stmt = SSA_NAME_DEF_STMT (op2);
-	}
-      else
-	gcc_unreachable ();
+      if (stmt != s)
+	continue;
 
-      // Bail if this ssa-name is defined outside this block.
-      if (!stmt || gimple_bb (stmt) != e->src)
-	return VREL_VARYING;
+      // LHS_RANGE is now S's LHS as it is known in ORIG_BB.
+      value_range op1_range (TREE_TYPE (s_handler.operand1 ()));
+      value_range op2_range (TREE_TYPE (s_handler.operand2 ()));
+      get_range_query (cfun)->range_on_entry (op1_range, orig_bb,
+					    s_handler.operand1 ());
+      get_range_query (cfun)->range_on_entry (op2_range, orig_bb,
+					    s_handler.operand2 ());
+      relation_kind r = s_handler.op1_op2_relation (lhs_range, op1_range,
+						  op2_range);
+      if (reversed)
+	r = relation_swap (r);
+      relation_kind k = relation_intersect (result, r);
+      if (k != VREL_UNDEFINED)
+	result = k;
     }
-  return VREL_VARYING;
+  return result;
 }
 
 // Find a relation between SSA1 and SSA2 in the dominator tree starting with
@@ -1976,7 +2016,7 @@ dom_oracle::expand_frontier (frontier_element w, basic_block bb,
   basic_block idom = get_immediate_dominator (CDI_DOMINATORS, found);
   if (idom && gimple_bb (SSA_NAME_DEF_STMT (w.name)) != found)
     m_worklist.safe_push ({ self.known_relation (SSA_NAME_VERSION (w.name)),
-			  w.name, idom, w.rhs });
+			    w.name, idom, w.rhs });
 
   return false;
 }
@@ -2027,6 +2067,20 @@ dom_oracle::relation_search (basic_block bb, tree lhs, const_bitmap lhs_equiv,
   m_wl_ix = 0;
   m_lhs_search.clear_search ();
   m_rhs_search.clear_search ();
+
+  // Check to see if any new relations can be formed by recomputing an
+  // expression using LHS and RHS.
+  // This call must come after the worklists are cleared above.  The call
+  // may invoke range_on_entry which may trigger another relation search,
+  // and thus the current search must be cleared before making this call.
+  relation_kind rel = recomputed_relation (bb, lhs, rhs);
+
+  if (rel != VREL_VARYING)
+    {
+      rel = relation_intersect (result, rel);
+      if (rel != VREL_UNDEFINED)
+	result = rel;
+    }
 
   // Record whatever was found so the next query for this pair is a direct
   // lookup rather than another search.

@@ -297,7 +297,7 @@ protected:
   relation_chain *search_and_merge_relation (basic_block bb, relation_kind k,
 					     tree op1, tree op2);
   void record_relation_block (unsigned v, unsigned bbi);
-  relation_kind recomputed_relation (basic_block, edge, tree, tree) const;
+  relation_kind recomputed_relation (basic_block, tree, tree) const;
   basic_block nearest_relations (tree name, basic_block bb);
   relation_kind relation_search (basic_block, tree, const_bitmap, tree,
 				 const_bitmap);
