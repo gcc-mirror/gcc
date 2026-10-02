@@ -1,3 +1,32 @@
+2026-10-01  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* g++.dg/tree-ssa/vrp-from-cst-agg-1.C: New test.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-9.c: New test.
+	* gnat.dg/opt111.adb: New test.
+
+2026-10-01  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/discarded_result.c: New test.
+
+2026-10-01  Jørgen Kvalsvik  <j@lambda.is>
+
+	* lib/gcov.exp: Add function summary test function.
+	* gcc.misc-tests/gcov-43.c: New test.
+
+2026-10-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-ccp-45.c: New testcase.
+
+2026-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127669
+	* gcc.dg/torture/bitint-110.c: New test.
+
+2026-10-01  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/101179
+	* gcc.dg/torture/pr101179.c: New test.
+
 2026-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127671

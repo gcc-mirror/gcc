@@ -1,3 +1,33 @@
+2026-10-01  Nick Rozinsky  <nick.rozinsky@gmail.com>
+
+	* Makefile.am: Add gettime.cc and posix-clock-gettime.{cbl,cpy}
+	* Makefile.in: Likewise.
+	* posix/t/Makefile: Add gettime smoke test.
+	* posix/cpy/posix-clock-gettime.cpy: New file.
+	* posix/shim/gettime.cc: New file.
+	* posix/shim/timespec.h: New file.
+	* posix/t/gettime.cbl: New file.
+	* posix/udf/posix-clock-gettime.cbl: New file.
+
+2026-10-01  Robert Dubner  <rdubner@symas.com>
+
+	* gfileio.cc (SLASH_CHAR): Support for copied routines, including
+	a copy of the enabling software license.
+	(SLASH_STR): Likewise.
+	(NUM_PREFIX): Likewise.
+	(COB_MODULE_PTR): Likewise.
+	(cob_chk_file_env): Copied routine.
+	(has_directory_separator): Likewise.
+	(looks_absolute): Likewise.
+	(has_acu_hyphen): Likewise.
+	(do_acu_hyphen_translation): Likewise.
+	(prepend_file_path): Likewise.
+	(cob_chk_file_mapping): Likewise.
+	(cob_setup_filename): Likewise.
+	(establish_filename): Use the dollar sign handling routine.
+	* libgcobol.cc (ec_priority): Suppress compiler warning.
+	(default_exception_handler): Eliminate unused variable.
+
 2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
 
 	* compat/gnu/lib/cobrt-file-status.cbl: COPY prototype.

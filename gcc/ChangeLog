@@ -1,3 +1,60 @@
+2026-10-01  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* Makefile.in: Compile new attr-handlers.cc file
+	* attr-handlers.cc: New file.
+	* attr-handlers.h: New file.
+
+2026-10-01  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.cc
+	(ctor_ref_range::accumulate_range_from_array_ref): Walk the
+	initializer by index to find the elements it leaves out.
+
+2026-10-01  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-acle-builtins.cc (gimple_folder::fold):
+	Don't bail out of folding early.
+
+2026-10-01  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.cc (class ctor_ref_range): New.
+	(ctor_ref_range::accumulate_range): New, the dispatch of...
+	(range_from_readonly_load): ...this.  Remove.
+	(ctor_ref_range::accumulate_range_from_scalar,
+	ctor_ref_range::accumulate_range_from_component_ref,
+	ctor_ref_range::accumulate_range_from_array_ref): New, its cases.
+	(range_from_missing_constructor_part): Rename to...
+	(ctor_ref_range::accumulate_range_from_missing_constructor_elt):
+	...this.
+	(fold_using_range::range_from_readonly_var): Collect the component
+	path from the aggregate out; walk it with ctor_ref_range.
+
+2026-10-01  Richard Biener  <rguenther@suse.de>
+
+	* fold-const-call.cc (fold_const_call_1): Check the
+	return type rather than the mode for a scalar integral
+	type before dispatching to fold_const_call_ss and
+	fold_const_call_sss.
+
+2026-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127686
+	* tree-vect-loop.cc (vect_analyze_loop_costing): Do not
+	require a single vector iteration to be profitable iff
+	the number of scalar iterations is constant.
+
+2026-10-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127669
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_bswap_bitreverse):
+	Set m_var_msb to true.
+
+2026-10-01  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR tree-optimization/101179
+	* tree-ssa-forwprop.cc (simplify_phi_result_movdiv): Reset the
+	flow-sensitive info of the result when its value changes.
+
 2026-09-30  Dominic P  <gcc@gcc.dp11.uk>
 
 	* tree-vect-patterns.cc (vect_narrow_unprom_to_range): New function.

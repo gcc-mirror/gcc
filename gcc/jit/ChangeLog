@@ -1,3 +1,16 @@
+2026-10-01  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* Make-lang.in: Compile new attr-handlers.cc file
+	* dummy-frontend.cc: (handle_leaf_attribute, handle_const_attribute)
+	(handle_pure_attribute, handle_novops_attribute)
+	(handle_nothrow_attribute, handle_type_generic_attribute)
+	(handle_returns_twice_attribute, ignore_attribute)
+	(handle_fnspec_attribute, handle_visibility_attribute)
+	(handle_always_inline_attribute, handle_noinline_attribute)
+	(handle_weak_attribute, handle_target_attribute)
+	(handle_used_attribute, handle_alias_ifunc_attribute)
+	(handle_alias_attribute): Move to `attr-handlers.cc`.
+
 2026-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* jit-recording.cc (recording::context::set_bool_option): Remove

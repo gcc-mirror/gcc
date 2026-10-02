@@ -1,3 +1,17 @@
+2026-10-01  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* c-attribs.cc: (decl_or_type_attrs, validate_attr_args)
+	(validate_attr_arg, handle_noinline_attribute)
+	(handle_always_inline_attribute, handle_leaf_attribute)
+	(handle_used_attribute, handle_retain_attribute)
+	(handle_const_attribute, handle_section_attribute)
+	(handle_weak_attribute, handle_alias_ifunc_attribute)
+	(handle_alias_attribute, handle_visibility_attribute)
+	(handle_fnspec_attribute, handle_returns_twice_attribute)
+	(handle_pure_attribute, ignore_attribute, handle_novops_attribute)
+	(handle_nothrow_attribute, handle_type_generic_attribute)
+	(handle_target_attribute): Move to `attr-handlers.cc`.
+
 2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-attribs.cc (c_common_gnu_attributes): Add "omp groupprivate".

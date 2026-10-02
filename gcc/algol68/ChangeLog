@@ -1,3 +1,8 @@
+2026-10-01  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* ga68.texi (Comments and pragmats): Correct description of
+	nestable comments on UPPER stropping and fix example code.
+
 2026-09-27  Cupertino Miranda  <cupertinomiranda@gmail.com>
 
 	* a68-lang.cc (a68_init): Anticipate the execution of

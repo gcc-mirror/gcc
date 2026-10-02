@@ -1,3 +1,14 @@
+2026-10-01  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* lexio.cc (cdftext::lex_open): Split objects for included files and
+		main source file.
+
+2026-10-01  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* lexio.cc (cdftext::lex_open): Add explicit_format condition.
+	(cobol_set_indicator_column): Use cdftext::explicit_format.
+	* lexio.h (class cdftext): Add cdftext::explicit_format.
+
 2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
 
 	* symbols.cc (calculate_capacity): Exclude 78-level entries.
