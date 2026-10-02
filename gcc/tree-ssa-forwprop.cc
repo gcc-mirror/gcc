@@ -6755,6 +6755,12 @@ pass_forwprop::execute (function *fun)
 	  tree lhs, rhs;
 	  enum tree_code code;
 
+	  if (is_gimple_debug (stmt))
+	    {
+	      gsi_next (&gsi);
+	      continue;
+	    }
+
 	  gimple_set_uid (stmt, uid++);
 
 	  if (!is_gimple_assign (stmt))
