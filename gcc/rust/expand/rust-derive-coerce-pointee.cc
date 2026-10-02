@@ -18,9 +18,10 @@
 
 #include "rust-attribute-values.h"
 #include "rust-derive-coerce-pointee.h"
-#include "rust-session-manager.h"
-#include "rust-feature.h"
+#include "rust-diagnostics.h"
 #include "rust-feature-store.h"
+#include "rust-feature.h"
+#include "rust-session-manager.h"
 
 namespace Rust {
 namespace AST {
@@ -34,6 +35,7 @@ std::unique_ptr<AST::Item>
 DeriveCoercePointee::go (Item &item)
 {
   validate_repr_transparent (item);
+  validate_number_of_fields (item);
   Features::EarlyFeatureGateStore::get ().add (
     Feature::Name::DERIVE_COERCE_POINTEE,
     Error (loc, "use of unstable library feature %<derive_coerce_pointee%>"));
@@ -102,6 +104,36 @@ DeriveCoercePointee::validate_repr_transparent (const Item &item)
 		 "%<CoercePointee%> is only applicable to struct/tuple with "
 		 "repr(transparent) layout");
   return false;
+}
+
+// Structs or Tuples with CoercePointee must have minimum of one field else
+// compile time error
+bool
+DeriveCoercePointee::validate_number_of_fields (const Item &item)
+{
+  size_t field_count = 0;
+
+  if (item.get_item_kind () == Item::Kind::Struct)
+    {
+      auto *struct_item = static_cast<const StructStruct *> (&item);
+      field_count = struct_item->get_fields ().size ();
+    }
+  else
+    {
+      rust_error_at (item.get_locus (), ErrorCode::E0802,
+		     "%<CoercePointee%> can only be derived on structs with "
+		     "#[repr(transparent)]");
+      return false;
+    }
+
+  if (field_count == 0)
+    {
+      rust_error_at (item.get_locus (), ErrorCode::E0802,
+		     "%<CoercePointee%> can only be derived on a struct "
+		     "with at least one field");
+      return false;
+    }
+  return true;
 }
 } // namespace AST
 } // namespace Rust
