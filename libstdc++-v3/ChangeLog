@@ -1,3 +1,12 @@
+2026-10-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-05-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/114400
+	* include/std/string_view (operator<=>): Use type_identity_t
+	instead of __type_identity_t.
+
 2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
