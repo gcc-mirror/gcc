@@ -1,3 +1,21 @@
+2026-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127579
+	* tree-vect-loop.cc (info_for_reduction): Add assert.
+	* tree-vect-stmts.cc (vectorizable_operation): Pass SLP node.
+
+2026-10-02  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	Backported from master:
+	2026-09-29  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	PR target/107549
+	* config/xtensa/xtensa.cc (xt_true_regnum): Don't index
+	reg_renumber before LRA starts.
+
 2026-09-30  Alfie Richards  <alfie.richards@arm.com>
 
 	Backported from master:

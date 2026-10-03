@@ -1,3 +1,11 @@
+2026-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127579
+	* gcc.target/aarch64/pr127579.c: New test.
+
 2026-10-01  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:

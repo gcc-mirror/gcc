@@ -1,3 +1,47 @@
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/125785
+	* include/std/ranges (enable_borrowed_range<as_input_view<T>>):
+	Define partial specialization.
+	* testsuite/std/ranges/adaptors/as_input/1.cc: Test
+	specialization for as_input_view.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: Test
+	specialization for as_const_view.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: Test
+	specialization for as_rvalue_view.
+
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127666
+	* src/c++17/floating_from_chars.cc (pattern): Avoid reading past
+	the end of the input. Remove unused variable.
+	* testsuite/20_util/from_chars/127666.cc: New test.
+
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126364
+	* include/bits/chrono_io.h (_Parser::operator()) <R>: Only break
+	early when setting failbit.
+	* testsuite/std/time/parse/126364.cc: New test.
+
+2026-10-02  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-05-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/114400
+	* include/std/string_view (operator<=>): Use type_identity_t
+	instead of __type_identity_t.
+
 2026-09-30  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
