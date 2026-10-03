@@ -537,8 +537,14 @@ resolve_type_path_like (NameResolutionContext &ctx, bool block_big_self,
       return;
     }
 
-  if (ctx.types.forward_declared (resolved->definition.get_node_id (),
-				  type.get_node_id ()))
+  // a trait's implicit Self is always in scope, even in its generic defaults
+  bool is_self
+    = !unwrap_segment_get_lang_item (type.get_segments ().front ()).has_value ()
+      && unwrap_type_segment (type.get_segments ().front ()).is_big_self_seg ();
+
+  if (!is_self
+      && ctx.types.forward_declared (resolved->definition.get_node_id (),
+				     type.get_node_id ()))
     {
       rust_error_at (type.get_locus (), ErrorCode::E0128,
 		     "type parameters with a default cannot use forward "

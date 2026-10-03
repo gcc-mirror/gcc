@@ -806,13 +806,21 @@ public:
     if (peek ().kind != Rib::Kind::ForwardTypeParamBan)
       return false;
 
-    const auto &definition_rib = dfs_rib (cursor (), definition);
-
-    if (!definition_rib)
+    // Each type param has a ban rib keyed by its NodeId, and those ribs are
+    // siblings ordered by NodeId, i.e. by declaration order. A default may
+    // only use params declared before its own.
+    auto &current = cursor ();
+    if (definition == current.id)
+      return true;
+    if (!current.parent)
       return false;
 
-    return (definition_rib
-	    && definition_rib.value ().kind == Rib::Kind::ForwardTypeParamBan);
+    for (auto &child : current.parent.value ().children)
+      if (child.second.id == definition)
+	return definition > current.id
+	       && child.second.rib (N).kind == Rib::Kind::ForwardTypeParamBan;
+
+    return false;
   }
 
   void map_usage (Usage usage, Definition definition)
