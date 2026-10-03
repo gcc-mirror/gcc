@@ -1,3 +1,57 @@
+2026-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/tree-ssa/vrp-rel1.c: New.
+	* gcc.dg/tree-ssa/vrp-rel2.c: New.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127702
+	* gfortran.dg/coarray/num_images_stopped_1.f90: New test.
+
+2026-10-02  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127687
+	* gcc.dg/pr127687.c: New test.
+
+2026-10-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127551
+	* g++.dg/torture/pr127551.C: New test.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* gfortran.dg/coarray/team_alloc_overlap_1.f90: New test.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* gfortran.dg/coarray/signal_sync_1.f90: New test.
+	* gfortran.dg/coarray/signal_team_1.f90: New test.
+	* gfortran.dg/coarray/sync_failed_stat_1.f90: New test.
+
+2026-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127693
+	* gcc.dg/tree-ssa/ssa-fre-116.c: New testcase.
+
+2026-10-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127637
+	* gfortran.dg/optional_class_2.f90: New test.
+
+2026-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127677
+	* gcc.dg/vect/vect-early-break_146-pr127677.c: New test.
+
+2026-10-02  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/phi-opt-52.c: New test.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-10.c: New test.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-11.c: New test.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-13.c: New test.
+
 2026-10-01  Aldy Hernandez  <aldy@quesejoda.com>
 
 	* g++.dg/tree-ssa/vrp-from-cst-agg-1.C: New test.

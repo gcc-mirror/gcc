@@ -1,3 +1,95 @@
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127675
+	* include/ext/pb_ds/detail/debug_map_base.hpp (split, join): Use
+	std::list::splice to move elements without reallocating.
+	* include/ext/pb_ds/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp
+	(copy_from_ordered_range(It, It, It, It)): Do not allocate new
+	storage for an empty container.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp
+	(erase_if): Do not modify this->debug_base::m_keys until all
+	allocations and other potentially-throwing operations have
+	completed successfully.
+	(erase_imp): Do not allocate new storage for an empty container.
+	* testsuite/ext/pb_ds/regression/127675.cc: New test.
+	* testsuite/util/testsuite_rng.h (get_time_determined_seed): Use
+	getenv("GLIBCXX_SEED_TEST_RNG") to allow the seed to be fixed.
+
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/mingw32-w64/error_constants.h: Use EPERM without
+	checking if it's defined.
+	* config/os/mingw32/error_constants.h: Likewise.
+	* src/c++11/system_error.cc: Likewise.
+	* src/c++17/fs_dir.cc (fs::recursive_directory_iterator::__erase):
+	Likewise.
+	* testsuite/19_diagnostics/headers/system_error/errc_std_c++0x.cc:
+	Use errc::operation_not_permitted without checking if EPERM is
+	defined.
+
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124370
+	* include/std/bitset (operator>>): Use array inside _Buffer
+	instead of __builtin_alloca.
+	* testsuite/20_util/bitset/io/input.cc: Suppress pedwarn about
+	C++14 binary literal.
+	* testsuite/20_util/bitset/io/wchar_t.cc: New test.
+
+2026-10-02  Anlai Lu  <agicy@qq.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/streambuf_iterator.h (__format::_Iter_sink)
+	[__glibcxx_format]: Declare with specialization for
+	ostreambuf_iterator.
+	(std::ostreambuf_iterator) [__glibcxx_format]: Befriend
+	__format::_Iter_sink for ostreambuf_iterator.
+	* include/std/format (_Iter_sink<_CharT, ostreambuf_iterator<...>>):
+	Define new partial specialization.
+
+2026-10-02  Anlai Lu  <agicy@qq.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__format::_Streambuf_sink): New class
+	template.
+	* include/std/streambuf: Include bits/version.h.
+	(__format::_Streambuf_sink) [__glibcxx_format]: Declare.
+	(std::basic_streambuf) [__glibcxx_format]: Befriend
+	__format::_Streambuf_sink.
+
+2026-10-02  Anlai Lu  <agicy@qq.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/27_io/basic_ostream/print/buffered.cc: New test.
+	* testsuite/std/format/functions/format_to_ostreambuf.cc:
+	New test.
+
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/125785
+	* include/std/ranges (enable_borrowed_range<as_input_view<T>>):
+	Define partial specialization.
+	* testsuite/std/ranges/adaptors/as_input/1.cc: Test
+	specialization for as_input_view.
+	* testsuite/std/ranges/adaptors/as_const/1.cc: Test
+	specialization for as_const_view.
+	* testsuite/std/ranges/adaptors/as_rvalue/1.cc: Test
+	specialization for as_rvalue_view.
+
+2026-10-02  Odysseas Georgoudis  <odygrd@hotmail.com>
+
+	PR libstdc++/124051
+	* include/bits/forward_list.tcc (forward_list::sort): Restore the
+	list before propagating an exception from the comparison
+	* testsuite/23_containers/forward_list/operations/124051.cc: New test.
+
+2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127666
+	* src/c++17/floating_from_chars.cc (pattern): Avoid reading past
+	the end of the input. Remove unused variable.
+	* testsuite/20_util/from_chars/127666.cc: New test.
+
 2026-10-01  Hugo Beauzée-Luyssen  <hugo.beauzee@datadoghq.com>
 
 	* config/os/aix/t-aix: Skip the 32/64 fat-archive repackage

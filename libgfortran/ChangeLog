@@ -1,3 +1,57 @@
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127702
+	* caf/shmem.c (_gfortran_caf_num_images, _gfortran_caf_image_status)
+	(_gfortran_caf_form_team): Take the size of a team from its image
+	map.
+	* caf/shmem/collective_subroutine.c (collsub_reduce_array):
+	Likewise.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (_gfortran_caf_register): Allocate a part for every
+	image of the program.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (_gfortran_caf_init): Synchronize without the checks
+	of the SYNC ALL statement.
+	(_gfortran_caf_sync_all, _gfortran_caf_sync_team): Report the images
+	of the team that terminated before the images synchronized.
+	(_gfortran_caf_form_team): Register the team.
+	* caf/shmem/collective_subroutine.c (collsub_sync): Adjust.
+	* caf/shmem/counter_barrier.c (counter_barrier_init): Initialize the
+	new fields.
+	(counter_barrier_add_locked): Count the images removed from the
+	barrier.
+	(next_round): Take that count as a completed round ends.
+	(wait_round, counter_barrier_wait_abortable): Report it for the round
+	the image took part in.
+	* caf/shmem/counter_barrier.h (counter_barrier): Add terminated and
+	round_terminated.
+	(counter_barrier_wait_abortable): Adjust.
+	* caf/shmem/supervisor.c (ensure_shmem_initialization): Initialize
+	the list of teams.  Register the initial team.
+	(supervisor_main_loop): Drop an image that terminated without
+	leaving its teams from them.
+	* caf/shmem/supervisor.h (supervisor): Add teams.
+	* caf/shmem/sync.c (sync_all, sync_team_unless_stopped): Report the
+	images that terminated.
+	* caf/shmem/sync.h (sync_all, sync_team_unless_stopped): Adjust.
+	* caf/shmem/teams_mgmt.c (team_terminated_images)
+	(update_teams_images_locked, leave_team): Take the team's image
+	info.
+	(register_team, update_registered_teams): New functions.
+	* caf/shmem/teams_mgmt.h (shmem_image_info): Add next_team.
+	(register_team, update_registered_teams): Declare.
+
+2026-10-02  LIU Hao  <lh_mouse@126.com>
+
+	* configure.ac: Set `enable_caf_shmem` to true for Cygwin and MinGW hosts.
+	* configure: Regenerate.
+
 2026-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127347

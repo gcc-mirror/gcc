@@ -1,3 +1,31 @@
+2026-10-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127637
+	* primary.cc (gfc_variable_attr): Track the current type through
+	the data reference walk.  Don't overwrite the attribute set and the
+	optional variable if the current type is a class container and the
+	component its _data field.  If the expression symbol is a function
+	without separate result name, and the current namespace is the
+	symbol's procedure body, adjust the attributes to those of the
+	function result.
+	* expr.cc (gfc_check_pointer_assign): Move the generic error check
+	after the specific function result error check.
+	* check.cc (gfc_check_c_funloc): Drop the function attribute from
+	the condition guarding the function result check.
+
+2026-10-02  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* resolve.cc (get_data_ref_type): New static function, using the
+	type initialization code from gfc_variable_attr.
+	(resolve_variable): Call the new function.
+	* gfortran.h (gfc_variable_attr): Remove type argument.
+	* primary.cc (gfc_variable_attr): Ditto.  Remove type initialization
+	code.
+	(gfc_expr_attr): Update caller.
+	* check.cc (allocatable_check, gfc_check_null): Likewise.
+	* expr.cc (gfc_is_simply_contiguous): Likewise.
+	* trans-expr.cc (gfc_conv_procedure_call): Likewise.
+
 2026-09-30  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127671

@@ -1,3 +1,106 @@
+2026-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-relation.cc (dom_oracle::recomputed_relation): Change
+	implementation.
+	(dom_oracle::relation_search): Invoke recomputed_relation.
+	* value-relation.h (recomputed_relation): Adjust prototype.
+
+2026-10-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* flag-types.h (RANGER_DEBUG_RELATION): New.
+	(RANGER_DEBUG_TRACE_RELATION): New.
+	* params.opt (--param=ranger-debug): Adjusted options.
+	* tree-vrp.cc (execute_fast_vrp): Remove deprecated param.
+	* value-query.cc (range_query::create_relation_oracle): Likewise.
+	* value-query.h (create_relation_oracle): Adjust prototype.
+	* value-relation.cc (frontier_data::frontier_data): New.
+	(frontier_data::set_known): New.
+	(frontier_data::known_relation): New.
+	(frontier_data::clear_search): New.
+	(dom_oracle::dom_oracle): Initialize new fields.
+	(dom_oracle::~dom_oracle): Release new fields.
+	(dom_oracle::record): Do not register transitives.
+	(dom_oracle::register_transitives): Delete.
+	(dom_oracle::find_relation_dom): Do not recompute relations.
+	(dom_oracle::nearest_relations): New.
+	(dom_oracle::cache_relation): New.
+	(dom_oracle::start_search): New.
+	(dom_oracle::add_to_frontier): New.
+	(dom_oracle::expand_frontier): New.
+	(dom_oracle::relation_search): New.
+	(dom_oracle::query): Use new relation_search routine.
+	* value-relation.h (dom_oracle::dom_oracle): Adjust prototype.
+	(dom_oracle::m_do_trans): Remove.
+	(class frontier_data): New.
+	(register_transitives): Remove prototype.
+	(nearest_relations): New prototype.
+	(relation_search): Likewise.
+	(cache_relation): Likewise.
+	(struct related): New.
+	(m_near): New.
+	(m_lhs_search, m_rhs_search): New.
+	(struct frontier_element): New.
+	(m_worklist): New.
+	(m_wl_ix): New.
+	(start_search): New.
+	(add_to_frontier): New.
+	(expand_frontier): New.
+
+2026-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/avr/avr.opt.urls: Regenerate.
+	* config/nvptx/nvptx.opt.urls: Regenerate.
+
+2026-10-02  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127687
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Skip debug
+	statements before assigning UIDs.
+
+2026-10-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* configure.ac [target=avr-*.*]: Test linker for --prune-vectab,
+	and AC_DEFINE HAVE_LD_AVR_PRUNE_VECTAB if supported.
+	* config.in: Rebuild.
+	* configure: Rebuild.
+	* config/avr/avr.opt (-mprune-vectab): New target option.
+	* config/avr/specs.h (LINK_SPEC): Add %(link_prune_vectab).
+	* config/avr/gen-avr-mmcu-specs.cc (print_mcu)
+	[HAVE_LD_AVR_PRUNE_VECTAB]: Emit link_prune_vectab spec.
+	* config/avr/avr.opt.urls: Rebuild.
+	* doc/invoke.texi (AVR Options): Document -mprune-vectab.
+
+2026-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127693
+	* tree-ssa-alias.cc (maybe_skip_until): Stop when reaching
+	the PHI again.
+
+2026-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR bootstrap/127635
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Avoid is_a<..>
+	with ref param.
+
+2026-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127677
+	* tree-vect-loop-manip.cc (vect_gen_prolog_loop_niters): Generate MIN
+	expression on niters.
+
+2026-10-02  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-fold.cc (intersects_p): New.
+	(class ctor_ref_range): Add SRC.
+	(ctor_ref_range::accumulate_range_from_array_ref): Load only from
+	the elements the range of the index reaches, a constant index
+	included.
+	(fold_using_range::fold_stmt): Pass the source to
+	range_from_readonly_var.
+	(fold_using_range::range_from_readonly_var): Add SRC.
+	* gimple-range-fold.h (fold_using_range::range_from_readonly_var):
+	Adjust.
+
 2026-10-01  Guillaume Gomez  <contact@guillaume-gomez.fr>
 
 	* Makefile.in: Compile new attr-handlers.cc file
