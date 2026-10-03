@@ -212,10 +212,17 @@ private:
   bool resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
   bool resolve_rebind_import (NodeId use_dec_id, TopLevel::ImportKind &&import);
 
+  // In the 2015 edition, a use path is relative to the crate root unless it
+  // starts with self or super.
+  static ResolutionMode import_resolution_mode (const AST::SimplePath &path);
+
   template <typename P>
   std::vector<NameResolutionContext::NamespacedDefinition>
   resolve_path_in_all_ns (const P &path)
   {
+    auto &segments = path.get_segments ();
+    auto mode = import_resolution_mode (path);
+
     std::vector<NameResolutionContext::NamespacedDefinition> resolved;
 
     std::vector<Error> value_errors;
@@ -227,9 +234,12 @@ private:
 	  resolved.emplace_back (new_def);
 	};
 
-    ctx.resolve_path (path, value_errors, Namespace::Values).map (resolved_fn);
-    ctx.resolve_path (path, type_errors, Namespace::Types).map (resolved_fn);
-    ctx.resolve_path (path, macro_errors, Namespace::Macros).map (resolved_fn);
+    ctx.resolve_path (segments, mode, value_errors, Namespace::Values)
+      .map (resolved_fn);
+    ctx.resolve_path (segments, mode, type_errors, Namespace::Types)
+      .map (resolved_fn);
+    ctx.resolve_path (segments, mode, macro_errors, Namespace::Macros)
+      .map (resolved_fn);
 
     if (!value_errors.empty () && !type_errors.empty ()
 	&& !macro_errors.empty ())

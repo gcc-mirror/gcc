@@ -31,6 +31,7 @@
 #include "rust-attribute-values.h"
 #include "rust-identifier-path.h"
 #include "rust-session-manager.h"
+#include "rust-edition.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -86,10 +87,33 @@ Early::go (AST::Crate &crate)
   IdentifierPathPass::go (crate, ctx, std::move (ident_path_to_convert));
 }
 
+ResolutionMode
+Early::import_resolution_mode (const AST::SimplePath &path)
+{
+  bool is_2015 = get_rust_edition () == Edition::E2015;
+
+  if (path.has_opening_scope_resolution ())
+    return is_2015 ? ResolutionMode::FromRoot : ResolutionMode::FromExtern;
+
+  if (!is_2015)
+    return ResolutionMode::Normal;
+
+  // `use *;` has no segments, and imports from the crate root as well
+  auto &segments = path.get_segments ();
+  if (!segments.empty ()
+      && (segments.front ().is_lower_self_seg ()
+	  || segments.front ().is_super_path_seg ()))
+    return ResolutionMode::Normal;
+
+  return ResolutionMode::FromRoot;
+}
+
 bool
 Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
 {
-  auto resolved = ctx.resolve_path (glob.to_resolve, Namespace::Types);
+  auto resolved = ctx.resolve_path (glob.to_resolve.get_segments (),
+				    import_resolution_mode (glob.to_resolve),
+				    Namespace::Types);
   if (!resolved.has_value ())
     return false;
 
