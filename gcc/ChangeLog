@@ -1,3 +1,38 @@
+2026-10-01  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	Backported from master:
+	2026-09-29  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	PR target/107549
+	* config/xtensa/xtensa.cc (xt_true_regnum): Don't index
+	reg_renumber before LRA starts.
+
+2026-10-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/117814
+	* config/arm/arm-builtins.cc (arm_init_fp16_builtins): Always
+	register __fp16 type.
+	* config/arm/arm-mve-builtins.cc (register_builtin_tuple_types):
+	Remove special handling when TARGET_HAVE_MVE_FLOAT is false.
+	(register_vector_type): Likewise.
+	(register_builtin_tuple_types): Likewise.
+	* config/arm/arm-opts.h (arm_fp16_format_type): Add
+	ARM_FP16_FORMAT_DEFAULT.
+	* config/arm/arm.cc (arm_vector_mode_supported_p): Accept
+	floating-point vector modes even if TARGET_HAVE_MVE_FLOAT is
+	false.
+	(arm_option_reconfigure_globals): Apply ARM_FP16_FORMAT_NONE if
+	requested.
+	* config/arm/arm.opt (mfp16-format): Default to
+	ARM_FP16_FORMAT_DEFAULT.
+	* config/arm/arm_mve_types.h (float16_t, float32_t): Define
+	unconditionally.
+	* doc/sourcebuild.texi (ARM-specific attributes): Document
+	arm_v8_1m_mve_nofp_ok.
+
 2026-09-29  Alfie Richards  <alfie.richards@arm.com>
 
 	Backported from master:
