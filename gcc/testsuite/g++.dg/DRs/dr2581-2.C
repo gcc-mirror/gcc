@@ -61,7 +61,7 @@
 #define __cpp_hex_float 201603L			// { dg-error "'__cpp_hex_float' redefined" "" { target c++20 } }
 #define __cpp_if_consteval 202106L		// { dg-error "'__cpp_if_consteval' redefined" "" { target c++23 } }
 #define __cpp_if_constexpr 201606L		// { dg-error "'__cpp_if_constexpr' redefined" "" { target c++20 } }
-#define __cpp_impl_coroutine 201902L		// { dg-error "'__cpp_impl_coroutine' redefined" "" { target c++20 } }
+#define __cpp_impl_coroutine 202606L		// { dg-error "'__cpp_impl_coroutine' redefined" "" { target c++20 } }
 #define __cpp_impl_destroying_delete 201806L	// { dg-error "'__cpp_impl_destroying_delete' redefined" "" { target c++20 } }
 #define __cpp_impl_three_way_comparison 201907L	// { dg-error "'__cpp_impl_three_way_comparison' redefined" "" { target c++20 } }
 #define __cpp_impl_reflection 202603L		// { dg-error "'__cpp_impl_reflection' redefined" "" { target c++26 } }

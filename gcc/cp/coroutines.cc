@@ -298,7 +298,6 @@ struct GTY((for_user)) coroutine_info
   /* Flags to avoid repeated errors for per-function issues.  */
   bool coro_ret_type_error_emitted;
   bool coro_promise_error_emitted;
-  bool coro_co_return_error_emitted;
 };
 
 struct coroutine_info_hasher : ggc_ptr_hash<coroutine_info>
@@ -825,37 +824,6 @@ coro_promise_type_found_p (tree fndecl, location_t loc)
 	  return false;
 	}
 
-      /* Test for errors in the promise type that can be determined now.  */
-      tree has_ret_void = lookup_member (coro_info->promise_type,
-					 coro_return_void_identifier,
-					 /*protect=*/1, /*want_type=*/0,
-					 tf_none);
-      tree has_ret_val = lookup_member (coro_info->promise_type,
-					coro_return_value_identifier,
-					/*protect=*/1, /*want_type=*/0,
-					tf_none);
-      if (has_ret_void && has_ret_val)
-	{
-	  auto_diagnostic_group d;
-	  location_t ploc = DECL_SOURCE_LOCATION (fndecl);
-	  if (!coro_info->coro_co_return_error_emitted)
-	    error_at (ploc, "the coroutine promise type %qT declares both"
-		      " %<return_value%> and %<return_void%>",
-		      coro_info->promise_type);
-	  inform (DECL_SOURCE_LOCATION (BASELINK_FUNCTIONS (has_ret_void)),
-		  "%<return_void%> declared here");
-	  has_ret_val = BASELINK_FUNCTIONS (has_ret_val);
-	  const char *message = "%<return_value%> declared here";
-	  if (TREE_CODE (has_ret_val) == OVERLOAD)
-	    {
-	      has_ret_val = OVL_FIRST (has_ret_val);
-	      message = "%<return_value%> first declared here";
-	    }
-	  inform (DECL_SOURCE_LOCATION (has_ret_val), message);
-	  coro_info->coro_co_return_error_emitted = true;
-	  return false;
-	}
-
       /* Try to find the handle type for the promise.  */
       tree handle_type
 	= instantiate_coro_handle_for_promise_type (loc, coro_info->promise_type);
@@ -1028,12 +996,13 @@ get_coroutine_from_address (tree decl)
 
 static tree
 lookup_promise_method (tree fndecl, tree member_id, location_t loc,
-		       bool musthave)
+		       bool musthave,
+		       tsubst_flags_t complain = tf_warning_or_error)
 {
   tree promise = get_coroutine_promise_type (fndecl);
   tree pm_memb
     = lookup_member (promise, member_id,
-		     /*protect=*/1, /*want_type=*/0, tf_warning_or_error);
+		     /*protect=*/1, /*want_type=*/0, complain);
   if (musthave && pm_memb == NULL_TREE)
     {
       error_at (loc, "no member named %qE in %qT", member_id, promise);
@@ -1051,9 +1020,10 @@ lookup_promise_method (tree fndecl, tree member_id, location_t loc,
 static tree
 coro_build_promise_expression (tree fn, tree promise_obj, tree member_id,
 			       location_t loc, vec<tree, va_gc> **args,
-			       bool musthave)
+			       bool musthave,
+			       tsubst_flags_t complain = tf_warning_or_error)
 {
-  tree meth = lookup_promise_method (fn, member_id, loc, musthave);
+  tree meth = lookup_promise_method (fn, member_id, loc, musthave, complain);
   if (meth == error_mark_node)
     return error_mark_node;
 
@@ -1067,17 +1037,17 @@ coro_build_promise_expression (tree fn, tree promise_obj, tree member_id,
   tree expr;
   if (BASELINK_P (meth))
     expr = build_new_method_call (promise, meth, args, NULL_TREE,
-				  LOOKUP_NORMAL, NULL, tf_warning_or_error);
+				  LOOKUP_NORMAL, NULL, complain);
   else
     {
       expr = build_class_member_access_expr (promise, meth, NULL_TREE,
-					     true, tf_warning_or_error);
+					     true, complain);
       vec<tree, va_gc> *real_args;
       if (!args)
 	real_args = make_tree_vector ();
       else
 	real_args = *args;
-      expr = build_op_call (expr, &real_args, tf_warning_or_error);
+      expr = build_op_call (expr, &real_args, complain);
     }
   return expr;
 }
@@ -1094,7 +1064,7 @@ get_coroutine_return_void_expr (tree decl, location_t loc, bool musthave)
 	info->return_void
 	  = coro_build_promise_expression (current_function_decl, NULL,
 					   coro_return_void_identifier,
-					   loc, NULL, musthave);
+					   loc, NULL, musthave, tf_none);
       /* Don't return an error if it's an optional call.  */
       if (!musthave && info->return_void == error_mark_node)
 	return NULL_TREE;

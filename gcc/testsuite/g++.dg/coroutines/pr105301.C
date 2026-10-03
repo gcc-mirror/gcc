@@ -46,7 +46,7 @@ struct bad_promise_6 {
 };
 
 coro<bad_promise_6>
-bad_implicit_return() // { dg-error {.aka 'bad_promise_6'. declares both 'return_value' and 'return_void'} }
+bad_implicit_return() // { dg-bogus {.aka 'bad_promise_6'. declares both 'return_value' and 'return_void'} }
 {
   co_await a;
 }

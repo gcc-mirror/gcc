@@ -25,6 +25,6 @@ public:
 }
 
 dummy_coroutine
-foo() { // { dg-error {the coroutine promise type 'std::__n4861::coroutine_traits<dummy_coroutine>::promise_type' declares both 'return_value' and 'return_void'} }
+foo() { // { dg-bogus {the coroutine promise type 'std::__n4861::coroutine_traits<dummy_coroutine>::promise_type' declares both 'return_value' and 'return_void'} }
     co_return 17;
 }
