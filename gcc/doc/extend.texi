@@ -27752,11 +27752,11 @@ All of these functions are declared in the include file @file{riscv_vector.h}.
 @node CORE-V Built-in Functions
 @subsection CORE-V Built-in Functions
 For more information on all CORE-V built-ins, please see
-@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md}
+@uref{https://github.com/openhwfoundation/core-v-sw/blob/master/specifications/corev-builtin-spec.md}
 
 These built-in functions are available for the CORE-V MAC machine
 architecture. For more information on CORE-V built-ins, please see
-@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-multiply-accumulate-builtins-xcvmac}.
+@uref{https://github.com/openhwfoundation/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-multiply-accumulate-builtins-xcvmac}.
 
 @deftypefn {Built-in Function} {int32_t} __builtin_riscv_cv_mac_mac (int32_t, int32_t, int32_t)
 Generated assembler @code{cv.mac}
@@ -27832,7 +27832,7 @@ Generates the @code{cv.machhsRN} machine instruction.
 
 These built-in functions are available for the CORE-V ALU machine
 architecture. For more information on CORE-V built-ins, please see
-@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-miscellaneous-alu-builtins-xcvalu}
+@uref{https://github.com/openhwfoundation/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-miscellaneous-alu-builtins-xcvalu}
 
 @deftypefn {Built-in Function} {int} __builtin_riscv_cv_alu_slet (int32_t, int32_t)
 Generated assembler @code{cv.slet}
@@ -27926,7 +27926,7 @@ Generated assembler @code{cv.subuRNr} if  the it is a register.
 
 These built-in functions are available for the CORE-V Event Load machine
 architecture. For more information on CORE-V ELW builtins, please see
-@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-event-load-word-builtins-xcvelw}
+@uref{https://github.com/openhwfoundation/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-event-load-word-builtins-xcvelw}
 
 @deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_elw_elw (uint32_t *)
 Generated assembler @code{cv.elw}
@@ -27934,7 +27934,7 @@ Generated assembler @code{cv.elw}
 
 These built-in functions are available for the CORE-V SIMD machine
 architecture. For more information on CORE-V SIMD built-ins, please see
-@uref{https://github.com/openhwgroup/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-pulp-816-bit-simd-builtins-xcvsimd}
+@uref{https://github.com/openhwfoundation/core-v-sw/blob/master/specifications/corev-builtin-spec.md#listing-of-pulp-816-bit-simd-builtins-xcvsimd}
 
 @deftypefn {Built-in Function} {uint32_t} __builtin_riscv_cv_simd_add_h (uint32_t, uint32_t, uint4_t)
 Generated assembler @code{cv.add.h}
