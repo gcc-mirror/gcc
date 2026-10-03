@@ -852,8 +852,12 @@ public:
   using range_operator::fold_range;
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::lhs_op1_relation;
   using range_operator::op1_op2_relation_effect;
   using range_operator::update_bitmask;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
 
   bool fold_range (prange &r, tree type,
 		   const prange &op1,
@@ -922,7 +926,15 @@ class operator_min : public range_operator
 {
 public:
   using range_operator::fold_range;
+  using range_operator::lhs_op1_relation;
+  using range_operator::lhs_op2_relation;
   using range_operator::update_bitmask;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op2_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
   bool fold_range (prange &r, tree type,
 		   const prange &op1,
 		   const prange &op2,
@@ -942,7 +954,15 @@ class operator_max : public range_operator
 {
 public:
   using range_operator::fold_range;
+  using range_operator::lhs_op1_relation;
+  using range_operator::lhs_op2_relation;
   using range_operator::update_bitmask;
+  relation_kind lhs_op1_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
+  relation_kind lhs_op2_relation (const irange &lhs,
+				  const irange &op1, const irange &op2,
+				  relation_kind) const final override;
   bool fold_range (prange &r, tree type,
 		   const prange &op1,
 		   const prange &op2,

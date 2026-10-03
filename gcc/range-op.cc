@@ -2180,6 +2180,36 @@ operator_min::wi_fold (irange &r, tree type,
   value_range_with_overflow (r, type, new_lb, new_ub);
 }
 
+// When op1 <= op2, MIN (op1, op2) is op1.
+
+relation_kind
+operator_min::lhs_op1_relation (const irange &lhs, const irange &op1,
+				const irange &op2, relation_kind rel) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+  if (rel == VREL_LE || rel == VREL_LT || rel == VREL_EQ
+      || wi::le_p (op1.upper_bound (), op2.lower_bound (),
+		   TYPE_SIGN (op1.type ())))
+    return VREL_EQ;
+  return VREL_VARYING;
+}
+
+// Same as above, but for op2.
+
+relation_kind
+operator_min::lhs_op2_relation (const irange &lhs, const irange &op1,
+				const irange &op2, relation_kind rel) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+  if (rel == VREL_GE || rel == VREL_GT || rel == VREL_EQ
+      || wi::le_p (op2.upper_bound (), op1.lower_bound (),
+		   TYPE_SIGN (op1.type ())))
+    return VREL_EQ;
+  return VREL_VARYING;
+}
+
 
 void
 operator_max::update_bitmask (irange &r, const irange &lh,
@@ -2197,6 +2227,36 @@ operator_max::wi_fold (irange &r, tree type,
   wide_int new_lb = wi::max (lh_lb, rh_lb, s);
   wide_int new_ub = wi::max (lh_ub, rh_ub, s);
   value_range_with_overflow (r, type, new_lb, new_ub);
+}
+
+// When op1 >= op2, MAX (op1, op2) is op1.
+
+relation_kind
+operator_max::lhs_op1_relation (const irange &lhs, const irange &op1,
+				const irange &op2, relation_kind rel) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+  if (rel == VREL_GE || rel == VREL_GT || rel == VREL_EQ
+      || wi::ge_p (op1.lower_bound (), op2.upper_bound (),
+		   TYPE_SIGN (op1.type ())))
+    return VREL_EQ;
+  return VREL_VARYING;
+}
+
+// Same as above, but for op2.
+
+relation_kind
+operator_max::lhs_op2_relation (const irange &lhs, const irange &op1,
+				const irange &op2, relation_kind rel) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+  if (rel == VREL_LE || rel == VREL_LT || rel == VREL_EQ
+      || wi::ge_p (op2.lower_bound (), op1.upper_bound (),
+		   TYPE_SIGN (op1.type ())))
+    return VREL_EQ;
+  return VREL_VARYING;
 }
 
 
@@ -3568,10 +3628,13 @@ relation_kind
 operator_bitwise_and::lhs_op1_relation (const irange &lhs,
 					const irange &op1,
 					const irange &op2,
-					relation_kind) const
+					relation_kind rel) const
 {
   if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
     return VREL_VARYING;
+  // When x == y, x & y is x.
+  if (rel == VREL_EQ)
+    return VREL_EQ;
   if (!op2.singleton_p ())
     return VREL_VARYING;
   // if val == 0xff or 0xFFFF OR 0Xffffffff OR 0Xffffffffffffffff, return TRUE
@@ -4132,6 +4195,21 @@ operator_bitwise_or::wi_fold (irange &r, tree type,
       return;
     }
   value_range_with_overflow (r, type, new_lb, new_ub);
+}
+
+// When x == y, x | y is x.
+
+relation_kind
+operator_bitwise_or::lhs_op1_relation (const irange &lhs,
+				       const irange &op1,
+				       const irange &op2,
+				       relation_kind rel) const
+{
+  if (lhs.undefined_p () || op1.undefined_p () || op2.undefined_p ())
+    return VREL_VARYING;
+  if (rel == VREL_EQ)
+    return VREL_EQ;
+  return VREL_VARYING;
 }
 
 bool
