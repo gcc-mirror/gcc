@@ -27,3 +27,7 @@ FEATURE_ACTIVE ("cfi_encoding", CFI_ENCODING, "1.71.0", ISSUE_SOME (89653),
 // FIXME: We need to enable this when the compatibility mode is >= 1.60 I guess?
 FEATURE_ACTIVE ("used_with_arg", USED_WITH_ARG, "1.60.0", ISSUE_SOME (93798),
 		EDITION_NONE)
+FEATURE_ACTIVE ("derive_coerce_pointee", DERIVE_COERCE_POINTEE,
+		"1.84.0" /* Not sure about the version number for this one */,
+		/* We also need a compatibility check to enable this */
+		ISSUE_SOME (123430), EDITION_NONE)
