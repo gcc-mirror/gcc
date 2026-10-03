@@ -4094,20 +4094,35 @@ write_expression (tree expr)
       switch (code)
 	{
 	case CALL_EXPR:
-	  {
-	    tree fn = CALL_EXPR_FN (expr);
+	  if (tree fn = CALL_EXPR_FN (expr))
+	    {
+	      if (TREE_CODE (fn) == ADDR_EXPR)
+		fn = TREE_OPERAND (fn, 0);
 
-	    if (TREE_CODE (fn) == ADDR_EXPR)
-	      fn = TREE_OPERAND (fn, 0);
+	      /* Mangle a dependent name as the name, not whatever happens to
+		 be the first function in the overload set.  */
+	      if (OVL_P (fn)
+		  && type_dependent_expression_p_push (expr))
+		fn = OVL_NAME (fn);
 
-	    /* Mangle a dependent name as the name, not whatever happens to
-	       be the first function in the overload set.  */
-	    if (OVL_P (fn)
-		&& type_dependent_expression_p_push (expr))
-	      fn = OVL_NAME (fn);
-
-	    write_expression (fn);
-	  }
+	      write_expression (fn);
+	    }
+	  else
+	    switch (CALL_EXPR_IFN (expr))
+	      {
+	      /* Calls to __builtin_bswapg/__builtin_bitreverseg are parsed
+		 as IFN_BSWAP/IFN_BITREVERSE calls because we don't have
+		 those builtins but instead keywords.  Pretend they are
+		 builtin function template.  */
+	      case IFN_BSWAP:
+		write_source_name (get_identifier ("__builtin_bswapg"));
+		break;
+	      case IFN_BITREVERSE:
+		write_source_name (get_identifier ("__builtin_bitreverseg"));
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 
 	  for (i = 0; i < call_expr_nargs (expr); ++i)
 	    write_expression (CALL_EXPR_ARG (expr, i));
