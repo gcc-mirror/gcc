@@ -628,7 +628,7 @@ building the documentation without error, but you may still want to
 install a newer release to get the best appearance and usability of
 the generated manuals.
 
-Also note that Texinfo older than version 7.1 may throw incorrect build
+Also note that Texinfo older than version 7.1.1 may throw incorrect build
 warnings, though the generated documentation is correct.
 
 @item @TeX{} (any working version)
