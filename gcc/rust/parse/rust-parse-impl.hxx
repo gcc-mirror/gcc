@@ -399,9 +399,19 @@ Parser<ManagedTokenSource>::parse_item (bool called_from_statement)
       // if any of these (should be all possible VisItem prefixes), parse a
       // VisItem
       {
+	auto errors_before = error_table.size ();
 	auto vis_item = parse_vis_item (std::move (outer_attrs));
 	if (!vis_item)
-	  return Parse::Error::Item::make_malformed ();
+	  {
+	    // e.g. `pub` followed by something that isn't an item
+	    if (error_table.size () == errors_before)
+	      {
+		const_TokenPtr t = lexer.peek_token ();
+		add_error (Error (t->get_locus (), "expected item, found %qs",
+				  t->get_token_description ()));
+	      }
+	    return Parse::Error::Item::make_malformed ();
+	  }
 	return RType{std::move (vis_item)};
       }
     case SUPER:
