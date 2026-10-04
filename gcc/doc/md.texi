@@ -7272,6 +7272,22 @@ mode; for example, if @var{n} is @code{HImode}, a CRC16 is calculated.
 @item @samp{crc_rev@var{m}@var{n}4}
 Similar to @samp{crc@var{m}@var{n}4}, but calculates a bit-reversed CRC.
 
+@mdindex aop@var{m}3
+@item @samp{aop@var{m}3}
+Like @samp{add@var{m}3} or @samp{ior@var{m}3}, perform a bit-wise
+addition between operand 1 and operand 2, which are known to have
+no set bits in common, and store the result in operand 0.  Because
+the input operands are bit-wise disjoint, the same result is obtained
+for @code{IOR}, @code{XOR} and @code{PLUS}, so this @code{aop} (``any or
+plus'') pattern allows the target to select the most suitable representation.
+For modes wider than a word, on targets without add with carry,
+@code{IOR} may be more efficient than @code{PLUS}.  On targets with
+shift-and-add (such as x86's @code{lea}) or multiply-add (@code{fma@var{m}4})
+instructions, @code{PLUS} may produce more efficent code than @code{IOR}.
+If the machine description doesn't specify this pattern, the middle-end
+will by default use @code{PLUS} for @code{SImode} and @code{word_mode},
+and @code{IOR} otherwise.
+
 @end table
 
 @node Standard Pattern Names for Vectorization
