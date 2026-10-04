@@ -1,6 +1,6 @@
 /* { dg-do compile { target { arm*-*-* } } } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
-/* { dg-options "-O3 -save-temps" } */
+/* { dg-options "-O3 -mtune=cortex-m55 -save-temps" } */
 /* { dg-add-options arm_v8_1m_mve } */
 
 #include <limits.h>
