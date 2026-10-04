@@ -109,15 +109,6 @@ static struct opt_stats_d opt_stats;
 /* Local functions.  */
 static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
-static void record_equivalences_from_incoming_edge (basic_block,
-						    class const_and_copies *,
-						    class avail_exprs_stack *,
-						    bitmap blocks_on_stack);
-static void eliminate_redundant_computations (gimple_stmt_iterator *,
-					      class const_and_copies *,
-					      class avail_exprs_stack *);
-static void record_equivalences_from_stmt (gimple *, int,
-					   class avail_exprs_stack *);
 static void dump_dominator_optimization_stats (FILE *file,
 					       hash_table<expr_elt_hasher> *);
 static void record_temporary_equivalences (edge, class const_and_copies *,
@@ -828,6 +819,9 @@ private:
   void set_global_ranges_from_unreachable_edges (basic_block);
 
   void simplify_stmt (gimple_stmt_iterator *);
+  void record_equivalences_from_incoming_edge (basic_block);
+  void eliminate_redundant_computations (gimple_stmt_iterator *);
+  void record_equivalences_from_stmt (gimple *, int);
 
   jump_threader *m_threader;
   gimple_ranger *m_ranger;
@@ -1457,15 +1451,11 @@ dom_opt_dom_walker::set_global_ranges_from_unreachable_edges (basic_block bb)
       }
 }
 
-/* Record any equivalences created by the incoming edge to BB into
-   CONST_AND_COPIES and AVAIL_EXPRS_STACK.  If BB has more than one
-   incoming edge, then no equivalence is created.  */
+/* Record any equivalences created by the incoming edge to BB.  If BB
+   has more than one incoming edge, then no equivalence is created.  */
 
-static void
-record_equivalences_from_incoming_edge (basic_block bb,
-    class const_and_copies *const_and_copies,
-    class avail_exprs_stack *avail_exprs_stack,
-    bitmap blocks_on_stack)
+void
+dom_opt_dom_walker::record_equivalences_from_incoming_edge (basic_block bb)
 {
   edge e;
   basic_block parent;
@@ -1480,8 +1470,8 @@ record_equivalences_from_incoming_edge (basic_block bb,
   /* If we had a single incoming edge from our parent block, then enter
      any data associated with the edge into our tables.  */
   if (e && e->src == parent)
-    record_temporary_equivalences (e, const_and_copies, avail_exprs_stack,
-				   blocks_on_stack);
+    record_temporary_equivalences (e, m_const_and_copies, m_avail_exprs_stack,
+				   m_state->get_blocks_on_stack ());
 }
 
 /* Dump statistics for the hash table HTAB.  */
@@ -1719,9 +1709,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
   m_const_and_copies->push_marker ();
   bitmap_set_bit (m_state->get_blocks_on_stack (), bb->index);
 
-  record_equivalences_from_incoming_edge (bb, m_const_and_copies,
-					  m_avail_exprs_stack,
-					  m_state->get_blocks_on_stack ());
+  record_equivalences_from_incoming_edge (bb);
   set_global_ranges_from_unreachable_edges (bb);
 
   /* PHI nodes can create equivalences too.  */
@@ -1732,8 +1720,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
      marker and unwind right afterwards.  */
   m_avail_exprs_stack->push_marker ();
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    eliminate_redundant_computations (&gsi, m_const_and_copies,
-				      m_avail_exprs_stack);
+    eliminate_redundant_computations (&gsi);
   m_avail_exprs_stack->pop_to_marker ();
 
   edge taken_edge = NULL;
@@ -1805,13 +1792,10 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
 /* Search for redundant computations in STMT.  If any are found, then
    replace them with the variable holding the result of the computation.
 
-   If safe, record this expression into AVAIL_EXPRS_STACK and
-   CONST_AND_COPIES.  */
+   If safe, record this expression into the tables.  */
 
-static void
-eliminate_redundant_computations (gimple_stmt_iterator* gsi,
-				  class const_and_copies *const_and_copies,
-				  class avail_exprs_stack *avail_exprs_stack)
+void
+dom_opt_dom_walker::eliminate_redundant_computations (gimple_stmt_iterator *gsi)
 {
   tree expr_type;
   tree cached_lhs;
@@ -1838,7 +1822,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
     insert = false;
 
   /* Check if the expression has been computed before.  */
-  cached_lhs = avail_exprs_stack->lookup_avail_expr (stmt, insert, true);
+  cached_lhs = m_avail_exprs_stack->lookup_avail_expr (stmt, insert, true);
 
   opt_stats.num_exprs_considered++;
 
@@ -1865,7 +1849,7 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
        This should be sufficient to kill the redundant phi.  */
     {
       if (def && cached_lhs)
-	const_and_copies->record_const_or_copy (def, cached_lhs);
+	m_const_and_copies->record_const_or_copy (def, cached_lhs);
       return;
     }
   else
@@ -1913,14 +1897,14 @@ eliminate_redundant_computations (gimple_stmt_iterator* gsi,
 
 /* STMT, a GIMPLE_ASSIGN, may create certain equivalences, in either
    the available expressions table or the const_and_copies table.
-   Detect and record those equivalences into AVAIL_EXPRS_STACK.
+   Detect and record those equivalences.
 
    We handle only very simple copy equivalences here.  The heavy
    lifing is done by eliminate_redundant_computations.  */
 
-static void
-record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
-			       class avail_exprs_stack *avail_exprs_stack)
+void
+dom_opt_dom_walker::record_equivalences_from_stmt (gimple *stmt,
+						   int may_optimize_p)
 {
   tree lhs;
   enum tree_code lhs_code;
@@ -2022,7 +2006,7 @@ record_equivalences_from_stmt (gimple *stmt, int may_optimize_p,
 
       /* Finally enter the statement into the available expression
 	 table.  */
-      avail_exprs_stack->lookup_avail_expr (new_stmt, true, true);
+      m_avail_exprs_stack->lookup_avail_expr (new_stmt, true, true);
     }
 }
 
@@ -2326,8 +2310,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 	}
 
       update_stmt_if_modified (stmt);
-      eliminate_redundant_computations (si, m_const_and_copies,
-					m_avail_exprs_stack);
+      eliminate_redundant_computations (si);
       stmt = gsi_stmt (*si);
 
       /* Perform simple redundant store elimination.  */
@@ -2384,7 +2367,7 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 
   /* Record any additional equivalences created by this statement.  */
   if (is_gimple_assign (stmt))
-    record_equivalences_from_stmt (stmt, may_optimize_p, m_avail_exprs_stack);
+    record_equivalences_from_stmt (stmt, may_optimize_p);
 
   /* If STMT is a COND_EXPR or SWITCH_EXPR and it was modified, then we may
      know where it goes.  */
