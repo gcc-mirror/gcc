@@ -156,11 +156,6 @@ class avail_exprs_stack
   vec<std::pair<expr_hash_elt_t, expr_hash_elt_t> > m_stack;
   hash_table<expr_elt_hasher> *m_avail_exprs;
 
-  /* For some assignments where the RHS is a binary operator, if we know
-     a equality relationship between the operands, we may be able to compute
-     a result, even if we don't know the exact value of the operands.  */
-  tree simplify_binary_operation (gimple *, class expr_hash_elt);
-
   /* We do not allow copying this object or initializing one
      from another.  */
   avail_exprs_stack& operator= (const avail_exprs_stack&);

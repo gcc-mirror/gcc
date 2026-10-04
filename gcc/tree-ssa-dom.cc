@@ -822,6 +822,7 @@ private:
   void record_equivalences_from_incoming_edge (basic_block);
   void eliminate_redundant_computations (gimple_stmt_iterator *);
   void record_equivalences_from_stmt (gimple *, int);
+  tree const_or_copy_of_stmt (gimple *);
 
   jump_threader *m_threader;
   gimple_ranger *m_ranger;
@@ -1789,6 +1790,33 @@ dom_opt_dom_walker::after_dom_children (basic_block bb)
   m_const_and_copies->pop_to_marker ();
 }
 
+/* Return the constant STMT computes, and barring that, an operand its
+   result is equivalent to.  NULL if neither.  */
+
+tree
+dom_opt_dom_walker::const_or_copy_of_stmt (gimple *stmt)
+{
+  if (tree val = m_ranger->value_of_stmt (stmt))
+    return val;
+
+  /* We could remove this gate, but we'd end up with tons of useless
+     replacements (casts, copies, etc).  Best to keep it to binops, which is
+     what the original code did.  */
+  if (!is_gimple_assign (stmt)
+      || gimple_assign_rhs_class (stmt) != GIMPLE_BINARY_RHS)
+    return NULL_TREE;
+
+  tree lhs = gimple_assign_lhs (stmt);
+  tree rhs1 = gimple_assign_rhs1 (stmt);
+  tree rhs2 = gimple_assign_rhs2 (stmt);
+  if (m_ranger->relation ().query (stmt, lhs, rhs1) == VREL_EQ)
+    return rhs1;
+  if (m_ranger->relation ().query (stmt, lhs, rhs2) == VREL_EQ)
+    return rhs2;
+
+  return NULL_TREE;
+}
+
 /* Search for redundant computations in STMT.  If any are found, then
    replace them with the variable holding the result of the computation.
 
@@ -1823,6 +1851,10 @@ dom_opt_dom_walker::eliminate_redundant_computations (gimple_stmt_iterator *gsi)
 
   /* Check if the expression has been computed before.  */
   cached_lhs = m_avail_exprs_stack->lookup_avail_expr (stmt, insert, true);
+
+  /* Otherwise, ask the ranger.  */
+  if (!cached_lhs)
+    cached_lhs = const_or_copy_of_stmt (stmt);
 
   opt_stats.num_exprs_considered++;
 
