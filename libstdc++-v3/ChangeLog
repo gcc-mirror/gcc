@@ -1,3 +1,11 @@
+2026-10-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-05-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/pstl/alg_sorting/minmax_element.cc:
+	Reduce iterations for debug mode.
+
 2026-10-02  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:
