@@ -413,7 +413,7 @@ get_guarded_dealloc (gfc_namespace *ns, gfc_expr *expr)
 void
 deallocate_allocated_coarrays (vec<gfc_expr *> *team_allocs)
 {
-  gfc_code *dealloc, *last_stmt;
+  gfc_code *dealloc, **prev;
   gfc_ref *ref, *aref = NULL;
   int i;
 
@@ -447,21 +447,12 @@ deallocate_allocated_coarrays (vec<gfc_expr *> *team_allocs)
 	 aref->u.ar.dimen_type[i] = DIMEN_THIS_IMAGE;
 
       /* Insert the deallocation code before the END TEAM statement.  */
-      last_stmt = gfc_current_ns->code;
-      while (last_stmt)
-	{
-	  last_stmt = last_stmt->next;
-	  if (last_stmt->next->op == EXEC_END_TEAM || !last_stmt->next)
-	    {
-	      dealloc = get_guarded_dealloc (gfc_current_ns, e);
-	      if (dealloc)
-		{
-		  dealloc->next = last_stmt->next;
-		  last_stmt->next = dealloc;
-		  break;
-		}
-	    }
-	}
+      for (prev = &gfc_current_ns->code; *prev; prev = &(*prev)->next)
+	if ((*prev)->op == EXEC_END_TEAM)
+	  break;
+      dealloc = get_guarded_dealloc (gfc_current_ns, e);
+      dealloc->next = *prev;
+      *prev = dealloc;
       gfc_free_expr (e);
       e = NULL;
     }
