@@ -1,3 +1,45 @@
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127344
+	* parser.cc (cp_parser_lookup_name): Call make_splice_scope for
+	dependent_namespace_p.  Use the result for make_typename_type
+	and make_unbound_class_template.
+
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127672
+	* decl2.cc (constrain_class_visibility): Check OVERLOAD_TYPE_P
+	before calling decl_anon_ns_mem_p.
+
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126654
+	* pt.cc (tsubst_stmt) <case DECL_EXPR>: If tsubst returns
+	error_mark_node, return error_mark_node.  Allow NAMESPACE_DECL.
+
+2026-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	P3950R1
+	PR c++/125830
+	* coroutines.cc: Implement C++29 P3950R1 - return_value & return_void
+	Are Not Mutually Exclusive paper as DR.
+	(struct coroutine_info): Remove coro_co_return_error_emitted member.
+	(coro_promise_type_found_p): Remove diagnostics about both return_void
+	and return_value successful lookup.
+	(lookup_promise_method): Add complain argument, pass it down to
+	lookup_member.
+	(coro_build_promise_expression): Add complain argument, pass it down
+	to lookup_promise_method, build_new_method_call and
+	build_class_member_access_expr.
+	(get_coroutine_return_void_expr): Pass tf_none to
+	coro_build_promise_expression.
+
+2026-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127668
+	* mangle.cc (write_expression): Handle mangling of
+	calls to IFN_BSWAP and IFN_BITREVERSE.
+
 2026-09-30  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/127349

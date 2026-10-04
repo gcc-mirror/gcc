@@ -1,3 +1,10 @@
+2026-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	P3950R1
+	PR c++/125830
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_impl_coroutine
+	from 201902L to 202606L.
+
 2026-10-01  Guillaume Gomez  <contact@guillaume-gomez.fr>
 
 	* c-attribs.cc: (decl_or_type_attrs, validate_attr_args)

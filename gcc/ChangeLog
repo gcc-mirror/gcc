@@ -1,3 +1,25 @@
+2026-10-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (CORE-V Built-in Functions): Update URL.
+
+2026-10-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/install.texi (Tools/packages necessary for modifying GCC):
+	Note that Texinfo older than 7.1.1 may throw incorrect build
+	warnings (as opposed to Texinfo older than 7.1).
+
+2026-10-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* doc/invoke.texi (AVR Options): Update documentation of linker
+	stubs relation to linker relaxation.
+
+2026-10-03  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/127689
+	* match.pd (`(trunc)abs((ext)a)`): Move right
+	after `abs((ext)a)` pattern.  Restrict to
+	non integral types.
+
 2026-10-02  Andrew MacLeod  <amacleod@redhat.com>
 
 	* value-relation.cc (dom_oracle::recomputed_relation): Change

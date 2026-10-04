@@ -1,3 +1,10 @@
+2026-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127683
+	* primary.cc (gfc_match_varspec): Fix two minor frontend memleaks.
+	* symbol.cc (gfc_find_derived_types): Return 0 when sym->assoc is
+	NULL.
+
 2026-10-02  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/127637
