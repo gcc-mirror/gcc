@@ -966,30 +966,6 @@ initialize_expr_from_cond (tree cond, struct hashable_expr *expr)
     gcc_unreachable ();
 }
 
-/* Build a cond_equivalence record indicating that the comparison
-   CODE holds between operands OP0 and OP1 and push it to **P.  */
-
-static void
-build_and_record_new_cond (enum tree_code code,
-                           tree op0, tree op1,
-                           vec<cond_equivalence> *p,
-			   bool val = true)
-{
-  cond_equivalence c;
-  struct hashable_expr *cond = &c.cond;
-
-  gcc_assert (TREE_CODE_CLASS (code) == tcc_comparison);
-
-  cond->type = boolean_type_node;
-  cond->kind = EXPR_BINARY;
-  cond->ops.binary.op = code;
-  cond->ops.binary.opnd0 = op0;
-  cond->ops.binary.opnd1 = op1;
-
-  c.value = val ? boolean_true_node : boolean_false_node;
-  p->safe_push (c);
-}
-
 /* Record that COND is true and INVERTED is false into the edge information
    structure.  Also record that any conditions dominated by COND are true
    as well.
@@ -999,79 +975,10 @@ build_and_record_new_cond (enum tree_code code,
 void
 record_conditions (vec<cond_equivalence> *p, tree cond, tree inverted)
 {
-  tree op0, op1;
   cond_equivalence c;
 
   if (!COMPARISON_CLASS_P (cond))
     return;
-
-  op0 = TREE_OPERAND (cond, 0);
-  op1 = TREE_OPERAND (cond, 1);
-
-  switch (TREE_CODE (cond))
-    {
-    case LT_EXPR:
-    case GT_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-	{
-	  build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-	  build_and_record_new_cond (LTGT_EXPR, op0, op1, p);
-	}
-
-      build_and_record_new_cond ((TREE_CODE (cond) == LT_EXPR
-				  ? LE_EXPR : GE_EXPR),
-				 op0, op1, p);
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      build_and_record_new_cond (EQ_EXPR, op0, op1, p, false);
-      break;
-
-    case GE_EXPR:
-    case LE_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-	{
-	  build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-	}
-      break;
-
-    case EQ_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-	{
-	  build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-	}
-      build_and_record_new_cond (LE_EXPR, op0, op1, p);
-      build_and_record_new_cond (GE_EXPR, op0, op1, p);
-      break;
-
-    case UNORDERED_EXPR:
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNLE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNGE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNEQ_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNLT_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNGT_EXPR, op0, op1, p);
-      break;
-
-    case UNLT_EXPR:
-    case UNGT_EXPR:
-      build_and_record_new_cond ((TREE_CODE (cond) == UNLT_EXPR
-				  ? UNLE_EXPR : UNGE_EXPR),
-				 op0, op1, p);
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      break;
-
-    case UNEQ_EXPR:
-      build_and_record_new_cond (UNLE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNGE_EXPR, op0, op1, p);
-      break;
-
-    case LTGT_EXPR:
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-      break;
-
-    default:
-      break;
-    }
 
   /* Now store the original true and false conditions into the first
      two slots.  */
