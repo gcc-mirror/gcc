@@ -1,3 +1,21 @@
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127672
+	* decl2.cc (constrain_class_visibility): Check OVERLOAD_TYPE_P
+	before calling decl_anon_ns_mem_p.
+
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126654
+	* pt.cc (tsubst_stmt) <case DECL_EXPR>: If tsubst returns
+	error_mark_node, return error_mark_node.  Allow NAMESPACE_DECL.
+
 2026-09-29  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
