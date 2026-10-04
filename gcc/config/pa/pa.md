@@ -10199,6 +10199,15 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
   "!TARGET_PORTABLE_RUNTIME && !TARGET_64BIT"
   "
 {
+  /* If operand 1 is an address calculation of a variable, do not emit
+     a redundant libcall wrapper.  Copy the address directly.  */
+  if (GET_CODE (operands[1]) == SYMBOL_REF
+      && !SYMBOL_REF_FUNCTION_P (operands[1]))
+    {
+      emit_move_insn (operands[0], operands[1]);
+      DONE;
+    }
+
   if (TARGET_ELF32)
     {
       rtx canonicalize_funcptr_for_compare_libfunc
