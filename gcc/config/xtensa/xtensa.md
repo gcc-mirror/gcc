@@ -227,10 +227,6 @@
 {
   rtx lo_dest, hi_dest, lo_op0, hi_op0, lo_op1, hi_op1;
   rtx_code_label *label;
-  if (rtx_equal_p (operands[0], operands[1])
-      || rtx_equal_p (operands[0], operands[2])
-      || ! REG_P (operands[1]) || ! REG_P (operands[2]))
-    FAIL;
   lo_dest = gen_lowpart (SImode, operands[0]);
   hi_dest = gen_highpart (SImode, operands[0]);
   lo_op0 = gen_lowpart (SImode, operands[1]);
@@ -239,14 +235,77 @@
   hi_op1 = gen_highpart (SImode, operands[2]);
   emit_insn (gen_addsi3 (hi_dest, hi_op0, hi_op1));
   emit_insn (gen_addsi3 (lo_dest, lo_op0, lo_op1));
-  emit_cmp_and_jump_insns (lo_dest,
-			   (REGNO (operands[1]) < REGNO (operands[2])
-			    ? lo_op1 : lo_op0), GEU, const0_rtx,
-			   SImode, true, label = gen_label_rtx ());
+  emit_cmp_and_jump_insns (lo_dest, lo_op0, GEU, const0_rtx, SImode,
+			   true, label = gen_label_rtx ());
   emit_insn (gen_addsi3 (hi_dest, hi_dest, const1_rtx));
   emit_label (label);
   DONE;
 })
+
+;; The RTL combiner can recognize two examples of insn sequence patterns
+;; that perform the lower half of a 64-bit addition, as shown below.
+;; To correctly detect an overflow, it is necessary to use a source register
+;; distinct from the destination register.  To achieve this, if the destina-
+;; tion and the first source are the same, the two sources are swapped; this
+;; is justified by the fact that the two sources of addition operation are
+;; commutative.
+
+(define_insn_and_split "*adddi3_lowpart_0"
+  [(set (pc)
+	(if_then_else (geu (plus:SI (match_operand:SI 1 "register_operand" "r")
+				    (match_operand:SI 2 "register_operand" "r"))
+			   (match_dup 1))
+		      (label_ref (match_operand 3 ""))
+		      (pc)))
+   (set (match_operand:SI 0 "register_operand" "=a")
+	(plus:SI (match_dup 1)
+		 (match_dup 2)))]
+  "! rtx_equal_p (operands[1], operands[2])"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (rtx_equal_p (operands[0], operands[1]))
+    std::swap (operands[1], operands[2]);
+  emit_insn (gen_addsi3 (operands[0], operands[1], operands[2]));
+  emit_jump_insn (gen_cbranchsi4 (gen_rtx_GEU (VOIDmode, operands[0], operands[1]),
+				  operands[0], operands[1], operands[3]));
+  DONE;
+}
+  [(set_attr "type"	"jump")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
+
+(define_insn_and_split "*adddi3_lowpart_1"
+  [(set (match_operand:SI 3 "register_operand" "=a")
+	(ltu:SI (plus:SI (match_operand:SI 1 "register_operand" "r")
+			 (match_operand:SI 2 "register_operand" "r"))
+		(match_dup 1)))
+   (set (match_operand:SI 0 "register_operand" "=a")
+	(plus:SI (match_dup 1)
+		 (match_dup 2)))]
+  "TARGET_SALT && ! rtx_equal_p (operands[1], operands[2])"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  if (rtx_equal_p (operands[0], operands[1]))
+    std::swap (operands[1], operands[2]);
+  emit_insn (gen_addsi3 (operands[0], operands[1], operands[2]));
+  emit_insn (gen_cstoresi4 (operands[3],
+			    gen_rtx_LTU (VOIDmode, operands[0], operands[1]),
+			    operands[0], operands[1]));
+  DONE;
+}
+  [(set_attr "type"	"multi")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
 
 (define_insn "addsf3"
   [(set (match_operand:SF 0 "register_operand" "=f")
