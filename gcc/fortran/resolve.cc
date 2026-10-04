@@ -10786,6 +10786,13 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
       return;
     }
 
+  /* The elements of a pointer function result may be spaced by more than
+     the element size.  */
+  if (target->expr_type == EXPR_FUNCTION
+      && target->rank > 0
+      && gfc_expr_attr (target).pointer)
+    sym->attr.subref_array_pointer = 1;
+
   if (sym->assoc->inferred_type || IS_INFERRED_TYPE (target))
     {
       /* By now, the type of the target has been fixed up.  */

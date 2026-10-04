@@ -4750,6 +4750,11 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 
   attr = gfc_expr_attr (rvalue);
 
+  /* The elements of a pointer function result may be spaced by more than
+     the element size.  */
+  if (rvalue->expr_type == EXPR_FUNCTION && rvalue->rank > 0 && attr.pointer)
+    lvalue->symtree->n.sym->attr.subref_array_pointer = 1;
+
   if (rvalue->expr_type == EXPR_FUNCTION && !attr.pointer)
     {
       /* F2008, C725.  For PURE also C1283.  Sometimes rvalue is a function call

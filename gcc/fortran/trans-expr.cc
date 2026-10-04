@@ -7151,6 +7151,58 @@ copy_in_out_allowed (gfc_symbol *fsym, gfc_expr *e, bool nodesc_arg)
 }
 
 
+/* Return true if E is a reference to a function returning a pointer array,
+   whose elements may be spaced by more than the element size.  */
+
+static bool
+pointer_array_result_p (gfc_expr *e)
+{
+  return e->expr_type == EXPR_FUNCTION
+	 && e->rank > 0
+	 && e->ts.type != BT_CLASS
+	 && gfc_expr_attr (e).pointer;
+}
+
+
+/* Evaluate the pointer array function reference E into a temporary pointer
+   in BLOCK and return a variable expression for that pointer.  */
+
+static gfc_expr *
+pointer_result_var (stmtblock_t *block, gfc_expr *e)
+{
+  gfc_symtree *st = gfc_get_unique_symtree (NULL);
+  gfc_symbol *sym = gfc_new_symbol (st->name, NULL);
+  st->n.sym = sym;
+  sym->ts = e->ts;
+  sym->attr.flavor = FL_VARIABLE;
+  sym->attr.referenced = 1;
+  sym->attr.dimension = 1;
+  sym->attr.pointer = 1;
+  sym->as = gfc_get_array_spec ();
+  sym->as->rank = e->rank;
+  sym->as->type = AS_DEFERRED;
+
+  gfc_se se;
+  gfc_init_se (&se, NULL);
+  gfc_conv_expr_descriptor (&se, e);
+  gfc_add_block_to_block (block, &se.pre);
+  gfc_add_block_to_block (block, &se.post);
+
+  gcc_assert (VAR_P (se.expr) && GFC_DECL_PTR_ARRAY_P (se.expr));
+  sym->backend_decl = se.expr;
+
+  if (sym->ts.type == BT_CHARACTER)
+    {
+      sym->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+      sym->ts.u.cl->backend_decl = gfc_evaluate_now (se.string_length, block);
+    }
+
+  gfc_expr *var = gfc_get_variable_expr (st);
+  var->where = e->where;
+  return var;
+}
+
+
 /* Generate code for a procedure call.  Note can return se->post != NULL.
    If se->direct_byref is set then se->expr contains the return parameter.
    Return nonzero, if the call has alternate specifiers.
@@ -8203,6 +8255,23 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 					   ? e->symtree->n.sym : NULL,
 					   false, true);
 
+	      else if (pointer_array_result_p (e)
+		       && !(fsym && fsym->attr.pointer)
+		       && copy_in_out_allowed (fsym, e, nodesc_arg))
+		/* A pointer function result is copied into a temporary when
+		   its elements are not spaced by the element size.  */
+		{
+		  gfc_expr *var = pointer_result_var (&parmse.pre, e);
+		  gfc_conv_subref_array_arg (&parmse, var, nodesc_arg,
+				fsym ? fsym->attr.intent : INTENT_INOUT,
+				false, fsym, sym->name, NULL, true, false,
+				dummy_accepts_strided_arg (fsym, nodesc_arg));
+		  gfc_symtree *st = var->symtree;
+		  gfc_free_expr (var);
+		  gfc_free_symbol (st->n.sym);
+		  XDELETE (st);
+		}
+
 	      else if (e->expr_type == EXPR_VARIABLE
 		    && is_subref_array (e)
 		    && !(fsym && fsym->attr.pointer)
@@ -9027,6 +9096,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				       !comp->attr.pointer, callee_alloc,
 				       &se->ss->info->expr->where);
 
+	  /* Index a pointer result by the span the callee returns.  */
+	  if (comp->attr.pointer && VAR_P (info->descriptor))
+	    GFC_DECL_PTR_ARRAY_P (info->descriptor) = 1;
+
 	  /* Pass the temporary as the first argument.  */
 	  result = info->descriptor;
 	  tmp = gfc_build_addr_expr (NULL_TREE, result);
@@ -9062,6 +9135,10 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				       tmp, NULL_TREE, false,
 				       !sym->attr.pointer, callee_alloc,
 				       &se->ss->info->expr->where);
+
+	  /* Index a pointer result by the span the callee returns.  */
+	  if (sym->attr.pointer && VAR_P (info->descriptor))
+	    GFC_DECL_PTR_ARRAY_P (info->descriptor) = 1;
 
 	  /* Pass the temporary as the first argument.  */
 	  result = info->descriptor;
