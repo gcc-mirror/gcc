@@ -1,5 +1,8 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -fdump-tree-pcom-details-blocks" } */
+/* { dg-options "-O3 -fdump-tree-pcom-details-blocks -fno-tree-dominator-opts" } */
+/* DOM folds the exit test to c + 1 == 1 from c's range, which leaves c a
+   two-valued PHI rather than an induction variable and predcom nothing to
+   do; keep it out of the way.  */
 
 int b, f, d[5][2];
 unsigned int c;

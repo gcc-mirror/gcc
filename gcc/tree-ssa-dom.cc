@@ -805,8 +805,6 @@ public:
     {
       m_ranger = ranger;
       m_state = state;
-      m_dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
-					integer_zero_node, NULL, NULL);
       m_const_and_copies = const_and_copies;
       m_avail_exprs_stack = avail_exprs_stack;
       m_threader = threader;
@@ -821,9 +819,6 @@ private:
   class const_and_copies *m_const_and_copies;
   class avail_exprs_stack *m_avail_exprs_stack;
 
-  /* Dummy condition to avoid creating lots of throw away statements.  */
-  gcond *m_dummy_cond;
-
   /* Optimize a single statement within a basic block using the
      various tables maintained by DOM.  Returns the taken edge if
      the statement is a conditional with a statically determined
@@ -832,8 +827,7 @@ private:
 
   void set_global_ranges_from_unreachable_edges (basic_block);
 
-  void test_for_singularity (gimple *, avail_exprs_stack *);
-  edge fold_cond (gcond *cond);
+  void simplify_stmt (gimple_stmt_iterator *);
 
   jump_threader *m_threader;
   gimple_ranger *m_ranger;
@@ -2097,6 +2091,34 @@ cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
     }
 }
 
+/* Attempt to simplify the statement in GSI with range info.  */
+
+void
+dom_opt_dom_walker::simplify_stmt (gimple_stmt_iterator *gsi)
+{
+  gimple *stmt = gsi_stmt (*gsi);
+
+  /* Avoid switches as touching those could remove edges mid-walk.  */
+  if (gimple_code (stmt) == GIMPLE_SWITCH)
+    return;
+
+  gimple_stmt_iterator i = *gsi;
+  gsi_prev (&i);
+  gimple *before = gsi_end_p (i) ? NULL : gsi_stmt (i);
+  simplify_using_ranges simplify (m_ranger);
+  if (!simplify.simplify (gsi))
+    return;
+
+  stmt = gsi_stmt (*gsi);
+  gimple_set_modified (stmt, true);
+
+  /* Our main loop will go back over the statements inserted in front of STMT,
+     so mark those as visited to avoid looking at them again.  */
+  i = *gsi;
+  for (gsi_prev (&i); !gsi_end_p (i) && gsi_stmt (i) != before; gsi_prev (&i))
+    gimple_set_visited (gsi_stmt (i), true);
+}
+
 /* CONST_AND_COPIES is a table which maps an SSA_NAME to the current
    known value for that SSA_NAME (or NULL if no value is known).
 
@@ -2126,99 +2148,6 @@ cprop_into_stmt (gimple *stmt, range_query *query)
 	  tree new_op = USE_FROM_PTR (op_p);
 	  if (new_op != old_op && TREE_CODE (new_op) == SSA_NAME)
 	    last_copy_propagated_op = new_op;
-	}
-    }
-}
-
-/* If STMT contains a relational test, try to convert it into an
-   equality test if there is only a single value which can ever
-   make the test true.
-
-   For example, if the expression hash table contains:
-
-    TRUE = (i <= 1)
-
-   And we have a test within statement of i >= 1, then we can safely
-   rewrite the test as i == 1 since there only a single value where
-   the test is true.
-
-   This is similar to code in VRP.  */
-
-void
-dom_opt_dom_walker::test_for_singularity (gimple *stmt,
-					  avail_exprs_stack *avail_exprs_stack)
-{
-  /* We want to support gimple conditionals as well as assignments
-     where the RHS contains a conditional.  */
-  if (is_gimple_assign (stmt) || gimple_code (stmt) == GIMPLE_COND)
-    {
-      enum tree_code code = ERROR_MARK;
-      tree lhs, rhs;
-
-      /* Extract the condition of interest from both forms we support.  */
-      if (is_gimple_assign (stmt))
-	{
-	  code = gimple_assign_rhs_code (stmt);
-	  lhs = gimple_assign_rhs1 (stmt);
-	  rhs = gimple_assign_rhs2 (stmt);
-	}
-      else if (gimple_code (stmt) == GIMPLE_COND)
-	{
-	  code = gimple_cond_code (as_a <gcond *> (stmt));
-	  lhs = gimple_cond_lhs (as_a <gcond *> (stmt));
-	  rhs = gimple_cond_rhs (as_a <gcond *> (stmt));
-	}
-
-      /* We're looking for a relational test using LE/GE.  Also note we can
-	 canonicalize LT/GT tests against constants into LE/GT tests.  */
-      if (code == LE_EXPR || code == GE_EXPR
-	  || ((code == LT_EXPR || code == GT_EXPR)
-	       && TREE_CODE (rhs) == INTEGER_CST))
-	{
-	  /* For LT_EXPR and GT_EXPR, canonicalize to LE_EXPR and GE_EXPR.  */
-	  if (code == LT_EXPR)
-	    rhs = fold_build2 (MINUS_EXPR, TREE_TYPE (rhs),
-			       rhs, build_int_cst (TREE_TYPE (rhs), 1));
-
-	  if (code == GT_EXPR)
-	    rhs = fold_build2 (PLUS_EXPR, TREE_TYPE (rhs),
-			       rhs, build_int_cst (TREE_TYPE (rhs), 1));
-
-	  /* Determine the code we want to check for in the hash table.  */
-	  enum tree_code test_code;
-	  if (code == GE_EXPR || code == GT_EXPR)
-	    test_code = LE_EXPR;
-	  else
-	    test_code = GE_EXPR;
-
-	  /* Update the dummy statement so we can query the hash tables.  */
-	  gimple_cond_set_code (m_dummy_cond, test_code);
-	  gimple_cond_set_lhs (m_dummy_cond, lhs);
-	  gimple_cond_set_rhs (m_dummy_cond, rhs);
-	  tree cached_lhs
-	    = avail_exprs_stack->lookup_avail_expr (m_dummy_cond,
-						    false, false);
-
-	  /* If the lookup returned 1 (true), then the expression we
-	     queried was in the hash table.  As a result there is only
-	     one value that makes the original conditional true.  Update
-	     STMT accordingly.  */
-	  if (cached_lhs && integer_onep (cached_lhs))
-	    {
-	      if (is_gimple_assign (stmt))
-		{
-		  gimple_assign_set_rhs_code (stmt, EQ_EXPR);
-		  gimple_assign_set_rhs2 (stmt, rhs);
-		  gimple_set_modified (stmt, true);
-		}
-	      else
-		{
-		  gimple_set_modified (stmt, true);
-		  gimple_cond_set_code (as_a <gcond *> (stmt), EQ_EXPR);
-		  gimple_cond_set_rhs (as_a <gcond *> (stmt), rhs);
-		  gimple_set_modified (stmt, true);
-		}
-	    }
 	}
     }
 }
@@ -2281,24 +2210,6 @@ reduce_vector_comparison_to_scalar_comparison (gimple *stmt)
 	    }
 	}
     }
-}
-
-/* If possible, rewrite the conditional as TRUE or FALSE, and return
-   the taken edge.  Otherwise, return NULL.  */
-
-edge
-dom_opt_dom_walker::fold_cond (gcond *cond)
-{
-  simplify_using_ranges simplify (m_ranger);
-  if (simplify.fold_cond (cond))
-    {
-      basic_block bb = gimple_bb (cond);
-      if (gimple_cond_true_p (cond))
-	return find_taken_edge (bb, boolean_true_node);
-      if (gimple_cond_false_p (cond))
-	return find_taken_edge (bb, boolean_false_node);
-    }
-  return NULL;
 }
 
 /* Optimize the statement in block BB pointed to by iterator SI.
@@ -2437,24 +2348,6 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
 						 integer_zero_node));
 	      gimple_set_modified (stmt, true);
 	    }
-	  else if (TREE_CODE (lhs) == SSA_NAME)
-	    {
-	      /* Exploiting EVRP data is not yet fully integrated into DOM
-		 but we need to do something for this case to avoid regressing
-		 udr4.f90 and new1.C which have unexecutable blocks with
-		 undefined behavior that get diagnosed if they're left in the
-		 IL because we've attached range information to new
-		 SSA_NAMES.  */
-	      update_stmt_if_modified (stmt);
-	      edge taken_edge = fold_cond (as_a <gcond *> (stmt));
-	      if (taken_edge)
-		{
-		  gimple_set_modified (stmt, true);
-		  update_stmt (stmt);
-		  cfg_altered = true;
-		  return taken_edge;
-		}
-	    }
 	}
 
       update_stmt_if_modified (stmt);
@@ -2509,7 +2402,9 @@ dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator *si,
       /* If this statement was not redundant, we may still be able to simplify
 	 it, which may in turn allow other part of DOM or other passes to do
 	 a better job.  */
-      test_for_singularity (stmt, m_avail_exprs_stack);
+      if (!gimple_modified_p (stmt))
+	simplify_stmt (si);
+      stmt = gsi_stmt (*si);
     }
 
   /* Record any additional equivalences created by this statement.  */
