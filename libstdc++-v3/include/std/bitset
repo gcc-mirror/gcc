@@ -1706,6 +1706,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       typedef typename __istream_type::ios_base    __ios_base;
 
       static const bool __use_local = _Nb * sizeof(_CharT) <= 256;
+      static const size_t __array_len = _Nb != 0 ? _Nb : 1;
 
       struct _Buffer
       {
@@ -1714,7 +1715,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	_Buffer() : _M_ptr(_M_local)
 	{
 	  if _GLIBCXX_CONSTEXPR (!__use_local)
-	    _M_ptr = new _CharT[_Nb];
+	    _M_ptr = new _CharT[__array_len];
 	}
 
 	~_Buffer()
@@ -1725,8 +1726,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #pragma GCC diagnostic pop
 
 	_CharT* _M_ptr;
-	_CharT _M_local[__use_local && _Nb != 0 ? _Nb : 1];
-      } __buf;
+	_CharT _M_local[__use_local ? __array_len : 1];
+      };
+      _Buffer __buf __attribute__((__uninitialized__));
 
       _CharT* __ptr = __buf._M_ptr;
 
