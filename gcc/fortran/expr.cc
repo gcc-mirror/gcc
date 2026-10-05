@@ -6490,12 +6490,13 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
     return false;
 
   /* An associate variable may point to a non-contiguous target.  */
-  if (ar && ar->type == AR_FULL
+  if (!part_ref
       && sym->attr.associate_var && !sym->attr.contiguous
       && sym->assoc
-      && sym->assoc->target)
-    return gfc_is_simply_contiguous (sym->assoc->target, strict,
-				     permit_element);
+      && sym->assoc->target
+      && !gfc_is_simply_contiguous (sym->assoc->target, strict,
+				    permit_element))
+    return false;
 
   if (!ar || ar->type == AR_FULL)
     return true;
