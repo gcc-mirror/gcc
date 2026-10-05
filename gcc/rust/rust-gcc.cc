@@ -1590,6 +1590,44 @@ slice_index_expression (tree slice_tree, tree index_tree, location_t location)
   return build1_loc (location, INDIRECT_REF, element_type, data_offset_expr);
 }
 
+// Rust evaluates the callee and then the arguments of a call from left to
+// right, but gimplify_call_expr evaluates the arguments in the order the
+// target pushes them, which is right to left on x86. When anything in the
+// call has side effects, wrap the callee and every argument but the last in
+// a SAVE_EXPR, and return those in order so that the caller can evaluate
+// them before the call. The call then only evaluates its last argument.
+
+static std::vector<tree>
+save_call_operands (tree &fn, tree *args, size_t nargs)
+{
+  std::vector<tree> saved;
+
+  bool has_side_effects = TREE_SIDE_EFFECTS (fn);
+  for (size_t i = 0; i < nargs && !has_side_effects; ++i)
+    has_side_effects = TREE_SIDE_EFFECTS (args[i]);
+
+  if (!has_side_effects || nargs == 0)
+    return saved;
+
+  if (TREE_SIDE_EFFECTS (fn))
+    {
+      fn = save_expr (fn);
+      saved.push_back (fn);
+    }
+
+  for (size_t i = 0; i + 1 < nargs; ++i)
+    {
+      if (VOID_TYPE_P (TREE_TYPE (args[i])) || really_constant_p (args[i]))
+	continue;
+
+      args[i] = save_expr (args[i]);
+      if (TREE_CODE (args[i]) == SAVE_EXPR)
+	saved.push_back (args[i]);
+    }
+
+  return saved;
+}
+
 // Create an expression for a call to FN_EXPR with FN_ARGS.
 tree
 call_expression (tree fn, const std::vector<tree> &fn_args, tree chain_expr,
@@ -1642,6 +1680,8 @@ call_expression (tree fn, const std::vector<tree> &fn_args, tree chain_expr,
 	}
     }
 
+  std::vector<tree> saved = save_call_operands (fn, args, nargs);
+
   tree ret
     = build_call_array_loc (location,
 			    excess_type != NULL_TREE ? excess_type : rettype,
@@ -1664,6 +1704,10 @@ call_expression (tree fn, const std::vector<tree> &fn_args, tree chain_expr,
       // That may or may not be a bug in convert_to_real.
       ret = build1_loc (location, NOP_EXPR, rettype, ret);
     }
+
+  // evaluate the saved operands in order before the call
+  for (auto it = saved.rbegin (); it != saved.rend (); ++it)
+    ret = build2_loc (location, COMPOUND_EXPR, TREE_TYPE (ret), *it, ret);
 
   delete[] args;
   return ret;
