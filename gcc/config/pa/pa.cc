@@ -1667,23 +1667,43 @@ hppa_address_cost (rtx X, machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 hppa_rtx_costs_shadd_p (rtx x)
 {
-  if (GET_CODE (x) != PLUS
-      || !REG_P (XEXP (x, 1)))
+  if (GET_CODE (x) != PLUS)
     return false;
+
+  /* Check if operand 1 is a REG or a SUBREG of a REG.  */
+  rtx op1 = XEXP (x, 1);
+  if (SUBREG_P (op1))
+    op1 = SUBREG_REG (op1);
+  if (!REG_P (op1))
+    return false;
+
   rtx op0 = XEXP (x, 0);
   if (GET_CODE (op0) == ASHIFT
-      && CONST_INT_P (XEXP (op0, 1))
-      && REG_P (XEXP (op0, 0)))
+      && CONST_INT_P (XEXP (op0, 1)))
     {
-      unsigned HOST_WIDE_INT x = UINTVAL (XEXP (op0, 1));
-      return x == 1 || x == 2 || x == 3;
+      rtx inner0 = XEXP (op0, 0);
+
+      if (SUBREG_P (inner0))
+	inner0 = SUBREG_REG (inner0);
+
+      if (REG_P (inner0))
+	{
+	  unsigned HOST_WIDE_INT shift_val = UINTVAL (XEXP (op0, 1));
+	  return shift_val == 1 || shift_val == 2 || shift_val == 3;
+	}
     }
   if (GET_CODE (op0) == MULT
-      && CONST_INT_P (XEXP (op0, 1))
-      && REG_P (XEXP (op0, 0)))
+      && CONST_INT_P (XEXP (op0, 1)))
     {
-      unsigned HOST_WIDE_INT x = UINTVAL (XEXP (op0, 1));
-      return x == 2 || x == 4 || x == 8;
+      rtx inner0 = XEXP (op0, 0);
+      if (SUBREG_P (inner0))
+	inner0 = SUBREG_REG (inner0);
+
+      if (REG_P (inner0))
+	{
+	  unsigned HOST_WIDE_INT mult_val = UINTVAL (XEXP (op0, 1));
+	  return mult_val == 2 || mult_val == 4 || mult_val == 8;
+	}
     }
   return false;
 }
