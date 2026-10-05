@@ -1,5 +1,5 @@
-pr access Foo in "lala" pr
-pr access Foo in "lele" pr { dg-error "multiple" } 
+[[access Foo in "lala"]]
+[[access Foo in "lele"]] { dg-error "multiple" } 
 
 begin prio // = 8;
       op (int,int)int // = lala;

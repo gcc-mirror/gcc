@@ -631,7 +631,19 @@ skip_pragmat (LINE_T **top, char **ch, int delim, bool whitespace)
 	      *ch = &v[1];
 	      return true;
 	    }
+	  else if (is_bold (v, "REDRO") && delim == BOLD_PRAGMAT_BEGIN_SYMBOL)
+	    {
+	      *top = u;
+	      *ch = &v[1];
+	      return true;
+	    }
 	  else if (is_bold (v, "PR") && delim == STYLE_I_PRAGMAT_SYMBOL)
+	    {
+	      *top = u;
+	      *ch = &v[1];
+	      return true;
+	    }
+	  else if (v[0] == ']' && v[1] == ']' && delim == STYLE_I_PRAGMAT_BEGIN_SYMBOL)
 	    {
 	      *top = u;
 	      *ch = &v[1];
@@ -758,7 +770,14 @@ next_preprocessor_item (LINE_T **top, char **ch, int *delim)
 	      SCAN_ERROR (!skip_comment (&u, &v, BRIEF_COMMENT_BEGIN_SYMBOL), start_l, start_c,
 			  "unterminated comment");
 	    }
-	  else if (is_bold (v, "PRAGMAT") || is_bold (v, "PR"))
+	  else if ((a68_find_keyword (A68 (top_keyword), "PRAGMAT") != NO_KEYWORD
+		    && is_bold (v, "PRAGMAT"))
+		   || (a68_find_keyword (A68 (top_keyword), "PR") != NO_KEYWORD
+		       && is_bold (v, "PR"))
+		   || (a68_find_keyword (A68 (top_keyword), "ORDER") != NO_KEYWORD
+		       && is_bold (v, "ORDER"))
+		   || (a68_find_keyword (A68 (top_keyword), "[[") != NO_KEYWORD
+		       && v[0] == '[' && v[1] == '['))
 	    {
 	      /* We caught a PRAGMAT.  */
 	      char *item;
@@ -771,6 +790,13 @@ next_preprocessor_item (LINE_T **top, char **ch, int *delim)
 		{
 		  *delim = STYLE_I_PRAGMAT_SYMBOL;
 		  v = &v[strlen ("PR")];
+		}
+	      else if (v[0] == '[' && v[1] == '['
+		       && !OPTION_STRICT (&A68_JOB)
+		       && OPTION_STROPPING (&A68_JOB) == SUPPER_STROPPING)
+		{
+		  *delim = STYLE_I_PRAGMAT_BEGIN_SYMBOL;
+		  v = &v[strlen ("[[")];
 		}
 	      item = get_pragmat_item (&u, &v);
 	      SCAN_ERROR (item == NO_TEXT, start_l, start_c,
@@ -1207,6 +1233,11 @@ pragment (int type, LINE_T **ref_l, char **ref_c)
       else if (type == STYLE_I_PRAGMAT_SYMBOL)
 	{
 	  term_s = "pr";
+	  pragmat = true;
+	}
+      else if (type == STYLE_I_PRAGMAT_BEGIN_SYMBOL)
+	{
+	  term_s = "]]";
 	  pragmat = true;
 	}
       else if (type == BOLD_PRAGMAT_SYMBOL)
@@ -1828,7 +1859,37 @@ string break character point"));
       sym[0] = '\0';
       *att = (in_format ? LITERAL : ROW_CHAR_DENOTATION);
     }
-  else if (strchr ("#$()[]{},;@", c) != NO_TEXT)
+  else if (c == '['
+	   && !OPTION_STRICT (&A68_JOB)
+	   && OPTION_STROPPING (&A68_JOB) == SUPPER_STROPPING)
+    {
+      /* Either a single [ or [[ for a pragmat.  */
+      (sym++)[0] = c;
+      c = next_char (ref_l, ref_s, false);
+      if (c == '[')
+	{
+	  (sym++)[0] = c;
+	  (void) next_char (ref_l, ref_s, false);
+	}
+      sym[0] = '\0';
+      *att = STOP;
+    }
+  else if (c == ']'
+	   && !OPTION_STRICT (&A68_JOB)
+	   && OPTION_STROPPING (&A68_JOB) == SUPPER_STROPPING)
+    {
+      /* Either a single ] or ]] for a pragmat.  */
+      (sym++)[0] = c;
+      c = next_char (ref_l, ref_s, false);
+      if (c == ']')
+	{
+	  (sym++)[0] = c;
+	  (void) next_char (ref_l, ref_s, false);
+	}
+      sym[0] = '\0';
+      *att = STOP;
+    }
+  else if (strchr ("#$(){}[],;@", c) != NO_TEXT)
     {
       /* Single character symbols.  */
       (sym++)[0] = c;
@@ -2183,7 +2244,8 @@ tokenise_source (NODE_T **root, int level, bool in_format,
 		      make_node = false;
 		    }
 		  else if (att == STYLE_I_PRAGMAT_SYMBOL
-			   || att == BOLD_PRAGMAT_SYMBOL)
+			   || att == BOLD_PRAGMAT_SYMBOL
+			   || att == STYLE_I_PRAGMAT_BEGIN_SYMBOL)
 		    {
 		      char *nlpr = pragment (ATTRIBUTE (kw), l, s);
 		      if (pragmat_lpr == NO_TEXT

@@ -192,7 +192,8 @@ This option controls whether @code{[ .. ]} is considered equivalent to
 @code{( .. )}.  This syntactic variation is blessed by the Revised
 Report and is still strict Algol 68.
 
-This option is disabled by default.
+This option is disabled by default and can only be activated in UPPER
+stropping.
 @end table
 
 @node Directory options

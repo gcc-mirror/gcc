@@ -1,0 +1,7 @@
+{ dg-do compile }
+{ dg-options "-fstropping=supper -fbrackets" }
+
+(~)
+
+{ dg-error "-fbrackets" "-fbrackets" {target *-*-*} 0 }
+{ dg-prune-output "compilation terminated" }

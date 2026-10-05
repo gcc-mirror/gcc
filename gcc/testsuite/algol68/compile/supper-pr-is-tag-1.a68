@@ -1,0 +1,5 @@
+{ pr and pragmat are valid tags in SUPPER stropping.  }
+
+begin int pr = 10, pragmat = 20;
+      skip
+end

@@ -50,6 +50,8 @@
        adds support for non-cummulative sizetys of some fixed sizes
        like `word', `single', `double', etc.
 
+  [NP] This is the GNU68-2025-006-nestable-pragmats GNU extension.
+
   The metaproduction rules, hyper-rules and hyper-alternatives
   introduced by each extension are clearly marked in the sections
   below.  You can easily search for them using the extensions tags in
@@ -1874,7 +1876,8 @@ h) *symbol : NOTION symbol{94a,b,c,d,e,f,g,h}.
 9.2.1 Syntax
 
 { Extensions:
-  [NC] nestable comments.  }
+  [NC] nestable comments.
+  [NP] nestable pragmats.}
 
 A) PRAGMENT :: pragmat ; comment.
 
@@ -1883,7 +1886,8 @@ b) PRAGMENT{a} :
      STYLE PRAGMENT symbol{94h,-},
        STYLE PRAGMENT item{c} sequence option,
        STYLE PRAGMENT symbol{94h,-} ;
-     STYLE nestable comment{d}.
+     STYLE nestable comment{d} ;
+     STYLE nestable pragmat{g}.
 c) STYLE PRAGMENT item{b} :
      character glyph{814c} ; STYLE other PRAGMENT item{d}.
 d) STYLE nestable comment{b} :
@@ -1895,6 +1899,10 @@ e) STYLE nestable comment contents{d} :
        STYLE nestable comment{d} option.
 f) STYLE nestable comment item{e} :
      character glyph{814c} ; STYLE other nestable comment item{d}.
+g) STYLE nestable pragmat{b} :
+     STYLE pragmat begin symbol@{94h,-},
+       STYLE PRAGMENT item{c} sequence option,
+       STYLE pragmat end symbol{94h,-}.
 
 { A production rule may be added for each notion designated by 'STYLE
   other PRAGMENT item' each of whose alternatives is a symbol
@@ -1938,8 +1946,12 @@ f) unsafe symbol{37a}                   UNSAFE
    brief of symbol{53a}                 '
 h) bold comment begin symbol{92a}       NOTE
    bold comment end symbol{92a}         ETON
+   bold pragmat begin symbol            ORDER
+   bold pragmat end symbol              REDRO
    brief comment begin symbol{92a}      {
    brief comment end symbol{92a}        }
+   style i pragmat begin symbol         [[
+   style i pragmat end symbol           ]]
 
 10.1.1 Syntax
 

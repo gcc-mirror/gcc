@@ -86,21 +86,22 @@ const char *
 handle_access_in_pragmat (NODE_T *p, const char *pragmat, size_t pos)
 {
   const char *beginning = pragmat;
-
   SKIP_WHITESPACES (pragmat);
   /* Parse module name.  */
   char *module;
   PARSE_WORD (pragmat, module);
   if (*module == '\0')
     {
-      a68_error (p, "invalid pragmat: expected module name after %<access%>");
+      a68_error_in_pragmat (p, pos + pragmat - beginning,
+			    "invalid pragmat: expected module name after %<access%>");
       return NULL;
     }
   SKIP_WHITESPACES (pragmat);
   /* Parse "in " */
-  if (strncmp (pragmat, "in ", 3) != 0)
+  if (strncmp (pragmat, "in ", 2) != 0)
     {
-      a68_error (p, "invalid pragmat: expected %<in%> after module name");
+      a68_error_in_pragmat (p, pos + pragmat - beginning,
+			    "invalid pragmat: expected %<in%> after module name");
       return NULL;
     }
   pragmat += 3;
@@ -137,6 +138,8 @@ handle_access_in_pragmat (NODE_T *p, const char *pragmat, size_t pos)
   /* Skip closing PR or PRAGMAT.  */
   if (NPRAGMAT_TYPE (p) == STYLE_I_PRAGMAT_SYMBOL)
     pragmat += 2;
+  else if (NPRAGMAT_TYPE (p) == STYLE_I_PRAGMAT_BEGIN_SYMBOL)
+    pragmat += 2;
   else
     pragmat += 7;
 
@@ -153,6 +156,7 @@ handle_pragmat (NODE_T *p)
   const char *pragmat = NPRAGMAT (p);
   if (pragmat != NULL
       && (NPRAGMAT_TYPE (p) == STYLE_I_PRAGMAT_SYMBOL
+	  || NPRAGMAT_TYPE (p) == STYLE_I_PRAGMAT_BEGIN_SYMBOL
 	  || NPRAGMAT_TYPE (p) == BOLD_PRAGMAT_SYMBOL))
     {
       /* Process pragmat commands.  */
@@ -161,6 +165,8 @@ handle_pragmat (NODE_T *p)
 	  SKIP_WHITESPACES (pragmat);
 	  /* Skip PR or PRAGMAT.  */
 	  if (NPRAGMAT_TYPE (p) == STYLE_I_PRAGMAT_SYMBOL)
+	    pragmat += 2;
+	  else if (NPRAGMAT_TYPE (p) == STYLE_I_PRAGMAT_BEGIN_SYMBOL)
 	    pragmat += 2;
 	  else
 	    pragmat += 7;

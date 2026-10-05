@@ -147,6 +147,8 @@ a68_set_up_tables (void)
       add_keyword (&A68 (top_keyword), ORF_SYMBOL, "OREL");
       add_keyword (&A68 (top_keyword), BRIEF_COMMENT_BEGIN_SYMBOL, "{");
       add_keyword (&A68 (top_keyword), BRIEF_COMMENT_END_SYMBOL, "}");
+      add_keyword (&A68 (top_keyword), STYLE_I_PRAGMAT_BEGIN_SYMBOL, "[[");
+      add_keyword (&A68 (top_keyword), STYLE_I_PRAGMAT_END_SYMBOL, "]]");
       add_keyword (&A68 (top_keyword), QUOTE_SYMBOL, "'");
       add_keyword (&A68 (top_keyword), WORD_SYMBOL, "WORD");
 
@@ -154,6 +156,8 @@ a68_set_up_tables (void)
 	{
 	  add_keyword (&A68 (top_keyword), BOLD_COMMENT_BEGIN_SYMBOL, "NOTE");
 	  add_keyword (&A68 (top_keyword), BOLD_COMMENT_END_SYMBOL, "ETON");
+	  add_keyword (&A68 (top_keyword), BOLD_PRAGMAT_BEGIN_SYMBOL, "ORDER");
+	  add_keyword (&A68 (top_keyword), BOLD_PRAGMAT_END_SYMBOL, "REDRO");
 	}
 
       /* Symbols from MR.  */
@@ -176,6 +180,8 @@ a68_set_up_tables (void)
       add_keyword (&A68 (top_keyword), STYLE_I_COMMENT_SYMBOL, "CO");
       add_keyword (&A68 (top_keyword), BOLD_COMMENT_SYMBOL, "COMMENT");
       add_keyword (&A68 (top_keyword), STYLE_II_COMMENT_SYMBOL, "#");
+      add_keyword (&A68 (top_keyword), BOLD_PRAGMAT_SYMBOL, "PRAGMAT");
+      add_keyword (&A68 (top_keyword), STYLE_I_PRAGMAT_SYMBOL, "PR");
     }
 
   add_keyword (&A68 (top_keyword), POINT_SYMBOL, ".");
@@ -201,7 +207,6 @@ a68_set_up_tables (void)
   add_keyword (&A68 (top_keyword), ASSIGN_TO_SYMBOL, "=:");
   add_keyword (&A68 (top_keyword), COMPL_SYMBOL, "COMPL");
   add_keyword (&A68 (top_keyword), FROM_SYMBOL, "FROM");
-  add_keyword (&A68 (top_keyword), BOLD_PRAGMAT_SYMBOL, "PRAGMAT");
   add_keyword (&A68 (top_keyword), DO_SYMBOL, "DO");
   add_keyword (&A68 (top_keyword), CASE_SYMBOL, "CASE");
   add_keyword (&A68 (top_keyword), LOC_SYMBOL, "LOC");
@@ -224,7 +229,6 @@ a68_set_up_tables (void)
   add_keyword (&A68 (top_keyword), OD_SYMBOL, "OD");
   add_keyword (&A68 (top_keyword), OF_SYMBOL, "OF");
   add_keyword (&A68 (top_keyword), STRUCT_SYMBOL, "STRUCT");
-  add_keyword (&A68 (top_keyword), STYLE_I_PRAGMAT_SYMBOL, "PR");
   add_keyword (&A68 (top_keyword), BUS_SYMBOL, "]");
   add_keyword (&A68 (top_keyword), SKIP_SYMBOL, "SKIP");
   add_keyword (&A68 (top_keyword), SHORT_SYMBOL, "SHORT");

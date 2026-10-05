@@ -1,4 +1,4 @@
-{ dg-error "unrecognized pragmat" } pr invalid Foo in "module" pr
+{ dg-error "unrecognized pragmat" } [[invalid Foo in "module"]]
 
 begin prio // = 8;
       op (int,int)int // = lala;

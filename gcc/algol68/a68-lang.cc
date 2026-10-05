@@ -691,6 +691,11 @@ a68_post_options (const char **filename ATTRIBUTE_UNUSED)
   /* No psABI change warnings for Algol 68.  */
   warn_psabi = 0;
 
+  /* Check for incompatible combinations of comand-line options.  */
+  if (!OPTION_STRICT (&A68_JOB) && OPTION_BRACKETS (&A68_JOB))
+    fatal_error (UNKNOWN_LOCATION,
+		 "%<-fbrackets%> can only be used with UPPER stroping.");
+
   return false;
 }
 

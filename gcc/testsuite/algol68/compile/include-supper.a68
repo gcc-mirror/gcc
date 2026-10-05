@@ -5,8 +5,8 @@ begin string name := "Algol68 with supper!";
       { Both files are in `./a68includes'.
         The first one will be included because we uwed `-I.
         The second one will be included because of the relative path. }
-      pr include "hello-supper.a68" pr
-      pr include "a68includes/goodbye-supper.a68" pr
+      [[include "hello-supper.a68"]]
+      [[include "a68includes/goodbye-supper.a68"]]
 
       string bye := goodbye(name);
       string hi := hello(name);
