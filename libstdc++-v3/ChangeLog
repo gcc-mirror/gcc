@@ -1,3 +1,83 @@
+2026-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127666
+	* src/c++17/floating_from_chars.cc (pattern): Avoid reading past
+	the end of the input. Remove unused variable.
+	* testsuite/20_util/from_chars/127666.cc: New test.
+
+2026-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-07-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/126364
+	* include/bits/chrono_io.h (_Parser::operator()) <R>: Only break
+	early when setting failbit.
+	* testsuite/std/time/parse/126364.cc: New test.
+
+2026-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122224
+	* include/bits/stl_iterator_base_funcs.h (prev): Compare
+	distance as n > 0 instead of n != 0.
+	* testsuite/24_iterators/range_operations/122224.cc: New test.
+
+2026-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124015
+	* include/bits/regex.tcc (regex_traits::lookup_classname): Fix
+	handling of icase parameter.
+
+2026-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-02-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124015
+	* testsuite/28_regex/traits/char/lookup_classname.cc: Check for
+	correct result for unrecognized classname. Check that lookup is
+	case insensitive. Check that all required classnames are
+	recognized. Check that icase flag only affects "lower" and
+	"upper".
+	* testsuite/28_regex/traits/wchar_t/lookup_classname.cc:
+	Likewise.
+
+2026-10-04  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-04-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_compiler.h: Replace _GLIBCXX17_CONSTEXPR
+	with constexpr and disable diagnostics with pragmas.
+	(_AnyMatcher::operator()): Use constexpr-if instead of tag
+	dispatching. Postpone calls to _M_translate until after checking
+	result of earlier calls.
+	(_AnyMatcher::_M_apply): Remove both overloads.
+	(_BracketMatcher::operator(), _BracketMatcher::_M_ready):
+	Replace tag dispatching with 'if constexpr'.
+	(_BracketMatcher::_M_apply(_CharT, true_type)): Remove.
+	(_BracketMatcher::_M_apply(_CharT, false_type)): Remove second
+	parameter.
+	(_BracketMatcher::_M_make_cache): Remove both overloads.
+	* include/bits/regex_compiler.tcc (_BracketMatcher::_M_apply):
+	Remove second parameter.
+	* include/bits/regex_executor.tcc: Replace _GLIBCXX17_CONSTEXPR
+	with constexpr and disable diagnostics with pragmas.
+	(_Executor::_M_handle_backref): Replace __glibcxx_assert with
+	static_assert.
+	(_Executor::_M_handle_accept): Mark _S_opcode_backref case as
+	unreachable for non-DFS mode and do not instantiate
+	_M_handle_backref for that case.
+
 2026-10-03  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
