@@ -1444,7 +1444,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 	 non-clobbering statements.  */
       unsigned int cnt = param_sccvn_max_alias_queries_per_access;
       vuse = get_continuation_for_phi (phi, &ref, true,
-				       cnt, &visited, false, NULL, NULL);
+				       cnt, &visited, NULL, NULL);
       if (visited)
 	BITMAP_FREE (visited);
     }

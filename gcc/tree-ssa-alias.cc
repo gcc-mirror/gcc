@@ -3759,7 +3759,7 @@ ref_can_have_store_data_races (tree ref)
 static bool
 maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 		  ao_ref *ref, tree vuse, bool tbaa_p, unsigned int &limit,
-		  bitmap *visited, bool abort_on_visited,
+		  bitmap *visited,
 		  void *(*translate)(ao_ref *, tree, void *, translate_flags *),
 		  bool (*is_backedge)(edge, void *),
 		  translate_flags disambiguate_only,
@@ -3801,10 +3801,9 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
 	{
 	  /* An already visited PHI node ends the walk successfully.  */
 	  if (bitmap_bit_p (*visited, SSA_NAME_VERSION (PHI_RESULT (phi))))
-	    return !abort_on_visited;
+	    return true;
 	  vuse = get_continuation_for_phi (phi, ref, tbaa_p, limit,
-					   visited, abort_on_visited,
-					   translate, data, is_backedge,
+					   visited, translate, data, is_backedge,
 					   disambiguate_only);
 	  if (!vuse)
 	    return false;
@@ -3833,7 +3832,7 @@ maybe_skip_until (gimple *phi, tree &target, basic_block target_bb,
       if (gimple_bb (def_stmt) != bb)
 	{
 	  if (!bitmap_set_bit (*visited, SSA_NAME_VERSION (vuse)))
-	    return !abort_on_visited;
+	    return true;
 	  bb = gimple_bb (def_stmt);
 	}
       vuse = gimple_vuse (def_stmt);
@@ -3864,7 +3863,6 @@ cmp_intpair (const void *a_, const void *b_)
 tree
 get_continuation_for_phi (gphi *phi, ao_ref *ref, bool tbaa_p,
 			  unsigned int &limit, bitmap *visited,
-			  bool abort_on_visited,
 			  void *(*translate)(ao_ref *, tree, void *,
 					     translate_flags *),
 			  void *data,
@@ -3923,13 +3921,10 @@ get_continuation_for_phi (gphi *phi, ao_ref *ref, bool tbaa_p,
       if (arg1 == arg0)
 	;
       else if (i > 0 && args[i].first == args[i-1].first)
-	/* Already visited paths can be skipped - we otherwise falsely
-	   abort_on_visited.  */
+	/* Already walked paths can be skipped.  */
 	;
       else if (! maybe_skip_until (phi, arg0, dom, ref, arg1, tbaa_p,
-				   limit, visited,
-				   abort_on_visited,
-				   translate, is_backedge,
+				   limit, visited, translate, is_backedge,
 				   /* Do not valueize when walking over
 				      backedges.  */
 				   !args[i].second
@@ -3980,7 +3975,6 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 {
   bitmap visited = NULL;
   void *res;
-  bool translated = false;
 
   timevar_push (TV_ALIAS_STMT_WALK);
 
@@ -4014,7 +4008,7 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 	break;
       else if (gphi *phi = dyn_cast <gphi *> (def_stmt))
 	vuse = get_continuation_for_phi (phi, ref, tbaa_p, limit,
-					 &visited, translated, translate, data,
+					 &visited, translate, data,
 					 is_backedge);
       else
 	{
@@ -4039,8 +4033,11 @@ walk_non_aliased_vuses (ao_ref *ref, tree vuse, bool tbaa_p,
 	      /* Lookup succeeded.  */
 	      else if (res != NULL)
 		break;
-	      /* Translation succeeded, continue walking.  */
-	      translated = translated || disambiguate_only == TR_TRANSLATE;
+	      /* Translation succeeded, continue walking.  Regions skipped
+		 so far were only verified to not clobber the original ref,
+		 so forget about them.  */
+	      if (disambiguate_only == TR_TRANSLATE && visited)
+		bitmap_clear (visited);
 	    }
 	  vuse = gimple_vuse (def_stmt);
 	}

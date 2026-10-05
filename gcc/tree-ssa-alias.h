@@ -152,7 +152,7 @@ extern bool ref_can_have_store_data_races (tree);
 enum translate_flags
   { TR_TRANSLATE, TR_VALUEIZE_AND_DISAMBIGUATE, TR_DISAMBIGUATE };
 extern tree get_continuation_for_phi (gphi *, ao_ref *, bool,
-				      unsigned int &, bitmap *, bool,
+				      unsigned int &, bitmap *,
 				      void *(*)(ao_ref *, tree, void *,
 						translate_flags *),
 				      void *,
