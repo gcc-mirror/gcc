@@ -525,7 +525,11 @@ ConstChecker::visit (MatchExpr &expr)
   expr.get_scrutinee_expr ().accept_vis (*this);
 
   for (auto &match_arm : expr.get_match_cases ())
-    match_arm.get_expr ().accept_vis (*this);
+    {
+      if (match_arm.get_arm ().has_match_arm_guard ())
+	match_arm.get_arm ().get_guard_expr ().accept_vis (*this);
+      match_arm.get_expr ().accept_vis (*this);
+    }
 }
 
 void

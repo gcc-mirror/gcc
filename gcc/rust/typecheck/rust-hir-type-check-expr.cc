@@ -1868,6 +1868,22 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
 	  continue;
 	}
 
+      // the guard is a bool condition evaluated with the bindings of the
+      // pattern in scope
+      if (kase_arm.has_match_arm_guard ())
+	{
+	  TyTy::BaseType *bool_ty = nullptr;
+	  bool ok = context->lookup_builtin ("bool", &bool_ty);
+	  rust_assert (ok);
+
+	  HIR::Expr &guard = kase_arm.get_guard_expr ();
+	  TyTy::BaseType *guard_ty = TypeCheckExpr::Resolve (guard);
+	  unify_site (guard.get_mappings ().get_hirid (),
+		      TyTy::TyWithLocation (bool_ty),
+		      TyTy::TyWithLocation (guard_ty, guard.get_locus ()),
+		      guard.get_locus ());
+	}
+
       // check the kase type
       TyTy::BaseType *kase_block_ty = TypeCheckExpr::Resolve (kase.get_expr ());
       kase_block_tys.push_back (kase_block_ty);

@@ -1530,6 +1530,19 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       CompilePatternBindings::Compile (*kase_pattern, match_scrutinee_expr,
 				       ctx);
 
+      // The guard is evaluated once the bindings are set up. The arm body
+      // goes into its own block that only runs when the guard holds, and
+      // when it does not the arm falls through to the next one.
+      tree guard_expr = NULL_TREE;
+      tree guarded_block = NULL_TREE;
+      if (kase_arm.has_match_arm_guard ())
+	{
+	  guard_expr = CompileExpr::Compile (kase_arm.get_guard_expr (), ctx);
+	  guarded_block = Backend::block (fndecl, ctx->peek_enclosing_scope (),
+					  {}, start_location, end_location);
+	  ctx->push_block (guarded_block);
+	}
+
       // compile the expr and setup the assignment if required when tmp !=
       // NULL
       location_t arm_locus = kase_arm.get_locus ();
@@ -1555,6 +1568,16 @@ CompileExpr::visit (HIR::MatchExpr &expr)
       tree goto_end_label
 	= build1_loc (arm_locus, GOTO_EXPR, void_type_node, end_label);
       ctx->add_statement (goto_end_label);
+
+      if (guarded_block != NULL_TREE)
+	{
+	  ctx->pop_block ();
+	  tree guard_stmt
+	    = Backend::if_statement (NULL_TREE, guard_expr, guarded_block,
+				     NULL_TREE,
+				     kase_arm.get_guard_expr ().get_locus ());
+	  ctx->add_statement (guard_stmt);
+	}
 
       ctx->pop_block ();
 
