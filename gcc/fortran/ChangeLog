@@ -1,3 +1,17 @@
+2026-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127724
+	* st.cc (deallocate_allocated_coarrays): Insert the guarded
+	deallocation before EXEC_END_TEAM, starting from the head of
+	the code list.
+
+2026-10-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127682
+	* interface.cc (compare_parameter): Update the conditions enforcing
+	the restrictions on volatile and asynchronous array arguments so
+	that they also work with polymorphic dummy arrays.
+
 2026-10-03  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/127683

@@ -1,3 +1,90 @@
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.texi (Extended environment enquiries): Document environment
+	enquiries related to word sized modes.
+	(Extended standard modes): New section.
+	(Extended integral operators): Likewise.
+	(Extended real operators): Likewise.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-imports.cc (complete_encoded_mode): Handle word sized modes.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-prelude.cc (stand_prelude): Add definitions for
+	shortmaxbits and shortshortmaxbits.
+	(gnu_prelude): Add new standard definitions for fixed sized modes.
+	* a68-low-prelude.cc (a68_lower_tan): New function.
+	(a68_lower_long_sin): Likewise.
+	(a68_lower_long_long_cos): Likewise.
+	(a68_lower_asin): Likewise.
+	(a68_lower_long_atan): Likewise.
+	(a68_lower_long_long_ln): Likewise.
+	(a68_lower_exp): Likewise.
+	(a68_lower_longreali): Likewise.
+	* a68.h: Add prototype for a68_lower_wordbitswidth.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-low-bits.cc (a68_get_bits_skip_tree): Handle fixed
+	sized modes.
+	* a68-low-prelude.cc (a68_lower_wordbitswidth): New function.
+	(a68_lower_wordreali): Likewise.
+	(a68_lower_wordinti): Likewise.
+	* a68-low-units.cc (a68_lower_denotation): Likewise.
+	* a68-low-reals.cc (a68_real_pow): Likewise.
+	(a68_real_round): Likewise.
+	(a68_real_entier): Likewise.
+	(a68_get_real_skip_tree): Likewise.
+	* a68-low-moids.cc (lower_standard_mode): Likewise.
+	* a68-low-ints.cc (a68_get_int_skip_tree): Likewise.
+	* a68-low-decls.cc: Likewise.
+	* a68-low-complex.cc (a68_complex_widen_from_real): Likewise.
+	* a68-low-coercions.cc: Likewise.
+	(a68_lower_widening): Likewise.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-attrs.def (FIXETY): New attribute.
+	(WORD_SYMBOL): Likewise.
+	* a68.h (a68_word_bits_type): Define.
+	(a68_word_bytes_type): Likewise.
+	(a68_word_int_type): Likewise.
+	(a68_word_real_type): Likewise.
+	* a68-types.h (enum a68_tree_index): Add enumerated values
+	A68_WORD_{INT,BITS,BYTES,REAL}_TYPE.
+	* a68-lang.cc (a68_build_a68_type_nodes): Initialize
+	a68_word_{int,bits,bytes,real}_type.
+	(a68_type_for_mode): Handle a68_word_{int,bits,bytes,real}_type.
+	* a68-moids-misc.cc (a68_is_transput_mode): Handle fixed sized
+	modes.
+	(a68_widens_to): Likewise.
+	* a68-moids-to-string.cc (moid_to_string_2): Likewise.
+	* a68-parser-bottom-up.cc (reduce_declarers): Reduce fixetys.
+	(reduce_primary_parts): Likewise.
+	* a68-parser-keywords.cc (a68_set_up_tables): Add keyword for
+	WORD_SYMBOL.
+	* a68-parser-modes.cc (count_sizety): Handle sizetys.
+	(get_mode_from_declarer): Likewise.
+	(get_mode_from_denotation): Likewise.
+	* a68-parser-victal.cc (victal_check_declarer): Likewise.
+	(compute_derived_modes): Resolve equivalences in M_WORD_* standard
+	modes.
+	* a68-parser-moids-check.cc (find_operator): Handle fixed sized
+	modes.
+	* a68-parser-prelude.cc (stand_moids): Build standard fixed sized
+	modes and operators.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.vw (12D): Add meta-alternative for word.
+	(81A): Likewise.
+	(65C): Add meta-alternative for WORD.
+	(65H): New metaproduction rule.
+	(82o): New hyper-rule.
+	(94d): New word symbol.
+
 2026-10-01  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* ga68.texi (Comments and pragmats): Correct description of

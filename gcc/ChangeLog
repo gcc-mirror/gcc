@@ -1,3 +1,69 @@
+2026-10-04  Roger Sayle  <roger@nextmovesoftware.com>
+	    Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md: Various whitespace and indentation clean-ups.
+	(aop_name_pfx): New code attribute to
+	produce "*" for XOR/PLUS.
+	(x86_64_shld<nf_name>): Use any_or_plus and aop_name_pfx.
+	(x86_64_shld_ndd<nf_name>): Likewise.
+	(x86_64_shld_1<nf_name>): Likewise.
+	(x86_64_shld_ndd_1<nf_name>): Likewise.
+	(*x86_64_shld_shrd_1_nozext_nf): Use any_or_plus.
+	(*x86_64_shld_shrd_1_nozext): Likewise.
+	(*x86_64_shld_2): Likewise.
+	(*x86_64_shld_ndd_2): Likewise.
+	(x86_shld<nf_name>): Use any_or_plus and aop_name_pfx.
+	(x86_shld_1<nf_name>): Likewise.
+	(x86_shld_ndd_1<nf_name>): Likewise.
+	(*x86_shld_shrd_1_nozext_nf): Use any_or_plus.
+	(*x86_shld_shrd_1_nozext): Likewise.
+	(*x86_shld_2): Likewise.
+	(*x86_shld_ndd_2): Likewise.
+	(x86_64_shrd<nf_name>): Use any_or_plus and aop_name_pfx.
+	(x86_64_shrd_ndd<nf_name>): Likewise.
+	(x86_64_shrd_1<nf_name>): Likewise.
+	(x86_64_shrd_ndd_1<nf_name>): Likewise.
+	(*x86_64_shrd_shld_1_nozext_nf): Use any_or_plus.
+	(*x86_64_shrd_shld_1_nozext): Likewise.
+	(*x86_64_shrd_2): Likewise.
+	(*x86_64_shrd_ndd_2): Likewise. Fix match_dup operand numbering.
+	(x86_shrd<nf_name>): Use any_or_plus and aop_name_pfx.
+	(x86_shrd_ndd<nf_name>): Likewise.
+	(x86_shrd_1<nf_name>): Likewise.
+	(x86_shrd_ndd_1<nf_name>): Likewise.
+	(*x86_shrd_shld_1_nozext_nf): Use any_or_plus.
+	(*x86_shrd_shld_1_nozext): Likewise.
+	(*x86_shrd_2): Likewise.
+	(*x86_shrd_ndd_2): Likewise.
+	* doc/md.texi: Document aop<mode>3 as a named pattern.
+
+2026-10-04  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (canonicalize_funcptr_for_compare): Check for
+	SYMBOL_REF targets that are not function addresses early and emit
+	a direct move instruction to bypass redundant libcall wrappers.
+
+2026-10-04  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* vr-values.cc (simplify_using_ranges::simplify_compare_using_ranges_1):
+	Fold a LE or GE test between two names to EQ when the relation
+	oracle implies it.
+
+2026-10-04  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* range-op-mixed.h (operator_bitwise_or::lhs_op1_relation): New.
+	(operator_min::lhs_op1_relation): New.
+	(operator_min::lhs_op2_relation): New.
+	(operator_max::lhs_op1_relation): New.
+	(operator_max::lhs_op2_relation): New.
+	* range-op.cc (operator_bitwise_and::lhs_op1_relation): Return
+	VREL_EQ when the operands are equal.
+	(operator_bitwise_or::lhs_op1_relation): New.
+	(operator_min::lhs_op1_relation): New.
+	(operator_min::lhs_op2_relation): New.
+	(operator_max::lhs_op1_relation): New.
+	(operator_max::lhs_op2_relation): New.
+
 2026-10-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/extend.texi (CORE-V Built-in Functions): Update URL.

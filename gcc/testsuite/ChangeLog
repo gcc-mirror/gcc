@@ -1,3 +1,118 @@
+2026-10-04  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127724
+	* gfortran.dg/coarray/team_allocated_coarrays_2.f90: New test.
+
+2026-10-04  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f16.c: Set
+	-mtune=cortex-m55 to get stable assembly.
+	* gcc.target/arm/mve/intrinsics/vcmpeqq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgeq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpgtq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpleq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpltq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vcmpneq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vdupq_n_f32.c: Likewise.
+	* gcc.target/arm/mve/dlstp-invalid-asm.c: Likewise.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/error-word-bits-6.a68: New test.
+	* algol68/compile/error-word-bits-5.a68: Likewise.
+	* algol68/compile/error-word-bits-4.a68: Likewise.
+	* algol68/compile/error-word-bits-3.a68: Likewise.
+	* algol68/compile/error-word-bits-2.a68: Likewise.
+	* algol68/compile/error-word-bits-1.a68: New test.
+	* algol68/execute/word-bits-1.a68: Likewise.
+	* algol68/execute/or-word-bits-1.a68: Likewise.
+	* algol68/execute/not-word-bits-1.a68: Likewise.
+	* algol68/execute/ne-word-bits-1.a68: Likewise.
+	* algol68/execute/le-word-bits-1.a68: Likewise.
+	* algol68/execute/elem-word-bits-1.a68: Likewise.
+	* algol68/execute/bin-word-1.a68: Likewise.
+	* algol68/execute/and-word-bits-1.a68: Likewise.
+	* algol68/execute/xor-bits-1.a68: Update for word sized modes.
+	* algol68/execute/word-bits-shift-1.a68: Likewise.
+	* algol68/execute/widening-compl-1.a68: Likewise.
+	* algol68/execute/timesab-1.a68: Likewise.
+	* algol68/execute/tan-1.a68: Likewise.
+	* algol68/execute/sqrt-1.a68: Likewise.
+	* algol68/execute/sin-1.a68: Likewise.
+	* algol68/execute/sign-real-1.a68: Likewise.
+	* algol68/execute/sign-int-1.a68: Likewise.
+	* algol68/execute/round-1.a68: Likewise.
+	* algol68/execute/re-im-1.a68: Likewise.
+	* algol68/execute/pow-real-1.a68: Likewise.
+	* algol68/execute/pow-int-1.a68: Likewise.
+	* algol68/execute/plusab-2.a68: Likewise.
+	* algol68/execute/plusab-1.a68: Likewise.
+	* algol68/execute/plus-int-1.a68: Likewise.
+	* algol68/execute/overab-1.a68: Likewise.
+	* algol68/execute/over-int-1.a68: Likewise.
+	* algol68/execute/odd-1.a68: Likewise.
+	* algol68/execute/neg-real-1.a68: Likewise.
+	* algol68/execute/neg-int-1.a68: Likewise.
+	* algol68/execute/ne-int-1.a68: Likewise.
+	* algol68/execute/mult-int-1.a68: Likewise.
+	* algol68/execute/modules/program-27.a68: Likewise.
+	* algol68/execute/modules/module27.a68: Likewise.
+	* algol68/execute/modab-1.a68: Likewise.
+	* algol68/execute/mod-int-1.a68: Likewise.
+	* algol68/execute/minusab-2.a68: Likewise.
+	* algol68/execute/minusab-1.a68: Likewise.
+	* algol68/execute/minus-int-1.a68: Likewise.
+	* algol68/execute/lt-int-1.a68: Likewise.
+	* algol68/execute/log-1.a68: Likewise.
+	* algol68/execute/ln-1.a68: Likewise.
+	* algol68/execute/le-int-1.a68: Likewise.
+	* algol68/execute/i-2.a68: Likewise.
+	* algol68/execute/i-1.a68: Likewise.
+	* algol68/execute/gt-int-1.a68: Likewise.
+	* algol68/execute/ge-word-bits-1.a68: Likewise.
+	* algol68/execute/ge-int-1.a68: Likewise.
+	* algol68/execute/eq-word-bits-1.a68: Likewise.
+	* algol68/execute/eq-int-1.a68: Likewise.
+	* algol68/execute/entier-1.a68: Likewise.
+	* algol68/execute/divab-real-1.a68: Likewise.
+	* algol68/execute/div-int-1.a68: Likewise.
+	* algol68/execute/cos-1.a68: Likewise.
+	* algol68/execute/conj-1.a68: Likewise.
+	* algol68/execute/bits-test-1.a68: Likewise.
+	* algol68/execute/bits-set-1.a68: Likewise.
+	* algol68/execute/bits-environment-enquiries-1.a68: Likewise.
+	* algol68/execute/bits-clear-1.a68: Likewise.
+	* algol68/execute/atan-1.a68: Likewise.
+	* algol68/execute/asin-1.a68: Likewise.
+	* algol68/execute/affirm-real-1.a68: Likewise.
+	* algol68/execute/affirm-int-1.a68: Likewise.
+	* algol68/execute/acos-1.a68: Likewise.
+	* algol68/execute/abs-real-1.a68: Likewise.
+	* algol68/execute/abs-int-1.a68: Likewise.
+
+2026-10-04  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/xor-bits-1.a68: New test.a
+
+2026-10-04  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127682
+	* gfortran.dg/volatile_15.f90: New test.
+
+2026-10-04  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-le-ge-relation-1.c: New test.
+
+2026-10-04  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gcc.dg/tree-ssa/vrp-and-or-relation-1.c: New test.
+
 2026-10-03  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/127344
