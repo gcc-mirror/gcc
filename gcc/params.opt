@@ -261,6 +261,10 @@ Threshold ipa-cp opportunity evaluation that is still considered beneficial to c
 Common Joined UInteger Var(param_ipa_cp_loop_hint_bonus) Init(64) Param Optimization
 Compile-time bonus IPA-CP assigns to candidates which make loop bounds or strides known.
 
+-param=ipa-cp-profile-runtime-scaling=
+Common Joined UInteger Var(param_ipa_cp_profile_runtime_scaling) Init(19) Param Optimization
+With profile feedback, by how many bits to shift the run-time before it is used as the basis for IPA-CP evaluations.
+
 -param=ipa-cp-max-recursive-depth=
 Common Joined UInteger Var(param_ipa_cp_max_recursive_depth) Init(8) Param Optimization
 Maximum depth of recursive cloning for self-recursive function.

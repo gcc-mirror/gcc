@@ -153,6 +153,12 @@ object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
 
 static long overall_size, orig_overall_size;
 
+/* Overall run-time of the part of the program or the compilation unit for
+   which profile information is available, scaled by
+   param_ipa_cp_min_recursive_probability.  */
+
+static sreal overall_scaled_runtime;
+
 /* The maximum number of IPA-CP decision sweeps that any node requested in its
    param.  */
 static int max_number_sweeps;
@@ -3477,8 +3483,8 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
   if (count_sum.nonzero_p ())
     {
       profile_count saved_time = count_sum * time_benefit;
-      sreal evaluation = saved_time.to_sreal_scale (profile_count::one ())
-			      / size_cost;
+      sreal evaluation = (saved_time.to_sreal_scale (profile_count::one ())
+                         / overall_scaled_runtime) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4082,6 +4088,8 @@ static void
 ipcp_propagate_stage (class ipa_topo_info *topo)
 {
   struct cgraph_node *node;
+  sreal overall_runtime = 0;
+  overall_scaled_runtime = 0;
 
   if (dump_file)
     fprintf (dump_file, "\n Propagating constants:\n\n");
@@ -4103,15 +4111,34 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 	if (max_number_sweeps < num_sweeps)
 	  max_number_sweeps = num_sweeps;
       }
-    ipa_size_summary *s = ipa_size_summaries->get (node);
-    if (node->definition && !node->alias && s != NULL)
-      overall_size += s->self_size;
+
+    if (!node->alias)
+      {
+       ipa_size_summary *szs = ipa_size_summaries->get (node);
+       if (szs)
+         overall_size += szs->self_size;
+       ipa_fn_summary *fns = ipa_fn_summaries->get (node);
+       if (fns)
+         {
+           int shift = opt_for_fn (node->decl,
+                                   param_ipa_cp_profile_runtime_scaling);
+           sreal frt = fns->time;
+           overall_runtime += frt;
+           overall_scaled_runtime += frt.shift(-shift);
+         }
+      }
   }
 
   orig_overall_size = overall_size;
 
   if (dump_file)
-    fprintf (dump_file, "\noverall_size: %li\n", overall_size);
+    {
+      fprintf (dump_file, "\noverall_size: %li\n", overall_size);
+      fprintf (dump_file, "overall_runtime: %.2e\n",
+              overall_runtime.to_double ());
+      fprintf (dump_file, "overall_scaled_runtime: %.2e\n",
+              overall_scaled_runtime.to_double ());
+    }
 
   propagate_constants_topo (topo);
   if (flag_checking)
@@ -6872,6 +6899,7 @@ ipa_cp_cc_finalize (void)
 {
   overall_size = 0;
   orig_overall_size = 0;
+  overall_scaled_runtime = 0;
   ipcp_free_transformation_sum ();
 }
 

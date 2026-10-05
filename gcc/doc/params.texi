@@ -1292,6 +1292,11 @@ of iterations of a loop known, it adds a bonus of
 @option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
+@paindex ipa-cp-profile-runtime-scaling
+@item ipa-cp-profile-runtime-scaling
+When using profile feedback, by how many bits to shift the run-time
+before it is used as the basis for IPA-CP evaluations.
+
 @paindex ipa-max-loop-predicates
 @item ipa-max-loop-predicates
 The maximum number of different predicates IPA uses to describe when
