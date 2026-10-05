@@ -18606,7 +18606,7 @@ of the function, control never reaches the end of the function
 body.  The @code{__builtin_unreachable} is in fact unreachable and
 communicates this fact to the compiler.
 
-Another use for @code{__builtin_unreachable} is following a call a
+Another use for @code{__builtin_unreachable} is following a call to a
 function that never returns but that is not declared
 @code{__attribute__((noreturn))}, as in this example:
 
