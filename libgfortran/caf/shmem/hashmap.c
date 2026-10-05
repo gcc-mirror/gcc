@@ -102,8 +102,8 @@ hashmap_init_supervisor (hashmap *hm, hashmap_shared *hs, allocator *a)
 {
   hashmap_entry *data;
   *hm = (hashmap) {hs, a->shm, a};
-  hm->s->data
-    = allocator_shared_malloc (a, INITIAL_SIZE * sizeof (hashmap_entry));
+  hm->s->data = allocator_shared_malloc_or_die (a, INITIAL_SIZE
+						     * sizeof (hashmap_entry));
   data = get_data (hm);
   memset (data, '\0', INITIAL_SIZE * sizeof (hashmap_entry));
 
@@ -205,8 +205,8 @@ enlarge_hashmap_mem (hashmap *hm, hashmap_entry **data, bool f)
   old_data_p = hm->s->data;
   old_size = hm->s->size;
 
-  hm->s->data = allocator_shared_malloc (hm->a, (hm->s->size *= 2)
-						  * sizeof (hashmap_entry));
+  hm->s->data = allocator_shared_malloc_or_die (hm->a, (hm->s->size *= 2)
+							* sizeof (hashmap_entry));
   hm->s->bitnum++;
 
   *data = get_data (hm);

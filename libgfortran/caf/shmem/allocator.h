@@ -68,8 +68,13 @@ void allocator_init_supervisor (allocator *, allocator_shared *, shared_memory);
 /* Request a block of shared memory.  The memory is not linked with the other
    images.  The shared_mem_ptr returned is only local to the calling image.
    When requiring a memory block shared between all images, call
-   alloc_get_memory_by_id...().  */
+   alloc_get_memory_by_id...().  Returns a null pointer when the shared
+   memory is exhausted.  */
 shared_mem_ptr allocator_shared_malloc (allocator *, size_t size);
+
+/* Like allocator_shared_malloc, but terminate the image when the shared
+   memory is exhausted.  */
+shared_mem_ptr allocator_shared_malloc_or_die (allocator *, size_t size);
 
 /* Free the given piece of memory.  This routine just inserts the memory chunk
    into the bucket list of free memory.  It does not join adjacent blocks of

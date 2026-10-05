@@ -187,7 +187,7 @@ collsub_init_supervisor (collsub_shared *cis, allocator *al,
   const size_t init_size = 1U << 10;
 
   cis->curr_size = init_size;
-  cis->collsub_buf = allocator_shared_malloc (al, init_size);
+  cis->collsub_buf = allocator_shared_malloc_or_die (al, init_size);
 
   counter_barrier_init (&cis->barrier, init_num_images);
   initialize_shared_mutex (&cis->mutex);
@@ -208,7 +208,8 @@ get_collsub_buf (size_t size)
 	caf_current_team->u.image_info->collsub.collsub_buf,
 	caf_current_team->u.image_info->collsub.curr_size);
       caf_current_team->u.image_info->collsub.collsub_buf
-	= allocator_shared_malloc (alloc_get_allocator (&local->ai), size);
+	= allocator_shared_malloc_or_die (alloc_get_allocator (&local->ai),
+					  size);
       caf_current_team->u.image_info->collsub.curr_size = size;
     }
 

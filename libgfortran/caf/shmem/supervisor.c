@@ -227,6 +227,9 @@ ensure_shmem_initialization (void)
 					 local->total_num_images * sizeof (int)
 					   + sizeof (struct shmem_image_info),
 					 next_memid++, &created)}};
+      if (caf_initial_team->u.image_info == NULL)
+	caf_runtime_error ("Shared memory exhausted; increase "
+			   "GFORTRAN_SHARED_MEMORY_SIZE");
       if (created)
 	{
 	  counter_barrier_init (&caf_initial_team->u.image_info->image_count,

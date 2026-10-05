@@ -319,10 +319,14 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
       mem = NULL;
       break;
     case CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY:
-      allocator_lock (&local->ai.alloc);
-      mem = SHMPTR_AS (void *, allocator_shared_malloc (&local->ai.alloc, size),
-		       &local->sm);
-      allocator_unlock (&local->ai.alloc);
+      {
+	shared_mem_ptr p;
+
+	allocator_lock (&local->ai.alloc);
+	p = allocator_shared_malloc (&local->ai.alloc, size);
+	allocator_unlock (&local->ai.alloc);
+	mem = SHMPTR_IS_NULL (p) ? NULL : SHMPTR_AS (void *, p, &local->sm);
+      }
       break;
     case CAF_REGTYPE_COARRAY_MAP_EXISTING:
       /* Computing the mem ptr is done above before the new token is allocated.
@@ -1777,6 +1781,14 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
       sizeof (struct shmem_image_info)
 	+ caf_current_team->u.image_info->image_map_size * sizeof (int),
       -tmemid, &created)}};
+  if (unlikely (t->u.image_info == NULL))
+    {
+      allocator_unlock (&local->ai.alloc);
+      free (t);
+      *team = NULL;
+      caf_internal_error (alloc_fail_msg, stat, errmsg, errmsg_len);
+      return;
+    }
 
   if (created)
     {

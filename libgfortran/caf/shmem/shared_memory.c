@@ -88,13 +88,16 @@ shared_memory_get_env (void)
 }
 
 /* Get a pointer into the shared memory block with alignment
-   (works similar to sbrk).  */
+   (works similar to sbrk).  Returns a null pointer when the block is
+   exhausted.  */
 
 shared_mem_ptr
 shared_memory_get_mem_with_alignment (shared_memory_act *mem, size_t size,
 				      size_t align)
 {
   size_t aligned_curr_size = alignto (mem->glbl.meta->used, align);
+  if (aligned_curr_size > mem->size || size > mem->size - aligned_curr_size)
+    return SHMPTR_NULL;
   mem->glbl.meta->used = aligned_curr_size + size;
   return (shared_mem_ptr) {aligned_curr_size};
 }

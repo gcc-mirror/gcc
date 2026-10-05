@@ -66,10 +66,11 @@ sync_init_supervisor (sync_t *si, alloc *ai)
   initialize_shared_mutex (&si->cis->sync_images_table_lock);
 
   si->cis->sync_images_table
-    = allocator_shared_malloc (alloc_get_allocator (ai), table_size_in_bytes);
+    = allocator_shared_malloc_or_die (alloc_get_allocator (ai),
+				      table_size_in_bytes);
   si->cis->sync_images_cond_vars
-    = allocator_shared_malloc (alloc_get_allocator (ai),
-			       sizeof (caf_shmem_condvar) * num_images);
+    = allocator_shared_malloc_or_die (alloc_get_allocator (ai),
+				      sizeof (caf_shmem_condvar) * num_images);
 
   si->table = SHMPTR_AS (int *, si->cis->sync_images_table, ai->mem);
   si->triggers
