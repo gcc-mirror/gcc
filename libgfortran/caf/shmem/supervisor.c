@@ -217,16 +217,23 @@ ensure_shmem_initialization (void)
       caf_initial_team = caf_current_team
 	= (caf_shmem_team_t) calloc (1, sizeof (struct caf_shmem_team));
       allocator_lock (&local->ai.alloc);
-      *caf_initial_team = (struct caf_shmem_team) {
-	NULL,
-	-1,
-	this_image.image_num,
-	0,
-	NULL,
-	{alloc_get_memory_by_id_created (&local->ai,
-					 local->total_num_images * sizeof (int)
-					   + sizeof (struct shmem_image_info),
-					 next_memid++, &created)}};
+
+      *caf_initial_team = (struct caf_shmem_team)
+	{
+	  NULL,
+	  -1,
+	  this_image.image_num,
+	  0,
+	  NULL,
+	  {
+	    alloc_get_memory_by_id_created (&local->ai,
+				  local->total_num_images * sizeof (int)
+				    + sizeof (struct shmem_image_info),
+				  next_memid++,
+				  &created)
+	  }
+	};
+
       if (caf_initial_team->u.image_info == NULL)
 	caf_runtime_error ("Shared memory exhausted; increase "
 			   "GFORTRAN_SHARED_MEMORY_SIZE");
@@ -242,7 +249,8 @@ ensure_shmem_initialization (void)
 	  caf_initial_team->u.image_info->image_map_size
 	    = local->total_num_images;
 	  caf_initial_team->u.image_info->num_term_images = 0;
-	  caf_initial_team->u.image_info->lastmemid = 0;
+	  caf_initial_team->u.image_info->id = 0;
+	  caf_initial_team->u.image_info->new_teams = SHMPTR_NULL;
 	  for (int i = 0; i < local->total_num_images; ++i)
 	    caf_initial_team->u.image_info->image_map[i] = i;
 	  register_team (caf_initial_team);
@@ -258,6 +266,7 @@ ensure_shmem_initialization (void)
       counter_barrier_init (&this_image.supervisor->num_active_images,
 			    local->total_num_images);
       this_image.supervisor->teams = SHMPTR_NULL;
+      this_image.supervisor->next_team_id = 1;
       alloc_init_supervisor (&local->ai, &local->sm);
       sync_init_supervisor (&local->si, &local->ai);
     }

@@ -66,6 +66,8 @@ typedef struct supervisor
      supervisor can reach the barriers of an image that terminated without
      leaving them.  Pushed to without a lock.  */
   shared_mem_ptr teams;
+  /* The id of the next team formed; guarded by the allocator lock.  */
+  memid next_team_id;
   caf_shmem_mutex image_tracker_lock;
 #ifdef WIN32
   size_t global_used_handles;

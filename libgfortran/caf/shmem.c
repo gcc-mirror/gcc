@@ -1716,6 +1716,50 @@ _gfortran_caf_random_init (bool repeatable, bool image_distinct)
     }
 }
 
+/* The id of team TEAM_NO formed by the current FORM TEAM statement of the
+   current team.  All images forming that team get the same id, which no
+   other team has.  To be called with the allocator lock held, after counting
+   the statement.  Returns 0 when the shared memory is exhausted.  */
+
+static memid
+new_team_id (int team_no)
+{
+  struct shmem_image_info *info = caf_current_team->u.image_info;
+  struct new_team_id
+  {
+    int team_no;
+    memid id;
+  } *table;
+  int i;
+
+  if (SHMPTR_IS_NULL (info->new_teams))
+    {
+      info->new_teams
+	= allocator_shared_malloc (&local->ai.alloc, info->image_map_size
+						       * sizeof (*table));
+      if (SHMPTR_IS_NULL (info->new_teams))
+	return 0;
+      info->new_teams_gen = 0;
+    }
+  table = SHMPTR_AS (struct new_team_id *, info->new_teams, &local->sm);
+  /* The first image of a new FORM TEAM statement clears the ids of the
+     previous one; the images all passed its final barrier.  */
+  if (info->new_teams_gen != caf_current_team->teams_formed)
+    {
+      for (i = 0; i < info->image_map_size; ++i)
+	table[i].team_no = 0;
+      info->new_teams_gen = caf_current_team->teams_formed;
+    }
+  for (i = 0; i < info->image_map_size && table[i].team_no != 0; ++i)
+    if (table[i].team_no == team_no)
+      return table[i].id;
+  /* Each image forms one team, so the table has room for all of them.  */
+  assert (i < info->image_map_size);
+  table[i].team_no = team_no;
+  table[i].id = this_image.supervisor->next_team_id++;
+  return table[i].id;
+}
+
 void
 _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
 			 int *stat, char *errmsg, size_t errmsg_len)
@@ -1729,14 +1773,10 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
     = "The NEW_INDEX of FORM TEAMs has to be unique.";
   const char cannot_assign_index[]
     = "Can not assign new image index in FORM TEAM.";
-  static int image_size_shift = -1;
-  static int teams_count = 0;
   caf_shmem_team_t t;
   bool created;
-  memid tmemid;
+  memid id;
 
-  if (image_size_shift < 0)
-    image_size_shift = (int) round (log2 (local->total_num_images));
   if (stat)
     *stat = 0;
 
@@ -1764,23 +1804,21 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
   t = *((caf_shmem_team_t *) team);
 
   allocator_lock (&local->ai.alloc);
-  if (caf_current_team->team_no == -1)
-    tmemid = team_no + teams_count;
-  else
-    tmemid = (caf_current_team->u.image_info->lastmemid << image_size_shift)
-	     + team_no + teams_count;
-  ++teams_count;
+  ++caf_current_team->teams_formed;
+  id = new_team_id (team_no);
   *t = (struct caf_shmem_team) {
     caf_teams_formed,
     team_no,
     -1,
     0,
     NULL,
-    {alloc_get_memory_by_id_created (
-      &local->ai,
-      sizeof (struct shmem_image_info)
-	+ caf_current_team->u.image_info->image_map_size * sizeof (int),
-      -tmemid, &created)}};
+    {id ? alloc_get_memory_by_id_created (
+	    &local->ai,
+	    sizeof (struct shmem_image_info)
+	      + caf_current_team->u.image_info->image_map_size * sizeof (int),
+	    -id, &created)
+	: NULL},
+    0};
   if (unlikely (t->u.image_info == NULL))
     {
       allocator_unlock (&local->ai.alloc);
@@ -1799,7 +1837,8 @@ _gfortran_caf_form_team (int team_no, caf_team_t *team, int *new_index,
       t->u.image_info->team_id = team_no;
       t->u.image_info->image_map_size = 0;
       t->u.image_info->num_term_images = 0;
-      t->u.image_info->lastmemid = tmemid;
+      t->u.image_info->id = id;
+      t->u.image_info->new_teams = SHMPTR_NULL;
       register_team (t);
       /* Initialize a freshly created image_map with -1.  */
       for (int i = 0; i < caf_current_team->u.image_info->image_map_size; ++i)
@@ -1899,10 +1938,7 @@ _gfortran_caf_change_team (caf_team_t team, int *stat,
 
   t->parent = caf_current_team;
   t->parent_teams_last_active_memid = next_memid;
-  next_memid = (t->u.image_info->team_parent_id != -1
-		  ? (((memid) t->u.image_info->team_parent_id) << 48)
-		  : 0)
-	       | (((memid) t->u.image_info->team_id) << 32) | 1;
+  next_memid = (t->u.image_info->id << 32) | 1;
   caf_current_team = t;
   sync_team (caf_current_team);
 }

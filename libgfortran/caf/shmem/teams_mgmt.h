@@ -64,10 +64,17 @@ struct caf_shmem_team
       int num_term_images;
       /* The next team in the supervisor's list of teams.  */
       shared_mem_ptr next_team;
-      memid lastmemid;
+      /* The id of the team, unique among all teams formed.  */
+      memid id;
+      /* The ids given to the teams formed from this one by the FORM TEAM
+	 statement with number NEW_TEAMS_GEN, see new_team_id.  */
+      shared_mem_ptr new_teams;
+      int new_teams_gen;
       int image_map[];
     } *image_info;
   } u;
+  /* The number of FORM TEAM statements executed with this team current.  */
+  int teams_formed;
 };
 typedef struct caf_shmem_team *caf_shmem_team_t;
 
