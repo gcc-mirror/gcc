@@ -2234,6 +2234,35 @@ TokenCollector::visit (TypeAlias &type_alias)
 }
 
 void
+TokenCollector::visit (TraitAlias &trait_alias)
+{
+  // Syntax:
+  // Visibility? trait IDENTIFIER GenericParams? = TypeBounds? WhereClause?;
+  // https://github.com/rust-lang/rfcs/blob/main/text/1733-trait-alias.md
+  describe_node (std::string ("TraitAlias"), [this, &trait_alias] () {
+    visit_items_as_lines (trait_alias.get_outer_attrs ());
+    if (trait_alias.has_visibility ())
+      visit (trait_alias.get_visibility ());
+    auto alias_name = trait_alias.get_alias_name ().as_string ();
+    push (Rust::Token::make (TRAIT, trait_alias.get_locus ()));
+    push (
+      Rust::Token::make_identifier (UNDEF_LOCATION, std::move (alias_name)));
+
+    if (trait_alias.has_generics ())
+      visit (trait_alias.get_generic_params ());
+
+    push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
+
+    visit_items_joined_by_separator (trait_alias.get_alias_bounds (), PLUS);
+
+    if (trait_alias.has_where_clause ())
+      visit (trait_alias.get_where_clause ());
+
+    push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
+  });
+}
+
+void
 TokenCollector::visit (StructStruct &struct_item)
 {
   describe_node (std::string ("StructStruct"), [this, &struct_item] () {

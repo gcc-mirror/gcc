@@ -188,6 +188,7 @@ private:
   virtual void visit (UseDeclaration &use_decl) override final{};
   virtual void visit (Function &function) override final{};
   virtual void visit (TypeAlias &type_alias) override final{};
+  virtual void visit (TraitAlias &trait_alias) override final{};
   virtual void visit (EnumItem &item) override final{};
   virtual void visit (EnumItemTuple &item) override final{};
   virtual void visit (EnumItemStruct &item) override final{};

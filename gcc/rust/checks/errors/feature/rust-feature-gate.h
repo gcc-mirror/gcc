@@ -52,6 +52,7 @@ public:
   void visit (AST::Enum &enum_item) override;
   void visit (AST::EnumItem &enum_variant) override;
   void visit (AST::StaticItem &static_item) override;
+  void visit (AST::TraitAlias &trait_alias) override;
 
   void visit (AST::Attribute &attr) override;
 

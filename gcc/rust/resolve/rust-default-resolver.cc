@@ -371,6 +371,21 @@ DefaultResolver::visit (AST::TypeAlias &type)
 }
 
 void
+DefaultResolver::visit (AST::TraitAlias &trait)
+{
+  auto inner_fn_1
+    = [this, &trait] () { AST::DefaultASTVisitor::visit (trait); };
+
+  auto inner_fn_2 = [this, &trait, &inner_fn_1] () {
+    ctx.canonical_ctx.scope (trait.get_node_id (), trait.get_alias_name (),
+			     std::move (inner_fn_1));
+  };
+
+  ctx.scoped (Rib::Kind::Item, trait.get_node_id (), inner_fn_2,
+	      trait.get_alias_name ());
+}
+
+void
 DefaultResolver::visit_closure_params (AST::ClosureExpr &expr)
 {
   for (auto &param : expr.get_params ())

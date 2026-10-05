@@ -386,6 +386,15 @@ FeatureGate::visit (AST::StaticItem &static_item)
 }
 
 void
+FeatureGate::visit (AST::TraitAlias &trait_alias)
+{
+  gate (Feature::Name::TRAIT_ALIAS, trait_alias.get_locus (),
+	"trait aliases are experimental");
+
+  AST::DefaultASTVisitor::visit (trait_alias);
+}
+
+void
 FeatureGate::visit (AST::Attribute &attr)
 {
   if (attr.get_path ().as_string () == "cfi_encoding")

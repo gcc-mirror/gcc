@@ -415,6 +415,15 @@ TopLevel::visit (AST::TypeAlias &type_item)
 }
 
 void
+TopLevel::visit (AST::TraitAlias &trait_item)
+{
+  insert_or_error_out (trait_item.get_alias_name (), trait_item,
+		       Namespace::Types);
+
+  DefaultResolver::visit (trait_item);
+}
+
+void
 TopLevel::visit (AST::ExternalTypeItem &type_item)
 {
   insert_or_error_out (type_item.get_identifier (), type_item,

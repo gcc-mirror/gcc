@@ -155,6 +155,7 @@ public:
   virtual void visit (UseDeclaration &use_decl) = 0;
   virtual void visit (Function &function) = 0;
   virtual void visit (TypeAlias &type_alias) = 0;
+  virtual void visit (TraitAlias &type_alias) = 0;
   virtual void visit (StructStruct &struct_item) = 0;
   virtual void visit (TupleStruct &tuple_struct) = 0;
   virtual void visit (EnumItem &item) = 0;
@@ -337,6 +338,7 @@ public:
   virtual void visit (AST::UseDeclaration &use_decl) override;
   virtual void visit (AST::Function &function) override;
   virtual void visit (AST::TypeAlias &type_alias) override;
+  virtual void visit (AST::TraitAlias &trait_alias) override;
   virtual void visit (AST::StructStruct &struct_item) override;
   virtual void visit (AST::TupleStruct &tuple_struct) override;
   virtual void visit (AST::EnumItem &item) override;

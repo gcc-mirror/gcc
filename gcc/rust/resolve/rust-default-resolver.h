@@ -77,6 +77,7 @@ public:
   void visit (AST::Enum &) override;
   void visit (AST::Union &) override;
   void visit (AST::TypeAlias &) override;
+  void visit (AST::TraitAlias &) override;
 
   // Visitors that visit their expression node(s)
   virtual void visit_closure_params (AST::ClosureExpr &);

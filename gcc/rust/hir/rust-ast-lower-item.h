@@ -33,6 +33,7 @@ public:
 
   void visit (AST::Module &module) override;
   void visit (AST::TypeAlias &alias) override;
+  void visit (AST::TraitAlias &alias) override;
   void visit (AST::TupleStruct &struct_decl) override;
   void visit (AST::StructStruct &struct_decl) override;
   void visit (AST::Enum &enum_decl) override;

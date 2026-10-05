@@ -1072,6 +1072,7 @@ public:
     UseDeclaration,
     Function,
     TypeAlias,
+    TraitAlias,
     Struct,
     EnumItem,
     Enum,

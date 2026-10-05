@@ -120,6 +120,12 @@ ASTLoweringItem::visit (AST::TypeAlias &alias)
 }
 
 void
+ASTLoweringItem::visit (AST::TraitAlias &alias)
+{
+  rust_sorry_at (alias.get_locus (), "trait alias lowering");
+}
+
+void
 ASTLoweringItem::visit (AST::TupleStruct &struct_decl)
 {
   std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;

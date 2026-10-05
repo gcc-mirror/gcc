@@ -3881,14 +3881,16 @@ Parser<ManagedTokenSource>::parse_static_item (AST::Visibility vis,
 }
 
 // Parses a trait definition item, including unsafe ones.
+// also handles trait aliases
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::Trait>
+std::unique_ptr<AST::VisItem>
 Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
 					 AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
   bool is_unsafe = false;
   bool is_auto_trait = false;
+  bool is_alias = false;
 
   if (lexer.peek_token ()->get_id () == UNSAFE)
     {
@@ -3918,8 +3920,23 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
   // create placeholder type param bounds in case they don't exist
   std::vector<std::unique_ptr<AST::TypeParamBound>> type_param_bounds;
 
-  // parse type param bounds (if they exist)
-  if (lexer.peek_token ()->get_id () == COLON)
+  // this might be a trait alias
+  if (lexer.peek_token ()->get_id () == EQUAL)
+    {
+      lexer.skip_token ();
+
+      if (is_auto_trait)
+	rust_error_at (locus, "trait aliases cannot be %<auto%>");
+      if (is_unsafe)
+	rust_error_at (locus, "trait aliases cannot be %<unsafe%>");
+
+      type_param_bounds = parse_type_param_bounds (
+	[] (TokenId id) { return id == WHERE || id == SEMICOLON; });
+
+      is_alias = true;
+    }
+  // otherwise, parse type param bounds (if they exist)
+  else if (lexer.peek_token ()->get_id () == COLON)
     {
       lexer.skip_token ();
 
@@ -3930,6 +3947,20 @@ Parser<ManagedTokenSource>::parse_trait (AST::Visibility vis,
 
   // parse where clause (if it exists)
   AST::WhereClause where_clause = parse_where_clause ();
+
+  // if this was a trait alias, finish up
+  if (is_alias)
+    {
+      if (!skip_token (SEMICOLON))
+	return nullptr;
+
+      return std::make_unique<AST::TraitAlias> (std::move (ident),
+						std::move (generic_params),
+						std::move (where_clause),
+						std::move (type_param_bounds),
+						std::move (vis),
+						std::move (outer_attrs), locus);
+    }
 
   if (!skip_token (LEFT_CURLY))
     {

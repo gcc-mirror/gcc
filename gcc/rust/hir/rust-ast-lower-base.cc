@@ -354,6 +354,9 @@ void
 ASTLoweringBase::visit (AST::TypeAlias &)
 {}
 void
+ASTLoweringBase::visit (AST::TraitAlias &)
+{}
+void
 ASTLoweringBase::visit (AST::StructStruct &)
 {}
 void

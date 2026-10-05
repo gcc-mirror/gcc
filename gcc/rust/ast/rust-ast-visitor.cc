@@ -916,6 +916,19 @@ DefaultASTVisitor::visit (AST::TypeAlias &type_alias)
 }
 
 void
+DefaultASTVisitor::visit (AST::TraitAlias &trait_alias)
+{
+  visit_outer_attrs (trait_alias);
+  visit (trait_alias.get_visibility ());
+  for (auto &generic : trait_alias.get_generic_params ())
+    visit (generic);
+  if (trait_alias.has_where_clause ())
+    visit (trait_alias.get_where_clause ());
+  for (auto &bound : trait_alias.get_alias_bounds ())
+    visit (bound);
+}
+
+void
 DefaultASTVisitor::visit (AST::StructField &field)
 {
   visit_outer_attrs (field);

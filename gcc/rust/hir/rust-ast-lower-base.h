@@ -180,6 +180,7 @@ public:
   virtual void visit (AST::UseDeclaration &use_decl) override;
   virtual void visit (AST::Function &function) override;
   virtual void visit (AST::TypeAlias &type_alias) override;
+  virtual void visit (AST::TraitAlias &type_alias) override;
   virtual void visit (AST::StructStruct &struct_item) override;
   virtual void visit (AST::TupleStruct &tuple_struct) override;
   virtual void visit (AST::EnumItem &item) override;

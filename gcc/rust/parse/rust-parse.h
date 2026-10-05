@@ -461,8 +461,8 @@ private:
   parse_const_item (AST::Visibility vis, AST::AttrVec outer_attrs);
   std::unique_ptr<AST::StaticItem> parse_static_item (AST::Visibility vis,
 						      AST::AttrVec outer_attrs);
-  std::unique_ptr<AST::Trait> parse_trait (AST::Visibility vis,
-					   AST::AttrVec outer_attrs);
+  std::unique_ptr<AST::VisItem> parse_trait (AST::Visibility vis,
+					     AST::AttrVec outer_attrs);
   std::unique_ptr<AST::TraitItemType>
   parse_trait_type (AST::AttrVec outer_attrs, AST::Visibility);
   std::unique_ptr<AST::ConstantItem>

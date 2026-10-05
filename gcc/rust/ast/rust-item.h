@@ -1640,6 +1640,135 @@ protected:
   }
 };
 
+// Rust trait alias AST node
+// like a type alias, but for traits
+// unstable but used in core
+class TraitAlias : public VisItem
+{
+  Identifier alias_name;
+
+  // bool has_generics;
+  // Generics generic_params;
+  std::vector<std::unique_ptr<GenericParam>> generic_params; // inlined
+
+  // bool has_where_clause;
+  WhereClause where_clause;
+
+  std::vector<std::unique_ptr<TypeParamBound>> alias_bounds;
+
+  location_t locus;
+
+  bool m_mark_for_strip;
+
+public:
+  std::string as_string () const override;
+
+  // Returns whether type alias has generic parameters.
+  bool has_generics () const { return !generic_params.empty (); }
+
+  // Returns whether type alias has a where clause.
+  bool has_where_clause () const { return !where_clause.is_empty (); }
+
+  // Mega-constructor with all possible fields
+  TraitAlias (Identifier alias_name,
+	      std::vector<std::unique_ptr<GenericParam>> generic_params,
+	      WhereClause where_clause,
+	      std::vector<std::unique_ptr<TypeParamBound>> alias_bounds,
+	      Visibility vis, std::vector<Attribute> outer_attrs,
+	      location_t locus)
+    : VisItem (std::move (vis), std::move (outer_attrs)),
+      alias_name (std::move (alias_name)),
+      generic_params (std::move (generic_params)),
+      where_clause (std::move (where_clause)),
+      alias_bounds (std::move (alias_bounds)), locus (locus),
+      m_mark_for_strip (false)
+  {}
+
+  // Copy constructor
+  TraitAlias (TraitAlias const &other)
+    : VisItem (other), alias_name (other.alias_name),
+      where_clause (other.where_clause), locus (other.locus)
+  {
+    generic_params.reserve (other.generic_params.size ());
+    for (const auto &e : other.generic_params)
+      generic_params.push_back (e->clone_generic_param ());
+
+    alias_bounds.reserve (other.alias_bounds.size ());
+    for (const auto &b : other.alias_bounds)
+      alias_bounds.push_back (b->clone_type_param_bound ());
+  }
+
+  // Overloaded assignment operator to clone
+  TraitAlias &operator= (TraitAlias const &other)
+  {
+    VisItem::operator= (other);
+    alias_name = other.alias_name;
+    where_clause = other.where_clause;
+    // visibility = other.visibility->clone_visibility();
+    // outer_attrs = other.outer_attrs;
+    locus = other.locus;
+
+    generic_params.clear ();
+    generic_params.reserve (other.generic_params.size ());
+    for (const auto &e : other.generic_params)
+      generic_params.push_back (e->clone_generic_param ());
+
+    alias_bounds.clear ();
+    alias_bounds.reserve (other.alias_bounds.size ());
+    for (const auto &b : other.alias_bounds)
+      alias_bounds.push_back (b->clone_type_param_bound ());
+
+    return *this;
+  }
+
+  // move constructors
+  TraitAlias (TraitAlias &&other) = default;
+  TraitAlias &operator= (TraitAlias &&other) = default;
+
+  location_t get_locus () const override final { return locus; }
+
+  // needed to override AssociatedItem::get_node_id
+  NodeId get_node_id () const override final { return VisItem::get_node_id (); }
+
+  void accept_vis (ASTVisitor &vis) override;
+
+  void mark_for_strip () override { m_mark_for_strip = true; }
+  bool is_marked_for_strip () const override { return m_mark_for_strip; }
+
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
+  {
+    return generic_params;
+  }
+
+  // TODO: is this better? Or is a "vis_block" better?
+  WhereClause &get_where_clause () { return where_clause; }
+
+  std::vector<std::unique_ptr<TypeParamBound>> &get_alias_bounds ()
+  {
+    return alias_bounds;
+  }
+  const std::vector<std::unique_ptr<TypeParamBound>> &get_alias_bounds () const
+  {
+    return alias_bounds;
+  }
+
+  const Identifier &get_alias_name () const { return alias_name; }
+
+  Item::Kind get_item_kind () const override { return Item::Kind::TraitAlias; }
+
+protected:
+  /* Use covariance to implement clone function as returning this object
+   * rather than base */
+  TraitAlias *clone_item_impl () const override
+  {
+    return new TraitAlias (*this);
+  }
+};
+
 // Rust base struct declaration AST node - abstract base class
 class Struct : public VisItem
 {

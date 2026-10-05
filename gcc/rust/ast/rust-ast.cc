@@ -1419,6 +1419,59 @@ TypeAlias::as_string () const
 }
 
 std::string
+TraitAlias::as_string () const
+{
+  std::string str = VisItem::as_string ();
+
+  str += " " + alias_name.as_string ();
+
+  // generic params
+  str += "\n Generic params: ";
+  if (!has_generics ())
+    {
+      str += "none";
+    }
+  else
+    {
+      auto i = generic_params.begin ();
+      auto e = generic_params.end ();
+
+      for (; i != e; i++)
+	{
+	  str += (*i)->as_string ();
+	  if (e != i + 1)
+	    str += ", ";
+	}
+    }
+
+  str += "\n Bounds: ";
+  if (alias_bounds.empty ())
+    {
+      str += "none";
+    }
+  else
+    {
+      bool needs_plus = false;
+
+      for (auto &bound : alias_bounds)
+	{
+	  if (needs_plus)
+	    str += " + ";
+	  needs_plus = true;
+	  str += bound->as_string ();
+	}
+    }
+
+  str += "\n Where clause: ";
+  if (!has_where_clause ())
+    str += "none";
+  else
+    str += where_clause.as_string ();
+
+  return str;
+}
+
+std::string
 ExternBlock::as_string () const
 {
   std::string str = VisItem::as_string ();
@@ -4750,6 +4803,12 @@ Function::accept_vis (ASTVisitor &vis)
 
 void
 TypeAlias::accept_vis (ASTVisitor &vis)
+{
+  vis.visit (*this);
+}
+
+void
+TraitAlias::accept_vis (ASTVisitor &vis)
 {
   vis.visit (*this);
 }
