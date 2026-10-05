@@ -9895,7 +9895,7 @@ does not distinguish between types with different attributes.  Support
 for attributes in C++ may be restricted in future to attributes on
 declarations only, but not on nested declarators.
 
-@xref{Attributes}, for details of the semantics of attributes.
+@xref{Attributes}, for details of the semantics of attributes
 applying to functions.
 
 An @dfn{attribute specifier} is of the form
