@@ -6411,13 +6411,14 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
 
       /* An IFN_GOMP_SIMT_ENTER_ALLOC/IFN_GOMP_SIMT_EXIT call must be
 	 duplicated as part of its group, or not at all.
-	 The IFN_GOMP_SIMT_VOTE_ANY and IFN_GOMP_SIMT_XCHG_* are part of such a
-	 group, so the same holds there.  */
+	 The IFN_GOMP_SIMT_VOTE_ANY, IFN_GOMP_SIMT_XCHG_IDX and
+	 IFN_GOMP_SIMT_REDUCE are part of such a group, so the same holds
+	 there.  */
       if (is_gimple_call (g)
 	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
-	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_BFLY)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_REDUCE)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_IDX)))
 	return false;
     }

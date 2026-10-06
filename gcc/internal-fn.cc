@@ -609,26 +609,41 @@ expand_GOMP_SIMT_VOTE_ANY (internal_fn, gcall *stmt)
   assign_call_lhs (lhs, target, &ops[0]);
 }
 
-/* Exchange between SIMT lanes with a "butterfly" pattern: source lane index
-   is destination lane index XOR given offset.  */
+/* Expand using "omp_simt_reduce<mode>".  Operand 1 of the
+   call is an INTEGER_CST holding the reduction operator as a tree_code,
+   which needs to be converted to an rtx_code for the backend.  */
 
 static void
-expand_GOMP_SIMT_XCHG_BFLY (internal_fn, gcall *stmt)
+expand_GOMP_SIMT_REDUCE (internal_fn, gcall *stmt)
 {
   tree lhs = gimple_call_lhs (stmt);
   if (!lhs)
     return;
 
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree_code code = (tree_code) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1));
+  enum rtx_code rcode
+    = (code == PLUS_EXPR ? PLUS
+       : code == MULT_EXPR ? MULT
+       : code == MIN_EXPR ? (TYPE_UNSIGNED (TREE_TYPE (arg0)) ? UMIN : SMIN)
+       : code == MAX_EXPR ? (TYPE_UNSIGNED (TREE_TYPE (arg0)) ? UMAX : SMAX)
+       : code == BIT_AND_EXPR ? AND
+       : code == BIT_IOR_EXPR ? IOR
+       : code == BIT_XOR_EXPR ? XOR
+       : code == TRUTH_ANDIF_EXPR ? AND
+       : code == TRUTH_ORIF_EXPR ? IOR
+       : UNKNOWN);
+  gcc_assert (rcode != UNKNOWN);
+
   rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
-  rtx src = expand_normal (gimple_call_arg (stmt, 0));
-  rtx idx = expand_normal (gimple_call_arg (stmt, 1));
+  rtx src = expand_normal (arg0);
   machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
   class expand_operand ops[3];
   create_call_lhs_operand (&ops[0], target, mode);
   create_input_operand (&ops[1], src, mode);
-  create_input_operand (&ops[2], idx, SImode);
-  gcc_assert (targetm.have_omp_simt_xchg_bfly ());
-  expand_insn (targetm.code_for_omp_simt_xchg_bfly, 3, ops);
+  create_integer_operand (&ops[2], rcode);
+  gcc_assert (targetm.have_omp_simt_reduce ());
+  expand_insn (targetm.code_for_omp_simt_reduce, 3, ops);
   assign_call_lhs (lhs, target, &ops[0]);
 }
 

@@ -2101,16 +2101,16 @@
   DONE;
 })
 
-;; Implement IFN_GOMP_SIMT_XCHG_BFLY: perform a "butterfly" exchange
-;; across lanes
-(define_expand "omp_simt_xchg_bfly"
+;; Implement IFN_GOMP_SIMT_REDUCE: reduce operand 1 across all lanes of the
+;; warp using the rtx_code reduction operator given as a literal constant
+;; in operand 2, leaving the result in operand 0 in every lane.
+(define_expand "omp_simt_reduce"
   [(match_operand 0 "nvptx_register_or_complex_di_df_register_operand" "=R")
    (match_operand 1 "nvptx_register_or_complex_di_df_register_operand" "R")
-   (match_operand:SI 2 "nvptx_nonmemory_operand" "Ri")]
+   (match_operand:SI 2 "const_int_operand" "n")]
   ""
 {
-  emit_insn (nvptx_gen_shuffle (operands[0], operands[1], operands[2],
-				SHUFFLE_BFLY));
+  nvptx_expand_simt_reduce (operands[0], operands[1], operands[2]);
   DONE;
 })
 

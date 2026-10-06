@@ -3385,7 +3385,7 @@ execute_omp_device_lower ()
 	      unlink_stmt_vdef (stmt);
 	    break;
 	  case IFN_GOMP_SIMT_VOTE_ANY:
-	  case IFN_GOMP_SIMT_XCHG_BFLY:
+	  case IFN_GOMP_SIMT_REDUCE:
 	  case IFN_GOMP_SIMT_XCHG_IDX:
 	    rhs = vf == 1 ? gimple_call_arg (stmt, 0) : NULL_TREE;
 	    break;
