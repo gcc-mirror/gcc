@@ -6007,17 +6007,20 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 		     && (scalar_mode == DImode
 			 || scalar_mode == DFmode))
 		    || (unspec == UNSPEC_PLUS_DPP_SHR
-			&& scalar_mode == DFmode));
+			&& scalar_mode == DFmode)
+		    || unspec == UNSPEC_MULT_DPP_SHR);
   rtx_code code = (unspec == UNSPEC_SMIN_DPP_SHR ? SMIN
 		   : unspec == UNSPEC_SMAX_DPP_SHR ? SMAX
 		   : unspec == UNSPEC_UMIN_DPP_SHR ? UMIN
 		   : unspec == UNSPEC_UMAX_DPP_SHR ? UMAX
 		   : unspec == UNSPEC_PLUS_DPP_SHR ? PLUS
+		   : unspec == UNSPEC_MULT_DPP_SHR ? MULT
 		   : UNKNOWN);
   bool use_extends = ((unspec == UNSPEC_SMIN_DPP_SHR
 		       || unspec == UNSPEC_SMAX_DPP_SHR
 		       || unspec == UNSPEC_UMIN_DPP_SHR
-		       || unspec == UNSPEC_UMAX_DPP_SHR)
+		       || unspec == UNSPEC_UMAX_DPP_SHR
+		       || unspec == UNSPEC_MULT_DPP_SHR)
 		      && (scalar_mode == QImode
 			  || scalar_mode == HImode));
   bool unsignedp = (unspec == UNSPEC_UMIN_DPP_SHR
@@ -6053,6 +6056,16 @@ gcn_expand_reduc_scalar (machine_mode mode, rtx src, int unspec)
 	{
 	  rtx tmp = gen_reg_rtx (mode);
 	  emit_insn (gen_dpp_move (mode, tmp, in, shift_val));
+	  if (code == MULT)
+	    {
+	      /* There is no DPP multiply, and V_DI multiply needs a scratch
+		 rather than VCC, so let the optab pick the pattern.  */
+	      rtx res = expand_simple_binop (mode, MULT, tmp, in, out, 0,
+					     OPTAB_DIRECT);
+	      if (res != out)
+		emit_move_insn (out, res);
+	      continue;
+	    }
 	  rtx insn = gen_rtx_SET (out, gen_rtx_fmt_ee (code, mode, tmp, in));
 	  if (scalar_mode == DImode)
 	    {
