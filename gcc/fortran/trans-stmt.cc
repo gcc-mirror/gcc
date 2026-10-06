@@ -836,7 +836,7 @@ gfc_trans_sync_stat (struct sync_stat *sync_stat, gfc_se *se, tree *stat,
 	  *stat = build_fold_addr_expr (tstat);
 	}
       else
-	*stat = build_fold_addr_expr (argse.expr);
+	*stat = gfc_build_addr_expr (NULL_TREE, argse.expr);
     }
   else
     *stat = null_pointer_node;
