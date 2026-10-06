@@ -25593,6 +25593,15 @@ aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
   return true;
 }
 
+/* Return true if X is the low element of vector V, in the lowpart form
+   that RTL simplification uses for it.  */
+
+bool
+aarch64_simd_lowpart_of_p (rtx x, rtx v)
+{
+  return rtx_equal_p (x, lowpart_subreg (GET_MODE (x), v, GET_MODE (v)));
+}
+
 /* Return a PARALLEL containing NELTS elements, with element I equal
    to BASE + I * STEP.  */
 
