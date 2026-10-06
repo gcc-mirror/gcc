@@ -132,29 +132,18 @@ public:
 
     if (fntype->get_abi () == ABI::UNADJUSTED)
       {
-	tree resolved;
-	LlvmBuiltinAdapter adapter;
-	auto mapping_res = BuiltinsContext::get ().map_llvm_to_gcc_builtin (
-	  asm_name.as_string (), &resolved, &adapter);
+	auto res = BuiltinsContext::get ().map_llvm_to_gcc_builtin (
+	  asm_name.as_string ());
 
-	switch (mapping_res)
+	if (!res)
 	  {
-	  case LlvmBuiltinMappingResult::NOT_MAPPED:
-	    rust_error_at (function.get_locus (),
-			   "LLVM intrinsic %qs is not supported at the moment",
-			   asm_name.c_str ());
+	    res.error ().emit (asm_name, function.get_locus ());
 	    reference = error_mark_node;
 	    return;
-	  case LlvmBuiltinMappingResult::TARGET_UNAVAILABLE:
-	    rust_error_at (
-	      function.get_locus (),
-	      "LLVM intrinsic %qs is not available for this target",
-	      asm_name.c_str ());
-	    reference = error_mark_node;
-	    return;
-	  case LlvmBuiltinMappingResult::RESOLVED:
-	    break;
 	  }
+
+	tree resolved = res->first;
+	LlvmBuiltinAdapter adapter = res->second;
 
 	tree adapter_tree = error_mark_node;
 

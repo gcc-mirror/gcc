@@ -99,11 +99,11 @@ Intrinsics::compile (TyTy::FnType *fntype, location_t expr_locus)
 {
   rust_assert (fntype->get_abi () == ABI::INTRINSIC);
 
-  tree builtin = error_mark_node;
   BuiltinsContext &builtin_ctx = BuiltinsContext::get ();
 
-  if (builtin_ctx.lookup_simple_builtin (fntype->get_identifier (), &builtin))
-    return builtin;
+  if (auto builtin
+      = builtin_ctx.lookup_simple_builtin (fntype->get_identifier ()))
+    return *builtin;
 
   // is it an generic builtin?
   auto it = generic_intrinsics.find (fntype->get_identifier ());

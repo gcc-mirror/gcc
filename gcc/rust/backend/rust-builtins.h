@@ -24,6 +24,10 @@
 #include "langhooks.h"
 #include "tree.h"
 #include "selftest.h"
+#include "util/expected.h"
+#include "util/optional.h"
+#include "util/rust-ggc.h"
+#include "rust-diagnostics.h"
 
 namespace Rust {
 namespace Compile {
@@ -79,11 +83,48 @@ namespace Compile {
 // };
 // Some(cx.get_intrinsic(&llvm_name))
 
-enum class LlvmBuiltinMappingResult
+/**
+ * Error type for Builtins::map_llvm_to_gcc_builtin
+ */
+struct LlvmBuiltinMappingError
 {
-  NOT_MAPPED,
-  TARGET_UNAVAILABLE,
-  RESOLVED,
+  enum class Kind
+  {
+    NOT_MAPPED,
+    TARGET_UNAVAILABLE,
+  } kind;
+
+  static LlvmBuiltinMappingError NotMapped ()
+  {
+    return LlvmBuiltinMappingError (Kind::NOT_MAPPED);
+  }
+
+  static LlvmBuiltinMappingError TargetUnavailable ()
+  {
+    return LlvmBuiltinMappingError (Kind::TARGET_UNAVAILABLE);
+  }
+
+  /**
+   * Emit the error for the missing intrinsic
+   */
+  void emit (const GGC::Ident &name, location_t loc)
+  {
+    switch (kind)
+      {
+      case LlvmBuiltinMappingError::Kind::TARGET_UNAVAILABLE:
+	rust_error_at (loc,
+		       "LLVM intrinsic %qs is not available for this target",
+		       name.c_str ());
+	return;
+      case LlvmBuiltinMappingError::Kind::NOT_MAPPED:
+	rust_sorry_at (loc, "LLVM intrinsic %qs is not supported at the moment",
+		       name.c_str ());
+	return;
+      }
+  }
+
+private:
+  LlvmBuiltinMappingError (Kind kind) : kind (kind) {}
 };
 
 enum class LlvmBuiltinAdapter
@@ -104,11 +145,10 @@ class BuiltinsContext
 public:
   static BuiltinsContext &get ();
 
-  bool lookup_simple_builtin (const std::string &name, tree *builtin);
+  tl::optional<tree> lookup_simple_builtin (const std::string &name);
 
-  LlvmBuiltinMappingResult
-  map_llvm_to_gcc_builtin (const std::string &name, tree *resolved,
-			   LlvmBuiltinAdapter *adapter);
+  tl::expected<std::pair<tree, LlvmBuiltinAdapter>, LlvmBuiltinMappingError>
+  map_llvm_to_gcc_builtin (const std::string &name);
 
   void register_builtin (tree decl);
 
@@ -235,7 +275,7 @@ private:
 
   void setup ();
 
-  bool lookup_gcc_builtin (const std::string &name, tree *builtin);
+  tl::optional<tree> lookup_gcc_builtin (const std::string &name);
 
   // A mapping of the GCC built-ins exposed to GCC Rust.
   std::map<std::string, tree> builtin_functions;

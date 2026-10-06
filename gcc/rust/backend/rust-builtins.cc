@@ -14,6 +14,8 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "expected.h"
+#include "optional.h"
 #include "rust-diagnostics.h"
 #include "rust-system.h"
 #include "rust-builtins.h"
@@ -36,8 +38,8 @@ BuiltinsContext::get ()
   return instance;
 }
 
-bool
-BuiltinsContext::lookup_simple_builtin (const std::string &name, tree *builtin)
+tl::optional<tree>
+BuiltinsContext::lookup_simple_builtin (const std::string &name)
 {
   auto *to_search = &name;
 
@@ -45,26 +47,20 @@ BuiltinsContext::lookup_simple_builtin (const std::string &name, tree *builtin)
   if (it != rust_intrinsic_to_gcc_builtin.end ())
     to_search = &it->second;
 
-  return lookup_gcc_builtin (*to_search, builtin);
+  return lookup_gcc_builtin (*to_search);
 }
 
-LlvmBuiltinMappingResult
-BuiltinsContext::map_llvm_to_gcc_builtin (const std::string &name,
-					  tree *resolved,
-					  LlvmBuiltinAdapter *adapter)
+tl::expected<std::pair<tree, LlvmBuiltinAdapter>, LlvmBuiltinMappingError>
+BuiltinsContext::map_llvm_to_gcc_builtin (const std::string &name)
 {
-  rust_assert (resolved != nullptr);
-
   auto mapping = llvm_to_gcc_builtin.find (name);
   if (mapping == llvm_to_gcc_builtin.end ())
-    return LlvmBuiltinMappingResult::NOT_MAPPED;
+    return tl::make_unexpected (LlvmBuiltinMappingError::NotMapped ());
 
-  *resolved = NULL_TREE;
-  if (!lookup_gcc_builtin (mapping->second.gcc_name, resolved))
-    return LlvmBuiltinMappingResult::TARGET_UNAVAILABLE;
+  if (auto lookup = lookup_gcc_builtin (mapping->second.gcc_name))
+    return std::make_pair (*lookup, mapping->second.adapter);
 
-  *adapter = mapping->second.adapter;
-  return LlvmBuiltinMappingResult::RESOLVED;
+  return tl::make_unexpected (LlvmBuiltinMappingError::TargetUnavailable ());
 }
 
 BuiltinsContext::BuiltinsContext () : setup_state (SetupState::UNINITIALIZED) {}
@@ -457,15 +453,14 @@ BuiltinsContext::setup ()
   setup_state = SetupState::READY;
 }
 
-bool
-BuiltinsContext::lookup_gcc_builtin (const std::string &name, tree *builtin)
+tl::optional<tree>
+BuiltinsContext::lookup_gcc_builtin (const std::string &name)
 {
   auto it = builtin_functions.find (name);
   if (it == builtin_functions.end ())
-    return false;
+    return tl::nullopt;
 
-  *builtin = it->second;
-  return true;
+  return it->second;
 }
 
 } // namespace Compile

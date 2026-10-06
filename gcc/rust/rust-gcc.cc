@@ -1168,31 +1168,30 @@ fetch_overflow_builtins (ArithmeticOrLogicalOperator op)
 {
   auto builtin_ctx = Rust::Compile::BuiltinsContext::get ();
 
-  auto builtin = NULL_TREE;
-  auto abort = NULL_TREE;
+  tl::optional<tree> builtin = NULL_TREE;
 
   switch (op)
     {
     case ArithmeticOrLogicalOperator::ADD:
-      builtin_ctx.lookup_simple_builtin ("__builtin_add_overflow", &builtin);
+      builtin = builtin_ctx.lookup_simple_builtin ("__builtin_add_overflow");
       break;
     case ArithmeticOrLogicalOperator::SUBTRACT:
-      builtin_ctx.lookup_simple_builtin ("__builtin_sub_overflow", &builtin);
+      builtin = builtin_ctx.lookup_simple_builtin ("__builtin_sub_overflow");
       break;
     case ArithmeticOrLogicalOperator::MULTIPLY:
-      builtin_ctx.lookup_simple_builtin ("__builtin_mul_overflow", &builtin);
+      builtin = builtin_ctx.lookup_simple_builtin ("__builtin_mul_overflow");
       break;
     default:
       rust_unreachable ();
       break;
     };
 
-  builtin_ctx.lookup_simple_builtin ("__builtin_abort", &abort);
+  auto abort = builtin_ctx.lookup_simple_builtin ("__builtin_abort");
 
   rust_assert (abort);
   rust_assert (builtin);
 
-  return {abort, builtin};
+  return {*abort, *builtin};
 }
 
 // Return an expression for the arithmetic or logical operation LEFT OP RIGHT
