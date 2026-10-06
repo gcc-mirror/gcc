@@ -6456,6 +6456,27 @@ nvptx_expand_shuffle (tree exp, rtx target, machine_mode mode, int ignore)
   return target;
 }
 
+/* Implement the "omp_simt_reduce" expander.  */
+
+void
+nvptx_expand_simt_reduce (rtx target, rtx src, rtx code)
+{
+  machine_mode mode = GET_MODE (target);
+  rtx var = src;
+
+  for (int shift = 1; shift < PTX_WARP_SIZE; shift <<= 1)
+    {
+      rtx idx = GEN_INT (shift);
+      rtx bfly = gen_reg_rtx (mode);
+      emit_insn (nvptx_gen_shuffle (bfly, var, idx, SHUFFLE_BFLY));
+      rtx next = expand_simple_binop (mode, (enum rtx_code) INTVAL (code),
+				      var, bfly, NULL_RTX, 1, OPTAB_DIRECT);
+      gcc_assert (next);
+      var = next;
+    }
+  emit_move_insn (target, var);
+}
+
 /* Expander for the bit reverse builtins.  */
 
 static rtx

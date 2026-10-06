@@ -1161,10 +1161,10 @@ The @code{IFN_GOMP_SIMT_ORDERED_PRED} internal function is expanded by the
 The @code{IFN_GOMP_SIMT_VOTE_ANY} internal function is expanded by the
 @code{expand_GOMP_SIMT_VOTE_ANY} function.
 
-@cindex @code{IFN_GOMP_SIMT_XCHG_BFLY} internal function
-@item @samp{IFN_GOMP_SIMT_XCHG_BFLY}
-The @code{IFN_GOMP_SIMT_XCHG_BFLY} internal function is expanded by the
-@code{expand_GOMP_SIMT_XCHG_BFLY} function.
+@cindex @code{IFN_GOMP_SIMT_REDUCE} internal function
+@item @samp{IFN_GOMP_SIMT_REDUCE}
+The @code{IFN_GOMP_SIMT_REDUCE} internal function is expanded by the
+@code{expand_GOMP_SIMT_REDUCE} function.
 
 @cindex @code{IFN_GOMP_SIMT_XCHG_IDX} internal function
 @item @samp{IFN_GOMP_SIMT_XCHG_IDX}

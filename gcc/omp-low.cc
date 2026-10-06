@@ -5422,7 +5422,7 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
   bool is_simd = (gimple_code (ctx->stmt) == GIMPLE_OMP_FOR
 		  && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD);
   omplow_simd_context sctx = omplow_simd_context ();
-  tree simt_lane = NULL_TREE, simtrec = NULL_TREE;
+  tree simtrec = NULL_TREE;
   tree ivar = NULL_TREE, lvar = NULL_TREE, uid = NULL_TREE;
   gimple_seq llist[4] = { };
   tree nonconst_simd_if = NULL_TREE;
@@ -7282,15 +7282,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 
 		      if (sctx.is_simt)
 			{
-			  if (!simt_lane)
-			    simt_lane = create_tmp_var (unsigned_type_node);
+			  tree op = build_int_cst (unsigned_type_node, code);
 			  x = build_call_expr_internal_loc
-			    (UNKNOWN_LOCATION, IFN_GOMP_SIMT_XCHG_BFLY,
-			     TREE_TYPE (ivar), 2, ivar, simt_lane);
-			  /* Make sure x is evaluated unconditionally.  */
-			  tree bfly_var = create_tmp_var (TREE_TYPE (ivar));
-			  gimplify_assign (bfly_var, x, &llist[2]);
-			  x = build2 (code, TREE_TYPE (ivar), ivar, bfly_var);
+			    (UNKNOWN_LOCATION, IFN_GOMP_SIMT_REDUCE,
+			     TREE_TYPE (ivar), 2, ivar, op);
 			  gimplify_assign (ivar, x, &llist[2]);
 			}
 		      tree ivar2 = ivar;
@@ -7454,39 +7449,10 @@ lower_rec_input_clauses (tree clauses, gimple_seq *ilist, gimple_seq *dlist,
 	  gimple_seq_add_stmt (dlist, g);
 	  gimple_seq_add_seq (dlist, llist[3]);
 	}
-      /* Emit reductions across SIMT lanes in log_2(simt_vf) steps.  */
+      /* Emit the IFN_GOMP_SIMT_REDUCE call built above, if any.
+	 The actual reduction algorithm is deferred to the back-end.  */
       if (llist[2])
-	{
-	  tree simt_vf = create_tmp_var (unsigned_type_node);
-	  g = gimple_build_call_internal (IFN_GOMP_SIMT_VF, 0);
-	  gimple_call_set_lhs (g, simt_vf);
-	  gimple_seq_add_stmt (dlist, g);
-
-	  tree t = build_int_cst (unsigned_type_node, 1);
-	  g = gimple_build_assign (simt_lane, INTEGER_CST, t);
-	  gimple_seq_add_stmt (dlist, g);
-
-	  t = build_int_cst (unsigned_type_node, 0);
-	  g = gimple_build_assign (sctx.idx, INTEGER_CST, t);
-	  gimple_seq_add_stmt (dlist, g);
-
-	  tree body = create_artificial_label (UNKNOWN_LOCATION);
-	  tree header = create_artificial_label (UNKNOWN_LOCATION);
-	  tree end = create_artificial_label (UNKNOWN_LOCATION);
-	  gimple_seq_add_stmt (dlist, gimple_build_goto (header));
-	  gimple_seq_add_stmt (dlist, gimple_build_label (body));
-
-	  gimple_seq_add_seq (dlist, llist[2]);
-
-	  g = gimple_build_assign (simt_lane, LSHIFT_EXPR, simt_lane, integer_one_node);
-	  gimple_seq_add_stmt (dlist, g);
-
-	  gimple_seq_add_stmt (dlist, gimple_build_label (header));
-	  g = gimple_build_cond (LT_EXPR, simt_lane, simt_vf, body, end);
-	  gimple_seq_add_stmt (dlist, g);
-
-	  gimple_seq_add_stmt (dlist, gimple_build_label (end));
-	}
+	gimple_seq_add_seq (dlist, llist[2]);
       for (int i = 0; i < 2; i++)
 	if (llist[i])
 	  {

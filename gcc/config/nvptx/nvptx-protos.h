@@ -52,6 +52,7 @@ extern void nvptx_expand_oacc_join (unsigned);
 extern void nvptx_expand_call (rtx, rtx);
 extern void nvptx_expand_omp_get_num_threads (rtx);
 extern rtx nvptx_gen_shuffle (rtx, rtx, rtx, nvptx_shuffle_kind);
+extern void nvptx_expand_simt_reduce (rtx, rtx, rtx);
 extern rtx nvptx_expand_compare (rtx);
 extern const char *nvptx_ptx_type_from_mode (machine_mode, bool);
 extern const char *nvptx_output_mov_insn (rtx, rtx);
