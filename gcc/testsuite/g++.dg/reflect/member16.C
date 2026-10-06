@@ -46,7 +46,7 @@ bar (S &c, T &d, U &g, V &h)
   d.[: ^^B::b :] = 5;			// { dg-error "'B' is an ambiguous base of 'D'" }
   d.[: ^^C::c :] = 6;
   d.[: ^^D::d :] = 7;
-  d.[: ^^I::i :] = 8;			// { dg-error "invalid use of non-static data member 'I::i'" }
+  d.[: ^^I::i :] = 8;			// { dg-error "'I' is not a base of 'D'" }
   g.[: ^^E::_ :] = 1;
   g.[: ^^F::_ :] = 2;
   g.[: ^^G::_ :] = 3;
@@ -54,7 +54,7 @@ bar (S &c, T &d, U &g, V &h)
   h.[: ^^F::_ :] = 5;			// { dg-error "'F' is an ambiguous base of 'H'" }
   h.[: ^^G::_ :] = 6;
   h.[: ^^H::_ :] = 7;
-  h.[: ^^J::_ :] = 8;			// { dg-error "invalid use of non-static data member 'J::_'" }
+  h.[: ^^J::_ :] = 8;			// { dg-error "'J' is not a base of 'H'" }
 }
 
 void

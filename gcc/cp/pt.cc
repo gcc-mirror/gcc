@@ -22917,13 +22917,15 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    r = build_ptrmemfunc_access_expr (object, DECL_NAME (member));
 	    RETURN (r);
 	  }
-	else if (TREE_CODE (member) == FIELD_DECL)
+	/* For obj->[:^^A::m:], go down the finish_class_member_access_expr
+	   path because object's type may not be instantiated yet.  */
+	else if (TREE_CODE (member) == FIELD_DECL
+		 && !COMPONENT_REF_SPLICE_P (t))
 	  {
 	    /* Assume access of this FIELD_DECL has already been checked; we
 	       don't recheck it to avoid bogus access errors when substituting
 	       a reduced constant initializer (97740).  */
-	    gcc_checking_assert (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL
-				 || dependent_splice_p (TREE_OPERAND (t, 1)));
+	    gcc_checking_assert (TREE_CODE (TREE_OPERAND (t, 1)) == FIELD_DECL);
 	    push_deferring_access_checks (dk_deferred);
 	    r = finish_non_static_data_member (member, object, NULL_TREE,
 					       complain);
