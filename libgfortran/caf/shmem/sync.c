@@ -175,7 +175,7 @@ sync_all (int *terminated)
 void
 sync_team (caf_shmem_team_t team)
 {
-  counter_barrier_wait (&team->u.image_info->image_count);
+  counter_barrier_wait (&team->u.image_info->image_count, NULL);
 }
 
 bool

@@ -88,14 +88,14 @@ void counter_barrier_init_add (counter_barrier *, int);
 int counter_barrier_get_count (counter_barrier *);
 
 /* Wait for the count in the barrier drop to or below 0.  When the round is
-   aborted, take part in the next one.  */
+   aborted, take part in the next one.  TERMINATED, when given, receives the
+   number of images that had been removed from the barrier when the round
+   ended; images removed later are not counted.  */
 
-void counter_barrier_wait (counter_barrier *);
+void counter_barrier_wait (counter_barrier *, int *terminated);
 
 /* Like counter_barrier_wait, but return false without waiting when the
-   barrier is aborting, or when the round is aborted.  TERMINATED, when
-   given, receives the number of images that had been removed from the
-   barrier when the round ended; images removed later are not counted.  */
+   barrier is aborting, or when the round is aborted.  */
 
 bool counter_barrier_wait_abortable (counter_barrier *, int *terminated);
 

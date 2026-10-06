@@ -1899,26 +1899,31 @@ void
 _gfortran_caf_end_team (int *stat, char *errmsg, size_t errmsg_len)
 {
   caf_shmem_team_t t = caf_current_team;
-
-  if (stat)
-    *stat = 0;
+  int terminated;
 
   caf_current_team = caf_current_team->parent;
   next_memid = t->parent_teams_last_active_memid;
-  sync_team (t);
+  /* The active images synchronize even with a stopped image, unlike in
+     SYNC ALL (F2023 11.7.11).  */
+  counter_barrier_wait (&t->u.image_info->image_count, &terminated);
 
   for (struct coarray_allocated *ca = t->allocated; ca;)
     {
       struct coarray_allocated *nca = ca->next;
       _gfortran_caf_deregister ((caf_token_t *) &ca->token,
-				CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY, stat,
-				errmsg, errmsg_len);
+				CAF_DEREGTYPE_COARRAY_DEALLOCATE_ONLY, NULL,
+				NULL, 0);
       free (ca);
       ca = nca;
     }
   t->allocated = NULL;
   t->parent = caf_teams_formed;
   caf_teams_formed = t;
+
+  if (terminated)
+    TEAM_HEALTH_CHECK (t, stat, errmsg, errmsg_len);
+  else if (stat)
+    *stat = 0;
 }
 
 void

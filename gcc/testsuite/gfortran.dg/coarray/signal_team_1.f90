@@ -22,5 +22,5 @@ program signal_team_1
       if (st == stat_failed_image) exit
     end do
     if (num_images () > 1 .and. st /= stat_failed_image) error stop "not reported"
-  end team
+  end team (stat=st)
 end program signal_team_1

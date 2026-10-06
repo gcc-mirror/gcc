@@ -108,10 +108,10 @@ wait_round (counter_barrier *b, bool abortable, int *terminated)
 }
 
 void
-counter_barrier_wait (counter_barrier *b)
+counter_barrier_wait (counter_barrier *b, int *terminated)
 {
   lock_counter_barrier (b);
-  while (!wait_round (b, false, NULL))
+  while (!wait_round (b, false, terminated))
     ;
   unlock_counter_barrier (b);
 }
