@@ -1697,8 +1697,30 @@ pass_gcn_simt_vectorize::execute (function *fn)
 		  /* Some UNSPECs have special handling.  */
 		  switch (XINT (x, 1))
 		    {
-		    case UNSPEC_SIMT_XCHG_BFLY:
 		    case UNSPEC_DIV_FMAS:
+		      /* The second unspec argument remains scalar, but
+			 we do want to recurse into the first argument.  */
+		      delayed_substitute = &XVECEXP (x, 0, 0);
+		      do_transform = true;
+
+		      if (dump_file && (dump_flags & TDF_DETAILS))
+			{
+			  fprintf (dump_file, "      no-op: ");
+			  dump_value_with_mode (dump_file, XVECEXP (x, 0, 1));
+			  fprintf (dump_file, " (special case)\n");
+			}
+		      break;
+
+		    default:
+		      do_transform = true;
+		    }
+		  break;
+
+		case UNSPEC_VOLATILE:
+		  /* Some UNSPEC_VOLATILEs have special handling.  */
+		  switch (XINT (x, 1))
+		    {
+		    case UNSPECV_SIMT_REDUCE:
 		      /* The second unspec argument remains scalar, but
 			 we do want to recurse into the first argument.  */
 		      delayed_substitute = &XVECEXP (x, 0, 0);

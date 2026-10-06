@@ -65,7 +65,8 @@
   UNSPECV_ICACHE_INV
   UNSPECV_SIMT_FORK UNSPECV_SIMT_JOIN
   UNSPECV_SIMT_ENTER UNSPECV_SIMT_EXIT
-  UNSPECV_SIMT_EXEC_BARRIER])
+  UNSPECV_SIMT_EXEC_BARRIER
+  UNSPECV_SIMT_REDUCE])
 
 (define_c_enum "unspec" [
   UNSPEC_ADDPTR
@@ -93,7 +94,6 @@
   UNSPEC_LDEXP UNSPEC_FREXP_EXP UNSPEC_FREXP_MANT
   UNSPEC_DIV_SCALE UNSPEC_DIV_FMAS UNSPEC_DIV_FIXUP
   UNSPEC_PAIR
-  UNSPEC_SIMT_XCHG_BFLY
   UNSPEC_SIMT_VOTE_ANY UNSPEC_SIMT_LAST_LANE UNSPEC_SIMT_XCHG_IDX
   UNSPEC_VSUBREG_WRITE UNSPEC_VSUBREG_READ
   UNSPEC_ENSURE_SCALAR])
@@ -2714,26 +2714,31 @@
 	(reg:SI LANE_ID_REG))]
   "flag_simt_mode")
 
+(define_mode_iterator SIMT_REDUCE_MODE [QI HI SI DI SF DF])
+
+;; Implement IFN_GOMP_SIMT_REDUCE: reduce operand 1 across all active SIMT
+;; lanes using the reduction operator (an rtx_code) given as a const_int in
+;; operand 2, leaving the result broadcast into every lane.
 ; This pseudo instruction should be replaced by the simt_vect pass
-(define_expand "omp_simt_xchg_bfly"
+(define_expand "omp_simt_reduce"
   [(match_operand 0 "register_operand")
    (match_operand 1 "register_operand")
-   (match_operand:SI 2 "nonmemory_operand")]
+   (match_operand:SI 2 "const_int_operand")]
   "flag_simt_mode"
   {
-    emit_insn (gen_omp_simt_xchg_bfly (GET_MODE (operands[0]), operands[0],
-				       operands[1], operands[2]));
+    emit_insn (gen_omp_simt_reduce (GET_MODE (operands[0]), operands[0],
+				    operands[1], operands[2]));
     DONE;
   })
 
-(define_insn "@omp_simt_xchg_bfly<mode>"
-  [(set (match_operand:MOV_MODE 0 "register_operand" "=r")
-	(unspec:MOV_MODE
-	  [(match_operand:MOV_MODE 1 "register_operand" "r")
-	   (match_operand:SI 2 "nonmemory_operand" "ri")]
-	  UNSPEC_SIMT_XCHG_BFLY))]
+(define_insn "@omp_simt_reduce<mode>"
+  [(set (match_operand:SIMT_REDUCE_MODE 0 "register_operand" "=r")
+	(unspec_volatile:SIMT_REDUCE_MODE
+	  [(match_operand:SIMT_REDUCE_MODE 1 "register_operand" "r")
+	   (match_operand:SI 2 "const_int_operand" "n")]
+	  UNSPECV_SIMT_REDUCE))]
   "flag_simt_mode"
-  "; %0 = simt_xchg_bfly %1 %2")
+  "; %0 = simt_reduce %1 %2")
 
 ;; Implement IFN_GOMP_SIMT_VOTE_ANY:
 ;; set operand 0 to zero iff all lanes supply zero in operand 1

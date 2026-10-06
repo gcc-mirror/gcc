@@ -4680,14 +4680,39 @@
     operands[4] = gcn_vec_constant (<MODE>mode, 0);
   })
 
-(define_insn "omp_simt_xchg_bfly<mode>"
-  [(set (match_operand:V_MOV 0 "register_operand"   "=v")
-	(unspec:V_MOV
-	  [(match_operand:V_MOV 1 "register_operand" "v")
-	   (match_operand:SI 2 "nonmemory_operand"  "Sg")]
-	  UNSPEC_SIMT_XCHG_BFLY))]
-  "flag_simt_mode"
-  "; %0 = simt_xchg_bfly %1 %2")
+(define_mode_iterator V64_SIMT_REDUCE_MODE
+  [V64QI V64HI V64SI V64DI V64SF V64DF])
+
+(define_insn_and_split "omp_simt_reduce<mode>"
+  [(set (match_operand:V64_SIMT_REDUCE_MODE 0 "register_operand" "=v")
+	(unspec_volatile:V64_SIMT_REDUCE_MODE
+	  [(match_operand:V64_SIMT_REDUCE_MODE 1 "register_operand" "v")
+	   (match_operand:SI 2 "const_int_operand" "n")]
+	  UNSPECV_SIMT_REDUCE))]
+  "flag_simt_mode && TARGET_DPP_FULL"
+  "#"
+  "can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    enum rtx_code rcode = (enum rtx_code) INTVAL (operands[2]);
+    int unspec = (rcode == PLUS ? UNSPEC_PLUS_DPP_SHR
+		  : rcode == UMIN ? UNSPEC_UMIN_DPP_SHR
+		  : rcode == SMIN ? UNSPEC_SMIN_DPP_SHR
+		  : rcode == UMAX ? UNSPEC_UMAX_DPP_SHR
+		  : rcode == SMAX ? UNSPEC_SMAX_DPP_SHR
+		  : rcode == AND ? UNSPEC_AND_DPP_SHR
+		  : rcode == IOR ? UNSPEC_IOR_DPP_SHR
+		  : rcode == XOR ? UNSPEC_XOR_DPP_SHR
+		  : 0);
+    gcc_assert (unspec);
+
+    rtx tmp = gcn_expand_reduc_scalar (<MODE>mode, operands[1], unspec);
+    rtx last_lane = GEN_INT (GET_MODE_NUNITS (<MODE>mode) - 1);
+    rtx scalar = gen_reg_rtx (<SCALAR_MODE>mode);
+    emit_insn (gen_vec_extract<mode><scalar_mode> (scalar, tmp, last_lane));
+    emit_insn (gen_vec_duplicate<mode> (operands[0], scalar));
+    DONE;
+  })
 
 (define_insn_and_split "omp_simt_vote_any_v64si"
   [(set (match_operand:V64SI 0 "register_operand" "=v")
