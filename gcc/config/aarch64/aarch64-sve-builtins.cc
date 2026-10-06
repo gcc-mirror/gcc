@@ -1223,8 +1223,10 @@ function_instance::hash () const
 {
   inchash::hash h;
   /* BASE uniquely determines BASE_NAME, so we don't need to hash both.  */
-  h.add_ptr (base);
-  h.add_ptr (shape);
+  /* FUNCTION_TABLE has a fixed address relative to BASE and SHAPE within
+     the compiler binary, even if PIE changes the binary's load address.  */
+  h.add_hwi ((uintptr_t) base - (uintptr_t) &function_table);
+  h.add_hwi ((uintptr_t) shape - (uintptr_t) &function_table);
   h.add_int (mode_suffix_id);
   h.add_int (type_suffix_ids[0]);
   h.add_int (type_suffix_ids[1]);
@@ -5350,8 +5352,14 @@ gt_pch_nx (function_instance *)
 }
 
 inline void
-gt_pch_nx (function_instance *, gt_pointer_operator, void *)
+gt_pch_nx (function_instance *instance, gt_pointer_operator, void *)
 {
+  /* The instance is the first member of its containing GC object.  PCH
+     adjusts these pointers if the compiler has a different PIE load base.  */
+  static_assert (offsetof (registered_function, instance) == 0);
+  gt_pch_note_callback (&instance->base_name, instance);
+  gt_pch_note_callback (&instance->base, instance);
+  gt_pch_note_callback (&instance->shape, instance);
 }
 
 #include "gt-aarch64-sve-builtins.h"
