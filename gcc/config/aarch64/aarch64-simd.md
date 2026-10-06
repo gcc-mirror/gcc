@@ -8340,6 +8340,8 @@
 ;; a pairwise addition on the result.  For 128-bit input modes represent this
 ;; as a concatenation of the pairwise addition results of the two input
 ;; registers.  This allow us to avoid using intermediate 256-bit modes.
+;; The RTL uses GCC's lane numbering, so on big-endian targets operand 1
+;; provides the architecturally high half of the result.
 (define_insn "aarch64_addp<mode>_insn"
   [(set (match_operand:VQ_I 0 "register_operand" "=w")
 	(vec_concat:VQ_I
@@ -8358,14 +8360,19 @@
 	      (match_dup 2)
 	      (match_dup 4)))))]
   "TARGET_SIMD && !rtx_equal_p (operands[3], operands[4])"
-  "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  {
+    if (BYTES_BIG_ENDIAN)
+      return "addp\t%<v>0<Vmtype>, %<v>2<Vmtype>, %<v>1<Vmtype>";
+    return "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>";
+  }
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
 ;; For 64-bit input modes an ADDP is represented as a concatenation
 ;; of the input registers into an 128-bit register which is then fed
 ;; into a pairwise add.  That way we avoid having to create intermediate
-;; 32-bit vector modes.
+;; 32-bit vector modes.  As above, operand 1 provides the architecturally
+;; high half of the result on big-endian targets.
 (define_insn "aarch64_addp<mode><vczle><vczbe>_insn"
   [(set (match_operand:VD_BHSI 0 "register_operand" "=w")
 	(plus:VD_BHSI
@@ -8380,7 +8387,11 @@
 	      (match_dup 2))
 	    (match_operand:<VDBL> 4 "vect_par_cnst_even_or_odd_half"))))]
   "TARGET_SIMD && !rtx_equal_p (operands[3], operands[4])"
-  "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
+  {
+    if (BYTES_BIG_ENDIAN)
+      return "addp\t%<v>0<Vmtype>, %<v>2<Vmtype>, %<v>1<Vmtype>";
+    return "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>";
+  }
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
@@ -8425,6 +8436,9 @@
       nunits /= 2;
     rtx par_even = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
     rtx par_odd = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
+    /* The intrinsic uses architectural lane numbering.  */
+    if (BYTES_BIG_ENDIAN)
+      std::swap (operands[1], operands[2]);
     emit_insn (gen_aarch64_addp<mode>_insn (operands[0], operands[1],
 					    operands[2], par_even, par_odd));
     DONE;
