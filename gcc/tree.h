@@ -2322,13 +2322,9 @@ class auto_suppress_location_wrappers
 #define SSA_NAME_POINTS_TO_READONLY_MEMORY(NODE) \
     SSA_NAME_CHECK (NODE)->base.deprecated_flag
 
-/* Attributes for SSA_NAMEs for pointer-type variables.  */
-#define SSA_NAME_PTR_INFO(N) \
-   SSA_NAME_CHECK (N)->ssa_name.info.ptr_info
-
-/* Value range info attributes for SSA_NAMEs of non pointer-type variables.  */
-#define SSA_NAME_RANGE_INFO(N) \
-    SSA_NAME_CHECK (N)->ssa_name.info.range_info
+/* Value range info for an SSA_NAME, of any type.  */
+#define SSA_NAME_RANGE_INFO(N)  \
+    SSA_NAME_CHECK (N)->ssa_name.range_info
 
 /* Return the immediate_use information for an SSA_NAME. */
 #define SSA_NAME_IMM_USE_NODE(NODE) SSA_NAME_CHECK (NODE)->ssa_name.imm_uses

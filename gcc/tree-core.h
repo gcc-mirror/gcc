@@ -1737,14 +1737,10 @@ struct GTY(()) tree_ssa_name {
   /* Statement that defines this SSA name.  */
   gimple *def_stmt;
 
-  /* Value range information.  */
-  union ssa_name_info_type {
-    /* Range and aliasing info for pointers.  */
-    struct GTY ((tag ("0"))) ptr_info_def *ptr_info;
-    /* Range info for everything else.  */
-    struct GTY ((tag ("1"))) vrange_storage * range_info;
-  } GTY ((desc ("%1.typed.type ?" \
-		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
+  /* Value range information for every type of SSA name.
+     The aliasing information for a prange is stored in prange_storage.
+     See SSA_NAME_PTR_INFO in tree-ssanames.h.  */
+  struct GTY (()) vrange_storage *range_info;
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_t imm_uses;
 #if defined ENABLE_GIMPLE_CHECKING

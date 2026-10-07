@@ -976,11 +976,11 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
 	  if (SSA_NAME_IN_FREE_LIST (node))
 	    fprintf (file, " in-free-list");
 
-	  if (SSA_NAME_PTR_INFO (node))
+	  /* Print the storage address for any range-info.  */
+	  if (SSA_NAME_RANGE_INFO (node))
 	    {
 	      indent_to (file, indent + 3);
-	      if (SSA_NAME_PTR_INFO (node))
-		dump_addr (file, " ptr-info ", SSA_NAME_PTR_INFO (node));
+	      dump_addr (file, " range-info ", SSA_NAME_RANGE_INFO (node));
 	    }
 	  break;
 

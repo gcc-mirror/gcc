@@ -94,7 +94,7 @@ range_info_fits_p (tree name, const vrange &r)
 /* Allocate a new global range for NAME and set it to R.  Return the
    allocation slot.  */
 
-inline void *
+inline vrange_storage *
 range_info_alloc (tree name, const vrange &r)
 {
   vrange_storage *mem = ggc_alloc_vrange_storage (r);
@@ -109,6 +109,18 @@ range_info_free (tree name)
 {
   vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
   ggc_free (mem);
+}
+
+/* Return the aliasing information for ssa-name NAME, or NULL if there
+   is none.  Return NULL for non pointer types.  */
+
+struct ptr_info_def *
+ssa_name_ptr_info (const_tree name)
+{
+  vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
+  if (!mem || mem->m_discriminator != VR_PRANGE)
+    return NULL;
+  return static_cast <prange_storage *> (mem)->ptr_info;
 }
 
 /* Return the global range for NAME in R.  */
@@ -127,10 +139,20 @@ range_info_set_range (tree name, const vrange &r)
 {
   if (!range_info_p (name) || !range_info_fits_p (name, r))
     {
+      // Aliasing info belongs to NAME, not to the prange storage object which
+      // might get reallocated.  ptr_info_def addresses may be cached
+      // elsewhere, so save and copy it back after any reallocation.
+      ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
       if (range_info_p (name))
 	range_info_free (name);
 
-      return range_info_alloc (name, r);
+      vrange_storage *mem = range_info_alloc (name, r);
+      if (pi && mem)
+	{
+	  gcc_checking_assert (mem->m_discriminator == VR_PRANGE);
+	  static_cast <prange_storage *> (mem)->ptr_info = pi;
+	}
+      return mem != NULL;
     }
   else
     {
@@ -398,10 +420,7 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
       SET_SSA_NAME_VAR_OR_IDENTIFIER (t, var);
     }
   SSA_NAME_DEF_STMT (t) = stmt;
-  if (POINTER_TYPE_P (TREE_TYPE (t)))
-    SSA_NAME_PTR_INFO (t) = NULL;
-  else
-    SSA_NAME_RANGE_INFO (t) = NULL;
+  SSA_NAME_RANGE_INFO (t) = NULL;
 
   SSA_NAME_IN_FREE_LIST (t) = 0;
   SSA_NAME_IS_DEFAULT_DEF (t) = 0;
@@ -787,6 +806,22 @@ adjust_ptr_info_misalignment (struct ptr_info_def *pi, poly_uint64 increment)
     }
 }
 
+/* Make PI the aliasing information for NAME.  Allocate a VARYING range if
+   NAME does not already have a range.  */
+
+static void
+set_ssa_name_ptr_info (tree name, struct ptr_info_def *pi)
+{
+  gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+
+  if (!range_info_p (name))
+    SSA_NAME_RANGE_INFO (name) = ggc_alloc_vrange_storage (TREE_TYPE (name));
+
+  vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
+  gcc_checking_assert (mem && mem->m_discriminator == VR_PRANGE);
+  static_cast <prange_storage *> (mem)->ptr_info = pi;
+}
+
 /* Return the alias information associated with pointer T.  It creates a
    new instance if none existed.  */
 
@@ -803,7 +838,7 @@ get_ptr_info (tree t)
       pi = ggc_cleared_alloc<ptr_info_def> ();
       pt_solution_reset (&pi->pt);
       mark_ptr_info_alignment_unknown (pi);
-      SSA_NAME_PTR_INFO (t) = pi;
+      set_ssa_name_ptr_info (t, pi);
     }
 
   return pi;
@@ -847,7 +882,7 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   new_ptr_info = ggc_alloc<ptr_info_def> ();
   *new_ptr_info = *ptr_info;
 
-  SSA_NAME_PTR_INFO (name) = new_ptr_info;
+  set_ssa_name_ptr_info (name, new_ptr_info);
 }
 
 void

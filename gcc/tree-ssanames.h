@@ -45,6 +45,9 @@ struct GTY(()) ptr_info_def
   unsigned int misalign;
 };
 
+/* Aliasing attributes for SSA_NAMEs for pointer-type variables.  */
+struct ptr_info_def *ssa_name_ptr_info (const_tree name);
+#define SSA_NAME_PTR_INFO(N) (ssa_name_ptr_info (N))
 
 #define SSANAMES(fun) (fun)->gimple_df->ssa_names
 #define DEFAULT_DEFS(fun) (fun)->gimple_df->default_defs

@@ -41,10 +41,6 @@ private:
 };
 
 // Efficient memory storage for a vrange.
-//
-// The GTY marker here does nothing but get gengtype to generate the
-// ggc_test_and_set_mark calls.  We ignore the derived classes, since
-// they don't contain any pointers.
 
 class GTY((desc ("%h.m_discriminator"), tag("VR_UNKNOWN"))) vrange_storage
 {
@@ -129,6 +125,9 @@ public:
   bool equal_p (const prange &r) const;
   bool fits_p (const prange &r) const;
   void dump () const;
+
+  // Pointer aliasing information.  Managed seperately via SSA_NAME_PTR_INFO.
+  struct ptr_info_def *ptr_info;
 
 private:
   DISABLE_COPY_AND_ASSIGN (prange_storage);

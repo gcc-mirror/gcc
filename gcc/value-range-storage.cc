@@ -638,6 +638,10 @@ prange_storage::alloc (vrange_internal_alloc &allocator, const prange &r,
 
 prange_storage::prange_storage (const prange &r) : vrange_storage (VR_PRANGE)
 {
+  // Aliasing info is not part of the range, so it is never copied from one.
+  // Only set_ssa_name_ptr_info() in tree-ssanames.cc ever makes this non-null.
+  ptr_info = NULL;
+
   unsigned num_words;
   enum prange_kind kind = prange_format (r, num_words);
   unsigned short prec = (kind == PR_UNDEFINED) ? 0 : TYPE_PRECISION (r.type ());
