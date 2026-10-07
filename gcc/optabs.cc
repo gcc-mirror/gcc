@@ -6812,9 +6812,10 @@ vec_perm_and_mask (machine_mode mode, const vec_perm_indices &sel,
    vector in SEL and return the result.  Use TARGET to hold the result
    if nonnull and convenient.
 
-   MODE is the mode of the vectors being permuted (V0 and V1).  SEL_MODE
-   is the TYPE_MODE associated with SEL, or BLKmode if SEL isn't known
-   to have a particular mode.  */
+   MODE is the mode of the result.  V0 and V1 have the same mode, which
+   has the same element mode as MODE but may have a different number of
+   elements.  SEL_MODE is the TYPE_MODE associated with SEL, or BLKmode
+   if SEL isn't known to have a particular mode.  */
 
 rtx
 expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
@@ -6833,11 +6834,15 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
   rtx_insn *last = get_last_insn ();
 
   bool single_arg_p = rtx_equal_p (v0, v1);
+  /* The selector indexes the concatenation of the inputs, which may have
+     a different number of elements than the result.  */
+  machine_mode op_mode = GET_MODE (v0);
+  gcc_checking_assert (op_mode == GET_MODE (v1));
   /* Always specify two input vectors here and leave the target to handle
      cases in which the inputs are equal.  Not all backends can cope with
      the single-input representation when testing for a double-input
      target instruction.  */
-  vec_perm_indices indices (sel, 2, GET_MODE_NUNITS (mode));
+  vec_perm_indices indices (sel, 2, GET_MODE_NUNITS (op_mode));
 
   /* See if this can be handled with a vec_shr or vec_shl.  We only do this
      if the second (for vec_shr) or first (for vec_shl) vector is all
@@ -6846,14 +6851,16 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
   insn_code shift_code_qi = CODE_FOR_nothing;
   optab shift_optab = unknown_optab;
   rtx v2 = v0;
-  if (v1 == CONST0_RTX (GET_MODE (v1)))
+  if (v1 == CONST0_RTX (op_mode))
     shift_optab = vec_shr_optab;
-  else if (v0 == CONST0_RTX (GET_MODE (v0)))
+  else if (v0 == CONST0_RTX (op_mode))
     {
       shift_optab = vec_shl_optab;
       v2 = v1;
     }
-  if (shift_optab != unknown_optab)
+  if (mode == op_mode
+      && GET_MODE_NUNITS (mode).is_constant ()
+      && shift_optab != unknown_optab)
     {
       shift_code = optab_handler (shift_optab, mode);
       shift_code_qi = ((qimode != VOIDmode && qimode != mode)
@@ -6893,11 +6900,16 @@ expand_vec_perm_const (machine_mode mode, rtx v0, rtx v1,
       if (single_arg_p)
 	v1 = v0;
 
-      gcc_checking_assert (GET_MODE (v0) == GET_MODE (v1));
-      machine_mode op_mode = GET_MODE (v0);
       if (targetm.vectorize.vec_perm_const (mode, op_mode, target, v0, v1,
 					    indices))
 	return target;
+    }
+
+  /* The fallbacks below need the inputs to have the result mode.  */
+  if (mode != op_mode)
+    {
+      delete_insns_since (last);
+      return NULL_RTX;
     }
 
   /* Fall back to a constant byte-based permutation.  */
