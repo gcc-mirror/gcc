@@ -941,7 +941,28 @@ struct gomp_team
 #ifdef __AMDGCN__
   /* Used on AMD GCN to inform threads how to launch in a team.  */
   struct gomp_thread_start_data thr_start_data;
+#elif LIBGOMP_USE_PTHREADS
+  /* Cache to help initialise each secondary threads `task` when re-using a
+     team very many times.  This allows each secondary thread to perform the
+     re-initialisation instead of having the primary thread need to perform
+     that initialisation.  */
+  struct thread_init {
+    struct gomp_task_icv task_icv_init;
+    struct gomp_task *task_parent_init;
+    struct gomp_taskgroup *task_taskgroup;
+    uintptr_t def_allocator;
+    unsigned int num_teams;
+    unsigned int team_num;
+    void (*fn) (void *data);
+    void *data;
+  } ti;
+  struct prev_place_vars {
+    unsigned int place_partition_off;
+    unsigned int place_partition_len;
+    char bind;
+  } ppv;
 #endif
+  bool reused;
 
   /* This array contains structures for implicit tasks.  */
   struct gomp_task implicit_task[];
@@ -955,6 +976,7 @@ struct gomp_thread
   /* This is the function that the thread should run upon launch.  */
   void (*fn) (void *data);
   void *data;
+  bool exit;
 
 #ifdef __AMDGCN__
   /* And these are the parameters it should set.  */
