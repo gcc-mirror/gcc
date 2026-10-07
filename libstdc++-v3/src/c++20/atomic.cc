@@ -325,15 +325,28 @@ namespace
 
     void
     _M_enter_wait() noexcept
-    { __atomic_fetch_add(&_M_waiters, 1, __ATOMIC_SEQ_CST); }
+    {
+      // This seq_cst RMW and the seq_cst fence in _M_waiting() are both in
+      // the single total order on seq_cst operations.
+      __atomic_fetch_add(&_M_waiters, 1, __ATOMIC_SEQ_CST);
+    }
 
     void
     _M_leave_wait() noexcept
     { __atomic_fetch_sub(&_M_waiters, 1, __ATOMIC_RELEASE); }
 
+    // Called by notifying thread to decide if it needs to do the notification
+    // (which requires an expensive wake syscall or condvar signal).
     bool
     _M_waiting() const noexcept
     {
+      // This thread modifies the atomic (or the proxy _M_ver) at memory
+      // location A, then loads _M_waiters here. A waiter thread calls
+      // _M_enter_wait() to increment _M_waiters, then loads A. Without this
+      // fence the two loads can both read stale values due to store buffering
+      // and if the notifier sees `_M_waiters == 0` the notification would be
+      // skipped, meaning the waiter would not get unblocked.
+      __atomic_thread_fence(__ATOMIC_SEQ_CST);
       __platform_wait_t __res;
       __atomic_load(&_M_waiters, &__res, __ATOMIC_SEQ_CST);
       return __res != 0;
