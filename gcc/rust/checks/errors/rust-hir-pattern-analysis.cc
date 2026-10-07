@@ -927,8 +927,9 @@ PatStack::pop_head_constructor (const Constructor &other_ctor,
 		other_ctor.to_string ().c_str (), s.c_str ());
   }
   pop_head ();
-  for (auto &pat : v)
-    pats.push_back (pat);
+  // The sub-patterns replace the head, in order, in front of the remaining
+  // columns, matching the order Matrix::specialize gives their types.
+  pats.insert (pats.begin (), v.begin (), v.end ());
 }
 
 std::string
