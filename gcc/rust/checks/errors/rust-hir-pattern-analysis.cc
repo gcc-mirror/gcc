@@ -1384,11 +1384,29 @@ lower_pattern (Resolver::TypeCheckContext *ctx, HIR::Pattern &pattern,
       break;
     case HIR::Pattern::PatternType::PATH:
       {
-	// TODO: support constants, associated constants, enum variants and
-	// structs
+	// A unit variant of the scrutinee's enum is a variant constructor
+	// without fields. Anything else is still treated as a wildcard.
+	// TODO: support constants, associated constants and unit structs
 	// https://doc.rust-lang.org/reference/patterns.html#path-patterns
-	// unimplemented. Treat this pattern as wildcard for now.
-	return DeconstructedPat::make_wildcard (pattern.get_locus ());
+	// The type is not destructured on purpose: split_constructors sees the
+	// column's type as it is, and asserts that it is an ADT.
+	if (scrutinee_ty->get_kind () != TyTy::TypeKind::ADT)
+	  return DeconstructedPat::make_wildcard (pattern.get_locus ());
+
+	TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (scrutinee_ty);
+	HirId variant_id = UNKNOWN_HIRID;
+	if (!adt->is_enum ()
+	    || !ctx->lookup_variant_definition (
+	      pattern.get_mappings ().get_hirid (), &variant_id))
+	  return DeconstructedPat::make_wildcard (pattern.get_locus ());
+
+	TyTy::VariantDef *variant;
+	int variant_idx;
+	if (!adt->lookup_variant_by_id (variant_id, &variant, &variant_idx))
+	  return DeconstructedPat::make_wildcard (pattern.get_locus ());
+
+	return DeconstructedPat (Constructor::make_variant (variant_idx), 0, {},
+				 pattern.get_locus ());
       }
       break;
     case HIR::Pattern::PatternType::REFERENCE:

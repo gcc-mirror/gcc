@@ -14,7 +14,9 @@ macro_rules! ty_app {
 }
 
 pub fn foo(ty: ApplicationTy) {
+    // Both variants, as in the reproducer of Rust-GCC/gccrs#3726: a match
+    // with only `TypeCtor::Array` is not exhaustive.
     match ty {
-        ty_app!(TypeCtor::Array) => {}
+        ty_app!(TypeCtor::Array) | ty_app!(TypeCtor::Slice) => {}
     }
 }
