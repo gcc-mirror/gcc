@@ -2660,6 +2660,20 @@ mask_to_comparison (int mask)
     }
 }
 
+/* Return true if the comparison with mask MASK (see comparison_to_mask)
+   raises an invalid-operation exception for a quiet NaN operand, as LT,
+   GT, LE, GE and LTGT do: they are false for unordered operands and
+   depend on their order.  EQ and ORDERED do not, and neither do the
+   constant results 0 and CMP_MASK_ALL.  */
+
+static bool
+comparison_mask_signals_p (int mask)
+{
+  return ((mask & CMP_BIT_UN) == 0
+	  && (mask & (CMP_BIT_LT | CMP_BIT_GT)) != 0
+	  && mask != CMP_MASK_ORDERED);
+}
+
 /* Canonicalize RES, a scalar const0_rtx/const_true_rtx to the right
    false/true value of comparison with MODE where comparison operands
    have CMP_MODE.  */
@@ -2770,6 +2784,15 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
   else if (code == XOR)
     mask = mask0 ^ mask1;
   else
+    return 0;
+
+  /* With trapping math, the result must signal for a quiet NaN exactly
+     when OP0 or OP1 does.  Inverting OP0 does not change that.  */
+  if (HONOR_NANS (cmp_mode)
+      && flag_trapping_math
+      && ((comparison_mask_signals_p (comparison_to_mask (code0))
+	   || comparison_mask_signals_p (comparison_to_mask (code1)))
+	  != comparison_mask_signals_p (mask)))
     return 0;
 
   if (mask == all)
@@ -9580,6 +9603,223 @@ test_comparisons (machine_mode mode0, machine_mode mode1, machine_mode mode2)
 	}
 }
 
+/* Return true if comparison CODE holds when its operands compare as
+   OUTCOME, one of CMP_BIT_LT, CMP_BIT_GT, CMP_BIT_EQ and CMP_BIT_UN.  */
+
+static bool
+comparison_holds_p (rtx_code code, int outcome)
+{
+  int mask = unsigned_comparison_to_mask (code);
+  if (mask == 0 || code == NE)
+    mask = comparison_to_mask (code);
+  return mask & outcome;
+}
+
+/* Return true if X is a comparison that raises an invalid-operation
+   exception for a quiet NaN operand.  */
+
+static bool
+comparison_signals_p (rtx x)
+{
+  return (COMPARISON_P (x)
+	  && comparison_mask_signals_p (comparison_to_mask (GET_CODE (x))));
+}
+
+/* Check RES, a simplification of (CODE OP0 OP1) where OP0 and OP1 are
+   comparisons between REG0 and REG1, against the value of (CODE OP0 OP1)
+   for every possible outcome of comparing REG0 and REG1.  CODE is IOR or
+   a comparison of the results of OP0 and OP1.  NANS_P says whether REG0
+   and REG1 can be unordered, TRAPS_P whether the result must signal
+   exactly when OP0 or OP1 does.  */
+
+static void
+check_logical_comparison (rtx res, rtx_code code, machine_mode mode,
+			  rtx op0, rtx op1, rtx reg0, rtx reg1,
+			  bool nans_p, bool traps_p)
+{
+  if (res == NULL_RTX)
+    return;
+
+  ASSERT_TRUE (CONSTANT_P (res)
+	       || (COMPARISON_P (res)
+		   && GET_MODE (res) == mode
+		   && ((XEXP (res, 0) == reg0 && XEXP (res, 1) == reg1)
+		       || (XEXP (res, 0) == reg1 && XEXP (res, 1) == reg0))));
+
+  /* Generic folds of (CODE X X) are allowed to drop a trap.  */
+  if (traps_p && GET_CODE (op0) != GET_CODE (op1))
+    ASSERT_EQ (comparison_signals_p (op0) || comparison_signals_p (op1),
+	       comparison_signals_p (res));
+
+  static const int outcomes[] = {
+    CMP_BIT_LT, CMP_BIT_GT, CMP_BIT_EQ, CMP_BIT_UN
+  };
+  for (int outcome : outcomes)
+    {
+      if (outcome == CMP_BIT_UN && !nans_p)
+	continue;
+
+      rtx val0 = (comparison_holds_p (GET_CODE (op0), outcome)
+		  ? const_true_rtx : const0_rtx);
+      rtx val1 = (comparison_holds_p (GET_CODE (op1), outcome)
+		  ? const_true_rtx : const0_rtx);
+      rtx expected;
+      if (code == IOR)
+	expected = simplify_const_binary_operation (code, mode, val0, val1);
+      else
+	expected = simplify_const_relational_operation (code, mode,
+							 val0, val1);
+
+      rtx folded = res;
+      if (COMPARISON_P (res))
+	{
+	  /* Swapping the operands exchanges < and >.  */
+	  int swapped = outcome;
+	  if (XEXP (res, 0) == reg1 && outcome == CMP_BIT_LT)
+	    swapped = CMP_BIT_GT;
+	  else if (XEXP (res, 0) == reg1 && outcome == CMP_BIT_GT)
+	    swapped = CMP_BIT_LT;
+	  folded = (comparison_holds_p (GET_CODE (res), swapped)
+		    ? const_true_rtx : const0_rtx);
+	}
+      ASSERT_RTX_EQ (expected, folded);
+    }
+}
+
+/* Simplify (CODE (CODE0 REG0 REG1) (CODE1 REG0 REG1)), with all results
+   in SImode.  CODE is IOR or a comparison; the latter combines the inner
+   comparisons through AND, IOR or XOR, inverting the first one for all
+   but NE (for example, (ltu X Y) is (and (not X) Y)).  */
+
+static rtx
+simplify_logical_comparison (rtx_code code, rtx_code code0, rtx_code code1,
+			     rtx reg0, rtx reg1)
+{
+  rtx op0 = gen_rtx_fmt_ee (code0, SImode, reg0, reg1);
+  rtx op1 = gen_rtx_fmt_ee (code1, SImode, reg0, reg1);
+  if (code == IOR)
+    return simplify_binary_operation (code, SImode, op0, op1);
+  return simplify_relational_operation (code, SImode, SImode, op0, op1);
+}
+
+/* Test the simplification of IOR and comparisons of two comparisons
+   between operands of mode OP_MODE against an evaluation of them, for
+   all pairs of comparison codes.  */
+
+static void
+test_logical_comparisons_in_mode (machine_mode op_mode)
+{
+  rtx reg0 = make_test_reg (op_mode);
+  rtx reg1 = (GET_MODE_CLASS (op_mode) == MODE_CC
+	      ? const0_rtx : make_test_reg (op_mode));
+
+  static const rtx_code codes[] = {
+    EQ, NE, LT, LE, GT, GE, LTGT, ORDERED,
+    UNORDERED, UNEQ, UNLT, UNLE, UNGT, UNGE
+  };
+  static const rtx_code outer_codes[] = { IOR, EQ, NE, LTU, LEU, GTU, GEU };
+
+  bool nans_p = (GET_MODE_CLASS (op_mode) == MODE_CC
+		 || HONOR_NANS (op_mode));
+  bool traps_p = HONOR_NANS (op_mode) && flag_trapping_math;
+
+  for (auto code0 : codes)
+    for (auto code1 : codes)
+      for (auto code : outer_codes)
+	{
+	  rtx res = simplify_logical_comparison (code, code0, code1,
+						 reg0, reg1);
+	  check_logical_comparison (res, code, SImode,
+				    gen_rtx_fmt_ee (code0, SImode, reg0, reg1),
+				    gen_rtx_fmt_ee (code1, SImode, reg0, reg1),
+				    reg0, reg1, nans_p, traps_p);
+	  /* Only a constant result can be expressed for a CC mode, other
+	     than by the generic (ior X X) -> X.  */
+	  if (GET_MODE_CLASS (op_mode) == MODE_CC
+	      && code == IOR
+	      && code0 != code1)
+	    ASSERT_FALSE (res && COMPARISON_P (res));
+	}
+}
+
+/* Return the code of simplify_logical_comparison's result, or UNKNOWN
+   if there is none.  A constant result has code CONST_INT.  */
+
+static rtx_code
+logical_comparison_code (rtx_code code, rtx_code code0, rtx_code code1,
+			 rtx reg0, rtx reg1)
+{
+  rtx res = simplify_logical_comparison (code, code0, code1, reg0, reg1);
+  return res ? GET_CODE (res) : UNKNOWN;
+}
+
+/* Test combinations of CC-mode, integer and floating-point comparisons,
+   the latter under the various floating-point options.  */
+
+static void
+test_logical_comparisons ()
+{
+  int saved_trapping_math = flag_trapping_math;
+  int saved_finite_math_only = flag_finite_math_only;
+
+  test_logical_comparisons_in_mode (CCmode);
+
+  for (int finite = 0; finite <= 1; ++finite)
+    for (int trapping = 0; trapping <= 1; ++trapping)
+      {
+	flag_finite_math_only = finite;
+	flag_trapping_math = trapping;
+	test_logical_comparisons_in_mode (SImode);
+	test_logical_comparisons_in_mode (DFmode);
+      }
+
+  rtx a = make_test_reg (DFmode);
+  rtx b = make_test_reg (DFmode);
+  rtx cc = make_test_reg (CCmode);
+
+  /* All outcomes are possible for a CC mode: x < 0 || x >= 0 is not
+     always true.  */
+  ASSERT_EQ (logical_comparison_code (IOR, LT, GE, cc, const0_rtx),
+	     UNKNOWN);
+  ASSERT_EQ (logical_comparison_code (IOR, EQ, NE, cc, const0_rtx),
+	     CONST_INT);
+
+  if (MODE_HAS_NANS (DFmode))
+    {
+      flag_finite_math_only = 0;
+      flag_trapping_math = 1;
+      /* These would add a trap: ORDERED & NE -> LTGT, ORDERED & UNLT -> LT.  */
+      ASSERT_EQ (logical_comparison_code (LTU, UNORDERED, NE, a, b), UNKNOWN);
+      ASSERT_EQ (logical_comparison_code (LTU, UNORDERED, UNLT, a, b),
+		 UNKNOWN);
+      /* These would drop one: UNLT | GT -> NE, LT ^ LE -> EQ,
+	 !UNGE & GT -> false.  */
+      ASSERT_EQ (logical_comparison_code (IOR, UNLT, GT, a, b), UNKNOWN);
+      ASSERT_EQ (logical_comparison_code (NE, LT, LE, a, b), UNKNOWN);
+      ASSERT_EQ (logical_comparison_code (LTU, UNGE, GT, a, b), UNKNOWN);
+      /* These do not.  */
+      ASSERT_EQ (logical_comparison_code (IOR, LT, GT, a, b), LTGT);
+      ASSERT_EQ (logical_comparison_code (IOR, LT, EQ, a, b), LE);
+      ASSERT_EQ (logical_comparison_code (IOR, UNORDERED, EQ, a, b), UNEQ);
+      ASSERT_EQ (logical_comparison_code (LTU, UNLT, UNLE, a, b), EQ);
+      ASSERT_EQ (logical_comparison_code (LTU, LT, GE, a, b), GE);
+
+      flag_trapping_math = 0;
+      ASSERT_EQ (logical_comparison_code (LTU, UNORDERED, NE, a, b), LTGT);
+      ASSERT_EQ (logical_comparison_code (LTU, UNORDERED, UNLT, a, b), LT);
+      ASSERT_EQ (logical_comparison_code (IOR, UNLT, GT, a, b), NE);
+      ASSERT_EQ (logical_comparison_code (NE, LT, LE, a, b), EQ);
+      ASSERT_EQ (logical_comparison_code (LTU, UNGE, GT, a, b), CONST_INT);
+    }
+
+  flag_finite_math_only = 1;
+  flag_trapping_math = 1;
+  ASSERT_EQ (logical_comparison_code (IOR, LT, GT, a, b), NE);
+  ASSERT_EQ (logical_comparison_code (IOR, LT, GE, a, b), CONST_INT);
+
+  flag_trapping_math = saved_trapping_math;
+  flag_finite_math_only = saved_finite_math_only;
+}
 
 /* Verify some simplifications involving scalar expressions.  */
 
@@ -9606,6 +9846,7 @@ test_scalar_ops ()
   test_scalar_int_ext_ops2 (DImode, SImode, HImode);
 
   test_comparisons (QImode, HImode, SImode);
+  test_logical_comparisons ();
 }
 
 /* Test vector simplifications involving VEC_DUPLICATE in which the
