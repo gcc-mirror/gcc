@@ -6430,8 +6430,19 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if (!HAVE_conditional_move)
 	return 0;
 
-      /* Do not turn a trapping comparison into a non-trapping one.  */
-      if ((code != EQ && code != NE && code != UNEQ && code != LTGT)
+      /* x != y is split into x unord y || x ltgt y, but the conditional move
+	 below evaluates its comparison unconditionally and LTGT is signaling.
+	 Use the quiet x unord y || !(x uneq y) instead.  */
+      bool invert = false;
+      if (code == LTGT && !and_them)
+	{
+	  code = UNEQ;
+	  invert = true;
+	}
+
+      /* Do not change whether the comparison traps: only the quiet
+	 EQ, NE and UNEQ remainders come from quiet comparisons.  */
+      if ((code != EQ && code != NE && code != UNEQ)
 	  && flag_trapping_math)
 	return 0;
 
@@ -6445,6 +6456,9 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if (and_them)
 	tem = emit_conditional_move (target, { code, op0, op1, mode },
 				     tem, const0_rtx, GET_MODE (tem), 0);
+      else if (invert)
+	tem = emit_conditional_move (target, { code, op0, op1, mode },
+				     tem, trueval, GET_MODE (tem), 0);
       else
 	tem = emit_conditional_move (target, { code, op0, op1, mode },
 				     trueval, tem, GET_MODE (tem), 0);

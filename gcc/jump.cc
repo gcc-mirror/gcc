@@ -388,10 +388,18 @@ reversed_comparison_code_parts (enum rtx_code code, const_rtx arg0,
       return reverse_condition (code);
     case ORDERED:
     case UNORDERED:
-    case LTGT:
-    case UNEQ:
       /* In case we already see unordered comparison, we can be sure to
 	 be dealing with floating point so we don't need any more tests.  */
+      return reverse_condition_maybe_unordered (code);
+    case LTGT:
+    case UNEQ:
+      /* LTGT is signaling and UNEQ is quiet, so reversing one into the
+	 other changes whether a quiet NaN operand raises an exception.
+	 That only matters if FP traps are honored and the operands may
+	 be NaNs; a MODE_CC comparison does not tell us the latter.  */
+      if (flag_trapping_math
+	  && (GET_MODE_CLASS (mode) == MODE_CC || HONOR_NANS (mode)))
+	return UNKNOWN;
       return reverse_condition_maybe_unordered (code);
     case UNLT:
     case UNLE:
