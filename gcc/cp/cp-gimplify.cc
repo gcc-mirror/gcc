@@ -2111,9 +2111,12 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *stmt_p = predeclare_vla (*stmt_p);
 
       /* Warn of new allocations that are not big enough for the target
-	 type.  */
+	 type.  Don't warn for calls from new expressions, new TYPE[0]
+	 is fine and new expansion should arrange for the right size
+	 to be provided.  */
       if (warn_alloc_size
 	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == CALL_EXPR
+	  && !CALL_FROM_NEW_OR_DELETE_P (TREE_OPERAND (stmt, 0))
 	  && POINTER_TYPE_P (TREE_TYPE (stmt)))
 	{
 	  if (tree fndecl = get_callee_fndecl (TREE_OPERAND (stmt, 0)))
