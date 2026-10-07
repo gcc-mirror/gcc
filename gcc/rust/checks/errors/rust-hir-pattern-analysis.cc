@@ -1635,7 +1635,7 @@ emit_exhaustiveness_error (Resolver::TypeCheckContext *ctx,
 	  if (i != witness.get_stacks ().size () - 1)
 	    buf << " and ";
 	}
-      rust_error_at (expr.get_scrutinee_expr ().get_locus (),
+      rust_error_at (expr.get_scrutinee_expr ().get_locus (), ErrorCode::E0004,
 		     "non-exhaustive patterns: %s not covered",
 		     buf.str ().c_str ());
     }
