@@ -1650,7 +1650,10 @@ nml_get_addr_expr (gfc_symbol * sym, gfc_component * c,
     tmp = gfc_class_data_get (tmp);
 
   if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (tmp)))
-    tmp = gfc_conv_array_data (tmp);
+    {
+      tmp = gfc_conv_array_data (tmp);
+      STRIP_NOPS (tmp);
+    }
   else
     {
       if (!POINTER_TYPE_P (TREE_TYPE (tmp)))
@@ -1820,6 +1823,9 @@ transfer_namelist_element (stmtblock_t * block, const char * var_name,
 
   for ( n_dim = 0 ; n_dim < rank ; n_dim++ )
     {
+      if (c && c->attr.pdt_array)
+	decl = TREE_OPERAND (nml_get_addr_expr (sym, c, base_addr), 0);
+
       tmp = build_call_expr_loc (input_location,
 			     iocall[IOCALL_SET_NML_VAL_DIM], 5,
 			     dt_parm_addr,
