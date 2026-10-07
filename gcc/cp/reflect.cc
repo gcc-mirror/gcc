@@ -8108,6 +8108,12 @@ process_metafunction (const constexpr_ctx *ctx, tree fun, tree call,
 	gcc_unreachable ();
       }
 
+  /* Some of the eval_ functions build new trees and in a template
+     that could produce template trees.  The subsequent evaluation
+     cannot process such trees, though, so force a non-template
+     context.  This assumes that the call is not instantiation-dependent.  */
+  processing_template_decl_sentinel ptds;
+
   switch (minfo->code)
     {
     case METAFN_OPERATOR_OF:
