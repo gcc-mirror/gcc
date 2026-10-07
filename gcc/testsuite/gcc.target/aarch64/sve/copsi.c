@@ -20,7 +20,6 @@ func_init4 (int64_t a, int64_t b)
 /*
 ** func_init3:
 **	fmov	s0, w2
-**	fmov	s0, s0
 **	insr	z0\.s, w1
 **	insr	z0\.s, w0
 **	ret
