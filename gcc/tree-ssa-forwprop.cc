@@ -3515,6 +3515,16 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       return false;
     }
 
+  /* The sequence below computes the result in int, for a CLZ as
+     INPUT_BITS - 1 minus the count.  If the table entry for zero does not
+     survive that, select it in TYPE after the conversion instead.  */
+  HOST_WIDE_INT table_zero = zero_val;
+  bool late_select
+    = (!wi::fits_to_tree_p (zero_val, integer_type_node)
+       || (fn == IFN_CLZ
+	   && !wi::fits_to_tree_p (input_bits - 1 - zero_val,
+				 integer_type_node)));
+
   HOST_WIDE_INT ctz_val = -1;
   bool zero_ok;
   if (fn == IFN_CTZ)
@@ -3528,7 +3538,8 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       ctz_val = 32;
       zero_ok = CLZ_DEFINED_VALUE_AT_ZERO (SCALAR_INT_TYPE_MODE (input_type),
 					   ctz_val) == 2;
-      zero_val = input_bits - 1 - zero_val;
+      if (!late_select)
+	zero_val = input_bits - 1 - zero_val;
     }
   /* Pass the value at zero only if the target defines it; otherwise the
      COND_EXPR below supplies the result for zero.  */
@@ -3546,6 +3557,7 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       zero_val = 0;
       ctz_val = 0;
       nargs = 1;
+      late_select = false;
     }
 
   gimple_seq seq = NULL;
@@ -3560,7 +3572,7 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
 
   tree prev_lhs = gimple_call_lhs (call);
 
-  if (zero_ok && zero_val == ctz_val)
+  if (late_select || (zero_ok && zero_val == ctz_val))
     ;
   /* Emit ctz (x) & 31 if ctz (0) is 32 but we need to return 0.  */
   else if (zero_ok && zero_val == 0 && ctz_val == input_bits)
@@ -3602,7 +3614,22 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       prev_lhs = gimple_assign_lhs (g);
     }
 
-  g = gimple_build_assign (gimple_assign_lhs (stmt), NOP_EXPR, prev_lhs);
+  if (late_select)
+    {
+      g = gimple_build_assign (make_ssa_name (type), NOP_EXPR, prev_lhs);
+      gimple_set_location (g, gimple_location (stmt));
+      gimple_seq_add_stmt (&seq, g);
+      prev_lhs = gimple_assign_lhs (g);
+      g = gimple_build_assign (make_ssa_name (boolean_type_node), EQ_EXPR,
+			       res_ops[0], build_zero_cst (input_type));
+      gimple_set_location (g, gimple_location (stmt));
+      gimple_seq_add_stmt (&seq, g);
+      g = gimple_build_assign (gimple_assign_lhs (stmt), COND_EXPR,
+			       gimple_assign_lhs (g),
+			       build_int_cst (type, table_zero), prev_lhs);
+    }
+  else
+    g = gimple_build_assign (gimple_assign_lhs (stmt), NOP_EXPR, prev_lhs);
   gimple_seq_add_stmt (&seq, g);
   gsi_replace_with_seq (gsi, seq, true);
   return true;
