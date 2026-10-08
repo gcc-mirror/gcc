@@ -756,7 +756,7 @@ GNATBIND_OBJS +=  \
 endif
 
 # Language-independent object files.
-ADA_BACKEND = $(BACKEND) attribs.o
+ADA_BACKEND = $(BACKEND) attribs.o attr-handlers.o
 
 # List of target dependent sources, overridden below as necessary
 TARGET_ADA_SRCS =
