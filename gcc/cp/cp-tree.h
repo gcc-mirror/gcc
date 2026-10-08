@@ -2439,6 +2439,9 @@ struct GTY(()) language_function {
 
 /* In parser.cc.  */
 extern tree cp_literal_operator_id (const char *);
+extern void missing_template_diag (location_t,
+				   diagnostics::kind
+				   = diagnostics::kind::warning);
 
 #define NON_ERROR(NODE) ((NODE) == error_mark_node ? NULL_TREE : (NODE))
 

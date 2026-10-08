@@ -7,6 +7,8 @@ struct S {
   struct tt {};
   template<typename T>
   using tu = tt<T>;
+  template<typename T>
+  static const int vt = 5;
 };
 int x;
 void f() {}
@@ -17,7 +19,7 @@ struct tt {};
 template<typename>
 void tf() {}
 
-template<typename>
+template<typename T>
 int tv = 5;
 
 template<typename T>
@@ -30,8 +32,9 @@ int main() {
   s.[:^^f:];		// { dg-error "not a member of .S." }
   s.[:^^tt:];		// { dg-error "invalid class member access of type template .tt." }
   s.template [:^^tf:];	// { dg-error "not a member of .S." }
-  s.[:^^tv:];		// { dg-error "not a member of .S." }
+  s.[:^^tv:];		// { dg-error "cannot use template" }
   s.[:^^tu:];		// { dg-error "invalid class member access of type template .tu." }
   s.[:^^S::tt:];	// { dg-error "invalid class member access of type template .S::tt." }
   s.[:^^S::tu:];	// { dg-error "invalid class member access of type template .S::tu." }
+  s.[:^^S::vt:];	// { dg-error "cannot use template .S::vt<T>. in a splice expression" }
 }

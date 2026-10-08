@@ -9375,6 +9375,33 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
       return false;
     }
 
+  /* [expr.prim.splice]/2 doesn't allow for the splice-expression of the form
+     splice-specifier to designate a template.  But we accept a function
+     template here as an extension, because it would be valid if the 'template'
+     keyword were present.  */
+  if (!template_p
+      && !targs_p
+      && TREE_CODE (t) == TEMPLATE_DECL
+      && !DECL_FUNCTION_TEMPLATE_P (t))
+    {
+      if (complain_p)
+	error_at (loc, "cannot use template %qE in a splice expression", t);
+      return false;
+    }
+
+  /* [expr.prim.splice]/4 allows only function and variable templates in the
+     template splice-specialization-specifier form.  */
+  if (targs_p
+      && TREE_CODE (t) == TEMPLATE_DECL
+      && !DECL_FUNCTION_TEMPLATE_P (t)
+      && !variable_template_p (t))
+    {
+      if (complain_p)
+	error_at (loc, "expected a reflection of a function or variable "
+		  "template");
+      return false;
+    }
+
   /* [expr.prim.splice]/2: "The expression is ill-formed if S [the construct
      designated by splice-specifier] is
      -- a local entity such that there is a lambda scope that intervenes
@@ -9466,6 +9493,17 @@ check_splice_expr (location_t loc, location_t start_loc, tree t,
 			   || variable_template_p (t)
 			   || dependent_splice_p (t));
     }
+
+  if (complain_p
+      && !template_p
+      /* No 'template' but there were template arguments?  */
+      && (targs_p
+	  /* No 'template' but the splice-specifier designates a function
+	     template?  */
+	  || reflection_function_template_p (t))
+      && warning_enabled_at (loc, OPT_Wmissing_template_keyword))
+    /* Were 'template' present, this would be valid code, so keep going.  */
+    missing_template_diag (loc, diagnostics::kind::pedwarn);
 
   return true;
 }

@@ -10,8 +10,8 @@ template<info R>
 void
 f ()
 {
-  [:R:] r; // { dg-error "expected" }
-  [:R:]<int> r; // { dg-error "expected" }
+  [:R:] r; // { dg-error "expected|cannot use template" }
+  [:R:]<int> r; // { dg-error "expected|cannot use template" }
 }
 
 void

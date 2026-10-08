@@ -279,8 +279,6 @@ static tree omp_start_variant_function
 static int omp_finish_variant_function
   (cp_parser *, tree, tree, tree, bool, bool);
 static void maybe_start_implicit_template (cp_parser *parser);
-static void missing_template_diag
-  (location_t, diagnostics::kind = diagnostics::kind::warning);
 
 /* Manifest constants.  */
 #define CP_LEXER_BUFFER_SIZE ((256 * 1024) / sizeof (cp_token))
@@ -6440,16 +6438,6 @@ cp_parser_splice_expression (cp_parser *parser, bool template_p,
 			  /*complain=*/true))
     return error_mark_node;
 
-  if (!template_p
-      /* No 'template' but there were template arguments?  */
-      && (targs_p
-	  /* No 'template' but the splice-specifier designates a function
-	     template?  */
-	  || reflection_function_template_p (t))
-      && warning_enabled_at (loc, OPT_Wmissing_template_keyword))
-    /* Were 'template' present, this would be valid code, so keep going.  */
-    missing_template_diag (loc, diagnostics::kind::pedwarn);
-
   cp_unevaluated u;
 
   /* When doing foo.[: bar :], cp_parser_postfix_dot_deref_expression wants
@@ -7299,7 +7287,7 @@ cp_parser_primary_expression (cp_parser *parser,
 /* Complain about missing template keyword when naming a dependent
    member template.  */
 
-static void
+void
 missing_template_diag (location_t loc,
 		       diagnostics::kind diag_kind/*=kind::warning*/)
 {

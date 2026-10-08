@@ -22,6 +22,7 @@ template <auto r> void (C::*tp2)(int) = &template[:r:];
 template <auto r> void (C::*tp3)(int) = template[:r:]; // { dg-error "cannot implicitly reference a class member" }
 /* tp4 and tp5 intentionally omitted as they are not applicable in a template context */
 template <auto r> void (C::*tp6)(int) = &[:r:];
+// { dg-warning "expected .template. keyword" "" { target *-*-* } .-1 }
 template <auto r> void (C::*tp7)(int) = [:r:]; // { dg-error "cannot implicitly reference a class member" }
 template <auto r> void (C::*tp0n)(int) = &template[:r:]<int>; // { dg-error "no matches converting function" }
 template <auto r> void (C::*tp1n)(int) = template[:r:]<int>; // { dg-error "cannot implicitly reference a class member" }
