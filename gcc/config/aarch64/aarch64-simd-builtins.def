@@ -140,17 +140,9 @@
   BUILTIN_VQN (UNOP, xtn, 0, DEFAULT)
   BUILTIN_VQN (UNOPU, xtn, 0, DEFAULT)
 
-  /* Implemented by aarch64_<su>mlsl<mode>.  */
-  BUILTIN_VD_BHSI (TERNOP, smlsl, 0, DEFAULT)
-  BUILTIN_VD_BHSI (TERNOPU, umlsl, 0, DEFAULT)
-
   /* Implemented by aarch64_<su>mlsl_n<mode>.  */
   BUILTIN_VD_HSI (TERNOP, smlsl_n, 0, DEFAULT)
   BUILTIN_VD_HSI (TERNOPU, umlsl_n, 0, DEFAULT)
-
-  /* Implemented by aarch64_<su>mlal<mode>.  */
-  BUILTIN_VD_BHSI (TERNOP, smlal, 0, DEFAULT)
-  BUILTIN_VD_BHSI (TERNOPU, umlal, 0, DEFAULT)
 
   /* Implemented by aarch64_<su>mlal_n<mode>.  */
   BUILTIN_VD_HSI (TERNOP, smlal_n, 0, DEFAULT)
@@ -214,9 +206,6 @@
   BUILTIN_VQ_HSI (QUADOP_LANE, sqdmlsl2_laneq, 0, DEFAULT)
   BUILTIN_VQ_HSI (TERNOP, sqdmlal2_n, 0, DEFAULT)
   BUILTIN_VQ_HSI (TERNOP, sqdmlsl2_n, 0, DEFAULT)
-
-  BUILTIN_VD_BHSI (BINOP, intrinsic_vec_smult_lo_, 0, DEFAULT)
-  BUILTIN_VD_BHSI (BINOPU, intrinsic_vec_umult_lo_, 0, DEFAULT)
 
   BUILTIN_VQW (BINOP, vec_widen_smult_hi_, 10, DEFAULT)
   BUILTIN_VQW (BINOPU, vec_widen_umult_hi_, 10, DEFAULT)

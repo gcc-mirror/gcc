@@ -39,9 +39,11 @@
 #include "tree-vector-builder.h"
 #include "rtx-vector-builder.h"
 #include "vec-perm-indices.h"
+#include "aarch64-builtins.h"
 #include "aarch64-acle-builtins.h"
 #include "aarch64-neon-builtins-base.h"
 #include "aarch64-neon-builtins-functions.h"
+#include "aarch64-neon-builtins-shapes.h"
 #include "gimple-fold.h"
 #include "ssa.h"
 #include "emit-rtl.h"
@@ -114,6 +116,16 @@ build_lane_set (tree vec, tree index, tree elem)
   auto offset = fold_build2 (MULT_EXPR, bitsizetype, elem_size,
 			     convert_lane_index (vec_len, index));
   return fold_build3 (BIT_INSERT_EXPR, vec_type, vec, elem, offset);
+}
+
+/* Build an extract of type TYPE (which must be a 64-bit vector type) for half
+   of the 128-bit vector VEC.  HIGH_P selects the upper half.  */
+tree
+build_vec_extract_half (tree type, tree vec, bool high_p)
+{
+  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (type)), 64));
+  return fold_build3 (BIT_FIELD_REF, type, vec, bitsize_int (64),
+		      bitsize_int (high_p ^ BYTES_BIG_ENDIAN ? 64 : 0));
 }
 
 /* Build an expression for a vector with all lanes set to `ELEM`.  */
@@ -607,9 +619,7 @@ struct gimple_get_half : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto src = gimple_call_arg (f.call, 0);
-    auto half
-      = fold_build3 (BIT_FIELD_REF, f.ret_type, src, bitsize_int (64),
-		     bitsize_int (high_half_p ^ BYTES_BIG_ENDIAN ? 64 : 0));
+    auto half = build_vec_extract_half (f.ret_type, src, high_half_p);
     return gimple_build_assign (f.lhs (), half);
   }
 };
@@ -1856,6 +1866,211 @@ using gimple_compare_abs = gimple_compare_base<compare_kind::abs>;
 using gimple_compare_zero = gimple_compare_base<compare_kind::zero>;
 using gimple_tst = gimple_compare_base<compare_kind::tst>;
 
+/* Widening multiply with optional accumulator.  HIGH_P selects the high forms,
+   usually spelled as `<name>_high`, eg. vmlsl_high.  */
+template <bool high_p> class gimple_widen_mult : public gimple_function_base
+{
+public:
+  /* How an intrinsic combines the widened product with an accumulator.  */
+  enum accumulation
+  {
+    NO_ACCUM,
+    PLUS_ACCUM,
+    MINUS_ACCUM
+  };
+
+private:
+  struct high_form
+  {
+    const char *name;
+    const function_base *const *base;
+    const function_shape *const *shape;
+  };
+
+  accumulation m_accum;
+
+  /* Used to redirect the low forms to the high forms.  */
+  high_form m_high;
+
+  /* The first multiplicand is operand 0 for VMULL and 1 otherwise.  */
+  int first_mult_arg () const { return m_accum != NO_ACCUM; }
+
+  /* Return the VECTOR_CST corresponding to VAL if it is one or if it is an
+     SSA_NAME which defines one.  */
+  tree vector_constant_value (tree val) const
+  {
+    if (TREE_CODE (val) == SSA_NAME)
+      {
+	gimple *def = SSA_NAME_DEF_STMT (val);
+	if (gimple_assign_single_p (def))
+	  val = gimple_assign_rhs1 (def);
+      }
+
+    return TREE_CODE (val) == VECTOR_CST ? val : NULL_TREE;
+  }
+
+  /* Return true if VAL can be profitably passed to the high form.  */
+  bool widenable_for_high_form_p (tree val) const
+  {
+    return aarch64_v128_highpart_src_reg (val) != NULL_TREE
+	   || vector_constant_value (val) != NULL_TREE
+	   || ssa_uniform_vector_p (val) != NULL_TREE;
+  }
+
+  /* Build and return the 128-bit vector that the high form should be given in
+     place of VAL when widenable_for_high_form_p holds true.  */
+  tree build_high_form_operand (gimple_folder &f, tree val) const
+  {
+    tree narrow_type = TREE_TYPE (val);
+    gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (narrow_type)), 64));
+    tree wide_type = build_vector_type (TREE_TYPE (narrow_type),
+					TYPE_VECTOR_SUBPARTS (narrow_type) * 2);
+
+    /* BIT_FIELD_REF of upper half.  Handle vreinterprets by view-converting to
+       the actual type we want.  */
+    if (tree obj = aarch64_v128_highpart_src_reg (val))
+      return types_compatible_p (TREE_TYPE (obj), wide_type)
+	       ? obj
+	       : f.force_val (build1 (VIEW_CONVERT_EXPR, wide_type, obj));
+
+    /* Constant.  */
+    if (tree cst = vector_constant_value (val))
+      return aarch64_build_vector_cst (cst, wide_type);
+
+    /* Splat.  */
+    if (tree elt = ssa_uniform_vector_p (val))
+      return f.force_val (build_vec_dup (wide_type, elt));
+
+    gcc_unreachable ();
+  }
+
+  /* Redirect the call in F to its high form if possible, otherwise return
+     NULL.  */
+  gimple *redirect_to_high_form (gimple_folder &f, unsigned int first,
+				 const high_form &high) const
+  {
+    if (!high.name)
+      return NULL;
+
+    tree orig1 = gimple_call_arg (f.call, first);
+    tree orig2 = gimple_call_arg (f.call, first + 1);
+
+    if (!widenable_for_high_form_p (orig1) || !widenable_for_high_form_p (orig2)
+	|| (!aarch64_v128_highpart_src_reg (orig1)
+	    && !aarch64_v128_highpart_src_reg (orig2)))
+      return NULL;
+
+    function_instance instance (high.name, *high.base, *high.shape,
+				f.mode_suffix_id, f.type_suffix_ids, GROUP_none,
+				PRED_none, FPM_unused);
+    gcall *call = f.redirect_call (instance);
+    if (!call)
+      return NULL;
+
+    gimple_call_set_arg (call, first, build_high_form_operand (f, orig1));
+    gimple_call_set_arg (call, first + 1, build_high_form_operand (f, orig2));
+    return call;
+  }
+
+public:
+  constexpr gimple_widen_mult (accumulation accum = NO_ACCUM,
+			       high_form high = {})
+    : m_accum (accum), m_high (high) {}
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    /* Folding is deferred until the function is in SSA form as
+       SSA_NAME_DEF_STMT is not able to look through user-defined constant decls
+       until then.  */
+    if ((cfun->curr_properties & PROP_ssa) == 0)
+      return nullptr;
+
+    int first = first_mult_arg ();
+
+    /* First try to optimize to the high form if both operands are extracts of
+       upper halves of vectors.  */
+    if (gimple *high_call = redirect_to_high_form (f, first, m_high))
+      return high_call;
+
+    /* Folding is not profitable if only one operand is widenable or if the
+       resulting element size is >= 64 bits (which leads to scalarization). Punt
+       on those cases.  */
+    if (TYPE_PRECISION (TREE_TYPE (f.ret_type)) >= 64
+	|| widenable_for_high_form_p (gimple_call_arg (f.call, first))
+	|| widenable_for_high_form_p (gimple_call_arg (f.call, first + 1)))
+      return NULL;
+
+    /* Otherwise translate to GIMPLE as `(WIDE_TYPE) A * (WIDE_TYPE) B`.  */
+    tree wide_type = f.ret_type;
+    tree a = gimple_call_arg (f.call, first);
+    tree b = gimple_call_arg (f.call, first + 1);
+    gcc_assert (TYPE_PRECISION (TREE_TYPE (wide_type))
+		== TYPE_PRECISION (TREE_TYPE (TREE_TYPE (a))) * 2);
+    if (high_p)
+      {
+	tree half_type = build_vector_type (TREE_TYPE (TREE_TYPE (a)),
+					    TYPE_VECTOR_SUBPARTS (wide_type));
+	a = f.force_val (build_vec_extract_half (half_type, a, true));
+	b = f.force_val (build_vec_extract_half (half_type, b, true));
+      }
+    a = f.force_val (fold_build1 (CONVERT_EXPR, wide_type, a));
+    b = f.force_val (fold_build1 (CONVERT_EXPR, wide_type, b));
+    tree product = fold_build2 (MULT_EXPR, wide_type, a, b);
+
+    /* Non-accumulating intrinsic.  */
+    if (m_accum == NO_ACCUM)
+      return gimple_build_assign (f.lhs (), product);
+
+    /* Accumulating intrinsic.  */
+    tree_code accum_code = m_accum == PLUS_ACCUM ? PLUS_EXPR : MINUS_EXPR;
+    tree accumulator = gimple_call_arg (f.call, 0);
+    product = f.force_val (product);
+
+    /* Accumulate in an unsigned mode to match wrapping semantics.  */
+    tree uwide_type = wide_type;
+    if (!TYPE_UNSIGNED (TREE_TYPE (wide_type)))
+      {
+	uwide_type = unsigned_type_for (wide_type);
+	accumulator = f.force_val (build_cast (uwide_type, accumulator));
+	product = f.force_val (build_cast (uwide_type, product));
+      }
+
+    return gimple_build_assign (
+      f.lhs (),
+      build_cast (wide_type, f.force_val (fold_build2 (accum_code, uwide_type,
+						       accumulator, product))));
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    auto mode = GET_MODE (e.args[first_mult_arg ()]);
+    auto ext = e.type_suffix (0).unsigned_p ? ZERO_EXTEND : SIGN_EXTEND;
+
+    insn_code icode;
+    switch (m_accum)
+      {
+      case NO_ACCUM:
+	icode = high_p
+		  ? e.direct_optab_handler_for_sign (vec_widen_smult_hi_optab,
+						     vec_widen_umult_hi_optab,
+						     0, mode)
+		  : code_for_aarch64_intrinsic_vec_mult_lo (ext, mode);
+	break;
+      case PLUS_ACCUM:
+	icode = high_p ? code_for_aarch64_mlal_hi (ext, mode)
+		       : code_for_aarch64_mlal (ext, mode);
+	break;
+      case MINUS_ACCUM:
+	icode = high_p ? code_for_aarch64_mlsl_hi (ext, mode)
+		       : code_for_aarch64_mlsl (ext, mode);
+	break;
+      default:
+	gcc_unreachable ();
+      }
+    return e.use_exact_insn (icode);
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
 
@@ -2007,6 +2222,25 @@ NEON_FUNCTION (vqrshrun_high_n, gimple_code_for_mode_function, (code_for_aarch64
 // Widening shifts by an immediate
 NEON_FUNCTION (vshll_n,      gimple_unspec_based_function, (code_for_aarch64_shll_n, UNSPEC_SSHLL, UNSPEC_USHLL))
 NEON_FUNCTION (vshll_high_n, gimple_unspec_based_function, (code_for_aarch64_shll2_n, UNSPEC_SSHLL, UNSPEC_USHLL))
+
+// Widening multiply and multiply-accumulate
+NEON_FUNCTION (vmull,      gimple_widen_mult<false>,
+	       (gimple_widen_mult<false>::NO_ACCUM,
+		{ "vmull_high", &functions::vmull_high,
+		  &shapes::vmull_high_bhs_integer_shape }))
+NEON_FUNCTION (vmull_high, gimple_widen_mult<true>,)
+NEON_FUNCTION (vmlal,      gimple_widen_mult<false>,
+	       (gimple_widen_mult<false>::PLUS_ACCUM,
+		{ "vmlal_high", &functions::vmlal_high,
+		  &shapes::vmlal_high_bhs_integer_shape }))
+NEON_FUNCTION (vmlal_high, gimple_widen_mult<true>,
+	       (gimple_widen_mult<true>::PLUS_ACCUM))
+NEON_FUNCTION (vmlsl,      gimple_widen_mult<false>,
+	       (gimple_widen_mult<false>::MINUS_ACCUM,
+		{ "vmlsl_high", &functions::vmlsl_high,
+		  &shapes::vmlsl_high_bhs_integer_shape }))
+NEON_FUNCTION (vmlsl_high, gimple_widen_mult<true>,
+	       (gimple_widen_mult<true>::MINUS_ACCUM))
 
 // Bitwise operations
 NEON_FUNCTION (vand,  vandq,  gimple_expr,    (BIT_AND_EXPR))

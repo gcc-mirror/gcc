@@ -567,25 +567,25 @@ TEST_VMLAL_N
 
 /*
 ** test_vmlsl_s8:
-**	smlsl2	v0\.8h, v1\.16b, v2\.16b
+**	smlsl2	v0\.8h, (v1\.16b, v2\.16b|v2\.16b, v1\.16b)
 **	ret
 */
 
 /*
 ** test_vmlsl_u8:
-**	umlsl2	v0\.8h, v1\.16b, v2\.16b
+**	umlsl2	v0\.8h, (v1\.16b, v2\.16b|v2\.16b, v1\.16b)
 **	ret
 */
 
 /*
 ** test_vmlsl_s16:
-**	smlsl2	v0\.4s, v1\.8h, v2\.8h
+**	smlsl2	v0\.4s, (v1\.8h, v2\.8h|v2\.8h, v1\.8h)
 **	ret
 */
 
 /*
 ** test_vmlsl_u16:
-**	umlsl2	v0\.4s, v1\.8h, v2\.8h
+**	umlsl2	v0\.4s, (v1\.8h, v2\.8h|v2\.8h, v1\.8h)
 **	ret
 */
 

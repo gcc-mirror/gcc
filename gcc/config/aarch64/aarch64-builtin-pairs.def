@@ -47,8 +47,6 @@
   LO_HI_PAIR_V_US_WI (BINOP,  addl, addl2) \
   LO_HI_PAIR_V_US_WI (BINOP,  subl, subl2) \
   LO_HI_PAIR_V_US_WI (BINOP,  abdl, abdl2) \
-  LO_HI_PAIR_V_WI (BINOP,  intrinsic_vec_smult_lo_, vec_widen_smult_hi_) \
-  LO_HI_PAIR_V_WI (BINOPU, intrinsic_vec_umult_lo_, vec_widen_umult_hi_) \
   LO_HI_PAIR_V_HSI (BINOP,  sqdmull, sqdmull2) \
   LO_HI_PAIR (BINOPP_pmullv8qi, BINOPP_pmull_hiv16qi)
 
@@ -61,8 +59,6 @@
   LO_HI_PAIR_V_US_WI (BINOP,  addw, addw2)
 
 #define TERNOP_LONG_LH_PAIRS \
-  LO_HI_PAIR_V_US_WI (TERNOP,  mlal, mlal_hi) \
-  LO_HI_PAIR_V_US_WI (TERNOP,  mlsl, mlsl_hi) \
   LO_HI_PAIR_V_US_WI (TERNOP,  abal, abal2) \
   LO_HI_PAIR_V_HSI (TERNOP, sqdmlal, sqdmlal2) \
   LO_HI_PAIR_V_HSI (TERNOP, sqdmlsl, sqdmlsl2)

@@ -108,4 +108,9 @@ extern const aarch64_simd_type_info aarch64_simd_types[];
 extern aarch64_simd_type_info_trees aarch64_simd_types_trees[];
 extern tree aarch64_simd_tuple_types[ARM_NEON_H_TYPES_LAST][3];
 
+/* Shared with the pragma-based builtin folders, which do the same
+   lo-to-high-form rewriting for the families they have taken over.  */
+extern tree aarch64_v128_highpart_src_reg (const_tree);
+extern tree aarch64_build_vector_cst (const_tree, tree);
+
 #endif

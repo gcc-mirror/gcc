@@ -1373,48 +1373,6 @@ vmlal_high_n_u32 (uint64x2_t __a, uint32x4_t __b, uint32_t __c)
   return __builtin_aarch64_umlal_hi_nv4si_uuuu (__a, __b, __c);
 }
 
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_high_s8 (int16x8_t __a, int8x16_t __b, int8x16_t __c)
-{
-  return __builtin_aarch64_smlal_hiv16qi (__a, __b, __c);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_high_s16 (int32x4_t __a, int16x8_t __b, int16x8_t __c)
-{
-  return __builtin_aarch64_smlal_hiv8hi (__a, __b, __c);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_high_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
-{
-  return __builtin_aarch64_smlal_hiv4si (__a, __b, __c);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_high_u8 (uint16x8_t __a, uint8x16_t __b, uint8x16_t __c)
-{
-  return __builtin_aarch64_umlal_hiv16qi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_high_u16 (uint32x4_t __a, uint16x8_t __b, uint16x8_t __c)
-{
-  return __builtin_aarch64_umlal_hiv8hi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_high_u32 (uint64x2_t __a, uint32x4_t __b, uint32x4_t __c)
-{
-  return __builtin_aarch64_umlal_hiv4si_uuuu (__a, __b, __c);
-}
-
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_lane_s16 (int32x4_t __acc, int16x4_t __a, int16x4_t __b, const int __c)
@@ -1497,48 +1455,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlal_n_u32 (uint64x2_t __a, uint32x2_t __b, uint32_t __c)
 {
   return __builtin_aarch64_umlal_nv2si_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_s8 (int16x8_t __a, int8x8_t __b, int8x8_t __c)
-{
-  return __builtin_aarch64_smlalv8qi (__a, __b, __c);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_s16 (int32x4_t __a, int16x4_t __b, int16x4_t __c)
-{
-  return __builtin_aarch64_smlalv4hi (__a, __b, __c);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_s32 (int64x2_t __a, int32x2_t __b, int32x2_t __c)
-{
-  return __builtin_aarch64_smlalv2si (__a, __b, __c);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_u8 (uint16x8_t __a, uint8x8_t __b, uint8x8_t __c)
-{
-  return __builtin_aarch64_umlalv8qi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_u16 (uint32x4_t __a, uint16x4_t __b, uint16x4_t __c)
-{
-  return __builtin_aarch64_umlalv4hi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlal_u32 (uint64x2_t __a, uint32x2_t __b, uint32x2_t __c)
-{
-  return __builtin_aarch64_umlalv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int32x4_t
@@ -1633,48 +1549,6 @@ vmlsl_high_n_u32 (uint64x2_t __a, uint32x4_t __b, uint32_t __c)
   return __builtin_aarch64_umlsl_hi_nv4si_uuuu (__a, __b, __c);
 }
 
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_high_s8 (int16x8_t __a, int8x16_t __b, int8x16_t __c)
-{
-  return __builtin_aarch64_smlsl_hiv16qi (__a, __b, __c);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_high_s16 (int32x4_t __a, int16x8_t __b, int16x8_t __c)
-{
-  return __builtin_aarch64_smlsl_hiv8hi (__a, __b, __c);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_high_s32 (int64x2_t __a, int32x4_t __b, int32x4_t __c)
-{
-  return __builtin_aarch64_smlsl_hiv4si (__a, __b, __c);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_high_u8 (uint16x8_t __a, uint8x16_t __b, uint8x16_t __c)
-{
-  return __builtin_aarch64_umlsl_hiv16qi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_high_u16 (uint32x4_t __a, uint16x8_t __b, uint16x8_t __c)
-{
-  return __builtin_aarch64_umlsl_hiv8hi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_high_u32 (uint64x2_t __a, uint32x4_t __b, uint32x4_t __c)
-{
-  return __builtin_aarch64_umlsl_hiv4si_uuuu (__a, __b, __c);
-}
-
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsl_lane_s16 (int32x4_t __a, int16x4_t __b, int16x4_t __v, const int __lane)
@@ -1761,48 +1635,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmlsl_n_u32 (uint64x2_t __a, uint32x2_t __b, uint32_t __c)
 {
   return __builtin_aarch64_umlsl_nv2si_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_s8 (int16x8_t __a, int8x8_t __b, int8x8_t __c)
-{
-  return __builtin_aarch64_smlslv8qi (__a, __b, __c);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_s16 (int32x4_t __a, int16x4_t __b, int16x4_t __c)
-{
-  return __builtin_aarch64_smlslv4hi (__a, __b, __c);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_s32 (int64x2_t __a, int32x2_t __b, int32x2_t __c)
-{
-  return __builtin_aarch64_smlslv2si (__a, __b, __c);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_u8 (uint16x8_t __a, uint8x8_t __b, uint8x8_t __c)
-{
-  return __builtin_aarch64_umlslv8qi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_u16 (uint32x4_t __a, uint16x4_t __b, uint16x4_t __c)
-{
-  return __builtin_aarch64_umlslv4hi_uuuu (__a, __b, __c);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmlsl_u32 (uint64x2_t __a, uint32x2_t __b, uint32x2_t __c)
-{
-  return __builtin_aarch64_umlslv2si_uuuu (__a, __b, __c);
 }
 
 __extension__ extern __inline int16x8_t
@@ -2064,48 +1896,6 @@ vmull_high_p8 (poly8x16_t __a, poly8x16_t __b)
   return __builtin_aarch64_pmull_hiv16qi_ppp (__a, __b);
 }
 
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_s8 (int8x16_t __a, int8x16_t __b)
-{
-  return __builtin_aarch64_vec_widen_smult_hi_v16qi (__a, __b);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_s16 (int16x8_t __a, int16x8_t __b)
-{
-  return __builtin_aarch64_vec_widen_smult_hi_v8hi (__a, __b);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_s32 (int32x4_t __a, int32x4_t __b)
-{
-  return __builtin_aarch64_vec_widen_smult_hi_v4si (__a, __b);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_u8 (uint8x16_t __a, uint8x16_t __b)
-{
-  return __builtin_aarch64_vec_widen_umult_hi_v16qi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_u16 (uint16x8_t __a, uint16x8_t __b)
-{
-  return __builtin_aarch64_vec_widen_umult_hi_v8hi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_high_u32 (uint32x4_t __a, uint32x4_t __b)
-{
-  return __builtin_aarch64_vec_widen_umult_hi_v4si_uuu (__a, __b);
-}
-
 __extension__ extern __inline int32x4_t
 __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_lane_s16 (int16x4_t __a, int16x4_t __b, const int __c)
@@ -2195,48 +1985,6 @@ __attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
 vmull_p8 (poly8x8_t __a, poly8x8_t __b)
 {
   return __builtin_aarch64_pmullv8qi_ppp (__a, __b);
-}
-
-__extension__ extern __inline int16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_s8 (int8x8_t __a, int8x8_t __b)
-{
-  return __builtin_aarch64_intrinsic_vec_smult_lo_v8qi (__a, __b);
-}
-
-__extension__ extern __inline int32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_s16 (int16x4_t __a, int16x4_t __b)
-{
-  return __builtin_aarch64_intrinsic_vec_smult_lo_v4hi (__a, __b);
-}
-
-__extension__ extern __inline int64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_s32 (int32x2_t __a, int32x2_t __b)
-{
-  return __builtin_aarch64_intrinsic_vec_smult_lo_v2si (__a, __b);
-}
-
-__extension__ extern __inline uint16x8_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_u8 (uint8x8_t __a, uint8x8_t __b)
-{
-  return __builtin_aarch64_intrinsic_vec_umult_lo_v8qi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint32x4_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_u16 (uint16x4_t __a, uint16x4_t __b)
-{
-  return __builtin_aarch64_intrinsic_vec_umult_lo_v4hi_uuu (__a, __b);
-}
-
-__extension__ extern __inline uint64x2_t
-__attribute__ ((__always_inline__, __gnu_inline__, __artificial__))
-vmull_u32 (uint32x2_t __a, uint32x2_t __b)
-{
-  return __builtin_aarch64_intrinsic_vec_umult_lo_v2si_uuu (__a, __b);
 }
 
 __extension__ extern __inline int16x4_t

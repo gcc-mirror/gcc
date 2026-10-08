@@ -2351,7 +2351,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 
-(define_expand "aarch64_<su>mlal_hi<mode>"
+(define_expand "@aarch64_<su>mlal_hi<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
    (match_operand:<VWIDE> 1 "register_operand")
    (ANY_EXTEND:<VWIDE>(match_operand:VQW 2 "register_operand"))
@@ -2428,7 +2428,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 
-(define_expand "aarch64_<su>mlsl_hi<mode>"
+(define_expand "@aarch64_<su>mlsl_hi<mode>"
   [(match_operand:<VWIDE> 0 "register_operand")
    (match_operand:<VWIDE> 1 "register_operand")
    (ANY_EXTEND:<VWIDE>(match_operand:VQW 2 "register_operand"))
@@ -2473,7 +2473,7 @@
 }
 )
 
-(define_insn "aarch64_<su>mlal<mode>"
+(define_insn "@aarch64_<su>mlal<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (plus:<VWIDE>
           (mult:<VWIDE>
@@ -2502,7 +2502,7 @@
   [(set_attr "type" "neon_mla_<Vetype>_long")]
 )
 
-(define_insn "aarch64_<su>mlsl<mode>"
+(define_insn "@aarch64_<su>mlsl<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
         (minus:<VWIDE>
           (match_operand:<VWIDE> 1 "register_operand" "0")
@@ -2544,7 +2544,7 @@
   [(set_attr "type" "neon_mul_<Vetype>_long")]
 )
 
-(define_insn "aarch64_intrinsic_vec_<su>mult_lo_<mode>"
+(define_insn "@aarch64_intrinsic_vec_<su>mult_lo_<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(mult:<VWIDE> (ANY_EXTEND:<VWIDE>
 			 (match_operand:VD_BHSI 1 "register_operand" "w"))
