@@ -12005,7 +12005,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
   (simplify
      (plus:c
-       (bit_and @step_4 INTEGER_CST@9)
+       (bit_and @step4 INTEGER_CST@9)
        (rshift
 	 (plus:c@step4
 	   (bit_and @step3 INTEGER_CST@7)
