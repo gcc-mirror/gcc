@@ -7715,8 +7715,10 @@ gimple_binop_def_p (enum tree_code code, tree t, tree op[2])
    *PAND_MASK is initially set to a mask with nonzero precision, that mask is
    combined with the found mask, or adjusted in precision to match.
 
-   *PSIGNBIT is set to TRUE if, before clipping to *PBITSIZE, the mask
-   encompassed bits that corresponded to extensions of the sign bit.
+   *PSIGNBIT is set to 1 if, before clipping to *PBITSIZE, the mask
+   encompassed bits that corresponded to extensions of the sign bit, or to -1
+   if the mask encompassed bits that would be extensions of the sign bit
+   and zeroed them out.  Otherwise, it is set to 0.
 
    *PXORP is to be FALSE if EXP might be a XOR used in a compare, in which
    case, if PXOR_CMP_OP is a zero constant, it will be overridden with *PEXP,
@@ -7738,7 +7740,7 @@ static tree
 decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 			HOST_WIDE_INT *pbitpos,
 			bool *punsignedp, bool *preversep, bool *pvolatilep,
-			wide_int *pand_mask, bool *psignbit,
+			wide_int *pand_mask, int *psignbit,
 			bool *pxorp, tree *pxor_cmp_op, wide_int *pxor_and_mask,
 			gimple **pload, location_t loc[4])
 {
@@ -7750,7 +7752,7 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   tree res_ops[2];
   machine_mode mode;
   bool convert_before_shift = false;
-  bool signbit = false;
+  int signbit = 0;
   bool xorp = false;
   tree xor_cmp_op;
   wide_int xor_and_mask;
@@ -7943,11 +7945,16 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
   if (and_mask.get_precision () != 0)
     {
       /* If the AND_MASK encompasses bits that would be extensions of
-	 the sign bit, set SIGNBIT.  */
+	 the sign bit, set SIGNBIT to 1 if any such bit is set, or -1 if
+	 they are all clear.  */
       if (!unsignedp
-	  && and_mask.get_precision () > bs
-	  && (and_mask & wi::mask (bs, true, and_mask.get_precision ())) != 0)
-	signbit = true;
+	  && and_mask.get_precision () > bs)
+	{
+	  if ((and_mask & wi::mask (bs, true, and_mask.get_precision ())) != 0)
+	    signbit = 1;
+	  else
+	    signbit = -1;
+	}
       and_mask = wide_int::from (and_mask, bs, UNSIGNED);
     }
 
@@ -8247,7 +8254,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
   HOST_WIDE_INT rnbitsize, rnbitpos, rnprec;
   bool ll_unsignedp, lr_unsignedp, rl_unsignedp, rr_unsignedp;
   bool ll_reversep, lr_reversep, rl_reversep, rr_reversep;
-  bool ll_signbit, lr_signbit, rl_signbit, rr_signbit;
+  int ll_signbit, lr_signbit, rl_signbit, rr_signbit;
   scalar_int_mode lnmode, lnmode2, rnmode;
   wide_int ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
   wide_int l_const, r_const;
@@ -8431,7 +8438,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
     return 0;
 
   /* ??? Can we do anything with these?  */
-  if (lr_signbit || rr_signbit)
+  if (lr_signbit > 0 || rr_signbit > 0)
     return 0;
 
   /* If the mask encompassed extensions of the sign bit before
@@ -8439,7 +8446,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
      comparing with zero, don't even try to deal with it (for now?).
      If we've already commited to a sign test, the extended (before
      clipping) mask could already be messing with it.  */
-  if (ll_signbit)
+  if (ll_signbit > 0)
     {
       if (!integer_zerop (lr_arg) || lsignbit)
 	return 0;
@@ -8450,7 +8457,7 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	ll_and_mask |= sign;
     }
 
-  if (rl_signbit)
+  if (rl_signbit > 0)
     {
       if (!integer_zerop (rr_arg) || rsignbit)
 	return 0;
@@ -8755,18 +8762,18 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	 check that they're sign or zero extensions, depending on how the
 	 left-hand operand would be extended.  If it is unsigned, or if there's
 	 a mask that zeroes out extension bits, whether because we've checked
-	 for upper bits in the mask and did not set ll_signbit, or because the
-	 sign bit itself is masked out, check that the right-hand operand is
-	 zero-extended.  */
+	 for upper bits in the mask and found them all clear (ll_signbit < 0),
+	 or because the sign bit itself is masked out, check that the
+	 right-hand operand is zero-extended.  */
       bool l_non_ext_bits = false;
       if (ll_bitsize < lr_bitsize)
 	{
 	  wide_int zext = wi::zext (l_const, ll_bitsize);
 	  if ((ll_unsignedp
+	       || ll_signbit < 0
 	       || (ll_and_mask.get_precision ()
-		   && (!ll_signbit
-		       || ((ll_and_mask & wi::mask (ll_bitsize - 1, true, ll_bitsize))
-			   == 0)))
+		   && ((ll_and_mask & wi::mask (ll_bitsize - 1, true, ll_bitsize))
+		       == 0))
 	       ? zext : wi::sext (l_const, ll_bitsize)) == l_const)
 	    l_const = zext;
 	  else
@@ -8794,10 +8801,10 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	{
 	  wide_int zext = wi::zext (r_const, rl_bitsize);
 	  if ((rl_unsignedp
+	       || rl_signbit < 0
 	       || (rl_and_mask.get_precision ()
-		   && (!rl_signbit
-		       || ((rl_and_mask & wi::mask (rl_bitsize - 1, true, rl_bitsize))
-			   == 0)))
+		   && ((rl_and_mask & wi::mask (rl_bitsize - 1, true, rl_bitsize))
+		       == 0))
 	       ? zext : wi::sext (r_const, rl_bitsize)) == r_const)
 	    r_const = zext;
 	  else
