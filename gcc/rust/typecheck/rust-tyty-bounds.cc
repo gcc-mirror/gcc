@@ -120,9 +120,10 @@ TypeBoundsProbe::scan ()
   // marker traits...
   assemble_marker_builtins ();
 
-  // add auto trait bounds
+  // add auto trait bounds, only the requested one when probing for a trait
   for (auto *auto_trait : mappings.get_auto_traits ())
-    add_trait_bound (auto_trait);
+    if (specified_trait == nullptr || specified_trait == auto_trait)
+      add_trait_bound (auto_trait);
 }
 
 void
