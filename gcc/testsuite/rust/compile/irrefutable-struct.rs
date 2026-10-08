@@ -1,11 +1,8 @@
 #![feature(no_core)]
 #![no_core]
 
-// this test ICEs because in CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
-// we are missing an implementation handling 'E::T(a, .., b)' with rest patterns
-// once that is implemented, this test should pass
-// { dg-ice "" }
-//
+// { dg-additional-options "-w" }
+
 struct S {
     x: i32,
     y: i32,

@@ -416,15 +416,26 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 	size_t num_patterns = items_has_rest.get_lower_patterns ().size ()
 			      + items_has_rest.get_upper_patterns ().size ();
 
-	// enums cases shouldn't reach here
-	rust_assert (num_patterns <= variant->num_fields ()
-		     && (!adt->is_enum ()));
+	rust_assert (num_patterns <= variant->num_fields ());
+
+	tree fields_expr = match_scrutinee_expr;
+	if (adt->is_enum ())
+	  {
+	    // find payload union field of scrutinee
+	    tree payload_ref
+	      = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						  pattern.get_locus ());
+
+	    fields_expr
+	      = Backend::struct_field_expression (payload_ref, variant_index,
+						  pattern.get_locus ());
+	  }
 
 	size_t tuple_field_index = 0;
 	for (auto &pattern : items_has_rest.get_lower_patterns ())
 	  {
 	    tree field_expr
-	      = Backend::struct_field_expression (match_scrutinee_expr,
+	      = Backend::struct_field_expression (fields_expr,
 						  tuple_field_index++,
 						  pattern->get_locus ());
 	    tree check_expr_sub
@@ -438,7 +449,7 @@ CompilePatternCheckExpr::visit (HIR::TupleStructPattern &pattern)
 	for (auto &pattern : items_has_rest.get_upper_patterns ())
 	  {
 	    tree field_expr
-	      = Backend::struct_field_expression (match_scrutinee_expr,
+	      = Backend::struct_field_expression (fields_expr,
 						  tuple_field_index++,
 						  pattern->get_locus ());
 	    tree check_expr_sub
@@ -841,15 +852,26 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	size_t num_patterns = items_has_rest.get_lower_patterns ().size ()
 			      + items_has_rest.get_upper_patterns ().size ();
 
-	// enums cases shouldn't reach here
-	rust_assert (num_patterns <= variant->num_fields ()
-		     && (!adt->is_enum ()));
+	rust_assert (num_patterns <= variant->num_fields ());
+
+	tree fields_expr = match_scrutinee_expr;
+	if (adt->is_enum ())
+	  {
+	    // find payload union field of scrutinee
+	    tree payload_ref
+	      = Backend::struct_field_expression (match_scrutinee_expr, 1,
+						  pattern.get_locus ());
+
+	    fields_expr
+	      = Backend::struct_field_expression (payload_ref, variant_index,
+						  pattern.get_locus ());
+	  }
 
 	size_t tuple_field_index = 0;
 	for (auto &pattern : items_has_rest.get_lower_patterns ())
 	  {
 	    tree binding
-	      = Backend::struct_field_expression (match_scrutinee_expr,
+	      = Backend::struct_field_expression (fields_expr,
 						  tuple_field_index++,
 						  pattern->get_locus ());
 
@@ -862,7 +884,7 @@ CompilePatternBindings::visit (HIR::TupleStructPattern &pattern)
 	for (auto &pattern : items_has_rest.get_upper_patterns ())
 	  {
 	    tree binding
-	      = Backend::struct_field_expression (match_scrutinee_expr,
+	      = Backend::struct_field_expression (fields_expr,
 						  tuple_field_index++,
 						  pattern->get_locus ());
 
