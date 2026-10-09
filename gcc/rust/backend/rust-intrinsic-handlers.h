@@ -175,6 +175,8 @@ void write_bytes_handler (IntrinsicCtx &ctx);
 void arith_offset_handler (IntrinsicCtx &ctx);
 void assert_zero_valid_handler (IntrinsicCtx &ctx);
 
+void exact_div_handler (IntrinsicCtx &ctx);
+
 Intrinsic::CompileFn op_with_overflow (tree_code op);
 
 Intrinsic::CompileFn wrapping_op (tree_code op);

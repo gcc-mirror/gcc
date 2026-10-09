@@ -332,6 +332,9 @@ const std::unordered_map<std::string, IntrinsicRules>
     {IValue::FLOAT_TO_INT_UNCHECKED,
      {2, {IRT::FirstGeneric}, IRT::SecondGeneric}},
 
+    // fn exact_div<T>(lhs: T, rhs: T) -> T
+    {IValue::EXACT_DIV,
+     {1, {IRT::FirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
 };
 
 IntrinsicCheckResult

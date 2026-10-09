@@ -183,6 +183,8 @@ public:
   static constexpr auto &FREM_FAST = "frem_fast";
 
   static constexpr auto &FLOAT_TO_INT_UNCHECKED = "float_to_int_unchecked";
+
+  static constexpr auto &EXACT_DIV = "exact_div";
 };
 } // namespace Values
 } // namespace Rust

@@ -1735,6 +1735,23 @@ assert_zero_valid_handler (IntrinsicCtx &ctx)
 }
 
 void
+exact_div_handler (IntrinsicCtx &ctx)
+{
+  auto lhs_param = ctx.param_vars.at (0);
+  auto rhs_param = ctx.param_vars.at (1);
+
+  auto lhs = Backend::var_expression (lhs_param, ctx.loc);
+  auto rhs = Backend::var_expression (rhs_param, ctx.loc);
+
+  auto div_expr
+    = build2_loc (ctx.loc, EXACT_DIV_EXPR, TREE_TYPE (lhs), lhs, rhs);
+
+  auto return_stmt = Backend::return_statement (ctx.fn, div_expr, ctx.loc);
+
+  ctx.add_statement (return_stmt);
+}
+
+void
 float_to_int_unchecked (IntrinsicCtx &ctx)
 {
   auto &dst_param = ctx.fntype.get_substs ().at (1);
