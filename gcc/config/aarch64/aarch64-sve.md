@@ -1111,6 +1111,7 @@
      [ Upa      , Upa ] #
      [ Upa      , m   ] #
      [ m        , Upa ] #
+     [ Upa      , Dz  ] #
   }
   "&& reload_completed"
   [(const_int 0)]
