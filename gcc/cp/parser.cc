@@ -16704,12 +16704,12 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
       bool expect_semicolon_p = true;
       if (cp_lexer_next_token_is_keyword (parser->lexer, RID_USING))
 	{
+	  const location_t loc = cp_lexer_peek_token (parser->lexer)->location;
 	  cp_parser_alias_declaration (parser);
 	  expect_semicolon_p = false;
 	  if (cxx_dialect < cxx23
 	      && !cp_parser_uncommitted_to_tentative_parse_p (parser))
-	    pedwarn (cp_lexer_peek_token (parser->lexer)->location,
-		     OPT_Wc__23_extensions,
+	    pedwarn (loc, OPT_Wc__23_extensions,
 		     "alias-declaration in init-statement only "
 		     "available with %<-std=c++23%> or %<-std=gnu++23%>");
 	}
@@ -16719,7 +16719,8 @@ cp_parser_init_statement (cp_parser *parser, tree *decl)
 				      /*function_definition_allowed_p=*/false,
 				      decl);
       parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
-      if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+      if (expect_semicolon_p
+	  && cp_lexer_next_token_is (parser->lexer, CPP_COLON))
 	{
 	  /* It is a range-for, consume the ':'.  */
 	  cp_lexer_consume_token (parser->lexer);
