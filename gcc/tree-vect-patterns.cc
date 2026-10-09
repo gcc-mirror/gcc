@@ -2258,9 +2258,7 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 	  return NULL;
 	break;
       case IFN_CLZ:
-	/* clzll (x) == clz (x) + 32 for unsigned x != 0, so ok
-	   if it is undefined at zero or if it matches also for the
-	   defined value there.  */
+	/* clzll (x) == clz (x) + 32 for unsigned x != 0.  */
 	if (!TYPE_UNSIGNED (unprom_diff.type))
 	  return NULL;
 	if (!type_has_mode_precision_p (lhs_type)
@@ -2268,31 +2266,9 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 	  return NULL;
 	addend = (TYPE_PRECISION (TREE_TYPE (rhs_oprnd))
 		  - TYPE_PRECISION (lhs_type));
-	if (gimple_call_internal_p (call_stmt)
-	    && gimple_call_num_args (call_stmt) == 2)
-	  {
-	    int val1, val2;
-	    val1 = tree_to_shwi (gimple_call_arg (call_stmt, 1));
-	    int d2
-	      = CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (vec_type), val2);
-	    if (d2 != 2 || val1 != val2 + addend)
-	      return NULL;
-	  }
 	break;
       case IFN_CTZ:
-	/* ctzll (x) == ctz (x) for unsigned or signed x != 0, so ok
-	   if it is undefined at zero or if it matches also for the
-	   defined value there.  */
-	if (gimple_call_internal_p (call_stmt)
-	    && gimple_call_num_args (call_stmt) == 2)
-	  {
-	    int val1, val2;
-	    val1 = tree_to_shwi (gimple_call_arg (call_stmt, 1));
-	    int d2
-	      = CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (vec_type), val2);
-	    if (d2 != 2 || val1 != val2)
-	      return NULL;
-	  }
+	/* ctzll (x) == ctz (x) for unsigned or signed x != 0.  */
 	break;
       case IFN_FFS:
 	/* ffsll (x) == ffs (x) for unsigned or signed x.  */
@@ -2300,6 +2276,21 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
       default:
 	gcc_unreachable ();
       }
+
+  /* For zero the pattern gives the value of the target for VEC_TYPE plus
+     ADDEND.  Punt if the call has another value at zero.  */
+  if ((ifn == IFN_CLZ || ifn == IFN_CTZ)
+      && gimple_call_internal_p (call_stmt)
+      && gimple_call_num_args (call_stmt) == 2)
+    {
+      int val;
+      int d = (ifn == IFN_CLZ
+	       ? CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (vec_type), val)
+	       : CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (vec_type), val));
+      if (d != 2
+	  || tree_to_shwi (gimple_call_arg (call_stmt, 1)) != val + addend)
+	return NULL;
+    }
 
   /* Do it only if the backend has popcount<vector_mode>2 etc. pattern.  */
   bool supported
