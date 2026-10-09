@@ -7551,6 +7551,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 {
   tree type = TREE_TYPE (exp);
   HOST_WIDE_INT exp_size = int_size_in_bytes (type);
+  gcc_assert (known_ge (size, 0));
   poly_int64 bitregion_end = known_gt (size, 0) ? size * BITS_PER_UNIT - 1 : 0;
 
   switch (TREE_CODE (type))
@@ -7595,9 +7596,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	   the whole structure first.  Don't do this if TARGET is a
 	   register whose mode size isn't equal to SIZE since
 	   clear_storage can't handle this case.  */
-	else if (known_size_p (size)
-		 && (((int) CONSTRUCTOR_NELTS (exp) != fields_length (type))
-		     || mostly_zeros_p (exp))
+	else if ((((int) CONSTRUCTOR_NELTS (exp) != fields_length (type))
+		  || mostly_zeros_p (exp))
 		 && (!REG_P (target)
 		     || known_eq (GET_MODE_SIZE (GET_MODE (target)), size)))
 	  {
@@ -9581,7 +9581,8 @@ expand_constructor (tree exp, rtx target, enum expand_modifier modifier,
       target = assign_temp (type, TREE_ADDRESSABLE (exp), 1);
     }
 
-  store_constructor (exp, target, 0, int_expr_size (exp), false);
+  store_constructor (exp, target, 0, tree_to_poly_int64 (size_in_bytes (type)),
+		     false);
   return target;
 }
 
