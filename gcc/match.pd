@@ -11298,8 +11298,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (min (func:s @0 INTEGER_CST@2) (func:s @1 @2))
   (if (types_match (@0, @1)
-       && wi::geu_p (wi::to_wide (@2),
-		     TYPE_PRECISION (TREE_TYPE (@0))))
+       && wi::to_widest (@2) >= element_precision (@0))
    (func (bit_ior @0 @1) @2))))
 
 /* CLZ simplifications.  */
