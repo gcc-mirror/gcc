@@ -240,10 +240,10 @@ D_ALL_OBJS = $(D_FRONTEND_OBJS) $(D_OBJS) $(D_TARGET_OBJS)
 
 d_OBJS = $(D_ALL_OBJS) d/d-spec.o
 
-d21$(exeext): $(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(d.prev)
+d21$(exeext): $(D_ALL_OBJS) attribs.o attr-handlers.o $(BACKEND) $(LIBDEPS) $(d.prev)
 	@$(call LINK_PROGRESS,$(INDEX.d),start)
 	+$(DLLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -static-libphobos -o $@ \
-		$(D_ALL_OBJS) attribs.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
+		$(D_ALL_OBJS) attribs.o attr-handlers.o $(BACKEND) $(LIBS) $(BACKENDLIBS)
 	@$(call LINK_PROGRESS,$(INDEX.d),end)
 
 # Documentation.
