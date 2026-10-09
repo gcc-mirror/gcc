@@ -24,6 +24,15 @@ local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|
 # Add Windows socket library.
 LIBS += -lws2_32
 
+ifeq ($(plugin_implib),yes)
+# Avoid exporting compiler-internal symbols from frontends without a plugin API.
+gnat1$(exeext) f951$(exeext) lto1$(exeext) lto-dump$(exeext) \
+cc1obj$(exeext) cc1objplus$(exeext) $(LIBGCCJIT_FILENAME): PLUGINLIBS =
+
+ALL_LINKERFLAGS += $(if $(filter cc1$(exeext) cc1plus$(exeext),$@),\
+	$(if $(filter -ffat-lto-objects,$(ALL_CXXFLAGS)),-fno-lto))
+endif
+
 # On MinGW, we use "%IA64d" to print 64-bit integers, and the format-checking
 # code does not handle that, so we have to disable checking here.
 WERROR_FLAGS += -Wno-format

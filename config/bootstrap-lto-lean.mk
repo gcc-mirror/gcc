@@ -5,6 +5,10 @@ STAGE3_CFLAGS += -flto=jobserver
 override STAGEtrain_CFLAGS := $(filter-out -flto=jobserver,$(STAGEtrain_CFLAGS))
 STAGEtrain_GENERATOR_CFLAGS += -flto=jobserver
 STAGEfeedback_CFLAGS += -flto=jobserver
+ifneq (,$(findstring mingw,$(host_os)))
+STAGE3_CFLAGS += -ffat-lto-objects
+STAGEfeedback_CFLAGS += -ffat-lto-objects
+endif
 
 # assumes the host supports the linker plugin
 LTO_AR = $$r/$(HOST_SUBDIR)/prev-gcc/gcc-ar$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/

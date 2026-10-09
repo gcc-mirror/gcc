@@ -165,8 +165,16 @@ JIT_LDFLAGS = $(LDFLAGS)
 endif
 
 ifneq (,$(findstring mingw,$(target)))
+LIBGCCJIT_DEF_FILE = libgccjit.def
+
 # Create import library
-LIBGCCJIT_EXTRA_OPTS = -Wl,--out-implib,$(LIBGCCJIT_IMPORT_LIB)
+LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_DEF_FILE) -Wl,--exclude-all-symbols \
+ -Wl,--out-implib,$(LIBGCCJIT_IMPORT_LIB)
+
+$(LIBGCCJIT_DEF_FILE): $(srcdir)/jit/libgccjit.exports
+	echo EXPORTS > $@.tmp
+	$(AWK) '/^_/ { sub(/^_/, ""); print }' $< >> $@.tmp
+	$(SHELL) $(srcdir)/../move-if-change $@.tmp $@
 else
 ifneq (,$(findstring darwin,$(host)))
 LIBGCCJIT_VERS = $(LIBGCCJIT_CURRENT).$(LIBGCCJIT_REVISION).$(LIBGCCJIT_AGE)
@@ -189,7 +197,7 @@ EXTRA_GCC_OBJS_EXCLUSIVE = $(foreach _obj1, $(EXTRA_GCC_OBJS), \
 $(LIBGCCJIT_FILENAME): $(jit_OBJS) \
 	libbackend.a libcommon-target.a libcommon.a \
 	$(CPPLIB) $(LIBDECNUMBER) \
-	$(LIBDEPS) $(srcdir)/jit/libgccjit.map \
+	$(LIBDEPS) $(srcdir)/jit/libgccjit.map $(LIBGCCJIT_DEF_FILE) \
 	$(EXTRA_GCC_OBJS_EXCLUSIVE) $(jit.prev)
 	@$(call LINK_PROGRESS,$(INDEX.jit),start)
 	+$(LLINKER) $(ALL_LINKERFLAGS) $(JIT_LDFLAGS) -o $@ -shared \
@@ -433,7 +441,7 @@ jit.uninstall:
 jit.mostlyclean:
 	-rm -f $(LIBGCCJIT_FILENAME) $(LIBGCCJIT_SYMLINK)
 	-rm -f $(LIBGCCJIT_LINKER_NAME_SYMLINK) $(FULL_DRIVER_NAME)
-	-rm -f $(LIBGCCJIT_SONAME)
+	-rm -f $(LIBGCCJIT_SONAME) $(LIBGCCJIT_DEF_FILE) $(LIBGCCJIT_DEF_FILE).tmp
 	-rm -f $(jit_OBJS)
 
 jit.clean:
