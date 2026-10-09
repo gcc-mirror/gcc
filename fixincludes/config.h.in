@@ -243,8 +243,5 @@
 /* Define to xatexit if the host system does not support atexit */
 #undef atexit
 
-/* Define to empty if `const' does not conform to ANSI C. */
-#undef const
-
 /* Define to xexit if the host system does not support atexit */
 #undef exit

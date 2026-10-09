@@ -98,9 +98,6 @@ AC_CHECK_FUNCS(fixincludes_UNLOCKED_FUNCS)
 AC_CHECK_DECLS([abort, asprintf, basename(char *), errno, vasprintf, memmem])
 AC_CHECK_DECLS(m4_split(m4_normalize(fixincludes_UNLOCKED_FUNCS)))
 
-# Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-
 # Checks for library functions.
 GCC_AC_FUNC_MMAP_BLACKLIST
 
