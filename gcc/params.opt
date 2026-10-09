@@ -30,10 +30,6 @@ Loops iterating at least selected number of iterations get loop alignment.
 Common Joined UInteger Var(param_align_threshold) Init(100) IntegerRange(1, 65536) Param Optimization
 Select fraction of the maximal frequency of executions of basic block in function given basic block get alignment.
 
--param=analyzer-max-macro-alias-depth=
-Common Joined UInteger Var(param_analyzer_max_macro_alias_depth) Init(8) IntegerRange(0, 255)
-Maximum number of macro aliases to follow when resolving named constants in the analyzer; zero disables alias following.
-
 -param=asan-globals=
 Common Joined UInteger Var(param_asan_globals) Init(1) IntegerRange(0, 1) Param
 Enable asan globals protection.
