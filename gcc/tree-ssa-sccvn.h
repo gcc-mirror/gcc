@@ -320,8 +320,6 @@ public:
 	     bool eliminate, bool skip_entry_phis, vn_lookup_kind);
   ~vn_driver ();
   unsigned finalize (bitmap inserted_exprs = NULL);
-  /* The TODO flags of the walk, for a caller that does not eliminate.  */
-  unsigned todo () const { return m_todo; }
 
 private:
   DISABLE_COPY_AND_ASSIGN (vn_driver);
@@ -330,6 +328,11 @@ private:
   unsigned m_todo;
   /* Whether the walk eliminated.  */
   bool m_eliminate;
+  /* Whether the walk was of a region.  */
+  bool m_region_p;
+  /* The walker that eliminated, if the walk did: M_AVAIL unless the walk
+     iterated.  */
+  class eliminate_dom_walker *m_eliminator;
 };
 
 /* Valueize NAME if it is an SSA name, otherwise just return it.  This hook

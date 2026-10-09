@@ -8860,13 +8860,16 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    If ITERATE is true then treat backedges optimistically as not
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  If SKIP_ENTRY_PHIS
-   is true then force PHI nodes in ENTRY->dest to VARYING.  AVAIL and
-   BB_TO_RPO belong to the caller, which can keep them past the walk.  */
+   is true then force PHI nodes in ENTRY->dest to VARYING.  AVAIL,
+   BB_TO_RPO and ELIMINATOR belong to the caller, which can keep them
+   past the walk.  Elimination stops short of eliminate_cleanup, which
+   is left to the caller.  */
 
 static unsigned
 do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	     bool iterate, bool eliminate, bool skip_entry_phis,
-	     vn_lookup_kind kind, rpo_elim &avail, int *bb_to_rpo)
+	     vn_lookup_kind kind, rpo_elim &avail, int *bb_to_rpo,
+	     eliminate_dom_walker *eliminator)
 {
   unsigned todo = 0;
   default_vn_walk_kind = kind;
@@ -9268,10 +9271,9 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	  /* Note we can't use avail.walk here because that gets confused
 	     by the existing availability and it will be less efficient
 	     as well.  */
-	  todo |= eliminate_with_rpo_vn (NULL);
+	  rpo_avail = eliminator;
+	  eliminator->walk (ENTRY_BLOCK_PTR_FOR_FN (fn));
 	}
-      else
-	todo |= avail.eliminate_cleanup (do_region);
     }
 
   vn_valueize = NULL;
@@ -9304,13 +9306,9 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 {
   auto_timevar tv (TV_TREE_RPO_VN);
 
-  /* We don't support elimination in region-based iteration.  */
-  gcc_assert (!entry || !iterate || !eliminate);
-  /* When iterating, finalize does the elimination; otherwise the
-     constructor's walk does.  */
-  vn_driver vn (fn, entry, exit_bbs, iterate, eliminate && !iterate,
+  vn_driver vn (fn, entry, exit_bbs, iterate, eliminate,
 		skip_entry_phis, kind);
-  return eliminate ? vn.finalize () : vn.todo ();
+  return vn.finalize ();
 }
 
 vn_driver::vn_driver (function *fn, bool iterate, bool eliminate,
@@ -9327,20 +9325,26 @@ vn_driver::vn_driver (function *fn, bool iterate, bool eliminate,
 vn_driver::vn_driver (function *fn, edge entry, bitmap exit_bbs,
 		      bool iterate, bool eliminate, bool skip_entry_phis,
 		      vn_lookup_kind kind)
-  : m_eliminate (eliminate)
+  : m_eliminate (eliminate), m_region_p (entry != NULL)
 {
   basic_block entry_bb
     = entry ? entry->dest : single_succ (ENTRY_BLOCK_PTR_FOR_FN (fn));
   m_avail = new rpo_elim (entry_bb);
   m_bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fn));
+  /* When iterating, elimination is a walk of its own.  */
+  m_eliminator = (iterate && eliminate
+		  ? new eliminate_dom_walker (CDI_DOMINATORS, NULL) : m_avail);
   m_todo = do_rpo_vn_1 (fn, entry, exit_bbs, iterate, eliminate,
-			skip_entry_phis, kind, *m_avail, m_bb_to_rpo);
+			skip_entry_phis, kind, *m_avail, m_bb_to_rpo,
+			m_eliminator);
 }
 
 vn_driver::~vn_driver ()
 {
   free_rpo_vn ();
   XDELETEVEC (m_bb_to_rpo);
+  if (m_eliminator != m_avail)
+    delete m_eliminator;
   delete m_avail;
 }
 
@@ -9351,7 +9355,7 @@ vn_driver::finalize (bitmap inserted_exprs)
 {
   /* If ELIMINATE was passed to the constructor, finish the elimination.  */
   if (m_eliminate)
-    return m_todo;
+    return m_todo | m_eliminator->eliminate_cleanup (m_region_p);
 
   /* PRE eliminates after its insertions, when the RPO map no longer
      describes the IL.  Return only its flags, as PRE always has, to avoid
@@ -9359,15 +9363,7 @@ vn_driver::finalize (bitmap inserted_exprs)
   if (inserted_exprs)
     return eliminate_with_rpo_vn (inserted_exprs);
 
-  /* Otherwise do full elimination.  */
-  rpo_avail = m_avail;
-  vn_bb_to_rpo = m_bb_to_rpo;
-  vn_valueize = rpo_vn_valueize;
-  unsigned todo = m_todo | eliminate_with_rpo_vn (NULL);
-  vn_valueize = NULL;
-  rpo_avail = NULL;
-  vn_bb_to_rpo = NULL;
-  return todo;
+  return m_todo;
 }
 
 
@@ -9423,9 +9419,7 @@ pass_fre::execute (function *fun)
     loop_optimizer_init (LOOPS_HAVE_SIMPLE_LATCHES);
 
   {
-    /* When iterating, finalize below does the elimination; otherwise the
-       constructor's walk does.  */
-    vn_driver vn (fun, iterate_p, !iterate_p);
+    vn_driver vn (fun, iterate_p, true);
     todo = vn.finalize ();
   }
 
