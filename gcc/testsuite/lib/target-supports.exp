@@ -10761,6 +10761,46 @@ proc check_effective_target_ctzll { } {
     } "" ]
 }
 
+# Return 1 if the target has a clzsi2 pattern, so that a .CLZ call on
+# a 32-bit unsigned integer can be expanded.  The pattern can be an
+# expander that uses other operations.  Niter analysis turns the loop
+# into such a call only in that case.
+
+proc check_effective_target_clzsi { } {
+    return [check_no_messages_and_pattern clzsi "\\.CLZ \\(" tree-optimized {
+	int foo (__UINT32_TYPE__ b)
+	  {
+	    int c = 0;
+	    while (b)
+	      {
+		b >>= 1;
+		c++;
+	      }
+	    return c;
+	  }
+    } "-O2" ]
+}
+
+# Return 1 if the target has a ctzsi2 pattern, so that a .CTZ call on
+# a 32-bit unsigned integer can be expanded.  The pattern can be an
+# expander that uses other operations.  Niter analysis turns the loop
+# into such a call only in that case.
+
+proc check_effective_target_ctzsi { } {
+    return [check_no_messages_and_pattern ctzsi "\\.CTZ \\(" tree-optimized {
+	int foo (__UINT32_TYPE__ b)
+	  {
+	    int c = 0;
+	    while (b)
+	      {
+		b <<= 1;
+		c++;
+	      }
+	    return c;
+	  }
+    } "-O2" ]
+}
+
 # Return 1 if the target supports atomic operations on "long long"
 # and can execute them.
 #
