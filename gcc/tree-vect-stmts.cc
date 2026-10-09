@@ -5116,6 +5116,14 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
 					     ncopies, masktype, j);
 		}
+	      else if (bestn->simdclone->mask_mode == VOIDmode)
+		{
+		  /* All lanes are active: pass what the VEC_COND_EXPR below
+		     would select.  An all-ones floating-point MASKTYPE
+		     is not a valid condition.  */
+		  vargs.safe_push (build_one_cst (masktype));
+		  continue;
+		}
 	      else
 		mask = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
 
