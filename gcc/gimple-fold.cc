@@ -8867,6 +8867,27 @@ fold_truth_andor_for_ifcombine (enum tree_code code, tree truth_type,
 	  || ll_bitpos - rl_bitpos != lr_bitpos - rr_bitpos)
 	return 0;
 
+      /* Each compare tests, for every bit in its masks, either that the bits
+	 on both sides are equal (bit in both masks), or that the bit on one
+	 side is zero (bit in one mask only).  The combined compare can only
+	 express one such test per bit, so reject combinations in which both
+	 compares test the same bit in different ways.  Check this in the
+	 left-hand frame, since the right-hand fields are laid out alike.  */
+      wide_int lr_m, rr_m;
+      if (lr_and_mask.get_precision ())
+	lr_m = wi::lshift (wide_int::from (lr_and_mask, lnprec, UNSIGNED),
+			   xll_bitpos);
+      else
+	lr_m = wi::shifted_mask (xll_bitpos, lr_bitsize, false, lnprec);
+      if (rr_and_mask.get_precision ())
+	rr_m = wi::lshift (wide_int::from (rr_and_mask, lnprec, UNSIGNED),
+			   xrl_bitpos);
+      else
+	rr_m = wi::shifted_mask (xrl_bitpos, rr_bitsize, false, lnprec);
+      if (((ll_mask | lr_m) & (rl_mask | rr_m)
+	   & ((ll_mask ^ rl_mask) | (lr_m ^ rr_m))) != 0)
+	return 0;
+
       bool r_split_load;
       scalar_int_mode rnmode2;
 
