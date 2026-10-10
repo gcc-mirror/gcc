@@ -15610,10 +15610,11 @@ ix86_check_avx_upper_stores (rtx dest, const_rtx, void *data)
     }
 }
 
-/* Return needed mode for entity in optimize_mode_switching pass.  */
+/* Return needed mode for entity in optimize_mode_switching pass.
+   LIVE is the set of hard registers live before INSN.  */
 
 static int
-ix86_avx_u128_mode_needed (rtx_insn *insn)
+ix86_avx_u128_mode_needed (rtx_insn *insn, HARD_REG_SET live)
 {
   if (DEBUG_INSN_P (insn))
     return AVX_U128_ANY;
@@ -15645,21 +15646,36 @@ ix86_avx_u128_mode_needed (rtx_insn *insn)
       if (avx_upper_reg_found)
 	return AVX_U128_DIRTY;
 
-      /* If the function is known to preserve some SSE registers,
-	 RA and previous passes can legitimately rely on that for
-	 modes wider than 256 bits.  It's only safe to issue a
-	 vzeroupper if all SSE registers are clobbered.  */
-      const function_abi &abi = insn_callee_abi (insn);
-      if (vzeroupper_pattern (PATTERN (insn), VOIDmode)
-	  /* Should be safe to issue an vzeroupper before sibling_call_p.
-	     Also there not mode_exit for sibling_call, so there could be
-	     missing vzeroupper for that.  */
-	  || !(SIBLING_CALL_P (insn)
-	       || hard_reg_set_subset_p (reg_class_contents[SSE_REGS],
-					 abi.mode_clobbers (V4DImode))))
+      if (vzeroupper_pattern (PATTERN (insn), VOIDmode))
 	return AVX_U128_ANY;
 
-      return AVX_U128_CLEAN;
+      /* Should be safe to issue a vzeroupper before sibling_call_p.  */
+      if (SIBLING_CALL_P (insn))
+	return AVX_U128_CLEAN;
+
+      const function_abi &abi = insn_callee_abi (insn);
+
+      /* IPA-RA conservatively records fixed registers as used by the
+	 callee, e.g. xmm8-xmm15 for ia32, so ignore them.  */
+      HARD_REG_SET sse_clobbers
+	= (reg_class_contents[SSE_REGS] & ~fixed_reg_set
+	   & abi.mode_clobbers (V4DImode));
+
+      /* A callee with no SSE register writes does not need clean upper
+	 state.  */
+      if (hard_reg_set_empty_p (sse_clobbers))
+	return AVX_U128_ANY;
+
+      /* vzeroupper must not clobber values preserved across the call.  */
+      live &= reg_class_contents[SSE_REGS] & ~sse_clobbers;
+
+      /* Exclude registers that die at the call.  */
+      for (link = REG_NOTES (insn); link; link = XEXP (link, 1))
+	if (REG_NOTE_KIND (link) == REG_DEAD && REG_P (XEXP (link, 0)))
+	  remove_from_hard_reg_set (&live, GET_MODE (XEXP (link, 0)),
+				    REGNO (XEXP (link, 0)));
+
+      return hard_reg_set_empty_p (live) ? AVX_U128_CLEAN : AVX_U128_ANY;
     }
 
   rtx set = single_set (insn);
@@ -15755,14 +15771,14 @@ ix86_i387_mode_needed (int entity, rtx_insn *insn)
    prior to the execution of insn.  */
 
 static int
-ix86_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
+ix86_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET live)
 {
   switch (entity)
     {
     case X86_DIRFLAG:
       return ix86_dirflag_mode_needed (insn);
     case AVX_U128:
-      return ix86_avx_u128_mode_needed (insn);
+      return ix86_avx_u128_mode_needed (insn, live);
     case I387_ROUNDEVEN:
     case I387_TRUNC:
     case I387_FLOOR:
@@ -15796,13 +15812,13 @@ ix86_avx_u128_mode_after (int mode, rtx_insn *insn)
 	return AVX_U128_DIRTY;
 
       /* If the function doesn't clobber any sse registers or only clobber
-	 128-bit part, Then vzeroupper isn't issued before the function exit.
-	 the status not CLEAN but ANY after the function.  */
+	 128-bit part, then vzeroupper isn't issued before the function exit,
+	 and the function doesn't change the status.  */
       const function_abi &abi = insn_callee_abi (insn);
       if (!(SIBLING_CALL_P (insn)
 	    || hard_reg_set_subset_p (reg_class_contents[SSE_REGS],
 				      abi.mode_clobbers (V4DImode))))
-	return AVX_U128_ANY;
+	return mode;
 
       return  AVX_U128_CLEAN;
     }
