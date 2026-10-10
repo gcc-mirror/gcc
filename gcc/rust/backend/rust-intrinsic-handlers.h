@@ -137,6 +137,8 @@ void atomic_store (IntrinsicCtx &ctx, int ordering);
 void atomic_load (IntrinsicCtx &ctx, int ordering);
 void atomic_binary_op (IntrinsicCtx &ctx, const std::string &op_name,
 		       int ordering);
+void atomic_compare_exchange (IntrinsicCtx &ctx, bool weak,
+			      int success_ordering, int failure_ordering);
 inline void copy (IntrinsicCtx &ctx, bool overlaps);
 inline void expect (IntrinsicCtx &ctx, bool likely);
 void try_handler (IntrinsicCtx &ctx, bool is_new_api);
@@ -199,6 +201,8 @@ Intrinsic::CompileFn atomic_and (int ordering);
 Intrinsic::CompileFn atomic_nand (int ordering);
 Intrinsic::CompileFn atomic_or (int ordering);
 Intrinsic::CompileFn atomic_xor (int ordering);
+Intrinsic::CompileFn atomic_compare_exchange (bool weak, int success_ordering,
+					      int failure_ordering);
 
 Intrinsic::CompileFn unchecked_op (tree_code op);
 

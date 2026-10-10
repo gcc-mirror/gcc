@@ -151,6 +151,30 @@ public:
   static constexpr auto &ATOMIC_XOR_ACQREL = "atomic_xor_acqrel";
   static constexpr auto &ATOMIC_XOR_RELAXED = "atomic_xor_relaxed";
 
+  static constexpr auto &ATOMIC_CXCHG = "atomic_cxchg";
+  static constexpr auto &ATOMIC_CXCHG_ACQ = "atomic_cxchg_acq";
+  static constexpr auto &ATOMIC_CXCHG_REL = "atomic_cxchg_rel";
+  static constexpr auto &ATOMIC_CXCHG_ACQREL = "atomic_cxchg_acqrel";
+  static constexpr auto &ATOMIC_CXCHG_RELAXED = "atomic_cxchg_relaxed";
+  static constexpr auto &ATOMIC_CXCHG_FAILRELAXED = "atomic_cxchg_failrelaxed";
+  static constexpr auto &ATOMIC_CXCHG_FAILACQ = "atomic_cxchg_failacq";
+  static constexpr auto &ATOMIC_CXCHG_ACQ_FAILRELAXED
+    = "atomic_cxchg_acq_failrelaxed";
+  static constexpr auto &ATOMIC_CXCHG_ACQREL_FAILRELAXED
+    = "atomic_cxchg_acqrel_failrelaxed";
+  static constexpr auto &ATOMIC_CXCHGWEAK = "atomic_cxchgweak";
+  static constexpr auto &ATOMIC_CXCHGWEAK_ACQ = "atomic_cxchgweak_acq";
+  static constexpr auto &ATOMIC_CXCHGWEAK_REL = "atomic_cxchgweak_rel";
+  static constexpr auto &ATOMIC_CXCHGWEAK_ACQREL = "atomic_cxchgweak_acqrel";
+  static constexpr auto &ATOMIC_CXCHGWEAK_RELAXED = "atomic_cxchgweak_relaxed";
+  static constexpr auto &ATOMIC_CXCHGWEAK_FAILRELAXED
+    = "atomic_cxchgweak_failrelaxed";
+  static constexpr auto &ATOMIC_CXCHGWEAK_FAILACQ = "atomic_cxchgweak_failacq";
+  static constexpr auto &ATOMIC_CXCHGWEAK_ACQ_FAILRELAXED
+    = "atomic_cxchgweak_acq_failrelaxed";
+  static constexpr auto &ATOMIC_CXCHGWEAK_ACQREL_FAILRELAXED
+    = "atomic_cxchgweak_acqrel_failrelaxed";
+
   static constexpr auto &UNCHECKED_ADD = "unchecked_add";
   static constexpr auto &UNCHECKED_SUB = "unchecked_sub";
   static constexpr auto &UNCHECKED_MUL = "unchecked_mul";

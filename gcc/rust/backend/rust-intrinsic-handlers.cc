@@ -641,6 +641,71 @@ atomic_binary_op (IntrinsicCtx &ctx, const std::string &op_name, int ordering)
   ctx.add_statement (return_statement);
 }
 
+// Compiles atomic compare exchange with signature (*mut T, T, T) -> (T, bool).
+void
+atomic_compare_exchange (IntrinsicCtx &ctx, bool weak, int success_ordering,
+			 int failure_ordering)
+{
+  // Most intrinsic functions are pure but not the atomic ones
+  TREE_READONLY (ctx.fn) = 0;
+  TREE_SIDE_EFFECTS (ctx.fn) = 1;
+
+  // The intrinsic block is already open, so emit the temporary declarations
+  // directly into it.
+  tree tmp_stmt = NULL_TREE;
+  Bvariable *expected_var
+    = Backend::temporary_variable (ctx.fn, NULL_TREE, ctx.param_types[1],
+				   NULL_TREE, true, UNDEF_LOCATION, &tmp_stmt);
+  ctx.add_statement (tmp_stmt);
+  Bvariable *success_var
+    = Backend::temporary_variable (ctx.fn, NULL_TREE, boolean_type_node,
+				   NULL_TREE, false, UNDEF_LOCATION, &tmp_stmt);
+  ctx.add_statement (tmp_stmt);
+
+  auto dst = Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
+  TREE_READONLY (dst) = 0;
+
+  auto expected = expected_var->get_tree (UNDEF_LOCATION);
+  auto success = success_var->get_tree (UNDEF_LOCATION);
+
+  auto old_value = Backend::var_expression (ctx.param_vars[1], UNDEF_LOCATION);
+  auto new_value = Backend::var_expression (ctx.param_vars[2], UNDEF_LOCATION);
+
+  auto builtin_decl = resolve_atomic_builtin (ctx, "atomic_compare_exchange");
+
+  if (!builtin_decl || builtin_decl == error_mark_node)
+    return;
+
+  ctx.add_statement (
+    Backend::assignment_statement (expected, old_value, UNDEF_LOCATION));
+
+  auto expected_addr = build_fold_addr_expr_loc (UNDEF_LOCATION, expected);
+  auto builtin_addr = build_fold_addr_expr_loc (UNDEF_LOCATION, builtin_decl);
+  auto weak_flag = build_int_cst (boolean_type_node, weak);
+  auto success_memorder = make_unsigned_long_tree (success_ordering);
+  auto failure_memorder = make_unsigned_long_tree (failure_ordering);
+
+  auto exchange_call
+    = Backend::call_expression (builtin_addr,
+				{dst, expected_addr, new_value, weak_flag,
+				 success_memorder, failure_memorder},
+				nullptr, UNDEF_LOCATION);
+  TREE_READONLY (exchange_call) = 0;
+  TREE_SIDE_EFFECTS (exchange_call) = 1;
+
+  auto assignment_statement
+    = Backend::assignment_statement (success, exchange_call, UNDEF_LOCATION);
+  ctx.add_statement (assignment_statement);
+
+  auto tuple_type = TREE_TYPE (DECL_RESULT (ctx.fn));
+  auto result
+    = Backend::constructor_expression (tuple_type, false, {expected, success},
+				       -1, UNDEF_LOCATION);
+  auto return_statement
+    = Backend::return_statement (ctx.fn, result, UNDEF_LOCATION);
+  ctx.add_statement (return_statement);
+}
+
 // Shared inner implementation for ctlz and ctlz_nonzero.
 //
 // nonzero=false → ctlz: ctlz(0) is well-defined in Rust and must return
@@ -1119,6 +1184,14 @@ atomic_xor (int ordering)
 {
   return [ordering] (IntrinsicCtx &ctx) {
     return inner::atomic_binary_op (ctx, "fetch_xor", ordering);
+  };
+}
+Intrinsic::CompileFn
+atomic_compare_exchange (bool weak, int success_ordering, int failure_ordering)
+{
+  return [weak, success_ordering, failure_ordering] (IntrinsicCtx &ctx) {
+    return inner::atomic_compare_exchange (ctx, weak, success_ordering,
+					   failure_ordering);
   };
 }
 
