@@ -1,10 +1,9 @@
+// { dg-do compile { target c++26 } }
+// { dg-additional-options "-freflection" }
 // Test is_conditional_operator, condition_of, true_expression_of and
 // false_expression_of.
-//
-// Build: g++ -std=c++26 -freflection main.cpp -o main
 
 #include <meta>
-#include <cstdio>
 
 using namespace std::meta;
 
@@ -21,7 +20,10 @@ constexpr float clamp01(float x) {
 }
 
 constexpr int elvis(int x) {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wpedantic"
   return x ?: 42;
+#pragma GCC diagnostic pop
 }
 
 constexpr float abs_if(float x) {
