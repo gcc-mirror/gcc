@@ -1,3 +1,86 @@
+2026-10-10  Yongqiang Tian  <yqtian668@gmail.com>
+
+	Backported from master:
+	2026-10-02  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127687
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Skip debug
+	statements before assigning UIDs.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127517
+	* internal-fn.cc (expand_mul_overflow): Revert the 2023-09-06
+	changes.  Instead promote arg0 and/or arg1 to a type with
+	uns{0,1}_p signedness and mode precision if they have non-mode
+	precision.  Pass the original arg0/arg1 and their type to
+	ubsan_build_overflow_builtin, instead of passing the promoted
+	ones.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* builtins.cc (expand_builtin_atomic_fetch_op): Force val into a
+	pseudo if updates to mem could change its value.
+	(expand_ifn_atomic_bit_test_and): Likewise.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127498
+	* config/i386/sse.md (<insn><mode>3 any_rotate:VI1_AVX512_3264): Add
+	TARGET_AVX2 to condition.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+		    Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR middle-end/127378
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt): On
+	big endian, compare idx_next in separate_ext loop against
+	bo_idx + total - 1 - end, and if that wraps around, compare idx
+	against 0 instead.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127352
+	* config/i386/i386-expand.cc (split_double_mode): For high halves of
+	paradoxical subregs after RA use CONST0_RTX (half_mode) instead of
+	ICE.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127336
+	* optabs.cc (maybe_emit_compare_and_swap_exchange_loop,
+	expand_atomic_fetch_op_no_fallback, expand_atomic_fetch_op): Force
+	val into a pseduo if it updates to mem could change its value
+	and when using val after the atomic op or inside of a loop.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127149
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Handle lhs_type without mode precision by adding casts.
+
 2026-10-08  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

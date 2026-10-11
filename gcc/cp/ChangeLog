@@ -1,3 +1,65 @@
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_genericize_r): Don't call warn_for_alloc_size
+	for CALL_FROM_NEW_OR_DELETE_P calls.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125536
+	* pt.cc (unify_array_domain): When adding 1 to parm_max or
+	arg_max, perform the addition in the type of those trees
+	rather than unconditionally in int type.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127493
+	* reflect.cc (eval_source_location_of): Call maybe_get_first_fn.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127276
+	* pt.cc (tsubst_splice_expr): Call convert_from_reference if not
+	member access and SPLICE_EXPR is a splice expression.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127109
+	* decl.cc (cp_finish_decomp): Add [dcl.struct.bind]/7 reference
+	to comment.  Use get_temp_regvar and pushdecl instead of
+	get_internal_target_expr and add_stmt.  Set DECL_DECOMP_BASE
+	to NON_LVALUE_EXPR around the temp regvar.
+	* cp-tree.h (DECL_DECOMP_BASE): Adjust macro comment.
+	* semantics.cc (maybe_convert_cond, switch_finish_cond): Check for
+	NON_LVALUE_EXPR rather than TARGET_EXPR and extract its operand
+	rather than TARGET_EXPR_SLOT.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-08-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126922
+	* mangle.cc (write_expression): For CONSTRUCTOR skipped
+	member of std::meta::info type, call write_expression on
+	get_null_reflection rather than build_zero_cst.
+	* tree.cc (zero_init_expr_p): If type is std::meta::info,
+	return true iff t is null reflection.
+
 2026-10-07  Jason Merrill  <jason@redhat.com>
 
 	PR c++/122774
