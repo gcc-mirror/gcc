@@ -1,4 +1,4 @@
-/* { dg-do run { xfail { { sparc*-*-* } || { { ! lp64 } && hppa*-*-* } } } } */
+/* { dg-do run { xfail  { sparc*-*-* } } } */
 /* { dg-options "-O2" } */
 
 #include <inttypes.h>
