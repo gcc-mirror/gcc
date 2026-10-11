@@ -94,8 +94,30 @@ AttributeChecker::visit (AST::Token &)
 {}
 
 void
-AttributeChecker::visit (AST::DelimTokenTree &)
-{}
+AttributeChecker::visit (AST::DelimTokenTree &ttree)
+{
+  // Checking if the DelimTokenTree contains '('
+  // or something else. If something else, then error
+  const auto &token_stream = ttree.to_token_stream ();
+  for (auto &token : token_stream)
+    {
+      switch (token.get ()->get_id ())
+	{
+	case TokenId::LEFT_PAREN:
+	  // correct case
+	  break;
+	case TokenId::LEFT_CURLY:
+	case TokenId::LEFT_SQUARE:
+	  rust_error_at (token.get ()->get_locus (),
+			 "wrong meta list delimiters");
+	  rust_inform (token.get ()->get_locus (),
+		       "the delimiters should be %<(%> and %<)%>");
+	  break;
+	default:
+	  break;
+	}
+    }
+}
 
 void
 AttributeChecker::visit (AST::IdentifierExpr &)
