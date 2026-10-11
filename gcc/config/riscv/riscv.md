@@ -5136,6 +5136,10 @@
 		 (match_operand 3 "const_int_operand" "n")))
    (clobber (match_scratch:DI 4 "=&r"))]
   "(TARGET_64BIT
+    /* If this might reasonably be a pack, then reject.  */
+    && !(TARGET_ZBKB
+	 && INTVAL (operands[2]) == BITS_PER_WORD / 2
+	 && (INTVAL (operands[3]) & ~HOST_WIDE_INT_C (0xffffffff)) == 0)
     && riscv_const_insns (operands[3], false) == 1
     && riscv_const_insns (GEN_INT (INTVAL (operands[3])
 			  << INTVAL (operands[2])), false) != 1)"
