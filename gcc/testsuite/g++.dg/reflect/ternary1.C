@@ -21,7 +21,7 @@ constexpr float clamp01(float x) {
 
 constexpr int elvis(int x) {
 #pragma GCC diagnostic push
-//#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wpedantic"
   return x ?: 42;
 #pragma GCC diagnostic pop
 }
