@@ -172,13 +172,6 @@ GCC_HEADER_STDINT(gstdint.h)
 
 GCC_AC_FUNC_MMAP_BLACKLIST
 
-AC_C_BIGENDIAN
-# I don't like the default behaviour of WORDS_BIGENDIAN undefined for LE.
-AH_BOTTOM(
-[#ifndef WORDS_BIGENDIAN
-#define WORDS_BIGENDIAN 0
-#endif])
-
 # Check to see if -pthread or -lpthread is needed.  Prefer the former.
 # In case the pthread.h system header is not found, this test will fail.
 XPCFLAGS=""
