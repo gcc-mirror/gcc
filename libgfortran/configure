@@ -32036,6 +32036,7 @@ main ()
 
   #ifdef _SOFT_FLOAT
   int ok;
+  (void)ok;
   #else
   choke me
   #endif
