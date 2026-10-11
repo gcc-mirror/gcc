@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fwrapv -march=rv64imvxtheadcondmov_xventanacondops -mabi=lp64d" } */
+/* { dg-additional-options "-fwrapv -march=rv64imvxtheadcondmov_zicond -mabi=lp64d" } */
 
 int a, b;
 void c() {

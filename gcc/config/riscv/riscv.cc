@@ -4679,7 +4679,7 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
 	  *total = COSTS_N_INSNS (1);
 	  return true;
 	}
-      else if (TARGET_ZICOND_LIKE
+      else if (TARGET_ZICOND
 	       && outer_code == SET
 	       && ((GET_CODE (XEXP (x, 1)) == REG
 		    && XEXP (x, 2) == CONST0_RTX (GET_MODE (XEXP (x, 1))))
@@ -6447,7 +6447,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
     }
 
 
-  if (((TARGET_ZICOND_LIKE
+  if (((TARGET_ZICOND
 	|| (arith_operand (cons, dst_mode) && arith_operand (alt, dst_mode)))
        && GET_MODE_CLASS (dst_mode) == MODE_INT
        && GET_MODE_CLASS (cond_mode) == MODE_INT)
@@ -6460,7 +6460,7 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	 for the output of the SCC instruction, to match the mode of the NEG
 	 operation below.  The output of SCC is 0 or 1 boolean, so it is
 	 valid for input in any scalar integer mode.  */
-      rtx tmp = gen_reg_rtx ((TARGET_ZICOND_LIKE || TARGET_COND_MOV)
+      rtx tmp = gen_reg_rtx ((TARGET_ZICOND || TARGET_COND_MOV)
 			     ? word_mode : dst_mode);
       bool invert = false;
 
@@ -6533,13 +6533,13 @@ riscv_expand_conditional_move (rtx dest, rtx op, rtx cons, rtx alt)
 	  op0 = XEXP (op, 0);
 	  op1 = XEXP (op, 1);
 	}
-      else if (!TARGET_ZICOND_LIKE && !TARGET_COND_MOV)
+      else if (!TARGET_ZICOND && !TARGET_COND_MOV)
 	riscv_expand_int_scc (tmp, code, op0, op1, &invert);
 
       if (TARGET_COND_MOV)
 	return riscv_target_conditional_move (dest, op0, op1, code, cons, alt);
 
-      else if (!TARGET_ZICOND_LIKE)
+      else if (!TARGET_ZICOND)
 	{
 	  if (invert)
 	    std::swap (cons, alt);

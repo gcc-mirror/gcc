@@ -3214,7 +3214,7 @@
 ;; Canonical form for an extend of a logical shift right (sign/zero extraction).
 ;; Special cases, that are ignored (handled elsewhere):
 ;; * Single-bit extraction (Zbs/XTheadBs)
-;; * Single-bit extraction (Zicondops/XVentanaCondops)
+;; * Single-bit extraction (Zicondops)
 ;; * Single-bit extraction (SFB)
 ;; * Extraction instruction th.ext(u) (XTheadBb)
 ;; * lshrsi3_extend_2 (see above)
@@ -3225,7 +3225,7 @@
        (match_operand     2 "const_int_operand")
        (match_operand     3 "const_int_operand")))]
   "!((TARGET_ZBS || TARGET_XTHEADBS || TARGET_ZICOND
-      || TARGET_XVENTANACONDOPS || TARGET_SFB_ALU)
+      || TARGET_SFB_ALU)
      && (INTVAL (operands[2]) == 1))
    && !TARGET_XTHEADBB
    && !TARGET_XANDESPERF
@@ -3507,7 +3507,7 @@
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
 			  (match_operand:GPR 2 "movcc_operand")
 			  (match_operand:GPR 3 "movcc_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND_LIKE
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND
    || TARGET_MOVCC || TARGET_XMIPSCMOV"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],

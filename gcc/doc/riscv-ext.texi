@@ -754,10 +754,6 @@
 @tab 1.0
 @tab T-head vector extension
 
-@item @samp{xventanacondops}
-@tab 1.0
-@tab Ventana integer conditional operations extension
-
 @item @samp{xmipscmov}
 @tab 1.0
 @tab Mips conditional move extension

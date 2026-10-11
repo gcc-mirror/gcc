@@ -1,5 +1,4 @@
-;; Machine description for the RISC-V Zicond extension and functionally-
-;; equivalent XVentanaCondOps vendor extension
+;; Machine description for the RISC-V Zicond extension
 ;; Copyright (C) 2022-2026 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
@@ -21,25 +20,16 @@
 (define_code_iterator eq_or_ne [eq ne])
 (define_code_attr eqz [(eq "nez") (ne "eqz")])
 (define_code_attr nez [(eq "eqz") (ne "nez")])
-(define_code_attr eqz_ventana [(eq "n") (ne "")])
-(define_code_attr nez_ventana [(eq "") (ne "n")])
 
-;; Zicond / XVentanaCondOps
+;; Zicond
 (define_insn "*czero.<eqz>.<GPR:mode><X:mode>"
   [(set (match_operand:GPR 0 "register_operand"                      "=r")
         (if_then_else:GPR (eq_or_ne (match_operand:X 1 "register_operand" "r")
                                     (const_int 0))
                           (match_operand:GPR 2 "register_operand"    "r")
                           (const_int 0)))]
-  "TARGET_ZICOND_LIKE"
-  {
-    if (TARGET_ZICOND)
-      return "czero.<eqz>\t%0,%2,%1";
-    else if (TARGET_XVENTANACONDOPS && TARGET_64BIT)
-      return "vt.maskc<eqz_ventana>\t%0,%2,%1";
-    else
-      gcc_unreachable ();
-  }
+  "TARGET_ZICOND"
+  "czero.<eqz>\t%0,%2,%1"
 [(set_attr "type" "zicond")])
 
 (define_insn "*czero.<nez>.<GPR:mode><X:mode>"
@@ -48,15 +38,8 @@
                                     (const_int 0))
                           (const_int 0)
                           (match_operand:GPR 2 "register_operand"   "r")))]
-  "TARGET_ZICOND_LIKE"
-  {
-    if (TARGET_ZICOND)
-      return "czero.<nez>\t%0,%2,%1";
-    else if (TARGET_XVENTANACONDOPS && TARGET_64BIT)
-      return "vt.maskc<nez_ventana>\t%0,%2,%1";
-    else
-      gcc_unreachable ();
-  }
+  "TARGET_ZICOND"
+  "czero.<nez>\t%0,%2,%1"
 [(set_attr "type" "zicond")])
 
 ;; Special optimization under eq/ne in primitive semantics
@@ -66,15 +49,8 @@
                               (const_int 0))
                           (match_operand:GPR 2 "register_operand" "1")
                           (match_operand:GPR 3 "register_operand" "r")))]
-  "TARGET_ZICOND_LIKE && rtx_equal_p (operands[1], operands[2])"
-  {
-    if (TARGET_ZICOND)
-      return "czero.eqz\t%0,%3,%1";
-    else if (TARGET_XVENTANACONDOPS && TARGET_64BIT)
-      return "vt.maskc\t%0,%3,%1";
-    else
-      gcc_unreachable ();
-  }
+  "TARGET_ZICOND && rtx_equal_p (operands[1], operands[2])"
+  "czero.eqz\t%0,%3,%1"
 [(set_attr "type" "zicond")])
 
 (define_insn "*czero.nez.<GPR:mode><X:mode>.opt2"
@@ -84,14 +60,7 @@
                           (match_operand:GPR 2 "register_operand" "r")
                           (match_operand:GPR 3 "register_operand" "1")))]
   "TARGET_ZICOND && rtx_equal_p (operands[1], operands[3])"
-  {
-    if (TARGET_ZICOND)
-      return "czero.eqz\t%0,%2,%1";
-    else if (TARGET_XVENTANACONDOPS && TARGET_64BIT)
-      return "vt.maskc\t%0,%2,%1";
-    else
-      gcc_unreachable ();
-  }
+  "czero.eqz\t%0,%2,%1";
 [(set_attr "type" "zicond")])
 
 ;; Combine creates this form in some cases (particularly the coremark
@@ -103,7 +72,7 @@
 			       (match_operand 2 "immediate_operand"))
 	       (match_operand:X 3 "register_operand")))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE && TARGET_ZBS"
+  "TARGET_ZICOND && TARGET_ZBS"
   [(set (match_dup 4) (zero_extract:X (match_dup 1) (const_int 1) (match_dup 2)))
    (set (match_dup 0) (if_then_else:X (eq:X (match_dup 4) (const_int 0))
 				      (const_int 0)
@@ -116,7 +85,7 @@
 			       (match_operand 2 "immediate_operand"))
 	       (match_operand:X 3 "register_operand")))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE && !TARGET_ZBS && (UINTVAL (operands[2]) < 11)"
+  "TARGET_ZICOND && !TARGET_ZBS && (UINTVAL (operands[2]) < 11)"
   [(set (match_dup 4) (and:X (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (if_then_else:X (eq:X (match_dup 4) (const_int 0))
 				      (const_int 0)
@@ -137,7 +106,7 @@
 	       (scc_0:X (match_operand:X 3 "register_operand")
 			(match_operand:X 4 "reg_or_0_operand"))))
    (clobber (match_operand:X 5 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 5) (scc_0:X (match_dup 3) (match_dup 4)))
    (set (match_dup 0) (if_then_else:X (match_op_dup 1
 					[(match_dup 2) (const_int 0)])
@@ -155,7 +124,7 @@
 	       (match_operator:X 1 "equality_operator"
 		[(match_operand:X 2 "register_operand") (const_int 0)])))
    (clobber (match_operand:X 5 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 5) (scc_0:X (match_dup 3) (match_dup 4)))
    (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
 					[(match_dup 2) (const_int 0)])
@@ -175,7 +144,7 @@
 	       (any_ge:X (match_operand:X 3 "register_operand")
 			 (const_int 1))))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 4) (any_ge:X (match_dup 3) (const_int 1)))
    (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
 				       [(match_dup 2) (const_int 0)])
@@ -193,7 +162,7 @@
 	       (match_operator:X 1 "equality_operator"
 		[(match_operand:X 2 "register_operand") (const_int 0)])))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 4) (any_ge:X (match_dup 3) (const_int 1)))
    (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
 				       [(match_dup 2) (const_int 0)])
@@ -212,7 +181,7 @@
 	       (any_lt:X (match_operand:X 3 "register_operand")
 			 (match_operand:X 4 "arith_operand"))))
    (clobber (match_operand:X 5 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 5) (any_lt:X (match_dup 3) (match_dup 4)))
    (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
 				       [(match_dup 2) (const_int 0)])
@@ -231,7 +200,7 @@
 	       (any_le:X (match_operand:X 3 "register_operand")
 			 (match_operand:X 4 "sle_operand"))))
    (clobber (match_operand:X 5 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 5) (any_le:X (match_dup 3) (match_dup 4)))
    (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
 				       [(match_dup 2) (const_int 0)])
@@ -253,7 +222,7 @@
 				(match_operand 2 "const_int_operand")
 				(match_operand 3 "const_int_operand"))
 		(match_operand 4 "const_int_operand")))]
-  "((TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV)
+  "((TARGET_ZICOND || TARGET_XTHEADCONDMOV)
     && INTVAL (operands[2]) + INTVAL (operands[4]) == 1
     && INTVAL (operands[3]) + INTVAL (operands[4]) == -1)"
   [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
@@ -272,7 +241,7 @@
 				(match_operand 2 "const_int_operand")
 				(match_operand 3 "const_int_operand"))
 		(match_operand 4 "const_int_operand")))]
-  "((TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV)
+  "((TARGET_ZICOND || TARGET_XTHEADCONDMOV)
     && INTVAL (operands[2]) + INTVAL (operands[4]) == -1
     && INTVAL (operands[3]) + INTVAL (operands[4]) == 1)"
   [(set (match_dup 0) (ashiftrt:X (match_dup 1) (match_dup 2)))
@@ -321,7 +290,7 @@
 		    (match_operand:X 3 "register_operand"))
 		  (const_int 0))))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
 				      (match_dup 3)
 				      (const_int 0)))
@@ -340,7 +309,7 @@
 		    (match_dup 2))
 		  (const_int 0))))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
 				      (match_dup 3)
 				      (const_int 0)))
@@ -362,7 +331,7 @@
 		    (match_operand:QI 3 "register_operand"))
 		  (const_int 0))))
    (clobber (match_operand:X 4 "register_operand"))]
-  "TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV"
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
 				      (match_dup 3)
 				      (const_int 0)))
@@ -386,7 +355,7 @@
 		    (match_dup 2)
 		    (match_operand:X 3 "register_operand" "r"))
 		  (const_int 0))))]
-  "(TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV) && can_create_pseudo_p ()"
+  "(TARGET_ZICOND || TARGET_XTHEADCONDMOV) && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(set (match_dup 4) (and:X (match_dup 2) (match_dup 3)))
@@ -410,7 +379,7 @@
 		    (match_operand:X 3 "register_operand" "r")
 		    (match_dup 2))
 		  (const_int 0))))]
-  "(TARGET_ZICOND_LIKE || TARGET_XTHEADCONDMOV) && can_create_pseudo_p ()"
+  "(TARGET_ZICOND || TARGET_XTHEADCONDMOV) && can_create_pseudo_p ()"
   "#"
   "&& 1"
   [(set (match_dup 4) (and:X (match_dup 2) (match_dup 3)))
@@ -495,7 +464,7 @@
 		    (match_operand:X 2 "sle<u>_operand"))
 	  (match_operand:GPR 3 "register_operand")
 	  (const_int 0)))]
-  "TARGET_ZICOND_LIKE && can_create_pseudo_p ()"
+  "TARGET_ZICOND && can_create_pseudo_p ()"
   [(set (match_dup 4) (any_le:X (match_dup 1) (match_dup 2)))
    (set (match_dup 0)
 	(if_then_else:GPR (ne:X (match_dup 4) (const_int 0))
@@ -512,7 +481,7 @@
 		    (match_operand:X 2 "sle<u>_operand"))
 	  (match_operand:GPR 3 "register_operand")
 	  (const_int 0)))]
-  "TARGET_ZICOND_LIKE && can_create_pseudo_p ()"
+  "TARGET_ZICOND && can_create_pseudo_p ()"
   [(set (match_dup 4) (<gt_to_le>:X (match_dup 1) (match_dup 2)))
    (set (match_dup 0)
 	(if_then_else:GPR (eq:X (match_dup 4) (const_int 0))
