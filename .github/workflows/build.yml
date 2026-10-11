@@ -34,4 +34,5 @@ jobs:
         run: |
           cd build/gcc
           make check-g++ RUNTESTFLAGS="dg.exp=reflect/*.C"
+          ! grep -E '^(FAIL|XPASS|UNRESOLVED|ERROR):' testsuite/g++/g++.sum
           
