@@ -1,3 +1,36 @@
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_genericize_r): Don't call warn_for_alloc_size
+	for CALL_FROM_NEW_OR_DELETE_P calls.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125536
+	* pt.cc (unify_array_domain): When adding 1 to parm_max or
+	arg_max, perform the addition in the type of those trees
+	rather than unconditionally in int type.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127109
+	* decl.cc (cp_finish_decomp): Add [dcl.struct.bind]/7 reference
+	to comment.  Use get_temp_regvar and pushdecl instead of
+	get_internal_target_expr and add_stmt.  Set DECL_DECOMP_BASE
+	to NON_LVALUE_EXPR around the temp regvar.
+	* cp-tree.h (DECL_DECOMP_BASE): Adjust macro comment.
+	* semantics.cc (maybe_convert_cond, switch_finish_cond): Check for
+	NON_LVALUE_EXPR rather than TARGET_EXPR and extract its operand
+	rather than TARGET_EXPR_SLOT.
+
 2026-10-03  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

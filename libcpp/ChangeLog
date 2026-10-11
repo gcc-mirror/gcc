@@ -1,3 +1,17 @@
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/121508
+	PR preprocessor/123339
+	* directives.cc (get_token_no_padding): Remove.
+	(glue_header_name): Use _cpp_get_token_no_padding instead of
+	get_token_no_padding.
+	(parse_include): Likewise.
+	(get__Pragma_string): Likewise.  Don't _cpp_backup_tokens on
+	CPP_EOF.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

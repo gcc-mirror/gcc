@@ -1,3 +1,108 @@
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/121508
+	PR preprocessor/123339
+	* c-c++-common/cpp/pr121508-1.c: New test.
+	* c-c++-common/cpp/pr121508-2.c: New test.
+	* c-c++-common/cpp/pr121508-3.c: New test.
+	* c-c++-common/cpp/pr121508-4.c: New test.
+	* c-c++-common/cpp/pr121508-5.c: New test.
+	* c-c++-common/cpp/pr123339.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Walloc-size-2.C: New test.
+
+2026-10-10  Yongqiang Tian  <yqtian668@gmail.com>
+
+	Backported from master:
+	2026-10-02  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127687
+	* gcc.dg/pr127687.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* gcc.dg/pr127492.c: Require int128 effective target and either
+	sync_int_128_runtime or libatomic_available.  Drop the long long
+	fallback, but define T only if it is not defined already.
+	* gcc.dg/pr127492-2.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127517
+	* gcc.dg/torture/bitint-109.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-23  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/125536
+	* g++.dg/template/unify14.C: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* gcc.dg/pr127492.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/bitint-142.c (main): Don't set z to ~0, instead memset
+	it to ~0.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/127383
+	* gcc.dg/torture/bitint-108.c: New test.
+	* gcc.dg/bitint-143.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127336
+	* gcc.dg/pr127336.c: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127109
+	* g++.dg/cpp26/decomp32.C: New test.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127149
+	* gcc.dg/bitint-142.c: New test.
+
 2026-10-09  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	Backported from master:
