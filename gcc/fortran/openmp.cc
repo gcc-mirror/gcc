@@ -11794,7 +11794,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		 "constant hint expression", &omp_clauses->hint->where);
     }
   if (omp_clauses->priority)
-    resolve_nonnegative_int_expr (omp_clauses->priority, "PRIORITY", false);
+    resolve_nonnegative_int_expr (omp_clauses->priority, "PRIORITY", true);
   if (omp_clauses->dist_chunk_size)
     {
       gfc_expr *expr = omp_clauses->dist_chunk_size;

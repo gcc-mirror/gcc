@@ -42,14 +42,13 @@ subroutine foo (x, a)
   !$omp end masked
 end
 
-subroutine foobar (d, f, fi, p, s, g, i1, i2, l, ll, nth, ntm, q, r, r2)
+subroutine foobar (d, f, fi, p, s, g, i1, i2, l, ll, nth, ntm, pp, q, r, r2)
   implicit none (type, external)
   logical :: i1, i2, fi
-  integer :: i, d, f, p, s, g, l, ll, nth, ntm, q, r, r2
+  integer :: i, d, f, p, s, g, l, ll, nth, ntm, pp, q, r, r2
   allocatable :: q
   integer, save :: t
   !$omp threadprivate (t)
-  integer, parameter :: pp = 3
 
   !$omp parallel masked &
   !$omp&  private (p) firstprivate (f) if (parallel: i2) default(shared) shared(s) reduction(+:r) &
