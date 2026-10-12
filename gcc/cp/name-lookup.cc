@@ -3669,7 +3669,7 @@ static void
 set_decl_context_in_fn (tree ctx, tree decl)
 {
   if (TREE_CODE (decl) == FUNCTION_DECL
-      || (VAR_P (decl) && DECL_EXTERNAL (decl)))
+      || (VAR_P (decl) && DECL_THIS_EXTERN (decl)))
     /* Make sure local externs are marked as such.  OMP UDRs really
        are nested functions.  */
     gcc_checking_assert (DECL_LOCAL_DECL_P (decl)
