@@ -1,3 +1,55 @@
+2026-10-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv.md ((x << C1) + C2 splitter): Do not
+	trigger for Zbkb when C1 is half the word size.
+
+2026-10-11  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/predicates.md (movcc_operand): Replace
+	TARGET_ZICOND_LIKE with TARGET_ZICOND.
+	* config/riscv/riscv.cc (riscv_rtx_costs): Likewise.
+	(riscv_expand_conditional_move): Likewise.
+	* config/riscv/riscv-ext-ventana.def: Remove.
+	* config/riscv/riscv-ext.def: Don't include riscv-ext_ventana.def.
+	* config/riscv/riscv-ext.opt: Regenerated.
+	* config/riscv/riscv-opts.h (TARGET_ZICOND_LIKE): Remove.
+	* config/riscv/riscv.md: Remove references to XVentanacondops.  Replace
+	TARGET_ZICOND_LIKE with TARGET_ZICOND.
+	* config/riscv/t-riscv (RISCV_EXT_DEFS): Remove riscv-ext-ventana.def.
+	* config/riscv/zicond.md: Remove references to XVentanaCondOps.
+	Replace TARGET_ZICOND_LIKE with TARGET_ZICOND throughout.  Simplify
+	where possible.
+	* doc/riscv-ext.texi: Regenerated.
+
+2026-10-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/vax/vax.h (CTZ_DEFINED_AT_ZERO): Use GET_MODE_UNIT_BITSIZE.
+
+2026-10-11  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h (CLZ_DEFINED_VALUE_AT_ZERO): Use
+	GET_MODE_UNIT_BITSIZE.
+
+2026-10-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv.md (aop<mode>3): New expander.
+
+2026-10-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/bitmanip.md: Add new 3->2 splitter when an outer PLUS
+	turns on some bits cleared by an inner AND.  Adjust the AND mask and
+	change the outer code to IOR.
+
+2026-10-11  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/iterators.md (oxp): New code iterator.
+	* config/riscv/crypto.md (pack patterns and splitters): Accept
+	oxp in matching RTL.  Fix whitespace goofs.  Generate the PLUS
+	forms when possible in splitters.
+	* config/riscv/riscv.cc (riscv_rtx_cost, case PLUS): Handle
+	PLUS form of pack instructions.
+	(riscv_move_integer): Trivial adjustment for crypto.md changes.
+
 2026-10-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_emit_move_sequence): Handle SFmode and DFmode

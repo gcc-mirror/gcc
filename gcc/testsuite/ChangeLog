@@ -1,3 +1,113 @@
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/coarray/team_stat_1.f90: New test.
+
+2026-10-11  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR middle-end/84877
+	* gcc.dg/pr84877.c: Remove 32-bit hppa*-*-* xfail.
+
+2026-10-11  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/cset-sext-ventana-rtl.c: Remove.
+	* gcc.target/riscv/cset-sext-ventana.c: Remove.
+	* gcc.target/riscv/movdibeq-ventana.c: Remove.
+	* gcc.target/riscv/movdibfeq-ventana.c: Remove.
+	* gcc.target/riscv/movdibfge-ventana.c: Remove.
+	* gcc.target/riscv/movdibfgt-ventana.c: Remove.
+	* gcc.target/riscv/movdibfle-ventana.c: Remove.
+	* gcc.target/riscv/movdibflt-ventana.c: Remove.
+	* gcc.target/riscv/movdibfne-ventana.c: Remove.
+	* gcc.target/riscv/movdibge-ventana.c: Remove.
+	* gcc.target/riscv/movdibgeu-ventana.c: Remove.
+	* gcc.target/riscv/movdibgt-ventana.c: Remove.
+	* gcc.target/riscv/movdibgtu-ventana.c: Remove.
+	* gcc.target/riscv/movdible-ventana.c: Remove.
+	* gcc.target/riscv/movdibleu-ventana.c: Remove.
+	* gcc.target/riscv/movdiblt-ventana.c: Remove.
+	* gcc.target/riscv/movdibltu-ventana.c: Remove.
+	* gcc.target/riscv/movdibne-ventana.c: Remove.
+	* gcc.target/riscv/movdieq-ventana.c: Remove.
+	* gcc.target/riscv/movdifeq-ventana.c: Remove.
+	* gcc.target/riscv/movdifge-ventana.c: Remove.
+	* gcc.target/riscv/movdifgt-ventana.c: Remove.
+	* gcc.target/riscv/movdifle-ventana.c: Remove.
+	* gcc.target/riscv/movdiflt-ventana.c: Remove.
+	* gcc.target/riscv/movdifne-ventana.c: Remove.
+	* gcc.target/riscv/movdige-ventana.c: Remove.
+	* gcc.target/riscv/movdigeu-ventana.c: Remove.
+	* gcc.target/riscv/movdigt-ventana.c: Remove.
+	* gcc.target/riscv/movdigtu-ventana.c: Remove.
+	* gcc.target/riscv/movdile-ventana.c: Remove.
+	* gcc.target/riscv/movdileu-ventana.c: Remove.
+	* gcc.target/riscv/movdilt-ventana.c: Remove.
+	* gcc.target/riscv/movdiltu-ventana.c: Remove.
+	* gcc.target/riscv/movdine-ventana.c: Remove.
+	* gcc.target/riscv/movsibeq-ventana.c: Remove.
+	* gcc.target/riscv/movsibfeq-ventana.c: Remove.
+	* gcc.target/riscv/movsibfge-ventana.c: Remove.
+	* gcc.target/riscv/movsibfgt-ventana.c: Remove.
+	* gcc.target/riscv/movsibfle-ventana.c: Remove.
+	* gcc.target/riscv/movsibflt-ventana.c: Remove.
+	* gcc.target/riscv/movsibfne-ventana.c: Remove.
+	* gcc.target/riscv/movsibge-ventana.c: Remove.
+	* gcc.target/riscv/movsibgeu-ventana.c: Remove.
+	* gcc.target/riscv/movsibgt-ventana.c: Remove.
+	* gcc.target/riscv/movsibgtu-ventana.c: Remove.
+	* gcc.target/riscv/movsible-ventana.c: Remove.
+	* gcc.target/riscv/movsibleu-ventana.c: Remove.
+	* gcc.target/riscv/movsiblt-ventana.c: Remove.
+	* gcc.target/riscv/movsibltu-ventana.c: Remove.
+	* gcc.target/riscv/movsibne-ventana.c: Remove.
+	* gcc.target/riscv/movsieq-ventana.c: Remove.
+	* gcc.target/riscv/movsifeq-ventana.c: Remove.
+	* gcc.target/riscv/movsifge-ventana.c: Remove.
+	* gcc.target/riscv/movsifgt-ventana.c: Remove.
+	* gcc.target/riscv/movsifle-ventana.c: Remove.
+	* gcc.target/riscv/movsiflt-ventana.c: Remove.
+	* gcc.target/riscv/movsifne-ventana.c: Remove.
+	* gcc.target/riscv/movsige-ventana.c: Remove.
+	* gcc.target/riscv/movsigeu-ventana.c: Remove.
+	* gcc.target/riscv/movsigt-ventana.c: Remove.
+	* gcc.target/riscv/movsigtu-ventana.c: Remove.
+	* gcc.target/riscv/movsile-ventana.c: Remove.
+	* gcc.target/riscv/movsileu-ventana.c: Remove.
+	* gcc.target/riscv/movsilt-ventana.c: Remove.
+	* gcc.target/riscv/movsiltu-ventana.c: Remove.
+	* gcc.target/riscv/movsine-ventana.c: Remove.
+	* gcc.target/riscv/predef-30.c: Remove.
+	* gcc.target/riscv/ventana-16122.c: Remove.
+	* gcc.target/riscv/xventanacondops-primitiveSemantics-rv32.c: Remove.
+	* gcc.target/riscv/xventanacondops-primitiveSemantics.c: Remove.
+	* gcc.target/riscv/xventanacondops-xor-01.c: Remove.
+	* gcc.target/riscv/pr116240.c: Change xventanacondops to zicond.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125762
+	* gfortran.dg/data_pointer_4.f90: New test.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125760
+	* gfortran.dg/select_type_52.f90: New test.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125724
+	* gfortran.dg/null_actual_8.f90: New test.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125721
+	* gfortran.dg/structure_constructor_20.f90: New test.
+	* gfortran.dg/structure_constructor_21.f90: New test.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125720
+	* gfortran.dg/structure_constructor_19.f90: New test.
+
 2026-10-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
 
 	* gcc.target/s390/clz-ctz-1.c: Adapt after zero tests are

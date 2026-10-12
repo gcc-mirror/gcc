@@ -1,3 +1,12 @@
+2026-10-11  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/127797
+	* a68-low-reals.cc (a68_real_pow): Fix selection of pow builtin.
+
+2026-10-11  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-lang.cc (a68_build_a68_type_nodes): Remove spurious assignment.
+
 2026-10-08  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-low-reals.cc (a68_real_entier): Fix for non 64-bit targets.

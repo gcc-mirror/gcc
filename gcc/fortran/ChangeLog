@@ -1,3 +1,42 @@
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* trans-stmt.cc (gfc_trans_sync_stat): Use gfc_build_addr_expr
+	to take the address of the STAT= variable.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125762
+	* resolve.cc (resolve_data): Call gfc_resolve_expr on each value
+	expression.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125760
+	* trans-stmt.cc (trans_associate_var): Use
+	gfc_get_class_from_gfc_expr when target_expr is not a
+	COMPONENT_REF.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125724
+	* trans-expr.cc (conv_null_actual): Handle intrinsic allocatable
+	and pointer dummies.
+	(gfc_conv_procedure_call): Use conv_null_actual for a NULL()
+	actual with a non-class, non-character allocatable dummy.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125721
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Handle a CLASS
+	pointer component with a non-class target.
+
+2026-10-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125720
+	* trans-expr.cc (gfc_trans_subcomponent_assign): Use
+	gfc_trans_string_copy for an explicit-length allocatable
+	character component.
+
 2026-10-05  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/127701
