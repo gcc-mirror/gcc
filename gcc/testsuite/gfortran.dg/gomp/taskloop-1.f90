@@ -7,13 +7,14 @@ module m
   !$omp declare target to(f, l, ll, r, r2)
 end module m
 
-subroutine foo(fi, p, pp, g, s, nta, nth, ntm, i1, i2, i3, q)
+subroutine foo(fi, p, g, s, nta, nth, ntm, i1, i2, i3, q)
   use m
   implicit none
-  integer, value :: p, pp, g, s, nta, nth, ntm
+  integer, value :: p, g, s, nta, nth, ntm
   logical, value :: fi, i1, i2, i3
   integer, pointer :: q(:)
   integer :: i
+  integer, parameter :: pp = 3
 
   !$omp taskgroup task_reduction(+:r2) !allocate (r2)
   !$omp taskloop simd &

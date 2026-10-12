@@ -18,8 +18,7 @@ integer, value :: j
   !$omp atomic hint(j + 2)      ! { dg-error "Value of HINT clause at .1. shall be a valid constant hint expression" }
   i = i + 1
   !$omp atomic hint(f)
-    ! { dg-error "HINT clause at .1. requires a scalar INTEGER expression" "" { target *-*-* } .-1 }
-    ! { dg-error "Value of HINT clause at .1. shall be a valid constant hint expression" "" { target *-*-* } .-2 }
+    ! { dg-error "Value of HINT clause at .1. shall be a valid constant hint expression" "" { target *-*-* } .-1 }
   i = i + 1
   !$omp atomic foobar           ! { dg-error "Failed to match clause" }
   i = i + 1

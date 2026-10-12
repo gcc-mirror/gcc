@@ -41,6 +41,10 @@ end do
 !$omp parallel master taskloop simd reduction(inscan, +: r)   ! { dg-error "'inscan' REDUCTION clause on construct other than DO, SIMD, DO SIMD, PARALLEL DO, PARALLEL DO SIMD" }
 do i = 1, 64                                 ! { dg-error "OMP SCAN between two structured block sequences" "" { target *-*-* } .-1 }
 end do
+
+!$omp parallel master taskloop reduction(+: r) priority(r) ! { dg-error "INTEGER expression of PRIORITY clause at .1. must be non-negtive and constant" }
+do i = 1, 64
+end do
 end
 
 

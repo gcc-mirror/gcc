@@ -11,7 +11,7 @@
 end
 subroutine bar (q)
   use iso_c_binding, only: c_ptr, c_loc, c_int
-  integer :: a, b, c, d(2:3,4:5), q(19:), h, k, m, n, o, p
+  integer :: a, b, c, d(2:3,4:5), q(19:), h, m, o, p
   integer(c_int), target :: e(64)
   type (c_ptr) :: f, g(64)
   logical :: l
@@ -80,9 +80,10 @@ contains
     c = 100
     h = 8
     m = 0
-    n = 64
     o = 16
     if (l) stop 6
+    block
+      integer, parameter :: n = 64
 !$omp target teams distribute parallel do simd if (.not.l) device(a) &
 !$omp & num_teams(b) dist_schedule(static, c) num_threads (h) &
 !$omp & reduction (+: m) safelen (n) schedule(static, o) &
@@ -91,6 +92,7 @@ contains
       m = m + 1
     end do
 !$omp end target teams distribute parallel do simd
+    end block
     if (m /= 64) stop 7
 !$omp end target data
   end subroutine foo

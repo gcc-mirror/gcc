@@ -4389,6 +4389,8 @@ static const mstring omp_declare_simd_clauses[] =
     minit ("UNIFORM", 3),
     minit ("LINEAR", 4),
     minit ("ALIGNED", 5),
+    minit ("SIMDLEN_TYP", 6),
+    minit ("SIMDLEN_DIV", 7),
     minit ("LINEAR_REF", 33),
     minit ("LINEAR_VAL", 34),
     minit ("LINEAR_UVAL", 35),
@@ -4435,12 +4437,26 @@ mio_omp_declare_simd_clauses (gfc_omp_clauses **clausesp)
 	  mio_symbol_ref (&n->sym);
 	  mio_expr (&n->expr);
 	}
+      if (clauses->simdlen_type.type != BT_UNKNOWN)
+	{
+	  gfc_typespec ts = {};
+	  ts.type = clauses->simdlen_type.type;
+	  ts.kind = clauses->simdlen_type.kind;
+	  mio_name (6, omp_declare_simd_clauses);
+	  mio_typespec (&ts);
+	  if (clauses->simdlen_divisor)
+	    {
+	      mio_name (7, omp_declare_simd_clauses);
+	      mio_expr (&clauses->simdlen_divisor);
+	    }
+	}
     }
   else
     {
       if (peek_atom () != ATOM_NAME)
 	return;
 
+      require_atom (ATOM_NAME);
       gfc_omp_namelist **ptrs[3] = { NULL, NULL, NULL };
       gfc_omp_clauses *clauses = *clausesp = gfc_get_omp_clauses ();
       ptrs[0] = &clauses->lists[OMP_LIST_UNIFORM];
@@ -4468,6 +4484,15 @@ mio_omp_declare_simd_clauses (gfc_omp_clauses **clausesp)
 	      if (t != 3)
 		mio_expr (&n->expr);
 	      break;
+	    case 6:
+	      {
+		gfc_typespec ts;
+		mio_typespec (&ts);
+		clauses->simdlen_type.type = ts.type;
+		clauses->simdlen_type.kind = ts.kind;
+		break;
+	      }
+	    case 7: mio_expr (&clauses->simdlen_divisor); break;
 	    case 33:
 	    case 34:
 	    case 35:
@@ -4517,7 +4542,6 @@ mio_omp_declare_simd (gfc_namespace *ns, gfc_omp_declare_simd **odsp)
 	  return;
 	}
 
-      require_atom (ATOM_NAME);
       *odsp = ods = gfc_get_omp_declare_simd ();
       ods->where = gfc_current_locus;
       ods->proc_name = ns->proc_name;

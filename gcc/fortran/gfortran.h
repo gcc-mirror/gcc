@@ -1716,6 +1716,13 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *chunk_size;
   struct gfc_expr *safelen_expr;
   struct gfc_expr *simdlen_expr;
+  struct
+    {
+      bt type;
+      int kind;
+    }
+  simdlen_type;
+  struct gfc_expr *simdlen_divisor;
   struct gfc_expr_list *num_teams_list;
   struct gfc_expr *device;
   struct gfc_expr_list *thread_limit_list;
