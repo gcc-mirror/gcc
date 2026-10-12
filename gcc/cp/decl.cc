@@ -9280,7 +9280,6 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	= c_omp_declare_simd_clauses_to_numbers (DECL_ARGUMENTS (decl),
 						 OMP_TS_PROPERTIES (simd));
       /* FIXME, adjusting simd args unimplemented.  */
-      return true;
     }
 
   tree chain = TREE_CHAIN (TREE_VALUE (attr));

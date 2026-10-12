@@ -42,7 +42,12 @@ void f() {
 
 // but the following three fail because of PR c++/127734:
 
-// { dg-final { scan-tree-dump-times "fvar0 \\(3\\);" 1 "gimple" { xfail c++ } } }
-// { dg-final { scan-tree-dump-times "fbase \\(4\\);" 1 "gimple" { target *-*-* } } }
+// { dg-final { scan-tree-dump-times "fvar0 \\(3\\);" 1 "gimple" } }
+// { dg-final { scan-tree-dump-times "fbase \\(4\\);" 1 "gimple" } }
 
-// { dg-final { scan-tree-dump "__attribute__\\(\\(omp declare variant base \\(fvar0 match construct = {simd \\(simdlen\\(4\\)\\)}\\), omp declare variant base \\(fvarInt0 match construct = {simd \\(simdlen\\(scaled\\(int\\):8\\)\\)}\\), omp declare variant base \\(fvarInt2 match construct = {simd \\(simdlen\\(scaled\\(int,2\\):8\\)\\)}\\)\\)\\)" "gimple" { xfail c++ } } }
+
+// Same but function-name order reversed:
+
+// { dg-final { scan-tree-dump "__attribute__\\(\\(omp declare variant base \\(fvar0 match construct = {simd \\(simdlen\\(4\\)\\)}\\), omp declare variant base \\(fvarInt0 match construct = {simd \\(simdlen\\(scaled\\(int\\):8\\)\\)}\\), omp declare variant base \\(fvarInt2 match construct = {simd \\(simdlen\\(scaled\\(int,2\\):8\\)\\)}\\)\\)\\)" "gimple" { target c } } }
+// { dg-final { scan-tree-dump "__attribute__\\(\\(omp declare variant base \\(fvarInt2 match construct = {simd \\(simdlen\\(scaled\\(int,2\\):8\\)\\)}\\), omp declare variant base \\(fvarInt0 match construct = {simd \\(simdlen\\(scaled\\(int\\):8\\)\\)}\\), omp declare variant base \\(fvar0 match construct = {simd \\(simdlen\\(4\\)\\)}\\)\\)\\)" "gimple" { target c++ } } }
+
