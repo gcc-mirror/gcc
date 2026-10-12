@@ -4147,38 +4147,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   return vect_epilogues ? epilog : NULL;
 }
 
-/* Function vect_create_cond_for_niters_checks.
-
-   Create a conditional expression that represents the run-time checks for
-   loop's niter.  The loop is guaranteed to terminate if the run-time
-   checks hold.
-
-   Input:
-   COND_EXPR  - input conditional expression.  New conditions will be chained
-		with logical AND operation.  If it is NULL, then the function
-		is used to return the number of alias checks.
-   LOOP_VINFO - field LOOP_VINFO_MAY_ALIAS_STMTS contains the list of ddrs
-		to be checked.
-
-   Output:
-   COND_EXPR - conditional expression.
-
-   The returned COND_EXPR is the conditional expression to be used in the
-   if statement that controls which version of the loop gets executed at
-   runtime.  */
-
-static void
-vect_create_cond_for_niters_checks (loop_vec_info loop_vinfo, tree *cond_expr)
-{
-  tree part_cond_expr = LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo);
-
-  if (*cond_expr)
-    *cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-			      *cond_expr, part_cond_expr);
-  else
-    *cond_expr = part_cond_expr;
-}
-
 /* Set *COND_EXPR to a tree that is true when both the original *COND_EXPR
    and PART_COND_EXPR are true.  Treat a null *COND_EXPR as "true".  */
 
@@ -4534,7 +4502,6 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   edge new_exit_e, e;
   gphi *orig_phi, *new_phi;
   tree cond_expr = NULL_TREE;
-  gimple_seq cond_expr_stmt_list = NULL;
   tree arg;
   profile_probability prob = profile_probability::likely ();
   gimple_seq gimplify_stmt_list = NULL;
@@ -4550,11 +4517,27 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   unsigned th = LOOP_VINFO_COST_MODEL_THRESHOLD (loop_vinfo);
   bool uncounted_p = LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo);
 
-  if (!uncounted_p && vect_apply_runtime_profitability_check_p (loop_vinfo)
+  /* Start with the niter assumptions so they are split out together
+     with the cost model check, short-circuiting all other checks
+     since niter information is not valid when the assumptions do not
+     hold.  */
+  if (version_niter)
+    cond_expr = LOOP_VINFO_NITERS_ASSUMPTIONS (loop_vinfo);
+
+  if (!uncounted_p
+      && vect_apply_runtime_profitability_check_p (loop_vinfo)
       && !ordered_p (th, versioning_threshold))
-    cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
-			     build_int_cst (TREE_TYPE (scalar_loop_iters),
-					    th - 1));
+    {
+      tree expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
+			       build_int_cst (TREE_TYPE (scalar_loop_iters),
+					      th - 1));
+      if (cond_expr)
+	cond_expr = fold_build2 (BIT_AND_EXPR, boolean_type_node,
+				 expr, cond_expr);
+      else
+	cond_expr = expr;
+    }
+
   if (!uncounted_p && maybe_ne (versioning_threshold, 0U))
     {
       tree expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
@@ -4568,6 +4551,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
 
   tree cost_name = NULL_TREE;
+  gimple_seq cond_expr_stmt_list = NULL;
   profile_probability prob2 = profile_probability::always ();
   if (cond_expr
       && EXPR_P (cond_expr)
@@ -4582,10 +4566,15 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       /* Split prob () into two so that the overall probability of passing
 	 both the cost-model and versioning checks is the orig prob.  */
       prob2 = prob = prob.sqrt ();
+      /* Rewrite to defined if there was an niter versioning condition.
+	 ???  We fail to be more selective with respect to niter may_be_zero
+	 and assumptions.  */
+      if (version_niter)
+	for (auto gsi = gsi_start (cond_expr_stmt_list); !gsi_end_p (gsi);
+	     gsi_next (&gsi))
+	  if (gimple_needing_rewrite_undefined (gsi_stmt (gsi)))
+	    rewrite_to_defined_unconditional (&gsi);
     }
-
-  if (version_niter)
-    vect_create_cond_for_niters_checks (loop_vinfo, &cond_expr);
 
   if (cond_expr)
     {
