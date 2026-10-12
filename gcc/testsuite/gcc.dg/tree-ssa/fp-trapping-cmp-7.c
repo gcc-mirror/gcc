@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -ftrapping-math -fdump-tree-ifcombine-details" } */
+/* { dg-options "-O1 -ftrapping-math -fdump-tree-ifcombine-details --param logical-op-non-short-circuit=1" } */
 
 int
 f (double a, double b)
