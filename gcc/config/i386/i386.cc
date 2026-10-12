@@ -14545,7 +14545,7 @@ ix86_print_operand (FILE *file, rtx x, int code)
 	    case LTGT:
 	      if (TARGET_AVX)
 		{
-		  fputs ("neq_oq", file);
+		  fputs ("neq_os", file);
 		  break;
 		}
 	     /* FALLTHRU */

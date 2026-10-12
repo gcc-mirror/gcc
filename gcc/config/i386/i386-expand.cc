@@ -4818,7 +4818,7 @@ ix86_fp_cmp_code_to_pcmp_immediate (enum rtx_code code)
     case UNEQ:
       return 0x08;
     case LTGT:
-      return 0x0c;
+      return 0x1c;
     case ORDERED:
       return 0x07;
     case UNORDERED:
@@ -4886,11 +4886,11 @@ ix86_expand_fp_vec_cmp (rtx operands[])
       switch (GET_CODE (operands[1]))
 	{
 	case LTGT:
-	  temp = ix86_expand_sse_cmp (operands[0], ORDERED, operands[2],
+	  temp = ix86_expand_sse_cmp (operands[0], LT, operands[2],
 				      operands[3], NULL, NULL);
-	  cmp = ix86_expand_sse_cmp (operands[0], NE, operands[2],
-				     operands[3], NULL, NULL);
-	  code = AND;
+	  cmp = ix86_expand_sse_cmp (operands[0], LT, operands[3],
+				     operands[2], NULL, NULL);
+	  code = IOR;
 	  break;
 	case UNEQ:
 	  temp = ix86_expand_sse_cmp (operands[0], UNORDERED, operands[2],
