@@ -1375,7 +1375,7 @@ vect_set_loop_condition_partial_vectors_avx512 (class loop *loop,
 	}
        else
 	assign = gimple_build_assign (final_iv, orig_niters);
-      gsi_insert_on_edge_immediate (exit_edge, assign);
+       gsi_insert_on_edge_immediate (LOOP_VINFO_MAIN_EXIT (loop_vinfo), assign);
     }
 
   return cond_stmt;
@@ -1529,7 +1529,8 @@ vect_set_loop_condition_normal (loop_vec_info loop_vinfo, edge exit_edge,
 	    }
 	  else
 	    assign = gimple_build_assign (final_iv, MINUS_EXPR, phi_dest, init);
-	  gimple_stmt_iterator gsi = gsi_after_labels (exit_edge->dest);
+	  gimple_stmt_iterator gsi
+	    = gsi_after_labels (LOOP_VINFO_MAIN_EXIT (loop_vinfo)->dest);
 	  gsi_insert_before (&gsi, assign, GSI_SAME_STMT);
 	}
     }
