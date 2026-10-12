@@ -1,3 +1,14 @@
+2026-10-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127553
+	* config/riscv/riscv-vector-builtins.cc (validate_instance_type_required_extensions):
+	Add location param for logging.
+	(expand_builtin): Pass location.
+	(check_builtin_call): Likewise.
+
 2026-10-10  Yongqiang Tian  <yqtian668@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,41 @@
+2026-10-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127553
+	* gcc.target/riscv/rvv/base/bug-9.c: Adjust test expectation.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-10.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-3.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-4.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-5.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-6.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-7.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-8.c: Ditto.
+	* gcc.target/riscv/rvv/base/intrinsic_required_ext-9.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114988-1.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr114988-2.c: Ditto.
+	* gcc.target/riscv/rvv/base/pr120436.c: Ditto.
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-17.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-18.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-19.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-20.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-21.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-22.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-23.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-24.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-25.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-26.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-27.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-28.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-29.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-3.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-7.c:
+	* gcc.target/riscv/rvv/base/target_attribute_v_with_intrinsic-8.c:
+	* gcc.target/riscv/pr127553.c: New test.
+
 2026-10-10  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
