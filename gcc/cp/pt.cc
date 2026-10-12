@@ -3377,6 +3377,9 @@ check_explicit_specialization (tree declarator,
 	  if (tsk == tsk_template && !was_template_id)
 	    {
 	      tree result = DECL_TEMPLATE_RESULT (tmpl);
+	      if (DECL_TEMPLATE_SPECIALIZATION (tmpl)
+		  && redefinable_import_p (tmpl))
+		return tmpl;
 	      SET_DECL_TEMPLATE_SPECIALIZATION (tmpl);
 	      DECL_INITIAL (result) = NULL_TREE;
 	      if (have_def)
