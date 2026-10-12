@@ -11209,10 +11209,14 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 						  gfc_rank_cst[i],
 						  size);
 		  size = gfc_evaluate_now (size, &fnblock);
+		  tmp = fold_build2_loc (input_location,
+					 MULT_EXPR,
+					 gfc_array_index_type,
+					 lower, size);
 		  offset = fold_build2_loc (input_location,
 					    MINUS_EXPR,
 					    gfc_array_index_type,
-					    offset, size);
+					    offset, tmp);
 		  offset = gfc_evaluate_now (offset, &fnblock);
 		  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 					 gfc_array_index_type,
