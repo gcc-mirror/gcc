@@ -2104,6 +2104,7 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 
   tree iv_2 = gimple_cond_lhs (cond_stmt);
   gimple *iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+  gimple *test_phi = NULL;
 
   /* If the test comes before the iv modification, then these will actually be
      iv_1 and a phi node.  */
@@ -2115,6 +2116,7 @@ number_of_iterations_popcount (loop_p loop, edge exit,
 	  == SSA_NAME))
     {
       /* iv_2 is actually one of the inputs to the phi.  */
+      test_phi = iv_2_stmt;
       iv_2 = gimple_phi_arg_def (iv_2_stmt, loop_latch_edge (loop)->dest_idx);
       iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
       modify_before_test = false;
@@ -2138,11 +2140,13 @@ number_of_iterations_popcount (loop_p loop, edge exit,
   else
     return false;
 
-  /* Check the recurrence.  */
+  /* Check the recurrence.  A test before the modification must test the
+     PHI of the recurrence.  */
   gimple *phi = SSA_NAME_DEF_STMT (iv_1);
   if (gimple_code (phi) != GIMPLE_PHI
       || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
-      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
+      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx))
+      || (test_phi && phi != test_phi))
     return false;
 
   /* We found a match.  */
@@ -2444,6 +2448,7 @@ number_of_iterations_cltz (loop_p loop, edge exit,
     }
 
   gimple *iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+  gimple *test_phi = NULL;
 
   /* If the test comes before the iv modification, then these will actually be
      iv_1 and a phi node.  */
@@ -2455,6 +2460,7 @@ number_of_iterations_cltz (loop_p loop, edge exit,
 	  == SSA_NAME))
     {
       /* iv_2 is actually one of the inputs to the phi.  */
+      test_phi = iv_2_stmt;
       iv_2 = gimple_phi_arg_def (iv_2_stmt, loop_latch_edge (loop)->dest_idx);
       iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
       modify_before_test = false;
@@ -2471,11 +2477,13 @@ number_of_iterations_cltz (loop_p loop, edge exit,
 
   tree iv_1 = gimple_assign_rhs1 (iv_2_stmt);
 
-  /* Check the recurrence.  */
+  /* Check the recurrence.  A test before the modification must test the
+     PHI of the recurrence.  */
   gimple *phi = SSA_NAME_DEF_STMT (iv_1);
   if (gimple_code (phi) != GIMPLE_PHI
       || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
-      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
+      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx))
+      || (test_phi && phi != test_phi))
     return false;
 
   /* We found a match.  */
@@ -2616,6 +2624,7 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
 
   tree iv_2 = gimple_cond_lhs (cond_stmt);
   gimple *iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
+  gimple *test_phi = NULL;
 
   /* If the test comes before the iv modification, then these will actually be
      iv_1 and a phi node.  */
@@ -2627,6 +2636,7 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
 	  == SSA_NAME))
     {
       /* iv_2 is actually one of the inputs to the phi.  */
+      test_phi = iv_2_stmt;
       iv_2 = gimple_phi_arg_def (iv_2_stmt, loop_latch_edge (loop)->dest_idx);
       iv_2_stmt = SSA_NAME_DEF_STMT (iv_2);
       modify_before_test = false;
@@ -2643,11 +2653,13 @@ number_of_iterations_cltz_complement (loop_p loop, edge exit,
 
   tree iv_1 = gimple_assign_rhs1 (iv_2_stmt);
 
-  /* Check the recurrence.  */
+  /* Check the recurrence.  A test before the modification must test the
+     PHI of the recurrence.  */
   gimple *phi = SSA_NAME_DEF_STMT (iv_1);
   if (gimple_code (phi) != GIMPLE_PHI
       || (gimple_bb (phi) != loop_latch_edge (loop)->dest)
-      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx)))
+      || (iv_2 != gimple_phi_arg_def (phi, loop_latch_edge (loop)->dest_idx))
+      || (test_phi && phi != test_phi))
     return false;
 
   /* We found a match.  */
