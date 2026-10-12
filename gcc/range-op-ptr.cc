@@ -469,6 +469,7 @@ class operator_pointer_diff : public range_operator
   using range_operator::fold_range;
   using range_operator::update_bitmask;
   using range_operator::op1_op2_relation_effect;
+  using range_operator::op1_op2_relation;
   virtual bool fold_range (irange &r, tree type,
 			   const prange &op1,
 			   const prange &op2,
@@ -478,6 +479,9 @@ class operator_pointer_diff : public range_operator
 					const prange &op1_range,
 					const prange &op2_range,
 					relation_kind rel) const final override;
+  virtual relation_kind op1_op2_relation (const irange &lhs,
+					  const prange &rhs1,
+					  const prange &rhs2) const final override;
   void update_bitmask (irange &r,
 		       const prange &lh, const prange &rh) const final override
   { update_known_bitmask (r, POINTER_DIFF_EXPR, lh, rh); }
@@ -516,6 +520,40 @@ operator_pointer_diff::op1_op2_relation_effect (irange &lhs_range, tree type,
     return false;
 
   return minus_op1_op2_relation_effect (lhs_range, type, op1, op2, rel);
+}
+
+
+// Check if the LHS range indicates a relation between OP1 and OP2.
+// OP1 - OP2 == 0 implies OP1 == OP2 even with wrapping arithmetic.
+// For signed types, when both OP1 and OP2 are both positive, infer
+// a relationship if there were it is overflow free.
+
+relation_kind
+operator_pointer_diff::op1_op2_relation (const irange &lhs, const prange &rhs1,
+					 const prange &) const
+{
+  if (lhs.undefined_p ())
+    return VREL_UNDEFINED;
+
+  if (lhs.zero_p ())
+    return VREL_EQ;
+
+  bool contains_z = lhs.contains_zero_p ();
+  // When a - b does not overflow and signed,
+  // we can figure out the relationship between
+  // a and b if the result is non-negative or non-positive.
+  if (TYPE_OVERFLOW_UNDEFINED (rhs1.type ()))
+    {
+      if (lhs.nonnegative_p ())
+	return contains_z ? VREL_GE : VREL_GT;
+      if (lhs.nonpositive_p ())
+	return contains_z ? VREL_LE : VREL_LT;
+    }
+
+  if (!contains_z)
+    return VREL_NE;
+
+  return VREL_VARYING;
 }
 
 bool
