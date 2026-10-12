@@ -11,7 +11,7 @@ dnl See docs/html/17_intro/configury.html#enable for documentation.
 dnl
 AC_DEFUN([GCC_ENABLE],[dnl
 m4_define([_g_switch],[--enable-$1])dnl
-m4_define([_g_help],[AS_HELP_STRING(_g_switch$3,[$4 @<:@default=$2@:>@])])dnl
+m4_define([_g_help],[AS_HELP_STRING([_g_switch$3],[$4 @<:@default=$2@:>@])])dnl
  AC_ARG_ENABLE($1,_g_help,
   m4_bmatch([$5],
    [^permit ],
