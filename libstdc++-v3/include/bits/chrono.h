@@ -331,7 +331,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline constexpr bool treat_as_floating_point_v<long double> = true;
 #endif // C++17
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_chrono_cxx20 // C++ >= 20
 #if __cpp_lib_concepts
     template<typename _Tp>
       inline constexpr bool is_clock_v = false;
@@ -376,6 +376,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { };
 #endif // C++20
 
+    // This should use __glibcxx_chrono >= 201611L but that implies HOSTED
+    // and we want these functions to be freestanding.
 #if __cplusplus >= 201703L // C++ >= 17
     /** Convert a `duration` to type `ToDur` and round down.
      *
@@ -532,7 +534,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // Duration only allows positive periods so we don't need to
 	  // handle negative values here (unlike __static_gcd and std::gcd).
-#if __cplusplus >= 201402L
+#if __cpp_constexpr >= 201304L // C++ >= 14
 	  do
 	    {
 	      intmax_t __rem = __m % __n;
@@ -836,7 +838,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __ct(__lhs).count() < __ct(__rhs).count();
       }
 
-#if __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison // C++ >= 20
     template<typename _Rep1, typename _Period1,
 	     typename _Rep2, typename _Period2>
       requires three_way_comparable<common_type_t<_Rep1, _Rep2>>
@@ -910,7 +912,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /// hours
     using hours		= duration<_GLIBCXX_CHRONO_INT64_T, ratio<3600>>;
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_chrono_cxx20 // C++ >= 20
     /// days
     using days		= duration<_GLIBCXX_CHRONO_INT64_T, ratio<86400>>;
 
@@ -957,7 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	time_since_epoch() const
 	{ return __d; }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_chrono_cxx20 // C++ >= 20
 	constexpr time_point&
 	operator++()
 	{
@@ -1030,7 +1032,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __time_point(duration_cast<_ToDur>(__t.time_since_epoch()));
       }
 
-#if __cplusplus > 201402L
+    // This should use __glibcxx_chrono >= 201611L but that implies HOSTED
+    // and we want these functions to be freestanding.
+#if __cplusplus >= 201703L // C++ >= 17
     /** Convert a `time_point` to type `ToDur` and round down.
      *
      * The result is the same time point as measured by the same clock, but
@@ -1162,7 +1166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 const time_point<_Clock, _Dur2>& __rhs)
       { return __lhs.time_since_epoch() == __rhs.time_since_epoch(); }
 
-#if __cpp_lib_three_way_comparison
+#if __cpp_lib_three_way_comparison // C++ >= 20
     template<typename _Clock, typename _Dur1,
 	     three_way_comparable_with<_Dur1> _Dur2>
       constexpr auto
@@ -1299,7 +1303,7 @@ _GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
 
 _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
-#if __cplusplus >= 202002L
+#ifdef __glibcxx_chrono_cxx20 // C++ >= 20
     /// @addtogroup chrono
     /// @{
     template<typename _Duration>
@@ -1321,7 +1325,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     template<> inline constexpr bool is_clock_v<file_clock> = true;
     /// @}
 #endif // C++20
-#elif __cplusplus >= 202002L
+#elif defined __glibcxx_chrono_cxx20 // C++ >= 20
     // Define a fake clock like chrono::local_t so that sys_time etc.
     // can be used for freestanding.
     struct __sys_t;
