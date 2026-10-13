@@ -854,8 +854,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	      pp_right_bracket (pp);
 	    }
 	  pp_right_paren (pp);
-	  if (OMP_CLAUSE_MESSAGE_SEVERITY_WARN (clause))
-	    pp_space (pp);
+	  pp_space (pp);
 	}
       if (OMP_CLAUSE_MESSAGE_SEVERITY_WARN (clause))
 	pp_string (pp, "severity(warning)");

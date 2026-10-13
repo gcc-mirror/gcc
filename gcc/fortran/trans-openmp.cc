@@ -8589,8 +8589,6 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->device_type;
 	  clausesa[GFC_OMP_SPLIT_TARGET].message
 	    = code->ext.omp_clauses->message;
-	  clausesa[GFC_OMP_SPLIT_TARGET].severity
-	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_TEAMS)
 	{
@@ -8614,8 +8612,6 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Message is used on target, teams, and parallel.  */
 	  clausesa[GFC_OMP_SPLIT_TEAMS].message
 	    = code->ext.omp_clauses->message;
-	  clausesa[GFC_OMP_SPLIT_TEAMS].severity
-	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_DISTRIBUTE)
 	{
