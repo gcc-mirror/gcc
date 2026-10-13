@@ -32,10 +32,14 @@ struct slow_clock
   using time_point = std::chrono::time_point<slow_clock, duration>;
   static constexpr bool is_steady = false;
 
-  static time_point now()
-  {
-    auto real = std::chrono::system_clock::now();
-    return time_point{real.time_since_epoch() / 3};
-  }
+  static time_point now();
 };
+
+#if _GLIBCXX_HOSTED
+inline slow_clock::time_point slow_clock::now()
+{
+  auto real = std::chrono::system_clock::now();
+  return time_point{real.time_since_epoch() / 3};
+}
+#endif
 }

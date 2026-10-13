@@ -22,6 +22,7 @@
 
 namespace chrono = std::chrono;
 
+#if __cpp_lib_chrono >= 201803L
 static_assert( chrono::is_clock<chrono::system_clock>::value );
 static_assert( chrono::is_clock_v<chrono::system_clock> );
 
@@ -48,6 +49,7 @@ static_assert( chrono::is_clock_v<Clock<chrono::steady_clock>> );
 
 static_assert(chrono::is_clock<Clock<chrono::file_clock>>::value);
 static_assert(chrono::is_clock_v<Clock<chrono::file_clock>>);
+#endif
 
 static_assert( chrono::is_clock<__gnu_test::slow_clock>::value );
 static_assert( chrono::is_clock_v<__gnu_test::slow_clock> );

@@ -1,4 +1,5 @@
 // { dg-do run { target c++20 } }
+// { dg-require-effective-target hosted }
 
 #include <chrono>
 #include <testsuite_hooks.h>

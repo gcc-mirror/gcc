@@ -54,6 +54,7 @@
 # include <bit> // __countr_zero
 #endif
 #ifdef __glibcxx_chrono_cxx20
+# include <string_view>
 # include <bits/stl_algo.h>     // upper_bound
 # include <bits/range_access.h> // begin/end for arrays
 #endif
@@ -96,7 +97,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using local_seconds = local_time<seconds>;
     using local_days = local_time<days>;
 
-#if _GLIBCXX_HOSTED
     class utc_clock;
     class tai_clock;
     class gps_clock;
@@ -153,10 +153,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using time_point                = chrono::time_point<utc_clock>;
       static constexpr bool is_steady = false;
 
+#if _GLIBCXX_HOSTED
       [[nodiscard]]
       static time_point
       now()
       { return from_sys(system_clock::now()); }
+#else
+      static time_point now() = delete;
+#endif
 
       template<typename _Duration>
 	[[nodiscard]]
@@ -192,9 +196,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using time_point                = chrono::time_point<tai_clock>;
       static constexpr bool is_steady = false;
 
+#if _GLIBCXX_HOSTED
       [[nodiscard]]
       static time_point
       now();  // in src/c++20/clock.cc
+#else
+      static time_point now() = delete;
+#endif
 
       template<typename _Duration>
 	[[nodiscard]]
@@ -230,9 +238,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using time_point                = chrono::time_point<gps_clock>;
       static constexpr bool is_steady = false;
 
+#if _GLIBCXX_HOSTED
       [[nodiscard]]
       static time_point
       now();  // in src/c++20/clock.cc
+#else
+      static time_point now() = delete;
+#endif
 
       template<typename _Duration>
 	[[nodiscard]]
@@ -252,7 +264,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return gps_time<_CDur>{__t.time_since_epoch()} - 315964809s;
 	}
     };
-#endif // _GLIBCXX_HOSTED
 
     template<typename _DestClock, typename _SourceClock>
       struct clock_time_conversion
@@ -269,7 +280,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { return __t; }
       };
 
-#if _GLIBCXX_HOSTED
     template<>
       struct clock_time_conversion<system_clock, system_clock>
       {
@@ -376,7 +386,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return _DestClock::from_utc(__t);
 	  }
       };
-#endif // _GLIBCXX_HOSTED
 
     /// @cond undocumented
     namespace __detail
@@ -387,7 +396,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    clock_time_conversion<_DestClock, _SourceClock>{}(__t);
 	  };
 
-#if _GLIBCXX_HOSTED
       template<typename _DestClock, typename _SourceClock, typename _Duration>
        concept __clock_convs_sys
 	  = requires (const time_point<_SourceClock, _Duration>& __t) {
@@ -417,7 +425,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      clock_time_conversion<system_clock, utc_clock>{}(
 		clock_time_conversion<utc_clock, _SourceClock>{}(__t)));
 	  };
-#endif // _GLIBCXX_HOSTED
     } // namespace __detail
     /// @endcond
 
@@ -427,12 +434,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       inline auto
       clock_cast(const time_point<_SourceClock, _Duration>& __t)
       requires __detail::__clock_convs<_DestClock, _SourceClock, _Duration>
-#if _GLIBCXX_HOSTED
 	|| __detail::__clock_convs_sys<_DestClock, _SourceClock, _Duration>
 	|| __detail::__clock_convs_utc<_DestClock, _SourceClock, _Duration>
 	|| __detail::__clock_convs_sys_utc<_DestClock, _SourceClock, _Duration>
 	|| __detail::__clock_convs_utc_sys<_DestClock, _SourceClock, _Duration>
-#endif // _GLIBCXX_HOSTED
       {
        constexpr bool __direct
 	 = __detail::__clock_convs<_DestClock, _SourceClock, _Duration>;
@@ -440,7 +445,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	 {
 	   return clock_time_conversion<_DestClock, _SourceClock>{}(__t);
 	 }
-#if _GLIBCXX_HOSTED
        else
 	 {
 	   constexpr bool __convert_via_sys_clock
@@ -491,7 +495,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 }
 	     }
 	 }
-#endif // _GLIBCXX_HOSTED
       }
 
     // CALENDRICAL TYPES
@@ -2528,10 +2531,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     }
 
-#if _GLIBCXX_HOSTED
-#if __cpp_lib_chrono >= 201803L
     // C++20 [time.zones] Time zones
 
+    template<class _Tp> struct zoned_traits { };
+
+    enum class choose { earliest, latest };
+
+#if __cpp_lib_chrono >= 201803L // C++ >= 20 && HOSTED && USE_CXX11_ABI
     struct tzdb;
 
     struct sys_info
@@ -2621,8 +2627,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #endif
       }
     /// @endcond
-
-    enum class choose { earliest, latest };
 
     class time_zone
     {
@@ -2947,8 +2951,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       seconds _M_s; // == date().time_since_epoch() * value().count()
     };
 
-    template<class _Tp> struct zoned_traits { };
-
     template<>
       struct zoned_traits<const time_zone*>
       {
@@ -2987,6 +2989,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     string remote_version();
 
     template<typename _Duration, typename _TimeZonePtr = const time_zone*>
+      class zoned_time;
+#endif // __cpp_lib_chrono >= 201803L
+
+    template<typename _Duration, typename _TimeZonePtr>
       class zoned_time
       {
 	static_assert(__is_duration_v<_Duration>);
@@ -3141,10 +3147,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	get_sys_time() const
 	{ return _M_tp; }
 
+#if __cpp_lib_chrono >= 201803L // C++ >= 20 && HOSTED && USE_CXX11_ABI
 	[[nodiscard]]
 	sys_info
 	get_info() const
 	{ return _M_zone->get_info(_M_tp); }
+#endif
 
 	[[nodiscard]] friend bool
 	operator==(const zoned_time&, const zoned_time&) = default;
@@ -3157,18 +3165,37 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  friend class zoned_time;
       };
 
+#if __cpp_lib_chrono >= 201803L // C++ >= 20 && HOSTED && USE_CXX11_ABI
+    using zoned_seconds = zoned_time<seconds>;
+
     zoned_time() -> zoned_time<seconds>;
 
     template<typename _Duration>
     zoned_time(sys_time<_Duration>)
       -> zoned_time<common_type_t<_Duration, seconds>>;
+#endif // __cpp_lib_chrono >= 201803L
 
   /// @cond undocumented
+#if __cpp_lib_chrono >= 201803L // C++ >= 20 && HOSTED && USE_CXX11_ABI
   template<typename _TimeZonePtrOrName>
     using __time_zone_representation
       = __conditional_t<is_convertible_v<_TimeZonePtrOrName, string_view>,
 			const time_zone*,
 			remove_cvref_t<_TimeZonePtrOrName>>;
+#else
+  template<typename _TimeZonePtrOrName>
+    struct __time_zone_representation_struct
+    {
+       static_assert(!is_convertible_v<_TimeZonePtrOrName, string_view>,
+		     "std::chrono::time_zone is not defined for freestanding,"
+		     " a custom time zone pointer must be provided");
+       using type = remove_cvref_t<_TimeZonePtrOrName>;
+    };
+
+  template<typename _TimeZonePtrOrName>
+    using __time_zone_representation
+      = typename __time_zone_representation_struct<_TimeZonePtrOrName>::type;
+#endif // __cpp_lib_chrono >= 201803L
   /// @endcond
 
   template<typename _TimeZonePtrOrName>
@@ -3202,9 +3229,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __x.get_time_zone() == __y.get_time_zone()
 	       && __x.get_sys_time() == __y.get_sys_time();
     }
-
-    using zoned_seconds = zoned_time<seconds>;
-#endif // __cpp_lib_chrono >= 201803L
 
 namespace __detail
 {
@@ -3318,7 +3342,6 @@ namespace __detail
 	const auto __li = __detail::__get_leap_second_info(__s, false);
 	return utc_time<_CDur>{__t.time_since_epoch()} + __li.elapsed;
       }
-#endif // _GLIBCXX_HOSTED
 
     /// @} group chrono
 #endif // C++20
@@ -3585,8 +3608,6 @@ namespace __detail
       }
     };
 
-#if _GLIBCXX_HOSTED
-#if __cpp_lib_chrono >= 201803L
   // zoned_time
   template<typename _Duration, typename _TimeZonePtr>
     requires __is_hash_enabled_for<
@@ -3614,9 +3635,11 @@ namespace __detail
 
 	const auto __izone = [&] {
 	  const _TimeZonePtr __tz = __val.get_time_zone();
+#if __cpp_lib_chrono >= 201803L // C++ >= 20 && HOSTED && USE_CXX11_ABI
 	  if constexpr (is_same_v<_TimeZonePtr, const chrono::time_zone*>)
 	    return reinterpret_cast<uintptr_t>(__tz);
 	  else
+#endif
 	    return hash<_TimeZonePtr>{}(__tz);
 	}();
 
@@ -3631,6 +3654,7 @@ namespace __detail
 	     __is_fast_hash<hash<_TimeZonePtr>>>
     {};
 
+#if __cpp_lib_chrono >= 201803L
   // leap_second
   template<>
     struct hash<chrono::leap_second>
@@ -3644,7 +3668,6 @@ namespace __detail
       }
     };
 #endif // __cpp_lib_chrono >= 201803L
-#endif // _GLIBCXX_HOSTED
 #endif // __glibcxx_chrono_cxx20 >= 202306
 
 #ifdef __glibcxx_chrono_cxx20

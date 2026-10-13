@@ -28,12 +28,12 @@ main()
 {
   using namespace std::chrono;
 
-  system_clock::time_point t1 = system_clock::now();
-  bool is_steady = system_clock::is_steady;
-  is_steady = is_steady; // suppress unused warning
+  [[maybe_unused]] system_clock::time_point t1;
+#if __STDC_HOSTED__
+  t1 = system_clock::now();
   std::time_t t2 = system_clock::to_time_t(t1);
   system_clock::time_point t3 = system_clock::from_time_t(t2);
   t3 = t3; // suppress unused warning
-  
-  return 0;
+#endif
+  [[maybe_unused]] bool is_steady = system_clock::is_steady;
 }

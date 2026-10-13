@@ -1,6 +1,7 @@
 // { dg-do run { target c++23 } }
 // { dg-options "-fexec-charset=UTF-8" }
 // { dg-timeout-factor 2 }
+// { dg-require-effective-target hosted }
 
 #include <algorithm>
 #include <chrono>

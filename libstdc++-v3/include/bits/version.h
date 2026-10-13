@@ -713,6 +713,23 @@
 #endif /* !defined(__cpp_lib_chrono_cxx20) */
 #undef __glibcxx_want_chrono_cxx20
 
+#if !defined(__cpp_lib_freestanding_chrono)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_freestanding_chrono 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_freestanding_chrono)
+#  endif
+# elif (__cplusplus >= 202002L)
+#  define __glibcxx_freestanding_chrono 201907L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_freestanding_chrono)
+#  endif
+# elif (__cplusplus >= 201703L)
+#  define __glibcxx_freestanding_chrono 201611L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_freestanding_chrono)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_freestanding_chrono) */
+#undef __glibcxx_want_freestanding_chrono
+
 #if !defined(__cpp_lib_execution)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
 #  define __glibcxx_execution 201902L

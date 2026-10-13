@@ -36,6 +36,7 @@ test02()
 void
 test03()
 {
+#if __STDC_HOSTED__
   using namespace std::chrono;
 
   tai_time<tai_clock::duration> tai1 = tai_clock::now();
@@ -48,6 +49,7 @@ test03()
 
   tai_seconds s = time_point_cast<seconds>(tai1);
   VERIFY( tai1 - s < 1s );
+#endif
 }
 
 int main()

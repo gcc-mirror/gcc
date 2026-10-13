@@ -33,6 +33,7 @@ test02()
 void
 test03()
 {
+#if __STDC_HOSTED__
   using namespace std::chrono;
 
   gps_time<gps_clock::duration> gps1 = gps_clock::now();
@@ -45,6 +46,7 @@ test03()
 
   gps_seconds s = time_point_cast<seconds>(gps1);
   VERIFY( gps1 - s < 1s );
+#endif
 }
 
 int main()

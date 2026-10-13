@@ -1,4 +1,5 @@
 // { dg-do compile { target c++20 } }
+// { dg-require-effective-target hosted }
 
 #include <chrono>
 #include <format>

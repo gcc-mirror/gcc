@@ -27,7 +27,11 @@ test01()
 {
   using namespace std::chrono;
 
+#if __STDC_HOSTED__
   auto ns = system_clock::now();
+#else
+  auto ns = system_clock::time_point(12345s);
+#endif
   auto s = time_point_cast<seconds>(ns + seconds(2));
 
   VERIFY( s != ns );

@@ -27,11 +27,24 @@
 # define EXPECTED_VALUE 201611L
 #endif
 
+#if __STDC_HOSTED__
+
 #ifndef __cpp_lib_chrono
 # error "Feature test macro for chrono is missing in <chrono>"
 #elif __cpp_lib_chrono < EXPECTED_VALUE
 # error "Feature test macro for chrono has wrong value in <chrono>"
 #endif
+
+#else // __cpp_lib_chrono is not defined for freestanding
+
+#ifndef __glibcxx_freestanding_chrono
+# error "Feature test macro for freestanding chrono is missing in <chrono>"
+#elif __glibcxx_freestanding_chrono < EXPECTED_VALUE
+# error "Feature test macro for chrono has wrong value in <chrono>"
+#endif
+
+#endif
+
 
 namespace __gnu_test
 {
@@ -64,8 +77,10 @@ namespace __gnu_test
   using std::chrono::gps_time;
   using std::chrono::gps_seconds;
 
+#if __STDC_HOSTED__ // no file_clock in freestanding
   using std::chrono::file_clock;
   using std::chrono::file_time;
+#endif
 
   using std::chrono::local_t;
   using std::chrono::local_time;
@@ -101,7 +116,7 @@ namespace __gnu_test
   using std::chrono::make12;
   using std::chrono::make24;
 
-#if __cpp_lib_chrono >= 201803L
+#if __cpp_lib_chrono >= 201803L // full C++20 tzdb support
   using std::chrono::tzdb;
   using std::chrono::tzdb_list;
   using std::chrono::get_tzdb;
@@ -130,10 +145,12 @@ namespace __gnu_test
   using std::chrono::time_zone_link;
 #endif
 
+#if __STDC_HOSTED__ // no chrono I/O in freestanding
   using std::chrono::local_time_format;
 
   using std::chrono::from_stream;
   using std::chrono::parse;
+#endif
 
   using std::chrono::last;
   using std::chrono::Sunday;
@@ -197,6 +214,8 @@ namespace __gnu_test
   static_assert( is_time_point<local_seconds> );
   static_assert( is_time_point<local_days> );
 
+#if __STDC_HOSTED__ // no file_clock in freestanding
   static_assert( std::is_class_v<file_clock> );
   static_assert( is_time_point<file_time<std::chrono::milliseconds>> );
+#endif
 }

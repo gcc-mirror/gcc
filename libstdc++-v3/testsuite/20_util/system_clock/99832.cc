@@ -1,5 +1,6 @@
 // { dg-options "-O0 -g0" }
 // { dg-do compile { target c++20 } }
+// { dg-require-effective-target hosted }
 // { dg-final { scan-assembler-not "system_clock9to_time_t" } }
 
 // Bug libstdc++/99832
