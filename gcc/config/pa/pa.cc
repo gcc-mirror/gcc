@@ -2232,8 +2232,8 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
   if ((mode == SFmode || mode == DFmode)
       && MEM_P (operand1)
       && (scratch_reg || can_create_pseudo_p ())
-      && (CONSTANT_POOL_ADDRESS_P (XEXP (operand1, 0))
-	  || GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF
+      && (GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (operand1, 0)) == LABEL_REF
 	  || GET_CODE (XEXP (operand1, 0)) == CONST))
     {
       rtx addr = XEXP (operand1, 0);
@@ -11005,7 +11005,7 @@ pa_legitimate_constant_p (machine_mode mode, rtx x)
       && !INT_14_BITS (x))
     return false;
 
-  /* Reject naked symbolic and constant pool SF and DF mode addresses
+  /* Reject naked symbolic and constant SF and DF mode addresses
      unconditionally on 32-bit targets.  We intentionally do not unwrap
      LO_SUM expressions here, as those are valid address calculations
      for 14-bit displacement optimizations on PA 2.0.  */
@@ -11017,17 +11017,18 @@ pa_legitimate_constant_p (machine_mode mode, rtx x)
 	  /* Check both components of the addition for symbolic links.  */
 	  rtx op0 = XEXP (base, 0);
 	  rtx op1 = XEXP (base, 1);
-	  if (GET_CODE (op0) == SYMBOL_REF || GET_CODE (op0) == LABEL_REF
-	      || GET_CODE (op0) == CONST || CONSTANT_POOL_ADDRESS_P (op0)
-	      || GET_CODE (op1) == SYMBOL_REF || GET_CODE (op1) == LABEL_REF
-	      || GET_CODE (op1) == CONST || CONSTANT_POOL_ADDRESS_P (op1))
+	  if (GET_CODE (op0) == SYMBOL_REF
+	      || GET_CODE (op0) == LABEL_REF
+	      || GET_CODE (op0) == CONST
+	      || GET_CODE (op1) == SYMBOL_REF
+	      || GET_CODE (op1) == LABEL_REF
+	      || GET_CODE (op1) == CONST)
 	    return false;
 	}
 
       if (GET_CODE (base) == SYMBOL_REF
 	  || GET_CODE (base) == LABEL_REF
-	  || GET_CODE (base) == CONST
-	  || CONSTANT_POOL_ADDRESS_P (base))
+	  || GET_CODE (base) == CONST)
 	return false;
     }
 
@@ -11244,8 +11245,7 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
       && (mode == SFmode || mode == DFmode)
       && (GET_CODE (x) == SYMBOL_REF
 	  || GET_CODE (x) == LABEL_REF
-	  || GET_CODE (x) == CONST
-	  || CONSTANT_POOL_ADDRESS_P (x)))
+	  || GET_CODE (x) == CONST))
     return false;
 
   if (GET_CODE (x) == CONST_INT && INT_5_BITS (x))
