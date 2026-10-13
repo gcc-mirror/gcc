@@ -249,6 +249,10 @@ static alternative_mask *insn_alternatives;
 
 static rtx true_rtx, false_rtx;
 
+/* The expressions that copy_rtx_unchanging has marked with
+   ATTR_CURR_SIMPLIFIED_P since the last call to clear_curr_simplified.  */
+static vec<rtx> curr_simplified;
+
 /* Used to reduce calls to `strcmp' */
 
 static const char *alternative_name;
@@ -287,7 +291,7 @@ static rtx simplify_test_exp_in_temp (rtx, int, int);
 static rtx copy_rtx_unchanging	   (rtx);
 static bool attr_alt_subset_p      (rtx, rtx);
 static bool attr_alt_subset_of_compl_p (rtx, rtx);
-static void clear_struct_flag      (rtx);
+static void clear_curr_simplified (void);
 static void write_attr_valueq	   (FILE *, class attr_desc *, const char *);
 static struct attr_value *find_most_used  (class attr_desc *);
 static void write_attr_set	   (FILE *, class attr_desc *, int, rtx,
@@ -3193,10 +3197,9 @@ optimize_attrs (int num_insn_codes)
   /* Process one insn code at a time.  */
   for (i = -2; i < num_insn_codes; i++)
     {
-      /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere relevant.
+      /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere.
 	 We use it to mean "already simplified for this insn".  */
-      for (iv = insn_code_values[i]; iv; iv = iv->next)
-	clear_struct_flag (iv->av->value);
+      clear_curr_simplified ();
 
       for (iv = insn_code_values[i]; iv; iv = iv->next)
 	{
@@ -3239,62 +3242,10 @@ optimize_attrs (int num_insn_codes)
 	}
     }
 
+  clear_curr_simplified ();
   free (ivbuf);
   free (insn_code_values - 2);
   insn_code_values = NULL;
-}
-
-/* Clear the ATTR_CURR_SIMPLIFIED_P flag in EXP and its subexpressions.  */
-
-static void
-clear_struct_flag (rtx x)
-{
-  int i;
-  int j;
-  enum rtx_code code;
-  const char *fmt;
-
-  ATTR_CURR_SIMPLIFIED_P (x) = 0;
-  if (ATTR_IND_SIMPLIFIED_P (x))
-    return;
-
-  code = GET_CODE (x);
-
-  switch (code)
-    {
-    case REG:
-    CASE_CONST_ANY:
-    case MATCH_TEST:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-    case PC:
-    case EQ_ATTR:
-    case ATTR_FLAG:
-      return;
-
-    default:
-      break;
-    }
-
-  /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.  */
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      switch (fmt[i])
-	{
-	case 'V':
-	case 'E':
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    clear_struct_flag (XVECEXP (x, i, j));
-	  break;
-
-	case 'e':
-	  clear_struct_flag (XEXP (x, i));
-	  break;
-	}
-    }
 }
 
 /* Add attribute value NAME to the beginning of ATTR's list.  */
@@ -5006,7 +4957,19 @@ copy_rtx_unchanging (rtx orig)
     return orig;
 
   ATTR_CURR_SIMPLIFIED_P (orig) = 1;
+  curr_simplified.safe_push (orig);
   return orig;
+}
+
+/* Clear ATTR_CURR_SIMPLIFIED_P on every expression that copy_rtx_unchanging
+   has marked since the last call.  */
+
+static void
+clear_curr_simplified (void)
+{
+  for (rtx x : curr_simplified)
+    ATTR_CURR_SIMPLIFIED_P (x) = 0;
+  curr_simplified.truncate (0);
 }
 
 /* Determine if an insn has a constant number of delay slots, i.e., the
