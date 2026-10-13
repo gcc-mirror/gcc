@@ -490,3 +490,48 @@
 {
   operands[4] = gen_reg_rtx (<X:MODE>mode);
 })
+
+(define_insn ""
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (neg:X (eq_or_ne (match_operand:X 1 "register_operand" "r")
+				(const_int 0)))
+	       (match_operand:X 2 "register_operand" "r")))]
+  "TARGET_ZICOND"
+  "czero.<eqz>\t%0,%2,%1"
+  [(set_attr "type" "zicond")])
+
+;; This is not ideal.  The (and ...) subexpression is just a czero, but
+;; we can't match it without knowing the register we're testing has a 0/1
+;; value, which we can't test in an insn condition.  We really want to
+;; match and rewrite the RTL form within combine.  We could do that with
+;; simplify-rtx.cc, but that's likely to not be generically a good thing.
+;;
+;; That low level primitive is often going to flow into an IOR which
+;; gives us the opportunity to do a 3->2 split, so we can rewrite
+;; immediately in combine and avoid testing pass specific state in an
+;; insn condition that lives beyond that single pass
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(ior:X (and:X (neg:X (match_operand:X 1 "register_operand"))
+		      (match_operand:X 2 "register_operand"))
+	       (match_operand:X 3 "register_operand")))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND && nonzero_bits (operands[1], word_mode) == 1"
+  [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
+				      (match_dup 2)
+				      (const_int 0)))
+   (set (match_dup 0) (ior:X (match_dup 4) (match_dup 3)))])
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(ior:X (and:X (plus:X (match_operand:X 1 "register_operand")
+			      (const_int -1))
+		      (match_operand:X 2 "register_operand"))
+	       (match_operand:X 3 "register_operand")))
+   (clobber (match_operand:X 4 "register_operand"))]
+  "TARGET_ZICOND && nonzero_bits (operands[1], word_mode) == 1"
+  [(set (match_dup 4) (if_then_else:X (eq:X (match_dup 1) (const_int 0))
+				      (match_dup 2)
+				      (const_int 0)))
+   (set (match_dup 0) (ior:X (match_dup 4) (match_dup 3)))])
+
