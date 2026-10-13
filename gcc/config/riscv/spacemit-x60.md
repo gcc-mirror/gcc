@@ -42,7 +42,7 @@
 (define_cpu_unit "spacemit_x60_fdivsqrt" "spacemit_x60")
 
 (define_reservation "spacemit_x60_lsu" "spacemit_x60_lsu0, spacemit_x60_lsu1")
-(define_reservation "spacemit_x60_alu" "spacemit_x60_alu0, spacemit_x60_alu1")
+(define_reservation "spacemit_x60_alu" "(spacemit_x60_alu0|spacemit_x60_alu1)")
 
 ;; ----------------------------------------------------
 ;; Memory (load/store)
