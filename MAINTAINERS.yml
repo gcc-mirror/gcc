@@ -3831,6 +3831,15 @@ users:
   forgeid: jemarch
   DCO:
   - jemarch@gnu.org
+- sn: Marchi
+  cn: Simon Marchi
+  email:
+  - simon.marchi@efficios.com
+  - simark@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: simark
+  forgeid: simark
 - sn: Markianos-Wright
   cn: Stamatis Markianos-Wright
   email:
