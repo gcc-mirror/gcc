@@ -241,6 +241,10 @@
 ;; still a NEON type, treat it as a basic NEON type.  This is better than
 ;; dropping it on the floor and making no assumptions about it whatsoever.
 	  (eq_attr "is_neon_type" "yes")
+	    (const_string "neon_arith_basic")
+;; Treat all SVE instructions as basic NEON instructions to avoid
+;; lots of "nothing" in the DFA.
+	  (not (eq_attr "sve_type" "none"))
 	    (const_string "neon_arith_basic")]
 	  (const_string "unknown")))
 

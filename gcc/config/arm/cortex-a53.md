@@ -446,7 +446,11 @@
 		     neon_store4_4reg, neon_store4_4reg_q,\
 		     neon_store4_one_lane, neon_store4_one_lane_q,\
 		     neon_stp, neon_stp_q")
-      (const_string "advsimd_store_lots")]
+      (const_string "advsimd_store_lots")
+;; Treat all SVE instructions as basic NEON instructions to avoid
+;; lots of "nothing" in the DFA.
+    (not (eq_attr "sve_type" "none"))
+      (const_string "advsimd_alu")]
       (const_string "unknown")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
