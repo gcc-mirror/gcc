@@ -3384,6 +3384,20 @@ riscv_add_offset (rtx temp, rtx reg, HOST_WIDE_INT offset)
 {
   if (!SMALL_OPERAND (offset))
     {
+      /* Re-use synthesize_add to try and emit efficient code here.  */
+      if ((temp || can_create_pseudo_p ())
+	  && reg != frame_pointer_rtx
+	  && reg != hard_frame_pointer_rtx
+	  && reg != virtual_stack_vars_rtx)
+	{
+	  rtx operands[3];
+	  operands[0] = temp ? temp : gen_reg_rtx (word_mode);
+	  operands[1] = reg;
+	  operands[2] = GEN_INT (offset);
+	  if (synthesize_add (operands))
+	    return operands[0];
+	}
+
       rtx high;
 
       /* Leave OFFSET as a 16-bit offset and put the excess in HIGH.
