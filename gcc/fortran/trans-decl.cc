@@ -5162,7 +5162,8 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	  if (!sym->attr.dummy && !sym->attr.pointer)
 	    {
 	      tmp = gfc_init_default_pdt (sym, true);
-	      if (!sym->attr.allocatable && tmp == NULL_TREE)
+	      if (!sym->attr.allocatable && tmp == NULL_TREE
+		  && sym->param_list)
 		{
 		  tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
 					       sym->backend_decl,
