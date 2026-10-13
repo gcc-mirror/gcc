@@ -36,6 +36,9 @@ UrlSuffix(gcc/eBPF-Options.html#index-msdiv)
 msmov
 UrlSuffix(gcc/eBPF-Options.html#index-msmov)
 
+mcallx
+UrlSuffix(gcc/eBPF-Options.html#index-mcallx)
+
 mcpu=
 UrlSuffix(gcc/eBPF-Options.html#index-mcpu-5)
 
