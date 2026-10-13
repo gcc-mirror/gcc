@@ -197,8 +197,8 @@ static tree fold_negate_expr (location_t, tree);
    The form is "(exp0 CMP cst1) ? exp0 : cst2". */
 tree_code
 minmax_from_comparison (tree_code cmp, tree exp0,
-			const widest_int cst1,
-			const widest_int cst2)
+			const widest_int &cst1,
+			const widest_int &cst2)
 {
   if (cst1 == cst2)
     {
@@ -7138,9 +7138,10 @@ fold_real_zero_addition_p (const_tree type, const_tree arg,
    due to truncation/rounding.
 */
 bool
-fold_cmp_float_cst_p (wide_int lo, wide_int hi, enum tree_code cmp,
+fold_cmp_float_cst_p (const wide_int &lo, const wide_int &hi,
+		      enum tree_code cmp,
 		      const REAL_VALUE_TYPE *r, format_helper fmt,
-		      wide_int i, signop isign)
+		      const wide_int &i, signop isign)
 {
   REAL_VALUE_TYPE raw;
   REAL_VALUE_TYPE rnd;
