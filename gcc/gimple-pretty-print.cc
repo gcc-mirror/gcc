@@ -2415,14 +2415,18 @@ dump_ssaname_info (pretty_printer *pp, tree node, int spc)
 	}
     }
 
-  if (!POINTER_TYPE_P (TREE_TYPE (node))
-      && SSA_NAME_RANGE_INFO (node))
+  if (SSA_NAME_RANGE_INFO (node))
     {
       value_range r (TREE_TYPE (node));
       get_global_range_query ()->range_of_expr (r, node);
-      pp_string (pp, "# RANGE ");
-      pp_vrange (pp, &r);
-      newline_and_indent (pp, spc);
+      /* A pointer has storage as soon as it has aliasing info, so do not
+	 print the VARYING that results.  */
+      if (!r.varying_p ())
+	{
+	  pp_string (pp, "# RANGE ");
+	  pp_vrange (pp, &r);
+	  newline_and_indent (pp, spc);
+	}
     }
 }
 
