@@ -2661,13 +2661,11 @@ operator_div::wi_op_overflows (wide_int &res, tree type,
 
 void
 operator_div::wi_fold (irange &r, tree type,
-		       const wide_int &lh_lb, const wide_int &lh_ub,
-		       const wide_int &rh_lb, const wide_int &rh_ub) const
+		       const wide_int &dividend_min,
+		       const wide_int &dividend_max,
+		       const wide_int &divisor_min,
+		       const wide_int &divisor_max) const
 {
-  const wide_int dividend_min = lh_lb;
-  const wide_int dividend_max = lh_ub;
-  const wide_int divisor_min = rh_lb;
-  const wide_int divisor_max = rh_ub;
   signop sign = TYPE_SIGN (type);
   unsigned prec = TYPE_PRECISION (type);
   wide_int extra_min, extra_max;
