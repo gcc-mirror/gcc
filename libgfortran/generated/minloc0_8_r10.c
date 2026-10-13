@@ -314,9 +314,10 @@ mminloc0_8_r10 (gfc_array_i8 * const restrict retarray,
 	      	  for (n = 0; n < rank; n++)
 		    dest[n * dstride] = count[n] + 1;
 	    	}
-		base += sstride[0];
+	      base += sstride[0];
+	      mbase += mstride[0];
 	    }
-	    while (++count[0] != extent[0]);
+	  while (++count[0] != extent[0]);
 	else
 	  do
 	    {
