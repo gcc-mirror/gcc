@@ -4109,7 +4109,7 @@ aarch64_expand_atomic_hints_builtins_fetch (tree exp)
   rtx hint = expand_normal (CALL_EXPR_ARG (exp, 3));
   rtx fetch_type = expand_normal (CALL_EXPR_ARG (exp, 4));
 
-  require_const_argument (exp, 3, 0, 2);
+  require_const_argument (exp, 3, 3, 5);
   require_const_argument (exp, 2, 0, 6);
   require_const_argument (exp, 4, 0, 6);
   if (seen_error ())
