@@ -1196,8 +1196,6 @@ process_dependent_filters ()
   for (int opno = 0; opno < recog_data.n_operands; ++opno)
     {
       rtx op = recog_data.operand[opno];
-      if (SUBREG_P (op))
-	op = SUBREG_REG (op);
       if (!REG_P (op) || HARD_REGISTER_P (op))
 	continue;
 
@@ -1226,8 +1224,6 @@ process_dependent_filters ()
 	      if (ref_opno < 0 || ref_opno >= recog_data.n_operands)
 		continue;
 	      rtx ref_op = recog_data.operand[ref_opno];
-	      if (SUBREG_P (ref_op))
-		ref_op = SUBREG_REG (ref_op);
 	      if (!REG_P (ref_op))
 		continue;
 

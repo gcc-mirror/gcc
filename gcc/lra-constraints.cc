@@ -2364,23 +2364,37 @@ get_dependent_filter (constraint_num cn, machine_mode mode)
   gcc_assert (ref_opno >= 0 && ref_opno < curr_static_id->n_operands);
 
   rtx ref_op = *curr_id->operand_loc[ref_opno];
-  if (SUBREG_P (ref_op))
-     ref_op = SUBREG_REG (ref_op);
-  if (!REG_P (ref_op))
+
+  rtx inner = SUBREG_P (ref_op) ? SUBREG_REG (ref_op) : ref_op;
+
+  if (!REG_P (inner))
     return nullptr;
-  unsigned int ref_regno = REGNO (ref_op);
+
+  int ref_regno = REGNO (inner);
+
   if (ref_regno >= FIRST_PSEUDO_REGISTER)
     {
-      int ref_hard_regno = reg_renumber[ref_regno];
+      ref_regno = reg_renumber[ref_regno];
       /* Even with a pseudo reference op, the filter can still reject
 	 based on the partner.  We call it with INVALID_REGNUM
 	 to give it a chance to do so.  Otherwise we'd introduce
 	 an "all choices legal" filter that might later
 	 "change its mind" once there is a fixed reference.  */
-      if (ref_hard_regno < 0)
+      if (ref_regno < 0)
 	return lra_get_dependent_filter (id, mode, INVALID_REGNUM,
 					 GET_MODE (ref_op), false);
-      ref_regno = (unsigned int) ref_hard_regno;
+    }
+
+  /* For a subreg, get the actual regno.  */
+  if (SUBREG_P (ref_op))
+    {
+      int subreg_regno = simplify_subreg_regno
+	(ref_regno, GET_MODE (inner), SUBREG_BYTE (ref_op),
+	 GET_MODE (ref_op), true);
+      /* The subreg should always map to a hard regno here.  */
+      gcc_assert (subreg_regno >= 0);
+
+      ref_regno = subreg_regno;
     }
 
   return lra_get_dependent_filter (id, mode, ref_regno, GET_MODE (ref_op),
