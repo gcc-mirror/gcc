@@ -354,6 +354,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	    {
 	      count[n]++;
 	      base += sstride[n] * 'base_mult`;
+	      mbase += mstride[n];
 	      dest += dstride[n];
 	    }
 	}
