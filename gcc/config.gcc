@@ -3673,6 +3673,10 @@ case "${target}_${with_picolibc}" in
 *-picolibc-*|*_yes)
 	default_use_cxa_atexit=yes
 	use_gcc_stdint=none
+	tmake_file="${tmake_file} t-picolibc"
+	c_target_objs="${c_target_objs} picolibc-c.o"
+	cxx_target_objs="${cxx_target_objs} picolibc-c.o"
+	target_has_targetcm=yes
 	# add newlib-stdint.h if not already present
 	case "${tm_file}" in
 	*newlib-stdint.h*)
