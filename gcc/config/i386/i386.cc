@@ -23031,6 +23031,16 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       if (TARGET_64BIT && mode == DImode
 	  && GET_MODE (XEXP (x, 0)) == SImode)
 	*total = 1;
+      /* Zero extension to a double-word mode (TImode on x86-64, DImode
+	 on ia32) is not a single movzx: the upper word must be cleared
+	 by a separate instruction.  Charge for it; a zero or too-low
+	 cost makes the extension look free, so CSE copies the extended
+	 value into every double-word store and STV can no longer share
+	 one vector register.  */
+      else if (speed && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	       && outer_code == SET
+	       && GET_MODE (XEXP (x, 0)) == word_mode)
+	*total = cost->add;
       else if (TARGET_ZERO_EXTEND_WITH_AND)
 	*total = cost->add;
       else
@@ -23038,7 +23048,16 @@ ix86_rtx_costs (rtx x, machine_mode mode, int outer_code_i, int opno,
       return false;
 
     case SIGN_EXTEND:
-      *total = cost->movsx;
+      /* Similarly to zero_extend for a double-word mode, but cost one
+	 more than zero_extend, so that when the sign bit is known to be
+	 zero, zero_extend is preferred to sign_extend: zero_extend needs
+	 an extra xor, while sign_extend needs an extra cdq.  */
+      if (speed && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	  && outer_code == SET
+	  && GET_MODE (XEXP (x, 0)) == word_mode)
+	*total = cost->add + 1;
+      else
+	*total = cost->movsx;
       return false;
 
     case ASHIFT:
