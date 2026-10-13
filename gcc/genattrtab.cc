@@ -3150,6 +3150,45 @@ write_derived_attr_get (FILE *outf, class attr_desc *attr)
 	   attr->cxx_type, attr->name, y->name, y->name);
 }
 
+/* Hash traits for the lists in INSN_CODE_VALUES.  Two lists are equal if
+   their insns have the same alternatives and the same value for each
+   attribute.  */
+
+struct insn_values_hasher : nofree_ptr_hash <attr_value_list>
+{
+  static inline hashval_t hash (const attr_value_list *);
+  static inline bool equal (const attr_value_list *, const attr_value_list *);
+};
+
+/* Return the hash of the insn alternatives and attribute values in the
+   non-empty list LIST.  */
+
+inline hashval_t
+insn_values_hasher::hash (const attr_value_list *list)
+{
+  inchash::hash h;
+  h.add_object (insn_alternatives[list->ie->def->insn_code]);
+  for (; list; list = list->next)
+    h.add_ptr (list->av);
+  return h.end ();
+}
+
+/* Return true if the non-empty lists LIST1 and LIST2 belong to insns with
+   the same alternatives and have the same attribute values.  */
+
+inline bool
+insn_values_hasher::equal (const attr_value_list *list1,
+			   const attr_value_list *list2)
+{
+  if (insn_alternatives[list1->ie->def->insn_code]
+      != insn_alternatives[list2->ie->def->insn_code])
+    return false;
+  for (; list1 && list2; list1 = list1->next, list2 = list2->next)
+    if (list1->av != list2->av)
+      return false;
+  return !list1 && !list2;
+}
+
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
    calls during the compilation.  NUM_INSN_CODES is the number of unique
@@ -3202,9 +3241,52 @@ optimize_attrs (int num_insn_codes)
   /* Sanity check on num_insn_ents.  */
   gcc_assert (iv == ivbuf + num_insn_ents);
 
+  /* Insns that have the same values for all attributes and the same
+     alternatives simplify in the same way.  Record for each insn code the
+     first insn code with the same values, before the loop below changes
+     them.  */
+  int *same_as = XNEWVEC (int, num_insn_codes);
+  {
+    hash_table<insn_values_hasher> values_table (num_insn_codes);
+    for (i = 0; i < num_insn_codes; i++)
+      {
+	same_as[i] = i;
+	if (insn_code_values[i])
+	  {
+	    attr_value_list **slot
+	      = values_table.find_slot (insn_code_values[i], INSERT);
+	    if (*slot)
+	      same_as[i] = (*slot)->ie->def->insn_code;
+	    else
+	      *slot = insn_code_values[i];
+	  }
+      }
+  }
+
   /* Process one insn code at a time.  */
   for (i = -2; i < num_insn_codes; i++)
     {
+      if (i >= 0 && same_as[i] != i)
+	{
+	  /* Move the insn to the values chosen for the first insn with the
+	     same values.  Both lists have the attributes in the same
+	     order.  */
+	  struct attr_value_list *first_iv = insn_code_values[same_as[i]];
+	  for (iv = insn_code_values[i]; iv;
+	       iv = iv->next, first_iv = first_iv->next)
+	    {
+	      gcc_checking_assert (iv->attr == first_iv->attr);
+	      if (iv->av != first_iv->av)
+		{
+		  remove_insn_ent (iv->av, iv->ie);
+		  iv->av = first_iv->av;
+		  insert_insn_ent (iv->av, iv->ie);
+		}
+	    }
+	  gcc_checking_assert (!first_iv);
+	  continue;
+	}
+
       /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere.
 	 We use it to mean "already simplified for this insn".  */
       clear_curr_simplified ();
@@ -3251,6 +3333,7 @@ optimize_attrs (int num_insn_codes)
     }
 
   clear_curr_simplified ();
+  free (same_as);
   free (ivbuf);
   free (insn_code_values - 2);
   insn_code_values = NULL;
