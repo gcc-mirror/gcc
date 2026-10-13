@@ -152,6 +152,7 @@ public:
 struct insn_ent
 {
   struct insn_ent *next;	/* Next in chain.  */
+  struct insn_ent *prev;	/* Previous in chain, or null if first.  */
   class insn_def *def;		/* Instruction definition.  */
 };
 
@@ -1794,16 +1795,16 @@ simplify_cond (rtx exp, int insn_code, int insn_index)
 static void
 remove_insn_ent (struct attr_value *av, struct insn_ent *ie)
 {
-  struct insn_ent *previe;
-
-  if (av->first_insn == ie)
-    av->first_insn = ie->next;
+  gcc_checking_assert (!ie->prev || ie->prev->next == ie);
+  if (ie->prev)
+    ie->prev->next = ie->next;
   else
     {
-      for (previe = av->first_insn; previe->next != ie; previe = previe->next)
-	;
-      previe->next = ie->next;
+      gcc_checking_assert (av->first_insn == ie);
+      av->first_insn = ie->next;
     }
+  if (ie->next)
+    ie->next->prev = ie->prev;
 
   av->num_insns--;
   if (ie->def->insn_code == -1)
@@ -1817,7 +1818,10 @@ remove_insn_ent (struct attr_value *av, struct insn_ent *ie)
 static void
 insert_insn_ent (struct attr_value *av, struct insn_ent *ie)
 {
+  ie->prev = NULL;
   ie->next = av->first_insn;
+  if (ie->next)
+    ie->next->prev = ie;
   av->first_insn = ie;
   av->num_insns++;
   if (ie->def->insn_code == -1)
