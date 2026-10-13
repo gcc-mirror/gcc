@@ -9333,9 +9333,9 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       if (!directly_supported_p (RSHIFT_EXPR, vectype, optab_vector))
 	return false;
 
-      /* Don't shift more than type precision to avoid UD.  */
+      /* Don't shift more than type precision to avoid UB.  */
       if (!tree_fits_uhwi_p (step_expr)
-	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+	  || maybe_ge (vf * tree_to_uhwi (step_expr),
 		       TYPE_PRECISION (TREE_TYPE (init_expr))))
 	return false;
       break;
@@ -9345,12 +9345,11 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       if (!directly_supported_p (LSHIFT_EXPR, vectype, optab_vector))
 	return false;
 
-      /* Don't shift more than type precision to avoid UD.  */
+      /* Don't shift more than type precision to avoid UB.  */
       if (!tree_fits_uhwi_p (step_expr)
-	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+	  || maybe_ge (vf * tree_to_uhwi (step_expr),
 		       TYPE_PRECISION (TREE_TYPE (init_expr))))
 	return false;
-
       break;
 
     default:
