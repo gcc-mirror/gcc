@@ -188,7 +188,7 @@ void test01()
   test_hash(2024y / month(1234u) / Tuesday[last]);
   test_hash(2024y / August / weekday(1234u)[last]);
 
-#if _GLIBCXX_USE_CXX11_ABI
+#if __cpp_lib_chrono >= 202306L
   // zoned_time
   test_hash(zoned_seconds("Europe/Rome", sys_seconds(1234s)));
   test_hash(zoned_time("Europe/Rome", system_clock::now()));
@@ -238,7 +238,7 @@ void test03()
   {
     test_hash(d);
     test_hash(sys_time<D>(d));
-#if _GLIBCXX_USE_CXX11_ABI
+#if __cpp_lib_chrono >= 202306L
     test_hash(zoned_time<D>(sys_time<D>(d)));
 #endif
   };
@@ -261,7 +261,7 @@ void test04()
   static_assert(is_hash_poisoned<duration<non_hashable_arithmetic_wrapper<int>>>);
   static_assert(is_hash_poisoned<duration<non_hashable_arithmetic_wrapper<double>>>);
 
-#if _GLIBCXX_USE_CXX11_ABI
+#if __cpp_lib_chrono >= 202306L
   static_assert(!is_hash_poisoned<zoned_time<duration<int>>>);
   static_assert(!is_hash_poisoned<zoned_time<duration<double>>>);
   static_assert(!is_hash_poisoned<zoned_time<duration<arithmetic_wrapper<int>>>>);

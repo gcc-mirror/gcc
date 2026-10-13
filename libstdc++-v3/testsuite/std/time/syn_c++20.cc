@@ -21,7 +21,7 @@
 #include <chrono>
 
 // std::chrono::tzdb is not defined for the old std::string ABI.
-#if _GLIBCXX_USE_CXX_ABI
+#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
 # define EXPECTED_VALUE 201907L
 #else
 # define EXPECTED_VALUE 201611L

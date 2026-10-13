@@ -2080,7 +2080,7 @@ namespace __format
 	}
     };
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   template<typename _CharT>
     struct __formatter_chrono_info
     {
@@ -3001,7 +3001,7 @@ namespace __format
       = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   template<__format::__char _CharT>
     struct formatter<chrono::sys_info, _CharT>
     {
@@ -3392,7 +3392,7 @@ namespace __format
       = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   template<typename _Duration, typename _TimeZonePtr, __format::__char _CharT>
     struct formatter<chrono::zoned_time<_Duration, _TimeZonePtr>, _CharT>
     : formatter<chrono::__detail::__local_time_fmt_for<_Duration>, _CharT>
@@ -3997,7 +3997,7 @@ namespace __detail
       return __os << format(__os.getloc(), _GLIBCXX_WIDEN("{:L%T}"), __hms);
     }
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   /// Writes a sys_info object to an ostream in an unspecified format.
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
