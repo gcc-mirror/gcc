@@ -1,3 +1,12 @@
+2026-10-12  WHR  <whr@rivoreo.one>
+
+	Backported from master:
+	2026-07-03  WHR  <whr@rivoreo.one>
+		    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR other/116547
+	* ssp.c: Include stdlib.h for alloca(3).
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.
