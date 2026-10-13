@@ -3336,9 +3336,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      rhs = XEXP (rhs, 0);
 	    }
 
-	  /* Keep PLUS of 2 volatile memory references.  */
-	  if (rtx_equal_p (lhs, rhs)
-	      && (!MEM_P (lhs) || !MEM_VOLATILE_P (lhs)))
+	  /* Don't merge operands that have side effects.  */
+	  if (rtx_equal_p (lhs, rhs) && !side_effects_p (lhs))
 	    {
 	      rtx orig = gen_rtx_PLUS (int_mode, op0, op1);
 	      rtx coeff;
@@ -3384,7 +3383,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		       && rtx_equal_p (XEXP (op1, 0), op0))
 		rhs = XEXP (XEXP (op1, 1), 0);
 	    }
-	  if (lhs != op0 || rhs != op1)
+	  if ((lhs != op0 && !side_effects_p (op1))
+	      || (rhs != op1 && !side_effects_p (op0)))
 	    return simplify_gen_binary (MULT, int_mode, lhs, rhs);
 	}
 
@@ -3560,7 +3560,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      rhs = XEXP (rhs, 0);
 	    }
 
-	  if (rtx_equal_p (lhs, rhs))
+	  if (rtx_equal_p (lhs, rhs) && !side_effects_p (lhs))
 	    {
 	      rtx orig = gen_rtx_MINUS (int_mode, op0, op1);
 	      rtx coeff;
@@ -3590,7 +3590,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		       && rtx_equal_p (XEXP (op0, 0), op1))
 		lhs = XEXP (XEXP (op0, 1), 0);
 	    }
-	  if (lhs != op0)
+	  if (lhs != op0 && !side_effects_p (op1))
 	    return simplify_gen_binary (MULT, int_mode, lhs, op1);
 	}
 
