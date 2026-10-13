@@ -1572,6 +1572,18 @@ CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 
+# The declaration checks include system.h, which includes gmp.h.  An
+# in-tree gmp is only configured, not built, when this script runs (see
+# configure-gcc in ../Makefile.def), so gmp.h must come from its
+# configure.  Stop here if gmp.h cannot be used.
+AC_MSG_CHECKING([whether gmp.h can be used])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[#include <gmp.h>]],
+				   [[mpz_t x; mpz_init (x);]])],
+  [AC_MSG_RESULT(yes)],
+  [AC_MSG_RESULT(no)
+   AC_MSG_ERROR([cannot compile with gmp.h using GMPINC ($GMPINC).
+An in-tree gmp must create gmp.h when it is configured.])])
+
 # gcc_AC_CHECK_DECLS doesn't support overloaded functions, so use the
 # normal autoconf function for these.  But force definition of
 # HAVE_DECL_BASENAME like gcc_AC_CHECK_DECLS does, to suppress the bizarre

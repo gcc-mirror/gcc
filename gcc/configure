@@ -12284,6 +12284,34 @@ CFLAGS="$CFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 saved_CXXFLAGS="$CXXFLAGS"
 CXXFLAGS="$CXXFLAGS -I${srcdir} -I${srcdir}/../include $GMPINC"
 
+# The declaration checks include system.h, which includes gmp.h.  An
+# in-tree gmp is only configured, not built, when this script runs (see
+# configure-gcc in ../Makefile.def), so gmp.h must come from its
+# configure.  Stop here if gmp.h cannot be used.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether gmp.h can be used" >&5
+$as_echo_n "checking whether gmp.h can be used... " >&6; }
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <gmp.h>
+int
+main ()
+{
+mpz_t x; mpz_init (x);
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+   as_fn_error $? "cannot compile with gmp.h using GMPINC ($GMPINC).
+An in-tree gmp must create gmp.h when it is configured." "$LINENO" 5
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
 # gcc_AC_CHECK_DECLS doesn't support overloaded functions, so use the
 # normal autoconf function for these.  But force definition of
 # HAVE_DECL_BASENAME like gcc_AC_CHECK_DECLS does, to suppress the bizarre
@@ -22067,7 +22095,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22070 "configure"
+#line 22098 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -22173,7 +22201,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 22176 "configure"
+#line 22204 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
