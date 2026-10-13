@@ -367,7 +367,7 @@ gcn_parse_amdgpu_hsa_kernel_attribute (struct gcn_kernel_args *args,
      Ideally, this would sit in gcn_option_override, but that runs before
      LTO stream-in loads the values from the host compiler.   */
   static bool gpu_mode_warned = false;
-  if (flag_openmp && !gpu_mode_warned)
+  if ((flag_openmp || flag_openacc) && !gpu_mode_warned)
     switch (param_offload_gpu_mode)
       {
       case OFFLOAD_GPU_MODE_AUTO:
@@ -7212,9 +7212,10 @@ gcn_oacc_dim_size (int dim)
   if (dim < 0 || dim > 2)
     error ("offload dimension out of range (%d)", dim);
 
-  /* Vectors are a special case.  */
+  /* Vectors are a special case.  In SIMD mode think of this as 1 times 64.
+     In SIMT mode each lane is a separate vector position.  */
   if (dim == 2)
-    return const1_rtx;		/* Think of this as 1 times 64.  */
+    return flag_simt_mode ? GEN_INT (64) : const1_rtx;
 
   static int offset[] = {
     /* Offsets into dispatch packet.  */
