@@ -781,14 +781,22 @@ check_attr_test (file_location loc, rtx exp, attr_desc *attr)
 	    }
 	  else
 	    {
-	      /* Make an IOR tree of the possible values.  */
-	      orexp = false_rtx;
+	      /* Make an IOR tree of the values, nested to the right, keeping
+		 the first occurrence of each.  A list with no values is
+		 false.  */
+	      auto_vec<rtx> values;
+	      hash_set<rtx> seen;
 	      name_ptr = XSTR (exp, 1);
 	      while ((p = next_comma_elt (&name_ptr)) != NULL)
 		{
 		  newexp = attr_eq (XSTR (exp, 0), p);
-		  orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
+		  if (!seen.add (newexp))
+		    values.safe_push (newexp);
 		}
+
+	      orexp = values.is_empty () ? false_rtx : values.pop ();
+	      while (!values.is_empty ())
+		orexp = attr_rtx (IOR, values.pop (), orexp);
 
 	      return check_attr_test (loc, orexp, attr);
 	    }
