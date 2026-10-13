@@ -6039,6 +6039,8 @@ ipa_record_return_value_range_1 (cgraph_node *n, value_range val)
     {
       const prange &pr = as_a <prange> (val);
       tree t = pr.pt_invariant ();
+      if (!t)
+	t = pr.pt_invariant_away ();
       if (t && !is_gimple_ip_invariant (t))
         {
 	  if (dump_file && (dump_flags & TDF_DETAILS))

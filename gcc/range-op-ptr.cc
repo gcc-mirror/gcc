@@ -947,7 +947,7 @@ operator_equal::op1_range (prange &r, tree type,
 
     case BRS_FALSE:
       // If the result is false, the only time we know anything is
-      // if OP2 is a constant.
+      // if OP2 is a constant, or refers to a known object.
       if (!op2.undefined_p ()
 	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	{
@@ -956,7 +956,12 @@ operator_equal::op1_range (prange &r, tree type,
 	    return false;
 	}
       else
-	r.set_varying (type);
+	{
+	  r.set_varying (type);
+	  // OP2 refers to OBJ, so OP1 does not refer to OBJ.
+	  if (tree obj = op2.pt_invariant ())
+	    r.set_pt (obj, false);
+	}
       break;
 
     default:
@@ -1047,7 +1052,7 @@ operator_not_equal::op1_range (prange &r, tree type,
     {
     case BRS_TRUE:
       // If the result is true, the only time we know anything is if
-      // OP2 is a constant.
+      // OP2 is a constant, or refers to a known object.
       if (!op2.undefined_p ()
 	  && wi::eq_p (op2.lower_bound(), op2.upper_bound()))
 	{
@@ -1056,7 +1061,12 @@ operator_not_equal::op1_range (prange &r, tree type,
 	    return false;
 	}
       else
-	r.set_varying (type);
+	{
+	  r.set_varying (type);
+	  // Check if op1 is known not to refer to op2 points to object.
+	  if (tree obj = op2.pt_invariant ())
+	    r.set_pt (obj, false);
+	}
       break;
 
     case BRS_FALSE:
