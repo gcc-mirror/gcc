@@ -4,4 +4,4 @@
 
 #include "src-loc-1.h"
 
-// { dg-final { scan-lang-dump {Written:-[0-9]* internal identifier:[^\n\r]*Lsrc_loc} module } }
+// { dg-final { scan-lang-dump {Written:-[0-9]* internal identifier:[^\n\r]*[lL]src_loc} module } }

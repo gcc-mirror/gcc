@@ -13,4 +13,4 @@ int main() {
     __builtin_abort();
 }
 
-// { dg-final { scan-lang-dump {Read internal identifier:-[0-9]* [^\n\r]*Lsrc_loc} module } }
+// { dg-final { scan-lang-dump {Read internal identifier:-[0-9]* [^\n\r]*[lL]src_loc} module } }
