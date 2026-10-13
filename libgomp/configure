@@ -12265,7 +12265,17 @@ FCFLAGS="$FCFLAGS -L."
 # We need gfortran to compile parts of the library
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
-FC="$GFORTRAN"
+# If '--enable-languages=fortran' isn't in effect, the 'GFORTRAN' passed by
+# the top-level build system isn't functional (executable doesn't exist).
+# Catch this case here, and set 'FC=no', so that we don't confuse libtool.
+case ,${enable_languages}, in
+  *,fortran,* )
+    FC=$GFORTRAN
+    ;;
+  * )
+    FC=no
+    ;;
+esac
 ac_ext=${ac_fc_srcext-f}
 ac_compile='$FC -c $FCFLAGS $ac_fcflags_srcext conftest.$ac_ext >&5'
 ac_link='$FC -o conftest$ac_exeext $FCFLAGS $LDFLAGS $ac_fcflags_srcext conftest.$ac_ext $LIBS >&5'
@@ -15231,15 +15241,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 FCFLAGS="$FCFLAGS -Wall -L../libgfortran"
 
-case ,${enable_languages}, in
-  *,fortran,* )
-   use_fortran=true
-   ;;
-  * )
-   use_fortran=false
-   ;;
-esac
- if "$use_fortran"; then
+ if test "$ac_cv_fc_compiler_gnu" = yes; then
   USE_FORTRAN_TRUE=
   USE_FORTRAN_FALSE='#'
 else
