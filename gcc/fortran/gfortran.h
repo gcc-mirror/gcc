@@ -4493,6 +4493,7 @@ gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
 bool gfc_is_constant_array_expr (gfc_expr *);
 bool gfc_is_size_zero_array (gfc_expr *);
 void gfc_convert_mpz_to_unsigned (mpz_t, int, bool sign = true);
+gfc_expr *gfc_simplify_len (gfc_expr *, gfc_expr *);
 
 /* trans-array.cc  */
 

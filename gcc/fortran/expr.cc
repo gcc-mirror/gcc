@@ -2050,15 +2050,16 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  else if (tmp->expr_type == EXPR_CONSTANT)
 	    *newp = gfc_get_int_expr (gfc_default_integer_kind,
 				      NULL, tmp->value.character.length);
-	  else if (gfc_init_expr_flag
-		   && tmp->ts.u.cl->length->symtree->n.sym->attr.pdt_len)
-	    *newp = gfc_pdt_find_component_copy_initializer (tmp->symtree->n
-							     .sym,
-							     tmp->ts.u.cl
-							     ->length->symtree
-							     ->n.sym->name);
 	  else
-	    goto cleanup;
+	    {
+	      gfc_expr *kind_expr;
+	      kind_expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+					    tmp->ts.kind);
+	      *newp = gfc_simplify_len (tmp, kind_expr);
+	      if (*newp)
+		break;
+	      goto cleanup;
+	    }
 
 	  break;
 

@@ -5060,20 +5060,15 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 	   component the last _data ref needs to be stripped and a ref to the
 	   _len component added.  */
 	return gfc_get_len_component (e->symtree->n.sym->assoc->target, k);
-      else if (e->symtree->n.sym->ts.type == BT_DERIVED
-	       && e->ref && e->ref->type == REF_COMPONENT
-	       && e->ref->u.c.component->attr.pdt_string
-	       && e->ref->u.c.component->ts.type == BT_CHARACTER
-	       && e->ref->u.c.component->ts.u.cl->length)
+      else if (gfc_expr_attr (e).pdt_string
+	       && e->ts.u.cl->length->expr_type == EXPR_VARIABLE)
 	{
+	  const char *name = e->ts.u.cl->length->symtree->name;
 	  if (gfc_init_expr_flag)
 	    {
 	      gfc_expr* tmp;
 	      tmp = gfc_pdt_find_component_copy_initializer (e->symtree->n.sym,
-							     e->ref->u.c
-							     .component->ts.u.cl
-							     ->length->symtree
-							     ->name);
+							     name);
 	      if (tmp)
 		return tmp;
 	    }
@@ -5082,13 +5077,29 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
 	      gfc_expr *len_expr = gfc_copy_expr (e);
 	      gfc_free_ref_list (len_expr->ref);
 	      len_expr->ref = NULL;
-	      gfc_find_component (len_expr->symtree->n.sym->ts.u.derived, e->ref
-				  ->u.c.component->ts.u.cl->length->symtree
-				  ->name,
-				  false, true, &len_expr->ref);
+	      gfc_find_component (len_expr->symtree->n.sym->ts.u.derived,
+				  name, false, true, &len_expr->ref);
 	      len_expr->ts = len_expr->ref->u.c.component->ts;
 	      return len_expr;
 	    }
+	}
+      else if (gfc_expr_attr (e).pdt_string)
+	{
+	  gfc_actual_arglist *parms;
+	  gfc_expr *len_expr;
+
+	  len_expr = gfc_copy_expr (e->ts.u.cl->length);
+	  parms = e->param_list ? e->param_list :
+				  e->symtree->n.sym->param_list;
+	  if (parms)
+	    gfc_insert_parameter_exprs (len_expr, parms);
+
+	  if (e->ts.u.cl->length->expr_type != EXPR_VARIABLE
+	      && gfc_simplify_expr (len_expr, 0)
+	      && gfc_is_constant_expr (len_expr))
+	    return len_expr;
+
+	  gfc_free_expr (len_expr);
 	}
     }
   else if (e->expr_type == EXPR_ARRAY && e->ts.type == BT_CHARACTER
