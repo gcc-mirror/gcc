@@ -315,6 +315,7 @@ mmaxloc0_8_r16 (gfc_array_i8 * const restrict retarray,
 		    dest[n * dstride] = count[n] + 1;
 		}
 	      base += sstride[0];
+	      mbase += mstride[0];
 	    }
 	  while (++count[0] != extent[0]);
 	else
@@ -360,7 +361,6 @@ mmaxloc0_8_r16 (gfc_array_i8 * const restrict retarray,
     }
   }
 }
-
 
 extern void smaxloc0_8_r16 (gfc_array_i8 * const restrict, 
 	gfc_array_r16 * const restrict, GFC_LOGICAL_4 *, GFC_LOGICAL_4);
