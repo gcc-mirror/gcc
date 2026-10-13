@@ -4323,6 +4323,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  gfc_get_sym_tree (instance->name, gfc_current_ns, &s, false,
 			    &gfc_current_locus);
 	  s->n.sym = instance;
+	  instance->refs++;
 	}
       s->n.sym->attr.imported = 1;
       s->import_only = 1;
@@ -4442,6 +4443,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 	  instance->attr.extension = c2->ts.u.derived->attr.extension + 1;
 
+	  /* Add the parent initializer.  */
+	  if (!IS_PDT (c2) && !c2->ts.u.derived->attr.alloc_comp)
+	    c2->initializer = gfc_generate_initializer (&c2->ts, false);
 	  continue;
 	}
 
@@ -4683,8 +4687,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   if (ptr_seen)
     instance->attr.pointer_comp = 1;
 
-
+  gfc_set_sym_referenced (instance);
   gfc_commit_symbol (instance);
+
   if (ext_param_list)
     *ext_param_list = type_param_spec_list;
   *sym = instance;
