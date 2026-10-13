@@ -1,5 +1,5 @@
 // { dg-do run { target c++20 } }
-// { dg-require-effective-target cxx11_abi }
+// { dg-require-effective-target tzdb }
 
 #include <chrono>
 #include <testsuite_hooks.h>

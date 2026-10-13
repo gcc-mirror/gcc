@@ -616,13 +616,13 @@ ftms = {
     v = 202306;
     cxxmin = 26;
     hosted = yes;
-    cxx11abi = yes;
+    extra_cond = "_GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI";
   };
   values = {
     v = 201907;
     cxxmin = 20;
     hosted = yes;
-    cxx11abi = yes; // std::chrono::tzdb requires cxx11 std::string
+    extra_cond = "_GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI";
   };
   values = {
     v = 201611;

@@ -35,7 +35,7 @@ static_assert( !std::formattable<std::chrono::tai_seconds, int> );
 static_assert( !std::formattable<std::chrono::gps_seconds, int> );
 static_assert( !std::formattable<std::chrono::local_seconds, int> );
 static_assert( !std::formattable<std::chrono::file_time<std::chrono::seconds>, int> );
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
 static_assert( !std::formattable<std::chrono::zoned_seconds, int> );
 
 static_assert( !std::formattable<std::chrono::sys_info, int> );
