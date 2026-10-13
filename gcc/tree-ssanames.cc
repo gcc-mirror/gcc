@@ -885,18 +885,24 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   set_ssa_name_ptr_info (name, new_ptr_info);
 }
 
+/* Copy any global range and aliasing information from SRC to NAME.  */
+
 void
 duplicate_ssa_name_range_info (tree name, tree src)
 {
-  gcc_checking_assert (!POINTER_TYPE_P (TREE_TYPE (src)));
   gcc_checking_assert (!range_info_p (name));
 
-  if (range_info_p (src))
-    {
-      value_range src_range (TREE_TYPE (src));
-      range_info_get_range (src, src_range);
-      range_info_set_range (name, src_range);
-    }
+  if (!range_info_p (src))
+    return;
+
+  value_range src_range (TREE_TYPE (src));
+  range_info_get_range (src, src_range);
+  range_info_set_range (name, src_range);
+
+  /* For a pointer the aliasing info lives in the storage just created,
+     so it has to be copied as part of the same operation.  */
+  if (POINTER_TYPE_P (TREE_TYPE (src)))
+    duplicate_ssa_name_ptr_info (name, SSA_NAME_PTR_INFO (src));
 }
 
 /* For a SSA copy DEST = SRC duplicate SSA info present on DEST to SRC
@@ -911,13 +917,7 @@ maybe_duplicate_ssa_info_at_copy (tree dest, tree src)
       != gimple_bb (SSA_NAME_DEF_STMT (dest)))
     return;
 
-  if (POINTER_TYPE_P (TREE_TYPE (dest))
-      && SSA_NAME_PTR_INFO (dest)
-      && ! SSA_NAME_PTR_INFO (src))
-    duplicate_ssa_name_ptr_info (src, SSA_NAME_PTR_INFO (dest));
-  else if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
-	   && SSA_NAME_RANGE_INFO (dest)
-	   && ! SSA_NAME_RANGE_INFO (src))
+  if (SSA_NAME_RANGE_INFO (dest) && !SSA_NAME_RANGE_INFO (src))
     duplicate_ssa_name_range_info (src, dest);
 }
 
@@ -929,14 +929,8 @@ tree
 duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
 {
   tree new_name = copy_ssa_name_fn (fn, name, stmt);
-  if (POINTER_TYPE_P (TREE_TYPE (name)))
-    {
-      struct ptr_info_def *old_ptr_info = SSA_NAME_PTR_INFO (name);
 
-      if (old_ptr_info)
-	duplicate_ssa_name_ptr_info (new_name, old_ptr_info);
-    }
-  else if (range_info_p (name))
+  if (range_info_p (name))
     duplicate_ssa_name_range_info (new_name, name);
 
   return new_name;
@@ -949,19 +943,17 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
 void
 reset_flow_sensitive_info (tree name)
 {
-  if (POINTER_TYPE_P (TREE_TYPE (name)))
+  /* Aliasing info is not flow sensitive, so preserve it if present.  */
+  ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+  SSA_NAME_RANGE_INFO (name) = NULL;
+  if (pi)
     {
-      /* points-to info is not flow-sensitive.  */
-      if (SSA_NAME_PTR_INFO (name))
-	{
-	  /* [E]VRP can derive context sensitive alignment info and
-	     non-nullness properties.  We must reset both.  */
-	  mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (name));
-	  SSA_NAME_PTR_INFO (name)->pt.null = 1;
-	}
+      set_ssa_name_ptr_info (name, pi);
+      /* [E]VRP can derive context sensitive alignment info and
+	 non-nullness properties.  We must reset both.  */
+      mark_ptr_info_alignment_unknown (pi);
+      pi->pt.null = 1;
     }
-  else
-    SSA_NAME_RANGE_INFO (name) = NULL;
 
   // Clear range info in the current range query.
   get_range_query (cfun)->reset_range_info (name);
@@ -1104,9 +1096,9 @@ void
 flow_sensitive_info_storage::save (tree name)
 {
   gcc_assert (state == 0);
+  range_info = SSA_NAME_RANGE_INFO (name);
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      range_info = SSA_NAME_RANGE_INFO (name);
       state = 1;
       return;
     }
@@ -1132,10 +1124,10 @@ void
 flow_sensitive_info_storage::restore (tree name)
 {
   gcc_assert (state != 0);
+  SSA_NAME_RANGE_INFO (name) = range_info;
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     {
       gcc_assert (state == 1);
-      SSA_NAME_RANGE_INFO (name) = range_info;
       return;
     }
   gcc_assert (state == -1);
