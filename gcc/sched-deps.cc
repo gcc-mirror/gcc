@@ -2944,6 +2944,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 
   /* Group compare and branch insns for macro-fusion.  */
   if (!deps->readonly
+      && (!sel_sched_p () || sched_emulate_haifa_p)
       && targetm.sched.macro_fusion_p
       && targetm.sched.macro_fusion_p ())
     sched_macro_fuse_insns (insn);
