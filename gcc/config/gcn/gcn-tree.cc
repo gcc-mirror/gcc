@@ -443,6 +443,50 @@ gcn_reduction_update (location_t loc, gimple_stmt_iterator *gsi,
     return gcn_lockfull_update (loc, gsi, ptr, var, op);
 }
 
+/* OpenACC offloading function attributes.  */
+
+struct oacc_attrs
+{
+  oacc_attrs ()
+  {
+    tree attr = oacc_get_fn_attrib (current_function_decl);
+    tree dims = TREE_VALUE (attr);
+    unsigned ix;
+
+    this->mask = 0;
+
+    for (ix = 0; ix != GOMP_DIM_MAX; ix++, dims = TREE_CHAIN (dims))
+      {
+	tree t = TREE_VALUE (dims);
+	int size = (t == NULL_TREE) ? -1 : TREE_INT_CST_LOW (t);
+	tree allowed = TREE_PURPOSE (dims);
+
+	if (size != 1 && !(allowed && integer_zerop (allowed)))
+	  this->mask |= GOMP_DIM_MASK (ix);
+
+	switch (ix)
+	  {
+	  case GOMP_DIM_GANG:
+	    this->num_gangs = size;
+	    break;
+
+	  case GOMP_DIM_WORKER:
+	    this->num_workers = size;
+	    break;
+
+	  case GOMP_DIM_VECTOR:
+	    this->vector_length = size;
+	    break;
+	  }
+      }
+  }
+
+  unsigned mask;
+  int num_gangs;
+  int num_workers;
+  int vector_length;
+};
+
 /* Return a temporary variable decl to use for an OpenACC worker reduction.  */
 
 static tree
@@ -837,16 +881,71 @@ gcn_goacc_reduction_init (gcall *call)
     init = omp_reduction_init_op (gimple_location (call), rcode,
 				  TREE_TYPE (var));
 
-  if (level == GOMP_DIM_GANG)
+  if (level == GOMP_DIM_VECTOR
+      && flag_simt_mode
+      && oacc_attrs().vector_length == 64)
     {
-      /* If there's no receiver object, propagate the incoming VAR.  */
-      tree ref_to_res = gimple_call_arg (call, 1);
-      if (integer_zerop (ref_to_res))
-	init = var;
-    }
+      /* Initialize vector-non-zeroes to INIT_VAL (OP).  */
+      tree tid = make_ssa_name (integer_type_node);
+      tree dim_vector = gimple_call_arg (call, 3);
+      gimple *tid_call = gimple_build_call_internal (IFN_GOACC_DIM_POS, 1,
+						     dim_vector);
+      gimple *cond_stmt = gimple_build_cond (NE_EXPR, tid, integer_zero_node,
+					     NULL_TREE, NULL_TREE);
 
-  if (lhs)
-    gimplify_assign (lhs, init, &seq);
+      gimple_call_set_lhs (tid_call, tid);
+      gimple_seq_add_stmt (&seq, tid_call);
+      gimple_seq_add_stmt (&seq, cond_stmt);
+
+      /* Split the block just after the call.  */
+      edge init_edge = split_block (gsi_bb (gsi), call);
+      basic_block init_bb = init_edge->dest;
+      basic_block call_bb = init_edge->src;
+
+      /* Fixup flags from call_bb to init_bb.  */
+      init_edge->flags ^= EDGE_FALLTHRU | EDGE_TRUE_VALUE;
+      init_edge->probability = profile_probability::even ();
+
+      /* Set the initialization stmts.  */
+      gimple_seq init_seq = NULL;
+      tree init_var = make_ssa_name (TREE_TYPE (var));
+      gimplify_assign (init_var, init, &init_seq);
+      gsi = gsi_start_bb (init_bb);
+      gsi_insert_seq_before (&gsi, init_seq, GSI_SAME_STMT);
+
+      /* Split block just after the init stmt.  */
+      gsi_prev (&gsi);
+      edge inited_edge = split_block (gsi_bb (gsi), gsi_stmt (gsi));
+      basic_block dst_bb = inited_edge->dest;
+
+      /* Create false edge from call_bb to dst_bb.  */
+      edge nop_edge = make_edge (call_bb, dst_bb, EDGE_FALSE_VALUE);
+      nop_edge->probability = profile_probability::even ();
+
+      /* Create phi node in dst block.  */
+      gphi *phi = create_phi_node (lhs, dst_bb);
+      add_phi_arg (phi, init_var, inited_edge, gimple_location (call));
+      add_phi_arg (phi, var, nop_edge, gimple_location (call));
+
+      /* Reset dominator of dst bb.  */
+      set_immediate_dominator (CDI_DOMINATORS, dst_bb, call_bb);
+
+      /* Reset the gsi.  */
+      gsi = gsi_for_stmt (call);
+    }
+  else
+    {
+      if (level == GOMP_DIM_GANG)
+	{
+	  /* If there's no receiver object, propagate the incoming VAR.  */
+	  tree ref_to_res = gimple_call_arg (call, 1);
+	  if (integer_zerop (ref_to_res))
+	    init = var;
+	}
+
+      if (lhs != NULL_TREE)
+	gimplify_assign (lhs, init, &seq);
+    }
 
   pop_gimplify_context (NULL);
 
@@ -876,43 +975,58 @@ gcn_goacc_reduction_fini (gcall *call)
 
   push_gimplify_context (true);
 
-  tree accum = NULL_TREE;
-
-  if (level == GOMP_DIM_WORKER)
+  if (level == GOMP_DIM_VECTOR
+      && flag_simt_mode
+      && oacc_attrs().vector_length == 64)
     {
-      tree offset = gimple_call_arg (call, 5);
-      tree decl;
-      if (array_p)
-	{
-	  tree array_type = TREE_TYPE (TREE_TYPE (array_addr));
-	  decl = gcn_goacc_get_worker_array_reduction_buffer
-	    (array_type, array_max_idx, &seq);
-	}
-      else
-	{
-	  tree var_type = TREE_TYPE (var);
-	  decl = gcn_goacc_get_worker_red_decl (var_type, offset);
-	}
-      accum = build_fold_addr_expr (decl);
+      /* Implement SIMT reductions using the OpenMP code-path.  */
+      tree opcode = build_int_cst (unsigned_type_node, op);
+      gimple *call = gimple_build_call_internal (IFN_GOMP_SIMT_REDUCE, 2, var,
+						 opcode);
+      r = make_ssa_name (TREE_TYPE (var));
+      gimple_call_set_lhs (call, r);
+      gimple_seq_add_stmt (&seq, call);
     }
-  else if (integer_zerop (ref_to_res))
-    r = var;
   else
-    accum = ref_to_res;
-
-  if (accum)
     {
-      /* UPDATE the accumulator.  */
-      gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
-      seq = NULL;
-      if (array_p)
+      tree accum = NULL_TREE;
+
+      if (level == GOMP_DIM_WORKER)
 	{
-	  gcn_reduction_update (gimple_location (call), &gsi, accum,
-				array_addr, op, array_max_idx);
-	  r = var;
+	  tree offset = gimple_call_arg (call, 5);
+	  tree decl;
+	  if (array_p)
+	    {
+	      tree array_type = TREE_TYPE (TREE_TYPE (array_addr));
+	      decl = gcn_goacc_get_worker_array_reduction_buffer
+		(array_type, array_max_idx, &seq);
+	    }
+	  else
+	    {
+	      tree var_type = TREE_TYPE (var);
+	      decl = gcn_goacc_get_worker_red_decl (var_type, offset);
+	    }
+	  accum = build_fold_addr_expr (decl);
 	}
+      else if (integer_zerop (ref_to_res))
+	r = var;
       else
-	r = gcn_reduction_update (gimple_location (call), &gsi, accum, var, op);
+	accum = ref_to_res;
+
+      if (accum)
+	{
+	  /* UPDATE the accumulator.  */
+	  gsi_insert_seq_before (&gsi, seq, GSI_SAME_STMT);
+	  seq = NULL;
+	  if (array_p)
+	    {
+	      gcn_reduction_update (gimple_location (call), &gsi, accum,
+				    array_addr, op, array_max_idx);
+	      r = var;
+	    }
+	  else
+	    r = gcn_reduction_update (gimple_location (call), &gsi, accum, var, op);
+	}
     }
 
   if (lhs)
@@ -943,7 +1057,10 @@ gcn_goacc_reduction_teardown (gcall *call)
 
   push_gimplify_context (true);
 
-  if (level == GOMP_DIM_WORKER)
+  if (level == GOMP_DIM_WORKER
+      || (level == GOMP_DIM_VECTOR
+	  && flag_simt_mode
+	  && oacc_attrs().vector_length != 64))
     {
       tree offset = gimple_call_arg (call, 5);
       if (array_p)
@@ -1036,12 +1153,6 @@ void
 gcn_goacc_reduction (gcall *call)
 {
   int level = TREE_INT_CST_LOW (gimple_call_arg (call, 3));
-
-  if (level == GOMP_DIM_VECTOR)
-    {
-      default_goacc_reduction (call);
-      return;
-    }
 
   unsigned code = (unsigned) TREE_INT_CST_LOW (gimple_call_arg (call, 0));
 

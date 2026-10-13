@@ -7062,9 +7062,10 @@ gcn_oacc_dim_size (int dim)
   if (dim < 0 || dim > 2)
     error ("offload dimension out of range (%d)", dim);
 
-  /* Vectors are a special case.  */
+  /* Vectors are a special case.  In SIMD mode think of this as 1 times 64.
+     In SIMT mode each lane is a separate vector position.  */
   if (dim == 2)
-    return const1_rtx;		/* Think of this as 1 times 64.  */
+    return flag_simt_mode ? GEN_INT (64) : const1_rtx;
 
   static int offset[] = {
     /* Offsets into dispatch packet.  */

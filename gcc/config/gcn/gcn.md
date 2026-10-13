@@ -63,7 +63,6 @@
   UNSPECV_BARRIER
   UNSPECV_ATOMIC
   UNSPECV_ICACHE_INV
-  UNSPECV_SIMT_FORK UNSPECV_SIMT_JOIN
   UNSPECV_SIMT_ENTER UNSPECV_SIMT_EXIT
   UNSPECV_SIMT_EXEC_BARRIER
   UNSPECV_SIMT_REDUCE])
@@ -2633,59 +2632,50 @@
   [(set_attr "type" "sopp")])
 
 (define_expand "oacc_fork"
-  [(set (match_operand:SI 0 "register_operand")
-	(unspec_volatile [(match_operand:SI 1 "")
-			  (match_operand:SI 2 "")]
-			 UNSPECV_SIMT_FORK))]
+  [(match_operand:SI 0 "register_operand")
+   (match_operand:SI 1 "")
+   (match_operand:SI 2 "")]
   ""
   {
-    /* We need to have oacc_fork/oacc_join named patterns as a pair,
-       but the fork isn't actually used.  */
-    if (!flag_simt_mode)
+    if (flag_simt_mode)
       {
-        gcc_unreachable ();
-	DONE;
+        int dim = INTVAL (operands[2]);
+
+	if (dim == GOMP_DIM_VECTOR)
+	  emit_insn (gen_omp_simt_enter (operands[0], operands[1],
+					 operands[2]));
+	/* Else do nothing.  */
       }
+    else
+      /* We need to have oacc_fork/oacc_join named patterns as a pair,
+        but the fork isn't actually used in SIMD mode.  */
+      gcc_unreachable ();
+
+    DONE;
   })
 
-; This pseudo instruction should be replaced by the simt_vect pass
-(define_insn "*oacc_fork_insn"
-  [(set (match_operand:SI 0 "register_operand")
-	(unspec_volatile [(match_operand:SI 1 "")
-			  (match_operand:SI 2 "")]
-			 UNSPECV_SIMT_FORK))]
-  ""
-  "; simt_fork %0 %1 %2 ")
-
 (define_expand "oacc_join"
-  [(unspec_volatile [(match_operand:SI 0 "")
-		     (match_operand:SI 1 "")
-		     (match_operand:SI 2 "")]
-		    UNSPECV_SIMT_JOIN)]
+  [(match_operand:SI 0 "")
+   (match_operand:SI 1 "")
+   (match_operand:SI 2 "")]
   ""
   {
     int dim = INTVAL (operands[2]);
-    if (dim == GOMP_DIM_WORKER)
-      {
-        emit_insn (gen_gcn_wavefront_barrier ());
-        DONE;
-      }
-    else if (!flag_simt_mode)
-      {
-        gcc_unreachable ();
-	DONE;
-      }
-    /* else use default expansion.  */
-  })
 
-; This pseudo instruction should be replaced by the simt_vect pass
-(define_insn "*oacc_join_insn"
-  [(unspec_volatile [(match_operand:SI 0 "")
-		     (match_operand:SI 1 "")
-		     (match_operand:SI 2 "")]
-		    UNSPECV_SIMT_JOIN)]
-  ""
-  "; simt_join %0 %1 %2 ")
+    if (dim == GOMP_DIM_WORKER)
+      emit_insn (gen_gcn_wavefront_barrier ());
+    else if (flag_simt_mode)
+      {
+	if (dim == GOMP_DIM_VECTOR)
+	  emit_insn (gen_omp_simt_exit (operands[1]));
+	/* Else do nothing.  */
+      }
+    else
+      /* Other uses should not occur with SIMD mode.  */
+      gcc_unreachable ();
+
+    DONE;
+  })
 
 ; This pseudo instruction should be replaced by the simt_vect pass
 (define_insn "omp_simt_enter"
@@ -2701,7 +2691,7 @@
 
 ; This pseudo instruction should be replaced by the simt_vect pass
 (define_insn "omp_simt_exit"
-  [(unspec_volatile [(match_operand 0 "register_operand" "r")]
+  [(unspec_volatile [(match_operand 0 "" "")]
 		    UNSPECV_SIMT_EXIT)
    (set (reg:DI EXEC_REG) (const_int 1))
    (set (reg:BI EXECZ_REG) (const_int 0))]
@@ -2748,7 +2738,7 @@
 	(unspec:SI [(match_operand:SI 1 "register_operand" "")]
 		   UNSPEC_SIMT_VOTE_ANY))]
   "flag_simt_mode"
-  "; %0 = simt_vote_any %1")
+  "sorry, unimplemented %0 = simt_vote_any %1")
 
 ;; Implement IFN_GOMP_SIMT_LAST_LANE:
 ;; set operand 0 to the value of the last active lane
@@ -2768,7 +2758,7 @@
 		 (match_operand:SI 2 "nonmemory_operand" "")]
 		UNSPEC_SIMT_XCHG_IDX))]
   "flag_simt_mode"
-  "; %0 = simt_xchg_idx %1")
+  "sorry, unimplemented %0 = simt_xchg_idx %1")
 
 ;; Ensure that scalar values are visible to all lanes at the SIMT_ENTER 
 ;; transition point.  This could be a vec_duplicate, or just ensuring it's
