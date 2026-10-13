@@ -9890,8 +9890,10 @@ trees_out::type_node (tree type)
 	}
       break;
 
-    case LANG_TYPE:
-      /* No additional data.  */
+    case OPAQUE_TYPE:
+      /* No additional data.  OPAQUE_TYPEs created by the rs6000 backend
+	 are registered as built-in types and are recorded in fixed_trees
+	 so they will not get here.  */
       gcc_checking_assert (REFLECTION_TYPE_P (type));
       break;
 
@@ -10746,10 +10748,10 @@ trees_in::tree_node (bool is_use)
 	    }
 	    break;
 
-	  /* LANG_TYPE can be more things, but here we assume it represents
+	  /* OPAQUE_TYPE can be more things, but here we assume it represents
 	     std::meta::info.  Unfortunately here it's not possible to check
 	     REFLECTION_TYPE_P.  */
-	  case LANG_TYPE:
+	  case OPAQUE_TYPE:
 	    if (!get_overrun ())
 	      res = meta_info_type_node;
 	    break;

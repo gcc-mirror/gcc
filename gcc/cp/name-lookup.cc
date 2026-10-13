@@ -1604,19 +1604,19 @@ name_lookup::adl_type (tree type)
       return;
 
     case LANG_TYPE:
-      if (REFLECTION_TYPE_P (type))
-	{
-	  /* The namespace std::meta is an associated namespace of
-	     std::meta::info.  */
-	  adl_namespace (std_meta_node);
-	  return;
-	}
       gcc_assert (type == unknown_type_node
 		  || type == init_list_type_node);
       return;
 
     case TYPE_PACK_EXPANSION:
       adl_type (PACK_EXPANSION_PATTERN (type));
+      return;
+
+    case OPAQUE_TYPE:
+      if (REFLECTION_TYPE_P (type))
+	/* The namespace std::meta is an associated namespace of
+	   std::meta::info.  */
+	adl_namespace (std_meta_node);
       return;
 
     default:

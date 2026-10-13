@@ -2770,7 +2770,7 @@ write_type (tree type)
 	      write_expression (PACK_INDEX_INDEX (type));
 	      break;
 
-	    case LANG_TYPE:
+	    case OPAQUE_TYPE:
 	      if (REFLECTION_TYPE_P (type))
 		{
 		  write_string ("Dm");

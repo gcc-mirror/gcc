@@ -1862,7 +1862,9 @@ wide_int_to_tree_1 (tree type, const wide_int_ref &pcst)
       switch (code)
 	{
 	/* This could represent the C++ std::meta::info type.  */
-	case LANG_TYPE:
+	case OPAQUE_TYPE:
+	  gcc_assert (SCALAR_INT_MODE_P (TYPE_MODE (type)));
+	  /* Fallthru.  */
 	case NULLPTR_TYPE:
 	  gcc_assert (hwi == 0);
 	  /* Fallthru.  */
@@ -2039,7 +2041,9 @@ cache_integer_cst (tree t, bool might_duplicate ATTRIBUTE_UNUSED)
   switch (TREE_CODE (type))
     {
     /* This could represent the C++ std::meta::info type.  */
-    case LANG_TYPE:
+    case OPAQUE_TYPE:
+      gcc_assert (SCALAR_INT_MODE_P (TYPE_MODE (type)));
+      /* Fallthru.  */
     case NULLPTR_TYPE:
       gcc_checking_assert (integer_zerop (t));
       /* Fallthru.  */
@@ -14540,7 +14544,10 @@ verify_opaque_type (const_tree t, tree tv, tree tc)
 	debug_tree (t2);
 	return;
       }
-    if (!OPAQUE_MODE_P (TYPE_MODE (t2)))
+    /* For C++ Reflection, we use the opaque type with a scalar integer
+       mode.  */
+    if (!OPAQUE_MODE_P (TYPE_MODE (t2))
+	&& !SCALAR_INT_MODE_P (TYPE_MODE (t2)))
       {
 	error ("type %s is not with opaque mode", kind_msg);
 	debug_tree (t2);

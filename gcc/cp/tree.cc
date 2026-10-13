@@ -5175,7 +5175,7 @@ type_has_unique_obj_representations (const_tree t, bool explain/*=false*/)
 	inform (loc, "%<std::nullptr_t%> has padding bits and no value bits");
       return false;
 
-    case LANG_TYPE:
+    case OPAQUE_TYPE:
       if (REFLECTION_TYPE_P (t))
 	{
 	  if (explain)

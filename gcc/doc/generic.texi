@@ -498,10 +498,12 @@ constants will be the type of enumeration type itself.
 
 @item OPAQUE_TYPE
 Used for things that have a @code{MODE_OPAQUE} mode class in the
-backend. Opaque types have a size and precision, and can be held in
-memory or registers. They are used when we do not want the compiler to
+backend.  Opaque types have a size and precision, and can be held in
+memory or registers.  They are used when we do not want the compiler to
 make assumptions about the availability of other operations as would
-happen with integer types.
+happen with integer types.  This type can also have a scalar integer
+mode; this is how the C++ front end represents the @code{std::meta::info}
+type.  The only @code{INTEGER_CST} of such a type is zero.
 
 @item BOOLEAN_TYPE
 Used to represent the @code{bool} type.

@@ -61,7 +61,7 @@ init_reflection ()
   /* The type std::meta::info is a scalar type for which equality and
      inequality are meaningful, but for which no ordering relation is
      defined.  */
-  meta_info_type_node = make_node (LANG_TYPE);
+  meta_info_type_node = make_node (OPAQUE_TYPE);
   /* Make it a complete type.  */
   TYPE_SIZE (meta_info_type_node) = bitsize_int (GET_MODE_BITSIZE (ptr_mode));
   TYPE_SIZE_UNIT (meta_info_type_node) = size_int (GET_MODE_SIZE (ptr_mode));

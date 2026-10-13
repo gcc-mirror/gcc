@@ -26992,8 +26992,12 @@ gen_type_die_with_usage (tree type, dw_die_ref context_die,
       gen_tagged_type_die (type, context_die, usage, reverse);
       return;
 
-    case VOID_TYPE:
     case OPAQUE_TYPE:
+      if (SCALAR_INT_MODE_P (TYPE_MODE (type)))
+	/* C++ std::meta::info type.  */
+	goto unspecified_type;
+      gcc_fallthrough ();
+    case VOID_TYPE:
     case INTEGER_TYPE:
     case REAL_TYPE:
     case FIXED_POINT_TYPE:

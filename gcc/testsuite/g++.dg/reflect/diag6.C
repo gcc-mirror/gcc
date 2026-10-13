@@ -5,6 +5,6 @@
 void
 g ()
 {
-  constexpr decltype(^^::) dm = ^^int; // { dg-message ".constexpr std::meta::info const dm. previously declared here" }
-  constexpr decltype(^^::) dm = ^^int; // { dg-error "redeclaration of .constexpr std::meta::info const dm." }
+  constexpr decltype(^^::) dm = ^^int; // { dg-message ".constexpr const std::meta::info dm. previously declared here" }
+  constexpr decltype(^^::) dm = ^^int; // { dg-error "redeclaration of .constexpr const std::meta::info dm." }
 }

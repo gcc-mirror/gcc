@@ -1442,7 +1442,7 @@ cxx_pretty_printer::simple_type_specifier (tree t)
       pp_cxx_trait (this, t);
       break;
 
-    case LANG_TYPE:
+    case OPAQUE_TYPE:
       if (REFLECTION_TYPE_P (t))
 	{
 	  pp_cxx_ws_string (this, "std::meta::info");
@@ -1978,7 +1978,7 @@ cxx_pretty_printer::type_id (tree t)
       }
       break;
 
-    case LANG_TYPE:
+    case OPAQUE_TYPE:
       if (REFLECTION_TYPE_P (t))
 	{
 	  pp_cxx_type_specifier_seq (this, t);
