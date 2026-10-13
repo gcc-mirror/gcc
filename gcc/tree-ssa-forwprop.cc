@@ -3530,7 +3530,9 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
 					   ctz_val) == 2;
       zero_val = input_bits - 1 - zero_val;
     }
-  int nargs = 2;
+  /* Pass the value at zero only if the target defines it; otherwise the
+     COND_EXPR below supplies the result for zero.  */
+  int nargs = zero_ok ? 2 : 1;
 
   /* If the input value can't be zero, don't special case ctz (0).  */
   range_query *q = get_range_query (cfun);
