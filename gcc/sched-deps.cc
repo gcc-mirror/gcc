@@ -3211,10 +3211,10 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	  EXECUTE_IF_SET_IN_REG_SET (&set_or_clobbered, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      rtx list;
-	      for (list = reg_last->uses; list; list = XEXP (list, 1))
+	      for (rtx_insn_list *list = reg_last->uses;
+		   list; list = list->next ())
 		{
-		  rtx other = XEXP (list, 0);
+		  rtx_insn *other = list->insn ();
 		  if (INSN_CACHED_COND (other) != const_true_rtx
 		      && refers_to_regno_p (i, INSN_CACHED_COND (other)))
 		    INSN_CACHED_COND (other) = const_true_rtx;
