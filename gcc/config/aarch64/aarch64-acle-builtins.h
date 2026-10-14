@@ -661,8 +661,6 @@ public:
 
   tree force_val (tree expr);
   gassign *assign (tree lhs, tree rhs);
-  gassign *assign (tree lhs, tree_code code, tree rhs1, tree rhs2 = NULL_TREE,
-		   tree rhs3 = NULL_TREE);
 
   gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();

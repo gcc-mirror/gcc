@@ -3179,18 +3179,6 @@ gimple_folder::assign (tree lhs, tree rhs)
   return stmt;
 }
 
-/* Insert a `lhs = code<rhs1, rhs2, rhs3>` statement before the current
-   statement.
-   Returns the new statement.  */
-gassign *
-gimple_folder::assign (tree lhs, tree_code code, tree rhs1, tree rhs2,
-		       tree rhs3)
-{
-  auto stmt = gimple_build_assign (lhs, code, rhs1, rhs2, rhs3);
-  gsi_insert_before (this->gsi, stmt, GSI_SAME_STMT);
-  return stmt;
-}
-
 function_expander::function_expander (const function_instance &instance,
 				      tree fndecl, tree call_expr_in,
 				      rtx possible_target_in)
