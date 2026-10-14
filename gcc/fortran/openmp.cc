@@ -3447,16 +3447,82 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match_dupl_check (!c->dyn_groupprivate,
 				       "dyn_groupprivate", true) == MATCH_YES)
 	    {
-	      if (gfc_match ("fallback ( abort ) : ") == MATCH_YES)
-		c->fallback = OMP_FALLBACK_ABORT;
-	      else if (gfc_match ("fallback ( default_mem ) : ") == MATCH_YES)
-		c->fallback = OMP_FALLBACK_DEFAULT_MEM;
-	      else if (gfc_match ("fallback ( null ) : ") == MATCH_YES)
-		c->fallback = OMP_FALLBACK_NULL;
+	      bool cgroup = false;
+	      bool first = true;
+	      bool error_p = false;
+	      do
+		{
+		  old_loc = gfc_current_locus;
+		  if (gfc_match ("cgroup ") == MATCH_YES)
+		    {
+		      if (cgroup)
+			{
+			  gfc_error ("Duplicated %<cgroup%> modifier at %L",
+				     &old_loc);
+			  goto error;
+			}
+		      cgroup = true;
+		    }
+		  else if (gfc_match ("fallback ( ") == MATCH_YES)
+		    {
+		      if (c->fallback != OMP_FALLBACK_NONE)
+			{
+			  gfc_error ("Duplicated %<fallback%> modifier at %L",
+				     &old_loc);
+			  goto error;
+			}
+		      old_loc = gfc_current_locus;
+		      if (gfc_match ("abort ) ") == MATCH_YES)
+			c->fallback = OMP_FALLBACK_ABORT;
+		      else if (gfc_match ("default_mem ) ") == MATCH_YES)
+			c->fallback = OMP_FALLBACK_DEFAULT_MEM;
+		      else if (gfc_match ("null ) ") == MATCH_YES)
+			c->fallback = OMP_FALLBACK_NULL;
+		      else
+			{
+			  gfc_error ("Expected %<abort%>, %<default_mem%> or "
+				     "%<null%> followed by %<)%> at %L",
+				     &old_loc);
+			  goto error;
+			}
+		    }
+		  else if (!first)
+		    {
+		      gfc_error ("Expected %<cgroup%> or %<fallback%> clause at %C");
+		      goto error;
+		    }
+		  if (gfc_match (", ") == MATCH_YES)
+		    {
+		      first = false;
+		      continue;
+		    }
+		  if (gfc_match (": ") == MATCH_YES)
+		    {
+		      old_loc = gfc_current_locus;
+		      break;
+		    }
+		  if (!first)
+		    {
+		      gfc_error ("Expected %<:%> at %C");
+		      goto error;
+		    }
+		  error_p = true;
+		  break;
+		}
+	      while (true);
 	      if (gfc_match_expr (&c->dyn_groupprivate) != MATCH_YES)
-		return MATCH_ERROR;
+		{
+		  gfc_error ("Expected numeric expression at %L, optionally preceeded by "
+			     "the %<cgroup%> and %<fallback%> modifier", &old_loc);
+		  goto error;
+		}
+	      if (error_p)
+		c->fallback = OMP_FALLBACK_NONE;
 	      if (gfc_match (" )") != MATCH_YES)
-		goto error;
+		{
+		  gfc_error ("Expected %<)%> at %C");
+		  goto error;
+		}
 	      continue;
 	    }
 	  break;
