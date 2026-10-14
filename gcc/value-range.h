@@ -1538,6 +1538,9 @@ prange::set_pt_unknown ()
 {
   m_pt = NULL_TREE;
   m_points_to_p = false;
+  // If this is a transition from a range, check for varying compatibility.
+  if (m_kind == VR_RANGE && varying_compatible_p ())
+    m_kind = VR_VARYING;
 }
 
 inline bool
