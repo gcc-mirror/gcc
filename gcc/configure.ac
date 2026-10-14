@@ -1577,7 +1577,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked dnl
   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
   putchar_unlocked putc_unlocked)
-AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
+AC_CHECK_FUNCS(times kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
 	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2 fstatat getauxval \
@@ -1662,15 +1662,11 @@ AC_CHECK_DECLS([basename(char*)], , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
-AC_CHECK_DECLS([strstr(const char*,const char*)], , ,[
-#include "ansidecl.h"
-#include "system.h"])
-
-gcc_AC_CHECK_DECLS(getenv atol atoll asprintf sbrk abort atof getcwd getwd \
+gcc_AC_CHECK_DECLS(atoll asprintf sbrk getcwd getwd \
 	madvise mkstemps stpcpy strnlen strsignal strverscmp \
-	strtol strtoul strtoll strtoull setenv unsetenv \
-	errno snprintf vsnprintf vasprintf malloc realloc calloc \
-	free getopt clock getpagesize ffs fmemopen gcc_UNLOCKED_FUNCS, , ,[
+	strtoll strtoull setenv unsetenv \
+	snprintf vsnprintf vasprintf \
+	getopt getpagesize ffs fmemopen gcc_UNLOCKED_FUNCS, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
@@ -1739,18 +1735,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 if test $ac_cv_struct_tms = yes; then
   AC_DEFINE(HAVE_STRUCT_TMS, 1,
   [Define if <sys/times.h> defines struct tms.])
-fi
-
-# use gcc_cv_* here because this doesn't match the behavior of AC_CHECK_TYPE.
-# revisit after autoconf 2.50.
-AC_CACHE_CHECK(for clock_t, gcc_cv_type_clock_t, [
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include "ansidecl.h"
-#include "system.h"
-]], [[clock_t x;]])],[gcc_cv_type_clock_t=yes],[gcc_cv_type_clock_t=no])])
-if test $gcc_cv_type_clock_t = yes; then
-  AC_DEFINE(HAVE_CLOCK_T, 1,
-  [Define if <time.h> defines clock_t.])
 fi
 
 # Check if F_SETLKW is supported by fcntl.

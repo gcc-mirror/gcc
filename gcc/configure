@@ -10512,7 +10512,7 @@ fi
 
 
 
-for ac_func in times clock kill getrlimit setrlimit atoq \
+for ac_func in times kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
 	clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked madvise mallinfo mallinfo2 fstatat getauxval \
@@ -12020,27 +12020,11 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
 
-as_ac_Symbol=`$as_echo "ac_cv_have_decl_strstr(const char*,const char*)" | $as_tr_sh`
-ac_fn_cxx_check_decl "$LINENO" "strstr(const char*,const char*)" "$as_ac_Symbol" "
-#include \"ansidecl.h\"
-#include \"system.h\"
-"
-if eval test \"x\$"$as_ac_Symbol"\" = x"yes"; then :
-  ac_have_decl=1
-else
-  ac_have_decl=0
-fi
-
-cat >>confdefs.h <<_ACEOF
-#define HAVE_DECL_STRSTR $ac_have_decl
-_ACEOF
-
-
-for ac_func in getenv atol atoll asprintf sbrk abort atof getcwd getwd \
+for ac_func in atoll asprintf sbrk getcwd getwd \
 	madvise mkstemps stpcpy strnlen strsignal strverscmp \
-	strtol strtoul strtoll strtoull setenv unsetenv \
-	errno snprintf vsnprintf vasprintf malloc realloc calloc \
-	free getopt clock getpagesize ffs fmemopen clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked
+	strtoll strtoull setenv unsetenv \
+	snprintf vsnprintf vasprintf \
+	getopt getpagesize ffs fmemopen clearerr_unlocked feof_unlocked   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked   putchar_unlocked putc_unlocked
 do
   ac_tr_decl=`$as_echo "HAVE_DECL_$ac_func" | $as_tr_cpp`
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $ac_func is declared" >&5
@@ -12432,43 +12416,6 @@ $as_echo "$ac_cv_struct_tms" >&6; }
 if test $ac_cv_struct_tms = yes; then
 
 $as_echo "#define HAVE_STRUCT_TMS 1" >>confdefs.h
-
-fi
-
-# use gcc_cv_* here because this doesn't match the behavior of AC_CHECK_TYPE.
-# revisit after autoconf 2.50.
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_t" >&5
-$as_echo_n "checking for clock_t... " >&6; }
-if ${gcc_cv_type_clock_t+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-#include "ansidecl.h"
-#include "system.h"
-
-int
-main ()
-{
-clock_t x;
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_cxx_try_compile "$LINENO"; then :
-  gcc_cv_type_clock_t=yes
-else
-  gcc_cv_type_clock_t=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_type_clock_t" >&5
-$as_echo "$gcc_cv_type_clock_t" >&6; }
-if test $gcc_cv_type_clock_t = yes; then
-
-$as_echo "#define HAVE_CLOCK_T 1" >>confdefs.h
 
 fi
 
@@ -21830,7 +21777,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21833 "configure"
+#line 21780 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21936,7 +21883,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21939 "configure"
+#line 21886 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

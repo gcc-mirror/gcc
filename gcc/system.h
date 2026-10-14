@@ -256,10 +256,6 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 
 #include <errno.h>
 
-#if !defined (errno) && defined (HAVE_DECL_ERRNO) && !HAVE_DECL_ERRNO
-extern int errno;
-#endif
-
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather
    rely on (and therefore test) GCC's string builtins.  */
 #define __NO_STRING_INLINES
@@ -475,24 +471,8 @@ extern int errno;
 extern "C" {
 #endif
 
-#if defined (HAVE_DECL_ATOF) && !HAVE_DECL_ATOF
-extern double atof (const char *);
-#endif
-
-#if defined (HAVE_DECL_ATOL) && !HAVE_DECL_ATOL
-extern long atol (const char *);
-#endif
-
-#if defined (HAVE_DECL_FREE) && !HAVE_DECL_FREE
-extern void free (void *);
-#endif
-
 #if defined (HAVE_DECL_GETCWD) && !HAVE_DECL_GETCWD
 extern char *getcwd (char *, size_t);
-#endif
-
-#if defined (HAVE_DECL_GETENV) && !HAVE_DECL_GETENV
-extern char *getenv (const char *);
 #endif
 
 #if defined (HAVE_DECL_GETOPT) && !HAVE_DECL_GETOPT
@@ -515,28 +495,12 @@ extern void *sbrk (int);
 int setenv(const char *, const char *, int);
 #endif
 
-#if defined (HAVE_DECL_STRSTR) && !HAVE_DECL_STRSTR
-extern char *strstr (const char *, const char *);
-#endif
-
 #if defined (HAVE_DECL_STPCPY) && !HAVE_DECL_STPCPY
 extern char *stpcpy (char *, const char *);
 #endif
 
 #if defined (HAVE_DECL_UNSETENV) && !HAVE_DECL_UNSETENV
 int unsetenv(const char *);
-#endif
-
-#if defined (HAVE_DECL_MALLOC) && !HAVE_DECL_MALLOC
-extern void *malloc (size_t);
-#endif
-
-#if defined (HAVE_DECL_CALLOC) && !HAVE_DECL_CALLOC
-extern void *calloc (size_t, size_t);
-#endif
-
-#if defined (HAVE_DECL_REALLOC) && !HAVE_DECL_REALLOC
-extern void *realloc (void *, size_t);
 #endif
 
 #ifdef __cplusplus
@@ -584,10 +548,6 @@ struct rlimit;
 extern int setrlimit (int, const struct rlimit *);
 #  endif
 # endif
-#endif
-
-#if defined (HAVE_DECL_ABORT) && !HAVE_DECL_ABORT
-extern void abort (void);
 #endif
 
 #if defined (HAVE_DECL_SNPRINTF) && !HAVE_DECL_SNPRINTF
