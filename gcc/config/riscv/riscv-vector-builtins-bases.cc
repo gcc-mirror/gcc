@@ -2595,6 +2595,80 @@ public:
   }
 };
 
+class vqwbdota : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    bool vs2_unsigned_p
+      = (e.op_info->args[1].base_type == RVV_BASE_zvbdota_u8_group
+	 || e.op_info->args[1].base_type == RVV_BASE_zvbdota_u16_group);
+    bool vs1_unsigned_p
+      = (e.op_info->args[2].base_type == RVV_BASE_zvbdota_u8_src
+	 || e.op_info->args[2].base_type == RVV_BASE_zvbdota_u16_src);
+    int unspec = vs2_unsigned_p
+		   ? (vs1_unsigned_p ? UNSPEC_VQWBDOTA_UU : UNSPEC_VQWBDOTA_US)
+		   : (vs1_unsigned_p ? UNSPEC_VQWBDOTA_SU : UNSPEC_VQWBDOTA_SS);
+    return e.use_widen_ternop_insn (
+      code_for_pred_vv (unspec, e.vector_mode ()));
+  }
+};
+
+class vfwbdota : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_widen_ternop_insn (
+      code_for_pred_vfwbdota_vv (e.vector_mode ()));
+  }
+};
+
+class vfqwbdota : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  rtx expand (function_expander &e) const override
+  {
+    bool vs2_e5m2_p
+      = e.op_info->args[1].base_type == RVV_BASE_zvbdota_f8e5m2_group;
+    bool vs1_e5m2_p
+      = e.op_info->args[2].base_type == RVV_BASE_zvbdota_f8e5m2_src;
+    int unspec = vs2_e5m2_p
+		   ? (vs1_e5m2_p ? UNSPEC_VFQWBDOTA_E5M2_E5M2
+				 : UNSPEC_VFQWBDOTA_E5M2_E4M3)
+		   : (vs1_e5m2_p ? UNSPEC_VFQWBDOTA_E4M3_E5M2
+				 : UNSPEC_VFQWBDOTA_E4M3_E4M3);
+    return e.use_widen_ternop_insn (
+      code_for_pred_vv (unspec, e.vector_mode ()));
+  }
+};
+
+template<enum frm_op_type FRM_OP = NO_FRM>
+class vfbdota : public function_base
+{
+public:
+  bool has_merge_operand_p () const override { return false; }
+
+  bool has_rounding_mode_operand_p () const override
+  {
+    return FRM_OP == HAS_FRM;
+  }
+
+  bool may_require_frm_p () const override { return true; }
+
+  rtx expand (function_expander &e) const override
+  {
+    return e.use_widen_ternop_insn (
+      code_for_pred_vfbdota_vv (e.vector_mode ()));
+  }
+};
+
 static constexpr const vsetvl<false> vsetvl_obj;
 static constexpr const vsetvl<true> vsetvlmax_obj;
 static constexpr const loadstore<false, LST_UNIT_STRIDE, false> vle_obj;
@@ -2931,6 +3005,12 @@ static constexpr const vabda<UNSPEC_VUABDA> vwabdau_obj;
 static constexpr const vqwdota vqwdota_obj;
 static constexpr const vfwdota vfwdota_obj;
 static constexpr const vfqwdota vfqwdota_obj;
+/* Zvbdota.  */
+static constexpr const vqwbdota vqwbdota_obj;
+static constexpr const vfwbdota vfwbdota_obj;
+static constexpr const vfqwbdota vfqwbdota_obj;
+static constexpr const vfbdota<NO_FRM> vfbdota_obj;
+static constexpr const vfbdota<HAS_FRM> vfbdota_frm_obj;
 
 /* Declare the function base NAME, pointing it to an instance
    of class <NAME>_obj.  */
@@ -3269,4 +3349,10 @@ BASE (vwabdau)
 BASE (vqwdota)
 BASE (vfwdota)
 BASE (vfqwdota)
+/* Zvbdota.  */
+BASE (vqwbdota)
+BASE (vfwbdota)
+BASE (vfqwbdota)
+BASE (vfbdota)
+BASE (vfbdota_frm)
 } // end namespace riscv_vector

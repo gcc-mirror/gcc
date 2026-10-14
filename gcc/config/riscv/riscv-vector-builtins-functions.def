@@ -461,6 +461,40 @@ DEF_RVV_FUNCTION (vfqwdota, zvdota, no_mu_preds,
 		  zvfqwdota8f_e5m2_e5m2_vv_ops)
 
 #undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVQWBDOTA8I_EXT
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota8i_ss_vv_ops)
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota8i_su_vv_ops)
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota8i_us_vv_ops)
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota8i_uu_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVQWBDOTA16I_EXT
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota16i_ss_vv_ops)
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota16i_su_vv_ops)
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota16i_us_vv_ops)
+DEF_RVV_FUNCTION (vqwbdota, zvbdota, full_preds, zvqwbdota16i_uu_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVFWBDOTA16BF_EXT
+DEF_RVV_FUNCTION (vfwbdota, zvbdota, full_preds, zvfwbdota16bf_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVFQWBDOTA8F_EXT
+DEF_RVV_FUNCTION (vfqwbdota, zvbdota, full_preds,
+		  zvfqwbdota8f_e4m3_e4m3_vv_ops)
+DEF_RVV_FUNCTION (vfqwbdota, zvbdota, full_preds,
+		  zvfqwbdota8f_e4m3_e5m2_vv_ops)
+DEF_RVV_FUNCTION (vfqwbdota, zvbdota, full_preds,
+		  zvfqwbdota8f_e5m2_e4m3_vv_ops)
+DEF_RVV_FUNCTION (vfqwbdota, zvbdota, full_preds,
+		  zvfqwbdota8f_e5m2_e5m2_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVFBDOTA32F_EXT
+DEF_RVV_FUNCTION (vfbdota, vfbdota, full_preds, zvfbdota32f_vv_ops)
+DEF_RVV_FUNCTION (vfbdota_frm, vfbdota_frm, full_preds, zvfbdota32f_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
 #define REQUIRED_EXTENSIONS VECTOR_EXT
 
 // 13.8. Vector Floating-Point Square-Root Instruction

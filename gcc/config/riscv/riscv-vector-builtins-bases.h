@@ -362,6 +362,12 @@ extern const function_base *const vwabdau;
 extern const function_base *const vqwdota;
 extern const function_base *const vfwdota;
 extern const function_base *const vfqwdota;
+/* Zvbdota.  */
+extern const function_base *const vqwbdota;
+extern const function_base *const vfwbdota;
+extern const function_base *const vfqwbdota;
+extern const function_base *const vfbdota;
+extern const function_base *const vfbdota_frm;
 }
 
 } // end namespace riscv_vector

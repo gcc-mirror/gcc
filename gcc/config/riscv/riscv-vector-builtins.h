@@ -111,6 +111,9 @@ static const unsigned int CP_WRITE_CSR = 1U << 5;
 #define RVV_REQUIRE_ELEN_FP_16 (1 << 6) /* Require FP ELEN >= 32.  */
 #define RVV_REQUIRE_ELEN_BF_16 (1 << 7) /* Require BF16.  */
 #define RVV_REQUIRE_ZVFOFP8MIN (1 << 8) /* Require ZVFOFP8MIN extension.  */
+#define RVV_REQUIRE_MIN_VLEN_128 (1 << 9) /* Require VLEN >= 128.  */
+#define RVV_REQUIRE_MIN_VLEN_256 (1 << 10) /* Require VLEN >= 256.  */
+#define RVV_REQUIRE_MIN_VLEN_512 (1 << 11) /* Require VLEN >= 512.  */
 
 /* Enumerates the required extensions.  */
 enum required_ext
@@ -136,6 +139,11 @@ enum required_ext
   ZVQWDOTA16I_EXT,	/* Zvqwdota16i extension.  */
   ZVFWDOTA16BF_EXT,	/* Zvfwdota16bf extension.  */
   ZVFQWDOTA8F_EXT,	/* Zvfqwdota8f extension.  */
+  ZVQWBDOTA8I_EXT,	/* Zvqwbdota8i extension.  */
+  ZVQWBDOTA16I_EXT,	/* Zvqwbdota16i extension.  */
+  ZVFWBDOTA16BF_EXT,	/* Zvfwbdota16bf extension.  */
+  ZVFQWBDOTA8F_EXT,	/* Zvfqwbdota8f extension.  */
+  ZVFBDOTA32F_EXT,	/* Zvfbdota32f extension.  */
   XSFVQMACCQOQ_EXT,	/* XSFVQMACCQOQ extension */
   XSFVQMACCDOD_EXT,	/* XSFVQMACCDOD extension */
   XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
@@ -173,6 +181,11 @@ enum rvv_builtin_partition
   RVV_PARTITION_ZVQWDOTA16I,
   RVV_PARTITION_ZVFWDOTA16BF,
   RVV_PARTITION_ZVFQWDOTA8F,
+  RVV_PARTITION_ZVQWBDOTA8I,
+  RVV_PARTITION_ZVQWBDOTA16I,
+  RVV_PARTITION_ZVFWBDOTA16BF,
+  RVV_PARTITION_ZVFQWBDOTA8F,
+  RVV_PARTITION_ZVFBDOTA32F,
   RVV_PARTITION_XSFVQMACCQOQ,
   RVV_PARTITION_XSFVQMACCDOD,
   RVV_PARTITION_XSFVFNRCLIPXFQF,
@@ -238,6 +251,16 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "zvfwdota16bf";
     case ZVFQWDOTA8F_EXT:
       return "zvfqwdota8f";
+    case ZVQWBDOTA8I_EXT:
+      return "zvqwbdota8i";
+    case ZVQWBDOTA16I_EXT:
+      return "zvqwbdota16i";
+    case ZVFWBDOTA16BF_EXT:
+      return "zvfwbdota16bf";
+    case ZVFQWBDOTA8F_EXT:
+      return "zvfqwbdota8f";
+    case ZVFBDOTA32F_EXT:
+      return "zvfbdota32f";
     case XSFVQMACCQOQ_EXT:
       return "xsfvqmaccqoq";
     case XSFVQMACCDOD_EXT:
@@ -307,6 +330,16 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_ZVFWDOTA16BF;
     case ZVFQWDOTA8F_EXT:
       return TARGET_ZVFQWDOTA8F;
+    case ZVQWBDOTA8I_EXT:
+      return TARGET_ZVQWBDOTA8I;
+    case ZVQWBDOTA16I_EXT:
+      return TARGET_ZVQWBDOTA16I;
+    case ZVFWBDOTA16BF_EXT:
+      return TARGET_ZVFWBDOTA16BF;
+    case ZVFQWBDOTA8F_EXT:
+      return TARGET_ZVFQWBDOTA8F;
+    case ZVFBDOTA32F_EXT:
+      return TARGET_ZVFBDOTA32F;
     case XSFVQMACCQOQ_EXT:
       return TARGET_XSFVQMACCQOQ;
     case XSFVQMACCDOD_EXT:
@@ -681,6 +714,7 @@ public:
   bool require_immediate (unsigned int, HOST_WIDE_INT, HOST_WIDE_INT) const;
   bool require_immediate_range_or (unsigned int, HOST_WIDE_INT,
 				   HOST_WIDE_INT, HOST_WIDE_INT) const;
+  bool require_zvbdota_ci (unsigned int) const;
 
 private:
   bool require_immediate_range (unsigned int, HOST_WIDE_INT,

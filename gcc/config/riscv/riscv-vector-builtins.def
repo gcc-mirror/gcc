@@ -794,6 +794,38 @@ DEF_RVV_BASE_TYPE (tuple_subpart, get_tuple_subpart_type (type_idx))
 DEF_RVV_BASE_TYPE (xfqf_float, get_xfqf_float_type (type_idx))
 DEF_RVV_BASE_TYPE (scalar_float, get_scalar_float_type (type_idx))
 DEF_RVV_BASE_TYPE (void_const_ptr, const_ptr_type_node)
+DEF_RVV_BASE_TYPE (zvbdota_i8_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_u8_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_i8_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_u8_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_i16_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_u16_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_i16_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_u16_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_bf16_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_bf16_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_f8e4m3_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_f8e4m3_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_f8e5m2_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_f8e5m2_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_f32_group,
+		   builtin_types[get_function_type_index (type_idx)].vector)
+DEF_RVV_BASE_TYPE (zvbdota_f32_src,
+		   builtin_types[get_function_type_index (type_idx)].vector)
 
 DEF_RVV_VXRM_ENUM (RNU, VXRM_RNU)
 DEF_RVV_VXRM_ENUM (RNE, VXRM_RNE)

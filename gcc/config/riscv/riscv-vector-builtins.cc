@@ -679,6 +679,68 @@ static const rvv_type_info zvfqwdota8f_e5m2_ops[] = {
   {VECTOR_TYPE_vfloat8e5m2m8_t, 0},
   {NUM_VECTOR_TYPES, 0}};
 
+static const rvv_type_info zvqwbdota8i_i_ops[] = {
+  {VECTOR_TYPE_vint32m1_t, RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vint32m2_t, RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vint32m4_t, RVV_REQUIRE_MIN_VLEN_64},
+  {VECTOR_TYPE_vint32m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvqwbdota8i_u_ops[] = {
+  {VECTOR_TYPE_vuint32m1_t, RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vuint32m2_t, RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vuint32m4_t, RVV_REQUIRE_MIN_VLEN_64},
+  {VECTOR_TYPE_vuint32m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvqwbdota16i_i_ops[] = {
+  {VECTOR_TYPE_vint64m1_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_512},
+  {VECTOR_TYPE_vint64m2_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vint64m4_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vint64m8_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_64},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvqwbdota16i_u_ops[] = {
+  {VECTOR_TYPE_vuint64m1_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_512},
+  {VECTOR_TYPE_vuint64m2_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vuint64m4_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vuint64m8_t, RVV_REQUIRE_ELEN_64 | RVV_REQUIRE_MIN_VLEN_64},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvfwbdota16bf_ops[] = {
+  {VECTOR_TYPE_vfloat32m1_t,
+   RVV_REQUIRE_ELEN_BF_16 | RVV_REQUIRE_ELEN_FP_32
+     | RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vfloat32m2_t,
+   RVV_REQUIRE_ELEN_BF_16 | RVV_REQUIRE_ELEN_FP_32
+     | RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vfloat32m4_t,
+   RVV_REQUIRE_ELEN_BF_16 | RVV_REQUIRE_ELEN_FP_32
+     | RVV_REQUIRE_MIN_VLEN_64},
+  {VECTOR_TYPE_vfloat32m8_t,
+   RVV_REQUIRE_ELEN_BF_16 | RVV_REQUIRE_ELEN_FP_32},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvfqwbdota8f_ops[] = {
+  {VECTOR_TYPE_vfloat32m1_t,
+   RVV_REQUIRE_ELEN_FP_32 | RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vfloat32m2_t,
+   RVV_REQUIRE_ELEN_FP_32 | RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vfloat32m4_t,
+   RVV_REQUIRE_ELEN_FP_32 | RVV_REQUIRE_MIN_VLEN_64},
+  {VECTOR_TYPE_vfloat32m8_t, RVV_REQUIRE_ELEN_FP_32},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvfbdota32f_ops[] = {
+  {VECTOR_TYPE_vfloat32m1_t,
+   RVV_REQUIRE_ELEN_FP_32 | RVV_REQUIRE_MIN_VLEN_256},
+  {VECTOR_TYPE_vfloat32m2_t,
+   RVV_REQUIRE_ELEN_FP_32 | RVV_REQUIRE_MIN_VLEN_128},
+  {VECTOR_TYPE_vfloat32m4_t,
+   RVV_REQUIRE_ELEN_FP_32 | RVV_REQUIRE_MIN_VLEN_64},
+  {VECTOR_TYPE_vfloat32m8_t, RVV_REQUIRE_ELEN_FP_32},
+  {NUM_VECTOR_TYPES, 0}};
+
 static constexpr const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -812,6 +874,90 @@ static constexpr const rvv_arg_type_info zvdota_fp8_e5m2_args[]
   = {rvv_arg_type_info (RVV_BASE_zvdota_f32_acc),
      rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info (RVV_BASE_fp8e5m2_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i8_ss_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i8_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i8_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i8_su_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i8_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u8_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i8_us_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u8_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i8_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i8_uu_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u8_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u8_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i16_ss_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i16_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i16_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i16_su_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i16_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u16_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i16_us_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u16_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_i16_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_i16_uu_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u16_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_u16_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_bf16_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_bf16_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_bf16_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_fp8_e4m3_e4m3_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e4m3_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e4m3_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_fp8_e4m3_e5m2_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e4m3_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e5m2_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_fp8_e5m2_e4m3_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e5m2_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e4m3_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_fp8_e5m2_e5m2_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e5m2_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f8e5m2_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvbdota_f32_args[]
+  = {rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f32_group),
+     rvv_arg_type_info (RVV_BASE_zvbdota_f32_src),
+     rvv_arg_type_info (RVV_BASE_size), rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (vector_type, vector_type, vector_type)
  * function.  */
@@ -1745,6 +1891,90 @@ static constexpr const rvv_op_info zvfqwdota8f_e5m2_e5m2_vv_ops
      OP_TYPE_vv,			       /* Suffix.  */
      rvv_arg_type_info (RVV_BASE_zvdota_f32_acc), /* Return type.  */
      zvdota_fp8_e5m2_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota8i_ss_vv_ops
+  = {zvqwbdota8i_i_ops,			  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i8_ss_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota8i_su_vv_ops
+  = {zvqwbdota8i_i_ops,			  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i8_su_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota8i_us_vv_ops
+  = {zvqwbdota8i_i_ops,			  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i8_us_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota8i_uu_vv_ops
+  = {zvqwbdota8i_u_ops,			  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i8_uu_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota16i_ss_vv_ops
+  = {zvqwbdota16i_i_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i16_ss_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota16i_su_vv_ops
+  = {zvqwbdota16i_i_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i16_su_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota16i_us_vv_ops
+  = {zvqwbdota16i_i_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i16_us_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwbdota16i_uu_vv_ops
+  = {zvqwbdota16i_u_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_i16_uu_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfwbdota16bf_vv_ops
+  = {zvfwbdota16bf_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_bf16_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwbdota8f_e4m3_e4m3_vv_ops
+  = {zvfqwbdota8f_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_fp8_e4m3_e4m3_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwbdota8f_e4m3_e5m2_vv_ops
+  = {zvfqwbdota8f_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_fp8_e4m3_e5m2_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwbdota8f_e5m2_e4m3_vv_ops
+  = {zvfqwbdota8f_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_fp8_e5m2_e4m3_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwbdota8f_e5m2_e5m2_vv_ops
+  = {zvfqwbdota8f_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_fp8_e5m2_e5m2_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfbdota32f_vv_ops
+  = {zvfbdota32f_ops,		  /* Types.  */
+     OP_TYPE_vv,			  /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_vector), /* Return type.  */
+     zvbdota_f32_args /* Args.  */};
 
 /* A static operand information for vector_type func (vector_type, scalar_type,
  * vector_type) function registration. */
@@ -3943,6 +4173,16 @@ get_builtin_partition (required_ext ext, const function_instance &instance)
       return RVV_PARTITION_ZVFWDOTA16BF;
     case ZVFQWDOTA8F_EXT:
       return RVV_PARTITION_ZVFQWDOTA8F;
+    case ZVQWBDOTA8I_EXT:
+      return RVV_PARTITION_ZVQWBDOTA8I;
+    case ZVQWBDOTA16I_EXT:
+      return RVV_PARTITION_ZVQWBDOTA16I;
+    case ZVFWBDOTA16BF_EXT:
+      return RVV_PARTITION_ZVFWBDOTA16BF;
+    case ZVFQWBDOTA8F_EXT:
+      return RVV_PARTITION_ZVFQWBDOTA8F;
+    case ZVFBDOTA32F_EXT:
+      return RVV_PARTITION_ZVFBDOTA32F;
     case XSFVQMACCQOQ_EXT:
       return RVV_PARTITION_XSFVQMACCQOQ;
     case XSFVQMACCDOD_EXT:
@@ -4507,9 +4747,188 @@ rvv_arg_type_info::get_scalar_float_type (vector_type_index type_idx) const
     return NULL_TREE;
 }
 
+static vector_type_index
+get_zvbdota_i8_type_index (vector_type_index type_idx, bool unsigned_p,
+			   bool group_p)
+{
+  switch (type_idx)
+    {
+    case VECTOR_TYPE_vint32m1_t:
+    case VECTOR_TYPE_vuint32m1_t:
+    case VECTOR_TYPE_vint32m2_t:
+    case VECTOR_TYPE_vuint32m2_t:
+    case VECTOR_TYPE_vint32m4_t:
+    case VECTOR_TYPE_vuint32m4_t:
+    case VECTOR_TYPE_vint32m8_t:
+    case VECTOR_TYPE_vuint32m8_t:
+      if (unsigned_p)
+	return group_p ? VECTOR_TYPE_vuint8m8_t : VECTOR_TYPE_vuint8m1_t;
+      return group_p ? VECTOR_TYPE_vint8m8_t : VECTOR_TYPE_vint8m1_t;
+
+    default:
+      return VECTOR_TYPE_INVALID;
+    }
+}
+
+static vector_type_index
+get_zvbdota_i16_type_index (vector_type_index type_idx, bool unsigned_p,
+			    bool group_p)
+{
+  switch (type_idx)
+    {
+    case VECTOR_TYPE_vint64m1_t:
+    case VECTOR_TYPE_vuint64m1_t:
+    case VECTOR_TYPE_vint64m2_t:
+    case VECTOR_TYPE_vuint64m2_t:
+    case VECTOR_TYPE_vint64m4_t:
+    case VECTOR_TYPE_vuint64m4_t:
+    case VECTOR_TYPE_vint64m8_t:
+    case VECTOR_TYPE_vuint64m8_t:
+      if (unsigned_p)
+	return group_p ? VECTOR_TYPE_vuint16m8_t : VECTOR_TYPE_vuint16m1_t;
+      return group_p ? VECTOR_TYPE_vint16m8_t : VECTOR_TYPE_vint16m1_t;
+
+    default:
+      return VECTOR_TYPE_INVALID;
+    }
+}
+
+static vector_type_index
+get_zvbdota_f32_type_index (vector_type_index type_idx)
+{
+  switch (type_idx)
+    {
+    case VECTOR_TYPE_vfloat32m1_t:
+    case VECTOR_TYPE_vfloat32m2_t:
+    case VECTOR_TYPE_vfloat32m4_t:
+    case VECTOR_TYPE_vfloat32m8_t:
+      return VECTOR_TYPE_vfloat32m1_t;
+
+    default:
+      return VECTOR_TYPE_INVALID;
+    }
+}
+
+static vector_type_index
+get_zvbdota_f32_group_type_index (vector_type_index type_idx)
+{
+  switch (type_idx)
+    {
+    case VECTOR_TYPE_vfloat32m1_t:
+    case VECTOR_TYPE_vfloat32m2_t:
+    case VECTOR_TYPE_vfloat32m4_t:
+    case VECTOR_TYPE_vfloat32m8_t:
+      return VECTOR_TYPE_vfloat32m8_t;
+
+    default:
+      return VECTOR_TYPE_INVALID;
+    }
+}
+
+static vector_type_index
+get_zvbdota_bf16_type_index (vector_type_index type_idx, bool group_p)
+{
+  switch (type_idx)
+    {
+    case VECTOR_TYPE_vfloat32m1_t:
+    case VECTOR_TYPE_vfloat32m2_t:
+    case VECTOR_TYPE_vfloat32m4_t:
+    case VECTOR_TYPE_vfloat32m8_t:
+      return group_p ? VECTOR_TYPE_vbfloat16m8_t : VECTOR_TYPE_vbfloat16m1_t;
+
+    default:
+      return VECTOR_TYPE_INVALID;
+    }
+}
+
+static vector_type_index
+get_zvbdota_fp8_type_index (vector_type_index type_idx, bool e5m2_p,
+			    bool group_p)
+{
+  switch (type_idx)
+    {
+    case VECTOR_TYPE_vfloat32m1_t:
+    case VECTOR_TYPE_vfloat32m2_t:
+    case VECTOR_TYPE_vfloat32m4_t:
+    case VECTOR_TYPE_vfloat32m8_t:
+      if (e5m2_p)
+	return group_p ? VECTOR_TYPE_vfloat8e5m2m8_t
+		       : VECTOR_TYPE_vfloat8e5m2m1_t;
+      return group_p ? VECTOR_TYPE_vfloat8e4m3m8_t
+		     : VECTOR_TYPE_vfloat8e4m3m1_t;
+
+    default:
+      return VECTOR_TYPE_INVALID;
+    }
+}
+
 vector_type_index
 rvv_arg_type_info::get_function_type_index (vector_type_index type_idx) const
 {
+  vector_type_index function_type_idx = VECTOR_TYPE_INVALID;
+  switch (base_type)
+    {
+    case RVV_BASE_zvbdota_i8_group:
+      function_type_idx = get_zvbdota_i8_type_index (type_idx, false, true);
+      break;
+    case RVV_BASE_zvbdota_u8_group:
+      function_type_idx = get_zvbdota_i8_type_index (type_idx, true, true);
+      break;
+    case RVV_BASE_zvbdota_i8_src:
+      function_type_idx = get_zvbdota_i8_type_index (type_idx, false, false);
+      break;
+    case RVV_BASE_zvbdota_u8_src:
+      function_type_idx = get_zvbdota_i8_type_index (type_idx, true, false);
+      break;
+    case RVV_BASE_zvbdota_i16_group:
+      function_type_idx = get_zvbdota_i16_type_index (type_idx, false, true);
+      break;
+    case RVV_BASE_zvbdota_u16_group:
+      function_type_idx = get_zvbdota_i16_type_index (type_idx, true, true);
+      break;
+    case RVV_BASE_zvbdota_i16_src:
+      function_type_idx = get_zvbdota_i16_type_index (type_idx, false, false);
+      break;
+    case RVV_BASE_zvbdota_u16_src:
+      function_type_idx = get_zvbdota_i16_type_index (type_idx, true, false);
+      break;
+    case RVV_BASE_zvbdota_bf16_group:
+      function_type_idx = get_zvbdota_bf16_type_index (type_idx, true);
+      break;
+    case RVV_BASE_zvbdota_bf16_src:
+      function_type_idx = get_zvbdota_bf16_type_index (type_idx, false);
+      break;
+    case RVV_BASE_zvbdota_f8e4m3_group:
+      function_type_idx = get_zvbdota_fp8_type_index (type_idx, false, true);
+      break;
+    case RVV_BASE_zvbdota_f8e4m3_src:
+      function_type_idx = get_zvbdota_fp8_type_index (type_idx, false, false);
+      break;
+    case RVV_BASE_zvbdota_f8e5m2_group:
+      function_type_idx = get_zvbdota_fp8_type_index (type_idx, true, true);
+      break;
+    case RVV_BASE_zvbdota_f8e5m2_src:
+      function_type_idx = get_zvbdota_fp8_type_index (type_idx, true, false);
+      break;
+    case RVV_BASE_zvbdota_f32_group:
+      function_type_idx = get_zvbdota_f32_group_type_index (type_idx);
+      break;
+    case RVV_BASE_zvbdota_f32_src:
+      function_type_idx = get_zvbdota_f32_type_index (type_idx);
+      break;
+    default:
+      break;
+    }
+
+  if (function_type_idx == VECTOR_TYPE_INVALID
+      && base_type >= RVV_BASE_zvbdota_i8_group
+      && base_type <= RVV_BASE_zvbdota_f32_src)
+    return NUM_VECTOR_TYPES;
+
+  if (function_type_idx != VECTOR_TYPE_INVALID)
+    return builtin_types[function_type_idx].vector ? function_type_idx
+						   : NUM_VECTOR_TYPES;
+
   tree type
     = builtin_types[function_types[type_idx].type_indexes[base_type]].vector;
   return type ? function_types[type_idx].type_indexes[base_type]
@@ -5614,6 +6033,52 @@ function_checker::require_immediate_range_or (unsigned int argno,
   return true;
 }
 
+/* Check that argument ARGNO is a valid Zvbdota ci immediate.  */
+bool
+function_checker::require_zvbdota_ci (unsigned int argno) const
+{
+  gcc_assert (argno >= 3 && argno < m_nargs);
+
+  tree arg = m_args[argno];
+  if (TREE_CODE (arg) != INTEGER_CST)
+    {
+      report_non_ice (argno);
+      return false;
+    }
+
+  widest_int actual = wi::to_widest (arg);
+  if (actual < 0 || actual > 56 || actual.to_shwi () % 8 != 0)
+    {
+      error_at (location,
+		"argument %d of %qE must be a constant multiple of 8 in the "
+		"range 0 to 56",
+		argno + 1, fndecl);
+      return false;
+    }
+
+  /* CI selects eight accumulator elements, independently of VL and the
+     compiler accumulator type's LMUL.  Only use an exact VLEN here: a
+     scalable target can guard larger offsets using the runtime VLEN.  */
+  machine_mode acc_mode = arg_mode (argno - 3);
+  unsigned int vlen;
+  if (VECTOR_MODE_P (acc_mode) && BITS_PER_RISCV_VECTOR.is_constant (&vlen))
+    {
+      unsigned int eew = GET_MODE_BITSIZE (GET_MODE_INNER (acc_mode));
+      unsigned int max_ci = vlen > 8 * eew ? vlen / eew - 8 : 0;
+      max_ci = MIN (max_ci, 56U);
+      if (actual.to_shwi () > max_ci)
+	{
+	  error_at (location,
+		    "argument %d of %qE must be in the range 0 to %u "
+		    "for a %u-bit VLEN",
+		    argno + 1, fndecl, max_ci, vlen);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
 /* Perform semantic checks on the call.  Return true if the call is valid,
    otherwise report a suitable error.  */
 bool
@@ -6028,6 +6493,38 @@ validate_instance_type_required_extensions (const rvv_type_info type,
       error_at (location,
 		"built-in function %qE requires the "
 		"zve64x, zve64f, zve64d or v ISA extension",
+		fndecl);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_MIN_VLEN_64) && TARGET_MIN_VLEN < 64)
+    {
+      error_at (location,
+		"built-in function %qE requires the zvl64b ISA extension",
+		fndecl);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_MIN_VLEN_128) && TARGET_MIN_VLEN < 128)
+    {
+      error_at (location,
+		"built-in function %qE requires the zvl128b ISA extension",
+		fndecl);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_MIN_VLEN_256) && TARGET_MIN_VLEN < 256)
+    {
+      error_at (location,
+		"built-in function %qE requires the zvl256b ISA extension",
+		fndecl);
+      return false;
+    }
+
+  if ((exts & RVV_REQUIRE_MIN_VLEN_512) && TARGET_MIN_VLEN < 512)
+    {
+      error_at (location,
+		"built-in function %qE requires the zvl512b ISA extension",
 		fndecl);
       return false;
     }
