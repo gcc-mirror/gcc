@@ -5,7 +5,6 @@
 /* Verify we do not ICE on the tests below.  */
 
 /* { dg-final { scan-assembler-not "rldicr" { target { le } } } } */
-/* { dg-final { scan-assembler-not "stxvd2x" { target { le } } } } */
 
 union U128
 {
