@@ -138,7 +138,7 @@ skip_consecutive_labels (rtx label_or_return)
 
      So we explicitly disallow looking through BARRIERS here.  */
   for (insn = label;
-       insn != 0 && !INSN_P (insn) && !BARRIER_P (insn);
+       insn != 0 && !NONDEBUG_INSN_P (insn) && !BARRIER_P (insn);
        insn = NEXT_INSN (insn))
     if (LABEL_P (insn))
       label = insn;
