@@ -990,9 +990,9 @@
 
 #if !defined(__cpp_lib_bitops)
 # if (__cplusplus >  202603L)
-#  define __glibcxx_bitops 202606L
+#  define __glibcxx_bitops 202607L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bitops)
-#   define __cpp_lib_bitops 202606L
+#   define __cpp_lib_bitops 202607L
 #  endif
 # elif (__cplusplus >= 202002L)
 #  define __glibcxx_bitops 201907L

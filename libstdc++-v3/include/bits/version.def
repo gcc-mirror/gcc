@@ -890,10 +890,13 @@ ftms = {
 
 ftms = {
   name = bitops;
+  // 202606 P3793R2 Better shifting
+  // 202607 P3104R6 Bit permutations
   values = {
-    v = 202606;
+    v = 202607;
     cxxmin = 29;
   };
+  // 201907 P0553R4 Bit operations
   values = {
     v = 201907;
     cxxmin = 20;
