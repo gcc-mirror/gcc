@@ -7224,9 +7224,17 @@ categorize_ctor_elements_1 (const_tree ctor, HOST_WIDE_INT *p_nz_elts,
 	  break;
 
 	case STRING_CST:
-	  nz_elts += mult * TREE_STRING_LENGTH (value);
-	  unique_nz_elts += TREE_STRING_LENGTH (value);
-	  init_elts += mult * TREE_STRING_LENGTH (value);
+	  {
+	    HOST_WIDE_INT len = TREE_STRING_LENGTH (value);
+	    nz_elts += mult * len;
+	    unique_nz_elts += len;
+	    /* Count implicit trailing zeros as well, so that the density
+	       heuristic can prefer clearing to copying a mostly-zero
+	       aggregate from read-only data.  */
+	    if (tree_fits_shwi_p (TYPE_SIZE_UNIT (elt_type)))
+	      len = MAX (len, tree_to_shwi (TYPE_SIZE_UNIT (elt_type)));
+	    init_elts += mult * len;
+	  }
 	  break;
 
 	case RAW_DATA_CST:

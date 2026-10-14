@@ -3,6 +3,10 @@
 
 using uint = unsigned int;
 
+// Use a byte-sized enum so the initializer remains a CONSTRUCTOR rather than
+// becoming a STRING_CST, preserving the stores this test exercises.
+enum class byte : unsigned char {};
+
 template<typename C, uint S>
 struct FixBuf
 {
@@ -71,10 +75,10 @@ template<uint N, uint S, bool BOS = 0>
 constexpr
 auto fixbuf()
 {
-	FixBuf<char, S> fb;
-	OutBuf<char> ob{fb};
+	FixBuf<byte, S> fb;
+	OutBuf<byte> ob{fb};
 	for (uint i = 0; i <= N; ++i) {
-		ob << i << static_cast<char>(i == N ? 0 : ' ');
+		ob << i << static_cast<byte>(i == N ? 0 : ' ');
 	}
 	return BufOrSize<BOS>::Select(fb, ob);
 }
