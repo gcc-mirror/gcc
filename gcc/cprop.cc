@@ -1702,7 +1702,7 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	    }
 	  else if (GET_CODE (new_rtx) == LABEL_REF)
 	    {
-	      dest = BLOCK_FOR_INSN (XEXP (new_rtx, 0));
+	      dest = BLOCK_FOR_INSN (label_ref_label (new_rtx));
 	      /* Don't bypass edges containing instructions.  */
 	      if (dest)
 		{
