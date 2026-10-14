@@ -47,10 +47,7 @@ along with GCC; see the file COPYING3.  If not see
 # endif
 #endif
 
-#ifdef HAVE_STDDEF_H
-# include <stddef.h>
-#endif
-
+#include <stddef.h>
 #include <stdio.h>
 
 /* Define a generic NULL if one hasn't already been defined.  */

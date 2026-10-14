@@ -1351,7 +1351,7 @@ AC_HEADER_TIME
 ACX_HEADER_STRING
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIOCGWINSZ
-AC_CHECK_HEADERS(stddef.h string.h strings.h time.h iconv.h \
+AC_CHECK_HEADERS(string.h strings.h iconv.h \
 		 fcntl.h ftw.h unistd.h sys/auxv.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h sys/locking.h \
 		 direct.h malloc.h langinfo.h ldfcn.h wchar.h libgen.h)

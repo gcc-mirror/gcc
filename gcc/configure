@@ -9345,7 +9345,7 @@ $as_echo "#define GWINSZ_IN_SYS_IOCTL 1" >>confdefs.h
   fi
 fi
 
-for ac_header in stddef.h string.h strings.h time.h iconv.h \
+for ac_header in string.h strings.h iconv.h \
 		 fcntl.h ftw.h unistd.h sys/auxv.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h sys/locking.h \
 		 direct.h malloc.h langinfo.h ldfcn.h wchar.h libgen.h
