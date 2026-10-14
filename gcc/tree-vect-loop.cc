@@ -7384,17 +7384,24 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      && types_compatible_p (TREE_TYPE (cond_initial_val),
 				     TREE_TYPE (cond_reduc_val)))
 	    {
-	      tree e = fold_binary (LE_EXPR, boolean_type_node,
-				    cond_initial_val, cond_reduc_val);
-	      if (e && (integer_onep (e) || integer_zerop (e)))
+	      tree lt, gt;
+	      enum tree_code cond_reduc_code = ERROR_MARK;
+	      if ((lt = fold_binary (LT_EXPR, boolean_type_node,
+				     cond_initial_val, cond_reduc_val))
+		  && integer_onep (lt))
+		cond_reduc_code = MAX_EXPR;
+	      else if ((gt = fold_binary (GT_EXPR, boolean_type_node,
+					  cond_initial_val, cond_reduc_val))
+		       && integer_onep (gt))
+		cond_reduc_code = MIN_EXPR;
+	      if (cond_reduc_code != ERROR_MARK)
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "condition expression based on "
 				     "compile time constant.\n");
 		  /* Record reduction code at analysis stage.  */
-		  VECT_REDUC_INFO_CODE (reduc_info)
-		    = integer_onep (e) ? MAX_EXPR : MIN_EXPR;
+		  VECT_REDUC_INFO_CODE (reduc_info) = cond_reduc_code;
 		  VECT_REDUC_INFO_TYPE (reduc_info) = CONST_COND_REDUCTION;
 		}
 	    }
