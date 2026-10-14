@@ -2857,10 +2857,13 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
   if (tem == NULL_TREE)
     return false;
 
-  /* If op is default def SSA_NAME, there is no place to insert the
-     new comparison.  Give up, unless we can use OP itself as the
-     range test.  */
-  if (op && SSA_NAME_IS_DEFAULT_DEF (op))
+  /* If op is default def SSA_NAME, or the range test on OP itself would
+     have to follow a definition of OP that ends its basic block, there
+     is no place to insert the new comparison.  Give up, unless we can
+     use OP itself as the range test.  */
+  if (op
+      && (SSA_NAME_IS_DEFAULT_DEF (op)
+	  || (op == range->exp && stmt_ends_bb_p (stmt))))
     {
       if (op == range->exp
 	  && ((TYPE_PRECISION (optype) == 1 && TYPE_UNSIGNED (optype))
