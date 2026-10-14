@@ -332,10 +332,9 @@ allocate_next_window (int window_num)
 /* Compute number of immediate operands of an instruction.  */
 
 static void
-find_constant (rtx in_rtx, imm_info *imm_values)
+find_constant (rtx_insn *insn, imm_info *imm_values)
 {
-  if (INSN_P (in_rtx))
-    in_rtx = PATTERN (in_rtx);
+  rtx in_rtx = INSN_P (insn) ? PATTERN (insn) : insn;
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, in_rtx, ALL)
     if (const_rtx x = *iter)

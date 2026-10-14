@@ -5325,7 +5325,7 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
    in movabs* patterns.  */
 
 bool
-ix86_check_movabs (rtx insn, int opnum)
+ix86_check_movabs (rtx_insn *insn, int opnum)
 {
   rtx set, mem;
 
@@ -18291,7 +18291,7 @@ ix86_class_likely_spilled_p (reg_class_t);
 /* Returns true if lhs of insn is HW function argument register and set up
    is_spilled to true if it is likely spilled HW register.  */
 static bool
-insn_is_function_arg (rtx insn, bool* is_spilled)
+insn_is_function_arg (rtx_insn *insn, bool* is_spilled)
 {
   rtx dst;
 
@@ -18300,12 +18300,12 @@ insn_is_function_arg (rtx insn, bool* is_spilled)
   /* Call instructions are not movable, ignore it.  */
   if (CALL_P (insn))
     return false;
-  insn = PATTERN (insn);
-  if (GET_CODE (insn) == PARALLEL)
-    insn = XVECEXP (insn, 0, 0);
-  if (GET_CODE (insn) != SET)
+  rtx pat = PATTERN (insn);
+  if (GET_CODE (pat) == PARALLEL)
+    pat = XVECEXP (pat, 0, 0);
+  if (GET_CODE (pat) != SET)
     return false;
-  dst = SET_DEST (insn);
+  dst = SET_DEST (pat);
   if (REG_P (dst) && HARD_REGISTER_P (dst)
       && ix86_function_arg_regno_p (REGNO (dst)))
     {
