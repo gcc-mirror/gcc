@@ -3770,7 +3770,6 @@ dirty_to_binary(const char  *instring,
   return value;
   }
 
-
 static void
 psa_FldLiteralN(struct cbl_field_t *field )
   {
@@ -3807,8 +3806,10 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
   static size_t our_index = 0;
 
-  sprintf(id_string, "." HOST_SIZE_T_PRINT_DEC, (fmt_size_t)++our_index);
-  strcpy(base_name, field->name);
+  sprintf(id_string, HOST_SIZE_T_PRINT_DEC, (fmt_size_t)++our_index);
+  strcpy(base_name, "_");
+  strcat(base_name, field->name);
+  strcat(base_name, "_data_");
   strcat(base_name, id_string);
 
   tree var_type;
@@ -14925,16 +14926,28 @@ psa_FldLiteralA(struct cbl_field_t *field )
 
   tree converted = convert_data_initial(field);
 
-  static const char name_base[] = "_literal_a_";
-
   static int nvar = 0;
-  nvar += 1;
+  char *name;
+  if( field->level == 78 )
+    {
+    name = xasprintf("%s.%d.%d",
+                     field->name,
+                     static_cast<int>(field->our_index),
+                     static_cast<int>(current_function->program_id_number));
+    }
+  else
+    {
+    name = xasprintf("%s_%d",
+                     "_literal_a_",
+                     nvar++);
+    }
 
-  char ach[32];
-  sprintf(ach, "%s%d", name_base, nvar);
-  field->var_decl_node  = gg_define_variable( cblc_field_type_node,
-                                              ach,
-                                              vs_file_static);
+  gg_variable_scope_t vs = field->level == 78 ? vs_static : vs_file_static ;
+  field->var_decl_node = gg_define_variable(cblc_field_type_node,
+                                            name,
+                                            vs);
+  free(name);
+
   TREE_READONLY(field->var_decl_node) = 1;
   TREE_USED(field->var_decl_node) = 1;
   TREE_STATIC(field->var_decl_node) = 1;
@@ -15595,7 +15608,11 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     // At this point, new_initial might have been set by
     // get_class_condition_string.  If not, we set it another way:
-    if( !level_88_string && !class_string)
+    if( new_var->type == FldLiteralN )
+      {
+      new_initial = new_var->data.original();
+      }
+    else if( !level_88_string && !class_string )
       {
       new_initial = const_cast<char *>(new_var->data.initial);
       length_of_initial_string = new_var->data.capacity();

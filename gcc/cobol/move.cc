@@ -865,6 +865,8 @@ mh_numeric_display( const cbl_refer_t &destref,
       &&  !(sourceref.field->attr & scaled_e)
       &&  charmap_source->stride() == 1
       &&  sourceref.field->codeset.encoding == destref.field->codeset.encoding
+      &&  !destref.refmod.from
+      &&  !sourceref.refmod.from
       )
     {
     // We can do simple moves of single-byte same-encoding numeric display.
