@@ -1,3 +1,25 @@
+2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (hppa_rtx_costs_shadd_p): Strip SUBREG wrappers
+	from inner operands when checking if X represents a possible
+	shadd pattern.
+
+2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (canonicalize_funcptr_for_compare): Check for
+	SYMBOL_REF targets that are not function addresses early and emit
+	a direct move instruction to bypass redundant libcall wrappers.
+
+2026-10-13  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-10-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/127382
+	* match.pd (cond_expr_convert_p): Use tree_nop_conversion_p
+	instead of INTEGRAL_TYPE_P to check the integral selected
+	operands.
+
 2026-10-12  Jeevitha  <jeevitha@linux.ibm.com>
 
 	Backported from master:
