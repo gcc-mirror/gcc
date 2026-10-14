@@ -81,9 +81,9 @@ enum dump_insn_rtx_def
 			 | DUMP_INSN_RTX_BBN)
   };
 
-extern void dump_insn_rtx_1 (rtx, int);
-extern void dump_insn_rtx (rtx);
-extern void debug_insn_rtx (rtx);
+extern void dump_insn_rtx_1 (rtx_insn *, int);
+extern void dump_insn_rtx (rtx_insn *);
+extern void debug_insn_rtx (rtx_insn *);
 
 /* These values control dumping of vinsns.  The meaning of different fields
    of a vinsn is explained in sel-sched-ir.h.  */

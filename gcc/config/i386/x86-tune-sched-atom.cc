@@ -80,8 +80,7 @@ do_reorder_for_imul (rtx_insn **ready, int n_ready)
 
       FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
 	{
-	  rtx con;
-	  con = DEP_CON (dep);
+	  rtx_insn *con = DEP_CON (dep);
 	  if (!NONDEBUG_INSN_P (con))
 	    continue;
 	  insn1 = PATTERN (con);

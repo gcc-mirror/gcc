@@ -233,10 +233,10 @@ static edgeset *ancestor_edges;
 /* Speculative scheduling functions.  */
 static bool check_live_1 (int, rtx);
 static void update_live_1 (int, rtx);
-static bool is_pfree (rtx, int, int);
+static bool is_pfree (rtx_insn *, int, int);
 static bool find_conditional_protection (rtx_insn *, int);
-static bool is_conditionally_protected (rtx, int, int);
-static bool is_prisky (rtx, int, int);
+static bool is_conditionally_protected (rtx_insn *, int, int);
+static bool is_prisky (rtx_insn *, int, int);
 static bool is_exception_free (rtx_insn *, int, int);
 
 static bool sets_likely_spilled (rtx);
@@ -1856,7 +1856,7 @@ update_live (rtx_insn *insn, int src)
 /* Turns on the fed_by_spec_load flag for insns fed by load_insn.  */
 
 static void
-set_spec_fed (rtx load_insn)
+set_spec_fed (rtx_insn *load_insn)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -1907,7 +1907,7 @@ find_conditional_protection (rtx_insn *insn, int load_insn_bb)
    Locate the branch by following INSN_FORW_DEPS from insn1.  */
 
 static bool
-is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
+is_conditionally_protected (rtx_insn *load_insn, int bb_src, int bb_trg)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -1958,7 +1958,7 @@ is_conditionally_protected (rtx load_insn, int bb_src, int bb_trg)
    load2 anyhow.  */
 
 static bool
-is_pfree (rtx load_insn, int bb_src, int bb_trg)
+is_pfree (rtx_insn *load_insn, int bb_src, int bb_trg)
 {
   sd_iterator_def back_sd_it;
   dep_t back_dep;
@@ -2010,7 +2010,7 @@ is_pfree (rtx load_insn, int bb_src, int bb_trg)
    a compare on load_insn's address).  */
 
 static bool
-is_prisky (rtx load_insn, int bb_src, int bb_trg)
+is_prisky (rtx_insn *load_insn, int bb_src, int bb_trg)
 {
   if (FED_BY_SPEC_LOAD (load_insn))
     return true;
@@ -2085,7 +2085,7 @@ static ds_t new_ready (rtx_insn *, ds_t);
 static bool schedule_more_p (void);
 static const char *rgn_print_insn (const rtx_insn *, int);
 static int rgn_rank (rtx_insn *, rtx_insn *);
-static void compute_jump_reg_dependencies (rtx, regset);
+static void compute_jump_reg_dependencies (rtx_insn *, regset);
 
 /* Functions for speculative scheduling.  */
 static void rgn_add_remove_insn (rtx_insn *, int);
@@ -2335,7 +2335,7 @@ contributes_to_priority (rtx_insn *next, rtx_insn *insn)
    considered as used by this jump in USED.  */
 
 static void
-compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
+compute_jump_reg_dependencies (rtx_insn *insn ATTRIBUTE_UNUSED,
 			       regset used ATTRIBUTE_UNUSED)
 {
   /* Nothing to do here, since we postprocess jumps in

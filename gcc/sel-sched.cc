@@ -592,7 +592,7 @@ advance_one_cycle (fence_t fence)
 /* Returns true when SUCC in a fallthru bb of INSN, possibly
    skipping empty basic blocks.  */
 static bool
-in_fallthru_bb_p (rtx_insn *insn, rtx succ)
+in_fallthru_bb_p (rtx_insn *insn, rtx_insn *succ)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   edge e;
@@ -3673,7 +3673,7 @@ vinsn_vec_free (vinsn_vec_t &vinsn_vec)
 
 /* Increase EXPR_PRIORITY_ADJ for INSN by AMOUNT.  */
 
-void sel_add_to_insn_priority (rtx insn, int amount)
+void sel_add_to_insn_priority (rtx_insn *insn, int amount)
 {
   EXPR_PRIORITY_ADJ (INSN_EXPR (insn)) += amount;
 

@@ -254,7 +254,7 @@ sms_print_insn (const rtx_insn *insn, int aligned ATTRIBUTE_UNUSED)
 }
 
 static void
-compute_jump_reg_dependencies (rtx insn ATTRIBUTE_UNUSED,
+compute_jump_reg_dependencies (rtx_insn *insn ATTRIBUTE_UNUSED,
 			       regset used ATTRIBUTE_UNUSED)
 {
 }
