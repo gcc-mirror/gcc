@@ -342,6 +342,10 @@
 @tab 1.0
 @tab Vector extensions for embedded processors
 
+@item @samp{zvfbdota32f}
+@tab 1.0
+@tab Vector FP32 batched dot-product extension
+
 @item @samp{zvfbfmin}
 @tab 1.0
 @tab Vector BF16 converts extension
@@ -349,6 +353,22 @@
 @item @samp{zvfofp8min}
 @tab 0.2
 @tab Vector FP8 minimum extension
+
+@item @samp{zvfqwbdota8f}
+@tab 1.0
+@tab Vector quad-widening FP8 batched dot-product extension
+
+@item @samp{zvfqwdota8f}
+@tab 1.0
+@tab Vector quad-widening FP8 dot-product extension
+
+@item @samp{zvfwbdota16bf}
+@tab 1.0
+@tab Vector widening BF16 batched dot-product extension
+
+@item @samp{zvfwdota16bf}
+@tab 1.0
+@tab Vector widening BF16 dot-product extension
 
 @item @samp{zvfbfwma}
 @tab 1.0
@@ -417,6 +437,22 @@
 @item @samp{zvkt}
 @tab 1.0
 @tab Vector data independent execution latency extension
+
+@item @samp{zvqwbdota8i}
+@tab 1.0
+@tab Vector quad-widening 8-bit integer batched dot-product extension
+
+@item @samp{zvqwbdota16i}
+@tab 1.0
+@tab Vector quad-widening 16-bit integer batched dot-product extension
+
+@item @samp{zvqwdota8i}
+@tab 1.0
+@tab Vector quad-widening 8-bit integer dot-product extension
+
+@item @samp{zvqwdota16i}
+@tab 1.0
+@tab Vector quad-widening 16-bit integer dot-product extension
 
 @item @samp{zvl1024b}
 @tab 1.0

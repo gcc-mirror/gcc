@@ -1182,6 +1182,19 @@ DEFINE_RISCV_EXT(
   /* BITMASK_BIT_POSITION*/ 62,
   /* EXTRA_EXTENSION_FLAGS */ 0)
 
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvfbdota32f,
+  /* UPPERCASE_NAME.  */ ZVFBDOTA32F,
+  /* FULL_NAME.  */ "Vector FP32 batched dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvf,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
 DEFINE_RISCV_EXT(
   /* NAME */ zvfbfmin,
   /* UPPERCASE_NAME */ ZVFBFMIN,
@@ -1207,6 +1220,58 @@ DEFINE_RISCV_EXT(
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
   /* BITMASK_BIT_POSITION*/ BITMASK_NOT_YET_ALLOCATED,
   /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvfqwbdota8f,
+  /* UPPERCASE_NAME.  */ ZVFQWBDOTA8F,
+  /* FULL_NAME.  */ "Vector quad-widening FP8 batched dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvf,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvfqwdota8f,
+  /* UPPERCASE_NAME.  */ ZVFQWDOTA8F,
+  /* FULL_NAME.  */ "Vector quad-widening FP8 dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvf,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvfwbdota16bf,
+  /* UPPERCASE_NAME.  */ ZVFWBDOTA16BF,
+  /* FULL_NAME.  */ "Vector widening BF16 batched dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvf,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvfwdota16bf,
+  /* UPPERCASE_NAME.  */ ZVFWDOTA16BF,
+  /* FULL_NAME.  */ "Vector widening BF16 dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32f"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvf,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvfbfwma,
@@ -1428,6 +1493,60 @@ DEFINE_RISCV_EXT(
   /* BITMASK_GROUP_ID */ 0,
   /* BITMASK_BIT_POSITION*/ 59,
   /* EXTRA_EXTENSION_FLAGS */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvqwbdota8i,
+  /* UPPERCASE_NAME.  */ ZVQWBDOTA8I,
+  /* FULL_NAME.  */ "Vector quad-widening 8-bit integer batched "
+		  "dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32x"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvq,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvqwbdota16i,
+  /* UPPERCASE_NAME.  */ ZVQWBDOTA16I,
+  /* FULL_NAME.  */ "Vector quad-widening 16-bit integer batched "
+		  "dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve64x"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvq,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvqwdota8i,
+  /* UPPERCASE_NAME.  */ ZVQWDOTA8I,
+  /* FULL_NAME.  */ "Vector quad-widening 8-bit integer dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve32x"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvq,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
+
+DEFINE_RISCV_EXT (
+  /* NAME.  */ zvqwdota16i,
+  /* UPPERCASE_NAME.  */ ZVQWDOTA16I,
+  /* FULL_NAME.  */ "Vector quad-widening 16-bit integer dot-product extension",
+  /* DESC.  */ "",
+  /* URL.  */ ,
+  /* DEP_EXTS.  */ ({"zve64x"}),
+  /* SUPPORTED_VERSIONS.  */ ({{1, 0}}),
+  /* FLAG_GROUP.  */ zvq,
+  /* BITMASK_GROUP_ID.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* BITMASK_BIT_POSITION.  */ BITMASK_NOT_YET_ALLOCATED,
+  /* EXTRA_EXTENSION_FLAGS.  */ 0)
 
 DEFINE_RISCV_EXT(
   /* NAME */ zvl1024b,

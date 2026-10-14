@@ -109,6 +109,9 @@ int riscv_zvk_subext
 TargetVariable
 int riscv_zvl_subext
 
+TargetVariable
+int riscv_zvq_subext
+
 Mask(RVE) Var(riscv_base_subext)
 
 Mask(RVI) Var(riscv_base_subext)
@@ -271,9 +274,19 @@ Mask(ZVE64F) Var(riscv_zve_subext)
 
 Mask(ZVE64X) Var(riscv_zve_subext)
 
+Mask(ZVFBDOTA32F) Var(riscv_zvf_subext)
+
 Mask(ZVFBFMIN) Var(riscv_zvf_subext)
 
 Mask(ZVFOFP8MIN) Var(riscv_zvf_subext)
+
+Mask(ZVFQWBDOTA8F) Var(riscv_zvf_subext)
+
+Mask(ZVFQWDOTA8F) Var(riscv_zvf_subext)
+
+Mask(ZVFWBDOTA16BF) Var(riscv_zvf_subext)
+
+Mask(ZVFWDOTA16BF) Var(riscv_zvf_subext)
 
 Mask(ZVFBFWMA) Var(riscv_zvf_subext)
 
@@ -308,6 +321,14 @@ Mask(ZVKSG) Var(riscv_zvk_subext)
 Mask(ZVKSH) Var(riscv_zvk_subext)
 
 Mask(ZVKT) Var(riscv_zvk_subext)
+
+Mask(ZVQWBDOTA8I) Var(riscv_zvq_subext)
+
+Mask(ZVQWBDOTA16I) Var(riscv_zvq_subext)
+
+Mask(ZVQWDOTA8I) Var(riscv_zvq_subext)
+
+Mask(ZVQWDOTA16I) Var(riscv_zvq_subext)
 
 Mask(ZVL1024B) Var(riscv_zvl_subext)
 
