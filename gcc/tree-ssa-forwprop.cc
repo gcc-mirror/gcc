@@ -5032,6 +5032,15 @@ simplify_permutation (gimple_stmt_iterator *gsi)
       op3 = gimple_assign_rhs3 (def_stmt);
       if (TREE_CODE (op3) != VECTOR_CST)
 	return false;
+      /* is_combined_permutation_identity assumes that both permutes and
+	 their inputs have the same number of elements.  Mixed widths are
+	 left to the match.pd VEC_PERM merge patterns.  */
+      if (maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op2)),
+		    TYPE_VECTOR_SUBPARTS (TREE_TYPE (op3)))
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (TREE_TYPE (op0)),
+		       TYPE_VECTOR_SUBPARTS
+			 (TREE_TYPE (gimple_assign_rhs1 (def_stmt)))))
+	return false;
       ident = is_combined_permutation_identity (op3, op2);
       if (!ident)
 	return false;

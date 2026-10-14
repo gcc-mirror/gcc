@@ -12893,11 +12893,16 @@ and,
    to
      result = VIEW_CONVERT_EXPR <VEC_PERM_EXPR <op2, op3, new_sel>>;
    The VIEW_CONVERT_EXPR may change the element type but not the element
-   count.  */
+   count.  op2 and op3 have the same number of elements, but inner may have
+   a different number than op2 and op3, and result a different number
+   than inner, so index each selector by the element count of its own
+   inputs.  */
 
 (simplify
  (vec_perm (view_convert?@0 (vec_perm@1 @2 @3 VECTOR_CST@4)) @0 VECTOR_CST@5)
- (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@2)).is_constant ())
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
@@ -12917,16 +12922,23 @@ and,
        for (int i = 0; i < nelts; i++)
 	 new_builder.quick_push (sel4[sel5[i].to_constant ()]);
 
-       vec_perm_indices new_sel (new_builder, 2, nelts);
+       vec_perm_indices new_sel (new_builder, 2, sel4.nelts_per_input ());
+
+       /* The new permute has the element count of result and the element
+	  type of op2, so it has the type of result unless the
+	  VIEW_CONVERT_EXPR changes the element type.  */
+       tree perm_type = type;
+       if (!types_match (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@2))))
+	 perm_type = build_vector_type (TREE_TYPE (TREE_TYPE (@2)), nelts);
+       machine_mode perm_mode = TYPE_MODE (perm_type);
 
        tree new_vcst = NULL_TREE;
        /* If the new VEC_PERM_EXPR can't be handled but both
 	  original VEC_PERM_EXPRs can, punt.
 	  If one or both of the original VEC_PERM_EXPRs can't be
 	  handled and the new one can't be either, don't increase
-	  number of VEC_PERM_EXPRs that can't be handled.
-	  The new VEC_PERM_EXPR has the type of op2.  */
-       if (can_vec_perm_const_p (op2_mode, op2_mode, new_sel, false)
+	  number of VEC_PERM_EXPRs that can't be handled.  */
+       if (can_vec_perm_const_p (perm_mode, op2_mode, new_sel, false)
 	   || (single_use (@0)
 	       ? (!can_vec_perm_const_p (inner_mode, op2_mode, sel4, true)
 		  || !can_vec_perm_const_p (result_mode, vc_mode, sel5, true))
@@ -12934,7 +12946,7 @@ and,
 	 new_vcst = vec_perm_indices_to_tree (TREE_TYPE (@5), new_sel);
      }
      (if (new_vcst)
-      (view_convert (vec_perm @2 @3 { new_vcst; }))))))))
+      (view_convert (vec_perm:perm_type @2 @3 { new_vcst; }))))))))
 
 /* Merge
      c = VEC_PERM_EXPR <a, b, VCST0>;
@@ -12946,11 +12958,16 @@ and,
 
 (simplify
  (vec_perm @5 (vec_perm@0 @1 @2 VECTOR_CST@3) VECTOR_CST@4)
- (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+ /* The new permute replaces c by a or b, which therefore must have the
+    type of x.  c may have more elements than d.  */
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)).is_constant ()
+      && types_match (@1, @5))
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
      machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     machine_mode c_mode = TYPE_MODE (TREE_TYPE (@0));
      int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
      vec_perm_indices sel0, sel1;
    }
@@ -12983,7 +13000,7 @@ and,
      (if (use_1 ^ use_2)
       (with
        {
-	 vec_perm_indices sel2 (builder2, 2, nelts);
+	 vec_perm_indices sel2 (builder2, 2, sel1.nelts_per_input ());
 	 tree op0 = NULL_TREE;
 	 /* If the new VEC_PERM_EXPR can't be handled but both
 	    original VEC_PERM_EXPRs can, punt.
@@ -12992,7 +13009,7 @@ and,
 	    number of VEC_PERM_EXPRs that can't be handled.  */
 	 if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
 	     || (single_use (@0)
-		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
+		 ? (!can_vec_perm_const_p (c_mode, op_mode, sel0, true)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
 	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
@@ -13008,11 +13025,16 @@ and,
 
 (simplify
  (vec_perm (vec_perm@0 @1 @2 VECTOR_CST@3) @5 VECTOR_CST@4)
- (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+ /* The new permute replaces c by a or b, which therefore must have the
+    type of x.  c may have more elements than d.  */
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)).is_constant ()
+      && types_match (@1, @5))
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
      machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     machine_mode c_mode = TYPE_MODE (TREE_TYPE (@0));
      int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
      vec_perm_indices sel0, sel1;
    }
@@ -13044,7 +13066,7 @@ and,
      (if (use_1 ^ use_2)
       (with
        {
-	 vec_perm_indices sel2 (builder2, 2, nelts);
+	 vec_perm_indices sel2 (builder2, 2, sel1.nelts_per_input ());
 	 tree op0 = NULL_TREE;
 	 /* If the new VEC_PERM_EXPR can't be handled but both
 	    original VEC_PERM_EXPRs can, punt.
@@ -13053,7 +13075,7 @@ and,
 	    number of VEC_PERM_EXPRs that can't be handled.  */
 	 if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
 	     || (single_use (@0)
-		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
+		 ? (!can_vec_perm_const_p (c_mode, op_mode, sel0, true)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
 	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
