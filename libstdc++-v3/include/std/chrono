@@ -3358,7 +3358,7 @@ namespace __detail
        ((__res = (__res << (sizeof(_Ts) * __CHAR_BIT__) | _ResT(__vs))), ...);
        return __res;
      }
-    
+
    template<typename _Tp>
      [[__gnu__::__always_inline__]]
      constexpr auto
@@ -3416,7 +3416,7 @@ namespace __detail
       size_t
       operator()(const chrono::duration<_Rep, _Period>& __val) const
       noexcept(__is_nothrow_copy_hashable<_Rep>)
-      {	
+      {
 	if constexpr (is_integral_v<_Rep>)
 	  return chrono::__int_hash(__val.count());
 	else
@@ -3567,7 +3567,7 @@ namespace __detail
     {
       size_t
       operator()(chrono::year_month_weekday __val) const noexcept
-      { 
+      {
 	return chrono::__hash(__val.year(), __val.month(),
 			      __val.weekday_indexed());
       }
@@ -3579,7 +3579,7 @@ namespace __detail
     {
       size_t
       operator()(chrono::year_month_weekday_last __val) const noexcept
-      { 
+      {
 	return chrono::__hash(__val.year(), __val.month(),
 			      __val.weekday_last());
       }
@@ -3637,7 +3637,7 @@ namespace __detail
     {
       size_t
       operator()(chrono::leap_second __val) const noexcept
-      { 
+      {
 	return chrono::__int_hash(
 		 __val.date().time_since_epoch().count(),
 		 __val.value().count());

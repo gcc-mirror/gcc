@@ -2516,7 +2516,7 @@ namespace __format
 	const size_t __r = __str.size() - __e; // Length of remainder.
 	auto __overwrite = [&](_CharT* __p, size_t) {
 	  // Copy any +/- sign and "0x" prefix
-	  ranges::copy_n(__str.data(), __offset, __p); 
+	  ranges::copy_n(__str.data(), __offset, __p);
 	  // Apply grouping to the digits before the radix or exponent.
 	  auto __end = std::__add_grouping(__p + __offset, __np.thousands_sep(),
 					   __grp.data(), __grp.size(),
@@ -3613,7 +3613,7 @@ namespace __format
       explicit
       _Streambuf_sink(basic_streambuf<_CharT>* __sbuf) noexcept
       : _M_sbuf(__sbuf), _M_write_failed(!__sbuf)
-      { 
+      {
 	if (!_M_write_failed) [[likely]]
 	  _M_reserve_put_area();
       }
@@ -5288,8 +5288,8 @@ namespace __format
     basic_format_arg<_Context>::_M_handle_unrecognized() const
     {
       // If _M_type corresponds to a new value of _Arg_t introduced after
-      // GCC 16, this function should return a handle that refers to the 
-      // union member of _M_val corresponding to that _Arg_t value.	    
+      // GCC 16, this function should return a handle that refers to the
+      // union member of _M_val corresponding to that _Arg_t value.
       __throw_format_error("format error: unrecognized argument type");
     }
 #endif

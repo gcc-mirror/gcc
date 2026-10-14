@@ -655,7 +655,7 @@ namespace ranges
 	     typename _Proj1 = identity, typename _Proj2 = identity>
       requires indirectly_comparable<iterator_t<_Range1>, iterator_t<_Range2>,
 				     _Pred, _Proj1, _Proj2>
-      [[nodiscard]]    
+      [[nodiscard]]
       constexpr mismatch_result<iterator_t<_Range1>, iterator_t<_Range2>>
       operator()(_Range1&& __r1, _Range2&& __r2, _Pred __pred = {},
 		 _Proj1 __proj1 = {}, _Proj2 __proj2 = {}) const

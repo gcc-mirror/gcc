@@ -3389,7 +3389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __mdspan::__index_type_cast<_IndexType>(std::move(__slice));
       }
 
-    template<typename _IndexType, 
+    template<typename _IndexType,
 	    typename _OffsetType, typename _SpanType, typename _StrideType>
     constexpr auto
     __canonical_range_slice(_OffsetType __offset, _SpanType __span,
