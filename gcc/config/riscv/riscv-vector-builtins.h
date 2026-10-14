@@ -132,6 +132,10 @@ enum required_ext
   ZVFBFWMA_EXT,		/* Zvfbfwma extension */
   ZVFOFP8MIN_EXT,	/* Zvfofp8min extension */
   ZVABD_EXT,		/* Zvabd extension */
+  ZVQWDOTA8I_EXT,	/* Zvqwdota8i extension.  */
+  ZVQWDOTA16I_EXT,	/* Zvqwdota16i extension.  */
+  ZVFWDOTA16BF_EXT,	/* Zvfwdota16bf extension.  */
+  ZVFQWDOTA8F_EXT,	/* Zvfqwdota8f extension.  */
   XSFVQMACCQOQ_EXT,	/* XSFVQMACCQOQ extension */
   XSFVQMACCDOD_EXT,	/* XSFVQMACCDOD extension */
   XSFVFNRCLIPXFQF_EXT,	/* XSFVFNRCLIPXFQF extension */
@@ -165,6 +169,10 @@ enum rvv_builtin_partition
   RVV_PARTITION_ZVFH,
   RVV_PARTITION_ZVFOFP8MIN,
   RVV_PARTITION_ZVABD,
+  RVV_PARTITION_ZVQWDOTA8I,
+  RVV_PARTITION_ZVQWDOTA16I,
+  RVV_PARTITION_ZVFWDOTA16BF,
+  RVV_PARTITION_ZVFQWDOTA8F,
   RVV_PARTITION_XSFVQMACCQOQ,
   RVV_PARTITION_XSFVQMACCDOD,
   RVV_PARTITION_XSFVFNRCLIPXFQF,
@@ -222,6 +230,14 @@ static inline const char * required_ext_to_isa_name (enum required_ext required)
       return "zvfofp8min";
     case ZVABD_EXT:
       return "zvabd";
+    case ZVQWDOTA8I_EXT:
+      return "zvqwdota8i";
+    case ZVQWDOTA16I_EXT:
+      return "zvqwdota16i";
+    case ZVFWDOTA16BF_EXT:
+      return "zvfwdota16bf";
+    case ZVFQWDOTA8F_EXT:
+      return "zvfqwdota8f";
     case XSFVQMACCQOQ_EXT:
       return "xsfvqmaccqoq";
     case XSFVQMACCDOD_EXT:
@@ -283,6 +299,14 @@ static inline bool required_extensions_specified (enum required_ext required)
       return TARGET_ZVFOFP8MIN;
     case ZVABD_EXT:
       return TARGET_ZVABD;
+    case ZVQWDOTA8I_EXT:
+      return TARGET_ZVQWDOTA8I;
+    case ZVQWDOTA16I_EXT:
+      return TARGET_ZVQWDOTA16I;
+    case ZVFWDOTA16BF_EXT:
+      return TARGET_ZVFWDOTA16BF;
+    case ZVFQWDOTA8F_EXT:
+      return TARGET_ZVFQWDOTA8F;
     case XSFVQMACCQOQ_EXT:
       return TARGET_XSFVQMACCQOQ;
     case XSFVQMACCDOD_EXT:

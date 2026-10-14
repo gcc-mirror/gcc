@@ -8019,7 +8019,7 @@ riscv_vector_element_bitsize (const_tree type)
 
   if (strstr (name, "bool") != NULL)
     return 1;
-  else if (strstr (name, "int8") != NULL)
+  else if (strstr (name, "int8") != NULL || strstr (name, "float8") != NULL)
     return 8;
   else if (strstr (name, "int16") != NULL || strstr (name, "float16") != NULL)
     return 16;

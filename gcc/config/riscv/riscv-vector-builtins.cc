@@ -611,6 +611,74 @@ static const rvv_type_info hu_su_ops[] = {
 #include "riscv-vector-builtins-types.def"
   {NUM_VECTOR_TYPES, 0}};
 
+static const rvv_type_info zvqwdota8i_i_ops[] = {
+  {VECTOR_TYPE_vint8mf8_t, RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vint8mf4_t, 0},
+  {VECTOR_TYPE_vint8mf2_t, 0},
+  {VECTOR_TYPE_vint8m1_t, 0},
+  {VECTOR_TYPE_vint8m2_t, 0},
+  {VECTOR_TYPE_vint8m4_t, 0},
+  {VECTOR_TYPE_vint8m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvqwdota8i_u_ops[] = {
+  {VECTOR_TYPE_vuint8mf8_t, RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vuint8mf4_t, 0},
+  {VECTOR_TYPE_vuint8mf2_t, 0},
+  {VECTOR_TYPE_vuint8m1_t, 0},
+  {VECTOR_TYPE_vuint8m2_t, 0},
+  {VECTOR_TYPE_vuint8m4_t, 0},
+  {VECTOR_TYPE_vuint8m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvqwdota16i_i_ops[] = {
+  {VECTOR_TYPE_vint16mf4_t, RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vint16mf2_t, 0},
+  {VECTOR_TYPE_vint16m1_t, 0},
+  {VECTOR_TYPE_vint16m2_t, 0},
+  {VECTOR_TYPE_vint16m4_t, 0},
+  {VECTOR_TYPE_vint16m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvqwdota16i_u_ops[] = {
+  {VECTOR_TYPE_vuint16mf4_t, RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vuint16mf2_t, 0},
+  {VECTOR_TYPE_vuint16m1_t, 0},
+  {VECTOR_TYPE_vuint16m2_t, 0},
+  {VECTOR_TYPE_vuint16m4_t, 0},
+  {VECTOR_TYPE_vuint16m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvfwdota16bf_ops[] = {
+  {VECTOR_TYPE_vbfloat16mf4_t,
+   RVV_REQUIRE_ELEN_BF_16 | RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vbfloat16mf2_t, RVV_REQUIRE_ELEN_BF_16},
+  {VECTOR_TYPE_vbfloat16m1_t, RVV_REQUIRE_ELEN_BF_16},
+  {VECTOR_TYPE_vbfloat16m2_t, RVV_REQUIRE_ELEN_BF_16},
+  {VECTOR_TYPE_vbfloat16m4_t, RVV_REQUIRE_ELEN_BF_16},
+  {VECTOR_TYPE_vbfloat16m8_t, RVV_REQUIRE_ELEN_BF_16},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvfqwdota8f_e4m3_ops[] = {
+  {VECTOR_TYPE_vfloat8e4m3mf8_t, RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vfloat8e4m3mf4_t, 0},
+  {VECTOR_TYPE_vfloat8e4m3mf2_t, 0},
+  {VECTOR_TYPE_vfloat8e4m3m1_t, 0},
+  {VECTOR_TYPE_vfloat8e4m3m2_t, 0},
+  {VECTOR_TYPE_vfloat8e4m3m4_t, 0},
+  {VECTOR_TYPE_vfloat8e4m3m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
+static const rvv_type_info zvfqwdota8f_e5m2_ops[] = {
+  {VECTOR_TYPE_vfloat8e5m2mf8_t, RVV_REQUIRE_ELEN_64},
+  {VECTOR_TYPE_vfloat8e5m2mf4_t, 0},
+  {VECTOR_TYPE_vfloat8e5m2mf2_t, 0},
+  {VECTOR_TYPE_vfloat8e5m2m1_t, 0},
+  {VECTOR_TYPE_vfloat8e5m2m2_t, 0},
+  {VECTOR_TYPE_vfloat8e5m2m4_t, 0},
+  {VECTOR_TYPE_vfloat8e5m2m8_t, 0},
+  {NUM_VECTOR_TYPES, 0}};
+
 static constexpr const rvv_arg_type_info rvv_arg_type_info_end
   = rvv_arg_type_info (NUM_BASE_TYPES);
 
@@ -709,6 +777,41 @@ static constexpr const rvv_arg_type_info scalar_ptr_eew64_index_args[]
 static constexpr const rvv_arg_type_info vv_args[]
   = {rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info (RVV_BASE_vector),
      rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_ss_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_acc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_signed_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_su_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_acc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_unsigned_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_us_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_acc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_signed_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_uu_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_uacc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_unsigned_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_f_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_f32_acc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_fp8_e4m3_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_f32_acc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_fp8e4m3_vector), rvv_arg_type_info_end};
+
+static constexpr const rvv_arg_type_info zvdota_fp8_e5m2_args[]
+  = {rvv_arg_type_info (RVV_BASE_zvdota_f32_acc),
+     rvv_arg_type_info (RVV_BASE_vector),
+     rvv_arg_type_info (RVV_BASE_fp8e5m2_vector), rvv_arg_type_info_end};
 
 /* A list of args for vector_type func (vector_type, vector_type, vector_type)
  * function.  */
@@ -1564,6 +1667,84 @@ static constexpr const rvv_op_info f_vvvv_ops
      OP_TYPE_vv,			  /* Suffix */
      rvv_arg_type_info (RVV_BASE_vector), /* Return type */
      vvv_args /* Args */};
+
+static constexpr const rvv_op_info zvqwdota8i_ss_vv_ops
+  = {zvqwdota8i_i_ops,			      /* Types.  */
+     OP_TYPE_vv,			      /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_acc), /* Return type.  */
+     zvdota_ss_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota8i_su_vv_ops
+  = {zvqwdota8i_i_ops,			      /* Types.  */
+     OP_TYPE_vv,			      /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_acc), /* Return type.  */
+     zvdota_su_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota8i_us_vv_ops
+  = {zvqwdota8i_u_ops,			      /* Types.  */
+     OP_TYPE_vv,			      /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_acc), /* Return type.  */
+     zvdota_us_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota8i_uu_vv_ops
+  = {zvqwdota8i_u_ops,			       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_uacc), /* Return type.  */
+     zvdota_uu_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota16i_ss_vv_ops
+  = {zvqwdota16i_i_ops,		      /* Types.  */
+     OP_TYPE_vv,			      /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_acc), /* Return type.  */
+     zvdota_ss_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota16i_su_vv_ops
+  = {zvqwdota16i_i_ops,		      /* Types.  */
+     OP_TYPE_vv,			      /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_acc), /* Return type.  */
+     zvdota_su_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota16i_us_vv_ops
+  = {zvqwdota16i_u_ops,		      /* Types.  */
+     OP_TYPE_vv,			      /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_acc), /* Return type.  */
+     zvdota_us_args /* Args.  */};
+
+static constexpr const rvv_op_info zvqwdota16i_uu_vv_ops
+  = {zvqwdota16i_u_ops,		       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_uacc), /* Return type.  */
+     zvdota_uu_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfwdota16bf_vv_ops
+  = {zvfwdota16bf_ops,			       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_f32_acc), /* Return type.  */
+     zvdota_f_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwdota8f_e4m3_e4m3_vv_ops
+  = {zvfqwdota8f_e4m3_ops,		       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_f32_acc), /* Return type.  */
+     zvdota_fp8_e4m3_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwdota8f_e4m3_e5m2_vv_ops
+  = {zvfqwdota8f_e4m3_ops,		       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_f32_acc), /* Return type.  */
+     zvdota_fp8_e5m2_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwdota8f_e5m2_e4m3_vv_ops
+  = {zvfqwdota8f_e5m2_ops,		       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_f32_acc), /* Return type.  */
+     zvdota_fp8_e4m3_args /* Args.  */};
+
+static constexpr const rvv_op_info zvfqwdota8f_e5m2_e5m2_vv_ops
+  = {zvfqwdota8f_e5m2_ops,		       /* Types.  */
+     OP_TYPE_vv,			       /* Suffix.  */
+     rvv_arg_type_info (RVV_BASE_zvdota_f32_acc), /* Return type.  */
+     zvdota_fp8_e5m2_args /* Args.  */};
 
 /* A static operand information for vector_type func (vector_type, scalar_type,
  * vector_type) function registration. */
@@ -3545,7 +3726,8 @@ static constexpr const function_type_info function_types[] = {
   SIGNED_EEW64_LMUL1_INTERPRET, UNSIGNED_EEW8_LMUL1_INTERPRET,                 \
   UNSIGNED_EEW16_LMUL1_INTERPRET, UNSIGNED_EEW32_LMUL1_INTERPRET,              \
   UNSIGNED_EEW64_LMUL1_INTERPRET, X2, X2_VLMUL_EXT, X4_VLMUL_EXT, X8_VLMUL_EXT,\
-  X16_VLMUL_EXT, X32_VLMUL_EXT, X64_VLMUL_EXT, TUPLE_SUBPART)                  \
+  X16_VLMUL_EXT, X32_VLMUL_EXT, X64_VLMUL_EXT, ZVDOTA_ACC, ZVDOTA_UACC, \
+  ZVDOTA_F32_ACC, FP8E4M3, FP8E5M2, TUPLE_SUBPART) \
   {                                                                            \
     VECTOR_TYPE_##VECTOR,                                                      \
     VECTOR_TYPE_INVALID,                                                       \
@@ -3617,7 +3799,12 @@ static constexpr const function_type_info function_types[] = {
     VECTOR_TYPE_##X16_VLMUL_EXT,                                               \
     VECTOR_TYPE_##X32_VLMUL_EXT,                                               \
     VECTOR_TYPE_##X64_VLMUL_EXT,                                               \
-    VECTOR_TYPE_INVALID,                                                       \
+    VECTOR_TYPE_##ZVDOTA_ACC, \
+    VECTOR_TYPE_##ZVDOTA_UACC, \
+    VECTOR_TYPE_##ZVDOTA_F32_ACC, \
+    VECTOR_TYPE_##FP8E4M3, \
+    VECTOR_TYPE_##FP8E5M2, \
+    VECTOR_TYPE_INVALID, \
     VECTOR_TYPE_##TUPLE_SUBPART,                                               \
   },
 #include "riscv-vector-builtins.def"
@@ -3748,6 +3935,14 @@ get_builtin_partition (required_ext ext, const function_instance &instance)
       return RVV_PARTITION_ZVFOFP8MIN;
     case ZVABD_EXT:
       return RVV_PARTITION_ZVABD;
+    case ZVQWDOTA8I_EXT:
+      return RVV_PARTITION_ZVQWDOTA8I;
+    case ZVQWDOTA16I_EXT:
+      return RVV_PARTITION_ZVQWDOTA16I;
+    case ZVFWDOTA16BF_EXT:
+      return RVV_PARTITION_ZVFWDOTA16BF;
+    case ZVFQWDOTA8F_EXT:
+      return RVV_PARTITION_ZVFQWDOTA8F;
     case XSFVQMACCQOQ_EXT:
       return RVV_PARTITION_XSFVQMACCQOQ;
     case XSFVQMACCDOD_EXT:
@@ -4094,6 +4289,8 @@ register_builtin_types_on_null ()
   tree int16_type_node = get_typenode_from_name (INT16_TYPE);
   tree int32_type_node = get_typenode_from_name (INT32_TYPE);
   tree int64_type_node = get_typenode_from_name (INT64_TYPE);
+  tree float8e4m3_type_node = build_distinct_type_copy (uint8_type_node);
+  tree float8e5m2_type_node = build_distinct_type_copy (uint8_type_node);
 
   machine_mode mode;
 #define DEF_RVV_TYPE(NAME, NCHARS, ABI_NAME, SCALAR_TYPE, VECTOR_MODE,         \
@@ -5437,6 +5634,38 @@ registered_function_hasher::equal (value_type value, const compare_type &key)
   return value->instance == key;
 }
 
+/* Return the ABI name of an FP8 vector type, including fixed-length variants.
+   The two FP8 formats share integer modes but are distinct overload types.  */
+static const char *
+mangle_fp8_type (const_tree type)
+{
+  if (!VECTOR_TYPE_P (type))
+    return nullptr;
+
+  const char *name = mangle_builtin_type (type);
+  if (!name)
+    return nullptr;
+
+  for (vector_type_index index : {VECTOR_TYPE_vfloat8e4m3mf8_t,
+				  VECTOR_TYPE_vfloat8e5m2mf8_t,
+				  VECTOR_TYPE_vfloat8e4m3mf4_t,
+				  VECTOR_TYPE_vfloat8e5m2mf4_t,
+				  VECTOR_TYPE_vfloat8e4m3mf2_t,
+				  VECTOR_TYPE_vfloat8e5m2mf2_t,
+				  VECTOR_TYPE_vfloat8e4m3m1_t,
+				  VECTOR_TYPE_vfloat8e5m2m1_t,
+				  VECTOR_TYPE_vfloat8e4m3m2_t,
+				  VECTOR_TYPE_vfloat8e5m2m2_t,
+				  VECTOR_TYPE_vfloat8e4m3m4_t,
+				  VECTOR_TYPE_vfloat8e5m2m4_t,
+				  VECTOR_TYPE_vfloat8e4m3m8_t,
+				  VECTOR_TYPE_vfloat8e5m2m8_t})
+    if (strcmp (name, vector_types[index].mangled_name) == 0)
+      return name;
+
+  return nullptr;
+}
+
 hashval_t
 registered_function::overloaded_hash () const
 {
@@ -5461,6 +5690,8 @@ registered_function::overloaded_hash () const
 	{
 	  h.add_int (unsigned_p);
 	  h.add_int (mode_p);
+	  if (const char *name = mangle_fp8_type (type))
+	    h.add (name, strlen (name));
 	}
       else if (instance.base->may_require_vxrm_p ()
 	       || instance.base->may_require_frm_p ())

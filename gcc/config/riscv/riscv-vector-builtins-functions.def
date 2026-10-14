@@ -431,6 +431,38 @@ DEF_RVV_FUNCTION (vfwmsac_frm, alu_frm, full_preds, f_wwfv_ops)
 DEF_RVV_FUNCTION (vfwnmsac_frm, alu_frm, full_preds, f_wwvv_ops)
 DEF_RVV_FUNCTION (vfwnmsac_frm, alu_frm, full_preds, f_wwfv_ops)
 
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVQWDOTA8I_EXT
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota8i_ss_vv_ops)
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota8i_su_vv_ops)
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota8i_us_vv_ops)
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota8i_uu_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVQWDOTA16I_EXT
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota16i_ss_vv_ops)
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota16i_su_vv_ops)
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota16i_us_vv_ops)
+DEF_RVV_FUNCTION (vqwdota, zvdota, no_mu_preds, zvqwdota16i_uu_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVFWDOTA16BF_EXT
+DEF_RVV_FUNCTION (vfwdota, zvdota, no_mu_preds, zvfwdota16bf_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS ZVFQWDOTA8F_EXT
+DEF_RVV_FUNCTION (vfqwdota, zvdota, no_mu_preds,
+		  zvfqwdota8f_e4m3_e4m3_vv_ops)
+DEF_RVV_FUNCTION (vfqwdota, zvdota, no_mu_preds,
+		  zvfqwdota8f_e4m3_e5m2_vv_ops)
+DEF_RVV_FUNCTION (vfqwdota, zvdota, no_mu_preds,
+		  zvfqwdota8f_e5m2_e4m3_vv_ops)
+DEF_RVV_FUNCTION (vfqwdota, zvdota, no_mu_preds,
+		  zvfqwdota8f_e5m2_e5m2_vv_ops)
+
+#undef REQUIRED_EXTENSIONS
+#define REQUIRED_EXTENSIONS VECTOR_EXT
+
 // 13.8. Vector Floating-Point Square-Root Instruction
 DEF_RVV_FUNCTION (vfsqrt, alu, full_preds, f_v_ops)
 

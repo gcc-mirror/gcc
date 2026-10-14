@@ -134,6 +134,17 @@ bfloat16_type (int lmul_log2)
 }
 
 std::string
+float8type (const char *format, int lmul_log2)
+{
+  if (!valid_type (8, lmul_log2, /* float_t = */ false))
+    return "INVALID";
+
+  std::stringstream mode;
+  mode << "vfloat8" << format << to_lmul (lmul_log2) << "_t";
+  return mode.str ();
+}
+
+std::string
 bfloat16_wide_type (int lmul_log2)
 {
   if (!valid_type (32, lmul_log2, /*float_t*/ true))
@@ -244,6 +255,90 @@ same_ratio_eew_bf16_type (unsigned sew, int lmul_log2)
   return bfloat16_type (elmul_log2);
 }
 
+static void
+emit_zvdota_type_indexes (FILE *fp, const char *acc = "INVALID",
+			  const char *uacc = "INVALID",
+			  const char *f32_acc = "INVALID",
+			  const char *fp8e4m3 = "INVALID",
+			  const char *fp8e5m2 = "INVALID")
+{
+  fprintf (fp, "  /* ZVDOTA_ACC.  */ %s,\n", acc);
+  fprintf (fp, "  /* ZVDOTA_UACC.  */ %s,\n", uacc);
+  fprintf (fp, "  /* ZVDOTA_F32_ACC.  */ %s,\n", f32_acc);
+  fprintf (fp, "  /* FP8E4M3.  */ %s,\n", fp8e4m3);
+  fprintf (fp, "  /* FP8E5M2.  */ %s,\n", fp8e5m2);
+}
+
+static void
+emit_float8_type_index (FILE *fp, const char *format, int lmul_log2)
+{
+  fprintf (fp, "DEF_RVV_TYPE_INDEX (\n");
+  fprintf (fp, "  /* VECTOR.  */ %s,\n",
+	   float8type (format, lmul_log2).c_str ());
+  fprintf (fp, "  /* MASK.  */ %s,\n", maskmode (8, lmul_log2).c_str ());
+  fprintf (fp, "  /* SIGNED.  */ %s,\n",
+	   inttype (8, lmul_log2, /* unsigned_p = */ false).c_str ());
+  fprintf (fp, "  /* UNSIGNED.  */ %s,\n",
+	   inttype (8, lmul_log2, /* unsigned_p = */ true).c_str ());
+  fprintf (fp, "  /* SIGNED_EEW8_INDEX.  */ %s,\n",
+	   inttype (8, lmul_log2, /* unsigned_p = */ false).c_str ());
+  for (unsigned eew : {8, 16, 32, 64})
+    fprintf (fp, "  /* EEW%d_INDEX.  */ %s,\n", eew,
+	     same_ratio_eew_type (8, lmul_log2, eew,
+				  /* unsigned_p = */ true, false)
+	       .c_str ());
+  fprintf (fp, "  /* SHIFT.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_TRUNC.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_EMUL.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_EMUL_SIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_EMUL_UNSIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_FIX.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_FIX_SIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* QUAD_FIX_UNSIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* OCT_TRUNC.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_SCALAR.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_SIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_UNSIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_UNSIGNED_SCALAR.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_BFLOAT_SCALAR.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_BFLOAT.  */ INVALID,\n");
+  fprintf (fp, "  /* DOUBLE_TRUNC_FLOAT.  */ INVALID,\n");
+  fprintf (fp, "  /* FLOAT.  */ INVALID,\n");
+  fprintf (fp, "  /* LMUL1.  */ %s,\n", float8type (format, 0).c_str ());
+  fprintf (fp, "  /* WLMUL1.  */ INVALID,\n");
+  fprintf (fp, "  /* QLMUL1.  */ INVALID,\n");
+  fprintf (fp, "  /* QLMUL1_SIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* QLMUL1_UNSIGNED.  */ INVALID,\n");
+  fprintf (fp, "  /* XFQF.  */ INVALID,\n");
+  for (unsigned eew : {8, 16, 32, 64})
+    fprintf (fp, "  /* EEW%d_INTERPRET.  */ INVALID,\n", eew);
+
+  for (unsigned boolsize : BOOL_SIZE_LIST)
+    fprintf (fp, "  /* BOOL%d_INTERPRET.  */ INVALID,\n", boolsize);
+
+  for (unsigned eew : EEW_SIZE_LIST)
+    fprintf (fp, "  /* SIGNED_EEW%d_LMUL1_INTERPRET.  */ INVALID,\n", eew);
+
+  for (unsigned eew : EEW_SIZE_LIST)
+    fprintf (fp, "  /* UNSIGNED_EEW%d_LMUL1_INTERPRET.  */ INVALID,\n", eew);
+
+  fprintf (fp, "  /* X2.  */ INVALID,\n");
+
+  for (unsigned lmul_log2_offset : {1, 2, 3, 4, 5, 6})
+    {
+      unsigned multiple_of_lmul = 1 << lmul_log2_offset;
+      fprintf (fp, "  /* X%d_VLMUL_EXT.  */ INVALID,\n", multiple_of_lmul);
+    }
+
+  emit_zvdota_type_indexes (fp, "INVALID", "INVALID", "vfloat32m1_t",
+			    float8type ("e4m3", lmul_log2).c_str (),
+			    float8type ("e5m2", lmul_log2).c_str ());
+  fprintf (fp, "  /* TUPLE_SUBPART.  */ %s\n",
+	   float8type (format, lmul_log2).c_str ());
+  fprintf (fp, ")\n");
+}
+
 int
 main (int argc, const char **argv)
 {
@@ -315,6 +410,7 @@ main (int argc, const char **argv)
 	  unsigned multiple_of_lmul = 1 << lmul_log2_offset;
 	  fprintf (fp, "  /*X%d_INTERPRET*/ INVALID,\n", multiple_of_lmul);
 	}
+      emit_zvdota_type_indexes (fp);
       fprintf (fp, "  /*TUPLE_SUBPART*/ INVALID\n");
       fprintf (fp, ")\n");
     }
@@ -447,9 +543,24 @@ main (int argc, const char **argv)
 			 inttype (sew, lmul_log2 + lmul_log2_offset, unsigned_p)
 			   .c_str ());
 	      }
+	    if (nf == 1 && sew == 8)
+	      emit_zvdota_type_indexes (
+		fp, inttype (32, LMUL1_LOG2, /* unsigned_p = */ false).c_str (),
+		inttype (32, LMUL1_LOG2, /* unsigned_p = */ true).c_str ());
+	    else if (nf == 1 && sew == 16)
+	      emit_zvdota_type_indexes (
+		fp, inttype (64, LMUL1_LOG2, /* unsigned_p = */ false).c_str (),
+		inttype (64, LMUL1_LOG2, /* unsigned_p = */ true).c_str ());
+	    else
+	      emit_zvdota_type_indexes (fp);
 	    fprintf (fp, "  /*TUPLE_SUBPART*/ %s\n",
 		     inttype (sew, lmul_log2, 1, unsigned_p).c_str ());
 	    fprintf (fp, ")\n");
+	    if (sew == 8 && nf == 1 && unsigned_p)
+	      {
+		emit_float8_type_index (fp, "e4m3", lmul_log2);
+		emit_float8_type_index (fp, "e5m2", lmul_log2);
+	      }
 	  }
   // Build for vbfloat16
   for (int lmul_log2 : {-2, -1, 0, 1, 2, 3})
@@ -523,6 +634,8 @@ main (int argc, const char **argv)
 	    fprintf (fp, "  /*X%d_VLMUL_EXT*/ %s,\n", multiple_of_lmul,
 		     bfloat16_type (lmul_log2 + lmul_log2_offset).c_str ());
 	  }
+	emit_zvdota_type_indexes (fp, "INVALID", "INVALID",
+				  nf == 1 ? "vfloat32m1_t" : "INVALID");
 	fprintf (fp, "  /*TUPLE_SUBPART*/ %s\n",
 		 bfloat16_type (lmul_log2, 1U).c_str ());
 	fprintf (fp, ")\n");
@@ -612,6 +725,7 @@ main (int argc, const char **argv)
 	      fprintf (fp, "  /*X%d_VLMUL_EXT*/ %s,\n", multiple_of_lmul,
 		       floattype (sew, lmul_log2 + lmul_log2_offset).c_str ());
 	    }
+	  emit_zvdota_type_indexes (fp);
 	  fprintf (fp, "  /*TUPLE_SUBPART*/ %s\n",
 		   floattype (sew, lmul_log2, 1).c_str ());
 	  fprintf (fp, ")\n");
