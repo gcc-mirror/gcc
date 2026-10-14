@@ -62,10 +62,6 @@
    you don't. */
 #undef HAVE_DECL_CLEARERR_UNLOCKED
 
-/* Define to 1 if you have the declaration of `errno', and to 0 if you don't.
-   */
-#undef HAVE_DECL_ERRNO
-
 /* Define to 1 if you have the declaration of `feof_unlocked', and to 0 if you
    don't. */
 #undef HAVE_DECL_FEOF_UNLOCKED
