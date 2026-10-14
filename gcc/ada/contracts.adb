@@ -4246,7 +4246,8 @@ package body Contracts is
       then
          pragma Assert
            (Comes_From_Source (Subp_Id)
-              or else Is_Dispatch_Table_Wrapper (Subp_Id));
+             or else Is_Dispatch_Table_Wrapper (Subp_Id)
+             or else Is_Primitive_Wrapper (Subp_Id));
 
          if No (Dynamic_Call_Helper (Subp_Id)) then
 
