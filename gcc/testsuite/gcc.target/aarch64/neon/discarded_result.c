@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-final { check-function-bodies "**" "" } } */
-/* { dg-additional-options "-fno-trapping-math" } */
+/* { dg-additional-options "-ftrapping-math" } */
 
 #include "arm_neon_test.h"
 
