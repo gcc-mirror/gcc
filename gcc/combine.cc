@@ -316,7 +316,7 @@ struct insn_link {
 static struct insn_link **uid_log_links;
 
 static inline int
-insn_uid_check (const_rtx insn)
+insn_uid_check (const rtx_insn *insn)
 {
   int uid = INSN_UID (insn);
   gcc_checking_assert (uid <= max_uid_known);
