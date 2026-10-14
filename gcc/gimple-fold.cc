@@ -7319,17 +7319,17 @@ same_bool_comparison_p (const_tree expr, enum tree_code code,
 	  && TREE_CODE_CLASS (gimple_assign_rhs_code (s)) == tcc_comparison)
 	{
 	  enum tree_code c = gimple_assign_rhs_code (s);
-	  if ((c == NE_EXPR && integer_zerop (op2))
-	      || (c == EQ_EXPR && integer_nonzerop (op2)))
-	    return same_bool_comparison_p (expr, c,
-					   gimple_assign_rhs1 (s),
-					   gimple_assign_rhs2 (s));
-	  if ((c == EQ_EXPR && integer_zerop (op2))
-	      || (c == NE_EXPR && integer_nonzerop (op2)))
-	    return same_bool_comparison_p (expr,
-					   invert_tree_comparison (c, false),
-					   gimple_assign_rhs1 (s),
-					   gimple_assign_rhs2 (s));
+	  tree rhs1 = gimple_assign_rhs1 (s);
+	  if ((code == EQ_EXPR || code == NE_EXPR)
+	      && TREE_CODE (op2) == INTEGER_CST)
+	    {
+	      /* OP1 == 0 and OP1 != true test the inverse.  */
+	      if ((code == EQ_EXPR) == integer_zerop (op2))
+		c = invert_tree_comparison (c, HONOR_NANS (rhs1));
+	      return (c != ERROR_MARK
+		      && same_bool_comparison_p (expr, c, rhs1,
+						 gimple_assign_rhs2 (s)));
+	    }
 	}
     }
   return false;
