@@ -1,3 +1,698 @@
+2026-10-13  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust-gcc.cc (arithmetic_or_logical_expression): Use build2_loc
+	instead of fold_build2_loc.
+	* backend/rust-constexpr.cc (eval_check_overflow_p): New function.
+	(eval_binary_expression): Use it.
+
+2026-10-13  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* checks/errors/feature/rust-feature-defs.h (FEATURE_ACTIVE): New feature.
+	* expand/rust-derive.cc (DeriveVisitor::derive): Add base handling for CoercePointee derive.
+	* expand/rust-macro-builtins.cc: Add CoercePointee as a built-in derive
+	* expand/rust-macro-builtins.h (enum class): Likewise.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_derive_attribute): Special case
+	derive(CoercePointee).
+	* rust-session-manager.h (should_support_coerce_pointee): New method.
+	* expand/rust-derive-coerce-pointee.cc: New file.
+	* expand/rust-derive-coerce-pointee.h: New file.
+	* Make-lang.in: Compile it.
+
+2026-10-13  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::visit): Add missing call to
+	default visitor for ExternType items.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* util/rust-hir-map.cc (CrateMappings::CrateMappings): Update variable
+	name at call site.
+	(CrateMappings::get_next_crate_num): Likewise.
+	(CrateMappings::set_current_crate): Likewise.
+	(CrateMappings::get_current_crate): Likewise.
+	(CrateMappings::get_ast_crate): Likewise.
+	(CrateMappings::get_ast_crate_by_node_id_raw): Likewise.
+	(CrateMappings::insert_ast_crate): Likewise.
+	* util/rust-hir-map.h (class CrateMappings): Rename variables.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* expand/rust-macro-expand.h (struct MacroExpander): Update call name.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_derive_attribute):
+	Likewise.
+	(Early::visit_non_builtin_attribute): Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit_extern_crate):
+	Likewise.
+	* util/rust-hir-map.cc (ProcMacroMappings::insert_derive_def): Remove.
+	(ProcMacroMappings::insert_bang_def): Remove.
+	(ProcMacroMappings::insert_attribute_def): Remove.
+	(ProcMacroMappings::lookup_derive_def): Remove.
+	(ProcMacroMappings::lookup_bang_def): Remove.
+	(ProcMacroMappings::lookup_attribute_def): Remove.
+	(ProcMacroMappings::insert_derive_invocation): Remove.
+	(ProcMacroMappings::lookup_derive_invocation): Remove.
+	(ProcMacroMappings::insert_bang_invocation): Remove.
+	(ProcMacroMappings::lookup_bang_invocation): Remove.
+	(ProcMacroMappings::insert_attribute_invocation): Remove.
+	(ProcMacroMappings::lookup_attribute_invocation): Remove.
+	* util/rust-hir-map.h (class ProcMacroMappings): Convert to struct.
+	(struct ProcMacroDefinitionMappings): Add definition mappings.
+	(struct ProcMacroInvocationsMappings): Add invocation mappings.
+	(struct ProcMacroMappings): Use two new separate fields for definitions
+	and invocations.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Update function call name.
+	* expand/rust-macro-substitute-ctx.cc: Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit_extern_crate):
+	Likewise.
+	* rust-session-manager.cc (Session::load_extern_crate): Likewise.
+	* util/rust-hir-map.cc (CrateMappings::get_next_crate_num): Likewise.
+	(CrateMappings::get_crate_name): Remove.
+	(CrateMappings::set_crate_name): Remove.
+	(CrateMappings::get_current_crate_name): Update with new lookup
+	function.
+	(CrateMappings::lookup_crate_name): Use internal storage getter.
+	(ProcMacroMappings::insert_bang_proc_macros): Remove.
+	(ProcMacroMappings::lookup_derive_proc_macros): Remove.
+	(ProcMacroMappings::lookup_bang_proc_macros): Remove.
+	(ProcMacroMappings::lookup_attribute_proc_macros): Remove.
+	* util/rust-hir-map.h (enum class): Move enum.
+	(class Mapping): Add a getter to const storage in order to allow
+	iteration on existing mappings. Also add a const getter.
+	(class CrateMappings): Add proc macro crate mappings. Convert
+	crate_name getter/setter to Mapping.
+	(class ProcMacroMappings): Remove crate related mappings.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* backend/rust-compile-item.cc (CompileItem::visit): Adapt call name.
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile):
+	Likewise.
+	* backend/rust-mangle-v0.cc (v0_path): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc
+	(VisibilityResolver::resolve_module_path): Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::check_function_call):
+	Likewise.
+	* checks/errors/rust-readonly-check.cc (ReadonlyChecker::visit):
+	Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::check_use_of_static):
+	Likewise.
+	(UnsafeChecker::check_function_call): Likewise.
+	(UnsafeChecker::check_function_attr): Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	(MarkLive::visit): Likewise.
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit):
+	Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_extern_block):
+	Likewise.
+	* hir/rust-ast-lower-block.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::translate): Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::translate): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::translate): Likewise.
+	(ASTLoweringItem::visit): Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::translate):
+	Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::translate): Likewise.
+	* hir/rust-ast-lower-struct-field-expr.h: Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLoweringType::translate): Likewise.
+	(ASTLowerGenericParam::translate): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowerPathInExpression::visit): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* hir/tree/rust-hir-pattern-abstract.cc (PathPattern::is_refutable):
+	Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_path_to_trait):
+	Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_root_path): Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* util/rust-hir-map.cc (Mappings::resolve_nodeid_to_stmt): Likewise.
+	(Mappings::build_impl_indexes): Likewise.
+	(Mappings::insert_trait_item_mapping): Likewise.
+	* util/rust-hir-map.h: Change HIR mapping name to their plural
+	counterpart.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-collect-lang-items.cc (CollectLangItems::visit): Adapt name
+	at call site.
+	* backend/rust-compile-expr.cc: Likewise.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::get_unit_type):
+	Likewise.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go):
+	Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc
+	(VisibilityResolver::resolve_module_path): Likewise.
+	* expand/rust-macro-expand.h (struct MacroExpander): Likewise.
+	* expand/rust-macro-substitute-ctx.cc: Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_lifetime):
+	Likewise.
+	(ASTLoweringBase::lower_loop_label): Likewise.
+	(ASTLoweringBase::lower_path_expr_seg): Likewise.
+	(ASTLoweringBase::lower_self): Likewise.
+	(ASTLoweringBase::lower_extern_block): Likewise.
+	* hir/rust-ast-lower-block.h: Likewise.
+	* hir/rust-ast-lower-enumitem.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-extern.h: Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Likewise.
+	(ASTLoweringSimplePath::lower): Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::visit): Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::visit): Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLowerTypePath::visit): Likewise.
+	(ASTLowerQualifiedPathInType::visit): Likewise.
+	(ASTLoweringType::visit): Likewise.
+	(ASTLowerGenericParam::visit): Likewise.
+	(ASTLoweringTypeBounds::visit): Likewise.
+	(ASTLowerWhereClauseItem::visit): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowering::go): Likewise.
+	(ASTLoweringBlock::visit): Likewise.
+	(ASTLoweringIfBlock::visit): Likewise.
+	(ASTLoweringIfLetBlock::desugar_iflet): Likewise.
+	(ASTLoweringIfLetBlock::visit): Likewise.
+	(ASTLowerStructExprField::visit): Likewise.
+	(ASTLoweringExprWithBlock::visit): Likewise.
+	(ASTLowerPathInExpression::visit): Likewise.
+	(ASTLoweringBase::lower_qual_path_type): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* metadata/rust-export-metadata.cc (PublicInterface::gather_export_data):
+	Likewise.
+	(PublicInterface::write_to_object_file): Likewise.
+	(PublicInterface::write_to_path): Likewise.
+	(PublicInterface::expected_metadata_filename): Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Likewise.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_derive_attribute):
+	Likewise.
+	(Early::visit_non_builtin_attribute): Likewise.
+	* resolve/rust-forever-stack.h: Likewise.
+	* resolve/rust-name-resolution-context.h: Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit_extern_crate):
+	Likewise.
+	* rust-session-manager.cc (Session::handle_crate_name): Likewise.
+	(Session::compile_crate): Likewise.
+	(Session::load_extern_crate): Likewise.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::resolve_literal):
+	Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_fn_trait_call): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	Likewise.
+	(TypeCheckImplItem::resolve_function_signature): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::resolve):
+	Likewise.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* typecheck/rust-tyty-bounds.cc: Likewise.
+	* typecheck/rust-tyty-subst.cc (SubstitutionParamMapping::override_context):
+	Likewise.
+	* typecheck/rust-tyty-util.cc (TyVar::monomorphized_clone): Likewise.
+	* typecheck/rust-tyty.cc (InferType::clone): Likewise.
+	(VariantDef::clone): Likewise.
+	(VariantDef::monomorphized_clone): Likewise.
+	(ConstInferType::clone): Likewise.
+	* util/rust-hir-map.cc (Mappings::get_ast_crate_by_node_id): Likewise.
+	(Mappings::insert_macro_def): Likewise.
+	(Mappings::insert_glob_container): Likewise.
+	* util/rust-hir-map.h: Rename pmacro_mappings to pmacro and
+	crate_mappings to crate.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* backend/rust-compile-item.cc (CompileItem::visit): Use new hir
+	category.
+	* backend/rust-compile-resolve-path.cc (HIRCompileBase::query_compile):
+	Likewise.
+	* backend/rust-mangle-v0.cc (v0_path): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc
+	(VisibilityResolver::resolve_module_path): Likewise.
+	* checks/errors/rust-const-checker.cc (ConstChecker::check_function_call):
+	Likewise.
+	* checks/errors/rust-readonly-check.cc (ReadonlyChecker::visit):
+	Likewise.
+	* checks/errors/rust-unsafe-checker.cc (UnsafeChecker::check_use_of_static):
+	Likewise.
+	(UnsafeChecker::check_function_call): Likewise.
+	(UnsafeChecker::check_function_attr): Likewise.
+	* checks/lints/rust-lint-marklive.cc (MarkLive::go): Likewise.
+	(MarkLive::visit): Likewise.
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::visit):
+	Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_extern_block):
+	Likewise.
+	* hir/rust-ast-lower-block.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::translate): Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::translate): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::translate): Likewise.
+	(ASTLoweringItem::visit): Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::translate):
+	Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::translate): Likewise.
+	* hir/rust-ast-lower-struct-field-expr.h: Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLoweringType::translate): Likewise.
+	(ASTLowerGenericParam::translate): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowerPathInExpression::visit): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* hir/tree/rust-hir-pattern-abstract.cc (PathPattern::is_refutable):
+	Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_path_to_trait):
+	Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_root_path): Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::resolve_root_path):
+	Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_hir_item): Move to dedicated
+	mappings within the hir category.
+	(Mappings::lookup_hir_item): Likewise.
+	(Mappings::insert_hir_trait_item): Likewise.
+	(Mappings::lookup_hir_trait_item): Likewise.
+	(Mappings::insert_hir_extern_block): Likewise.
+	(Mappings::lookup_hir_extern_block): Likewise.
+	(Mappings::insert_module): Likewise.
+	(Mappings::lookup_module): Likewise.
+	(Mappings::insert_hir_expr): Likewise.
+	(Mappings::lookup_hir_expr): Likewise.
+	(Mappings::insert_hir_path_expr_seg): Likewise.
+	(Mappings::lookup_hir_path_expr_seg): Likewise.
+	(Mappings::insert_hir_generic_param): Likewise.
+	(Mappings::lookup_hir_generic_param): Likewise.
+	(Mappings::insert_hir_type): Likewise.
+	(Mappings::lookup_hir_type): Likewise.
+	(Mappings::insert_hir_stmt): Likewise.
+	(Mappings::lookup_hir_stmt): Likewise.
+	(Mappings::insert_hir_param): Likewise.
+	(Mappings::lookup_hir_param): Likewise.
+	(Mappings::insert_hir_self_param): Likewise.
+	(Mappings::lookup_hir_self_param): Likewise.
+	(Mappings::insert_hir_struct_field): Likewise.
+	(Mappings::lookup_hir_struct_field): Likewise.
+	(Mappings::insert_hir_pattern): Likewise.
+	(Mappings::lookup_hir_pattern): Likewise.
+	(Mappings::resolve_nodeid_to_stmt): Likewise.
+	(Mappings::build_impl_indexes): Likewise.
+	(Mappings::insert_trait_item_mapping): Likewise.
+	* util/rust-hir-map.h (class HIRMappings): Add new class for all hir
+	related mappings.
+	* util/rust-hir-map.hxx: New file.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* checks/errors/privacy/rust-privacy-reporter.cc (PrivacyReporter::check_violation_inner):
+	Use ast category.
+	* checks/errors/privacy/rust-pub-restricted-visitor.cc
+	(PubRestrictedVisitor::is_restriction_valid): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc (VisibilityResolver::go):
+	Likewise.
+	(VisibilityResolver::resolve_and_update): Likewise.
+	(VisibilityResolver::visit): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_visibility): Move to
+	ASTMappings.
+	(Mappings::lookup_visibility): Likewise.
+	* util/rust-hir-map.h (class ASTMappings): Add a mapping class
+	dedicated to mapping an id to an Item. Add a specialized ASTMappings
+	class to hold all ast related mappings.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* expand/rust-macro-expand.h (struct MacroExpander): Apply new name.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_derive_attribute):
+	Likewise.
+	(Early::visit_non_builtin_attribute): Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit_extern_crate):
+	Likewise.
+	* util/rust-hir-map.cc (ProcMacroMappings::insert_bang_proc_macros):
+	Use new member name.
+	(ProcMacroMappings::lookup_derive_proc_macros): Likewise.
+	(ProcMacroMappings::lookup_bang_proc_macros): Likewise.
+	(ProcMacroMappings::lookup_attribute_proc_macros): Likewise.
+	(ProcMacroMappings::insert_derive_proc_macro_def): Likewise.
+	(ProcMacroMappings::insert_derive_def): Likewise.
+	(ProcMacroMappings::insert_bang_proc_macro_def): Likewise.
+	(ProcMacroMappings::insert_bang_def): Likewise.
+	(ProcMacroMappings::insert_attribute_proc_macro_def): Likewise.
+	(ProcMacroMappings::insert_attribute_def): Likewise.
+	(ProcMacroMappings::lookup_derive_proc_macro_def): Likewise.
+	(ProcMacroMappings::lookup_derive_def): Likewise.
+	(ProcMacroMappings::lookup_bang_proc_macro_def): Likewise.
+	(ProcMacroMappings::lookup_bang_def): Likewise.
+	(ProcMacroMappings::lookup_attribute_proc_macro_def): Likewise.
+	(ProcMacroMappings::lookup_attribute_def): Likewise.
+	(ProcMacroMappings::insert_derive_invocation): Likewise.
+	(ProcMacroMappings::lookup_derive_proc_macro_invocation): Likewise.
+	(ProcMacroMappings::lookup_derive_invocation): Likewise.
+	(ProcMacroMappings::insert_bang_invocation): Likewise.
+	(ProcMacroMappings::lookup_bang_invocation): Likewise.
+	(ProcMacroMappings::insert_attribute_invocation): Likewise.
+	(ProcMacroMappings::lookup_attribute_invocation): Likewise.
+	* util/rust-hir-map.h (class ProcMacroMappings): Rename member maps as
+	well as some functions to remove the proc macro mention.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* expand/rust-macro-expand.h (struct MacroExpander): Use new macro
+	category.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit_derive_attribute):
+	Likewise.
+	(Early::visit_non_builtin_attribute): Likewise.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit_extern_crate):
+	Likewise.
+	* rust-session-manager.cc (Session::load_extern_crate): Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_derive_proc_macros): Move to
+	specialized macro class declartion.
+	(Mappings::insert_bang_proc_macros): Move from here...
+	(ProcMacroMappings::insert_bang_proc_macros): ... to here.
+	(Mappings::insert_attribute_proc_macros): Likewise.
+	(Mappings::lookup_derive_proc_macros): Likewise.
+	(ProcMacroMappings::lookup_derive_proc_macros): Likewise.
+	(Mappings::lookup_bang_proc_macros): Likewise.
+	(ProcMacroMappings::lookup_bang_proc_macros): Likewise.
+	(Mappings::lookup_attribute_proc_macros): Likewise.
+	(ProcMacroMappings::lookup_attribute_proc_macros): Likewise.
+	(Mappings::insert_derive_proc_macro_def): Likewise.
+	(ProcMacroMappings::insert_derive_proc_macro_def): Likewise.
+	(Mappings::insert_bang_proc_macro_def): Likewise.
+	(ProcMacroMappings::insert_bang_proc_macro_def): Likewise.
+	(Mappings::insert_attribute_proc_macro_def): Likewise.
+	(ProcMacroMappings::insert_attribute_proc_macro_def): Likewise.
+	(Mappings::lookup_derive_proc_macro_def): Likewise.
+	(ProcMacroMappings::lookup_derive_proc_macro_def): Likewise.
+	(Mappings::lookup_bang_proc_macro_def): Likewise.
+	(ProcMacroMappings::lookup_bang_proc_macro_def): Likewise.
+	(Mappings::lookup_attribute_proc_macro_def): Likewise.
+	(ProcMacroMappings::lookup_attribute_proc_macro_def): Likewise.
+	(Mappings::insert_derive_proc_macro_invocation): Likewise.
+	(Mappings::lookup_derive_proc_macro_invocation): Likewise.
+	(ProcMacroMappings::lookup_derive_proc_macro_invocation): Likewise.
+	(Mappings::insert_bang_proc_macro_invocation): Likewise.
+	(Mappings::lookup_bang_proc_macro_invocation): Likewise.
+	(Mappings::insert_attribute_proc_macro_invocation): Likewise.
+	(Mappings::lookup_attribute_proc_macro_invocation): Likewise.
+	* util/rust-hir-map.h (class ProcMacroMappings): Add specialized class
+	for macro mappings.
+
+2026-10-13  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-collect-lang-items.cc (CollectLangItems::visit): Use sub
+	category.
+	* backend/rust-compile-expr.cc: Likewise.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::get_unit_type): Likewise.
+	* checks/errors/borrowck/rust-borrow-checker.cc (BorrowChecker::go): Likewise.
+	* checks/errors/privacy/rust-visibility-resolver.cc
+	(VisibilityResolver::resolve_module_path): Likewise.
+	* expand/rust-macro-substitute-ctx.cc: Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_lifetime): Likewise.
+	(ASTLoweringBase::lower_loop_label): Likewise.
+	(ASTLoweringBase::lower_path_expr_seg): Likewise.
+	(ASTLoweringBase::lower_self): Likewise.
+	(ASTLoweringBase::lower_extern_block): Likewise.
+	* hir/rust-ast-lower-block.h: Likewise.
+	* hir/rust-ast-lower-enumitem.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-extern.h: Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Likewise.
+	(ASTLoweringSimplePath::lower): Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::visit): Likewise.
+	* hir/rust-ast-lower-stmt.cc (ASTLoweringStmt::visit): Likewise.
+	* hir/rust-ast-lower-type.cc (ASTLowerTypePath::visit): Likewise.
+	(ASTLowerQualifiedPathInType::visit): Likewise.
+	(ASTLoweringType::visit): Likewise.
+	(ASTLowerGenericParam::visit): Likewise.
+	(ASTLoweringTypeBounds::visit): Likewise.
+	(ASTLowerWhereClauseItem::visit): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowering::go): Likewise.
+	(ASTLoweringBlock::visit): Likewise.
+	(ASTLoweringIfBlock::visit): Likewise.
+	(ASTLoweringIfLetBlock::desugar_iflet): Likewise.
+	(ASTLoweringIfLetBlock::visit): Likewise.
+	(ASTLowerStructExprField::visit): Likewise.
+	(ASTLoweringExprWithBlock::visit): Likewise.
+	(ASTLowerPathInExpression::visit): Likewise.
+	(ASTLoweringBase::lower_qual_path_type): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* metadata/rust-export-metadata.cc (PublicInterface::gather_export_data):
+	Likewise.
+	(PublicInterface::write_to_object_file): Likewise.
+	(PublicInterface::write_to_path): Likewise.
+	(PublicInterface::expected_metadata_filename): Likewise.
+	* resolve/rust-default-resolver.cc (DefaultResolver::visit): Likewise.
+	* resolve/rust-forever-stack.h: Likewise.
+	* resolve/rust-name-resolution-context.h: Likewise.
+	* rust-session-manager.cc (Session::handle_crate_name): Likewise.
+	(Session::compile_crate): Likewise.
+	(Session::load_extern_crate): Likewise.
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::resolve_literal):
+	Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_fn_trait_call): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	Likewise.
+	(TypeCheckImplItem::resolve_function_signature): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::resolve):
+	Likewise.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Likewise.
+	* typecheck/rust-type-util.cc (query_type): Likewise.
+	* typecheck/rust-tyty-bounds.cc: Likewise.
+	* typecheck/rust-tyty-subst.cc (SubstitutionParamMapping::override_context):
+	Likewise.
+	* typecheck/rust-tyty-util.cc (TyVar::monomorphized_clone): Likewise.
+	* typecheck/rust-tyty.cc (InferType::clone): Likewise.
+	(ConstInferType::clone): Likewise.
+	* util/rust-hir-map.cc (CrateMappings::CrateMappings): Add a new
+	specialized class to keep all crate related mappings.
+	(Mappings::Mappings): Move some member functions to CrateMappings.
+	(Mappings::get_next_crate_num): Likewise.
+	(CrateMappings::get_next_crate_num): Likewise.
+	(Mappings::set_current_crate): Likewise.
+	(CrateMappings::set_current_crate): Likewise.
+	(Mappings::get_current_crate): Likewise.
+	(CrateMappings::get_current_crate): Likewise.
+	(Mappings::get_crate_name): Likewise.
+	(CrateMappings::get_crate_name): Likewise.
+	(Mappings::lookup_crate_num): Likewise.
+	(CrateMappings::lookup_crate_num): Likewise.
+	(Mappings::set_crate_name): Likewise.
+	(CrateMappings::set_crate_name): Likewise.
+	(Mappings::get_current_crate_name): Likewise.
+	(CrateMappings::get_current_crate_name): Likewise.
+	(Mappings::lookup_crate_name): Likewise.
+	(CrateMappings::lookup_crate_name): Likewise.
+	(Mappings::crate_num_to_nodeid): Likewise.
+	(CrateMappings::crate_num_to_nodeid): Likewise.
+	(Mappings::node_is_crate): Likewise.
+	(CrateMappings::node_is_crate): Likewise.
+	(Mappings::get_ast_crate): Likewise.
+	(CrateMappings::get_ast_crate): Likewise.
+	(Mappings::get_ast_crate_by_node_id): Likewise.
+	(Mappings::get_ast_crate_by_node_id_raw): Likewise.
+	(CrateMappings::get_ast_crate_by_node_id_raw): Likewise.
+	(Mappings::insert_ast_crate): Likewise.
+	(CrateMappings::insert_ast_crate): Likewise.
+	(Mappings::insert_macro_def): Likewise.
+	(Mappings::insert_glob_container): Likewise.
+	* util/rust-hir-map.h (class Mappings): Move some declarations from
+	here...
+	(class CrateMappings): ...to here.
+
+2026-10-13  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-intrinsic-values.h (Rust::Values::Intrinsics): Add entries for atomic_store,
+	atomic_store_rel, atomic_load, atomic_load_acq.
+	* backend/rust-compile-intrinsic.cc (generic_intrinsics): Likewise.
+
+2026-10-13  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/rust-ast-validation.cc
+	(ASTValidation::visit (Function)): Emit error on complex
+	patterns in non-extern bodyless functions as well.
+
+2026-10-13  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* ast/rust-ast-builder.cc (Builder::new_type_param): Handle
+	FUNCTION segments.
+
+2026-10-13  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::Late):
+	Initialize in_bodyless_params.
+	(Late::visit (FunctionParam)): New function definition, skip
+	visiting the patterns of function parameters on bodyless
+	functions.
+	(Late::visit_function_params): Set in_bodyless_params.
+	* resolve/rust-late-name-resolver-2.0.h
+	(Late::visit (FunctionParam)): New function declaration.
+	(Late::in_bodyless_params): New member variable.
+
+2026-10-13  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* lang.opt: Remove frust-c-style-string-literals option.
+	* rust-session-manager.h (Session): New should_support_cstr_parsing function.
+	* parse/rust-parse-impl-expr.hxx (Parser<ManagedTokenSource>::parse_literal_expr):
+	Replace old flag_c_style_string_literals check with should_support_cstr_parsing.
+	(Parser<ManagedTokenSource>::null_denotation_not_path): Likewise.
+	* parse/rust-parse.h: Import rust-session-manager.h to access Session class.
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (walk_type_to_constrain): walk binding args
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_trait): add missing
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::try_hook): use new helper
+	* typecheck/rust-hir-path-probe-expr.cc (PathProbeExpr::probe_bounds): likewise
+	* typecheck/rust-hir-path-probe-type.cc (TypePathProbe::probe_generic): likewise
+	* typecheck/rust-hir-type-check-type.cc (TypeResolveGenericParam::visit): likewise
+	(TypeResolveGenericParam::apply_trait_bounds): track new decl id
+	* typecheck/rust-hir-type-check.h: new helper
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::predicates_for_type): impl
+	* typecheck/rust-tyty.cc (ParamType::ParamType): new decl id
+	(ParamType::clone): likewise
+	* typecheck/rust-tyty.h: likewise
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-coercion.cc (TypeCoercionRules::TryCoerce): add flag
+	(TypeCoercionRules::TypeCoercionRules): Likewise.
+	(TypeCoercionRules::do_coercion): Likewise.
+	(TypeCoercionRules::coerce_unsafe_ptr): Likewise.
+	(TypeCoercionRules::coerce_borrowed_pointer): Likewise.
+	(TypeCoercionRules::select): Likewise.
+	* typecheck/rust-coercion.h: Likewise.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::try_select_predicate_candidates):
+	Likewise.
+	* typecheck/rust-type-util.cc (unify_site_and): Likewise.
+	* typecheck/rust-type-util.h (unify_site_and): Likewise.
+	* typecheck/rust-unify.cc (UnifyRules::UnifyRules): Likewise.
+	(UnifyRules::Resolve): Likewise.
+	(UnifyRules::resolve_subtype): Likewise.
+	(UnifyRules::expect_never): Likewise.
+	* typecheck/rust-unify.h: Likewise.
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-type-util.cc (normalize_projection): resolve through super traits
+	* typecheck/rust-typecheck-context.cc: disable infer for trait-self
+	* typecheck/rust-tyty-subst.cc: reuse to handle nested arguments
+	* typecheck/rust-unify.cc (UnifyRules::go): relax infer on adts
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (ParamType::clone): add guard
+
+2026-10-13  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* parse/rust-parse.h: Remove field and associated method for
+	retrieving the errors.
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-context.cc (Context::type_hasher): track active adt's
+	* backend/rust-compile-context.h: likewise
+	* backend/rust-compile-type.cc (type_reaches_adt): likewise
+	(is_recursive_adt): new helper
+	(TyTyResolveCompile::compile): check for active adt
+	(TyTyResolveCompile::visit): setup placeholder node then layout
+	* rust-session-manager.cc (Session::compile_crate): saw errors early return
+	* typecheck/rust-hir-type-check-item.cc (validate_adt_size): new helper
+	(TypeCheckItem::visit): setup type node then add variants
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): check for incomplete
+	* typecheck/rust-hir-type-check.h: new helpers
+	* typecheck/rust-typecheck-context.cc (make_adt_substitution_key): likewise
+	* typecheck/rust-tyty.cc (BaseType::monomorphized_clone): early return
+	(BaseType::contains_infer): track visited for recursive safety
+	(BaseType::is_concrete): likewise
+	(ADTType::is_equal): likewise
+	(ADTType::handle_substitions): likewise
+	(FnPtr::as_string): likewise
+	(PointerType::as_string): likewise
+	* typecheck/rust-tyty.h: recusision safety
+	* typecheck/rust-unify.cc (UnifyRules::UnifyRules): new ActiveADT's guard
+	(UnifyRules::Resolve): likewise
+	(UnifyRules::resolve_subtype): likewise
+	(UnifyRules::expect_adt): likewise
+	* typecheck/rust-unify.h: likewise
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (walk_type_to_constrain): walk the generics as well
+
+2026-10-13  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-name-resolver.cc (Scope::Scope): Remove function
+	definition.
+	(Scope::insert): Likewise.
+	(Scope::lookup): Likewise.
+	(Scope::lookup_decl_type): Likewise.
+	(Scope::lookup_rib_for_decl): Likewise.
+	(Scope::iterate): Likewise.
+	(Scope::peek): Likewise.
+	(Scope::push): Likewise.
+	(Scope::pop): Likewise.
+	(Scope::append_reference_for_def): Likewise.
+	(Scope::decl_was_declared_here): Likewise.
+	* resolve/rust-name-resolver.h (class Scope): Remove.
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitItemReference::resolve_item): track lifetimes
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-resolve-path.cc: return a constructor for this ADT
+	* backend/rust-constexpr.cc (adjust_temp_type): check for constructor
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit): this is a coercion site
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* expand/rust-expand-visitor.cc (builtin_derive_item): check for null and remove
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): always update const type
+	* typecheck/rust-unify.cc (UnifyRules::expect_array): emit_error=false
+
+2026-10-13  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): check for const args
+	* hir/tree/rust-hir-expr.cc (CallExpr::CallExpr): add new helper to parse attribute
+	(CallExpr::operator=): new member
+	* hir/tree/rust-hir-expr.h (class CallExpr): new helper
+	* hir/tree/rust-hir-item.cc (Function::get_legacy_const_generic_indexes): likewise
+	* hir/tree/rust-hir-item.h: likewise
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit): handle const args
+	* typecheck/rust-tyty-subst.cc (SubstitutionRef::resolve_const_argument): refactor out
+	* typecheck/rust-tyty-subst.h: likewise
+
 2026-10-08  Guillaume Gomez  <contact@guillaume-gomez.fr>
 
 	* Make-lang.in: Add compilation of `attr-handlers.c` in

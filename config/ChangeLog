@@ -1,3 +1,9 @@
+2026-10-13  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* enable.m4: Sync with binutils.
+	* lib-prefix.m4: Likewise.
+	* tcl.m4: Likewise.
+
 2026-10-11  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* acinclude.m4: Removed.

@@ -1,3 +1,12 @@
+2026-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-linux-loongarch.ads (Address): Add size clause.
+
+2026-10-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/system-linux-loongarch.ads(Support_Atomic_Primitives):
+	New boolean constant.
+
 2026-10-07  Hodong Kim  <hodong@nimfsoft.com>
 
 	PR ada/127759

@@ -1,3 +1,135 @@
+2026-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127845
+	* generated/findloc1_c10.c (mfindloc1_c10): Regenerate.
+	* generated/findloc1_c16.c (mfindloc1_c16): Likewise.
+	* generated/findloc1_c17.c (mfindloc1_c17): Likewise.
+	* generated/findloc1_c4.c (mfindloc1_c4): Likewise.
+	* generated/findloc1_c8.c (mfindloc1_c8): Likewise.
+	* generated/findloc1_i1.c (mfindloc1_i1): Likewise.
+	* generated/findloc1_i16.c (mfindloc1_i16): Likewise.
+	* generated/findloc1_i2.c (mfindloc1_i2): Likewise.
+	* generated/findloc1_i4.c (mfindloc1_i4): Likewise.
+	* generated/findloc1_i8.c (mfindloc1_i8): Likewise.
+	* generated/findloc1_r10.c (mfindloc1_r10): Likewise.
+	* generated/findloc1_r16.c (mfindloc1_r16): Likewise.
+	* generated/findloc1_r17.c (mfindloc1_r17): Likewise.
+	* generated/findloc1_r4.c (mfindloc1_r4): Likewise.
+	* generated/findloc1_r8.c (mfindloc1_r8): Likewise.
+	* generated/findloc1_s1.c (mfindloc1_s1): Likewise.
+	* generated/findloc1_s4.c (mfindloc1_s4): Likewise.
+	* m4/ifindloc1.m4: Properly advance through MASK array argument when
+	MASK and DIM are present.
+
+2026-10-13  Harald Anlauf  <anlauf@gmx.de>
+	    Federico Perini  <federico.perini@gmail.com>
+
+	PR fortran/127846
+	* generated/maxloc0_16_i1.c (mmaxloc0_16_i1): Regenerate.
+	* generated/maxloc0_16_i16.c (mmaxloc0_16_i16): Likewise.
+	* generated/maxloc0_16_i2.c (mmaxloc0_16_i2): Likewise.
+	* generated/maxloc0_16_i4.c (mmaxloc0_16_i4): Likewise.
+	* generated/maxloc0_16_i8.c (mmaxloc0_16_i8): Likewise.
+	* generated/maxloc0_16_m1.c (mmaxloc0_16_m1): Likewise.
+	* generated/maxloc0_16_m16.c (mmaxloc0_16_m16): Likewise.
+	* generated/maxloc0_16_m2.c (mmaxloc0_16_m2): Likewise.
+	* generated/maxloc0_16_m4.c (mmaxloc0_16_m4): Likewise.
+	* generated/maxloc0_16_m8.c (mmaxloc0_16_m8): Likewise.
+	* generated/maxloc0_16_r10.c (mmaxloc0_16_r10): Likewise.
+	* generated/maxloc0_16_r16.c (mmaxloc0_16_r16): Likewise.
+	* generated/maxloc0_16_r17.c (mmaxloc0_16_r17): Likewise.
+	* generated/maxloc0_16_r4.c (mmaxloc0_16_r4): Likewise.
+	* generated/maxloc0_16_r8.c (mmaxloc0_16_r8): Likewise.
+	* generated/maxloc0_4_i1.c (mmaxloc0_4_i1): Likewise.
+	* generated/maxloc0_4_i16.c (mmaxloc0_4_i16): Likewise.
+	* generated/maxloc0_4_i2.c (mmaxloc0_4_i2): Likewise.
+	* generated/maxloc0_4_i4.c (mmaxloc0_4_i4): Likewise.
+	* generated/maxloc0_4_i8.c (mmaxloc0_4_i8): Likewise.
+	* generated/maxloc0_4_m1.c (mmaxloc0_4_m1): Likewise.
+	* generated/maxloc0_4_m16.c (mmaxloc0_4_m16): Likewise.
+	* generated/maxloc0_4_m2.c (mmaxloc0_4_m2): Likewise.
+	* generated/maxloc0_4_m4.c (mmaxloc0_4_m4): Likewise.
+	* generated/maxloc0_4_m8.c (mmaxloc0_4_m8): Likewise.
+	* generated/maxloc0_4_r10.c (mmaxloc0_4_r10): Likewise.
+	* generated/maxloc0_4_r16.c (mmaxloc0_4_r16): Likewise.
+	* generated/maxloc0_4_r17.c (mmaxloc0_4_r17): Likewise.
+	* generated/maxloc0_4_r4.c (mmaxloc0_4_r4): Likewise.
+	* generated/maxloc0_4_r8.c (mmaxloc0_4_r8): Likewise.
+	* generated/maxloc0_8_i1.c (mmaxloc0_8_i1): Likewise.
+	* generated/maxloc0_8_i16.c (mmaxloc0_8_i16): Likewise.
+	* generated/maxloc0_8_i2.c (mmaxloc0_8_i2): Likewise.
+	* generated/maxloc0_8_i4.c (mmaxloc0_8_i4): Likewise.
+	* generated/maxloc0_8_i8.c (mmaxloc0_8_i8): Likewise.
+	* generated/maxloc0_8_m1.c (mmaxloc0_8_m1): Likewise.
+	* generated/maxloc0_8_m16.c (mmaxloc0_8_m16): Likewise.
+	* generated/maxloc0_8_m2.c (mmaxloc0_8_m2): Likewise.
+	* generated/maxloc0_8_m4.c (mmaxloc0_8_m4): Likewise.
+	* generated/maxloc0_8_m8.c (mmaxloc0_8_m8): Likewise.
+	* generated/maxloc0_8_r10.c (mmaxloc0_8_r10): Likewise.
+	* generated/maxloc0_8_r16.c (mmaxloc0_8_r16): Likewise.
+	* generated/maxloc0_8_r17.c (mmaxloc0_8_r17): Likewise.
+	* generated/maxloc0_8_r4.c (mmaxloc0_8_r4): Likewise.
+	* generated/maxloc0_8_r8.c (mmaxloc0_8_r8): Likewise.
+	* generated/minloc0_16_i1.c (mminloc0_16_i1): Likewise.
+	* generated/minloc0_16_i16.c (mminloc0_16_i16): Likewise.
+	* generated/minloc0_16_i2.c (mminloc0_16_i2): Likewise.
+	* generated/minloc0_16_i4.c (mminloc0_16_i4): Likewise.
+	* generated/minloc0_16_i8.c (mminloc0_16_i8): Likewise.
+	* generated/minloc0_16_m1.c (mminloc0_16_m1): Likewise.
+	* generated/minloc0_16_m16.c (mminloc0_16_m16): Likewise.
+	* generated/minloc0_16_m2.c (mminloc0_16_m2): Likewise.
+	* generated/minloc0_16_m4.c (mminloc0_16_m4): Likewise.
+	* generated/minloc0_16_m8.c (mminloc0_16_m8): Likewise.
+	* generated/minloc0_16_r10.c (mminloc0_16_r10): Likewise.
+	* generated/minloc0_16_r16.c (mminloc0_16_r16): Likewise.
+	* generated/minloc0_16_r17.c (mminloc0_16_r17): Likewise.
+	* generated/minloc0_16_r4.c (mminloc0_16_r4): Likewise.
+	* generated/minloc0_16_r8.c (mminloc0_16_r8): Likewise.
+	* generated/minloc0_4_i1.c (mminloc0_4_i1): Likewise.
+	* generated/minloc0_4_i16.c (mminloc0_4_i16): Likewise.
+	* generated/minloc0_4_i2.c (mminloc0_4_i2): Likewise.
+	* generated/minloc0_4_i4.c (mminloc0_4_i4): Likewise.
+	* generated/minloc0_4_i8.c (mminloc0_4_i8): Likewise.
+	* generated/minloc0_4_m1.c (mminloc0_4_m1): Likewise.
+	* generated/minloc0_4_m16.c (mminloc0_4_m16): Likewise.
+	* generated/minloc0_4_m2.c (mminloc0_4_m2): Likewise.
+	* generated/minloc0_4_m4.c (mminloc0_4_m4): Likewise.
+	* generated/minloc0_4_m8.c (mminloc0_4_m8): Likewise.
+	* generated/minloc0_4_r10.c (mminloc0_4_r10): Likewise.
+	* generated/minloc0_4_r16.c (mminloc0_4_r16): Likewise.
+	* generated/minloc0_4_r17.c (mminloc0_4_r17): Likewise.
+	* generated/minloc0_4_r4.c (mminloc0_4_r4): Likewise.
+	* generated/minloc0_4_r8.c (mminloc0_4_r8): Likewise.
+	* generated/minloc0_8_i1.c (mminloc0_8_i1): Likewise.
+	* generated/minloc0_8_i16.c (mminloc0_8_i16): Likewise.
+	* generated/minloc0_8_i2.c (mminloc0_8_i2): Likewise.
+	* generated/minloc0_8_i4.c (mminloc0_8_i4): Likewise.
+	* generated/minloc0_8_i8.c (mminloc0_8_i8): Likewise.
+	* generated/minloc0_8_m1.c (mminloc0_8_m1): Likewise.
+	* generated/minloc0_8_m16.c (mminloc0_8_m16): Likewise.
+	* generated/minloc0_8_m2.c (mminloc0_8_m2): Likewise.
+	* generated/minloc0_8_m4.c (mminloc0_8_m4): Likewise.
+	* generated/minloc0_8_m8.c (mminloc0_8_m8): Likewise.
+	* generated/minloc0_8_r10.c (mminloc0_8_r10): Likewise.
+	* generated/minloc0_8_r16.c (mminloc0_8_r16): Likewise.
+	* generated/minloc0_8_r17.c (mminloc0_8_r17): Likewise.
+	* generated/minloc0_8_r4.c (mminloc0_8_r4): Likewise.
+	* generated/minloc0_8_r8.c (mminloc0_8_r8): Likewise.
+	* m4/maxloc0.m4: Fix looping through array argument when BACK=.true.
+	* m4/minloc0.m4: Likewise.
+
+2026-10-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127837
+	* caf/shmem.c (_gfortran_caf_end_team): Wait with
+	counter_barrier_wait and set STAT= with TEAM_HEALTH_CHECK when
+	an image of the team stopped or failed.  Do not pass STAT= to
+	_gfortran_caf_deregister.
+	* caf/shmem/counter_barrier.c (counter_barrier_wait): Add
+	TERMINATED argument.
+	* caf/shmem/counter_barrier.h (counter_barrier_wait): Likewise.
+	* caf/shmem/sync.c (sync_team): Update call.
+
 2026-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127684

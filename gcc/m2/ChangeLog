@@ -1,3 +1,8 @@
+2026-10-12  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* Make-lang.in: Do not makr m2.pod as .INTERMEDIATE but delete it
+	explicitly in clean targets.
+
 2026-10-09  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

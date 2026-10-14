@@ -1,3 +1,8 @@
+2026-10-13  Simon Marchi  <simon.marchi@polymtl.ca>
+
+	* configure.ac: Add AC_CONFIG_MACRO_DIRS.
+	* configure: Regenerate.
+
 2026-10-09  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

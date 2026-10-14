@@ -1,3 +1,29 @@
+2026-10-13  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* call.cc: Remove unused include directives.
+	* init.cc: Likewise.
+	* semantics.cc: Likewise.
+
+2026-10-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127780
+	* parser.cc (cp_parser_init_statement): Use the location of
+	'using' in the C++23 pedwarn.  Only consume the ':' if
+	expect_semicolon_p.
+
+2026-10-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/127787
+	PR c++/99000
+	* pt.cc (check_explicit_specialization): Don't clobber a redefinable
+	imported definition.
+
+2026-10-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/127734
+	* decl.cc (omp_declare_variant_finalize_one): Remove early
+	return when a 'simd' trait exists.
+
 2026-10-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/127710

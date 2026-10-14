@@ -1,3 +1,8 @@
+2026-10-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR analyzer/125265
+	* analyzer.opt: ...here.  Align parameter definition.
+
 2026-10-07  Filip Kastl  <fkastl@suse.cz>
 
 	* region-model.cc: Add some missing override keywords for member

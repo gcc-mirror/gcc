@@ -1,3 +1,17 @@
+2026-10-13  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/127228
+	* include/bits/basic_string.tcc (_M_create): Restore old version.
+	* testsuite/21_strings/basic_string/127228.cc: New test.
+
+2026-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127757
+	* src/c++20/atomic.cc (__waitable_state::_M_enter_wait): Add
+	comment.
+	(__waitable_state::_M_waiting): Add seq_cst fence and comments.
+	* testsuite/29_atomics/atomic/wait_notify/127757.cc: New test.
+
 2026-10-09  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/simd: Include <bits/ranges_access.h>.

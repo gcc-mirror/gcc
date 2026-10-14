@@ -1,3 +1,15 @@
+2026-10-13  Simon Marchi  <simon.marchi@efficios.com>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add record for myself.
+
+2026-10-12  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR target/126608
+	* configure.ac (x86_64-*mingw* | *-w64-mingw*): Do not use
+	/mingw symlink.
+	* configure: Regenerate.
+
 2026-10-09  Gabriel Dos Reis  <gdr@integrable-solutions.net>
 
 	* MAINTAINERS: Regenerate.

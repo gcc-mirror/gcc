@@ -1,3 +1,9 @@
+2026-10-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127723
+	* testsuite/libgomp.fortran/nestedfn5.f90: Fix testcase: safelen
+	must be constant.
+
 2026-10-09  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/127723

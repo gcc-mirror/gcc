@@ -1,3 +1,8 @@
+2026-10-13  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rustc-lib/version-info: Regenerate, now mentions stdarch.
+	* contrib/vendor-libs.sh: New file.
+
 2026-10-09  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

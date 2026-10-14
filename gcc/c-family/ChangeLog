@@ -1,3 +1,9 @@
+2026-10-12  Josef Melcr  <josef.melcr@suse.com>
+
+	PR c/127464
+	* c-attribs.cc (handle_callback_only_attribute): Reject
+	unprototyped functions.
+
 2026-10-09  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/127723
