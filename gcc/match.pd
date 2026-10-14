@@ -12865,10 +12865,13 @@ and,
 
 
 /* Merge
-     c = VEC_PERM_EXPR <a, b, VCST0>;
-     d = VEC_PERM_EXPR <c, c, VCST1>;
+     inner = VEC_PERM_EXPR <op2, op3, sel4>;
+     vc = VIEW_CONVERT_EXPR <inner>;  (optional)
+     result = VEC_PERM_EXPR <vc, vc, sel5>;
    to
-     d = VEC_PERM_EXPR <a, b, NEW_VCST>;  */
+     result = VIEW_CONVERT_EXPR <VEC_PERM_EXPR <op2, op3, new_sel>>;
+   The VIEW_CONVERT_EXPR may change the element type but not the element
+   count.  */
 
 (simplify
  (vec_perm (view_convert?@0 (vec_perm@1 @2 @3 VECTOR_CST@4)) @0 VECTOR_CST@5)
@@ -12876,37 +12879,40 @@ and,
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
-     machine_mode op_mode = TYPE_MODE (TREE_TYPE (@2));
+     machine_mode vc_mode = TYPE_MODE (TREE_TYPE (@0));
+     machine_mode inner_mode = TYPE_MODE (TREE_TYPE (@1));
+     machine_mode op2_mode = TYPE_MODE (TREE_TYPE (@2));
      int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
-     vec_perm_indices sel0, sel1;
+     vec_perm_indices sel4, sel5;
    }
-   (if (tree_to_vec_perm_indices (&sel0, @2, @3, @4)
-	&& tree_to_vec_perm_indices (&sel1, @0, @0, @5)
+   (if (tree_to_vec_perm_indices (&sel4, @2, @3, @4)
+	&& tree_to_vec_perm_indices (&sel5, @0, @0, @5)
 	&& TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0)))
 	   == TYPE_SIZE (TREE_TYPE (TREE_TYPE (@1))))
     (with
      {
-       vec_perm_builder builder2 (nelts, nelts, 1);
+       vec_perm_builder new_builder (nelts, nelts, 1);
        for (int i = 0; i < nelts; i++)
-	 builder2.quick_push (sel0[sel1[i].to_constant ()]);
+	 new_builder.quick_push (sel4[sel5[i].to_constant ()]);
 
-       vec_perm_indices sel2 (builder2, 2, nelts);
+       vec_perm_indices new_sel (new_builder, 2, nelts);
 
-       tree op0 = NULL_TREE;
+       tree new_vcst = NULL_TREE;
        /* If the new VEC_PERM_EXPR can't be handled but both
 	  original VEC_PERM_EXPRs can, punt.
 	  If one or both of the original VEC_PERM_EXPRs can't be
 	  handled and the new one can't be either, don't increase
-	  number of VEC_PERM_EXPRs that can't be handled.  */
-       if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
+	  number of VEC_PERM_EXPRs that can't be handled.
+	  The new VEC_PERM_EXPR has the type of op2.  */
+       if (can_vec_perm_const_p (op2_mode, op2_mode, new_sel, false)
 	   || (single_use (@0)
-	       ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
-		  || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
-	       : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
-	 op0 = vec_perm_indices_to_tree (TREE_TYPE (@5), sel2);
+	       ? (!can_vec_perm_const_p (inner_mode, op2_mode, sel4, true)
+		  || !can_vec_perm_const_p (result_mode, vc_mode, sel5, true))
+	       : !can_vec_perm_const_p (result_mode, vc_mode, sel5, true)))
+	 new_vcst = vec_perm_indices_to_tree (TREE_TYPE (@5), new_sel);
      }
-     (if (op0)
-      (view_convert (vec_perm @2 @3 { op0; }))))))))
+     (if (new_vcst)
+      (view_convert (vec_perm @2 @3 { new_vcst; }))))))))
 
 /* Merge
      c = VEC_PERM_EXPR <a, b, VCST0>;
