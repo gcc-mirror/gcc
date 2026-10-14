@@ -301,18 +301,6 @@ extern int errno;
    here.  These checks will be in the undefined state while configure
    is running so be careful to test "defined (HAVE_DECL_*)".  */
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#if defined (HAVE_DECL_ABORT) && !HAVE_DECL_ABORT
-extern void abort (void);
-#endif
-
-#ifdef __cplusplus
-}
-#endif
-
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>
 #endif
