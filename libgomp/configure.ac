@@ -180,7 +180,6 @@ libtool_VERSION=1:0:0
 AC_SUBST(libtool_VERSION)
 
 # Check header files.
-AC_HEADER_STDC
 AC_HEADER_TIME
 ACX_HEADER_STRING
 AC_CHECK_HEADERS(pthread.h unistd.h semaphore.h sys/loadavg.h sys/sysctl.h sys/time.h)
