@@ -479,6 +479,15 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
       bitmap_iterator bi;
       unsigned i;
       auto_vec<tree, 16> worklist;
+      // Add NAME to the list of imports.
+      auto add_import = [&] (tree name)
+	{
+	  if (bitmap_set_bit (m_imports, SSA_NAME_VERSION (name)))
+	    {
+	      new_imports.safe_push (SSA_NAME_VERSION (name));
+	      worklist.safe_push (name);
+	    }
+	};
       EXECUTE_IF_SET_IN_BITMAP (interesting, 0, i, bi)
 	{
 	  tree name = ssa_name (i);
@@ -510,16 +519,8 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 		  tree ssa[3];
 		  unsigned lim = gimple_range_ssa_names (ssa, 3, def_stmt);
 		  for (unsigned j = 0; j < lim; ++j)
-		    {
-		      tree rhs = ssa[j];
-		      if (rhs
-			  && bitmap_set_bit (m_imports,
-					     SSA_NAME_VERSION (rhs)))
-			{
-			  new_imports.safe_push (SSA_NAME_VERSION (rhs));
-			  worklist.safe_push (rhs);
-			}
-		    }
+		    if (ssa[j])
+		      add_import (ssa[j]);
 		}
 	    }
 	}
