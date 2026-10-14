@@ -3681,9 +3681,9 @@ extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 
 /* In emit-rtl.cc  */
-extern rtx set_for_reg_notes (rtx);
-extern rtx set_unique_reg_note (rtx, enum reg_note, rtx);
-extern rtx set_dst_reg_note (rtx, enum reg_note, rtx, rtx);
+extern rtx set_for_reg_notes (rtx_insn *);
+extern rtx set_unique_reg_note (rtx_insn *, enum reg_note, rtx);
+extern rtx set_dst_reg_note (rtx_insn *, enum reg_note, rtx, rtx);
 extern void set_insn_deleted (rtx_insn *);
 
 /* Functions in rtlanal.cc */

@@ -5552,7 +5552,7 @@ gen_use (rtx x)
    have no meaning for INSN.  */
 
 rtx
-set_for_reg_notes (rtx insn)
+set_for_reg_notes (rtx_insn *insn)
 {
   rtx pat, reg;
 
@@ -5591,7 +5591,7 @@ set_for_reg_notes (rtx insn)
    note of this type already exists, remove it first.  */
 
 rtx
-set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
+set_unique_reg_note (rtx_insn *insn, enum reg_note kind, rtx datum)
 {
   rtx note = find_reg_note (insn, kind, NULL_RTX);
 
@@ -5633,7 +5633,7 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
     {
     case REG_EQUAL:
     case REG_EQUIV:
-      df_notes_rescan (as_a <rtx_insn *> (insn));
+      df_notes_rescan (insn);
       break;
     default:
       break;
@@ -5644,7 +5644,7 @@ set_unique_reg_note (rtx insn, enum reg_note kind, rtx datum)
 
 /* Like set_unique_reg_note, but don't do anything unless INSN sets DST.  */
 rtx
-set_dst_reg_note (rtx insn, enum reg_note kind, rtx datum, rtx dst)
+set_dst_reg_note (rtx_insn *insn, enum reg_note kind, rtx datum, rtx dst)
 {
   rtx set = set_for_reg_notes (insn);
 
