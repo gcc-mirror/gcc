@@ -1283,15 +1283,13 @@ shorten_branches (rtx_insn *first)
 
 	  if (! (varying_length[uid]))
 	    {
+	      rtx_sequence *seq;
 	      if (NONJUMP_INSN_P (insn)
-		  && GET_CODE (PATTERN (insn)) == SEQUENCE)
+		  && (seq = dyn_cast<rtx_sequence *> (PATTERN (insn))))
 		{
-		  int i;
-
-		  body = PATTERN (insn);
-		  for (i = 0; i < XVECLEN (body, 0); i++)
+		  for (int i = 0; i < seq->len (); i++)
 		    {
-		      rtx inner_insn = XVECEXP (body, 0, i);
+		      rtx_insn *inner_insn = seq->insn (i);
 		      int inner_uid = INSN_UID (inner_insn);
 
 		      INSN_ADDRESSES (inner_uid) = insn_current_address;

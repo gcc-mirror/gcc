@@ -3159,18 +3159,18 @@ reset_all_used_flags (void)
     if (INSN_P (p))
       {
 	rtx pat = PATTERN (p);
-	if (GET_CODE (pat) != SEQUENCE)
-	  reset_insn_used_flags (p);
-	else
+	if (rtx_sequence *seq = dyn_cast<rtx_sequence *> (pat))
 	  {
 	    gcc_assert (REG_NOTES (p) == NULL);
-	    for (int i = 0; i < XVECLEN (pat, 0); i++)
+	    for (int i = 0; i < seq->len (); i++)
 	      {
-		rtx insn = XVECEXP (pat, 0, i);
+		rtx insn = seq->element (i);
 		if (INSN_P (insn))
 		  reset_insn_used_flags (insn);
 	      }
 	  }
+	else
+	  reset_insn_used_flags (p);
       }
 }
 
@@ -3202,15 +3202,15 @@ verify_rtl_sharing (void)
     if (INSN_P (p))
       {
 	rtx pat = PATTERN (p);
-	if (GET_CODE (pat) != SEQUENCE)
-	  verify_insn_sharing (p);
-	else
-	  for (int i = 0; i < XVECLEN (pat, 0); i++)
+	if (rtx_sequence *seq = dyn_cast<rtx_sequence *> (pat))
+	  for (int i = 0; i < seq->len (); i++)
 	      {
-		rtx insn = XVECEXP (pat, 0, i);
+		rtx insn = seq->element (i);
 		if (INSN_P (insn))
 		  verify_insn_sharing (insn);
 	      }
+	else
+	  verify_insn_sharing (p);
       }
 
   reset_all_used_flags ();
@@ -3557,9 +3557,10 @@ get_first_nonnote_insn (void)
 	  continue;
       else
 	{
+	  rtx_sequence *seq;
 	  if (NONJUMP_INSN_P (insn)
-	      && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	    insn = as_a <rtx_sequence *> (PATTERN (insn))->insn (0);
+	      && (seq = dyn_cast<rtx_sequence *> (PATTERN (insn))))
+	    insn = seq->insn (0);
 	}
     }
 
