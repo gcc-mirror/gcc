@@ -160,5 +160,6 @@
       vfsqrt, vsshift, vfmovfv, vcpop, vshift, vsm4r, vimovvx, vialu, vmiota,
       vclmulh, vimul, vfmul, vsetvl, vaesdf, vfncvtitof, vfwcvtitof, vmov,
       vssegte, vaesef, vicalu, vaesz, vlsegds, vaalu, vfminmax, vlde,
-      xt_vile, xt_vilo, xt_vcrcfold, xt_vgmulxor"))
+      xt_vile, xt_vilo, xt_vcrcfold, xt_vgmulxor,
+      vidota, vfdota, vibdota, vfbdota"))
   "mips_i8500_control_alu0")

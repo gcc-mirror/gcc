@@ -83,6 +83,11 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 10)")))
 
+(define_predicate "zvbdota_ci_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 56)
+		    && INTVAL (op) % 8 == 0")))
+
 (define_predicate "csr_operand"
   (ior (match_operand 0 "const_csr_operand")
        (match_operand 0 "register_operand")))

@@ -57,6 +57,7 @@
 			  vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,\
 			  vfncvtbf16,vfwcvtbf16,vfwmaccbf16,sf_vqmacc,sf_vfnrclip,sf_vc,sf_vc_se,\
+			  vidota,vfdota,vibdota,vfbdota,\
 			  xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo")
 	 (const_string "true")]
 	(const_string "false")))
@@ -89,6 +90,7 @@
 			  vror,vwsll,vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,\
 			  vfncvtbf16,vfwcvtbf16,vfwmaccbf16,\
+			  vidota,vfdota,vibdota,vfbdota,\
 			  xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo")
 	 (const_string "true")]
 	(const_string "false")))
@@ -510,6 +512,7 @@
 			  vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,\
 			  vaeskf1,vaeskf2,vaesz,vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,\
 			  vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16,\
+			  vidota,vfdota,vibdota,vfbdota,\
 			  xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo")
 	   (const_int INVALID_ATTRIBUTE)
 	(and (eq_attr "type" "vlde,vste,vlds,vsts,vlsegde,vssegte,vlsegds,\
@@ -839,7 +842,8 @@
                                 xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo")
 	       (const_int 1)
 
-	       (eq_attr "type" "vimuladd,vfmuladd")
+	       (eq_attr "type" "vimuladd,vfmuladd,\
+				vidota,vfdota,vibdota,vfbdota")
 	       (const_int 2)]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -863,10 +867,14 @@
 	       (const_int 2)
 
 	       (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox,vfcvtftoi,vfwcvtitof,vfwcvtftoi,
-				vfwcvtftof,vmsfs,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,vwsll,viwalu,vfwalu,viwmul,vfwmul")
+				vfwcvtftof,vmsfs,vired,viwred,vfredu,vfredo,\
+				vfwredu,vfwredo,vwsll,viwalu,vfwalu,viwmul,\
+				vfwmul,\
+				vidota,vfdota")
 	       (const_int 3)
 
-	       (eq_attr "type" "viwmuladd,vfwmuladd")
+	       (eq_attr "type" "viwmuladd,vfwmuladd,\
+				vibdota,vfbdota")
 	       (const_int 4)]
 	(const_int INVALID_ATTRIBUTE)))
 
@@ -895,10 +903,12 @@
 			  vfsgnj,vfmerge,vired,viwred,vfredu,vfredo,vfwredu,vfwredo,\
 			  vslideup,vslidedown,vislide1up,vislide1down,vfslide1up,vfslide1down,\
 			  vgather,viwmuladd,vfwmuladd,vlsegds,vlsegdux,vlsegdox,vandn,vrol,\
-                          vror,vwsll,vclmul,vclmulh,vfwmaccbf16")
+			  vror,vwsll,vclmul,vclmulh,vfwmaccbf16,\
+			  vidota,vfdota")
 	   (const_int 5)
 
-	 (eq_attr "type" "vicmp,vimuladd,vfcmp,vfmuladd")
+	 (eq_attr "type" "vicmp,vimuladd,vfcmp,vfmuladd,\
+			  vibdota,vfbdota")
 	   (const_int 6)
 
 	 (eq_attr "type" "vmpop,vmffs,vmidx,vssegte,vcpop,vclz,vctz,vgmul,vaesef,vaesem,vaesdf,\
@@ -931,10 +941,12 @@
 			  vfredo,vfwredu,vfwredo,vslideup,vslidedown,vislide1up,\
 			  vislide1down,vfslide1up,vfslide1down,vgather,viwmuladd,vfwmuladd,\
 			  vlsegds,vlsegdux,vlsegdox,vandn,vrol,vror,vwsll,vclmul,vclmulh,\
-			  vfwmaccbf16,sf_vqmacc,sf_vfnrclip")
+			  vfwmaccbf16,sf_vqmacc,sf_vfnrclip,\
+			  vidota,vfdota")
 	   (symbol_ref "riscv_vector::get_ta(operands[6])")
 
-	 (eq_attr "type" "vimuladd,vfmuladd")
+	 (eq_attr "type" "vimuladd,vfmuladd,\
+			  vibdota,vfbdota")
 	   (symbol_ref "riscv_vector::get_ta(operands[7])")
 
 	 (eq_attr "type" "vmidx,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaesz,vsm4r")
@@ -962,10 +974,13 @@
 			  vfwalu,vfwmul,vfsgnj,vfcmp,vslideup,vslidedown,\
 			  vislide1up,vislide1down,vfslide1up,vfslide1down,vgather,\
 			  viwmuladd,vfwmuladd,vlsegds,vlsegdux,vlsegdox,vandn,vrol,\
-			  vror,vwsll,vclmul,vclmulh,vfwmaccbf16,sf_vqmacc,sf_vfnrclip")
+			  vror,vwsll,vclmul,vclmulh,vfwmaccbf16,sf_vqmacc,\
+			  sf_vfnrclip,\
+			  vidota,vfdota")
 	   (symbol_ref "riscv_vector::get_ma(operands[7])")
 
-	 (eq_attr "type" "vimuladd,vfmuladd")
+	 (eq_attr "type" "vimuladd,vfmuladd,\
+			  vibdota,vfbdota")
 	   (symbol_ref "riscv_vector::get_ma(operands[8])")
 
 	 (eq_attr "type" "vmsfs,vmidx")
@@ -998,12 +1013,14 @@
 			  vfsgnj,vfcmp,vslideup,vslidedown,vislide1up,\
 			  vislide1down,vfslide1up,vfslide1down,vgather,viwmuladd,vfwmuladd,\
 			  vlsegds,vlsegdux,vlsegdox,vandn,vrol,vror,vclmul,vclmulh,vwsll,\
-			  vfwmaccbf16")
+			  vfwmaccbf16,\
+			  vidota,vfdota")
 	   (const_int 8)
 	 (eq_attr "type" "vstux,vstox,vssegts,vssegtux,vssegtox")
 	   (const_int 5)
 
-	 (eq_attr "type" "vimuladd,vfmuladd")
+	 (eq_attr "type" "vimuladd,vfmuladd,\
+			  vibdota,vfbdota")
 	   (const_int 9)
 
 	 (eq_attr "type" "vmsfs,vmidx,vcompress,vghsh,vaeskf1,vaeskf2,vsha2ms,vsha2ch,vsha2cl,\

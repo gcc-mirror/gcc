@@ -71,7 +71,7 @@
 (define_insn_reservation "vec_imul" 4
   (and (eq_attr "tune" "generic_ooo,generic")
        (eq_attr "type" "vimul,viwmul,vimuladd,viwmuladd,vsmul,vclmul,vclmulh,\
-                        vghsh,vgmul,xt_vgmulxor,xt_vcrcfold"))
+			  vghsh,vgmul,xt_vgmulxor,xt_vcrcfold,vidota,vibdota"))
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector float addition.
@@ -83,7 +83,8 @@
 ;; Vector float multiplication and FMA.
 (define_insn_reservation "vec_fmul" 6
   (and (eq_attr "tune" "generic_ooo,generic")
-       (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd,vfwmaccbf16,sf_vqmacc,sf_vfnrclip"))
+       (eq_attr "type" "vfmul,vfwmul,vfmuladd,vfwmuladd,vfwmaccbf16,\
+			  vfdota,vfbdota,sf_vqmacc,sf_vfnrclip"))
   "vxu_ooo_issue,vxu_ooo_alu")
 
 ;; Vector crypto, assumed to be a generic operation for now.

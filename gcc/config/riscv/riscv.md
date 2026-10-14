@@ -491,6 +491,11 @@
 ;; vfncvtbf16  vector narrowing single floating-point to brain floating-point instruction
 ;; vfwcvtbf16  vector widening brain floating-point to single floating-point instruction
 ;; vfwmaccbf16  vector BF16 widening multiply-accumulate
+;; 19.  Vector dot-product instructions
+;; vidota       vector integer dot-product accumulate instructions
+;; vfdota       vector floating-point dot-product accumulate instructions
+;; vibdota      vector integer batched dot-product accumulate instructions
+;; vfbdota      vector floating-point batched dot-product accumulation
 ;; SiFive custom extension instructions
 ;; sf_vqmacc      vector matrix integer multiply-add instructions
 ;; sf_vfnrclip     vector fp32 to int8 ranged clip instructions
@@ -523,6 +528,7 @@
    vgather,vcompress,vmov,vector,vandn,vbrev,vbrev8,vrev8,vclz,vctz,vcpop,vrol,vror,vwsll,
    vclmul,vclmulh,vghsh,vgmul,vaesef,vaesem,vaesdf,vaesdm,vaeskf1,vaeskf2,vaesz,
    vsha2ms,vsha2ch,vsha2cl,vsm4k,vsm4r,vsm3me,vsm3c,vfncvtbf16,vfwcvtbf16,vfwmaccbf16,
+   vidota,vfdota,vibdota,vfbdota,
    sf_vc,sf_vc_se,xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"
   (cond [(eq_attr "got" "load") (const_string "load")
 
@@ -559,7 +565,7 @@
 (define_attr "fp_vector_disabled" "no,yes"
   (cond [
     (and (eq_attr "type" "vfmov,vfalu,vfmul,vfdiv,
-			  vfwalu,vfwmul,vfmuladd,vfwmuladd,
+			  vfwalu,vfwmul,vfmuladd,vfwmuladd,vfdota,vfbdota,
 			  vfsqrt,vfrecp,vfminmax,vfsgnj,vfcmp,
 			  vfclass,vfmerge,
 			  vfncvtitof,vfwcvtftoi,vfcvtftoi,vfcvtitof,
@@ -5582,6 +5588,7 @@
 (include "vector.md")
 (include "vector-crypto.md")
 (include "vector-bfloat16.md")
+(include "vector-dot.md")
 (include "zicond.md")
 (include "mips-insn.md")
 (include "sfb.md")

@@ -146,14 +146,22 @@ avl_can_be_propagated_p (rtx_insn *rinsn)
 	 - It read pairs of adjacent elements of source vectors.  It does not
 	   read past AVL when AVL is odd, but needs an even AVL to perform
 	   correctly even if the consumer only nees an odd number of
-	   elements.  */
+	   elements.
+       Dot products:
+	 - VL counts reduction terms rather than live accumulator elements,
+	   so propagating it into an accumulator producer can discard values
+	   that the dot product still needs.  */
   return get_attr_type (rinsn) != TYPE_VGATHER
 	 && get_attr_type (rinsn) != TYPE_VSLIDEDOWN
 	 && get_attr_type (rinsn) != TYPE_VISLIDE1DOWN
 	 && get_attr_type (rinsn) != TYPE_VFSLIDE1DOWN
 	 && get_attr_type (rinsn) != TYPE_VCOMPRESS
 	 && get_attr_type (rinsn) != TYPE_XT_VCRCFOLD
-	 && get_attr_type (rinsn) != TYPE_XT_VILO;
+	 && get_attr_type (rinsn) != TYPE_XT_VILO
+	 && get_attr_type (rinsn) != TYPE_VIDOTA
+	 && get_attr_type (rinsn) != TYPE_VFDOTA
+	 && get_attr_type (rinsn) != TYPE_VIBDOTA
+	 && get_attr_type (rinsn) != TYPE_VFBDOTA;
 }
 
 static bool

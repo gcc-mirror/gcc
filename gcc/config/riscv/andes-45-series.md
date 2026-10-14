@@ -376,5 +376,6 @@
 			vsm3me,vbrev,vctz,vgmul,vsha2ms,vaesz,vrev8,
 			vaeskf2,vsha2cl,vwsll,vaesdf,vaesem,vfwmaccbf16,
 			sf_vqmacc,sf_vc,sf_vc_se,sf_vfnrclip,vlsegde,
-			xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo"))
+			xt_vgmulxor,xt_vcrcfold,xt_vile,xt_vilo,
+			vidota,vfdota,vibdota,vfbdota"))
   "andes_45_vector_dummies")
