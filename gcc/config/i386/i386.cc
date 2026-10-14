@@ -5342,7 +5342,7 @@ ix86_check_movabs (rtx insn, int opnum)
 
 /* Return true if XVECEXP idx of INSN satisfies MOVS arguments.  */
 bool
-ix86_check_movs (rtx insn, int idx)
+ix86_check_movs (rtx_insn *insn, int idx)
 {
   rtx pat = PATTERN (insn);
   gcc_assert (GET_CODE (pat) == PARALLEL);
@@ -5363,7 +5363,7 @@ ix86_check_movs (rtx insn, int idx)
 
 /* Return false if INSN contains a MEM with a non-default address space.  */
 bool
-ix86_check_no_addr_space (rtx insn)
+ix86_check_no_addr_space (rtx_insn *insn)
 {
   subrtx_var_iterator::array_type array;
   FOR_EACH_SUBRTX_VAR (iter, array, PATTERN (insn), ALL)
@@ -16263,7 +16263,7 @@ insn_defines_reg (unsigned int regno1, unsigned int regno2,
    REGNO as a part of address expression.  */
 
 static bool
-insn_uses_reg_mem (unsigned int regno, rtx insn)
+insn_uses_reg_mem (unsigned int regno, rtx_insn *insn)
 {
   df_ref use;
 
@@ -16838,7 +16838,7 @@ ix86_dep_by_shift_count_body (const_rtx set_body, const_rtx use_body)
    USE_INSN.  */
 
 bool
-ix86_dep_by_shift_count (const_rtx set_insn, const_rtx use_insn)
+ix86_dep_by_shift_count (const rtx_insn *set_insn, const rtx_insn *use_insn)
 {
   return ix86_dep_by_shift_count_body (PATTERN (set_insn),
 				       PATTERN (use_insn));
@@ -17072,7 +17072,7 @@ int ix86_get_flags_cc (rtx_code code)
    CC mode is at least as constrained as REQ_MODE.  */
 
 bool
-ix86_match_ccmode (rtx insn, machine_mode req_mode)
+ix86_match_ccmode (rtx_insn *insn, machine_mode req_mode)
 {
   rtx set;
   machine_mode set_mode;
@@ -17223,7 +17223,7 @@ ix86_cc_mode (enum rtx_code code, rtx op0, rtx op1)
    INSN has source and destination with suitable matching CC modes.  */
 
 bool
-ix86_match_ptest_ccmode (rtx insn)
+ix86_match_ptest_ccmode (rtx_insn *insn)
 {
   rtx set, src;
   machine_mode set_mode;

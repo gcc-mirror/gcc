@@ -28750,9 +28750,9 @@ ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
   emit_insn (gen_sse2_pshufd_1 (res_2, gen_lowpart (V4SImode, res_4),
 				const0_rtx, const2_rtx,
 				const0_rtx, const0_rtx));
-  res_1 = emit_insn (gen_vec_interleave_lowv4si (op0, res_1, res_2));
+  rtx_insn *insn = emit_insn (gen_vec_interleave_lowv4si (op0, res_1, res_2));
 
-  set_unique_reg_note (res_1, REG_EQUAL, gen_rtx_MULT (V4SImode, op1, op2));
+  set_unique_reg_note (insn, REG_EQUAL, gen_rtx_MULT (V4SImode, op1, op2));
 }
 
 void
