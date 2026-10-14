@@ -1,4 +1,5 @@
 // { dg-do run { target c++23 } }
+// { dg-require-effective-target cxx11_abi }
 // { dg-options "-fno-access-control -fno-inline -fno-ipa-sra -fno-ipa-modref -fno-ipa-cp -fno-ipa-icf" }
 
 // libstdc++/127228
