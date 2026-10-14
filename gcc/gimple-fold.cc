@@ -7243,10 +7243,16 @@ canonicalize_bool (tree expr, bool invert)
 	return fold_build2 (EQ_EXPR, boolean_type_node, expr,
 			    build_int_cst (TREE_TYPE (expr), 0));
       else if (COMPARISON_CLASS_P (expr))
-	return fold_build2 (invert_tree_comparison (TREE_CODE (expr), false),
-			    boolean_type_node,
-			    TREE_OPERAND (expr, 0),
-			    TREE_OPERAND (expr, 1));
+	{
+	  tree_code code
+	    = invert_tree_comparison (TREE_CODE (expr),
+				      HONOR_NANS (TREE_OPERAND (expr, 0)));
+	  if (code == ERROR_MARK)
+	    return NULL_TREE;
+	  return fold_build2 (code, boolean_type_node,
+			      TREE_OPERAND (expr, 0),
+			      TREE_OPERAND (expr, 1));
+	}
       else
 	return NULL_TREE;
     }
@@ -7422,9 +7428,13 @@ and_var_with_comparison (tree type, enum tree_code code, tree var,
      !var AND (op2a code2 op2b) => !(var OR !(op2a code2 op2b))
      Then we only have to consider the simpler non-inverted cases.  */
   if (invert)
-    t = or_var_with_comparison_1 (type, truth_andor_compl (code), stmt,
-				  invert_tree_comparison (code2, false),
-				  op2a, op2b, outer_cond_bb);
+    {
+      code2 = invert_tree_comparison (code2, HONOR_NANS (op2a));
+      if (code2 == ERROR_MARK)
+	return NULL_TREE;
+      t = or_var_with_comparison_1 (type, truth_andor_compl (code), stmt,
+				    code2, op2a, op2b, outer_cond_bb);
+    }
   else
     t = and_var_with_comparison_1 (type, code, stmt, code2, op2a, op2b,
 				   outer_cond_bb);
@@ -9403,9 +9413,13 @@ or_var_with_comparison (tree type, enum tree_code code, tree var,
      !var OR (op2a code2 op2b) => !(var AND !(op2a code2 op2b))
      Then we only have to consider the simpler non-inverted cases.  */
   if (invert)
-    t = and_var_with_comparison_1 (type, truth_andor_compl (code), stmt,
-				   invert_tree_comparison (code2, false),
-				   op2a, op2b, outer_cond_bb);
+    {
+      code2 = invert_tree_comparison (code2, HONOR_NANS (op2a));
+      if (code2 == ERROR_MARK)
+	return NULL_TREE;
+      t = and_var_with_comparison_1 (type, truth_andor_compl (code), stmt,
+				     code2, op2a, op2b, outer_cond_bb);
+    }
   else
     t = or_var_with_comparison_1 (type, code, stmt, code2, op2a, op2b,
 				  outer_cond_bb);
