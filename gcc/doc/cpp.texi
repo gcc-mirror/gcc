@@ -2485,6 +2485,10 @@ by another option such as @option{-ffast-math} or by default.
 @item __ROUNDING_MATH__
 This macro is defined if @option{-frounding-math} is used.
 
+@item __UNSAFE_MATH_OPTIMIZATIONS__
+This macro is defined if @option{-funsafe-math-optimizations} is used,
+or enabled by another option such as @option{-ffast-math}.
+
 @item __GNUC_EXECUTION_CHARSET_NAME
 @itemx __GNUC_WIDE_EXECUTION_CHARSET_NAME
 These macros are defined to expand to a narrow string literal of

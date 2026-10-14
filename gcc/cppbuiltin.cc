@@ -120,6 +120,8 @@ define_builtin_macros_for_compilation_flags (cpp_reader *pfile)
     cpp_define (pfile, "__ASSOCIATIVE_MATH__");
   if (flag_rounding_math)
     cpp_define (pfile, "__ROUNDING_MATH__");
+  if (flag_unsafe_math_optimizations)
+    cpp_define (pfile, "__UNSAFE_MATH_OPTIMIZATIONS__");
 
   cpp_define_formatted (pfile, "__FINITE_MATH_ONLY__=%d",
 			flag_finite_math_only);

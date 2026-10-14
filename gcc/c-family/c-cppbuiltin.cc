@@ -645,6 +645,13 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   else if (prev->x_flag_rounding_math && !cur->x_flag_rounding_math)
     cpp_undef (pfile, "__ROUNDING_MATH__");
 
+  if (!prev->x_flag_unsafe_math_optimizations
+      && cur->x_flag_unsafe_math_optimizations)
+    cpp_define_unused (pfile, "__UNSAFE_MATH_OPTIMIZATIONS__");
+  else if (prev->x_flag_unsafe_math_optimizations
+	   && !cur->x_flag_unsafe_math_optimizations)
+    cpp_undef (pfile, "__UNSAFE_MATH_OPTIMIZATIONS__");
+
   cpp_stop_forcing_token_locations (parse_in);
 }
 
