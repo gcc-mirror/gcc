@@ -10737,6 +10737,21 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if ((cmp == EQ_EXPR) == (icmp1 == icmp2))
        (IFN_COPYSIGN @1 @0)
        (IFN_COPYSIGN @1 (negate @0)))))))))
+
+/* signbit (x) cmp signbit (y) ? y : -y -> copysign (y, +-x).  The nonzero
+   value of signbit is unspecified, so the comparison is too when both x
+   and y are negative; the fold takes the two values to be equal.  */
+(for cmp (eq ne)
+ (for sign (SIGNBIT)
+  (simplify
+   (cond (cmp:c (sign @0) (sign @1)) @1 (negate @1))
+   (if (SCALAR_FLOAT_TYPE_P (type)
+	&& types_match (type, TREE_TYPE (@0))
+	&& direct_internal_fn_supported_p (IFN_COPYSIGN, type,
+					   OPTIMIZE_FOR_BOTH))
+    (if (cmp == EQ_EXPR)
+     (IFN_COPYSIGN @1 @0)
+     (IFN_COPYSIGN @1 (negate @0)))))))
 #endif
 
 (simplify
