@@ -3797,6 +3797,7 @@ extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
 extern bool shared_tablejump_p (const rtx_insn *, rtx_insn **,
 				rtx_jump_table_data **);
+extern void verify_jump_tables (void);
 extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern bool computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);

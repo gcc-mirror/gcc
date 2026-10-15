@@ -2715,6 +2715,7 @@ rtl_verify_edges (void)
   bool err = false;
   basic_block bb;
   auto_bitmap succ_dests;
+  auto_bitmap table_dests;
 
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
@@ -2848,29 +2849,47 @@ rtl_verify_edges (void)
 	  err = true;
 	}
 
-      /* A shared jump table lists the successors of every jump that
-	 dispatches through it, so nothing may have redirected one of them
-	 behind the others' back.  */
+      /* Compare each shared dispatch's normal successors with its table
+	 entries and optional out-of-range destination.  */
       rtx_jump_table_data *table;
       if (shared_tablejump_p (BB_END (bb), NULL, &table))
 	{
 	  bitmap_clear (succ_dests);
+	  bitmap_clear (table_dests);
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    bitmap_set_bit (succ_dests, e->dest->index);
-
-	  rtvec vec = table->get_labels ();
-	  for (int j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
 	    {
-	      rtx lab = XEXP (RTVEC_ELT (vec, j), 0);
+	      bitmap_set_bit (succ_dests, e->dest->index);
+	      if (e->flags & (EDGE_ABNORMAL | EDGE_EH))
+		bitmap_set_bit (table_dests, e->dest->index);
+	    }
+
+	  auto add_destination = [&] (rtx lab)
+	    {
 	      basic_block dest = (LABEL_P (lab)
 				  ? BLOCK_FOR_INSN (as_a <rtx_insn *> (lab))
 				  : NULL);
-	      if (!dest || !bitmap_bit_p (succ_dests, dest->index))
+	      if (dest)
+		bitmap_set_bit (table_dests, dest->index);
+	      else
 		{
-		  error ("entry %i of the jump table of bb %i has no edge",
-			 j, bb->index);
+		  error ("jump table of bb %i has an invalid destination",
+			 bb->index);
 		  err = true;
 		}
+	    };
+	  rtvec vec = table->get_labels ();
+	  for (int j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+	    add_destination (XEXP (RTVEC_ELT (vec, j), 0));
+
+	  rtx casesi = tablejump_casesi_pattern (BB_END (bb));
+	  if (casesi)
+	    add_destination (label_ref_label (XEXP (SET_SRC (casesi), 2)));
+
+	  if (!bitmap_equal_p (succ_dests, table_dests))
+	    {
+	      error ("jump table of bb %i does not match its successors",
+		     bb->index);
+	      err = true;
 	    }
 	}
       if (n_branch != 1 && any_uncondjump_p (BB_END (bb)))

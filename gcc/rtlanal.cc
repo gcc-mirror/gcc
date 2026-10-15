@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "hard-reg-set.h"
 #include "function-abi.h"
+#include "hash-map.h"
+#include "tree-pass.h"
 
 /* Forward declarations */
 static void set_of_1 (rtx, const_rtx, void *);
@@ -3565,6 +3567,132 @@ shared_tablejump_p (const rtx_insn *insn, rtx_insn **labelp,
   if (tablep)
     *tablep = table;
   return true;
+}
+
+/* Check the tablejump links in the current function's linear RTL chain.
+   This also works after the CFG has been released.  */
+
+void
+verify_jump_tables (void)
+{
+  struct table_users
+  {
+    unsigned int total;
+    unsigned int repeatable;
+  };
+  hash_set<rtx_insn *> live;
+  hash_map<rtx_insn *, table_users> users;
+  auto_vec<rtx_jump_table_data *> tables;
+  auto_vec<rtx_insn *> jumps;
+
+  for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
+    {
+      if (LABEL_P (insn) || JUMP_TABLE_DATA_P (insn))
+	live.add (insn);
+      if (JUMP_TABLE_DATA_P (insn))
+	{
+	  tables.safe_push (as_a<rtx_jump_table_data *> (insn));
+	  users.put (insn, { 0, 0 });
+	}
+      else if (JUMP_P (insn))
+	jumps.safe_push (insn);
+      else if (NONDEBUG_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	for (int i = 0; i < XVECLEN (PATTERN (insn), 0); ++i)
+	  {
+	    rtx_insn *part = as_a<rtx_insn *> (XVECEXP (PATTERN (insn), 0, i));
+	    if (JUMP_P (part))
+	      jumps.safe_push (part);
+	  }
+    }
+
+  for (rtx_jump_table_data *table : tables)
+    {
+      rtx_insn *label = PREV_INSN (table);
+      if (!label || !LABEL_P (label) || !live.contains (label)
+	  || NEXT_INSN (label) != table)
+	fatal_insn ("jump table has no adjacent live label", table);
+    }
+
+  for (rtx_insn *jump : jumps)
+    {
+      rtx_insn *label = NULL;
+      if (tablejump_p (jump, &label, NULL)
+	  && !reg_mentioned_p (label, PATTERN (jump)))
+	fatal_insn ("tablejump pattern does not reference its label", jump);
+
+      /* A USE of a label identifies a tablejump even if its JUMP_LABEL
+	 or table was lost.  Also find table references in casesi patterns.  */
+      bool indirect = (!any_uncondjump_p (jump) && !any_condjump_p (jump)
+		       && !returnjump_p (jump));
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (jump), ALL)
+	{
+	  const_rtx x = *iter;
+	  bool table_use = (indirect && GET_CODE (x) == USE
+			    && GET_CODE (XEXP (x, 0)) == LABEL_REF);
+	  if (table_use)
+	    x = XEXP (x, 0);
+	  else if (GET_CODE (x) != LABEL_REF)
+	    continue;
+	  rtx_insn *ref = label_ref_label (x);
+	  if (!table_use
+	      && (!LABEL_P (ref) || !NEXT_INSN (ref)
+		  || !JUMP_TABLE_DATA_P (NEXT_INSN (ref))))
+	    continue;
+	  if (!LABEL_P (ref) || !live.contains (ref))
+	    fatal_insn ("tablejump references a label outside the RTL chain",
+			jump);
+	  if (JUMP_LABEL (jump) != ref)
+	    fatal_insn ("tablejump pattern and JUMP_LABEL disagree", jump);
+	  if (!NEXT_INSN (ref) || !JUMP_TABLE_DATA_P (NEXT_INSN (ref))
+	      || !live.contains (NEXT_INSN (ref)))
+	    fatal_insn ("tablejump references a missing jump table", jump);
+	  label = ref;
+	}
+      if (label)
+	{
+	  table_users &count = *users.get (NEXT_INSN (label));
+	  ++count.total;
+	  if (!targetm.cannot_copy_insn_p || !targetm.cannot_copy_insn_p (jump))
+	    ++count.repeatable;
+	}
+    }
+
+  for (rtx_jump_table_data *table : tables)
+    {
+      /* A dispatch with private labels can also have an out-of-line
+	 execution template that references the same table.  */
+      const table_users &count = *users.get (table);
+      if (count.repeatable > 1 && !JUMP_TABLE_SHARED_P (PATTERN (table)))
+	fatal_insn ("jump table with multiple users is not marked shared",
+		    table);
+      if (!count.total)
+	continue;
+
+      /* While the CFG exists, a shared table follows one of the jumps
+	 through it.  Machine reorganization can place other insns between
+	 them later.  */
+      if ((cfun->curr_properties & PROP_cfg)
+	  && JUMP_TABLE_SHARED_P (PATTERN (table)))
+	{
+	  rtx_insn *label = PREV_INSN (table);
+	  rtx_insn *prev = prev_nonnote_nondebug_insn (label);
+	  while (prev && BARRIER_P (prev))
+	    prev = prev_nonnote_nondebug_insn (prev);
+	  if (!prev || !JUMP_P (prev) || JUMP_LABEL (prev) != label)
+	    fatal_insn ("shared jump table does not follow a jump through it",
+			table);
+	}
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (table), ALL)
+	if (GET_CODE (*iter) == LABEL_REF)
+	  {
+	    rtx_insn *label = label_ref_label (*iter);
+	    if (!LABEL_P (label) || !live.contains (label))
+	      fatal_insn ("jump table references a label outside the RTL chain",
+			  table);
+	  }
+    }
 }
 
 /* For INSN known to satisfy tablejump_p, determine if it actually is a

@@ -2092,6 +2092,11 @@ execute_function_todo (function *fn, void *data)
 
       if (flags & TODO_verify_il)
 	{
+	  /* Shared tables are introduced after leaving CFG layout mode.
+	     Check their RTL links even after the CFG has been released.  */
+	  if ((cfun->curr_properties & PROP_rtl)
+	      && !(cfun->curr_properties & PROP_cfglayout))
+	    verify_jump_tables ();
 	  if (cfun->curr_properties & PROP_gimple)
 	    {
 	      if (cfun->curr_properties & PROP_cfg)

@@ -55,6 +55,21 @@ gcc_parallel_test_enable 0
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
     { tablejump_capability_plugin.cc tablejump-capability.c } \
+    { tablejump_plugin.cc \
+	  tablejump-valid.c \
+	  tablejump-missing-edge.c \
+	  tablejump-extra-edge.c \
+	  tablejump-null-label.c \
+	  tablejump-stale-label.c \
+	  tablejump-missing-ref.c \
+	  tablejump-detached-label.c \
+	  tablejump-detached-table.c \
+	  tablejump-detached-pair.c \
+	  tablejump-deleted-table.c \
+	  tablejump-unmarked.c \
+	  tablejump-case-label.c \
+	  tablejump-base-label.c \
+	  tablejump-misplaced-table.c } \
     { selfassign.cc self-assign-test-1.c self-assign-test-2.c } \
     { ggcplug.cc ggcplug-test-1.c } \
     { one_time_plugin.cc one_time-test-1.c } \
