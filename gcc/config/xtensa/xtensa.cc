@@ -4886,6 +4886,13 @@ xtensa_is_insn_L32R_p (const rtx_insn *insn)
       && CONST_INT_P (src) && xtensa_simm12b (INTVAL (src)))
     return false;
 
+  /* If the insn corresponds to the CONST.[SD] instruction, then obviously
+     not L32R.  */
+  if (TARGET_HARD_FLOAT_CONST && (mode == SFmode || mode == DFmode)
+      && CONST_DOUBLE_P (src)
+      && xtensa_fp_const (CONST_DOUBLE_REAL_VALUE (src)) >= 0)
+    return false;
+
   /* If TARGET_CONST16 is configured, constants of the remaining forms
      correspond to pairs of CONST16 instructions, not L32R.  */
   if (TARGET_CONST16)
