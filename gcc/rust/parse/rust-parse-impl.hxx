@@ -7233,6 +7233,14 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	  parse_let_stmt (std::move (outer_attrs)));
 	return ExprOrStmt (std::move (stmt));
       }
+    case CONST:
+      if (lexer.peek_token (1)->get_id () == LEFT_CURLY)
+	{
+	  // const block: parse as expression
+	  expr = parse_expr (std::move (outer_attrs), restrictions);
+	  break;
+	}
+      gcc_fallthrough ();
     case PUB:
     case MOD:
     case EXTERN_KW:
@@ -7241,7 +7249,6 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
     case TYPE:
     case STRUCT_KW:
     case ENUM_KW:
-    case CONST:
     case STATIC_KW:
     case AUTO:
     case TRAIT:
