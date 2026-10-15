@@ -10635,7 +10635,8 @@ pa_can_change_mode_class (machine_mode from, machine_mode to,
      before reload completes.  If the allocator is forced to use
      GENERAL_REGS, disallow the mode change so it forces a proper
      instruction breakdown.  */
-  if ((rclass == GENERAL_REGS || rclass == R1_REGS)
+  if (!TARGET_SOFT_FLOAT
+      && (rclass == GENERAL_REGS || rclass == R1_REGS)
       && !reload_completed
       && GET_MODE_SIZE (to) <= GET_MODE_SIZE (DFmode)
       && GET_MODE_SIZE (from) <= GET_MODE_SIZE (DFmode)
@@ -10651,7 +10652,7 @@ pa_can_change_mode_class (machine_mode from, machine_mode to,
      of LOAD_EXTEND_OP.  Thus, we reject all mode changes in the FP registers
      except for DImode to SImode on the 64-bit target.  It is handled by
      register renaming in pa_print_operand.  */
-  if (MAYBE_FP_REG_CLASS_P (rclass))
+  if (!TARGET_SOFT_FLOAT && MAYBE_FP_REG_CLASS_P (rclass))
     return TARGET_64BIT && from == DImode && to == SImode;
 
   /* TARGET_HARD_REGNO_MODE_OK places modes with sizes larger than a word
