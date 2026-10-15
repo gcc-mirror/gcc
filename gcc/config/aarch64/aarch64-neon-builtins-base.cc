@@ -553,7 +553,7 @@ public:
     /* Temporary scalar to hold the result.  */
     tree res = create_tmp_var (TREE_TYPE (lhs_type));
     gimple_call_set_lhs (call, res);
-    gsi_insert_before (f.gsi, call, GSI_SAME_STMT);
+    gimple_seq_add_stmt_without_update (&f.stmts, call);
     /* Build the actual vector that the call's result gets assigned to.  */
     return gimple_build_assign (f.lhs, build_vec_dup (lhs_type, res));
   }

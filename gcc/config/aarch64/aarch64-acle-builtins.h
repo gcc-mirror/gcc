@@ -647,9 +647,9 @@ public:
   gimple_folder (const function_instance &, tree,
 		 gimple_stmt_iterator *, gcall *);
 
-  tree force_vector (gimple_seq &, tree, tree);
-  tree convert_pred (gimple_seq &, tree, unsigned int);
-  tree fold_contiguous_base (gimple_seq &, tree);
+  tree force_vector (tree, tree);
+  tree convert_pred (tree, unsigned int);
+  tree fold_contiguous_base (tree);
   gimple *fold_contiguous_load (internal_fn);
   tree load_store_cookie (tree);
 
@@ -669,7 +669,6 @@ public:
   gimple *fold_const_binary (enum tree_code);
   gimple *fold_active_lanes_to (tree);
   gimple *fold_call_to (tree);
-  gimple *fold_to_stmt_vops (gimple *);
 
   gimple *fold ();
 
@@ -681,6 +680,10 @@ public:
 
   /* The result of the call, or null if none.  */
   tree lhs;
+
+  /* The sequence of statements that should be emitted before the original
+     call.  */
+  gimple_seq stmts;
 };
 
 /* A class for expanding a function call into RTL.  */

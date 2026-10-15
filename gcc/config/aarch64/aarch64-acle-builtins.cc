@@ -49,6 +49,7 @@
 #include "attribs.h"
 #include "value-range.h"
 #include "tree-ssanames.h"
+#include "gimple-ssa.h"
 #include "aarch64-acle-builtins.h"
 #include "aarch64-sve-builtins-base.h"
 #include "aarch64-sve-builtins-sve2.h"
@@ -2803,15 +2804,15 @@ is_pfalse (tree v)
 gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 			      gimple_stmt_iterator *gsi_in, gcall *call_in)
   : function_call_info (gimple_location (call_in), instance, fndecl),
-    gsi (gsi_in), call (call_in), lhs (gimple_call_lhs (call_in))
+    gsi (gsi_in), call (call_in), lhs (gimple_call_lhs (call_in)),
+    stmts (nullptr)
 {
 }
 
 /* VALUE might be a vector of type VECTYPE or a single scalar element.
-   Duplicate it into a vector of type VECTYPE in the latter case, adding any
-   new statements to STMTS.  */
+   Duplicate it into a vector of type VECTYPE in the latter case.  */
 tree
-gimple_folder::force_vector (gimple_seq &stmts, tree vectype, tree value)
+gimple_folder::force_vector (tree vectype, tree value)
 {
   if (!VECTOR_TYPE_P (TREE_TYPE (value)))
     value = gimple_build_vector_from_val (&stmts, vectype, value);
@@ -2819,10 +2820,9 @@ gimple_folder::force_vector (gimple_seq &stmts, tree vectype, tree value)
 }
 
 /* Convert predicate argument ARGNO so that it has the type appropriate for
-   an operation on VECTYPE.  Add any new statements to STMTS.  */
+   an operation on VECTYPE.  */
 tree
-gimple_folder::convert_pred (gimple_seq &stmts, tree vectype,
-			     unsigned int argno)
+gimple_folder::convert_pred (tree vectype, unsigned int argno)
 {
   tree pred = gimple_call_arg (call, argno);
   if (known_eq (TYPE_VECTOR_SUBPARTS (TREE_TYPE (pred)),
@@ -2834,10 +2834,9 @@ gimple_folder::convert_pred (gimple_seq &stmts, tree vectype,
 }
 
 /* Return a pointer to the address in a contiguous load or store,
-   given that each memory vector has type VECTYPE.  Add any new
-   statements to STMTS.  */
+   given that each memory vector has type VECTYPE.  */
 tree
-gimple_folder::fold_contiguous_base (gimple_seq &stmts, tree vectype)
+gimple_folder::fold_contiguous_base (tree vectype)
 {
   tree base = gimple_call_arg (call, 1);
   if (mode_suffix_id == MODE_vnum)
@@ -2863,11 +2862,9 @@ gimple_folder::fold_contiguous_load (internal_fn ifn_code)
   tree vectype = vector_type (0);
 
   /* Get the predicate and base pointer.  */
-  gimple_seq stmts = NULL;
-  tree pred = convert_pred (stmts, vectype, 0);
-  tree base = fold_contiguous_base (stmts, vectype);
+  tree pred = convert_pred (vectype, 0);
+  tree base = fold_contiguous_base (vectype);
   tree els = build_zero_cst (vectype);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
 
   tree cookie = load_store_cookie (TREE_TYPE (vectype));
   gcall *new_call = gimple_build_call_internal (ifn_code, 4,
@@ -2963,7 +2960,7 @@ gimple_folder::fold_pfalse ()
 	  && !AGGREGATE_TYPE_P (TREE_TYPE (lhs)))
 	return fold_call_to (build_zero_cst (TREE_TYPE (lhs)));
       if (flags & (CP_WRITE_MEMORY | CP_PREFETCH_MEMORY))
-	return fold_to_stmt_vops (gimple_build_nop ());
+	return gimple_build_nop ();
     }
   return nullptr;
 }
@@ -2981,7 +2978,6 @@ gimple_folder::convert_and_fold (tree type,
   gcc_assert (VECTOR_TYPE_P (type)
 	      && TYPE_MODE (type) != VNx16BImode);
   tree old_ty = TREE_TYPE (lhs);
-  gimple_seq stmts = NULL;
   bool convert_lhs_p = !useless_type_conversion_p (type, old_ty);
   tree lhs_conv = convert_lhs_p ? make_ssa_name (type) : lhs;
   unsigned int num_args = gimple_call_num_args (call);
@@ -2999,7 +2995,6 @@ gimple_folder::convert_and_fold (tree type,
     }
 
   gimple *new_stmt = fp (*this, lhs_conv, args_conv);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   if (convert_lhs_p)
     {
       tree t = build1 (VIEW_CONVERT_EXPR, old_ty, lhs_conv);
@@ -3101,10 +3096,8 @@ gimple_folder::fold_active_lanes_to (tree x)
   if (operand_equal_p (x, vec_inactive, 0))
     return gimple_build_assign (lhs, x);
 
-  gimple_seq stmts = NULL;
-  tree pred = convert_pred (stmts, vector_type (0), 0);
-  x = force_vector (stmts, TREE_TYPE (lhs), x);
-  gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  tree pred = convert_pred (vector_type (0), 0);
+  x = force_vector (TREE_TYPE (lhs), x);
   return gimple_build_assign (lhs, VEC_COND_EXPR, pred, x, vec_inactive);
 }
 
@@ -3113,20 +3106,10 @@ gimple *
 gimple_folder::fold_call_to (tree t)
 {
   if (types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (t)))
-    return fold_to_stmt_vops (gimple_build_assign (lhs, t));
+    return gimple_build_assign (lhs, t);
 
   tree rhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), t);
-  return fold_to_stmt_vops (gimple_build_assign (lhs, VIEW_CONVERT_EXPR, rhs));
-}
-
-/* Fold call to G, incl. adjustments to the virtual operands.  */
-gimple *
-gimple_folder::fold_to_stmt_vops (gimple *g)
-{
-  gimple_seq stmts = NULL;
-  gimple_seq_add_stmt_without_update (&stmts, g);
-  gsi_replace_with_seq_vops (gsi, stmts);
-  return g;
+  return gimple_build_assign (lhs, VIEW_CONVERT_EXPR, rhs);
 }
 
 /* Try to fold the call.  Return the new statement on success and null
@@ -3146,12 +3129,25 @@ gimple_folder::fold ()
     lhs = create_tmp_var (TREE_TYPE (gimple_call_fntype (call)));
 
   /* First try some simplifications that are common to many functions.  */
-  if (auto *call = redirect_pred_x ())
-    return call;
-  if (auto *call = fold_pfalse ())
-    return call;
+  gimple *res = redirect_pred_x ();
+  if (!res)
+    res = fold_pfalse ();
+  if (!res)
+    res = base->fold (*this);
 
-  return base->fold (*this);
+  if (res == call)
+    /* Folds can only reuse the existing call if there are no extra vops
+       to worry about.  */
+    gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+  else if (res)
+    {
+      gimple_seq_add_stmt_without_update (&stmts, res);
+      if (gimple_in_ssa_p (cfun))
+	gsi_replace_with_seq_vops (gsi, stmts);
+      else
+	gsi_replace_with_seq (gsi, stmts, true);
+    }
+  return res;
 }
 
 /* Force EXPR to be a GIMPLE value, putting it into a new variable if
@@ -3165,7 +3161,7 @@ gimple_folder::force_val (tree expr)
   auto type = TREE_TYPE (expr);
   auto var = create_tmp_var (type);
   auto stmt = gimple_build_assign (var, expr);
-  gsi_insert_before (this->gsi, stmt, GSI_SAME_STMT);
+  gimple_seq_add_stmt_without_update (&stmts, stmt);
   return var;
 }
 
@@ -3175,7 +3171,7 @@ gassign *
 gimple_folder::assign (tree lhs, tree rhs)
 {
   auto stmt = gimple_build_assign (lhs, rhs);
-  gsi_insert_before (this->gsi, stmt, GSI_SAME_STMT);
+  gimple_seq_add_stmt_without_update (&stmts, stmt);
   return stmt;
 }
 
