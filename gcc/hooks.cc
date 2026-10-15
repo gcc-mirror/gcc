@@ -371,6 +371,12 @@ hook_bool_rtx_insn_true (rtx_insn *)
 }
 
 bool
+hook_bool_rtx_insn_false (rtx_insn *)
+{
+  return false;
+}
+
+bool
 hook_bool_rtx_false (rtx)
 {
   return false;

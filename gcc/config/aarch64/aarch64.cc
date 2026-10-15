@@ -14458,6 +14458,21 @@ aarch64_elf_asm_destructor (rtx symbol, int priority)
     }
 }
 
+/* True if the base of a jump table whose body is DIFF_VEC has to be
+   materialised with ADRP and ADD rather than ADR.  Once other jumps dispatch
+   through the same table the base is defined once and the copies are spread
+   over the whole function, which ADR does not cover.  The tiny code model
+   bounds the whole program by 1MB, so ADR always reaches there.  Under the
+   other models the base is still a label in this function, whose text is
+   limited to 4GB, so the page-relative form is enough.  */
+
+static bool
+aarch64_far_jump_table_base_p (rtx diff_vec)
+{
+  return (JUMP_TABLE_SHARED_P (diff_vec)
+	  && aarch64_cmodel != AARCH64_CMODEL_TINY);
+}
+
 const char*
 aarch64_output_casesi (rtx *operands)
 {
@@ -14498,15 +14513,57 @@ aarch64_output_casesi (rtx *operands)
   /* Need to implement table size reduction, by changing the code below.  */
   output_asm_insn (patterns[index][0], operands);
   ASM_GENERATE_INTERNAL_LABEL (label, "Lrtx", CODE_LABEL_NUMBER (operands[2]));
-  snprintf (buf, sizeof (buf),
-	    "adr\t%%4, %s", targetm.strip_name_encoding (label));
-  output_asm_insn (buf, operands);
+  const char *name = targetm.strip_name_encoding (label);
+  if (aarch64_far_jump_table_base_p (diff_vec))
+    {
+      /* Several jumps dispatch through this table and there is one base,
+	 so the distance to it is bounded only by the size of the function.
+	 ADR only reaches 1MB.  */
+      snprintf (buf, sizeof (buf), "adrp\t%%4, %s", name);
+      output_asm_insn (buf, operands);
+      snprintf (buf, sizeof (buf), "add\t%%4, %%4, :lo12:%s", name);
+      output_asm_insn (buf, operands);
+    }
+  else
+    {
+      snprintf (buf, sizeof (buf), "adr\t%%4, %s", name);
+      output_asm_insn (buf, operands);
+    }
   output_asm_insn (patterns[index][1], operands);
   output_asm_insn ("br\t%3", operands);
   output_asm_insn (aarch64_sls_barrier (aarch64_harden_sls_retbr_p ()),
 		   operands);
-  assemble_label (asm_out_file, label);
+  if (!JUMP_TABLE_SHARED_P (diff_vec))
+    assemble_label (asm_out_file, label);
   return "";
+}
+
+/* Return true if the dispatch INSN needs the longer base sequence.  Used by
+   the length attribute of the dispatch pattern.  */
+
+bool
+aarch64_casesi_far_base_p (rtx_insn *insn)
+{
+  rtx_jump_table_data *table;
+
+  return (tablejump_p (insn, NULL, &table)
+	  && aarch64_far_jump_table_base_p (PATTERN (table)));
+}
+
+/* Implement TARGET_ASM_JUMP_TABLE_BASE.  The entries of a table are the
+   distance from the base to the case handler, so the base has to be a
+   text label.  Emit it here, just before the table's own label, rather than
+   from the output template of the dispatching jump: several jumps may
+   dispatch through the one table, and the base has to be defined once.  */
+
+static void
+aarch64_asm_jump_table_base (FILE *stream, rtx_jump_table_data *,
+			     unsigned long labelno)
+{
+  char label[100];
+
+  ASM_GENERATE_INTERNAL_LABEL (label, "Lrtx", labelno);
+  assemble_label (stream, label);
 }
 
 /* Return the asm string for an SME ZERO instruction whose 8-bit mask
@@ -34355,6 +34412,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
+
+#undef TARGET_ASM_JUMP_TABLE_BASE
+#define TARGET_ASM_JUMP_TABLE_BASE aarch64_asm_jump_table_base
 
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"

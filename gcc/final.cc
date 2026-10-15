@@ -2425,6 +2425,15 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	 the label in the read-only section.  Also possibly write the
 	 label and jump table together.  */
       table = jump_table_for_label (as_a <rtx_code_label *> (insn));
+
+      /* Still in the function's own section here, which is where the base
+	 label of a PC-relative table has to go.  */
+      if (table
+	  && JUMP_TABLE_SHARED_P (PATTERN (table))
+	  && targetm.asm_out.jump_table_base)
+	targetm.asm_out.jump_table_base (file, table,
+					     CODE_LABEL_NUMBER (insn));
+
       if (table)
 	{
 #if defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC)

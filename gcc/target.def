@@ -233,6 +233,23 @@ DEFHOOK_UNDOC
  void, (char *buf, const char *prefix, unsigned long labelno),
  default_generate_internal_label)
 
+/* Emit whatever a shared jump table's entries are relative to, once per
+   table, in the function's own section.  */
+DEFHOOK
+(jump_table_base,
+ "Define this hook if the output of a dispatching jump defines the base that\n\
+the entries of its jump table are relative to.  Several jumps can share one\n\
+table, and the base then has to be defined once.  The hook is called once\n\
+for a shared table, with the function's own section still selected,\n\
+immediately before the label of the jump table @var{table}, whose label\n\
+number is @var{labelno}.  It should write that base to the stdio stream\n\
+@var{stream}, typically as a text label for a PC-relative table.\n\
+\n\
+A target whose table entries are absolute or relative to the label of the\n\
+table has nothing to emit and does not need this hook.",
+ void, (FILE *stream, rtx_jump_table_data *table, unsigned long labelno),
+ NULL)
+
 /* Output an internal label.  */
 DEFHOOK
 (internal_label,
@@ -2809,6 +2826,31 @@ For example, on some targets, certain kinds of branches can't be made to\n\
 follow through a hot/cold partitioning.",
  bool, (const rtx_insn *follower, const rtx_insn *followee),
  hook_bool_const_rtx_insn_const_rtx_insn_true)
+
+/* Return true if INSN can share its jump table with copies of itself.  */
+DEFHOOK
+(can_share_jump_table_p,
+ "Return true if the tablejump instruction @var{insn} can share its jump\n\
+table with copies of itself.  The hook is called before duplication, with\n\
+the current function's target options active.  It can inspect the instruction\n\
+form and these options, but must not modify RTL or emit assembly.\n\
+\n\
+A shared table follows only one of the jumps through it.  Return false if\n\
+@var{insn} finds its table, or the base of the table entries, from its own\n\
+address or from a label that its output defines, unless\n\
+@code{TARGET_ASM_JUMP_TABLE_BASE} emits that base once per table.  Also\n\
+return false if a copy elsewhere in the function might not reach the table\n\
+under the current target configuration, including the code model and\n\
+section layout, or if a target pass expects a table to follow every jump\n\
+through it.  This hook only permits creating shared tables.  It is not\n\
+called to control their later output or verification.\n\
+\n\
+The default implementation returns true.  Define the hook as\n\
+@code{hook_bool_rtx_insn_false} to disable shared jump tables.  Other\n\
+duplication restrictions, including @code{TARGET_CANNOT_COPY_INSN_P}, still\n\
+apply.",
+ bool, (rtx_insn *insn),
+ hook_bool_rtx_insn_true)
 
 /* Return true if the target supports conditional execution.  */
 DEFHOOK

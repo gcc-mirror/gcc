@@ -996,6 +996,7 @@ bool aarch64_is_mov_xn_imm (unsigned HOST_WIDE_INT);
 bool aarch64_use_return_insn_p (void);
 bool aarch64_use_simple_return_insn_p (void);
 const char *aarch64_output_casesi (rtx *);
+bool aarch64_casesi_far_base_p (rtx_insn *);
 const char *aarch64_output_load_tp (rtx);
 const char *aarch64_output_sme_zero_za (rtx);
 const char *aarch64_output_move_imm (rtx);

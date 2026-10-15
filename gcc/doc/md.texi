@@ -6447,10 +6447,12 @@ mode @code{Pmode}.
 The @samp{tablejump} insn is normally the last insn before the jump
 table it uses.  A late RTL pass can make several such insns share one table,
 which is then marked with @code{JUMP_TABLE_SHARED_P} and follows only one of
-them.  The assembler code normally has no need to use the second operand,
-but the RTL pattern must incorporate it.  Copies rely on
-@code{mark_jump_label} finding this operand, and it also prevents the jump
-optimizer from deleting the table as unreachable code.
+them.  A port whose dispatch needs the table right after the jump must refuse
+to share it through @code{TARGET_CAN_SHARE_JUMP_TABLE_P}.  The assembler code
+normally has no need to use the second operand, but the RTL pattern must
+incorporate it.  Copies rely on @code{mark_jump_label} finding this operand,
+and it also prevents the jump optimizer from deleting the table as
+unreachable code.
 
 
 @mdindex doloop_end

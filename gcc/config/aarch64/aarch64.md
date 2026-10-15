@@ -646,6 +646,14 @@
 		  (match_test "TARGET_SB") (const_int 8)]
 		 (const_int 12))
 
+	 ;; A shared jump table may have to reach its base with ADRP and
+	 ;; ADD rather than ADR, which is one instruction more.
+	 (and (eq_attr "sls_length" "casesi")
+	      (match_test "aarch64_casesi_far_base_p (insn)"))
+	   (cond [(match_test "!aarch64_harden_sls_retbr_p ()") (const_int 20)
+		  (match_test "TARGET_SB") (const_int 24)]
+		 (const_int 28))
+
 	 (eq_attr "sls_length" "casesi")
 	   (cond [(match_test "!aarch64_harden_sls_retbr_p ()") (const_int 16)
 		  (match_test "TARGET_SB") (const_int 20)]

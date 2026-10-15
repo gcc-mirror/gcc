@@ -10058,6 +10058,41 @@ If this macro is not defined, nothing special is output at the end of
 the jump-table.
 @end defmac
 
+@deftypefn {Target Hook} void TARGET_ASM_JUMP_TABLE_BASE (FILE *@var{stream}, rtx_jump_table_data *@var{table}, unsigned long @var{labelno})
+Define this hook if the output of a dispatching jump defines the base that
+the entries of its jump table are relative to.  Several jumps can share one
+table, and the base then has to be defined once.  The hook is called once
+for a shared table, with the function's own section still selected,
+immediately before the label of the jump table @var{table}, whose label
+number is @var{labelno}.  It should write that base to the stdio stream
+@var{stream}, typically as a text label for a PC-relative table.
+
+A target whose table entries are absolute or relative to the label of the
+table has nothing to emit and does not need this hook.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_CAN_SHARE_JUMP_TABLE_P (rtx_insn *@var{insn})
+Return true if the tablejump instruction @var{insn} can share its jump
+table with copies of itself.  The hook is called before duplication, with
+the current function's target options active.  It can inspect the instruction
+form and these options, but must not modify RTL or emit assembly.
+
+A shared table follows only one of the jumps through it.  Return false if
+@var{insn} finds its table, or the base of the table entries, from its own
+address or from a label that its output defines, unless
+@code{TARGET_ASM_JUMP_TABLE_BASE} emits that base once per table.  Also
+return false if a copy elsewhere in the function might not reach the table
+under the current target configuration, including the code model and
+section layout, or if a target pass expects a table to follow every jump
+through it.  This hook only permits creating shared tables.  It is not
+called to control their later output or verification.
+
+The default implementation returns true.  Define the hook as
+@code{hook_bool_rtx_insn_false} to disable shared jump tables.  Other
+duplication restrictions, including @code{TARGET_CANNOT_COPY_INSN_P}, still
+apply.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_POST_CFI_STARTPROC (FILE *@var{}, @var{tree})
 This target hook is used to emit assembly strings required by the target
 after the .cfi_startproc directive.  The first argument is the file stream to
