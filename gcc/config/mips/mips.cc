@@ -23133,6 +23133,16 @@ mips_case_values_threshold (void)
     return default_case_values_threshold ();
 }
 
+/* Implement TARGET_CAN_SHARE_JUMP_TABLE_P.  The MIPS16 casesi dispatch
+   loads the address of a table in the text section with a PC-relative
+   la, whose length assumes that the table follows the jump.  */
+
+static bool
+mips_can_share_jump_table_p (rtx_insn *)
+{
+  return !TARGET_MIPS16_SHORT_JUMP_TABLES;
+}
+
 /* Implement TARGET_ATOMIC_ASSIGN_EXPAND_FENV.  */
 
 static void
@@ -23629,6 +23639,9 @@ mips_print_patchable_function_entry (FILE *file ATTRIBUTE_UNUSED,
 
 #undef TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD mips_case_values_threshold
+
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P mips_can_share_jump_table_p
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV mips_atomic_assign_expand_fenv

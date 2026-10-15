@@ -691,6 +691,9 @@ static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
 #undef TARGET_CAN_FOLLOW_JUMP
 #define TARGET_CAN_FOLLOW_JUMP arc_can_follow_jump
 
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P arc_can_share_jump_table_p
+
 #undef TARGET_DELEGITIMIZE_ADDRESS
 #define TARGET_DELEGITIMIZE_ADDRESS arc_delegitimize_address
 
@@ -10148,6 +10151,15 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
 	return true;
       }
   return true;
+}
+
+/* Implement TARGET_CAN_SHARE_JUMP_TABLE_P.  The bi and bih dispatches branch
+   into a table of branches that has to follow them.  */
+
+static bool
+arc_can_share_jump_table_p (rtx_insn *)
+{
+  return !TARGET_BI_BIH;
 }
 
 

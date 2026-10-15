@@ -489,6 +489,10 @@ TARGET_GNU_ATTRIBUTES (sh_attribute_table,
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P sh_cannot_copy_insn_p
+/* The table entries are relative to the braf of one dispatch, and sh_reorg
+   pairs every table with one mova.  */
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P hook_bool_rtx_insn_false
 #undef TARGET_RTX_COSTS
 #define TARGET_RTX_COSTS sh_rtx_costs
 #undef TARGET_ADDRESS_COST

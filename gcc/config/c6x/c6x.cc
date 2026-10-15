@@ -6670,6 +6670,15 @@ c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
 }
 
+/* Implement TARGET_CAN_SHARE_JUMP_TABLE_P.  With PIC, the dispatch finds the
+   table with addkpc, which only reaches a table close to the jump.  */
+
+static bool
+c6x_can_share_jump_table_p (rtx_insn *)
+{
+  return !flag_pic;
+}
+
 /* Implement REGNO_REG_CLASS.  */
 
 enum reg_class
@@ -6820,6 +6829,9 @@ c6x_regno_reg_class (int reg)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG c6x_reorg
+
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P c6x_can_share_jump_table_p
 
 #undef TARGET_ASM_FILE_START
 #define TARGET_ASM_FILE_START c6x_file_start

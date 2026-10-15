@@ -2847,6 +2847,10 @@ xstormy16_push_rounding (poly_int64 bytes)
 #undef  TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
+/* The table is a run of jmpf insns that the dispatch branches into.  */
+#undef  TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P hook_bool_rtx_insn_false
+
 #undef  TARGET_PRINT_OPERAND
 #define TARGET_PRINT_OPERAND xstormy16_print_operand
 #undef  TARGET_PRINT_OPERAND_ADDRESS

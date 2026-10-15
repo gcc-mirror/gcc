@@ -213,6 +213,7 @@ static section* pa_elf_select_rtx_section(machine_mode, rtx, unsigned HOST_WIDE_
 static void pa_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool pa_use_lra_p (void);
 static bool pa_frame_pointer_required (void);
+static bool pa_can_share_jump_table_p (rtx_insn *);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -336,6 +337,9 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG pa_reorg
+
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P pa_can_share_jump_table_p
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS pa_init_libfuncs
@@ -11381,6 +11385,17 @@ pa_legitimize_reload_address (rtx ad, machine_mode mode,
     }
 
   return NULL_RTX;
+}
+
+/* Implement TARGET_CAN_SHARE_JUMP_TABLE_P.  casesi32 loads the address of
+   the table.  The PIC dispatches add the distance to the table to their
+   own address with one ldo, which only reaches a table close to the
+   jump.  */
+
+static bool
+pa_can_share_jump_table_p (rtx_insn *insn)
+{
+  return recog_memoized (insn) == CODE_FOR_casesi32;
 }
 
 /* Output address vector.  */

@@ -88,6 +88,10 @@ static HOST_WIDE_INT vax_starting_frame_offset (void);
 #undef TARGET_ASM_CAN_OUTPUT_MI_THUNK
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
+/* The casel table is part of the instruction.  */
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P hook_bool_rtx_insn_false
+
 /* Enable compare elimination pass.  */
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM VAX_PSL_REGNUM

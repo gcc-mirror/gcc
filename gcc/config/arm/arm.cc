@@ -627,6 +627,12 @@ static const scoped_attribute_specs *const arm_attribute_table[] =
 #undef  TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P arm_cannot_copy_insn_p
 
+/* The dispatch sequences find the table through the PC or LR, or define a
+   base label of their own, and arm_reorg expects every table to follow its
+   jump.  */
+#undef TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P hook_bool_rtx_insn_false
+
 #ifdef HAVE_AS_TLS
 #undef TARGET_HAVE_TLS
 #define TARGET_HAVE_TLS true

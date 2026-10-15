@@ -658,6 +658,9 @@ csky_default_logical_op_non_short_circuit (void)
 #undef	TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P csky_cannot_copy_insn_p
 
+#undef	TARGET_CAN_SHARE_JUMP_TABLE_P
+#define TARGET_CAN_SHARE_JUMP_TABLE_P csky_can_share_jump_table_p
+
 
 /******************************************************************
  *			Assembler Format			  *
@@ -1695,6 +1698,15 @@ csky_reorg (void)
 {
   if (TARGET_CONSTANT_POOL)
     csky_emit_constant_pools ();
+}
+
+/* Implement TARGET_CAN_SHARE_JUMP_TABLE_P.  The -mconstpool scan in
+   csky_emit_constant_pools expects every table to follow its jump.  */
+
+static bool
+csky_can_share_jump_table_p (rtx_insn *)
+{
+  return !TARGET_CONSTANT_POOL;
 }
 
 
