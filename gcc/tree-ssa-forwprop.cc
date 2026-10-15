@@ -5338,6 +5338,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       op1 = get_bit_field_ref_def (elt->value, conv_code);
       if (op1
 	  && TREE_CODE ((ref = TREE_OPERAND (op1, 0))) == SSA_NAME
+	  /* Do not extend the live range of an SSA name that occurs in an
+	     abnormal PHI.  */
+	  && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (ref)
 	  && VECTOR_TYPE_P (TREE_TYPE (ref))
 	  && (tree_nop_conversion_p (TREE_TYPE (op1),
 				     TREE_TYPE (TREE_TYPE (ref)))
