@@ -8233,9 +8233,9 @@ emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
 
   /* Find the corresponding vector mode with the same size as MOVE_MODE.
      MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
-  if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
+  if (GET_MODE_SIZE (move_mode) > UNITS_PER_WORD)
     {
-      int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
+      int nunits = GET_MODE_SIZE (move_mode) / UNITS_PER_WORD;
       if (!mode_for_vector (word_mode, nunits).exists (&move_mode)
 	  || (code = optab_handler (mov_optab, move_mode)) == CODE_FOR_nothing)
 	{
@@ -8442,7 +8442,7 @@ emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
 
   for (i = 0; i < size_to_move; i += piece_size)
     {
-      if (piece_size <= GET_MODE_SIZE (word_mode))
+      if (piece_size <= UNITS_PER_WORD)
 	{
 	  emit_insn (gen_strset (destptr, dst, promoted_val));
 	  dst = adjust_automodify_address_nv (dst, move_mode, destptr,
@@ -9703,7 +9703,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       need_zero_guard = true;
       unroll_factor = 4;
       /* Get the vector mode to move STORE_MAX_PIECES/MOVE_MAX bytes.  */
-      nunits /= GET_MODE_SIZE (word_mode);
+      nunits /= UNITS_PER_WORD;
       if (nunits > 1)
 	{
 	  move_mode = mode_for_vector (word_mode, nunits).require ();
@@ -9800,7 +9800,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       if (alg == vector_loop)
 	{
 	  promoted_val = promote_duplicated_reg_to_size (val_exp,
-							 GET_MODE_SIZE (word_mode),
+							 UNITS_PER_WORD,
 							 desired_align, align);
 	  /* Duplicate the promoted scalar value if not 0 nor -1.  */
 	  vec_promoted_val
@@ -10735,7 +10735,7 @@ ix86_expand_set_or_movmem (rtx operands[], bool iscpymem, bool issetmem)
 	    {
 	      /* Use the vector mode based on WORD_MODE to avoid extra
 		 GPR moves.  */
-	      nunits = size / GET_MODE_SIZE (word_mode);
+	      nunits = size / UNITS_PER_WORD;
 	      machine_mode vector_mode
 		= mode_for_vector (word_mode, nunits).require ();
 	      rtx vector = promote_duplicated_reg (vector_mode,

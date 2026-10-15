@@ -14075,7 +14075,7 @@ print_reg (rtx x, int code, FILE *file)
   if (code == 'V')
     {
       if (GENERAL_REGNO_P (regno))
-	msize = GET_MODE_SIZE (word_mode);
+	msize = UNITS_PER_WORD;
       else
 	error ("%<V%> modifier on non-integer register");
     }
@@ -14087,7 +14087,7 @@ print_reg (rtx x, int code, FILE *file)
     case 16:
     case 12:
     case 8:
-      if (GENERAL_REGNO_P (regno) && msize > GET_MODE_SIZE (word_mode))
+      if (GENERAL_REGNO_P (regno) && msize > UNITS_PER_WORD)
 	warning (0, "unsupported size for integer register");
       /* FALLTHRU */
     case 4:
@@ -21197,7 +21197,7 @@ ix86_preferred_reload_class (rtx x, reg_class_t regclass)
     {
       if (TARGET_INTER_UNIT_MOVES_FROM_VEC
 	  && TARGET_INTER_UNIT_MOVES_TO_VEC
-	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (word_mode))
+	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
 	return INT_SSE_CLASS_P (regclass) ? regclass : NO_REGS;
       else
 	return SSE_CLASS_P (regclass) ? regclass : NO_REGS;
