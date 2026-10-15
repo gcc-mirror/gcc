@@ -3633,7 +3633,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			(bit_xor:c @0 INTEGER_CST@3)) integer_zerop)
 	 (signed_integer_sat_val @0)
 	 @2)
-  (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
+  /* (X ^ C3) < 0 has to test that X has the sign of IMM, so C3 and IMM
+     need opposite signs.  The source form above has C3 == ~IMM.  */
+  (if (tree_int_cst_sign_bit (@1) != tree_int_cst_sign_bit (@3))))
 
 (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)-1);
