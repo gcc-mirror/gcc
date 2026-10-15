@@ -334,6 +334,26 @@ discover_loop (hwloop_info loop, basic_block tail_bb, rtx_insn *tail_insn, rtx r
 	    }
 	}
     }
+
+  /* The targets redirect the incoming edges to a new loop entry.  An edge
+     from a jump through a shared jump table cannot be redirected without
+     changing the other jumps through that table.  */
+  if (!loop->bad)
+    {
+      edge e;
+      unsigned ix;
+      FOR_EACH_VEC_SAFE_ELT (loop->incoming, ix, e)
+	if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	    && shared_tablejump_p (BB_END (e->src), NULL, NULL))
+	  {
+	    if (dump_file)
+	      fprintf (dump_file,
+		       ";; loop %d is entered through a shared jump table\n",
+		       loop->loop_no);
+	    loop->bad = true;
+	    break;
+	  }
+    }
 }
 
 /* Analyze the structure of the loops in the current function.  Use

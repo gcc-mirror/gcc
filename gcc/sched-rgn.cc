@@ -293,6 +293,11 @@ is_cfg_nonregular (void)
 	if (JUMP_P (insn) && computed_jump_p (insn))
 	  return true;
 
+	/* A shared table's successors cannot be redirected independently
+	   to create loop preheaders or scheduling bookkeeping blocks.  */
+	if (shared_tablejump_p (insn, NULL, NULL))
+	  return true;
+
 	if (!INSN_P (insn))
 	  continue;
 

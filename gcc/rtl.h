@@ -347,6 +347,7 @@ struct GTY((desc("0"), tag("0"),
      1 in a CONCAT is VAL_EXPR_IS_CLOBBERED in var-tracking.cc.
      1 in a preserved VALUE is PRESERVED_VALUE_P in cselib.cc.
      1 in a clobber temporarily created for LRA.
+     1 in an ADDR_VEC or ADDR_DIFF_VEC for a shared jump table.
      Dumped as "/u" in RTL dumps.  */
   unsigned int unchanging : 1;
   /* 1 in a MEM or ASM_OPERANDS expression if the memory reference is volatile.
@@ -2749,6 +2750,14 @@ do {								        \
 #define LABEL_PRESERVE_P(RTX)						\
   (RTL_FLAG_CHECK2 ("LABEL_PRESERVE_P", (RTX), CODE_LABEL, NOTE)->in_struct)
 
+/* 1 if RTX is the pattern of a jump table that has been shared by two jump
+   instructions.  The flag is sticky even if one is later removed.  The table
+   entries must not be edited in place: redirecting one dispatch would
+   silently redirect all the others.  */
+#define JUMP_TABLE_SHARED_P(RTX)					\
+  (RTL_FLAG_CHECK2 ("JUMP_TABLE_SHARED_P", (RTX), ADDR_VEC,		\
+		    ADDR_DIFF_VEC)->unchanging)
+
 /* During sched, 1 if RTX is an insn that must be scheduled together
    with the preceding insn.  */
 #define SCHED_GROUP_P(RTX)						\
@@ -3786,6 +3795,8 @@ extern void replace_label (rtx *, rtx_insn *, rtx_insn *, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx_insn *, rtx_insn *, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
+extern bool shared_tablejump_p (const rtx_insn *, rtx_insn **,
+				rtx_jump_table_data **);
 extern rtx tablejump_casesi_pattern (const rtx_insn *insn);
 extern bool computed_jump_p (const rtx_insn *);
 extern bool tls_referenced_p (const_rtx);

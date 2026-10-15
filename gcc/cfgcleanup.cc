@@ -1738,6 +1738,12 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	  && tablejump_p (BB_END (bb2), &label2, &table2)
 	  && GET_CODE (PATTERN (table1)) == GET_CODE (PATTERN (table2)))
 	{
+	  /* Cross-jumping redirects every user of one table to the other.
+	     Keep a shared table and all its users unchanged.  */
+	  if (JUMP_TABLE_SHARED_P (PATTERN (table1))
+	      || JUMP_TABLE_SHARED_P (PATTERN (table2)))
+	    return false;
+
 	  /* The labels should never be the same rtx.  If they really are same
 	     the jump tables are same too. So disable crossjumping of blocks BB1
 	     and BB2 because when deleting the common insns in the end of BB1

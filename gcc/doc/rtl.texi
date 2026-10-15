@@ -636,6 +636,15 @@ branch is not taken.  When @code{INSN_ANNULLED_BRANCH_P} is not set,
 this insn will always be executed.  Stored in the @code{in_struct}
 field and printed as @samp{/s}.
 
+@findex JUMP_TABLE_SHARED_P
+@cindex @code{addr_vec} and @samp{/u}
+@cindex @code{addr_diff_vec} and @samp{/u}
+@cindex @code{unchanging}, in @code{addr_vec} and @code{addr_diff_vec}
+@item JUMP_TABLE_SHARED_P (@var{x})
+In an @code{addr_vec} or @code{addr_diff_vec}, nonzero if several table
+jumps can use the jump table.  The flag stays set when users are deleted.
+Stored in the @code{unchanging} field and printed as @samp{/u}.
+
 @findex LABEL_PRESERVE_P
 @cindex @code{code_label} and @samp{/i}
 @cindex @code{note} and @samp{/i}
@@ -1048,6 +1057,9 @@ something in the per-function constant pool.
 
 In a @code{call_insn} 1 means that this instruction is a call to a const
 function.
+
+In an @code{addr_vec} or @code{addr_diff_vec}, 1 means that several table
+jumps can share the jump table.
 
 In an RTL dump, this flag is represented as @samp{/u}.
 
@@ -3931,13 +3943,14 @@ To set the kind of a label, use the @code{SET_LABEL_KIND} macro.
 @findex jump_table_data
 @item jump_table_data
 A @code{jump_table_data} insn is a placeholder for the jump-table data
-of a @code{casesi} or @code{tablejump} insn.  They are placed after
-a @code{tablejump_p} insn.  A @code{jump_table_data} insn is not part of
-a basic block but it is associated with the basic block that ends with
-the @code{tablejump_p} insn.  The @code{PATTERN} of a @code{jump_table_data}
-is always either an @code{addr_vec} or an @code{addr_diff_vec}, and a
-@code{jump_table_data} insn is always preceded by a @code{code_label}.
-The @code{tablejump_p} insn refers to that @code{code_label} via its
+of a @code{casesi} or @code{tablejump} insn.  It is normally placed after
+the @code{tablejump_p} insn and associated with that insn's basic block.
+A late RTL pass can instead make several table jumps share one table.  The
+table then follows only one of them and its pattern has
+@code{JUMP_TABLE_SHARED_P} set.  A @code{jump_table_data} insn is not part
+of a basic block.  Its @code{PATTERN} is always either an @code{addr_vec}
+or an @code{addr_diff_vec}, and it is always preceded by a @code{code_label}.
+Each @code{tablejump_p} insn refers to that @code{code_label} through its
 @code{JUMP_LABEL}.
 
 @findex barrier

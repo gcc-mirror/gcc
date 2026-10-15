@@ -129,8 +129,11 @@ the instruction stream of a basic block.
 @cindex table jump
 In addition to notes, the jump table vectors are also represented as
 ``pseudo-instructions'' inside the insn stream.  These vectors never
-appear in the basic block and should always be placed just after the
-table jump instructions referencing them.  After removing the
+appear in a basic block and are normally placed just after the table jump
+instruction that references them.  A late RTL pass can make several table
+jumps share one vector.  Such a vector is marked with
+@code{JUMP_TABLE_SHARED_P}, follows only one of the table jumps that use it
+and must not be edited or deleted through one of them.  After removing the
 table-jump it is often difficult to eliminate the code computing the
 address and referencing the vector, so cleaning up these vectors is
 postponed until after liveness analysis.   Thus the jump table vectors

@@ -3549,6 +3549,24 @@ tablejump_p (const rtx_insn *insn, rtx_insn **labelp,
   return true;
 }
 
+/* Return true if INSN is a tablejump whose table is shared with other
+   jumps (JUMP_TABLE_SHARED_P).  Store the label and the table as
+   tablejump_p does.  */
+
+bool
+shared_tablejump_p (const rtx_insn *insn, rtx_insn **labelp,
+		    rtx_jump_table_data **tablep)
+{
+  rtx_jump_table_data *table;
+  if (!tablejump_p (insn, labelp, &table)
+      || !JUMP_TABLE_SHARED_P (PATTERN (table)))
+    return false;
+
+  if (tablep)
+    *tablep = table;
+  return true;
+}
+
 /* For INSN known to satisfy tablejump_p, determine if it actually is a
    CASESI.  Return the insn pattern if so, NULL_RTX otherwise.  */
 

@@ -254,6 +254,86 @@ delete_insn_and_edges (rtx_insn *insn)
   return false;
 }
 
+/* Return true if INSN is a shared jump table or its adjacent label.  */
+
+static bool
+shared_jump_table_component_p (rtx_insn *insn)
+{
+  rtx_insn *table = insn;
+  if (LABEL_P (insn))
+    table = NEXT_INSN (insn);
+
+  return (table && JUMP_TABLE_DATA_P (table)
+	  && JUMP_TABLE_SHARED_P (PATTERN (table)));
+}
+
+/* Return true if the half-open range from FIRST to LAST contains part of a
+   shared jump table.  */
+
+static bool
+shared_jump_table_between_p (rtx_insn *first, rtx_insn *last)
+{
+  for (rtx_insn *insn = first; insn != last; insn = NEXT_INSN (insn))
+    if (shared_jump_table_component_p (insn))
+      return true;
+  return false;
+}
+
+/* Return the shared jump table that BB hosts: BB ends in a jump through the
+   table and the table's label follows BB_END, possibly after barriers.
+   Return NULL otherwise.  */
+
+static rtx_jump_table_data *
+hosted_shared_table (basic_block bb)
+{
+  rtx_insn *label;
+  rtx_jump_table_data *table;
+  if (!shared_tablejump_p (BB_END (bb), &label, &table))
+    return NULL;
+
+  rtx_insn *insn = next_nonnote_nondebug_insn_bb (BB_END (bb));
+  while (insn && BARRIER_P (insn))
+    insn = next_nonnote_nondebug_insn_bb (insn);
+  return insn == label ? table : NULL;
+}
+
+/* Return a block other than BB that ends in a jump through the table whose
+   label is LABEL, or NULL if there is none.  */
+
+static basic_block
+other_table_user (basic_block bb, rtx_insn *label)
+{
+  basic_block other;
+  FOR_EACH_BB_FN (other, cfun)
+    if (other != bb
+	&& JUMP_P (BB_END (other))
+	&& JUMP_LABEL (BB_END (other)) == label)
+      return other;
+  return NULL;
+}
+
+/* Move the jump table TABLE, with its label, right after BB_END (BB), which
+   is a jump through it.  */
+
+static void
+move_table_after (rtx_jump_table_data *table, basic_block bb)
+{
+  rtx_insn *label = PREV_INSN (table);
+  gcc_checking_assert (LABEL_P (label) && JUMP_LABEL (BB_END (bb)) == label);
+
+  if (current_ir_type () == IR_RTL_CFGLAYOUT)
+    {
+      /* The insns that follow BB are in its footer, outside the chain.  */
+      unlink_insn_chain (label, table);
+      SET_NEXT_INSN (table) = BB_FOOTER (bb);
+      if (BB_FOOTER (bb))
+	SET_PREV_INSN (BB_FOOTER (bb)) = table;
+      BB_FOOTER (bb) = label;
+    }
+  else
+    reorder_insns_nobb (label, table, BB_END (bb));
+}
+
 /* Unlink a chain of insns between START and FINISH, leaving notes
    that must be paired.  If CLEAR_BB is true, we set bb field for
    insns that cannot be removed to NULL.  */
@@ -268,6 +348,7 @@ delete_insn_chain (rtx_insn *start, rtx_insn *finish, bool clear_bb)
   while (1)
     {
       rtx_insn *prev = PREV_INSN (current);
+      gcc_checking_assert (!shared_jump_table_component_p (current));
       if (NOTE_P (current) && !can_delete_note_p (as_a <rtx_note *> (current)))
 	;
       else
@@ -415,6 +496,20 @@ rtl_delete_block (basic_block b)
   insn = BB_HEAD (b);
 
   end = get_last_bb_insn (b);
+
+  /* A shared table that B hosts has to go on following one of the jumps
+     through it.  If B has the last such jump, leave the dead table to
+     delete_dead_jumptables.  */
+  if (rtx_jump_table_data *table = hosted_shared_table (b))
+    {
+      if (basic_block user = other_table_user (b, PREV_INSN (table)))
+	{
+	  move_table_after (table, user);
+	  end = get_last_bb_insn (b);
+	}
+      else
+	end = PREV_INSN (PREV_INSN (table));
+    }
 
   /* Selectively delete the entire chain.  */
   BB_HEAD (b) = NULL;
@@ -657,6 +752,9 @@ can_fallthru (basic_block src, basic_block target)
   if (target == EXIT_BLOCK_PTR_FOR_FN (cfun))
     return true;
   if (src->next_bb != target)
+    return false;
+
+  if (shared_jump_table_between_p (NEXT_INSN (insn), BB_HEAD (target)))
     return false;
 
   /* ??? Later we may add code to move jump tables offline.  */
@@ -997,6 +1095,14 @@ rtl_can_merge_blocks (basic_block a, basic_block b)
   if (current_loops && b->loop_father->latch == b)
     return false;
 
+  /* A shared table between the blocks is live data, not disposable material
+     that can become part of the merged block.  */
+  if (a->next_bb == b
+      && a != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+      && b != EXIT_BLOCK_PTR_FOR_FN (cfun)
+      && shared_jump_table_between_p (NEXT_INSN (BB_END (a)), BB_HEAD (b)))
+    return false;
+
   /* There must be exactly one edge in between the blocks.  */
   return (single_succ_p (a)
 	  && single_succ (a) == b
@@ -1094,7 +1200,14 @@ try_redirect_by_replacing_jump (edge e, basic_block target, bool in_cfglayout)
 
   if (!onlyjump_p (insn))
     return NULL;
-  if ((!optimize || reload_completed) && tablejump_p (insn, NULL, NULL))
+
+  rtx_jump_table_data *insn_table;
+  if (tablejump_p (insn, NULL, &insn_table)
+      && (!optimize
+	  || reload_completed
+	  /* A shared table is still needed by the other jumps that dispatch
+	     through it, so it cannot be removed along with INSN.  */
+	  || JUMP_TABLE_SHARED_P (PATTERN (insn_table))))
     return NULL;
 
   /* Avoid removing branch with side effects.  */
@@ -1224,10 +1337,16 @@ patch_jump_insn (rtx_insn *insn, rtx_insn *old_label, basic_block new_bb)
     {
       rtvec vec;
       int j;
-      rtx_code_label *new_label = block_label (new_bb);
 
       if (new_bb == EXIT_BLOCK_PTR_FOR_FN (cfun))
 	return false;
+
+      /* The table also describes the successors of the other jumps that
+	 dispatch through it, which this edge says nothing about.  */
+      if (JUMP_TABLE_SHARED_P (PATTERN (table)))
+	return false;
+
+      rtx_code_label *new_label = block_label (new_bb);
       vec = table->get_labels ();
 
       for (j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
@@ -1629,9 +1748,12 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 
       /* If the old block ended with a tablejump, skip its table
 	 by searching forward from there.  Otherwise start searching
-	 forward from the last instruction of the old block.  */
+	 forward from the last instruction of the old block.  A shared
+	 table follows only one of the jumps through it.  */
       rtx_jump_table_data *table;
-      if (tablejump_p (BB_END (e->src), NULL, &table))
+      if (tablejump_p (BB_END (e->src), NULL, &table)
+	  && (!JUMP_TABLE_SHARED_P (PATTERN (table))
+	      || hosted_shared_table (e->src) == table))
 	new_head = table;
       else
 	new_head = BB_END (e->src);
@@ -1783,7 +1905,7 @@ rtl_tidy_fallthru_edge (edge e)
      the head of block C and assert that we really do fall through.  */
 
   for (q = NEXT_INSN (BB_END (b)); q != BB_HEAD (c); q = NEXT_INSN (q))
-    if (NONDEBUG_INSN_P (q))
+    if (NONDEBUG_INSN_P (q) || shared_jump_table_component_p (q))
       return;
 
   /* Remove what will soon cease being the jump insn from the source block.
@@ -1798,7 +1920,10 @@ rtl_tidy_fallthru_edge (edge e)
       rtx_insn *label;
       rtx_jump_table_data *table;
 
-      if (tablejump_p (q, &label, &table))
+      /* A shared table is still needed by the other jumps that dispatch
+	 through it; deleting this jump alone just drops one reference.  */
+      if (tablejump_p (q, &label, &table)
+	  && !JUMP_TABLE_SHARED_P (PATTERN (table)))
 	{
 	  /* The label is likely mentioned in some instruction before
 	     the tablejump and might not be DCEd, so turn it into
@@ -2376,8 +2501,11 @@ get_last_bb_insn (basic_block bb)
   rtx_insn *tmp;
   rtx_insn *end = BB_END (bb);
 
-  /* Include any jump table following the basic block.  */
-  if (tablejump_p (end, NULL, &table))
+  /* Include any jump table following the basic block.  A table that other
+     jumps dispatch through as well follows only one of them.  */
+  if (tablejump_p (end, NULL, &table)
+      && (!JUMP_TABLE_SHARED_P (PATTERN (table))
+	  || hosted_shared_table (bb) == table))
     end = table;
 
   /* Include any barriers that may follow the basic block.  */
@@ -2586,6 +2714,7 @@ rtl_verify_edges (void)
 {
   bool err = false;
   basic_block bb;
+  auto_bitmap succ_dests;
 
   FOR_EACH_BB_REVERSE_FN (bb, cfun)
     {
@@ -2717,6 +2846,32 @@ rtl_verify_edges (void)
 	{
 	  error ("fallthru edge after unconditional jump in bb %i", bb->index);
 	  err = true;
+	}
+
+      /* A shared jump table lists the successors of every jump that
+	 dispatches through it, so nothing may have redirected one of them
+	 behind the others' back.  */
+      rtx_jump_table_data *table;
+      if (shared_tablejump_p (BB_END (bb), NULL, &table))
+	{
+	  bitmap_clear (succ_dests);
+	  FOR_EACH_EDGE (e, ei, bb->succs)
+	    bitmap_set_bit (succ_dests, e->dest->index);
+
+	  rtvec vec = table->get_labels ();
+	  for (int j = GET_NUM_ELEM (vec) - 1; j >= 0; --j)
+	    {
+	      rtx lab = XEXP (RTVEC_ELT (vec, j), 0);
+	      basic_block dest = (LABEL_P (lab)
+				  ? BLOCK_FOR_INSN (as_a <rtx_insn *> (lab))
+				  : NULL);
+	      if (!dest || !bitmap_bit_p (succ_dests, dest->index))
+		{
+		  error ("entry %i of the jump table of bb %i has no edge",
+			 j, bb->index);
+		  err = true;
+		}
+	    }
 	}
       if (n_branch != 1 && any_uncondjump_p (BB_END (bb)))
 	{
@@ -4347,15 +4502,19 @@ force_one_exit_fallthru (void)
     }
 }
 
-/* Return true in case it is possible to duplicate the basic block BB.  */
+/* Return true if BB can be duplicated.  A tablejump can be duplicated only
+   when PROP_rtl_allow_tablejump_duplication is set.  Its copy then shares the
+   table with BB, see duplicate_insn_chain.  */
 
 static bool
 cfg_layout_can_duplicate_bb_p (const_basic_block bb)
 {
-  /* Do not attempt to duplicate tablejumps, as we need to unshare
-     the dispatch table.  This is difficult to do, as the instructions
-     computing jump destination may be hoisted outside the basic block.  */
-  if (tablejump_p (BB_END (bb), NULL, NULL))
+  /* A copy of a tablejump shares the dispatch table with the original.
+     Unsharing it is not an option, as the instructions computing the jump
+     destination may have been hoisted outside the basic block.  The property
+     is set while a pass can make the table immutable.  */
+  if (!(cfun->curr_properties & PROP_rtl_allow_tablejump_duplication)
+      && tablejump_p (BB_END (bb), NULL, NULL))
     return false;
 
   /* Do not duplicate blocks containing insns that can't be copied.  */
@@ -4405,6 +4564,22 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to,
 	  if (JUMP_P (insn) && JUMP_LABEL (insn) != NULL_RTX
 	      && ANY_RETURN_P (JUMP_LABEL (insn)))
 	    JUMP_LABEL (copy) = JUMP_LABEL (insn);
+	  else if (JUMP_P (insn))
+	    {
+	      rtx_insn *table_label;
+	      rtx_jump_table_data *table;
+	      if (tablejump_p (insn, &table_label, &table))
+		{
+		  /* The copy dispatches through the very same table.  Mark it:
+		     its entries now describe the successors of several jumps
+		     at once and so must not be edited in place.  The reference
+		     itself is recorded by emit_copy_of_insn_after through
+		     mark_jump_label.  */
+		  gcc_assert (JUMP_LABEL (copy) == table_label);
+		  JUMP_TABLE_SHARED_P (PATTERN (table)) = 1;
+		  gcc_assert (tablejump_p (copy, NULL, NULL));
+		}
+	    }
           maybe_copy_prologue_epilogue_insn (insn, copy);
 	  /* If requested remap dependence info of cliques brought in
 	     via inlining.  */
@@ -4455,11 +4630,9 @@ duplicate_insn_chain (rtx_insn *from, rtx_insn *to,
 	  break;
 
 	case JUMP_TABLE_DATA:
-	  /* Avoid copying of dispatch tables.  We never duplicate
-	     tablejumps, so this can hit only in case the table got
-	     moved far from original jump.
-	     Avoid copying following barrier as well if any
-	     (and debug insns in between).  */
+	  /* Avoid copying dispatch tables.  A duplicated tablejump continues
+	     to use the original table.  Avoid copying the following barrier as
+	     well, if any, and debug insns in between.  */
 	  for (next = NEXT_INSN (insn);
 	       next != NEXT_INSN (to);
 	       next = NEXT_INSN (next))

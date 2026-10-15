@@ -231,6 +231,8 @@ protected:
 						   around.  */
 #define PROP_gimple_lbitint	(1 << 20)       /* lowered large _BitInt */
 #define PROP_last_full_fold	(1 << 21)	/* Start of last forwprop.  */
+/* RTL tablejumps can be duplicated.  */
+#define PROP_rtl_allow_tablejump_duplication (1 << 22)
 
 #define PROP_gimple \
   (PROP_gimple_any | PROP_gimple_lcf | PROP_gimple_leh | PROP_gimple_lomp)

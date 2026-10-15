@@ -1252,12 +1252,14 @@ delete_related_insns (rtx uncast_insn)
 	   either directly if NEXT is JUMP_LABEL (INSN),
 	   or indirectly through more levels of jumps.  */
 	delete_related_insns (lab);
-      else if (tablejump_p (insn, NULL, &lab_next))
+      else if (tablejump_p (insn, NULL, &lab_next)
+	       && !JUMP_TABLE_SHARED_P (PATTERN (lab_next)))
 	{
 	  /* If we're deleting the tablejump, delete the dispatch table.
 	     We may not be able to kill the label immediately preceding
 	     just yet, as it might be referenced in code leading up to
-	     the tablejump.  */
+	     the tablejump.  A table that other jumps dispatch through as
+	     well outlives this one.  */
 	  delete_related_insns (lab_next);
 	}
     }
