@@ -781,9 +781,12 @@ invalid_opt_bb_p (basic_block cfg_bb)
   edge e;
   edge_iterator ei;
 
-  /* We don't do LCM optimizations on complex edges.  */
+  /* Keep local configurations when an incoming edge cannot be split for
+     a vsetvl insertion.  */
   FOR_EACH_EDGE (e, ei, cfg_bb->preds)
-    if (e->flags & EDGE_COMPLEX)
+    if ((e->flags & EDGE_COMPLEX)
+	|| (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	    && shared_tablejump_p (BB_END (e->src), nullptr, nullptr)))
       return true;
 
   /* We only do LCM optimizations on blocks that are post dominated by
