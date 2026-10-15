@@ -1,4 +1,5 @@
 /* { dg-do run { target { power10_hw } } } */
+/* { dg-require-effective-target int128 } */
 /* { dg-require-effective-target power10_ok } */
 /* { dg-options "-mdejagnu-cpu=power10 -O2" } */
 #include <altivec.h>
