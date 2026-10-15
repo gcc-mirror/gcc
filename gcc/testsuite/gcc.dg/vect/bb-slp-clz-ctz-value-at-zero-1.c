@@ -39,7 +39,8 @@ clz5 (void)
   return;
 }
 
-/* The conversion makes the call part of a vectorizer pattern.  */
+/* The conversion makes the call part of a vectorizer pattern, which
+   selects 5 for zero lanes.  */
 
 void __GIMPLE (ssa,startwith ("fix_loops")) __attribute__((noipa))
 clz5u (void)
@@ -178,5 +179,6 @@ main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times {\.CLZ \(vect_} 1 "optimized" { target aarch64*-*-* } } } */
-/* { dg-final { scan-tree-dump-not {\.CTZ \(vect_} "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times {\.CLZ \(vect_} 2 "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times {\.CTZ \(vect_} 1 "optimized" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times {\.VCOND_MASK \(} 2 "optimized" { target aarch64*-*-* } } } */

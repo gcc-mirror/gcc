@@ -2278,7 +2278,8 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
       }
 
   /* For zero the pattern gives the value of the target for VEC_TYPE plus
-     ADDEND.  Punt if the call has another value at zero.  */
+     ADDEND.  If the call has another value at zero, select it.  */
+  tree zero_val = NULL_TREE;
   if ((ifn == IFN_CLZ || ifn == IFN_CTZ)
       && gimple_call_internal_p (call_stmt)
       && gimple_call_num_args (call_stmt) == 2)
@@ -2289,7 +2290,7 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 	       : CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (vec_type), val));
       if (d != 2
 	  || tree_to_shwi (gimple_call_arg (call_stmt, 1)) != val + addend)
-	return NULL;
+	zero_val = gimple_call_arg (call_stmt, 1);
     }
 
   /* Do it only if the backend has popcount<vector_mode>2 etc. pattern.  */
@@ -2352,6 +2353,12 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 	   && CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (vec_type),
 					 val) == 2)
     arg2 = build_int_cst (integer_type_node, val);
+  /* vect_recog_ctz_ffs_pattern selects the value at zero itself.  */
+  if (zero_val && !supported)
+    {
+      arg2 = zero_val;
+      zero_val = NULL_TREE;
+    }
   if (arg2)
     pattern_stmt = gimple_build_call_internal (ifn, 2, unprom_diff.op, arg2);
   else
@@ -2390,6 +2397,21 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
     }
   else if (cast_stmt)
     append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, vec_type);
+
+  if (zero_val)
+    {
+      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, vec_type);
+      tree op = unprom_diff.op;
+      tree cmp = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+      gimple *cmp_stmt = gimple_build_assign (cmp, NE_EXPR, op,
+					      build_zero_cst (TREE_TYPE (op)));
+      append_pattern_def_seq (vinfo, stmt_vinfo, cmp_stmt,
+			      truth_type_for (vec_type), TREE_TYPE (op));
+      tree ret_var = vect_recog_temp_ssa_var (lhs_type, NULL);
+      pattern_stmt = gimple_build_assign (ret_var, COND_EXPR, cmp,
+				  gimple_get_lhs (pattern_stmt),
+				  fold_convert (lhs_type, zero_val));
+    }
 
   if (cast_stmt)
     {
