@@ -3172,28 +3172,39 @@ sequential_file_write(cblc_file_t    *file,
 
   int lcount;
 
-  if( lines < -1 )
-    {
-    // We are using -666 for a form feed
-    chvert = ascii_ff;
-    lcount = 1;
-    }
-  else if( lines == -1 )
-    {
-    // -1 is a flag that no vertical control is requested
+  switch(file->org) {
+  case file_disorganized_e:
+  case file_indexed_e:
+  case file_relative_e:
+    assert(false);
+    break;
+  case file_sequential_e:
     lcount = 0;
-    }
-  else if( lines == 0 )
-    {
-    lcount = 1;
-    chvert = ascii_newline;
-    }
-  else /* if( lines > 0 ) */
-    {
-    lcount = lines;
-    chvert = ascii_newline;
-    }
-
+    break;
+  case file_line_sequential_e:
+    if( lines < -1 )
+      {
+      // We are using -666 for a form feed
+      chvert = ascii_ff;
+      lcount = 1;
+      }
+    else if( lines == -1 )
+      {
+      // -1 is a flag that no vertical control is requested
+      lcount = 0;
+      }
+    else if( lines == 0 )
+      {
+      lcount = 1;
+      chvert = ascii_newline;
+      }
+    else /* if( lines > 0 ) */
+      {
+      lcount = lines;
+      chvert = ascii_newline;
+      }
+    break;
+  }
   // By default, we write out the number of characters in the record area
   bytes_to_write = length;
 
