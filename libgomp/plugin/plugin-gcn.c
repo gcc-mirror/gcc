@@ -3007,10 +3007,22 @@ drain_queue (void *thread_arg)
 
       if (aq->queue_n > 0)
 	{
-	  pthread_mutex_unlock (&aq->mutex);
-	  execute_queue_entry (aq, aq->queue_first);
+	  int index = aq->queue_first;
 
-	  pthread_mutex_lock (&aq->mutex);
+	  /* Signal placeholders with the queue lock held, so that the signal
+	     and the dequeue appear atomic to any thread inspecting this queue.
+	     Otherwise, a thread waiting on the placeholder (and hence any host
+	     thread waiting on that thread's queue) can proceed while this queue
+	     still appears to be busy, and an acc_async_test on this queue will
+	     spuriously fail.  */
+	  bool unlock_p = aq->queue[index].type != ASYNC_PLACEHOLDER;
+
+	  if (unlock_p)
+	    pthread_mutex_unlock (&aq->mutex);
+	  execute_queue_entry (aq, index);
+	  if (unlock_p)
+	    pthread_mutex_lock (&aq->mutex);
+
 	  aq->queue_first = ((aq->queue_first + 1)
 			     % ASYNC_QUEUE_SIZE);
 	  aq->queue_n--;
