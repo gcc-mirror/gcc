@@ -111,16 +111,20 @@ along with GCC; see the file COPYING3.  If not see
   (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 INTEGER_CST@1)) integer_zerop)
 	 integer_minus_onep (realpart @2))
   (if (types_match (type, @0) && int_fits_type_p (@1, type))))
+ /* The overflow flag of SUM describes X + Y only when the parts of SUM have
+    the type of X + Y.  */
  (match (unsigned_integer_sat_add @0 @1)
   /* SUM = ADD_OVERFLOW (X, Y)
      SAT_U_ADD = IMAGPART (SUM) == 0 ? X + Y : -1.  */
-  (cond^ (eq (imagpart (IFN_ADD_OVERFLOW @0 @1)) integer_zerop)
-	 (plus @0 @1) integer_minus_onep))
+  (cond^ (eq (imagpart (IFN_ADD_OVERFLOW@2 @0 @1)) integer_zerop)
+	 (plus @0 @1) integer_minus_onep)
+  (if (types_match (type, TREE_TYPE (TREE_TYPE (@2))))))
  (match (unsigned_integer_sat_add @0 @1)
   /* SUM = ADD_OVERFLOW (X, Y)
      SAT_U_ADD = IMAGPART (SUM) != 0 ? -1 : X + Y.  */
-  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW @0 @1)) integer_zerop)
-	 integer_minus_onep (plus @0 @1)))
+  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 @1)) integer_zerop)
+	 integer_minus_onep (plus @0 @1))
+  (if (types_match (type, TREE_TYPE (TREE_TYPE (@2))))))
  /* A source that tests for overflow against the complement of an operand,
     such as a > MAX - b ? MAX : a + b, reaches the recognisers as a compare
     with ~Y, since ~Y is MAX - Y.  The strict and non-strict forms are both
