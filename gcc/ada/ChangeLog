@@ -1,3 +1,34 @@
+2026-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127880
+	* contracts.adb (Make_Class_Precondition_Subps): Accept another
+	kind of wrapper subprograms.
+
+2026-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/127880
+	* sem_ch12.adb (Build_Subprogram_Wrapper): Remove the subprogram
+	renaming created for the formal-to-actual association from the
+	list of renamings (only when such a subprogram renaming is present).
+	Also, change the name from plural to singular, since the procedure
+	only creates one wrapper, update the spec comment to reflect that,
+	and clarify the state and use of the Renamings parameter.
+
+2026-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/127880
+	* contracts.adb (Analyze_Contracts): Add cases for formal subprogram
+	Nkinds so that Analyze_Entry_Or_Subprogram_Contract will be called
+	for them.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Account for the cases
+	of formal subprogram Nkinds, allowing Old attributes for those.
+	* sem_ch12.adb (Build_Subprogram_Wrappers): Add a formal for passing
+	the unanalyzed generic formal, and use it for copying any aspect
+	specifications of the generic formal rather than copying the analyzed
+	generic formal's aspects.
+	(Analyze_One_Association): Pass Assoc.Un_Formal as an additional
+	actual in the call to Build_Subprogram_Wrappers.
+
 2026-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/system-linux-loongarch.ads (Address): Add size clause.

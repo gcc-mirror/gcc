@@ -1,3 +1,29 @@
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/aarch64.md (movti):  Ensure we don't call
+	gen_highpart on a subreg.
+	(addti3): Use pure_register_operand for the destination.
+	(addvti4): Likewise.
+	(uaddvti4): Likewise.
+	(subti3): Likewise.
+	(subvti4): Likewise.
+	(usubti4): Likewise.
+	(<su_optab>mulditi3): Likewise.
+	(multi3): Require pure_register_operand for all operands.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-09-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/predicates.md (pure_register_operand): New predicate.
+	* config/aarch64/aarch64.md (negvti3): Use it.
+
 2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (hppa_rtx_costs_shadd_p): Strip SUBREG wrappers

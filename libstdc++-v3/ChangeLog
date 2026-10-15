@@ -1,3 +1,84 @@
+2026-10-14  Hugo Beauzée-Luyssen  <hugo.beauzee@datadoghq.com>
+
+	Backported from master:
+	2026-10-14  Hugo Beauzée-Luyssen  <hugo.beauzee@datadoghq.com>
+		    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h: Check __glibcxx_chrono for C++20
+	tzdb features instead of the ABI macros.
+	* include/bits/version.def (chrono): Use extra_cond instead of
+	cxx11abi to also define 201907 for old-ABI-only builds.
+	* include/bits/version.h: Regenerate.
+	* include/std/chrono: Check __cpp_lib_chrono instead of the
+	ABI macros.
+	* testsuite/lib/libstdc++.exp (check_effective_target_tzdb):
+	Replace cxx11_abi check with hosted check and check
+	__cpp_lib_chrono in preprocessor condition.
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Use
+	__cpp_lib_chrono for preprocessor condition and use tzdb for
+	effective target.  Remove dg-additional-options.
+	* testsuite/std/time/format/data_not_present_neg.cc: Use
+	__cpp_lib_chrono for preprocessor conditions and use tzdb for
+	effective target.
+	* testsuite/std/time/format/empty_spec.cc: Use __cpp_lib_chrono
+	for preprocessor conditions.
+	* testsuite/std/time/format/nonlocking.cc: Likewise.
+	* testsuite/std/time/format/pr117214.cc: Likewise.
+	* testsuite/std/time/format/pr119517.cc: Likewise.
+	* testsuite/std/time/format/whitespace.cc: Likewise.
+	* testsuite/std/time/hash.cc: Likewise.
+	* testsuite/std/time/syn_c++20.cc: Fix typo in macro name and
+	expect new value for !_GLIBCXX_USE_DUAL_ABI.
+	* testsuite/std/time/tzdb/1.cc: Require tzdb effective target
+	instead of cxx11_abi.
+	* testsuite/std/time/tzdb_list/requirements.cc: Likewise.
+	* testsuite/std/time/zoned_time/deduction.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/req_neg.cc: Likewise.
+	* testsuite/std/time/zoned_time/requirements.cc: Likewise.
+	* testsuite/std/time/zoned_traits.cc: Likewise.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127757
+	* src/c++20/atomic.cc (__waitable_state::_M_enter_wait): Add
+	comment.
+	(__waitable_state::_M_waiting): Add seq_cst fence and comments.
+	* testsuite/29_atomics/atomic/wait_notify/127757.cc: New test.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/115955
+	* src/c++20/atomic.cc (__waitable_state::_S_state_for): Use a
+	real hash function to map addresses to waitable states.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (operator>>): Define __array_len to ensure
+	that the array size is never zero. Add uninitialized attribute
+	to __buf.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124370
+	* include/std/bitset (operator>>): Use array inside _Buffer
+	instead of __builtin_alloca.
+	* testsuite/20_util/bitset/io/input.cc: Suppress pedwarn about
+	C++14 binary literal.
+	* testsuite/20_util/bitset/io/wchar_t.cc: New test.
+
 2026-10-08  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:
