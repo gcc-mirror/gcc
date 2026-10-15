@@ -4742,6 +4742,10 @@ vect_recog_sat_add_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   if (gimple_unsigned_integer_sat_add (lhs, ops, NULL)
       || gimple_signed_integer_sat_add (lhs, ops, NULL))
     {
+      /* .SAT_ADD saturates in the type of its first operand, which must be
+	 the type of the result.  */
+      gcc_checking_assert (types_compatible_p (TREE_TYPE (lhs),
+					       TREE_TYPE (ops[0])));
       if (TREE_CODE (ops[1]) == INTEGER_CST)
 	ops[1] = fold_convert (TREE_TYPE (ops[0]), ops[1]);
 

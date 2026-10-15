@@ -456,7 +456,12 @@ along with GCC; see the file COPYING3.  If not see
       SAT_S_ADD = IMAGPART_EXPR (SUM) != 0 ? (-(T)(X < 0) ^ MAX) : SUM  */
   (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
 	 (signed_integer_sat_val @0)
-	 (realpart @2)))
+	 (realpart @2))
+  /* The overflow flag describes X + Y in T only when X and Y are values
+     of T.  The callers convert a constant Y to T.  */
+  (if (types_match (type, @0)
+       && (types_match (type, @1)
+	   || (TREE_CODE (@1) == INTEGER_CST && int_fits_type_p (@1, type))))))
  (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)Y)
      SAT_S_ADD = (X ^ SUM) < 0 & ~((X ^ Y) < 0) ? (-(T)(X < 0) ^ MAX) : SUM  */
@@ -492,7 +497,9 @@ along with GCC; see the file COPYING3.  If not see
      wide_int c2 = wi::to_wide (@2);
      wide_int sum = wi::add (c1, c2);
     }
-    (if (wi::eq_p (sum, wi::max_value (precision, SIGNED))))))
+    /* The outer conversion must not change the type of X.  */
+    (if (types_match (type, @0)
+	 && wi::eq_p (sum, wi::max_value (precision, SIGNED))))))
 
 (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)IMM)

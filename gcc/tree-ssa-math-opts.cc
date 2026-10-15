@@ -4192,8 +4192,15 @@ match_saturation_add_with_assign (gimple_stmt_iterator *gsi, gassign *stmt)
 
   if (gimple_unsigned_integer_sat_add (lhs, ops, NULL)
       || gimple_signed_integer_sat_add (lhs, ops, NULL))
-    return build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_ADD,
-							   lhs, ops[0], ops[1]);
+    {
+      /* .SAT_ADD saturates in the type of its first operand, which must be
+	 the type of the result.  */
+      gcc_checking_assert (types_compatible_p (TREE_TYPE (lhs),
+					       TREE_TYPE (ops[0])));
+      return build_saturation_binary_arith_call_and_replace (gsi, IFN_SAT_ADD,
+							     lhs, ops[0],
+							     ops[1]);
+    }
 
   return false;
 }
@@ -4249,6 +4256,11 @@ match_saturation_add (gimple_stmt_iterator *gsi, gphi *phi)
   if (!gimple_unsigned_integer_sat_add (phi_result, ops, NULL)
       && !gimple_signed_integer_sat_add (phi_result, ops, NULL))
     return false;
+
+  /* .SAT_ADD saturates in the type of its first operand, which must be the
+     type of the result.  */
+  gcc_checking_assert (types_compatible_p (TREE_TYPE (phi_result),
+					   TREE_TYPE (ops[0])));
 
   if (!TYPE_UNSIGNED (TREE_TYPE (ops[0])) && TREE_CODE (ops[1]) == INTEGER_CST)
     ops[1] = fold_convert (TREE_TYPE (ops[0]), ops[1]);
