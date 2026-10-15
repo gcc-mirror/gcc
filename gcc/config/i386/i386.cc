@@ -20444,7 +20444,7 @@ ix86_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	  else if (tree_to_uhwi (arg4) != 8)
 	    /* Invalid round argument.  */
 	    break;
-	  else if (HONOR_NANS (arg0))
+	  else if (HONOR_NANS (arg0) || flag_trapping_math)
 	    /* Lowering to comparison would raise exceptions which
 	       shouldn't be raised.  */
 	    break;
