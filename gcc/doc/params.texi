@@ -122,7 +122,8 @@ to a computed goto.  To avoid @math{O(N^2)} behavior in a number of
 passes, GCC factors computed gotos early in the compilation process,
 and unfactors them as late as possible.  Only computed jumps at the
 end of a basic blocks with no more than @code{max-goto-duplication-insns} are
-unfactored.
+unfactored.  With @option{-fduplicate-switch-dispatch}, the same limit applies
+to switch dispatches.
 
 @paindex max-delay-slot-insn-search
 @item max-delay-slot-insn-search

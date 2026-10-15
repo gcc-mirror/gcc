@@ -1043,6 +1043,78 @@ proc check_effective_target_nonlocal_goto {} {
     return 1
 }
 
+# Return 1 if the copies of a loop switch dispatch that
+# -fduplicate-switch-dispatch creates share one jump table, with the
+# current multilib and test options.  This lists the expected result
+# rather than probing for it, so that a target that is expected to share
+# tables and does not makes the test fail.  Use it only in test directives,
+# as it reads the options of the current test.
+
+proc check_effective_target_shared_jump_tables { } {
+    # Targets without jump tables.
+    if { ![check_effective_target_indirect_jumps]
+	 || [istarget amdgcn-*-*] || [istarget moxie-*-*]
+	 || [istarget msp430-*-*] || [istarget or1k*-*-*]
+	 || [istarget pru-*-*] || [istarget rl78-*-*] } {
+	return 0
+    }
+
+    # Targets whose dispatch needs the table to follow it.
+    if { [istarget arm*-*-*] || [istarget cris-*-*]
+	 || [istarget fido-*-*] || [istarget m68k-*-*]
+	 || [istarget sh*-*-*] || [istarget vax-*-*]
+	 || [istarget xstormy16-*-*] } {
+	return 0
+    }
+
+    # Targets without ASM_OUTPUT_ADDR_DIFF_ELT emit no jump tables for PIC.
+    # hppa, tic6x and rx refuse to share PIC or 64-bit dispatches.
+    if { ([istarget avr-*-*] || [istarget ft32-*-*]
+	  || [istarget hppa*-*-*] || [istarget mcore-*-*]
+	  || [istarget pdp11-*-*] || [istarget rx-*-*]
+	  || [istarget tic6x-*-*])
+	 && ![check_no_compiler_messages_nocache shared_jump_tables_nopic \
+		  assembly {
+		      #if defined __PIC__ || defined __LP64__
+		      #error PIC or 64-bit dispatch
+		      #endif
+		      int i;
+		  } [current_compiler_flags]] } {
+	return 0
+    }
+
+    # Targets that refuse to share other forms.
+    if { [istarget mips*-*-*]
+	 && ([check-flags [list "" { *-*-* } { "-mflip-mips16" } { "" }]]
+	     || ![check_no_compiler_messages_nocache shared_jump_tables_nomips16 \
+		      assembly {
+			  #ifdef __mips16
+			  #error MIPS16 dispatch
+			  #endif
+			  int i;
+		      } [current_compiler_flags]]) } {
+	return 0
+    }
+    if { [istarget csky*-*-*]
+	 && ([check-flags [list "" { *-*-* } { "-mconstpool" } { "" }]]
+	     || ![check_no_compiler_messages_nocache shared_jump_tables_nopool \
+		      assembly {
+			  #if defined __CK801__ || defined __CK802__
+			  #error mandatory constant pools
+			  #endif
+			  int i;
+		      } [current_compiler_flags]]) } {
+	return 0
+    }
+    if { ([istarget rx-*-*]
+	  && [check-flags [list "" { *-*-* } { "-mpid" } { "" }]])
+	 || ([istarget arc*-*-*]
+	     && [check-flags [list "" { *-*-* } { "-mbranch-index" } { "" }]]) } {
+	return 0
+    }
+    return 1
+}
+
 # Return 1 if global constructors are supported, 0 otherwise.
 
 proc check_effective_target_global_constructor {} {

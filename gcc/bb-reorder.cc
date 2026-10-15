@@ -2740,59 +2740,225 @@ duplication_size (rtx_insn *insn)
   return active_insn_p (insn);
 }
 
-/* Duplicate a block (that we already know ends in a computed jump) into its
-   predecessors, where possible.  Return whether anything is changed.  */
+/* Return true if INSN is a jump whose predecessors are worth giving a copy
+   of their own.  Every transition through such a jump uses the same indirect
+   branch instruction, which can make indirect target prediction less
+   effective.  */
+
 static bool
-maybe_duplicate_computed_goto (basic_block bb, int max_size)
+dispatch_jump_p (rtx_insn *insn)
 {
-  /* Make sure that the block is small enough.  */
-  rtx_insn *insn;
-  FOR_BB_INSNS (bb, insn)
-    if (INSN_P (insn))
-      {
-	max_size -= duplication_size (insn);
-	if (max_size < 0)
-	   return false;
-      }
+  if (computed_jump_p (insn))
+    return true;
+
+  /* A switch lowered to a jump table dispatches exactly like a factored
+     computed goto.  Copying such a block makes the copies share the one
+     table, so only the branch is replicated, not the table.  The target
+     decides whether the dispatch can share its table.  Sharing a table in a
+     partitioned function would require explicit ownership of the section of
+     the base of the table entries.  */
+  if (!(flag_duplicate_switch_dispatch
+	&& !crtl->has_bb_partition
+	&& tablejump_p (insn, NULL, NULL)
+	&& targetm.can_share_jump_table_p (insn)))
+    return false;
+
+#ifdef STACK_REGS
+  /* Stack-register conversion can split outgoing edges to reconcile stack
+     layouts.  Such edges cannot be redirected for one shared-table user.  */
+  for (int regno = FIRST_STACK_REG; regno <= LAST_STACK_REG; ++regno)
+    if (df_regs_ever_live_p (regno))
+      return false;
+#endif
+
+  return true;
+}
+
+/* Return true if a copy of the dispatch can be attached to the source of E,
+   taking over that edge.  */
+
+static bool
+can_attach_dispatch_copy_p (edge e)
+{
+  basic_block pred = e->src;
+
+  return (single_succ_p (pred)
+	  && !(e->flags & EDGE_COMPLEX)
+	  && pred->index >= NUM_FIXED_BLOCKS
+	  && (!JUMP_P (BB_END (pred))
+	      || (simplejump_p (BB_END (pred))
+		  && !CROSSING_JUMP_P (BB_END (pred)))));
+}
+
+/* Return true if the fall-through edge E also stands for a branch, that is
+   if the jump at the end of its source names its destination as well.
+   Such an edge cannot move to a copy of its destination without changing
+   the jump.  */
+
+static bool
+fallthru_unified_with_branch_p (edge e)
+{
+  rtx_insn *end = BB_END (e->src);
+  return JUMP_P (end) && label_is_jump_target_p (BB_HEAD (e->dest), end);
+}
+
+/* Collect into CHAIN the blocks that have to be copied together with the
+   dispatch block BB, innermost first, and return the head of the chain: the
+   block whose predecessors the copies are attached to.  Anything above the
+   dispatch is reached only through the chain, so copying the lot into a
+   predecessor of the head is sound.  The chain is what makes a jump table
+   dispatch reachable at all, since the range check that guards it sits in a
+   block of its own.  Return NULL if the chain is larger than MAX_SIZE, which
+   is in units of duplication_unit.  */
+
+static basic_block
+find_dispatch_chain (basic_block bb, int max_size,
+		     vec<basic_block> *chain)
+{
+  int size = 0;
+
+  /* Count a tablejump as one instruction.  Its target sequence is an
+     indivisible part of every copy, while the budget still bounds the work
+     copied with it.  */
+  rtx_insn *dispatch = NULL;
+  if (tablejump_p (BB_END (bb), NULL, NULL))
+    dispatch = BB_END (bb);
+
+  for (basic_block b = bb; ; b = single_pred (b))
+    {
+      rtx_insn *insn;
+      FOR_BB_INSNS (b, insn)
+	if (INSN_P (insn))
+	  {
+	    size += (insn == dispatch
+		     ? duplication_unit () : duplication_size (insn));
+	    if (size > max_size)
+	      return NULL;
+	  }
+
+      chain->safe_push (b);
+
+      /* Stop at the block the copies attach to, and at anything we may not
+	 copy.  Only a jump table dispatch needs more than its own block, and
+	 only a plain fall-through predecessor can be taken along: the copies
+	 are laid out one after the other, so any other edge into the chain
+	 would need a jump of its own, and a jump that also targets the next
+	 block would still name the original block.  */
+      if (!dispatch || !single_pred_p (b))
+	break;
+      edge in = single_pred_edge (b);
+      if (can_attach_dispatch_copy_p (in)
+	  || !(in->flags & EDGE_FALLTHRU)
+	  || in->src == ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	  || !can_duplicate_block_p (in->src)
+	  || fallthru_unified_with_branch_p (in))
+	break;
+    }
+
+  return chain->last ();
+}
+
+/* Duplicate the dispatch block BB, along with the blocks it can only be
+   reached through, into the predecessors of that chain, where possible.
+   MAX_SIZE limits the size of the chain, in units of duplication_unit.
+   If REQUIRE_BACK_EDGE is true, first require a DFS back edge into the head
+   of the chain.  Return whether anything is changed.  */
+static bool
+maybe_duplicate_dispatch (basic_block bb, int max_size,
+			  bool require_back_edge)
+{
+  auto_vec<basic_block, 4> chain;
+  basic_block head = find_dispatch_chain (bb, max_size, &chain);
+  if (!head)
+    return false;
+
+  if (require_back_edge)
+    {
+      bool found = false;
+      edge e;
+      edge_iterator ei;
+      FOR_EACH_EDGE (e, ei, head->preds)
+	if (e->flags & EDGE_DFS_BACK)
+	  {
+	    found = true;
+	    break;
+	  }
+      if (!found)
+	return false;
+    }
 
   bool changed = false;
   edge e;
   edge_iterator ei;
-  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
+  for (ei = ei_start (head->preds); (e = ei_safe_edge (ei)); )
     {
       basic_block pred = e->src;
 
-      /* Do not duplicate BB into PRED if we cannot merge a copy of BB
-	 with PRED.  */
-      if (!single_succ_p (pred)
-	  || e->flags & EDGE_COMPLEX
-	  || pred->index < NUM_FIXED_BLOCKS
-	  || (JUMP_P (BB_END (pred)) && !simplejump_p (BB_END (pred)))
-	  || (JUMP_P (BB_END (pred)) && CROSSING_JUMP_P (BB_END (pred))))
+      /* Do not duplicate the chain into PRED if we cannot merge a copy of
+	 its head with PRED.  */
+      if (!can_attach_dispatch_copy_p (e))
 	{
 	  ei_next (&ei);
 	  continue;
 	}
 
       if (dump_file)
-	fprintf (dump_file, "Duplicating computed goto bb %d into bb %d\n",
-		 bb->index, e->src->index);
+	fprintf (dump_file, "Duplicating dispatch bb %d into bb %d\n",
+		 bb->index, pred->index);
 
-      /* Remember if PRED can be duplicated; if so, the copy of BB merged
-	 with PRED can be duplicated as well.  */
+      /* Remember if PRED can be duplicated; if so, the copy of the chain
+	 merged with PRED can be duplicated as well.  */
       bool can_dup_more = can_duplicate_block_p (pred);
 
-      /* Make a copy of BB, merge it into PRED.  */
-      basic_block copy = duplicate_block (bb, e, NULL);
-      emit_barrier_after_bb (copy);
-      reorder_insns_nobb (BB_HEAD (copy), BB_END (copy), BB_END (pred));
-      merge_blocks (pred, copy);
+      /* Copy the chain head first, so that the copies end up in the
+	 instruction stream in the order they are executed in.  Only the head
+	 takes over the edge from PRED; the edges inside the chain are
+	 fall-through and so are moved onto the copies directly.  */
+      auto_vec<basic_block, 4> copies;
+      for (unsigned i = chain.length (); i-- > 0; )
+	{
+	  basic_block copy;
+	  if (copies.is_empty ())
+	    copy = duplicate_block (chain[i], e, NULL);
+	  else
+	    {
+	      edge in = find_edge (copies.last (), chain[i]);
+	      gcc_checking_assert (!fallthru_unified_with_branch_p (in));
+	      profile_count count = in->count ();
+	      if (chain[i]->count < count)
+		count = chain[i]->count;
+	      copy = duplicate_block (chain[i], NULL, NULL);
+	      copy->count = count;
+	      chain[i]->count -= count;
+	      redirect_edge_succ (in, copy);
+	    }
+	  copies.safe_push (copy);
+	}
+
+      basic_block first = copies[0];
+      basic_block last = copies.last ();
+
+      /* Move the copies after PRED and fold the head into it.  */
+      emit_barrier_after_bb (last);
+      reorder_insns_nobb (BB_HEAD (first), BB_END (last), BB_END (pred));
+      merge_blocks (pred, first);
+
+      /* The rest of the chain stays as separate blocks that PRED falls
+	 through to, so put them in the block order to match.  */
+      basic_block after = pred;
+      for (unsigned i = 1; i < copies.length (); i++)
+	{
+	  unlink_block (copies[i]);
+	  link_block (copies[i], after);
+	  after = copies[i];
+	}
 
       changed = true;
 
-      /* Try to merge the resulting merged PRED into further predecessors.  */
+      /* Try to merge the resulting dispatch block into further
+	 predecessors.  */
       if (can_dup_more)
-	maybe_duplicate_computed_goto (pred, max_size);
+	maybe_duplicate_dispatch (first == last ? pred : last, max_size, false);
     }
 
   return changed;
@@ -2802,7 +2968,11 @@ maybe_duplicate_computed_goto (basic_block bb, int max_size)
    computed gotos that were factored early on in the compilation process to
    speed up edge based data flow.  We used to not unfactor them again, which
    can seriously pessimize code with many computed jumps in the source code,
-   such as interpreters.  See e.g. PR15242.  */
+   such as interpreters.  See e.g. PR15242.
+
+   With -fduplicate-switch-dispatch the same is done for a switch lowered to
+   a jump table, which an interpreter written without the labels-as-values
+   extension ends up with.  See PR126236.  */
 static void
 duplicate_computed_gotos (function *fun)
 {
@@ -2810,13 +2980,32 @@ duplicate_computed_gotos (function *fun)
   int max_size = duplication_unit () * param_max_goto_duplication_insns;
 
   bool changed = false;
+  bool back_edges_marked = false;
 
-  /* Try to duplicate all blocks that end in a computed jump and that
+  gcc_checking_assert (!(fun->curr_properties
+			 & PROP_rtl_allow_tablejump_duplication));
+  fun->curr_properties |= PROP_rtl_allow_tablejump_duplication;
+
+  /* Try to duplicate all blocks that end in a dispatching jump and that
      can be duplicated at all.  */
   basic_block bb;
   FOR_EACH_BB_FN (bb, fun)
-    if (computed_jump_p (BB_END (bb)) && can_duplicate_block_p (bb))
-      changed |= maybe_duplicate_computed_goto (bb, max_size);
+    {
+      if (!dispatch_jump_p (BB_END (bb))
+	  || !can_duplicate_block_p (bb))
+	continue;
+
+      bool tablejump = tablejump_p (BB_END (bb), NULL, NULL);
+      if (tablejump && !back_edges_marked)
+	{
+	  mark_dfs_back_edges ();
+	  back_edges_marked = true;
+	}
+
+      changed |= maybe_duplicate_dispatch (bb, max_size, tablejump);
+    }
+
+  fun->curr_properties &= ~PROP_rtl_allow_tablejump_duplication;
 
   /* Some blocks may have become unreachable.  */
   if (changed)

@@ -1706,6 +1706,10 @@ fdump-unnumbered-links
 Common Var(flag_dump_unnumbered_links)
 Suppress output of previous and next insn numbers in debugging dumps.
 
+fduplicate-switch-dispatch
+Common Var(flag_duplicate_switch_dispatch) Optimization
+Give eligible predecessors of a loop switch their own copy of the table branch.
+
 fdwarf2-cfi-asm
 Common Var(flag_dwarf2_cfi_asm) Init(HAVE_GAS_CFI_DIRECTIVE)
 Enable CFI tables via GAS assembler directives.

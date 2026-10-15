@@ -620,7 +620,7 @@ The maximum amount of memory to be allocated by GCSE, in kilobytes.
 
 -param=max-goto-duplication-insns=
 Common Joined UInteger Var(param_max_goto_duplication_insns) Init(8) Param Optimization
-The maximum number of insns to duplicate when unfactoring computed gotos.
+The maximum number of insns to duplicate when unfactoring computed gotos or switch dispatches.
 
 -param=max-grow-copy-bb-insns=
 Common Joined UInteger Var(param_max_grow_copy_bb_insns) Init(8) Param Optimization

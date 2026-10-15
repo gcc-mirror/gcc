@@ -54,6 +54,7 @@ gcc_parallel_test_enable 0
 # Specify the plugin source file and the associated test files in a list.
 # plugin_test_list={ {plugin1 test1 test2 ...} {plugin2 test1 ...} ... }
 set plugin_test_list [list \
+    { tablejump_capability_plugin.cc tablejump-capability.c } \
     { selfassign.cc self-assign-test-1.c self-assign-test-2.c } \
     { ggcplug.cc ggcplug-test-1.c } \
     { one_time_plugin.cc one_time-test-1.c } \

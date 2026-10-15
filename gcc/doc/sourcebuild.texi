@@ -3220,6 +3220,11 @@ and @code{double}.  These optabs are: @code{fma_optab}, @code{fms_optab},
 @item section_anchors
 Target supports section anchors.
 
+@item shared_jump_tables
+Target makes the copies of a loop switch dispatch that
+@option{-fduplicate-switch-dispatch} creates share one jump table, with the
+current multilib and test options.  Use it only in test directives.
+
 @item shf_gnu_retain
 Target supports @code{SHF_GNU_RETAIN}.
 

@@ -935,6 +935,9 @@ UrlSuffix(gcc/Developer-Options.html#index-fdump-unnumbered)
 fdump-unnumbered-links
 UrlSuffix(gcc/Developer-Options.html#index-fdump-unnumbered-links)
 
+fduplicate-switch-dispatch
+UrlSuffix(gcc/Optimize-Options.html#index-fduplicate-switch-dispatch)
+
 fdwarf2-cfi-asm
 UrlSuffix(gcc/Debugging-Options.html#index-fdwarf2-cfi-asm)
 
