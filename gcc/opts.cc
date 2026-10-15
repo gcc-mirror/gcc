@@ -685,6 +685,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_jumps, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_labels, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_falign_loops, NULL, 1 },
+    { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_fduplicate_switch_dispatch, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_foptimize_strlen, NULL, 1 },
     { OPT_LEVELS_2_PLUS_SPEED_ONLY, OPT_freorder_blocks_algorithm_, NULL,
       REORDER_BLOCKS_ALGORITHM_STC },

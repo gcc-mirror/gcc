@@ -1,6 +1,6 @@
 /* PR middle-end/126236 */
 /* { dg-do assemble } */
-/* { dg-options "-O2 -fduplicate-switch-dispatch -save-temps" } */
+/* { dg-options "-O2 -save-temps" } */
 
 /* Each of the 11 continuing handlers, the default handler and the loop entry
    get a dispatch of their own, so 13 register indirect branches.  All of them

@@ -13663,6 +13663,7 @@ also turns on the following optimization flags:
 -fcse-follow-jumps  -fcse-skip-blocks
 -fdelete-null-pointer-checks -fdep-fusion
 -fdevirtualize  -fdevirtualize-speculatively
+-fduplicate-switch-dispatch
 -fexpensive-optimizations
 -ffinite-loops
 -fgcse  -fgcse-lm
@@ -13736,7 +13737,7 @@ Optimize for size.  @option{-Os} enables all @option{-O2} optimizations
 except those that often increase code size:
 
 @gccoptlist{-falign-functions  -falign-jumps
--falign-labels  -falign-loops
+-falign-labels  -falign-loops  -fduplicate-switch-dispatch
 -fprefetch-loop-arrays  -freorder-blocks-algorithm=stc}
 
 It also enables @option{-finline-functions}, causes the compiler to tune for
@@ -14321,6 +14322,8 @@ It trades size for speed, so the amount copied is bounded by
 @option{--param=max-goto-duplication-insns}.  The transformation runs only
 with @option{-fexpensive-optimizations} and only in functions that are
 optimized for speed.
+
+Enabled at levels @option{-O2}, @option{-O3}.
 
 @opindex fif-conversion
 @opindex fno-if-conversion
