@@ -995,7 +995,7 @@ redirect_all_callers (cgraph_node *n, cgraph_node *to)
           nredirected++;
 	}
       else
-	e = e->next_callee;
+	e = e->next_caller;
     }
   for (unsigned i = 0; n->iterate_direct_aliases (i, ref);)
     {
