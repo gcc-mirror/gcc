@@ -451,3 +451,6 @@ extern void ix86_set_handled_components (sbitmap);
 bool ix86_check_builtin_isa_match (unsigned int, HOST_WIDE_INT*,
 				   HOST_WIDE_INT*);
 rtx ix86_vgf2p8affine_shift_matrix (rtx, rtx, enum rtx_code);
+extern void ix86_expand_crc_using_pclmul (scalar_mode, scalar_mode, rtx *);
+extern void ix86_expand_reversed_crc_using_pclmul (scalar_mode, scalar_mode,
+						   rtx *);
