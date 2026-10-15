@@ -703,7 +703,14 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (op1, 0))))
     {
       rtx first = ix86_broadcast_from_constant (mode, op1);
-      if (first != nullptr)
+      /* Only broadcast floating-point constants when a broadcast instruction
+	 is available (AVX, or AVX2 for 16-bit elements), avoiding sequences
+	 such as movss + shufps.  For integer constants, guard broadcasting
+	 with TARGET_PREFER_BCST_FROM_INTEGER.  */
+      if (first != nullptr
+	  && (FLOAT_MODE_P (mode)
+	      ? (GET_MODE_UNIT_SIZE (mode) < 4 ? TARGET_AVX2 : TARGET_AVX)
+	      : TARGET_PREFER_BCST_FROM_INTEGER))
 	{
 	  /* Broadcast to XMM/YMM/ZMM register from an integer
 	     constant or scalar mem.  */
