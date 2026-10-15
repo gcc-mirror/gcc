@@ -104,6 +104,7 @@
 #include "regs.h"
 #include "emit-rtl.h"
 #include "output.h"
+#include "insn-attr.h"
 #include "expr.h"
 #include "tree-pass.h"
 #include "cfgrtl.h"
@@ -2706,6 +2707,39 @@ make_pass_reorder_blocks (gcc::context *ctxt)
   return new pass_reorder_blocks (ctxt);
 }
 
+/* Return the unit of --param=max-goto-duplication-insns: the length of an
+   unconditional jump, or 1 if the target has no length attribute.  */
+
+static int
+duplication_unit (void)
+{
+  if (!HAVE_ATTR_length)
+    return 1;
+
+  /* We are estimating the length of uncond jump insn only once
+     since the code for getting the insn length always returns
+     the minimal length now.  */
+  if (uncond_jump_length == 0)
+    uncond_jump_length = get_uncond_jump_length ();
+
+  /* A target with insn lengths gives a jump a nonzero length.  A zero unit
+     would make every budget 0, whatever the parameter says.  */
+  gcc_checking_assert (uncond_jump_length > 0);
+  return uncond_jump_length;
+}
+
+/* Return the size of INSN in the units of duplication_unit: its minimum
+   length, or 1 for an active insn if the target has no length attribute.
+   Debug insns never count, so they cannot change the decision.  */
+
+static int
+duplication_size (rtx_insn *insn)
+{
+  if (HAVE_ATTR_length)
+    return get_attr_min_length (insn);
+  return active_insn_p (insn);
+}
+
 /* Duplicate a block (that we already know ends in a computed jump) into its
    predecessors, where possible.  Return whether anything is changed.  */
 static bool
@@ -2716,7 +2750,7 @@ maybe_duplicate_computed_goto (basic_block bb, int max_size)
   FOR_BB_INSNS (bb, insn)
     if (INSN_P (insn))
       {
-	max_size -= get_attr_min_length (insn);
+	max_size -= duplication_size (insn);
 	if (max_size < 0)
 	   return false;
       }
@@ -2772,15 +2806,8 @@ maybe_duplicate_computed_goto (basic_block bb, int max_size)
 static void
 duplicate_computed_gotos (function *fun)
 {
-  /* We are estimating the length of uncond jump insn only once
-     since the code for getting the insn length always returns
-     the minimal length now.  */
-  if (uncond_jump_length == 0)
-    uncond_jump_length = get_uncond_jump_length ();
-
   /* Never copy a block larger than this.  */
-  int max_size
-    = uncond_jump_length * param_max_goto_duplication_insns;
+  int max_size = duplication_unit () * param_max_goto_duplication_insns;
 
   bool changed = false;
 
