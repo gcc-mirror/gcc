@@ -1,3 +1,9 @@
+2026-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127880
+	* contracts.adb (Make_Class_Precondition_Subps): Accept another
+	kind of wrapper subprograms.
+
 2026-10-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnat/system-linux-loongarch.ads (Address): Add size clause.

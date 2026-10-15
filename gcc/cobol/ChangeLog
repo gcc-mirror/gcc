@@ -1,3 +1,14 @@
+2026-10-14  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (dirty_to_binary): Formatting.
+	(psa_FldLiteralN): Change name of data area for GDB-COBOL.
+	(psa_FldLiteralA): Make LEVEL78 variables static with function scope
+	for GDB-COBOL.
+	(parser_symbol_add): Put data.original into cblc_field_t::initial for
+	FldLiteralN variables; needed for GDB-COBOL.
+	* move.cc (mh_numeric_display): Bug fix: Pass refmodded numeric-
+	display moves on to __gg__move().
+
 2026-10-07  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.h (parser_add): Formatting.

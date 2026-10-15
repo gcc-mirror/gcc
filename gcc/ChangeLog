@@ -1,3 +1,222 @@
+2026-10-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/aarch64/aarch64-acle-builtins.h
+	(gimple_folder::assign): Delete.
+	* config/aarch64/aarch64-acle-builtins.cc
+	(gimple_folder::assign): Likewise.
+
+2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127811
+	* tree-vect-slp.cc (vect_schedule_slp_node): Revert last fix.
+	Instead NULL last_stmt for external defs.
+
+2026-10-14  From: Jonas Hansen  <jhansen@roku.com>
+
+	PR tree-optimization/127416
+	* expr.cc (categorize_ctor_elements_1): Include implicit trailing
+	zeros in the total element count for string initializers.
+
+2026-10-14  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127796
+	* reorg.cc (skip_consecutive_labels): Ignore debug instructions
+	when scanning consecutive labels.
+
+2026-10-14  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127726
+	* resource.cc (find_basic_block): Ignore debug instructions in
+	the backward and forward scans.
+
+2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127876
+	* tree-vect-loop.cc (vectorizable_reduction): For
+	conditional reduction assign then CONST_COND_REDUCTION mode
+	with explicit LT/GT checks.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127227
+	* config/arm/minipool.cc (INCLUDE_ALGORITHM): Define.
+	(print-rtl.h): Include it.
+	(minipool_address): New typedef.
+	(IS_MINIPOOL_ADDRESS_MIN): New define.
+	(IS_MINIPOOL_ADDRESS_MAX): Likewise.
+	(MINIPOOL_ADDRESS_MIN): Likewise.
+	(MINIPOOL_ADDRESS_MAX): Likewise.
+	(struct minipool_node): Use minipool_address for address entries.
+	(struct minipool_fixup): Likewise.
+	(class subpool): New class.
+	(class minipool): Rework to use subpools.
+	(subpool::subpool): New constructor.
+	(subpool::reset): New function.
+	(subpool::update_bounds): New function.
+	(subpool::move_fix_forward_ref): New function.
+	(subpool::add_forward_ref): New function.
+	(subpool::move_fix_backward_ref): New function.
+	(subpool::add_backward_ref): New function.
+	(subpool::assign_offsets): New function.
+	(subpool::dump): New function.
+	(subpool::debug): New function.
+	(minipool::minipool): New constructor.
+	(minipool::minipool): New function.
+	(minipool::label): New function.
+	(minipool::get_label_padding): Converted form get_label_padding.
+	(minipool::get_alignment_size): Converted from get_alignment_size.
+	(minipool::find_subpool): New function.
+	(minipool::add_forward_ref): Rework for subpools.
+	(minipool::add_backward_ref): Likewise.
+	(minipool::assign_offsets): Likewise.
+	(minipool::dump): Rework for subpools.
+	(minipool::create_fix_barrier): Converted from create_fix_barrier.
+	(minipool::debug): New function.
+	(place_minipools): Rework for subpools.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/minipool.cc (INCLUDE_LIST): Define.
+	(minipool_node): Remove next and prev.
+	(minipool): Remove vector_head and vector_tail.  Add elements.
+	(minipool::reset): Update.
+	(minipool::head): Likewise.
+	(minipool::add_forward_ref): Rework to use list class and iterators.
+	(minipool::add_bacward_ref): Likewise.
+	(minipool::move_fix_forward_ref): Likewise.
+	(minipool::move_fix_backward_ref): Likewise.
+	(minipool::assign_offsets): Likewise.
+	(minipool::dump): Likewise.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/minipool.cc: New file.
+	* config/arm/minipool.h: New file.
+	* config/arm/t-arm: Add rules to build minipool.o.
+	* config/arm/arm.cc (get_jump_table_size): Move to minipool.cc.
+	(arm_print_value): Rename to print_value and move to minipool.cc.
+	(arm_barrier_cost): Rename to barrier_cost and move to minipool.cc.
+	(arm_add_gc_roots): Call minipools::add_gc_roots.
+	(create_fix_barrier): Move to minipool.cc.
+	(push_minipool_barrier): Likewise.
+	(push_minipool_fix): Likewise.
+	(minipool_obstack): Likewise.
+	(minipool_startobj): Likewise.
+	(struct minipool_node): Likewise.
+	(struct minipool_fixup): Likewise.
+	(MINIPOOL_FIX_SIZE): Likewise.
+	(class minipool): Likewise.
+	(JUMP_TABLES_IN_TEXT_SECTION): Likewise.
+	(get_label_padding): Likewise.
+	(minipool::move_fix_forward_ref): Likewise.
+	(minipool::add_forward_ref): Likewise.
+	(minipool::move_fix_backward_ref): Likewise.
+	(minipool::add_backward_ref): Likewise.
+	(minipool::assign_offsets): Likewise.
+	(minipool::dump): Likewise.
+	(note_invalid_constants): Likewise.
+	(place_minipools): Likewise.
+	(arm_reorg): Call minipools::place_minipools.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	* config/arm/arm.cc (class minipool): New class.
+	(minipool_vector_head): Removed.
+	(minipool_vector_tail): Removed.
+	(minipool_vector_label): Removed.
+	(move_minipool_fix_forward_ref): Convert to ...
+	(minipool::move_fix_forward_ref): ... this.
+	(add_minipool_forward_ref): Convert to ...
+	(minipool::add_forward_ref): ... this.
+	(move_minipool_fix_backward_ref): Convert to ...
+	(minipool::move_fix_backward_ref): ... this.
+	(add_minipool_backward_ref): Convert to ...
+	(minipool::add_backward_ref): ... this.
+	(assign_minipool_offsets): Convert to ...
+	(minipool::assign_offsets): ... this.
+	(dump_minipool): Convert to ...
+	(minipool::dump): ... this.
+	(place_minipools): New function, split out from ...
+	(arm_reorg): ... here.
+
+2026-10-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_addp<mode>_insn): Swap
+	the input operands on big-endian targets.
+	(aarch64_addp<mode><vczle><vczbe>_insn): Likewise.
+	(aarch64_addp<mode>): Swap the input operands on big-endian
+	targets.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/aarch64.md (movti):  Ensure we don't call
+	gen_highpart on a subreg.
+	(addti3): Use pure_register_operand for the destination.
+	(addvti4): Likewise.
+	(uaddvti4): Likewise.
+	(subti3): Likewise.
+	(subvti4): Likewise.
+	(usubti4): Likewise.
+	(<su_optab>mulditi3): Likewise.
+	(multi3): Require pure_register_operand for all operands.
+
+2026-10-14  Jin Ma  <jinma@linux.alibaba.com>
+
+	* sched-deps.cc (sched_analyze_insn): Restrict macro-fusion grouping
+	to Haifa dependency analysis.
+
+2026-10-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-sve.md
+	(*aarch64_vec_shl_insert_into_zero_<mode>): Add an alternative for
+	general registers.  Give the instruction type per alternative.
+	(*aarch64_vec_shl_insert_into_zero_vnx16qi): Likewise.
+
+2026-10-14  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR target/93171
+	* config/rs6000/rs6000.md (New merge field splitter): New define_split
+	pattern. Split disjoint rotate-and-mask OR sequences into rldic + rldimi
+	when both masks are valid and non-overlapping.
+
+2026-10-14  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	Revert:
+	2026-09-28  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR target/126245
+	* config/riscv/riscv.md (neg<mode>cc): Add an expansion for
+	conditional negation of integral values.
+
+2026-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127773
+	* config/i386/i386.cc (ix86_avx_u128_mode_needed): Add LIVE argument.
+	Check live preserved SSE registers before requiring AVX_U128_CLEAN.
+	Do not require clean upper state for callees that clobber no SSE
+	registers, ignoring fixed registers.
+	(ix86_mode_needed): Pass LIVE.
+	(ix86_avx_u128_mode_after): Keep MODE after partial-clobber calls.
+
+2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127877
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Fix
+	shift count check.
+
+2026-10-14  LIU Hao  <lh_mouse@126.com>
+
+	* config/i386/sym-mingw32.cc (HOST_EXTRA_OBJS_SYMBOL): Add explicit
+	initializer to zero.
+
+2026-10-14  Kewen Lin  <linkewen@hygon.cn>
+
+	* builtins.cc (mathfn_built_in_2): Add trigonometric pi-based
+	builtin functions to SEQ_OF_CASE_MATHFN.
+	(builtin_with_linkage_p): Treat trigonometric pi-based builtin
+	functions as library functions and adjust the order.
+
 2026-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/bpf/bpf.opt.urls: Regenerate.

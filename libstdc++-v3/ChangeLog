@@ -1,3 +1,87 @@
+2026-10-14  Nathan Myers  <ncm@cantrip.org>
+
+	* testsuite/21_strings/basic_string/127228.cc:
+	Skip on pre-C++11 ABI.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (_Select_uint_least_t<>): Fix typo in
+	comment.
+	* include/bits/uniform_int_dist.h (_Select_uint_least_t): Remove
+	comment with incomplete sentence.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/alloc_traits.h: Remove trailing whitespace.
+	* include/bits/atomic_base.h: Likewise.
+	* include/bits/ranges_util.h: Likewise.
+	* include/bits/stdexcept_except.h: Likewise.
+	* include/bits/stdexcept_throwdef.h: Likewise.
+	* include/bits/unicode.h: Likewise.
+	* include/std/bit: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/format: Likewise.
+	* include/std/mdspan: Likewise.
+	* include/std/string_view: Likewise.
+	* src/c++20/format-inst.cc: Likewise.
+
+2026-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono.h: Use specific feature test macros
+	instead of checking __cplusplus.
+
+2026-10-14  Hugo Beauzée-Luyssen  <hugo.beauzee@datadoghq.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h: Check __glibcxx_chrono for C++20
+	tzdb features instead of the ABI macros.
+	* include/bits/version.def (chrono): Use extra_cond instead of
+	cxx11abi to also define 201907 for old-ABI-only builds.
+	* include/bits/version.h: Regenerate.
+	* include/std/chrono: Check __cpp_lib_chrono instead of the
+	ABI macros.
+	* testsuite/lib/libstdc++.exp (check_effective_target_tzdb):
+	Replace cxx11_abi check with hosted check and check
+	__cpp_lib_chrono in preprocessor condition.
+	* testsuite/libstdc++-prettyprinters/chrono.cc: Use
+	__cpp_lib_chrono for preprocessor condition and use tzdb for
+	effective target.  Remove dg-additional-options.
+	* testsuite/std/time/format/data_not_present_neg.cc: Use
+	__cpp_lib_chrono for preprocessor conditions and use tzdb for
+	effective target.
+	* testsuite/std/time/format/empty_spec.cc: Use __cpp_lib_chrono
+	for preprocessor conditions.
+	* testsuite/std/time/format/nonlocking.cc: Likewise.
+	* testsuite/std/time/format/pr117214.cc: Likewise.
+	* testsuite/std/time/format/pr119517.cc: Likewise.
+	* testsuite/std/time/format/whitespace.cc: Likewise.
+	* testsuite/std/time/hash.cc: Likewise.
+	* testsuite/std/time/syn_c++20.cc: Fix typo in macro name and
+	expect new value for !_GLIBCXX_USE_DUAL_ABI.
+	* testsuite/std/time/tzdb/1.cc: Require tzdb effective target
+	instead of cxx11_abi.
+	* testsuite/std/time/tzdb_list/requirements.cc: Likewise.
+	* testsuite/std/time/zoned_time/deduction.cc: Likewise.
+	* testsuite/std/time/zoned_time/io.cc: Likewise.
+	* testsuite/std/time/zoned_time/req_neg.cc: Likewise.
+	* testsuite/std/time/zoned_time/requirements.cc: Likewise.
+	* testsuite/std/time/zoned_traits.cc: Likewise.
+
+2026-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	P3104R6
+	* include/bits/version.def: Implement C++29 P3104R6 - Bit permutations.
+	(bitops): Change value from 202606 to 202607.
+	* include/bits/version.h: Regenerate.
+	* include/std/bit (std::bit_repeat, std::bit_reverse,
+	std::bit_compress, std::bit_expand): New function templates for C++29.
+	* src/c++23/std.cc.in (std::bit_repeat, std::bit_reverse,
+	std::bit_compress, std::bit_expand): New exports for C++29.
+	* testsuite/26_numerics/bit/bit.permute/bit_reverse.cc: New test.
+	* testsuite/26_numerics/bit/bit.permute/bit_repeat.cc: New test.
+	* testsuite/26_numerics/bit/bit.permute/bit_compress.cc: New test.
+	* testsuite/26_numerics/bit/bit.permute/bit_expand.cc: New test.
+
 2026-10-13  Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/127228

@@ -1,3 +1,110 @@
+2026-10-14  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/move_numdisp_with_refmods.cob: New test.
+	* cobol.dg/group2/move_numdisp_with_refmods.out: New test.
+
+2026-10-14  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/lto/toplevel-simple-asm-1_0.c: Indent .type directives.
+
+2026-10-14  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* gcc.target/aarch64/neon/discarded_result.c: Use -ftrapping-math.
+
+2026-10-14  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/dyn_groupprivate-1.f90: Add tests related to
+	the 'cgroup' modifier.
+	* gfortran.dg/gomp/dyn_groupprivate-2.f90: Likewise.
+
+2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127811
+	* g++.dg/vect/pr127811-2.cc: New testcase.
+
+2026-10-14  From: Jonas Hansen  <jhansen@roku.com>
+
+	PR tree-optimization/127416
+	* g++.dg/tree-ssa/ssa-dse-1.C (byte): Remove enum.
+	(fixbuf): Restore char buffer elements. Update the dump assertion
+	to check deletion of the redundant whole-object clear.
+	* g++.dg/tree-ssa/ssa-dse-4.C: New test preserving the enum variant
+	and partial-DSE assertion.
+
+2026-10-14  From: Jonas Hansen  <jhansen@roku.com>
+
+	PR tree-optimization/127416
+	* g++.dg/tree-ssa/constexpr-array-padding.C: New test.
+	* g++.dg/tree-ssa/ssa-dse-1.C (byte): New enum.
+	(fixbuf): Use byte as the buffer element type.
+
+2026-10-14  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127796
+	* gcc.target/sparc/reorg-skip-labels-debug.c: New test.
+
+2026-10-14  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR rtl-optimization/127726
+	* gcc.target/sparc/resource-live-search-debug.c: New test.
+
+2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127876
+	* gcc.dg/vect/vect-pr127876-1.c: New testcase.
+	* gcc.dg/vect/vect-pr127876-2.c: Likewise.
+
+2026-10-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/simd/addp-same-low_1.c: Also run on big-endian
+	targets.
+	* gcc.target/aarch64/simd/vpadd_lane_1.c: New test.
+	* gcc.target/aarch64/simd/vpadd_lane_2.c: Likewise.
+
+2026-10-14  Jin Ma  <jinma@linux.alibaba.com>
+
+	* gcc.target/riscv/sched-fusion-selective.c: New test.
+	* gcc.target/riscv/sched-fusion-selective-ice.c: Likewise.
+
+2026-10-14  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve/copsi.c (func_init3): Update expected
+	assembly.
+	* gcc.target/aarch64/sve/insr-zero-gpr.c: New test.
+	* gcc.target/aarch64/sve/insr-zero-gpr_run.c: New test.
+
+2026-10-14  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR target/123055
+	* gcc.target/powerpc/pr116030.c: Remove scan-assembler-not "stxvd2x".
+
+2026-10-14  Kishan Parmar  <kishan@linux.ibm.com>
+
+	* gcc.target/powerpc/pr93171.c: New testcase.
+
+2026-10-14  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	Revert:
+	2026-10-14  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR target/126245
+	* gcc.target/riscv/pr126245-negcc.c: New test.
+
+2026-10-14  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127773
+	* gcc.target/i386/pr127773-1.c: New test.
+	* gcc.target/i386/pr127773-2.c: New test.
+	* gcc.target/i386/pr127773-3.c: New test.
+	* gcc.target/i386/pr127773-4.c: New test.
+	* gcc.target/i386/pr127773-5.c: New test.
+	* gcc.target/i386/pr127773-6.c: New test.
+
+2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127877
+	* gcc.dg/vect/vect-pr127877.c: New testcase.
+
 2026-10-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/110421
