@@ -3357,7 +3357,7 @@ int pclose (FILE*);
   FILE* fopen (const char*, const char*);
 [[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* fmemopen(void *, size_t, const char *);
-[[gnu::malloc, gnu::malloc (fclose, 1)]]
+[[gnu::malloc, gnu::malloc (pclose, 1)]]
   FILE* popen (const char*, const char*);
 [[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* tmpfile (void);
