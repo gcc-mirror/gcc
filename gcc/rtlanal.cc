@@ -3416,7 +3416,8 @@ replace_rtx (rtx x, rtx from, rtx to, bool all_regs)
    the change in LABEL_NUSES if UPDATE_LABEL_NUSES.  */
 
 void
-replace_label (rtx *loc, rtx old_label, rtx new_label, bool update_label_nuses)
+replace_label (rtx *loc, rtx_insn *old_label, rtx_insn *new_label,
+	       bool update_label_nuses)
 {
   /* Handle jump tables specially, since ADDR_{DIFF_,}VECs can be long.  */
   rtx x = *loc;
