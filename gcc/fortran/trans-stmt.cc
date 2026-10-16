@@ -8010,8 +8010,17 @@ gfc_trans_deallocate (gfc_code *code)
       if (expr->rank || is_coarray_array)
 	{
 	  gfc_ref *ref;
+	  /* class.cc(finalize_component) generates these, when a
+	     finalizable entity has a non-allocatable derived type array
+	     component, which has allocatable components.  EXPR then has the
+	     type of its last component, not of the array elements.  */
+	  bool fini_comp_array
+	    = (TREE_CODE (se.expr) == COMPONENT_REF
+	       && TREE_CODE (TREE_TYPE (se.expr)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (TREE_TYPE (se.expr))) == RECORD_TYPE);
 
-	  if (gfc_bt_struct (expr->ts.type)
+	  if (!fini_comp_array
+	      && gfc_bt_struct (expr->ts.type)
 	      && expr->ts.u.derived->attr.alloc_comp
 	      && !gfc_is_finalizable (expr->ts.u.derived, NULL))
 	    {
@@ -8058,16 +8067,10 @@ gfc_trans_deallocate (gfc_code *code)
 						caf_dtype);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
-	  else if (TREE_CODE (se.expr) == COMPONENT_REF
-		   && TREE_CODE (TREE_TYPE (se.expr)) == ARRAY_TYPE
-		   && TREE_CODE (TREE_TYPE (TREE_TYPE (se.expr)))
-			== RECORD_TYPE)
+	  else if (fini_comp_array)
 	    {
-	      /* class.cc(finalize_component) generates these, when a
-		 finalizable entity has a non-allocatable derived type array
-		 component, which has allocatable components. Obtain the
-		 derived type of the array and deallocate the allocatable
-		 components. */
+	      /* Obtain the derived type of the array and deallocate the
+		 allocatable components.  */
 	      for (ref = expr->ref; ref; ref = ref->next)
 		{
 		  if (ref->u.c.component->attr.dimension
