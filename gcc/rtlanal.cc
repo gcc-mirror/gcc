@@ -4506,7 +4506,7 @@ keep_with_call_p (const rtx_insn *insn)
    not apply to the fallthru case of a conditional jump.  */
 
 bool
-label_is_jump_target_p (const_rtx label, const rtx_insn *jump_insn)
+label_is_jump_target_p (const rtx_insn *label, const rtx_insn *jump_insn)
 {
   rtx tmp = JUMP_LABEL (jump_insn);
   rtx_jump_table_data *table;
