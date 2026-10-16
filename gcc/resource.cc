@@ -619,13 +619,13 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 /* Return TRUE if INSN is a return, possibly with a filled delay slot.  */
 
 static bool
-return_insn_p (const_rtx insn)
+return_insn_p (const rtx_insn *insn)
 {
   if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
     return true;
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    return return_insn_p (XVECEXP (PATTERN (insn), 0, 0));
+    return return_insn_p (as_a <rtx_insn *> (XVECEXP (PATTERN (insn), 0, 0)));
 
   return false;
 }
