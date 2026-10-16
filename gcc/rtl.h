@@ -3465,7 +3465,7 @@ extern rtx_insn *next_nonnote_nondebug_insn_bb (rtx_insn *);
 extern rtx_insn *prev_real_insn (rtx_insn *);
 extern rtx_insn *next_real_insn (rtx_insn *);
 extern rtx_insn *prev_real_nondebug_insn (rtx_insn *);
-extern rtx_insn *next_real_nondebug_insn (rtx);
+extern rtx_insn *next_real_nondebug_insn (rtx_insn *);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
 extern bool active_insn_p (const rtx_insn *);

@@ -3281,7 +3281,7 @@ relax_delay_slots (rtx_insn *first)
 	 We use next_real_nondebug_insn instead of next_active_insn so we
 	 don't skip USE-markers, or we'll end up with incorrect
 	 liveness info.  */
-      trial = next_real_nondebug_insn (target_label);
+      trial = next_real_nondebug_insn (as_a<rtx_insn *> (target_label));
       if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
 	  && redundant_insn (trial, insn, vNULL)
 	  && ! can_throw_internal (trial))
