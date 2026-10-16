@@ -133,7 +133,7 @@ extern void reemit_notes (rtx_insn *);
 
 /* Functions in sel-sched-ir.cc.  */
 extern void sel_find_rgns (void);
-extern void sel_mark_hard_insn (rtx);
+extern void sel_mark_hard_insn (rtx_insn *);
 
 extern size_t dfa_state_size;
 

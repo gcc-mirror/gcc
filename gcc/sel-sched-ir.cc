@@ -3311,7 +3311,7 @@ has_dependence_note_dep (insn_t pro, ds_t ds ATTRIBUTE_UNUSED)
 
 /* Mark the insn as having a hard dependence that prevents speculation.  */
 void
-sel_mark_hard_insn (rtx insn)
+sel_mark_hard_insn (rtx_insn *insn)
 {
   int i;
 
