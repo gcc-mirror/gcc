@@ -5859,20 +5859,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_and (convert?:s@4 (shift:s@5 (convert1?@3 @0) INTEGER_CST@1))
            INTEGER_CST@2)
    (if (tree_nop_conversion_p (TREE_TYPE (@4), TREE_TYPE (@5))
-	&& TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
 	&& tree_fits_uhwi_p (@1)
 	&& tree_to_uhwi (@1) > 0
 	&& tree_to_uhwi (@1) < TYPE_PRECISION (type))
     (with
      {
        unsigned int shiftc = tree_to_uhwi (@1);
-       unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (@2);
-       unsigned HOST_WIDE_INT newmask, zerobits = 0;
+       wide_int mask = wi::to_wide (@2);
+       wide_int newmask, zerobits = wi::zero (TYPE_PRECISION (type));
        tree shift_type = TREE_TYPE (@3);
        unsigned int prec;
 
        if (shift == LSHIFT_EXPR)
-	 zerobits = ((HOST_WIDE_INT_1U << shiftc) - 1);
+	 zerobits = wi::mask (shiftc, false, TYPE_PRECISION (type));
        else if (shift == RSHIFT_EXPR
 		&& type_has_mode_precision_p (shift_type))
 	 {
@@ -5896,12 +5895,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      is all ones.  */
 		 }
 	     }
-	   zerobits = HOST_WIDE_INT_M1U;
+	   zerobits = wi::minus_one (TYPE_PRECISION (type));
 	   if (shiftc < prec)
-	     {
-	       zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
-	       zerobits <<= prec - shiftc;
-	     }
+	      zerobits = wi::mask (prec - shiftc, true, TYPE_PRECISION (type));
 	   /* For arithmetic shift if sign bit could be set, zerobits
 	      can contain actually sign bits, so no transformation is
 	      possible, unless MASK masks them all away.  In that
@@ -5909,35 +5905,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   if (!TYPE_UNSIGNED (TREE_TYPE (@3))
 	       && prec == TYPE_PRECISION (TREE_TYPE (@3)))
 	     {
-	       if ((mask & zerobits) == 0)
+	       if ((mask & zerobits) == wi::zero (TYPE_PRECISION (type)))
 		 shift_type = unsigned_type_for (TREE_TYPE (@3));
 	       else
-		 zerobits = 0;
+		 zerobits = wi::zero (TYPE_PRECISION (type));
 	     }
 	 }
      }
      /* ((X << 16) & 0xff00) is (X, 0).  */
      (if ((mask & zerobits) == mask)
       { build_int_cst (type, 0); }
-      (with { newmask = mask | zerobits; }
-       (if (newmask != mask && (newmask & (newmask + 1)) == 0)
-        (with
-	 {
-	   /* Only do the transformation if NEWMASK is some integer
-	      mode's mask.  */
-	   for (prec = BITS_PER_UNIT;
-	        prec < HOST_BITS_PER_WIDE_INT; prec <<= 1)
-	     if (newmask == (HOST_WIDE_INT_1U << prec) - 1)
-	       break;
-	 }
-	 (if (prec < HOST_BITS_PER_WIDE_INT
-	      || newmask == HOST_WIDE_INT_M1U)
+      (with { newmask = (mask | zerobits);
+	      /* Only do the transformation if NEWMASK is some integer mode's
+		 mask, i.e.  an all-ones value (2^n - 1) where n is a power of
+		 2 precision >= BITS_PER_UNIT.  We check this by testing
+		 whether newmask + 1 is a power of two via wi::exact_log2.  */
+	      int lg;
+	      /* newmask + 1 overflows at full type precision (e.g.  128-bit
+		 all-ones), so handle that case directly.  */
+	      if (newmask == wi::minus_one (TYPE_PRECISION (type)))
+		lg = TYPE_PRECISION (type);
+	      else
+		lg = wi::exact_log2 (newmask + 1);
+	      unsigned int newmask_prec = lg >= 0 ? (unsigned int) lg : 0; }
+       (if (newmask != mask
+	    && lg > 0 && (newmask_prec & (newmask_prec - 1)) == 0
+	    && newmask_prec >= BITS_PER_UNIT)
 	  (with
-	   { tree newmaskt = build_int_cst_type (TREE_TYPE (@2), newmask); }
+	   { tree newmaskt = wide_int_to_tree (TREE_TYPE (@2), newmask); }
 	   (if (!tree_int_cst_equal (newmaskt, @2))
 	    (if (shift_type != TREE_TYPE (@3))
 	     (bit_and (convert (shift:shift_type (convert @3) @1)) { newmaskt; })
-	     (bit_and @4 { newmaskt; })))))))))))))
+	     (bit_and @4 { newmaskt; })))))))))))
 
 /* ((1 << n) & M) != 0  -> n == log2 (M) */
 (for cmp (ne eq)
