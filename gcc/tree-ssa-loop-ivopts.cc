@@ -467,6 +467,7 @@ struct iv_cand
 			   computation of the value.  */
   unsigned cost;	/* Cost of the candidate.  */
   unsigned cost_step;	/* Cost of the candidate's increment operation.  */
+  unsigned nregs;	/* Total number of registers used by the candidate.  */
   struct iv_use *ainc_use; /* For IP_{BEFORE,AFTER}_USE candidates, the place
 			      where it is incremented.  */
   bitmap inv_vars;	/* The list of invariant ssa_vars used in step of the
@@ -636,6 +637,10 @@ struct ivopts_data
   /* The maximum invariant expression id.  */
   unsigned max_inv_expr_id;
 
+  /* Number of registers used by each invariant variable and expression.  */
+  vec<unsigned> inv_var_nregs;
+  vec<unsigned> inv_expr_nregs;
+
   /* Number of no_overflow BIVs which are not used in memory address.  */
   unsigned bivs_not_used_in_addr;
 
@@ -685,6 +690,12 @@ public:
   /* The number of invariants needed, including both invariant variants and
      invariant expressions.  */
   unsigned n_invs;
+
+  /* Total number of registers used by candidates.  */
+  unsigned n_cand_regs;
+
+  /* Total number of registers used by invariants.  */
+  unsigned n_inv_regs;
 
   /* Total cost of expressing uses.  */
   comp_cost cand_use_cost;
@@ -1082,6 +1093,8 @@ tree_ssa_iv_optimize_init (struct ivopts_data *data)
   data->important_candidates = BITMAP_ALLOC (NULL);
   data->max_inv_var_id = 0;
   data->max_inv_expr_id = 0;
+  data->inv_var_nregs.create (0);
+  data->inv_expr_nregs.create (0);
   data->niters = NULL;
   data->vgroups.create (20);
   data->vcands.create (20);
@@ -5974,6 +5987,18 @@ find_iv_candidates (struct ivopts_data *data)
     }
 }
 
+/* Return the number of registers needed to hold a value of a given TYPE.  */
+
+static unsigned
+nregs_per_value (tree type)
+{
+  machine_mode mode = TYPE_MODE (type);
+  if (SCALAR_INT_MODE_P (mode))
+    return MAX (1u, targetm.class_max_nregs (GENERAL_REGS, mode));
+
+  return 1;
+}
+
 /* Determines costs of computing use of iv with an iv candidate.  */
 
 static void
@@ -6139,6 +6164,7 @@ determine_iv_cost (struct ivopts_data *data, struct iv_cand *cand)
 
   cand->cost = cost;
   cand->cost_step = cost_step;
+  cand->nregs = nregs_per_value (TREE_TYPE (cand->iv->base));
 }
 
 /* Determines costs of computation of the candidates.  */
@@ -6168,16 +6194,18 @@ determine_iv_costs (struct ivopts_data *data)
     fprintf (dump_file, "\n");
 }
 
-/* Estimate register pressure for loop having N_INVS invariants and N_CANDS
-   induction variables.  Note N_INVS includes both invariant variables and
-   invariant expressions.  */
+/* Estimate register pressure for loop whose invariants occupy N_INV_REGS
+   registers and whose induction variables occupy N_CAND_REGS registers.
+   Note N_INV_REGS covers both invariant variables and invariant expressions.
+   All counts, including DATA->regs_used, are in GENERAL_REGS hard registers,
+   the same units as target_avail_regs.  */
 
 static unsigned
-ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
-			      unsigned n_cands)
+ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_inv_regs,
+			      unsigned n_cand_regs)
 {
   unsigned cost;
-  unsigned n_old = data->regs_used, n_new = n_invs + n_cands;
+  unsigned n_old = data->regs_used, n_new = n_inv_regs + n_cand_regs;
   unsigned regs_needed = n_new + n_old, available_regs = target_avail_regs;
   bool speed = data->speed;
 
@@ -6194,13 +6222,13 @@ ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
      As we tend to spill invariants here, only take loading the
      invariant into account, because the invariant won't change for the
      duration of the loop and storing it every iteration is unnecessary. */
-  else if (n_cands <= available_regs)
+  else if (n_cand_regs <= available_regs)
     cost = target_spill_cost [speed] * (regs_needed - available_regs) / 2;
   /* If both IV cands and invariants spill, calculate additional cost for
      having to store spilled candidates. */
   else
-    cost = (target_spill_cost [speed] * (regs_needed - available_regs) / 2
-	    + target_spill_cost[speed] * (n_cands - available_regs) / 2);
+    cost = (target_spill_cost[speed] * (regs_needed - available_regs) / 2
+	    + target_spill_cost[speed] * (n_cand_regs - available_regs) / 2);
 
   return cost;
 }
@@ -6210,7 +6238,7 @@ ivopts_estimate_reg_pressure (struct ivopts_data *data, unsigned n_invs,
 static void
 determine_set_costs (struct ivopts_data *data)
 {
-  unsigned j, n;
+  unsigned j, n, n_values;
   gphi *phi;
   gphi_iterator psi;
   tree op;
@@ -6227,6 +6255,7 @@ determine_set_costs (struct ivopts_data *data)
     }
 
   n = 0;
+  n_values = 0;
   for (psi = gsi_start_phis (loop->header); !gsi_end_p (psi); gsi_next (&psi))
     {
       phi = psi.phi ();
@@ -6242,25 +6271,41 @@ determine_set_costs (struct ivopts_data *data)
 	  && !INTEGRAL_TYPE_P (TREE_TYPE (op)))
 	continue;
 
-      n++;
+      n += nregs_per_value (TREE_TYPE (op));
+      n_values++;
     }
+
+  data->inv_expr_nregs.safe_grow_cleared (data->max_inv_expr_id + 1);
+  data->inv_var_nregs.safe_grow_cleared (data->max_inv_var_id + 1);
+
+  for (hash_table<iv_inv_expr_hasher>::iterator it
+       = data->inv_expr_tab->begin ();
+       it != data->inv_expr_tab->end (); ++it)
+    data->inv_expr_nregs[(*it)->id] = nregs_per_value (TREE_TYPE ((*it)->expr));
 
   EXECUTE_IF_SET_IN_BITMAP (data->relevant, 0, j, bi)
     {
       struct version_info *info = ver_info (data, j);
 
+      if (info->inv_id)
+	data->inv_var_nregs[info->inv_id]
+	  = nregs_per_value (TREE_TYPE (info->name));
+
       if (info->inv_id && info->has_nonlin_use)
-	n++;
+	{
+	  n += data->inv_var_nregs[info->inv_id];
+	  n_values++;
+	}
     }
 
   data->regs_used = n;
   if (dump_file && (dump_flags & TDF_DETAILS))
-    fprintf (dump_file, "  regs_used %d\n", n);
+    fprintf (dump_file, "  regs_used %u (%u values)\n", n, n_values);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "  cost for size:\n");
-      fprintf (dump_file, "  ivs\tcost\n");
+      fprintf (dump_file, "  regs\tcost\n");
       for (j = 0; j <= 2 * target_avail_regs; j++)
 	fprintf (dump_file, "  %d\t%d\n", j,
 		 ivopts_estimate_reg_pressure (data, 0, j));
@@ -6322,15 +6367,20 @@ iv_ca_recount_cost (struct ivopts_data *data, class iv_ca *ivs)
   comp_cost cost = ivs->cand_use_cost;
 
   cost += ivs->cand_cost;
-  cost += ivopts_estimate_reg_pressure (data, ivs->n_invs, ivs->n_cands);
+  cost
+    += ivopts_estimate_reg_pressure (data, ivs->n_inv_regs, ivs->n_cand_regs);
   ivs->cost = cost;
+
+  gcc_checking_assert (ivs->n_cand_regs >= ivs->n_cands
+		       && ivs->n_inv_regs >= ivs->n_invs);
 }
 
 /* Remove use of invariants in set INVS by decreasing counter in N_INV_USES
    and IVS.  */
 
 static void
-iv_ca_set_remove_invs (class iv_ca *ivs, bitmap invs, unsigned *n_inv_uses)
+iv_ca_set_remove_invs (class iv_ca *ivs, bitmap invs, unsigned *n_inv_uses,
+		       const vec<unsigned> &nregs)
 {
   bitmap_iterator bi;
   unsigned iid;
@@ -6343,7 +6393,10 @@ iv_ca_set_remove_invs (class iv_ca *ivs, bitmap invs, unsigned *n_inv_uses)
     {
       n_inv_uses[iid]--;
       if (n_inv_uses[iid] == 0)
-	ivs->n_invs--;
+	{
+	  ivs->n_invs--;
+	  ivs->n_inv_regs -= nregs[iid];
+	}
     }
 }
 
@@ -6369,15 +6422,22 @@ iv_ca_set_no_cp (struct ivopts_data *data, class iv_ca *ivs,
     {
       bitmap_clear_bit (ivs->cands, cid);
       if (!cp->cand->doloop_p || !targetm.have_count_reg_decr_p)
-	ivs->n_cands--;
+	{
+	  ivs->n_cands--;
+	  ivs->n_cand_regs -= cp->cand->nregs;
+	}
       ivs->cand_cost -= cp->cand->cost;
-      iv_ca_set_remove_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses);
-      iv_ca_set_remove_invs (ivs, cp->cand->inv_exprs, ivs->n_inv_expr_uses);
+      iv_ca_set_remove_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses,
+			     data->inv_var_nregs);
+      iv_ca_set_remove_invs (ivs, cp->cand->inv_exprs, ivs->n_inv_expr_uses,
+			     data->inv_expr_nregs);
     }
 
   ivs->cand_use_cost -= cp->cost;
-  iv_ca_set_remove_invs (ivs, cp->inv_vars, ivs->n_inv_var_uses);
-  iv_ca_set_remove_invs (ivs, cp->inv_exprs, ivs->n_inv_expr_uses);
+  iv_ca_set_remove_invs (ivs, cp->inv_vars, ivs->n_inv_var_uses,
+			 data->inv_var_nregs);
+  iv_ca_set_remove_invs (ivs, cp->inv_exprs, ivs->n_inv_expr_uses,
+			 data->inv_expr_nregs);
   iv_ca_recount_cost (data, ivs);
 }
 
@@ -6385,7 +6445,8 @@ iv_ca_set_no_cp (struct ivopts_data *data, class iv_ca *ivs,
    IVS.  */
 
 static void
-iv_ca_set_add_invs (class iv_ca *ivs, bitmap invs, unsigned *n_inv_uses)
+iv_ca_set_add_invs (class iv_ca *ivs, bitmap invs, unsigned *n_inv_uses,
+		    const vec<unsigned> &nregs)
 {
   bitmap_iterator bi;
   unsigned iid;
@@ -6398,7 +6459,10 @@ iv_ca_set_add_invs (class iv_ca *ivs, bitmap invs, unsigned *n_inv_uses)
     {
       n_inv_uses[iid]++;
       if (n_inv_uses[iid] == 1)
-	ivs->n_invs++;
+	{
+	  ivs->n_invs++;
+	  ivs->n_inv_regs += nregs[iid];
+	}
     }
 }
 
@@ -6427,15 +6491,22 @@ iv_ca_set_cp (struct ivopts_data *data, class iv_ca *ivs,
 	{
 	  bitmap_set_bit (ivs->cands, cid);
 	  if (!cp->cand->doloop_p || !targetm.have_count_reg_decr_p)
-	    ivs->n_cands++;
+	    {
+	      ivs->n_cands++;
+	      ivs->n_cand_regs += cp->cand->nregs;
+	    }
 	  ivs->cand_cost += cp->cand->cost;
-	  iv_ca_set_add_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses);
-	  iv_ca_set_add_invs (ivs, cp->cand->inv_exprs, ivs->n_inv_expr_uses);
+	  iv_ca_set_add_invs (ivs, cp->cand->inv_vars, ivs->n_inv_var_uses,
+			      data->inv_var_nregs);
+	  iv_ca_set_add_invs (ivs, cp->cand->inv_exprs, ivs->n_inv_expr_uses,
+			      data->inv_expr_nregs);
 	}
 
       ivs->cand_use_cost += cp->cost;
-      iv_ca_set_add_invs (ivs, cp->inv_vars, ivs->n_inv_var_uses);
-      iv_ca_set_add_invs (ivs, cp->inv_exprs, ivs->n_inv_expr_uses);
+      iv_ca_set_add_invs (ivs, cp->inv_vars, ivs->n_inv_var_uses,
+			  data->inv_var_nregs);
+      iv_ca_set_add_invs (ivs, cp->inv_exprs, ivs->n_inv_expr_uses,
+			  data->inv_expr_nregs);
       iv_ca_recount_cost (data, ivs);
     }
 }
@@ -6639,6 +6710,8 @@ iv_ca_new (struct ivopts_data *data)
   nw->cands = BITMAP_ALLOC (NULL);
   nw->n_cands = 0;
   nw->n_invs = 0;
+  nw->n_cand_regs = 0;
+  nw->n_inv_regs = 0;
   nw->cand_use_cost = no_cost;
   nw->cand_cost = 0;
   nw->n_inv_var_uses = XCNEWVEC (unsigned, data->max_inv_var_id + 1);
@@ -6673,7 +6746,13 @@ iv_ca_dump (struct ivopts_data *data, FILE *file, class iv_ca *ivs)
   fprintf (file, "  cost: %" PRId64 " (complexity %d)\n", cost.cost,
 	   cost.complexity);
   fprintf (file, "  reg_cost: %d\n",
-	   ivopts_estimate_reg_pressure (data, ivs->n_invs, ivs->n_cands));
+	   ivopts_estimate_reg_pressure (data, ivs->n_inv_regs,
+					 ivs->n_cand_regs));
+  fprintf (file,
+	   "  regs: %u (%u values) cands, %u (%u values) invs, "
+	   "%u used\n",
+	   ivs->n_cand_regs, ivs->n_cands, ivs->n_inv_regs, ivs->n_invs,
+	   data->regs_used);
   fprintf (file, "  cand_cost: %" PRId64 "\n  cand_group_cost: "
 	   "%" PRId64 " (complexity %d)\n", ivs->cand_cost,
 	   ivs->cand_use_cost.cost, ivs->cand_use_cost.complexity);
@@ -8057,6 +8136,9 @@ free_loop_data (struct ivopts_data *data)
   data->max_inv_var_id = 0;
   data->max_inv_expr_id = 0;
 
+  data->inv_var_nregs.truncate (0);
+  data->inv_expr_nregs.truncate (0);
+
   FOR_EACH_VEC_ELT (decl_rtl_to_reset, i, obj)
     SET_DECL_RTL (obj, NULL_RTX);
 
@@ -8082,6 +8164,8 @@ tree_ssa_iv_optimize_finalize (struct ivopts_data *data)
   decl_rtl_to_reset.release ();
   data->vgroups.release ();
   data->vcands.release ();
+  data->inv_var_nregs.release ();
+  data->inv_expr_nregs.release ();
   delete data->inv_expr_tab;
   data->inv_expr_tab = NULL;
   free_affine_expand_cache (&data->name_expansion_cache);
