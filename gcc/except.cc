@@ -1868,7 +1868,7 @@ get_eh_landing_pad_from_rtx (const_rtx insn)
    have a reachable region within this function.  */
 
 eh_region
-get_eh_region_from_rtx (const_rtx insn)
+get_eh_region_from_rtx (const rtx_insn *insn)
 {
   eh_landing_pad lp;
   eh_region r;
