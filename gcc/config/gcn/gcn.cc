@@ -55,6 +55,7 @@
 #include "cgraph.h"
 #include "case-cfn-macros.h"
 #include "opts.h"
+#include "target-globals.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -108,6 +109,13 @@ const struct gcn_device_def gcn_devices[] = {
      GEN_VER, #ARCH_FAM},
 #include "gcn-devices.def"
 };
+
+/* Target state for non-kernel, normal functions. (Kernels use
+   default_target_globals.)  */
+static GTY (()) struct target_globals *normal_function_globals;
+
+/* Whether the last function passed to gcn_set_current_function was a kernel. */
+static bool old_is_kernel = true;
 
 /* }}}  */
 /* {{{ Initialization and options.  */
@@ -1492,6 +1500,26 @@ gcn_stepped_zero_int_parallel_p (rtx op, int step)
   return true;
 }
 
+/* Return true if FNDECL is a kernel function.  A function is treated as a
+   kernel if it has the "amdgpu_hsa_kernel" attribute, or it is the main
+   function, or it has the "omp target entrypoint" attribute.  */
+
+static bool
+gcn_is_kernel (tree fndecl)
+{
+  if (!fndecl)
+    return true;
+
+  tree attr = lookup_attribute ("amdgpu_hsa_kernel", DECL_ATTRIBUTES (fndecl));
+  if (!attr)
+    attr = lookup_attribute ("amdgpu_hsa_kernel",
+			     TYPE_ATTRIBUTES (TREE_TYPE (fndecl)));
+
+  return attr || (DECL_NAME (fndecl) && MAIN_NAME_P (DECL_NAME (fndecl)))
+	 || lookup_attribute ("omp target entrypoint", DECL_ATTRIBUTES (fndecl))
+	      != NULL_TREE;
+}
+
 /* }}}  */
 /* {{{ Addresses, pointers and moves.  */
 
@@ -2604,10 +2632,11 @@ gcn_conditional_register_usage (void)
        i++)
     fixed_regs[VGPR_REGNO (i)] = call_used_regs[VGPR_REGNO (i)] = 1;
 
-  if (!cfun || !cfun->machine)
+  if (!cfun)
     return;
 
-  if (cfun->machine->normal_function)
+  if (!gcn_is_kernel (cfun->decl)
+      || (cfun->machine && cfun->machine->normal_function))
     {
       /* Restrict the set of SGPRs, VGPRs and AVGPRs used by non-kernel
 	 functions.  */
@@ -2624,6 +2653,9 @@ gcn_conditional_register_usage (void)
 	fixed_regs[i] = 1, call_used_regs[i] = 1;
       return;
     }
+
+  if (!cfun->machine)
+    return;
 
   /* If the set of requested args is the default set, nothing more needs to
      be done.  */
@@ -4108,6 +4140,39 @@ gcn_expand_divmod_libfunc (rtx libfunc, machine_mode mode, rtx op0, rtx op1,
   *quot = gen_rtx_REG (mode, RETURN_VALUE_REG);
   *rem = gen_rtx_REG (mode,
 		      RETURN_VALUE_REG + (wideinnermode == TImode ? 2 : 1));
+}
+
+/* Implement TARGET_SET_CURRENT_FUNCTION.  Set up the target-dependent global
+   state depending on whether the current function is a kernel.  */
+
+static void
+gcn_set_current_function (tree fndecl)
+{
+  bool is_kernel = gcn_is_kernel (fndecl);
+  if (is_kernel == old_is_kernel)
+    return;
+
+  if (!is_kernel)
+    {
+      if (!normal_function_globals)
+	normal_function_globals = save_target_globals_default_opts ();
+      else
+	restore_target_globals (normal_function_globals);
+    }
+  else
+    restore_target_globals (&default_target_globals);
+
+  old_is_kernel = is_kernel;
+}
+
+/* Implement TARGET_PREPARE_PCH_SAVE.  */
+
+static void
+gcn_prepare_pch_save (void)
+{
+  restore_target_globals (&default_target_globals);
+  normal_function_globals = NULL;
+  old_is_kernel = true;
 }
 
 /* }}}  */
@@ -8738,6 +8803,8 @@ gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
 #define TARGET_MODES_TIEABLE_P gcn_modes_tieable_p
 #undef  TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE gcn_option_override
+#undef  TARGET_PREPARE_PCH_SAVE
+#define TARGET_PREPARE_PCH_SAVE gcn_prepare_pch_save
 #undef  TARGET_PRETEND_OUTGOING_VARARGS_NAMED
 #define TARGET_PRETEND_OUTGOING_VARARGS_NAMED \
   gcn_pretend_outgoing_varargs_named
@@ -8755,6 +8822,8 @@ gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
 #define TARGET_SECTION_TYPE_FLAGS gcn_section_type_flags
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P gcn_scalar_mode_supported_p
+#undef  TARGET_SET_CURRENT_FUNCTION
+#define TARGET_SET_CURRENT_FUNCTION gcn_set_current_function
 #undef  TARGET_SIMD_CLONE_ADJUST
 #define TARGET_SIMD_CLONE_ADJUST gcn_simd_clone_adjust
 #undef  TARGET_SIMD_CLONE_COMPUTE_VECSIZE_AND_SIMDLEN
