@@ -2538,7 +2538,7 @@
 	<para>
 	  A range-type iterator is an iterator that is used to go over a
 	  sequence of elements, as returned by a container's
-	  <function>find</function> method.
+	  <function>begin</function> and <function>end</function> methods.
 	</para>
 
 	<para>
