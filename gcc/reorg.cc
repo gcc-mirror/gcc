@@ -186,7 +186,7 @@ static rtx_insn *delete_from_delay_slot (rtx_insn *);
 static void delete_scheduled_jump (rtx_insn *);
 static void note_delay_statistics (int, int);
 static int get_jump_flags (const rtx_insn *, rtx);
-static int mostly_true_jump (rtx);
+static int mostly_true_jump (rtx_insn *);
 static rtx get_branch_condition (const rtx_insn *, rtx);
 static bool condition_dominates_p (rtx, const rtx_insn *);
 static bool redirect_with_delay_slots_safe_p (rtx_insn *, rtx, rtx);
@@ -775,7 +775,7 @@ get_jump_flags (const rtx_insn *insn, rtx label)
    return 0 and if the branch is highly unlikely to be taken, return -1.  */
 
 static int
-mostly_true_jump (rtx jump_insn)
+mostly_true_jump (rtx_insn *jump_insn)
 {
   /* If branch probabilities are available, then use that number since it
      always gives a correct answer.  */
