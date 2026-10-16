@@ -6416,17 +6416,17 @@ struct usage_insns
      to use the original reg value again in the next insns we can try
      to use the value in a hard register from a reload insn of the
      current insn.  */
-  rtx insns;
+  rtx_insn_list *insns;
 };
 
 /* Map: regno -> corresponding pseudo usage insns.  */
 static struct usage_insns *usage_insns;
 
 static void
-setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
+setup_next_usage_insn (int regno, rtx_insn *insn, int reloads_num, bool after_p)
 {
   usage_insns[regno].check = curr_usage_insns_check;
-  usage_insns[regno].insns = insn;
+  usage_insns[regno].insns = gen_rtx_INSN_LIST (VOIDmode, insn, nullptr);
   usage_insns[regno].reloads_num = reloads_num;
   usage_insns[regno].calls_num = calls_num;
   usage_insns[regno].after_p = after_p;
@@ -6442,16 +6442,14 @@ setup_next_usage_insn (int regno, rtx insn, int reloads_num, bool after_p)
 static void
 add_next_usage_insn (int regno, rtx_insn *insn, int reloads_num)
 {
-  rtx next_usage_insns;
+  rtx_insn_list *next_usage_insns;
 
   if (usage_insns[regno].check == curr_usage_insns_check
       && (next_usage_insns = usage_insns[regno].insns) != NULL_RTX
       && DEBUG_INSN_P (insn))
     {
       /* Check that we did not add the debug insn yet.	*/
-      if (next_usage_insns != insn
-	  && (GET_CODE (next_usage_insns) != INSN_LIST
-	      || XEXP (next_usage_insns, 0) != insn))
+      if (next_usage_insns->insn () != insn)
 	usage_insns[regno].insns = gen_rtx_INSN_LIST (VOIDmode, insn,
 						      next_usage_insns);
     }
@@ -6463,16 +6461,21 @@ add_next_usage_insn (int regno, rtx_insn *insn, int reloads_num)
 
 /* Return first non-debug insn in list USAGE_INSNS.  */
 static rtx_insn *
-skip_usage_debug_insns (rtx usage_insns)
+skip_usage_debug_insns (rtx_insn_list *usage_insns)
 {
-  rtx insn;
+  rtx_insn_list *next;
 
-  /* Skip debug insns.  */
-  for (insn = usage_insns;
-       insn != NULL_RTX && GET_CODE (insn) == INSN_LIST;
-       insn = XEXP (insn, 1))
-    ;
-  return safe_as_a <rtx_insn *> (insn);
+  /* All but the last insn are debug insns.  Skip them.  */
+  while (usage_insns)
+    {
+      next = usage_insns->next ();
+      if (next)
+	usage_insns = next;
+      else
+	return usage_insns->insn ();
+    }
+
+  return nullptr;
 }
 
 /* Return true if we need secondary memory moves for insn in
@@ -6480,7 +6483,7 @@ skip_usage_debug_insns (rtx usage_insns)
    into the insn.  */
 static bool
 check_secondary_memory_needed_p (enum reg_class inher_cl ATTRIBUTE_UNUSED,
-				 rtx usage_insns ATTRIBUTE_UNUSED)
+				 rtx_insn_list *usage_insns)
 {
   rtx_insn *insn;
   rtx set, dest;
@@ -6533,14 +6536,15 @@ static bitmap_head invalid_invariant_regs;
    class of ORIGINAL REGNO.  */
 static bool
 inherit_reload_reg (bool def_p, int original_regno,
-		    enum reg_class cl, rtx_insn *insn, rtx next_usage_insns)
+		    enum reg_class cl, rtx_insn *insn,
+		    rtx_insn_list *next_usage_insns)
 {
   if (optimize_function_for_size_p (cfun))
     return false;
 
   enum reg_class rclass = lra_get_allocno_class (original_regno);
   rtx original_reg = regno_reg_rtx[original_regno];
-  rtx new_reg, usage_insn;
+  rtx new_reg;
   rtx_insn *new_insns;
 
   lra_assert (! usage_insns[original_regno].after_p);
@@ -6653,23 +6657,24 @@ inherit_reload_reg (bool def_p, int original_regno,
   else
     lra_process_new_insns (insn, new_insns, NULL,
 			   "Add inheritance<-original");
+  rtx_insn *usage_insn;
   while (next_usage_insns != NULL_RTX)
     {
-      if (GET_CODE (next_usage_insns) != INSN_LIST)
+      usage_insn = next_usage_insns->insn ();
+      if (!next_usage_insns->next ())
 	{
-	  usage_insn = next_usage_insns;
 	  lra_assert (NONDEBUG_INSN_P (usage_insn));
 	  next_usage_insns = NULL;
 	}
       else
 	{
-	  usage_insn = XEXP (next_usage_insns, 0);
 	  lra_assert (DEBUG_INSN_P (usage_insn));
-	  next_usage_insns = XEXP (next_usage_insns, 1);
+	  next_usage_insns = next_usage_insns->next ();
 	}
-      lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+      rtx temp = usage_insn;
+      lra_substitute_pseudo (&temp, original_regno, new_reg, false,
 			     DEBUG_INSN_P (usage_insn));
-      lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
+      lra_update_insn_regno_info (usage_insn);
       if (lra_dump_file != NULL)
 	{
 	  basic_block bb = BLOCK_FOR_INSN (usage_insn);
@@ -6677,7 +6682,7 @@ inherit_reload_reg (bool def_p, int original_regno,
 		   "    Inheritance reuse change %d->%d (bb%d):\n",
 		   original_regno, REGNO (new_reg),
 		   bb ? bb->index : -1);
-	  dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
+	  dump_insn_slim (lra_dump_file, usage_insn);
 	}
     }
   if (lra_dump_file != NULL)
@@ -6850,12 +6855,12 @@ lra_copy_reg_equiv (unsigned int new_regno, unsigned int original_regno,
    transformation.  */
 static bool
 split_reg (bool before_p, int original_regno, rtx_insn *insn,
-	   rtx next_usage_insns, rtx_insn *to)
+	   rtx_insn_list *next_usage_insns, rtx_insn *to)
 {
   enum reg_class rclass;
   rtx original_reg;
   int hard_regno, nregs;
-  rtx new_reg, usage_insn;
+  rtx new_reg;
   rtx_insn *restore, *save;
   bool after_p;
   bool call_save_p;
@@ -6989,6 +6994,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
     lra_copy_reg_equiv (new_regno, original_regno, call_save_p);
   lra_reg_info[new_regno].restore_rtx = regno_reg_rtx[original_regno];
   bitmap_set_bit (&lra_split_regs, new_regno);
+  rtx_insn *usage_insn;
   if (to != NULL)
     {
       lra_assert (next_usage_insns == NULL);
@@ -7003,28 +7009,27 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
       after_p = usage_insns[original_regno].after_p;
       for (;;)
 	{
-	  if (GET_CODE (next_usage_insns) != INSN_LIST)
-	    {
-	      usage_insn = next_usage_insns;
-	      break;
-	    }
-	  usage_insn = XEXP (next_usage_insns, 0);
+	  usage_insn = next_usage_insns->insn ();
+	  if (!next_usage_insns->next ())
+	    break;
+
 	  lra_assert (DEBUG_INSN_P (usage_insn));
-	  next_usage_insns = XEXP (next_usage_insns, 1);
-	  lra_substitute_pseudo (&usage_insn, original_regno, new_reg, false,
+	  next_usage_insns = next_usage_insns->next ();
+	  rtx temp = usage_insn;
+	  lra_substitute_pseudo (&temp, original_regno, new_reg, false,
 				 true);
-	  lra_update_insn_regno_info (as_a <rtx_insn *> (usage_insn));
+	  lra_update_insn_regno_info (usage_insn);
 	  if (lra_dump_file != NULL)
 	    {
 	      fprintf (lra_dump_file, "    Split reuse change %d->%d:\n",
 		       original_regno, new_regno);
-	      dump_insn_slim (lra_dump_file, as_a <rtx_insn *> (usage_insn));
+	      dump_insn_slim (lra_dump_file, usage_insn);
 	    }
 	}
     }
   lra_assert (NOTE_P (usage_insn) || NONDEBUG_INSN_P (usage_insn));
   lra_assert (usage_insn != insn || (after_p && before_p));
-  lra_process_new_insns (as_a <rtx_insn *> (usage_insn),
+  lra_process_new_insns (usage_insn,
 			 after_p ? NULL : restore,
 			 after_p ? restore : NULL,
 			 call_save_p ? "Add reg<-save" : "Add reg<-split");
@@ -7138,7 +7143,7 @@ split_if_necessary (int regno, machine_mode mode,
 {
   bool res = false;
   int i, nregs = 1;
-  rtx next_usage_insns;
+  rtx_insn_list *next_usage_insns;
 
   if (regno < FIRST_PSEUDO_REGISTER)
     nregs = hard_regno_nregs (regno, mode);
@@ -7146,10 +7151,7 @@ split_if_necessary (int regno, machine_mode mode,
     if (usage_insns[regno + i].check == curr_usage_insns_check
 	&& (next_usage_insns = usage_insns[regno + i].insns) != NULL_RTX
 	/* To avoid processing the register twice or more.  */
-	&& ((GET_CODE (next_usage_insns) != INSN_LIST
-	     && INSN_UID (next_usage_insns) < max_uid)
-	    || (GET_CODE (next_usage_insns) == INSN_LIST
-		&& (INSN_UID (XEXP (next_usage_insns, 0)) < max_uid)))
+	&& INSN_UID (next_usage_insns->insn ()) < max_uid
 	&& need_for_split_p (potential_reload_hard_regs, regno + i)
 	&& split_reg (before_p, regno + i, insn, next_usage_insns, NULL))
       res = true;
@@ -7414,7 +7416,7 @@ struct to_inherit
   /* Original regno.  */
   int regno;
   /* Subsequent insns which can inherit original reg value.  */
-  rtx insns;
+  rtx_insn_list *insns;
 };
 
 /* Array containing all info for doing inheritance from the current
@@ -7427,7 +7429,7 @@ static int to_inherit_num;
 /* Add inheritance info REGNO and INSNS. Their meaning is described in
    structure to_inherit.  */
 static void
-add_to_inherit (int regno, rtx insns)
+add_to_inherit (int regno, rtx_insn_list *insns)
 {
   int i;
 
@@ -7506,7 +7508,8 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
   int i, src_regno, dst_regno, nregs;
   bool change_p, succ_p, update_reloads_num_p;
   rtx_insn *prev_insn, *last_insn;
-  rtx next_usage_insns, curr_set;
+  rtx_insn_list *next_usage_insns;
+  rtx curr_set;
   enum reg_class cl;
   struct lra_insn_reg *reg;
   basic_block last_processed_bb, curr_bb = NULL;
