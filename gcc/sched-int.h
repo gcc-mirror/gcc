@@ -816,7 +816,7 @@ struct reg_set_data
   /* Regno used in the insn.  */
   int regno;
   /* Insn setting the regno.  */
-  rtx insn;
+  rtx_insn *insn;
   /* List of elements with the same insn.  */
   struct reg_set_data *next_insn_set;
 };
