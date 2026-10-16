@@ -86,7 +86,7 @@ extern void rtl_predict_edge (edge, enum br_predictor, int);
 extern void gimple_predict_edge (edge, enum br_predictor, int);
 extern void remove_predictions_associated_with_edge (edge);
 extern void predict_edge_def (edge, enum br_predictor, enum prediction);
-extern void invert_br_probabilities (rtx);
+extern void invert_br_probabilities (rtx_insn *);
 extern void guess_outgoing_edge_probabilities (basic_block);
 extern void tree_guess_outgoing_edge_probabilities (basic_block);
 extern void tree_estimate_probability (bool);
