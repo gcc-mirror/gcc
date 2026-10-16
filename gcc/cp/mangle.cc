@@ -192,7 +192,7 @@ static void mangle_call_offset (const tree, const tree);
 
 static void write_mangled_name (const tree, bool);
 static void write_encoding (const tree);
-static void write_name (tree, const int);
+static void write_name (tree, const bool = false);
 static void write_abi_tags (tree);
 static void write_unscoped_name (const tree);
 static void write_unscoped_template_name (const tree);
@@ -914,7 +914,7 @@ write_type_constraint (tree cnst)
   gcc_checking_assert (TREE_CODE (cnst) == TEMPLATE_ID_EXPR);
 
   tree concept_decl = get_concept_check_template (cnst);
-  write_name (concept_decl, 0);
+  write_name (concept_decl);
   tree args = TREE_OPERAND (cnst, 1);
   if (TREE_VEC_LENGTH (args) > 1)
     {
@@ -936,13 +936,13 @@ write_encoding (const tree decl)
       /* For overloaded operators write just the mangled name
 	 without arguments.  */
       if (DECL_OVERLOADED_OPERATOR_P (decl))
-	write_name (decl, /*ignore_local_scope=*/0);
+	write_name (decl);
       else
 	write_source_name (DECL_NAME (decl));
       return;
     }
 
-  write_name (decl, /*ignore_local_scope=*/0);
+  write_name (decl);
   if (TREE_CODE (decl) == FUNCTION_DECL)
     {
       tree fn_type;
@@ -1086,14 +1086,14 @@ decl_mangling_context (tree decl)
 	  ::= <nested-name>
 	  ::= <local-name>
 
-   If IGNORE_LOCAL_SCOPE is nonzero, this production of <name> is
+   If IGNORE_LOCAL_SCOPE is true, this production of <name> is
    called from <local-name>, which mangles the enclosing scope
    elsewhere and then uses this function to mangle just the part
    underneath the function scope.  So don't use the <local-name>
    production, to avoid an infinite recursion.  */
 
 static void
-write_name (tree decl, const int ignore_local_scope)
+write_name (tree decl, const bool ignore_local_scope/*=false*/)
 {
   tree context;
 
@@ -2429,7 +2429,7 @@ write_local_name (tree function, const tree local_entity,
       /* Now the <entity name>.  Let write_name know its being called
 	 from <local-name>, so it doesn't try to process the enclosing
 	 function scope again.  */
-      write_name (entity, /*ignore_local_scope=*/1);
+      write_name (entity, /*ignore_local_scope=*/true);
       if (DECL_DISCRIMINATOR_P (local_entity)
 	  && !(TREE_CODE (local_entity) == TYPE_DECL
 	       && TYPE_ANON_P (TREE_TYPE (local_entity))))
@@ -2640,7 +2640,7 @@ write_type (tree type)
 		      type = CLASS_PLACEHOLDER_TEMPLATE (type);
 		      if (find_substitution (type))
 			return;
-		      write_name (type, 0);
+		      write_name (type);
 		      break;
 		    }
 		  if (AUTO_IS_DECLTYPE (type))
@@ -3202,7 +3202,7 @@ write_method_parms (tree parm_types, const int method_p, const tree decl)
 static void
 write_class_enum_type (const tree type)
 {
-  write_name (TYPE_NAME (type), /*ignore_local_scope=*/0);
+  write_name (TYPE_NAME (type));
 }
 
 /* Mangle a requirement REQ in a requires-expression.  */
@@ -4255,7 +4255,7 @@ write_reflection (tree refl)
   if (strcmp (prefix, "vl") == 0 || strcmp (prefix, "ob") == 0)
     write_expression (arg);
   else if (strcmp (prefix, "vr") == 0 || strcmp (prefix, "sb") == 0)
-    write_name (arg, 0);
+    write_name (arg);
   else if (strcmp (prefix, "fn") == 0)
     write_encoding (arg);
   else if (strcmp (prefix, "pa") == 0)
@@ -4620,7 +4620,7 @@ write_template_template_arg (const tree decl)
 
   if (find_substitution (decl))
     return;
-  write_name (decl, /*ignore_local_scope=*/0);
+  write_name (decl);
   add_substitution (decl);
 }
 
@@ -5351,7 +5351,7 @@ write_guarded_var_name (const tree variable)
        casing.  */
     write_string (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (variable)) + 2);
   else
-    write_name (variable, /*ignore_local_scope=*/0);
+    write_name (variable);
 }
 
 /* Return an identifier for the name of an initialization guard
