@@ -51,6 +51,11 @@ public:
   void dump (FILE *) override;
   void debug ();
 
+protected:
+  void close_dependencies (const vec<basic_block> &, bitmap dependencies);
+  void add_dependencies_of (tree name, const vec<basic_block> &,
+			    bitmap dependencies, vec<tree> &worklist);
+
 private:
   bool internal_range_of_expr (vrange &r, tree name, gimple *);
   void compute_ranges (const bitmap_head *dependencies);
