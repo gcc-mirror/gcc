@@ -839,7 +839,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 
   if (!size_unknown_p (bytes, object_size_type)
       && size_valid_p (bytes, object_size_type)
-      && !size_unknown_p (bytes, object_size_type)
+      && !size_unknown_p (wholebytes, object_size_type)
       && size_valid_p (wholebytes, object_size_type))
     {
       *psize = bytes;
