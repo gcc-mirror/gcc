@@ -7543,7 +7543,7 @@ extern void defaulted_late_check		(tree, tristate = tristate::unknown ());
 extern bool defaultable_fn_check		(tree);
 extern void check_abi_tags			(tree);
 extern tree missing_abi_tags			(tree);
-extern void fixup_type_variants			(tree);
+extern void fixup_type_variants			(tree, bool = false);
 extern void fixup_attribute_variants		(tree);
 extern void build_cdtor_clones 			(tree, bool, bool, bool);
 extern void clone_cdtor				(tree, bool);

@@ -2319,10 +2319,11 @@ determine_primary_bases (tree t)
     }
 }
 
-/* Update the variant types of T.  */
+/* Update the variant types of T.  If UPDATE_ALIGN is true, also
+   update variant alignments from TYPE.  */
 
 void
-fixup_type_variants (tree type)
+fixup_type_variants (tree type, bool update_align /* = false */)
 {
   if (!type)
     return;
@@ -2350,9 +2351,10 @@ fixup_type_variants (tree type)
       TYPE_SIZE (variant) = TYPE_SIZE (type);
       TYPE_SIZE_UNIT (variant) = TYPE_SIZE_UNIT (type);
 
-      if (!TYPE_USER_ALIGN (variant)
-	  || TYPE_NAME (variant) == TYPE_NAME (type)
-	  || TYPE_ALIGN_RAW (variant) < TYPE_ALIGN_RAW (type))
+      if (update_align
+	  && (!TYPE_USER_ALIGN (variant)
+	      || TYPE_NAME (variant) == TYPE_NAME (type)
+	      || TYPE_ALIGN_RAW (variant) < TYPE_ALIGN_RAW (type)))
 	{
 	  TYPE_ALIGN_RAW (variant) =  TYPE_ALIGN_RAW (type);
 	  TYPE_USER_ALIGN (variant) = TYPE_USER_ALIGN (type);
@@ -2453,7 +2455,7 @@ finish_struct_bits (tree t)
     get_pure_virtuals (t);
 
   /* Fix up variants (if any).  */
-  fixup_type_variants (t);
+  fixup_type_variants (t, /*update_align=*/true);
 }
 
 /* Issue warnings about T having private constructors, but no friends,

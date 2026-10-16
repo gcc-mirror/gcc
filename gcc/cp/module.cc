@@ -13970,7 +13970,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
   /* Propagate to all variants.  */
   if (installing)
-    fixup_type_variants (type);
+    fixup_type_variants (type, /*update_align=*/true);
 
   /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
      the fake base, we've not hooked it into the containing class's
