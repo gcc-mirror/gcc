@@ -138,14 +138,14 @@ delete_insn (rtx_insn *insn)
   rtx note;
   bool really_delete = true;
 
-  if (LABEL_P (insn))
+  if (rtx_code_label *label = dyn_cast<rtx_code_label *> (insn))
     {
       /* Some labels can't be directly removed from the INSN chain, as they
 	 might be references via variables, constant pool etc.
 	 Convert them to the special NOTE_INSN_DELETED_LABEL note.  */
-      if (! can_delete_label_p (as_a <rtx_code_label *> (insn)))
+      if (! can_delete_label_p (label))
 	{
-	  const char *name = LABEL_NAME (insn);
+	  const char *name = LABEL_NAME (label);
 	  basic_block bb = BLOCK_FOR_INSN (insn);
 	  rtx_insn *bb_note = NEXT_INSN (insn);
 
