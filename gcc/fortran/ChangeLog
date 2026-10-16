@@ -1,3 +1,22 @@
+2026-10-15  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127683
+	* primary.cc (gfc_match_varspec): Fix two minor frontend memleaks.
+	* symbol.cc (gfc_find_derived_types): Return 0 when sym->assoc is
+	NULL.
+
+2026-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/110421
+	* trans-expr.cc (alloc_scalar_allocatable_subcomponent): Use
+	gfc_typenode_for_spec for BT_DERIVED values too.
+
 2026-10-01  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
