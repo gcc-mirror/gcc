@@ -25,7 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include <algorithm>
 #include <memory>
 // C
-#include <cstring>
+#include <stdlib.h> // for malloc & free
+#include <string.h> // for strlen
 // OS
 #include <fcntl.h>
 #include <unistd.h>
