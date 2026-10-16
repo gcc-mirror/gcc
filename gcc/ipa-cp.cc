@@ -5833,6 +5833,44 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
   return avl.superset_of_p (existing);
 }
 
+/* Determine whether CS also brings all polymorphic contexts that NODE is
+   specialized for.  */
+
+static bool
+cgraph_edge_brings_all_contexts_for_node (struct cgraph_edge *cs,
+					  struct cgraph_node *node)
+{
+  ipa_node_params *dest_info = ipa_node_params_sum->get (node);
+  unsigned count = dest_info->known_contexts.length ();
+  if (!count)
+    return true;
+
+  ipa_node_params *caller_info = ipa_node_params_sum->get (cs->caller);
+  ipa_edge_args *args = ipa_edge_args_sum->get (cs);
+  for (unsigned i = 0; i < count; i++)
+    {
+      ipa_polymorphic_call_context ctx = dest_info->known_contexts[i];
+      if (ctx.useless_p ())
+	continue;
+
+      if (!args || i >= (unsigned) ipa_get_cs_argument_count (args))
+	return false;
+      ipa_jump_func *jump_func = ipa_get_ith_jump_func (args, i);
+      ipa_polymorphic_call_context edge_ctx
+	= ipa_context_from_jfunc (caller_info, cs, i, jump_func);
+      if (edge_ctx.useless_p ())
+	return false;
+      if (edge_ctx.equal_to (ctx))
+	continue;
+      /* Also accept a context that is more precise than the one NODE has been
+	 specialized for.  */
+      ctx.combine_with (edge_ctx);
+      if (!edge_ctx.equal_to (ctx))
+	return false;
+    }
+  return true;
+}
+
 /* Given an original NODE and a VAL for which we have already created a
    specialized clone, look whether there are incoming edges that still lead
    into the old node but now also bring the requested value and also conform to
@@ -5853,7 +5891,8 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 	{
 	  if (cgraph_edge_brings_value_p (cs, src, node, val)
 	      && cgraph_edge_brings_all_scalars_for_node (cs, val->spec_node)
-	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node))
+	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node)
+	      && cgraph_edge_brings_all_contexts_for_node (cs, val->spec_node))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, " - adding an extra caller %s of %s\n",
