@@ -1603,6 +1603,8 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
   /* Don't let anti_adjust_stack emit notes.  */
   suppress_reg_args_size = true;
 
+  poly_int64 saved_stack_pointer_delta = stack_pointer_delta;
+
   /* Perform the required allocation from the stack.  Some systems do
      this differently than simply incrementing/decrementing from the
      stack pointer, such as acquiring the space by calling malloc().  */
@@ -1618,8 +1620,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
     }
   else
     {
-      poly_int64 saved_stack_pointer_delta;
-
       if (!STACK_GROWS_DOWNWARD)
 	emit_move_insn (target, force_operand (addr, target));
 
@@ -1647,8 +1647,6 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
 	  emit_label (space_available);
 	}
 
-      saved_stack_pointer_delta = stack_pointer_delta;
-
       /* If stack checking or stack clash protection is requested,
 	 then probe the stack while allocating space from it.  */
       if (flag_stack_check && STACK_CHECK_MOVING_SP)
@@ -1658,14 +1656,14 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       else
 	anti_adjust_stack (size);
 
-      /* Even if size is constant, don't modify stack_pointer_delta.
-	 The constant size alloca should preserve
-	 crtl->preferred_stack_boundary alignment.  */
-      stack_pointer_delta = saved_stack_pointer_delta;
-
       if (STACK_GROWS_DOWNWARD)
 	emit_move_insn (target, force_operand (addr, target));
     }
+
+  /* Even if size is constant, don't modify stack_pointer_delta.
+     The constant size alloca should preserve
+     crtl->preferred_stack_boundary alignment.  */
+  stack_pointer_delta = saved_stack_pointer_delta;
 
   suppress_reg_args_size = false;
 
