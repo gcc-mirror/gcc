@@ -5273,6 +5273,7 @@
   {
     return aarch64_output_sve_cnt_immediate ("uqdec", "%<w>0", operands[2]);
   }
+  [(set_attr "sve_type" "sve_pred_cnt_scalar")]
 )
 
 ;; Implement MAX/MIN (A, B) - C using SUBS/ADDS followed by CSEL/CSINV/CSINC.

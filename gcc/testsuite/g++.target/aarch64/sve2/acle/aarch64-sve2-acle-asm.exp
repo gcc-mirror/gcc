@@ -59,7 +59,7 @@ set-torture-options {
     "-std=c++14 -O3 -g"
     "-std=c++17 -Og -g"
     "-std=c++2a -Os -g"
-    "-std=gnu++98 -O2 -fno-schedule-insns -DCHECK_ASM --save-temps"
+    "-std=gnu++98 -O2 -fno-schedule-insns -fno-schedule-insns2 -DCHECK_ASM --save-temps"
     "-std=gnu++11 -Ofast -g"
     "-std=gnu++17 -O3 -g"
     "-std=gnu++2a -O0 -g"

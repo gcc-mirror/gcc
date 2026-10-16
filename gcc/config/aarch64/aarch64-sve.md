@@ -702,8 +702,8 @@
   {@ [ cons: =0 , 1   ; attrs: sve_type ]
      [ w        , Utr ; sve_load_1reg   ] ldr\t%0, %1
      [ Utr      , w   ; sve_store_1reg  ] str\t%1, %0
-     [ w        , w   ; *               ] mov\t%0.d, %1.d
-     [ w        , Dn  ; *               ] << aarch64_output_sve_mov_immediate (operands[1]);
+     [ w        , w   ; sve_int_general ] mov\t%0.d, %1.d
+     [ w        , Dn  ; sve_int_general ] << aarch64_output_sve_mov_immediate (operands[1]);
   }
 )
 
@@ -741,6 +741,7 @@
      [ w        , w   ] mov\t%0.d, %1.d
      [ w        , Dn  ] << aarch64_output_sve_mov_immediate (operands[1]);
   }
+  [(set_attr "sve_type" "sve_int_general")]
 )
 
 ;; Handle memory reloads for modes that can't use LDR and STR.  We use
@@ -2827,6 +2828,7 @@
 				   CONST0_RTX (<MODE>mode)));
     DONE;
   }
+  [(set_attr "sve_type" "sve_int_general")]
 )
 
 ;; Duplicate an Advanced SIMD vector to fill an SVE vector (LE version).
@@ -2905,6 +2907,7 @@
      [ w        , r ] mov\t%0.<single_type>, %<single_wx>1
      [ w        , w ] mov\t%0.<single_type>, %<single_type>1
   }
+  [(set_attr "sve_type" "sve_int_general")]
 )
 
 ;; This is used for vec_duplicate<mode>s from memory, but can also

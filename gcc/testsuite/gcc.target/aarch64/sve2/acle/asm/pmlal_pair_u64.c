@@ -66,9 +66,9 @@ TEST_XN_INDEXED(test_pmlal_pair_n_u64_regs_x0_1, svuint64x2_t, svuint64_t,
 
 /*
 **test_pmlal_pair_n_u64_regs_mov:
-**	movi	d30, #0
 **	mov	z0.d, z3.d
 **	mov	z1.d, z4.d
+**	movi	d30, #0
 **	pmlal	{z0.q - z1.q}, z4.d, z30.d
 **	ret
 */
@@ -90,9 +90,9 @@ TEST_XN_INDEXED(test_pmlal_pair_n_u64_regs_mov_x0, svuint64x2_t, svuint64_t,
 
 /*
 **test_pmlal_pair_n_u64_regs_mov_1:
-**	mov	z30.d, #65535
 **	mov	z0.d, z3.d
 **	mov	z1.d, z4.d
+**	mov	z30.d, #65535
 **	pmlal	{z0.q - z1.q}, z4.d, z30.d
 **	ret
 */

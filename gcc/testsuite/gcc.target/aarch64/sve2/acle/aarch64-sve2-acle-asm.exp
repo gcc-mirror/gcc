@@ -56,7 +56,7 @@ set-torture-options {
     "-std=c90 -O1 -g"
     "-std=c99 -O2 -g"
     "-std=c11 -O3 -g"
-    "-std=gnu90 -O2 -fno-schedule-insns -DCHECK_ASM --save-temps"
+    "-std=gnu90 -O2 -fno-schedule-insns -fno-schedule-insns2 -DCHECK_ASM --save-temps"
     "-std=gnu99 -Ofast -g"
     "-std=gnu11 -Os -g"
 } {
