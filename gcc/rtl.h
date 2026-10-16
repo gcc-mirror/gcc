@@ -3736,7 +3736,7 @@ extern bool modified_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern bool no_labels_between_p (const rtx_insn *, const rtx_insn *);
 extern bool modified_in_p (const_rtx, const_rtx);
 extern bool reg_set_p (const_rtx, const_rtx);
-extern bool multiple_sets (const_rtx);
+extern bool multiple_sets (const rtx_insn *);
 extern bool set_noop_p (const_rtx);
 extern bool noop_move_p (const rtx_insn *);
 extern bool refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);

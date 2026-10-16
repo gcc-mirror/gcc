@@ -1590,7 +1590,7 @@ single_set_2 (const rtx_insn *insn, const_rtx pat)
    false.  */
 
 bool
-multiple_sets (const_rtx insn)
+multiple_sets (const rtx_insn *insn)
 {
   bool found;
   int i;
@@ -2585,7 +2585,8 @@ find_reg_equal_equiv_note (const_rtx insn)
 	   in the comment in set_unique_reg_note.
 
 	   This should be changed into an assert.  */
-	if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
+	if (GET_CODE (PATTERN (insn)) == PARALLEL
+	    && multiple_sets (as_a<const rtx_insn *> (insn)))
 	  return 0;
 	return link;
       }
