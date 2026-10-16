@@ -9268,6 +9268,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
    (cmp @0 (convert @1)))))
 
+/* (a & -a) < 0 -> a == INT_MIN
+   (a & -a) >= 0 -> a != INT_MIN.  */
+(match (negate_maybe_without_ud @0)
+ (negate @0))
+(match (negate_maybe_without_ud @0)
+ (convert (negate (nop_convert @0)))
+ (if (types_match (type, @0))))
+
+(for cmp (lt ge)
+     eqcmp (eq ne)
+ (simplify
+  (cmp (nop_convert?@0 (bit_and:c (negate_maybe_without_ud @1) @1))
+       integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@1)))
+   (eqcmp @1 { wide_int_to_tree (TREE_TYPE (@1),
+ wi::min_value (TYPE_PRECISION (TREE_TYPE (@1)), SIGNED)); }))))
+
 /* Non-equality compare simplifications from fold_binary  */
 (for cmp (lt gt le ge)
  /* Comparisons with the highest or lowest possible integer of
