@@ -259,7 +259,7 @@ delete_insn_and_edges (rtx_insn *insn)
    insns that cannot be removed to NULL.  */
 
 void
-delete_insn_chain (rtx start, rtx_insn *finish, bool clear_bb)
+delete_insn_chain (rtx_insn *start, rtx_insn *finish, bool clear_bb)
 {
   /* Unchain the insns one by one.  It would be quicker to delete all of these
      with a single unchaining, rather than one at a time, but we need to keep
