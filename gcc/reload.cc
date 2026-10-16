@@ -6310,7 +6310,8 @@ subst_reloads (rtx_insn *insn)
 		      || find_reg_note (insn,
 					REG_LABEL_OPERAND,
 					XEXP (*r->where, 0))
-		      || label_is_jump_target_p (XEXP (*r->where, 0), insn));
+		      || label_is_jump_target_p (label_ref_label (*r->where),
+						 insn));
 
 	  /* Encapsulate RELOADREG so its machine mode matches what
 	     used to be there.  Note that gen_lowpart_common will

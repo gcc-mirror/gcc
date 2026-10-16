@@ -5710,7 +5710,7 @@ cse_insn (rtx_insn *insn)
 	      rtx_insn *seq = targetm.gen_jump (XEXP (src, 0));
 	      new_rtx = emit_jump_insn_before (seq, insn);
 	      JUMP_LABEL (new_rtx) = XEXP (src, 0);
-	      LABEL_NUSES (XEXP (src, 0))++;
+	      LABEL_NUSES (label_ref_label (src))++;
 
 	      /* Make sure to copy over REG_NON_LOCAL_GOTO.  */
 	      note = find_reg_note (insn, REG_NON_LOCAL_GOTO, 0);

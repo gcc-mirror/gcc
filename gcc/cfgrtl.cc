@@ -215,7 +215,7 @@ delete_insn (rtx_insn *insn)
 
       for (i = 0; i < len; i++)
 	{
-	  rtx label = XEXP (RTVEC_ELT (vec, i), 0);
+	  rtx_insn *label = label_ref_label (RTVEC_ELT (vec, i));
 
 	  /* When deleting code in bulk (e.g. removing many unreachable
 	     blocks) we can delete a label that's a target of the vector
@@ -1667,10 +1667,10 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  for (int i = 0; i < n; ++i)
 	    if (XEXP (ASM_OPERANDS_LABEL (note, i), 0) == BB_HEAD (e->dest))
 	      {
-		LABEL_NUSES (XEXP (ASM_OPERANDS_LABEL (note, i), 0))--;
+		LABEL_NUSES (label_ref_label (ASM_OPERANDS_LABEL (note, i)))--;
 		XEXP (ASM_OPERANDS_LABEL (note, i), 0)
 		  = block_label (jump_block);
-		LABEL_NUSES (XEXP (ASM_OPERANDS_LABEL (note, i), 0))++;
+		LABEL_NUSES (label_ref_label (ASM_OPERANDS_LABEL (note, i)))++;
 	      }
 
 	  rtx_insn *insn = BB_END (new_edge->src);
