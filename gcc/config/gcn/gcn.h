@@ -911,3 +911,6 @@ enum gcn_builtin_codes
       || M == V2SFmode || M == V2DImode || M == V2DFmode) \
    ? 2 \
    : 1)
+
+/* For switching between kernel and regular function.  */
+#define SWITCHABLE_TARGET 1
