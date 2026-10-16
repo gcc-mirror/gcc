@@ -7874,6 +7874,9 @@ if test x$gcc_no_link = xyes; then
   fi
 fi
 if test "x${ac_cv_func_mmap_fixed_mapped}" != xno; then
+  save_ASAN_OPTIONS="$ASAN_OPTIONS"
+  ASAN_OPTIONS=detect_leaks=0
+  export ASAN_OPTIONS
 
 for ac_func in getpagesize
 do :
@@ -8051,6 +8054,8 @@ $as_echo "#define HAVE_MMAP 1" >>confdefs.h
 
 fi
 rm -f conftest.mmap conftest.txt
+
+  ASAN_OPTIONS="$save_ASAN_OPTIONS"
 
 fi
 

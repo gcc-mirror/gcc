@@ -175,6 +175,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/ax_pthread.m4 \
 	$(top_srcdir)/../ltoptions.m4 $(top_srcdir)/../ltsugar.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/acx.m4 \
+	$(top_srcdir)/../config/mmap.m4 \
 	$(top_srcdir)/../config/no-executables.m4 \
 	$(top_srcdir)/../config/math.m4 \
 	$(top_srcdir)/../config/ax_check_define.m4 \

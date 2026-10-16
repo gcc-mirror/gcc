@@ -9,6 +9,7 @@ dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
 m4_include(../config/acx.m4)
+m4_include(../config/mmap.m4)
 m4_include(../config/no-executables.m4)
 m4_include(../config/enable.m4)
 m4_include(../config/tls.m4)

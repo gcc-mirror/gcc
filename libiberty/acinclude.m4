@@ -19,7 +19,7 @@ dnl On some versions of SunOS4 at least, strncmp reads a word at a time
 dnl but erroneously reads past the end of strings.  This can cause
 dnl a SEGV in some cases.
 AC_DEFUN([libiberty_AC_FUNC_STRNCMP],
-[AC_REQUIRE([AC_FUNC_MMAP])
+[AC_REQUIRE([GCC_AC_FUNC_MMAP])
 AC_CACHE_CHECK([for working strncmp], ac_cv_func_strncmp_works,
 [AC_RUN_IFELSE([AC_LANG_SOURCE([[
 /* Test by Jim Wilson and Kaveh Ghazi.
@@ -192,3 +192,5 @@ AC_DEFINE_UNQUOTED(STACK_DIRECTION, $ac_cv_c_stack_direction,
         STACK_DIRECTION < 0 => grows toward lower addresses
         STACK_DIRECTION = 0 => direction of growth unknown])
 ])
+
+m4_include([../config/mmap.m4])

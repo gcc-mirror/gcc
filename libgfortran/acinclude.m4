@@ -1,4 +1,5 @@
 m4_include(../config/acx.m4)
+m4_include(../config/mmap.m4)
 m4_include(../config/no-executables.m4)
 m4_include(../config/math.m4)
 m4_include(../config/ax_check_define.m4)
