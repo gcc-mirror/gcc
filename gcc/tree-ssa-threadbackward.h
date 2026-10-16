@@ -51,6 +51,9 @@ public:
   unsigned thread_blocks ();
   void search ();
   unsigned apply ();
+protected:
+  // The path solver for the search.
+  virtual path_range_query *make_solver (gimple_ranger &);
 private:
   void maybe_thread_block (basic_block bb);
   bool debug_counter ();

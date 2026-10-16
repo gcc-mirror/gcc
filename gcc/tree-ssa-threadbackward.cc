@@ -207,12 +207,11 @@ back_threader::back_threader (function *fun, unsigned flags, bool first)
     mark_dfs_back_edges ();
 
   m_ranger = new gimple_ranger;
-  m_solver = new path_range_query (*m_ranger, flags & BT_RESOLVE);
+  m_solver = NULL;
 }
 
 back_threader::~back_threader ()
 {
-  delete m_solver;
   delete m_ranger;
   loop_optimizer_finalize ();
 }
@@ -920,15 +919,29 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
   return register_jump_thread (jump_thread_path);
 }
 
+// Return a new path solver for the search.
+
+path_range_query *
+back_threader::make_solver (gimple_ranger &ranger)
+{
+  return new path_range_query (ranger, m_flags & BT_RESOLVE);
+}
+
 // Find the paths to thread in the current function.
 
 void
 back_threader::search ()
 {
+  m_solver = make_solver (*m_ranger);
+
   basic_block bb;
   FOR_EACH_BB_FN (bb, m_fun)
     if (EDGE_COUNT (bb->succs) > 1)
       maybe_thread_block (bb);
+
+  // The solver lives as long as the search: the IL changes after it.
+  delete m_solver;
+  m_solver = NULL;
 }
 
 // Thread the paths found.  Return TODO_flags.
