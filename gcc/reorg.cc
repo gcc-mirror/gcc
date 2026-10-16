@@ -3470,8 +3470,8 @@ make_return_insns (rtx_insn *first)
 {
   rtx_insn *insn;
   rtx_jump_insn *jump_insn;
-  rtx real_return_label = function_return_label;
-  rtx real_simple_return_label = function_simple_return_label;
+  rtx_insn *real_return_label = function_return_label;
+  rtx_insn *real_simple_return_label = function_simple_return_label;
   int slots, i;
 
   /* See if there is a RETURN insn in the function other than the one we
@@ -3480,7 +3480,7 @@ make_return_insns (rtx_insn *first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
       {
-	rtx t = get_label_before (insn, NULL_RTX);
+	rtx_insn *t = get_label_before (insn, NULL_RTX);
 	if (PATTERN (insn) == ret_rtx)
 	  real_return_label = t;
 	else
