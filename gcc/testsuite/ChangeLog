@@ -1,3 +1,58 @@
+2026-10-15  Manjunath Matti  <mmatti.gnu@gmail.com>
+
+	PR target/127278
+	* gcc.target/powerpc/vec-msumc.c: Add int128
+	effective-target.
+
+2026-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/121688
+	* gcc.target/i386/pr121688-avx512fp16novl.c: New test.
+
+2026-10-15  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127882
+	* gcc.target/i386/pr127882.c: New test.
+
+2026-10-15  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127860
+	* gcc.dg/torture/vec-perm-wide-input-1.c: New test.
+
+2026-10-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.c-torture/execute/ccmp-tree-1.c: New test.
+	* gcc.target/aarch64/ccmp_6.c: New test.
+	* gcc.target/aarch64/ccmp_10.c: Likewise.
+	* gcc.target/aarch64/ccmp_12.c: Likewise.
+	* gcc.target/aarch64/ccmp_14.c: Likewise.
+	* gcc.target/aarch64/fccmp_6.c: Likewise.
+	* gcc.target/aarch64/fccmp_8.c: Likewise.
+
+2026-10-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/109832
+	* gcc.target/aarch64/ccmp_7.c: New test.
+	* gcc.target/aarch64/ccmp_9.c: Likewise.
+	* gcc.target/aarch64/ccmp_11.c: Likewise.
+	* gcc.target/aarch64/ccmp_13.c: Likewise.
+
+2026-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127883
+	* gcc.target/i386/pr127883-1.c: New test.
+	* gcc.target/i386/pr127883-2.c: Ditto.
+
+2026-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/127649
+	* gcc.target/i386/pr127649-1.c: New test.
+	* gcc.target/i386/pr127649-2.c: Likewise.
+
+2026-10-15  Kewen Lin  <linkewen@hygon.cn>
+
+	* gcc.dg/builtin-pi-linkage.c: New test.
+
 2026-10-14  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group2/move_numdisp_with_refmods.cob: New test.

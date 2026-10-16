@@ -1,3 +1,281 @@
+2026-10-15  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_can_change_mode_class): Don't reject
+	cross-class mode changes when floating-point registers are
+	disabled.
+
+2026-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-expand.cc (emit_memmov): Use UNITS_PER_WORD
+	instead of GET_MODE_SIZE (word_mode).
+	(emit_memset): Ditto.
+	(ix86_expand_set_or_cpymem): Ditto.
+	(ix86_expand_set_or_movmem): Ditto.
+	* config/i386/i386.cc (print_reg): Ditto.
+	(ix86_preferred_reload_class): Ditto.
+	* config/i386/i386.md (push and pop peephole2): Ditto.
+
+2026-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (cstore<mode>4): Use <MODE_SIZE> and
+	bt_comparison_operator to reject non-equality double-word
+	comparisons.
+	(push splitter): Use <SWI48DWI:MODE_SIZE> instead of
+	GET_MODE_SIZE (<SWI48DWI:MODE>mode).
+	(narrow test insn peephole2): Use <MODE_SIZE> instead of
+	GET_MODE_SIZE (<MODE>mode).
+	(and<mode>3): Ditto.
+	(<any_or:code><mode>3): Ditto.
+
+2026-10-15  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.cc (back_threader::find_paths_to_names):
+	Factor making a name an import out into add_import.
+
+2026-10-15  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.h: New file.
+	* tree-ssa-threadbackward.cc: Include it.
+	(class back_threader_registry): Move to tree-ssa-threadbackward.h.
+	(BT_NONE, BT_SPEED, BT_RESOLVE): Likewise.
+	(class back_threader): Likewise.
+
+2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (UNSPEC_PAIR): New.
+	(X): Add vector modes.
+	(ATOMICMODE): New mode iterator.
+	(atomic_fetch_<bare_mnemonic><mode>): Use ATOMICMODE iterator.  Add Rf
+	and Rm constraints.
+	(atomic_<bare_mnemonic><mode>): Likewise.
+	(x2): Add vector modes.
+	(size): Delete.
+	(bitsize): Add vector modes.
+	(createpair<mode>): New insn.
+	(sync_compare_and_swap<mode>): Use ATOMICMODE iterator.  Use
+	createpair<mode> instead of subregs.
+	(sync_compare_and_swap<mode>_insn): Use ATOMICMODE iterator.  Add Rf
+	and Rm constraints.
+	(sync_compare_and_swap<mode>_lds_insn): Use ATOMICMODE iterator.  Add
+	Rl constraint.
+	(atomic_load<mode>): Use ATOMICMODE iterator.  Add Rf and Rm
+	constraints.  Make the memory model operand SImode.
+	(atomic_store<mode>): Likewise.
+	(atomic_exchange<mode>): Use ATOMICMODE iterator.  Add Rf and Rm
+	constraints.
+
+2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/constraints.md (RF): Limit to scalar addresses.
+	(Rf): New.
+	(Pf): New.
+	(RL): Limit to scalar addresses.
+	(Rl): New.
+	(Pl): New.
+	(RM): Limit to scalar addresses.
+	(Rm): New.
+	(Pm): New.
+	(RA): New.
+	* config/gcn/gcn-protos.h (gcn_gen_vector_mem): New prototype.
+	(gcn_flat_address_p): Add "strict" parameter.
+	(gcn_global_address_p): Add "data_mode" and "strict" parameters.
+	(gcn_mode_code_base_reg_class): Delete prototype.
+	(gcn_scalar_flat_address_p): Add "strict" parameter.
+	* config/gcn/gcn-valu.md (exec_scatter): Delete define_subst_attr.
+	(scatter_store): Delete define_subst.
+	(mov<mode>): Recognize address vectors.  Use vector MEMs instead of
+	gather/scatter.
+	(*mov<mode>_1reg): Rework from the old "mov<mode>" patterns.  Add
+	memory alternatives.
+	(*mov<mode>_2reg): Likewise.
+	(*mov<mode>_4reg): Likewise.
+	(@mov<mode>_exec): New expander to separate masked loads from others.
+	(*mov<mode>_1reg_exec): Rework from the old "mov<mode>_exec" patterns.
+	Add memory alternatives.
+	(*mov<mode>_2reg_exec): Likewise.
+	(*mov<mode>_4reg_exec): Likewise.
+	(load<mode>_exec): New.
+	(UNSPEC_SGPRBASE define_splits): Split to vector MEMs instead of
+	gather/scatter unspecs.
+	(gather_load<mode><vnsi>): Rework to use emit_move_insn.
+	(gather_load<mode><vndi>): Likewise.
+	(gather<mode>_expr<exec>): Delete.
+	(gather<mode>_insn_1offset<exec>): Delete.
+	(gather<mode>_insn_1offset_ds<exec>): Delete.
+	(gather<mode>_insn_2offsets<exec>): Delete.
+	(scatter<mode>_expr<exec_scatter>): Delete.
+	(scatter<mode>_insn_1offset<exec_scatter>): Delete.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Delete.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Delete.
+	(scatter_store<mode><vnsi>): Rework to use emit_move_insn.
+	(scatter_store<mode><vndi>): Likewise.
+	(maskload<mode>di): Rework to use mov*_exec.
+	(maskstore<mode>di): Likewise.
+	(mask_gather_load<mode><vnsi>): Likewise.
+	(mask_gather_load<mode><vndi>): Likewise.
+	(mask_scatter_store<mode><vnsi>): Likewise.
+	(mask_scatter_store<mode><vndi>): Likewise.
+	* config/gcn/gcn.cc (single_cst_vector_p): Delete.
+	(GEN_VNM): Delete gather_expr case.
+	(gcn_address_register_p): Rename ...
+	(gcn_scalar_address_register_p): ... to this.
+	(gcn_vec_address_register_p): Support address vectors.
+	(gcn_auto_address_register_p): New.
+	(gcn_flat_address_p): Refactor code from
+	gcn_addr_space_legitimate_address_p here, and support address vectors.
+	(gcn_scalar_flat_address_p): Likewise.
+	(gcn_ds_address_p): Likewise.  Add "strict" parameter.  Only accept
+	constant offsets that fit the 16-bit DS offset field.
+	(gcn_global_address_p): Refactor code from
+	gcn_addr_space_legitimate_address_p here, and support address vectors,
+	including vector constant offsets.
+	(gcn_addr_space_legitimate_address_p): Use the above functions.
+	Reject vector addresses whose lane count doesn't match the data mode.
+	Look through SUBREGs when not strict.
+	(gcn_addr_space_valid_pointer_mode): New.
+	(gcn_mode_code_base_reg_class): Replace this ...
+	(gcn_base_reg_class): ... with this.
+	(gcn_expand_vector_init): Rework using mov*_exec.
+	(gcn_expand_scalar_to_vector_address): Rework using vector MEM.  Set
+	MEM_INDEPENDENT_P.
+	(gcn_gen_vector_mem): New.  Set MEM_INDEPENDENT_P.
+	(gcn_secondary_reload): Handle address vectors.
+	(gcn_valid_move_p): Update calls to gcn_global_address_p.
+	(move_callee_saved_registers): Rework using mov*_exec.  Set
+	MEM_INDEPENDENT_P.
+	(print_operand_address): Handle MEM changes.
+	(print_operand): Likewise.  Handle VEC_DUPLICATE offsets.
+	(TARGET_ADDR_SPACE_VALID_POINTER_MODE): New.
+	(TARGET_BASE_REG_CLASS): New.
+	* config/gcn/gcn.h (MODE_CODE_BASE_REG_CLASS): Delete.
+	* config/gcn/gcn.md (UNSPEC_MASKLOAD): New.
+	(UNSPEC_GATHER): Delete.
+	(UNSPEC_SCATTER): Delete.
+	(*mov<mode>_insn): Disallow MEM to MEM moves.
+	(*movti_insn): Likewise.
+	(atomic_fetch_<bare_mnemonic><mode>): Add missing offsets.
+	(atomic_<bare_mnemonic><mode>): Likewise.
+	(sync_compare_and_swap<mode>_insn): Likewise.
+	(atomic_exchange<mode>): Likewise.
+
+2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+	    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/rtl.texi: Document MEM_INDEPENDENT_P.
+	Document new MEM semantics.
+	* doc/tm.texi: Regenerate.
+	* emit-rtl.cc (gen_int_mode): Extend to DTRT for vector modes.
+	(change_address): Split out a static overload with a "validate"
+	parameter.
+	(change_address_nv): New.
+	(adjust_address_1): Permit vectors of addresses.
+	* emit-rtl.h (change_address_nv): New prototype.
+	* explow.cc (convert_memory_address_addr_space_1): Permit vectors of
+	addresses, for no-op conversions only.
+	* recog.cc (address_operand): Permit vectors of addresses.
+	* rtl.h (MEM_INDEPENDENT_P): New macro.
+	(MEM_COPY_ATTRIBUTES): Copy MEM_INDEPENDENT_P.
+	(get_address_mode): Change return type to machine_mode.
+	* rtlanal.cc (get_address_mode): Likewise.
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Handle vectors
+	of addresses, and simplify subregs of vector mems.
+	* target.def (pointer_mode): Document vectors of addresses.
+	(address_mode): Likewise.
+	(valid_pointer_mode): Change scalar_int_mode to machine_mode, and
+	document the vector use case.
+	* targhooks.cc (default_addr_space_valid_pointer_mode): Change
+	scalar_int_mode to machine_mode, but reject non-scalar inputs.
+	* targhooks.h (default_addr_space_valid_pointer_mode): Likewise.
+
+2026-10-15  Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* config/aarch64/aarch64-acle-builtins.h
+	(gimple_folder::force_vector): Drop the stmts parameter.
+	(gimple_folder::convert_pred): Likewise.
+	(gimple_folder::fold_contiguous_base): Likewise.
+	(gimple_folder::fold_to_stmt_vops): Delete.
+	(gimple_folder::stmts): New member variable.
+	* config/aarch64/aarch64-acle-builtins.cc: Include gimple-ssa.h.
+	(gimple_folder::gimple_folder): Initialize stmts.
+	(gimple_folder::force_vector): Drop the stmts parameter and instead
+	use the member variable of the same name.
+	(gimple_folder::convert_pred): Likewise.
+	(gimple_folder::fold_contiguous_base): Likewise.  Update callers
+	to the above.
+	(gimple_folder::convert_and_fold): Add statements to the stmts
+	member variable.  Don't insert them into the IL here.
+	(gimple_folder::fold_pfalse): Drop use of fold_to_stmt_vops.
+	(gimple_folder::fold_call_to): Likewise.
+	(gimple_folder::fold_to_stmt_vops): Delete.
+	(gimple_folder::fold): Handle the new stmts member variable.
+	Use gsi_replace_with_seq_vops if we're replacing a call while
+	in SSA form.
+	(gimple_folder::force_val): Add to the gimple sequence instead
+	of inserting directly into the IL.
+	(gimple_folder::assign): Likewise.
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(gimple_ifn::fold): Likewise.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svdupq_impl::fold): Likewise.  Remove direct use of
+	gsi_replace_with_seq.
+	(svld1rq_impl::fold): Likewise gsi_replace_with_seq_vops.
+	(svcmp_impl::fold, svdup_impl::fold, svld234_impl::fold)
+	(svsel_impl::fold, svst1_impl::fold, svst234_impl::fold): Update
+	calls to convert_pred, force_vector, and fold_contiguous_base.
+
+2026-10-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/121688
+	* config/i386/sse.md (VF48H_AVX512VL): Change V8SF condition
+	to TARGET_F16C || TARGET_AVX512VL.
+
+2026-10-15  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127882
+	* match.pd (vec_perm (view_convert? (vec_perm)) merge): Query
+	each permute with its own modes.  Rename the modes and selectors
+	and show the VIEW_CONVERT_EXPR in the comment.
+
+2026-10-15  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127860
+	* optabs.cc (expand_vec_perm_const): Reduce the selector by twice
+	the input length.  Only use vec_shr and vec_shl for constant-length
+	inputs of the result mode, and the fallbacks for inputs of the
+	result mode.  Check earlier that the inputs have the same mode.
+
+2026-10-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-reassoc.cc (ccmp_comparison_p): New function.
+	(prepare_ccmp_chain): Likewise.
+	(reassociate_bb): Keep a complete conditional-compare chain linear
+	and put its required first operand in the innermost pair.
+
+2026-10-15  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/109832
+	* ccmp.cc (ccmp_tree_comparison_p): Report whether an accepted leaf
+	is a comparison.
+	(ccmp_candidate_p): Propagate the result and cache all-boolean
+	candidates.
+	(expand_ccmp_expr): Reject an all-boolean candidate.
+	* tree-outof-ssa.h (ssaexpand::ccmp_no_comparison): New member.
+	* tree-outof-ssa.cc (finish_out_of_ssa): Free it.
+
+2026-10-15  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127883
+	* config/i386/i386.md (*extzvdi_shr):
+	New define_insn_and_split pattern.
+
+2026-10-15  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/127649
+	* config/i386/i386-expand.cc (ix86_fp_cmp_code_to_pcmp_immediate):
+	Use NEQ_OS for LTGT.
+	(ix86_expand_fp_vec_cmp): Expand LTGT as LT | GT.
+	* config/i386/i386.cc (ix86_print_operand): Print neq_os for LTGT.
+
 2026-10-14  Richard Sandiford  <rdsandiford@googlemail.com>
 
 	* config/aarch64/aarch64-acle-builtins.h
