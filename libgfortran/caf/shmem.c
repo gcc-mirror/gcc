@@ -833,6 +833,21 @@ check_map_team (int *remote_index, int *this_index, const int image_index,
   return check;
 }
 
+/* Report the outcome R of a collective through STAT and ERRMSG.  A
+   terminated image leaves the collective incomplete (F2023 16.6).  */
+
+static void
+report_collective (collsub_result r, int *stat, char *errmsg,
+		   size_t errmsg_len)
+{
+  if (r == COLLSUB_TERMINATED)
+    HEALTH_CHECK (stat, errmsg, errmsg_len);
+  else if (r == COLLSUB_NO_MEMORY)
+    caf_internal_error ("Shared memory exhausted; increase "
+			"GFORTRAN_SHARED_MEMORY_SIZE",
+			stat, errmsg, errmsg_len);
+}
+
 void
 _gfortran_caf_co_broadcast (gfc_descriptor_t *desc, int source_image, int *stat,
 			    char *errmsg __attribute__ ((unused)),
@@ -849,9 +864,8 @@ _gfortran_caf_co_broadcast (gfc_descriptor_t *desc, int source_image, int *stat,
 		       NULL, stat))
     return;
 
-  /* A terminated image leaves the collective incomplete (F2023 16.6).  */
-  if (!collsub_broadcast_array (desc, mapped_index))
-    HEALTH_CHECK (stat, errmsg, errmsg_len);
+  report_collective (collsub_broadcast_array (desc, mapped_index), stat,
+		     errmsg, errmsg_len);
 }
 
 #define GEN_OP(name, op, type)                                                 \
@@ -953,8 +967,8 @@ _gfortran_caf_co_sum (gfc_descriptor_t *desc, int result_image, int *stat,
 
   SWITCH_TYPE_KIND (sum)
 
-  if (!collsub_reduce_array (desc, mapped_index, opr, 0, 0))
-    HEALTH_CHECK (stat, errmsg, errmsg_len);
+  report_collective (collsub_reduce_array (desc, mapped_index, opr, 0, 0),
+		     stat, errmsg, errmsg_len);
 }
 
 void
@@ -979,8 +993,8 @@ _gfortran_caf_co_min (gfc_descriptor_t *desc, int result_image, int *stat,
 
   SWITCH_TYPE_KIND (min)
 
-  if (!collsub_reduce_array (desc, mapped_index, opr, 0, 0))
-    HEALTH_CHECK (stat, errmsg, errmsg_len);
+  report_collective (collsub_reduce_array (desc, mapped_index, opr, 0, 0),
+		     stat, errmsg, errmsg_len);
 }
 
 void
@@ -1005,8 +1019,8 @@ _gfortran_caf_co_max (gfc_descriptor_t *desc, int result_image, int *stat,
 
   SWITCH_TYPE_KIND (max)
 
-  if (!collsub_reduce_array (desc, mapped_index, opr, 0, 0))
-    HEALTH_CHECK (stat, errmsg, errmsg_len);
+  report_collective (collsub_reduce_array (desc, mapped_index, opr, 0, 0),
+		     stat, errmsg, errmsg_len);
 }
 
 void
@@ -1029,8 +1043,9 @@ _gfortran_caf_co_reduce (gfc_descriptor_t *desc, void *(*opr) (void *, void *),
 			  NULL, stat))
     return;
 
-  if (!collsub_reduce_array (desc, mapped_index, opr, opr_flags, desc_len))
-    HEALTH_CHECK (stat, errmsg, errmsg_len);
+  report_collective (collsub_reduce_array (desc, mapped_index, opr, opr_flags,
+					   desc_len),
+		     stat, errmsg, errmsg_len);
 }
 
 void

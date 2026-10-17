@@ -35,6 +35,9 @@ typedef struct collsub_shared
 {
   size_t curr_size;
   shared_mem_ptr collsub_buf;
+  /* Set when growing collsub_buf failed, until every image of the team has
+     seen it.  Guarded by mutex.  */
+  bool alloc_failed;
   counter_barrier barrier;
   caf_shmem_mutex mutex;
 } collsub_shared;
@@ -42,12 +45,20 @@ typedef struct collsub_shared
 void collsub_init_supervisor (collsub_shared *, allocator *,
 			      const int init_num_images);
 
-/* Both return false when an image of the current team terminated before the
-   collective could be completed.  */
+typedef enum
+{
+  COLLSUB_DONE,
+  /* An image of the current team terminated before the collective could be
+     completed.  */
+  COLLSUB_TERMINATED,
+  /* The shared memory cannot hold the collective's buffer.  */
+  COLLSUB_NO_MEMORY
+} collsub_result;
 
-bool collsub_broadcast_array (gfc_descriptor_t *, int);
+collsub_result collsub_broadcast_array (gfc_descriptor_t *, int);
 
-bool collsub_reduce_array (gfc_descriptor_t *, int, void *(*) (void *, void *),
-			   int opr_flags, int str_len);
+collsub_result collsub_reduce_array (gfc_descriptor_t *, int,
+				     void *(*) (void *, void *),
+				     int opr_flags, int str_len);
 
 #endif
