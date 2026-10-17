@@ -3374,6 +3374,7 @@ extern rtx convert_memory_address_addr_space (scalar_int_mode, rtx,
 extern const char *get_insn_name (int);
 extern rtx_insn *get_last_insn_anywhere (void);
 extern rtx_insn *get_first_nonnote_insn (void);
+extern rtx_insn *get_first_nonnote_nondebug_insn (void);
 extern rtx_insn *get_last_nonnote_insn (void);
 extern void start_sequence (void);
 extern void push_to_sequence (rtx_insn *);

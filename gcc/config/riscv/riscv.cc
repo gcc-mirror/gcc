@@ -14187,10 +14187,10 @@ riscv_mode_needed (int entity, rtx_insn *insn, HARD_REG_SET)
   switch (entity)
     {
     case RISCV_VXRM:
-      /* If CUR_INSN is the first insn in the function, then determine if we
+      /* If CUR_INSN is the first nondebug insn, then determine if we
 	 want to signal a need in ENTRY->succs to allow for aggressive
 	 elimination of subsequent sets of VXRM.  */
-      if (insn == get_first_nonnote_insn ())
+      if (insn == get_first_nonnote_nondebug_insn ())
 	{
 	  int need = singleton_vxrm_need ();
 	  if (need != VXRM_MODE_NONE)

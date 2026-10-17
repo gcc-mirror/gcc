@@ -3567,6 +3567,19 @@ get_first_nonnote_insn (void)
   return insn;
 }
 
+/* Return the first nonnote, nondebug insn emitted in current sequence or
+   current function.  This routine follows get_first_nonnote_insn into a
+   leading SEQUENCE.  */
+
+rtx_insn *
+get_first_nonnote_nondebug_insn (void)
+{
+  rtx_insn *insn = get_first_nonnote_insn ();
+  while (insn && (NOTE_P (insn) || DEBUG_INSN_P (insn)))
+    insn = next_insn (insn);
+  return insn;
+}
+
 /* Return the last nonnote insn emitted in current sequence or current
    function.  This routine looks inside SEQUENCEs.  */
 
