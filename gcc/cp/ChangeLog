@@ -1,3 +1,24 @@
+2026-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.cc (write_name): Change type of the second argument
+	from const int to const bool, make it defaulted to false.
+	(write_local_name): Pass true rather than 1 to it.
+	(write_type_constraint, write_encoding, write_type,
+	write_class_enum_type, write_reflection, write_template_template_arg,
+	write_guarded_var_name): Remove ", 0" from callers.
+
+2026-10-16  Illia Polishchuk  <illia.polishchuk@thalesgroup.com>
+
+	PR c++/103303
+	* cp-tree.h (fixup_type_variants): Add update_align parameter.
+	* class.cc (fixup_type_variants): Only update alignment if
+	update_align is true.
+	(finish_struct_bits): Pass update_align = true.
+	* module.cc (trees_in::read_class_def): Likewise.
+	* cp-gimplify.cc (cp_genericize_r) <case INDIRECT_REF>: Use the
+	alignment of the class as a base for references to a class that
+	might be a base subobject.
+
 2026-10-13  Léo Hardt  <leom.hardt@inf.ufrgs.br>
 
 	* call.cc: Remove unused include directives.

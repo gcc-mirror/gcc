@@ -1,3 +1,10 @@
+2026-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126321
+	* sem_type.adb (Has_Compatible_Type): Remove code redundant with
+	the Covers routine, and deal specially with operations whose result
+	is of an universal numeric type when they are overloaded.
+
 2026-10-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/127880

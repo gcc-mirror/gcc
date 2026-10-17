@@ -1,3 +1,15 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/41418
+	* configure.ac (FC): Set to 'no' if '--enable-languages=fortran'
+	isn't in effect.
+	* configure: Regenerate.
+
 2026-10-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR middle-end/127723

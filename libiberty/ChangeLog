@@ -1,3 +1,8 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* acinclude.m4: Change AC_FUNC_MMAP to GCC_AC_FUNC_MMAP.
+	* configure: Regenerate.
+
 2026-10-15  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

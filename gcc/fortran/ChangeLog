@@ -1,3 +1,19 @@
+2026-10-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* class.cc (finalize_component): Apply ASSOCIATED to the base
+	pointer of EXPR rather than to EXPR.
+
+2026-10-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125747
+	* gfortran.h (gfc_forall_iterator): Add shadow_outer_sym.
+	* match.cc (apply_typespec_to_iterator): Number the shadow
+	variable name and set shadow_outer_sym.
+	* resolve.cc (check_default_none_expr): Use shadow_outer_sym.
+	(replace_in_code_recursive): Do not recurse into a nested
+	FORALL/DO CONCURRENT that shadows old_sym.
+	(gfc_resolve_forall): Use shadow_outer_sym.
+
 2026-10-14  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (gfc_match_omp_clauses): Handle 'cgroup' modifier to

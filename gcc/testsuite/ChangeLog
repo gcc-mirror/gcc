@@ -1,3 +1,91 @@
+2026-10-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/finalize_63.f90: New test.
+
+2026-10-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125747
+	* gfortran.dg/do_concurrent_typespec_2.f90: New test.
+	* gfortran.dg/do_concurrent_typespec_3.f90: New test.
+	* gfortran.dg/do_concurrent_typespec_4.f90: New test.
+	* gfortran.dg/do_concurrent_typespec_6.f90: New test.
+
+2026-10-16  Uttam Bhadauriya  <uttamsinghbhadoriya23@gmail.com>
+
+	PR tree-optimization/126627
+	* gcc.dg/tree-ssa/pr126627.c: New test.
+	* gcc.dg/tree-ssa/pr126627-2.c: New test.
+	* gcc.dg/pr127916.c: New file.
+
+2026-10-16  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* gcc.dg/unsafe-math-optimizations-1.c: New test.
+	* gcc.dg/unsafe-math-optimizations-2.c: New test.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127357
+	PR tree-optimization/127916
+	* gcc.dg/torture/pr127357.c: New test.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127916
+	* gcc.dg/torture/pr127916.c: New test.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127760
+	* gcc.dg/torture/pr127760.c: New test.
+
+2026-10-16  Hugo Sales  <hugo@hsal.es>
+
+	PR ipa/127917
+	* g++.dg/ipa/pr127917.C: New test.
+
+2026-10-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/114432
+	* gcc.target/s390/pr114432-1.c: New test.
+
+2026-10-16  Avinal Kumar  <avinal.xlvii@gmail.com>
+
+	PR tree-optimization/120524
+	* gcc.dg/tree-ssa/pr120524-1.c: New test.
+	* gcc.dg/tree-ssa/pr120524-2.c: New test.
+
+2026-10-16  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* gcc.target/riscv/rvv/autovec/vec-concat-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/vec-concat-2.c: Likewise.
+
+2026-10-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/test_rational_arithmetic2.adb: New test.
+	* gnat.dg/rational_arithmetic2.ads: New helper package.
+	* gnat.dg/invisible.ads: Likewise.
+
+2026-10-16  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/sve/sve-asrd-2.c: New test.
+
+2026-10-16  liuhongt  <hongtao.liu@intel.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127020
+	* gcc.target/i386/pr127020.c: New test.
+	* gcc.target/i386/pr127020-2.c: New test.
+
+2026-10-16  Sun, Qin  <qin.sun@intel.com>
+
+	* gcc.target/i386/pr127648.c: New test.
+
+2026-10-16  Illia Polishchuk  <illia.polishchuk@thalesgroup.com>
+
+	PR c++/103303
+	* g++.dg/torture/pr103303.C: New test.
+	* g++.target/i386/pr103303.C: New test.
+
 2026-10-15  Manjunath Matti  <mmatti.gnu@gmail.com>
 
 	PR target/127278

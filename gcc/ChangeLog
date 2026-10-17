@@ -1,3 +1,280 @@
+2026-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* doc/extend.texi (Common Attributes): Fix typo in example.
+
+2026-10-16  Uttam Bhadauriya  <uttamsinghbhadoriya23@gmail.com>
+
+	PR tree-optimization/126627
+	* match.pd: Simplify (a & -a) < 0 to a == INT_MIN and
+	(a & -a) >= 0 to a != INT_MIN, using the negate_maybe_without_ud
+	predicate to support both signed and unsigned negation.
+
+2026-10-16  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* cppbuiltin.cc (define_builtin_macros_for_compilation_flags):
+	Define __UNSAFE_MATH_OPTIMIZATIONS__.
+	* doc/cpp.texi (Common Predefined Macros): Document
+	__UNSAFE_MATH_OPTIMIZATIONS__.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127357
+	PR tree-optimization/127916
+	* match-sat-alu.pd (signed_integer_sat_add): Require opposite signs
+	for the two constants of the single AND IMM form.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127916
+	* match-sat-alu.pd (signed_integer_sat_add): Check the operand types
+	of the .ADD_OVERFLOW form and of the IMM = -1 form.
+	* tree-ssa-math-opts.cc (match_saturation_add_with_assign): Assert
+	that the first operand has the type of the result.
+	(match_saturation_add): Likewise.
+	* tree-vect-patterns.cc (vect_recog_sat_add_pattern): Likewise.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127760
+	* match-sat-alu.pd (unsigned_integer_sat_add): Check the type of the
+	.ADD_OVERFLOW result in the forms that select a separate X + Y.
+
+2026-10-16  Hugo Sales  <hugo@hsal.es>
+
+	PR ipa/127917
+	* ipa-cp.cc (cgraph_edge_brings_all_contexts_for_node): New function.
+	(perhaps_add_new_callers): Use it.
+
+2026-10-16  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/114432
+	* explow.cc (allocate_dynamic_stack_space): Save and restore
+	stack_pointer_delta also if expander allocate_stack is
+	available.
+
+2026-10-16  Avinal Kumar  <avinal.xlvii@gmail.com>
+
+	PR tree-optimization/120524
+	* match.pd: Use wide_int for shift-and-mask folding [PR120524]
+
+2026-10-16  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* config/riscv/autovec.md (vec_init<mode><v_half>): New expander.
+	(vec_extract<mode><v_half>): Use <V_HALF>.
+	* config/riscv/riscv-v.cc (shuffle_even_odd_patterns): Update
+	comments.
+	* config/riscv/vector.md (@vec_concat<mode>): New expander.
+	* config/riscv/vector-iterators.md (VLS_HAS_HALF): Add HF and BF modes.
+	(VLA_HAS_HALF, V_HAS_HALF): New mode iterators.
+	(V_HALF, v_half): Rename from VLS_HALF and vls_half.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genattrtab.cc (struct insn_ent): Add prev.
+	(remove_insn_ent): Use it instead of a search of the list.
+	(insert_insn_ent): Set it.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genattrtab.cc (struct insn_values_hasher): New hash traits.
+	(optimize_attrs): Simplify the attribute values only for the
+	first insn code of each set of insn codes with the same
+	attribute values and alternatives.  Give the other insn codes
+	the same values.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genattrtab.cc (check_attr_test): Build the IOR tree for a list
+	of values directly instead of with insert_right_side.
+
+2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* genattrtab.cc (curr_simplified): New.
+	(clear_curr_simplified): New.
+	(clear_struct_flag): Delete.
+	(copy_rtx_unchanging): Record the expressions it marks.
+	(optimize_attrs): Use clear_curr_simplified instead of
+	clear_struct_flag before each insn.  Also call it at the end.
+
+2026-10-16  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* gimple-range-path.h (path_range_query::close_dependencies): New.
+	(path_range_query::add_dependencies_of): New.
+	* gimple-range-path.cc (path_range_query::add_dependencies_of): New,
+	split out of...
+	(path_range_query::compute_exit_dependencies): ...here.
+	(path_range_query::close_dependencies): New, likewise.
+
+2026-10-16  Aldy Hernandez  <aldy@quesejoda.com>
+
+	* tree-ssa-threadbackward.h (back_threader::make_solver): New.
+	* tree-ssa-threadbackward.cc (back_threader::back_threader): Do not
+	create the solver.
+	(back_threader::~back_threader): Nor delete it.
+	(back_threader::make_solver): New.
+	(back_threader::search): Create the solver for the search.
+
+2026-10-16  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64.cc: Include internal-fn.h.
+	(aarch64_try_sdiv_pow2): New function.
+	(aarch64_instruction_selection): Call it for TRUNC_DIV_EXPR.
+
+2026-10-16  liuhongt  <hongtao.liu@intel.com>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/127020
+	* config/i386/i386.cc (ix86_rtx_costs): Use the add cost for
+	standalone double-word zero extensions when optimizing for speed.
+	Cost standalone double-word sign extensions one more than that.
+
+2026-10-16  Sun, Qin  <qin.sun@intel.com>
+
+	* config/i386/i386.cc (ix86_gimple_fold_builtin): Disable the
+	folding on flag_trapping_math.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgbuild.cc (make_edges): Read labels with label_ref_label.
+	(mark_tablejump_edge): Take an rtx_insn *.
+	(purge_dead_tablejump_edges): Read labels with label_ref_label.
+	* cprop.cc (bypass_block): Likewise.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* emit-rtl.cc (reset_all_used_flags): Walk sequences with
+	rtx_sequence.
+	(verify_rtl_sharing): Likewise.
+	(get_first_nonnote_insn): Likewise.
+	* except.cc (get_eh_region_and_lp_from_rtx): Likewise.
+	(can_throw_external): Likewise.
+	(insn_nothrow_p): Likewise.
+	(convert_to_eh_region_ranges): Likewise.
+	* final.cc (shorten_branches): Likewise.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* sched-deps.cc (sched_analyze_insn): Walk register uses with
+	rtx_insn_list.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/i386/i386-protos.h (ix86_check_movabs): Take an
+	rtx_insn *.
+	* config/i386/i386.cc (ix86_check_movabs): Likewise.
+	(insn_is_function_arg): Likewise.
+	* config/i386/x86-tune-sched-bd.cc (find_constant): Likewise.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* reg-stack.cc (stack_regs_mentioned): Take an rtx_insn *.
+	* rtl.h (stack_regs_mentioned): Likewise.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* final.cc (align_fuzz): Take an rtx_insn *.
+	(insn_current_reference_address): Cast JUMP_LABEL to rtx_insn *.
+	(shorten_branches): Keep the alignment chain as rtx_insn *, and
+	read ADDR_DIFF_VEC bounds with label_ref_label.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* combine.cc (insn_uid_check): Take an rtx_insn *.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/csky/csky.cc (csky_legitimize_pic_address): Pass the
+	emitted insn to set_unique_reg_note.
+	* emit-rtl.cc (set_for_reg_notes): Take an rtx_insn *.
+	(set_unique_reg_note): Likewise.
+	(set_dst_reg_note): Likewise.
+	* rtl.h (set_for_reg_notes): Likewise.
+	(set_unique_reg_note): Likewise.
+	(set_dst_reg_note): Likewise.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/i386/i386-expand.cc (ix86_expand_sse2_mulv4si3): Record
+	the emitted insn as an rtx_insn *.
+	* config/i386/i386-protos.h (ix86_dep_by_shift_count): Take an
+	rtx_insn *.
+	(ix86_match_ccmode): Likewise.
+	(ix86_match_ptest_ccmode): Likewise.
+	(ix86_check_movs): Likewise.
+	(ix86_check_no_addr_space): Likewise.
+	* config/i386/i386.cc (ix86_check_movs): Likewise.
+	(ix86_check_no_addr_space): Likewise.
+	(insn_uses_reg_mem): Likewise.
+	(ix86_dep_by_shift_count): Likewise.
+	(ix86_match_ccmode): Likewise.
+	(ix86_match_ptest_ccmode): Likewise.
+	* config/i386/x86-tune-sched-atom.cc (swap_top_of_ready_list):
+	Read DEP_PRO as an rtx_insn *.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgbuild.cc (rtl_make_eh_edge): Take an rtx_insn *.
+	* cfgbuild.h (rtl_make_eh_edge): Likewise.
+
+2026-10-16  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/i386/x86-tune-sched-atom.cc (do_reorder_for_imul): Take
+	an rtx_insn *.
+	* config/rs6000/rs6000.cc (is_costly_group): Likewise.
+	(force_new_group): Likewise.
+	(redefine_groups): Likewise.
+	* haifa-sched.cc (haifa_classify_insn): Likewise.
+	(rfs_result): Likewise.
+	* modulo-sched.cc (compute_jump_reg_dependencies): Likewise.
+	* sched-deps.cc (sd_next_list): Likewise.
+	(sd_lists_size): Likewise.
+	(sd_lists_empty_p): Likewise.
+	(sd_find_dep_between_no_cache): Likewise.
+	(sd_find_dep_between): Likewise.
+	(dump_lists): Likewise.
+	(sd_debug_lists): Likewise.
+	(create_insn_reg_set): Likewise.
+	(insn_use_p): Likewise.
+	(mark_insn_pseudo_birth): Likewise.
+	(mark_insn_hard_regno_birth): Likewise.
+	(mark_insn_reg_birth): Likewise.
+	(mark_insn_reg_store): Likewise.
+	(mark_insn_reg_clobber): Likewise.
+	* sched-ebb.cc (earliest_block_with_similiar_load): Likewise.
+	(ebb_compute_jump_reg_dependencies): Likewise.
+	* sched-int.h (sel_add_to_insn_priority): Likewise.
+	(haifa_classify_insn): Likewise.  Remove the duplicate prototype.
+	(sel_insn_is_speculation_check): Likewise.
+	(ebb_compute_jump_reg_dependencies): Likewise.
+	(struct sched_deps_info_def): Use rtx_insn * in the jump callback.
+	(sd_next_list): Take an rtx_insn *.
+	(struct _sd_iterator): Store the insn as an rtx_insn *.
+	(sd_iterator_start): Take an rtx_insn *.
+	(sd_lists_size): Likewise.
+	(sd_lists_empty_p): Likewise.
+	(sd_find_dep_between): Likewise.
+	(sd_debug_lists): Likewise.
+	* sched-rgn.cc (is_pfree): Likewise.
+	(is_conditionally_protected): Likewise.
+	(is_prisky): Likewise.
+	(set_spec_fed): Likewise.
+	(compute_jump_reg_dependencies): Likewise.
+	* sel-sched-dump.cc (dump_insn_rtx_1): Likewise.
+	(dump_insn_rtx): Likewise.
+	(debug_insn_rtx): Likewise.
+	* sel-sched-dump.h (dump_insn_rtx_1): Likewise.
+	(dump_insn_rtx): Likewise.
+	(debug_insn_rtx): Likewise.
+	* sel-sched-ir.cc (find_in_history_vect): Likewise.
+	(sel_insn_is_speculation_check): Likewise.
+	(get_dest_and_mode): Likewise.
+	(create_copy_of_insn_rtx): Likewise.
+	* sel-sched-ir.h (find_in_history_vect): Likewise.
+	(get_dest_and_mode): Likewise.
+	(create_copy_of_insn_rtx): Likewise.
+	* sel-sched.cc (in_fallthru_bb_p): Likewise.
+	(sel_add_to_insn_priority): Likewise.
+
 2026-10-15  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_can_change_mode_class): Don't reject

@@ -1,3 +1,45 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Include ../config/mmap.m4.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++23/Makefile.in: Regenerate.
+	* src/c++26/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/experimental/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2026-10-16  Jesse Connell  <jesseconnell@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127918
+	* include/bits/ranges_util.h (__mismatch_fn::operator()): Use
+	borrowed_iterator_t in return type.
+	* testsuite/25_algorithms/mismatch/constrained.cc: Check that
+	dangling results are correctly avoided.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/policy_data_structures.xml: Fix definition of
+	range-type iterator.
+	* doc/html/manual/policy_data_structures_design.html:
+	Regenerate.
+
 2026-10-14  Nathan Myers  <ncm@cantrip.org>
 
 	* testsuite/21_strings/basic_string/127228.cc:

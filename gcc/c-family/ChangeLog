@@ -1,3 +1,8 @@
+2026-10-16  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* c-cppbuiltin.cc (c_cpp_builtins_optimize_pragma): Define or
+	undefine __UNSAFE_MATH_OPTIMIZATIONS__.
+
 2026-10-12  Josef Melcr  <josef.melcr@suse.com>
 
 	PR c/127464

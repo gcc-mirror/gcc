@@ -1,3 +1,14 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* mmap.m4 (GCC_AC_FUNC_MMAP): New.
+	* no-executables.m4 (GCC_NO_EXECUTABLES): Use GCC_AC_FUNC_MMAP
+	instead of AC_FUNC_MMAP.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* multi.m4: Update AC_OUTPUT_COMMANDS to AC_CONFIG_COMMANDS.
+
 2026-10-13  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* enable.m4: Sync with binutils.

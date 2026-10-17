@@ -1,3 +1,8 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* libgo/configure: Regenerate.
+
 2026-10-13  Simon Marchi  <simon.marchi@efficios.com>
 
 	* MAINTAINERS: Regenerate.
