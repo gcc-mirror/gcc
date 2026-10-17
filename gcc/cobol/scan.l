@@ -2797,6 +2797,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ^[ ]*[$]{OBLANK}SET({SPC}CONSTANT)? {
 				  dialect_ok(yylloc, MfCdfDollar, yytext);
 				  PUSH_CDF_STATE; return CDF_DEFINE; }
+  ^[ ]*[#]DEFLIT		{ PUSH_CDF_STATE; return CDF_DEFINE; }
   ^[ ]*[$]{OBLANK}DISPLAY 	{ dialect_ok(yylloc, MfCdfDollar, yytext);
 				  PUSH_CDF_STATE; return CDF_DISPLAY; }
 

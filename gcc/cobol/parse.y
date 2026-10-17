@@ -4091,8 +4091,9 @@ level_name:     LEVEL ctx_name
                   if( !namcpy(@ctx_name, field.name, $2) ) YYERROR;
 
                   if( 0 == strcasecmp(field.name, "errno") ) {
-                    warn_msg(@ctx_name, "%<errno%> does not refer to the C variable, "
-                             "see posix-errno function");
+                      cbl_message(@ctx_name, ParErrno,
+                                  "%<errno%> does not refer to the C variable, "
+                                  "see posix-errno function");
                   }
 
                   $$ = field_add(@$, &field);

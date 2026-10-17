@@ -809,7 +809,7 @@ parse_replace_pairs( const char *stmt, const char *estmt,
   std::list<replace_t> pairs ;
 
   static const char     any_ch[] = "";
-  // lexio replaces 'D' with 0x8D for a Debug indicator, which scan.l recognizes. 
+  // lexio replaces 'D' with 0x8D for a Debug indicator, which scan.l recognizes.
   static const char nonword_ch[] = "[^[:alnum:]\x8D\"'$_-]";
 
   // Pattern to find one REPLACE pseudo-text pair
@@ -987,7 +987,7 @@ parse_copy_directive( filespan_t& mfile, const source_format_t& source_format ) 
         size_t nst = 1 + count_newlines(copy_stmt.p, copy_stmt.pend);
         dbgmsg("%s:%d: %s:" HOST_SIZE_T_PRINT_UNSIGNED
                ": COPY directive is " HOST_SIZE_T_PRINT_UNSIGNED " lines '%.*s'",
-               __func__, __LINE__, cobol_filename(), 
+               __func__, __LINE__, cobol_filename(),
                (fmt_size_t)nnl, (fmt_size_t)nst, copy_stmt.size(), copy_stmt.p);
       }
     }
@@ -1498,6 +1498,10 @@ inode_of( int fd ) {
   return sb.st_ino;
 }
 
+namespace cmd_line {
+  static source_format_t source_format;
+}
+
 FILE *
 cdftext::lex_open( const char filename[] ) {
   /*
@@ -1507,21 +1511,17 @@ cdftext::lex_open( const char filename[] ) {
    * redundant.
    */
 
+  source_format_stack_t source_format;
+  source_format.push(cmd_line::source_format);
+
   int input = open_input( filename );
   if( input == -1 ) return NULL;
 
   int output = open_output();
-  size_t n =0;
-  
+  size_t n = 0;
+
   // Process any files supplied by the -include command-line option.
   for( auto name : included_files ) {
-    source_format_stack_t source_format;
-    source_format_t format;  // free-form by default
-    if( command_line_indicator_column || explicit_format ) {
-      format.indicator_column_set(command_line_indicator_column);
-    }
-    source_format.push(format);
-
     int input; // cppcheck-suppress shadowVariable
     if( -1 == (input = open(name, O_RDONLY)) ) {
       cbl_message(LexIncludeE, "cannot open %<-include%> file %qs", name);
@@ -1537,13 +1537,6 @@ cdftext::lex_open( const char filename[] ) {
     dbgmsg("lex_open: processed %zu of %zu: '%s'", n, included_files.size(), name);
     cobol_filename_restore(); // process_file restores only for COPY
   }
-  source_format_stack_t source_format;
-  source_format_t format;  // free-form by default
-  if( command_line_indicator_column || explicit_format ) {
-    format.indicator_column_set(command_line_indicator_column);
-  }
-  source_format.push(format);
-
   included_files.clear();
   dbgmsg("lex_open: '%s'", filename);
 
@@ -1708,7 +1701,7 @@ valid_sequence_area( const char *data, const char *eodata ) {
        p++ )
   {
     auto eol = std::find(p, eodata, '\n');
-    if( p == data || ISSPACE(p[-1]) ) { // start-of-buffer or preceded by space. 
+    if( p == data || ISSPACE(p[-1]) ) { // start-of-buffer or preceded by space.
       if( is_program_id(p, eol) ) {     // found program-id token
 	const char *bol = p;
 	for( ; data <= bol-1 && bol[-1] != '\n'; --bol )
@@ -1780,7 +1773,7 @@ cdftext::free_form_reference_format( int input,
     if( mfile.is_blank_line() ) continue;
 
     // indcol is true only for fixed format
-    char *indcol = format.top().indicated(mfile.cur, mfile.eol); 
+    char *indcol = format.top().indicated(mfile.cur, mfile.eol);
 
     if( format.top().is_fixed() && !indcol ) { // short line
       erase_source(mfile.cur, mfile.eol);
@@ -1873,16 +1866,13 @@ cdftext::free_form_reference_format( int input,
 }
 
 bool cdftext::please_push_filename = false;
-int cdftext::command_line_indicator_column = 0;
-bool cdftext::explicit_format = false;
 
 void
 cobol_set_indicator_column( int column ) {
-  cdftext::command_line_indicator_column = column;
-  cdftext::explicit_format = true;
-  source_format_t local;
-  local.indicator_column_set(column);
-  dbgmsg("%s: format now %s", __func__, local.description());
+  source_format_t& format( cmd_line::source_format );
+
+  format.indicator_column_set(column);
+  dbgmsg("%s: format now %s", __func__, format.description());
 }
 
 static inline void
@@ -1897,7 +1887,7 @@ output_segment(const char *beg, const char *end,
     if (*p == '\t') {
       std::generate_n(ofs, 8, [](){ return ' '; });
       continue;
-    } 
+    }
     *ofs = *p;
   }
 #endif
@@ -1947,12 +1937,12 @@ cdftext::output_push_directive( const char filename[],
  * cobol filename and yylineno.
  */
 void
-cdftext::process_file( filespan_t mfile, int output, 
-                       source_format_stack_t source_format, 
+cdftext::process_file( filespan_t mfile, int output,
+                       source_format_stack_t source_format,
                        bool second_pass )
 {
   static size_t nfiles = 0;
-  
+
   __gnu_cxx::stdio_filebuf<char> outbuf(fdopen(output, "a"), std::ios::out);
   std::ostream out(&outbuf);
   std::ostream_iterator<char> ofs(out);
@@ -2020,7 +2010,7 @@ cdftext::process_file( filespan_t mfile, int output,
        */
       cobol_filename_restore();
       unsigned long n = std::count(copied.erased_lines.p, copied.erased_lines.pend, '\n');
-      std::copy_if(copied.erased_lines.p, copied.erased_lines.pend, ofs, 
+      std::copy_if(copied.erased_lines.p, copied.erased_lines.pend, ofs,
                    []( char ch ) { return ch == '\n'; } );
       dbgmsg("%s:%d: %lu blank lines erased", __func__, __LINE__, n);
     }

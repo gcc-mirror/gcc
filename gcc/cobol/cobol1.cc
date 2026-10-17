@@ -733,7 +733,7 @@ cobol_langhook_handle_option (size_t scode,
           return true;
 
         case OPT_Werrno:
-          cobol_warning(ParNumstrW, cobol_errno, warning_as_error);
+          cobol_warning(ParErrno, cobol_errno, warning_as_error);
           return true;
 
         case OPT_Wiconv_error:
