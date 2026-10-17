@@ -169,10 +169,6 @@ a68_build_a68_type_nodes (void)
   else
     a68_long_long_int_type = a68_long_int_type;
 
-  /* WORD INT */
-  a68_word_int_type
-    = build_nonstandard_integer_type (POINTER_SIZE, 0);
-
   /* SHORT SHORT BITS
      SHORT BITS
      BITS */
@@ -200,19 +196,10 @@ a68_build_a68_type_nodes (void)
   else
     a68_long_long_bits_type = a68_long_bits_type;
 
-  /* WORD BITS */
-  a68_word_bits_type
-    = build_nonstandard_integer_type (POINTER_SIZE, 1);
-
   /* BYTES
      LONG BYTES */
   a68_bytes_type = unsigned_type_node;
   a68_long_bytes_type = long_unsigned_type_node;
-
-
-  /* WORD BYTES */
-  a68_word_bytes_type
-    = build_nonstandard_integer_type (POINTER_SIZE, 1);
 
   /* REAL
      LONG REAL
@@ -220,6 +207,46 @@ a68_build_a68_type_nodes (void)
   a68_real_type = float_type_node;
   a68_long_real_type = double_type_node;
   a68_long_long_real_type = long_double_type_node;
+
+  /* Please note that it is important for the fixed sized modes defined below
+     (like word int, word real, etc) to be defined in terms of standard types,
+     since there is code in the lowering pass that relies on that.  */
+
+  /* WORD INT */
+  if (TYPE_PRECISION (a68_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_int_type;
+  else if (TYPE_PRECISION (a68_long_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_long_int_type;
+  else if (TYPE_PRECISION (a68_long_long_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_long_long_int_type;
+  else if (TYPE_PRECISION (a68_short_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_short_int_type;
+  else if (TYPE_PRECISION (a68_short_short_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_short_short_int_type;
+  else
+    gcc_unreachable ();
+
+  /* WORD BITS */
+  if (TYPE_PRECISION (a68_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_bits_type;
+  else if (TYPE_PRECISION (a68_long_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_long_bits_type;
+  else if (TYPE_PRECISION (a68_long_long_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_long_long_bits_type;
+  else if (TYPE_PRECISION (a68_short_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_short_bits_type;
+  else if (TYPE_PRECISION (a68_short_short_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_short_short_bits_type;
+  else
+    gcc_unreachable ();
+
+  /* WORD BYTES */
+  if (TYPE_PRECISION (a68_bytes_type) == POINTER_SIZE)
+    a68_word_bytes_type = a68_bytes_type;
+  else if (TYPE_PRECISION (a68_long_bytes_type) == POINTER_SIZE)
+    a68_word_bytes_type = a68_long_bytes_type;
+  else
+    gcc_unreachable ();
 
   /* WORD REAL */
   if (TYPE_PRECISION (a68_real_type) == POINTER_SIZE)
