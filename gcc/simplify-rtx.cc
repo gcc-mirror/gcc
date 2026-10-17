@@ -9059,7 +9059,9 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && known_eq (GET_MODE_NUNITS (outermode), GET_MODE_NUNITS (innermode))
       && known_eq (GET_MODE_UNIT_SIZE (outermode),
 		   GET_MODE_UNIT_SIZE (innermode)))
-    return simplify_gen_relational (GET_CODE (op), outermode, innermode,
+    /* INNERMODE is the mode of the comparison result; the comparison is
+       still done in the mode of its operands.  */
+    return simplify_gen_relational (GET_CODE (op), outermode, VOIDmode,
 				    XEXP (op, 0), XEXP (op, 1));
 
   /* Distribute non-paradoxical subregs through logic ops in cases where
@@ -10065,6 +10067,28 @@ test_vector_subregs (machine_mode inner_mode)
   test_vector_subregs_stepped (inner_mode);
 }
 
+/* A subreg of a vector comparison is simplified to a comparison in the
+   subreg's mode.  Check that the comparison is still done in the mode of
+   its operands, not of its integer result: with floating-point operands
+   that may be NaNs, x unord x and x ord x must not fold to constants.  */
+
+static void
+test_vector_subreg_of_fp_comparison (machine_mode mode)
+{
+  machine_mode int_mode;
+  if (!HONOR_NANS (mode)
+      || !related_int_vector_mode (mode).exists (&int_mode))
+    return;
+
+  rtx reg = make_test_reg (mode);
+  rtx unord = gen_rtx_UNORDERED (int_mode, reg, reg);
+  rtx ord = gen_rtx_ORDERED (int_mode, reg, reg);
+  rtx x = simplify_subreg (mode, unord, int_mode, 0);
+  ASSERT_TRUE (x == NULL_RTX || !CONSTANT_P (x));
+  x = simplify_subreg (mode, ord, int_mode, 0);
+  ASSERT_TRUE (x == NULL_RTX || !CONSTANT_P (x));
+}
+
 /* Verify some simplifications involving vectors.  */
 
 static void
@@ -10086,6 +10110,8 @@ test_vector_ops ()
 	      test_vector_rotate (vector_reg);
 	    }
 	  test_vec_merge (mode);
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	    test_vector_subreg_of_fp_comparison (mode);
 	}
     }
 }
