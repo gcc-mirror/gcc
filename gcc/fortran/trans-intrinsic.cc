@@ -12606,7 +12606,7 @@ conv_co_collective (gfc_code *code)
   if (errmsg_expr)
     {
       gfc_init_se (&argse, NULL);
-      gfc_conv_expr (&argse, errmsg_expr);
+      gfc_conv_expr_reference (&argse, errmsg_expr);
       gfc_add_block_to_block (&block, &argse.pre);
       gfc_add_block_to_block (&post_block, &argse.post);
       errmsg = argse.expr;
