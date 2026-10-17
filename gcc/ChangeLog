@@ -1,3 +1,16 @@
+2026-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* doc/extend.texi (Common Attributes): Fix typo in example.
+
+2026-10-16  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/126462
+	* match.pd (reassociate xor to expose rotate patterns): Rewrite using
+	wi:: interfaces for the xor constant operand.
+
 2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:

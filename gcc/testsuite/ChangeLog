@@ -1,3 +1,11 @@
+2026-10-16  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/126462
+	* gcc.dg/torture/pr126462.c: New test.
+
 2026-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
