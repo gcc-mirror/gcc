@@ -11042,8 +11042,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     unsigned HOST_WIDE_INT nelts, idx;
     unsigned HOST_WIDE_INT nelts_op = 0;
   }
+  /* NELTS is the number of elements in each input, which may differ
+     from that of the result; the selector indexes their concatenation.  */
   (if (constant_multiple_p (tree_to_poly_uint64 (@rpos), elem_size, &idx)
-       && VECTOR_CST_NELTS (@3).is_constant (&nelts)
+       && VECTOR_CST_NELTS (@3).is_constant ()
+       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)).is_constant (&nelts)
        && (known_eq (size, elem_size)
 	   || (constant_multiple_p (size, elem_size, &nelts_op)
 	       && pow2p_hwi (nelts_op))))
