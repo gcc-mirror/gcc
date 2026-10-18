@@ -2493,28 +2493,39 @@ simplify_context::simplify_associative_operation (rtx_code code,
   return 0;
 }
 
+/* A comparison mask has one bit per outcome for which the comparison
+   holds.  */
+enum comparison_mask
+{
+  CMP_BIT_UN = 1,
+  CMP_BIT_EQ = 2,
+  CMP_BIT_GT = 4,
+  CMP_BIT_LT = 8,
+  CMP_MASK_ORDERED = CMP_BIT_LT | CMP_BIT_GT | CMP_BIT_EQ,
+  CMP_MASK_ALL = CMP_MASK_ORDERED | CMP_BIT_UN
+};
+
 /* If COMPARISON can be treated as an unsigned comparison, return a mask
-   that represents it (8 if it includes <, 4 if it includes > and 2
-   if it includes ==).  Return 0 otherwise.  */
+   that represents it.  Return 0 otherwise.  */
 static int
 unsigned_comparison_to_mask (rtx_code comparison)
 {
   switch (comparison)
     {
     case LTU:
-      return 8;
+      return CMP_BIT_LT;
     case GTU:
-      return 4;
+      return CMP_BIT_GT;
     case EQ:
-      return 2;
+      return CMP_BIT_EQ;
 
     case LEU:
-      return 10;
+      return CMP_BIT_LT | CMP_BIT_EQ;
     case GEU:
-      return 6;
+      return CMP_BIT_GT | CMP_BIT_EQ;
 
     case NE:
-      return 12;
+      return CMP_BIT_LT | CMP_BIT_GT;
 
     default:
       return 0;
@@ -2528,23 +2539,40 @@ mask_to_unsigned_comparison (int mask)
 {
   switch (mask)
     {
-    case 8:
+    case CMP_BIT_LT:
       return LTU;
-    case 4:
+    case CMP_BIT_GT:
       return GTU;
-    case 2:
+    case CMP_BIT_EQ:
       return EQ;
 
-    case 10:
+    case CMP_BIT_LT | CMP_BIT_EQ:
       return LEU;
-    case 6:
+    case CMP_BIT_GT | CMP_BIT_EQ:
       return GEU;
 
-    case 12:
+    case CMP_BIT_LT | CMP_BIT_GT:
       return NE;
 
     default:
       gcc_unreachable ();
+    }
+}
+
+/* Return true if CODE is LTU, GTU, LEU or GEU.  */
+static bool
+unsigned_inequality_p (rtx_code code)
+{
+  switch (code)
+    {
+    case LTU:
+    case GTU:
+    case LEU:
+    case GEU:
+      return true;
+
+    default:
+      return false;
     }
 }
 
@@ -2555,35 +2583,35 @@ comparison_to_mask (enum rtx_code comparison)
   switch (comparison)
     {
     case LT:
-      return 8;
+      return CMP_BIT_LT;
     case GT:
-      return 4;
+      return CMP_BIT_GT;
     case EQ:
-      return 2;
+      return CMP_BIT_EQ;
     case UNORDERED:
-      return 1;
+      return CMP_BIT_UN;
 
     case LTGT:
-      return 12;
+      return CMP_BIT_LT | CMP_BIT_GT;
     case LE:
-      return 10;
+      return CMP_BIT_LT | CMP_BIT_EQ;
     case GE:
-      return 6;
+      return CMP_BIT_GT | CMP_BIT_EQ;
     case UNLT:
-      return 9;
+      return CMP_BIT_UN | CMP_BIT_LT;
     case UNGT:
-      return 5;
+      return CMP_BIT_UN | CMP_BIT_GT;
     case UNEQ:
-      return 3;
+      return CMP_BIT_UN | CMP_BIT_EQ;
 
     case ORDERED:
-      return 14;
+      return CMP_MASK_ORDERED;
     case NE:
-      return 13;
+      return CMP_BIT_UN | CMP_BIT_LT | CMP_BIT_GT;
     case UNLE:
-      return 11;
+      return CMP_BIT_UN | CMP_BIT_LT | CMP_BIT_EQ;
     case UNGE:
-      return 7;
+      return CMP_BIT_UN | CMP_BIT_GT | CMP_BIT_EQ;
 
     default:
       gcc_unreachable ();
@@ -2596,35 +2624,35 @@ mask_to_comparison (int mask)
 {
   switch (mask)
     {
-    case 8:
+    case CMP_BIT_LT:
       return LT;
-    case 4:
+    case CMP_BIT_GT:
       return GT;
-    case 2:
+    case CMP_BIT_EQ:
       return EQ;
-    case 1:
+    case CMP_BIT_UN:
       return UNORDERED;
 
-    case 12:
+    case CMP_BIT_LT | CMP_BIT_GT:
       return LTGT;
-    case 10:
+    case CMP_BIT_LT | CMP_BIT_EQ:
       return LE;
-    case 6:
+    case CMP_BIT_GT | CMP_BIT_EQ:
       return GE;
-    case 9:
+    case CMP_BIT_UN | CMP_BIT_LT:
       return UNLT;
-    case 5:
+    case CMP_BIT_UN | CMP_BIT_GT:
       return UNGT;
-    case 3:
+    case CMP_BIT_UN | CMP_BIT_EQ:
       return UNEQ;
 
-    case 14:
+    case CMP_MASK_ORDERED:
       return ORDERED;
-    case 13:
+    case CMP_BIT_UN | CMP_BIT_LT | CMP_BIT_GT:
       return NE;
-    case 11:
+    case CMP_BIT_UN | CMP_BIT_LT | CMP_BIT_EQ:
       return UNLE;
-    case 7:
+    case CMP_BIT_UN | CMP_BIT_GT | CMP_BIT_EQ:
       return UNGE;
 
     default:
@@ -2708,11 +2736,11 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
 
   /* Assume at first that the comparisons are on integers, and that the
      operands are therefore ordered.  */
-  int all = 14;
+  int all = CMP_MASK_ORDERED;
   int mask0 = unsigned_comparison_to_mask (code0);
   int mask1 = unsigned_comparison_to_mask (code1);
-  bool unsigned_p = (IN_RANGE (mask0 & 12, 4, 8)
-		     || IN_RANGE (mask1 & 12, 4, 8));
+  bool unsigned_p = (unsigned_inequality_p (code0)
+		     || unsigned_inequality_p (code1));
   if (unsigned_p)
     {
       /* We only reach here when comparing integers.  Reject mixtures of signed
@@ -2726,7 +2754,7 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
 	 results are possible for CC modes, and punt later if we don't get an
 	 always-true or always-false answer.  */
       if (GET_MODE_CLASS (cmp_mode) == MODE_CC || HONOR_NANS (cmp_mode))
-	all = 15;
+	all = CMP_MASK_ALL;
       mask0 = comparison_to_mask (code0) & all;
       mask1 = comparison_to_mask (code1) & all;
     }
@@ -2760,7 +2788,7 @@ simplify_context::simplify_logical_relational_operation (rtx_code code,
       code = mask_to_comparison (mask);
       /* LTGT and NE are arithmetically equivalent for ordered operands,
 	 with NE being the canonical choice.  */
-      if (code == LTGT && all == 14)
+      if (code == LTGT && all == CMP_MASK_ORDERED)
 	code = NE;
     }
 
