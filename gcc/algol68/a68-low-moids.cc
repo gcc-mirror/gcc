@@ -352,7 +352,6 @@ lower_proc_mode (MOID_T *m)
      build_function_type, which we cannot use, but such is life.  */
   TREE_TYPE (function_type) = ret_type; /* THIS */
   TYPE_ARG_TYPES (function_type) = fnargs;
-  SET_TYPE_STRUCTURAL_EQUALITY (function_type);
 
   if (!COMPLETE_TYPE_P (function_type))
     layout_type (function_type);
@@ -381,7 +380,6 @@ lower_union_mode (MOID_T *m)
   TYPE_NAME (c_union_type) = NULL_TREE;
   TYPE_FIELDS (c_union_type) = NULL_TREE;
   TYPE_CXX_ODR_P (c_union_type) = 0; // XXX otherwise lto complains.  why.
-  SET_TYPE_STRUCTURAL_EQUALITY (c_union_type);
 
   /* Add field declarations.  */
   chain_struct_fields (PACK (m), c_union_type);
@@ -443,7 +441,6 @@ lower_union_mode (MOID_T *m)
       TYPE_FORWARD_REFERENCES (union_type) = forward_refs;
     }
 
-  SET_TYPE_STRUCTURAL_EQUALITY (union_type);
   A68_UNION_TYPE_P (union_type) = 1;
   return union_type;
 }
