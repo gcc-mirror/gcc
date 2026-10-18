@@ -3324,6 +3324,54 @@ eval_body_of (location_t loc, const constexpr_ctx *ctx, tree r,
   return get_reflection_raw (loc, body, REFLECT_UNDEF);
 }
 
+/* Append STMT, a statement of a block, to ELTS the way statements_of
+   reports it.  */
+
+static void
+append_block_statement (location_t loc, tree stmt,
+			vec<constructor_elt, va_gc> **elts)
+{
+  while (stmt && (TREE_CODE (stmt) == BIND_EXPR
+		  || TREE_CODE (stmt) == CLEANUP_POINT_EXPR
+		  || TREE_CODE (stmt) == EXPR_STMT))
+    {
+      if (TREE_CODE (stmt) == BIND_EXPR)
+	stmt = BIND_EXPR_BODY (stmt);
+      else if (TREE_CODE (stmt) == CLEANUP_POINT_EXPR)
+	stmt = TREE_OPERAND (stmt, 0);
+      else
+	stmt = EXPR_STMT_EXPR (stmt);
+    }
+  if (!stmt || TREE_CODE (stmt) == DEBUG_BEGIN_STMT)
+    return;
+
+  /* A local variable whose type has a non-trivial destructor makes the rest
+     of its block the body of a TRY_FINALLY_EXPR, with the destructor call as
+     the cleanup: that is how cp_genericize lowers the variable's
+     CLEANUP_STMT.  C++ has no try-finally statement, so report the
+     statements of the body in place, and leave out the destructor call,
+     which isn't in the source.  */
+  if (TREE_CODE (stmt) == TRY_FINALLY_EXPR)
+    {
+      tree body = TREE_OPERAND (stmt, 0);
+      if (body && TREE_CODE (body) == STATEMENT_LIST)
+	for (tree s : tsi_range (body))
+	  append_block_statement (loc, s, elts);
+      else
+	append_block_statement (loc, body, elts);
+      return;
+    }
+
+  if (TREE_CODE (stmt) == INIT_EXPR
+      && TREE_OPERAND_LENGTH (stmt) > 0
+      && VAR_P (TREE_OPERAND (stmt, 0))
+      && !DECL_ARTIFICIAL (TREE_OPERAND (stmt, 0)))
+    return;
+
+  CONSTRUCTOR_APPEND_ELT (*elts, NULL_TREE,
+			  get_reflection_raw (loc, stmt, REFLECT_UNDEF));
+}
+
 /* Process std::meta::statements_of.
    Returns: A vector of reflections of top-level statements in the block.
    Throws: meta::exception if the argument does not represent a block or statement.  */
@@ -3363,40 +3411,7 @@ eval_statements_of (location_t loc, const constexpr_ctx *ctx, tree r,
       if (TREE_CODE (r) == STATEMENT_LIST)
 	{
 	  for (tree stmt : tsi_range (r))
-	    {
-	      if (stmt)
-		{
-		  if (TREE_CODE (stmt) == DEBUG_BEGIN_STMT)
-		    continue;
-
-		  tree unwrapped = stmt;
-		  while (unwrapped && (TREE_CODE (unwrapped) == BIND_EXPR
-				       || TREE_CODE (unwrapped) == CLEANUP_POINT_EXPR
-				       || TREE_CODE (unwrapped) == EXPR_STMT))
-		    {
-		      if (TREE_CODE (unwrapped) == BIND_EXPR)
-			unwrapped = BIND_EXPR_BODY (unwrapped);
-		      else if (TREE_CODE (unwrapped) == CLEANUP_POINT_EXPR)
-			unwrapped = TREE_OPERAND (unwrapped, 0);
-		      else if (TREE_CODE (unwrapped) == EXPR_STMT)
-			unwrapped = EXPR_STMT_EXPR (unwrapped);
-		    }
-		  if (unwrapped)
-		    {
-		      if (TREE_CODE (unwrapped) == DEBUG_BEGIN_STMT)
-			continue;
-
-		      if (TREE_CODE (unwrapped) == INIT_EXPR
-			  && TREE_OPERAND_LENGTH (unwrapped) > 0
-			  && VAR_P (TREE_OPERAND (unwrapped, 0))
-			  && !DECL_ARTIFICIAL (TREE_OPERAND (unwrapped, 0)))
-			continue;
-
-		      CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
-					      get_reflection_raw (loc, unwrapped, REFLECT_UNDEF));
-		    }
-		}
-	    }
+	    append_block_statement (loc, stmt, &elts);
 	}
       else if (TREE_CODE (r) == IF_STMT)
 	{
@@ -3593,6 +3608,18 @@ unwrap_statement_wrappers (tree r)
   return r;
 }
 
+/* True if T is the function's return slot: its RESULT_DECL or, for a class
+   returned by invisible reference (one with a non-trivial destructor or copy
+   constructor), the dereference of it that cp_genericize puts in its place.  */
+
+static bool
+is_return_slot (tree t)
+{
+  if (t && TREE_CODE (t) == INDIRECT_REF)
+    t = TREE_OPERAND (t, 0);
+  return t && TREE_CODE (t) == RESULT_DECL;
+}
+
 static tree
 eval_is_return_statement (tree r)
 {
@@ -3602,7 +3629,7 @@ eval_is_return_statement (tree r)
   if (r && (TREE_CODE (r) == RETURN_EXPR
 	    || ((TREE_CODE (r) == INIT_EXPR || TREE_CODE (r) == MODIFY_EXPR)
 		&& TREE_OPERAND_LENGTH (r) > 0
-		&& TREE_CODE (TREE_OPERAND (r, 0)) == RESULT_DECL)))
+		&& is_return_slot (TREE_OPERAND (r, 0)))))
     return boolean_true_node;
   return boolean_false_node;
 }
@@ -3615,7 +3642,7 @@ eval_is_declaration_statement (tree r)
     return boolean_false_node;
   if (r && (TREE_CODE (r) == INIT_EXPR || TREE_CODE (r) == MODIFY_EXPR)
       && TREE_OPERAND_LENGTH (r) > 0
-      && TREE_CODE (TREE_OPERAND (r, 0)) == RESULT_DECL)
+      && is_return_slot (TREE_OPERAND (r, 0)))
     return boolean_false_node;
   if (r && (TREE_CODE (r) == INIT_EXPR || TREE_CODE (r) == MODIFY_EXPR))
     return boolean_true_node;
@@ -3753,6 +3780,32 @@ eval_initializer_of (location_t loc, const constexpr_ctx *ctx, tree r,
 			  fun, non_constant_p, jump_target);
 }
 
+/* True if R is an AGGR_INIT_EXPR for a call to a function that returns a
+   class by value, rather than for a constructor call.  GCC uses one for a
+   call that returns a class with a non-trivial destructor or copy
+   constructor.  */
+
+static bool
+aggr_init_call_p (tree r)
+{
+  return r && TREE_CODE (r) == AGGR_INIT_EXPR && !AGGR_INIT_VIA_CTOR_P (r);
+}
+
+/* `return f (args);` for a class type initializes a temporary in the return
+   slot from the call.  Report the call, as for any other type.  */
+
+static tree
+strip_return_slot_temporary (tree v)
+{
+  if (v && TREE_CODE (v) == TARGET_EXPR)
+    {
+      tree init = TARGET_EXPR_INITIAL (v);
+      if (init && (TREE_CODE (init) == CALL_EXPR || aggr_init_call_p (init)))
+	return init;
+    }
+  return v;
+}
+
 static tree
 eval_return_value_of (location_t loc, const constexpr_ctx *ctx, tree r,
 		      bool *non_constant_p, tree *jump_target, tree fun)
@@ -3766,15 +3819,15 @@ eval_return_value_of (location_t loc, const constexpr_ctx *ctx, tree r,
       tree ret_val = TREE_OPERAND (r, 0);
       ret_val = unwrap_statement_wrappers (ret_val);
       if (ret_val && (TREE_CODE (ret_val) == MODIFY_EXPR || TREE_CODE (ret_val) == INIT_EXPR))
-	ret_val = TREE_OPERAND (ret_val, 1);
+	ret_val = strip_return_slot_temporary (TREE_OPERAND (ret_val, 1));
       if (ret_val)
 	return get_reflection_raw (loc, ret_val, REFLECT_UNDEF);
     }
   else if (r && (TREE_CODE (r) == INIT_EXPR || TREE_CODE (r) == MODIFY_EXPR)
 	   && TREE_OPERAND_LENGTH (r) > 1
-	   && TREE_CODE (TREE_OPERAND (r, 0)) == RESULT_DECL)
+	   && is_return_slot (TREE_OPERAND (r, 0)))
     {
-      tree ret_val = TREE_OPERAND (r, 1);
+      tree ret_val = strip_return_slot_temporary (TREE_OPERAND (r, 1));
       if (ret_val)
 	return get_reflection_raw (loc, ret_val, REFLECT_UNDEF);
     }
@@ -3828,7 +3881,7 @@ eval_is_construct (tree r)
   tree_code code = TREE_CODE (r);
   if (code == TARGET_EXPR
       || code == CONSTRUCTOR
-      || code == AGGR_INIT_EXPR)
+      || (code == AGGR_INIT_EXPR && !aggr_init_call_p (r)))
     return boolean_true_node;
   return boolean_false_node;
 }
@@ -3952,7 +4005,7 @@ eval_is_function_call (tree r)
 {
   if (!r)
     return boolean_false_node;
-  if (TREE_CODE (r) == CALL_EXPR)
+  if (TREE_CODE (r) == CALL_EXPR || aggr_init_call_p (r))
     return boolean_true_node;
   return boolean_false_node;
 }
@@ -4012,6 +4065,21 @@ eval_operands_of (location_t loc, const constexpr_ctx *ctx, tree r,
 	if (arg)
 	  CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
 				  get_reflection_raw (loc, arg, REFLECT_UNDEF));
+    }
+  else if (aggr_init_call_p (r))
+    {
+      // The same as a CALL_EXPR: the callee, then the arguments.  The slot
+      // the call initializes isn't an operand in the source.
+      tree fn = AGGR_INIT_EXPR_FN (r);
+      if (TREE_CODE (fn) == ADDR_EXPR)
+	fn = TREE_OPERAND (fn, 0);
+      CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
+			      get_reflection_raw (loc, fn, REFLECT_UNDEF));
+      aggr_init_expr_arg_iterator ai;
+      for (tree arg = first_aggr_init_expr_arg (r, &ai); arg;
+	   arg = next_aggr_init_expr_arg (&ai))
+	CONSTRUCTOR_APPEND_ELT (elts, NULL_TREE,
+				get_reflection_raw (loc, arg, REFLECT_UNDEF));
     }
   else
     {
