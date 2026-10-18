@@ -496,8 +496,8 @@
 	(bitmanip_rotate:SI
 	  (match_operand:SI 1 "register_operand" "r")
 	  (match_operator 3 "subreg_lowpart_operator"
-	    [(and:X (match_operand:SI 2 "register_operand"  "r")
-		    (const_int 31))])))]
+	    [(and:DI (match_operand:DI 2 "register_operand"  "r")
+		     (const_int 31))])))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "<bitmanip_insn>w\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
@@ -509,8 +509,8 @@
 	  (bitmanip_rotate:SI
 	    (match_operand:SI 1 "register_operand" "r")
 	    (match_operator 3 "subreg_lowpart_operator"
-	      [(and:X (match_operand:GPR 2 "register_operand"  "r")
-		      (const_int 31))]))))]
+	      [(and:DI (match_operand:DI 2 "register_operand"  "r")
+		       (const_int 31))]))))]
   "TARGET_64BIT && (TARGET_ZBB || TARGET_ZBKB)"
   "<bitmanip_insn>w\t%0,%1,%2"
   [(set_attr "type" "bitmanip")
