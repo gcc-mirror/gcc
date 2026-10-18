@@ -1,0 +1,1 @@
+$ // { dg-error "failed to parse macro invocation path" "" { target *-*-* } }

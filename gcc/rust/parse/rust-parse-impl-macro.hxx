@@ -33,7 +33,11 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
   location_t macro_locus = lexer.peek_token ()->get_locus ();
   auto path = parse_simple_path ();
   if (!path)
-    return nullptr;
+    {
+      rust_error_at (lexer.peek_token ()->get_locus (),
+		     "failed to parse macro invocation path");
+      return nullptr;
+    }
 
   if (!skip_token (EXCLAM))
     {
