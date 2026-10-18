@@ -1,3 +1,7 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	* ax_check_define.m4: Update to serial 12.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* mmap.m4 (GCC_AC_FUNC_MMAP): New.

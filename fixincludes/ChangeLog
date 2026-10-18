@@ -1,3 +1,19 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't check for errno.
+	* system.h: Drop errno fallback.
+
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for abort. Don't search for strings.h.
+	* system.h: Drop abort fallback. Drop strings.h fallback.
+
 2026-10-15  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

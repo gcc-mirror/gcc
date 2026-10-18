@@ -1,3 +1,16 @@
+2026-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127559
+	* semantics.cc (finish_omp_target_clauses_r): Only record
+	in local_decls VAR_DECLs, PARM_DECLs and RESULT_DECLs.
+	For TARGET_EXPR with lambda type mark TARGET_EXPR_SLOT in
+	local_decls too.  Never *walk_subtrees = 0; for lambdas.
+	Don't add arbitrary expressions of lambda type to
+	lambda_objects_accessed, only VAR_DECLs, PARM_DECLs or
+	RESULT_DECLs possibly with COMPONENT_REFs or ARRAY_REFs around
+	those.  If it is handled component case, check in local_decls
+	the base variable rather than whole expression.
+
 2026-10-16  Jakub Jelinek  <jakub@redhat.com>
 
 	* mangle.cc (write_name): Change type of the second argument

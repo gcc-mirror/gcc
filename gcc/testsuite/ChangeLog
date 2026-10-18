@@ -1,3 +1,40 @@
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/coarray_collectives_6.f90: Expect the address of
+	errmsg.
+	* gfortran.dg/coarray_collectives_12.f90: Likewise.
+	* gfortran.dg/coarray_collectives_16.f90: Likewise.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* gfortran.dg/coarray/alloc_pool_exhausted_1.f90: New test.
+
+2026-10-17  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR rtl-optimization/127903
+	* gcc.dg/torture/pr127903.c: New test.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127941
+	* gfortran.dg/allocate_with_source_14.f03: Expect one fewer call
+	to __builtin_free.
+	* gfortran.dg/finalize_64.f90: New test.
+
+2026-10-17  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR target/127934
+	PR target/127936
+	* gcc.target/aarch64/bti-debug-1.c: New test.
+	* gcc.target/riscv/rvv/base/vxrm-debug-1.c: New test.
+
+2026-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/127945
+	* g++.dg/cpp26/literals1.C: Drop bogus { target c++23 } from dg-error.
+	* g++.dg/cpp26/literals2.C: Likewise.
+
 2026-10-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/finalize_63.f90: New test.

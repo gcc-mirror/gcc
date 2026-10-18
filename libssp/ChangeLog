@@ -1,3 +1,13 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for memmove, strncat, strncpy.
+	Unconditionally search for mempcpy.
+	* strncpy-chk.c: Drop HAVE_STRNCPY guard.
+	* memmove-chk.c: Drop HAVE_MEMMOVE guard.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.

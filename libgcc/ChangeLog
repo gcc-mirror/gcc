@@ -1,3 +1,11 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for inttypes.h, stdint.h, sys/auxv.h,
+	sys/mman.h, sys/stat.h, sys/types.h, or unistd.h.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* configure.ac: Include ../config/mmap.m4.

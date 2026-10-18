@@ -1,3 +1,46 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for stddef.h, time.h.
+	* system.h: Drop guards for stddef.h, time.h.
+
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for abort, atof, atol, calloc, clock,
+	errno, free, getenv, malloc, realloc, strotol, strtoul, or strstr.
+	Don't check whether clock_t is defined in time.h.
+	* system.h: Drop obsolete fallbacks.
+
+2026-10-17  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/bitmanip.md (minmax splitter): Remove broken pattern.
+	(*bextdi_position_ze_masked): Likewise.
+	(polarity reversed mask splitter): Clobber GPR, not X mode register.
+	(splitter to generate bext): Make conditional on TARGET_ZBS.
+
+2026-10-17  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR rtl-optimization/127903
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Pass VOIDmode,
+	not INNERMODE, as the comparison mode of a subreg'd vector comparison.
+	(test_vector_subreg_of_fp_comparison): New selftest.
+	(test_vector_ops): Call it for float vector modes.
+
+2026-10-17  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR target/127934
+	PR target/127936
+	* config/arm/aarch-bti-insert.cc (rest_of_insert_bti): Use
+	get_first_nonnote_nondebug_insn.
+	* config/riscv/riscv.cc (riscv_mode_needed): Likewise.
+	* emit-rtl.cc (get_first_nonnote_nondebug_insn): New function.
+	* rtl.h (get_first_nonnote_nondebug_insn): Declare.
+
 2026-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* doc/extend.texi (Common Attributes): Fix typo in example.

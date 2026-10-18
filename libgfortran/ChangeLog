@@ -1,3 +1,46 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127753
+	* caf/shmem/shared_memory.c (ENV_FD): New.
+	(shared_memory_init): Pass the descriptor to the images through
+	ENV_FD and unlink the object.  Use the inherited descriptor in an
+	image.  Exclude the mapping from core dumps.
+	(shared_memory_cleanup): Do not unlink an unlinked object.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* caf/shmem/thread_support.c (initialize_shared_mutex)
+	(initialize_shared_errorcheck_mutex): Do not make the mutex robust.
+	* caf/shmem/thread_support.h: Remove the executable bit.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* caf/shmem.c (_gfortran_caf_register): Handle a failed allocation
+	of a component.
+	(_gfortran_caf_form_team): Report a failed allocation.
+	* caf/shmem/alloc.c (get_memory_by_id_internal): Return NULL when
+	the shared memory is exhausted.
+	* caf/shmem/alloc.h (alloc_get_memory_by_id): Document it.
+	* caf/shmem/allocator.c (allocator_shared_malloc_or_die): New
+	function.
+	* caf/shmem/allocator.h (allocator_shared_malloc): Document the null
+	result.
+	(allocator_shared_malloc_or_die): Declare.
+	* caf/shmem/collective_subroutine.c (collsub_init_supervisor)
+	(get_collsub_buf): Use allocator_shared_malloc_or_die.
+	* caf/shmem/hashmap.c (hashmap_init_supervisor)
+	(enlarge_hashmap_mem): Likewise.
+	* caf/shmem/sync.c (sync_init_supervisor): Likewise.
+	* caf/shmem/shared_memory.c (shared_memory_get_mem_with_alignment):
+	Return a null pointer when the shared memory is exhausted.
+	* caf/shmem/supervisor.c (ensure_shmem_initialization): Terminate
+	when the initial team cannot be allocated.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.
