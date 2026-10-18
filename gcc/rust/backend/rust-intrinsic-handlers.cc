@@ -706,6 +706,94 @@ atomic_compare_exchange (IntrinsicCtx &ctx, bool weak, int success_ordering,
   ctx.add_statement (return_statement);
 }
 
+// Compiles atomic min/max with signature (*mut T, T) -> T
+//
+// no gcc backend built-in equivalent, so we just do a compare-and-swap loop
+// similar to rustc_codegen_gcc & libstdc++.
+//
+// This is equivalent to the following code:
+//
+// T old_val = __atomic_load_N (dst, failure_order);
+// do
+//   {
+//     T desired = min_or_max (old_val, value);
+//     if (__atomic_compare_exchange_N (dst, &old_val, desired, true,
+//					order, failure_order))
+//	  break;
+//   } while (true);
+// return old_val;
+void
+atomic_minmax (IntrinsicCtx &ctx, AtomicMinMaxKind kind, int ordering)
+{
+  // Most intrinsic functions are pure but not the atomic ones
+  TREE_READONLY (ctx.fn) = 0;
+  TREE_SIDE_EFFECTS (ctx.fn) = 1;
+
+  auto load_decl = resolve_atomic_builtin (ctx, "atomic_load");
+  if (!load_decl || load_decl == error_mark_node)
+    return;
+  auto exchange_decl = resolve_atomic_builtin (ctx, "atomic_compare_exchange");
+  if (!exchange_decl || exchange_decl == error_mark_node)
+    return;
+
+  auto dst = Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
+  TREE_READONLY (dst) = 0;
+  auto value = Backend::var_expression (ctx.param_vars[1], UNDEF_LOCATION);
+  auto value_type = ctx.param_types[1];
+
+  // release uses relaxed & acq_req uses acquire for loads on fail exchanges
+  int failure_ordering = ordering;
+  if (ordering == __ATOMIC_RELEASE)
+    failure_ordering = __ATOMIC_RELAXED;
+  else if (ordering == __ATOMIC_ACQ_REL)
+    failure_ordering = __ATOMIC_ACQUIRE;
+
+  auto failure_memorder = make_unsigned_long_tree (failure_ordering);
+  auto load_addr = build_fold_addr_expr_loc (UNDEF_LOCATION, load_decl);
+  auto load_call = Backend::call_expression (load_addr, {dst, failure_memorder},
+					     nullptr, UNDEF_LOCATION);
+  TREE_READONLY (load_call) = 0;
+  TREE_SIDE_EFFECTS (load_call) = 1;
+
+  tree tmp_stmt = NULL_TREE;
+  Bvariable *expected_var
+    = Backend::temporary_variable (ctx.fn, NULL_TREE, value_type, load_call,
+				   true, UNDEF_LOCATION, &tmp_stmt);
+  ctx.add_statement (tmp_stmt);
+  auto expected = expected_var->get_tree (UNDEF_LOCATION);
+
+  bool is_unsigned = kind == AtomicMinMaxKind::UnsignedMax
+		     || kind == AtomicMinMaxKind::UnsignedMin;
+  auto comparison_type = is_unsigned ? unsigned_type_for (value_type)
+				     : signed_type_for (value_type);
+
+  // handle signedness irrespective of what the original type of the var is,
+  // in case users do things like using atomic_umin on signed types and expect
+  // it to work correctly
+  bool is_min = (kind == AtomicMinMaxKind::SignedMin
+		 || kind == AtomicMinMaxKind::UnsignedMin);
+  auto desired = build2 (is_min ? MIN_EXPR : MAX_EXPR, comparison_type,
+			 fold_convert (comparison_type, expected),
+			 fold_convert (comparison_type, value));
+  desired = fold_convert (value_type, desired);
+
+  auto exchange_addr = build_fold_addr_expr_loc (UNDEF_LOCATION, exchange_decl);
+  auto expected_addr = build_fold_addr_expr_loc (UNDEF_LOCATION, expected);
+  auto exchange_call
+    = Backend::call_expression (exchange_addr,
+				{dst, expected_addr, desired, boolean_true_node,
+				 make_unsigned_long_tree (ordering),
+				 failure_memorder},
+				nullptr, UNDEF_LOCATION);
+  TREE_READONLY (exchange_call) = 0;
+  TREE_SIDE_EFFECTS (exchange_call) = 1;
+
+  auto exit = Backend::exit_expression (exchange_call, UNDEF_LOCATION);
+  ctx.add_statement (Backend::loop_expression (exit, UNDEF_LOCATION));
+  ctx.add_statement (
+    Backend::return_statement (ctx.fn, expected, UNDEF_LOCATION));
+}
+
 // Shared inner implementation for ctlz and ctlz_nonzero.
 //
 // nonzero=false → ctlz: ctlz(0) is well-defined in Rust and must return
@@ -1192,6 +1280,14 @@ atomic_compare_exchange (bool weak, int success_ordering, int failure_ordering)
   return [weak, success_ordering, failure_ordering] (IntrinsicCtx &ctx) {
     return inner::atomic_compare_exchange (ctx, weak, success_ordering,
 					   failure_ordering);
+  };
+}
+
+Intrinsic::CompileFn
+atomic_minmax (AtomicMinMaxKind kind, int ordering)
+{
+  return [kind, ordering] (IntrinsicCtx &ctx) {
+    return inner::atomic_minmax (ctx, kind, ordering);
   };
 }
 

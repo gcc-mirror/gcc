@@ -151,6 +151,27 @@ public:
   static constexpr auto &ATOMIC_XOR_ACQREL = "atomic_xor_acqrel";
   static constexpr auto &ATOMIC_XOR_RELAXED = "atomic_xor_relaxed";
 
+  static constexpr auto &ATOMIC_MIN = "atomic_min";
+  static constexpr auto &ATOMIC_MIN_ACQ = "atomic_min_acq";
+  static constexpr auto &ATOMIC_MIN_REL = "atomic_min_rel";
+  static constexpr auto &ATOMIC_MIN_ACQREL = "atomic_min_acqrel";
+  static constexpr auto &ATOMIC_MIN_RELAXED = "atomic_min_relaxed";
+  static constexpr auto &ATOMIC_MAX = "atomic_max";
+  static constexpr auto &ATOMIC_MAX_ACQ = "atomic_max_acq";
+  static constexpr auto &ATOMIC_MAX_REL = "atomic_max_rel";
+  static constexpr auto &ATOMIC_MAX_ACQREL = "atomic_max_acqrel";
+  static constexpr auto &ATOMIC_MAX_RELAXED = "atomic_max_relaxed";
+  static constexpr auto &ATOMIC_UMIN = "atomic_umin";
+  static constexpr auto &ATOMIC_UMIN_ACQ = "atomic_umin_acq";
+  static constexpr auto &ATOMIC_UMIN_REL = "atomic_umin_rel";
+  static constexpr auto &ATOMIC_UMIN_ACQREL = "atomic_umin_acqrel";
+  static constexpr auto &ATOMIC_UMIN_RELAXED = "atomic_umin_relaxed";
+  static constexpr auto &ATOMIC_UMAX = "atomic_umax";
+  static constexpr auto &ATOMIC_UMAX_ACQ = "atomic_umax_acq";
+  static constexpr auto &ATOMIC_UMAX_REL = "atomic_umax_rel";
+  static constexpr auto &ATOMIC_UMAX_ACQREL = "atomic_umax_acqrel";
+  static constexpr auto &ATOMIC_UMAX_RELAXED = "atomic_umax_relaxed";
+
   static constexpr auto &ATOMIC_CXCHG = "atomic_cxchg";
   static constexpr auto &ATOMIC_CXCHG_ACQ = "atomic_cxchg_acq";
   static constexpr auto &ATOMIC_CXCHG_REL = "atomic_cxchg_rel";
