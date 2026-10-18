@@ -2443,7 +2443,10 @@ public:
 
   bool matches_call_types_p (const call_details &cd) const final override
   {
-    return (cd.num_args () == 3 && cd.arg_is_pointer_p (1));
+    return (cd.num_args () == 3
+	    && cd.arg_is_integral_p (0)
+	    && cd.arg_is_pointer_p (1)
+	    && cd.arg_is_integral_p (2));
   }
 
   void impl_call_post (const call_details &cd) const final override
