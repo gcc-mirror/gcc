@@ -41,15 +41,30 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
     && !defined __cplusplus
 # if _FORTIFY_SOURCE == 1
 #  define __SSP_FORTIFY_LEVEL 1
-# elif _FORTIFY_SOURCE > 1
+# elif _FORTIFY_SOURCE == 2
 #  define __SSP_FORTIFY_LEVEL 2
+# elif _FORTIFY_SOURCE > 2
+#  ifdef __has_builtin
+#   if __has_builtin (__builtin_dynamic_object_size)
+#    define __SSP_FORTIFY_LEVEL 3
+#   else
+#    define __SSP_FORTIFY_LEVEL 2
+#   endif
+#  else
+#   define __SSP_FORTIFY_LEVEL 2
+#  endif
 # endif
 #endif
 
 #if __SSP_FORTIFY_LEVEL > 0
 # include <stddef.h>
-# define __ssp_bos(ptr) __builtin_object_size (ptr, __SSP_FORTIFY_LEVEL > 1)
-# define __ssp_bos0(ptr) __builtin_object_size (ptr, 0)
+# if __SSP_FORTIFY_LEVEL > 2
+#  define __ssp_bos(ptr) __builtin_dynamic_object_size (ptr, 1)
+#  define __ssp_bos0(ptr) __builtin_dynamic_object_size (ptr, 0)
+# else
+#  define __ssp_bos(ptr) __builtin_object_size (ptr, __SSP_FORTIFY_LEVEL > 1)
+#  define __ssp_bos0(ptr) __builtin_object_size (ptr, 0)
+# endif
 
 # define __SSP_REDIRECT(name, proto, alias) \
   name proto __asm__ (__SSP_ASMNAME (#alias))
