@@ -8173,13 +8173,16 @@ get_scratch_register_on_entry (struct scratch_reg *sr)
 	       && !static_chain_p
 	       && drap_regno != CX_REG)
 	regno = CX_REG;
-      else if (ix86_save_reg (BX_REG, true, false))
+      else if (ix86_save_reg (BX_REG, true, false)
+	       && drap_regno != BX_REG)
 	regno = BX_REG;
       /* esi is the static chain register.  */
       else if (!(regparm == 3 && static_chain_p)
-	       && ix86_save_reg (SI_REG, true, false))
+	       && ix86_save_reg (SI_REG, true, false)
+	       && drap_regno != SI_REG)
 	regno = SI_REG;
-      else if (ix86_save_reg (DI_REG, true, false))
+      else if (ix86_save_reg (DI_REG, true, false)
+	       && drap_regno != DI_REG)
 	regno = DI_REG;
       else
 	{
