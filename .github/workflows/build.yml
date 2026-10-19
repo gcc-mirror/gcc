@@ -2,7 +2,7 @@ name: Compile GCC
 
 on:
   push:
-    branches: [ "master", "ci", "autograd-capable" ]
+    branches: [ "master", "p4395", "p4395ci" ]
   pull_request:
   workflow_dispatch:
 
