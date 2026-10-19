@@ -121,6 +121,7 @@ erase_if(Pred pred)
       entry_pointer new_entries = s_entry_allocator.allocate(new_size);
       std::copy(m_a_entries, m_a_entries + left, new_entries);
       s_entry_allocator.deallocate(m_a_entries, m_actual_size);
+      m_a_entries = new_entries;
       m_actual_size = new_size;
       resize_policy::notify_arbitrary(m_actual_size);
     }

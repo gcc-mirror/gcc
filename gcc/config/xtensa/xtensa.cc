@@ -499,9 +499,12 @@ xt_true_regnum (rtx x)
 {
   if (REG_P (x))
     {
+      /* Before LRA, reg_renumber need not cover pseudos created since it
+	 was last resized (e.g. by ira_emit during regional allocation).  */
       if (! HARD_REGISTER_P (x)
 	  && reg_renumber
-	  && (lra_in_progress || reg_renumber[REGNO (x)] >= 0))
+	  && (lra_in_progress
+	      || (reload_completed && reg_renumber[REGNO (x)] >= 0)))
 	return reg_renumber[REGNO (x)];
       return REGNO (x);
     }

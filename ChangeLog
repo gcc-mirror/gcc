@@ -1,3 +1,11 @@
+2026-09-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/120106
+	* Makefile.def (GNATMAKE_FOR_BUILD): New flag to pass.
+	* Makefile.tpl (HOST_EXPORTS): Remove GNATMAKE_FOR_BUILD.
+	(BASE_TARGET_EXPORTS): Likewise.
+	* Makefile.in: Regenerate.
+
 2026-09-16  Kishan Parmar  <kishan@linux.ibm.com>
 
 	Backported from master:

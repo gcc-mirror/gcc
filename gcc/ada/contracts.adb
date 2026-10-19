@@ -452,6 +452,8 @@ package body Contracts is
 
          if Nkind (Decl) in N_Abstract_Subprogram_Declaration
                           | N_Entry_Declaration
+                          | N_Formal_Abstract_Subprogram_Declaration
+                          | N_Formal_Concrete_Subprogram_Declaration
                           | N_Generic_Subprogram_Declaration
                           | N_Subprogram_Declaration
          then
@@ -4231,7 +4233,8 @@ package body Contracts is
       then
          pragma Assert
            (Comes_From_Source (Subp_Id)
-              or else Is_Dispatch_Table_Wrapper (Subp_Id));
+             or else Is_Dispatch_Table_Wrapper (Subp_Id)
+             or else Is_Primitive_Wrapper (Subp_Id));
 
          if No (Dynamic_Call_Helper (Subp_Id)) then
 

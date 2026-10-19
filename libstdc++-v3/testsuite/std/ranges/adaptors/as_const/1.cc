@@ -81,6 +81,11 @@ test04()
   VERIFY( ranges::equal(v, x) );
 }
 
+using Owning = ranges::single_view<int>;
+using Borrowed = std::span<int>;
+static_assert( ! ranges::enable_borrowed_range<ranges::as_const_view<Owning>> );
+static_assert( ranges::enable_borrowed_range<ranges::as_const_view<Borrowed>> );
+
 int
 main()
 {

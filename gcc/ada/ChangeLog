@@ -1,3 +1,77 @@
+2026-10-14  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127880
+	* contracts.adb (Make_Class_Precondition_Subps): Accept another
+	kind of wrapper subprograms.
+
+2026-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/127880
+	* sem_ch12.adb (Build_Subprogram_Wrapper): Remove the subprogram
+	renaming created for the formal-to-actual association from the
+	list of renamings (only when such a subprogram renaming is present).
+	Also, change the name from plural to singular, since the procedure
+	only creates one wrapper, update the spec comment to reflect that,
+	and clarify the state and use of the Renamings parameter.
+
+2026-10-14  Gary Dismukes  <dismukes@adacore.com>
+
+	PR ada/127880
+	* contracts.adb (Analyze_Contracts): Add cases for formal subprogram
+	Nkinds so that Analyze_Entry_Or_Subprogram_Contract will be called
+	for them.
+	* sem_attr.adb (Analyze_Attribute_Old_Result): Account for the cases
+	of formal subprogram Nkinds, allowing Old attributes for those.
+	* sem_ch12.adb (Build_Subprogram_Wrappers): Add a formal for passing
+	the unanalyzed generic formal, and use it for copying any aspect
+	specifications of the generic formal rather than copying the analyzed
+	generic formal's aspects.
+	(Analyze_One_Association): Pass Assoc.Un_Formal as an additional
+	actual in the call to Build_Subprogram_Wrappers.
+
+2026-10-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnat/system-linux-loongarch.ads (Address): Add size clause.
+
+2026-10-12  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/system-linux-loongarch.ads(Support_Atomic_Primitives):
+	New boolean constant.
+
+2026-10-07  Hodong Kim  <hodong@nimfsoft.com>
+
+	PR ada/127759
+	* libgnat/g-socthi.adb (C_Accept): Do not call Disable_SIGPIPE
+	on failure.
+	(C_Socket): Likewise.
+
+2026-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126448
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Pass Nam instead of
+	Name (N) in the calls to Find_Renamed_Entity.  Remove if_statement
+	whose condition is always false.
+	(Find_Renamed_Entity): In the overloaded case and if the overload
+	resolution has succeeded, call Mark_Use_Clauses on the entity.
+
+2026-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/126125
+	* sem_ch8.adb (Find_Direct_Name): Add missing guard to the manual
+	walk of the scope stack used to cope with the Rtsfind mechanism.
+
+2026-10-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127756
+	* exp_util.adb (Find_Protection_Type): Remove early return.
+
+2026-09-29  Yang Yujie  <yangyujie@loongson.cn>
+
+	* libgnat/s-objrea.ads (Object_Arch): Add LOONGARCH.
+	* libgnat/s-objrea.adb (EM_LOONGARCH): New named number.
+	(ELF_Ops.Initialize): Deal with EM_LOONGARCH.
+	(Read_Address): Deal with LOONGARCH.
+
 2026-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_attr.adb (Expand_N_Attribute_Reference) <Attribute_Valid>:

@@ -39,6 +39,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef HAVE_MALLOC_H
 # include <malloc.h>
 #endif
+#ifdef HAVE_STDLIB_H
+# include <stdlib.h>
+#endif
 #ifdef HAVE_STRING_H
 # include <string.h>
 #endif

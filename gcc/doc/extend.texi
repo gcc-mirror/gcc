@@ -3357,7 +3357,7 @@ int pclose (FILE*);
   FILE* fopen (const char*, const char*);
 [[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* fmemopen(void *, size_t, const char *);
-[[gnu::malloc, gnu::malloc (fclose, 1)]]
+[[gnu::malloc, gnu::malloc (pclose, 1)]]
   FILE* popen (const char*, const char*);
 [[gnu::malloc, gnu::malloc (fclose, 1)]]
   FILE* tmpfile (void);
@@ -9838,7 +9838,7 @@ does not distinguish between types with different attributes.  Support
 for attributes in C++ may be restricted in future to attributes on
 declarations only, but not on nested declarators.
 
-@xref{Attributes}, for details of the semantics of attributes.
+@xref{Attributes}, for details of the semantics of attributes
 applying to functions.
 
 An @dfn{attribute specifier} is of the form

@@ -24679,7 +24679,7 @@ finish_using_decl (tree qscope, tree identifier, bool typename_p = false)
       finish_member_declaration (decl);
     }
   else
-    finish_nonmember_using_decl (qscope, identifier);
+    finish_nonmember_using_decl (qscope, identifier, typename_p);
   return decl;
 }
 

@@ -57,7 +57,7 @@
 # include <bits/stl_algo.h>     // upper_bound
 # include <bits/range_access.h> // begin/end for arrays
 #endif
-#if __cpp_lib_chrono >= 201803L // C++20 && HOSTED && USE_CXX11_ABI
+#if __cpp_lib_chrono >= 201803L // C++20 && HOSTED
 # include <sstream>
 # include <string>
 # include <vector>
@@ -2544,7 +2544,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if _GLIBCXX_HOSTED
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
     // C++20 [time.zones] Time zones
 
     struct tzdb;
@@ -3219,7 +3219,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     using zoned_seconds = zoned_time<seconds>;
-#endif // _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#endif // __cpp_lib_chrono >= 201803L
 
 namespace __detail
 {
@@ -3270,11 +3270,11 @@ namespace __detail
 
       // The list above is known to be valid until (at least) this date
       // and only contains positive leap seconds.
-      constexpr sys_seconds __expires(1798416000s); // 2026-12-28 00:00:00 UTC
+      constexpr sys_seconds __expires(1814140800s); // 2027-06-28 00:00:00 UTC
 
       if (__ss > __expires)
 	{
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI // use chrono::tzdb
+#if __cpp_lib_chrono >= 201803L // use chrono::tzdb
 	  // Call into the library because it might have knowledge of new
 	  // leap seconds loaded at runtime from the tzdata files.
 
@@ -3601,7 +3601,7 @@ namespace __detail
     };
 
 #if _GLIBCXX_HOSTED
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
   // zoned_time
   template<typename _Duration, typename _TimeZonePtr>
     requires __is_hash_enabled_for<
@@ -3658,7 +3658,7 @@ namespace __detail
 		 __val.value().count());
       }
     };
-#endif // _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#endif // __cpp_lib_chrono >= 201803L
 #endif // _GLIBCXX_HOSTED
 #endif // __glibcxx_chrono_cxx20 >= 202306
 

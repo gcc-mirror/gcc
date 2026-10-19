@@ -1330,7 +1330,7 @@
 	  container:
 	</para>
 	<programlisting>
-	  #include &lt;ext/pb_ds/assoc_container.h&gt;
+	  #include &lt;ext/pb_ds/assoc_container.hpp&gt;
 
 	  int main()
 	  {
@@ -1353,7 +1353,7 @@
 	<para>This snippet shows a red-black tree based container:</para>
 
 	<programlisting>
-	  #include &lt;ext/pb_ds/assoc_container.h&gt;
+	  #include &lt;ext/pb_ds/assoc_container.hpp&gt;
 
 	  int main()
 	  {

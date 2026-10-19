@@ -1498,8 +1498,8 @@ constexpr leap_second tzdb_list::_Node::fixed_leaps[] {
 namespace
 {
   // The expiry date corresponding to the list above.
-  // tzdata 2026a leapseconds list expires at 2026-12-28 00:00:00 UTC
-  constexpr seconds fixed_expiry{1798416000u};
+  // tzdata 2026e leapseconds list expires at 2027-06-28 00:00:00 UTC
+  constexpr seconds fixed_expiry{1814140800};
 }
 
 // This holds the most up-to-date number of leap seconds known at runtime.

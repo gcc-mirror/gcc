@@ -2674,6 +2674,8 @@ eval_source_location_of (location_t loc, tree r, reflect_kind kind,
        for now use location_t of the base parent (i.e. the derived
        class).  */
     r = direct_base_derived (r);
+  else
+    r = maybe_get_first_fn (r);
   if (OVERLOAD_TYPE_P (r) || (TYPE_P (r) && typedef_variant_p (r)))
     rloc = DECL_SOURCE_LOCATION (TYPE_NAME (r));
   else if (DECL_P (r) && r != global_namespace)
@@ -7087,16 +7089,17 @@ class_members_of (location_t loc, const constexpr_ctx *ctx, tree r,
     {
       tree m = field;
       if (TREE_CODE (field) == FIELD_DECL && DECL_ARTIFICIAL (field))
-	continue; /* Ignore bases and the vptr.  */
+	/* Ignore bases and the vptr.  */
+	continue;
+      else if (DECL_CLONED_FUNCTION_P (field))
+	/* Ignore cloned cdtors.  */
+	continue;
       else if (DECL_SELF_REFERENCE_P (field))
 	continue;
       else if (TREE_CODE (field) == TYPE_DECL)
 	m = TREE_TYPE (field);
       else if (TREE_CODE (field) == FUNCTION_DECL)
 	{
-	  /* Ignore cloned cdtors.  */
-	  if (DECL_CLONED_FUNCTION_P (field))
-	    continue;
 	  /* Ignore functions with unsatisfied constraints.  */
 	  if (!constraints_satisfied_p (field))
 	    continue;

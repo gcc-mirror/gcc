@@ -885,8 +885,8 @@ compiler supports scalar decimal floating-point types defined via
 <entry><filename class="headerfile">ext/new_allocator.h</filename></entry>
 <entry><filename class="headerfile">ext/numeric</filename></entry>
 <entry><filename class="headerfile">ext/numeric_traits.h</filename></entry>
-<entry><filename class="headerfile">ext/pb_ds/assoc_container.h</filename></entry>
-<entry><filename class="headerfile">ext/pb_ds/priority_queue.h</filename></entry>
+<entry><filename class="headerfile">ext/pb_ds/assoc_container.hpp</filename></entry>
+<entry><filename class="headerfile">ext/pb_ds/priority_queue.hpp</filename></entry>
 </row>
 <row>
 <entry><filename class="headerfile">ext/pod_char_traits.h</filename></entry>

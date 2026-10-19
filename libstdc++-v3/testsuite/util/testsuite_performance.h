@@ -157,17 +157,17 @@ namespace __gnu_test
     void
     clear() throw()
     {
-      memset(&rusage_begin, 0, sizeof(rusage_begin));
-      memset(&rusage_end, 0, sizeof(rusage_end));
-      memset(&allocation_begin, 0, sizeof(allocation_begin));
-      memset(&allocation_end, 0, sizeof(allocation_end));
+      rusage_begin = rusage();
+      rusage_end = rusage();
+      allocation_begin = MallocInfo();
+      allocation_end = MallocInfo();
     }
 
     void
     start()
     {
       if (getrusage(who, &rusage_begin) != 0 )
-	memset(&rusage_begin, 0, sizeof(rusage_begin));
+	rusage_begin = rusage();
       void* p __attribute__((unused)) = malloc(0); // Needed for some implementations.
       allocation_begin = malloc_info();
     }
@@ -176,7 +176,7 @@ namespace __gnu_test
     stop()
     {
       if (getrusage(who, &rusage_end) != 0 )
-	memset(&rusage_end, 0, sizeof(rusage_end));
+	rusage_end = rusage();
       allocation_end = malloc_info();
     }
 

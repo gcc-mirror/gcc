@@ -17169,6 +17169,8 @@ tsubst_splice_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
      certain kind of entities.  */
   if (SPLICE_EXPR_MEMBER_ACCESS_P (t))
     gcc_assert (valid_splice_for_member_access_p (op, /*decls_only_p=*/false));
+  else if (SPLICE_EXPR_EXPRESSION_P (t))
+    op = convert_from_reference (op);
 
   return op;
 }
@@ -19869,7 +19871,10 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    if (DECL_DEPENDENT_P (decl))
 	      {
 		scope = tsubst (scope, args, complain, in_decl);
+		if (scope == error_mark_node)
+		  return error_mark_node;
 		if (!MAYBE_CLASS_TYPE_P (scope)
+		    && TREE_CODE (scope) != NAMESPACE_DECL
 		    && TREE_CODE (scope) != ENUMERAL_TYPE)
 		  {
 		    if (complain & tf_error)
@@ -19877,7 +19882,8 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 				"class, namespace, or enumeration", scope);
 		    return error_mark_node;
 		  }
-		finish_nonmember_using_decl (scope, DECL_NAME (decl));
+		finish_nonmember_using_decl (scope, DECL_NAME (decl),
+					     USING_DECL_TYPENAME_P (decl));
 	      }
 	    else
 	      {
@@ -26312,14 +26318,14 @@ unify_array_domain (tree tparms, tree targs,
      by adding one to the other bound.  */
   if (parm_cst && !arg_cst)
     parm_max = fold_build2_loc (input_location, PLUS_EXPR,
-				integer_type_node,
+				TREE_TYPE (parm_max),
 				parm_max,
-				integer_one_node);
+				build_int_cst (TREE_TYPE (parm_max), 1));
   else if (arg_cst && !parm_cst)
     arg_max = fold_build2_loc (input_location, PLUS_EXPR,
-			       integer_type_node,
+			       TREE_TYPE (arg_max),
 			       arg_max,
-			       integer_one_node);
+			       build_int_cst (TREE_TYPE (arg_max), 1));
 
   return unify (tparms, targs, parm_max, arg_max,
 		UNIFY_ALLOW_INTEGER, explain_p);

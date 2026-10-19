@@ -1,3 +1,11 @@
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-24  Jakub Jelinek  <jakub@redhat.com>
+
+	* alloc.c (gomp_aligned_alloc): Check for overflows in the
+	_aligned_malloc case and in the last fallback.
+
 2026-08-07  Release Manager
 
 	* GCC 16.2.0 released.

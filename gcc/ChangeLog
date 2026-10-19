@@ -1,3 +1,286 @@
+2026-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
+
+	* doc/extend.texi (Common Attributes): Fix typo in example.
+
+2026-10-16  Jeff Law  <jeffreyalaw@gmail.com>
+
+	Backported from master:
+	2026-09-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR tree-optimization/126462
+	* match.pd (reassociate xor to expose rotate patterns): Rewrite using
+	wi:: interfaces for the xor constant operand.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/aarch64.md (movti):  Ensure we don't call
+	gen_highpart on a subreg.
+	(addti3): Use pure_register_operand for the destination.
+	(addvti4): Likewise.
+	(uaddvti4): Likewise.
+	(subti3): Likewise.
+	(subvti4): Likewise.
+	(usubti4): Likewise.
+	(<su_optab>mulditi3): Likewise.
+	(multi3): Require pure_register_operand for all operands.
+
+2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-09-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/predicates.md (pure_register_operand): New predicate.
+	* config/aarch64/aarch64.md (negvti3): Use it.
+
+2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (hppa_rtx_costs_shadd_p): Strip SUBREG wrappers
+	from inner operands when checking if X represents a possible
+	shadd pattern.
+
+2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.md (canonicalize_funcptr_for_compare): Check for
+	SYMBOL_REF targets that are not function addresses early and emit
+	a direct move instruction to bypass redundant libcall wrappers.
+
+2026-10-13  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-10-12  liuhongt  <hongtao.liu@intel.com>
+
+	PR tree-optimization/127382
+	* match.pd (cond_expr_convert_p): Use tree_nop_conversion_p
+	instead of INTEGRAL_TYPE_P to check the integral selected
+	operands.
+
+2026-10-12  Jeevitha  <jeevitha@linux.ibm.com>
+
+	Backported from master:
+	2026-10-07  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/125060
+	* config/rs6000/vector.md (vcond_mask_<mode><mode>): Change the mode
+	iterator from VEC_I to VEC_IC to support V1TI.
+
+2026-10-11  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	Backported from master:
+	2026-09-28  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/127553
+	* config/riscv/riscv-vector-builtins.cc (validate_instance_type_required_extensions):
+	Add location param for logging.
+	(expand_builtin): Pass location.
+	(check_builtin_call): Likewise.
+
+2026-10-10  Yongqiang Tian  <yqtian668@gmail.com>
+
+	Backported from master:
+	2026-10-02  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127687
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Skip debug
+	statements before assigning UIDs.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127517
+	* internal-fn.cc (expand_mul_overflow): Revert the 2023-09-06
+	changes.  Instead promote arg0 and/or arg1 to a type with
+	uns{0,1}_p signedness and mode precision if they have non-mode
+	precision.  Pass the original arg0/arg1 and their type to
+	ubsan_build_overflow_builtin, instead of passing the promoted
+	ones.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127492
+	* builtins.cc (expand_builtin_atomic_fetch_op): Force val into a
+	pseudo if updates to mem could change its value.
+	(expand_ifn_atomic_bit_test_and): Likewise.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127498
+	* config/i386/sse.md (<insn><mode>3 any_rotate:VI1_AVX512_3264): Add
+	TARGET_AVX2 to condition.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-18  Jakub Jelinek  <jakub@redhat.com>
+		    Manjunath Matti  <mmatti@linux.ibm.com>
+
+	PR middle-end/127378
+	* gimple-lower-bitint.cc (bitint_large_huge::lower_mergeable_stmt): On
+	big endian, compare idx_next in separate_ext loop against
+	bo_idx + total - 1 - end, and if that wraps around, compare idx
+	against 0 instead.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127352
+	* config/i386/i386-expand.cc (split_double_mode): For high halves of
+	paradoxical subregs after RA use CONST0_RTX (half_mode) instead of
+	ICE.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127336
+	* optabs.cc (maybe_emit_compare_and_swap_exchange_loop,
+	expand_atomic_fetch_op_no_fallback, expand_atomic_fetch_op): Force
+	val into a pseduo if it updates to mem could change its value
+	and when using val after the atomic op or inside of a loop.
+
+2026-10-10  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-09-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127149
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Handle lhs_type without mode precision by adding casts.
+
+2026-10-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2026-10-08  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/127482
+	* config/avr/avr.cc (sequent_regs_live): Return 0 for
+	noreturn functions, OS_task and OS_main.
+	(avr_prologue_setup_frame, avr_expand_epilogue) <minimize>: Move
+	OS_task and OS_main tests to sequent_regs_live.
+
+2026-10-08  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-09-20  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR middle-end/127474
+	* expmed.cc (expand_mult): Look through vector mode.
+
+2026-10-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-09-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127650
+	* config/i386/i386.cc (ix86_gimplify_va_arg): Limit type_align
+	to arg_boundary.
+
+2026-10-05  Julio Sotoriva De Bastiani  <Julio.SotorivaDeBastiani@arm.com>
+
+	PR target/126096
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::fold_to_pfalse): Handle svcount_t.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svpfalse_impl::fold): Handle svcount_t.
+	(svwhilelx_impl::fold_type): Punt for non-pfalse svcount_t.
+
+2026-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/extend.texi (Attribute Syntax): Remove stray period.
+
+2026-10-02  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2026-09-24  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/127579
+	* tree-vect-loop.cc (info_for_reduction): Add assert.
+	* tree-vect-stmts.cc (vectorizable_operation): Pass SLP node.
+
+2026-10-02  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	Backported from master:
+	2026-09-29  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	PR target/107549
+	* config/xtensa/xtensa.cc (xt_true_regnum): Don't index
+	reg_renumber before LRA starts.
+
+2026-09-30  Alfie Richards  <alfie.richards@arm.com>
+
+	Backported from master:
+	2026-09-15  Alfie Richards  <alfie.richards@arm.com>
+		    Tamar Christina  <Tamar.Christina@arm.com>
+
+	PR target/126629
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(emit_ldf1_ffr_update): New.
+	(svldff1_gather_impl::expand): Change ffr update.
+	(svldff1_gather_extend::expand): Likewise.
+	(svldxf1_impl::expand): Likewise.
+	(svldxf1_extend_impl::expand): Likewise.
+	* config/aarch64/aarch64-sve.md (aarch64_update_ffr_for_load):
+	Change to...
+	(@aarch64_update_ffr<mode>): ...this.
+
+2026-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-ssa-forwprop.cc (optimize_agr_copyprop_1): Use the index of
+	the basic block of USE_STMT instead of STMT to purge EH edges.
+
+2026-09-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2026-05-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* flag-types.h (gfc_fcoarray): Add GFC_FCOARRAY_SHARED.
+
+2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127571
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def):
+	Re-associate offset computation to avoid overflow.
+
+2026-09-23  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	Backported from master:
+	2026-09-18  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR rtl-optimization/127367
+	* ext-dce.cc: Include regs.h.
+	(ext_dce_process_uses): Handle multi-register hard regs.
+
+2026-09-23  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-09-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127500
+	* config/i386/i386.cc (ix86_split_stlf_stall_load): Don't split
+	the load when the address adjusted by 8 is not a valid memory
+	address.
+
 2026-09-22  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
