@@ -1707,7 +1707,8 @@ users:
   - david.faust@oss.qualcomm.com
   - dfaust@gcc.gnu.org
   roles:
-  - Reviewer: CTF, BTF, bpf port
+  - Maintainer: bpf port
+  - Reviewer: CTF, BTF
   - WriteAfter
   account: dfaust
   inactive_email:

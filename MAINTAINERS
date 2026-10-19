@@ -70,6 +70,7 @@ arm port                Richard Earnshaw        <richard.earnshaw@arm.com>
 arm port                Ramana Radhakrishnan    <ramanara@nvidia.com>
 avr port                Denis Chertykov         <chertykov@gmail.com>
 bfin port               Jie Zhang               <jzhang918@gmail.com>
+bpf port                David Faust             <david.faust@oss.qualcomm.com>
 bpf port                Jose E. Marchesi        <jose.marchesi@oracle.com>
 c-sky port              Xianmiao Qu             <cooper.qu@linux.alibaba.com>
 c-sky port              Yunhai Shang            <yunhai@linux.alibaba.com>
@@ -295,7 +296,7 @@ C front end             Marek Polacek           <polacek@redhat.com>
 c++                     Patrick Palka           <ppalka@gcc.gnu.org>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
-CTF, BTF, bpf port      David Faust             <david.faust@oss.qualcomm.com>
+CTF, BTF                David Faust             <david.faust@oss.qualcomm.com>
 dataflow                Paolo Bonzini           <bonzini@gnu.org>
 dataflow                Seongbae Park           <seongbae.park@gmail.com>
 dataflow                Kenneth Zadeck          <zadeck@naturalbridge.com>
