@@ -871,7 +871,7 @@ add_scope_conflicts_1 (vars_ssa_cache &cache, basic_block bb, bitmap work, bool 
 
   /* Addresses coming into the bb via phis are alive at the entry point. */
   for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    add_scope_conflicts_2 (cache, gimple_phi_result (gsi_stmt (gsi)), work, visit_op);
+    add_scope_conflicts_2 (cache, gimple_phi_result (gsi_stmt (gsi)), work, visit);
 
   for (gsi = gsi_after_labels (bb); !gsi_end_p (gsi); gsi_next (&gsi))
     {
