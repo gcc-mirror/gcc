@@ -7490,10 +7490,11 @@ gimple_lower_bitint (void)
 			rhs1 = fold_convert (utype, rhs1);
 		      else
 			{
-			  tree t = make_ssa_name (type);
+			  tree t = make_ssa_name (utype);
 			  g = gimple_build_assign (t, NOP_EXPR, rhs1);
 			  gsi_insert_before (&gsi, g, GSI_SAME_STMT);
 			  gimple_set_location (g, loc);
+			  rhs1 = t;
 			}
 		    }
 		  g = gimple_build_assign (make_ssa_name (TREE_TYPE (rhs1)),
