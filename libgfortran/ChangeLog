@@ -1,3 +1,18 @@
+2026-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127738
+	* caf/shmem.c (new_team_id): New function.
+	(_gfortran_caf_form_team): Use it.  Count the FORM TEAM statements
+	of the current team.
+	(_gfortran_caf_change_team): Derive the coarray ids from the team's
+	id.
+	* caf/shmem/supervisor.c (ensure_shmem_initialization): Initialize
+	the id of the initial team and the next team id.
+	* caf/shmem/supervisor.h (struct supervisor): Add next_team_id.
+	* caf/shmem/teams_mgmt.h (struct caf_shmem_team): Add teams_formed.
+	(struct shmem_image_info): Replace lastmemid by id.  Add new_teams
+	and new_teams_gen.
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

@@ -1,3 +1,12 @@
+2026-10-18  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/127977
+	* a68-low.cc (a68_low_assignation): Compare types using
+	TYPE_CANONICAL.
+	* a68-low-moids.cc (lower_proc_mode): Do not
+	SET_TYPE_STRUCTURAL_EQUALITY.
+	(lower_union_mode): Likewise.
+
 2026-10-17  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-lang.cc (a68_build_a68_type_nodes): Define fixed sized modes

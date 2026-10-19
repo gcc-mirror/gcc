@@ -1,3 +1,8 @@
+2026-10-18  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add record for myself.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

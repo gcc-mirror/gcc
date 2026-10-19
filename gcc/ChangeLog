@@ -1,3 +1,143 @@
+2026-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* optabs.def (aop_optab): Change from OPTAB_DC to OPTAB_C.
+	* rtl.def (AOP): Remove/revert AOP rtx code.
+
+2026-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* fold-const.cc (tree_expr_maybe_signaling_nan_p): The result of
+	an arithmetic operation or math function can't be a signaling NaN.
+
+2026-10-18  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_is_insn_L32R_p):
+	Modify it to return false if the given insn corresponds to
+	CONST.[SD].
+
+2026-10-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/constraints.md (Gc): Update comment and drop _S from
+	TARGET_HARD_FLOAT_CONST.
+	* config/xtensa/xtensa-protos.h (xtensa_expand_conditional_move):
+	Change second argument type to machine_mode.
+	* config/xtensa/xtensa.cc (xtensa_class_max_nregs): New
+	function.
+	(TARGET_CLASS_MAX_NREGS): Define new macro.
+	(gen_float_relational): Generate DF mode comparisons in addition
+	to SF.
+	(xtensa_expand_conditional_branch): Change TARGET_HARD_FLOAT to
+	TARGET_FLOAT32 under the E_SFmode case.  Add
+	gen_float_relational() call under the E_DFmode case.
+	(gen_conditional_move): Handle DFmode case.
+	(xtensa_expand_conditional_move): Change second argument type to
+	machine_mode.  Change if/else check for floating point/integer
+	move to a switch for integer/single precision/double precision
+	floating point move.
+	(xtensa_copy_incoming_a7): Separate E_DImode and E_DFmode code
+	and handle E_DFmode case by emitting gen_movdf_internal.
+	(xtensa_emit_movcc): Generate conditional moves for DFmode.
+	Use .s suffix, because .d is not handled by the assembler and
+	both .s and .d instructions have the same encoding.
+	(xtensa_option_override): Initialize xtensa_hard_regno_mode_ok_p
+	for DFmode.
+	(print_operand): Add support for 'T' and 'B' codes.  Expand 'U',
+	'V' and 'G' conditions to cover DFmode.
+	(xtensa_rtx_costs): Change TARGET_HARD_FLOAT to TARGET_FLOAT32.
+	Define costs for FP operations on DF mode values when
+	TARGET_FLOAT64 is on.
+	(xtensa_legitimate_constant_p): Cover DF mode case.  Return true
+	for 0 and FP constants supported by const.d instruction when
+	TARGET_FLOAT64 is on.
+	(xtensa_zero_call_used_regs): Change TARGET_HARD_FLOAT to
+	TARGET_FLOAT32.  Handle double precision FPU registers by
+	emitting gen_movdf_concat.
+	(FPreg_neg_scaled_simm12b): Change TARGET_HARD_FLOAT to
+	TARGET_FLOAT32.
+	* config/xtensa/xtensa.h (TARGET_HARD_FLOAT): Change to to be on
+	when either single precision or double precision hardware FP
+	support is present.
+	(TARGET_FLOAT32): Define to 1 when single precision FPU is
+	available, 0 otherwise.
+	(TARGET_FLOAT64): Define to 1 when double precision FPU is
+	available, 0 otherwise.
+	(TARGET_HARD_FLOAT_DIV): Rename to TARGET_FLOAT32_DIV.
+	(TARGET_HARD_FLOAT_RECIP): Rename to TARGET_FLOAT32_RECIP.
+	(TARGET_HARD_FLOAT_SQRT): Rename to TARGET_FLOAT32_SQRT.
+	(TARGET_HARD_FLOAT_RSQRT): Rename to TARGET_FLOAT32_RSQRT.
+	(TARGET_FLOAT64_DIV, TARGET_FLOAT64_RECIP, TARGET_FLOAT64_SQRT)
+	(TARGET_FLOAT64_RSQRT): Define similarly to TARGET_FLOAT32_*,
+	but for double precision FPU.
+	(TARGET_HARD_FLOAT_CONST_S): Rename to TARGET_HARD_FLOAT_CONST
+	and include 64-bit instruction variants into the condition.
+	(UNITS_PER_FPREG): Define as 8 when 64-bit FPU is available, 4
+	otherwise.
+	* config/xtensa/xtensa.md (UNSPEC_CONCAT): New unspec constant.
+	(SDF): New mode iterator for SF and DF.
+	(sd, sdf_mode_bits): New mode attributes.
+	(addsf3, subsf3, mulsf3, fmasf4, fnmasf4, abssf2, negsf2)
+	(fix<s_fix>_truncsfsi2, *fix<s_fix>_truncsfsi2_2x)
+	(*fix<s_fix>_truncsfsi2_scaled, float<s_float>sisf2)
+	(*float<s_float>sisf2_scaled, l<m_round>sfsi2)
+	(*l<m_round>sfsi2_2x, *l<m_round>sfsi2_scaled, *lsip, *ssip)
+	(cbranchsf4, cstoresf4, movsfcc, movsfcc_internal0)
+	(movsfcc_internal1, s<code>_sf): Extend support to DF mode using
+	SDF iterator and corresponding attributes.
+	(extendsfdf2, truncdfsf2, movdf_concat): New patterns.
+	(movdf): Don't force second argument to a memory const if it
+	satisfies the Gc constraint.
+	(movdf_internal): Add instructions for arguments matching the f
+	constraint.  Don't do the split if either argument is in the
+	hard FP register.
+
+2026-10-18  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/bitmanip.md (*<bitmanip_optab>3_mask_si): Fix mode
+	for masked shift count.
+	(*<bitmanip_optab>si3_sext_mask): Likewise.
+
+2026-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127900
+	* config/i386/i386.md (*bmi2_umul<mode>3_highpart): Mark
+	operand 1 as commutative.
+	(<s>mul<mode>3_highpart): Split into...
+	(umul<mode>3_highpart): ... a define_insn_and_split with a BMI2
+	alternative and ...
+	(smul<mode>3_highpart): ... a define_insn.
+	(*bmi2_umulsi3_highpart_zext): New pattern.
+	(*<s>mulsi3_highpart_zext): Split into...
+	(*umulsi3_highpart_zext): ... a define_insn_and_split with a BMI2
+	alternative and ...
+	(*smulsi3_highpart_zext): ... a define_insn.
+	(*<s>muldi3_highpart_1): Split into...
+	(*umuldi3_highpart_1): ... a define_insn_and_split with a BMI2
+	alternative and ...
+	(*smuldi3_highpart_1): ... a define_insn.  Use register_operand
+	for operand 1 and remove redundant MEM_P condition.
+	(*<s>mulsi3_highpart_zext): Split into...
+	(*umulsi3_highpart_1_zext): ... a define_insn_and_split with a
+	BMI2 alternative and ...
+	(*smulsi3_highpart_1_zext): ... a define_insn.  Use
+	register_operand for operand 1 and remove redundant MEM_P
+	condition.
+	(*<s>mulsi3_highpart_1): Split into...
+	(*umulsi3_highpart_1): ... a define_insn_and_split with a BMI2
+	alternative and ...
+	(*smulsi3_highpart_1): ... a define_insn.  Use register_operand
+	for operand 1 and remove redundant MEM_P condition.
+
+2026-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*umul<mode><dwi>3_1): Change to
+	define_insn_and_split.  Merge in the define_split that
+	converts mul to the mulx pattern.  Remove redundant
+	!(MEM_P (operands[1]) && MEM_P (operands[2])) condition.
+	Do not assign operands[5] in the split, it has no matching
+	match_dup.
+	(*mul<mode><dwi>3_1<nf_name>): Remove redundant
+	!(MEM_P (operands[1]) && MEM_P (operands[2])) condition.
+	(*<u>mulqihi3_1<nf_name>): Ditto.
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

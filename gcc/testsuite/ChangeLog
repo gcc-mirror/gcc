@@ -1,3 +1,53 @@
+2026-10-18  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/fold-signaling-nan-1.c: New test case.
+	* gcc.dg/fold-signaling-nan-2.c: Likewise.
+
+2026-10-18  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* gcc.target/xtensa/constsynthV2_O2_costs0.c: Adjust
+	scan-assembler-times count for the hard_float target.
+	* gcc.target/xtensa/elim_callee_saved.c: Likewise.
+	* gcc.target/xtensa/double-conv.c: New test.
+	* gcc.target/xtensa/float-conv.c: New test.
+
+2026-10-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/opt/mem-notrap-load-builtin.C: Disable scan-rtl-dump for
+	64-bit PA-RISC targets because address splitting separates the
+	'this' pointer attribute from the memory expression during expand.
+
+2026-10-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/clone-4_b.C: Update scan-assembler pattern to
+	match either C2 or C4 constructor symbols to fix test failure
+	on hppa64-hp-hpux11.11 when using the GNU assembler.
+
+2026-10-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127900
+	* gcc.target/i386/pr127900.c: New test.
+
+2026-10-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* c-c++-common/analyzer/omp-parallel-for-1.c: Add additional
+	option "--param=analyzer-max-svalue-depth=20".
+
+2026-10-18  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/modules/src-loc-1_a.H: Adjust regexp.
+	* g++.dg/modules/src-loc-1_c.C: Likewise.
+
+2026-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127738
+	* gfortran.dg/coarray/form_team_ids_1.f90: New test.
+
+2026-10-18  Jose E. Marchesi  <jemarch@gnu.org>
+
+	PR algol68/127977
+	* algol68/compile/pr127977.a68: New test.
+
 2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* gfortran.dg/coarray_collectives_6.f90: Expect the address of
