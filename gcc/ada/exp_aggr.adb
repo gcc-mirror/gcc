@@ -119,14 +119,17 @@ package body Exp_Aggr is
    --  of a statically allocated dispatch table.
 
    function Late_Expansion
-     (N      : Node_Id;
-      Typ    : Entity_Id;
-      Target : Node_Id) return List_Id;
-   --  This routine implements top-down expansion of nested aggregates. In
-   --  doing so, it avoids the generation of temporaries at each level. N is
-   --  a nested record or array aggregate with the Expansion_Delayed flag.
-   --  Typ is the expected type of the aggregate. Target is a (duplicatable)
-   --  expression that will hold the result of the aggregate expansion.
+     (N       : Node_Id;
+      Typ     : Entity_Id;
+      Target  : Node_Id;
+      Ptr_Typ : Entity_Id := Empty) return List_Id;
+   --  This routine implements top-down expansion of nested aggregates, so as
+   --  to avoid the generation of temporaries at each level. N is a record or
+   --  an array aggregate with the Expansion_Delayed flag. Typ is the expected
+   --  type of the aggregate. Target is a (duplicatable) expression that will
+   --  hold the result of the elaboration of the aggregate. Ptr_Typ is set to
+   --  the type of the allocator if N is used as its (qualified) expression,
+   --  or Empty otherwise.
 
    function Make_OK_Assignment_Statement
      (Sloc       : Source_Ptr;
@@ -174,14 +177,16 @@ package body Exp_Aggr is
    ------------------------------------------------------
 
    function Build_Record_Aggr_Code
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Lhs : Node_Id) return List_Id;
+     (N       : Node_Id;
+      Typ     : Entity_Id;
+      Lhs     : Node_Id;
+      Ptr_Typ : Entity_Id := Empty) return List_Id;
    --  N is an N_Aggregate or an N_Extension_Aggregate. Typ is the type of the
    --  aggregate. Lhs is an expression containing the location on which the
-   --  component by component assignments will take place. Returns the list of
-   --  assignments plus all other adjustments needed for tagged and controlled
-   --  types.
+   --  component by component assignments will take place. Ptr_Typ is set to
+   --  the type of the allocator if N is used as its (qualified) expression,
+   --  or Empty otherwise. Return the list of assignments, as well as other
+   --  adjustments needed for tagged and controlled types.
 
    procedure Convert_To_Assignments (N : Node_Id; Typ : Entity_Id);
    --  Transform a record aggregate into a sequence of assignments performed
@@ -2238,9 +2243,10 @@ package body Exp_Aggr is
    ----------------------------
 
    function Build_Record_Aggr_Code
-     (N   : Node_Id;
-      Typ : Entity_Id;
-      Lhs : Node_Id) return List_Id
+     (N       : Node_Id;
+      Typ     : Entity_Id;
+      Lhs     : Node_Id;
+      Ptr_Typ : Entity_Id := Empty) return List_Id
    is
       Loc     : constant Source_Ptr := Sloc (N);
       L       : constant List_Id    := New_List;
@@ -3083,6 +3089,7 @@ package body Exp_Aggr is
                       Id_Ref            => Ref,
                       Typ               => Init_Typ,
                       In_Init_Proc      => Inside_Init_Proc,
+                      Target_Ref        => Ptr_Typ,
                       With_Default_Init => Has_Default_Init_Comps (N)
                                              or else
                                            Has_Task (Base_Type (Init_Typ))));
@@ -3724,21 +3731,14 @@ package body Exp_Aggr is
         Unchecked_Convert_To (Typ,
           Make_Explicit_Dereference (Loc, New_Occurrence_Of (Temp, Loc)));
 
+      Stmts : constant List_Id :=
+        Late_Expansion (Aggr, Typ, Occ, Etype (Temp));
+
    begin
-      if Has_Default_Init_Comps (Aggr) then
-         declare
-            Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
-
-         begin
-            if Has_Task (Typ) then
-               Insert_Actions (N, Build_Task_Allocate_Block (Aggr, Stmts));
-            else
-               Insert_Actions (N, Stmts);
-            end if;
-         end;
-
+      if Has_Task (Typ) then
+         Insert_Actions (N, Build_Task_Allocate_Block (Aggr, Stmts));
       else
-         Insert_Actions (N, Late_Expansion (Aggr, Typ, Occ));
+         Insert_Actions (N, Stmts);
       end if;
    end Convert_Aggr_In_Allocator;
 
@@ -9110,9 +9110,10 @@ package body Exp_Aggr is
    --------------------
 
    function Late_Expansion
-     (N      : Node_Id;
-      Typ    : Entity_Id;
-      Target : Node_Id) return List_Id
+     (N       : Node_Id;
+      Typ     : Entity_Id;
+      Target  : Node_Id;
+      Ptr_Typ : Entity_Id := Empty) return List_Id
    is
       Aggr_Code : List_Id;
 
@@ -9127,7 +9128,7 @@ package body Exp_Aggr is
               Scalar_Comp => Is_Scalar_Type (Component_Type (Typ)));
 
       else
-         Aggr_Code := Build_Record_Aggr_Code (N, Typ, Target);
+         Aggr_Code := Build_Record_Aggr_Code (N, Typ, Target, Ptr_Typ);
       end if;
 
       --  Save the last assignment statement associated with the aggregate
