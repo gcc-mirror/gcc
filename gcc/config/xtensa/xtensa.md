@@ -44,7 +44,6 @@
   UNSPEC_CEIL
   UNSPEC_FLOOR
   UNSPEC_ROUND
-  UNSPEC_CONCAT
 ])
 
 (define_c_enum "unspecv" [
@@ -1634,16 +1633,6 @@
   xtensa_split_operand_pair (operands, SFmode);
 }
   [(set_attr "mode" "DF")])
-
-(define_insn "movdf_concat"
-  [(set (match_operand:DF 0 "register_operand" "=f")
-	(unspec:DF [(match_operand:SI 1 "register_operand" "r")
-		    (match_operand:SI 2 "register_operand" "r")] UNSPEC_CONCAT))]
-  "TARGET_FLOAT64"
-  "wfrd\t%0, %1, %2"
-  [(set_attr "type"	"farith")
-   (set_attr "mode"	"DF")
-   (set_attr "length"	"3")])
 
 ;; Block moves
 

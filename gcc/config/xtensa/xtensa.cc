@@ -5693,9 +5693,18 @@ xtensa_zero_call_used_regs (HARD_REG_SET selected_regs)
 					   UNKNOWN_LOCATION));
 	}
       else if (TARGET_FLOAT64 && FP_REG_P (regno))
-	emit_insn (gen_movdf_concat (gen_rtx_REG (DFmode, regno),
-				     gen_rtx_REG (SImode, zeroed_regno),
-				     gen_rtx_REG (SImode, zeroed_regno)));
+	{
+	  argvec = rtvec_alloc (1);
+	  RTVEC_ELT (argvec, 0) = gen_rtx_REG (SImode, zeroed_regno);
+	  convec = rtvec_alloc (1);
+	  RTVEC_ELT (convec, 0) = gen_rtx_ASM_INPUT (SImode, "r");
+	  emit_insn (gen_rtx_SET (gen_rtx_REG (DFmode, regno),
+				  gen_rtx_ASM_OPERANDS (DFmode,
+							"wfrd\t%0, %1, %1",
+							"f", 0, argvec, convec,
+							rtvec_alloc (0),
+							UNKNOWN_LOCATION)));
+	}
       else if (TARGET_FLOAT32 && FP_REG_P (regno))
 	emit_move_insn (gen_rtx_REG (SFmode, regno),
 			gen_rtx_REG (SFmode, zeroed_regno));
