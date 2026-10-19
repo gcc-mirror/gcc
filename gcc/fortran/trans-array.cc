@@ -8509,6 +8509,36 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
       gfc_trans_scalarizing_loops (&loop, &block);
 
       desc = loop.temp_ss->info->data.array.descriptor;
+
+      /* The _copy of a CLASS element is deep, so finalize the temporary
+	 through the vtable to free the components of the copies.  */
+      tree ctmp = expr->ts.type == BT_CLASS && expr->expr_type == EXPR_OP
+		  ? gfc_get_class_from_expr (desc) : NULL_TREE;
+      if (ctmp)
+	{
+	  tree final_fn, has_final, elsize;
+
+	  final_fn = gfc_evaluate_now (gfc_class_vtab_final_get (ctmp),
+				       &se->post);
+	  has_final = fold_build2_loc (input_location, NE_EXPR,
+				       logical_type_node, final_fn,
+				       fold_convert (TREE_TYPE (final_fn),
+						     null_pointer_node));
+	  elsize = gfc_resize_class_size_with_len (&se->post, ctmp,
+						   gfc_class_vtab_size_get (ctmp));
+	  /* The finalization wrapper takes the rank from the descriptor.  */
+	  gfc_conv_descriptor_rank_set (&se->post, desc, loop.dimen);
+	  tmp = build_call_expr_loc (input_location,
+				     build_fold_indirect_ref_loc (input_location,
+								  final_fn),
+				     3, gfc_build_addr_expr (NULL_TREE, desc),
+				     fold_convert (gfc_charlen_type_node,
+						   elsize),
+				     boolean_false_node);
+	  tmp = build3_v (COND_EXPR, has_final, tmp,
+			  build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&se->post, tmp);
+	}
     }
   else if (expr->expr_type == EXPR_FUNCTION && !transposed_dims (ss))
     {

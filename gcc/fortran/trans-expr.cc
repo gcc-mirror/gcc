@@ -4171,6 +4171,20 @@ gfc_conv_concat_op (gfc_se * se, gfc_expr * expr)
   se->string_length = len;
 }
 
+
+/* Return the variable that E puts in parentheses, or NULL.  */
+
+static gfc_expr *
+parenthesized_variable (gfc_expr *e)
+{
+  if (e->expr_type == EXPR_OP
+      && e->value.op.op == INTRINSIC_PARENTHESES
+      && e->value.op.op1->expr_type == EXPR_VARIABLE)
+    return e->value.op.op1;
+  return NULL;
+}
+
+
 /* Translates an op expression. Common (binary) cases are handled by this
    function, others are passed on. Recursion is used in either case.
    We use the fact that (op1.ts == op2.ts) (except for the power
@@ -8541,11 +8555,13 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 procedures, and array arguments with descriptor to non-elemental
 	 procedures.  As bounds information for descriptorless arrays is no
 	 longer available here, they are dealt with in trans-array.cc
-	 (gfc_conv_array_parameter).  */
+	 (gfc_conv_array_parameter).  A derived-type temporary for a
+	 parenthesized variable shares the components of the variable.  */
       if (e && (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS)
 	    && e->ts.u.derived->attr.alloc_comp
 	    && (e->rank == 0 || elemental_proc || !nodesc_arg)
-	    && !expr_may_alias_variables (e, elemental_proc))
+	    && !expr_may_alias_variables (e, elemental_proc)
+	    && !(e->ts.type == BT_DERIVED && parenthesized_variable (e)))
 	{
 	  int parm_rank;
 	  /* It is known the e returns a structure type with at least one
@@ -8593,9 +8609,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 	    }
 
-	  if (e->expr_type == EXPR_OP
-		&& e->value.op.op == INTRINSIC_PARENTHESES
-		&& e->value.op.op1->expr_type == EXPR_VARIABLE)
+	  if (parenthesized_variable (e))
 	    {
 	      tree local_tmp;
 	      local_tmp = gfc_evaluate_now (tmp, &se->pre);
