@@ -1,27 +1,27 @@
 // zicbom
-RISCV_BUILTIN (clean_si, "zicbom_cbo_clean", RISCV_VOID_FTYPE_VOID_PTR, clean32),
-RISCV_BUILTIN (clean_di, "zicbom_cbo_clean", RISCV_VOID_FTYPE_VOID_PTR, clean64),
+RISCV_BUILTIN (clean_si, "zicbom_cbo_clean", RISCV_VOID_FTYPE_VOID_PTR, clean32, 0),
+RISCV_BUILTIN (clean_di, "zicbom_cbo_clean", RISCV_VOID_FTYPE_VOID_PTR, clean64, 0),
 
-RISCV_BUILTIN (flush_si, "zicbom_cbo_flush", RISCV_VOID_FTYPE_VOID_PTR, flush32),
-RISCV_BUILTIN (flush_di, "zicbom_cbo_flush", RISCV_VOID_FTYPE_VOID_PTR, flush64),
+RISCV_BUILTIN (flush_si, "zicbom_cbo_flush", RISCV_VOID_FTYPE_VOID_PTR, flush32, 0),
+RISCV_BUILTIN (flush_di, "zicbom_cbo_flush", RISCV_VOID_FTYPE_VOID_PTR, flush64, 0),
 
-RISCV_BUILTIN (inval_si, "zicbom_cbo_inval", RISCV_VOID_FTYPE_VOID_PTR, inval32),
-RISCV_BUILTIN (inval_di, "zicbom_cbo_inval", RISCV_VOID_FTYPE_VOID_PTR, inval64),
+RISCV_BUILTIN (inval_si, "zicbom_cbo_inval", RISCV_VOID_FTYPE_VOID_PTR, inval32, 0),
+RISCV_BUILTIN (inval_di, "zicbom_cbo_inval", RISCV_VOID_FTYPE_VOID_PTR, inval64, 0),
 
 // zicboz
-RISCV_BUILTIN (zero_si, "zicboz_cbo_zero", RISCV_VOID_FTYPE_VOID_PTR, zero32),
-RISCV_BUILTIN (zero_di, "zicboz_cbo_zero", RISCV_VOID_FTYPE_VOID_PTR, zero64),
+RISCV_BUILTIN (zero_si, "zicboz_cbo_zero", RISCV_VOID_FTYPE_VOID_PTR, zero32, 0),
+RISCV_BUILTIN (zero_di, "zicboz_cbo_zero", RISCV_VOID_FTYPE_VOID_PTR, zero64, 0),
 
 // zicbop
-RISCV_BUILTIN (prefetchi_si, "zicbop_cbo_prefetchi", RISCV_USI_FTYPE_USI, prefetchi32),
-RISCV_BUILTIN (prefetchi_di, "zicbop_cbo_prefetchi", RISCV_UDI_FTYPE_UDI, prefetchi64),
+RISCV_BUILTIN (prefetchi_si, "zicbop_cbo_prefetchi", RISCV_USI_FTYPE_USI, prefetchi32, 0),
+RISCV_BUILTIN (prefetchi_di, "zicbop_cbo_prefetchi", RISCV_UDI_FTYPE_UDI, prefetchi64, 0),
 
 // zbkc or zbc
-RISCV_BUILTIN (clmul_si, "clmul_32", RISCV_USI_FTYPE_USI_USI, clmul_zbkc_or_zbc),
-RISCV_BUILTIN (clmul_di, "clmul_64", RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64),
-RISCV_BUILTIN (clmulh_si, "clmulh_32", RISCV_USI_FTYPE_USI_USI, clmul_zbkc32_or_zbc32),
-RISCV_BUILTIN (clmulh_di, "clmulh_64", RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64),
+RISCV_BUILTIN (clmul_si, "clmul_32", RISCV_USI_FTYPE_USI_USI, clmul_zbkc_or_zbc, 0),
+RISCV_BUILTIN (clmul_di, "clmul_64", RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64, 0),
+RISCV_BUILTIN (clmulh_si, "clmulh_32", RISCV_USI_FTYPE_USI_USI, clmul_zbkc32_or_zbc32, 0),
+RISCV_BUILTIN (clmulh_di, "clmulh_64", RISCV_UDI_FTYPE_UDI_UDI, clmul_zbkc64_or_zbc64, 0),
 
 // zbc
-RISCV_BUILTIN (clmulr_si, "clmulr_32", RISCV_USI_FTYPE_USI_USI, clmulr_zbc32),
-RISCV_BUILTIN (clmulr_di, "clmulr_64", RISCV_UDI_FTYPE_UDI_UDI, clmulr_zbc64),
+RISCV_BUILTIN (clmulr_si, "clmulr_32", RISCV_USI_FTYPE_USI_USI, clmulr_zbc32, 0),
+RISCV_BUILTIN (clmulr_di, "clmulr_64", RISCV_UDI_FTYPE_UDI_UDI, clmulr_zbc64, 0),
