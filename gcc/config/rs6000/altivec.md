@@ -4581,7 +4581,7 @@
 
 ;; Due to saturating semantics, we can't combine the sum-across
 ;; with the vector accumulate in vsum4ubs.  A vadduwm is needed.
-(define_expand "usadv16qi"
+(define_expand "usadv4siv16qi"
   [(use (match_operand:V4SI 0 "register_operand"))
    (use (match_operand:V16QI 1 "register_operand"))
    (use (match_operand:V16QI 2 "register_operand"))
@@ -4602,7 +4602,7 @@
 ;; Since vsum4shs is saturating and further performs signed
 ;; arithmetic, we can't combine the sum-across with the vector
 ;; accumulate in vsum4shs.  A vadduwm is needed.
-(define_expand "usadv8hi"
+(define_expand "usadv4siv8hi"
   [(use (match_operand:V4SI 0 "register_operand"))
    (use (match_operand:V8HI 1 "register_operand"))
    (use (match_operand:V8HI 2 "register_operand"))

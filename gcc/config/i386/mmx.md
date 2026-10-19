@@ -6684,7 +6684,7 @@
   DONE;
 })
 
-(define_expand "usadv8qi"
+(define_expand "usadv2siv8qi"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand:V8QI 1 "register_operand")
    (match_operand:V8QI 2 "register_operand")

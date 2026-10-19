@@ -2654,7 +2654,7 @@
   [(set_attr "type" "neon_arith_acc<q>")]
 )
 
-(define_expand "<sup>sadv16qi"
+(define_expand "<sup>sadv4siv16qi"
   [(use (match_operand:V4SI 0 "register_operand"))
    (unspec:V16QI [(use (match_operand:V16QI 1 "register_operand"))
                   (use (match_operand:V16QI 2 "register_operand"))] VABAL)

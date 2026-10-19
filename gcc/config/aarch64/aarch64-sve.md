@@ -7924,7 +7924,7 @@
 ;; [SU]ABD	diff.b, p0/m, op1.b, op2.b
 ;; MOVPRFX	op0, op3	// If necessary
 ;; UDOT		op0.s, diff.b, ones.b
-(define_expand "<su>sad<vsi2qi>"
+(define_expand "<su>sad<mode><vsi2qi>"
   [(use (match_operand:SVE_FULL_SDI 0 "register_operand"))
    (USMAX:<VSI2QI> (match_operand:<VSI2QI> 1 "register_operand")
 		   (match_operand:<VSI2QI> 2 "register_operand"))

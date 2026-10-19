@@ -3746,7 +3746,7 @@ gen_lasx_xvmulwod_<dlasxfmt>_<lasxfmt><u>;
   DONE;
 })
 
-(define_expand "usadv32qi"
+(define_expand "usadv8siv32qi"
   [(match_operand:V8SI 0 "register_operand")
    (match_operand:V32QI 1 "register_operand")
    (match_operand:V32QI 2 "register_operand")
@@ -3763,7 +3763,7 @@ gen_lasx_xvmulwod_<dlasxfmt>_<lasxfmt><u>;
   DONE;
 })
 
-(define_expand "ssadv32qi"
+(define_expand "ssadv8siv32qi"
   [(match_operand:V8SI 0 "register_operand")
    (match_operand:V32QI 1 "register_operand")
    (match_operand:V32QI 2 "register_operand")

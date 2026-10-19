@@ -18133,7 +18133,7 @@
   ix86_fixup_binary_operands_no_copy (PLUS, <MODE>mode, operands);
 })
 
-(define_expand "usadv16qi"
+(define_expand "usadv4siv16qi"
   [(match_operand:V4SI 0 "register_operand")
    (match_operand:V16QI 1 "register_operand")
    (match_operand:V16QI 2 "vector_operand")
@@ -18148,7 +18148,7 @@
   DONE;
 })
 
-(define_expand "usadv32qi"
+(define_expand "usadv8siv32qi"
   [(match_operand:V8SI 0 "register_operand")
    (match_operand:V32QI 1 "register_operand")
    (match_operand:V32QI 2 "nonimmediate_operand")
@@ -18163,7 +18163,7 @@
   DONE;
 })
 
-(define_expand "usadv64qi"
+(define_expand "usadv16siv64qi"
   [(match_operand:V16SI 0 "register_operand")
    (match_operand:V64QI 1 "register_operand")
    (match_operand:V64QI 2 "nonimmediate_operand")

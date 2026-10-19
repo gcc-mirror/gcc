@@ -27359,7 +27359,7 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 
 		  /* Vectorizer lane_reducing_op_p supports DOT_PROX_EXPR,
 		     WIDEN_SUM_EXPR and SAD_EXPR, x86 backend only supports
-		     SAD_EXPR (usad{v16qi,v32qi,v64qi}) and DOT_PROD_EXPR.  */
+		     SAD_EXPR (usad{v4siv16qi,v8siv32qi,v16siv64qi}) and DOT_PROD_EXPR.  */
 		case DOT_PROD_EXPR:
 		  rhs1 = gimple_assign_rhs1 (stmt_info->stmt);
 		  mode_rhs = TYPE_MODE (TREE_TYPE (rhs1));

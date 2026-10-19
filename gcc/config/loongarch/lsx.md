@@ -2844,7 +2844,7 @@
   DONE;
 })
 
-(define_expand "usadv16qi"
+(define_expand "usadv4siv16qi"
   [(match_operand:V4SI 0 "register_operand")
    (match_operand:V16QI 1 "register_operand")
    (match_operand:V16QI 2 "register_operand")
@@ -2861,7 +2861,7 @@
   DONE;
 })
 
-(define_expand "ssadv16qi"
+(define_expand "ssadv4siv16qi"
   [(match_operand:V4SI 0 "register_operand")
    (match_operand:V16QI 1 "register_operand")
    (match_operand:V16QI 2 "register_operand")

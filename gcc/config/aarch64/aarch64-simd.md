@@ -1235,7 +1235,7 @@
   [(set_attr "type" "neon_reduc_add<q>")]
 )
 
-(define_expand "<su>sadv8qi"
+(define_expand "<su>sadv2siv8qi"
   [(use (match_operand:V2SI 0 "register_operand"))
    (USMAX:V8QI (match_operand:V8QI 1 "register_operand")
 		(match_operand:V8QI 2 "register_operand"))
@@ -1270,7 +1270,7 @@
 ;; but for TARGET_DOTPROD still emits a UDOT as the absolute difference is
 ;; unsigned.
 
-(define_expand "<su>sadv16qi"
+(define_expand "<su>sadv4siv16qi"
   [(use (match_operand:V4SI 0 "register_operand"))
    (USMAX:V16QI (match_operand:V16QI 1 "register_operand")
 		(match_operand:V16QI 2 "register_operand"))

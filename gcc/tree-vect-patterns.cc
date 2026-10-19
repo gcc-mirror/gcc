@@ -1506,8 +1506,8 @@ vect_recog_sad_pattern (vec_info *vinfo,
   vect_pattern_detected ("vect_recog_sad_pattern", last_stmt);
 
   tree half_vectype;
-  if (!vect_supportable_direct_optab_p (vinfo, sum_type, SAD_EXPR, half_type,
-					type_out, &half_vectype))
+  if (!vect_supportable_conv_optab_p (vinfo, sum_type, SAD_EXPR, half_type,
+				      type_out, &half_vectype))
     return NULL;
 
   /* Get the inputs to the SAD_EXPR in the appropriate types.  */
