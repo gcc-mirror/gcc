@@ -81,6 +81,7 @@ get_gimple_for_ssa_name (tree exp)
 extern bool ssa_is_replaceable_p (gimple *stmt);
 extern void finish_out_of_ssa (struct ssaexpand *sa);
 extern unsigned int rewrite_out_of_ssa (struct ssaexpand *sa);
+extern void remove_gimple_phi_args (gphi *phi);
 extern void expand_phi_nodes (struct ssaexpand *sa);
 
 #endif /* GCC_TREE_OUTOF_SSA_H */

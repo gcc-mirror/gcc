@@ -793,7 +793,7 @@ eliminate_phi (edge e, elim_graph *g)
 /* Remove each argument from PHI.  If an arg was the last use of an SSA_NAME,
    check to see if this allows another PHI node to be removed.  */
 
-static void
+void
 remove_gimple_phi_args (gphi *phi)
 {
   use_operand_p arg_p;
