@@ -1051,9 +1051,8 @@ cobol_set_decl_assembler_name (tree decl)
       }
 
     id = get_identifier(mangled_name);
-    free(mangled_name);
-
     SET_DECL_ASSEMBLER_NAME (decl, id);
+    free(mangled_name);
     }
 
 /* Get a value for the SARIF v2.1.0 "artifact.sourceLanguage" property,

@@ -120,9 +120,9 @@
           } GCOBOL_17.1;
 
     There are two ways of routing the symbol versions in the source code.
-    
+
     First method:
-    
+
     Add the following directives at file scope in the .cc file that contains
     __gg__acos_17_1() and __gg__acos_17_1():
 
@@ -143,7 +143,7 @@
         __gg__acos_17_2()
           {
           // New implementation.
-          }    
+          }
 
     In either case, those specify that somebody trying to link to
     __gg__acos@GCOBOL_17.1 will actually link to __gg__acos_17_1().  The @@
@@ -9805,7 +9805,7 @@ __gg__routine_to_call(const char *name,
                       int         program_id)
   {
   // The list of names is sorted, so at the very least this should be replaced
-  // with a binary search:
+  // with a binary search.
 
   std::unordered_map<int, char***>::const_iterator it =
          accessible_programs.find(program_id);
@@ -9816,20 +9816,22 @@ __gg__routine_to_call(const char *name,
     }
 
   char **names = *(it->second);
-
   int retval = -1;
+
+  // The entries are of the form "parent.child".  We are looking for an entry
+  // where the "name" matches "child".
 
   if( names )
     {
     int i=0;
-    while(*names)
+    while( *names )
       {
-      if( strstr(*names, name) )
+      const char *pdot = strrchr(*names, '.');
+      if( pdot )
         {
-        // The first part of the names match
-        if( (*names)[strlen(name)] == '.' )
+        if( strcmp(pdot+1, name) == 0 )
           {
-          // And the first character after the match is a '.'
+          // We have a match
           retval = i;
           break;
           }

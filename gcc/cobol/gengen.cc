@@ -2687,6 +2687,13 @@ gg_build_fn_decl(const char *funcname, tree fndecl_type)
 
     function_decl = build_fn_decl(funcname, fndecl_type);
 
+    if(current_call_convention() == cbl_call_cobol_e )
+      {
+      char *mangled_name = cobol_name_mangler(funcname);
+      SET_DECL_ASSEMBLER_NAME(function_decl, get_identifier(mangled_name));
+      free(mangled_name);
+      }
+
     // These are the bits shown in the table in the comment up above
     TREE_ADDRESSABLE(function_decl) = 1;
     TREE_USED(function_decl) = 1;

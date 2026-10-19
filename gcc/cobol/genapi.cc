@@ -224,7 +224,7 @@ static void
 create_cblc_string_variable(const char *var_name, const char *var_contents)
   {
   // This is a way of having the compiler communicate with GDB.  I create a
-  // global const char[] string with a known name so that GDB can look for that
+  // const char[] string with a known name so that GDB can look for that
   // variable and pick up its contents.
 
   // This probably should be in the .debug_info section, but for the moment I
@@ -240,7 +240,7 @@ create_cblc_string_variable(const char *var_name, const char *var_contents)
   tree entry_point = gg_declare_variable(array_of_characters,
                                          var_name,
                                          constr,
-                                         vs_global);
+                                         vs_file_static);
   gg_define_from_declaration(entry_point);
   }
 
@@ -775,7 +775,7 @@ parser_call_target_convention( tree func )
 size_t
 parser_call_target_update( size_t caller,
                            const char plain_name[],
-                           const char mangled_name[] )
+                           const char mangled_name_[] )
   {
   auto key = program_reference_t(caller, plain_name);
   auto p = call_targets.find(key);
@@ -788,7 +788,31 @@ parser_call_target_update( size_t caller,
                        NULL); // And, hence, no types
 
     // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
-    tree function_decl = gg_build_fn_decl(mangled_name, fndecl_type);
+
+    // We have to convert the dotted name into the form created in
+    // parser_enter_program().
+    std::string funcname = mangled_name_;
+
+    char *pdot = strchr(const_cast<char *>(mangled_name_), '.');
+    if(pdot)
+      {
+      size_t parent_index = atol(pdot+1);
+      funcname = funcname.substr(0, pdot-mangled_name_);
+
+      while(parent_index)
+        {
+        const cbl_label_t *program_label = cbl_label_of(symbol_at(parent_index));
+        char *mangled_name = cobol_name_mangler(program_label->name);
+        std::string temp = mangled_name;
+        free(mangled_name);
+        temp += ".";
+        temp += funcname;
+        funcname = temp;
+        parent_index = symbol_at(parent_index)->program;
+        }
+      }
+
+    tree function_decl = gg_build_fn_decl(funcname.c_str(), fndecl_type);
     tree function_address = gg_get_address_of(function_decl);
 
     TREE_OPERAND(call_expr, 1) = function_address;
@@ -3057,36 +3081,40 @@ parser_enter_program( const char *funcname_,
   // though the end result will be mangled again, because the mangler doesn't
   // change a mangled name.
 
+  // This is the starting name for this function
   char *mangled_name = cobol_name_mangler(funcname_);
-
-  size_t iprog  = current_program_index();
-  assert(iprog);
-
-  size_t parent_index = symbol_at(iprog)->program;
-  char *funcname;
-  if( parent_index )
-    {
-    // This is a nested function.  Tack on the parent_index to the end of it.
-    funcname = xasprintf( "%s." HOST_SIZE_T_PRINT_DEC,
-                          mangled_name,
-                          (fmt_size_t)parent_index);
-    }
-  else
-    {
-    // This is a top-level function; just use the straight mangled name
-    funcname = xstrdup(mangled_name);
-    }
+  std::string funcname = mangled_name;
   free(mangled_name);
+
+  // If we are a contained program, we are going to build up our name from
+  // our parent's names.  The name will be grandparent.parent.us
+  size_t parent_index = symbol_at(current_program_index())->program;
+  size_t original_parent_index = parent_index;
+  while(parent_index)
+    {
+    const cbl_label_t *program_label = cbl_label_of(symbol_at(parent_index));
+    mangled_name = cobol_name_mangler(program_label->name);
+    std::string temp = mangled_name;
+    free(mangled_name);
+    temp += ".";
+    temp += funcname;
+    funcname = temp;
+    parent_index = symbol_at(parent_index)->program;
+    }
+  // funcname is now the name that will have to be matched in
+  // parser_call_target_update.
+
+  funcname = xstrdup(funcname.c_str());
 
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" ")
-    SHOW_PARSE_TEXT(funcname)
+    SHOW_PARSE_TEXT(funcname.c_str())
     SHOW_PARSE_END
     }
 
-  if( !is_function && !parent_index )
+  if( !is_function && !original_parent_index )
     {
     // This is a top_level program-id, and not a function
     if( next_program_is_main )
@@ -3098,7 +3126,7 @@ parser_enter_program( const char *funcname_,
         // Because no explicit main_entry_point was specified, this program-id,
         // the first in the file, becomes the target of the main() function
         // that will be created at parser_leave_file time.
-        main_entry_point = xstrdup(funcname);
+        main_entry_point = xstrdup(funcname.c_str());
 
         char *psz = cobol_name_mangler(main_entry_point);
         strncpy(ach_cobol_entry_point, psz, sizeof(ach_cobol_entry_point)-1);
@@ -3119,28 +3147,26 @@ parser_enter_program( const char *funcname_,
     }
 
 #ifdef ENABLE_HIJACKING
-  if( strcmp(funcname, "dubner_h") == 0)
+  if( strcmp(funcname.c_str(), "dubner_h") == 0)
     {
     fprintf(stderr, "This is a DUBNER hijacking\n");
-    hijack_for_development(funcname);
+    hijack_for_development(funcname.c_str());
     return;
     }
 
 #endif
 
-  enter_program_common(funcname, funcname_);
+  enter_program_common(funcname.c_str(), funcname_);
   current_function->is_function = is_function;
 
   TRACE1
     {
     TRACE1_HEADER
     TRACE1_TEXT("entered program \"")
-    TRACE1_TEXT(funcname)
+    TRACE1_TEXT(funcname.c_str())
     TRACE1_TEXT("\"")
     TRACE1_END
     }
-
-  free(funcname);
   }
 
 static class label_verify_t {
@@ -12871,8 +12897,6 @@ parser_call_exception_end( cbl_label_t *name )
   gg_append_statement( name->structs.call_exception->bottom.go_to );
   }
 
-
-
 static
 void
 create_and_call(size_t narg,
@@ -13085,10 +13109,10 @@ create_and_call(size_t narg,
 
     // Stash that address as the called program's signature:
     tree address_as_char_p = gg_cast(CHAR_P, address_of_function);
-    tree assigment = gg_assign( var_decl_call_parameter_signature,
+    tree assignment = gg_assign( var_decl_call_parameter_signature,
                                 address_as_char_p);
-    // The source of the assigment is the second element of a MODIFY_EXPR
-    parser_call_target( funcname, assigment );
+    // The source of the assignment is the second element of a MODIFY_EXPR
+    parser_call_target( funcname, assignment );
 
     // Create the call_expr from that address
     call_expr = build_call_array_loc( gg_token_location(),
@@ -14121,13 +14145,32 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
                   "%s." HOST_SIZE_T_PRINT_DEC,
                   (*callee)->name,
                   (fmt_size_t)(*callee)->parent_node->our_index);
+          std::string funcname = ach;
+          char *pdot = strchr(ach, '.');
+          if(pdot)
+            {
+            size_t parent_index = atol(pdot+1);
+            funcname = funcname.substr(0, pdot-ach);
+
+            while(parent_index)
+              {
+              const cbl_label_t *program_label = cbl_label_of(symbol_at(parent_index));
+              char *mangled_name = cobol_name_mangler(program_label->name);
+              std::string temp = mangled_name;
+              free(mangled_name);
+              temp += ".";
+              temp += funcname;
+              funcname = temp;
+              parent_index = symbol_at(parent_index)->program;
+              }
+            }
 
           CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr_names),
                                   build_int_cst_type(SIZE_T, i),
-                                  build_string_literal(ach));
+                                  build_string_literal(funcname.c_str()));
 
           // Build the constructor element for that function:
-          tree function_decl = build_fn_decl (ach, function_type);
+          tree function_decl = build_fn_decl (funcname.c_str(), function_type);
           tree addr_expr = build1(ADDR_EXPR, pointer_type, function_decl);
 
           CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
