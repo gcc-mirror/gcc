@@ -204,6 +204,32 @@ case $host in
 esac
 AC_SUBST(extra_ldflags_libgcobol)
 
+# Do not add ELF linker options on other targets, or embed build-host paths
+# in programs produced by a cross compiler.  Native Linux installations can
+# find their runtime without changing the system-wide loader configuration.
+AC_ARG_ENABLE([libgcobol-rpath],
+  [AS_HELP_STRING([--disable-libgcobol-rpath],
+    [do not embed the native Linux libgcobol installation directory in RUNPATH])],
+  [case $enableval in
+     yes|no) ;;
+     *) AC_MSG_ERROR([--enable-libgcobol-rpath expects yes or no]) ;;
+   esac],
+  [enable_libgcobol_rpath=yes])
+LIBGCOBOL_RPATH_SPEC=
+case $host in
+  *-*-linux*)
+    if test x$enable_libgcobol_rpath = xyes \
+       && test x$enable_shared = xyes \
+       && { test -z "$with_cross_host" || test x$with_cross_host = xno; }; then
+      LIBGCOBOL_RPATH_SPEC='%{!static:%{!static-pie:--enable-new-dtags -rpath @LIBGCOBOL_RUNTIME_DIR@}}'
+      # RUNPATH is not transitive.  Each runtime DSO needs its own entry
+      # for dependencies installed alongside it (for example libquadmath).
+      extra_ldflags_libgcobol="$extra_ldflags_libgcobol"' -Wl,--enable-new-dtags -Wl,-rpath,$(toolexeclibdir)'
+    fi
+    ;;
+esac
+AC_SUBST(LIBGCOBOL_RPATH_SPEC)
+
 AC_CHECK_HEADERS_ONCE(floatingpoint.h ieeefp.h fenv.h fptrap.h \
 complex.h stdlib.h errno.h)
 
@@ -388,7 +414,7 @@ AC_SUBST(SPEC_LIBGCOBOL_DEPS)
 
 AC_CONFIG_FILES([
 Makefile
-libgcobol.spec
+libgcobol.spec.conf:libgcobol.spec.in
 ])
 
 AC_MSG_NOTICE([libgcobol has been configured.])

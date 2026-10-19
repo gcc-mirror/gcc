@@ -45,6 +45,16 @@ if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la libgcobol_posix.la libgcobol_compat_gnu.la
 toolexeclib_DATA = libgcobol.spec
 
+# Expand the installation directory at make time, after multilib and
+# version-specific directory variables have acquired their final values.
+# DESTDIR is deliberately excluded: it is a staging location, not a runtime
+# search directory.  config.status supplies the other spec substitutions.
+libgcobol.spec: libgcobol.spec.conf Makefile $(srcdir)/mk-rpath-spec.sh
+	$(SHELL) $(srcdir)/mk-rpath-spec.sh "$(toolexeclibdir)" < $< > $@.tmp
+	mv $@.tmp $@
+
+CLEANFILES = libgcobol.spec libgcobol.spec.tmp
+
 libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)/cobol
 libsubincludedir = $(libsubdir)
 
@@ -229,6 +239,7 @@ LTCOBCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 .cbl.lo:
 	$(LTCOBCOMPILE) $(COBFLAGS) $(MULTIFLAGS) -c -o $@ $<
 
-EXTRA_DIST = libgcobol.map libgcobol_posix.map libgcobol_compat_gnu.map
+EXTRA_DIST = libgcobol.map libgcobol_posix.map libgcobol_compat_gnu.map \
+	mk-rpath-spec.sh testsuite/runpath.py README.runpath
 
 endif BUILD_LIBGCOBOL

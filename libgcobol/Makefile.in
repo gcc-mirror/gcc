@@ -148,7 +148,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno config.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/../mkinstalldirs
 CONFIG_HEADER = config.h
-CONFIG_CLEAN_FILES = libgcobol.spec
+CONFIG_CLEAN_FILES = libgcobol.spec.conf
 CONFIG_CLEAN_VPATH_FILES =
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
@@ -357,6 +357,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBGCOBOL_RPATH_SPEC = @LIBGCOBOL_RPATH_SPEC@
 LIBGCOBOL_VERSION = @LIBGCOBOL_VERSION@
 LIBICONV = @LIBICONV@
 LIBM = @LIBM@
@@ -479,6 +480,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 # Skip the whole process if we are not building libgcobol.
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_LTLIBRARIES = libgcobol.la libgcobol_posix.la libgcobol_compat_gnu.la
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_DATA = libgcobol.spec
+@BUILD_LIBGCOBOL_TRUE@CLEANFILES = libgcobol.spec libgcobol.spec.tmp
 @BUILD_LIBGCOBOL_TRUE@libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)/cobol
 @BUILD_LIBGCOBOL_TRUE@libsubincludedir = $(libsubdir)
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_SOURCES = \
@@ -640,7 +642,9 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@LTCOBCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 @BUILD_LIBGCOBOL_TRUE@	--mode=compile $(AM_COBC) $(AM_COBFLAGS)
 
-@BUILD_LIBGCOBOL_TRUE@EXTRA_DIST = libgcobol.map libgcobol_posix.map libgcobol_compat_gnu.map
+@BUILD_LIBGCOBOL_TRUE@EXTRA_DIST = libgcobol.map libgcobol_posix.map libgcobol_compat_gnu.map \
+@BUILD_LIBGCOBOL_TRUE@	mk-rpath-spec.sh testsuite/runpath.py README.runpath
+
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -694,7 +698,7 @@ $(srcdir)/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f config.h stamp-h1
-libgcobol.spec: $(top_builddir)/config.status $(srcdir)/libgcobol.spec.in
+libgcobol.spec.conf: $(top_builddir)/config.status $(srcdir)/libgcobol.spec.in
 	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 install-toolexeclibLTLIBRARIES: $(toolexeclib_LTLIBRARIES)
@@ -1030,6 +1034,7 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
+	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
@@ -1142,6 +1147,14 @@ uninstall-am: uninstall-nobase_libsubincludeHEADERS \
 
 .PRECIOUS: Makefile
 
+
+# Expand the installation directory at make time, after multilib and
+# version-specific directory variables have acquired their final values.
+# DESTDIR is deliberately excluded: it is a staging location, not a runtime
+# search directory.  config.status supplies the other spec substitutions.
+@BUILD_LIBGCOBOL_TRUE@libgcobol.spec: libgcobol.spec.conf Makefile $(srcdir)/mk-rpath-spec.sh
+@BUILD_LIBGCOBOL_TRUE@	$(SHELL) $(srcdir)/mk-rpath-spec.sh "$(toolexeclibdir)" < $< > $@.tmp
+@BUILD_LIBGCOBOL_TRUE@	mv $@.tmp $@
 
 @BUILD_LIBGCOBOL_TRUE@$(LC_COPYDIR_BUILD)/%.cpy: ${srcdir}/compat/gnu/cpy/%.cpy
 @BUILD_LIBGCOBOL_TRUE@	mkdir -p `dirname $@`
