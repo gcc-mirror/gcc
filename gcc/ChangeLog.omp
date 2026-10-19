@@ -1,3 +1,231 @@
+2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.md (UNSPEC_PAIR): New.
+	(X): Add vector modes.
+	(ATOMICMODE): New mode iterator.
+	(atomic_fetch_<bare_mnemonic><mode>): Use ATOMICMODE iterator.  Add Rf
+	and Rm constraints.
+	(atomic_<bare_mnemonic><mode>): Likewise.
+	(x2): Add vector modes.
+	(size): Delete.
+	(bitsize): Add vector modes.
+	(createpair<mode>): New insn.
+	(sync_compare_and_swap<mode>): Use ATOMICMODE iterator.  Use
+	createpair<mode> instead of subregs.
+	(sync_compare_and_swap<mode>_insn): Use ATOMICMODE iterator.  Add Rf
+	and Rm constraints.
+	(sync_compare_and_swap<mode>_lds_insn): Use ATOMICMODE iterator.  Add
+	Rl constraint.
+	(atomic_load<mode>): Use ATOMICMODE iterator.  Add Rf and Rm
+	constraints.  Make the memory model operand SImode.
+	(atomic_store<mode>): Likewise.
+	(atomic_exchange<mode>): Use ATOMICMODE iterator.  Add Rf and Rm
+	constraints.
+
+2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+		    Richard Sandiford  <rdsandiford@googlemail.com>
+
+	* doc/rtl.texi: Document MEM_INDEPENDENT_P.
+	Document new MEM semantics.
+	* doc/tm.texi: Regenerate.
+	* emit-rtl.cc (gen_int_mode): Extend to DTRT for vector modes.
+	(change_address): Split out a static overload with a "validate"
+	parameter.
+	(change_address_nv): New.
+	(adjust_address_1): Permit vectors of addresses.
+	* emit-rtl.h (change_address_nv): New prototype.
+	* explow.cc (convert_memory_address_addr_space_1): Permit vectors of
+	addresses, for no-op conversions only.
+	* recog.cc (address_operand): Permit vectors of addresses.
+	* rtl.h (MEM_INDEPENDENT_P): New macro.
+	(MEM_COPY_ATTRIBUTES): Copy MEM_INDEPENDENT_P.
+	(get_address_mode): Change return type to machine_mode.
+	* rtlanal.cc (get_address_mode): Likewise.
+	* simplify-rtx.cc (simplify_context::simplify_subreg): Handle vectors
+	of addresses, and simplify subregs of vector mems.
+	* target.def (pointer_mode): Document vectors of addresses.
+	(address_mode): Likewise.
+	(valid_pointer_mode): Change scalar_int_mode to machine_mode, and
+	document the vector use case.
+	* targhooks.cc (default_addr_space_valid_pointer_mode): Change
+	scalar_int_mode to machine_mode, but reject non-scalar inputs.
+	* targhooks.h (default_addr_space_valid_pointer_mode): Likewise.
+
+2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-10-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/constraints.md (RF): Limit to scalar addresses.
+	(Rf): New.
+	(Pf): New.
+	(RL): Limit to scalar addresses.
+	(Rl): New.
+	(Pl): New.
+	(RM): Limit to scalar addresses.
+	(Rm): New.
+	(Pm): New.
+	(RA): New.
+	* config/gcn/gcn-protos.h (gcn_gen_vector_mem): New prototype.
+	(gcn_flat_address_p): Add "strict" parameter.
+	(gcn_global_address_p): Add "data_mode" and "strict" parameters.
+	(gcn_mode_code_base_reg_class): Delete prototype.
+	(gcn_scalar_flat_address_p): Add "strict" parameter.
+	* config/gcn/gcn-valu.md (exec_scatter): Delete define_subst_attr.
+	(scatter_store): Delete define_subst.
+	(mov<mode>): Recognize address vectors.  Use vector MEMs instead of
+	gather/scatter.
+	(*mov<mode>_1reg): Rework from the old "mov<mode>" patterns.  Add
+	memory alternatives.
+	(*mov<mode>_2reg): Likewise.
+	(*mov<mode>_4reg): Likewise.
+	(@mov<mode>_exec): New expander to separate masked loads from others.
+	(*mov<mode>_1reg_exec): Rework from the old "mov<mode>_exec" patterns.
+	Add memory alternatives.
+	(*mov<mode>_2reg_exec): Likewise.
+	(*mov<mode>_4reg_exec): Likewise.
+	(load<mode>_exec): New.
+	(UNSPEC_SGPRBASE define_splits): Split to vector MEMs instead of
+	gather/scatter unspecs.
+	(gather_load<mode><vnsi>): Rework to use emit_move_insn.
+	(gather_load<mode><vndi>): Likewise.
+	(gather<mode>_expr<exec>): Delete.
+	(gather<mode>_insn_1offset<exec>): Delete.
+	(gather<mode>_insn_1offset_ds<exec>): Delete.
+	(gather<mode>_insn_2offsets<exec>): Delete.
+	(scatter<mode>_expr<exec_scatter>): Delete.
+	(scatter<mode>_insn_1offset<exec_scatter>): Delete.
+	(scatter<mode>_insn_1offset_ds<exec_scatter>): Delete.
+	(scatter<mode>_insn_2offsets<exec_scatter>): Delete.
+	(scatter_store<mode><vnsi>): Rework to use emit_move_insn.
+	(scatter_store<mode><vndi>): Likewise.
+	(maskload<mode>di): Rework to use mov*_exec.
+	(maskstore<mode>di): Likewise.
+	(mask_gather_load<mode><vnsi>): Likewise.
+	(mask_gather_load<mode><vndi>): Likewise.
+	(mask_scatter_store<mode><vnsi>): Likewise.
+	(mask_scatter_store<mode><vndi>): Likewise.
+	* config/gcn/gcn.cc (single_cst_vector_p): Delete.
+	(GEN_VNM): Delete gather_expr case.
+	(gcn_address_register_p): Rename ...
+	(gcn_scalar_address_register_p): ... to this.
+	(gcn_vec_address_register_p): Support address vectors.
+	(gcn_auto_address_register_p): New.
+	(gcn_flat_address_p): Refactor code from
+	gcn_addr_space_legitimate_address_p here, and support address vectors.
+	(gcn_scalar_flat_address_p): Likewise.
+	(gcn_ds_address_p): Likewise.  Add "strict" parameter.  Only accept
+	constant offsets that fit the 16-bit DS offset field.
+	(gcn_global_address_p): Refactor code from
+	gcn_addr_space_legitimate_address_p here, and support address vectors,
+	including vector constant offsets.
+	(gcn_addr_space_legitimate_address_p): Use the above functions.
+	Reject vector addresses whose lane count doesn't match the data mode.
+	Look through SUBREGs when not strict.
+	(gcn_addr_space_valid_pointer_mode): New.
+	(gcn_mode_code_base_reg_class): Replace this ...
+	(gcn_base_reg_class): ... with this.
+	(gcn_expand_vector_init): Rework using mov*_exec.
+	(gcn_expand_scalar_to_vector_address): Rework using vector MEM.  Set
+	MEM_INDEPENDENT_P.
+	(gcn_gen_vector_mem): New.  Set MEM_INDEPENDENT_P.
+	(gcn_secondary_reload): Handle address vectors.
+	(gcn_valid_move_p): Update calls to gcn_global_address_p.
+	(move_callee_saved_registers): Rework using mov*_exec.  Set
+	MEM_INDEPENDENT_P.
+	(print_operand_address): Handle MEM changes.
+	(print_operand): Likewise.  Handle VEC_DUPLICATE offsets.
+	(TARGET_ADDR_SPACE_VALID_POINTER_MODE): New.
+	(TARGET_BASE_REG_CLASS): New.
+	* config/gcn/gcn.h (MODE_CODE_BASE_REG_CLASS): Delete.
+	* config/gcn/gcn.md (UNSPEC_MASKLOAD): New.
+	(UNSPEC_GATHER): Delete.
+	(UNSPEC_SCATTER): Delete.
+	(*mov<mode>_insn): Disallow MEM to MEM moves.
+	(*movti_insn): Likewise.
+	(atomic_fetch_<bare_mnemonic><mode>): Add missing offsets.
+	(atomic_<bare_mnemonic><mode>): Likewise.
+	(sync_compare_and_swap<mode>_insn): Likewise.
+	(atomic_exchange<mode>): Likewise.
+
+2026-09-28  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-25  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (mul<mode>3): Remove erroneous hi*hi step.
+	(mul<mode>3_dup): Likewise.
+	(mul<mode>3_exec): Likewise.
+	(mul<mode>3_dup_exec): Likewise.
+
+2026-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	Backported from master:
+	2026-09-25  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR lto/127589
+	* lto-streamer-in.cc (lto_input_mode_table): With ACCEL_COMPILER,
+	check whether found float and int modes are actually enabled/available
+	at runtime.
+
+2026-09-24  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-24  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/127542
+	* config/gcn/gcn-valu.md (<expander><mode>2<exec>): Add
+	"popcount_extra_op".
+
+2026-09-24  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2026-09-22  Andrew Stubbs  <ams@baylibre.com>
+
+	* target.def (base_reg_class): New target hook.
+	* targhooks.h (default_base_reg_class): Declare.
+	* targhooks.cc (default_base_reg_class): New function, implementing
+	the previous BASE_REG_CLASS/MODE_BASE_REG_CLASS/
+	MODE_BASE_REG_REG_CLASS/MODE_CODE_BASE_REG_CLASS macro fallback
+	chain as the hook's default.
+	* addresses.h (base_reg_class): Rewrite to call the
+	TARGET_BASE_REG_CLASS hook instead of dispatching through
+	INSN_BASE_REG_CLASS and the other macros by hand; add a MEM
+	parameter.
+	* rtl.h (address_info): Add mem field.
+	* rtlanal.cc (decompose_mem_address): Set it.
+	* lra-constraints.cc (simplify_operand_subreg, process_alt_operands,
+	base_to_reg, base_plus_disp_to_reg, process_address_1,
+	curr_insn_transform): Pass the enclosing MEM, and INSN where
+	previously omitted, to base_reg_class.
+	* reload.cc (find_reloads, find_reloads_address,
+	find_reloads_address_1, find_reloads_subreg_address): Likewise.
+	* reload1.cc (maybe_fix_stack_asms): Likewise.
+	* regcprop.cc: Include target.h.
+	(replace_oldest_value_addr, replace_oldest_value_mem): Pass MEM to
+	base_reg_class.
+	* regrename.cc (base_reg_class_for_rename): Add a MEM parameter.
+	(scan_rtx_address, scan_rtx): Pass it.
+	* caller-save.cc: Include target.h.
+	* config/i386/i386.h (INSN_BASE_REG_CLASS): Delete.
+	* config/i386/i386-protos.h (ix86_insn_base_reg_class): Delete
+	declaration.
+	* config/i386/i386.cc (ix86_insn_base_reg_class): Rename to...
+	(ix86_base_reg_class): ...this, adjust the signature, and implement
+	TARGET_BASE_REG_CLASS instead of INSN_BASE_REG_CLASS.
+	(TARGET_BASE_REG_CLASS): Define.
+	* doc/tm.texi.in: Add TARGET_BASE_REG_CLASS.  Mark BASE_REG_CLASS,
+	MODE_BASE_REG_CLASS, MODE_BASE_REG_REG_CLASS and
+	MODE_CODE_BASE_REG_CLASS as obsolete in favor of the new hook, and
+	remove the now-unused INSN_BASE_REG_CLASS.
+	* doc/tm.texi: Regenerate.
+
 2026-09-23  Chung-Lin Tang  <cltang@baylibre.com>
 
 	Backported from master:
