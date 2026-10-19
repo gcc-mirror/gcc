@@ -5764,7 +5764,13 @@ expand_bitquery (internal_fn fn, gcall *stmt)
   tree arg = gimple_call_arg (stmt, 0);
   if (TREE_CODE (arg) == INTEGER_CST)
     {
-      tree ret = fold_const_call (as_combined_fn (fn), TREE_TYPE (arg), arg);
+      tree ret;
+      /* A second argument of IFN_CLZ or IFN_CTZ is the result for zero.  */
+      if ((fn == IFN_CLZ || fn == IFN_CTZ) && gimple_call_num_args (stmt) == 2)
+	ret = fold_const_call (as_combined_fn (fn), TREE_TYPE (lhs), arg,
+			       gimple_call_arg (stmt, 1));
+      else
+	ret = fold_const_call (as_combined_fn (fn), TREE_TYPE (arg), arg);
       gcc_checking_assert (ret && TREE_CODE (ret) == INTEGER_CST);
       expand_assignment (lhs, ret, false);
       return false;
@@ -5779,18 +5785,73 @@ expand_CLRSB (internal_fn fn, gcall *stmt)
     expand_unary_optab_fn (fn, stmt, clrsb_optab);
 }
 
+/* Expand STMT, a call to the IFN_CLZ or IFN_CTZ internal function FN,
+   using OPTAB.  The optional second argument of STMT is the result for a
+   zero first argument.  If it is not the value that the instruction gives
+   for zero, test the first argument for zero and use the second argument
+   as the result.  If the target does not define the instruction for zero,
+   execute it only for a nonzero first argument.  */
+
+static void
+expand_clz_ctz (internal_fn fn, gcall *stmt, direct_optab optab)
+{
+  if (!expand_bitquery (fn, stmt))
+    return;
+  tree arg = gimple_call_arg (stmt, 0);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (arg));
+  int val = 0, defined = 0;
+  if (gimple_call_num_args (stmt) == 2)
+    defined = (fn == IFN_CLZ
+	       ? CLZ_DEFINED_VALUE_AT_ZERO (mode, val)
+	       : CTZ_DEFINED_VALUE_AT_ZERO (mode, val));
+  if (gimple_call_num_args (stmt) == 1
+      || (defined == 2 && wi::to_widest (gimple_call_arg (stmt, 1)) == val))
+    {
+      expand_unary_optab_fn (fn, stmt, optab);
+      return;
+    }
+  /* The vectorizer creates vector calls only with the value of the
+     target.  */
+  gcc_checking_assert (!VECTOR_TYPE_P (TREE_TYPE (arg)));
+
+  tree lhs = gimple_call_lhs (stmt);
+  rtx op0 = force_reg (mode, expand_normal (arg));
+  rtx zero_val = expand_normal (fold_convert (TREE_TYPE (lhs),
+					      gimple_call_arg (stmt, 1)));
+  rtx res = gen_reg_rtx (TYPE_MODE (TREE_TYPE (lhs)));
+  rtx_code_label *done = gen_label_rtx ();
+  if (defined)
+    {
+      convert_move (res, expand_unop (mode, optab, op0, NULL_RTX, 1), 1);
+      emit_cmp_and_jump_insns (op0, const0_rtx, NE, NULL_RTX, mode, true,
+			       done, profile_probability::likely ());
+      emit_move_insn (res, zero_val);
+    }
+  else
+    {
+      emit_move_insn (res, zero_val);
+      emit_cmp_and_jump_insns (op0, const0_rtx, EQ, NULL_RTX, mode, true,
+			       done, profile_probability::unlikely ());
+      convert_move (res, expand_unop (mode, optab, op0, NULL_RTX, 1), 1);
+    }
+  emit_label (done);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  if (GET_CODE (target) == SUBREG && SUBREG_PROMOTED_VAR_P (target))
+    convert_move (SUBREG_REG (target), res, SUBREG_PROMOTED_SIGN (target));
+  else
+    emit_move_insn (target, res);
+}
+
 void
 expand_CLZ (internal_fn fn, gcall *stmt)
 {
-  if (expand_bitquery (fn, stmt))
-    expand_unary_optab_fn (fn, stmt, clz_optab);
+  expand_clz_ctz (fn, stmt, clz_optab);
 }
 
 void
 expand_CTZ (internal_fn fn, gcall *stmt)
 {
-  if (expand_bitquery (fn, stmt))
-    expand_unary_optab_fn (fn, stmt, ctz_optab);
+  expand_clz_ctz (fn, stmt, ctz_optab);
 }
 
 void
