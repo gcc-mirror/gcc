@@ -5491,21 +5491,11 @@
   {
     /* If we have shift-add insns and arguments are all registers, steer
        towards PLUS, otherwise steer towards IOR.  */
-    if (TARGET_ZBA && REG_P (operands[2]))
+    if ((TARGET_ZBA && REG_P (operands[2]))
+	|| (TARGET_64BIT && GET_MODE (operands[0]) == SImode))
       emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
     else
-      {
-	/* We accept GPRs, so we need to do the right thing for SI on rv64.  */
-	if (GET_MODE (operands[0]) != word_mode)
-	  {
-	    operands[0] = gen_lowpart (word_mode, operands[0]);
-	    operands[1] = gen_lowpart (word_mode, operands[1]);
-	    operands[2] = gen_lowpart (word_mode, operands[2]);
-	    emit_insn (gen_iordi3 (operands[0], operands[1], operands[2]));
-	  }
-	else
-	  emit_insn (gen_ior<mode>3 (operands[0], operands[1], operands[2]));
-      }
+      emit_insn (gen_ior<mode>3 (operands[0], operands[1], operands[2]));
     DONE;
   }
 ) 
