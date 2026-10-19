@@ -1460,18 +1460,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       is_lock_free() const noexcept
       { return __atomic_impl::is_lock_free<sizeof(_Fp), _S_alignment>(); }
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(_Fp __t, memory_order __m = memory_order_seq_cst) volatile noexcept
       { __atomic_impl::store(&_M_fp, __t, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(_Fp __t, memory_order __m = memory_order_seq_cst) noexcept
       { __atomic_impl::store(&_M_fp, __t, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Fp
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       { return __atomic_impl::load(&_M_fp, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Fp
       load(memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::load(&_M_fp, __m); }
@@ -1484,11 +1488,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_impl::exchange(&_M_fp, __desired, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Fp
       exchange(_Fp __desired,
 	       memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_impl::exchange(&_M_fp, __desired, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Fp& __expected, _Fp __desired,
 			    memory_order __success,
@@ -1499,6 +1505,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						    __success, __failure);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Fp& __expected, _Fp __desired,
 			    memory_order __success,
@@ -1509,6 +1516,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						    __success, __failure);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Fp& __expected, _Fp __desired,
 			      memory_order __success,
@@ -1519,6 +1527,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						      __success, __failure);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Fp& __expected, _Fp __desired,
 			      memory_order __success,
@@ -1529,6 +1538,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						      __success, __failure);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Fp& __expected, _Fp __desired,
 			    memory_order __order = memory_order_seq_cst)
@@ -1538,6 +1548,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __cmpexch_failure_order(__order));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Fp& __expected, _Fp __desired,
 			    memory_order __order = memory_order_seq_cst)
@@ -1547,6 +1558,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                      __cmpexch_failure_order(__order));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Fp& __expected, _Fp __desired,
 			      memory_order __order = memory_order_seq_cst)
@@ -1556,6 +1568,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				       __cmpexch_failure_order(__order));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Fp& __expected, _Fp __desired,
 			      memory_order __order = memory_order_seq_cst)
@@ -1585,42 +1598,50 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // TODO add const volatile overload
 #endif // __glibcxx_atomic_wait
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_add(value_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_impl::__fetch_add_flt(&_M_fp, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_add(value_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_impl::__fetch_add_flt(&_M_fp, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_sub(value_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_impl::__fetch_sub_flt(&_M_fp, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_sub(value_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_impl::__fetch_sub_flt(&_M_fp, __i, __m); }
 
 #if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_min(value_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_impl::__fetch_min(&_M_fp, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_min(value_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return __atomic_impl::__fetch_min(&_M_fp, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_max(value_type __i,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return __atomic_impl::__fetch_max(&_M_fp, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_max(value_type __i,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -1715,6 +1736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       is_lock_free() const noexcept
       { return __atomic_impl::is_lock_free<sizeof(_Tp), required_alignment>(); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::load(_M_ptr, __m); }
@@ -1762,15 +1784,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __t;
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(value_type __t, memory_order __m = memory_order_seq_cst) const noexcept
       { __atomic_impl::store(this->_M_ptr, __t, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       exchange(value_type __desired, memory_order __m = memory_order_seq_cst)
       const noexcept
       { return __atomic_impl::exchange(this->_M_ptr, __desired, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(value_type& __expected, value_type __desired,
 			    memory_order __success,
@@ -1780,6 +1805,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 this->_M_ptr, __expected, __desired, __success, __failure);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(value_type& __expected, value_type __desired,
 			    memory_order __success,
@@ -1789,6 +1815,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		 this->_M_ptr, __expected, __desired, __success, __failure);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(value_type& __expected, value_type __desired,
 			    memory_order __order = memory_order_seq_cst)
@@ -1798,6 +1825,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     __cmpexch_failure_order(__order));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(value_type& __expected, value_type __desired,
 			      memory_order __order = memory_order_seq_cst)
@@ -1867,37 +1895,44 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __atomic_ref_base<_Tp>::__atomic_ref_base;
       using __atomic_ref_base<_Tp>::operator=;
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_add(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_add(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_sub(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_sub(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_and(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_and(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_or(value_type __i,
 	       memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_or(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_xor(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::fetch_xor(this->_M_ptr, __i, __m); }
 
 #if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_min(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::__fetch_min(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_max(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
@@ -1960,22 +1995,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using __atomic_ref_base<_Fp>::__atomic_ref_base;
       using __atomic_ref_base<_Fp>::operator=;
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_add(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::__fetch_add_flt(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_sub(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::__fetch_sub_flt(this->_M_ptr, __i, __m); }
 
 #if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_min(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
       { return __atomic_impl::__fetch_min(this->_M_ptr, __i, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       value_type
       fetch_max(value_type __i,
 		memory_order __m = memory_order_seq_cst) const noexcept
@@ -2009,6 +2048,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using __atomic_ref_base<_Pt>::__atomic_ref_base;
       using __atomic_ref_base<_Pt>::operator=;
+
       _GLIBCXX_ALWAYS_INLINE value_type
       fetch_add(difference_type __d,
 		memory_order __m = memory_order_seq_cst) const noexcept

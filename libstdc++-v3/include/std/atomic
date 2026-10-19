@@ -109,72 +109,87 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     static constexpr bool is_always_lock_free = ATOMIC_BOOL_LOCK_FREE == 2;
 #endif
 
+    _GLIBCXX_ALWAYS_INLINE
     void
     store(bool __i, memory_order __m = memory_order_seq_cst) noexcept
     { _M_base.store(__i, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     void
     store(bool __i, memory_order __m = memory_order_seq_cst) volatile noexcept
     { _M_base.store(__i, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     load(memory_order __m = memory_order_seq_cst) const noexcept
     { return _M_base.load(__m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     load(memory_order __m = memory_order_seq_cst) const volatile noexcept
     { return _M_base.load(__m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     exchange(bool __i, memory_order __m = memory_order_seq_cst) noexcept
     { return _M_base.exchange(__i, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     exchange(bool __i,
 	     memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.exchange(__i, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_weak(bool& __i1, bool __i2, memory_order __m1,
 			  memory_order __m2) noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m1, __m2); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_weak(bool& __i1, bool __i2, memory_order __m1,
 			  memory_order __m2) volatile noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m1, __m2); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_weak(bool& __i1, bool __i2,
 			  memory_order __m = memory_order_seq_cst) noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_weak(bool& __i1, bool __i2,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_weak(__i1, __i2, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_strong(bool& __i1, bool __i2, memory_order __m1,
 			    memory_order __m2) noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m1, __m2); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_strong(bool& __i1, bool __i2, memory_order __m1,
 			    memory_order __m2) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m1, __m2); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_strong(bool& __i1, bool __i2,
 			    memory_order __m = memory_order_seq_cst) noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
 
+    _GLIBCXX_ALWAYS_INLINE
     bool
     compare_exchange_strong(bool& __i1, bool __i2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
     { return _M_base.compare_exchange_strong(__i1, __i2, __m); }
 
 #if __cpp_lib_atomic_wait
+    _GLIBCXX_ALWAYS_INLINE
     void
     wait(bool __old, memory_order __m = memory_order_seq_cst) const noexcept
     { _M_base.wait(__old, __m); }
@@ -294,6 +309,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= __atomic_always_lock_free(sizeof(_M_i), 0);
 #endif
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -302,6 +318,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       int(__m));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(_Tp __i, memory_order __m = memory_order_seq_cst) volatile noexcept
       {
@@ -310,6 +327,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       int(__m));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Tp
       load(memory_order __m = memory_order_seq_cst) const noexcept
       {
@@ -319,6 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *__ptr;
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Tp
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       {
@@ -328,6 +347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *__ptr;
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Tp
       exchange(_Tp __i, memory_order __m = memory_order_seq_cst) noexcept
       {
@@ -339,6 +359,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *__ptr;
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       _Tp
       exchange(_Tp __i,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -351,6 +372,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *__ptr;
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) noexcept
@@ -359,6 +381,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s, __f);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i, memory_order __s,
 			    memory_order __f) volatile noexcept
@@ -367,18 +390,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s, __f);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i,
 			    memory_order __m = memory_order_seq_cst) noexcept
       { return compare_exchange_weak(__e, __i, __m,
                                      __cmpexch_failure_order(__m)); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(_Tp& __e, _Tp __i,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
       { return compare_exchange_weak(__e, __i, __m,
                                      __cmpexch_failure_order(__m)); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) noexcept
@@ -387,6 +413,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s, __f);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i, memory_order __s,
 			      memory_order __f) volatile noexcept
@@ -395,12 +422,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						 __s, __f);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i,
 			       memory_order __m = memory_order_seq_cst) noexcept
       { return compare_exchange_strong(__e, __i, __m,
                                        __cmpexch_failure_order(__m)); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(_Tp& __e, _Tp __i,
 		     memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -408,6 +437,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                        __cmpexch_failure_order(__m)); }
 
 #if __cpp_lib_atomic_wait // C++ >= 20
+      _GLIBCXX_ALWAYS_INLINE
       void
       wait(_Tp __old, memory_order __m = memory_order_seq_cst) const noexcept
       {
@@ -581,45 +611,54 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	= ATOMIC_POINTER_LOCK_FREE == 2;
 #endif
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.store(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       void
       store(__pointer_type __p,
 	    memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.store(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       load(memory_order __m = memory_order_seq_cst) const noexcept
       { return _M_b.load(__m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       load(memory_order __m = memory_order_seq_cst) const volatile noexcept
       { return _M_b.load(__m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       exchange(__pointer_type __p,
 	       memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.exchange(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       exchange(__pointer_type __p,
 	       memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.exchange(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m1, memory_order __m2) noexcept
       { return _M_b.compare_exchange_weak(__p1, __p2, __m1, __m2); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m1,
 			    memory_order __m2) volatile noexcept
       { return _M_b.compare_exchange_weak(__p1, __p2, __m1, __m2); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 			    memory_order __m = memory_order_seq_cst) noexcept
@@ -628,6 +667,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     __cmpexch_failure_order(__m));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_weak(__pointer_type& __p1, __pointer_type __p2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -636,17 +676,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     __cmpexch_failure_order(__m));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1, memory_order __m2) noexcept
       { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m1,
 			      memory_order __m2) volatile noexcept
       { return _M_b.compare_exchange_strong(__p1, __p2, __m1, __m2); }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 			      memory_order __m = memory_order_seq_cst) noexcept
@@ -655,6 +698,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					    __cmpexch_failure_order(__m));
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       bool
       compare_exchange_strong(__pointer_type& __p1, __pointer_type __p2,
 		    memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -664,6 +708,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __cpp_lib_atomic_wait
+      _GLIBCXX_ALWAYS_INLINE
       void
       wait(__pointer_type __old,
 	   memory_order __m = memory_order_seq_cst) const noexcept
@@ -680,6 +725,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { _M_b.notify_all(); }
 #endif // __cpp_lib_atomic_wait
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
@@ -690,6 +736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_b.fetch_add(__d, __m);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_add(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -700,6 +747,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_b.fetch_add(__d, __m);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) noexcept
@@ -710,6 +758,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return _M_b.fetch_sub(__d, __m);
       }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_sub(ptrdiff_t __d,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
@@ -721,21 +770,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
 #if __glibcxx_atomic_min_max
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_min(__pointer_type __p,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.fetch_min(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_min(__pointer_type __p,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
       { return _M_b.fetch_min(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_max(__pointer_type __p,
 		memory_order __m = memory_order_seq_cst) noexcept
       { return _M_b.fetch_max(__p, __m); }
 
+      _GLIBCXX_ALWAYS_INLINE
       __pointer_type
       fetch_max(__pointer_type __p,
 		memory_order __m = memory_order_seq_cst) volatile noexcept
