@@ -630,17 +630,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
 	  initializer = cp_build_fold_indirect_ref (initializer);
 	}
 
-      if (dependent_type_p (type))
-	;
-      else if (id != this_identifier && by_reference_p)
-	{
-	  if (!lvalue_p (initializer))
-	    {
-	      error ("cannot capture %qE by reference", initializer);
-	      return error_mark_node;
-	    }
-	}
-      else
+      if (!dependent_type_p (type) && !by_reference_p)
 	{
 	  /* Capture by copy requires a complete type.  */
 	  type = complete_type (type);
