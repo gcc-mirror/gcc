@@ -11840,7 +11840,8 @@ walk_type_fields (tree type, walk_tree_fn func, void *data,
    called with the DATA and the address of each sub-tree.  If FUNC returns a
    non-NULL value, the traversal is stopped, and the value returned by FUNC
    is returned.  If PSET is non-NULL it is used to record the nodes visited,
-   and to avoid visiting a node more than once.  */
+   and to avoid visiting a node more than once.
+   Note that TREE_PURPOSE is not walked.  */
 
 tree
 walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
@@ -11996,6 +11997,16 @@ walk_tree_1 (tree *tp, walk_tree_fn func, void *data,
 	  WALK_SUBTREE (OMP_CLAUSE_OPERAND (t, i));
 	WALK_SUBTREE_TAIL (OMP_CLAUSE_CHAIN (t));
       }
+
+    case OMP_METADIRECTIVE:
+      /* Handle this explicitly as TREE_PURPOSE is usually not walked.  */
+      for (tree t2 = OMP_METADIRECTIVE_VARIANTS (t); t2; t2 = TREE_CHAIN (t2))
+	{
+	  WALK_SUBTREE (OMP_METADIRECTIVE_VARIANT_SELECTOR (t2));
+	  WALK_SUBTREE (OMP_METADIRECTIVE_VARIANT_DIRECTIVE (t2));
+	  WALK_SUBTREE (OMP_METADIRECTIVE_VARIANT_BODY (t2));
+	}
+      break;
 
     case TARGET_EXPR:
       {
