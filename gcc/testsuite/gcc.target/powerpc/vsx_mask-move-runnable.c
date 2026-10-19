@@ -34,23 +34,19 @@ int main ()
   vector unsigned long long vbc_result_di, vbc_expected_result_di;
   vector __uint128_t vbc_result_qi, vbc_expected_result_qi;
 
-  unsigned int result_wi, expected_result_wi;
-  unsigned long long result, expected_result;
-  const unsigned char mp=1;
-  vector unsigned char vbc_bi_src;
-  vector unsigned short vbc_hi_src;
-  vector unsigned int vbc_wi_src;
-  vector unsigned long long vbc_di_src;
-  vector __uint128_t vbc_qi_src;
-  
  /* mtvsrbmi */
   num_elements = 16;
   
   for (i = 0; i<num_elements; i++)
     vbc_expected_result_bi[i] = 0x0;
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  vbc_expected_result_bi[13] = 0xFF;
+  vbc_expected_result_bi[15] = 0xFF;
+#else
   vbc_expected_result_bi[0] = 0xFF;
   vbc_expected_result_bi[2] = 0xFF;
+#endif
 
   vbc_result_bi = vec_genbm(5);
   
@@ -75,8 +71,13 @@ int main ()
   for (i = 0; i<num_elements; i++)
     vbc_expected_result_bi[i] = 0x0;
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  vbc_expected_result_bi[14] = 0xFF;
+  vbc_expected_result_bi[15] = 0xFF;
+#else
   vbc_expected_result_bi[1] = 0xFF;
   vbc_expected_result_bi[0] = 0xFF;
+#endif
 
   vbc_result_bi = vec_genbm(arg1);
   
@@ -93,18 +94,25 @@ int main ()
     }
   }
 
-  num_elements = 16;
   /* Should generate mtvsrbm as argument will not fit in 6-bit field. */
   arg1 = 0xEA;   // 234 decimal
   
   for (i = 0; i<num_elements; i++)
     vbc_expected_result_bi[i] = 0x0;
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  vbc_expected_result_bi[8]  = 0xFF;
+  vbc_expected_result_bi[9]  = 0xFF;
+  vbc_expected_result_bi[10] = 0xFF;
+  vbc_expected_result_bi[12] = 0xFF;
+  vbc_expected_result_bi[14] = 0xFF;
+#else
   vbc_expected_result_bi[7] = 0xFF;
   vbc_expected_result_bi[6] = 0xFF;
   vbc_expected_result_bi[5] = 0xFF;
   vbc_expected_result_bi[3] = 0xFF;
   vbc_expected_result_bi[1] = 0xFF;
+#endif
 
   vbc_result_bi = vec_genbm(arg1);
   
@@ -128,8 +136,13 @@ int main ()
   for (i = 0; i<num_elements; i++)
     vbc_expected_result_hi[i] = 0x0;
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  vbc_expected_result_hi[5] = 0xFFFF;
+  vbc_expected_result_hi[7] = 0xFFFF;
+#else
   vbc_expected_result_hi[2] = 0xFFFF;
   vbc_expected_result_hi[0] = 0xFFFF;
+#endif
 
   vbc_result_hi = vec_genhm(arg1);
   
@@ -153,9 +166,15 @@ int main ()
   for (i = 0; i<num_elements; i++)
     vbc_expected_result_wi[i] = 0x0;
 
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  vbc_expected_result_wi[1] = 0xFFFFFFFF;
+  vbc_expected_result_wi[2] = 0xFFFFFFFF;
+  vbc_expected_result_wi[3] = 0xFFFFFFFF;
+#else
   vbc_expected_result_wi[2] = 0xFFFFFFFF;
   vbc_expected_result_wi[1] = 0xFFFFFFFF;
   vbc_expected_result_wi[0] = 0xFFFFFFFF;
+#endif
 
   vbc_result_wi = vec_genwm(arg1);
   
@@ -179,8 +198,11 @@ int main ()
   for (i = 0; i<num_elements; i++)
     vbc_expected_result_di[i] = 0x0;
 
-  vbc_expected_result_di[1] = 0x0;
+#if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+  vbc_expected_result_di[1] = 0xFFFFFFFFFFFFFFFF;
+#else
   vbc_expected_result_di[0] = 0xFFFFFFFFFFFFFFFF;
+#endif
 
   vbc_result_di = vec_gendm(arg1);
   
