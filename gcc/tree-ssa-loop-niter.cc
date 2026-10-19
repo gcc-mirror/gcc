@@ -3725,6 +3725,7 @@ loop_niter_by_eval (class loop *loop, edge exit)
 		  tree mem = gimple_assign_rhs1 (def);
 		  affine_iv iv;
 		  if (TYPE_MODE (TREE_TYPE (mem)) == TYPE_MODE (char_type_node)
+		      && CHAR_TYPE_SIZE == 8
 		      && simple_iv (loop, loop,
 				    TREE_OPERAND (mem, 0), &iv, false)
 		      && tree_fits_uhwi_p (TREE_OPERAND (mem, 1))
@@ -3740,6 +3741,7 @@ loop_niter_by_eval (class loop *loop, edge exit)
 			{
 			  str = TREE_OPERAND (str, 0);
 			  unsigned i = 0;
+			  uint8_t op1 = TREE_INT_CST_LOW (op[1]);
 			  for (unsigned HOST_WIDE_INT idx
 			       = (tree_to_uhwi (TREE_OPERAND (mem, 1))
 				  + tree_to_uhwi (off));
@@ -3747,10 +3749,9 @@ loop_niter_by_eval (class loop *loop, edge exit)
 			       && i < MAX_ITERATIONS_TO_TRACK;
 			       idx += tree_to_uhwi (iv.step), ++i)
 			    {
-			      int res = compare_tree_int
-				(op[1], TREE_STRING_POINTER (str)[idx]);
-			      if ((cmp == NE_EXPR && res == 0)
-				  || (cmp == EQ_EXPR && res != 0))
+			      uint8_t c = TREE_STRING_POINTER (str)[idx];
+			      if ((cmp == NE_EXPR && op1 == c)
+				  || (cmp == EQ_EXPR && op1 != c))
 				return build_int_cst (unsigned_type_node, i);
 			    }
 			}
