@@ -1,4 +1,4 @@
-/* { dg-additional-options "-fsigned-zeros" } */
+/* { dg-additional-options "-fno-associative-math -fsigned-zeros" } */
 
 #include "tree-vect.h"
 
