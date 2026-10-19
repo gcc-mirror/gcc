@@ -605,6 +605,9 @@ STAGEautofeedback_TFLAGS = $(STAGE3_TFLAGS)
 # may result in additional warnings.
 STAGEautofeedback_CONFIGURE_FLAGS = $(filter-out --enable-werror-always,$(STAGE_CONFIGURE_FLAGS))
 
+GMP_CHECKING_FLAGS = -fno-checking -fchecking=1
+GMP_FILTER_CHECKING_FLAGS = $(filter-out $(GMP_CHECKING_FLAGS),$(1))
+
 do-compare = @do_compare@
 do-compare3 = $(do-compare)
 
@@ -1194,7 +1197,18 @@ TAGS: do-TAGS
 # Macros for configure and all targets
 # ------------------------------------
 
-[+ DEFINE configure +]
+[+ ;; Return the stage flag variable that should be used when configuring
+   ;; the current module.
+   ;; GMP and MPC record the compiler options in object files, which makes
+   ;; LTO bootstrap comparisons fail if stage-specific checking flags differ.
+   (define stage-configure-flags
+     (lambda (suffix)
+       (let ((flag (string-append "STAGE" (get "id") suffix)))
+	 (if (or (= (get "module") "gmp")
+		 (= (get "module") "mpc"))
+	     (string-append "$(call GMP_FILTER_CHECKING_FLAGS,$(" flag "))")
+	     (string-append "$(" flag ")")))))
++][+ DEFINE configure +]
 .PHONY: configure-[+prefix+][+module+] maybe-configure-[+prefix+][+module+]
 maybe-configure-[+prefix+][+module+]:
 @if gcc-bootstrap
@@ -1251,7 +1265,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	@$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
+	TFLAGS="[+ (stage-configure-flags "_TFLAGS") +]"; \
 	[+ IF check_multilibs
 	+]echo "Checking multilib configuration for [+module+]..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null; \
@@ -1271,7 +1285,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;[+ ELSE prefix +] \
-	CFLAGS="$(STAGE[+id+]_CFLAGS)"; export CFLAGS; \
+	CFLAGS="[+ (stage-configure-flags "_CFLAGS") +]"; export CFLAGS; \
 	CXXFLAGS="$(STAGE[+id+]_CXXFLAGS)"; export CXXFLAGS;[+ IF (= (get "module") "gcc") +] \
 	GDCFLAGS="$(STAGE[+id+]_GDCFLAGS)"; export GDCFLAGS;[+ ENDIF +][+ IF prev +] \
 	LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \
