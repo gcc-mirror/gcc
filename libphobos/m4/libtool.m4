@@ -10,7 +10,7 @@
 # to write the compiler configuration to `libtool'.
 m4_defun([_LT_LANG_D_CONFIG],
 [AC_REQUIRE([AC_PROG_GDC])dnl
-AC_LANG_SAVE
+AC_LANG_PUSH([D])
 
 # Source file extension for D test sources.
 ac_ext=d
@@ -72,7 +72,7 @@ if test -n "$compiler"; then
   _LT_CONFIG($1)
 fi
 
-AC_LANG_RESTORE
+AC_LANG_POP([D])
 
 GCC=$lt_save_GCC
 CC=$lt_save_CC
