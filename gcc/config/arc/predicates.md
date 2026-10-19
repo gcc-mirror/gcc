@@ -775,3 +775,20 @@
   (ior (match_test "register_operand (op, mode)")
        (and (match_code "const_int, symbol_ref")
 	    (match_test "!optimize_size"))))
+
+(define_predicate "non_mod_move_dest_operand"
+  (match_operand 0 "move_dest_operand")
+{
+  rtx addr = XEXP (op, 0);
+  enum rtx_code code = GET_CODE (addr);
+
+  if (code == POST_INC
+      || code == PRE_INC
+      || code == POST_DEC
+      || code == PRE_DEC
+      || code == POST_MODIFY
+      || code == PRE_MODIFY)
+    return false;
+
+  return true;
+})

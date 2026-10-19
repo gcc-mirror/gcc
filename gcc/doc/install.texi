@@ -628,7 +628,7 @@ building the documentation without error, but you may still want to
 install a newer release to get the best appearance and usability of
 the generated manuals.
 
-Also note that Texinfo older than version 7.1 may throw incorrect build
+Also note that Texinfo older than version 7.1.1 may throw incorrect build
 warnings, though the generated documentation is correct.
 
 @item @TeX{} (any working version)
@@ -886,7 +886,7 @@ aix@var{version}, amdhsa, aout, cygwin, darwin@var{version},
 eabi, eabialtivec, eabisim, eabisimaltivec, elf, elf32,
 elfbare, elfoabi, freebsd@var{version}, gnu, hpux, hpux@var{version},
 kfreebsd-gnu, kopensolaris-gnu, linux-androideabi, linux-gnu,
-linux-gnu_altivec, linux-musl, linux-uclibc, lynxos, mingw32, mingw32crt,
+linux-gnu_altivec, linux-musl, linux-uclibc, lynxos, mingw32,
 mmixware, msdosdjgpp, netbsd, netbsdelf@var{version}, nto-qnx, openbsd,
 rtems, solaris@var{version}, symbianelf, tpf, uclinux, uclinux_eabi, vms,
 vxworks, vxworksae, vxworksmils
@@ -5156,13 +5156,7 @@ GCC contains support for x86-64 using the mingw-w64
 runtime library, available from @uref{https://www.mingw-w64.org/downloads/}.
 This library should be used with the target triple x86_64-pc-mingw32.
 
-@subheading Windows CE
-Windows CE is supported as a target only on Hitachi
-SuperH (sh-wince-pe), and MIPS (mips-wince-pe).
-
 @subheading Other Windows Platforms
-GCC no longer supports Windows NT on the Alpha or PowerPC.
-
 GCC no longer supports the Windows POSIX subsystem.
 
 Old target names including *-*-winnt and *-*-windowsnt are no longer used.

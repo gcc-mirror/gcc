@@ -17,10 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-tyty-call.h"
+#include "optional.h"
+#include "rust-hir-item.h"
 #include "rust-hir-type-check-expr.h"
 #include "rust-hir-type-check.h"
 #include "rust-type-util.h"
 #include "rust-hir-trait-reference.h"
+#include "rust-tyty.h"
 
 namespace Rust {
 namespace TyTy {
@@ -153,26 +156,91 @@ TypeCheckCallExpr::visit (ADTType &type)
 void
 TypeCheckCallExpr::visit (FnType &type)
 {
-  if (call.num_params () != type.num_params ())
+  std::vector<size_t> indexes;
+  const auto lookup = mappings.lookup_defid (type.get_id ());
+  if (lookup.has_value ())
     {
-      if (type.is_variadic ())
+      const auto *item = lookup.value ();
+      rust_assert (item->get_item_kind () == HIR::Item::ItemKind::Function);
+
+      const auto &fn = *static_cast<const HIR::Function *> (item);
+      auto legacy_const_generic_indexes
+	= fn.get_legacy_const_generic_indexes ();
+
+      bool malformed_const_generic_indexes
+	= !legacy_const_generic_indexes.has_value ();
+      if (malformed_const_generic_indexes)
+	return;
+
+      indexes = legacy_const_generic_indexes.value ();
+    }
+
+  size_t expected_args = type.num_params () + indexes.size ();
+  if (call.num_params () < expected_args
+      || (!type.is_variadic () && call.num_params () != expected_args))
+    {
+      emit_unexpected_argument_error (call.get_locus (), call.num_params (),
+				      expected_args);
+      return;
+    }
+
+  if (!indexes.empty ())
+    {
+      std::set<size_t> seen;
+      for (size_t i = 0; i < indexes.size (); i++)
 	{
-	  if (call.num_params () < type.num_params ())
+	  size_t index = indexes[i];
+	  seen.insert (index);
+
+	  bool duplicate_index = seen.size () != i + 1;
+	  if (index >= call.num_params () || duplicate_index)
 	    {
-	      emit_unexpected_argument_error (
-		call.get_locus (), (unsigned long) call.num_params (),
-		(unsigned long) type.num_params ());
+	      rust_error_at (call.get_locus (), "invalid const argument index");
 	      return;
 	    }
 	}
-      else
+
+      std::vector<SubstitutionParamMapping *> const_params;
+      for (auto &sub : type.get_substs ())
 	{
-	  emit_unexpected_argument_error (call.get_locus (),
-					  (unsigned long) call.num_params (),
-					  (unsigned long) type.num_params ());
+	  if (sub.get_generic_param ().get_kind ()
+	      == HIR::GenericParam::GenericKind::CONST)
+	    const_params.push_back (&sub);
+	}
+
+      if (const_params.size () != indexes.size ())
+	{
+	  rust_error_at (
+	    call.get_locus (),
+	    "const argument count does not match const parameters");
+
 	  return;
 	}
+
+      auto &subst_mappings = type.get_substitution_arguments ();
+      for (size_t i = 0; i < indexes.size (); i++)
+	{
+	  size_t cidx = indexes[i];
+	  auto &argument = *call.get_arguments ().at (cidx);
+
+	  auto *param = const_params[i]->get_param_ty ();
+	  auto const_ty = param->as_const_type ()->get_specified_type ();
+	  auto *value
+	    = SubstitutionRef::resolve_const_argument (argument, const_ty);
+
+	  if (value->is<ErrorType> ())
+	    return;
+
+	  SubstitutionArg existing = SubstitutionArg::error ();
+	  bool ok = subst_mappings.get_argument_for_symbol (param, &existing);
+	  rust_assert (ok);
+
+	  Resolver::unify_site (argument.get_mappings ().get_hirid (),
+				TyWithLocation (existing.get_tyty ()),
+				TyWithLocation (value), argument.get_locus ());
+	}
     }
+  call.set_const_argument_indexes (indexes);
 
   // if the surrounding context has pushed an expected type, try unifying it
   // with the fn's return type before checking arguments. This lets the callee
@@ -193,9 +261,13 @@ TypeCheckCallExpr::visit (FnType &type)
 				true /*implicit_infer_vars*/, true /*cleanup*/);
     }
 
-  size_t i = 0;
-  for (auto &argument : call.get_arguments ())
+  size_t i;
+  for (i = 0; i < call.get_arguments ().size (); i++)
     {
+      auto &argument = call.get_arguments ().at (i);
+      if (call.is_const_argument (i))
+	continue;
+
       location_t arg_locus = argument->get_locus ();
 
       TyTy::BaseType *param_ty = nullptr;
@@ -204,6 +276,7 @@ TypeCheckCallExpr::visit (FnType &type)
 
       if (param_ty != nullptr)
 	ctx->push_expected_type (param_ty);
+
       auto argument_expr_tyty = Resolver::TypeCheckExpr::Resolve (*argument);
       if (param_ty != nullptr)
 	ctx->pop_expected_type ();
@@ -309,11 +382,9 @@ TypeCheckCallExpr::visit (FnType &type)
 	      break;
 	    }
 	}
-
-      i++;
     }
 
-  if (i < call.num_params ())
+  if (i + indexes.size () < call.num_params ())
     {
       emit_unexpected_argument_error (call.get_locus (), (unsigned long) i,
 				      (unsigned long) call.num_params ());

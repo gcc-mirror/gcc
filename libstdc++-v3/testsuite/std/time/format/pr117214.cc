@@ -82,7 +82,7 @@ void maybe_set_tz()
 void
 test_c_zoned()
 {
-#if _GLIBCXX_USE_CXX11_ABI
+#if __cpp_lib_chrono >= 201803L
   maybe_set_tz();
 
   using namespace std::chrono;
@@ -118,7 +118,7 @@ test_c_local()
   VERIFY( s.find("GMT") == s.npos );
   VERIFY( s.find("UTC") == s.npos );
 
-#if _GLIBCXX_USE_CXX11_ABI
+#if __cpp_lib_chrono >= 201803L
   zoned_time z(system_clock::now());
   VERIFY( s.find(z.get_info().abbrev) == s.npos );
 #endif

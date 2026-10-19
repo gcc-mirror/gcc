@@ -1021,6 +1021,33 @@ program_state::program_state (program_state &&other)
   m_valid = other.m_valid;
 }
 
+/* Move assignment for program_state.  */
+
+program_state&
+program_state::operator= (program_state &&other)
+{
+  if (this == &other)
+    return *this;
+
+  delete m_region_model;
+  m_region_model = other.m_region_model;
+  other.m_region_model = nullptr;
+
+  int i;
+  sm_state_map *smap;
+  FOR_EACH_VEC_ELT (m_checker_states, i, smap)
+    delete smap;
+  m_checker_states.truncate (0);
+  gcc_assert (m_checker_states.space (other.m_checker_states.length ()));
+  FOR_EACH_VEC_ELT (other.m_checker_states, i, smap)
+    m_checker_states.quick_push (smap);
+  other.m_checker_states.truncate (0);
+
+  m_valid = other.m_valid;
+
+  return *this;
+}
+
 /* program_state's dtor.  */
 
 program_state::~program_state ()

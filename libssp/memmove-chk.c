@@ -34,13 +34,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include <ssp/ssp.h>
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif
+#include <string.h>
 
 extern void __chk_fail (void) __attribute__((__noreturn__));
 
-#ifdef HAVE_MEMMOVE
 void *
 __memmove_chk (void *dest, const void *src, size_t len, size_t slen)
 {
@@ -48,4 +45,3 @@ __memmove_chk (void *dest, const void *src, size_t len, size_t slen)
     __chk_fail ();
   return memmove (dest, src, len);
 }
-#endif

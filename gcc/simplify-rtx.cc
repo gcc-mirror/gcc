@@ -3336,9 +3336,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      rhs = XEXP (rhs, 0);
 	    }
 
-	  /* Keep PLUS of 2 volatile memory references.  */
-	  if (rtx_equal_p (lhs, rhs)
-	      && (!MEM_P (lhs) || !MEM_VOLATILE_P (lhs)))
+	  /* Don't merge operands that have side effects.  */
+	  if (rtx_equal_p (lhs, rhs) && !side_effects_p (lhs))
 	    {
 	      rtx orig = gen_rtx_PLUS (int_mode, op0, op1);
 	      rtx coeff;
@@ -3384,7 +3383,8 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		       && rtx_equal_p (XEXP (op1, 0), op0))
 		rhs = XEXP (XEXP (op1, 1), 0);
 	    }
-	  if (lhs != op0 || rhs != op1)
+	  if ((lhs != op0 && !side_effects_p (op1))
+	      || (rhs != op1 && !side_effects_p (op0)))
 	    return simplify_gen_binary (MULT, int_mode, lhs, rhs);
 	}
 
@@ -3560,7 +3560,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      rhs = XEXP (rhs, 0);
 	    }
 
-	  if (rtx_equal_p (lhs, rhs))
+	  if (rtx_equal_p (lhs, rhs) && !side_effects_p (lhs))
 	    {
 	      rtx orig = gen_rtx_MINUS (int_mode, op0, op1);
 	      rtx coeff;
@@ -3590,7 +3590,7 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		       && rtx_equal_p (XEXP (op0, 0), op1))
 		lhs = XEXP (XEXP (op0, 1), 0);
 	    }
-	  if (lhs != op0)
+	  if (lhs != op0 && !side_effects_p (op1))
 	    return simplify_gen_binary (MULT, int_mode, lhs, op1);
 	}
 
@@ -4118,6 +4118,22 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 				    simplify_gen_unary (NOT, mode,
 							XEXP (op0, 1), mode),
 				    op1);
+
+      /* Similarly, convert (xor (ior A B) B) to (and (not B) A).  */
+      else if (GET_CODE (op0) == IOR
+	       && rtx_equal_p (XEXP (op0, 1), op1)
+	       && ! side_effects_p (op1))
+	return simplify_gen_binary (AND, mode,
+				    simplify_gen_unary (NOT, mode,
+							op1, mode),
+				    XEXP (op0, 0));
+      else if (GET_CODE (op0) == IOR
+	       && rtx_equal_p (XEXP (op0, 0), op1)
+	       && ! side_effects_p (op1))
+	return simplify_gen_binary (AND, mode,
+				    simplify_gen_unary (NOT, mode,
+							op1, mode),
+				    XEXP (op0, 1));
 
       /* Given (xor (ior (xor A B) C) D), where B, C and D are
 	 constants, simplify to (xor (ior A C) (B&~C)^D), canceling
@@ -5665,7 +5681,11 @@ simplify_ashift:
 		  && known_eq (offset, GET_MODE_SIZE (op0_mode))
 		  && !side_effects_p (trueop0)
 		  && !side_effects_p (trueop1))
-		return gen_lowpart (mode, base0);
+		{
+		  tem = rtl_hooks.gen_lowpart_no_emit (mode, base0);
+		  if (tem)
+		    return tem;
+		}
 	    }
 	}
       }
@@ -8819,8 +8839,33 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && (! MEM_VOLATILE_P (op)
 	  || ! have_insn_for (SET, innermode))
       && !(STRICT_ALIGNMENT && MEM_ALIGN (op) < GET_MODE_ALIGNMENT (outermode))
-      && known_le (outersize, innersize))
+      && known_le (outersize, innersize)
+      /* You can't get the Nth element of a vector of addresses (i.e.
+	 gather/scatter) by adding an offset to the base.  */
+      && !VECTOR_MODE_P (GET_MODE (XEXP (op, 0))))
     return adjust_address_nv (op, outermode, byte);
+
+  /* Simplify (subreg:<m> (mem:<vec_m> (reg:<vec_p> addr)) x)
+     to (mem:<m> (subreg:<p> (reg:<vec_p>)) y)  */
+  if (MEM_P (op)
+      && VECTOR_MODE_P (innermode)
+      && VECTOR_MODE_P (GET_MODE (XEXP (op, 0)))
+      && GET_MODE_INNER (innermode) == outermode)
+    {
+      poly_uint64 index;
+      if (multiple_p (byte, GET_MODE_SIZE (outermode), &index))
+	{
+	  rtx addr = XEXP (op, 0);
+	  machine_mode addrmode = GET_MODE (addr);
+	  scalar_mode addr_elt_mode = GET_MODE_INNER (addrmode);
+	  poly_uint64 addr_byte = index * GET_MODE_SIZE (addr_elt_mode);
+
+	  rtx new_addr = simplify_gen_subreg (addr_elt_mode, addr, addrmode,
+					      addr_byte);
+	  if (new_addr)
+	    return change_address_nv (op, outermode, new_addr);
+	}
+    }
 
   /* Handle complex or vector values represented as CONCAT or VEC_CONCAT
      of two parts.  */
@@ -8959,10 +9004,15 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
 	break;
       }
 
-  if (is_a <scalar_int_mode> (outermode, &int_outermode)
-      && is_a <scalar_int_mode> (innermode, &int_innermode)
-      && known_eq (byte, subreg_lowpart_offset (int_outermode, int_innermode)))
+  if (is_a <scalar_int_mode> (outermode)
+      && is_a <scalar_int_mode> (innermode)
+      && known_eq (byte,
+		   subreg_lowpart_offset (as_a <scalar_int_mode> (outermode),
+					  as_a <scalar_int_mode> (innermode))))
     {
+      scalar_int_mode int_outermode = as_a <scalar_int_mode> (outermode);
+      scalar_int_mode int_innermode = as_a <scalar_int_mode> (innermode);
+
       /* Handle polynomial integers.  The upper bits of a paradoxical
 	 subreg are undefined, so this is safe regardless of whether
 	 we're truncating or extending.  */
@@ -9009,7 +9059,9 @@ simplify_context::simplify_subreg (machine_mode outermode, rtx op,
       && known_eq (GET_MODE_NUNITS (outermode), GET_MODE_NUNITS (innermode))
       && known_eq (GET_MODE_UNIT_SIZE (outermode),
 		   GET_MODE_UNIT_SIZE (innermode)))
-    return simplify_gen_relational (GET_CODE (op), outermode, innermode,
+    /* INNERMODE is the mode of the comparison result; the comparison is
+       still done in the mode of its operands.  */
+    return simplify_gen_relational (GET_CODE (op), outermode, VOIDmode,
 				    XEXP (op, 0), XEXP (op, 1));
 
   /* Distribute non-paradoxical subregs through logic ops in cases where
@@ -10015,6 +10067,28 @@ test_vector_subregs (machine_mode inner_mode)
   test_vector_subregs_stepped (inner_mode);
 }
 
+/* A subreg of a vector comparison is simplified to a comparison in the
+   subreg's mode.  Check that the comparison is still done in the mode of
+   its operands, not of its integer result: with floating-point operands
+   that may be NaNs, x unord x and x ord x must not fold to constants.  */
+
+static void
+test_vector_subreg_of_fp_comparison (machine_mode mode)
+{
+  machine_mode int_mode;
+  if (!HONOR_NANS (mode)
+      || !related_int_vector_mode (mode).exists (&int_mode))
+    return;
+
+  rtx reg = make_test_reg (mode);
+  rtx unord = gen_rtx_UNORDERED (int_mode, reg, reg);
+  rtx ord = gen_rtx_ORDERED (int_mode, reg, reg);
+  rtx x = simplify_subreg (mode, unord, int_mode, 0);
+  ASSERT_TRUE (x == NULL_RTX || !CONSTANT_P (x));
+  x = simplify_subreg (mode, ord, int_mode, 0);
+  ASSERT_TRUE (x == NULL_RTX || !CONSTANT_P (x));
+}
+
 /* Verify some simplifications involving vectors.  */
 
 static void
@@ -10036,6 +10110,8 @@ test_vector_ops ()
 	      test_vector_rotate (vector_reg);
 	    }
 	  test_vec_merge (mode);
+	  if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+	    test_vector_subreg_of_fp_comparison (mode);
 	}
     }
 }

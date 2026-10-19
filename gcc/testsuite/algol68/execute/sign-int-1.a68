@@ -9,6 +9,7 @@ BEGIN INT zero = 0;
       SHORT SHORT INT short short ten = SHORT SHORT 10;
       LONG INT long ten = LONG 10;
       LONG LONG INT long long ten = LONG LONG 10;
+      WORD INT word ten = WORD 10;
       ASSERT (SIGN zero = 0);
       ASSERT (SIGN short zero = 0);
       ASSERT (SIGN short short zero = 0);
@@ -23,6 +24,8 @@ BEGIN INT zero = 0;
       ASSERT (SIGN -short ten = -1);
       ASSERT (SIGN -short short ten = -1);
       ASSERT (SIGN -long ten = -1);
-      ASSERT (SIGN -long long ten = -1)
+      ASSERT (SIGN -long long ten = -1);
+      ASSERT (SIGN word ten = 1);
+      ASSERT (SIGN -word ten = -1)
 END
 

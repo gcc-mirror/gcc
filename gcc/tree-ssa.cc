@@ -1882,6 +1882,33 @@ is_asan_mark_p (gimple *stmt)
   return false;
 }
 
+/* Helper for set_addresses_taken.  If the base of ADDR is a DECL,
+   set the bit for its uid in the bitmap passed as DATA and return
+   true; otherwise return false.  */
+
+static bool
+set_addresses_taken_1 (gimple *, tree addr, tree, void *data)
+{
+  bitmap addresses_taken = (bitmap)data;
+  addr = get_base_address (addr);
+  if (addr && DECL_P (addr))
+    {
+      bitmap_set_bit (addresses_taken, DECL_UID (addr));
+      return true;
+    }
+  return false;
+}
+
+/* Set the bit for the uid of all DECLs that have their address taken in
+   STMT in the ADDRESSES_TAKEN bitmap.  Return true if there are any.  */
+
+static bool
+set_addresses_taken (gimple *stmt, bitmap addresses_taken)
+{
+  return walk_stmt_load_store_addr_ops (stmt, addresses_taken, NULL, NULL,
+					set_addresses_taken_1);
+}
+
 /* Compute TREE_ADDRESSABLE and whether we have unhandled partial defs
    for local variables.  */
 
@@ -1919,7 +1946,7 @@ execute_update_addresses_taken (void)
 		     ATOMIC_COMPARE_EXCHANGE call.  */
 		  tree arg = gimple_call_arg (stmt, 1);
 		  gimple_call_set_arg (stmt, 1, null_pointer_node);
-		  gimple_ior_addresses_taken (addresses_taken, stmt);
+		  set_addresses_taken (stmt, addresses_taken);
 		  gimple_call_set_arg (stmt, 1, arg);
 		  /* Remember we have to check again below.  */
 		  optimistic_not_addressable = true;
@@ -1927,12 +1954,26 @@ execute_update_addresses_taken (void)
 	      else if (is_asan_mark_p (stmt)
 		       || gimple_call_internal_p (stmt, IFN_GOMP_SIMT_ENTER))
 		;
+	      else if (gimple_call_internal_p (stmt, IFN_ASSUME))
+		{
+		  /* An address-taken arguments are not relevant for aliasing
+		     and we never expand the call (and need the address).
+		     But we can't use a register.  */
+		  for (unsigned i = 1; i < gimple_call_num_args (stmt); ++i)
+		    {
+		      tree arg = gimple_call_arg (stmt, i);
+		      if (TREE_CODE (arg) == ADDR_EXPR)
+			bitmap_set_bit (not_reg_needs,
+					DECL_UID (get_base_address
+						    (TREE_OPERAND (arg, 0))));
+		    }
+		}
 	      else
-		gimple_ior_addresses_taken (addresses_taken, stmt);
+		set_addresses_taken (stmt, addresses_taken);
 	    }
 	  else
 	    /* Note all addresses taken by the stmt.  */
-	    gimple_ior_addresses_taken (addresses_taken, stmt);
+	    set_addresses_taken (stmt, addresses_taken);
 
 	  /* If we have a call or an assignment, see if the lhs contains
 	     a local decl that requires not to be a gimple register.  */
@@ -1999,16 +2040,14 @@ execute_update_addresses_taken (void)
       for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
 	   gsi_next (&gsi))
 	{
-	  size_t i;
 	  gphi *phi = gsi.phi ();
 
 	  for (i = 0; i < gimple_phi_num_args (phi); i++)
 	    {
-	      tree op = PHI_ARG_DEF (phi, i), var;
-	      if (TREE_CODE (op) == ADDR_EXPR
-		  && (var = get_base_address (TREE_OPERAND (op, 0))) != NULL
-		  && DECL_P (var))
-		bitmap_set_bit (addresses_taken, DECL_UID (var));
+	      tree op = PHI_ARG_DEF (phi, i);
+	      if (TREE_CODE (op) == ADDR_EXPR)
+		set_addresses_taken_1 (phi, TREE_OPERAND (op, 0), op,
+				       (void *)addresses_taken);
 	    }
 	}
     }

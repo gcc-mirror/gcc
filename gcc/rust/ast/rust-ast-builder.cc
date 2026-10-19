@@ -654,12 +654,7 @@ Builder::new_type_param (
 		    break;
 
 		  case TypePathSegment::FUNCTION:
-		    {
-		      rust_unreachable ();
-		      // TODO
-		      // const TypePathSegmentFunction &fn
-		      //   = (const TypePathSegmentFunction &) (*seg.get ());
-		    }
+		    segments.emplace_back (seg->reconstruct ());
 		    break;
 		  }
 	      }

@@ -131,6 +131,7 @@ jit.serial = $(LIBGCCJIT_FILENAME)
 .PHONY: jit
 
 JIT_OBJS = attribs.o \
+	attr-handlers.o \
 	jit/dummy-frontend.o \
 	jit/libgccjit.o \
 	jit/jit-logging.o \
@@ -153,6 +154,16 @@ jit_OBJS = $(JIT_OBJS) $(JIT_TARGET_OBJS)
 # Use strict warnings for this front end.
 jit-warn = $(STRICT_WARN)
 
+ifneq (,$(findstring darwin,$(host)))
+# Use the default (shared) libgcc.
+JIT_LDFLAGS = $(filter-out -static-libgcc, $(LDFLAGS))
+ifeq (,$(findstring darwin8,$(host)))
+JIT_LDFLAGS += -Wl,-rpath,@loader_path
+endif
+else
+JIT_LDFLAGS = $(LDFLAGS)
+endif
+
 ifneq (,$(findstring mingw,$(target)))
 # Create import library
 LIBGCCJIT_EXTRA_OPTS = -Wl,--out-implib,$(LIBGCCJIT_IMPORT_LIB)
@@ -162,13 +173,7 @@ LIBGCCJIT_VERS = $(LIBGCCJIT_CURRENT).$(LIBGCCJIT_REVISION).$(LIBGCCJIT_AGE)
 LIBGCCJIT_EXTRA_OPTS = -Wl,-current_version,$(LIBGCCJIT_VERS) \
  -Wl,-compatibility_version,$(LIBGCCJIT_COMPAT) \
   $(LIBGCCJIT_VERSION_SCRIPT_OPTION) $(LIBGCCJIT_SONAME_OPTION)
-# Use the default (shared) libgcc.
-JIT_LDFLAGS = $(filter-out -static-libgcc, $(LDFLAGS))
-ifeq (,$(findstring darwin8,$(host)))
-JIT_LDFLAGS += -Wl,-rpath,@loader_path
-endif
 else
-JIT_LDFLAGS = $(LDFLAGS)
 LIBGCCJIT_EXTRA_OPTS = $(LIBGCCJIT_VERSION_SCRIPT_OPTION) \
 	$(LIBGCCJIT_SONAME_OPTION)
 endif

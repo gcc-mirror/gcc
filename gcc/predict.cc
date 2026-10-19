@@ -755,7 +755,7 @@ predict_edge_def (edge e, enum br_predictor predictor,
    to be done each time we invert the condition used by the jump.  */
 
 void
-invert_br_probabilities (rtx insn)
+invert_br_probabilities (rtx_insn *insn)
 {
   rtx note;
 

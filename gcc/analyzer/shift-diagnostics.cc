@@ -72,7 +72,7 @@ public:
   }
 
   void
-  mark_interesting_stuff (interesting_t *interest)
+  mark_interesting_stuff (interesting_t *interest) override
   {
     interest->add_read_region (m_src_region, "shift count value");
   }
@@ -141,7 +141,7 @@ public:
   }
 
   void
-  mark_interesting_stuff (interesting_t *interest)
+  mark_interesting_stuff (interesting_t *interest) override
   {
     interest->add_read_region (m_src_region, "shift count value");
   }

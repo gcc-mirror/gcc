@@ -97,4 +97,6 @@ int main()
 }
 
 
-/* { dg-final { scan-tree-dump-times "MEM <char\\\[\[0-9\]+]> \\\[\\(struct FixBuf \\*\\)&<retval> \\+ \[0-9\]+B\\\] = {}" 1 "dse1" } } */
+// The string assignment includes the trailing zeros, making the preceding
+// whole-object clear redundant.  Keep partial DSE covered by ssa-dse-4.C.
+/* { dg-final { scan-tree-dump-times "Deleted dead store: <retval> = {};" 1 "dse1" } } */

@@ -654,4 +654,4 @@ VAX operand formatting codes:
 /* Upon failure to find the bit the FFS hardware instruction returns
    the position of the bit immediately following the field specified.  */
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)	\
-  ((VALUE) = GET_MODE_BITSIZE (MODE), 2)
+  ((VALUE) = GET_MODE_UNIT_BITSIZE (MODE), 2)

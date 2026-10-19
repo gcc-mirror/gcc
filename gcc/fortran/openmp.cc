@@ -202,6 +202,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->chunk_size);
   gfc_free_expr (c->safelen_expr);
   gfc_free_expr (c->simdlen_expr);
+  gfc_free_expr (c->simdlen_divisor);
   gfc_free_expr (c->device);
   gfc_free_expr (c->dyn_groupprivate);
   gfc_free_expr (c->dist_chunk_size);
@@ -3446,16 +3447,82 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      && gfc_match_dupl_check (!c->dyn_groupprivate,
 				       "dyn_groupprivate", true) == MATCH_YES)
 	    {
-	      if (gfc_match ("fallback ( abort ) : ") == MATCH_YES)
-		c->fallback = OMP_FALLBACK_ABORT;
-	      else if (gfc_match ("fallback ( default_mem ) : ") == MATCH_YES)
-		c->fallback = OMP_FALLBACK_DEFAULT_MEM;
-	      else if (gfc_match ("fallback ( null ) : ") == MATCH_YES)
-		c->fallback = OMP_FALLBACK_NULL;
+	      bool cgroup = false;
+	      bool first = true;
+	      bool error_p = false;
+	      do
+		{
+		  old_loc = gfc_current_locus;
+		  if (gfc_match ("cgroup ") == MATCH_YES)
+		    {
+		      if (cgroup)
+			{
+			  gfc_error ("Duplicated %<cgroup%> modifier at %L",
+				     &old_loc);
+			  goto error;
+			}
+		      cgroup = true;
+		    }
+		  else if (gfc_match ("fallback ( ") == MATCH_YES)
+		    {
+		      if (c->fallback != OMP_FALLBACK_NONE)
+			{
+			  gfc_error ("Duplicated %<fallback%> modifier at %L",
+				     &old_loc);
+			  goto error;
+			}
+		      old_loc = gfc_current_locus;
+		      if (gfc_match ("abort ) ") == MATCH_YES)
+			c->fallback = OMP_FALLBACK_ABORT;
+		      else if (gfc_match ("default_mem ) ") == MATCH_YES)
+			c->fallback = OMP_FALLBACK_DEFAULT_MEM;
+		      else if (gfc_match ("null ) ") == MATCH_YES)
+			c->fallback = OMP_FALLBACK_NULL;
+		      else
+			{
+			  gfc_error ("Expected %<abort%>, %<default_mem%> or "
+				     "%<null%> followed by %<)%> at %L",
+				     &old_loc);
+			  goto error;
+			}
+		    }
+		  else if (!first)
+		    {
+		      gfc_error ("Expected %<cgroup%> or %<fallback%> clause at %C");
+		      goto error;
+		    }
+		  if (gfc_match (", ") == MATCH_YES)
+		    {
+		      first = false;
+		      continue;
+		    }
+		  if (gfc_match (": ") == MATCH_YES)
+		    {
+		      old_loc = gfc_current_locus;
+		      break;
+		    }
+		  if (!first)
+		    {
+		      gfc_error ("Expected %<:%> at %C");
+		      goto error;
+		    }
+		  error_p = true;
+		  break;
+		}
+	      while (true);
 	      if (gfc_match_expr (&c->dyn_groupprivate) != MATCH_YES)
-		return MATCH_ERROR;
+		{
+		  gfc_error ("Expected numeric expression at %L, optionally preceeded by "
+			     "the %<cgroup%> and %<fallback%> modifier", &old_loc);
+		  goto error;
+		}
+	      if (error_p)
+		c->fallback = OMP_FALLBACK_NONE;
 	      if (gfc_match (" )") != MATCH_YES)
-		goto error;
+		{
+		  gfc_error ("Expected %<)%> at %C");
+		  goto error;
+		}
 	      continue;
 	    }
 	  break;
@@ -4833,11 +4900,55 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					      true) == MATCH_YES)
 	    continue;
 	  if ((mask & OMP_CLAUSE_SIMDLEN)
-	      && (m = gfc_match_dupl_check (!c->simdlen_expr, "simdlen", true,
-					    &c->simdlen_expr)) != MATCH_NO)
+	      && (m = gfc_match_dupl_check (!c->simdlen_expr, "simdlen",
+					    true)) != MATCH_NO)
 	    {
 	      if (m == MATCH_ERROR)
 		goto error;
+	      if (gfc_match ("scaled ( ") == MATCH_YES)
+		{
+		  old_loc = gfc_current_locus;
+		  gfc_typespec ts;
+		  /* This does not match 'type(integer)'; should it?  */
+		  if (gfc_match_type_spec (&ts) != MATCH_YES
+		      || (ts.type != BT_INTEGER && ts.type != BT_UNSIGNED
+			  && ts.type != BT_REAL && ts.type != BT_COMPLEX))
+		    {
+		      gfc_error ("Expected numerical type name at %L",
+				 &old_loc);
+		      goto error;
+		    }
+		  c->simdlen_type.type = ts.type;
+		  c->simdlen_type.kind = ts.kind;
+		  if (gfc_match (" , ") == MATCH_YES)
+		    {
+		      if (gfc_match_expr (&c->simdlen_divisor) != MATCH_YES)
+			{
+			  gfc_error ("Expected divisor expression at %C");
+			  goto error;
+			}
+		    }
+		  if (gfc_match (" ) ") != MATCH_YES)
+		    {
+		      gfc_error ("Expected %<)%> at %C");
+		      goto error;
+		    }
+		  if (gfc_match (" : ") != MATCH_YES)
+		    {
+		      gfc_error ("Expected %<:%> at %C");
+		      goto error;
+		    }
+		}
+	      if (gfc_match_expr (&c->simdlen_expr) != MATCH_YES)
+		{
+		  gfc_error ("Expected length expression at %C");
+		  goto error;
+		}
+	      if (gfc_match (" ) ") != MATCH_YES)
+		{
+		  gfc_error ("Expected %<)%> at %C");
+		  goto error;
+		}
 	      continue;
 	    }
 	  if ((mask & OMP_CLAUSE_SIMD)
@@ -5867,7 +5978,7 @@ cleanup:
    | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
    | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS		\
    | OMP_CLAUSE_DYN_GROUPPRIVATE | OMP_CLAUSE_DEVICE_TYPE		\
-   | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
+   | OMP_CLAUSE_MESSAGE)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -5884,7 +5995,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_NUM_TEAMS) | OMP_CLAUSE_THREAD_LIMIT		\
    | OMP_CLAUSE_DEFAULT | OMP_CLAUSE_PRIVATE | OMP_CLAUSE_FIRSTPRIVATE	\
    | OMP_CLAUSE_SHARED | OMP_CLAUSE_REDUCTION | OMP_CLAUSE_ALLOCATE	\
-   | OMP_CLAUSE_MESSAGE | OMP_CLAUSE_SEVERITY)
+   | OMP_CLAUSE_MESSAGE)
 #define OMP_DISTRIBUTE_CLAUSES \
   (omp_mask (OMP_CLAUSE_PRIVATE) | OMP_CLAUSE_FIRSTPRIVATE		\
    | OMP_CLAUSE_LASTPRIVATE | OMP_CLAUSE_COLLAPSE | OMP_CLAUSE_DIST_SCHEDULE \
@@ -9423,38 +9534,64 @@ oacc_is_loop (gfc_code *code)
 	 || code->op == EXEC_OACC_LOOP;
 }
 
-static void
+static bool
 resolve_scalar_int_expr (gfc_expr *expr, const char *clause)
 {
   if (!gfc_resolve_expr (expr)
       || expr->ts.type != BT_INTEGER
       || expr->rank != 0)
-    gfc_error ("%s clause at %L requires a scalar INTEGER expression",
-	       clause, &expr->where);
+    {
+      gfc_error ("%s clause at %L requires a scalar INTEGER expression",
+		 clause, &expr->where);
+      return false;
+    }
+  return true;
 }
 
+/* Require that EXPR is a scalar constant integer expression; it shall be a
+   positive number: If WARN is true, a warning is printed if constant and
+   not positive. If WARN is false, an error is printed if it is either not
+   constant or not positive.  CLAUSE is used in the diagnostic output.  */
+
 static void
-resolve_positive_int_expr (gfc_expr *expr, const char *clause)
+resolve_positive_int_expr (gfc_expr *expr, const char *clause, bool warn)
 {
-  resolve_scalar_int_expr (expr, clause);
-  if (expr->expr_type == EXPR_CONSTANT
-      && expr->ts.type == BT_INTEGER
+  if (!resolve_scalar_int_expr (expr, clause))
+    return;
+  if (warn
+      && expr->expr_type == EXPR_CONSTANT
       && mpz_sgn (expr->value.integer) <= 0)
     gfc_warning ((flag_openmp || flag_openmp_simd) ? OPT_Wopenmp : 0,
 		 "INTEGER expression of %s clause at %L must be positive",
 		 clause, &expr->where);
+  else if (!warn
+	   && (expr->expr_type != EXPR_CONSTANT
+	       || mpz_sgn (expr->value.integer) <= 0))
+    gfc_error ("INTEGER expression of %s clause at %L must be positive and "
+	       "constant", clause, &expr->where);
 }
 
+/* Require that EXPR is a scalar constant integer expression; it shall be a
+   nonnegative number: If WARN is true, a warning is printed if constant and
+   negative. If WARN is false, an error is printed if it is either not constant
+   or negative.  CLAUSE is used in the diagnostic output.  */
+
 static void
-resolve_nonnegative_int_expr (gfc_expr *expr, const char *clause)
+resolve_nonnegative_int_expr (gfc_expr *expr, const char *clause, bool warn)
 {
-  resolve_scalar_int_expr (expr, clause);
-  if (expr->expr_type == EXPR_CONSTANT
-      && expr->ts.type == BT_INTEGER
+  if (!resolve_scalar_int_expr (expr, clause))
+    return;
+  if (warn
+      && expr->expr_type == EXPR_CONSTANT
       && mpz_sgn (expr->value.integer) < 0)
     gfc_warning ((flag_openmp || flag_openmp_simd) ? OPT_Wopenmp : 0,
 		 "INTEGER expression of %s clause at %L must be non-negative",
 		 clause, &expr->where);
+  else if (!warn
+	   && (expr->expr_type != EXPR_CONSTANT
+	       || mpz_sgn (expr->value.integer) < 0))
+    gfc_error ("INTEGER expression of %s clause at %L must be non-negtive and "
+	       "constant", clause, &expr->where);
 }
 
 /* Emits error when symbol is pointer, cray pointer or cray pointee
@@ -10868,11 +11005,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     }
 
   for (el = omp_clauses->num_threads_list; el; el = el->next)
-    resolve_positive_int_expr (el->expr, "NUM_THREADS");
+    resolve_positive_int_expr (el->expr, "NUM_THREADS", true);
 
   if (omp_clauses->dyn_groupprivate)
     resolve_nonnegative_int_expr (omp_clauses->dyn_groupprivate,
-				  "DYN_GROUPPRIVATE");
+				  "DYN_GROUPPRIVATE", true);
   if (omp_clauses->chunk_size)
     {
       gfc_expr *expr = omp_clauses->chunk_size;
@@ -11669,11 +11806,35 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	}
     }
   if (omp_clauses->safelen_expr)
-    resolve_positive_int_expr (omp_clauses->safelen_expr, "SAFELEN");
+    resolve_positive_int_expr (omp_clauses->safelen_expr, "SAFELEN", false);
   if (omp_clauses->simdlen_expr)
-    resolve_positive_int_expr (omp_clauses->simdlen_expr, "SIMDLEN");
+    resolve_positive_int_expr (omp_clauses->simdlen_expr, "SIMDLEN", false);
+  if (omp_clauses->simdlen_divisor
+      && (!gfc_resolve_expr (omp_clauses->simdlen_divisor)
+	  || omp_clauses->simdlen_divisor->ts.type != BT_INTEGER
+	  || omp_clauses->simdlen_divisor->rank != 0
+	  || omp_clauses->simdlen_divisor->expr_type != EXPR_CONSTANT
+	  || mpz_sgn (omp_clauses->simdlen_divisor->value.integer) <= 0))
+    gfc_error ("Divisor expression at %L of the SCALED modifier to SIMDLEN must"
+	       " be a positive scalar constant integer expression",
+	       &omp_clauses->simdlen_divisor->where);
+  /* Check that safelen >= simdlen * scaled; however, scaled is
+     unknown, hence, assume scaled == 1 as conservative estimate.
+     we need to repeat some const check as the program still continues
+     after the error diagnostic above.  */
+  if (omp_clauses->safelen_expr && omp_clauses->simdlen_expr
+
+      && omp_clauses->safelen_expr->expr_type == EXPR_CONSTANT
+      && omp_clauses->simdlen_expr->ts.type == BT_INTEGER
+      && omp_clauses->simdlen_expr->expr_type == EXPR_CONSTANT
+      && omp_clauses->simdlen_expr->ts.type == BT_INTEGER
+      && mpz_cmp (omp_clauses->safelen_expr->value.integer,
+		  omp_clauses->simdlen_expr->value.integer) < 0)
+    gfc_error ("SIMDLEN at %L must be smaller or equal to SAFELEN at %L",
+	       &omp_clauses->simdlen_expr->where,
+	       &omp_clauses->safelen_expr->where);
   for (el = omp_clauses->num_teams_list; el; el = el->next)
-    resolve_positive_int_expr (el->expr, "NUM_TEAMS");
+    resolve_positive_int_expr (el->expr, "NUM_TEAMS", true);
   if (omp_clauses->num_teams_list
       && omp_clauses->num_teams_list->next
       && !omp_clauses->num_teams_dims
@@ -11687,18 +11848,19 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->device)
     resolve_scalar_int_expr (omp_clauses->device, "DEVICE");
   if (omp_clauses->filter)
-    resolve_nonnegative_int_expr (omp_clauses->filter, "FILTER");
+    resolve_nonnegative_int_expr (omp_clauses->filter, "FILTER", true);
   if (omp_clauses->hint)
     {
-      resolve_scalar_int_expr (omp_clauses->hint, "HINT");
-    if (omp_clauses->hint->ts.type != BT_INTEGER
-	|| omp_clauses->hint->expr_type != EXPR_CONSTANT
-	|| mpz_sgn (omp_clauses->hint->value.integer) < 0)
+      if (!gfc_resolve_expr (omp_clauses->hint)
+	  || omp_clauses->hint->rank != 0
+	  || omp_clauses->hint->ts.type != BT_INTEGER
+	  || omp_clauses->hint->expr_type != EXPR_CONSTANT
+	  || mpz_sgn (omp_clauses->hint->value.integer) < 0)
       gfc_error ("Value of HINT clause at %L shall be a valid "
 		 "constant hint expression", &omp_clauses->hint->where);
     }
   if (omp_clauses->priority)
-    resolve_nonnegative_int_expr (omp_clauses->priority, "PRIORITY");
+    resolve_nonnegative_int_expr (omp_clauses->priority, "PRIORITY", true);
   if (omp_clauses->dist_chunk_size)
     {
       gfc_expr *expr = omp_clauses->dist_chunk_size;
@@ -11708,11 +11870,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		   "a scalar INTEGER expression", &expr->where);
     }
   for (el = omp_clauses->thread_limit_list; el; el = el->next)
-    resolve_positive_int_expr (el->expr, "THREAD_LIMIT");
+    resolve_positive_int_expr (el->expr, "THREAD_LIMIT", true);
   if (omp_clauses->grainsize)
-    resolve_positive_int_expr (omp_clauses->grainsize, "GRAINSIZE");
+    resolve_positive_int_expr (omp_clauses->grainsize, "GRAINSIZE", true);
   if (omp_clauses->num_tasks)
-    resolve_positive_int_expr (omp_clauses->num_tasks, "NUM_TASKS");
+    resolve_positive_int_expr (omp_clauses->num_tasks, "NUM_TASKS", true);
   if (omp_clauses->grainsize && omp_clauses->num_tasks)
     gfc_error ("%<GRAINSIZE%> clause at %L must not be used together with "
 	       "%<NUM_TASKS%> clause", &omp_clauses->grainsize->where);
@@ -11734,20 +11896,21 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     gfc_error ("At least one of the clauses %<DEVICE_TYPE%> and %<DEVICE_NUM%> "
 	       "should be present in %<SET%> directive at %L", &code->loc);
   if (omp_clauses->num_gangs_expr)
-    resolve_positive_int_expr (omp_clauses->num_gangs_expr, "NUM_GANGS");
+    resolve_positive_int_expr (omp_clauses->num_gangs_expr, "NUM_GANGS", true);
   if (omp_clauses->num_workers_expr)
-    resolve_positive_int_expr (omp_clauses->num_workers_expr, "NUM_WORKERS");
+    resolve_positive_int_expr (omp_clauses->num_workers_expr, "NUM_WORKERS",
+			       true);
   if (omp_clauses->vector_length_expr)
     resolve_positive_int_expr (omp_clauses->vector_length_expr,
-			       "VECTOR_LENGTH");
+			       "VECTOR_LENGTH", true);
   if (omp_clauses->gang_num_expr)
-    resolve_positive_int_expr (omp_clauses->gang_num_expr, "GANG");
+    resolve_positive_int_expr (omp_clauses->gang_num_expr, "GANG", true);
   if (omp_clauses->gang_static_expr)
-    resolve_positive_int_expr (omp_clauses->gang_static_expr, "GANG");
+    resolve_positive_int_expr (omp_clauses->gang_static_expr, "GANG", true);
   if (omp_clauses->worker_expr)
-    resolve_positive_int_expr (omp_clauses->worker_expr, "WORKER");
+    resolve_positive_int_expr (omp_clauses->worker_expr, "WORKER", true);
   if (omp_clauses->vector_expr)
-    resolve_positive_int_expr (omp_clauses->vector_expr, "VECTOR");
+    resolve_positive_int_expr (omp_clauses->vector_expr, "VECTOR", true);
   for (el = omp_clauses->wait_list; el; el = el->next)
     resolve_scalar_int_expr (el->expr, "WAIT");
   if (omp_clauses->collapse && omp_clauses->tile_list)
@@ -11785,17 +11948,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     {
       gfc_expr_list *el;
       for (el = omp_clauses->sizes_list; el; el = el->next)
-	{
-	  resolve_scalar_int_expr (el->expr, "SIZES");
-	  if (el->expr->expr_type != EXPR_CONSTANT)
-	    gfc_error ("SIZES requires constant expression at %L",
-		       &el->expr->where);
-	  else if (el->expr->expr_type == EXPR_CONSTANT
-		   && el->expr->ts.type == BT_INTEGER
-		   && mpz_sgn (el->expr->value.integer) <= 0)
-	    gfc_error ("INTEGER expression of %s clause at %L must be "
-		       "positive", "SIZES", &el->expr->where);
-	}
+	resolve_positive_int_expr (el->expr, "SIZES", false);
     }
 
   if (!openacc && omp_clauses->detach)
@@ -14128,12 +14281,7 @@ resolve_oacc_loop_blocks (gfc_code *code)
 	      mpz_set_si (el->expr->value.integer, 0);
 	    }
 	  else
-	    {
-	      resolve_positive_int_expr (el->expr, "TILE");
-	      if (el->expr->expr_type != EXPR_CONSTANT)
-		gfc_error ("TILE requires constant expression at %L",
-			   &code->loc);
-	    }
+	    resolve_positive_int_expr (el->expr, "TILE", false);
 	}
     }
 }

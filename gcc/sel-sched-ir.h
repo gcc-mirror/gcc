@@ -1503,7 +1503,7 @@ extern void clear_expr (expr_t);
 extern unsigned expr_dest_regno (expr_t);
 extern rtx expr_dest_reg (expr_t);
 extern int find_in_history_vect (vec<expr_history_def> ,
-                                 rtx, vinsn_t, bool);
+                                 rtx_insn *, vinsn_t, bool);
 extern void insert_in_history_vect (vec<expr_history_def> *,
                                     unsigned, enum local_trans_type,
                                     vinsn_t, vinsn_t, ds_t);
@@ -1540,7 +1540,7 @@ extern int tick_check_p (expr_t, deps_t, fence_t);
 
 /* Functions to work with insns.  */
 extern bool lhs_of_insn_equals_to_dest_p (insn_t, rtx);
-extern void get_dest_and_mode (rtx, rtx *, machine_mode *);
+extern void get_dest_and_mode (rtx_insn *, rtx *, machine_mode *);
 
 extern bool bookkeeping_can_be_created_if_moved_through_p (insn_t);
 extern bool sel_remove_insn (insn_t, bool, bool);
@@ -1595,7 +1595,7 @@ extern void sel_unregister_cfg_hooks (void);
 /* Expression transformation routines.  */
 extern rtx_insn *create_insn_rtx_from_pattern (rtx, rtx);
 extern vinsn_t create_vinsn_from_insn_rtx (rtx_insn *, bool);
-extern rtx_insn *create_copy_of_insn_rtx (rtx);
+extern rtx_insn *create_copy_of_insn_rtx (rtx_insn *);
 extern void change_vinsn_in_expr (expr_t, vinsn_t);
 
 /* Various initialization functions.  */

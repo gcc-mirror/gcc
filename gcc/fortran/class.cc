@@ -1130,7 +1130,10 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       cond->block->expr1->ts.kind = gfc_default_logical_kind;
       cond->block->expr1->value.function.isym = gfc_intrinsic_function_by_id (GFC_ISYM_ASSOCIATED);
       cond->block->expr1->value.function.actual = gfc_get_actual_arglist ();
-      cond->block->expr1->value.function.actual->expr = gfc_copy_expr (expr);
+      /* EXPR only adds nonpointer, nonallocatable components to its base
+	 pointer, so testing the base suffices.  */
+      cond->block->expr1->value.function.actual->expr
+	= gfc_lval_expr_from_sym (expr->symtree->n.sym);
       cond->block->expr1->value.function.actual->next = gfc_get_actual_arglist ();
       cond->block->next = dealloc;
 

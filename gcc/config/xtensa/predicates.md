@@ -154,7 +154,7 @@
        (match_test "satisfies_constraint_Gz (op)
 		    || satisfies_constraint_Gc (op)
 		    || ((TARGET_CONST16 || TARGET_AUTO_LITPOOLS)
-			&& CONST_DOUBLE_P (op))")))
+			&& CONSTANT_P (op))")))
 
 (define_predicate "fix_scaling_operand"
   (match_code "const_double")

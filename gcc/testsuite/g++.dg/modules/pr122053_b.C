@@ -3,7 +3,7 @@
 // Test we don't ICE when redefining a type coming from an import.
 
 import M;
-struct mytime {  // { dg-bogus "conflicting" "PR99000" { xfail *-*-* } }
+struct mytime {  // { dg-bogus "conflicting" "PR99000" }
   long a, b;
 };
-mytime m = foo();  // { dg-bogus "" "PR99000" { xfail *-*-* } }
+mytime m = foo();  // { dg-bogus "" "PR99000" }

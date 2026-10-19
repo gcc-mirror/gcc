@@ -963,6 +963,7 @@ bool aarch64_regno_ok_for_index_p (int, bool);
 bool aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *fail);
 bool aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
 					    bool high);
+bool aarch64_simd_lowpart_of_p (rtx, rtx);
 bool aarch64_parallel_select_half_p (machine_mode, rtx);
 bool aarch64_pars_overlap_p (rtx, rtx);
 bool aarch64_simd_scalar_immediate_valid_for_move (rtx, scalar_int_mode);
@@ -1138,7 +1139,7 @@ void aarch64_finish_ldpstp_peephole (rtx *, bool,
 void aarch64_expand_sve_vec_cmp_int (rtx, rtx_code, rtx, rtx);
 void aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx);
 
-bool aarch64_prepare_sve_int_fma (rtx *, rtx_code);
+bool aarch64_prepare_int_fma (rtx *, rtx_code);
 bool aarch64_prepare_sve_cond_int_fma (rtx *, rtx_code);
 
 bool aarch64_granule16_memory_address_p (rtx mem);

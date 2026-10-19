@@ -15,7 +15,7 @@
     valid. A program that is not valid C++ (e.g., invokes undefined
     behavior) is not required to behave similarly, although the debug
     mode will abort with a diagnostic when it detects undefined
-    behavior.</p></li><li class="listitem"><p><span class="emphasis"><em>Performance</em></span>: the additional of the libstdc++ debug mode
+    behavior.</p></li><li class="listitem"><p><span class="emphasis"><em>Performance</em></span>: the addition of the libstdc++ debug mode
     must not affect the performance of the library when it is compiled
     in release mode. Performance of the libstdc++ debug mode is
     secondary (and, in fact, will be worse than the release
@@ -181,7 +181,7 @@ template&lt;typename _Tp, typename _Allocator = allocator&lt;_Tp&gt;
   either the debug-mode assertion
   macro <code class="code">_GLIBCXX_DEBUG_ASSERT</code> , its pedantic
   cousin <code class="code">_GLIBCXX_DEBUG_PEDASSERT</code>, or the assertion
-  check macro that supports more advance formulation of error
+  check macro that supports more advanced formulation of error
   messages, <code class="code">_GLIBCXX_DEBUG_VERIFY</code>. These macros are
   documented more thoroughly in the debug mode source code.</p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="debug_mode.design.methods.coexistence"></a>Release- and debug-mode coexistence</h4></div></div></div><p>The libstdc++ debug mode is the first debug mode we know of that
   is able to provide the "Per-use recompilation" (4) guarantee, that
@@ -316,7 +316,7 @@ test02()
   solutions, with justifications for our rejection of each.</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><span class="emphasis"><em>Completely separate debug/release libraries</em></span>: This is by
   far the simplest implementation option, where we do not allow any
   coexistence of debug- and release-compiled translation units in a
-  program. This solution has an extreme negative affect on usability,
+  program. This solution has an extreme negative effect on usability,
   because it is quite likely that some libraries an application
   depends on cannot be recompiled easily. This would not meet
   our <span class="emphasis"><em>usability</em></span> or <span class="emphasis"><em>minimize recompilation</em></span> criteria
@@ -357,7 +357,7 @@ test02()
     debug- and release-compiled code cannot be mixed unsafely, it ensures that
     debug- and release-compiled code cannot be mixed at all. For
     instance, the program would have two <code class="code">std::cout</code>
-    objects! This solution would fails the <span class="emphasis"><em>minimize
+    objects! This solution would fail the <span class="emphasis"><em>minimize
     recompilation</em></span> requirement, because we would only be able to
     support option (1) or (2).</p></li><li class="listitem"><p><span class="emphasis"><em>Extension: use link name</em></span>: This option
     involves complicated re-naming between debug-mode and release-mode
@@ -385,7 +385,7 @@ test02()
     </p><p> There are several existing implementations of debug modes for C++
   standard library implementations, although none of them directly
   supports debugging for programs using libstdc++. The existing
-  implementations include:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><a class="link" href="http://www.cs.sjsu.edu/faculty/horstman/safestl.html" target="_top">SafeSTL</a>:
+  implementations include:</p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p><a class="link" href="https://www.cs.sjsu.edu/faculty/horstman/safestl.html" target="_top">SafeSTL</a>:
   SafeSTL was the original debugging version of the Standard Template
   Library (STL), implemented by Cay S. Horstmann on top of the
   Hewlett-Packard STL. Though it inspired much work in this area, it

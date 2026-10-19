@@ -248,6 +248,9 @@ bpf_option_override (void)
   if (bpf_has_smov == -1)
     bpf_has_smov = (bpf_isa >= ISA_V4);
 
+  if (bpf_has_callx == -1)
+    bpf_has_callx = (bpf_isa >= ISA_V1);
+
   /* Disable -fstack-protector as it is not supported in BPF.  */
   if (flag_stack_protect)
     {
@@ -755,12 +758,39 @@ bpf_output_destructor (rtx symbol, int priority ATTRIBUTE_UNUSED)
 #undef TARGET_ASM_DESTRUCTOR
 #define TARGET_ASM_DESTRUCTOR bpf_output_destructor
 
+/* Check the TARGET of a call, an RTX denoting the address of the called
+   function, and return the target to actually call.
+
+   Calling through anything but a constant address requires an indirect
+   CALL instruction, which is not available with -mno-callx.  Diagnose
+   that here, at expansion time, so the error is reported at the call
+   itself and only once per call; by the time the instruction is output
+   the location of the call is no longer available.
+
+   This function is called from the expansion of the 'call' and
+   'call_value' patterns in bpf.md.  */
+
+rtx
+bpf_check_call_target (rtx target)
+{
+  if (bpf_has_callx
+      || GET_CODE (target) == CONST_INT
+      || GET_CODE (target) == SYMBOL_REF)
+    return target;
+
+  error_at (curr_insn_location (),
+	    "indirect call in function, not supported with %<-mno-callx%>");
+
+  /* Call address zero instead, so the expansion can continue.  */
+  return const0_rtx;
+}
+
 /* Return the appropriate instruction to CALL to a function.  TARGET
    is an RTX denoting the address of the called function.
 
    The main purposes of this function are:
-   - To reject indirect CALL instructions, which are not supported by
-     eBPF.
+   - To reject indirect CALL instructions that reached this point
+     despite bpf_check_call_target, which is not expected to happen.
    - To recognize calls to kernel helper functions and emit the
      corresponding CALL N instruction.
 
@@ -792,9 +822,9 @@ bpf_output_call (const char *templ, rtx *operands, int target_index)
 	break;
       }
     default:
-      if (!TARGET_XBPF)
+      if (!bpf_has_callx)
 	{
-	  error ("indirect call in function, which are not supported by eBPF");
+	  error ("indirect call in function, not supported with %<-mno-callx%>");
 	  operands[target_index] = GEN_INT (0);
 	}
       break;
@@ -1317,11 +1347,11 @@ bpf_asm_named_section (const char *name, unsigned int flags,
 static bool
 bpf_small_register_classes_for_mode_p (machine_mode mode)
 {
-  if (TARGET_XBPF)
+  if (bpf_has_callx)
     return 1;
   else
     /* Avoid putting function addresses in registers, as calling these
-       is not supported in eBPF.  */
+       is not supported with -mno-callx.  */
     return (mode != FUNCTION_MODE);
 }
 

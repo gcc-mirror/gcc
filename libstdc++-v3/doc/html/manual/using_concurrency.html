@@ -3,7 +3,7 @@
       of multithreaded applications which use the Standard C++
       library.  This information is GCC-specific since the C++
       standard does not address matters of multithreaded applications.
-   </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.prereq"></a>Prerequisites</h3></div></div></div><p>All normal disclaimers aside, multithreaded C++ application are
+   </p><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="manual.intro.using.concurrency.prereq"></a>Prerequisites</h3></div></div></div><p>All normal disclaimers aside, multithreaded C++ applications are
       only supported when libstdc++ and all user code was built with
       compilers which report (via <code class="code"> gcc/g++ -v </code>) the same thread
       model and that model is not <span class="emphasis"><em>single</em></span>.  As long as your
@@ -103,7 +103,7 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
        object_a.mutate ();
      } </pre><p>All library types are safe to use in a multithreaded program
          if objects are not shared between threads or as
-	 long each thread carefully locks out access by any other
+	 long as each thread carefully locks out access by any other
 	 thread while it modifies any object visible to another thread.
 	 Unless otherwise documented, the only exceptions to these rules
          are atomic operations on the types in
@@ -265,8 +265,8 @@ gcc version 4.1.2 20070925 (Red Hat 4.1.2-33)
       (<span class="emphasis"><em>For most clients...</em></span>), which points out that
       locking must nearly always be done outside the container, by
       client code (that'd be you, not us).  There is a notable
-      exceptions to this rule.  Allocators called while a container or
-      element is constructed uses an internal lock obtained and
+      exception to this rule.  Allocators called while a container or
+      element is constructed use an internal lock obtained and
       released solely within libstdc++ code (in fact, this is the
       reason STL requires any knowledge of the thread configuration).
    </p><p>For implementing a container which does its own locking, it is

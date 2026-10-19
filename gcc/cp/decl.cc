@@ -1754,12 +1754,13 @@ duplicate_function_template_decls (tree newdecl, tree olddecl)
 /* OLD_PARMS is the innermost set of template parameters for some template
    declaration, and NEW_PARMS is the corresponding set of template parameters
    for a redeclaration of that template.  Merge the default arguments within
-   these two sets of parameters.  CLASS_P is true iff the template in
-   question is a class template.  */
+   these two sets of parameters.  OLDDECL is the origin of OLD_PARMS.  */
 
 bool
-merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
+merge_default_template_args (tree new_parms, tree old_parms, tree olddecl)
 {
+  bool class_p = DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (olddecl));
+
   gcc_checking_assert (TREE_VEC_LENGTH (new_parms)
 		       == TREE_VEC_LENGTH (old_parms));
   for (int i = 0; i < TREE_VEC_LENGTH (new_parms); i++)
@@ -1770,7 +1771,9 @@ merge_default_template_args (tree new_parms, tree old_parms, bool class_p)
       tree& old_default = TREE_PURPOSE (TREE_VEC_ELT (old_parms, i));
       if (error_operand_p (new_parm) || error_operand_p (old_parm))
 	return false;
-      if (new_default != NULL_TREE && old_default != NULL_TREE)
+      if (new_default != NULL_TREE && old_default != NULL_TREE
+	  && !(redefinable_import_p (olddecl)
+	       && cp_tree_equal (new_default, old_default)))
 	{
 	  auto_diagnostic_group d;
 	  error ("redefinition of default argument for %q+#D", new_parm);
@@ -1941,6 +1944,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   if (TREE_TYPE (newdecl) == error_mark_node
       || TREE_TYPE (olddecl) == error_mark_node)
     return error_mark_node;
+
+  bool mod_redefinable = redefinable_import_p (olddecl);
 
   /* Check for redeclaration and other discrepancies.  */
   if (TREE_CODE (olddecl) == FUNCTION_DECL
@@ -2228,6 +2233,14 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (TREE_CODE (oldres) == TYPE_DECL
 	      || TREE_CODE (newres) == TYPE_DECL)
 	    {
+	      /* E.g. cstddef __byte_operand.  Alternatively we could find a
+		 mergeable definition in lookup_elaborated_type, but we'd still
+		 need to push it into scope in the current TU.  */
+	      if (mod_redefinable
+		  && (DECL_IMPLICIT_TYPEDEF_P (oldres)
+		      == DECL_IMPLICIT_TYPEDEF_P (newres)))
+		goto return_old;
+
 	      auto_diagnostic_group d;
 	      error_at (newdecl_loc,
 			"conflicting declaration of template %q#D", newdecl);
@@ -2283,6 +2296,18 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  else
 	    return NULL_TREE;
 	}
+      else if (mod_redefinable
+	       && TREE_CODE (newdecl) == TYPE_DECL
+	       && (DECL_IMPLICIT_TYPEDEF_P (newdecl)
+		   == DECL_IMPLICIT_TYPEDEF_P (olddecl)))
+	/* Can also get here with e.g. typedef class {...} foo.  */
+	goto return_old;
+      else if (mod_redefinable
+	       && TREE_CODE (newdecl) == VAR_DECL
+	       && undeduced_auto_decl (newdecl)
+	       && !undeduced_auto_decl (olddecl))
+	/* We don't have fndecl_declared_return_type for vars.  */
+	goto return_old;
       else
 	{
 	  auto_diagnostic_group d;
@@ -2344,7 +2369,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (DECL_NAMESPACE_ALIAS (newdecl)
 	  && (DECL_NAMESPACE_ALIAS (newdecl)
 	      == DECL_NAMESPACE_ALIAS (olddecl)))
-	return olddecl;
+	goto return_old;
 
       /* Leave it to update_binding to merge or report error.  */
       return NULL_TREE;
@@ -2478,7 +2503,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		     of the member function within the class template.  */
 		  || CLASSTYPE_TEMPLATE_INFO (CP_DECL_CONTEXT (olddecl))))
 	    {
-	      check_redeclaration_no_default_args (newdecl);
+	      if (!mod_redefinable)
+		check_redeclaration_no_default_args (newdecl);
 
 	      if (DECL_TEMPLATE_INFO (olddecl)
 		  && DECL_MEMBER_TEMPLATE_P (DECL_TI_TEMPLATE (olddecl)))
@@ -2488,8 +2514,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		    : INNERMOST_TEMPLATE_PARMS (current_template_parms);
 		  tree old_parms
 		    = DECL_INNERMOST_TEMPLATE_PARMS (DECL_TI_TEMPLATE (olddecl));
-		  merge_default_template_args (new_parms, old_parms,
-					       /*class_p=*/false);
+		  merge_default_template_args (new_parms, old_parms, olddecl);
 		}
 	    }
 	  else
@@ -2502,18 +2527,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 		   t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2), i++)
 		if (TREE_PURPOSE (t1) && TREE_PURPOSE (t2))
 		  {
-		    if (simple_cst_equal (TREE_PURPOSE (t1),
-					  TREE_PURPOSE (t2)) == 1)
-		      {
-			auto_diagnostic_group d;
-			if (permerror (newdecl_loc,
-				       "default argument given for parameter "
-				       "%d of %q#D", i, newdecl))
-			  inform (olddecl_loc,
-				  "previous specification in %q#D here",
-				  olddecl);
-		      }
-		    else
+		    if (!cp_tree_equal (TREE_PURPOSE (t1),
+					TREE_PURPOSE (t2)))
 		      {
 			auto_diagnostic_group d;
 			error_at (newdecl_loc,
@@ -2522,6 +2537,16 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 			inform (olddecl_loc,
 				"previous specification in %q#D here",
 				olddecl);
+		      }
+		    else if (!mod_redefinable)
+		      {
+			auto_diagnostic_group d;
+			if (permerror (newdecl_loc,
+				       "default argument given for parameter "
+				       "%d of %q#D", i, newdecl))
+			  inform (olddecl_loc,
+				  "previous specification in %q#D here",
+				  olddecl);
 		      }
 		  }
 
@@ -2595,9 +2620,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
      set OLDDECL's attributes to those of NEWDECL (for template
      explicit specializations that specify their own attributes
      independent of those specified for the primary template).  */
-  const bool merge_attr = (TREE_CODE (newdecl) != FUNCTION_DECL
-			   || !DECL_TEMPLATE_SPECIALIZATION (newdecl)
-			   || DECL_TEMPLATE_SPECIALIZATION (olddecl));
+  bool merge_attr;
+  merge_attr = (TREE_CODE (newdecl) != FUNCTION_DECL
+		|| !DECL_TEMPLATE_SPECIALIZATION (newdecl)
+		|| DECL_TEMPLATE_SPECIALIZATION (olddecl));
 
   if (TREE_CODE (newdecl) == FUNCTION_DECL)
     {
@@ -2652,6 +2678,17 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  = DECL_OVERLOADED_OPERATOR_CODE_RAW (olddecl);
       new_defines_function = DECL_INITIAL (newdecl) != NULL_TREE;
 
+      if (new_defines_function && mod_redefinable
+	  && DECL_INITIAL (olddecl))
+	{
+	  if (GNU_INLINE_P (STRIP_TEMPLATE (olddecl))
+	      && !GNU_INLINE_P (STRIP_TEMPLATE (newdecl)))
+	    /* Normal out-of-line redefinition of gnu_inline.  */
+	    mod_redefinable = false;
+	  else
+	    new_defines_function = false;
+	}
+
       check_redecl_contract (newdecl, olddecl);
 
       /* Optionally warn about more than one declaration for the same
@@ -2683,7 +2720,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       if (!(DECL_TEMPLATE_INSTANTIATION (olddecl)
 	    && DECL_TEMPLATE_SPECIALIZATION (newdecl)))
 	{
-	  if (DECL_DELETED_FN (newdecl))
+	  if (DECL_DELETED_FN (newdecl)
+	      && !(mod_redefinable
+		   && DECL_DELETED_FN (olddecl)))
 	    {
 	      auto_diagnostic_group d;
 	      if (pedwarn (newdecl_loc, 0, "deleted definition of %qD "
@@ -2747,7 +2786,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	    {
 	      /* Per C++11 8.3.6/4, default arguments cannot be added in
 		 later declarations of a function template.  */
-	      check_redeclaration_no_default_args (newdecl);
+	      if (!mod_redefinable)
+		check_redeclaration_no_default_args (newdecl);
 	      /* C++17 11.3.6/4: "If a friend declaration specifies a default
 		 argument expression, that declaration... shall be the only
 		 declaration of the function or function template in the
@@ -2757,8 +2797,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
 	      tree new_parms = DECL_INNERMOST_TEMPLATE_PARMS (newdecl);
 	      tree old_parms = DECL_INNERMOST_TEMPLATE_PARMS (olddecl);
-	      merge_default_template_args (new_parms, old_parms,
-					   /*class_p=*/false);
+	      merge_default_template_args (new_parms, old_parms, olddecl);
 	    }
 	  if (!DECL_UNIQUE_FRIEND_P (new_result))
 	    DECL_UNIQUE_FRIEND_P (old_result) = false;
@@ -2768,6 +2807,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (GNU_INLINE_P (old_result) != GNU_INLINE_P (new_result)
 	      && DECL_INITIAL (new_result))
 	    {
+	      mod_redefinable = false;
 	      if (DECL_INITIAL (old_result))
 		DECL_UNINLINABLE (old_result) = 1;
 	      else
@@ -2797,7 +2837,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       /* If the new declaration is a definition, update the file and
 	 line information on the declaration, and also make
 	 the old declaration the same definition.  */
-      if (DECL_INITIAL (new_result) != NULL_TREE)
+      if (DECL_INITIAL (new_result) != NULL_TREE
+	  && !(DECL_INITIAL (old_result)
+	       && mod_redefinable))
 	{
 	  DECL_SOURCE_LOCATION (olddecl)
 	    = DECL_SOURCE_LOCATION (old_result)
@@ -2816,6 +2858,8 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	    }
 	}
 
+      /* FIXME we can't goto return_old here without removing newdecl from more
+	 hash tables.  */
       return olddecl;
     }
 
@@ -2979,8 +3023,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
 
       /* Merge the initialization information.  */
-      if (DECL_INITIAL (newdecl) == NULL_TREE
-	  && DECL_INITIAL (olddecl) != NULL_TREE)
+      if (DECL_INITIAL (olddecl) != NULL_TREE
+	  && (DECL_INITIAL (newdecl) == NULL_TREE
+	      || mod_redefinable))
 	{
 	  DECL_INITIAL (newdecl) = DECL_INITIAL (olddecl);
 	  DECL_SOURCE_LOCATION (newdecl) = DECL_SOURCE_LOCATION (olddecl);
@@ -3580,6 +3625,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	}
     }
 
+ return_old:
   /* Remove the associated constraints for newdecl, if any, before
      reclaiming memory. */
   if (flag_concepts)
@@ -3607,6 +3653,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 static const char *
 redeclaration_error_message (tree newdecl, tree olddecl)
 {
+  if (redefinable_import_p (olddecl))
+    return NULL;
+
   if (TREE_CODE (newdecl) == TYPE_DECL)
     {
       /* Because C++ can put things into name space for free,
@@ -9231,7 +9280,6 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	= c_omp_declare_simd_clauses_to_numbers (DECL_ARGUMENTS (decl),
 						 OMP_TS_PROPERTIES (simd));
       /* FIXME, adjusting simd args unimplemented.  */
-      return true;
     }
 
   tree chain = TREE_CHAIN (TREE_VALUE (attr));
@@ -12867,7 +12915,9 @@ grokfndecl (tree ctype,
 	      error ("definition of implicitly-declared %qD", old_decl);
 	      return NULL_TREE;
 	    }
-	  else if (DECL_DEFAULTED_FN (old_decl))
+	  else if (DECL_DEFAULTED_FN (old_decl)
+		   && !(initialized == SD_DEFAULTED
+			&& redefinable_import_p (old_decl)))
 	    {
 	      auto_diagnostic_group d;
 	      error ("definition of explicitly-defaulted %q+D", decl);
@@ -18490,6 +18540,24 @@ lookup_and_check_tag (enum tag_types tag_code, tree name,
       || (how != TAG_how::CURRENT_ONLY && DECL_TEMPLATE_TEMPLATE_PARM_P (decl)))
     decl = DECL_TEMPLATE_RESULT (decl);
 
+  if (TREE_CODE (decl) == USING_DECL)
+    {
+      tree u = decl;
+      decl = strip_using_decl (decl);
+      if (how == TAG_how::CURRENT_ONLY
+	  && TREE_CODE (decl) == TYPE_DECL
+	  && !(DECL_IMPLICIT_TYPEDEF_P (decl)
+	       && CP_DECL_CONTEXT (decl) == CP_DECL_CONTEXT (u)
+	       && redefinable_import_p (decl)))
+	{
+	  auto_diagnostic_group _;
+	  error ("%qD conflicts with a previous declaration", name);
+	  inform (location_of (u), "previous declaration %qD", u);
+	  inform (location_of (decl), "%qD declared here", decl);
+	  return error_mark_node;
+	}
+    }
+
   if (TREE_CODE (decl) != TYPE_DECL)
     /* Found not-a-type.  */
     return NULL_TREE;
@@ -19077,6 +19145,9 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	  tree decl = TYPE_NAME (enumtype);
 	  if (!module_may_redeclare (decl))
 	    enumtype = error_mark_node;
+	  else if (COMPLETE_TYPE_P (enumtype)
+		   && redefinable_import_p (decl))
+	    return enumtype;
 	  else
 	    set_instantiating_module (decl);
 	}
@@ -19145,6 +19216,12 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 
 	  if (enumtype != error_mark_node)
 	    {
+	      /* ??? We wouldn't need to repeat this if lookup_elaborated_type
+		 found (and pushed) mergeable types.  */
+	      if (COMPLETE_TYPE_P (enumtype)
+		  && redefinable_import_p (TYPE_NAME (enumtype)))
+		return enumtype;
+
 	      /* The enum is considered opaque until the opening '{' of the
 		 enumerator list.  */
 	      SET_OPAQUE_ENUM_P (enumtype, true);

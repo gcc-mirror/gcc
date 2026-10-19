@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "debug.h"
 #include "alloc-pool.h"
-#include "toplev.h"
 
 /* Allocator used to hold string slot entries for line map streaming.  */
 static struct object_allocator<struct string_slot> *string_slot_allocator;

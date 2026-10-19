@@ -2283,7 +2283,9 @@ resolve_omp_target_device_matches (tree node)
 }
 
 /* Compare construct={simd} CLAUSES1 with CLAUSES2, return 0/-1/1/2 as
-   in omp_context_selector_set_compare.  If MATCH_P is true, additionally
+   in omp_context_selector_set_compare: 0 if equal, -1 if clause1 is a
+   strict subset of clause2, 1 if clause2 is a strict subset of clause1,
+   and 2 if neither is a subset of the other. If MATCH_P is true, additionally
    apply the special matching rules for the "simdlen" and "aligned" clauses
    used to determine whether the selector CLAUSES1 is part of matches
    the OpenMP context containing CLAUSES2.  */
@@ -2299,11 +2301,12 @@ omp_construct_simd_compare (tree clauses1, tree clauses2, bool match_p)
   int r = 0;
   struct declare_variant_simd_data {
     bool inbranch, notinbranch;
-    tree simdlen;
+    tree simdlen, simdlen_divisor, simdlen_type;
     auto_vec<tree,16> data_sharing;
     auto_vec<tree,16> aligned;
     declare_variant_simd_data ()
-      : inbranch(false), notinbranch(false), simdlen(NULL_TREE) {}
+      : inbranch(false), notinbranch(false), simdlen(NULL_TREE),
+	simdlen_divisor(NULL_TREE), simdlen_type(NULL_TREE) {}
   } data[2];
   unsigned int i;
   tree e0, e1;
@@ -2321,6 +2324,10 @@ omp_construct_simd_compare (tree clauses1, tree clauses2, bool match_p)
 	    continue;
 	  case OMP_CLAUSE_SIMDLEN:
 	    data[i].simdlen = OMP_CLAUSE_SIMDLEN_EXPR (c);
+	    data[i].simdlen_type = OMP_CLAUSE_SIMDLEN_TYPE (c);
+	    data[i].simdlen_divisor = OMP_CLAUSE_SIMDLEN_DIVISOR (c);
+	    if (!data[i].simdlen_divisor)
+	      data[i].simdlen_divisor = integer_one_node;
 	    continue;
 	  case OMP_CLAUSE_UNIFORM:
 	  case OMP_CLAUSE_LINEAR:
@@ -2345,6 +2352,13 @@ omp_construct_simd_compare (tree clauses1, tree clauses2, bool match_p)
     r |= data[0].inbranch ? 2 : 1;
   if (data[0].notinbranch != data[1].notinbranch)
     r |= data[0].notinbranch ? 2 : 1;
+  /* FIXME: In OpenMP is underspecified how scaled-modifier should affect the
+     context matching; cf. OpenMP specification Issue 5160.  We require here that
+     the type and divisor are identical.  */
+  if (data[0].simdlen_type != data[1].simdlen_type)
+    return 2;
+  if (!simple_cst_equal (data[0].simdlen_divisor, data[1].simdlen_divisor))
+    return 2;
   e0 = data[0].simdlen;
   e1 = data[1].simdlen;
   if (!simple_cst_equal (e0, e1))

@@ -39,6 +39,8 @@
 
 #include <bits/requires_hosted.h> // iostreams
 
+#include <bits/version.h>
+
 #include <bits/c++config.h>
 #include <bits/iosfwd.h>
 #include <bits/localefwd.h>
@@ -56,6 +58,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     streamsize
     __copy_streambufs_eof(basic_streambuf<_CharT, _Traits>*,
 			  basic_streambuf<_CharT, _Traits>*, bool&);
+
+#ifdef __glibcxx_format // C++ >= 20 && HOSTED
+  namespace __format { template<typename> class _Streambuf_sink; }
+#endif
 
   /**
    *  @brief  The actual work of input and output (interface).
@@ -149,6 +155,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend class basic_ostream<char_type, traits_type>;
       friend class istreambuf_iterator<char_type, traits_type>;
       friend class ostreambuf_iterator<char_type, traits_type>;
+#ifdef __glibcxx_format // C++ >= 20 && HOSTED
+      friend class __format::_Streambuf_sink<char_type>;
+#endif
 
       friend streamsize
       __copy_streambufs_eof<>(basic_streambuf*, basic_streambuf*, bool&);

@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-additional-options "-std=c++20" }
 // { dg-additional-options "-Wno-deprecated-openmp" }
+// { dg-skip-if "Target libm lacks complete C99 math library" { hppa*-*-hpux* } }
 #include <cmath>
 #include <numbers>
 

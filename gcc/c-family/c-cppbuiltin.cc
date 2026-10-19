@@ -645,6 +645,13 @@ c_cpp_builtins_optimize_pragma (cpp_reader *pfile, tree prev_tree,
   else if (prev->x_flag_rounding_math && !cur->x_flag_rounding_math)
     cpp_undef (pfile, "__ROUNDING_MATH__");
 
+  if (!prev->x_flag_unsafe_math_optimizations
+      && cur->x_flag_unsafe_math_optimizations)
+    cpp_define_unused (pfile, "__UNSAFE_MATH_OPTIMIZATIONS__");
+  else if (prev->x_flag_unsafe_math_optimizations
+	   && !cur->x_flag_unsafe_math_optimizations)
+    cpp_undef (pfile, "__UNSAFE_MATH_OPTIMIZATIONS__");
+
   cpp_stop_forcing_token_locations (parse_in);
 }
 
@@ -1152,7 +1159,7 @@ c_cpp_builtins (cpp_reader *pfile)
       else if (cxx_dialect >= cxx20)
 	cpp_warn (pfile, "__cpp_modules");
       if (flag_coroutines)
-	cpp_define (pfile, "__cpp_impl_coroutine=201902L"); /* n4861, DIS */
+	cpp_define (pfile, "__cpp_impl_coroutine=202606L"); /* n4861, DIS */
       else if (cxx_dialect >= cxx20)
 	cpp_warn (pfile, "__cpp_impl_coroutine");
       if (flag_tm)

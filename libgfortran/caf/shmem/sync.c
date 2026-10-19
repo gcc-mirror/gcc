@@ -66,10 +66,11 @@ sync_init_supervisor (sync_t *si, alloc *ai)
   initialize_shared_mutex (&si->cis->sync_images_table_lock);
 
   si->cis->sync_images_table
-    = allocator_shared_malloc (alloc_get_allocator (ai), table_size_in_bytes);
+    = allocator_shared_malloc_or_die (alloc_get_allocator (ai),
+				      table_size_in_bytes);
   si->cis->sync_images_cond_vars
-    = allocator_shared_malloc (alloc_get_allocator (ai),
-			       sizeof (caf_shmem_condvar) * num_images);
+    = allocator_shared_malloc_or_die (alloc_get_allocator (ai),
+				      sizeof (caf_shmem_condvar) * num_images);
 
   si->table = SHMPTR_AS (int *, si->cis->sync_images_table, ai->mem);
   si->triggers
@@ -81,7 +82,18 @@ sync_init_supervisor (sync_t *si, alloc *ai)
   memset (si->table, 0, table_size_in_bytes);
 }
 
-void
+/* Whether one of the SIZE IMAGES has stopped.  */
+
+static bool
+stopped_image_in (const int *images, int size)
+{
+  for (int i = 0; i < size; ++i)
+    if (this_image.supervisor->images[images[i]].status == IMAGE_SUCCESS)
+      return true;
+  return false;
+}
+
+bool
 sync_table (sync_t *si, int *images, int size)
 {
   /* The variable `table` is an N x N matrix, where N is the number of all
@@ -97,6 +109,7 @@ sync_table (sync_t *si, int *images, int size)
   /* The table is allocated for all images, so the row stride is the total
      number of images and not the (shrinking) number of images in a team.  */
   const size_t img_c = local->total_num_images;
+  bool terminated;
   int i;
 
   if (size <= 0)
@@ -106,6 +119,8 @@ sync_table (sync_t *si, int *images, int size)
     }
 
   lock_table (si);
+  /* Count the statement even with a stopped image in the set, so that the
+     counts of the active images keep pairing corresponding statements.  */
   for (i = 0; i < size; ++i)
     {
       if (this_image.supervisor->images[images[i]].status != IMAGE_OK)
@@ -115,6 +130,10 @@ sync_table (sync_t *si, int *images, int size)
     }
   for (;;)
     {
+      /* With a stopped image in the set this only has the effect of SYNC
+	 MEMORY; failed images are skipped (F2023 11.7.11).  */
+      if (stopped_image_in (images, size))
+	break;
       for (i = 0; i < size; ++i)
 	if (this_image.supervisor->images[images[i]].status == IMAGE_OK
 	    && table[images[i] + img_c * this_image.image_num]
@@ -125,25 +144,46 @@ sync_table (sync_t *si, int *images, int size)
       caf_shmem_cond_wait (&si->triggers[this_image.image_num],
 			   &si->cis->sync_images_table_lock);
     }
+  terminated = false;
+  for (i = 0; i < size; ++i)
+    if (this_image.supervisor->images[images[i]].status != IMAGE_OK)
+      terminated = true;
+  unlock_table (si);
+  return terminated;
+}
+
+void
+notify_image_terminated (sync_t *si, int image, bool stopped)
+{
+  /* Under the table lock, so that an image about to wait in sync_table
+     either sees the new status or is woken.  */
+  lock_table (si);
+  atomic_fetch_add (stopped ? &this_image.supervisor->finished_images
+			    : &this_image.supervisor->failed_images, 1);
+  this_image.supervisor->images[image].status
+    = stopped ? IMAGE_SUCCESS : IMAGE_FAILED;
+  for (int j = 0; j < local->total_num_images; ++j)
+    caf_shmem_cond_signal (&si->triggers[j]);
   unlock_table (si);
 }
 
 bool
-sync_all (void)
+sync_all (int *terminated)
 {
-  return sync_team_unless_stopped (caf_current_team);
+  return sync_team_unless_stopped (caf_current_team, terminated);
 }
 
 void
 sync_team (caf_shmem_team_t team)
 {
-  counter_barrier_wait (&team->u.image_info->image_count);
+  counter_barrier_wait (&team->u.image_info->image_count, NULL);
 }
 
 bool
-sync_team_unless_stopped (caf_shmem_team_t team)
+sync_team_unless_stopped (caf_shmem_team_t team, int *terminated)
 {
-  return counter_barrier_wait_abortable (&team->u.image_info->image_count);
+  return counter_barrier_wait_abortable (&team->u.image_info->image_count,
+					 terminated);
 }
 
 void

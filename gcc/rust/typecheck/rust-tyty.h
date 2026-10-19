@@ -368,6 +368,10 @@ public:
   virtual bool is_box () const { return false; }
 
 protected:
+  const TyTy::BaseType *
+  contains_infer (std::set<const TyTy::BaseType *> &visited) const;
+  bool is_concrete (std::set<const TyTy::BaseType *> &visited) const;
+
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
 	    std::set<HirId> refs = std::set<HirId> ());
 
@@ -511,12 +515,12 @@ class ParamType : public BaseGeneric
 public:
   static constexpr auto KIND = TypeKind::PARAM;
 
-  ParamType (std::string symbol, location_t locus, HirId ref,
+  ParamType (std::string symbol, location_t locus, HirId ref, HirId decl_id,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
   ParamType (bool is_trait_self, std::string symbol, location_t locus,
-	     HirId ref, HirId ty_ref,
+	     HirId ref, HirId ty_ref, HirId decl_id,
 	     std::vector<TypeBoundPredicate> specified_bounds,
 	     std::set<HirId> refs = std::set<HirId> ());
 
@@ -542,7 +546,11 @@ public:
   void set_implicit_self_trait ();
   bool is_implicit_self_trait () const;
 
+  HirId get_decl_id () const { return decl_id; }
+
 private:
+  // Identity of the original HIR parameter, preserved through substitution.
+  const HirId decl_id;
   bool is_trait_self;
   std::string symbol;
 };

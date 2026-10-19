@@ -1339,7 +1339,7 @@ C_COMMON_OBJS = c-family/c-common.o c-family/c-cppbuiltin.o c-family/c-dump.o \
   c-family/c-semantics.o c-family/c-ada-spec.o \
   c-family/c-ubsan.o c-family/known-headers.o \
   c-family/c-attribs.o c-family/c-warn.o c-family/c-spellcheck.o \
-  c-family/c-type-mismatch.o
+  c-family/c-type-mismatch.o attr-handlers.o
 
 # Analyzer object files
 ANALYZER_OBJS = \

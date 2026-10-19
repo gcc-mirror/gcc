@@ -1,3 +1,17 @@
+2026-10-08  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR target/127137
+	* config-list.mk (LIST): Remove i686-mingw32crt.
+
+2026-10-08  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* mklog.py: Add "enum class" as a type starter to the struct regex.
+
+2026-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add two new
+	hashes.
+
 2026-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	* unicode/README: Replace Unicode 17 version with 18.

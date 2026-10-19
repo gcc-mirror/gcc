@@ -704,7 +704,14 @@ ix86_expand_vector_move (machine_mode mode, rtx operands[])
 	  && CONSTANT_POOL_ADDRESS_P (XEXP (op1, 0))))
     {
       rtx first = ix86_broadcast_from_constant (mode, op1);
-      if (first != nullptr)
+      /* Only broadcast floating-point constants when a broadcast instruction
+	 is available (AVX, or AVX2 for 16-bit elements), avoiding sequences
+	 such as movss + shufps.  For integer constants, guard broadcasting
+	 with TARGET_PREFER_BCST_FROM_INTEGER.  */
+      if (first != nullptr
+	  && (FLOAT_MODE_P (mode)
+	      ? (GET_MODE_UNIT_SIZE (mode) < 4 ? TARGET_AVX2 : TARGET_AVX)
+	      : TARGET_PREFER_BCST_FROM_INTEGER))
 	{
 	  /* Broadcast to XMM/YMM/ZMM register from an integer
 	     constant or scalar mem.  */
@@ -4818,7 +4825,7 @@ ix86_fp_cmp_code_to_pcmp_immediate (enum rtx_code code)
     case UNEQ:
       return 0x08;
     case LTGT:
-      return 0x0c;
+      return 0x1c;
     case ORDERED:
       return 0x07;
     case UNORDERED:
@@ -4886,11 +4893,11 @@ ix86_expand_fp_vec_cmp (rtx operands[])
       switch (GET_CODE (operands[1]))
 	{
 	case LTGT:
-	  temp = ix86_expand_sse_cmp (operands[0], ORDERED, operands[2],
+	  temp = ix86_expand_sse_cmp (operands[0], LT, operands[2],
 				      operands[3], NULL, NULL);
-	  cmp = ix86_expand_sse_cmp (operands[0], NE, operands[2],
-				     operands[3], NULL, NULL);
-	  code = AND;
+	  cmp = ix86_expand_sse_cmp (operands[0], LT, operands[3],
+				     operands[2], NULL, NULL);
+	  code = IOR;
 	  break;
 	case UNEQ:
 	  temp = ix86_expand_sse_cmp (operands[0], UNORDERED, operands[2],
@@ -8233,9 +8240,9 @@ emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
 
   /* Find the corresponding vector mode with the same size as MOVE_MODE.
      MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
-  if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
+  if (GET_MODE_SIZE (move_mode) > UNITS_PER_WORD)
     {
-      int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
+      int nunits = GET_MODE_SIZE (move_mode) / UNITS_PER_WORD;
       if (!mode_for_vector (word_mode, nunits).exists (&move_mode)
 	  || (code = optab_handler (mov_optab, move_mode)) == CODE_FOR_nothing)
 	{
@@ -8442,7 +8449,7 @@ emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
 
   for (i = 0; i < size_to_move; i += piece_size)
     {
-      if (piece_size <= GET_MODE_SIZE (word_mode))
+      if (piece_size <= UNITS_PER_WORD)
 	{
 	  emit_insn (gen_strset (destptr, dst, promoted_val));
 	  dst = adjust_automodify_address_nv (dst, move_mode, destptr,
@@ -9703,7 +9710,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       need_zero_guard = true;
       unroll_factor = 4;
       /* Get the vector mode to move STORE_MAX_PIECES/MOVE_MAX bytes.  */
-      nunits /= GET_MODE_SIZE (word_mode);
+      nunits /= UNITS_PER_WORD;
       if (nunits > 1)
 	{
 	  move_mode = mode_for_vector (word_mode, nunits).require ();
@@ -9800,7 +9807,7 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       if (alg == vector_loop)
 	{
 	  promoted_val = promote_duplicated_reg_to_size (val_exp,
-							 GET_MODE_SIZE (word_mode),
+							 UNITS_PER_WORD,
 							 desired_align, align);
 	  /* Duplicate the promoted scalar value if not 0 nor -1.  */
 	  vec_promoted_val
@@ -10735,7 +10742,7 @@ ix86_expand_set_or_movmem (rtx operands[], bool iscpymem, bool issetmem)
 	    {
 	      /* Use the vector mode based on WORD_MODE to avoid extra
 		 GPR moves.  */
-	      nunits = size / GET_MODE_SIZE (word_mode);
+	      nunits = size / UNITS_PER_WORD;
 	      machine_mode vector_mode
 		= mode_for_vector (word_mode, nunits).require ();
 	      rtx vector = promote_duplicated_reg (vector_mode,
@@ -19134,7 +19141,13 @@ ix86_expand_vector_init_insert (machine_mode mode, rtx target,
     case E_V16QImode:
       if (var != const0_rtx)
 	{
-	  var = convert_modes (SImode, QImode, var, true);
+	  if (REG_P (var)
+	      && ops[1] != const0_rtx
+	      && ops[2] != const0_rtx
+	      && ops[3] != const0_rtx)
+	    var = gen_lowpart (SImode, var);
+	  else
+	    var = convert_modes (SImode, QImode, var, true);
 	  var = force_reg (SImode, var);
 	  x = gen_reg_rtx (V4SImode);
 	  emit_insn (gen_vec_setv4si_0 (x, CONST0_RTX (V4SImode), var));
@@ -19147,7 +19160,11 @@ ix86_expand_vector_init_insert (machine_mode mode, rtx target,
     case E_V8HImode:
       if (var != const0_rtx)
 	{
-	  var = convert_modes (SImode, HImode, var, true);
+	  if (REG_P (var)
+	      && ops[1] != const0_rtx)
+	    var = gen_lowpart (SImode, var);
+	  else
+	    var = convert_modes (SImode, HImode, var, true);
 	  var = force_reg (SImode, var);
 	  x = gen_reg_rtx (V4SImode);
 	  emit_insn (gen_vec_setv4si_0 (x, CONST0_RTX (V4SImode), var));
@@ -19173,7 +19190,7 @@ ix86_expand_vector_init_insert (machine_mode mode, rtx target,
       gcc_unreachable ();
     }
 
-  for (i=1; i<n; i++)
+  for (i = 1; i < n; i++)
     if (ops[i] != CONST0_RTX (inner_mode))
       {
 	rtx val = ops[i];
@@ -19711,7 +19728,7 @@ ix86_expand_vector_init_v8hi (rtx target, rtx *ops)
 	  }
       rtx tmp1 = gen_reg_rtx (V8HImode);
       if (!ix86_expand_vector_init_v8hi (tmp1, vars))
-        gcc_unreachable ();
+	gcc_unreachable ();
       rtx tmp2 = gen_reg_rtx (V8HImode);
       rtx vec = gen_rtx_CONST_VECTOR (V8HImode, gen_rtvec_v (8, csts));
       emit_move_insn (tmp2, vec);
@@ -19727,12 +19744,243 @@ ix86_expand_vector_init_v8hi (rtx target, rtx *ops)
   return false;
 }
 
+/* A subroutine of ix86_expand_vector_init_v16qi.
+   Place OPS[0..3] in an SImode REG or CONST_INT.  */
+
+static rtx
+ix86_expand_vector_init_qi4 (rtx *ops)
+{
+  rtx vars[4];
+  rtx word;
+  int i;
+
+  if (CONST_INT_P (ops[0])
+      && CONST_INT_P (ops[1])
+      && CONST_INT_P (ops[2])
+      && CONST_INT_P (ops[3]))
+    {
+      HOST_WIDE_INT val = (UINTVAL (ops[0]) & 0xff)
+			  + ((UINTVAL (ops[1]) & 0xff) << 8)
+			  + ((UINTVAL (ops[2]) & 0xff) << 16)
+			  + ((UINTVAL (ops[3]) & 0xff) << 24);
+      return gen_int_mode (val, SImode);
+    }
+
+  if (ops[1] == const0_rtx
+      && ops[2] == const0_rtx
+      && ops[3] == const0_rtx)
+    return convert_modes (SImode, QImode, ops[0], true);
+
+
+  if (rtx_equal_p (ops[0], ops[2])
+      && rtx_equal_p (ops[1], ops[3]))
+    {
+      vars[0] = ops[0];
+      vars[1] = ops[1];
+      vars[2] = const0_rtx;
+      vars[3] = const0_rtx;
+      rtx tmp1 = ix86_expand_vector_init_qi4 (vars);
+      rtx tmp2 = expand_simple_binop (SImode, ASHIFT, tmp1, GEN_INT (16),
+				      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      return expand_simple_binop (SImode, PLUS, tmp2, tmp1,
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  HOST_WIDE_INT val = 0;
+  for (i = 0; i < 4; i++)
+    if (CONST_INT_P (ops[i]) && ops[i] != const0_rtx)
+      {
+	val += (UINTVAL (ops[i]) & 0xff) << (i * 8);
+	vars[i] = const0_rtx;
+      }
+    else
+      vars[i] = ops[i];
+
+  if (val != 0)
+    {
+      rtx tmp = ix86_expand_vector_init_qi4 (vars);
+      return expand_simple_binop (SImode, IOR, tmp,
+				  gen_int_mode (val, SImode),
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  if (ops[0] == const0_rtx && ops[1] == const0_rtx)
+    {
+      if (ops[2] == const0_rtx)
+	{
+	  word = convert_modes (SImode, QImode, ops[3], true);
+	  return expand_simple_binop (SImode, ASHIFT, word, GEN_INT (24),
+				      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+	}
+      vars[0] = ops[2];
+      vars[1] = ops[3];
+      vars[2] = const0_rtx;
+      vars[3] = const0_rtx;
+      word = ix86_expand_vector_init_qi4 (vars);
+      return expand_simple_binop (SImode, ASHIFT, word, GEN_INT (16),
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  vars[0] = ops[1];
+  vars[1] = ops[2];
+  vars[2] = ops[3];
+  vars[3] = const0_rtx;
+  word = ix86_expand_vector_init_qi4 (vars);
+  word = expand_simple_binop (SImode, ASHIFT, word, GEN_INT (8),
+			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  if (ops[0] != const0_rtx)
+    {
+      rtx elt = convert_modes (SImode, QImode, ops[0], true);
+      word = expand_simple_binop (SImode, PLUS, word, elt,
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+  return word;
+}
+
+/* A subroutine of ix86_expand_vector_init_v16qi.
+   Place OPS[0..7] in an DImode REG or CONST_INT.  */
+
+static rtx
+ix86_expand_vector_init_qi8 (rtx *ops)
+{
+  rtx vars[8];
+  rtx word;
+  int i;
+
+  if (CONST_INT_P (ops[0])
+      && CONST_INT_P (ops[1])
+      && CONST_INT_P (ops[2])
+      && CONST_INT_P (ops[3])
+      && CONST_INT_P (ops[4])
+      && CONST_INT_P (ops[5])
+      && CONST_INT_P (ops[6])
+      && CONST_INT_P (ops[7]))
+    {
+      HOST_WIDE_INT val = (UINTVAL (ops[0]) & 0xff)
+			  + ((UINTVAL (ops[1]) & 0xff) << 8)
+			  + ((UINTVAL (ops[2]) & 0xff) << 16)
+			  + ((UINTVAL (ops[3]) & 0xff) << 24)
+			  + ((UINTVAL (ops[4]) & 0xff) << 32)
+			  + ((UINTVAL (ops[5]) & 0xff) << 40)
+			  + ((UINTVAL (ops[6]) & 0xff) << 48)
+			  + ((UINTVAL (ops[7]) & 0xff) << 56);
+      return gen_int_mode (val, DImode);
+    }
+
+  if (ops[1] == const0_rtx
+      && ops[2] == const0_rtx
+      && ops[3] == const0_rtx
+      && ops[4] == const0_rtx
+      && ops[5] == const0_rtx
+      && ops[6] == const0_rtx
+      && ops[7] == const0_rtx)
+    return convert_modes (DImode, QImode, ops[0], true);
+
+  if (rtx_equal_p (ops[0], ops[4])
+      && rtx_equal_p (ops[1], ops[5])
+      && rtx_equal_p (ops[2], ops[6])
+      && rtx_equal_p (ops[3], ops[7]))
+    {
+      vars[0] = ops[0];
+      vars[1] = ops[1];
+      vars[2] = ops[2];
+      vars[3] = ops[3];
+      vars[4] = const0_rtx;
+      vars[5] = const0_rtx;
+      vars[6] = const0_rtx;
+      vars[7] = const0_rtx;
+      rtx tmp1 = ix86_expand_vector_init_qi8 (vars);
+      rtx tmp2 = expand_simple_binop (DImode, ASHIFT, tmp1, GEN_INT (32),
+				      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      return expand_simple_binop (DImode, PLUS, tmp2, tmp1,
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  HOST_WIDE_INT val = 0;
+  for (i = 0; i < 8; i++)
+    if (CONST_INT_P (ops[i]) && ops[i] != const0_rtx)
+      {
+	val += (UINTVAL (ops[i]) & 0xff) << (i * 8);
+	vars[i] = const0_rtx;
+      }
+    else
+      vars[i] = ops[i];
+
+  if (val != 0)
+    {
+      rtx tmp = ix86_expand_vector_init_qi8 (vars);
+      return expand_simple_binop (DImode, IOR, tmp,
+				  gen_int_mode (val, DImode),
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  if (rtx_equal_p (ops[0], ops[2])
+      && rtx_equal_p (ops[1], ops[3])
+      && ops[4] == const0_rtx
+      && ops[5] == const0_rtx
+      && ops[6] == const0_rtx
+      && ops[7] == const0_rtx)
+    {
+      vars[0] = ops[0];
+      vars[1] = ops[1];
+      vars[2] = const0_rtx;
+      vars[3] = const0_rtx;
+      vars[4] = const0_rtx;
+      vars[5] = const0_rtx;
+      vars[6] = const0_rtx;
+      vars[7] = const0_rtx;
+      rtx tmp1 = ix86_expand_vector_init_qi8 (vars);
+      rtx tmp2 = expand_simple_binop (DImode, ASHIFT, tmp1, GEN_INT (16),
+				      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+      return expand_simple_binop (DImode, PLUS, tmp2, tmp1,
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  if (ops[0] == const0_rtx && ops[1] == const0_rtx)
+    {
+      i = 2;
+      while (ops[i] == const0_rtx)
+	i++;
+      vars[0] = ops[i];
+      vars[1] = i + 1 < 8 ? ops[i + 1] : const0_rtx;
+      vars[2] = i + 2 < 8 ? ops[i + 2] : const0_rtx;
+      vars[3] = i + 3 < 8 ? ops[i + 3] : const0_rtx;
+      vars[4] = i + 4 < 8 ? ops[i + 4] : const0_rtx;
+      vars[5] = i + 5 < 8 ? ops[i + 5] : const0_rtx;
+      vars[6] = const0_rtx;
+      vars[7] = const0_rtx;
+      word = ix86_expand_vector_init_qi8 (vars);
+      return expand_simple_binop (DImode, ASHIFT, word, GEN_INT (i * 8),
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+
+  vars[0] = ops[1];
+  vars[1] = ops[2];
+  vars[2] = ops[3];
+  vars[3] = ops[4];
+  vars[4] = ops[5];
+  vars[5] = ops[6];
+  vars[6] = ops[7];
+  vars[7] = const0_rtx;
+  word = ix86_expand_vector_init_qi8 (vars);
+  word = expand_simple_binop (DImode, ASHIFT, word, GEN_INT (8),
+			      NULL_RTX, 1, OPTAB_LIB_WIDEN);
+  if (ops[0] != const0_rtx)
+    {
+      rtx elt = convert_modes (DImode, QImode, ops[0], true);
+      word = expand_simple_binop (DImode, PLUS, word, elt,
+				  NULL_RTX, 1, OPTAB_LIB_WIDEN);
+    }
+  return word;
+}
+
 /* A subroutine of ix86_expand_vector_init for V16QImode.  */
 
-static bool
+static void
 ix86_expand_vector_init_v16qi (rtx target, rtx *ops)
 {
   rtx vars[16];
+  bool ok;
   int i;
 
   bool all_zero_p = true;
@@ -19745,7 +19993,66 @@ ix86_expand_vector_init_v16qi (rtx target, rtx *ops)
   if (all_zero_p)
     {
       emit_move_insn (target, CONST0_RTX (V16QImode));
-      return true;
+      return;
+    }
+
+  bool all_same_p = true;
+  for (i = 1; i < 16; i++)
+    if (!rtx_equal_p (ops[i], ops[0]))
+      {
+	all_same_p = false;
+	break;
+      }
+  if (all_same_p)
+    {
+      ok = ix86_expand_vector_init_duplicate (false, V16QImode,
+					      target, ops[0]);
+      gcc_assert (ok);
+      return;
+    }
+
+  /* abababababababab */
+  if (TARGET_AVX2
+      && rtx_equal_p (ops[0], ops[2])
+      && rtx_equal_p (ops[1], ops[3])
+      && rtx_equal_p (ops[0], ops[4])
+      && rtx_equal_p (ops[1], ops[5])
+      && rtx_equal_p (ops[0], ops[6])
+      && rtx_equal_p (ops[1], ops[7])
+      && rtx_equal_p (ops[0], ops[8])
+      && rtx_equal_p (ops[1], ops[9])
+      && rtx_equal_p (ops[0], ops[10])
+      && rtx_equal_p (ops[1], ops[11])
+      && rtx_equal_p (ops[0], ops[12])
+      && rtx_equal_p (ops[1], ops[13])
+      && rtx_equal_p (ops[0], ops[14])
+      && rtx_equal_p (ops[1], ops[15]))
+    {
+      rtx tmp1 = gen_reg_rtx (V16QImode);
+      if (REG_P (ops[0]))
+	{
+	  rtx op0 = force_reg (SImode, gen_lowpart (SImode, ops[0]));
+	  rtx tmp = gen_reg_rtx (V4SImode);
+	  emit_insn (gen_vec_setv4si_0 (tmp, CONST0_RTX (V4SImode), op0));
+	  emit_move_insn (tmp1, gen_lowpart (V16QImode, tmp));
+	  rtx op1 = ops[1];
+	  if (!REG_P (op1) && !MEM_P (op1))
+	    op1 = force_reg (QImode, op1);
+	  emit_insn (gen_sse4_1_pinsrb (tmp1, tmp1, op1, GEN_INT (2)));
+	}
+      else
+	{
+	  vars[0] = ops[0];
+	  vars[1] = ops[1];
+	  for (i = 2; i < 16; i++)
+	    vars[i] = const0_rtx;
+	  ix86_expand_vector_init_v16qi (tmp1, vars);
+	}
+      tmp1 = gen_lowpart (V8HImode, tmp1);
+      rtx tmp2 = gen_reg_rtx (V8HImode);
+      emit_insn (gen_avx2_pbroadcastv8hi (tmp2, tmp1));
+      emit_move_insn (target, gen_lowpart (V16QImode, tmp2));
+      return;
     }
 
   bool all_const_p = true;
@@ -19757,15 +20064,31 @@ ix86_expand_vector_init_v16qi (rtx target, rtx *ops)
       }
   if (all_const_p)
     {
+      int last_nonzero = 15;
+      while (ops[last_nonzero] == const0_rtx)
+	last_nonzero--;
+      if (last_nonzero < 4)
+	{
+	  HOST_WIDE_INT val = (UINTVAL (ops[0]) & 0xff)
+			      + ((UINTVAL (ops[1]) & 0xff) << 8)
+			      + ((UINTVAL (ops[2]) & 0xff) << 16)
+			      + ((UINTVAL (ops[3]) & 0xff) << 24);
+	  rtx tmp1 = force_reg (SImode, gen_int_mode (val, SImode));
+	  rtx tmp2 = gen_reg_rtx (V4SImode);
+	  emit_insn (gen_vec_setv4si_0 (tmp2, CONST0_RTX (V4SImode), tmp1));
+	  emit_move_insn (target, gen_lowpart (V16QImode, tmp2));
+	  return;
+	}
       rtx vec = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, ops));
       emit_move_insn (target, vec);
-      return true;
+      return;
     }
 
   if (TARGET_SSE4_1
       && nonzero_int_const_count (ops, 16) >= 2)
     {
       rtx csts[16];
+      int count = 0;
       for (i = 0; i < 16; i++)
 	if (CONST_INT_P (ops[i]))
 	  {
@@ -19776,23 +20099,93 @@ ix86_expand_vector_init_v16qi (rtx target, rtx *ops)
 	  {
 	    csts[i] = const0_rtx;
 	    vars[i] = ops[i];
+	    count++;
 	  }
       rtx tmp1 = gen_reg_rtx (V16QImode);
-      if (!ix86_expand_vector_init_v16qi (tmp1, vars))
-	gcc_unreachable ();
+      if (count <= 3)
+	{
+	  ix86_expand_vector_init_v16qi (tmp1, csts);
+	  for (i = 0; i < 16; i++)
+	    if (vars[i] != const0_rtx)
+	      {
+		rtx elt = vars[i];
+		if (!REG_P (elt) && !MEM_P (elt))
+		  elt = force_reg (QImode, elt);
+		emit_insn (gen_sse4_1_pinsrb (tmp1, tmp1, elt,
+					      GEN_INT (1 << i)));
+	      }
+	  emit_move_insn (target, tmp1);
+	  return;
+	}
+      ix86_expand_vector_init_v16qi (tmp1, vars);
       rtx tmp2 = gen_reg_rtx (V16QImode);
       rtx vec = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, csts));
       emit_move_insn (tmp2, vec);
       emit_insn (gen_rtx_SET (target, gen_rtx_IOR (V16QImode, tmp1, tmp2)));
-      return true;
     }
-
-  if (TARGET_SSE4_1)
+  else if (TARGET_SSE4_1)
+    ix86_expand_vector_init_insert (V16QImode, target, ops, 16);
+  else if (TARGET_64BIT)
     {
-      ix86_expand_vector_init_insert (V16QImode, target, ops, 16);
-      return true;
+      rtx tmp = gen_reg_rtx (V2DImode);
+      vars[0] = ix86_expand_vector_init_qi8 (ops);
+      if (rtx_equal_p (ops[0], ops[8])
+	  && rtx_equal_p (ops[1], ops[9])
+	  && rtx_equal_p (ops[2], ops[10])
+	  && rtx_equal_p (ops[3], ops[11])
+	  && rtx_equal_p (ops[4], ops[12])
+	  && rtx_equal_p (ops[5], ops[13])
+	  && rtx_equal_p (ops[6], ops[14])
+	  && rtx_equal_p (ops[7], ops[15]))
+	vars[1] = vars[0];
+      else
+	vars[1] = ix86_expand_vector_init_qi8 (ops + 8);
+      ix86_expand_vector_init_v2di (tmp, vars);
+      emit_move_insn (target, gen_lowpart (V16QImode, tmp));
     }
-  return false;
+  else
+    {
+      rtx tmp = gen_reg_rtx (V4SImode);
+      vars[0] = ix86_expand_vector_init_qi4 (ops);
+      if (rtx_equal_p (ops[0], ops[4])
+	  && rtx_equal_p (ops[1], ops[5])
+	  && rtx_equal_p (ops[2], ops[6])
+	  && rtx_equal_p (ops[3], ops[7]))
+	vars[1] = vars[0];
+      else
+	vars[1] = ix86_expand_vector_init_qi4 (ops + 4);
+      if (rtx_equal_p (ops[0], ops[8])
+	  && rtx_equal_p (ops[1], ops[9])
+	  && rtx_equal_p (ops[2], ops[10])
+	  && rtx_equal_p (ops[3], ops[11]))
+	vars[2] = vars[0];
+      else if (rtx_equal_p (ops[4], ops[8])
+	       && rtx_equal_p (ops[5], ops[9])
+	       && rtx_equal_p (ops[6], ops[10])
+	       && rtx_equal_p (ops[7], ops[11]))
+	vars[2] = vars[1];
+      else
+	vars[2] = ix86_expand_vector_init_qi4 (ops + 8);
+      if (rtx_equal_p (ops[0], ops[12])
+	  && rtx_equal_p (ops[1], ops[13])
+	  && rtx_equal_p (ops[2], ops[14])
+	  && rtx_equal_p (ops[3], ops[15]))
+	vars[3] = vars[0];
+      else if (rtx_equal_p (ops[4], ops[12])
+	       && rtx_equal_p (ops[5], ops[13])
+	       && rtx_equal_p (ops[6], ops[14])
+	       && rtx_equal_p (ops[7], ops[15]))
+	vars[3] = vars[1];
+      else if (rtx_equal_p (ops[8], ops[12])
+	       && rtx_equal_p (ops[9], ops[13])
+	       && rtx_equal_p (ops[10], ops[14])
+	       && rtx_equal_p (ops[11], ops[15]))
+	vars[3] = vars[2];
+      else
+	vars[3] = ix86_expand_vector_init_qi4 (ops + 12);
+      ix86_expand_vector_init_v4si (tmp, vars);
+      emit_move_insn (target, gen_lowpart (V16QImode, tmp));
+    }
 }
 
 /* A subroutine of ix86_expand_vector_init for V4DImode.  */
@@ -20272,9 +20665,8 @@ ix86_expand_vector_init_general (bool mmx_ok, machine_mode mode,
     case E_V16QImode:
       for (i = 0; i < 16; i++)
 	ops[i] = XVECEXP (vals, 0, i);
-      if (ix86_expand_vector_init_v16qi (target, ops))
-	return;
-      break;
+      ix86_expand_vector_init_v16qi (target, ops);
+      return;
 
     case E_V4DImode:
       for (i = 0; i < 4; i++)
@@ -28365,9 +28757,9 @@ ix86_expand_sse2_mulv4si3 (rtx op0, rtx op1, rtx op2)
   emit_insn (gen_sse2_pshufd_1 (res_2, gen_lowpart (V4SImode, res_4),
 				const0_rtx, const2_rtx,
 				const0_rtx, const0_rtx));
-  res_1 = emit_insn (gen_vec_interleave_lowv4si (op0, res_1, res_2));
+  rtx_insn *insn = emit_insn (gen_vec_interleave_lowv4si (op0, res_1, res_2));
 
-  set_unique_reg_note (res_1, REG_EQUAL, gen_rtx_MULT (V4SImode, op1, op2));
+  set_unique_reg_note (insn, REG_EQUAL, gen_rtx_MULT (V4SImode, op1, op2));
 }
 
 void
@@ -28465,6 +28857,73 @@ ix86_expand_sse2_mulvxdi3 (rtx op0, rtx op1, rtx op2)
 
   set_unique_reg_note (get_last_insn (), REG_EQUAL,
 		       gen_rtx_MULT (mode, op1, op2));
+}
+
+void
+ix86_expand_umulvndi_highpart (rtx op0, rtx op1, rtx op2)
+{
+  /* The following sequence can be used with SSE2.  */
+  machine_mode mode = GET_MODE (op0);
+  rtx (*umul) (rtx, rtx, rtx);
+  machine_mode nmode;
+  if (mode == V2DImode)
+    {
+      umul = gen_vec_widen_umult_even_v4si;
+      nmode = V4SImode;
+    }
+  else if (mode == V4DImode)
+    {
+      umul = gen_vec_widen_umult_even_v8si;
+      nmode = V8SImode;
+    }
+  else if (mode == V8DImode)
+    {
+      umul = gen_vec_widen_umult_even_v16si;
+      nmode = V16SImode;
+    }
+  else
+    gcc_unreachable ();
+
+  rtx t32 = GEN_INT (32);
+
+  /* Shift input vectors right 32 bits so we can get high parts of operands.  */
+  rtx op1_hi = expand_binop (mode, lshr_optab, op1, t32, NULL, 1, OPTAB_DIRECT);
+  rtx op2_hi = expand_binop (mode, lshr_optab, op2, t32, NULL, 1, OPTAB_DIRECT);
+
+  /* Multiply low parts.  */
+  rtx p0 = gen_reg_rtx (mode);
+  emit_insn (umul (p0, gen_lowpart (nmode, op1), gen_lowpart (nmode, op2)));
+
+  /* Multiply high parts by low parts.  */
+  rtx p1 = gen_reg_rtx (mode);
+  emit_insn (umul (p1, gen_lowpart (nmode, op1_hi), gen_lowpart (nmode, op2)));
+  rtx p2 = gen_reg_rtx (mode);
+  emit_insn (umul (p2, gen_lowpart (nmode, op1), gen_lowpart (nmode, op2_hi)));
+
+  /* Multiply high parts.  */
+  rtx p3 = gen_reg_rtx (mode);
+  emit_insn (umul (p3, gen_lowpart (nmode, op1_hi),
+		   gen_lowpart (nmode, op2_hi)));
+
+  /* Fold the carry in once cross product at a time.
+     t = (p0 >> 32) + p1  */
+  rtx p0_hi = expand_binop (mode, lshr_optab, p0, t32, NULL, 1, OPTAB_DIRECT);
+  rtx t = expand_binop (mode, add_optab, p0_hi, p1, NULL, 1, OPTAB_DIRECT);
+
+  /* Extract low 32 bits of products by masking with 0xffffffff.  */
+  rtx mask = gen_reg_rtx (mode);
+  emit_insn (gen_rtx_SET (mask, CONSTM1_RTX (mode)));
+  mask = expand_binop (mode, lshr_optab, mask, t32, NULL, 1, OPTAB_DIRECT);
+
+  /* u = (t & MASK) + p2  */
+  rtx u = expand_binop (mode, and_optab, t, mask, NULL, 1, OPTAB_DIRECT);
+  u = expand_binop (mode, add_optab, u, p2, NULL, 1, OPTAB_DIRECT);
+
+  /* high = p3 + (t >> 32) + (u >> 32)  */
+  rtx t_hi = expand_binop (mode, lshr_optab, t, t32, NULL, 1, OPTAB_DIRECT);
+  rtx u_hi = expand_binop (mode, lshr_optab, u, t32, NULL, 1, OPTAB_DIRECT);
+  rtx high = expand_binop (mode, add_optab, p3, t_hi, NULL, 1, OPTAB_DIRECT);
+  force_expand_binop (mode, add_optab, high, u_hi, op0, 1, OPTAB_DIRECT);
 }
 
 /* Return 1 if control transfer instruction INSN
@@ -30343,6 +30802,139 @@ ix86_expand_lcp_stall_peephole (rtx_insn *insn, rtx *operands,
   emit_insn (set);
   set = gen_rtx_SET (operands[0], scratch);
   emit_insn (set);
+}
+
+/* Generate assembly to calculate CRC using pclmulqdq instruction.
+   OPERANDS[1] is input CRC,
+   OPERANDS[2] is data (message),
+   OPERANDS[3] is the polynomial without the leading 1.  */
+
+void
+ix86_expand_crc_using_pclmul (scalar_mode crc_mode,
+			      scalar_mode data_mode,
+			      rtx *operands)
+{
+  /* Check and keep arguments.  */
+  gcc_assert (!CONST_INT_P (operands[0]));
+  gcc_assert (CONST_INT_P (operands[3]));
+  rtx crc = operands[1];
+  rtx data = operands[2];
+  rtx polynomial = operands[3];
+
+  unsigned HOST_WIDE_INT crc_size = GET_MODE_BITSIZE (crc_mode);
+  unsigned HOST_WIDE_INT data_size = GET_MODE_BITSIZE (data_mode);
+  gcc_assert (crc_size <= 32);
+  gcc_assert (data_size <= crc_size);
+
+  /* Calculate the quotient.  */
+  unsigned HOST_WIDE_INT
+      q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
+
+  if (crc_size > data_size)
+    crc = expand_shift (RSHIFT_EXPR, SImode, crc, crc_size - data_size,
+			NULL_RTX, 1);
+
+  /* Keep the quotient and polynomial in V2DImode.  */
+  rtvec q_poly_constants = gen_rtvec (2, gen_int_mode (q, DImode),
+				      gen_int_mode (UINTVAL (polynomial),
+						    DImode));
+  rtx constants_v2di = gen_rtx_CONST_VECTOR (V2DImode, q_poly_constants);
+  rtx constants_reg = gen_reg_rtx (V2DImode);
+  emit_move_insn (constants_reg, constants_v2di);
+
+  /* crc ^ data and keep in V2DImode.  */
+  rtx cd_xor = expand_binop (SImode, xor_optab, crc, data, NULL_RTX, 1,
+			     OPTAB_WIDEN);
+  rtx res = gen_reg_rtx (V4SImode);
+  emit_insn (gen_vec_setv4si_0 (res, CONST0_RTX (V4SImode), cd_xor));
+  res = gen_lowpart (V2DImode, res);
+  /* Perform carry-less multiplication with quotient.  */
+  emit_insn (gen_pclmulqdq (res, res, constants_reg, const0_rtx));
+
+  res = expand_shift (RSHIFT_EXPR, V2DImode, res, crc_size, NULL_RTX, 1);
+
+  /* Perform carry-less multiplication with polynomial and get low part.  */
+  emit_insn (gen_pclmulqdq (res, res, constants_reg,
+			    gen_int_mode (0x10, SImode)));
+  rtx crc_part = gen_reg_rtx (SImode);
+  res = gen_lowpart (V4SImode, res);
+  emit_insn (gen_vec_extractv4sisi (crc_part, res, const0_rtx));
+
+  if (crc_size > data_size)
+    {
+      rtx shift = expand_shift (LSHIFT_EXPR, SImode, operands[1], data_size,
+				NULL_RTX, 1);
+      crc_part = expand_binop (SImode, xor_optab, crc_part, shift, NULL_RTX, 1,
+			       OPTAB_DIRECT);
+    }
+  emit_move_insn (operands[0], gen_lowpart (crc_mode, crc_part));
+}
+
+/* Generate assembly to calculate reversed CRC using pclmulqdq instruction.
+   OPERANDS[1] is input CRC,
+   OPERANDS[2] is data (message),
+   OPERANDS[3] is the polynomial without the leading 1.  */
+
+void
+ix86_expand_reversed_crc_using_pclmul (scalar_mode crc_mode,
+				       scalar_mode data_mode,
+				       rtx *operands)
+{
+  /* Check and keep arguments.  */
+  gcc_assert (!CONST_INT_P (operands[0]));
+  gcc_assert (CONST_INT_P (operands[3]));
+  rtx crc = operands[1];
+  rtx data = operands[2];
+  rtx polynomial = operands[3];
+
+  unsigned HOST_WIDE_INT crc_size = GET_MODE_BITSIZE (crc_mode);
+  unsigned HOST_WIDE_INT data_size = GET_MODE_BITSIZE (data_mode);
+  gcc_assert (crc_size <= 32);
+  gcc_assert (data_size <= crc_size);
+
+  /* Calculate the quotient.  */
+  unsigned HOST_WIDE_INT
+      q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
+  /* Reflect the calculated quotient.  */
+  q = reflect_hwi (q, crc_size + 1);
+
+  unsigned HOST_WIDE_INT reflected_op3 = reflect_hwi (UINTVAL (polynomial),
+						      crc_size);
+  /* Keep the quotient and reflected polynomial in V2DImode.  */
+  rtvec q_poly_constants = gen_rtvec (2, gen_int_mode (q, DImode),
+				      gen_int_mode (reflected_op3 << 1,
+						    DImode));
+  rtx constants_v2di = gen_rtx_CONST_VECTOR (V2DImode, q_poly_constants);
+  rtx constants_reg = gen_reg_rtx (V2DImode);
+  emit_move_insn (constants_reg, constants_v2di);
+
+  /* crc ^ data and keep in V2DImode.  */
+  rtx cd_xor = expand_binop (SImode, xor_optab, crc, data, NULL_RTX, 1,
+			     OPTAB_WIDEN);
+
+  /* Perform carry-less multiplication with quotient.  */
+  rtx res = gen_reg_rtx (V4SImode);
+  emit_insn (gen_vec_setv4si_0 (res, CONST0_RTX (V4SImode), cd_xor));
+  res = gen_lowpart (V2DImode, res);
+  emit_insn (gen_pclmulqdq (res, res, constants_reg, const0_rtx));
+
+  res = expand_shift (LSHIFT_EXPR, V2DImode, res, 64 - data_size, NULL_RTX, 0);
+
+  /* Perform carry-less multiplication with polynomial and get high part.  */
+  emit_insn (gen_pclmulqdq (res, res, constants_reg,
+			    gen_int_mode (0x10, SImode)));
+  rtx res_high = gen_reg_rtx (SImode);
+  res = gen_lowpart (V4SImode, res);
+  emit_insn (gen_vec_extractv4sisi (res_high, res, const2_rtx));
+
+  if (crc_size > data_size)
+    {
+      rtx shift = expand_shift (RSHIFT_EXPR, SImode, crc, data_size,
+				NULL_RTX, 1);
+      res_high = expand_binop (SImode, xor_optab, res_high, shift, NULL_RTX, 1,
+			       OPTAB_DIRECT);
+    }
+  emit_move_insn (operands[0], gen_lowpart (crc_mode, res_high));
 }
 
 #include "gt-i386-expand.h"

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ffast-math -ftree-vectorize -mavx512f" } */
+/* { dg-options "-O2 -ffast-math -ftree-vectorize -mavx512f -mprefer-vector-width=512" } */
 
 #include "avx512f-trunc-vec-1.c"
 

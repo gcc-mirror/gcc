@@ -376,6 +376,12 @@ print_mcu (const avr_mcu_t *mcu, const McuInfo &mi)
       if (mcu->text_section_start != 0x0)
 	fprintf (f, "\t%%{!Ttext:-Ttext 0x%lX}", 0UL + mcu->text_section_start);
       fprintf (f, "\n\n");
+
+      fprintf (f, "*link_prune_vectab:\n");
+#if defined (WITH_AVRLIBC) && defined (HAVE_LD_AVR_PRUNE_VECTAB)
+      fprintf (f, "\t%%{!r:%%{mprune-vectab:--prune-vectab}}");
+#endif // Have --prune-vectab
+      fprintf (f, "\n\n");
     }
 
   // -m[no-]rodata-in-ram affects linking.  Sanity check its usage.

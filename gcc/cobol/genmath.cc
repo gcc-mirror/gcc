@@ -479,7 +479,8 @@ fast_add( size_t nC, cbl_num_result_t *C,
   if(    all_results_integer(nC, C)
       && all_refers_integer(nA, A)
       && !error
-      && !not_error )
+      && !not_error
+      && !process_this_exception(ec_size_truncation_e) )
     {
     Analyze();
     // All targets are non-PICTURE binaries:
@@ -602,7 +603,7 @@ fast_subtract(size_t nC, cbl_num_result_t *C,
       && all_results_integer(nC, C)
       && !error
       && !not_error
-      )
+      && !process_this_exception(ec_size_truncation_e) )
     {
     Analyze();
     // All targets are non-PICTURE binaries:
@@ -1294,7 +1295,6 @@ add_case_1( tree pointer,
     {
     // We have rippled through every digit, meaning we just added
     // 1 to 9999, yielding 0000.
-
     set_exception_code(ec_size_truncation_e);
 
     gg_append_statement(break_goto);
@@ -2559,6 +2559,116 @@ parser_divide(  const cbl_refer_t& cref,
                   NULL );
   }
 
+static
+bool parser_as_two(cbl_refer_t *tgt,
+                   const std::deque<rpn_t>& operations,
+                   cbl_round_t rounded,
+                   cbl_label_t *on_error,
+                   cbl_label_t *not_error,
+                   cbl_label_t *compute_error_label)
+  {
+  bool retval = false;
+  if( operations.size() == 3
+      && strchr("+-*/", operations[2].op)
+      && (    (operations[0].term.field->type == FldLiteralN)
+          || !(operations[0].term.field->attr & intermediate_e))
+      && (    (operations[0].term.field->type == FldLiteralN)
+          || !(operations[1].term.field->attr & intermediate_e))  )
+    {
+    set_up_compute_error_label(compute_error_label);
+    gg_assign(var_decl_default_compute_error, integer_zero_node);
+    tree compute_error =    compute_error_label
+                          ? gg_get_address_of( compute_error_label->
+                                               structs.compute_error->
+                                               compute_error_code)
+                          : gg_get_address_of(var_decl_default_compute_error) ;
+    cbl_num_result_t result;
+    result.refer = *tgt;
+    result.rounded = rounded;
+    switch(operations[2].op)
+      {
+      case '+':
+        {
+        cbl_refer_t A[2];
+        A[0] = operations[0].term;
+        A[1] = operations[1].term;
+        parser_add( 1, &result,
+                    2, A,
+                    giving_e,
+                    on_error,
+                    not_error,
+                    compute_error );
+        retval = true;
+        break;
+        }
+
+      case '-':
+        {
+        cbl_refer_t A[1];
+        cbl_refer_t B[1];
+        A[0] = operations[1].term;
+        B[0] = operations[0].term;
+        // Yes, the A-ness and B-ness are not really consistent
+        parser_subtract(1, &result,
+                        1, A,
+                        1, B,
+                        giving_e,
+                        on_error,
+                        not_error,
+                        compute_error );
+        retval = true;
+        break;
+        }
+
+      case '*':
+        {
+        cbl_refer_t A[1];
+        cbl_refer_t B[1];
+        A[0] = operations[1].term;
+        B[0] = operations[0].term;
+        parser_multiply(1, &result,
+                        1, A,
+                        1, B,
+                        on_error,
+                        not_error,
+                        compute_error );
+        retval = true;
+        break;
+        }
+      case '/':
+        {
+        cbl_refer_t A[1];
+        cbl_refer_t B[1];
+        A[0] = operations[0].term;
+        B[0] = operations[1].term;
+        parser_divide(1, &result,
+                      1, A,
+                      1, B,
+                      NULL,
+                      on_error,
+                      not_error,
+                      compute_error );
+        retval = true;
+        break;
+        }
+      }
+
+    if( retval && process_this_exception(ec_size_truncation_e) )
+      {
+      IF( gg_indirect(compute_error), ne_op, integer_zero_node )
+        {
+        set_exception_code(ec_size_truncation_e);
+        }
+      ELSE
+        {
+        }
+      ENDIF
+      }
+    }
+
+  return retval;
+  }
+
 void
 parser_compute( cbl_refer_t *tgt,
                 const std::deque<rpn_t>& operations,
@@ -2567,6 +2677,17 @@ parser_compute( cbl_refer_t *tgt,
   RETURN_IF_PARSE_ONLY;
   CHECK_FIELD(tgt->field);
   gcc_assert(operations.size());
+
+  if( parser_as_two(tgt,
+                    operations,
+                    truncation_e,
+                    NULL,
+                    NULL,
+                    compute_error_label) )
+    {
+    // We were able to handle it as an operation on two variables.
+    return;
+    }
 
   set_up_compute_error_label(compute_error_label);
 
@@ -2646,8 +2767,22 @@ parser_compute( std::vector<cbl_num_result_t>& results,
                 const std::deque<rpn_t>& operations,
                 cbl_label_t *on_error,
                 cbl_label_t *not_error,
-                cbl_label_t *compute_error)
+                cbl_label_t *compute_error_label)
   {
+  if( results.size() == 1 )
+    {
+    if( parser_as_two(&results[0].refer,
+                      operations,
+                      results[0].rounded,
+                      on_error,
+                      not_error,
+                      compute_error_label) )
+      {
+      // We were able to handle it as an operation on two variables.
+      return;
+      }
+    }
+
   bool compute_float = false;
   for(auto op : operations)
     {
@@ -2676,7 +2811,7 @@ parser_compute( std::vector<cbl_num_result_t>& results,
   cbl_refer_t  temp_refer;
   temp_refer.field = temp_field;
 
-  parser_compute( &temp_refer, operations, compute_error );
+  parser_compute( &temp_refer, operations, compute_error_label );
 
   if( !results.empty() )
     {
@@ -2685,7 +2820,7 @@ parser_compute( std::vector<cbl_num_result_t>& results,
                   temp_refer,
                   on_error,
                   not_error,
-                  compute_error);
+                  compute_error_label);
     }
   }
 

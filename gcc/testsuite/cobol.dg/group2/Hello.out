@@ -1,0 +1,6 @@
+"Hello     "
+Note the quotes. autoconf is allergic to trailing spaces.
+The alternative is to use FUNCTION TRIM, or autoconf quadrigraphs.
+Hello
+Hello     
+

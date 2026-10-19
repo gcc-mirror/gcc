@@ -1429,7 +1429,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       __atomic_float(_Fp __t) : _M_fp(__t)
-      { 
+      {
  	if (!std::__is_constant_evaluated())
 	  __atomic_impl::__clear_padding(_M_fp);
       }

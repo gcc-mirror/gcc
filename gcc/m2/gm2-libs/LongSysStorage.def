@@ -1,0 +1,87 @@
+(* LongSysStorage.def provides dynamic allocation for the system components.
+
+Copyright (C) 2026 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE LongSysStorage ;
+
+(*  Provides dynamic allocation for the system components.
+    This allows the application to use the traditional Storage module
+    which can be handled differently.
+    ALLOCATE and DEALLOCATE will call M2Diagnostic to adjust the
+    global tracking of the application heap.  *)
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+(*
+   ALLOCATE - attempt to allocate memory from the heap.
+              NIL is returned in, a, if ALLOCATE fails.
+*)
+
+PROCEDURE ALLOCATE (VAR a: ADDRESS ; size: LONGCARD) ;
+
+
+(*
+   DEALLOCATE - return, size, bytes to the heap.
+                The variable, a, is set to NIL.
+*)
+
+PROCEDURE DEALLOCATE (VAR a: ADDRESS ; size: LONGCARD) ;
+
+
+(*
+   REALLOCATE - attempts to reallocate storage. The address,
+                a, should either be NIL in which case ALLOCATE
+                is called, or alternatively it should have already
+                been initialized by ALLOCATE. The allocated storage
+                is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
+*)
+
+PROCEDURE REALLOCATE (VAR a: ADDRESS; size: LONGCARD) ;
+
+
+(*
+   Available - returns TRUE if, size, bytes can be allocated.
+*)
+
+PROCEDURE Available (size: LONGCARD) : BOOLEAN;
+
+
+(*
+   Init - initializes the heap.
+          This does nothing on a GNU/Linux system.
+          But it remains here since it might be used in an
+          embedded system.
+*)
+
+PROCEDURE Init ;
+
+
+END LongSysStorage.

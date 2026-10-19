@@ -2995,6 +2995,30 @@ proc check_sse4_hw_available { } {
     }]
 }
 
+# Return 1 if the target supports executing PCLMUL instructions, 0
+# otherwise.  Cache the result.
+
+proc check_pclmul_hw_available { } {
+    return [check_cached_effective_target pclmul_hw_available {
+	# If this is not the right target then we can skip the test.
+	if { ![check_effective_target_x86] } {
+	    expr 0
+	} else {
+	    check_runtime_nocache pclmul_hw_available {
+		#include "cpuid.h"
+		int main ()
+		{
+		  unsigned int eax, ebx, ecx, edx;
+		  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
+		    return 1;
+
+		  return !(ecx & bit_PCLMUL);
+		}
+	    } ""
+	}
+    }]
+}
+
 # Return 1 if the target supports executing AVX instructions, 0
 # otherwise.  Cache the result.
 
@@ -3113,6 +3137,17 @@ proc check_effective_target_sse2_runtime { } {
 proc check_effective_target_sse4_runtime { } {
     if { [check_effective_target_sse4]
 	 && [check_sse4_hw_available]
+	 && [check_sse_os_support_available] } {
+	return 1
+    }
+    return 0
+}
+
+# Return 1 if the target supports running PCLMUL executables, 0 otherwise.
+
+proc check_effective_target_pclmul_runtime { } {
+    if { [check_effective_target_pclmul]
+	 && [check_pclmul_hw_available]
 	 && [check_sse_os_support_available] } {
 	return 1
     }
@@ -8564,6 +8599,15 @@ proc check_effective_target_ultrasparc_vis3_hw { } {
     } "-mcpu=niagara3"]
 }
 
+# Return 1 if the test environment supports executing SPARC compare-and-branch
+# instructions.  We check this by attempting: "cwbe %g0, %g0, .+4"
+
+proc check_effective_target_cbcond_hw { } {
+    return [check_runtime cbcond_hw {
+	int main() { __asm__(".word 0x12c00020"); return 0; }
+    } "-mcpu=niagara4"]
+}
+
 # Return 1 if this is a SPARC-V9 target.
 
 proc check_effective_target_sparc_v9 { } {
@@ -10715,6 +10759,46 @@ proc check_effective_target_ctzll { } {
 	    return __builtin_ctzll (b);
 	  }
     } "" ]
+}
+
+# Return 1 if the target has a clzsi2 pattern, so that a .CLZ call on
+# a 32-bit unsigned integer can be expanded.  The pattern can be an
+# expander that uses other operations.  Niter analysis turns the loop
+# into such a call only in that case.
+
+proc check_effective_target_clzsi { } {
+    return [check_no_messages_and_pattern clzsi "\\.CLZ \\(" tree-optimized {
+	int foo (__UINT32_TYPE__ b)
+	  {
+	    int c = 0;
+	    while (b)
+	      {
+		b >>= 1;
+		c++;
+	      }
+	    return c;
+	  }
+    } "-O2" ]
+}
+
+# Return 1 if the target has a ctzsi2 pattern, so that a .CTZ call on
+# a 32-bit unsigned integer can be expanded.  The pattern can be an
+# expander that uses other operations.  Niter analysis turns the loop
+# into such a call only in that case.
+
+proc check_effective_target_ctzsi { } {
+    return [check_no_messages_and_pattern ctzsi "\\.CTZ \\(" tree-optimized {
+	int foo (__UINT32_TYPE__ b)
+	  {
+	    int c = 0;
+	    while (b)
+	      {
+		b <<= 1;
+		c++;
+	      }
+	    return c;
+	  }
+    } "-O2" ]
 }
 
 # Return 1 if the target supports atomic operations on "long long"

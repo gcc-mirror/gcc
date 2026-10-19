@@ -34,21 +34,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include <ssp/ssp.h>
+#include <limits.h>
 #include <stdarg.h>
-#ifdef HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #ifdef HAVE_ALLOCA_H
 # include <alloca.h>
-#endif
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
-#ifdef HAVE_STDIO_H
-# include <stdio.h>
-#endif
-#ifdef HAVE_STRING_H
-# include <string.h>
 #endif
 
 #if !HAVE_DECL_GETS

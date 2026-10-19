@@ -836,7 +836,7 @@ gfc_trans_sync_stat (struct sync_stat *sync_stat, gfc_se *se, tree *stat,
 	  *stat = build_fold_addr_expr (tstat);
 	}
       else
-	*stat = build_fold_addr_expr (argse.expr);
+	*stat = gfc_build_addr_expr (NULL_TREE, argse.expr);
     }
   else
     *stat = null_pointer_node;
@@ -2273,9 +2273,13 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 		   descriptor to get the target_expr.  */
 		target_expr =
 		    GFC_DECL_SAVED_DESCRIPTOR (e->symtree->n.sym->backend_decl);
-	      else
+	      else if (TREE_CODE (target_expr) == COMPONENT_REF)
 		/* Strip the _data component from the target_expr.  */
 		target_expr = TREE_OPERAND (target_expr, 0);
+	      else
+		/* An array section selector yields a bare descriptor; get the
+		   class container from the selector expression.  */
+		target_expr = gfc_get_class_from_gfc_expr (e);
 	      /* Add a reference to the _len comp to the target expr.  */
 	      tmp = gfc_class_len_get (target_expr);
 	      /* Get the component-ref for the temp structure's _len comp.  */
@@ -7965,6 +7969,21 @@ gfc_trans_deallocate (gfc_code *code)
 	}
 
       if (tmp)
+	{
+	  tree null_cond, zero;
+	  null_cond = se.expr;
+	  if (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (se.expr)))
+	    null_cond = gfc_conv_descriptor_data_get (null_cond);
+	  zero = build_int_cst (TREE_TYPE (null_cond), 0);
+	  null_cond = fold_build2_loc (input_location, NE_EXPR,
+				       logical_type_node,
+				       null_cond, zero);
+	  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
+			    null_cond, tmp,
+			    build_empty_stmt (input_location));
+	}
+
+      if (tmp)
 	gfc_add_expr_to_block (&se.pre, tmp);
 
       if (flag_coarray == GFC_FCOARRAY_LIB
@@ -7991,8 +8010,17 @@ gfc_trans_deallocate (gfc_code *code)
       if (expr->rank || is_coarray_array)
 	{
 	  gfc_ref *ref;
+	  /* class.cc(finalize_component) generates these, when a
+	     finalizable entity has a non-allocatable derived type array
+	     component, which has allocatable components.  EXPR then has the
+	     type of its last component, not of the array elements.  */
+	  bool fini_comp_array
+	    = (TREE_CODE (se.expr) == COMPONENT_REF
+	       && TREE_CODE (TREE_TYPE (se.expr)) == ARRAY_TYPE
+	       && TREE_CODE (TREE_TYPE (TREE_TYPE (se.expr))) == RECORD_TYPE);
 
-	  if (gfc_bt_struct (expr->ts.type)
+	  if (!fini_comp_array
+	      && gfc_bt_struct (expr->ts.type)
 	      && expr->ts.u.derived->attr.alloc_comp
 	      && !gfc_is_finalizable (expr->ts.u.derived, NULL))
 	    {
@@ -8039,16 +8067,10 @@ gfc_trans_deallocate (gfc_code *code)
 						caf_dtype);
 	      gfc_add_expr_to_block (&se.pre, tmp);
 	    }
-	  else if (TREE_CODE (se.expr) == COMPONENT_REF
-		   && TREE_CODE (TREE_TYPE (se.expr)) == ARRAY_TYPE
-		   && TREE_CODE (TREE_TYPE (TREE_TYPE (se.expr)))
-			== RECORD_TYPE)
+	  else if (fini_comp_array)
 	    {
-	      /* class.cc(finalize_component) generates these, when a
-		 finalizable entity has a non-allocatable derived type array
-		 component, which has allocatable components. Obtain the
-		 derived type of the array and deallocate the allocatable
-		 components. */
+	      /* Obtain the derived type of the array and deallocate the
+		 allocatable components.  */
 	      for (ref = expr->ref; ref; ref = ref->next)
 		{
 		  if (ref->u.c.component->attr.dimension

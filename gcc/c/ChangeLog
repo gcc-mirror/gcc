@@ -1,3 +1,22 @@
+2026-10-07  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR analyzer/125265
+	* c-parser.cc: Follow macro alias to get the value for a named
+	constant.
+
+2026-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127723
+	* c-parser.cc (c_parser_omp_clause_simdlen): Handle
+	simdlen's type and divisor of the scaled modifier.
+	* c-typeck.cc (c_finish_omp_clauses): Add comment
+	about safelen vs. simdlen with scaled.
+
+2026-10-05  Dominic P  <gcc@gcc.dp11.uk>
+
+	PR c/123370
+	* c-typeck.cc (build_unary_op) <case TRUTH_NOT_EXPR>: Clear eptype.
+
 2026-09-22  Chung-Lin Tang  <cltang@baylibre.com>
 
 	* c-parser.cc (c_parser_omp_clause_name): Add "local" case.

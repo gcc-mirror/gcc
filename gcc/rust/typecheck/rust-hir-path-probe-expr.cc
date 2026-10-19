@@ -193,7 +193,7 @@ PathProbeExpr::probe_bounds ()
     }
 
   for (const TyTy::TypeBoundPredicate &predicate :
-       receiver->get_specified_bounds ())
+       context->predicates_for_type (receiver))
     {
       process_predicate_for_candidates (predicate);
     }

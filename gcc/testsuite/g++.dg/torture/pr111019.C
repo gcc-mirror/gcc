@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-additional-options "-fstrict-aliasing" }
 // { dg-skip-if "requires hosted libstdc++ for cassert" { ! hostedlib } }
+// { dg-skip-if "HP-UX shared libstdc++ does not export C4 unified constructor clones under -Os" { hppa*-*-hpux* } { "-Os" } { "" } }
 
 #include <cassert>
 #include <memory>

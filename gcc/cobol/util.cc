@@ -28,12 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/*
- * This file supports parsing without requiring access to the symbol
- * table definition.  Unlike the Bison input, this file brings in gcc
- * header files.
- */
-
 #include "cobol-system.h"
 #include <coretypes.h>
 #include <tree.h>
@@ -349,7 +343,8 @@ void
 cdf_field_add( const cbl_loc_t& loc, const std::string& name, const cdfval_t& value ) {
   if( symbols_begin() < symbols_end() ) {
     cbl_field_t field = cdf_literalize(loc, name, value);
-    symbol_field_add(current_program_index(), &field);
+    auto e = symbol_field_add(current_program_index(), &field);
+    update_prior_invalid_field( cbl_field_of(e) );
   }
 }
 
@@ -543,15 +538,19 @@ determine_intermediate_type( const cbl_refer_t& aref,
 static char regexmsg[80];
 
 static int
-named_constant( const cbl_name_t name ) {
+named_constant( const cbl_name_t name, cbl_field_type_t *type_out ) {
   int output = -1;
 
   auto e = symbol_field( current_program_index(), 0, name );
   if( e && e->type == SymField ) {
     auto f = cbl_field_of(e);
-    if( f->has_attr(constant_e) && is_numeric(f->type) ) {
-      auto result = f->data.int64_of();
-      if( result.second) output = result.first;
+    if( is_numeric(f->type) ) {
+      if( f->has_attr(constant_e) && is_numeric(f->type) ) {
+        auto result = f->data.int64_of();
+        if( result.second) output = result.first;
+      }
+    } else {
+      *type_out = f->type;
     }
   }
   return output;
@@ -564,33 +563,65 @@ named_constant( const cbl_name_t name ) {
  */
 extern cbl_loc_t yylloc;
 
-std::pair<int, int>
-repeat_count(const char picture[])
+std::pair<uint32_t, int>
+repeat_count(const cbl_loc_t& loc, const char picture[])
 {
   char ch;
-  int count = 0, pos = -1;
+  long count = 0;
+  int pos = -1;
 
-  int n = sscanf(picture, "%c(%d)%n", &ch, &count, &pos);
+  int n = sscanf(picture, "%c(%ld)%n", &ch, &count, &pos);
 
   if( n == 2 ) {
-    if( count < 0 ) {
-      error_msg(yylloc, "not a positive integer constant: %d", count);
+    if( count == 0 ) {
+      error_msg(loc, "%<(0)%> invalid in PICTURE (ISO 2023 13.18.40.3)");
+    } else if( count < 0 ) {
+      error_msg(loc, "not a positive integer constant: %ld", count);
+    } else {
+      uint32_t n = count;
+      if( n != count ) {
+        error_msg(loc, "count exceeds 4 GB: %ld", count);
+      }
     }
   } else {
     cbl_name_t name;
+    cbl_field_type_t type = FldInvalid;
     n = sscanf(picture, "%c(%s)%n", &ch, name, &pos);
+
     if( n == 2 ) {
-      if( (count = named_constant(name)) < 0 ) {
-        error_msg(yylloc, "not a positive integer constant: %qs: %d", name, count);
+      auto ename = name + sizeof(name);
+      auto p = std::find(name, ename, ')');
+      if( p < ename ) *p = '\0';
+      if( (count = named_constant(name, &type)) <= 0 ) {
+        if( is_numeric(type) ) {
+          if( count == 0 ) {
+            error_msg(loc, "%qs is 0, invalid in PICTURE (ISO 2023 13.18.40.3)", name);
+          } else {
+            error_msg(loc, "not a positive integer constant: %qs: %ld", name, count);
+          }
+        } else {
+          error_msg(loc, "not an integer constant: %qs", name);
+        }
+      } else {
+        uint32_t n = count;
+        if( n != count ) {
+          error_msg(loc, "count exceeds 4 GB: %qs: %ld", name, count);
+        }
       }
     }
   }
 
   if( n == 2 && 0 <= count ) {
-  return {count, pos};
+    return {count, pos};
   }
 
   return {0, -1};
+}
+
+std::pair<uint32_t, int>
+repeat_count(const char picture[])
+{
+  return repeat_count(yylloc, picture);
 }
 
 const char *numed_message;
@@ -1933,9 +1964,6 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc ) {
 
             // __gg__string_to_numeric_edited operates in ASCII space:
             char *expanded = expand_picture(data.picture);
-            // By the time you read this, this next statement ought to be
-            // obsolete.  See RT issue 3682.
-            expanded[char_capacity()] = '\0';
             if( type == FldNumericEdited )
               {
               expand_expanded(expanded);
@@ -1969,7 +1997,6 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc ) {
 }
 
 size_t parse_error_inc();
-size_t parse_error_count();
 
 bool // true if error reported
 cbl_field_t::report_invalid_initial_value(const cbl_loc_t& loc) const {
@@ -2182,7 +2209,7 @@ literal_subscript_oob( const cbl_refer_t& r, size_t& isub /* output */)  {
   for( isub=0; isub < ndim; isub++ ) {
     const auto& subscript = r.subscripts[isub];
     const auto& occurs = dims[isub]->occurs;
-    
+
     if( ! occurs.subscript_ok(subscript.field) ) {
       break; // found one
     }
@@ -2550,7 +2577,7 @@ hex2numstr( const char input[] ) {
 
   int n = sscanf(++input, "%c%" GCC_PRISZ "x%c", &q, &value, &q);
   assert(n == 3 && (q == '\'' || q == '"'));
-         
+
   return xasprintf("%lu", value);
 }
 
@@ -4672,4 +4699,3 @@ iso_cobol_word( const std::string& name, bool include_context ) {
   }
   return ok;
 }
-

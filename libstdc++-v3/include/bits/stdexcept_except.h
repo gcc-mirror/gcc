@@ -169,7 +169,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       } else {
 	return __detail::_ZNSt12__cow_stringaSEOS_(this, std::move(__o));
-      }	
+      }
     }
 
     [[__gnu__::__always_inline__]] constexpr const char*

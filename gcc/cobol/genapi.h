@@ -114,7 +114,8 @@ parser_add( size_t nC, cbl_num_result_t *C,
             size_t nA, cbl_refer_t *A,
             cbl_arith_format_t format,
             cbl_label_t *error,
-            cbl_label_t *not_error,            void *compute_error = NULL);  // This has to be cast to a tree pointer to int
+            cbl_label_t *not_error,
+            void *compute_error = NULL);  // This has to be cast to a tree pointer to int
 
 void parser_arith_error( cbl_label_t *name );
 void parser_arith_error_end( cbl_label_t *name );
@@ -166,13 +167,6 @@ parser_divide( const cbl_refer_t& quotient,
                const cbl_refer_t& dividend,
                enum cbl_round_t = truncation_e,
                const cbl_refer_t& remainder = cbl_refer_t());
-
-// void
-// parser_exponentiation(  cbl_refer_t cref,
-//                         cbl_refer_t aref,
-//                         cbl_refer_t bref,
-//                         cbl_round_t rounded = truncation_e );
-
 void
 parser_relop( struct cbl_field_t *tgt,
               struct cbl_refer_t a, enum relop_t, struct cbl_refer_t b );
@@ -187,7 +181,9 @@ parser_logop( struct cbl_field_t *tgt,
 
 void
 parser_setop( struct cbl_field_t *tgt,
-              struct cbl_field_t *a,  enum setop_t, struct cbl_field_t *b );
+              struct cbl_refer_t &candidate,
+              enum setop_t,
+              struct cbl_field_t *b );
 
 void
 parser_bitop( struct cbl_field_t *tgt,
@@ -488,8 +484,8 @@ parser_exception_file( cbl_field_t *tgt, cbl_file_t* file = NULL );
 
 void
 parser_intrinsic_convert(cbl_field_t *tgt,
-                         const cbl_refer_t& input,                           
-                         convert_type_t src_fmt, 
+                         const cbl_refer_t& input,
+                         convert_type_t src_fmt,
                          unsigned int   dst_fmt );
 
 void
@@ -640,7 +636,7 @@ tree parser_compile_dcls( const std::vector<uint64_t>& dcls );
 void parser_trim( cbl_field_t *tgt, const cbl_refer_t& input,
                   size_t how, const std::vector<cbl_refer_t>& args );
 
-void 
+void
 move_helper(tree        size_error,  // INT
             cbl_refer_t destref,
             cbl_refer_t sourceref,

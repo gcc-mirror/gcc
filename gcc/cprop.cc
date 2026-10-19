@@ -1457,14 +1457,41 @@ find_implicit_sets (void)
 
 static int bypass_last_basic_block;
 
+/* A find_bypass_set query and its result.  */
+
+struct bypass_set_cache_entry
+{
+  /* The register number of the query, or -1 if there was no query.  */
+  int regno;
+
+  /* The result of the query.  */
+  struct cprop_expr *set;
+};
+
+/* The last find_bypass_set query for each basic block with an index less
+   than bypass_last_basic_block.  Jump bypassing can move an edge past a
+   long chain of blocks, and repeats the query for the source of the edge
+   at each step.  */
+
+static struct bypass_set_cache_entry *bypass_set_cache;
+
 /* Find a set of REGNO to a constant that is available at the end of basic
    block BB.  Return NULL if no such set is found.  Based heavily upon
-   find_avail_set.  */
+   find_avail_set.  The set hash table and CPROP_AVOUT do not change
+   during jump bypassing, so the result is cached in bypass_set_cache.  */
 
 static struct cprop_expr *
 find_bypass_set (int regno, int bb)
 {
   struct cprop_expr *result = 0;
+
+  gcc_checking_assert (bb < bypass_last_basic_block);
+  struct bypass_set_cache_entry *entry = &bypass_set_cache[bb];
+  if (entry->regno == regno)
+    return entry->set;
+
+  /* The loop below changes REGNO when it follows a copy.  */
+  entry->regno = regno;
 
   for (;;)
     {
@@ -1490,6 +1517,8 @@ find_bypass_set (int regno, int bb)
 
       regno = REGNO (src);
     }
+
+  entry->set = result;
   return result;
 }
 
@@ -1506,6 +1535,39 @@ reg_killed_on_edge (const_rtx reg, const_edge e)
 
   for (insn = e->insns.r; insn; insn = NEXT_INSN (insn))
     if (INSN_P (insn) && reg_set_p (reg, insn))
+      return true;
+
+  return false;
+}
+
+/* Subroutine of bypass_block.  Return true if a copy of SETCC, the insn
+   before the jump of a bypassed block, must be placed on an edge that has
+   been redirected to DEST.
+
+   The copy is not needed if SETCC has no side effects, cannot throw, and
+   sets only condition-code registers that are dead on entry to DEST.
+   Setters of other registers are always copied, because debug insns and
+   REG_EQUAL notes, which the liveness information ignores, can refer to
+   them.  The liveness information predates the global propagation and
+   the edge redirections, but neither can make a register set by SETCC
+   live on entry to DEST: hard registers are never propagated, SETCC kills
+   every copy from a pseudo that it sets, and a redirection omits a copy
+   of a setter only if its registers are dead on entry to the new
+   destination.  */
+
+static bool
+bypass_setcc_needed_p (rtx_insn *setcc, basic_block dest)
+{
+  if (side_effects_p (PATTERN (setcc)) || !insn_nothrow_p (setcc))
+    return true;
+
+  /* DEST existed when the DF information was computed.  */
+  gcc_checking_assert (dest->index < bypass_last_basic_block);
+  bitmap live = df_get_live_in (dest);
+  df_ref def;
+  FOR_EACH_INSN_DEF (def, setcc)
+    if (GET_MODE_CLASS (GET_MODE (*DF_REF_REAL_LOC (def))) != MODE_CC
+	|| REGNO_REG_SET_P (live, DF_REF_REGNO (def)))
       return true;
 
   return false;
@@ -1573,6 +1635,15 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  }
     }
 
+  /* The source of JUMP with SETCC substituted into it.  JUMP only changes
+     when an edge from BB itself is redirected.  With SETCC that never
+     happens, because DEST is a successor of BB (see the check of
+     find_edge (e->src, dest) below).  Without SETCC, SRC is the source
+     of JUMP itself.  */
+  rtx src = SET_SRC (pc_set (jump));
+  if (setcc != NULL)
+    src = simplify_replace_rtx (src, setcc_dest, setcc_src);
+
   change = false;
   for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
@@ -1607,7 +1678,7 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  unsigned int regno = REGNO (reg_used);
 	  basic_block dest, old_dest;
 	  struct cprop_expr *set;
-	  rtx src, new_rtx;
+	  rtx new_rtx;
 
 	  set = find_bypass_set (regno, e->src->index);
 
@@ -1617,11 +1688,6 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	  /* Check the data flow is valid after edge insertions.  */
 	  if (e->insns.r && reg_killed_on_edge (reg_used, e))
 	    continue;
-
-	  src = SET_SRC (pc_set (jump));
-
-	  if (setcc != NULL)
-	    src = simplify_replace_rtx (src, setcc_dest, setcc_src);
 
 	  new_rtx = simplify_replace_rtx (src, reg_used, set->src);
 
@@ -1636,7 +1702,7 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
 	    }
 	  else if (GET_CODE (new_rtx) == LABEL_REF)
 	    {
-	      dest = BLOCK_FOR_INSN (XEXP (new_rtx, 0));
+	      dest = BLOCK_FOR_INSN (label_ref_label (new_rtx));
 	      /* Don't bypass edges containing instructions.  */
 	      if (dest)
 		{
@@ -1661,8 +1727,9 @@ bypass_block (basic_block bb, rtx_insn *setcc, rtx_insn *jump)
             {
 	      redirect_edge_and_branch_force (e, dest);
 
-	      /* Copy the register setter to the redirected edge.  */
-	      if (setcc)
+	      /* Copy the register setter to the redirected edge if it is
+		 needed on entry to DEST.  */
+	      if (setcc && bypass_setcc_needed_p (setcc, dest))
 		{
 		  rtx pat = PATTERN (setcc);
 		  insert_insn_on_edge (copy_insn (pat), e);
@@ -1712,6 +1779,11 @@ bypass_conditional_jumps (void)
 
   mark_dfs_back_edges ();
 
+  bypass_set_cache = XNEWVEC (struct bypass_set_cache_entry,
+			      bypass_last_basic_block);
+  for (int i = 0; i < bypass_last_basic_block; i++)
+    bypass_set_cache[i].regno = -1;
+
   changed = false;
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb->next_bb,
 		  EXIT_BLOCK_PTR_FOR_FN (cfun), next_bb)
@@ -1750,8 +1822,11 @@ bypass_conditional_jumps (void)
 	}
     }
 
-  /* If we bypassed any register setting insns, we inserted a
-     copy on the redirected edge.  These need to be committed.  */
+  free (bypass_set_cache);
+  bypass_set_cache = NULL;
+
+  /* If we bypassed any register setting insns, we may have inserted
+     copies of them on the redirected edges.  These need to be committed.  */
   if (changed)
     commit_edge_insertions ();
 

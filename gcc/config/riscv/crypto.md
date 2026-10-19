@@ -107,9 +107,9 @@
 ;; This is slightly more complex than the other pack patterns
 ;; that fully expose the RTL as it needs to self-adjust to
 ;; rv32 and rv64.  But it's not that hard.
-(define_insn "riscv_xpack_<X:mode>_<HX:mode>_2"
+(define_insn "riscv_xpack_<code>_<X:mode>_<HX:mode>_2"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (ashift:X (match_operand:X 1 "register_operand" "r")
+	(oxp:X (ashift:X (match_operand:X 1 "register_operand" "r")
 			 (match_operand 2 "immediate_operand" "n"))
 	       (zero_extend:X
 		 (match_operand:HX 3 "register_operand" "r"))))]
@@ -141,7 +141,7 @@
 ;; to be the canonical form.  The other form doesn't seem to trigger.
 (define_insn "*riscv_packh_<mode>_3"
   [(set (match_operand:X 0 "register_operand" "=r")
-	(ior:X (and:X (ashift:X (match_operand:X 1 "register_operand" "r")
+	(oxp:X (and:X (ashift:X (match_operand:X 1 "register_operand" "r")
 				(const_int 8))
 		      (const_int 65280))
 	       (zero_extend:X (match_operand:QI 2 "register_operand" "r"))))]
@@ -151,8 +151,8 @@
 
 (define_insn "riscv_packw"
   [(set (match_operand:DI 0 "register_operand" "=r")
-        (unspec:DI [(match_operand:HI 1 "register_operand" "r")
-                  (match_operand:HI 2 "register_operand" "r")]
+	(unspec:DI [(match_operand:HI 1 "register_operand" "r")
+		    (match_operand:HI 2 "register_operand" "r")]
                   UNSPEC_PACKW))]
   "TARGET_ZBKB && TARGET_64BIT"
   "packw\t%0,%1,%2"
@@ -163,55 +163,55 @@
 ;; allows later code to eliminate subsequent explicit sign extensions.
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(ior:DI (ashift:DI
+	(oxp:DI (ashift:DI
 		  (sign_extend:DI (match_operand:HI 1 "register_operand"))
 		  (const_int 16))
 		(zero_extend:DI (match_operand:HI 2 "register_operand"))))]
   "TARGET_ZBKB && TARGET_64BIT"
   [(set (match_dup 0)
-	(sign_extend:DI (ior:SI (ashift:SI (match_dup 1) (const_int 16))
-				(zero_extend:SI (match_dup 2)))))]
+	(sign_extend:DI (plus:SI (ashift:SI (match_dup 1) (const_int 16))
+				 (zero_extend:SI (match_dup 2)))))]
   "operands[1] = gen_lowpart (SImode, operands[1]);")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(ior:DI (zero_extend:DI (match_operand:HI 1 "register_operand"))
+	(oxp:DI (zero_extend:DI (match_operand:HI 1 "register_operand"))
 		(ashift:DI
 		  (sign_extend:DI (match_operand:HI 2 "register_operand"))
 		  (const_int 16))))]
   "TARGET_ZBKB && TARGET_64BIT"
   [(set (match_dup 0)
-	(sign_extend:DI (ior:SI (ashift:SI (match_dup 2) (const_int 16))
-				(zero_extend:SI (match_dup 1)))))]
+	(sign_extend:DI (plus:SI (ashift:SI (match_dup 2) (const_int 16))
+				 (zero_extend:SI (match_dup 1)))))]
   "operands[2] = gen_lowpart (SImode, operands[2]);")
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(ior:DI (sign_extend:DI
+	(oxp:DI (sign_extend:DI
 		  (ashift:SI (match_operand:SI 1 "register_operand")
 			     (const_int 16)))
 		(zero_extend:DI (match_operand:HI 2 "register_operand"))))]
   "TARGET_ZBKB && TARGET_64BIT"
   [(set (match_dup 0)
-	(sign_extend:DI (ior:SI (ashift:SI (match_dup 1) (const_int 16))
-				(zero_extend:SI (match_dup 2)))))])
+	(sign_extend:DI (plus:SI (ashift:SI (match_dup 1) (const_int 16))
+				 (zero_extend:SI (match_dup 2)))))])
 
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(ior:DI (zero_extend:DI (match_operand:HI 1 "register_operand"))
+	(oxp:DI (zero_extend:DI (match_operand:HI 1 "register_operand"))
 		(sign_extend:DI
 		  (ashift:SI (match_operand:SI 2 "register_operand")
 			     (const_int 16)))))]
   "TARGET_ZBKB && TARGET_64BIT"
   [(set (match_dup 0)
-	(sign_extend:DI (ior:SI (ashift:SI (match_dup 2) (const_int 16))
-				(zero_extend:SI (match_dup 1)))))])
+	(sign_extend:DI (plus:SI (ashift:SI (match_dup 2) (const_int 16))
+				 (zero_extend:SI (match_dup 1)))))])
 
 ;; And this patches the result of the splitter above.
 (define_insn "*riscv_packw_2"
   [(set (match_operand:DI 0 "register_operand" "=r")
 	(sign_extend:DI
-	  (ior:SI
+	  (oxp:SI
 	    (ashift:SI (match_operand:SI 1 "register_operand" "r")
 		       (const_int 16))
 	    (zero_extend:SI (match_operand:HI 2 "register_operand" "r")))))]

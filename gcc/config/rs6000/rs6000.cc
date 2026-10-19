@@ -20089,7 +20089,7 @@ insn_must_be_last_in_group (rtx_insn *insn)
    dispatch group) from the insns in GROUP_INSNS.  Return false otherwise.  */
 
 static bool
-is_costly_group (rtx *group_insns, rtx next_insn)
+is_costly_group (rtx_insn **group_insns, rtx next_insn)
 {
   int i;
   int issue_rate = rs6000_issue_rate ();
@@ -20098,7 +20098,7 @@ is_costly_group (rtx *group_insns, rtx next_insn)
     {
       sd_iterator_def sd_it;
       dep_t dep;
-      rtx insn = group_insns[i];
+      rtx_insn *insn = group_insns[i];
 
       if (!insn)
 	continue;
@@ -20130,7 +20130,7 @@ is_costly_group (rtx *group_insns, rtx next_insn)
    last group, and how many dispatch groups were encountered so far).  */
 
 static int
-force_new_group (int sched_verbose, FILE *dump, rtx *group_insns,
+force_new_group (int sched_verbose, FILE *dump, rtx_insn **group_insns,
 		 rtx_insn *next_insn, bool *group_end, int can_issue_more,
 		 int *group_count)
 {
@@ -20287,11 +20287,11 @@ redefine_groups (FILE *dump, int sched_verbose, rtx_insn *prev_head_insn,
   int slot, i;
   bool group_end;
   int group_count = 0;
-  rtx *group_insns;
+  rtx_insn **group_insns;
 
   /* Initialize.  */
   issue_rate = rs6000_issue_rate ();
-  group_insns = XALLOCAVEC (rtx, issue_rate);
+  group_insns = XALLOCAVEC (rtx_insn *, issue_rate);
   for (i = 0; i < issue_rate; i++)
     {
       group_insns[i] = 0;

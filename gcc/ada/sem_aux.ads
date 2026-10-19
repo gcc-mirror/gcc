@@ -127,13 +127,13 @@ package Sem_Aux is
    --  stored discriminants are the same as the actual discriminants of the
    --  type, and hence this function is the same as First_Discriminant.
    --
-   --  For derived untagged types that rename discriminants in the root type
+   --  For derived untagged types that rename discriminants in the root type,
    --  this is the first of the discriminants that occur in the root type. To
    --  be precise, in this case stored discriminants are entities attached to
-   --  the entity chain of the derived type which are a copy of the
-   --  discriminants of the root type. Furthermore their Is_Completely_Hidden
-   --  flag is set since although they are actually stored in the object, they
-   --  are not in the set of discriminants that is visible in the type.
+   --  the entity chain of the derived type but which are a mere copy of the
+   --  discriminants of the root type. Furthermore, their Is_Completely_Hidden
+   --  flag is set since, although they are actually stored in the object, they
+   --  are not in the set of discriminants that are visible in the type.
    --
    --  For derived untagged types, the set of stored discriminants are the real
    --  discriminants from Gigi's standpoint, i.e. those that will be stored in

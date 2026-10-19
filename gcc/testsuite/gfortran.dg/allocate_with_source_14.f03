@@ -211,4 +211,4 @@ program main
   deallocate(av)
 end program
 ! { dg-final { scan-tree-dump-times "__builtin_malloc" 23 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_free" 29 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 28 "original" } }

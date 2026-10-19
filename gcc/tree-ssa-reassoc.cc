@@ -5165,6 +5165,66 @@ swap_ops_for_binary_stmt (const vec<operand_entry *> &ops,
     std::swap (*oe1, *oe2);
 }
 
+/* Return true if OP is set by a comparison in BB, which a conditional
+   compare can compute into the condition flags.  */
+
+static bool
+ccmp_comparison_p (tree op, basic_block bb)
+{
+  if (TREE_CODE (op) != SSA_NAME)
+    return false;
+
+  gimple *def = SSA_NAME_DEF_STMT (op);
+  if (!is_gimple_assign (def)
+      || gimple_bb (def) != bb
+      || TREE_CODE_CLASS (gimple_assign_rhs_code (def)) != tcc_comparison)
+    return false;
+
+  /* A conditional compare sets the flags from one scalar comparison.  */
+  machine_mode mode = TYPE_MODE (TREE_TYPE (gimple_assign_rhs1 (def)));
+  return ((SCALAR_INT_MODE_P (mode) || SCALAR_FLOAT_MODE_P (mode))
+	  && known_le (GET_MODE_SIZE (mode), UNITS_PER_WORD));
+}
+
+/* Return true if all operands in OPS form one conditional compare sequence
+   for CODE in BB.  Put the operand that must start the sequence last in OPS,
+   where rewrite_expr_tree builds the innermost pair.  Every operand must be a
+   comparison, and at least one must be foldable into the flags.  */
+
+static bool
+prepare_ccmp_chain (vec<operand_entry *> &ops, tree_code code, basic_block bb)
+{
+  if (!targetm.have_ccmp ()
+      || (code != BIT_AND_EXPR && code != BIT_IOR_EXPR))
+    return false;
+
+  bool seen_foldable = false;
+  int head = -1;
+
+  for (unsigned int i = 0; i < ops.length (); ++i)
+    {
+      const operand_entry *oe = ops[i];
+      if (!ccmp_comparison_p (oe->op, bb))
+	return false;
+
+      bool foldable = has_single_use (oe->op);
+      if (foldable
+	  && gimple_could_trap_p (SSA_NAME_DEF_STMT (oe->op)))
+	{
+	  if (head >= 0)
+	    return false;
+	  head = i;
+	}
+
+      /* Comparison leaves can have uses outside this chain.  */
+      seen_foldable |= foldable;
+    }
+
+  if (head >= 0)
+    std::swap (*ops[head], *ops.last ());
+  return seen_foldable;
+}
+
 /* If definition of RHS1 or RHS2 dominates STMT, return the later of those
    two definitions, otherwise return STMT.  Sets INSERT_BEFORE to indicate
    whether RHS1 op RHS2 can be inserted before or needs to be inserted
@@ -7153,11 +7213,19 @@ reassociate_bb (basic_block bb)
 		      mult_num = rank_ops_for_fma (&ops);
 		    }
 
+		  /* A chain that expands to a conditional compare sequence
+		     has to stay linear.  Every conditional compare tests the
+		     flags that the previous comparison set, so the sequence
+		     cannot be split into independent parts.  */
+		  bool ccmp_chain = (ops_num > 2
+				     && prepare_ccmp_chain (ops, rhs_code, bb));
+
 		  /* Only rewrite the expression tree to parallel in the
 		     last reassoc pass to avoid useless work back-and-forth
 		     with initial linearization.  */
 		  bool has_fma = mult_num >= 2 && mult_num != ops_num;
 		  if (!reassoc_insert_powi_p
+		      && !ccmp_chain
 		      && ops.length () > 3
 		      && (width = get_reassociation_width (&ops, mult_num, lhs,
 							   rhs_code, mode))
@@ -7178,7 +7246,7 @@ reassociate_bb (basic_block bb)
 			 to make sure the ones that get the double
 			 binary op are chosen wisely.  */
 		      int len = ops.length ();
-		      if (!reassoc_insert_powi_p
+		      if (!reassoc_insert_powi_p && !ccmp_chain
 			  && len >= 3
 			  && (!has_fma
 			      /* width > 1 means ranking ops results in better

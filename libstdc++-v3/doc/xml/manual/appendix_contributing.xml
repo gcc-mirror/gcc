@@ -899,7 +899,7 @@ indicate a place that may require attention for multi-thread safety.
 
       Don't use names in the same scope that differ only in the prefix,
       e.g. _S_top and _M_top. See <link linkend="coding_style.bad_identifiers">BADNAMES</link> for a list of forbidden names.
-      (The most tempting of these seem to be and "_T" and "_N".)
+      (The most tempting of these seem to be "_T" and "_N".)
 
       Names must never have "__" internally; it would confuse name
       unmanglers on some targets. Also, never use "__[0-9]", same reason.
@@ -1051,7 +1051,7 @@ indicate a place that may require attention for multi-thread safety.
     The Library
     -----------
 
-    This paper is covers two major areas:
+    This paper covers two major areas:
 
     - Features and policies not mentioned in the standard that
     the quality of the library implementation depends on, including
@@ -1085,10 +1085,10 @@ indicate a place that may require attention for multi-thread safety.
     When these hooks are not used, any time and code expended to
     support that flexibility is wasted.
 
-    - Templates are often described as causing to "code bloat". In
+    - Templates are often described as causing "code bloat". In
     practice, this refers (when it refers to anything real) to several
     independent processes. First, when a class template is manually
-    instantiated in its entirely, current compilers place the definitions
+    instantiated in its entirety, current compilers place the definitions
     for all members in a single object file, so that a program linking
     to one member gets definitions of all. Second, template functions
     which do not actually depend on the template argument are, under
@@ -1607,7 +1607,7 @@ indicate a place that may require attention for multi-thread safety.
     pointers and iterators, and that must be fixed before safer iterators
     can be introduced.
 
-    Some of the functions in &lt;cstring&gt; are different from the C version.
+    Some of the functions in &lt;cstring&gt; are different from the C version,
     generally overloaded on const and non-const argument pointers. For
     example, in &lt;cstring&gt; strchr is overloaded. The functions isupper
     etc. in &lt;cctype&gt; typically implemented as macros in C are functions
@@ -1863,7 +1863,7 @@ indicate a place that may require attention for multi-thread safety.
     interesting problem. It is possible to define an inline std::fprintf()
     implemented in terms of the 'extern "C"' vfprintf(), but there is no
     standard vfscanf() to use to implement std::fscanf(). It appears that
-    vfscanf but be re-implemented in C++ for targets where no vfscanf
+    vfscanf must be re-implemented in C++ for targets where no vfscanf
     extension has been defined. This is interesting in that it seems
     to be the only significant case in the C library where this kind of
     rewriting is necessary. (Of course Glibc provides the vfscanf()

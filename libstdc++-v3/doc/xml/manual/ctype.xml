@@ -34,7 +34,7 @@ ctype&lt;char&gt;
 </code>
 </para>
 <para>
-This is simple specialization. Implementing this was a piece of cake.
+This is a simple specialization. Implementing this was a piece of cake.
 </para>
 
 <para>
@@ -45,8 +45,8 @@ ctype&lt;wchar_t&gt;
 <para>
 This specialization, by specifying all the template parameters, pretty
 much ties the hands of implementors. As such, the implementation is
-straightforward, involving <function>mcsrtombs</function> for the
-conversions between <type>char</type> to <type>wchar_t</type> and
+straightforward, involving <function>mbsrtowcs</function> for the
+conversions between <type>char</type> and <type>wchar_t</type> and
 <function>wcsrtombs</function> for conversions between <type>wchar_t</type>
 and <type>char</type>.
 </para>
@@ -81,7 +81,7 @@ characters.
    <listitem>
      <para>
        <type>mask</type> typedef in <classname>codecvt_base</classname>,
-       argument types in <type>codecvt</type>.  what is know about this type?
+       argument types in <type>codecvt</type>.  what is known about this type?
    </para></listitem>
 
    <listitem>

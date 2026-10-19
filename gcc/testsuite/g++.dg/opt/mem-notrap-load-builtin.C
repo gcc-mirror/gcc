@@ -18,5 +18,5 @@ blocks::compare () const
   return __builtin_memcmp (first, second, sizeof (first));
 }
 
-// { dg-final { scan-rtl-dump {\(mem(?:/[a-z])*/c(?:/[a-z])*:[^\n\r]*\[ this \]} "expand" } }
+// { dg-final { scan-rtl-dump "expand" {\(mem(?:/[a-z])*/c(?:/[a-z])*:[^\n\r]*\[ this \]} { target { ! hppa*64*-*-* } } } }
 // { dg-final { scan-assembler-not {\mmemcmp\M} } }

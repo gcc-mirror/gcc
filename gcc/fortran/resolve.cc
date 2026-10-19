@@ -6478,6 +6478,78 @@ gfc_op_rank_conformable (gfc_expr *op1, gfc_expr *op2)
 	     || (!gfc_is_coindexed (op1) && !gfc_is_coindexed (op2)));
 }
 
+
+/* Given an expression EXPR that is a variable, figure out what the ultimate
+   variable's type is and store it in TS, traversing the reference structures
+   if necessary.
+
+   We start at the base symbol and store the type.  Component references
+   overwrite a completely new type.  */
+
+static void
+get_data_ref_type (gfc_expr *expr, gfc_typespec *ts)
+{
+  gfc_ref *ref;
+  gfc_symbol *sym;
+  gfc_component *comp;
+  bool has_inquiry_part;
+  bool has_substring_ref = false;
+
+  if (expr->expr_type != EXPR_VARIABLE
+      && expr->expr_type != EXPR_FUNCTION
+      && !(expr->expr_type == EXPR_NULL && expr->ts.type != BT_UNKNOWN))
+    gfc_internal_error ("get_data_ref_type(): Expression isn't a variable");
+
+  sym = expr->symtree->n.sym;
+
+  if (ts != NULL && expr->ts.type == BT_UNKNOWN)
+    *ts = sym->ts;
+
+  /* Catch left-overs from match_actual_arg, where an actual argument of a
+     procedure is given a temporary ts.type == BT_PROCEDURE.  The fixup is
+     needed for structure constructors in DATA statements, where a pointer
+     is associated with a data target, and the argument has not been fully
+     resolved yet.  Components references are dealt with further below.  */
+  if (ts != NULL
+      && expr->ts.type == BT_PROCEDURE
+      && expr->ref == NULL
+      && sym->attr.flavor != FL_PROCEDURE
+      && sym->attr.target)
+    *ts = sym->ts;
+
+  has_inquiry_part = false;
+  for (ref = expr->ref; ref; ref = ref->next)
+    if (ref->type == REF_SUBSTRING)
+      has_substring_ref = true;
+    else if (ref->type == REF_INQUIRY)
+      {
+	has_inquiry_part = true;
+	break;
+      }
+
+  for (ref = expr->ref; ref; ref = ref->next)
+    switch (ref->type)
+      {
+      case REF_COMPONENT:
+	comp = ref->u.c.component;
+	if (ts != NULL && !has_inquiry_part)
+	  {
+	    *ts = comp->ts;
+	    /* Don't set the string length if a substring reference
+	       follows.  */
+	    if (ts->type == BT_CHARACTER && has_substring_ref)
+	      ts->u.cl = NULL;
+	  }
+	break;
+
+      case REF_ARRAY:
+      case REF_INQUIRY:
+      case REF_SUBSTRING:
+	break;
+      }
+}
+
+
 /* Resolve a variable expression.  */
 
 static bool
@@ -6739,7 +6811,7 @@ resolve_variable (gfc_expr *e)
     {
       gfc_ref *ref;
       for (ref = e->ref; ref; ref = ref->next)
-	if (ref->type == REF_SUBSTRING)
+	if (ref->type == REF_SUBSTRING || ref->type == REF_INQUIRY)
 	  break;
       if (ref == NULL)
 	e->ts = sym->ts;
@@ -6759,7 +6831,7 @@ resolve_variable (gfc_expr *e)
     }
 
   if (sym->ts.type != BT_UNKNOWN)
-    gfc_variable_attr (e, &e->ts);
+    get_data_ref_type (e, &e->ts);
   else if (sym->attr.flavor == FL_PROCEDURE
 	   && sym->attr.function && sym->result
 	   && sym->result->ts.type != BT_UNKNOWN
@@ -8637,11 +8709,9 @@ check_default_none_expr (gfc_expr **e, int *, void *data)
 	      if (!iter->var || !iter->var->symtree)
 		continue;
 	      const char *iter_name = iter->var->symtree->name;
-	      /* Shadow iterators (from inline type-spec: integer :: i = ...)
-		 store the iterator with a leading underscore internally; the
-		 user-visible name does not have the underscore.  */
+	      /* Use the user-visible name of a shadow iterator.  */
 	      if (iter->shadow)
-		iter_name++;
+		iter_name = iter->shadow_outer_sym->name;
 	      if (strcmp (sym->name, iter_name) == 0)
 		return 0;
 	    }
@@ -10789,6 +10859,16 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 			   && !gfc_has_vector_subscript (target))
 			  || gfc_is_ptr_fcn (target));
 
+  /* A type parameter inquiry is not a variable.  */
+  if (sym->assoc->variable && target->expr_type == EXPR_VARIABLE)
+    for (gfc_ref *ref = target->ref; ref; ref = ref->next)
+      if (ref->type == REF_INQUIRY
+	  && (ref->u.i == INQUIRY_LEN || ref->u.i == INQUIRY_KIND))
+	{
+	  sym->assoc->variable = false;
+	  break;
+	}
+
   /* Finally resolve if this is an array or not.  */
   if (target->expr_type == EXPR_FUNCTION && target->rank == 0
       && (sym->ts.type == BT_CLASS || sym->ts.type == BT_DERIVED))
@@ -12813,8 +12893,19 @@ replace_in_code_recursive (gfc_code *code, gfc_symbol *old_sym, gfc_symtree *new
 	  break;
 	}
 
-      /* Recurse into blocks */
-      if (c->block)
+      /* Recurse into blocks, except a nested FORALL/DO CONCURRENT that
+	 shadows OLD_SYM itself.  */
+      bool skip_nested_shadow = false;
+      if (c->op == EXEC_FORALL || c->op == EXEC_DO_CONCURRENT)
+	for (gfc_forall_iterator *fa = c->ext.concur.forall_iterator;
+	     fa; fa = fa->next)
+	  if (fa->shadow && fa->shadow_outer_sym == old_sym)
+	    {
+	      skip_nested_shadow = true;
+	      break;
+	    }
+
+      if (c->block && !skip_nested_shadow)
 	replace_in_code_recursive (c->block->next, old_sym, new_st);
     }
 }
@@ -12909,29 +13000,9 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 	{
 	  if (fa->shadow)
 	    {
-	      gfc_symtree *shadow_st;
-	      const char *shadow_name_str;
-	      char *outer_name;
+	      gfc_symtree *shadow_st = fa->var->symtree;
 
-	      /* fa->var now points to the shadow variable "_name".  */
-	      shadow_name_str = fa->var->symtree->name;
-	      shadow_st = fa->var->symtree;
-
-	      if (shadow_name_str[0] != '_')
-		gfc_internal_error ("Expected shadow variable name to start with _");
-
-	      outer_name = (char *) alloca (strlen (shadow_name_str));
-	      strcpy (outer_name, shadow_name_str + 1);
-
-	      /* Find the ITERATOR symbol in the current namespace.
-		 This is the local DO CONCURRENT variable that body expressions reference.  */
-	      gfc_symtree *iter_st = gfc_find_symtree (ns->sym_root, outer_name);
-
-	      if (!iter_st)
-		/* No iterator variable found - this shouldn't happen */
-		continue;
-
-	      gfc_symbol *iter_sym = iter_st->n.sym;
+	      gfc_symbol *iter_sym = fa->shadow_outer_sym;
 
 	      /* Walk the FORALL/DO CONCURRENT body and replace all references.  */
 	      if (code->block && code->block->next)
@@ -19943,9 +20014,14 @@ resolve_data_variables (gfc_data_variable *d)
 static void
 resolve_data (gfc_data *d)
 {
+  gfc_data_value *v;
 
   if (!resolve_data_variables (d->var))
     return;
+
+  for (v = d->value; v; v = v->next)
+    if (v->expr && !gfc_resolve_expr (v->expr))
+      return;
 
   values.vnode = d->value;
   if (d->value == NULL)

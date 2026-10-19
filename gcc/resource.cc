@@ -130,9 +130,9 @@ find_basic_block (rtx_insn *insn, int search_limit)
 {
   /* Scan backwards to the previous BARRIER.  Then see if we can find a
      label that starts a basic block.  Return the basic block number.  */
-  for (insn = prev_nonnote_insn (insn);
+  for (insn = prev_nonnote_nondebug_insn (insn);
        insn && !BARRIER_P (insn) && search_limit != 0;
-       insn = prev_nonnote_insn (insn), --search_limit)
+       insn = prev_nonnote_nondebug_insn (insn), --search_limit)
     ;
 
   /* The closest BARRIER is too far away.  */
@@ -145,9 +145,9 @@ find_basic_block (rtx_insn *insn, int search_limit)
 
   /* See if any of the upcoming CODE_LABELs start a basic block.  If we reach
      anything other than a CODE_LABEL or note, we can't find this code.  */
-  for (insn = next_nonnote_insn (insn);
+  for (insn = next_nonnote_nondebug_insn (insn);
        insn && LABEL_P (insn);
-       insn = next_nonnote_insn (insn))
+       insn = next_nonnote_nondebug_insn (insn))
     if (BLOCK_FOR_INSN (insn))
       return BLOCK_FOR_INSN (insn)->index;
 
@@ -619,13 +619,13 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
 /* Return TRUE if INSN is a return, possibly with a filled delay slot.  */
 
 static bool
-return_insn_p (const_rtx insn)
+return_insn_p (const rtx_insn *insn)
 {
   if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
     return true;
 
   if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    return return_insn_p (XVECEXP (PATTERN (insn), 0, 0));
+    return return_insn_p (as_a <rtx_insn *> (XVECEXP (PATTERN (insn), 0, 0)));
 
   return false;
 }

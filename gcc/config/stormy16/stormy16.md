@@ -1419,3 +1419,26 @@
   (set (match_dup 0) (ior:HI (match_dup 3) (match_dup 2)))]
   "operands[3] = gen_reg_rtx (HImode);")
 
+
+(define_expand "aopqi3"
+  [(set (match_operand:QI 0 "xstormy16_below100_or_register")
+	(ior:QI (match_operand:QI 1 "xstormy16_below100_or_register")
+		(match_operand:QI 2 "nonmemory_operand")))]
+  ""
+  {
+    emit_insn (gen_iorqi3 (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+
+(define_expand "aophi3"
+  [(set (match_operand:HI 0 "xstormy16_splittable_below100_or_register")
+	(ior:HI (match_operand:HI 1 "xstormy16_below100_or_register")
+		(match_operand:HI 2 "nonmemory_operand")))]
+  ""
+  {
+    emit_insn (gen_iorhi3 (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+

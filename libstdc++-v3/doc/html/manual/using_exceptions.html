@@ -21,7 +21,7 @@ exception neutrality and exception safety.
     Please note that using exceptions in combination with templates
     imposes an additional requirement for exception
     safety. Instantiating types are required to have destructors that
-    do no throw.
+    do not throw.
   </p><p>
     Using the layered approach from Abrahams, can classify library
     components as providing set levels of safety. These will be called
@@ -39,7 +39,7 @@ exception neutrality and exception safety.
     Two. Don't leak resources when exceptions are thrown. This is
     also referred to as the <span class="quote">“<span class="quote">basic</span>”</span> exception safety guarantee.
   </p><p>
-    This applicable throughout the standard library.
+    This is applicable throughout the standard library.
   </p></li><li class="listitem"><p>
     Three. Commit-or-rollback semantics.  This is
     referred to as <span class="quote">“<span class="quote">strong</span>”</span> exception safety guarantee.
@@ -56,9 +56,9 @@ exception neutrality and exception safety.
     propagating exceptions should not be swallowed in
     gratuitous <code class="literal">catch(...)</code> blocks. Instead,
     matching <code class="literal">try</code> and <code class="literal">catch</code>
-    blocks should have specific catch handlers and allow un-handed
+    blocks should have specific catch handlers and allow unhandled
     exception objects to propagate. If a
-    terminating <code class="literal">catch(...)</code> blocks exist then it
+    terminating <code class="literal">catch(...)</code> block exists then it
     should end with a <code class="literal">throw</code> to re-throw the current
     exception.
   </p><p>
@@ -186,7 +186,7 @@ exception neutrality and exception safety.
     configuration of the C++ compiler. On recent hardware with GNU
     system software of the same age, the combined code and data size
     overhead for enabling exception handling is around 7%. Of course,
-    if code size is of singular concern than using the appropriate
+    if code size is of singular concern then using the appropriate
     optimizer setting with exception handling enabled
     (ie, <code class="literal">-Os -fexceptions</code>) may save up to twice
     that, and preserve error checking.

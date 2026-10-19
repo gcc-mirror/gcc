@@ -1,0 +1,19 @@
+GCOBOL_17.1
+  {
+  global:
+
+    posix$close;
+    posix$errno;
+    posix$fstat;
+    posix$ftruncate;
+    posix$localtime;
+    posix$lseek;
+    posix$open;
+    posix$read;
+    posix$stat;
+    posix$unlink;
+    posix$write;
+
+  local:
+    *;
+  };

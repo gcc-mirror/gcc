@@ -70,7 +70,7 @@
 
   <author><personname><firstname>Nathan</firstname><surname>Myers</surname></personname><personblurb>
       <para>
-	Referenced counted string, C++1998 implementation status.
+	Reference counted string, C++1998 implementation status.
       </para>
     </personblurb></author>
 

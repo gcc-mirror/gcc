@@ -4340,8 +4340,11 @@ compute_a_shift_length (rtx operands[3], rtx_code code)
 	  /* Fall through.  */
 
 	case SHIFT_INLINE:
-	  /* H8/SX has a richer set of logical shifts.  */
+	  /* H8/SX has a richer set of logical shifts, but do not
+	     override the length computation if we're using a SHIFT_SPECIAL
+	     sequence as those may not exploit the H8/SX special shifts.  */
 	  if (TARGET_H8300SX
+	      && info.alg == SHIFT_SPECIAL
 	      && (code == ASHIFT || code == LSHIFTRT))
 	    return (exact_log2 (n) >= 0) ? 2 : 4;
 

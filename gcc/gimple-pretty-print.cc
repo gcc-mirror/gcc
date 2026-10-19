@@ -22,7 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "dumpfile.h"
+#include "dumpfile.h"	/* for dump_flags */
 #include "backend.h"
 #include "tree.h"
 #include "gimple.h"
@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
-#include "dumpfile.h"	/* for dump_flags */
 #include "value-prof.h"
 #include "trans-mem.h"
 #include "cfganal.h"

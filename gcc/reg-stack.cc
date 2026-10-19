@@ -304,7 +304,7 @@ stack_regs_mentioned_p (const_rtx pat)
 /* Return true if INSN mentions stacked registers, else return zero.  */
 
 bool
-stack_regs_mentioned (const_rtx insn)
+stack_regs_mentioned (const rtx_insn *insn)
 {
   unsigned int uid, max;
   int test;

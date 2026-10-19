@@ -2758,6 +2758,10 @@ Target supports the execution of @code{avxvnniint16} instructions.
 Target runtime permits dereferencing a null pointer without trapping, for
 example because address zero is mapped and readable.
 
+@item cbcond_hw
+Test system can execute SPARC compare-and-branch (@code{cbcond})
+instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 
@@ -2770,6 +2774,11 @@ Target supports a clz optab on long.
 @item clzll
 Target supports a clz optab on long long.
 
+@item clzsi
+Target has a @code{clzsi2} pattern, which can be an expander, so a
+@code{.CLZ} internal function call on a 32-bit unsigned integer can be
+expanded.
+
 @item ctz
 Target supports a ctz optab on int.
 
@@ -2778,6 +2787,11 @@ Target supports a ctz optab on long.
 
 @item ctzll
 Target supports a ctz optab on long long.
+
+@item ctzsi
+Target has a @code{ctzsi2} pattern, which can be an expander, so a
+@code{.CTZ} internal function call on a 32-bit unsigned integer can be
+expanded.
 
 @item cmpccxadd
 Target supports the execution of @code{cmpccxadd} instructions.

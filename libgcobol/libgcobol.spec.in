@@ -5,4 +5,4 @@
 #
 
 %rename lib liborig
-*lib: @LIBQUADSPEC@ @LIBM@ %(liborig)
+*lib: @LIBGCOBOL_RPATH_SPEC@ @LIBQUADSPEC@ @LIBM@ %(liborig)

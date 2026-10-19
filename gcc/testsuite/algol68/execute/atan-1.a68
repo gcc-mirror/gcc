@@ -2,7 +2,9 @@
 BEGIN REAL r = 0.0;
       LONG REAL rr = LONG 45.0;
       LONG LONG REAL rrr = LONG LONG 60.0;
+      WORD REAL w = WORD 0.0;
       ASSERT (arctan (r) = 0.0);
       long arctan (rr);
-      long long arctan (rrr)
+      long long arctan (rrr);
+      ASSERT (word arctan (w) = WORD 0.0)
 END

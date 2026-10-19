@@ -1,23 +1,21 @@
 // PR c++/20420
-// FIXME: These error messages aren't great, rather than multiple definition
-// we should talk about conflicting declarations with the using-decl.
 
 class B
 {
 protected:
-  enum E { E1, E2, E3 };     // { dg-message "previous" }
-  struct S { int i; E e; };  // { dg-message "previous" }
+  enum E { E1, E2, E3 };     // { dg-message "here" }
+  struct S { int i; E e; };  // { dg-message "here" }
 };
 
 class D : private B
 {
 public:
-  using B::E;
-  using B::S;
+  using B::E;			// { dg-message "previous" }
+  using B::S;			// { dg-message "previous" }
 
 private:
-  enum E {};        // { dg-error "multiple definition" }
-  struct S {};      // { dg-error "redefinition" }
+  enum E {};        // { dg-error "conflicts" }
+  struct S {};      // { dg-error "conflicts" }
 };
 
 template<typename T>
@@ -32,11 +30,11 @@ template<typename T>
 class DT : private BT<T>
 {
 public:
-  using BT<T>::E;   // { dg-message "previous" "PR c++/115806" { xfail *-*-* } }
+  using BT<T>::E;   // { dg-message "previous" }
   using BT<T>::S;   // { dg-message "previous" }
 
 private:
-  enum E {};        // { dg-error "conflicts" "PR c++/115806" { xfail *-*-* } }
+  enum E {};        // { dg-error "conflicts" }
   struct S {};      // { dg-error "conflicts" }
 };
 

@@ -153,6 +153,12 @@ object_allocator<ipcp_agg_lattice> ipcp_agg_lattice_pool
 
 static long overall_size, orig_overall_size;
 
+/* Overall run-time of the part of the program or the compilation unit for
+   which profile information is available, scaled by
+   param_ipa_cp_min_recursive_probability.  */
+
+static sreal overall_scaled_runtime;
+
 /* The maximum number of IPA-CP decision sweeps that any node requested in its
    param.  */
 static int max_number_sweeps;
@@ -928,7 +934,8 @@ ipcp_bits_lattice::set_to_bottom ()
    when switching state from TOP.  */
 
 bool
-ipcp_bits_lattice::set_to_constant (widest_int value, widest_int mask)
+ipcp_bits_lattice::set_to_constant (const widest_int &value,
+				    const widest_int &mask)
 {
   gcc_assert (top_p ());
   m_lattice_val = IPA_BITS_CONSTANT;
@@ -985,7 +992,8 @@ ipcp_bits_lattice::get_value_and_mask (tree operand, widest_int *valuep, widest_
    DROP_ALL_ONES, mask out any known bits with value one afterwards.  */
 
 bool
-ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
+ipcp_bits_lattice::meet_with_1 (const widest_int &value,
+				const widest_int &mask,
 				unsigned precision, bool drop_all_ones)
 {
   gcc_assert (constant_p ());
@@ -1008,7 +1016,8 @@ ipcp_bits_lattice::meet_with_1 (widest_int value, widest_int mask,
    described by <value, mask, sgn, precision.  */
 
 bool
-ipcp_bits_lattice::meet_with (widest_int value, widest_int mask,
+ipcp_bits_lattice::meet_with (const widest_int &value,
+			      const widest_int &mask,
 			      unsigned precision)
 {
   if (bottom_p ())
@@ -3474,8 +3483,8 @@ good_cloning_opportunity_p (struct cgraph_node *node, sreal time_benefit,
   if (count_sum.nonzero_p ())
     {
       profile_count saved_time = count_sum * time_benefit;
-      sreal evaluation = saved_time.to_sreal_scale (profile_count::one ())
-			      / size_cost;
+      sreal evaluation = (saved_time.to_sreal_scale (profile_count::one ())
+                         / overall_scaled_runtime) / size_cost;
       evaluation = incorporate_penalties (node, info, evaluation);
 
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4079,6 +4088,8 @@ static void
 ipcp_propagate_stage (class ipa_topo_info *topo)
 {
   struct cgraph_node *node;
+  sreal overall_runtime = 0;
+  overall_scaled_runtime = 0;
 
   if (dump_file)
     fprintf (dump_file, "\n Propagating constants:\n\n");
@@ -4100,15 +4111,34 @@ ipcp_propagate_stage (class ipa_topo_info *topo)
 	if (max_number_sweeps < num_sweeps)
 	  max_number_sweeps = num_sweeps;
       }
-    ipa_size_summary *s = ipa_size_summaries->get (node);
-    if (node->definition && !node->alias && s != NULL)
-      overall_size += s->self_size;
+
+    if (!node->alias)
+      {
+       ipa_size_summary *szs = ipa_size_summaries->get (node);
+       if (szs)
+         overall_size += szs->self_size;
+       ipa_fn_summary *fns = ipa_fn_summaries->get (node);
+       if (fns)
+         {
+           int shift = opt_for_fn (node->decl,
+                                   param_ipa_cp_profile_runtime_scaling);
+           sreal frt = fns->time;
+           overall_runtime += frt;
+           overall_scaled_runtime += frt.shift(-shift);
+         }
+      }
   }
 
   orig_overall_size = overall_size;
 
   if (dump_file)
-    fprintf (dump_file, "\noverall_size: %li\n", overall_size);
+    {
+      fprintf (dump_file, "\noverall_size: %li\n", overall_size);
+      fprintf (dump_file, "overall_runtime: %.2e\n",
+              overall_runtime.to_double ());
+      fprintf (dump_file, "overall_scaled_runtime: %.2e\n",
+              overall_scaled_runtime.to_double ());
+    }
 
   propagate_constants_topo (topo);
   if (flag_checking)
@@ -4815,7 +4845,7 @@ update_profiling_info (struct cgraph_node *orig_node,
 	 to global0adjusted or to local if we have partial training.  */
       if (opt_for_fn (orig_node->decl, flag_profile_partial_training))
 	orig_node->make_profile_local ();
-      if (new_sum.quality () == AFDO)
+      else if (new_sum.quality () == AFDO)
 	orig_node->make_profile_global0 (GUESSED_GLOBAL0_AFDO);
       else
 	orig_node->make_profile_global0 (GUESSED_GLOBAL0_ADJUSTED);
@@ -5803,6 +5833,44 @@ cgraph_edge_brings_all_agg_vals_for_node (struct cgraph_edge *cs,
   return avl.superset_of_p (existing);
 }
 
+/* Determine whether CS also brings all polymorphic contexts that NODE is
+   specialized for.  */
+
+static bool
+cgraph_edge_brings_all_contexts_for_node (struct cgraph_edge *cs,
+					  struct cgraph_node *node)
+{
+  ipa_node_params *dest_info = ipa_node_params_sum->get (node);
+  unsigned count = dest_info->known_contexts.length ();
+  if (!count)
+    return true;
+
+  ipa_node_params *caller_info = ipa_node_params_sum->get (cs->caller);
+  ipa_edge_args *args = ipa_edge_args_sum->get (cs);
+  for (unsigned i = 0; i < count; i++)
+    {
+      ipa_polymorphic_call_context ctx = dest_info->known_contexts[i];
+      if (ctx.useless_p ())
+	continue;
+
+      if (!args || i >= (unsigned) ipa_get_cs_argument_count (args))
+	return false;
+      ipa_jump_func *jump_func = ipa_get_ith_jump_func (args, i);
+      ipa_polymorphic_call_context edge_ctx
+	= ipa_context_from_jfunc (caller_info, cs, i, jump_func);
+      if (edge_ctx.useless_p ())
+	return false;
+      if (edge_ctx.equal_to (ctx))
+	continue;
+      /* Also accept a context that is more precise than the one NODE has been
+	 specialized for.  */
+      ctx.combine_with (edge_ctx);
+      if (!edge_ctx.equal_to (ctx))
+	return false;
+    }
+  return true;
+}
+
 /* Given an original NODE and a VAL for which we have already created a
    specialized clone, look whether there are incoming edges that still lead
    into the old node but now also bring the requested value and also conform to
@@ -5823,7 +5891,8 @@ perhaps_add_new_callers (cgraph_node *node, ipcp_value<valtype> *val)
 	{
 	  if (cgraph_edge_brings_value_p (cs, src, node, val)
 	      && cgraph_edge_brings_all_scalars_for_node (cs, val->spec_node)
-	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node))
+	      && cgraph_edge_brings_all_agg_vals_for_node (cs, val->spec_node)
+	      && cgraph_edge_brings_all_contexts_for_node (cs, val->spec_node))
 	    {
 	      if (dump_file)
 		fprintf (dump_file, " - adding an extra caller %s of %s\n",
@@ -6869,6 +6938,7 @@ ipa_cp_cc_finalize (void)
 {
   overall_size = 0;
   orig_overall_size = 0;
+  overall_scaled_runtime = 0;
   ipcp_free_transformation_sum ();
 }
 

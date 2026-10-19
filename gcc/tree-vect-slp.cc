@@ -3380,7 +3380,6 @@ fail:
       SLP_TREE_CHILDREN (node).quick_push (two);
       SLP_TREE_REPRESENTATIVE (node) = NULL;
       enum tree_code code0 = ERROR_MARK;
-      enum tree_code ocode = ERROR_MARK;
       if (gassign *stmt = dyn_cast <gassign *> (stmts[0]->stmt))
 	code0 = gimple_assign_rhs_code (stmt);
       stmt_vec_info ostmt_info;
@@ -3388,28 +3387,17 @@ fail:
       FOR_EACH_VEC_ELT (stmts, i, ostmt_info)
 	{
 	  int op = 0;
-	  if (gassign *ostmt = dyn_cast <gassign *> (ostmt_info->stmt))
+	  gassign *ostmt = dyn_cast<gassign *> (ostmt_info->stmt);
+	  if ((ostmt && gimple_assign_rhs_code (ostmt) != code0)
+	      || (!ostmt
+		  && gimple_call_combined_fn (stmts[0]->stmt)
+		     != gimple_call_combined_fn (ostmt_info->stmt)))
 	    {
-	      if (gimple_assign_rhs_code (ostmt) != code0)
-		{
-		  ocode = gimple_assign_rhs_code (ostmt);
-		  op = 1;
-		  j = i;
-		}
-	    }
-	  else
-	    {
-	      if (gimple_call_combined_fn (stmts[0]->stmt)
-		  != gimple_call_combined_fn (ostmt_info->stmt))
-		{
-		  op = 1;
-		  j = i;
-		}
+	      op = 1;
+	      j = i;
 	    }
 	  SLP_TREE_LANE_PERMUTATION (node).safe_push (std::make_pair (op, i));
 	}
-      SLP_TREE_CODE (one) = code0;
-      SLP_TREE_CODE (two) = ocode;
       SLP_TREE_LANES (one) = stmts.length ();
       SLP_TREE_LANES (two) = stmts.length ();
       SLP_TREE_REPRESENTATIVE (one) = stmts[0];
@@ -12385,6 +12373,15 @@ vect_schedule_slp_node (vec_info *vinfo,
 	      }
 	  }
 
+      /* When we face existing vector defs that are external, make sure
+	 to insert at region boundary.  */
+      if (last_stmt
+	  && is_a <bb_vec_info> (vinfo)
+	  && vinfo->bbs[0] != gimple_bb (last_stmt)
+	  && dominated_by_p (CDI_DOMINATORS, vinfo->bbs[0],
+			     gimple_bb (last_stmt)))
+	last_stmt = NULL;
+
       /* We split regions to vectorize at control altering stmts
 	 with a definition so this can only be an external.  */
       gcc_checking_assert (!last_stmt
@@ -12806,7 +12803,8 @@ vect_schedule_scc (vec_info *vinfo, slp_tree node, slp_instance instance,
 	 iterate and schedule those that are ready.  */
       unsigned todo = stack.length () - last_idx;
       auto_vec<slp_tree, 4> saved_scc (todo);
-      memcpy (saved_scc.address (), stack.address ()[last_idx + 1],
+      saved_scc.quick_grow (todo);
+      memcpy (saved_scc.address (), &stack.address ()[last_idx],
 	      sizeof (slp_tree) * todo);
       do
 	{

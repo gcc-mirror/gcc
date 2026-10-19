@@ -29,9 +29,9 @@
  */
 
 /*
- * Define a table of diagnositic messages, each uniquely identified and 
- * grouped into dialects. The user can select on the command line which 
- * ones are in effect.  
+ * Define a table of diagnositic messages, each uniquely identified and
+ * grouped into dialects. The user can select on the command line which
+ * ones are in effect.
  */
 
 #include <cobol-system.h>
@@ -84,7 +84,7 @@ struct cbl_diag_t {
   cbl_name_t option;
   diagnostics::kind kind;
   cbl_dialect_t dialect;
-  
+
   explicit cbl_diag_t( cbl_diag_id_t id )
     : id(id), option(""), kind(diagnostics::kind::ignored), dialect(dialect_gcc_e)
   {}
@@ -109,7 +109,7 @@ struct cbl_diag_t {
  * user chooses dialect iso, all dialect-enabled features are turned into
  * errors.  If the user selects a more generous dialect, features associated
  * with it are set to be ignored.
- * 
+ *
  * Individual features may also be suppressed, and all warnings may be elevated
  * to errors.
  */
@@ -138,7 +138,7 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { IbmVolatileE, "-Wcobol-volatile", diagnostics::kind::error, dialect_ibm_e },
   { IbmVolatileW, "-Wcobol-volatile", diagnostics::kind::warning, dialect_ibm_e },
 
-  // IBM, MF, and GNU all support ASSIGN TO filename, so we keep mum. 
+  // IBM, MF, and GNU all support ASSIGN TO filename, so we keep mum.
   { IsoAssignFile, "-Wassign-file", diagnostics::kind::ignored, dialect_ibm_mf_gnu },
   // ISO says for B REDEFINES A, Length(B) <= Length(A), others disagree
   { IsoRedefinesGrow, "-Wredefines-grow", diagnostics::kind::error, dialect_ibm_mf_gnu },
@@ -165,21 +165,23 @@ std::set<cbl_diag_t> cbl_diagnostics {
   { MfSetNumeric, "-Wset-numeric", diagnostics::kind::error, dialect_mf_gnu },
   { MfTrailing, "-Winspect-trailing", diagnostics::kind::error, dialect_mf_gnu },
   { MfUsageTypename, "-Wusage-typename", diagnostics::kind::error, dialect_mf_gnu },
+  { MfValueClause, "-Wvalue-clause", diagnostics::kind::error, dialect_mf_gnu },
 
-  { LexIncludeE, "-Winclude-file-not-found", diagnostics::kind::error }, 
-  { LexIncludeOkN, "-Winclude-file-found", diagnostics::kind::note }, 
-  { LexIndicatorE, "-Wstray-indicator", diagnostics::kind::error }, 
-  { LexInputN, "-Wcopybook-found", diagnostics::kind::ignored }, 
-  { LexLineE, "-Wbad-line-directive", diagnostics::kind::error }, 
-  { LexPreprocessE, "-Wpreprocessor-error", diagnostics::kind::error }, 
+  { LexIncludeE, "-Winclude-file-not-found", diagnostics::kind::error },
+  { LexIncludeOkN, "-Winclude-file-found", diagnostics::kind::note },
+  { LexIndicatorE, "-Wstray-indicator", diagnostics::kind::error },
+  { LexInputN, "-Wcopybook-found", diagnostics::kind::ignored },
+  { LexLineE, "-Wbad-line-directive", diagnostics::kind::error },
+  { LexPreprocessE, "-Wpreprocessor-error", diagnostics::kind::error },
   { LexReplaceE, "-Wreplace-error", diagnostics::kind::error },
   // mf and gnu do not require whitespace after relational operators
-  { LexSeparatorE, "-Woperator-space", diagnostics::kind::error, dialect_mf_gnu }, 
+  { LexSeparatorE, "-Woperator-space", diagnostics::kind::error, dialect_mf_gnu },
 
   { Par78CdfDefinedW, "-Wlevel-78-defined", diagnostics::kind::warning },
-  { ParDynamicCall, "-Wdynamic-call", diagnostics::kind::ignored }, 
-  { ParIconvE, "-Wiconv-error", diagnostics::kind::note }, 
-  { ParInfoI, "-Wentry-convention", diagnostics::kind::note }, 
+  { ParDynamicCall, "-Wdynamic-call", diagnostics::kind::ignored },
+  { ParErrno, "-Werrno", diagnostics::kind::warning },
+  { ParIconvE, "-Wiconv-error", diagnostics::kind::note },
+  { ParInfoI, "-Wentry-convention", diagnostics::kind::note },
   { ParLangInfoW, "-Wnllanginfo-error", diagnostics::kind::warning },
   { ParLiteral2W, "-Wliteral-concat", diagnostics::kind::warning },
   { ParLocaleW, "-Wlocale-error", diagnostics::kind::warning },
@@ -221,7 +223,7 @@ kind_of( cbl_diag_id_t id ) {
     return diag->kind;
   }
   return diagnostics::kind::ice;
-}  
+}
 
 diagnostics::kind
 cbl_diagnostic_kind( cbl_diag_id_t id ) {
@@ -270,11 +272,11 @@ cobol_warning( cbl_diag_id_t id, int yn, bool warning_as_error ) {
       break;
     }
   }
-  
+
   if( warning_as_error ) {
     kind = diagnostics::kind::error;
   }
-  
+
   cbl_diagnostic_kind(id, kind);
 }
 
@@ -320,7 +322,7 @@ option_of( cbl_diag_id_t id ) {
     return diag->option;
   }
   return nullptr;
-}  
+}
 
 const char *
 cbl_diagnostic_option( cbl_diag_id_t id ) {
@@ -353,7 +355,7 @@ cbl_message( cbl_diag_id_t id, const char gmsgid[], ... ) {
     msg = xasprintf("%s [%s]", gmsgid, option);
     gmsgid = msg;
   }
- 
+
   va_list ap;
 
   va_start (ap, gmsgid);
@@ -361,7 +363,7 @@ cbl_message( cbl_diag_id_t id, const char gmsgid[], ... ) {
                                      option_zero, gmsgid, &ap );
   va_end (ap);
   free(msg);
-  
+
   return ret;
 }
 
@@ -398,10 +400,10 @@ bool cbl_message( cbl_loc_t loc, cbl_diag_id_t id, const char gmsgid[], ... ) {
 
   temp_loc_t looker(loc);
   va_list ap;
-  
+
   va_start (ap, gmsgid);
   rich_location richloc (line_table, current_token_location());
-  auto ret = emit_diagnostic_valist( kind, 
+  auto ret = emit_diagnostic_valist( kind,
                                      current_token_location(),
                                      option_zero, gmsgid, &ap );
   va_end (ap);
@@ -417,20 +419,20 @@ bool cbl_message( cbl_loc_t loc, cbl_diag_id_t id, const char gmsgid[], ... ) {
  *   dialect required:  ok, dialect matches feature dialect
  *   dialect prohibits  not_ok, dialect matches feature ~dialect
  *
- * If ok is false, then a match means the dialect prohibits the feature. 
+ * If ok is false, then a match means the dialect prohibits the feature.
  */
 bool
 dialect_ok( const cbl_loc_t& loc, cbl_diag_id_t id, const char term[], bool ok ) {
   auto diag = cbl_diagnostics.find(cbl_diag_t(id));
 
   const char *verb = "requires";
-  
+
   if( diag == cbl_diagnostics.end() ) {
     gcc_unreachable();
   }
 
   if( diag->kind == diagnostics::kind::ignored ) return true;
-  
+
   if( dialect_has(diag->dialect) ) {
     if( ok ) {
       return true;
@@ -451,8 +453,3 @@ dialect_ok( const cbl_loc_t& loc, cbl_diag_id_t id, const char term[], bool ok )
   }
   return false;
 }
-
-
-
-
-  

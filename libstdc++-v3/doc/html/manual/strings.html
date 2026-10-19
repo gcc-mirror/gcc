@@ -78,7 +78,7 @@
    </p><p>
      Since C++11 the wrapper can be replaced with a lambda expression,
      which can perform the conversion to <code class="code">unsigned char</code> and
-     also ensure the single-argument form of <code class="code">std::lower</code> is used:
+     also ensure the single-argument form of <code class="code">std::tolower</code> is used:
    </p><pre class="programlisting">
      std::transform (s.begin(), s.end(), capital_s.begin(),
                      [](unsigned char c) { return std::tolower(c); });
@@ -125,7 +125,7 @@
      case-insensitive comparisons are not as easy as they seem, and
      why creating a class is the <span class="emphasis"><em>wrong</em></span> way to go
      about it in production code.  (The GotW answer mentions one of
-     the principle difficulties; his article mentions more.)
+     the principal difficulties; his article mentions more.)
    </p><p>Basically, this is "easy" only if you ignore some things,
       things which may be too important to your program to ignore.  (I chose
       to ignore them when originally writing this entry, and am surprised
@@ -179,7 +179,7 @@
       built-in types.
    </p><p>If you want to use your own special character class, then you have
       <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00163.html" target="_top">a lot
-      of work to do</a>, especially if you with to use i18n features
+      of work to do</a>, especially if you wish to use i18n features
       (facets require traits information but don't have a traits argument).
    </p><p>Another example of how to specialize char_traits was given <a class="link" href="http://gcc.gnu.org/ml/libstdc++/2002-08/msg00260.html" target="_top">on the
       mailing list</a> and at a later date was put into the file <code class="code">
@@ -304,7 +304,7 @@ stringtok(Container &amp;container, string const &amp;in,
       stringstream classes.  These are the bridge between the iostream
       hierarchy and the string class, and they operate with regular
       streams seamlessly because they inherit from the iostream
-      hierarchy.  An quick example:
+      hierarchy.  A quick example:
    </p><pre class="programlisting">
    #include &lt;iostream&gt;
    #include &lt;string&gt;

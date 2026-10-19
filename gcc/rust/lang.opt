@@ -237,8 +237,4 @@ frust-unused-check-2.0
 Rust Var(flag_unused_check_2_0)
 Use the new unused variable check implementation.
 
-frust-c-style-string-literals
-Rust Var(flag_c_style_string_literals)
-Enable parsing and compilation of C-styled string literals.
-
 ; This comment is to ensure we retain the blank line above.

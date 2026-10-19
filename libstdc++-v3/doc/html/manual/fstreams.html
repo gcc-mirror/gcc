@@ -30,7 +30,7 @@
    </p><p>Why a <span class="emphasis"><em>pointer</em></span> to streambuf and not just a streambuf?  Well,
       the [io]streams hold pointers (or references, depending on the
       implementation) to their buffers, not the actual
-      buffers.  This allows polymorphic behavior on the chapter of the buffers
+      buffers.  This allows polymorphic behavior on the part of the buffers
       as well as the streams themselves.  The pointer is easily retrieved
       using the <code class="code">rdbuf()</code> member function.  Therefore, the easiest
       way to copy the file is:
@@ -69,7 +69,7 @@
       under Windows won't accidentally get mapped to a '\n' character, etc.
       Binary mode is not supposed to suddenly give you a bitstream, and
       if it is doing so in your program then you've discovered a bug in
-      your vendor's compiler (or some other chapter of the C++ implementation,
+      your vendor's compiler (or some other part of the C++ implementation,
       possibly the runtime system).
    </p><p>Second, using <code class="code">&lt;&lt;</code> to write and <code class="code">&gt;&gt;</code> to
       read isn't going to work with the standard file stream classes, even

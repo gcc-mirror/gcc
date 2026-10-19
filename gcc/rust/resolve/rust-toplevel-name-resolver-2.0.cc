@@ -187,30 +187,32 @@ TopLevel::visit_extern_crate (AST::ExternCrate &extern_crate, AST::Crate &crate,
 {
   auto &mappings = Analysis::Mappings::get ();
 
-  auto attribute_macros = mappings.lookup_attribute_proc_macros (num);
+  auto attribute_macros = mappings.crate.attributes.lookup (num);
 
-  auto bang_macros = mappings.lookup_bang_proc_macros (num);
+  auto bang_macros = mappings.crate.bangs.lookup (num);
 
-  auto derive_macros = mappings.lookup_derive_proc_macros (num);
+  auto derive_macros = mappings.crate.derives.lookup (num);
 
   // TODO: Find a way to keep this part clean without the double dispatch.
   if (derive_macros.has_value ())
     {
       insert_macros (derive_macros.value (), ctx);
       for (auto &macro : derive_macros.value ())
-	mappings.insert_derive_proc_macro_def (macro);
+	mappings.pmacro.definitions.derives.insert (macro.get_node_id (),
+						    macro);
     }
   if (attribute_macros.has_value ())
     {
       insert_macros (attribute_macros.value (), ctx);
       for (auto &macro : attribute_macros.value ())
-	mappings.insert_attribute_proc_macro_def (macro);
+	mappings.pmacro.definitions.attributes.insert (macro.get_node_id (),
+						       macro);
     }
   if (bang_macros.has_value ())
     {
       insert_macros (bang_macros.value (), ctx);
       for (auto &macro : bang_macros.value ())
-	mappings.insert_bang_proc_macro_def (macro);
+	mappings.pmacro.definitions.bangs.insert (macro.get_node_id (), macro);
     }
 
   // We do *NOT* visit the crate because loaded crates are resolved

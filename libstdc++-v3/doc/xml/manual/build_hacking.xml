@@ -250,7 +250,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
     libtool bits
 </programlisting>
 <para>
-  Things which we don't seem to use directly, but just has to be
+  Things which we don't seem to use directly, but just have to be
   present otherwise stuff magically goes wonky.
 </para>
 
@@ -404,7 +404,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
 
 <para>
 The <filename class="library">libstdc++.so</filename> shared library must
-be carefully managed to maintain binary compatible with older versions
+be carefully managed to maintain binary compatibility with older versions
 of the library. This ensures a new version of the library is still usable by
 programs that were linked against an older version.
 </para>
@@ -527,7 +527,7 @@ baseline file.
 <section xml:id="build_hacking.make"><info><title>Make</title></info>
 
   <para>
-    The build process has to make all of object files needed for
+    The build process has to make all of the object files needed for
     static or shared libraries, but first it has to generate some
     include files. The general order is as follows:
   </para>
@@ -662,7 +662,7 @@ baseline file.
    </para>
    <para>
      Generates needed compatibility objects for shared and static
-     libraries. Shared-only code is seggregated at compile-time via
+     libraries. Shared-only code is segregated at compile-time via
      the macro <literal>_GLIBCXX_SHARED</literal>.
    </para>
 

@@ -1056,10 +1056,6 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
       value = digest_init_flags (type, init, flags, tf_warning_or_error);
     }
 
-  /* Look for braced array initializers for character arrays and
-     recursively convert them into STRING_CSTs.  */
-  value = braced_lists_to_strings (type, value);
-
   current_ref_temp_count = 0;
   value = extend_ref_init_temps (decl, value, cleanups);
 
@@ -1138,6 +1134,10 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 
   /* Handle aggregate NSDMI in non-constant initializers, too.  */
   value = replace_placeholders (value, decl);
+
+  /* Look for braced array initializers for character arrays and
+     recursively convert them into STRING_CSTs.  */
+  value = braced_lists_to_strings (type, value);
 
   /* Detect stuff like 'info r = ^^int;' outside a manifestly
      constant-evaluated context.  */

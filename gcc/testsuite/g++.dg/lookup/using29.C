@@ -51,7 +51,7 @@ struct I2 : H
 
 struct J
 {
-  struct type {}; // { dg-message "previous" }
+  struct type {}; // { dg-message "here" }
 };
 
 struct K : J
@@ -63,7 +63,7 @@ struct K : J
 struct L : J
 {
   using J::type;
-  struct type {}; // { dg-error "redefinition" }
+  struct type {}; // { dg-error "conflicts" }
 };
 
 struct M

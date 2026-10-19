@@ -9,6 +9,7 @@
 #include <list>
 #include <forward_list>
 #include <map>
+#include <set>
 #include <testsuite_hooks.h>
 #include <testsuite_allocator.h>
 #include <testsuite_iterators.h>
@@ -204,13 +205,13 @@ test_2_1_3()
   VERIFY( c2.c.get_allocator() == Alloc(78) );
 }
 
-enum AppendKind { None, EmplaceBack, PushBack, Emplace, Insert };
+enum AppendKind { None, EmplaceBack, PushBack, EmplaceHint, Insert };
 
 template<typename C, AppendKind Kind>
 struct Cont4
 {
   // Only support construction with no args or an allocator.
-  // This forces the use of either emplace_back, push_back, emplace or insert.
+  // This forces the use of either emplace_back, push_back, emplace_hint or insert.
   Cont4() { }
   Cont4(typename C::allocator_type a) : c(a) { }
 
@@ -235,13 +236,13 @@ struct Cont4
     }
 
   template<typename T>
-    requires (Kind <= Emplace)
-    && requires(C& c, T&& t) { c.emplace(c.end(), std::forward<T>(t)); }
+    requires (Kind <= EmplaceHint)
+    && requires(C& c, T&& t) { c.emplace_hint(c.end(), std::forward<T>(t)); }
     void
-    emplace(typename C::iterator pos, T&& t)
+    emplace_hint(typename C::iterator pos, T&& t)
     {
-      kind = Emplace;
-      c.emplace(pos, std::forward<T>(t));
+      kind = EmplaceHint;
+      c.emplace_hint(pos, std::forward<T>(t));
     }
 
   template<typename T>
@@ -287,6 +288,7 @@ test_2_1_4()
   using Alloc2 = __gnu_test::uneq_allocator<short>;
   using V = std::vector<int, Alloc>;
   using List = std::list<short, Alloc2>;
+  using Set = std::set<int>;
 
   std::list<unsigned> l{1u, 2u, 3u};
   std::list<long> l2{4l, 5l, 6l};
@@ -337,30 +339,30 @@ test_2_1_4()
   VERIFY( c6.kind == PushBack );
   VERIFY( ! c6.used_reserve );
 
-  // use vector::emplace and vector::reserve
-  auto c7 = std::ranges::to<Cont4<V, Emplace>>(l);
-  static_assert(std::is_same_v<decltype(c7), Cont4<V, Emplace>>);
-  VERIFY( c7.c == V(l.begin(), l.end()) );
-  VERIFY( c7.kind == Emplace );
-  VERIFY( c7.used_reserve );
+  // use list::emplace_back
+  auto c7 = std::ranges::to<Cont4<List, EmplaceBack>>(c.c, Alloc2(99));
+  static_assert(std::is_same_v<decltype(c7), Cont4<List, EmplaceBack>>);
+  VERIFY( c7.c == List(l.begin(), l.end()) );
+  VERIFY( c7.c.get_allocator() == Alloc(99) );
+  VERIFY( c7.kind == EmplaceBack );
+  VERIFY( ! c7.used_reserve );
+ 
+  // use set::emplace_hint
+  auto c8 = std::ranges::to<Cont4<Set, EmplaceHint>>(l);
+  static_assert(std::is_same_v<decltype(c8), Cont4<Set, EmplaceHint>>);
+  VERIFY( c8.c == Set(l.begin(), l.end()) );
+  VERIFY( c8.kind == EmplaceHint );
+  VERIFY( ! c8.used_reserve );
 
-  // use vector::emplace and vector::reserve
-  auto c8 = std::ranges::to<Cont4<V, Emplace>>(l2, Alloc(78));
-  static_assert(std::is_same_v<decltype(c8), Cont4<V, Emplace>>);
-  VERIFY( c8.c == V(l2.begin(), l2.end()) );
-  VERIFY( c8.c.get_allocator() == Alloc(78) );
-  VERIFY( c8.kind == Emplace );
-  VERIFY( c8.used_reserve );
-
-  // use list::emplace
-  auto c9 = std::ranges::to<Cont4<List, Emplace>>(c.c, Alloc2(99));
-  static_assert(std::is_same_v<decltype(c9), Cont4<List, Emplace>>);
-  VERIFY( c9.c == List(l.begin(), l.end()) );
-  VERIFY( c9.c.get_allocator() == Alloc(99) );
-  VERIFY( c9.kind == Emplace );
+  // use set::emplace_hint 
+  auto c9 = std::ranges::to<Cont4<Set, EmplaceHint>>(l2, Alloc(78));
+  static_assert(std::is_same_v<decltype(c9), Cont4<Set, EmplaceHint>>);
+  VERIFY( c9.c == Set(l2.begin(), l2.end()) );
+  VERIFY( c9.c.get_allocator() == Alloc(78) );
+  VERIFY( c9.kind == EmplaceHint );
   VERIFY( ! c9.used_reserve );
 
-  // use vector::insert and vector::reserve
+ // use vector::insert and vector::reserve
   auto c10 = std::ranges::to<Cont4<V, Insert>>(l);
   static_assert(std::is_same_v<decltype(c10), Cont4<V, Insert>>);
   VERIFY( c10.c == V(l.begin(), l.end()) );

@@ -1820,45 +1820,35 @@ static bool
 get_eh_region_and_lp_from_rtx (const_rtx insn, eh_region *pr,
 			       eh_landing_pad *plp)
 {
-  eh_landing_pad lp = NULL;
-  eh_region r = NULL;
-  bool ret = false;
   rtx note;
   int lp_nr;
 
+  *pr = nullptr;
+  *plp = nullptr;
   if (! INSN_P (insn))
-    goto egress;
+    return false;
 
-  if (NONJUMP_INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = XVECEXP (PATTERN (insn), 0, 0);
+  rtx_sequence *seq = dyn_cast<rtx_sequence *> (PATTERN (insn));
+  if (NONJUMP_INSN_P (insn) && seq)
+    insn = seq->insn (0);
 
   note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
   if (!note)
-    {
-      ret = !insn_could_throw_p (insn);
-      goto egress;
-    }
+    return !insn_could_throw_p (insn);
 
   lp_nr = INTVAL (XEXP (note, 0));
   if (lp_nr == 0 || lp_nr == INT_MIN)
-    {
-      ret = true;
-      goto egress;
-    }
+    return true;
 
   if (lp_nr < 0)
-    r = (*cfun->eh->region_array)[-lp_nr];
+    *pr = (*cfun->eh->region_array)[-lp_nr];
   else
     {
-      lp = (*cfun->eh->lp_array)[lp_nr];
-      r = lp->region;
+      *plp = (*cfun->eh->lp_array)[lp_nr];
+      *pr = (*plp)->region;
     }
 
- egress:
-  *plp = lp;
-  *pr = r;
-  return ret;
+  return false;
 }
 
 /* Return the landing pad to which INSN may go, or NULL if it does not
@@ -1878,7 +1868,7 @@ get_eh_landing_pad_from_rtx (const_rtx insn)
    have a reachable region within this function.  */
 
 eh_region
-get_eh_region_from_rtx (const_rtx insn)
+get_eh_region_from_rtx (const rtx_insn *insn)
 {
   eh_landing_pad lp;
   eh_region r;
@@ -1907,10 +1897,9 @@ can_throw_external (const_rtx insn)
   if (! INSN_P (insn))
     return false;
 
-  if (NONJUMP_INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == SEQUENCE)
+  rtx_sequence *seq = dyn_cast<rtx_sequence *> (PATTERN (insn));
+  if (NONJUMP_INSN_P (insn) && seq)
     {
-      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
       int i, n = seq->len ();
 
       for (i = 0; i < n; i++)
@@ -1951,10 +1940,9 @@ insn_nothrow_p (const_rtx insn)
   if (! INSN_P (insn))
     return true;
 
-  if (NONJUMP_INSN_P (insn)
-      && GET_CODE (PATTERN (insn)) == SEQUENCE)
+  rtx_sequence *seq = dyn_cast<rtx_sequence *> (PATTERN (insn));
+  if (NONJUMP_INSN_P (insn) && seq)
     {
-      rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (insn));
       int i, n = seq->len ();
 
       for (i = 0; i < n; i++)
@@ -2608,9 +2596,9 @@ convert_to_eh_region_ranges (void)
 	rtx_code_label *this_landing_pad;
 
 	insn = iter;
-	if (NONJUMP_INSN_P (insn)
-	    && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	  insn = XVECEXP (PATTERN (insn), 0, 0);
+	rtx_sequence *seq = dyn_cast<rtx_sequence *> (PATTERN (insn));
+	if (NONJUMP_INSN_P (insn) && seq)
+	  insn = seq->element (0);
 
 	nothrow = get_eh_region_and_lp_from_rtx (insn, &region, &lp);
 	if (nothrow)

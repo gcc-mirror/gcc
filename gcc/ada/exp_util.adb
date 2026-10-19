@@ -6090,7 +6090,7 @@ package body Exp_Util is
             --  generate the proper actual subtype for it.
 
             if Nkind (Exp) = N_Selected_Component
-              and then Within_Init_Proc
+              and then Inside_Init_Proc
             then
                declare
                   Decl : constant Node_Id :=
@@ -7218,15 +7218,6 @@ package body Exp_Util is
    begin
       if Is_Concurrent_Type (Typ) then
          Typ := Corresponding_Record_Type (Typ);
-      end if;
-
-      --  Since restriction violations are not considered serious errors, the
-      --  expander remains active, but may leave the corresponding record type
-      --  malformed. In such cases, component _object is not available so do
-      --  not look for it.
-
-      if not Analyzed (Typ) then
-         return Empty;
       end if;
 
       Comp := First_Component (Typ);

@@ -224,7 +224,7 @@ static void
 create_cblc_string_variable(const char *var_name, const char *var_contents)
   {
   // This is a way of having the compiler communicate with GDB.  I create a
-  // global const char[] string with a known name so that GDB can look for that
+  // const char[] string with a known name so that GDB can look for that
   // variable and pick up its contents.
 
   // This probably should be in the .debug_info section, but for the moment I
@@ -240,7 +240,7 @@ create_cblc_string_variable(const char *var_name, const char *var_contents)
   tree entry_point = gg_declare_variable(array_of_characters,
                                          var_name,
                                          constr,
-                                         vs_global);
+                                         vs_file_static);
   gg_define_from_declaration(entry_point);
   }
 
@@ -775,7 +775,7 @@ parser_call_target_convention( tree func )
 size_t
 parser_call_target_update( size_t caller,
                            const char plain_name[],
-                           const char mangled_name[] )
+                           const char mangled_name_[] )
   {
   auto key = program_reference_t(caller, plain_name);
   auto p = call_targets.find(key);
@@ -788,7 +788,31 @@ parser_call_target_update( size_t caller,
                        NULL); // And, hence, no types
 
     // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
-    tree function_decl = gg_build_fn_decl(mangled_name, fndecl_type);
+
+    // We have to convert the dotted name into the form created in
+    // parser_enter_program().
+    std::string funcname = mangled_name_;
+
+    char *pdot = strchr(const_cast<char *>(mangled_name_), '.');
+    if(pdot)
+      {
+      size_t parent_index = atol(pdot+1);
+      funcname = funcname.substr(0, pdot-mangled_name_);
+
+      while(parent_index)
+        {
+        const cbl_label_t *program_label = cbl_label_of(symbol_at(parent_index));
+        char *mangled_name = cobol_name_mangler(program_label->name);
+        std::string temp = mangled_name;
+        free(mangled_name);
+        temp += ".";
+        temp += funcname;
+        funcname = temp;
+        parent_index = symbol_at(parent_index)->program;
+        }
+      }
+
+    tree function_decl = gg_build_fn_decl(funcname.c_str(), fndecl_type);
     tree function_address = gg_get_address_of(function_decl);
 
     TREE_OPERAND(call_expr, 1) = function_address;
@@ -3057,36 +3081,40 @@ parser_enter_program( const char *funcname_,
   // though the end result will be mangled again, because the mangler doesn't
   // change a mangled name.
 
+  // This is the starting name for this function
   char *mangled_name = cobol_name_mangler(funcname_);
-
-  size_t iprog  = current_program_index();
-  assert(iprog);
-
-  size_t parent_index = symbol_at(iprog)->program;
-  char *funcname;
-  if( parent_index )
-    {
-    // This is a nested function.  Tack on the parent_index to the end of it.
-    funcname = xasprintf( "%s." HOST_SIZE_T_PRINT_DEC,
-                          mangled_name,
-                          (fmt_size_t)parent_index);
-    }
-  else
-    {
-    // This is a top-level function; just use the straight mangled name
-    funcname = xstrdup(mangled_name);
-    }
+  std::string funcname = mangled_name;
   free(mangled_name);
+
+  // If we are a contained program, we are going to build up our name from
+  // our parent's names.  The name will be grandparent.parent.us
+  size_t parent_index = symbol_at(current_program_index())->program;
+  size_t original_parent_index = parent_index;
+  while(parent_index)
+    {
+    const cbl_label_t *program_label = cbl_label_of(symbol_at(parent_index));
+    mangled_name = cobol_name_mangler(program_label->name);
+    std::string temp = mangled_name;
+    free(mangled_name);
+    temp += ".";
+    temp += funcname;
+    funcname = temp;
+    parent_index = symbol_at(parent_index)->program;
+    }
+  // funcname is now the name that will have to be matched in
+  // parser_call_target_update.
+
+  funcname = xstrdup(funcname.c_str());
 
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" ")
-    SHOW_PARSE_TEXT(funcname)
+    SHOW_PARSE_TEXT(funcname.c_str())
     SHOW_PARSE_END
     }
 
-  if( !is_function && !parent_index )
+  if( !is_function && !original_parent_index )
     {
     // This is a top_level program-id, and not a function
     if( next_program_is_main )
@@ -3098,7 +3126,7 @@ parser_enter_program( const char *funcname_,
         // Because no explicit main_entry_point was specified, this program-id,
         // the first in the file, becomes the target of the main() function
         // that will be created at parser_leave_file time.
-        main_entry_point = xstrdup(funcname);
+        main_entry_point = xstrdup(funcname.c_str());
 
         char *psz = cobol_name_mangler(main_entry_point);
         strncpy(ach_cobol_entry_point, psz, sizeof(ach_cobol_entry_point)-1);
@@ -3119,28 +3147,26 @@ parser_enter_program( const char *funcname_,
     }
 
 #ifdef ENABLE_HIJACKING
-  if( strcmp(funcname, "dubner_h") == 0)
+  if( strcmp(funcname.c_str(), "dubner_h") == 0)
     {
     fprintf(stderr, "This is a DUBNER hijacking\n");
-    hijack_for_development(funcname);
+    hijack_for_development(funcname.c_str());
     return;
     }
 
 #endif
 
-  enter_program_common(funcname, funcname_);
+  enter_program_common(funcname.c_str(), funcname_);
   current_function->is_function = is_function;
 
   TRACE1
     {
     TRACE1_HEADER
     TRACE1_TEXT("entered program \"")
-    TRACE1_TEXT(funcname)
+    TRACE1_TEXT(funcname.c_str())
     TRACE1_TEXT("\"")
     TRACE1_END
     }
-
-  free(funcname);
   }
 
 static class label_verify_t {
@@ -3770,7 +3796,6 @@ dirty_to_binary(const char  *instring,
   return value;
   }
 
-
 static void
 psa_FldLiteralN(struct cbl_field_t *field )
   {
@@ -3807,8 +3832,10 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
   static size_t our_index = 0;
 
-  sprintf(id_string, "." HOST_SIZE_T_PRINT_DEC, (fmt_size_t)++our_index);
-  strcpy(base_name, field->name);
+  sprintf(id_string, HOST_SIZE_T_PRINT_DEC, (fmt_size_t)++our_index);
+  strcpy(base_name, "_");
+  strcat(base_name, field->name);
+  strcat(base_name, "_data_");
   strcat(base_name, id_string);
 
   tree var_type;
@@ -6323,60 +6350,134 @@ parser_arith_error_end(cbl_label_t *arithmetic_label)
   gg_append_statement( arithmetic_label->structs.arith_error->over.label );
   }
 
+// Preserve the existing traversal, including repeated entries from REDEFINES.
 static void
-propogate_linkage_offsets(cbl_field_t *field, tree base)
+collect_linkage_offsets(cbl_field_t *field,
+                        tree base,
+                        std::vector<cbl_field_t *> &fields)
   {
   if( field->level == LEVEL01 || field->level == LEVEL77 )
     {
     field->data_decl_node = base;
-    symbol_elem_t *e = symbol_at(field_index(field));
-    // We already updated the data pointer of the first element:
-    e += 1;
+    symbol_elem_t *e = symbol_at(field_index(field)) + 1;
     while( e < symbols_end() )
       {
-      symbol_elem_t& element = *e++;
+      symbol_elem_t &element = *e++;
       if( element.type == SymField )
         {
         cbl_field_t *this_one = cbl_field_of(&element);
         if( this_one->level == LEVEL01 || this_one->level == LEVEL77 )
           {
-          // We have encountered another level 01/77.  If this LEVEL 01 had a
-          // parent, then we have to assume that this is a redefines of another
-          // level 01/77.
           if( this_one->parent )
             {
-            // And, gloriously and frighteningly, it can be handled by
-            // recursion:
-            propogate_linkage_offsets(this_one, base);
+            collect_linkage_offsets(this_one, base, fields);
             }
           else
             {
-            // Having encountered the next 01 or 77, we are done
             break;
             }
           }
         if( this_one->level == 00 )
           {
-          // Ignore LEVEL00 "INDEXED BY" variables
           continue;
           }
-        tree offset = gg_define_variable(SIZE_T);
-        IF( base, eq_op, gg_cast(UCHAR_P, null_pointer_node) )
-          {
-          gg_assign(offset, size_t_zero_node);
-          }
-        ELSE
-          {
-          gg_assign(offset, member(this_one, "offset"));
-          }
-        ENDIF
         this_one->data_decl_node = base;
-        member( this_one,
-                "data",
-                gg_add(base, offset));
+        fields.push_back(this_one);
         }
       }
     }
+  }
+
+static void
+propagate_linkage_offsets(cbl_field_t *field, tree base)
+  {
+  std::vector<cbl_field_t *> fields;
+  collect_linkage_offsets(field, base, fields);
+  if( fields.empty() )
+    {
+    return;
+    }
+
+  // Both current callers supply an addressable pointer: a local variable
+  // for USING, or a descriptor's data member for SET ADDRESS OF.
+  // Retain the old emission for other expressions or nonstatic descriptors.
+  bool batchable = TREE_TYPE(base) == UCHAR_P
+                   && !TREE_THIS_VOLATILE(base)
+                   && (TREE_CODE(base) == VAR_DECL
+                       || TREE_CODE(base) == PARM_DECL
+                       || TREE_CODE(base) == COMPONENT_REF);
+  for( size_t i = 0; i < fields.size(); ++i )
+    {
+    tree decl = fields[i]->var_decl_node;
+    if( !decl
+        || TREE_CODE(decl) != VAR_DECL
+        || !TREE_STATIC(decl)
+        || DECL_EXTERNAL(decl)
+        || DECL_WEAK(decl)
+        || DECL_THREAD_LOCAL_P(decl)
+        || DECL_HAS_VALUE_EXPR_P(decl)
+        || TREE_THIS_VOLATILE(decl) )
+      {
+      batchable = false;
+      break;
+      }
+    }
+
+  if( !batchable )
+    {
+    for( size_t i = 0; i < fields.size(); ++i )
+      {
+      cbl_field_t *this_one = fields[i];
+      tree offset = gg_define_variable(SIZE_T);
+      IF( base, eq_op, gg_cast(UCHAR_P, null_pointer_node) )
+        {
+        gg_assign(offset, size_t_zero_node);
+        }
+      ELSE
+        {
+        gg_assign(offset, member(this_one, "offset"));
+        }
+      ENDIF
+      member(this_one, "data", gg_add(base, offset));
+      }
+    return;
+    }
+
+  static size_t table_number = 0;
+  char name[96];
+  snprintf(name, sizeof(name),
+           "..linkage_offsets_" HOST_SIZE_T_PRINT_DEC,
+           (fmt_size_t)table_number++);
+
+  tree array_type = build_array_type_nelts(VOID_P, fields.size());
+  vec<constructor_elt, va_gc> *elts = NULL;
+  for( size_t i = 0; i < fields.size(); ++i )
+    {
+    CONSTRUCTOR_APPEND_ELT(
+      elts,
+      build_int_cst_type(SIZE_T, i),
+      gg_cast(VOID_P, gg_get_address_of(fields[i]->var_decl_node)));
+    }
+  tree initializer = build_constructor(array_type, elts);
+  gcc_assert(TREE_CONSTANT(initializer));
+  TREE_STATIC(initializer) = 1;
+
+  tree table = gg_declare_variable(array_type, name, NULL_TREE,
+                                  vs_file_static);
+  DECL_INITIAL(table) = initializer;
+  TREE_READONLY(table) = 1;
+  DECL_ARTIFICIAL(table) = 1;
+  DECL_IGNORED_P(table) = 1;
+  gg_define_from_declaration(table);
+
+  // Pass the location of the base, not a snapshot of its value.  This
+  // preserves repeated reads if a preceding descriptor store changes it.
+  gg_call(VOID,
+          "__gg__propagate_linkage_offsets",
+          gg_pointer_to_array(table),
+          gg_get_address_of(base),
+          build_int_cst_type(SIZE_T, fields.size()),
+          NULL_TREE);
   }
 
 static bool initialized_data = false;
@@ -6663,7 +6764,7 @@ establish_using(size_t nusing,
 
         // We need to apply reference + offset to the LINKAGE variable
         // and all of its children
-        propogate_linkage_offsets( args[i].field(), reference );
+        propagate_linkage_offsets( args[i].field(), reference );
         }
 
       if( crv == by_value_e )
@@ -7573,7 +7674,7 @@ parser_label_goto(struct cbl_label_t *label)
 
 void
 parser_setop( struct cbl_field_t *tgt,
-              struct cbl_field_t *candidate,
+              struct cbl_refer_t &candidate,
               enum setop_t op,
               struct cbl_field_t *domain)
   {
@@ -7582,7 +7683,7 @@ parser_setop( struct cbl_field_t *tgt,
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_FIELD(" ", tgt)
-    SHOW_PARSE_FIELD(" = ", candidate)
+    SHOW_PARSE_FIELD(" = ", candidate.field)
     if( op == is_op )
       {
       SHOW_PARSE_TEXT(" is_op ")
@@ -7592,13 +7693,13 @@ parser_setop( struct cbl_field_t *tgt,
     }
 
   CHECK_FIELD(tgt);
-  CHECK_FIELD(candidate);
+  CHECK_FIELD(candidate.field);
   CHECK_FIELD(domain);
 
   TRACE1
     {
     TRACE1_HEADER
-    TRACE1_FIELD("parser_setop: ", candidate, "")
+    TRACE1_REFER("parser_setop: ", candidate, "")
     TRACE1_TEXT(" ")
     TRACE1_TEXT(setop_str(op))
     TRACE1_FIELD(" ", domain, "")
@@ -7610,25 +7711,28 @@ parser_setop( struct cbl_field_t *tgt,
   switch(op)
     {
     case is_op:
-      switch(candidate->type)
+      switch(candidate.field->type)
         {
         case FldGroup:
         case FldAlphanumeric:
-          gg_assign(tgt->var_decl_node, gg_build_relational_expression(
-                      gg_call_expr(INT,
-                                   "__gg__setop_compare",
-                                   gg_get_address_of(candidate->var_decl_node),
-                                   member(domain, "initial"),
-                                   NULL_TREE),
-                      ne_op,
-                      integer_zero_node));
+          gg_assign(tgt->var_decl_node,
+                    gg_build_relational_expression(gg_call_expr(
+                             INT,
+                             "__gg__setop_compare",
+                             gg_get_address_of(candidate.field->var_decl_node),
+                             refer_offset(candidate),
+                             refer_size_source(candidate),
+                             member(domain, "initial"),
+                             NULL_TREE),
+                                                    ne_op,
+                                                    integer_zero_node));
           break;
         default:
           dbgmsg("%10s in %s:%d", __func__, __FILE__, __LINE__ );
           cbl_internal_error("candidate %s has unimplemented %<CVT_type%> %d(%s)",
-                             candidate->name,
-                             candidate->type,
-                             cbl_field_type_str(candidate->type));
+                             candidate.field->name,
+                             candidate.field->type,
+                             cbl_field_type_str(candidate.field->type));
           gcc_unreachable();
           break;
         }
@@ -12793,8 +12897,6 @@ parser_call_exception_end( cbl_label_t *name )
   gg_append_statement( name->structs.call_exception->bottom.go_to );
   }
 
-
-
 static
 void
 create_and_call(size_t narg,
@@ -13007,10 +13109,10 @@ create_and_call(size_t narg,
 
     // Stash that address as the called program's signature:
     tree address_as_char_p = gg_cast(CHAR_P, address_of_function);
-    tree assigment = gg_assign( var_decl_call_parameter_signature,
+    tree assignment = gg_assign( var_decl_call_parameter_signature,
                                 address_as_char_p);
-    // The source of the assigment is the second element of a MODIFY_EXPR
-    parser_call_target( funcname, assigment );
+    // The source of the assignment is the second element of a MODIFY_EXPR
+    parser_call_target( funcname, assignment );
 
     // Create the call_expr from that address
     call_expr = build_call_array_loc( gg_token_location(),
@@ -13440,9 +13542,10 @@ parser_call(   cbl_refer_t name,
 
       if( except )
         {
-        // Preserve the existing ON EXCEPTION routing and reset placement.
-        gg_append_statement(except->structs.call_exception->into.go_to);
+        // Set the exception data, but clear the code, because
+        // ON EXCEPTION prevents exception process.
         gg_assign(var_decl_exception_code, integer_zero_node);
+        gg_append_statement(except->structs.call_exception->into.go_to);
         }
       else if( !literal_call && issue_warning )
         {
@@ -13786,7 +13889,7 @@ parser_set_pointers( size_t ntgt, cbl_refer_t *tgts, cbl_refer_t source )
         // When SET ADDRESS OF TARGET TO ..., the library call sets
         // tgts[i].field->data.  We need to propagate the data+offset
         // through the level01 variable's children:
-        propogate_linkage_offsets(tgts[i].field,
+        propagate_linkage_offsets(tgts[i].field,
                                   member(tgts[i].field->var_decl_node, "data"));
         }
       }
@@ -14042,13 +14145,32 @@ parser_program_hierarchy( const cbl_prog_hier_t& hier )
                   "%s." HOST_SIZE_T_PRINT_DEC,
                   (*callee)->name,
                   (fmt_size_t)(*callee)->parent_node->our_index);
+          std::string funcname = ach;
+          char *pdot = strchr(ach, '.');
+          if(pdot)
+            {
+            size_t parent_index = atol(pdot+1);
+            funcname = funcname.substr(0, pdot-ach);
+
+            while(parent_index)
+              {
+              const cbl_label_t *program_label = cbl_label_of(symbol_at(parent_index));
+              char *mangled_name = cobol_name_mangler(program_label->name);
+              std::string temp = mangled_name;
+              free(mangled_name);
+              temp += ".";
+              temp += funcname;
+              funcname = temp;
+              parent_index = symbol_at(parent_index)->program;
+              }
+            }
 
           CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr_names),
                                   build_int_cst_type(SIZE_T, i),
-                                  build_string_literal(ach));
+                                  build_string_literal(funcname.c_str()));
 
           // Build the constructor element for that function:
-          tree function_decl = build_fn_decl (ach, function_type);
+          tree function_decl = build_fn_decl (funcname.c_str(), function_type);
           tree addr_expr = build1(ADDR_EXPR, pointer_type, function_decl);
 
           CONSTRUCTOR_APPEND_ELT( CONSTRUCTOR_ELTS(constr),
@@ -14847,16 +14969,28 @@ psa_FldLiteralA(struct cbl_field_t *field )
 
   tree converted = convert_data_initial(field);
 
-  static const char name_base[] = "_literal_a_";
-
   static int nvar = 0;
-  nvar += 1;
+  char *name;
+  if( field->level == 78 )
+    {
+    name = xasprintf("%s.%d.%d",
+                     field->name,
+                     static_cast<int>(field->our_index),
+                     static_cast<int>(current_function->program_id_number));
+    }
+  else
+    {
+    name = xasprintf("%s_%d",
+                     "_literal_a_",
+                     nvar++);
+    }
 
-  char ach[32];
-  sprintf(ach, "%s%d", name_base, nvar);
-  field->var_decl_node  = gg_define_variable( cblc_field_type_node,
-                                              ach,
-                                              vs_file_static);
+  gg_variable_scope_t vs = field->level == 78 ? vs_static : vs_file_static ;
+  field->var_decl_node = gg_define_variable(cblc_field_type_node,
+                                            name,
+                                            vs);
+  free(name);
+
   TREE_READONLY(field->var_decl_node) = 1;
   TREE_USED(field->var_decl_node) = 1;
   TREE_STATIC(field->var_decl_node) = 1;
@@ -15517,7 +15651,11 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     // At this point, new_initial might have been set by
     // get_class_condition_string.  If not, we set it another way:
-    if( !level_88_string && !class_string)
+    if( new_var->type == FldLiteralN )
+      {
+      new_initial = new_var->data.original();
+      }
+    else if( !level_88_string && !class_string )
       {
       new_initial = const_cast<char *>(new_var->data.initial);
       length_of_initial_string = new_var->data.capacity();

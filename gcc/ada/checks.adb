@@ -4146,7 +4146,7 @@ package body Checks is
            and then Etype (N) = Entity (N)
          then
             Rewrite (N,
-              New_Occurrence_Of (First_Formal (Current_Subprogram), Loc));
+              New_Occurrence_Of (First_Formal (Enclosing_Init_Proc), Loc));
          end if;
 
          return OK;
@@ -4187,7 +4187,7 @@ package body Checks is
          --  Replace references to the current instance of the type with the
          --  corresponding _init formal of the initialization procedure.
 
-         if Within_Init_Proc then
+         if Inside_Init_Proc then
             Search_And_Replace_Current_Instance (Dval);
          end if;
 

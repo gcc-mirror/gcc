@@ -62,7 +62,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace pmr
   {
     template<typename _Tp>
-      using indirect = indirect<_Tp, polymorphic_allocator<_Tp>>;
+      using indirect = std::indirect<_Tp, polymorphic_allocator<_Tp>>;
   }
 #endif
 
@@ -462,7 +462,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   namespace pmr
   {
     template<typename _Tp>
-      using polymorphic = polymorphic<_Tp, polymorphic_allocator<_Tp>>;
+      using polymorphic = std::polymorphic<_Tp, polymorphic_allocator<_Tp>>;
   }
 
   // [polymorphic], class template polymorphic

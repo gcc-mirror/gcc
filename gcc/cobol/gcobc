@@ -86,6 +86,34 @@ then
     copydir="-I$COB_COPY_DIR"
 fi
 
+# if not available from the build tree, attempt to search the install directory.
+udf_default="${0%/*}/../$($gcobol -dumpmachine)/libgcobol/compat/gnu/cpy"
+if ! [ -d "$udf_default" ]
+then
+    install_dir="$($gcobol -print-search-dirs | grep '^install:' | awk '{print $2}')"
+    udf_default="$install_dir/cobol/compat/gnu/cpy"
+fi
+udfdir="${GCOBCUDF:-$udf_default}"
+
+if [ -d "$udfdir" ]
+then
+    # Feel free to add more UDFs below.
+    udfs=stored-char-length.cpy
+
+    for F in $udfs
+    do
+        if [ -f "$udfdir/$F" ]
+        then
+            includes="$includes -include $udfdir/$F "
+        fi
+    done
+else
+    if [ "${GCOBCUDF:-none}" != "none" ]
+    then
+        echo warning: no such directory: "'$GCOBCUDF'"
+    fi
+fi
+
 exit_status=0
 skip_arg=
 opts="$copydir $includes"
@@ -204,6 +232,8 @@ do
         -echo) echo="echo"
                ;;
 
+        # note: if warnings on not implemented GC exceptions should be suppressed,
+        # then use -Wno-ec-unknown
         -fec=* | -fno-ec=*)
             opt="$(echo "$opt" | sed -E 's/-f(no-)?ec=/-f\1cobol-exceptions=EC-/g')"
              opts="$opts $opt"
@@ -410,12 +440,16 @@ do
                ;;
         -i | --info) warn "$opt"
                      ;;
-        -include )
-            pending_arg=$opt
+
+        # include a COBOL copybook --> gcobol's -include
+        --copy)
+            pending_arg="-include "  # space-separation needed
             ;;
-        # no-space version: just concatenate
-        -include* )
-            opts="$opts $opt"
+        #
+
+        # include a C header --> no real option in gcobol
+        --include)
+            error "$opt $incomparable"
             ;;
         #
         # Options that may have a space  before the argument, or not
@@ -484,7 +518,7 @@ do
             ;;
          -q | --brief) warn "$opt"
                        ;;
-         -v | --verbose) opts="$opts -V"
+         -v | --verbose) opts="$opts -v"
                          ;;
          # -dumpversion, like all options not handled specifically, is
          # passed by default.
@@ -497,7 +531,8 @@ do
              # opts="$opts --version"
             ;;
         # pass through, -Wall support pending gcc to set for all front ends
-        # cobc does not support all gcc -Wl options
+        # note: while cobc does not support gcc's -Wl options, they
+        # might be passed anyway for different reasons e.g.: -Wl,rpath.
         -w | -W | -Wextra | -Wno-* | -Wl,*) opts="$opts $opt"
              ;;
 
@@ -533,7 +568,8 @@ done
 # cobc default:
 if [ "$static_used" = "" ]
 then
-    opts="-fno-static-call $opts";
+    # -export-dynamic required if CALLs occur within the same executable.
+    opts="-fno-static-call -export-dynamic $opts";
 fi
 
 if [ "$exit_status" -gt 0 ]

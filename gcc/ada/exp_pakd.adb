@@ -1169,13 +1169,11 @@ package body Exp_Pakd is
       --  out-of-range value by design. Compile this value without checks,
       --  because a call to the array init_proc must not raise an exception.
 
-      --  Condition is not consistent with description above, Within_Init_Proc
+      --  Condition is not consistent with description above, Inside_Init_Proc
       --  is True also when we are building the IP for a record or protected
       --  type that has a packed array component???
 
-      if Within_Init_Proc
-        and then Initialize_Scalars
-      then
+      if Inside_Init_Proc and then Initialize_Scalars then
          Analyze_And_Resolve (Rhs, Ctyp, Suppress => All_Checks);
       else
          Analyze_And_Resolve (Rhs, Ctyp);
@@ -1242,7 +1240,9 @@ package body Exp_Pakd is
 
          --  Determine if right side is all 0 bits or all 1 bits
 
-         if Compile_Time_Known_Value (Rhs) then
+         if Compile_Time_Known_Value (Rhs)
+           and then Is_Discrete_Type (Etype (Rhs))
+         then
             Rhs_Val := Expr_Rep_Value (Rhs);
 
          --  The following test catches the case of an unchecked conversion of

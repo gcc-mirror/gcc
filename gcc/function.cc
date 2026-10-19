@@ -5832,7 +5832,7 @@ record_insns (rtx_insn *insns, rtx end, hash_table<insn_cache_hasher> **hashp)
    insn, then record COPY as well.  */
 
 void
-maybe_copy_prologue_epilogue_insn (rtx insn, rtx copy)
+maybe_copy_prologue_epilogue_insn (rtx_insn *insn, rtx_insn *copy)
 {
   hash_table<insn_cache_hasher> *hash;
   rtx *slot;

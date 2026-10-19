@@ -80,8 +80,7 @@ do_reorder_for_imul (rtx_insn **ready, int n_ready)
 
       FOR_EACH_DEP (insn, SD_LIST_FORW, sd_it, dep)
 	{
-	  rtx con;
-	  con = DEP_CON (dep);
+	  rtx_insn *con = DEP_CON (dep);
 	  if (!NONDEBUG_INSN_P (con))
 	    continue;
 	  insn1 = PATTERN (con);
@@ -156,8 +155,7 @@ swap_top_of_ready_list (rtx_insn **ready, int n_ready)
       /* Determine winner more precise.  */
       FOR_EACH_DEP (top, SD_LIST_RES_BACK, sd_it, dep)
 	{
-	  rtx pro;
-	  pro = DEP_PRO (dep);
+	  rtx_insn *pro = DEP_PRO (dep);
 	  if (!NONDEBUG_INSN_P (pro))
 	    continue;
 	  if (INSN_TICK (pro) > clock1)
@@ -165,8 +163,7 @@ swap_top_of_ready_list (rtx_insn **ready, int n_ready)
 	}
       FOR_EACH_DEP (next, SD_LIST_RES_BACK, sd_it, dep)
 	{
-	  rtx pro;
-	  pro = DEP_PRO (dep);
+	  rtx_insn *pro = DEP_PRO (dep);
 	  if (!NONDEBUG_INSN_P (pro))
 	    continue;
 	  if (INSN_TICK (pro) > clock2)

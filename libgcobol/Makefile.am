@@ -45,6 +45,16 @@ if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la libgcobol_posix.la libgcobol_compat_gnu.la
 toolexeclib_DATA = libgcobol.spec
 
+# Expand the installation directory at make time, after multilib and
+# version-specific directory variables have acquired their final values.
+# DESTDIR is deliberately excluded: it is a staging location, not a runtime
+# search directory.  config.status supplies the other spec substitutions.
+libgcobol.spec: libgcobol.spec.conf Makefile $(srcdir)/mk-rpath-spec.sh
+	$(SHELL) $(srcdir)/mk-rpath-spec.sh "$(toolexeclibdir)" < $< > $@.tmp
+	mv $@.tmp $@
+
+CLEANFILES = libgcobol.spec libgcobol.spec.tmp
+
 libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)/cobol
 libsubincludedir = $(libsubdir)
 
@@ -66,6 +76,7 @@ libgcobol_la_SOURCES =      \
     posix/shim/lseek.cc     \
     posix/shim/open.cc      \
     posix/shim/stat.cc      \
+    posix/shim/gettime.cc   \
     stringbin.cc            \
     unstring.cc             \
     valconv.cc              \
@@ -99,7 +110,8 @@ libgcobol_posix_la_SOURCES =			\
 	posix/udf/posix-read.cbl		\
 	posix/udf/posix-stat.cbl		\
 	posix/udf/posix-unlink.cbl		\
-	posix/udf/posix-write.cbl
+	posix/udf/posix-write.cbl		\
+	posix/udf/posix-clock-gettime.cbl
 
 # Install the COBOL for the POSIX and compatibility libraries.
 nobase_libsubinclude_HEADERS =			\
@@ -113,6 +125,7 @@ nobase_libsubinclude_HEADERS =			\
 	posix/cpy/posix-open.cpy		\
 	posix/cpy/posix-read.cpy		\
 	posix/cpy/posix-stat.cpy		\
+	posix/cpy/posix-clock-gettime.cpy	\
 	posix/cpy/psx-lseek.cpy			\
 	posix/cpy/psx-open.cpy			\
 	posix/cpy/statbuf.cpy			\
@@ -187,8 +200,10 @@ $(LP_COPYDIR_BUILD)/%.cpy: ${srcdir}/posix/cpy/%.cpy
 libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
 version_arg = -version-info $(LIBGCOBOL_VERSION)
 libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
-	$(extra_ldflags_libgcobol) $(LIBS) $(LIBXML2_LIBS) $(version_arg)
-libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
+	$(extra_ldflags_libgcobol) $(LIBS) $(LIBXML2_LIBS) $(version_arg) \
+	-Wl,--version-script=$(srcdir)/libgcobol.map
+libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP) \
+	$(srcdir)/libgcobol.map
 
 # Rules for libgcobol_posix.so and libgcobol_compat_gnu.so, which have
 # COBOL sources.  They require gcobol and libgcobol to have already
@@ -203,16 +218,17 @@ libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
 
 libgcobol_posix_la_LINK = $(CXXLINK) $(libgcobol_posix_la_LDFLAGS)
 libgcobol_posix_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
-	$(extra_ldflags_libgcobol) $(LIBS) $(LIBXML2_LIBS) $(version_arg)
+	$(extra_ldflags_libgcobol) $(LIBS) $(LIBXML2_LIBS) $(version_arg) \
+	-Wl,--version-script=$(srcdir)/libgcobol_posix.map
 libgcobol_posix_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP) \
-	$(LP_COPYBOOKS)
+	$(LP_COPYBOOKS) $(srcdir)/libgcobol_posix.map
 
 libgcobol_compat_gnu_la_LINK = $(CXXLINK) $(libgcobol_compat_gnu_la_LDFLAGS)
 libgcobol_compat_gnu_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
-	$(extra_ldflags_libgcobol) $(LIBS) $(LIBXML2_LIBS) $(version_arg)
+	$(extra_ldflags_libgcobol) $(LIBS) $(LIBXML2_LIBS) $(version_arg) \
+	-Wl,--version-script=$(srcdir)/libgcobol_compat_gnu.map
 libgcobol_compat_gnu_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP) \
-	$(LC_COPYBOOKS)
-
+	$(LC_COPYBOOKS) $(srcdir)/libgcobol_compat_gnu.map
 
 LTCOBCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=compile $(AM_COBC) $(AM_COBFLAGS)
@@ -223,6 +239,7 @@ LTCOBCOMPILE = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 .cbl.lo:
 	$(LTCOBCOMPILE) $(COBFLAGS) $(MULTIFLAGS) -c -o $@ $<
 
-
+EXTRA_DIST = libgcobol.map libgcobol_posix.map libgcobol_compat_gnu.map \
+	mk-rpath-spec.sh testsuite/runpath.py README.runpath
 
 endif BUILD_LIBGCOBOL

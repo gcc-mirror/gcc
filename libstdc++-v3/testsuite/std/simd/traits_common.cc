@@ -372,6 +372,14 @@ static_assert([] { simd::vec<float> x = {}; return x.begin() - x.end(); }() == -
 static_assert([] { simd::vec<float> x = {}; return x.begin() - x.begin(); }() == 0);
 static_assert([] { simd::vec<float> x = {}; return x.begin() + 1 - x.begin(); }() == 1);
 static_assert([] { simd::vec<float> x = {}; return x.begin() + 1 - x.cbegin(); }() == 1);
+
+static_assert([] { simd::vec<float> x = {}; return std::begin(x) + std::size(x) == std::end(x); }());
+static_assert([] { simd::vec<float> x = {}; return std::cend(x) == std::cbegin(x) + std::size(x); }());
+static_assert([] { simd::vec<float> x = {}; return std::ranges::begin(x) + std::ranges::size(x) == std::ranges::end(x); }());
+static_assert([] { simd::vec<float> x = {}; return std::ranges::cend(x) == std::ranges::cbegin(x) + std::ranges::size(x); }());
+static_assert([] { simd::vec<float> x = {}; return std::ranges::rbegin(x) + std::ranges::size(x) == std::ranges::rend(x); }());
+static_assert([] { simd::vec<float> x = {}; return std::ranges::crend(x) == std::ranges::crbegin(x) + std::ranges::size(x); }());
+
 #endif
 
 // mask to vec ///////////////////////

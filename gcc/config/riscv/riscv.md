@@ -2903,6 +2903,19 @@
   DONE;
 })
 
+;; And TFmode.
+(define_expand "movtf"
+  [(set (match_operand:TF 0 "nonimmediate_operand")
+	(match_operand:TF 1 "general_operand"))]
+  ""
+{
+  if (TARGET_64BIT)
+    riscv_split_doubleword_move (operands[0], operands[1]);
+  else
+    riscv_split_quadword_move (operands[0], operands[1]);
+  DONE;
+})
+
 (define_expand "cmpmemsi"
   [(parallel [(set (match_operand:SI 0)
                (compare:SI (match_operand:BLK 1)
@@ -3201,7 +3214,7 @@
 ;; Canonical form for an extend of a logical shift right (sign/zero extraction).
 ;; Special cases, that are ignored (handled elsewhere):
 ;; * Single-bit extraction (Zbs/XTheadBs)
-;; * Single-bit extraction (Zicondops/XVentanaCondops)
+;; * Single-bit extraction (Zicondops)
 ;; * Single-bit extraction (SFB)
 ;; * Extraction instruction th.ext(u) (XTheadBb)
 ;; * lshrsi3_extend_2 (see above)
@@ -3212,7 +3225,7 @@
        (match_operand     2 "const_int_operand")
        (match_operand     3 "const_int_operand")))]
   "!((TARGET_ZBS || TARGET_XTHEADBS || TARGET_ZICOND
-      || TARGET_XVENTANACONDOPS || TARGET_SFB_ALU)
+      || TARGET_SFB_ALU)
      && (INTVAL (operands[2]) == 1))
    && !TARGET_XTHEADBB
    && !TARGET_XANDESPERF
@@ -3494,7 +3507,7 @@
 	(if_then_else:GPR (match_operand 1 "comparison_operator")
 			  (match_operand:GPR 2 "movcc_operand")
 			  (match_operand:GPR 3 "movcc_operand")))]
-  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND_LIKE
+  "TARGET_SFB_ALU || TARGET_XTHEADCONDMOV || TARGET_ZICOND
    || TARGET_MOVCC || TARGET_XMIPSCMOV"
 {
   if (riscv_expand_conditional_move (operands[0], operands[1],
@@ -5097,6 +5110,10 @@
 		 (match_operand 3 "const_int_operand" "n")))
    (clobber (match_scratch:DI 4 "=&r"))]
   "(TARGET_64BIT
+    /* If this might reasonably be a pack, then reject.  */
+    && !(TARGET_ZBKB
+	 && INTVAL (operands[2]) == BITS_PER_WORD / 2
+	 && (INTVAL (operands[3]) & ~HOST_WIDE_INT_C (0xffffffff)) == 0)
     && riscv_const_insns (operands[3], false) == 1
     && riscv_const_insns (GEN_INT (INTVAL (operands[3])
 			  << INTVAL (operands[2])), false) != 1)"
@@ -5463,6 +5480,25 @@
 }
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
+
+;; If the input operands are registers then we want to steer towards
+;; ADD, otherwise steer towards IOR.
+(define_expand "aop<mode>3"
+  [(set (match_operand:GPR 0 "register_operand")
+        (ior:GPR (match_operand:GPR 1 "register_operand")
+                 (match_operand:GPR 2 "arith_operand")))]
+  ""          
+  {
+    /* If we have shift-add insns and arguments are all registers, steer
+       towards PLUS, otherwise steer towards IOR.  */
+    if ((TARGET_ZBA && REG_P (operands[2]))
+	|| (TARGET_64BIT && GET_MODE (operands[0]) == SImode))
+      emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
+    else
+      emit_insn (gen_ior<mode>3 (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+) 
 
 (include "bitmanip.md")
 (include "crypto.md")

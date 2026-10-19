@@ -67,9 +67,39 @@ test02()
   static_assert(ranges::mismatch(ya, yb, {}, &Y::i, &Y::j).in2 == yb+2);
 }
 
+void
+test03()
+{
+  // Bug 127918 - ranges::mismatch fails to use borrowed_iterator_t
+
+  int a[3] = {1, 2, 3};
+  using RA = test_range<int, input_iterator_wrapper>;
+  short b[3] = {1, 2, 4};
+  using RB = test_range<short, input_iterator_wrapper>;
+
+  {
+    RA ra(a);
+    auto ret = ranges::mismatch(ra, RB(b));
+    static_assert( std::is_same_v<decltype(ret.in1), ranges::iterator_t<RA>> );
+    static_assert( std::is_same_v<decltype(ret.in2), ranges::dangling> );
+  }
+  {
+    RB rb(b);
+    auto ret = ranges::mismatch(RA(a), rb);
+    static_assert( std::is_same_v<decltype(ret.in1), ranges::dangling> );
+    static_assert( std::is_same_v<decltype(ret.in2), ranges::iterator_t<RB>> );
+  }
+  {
+    auto ret = ranges::mismatch(RA(a), RB(b));
+    static_assert( std::is_same_v<decltype(ret.in1), ranges::dangling> );
+    static_assert( std::is_same_v<decltype(ret.in2), ranges::dangling> );
+  }
+}
+
 int
 main()
 {
   test01();
   test02();
+  test03();
 }

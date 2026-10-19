@@ -55,7 +55,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "builtins.h"
 #include "cfgexpand.h"
-#include "output.h"
 
 
 /* Functions and data structures for expanding case statements.  */

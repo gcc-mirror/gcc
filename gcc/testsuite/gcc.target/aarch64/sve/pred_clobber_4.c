@@ -12,6 +12,7 @@ extern void use(svbool_t);
 ** foo:
 **	...
 **	ptrue	p0.b, all
+**	mov	z[0-9]+.h, w0
 **	cmplo	p0.h, p0/z, z0.h, z[0-9]+.h
 **	...
 */

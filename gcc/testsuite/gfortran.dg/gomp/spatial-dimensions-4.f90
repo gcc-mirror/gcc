@@ -65,7 +65,7 @@ end do
 block
   x = 1
 end block
-! { dg-final { scan-tree-dump-times "#pragma omp parallel message\\(.my77. \\\[len:4\\\]\\)severity\\(fatal\\) num_threads\\(dims\\(\\):77\\) shared\\(x\\) \\\[child fn" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp parallel message\\(.my77. \\\[len:4\\\]\\) severity\\(fatal\\) num_threads\\(dims\\(\\):77\\) shared\\(x\\) \\\[child fn" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel \\(sub_._omp_fn.\[0-9\]+, &.omp_data_o.\[0-9\]+, 77, 0\\);" 1 "ompexp" } }
 
 
@@ -90,10 +90,10 @@ end block
 ! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-1\\) thread_limit\\(991\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(191, 993\\) thread_limit\\(991\\) shared\\(x\\)" 1 "omplower" } }
 
-!$omp teams thread_limit(relaxed : 1231) message("my1234") severity(warning)
+!$omp teams thread_limit(relaxed : 1231) message("my1234")
 block
 end block 
-! { dg-final { scan-tree-dump-times "#pragma omp teams message\\(.my1234. \\\[len:6\\\]\\) severity\\(warning\\) thread_limit\\(1231\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams message\\(.my1234. \\\[len:6\\\]\\) severity\\(fatal\\) thread_limit\\(1231\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_teams_reg \\(sub_._omp_fn.\[0-9\]+, 0B, 0, 1231, 0\\);" 1 "ompexp" } }
 
 end

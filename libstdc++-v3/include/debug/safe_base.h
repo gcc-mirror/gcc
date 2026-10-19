@@ -51,12 +51,14 @@ namespace __gnu_debug
   {
     friend class _Safe_sequence_base;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
   public:
     /** The sequence this iterator references; may be NULL to indicate
      *  a singular iterator. Stored as pointer-to-const because sequence
      *  could be declared as const.
      */
-    const _Safe_sequence_base*	_M_sequence;
+    const _Safe_sequence_base*	_M_sequence = 0;
 
     /** The version number of this iterator. The sentinel value 0 is
      *  used to indicate an invalidated iterator (i.e., one that is
@@ -65,22 +67,20 @@ namespace __gnu_debug
      *  referenced by _M_sequence for the iterator to be
      *  non-singular.
      */
-    unsigned int		_M_version;
+    unsigned int		_M_version = 0;
 
     /** Pointer to the previous iterator in the sequence's list of
 	iterators. Only valid when _M_sequence != NULL. */
-    _Safe_iterator_base*	_M_prior;
+    _Safe_iterator_base*	_M_prior = 0;
 
     /** Pointer to the next iterator in the sequence's list of
 	iterators. Only valid when _M_sequence != NULL. */
-    _Safe_iterator_base*	_M_next;
+    _Safe_iterator_base*	_M_next = 0;
 
   protected:
     /** Initializes the iterator and makes it singular. */
     _GLIBCXX20_CONSTEXPR
-    _Safe_iterator_base()
-    : _M_sequence(0), _M_version(0), _M_prior(0), _M_next(0)
-    { }
+    _Safe_iterator_base() = default;
 
     /** Initialize the iterator to reference the sequence pointed to
      *  by @p __seq. @p __constant is true when we are initializing a
@@ -91,7 +91,7 @@ namespace __gnu_debug
      */
     _GLIBCXX20_CONSTEXPR
     _Safe_iterator_base(const _Safe_sequence_base* __seq, bool __constant)
-    : _M_sequence(0), _M_version(0), _M_prior(0), _M_next(0)
+    : _Safe_iterator_base()
     {
       if (!std::__is_constant_evaluated())
 	this->_M_attach(__seq, __constant);
@@ -102,11 +102,12 @@ namespace __gnu_debug
 	iterator, and false if it is mutable. */
     _GLIBCXX20_CONSTEXPR
     _Safe_iterator_base(const _Safe_iterator_base& __x, bool __constant)
-    : _M_sequence(0), _M_version(0), _M_prior(0), _M_next(0)
+    : _Safe_iterator_base()
     {
       if (!std::__is_constant_evaluated())
 	this->_M_attach(__x._M_sequence, __constant);
     }
+#pragma GCC diagnostic pop
 
     _GLIBCXX20_CONSTEXPR
     ~_Safe_iterator_base()
@@ -219,28 +220,29 @@ namespace __gnu_debug
   {
     friend class _Safe_iterator_base;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++11-extensions"
   public:
     /// The list of mutable iterators that reference this container
-    mutable _Safe_iterator_base* _M_iterators;
+    mutable _Safe_iterator_base*	_M_iterators = 0;
 
     /// The list of constant iterators that reference this container
-    mutable _Safe_iterator_base* _M_const_iterators;
+    mutable _Safe_iterator_base*	_M_const_iterators = 0;
 
     /// The container version number. This number may never be 0.
-    mutable unsigned int _M_version;
+    mutable unsigned int		_M_version = 1;
 
   protected:
     // Initialize with a version number of 1 and no iterators
     _GLIBCXX20_CONSTEXPR
-    _Safe_sequence_base() _GLIBCXX_NOEXCEPT
-    : _M_iterators(0), _M_const_iterators(0), _M_version(1)
-    { }
+    _Safe_sequence_base() = default;
+
+    _GLIBCXX20_CONSTEXPR
+    _Safe_sequence_base(const _Safe_sequence_base&) _GLIBCXX_NOEXCEPT
+    : _Safe_sequence_base() { }
+#pragma GCC diagnostic pop
 
 #if __cplusplus >= 201103L
-    _GLIBCXX20_CONSTEXPR
-    _Safe_sequence_base(const _Safe_sequence_base&) noexcept
-    : _Safe_sequence_base() { }
-
     // Move constructor swap iterators.
     _GLIBCXX20_CONSTEXPR
     _Safe_sequence_base(_Safe_sequence_base&& __seq) noexcept

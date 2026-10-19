@@ -6,18 +6,15 @@
 
 /*
 ** callee_pred:
-**	brkpa	(p[0-3])\.b, p0/z, p1\.b, p2\.b
-** (
-**	ldr	(p[0-3]), \[x0\]
-**	ldr	(p[0-3]), \[x1\]
-**	brkpb	(p[0-3])\.b, \1/z, \2\.b, \3\.b
+**	addvl	sp, sp, #-1
+**	str	p[0-9]+, \[sp\]
+**	ldr	(p[0-9]+), \[x0\]
+**	brkpa	(p[0-7])\.b, p0/z, p1\.b, p2\.b
+**	ldr	(p[0-9]+), \[x1\]
+**	brkpb	(p[0-7])\.b, \2/z, \1\.b, \3\.b
 **	brka	p0\.b, \4/z, p3\.b
-** |
-**	ldr	(p[0-3]), \[x1\]
-**	ldr	(p[0-3]), \[x0\]
-**	brkpb	(p[0-3])\.b, \1/z, \6\.b, \5\.b
-**	brka	p0\.b, \7/z, p3\.b
-** )
+**	ldr	p[0-9]+, \[sp\]
+**	addvl	sp, sp, #1
 **	ret
 */
 __SVBool_t __attribute__((noipa, optimize("schedule-insns")))

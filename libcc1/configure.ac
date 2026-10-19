@@ -18,7 +18,7 @@ dnl <http://www.gnu.org/licenses/>.
 
 AC_INIT([libcc1], [version-unused])
 AC_CONFIG_SRCDIR([libcc1.cc])
-AC_CONFIG_HEADER(cc1plugin-config.h)
+AC_CONFIG_HEADERS([cc1plugin-config.h])
 
 AC_CANONICAL_TARGET
 AC_USE_SYSTEM_EXTENSIONS

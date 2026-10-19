@@ -307,7 +307,7 @@ range_def_chain::clear (tree name)
   m_def_chain[v].ssa1 = 0;
   m_def_chain[v].ssa2 = 0;
   m_def_chain[v].bm = NULL;
-  get_def_chain (name);
+  m_def_chain[v].m_import = NULL;
 }
 
 // Dump what we know for basic block BB to file F.

@@ -21,12 +21,19 @@
 # If the first parameter reads --patch, the second parameter is considered
 # a patch file.
 #
-# If the first parameter is --touch, no svn operation will be performed,
-# only generated files that appear to be out of date in the local tree
-# will be touched.
+# If the first parameter is --touch, no update will be performed, only
+# generated files that appear to be out of date in the local tree will
+# be touched.
 #
 # If the first parameter is --list, a list of the generated files and
 # their dependencies will be printed; --help prints this message.
+#
+# If the first parameter is --no-fetch, then suppress the git fetch
+# step and rebase only on the current working tree from the local
+# repository.  This can be used to update multiple worktrees that
+# share a common git tree that was previously synced.  Any additional
+# arguments are interpreted as arguments to git rebase.  Ignored when
+# not using git.
 #
 # If the first parameter is --silent, this script prints nothing other
 # than error messages; the second parameter is then interpreted as above.
@@ -37,6 +44,7 @@
 # contrib/gcc_update --patch some-patch
 # contrib/gcc_update --touch
 # contrib/gcc_update --list
+# contrib/gcc_update --no-fetch
 
 
 # Default options used when updating (none).
@@ -52,6 +60,9 @@ export LANG LC_ALL
 
 # Arrange for the value of $0 to be available for functions
 self=$0
+
+# (Git only), suppress fetching the repository from upstream.
+unset nofetch
 
 # This function prints its arguments to standard output unless
 # "silent" is set.
@@ -300,6 +311,11 @@ case "$1" in
     exit $?
     ;;
 
+--no-fetch)
+    nofetch=t
+    shift
+    ;;
+
 --help)
     sed -e '1,2d' -e '/^UPDATE_OPTIONS=/{i\
 \
@@ -345,11 +361,20 @@ case $vcs_type in
             exit 1
 	fi
 
-	$GCC_GIT pull ${silent+-q} --rebase ${1+"$@"}
-	if [ $? -ne 0 ]; then
-            (touch_files_reexec)
-            echo "git pull of full tree failed." >&2
-            exit 1
+	if [ -n "${nofetch}" ]; then
+	    $GCC_GIT rebase --fork-point ${silent+-q} ${1+"$@"}
+	    if [ $? -ne 0 ]; then
+		(touch_files_reexec)
+		echo "git rebase of full tree failed." >&2
+		exit 1
+	    fi
+	else
+	    $GCC_GIT pull ${silent+-q} --rebase ${1+"$@"}
+	    if [ $? -ne 0 ]; then
+		(touch_files_reexec)
+		echo "git pull of full tree failed." >&2
+		exit 1
+	    fi
 	fi
 
 	# Open-coded version of "git gcc-descr" from contrib/gcc-git-customization.sh

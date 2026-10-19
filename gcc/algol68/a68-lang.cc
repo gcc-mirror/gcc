@@ -207,6 +207,61 @@ a68_build_a68_type_nodes (void)
   a68_real_type = float_type_node;
   a68_long_real_type = double_type_node;
   a68_long_long_real_type = long_double_type_node;
+
+  /* Please note that it is important for the fixed sized modes defined below
+     (like word int, word real, etc) to be defined in terms of standard types,
+     since there is code in the lowering pass that relies on that.  */
+
+  /* WORD INT */
+  if (TYPE_PRECISION (a68_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_int_type;
+  else if (TYPE_PRECISION (a68_long_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_long_int_type;
+  else if (TYPE_PRECISION (a68_long_long_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_long_long_int_type;
+  else if (TYPE_PRECISION (a68_short_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_short_int_type;
+  else if (TYPE_PRECISION (a68_short_short_int_type) == POINTER_SIZE)
+    a68_word_int_type = a68_short_short_int_type;
+  else
+    gcc_unreachable ();
+
+  /* WORD BITS */
+  if (TYPE_PRECISION (a68_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_bits_type;
+  else if (TYPE_PRECISION (a68_long_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_long_bits_type;
+  else if (TYPE_PRECISION (a68_long_long_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_long_long_bits_type;
+  else if (TYPE_PRECISION (a68_short_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_short_bits_type;
+  else if (TYPE_PRECISION (a68_short_short_bits_type) == POINTER_SIZE)
+    a68_word_bits_type = a68_short_short_bits_type;
+  else
+    gcc_unreachable ();
+
+  /* WORD BYTES */
+  if (TYPE_PRECISION (a68_bytes_type) == POINTER_SIZE)
+    a68_word_bytes_type = a68_bytes_type;
+  else if (TYPE_PRECISION (a68_long_bytes_type) == POINTER_SIZE)
+    a68_word_bytes_type = a68_long_bytes_type;
+  else
+    gcc_unreachable ();
+
+  /* WORD REAL */
+  if (TYPE_PRECISION (a68_real_type) == POINTER_SIZE)
+    a68_word_real_type = a68_real_type;
+  else if (TYPE_PRECISION (a68_long_real_type) == POINTER_SIZE)
+    a68_word_real_type = a68_long_real_type;
+  else if (TYPE_PRECISION (a68_long_long_real_type) == POINTER_SIZE)
+    a68_word_real_type = a68_long_long_real_type;
+  else if (float16_type_node && TYPE_PRECISION (float16_type_node) == POINTER_SIZE)
+    a68_word_real_type = float16_type_node;
+  else if (bfloat16_type_node && TYPE_PRECISION (bfloat16_type_node) == POINTER_SIZE)
+    a68_word_real_type = bfloat16_type_node;
+  else
+    /* This should not happen for 16-, 32- and 64- bit targets.  */
+    gcc_unreachable ();
 }
 
 /* Language hooks data structures.  This is the main interface between
@@ -222,14 +277,15 @@ a68_build_a68_type_nodes (void)
 static bool
 a68_init (void)
 {
+  /* Initialize binding contexts.  */
+  a68_init_ranges ();
+
   build_common_tree_nodes (false);
   a68_build_a68_type_nodes ();
   targetm.init_builtins ();
   build_common_builtin_nodes ();
   a68_install_builtins ();
 
-  /* Initialize binding contexts.  */
-  a68_init_ranges ();
 
   /* Set the type of size_t.  */
   if (TYPE_MODE (long_unsigned_type_node) == ptr_mode)
@@ -281,6 +337,9 @@ a68_type_for_mode (enum machine_mode mode, int unsignedp)
   if (mode == TYPE_MODE (a68_long_long_bits_type))
     return unsignedp ? a68_long_long_bits_type : a68_long_long_int_type;
 
+  if (mode == TYPE_MODE (a68_word_bits_type))
+    return unsignedp ? a68_word_bits_type : a68_word_int_type;
+
   if (mode == TYPE_MODE (a68_real_type))
     return a68_real_type;
 
@@ -289,6 +348,9 @@ a68_type_for_mode (enum machine_mode mode, int unsignedp)
 
   if (mode == TYPE_MODE (a68_long_long_real_type))
     return a68_long_long_real_type;
+
+  if (mode == TYPE_MODE (a68_word_real_type))
+    return a68_word_real_type;
 
   if (mode == TYPE_MODE (build_pointer_type (char_type_node)))
     return build_pointer_type (char_type_node);
@@ -399,20 +461,6 @@ a68_getdecls (void)
 #undef LANG_HOOKS_GETDECLS
 #define LANG_HOOKS_GETDECLS a68_getdecls
 
-/* Return A68_GLOBAL_CONTEXT, but create it first if need be.  */
-
-static tree
-get_global_context (void)
-{
-  if (!A68_GLOBAL_CONTEXT)
-    {
-      A68_GLOBAL_CONTEXT = build_translation_unit_decl (NULL_TREE);
-      debug_hooks->register_main_translation_unit (A68_GLOBAL_CONTEXT);
-    }
-
-  return A68_GLOBAL_CONTEXT;
-}
-
 /* Implements the lang_hooks.decls.pushdecl routine.
    Record DECL as belonging to the current lexical scope.  */
 
@@ -426,7 +474,7 @@ pushdecl (tree decl)
       if (current_function_decl)
 	DECL_CONTEXT (decl) = current_function_decl;
       else
-	DECL_CONTEXT (decl) = get_global_context ();
+	DECL_CONTEXT (decl) = a68_range_context ();
     }
 
   /* Put decls on list in reverse order.  */
@@ -542,7 +590,7 @@ a68_handle_option (size_t scode,
 	if (file == NULL)
 	  fatal_error (UNKNOWN_LOCATION,
 		       "cannot open modules map file %<%s%>", arg);
-	
+
 	ssize_t ssize = a68_file_size (fileno (file));
 	if (ssize < 0)
 	  fatal_error (UNKNOWN_LOCATION,

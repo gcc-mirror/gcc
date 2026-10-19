@@ -50,9 +50,6 @@ initialize_shared_mutex (caf_shmem_mutex *mutex)
   pthread_mutexattr_t mattr;
   ERRCHECK (pthread_mutexattr_init (&mattr));
   ERRCHECK (pthread_mutexattr_setpshared (&mattr, PTHREAD_PROCESS_SHARED));
-#ifdef PTHREAD_MUTEX_ROBUST
-  ERRCHECK (pthread_mutexattr_setrobust (&mattr, PTHREAD_MUTEX_ROBUST));
-#endif
   ERRCHECK (pthread_mutex_init (mutex, &mattr));
   ERRCHECK (pthread_mutexattr_destroy (&mattr));
 }
@@ -64,9 +61,6 @@ initialize_shared_errorcheck_mutex (caf_shmem_mutex *mutex)
   ERRCHECK (pthread_mutexattr_init (&mattr));
   ERRCHECK (pthread_mutexattr_settype (&mattr, PTHREAD_MUTEX_ERRORCHECK));
   ERRCHECK (pthread_mutexattr_setpshared (&mattr, PTHREAD_PROCESS_SHARED));
-#ifdef PTHREAD_MUTEX_ROBUST
-  ERRCHECK (pthread_mutexattr_setrobust (&mattr, PTHREAD_MUTEX_ROBUST));
-#endif
   ERRCHECK (pthread_mutex_init (mutex, &mattr));
   ERRCHECK (pthread_mutexattr_destroy (&mattr));
 }

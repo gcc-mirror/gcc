@@ -81,9 +81,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_out_of_range(const char*) __attribute__((__noreturn__,__cold__));
 
+#if __cplusplus >= 201103L
+  // C++98 does not support %zu which is used in most calls to this function.
+  [[__gnu__::__format__(__gnu_printf__, 1, 2)]]
+#endif
   void
   __throw_out_of_range_fmt(const char*, ...)
-    __attribute__((__noreturn__,__cold__,__format__(__gnu_printf__, 1, 2)));
+  __attribute__((__noreturn__,__cold__));
 
   void
   __throw_runtime_error(const char*) __attribute__((__noreturn__,__cold__));

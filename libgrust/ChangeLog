@@ -1,3 +1,34 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* libformat_parser/Makefile.in: Regenerate.
+	* libproc_macro_internal/Makefile.in: Regenerate.
+	* acinclude.m4: New file.  Include ../config/mmap.m4.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-13  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rustc-lib/version-info: Regenerate, now mentions stdarch.
+	* contrib/vendor-libs.sh: New file.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac (AC_HEADER_SYS_WAIT): Delete.
+	(AC_CHECK_HEADERS): Delete
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac: Drop AC_HEADER_STDC.
+
 2026-09-16  Enes Cevik  <enes@nsvke.com>
 
 	* rustc-lib/version-info:

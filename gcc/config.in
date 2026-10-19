@@ -862,21 +862,9 @@
 #endif
 
 
-/* Define to 1 if you have the `clock' function. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_CLOCK
-#endif
-
-
 /* Define to 1 if you have the `clock_gettime' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_CLOCK_GETTIME
-#endif
-
-
-/* Define if <time.h> defines clock_t. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_CLOCK_T
 #endif
 
 
@@ -893,29 +881,10 @@
 #endif
 
 
-/* Define to 1 if we found a declaration for 'abort', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_ABORT
-#endif
-
-
 /* Define to 1 if we found a declaration for 'asprintf', otherwise define to
    0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_ASPRINTF
-#endif
-
-
-/* Define to 1 if we found a declaration for 'atof', otherwise define to 0. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_ATOF
-#endif
-
-
-/* Define to 1 if we found a declaration for 'atol', otherwise define to 0. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_ATOL
 #endif
 
 
@@ -933,31 +902,10 @@
 #endif
 
 
-/* Define to 1 if we found a declaration for 'calloc', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_CALLOC
-#endif
-
-
 /* Define to 1 if we found a declaration for 'clearerr_unlocked', otherwise
    define to 0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_CLEARERR_UNLOCKED
-#endif
-
-
-/* Define to 1 if we found a declaration for 'clock', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_CLOCK
-#endif
-
-
-/* Define to 1 if we found a declaration for 'errno', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_ERRNO
 #endif
 
 
@@ -1044,12 +992,6 @@
 #endif
 
 
-/* Define to 1 if we found a declaration for 'free', otherwise define to 0. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_FREE
-#endif
-
-
 /* Define to 1 if we found a declaration for 'fwrite_unlocked', otherwise
    define to 0. */
 #ifndef USED_FOR_TARGET
@@ -1075,13 +1017,6 @@
    to 0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_GETC_UNLOCKED
-#endif
-
-
-/* Define to 1 if we found a declaration for 'getenv', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_GETENV
 #endif
 
 
@@ -1148,13 +1083,6 @@
 #endif
 
 
-/* Define to 1 if we found a declaration for 'malloc', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_MALLOC
-#endif
-
-
 /* Define to 1 if we found a declaration for 'mkstemps', otherwise define to
    0. */
 #ifndef USED_FOR_TARGET
@@ -1173,13 +1101,6 @@
    to 0. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_PUTC_UNLOCKED
-#endif
-
-
-/* Define to 1 if we found a declaration for 'realloc', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_REALLOC
 #endif
 
 
@@ -1238,31 +1159,10 @@
 #endif
 
 
-/* Define to 1 if you have the declaration of `strstr(const char*,const
-   char*)', and to 0 if you don't. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_STRSTR
-#endif
-
-
-/* Define to 1 if we found a declaration for 'strtol', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_STRTOL
-#endif
-
-
 /* Define to 1 if we found a declaration for 'strtoll', otherwise define to 0.
    */
 #ifndef USED_FOR_TARGET
 #undef HAVE_DECL_STRTOLL
-#endif
-
-
-/* Define to 1 if we found a declaration for 'strtoul', otherwise define to 0.
-   */
-#ifndef USED_FOR_TARGET
-#undef HAVE_DECL_STRTOUL
 #endif
 
 
@@ -1726,6 +1626,12 @@
 #endif
 
 
+/* Define if your linker supports --prune-vectab. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_LD_AVR_PRUNE_VECTAB
+#endif
+
+
 /* Define if your linker supports -z bndplt */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_BNDPLT_SUPPORT
@@ -1862,18 +1768,6 @@
 /* Define to 1 if you have the <libgen.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LIBGEN_H
-#endif
-
-
-/* Define to 1 if you have the <limits.h> header file. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LIMITS_H
-#endif
-
-
-/* Define to 1 if you have the <locale.h> header file. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LOCALE_H
 #endif
 
 
@@ -2040,12 +1934,6 @@
 #endif
 
 
-/* Define to 1 if you have the <stddef.h> header file. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_STDDEF_H
-#endif
-
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_STDINT_H
@@ -2166,12 +2054,6 @@
 /* Define to 1 if you have the `times' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_TIMES
-#endif
-
-
-/* Define to 1 if you have the <time.h> header file. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_TIME_H
 #endif
 
 
@@ -2750,12 +2632,6 @@
 #undef caddr_t
 #endif
 
-
-/* Define to `__inline__' or `__inline' if that's what the C compiler
-   calls it, or to nothing if 'inline' is not supported under any name.  */
-#ifndef __cplusplus
-#undef inline
-#endif
 
 /* Define to the type of a signed integer type of width exactly 16 bits if
    such a type exists and the standard includes do not define it. */

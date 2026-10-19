@@ -1,6 +1,7 @@
 // { dg-do compile }
 // { dg-options "-fgnu-tm" }
 // { dg-skip-if "requires hosted libstdc++ for list" { ! hostedlib } }
+// { dg-skip-if "hppa64 size_t type width conflicts with gnu-tm builtin allocation mappings" { hppa*64*-*-hpux* } }
 
 #include <list>
 class Game

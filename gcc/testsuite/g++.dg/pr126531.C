@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-options "-O2" }
 //
 /* More than 16 bytes, so S is returned in memory.  *p becomes the return slot
    of the call and GIMPLE keeps a single statement "*p_7(D) = h (k_8(D));",

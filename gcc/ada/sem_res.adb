@@ -9389,6 +9389,7 @@ package body Sem_Res is
       function Get_Literal (Expr : Node_Id) return Node_Id is
          pragma Assert (Compile_Time_Known_Value (Expr));
          Result : Node_Id;
+
       begin
          case Nkind (Expr) is
             when N_Has_Entity =>
@@ -9397,30 +9398,23 @@ package body Sem_Res is
                else
                   Result := Constant_Value (Entity (Expr));
                end if;
-            when N_Numeric_Or_String_Literal =>
+            when N_Aggregate | N_Numeric_Or_String_Literal =>
                Result := Expr;
             when others =>
                raise Program_Error;
          end case;
 
          pragma Assert
-           (Nkind (Result) in N_Numeric_Or_String_Literal
-              or else Ekind (Entity (Result)) = E_Enumeration_Literal);
+           (Nkind (Result) in N_Aggregate | N_Numeric_Or_String_Literal
+             or else Ekind (Entity (Result)) = E_Enumeration_Literal);
+
          return Result;
       end Get_Literal;
-
-      --  Local variables
-
-      Loc : constant Source_Ptr := Sloc (N);
 
    --  Start of processing for Resolve_Expression_With_Actions
 
    begin
       Set_Etype (N, Typ);
-
-      if Is_Empty_List (Actions (N)) then
-         pragma Assert (All_OK_For_Static); null;
-      end if;
 
       --  If the value of the expression is known at compile time, and all
       --  of the actions (if any) are suitable, then replace the declare
@@ -9433,7 +9427,7 @@ package body Sem_Res is
          elsif All_OK_For_Static then
             Rewrite
               (N, New_Copy_Tree
-                    (Get_Literal (Expression (N)), New_Sloc => Loc));
+                    (Get_Literal (Expression (N)), New_Sloc => Sloc (N)));
          end if;
       end if;
    end Resolve_Expression_With_Actions;

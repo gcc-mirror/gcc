@@ -62,9 +62,6 @@ TargetVariable
 int riscv_xthead_subext
 
 TargetVariable
-int riscv_xventana_subext
-
-TargetVariable
 int riscv_za_subext
 
 TargetVariable
@@ -476,8 +473,6 @@ Mask(XTHEADMEMPAIR) Var(riscv_xthead_subext)
 Mask(XTHEADSYNC) Var(riscv_xthead_subext)
 
 Mask(XTHEADVECTOR) Var(riscv_xthead_subext)
-
-Mask(XVENTANACONDOPS) Var(riscv_xventana_subext)
 
 Mask(XMIPSCMOV) Var(riscv_xmips_subext)
 

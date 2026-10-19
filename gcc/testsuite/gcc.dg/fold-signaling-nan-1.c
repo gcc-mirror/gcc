@@ -1,0 +1,12 @@
+/* { dg-do compile } */
+/* { dg-options "-O2 -fsignaling-nans -fdump-tree-optimized" } */
+/* { dg-add-options ieee } */
+
+double foo(double x)
+{
+  return (x + 0.0) * 1.0;
+}
+
+/* { dg-final { scan-tree-dump " \\+ " "optimized" } } */
+/* { dg-final { scan-tree-dump-not " \\* " "optimized" } } */
+

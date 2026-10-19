@@ -1,3 +1,22 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for inttypes.h, stdint.h, sys/auxv.h,
+	sys/mman.h, sys/stat.h, sys/types.h, or unistd.h.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure.ac: Include ../config/mmap.m4.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in (STDC_HEADERS): Delete.
+	* configure: Regenerate.
+	* configure.ac: Drop AC_HEADER_STDC.
+
 2026-09-11  Manjunath Matti  <mmatti@linux.ibm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

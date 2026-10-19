@@ -1,12 +1,12 @@
         >> PUSH source format
         >>SOURCE format is fixed
+        COPY "cblproto.cpy".
         IDENTIFICATION DIVISION.
         FUNCTION-ID. COBRT-FILE-STATUS.
         DATA DIVISION.
         WORKING-STORAGE SECTION.
         01 FsErrno CONSTANT 1000000.
         LINKAGE SECTION.
-        01 ERRNO BINARY-LONG.
         01 FILE-STATUS PIC X(2) COMP-5.
         01 REDEFINES FILE-STATUS.
           03 MSB PIC X.

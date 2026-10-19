@@ -580,7 +580,15 @@ force_rvalue (tree expr, tsubst_flags_t complain)
 tree
 force_lvalue (tree expr, tsubst_flags_t complain)
 {
-  if (!lvalue_p (expr))
+  if (lvalue_p (expr))
+    return expr;
+
+  /* If we build up *&TARGET_EXPR, we have an lvalue, but it could be
+     folded back to a prvalue by removing the *&.  */
+  if (TREE_CODE (expr) == TARGET_EXPR)
+    expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), expr,
+		   TARGET_EXPR_SLOT (expr));
+  else
     {
       expr = cp_build_addr_expr (expr, complain);
       expr = cp_build_indirect_ref (input_location, expr, RO_ARROW, complain);

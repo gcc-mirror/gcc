@@ -1,0 +1,4 @@
+begin word bits b = word 2r1010;
+      assert ((word_bits_width - 1) ELEM b);
+      assert (NOT ((word_bits_width - 2) ELEM b))
+end

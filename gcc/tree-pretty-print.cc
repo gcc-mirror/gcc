@@ -854,8 +854,7 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 	      pp_right_bracket (pp);
 	    }
 	  pp_right_paren (pp);
-	  if (OMP_CLAUSE_MESSAGE_SEVERITY_WARN (clause))
-	    pp_space (pp);
+	  pp_space (pp);
 	}
       if (OMP_CLAUSE_MESSAGE_SEVERITY_WARN (clause))
 	pp_string (pp, "severity(warning)");
@@ -1436,6 +1435,20 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
 
     case OMP_CLAUSE_SIMDLEN:
       pp_string (pp, "simdlen(");
+      if (OMP_CLAUSE_SIMDLEN_TYPE (clause))
+	{
+	  pp_string (pp, "scaled(");
+	  dump_generic_node (pp, OMP_CLAUSE_SIMDLEN_TYPE (clause),
+			     spc, flags, false);
+	  if (OMP_CLAUSE_SIMDLEN_DIVISOR (clause))
+	    {
+	      pp_comma (pp);
+	      dump_generic_node (pp, OMP_CLAUSE_SIMDLEN_DIVISOR (clause),
+				 spc, flags, false);
+	    }
+	  pp_right_paren (pp);
+	  pp_colon (pp);
+	}
       dump_generic_node (pp, OMP_CLAUSE_SIMDLEN_EXPR (clause),
 			 spc, flags, false);
       pp_right_paren (pp);
@@ -1786,6 +1799,7 @@ dump_omp_context_selector (pretty_printer *pp, tree ctx, int spc,
 	    pp_string (pp, OMP_TS_NAME (sel));
 	  tree score = OMP_TS_SCORE (sel);
 	  tree props = OMP_TS_PROPERTIES (sel);
+	  enum omp_tp_type tp_type = omp_ts_map[OMP_TS_CODE (sel)].tp_type;
 	  if (props)
 	    {
 	      pp_string (pp, " (");
@@ -1797,7 +1811,9 @@ dump_omp_context_selector (pretty_printer *pp, tree ctx, int spc,
 		}
 	      for (tree prop = props; prop; prop = TREE_CHAIN (prop))
 		{
-		  if (OMP_TP_NAME (prop) == OMP_TP_NAMELIST_NODE)
+		  if (tp_type == OMP_TRAIT_PROPERTY_CLAUSE_LIST)
+		    dump_omp_clause (pp, prop, spc + 4, flags);
+		  else if (OMP_TP_NAME (prop) == OMP_TP_NAMELIST_NODE)
 		    {
 		      const char *str = omp_context_name_list_prop (prop);
 		      pp_string (pp, "\"");

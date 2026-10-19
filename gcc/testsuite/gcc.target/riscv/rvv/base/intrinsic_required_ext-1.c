@@ -6,5 +6,5 @@
 size_t
 test_3 (size_t vl)
 {
-  return __riscv_vsetvl_e8m4 (vl); /* { dg-error {built-in function '__riscv_vsetvl_e8m4\(vl\)' requires the 'v' ISA extension} } */
+  return __riscv_vsetvl_e8m4 (vl); /* { dg-error {built-in function '__riscv_vsetvl_e8m4' requires the 'v' ISA extension} } */
 }

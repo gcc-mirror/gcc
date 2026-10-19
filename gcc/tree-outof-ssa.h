@@ -34,6 +34,10 @@ struct ssaexpand
      its definition should be forwarded.  */
   bitmap values;
 
+  /* For an SSA name version V bit V is set iff conditional-compare
+     recognition found no explicit comparison that can be folded.  */
+  bitmap ccmp_no_comparison;
+
   /* For a partition number I partition_to_pseudo[I] contains the
      RTL expression of the allocated space of it (either a MEM or
      a pseudos REG).  */
@@ -77,6 +81,7 @@ get_gimple_for_ssa_name (tree exp)
 extern bool ssa_is_replaceable_p (gimple *stmt);
 extern void finish_out_of_ssa (struct ssaexpand *sa);
 extern unsigned int rewrite_out_of_ssa (struct ssaexpand *sa);
+extern void remove_gimple_phi_args (gphi *phi);
 extern void expand_phi_nodes (struct ssaexpand *sa);
 
 #endif /* GCC_TREE_OUTOF_SSA_H */

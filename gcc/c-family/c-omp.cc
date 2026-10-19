@@ -3155,6 +3155,10 @@ c_omp_declare_simd_clauses_to_numbers (tree parms, tree clauses)
 
   for (c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_SIMDLEN
+	  && OMP_CLAUSE_SIMDLEN_TYPE (c))
+	sorry_at (OMP_CLAUSE_LOCATION (c),
+		  "%<simdlen%> clause with %<scaled%> modifier");
       if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_SIMDLEN
 	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_INBRANCH
 	  && OMP_CLAUSE_CODE (c) != OMP_CLAUSE_NOTINBRANCH)

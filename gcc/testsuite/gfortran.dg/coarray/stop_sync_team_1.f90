@@ -28,5 +28,7 @@ program stop_sync_team_1
     sync team (get_team (), stat=st)
     if (me == 2 .and. st /= 0) error stop 3
     if (me == 1 .and. st /= stat_stopped_image) error stop 4
-  end team
+  end team (stat=st)
+  if (me == 2 .and. st /= 0) error stop 5
+  if (me == 1 .and. st /= stat_stopped_image) error stop 6
 end program stop_sync_team_1

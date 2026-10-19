@@ -2472,7 +2472,7 @@ if test $cross_compiling = no && test $multilib = yes \
    cross_compiling=maybe
 fi
 
-ac_config_commands="$ac_config_commands default-1"
+ac_config_commands="$ac_config_commands multilib"
 
 
 target_alias=${target_alias-$host_alias}
@@ -14831,7 +14831,7 @@ for ac_config_target in $ac_config_targets
 do
   case $ac_config_target in
     "config.h") CONFIG_HEADERS="$CONFIG_HEADERS config.h" ;;
-    "default-1") CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
+    "multilib") CONFIG_COMMANDS="$CONFIG_COMMANDS multilib" ;;
     "depfiles") CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
     "libtool") CONFIG_COMMANDS="$CONFIG_COMMANDS libtool" ;;
     "Makefile") CONFIG_FILES="$CONFIG_FILES Makefile" ;;
@@ -15430,7 +15430,7 @@ $as_echo "$as_me: executing $ac_file commands" >&6;}
 
 
   case $ac_file$ac_mode in
-    "default-1":C)
+    "multilib":C)
 # Only add multilib support code if we just rebuilt the top-level
 # Makefile.
 case " $CONFIG_FILES " in

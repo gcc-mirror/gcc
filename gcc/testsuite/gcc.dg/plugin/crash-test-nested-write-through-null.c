@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-skip-if "Target frontend exits early on syntax recovery errors" { hppa*-*-hpux* } } */
 /* { dg-additional-options "-fno-report-bug" } */
 /* { dg-additional-options "-fplugin-arg-crash_test_plugin-nested" } */
 /* { dg-additional-options "-fdiagnostics-add-output=sarif" } */

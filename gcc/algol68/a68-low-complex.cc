@@ -108,6 +108,8 @@ a68_complex_widen_from_real (MOID_T *mode, tree r)
     gcc_assert (TREE_TYPE (r) == a68_long_real_type);
   else if (mode == M_LONG_LONG_COMPLEX)
     gcc_assert (TREE_TYPE (r) == a68_long_long_real_type);
+  else if (mode == M_WORD_COMPLEX)
+    gcc_assert (TREE_TYPE (r) == a68_word_real_type);
   else
     gcc_unreachable ();
 

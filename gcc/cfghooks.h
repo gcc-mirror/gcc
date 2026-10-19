@@ -67,12 +67,15 @@ typedef int_hash <unsigned short, 0> dependence_hash;
 class copy_bb_data
 {
 public:
-  copy_bb_data() : dependence_map (NULL) {}
+  copy_bb_data () : dependence_map (NULL), skip_copyid (false) {}
   ~copy_bb_data () { delete dependence_map; }
 
   /* A map from the copied BBs dependence info cliques to
      equivalents in the BBs duplicated to.  */
   hash_map<dependence_hash, unsigned short> *dependence_map;
+
+  /* If true copy_bbs assigns one copyid for the region.  */
+  bool skip_copyid;
 };
 
 struct cfg_hooks

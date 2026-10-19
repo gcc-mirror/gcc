@@ -173,11 +173,11 @@ extern bool integer_valued_real_p (tree, int = 0);
 
 extern bool fold_real_zero_addition_p (const_tree, const_tree, const_tree,
 				       int);
-extern bool fold_cmp_float_cst_p (wide_int lo, wide_int hi,
+extern bool fold_cmp_float_cst_p (const wide_int &lo, const wide_int &hi,
 				  enum tree_code cmp,
 				  const REAL_VALUE_TYPE *r,
 				  format_helper fmt,
-				  wide_int i, signop isign);
+				  const wide_int &i, signop isign);
 
 extern tree combine_comparisons (location_t, enum tree_code, enum tree_code,
 				 enum tree_code, tree, tree, tree);
@@ -253,8 +253,8 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 
 extern tree_code minmax_from_comparison (tree_code, tree,
-					 const widest_int,
-					 const widest_int);
+					 const widest_int &,
+					 const widest_int &);
 extern tree_code minmax_from_comparison (tree_code, tree, tree,
 					 tree, tree);
 

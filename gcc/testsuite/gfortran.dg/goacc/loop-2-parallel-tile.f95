@@ -20,10 +20,10 @@ program test
       DO j = 1,10
       ENDDO
     ENDDO
-    !$acc loop tile(-1) ! { dg-warning "must be positive" }
+    !$acc loop tile(-1) ! { dg-error "INTEGER expression of TILE clause at .1. must be positive and constant" }
     do i = 1,10
     enddo
-    !$acc loop tile(i) ! { dg-error "constant expression" }
+    !$acc loop tile(i) ! { dg-error "INTEGER expression of TILE clause at .1. must be positive and constant" }
     do i = 1,10
     enddo
     !$acc loop tile(2, 2, 1) ! { dg-error "not enough DO loops for tiled" }
@@ -73,10 +73,10 @@ program test
     DO j = 1,10
     ENDDO
   ENDDO
-  !$acc parallel loop tile(-1) ! { dg-warning "must be positive" }
+  !$acc parallel loop tile(-1) ! { dg-error "INTEGER expression of TILE clause at .1. must be positive and constant" }
   do i = 1,10
   enddo
-  !$acc parallel loop tile(i) ! { dg-error "constant expression" }
+  !$acc parallel loop tile(i) ! { dg-error "INTEGER expression of TILE clause at .1. must be positive and constant" }
   do i = 1,10
   enddo
   !$acc parallel loop tile(2, 2, 1) ! { dg-error "not enough DO loops for tiled" }

@@ -83,41 +83,6 @@ private:
   std::map<NodeId, ItemType> decl_type_mappings;
 };
 
-class Scope
-{
-public:
-  Scope (CrateNum crate_num);
-
-  void insert (
-    const CanonicalPath &ident, NodeId id, location_t locus, bool shadow,
-    Rib::ItemType type,
-    std::function<void (const CanonicalPath &, NodeId, location_t)> dup_cb);
-
-  void insert (const CanonicalPath &ident, NodeId id, location_t locus,
-	       Rib::ItemType type = Rib::ItemType::Unknown);
-  bool lookup (const CanonicalPath &ident, NodeId *id);
-  bool lookup_decl_type (NodeId id, Rib::ItemType *type);
-  bool lookup_rib_for_decl (NodeId id, const Rib **rib);
-
-  void iterate (std::function<bool (Rib *)> cb);
-  void iterate (std::function<bool (const Rib *)> cb) const;
-
-  Rib *peek ();
-  void push (NodeId id);
-  Rib *pop ();
-
-  bool decl_was_declared_here (NodeId def) const;
-  void append_reference_for_def (NodeId refId, NodeId defId);
-
-  CrateNum get_crate_num () const { return crate_num; }
-
-  const std::vector<Rib *> &get_context () const { return stack; };
-
-private:
-  CrateNum crate_num;
-  std::vector<Rib *> stack;
-};
-
 class Resolver
 {
 public:

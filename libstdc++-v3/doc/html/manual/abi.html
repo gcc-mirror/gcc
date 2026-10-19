@@ -11,7 +11,7 @@
   The C++ Standard Library has many include files, types defined in
   those include files, specific named functions, and other
   behavior. The text of these behaviors, as written in source include
-  files, is called the Application Programing Interface, or API.
+  files, is called the Application Programming Interface, or API.
 </p><p>
   Furthermore, C++ source that is compiled into object files is
   transformed by the compiler: it arranges objects with specific
@@ -103,7 +103,7 @@ compatible.
 	example, filename <code class="filename">libstdc++.so.5.0.4</code>
 	corresponds to a <code class="constant">DT_SONAME</code> of
 	<code class="constant">libstdc++.so.5</code>. Binaries with equivalent
-	<code class="constant">DT_SONAME</code>s are forward-compatibile: in
+	<code class="constant">DT_SONAME</code>s are forward-compatible: in
 	the table below, releases incompatible with the previous
 	one are explicitly noted.
 	If a particular release is not listed, its libstdc++.so binary
@@ -383,7 +383,7 @@ exceptional symbols are allowed to be visible.</p></dd><dt><span class="term"><c
 <code class="code">GLIBCXX</code>, select items are allowed to be visible.</p></dd><dt><span class="term"><code class="code">namespace __gnu_internal</code></span></dt><dd><p> Defaults to not exported, no items are allowed to be visible.</p></dd><dt><span class="term"><code class="code">namespace __cxxabiv1</code>, aliased to <code class="code"> namespace abi</code></span></dt><dd><p> Defaults to not exporting any symbols in label
 <code class="code">CXXABI</code>, select items are allowed to be visible.</p></dd></dl></div><p>
 </p></li><li class="listitem"><p>Freezing the API</p><p>Disallowed changes, as above, are not made on a stable release
-branch. Enforcement tends to be less strict with GNU extensions that
+branch. Enforcement tends to be less strict with GNU extensions than
 standard includes.</p></li></ol></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="abi.testing"></a>Testing</h3></div></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="abi.testing.single"></a>Single ABI Testing</h4></div></div></div><p>
       Testing for GNU C++ ABI changes is composed of two distinct
       areas: testing the C++ compiler (g++) for compiler changes, and

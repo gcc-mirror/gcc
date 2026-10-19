@@ -240,7 +240,7 @@ model.
   </para>
 
   <para>
-    Making the message catalogs can be initially tricky, but become
+    Making the message catalogs can be initially tricky, but becomes
     quite simple with practice. For complete info, see the gettext
     documentation. Here's an idea of what is required:
   </para>

@@ -1,4 +1,4 @@
-/* Header file for pr102976.c test - contains test functions only */
+/* Header file for pr102976.*.c test - contains test functions only */
 
 #include <altivec.h>
 void

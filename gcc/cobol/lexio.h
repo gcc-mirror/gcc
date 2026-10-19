@@ -71,7 +71,7 @@ struct bytespan_t {
   char *data, *eodata;
 
   bytespan_t() : data( nullptr), eodata(nullptr) {}
-  
+
   bytespan_t( char *data, char *eodata )
     : data(data), eodata(eodata)
   {
@@ -204,7 +204,6 @@ struct filespan_t : public bytespan_t {
     loc.first_column = loc.last_column = 1 + icol;
     return loc;
   }
-
 };
 
 #if USE_STD_REGEX
@@ -307,7 +306,7 @@ public:
     }
     left = column;
   }
-  
+
   char * indicated( char *bol, const char *eol, char ch = '\0' );
 
   bool inference_pending() {
@@ -319,13 +318,13 @@ public:
   inline bool is_fixed() const { return left == 7; }
   inline bool is_reffmt() const { return is_fixed() && right == 73; }
   inline bool is_free() const { return ! is_fixed(); }
-  
+
   const char * description() const {
     if( is_reffmt() ) return "REFERENCE";
     if( is_fixed() ) return "FIXED";
     if( is_free() ) return "FREE";
     gcc_unreachable();
-  }    
+  }
 
   inline int left_margin() {
     return left == 0? left : left - 1;
@@ -350,14 +349,12 @@ typedef std::stack<source_format_t> source_format_stack_t;
 
 #include <cstdio>
 
+
 class cdftext {
   static bool please_push_filename;
-  static int command_line_indicator_column;
 
-  friend void cobol_set_indicator_column( int column );
-
-  static void process_file( filespan_t mfile, int output, 
-                            source_format_stack_t source_format, 
+  static void process_file( filespan_t mfile, int output,
+                            source_format_stack_t source_format,
                             bool second_pass = false ) ;
   static filespan_t  free_form_reference_format( int fd, source_format_stack_t& );
 

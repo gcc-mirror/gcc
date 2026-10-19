@@ -372,6 +372,7 @@ mfindloc1_i1 (gfc_array_index_type * const restrict retarray,
 	    {
 	      count[n]++;
 	      base += sstride[n] * 1;
+	      mbase += mstride[n];
 	      dest += dstride[n];
 	    }
 	}

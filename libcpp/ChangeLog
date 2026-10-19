@@ -1,3 +1,61 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't check for errno.
+	* system.h: Drop errno fallback.
+
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for abort.
+	* system.h: Drop abort fallback.
+
+2026-10-10  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Drop AC_C_CONST and AC_C_INLINE.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac: Drop AC_HEADER_STDC.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for stddef.h.
+	* system.h (HAVE_STDDEF_H): Delete.
+	Include stddef.h unconditionally.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac: Don't search for stdlib.h.
+	* system.h (HAVE_STDLIB_H): Delete.
+	Include stdlib.h unconditionally.
+
+2026-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR preprocessor/121508
+	PR preprocessor/123339
+	* macro.cc (builtin_has_include_1): Revert 2026-09-21 changes.
+	* directives.cc (get_token_no_padding): Remove.
+	(glue_header_name): Use _cpp_get_token_no_padding instead of
+	get_token_no_padding.
+	(parse_include): Likewise.
+	(get__Pragma_string): Likewise.  Don't _cpp_backup_tokens on
+	CPP_EOF.
+
 2026-09-21  Léo Hardt  <leom.hardt@inf.ufrgs.br>
 
 	PR preprocessor/121508

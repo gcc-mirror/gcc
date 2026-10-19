@@ -76,6 +76,121 @@ DEF_NEON_FUNCTION (vadd,  h_float, ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vaddq, h_float, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
+// Saturating arithmetic
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vqaddb, b_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqaddh, h_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqadds, s_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqaddd, d_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqadd,  all_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vqaddq, all_integer, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vqsubb, b_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqsubh, h_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqsubs, s_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqsubd, d_integer,   ("s0,s0,s0"))
+DEF_NEON_FUNCTION (vqsub,  all_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vqsubq, all_integer, ("Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Max/min
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vmax,    bhs_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vmaxq,   bhs_integer, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vmin,    bhs_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vminq,   bhs_integer, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vmaxnm,  sd_float,    ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vmaxnmq, sd_float,    ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vminnm,  sd_float,    ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vminnmq, sd_float,    ("Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Max/min (FP16)
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_F16)
+DEF_NEON_FUNCTION (vmaxnm,  h_float, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vmaxnmq, h_float, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vminnm,  h_float, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vminnmq, h_float, ("Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Reductions
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vaddv,    s_float_bhs_integer,  ("s0,D0"))
+DEF_NEON_FUNCTION (vaddvq,   sd_float_all_integer, ("s0,Q0"))
+DEF_NEON_FUNCTION (vmaxv,    bhs_integer,          ("s0,D0"))
+DEF_NEON_FUNCTION (vmaxvq,   bhs_integer,          ("s0,Q0"))
+DEF_NEON_FUNCTION (vminv,    bhs_integer,          ("s0,D0"))
+DEF_NEON_FUNCTION (vminvq,   bhs_integer,          ("s0,Q0"))
+DEF_NEON_FUNCTION (vmaxnmv,  s_float,              ("s0,D0"))
+DEF_NEON_FUNCTION (vmaxnmvq, sd_float,             ("s0,Q0"))
+DEF_NEON_FUNCTION (vminnmv,  s_float,              ("s0,D0"))
+DEF_NEON_FUNCTION (vminnmvq, sd_float,             ("s0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Reductions (FP16)
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_F16)
+DEF_NEON_FUNCTION (vmaxnmv,  h_float, ("s0,D0"))
+DEF_NEON_FUNCTION (vmaxnmvq, h_float, ("s0,Q0"))
+DEF_NEON_FUNCTION (vminnmv,  h_float, ("s0,D0"))
+DEF_NEON_FUNCTION (vminnmvq, h_float, ("s0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Halving add
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vhadd,   bhs_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vhaddq,  bhs_integer, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vrhadd,  bhs_integer, ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vrhaddq, bhs_integer, ("Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Square root
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vsqrt,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vsqrtq, sd_float, ("Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Square root (FP16)
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_F16)
+DEF_NEON_FUNCTION (vsqrt,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vsqrtq, h_float, ("Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Rounding
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vrnd,   sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndq,  sd_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrnda,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndaq, sd_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndi,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndiq, sd_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndm,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndmq, sd_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndn,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndns, s_float,  ("s0,s0"))
+DEF_NEON_FUNCTION (vrndnq, sd_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndp,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndpq, sd_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndx,  sd_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndxq, sd_float, ("Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// Rounding (FP16)
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_F16)
+DEF_NEON_FUNCTION (vrnd,   h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndq,  h_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrnda,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndaq, h_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndi,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndiq, h_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndm,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndmq, h_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndn,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndnq, h_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndp,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndpq, h_float, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vrndx,  h_float, ("D0,D0"))
+DEF_NEON_FUNCTION (vrndxq, h_float, ("Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
 // Bitwise operations
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
 DEF_NEON_FUNCTION (vand,   all_integer, ("D0,D0,D0"))
@@ -144,4 +259,55 @@ DEF_NEON_FUNCTION (vzip1q,  bhsd_neon,  ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vzip2,   bhs_neon,   ("D0,D0,D0"))
 DEF_NEON_FUNCTION (vzip2q,  bhsd_neon,  ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vzipq,   bhs_neon,   ("Q0x2,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// AES
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_AES)
+DEF_NEON_FUNCTION (vaeseq,   b_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vaesdq,   b_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vaesmcq,  b_unsigned, ("Q0,Q0"))
+DEF_NEON_FUNCTION (vaesimcq, b_unsigned, ("Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// SHA1
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SHA2)
+DEF_NEON_FUNCTION (vsha1cq,   s_unsigned, ("Q0,Q0,s0,Q0"))
+DEF_NEON_FUNCTION (vsha1mq,   s_unsigned, ("Q0,Q0,s0,Q0"))
+DEF_NEON_FUNCTION (vsha1pq,   s_unsigned, ("Q0,Q0,s0,Q0"))
+DEF_NEON_FUNCTION (vsha1h,    s_unsigned, ("s0,s0"))
+DEF_NEON_FUNCTION (vsha1su0q, s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha1su1q, s_unsigned, ("Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// SHA256
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SHA2)
+DEF_NEON_FUNCTION (vsha256hq,   s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha256h2q,  s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha256su0q, s_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha256su1q, s_unsigned, ("Q0,Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// SHA512
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SHA2)
+DEF_NEON_FUNCTION (vsha512hq,   d_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha512h2q,  d_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha512su0q, d_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsha512su1q, d_unsigned, ("Q0,Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// SM3
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SM4)
+DEF_NEON_FUNCTION (vsm3ss1q,    s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsm3tt1aq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3tt1bq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3tt2aq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3tt2bq,   s_unsigned, ("Q0,Q0,Q0,Q0,s0", range<3, 0, 3>))
+DEF_NEON_FUNCTION (vsm3partw1q, s_unsigned, ("Q0,Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsm3partw2q, s_unsigned, ("Q0,Q0,Q0,Q0"))
+#undef REQUIRED_EXTENSIONS
+
+// SM4
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_SM4)
+DEF_NEON_FUNCTION (vsm4eq,    s_unsigned, ("Q0,Q0,Q0"))
+DEF_NEON_FUNCTION (vsm4ekeyq, s_unsigned, ("Q0,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS

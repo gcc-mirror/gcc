@@ -1,0 +1,3 @@
+begin word real w = word 1.0;
+      assert (+w = word 1.0)
+end

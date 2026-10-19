@@ -6,10 +6,6 @@
 /* Define to 1 if you have the `clearerr_unlocked' function. */
 #undef HAVE_CLEARERR_UNLOCKED
 
-/* Define to 1 if you have the declaration of `abort', and to 0 if you don't.
-   */
-#undef HAVE_DECL_ABORT
-
 /* Define to 1 if you have the declaration of `asprintf', and to 0 if you
    don't. */
 #undef HAVE_DECL_ASPRINTF
@@ -21,10 +17,6 @@
 /* Define to 1 if you have the declaration of `clearerr_unlocked', and to 0 if
    you don't. */
 #undef HAVE_DECL_CLEARERR_UNLOCKED
-
-/* Define to 1 if you have the declaration of `errno', and to 0 if you don't.
-   */
-#undef HAVE_DECL_ERRNO
 
 /* Define to 1 if you have the declaration of `feof_unlocked', and to 0 if you
    don't. */
@@ -157,9 +149,6 @@
 /* Define to 1 if you have the `putc_unlocked' function. */
 #undef HAVE_PUTC_UNLOCKED
 
-/* Define to 1 if you have the <stddef.h> header file. */
-#undef HAVE_STDDEF_H
-
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
@@ -245,9 +234,6 @@
 
 /* Define to xatexit if the host system does not support atexit */
 #undef atexit
-
-/* Define to empty if `const' does not conform to ANSI C. */
-#undef const
 
 /* Define to xexit if the host system does not support atexit */
 #undef exit

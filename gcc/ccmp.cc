@@ -38,13 +38,17 @@ along with GCC; see the file COPYING3.  If not see
 #include "ccmp.h"
 #include "predict.h"
 
-/* Check whether T is a simple boolean variable or a SSA name
-   set by a comparison operator in the same basic block.  */
+/* Check whether T is a simple boolean variable or an SSA name set by a
+   comparison operator in BB.  Set *HAS_COMPARISON if T is the latter.  */
 static bool
-ccmp_tree_comparison_p (tree t, basic_block bb)
+ccmp_tree_comparison_p (tree t, basic_block bb,
+			bool *has_comparison = nullptr)
 {
   gimple *g = get_gimple_for_ssa_name (t);
   tree_code tcode;
+
+  if (has_comparison)
+    *has_comparison = false;
 
   /* If we have a boolean variable allow it and generate a compare
      to zero reg when expanding.  */
@@ -58,7 +62,12 @@ ccmp_tree_comparison_p (tree t, basic_block bb)
   if (bb != gimple_bb (g))
     return false;
   tcode = gimple_assign_rhs_code (g);
-  return TREE_CODE_CLASS (tcode) == tcc_comparison;
+  if (TREE_CODE_CLASS (tcode) != tcc_comparison)
+    return false;
+
+  if (has_comparison)
+    *has_comparison = true;
+  return true;
 }
 
 /* The following functions expand conditional compare (CCMP) instructions.
@@ -90,15 +99,18 @@ ccmp_tree_comparison_p (tree t, basic_block bb)
    If all checks OK in expand_ccmp_expr, it emits insns in prep_seq, then
    insns in gen_seq.  */
 
-/* Check whether G is a potential conditional compare candidate; OUTER is true if
-   G is the outer most AND/IOR.  */
+/* Return true if G is a potential conditional compare candidate.  Set
+   *HAS_COMPARISON if it contains a comparison that will be folded into the
+   flags.  OUTER is true if G is the outermost AND/IOR.  */
 static bool
-ccmp_candidate_p (gimple *g, bool outer = false)
+ccmp_candidate_p (gimple *g, bool *has_comparison, bool outer = false)
 {
   tree lhs, op0, op1;
   gimple *gs0, *gs1;
   tree_code tcode;
   basic_block bb;
+
+  *has_comparison = false;
 
   if (!g || !is_gimple_assign (g))
     return false;
@@ -115,20 +127,46 @@ ccmp_candidate_p (gimple *g, bool outer = false)
   if (!outer && !has_single_use (lhs))
     return false;
 
+  if (SA.ccmp_no_comparison
+      && bitmap_bit_p (SA.ccmp_no_comparison, SSA_NAME_VERSION (lhs)))
+    {
+      *has_comparison = false;
+      return true;
+    }
+
   bb = gimple_bb (g);
   gs0 = get_gimple_for_ssa_name (op0); /* gs0 may be NULL */
   gs1 = get_gimple_for_ssa_name (op1); /* gs1 may be NULL */
 
-  if (ccmp_tree_comparison_p (op0, bb) && ccmp_tree_comparison_p (op1, bb))
-    return true;
-  if (ccmp_tree_comparison_p (op0, bb) && ccmp_candidate_p (gs1))
-    return true;
-  if (ccmp_tree_comparison_p (op1, bb) && ccmp_candidate_p (gs0))
-    return true;
+  bool comparison0, comparison1;
+  bool leaf0 = ccmp_tree_comparison_p (op0, bb, &comparison0);
+  bool leaf1 = ccmp_tree_comparison_p (op1, bb, &comparison1);
+
+  if (leaf0 && leaf1)
+    *has_comparison = comparison0 || comparison1;
+  else if (leaf0 || leaf1)
+    {
+      bool inner_has_comparison;
+      if (!ccmp_candidate_p (leaf0 ? gs1 : gs0, &inner_has_comparison))
+	return false;
+      *has_comparison = inner_has_comparison
+			|| (leaf0 ? comparison0 : comparison1);
+    }
+  else
+    return false;
+
   /* We skip ccmp_candidate_p (gs1) && ccmp_candidate_p (gs0) since
      there is no way to set and maintain the CC flag on both sides of
      the logical operator at the same time.  */
-  return false;
+
+  if (!*has_comparison)
+    {
+      if (!SA.ccmp_no_comparison)
+	SA.ccmp_no_comparison = BITMAP_ALLOC (NULL);
+      bitmap_set_bit (SA.ccmp_no_comparison, SSA_NAME_VERSION (lhs));
+    }
+
+  return true;
 }
 
 /* Extract the comparison we want to do from the tree.  */
@@ -291,7 +329,8 @@ expand_ccmp_expr (gimple *g, machine_mode mode)
   rtx_insn *last;
   rtx tmp;
 
-  if (!ccmp_candidate_p (g, true))
+  bool has_comparison;
+  if (!ccmp_candidate_p (g, &has_comparison, true) || !has_comparison)
     return NULL_RTX;
 
   last = get_last_insn ();

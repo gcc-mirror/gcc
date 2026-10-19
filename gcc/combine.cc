@@ -316,7 +316,7 @@ struct insn_link {
 static struct insn_link **uid_log_links;
 
 static inline int
-insn_uid_check (const_rtx insn)
+insn_uid_check (const rtx_insn *insn)
 {
   int uid = INSN_UID (insn);
   gcc_checking_assert (uid <= max_uid_known);
@@ -10070,7 +10070,11 @@ distribute_and_simplify_rtx (rtx x, int n)
 
   /* Special case (and (xor B C) (not A)), which is equivalent to
      (xor (ior A B) (ior A C))  */
-  if (outer_code == AND && inner_code == XOR && GET_CODE (distributed) == NOT)
+  if (outer_code == AND && inner_code == XOR && GET_CODE (distributed) == NOT
+      /* But not when A is a paradoxical subreg since the masking effect
+	 of the outer AND is lost and the duplicated use can result in
+	 undefined bits to be exposed when spilling.  */
+      && !contains_paradoxical_subreg_p (XEXP (distributed, 0)))
     {
       distributed = XEXP (distributed, 0);
       outer_code = IOR;

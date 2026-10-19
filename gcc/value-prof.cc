@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "dumpfile.h"
 #include "builtins.h"
+#include "hierarchical_discriminator.h"
 
 /* In this file value profile based optimizations are placed.  Currently the
    following optimizations are implemented (for more detailed descriptions
@@ -1344,6 +1345,8 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   gimple_set_vuse (icall_stmt, NULL_TREE);
   update_stmt (icall_stmt);
   dcall_stmt = as_a <gcall *> (gimple_copy (icall_stmt));
+  assign_discriminators_to_stmt
+    (dcall_stmt, 0, allocate_copyid_base (gimple_location (dcall_stmt), 1));
   gimple_call_set_fndecl (dcall_stmt, direct_call->decl);
   dflags = flags_from_decl_or_type (direct_call->decl);
   if ((dflags & ECF_NORETURN) != 0
@@ -1572,6 +1575,8 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, profile_probabi
   gimple_set_vuse (vcall_stmt, NULL);
   update_stmt (vcall_stmt);
   icall_stmt = as_a <gcall *> (gimple_copy (vcall_stmt));
+  assign_discriminators_to_stmt
+    (icall_stmt, 0, allocate_copyid_base (gimple_location (icall_stmt), 1));
   gimple_call_set_arg (icall_stmt, size_arg,
 		       fold_convert (optype, icall_size));
   gsi_insert_before (&gsi, icall_stmt, GSI_SAME_STMT);

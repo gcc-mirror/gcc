@@ -500,7 +500,6 @@ AC_SUBST(PICFLAG_FOR_TARGET)
 AC_USE_SYSTEM_EXTENSIONS
 
 AC_PROG_CPP
-AC_C_INLINE
 
 AC_SYS_LARGEFILE
 AC_CHECK_SIZEOF(ino_t)
@@ -1348,21 +1347,19 @@ AC_CHECK_PROG(doc_build_sys, sphinx-build, sphinx, texinfo)
 # works later. *sigh*  This needs to come before all header checks.
 AC_PROG_CPP_WERROR
 
-AC_HEADER_STDC
 AC_HEADER_TIME
 ACX_HEADER_STRING
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIOCGWINSZ
-AC_CHECK_HEADERS(limits.h stddef.h string.h strings.h stdlib.h time.h iconv.h \
+AC_CHECK_HEADERS(string.h strings.h iconv.h \
 		 fcntl.h ftw.h unistd.h sys/auxv.h sys/file.h sys/time.h sys/mman.h \
 		 sys/resource.h sys/param.h sys/times.h sys/stat.h sys/locking.h \
-		 direct.h malloc.h langinfo.h ldfcn.h locale.h wchar.h libgen.h)
+		 direct.h malloc.h langinfo.h ldfcn.h wchar.h libgen.h)
 
 # Check for thread headers.
 AC_CHECK_HEADER(thread.h, [have_thread_h=yes], [have_thread_h=])
 AC_CHECK_HEADER(pthread.h, [have_pthread_h=yes], [have_pthread_h=])
 
-# These tests can't be done till we know if we have limits.h.
 gcc_AC_C_CHAR_BIT
 AC_C_BIGENDIAN
 
@@ -1580,7 +1577,7 @@ define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked dnl
   fread_unlocked fwrite_unlocked getchar_unlocked getc_unlocked dnl
   putchar_unlocked putc_unlocked)
-AC_CHECK_FUNCS(times clock kill getrlimit setrlimit atoq \
+AC_CHECK_FUNCS(times kill getrlimit setrlimit atoq \
 	popen sysconf strsignal getrusage nl_langinfo \
 	gettimeofday mbstowcs wcswidth mmap posix_fallocate setlocale \
 	gcc_UNLOCKED_FUNCS madvise mallinfo mallinfo2 fstatat getauxval \
@@ -1665,15 +1662,11 @@ AC_CHECK_DECLS([basename(char*)], , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
-AC_CHECK_DECLS([strstr(const char*,const char*)], , ,[
-#include "ansidecl.h"
-#include "system.h"])
-
-gcc_AC_CHECK_DECLS(getenv atol atoll asprintf sbrk abort atof getcwd getwd \
+gcc_AC_CHECK_DECLS(atoll asprintf sbrk getcwd getwd \
 	madvise mkstemps stpcpy strnlen strsignal strverscmp \
-	strtol strtoul strtoll strtoull setenv unsetenv \
-	errno snprintf vsnprintf vasprintf malloc realloc calloc \
-	free getopt clock getpagesize ffs fmemopen gcc_UNLOCKED_FUNCS, , ,[
+	strtoll strtoull setenv unsetenv \
+	snprintf vsnprintf vasprintf \
+	getopt getpagesize ffs fmemopen gcc_UNLOCKED_FUNCS, , ,[
 #include "ansidecl.h"
 #include "system.h"])
 
@@ -1742,18 +1735,6 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
 if test $ac_cv_struct_tms = yes; then
   AC_DEFINE(HAVE_STRUCT_TMS, 1,
   [Define if <sys/times.h> defines struct tms.])
-fi
-
-# use gcc_cv_* here because this doesn't match the behavior of AC_CHECK_TYPE.
-# revisit after autoconf 2.50.
-AC_CACHE_CHECK(for clock_t, gcc_cv_type_clock_t, [
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
-#include "ansidecl.h"
-#include "system.h"
-]], [[clock_t x;]])],[gcc_cv_type_clock_t=yes],[gcc_cv_type_clock_t=no])])
-if test $gcc_cv_type_clock_t = yes; then
-  AC_DEFINE(HAVE_CLOCK_T, 1,
-  [Define if <time.h> defines clock_t.])
 fi
 
 # Check if F_SETLKW is supported by fcntl.
@@ -4880,6 +4861,16 @@ EOF
 	AC_MSG_WARN([[see `config.log' for details]])
     fi
     rm -f conftest.s conftest.o conftest.elf
+
+    # Check for linker --prune-vectab.
+    gcc_cv_ld_avr_prune_vectab=no
+    AC_MSG_CHECKING(linker for --prune-vectab support)
+    if $gcc_cv_ld --help 2>&1 | grep -- '--prune-vectab' > /dev/null; then
+       gcc_cv_ld_avr_prune_vectab=yes
+       AC_DEFINE(HAVE_LD_AVR_PRUNE_VECTAB, 1,
+		 [Define if your linker supports --prune-vectab.])
+    fi
+    AC_MSG_RESULT($gcc_cv_ld_avr_prune_vectab)
     ;;
 
   cris-*-*)

@@ -941,7 +941,7 @@ public:
   }
 
   void
-  mark_interesting_stuff (interesting_t *interest)
+  mark_interesting_stuff (interesting_t *interest) override
   {
     interest->add_read_region (m_divisor_reg, "divisor zero value");
   }
@@ -950,6 +950,7 @@ public:
   add_function_entry_event (const exploded_edge &eedge,
 			    checker_path *emission_path,
 			    const state_transition_at_call *state_trans)
+			    override
   {
     class custom_function_entry_event : public function_entry_event
     {

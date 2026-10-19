@@ -569,7 +569,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       struct _Shift<_UIntType, __w, true>
       { static constexpr _UIntType __value = _UIntType(1) << __w; };
 
-// Primary template and other specializtions are defined in bits/uniform_int_dist.h.
+// Primary template and other specializations are defined in bits/uniform_int_dist.h.
 #if __SIZEOF_INT128__ <= __SIZEOF_LONG_LONG__ \
     && __has_builtin(__builtin_add_overflow)  \
     && __has_builtin(__builtin_sub_overflow)  \

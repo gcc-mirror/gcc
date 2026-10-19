@@ -195,7 +195,7 @@ extensions, be aware of two things:
 
    <para>
      The SGI hashing classes <classname>hash_set</classname> and
-     <classname>hash_set</classname> have been deprecated by the
+     <classname>hash_map</classname> have been deprecated by the
      unordered_set, unordered_multiset, unordered_map,
      unordered_multimap containers in TR1 and C++11, and
      may be removed in future releases.
@@ -241,7 +241,7 @@ extensions, be aware of two things:
       of buckets, etc.
    </para>
    <para>Why would you want to use a hashing class instead of the
-      <quote>normal</quote>implementations?  Matt Austern writes:
+      <quote>normal</quote> implementations?  Matt Austern writes:
    </para>
    <blockquote>
      <para>

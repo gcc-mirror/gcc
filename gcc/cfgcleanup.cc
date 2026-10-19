@@ -2180,9 +2180,11 @@ try_crossjump_bb (int mode, basic_block bb)
   if (EDGE_COUNT (bb->preds) < 2)
     return false;
 
-  /* Don't crossjump if this block ends in a computed jump,
-     unless we are optimizing for size.  */
-  if (optimize_bb_for_size_p (bb)
+  /* Don't crossjump the predecessors of a computed jump when computed
+     gotos are duplicated (see pass_duplicate_computed_gotos::gate), as
+     that copies the jump back into each predecessor.  */
+  if (!optimize_function_for_size_p (cfun)
+      && flag_expensive_optimizations
       && bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
       && computed_jump_p (BB_END (bb)))
     return false;

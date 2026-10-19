@@ -1209,6 +1209,20 @@ simplify_using_ranges::simplify_compare_using_ranges_1 (tree_code &cond_code, tr
 	    }
 	}
     }
+  // If OP0 >= OP1 and the relation between them is VREL_LE (or vice
+  // versa), we know OP0 == OP1.
+  else if ((cond_code == LE_EXPR || cond_code == GE_EXPR)
+	   && gimple_range_ssa_p (op0)
+	   && gimple_range_ssa_p (op1))
+    {
+      relation_kind rel = query->relation ().query (stmt, op0, op1);
+      if (relation_intersect (cond_code == LE_EXPR ? VREL_LE : VREL_GE, rel)
+	  == VREL_EQ)
+	{
+	  cond_code = EQ_EXPR;
+	  happened = true;
+	}
+    }
   // Try to simplify casted conditions.
   if (simplify_casted_compare (cond_code, op0, op1))
     happened = true;

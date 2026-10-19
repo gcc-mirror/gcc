@@ -50,29 +50,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       [[noreturn, __gnu__::__cold__]] void
       _ZSt19__throw_logic_errorPKc(const char*);
-     
+
       [[noreturn, __gnu__::__cold__]] void
       _ZSt20__throw_domain_errorPKc(const char*);
-    
+
       [[noreturn, __gnu__::__cold__]] void
       _ZSt24__throw_invalid_argumentPKc(const char*);
 
       [[noreturn, __gnu__::__cold__]] void
       _ZSt20__throw_length_errorPKc(const char*);
-  
+
       [[noreturn, __gnu__::__cold__]] void
       _ZSt20__throw_out_of_rangePKc(const char*);
-  
+
       [[noreturn, __gnu__::__cold__]]
       [[__gnu__::__format__(__gnu_printf__, 1, 2)]] void
       _ZSt24__throw_out_of_range_fmtPKcz(const char*, ...);
-  
+
       [[noreturn, __gnu__::__cold__]] void
       _ZSt21__throw_runtime_errorPKc(const char*);
 
       [[noreturn, __gnu__::__cold__]] void
       _ZSt22__throw_overflow_errorPKc(const char*);
-  
+
       [[noreturn, __gnu__::__cold__]] void
       _ZSt23__throw_underflow_errorPKc(const char*);
     }
@@ -87,7 +87,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_ZSt19__throw_logic_errorPKc(__s);
     }
   }
-      
+
   [[noreturn, __gnu__::__always_inline__, __gnu__::__cold__]] constexpr void
   __throw_domain_error(const char* __s)
   {
@@ -97,7 +97,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_ZSt20__throw_domain_errorPKc(__s);
     }
   }
-      
+
   [[noreturn, __gnu__::__always_inline__, __gnu__::__cold__]] constexpr void
   __throw_invalid_argument(const char* __s)
   {
@@ -107,7 +107,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_ZSt24__throw_invalid_argumentPKc(__s);
     }
   }
-      
+
   [[noreturn, __gnu__::__always_inline__, __gnu__::__cold__]] constexpr void
   __throw_length_error(const char* __s)
   {
@@ -117,7 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_ZSt20__throw_length_errorPKc(__s);
     }
   }
-    
+
   [[noreturn, __gnu__::__always_inline__, __gnu__::__cold__]] constexpr void
   __throw_out_of_range(const char* __s)
   {
@@ -125,9 +125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       throw out_of_range(__s);
     } else {
       __detail::_ZSt20__throw_out_of_rangePKc(__s);
-    } 
+    }
   }
-    
+
   template <typename... _Args>
   [[noreturn, __gnu__::__always_inline__, __gnu__::__cold__]] constexpr void
   __throw_out_of_range_fmt(const char* __s, _Args... __args)
@@ -158,7 +158,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __detail::_ZSt22__throw_overflow_errorPKc(__s);
     }
   }
-  
+
   [[noreturn, __gnu__::__always_inline__, __gnu__::__cold__]] constexpr void
   __throw_underflow_error(const char* __s)
   {
@@ -166,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       throw underflow_error(__s);
     } else {
       __detail::_ZSt23__throw_underflow_errorPKc(__s);
-    } 
+    }
   }
 
 _GLIBCXX_END_NAMESPACE_VERSION

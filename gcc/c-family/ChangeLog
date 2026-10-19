@@ -1,3 +1,56 @@
+2026-10-16  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	* c-cppbuiltin.cc (c_cpp_builtins_optimize_pragma): Define or
+	undefine __UNSAFE_MATH_OPTIMIZATIONS__.
+
+2026-10-12  Josef Melcr  <josef.melcr@suse.com>
+
+	PR c/127464
+	* c-attribs.cc (handle_callback_only_attribute): Reject
+	unprototyped functions.
+
+2026-10-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127723
+	* c-omp.cc (c_omp_declare_simd_clauses_to_numbers): Add sorry
+	diagnostic for simdlen with scaled modifer, moved from
+	omp-simd-clone.cc to ensure it is always active.
+
+2026-10-07  Jason Merrill  <jason@redhat.com>
+
+	* c.opt.urls: Regenerate.
+
+2026-10-07  Jason Merrill  <jason@redhat.com>
+
+	P1811
+	PR c++/99000
+	* c.opt (fmodule-include-translate): New option.
+
+2026-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	P3950R1
+	PR c++/125830
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump __cpp_impl_coroutine
+	from 201902L to 202606L.
+
+2026-10-01  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* c-attribs.cc: (decl_or_type_attrs, validate_attr_args)
+	(validate_attr_arg, handle_noinline_attribute)
+	(handle_always_inline_attribute, handle_leaf_attribute)
+	(handle_used_attribute, handle_retain_attribute)
+	(handle_const_attribute, handle_section_attribute)
+	(handle_weak_attribute, handle_alias_ifunc_attribute)
+	(handle_alias_attribute, handle_visibility_attribute)
+	(handle_fnspec_attribute, handle_returns_twice_attribute)
+	(handle_pure_attribute, ignore_attribute, handle_novops_attribute)
+	(handle_nothrow_attribute, handle_type_generic_attribute)
+	(handle_target_attribute): Move to `attr-handlers.cc`.
+
+2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-attribs.cc (c_common_gnu_attributes): Add "omp groupprivate".
+
 2026-09-24  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/126848

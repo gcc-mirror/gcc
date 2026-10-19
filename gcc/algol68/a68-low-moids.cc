@@ -49,23 +49,6 @@ static tree a68_lower_mode (MOID_T *m);
    This is used for TYPE_STUB_DECL so we can generate debug info for all our
    modes, so the TYPE_DECL has no name.  */
 
-static void
-build_stub_type_decl (tree type, tree context)
-{
-  if (TYPE_STUB_DECL (type))
-    return;
-
-  tree decl = build_decl (UNKNOWN_LOCATION,
-			  TYPE_DECL,
-			  NULL_TREE /* name */,
-			  type);
-  TREE_PUBLIC (decl) = 1;
-  DECL_CONTEXT (decl) = context;
-  TYPE_CONTEXT (type) = DECL_CONTEXT (decl);
-  TYPE_NAME (type) = decl; /* Weird.  This is for typedefs! */
-  TYPE_STUB_DECL (type) = decl;
-}
-
 /* Builds a record type whose name is NAME.  NFIELDS is the number of fields,
    provided as field ident/type pairs.
 
@@ -207,7 +190,8 @@ lower_hip_mode (MOID_T *m)
 /* Lower a standard mode to a GENERIC tree.
 
    Note that this function only has to handle the standard modes that have not
-   been resolved to some equivalent.  */
+   been resolved to some equivalent.  In particular, this excludes the complex
+   modes, for which equivalent modes are declared in a68-parser-prelude.cc.  */
 
 static tree
 lower_standard_mode (MOID_T *m)
@@ -230,12 +214,16 @@ lower_standard_mode (MOID_T *m)
     type = a68_long_int_type;
   else if (m == M_LONG_LONG_INT)
     type = a68_long_long_int_type;
+  else if (m == M_WORD_INT)
+    type = a68_word_int_type;
   else if (m == M_REAL)
     type = a68_real_type;
   else if (m == M_LONG_REAL)
     type = a68_long_real_type;
   else if (m == M_LONG_LONG_REAL)
     type = a68_long_long_real_type;
+  else if (m == M_WORD_REAL)
+    type = a68_word_real_type;
   else if (m == M_SHORT_SHORT_BITS)
     type = a68_short_short_bits_type;
   else if (m == M_SHORT_BITS)
@@ -246,10 +234,14 @@ lower_standard_mode (MOID_T *m)
     type = a68_long_bits_type;
   else if (m == M_LONG_LONG_BITS)
     type = a68_long_long_bits_type;
+  else if (m == M_WORD_BITS)
+    type = a68_word_bits_type;
   else if (m == M_BYTES)
     type = a68_bytes_type;
   else if (m == M_LONG_BYTES)
     type = a68_long_bytes_type;
+  else if (m == M_WORD_BYTES)
+    type = a68_word_bytes_type;
   else if (m == M_FILE)
     /* XXX for now this is a file descriptor.  */
     type = integer_type_node;
@@ -311,10 +303,6 @@ lower_struct_mode (MOID_T *m)
       compute_record_mode (struct_type);
     }
 
-  /* Finish debugging output for this type.  */
-  build_stub_type_decl (struct_type, NULL_TREE /* context */);
-  rest_of_type_compilation (struct_type, TYPE_FILE_SCOPE_P (struct_type));
-  rest_of_decl_compilation (TYPE_NAME (struct_type), 1 /* file scope p */, 0);
   A68_STRUCT_TYPE_P (struct_type) = 1;
   return struct_type;
 }
@@ -364,7 +352,6 @@ lower_proc_mode (MOID_T *m)
      build_function_type, which we cannot use, but such is life.  */
   TREE_TYPE (function_type) = ret_type; /* THIS */
   TYPE_ARG_TYPES (function_type) = fnargs;
-  SET_TYPE_STRUCTURAL_EQUALITY (function_type);
 
   if (!COMPLETE_TYPE_P (function_type))
     layout_type (function_type);
@@ -393,7 +380,6 @@ lower_union_mode (MOID_T *m)
   TYPE_NAME (c_union_type) = NULL_TREE;
   TYPE_FIELDS (c_union_type) = NULL_TREE;
   TYPE_CXX_ODR_P (c_union_type) = 0; // XXX otherwise lto complains.  why.
-  SET_TYPE_STRUCTURAL_EQUALITY (c_union_type);
 
   /* Add field declarations.  */
   chain_struct_fields (PACK (m), c_union_type);
@@ -429,11 +415,6 @@ lower_union_mode (MOID_T *m)
       compute_record_mode (c_union_type);
     }
 
-  /* Finish debugging output for this type.  */
-  build_stub_type_decl (c_union_type, NULL_TREE /* context */);
-  rest_of_type_compilation (c_union_type, TYPE_FILE_SCOPE_P (c_union_type));
-  rest_of_decl_compilation (TYPE_NAME (c_union_type), 1 /* file scope p */, 0);
-
   /* Now the type with the overhead.  */
   TYPE_NAME (union_type) = get_identifier ("union%");
   tree overhead_field = build_decl (UNKNOWN_LOCATION, FIELD_DECL,
@@ -460,7 +441,6 @@ lower_union_mode (MOID_T *m)
       TYPE_FORWARD_REFERENCES (union_type) = forward_refs;
     }
 
-  SET_TYPE_STRUCTURAL_EQUALITY (union_type);
   A68_UNION_TYPE_P (union_type) = 1;
   return union_type;
 }

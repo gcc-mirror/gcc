@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <span>
 #include <testsuite_hooks.h>
 #include <testsuite_iterators.h>
 
@@ -54,6 +55,11 @@ test02()
   VERIFY( x.get() == nullptr );
   VERIFY( *y == 42 );
 }
+
+using Owning = ranges::single_view<int>;
+using Borrowed = std::span<int>;
+static_assert( ! ranges::enable_borrowed_range<ranges::as_rvalue_view<Owning>> );
+static_assert( ranges::enable_borrowed_range<ranges::as_rvalue_view<Borrowed>> );
 
 int
 main()

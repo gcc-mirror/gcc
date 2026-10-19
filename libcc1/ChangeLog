@@ -1,3 +1,8 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/103459
+	* configure.ac: Use AC_CONFIG_HEADERS, not AC_CONFIG_HEADER.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

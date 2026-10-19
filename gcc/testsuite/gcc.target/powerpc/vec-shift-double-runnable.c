@@ -68,8 +68,14 @@ main (int argc, char *argv [])
 					100, 110, 120, 130, 140, 150, 160 };
   vresult_char = (vector signed char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					  0, 0, 0, 0, 0, 0, 0, 0 };
+#if __LITTLE_ENDIAN__
   expected_vresult_char = (vector signed char) { 80, 0, 1, 2, 3, 4, 5, 6, 7,
 						 8, 9, 10, 11, 12, 13, 14 }; 
+             
+#else
+  expected_vresult_char = (vector signed char) { 1, 2, 3, 4, 5, 6, 7, 8,
+                                                 9, 10, 11, 12, 13, 14, 15, 5 };
+#endif
 						 
   vresult_char = vec_sldb (src_va_char, src_vb_char, 7);
 
@@ -90,8 +96,13 @@ main (int argc, char *argv [])
 					  0, 0, 0, 0, 0, 0, 0, 0 };
   vresult_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					   0, 0, 0, 0, 0, 0, 0, 0 };
+#if __LITTLE_ENDIAN__
   expected_vresult_uchar = (vector unsigned char) { 0, 0, 1, 2, 3, 4, 5, 6, 7,
 						    8, 9, 10, 11, 12, 13, 14 };
+#else
+  expected_vresult_uchar = (vector unsigned char) { 1, 2, 3, 4, 5, 6, 7, 8,
+                                                    9, 10, 11, 12, 13, 14, 15, 0 };
+#endif
 						 
   vresult_uchar = vec_sldb (src_va_uchar, src_vb_uchar, 7);
 
@@ -225,9 +236,15 @@ main (int argc, char *argv [])
 					28, 30, 32, 34, 36, 38, 40 };
   vresult_char = (vector signed char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					  0, 0, 0, 0, 0, 0, 0, 0 };
+#if __LITTLE_ENDIAN__
   expected_vresult_char = (vector signed char) { 24, 28, 32, 36, 40, 44, 48,
 						 52, 56, 60, 64, 68, 72, 76,
 						 80, 0 }; 
+#else
+  expected_vresult_char = (vector signed char) { 60, 20, 24, 28, 32, 36, 40,
+						  44, 48, 52, 56, 60, 64, 68,
+						  72, 76 };
+#endif
 						 
   vresult_char = vec_srdb (src_va_char, src_vb_char, 7);
 
@@ -248,9 +265,15 @@ main (int argc, char *argv [])
 					  16, 18, 20, 22, 24, 26, 28, 30 }; 
   vresult_uchar = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					   0, 0, 0, 0, 0, 0, 0, 0 };
+#if __LITTLE_ENDIAN__
   expected_vresult_uchar = (vector unsigned char) { 4, 8, 12, 16, 20, 24, 28,
 						    32, 36, 40, 44, 48, 52,
 						    56, 60, 200 };
+#else
+  expected_vresult_uchar = (vector unsigned char) { 0, 0, 4, 8, 12, 16, 20,
+						    24, 28, 32, 36, 40, 44, 48,
+						    52, 56 };
+#endif
 						 
   vresult_uchar = vec_srdb (src_va_uchar, src_vb_uchar, 7);
 
@@ -288,8 +311,13 @@ main (int argc, char *argv [])
   src_vb_ush = (vector short unsigned int) { 0, 2*128, 4*128, 6*128,
 					     8*128, 10*128, 12*128, 14*128 };
   vresult_ush = (vector short unsigned int) { 0, 0, 0, 0, 0, 0, 0, 0 };
+#if __LITTLE_ENDIAN__
   expected_vresult_ush = (vector short unsigned int) { 0, 2, 4, 6, 8, 10,
 						       12, 14 }; 
+#else
+  expected_vresult_ush = (vector short unsigned int) { 40960, 2, 4, 6, 8, 10,
+                                                       12, 14 };
+#endif
 						 
   vresult_ush = vec_srdb (src_va_ush, src_vb_ush, 7);
 
@@ -325,7 +353,11 @@ main (int argc, char *argv [])
   src_va_uint = (vector unsigned int) { 0, 20, 30, 40 };
   src_vb_uint = (vector unsigned int) { 128, 2*128, 4*128, 6*128 };
   vresult_uint = (vector unsigned int) { 0, 0, 0, 0 };
+#if __LITTLE_ENDIAN__
   expected_vresult_uint = (vector unsigned int) { 1, 2, 4, 6 }; 
+#else
+  expected_vresult_uint = (vector unsigned int) { 1342177281, 2, 4, 6 };
+#endif
 						 
   vresult_uint = vec_srdb (src_va_uint, src_vb_uint, 7);
 

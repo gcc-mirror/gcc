@@ -76,6 +76,7 @@ enum class BuiltinMacro
   Ord,
   PartialOrd,
   Hash,
+  CoercePointee,
 };
 
 tl::optional<BuiltinMacro>

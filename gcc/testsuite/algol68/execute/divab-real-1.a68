@@ -7,5 +7,8 @@ BEGIN REAL r := 3.14;
       rr /:= LONG 2.0;
       LONG LONG REAL rrr := LONG LONG 3.14;
       rrr DIVAB LONG LONG 2.0;
-      rrr /:= LONG LONG 2.0
+      rrr /:= LONG LONG 2.0;
+      WORD REAL w := WORD 3.14;
+      w DIVAB WORD 2.0;
+      w  /:= WORD 2.0
 END

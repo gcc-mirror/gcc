@@ -7,5 +7,5 @@ vuint32m1_t
 __attribute__((target("arch=+v")))
 test_1 (vuint32m1_t dest, vuint32m1_t op_1, vuint32m1_t op_2, size_t vl)
 {
-  return __riscv_vsha2ms_vv_u32m1 (dest, op_1, op_2, vl); /* { dg-error {built-in function '__riscv_vsha2ms_vv_u32m1\(dest,  op_1,  op_2,  vl\)' requires the 'zvknha or zvknhb' ISA extension} } */
+  return __riscv_vsha2ms_vv_u32m1 (dest, op_1, op_2, vl); /* { dg-error {built-in function '__riscv_vsha2ms_vv_u32m1' requires the 'zvknha or zvknhb' ISA extension} } */
 }

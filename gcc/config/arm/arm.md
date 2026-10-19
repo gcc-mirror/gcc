@@ -72,6 +72,13 @@
 ;; Instruction classification types
 (include "types.md")
 
+;; Included for cortex-a53 and cortex-a57 to use sve_type to handle
+;; SVE instructions on AArch64.
+;; TODO: Decouple the cortex-a57 description into an aarch64-only
+;; "big core" description and use that as the base for big AArch64
+;; cores, unburdened by compatibility with arm.
+(include "../aarch64/aarch64-sched-types.md")
+
 ; IS_THUMB is set to 'yes' when we are generating Thumb code, and 'no' when
 ; generating ARM code.  This is used to control the length of some insn
 ; patterns that share the same RTL in both ARM and Thumb code.

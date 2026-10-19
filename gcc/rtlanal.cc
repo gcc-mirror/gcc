@@ -1590,7 +1590,7 @@ single_set_2 (const rtx_insn *insn, const_rtx pat)
    false.  */
 
 bool
-multiple_sets (const_rtx insn)
+multiple_sets (const rtx_insn *insn)
 {
   bool found;
   int i;
@@ -2585,7 +2585,8 @@ find_reg_equal_equiv_note (const_rtx insn)
 	   in the comment in set_unique_reg_note.
 
 	   This should be changed into an assert.  */
-	if (GET_CODE (PATTERN (insn)) == PARALLEL && multiple_sets (insn))
+	if (GET_CODE (PATTERN (insn)) == PARALLEL
+	    && multiple_sets (as_a<const rtx_insn *> (insn)))
 	  return 0;
 	return link;
       }
@@ -3415,7 +3416,8 @@ replace_rtx (rtx x, rtx from, rtx to, bool all_regs)
    the change in LABEL_NUSES if UPDATE_LABEL_NUSES.  */
 
 void
-replace_label (rtx *loc, rtx old_label, rtx new_label, bool update_label_nuses)
+replace_label (rtx *loc, rtx_insn *old_label, rtx_insn *new_label,
+	       bool update_label_nuses)
 {
   /* Handle jump tables specially, since ADDR_{DIFF_,}VECs can be long.  */
   rtx x = *loc;
@@ -4504,7 +4506,7 @@ keep_with_call_p (const rtx_insn *insn)
    not apply to the fallthru case of a conditional jump.  */
 
 bool
-label_is_jump_target_p (const_rtx label, const rtx_insn *jump_insn)
+label_is_jump_target_p (const rtx_insn *label, const rtx_insn *jump_insn)
 {
   rtx tmp = JUMP_LABEL (jump_insn);
   rtx_jump_table_data *table;
@@ -6295,7 +6297,7 @@ low_bitmask_len (machine_mode mode, unsigned HOST_WIDE_INT m)
 
 /* Return the mode of MEM's address.  */
 
-scalar_int_mode
+machine_mode
 get_address_mode (rtx mem)
 {
   machine_mode mode;
@@ -6303,7 +6305,7 @@ get_address_mode (rtx mem)
   gcc_assert (MEM_P (mem));
   mode = GET_MODE (XEXP (mem, 0));
   if (mode != VOIDmode)
-    return as_a <scalar_int_mode> (mode);
+    return mode;
   return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
 }
 

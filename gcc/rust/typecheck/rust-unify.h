@@ -28,6 +28,40 @@ namespace Resolver {
 class UnifyRules
 {
 public:
+  using ADTPair = std::pair<const TyTy::ADTType *, const TyTy::ADTType *>;
+  using ActiveADTs = std::set<ADTPair>;
+
+  class ActiveADTGuard
+  {
+  public:
+    ActiveADTGuard (ActiveADTs &active, ADTPair pair)
+      : active (active), pair (pair), inserted (false)
+    {
+      bool found = active.find (this->pair) != active.end ();
+      if (!found)
+	{
+	  active.insert (this->pair);
+	  inserted = true;
+	}
+    }
+
+    ~ActiveADTGuard ()
+    {
+      if (inserted)
+	active.erase (pair);
+    }
+
+    bool already_active () const { return !inserted; }
+
+    ActiveADTGuard (const ActiveADTGuard &) = delete;
+    ActiveADTGuard &operator= (const ActiveADTGuard &) = delete;
+
+  private:
+    ActiveADTs &active;
+    ADTPair pair;
+    bool inserted;
+  };
+
   struct InferenceSite
   {
     InferenceSite (HirId pref, HirId ptyref, TyTy::BaseGeneric *param,
@@ -52,12 +86,11 @@ public:
     TyTy::BaseType *resolved;
   };
 
-  static TyTy::BaseType *Resolve (TyTy::TyWithLocation lhs,
-				  TyTy::TyWithLocation rhs, location_t locus,
-				  bool commit_flag, bool emit_error,
-				  bool check_bounds, bool infer,
-				  std::vector<CommitSite> &commits,
-				  std::vector<InferenceSite> &infers);
+  static TyTy::BaseType *
+  Resolve (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs, location_t locus,
+	   bool commit_flag, bool emit_error, bool check_bounds, bool infer,
+	   std::vector<CommitSite> &commits, std::vector<InferenceSite> &infers,
+	   ActiveADTs *active_adts = nullptr, bool allow_never_coercion = true);
 
   static void commit (TyTy::BaseType *base, TyTy::BaseType *other,
 		      TyTy::BaseType *resolved);
@@ -102,7 +135,8 @@ private:
   UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 	      location_t locus, bool commit_flag, bool emit_error, bool infer,
 	      bool check_bounds, std::vector<CommitSite> &commits,
-	      std::vector<InferenceSite> &infers);
+	      std::vector<InferenceSite> &infers, ActiveADTs &active_adts,
+	      bool allow_never_coercion);
 
   TyTy::BaseType *resolve_subtype (TyTy::TyWithLocation lhs,
 				   TyTy::TyWithLocation rhs);
@@ -123,8 +157,11 @@ private:
   bool emit_error;
   bool infer_flag;
   bool check_bounds_flag;
+  bool allow_never_coercion;
   std::vector<CommitSite> &commits;
   std::vector<InferenceSite> &infers;
+
+  ActiveADTs &active_adts;
 
   Analysis::Mappings &mappings;
   TypeCheckContext &context;

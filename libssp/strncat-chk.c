@@ -34,9 +34,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include <ssp/ssp.h>
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif
+#include <string.h>
 
 extern void __chk_fail (void) __attribute__((__noreturn__));
 

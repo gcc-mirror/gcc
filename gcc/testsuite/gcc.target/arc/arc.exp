@@ -94,6 +94,15 @@ proc check_effective_target_barrelshifter { } {
     }]
 }
 
+# Return 1 if norm is enabled by default.
+proc check_effective_target_norm { } {
+    return [check_no_compiler_messages norm_default assembly {
+	#if !defined(__ARC_NORM__)
+	#error No default norm instruction
+	#endif
+    }]
+}
+
 #return 1 if we have code density option on.
 proc check_effective_target_codedensity { } {
     return [check_no_compiler_messages codedensity assembly {

@@ -1,4 +1,4 @@
-/* Header file for mma-builtin-6.c test - contains test functions only */
+/* Header file for mma-builtin-6.*.c test - contains test functions only */
 
 void
 foo (__vector_quad *dst)

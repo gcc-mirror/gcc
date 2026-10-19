@@ -60,7 +60,7 @@ void
 TypePathProbe::probe_generic ()
 {
   for (const TyTy::TypeBoundPredicate &predicate :
-       receiver->get_specified_bounds ())
+       TypeCheckContext::get ()->predicates_for_type (receiver))
     {
       auto candidate = process_predicate_for_candidates (predicate);
       insert_candidate (std::move (candidate));

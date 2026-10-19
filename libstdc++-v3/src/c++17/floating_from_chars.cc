@@ -451,12 +451,15 @@ namespace
     // fmt has the value of one of the enumerators of chars_format.
     __glibcxx_assert(valid_fmt(fmt));
 
-    string_view res;
-
+    // Fail if the input is empty or starts with '+'
     if (first == last || *first == '+') [[unlikely]]
 	return nullptr;
 
     const int neg = (*first == '-');
+
+    // Fail if the input consists of a lone '-'
+    if (first + neg == last)
+      return nullptr;
 
     if (std::memchr("iInN", (unsigned char)first[neg], 4))
       {
@@ -489,7 +492,7 @@ namespace
 	else // Only need 4 chars for "-NAN"
 	  len = neg + 3;
 
-	buf.assign(first, 0, len);
+	buf.assign(first, len);
 	// prevent make_result correcting for "0x"
 	fmt = chars_format::general;
 	return buf.c_str();

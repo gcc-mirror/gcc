@@ -1,0 +1,7 @@
+begin assert (maxbits >= 16r0);
+      assert (longmaxbits >= long 16r0);
+      assert (longlongmaxbits >= long long 16r0);
+      assert (shortmaxbits >= short 16r0);
+      assert (shortshortmaxbits >= short short 16r0);
+      assert (wordmaxbits >= word 16r0)
+end

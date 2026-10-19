@@ -81,7 +81,11 @@ ResolvePathRef::attempt_constructor_expression_lookup (
 
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (lookup);
   if (adt->is_unit ())
-    return unit_expression (expr_locus);
+    {
+      tree compiled_adt_type = TyTyResolveCompile::compile (ctx, adt);
+      return Backend::constructor_expression (compiled_adt_type, false, {}, -1,
+					      expr_locus);
+    }
 
   if (!adt->is_enum ())
     return error_mark_node;
@@ -255,7 +259,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 			       location_t expr_locus, bool is_qualified_path)
 {
   bool is_fn = lookup->get_kind () == TyTy::TypeKind::FNDEF;
-  if (auto resolved_item = ctx->get_mappings ().lookup_hir_item (ref))
+  if (auto resolved_item = ctx->get_mappings ().hir.items.lookup (ref))
     {
       if (!lookup->has_substitutions_defined ())
 	return CompileItem::compile (*resolved_item, ctx, nullptr, expr_locus);
@@ -299,7 +303,7 @@ HIRCompileBase::query_compile (HirId ref, TyTy::BaseType *lookup,
 						     lookup, expr_locus);
 	}
       else if (auto trait_item
-	       = ctx->get_mappings ().lookup_hir_trait_item (ref))
+	       = ctx->get_mappings ().hir.trait_items.lookup (ref))
 	{
 	  HIR::Trait *trait = ctx->get_mappings ().lookup_trait_item_mapping (
 	    trait_item.value ()->get_mappings ().get_hirid ());

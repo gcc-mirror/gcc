@@ -71,7 +71,7 @@ classes.
    <para>This starts off sounding complicated, but is actually very easy,
       especially towards the end.  Trust me.
    </para>
-   <para>Beginners usually have a little trouble understand the whole
+   <para>Beginners usually have a little trouble understanding the whole
       'past-the-end' thing, until they remember their early algebra classes
       (see, they <emphasis>told</emphasis> you that stuff would come in handy!) and
       the concept of half-open ranges.
@@ -132,7 +132,7 @@ classes.
    beginning                end
 
 </programlisting>
-   <para>See?  Everything between the boundary markers is chapter of the array.
+   <para>See?  Everything between the boundary markers is part of the array.
       Simple.
    </para>
    <para>Now think back to your junior-high school algebra course, when you

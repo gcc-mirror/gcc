@@ -452,6 +452,27 @@
   }
 )
 
+;; -------------------------------------------------------------------------
+;; ---- [INT,FP] Initialize from two half-width vectors
+;; -------------------------------------------------------------------------
+
+(define_expand "vec_init<mode><v_half>"
+  [(match_operand:V_HAS_HALF 0 "register_operand")
+   (match_operand 1 "")]
+  "TARGET_VECTOR
+   && known_le (GET_MODE_SIZE (<MODE>mode),
+		riscv_regmode_natural_size (<MODE>mode))"
+{
+  gcc_assert (GET_CODE (operands[1]) == PARALLEL);
+  gcc_assert (XVECLEN (operands[1], 0) == 2);
+
+  rtx low = force_reg (<V_HALF>mode, XVECEXP (operands[1], 0, 0));
+  rtx high = force_reg (<V_HALF>mode, XVECEXP (operands[1], 0, 1));
+
+  emit_insn (gen_vec_concat (<MODE>mode, operands[0], low, high));
+  DONE;
+})
+
 ;; Slide an RVV vector left and insert a scalar into element 0.
 (define_expand "vec_shl_insert_<mode>"
   [(match_operand:V_VLSI 0 "register_operand")
@@ -1523,15 +1544,15 @@
 ;; For now this helps optimize VLS subregs like (subreg:V2DI (reg:V4DI) 16)
 ;; that would otherwise need to go via memory.
 
-(define_expand "vec_extract<mode><vls_half>"
-  [(set (match_operand:<VLS_HALF>	 0 "nonimmediate_operand")
-     (vec_select:<VLS_HALF>
+(define_expand "vec_extract<mode><v_half>"
+  [(set (match_operand:<V_HALF>	 0 "nonimmediate_operand")
+     (vec_select:<V_HALF>
        (match_operand:VLS_HAS_HALF	 1 "register_operand")
        (parallel
 	 [(match_operand		 2 "immediate_operand")])))]
   "TARGET_VECTOR"
 {
-  int sz = GET_MODE_NUNITS (<VLS_HALF>mode).to_constant ();
+  int sz = GET_MODE_NUNITS (<V_HALF>mode).to_constant ();
   int part = INTVAL (operands[2]);
 
   rtx start = GEN_INT (part * sz);
@@ -1547,7 +1568,7 @@
 	 riscv_vector::BINARY_OP, ops);
     }
 
-  emit_move_insn (operands[0], gen_lowpart (<VLS_HALF>mode, tmp));
+  emit_move_insn (operands[0], gen_lowpart (<V_HALF>mode, tmp));
   DONE;
 })
 

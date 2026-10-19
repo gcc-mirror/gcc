@@ -133,9 +133,9 @@
       (match_test "rval->cl == rvc_zero && rval->sign == 0")))
 
 (define_constraint "Gc"
- "A single Floating-point constant for use with CONST.S instructions."
+ "A single Floating-point constant for use with CONST.[SD] instructions."
  (and (match_code "const_double")
-      (match_test "TARGET_HARD_FLOAT_CONST_S && xtensa_fp_const (rval) >= 0")))
+      (match_test "TARGET_HARD_FLOAT_CONST && xtensa_fp_const (rval) >= 0")))
 
 ;; Memory constraints.
 

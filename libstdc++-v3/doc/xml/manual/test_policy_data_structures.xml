@@ -23,7 +23,7 @@
     <para>Additionally, the test integrally checks exception safety
     and resource leaks. This is done as follows. A special
     allocator type, written for the purpose of the test, both
-    randomly throws an exceptions when allocations are performed,
+    randomly throws exceptions when allocations are performed,
     and tracks allocations and de-allocations. The exceptions thrown
     at allocations simulate memory-allocation failures; the
     tracking mechanism checks for memory-related bugs (e.g.,
@@ -31,7 +31,7 @@
     this library's containers and the containers' value-types are
     configured to use this allocator.</para>
 
-    <para>For granularity, the test is split into the
+    <para>For granularity, the test is split into
     several sources, each checking only some containers.</para>
 
     <para>For more details, consult the files in
@@ -64,7 +64,7 @@
 	    arbitrary text (<xref
 	    linkend="biblio.wickland96thirty"/>) into a container,
 	    then performs a series of finds using
-	    <function>find</function> . It measures the average
+	    <function>find</function>. It measures the average
 	    time for <function>find</function> as a function of
 	  the number of values inserted.</para>
 	  <para>
@@ -88,7 +88,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for the native
+	  <para>The graphic below shows the results for the native
 	  and collision-chaining hash types the function
 	  applied being a text find timing test using
 	  <function>find</function>.
@@ -368,8 +368,8 @@
 	  entry affects performance only marginally, at least in this
 	  library's implementation. (Unfortunately, it was not possible to run
 	  the tests with <classname>std::tr1::unordered_map</classname> 's
-	  <classname>cache_hash_code = true</classname> , as it appeared to
-	  malfuntion.)</para>
+	  <classname>cache_hash_code = true</classname>, as it appeared to
+	  malfunction.)</para>
 
 	</section>
 
@@ -1882,7 +1882,7 @@
 
 	  <para>In this setting, as in Hash-Based Text
 	  <function>find</function> Find Timing test and Hash-Based
-	  Integer <function>find</function> Find Timing test , the choice
+	  Integer <function>find</function> Find Timing test, the choice
 	  of underlying hash-table underlying hash-table affects performance
 	  most, then the range-hashing scheme, and
 	  finally any other policies.</para>
@@ -1960,7 +1960,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for the native, collision-chaining, and general-probing hash types.
+	  <para>The graphic below shows the results for the native, collision-chaining, and general-probing hash types.
 	  </para>
 
 	  <!-- results graphic -->
@@ -2257,7 +2257,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for the native, collision-chaining, and general-probing hash types.
+	  <para>The graphic below shows the results for the native, collision-chaining, and general-probing hash types.
 	  </para>
 
 	  <!-- results graphic -->
@@ -2514,7 +2514,7 @@
 
 	  <para>This test inserts a number of values with keys from an arbitrary
 	  text ([wickland96thirty]) into a container
-	  using <function>insert</function> . It measures the average time
+	  using <function>insert</function>. It measures the average time
 	  for <function>insert</function> as a function of the number of
 	  values inserted.</para>
 
@@ -3808,7 +3808,7 @@
 	  <para>In this test, the native red-black tree can support
 	  order-statistics queries only externally, by performing a
 	  <classname>find</classname> (alternatively, <classname>lower_bound</classname> or
-	  <classname>upper_bound</classname> ) and then using <classname>std::distance</classname> .
+	  <classname>upper_bound</classname>) and then using <classname>std::distance</classname>.
 	  This is clearly linear, and it is not that surprising that the
 	  cost is high.</para>
 	  <para>This library's tree-based containers use in this test the
@@ -3816,10 +3816,10 @@
 	  This method has only linear complexity in the length of the
 	  root-node path. Unfortunately, the average path of a splay tree
 	  (<classname>tree</classname>
-	  with <classname>Tag =</classname> <classname>splay_tree_tag</classname> ) can
+	  with <classname>Tag =</classname> <classname>splay_tree_tag</classname>) can
 	  be higher than logarithmic; the longest path of a red-black
 	  tree (<classname>tree</classname>
-	  with <classname>Tag =</classname> <classname>rb_tree_tag</classname> ) is
+	  with <classname>Tag =</classname> <classname>rb_tree_tag</classname>) is
 	  logarithmic in the number of elements. Consequently, the splay
 	  tree has worse performance than the red-black tree.</para>
 	</section>
@@ -3875,7 +3875,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a tree-based container for primary keys.
 	  </para>
 
@@ -4061,7 +4061,7 @@
 	  </informaltable>
 
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a hash-based container for primary keys.
 	  </para>
 
@@ -4338,7 +4338,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a tree-based container for primary keys.
 	  </para>
 
@@ -4524,7 +4524,7 @@
 	  </informaltable>
 
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a hash-based container for primary keys.
 	  </para>
 
@@ -4805,7 +4805,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a tree-based container for primary keys.
 	  </para>
 
@@ -4991,7 +4991,7 @@
 	  </informaltable>
 
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a hash-based container for primary keys.
 	  </para>
 
@@ -5272,7 +5272,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a tree-based container for primary keys.
 	  </para>
 
@@ -5458,7 +5458,7 @@
 	  </informaltable>
 
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a hash-based container for primary keys.
 	  </para>
 
@@ -5733,7 +5733,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a tree-based container for primary keys.
 	  </para>
 
@@ -5919,7 +5919,7 @@
 	  </informaltable>
 
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a hash-based container for primary keys.
 	  </para>
 
@@ -6193,7 +6193,7 @@
 	    Results
 	  </title></info>
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a tree-based container for primary keys.
 	  </para>
 
@@ -6379,7 +6379,7 @@
 	  </informaltable>
 
 
-	  <para>The graphic below show the results for "multimaps" which
+	  <para>The graphic below shows the results for "multimaps" which
 	  use a hash-based container for primary keys.
 	  </para>
 
@@ -7018,8 +7018,8 @@
 
 	  <para>This test inserts a number of values with keys from an
 	  arbitrary text ([ wickland96thirty ]) into
-	  a container using <classname>push</classname> , then removes them using
-	  <classname>pop</classname> . It measures the average time for <classname>push</classname>
+	  a container using <classname>push</classname>, then removes them using
+	  <classname>pop</classname>. It measures the average time for <classname>push</classname>
 	  as a function of the number of values.</para>
 
 
@@ -7737,8 +7737,8 @@
 	  </title></info>
 
 	  <para>This test inserts a number of values with integer keys
-	  into a container using <function>push</function> , then removes them
-	  using <function>pop</function> . It measures the average time for
+	  into a container using <function>push</function>, then removes them
+	  using <function>pop</function>. It measures the average time for
 	  <function>push</function> and <function>pop</function> as a function
 	  of the number of values.</para>
 
@@ -9211,7 +9211,7 @@
 	  byproduct of the tree-like structure is required: either
 	  order-preservation, or the ability to utilize node invariants. If
 	  memory-use is the major factor, an ordered-vector tree gives
-	  optimal results (albeit with high modificiation costs), and a
+	  optimal results (albeit with high modification costs), and a
 	  list-based container gives reasonable results.</para>
 
 	</section>

@@ -1926,6 +1926,7 @@ vect_analyze_loop_costing (loop_vec_info loop_vinfo,
      things are probably too close to call, and the conservative thing
      would be to stick with the scalar code.  */
   if (loop_cost_model (loop) == VECT_COST_MODEL_VERY_CHEAP
+      && !LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
       && min_profitable_estimate > (int) vect_vf_for_cost (loop_vinfo))
     {
       if (dump_enabled_p ())
@@ -7383,17 +7384,24 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	      && types_compatible_p (TREE_TYPE (cond_initial_val),
 				     TREE_TYPE (cond_reduc_val)))
 	    {
-	      tree e = fold_binary (LE_EXPR, boolean_type_node,
-				    cond_initial_val, cond_reduc_val);
-	      if (e && (integer_onep (e) || integer_zerop (e)))
+	      tree lt, gt;
+	      enum tree_code cond_reduc_code = ERROR_MARK;
+	      if ((lt = fold_binary (LT_EXPR, boolean_type_node,
+				     cond_initial_val, cond_reduc_val))
+		  && integer_onep (lt))
+		cond_reduc_code = MAX_EXPR;
+	      else if ((gt = fold_binary (GT_EXPR, boolean_type_node,
+					  cond_initial_val, cond_reduc_val))
+		       && integer_onep (gt))
+		cond_reduc_code = MIN_EXPR;
+	      if (cond_reduc_code != ERROR_MARK)
 		{
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_NOTE, vect_location,
 				     "condition expression based on "
 				     "compile time constant.\n");
 		  /* Record reduction code at analysis stage.  */
-		  VECT_REDUC_INFO_CODE (reduc_info)
-		    = integer_onep (e) ? MAX_EXPR : MIN_EXPR;
+		  VECT_REDUC_INFO_CODE (reduc_info) = cond_reduc_code;
 		  VECT_REDUC_INFO_TYPE (reduc_info) = CONST_COND_REDUCTION;
 		}
 	    }
@@ -9332,9 +9340,9 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       if (!directly_supported_p (RSHIFT_EXPR, vectype, optab_vector))
 	return false;
 
-      /* Don't shift more than type precision to avoid UD.  */
+      /* Don't shift more than type precision to avoid UB.  */
       if (!tree_fits_uhwi_p (step_expr)
-	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+	  || maybe_ge (vf * tree_to_uhwi (step_expr),
 		       TYPE_PRECISION (TREE_TYPE (init_expr))))
 	return false;
       break;
@@ -9344,12 +9352,11 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
       if (!directly_supported_p (LSHIFT_EXPR, vectype, optab_vector))
 	return false;
 
-      /* Don't shift more than type precision to avoid UD.  */
+      /* Don't shift more than type precision to avoid UB.  */
       if (!tree_fits_uhwi_p (step_expr)
-	  || maybe_ge (nunits * tree_to_uhwi (step_expr),
+	  || maybe_ge (vf * tree_to_uhwi (step_expr),
 		       TYPE_PRECISION (TREE_TYPE (init_expr))))
 	return false;
-
       break;
 
     default:
@@ -10266,12 +10273,16 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 
   gcc_assert (slp_index >= 0);
 
-  /* Get the last occurrence of the scalar index from the concatenation of
-     all the slp vectors. Calculate which slp vector it is and the index
-     within.  */
-  int num_scalar = SLP_TREE_LANES (slp_node);
   int num_vec = vect_get_num_copies (vinfo, slp_node);
-  poly_uint64 pos = (num_vec * nunits) - num_scalar + slp_index;
+  poly_uint64 pos = slp_index;
+  if (loop_vinfo)
+    {
+      /* Get the last occurrence of the scalar index from the concatenation of
+	 all the slp vectors. Calculate which slp vector it is and the index
+	 within.  */
+      int num_scalar = SLP_TREE_LANES (slp_node);
+      pos += (num_vec * nunits) - num_scalar;
+    }
 
   /* Calculate which vector contains the result, and which lane of
      that vector we need.  */
@@ -10879,14 +10890,88 @@ vect_gen_loop_len_mask (loop_vec_info loop_vinfo, gimple_stmt_iterator *gsi,
   return len_mask;
 }
 
+/* Update the exit profile counts scaling them from scalar to vector counts.
+
+   The calculations are as follows.
+
+   let P be the scalar probability that one iteration takes an early exit edge.
+   1 - P is then the probabiliy that the exit is not taken.
+
+   Since every vector iteration handles VF scalar iterations, the early exit
+   branch can be taken when any of the lanes are true.
+
+   We invert this and first calculate the probablity that you reach the latch,
+   i.e. the probability that the vector code does not exit is the probability
+   Q that none of the lanes are true.
+
+   Q = (1 - P) * (1 - P) * ... * (1 - P)
+     = (1 - P) ^ VF
+
+   and so the probability that at least one lane breaks is 1 - Q,
+   or rather 1 - (i - P) ^ VF.
+
+   For example, if the scalar break probability is 10% and VF is 4:
+
+   P = 0.1
+   1 - P = 0.9
+   (1 - P) ^ VF = 0.9 ^ 4 = 0.6561
+   1 - (1 - p) ^ VF = 1 - 0.6561 = 0.3439
+
+   So a scalar early-exit edge that is taken 10% of the time becomes a vector
+   early-exit edge that is taken about 34.4% of the time, because each vector
+   iteration gives the break condition four chances to trigger.  */
+
+static void
+vect_update_early_break_profiles (loop_vec_info loop_vinfo)
+{
+  if (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+    return;
+
+  class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  unsigned int vf = vect_vf_for_cost (loop_vinfo);
+
+  auto_vec<std::pair<edge, profile_probability>, 8> updates;
+  for (edge e : get_loop_exit_edges (loop))
+    {
+      if ((e == LOOP_VINFO_MAIN_EXIT (loop_vinfo)
+	   && !LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+	  || !e->probability.initialized_p ())
+	continue;
+
+      /* For any early break exits, the probablity of exiting are based on if
+	 any lane is true, and so are tied to VF since you have VF chances.
+	 As such scale the scalar profile by VF to the the probability for the
+	 vector edges using 1 - (1 - p) ^ VF.  */
+      profile_probability probability
+	= profile_probability::always () - e->probability.invert ().pow (vf);
+      updates.safe_push ({e, probability});
+    }
+
+  /* First update the edge counts.  */
+  for (auto update : updates)
+    set_edge_probability_and_rescale_others (update.first, update.second);
+
+  /* And then only update the in loop BBs, i.e. the fall through block for
+     the early exits.  */
+  for (auto update : updates)
+    for (edge e : update.first->src->succs)
+      if (!loop_exit_edge_p (loop, e) && single_pred_p (e->dest))
+	e->dest->count = e->count ();
+}
+
 /* Scale profiling counters by estimation for LOOP which is vectorized
    by factor VF.
    If FLAT is true, the loop we started with had unrealistically flat
    profile.  */
 
 static void
-scale_profile_for_vect_loop (class loop *loop, edge exit_e, unsigned vf, bool flat)
+scale_profile_for_vect_loop (loop_vec_info loop_vinfo,
+			     class loop *loop, edge exit_e, unsigned vf,
+			     bool flat)
 {
+  /* First scale any early exits.  */
+  vect_update_early_break_profiles (loop_vinfo);
+
   /* For flat profiles do not scale down proportionally by VF and only
      cap by known iteration count bounds.  */
   if (flat)
@@ -10916,14 +11001,19 @@ scale_profile_for_vect_loop (class loop *loop, edge exit_e, unsigned vf, bool fl
       vf /= 2;
     }
 
-  if (entry_count.nonzero_p ())
-    set_edge_probability_and_rescale_others
+  if (!LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+    {
+      if (entry_count.nonzero_p ())
+	set_edge_probability_and_rescale_others
 	    (exit_e,
 	     entry_count.probability_in (loop->header->count / vf));
-  /* Avoid producing very large exit probability when we do not have
-     sensible profile.  */
-  else if (exit_e->probability < profile_probability::always () / (vf * 2))
-    set_edge_probability_and_rescale_others (exit_e, exit_e->probability * vf);
+      /* Avoid producing very large exit probability when we do not have
+	 sensible profile.  */
+      else if (exit_e->probability < profile_probability::always () / (vf * 2))
+	set_edge_probability_and_rescale_others (exit_e,
+						 exit_e->probability * vf);
+    }
+
   loop->latch->count = single_pred_edge (loop->latch)->count ();
 
   scale_loop_profile (loop, profile_probability::always () / vf,
@@ -11192,8 +11282,7 @@ vect_update_ivs_after_vectorizer_for_early_breaks (loop_vec_info loop_vinfo)
   /* Write the adjustments at the end of the iv increment.  */
   bool insert_after;
   gimple_stmt_iterator incr_gsi;
-  vect_iv_increment_position (LOOP_VINFO_MAIN_EXIT (loop_vinfo), &incr_gsi,
-			      &insert_after);
+  standard_iv_increment_position (loop, &incr_gsi, &insert_after);
 
   if (insert_after)
     gsi_insert_seq_after (&incr_gsi, stmts, GSI_NEW_STMT);
@@ -11545,8 +11634,9 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 			  assumed_vf) - 1
 	 : wi::udiv_floor (loop->nb_iterations_estimate + bias_for_assumed,
 			   assumed_vf) - 1);
-  scale_profile_for_vect_loop (loop, LOOP_VINFO_MAIN_EXIT (loop_vinfo),
-			       assumed_vf, flat);
+  scale_profile_for_vect_loop (loop_vinfo, loop,
+			       LOOP_VINFO_MAIN_EXIT (loop_vinfo), assumed_vf,
+			       flat);
 
   if (dump_enabled_p ())
     {

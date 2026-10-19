@@ -77,7 +77,7 @@ dg_regex = re.compile(r'{\s+dg-(error|warning)')
 pr_filename_regex = re.compile(r'(^|[\W_])[Pp][Rr](?P<pr>\d{4,})')
 identifier_regex = re.compile(r'^([a-zA-Z0-9_#].*)')
 comment_regex = re.compile(r'^\/\*')
-struct_regex = re.compile(r'^(class|struct|union|enum)\s+'
+struct_regex = re.compile(r'^(class|struct|union|enum class|enum)\s+'
                           r'(GTY\(.*\)\s+)?([a-zA-Z0-9_]+)')
 macro_regex = re.compile(r'#\s*(define|undef)\s+([a-zA-Z0-9_]+)')
 super_macro_regex = re.compile(r'^DEF[A-Z0-9_]+\s*\(([a-zA-Z0-9_]+)')

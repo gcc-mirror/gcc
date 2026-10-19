@@ -150,7 +150,6 @@
 #include "ssa.h"
 #include "gimple-pretty-print.h"
 #include "alias.h"
-#include "fold-const.h"
 #include "print-tree.h"
 #include "tree-hash-traits.h"
 #include "gimple-iterator.h"

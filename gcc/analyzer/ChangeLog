@@ -1,3 +1,43 @@
+2026-10-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR analyzer/125265
+	* analyzer.opt: ...here.  Align parameter definition.
+
+2026-10-07  Filip Kastl  <fkastl@suse.cz>
+
+	* region-model.cc: Add some missing override keywords for member
+	functions.
+	* shift-diagnostics.cc: Ditto.
+
+2026-10-05  linden  <bestxmg@gmail.com>
+
+	* access-diagram.cc (access_diagram_impl::make_warning_string):
+	Remove no-op std::move.
+	* engine.cc (exploded_graph::unwind_from_exception): Likewise.
+
+2026-10-05  linden  <bestxmg@gmail.com>
+
+	* infinite-loop.cc (infinite_loop::infinite_loop): std::move eedges
+	into m_eedge_vec.
+
+2026-10-05  linden  <bestxmg@gmail.com>
+
+	* program-state.h (program_state::operator=): Declare move-assignment
+	overload.
+	* program-state.cc (program_state::operator=): Implement it: steal
+	the region_model and sm_state_map pointers, leaving the source empty.
+	* exploded-graph.h (point_and_state::point_and_state): Add a move
+	ctor; explicitly default the copy ctor.
+	(point_and_state::set_state): Add a program_state&& overload.
+	(exploded_node::exploded_node): Declare a (point_and_state&&, int)
+	overload.
+	* engine.cc (exploded_node::exploded_node): Implement the
+	(point_and_state&&, int) overload; check m_ps rather than the
+	argument in the existing overload's assertion.
+	(exploded_graph::get_or_create_node): Move the merged state into
+	point_and_state::set_state; move the point_and_state into the new
+	exploded_node; log node->get_state () instead of the moved-from ps.
+
 2026-08-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* analyzer.opt (fanalyzer-fine-grained): Use 2 spaces instead of 1

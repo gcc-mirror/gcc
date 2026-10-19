@@ -629,7 +629,7 @@ test_leap_second()
 	  WIDEN("2012-06-30 23:59:60") );
 }
 
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
 template<typename Dur, typename Dur2>
 auto
 make_zoned(const sys_time<Dur2>& st, const time_zone* tz)
@@ -709,14 +709,14 @@ test_time_points()
   test_time_point<CharT, gps_clock, false>();
   test_time_point<CharT, file_clock, false>();
   test_leap_second<CharT>();
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
   test_zoned_time<CharT>();
 #endif
   test_local_time_format<CharT>();
 
 }
 
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
 template<typename CharT>
 void
 test_sys_info()
@@ -826,7 +826,7 @@ test_all()
   test_durations<CharT>();
   test_calendar<CharT>();
   test_time_points<CharT>();
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
   test_infos<CharT>();
 #endif
 }

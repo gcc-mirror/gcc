@@ -144,7 +144,6 @@
         Function-Id. COBRT-FILE-STATUS prototype.
         Data Division.
         Linkage Section.
-        01 ERRNO BINARY-LONG.
         01 FILE-STATUS PIC X(2) COMP-5.
 
         Procedure Division

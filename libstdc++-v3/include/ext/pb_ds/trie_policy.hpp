@@ -245,7 +245,7 @@ namespace __gnu_pbds
   trie_order_statistics_node_update<Node_CItr, Node_Itr, \
 				    _ATraits, _Alloc>
 
-  /// Functor updating ranks of entrees.
+  /// Functor updating ranks of entries.
   template<typename Node_CItr,
 	   typename Node_Itr,
 	   typename _ATraits,

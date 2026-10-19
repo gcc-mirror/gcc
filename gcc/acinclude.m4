@@ -246,9 +246,7 @@ dnl
 AC_DEFUN([gcc_AC_C_CHAR_BIT],
 [AC_CACHE_CHECK(for CHAR_BIT, gcc_cv_decl_char_bit,
 [AC_EGREP_CPP(found,
-[#ifdef HAVE_LIMITS_H
-#include <limits.h>
-#endif
+[#include <limits.h>
 #ifdef CHAR_BIT
 found
 #endif], gcc_cv_decl_char_bit=yes, gcc_cv_decl_char_bit=no)

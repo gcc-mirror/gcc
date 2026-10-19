@@ -54,7 +54,10 @@ count_bounds (NODE_T *p)
     }
 }
 
-/* Count number of SHORTs or LONGs. */
+/* Count number of SHORTs or LONGs.
+
+   Non-cummulative sizes use fixed codes:
+   WORD - 100  */
 
 static int
 count_sizety (NODE_T *p)
@@ -65,10 +68,14 @@ count_sizety (NODE_T *p)
     return count_sizety (SUB (p)) + count_sizety (NEXT (p));
   else if (IS (p, SHORTETY))
     return count_sizety (SUB (p)) + count_sizety (NEXT (p));
+  else if (IS (p, FIXETY))
+    return count_sizety (SUB (p));
   else if (IS (p, LONG_SYMBOL))
     return 1;
   else if (IS (p, SHORT_SYMBOL))
     return -1;
+  else if (IS (p, WORD_SYMBOL))
+    return 100;
   else
     return 0;
 }
@@ -352,7 +359,10 @@ search_standard_mode (int sizety, NODE_T *indicant)
 	return p;
   }
 
-  /* Map onto greater precision.  */
+  if (sizety >= 100)
+    /* Modes with sizety > 100 are non-cummulative.  */
+    return NO_MOID;
+
   if (sizety < 0)
     return search_standard_mode (sizety + 1, indicant);
   else if (sizety > 0)
@@ -501,6 +511,17 @@ get_mode_from_declarer (NODE_T *p)
 	  else if (IS (p, SHORTETY))
 	    {
 	      if (a68_whether (p, SHORTETY, INDICANT, STOP))
+		{
+		  int k = count_sizety (SUB (p));
+		  MOID (p) = search_standard_mode (k, NEXT (p));
+		  return MOID (p);
+		}
+	      else
+		return NO_MOID;
+	    }
+	  else if (IS (p, FIXETY))
+	    {
+	      if (a68_whether (p, FIXETY, INDICANT, STOP))
 		{
 		  int k = count_sizety (SUB (p));
 		  MOID (p) = search_standard_mode (k, NEXT (p));
@@ -662,6 +683,8 @@ get_mode_from_denotation (NODE_T *p, int sizety)
 	    MOID (p) = M_LONG_INT;
 	  else if (sizety == 2)
 	    MOID (p) = M_LONG_LONG_INT;
+	  else if (sizety == 100)
+	    MOID (p) = M_WORD_INT;
 	 else
 	   MOID (p) = (sizety > 0 ? M_LONG_LONG_INT : M_INT);
 	}
@@ -673,6 +696,8 @@ get_mode_from_denotation (NODE_T *p, int sizety)
 	    MOID (p) = M_LONG_REAL;
 	 else if (sizety == 2)
 	   MOID (p) = M_LONG_LONG_REAL;
+	 else if (sizety == 100)
+	   MOID (p) = M_WORD_REAL;
 	 else
 	   MOID (p) = (sizety > 0 ? M_LONG_LONG_REAL : M_REAL);
 	}
@@ -688,10 +713,12 @@ get_mode_from_denotation (NODE_T *p, int sizety)
 	    MOID (p) = M_LONG_BITS;
 	  else if (sizety == 2)
 	    MOID (p) = M_LONG_LONG_BITS;
+	  else if (sizety == 100)
+	    MOID (p) = M_WORD_BITS;
 	  else
 	    MOID (p) = (sizety > 0 ? M_LONG_LONG_BITS : M_BITS);
 	}
-      else if (IS (p, LONGETY) || IS (p, SHORTETY))
+      else if (IS (p, LONGETY) || IS (p, SHORTETY) || IS (p, FIXETY))
 	{
 	  get_mode_from_denotation (NEXT (p), count_sizety (SUB (p)));
 	  MOID (p) = MOID (NEXT (p));
@@ -1185,6 +1212,7 @@ compute_derived_modes (MODULE_T *mod)
       a68_resolve_equivalent (&M_COMPLEX);
       a68_resolve_equivalent (&M_LONG_COMPLEX);
       a68_resolve_equivalent (&M_LONG_LONG_COMPLEX);
+      a68_resolve_equivalent (&M_WORD_COMPLEX);
       a68_resolve_equivalent (&M_SEMA);
       /* UNION members could be resolved.  */
       absorb_unions (TOP_MOID (mod));

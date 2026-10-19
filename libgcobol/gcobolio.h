@@ -154,4 +154,92 @@ typedef struct cblc_file_t
 
 #define FILE_BUFFER_SIZE (64 * 1024)
 
+/*
+ * The following is a public API for gcobol I/O.
+ *
+ * The class gcobol_io_t may  be used by any library that provides an I/O
+ * implementation.
+ *
+ * The library constructs the class, providing its own pointers, and supplies a
+ * known function.  It calls __gg__file_io_funcs() to return the default
+ * implementation, and overwrites it with one or more of its own functions.
+ * gcobol-compiled programs call the functions through the pointers.
+ *
+ * This design makes it possible to run the same code, unaltered, simply by
+ * relinking. It is commonly used, and is similar to the one used in GnuCOBOL.
+ * One difference is that the file status is captured in the cblc_file_t,
+ * whereas in GnuCOBOL it is the return value.
+ *
+ * There is no provision for using more than one implementation at
+ * a time in the same program.
+ */
+
+class gcobol_io_t {
+public:
+  static const char constexpr marquee[64] = "libgcobol: gfileio.cc";
+
+  typedef void (open_t)( cblc_file_t *file,
+                   const char *filename,
+                         int mode_char);
+  typedef void (close_t)( cblc_file_t *file,
+                          int how );
+  typedef void (start_t)( cblc_file_t *file,
+                          int relop, // needs enum
+                          int first_last_key,
+                          size_t length );
+  typedef void (read_t)( cblc_file_t *file,
+                         int where );
+  typedef void (write_t)( cblc_file_t *file,
+                          const unsigned char  *location,
+                          size_t length,
+                          int after,
+                          int lines,
+                          int is_random );
+  typedef void (rewrite_t)(cblc_file_t *file,
+                           size_t length, bool is_random );
+  typedef void (delete_t)(cblc_file_t *file,
+                          bool is_random );
+  typedef void (remove_t)(cblc_file_t  *file,
+                    const char         *filename);
+  open_t      *Open;
+  close_t     *Close;
+  start_t     *Start;
+  read_t      *Read;
+  write_t     *Write;
+  rewrite_t   *Rewrite;
+  delete_t    *Delete;
+  remove_t    *Remove;
+
+  gcobol_io_t()
+    : Open(NULL)
+    , Close(NULL)
+    , Start(NULL)
+    , Read(NULL)
+    , Write(NULL)
+    , Rewrite(NULL)
+    , Delete(NULL)
+    , Remove(NULL)
+  {}
+
+  gcobol_io_t(   open_t      *Open,
+                 close_t     *Close,
+                 start_t     *Start,
+                 read_t      *Read,
+                 write_t     *Write,
+                 rewrite_t   *Rewrite,
+                 delete_t    *Delete,
+                 remove_t    *Remove)
+    : Open(Open)
+    , Close(Close)
+    , Start(Start)
+    , Read(Read)
+    , Write(Write)
+    , Rewrite(Rewrite)
+    , Delete(Delete)
+    , Remove(Remove)
+  {}
+};
+
+gcobol_io_t * __gg__file_io_funcs();
+
 #endif

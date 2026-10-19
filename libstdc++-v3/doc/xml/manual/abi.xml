@@ -31,7 +31,7 @@
   The C++ Standard Library has many include files, types defined in
   those include files, specific named functions, and other
   behavior. The text of these behaviors, as written in source include
-  files, is called the Application Programing Interface, or API.
+  files, is called the Application Programming Interface, or API.
 </para>
 
 <para>
@@ -220,7 +220,7 @@ compatible.
 	example, filename <filename>libstdc++.so.5.0.4</filename>
 	corresponds to a <constant>DT_SONAME</constant> of
 	<constant>libstdc++.so.5</constant>. Binaries with equivalent
-	<constant>DT_SONAME</constant>s are forward-compatibile: in
+	<constant>DT_SONAME</constant>s are forward-compatible: in
 	the table below, releases incompatible with the previous
 	one are explicitly noted.
 	If a particular release is not listed, its libstdc++.so binary
@@ -915,7 +915,7 @@ exceptional symbols are allowed to be visible.</para></listitem>
 
  <listitem><para>Freezing the API</para>
  <para>Disallowed changes, as above, are not made on a stable release
-branch. Enforcement tends to be less strict with GNU extensions that
+branch. Enforcement tends to be less strict with GNU extensions than
 standard includes.</para>
 </listitem>
 </orderedlist>

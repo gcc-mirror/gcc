@@ -839,7 +839,7 @@ addr_object_size (struct object_size_info *osi, const_tree ptr,
 
   if (!size_unknown_p (bytes, object_size_type)
       && size_valid_p (bytes, object_size_type)
-      && !size_unknown_p (bytes, object_size_type)
+      && !size_unknown_p (wholebytes, object_size_type)
       && size_valid_p (wholebytes, object_size_type))
     {
       *psize = bytes;
@@ -1635,6 +1635,15 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 	bytes = size_unknown (object_size_type);
       else
 	bytes = wholesize;
+
+      /* If the size ends up being unknown (either intentionally or because
+	 SIZE_FOR_OFFSET returned a zero size, which happens to be the unknown
+	 value for OST_MINIMUM), reset wholesize too.  */
+      if (size_unknown_p (bytes, object_size_type))
+	{
+	  wholesize = size_unknown (object_size_type);
+	  reexamine = false;
+	}
     }
   else
     bytes = wholesize = size_unknown (object_size_type);
@@ -1651,11 +1660,12 @@ plus_stmt_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 /* Compute the dynamic object size for VAR.  Return the result in SIZE and
    WHOLESIZE.  */
 
-static void
+static bool
 dynamic_object_size (struct object_size_info *osi, tree var,
 		     tree *size, tree *wholesize)
 {
   int object_size_type = osi->object_size_type;
+  bool reexamine = false;
 
   if (TREE_CODE (var) == SSA_NAME)
     {
@@ -1664,11 +1674,14 @@ dynamic_object_size (struct object_size_info *osi, tree var,
       collect_object_sizes_for (osi, var);
       *size = object_sizes_get (osi, varno);
       *wholesize = object_sizes_get (osi, varno, true);
+      reexamine = bitmap_bit_p (osi->reexamine, varno);
     }
   else if (TREE_CODE (var) == ADDR_EXPR)
     addr_object_size (osi, var, object_size_type, size, wholesize);
   else
     *size = *wholesize = size_unknown (object_size_type);
+
+  return reexamine;
 }
 
 /* Compute object_sizes for VAR, defined at STMT, which is
@@ -1695,9 +1708,11 @@ cond_expr_object_size (struct object_size_info *osi, tree var, gimple *stmt)
     {
       tree then_size, then_wholesize, else_size, else_wholesize;
 
-      dynamic_object_size (osi, then_, &then_size, &then_wholesize);
+      reexamine |= dynamic_object_size (osi, then_, &then_size,
+					&then_wholesize);
       if (!size_unknown_p (then_size, object_size_type))
-	dynamic_object_size (osi, else_, &else_size, &else_wholesize);
+	reexamine |= dynamic_object_size (osi, else_, &else_size,
+					  &else_wholesize);
 
       tree cond_size, cond_wholesize;
       if (size_unknown_p (then_size, object_size_type)
@@ -1715,7 +1730,7 @@ cond_expr_object_size (struct object_size_info *osi, tree var, gimple *stmt)
 
       object_sizes_set (osi, varno, cond_size, cond_wholesize);
 
-      return false;
+      return reexamine;
     }
 
   if (TREE_CODE (then_) == SSA_NAME)
@@ -2012,8 +2027,15 @@ collect_object_sizes_for (struct object_size_info *osi, tree var)
       bitmap_set_bit (computed[object_size_type], varno);
       if (!(object_size_type & OST_DYNAMIC))
 	bitmap_clear_bit (osi->reexamine, varno);
+      /* The REEXAMINE flag for dynamic size expressions needs to propagate so
+	 that there are no stale references to SSA names released during
+	 unknown size propagation in gimplify_size_expressions.  */
       else if (reexamine)
-	bitmap_set_bit (osi->reexamine, varno);
+	{
+	  gcc_checking_assert (!object_sizes_unknown_p (object_size_type,
+							varno));
+	  bitmap_set_bit (osi->reexamine, varno);
+	}
     }
   else
     {

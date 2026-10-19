@@ -309,10 +309,28 @@ unsigned do_rpo_vn (function *, edge, bitmap,
 		    /* skip_entry_phis */ bool = false,
 		    vn_lookup_kind = VN_WALKREWRITE);
 
-/* Private interface for PRE.  */
-void run_rpo_vn (vn_lookup_kind);
-unsigned eliminate_with_rpo_vn (bitmap);
-void free_rpo_vn (void);
+/* Value-numbers a function or a region.  */
+
+class vn_driver
+{
+public:
+  vn_driver (function *, bool iterate, bool eliminate,
+	     bool want_value_ids = false, vn_lookup_kind = VN_WALKREWRITE);
+  vn_driver (function *, edge entry, bitmap exit_bbs, bool iterate,
+	     bool eliminate, bool skip_entry_phis, vn_lookup_kind);
+  ~vn_driver ();
+  unsigned finalize (bitmap inserted_exprs = NULL);
+  /* The TODO flags of the walk, for a caller that does not eliminate.  */
+  unsigned todo () const { return m_todo; }
+
+private:
+  DISABLE_COPY_AND_ASSIGN (vn_driver);
+  class rpo_elim *m_avail;
+  int *m_bb_to_rpo;
+  unsigned m_todo;
+  /* Whether the walk eliminated.  */
+  bool m_eliminate;
+};
 
 /* Valueize NAME if it is an SSA name, otherwise just return it.  This hook
    is initialized by run_scc_vn.  */

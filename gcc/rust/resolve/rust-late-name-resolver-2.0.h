@@ -39,6 +39,7 @@ public:
 
   // Specialized visit bits
   void visit_function_params (AST::Function &function) override;
+  void visit (AST::FunctionParam &) override;
 
   // some more label declarations
   void visit (AST::LetStmt &) override;
@@ -79,6 +80,8 @@ private:
 
   /* used to prevent "impl Self {}", "impl (Self, i32) {}", etc */
   bool block_big_self;
+
+  bool in_bodyless_params;
 };
 
 // TODO: Add missing mappings and data structures

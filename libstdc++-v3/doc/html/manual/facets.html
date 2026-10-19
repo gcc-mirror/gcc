@@ -14,7 +14,7 @@ The two required specializations are implemented as follows:
 ctype&lt;char&gt;
 </code>
 </p><p>
-This is simple specialization. Implementing this was a piece of cake.
+This is a simple specialization. Implementing this was a piece of cake.
 </p><p>
 <code class="code">
 ctype&lt;wchar_t&gt;
@@ -22,8 +22,8 @@ ctype&lt;wchar_t&gt;
 </p><p>
 This specialization, by specifying all the template parameters, pretty
 much ties the hands of implementors. As such, the implementation is
-straightforward, involving <code class="function">mcsrtombs</code> for the
-conversions between <span class="type">char</span> to <span class="type">wchar_t</span> and
+straightforward, involving <code class="function">mbsrtowcs</code> for the
+conversions between <span class="type">char</span> and <span class="type">wchar_t</span> and
 <code class="function">wcsrtombs</code> for conversions between <span class="type">wchar_t</span>
 and <span class="type">char</span>.
 </p><p>
@@ -37,7 +37,7 @@ characters.
    Overlap between codecvt/ctype: narrow/widen
    </p></li><li class="listitem"><p>
        <span class="type">mask</span> typedef in <code class="classname">codecvt_base</code>,
-       argument types in <span class="type">codecvt</span>.  what is know about this type?
+       argument types in <span class="type">codecvt</span>.  what is known about this type?
    </p></li><li class="listitem"><p>
    Why mask* argument in codecvt?
    </p></li><li class="listitem"><p>
@@ -215,7 +215,7 @@ mechanism may be required.
  Conversion descriptors for both directions of encoding. (i.e., both
   UCS-2 to UTF-8 and UTF-8 to UCS-2.)
 </p></li><li class="listitem"><p>
- Something to indicate if the conversion requested if valid.
+ Something to indicate if the conversion requested is valid.
 </p></li><li class="listitem"><p>
  Something to represent if the conversion descriptors are valid.
 </p></li><li class="listitem"><p>
@@ -599,7 +599,7 @@ model.
     necessary. To avoid any unpleasantness, all bits of the "C" mask
     (i.e. <code class="code">LC_ALL</code>) are set before retrieving messages.
   </p><p>
-    Making the message catalogs can be initially tricky, but become
+    Making the message catalogs can be initially tricky, but becomes
     quite simple with practice. For complete info, see the gettext
     documentation. Here's an idea of what is required:
   </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>

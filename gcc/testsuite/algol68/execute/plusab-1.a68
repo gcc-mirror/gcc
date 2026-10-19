@@ -25,10 +25,18 @@ BEGIN BEGIN INT i := 10;
             i PLUSAB LONG 100;
             ASSERT (i = LONG 1200)
       END;
+            
       BEGIN LONG LONG INT i := LONG LONG 10000;
             i +:= LONG LONG 1000;
             ASSERT (i = LONG LONG 11000);
             i PLUSAB LONG LONG 1000;
             ASSERT (i = LONG LONG 12000)
-      END
+      END;
+
+      BEGIN WORD INT i := WORD 1000;
+            i +:= WORD 100;
+            ASSERT (i = WORD 1100);
+            i PLUSAB WORD 100;
+            ASSERT (i = WORD 1200)
+      END;
 END

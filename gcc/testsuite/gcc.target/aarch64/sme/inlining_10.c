@@ -18,9 +18,9 @@ call_vadd ()
 }
 
 inline void __attribute__((always_inline))
-call_vhadd () // { dg-error "inlining failed" }
+call_vqtbl () // { dg-error "inlining failed" }
 {
-  neon[0] = vhaddq_u8 (neon[1], neon[2]);
+  neon[0] = vqtbl1q_u8 (neon[1], neon[2]);
 }
 
 inline void __attribute__((always_inline))
@@ -51,7 +51,7 @@ void
 sc_caller () [[arm::inout("za"), arm::streaming_compatible]]
 {
   call_vadd ();
-  call_vhadd ();
+  call_vqtbl ();
   call_svadd ();
   call_svld1_gather ();
   call_svzero ();

@@ -44,15 +44,15 @@ if test $cross_compiling = no && test $multilib = yes \
    cross_compiling=maybe
 fi
 
-AC_OUTPUT_COMMANDS([
+AC_CONFIG_COMMANDS([multilib],[[
 # Only add multilib support code if we just rebuilt the top-level
 # Makefile.
 case " $CONFIG_FILES " in
- *" ]m4_default([$1],Makefile)[ "*)
-   ac_file=]m4_default([$1],Makefile)[ . ${multi_basedir}/config-ml.in
+ *" ]]m4_default($1,Makefile)[[ "*)
+   ac_file=]]m4_default($1,Makefile)[[ . ${multi_basedir}/config-ml.in
    ;;
-esac],
-		   [
+esac]],
+		   [[
 srcdir="$srcdir"
 host="$host"
 target="$target"
@@ -65,4 +65,4 @@ CONFIG_SHELL=${CONFIG_SHELL-/bin/sh}
 CC="$CC"
 CXX="$CXX"
 GFORTRAN="$GFORTRAN"
-GDC="$GDC"])])dnl
+GDC="$GDC"]])])dnl

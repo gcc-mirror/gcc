@@ -1,3 +1,15 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* acinclude.m4: Change AC_FUNC_MMAP to GCC_AC_FUNC_MMAP.
+	* configure: Regenerate.
+
+2026-10-15  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Drop AC_C_CONST and AC_C_INLINE.
+
 2026-07-01  Alan Modra  <amodra@gmail.com>
 
 	* cp-demangle.c (d_compact_number): Avoid signed overflow.

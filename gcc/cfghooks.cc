@@ -32,11 +32,35 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfganal.h"
 #include "tree.h"
 #include "tree-ssa.h"
+#include "tree-cfg.h"
 #include "cfgloop.h"
 #include "sreal.h"
 #include "profile.h"
 #include "diagnostics/sarif-sink.h"
 #include "custom-sarif-properties/cfg.h"
+#include "hierarchical_discriminator.h"
+
+/* Location used to allocate a copyid for a duplicated BB.  */
+
+static location_t
+copyid_location_from_bb (basic_block bb)
+{
+  if (!bb)
+    return UNKNOWN_LOCATION;
+
+  if (current_ir_type () == IR_GIMPLE)
+    {
+      gimple *last = last_nondebug_stmt (bb);
+      return last ? gimple_location (last) : UNKNOWN_LOCATION;
+    }
+
+  rtx_insn *insn;
+  FOR_BB_INSNS_REVERSE (bb, insn)
+    if (INSN_P (insn) && INSN_HAS_LOCATION (insn))
+      return INSN_LOCATION (insn);
+
+  return UNKNOWN_LOCATION;
+}
 
 /* Disable warnings about missing quoting in GCC diagnostics.  */
 #if __GNUC__ >= 10
@@ -1249,6 +1273,15 @@ duplicate_block (basic_block bb, edge e, basic_block after, copy_bb_data *id)
 	}
     }
 
+  /* Skip if copy_bbs assigns one copyid for the whole region.  */
+  if (!id || !id->skip_copyid)
+    {
+      location_t loc = copyid_location_from_bb (bb);
+      if (loc != UNKNOWN_LOCATION)
+	assign_discriminators_to_bb (new_bb, 0,
+				     allocate_copyid_base (loc, 1));
+    }
+
   return new_bb;
 }
 
@@ -1471,6 +1504,9 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
   edge e;
   copy_bb_data id;
 
+  /* One copyid for the region (not per BB).  */
+  id.skip_copyid = true;
+
   /* Mark the blocks to be copied.  This is used by edge creation hooks
      to decide whether to reallocate PHI nodes capacity to avoid reallocating
      PHIs in the set of source BBs.  */
@@ -1558,6 +1594,19 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
   /* Clear information about duplicates.  */
   for (i = 0; i < n; i++)
     bbs[i]->flags &= ~BB_DUPLICATED;
+
+  /* One copyid for the whole region, keyed off the first source block that
+     has a location.  */
+  location_t loc = UNKNOWN_LOCATION;
+  for (i = 0; i < n && loc == UNKNOWN_LOCATION; i++)
+    loc = copyid_location_from_bb (bbs[i]);
+
+  if (loc != UNKNOWN_LOCATION)
+    {
+      unsigned int copyid = allocate_copyid_base (loc, 1);
+      for (i = 0; i < n; i++)
+	assign_discriminators_to_bb (new_bbs[i], 0, copyid);
+    }
 }
 
 /* Return true if BB contains only labels or non-executable

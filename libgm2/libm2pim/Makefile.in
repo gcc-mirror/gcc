@@ -122,7 +122,8 @@ am__aclocal_m4_deps = $(top_srcdir)/ax_python_interpreter.m4 \
 	$(top_srcdir)/../ltversion.m4 $(top_srcdir)/../lt~obsolete.m4 \
 	$(top_srcdir)/acinclude.m4 $(top_srcdir)/../config/gc++filt.m4 \
 	$(top_srcdir)/../config/tls.m4 $(top_srcdir)/../config/gthr.m4 \
-	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/../config/cet.m4 $(top_srcdir)/../config/mmap.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am
@@ -165,9 +166,10 @@ LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 @BUILD_PIMLIB_TRUE@	Break.lo CmdArgs.lo Scan.lo StrCase.lo \
 @BUILD_PIMLIB_TRUE@	FIO.lo StrIO.lo StrLib.lo TimeString.lo \
 @BUILD_PIMLIB_TRUE@	Environment.lo FpuIO.lo Debug.lo \
-@BUILD_PIMLIB_TRUE@	SysStorage.lo Storage.lo StdIO.lo \
-@BUILD_PIMLIB_TRUE@	SEnvironment.lo DynamicStrings.lo SFIO.lo \
-@BUILD_PIMLIB_TRUE@	SArgs.lo SCmdArgs.lo PushBackInput.lo \
+@BUILD_PIMLIB_TRUE@	SysStorage.lo Storage.lo LongSysStorage.lo \
+@BUILD_PIMLIB_TRUE@	LongStorage.lo StdIO.lo SEnvironment.lo \
+@BUILD_PIMLIB_TRUE@	DynamicStrings.lo SFIO.lo SArgs.lo \
+@BUILD_PIMLIB_TRUE@	SCmdArgs.lo PushBackInput.lo \
 @BUILD_PIMLIB_TRUE@	StringConvert.lo FormatStrings.lo \
 @BUILD_PIMLIB_TRUE@	Builtins.lo MathLib0.lo M2EXCEPTION.lo \
 @BUILD_PIMLIB_TRUE@	RTExceptions.lo SMathLib0.lo RTint.lo \
@@ -499,6 +501,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@       TimeString.mod Environment.mod \
 @BUILD_PIMLIB_TRUE@       FpuIO.mod Debug.mod \
 @BUILD_PIMLIB_TRUE@       SysStorage.mod Storage.mod \
+@BUILD_PIMLIB_TRUE@       LongSysStorage.mod LongStorage.mod \
 @BUILD_PIMLIB_TRUE@       StdIO.mod SEnvironment.mod \
 @BUILD_PIMLIB_TRUE@       DynamicStrings.mod SFIO.mod \
 @BUILD_PIMLIB_TRUE@       SArgs.mod SCmdArgs.mod \
@@ -534,6 +537,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@         IO.def  ldtoa.def \
 @BUILD_PIMLIB_TRUE@         LegacyReal.def  libc.def \
 @BUILD_PIMLIB_TRUE@         libm.def  LMathLib0.def \
+@BUILD_PIMLIB_TRUE@         LongSysStorage.def LongStorage.def \
 @BUILD_PIMLIB_TRUE@         M2Dependent.def \
 @BUILD_PIMLIB_TRUE@         M2Diagnostic.def \
 @BUILD_PIMLIB_TRUE@         M2EXCEPTION.def \

@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "target.h"
 #include "dwarf2out.h"
-#include "dwarf2out.h"
 
 #include "dwarf2ctf.h"
 #include "ctfc.h"

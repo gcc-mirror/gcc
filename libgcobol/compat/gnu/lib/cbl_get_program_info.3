@@ -38,9 +38,13 @@ and assign
 .Ar cblte-gpi-handle .
 
 .Ar 2 :
-Return the program name associated with a
+Return the
+.Ar caller
+program name associated with a
 .Ar cblte-gpi-handle
 instance previously allocated by function 0.
+.Ar cblte-gpi-handle
+is updated to the caller function.
 
 .Ar 3 :
 close a
@@ -77,12 +81,6 @@ and is ignored by all other functions.
 fill
 .Ar return-buf
 with the program name.
-.Ar return-buf-len
-therefore indicates the length of the
-.Ar return-buf
-buffer. If the program name is longer than
-.Ar return-buf-len ,
-the result is truncated.
 This bit is only relevant for functions
 .Ar 0
 and
@@ -99,15 +97,58 @@ points to a buffer to be filled by
 .Nm .
 
 .It Ar return-buf-len
-determines the length for the
+on entry,
+.Ar return-buf-len
+indicates the length of the
 .Ar return-buf
-buffer.
+buffer,
+.Sy including
+the terminator byte (nul or space).
+On exit,
+.Ar return-buf-len
+is updated to the length of the program name,
+.Sy excluding
+the terminator byte.
+However, if
+.Ar return-buf-len
+is too small,
+.Ar return-buf
+is left untouched and
+.Ar return-buf-len
+is updated to the required buffer length,
+.Sy including
+the terminator byte.
 
 .Sh RETURN STATUS
 .Nm
 returns
 .Sy "PIC X(2) COMP-5" .
 The return status is 0 on success, else nonzero.
+The following return values are defined:
+
+.Ar 500 :
+(function 2 only) no parent available from the call stack.
+
+.Ar 1001 :
+invalid
+.Ar cblte-gpi-handle .
+
+.Ar 1009 :
+invalid parameter.
+
+.Ar 1011 :
+invalid or undefined program name.
+Additionally,
+.Ar libgcobol_compat_gnu
+uses this return value when no call stack was found for the given program.
+
+.Ar 1013 :
+.Ar return-buf-len
+is too small to write the function basename to
+.Ar return-buf .
+The required buffer length is therefore written to
+.Ar return-buf-len .
+
 .
 .Sh SEE ALSO
 .Xr CBL_CLOSE_FILE

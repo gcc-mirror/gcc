@@ -40,21 +40,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-range.h"
 #include "tree-ssa-threadedge.h"
 #include "gimple-range-path.h"
+#include "tree-ssa-threadbackward.h"
 #include "ssa.h"
 #include "tree-cfgcleanup.h"
 #include "tree-pretty-print.h"
 #include "cfghooks.h"
 #include "dbgcnt.h"
-
-// Path registry for the backwards threader.  After all paths have been
-// registered with register_path(), thread_through_all_blocks() is called
-// to modify the CFG.
-
-class back_threader_registry : public back_jt_path_registry
-{
-public:
-  bool register_path (const vec<basic_block> &, edge taken);
-};
 
 // Class to abstract the profitability code for the backwards threader.
 
@@ -195,62 +186,6 @@ back_threader_profitability::pop_bb ()
   m_stats = m_unwind.pop ().stats;
 }
 
-// Back threader flags.
-#define BT_NONE 0
-// Generate fast code at the expense of code size.
-#define BT_SPEED 1
-// Resolve unknown SSAs on entry to a threading path.  If set, use the
-// ranger.  If not, assume all ranges on entry to a path are VARYING.
-#define BT_RESOLVE 2
-
-class back_threader
-{
-public:
-  back_threader (function *fun, unsigned flags, bool first);
-  ~back_threader ();
-  unsigned thread_blocks ();
-private:
-  void maybe_thread_block (basic_block bb);
-  bool debug_counter ();
-  edge maybe_register_path (back_threader_profitability &);
-  void maybe_register_path_dump (edge taken_edge);
-  void find_paths_to_names (basic_block bb, bitmap imports, unsigned,
-			    back_threader_profitability &);
-  edge find_taken_edge (const vec<basic_block> &path);
-  edge find_taken_edge_cond (const vec<basic_block> &path, gcond *);
-  edge find_taken_edge_switch (const vec<basic_block> &path, gswitch *);
-  edge find_taken_edge_goto (const vec<basic_block> &path, ggoto *);
-  virtual void debug ();
-  virtual void dump (FILE *out);
-
-  back_threader_registry m_registry;
-
-  // Current path being analyzed.
-  auto_vec<basic_block> m_path;
-  // Flag to mark visited BBs while analyzing a path.
-  auto_bb_flag m_visited_flag;
-  // The set of SSA names, any of which could potentially change the
-  // value of the final conditional in a path.
-  auto_bitmap m_imports;
-  // The last statement in the path.
-  gimple *m_last_stmt;
-  // Marker to differentiate unreachable edges.
-  static const edge UNREACHABLE_EDGE;
-  // Set to TRUE if unknown SSA names along a path should be resolved
-  // with the ranger.  Otherwise, unknown SSA names are assumed to be
-  // VARYING.  Setting to true is more precise but slower.
-  function *m_fun;
-  // Ranger for the path solver.
-  gimple_ranger *m_ranger;
-  // Path solver, reused across all candidate paths.
-  path_range_query *m_solver;
-  unsigned m_flags;
-  // Set to TRUE for the first of each thread[12] pass or the first of
-  // each threadfull[12] pass.  This is used to differentiate between
-  // the different threading passes so we can set up debug counters.
-  bool m_first;
-};
-
 // Used to differentiate unreachable edges, so we may stop the search
 // in a the given direction.
 const edge back_threader::UNREACHABLE_EDGE = (edge) -1;
@@ -272,12 +207,11 @@ back_threader::back_threader (function *fun, unsigned flags, bool first)
     mark_dfs_back_edges ();
 
   m_ranger = new gimple_ranger;
-  m_solver = new path_range_query (*m_ranger, flags & BT_RESOLVE);
+  m_solver = NULL;
 }
 
 back_threader::~back_threader ()
 {
-  delete m_solver;
   delete m_ranger;
   loop_optimizer_finalize ();
 }
@@ -544,6 +478,15 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
       bitmap_iterator bi;
       unsigned i;
       auto_vec<tree, 16> worklist;
+      // Add NAME to the list of imports.
+      auto add_import = [&] (tree name)
+	{
+	  if (bitmap_set_bit (m_imports, SSA_NAME_VERSION (name)))
+	    {
+	      new_imports.safe_push (SSA_NAME_VERSION (name));
+	      worklist.safe_push (name);
+	    }
+	};
       EXECUTE_IF_SET_IN_BITMAP (interesting, 0, i, bi)
 	{
 	  tree name = ssa_name (i);
@@ -575,16 +518,8 @@ back_threader::find_paths_to_names (basic_block bb, bitmap interesting,
 		  tree ssa[3];
 		  unsigned lim = gimple_range_ssa_names (ssa, 3, def_stmt);
 		  for (unsigned j = 0; j < lim; ++j)
-		    {
-		      tree rhs = ssa[j];
-		      if (rhs
-			  && bitmap_set_bit (m_imports,
-					     SSA_NAME_VERSION (rhs)))
-			{
-			  new_imports.safe_push (SSA_NAME_VERSION (rhs));
-			  worklist.safe_push (rhs);
-			}
-		    }
+		    if (ssa[j])
+		      add_import (ssa[j]);
 		}
 	    }
 	}
@@ -984,6 +919,44 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
   return register_jump_thread (jump_thread_path);
 }
 
+// Return a new path solver for the search.
+
+path_range_query *
+back_threader::make_solver (gimple_ranger &ranger)
+{
+  return new path_range_query (ranger, m_flags & BT_RESOLVE);
+}
+
+// Find the paths to thread in the current function.
+
+void
+back_threader::search ()
+{
+  m_solver = make_solver (*m_ranger);
+
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, m_fun)
+    if (EDGE_COUNT (bb->succs) > 1)
+      maybe_thread_block (bb);
+
+  // The solver lives as long as the search: the IL changes after it.
+  delete m_solver;
+  m_solver = NULL;
+}
+
+// Thread the paths found.  Return TODO_flags.
+
+unsigned int
+back_threader::apply ()
+{
+  bool changed = m_registry.thread_through_all_blocks (true);
+
+  if (m_flags & BT_SPEED)
+    return changed ? TODO_cleanup_cfg : 0;
+
+  return false;
+}
+
 // Thread all suitable paths in the current function.
 //
 // Return TODO_flags.
@@ -991,17 +964,8 @@ back_threader_registry::register_path (const vec<basic_block> &m_path,
 unsigned int
 back_threader::thread_blocks ()
 {
-  basic_block bb;
-  FOR_EACH_BB_FN (bb, m_fun)
-    if (EDGE_COUNT (bb->succs) > 1)
-      maybe_thread_block (bb);
-
-  bool changed = m_registry.thread_through_all_blocks (true);
-
-  if (m_flags & BT_SPEED)
-    return changed ? TODO_cleanup_cfg : 0;
-
-  return false;
+  search ();
+  return apply ();
 }
 
 namespace {

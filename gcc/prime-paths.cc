@@ -1040,13 +1040,7 @@ scc_exit_prime_paths (const struct graph *cfg, const trie &scc_exit_paths,
 	  path.reserve (q.length () + r.length ());
 	  path.splice (q);
 	  path.splice (r);
-	  /* This can probably insert without subpath elimination because:
-	     1. Conflicts are *really* rare (see patmatch in tree.c), but they
-		do happen.
-	     2. The output of this function is "filtered" through another trie
-		anyway so the redundant paths generated here will be eliminated
-		in the consumers at a very low extra cost.  */
-	  trie.insert (path);
+	  trie.insert_with_suffix (path);
 	  if (limit_exceed_p (trie.size ()))
 	    return trie;
 	}

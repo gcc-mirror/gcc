@@ -238,7 +238,7 @@ run_cdf( int token ) {
   parsing.parser_restore();
 
   if( yy_flex_debug ) {
-    dbgmsg("%s: CDF parser returned %d, scanner SC <%s>", __func__, 
+    dbgmsg("%s: CDF parser returned %d, scanner SC <%s>", __func__,
            erc, start_condition_is());
   }
 
@@ -272,10 +272,10 @@ static int next_token() {
     if( token != cdf::last_lexed ) {
       const char *name = 0 < token? keyword_str(token) : "lost";
       if( cdf::last_lexed == NAME ) {
-        dbgmsg("%s:%d: NAME '%s' became '%s' (%d)", __func__, __LINE__, 
+        dbgmsg("%s:%d: NAME '%s' became '%s' (%d)", __func__, __LINE__,
                yylval.string, name, token);
       } else {
-        dbgmsg("%s:%d: %s (%d) became %d for '%s'", __func__, __LINE__, 
+        dbgmsg("%s:%d: %s (%d) became %d for '%s'", __func__, __LINE__,
                keyword_str(cdf::last_lexed), cdf::last_lexed,
                token, yytext);
       }
@@ -322,7 +322,7 @@ prelex() {
     } else {
       token = next_token();
     }
- 
+
     if( token == NO_CONDITION && parsing.at_eof() ) {
       dbgmsg("scanner at EOF, apparently (%d)", token);
       return YYEOF;
@@ -333,15 +333,15 @@ prelex() {
     if( ! parsing.on() && ! is_cdf_condition_token(token) ) break;
   }
 
-  // Do not disturb lexer state while we're not parsing the COBOL. 
+  // Do not disturb lexer state while we're not parsing the COBOL.
   if( parsing.on() ) {
     if( YY_START == cdf_state ) {
         yy_pop_state();
     }
-    // still parsing.on() 
+    // still parsing.on()
 
     if( yy_flex_debug ) {
-      dbgmsg("scanner SC <%s>", start_condition_is());
+      dbgmsg("%s:%d: scanner SC <%s>", __func__, __LINE__, start_condition_is());
     }
 
     switch(YY_START) {
@@ -351,18 +351,22 @@ prelex() {
     case LINKAGE_SECT:
       BEGIN(field_state);
       if( yy_flex_debug ) {
-        dbgmsg("scanner SC now <%s>", start_condition_is());
+        dbgmsg("%s:%d: scanner SC now <%s>", __func__, __LINE__, start_condition_is());
       }
-    }
-    
-    if( YY_START == copy_state || YY_START == cdf_state ) {
+      break;
+    case copy_state:
+    case cdf_state:
+    case field_data_item:
       if( token == NAME ) {
         auto tok = keyword_tok(ydflval.string);
         if( tok ) token = tok;
       }
-      yy_pop_state();
+      break;
+    }
 
-      dbgmsg("%s: scanner SC <%s>, token now %s", __func__,
+    if( YY_START == copy_state || YY_START == cdf_state ) {
+      yy_pop_state();
+      dbgmsg("%s:%d: scanner SC <%s>, token now %s", __func__, __LINE__,
              start_condition_is(), keyword_str(token));
     }
 
@@ -398,7 +402,7 @@ prelex() {
   }
 
   dbgmsg( ">>CDF parser done, %s returning %s, conditional compilation %s", __func__,
-          keyword_str(token), 
+          keyword_str(token),
           parsing.on()? "TRUE" : "FALSE" );
   in_cdf = false;
   return token;
@@ -481,7 +485,7 @@ yylex(void) {
     dbgmsg("%s:%d: ate %d tokens, now returning %s", __func__, __LINE__,
            ntoken, keyword_str(token));
   }
-  
+
   if( next_sentence && token == '.' ) {
     produce_next_sentence_target = true;
   }

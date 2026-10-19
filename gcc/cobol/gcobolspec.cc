@@ -87,7 +87,10 @@ static std::vector<cl_decoded_option>new_opt;
 
 static bool need_libgcobol = true;
 static bool need_libcompat = false; // This one need for dialect mf or ibm
-static bool need_libposix = false;
+static bool need_libposix = true;
+/* Whether the link needs the runtime specs, independently of whether the
+   user has already supplied -lgcobol.  */
+static bool need_runtime_specs = false;
 
 // #define NOISY 1
 
@@ -162,6 +165,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   bool saw_OPT_shared = false;
 
   bool verbose = false;
+  bool linking = true;
 
   // These flags indicate whether we need various libraries
 
@@ -264,10 +268,13 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
       case OPT_S:
       case OPT_fsyntax_only:
       case OPT_E:
+	linking = false;
         // With these options, no libraries need be loaded
         need_libgcobol   = false;
         need_libdl       = false;
         need_libstdc     = false;
+        need_libcompat   = false;
+        need_libposix    = false;
         break;
 
       case OPT_static_libgcobol:
@@ -394,8 +401,6 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
             || strstr(decoded_options[i].arg, "mf") )
           {
           need_libcompat = true;
-          // libcompat depends on libposix.
-          need_libposix = true;
           }
         break;
 
@@ -426,6 +431,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
     need_libdl       = false;
     need_libstdc     = false;
     }
+
+  need_runtime_specs = linking && n_infiles != 0;
 
   /* Second pass through arglist, transforming arguments as appropriate.  */
 
@@ -624,8 +631,8 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 int
 lang_specific_pre_link (void)
 {
-  if (need_libgcobol)
-    do_spec ("%:include(libgcobol.spec)");
+  if (need_runtime_specs)
+    return do_spec ("%:include(libgcobol.spec)");
 
   return 0;
 }

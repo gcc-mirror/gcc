@@ -392,6 +392,12 @@ Early::visit_derive_attribute (AST::Attribute &attr,
   auto traits = attr.get_traits_to_derive ();
   for (auto &trait : traits)
     {
+      // Special case CoercePointee if we're in a proper compatibility mode.
+      // Count it as a builtin derive macro and keep going.
+      if (trait.get ().as_string () == "CoercePointee"
+	  && Session::get_instance ().should_support_coerce_pointee ())
+	continue;
+
       auto ns_def = ctx.resolve_path (trait.get (), Namespace::Macros);
       if (!ns_def.has_value ())
 	{
@@ -402,11 +408,12 @@ Early::visit_derive_attribute (AST::Attribute &attr,
 	  continue;
 	}
 
-      auto pm_def = mappings.lookup_derive_proc_macro_def (
+      auto pm_def = mappings.pmacro.definitions.derives.lookup (
 	ns_def->definition.get_node_id ());
 
       if (pm_def.has_value ())
-	mappings.insert_derive_proc_macro_invocation (trait, pm_def.value ());
+	mappings.pmacro.invocations.derives.insert (trait.get ().get_node_id (),
+						    pm_def.value ());
     }
 }
 
@@ -424,14 +431,14 @@ Early::visit_non_builtin_attribute (AST::Attribute &attr,
 			    name.c_str ()));
       return;
     }
-  auto pm_def = mappings.lookup_attribute_proc_macro_def (
+  auto pm_def = mappings.pmacro.definitions.attributes.lookup (
     ns_def->definition.get_node_id ());
 
   if (!pm_def.has_value ())
     return;
 
-  mappings.insert_attribute_proc_macro_invocation (attr.get_path (),
-						   pm_def.value ());
+  mappings.pmacro.invocations.attributes.insert (
+    attr.get_path ().get_node_id (), pm_def.value ());
 }
 
 void

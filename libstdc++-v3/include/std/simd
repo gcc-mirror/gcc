@@ -39,16 +39,17 @@
 
 #ifdef __glibcxx_simd
 
-#include "bits/simd_vec.h"
-#include "bits/simd_loadstore.h"
-#include "bits/simd_mask_reductions.h"
-#include "bits/simd_reductions.h"
-#include "bits/simd_alg.h"
-#include "bits/simd_bit.h"
+#include <bits/simd_vec.h>
+#include <bits/simd_loadstore.h>
+#include <bits/simd_mask_reductions.h>
+#include <bits/simd_reductions.h>
+#include <bits/simd_alg.h>
+#include <bits/simd_bit.h>
 #ifdef __glibcxx_simd_complex
-#include "bits/simd_complex.h"
+#include <bits/simd_complex.h>
 #endif
-#include "bits/simd_math.h"
+#include <bits/simd_math.h>
+#include <bits/range_access.h>
 
 #endif
 #endif

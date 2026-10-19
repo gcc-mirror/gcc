@@ -70,13 +70,14 @@ query_type (HirId reference, TyTy::BaseType **result)
       return true;
     }
 
-  if (auto item = mappings.lookup_hir_item (reference))
+  if (auto item = mappings.hir.items.lookup (reference))
     {
       rust_debug_loc (item.value ()->get_locus (), "resolved item {%u} to",
 		      reference);
 
       DefId item_defid = item.value ()->get_mappings ().get_defid ();
-      bool is_local = item_defid.crateNum == mappings.get_current_crate ();
+      bool is_local
+	= item_defid.crateNum == mappings.crate.get_current_crate ();
       bool is_fn
 	= item.value ()->get_item_kind () == HIR::Item::ItemKind::Function;
       bool is_const_fn = false;
@@ -164,7 +165,8 @@ query_type (HirId reference, TyTy::BaseType **result)
 		      "resolved impl-item {%u} to", reference);
 
       DefId item_defid = impl_item->first->get_impl_mappings ().get_defid ();
-      bool is_local = item_defid.crateNum == mappings.get_current_crate ();
+      bool is_local
+	= item_defid.crateNum == mappings.crate.get_current_crate ();
       bool is_fn
 	= impl_item->first->get_impl_item_type () == HIR::ImplItem::FUNCTION;
       bool is_const_fn = false;
@@ -231,7 +233,7 @@ query_type (HirId reference, TyTy::BaseType **result)
   // is it an extern item?
   if (auto extern_item = mappings.lookup_hir_extern_item (reference))
     {
-      auto block = mappings.lookup_hir_extern_block (extern_item->second);
+      auto block = mappings.hir.extern_blocks.lookup (extern_item->second);
       rust_assert (block.has_value ());
 
       *result
@@ -281,7 +283,8 @@ unify_site (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 TyTy::BaseType *
 unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 		location_t unify_locus, bool emit_errors, bool commit_if_ok,
-		bool implicit_infer_vars, bool cleanup, bool check_bounds)
+		bool implicit_infer_vars, bool cleanup, bool check_bounds,
+		bool allow_never_coercion)
 {
   TypeCheckContext &context = *TypeCheckContext::get ();
 
@@ -301,7 +304,7 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
   TyTy::BaseType *result
     = UnifyRules::Resolve (lhs, rhs, unify_locus, false /*commit inline*/,
 			   emit_errors, check_bounds, implicit_infer_vars,
-			   commits, infers);
+			   commits, infers, nullptr, allow_never_coercion);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
 
   rust_debug_loc (unify_locus,
@@ -688,17 +691,28 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
 	{
 	  for (auto &bound : self->get_specified_bounds ())
 	    {
-	      if (!bound.get ()->is_equal (*proj->get_trait_ref ()))
+	      // The associated type can be declared on a supertrait of
+	      // a bound: see issue-4884
+	      //
+	      //    I: SplitIter<Item = T> binds Iterator2::Item,
+
+	      auto item = bound.lookup_associated_item (assoc_name);
+	      if (!item.has_value ())
 		continue;
 
-	      auto &binding
-		= bound.get_substitution_arguments ().get_binding_args ();
+	      auto &item_val = item.value ();
+	      const auto raw_item = item_val.get_raw_item ();
+	      if (raw_item->get_mappings ().get_defid () != item_defid)
+		continue;
+
+	      const auto parent = item_val.get_parent ();
+	      const auto &arguments = parent->get_substitution_arguments ();
+	      const auto &binding = arguments.get_binding_args ();
 	      auto it = binding.find (assoc_name);
 	      if (it != binding.end ())
 		return it->second;
 
-	      const auto &constraints
-		= bound.get_substitution_arguments ().get_constraint_args ();
+	      const auto &constraints = arguments.get_constraint_args ();
 	      auto constraint = constraints.find (assoc_name);
 	      if (constraint != constraints.end ())
 		{
@@ -847,18 +861,28 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
   if (unify_self)
     {
       TyTy::BaseType *proj_self = proj->get_self ();
-      TyTy::BaseType *impl_self = frame.self;
-      TyTy::BaseType *self
-	= unify_site_and (/*id*/ 0, TyTy::TyWithLocation (proj_self, locus),
-			  TyTy::TyWithLocation (impl_self, locus), locus,
-			  /*emit_errors*/ false,
-			  /*commit*/ false,
-			  /*infer*/ false,
-			  /*cleanup*/ true,
-			  /*check_bounds*/ false);
+      bool proj_self_is_unresolved_trait_self = false;
+      if (auto *param = proj_self->try_as<TyTy::ParamType> ())
+	{
+	  proj_self_is_unresolved_trait_self
+	    = !param->can_resolve () && param->is_implicit_self_trait ();
+	}
 
-      if (self->get_kind () == TyTy::TypeKind::ERROR)
-	return self;
+      if (!proj_self_is_unresolved_trait_self)
+	{
+	  TyTy::BaseType *impl_self = frame.self;
+	  TyTy::BaseType *self = unify_site_and (
+	    /*id*/ 0, TyTy::TyWithLocation (proj_self, locus),
+	    TyTy::TyWithLocation (impl_self, locus), locus,
+	    /*emit_errors*/ false,
+	    /*commit*/ false,
+	    /*infer*/ false,
+	    /*cleanup*/ true,
+	    /*check_bounds*/ false);
+
+	  if (self->get_kind () == TyTy::TypeKind::ERROR)
+	    return self;
+	}
     }
 
   // Lookup the trait item -> impl type mapping (key = trait item DefId).

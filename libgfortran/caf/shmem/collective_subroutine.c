@@ -187,7 +187,7 @@ collsub_init_supervisor (collsub_shared *cis, allocator *al,
   const size_t init_size = 1U << 10;
 
   cis->curr_size = init_size;
-  cis->collsub_buf = allocator_shared_malloc (al, init_size);
+  cis->collsub_buf = allocator_shared_malloc_or_die (al, init_size);
 
   counter_barrier_init (&cis->barrier, init_num_images);
   initialize_shared_mutex (&cis->mutex);
@@ -208,7 +208,8 @@ get_collsub_buf (size_t size)
 	caf_current_team->u.image_info->collsub.collsub_buf,
 	caf_current_team->u.image_info->collsub.curr_size);
       caf_current_team->u.image_info->collsub.collsub_buf
-	= allocator_shared_malloc (alloc_get_allocator (&local->ai), size);
+	= allocator_shared_malloc_or_die (alloc_get_allocator (&local->ai),
+					  size);
       caf_current_team->u.image_info->collsub.curr_size = size;
     }
 
@@ -228,7 +229,7 @@ collsub_sync (void)
 {
   counter_barrier *barrier = &caf_current_team->u.image_info->collsub.barrier;
 
-  return counter_barrier_wait_abortable (barrier);
+  return counter_barrier_wait_abortable (barrier, NULL);
 }
 
 typedef void *(*red_op) (void *, void *);
@@ -343,7 +344,7 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
   this_image_size_bytes = elem_size * pi.num_elem;
 
   buffer = get_collsub_buf (
-    this_image_size_bytes * caf_current_team->u.image_info->image_count.count);
+    this_image_size_bytes * caf_current_team->u.image_info->image_map_size);
   this_image_buf = buffer + this_image_size_bytes * this_img_id;
 
   if (packed)
@@ -356,12 +357,12 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
     return false;
 
   for (; ((this_img_id >> cbit) & 1) == 0
-	 && (caf_current_team->u.image_info->image_count.count >> cbit) != 0;
+	 && (caf_current_team->u.image_info->image_map_size >> cbit) != 0;
        cbit++)
     {
       imoffset = 1 << cbit;
       if (this_img_id + imoffset
-	  < caf_current_team->u.image_info->image_count.count)
+	  < caf_current_team->u.image_info->image_map_size)
 	{
 	  /* Reduce arrays elementwise.  */
 	  roll_iter = this_image_buf;
@@ -373,7 +374,7 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
       if (!collsub_sync ())
 	return false;
     }
-  for (; (caf_current_team->u.image_info->image_count.count >> cbit) != 0;
+  for (; (caf_current_team->u.image_info->image_map_size >> cbit) != 0;
        cbit++)
     if (!collsub_sync ())
       return false;

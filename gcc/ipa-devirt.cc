@@ -135,7 +135,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "attribs.h"
 #include "data-streamer.h"
-#include "lto-streamer.h"
 #include "streamer-hooks.h"
 
 /* Hash based set of pairs of types.  */

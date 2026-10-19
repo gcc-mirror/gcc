@@ -138,14 +138,14 @@ delete_insn (rtx_insn *insn)
   rtx note;
   bool really_delete = true;
 
-  if (LABEL_P (insn))
+  if (rtx_code_label *label = dyn_cast<rtx_code_label *> (insn))
     {
       /* Some labels can't be directly removed from the INSN chain, as they
 	 might be references via variables, constant pool etc.
 	 Convert them to the special NOTE_INSN_DELETED_LABEL note.  */
-      if (! can_delete_label_p (as_a <rtx_code_label *> (insn)))
+      if (! can_delete_label_p (label))
 	{
-	  const char *name = LABEL_NAME (insn);
+	  const char *name = LABEL_NAME (label);
 	  basic_block bb = BLOCK_FOR_INSN (insn);
 	  rtx_insn *bb_note = NEXT_INSN (insn);
 
@@ -215,7 +215,7 @@ delete_insn (rtx_insn *insn)
 
       for (i = 0; i < len; i++)
 	{
-	  rtx label = XEXP (RTVEC_ELT (vec, i), 0);
+	  rtx_insn *label = label_ref_label (RTVEC_ELT (vec, i));
 
 	  /* When deleting code in bulk (e.g. removing many unreachable
 	     blocks) we can delete a label that's a target of the vector
@@ -259,7 +259,7 @@ delete_insn_and_edges (rtx_insn *insn)
    insns that cannot be removed to NULL.  */
 
 void
-delete_insn_chain (rtx start, rtx_insn *finish, bool clear_bb)
+delete_insn_chain (rtx_insn *start, rtx_insn *finish, bool clear_bb)
 {
   /* Unchain the insns one by one.  It would be quicker to delete all of these
      with a single unchaining, rather than one at a time, but we need to keep
@@ -1667,10 +1667,10 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  for (int i = 0; i < n; ++i)
 	    if (XEXP (ASM_OPERANDS_LABEL (note, i), 0) == BB_HEAD (e->dest))
 	      {
-		LABEL_NUSES (XEXP (ASM_OPERANDS_LABEL (note, i), 0))--;
+		LABEL_NUSES (label_ref_label (ASM_OPERANDS_LABEL (note, i)))--;
 		XEXP (ASM_OPERANDS_LABEL (note, i), 0)
 		  = block_label (jump_block);
-		LABEL_NUSES (XEXP (ASM_OPERANDS_LABEL (note, i), 0))++;
+		LABEL_NUSES (label_ref_label (ASM_OPERANDS_LABEL (note, i)))++;
 	      }
 
 	  rtx_insn *insn = BB_END (new_edge->src);

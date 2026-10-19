@@ -187,7 +187,10 @@ package body GNAT.Sockets.Thin is
          Discard := C_Ioctl (R, SOSC.FIONBIO, Val'Access);
       end if;
 
-      Disable_SIGPIPE (R);
+      if R /= Failure then
+         Disable_SIGPIPE (R);
+      end if;
+
       return R;
    end C_Accept;
 
@@ -533,7 +536,11 @@ package body GNAT.Sockets.Thin is
          Discard := C_Ioctl (R, SOSC.FIONBIO, Val'Access);
          Set_Non_Blocking_Socket (R, False);
       end if;
-      Disable_SIGPIPE (R);
+
+      if R /= Failure then
+         Disable_SIGPIPE (R);
+      end if;
+
       return R;
    end C_Socket;
 

@@ -2651,6 +2651,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		    {
 			gfc_error ("The RE or IM part_ref at %C must be "
 				   "applied to a COMPLEX expression");
+			gfc_free_ref_list (tmp);
 			return MATCH_ERROR;
 		    }
 		  else if (tmp->u.i == INQUIRY_LEN
@@ -2658,6 +2659,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		    {
 			gfc_error ("The LEN part_ref at %C must be applied "
 				   "to a CHARACTER expression");
+			gfc_free_ref_list (tmp);
 			return MATCH_ERROR;
 		    }
 		}
@@ -2836,6 +2838,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		  return MATCH_ERROR;
 		}
 	      primary->ts.u.cl = NULL;
+	      primary->ts.deferred = false;
 	      primary->ts.type = BT_INTEGER;
 	      primary->ts.kind = gfc_default_integer_kind;
 	      break;
@@ -2850,6 +2853,11 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 		  gfc_error ("The KIND part_ref at %C must be applied "
 			     "to an expression of intrinsic type");
 		  return MATCH_ERROR;
+		}
+	      if (primary->ts.type == BT_CHARACTER)
+		{
+		  primary->ts.u.cl = NULL;
+		  primary->ts.deferred = false;
 		}
 	      primary->ts.type = BT_INTEGER;
 	      primary->ts.kind = gfc_default_integer_kind;
@@ -3000,7 +3008,7 @@ check_substring:
 
 
 /* Given an expression that is a variable, figure out what the
-   ultimate variable's type and attribute is, traversing the reference
+   ultimate variable's attribute is, traversing the reference
    structures if necessary.
 
    This subroutine is trickier than it looks.  We start at the base
@@ -3017,15 +3025,14 @@ check_substring:
    We can have at most one full array reference.  */
 
 symbol_attribute
-gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
+gfc_variable_attr (gfc_expr *expr)
 {
   int dimension, codimension, pointer, allocatable, target, optional;
   symbol_attribute attr;
   gfc_ref *ref;
   gfc_symbol *sym;
   gfc_component *comp;
-  bool has_inquiry_part;
-  bool has_substring_ref = false;
+  gfc_typespec *current_ts;
 
   if (expr->expr_type != EXPR_VARIABLE
       && expr->expr_type != EXPR_FUNCTION
@@ -3034,6 +3041,22 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
   sym = expr->symtree->n.sym;
   attr = sym->attr;
+  current_ts = &sym->ts;
+
+  /* If we are in the body of a function, the function name references the
+     function result, not the function itself.  */
+  if (attr.function
+      && sym->result == sym
+      && gfc_current_ns
+      && gfc_current_ns->proc_name == sym)
+    {
+      attr.function = 0;
+      attr.elemental = 0;
+      attr.pure = 0;
+      attr.recursive = 0;
+      attr.flavor = FL_VARIABLE;
+      attr.result = 1;
+    }
 
   optional = attr.optional;
   if (sym->ts.type == BT_CLASS && sym->attr.class_ok && sym->ts.u.derived)
@@ -3071,31 +3094,11 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	target = 0;
     }
 
-  if (ts != NULL && expr->ts.type == BT_UNKNOWN)
-    *ts = sym->ts;
-
-  /* Catch left-overs from match_actual_arg, where an actual argument of a
-     procedure is given a temporary ts.type == BT_PROCEDURE.  The fixup is
-     needed for structure constructors in DATA statements, where a pointer
-     is associated with a data target, and the argument has not been fully
-     resolved yet.  Components references are dealt with further below.  */
-  if (ts != NULL
-      && expr->ts.type == BT_PROCEDURE
-      && expr->ref == NULL
-      && attr.flavor != FL_PROCEDURE
-      && attr.target)
-    *ts = sym->ts;
-
-  has_inquiry_part = false;
   for (ref = expr->ref; ref; ref = ref->next)
     if (ref->type == REF_SUBSTRING)
-      {
-	has_substring_ref = true;
-	optional = false;
-      }
+      optional = false;
     else if (ref->type == REF_INQUIRY)
       {
-	has_inquiry_part = true;
 	optional = false;
 	break;
       }
@@ -3133,17 +3136,15 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 	break;
 
       case REF_COMPONENT:
-	optional = false;
 	comp = ref->u.c.component;
-	attr = comp->attr;
-	if (ts != NULL && !has_inquiry_part)
+	if (!(current_ts->type == BT_CLASS
+	      && current_ts->u.derived->attr.is_class
+	      && strcmp (comp->name, "_data") == 0))
 	  {
-	    *ts = comp->ts;
-	    /* Don't set the string length if a substring reference
-	       follows.  */
-	    if (ts->type == BT_CHARACTER && has_substring_ref)
-	      ts->u.cl = NULL;
+	    optional = false;
+	    attr = comp->attr;
 	  }
+	current_ts = &sym->ts;
 
 	if (comp->ts.type == BT_CLASS)
 	  {
@@ -3195,7 +3196,7 @@ gfc_expr_attr (gfc_expr *e)
   switch (e->expr_type)
     {
     case EXPR_VARIABLE:
-      attr = gfc_variable_attr (e, NULL);
+      attr = gfc_variable_attr (e);
       break;
 
     case EXPR_FUNCTION:
@@ -3217,7 +3218,7 @@ gfc_expr_attr (gfc_expr *e)
 	       && e->ts.type == BT_CLASS)
 	attr = CLASS_DATA (e)->attr;
       else if (e->symtree)
-	attr = gfc_variable_attr (e, NULL);
+	attr = gfc_variable_attr (e);
 
       /* TODO: NULL() returns pointers.  May have to take care of this
 	 here.  */

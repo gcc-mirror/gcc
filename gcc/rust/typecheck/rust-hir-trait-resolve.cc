@@ -227,7 +227,7 @@ TraitResolver::resolve_path_to_trait (const HIR::TypePath &path,
       return false;
     }
 
-  auto resolved_item = mappings.lookup_hir_item (hid.value ());
+  auto resolved_item = mappings.hir.items.lookup (hid.value ());
   if (!resolved_item.has_value ())
     {
       rust_error_at (path.get_locus (),
@@ -283,6 +283,8 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
   TyTy::BaseType *self = nullptr;
   std::vector<TyTy::SubstitutionParamMapping> substitutions;
 
+  auto lifetime_pin = context->push_clean_lifetime_resolver ();
+
   // this needs to be special cased for the sized trait to not auto implemented
   // Sized on Self
   for (auto &generic_param : trait_reference->get_generic_params ())
@@ -290,6 +292,14 @@ TraitResolver::resolve_trait (HIR::Trait *trait_reference)
       switch (generic_param.get ()->get_kind ())
 	{
 	case HIR::GenericParam::GenericKind::LIFETIME:
+	  {
+	    auto &lifetime_param
+	      = static_cast<HIR::LifetimeParam &> (*generic_param);
+	    context->intern_and_insert_lifetime (
+	      lifetime_param.get_lifetime ());
+	  }
+	  break;
+
 	case HIR::GenericParam::GenericKind::CONST:
 	  // FIXME: Skipping Lifetime and Const completely until better
 	  // handling.
@@ -472,10 +482,22 @@ void
 TraitItemReference::resolve_item (const TraitReference *tref,
 				  HIR::TraitItemType &type)
 {
+  auto lifetime_pin = context->push_clean_lifetime_resolver ();
+  for (auto &param : tref->get_hir_trait_ref ()->get_generic_params ())
+    {
+      if (param->get_kind () == HIR::GenericParam::GenericKind::LIFETIME)
+	{
+	  auto &lifetime_param = static_cast<HIR::LifetimeParam &> (*param);
+	  context->intern_and_insert_lifetime (lifetime_param.get_lifetime ());
+	}
+    }
+
   auto substitutions = inherited_substitutions;
+  tl::optional<TypeCheckContext::LifetimeResolverGuard> binder_pin;
   if (type.has_generics ())
     {
-      auto binder_pin = context->push_lifetime_binder ();
+      binder_pin.emplace (*context,
+			  TypeCheckContext::LifetimeResolverGuard::BINDER);
       TypeCheckBase::ResolveGenericParams (HIR::Item::ItemKind::TypeAlias,
 					   type.get_locus (),
 					   type.get_generic_params (),

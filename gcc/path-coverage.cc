@@ -134,6 +134,7 @@ find_prime_paths (struct function *fn)
   if (any_empty)
     VEC_ORDERED_REMOVE_IF (paths, ix1, ix2, ptr, ptr->is_empty ());
 
+  free_graph (cfg);
   return paths;
 }
 

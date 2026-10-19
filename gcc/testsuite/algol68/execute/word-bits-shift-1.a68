@@ -1,0 +1,26 @@
+{ Note that this test should not feature bits constants bigger than
+  the minimum supported size of pointer.  This is because the compiler
+  will emit a compile-time error message.  }
+
+begin if word_bits_width = 64
+      then word bits address      = word 16r00ff0ffff;
+           assert (address SHL 4  = word 16r0ff0ffff0);
+           assert (address UP 4   = word 16r0ff0ffff0);
+           assert (address SHR 4  = word 16r000ff0fff);
+           assert (address DOWN 4 = word 16r000ff0fff)
+      elif word_bits_width = 32
+      then word bits address      = word 16r0000ffff;
+           assert (address SHL 4  = word 16r000ffff0);
+           assert (address UP 4   = word 16r000ffff0);
+           assert (address SHR 4  = word 16r00000fff);
+           assert (address DOWN 4 = word 16r00000fff)
+      elif word_bits_width = 16
+      then word bits address      = word 16rfff0;
+           assert (address SHL 4  = word 16rff00);
+           assert (address UP 4   = word 16rff00);
+           assert (address SHR 4  = word 16r0fff);
+           assert (address DOWN 4 = word 16r0fff)
+      else
+           assert(false)
+      fi
+end

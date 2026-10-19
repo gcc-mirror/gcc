@@ -1,3 +1,59 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac: Drop AC_HEADER_STDC.
+
+2026-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127559
+	* testsuite/libgomp.c++/target-lambda-5.C: New test.
+	* testsuite/libgomp.c++/target-lambda-6.C: New test.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-16  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/41418
+	* configure.ac (FC): Set to 'no' if '--enable-languages=fortran'
+	isn't in effect.
+	* configure: Regenerate.
+
+2026-10-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127723
+	* testsuite/libgomp.fortran/nestedfn5.f90: Fix testcase: safelen
+	must be constant.
+
+2026-10-09  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127723
+	* libgomp.texi (OpenMP 6.1 Impl. Status): Link to Bugzilla
+	for the pending 'scaled' modifer to the 'simdlen' clause.
+
+2026-10-08  John David Anglin  <danglin@gcc.gnu.org>
+
+	* testsuite/libgomp.c++/target-std__cmath.C: Skip on hppa*-*-hpux*.
+
+2026-09-30  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP 6.0 Impl. Status): Set 'local' clause to 'Y'.
+
+2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Impl. Status): Mark optional const bool
+	expr for inarguable clauses as implemented for Fortran.
+
+2026-09-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (Impl.Status): Mark 'omp groupprivate' as
+	partially supported.
+	* testsuite/libgomp.fortran/groupprivate-1.f90: New test.
+	* testsuite/libgomp.fortran/groupprivate-2.f90: New test.
+
 2026-09-25  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR tree-optimization/127053

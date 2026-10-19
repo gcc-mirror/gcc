@@ -59,6 +59,8 @@ a68_get_bits_skip_tree (MOID_T *m)
     type = a68_short_bits_type;
   else if (m == M_SHORT_SHORT_BITS)
     type = a68_short_short_bits_type;
+  else if (m == M_WORD_BITS)
+    type = a68_word_bits_type;
   else
     gcc_unreachable ();
 

@@ -42,7 +42,7 @@
      To mitigate this, a <code class="code">time_zone</code> can be expanded for a
      particular time range at the start
      of the program (and after each reload), by iterating over the
-     <code class="code">sys_info</code> dequence, as in the example below.
+     <code class="code">sys_info</code> sequence, as in the example below.
    </p><pre class="programlisting">
      void
      expand_zone(const std::chrono::time_zone* tz,
@@ -61,9 +61,9 @@
      (by <code class="code">std::chrono::locate_zone</code>) IANA zone name
      determined as follows (for platforms other than AIX and Windows):
    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem">
-       On system supporting <code class="code">readlink</code>, suffix components of the
+       On systems supporting <code class="code">readlink</code>, suffix components of the
        path of the file linked by <code class="code">/etc/localtime</code>. The suffixes
-       are matched in the other of increasing length, starting from the final
+       are matched in the order of increasing length, starting from the final
        component, until the match is found in the time zone database.
        Any repeated slashes (<code class="code">//</code>) are eliminated.
      </li><li class="listitem">
@@ -91,7 +91,7 @@
        If <code class="code">TimeZoneKeyName</code> corresponds to multiple IANA zones,
        a 2-letter country code is used, retrieved by applying <code class="code">GetGeoInfoW</code>
        on the result of <code class="code">GetUserGeoID(GEOCLASS_NATION)</code>.
-       If determining the country code fails, or no entry exits for a given code,
+       If determining the country code fails, or no entry exists for a given code,
        the first mapping entry (<code class="code">001</code>) is returned.
      </li></ul></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="zone.db.sources"></a>data sources</h3></div></div></div><p>
       Depending on the build configuration (see
@@ -105,14 +105,14 @@
       By default, <span class="emphasis"><em>zoneinfo_dir</em></span> is set to the
       system-specific default directory (if a suitable dir is known for target),
       usually <code class="code">/usr/share/zoneinfo</code>. If no such directory
-      exits, or it does not contain the required files in the correct format,
+      exists, or it does not contain the required files in the correct format,
       embedded static data is used as fallback.
     </p><p>
       In addition to <code class="code">--with-libstdcxx-zoneinfo=</code> configure option
       (used during GCC build), the path of <span class="emphasis"><em>zoneinfo_dir</em></span>
       can be overridden by the application by providing a definition of the
-      <code class="code">__gnu_cxx::zoneinfo_dir_overrride()</code> function. The
-      returned path should be directory that contains <code class="code">tzdata.zi</code>
+      <code class="code">__gnu_cxx::zoneinfo_dir_override()</code> function. The
+      returned path should be a directory that contains <code class="code">tzdata.zi</code>
       and <code class="code">leapseconds</code> files in the
       <a class="link" href="https://man7.org/linux/man-pages/man8/zic.8.html#FILES" target="_top">
       <code class="code">zic</code> format</a>.
@@ -154,7 +154,7 @@
       (e.g. due to memory constraints), entries
       may be removed from <code class="code">tzdb_list</code> using <code class="code">tzdb_list::erase_after</code>.
       When using this function, you are responsible for ensuring that the application
-      no longer is no longer using any <code class="code">time_zone*</code> to a removed database.
+      is no longer using any <code class="code">time_zone*</code> to a removed database.
       If you erase a <code class="code">tzdb</code> while some part of the application is still
       using it (or one of its <code class="code">time_zone</code> objects) you will create
       a dangling pointer, leading to undefined behaviour.

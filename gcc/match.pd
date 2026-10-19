@@ -214,6 +214,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (with { tree utype = unsigned_type_for (TREE_TYPE (@0)); }
    (convert (absu:utype @0)))))
 
+/* (trunc)abs (extend x) --> abs (x) for non-integral types.  */
+(simplify
+ (convert (abs (convert@1 @0)))
+  (if (!ANY_INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && !HONOR_SNANS (@1)
+       && types_match (type, TREE_TYPE (@0))
+       && element_precision (type) < element_precision (TREE_TYPE (@1))
+       && (!VECTOR_TYPE_P (type)
+	   || target_supports_op_p (type, ABS_EXPR, optab_default)))
+   (abs @0)))
+
 #if GIMPLE
 /* Optimize (X + (X >> (prec - 1))) ^ (X >> (prec - 1)) into abs (X).  */
 (simplify
@@ -531,13 +542,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (gimple_match_range_of_expr (vr0, @0, @2)
 	&& range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr0))
     (max (plus @0 @0) @1)))))
-/* minmax (a - c, b) + c -> minmax (a, b + c) if b+c don't overflow.  */
+/* minmax (a - c, b) + c -> minmax (a, b + c) if a-c and b+c don't overflow.  */
 (for minmax (min max)
  (simplify
   (plus:c @0 (minmax:cs@3 (minus @1 @0) @2))
-  (with { int_range_max vr0, vr2; }
+  (with { int_range_max vr0, vr1, vr2; }
    (if (TYPE_UNSIGNED (type)
 	&& gimple_match_range_of_expr (vr0, @0)
+	&& gimple_match_range_of_expr (vr1, @1, @3)
+	&& range_op_handler (MINUS_EXPR).overflow_free_p (vr1, vr0)
 	&& gimple_match_range_of_expr (vr2, @2, @3)
 	&& range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr2))
     (minmax @1 (plus @2 @0))))))
@@ -5356,9 +5369,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     tree cst1 = uniform_integer_cst_p (@1);
     tree cst2 = uniform_integer_cst_p (@3);
     tree cst3 = uniform_integer_cst_p (@4);
-  }
-  (if (wi::to_wide (cst1) + wi::to_wide (cst2) == wi::to_wide (cst3))
-   @2))))
+    wi::overflow_type ovf;
+   }
+   (if (wi::add (wi::to_wide (cst1), wi::to_wide (cst2),
+		 TYPE_SIGN (TREE_TYPE (cst1)), &ovf) == wi::to_wide (cst3))
+    (if (!ovf || TYPE_OVERFLOW_WRAPS (TREE_TYPE (cst1)))
+     @2
+     (with {
+       tree utype = unsigned_type_for (type);
+      }
+      (convert (plus (convert:utype @0) (convert:utype @3)))))))))
 
 /* Simplifications of shift and rotates.  */
 
@@ -5839,20 +5859,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (bit_and (convert?:s@4 (shift:s@5 (convert1?@3 @0) INTEGER_CST@1))
            INTEGER_CST@2)
    (if (tree_nop_conversion_p (TREE_TYPE (@4), TREE_TYPE (@5))
-	&& TYPE_PRECISION (type) <= HOST_BITS_PER_WIDE_INT
 	&& tree_fits_uhwi_p (@1)
 	&& tree_to_uhwi (@1) > 0
 	&& tree_to_uhwi (@1) < TYPE_PRECISION (type))
     (with
      {
        unsigned int shiftc = tree_to_uhwi (@1);
-       unsigned HOST_WIDE_INT mask = TREE_INT_CST_LOW (@2);
-       unsigned HOST_WIDE_INT newmask, zerobits = 0;
+       wide_int mask = wi::to_wide (@2);
+       wide_int newmask, zerobits = wi::zero (TYPE_PRECISION (type));
        tree shift_type = TREE_TYPE (@3);
        unsigned int prec;
 
        if (shift == LSHIFT_EXPR)
-	 zerobits = ((HOST_WIDE_INT_1U << shiftc) - 1);
+	 zerobits = wi::mask (shiftc, false, TYPE_PRECISION (type));
        else if (shift == RSHIFT_EXPR
 		&& type_has_mode_precision_p (shift_type))
 	 {
@@ -5876,12 +5895,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		      is all ones.  */
 		 }
 	     }
-	   zerobits = HOST_WIDE_INT_M1U;
+	   zerobits = wi::minus_one (TYPE_PRECISION (type));
 	   if (shiftc < prec)
-	     {
-	       zerobits >>= HOST_BITS_PER_WIDE_INT - shiftc;
-	       zerobits <<= prec - shiftc;
-	     }
+	      zerobits = wi::mask (prec - shiftc, true, TYPE_PRECISION (type));
 	   /* For arithmetic shift if sign bit could be set, zerobits
 	      can contain actually sign bits, so no transformation is
 	      possible, unless MASK masks them all away.  In that
@@ -5889,35 +5905,38 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   if (!TYPE_UNSIGNED (TREE_TYPE (@3))
 	       && prec == TYPE_PRECISION (TREE_TYPE (@3)))
 	     {
-	       if ((mask & zerobits) == 0)
+	       if ((mask & zerobits) == wi::zero (TYPE_PRECISION (type)))
 		 shift_type = unsigned_type_for (TREE_TYPE (@3));
 	       else
-		 zerobits = 0;
+		 zerobits = wi::zero (TYPE_PRECISION (type));
 	     }
 	 }
      }
      /* ((X << 16) & 0xff00) is (X, 0).  */
      (if ((mask & zerobits) == mask)
       { build_int_cst (type, 0); }
-      (with { newmask = mask | zerobits; }
-       (if (newmask != mask && (newmask & (newmask + 1)) == 0)
-        (with
-	 {
-	   /* Only do the transformation if NEWMASK is some integer
-	      mode's mask.  */
-	   for (prec = BITS_PER_UNIT;
-	        prec < HOST_BITS_PER_WIDE_INT; prec <<= 1)
-	     if (newmask == (HOST_WIDE_INT_1U << prec) - 1)
-	       break;
-	 }
-	 (if (prec < HOST_BITS_PER_WIDE_INT
-	      || newmask == HOST_WIDE_INT_M1U)
+      (with { newmask = (mask | zerobits);
+	      /* Only do the transformation if NEWMASK is some integer mode's
+		 mask, i.e.  an all-ones value (2^n - 1) where n is a power of
+		 2 precision >= BITS_PER_UNIT.  We check this by testing
+		 whether newmask + 1 is a power of two via wi::exact_log2.  */
+	      int lg;
+	      /* newmask + 1 overflows at full type precision (e.g.  128-bit
+		 all-ones), so handle that case directly.  */
+	      if (newmask == wi::minus_one (TYPE_PRECISION (type)))
+		lg = TYPE_PRECISION (type);
+	      else
+		lg = wi::exact_log2 (newmask + 1);
+	      unsigned int newmask_prec = lg >= 0 ? (unsigned int) lg : 0; }
+       (if (newmask != mask
+	    && lg > 0 && (newmask_prec & (newmask_prec - 1)) == 0
+	    && newmask_prec >= BITS_PER_UNIT)
 	  (with
-	   { tree newmaskt = build_int_cst_type (TREE_TYPE (@2), newmask); }
+	   { tree newmaskt = wide_int_to_tree (TREE_TYPE (@2), newmask); }
 	   (if (!tree_int_cst_equal (newmaskt, @2))
 	    (if (shift_type != TREE_TYPE (@3))
 	     (bit_and (convert (shift:shift_type (convert @3) @1)) { newmaskt; })
-	     (bit_and @4 { newmaskt; })))))))))))))
+	     (bit_and @4 { newmaskt; })))))))))))
 
 /* ((1 << n) & M) != 0  -> n == log2 (M) */
 (for cmp (ne eq)
@@ -6585,13 +6604,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Sink unary conversions to branches, but only if we do fold both
    and the target's truth type is the same as we already have.  */
-(simplify
- (convert (vec_cond:s @0 @1 @2))
- (if (VECTOR_TYPE_P (type)
-      && types_match (TREE_TYPE (@0), truth_type_for (type))
-      && (expand_vec_cond_expr_p (type, TREE_TYPE (@0))
-	  || !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0))))
-  (vec_cond @0 (convert! @1) (convert! @2))))
+(for op (convert float fix_trunc)
+ (simplify
+  (op (vec_cond:s @0 @1 @2))
+  (if (VECTOR_TYPE_P (type)
+       && types_match (TREE_TYPE (@0), truth_type_for (type))
+       && (expand_vec_cond_expr_p (type, TREE_TYPE (@0))
+	   || !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0))))
+   (vec_cond @0 (op! @1) (op! @2)))))
 
 /* Likewise for view_convert of nop_conversions. */
 (simplify
@@ -6622,15 +6642,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
    (vec_cond @0 (op!:type @1 @3) (op!:type @2 @4))))
 
-/* (@0 ? @2 : @3) lop (@1 ? @2 : @3)  -->  (@0 lop @1) ? @2 : @3.  */
-(for lop (bit_and bit_ior bit_xor)
-   (simplify
-   (lop
-      (vec_cond @0 integer_minus_onep@2 integer_zerop@3)
-      (vec_cond @1 @2 @3))
-      (if (target_supports_op_p (TREE_TYPE (@0), lop, optab_vector))
-   (vec_cond (lop @0 @1) @2 @3))))
-
 /* (c ? a : b) op d  -->  c ? (a op d) : (b op d) */
  (simplify
   (op (vec_cond:s @0 @1 @2) @3)
@@ -6650,6 +6661,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || (optimize_vectors_before_lowering_p ()
 	       && !expand_vec_cond_expr_p (TREE_TYPE (@1), TREE_TYPE (@0)))))
    (vec_cond @0 (op!:type @3 @1) (op!:type @3 @2)))))
+
+/* (@0 ? @2 : @3) lop (@1 ? @2 : @3)  -->  (@0 lop @1) ? @2 : @3.  */
+(for lop (bit_and bit_ior bit_xor)
+   (simplify
+   (lop
+      (vec_cond @0 integer_minus_onep@2 integer_zerop@3)
+      (vec_cond @1 @2 @3))
+      (if (target_supports_op_p (TREE_TYPE (@0), lop, optab_vector))
+   (vec_cond (lop @0 @1) @2 @3))))
 
 /* If we have a "if a bit is not set, set it" case,
    just set the bit all the time (PR 64567).  Note that
@@ -9249,6 +9269,26 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && TYPE_PRECISION (TREE_TYPE (@0)) == TYPE_PRECISION (TREE_TYPE (@1)))
    (cmp @0 (convert @1)))))
 
+/* (a & -a) < 0 -> a == INT_MIN
+   (a & -a) >= 0 -> a != INT_MIN.  */
+(match (negate_maybe_without_ud @0)
+ (negate @0))
+(match (negate_maybe_without_ud @0)
+ (convert (negate (nop_convert @0)))
+ (if (types_match (type, @0))))
+
+(for cmp (lt ge)
+     eqcmp (eq ne)
+ (simplify
+  (cmp (nop_convert?@0 (bit_and:c (negate_maybe_without_ud @1) @1))
+       integer_zerop)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && !TYPE_UNSIGNED (TREE_TYPE (@0))
+       && !TYPE_OVERFLOW_TRAPS (TREE_TYPE (@1)))
+   (eqcmp @1 { wide_int_to_tree (TREE_TYPE (@1),
+ wi::min_value (TYPE_PRECISION (TREE_TYPE (@1)), SIGNED)); }))))
+
 /* Non-equality compare simplifications from fold_binary  */
 (for cmp (lt gt le ge)
  /* Comparisons with the highest or lowest possible integer of
@@ -10338,17 +10378,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      (IFN_COPYSIGN @0 { build_minus_one_cst (type); })
      (IFN_COPYSIGN @0 { build_one_cst (type); })))))
 
-/* (trunc)abs (extend x) --> abs (x)  */
-(simplify
- (convert (abs (convert@1 @0)))
-  (if (optimize
-      && !HONOR_SNANS (@1)
-      && types_match (type, TREE_TYPE (@0))
-      && element_precision (type) < element_precision (TREE_TYPE (@1))
-      && (!VECTOR_TYPE_P (type)
-	  || target_supports_op_p (type, ABS_EXPR, optab_default)))
-   (abs @0)))
-
 (for froms (BUILT_IN_FMAF BUILT_IN_FMA BUILT_IN_FMAL)
      tos (IFN_FMA IFN_FMA IFN_FMA)
  (simplify
@@ -11014,8 +11043,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     unsigned HOST_WIDE_INT nelts, idx;
     unsigned HOST_WIDE_INT nelts_op = 0;
   }
+  /* NELTS is the number of elements in each input, which may differ
+     from that of the result; the selector indexes their concatenation.  */
   (if (constant_multiple_p (tree_to_poly_uint64 (@rpos), elem_size, &idx)
-       && VECTOR_CST_NELTS (@3).is_constant (&nelts)
+       && VECTOR_CST_NELTS (@3).is_constant ()
+       && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@1)).is_constant (&nelts)
        && (known_eq (size, elem_size)
 	   || (constant_multiple_p (size, elem_size, &nelts_op)
 	       && pow2p_hwi (nelts_op))))
@@ -11266,8 +11298,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (min (func:s @0 INTEGER_CST@2) (func:s @1 @2))
   (if (types_match (@0, @1)
-       && wi::geu_p (wi::to_wide (@2),
-		     TYPE_PRECISION (TREE_TYPE (@0))))
+       && wi::to_widest (@2) >= element_precision (@0))
    (func (bit_ior @0 @1) @2))))
 
 /* CLZ simplifications.  */
@@ -11413,7 +11444,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (val >= prec)
        (if (ok && zero_val < val)
 	{ constant_boolean_node (cmp != EQ_EXPR, type); })
-       (if (ok && (zero_val < 0 || zero_val >= prec))
+       (if (ok && zero_val >= val)
 	(cmp (bit_and @0 { wide_int_to_tree (type0,
 					     wi::mask (val, false, prec)); })
 	     { build_zero_cst (type0); })))))))
@@ -11507,6 +11538,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (simplify
       (cmp (popcount @0) integer_zerop)
       (rep @0 { build_zero_cst (TREE_TYPE (@0)); }))))
+
+/* (a != 0) | (popcount (a) == n)  ->  (a != 0) | (n == 0)
+   (a == 0) & (popcount (a) != n)  ->  (a == 0) & (n != 0)  */
+(for popcount (POPCOUNT)
+ (for bop (bit_ior bit_and)
+      popcmp (eq ne)
+      zerocmp (ne      eq)
+  (simplify
+   (bop:c (zerocmp@2 @0 integer_zerop)
+	  (popcmp:cs (popcount (convert?@3 @0)) @1))
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@3)))
+    (bop @2 (popcmp @1 { build_zero_cst (TREE_TYPE (@1)); }))))))
 
 /* popcount(bswap(x)) is popcount(x).  */
 (for popcount (POPCOUNT)
@@ -11764,8 +11808,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	}
    (if (ifn == IFN_CLZ && wi::to_widest (@2) == val)
     (IFN_CLZ @3 @2)))))
-(simplify
- (cond (ne @0 integer_zerop@1) (IFN_CLZ (convert?@3 @0) INTEGER_CST@2) @2)
+(for cnd (cond vec_cond)
+ (simplify
+  (cnd (ne @0 integer_zerop@1) (IFN_CLZ (convert?@3 @0) INTEGER_CST@2) uniform_integer_cst_p@4)
   (with { int val;
 	  internal_fn ifn = IFN_LAST;
 	  if (BITINT_TYPE_P (TREE_TYPE (@3)))
@@ -11774,8 +11819,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 						   OPTIMIZE_FOR_BOTH))
 	    ifn = IFN_CLZ;
 	}
-   (if (ifn == IFN_CLZ)
-    (IFN_CLZ @3 @2))))
+   (if (ifn == IFN_CLZ && tree_int_cst_equal (@2, uniform_integer_cst_p (@4)))
+    (IFN_CLZ @3 @2)))))
 
 /* a != 0 ? CTZ(a) : CST -> .CTZ(a) where CST is the result of the internal function for 0. */
 (for func (CTZ)
@@ -11803,8 +11848,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	}
    (if (ifn == IFN_CTZ && wi::to_widest (@2) == val)
     (IFN_CTZ @3 @2)))))
-(simplify
- (cond (ne @0 integer_zerop@1) (IFN_CTZ (convert?@3 @0) INTEGER_CST@2) @2)
+(for cnd (cond vec_cond)
+ (simplify
+  (cnd (ne @0 integer_zerop@1) (IFN_CTZ (convert?@3 @0) INTEGER_CST@2) uniform_integer_cst_p@4)
   (with { int val;
 	  internal_fn ifn = IFN_LAST;
 	  if (BITINT_TYPE_P (TREE_TYPE (@3)))
@@ -11813,8 +11859,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 						   OPTIMIZE_FOR_BOTH))
 	    ifn = IFN_CTZ;
 	}
-   (if (ifn == IFN_CTZ)
-    (IFN_CTZ @3 @2))))
+   (if (ifn == IFN_CTZ && tree_int_cst_equal (@2, uniform_integer_cst_p (@4)))
+    (IFN_CTZ @3 @2)))))
 #endif
 
 /* Common POPCOUNT/PARITY simplifications.  */
@@ -12841,48 +12887,66 @@ and,
 
 
 /* Merge
-     c = VEC_PERM_EXPR <a, b, VCST0>;
-     d = VEC_PERM_EXPR <c, c, VCST1>;
+     inner = VEC_PERM_EXPR <op2, op3, sel4>;
+     vc = VIEW_CONVERT_EXPR <inner>;  (optional)
+     result = VEC_PERM_EXPR <vc, vc, sel5>;
    to
-     d = VEC_PERM_EXPR <a, b, NEW_VCST>;  */
+     result = VIEW_CONVERT_EXPR <VEC_PERM_EXPR <op2, op3, new_sel>>;
+   The VIEW_CONVERT_EXPR may change the element type but not the element
+   count.  op2 and op3 have the same number of elements, but inner may have
+   a different number than op2 and op3, and result a different number
+   than inner, so index each selector by the element count of its own
+   inputs.  */
 
 (simplify
  (vec_perm (view_convert?@0 (vec_perm@1 @2 @3 VECTOR_CST@4)) @0 VECTOR_CST@5)
- (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@2)).is_constant ())
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
-     machine_mode op_mode = TYPE_MODE (TREE_TYPE (@2));
+     machine_mode vc_mode = TYPE_MODE (TREE_TYPE (@0));
+     machine_mode inner_mode = TYPE_MODE (TREE_TYPE (@1));
+     machine_mode op2_mode = TYPE_MODE (TREE_TYPE (@2));
      int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
-     vec_perm_indices sel0, sel1;
+     vec_perm_indices sel4, sel5;
    }
-   (if (tree_to_vec_perm_indices (&sel0, @2, @3, @4)
-	&& tree_to_vec_perm_indices (&sel1, @0, @0, @5)
+   (if (tree_to_vec_perm_indices (&sel4, @2, @3, @4)
+	&& tree_to_vec_perm_indices (&sel5, @0, @0, @5)
 	&& TYPE_SIZE (TREE_TYPE (TREE_TYPE (@0)))
 	   == TYPE_SIZE (TREE_TYPE (TREE_TYPE (@1))))
     (with
      {
-       vec_perm_builder builder2 (nelts, nelts, 1);
+       vec_perm_builder new_builder (nelts, nelts, 1);
        for (int i = 0; i < nelts; i++)
-	 builder2.quick_push (sel0[sel1[i].to_constant ()]);
+	 new_builder.quick_push (sel4[sel5[i].to_constant ()]);
 
-       vec_perm_indices sel2 (builder2, 2, nelts);
+       vec_perm_indices new_sel (new_builder, 2, sel4.nelts_per_input ());
 
-       tree op0 = NULL_TREE;
+       /* The new permute has the element count of result and the element
+	  type of op2, so it has the type of result unless the
+	  VIEW_CONVERT_EXPR changes the element type.  */
+       tree perm_type = type;
+       if (!types_match (TREE_TYPE (type), TREE_TYPE (TREE_TYPE (@2))))
+	 perm_type = build_vector_type (TREE_TYPE (TREE_TYPE (@2)), nelts);
+       machine_mode perm_mode = TYPE_MODE (perm_type);
+
+       tree new_vcst = NULL_TREE;
        /* If the new VEC_PERM_EXPR can't be handled but both
 	  original VEC_PERM_EXPRs can, punt.
 	  If one or both of the original VEC_PERM_EXPRs can't be
 	  handled and the new one can't be either, don't increase
 	  number of VEC_PERM_EXPRs that can't be handled.  */
-       if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
+       if (can_vec_perm_const_p (perm_mode, op2_mode, new_sel, false)
 	   || (single_use (@0)
-	       ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
-		  || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
-	       : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
-	 op0 = vec_perm_indices_to_tree (TREE_TYPE (@5), sel2);
+	       ? (!can_vec_perm_const_p (inner_mode, op2_mode, sel4, true)
+		  || !can_vec_perm_const_p (result_mode, vc_mode, sel5, true))
+	       : !can_vec_perm_const_p (result_mode, vc_mode, sel5, true)))
+	 new_vcst = vec_perm_indices_to_tree (TREE_TYPE (@5), new_sel);
      }
-     (if (op0)
-      (view_convert (vec_perm @2 @3 { op0; }))))))))
+     (if (new_vcst)
+      (view_convert (vec_perm:perm_type @2 @3 { new_vcst; }))))))))
 
 /* Merge
      c = VEC_PERM_EXPR <a, b, VCST0>;
@@ -12894,11 +12958,16 @@ and,
 
 (simplify
  (vec_perm @5 (vec_perm@0 @1 @2 VECTOR_CST@3) VECTOR_CST@4)
- (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+ /* The new permute replaces c by a or b, which therefore must have the
+    type of x.  c may have more elements than d.  */
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)).is_constant ()
+      && types_match (@1, @5))
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
      machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     machine_mode c_mode = TYPE_MODE (TREE_TYPE (@0));
      int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
      vec_perm_indices sel0, sel1;
    }
@@ -12931,7 +13000,7 @@ and,
      (if (use_1 ^ use_2)
       (with
        {
-	 vec_perm_indices sel2 (builder2, 2, nelts);
+	 vec_perm_indices sel2 (builder2, 2, sel1.nelts_per_input ());
 	 tree op0 = NULL_TREE;
 	 /* If the new VEC_PERM_EXPR can't be handled but both
 	    original VEC_PERM_EXPRs can, punt.
@@ -12940,7 +13009,7 @@ and,
 	    number of VEC_PERM_EXPRs that can't be handled.  */
 	 if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
 	     || (single_use (@0)
-		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
+		 ? (!can_vec_perm_const_p (c_mode, op_mode, sel0, true)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
 	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
@@ -12956,11 +13025,16 @@ and,
 
 (simplify
  (vec_perm (vec_perm@0 @1 @2 VECTOR_CST@3) @5 VECTOR_CST@4)
- (if (TYPE_VECTOR_SUBPARTS (type).is_constant ())
+ /* The new permute replaces c by a or b, which therefore must have the
+    type of x.  c may have more elements than d.  */
+ (if (TYPE_VECTOR_SUBPARTS (type).is_constant ()
+      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (@0)).is_constant ()
+      && types_match (@1, @5))
   (with
    {
      machine_mode result_mode = TYPE_MODE (type);
      machine_mode op_mode = TYPE_MODE (TREE_TYPE (@1));
+     machine_mode c_mode = TYPE_MODE (TREE_TYPE (@0));
      int nelts = TYPE_VECTOR_SUBPARTS (type).to_constant ();
      vec_perm_indices sel0, sel1;
    }
@@ -12992,7 +13066,7 @@ and,
      (if (use_1 ^ use_2)
       (with
        {
-	 vec_perm_indices sel2 (builder2, 2, nelts);
+	 vec_perm_indices sel2 (builder2, 2, sel1.nelts_per_input ());
 	 tree op0 = NULL_TREE;
 	 /* If the new VEC_PERM_EXPR can't be handled but both
 	    original VEC_PERM_EXPRs can, punt.
@@ -13001,7 +13075,7 @@ and,
 	    number of VEC_PERM_EXPRs that can't be handled.  */
 	 if (can_vec_perm_const_p (result_mode, op_mode, sel2, false)
 	     || (single_use (@0)
-		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, true)
+		 ? (!can_vec_perm_const_p (c_mode, op_mode, sel0, true)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, true))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, true)))
 	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
@@ -13251,7 +13325,7 @@ and,
   (if ((INTEGRAL_TYPE_P (type)
        || (!flag_trapping_math && SCALAR_FLOAT_TYPE_P (type)))
        && ((INTEGRAL_TYPE_P (TREE_TYPE (@2))
-	    && INTEGRAL_TYPE_P (TREE_TYPE (@3)))
+	    && tree_nop_conversion_p (TREE_TYPE (@2), TREE_TYPE (@3)))
 	   || (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@2))
 	       && types_match (TREE_TYPE (@2), TREE_TYPE (@3))))
        && !operand_equal_p (TYPE_SIZE (type), TYPE_SIZE (TREE_TYPE (@0)))
@@ -13579,8 +13653,7 @@ and,
    (if (type_has_mode_precision_p (type)
 	&& tree_fits_uhwi_p (@1)
 	&& tree_fits_uhwi_p (@3)
-	&& tree_fits_uhwi_p (@4)
-	&& ((~((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@4)) == 0
+	&& (wi::mask (tree_to_uhwi (@1), true, TYPE_PRECISION (type)) & wi::to_wide (@4)) == 0
         && (tree_to_uhwi (@1) + tree_to_uhwi (@3)) == TYPE_PRECISION (type)
         && TYPE_UNSIGNED (type)
         && @0 == @2)
@@ -13593,9 +13666,8 @@ and,
 	     (rshift @3 INTEGER_CST@4))
    (if (type_has_mode_precision_p (type)
 	&& tree_fits_uhwi_p (@1)
-	&& tree_fits_uhwi_p (@2)
 	&& tree_fits_uhwi_p (@4)
-	&& (((((HOST_WIDE_INT_1U << tree_to_uhwi (@1)) - 1)) & tree_to_uhwi (@2)) == 0)
+	&& ((wi::mask (tree_to_uhwi (@1), false, TYPE_PRECISION (type)) & wi::to_wide (@2)) == 0)
         && (tree_to_uhwi (@1) + tree_to_uhwi (@4)) == TYPE_PRECISION (type)
         && TYPE_UNSIGNED (type)
         && @0 == @3)

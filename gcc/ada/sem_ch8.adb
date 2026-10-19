@@ -3319,7 +3319,7 @@ package body Sem_Ch8 is
                --  Box present
 
                if Box_Present (Inst_Node) then
-                  Old_S := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
+                  Old_S := Find_Renamed_Entity (N, Nam, New_S, Is_Actual);
 
                --  If there is an immediately visible homonym of the operator
                --  and the declaration has a default, this is worth a warning
@@ -3679,7 +3679,7 @@ package body Sem_Ch8 is
       Ada_Version_Explicit := Ada_Version;
 
       if No (Old_S) then
-         Old_S := Find_Renamed_Entity (N, Name (N), New_S, Is_Actual);
+         Old_S := Find_Renamed_Entity (N, Nam, New_S, Is_Actual);
 
          --  The visible operation may be an inherited abstract operation that
          --  was overridden in the private part, in which case a call will
@@ -3694,14 +3694,6 @@ package body Sem_Ch8 is
            and then Present (Overridden_Operation (Alias (Old_S)))
          then
             Old_S := Alias (Old_S);
-         end if;
-
-         --  When the renamed subprogram is overloaded and used as an actual
-         --  of a generic, its entity is set to the first available homonym.
-         --  We must first disambiguate the name, then set the proper entity.
-
-         if Is_Actual and then Is_Overloaded (Nam) then
-            Set_Entity (Nam, Old_S);
          end if;
       end if;
 
@@ -6485,6 +6477,7 @@ package body Sem_Ch8 is
 
          Level := Scope_Stack.Last;
          loop
+            exit when Level < 0;
             Scop := Scope_Stack.Table (Level).Entity;
             exit when Scop = Scope (E);
             Level := Level - 1;
@@ -8108,8 +8101,12 @@ package body Sem_Ch8 is
 
          Set_Entity (Nam, Old_S);
 
+         --  If overload resolution has succeeded, reset the flag and mark
+         --  relevant use clauses like Find_{Direct,Expanded}_Name above.
+
          if Old_S /= Any_Id then
             Set_Is_Overloaded (Nam, False);
+            Mark_Use_Clauses (Old_S);
          end if;
 
       --  Non-overloaded case

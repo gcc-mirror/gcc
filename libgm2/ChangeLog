@@ -1,3 +1,32 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Include ../config/mmap.m4.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac: Drop AC_HEADER_STDC.
+
+2026-10-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127794
+	* libm2pim/Makefile.am (M2DEFS): Add LongStorage.def
+	and LongSysStorage.def.
+	(M2MODS): Add LongStorage.mod and LongSysStorage.mod.
+	* libm2pim/Makefile.in: Regenerate.
+
 2026-09-16  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127359

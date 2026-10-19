@@ -80,7 +80,7 @@ if test -n "$with_cross_host"; then
    AC_DEFINE(HAVE_MEMCPY)
    AC_DEFINE(HAVE_STRERROR)
 else
-   AC_FUNC_MMAP
+   GCC_AC_FUNC_MMAP
    AC_CHECK_FUNCS(memcpy strerror)
 fi
 

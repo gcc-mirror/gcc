@@ -583,7 +583,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if _GLIBCXX_HOSTED
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Winvalid-specialization"
- 
+
   /**
    * @brief  Partial specialization for `std::allocator`
    * @headerfile memory

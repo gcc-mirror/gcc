@@ -104,6 +104,35 @@ ASTValidation::visit (AST::Function &function)
       function.get_self_param ().get_locus (),
       "%<self%> parameter is only allowed in associated functions");
 
+  // functions without bodies can only have very specific
+  // kinds of patterns in their parameters
+  auto is_param_complex_with_loc
+    = [] (AST::Param &param) -> tl::optional<location_t> {
+    tl::optional<location_t> ret;
+
+    if (param.is_self () || param.is_variadic ())
+      return ret;
+
+    auto &fn_param = static_cast<AST::FunctionParam &> (param);
+    if (!fn_param.has_name ())
+      return ret;
+
+    auto &pat = fn_param.get_pattern ();
+    ret = pat.get_locus ();
+    auto kind = pat.get_pattern_kind ();
+    if (kind == AST::Pattern::Kind::Identifier)
+      {
+	auto &ident_pat = static_cast<AST::IdentifierPattern &> (pat);
+	if (!ident_pat.get_is_ref () && !ident_pat.get_is_mut ()
+	    && !ident_pat.has_subpattern ())
+	  ret = tl::nullopt;
+      }
+    else if (kind == AST::Pattern::Kind::Wildcard)
+      ret = tl::nullopt;
+
+    return ret;
+  };
+
   if (function.is_external ())
     {
       if (function.has_body ())
@@ -123,20 +152,11 @@ ASTValidation::visit (AST::Function &function)
 	      it->get ()->get_locus (),
 	      "%<...%> must be the last argument of a C-variadic function");
 
-	  // if functional parameter
-	  if (!it->get ()->is_self () && !it->get ()->is_variadic ())
-	    {
-	      auto &param = static_cast<AST::FunctionParam &> (**it);
-	      auto kind = param.get_pattern ().get_pattern_kind ();
-
-	      if (kind != AST::Pattern::Kind::Identifier
-		  && kind != AST::Pattern::Kind::Wildcard)
-		rust_error_at (it->get ()->get_locus (), ErrorCode::E0130,
-			       "pattern not allowed in foreign function");
-	    }
+	  if (auto pat_loc = is_param_complex_with_loc (**it))
+	    rust_error_at (*pat_loc, ErrorCode::E0130,
+			   "pattern not allowed in foreign function");
 	}
     }
-
   else
     {
       if (!function.has_body ())
@@ -158,6 +178,11 @@ ASTValidation::visit (AST::Function &function)
 	      it->get ()->get_locus (),
 	      "only foreign or %<unsafe extern \"C\"%> functions may "
 	      "be C-variadic");
+
+	  if (!function.has_body ())
+	    if (auto pat_loc = is_param_complex_with_loc (**it))
+	      rust_error_at (*pat_loc, ErrorCode::E0642,
+			     "pattern not allowed in function without body");
 	}
     }
 

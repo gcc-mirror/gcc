@@ -35,8 +35,8 @@ VisibilityResolver::VisibilityResolver (
 void
 VisibilityResolver::go (HIR::Crate &crate)
 {
-  mappings.insert_visibility (crate.get_mappings ().get_nodeid (),
-			      ModuleVisibility::create_public ());
+  mappings.ast.module_visibility.insert (crate.get_mappings ().get_nodeid (),
+					 ModuleVisibility::create_public ());
 
   current_module = crate.get_mappings ().get_defid ();
 
@@ -82,7 +82,8 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
   rust_assert (hid.has_value ());
   auto ref = hid.value ();
 
-  auto crate = mappings.get_ast_crate (mappings.get_current_crate ());
+  auto crate
+    = mappings.crate.get_ast_crate (mappings.crate.get_current_crate ());
 
   // we may be dealing with pub(crate)
   if (ref_node_id == crate.get_node_id ())
@@ -92,7 +93,7 @@ VisibilityResolver::resolve_module_path (const HIR::SimplePath &restriction,
     // these items as private?
     return true;
 
-  if (auto module = mappings.lookup_module (ref))
+  if (auto module = mappings.hir.modules.lookup (ref))
     {
       // Fill in the resolved `DefId`
       id = module.value ()->get_mappings ().get_defid ();
@@ -136,7 +137,8 @@ VisibilityResolver::resolve_and_update (const HIR::VisItem *item)
   if (!resolve_visibility (item->get_visibility (), module_vis))
     return; // we will already have emitted errors
 
-  mappings.insert_visibility (item->get_mappings ().get_nodeid (), module_vis);
+  mappings.ast.module_visibility.insert (item->get_mappings ().get_nodeid (),
+					 module_vis);
 }
 
 void
@@ -196,9 +198,11 @@ VisibilityResolver::visit (HIR::Enum &enum_item)
   if (!resolve_visibility (enum_item.get_visibility (), vis))
     return;
 
-  mappings.insert_visibility (enum_item.get_mappings ().get_nodeid (), vis);
+  auto &mod_vis_mapping = mappings.ast.module_visibility;
+
+  mod_vis_mapping.insert (enum_item.get_mappings ().get_nodeid (), vis);
   for (auto &variant : enum_item.get_variants ())
-    mappings.insert_visibility (variant->get_mappings ().get_nodeid (), vis);
+    mod_vis_mapping.insert (variant->get_mappings ().get_nodeid (), vis);
 }
 
 void
@@ -224,9 +228,10 @@ VisibilityResolver::visit (HIR::Trait &trait)
   if (!resolve_visibility (trait.get_visibility (), vis))
     return;
 
-  mappings.insert_visibility (trait.get_mappings ().get_nodeid (), vis);
+  auto &mod_vis_mapping = mappings.ast.module_visibility;
+  mod_vis_mapping.insert (trait.get_mappings ().get_nodeid (), vis);
   for (auto &item : trait.get_trait_items ())
-    mappings.insert_visibility (item->get_mappings ().get_nodeid (), vis);
+    mod_vis_mapping.insert (item->get_mappings ().get_nodeid (), vis);
 }
 
 void

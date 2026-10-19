@@ -844,7 +844,7 @@ ec_descr_t __gg__exception_table[] = {
   { ec_program_imp_e,            uc_category_implementor_e,
    "EC-PROGRAM-IMP",
     "Implementor-defined inter-program communication exception" },
-  { ec_program_not_found_e,      uc_category_fatal_e,
+  { ec_program_not_found_e,      ec_category_fatal_e,
    "EC-PROGRAM-NOT-FOUND", "Called program not found" },
   { ec_program_ptr_null_e,       uc_category_fatal_e,
    "EC-PROGRAM-PTR-NULL", "Program-pointer used in CALL is set to NULL" },
@@ -996,4 +996,3 @@ ec_descr_t __gg__exception_table[] = {
 } ;
 
 ec_descr_t *__gg__exception_table_end = __gg__exception_table + COUNT_OF(__gg__exception_table);
-

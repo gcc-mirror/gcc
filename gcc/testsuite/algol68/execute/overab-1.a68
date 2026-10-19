@@ -8,5 +8,6 @@ BEGIN (INT i := 11; i OVERAB 2; ASSERT (i = 5));
       (LONG INT i := LONG 11; i OVERAB LONG 2; ASSERT (i = LONG 5));
       (LONG INT i := LONG 11; i %:= LONG 2; ASSERT (i = LONG 5));
       (LONG LONG INT i := LONG LONG 11; i OVERAB LONG LONG 2; ASSERT (i = LONG LONG 5));
-      (LONG LONG INT i := LONG LONG 11; i %:= LONG LONG 2; ASSERT (i = LONG LONG 5))
+      (LONG LONG INT i := LONG LONG 11; i %:= LONG LONG 2; ASSERT (i = LONG LONG 5));
+      (WORD INT i := WORD 11; i %:= WORD 2; ASSERT (i = WORD 5))
 END

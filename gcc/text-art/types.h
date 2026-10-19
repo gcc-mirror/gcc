@@ -183,6 +183,12 @@ class array2
     m_elements[idx] = element;
   }
 
+  void set (const coord_t &coord, element_t &&element)
+  {
+    ::size_t idx = get_idx (coord);
+    m_elements[idx] = std::move (element);
+  }
+
   void fill (element_t element)
   {
     for (int y = 0; y < m_size.h; y++)

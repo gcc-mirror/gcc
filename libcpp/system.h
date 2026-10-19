@@ -24,10 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 
 /* We must include stdarg.h before stdio.h.  */
 #include <stdarg.h>
+#include <stddef.h>
 
-#ifdef HAVE_STDDEF_H
-# include <stddef.h>
-#endif
 #ifdef HAVE_STDINT_H
 # include <stdint.h>
 #endif
@@ -193,10 +191,6 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 #include <sys/types.h>
 #include <errno.h>
 
-#if !defined (errno) && defined (HAVE_DECL_ERRNO) && !HAVE_DECL_ERRNO
-extern int errno;
-#endif
-
 /* Some of glibc's string inlines cause warnings.  Plus we'd rather
    rely on (and therefore test) GCC's string builtins.  */
 #define __NO_STRING_INLINES
@@ -214,9 +208,7 @@ extern int errno;
 # endif
 #endif
 
-#ifdef HAVE_STDLIB_H
-# include <stdlib.h>
-#endif
+#include <stdlib.h>
 
 #ifdef HAVE_UNISTD_H
 # include <unistd.h>
@@ -304,18 +296,6 @@ extern int errno;
    are defined to 0 then we must provide the relevant declaration
    here.  These checks will be in the undefined state while configure
    is running so be careful to test "defined (HAVE_DECL_*)".  */
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#if defined (HAVE_DECL_ABORT) && !HAVE_DECL_ABORT
-extern void abort (void);
-#endif
-
-#ifdef __cplusplus
-}
-#endif
 
 #if HAVE_SYS_STAT_H
 # include <sys/stat.h>

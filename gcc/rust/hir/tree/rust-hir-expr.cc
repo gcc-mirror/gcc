@@ -581,7 +581,7 @@ CallExpr::CallExpr (Analysis::NodeMapping mappings,
 
 CallExpr::CallExpr (CallExpr const &other)
   : ExprWithoutBlock (other), function (other.function->clone_expr ()),
-    locus (other.locus)
+    const_argument_indexes (other.const_argument_indexes), locus (other.locus)
 /*, params(other.params),*/ {
   params.reserve (other.params.size ());
   for (const auto &e : other.params)
@@ -593,6 +593,7 @@ CallExpr::operator= (CallExpr const &other)
 {
   ExprWithoutBlock::operator= (other);
   function = other.function->clone_expr ();
+  const_argument_indexes = other.const_argument_indexes;
   locus = other.locus;
 
   params.reserve (other.params.size ());

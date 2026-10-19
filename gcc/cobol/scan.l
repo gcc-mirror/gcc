@@ -53,6 +53,70 @@
 #pragma GCC diagnostic ignored "-Wsign-compare"
 #pragma GCC diagnostic ignored "-Wunused-function"
 
+namespace picture_validation {
+  enum state_t {
+    none_e,
+    alphabetic_e   = 1,
+    alphanumeric_e,
+    alpha_ed_e,
+    national_e,
+    national_ed_e,
+    numeric_e,
+    numeric_ed_e,
+    invalid_e = 0x80,
+    alpha_pending_e,
+    c_need_r_e,
+    crdb_e,
+    d_need_b_e,
+    postdec_e,
+    antedec_e,
+    exponent_e,
+    accept_e,
+  };
+}
+
+static const char *
+crdb_maybe( const char *p )  {
+  char candidate[3] = { TOUPPER(p[-1]), TOUPPER(p[0]) };
+  static const std::set<std::string> endings{ "CR", "DB" };
+  return 1 == endings.count(candidate)? --p : p;
+}
+
+static const char *
+picture_at() {
+  std::reverse_iterator<const char*> end(yytext), beg(yytext + yyleng);
+  auto pos = std::find(beg, end, 0x20);
+  auto picture = pos.base();
+  dbgmsg("%s: picture is '%s'", __func__, picture);
+  return picture;
+}
+
+static size_t
+old_valid_picture(){
+    auto picture = picture_at();
+    dbgmsg("%s: picture is '%s'", __func__, picture);
+
+    auto result = is_valid_picture(yylloc, picture);
+
+    if( result.valid() ) {
+      auto p = crdb_maybe( yytext + result.pos );
+      auto loc(yylloc);
+      if( loc.first_line == loc.last_line ) {
+        auto error_col = p - yytext;
+        if( p == yytext + yyleng ) error_col = picture - yytext;
+        if( loc.first_column + error_col < loc.last_column )
+          loc.first_column += error_col;
+      }
+      if( *p ) {
+        unsigned int pos = p - picture;
+        error_msg(loc, "invalid PICTURE character %qc at offset %u", *p, pos);
+      } else {
+        error_msg(loc, "invalid picture");
+      }
+    }
+    dbgmsg("%s: returning '%u'", __func__, unsigned(picture - yytext));
+    return picture - yytext;
+}
 %}
 
     /* C99 floating point constant, per flex(1) appendix "common patterns" */
@@ -100,7 +164,7 @@ DOTEOL    [[:blank:]]*[.]{BLANK_EOL}
 	   *  of the data description entry and shall be followed immediately
 	   *  (without an intervening separator space) by the separator period."
 	   */
-NONPIC	  [,]{DOTSEP} 
+NONPIC	  [,]{DOTSEP}
 EOPIC	  [.,;]?[[:space:]]
 
 SKIP	  [[:blank:]]*SKIP[123][[:blank:]]*[.]?{BLANK_EOL}
@@ -109,7 +173,7 @@ NAME      [[:alnum:]]+([_-]+[[:alnum:]]+)*
 
 COUNT     [(][[:digit:]]+[)]
 NAMECOUNT [(]{NAME}[)]
-                        
+
 N9        9+|9{COUNT}|9{NAMECOUNT}
 NP        P+|P{COUNT}
 
@@ -122,35 +186,6 @@ ALNUM     [AX9]+|N+|U+
 
 AX       [AX]{COUNT}?
 B0       [B0/]{COUNT}?
-ALPHEDREQ   ({N9}*{AX}+{N9}*{B0}+{N9}*)|({N9}*({B0}|[.])+{N9}*{AX}+{N9}*)
-ALPHED   {ALPHEDREQ}([AX9B0/]{COUNT}?)*
-
-			/* Must contain at least one 0, B, /, Z, *, +,
-                         * (comma), ., –, CR, DB, or cs. Can contain
-                         * Ps, 9s, and one V. Must describe 1 to 31
-                         * digit positions, which can be represented
-                         * by 9s, zero suppression symbols (Z, *), and
-                         * floating insertion symbols (+, –, cs).
-                         * Cannot end with '.'.  // BPVZ90/,.+- CR DB * cs
-			 */
-NUMEDCHAR  [BPVZ90/,]+{COUNT}?
-NUMEDCHARS {NUMEDCHAR}([.]?{NUMEDCHAR})*
-NUMED     ([+-]{NUMEDCHARS}+)|({NUMEDCHARS}+[+-]?)
-                        /* ISO specification 12.3.7.2:
-			 * 27) Literal-8 may be any character from the
-			 * computer's coded character set except for the
-			 * following:
-			 * a) digits 0 through 9;
-			 * b) alphabetic characters A, B, C, D, E, N, P, R, S, V, X, Z, 
-			 *    or their lowercase equivalents; or the space;
-			 * c) characters '+' '–' ',' '.' '*' '/' ';' '(' ')' '"' '='
-			 */
-CURRENCY [A-Zfhijklmoqtuwy\x80-\xFF]{-}[ABCDEGNPRSVXZ]
-xCURRENCY [\x00-\xFF]{-}[ABCDEGNPRSVXZ 0-9 abcdegnprsvxz,.*/;()""=+-]
-NUMEDCUR (([.]?[$0B/Z*+,P9()V+-]|{CURRENCY}+|{COUNT})+([.][$0B/Z*+P9()V+-])*)+
-
-NUMEDITED         {NUMED}|{NUMEDCUR}
-EDITED   {ALPHED}|{NUMED}|{NUMEDCUR}
 
 DATE_FMT_B (YYYYMMDD)|(YYYYDDD)|(YYYYWwwD)
 DATE_FMT_E (YYYY-MM-DD)|(YYYY-DDD)|(YYYY-Www-D)
@@ -310,7 +345,7 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
   (ENVIRONMENT|DATA|PROCEDURE){SPC}DIVISION  { myless(0); yy_pop_state(); }
   {COMMENTARY}.*
   [[:blank:]]+
-  [[:graph:]]+ 
+  [[:graph:]]+
   {BLANK_EOL}
 }
 
@@ -382,7 +417,7 @@ PROGRAM-ID{OSPC}{DOTSEP}?	{ yy_push_state(ident_state);
 
   [*]{2}	{ return POW; }
 
-  /* 
+  /*
    * "A boolean operator specifies the type of boolean operation to be performed
    *  on one or two operands, for a unary operator or binary operator,
    *  respectively."
@@ -667,7 +702,7 @@ REVERSED	{ return REVERSED; }
 RETURN		{ return RETURN; }
 RESTRICTED	{ return RESTRICTED; }
 
-RESUME		{ // RESUME is ISO syntax, not IBM.  
+RESUME		{ // RESUME is ISO syntax, not IBM.
 		  if( ! dialect_ibm() ) return RESUME;
 		  yylval.string = xstrdup(yytext);
 		  return typed_name(yytext);
@@ -1031,7 +1066,7 @@ USE({SPC}FOR)?		{ return USE; }
   DISPLAY		{ return DISPLAY; }
   EBCDIC		{ return EBCDIC; }
   EJECT{DOTEOL}?  	{
-			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
+			  dialect_ok(yylloc, IbmEjectE, "EJECT");
 			  auto len = yyleng - 1;
 			  if( yytext[len] == '\f' ) myless(--len);
 			}
@@ -1111,7 +1146,7 @@ USE({SPC}FOR)?		{ return USE; }
   DISPLAY		{ return DISPLAY; }
   EBCDIC		{ return EBCDIC; }
   EJECT{DOTEOL}?  	{
-			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
+			  dialect_ok(yylloc, IbmEjectE, "EJECT");
 			  auto len = yyleng - 1;
 			  if( yytext[len] == '\f' ) myless(--len);
 			}
@@ -1172,7 +1207,7 @@ USE({SPC}FOR)?		{ return USE; }
                   return NUMSTR;
 		}
 
-  {NAME}	{ 
+  {NAME}	{
                   yylval.string = xstrdup(yytext);
                   return NAME;
                 }
@@ -1195,14 +1230,14 @@ USE({SPC}FOR)?		{ return USE; }
 <field_state>{
   FD		{ yy_push_state(fd_state); return FD; }
   SD		{ yy_push_state(fd_state); return SD; }
-  {NAME}	{ 
+  {NAME}	{
                   ydflval.string = yylval.string = xstrdup(yytext);
                   return NAME;
                 }
 
   [[:digit:]]{1,2}/{NOTWORD} {
       yy_push_state(field_data_item);
-      yylval.number = level_of(yytext); 
+      yylval.number = level_of(yytext);
 
       switch(yylval.number) {
       case 66: return LEVEL66;
@@ -1236,9 +1271,52 @@ USE({SPC}FOR)?		{ return USE; }
 			}
 
   PIC(TURE)?({SPC}IS)?{SPC}{PICTURE} {
-				  auto pos = validate_picture();
-				  myless(pos);
-				  yy_push_state(picture); return PIC; }
+				  const auto nerror = parse_error_count();
+                                  auto end_dot = yyleng - 1;
+				  auto p = picture_at();
+                                  auto loc(yylloc);
+                                  loc.first_column += (p - yytext);
+				  const auto& pic = is_valid_picture(loc, p);
+                                  switch( pic.type ) {
+                                  case FldAlphaEdited:
+                                  case FldNumericEdited:
+                                    ////pic.dump();
+                                    yylval.lex_picture = pic;
+                                    if( yytext[end_dot] == '.' )  {
+                                      myless(end_dot);
+                                    }
+                                    return PICTURE;
+                                  case FldInvalid:
+                                    if( nerror == parse_error_count() ) {
+                                      if( *p == '1' ) {
+                                        cbl_unimplemented_at(loc, "BOOLEAN PICTURE %qs", p);
+                                      } else {
+                                        loc += pic.pos;
+                                        error_msg(loc, "invalid %qc at %u in PICTURE %qs",
+                                                  p[pic.pos], unsigned(pic.pos), p);
+                                      }
+                                    }
+                                    if( yytext[end_dot] == '.' )  {
+                                      myless(end_dot);
+                                    }
+                                    return NO_CONDITION;
+                                    break;
+                                  default:
+                                    if( nerror < parse_error_count() ) {
+                                      if( yytext[end_dot] == '.' )  {
+                                        myless(end_dot);
+                                        dbgmsg("picture is %s, %u error",
+                                               cbl_field_type_str(pic.type),
+                                               unsigned(nerror));
+                                        return NO_CONDITION;
+                                      }
+                                    }
+                                    break;
+                                  }
+				  myless(p - yytext);
+				  yy_push_state(picture);
+                                  return PIC;
+                                }
 
   ANY				{ return ANY; }
   LENGTH			{ return LENGTH; }
@@ -1295,7 +1373,7 @@ USE({SPC}FOR)?		{ return USE; }
   PROGRAM-POINTER      	{ yylval.field_attr = prog_ptr_e; return POINTER; }
   POINTER           	{ yylval.field_attr = none_e;     return POINTER; }
 
-  PROCEDURE-POINTER    	{ 
+  PROCEDURE-POINTER    	{
 			  dialect_ok(yylloc, IbmProcedurePointer, yytext);
 			  yylval.field_attr = prog_ptr_e;
 			  return POINTER;  // return it anyway
@@ -1389,8 +1467,6 @@ USE({SPC}FOR)?		{ return USE; }
   {DOTSEP}[[:blank:].]+$	{ yy_pop_state(); myless(0); }
   {DOTSEP}			{ yy_pop_state(); myless(0); }
 
-  [[:blank:]]+[-+]/{EDITED} 	{ return picset(yytext[yyleng-1]); }
-
   /* Sign, if any, first */
   S/({NP}|{N9}|V)+{EOPIC} { return picset('S'); }
   /* P's either lead (after sign) or trail, with any V adjacent, see Table 10. */
@@ -1422,16 +1498,6 @@ USE({SPC}FOR)?		{ return USE; }
                          yy_push_state(picture_count);
                          yylval.string = xstrdup(yytext); return picset(ALNUM); }
   {ALNUM}/{EOPIC}?     { yylval.string = xstrdup(yytext); return picset(ALNUM); }
-
-  {ALPHED}             { yylval.string = xstrdup(yytext); return picset(ALPHED); }
-  {NUMEDITED}          { yylval.string = xstrdup(yytext); return picset(NUMED); }
-  {NUMEDITED}[.]?CR    { yylval.string = xstrdup(yytext); return picset(NUMED_CR); }
-  {NUMEDITED}[.]?DB    { yylval.string = xstrdup(yytext); return picset(NUMED_DB); }
-  {NUMEDITED}[.]/{DOTEOL} {
-                         yylval.string = xstrdup(yytext); return picset(NUMED); }
-
-  [^[:space:].,;]+([.,;][^[:space:].,;]+)* {
-                         yylval.string = xstrdup(yytext); return picset(ALPHED); }
 
   .     { dbgmsg("unrecognized character '%c' (0x%x) in PICTURE",
                     *yytext, *yytext ); return NO_CONDITION; }
@@ -1560,6 +1626,7 @@ USE({SPC}FOR)?		{ return USE; }
                         tmpstring = NULL; pop_return LITERAL; }
 }
 
+
   /* These appear only in ISO list of CDF reserved words */
   /* DE-EDITING 		{ return DE_EDITING; } */
   /* EXTERNAL-FILE-FILE-STATUS 	{ return EXTERNAL_FILE_FILE_STATUS; } */
@@ -1652,7 +1719,7 @@ USE({SPC}FOR)?		{ return USE; }
   EXCLUSIVE-OR |
   XOR	 		{ return XOR; }
   ZERO-LENGTH 		{ return ZERO_LENGTH; }
-  
+
   [+-]?{INTEGERZ}       { int value;
 			  if( is_integer_token(&value) ) {
 			    ydflval.number = value;
@@ -2071,7 +2138,7 @@ USE({SPC}FOR)?		{ return USE; }
 <name_state>{           /* Either pop from here, or let the quoted state pop */
   {NAME}	        { yy_pop_state();
 			  yylval.string = xstrdup(yytext);
-			  return NAME; 
+			  return NAME;
 			}
   {PREFIX}?['']                { yylval.literal.set_prefix(yytext, yyleng-1);
 			  BEGIN(quoted1); }
@@ -2190,7 +2257,7 @@ USE({SPC}FOR)?		{ return USE; }
   [(]/[^(:)""'']*[:][^)]*[)] 	{ return LPAREN; /* parentheses around a colon */ }
   [(] 				{
                                   int tok = is_refmod()? int(LPAREN) : '(';
-                                  return tok; 
+                                  return tok;
                                 }
 
   FILLER			{ return FILLER_kw; }
@@ -2712,7 +2779,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
                  */
 <*>{
   ^[ ]{6}\x8d.*\n {
-		  // lexio munged fixed-format D indicator to 0x8D. 
+		  // lexio munged fixed-format D indicator to 0x8D.
 		  // If WITH DEBUGGING MODE, drop the D, else drop the line.
 		  if( include_debug() ) myless(7);
 		}
@@ -2720,17 +2787,18 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ^[ ]*>>{OBLANK}ELSE	 	{ return CDF_ELSE; }
   ^[ ]*>>{OBLANK}END-IF	 	{ return CDF_END_IF; }
 
-  ^[ ]*[$]{OBLANK}IF		{ dialect_ok(yylloc, MfCdfDollar, yytext); 
+  ^[ ]*[$]{OBLANK}IF		{ dialect_ok(yylloc, MfCdfDollar, yytext);
 				  PUSH_CDF_STATE; return CDF_IF; }
-  ^[ ]*[$]{OBLANK}ELSE	 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
+  ^[ ]*[$]{OBLANK}ELSE	 	{ dialect_ok(yylloc, MfCdfDollar, yytext);
 				  return CDF_ELSE; }
-  ^[ ]*[$]{OBLANK}END(-IF)? 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
+  ^[ ]*[$]{OBLANK}END(-IF)? 	{ dialect_ok(yylloc, MfCdfDollar, yytext);
 				  return CDF_END_IF; }
 
   ^[ ]*[$]{OBLANK}SET({SPC}CONSTANT)? {
-				  dialect_ok(yylloc, MfCdfDollar, yytext); 
+				  dialect_ok(yylloc, MfCdfDollar, yytext);
 				  PUSH_CDF_STATE; return CDF_DEFINE; }
-  ^[ ]*[$]{OBLANK}DISPLAY 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
+  ^[ ]*[#]DEFLIT		{ PUSH_CDF_STATE; return CDF_DEFINE; }
+  ^[ ]*[$]{OBLANK}DISPLAY 	{ dialect_ok(yylloc, MfCdfDollar, yytext);
 				  PUSH_CDF_STATE; return CDF_DISPLAY; }
 
   ^[ ]*>>{OBLANK}EVALUATE		{ return CDF_EVALUATE; }

@@ -378,7 +378,7 @@ recognize_bits_test (gcond *cond, tree *name, tree *bits, bool inv)
       || gimple_assign_rhs_code (stmt) != BIT_AND_EXPR)
     return false;
 
-  *name = get_name_for_bit_test (gimple_assign_rhs1 (stmt));
+  *name = gimple_assign_rhs1 (stmt);
   *bits = gimple_assign_rhs2 (stmt);
 
   return true;
@@ -1015,7 +1015,11 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       if ((TREE_CODE (name1) == SSA_NAME
 	   && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name1))
 	  || (TREE_CODE (name2) == SSA_NAME
-	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name2)))
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name2))
+	  || (TREE_CODE (bits1) == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (bits1))
+	  || (TREE_CODE (bits2) == SSA_NAME
+	      && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (bits2)))
 	return false;
 
       /* Find the common name which is bit-tested.  */
@@ -1031,7 +1035,19 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
       else if (bits1 == name2)
 	std::swap (name1, bits1);
       else
-	goto bits_test_failed;
+	{
+	  /* Look through non-widening conversions, but only on the names
+	     so that a stripped operand never becomes part of the mask.  */
+	  tree t1 = get_name_for_bit_test (name1);
+	  tree t2 = get_name_for_bit_test (name2);
+	  if (t1 != t2)
+	    goto bits_test_failed;
+	  name1 = name2 = t1;
+	}
+
+      if (TREE_CODE (name1) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name1))
+	return false;
 
       /* As we strip non-widening conversions in finding a common
          name that is tested make sure to end up with an integral
@@ -1096,12 +1112,12 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	return false;
       /* Don't return false so fast, try maybe_fold_or_comparisons?  */
 
-      if (!(t = maybe_fold_and_comparisons (boolean_type_node, inner_cond_code,
-					    gimple_cond_lhs (inner_cond),
-					    gimple_cond_rhs (inner_cond),
-					    outer_cond_code,
+      if (!(t = maybe_fold_and_comparisons (boolean_type_node, outer_cond_code,
 					    gimple_cond_lhs (outer_cond),
 					    gimple_cond_rhs (outer_cond),
+					    inner_cond_code,
+					    gimple_cond_lhs (inner_cond),
+					    gimple_cond_rhs (inner_cond),
 					    gimple_bb (outer_cond)))
 	  && !(t = (fold_truth_andor_for_ifcombine
 		    (TRUTH_ANDIF_EXPR, boolean_type_node,

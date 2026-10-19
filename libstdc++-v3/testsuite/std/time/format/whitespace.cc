@@ -40,7 +40,7 @@ test_all()
   test<CharT>(2020y/January/8);
   test<CharT>(local_days(2020y/January/8));
   test<CharT>(sys_days(2020y/January/8) + 13h + 10min + 5s);
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
   test<CharT>(sys_info());
   test<CharT>(local_info());
 #endif

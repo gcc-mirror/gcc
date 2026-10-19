@@ -60,7 +60,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "toplev.h"
 #include "opts.h"
-#include "asan.h"
 #include "recog.h"
 #include "gimple-expr.h"
 

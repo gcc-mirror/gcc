@@ -3166,8 +3166,9 @@ noce_try_abs (noce_if_info *if_info)
   if (!noce_simple_bbs (if_info))
     return false;
 
-  /* Reject modes with signed zeros.  */
-  if (HONOR_SIGNED_ZEROS (if_info->x))
+  /* Reject modes with signed zeros or NaNs.  */
+  if (HONOR_SIGNED_ZEROS (if_info->x)
+      || HONOR_NANS (if_info->x))
     return false;
 
   /* Recognize A and B as constituting an ABS or NABS.  The canonical
@@ -6113,6 +6114,9 @@ find_cond_trap (basic_block test_bb, edge then_edge, edge else_edge)
 	? !valid_insn_p (x)
 	: recog_memoized (x) < 0)
       return false;
+
+  if (noce_clobbers_live_cc_p (test_bb, seq))
+    return false;
 
   /* Emit the new insns before cond_earliest.  */
   emit_insn_before_setloc (seq, cond_earliest, INSN_LOCATION (trap));

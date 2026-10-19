@@ -46,4 +46,4 @@ f2 (char *s)
   return c;
 }
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 0 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops" 1 "vect" } } */

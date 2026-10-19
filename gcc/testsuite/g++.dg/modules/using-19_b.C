@@ -3,8 +3,8 @@
 import M;
 
 namespace exposed {
-  struct S {};  // { dg-error "redefinition" }
-  enum E { x };  // { dg-error "multiple definition" }
+  struct S {};  // { dg-error "conflicts" }
+  enum E { x };  // { dg-error "conflicts" }
   int e();  // { dg-error "redeclared" }
   int f;  // { dg-error "redeclared" }
 }

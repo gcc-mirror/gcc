@@ -433,7 +433,8 @@ canonicalize_value (ccp_prop_value_t *val)
 /* Return whether the lattice transition is valid.  */
 
 static bool
-valid_lattice_transition (ccp_prop_value_t old_val, ccp_prop_value_t new_val)
+valid_lattice_transition (const ccp_prop_value_t &old_val,
+			  const ccp_prop_value_t &new_val)
 {
   /* Lattice transitions must always be monotonically increasing in
      value.  */
@@ -1633,25 +1634,24 @@ bit_value_binop (enum tree_code code, signop sgn, int width,
 	 is zero.  */
       if (r2mask == 0)
 	{
-	  widest_int shift = r2val;
-	  if (shift == 0)
+	  if (r2val == 0)
 	    {
 	      *mask = r1mask;
 	      *val = r1val;
 	    }
 	  else
 	    {
-	      if (wi::neg_p (shift, r2type_sgn))
+	      if (wi::neg_p (r2val, r2type_sgn))
 		break;
 	      if (code == RSHIFT_EXPR)
 		{
-		  *mask = wi::rshift (wi::ext (r1mask, width, sgn), shift, sgn);
-		  *val = wi::rshift (wi::ext (r1val, width, sgn), shift, sgn);
+		  *mask = wi::rshift (wi::ext (r1mask, width, sgn), r2val, sgn);
+		  *val = wi::rshift (wi::ext (r1val, width, sgn), r2val, sgn);
 		}
 	      else
 		{
-		  *mask = wi::ext (r1mask << shift, width, sgn);
-		  *val = wi::ext (r1val << shift, width, sgn);
+		  *mask = wi::ext (r1mask << r2val, width, sgn);
+		  *val = wi::ext (r1val << r2val, width, sgn);
 		}
 	    }
 	}

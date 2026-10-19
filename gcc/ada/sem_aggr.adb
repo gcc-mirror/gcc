@@ -776,7 +776,6 @@ package body Sem_Aggr is
       Set_Size_Known_At_Compile_Time
         (Itype,
          Is_Fully_Positional
-           and then Comes_From_Source (N)
            and then Size_Known_At_Compile_Time (Component_Type (Typ)));
 
       --  We always need a freeze node for a packed array subtype, so that we

@@ -30,7 +30,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "fold-const.h"
-#include "tree-cfg.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
 #include "gimple-range.h"

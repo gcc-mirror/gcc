@@ -32,6 +32,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "libgfortran.h"
 
 #include "allocator.h"
+#include "../caf_error.h"
 #include "supervisor.h"
 #include "thread_support.h"
 
@@ -102,6 +103,17 @@ allocator_shared_malloc (allocator *a, size_t size)
   ret = a->s->free_bucket_head[bucket_list_index];
   a->s->free_bucket_head[bucket_list_index]
       = (SHMPTR_AS (bucket *, ret, a->shm)->next);
+  return ret;
+}
+
+shared_mem_ptr
+allocator_shared_malloc_or_die (allocator *a, size_t size)
+{
+  shared_mem_ptr ret = allocator_shared_malloc (a, size);
+
+  if (SHMPTR_IS_NULL (ret))
+    caf_runtime_error ("Shared memory exhausted; increase "
+		       "GFORTRAN_SHARED_MEMORY_SIZE");
   return ret;
 }
 

@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "ipa-inline.h"
 #include "tree-inline.h"
-#include "function.h"
 #include "cfg.h"
 #include "basic-block.h"
 #include "ipa-utils.h"

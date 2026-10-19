@@ -159,26 +159,27 @@ FCFLAGS="$FCFLAGS -L."
 # We need gfortran to compile parts of the library
 # We can't use AC_PROG_FC because it expects a fully working gfortran.
 #AC_PROG_FC(gfortran)
-FC="$GFORTRAN"
+# If '--enable-languages=fortran' isn't in effect, the 'GFORTRAN' passed by
+# the top-level build system isn't functional (executable doesn't exist).
+# Catch this case here, and set 'FC=no', so that we don't confuse libtool.
+case ,${enable_languages}, in
+  *,fortran,* )
+    FC=$GFORTRAN
+    ;;
+  * )
+    FC=no
+    ;;
+esac
 AC_PROG_FC(gfortran)
 FCFLAGS="$FCFLAGS -Wall -L../libgfortran"
 
-case ,${enable_languages}, in
-  *,fortran,* )
-   use_fortran=true
-   ;;
-  * )
-   use_fortran=false
-   ;;
-esac
-AM_CONDITIONAL([USE_FORTRAN], ["$use_fortran"])
+AM_CONDITIONAL([USE_FORTRAN], [test "$ac_cv_fc_compiler_gnu" = yes])
 
 # For libtool versioning info, format is CURRENT:REVISION:AGE
 libtool_VERSION=1:0:0
 AC_SUBST(libtool_VERSION)
 
 # Check header files.
-AC_HEADER_STDC
 AC_HEADER_TIME
 ACX_HEADER_STRING
 AC_CHECK_HEADERS(pthread.h unistd.h semaphore.h sys/loadavg.h sys/sysctl.h sys/time.h)

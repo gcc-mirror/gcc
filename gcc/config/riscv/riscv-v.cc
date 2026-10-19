@@ -4058,9 +4058,8 @@ shuffle_even_odd_patterns (struct expand_vec_perm_d *d)
      vnsrl instructions, each extracting the even/odd elements of one source,
      and a vslideup instruction to merge them into one vector.
 
-     Until we have a "widening" vector concat pattern (just like slideup here
-     but with the proper modes) we still need the natural-size check for
-     LMUL > 1 cases.  */
+     We still need the natural-size check to avoid multi-register spills
+     for LMUL > 1 cases.  */
   unsigned int max_elen = TARGET_VECTOR_ELEN_64 ? 64 : 32;
   if (GET_MODE_BITSIZE (GET_MODE_INNER (vmode)) * 2 <= max_elen
       && known_le (GET_MODE_SIZE (vmode), riscv_regmode_natural_size (vmode)))
@@ -4074,8 +4073,9 @@ shuffle_even_odd_patterns (struct expand_vec_perm_d *d)
       machine_mode vmode_half = get_vector_mode (smode, vlen / 2).require ();
       unsigned int shift_amt = even ? 0 : elen;
       insn_code icode = code_for_pred_narrow_scalar (LSHIFTRT, vmode_elen2x);
-      /* TODO these lowpart subreg workarounds should go, this is actually a
-	 simple concatenation of two "half"-sized vectors.  */
+      /* TODO: Although vec_concat is supported, it does not cover mixed
+	 VLA/VLS modes under -mrvv-vector-bits=zvl.  Keep these lowpart
+	 subreg workarounds for now.  */
       rtx tmp = gen_reg_rtx (vmode);
       rtx ops_shift1[]
 	= {gen_lowpart (vmode_half, d->target),

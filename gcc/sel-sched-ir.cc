@@ -1480,7 +1480,7 @@ find_in_history_vect_1 (vec<expr_history_def> vect,
    the position found or -1, if no such value is in vector.
    Search also for UIDs of insn's originators, if ORIGINATORS_P is true.  */
 int
-find_in_history_vect (vec<expr_history_def> vect, rtx insn,
+find_in_history_vect (vec<expr_history_def> vect, rtx_insn *insn,
                       vinsn_t new_vinsn, bool originators_p)
 {
   int ind;
@@ -3311,7 +3311,7 @@ has_dependence_note_dep (insn_t pro, ds_t ds ATTRIBUTE_UNUSED)
 
 /* Mark the insn as having a hard dependence that prevents speculation.  */
 void
-sel_mark_hard_insn (rtx insn)
+sel_mark_hard_insn (rtx_insn *insn)
 {
   int i;
 
@@ -3597,7 +3597,7 @@ insn_sid (insn_t insn)
    at the data structures of the selective scheduler, not by examining
    the pattern.  */
 bool
-sel_insn_is_speculation_check (rtx insn)
+sel_insn_is_speculation_check (rtx_insn *insn)
 {
   return s_i_d.exists () && !! INSN_SPEC_CHECKED_DS (insn);
 }
@@ -3605,7 +3605,7 @@ sel_insn_is_speculation_check (rtx insn)
 /* Extracts machine mode MODE and destination location DST_LOC
    for given INSN.  */
 void
-get_dest_and_mode (rtx insn, rtx *dst_loc, machine_mode *mode)
+get_dest_and_mode (rtx_insn *insn, rtx *dst_loc, machine_mode *mode)
 {
   rtx pat = PATTERN (insn);
 
@@ -5758,7 +5758,7 @@ create_vinsn_from_insn_rtx (rtx_insn *insn_rtx, bool force_unique_p)
 
 /* Create a copy of INSN_RTX.  */
 rtx_insn *
-create_copy_of_insn_rtx (rtx insn_rtx)
+create_copy_of_insn_rtx (rtx_insn *insn_rtx)
 {
   rtx_insn *res;
   rtx link;

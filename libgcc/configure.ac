@@ -4,6 +4,7 @@ sinclude(../config/enable.m4)
 sinclude(../config/tls.m4)
 sinclude(../config/toolexeclibdir.m4)
 sinclude(../config/acx.m4)
+sinclude(../config/mmap.m4)
 sinclude(../config/no-executables.m4)
 sinclude(../config/lib-ld.m4)
 sinclude(../config/override.m4)
@@ -229,10 +230,8 @@ AS_VAR_ARITH([long_double_type_size], [$ac_cv_sizeof_long_double \* 8])
 AC_SUBST(double_type_size)
 AC_SUBST(long_double_type_size)
 
-AC_CHECK_HEADERS(inttypes.h stdint.h stdlib.h ftw.h \
-	unistd.h sys/stat.h sys/types.h \
-	string.h strings.h memory.h sys/auxv.h sys/mman.h)
-AC_HEADER_STDC
+AC_CHECK_HEADERS(stdlib.h ftw.h string.h strings.h memory.h)
+AC_CHECK_HEADERS(ftw.h sys/mman.h)
 
 # Check for decimal float support.
 AC_CACHE_CHECK([whether decimal floating point is supported], [libgcc_cv_dfp],

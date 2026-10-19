@@ -11209,10 +11209,14 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 						  gfc_rank_cst[i],
 						  size);
 		  size = gfc_evaluate_now (size, &fnblock);
+		  tmp = fold_build2_loc (input_location,
+					 MULT_EXPR,
+					 gfc_array_index_type,
+					 lower, size);
 		  offset = fold_build2_loc (input_location,
 					    MINUS_EXPR,
 					    gfc_array_index_type,
-					    offset, size);
+					    offset, tmp);
 		  offset = gfc_evaluate_now (offset, &fnblock);
 		  tmp = fold_build2_loc (input_location, MINUS_EXPR,
 					 gfc_array_index_type,
@@ -11270,17 +11274,35 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 
 	  /* Recurse in to PDT components.  */
 	  if ((IS_PDT (c) || IS_CLASS_PDT (c))
-	      && !(c->attr.pointer || c->attr.allocatable))
+	       && !(c->attr.pointer || c->attr.allocatable))
 	    {
-	      gfc_actual_arglist *tail = c->param_list;
+	      gfc_actual_arglist *tail = c->param_list, *parms;
+	      bool ext;
+
+	      ext = gfc_get_derived_super_type (der_type) == c->ts.u.derived;
 
 	      for (; tail; tail = tail->next)
-		if (tail->expr)
-		  gfc_insert_parameter_exprs (tail->expr, pdt_param_list);
+		if (tail->spec_type != SPEC_EXPLICIT && tail->expr)
+		  break;
+
+	      if (tail && ext)
+		/* 'der_type' extends the type of this component but has no
+		   type parameters of its own and so some of the components
+		   might be assumed.  The pdt_param_list will have what is
+		   needed.  */
+		parms = pdt_param_list;
+	      else
+		/* Otherwise, use the component's type parameters.  */
+		{
+		  tail = parms = c->param_list;
+		  for (; tail; tail = tail->next)
+		    if (tail->expr)
+		      gfc_insert_parameter_exprs (tail->expr, pdt_param_list);
+		}
 
 	      tmp = gfc_allocate_pdt_comp (c->ts.u.derived, comp,
 					   c->as ? c->as->rank : 0,
-					   c->param_list);
+					   parms);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 

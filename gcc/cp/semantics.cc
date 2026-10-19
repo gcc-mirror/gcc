@@ -40,7 +40,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "omp-general.h"
 #include "convert.h"
-#include "stringpool.h"
 #include "attribs.h"
 #include "gomp-constants.h"
 #include "predict.h"
@@ -8768,6 +8767,49 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	  break;
 
 	case OMP_CLAUSE_SIMDLEN:
+	  t = OMP_CLAUSE_SIMDLEN_TYPE (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (t && !dependent_type_p (t)
+		   && !ARITHMETIC_TYPE_P (t))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"expected arithmetic type name as argument to the "
+			"%<scaled%> modifier");
+	      remove = true;
+	    }
+	  t = OMP_CLAUSE_SIMDLEN_DIVISOR (c);
+	  if (t == error_mark_node)
+	    remove = true;
+	  else if (t && !type_dependent_expression_p (t)
+		   && !INTEGRAL_TYPE_P (TREE_TYPE (t)))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qs divisor expression of the %<scaled%> modifier "
+			"must be integral",
+			omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+	      remove = true;
+	    }
+	  else if (t)
+	    {
+	      t = mark_rvalue_use (t);
+	      if (!processing_template_decl)
+		{
+		  t = maybe_constant_value (t);
+		  if (TREE_CODE (t) != INTEGER_CST
+		      || tree_int_cst_sgn (t) != 1)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c),
+				"%qs divisor expression of the %<scaled%> "
+				"modifier must be a positive constant integer "
+				"expression",
+				omp_clause_code_name[OMP_CLAUSE_CODE (c)]);
+		      remove = true;
+		    }
+		}
+	      OMP_CLAUSE_SIMDLEN_DIVISOR (c) = t;
+	    }
+	  /* FALLTHRU */
 	case OMP_CLAUSE_SAFELEN:
 	  t = OMP_CLAUSE_OPERAND (c, 0);
 	  if (t == error_mark_node)
@@ -10484,6 +10526,14 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      && tree_int_cst_lt (OMP_CLAUSE_SAFELEN_EXPR (safelen),
 				  OMP_CLAUSE_SIMDLEN_EXPR (c)))
 	    {
+	      /* Note: How a scaling factor affects this, is underspecified in
+		 OpenMP; cf. OpenMP spec issue #5160.  Presumably, it means:
+		   savelen >= simdlen * scale_factor
+		 with
+		   scale_factor = MAX (1, FLOOR_DIV_EXPR (VL(type), divisor))
+		 and OpenMP states that VL(type) might be only known at runtime.
+		 Hence scale_factor >= 1 and, conservatively, assume == 1 for
+		 this error check.  */
 	      error_at (OMP_CLAUSE_LOCATION (c),
 			"%<simdlen%> clause value is bigger than "
 			"%<safelen%> clause value");
@@ -11223,25 +11273,44 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
     {
       if (tree block = BIND_EXPR_BLOCK (t))
 	for (tree var = BLOCK_VARS (block); var; var = DECL_CHAIN (var))
-	  if (!data->local_decls.contains (var))
+	  if ((VAR_P (var)
+	       || TREE_CODE (var) == PARM_DECL
+	       || TREE_CODE (var) == RESULT_DECL)
+	      && !data->local_decls.contains (var))
 	    data->local_decls.add (var);
       return NULL_TREE;
     }
 
-  if (TREE_TYPE (t) && LAMBDA_TYPE_P (TREE_TYPE (t)))
-    {
-      tree lt = TREE_TYPE (t);
-      gcc_assert (CLASS_TYPE_P (lt));
+  /* Note, this really should be done during gimplification using
+     a target hook instead, as a magic declare mapper for the lambda
+     types.  */
+  if (tree lt = TREE_TYPE (t))
+    if (LAMBDA_TYPE_P (lt))
+      {
+	gcc_assert (CLASS_TYPE_P (lt));
 
-      if (!data->lambda_objects_accessed.contains (t)
-	  /* Do not prepare to create target maps for locally declared
-	     lambdas or anonymous ones.  */
-	  && !data->local_decls.contains (t)
-	  && TREE_CODE (t) != TARGET_EXPR)
-	data->lambda_objects_accessed.add (t);
-      *walk_subtrees = 0;
-      return NULL_TREE;
-    }
+	if (TREE_CODE (t) == TARGET_EXPR
+	    && !data->local_decls.contains (TARGET_EXPR_SLOT (t)))
+	  data->local_decls.add (TARGET_EXPR_SLOT (t));
+
+	tree b = t;
+	while (TREE_CODE (b) == COMPONENT_REF
+	       /* Note, this isn't fully correct.  We can handle it
+		  this way for constant index, or when it is e.g.
+		  a value of firstprivatized variable, but we can't
+		  do that if something in the index expression is
+		  local to the target region.  */
+	       || TREE_CODE (b) == ARRAY_REF)
+	  b = TREE_OPERAND (b, 0);
+	if ((VAR_P (b)
+	     || TREE_CODE (b) == PARM_DECL
+	     || TREE_CODE (b) == RESULT_DECL)
+	    && !data->lambda_objects_accessed.contains (t)
+	    /* Do not prepare to create target maps for locally declared
+	       lambdas or anonymous ones.  */
+	    && !data->local_decls.contains (b))
+	  data->lambda_objects_accessed.add (t);
+      }
 
   return NULL_TREE;
 }

@@ -1,4 +1,4 @@
-/* Header file for pr96530.c test - contains test functions only */
+/* Header file for pr96530.*.c test - contains test functions only */
 
 /* PR target/96530 */
 

@@ -49,13 +49,22 @@ static std::vector<std::unique_ptr<AST::Item>>
 builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
 		     BuiltinMacro to_derive, MacroExpander &expander)
 {
+  auto &mappings = Analysis::Mappings::get ();
   auto item_source = AST::Builder::get_item_source (expander.crate);
 
   auto items
     = AST::DeriveVisitor::derive (item, derive, to_derive, item_source);
 
-  for (auto &item : items)
-    Analysis::Mappings::get ().add_derived_node (item->get_node_id ());
+  for (auto it = items.begin (); it != items.end ();)
+    {
+      if (*it == nullptr)
+	it = items.erase (it);
+      else
+	{
+	  mappings.add_derived_node ((*it)->get_node_id ());
+	  ++it;
+	}
+    }
 
   return items;
 }

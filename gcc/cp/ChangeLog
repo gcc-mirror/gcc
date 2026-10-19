@@ -1,3 +1,205 @@
+2026-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127559
+	* semantics.cc (finish_omp_target_clauses_r): Only record
+	in local_decls VAR_DECLs, PARM_DECLs and RESULT_DECLs.
+	For TARGET_EXPR with lambda type mark TARGET_EXPR_SLOT in
+	local_decls too.  Never *walk_subtrees = 0; for lambdas.
+	Don't add arbitrary expressions of lambda type to
+	lambda_objects_accessed, only VAR_DECLs, PARM_DECLs or
+	RESULT_DECLs possibly with COMPONENT_REFs or ARRAY_REFs around
+	those.  If it is handled component case, check in local_decls
+	the base variable rather than whole expression.
+
+2026-10-16  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.cc (write_name): Change type of the second argument
+	from const int to const bool, make it defaulted to false.
+	(write_local_name): Pass true rather than 1 to it.
+	(write_type_constraint, write_encoding, write_type,
+	write_class_enum_type, write_reflection, write_template_template_arg,
+	write_guarded_var_name): Remove ", 0" from callers.
+
+2026-10-16  Illia Polishchuk  <illia.polishchuk@thalesgroup.com>
+
+	PR c++/103303
+	* cp-tree.h (fixup_type_variants): Add update_align parameter.
+	* class.cc (fixup_type_variants): Only update alignment if
+	update_align is true.
+	(finish_struct_bits): Pass update_align = true.
+	* module.cc (trees_in::read_class_def): Likewise.
+	* cp-gimplify.cc (cp_genericize_r) <case INDIRECT_REF>: Use the
+	alignment of the class as a base for references to a class that
+	might be a base subobject.
+
+2026-10-13  Léo Hardt  <leom.hardt@inf.ufrgs.br>
+
+	* call.cc: Remove unused include directives.
+	* init.cc: Likewise.
+	* semantics.cc: Likewise.
+
+2026-10-12  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127780
+	* parser.cc (cp_parser_init_statement): Use the location of
+	'using' in the C++23 pedwarn.  Only consume the ':' if
+	expect_semicolon_p.
+
+2026-10-12  Jason Merrill  <jason@redhat.com>
+
+	PR c++/127787
+	PR c++/99000
+	* pt.cc (check_explicit_specialization): Don't clobber a redefinable
+	imported definition.
+
+2026-10-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/127734
+	* decl.cc (omp_declare_variant_finalize_one): Remove early
+	return when a 'simd' trait exists.
+
+2026-10-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127710
+	* cvt.cc (force_lvalue): For a TARGET_EXPR, build
+	(TARGET_EXPR<...>, slot).
+
+2026-10-07  Jason Merrill  <jason@redhat.com>
+
+	P1811
+	PR c++/99000
+	* module.cc (maybe_translate_include): Check
+	-fmodule-include-translate.
+	* name-lookup.cc (redefinable_import_p): New.
+	(pushdecl): Check DECL_IS_UNDECLARED_BUILTIN instead of hidden_p.
+	(lookup_elaborated_type): Don't special-case cxxabi classes.
+	(pushtag): Handle pushdecl finding a previous definition.
+	* decl.cc (merge_default_template_args): Check redefinable_import_p.
+	(duplicate_decls, grokfndecl, start_enum): Likewise.
+	(redeclaration_error_message): Likewise.
+	* parser.cc (cp_parser_skip_to_end_of_balanced_tokens): New.
+	(cp_parser_skip_function_definition): New.
+	(cp_parser_skip_base_clause): New.
+	(cp_parser_enum_specifier): Skip redundant definition.
+	(cp_parser_class_specifier): Likewise.
+	(cp_parser_class_head): Likewise.
+	(cp_parser_function_definition_from_specifiers_and_declarator):
+	Likewise.
+	* pt.cc (redeclare_class_template): Adjust.
+	* cp-tree.h: Adjust.
+	* name-lookup.h: Adjust.
+
+2026-10-07  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (pushtag): Set TREE_PUBLIC sooner.
+	* parser.cc (cp_parser_class_head): Set location and final
+	before 'done' label.
+	* decl.cc (duplicate_decls): Free duplicate namespace alias.
+
+2026-10-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-gimplify.cc (cp_genericize_r): Don't call warn_for_alloc_size
+	for CALL_FROM_NEW_OR_DELETE_P calls.
+
+2026-10-07  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/127723
+	* parser.cc (cp_parser_omp_clause_simdlen): Handle
+	simdlen's type and divisor of the scaled modifier.
+	* pt.cc (tsubst_omp_clauses): Likewise
+	* semantics.cc (finish_omp_clauses): Likewise;
+	add comment about safelen vs. simdlen with scaled.
+
+2026-10-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/115806
+	* decl.cc (lookup_and_check_tag): Strip using here...
+	* name-lookup.cc (lookup_elaborated_type): ...not here.
+
+2026-10-07  Jason Merrill  <jason@redhat.com>
+
+	PR c++/127627
+	* class.cc (add_method): Don't remove a less-explicit function.
+
+2026-10-06  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127707
+	* name-lookup.cc (finish_nonmember_using_decl): New bool
+	parameter.  Set USING_DECL_TYPENAME_P if it's true.
+	* name-lookup.h (finish_nonmember_using_decl): Adjust
+	declaration.
+	* parser.cc (finish_using_decl): Pass typename_p to
+	finish_nonmember_using_decl.
+	* pt.cc (tsubst_stmt) <case DECL_EXPR>: Pass
+	USING_DECL_TYPENAME_P to finish_nonmember_using_decl.
+
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127344
+	* parser.cc (cp_parser_lookup_name): Call make_splice_scope for
+	dependent_namespace_p.  Use the result for make_typename_type
+	and make_unbound_class_template.
+
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127672
+	* decl2.cc (constrain_class_visibility): Check OVERLOAD_TYPE_P
+	before calling decl_anon_ns_mem_p.
+
+2026-10-03  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126654
+	* pt.cc (tsubst_stmt) <case DECL_EXPR>: If tsubst returns
+	error_mark_node, return error_mark_node.  Allow NAMESPACE_DECL.
+
+2026-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	P3950R1
+	PR c++/125830
+	* coroutines.cc: Implement C++29 P3950R1 - return_value & return_void
+	Are Not Mutually Exclusive paper as DR.
+	(struct coroutine_info): Remove coro_co_return_error_emitted member.
+	(coro_promise_type_found_p): Remove diagnostics about both return_void
+	and return_value successful lookup.
+	(lookup_promise_method): Add complain argument, pass it down to
+	lookup_member.
+	(coro_build_promise_expression): Add complain argument, pass it down
+	to lookup_promise_method, build_new_method_call and
+	build_class_member_access_expr.
+	(get_coroutine_return_void_expr): Pass tf_none to
+	coro_build_promise_expression.
+
+2026-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127668
+	* mangle.cc (write_expression): Handle mangling of
+	calls to IFN_BSWAP and IFN_BITREVERSE.
+
+2026-09-30  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127349
+	* pt.cc (tsubst) <case UNBOUND_CLASS_TEMPLATE>: Handle the case
+	when the context was substituted into a NAMESPACE_DECL.
+
+2026-09-29  Jonas Hansen  <jhansen@roku.com>
+
+	PR tree-optimization/127416
+	* typeck2.cc (store_init_value): Move braced_lists_to_strings after
+	constant folding.
+
+2026-09-29  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127643
+	* reflect.cc (class_members_of): Also skip templated clones.
+
+2026-09-27  Steven Sudit  <stevensudit@gmail.com>
+
+	PR c++/127218
+	* constexpr.cc (cxx_eval_builtin_function_call): Clear STRRET
+	when the argument it refers to is not replaced by the address of
+	a STRING_CST, so the folded result is re-based on the original
+	argument only when that replacement happened.
+
 2026-09-25  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/127385

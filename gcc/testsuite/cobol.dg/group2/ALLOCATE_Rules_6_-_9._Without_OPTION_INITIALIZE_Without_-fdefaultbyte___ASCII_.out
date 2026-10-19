@@ -1,6 +1,6 @@
 allocate characters INITIALIZED (ISO 2023 Rule 6: defaultbyte if specified, else zero)
    (1) as allocated
-       "" "000" 0x0000000000000000
+       "" "" 0x0000000000000000
    (2) after "initialize based-var"
        "                        " "000" 0x0000000000000000
    (3) after "initialize based-var all to value"
@@ -14,14 +14,14 @@ allocate based-var initialized (ISO 2023 Rule 7: ALL TO VALUE)
        "I am I, Don Quixote     " "123" 0x0000000000000000
 allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)
    (1) as allocated
-       "" "000" 0x0000000000000000
+       "" "" 0x0000000000000000
    (2) after "initialize based-var"
        "                        " "000" 0x0000000000000000
    (3) after "initialize based-var all to value"
        "I am I, Don Quixote     " "123" 0x0000000000000000
 allocate based-var (ISO 2023 Rule 9: pointers NULL, otherwise OPT_INIT)
    (1) as allocated
-       "" "000" 0x0000000000000000
+       "" "" 0x0000000000000000
    (2) after "initialize based-var"
        "                        " "000" 0x0000000000000000
    (3) after "initialize based-var all to value"
