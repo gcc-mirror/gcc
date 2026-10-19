@@ -2,7 +2,9 @@
 BEGIN REAL r = 0.0;
       LONG REAL rr = LONG 45.0;
       LONG LONG REAL rrr = LONG LONG 60.0;
+      WORD REAL w = WORD 0.0;
       ASSERT (cos (r) = 1.0);
       long cos (rr);
-      long long cos (rrr)
+      long long cos (rrr);
+      ASSERT (word cos (w) = WORD 1.0)
 END

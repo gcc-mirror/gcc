@@ -28,5 +28,11 @@ BEGIN BEGIN INT i := 10;
             ASSERT (i = SHORT SHORT 9);
             i MINUSAB SHORT SHORT 2;
             ASSERT (i = SHORT SHORT 7)
-      END
+      END;
+      BEGIN WORD INT i := WORD 1000;
+            i -:= WORD 100;
+            ASSERT (i = WORD 900);
+            i MINUSAB WORD 100;
+            ASSERT (i = WORD 800)
+      END;
 END

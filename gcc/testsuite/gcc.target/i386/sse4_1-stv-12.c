@@ -1,5 +1,5 @@
 /* { dg-do compile { target int128 } } */
-/* { dg-options "-O2 -msse4.1 -mstv -mno-stackrealign" } */
+/* { dg-options "-O2 -msse4.1 -mstv -mno-stackrealign -mtune=generic" } */
 
 __int128 m0,m1,m2,m3;
 void foo(unsigned int x)

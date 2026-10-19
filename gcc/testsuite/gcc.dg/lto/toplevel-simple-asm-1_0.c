@@ -17,8 +17,8 @@ void asm_fn_used();
 #endif
 
 #ifdef TYPE_PFX
-asm(".global asm_fn\n.type asm_fn, " TYPE_PFX "function\nasm_fn:");
-asm(".global asm_fn_used\n.type asm_fn_used, " TYPE_PFX "function\nasm_fn_used:");
+asm(".global asm_fn\n\t.type asm_fn, " TYPE_PFX "function\nasm_fn:");
+asm(".global asm_fn_used\n\t.type asm_fn_used, " TYPE_PFX "function\nasm_fn_used:");
 #else
 asm(".global asm_fn\nasm_fn:");
 asm(".global asm_fn_used\nasm_fn_used:");

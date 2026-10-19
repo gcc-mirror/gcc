@@ -1,0 +1,10 @@
+begin
+      mode NP = struct(int value);
+      mode NPH = [3]ref NP;
+
+      NPH nph;
+      NP np;
+
+      nph := loc[3]ref NP;
+      nph[0] := np
+end

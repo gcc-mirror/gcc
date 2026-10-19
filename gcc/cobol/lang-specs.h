@@ -73,11 +73,13 @@
 	"%{Wdynamic-call} %{Wno-dynamic-call} "
 	"%{Wec-unknown} %{Wno-ec-unknown} "
 	"%{Wentry-convention} %{Wno-entry-convention} "
+	"%{Werrno} %{Wno-errno} "
 	"%{Whex-numeric} %{Wno-hex-numeric} "
 	"%{Wibm-cdf} %{Wno-ibm-cdf} "
 	"%{Wiconv-error} %{Wno-iconv-error} "
 	"%{Winclude-file-found} %{Wno-include-file-found} "
 	"%{Winclude-file-not-found} %{Wno-include-file-not-found} "
+	"%{Wvalue-clause} %{Wno-value-clause} "
 	"%{Winspect-trailing} %{Wno-inspect-trailing} "
 	"%{Wlength-of} %{Wno-length-of} "
 	"%{Wlevel-1-occurs} %{Wno-level-1-occurs} "
@@ -110,4 +112,3 @@
         "%{nomain} "
         "%{!fsyntax-only:%(invoke_as)} "
         , 0, 0, 0},
-      

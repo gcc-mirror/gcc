@@ -793,7 +793,7 @@ eliminate_phi (edge e, elim_graph *g)
 /* Remove each argument from PHI.  If an arg was the last use of an SSA_NAME,
    check to see if this allows another PHI node to be removed.  */
 
-static void
+void
 remove_gimple_phi_args (gphi *phi)
 {
   use_operand_p arg_p;
@@ -1489,6 +1489,8 @@ finish_out_of_ssa (struct ssaexpand *sa)
   free (sa->partition_to_pseudo);
   if (sa->values)
     BITMAP_FREE (sa->values);
+  if (sa->ccmp_no_comparison)
+    BITMAP_FREE (sa->ccmp_no_comparison);
   delete_var_map (sa->map);
   BITMAP_FREE (sa->partitions_for_parm_default_defs);
   BITMAP_FREE (sa->partitions_for_undefined_values);

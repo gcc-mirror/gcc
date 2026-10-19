@@ -9,5 +9,5 @@ int main() {
 }
 
 // { dg-final { scan-assembler-not {_?_ZNW1M12__shared_ptrIiEC[1-4]Ev:} } }
-// { dg-final { scan-assembler {_?_ZNW1M12__shared_ptrIdEC2Ev:} { target alias } } }
+// { dg-final { scan-assembler {_?_ZNW1M12__shared_ptrIdEC[24]Ev:} { target alias } } }
 // { dg-final { scan-assembler {_?_ZNW1M12__shared_ptrIdEC1Ev:} { target { ! alias } } } }

@@ -699,6 +699,12 @@ export namespace std
   using std::shl;
   using std::shr;
 #endif
+#if __cpp_lib_bitops >= 202607L // >= C++29
+  using std::bit_reverse;
+  using std::bit_repeat;
+  using std::bit_compress;
+  using std::bit_expand;
+#endif
 }
 
 // 22.9 <bitset>

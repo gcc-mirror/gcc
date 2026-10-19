@@ -100,6 +100,12 @@ get_memory_by_id_internal (alloc *iface, size_t size, memid id, bool *created)
   else
     {
       shared_ptr = allocator_shared_malloc (&iface->alloc, size);
+      if (SHMPTR_IS_NULL (shared_ptr))
+	{
+	  if (created)
+	    *created = false;
+	  return NULL;
+	}
       hashmap_set (&iface->hm, id, NULL, shared_ptr, size);
 
       if (created)

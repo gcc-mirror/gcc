@@ -1,3 +1,40 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	* ax_check_define.m4: Update to serial 12.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* mmap.m4 (GCC_AC_FUNC_MMAP): New.
+	* no-executables.m4 (GCC_NO_EXECUTABLES): Use GCC_AC_FUNC_MMAP
+	instead of AC_FUNC_MMAP.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* multi.m4: Update AC_OUTPUT_COMMANDS to AC_CONFIG_COMMANDS.
+
+2026-10-13  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* enable.m4: Sync with binutils.
+	* lib-prefix.m4: Likewise.
+	* tcl.m4: Likewise.
+
+2026-10-11  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* acinclude.m4: Removed.
+	* ax_lib_socket_nsl.m4: Removed.
+	* extensions.m4: Removed.
+	* glibc21.m4: Removed.
+	* gxx-include-dir.m4: Removed.
+	* intdiv0.m4: Removed.
+	* inttypes-pri.m4: Removed.
+	* inttypes.m4: Removed.
+	* inttypes_h.m4: Removed.
+	* ld-symbolic.m4: Removed.
+	* stdint_h.m4: Removed.
+	* uintmax_t.m4: Removed.
+	* ulonglong.m4: Removed.
+
 2026-09-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	PR bootstrap/126875

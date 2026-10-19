@@ -34,7 +34,7 @@
  * Contains utilities for tests.
  */
 
-#include <util/performance/time/elapsed_timer.hpp>
+#include "elapsed_timer.hpp"
 
 namespace __gnu_pbds
 {

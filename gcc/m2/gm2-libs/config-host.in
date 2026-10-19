@@ -33,7 +33,6 @@ AC_CONFIG_HEADER(gm2-libs-host.h:gm2-libs-host.h.in)
 # Checks for libraries.
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_SYS_WAIT
 AC_CHECK_HEADER([math.h],

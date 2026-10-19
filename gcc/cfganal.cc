@@ -1671,13 +1671,17 @@ compute_dominance_frontiers (bitmap_head *frontiers)
    return a bitmap with all the blocks in the iterated dominance
    frontier of the blocks in DEF_BLOCKS.  DFS contains dominance
    frontier information as returned by compute_dominance_frontiers.
+   If LIVE is not NULL, only the blocks in LIVE are added to the result
+   and have their dominance frontier followed.  If LIVE is the set of
+   blocks where the variable is live on entry, the result is the
+   iterated dominance frontier restricted to LIVE.
 
    The resulting set of blocks are the potential sites where PHI nodes
    are needed.  The caller is responsible for freeing the memory
    allocated for the return value.  */
 
 bitmap
-compute_idf (bitmap def_blocks, bitmap_head *dfs)
+compute_idf (bitmap def_blocks, bitmap_head *dfs, bitmap live)
 {
   bitmap_iterator bi, bi2;
   unsigned bb_index, i;
@@ -1704,7 +1708,8 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
 	 as well.  That makes iterating over the DFS bitmap preferential
 	 to whole bitmap operations involving also phi_insertion_points.  */
       EXECUTE_IF_SET_IN_BITMAP (&dfs[bb_index], 0, i, bi)
-	bitmap_set_bit (phi_insertion_points, i);
+	if (!live || bitmap_bit_p (live, i))
+	  bitmap_set_bit (phi_insertion_points, i);
     }
 
   /* Seed the work set with the initial phi_insertion_points.  */
@@ -1723,7 +1728,8 @@ compute_idf (bitmap def_blocks, bitmap_head *dfs)
       gcc_checking_assert (bb_index
 			   < (unsigned) last_basic_block_for_fn (cfun));
       EXECUTE_IF_SET_IN_BITMAP (&dfs[bb_index], 0, i, bi)
-	if (bitmap_set_bit (phi_insertion_points, i))
+	if ((!live || bitmap_bit_p (live, i))
+	    && bitmap_set_bit (phi_insertion_points, i))
 	  work_set.quick_push (i);
     }
 

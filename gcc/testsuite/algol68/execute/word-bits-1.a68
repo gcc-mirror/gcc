@@ -1,0 +1,4 @@
+begin word bits address = word 16rffffffff;
+      assert (address = word 16rffffffff);
+      skip
+end

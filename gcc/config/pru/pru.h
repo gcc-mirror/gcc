@@ -573,7 +573,7 @@ do {									\
 
 /* See definition of clz pattern for rationale of the value.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)	\
-	((VALUE) = GET_MODE_BITSIZE (MODE) - 1 - 32, 2)
+	((VALUE) = GET_MODE_UNIT_BITSIZE (MODE) - 1 - 32, 2)
 
 /* Jumps are cheap on PRU.  */
 #define LOGICAL_OP_NON_SHORT_CIRCUIT		0

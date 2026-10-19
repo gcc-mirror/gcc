@@ -6,6 +6,6 @@
 // function name.
 
 class A {
-  friend class abort;
+  friend class abort;		// { dg-warning "built-in" }
   abort *b;	// { dg-error "type|expected" }
 };

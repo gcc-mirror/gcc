@@ -21,7 +21,8 @@ program stop_end_team_1
         if (st /= 0 .and. st /= stat_stopped_image) error stop 1
       end do
     end if
-  end team
+  end team (stat=st)
+  if (me == 1 .and. num_images () > 2 .and. st /= stat_stopped_image) error stop 3
   st = -1
   sync all (stat=st)
   if (num_images () > 2 .and. st /= stat_stopped_image) error stop 2

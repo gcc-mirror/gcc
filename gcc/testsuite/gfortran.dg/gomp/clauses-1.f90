@@ -26,12 +26,13 @@ module m
 
 contains
 
-subroutine foo (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd, ntm)
+subroutine foo (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, q, dd, ntm)
   !$omp declare target (foo)
-  integer :: d, m, p, idp, s, nte, tl, nth, g, nta, pp, q, dd, ntm
+  integer :: d, m, p, idp, s, nte, tl, nth, g, nta, q, dd, ntm
   logical :: i1, i2, i3, fi
   pointer :: q
   integer :: i
+  integer, parameter :: pp = 3
 
   !$omp distribute parallel do &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
@@ -73,11 +74,12 @@ subroutine qux (p)
   end do
 end
 
-subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd, ntm)
-  integer :: d, m, p, idp, s, nte, tl, nth, g, nta, pp, q, dd, ntm
+subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, q, dd, ntm)
+  integer :: d, m, p, idp, s, nte, tl, nth, g, nta, q, dd, ntm
   logical :: i1, i2, i3, fi
   pointer :: q
   integer :: i
+  integer, parameter :: pp = 3
   !$omp distribute parallel do &
   !$omp&  private (p) firstprivate (f) collapse(1) dist_schedule(static, 16) &
   !$omp&  if (parallel: i2) default(shared) shared(s) reduction(+:r) num_threads (nth) proc_bind(spread) &
@@ -132,11 +134,12 @@ subroutine baz (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd
   end do
 end
 
-subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, pp, q, dd, ntm)
-  integer :: d, m, p, idp, s, nte, tl, nth, g, nta, pp, q, dd(0:5), ntm
+subroutine bar (d, m, i1, i2, i3, p, idp, s, nte, tl, nth, g, nta, fi, q, dd, ntm)
+  integer :: d, m, p, idp, s, nte, tl, nth, g, nta, q, dd(0:5), ntm
   logical :: i1, i2, i3, fi
   pointer :: q
   integer :: i
+  integer, parameter :: pp = 3
 
   !$omp do simd &
   !$omp&  private (p) firstprivate (f) lastprivate (l) linear (ll:1) reduction(+:r) schedule(static, 4) collapse(1) &

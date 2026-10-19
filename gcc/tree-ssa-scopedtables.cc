@@ -108,153 +108,6 @@ vuse_eq (ao_ref *, tree vuse1, void *data)
   return NULL;
 }
 
-/* We looked for STMT in the hash table, but did not find it.
-
-   If STMT is an assignment from a binary operator, we may know something
-   about the operands relationship to each other which would allow
-   us to derive a constant value for the RHS of STMT.  */
-
-tree
-avail_exprs_stack::simplify_binary_operation (gimple *stmt,
-					      class expr_hash_elt element)
-{
-  if (is_gimple_assign (stmt))
-    {
-      struct hashable_expr *expr = element.expr ();
-      if (expr->kind == EXPR_BINARY)
-	{
-	  enum tree_code code = expr->ops.binary.op;
-
-	  switch (code)
-	    {
-	    /* For these cases, if we know some relationships
-	       between the operands, then we can simplify.  */
-	    case MIN_EXPR:
-	    case MAX_EXPR:
-	      {
-		/* Build a simple equality expr and query the hash table
-		   for it.  */
-		struct hashable_expr expr;
-		expr.type = boolean_type_node;
-		expr.kind = EXPR_BINARY;
-		expr.ops.binary.op = LE_EXPR;
-		tree rhs1 = gimple_assign_rhs1 (stmt);
-		tree rhs2 = gimple_assign_rhs2 (stmt);
-		if (tree_swap_operands_p (rhs1, rhs2))
-		  std::swap (rhs1, rhs2);
-		expr.ops.binary.opnd0 = rhs1;
-		expr.ops.binary.opnd1 = rhs2;
-		class expr_hash_elt element2 (&expr, NULL_TREE);
-		expr_hash_elt **slot
-		  = m_avail_exprs->find_slot (&element2, NO_INSERT);
-
-		/* If the query was successful and returned a nonzero
-		   result, then we know the result of the MIN/MAX, even
-		   though it is not a constant value.  */
-		if (slot && *slot && integer_onep ((*slot)->lhs ()))
-		  return code == MIN_EXPR ? rhs1 : rhs2;
-
-		/* Try again, this time with GE_EXPR.  */
-		expr.ops.binary.op = GE_EXPR;
-		class expr_hash_elt element3 (&expr, NULL_TREE);
-		slot = m_avail_exprs->find_slot (&element3, NO_INSERT);
-
-		/* If the query was successful and returned a nonzero
-		   result, then we know the result of the MIN/MAX, even
-		   though it is not a constant value.  */
-		if (slot && *slot && integer_onep ((*slot)->lhs ()))
-		  return code == MIN_EXPR ? rhs2 : rhs1;
-
-		break;
-	      }
-
-	    /* For these cases, if we know the operands
-	       are equal, then we know the result.  */
-	    case BIT_IOR_EXPR:
-	    case BIT_AND_EXPR:
-	    case BIT_XOR_EXPR:
-	    case MINUS_EXPR:
-	    case TRUNC_DIV_EXPR:
-	    case CEIL_DIV_EXPR:
-	    case FLOOR_DIV_EXPR:
-	    case ROUND_DIV_EXPR:
-	    case EXACT_DIV_EXPR:
-	    case TRUNC_MOD_EXPR:
-	    case CEIL_MOD_EXPR:
-	    case FLOOR_MOD_EXPR:
-	    case ROUND_MOD_EXPR:
-	      {
-		/* Build a simple equality expr and query the hash table
-		   for it.  */
-		struct hashable_expr expr;
-		expr.type = boolean_type_node;
-		expr.kind = EXPR_BINARY;
-		expr.ops.binary.op = EQ_EXPR;
-		tree rhs1 = gimple_assign_rhs1 (stmt);
-		tree rhs2 = gimple_assign_rhs2 (stmt);
-		if (tree_swap_operands_p (rhs1, rhs2))
-		  std::swap (rhs1, rhs2);
-		expr.ops.binary.opnd0 = rhs1;
-		expr.ops.binary.opnd1 = rhs2;
-		class expr_hash_elt element2 (&expr, NULL_TREE);
-		expr_hash_elt **slot
-		  = m_avail_exprs->find_slot (&element2, NO_INSERT);
-		tree result_type = TREE_TYPE (gimple_assign_lhs (stmt));
-
-		/* If the query was successful and returned a nonzero
-		   result, then we know that the operands of the binary
-		   expression are the same.  In many cases this allows
-		   us to compute a constant result of the expression
-		   at compile time, even if we do not know the exact
-		   values of the operands.  */
-		if (slot && *slot && integer_onep ((*slot)->lhs ()))
-		  {
-		    switch (code)
-		      {
-		      case BIT_IOR_EXPR:
-		      case BIT_AND_EXPR:
-			return gimple_assign_rhs1 (stmt);
-
-		      case MINUS_EXPR:
-			/* This is unsafe for certain floats even in non-IEEE
-			   formats.  In IEEE, it is unsafe because it does
-			   wrong for NaNs.  */
-			if (FLOAT_TYPE_P (result_type)
-			    && HONOR_NANS (result_type))
-			  break;
-			/* FALLTHRU */
-		      case BIT_XOR_EXPR:
-		      case TRUNC_MOD_EXPR:
-		      case CEIL_MOD_EXPR:
-		      case FLOOR_MOD_EXPR:
-		      case ROUND_MOD_EXPR:
-			return build_zero_cst (result_type);
-
-		      case TRUNC_DIV_EXPR:
-		      case CEIL_DIV_EXPR:
-		      case FLOOR_DIV_EXPR:
-		      case ROUND_DIV_EXPR:
-		      case EXACT_DIV_EXPR:
-			/* Avoid _Fract types where we can't build 1.  */
-			if (ALL_FRACT_MODE_P (TYPE_MODE (result_type)))
-			  break;
-			return build_one_cst (result_type);
-
-		      default:
-			gcc_unreachable ();
-		      }
-		  }
-		break;
-	      }
-
-	    default:
-	      break;
-	    }
-	}
-    }
-  return NULL_TREE;
-}
-
 /* Search for an existing instance of STMT in the AVAIL_EXPRS_STACK table.
    If found, return its LHS. Otherwise insert STMT in the table and
    return NULL_TREE.
@@ -313,13 +166,8 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p,
       class expr_hash_elt *element2 = new expr_hash_elt (element);
       *slot = element2;
 
-      /* If we did not find the expression in the hash table, we may still
-	 be able to produce a result for some expressions.  */
-      tree retval = avail_exprs_stack::simplify_binary_operation (stmt,
-								  element);
-
       record_expr (element2, NULL, '2');
-      return retval;
+      return NULL_TREE;
     }
 
   /* If we found a redundant memory operation do an alias walk to
@@ -1096,7 +944,7 @@ expr_elt_hasher::equal (const value_type &p1, const compare_type &p2)
    comparison or logical negation.  A constant or a variable is
    not permitted.  */
 
-void
+static void
 initialize_expr_from_cond (tree cond, struct hashable_expr *expr)
 {
   expr->type = boolean_type_node;
@@ -1118,30 +966,6 @@ initialize_expr_from_cond (tree cond, struct hashable_expr *expr)
     gcc_unreachable ();
 }
 
-/* Build a cond_equivalence record indicating that the comparison
-   CODE holds between operands OP0 and OP1 and push it to **P.  */
-
-static void
-build_and_record_new_cond (enum tree_code code,
-                           tree op0, tree op1,
-                           vec<cond_equivalence> *p,
-			   bool val = true)
-{
-  cond_equivalence c;
-  struct hashable_expr *cond = &c.cond;
-
-  gcc_assert (TREE_CODE_CLASS (code) == tcc_comparison);
-
-  cond->type = boolean_type_node;
-  cond->kind = EXPR_BINARY;
-  cond->ops.binary.op = code;
-  cond->ops.binary.opnd0 = op0;
-  cond->ops.binary.opnd1 = op1;
-
-  c.value = val ? boolean_true_node : boolean_false_node;
-  p->safe_push (c);
-}
-
 /* Record that COND is true and INVERTED is false into the edge information
    structure.  Also record that any conditions dominated by COND are true
    as well.
@@ -1151,79 +975,10 @@ build_and_record_new_cond (enum tree_code code,
 void
 record_conditions (vec<cond_equivalence> *p, tree cond, tree inverted)
 {
-  tree op0, op1;
   cond_equivalence c;
 
   if (!COMPARISON_CLASS_P (cond))
     return;
-
-  op0 = TREE_OPERAND (cond, 0);
-  op1 = TREE_OPERAND (cond, 1);
-
-  switch (TREE_CODE (cond))
-    {
-    case LT_EXPR:
-    case GT_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-	{
-	  build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-	  build_and_record_new_cond (LTGT_EXPR, op0, op1, p);
-	}
-
-      build_and_record_new_cond ((TREE_CODE (cond) == LT_EXPR
-				  ? LE_EXPR : GE_EXPR),
-				 op0, op1, p);
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      build_and_record_new_cond (EQ_EXPR, op0, op1, p, false);
-      break;
-
-    case GE_EXPR:
-    case LE_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-	{
-	  build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-	}
-      break;
-
-    case EQ_EXPR:
-      if (FLOAT_TYPE_P (TREE_TYPE (op0)))
-	{
-	  build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-	}
-      build_and_record_new_cond (LE_EXPR, op0, op1, p);
-      build_and_record_new_cond (GE_EXPR, op0, op1, p);
-      break;
-
-    case UNORDERED_EXPR:
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNLE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNGE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNEQ_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNLT_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNGT_EXPR, op0, op1, p);
-      break;
-
-    case UNLT_EXPR:
-    case UNGT_EXPR:
-      build_and_record_new_cond ((TREE_CODE (cond) == UNLT_EXPR
-				  ? UNLE_EXPR : UNGE_EXPR),
-				 op0, op1, p);
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      break;
-
-    case UNEQ_EXPR:
-      build_and_record_new_cond (UNLE_EXPR, op0, op1, p);
-      build_and_record_new_cond (UNGE_EXPR, op0, op1, p);
-      break;
-
-    case LTGT_EXPR:
-      build_and_record_new_cond (NE_EXPR, op0, op1, p);
-      build_and_record_new_cond (ORDERED_EXPR, op0, op1, p);
-      break;
-
-    default:
-      break;
-    }
 
   /* Now store the original true and false conditions into the first
      two slots.  */

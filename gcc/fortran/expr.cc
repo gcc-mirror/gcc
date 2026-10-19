@@ -2050,15 +2050,16 @@ find_inquiry_ref (gfc_expr *p, gfc_expr **newp)
 	  else if (tmp->expr_type == EXPR_CONSTANT)
 	    *newp = gfc_get_int_expr (gfc_default_integer_kind,
 				      NULL, tmp->value.character.length);
-	  else if (gfc_init_expr_flag
-		   && tmp->ts.u.cl->length->symtree->n.sym->attr.pdt_len)
-	    *newp = gfc_pdt_find_component_copy_initializer (tmp->symtree->n
-							     .sym,
-							     tmp->ts.u.cl
-							     ->length->symtree
-							     ->n.sym->name);
 	  else
-	    goto cleanup;
+	    {
+	      gfc_expr *kind_expr;
+	      kind_expr = gfc_get_int_expr (gfc_default_integer_kind, NULL,
+					    tmp->ts.kind);
+	      *newp = gfc_simplify_len (tmp, kind_expr);
+	      if (*newp)
+		break;
+	      goto cleanup;
+	    }
 
 	  break;
 
@@ -4414,16 +4415,6 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
       const char *name;
 
       attr = gfc_expr_attr (rvalue);
-      if (!((rvalue->expr_type == EXPR_NULL)
-	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
-	    || (rvalue->expr_type == EXPR_VARIABLE && attr.proc_pointer)
-	    || (rvalue->expr_type == EXPR_VARIABLE
-		&& attr.flavor == FL_PROCEDURE)))
-	{
-	  gfc_error ("Invalid procedure pointer assignment at %L",
-		     &rvalue->where);
-	  return false;
-	}
 
       if (rvalue->expr_type == EXPR_VARIABLE && !attr.proc_pointer)
 	{
@@ -4452,6 +4443,18 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 		  }
 	    }
 	}
+
+      if (!((rvalue->expr_type == EXPR_NULL)
+	    || (rvalue->expr_type == EXPR_FUNCTION && attr.proc_pointer)
+	    || (rvalue->expr_type == EXPR_VARIABLE && attr.proc_pointer)
+	    || (rvalue->expr_type == EXPR_VARIABLE
+		&& attr.flavor == FL_PROCEDURE)))
+	{
+	  gfc_error ("Invalid procedure pointer assignment at %L",
+		     &rvalue->where);
+	  return false;
+	}
+
       if (attr.abstract)
 	{
 	  gfc_error ("Abstract interface %qs is invalid "
@@ -6418,8 +6421,8 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
       if (expr->ts.type == BT_UNKNOWN)
 	return true;
       else
-	return (gfc_variable_attr (expr, NULL).contiguous
-		|| gfc_variable_attr (expr, NULL).allocatable);
+	return (gfc_variable_attr (expr).contiguous
+		|| gfc_variable_attr (expr).allocatable);
     }
 
   if (expr->expr_type == EXPR_FUNCTION)
@@ -6488,12 +6491,13 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
     return false;
 
   /* An associate variable may point to a non-contiguous target.  */
-  if (ar && ar->type == AR_FULL
+  if (!part_ref
       && sym->attr.associate_var && !sym->attr.contiguous
       && sym->assoc
-      && sym->assoc->target)
-    return gfc_is_simply_contiguous (sym->assoc->target, strict,
-				     permit_element);
+      && sym->assoc->target
+      && !gfc_is_simply_contiguous (sym->assoc->target, strict,
+				    permit_element))
+    return false;
 
   if (!ar || ar->type == AR_FULL)
     return true;

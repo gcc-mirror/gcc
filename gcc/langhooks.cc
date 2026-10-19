@@ -35,7 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "tree-diagnostic.h"
 #include "output.h"
-#include "timevar.h"
 #include "stor-layout.h"
 #include "cgraph.h"
 #include "debug.h"

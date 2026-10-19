@@ -1398,6 +1398,16 @@ users:
   roles:
   - WriteAfter
   account: lhtin
+- sn: Dos Reis
+  cn: Gabriel Dos Reis
+  email:
+  - gdr@integrable-solutions.net
+  - gdr@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: gdr
+  DCO:
+  - gdr@integrable-solutions.net
 - sn: Drepper
   cn: Ulrich Drepper
   email:
@@ -1697,7 +1707,8 @@ users:
   - david.faust@oss.qualcomm.com
   - dfaust@gcc.gnu.org
   roles:
-  - Reviewer: CTF, BTF, bpf port
+  - Maintainer: bpf port
+  - Reviewer: CTF, BTF
   - WriteAfter
   account: dfaust
   inactive_email:
@@ -3821,6 +3832,15 @@ users:
   forgeid: jemarch
   DCO:
   - jemarch@gnu.org
+- sn: Marchi
+  cn: Simon Marchi
+  email:
+  - simon.marchi@efficios.com
+  - simark@gcc.gnu.org
+  roles:
+  - WriteAfter
+  account: simark
+  forgeid: simark
 - sn: Markianos-Wright
   cn: Stamatis Markianos-Wright
   email:
@@ -5597,6 +5617,21 @@ users:
   - WriteAfter
   account: davids
   inactive: true
+- sn: Shevlyakov
+  cn: Igor Shevlyakov
+  email:
+  - igor.shevlyakov@gmail.com
+  - ishevlyakov@gcc.gnu.org
+  - igor@tachyum.com
+  roles:
+  - WriteAfter
+  account: ishevlyakov
+  inactive_email:
+  - igor@microunity.com
+  - igor@windriver.com
+  DCO:
+  - igor@tachyum.com
+  - igor.shevlyakov@gmail.com
 - sn: Sidwell
   cn: Nathan Sidwell
   email:

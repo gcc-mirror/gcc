@@ -21,7 +21,7 @@ testFun1 ()
   char* ptr1 = &item1;
   char test1 = 1;
 
-  return __arm_atomic_fetch_sub_with_hint (ptr1, test1, __ATOMIC_RELAXED, 0);
+  return __arm_atomic_fetch_sub_with_hint (ptr1, test1, __ATOMIC_RELAXED, 3);
 }
 
 /*
@@ -38,7 +38,7 @@ testFun2 ()
   short item2 = 10;
   short* ptr2 = &item2;
   short test2 = 11;
-  return __arm_atomic_fetch_sub_with_hint (ptr2, test2, __ATOMIC_RELEASE, 0);
+  return __arm_atomic_fetch_sub_with_hint (ptr2, test2, __ATOMIC_RELEASE, 3);
 }
 
 /*
@@ -55,7 +55,7 @@ testFun3 ()
   unsigned int item3 = 10;
   unsigned int* ptr3 = &item3;
   unsigned int test3 = 11;
-  return __arm_atomic_fetch_sub_with_hint (ptr3, test3, __ATOMIC_SEQ_CST, 1);
+  return __arm_atomic_fetch_sub_with_hint (ptr3, test3, __ATOMIC_SEQ_CST, 4);
 }
 
 /*
@@ -74,7 +74,7 @@ testFun4 ()
   long item4 = 10;
   long* ptr4 = &item4;
   long test4 = 11;
-  __arm_atomic_fetch_sub_with_hint (ptr4, test4, __ATOMIC_RELAXED, 1);
+  __arm_atomic_fetch_sub_with_hint (ptr4, test4, __ATOMIC_RELAXED, 4);
 }
 
 /*
@@ -93,7 +93,7 @@ testFun5 ()
   long **ptr5 = &ptritem;
   long test5item = 11;
   long *test5 = &test5item;
-  __arm_atomic_fetch_sub_with_hint (ptr5, test5, __ATOMIC_SEQ_CST, 0);
+  __arm_atomic_fetch_sub_with_hint (ptr5, test5, __ATOMIC_SEQ_CST, 3);
 }
 
 /*
@@ -113,7 +113,7 @@ testFun6 ()
   char* ptr8 = &item8;
   long test8 = 1;
 
-  __arm_atomic_fetch_sub_with_hint (ptr8, test8, __ATOMIC_RELAXED, 0);
+  __arm_atomic_fetch_sub_with_hint (ptr8, test8, __ATOMIC_RELAXED, 3);
 }
 
 /*
@@ -129,7 +129,7 @@ static char buf[8];
 void
 testFun7 (void)
 {
-  __arm_atomic_fetch_sub_with_hint((buf + 1), (char)7, __ATOMIC_RELAXED, 1);
+  __arm_atomic_fetch_sub_with_hint((buf + 1), (char)7, __ATOMIC_RELAXED, 4);
 }
 
 /*
@@ -143,7 +143,7 @@ testFun7 (void)
 long
 signed_fetch_sub_hint (int x, int *p)
 {
-  return __arm_atomic_fetch_sub_with_hint (p, x, __ATOMIC_RELAXED, 1);
+  return __arm_atomic_fetch_sub_with_hint (p, x, __ATOMIC_RELAXED, 4);
 }
 
 
@@ -158,5 +158,5 @@ signed_fetch_sub_hint (int x, int *p)
 long
 unsigned_fetch_sub_hint (unsigned int x, unsigned int *p)
 {
-  return __arm_atomic_fetch_sub_with_hint (p, x, __ATOMIC_RELAXED, 1);
+  return __arm_atomic_fetch_sub_with_hint (p, x, __ATOMIC_RELAXED, 4);
 }

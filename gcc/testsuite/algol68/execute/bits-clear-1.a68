@@ -31,5 +31,12 @@ begin (short short bits a = short short 16rf;
        assert (a CLEAR -1 = a);
        assert (a CLEAR long_long_bits_width = a);
        assert (a CLEAR (long_long_bits_width-1) = long long 16rf);
-       assert (a CLEAR 0 CLEAR 1 = BIN long long 12))
+       assert (a CLEAR 0 CLEAR 1 = BIN long long 12));
+
+      (word bits a = word 16rf;
+       assert (a CLEAR (word_bits_width + 1) = a);
+       assert (a CLEAR -1 = a);
+       assert (a CLEAR word_bits_width = a);
+       assert (a CLEAR (word_bits_width-1) = word 16rf);
+       assert (a CLEAR 0 CLEAR 1 = BIN word 12));
 end

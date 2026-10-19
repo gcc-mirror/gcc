@@ -349,3 +349,20 @@
    (parallel [(set (zero_extract:SI (match_dup 0) (const_int 8) (const_int 8))
 		   (lshiftrt:SI (match_dup 1) (const_int 8)))
 	      (clobber (reg:CC CC_REG))])])
+
+;; The two register form for PLUS is smaller and faster than the IOR or
+;; XOR forms for SImode
+(define_expand "aop<mode>3"
+  [(set (match_operand:QHSI 0 "register_operand")
+	(ior:QHSI (match_operand:QHSI 1 "register_operand")
+                (match_operand:QHSI 2 "h8300_src_operand")))]
+  ""
+  {
+    if (REG_P (operands[2]) && <MODE>mode == SImode)
+      emit_insn (gen_add<mode>3 (operands[0], operands[1], operands[2]));
+    else
+      emit_insn (gen_ior<mode>3 (operands[0], operands[1], operands[2]));
+    DONE;
+  }
+)
+

@@ -238,6 +238,15 @@
 ;; Advanced SIMD Float modes with 2 elements.
 (define_mode_iterator V2F [V2SF V2DF])
 
+;; 64-bit modes of ADDP and FADDP.
+(define_mode_iterator VD_ADDP [VD_BHSI (V4HF "TARGET_SIMD_F16INST") V2SF])
+
+;; 128-bit modes of ADDP and FADDP.
+(define_mode_iterator VQ_ADDP [VQ_I (V8HF "TARGET_SIMD_F16INST") V4SF V2DF])
+
+;; Modes of ADDP and FADDP.
+(define_mode_iterator VDQ_ADDP [VDQ_I VHSDF])
+
 ;; All Advanced SIMD modes on which we support any arithmetic operations.
 (define_mode_iterator VALL [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF])
 
@@ -2715,6 +2724,17 @@
 		     (V2SF "f") (V4SF  "f")
 		     (V2DF "f") (DF    "f")])
 
+;; The type of ADDP and FADDP.
+(define_mode_attr addp_type [(V8QI "neon_reduc_add") (V16QI "neon_reduc_add_q")
+			     (V4HI "neon_reduc_add") (V8HI "neon_reduc_add_q")
+			     (V2SI "neon_reduc_add") (V4SI "neon_reduc_add_q")
+			     (V2DI "neon_reduc_add_q")
+			     (V4HF "neon_fp_reduc_add_s")
+			     (V8HF "neon_fp_reduc_add_s_q")
+			     (V2SF "neon_fp_reduc_add_s")
+			     (V4SF "neon_fp_reduc_add_s_q")
+			     (V2DF "neon_fp_reduc_add_d_q")])
+
 ;; Defined to '_fp' for types whose element type is a float type.
 (define_mode_attr fp [(V8QI "")  (V16QI "")
 		      (V4HI "")  (V8HI  "")
@@ -3693,6 +3713,9 @@
 			    (post_dec "postdec")
 			    (pre_inc "preinc")
 			    (pre_dec "predec")])
+
+;; Prefer IOR form when expanding any_or_plus
+(define_code_attr aop_pref_ior [(ior "") (xor "*") (plus "*")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.

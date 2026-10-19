@@ -62,7 +62,8 @@ void alloc_init (alloc *, shared_memory);
 void alloc_init_supervisor (alloc *, shared_memory);
 
 /* Get a shared memory block identified by id, or a new one, when the id
-   is not known yet.  This routine locks the allocator lock itself.  */
+   is not known yet.  This routine locks the allocator lock itself.  Returns
+   NULL when the shared memory is exhausted.  */
 void *alloc_get_memory_by_id (alloc *, size_t, memid);
 
 /* Same as alloc_get_memory_by_id, but it does not lock the allocator lock and

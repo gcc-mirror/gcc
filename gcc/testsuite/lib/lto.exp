@@ -410,11 +410,23 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
     }
 
     set is_incr_link [string equal "incr-link" $optstr]
-    if { $is_incr_link && [info exists gluefile] } {
-	set sav_gluefile $gluefile
-	# Setting gluefile to an empty string arranges that we still pass the needed
-	# -wrap flags to the linker, but we don't include the object file.
-	set gluefile ""
+    if { $is_incr_link } {
+	# An incremental LTO link must contain only the test's LTO objects.
+	lappend options "additional_flags=-nostdlib"
+	foreach property {ldflags libs} {
+	    if { [board_info $target_board exists $property] } {
+		set saved_board_info($property) \
+		    [board_info $target_board $property]
+		set board_info($target_board,$property) ""
+	    }
+	}
+
+	if { [info exists gluefile] } {
+	    set sav_gluefile $gluefile
+	    # Setting gluefile to an empty string arranges that we still pass
+	    # the needed -wrap flags to the linker, but not the object file.
+	    set gluefile ""
+	}
     }
 
     # Link the objects into an executable.
@@ -423,6 +435,13 @@ proc lto-link-and-maybe-run { testname objlist dest optall optfile optstr } {
 
     if { [info exists sav_gluefile] } {
 	set gluefile $sav_gluefile
+    }
+
+    foreach property {ldflags libs} {
+	if { [info exists saved_board_info($property)] } {
+	    set board_info($target_board,$property) \
+		$saved_board_info($property)
+	}
     }
 
     if { $relocatable } {

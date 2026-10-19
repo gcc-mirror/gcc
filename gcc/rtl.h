@@ -361,6 +361,7 @@ struct GTY((desc("0"), tag("0"),
      In a PREFETCH, this flag indicates that it should be considered a
      scheduling barrier.
      1 in a CONCAT is VAL_NEEDS_RESOLUTION in var-tracking.cc.
+     1 in a CONCATN is used internally by lower-subreg.cc.
      Dumped as "/v" in RTL dumps.  */
   unsigned int volatil : 1;
   /* 1 in a REG if the register is used only in exit code a loop.
@@ -2657,6 +2658,11 @@ do {								        \
 #define MEM_READONLY_P(RTX) \
   (RTL_FLAG_CHECK1 ("MEM_READONLY_P", (RTX), MEM)->unchanging)
 
+/* 1 if RTX is a mem whose address vector elements all point to
+   independent memory locations, without overlapping each other.  */
+#define MEM_INDEPENDENT_P(RTX) \
+  (RTL_FLAG_CHECK1 ("MEM_INDEPENDENT_P", (RTX), MEM)->return_val)
+
 /* 1 if RTX is a mem and we should keep the alias set for this mem
    unchanged when we access a component.  Set to 1, or example, when we
    are already in a non-addressable component of an aggregate.  */
@@ -2730,6 +2736,7 @@ do {								        \
    MEM_READONLY_P (LHS) = MEM_READONLY_P (RHS),			\
    MEM_KEEP_ALIAS_SET_P (LHS) = MEM_KEEP_ALIAS_SET_P (RHS),	\
    MEM_POINTER (LHS) = MEM_POINTER (RHS),			\
+   MEM_INDEPENDENT_P (LHS) = MEM_INDEPENDENT_P (RHS),		\
    MEM_ATTRS (LHS) = MEM_ATTRS (RHS))
 
 /* 1 if RTX is a label_ref for a nonlocal label.  */
@@ -3367,6 +3374,7 @@ extern rtx convert_memory_address_addr_space (scalar_int_mode, rtx,
 extern const char *get_insn_name (int);
 extern rtx_insn *get_last_insn_anywhere (void);
 extern rtx_insn *get_first_nonnote_insn (void);
+extern rtx_insn *get_first_nonnote_nondebug_insn (void);
 extern rtx_insn *get_last_nonnote_insn (void);
 extern void start_sequence (void);
 extern void push_to_sequence (rtx_insn *);
@@ -3457,7 +3465,7 @@ extern rtx_insn *next_nonnote_nondebug_insn_bb (rtx_insn *);
 extern rtx_insn *prev_real_insn (rtx_insn *);
 extern rtx_insn *next_real_insn (rtx_insn *);
 extern rtx_insn *prev_real_nondebug_insn (rtx_insn *);
-extern rtx_insn *next_real_nondebug_insn (rtx);
+extern rtx_insn *next_real_nondebug_insn (rtx_insn *);
 extern rtx_insn *prev_active_insn (rtx_insn *);
 extern rtx_insn *next_active_insn (rtx_insn *);
 extern bool active_insn_p (const rtx_insn *);
@@ -3674,9 +3682,9 @@ extern machine_mode choose_hard_reg_mode (unsigned int, unsigned int,
 extern const HARD_REG_SET &simplifiable_subregs (const subreg_shape &);
 
 /* In emit-rtl.cc  */
-extern rtx set_for_reg_notes (rtx);
-extern rtx set_unique_reg_note (rtx, enum reg_note, rtx);
-extern rtx set_dst_reg_note (rtx, enum reg_note, rtx, rtx);
+extern rtx set_for_reg_notes (rtx_insn *);
+extern rtx set_unique_reg_note (rtx_insn *, enum reg_note, rtx);
+extern rtx set_dst_reg_note (rtx_insn *, enum reg_note, rtx, rtx);
 extern void set_insn_deleted (rtx_insn *);
 
 /* Functions in rtlanal.cc */
@@ -3703,7 +3711,7 @@ inline rtx single_set (const rtx_insn *insn)
   return single_set_2 (insn, PATTERN (insn));
 }
 
-extern scalar_int_mode get_address_mode (rtx mem);
+extern machine_mode get_address_mode (rtx mem);
 extern bool rtx_addr_can_trap_p (const_rtx);
 extern bool nonzero_address_p (const_rtx);
 extern bool rtx_unstable_p (const_rtx);
@@ -3728,7 +3736,7 @@ extern bool modified_between_p (const_rtx, const rtx_insn *, const rtx_insn *);
 extern bool no_labels_between_p (const rtx_insn *, const rtx_insn *);
 extern bool modified_in_p (const_rtx, const_rtx);
 extern bool reg_set_p (const_rtx, const_rtx);
-extern bool multiple_sets (const_rtx);
+extern bool multiple_sets (const rtx_insn *);
 extern bool set_noop_p (const_rtx);
 extern bool noop_move_p (const rtx_insn *);
 extern bool refers_to_regno_p (unsigned int, unsigned int, const_rtx, rtx *);
@@ -3774,7 +3782,7 @@ extern bool can_nonlocal_goto (const rtx_insn *);
 extern void copy_reg_eh_region_note_forward (rtx, rtx_insn *, rtx);
 extern void copy_reg_eh_region_note_backward (rtx, rtx_insn *, rtx);
 extern rtx replace_rtx (rtx, rtx, rtx, bool = false);
-extern void replace_label (rtx *, rtx, rtx, bool);
+extern void replace_label (rtx *, rtx_insn *, rtx_insn *, bool);
 extern void replace_label_in_insn (rtx_insn *, rtx_insn *, rtx_insn *, bool);
 extern bool rtx_referenced_p (const_rtx, const_rtx);
 extern bool tablejump_p (const rtx_insn *, rtx_insn **, rtx_jump_table_data **);
@@ -3808,7 +3816,7 @@ extern void remove_node_from_insn_list (const rtx_insn *, rtx_insn_list **);
 extern bool loc_mentioned_in_p (rtx *, const_rtx);
 extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
 extern bool keep_with_call_p (const rtx_insn *);
-extern bool label_is_jump_target_p (const_rtx, const rtx_insn *);
+extern bool label_is_jump_target_p (const rtx_insn *, const rtx_insn *);
 extern int pattern_cost (rtx, bool);
 extern int insn_cost (rtx_insn *, bool);
 extern unsigned seq_cost (const rtx_insn *, bool);
@@ -4635,7 +4643,7 @@ extern rtx get_reg_base_value (unsigned int);
 extern rtx extract_mem_from_operand (rtx);
 
 #ifdef STACK_REGS
-extern bool stack_regs_mentioned (const_rtx insn);
+extern bool stack_regs_mentioned (const rtx_insn *insn);
 #endif
 
 /* In toplev.cc */

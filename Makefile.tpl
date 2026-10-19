@@ -212,7 +212,6 @@ HOST_EXPORTS = \
 	GOC="$(GOC)"; export GOC; \
 	GDC="$(GDC)"; export GDC; \
 	GM2="$(GM2)"; export GM2; \
-	GNATMAKE_FOR_BUILD="$(GNATMAKE_FOR_BUILD)"; export GNATMAKE_FOR_BUILD; \
 	AR="$(AR)"; export AR; \
 	AS="$(AS)"; export AS; \
 	CC_FOR_BUILD="$(CC_FOR_BUILD)"; export CC_FOR_BUILD; \
@@ -325,7 +324,6 @@ BASE_TARGET_EXPORTS = \
 	GOC="$(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GOC; \
 	GDC="$(GDC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GDC; \
 	GM2="$(GM2_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GM2; \
-	GNATMAKE_FOR_BUILD="$(GNATMAKE_FOR_BUILD)"; export GNATMAKE_FOR_BUILD; \
 	DLLTOOL="$(DLLTOOL_FOR_TARGET)"; export DLLTOOL; \
 	DSYMUTIL="$(DSYMUTIL_FOR_TARGET)"; export DSYMUTIL; \
 	LD="$(COMPILER_LD_FOR_TARGET)"; export LD; \
@@ -606,6 +604,9 @@ STAGEautofeedback_TFLAGS = $(STAGE3_TFLAGS)
 # Disable warnings as errors since inlining decisions with -fauto-profile
 # may result in additional warnings.
 STAGEautofeedback_CONFIGURE_FLAGS = $(filter-out --enable-werror-always,$(STAGE_CONFIGURE_FLAGS))
+
+GMP_CHECKING_FLAGS = -fno-checking -fchecking=1
+GMP_FILTER_CHECKING_FLAGS = $(filter-out $(GMP_CHECKING_FLAGS),$(1))
 
 do-compare = @do_compare@
 do-compare3 = $(do-compare)
@@ -1196,7 +1197,18 @@ TAGS: do-TAGS
 # Macros for configure and all targets
 # ------------------------------------
 
-[+ DEFINE configure +]
+[+ ;; Return the stage flag variable that should be used when configuring
+   ;; the current module.
+   ;; GMP and MPC record the compiler options in object files, which makes
+   ;; LTO bootstrap comparisons fail if stage-specific checking flags differ.
+   (define stage-configure-flags
+     (lambda (suffix)
+       (let ((flag (string-append "STAGE" (get "id") suffix)))
+	 (if (or (= (get "module") "gmp")
+		 (= (get "module") "mpc"))
+	     (string-append "$(call GMP_FILTER_CHECKING_FLAGS,$(" flag "))")
+	     (string-append "$(" flag ")")))))
++][+ DEFINE configure +]
 .PHONY: configure-[+prefix+][+module+] maybe-configure-[+prefix+][+module+]
 maybe-configure-[+prefix+][+module+]:
 @if gcc-bootstrap
@@ -1253,7 +1265,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	@$(SHELL) $(srcdir)/mkinstalldirs [+subdir+]/[+module+]
 	@r=`${PWD_COMMAND}`; export r; \
 	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
-	TFLAGS="$(STAGE[+id+]_TFLAGS)"; \
+	TFLAGS="[+ (stage-configure-flags "_TFLAGS") +]"; \
 	[+ IF check_multilibs
 	+]echo "Checking multilib configuration for [+module+]..."; \
 	$(CC_FOR_TARGET) --print-multi-lib > [+subdir+]/[+module+]/multilib.tmp 2> /dev/null; \
@@ -1273,7 +1285,7 @@ configure-stage[+id+]-[+prefix+][+module+]:
 	CFLAGS="$(CFLAGS_FOR_TARGET)"; export CFLAGS; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	LIBCFLAGS="$(LIBCFLAGS_FOR_TARGET)"; export LIBCFLAGS;[+ ELSE prefix +] \
-	CFLAGS="$(STAGE[+id+]_CFLAGS)"; export CFLAGS; \
+	CFLAGS="[+ (stage-configure-flags "_CFLAGS") +]"; export CFLAGS; \
 	CXXFLAGS="$(STAGE[+id+]_CXXFLAGS)"; export CXXFLAGS;[+ IF (= (get "module") "gcc") +] \
 	GDCFLAGS="$(STAGE[+id+]_GDCFLAGS)"; export GDCFLAGS;[+ ENDIF +][+ IF prev +] \
 	LIBCFLAGS="$(STAGE[+id+]_CFLAGS)"[+ ELSE prev +] \

@@ -1,3 +1,9 @@
+2026-10-08  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR target/127137
+	* README: Remove i686-mingw32crt from the list of targets.
+	* reduce-headers: Likewise.
+
 2026-04-22  Sam James  <sam@gentoo.org>
 
 	* show-headers: Fix spelling of 'additional'.

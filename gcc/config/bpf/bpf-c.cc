@@ -76,6 +76,8 @@ bpf_target_macros (cpp_reader *pfile)
     builtin_define ("__BPF_FEATURE_SDIV_SMOD");
   if (bpf_has_smov)
     builtin_define ("__BPF_FEATURE_MOVSX");
+  if (bpf_has_callx)
+    builtin_define ("__BPF_FEATURE_CALLX");
 
   /* Other CPU features can only be enabled/disabled generically by
      selecting the corresponding CPU version.  */

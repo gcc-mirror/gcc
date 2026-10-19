@@ -5,6 +5,7 @@ BEGIN REAL zero = 0.0;
       REAL ten = 10.0;
       LONG REAL long ten = LONG 10.0;
       LONG LONG REAL long long ten = LONG LONG 10.0;
+      WORD REAL word ten = WORD 10.0;
       ASSERT (SIGN zero = 0);
       ASSERT (SIGN long zero = 0);
       ASSERT (SIGN long long zero = 0);
@@ -13,5 +14,7 @@ BEGIN REAL zero = 0.0;
       ASSERT (SIGN long long ten = 1);
       ASSERT (SIGN -ten = -1);
       ASSERT (SIGN -long ten = -1);
-      ASSERT (SIGN -long long ten = -1)
+      ASSERT (SIGN -long long ten = -1);
+      ASSERT (SIGN word ten = 1);
+      ASSERT (SIGN -word ten = -1)
 END

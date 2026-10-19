@@ -7543,7 +7543,7 @@ extern void defaulted_late_check		(tree, tristate = tristate::unknown ());
 extern bool defaultable_fn_check		(tree);
 extern void check_abi_tags			(tree);
 extern tree missing_abi_tags			(tree);
-extern void fixup_type_variants			(tree);
+extern void fixup_type_variants			(tree, bool = false);
 extern void fixup_attribute_variants		(tree);
 extern void build_cdtor_clones 			(tree, bool, bool, bool);
 extern void clone_cdtor				(tree, bool);
@@ -7605,7 +7605,7 @@ extern bool fns_correspond			(tree, tree);
 extern int decls_match				(tree, tree, bool = true);
 extern bool maybe_version_functions		(tree, tree);
 extern bool validate_constexpr_redeclaration	(tree, tree);
-extern bool merge_default_template_args		(tree, tree, bool);
+extern bool merge_default_template_args		(tree, tree, tree);
 extern void merge_decl_arguments		(tree, tree, bool, bool, bool);
 extern tree duplicate_decls			(tree, tree,
 						 bool hiding = false,

@@ -336,10 +336,10 @@
 
 ;; Same mode for condition true/false values and predicate operand.
 (define_expand "vcond_mask_<mode><mode>"
-  [(match_operand:VEC_I 0 "vint_operand")
-   (match_operand:VEC_I 1 "vint_operand")
-   (match_operand:VEC_I 2 "vint_operand")
-   (match_operand:VEC_I 3 "vint_operand")]
+  [(match_operand:VEC_IC 0 "vint_operand")
+   (match_operand:VEC_IC 1 "vint_operand")
+   (match_operand:VEC_IC 2 "vint_operand")
+   (match_operand:VEC_IC 3 "vint_operand")]
   "VECTOR_UNIT_ALTIVEC_OR_VSX_P (<MODE>mode)"
 {
   emit_insn (gen_vector_select_<mode> (operands[0], operands[2], operands[1],

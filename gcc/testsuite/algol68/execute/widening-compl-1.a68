@@ -1,0 +1,4 @@
+begin word compl wc2 = word 10.0; { widening }
+      assert (IM wc2 = word 0.0 AND RE wc2 = word 10.0);
+      skip
+end

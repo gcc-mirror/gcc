@@ -3,7 +3,7 @@
 
 #include <altivec.h>
 
-#define DEBUG 0
+
 
 #if DEBUG
 #include <stdio.h>
@@ -26,8 +26,12 @@ main (int argc, char *argv [])
   src_a_ullint = 456;
   src_va_ullint = (vector unsigned long long int) { 0, 11 };
   vresult_ullint = (vector unsigned long long int) { 0, 2 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_ullint = (vector unsigned long long int) { 456, 11 };
+#else
   expected_vresult_ullint = (vector unsigned long long int) { 0, 456 };
-						 
+#endif
+
   vresult_ullint = (vector unsigned long long int)
     vec_replace_unaligned ((vector unsigned char)src_va_ullint,
 			   src_a_ullint, 0);
@@ -42,8 +46,9 @@ main (int argc, char *argv [])
     abort();
 #endif
   }
-  
+
   return 0;
 }
 
 /* { dg-final { scan-assembler-times {\mvinsd\M} 1 } } */
+

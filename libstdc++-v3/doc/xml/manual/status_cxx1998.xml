@@ -1148,7 +1148,7 @@ mainline GCC, not in any particular release.
    </para>
    <para><emphasis>27.6.1.1.2 [lib.istream::sentry]</emphasis>,
       <emphasis>27.6.2.3 [lib.ostream::sentry]</emphasis> The I/O sentry ctor
-      and dtor can perform additional work than the minimum required. We are
+      and dtor can perform more work than the minimum required. We are
       not currently taking  advantage of this yet.
    </para>
    <para><emphasis>27.7.1.3 [lib.stringbuf.virtuals]/16</emphasis>,

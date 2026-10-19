@@ -14,7 +14,7 @@ subroutine test
   end do
   !$omp end tile
 
-  !$omp tile sizes(i) ! { dg-error "SIZES requires constant expression" }
+  !$omp tile sizes(i) ! { dg-error "INTEGER expression of SIZES clause at .1. must be positive and constant" }
   do i = 1,100
     call dummy(i)
   end do

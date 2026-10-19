@@ -138,7 +138,7 @@
 	variable in the configuration file <code class="filename">texmf.cnf</code> may
 	need to be increased by a minimum factor of two. Alternatively, using
 	<strong class="userinput"><code>LATEX_CMD=lualatex</code></strong> might allow the docs to be
-	build without running out of memory.
+	built without running out of memory.
       </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="doxygen.rules"></a>Generating the Doxygen Files</h4></div></div></div><p>
 	The following Makefile rules run Doxygen to generate HTML
 	docs, XML docs, XML docs as a single file, PDF docs, and the
@@ -387,7 +387,7 @@
       </p><p>
       </p><pre class="screen"><strong class="userinput"><code>make doc-xml-single-docbook</code></strong></pre><p>
       </p><p>
-	Generated files are output into separate sub-directores of
+	Generated files are output into separate sub-directories of
 	<code class="filename">doc/docbook/</code> in the
 	build directory, based on the output format. For instance, the
 	HTML docs will be in <code class="filename">doc/docbook/html</code>.
@@ -449,7 +449,7 @@ make <code class="literal">XSL_STYLE_DIR="/usr/share/xml/docbook/stylesheet/nwal
     incorrect.
   </p></li></ul></div><p>
 	  If the error at hand is not obvious after examination, or if one
-	  encounters the inscruitable <span class="quote">“<span class="quote">Incomplete
+	  encounters the inscrutable <span class="quote">“<span class="quote">Incomplete
 	  \ifmmode</span>”</span> error, a fall-back strategy is to start
 	  commenting out parts of the XML document (regardless of what
 	  this does to over-all document validity). Start by

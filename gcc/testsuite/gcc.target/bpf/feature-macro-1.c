@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mcpu=v1 -malu32 -mjmp32 -mjmpext -mbswap -msdiv -msmov" } */
+/* { dg-options "-mcpu=v1 -malu32 -mjmp32 -mjmpext -mbswap -msdiv -msmov -mcallx" } */
 
 #ifndef __BPF_FEATURE_ALU32
 #error __BPF_FEATURE_ALU32 undefined
@@ -19,6 +19,10 @@
 
 #ifndef __BPF_FEATURE_MOVSX
 #error __BPF_FEATURE_MOVSX undefined
+#endif
+
+#ifndef __BPF_FEATURE_CALLX
+#error __BPF_FEATURE_CALLX undefined
 #endif
 
 #ifdef __BPF_FEATURE_LDSX

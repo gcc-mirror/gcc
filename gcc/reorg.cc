@@ -138,7 +138,7 @@ skip_consecutive_labels (rtx label_or_return)
 
      So we explicitly disallow looking through BARRIERS here.  */
   for (insn = label;
-       insn != 0 && !INSN_P (insn) && !BARRIER_P (insn);
+       insn != 0 && !NONDEBUG_INSN_P (insn) && !BARRIER_P (insn);
        insn = NEXT_INSN (insn))
     if (LABEL_P (insn))
       label = insn;
@@ -186,7 +186,7 @@ static rtx_insn *delete_from_delay_slot (rtx_insn *);
 static void delete_scheduled_jump (rtx_insn *);
 static void note_delay_statistics (int, int);
 static int get_jump_flags (const rtx_insn *, rtx);
-static int mostly_true_jump (rtx);
+static int mostly_true_jump (rtx_insn *);
 static rtx get_branch_condition (const rtx_insn *, rtx);
 static bool condition_dominates_p (rtx, const rtx_insn *);
 static bool redirect_with_delay_slots_safe_p (rtx_insn *, rtx, rtx);
@@ -670,7 +670,7 @@ note_delay_statistics (int slots_filled, int index)
 static void
 optimize_skip (rtx_jump_insn *insn, vec<rtx_insn *> *delay_list)
 {
-  rtx_insn *trial = next_nonnote_insn (insn);
+  rtx_insn *trial = next_nonnote_nondebug_insn (insn);
   rtx_insn *next_trial = next_active_insn (trial);
   int flags;
 
@@ -775,7 +775,7 @@ get_jump_flags (const rtx_insn *insn, rtx label)
    return 0 and if the branch is highly unlikely to be taken, return -1.  */
 
 static int
-mostly_true_jump (rtx jump_insn)
+mostly_true_jump (rtx_insn *jump_insn)
 {
   /* If branch probabilities are available, then use that number since it
      always gives a correct answer.  */
@@ -1765,7 +1765,7 @@ get_label_before (rtx_insn *insn, rtx sibling)
 
   /* Find an existing label at this point
      or make a new one if there is none.  */
-  label = prev_nonnote_insn (insn);
+  label = prev_nonnote_nondebug_insn (insn);
 
   if (label == 0 || !LABEL_P (label))
     {
@@ -2580,7 +2580,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 	  && REG_P (SET_DEST (pat))
 	  && !reg_overlap_mentioned_p (SET_DEST (pat), SET_SRC (pat)))
 	{
-	  rtx_insn *next = next_nonnote_insn (trial);
+	  rtx_insn *next = next_nonnote_nondebug_insn (trial);
 
 	  if (next && NONJUMP_INSN_P (next)
 	      && GET_CODE (PATTERN (next)) != USE
@@ -2884,10 +2884,10 @@ delete_prior_computation (rtx note, rtx_insn *insn)
   rtx_insn *our_prev;
   rtx reg = XEXP (note, 0);
 
-  for (our_prev = prev_nonnote_insn (insn);
+  for (our_prev = prev_nonnote_nondebug_insn (insn);
        our_prev && (NONJUMP_INSN_P (our_prev)
 		    || CALL_P (our_prev));
-       our_prev = prev_nonnote_insn (our_prev))
+       our_prev = prev_nonnote_nondebug_insn (our_prev))
     {
       rtx pat = PATTERN (our_prev);
 
@@ -3091,7 +3091,7 @@ relax_delay_slots (rtx_insn *first)
 	      && ! (next && switch_text_sections_between_p (jump_insn, next)))
 	    {
 	      rtx_insn *direct_label = as_a<rtx_insn *> (JUMP_LABEL (insn));
-	      rtx_insn *prev = prev_nonnote_insn (direct_label);
+	      rtx_insn *prev = prev_nonnote_nondebug_insn (direct_label);
 
 	      /* If the insn jumps over a BARRIER and is the only way to reach
 		 its target, then we need to delete the BARRIER before the jump
@@ -3281,7 +3281,7 @@ relax_delay_slots (rtx_insn *first)
 	 We use next_real_nondebug_insn instead of next_active_insn so we
 	 don't skip USE-markers, or we'll end up with incorrect
 	 liveness info.  */
-      trial = next_real_nondebug_insn (target_label);
+      trial = next_real_nondebug_insn (as_a<rtx_insn *> (target_label));
       if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
 	  && redundant_insn (trial, insn, vNULL)
 	  && ! can_throw_internal (trial))
@@ -3338,7 +3338,8 @@ relax_delay_slots (rtx_insn *first)
 	  && !INSN_ANNULLED_BRANCH_P (delay_jump_insn)
 	  && !condjump_in_parallel_p (delay_jump_insn)
 	  && prev_active_insn (as_a<rtx_insn *> (target_label)) == insn
-	  && !BARRIER_P (prev_nonnote_insn (as_a<rtx_insn *> (target_label))))
+	  && !BARRIER_P (prev_nonnote_nondebug_insn
+			   (as_a<rtx_insn *> (target_label))))
 	{
 	  rtx_insn *after;
 	  int i;
@@ -3469,8 +3470,8 @@ make_return_insns (rtx_insn *first)
 {
   rtx_insn *insn;
   rtx_jump_insn *jump_insn;
-  rtx real_return_label = function_return_label;
-  rtx real_simple_return_label = function_simple_return_label;
+  rtx_insn *real_return_label = function_return_label;
+  rtx_insn *real_simple_return_label = function_simple_return_label;
   int slots, i;
 
   /* See if there is a RETURN insn in the function other than the one we
@@ -3479,7 +3480,7 @@ make_return_insns (rtx_insn *first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
       {
-	rtx t = get_label_before (insn, NULL_RTX);
+	rtx_insn *t = get_label_before (insn, NULL_RTX);
 	if (PATTERN (insn) == ret_rtx)
 	  real_return_label = t;
 	else

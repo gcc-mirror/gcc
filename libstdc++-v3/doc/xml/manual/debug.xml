@@ -276,7 +276,7 @@
 </para>
 
 <para>
-  These settings can either be switched on in at the GDB command line,
+  These settings can either be switched on at the GDB command line,
   or put into a <filename>.gdbinit</filename> file to establish default
   debugging characteristics, like so:
 </para>

@@ -1003,9 +1003,6 @@ copy_reference_ops_from_ref (tree ref, vec<vn_reference_op_s> *result)
 	  temp.reverse = REF_REVERSE_STORAGE_ORDER (ref);
 	  break;
 	case COMPONENT_REF:
-	  /* The field decl is enough to unambiguously specify the field,
-	     so use its type here.  */
-	  temp.type = TREE_TYPE (TREE_OPERAND (ref, 1));
 	  temp.op0 = TREE_OPERAND (ref, 1);
 	  temp.op1 = TREE_OPERAND (ref, 2);
 	  temp.reverse = (AGGREGATE_TYPE_P (TREE_TYPE (TREE_OPERAND (ref, 0)))
@@ -2696,7 +2693,7 @@ class eliminate_dom_walker : public dom_walker
 {
 public:
   eliminate_dom_walker (cdi_direction, bitmap);
-  ~eliminate_dom_walker ();
+  virtual ~eliminate_dom_walker ();
 
   edge before_dom_children (basic_block) final override;
   void after_dom_children (basic_block) final override;
@@ -7513,16 +7510,17 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 				 TYPE_UNSIGNED (TREE_TYPE (lhs)));
 	      if (TREE_CODE (lhs) == COMPONENT_REF)
 		{
-		  tree foff = component_ref_field_offset (lhs);
+		  tree bpos, foff = component_ref_field_offset (lhs);
 		  tree f = TREE_OPERAND (lhs, 1);
-		  if (!poly_int_tree_p (foff))
+		  if (!poly_int_tree_p (foff)
+		      || !tree_fits_poly_uint64_p
+			   (bpos = bit_from_pos (foff,
+						 DECL_FIELD_BIT_OFFSET (f))))
 		    lookup_lhs = NULL_TREE;
 		  else
 		    lookup_lhs = build3 (BIT_FIELD_REF, ltype,
 					 TREE_OPERAND (lhs, 0),
-					 TYPE_SIZE (TREE_TYPE (lhs)),
-					 bit_from_pos
-					   (foff, DECL_FIELD_BIT_OFFSET (f)));
+					 TYPE_SIZE (TREE_TYPE (lhs)), bpos);
 		}
 	      else
 		lookup_lhs = build2 (MEM_REF, ltype,
@@ -8057,7 +8055,7 @@ eliminate_dom_walker::eliminate_cleanup (bool region_p)
 
 /* Eliminate fully redundant computations.  */
 
-unsigned
+static unsigned
 eliminate_with_rpo_vn (bitmap inserted_exprs)
 {
   eliminate_dom_walker walker (CDI_DOMINATORS, inserted_exprs);
@@ -8070,16 +8068,11 @@ eliminate_with_rpo_vn (bitmap inserted_exprs)
   return walker.eliminate_cleanup ();
 }
 
-static unsigned
-do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
-	     bool iterate, bool eliminate, bool skip_entry_phis,
-	     vn_lookup_kind kind);
+/* Give every value a value id, for PRE.  */
 
-void
-run_rpo_vn (vn_lookup_kind kind)
+static void
+assign_value_ids ()
 {
-  do_rpo_vn_1 (cfun, NULL, NULL, true, false, false, kind);
-
   /* ???  Prune requirement of these.  */
   constant_to_value_id = new hash_table<vn_constant_hasher> (23);
 
@@ -8130,7 +8123,7 @@ run_rpo_vn (vn_lookup_kind kind)
 
 /* Free VN associated data structures.  */
 
-void
+static void
 free_rpo_vn (void)
 {
   free_vn_table (valid_info);
@@ -8822,6 +8815,18 @@ struct unwind_state
   vn_avail *avail_top;
 };
 
+/* Record in TO the RPO VN state do_unwind unwinds to.  */
+
+static void
+record_unwind_state (unwind_state *to)
+{
+  to->ob_top = obstack_alloc (&vn_tables_obstack, 0);
+  to->ref_top = last_inserted_ref;
+  to->phi_top = last_inserted_phi;
+  to->nary_top = last_inserted_nary;
+  to->avail_top = last_pushed_avail ? last_pushed_avail->avail : NULL;
+}
+
 /* Unwind the RPO VN state for iteration.  */
 
 static void
@@ -8875,12 +8880,13 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    If ITERATE is true then treat backedges optimistically as not
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  If SKIP_ENTRY_PHIS
-   is true then force PHI nodes in ENTRY->dest to VARYING.  */
+   is true then force PHI nodes in ENTRY->dest to VARYING.  AVAIL and
+   BB_TO_RPO belong to the caller, which can keep them past the walk.  */
 
 static unsigned
 do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	     bool iterate, bool eliminate, bool skip_entry_phis,
-	     vn_lookup_kind kind)
+	     vn_lookup_kind kind, rpo_elim &avail, int *bb_to_rpo)
 {
   unsigned todo = 0;
   default_vn_walk_kind = kind;
@@ -8926,14 +8932,12 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	     "the entry block, skipping its PHIs.\n");
   skip_entry_phis |= e != NULL;
 
-  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fn));
   for (int i = 0; i < n; ++i)
     bb_to_rpo[rpo[i]] = i;
   vn_bb_to_rpo = bb_to_rpo;
 
   unwind_state *rpo_state = XNEWVEC (unwind_state, n);
 
-  rpo_elim avail (entry->dest);
   rpo_avail = &avail;
 
   /* Verify we have no extra entries into the region.  */
@@ -9073,14 +9077,7 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	   not iterate where we then handle PHIs conservatively.  We do that
 	   heuristically to reduce compile-time for degenerate cases.  */
 	if (rpo_state[idx].iterate)
-	  {
-	    rpo_state[idx].ob_top = obstack_alloc (&vn_tables_obstack, 0);
-	    rpo_state[idx].ref_top = last_inserted_ref;
-	    rpo_state[idx].phi_top = last_inserted_phi;
-	    rpo_state[idx].nary_top = last_inserted_nary;
-	    rpo_state[idx].avail_top
-	      = last_pushed_avail ? last_pushed_avail->avail : NULL;
-	  }
+	  record_unwind_state (&rpo_state[idx]);
 
 	if (!(bb->flags & BB_EXECUTABLE))
 	  {
@@ -9289,7 +9286,6 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
   rpo_avail = NULL;
   vn_bb_to_rpo = NULL;
 
-  XDELETEVEC (bb_to_rpo);
   XDELETEVEC (rpo);
   XDELETEVEC (rpo_state);
 
@@ -9312,9 +9308,70 @@ do_rpo_vn (function *fn, edge entry, bitmap exit_bbs,
 	   vn_lookup_kind kind)
 {
   auto_timevar tv (TV_TREE_RPO_VN);
-  unsigned todo = do_rpo_vn_1 (fn, entry, exit_bbs, iterate, eliminate,
-			       skip_entry_phis, kind);
+
+  /* We don't support elimination in region-based iteration.  */
+  gcc_assert (!entry || !iterate || !eliminate);
+  /* When iterating, finalize does the elimination; otherwise the
+     constructor's walk does.  */
+  vn_driver vn (fn, entry, exit_bbs, iterate, eliminate && !iterate,
+		skip_entry_phis, kind);
+  return eliminate ? vn.finalize () : vn.todo ();
+}
+
+vn_driver::vn_driver (function *fn, bool iterate, bool eliminate,
+		      bool want_value_ids, vn_lookup_kind kind)
+  : vn_driver (fn, NULL, NULL, iterate, eliminate, false, kind)
+{
+  if (want_value_ids)
+    assign_value_ids ();
+}
+
+/* Value-number the region ENTRY leads into, which exits to EXIT_BBS, or all of
+   FN if ENTRY is NULL.  */
+
+vn_driver::vn_driver (function *fn, edge entry, bitmap exit_bbs,
+		      bool iterate, bool eliminate, bool skip_entry_phis,
+		      vn_lookup_kind kind)
+  : m_eliminate (eliminate)
+{
+  basic_block entry_bb
+    = entry ? entry->dest : single_succ (ENTRY_BLOCK_PTR_FOR_FN (fn));
+  m_avail = new rpo_elim (entry_bb);
+  m_bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fn));
+  m_todo = do_rpo_vn_1 (fn, entry, exit_bbs, iterate, eliminate,
+			skip_entry_phis, kind, *m_avail, m_bb_to_rpo);
+}
+
+vn_driver::~vn_driver ()
+{
   free_rpo_vn ();
+  XDELETEVEC (m_bb_to_rpo);
+  delete m_avail;
+}
+
+/* Finish elimination and return the TODO flags.  */
+
+unsigned
+vn_driver::finalize (bitmap inserted_exprs)
+{
+  /* If ELIMINATE was passed to the constructor, finish the elimination.  */
+  if (m_eliminate)
+    return m_todo;
+
+  /* PRE eliminates after its insertions, when the RPO map no longer
+     describes the IL.  Return only its flags, as PRE always has, to avoid
+     an extra CFG cleanup.  */
+  if (inserted_exprs)
+    return eliminate_with_rpo_vn (inserted_exprs);
+
+  /* Otherwise do full elimination.  */
+  rpo_avail = m_avail;
+  vn_bb_to_rpo = m_bb_to_rpo;
+  vn_valueize = rpo_vn_valueize;
+  unsigned todo = m_todo | eliminate_with_rpo_vn (NULL);
+  vn_valueize = NULL;
+  rpo_avail = NULL;
+  vn_bb_to_rpo = NULL;
   return todo;
 }
 
@@ -9369,8 +9426,12 @@ pass_fre::execute (function *fun)
   if (iterate_p)
     loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
 
-  todo = do_rpo_vn_1 (fun, NULL, NULL, iterate_p, true, false, VN_WALKREWRITE);
-  free_rpo_vn ();
+  {
+    /* When iterating, finalize below does the elimination; otherwise the
+       constructor's walk does.  */
+    vn_driver vn (fun, iterate_p, !iterate_p);
+    todo = vn.finalize ();
+  }
 
   if (iterate_p)
     loop_optimizer_finalize ();

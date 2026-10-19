@@ -1391,6 +1391,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodule-header)
 fmodule-implicit-inline
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodule-implicit-inline)
 
+fmodule-include-translate
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodule-include-translate)
+
 fmodule-only
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fmodule-only)
 

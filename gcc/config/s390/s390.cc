@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define IN_TARGET_CODE 1
 
+#define INCLUDE_ARRAY
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -351,9 +352,6 @@ extern int reload_completed;
 /* Kept up to date using the SCHED_VARIABLE_ISSUE hook.  */
 static rtx_insn *last_scheduled_insn;
 #define NUM_SIDES 2
-
-#define MAX_SCHED_UNITS 4
-static int last_scheduled_unit_distance[MAX_SCHED_UNITS][NUM_SIDES];
 
 /* Estimate of number of cycles a long-running insn occupies an
    execution unit.  */
@@ -843,6 +841,30 @@ s390_const_operand_ok (tree arg, int argnum, int op_flags, tree decl)
 	}
     }
   return true;
+}
+
+static bool
+s390_gimple_fold_builtin (gimple_stmt_iterator *gsi)
+{
+  gcall *stmt = as_a <gcall *> (gsi_stmt (*gsi));
+  tree fndecl = gimple_call_fndecl (stmt);
+  unsigned int fcode = DECL_MD_FUNCTION_CODE (fndecl);
+  gimple *new_stmt;
+  tree arg0, arg1, arg2;
+
+  if (fcode == S390_BUILTIN_s390_vperm)
+    {
+      arg0 = gimple_call_arg (stmt, 0);
+      arg1 = gimple_call_arg (stmt, 1);
+      arg2 = gimple_call_arg (stmt, 2);
+      new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
+				      VEC_PERM_EXPR,
+				      arg0, arg1, arg2);
+      gimple_set_location (new_stmt, gimple_location (stmt));
+      gsi_replace (gsi, new_stmt, false);
+      return true;
+    }
+  return false;
 }
 
 /* Expand an expression EXP that calls a built-in function,
@@ -3944,6 +3966,21 @@ s390_insn_cost (rtx_insn *insn, bool speed)
   return pattern_cost (PATTERN (insn), speed);
 }
 
+/* Returns true if the constant value OP is a legitimate vector operand
+   during and after reload.
+   This function accepts all constants which can be loaded directly
+   into an VR.  */
+
+static bool
+legitimate_reload_vector_constant_p (rtx op)
+{
+  return TARGET_VX && (satisfies_constraint_j00 (op)
+		       || satisfies_constraint_jm1 (op)
+		       || satisfies_constraint_jzz (op)
+		       || satisfies_constraint_jxx (op)
+		       || satisfies_constraint_jyy (op));
+}
+
 /* Compute a (partial) cost for rtx X.  Return true if the complete
    cost has been computed, and false if subexpressions should be
    scanned.  In either case, *TOTAL contains the cost result.  The
@@ -3956,6 +3993,7 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		int opno ATTRIBUTE_UNUSED,
 		int *total, bool speed ATTRIBUTE_UNUSED)
 {
+  constexpr int vml_vmal_costs = COSTS_N_INSNS (5);
   int code = GET_CODE (x);
   switch (code)
     {
@@ -3968,6 +4006,16 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MEM:
       *total = 0;
       return true;
+
+    case CONST_VECTOR:
+      /* Constant vectors never end up as immediates.  Penalize vectors which
+	 cannot be loaded by a single instruction (vzero, vone, vgm, vgbm,
+	 vrepi) and therefore go through the constant pool.  */
+      *total = COSTS_N_INSNS (1);
+      if (!legitimate_reload_vector_constant_p (x))
+	*total += COSTS_N_INSNS (1);
+      return true;
+
     case SET:
       {
 	rtx dst = SET_DEST (x);
@@ -4139,12 +4187,43 @@ s390_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case XOR:
     case NEG:
     case NOT:
-    case PLUS:
     case MINUS:
       *total = COSTS_N_INSNS (1);
       return false;
 
+    case PLUS:
+      /* Check for VECTOR MULTIPLY AND ADD.  */
+      if (TARGET_VX
+	  && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT || mode == TImode)
+	  /* VMALG/Q become available with z17.  */
+	  && (GET_MODE_UNIT_SIZE (mode) < 8 || TARGET_VXE3)
+	  && GET_CODE (XEXP (x, 0)) == MULT)
+	{
+	  *total = vml_vmal_costs;
+	  *total += rtx_cost (XEXP (x, 1), mode, PLUS, 1, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 0), mode, MULT, 0, speed);
+	  *total += rtx_cost (XEXP (XEXP (x, 0), 1), mode, MULT, 1, speed);
+	  return true;
+	}
+      *total = COSTS_N_INSNS (1);
+      return false;
+
     case MULT:
+      if (TARGET_VX
+	  && (GET_MODE_CLASS (mode) == MODE_VECTOR_INT || mode == TImode)
+	  /* VMLG/Q become available with z17.  */
+	  && (GET_MODE_UNIT_SIZE (mode) < 8 || TARGET_VXE3))
+	{
+	  /* During expand_mult we may emit a synthetic multiplication
+	     depending on the costs.  For example, for mode V16QI and
+	     multiplicand 123 the sequence VREPI+VML competes with
+	     VESL+VS+VESL+VS.  The downside of the synthetic multiplication is
+	     that on RTL level it is hard to reconstruct the fact that the
+	     sequence was a multiplication which may prohibit the combination
+	     with a PLUS into a VMAL.  */
+	  *total = vml_vmal_costs;
+	  return false;
+	}
       switch (mode)
 	{
 	case E_SImode:
@@ -4487,15 +4566,10 @@ legitimate_pic_operand_p (rtx op)
 static bool
 s390_legitimate_constant_p (machine_mode mode, rtx op)
 {
-  if (TARGET_VX && GET_CODE (op) == CONST_VECTOR)
-    {
-      if (!satisfies_constraint_j00 (op)
-	  && !satisfies_constraint_jm1 (op)
-	  && !satisfies_constraint_jzz (op)
-	  && !satisfies_constraint_jxx (op)
-	  && !satisfies_constraint_jyy (op))
-	return 0;
-    }
+  if (TARGET_VX
+      && GET_CODE (op) == CONST_VECTOR
+      && !legitimate_reload_vector_constant_p (op))
+    return 0;
 
   if (mode == HFmode)
     return satisfies_constraint_j00 (op);
@@ -4676,21 +4750,6 @@ legitimate_reload_fp_constant_p (rtx op)
     return true;
 
   return false;
-}
-
-/* Returns true if the constant value OP is a legitimate vector operand
-   during and after reload.
-   This function accepts all constants which can be loaded directly
-   into an VR.  */
-
-static bool
-legitimate_reload_vector_constant_p (rtx op)
-{
-  return TARGET_VX && (satisfies_constraint_j00 (op)
-		       || satisfies_constraint_jm1 (op)
-		       || satisfies_constraint_jzz (op)
-		       || satisfies_constraint_jxx (op)
-		       || satisfies_constraint_jyy (op));
 }
 
 /* Given an rtx OP being reloaded into a reg required to be in class RCLASS,
@@ -15466,195 +15525,145 @@ struct s390_sched_state
 
 static struct s390_sched_state sched_state;
 
-#define S390_SCHED_ATTR_MASK_CRACKED    0x1
-#define S390_SCHED_ATTR_MASK_EXPANDED   0x2
-#define S390_SCHED_ATTR_MASK_ENDGROUP   0x4
-#define S390_SCHED_ATTR_MASK_GROUPALONE 0x8
-#define S390_SCHED_ATTR_MASK_GROUPOFTWO 0x10
-
-static unsigned int
-s390_get_sched_attrmask (rtx_insn *insn)
+enum s390_sched_unit
 {
-  unsigned int mask = 0;
+  FIRST_UNIT,
+  LSU = FIRST_UNIT,
+  FXA,
+  FXB,
+  VFU,
+  UNIT_COUNT
+};
 
-  switch (s390_tune)
+struct s390_sched_insn_descr
+{
+  using T = s390_sched_insn_descr;
+
+  unsigned short unit_lsu : 1;
+  unsigned short unit_fxa : 1;
+  unsigned short unit_fxb : 1;
+  unsigned short unit_vfu : 1;
+  unsigned short unit_fxd : 1;
+  unsigned short unit_fpd : 1;
+  unsigned short cracked : 1;
+  unsigned short expanded : 1;
+  unsigned short groupalone : 1;
+  unsigned short endgroup : 1;
+  unsigned short groupoftwo : 1;
+
+  constexpr s390_sched_insn_descr ()
+    : unit_lsu (0)
+    , unit_fxa (0)
+    , unit_fxb (0)
+    , unit_vfu (0)
+    , unit_fxd (0)
+    , unit_fpd (0)
+    , cracked (0)
+    , expanded (0)
+    , groupalone (0)
+    , endgroup (0)
+    , groupoftwo (0) {}
+
+  constexpr T set_unit_lsu () { unit_lsu = 1; return *this; }
+  constexpr T set_unit_fxa () { unit_fxa = 1; return *this; }
+  constexpr T set_unit_fxb () { unit_fxb = 1; return *this; }
+  constexpr T set_unit_vfu () { unit_vfu = 1; return *this; }
+  constexpr T set_unit_fxd () { unit_fxd = 1; return *this; }
+  constexpr T set_unit_fpd () { unit_fpd = 1; return *this; }
+  constexpr T set_cracked () { cracked = 1; return *this; }
+  constexpr T set_expanded () { expanded = 1; return *this; }
+  constexpr T set_groupalone () { groupalone = 1; return *this; }
+  constexpr T set_endgroup () { endgroup = 1; return *this; }
+  constexpr T set_groupoftwo () { groupoftwo = 1; return *this; }
+
+  bool unit_p (s390_sched_unit unit) const
+  {
+    switch (unit)
+      {
+      case LSU: return unit_lsu;
+      case FXA: return unit_fxa;
+      case FXB: return unit_fxb;
+      case VFU: return unit_vfu;
+      default: gcc_unreachable ();
+      }
+  }
+
+  bool longrunning_p () const
+  {
+    return unit_fxd || unit_fpd;
+  }
+
+  class unit_iterator
+  {
+  private:
+    const s390_sched_insn_descr *insn_descr;
+    s390_sched_unit unit;
+
+    void next_set_unit ()
     {
-    case PROCESSOR_2827_ZEC12:
-      if (get_attr_zEC12_cracked (insn))
-	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_zEC12_expanded (insn))
-	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_zEC12_endgroup (insn))
-	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_zEC12_groupalone (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      break;
-    case PROCESSOR_2964_Z13:
-      if (get_attr_z13_cracked (insn))
-	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_z13_expanded (insn))
-	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_z13_endgroup (insn))
-	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_z13_groupalone (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      if (get_attr_z13_groupoftwo (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
-      break;
-    case PROCESSOR_3906_Z14:
-      if (get_attr_z14_cracked (insn))
-	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_z14_expanded (insn))
-	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_z14_endgroup (insn))
-	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_z14_groupalone (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      if (get_attr_z14_groupoftwo (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
-      break;
-    case PROCESSOR_8561_Z15:
-      if (get_attr_z15_cracked (insn))
-	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_z15_expanded (insn))
-	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_z15_endgroup (insn))
-	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_z15_groupalone (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      if (get_attr_z15_groupoftwo (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
-      break;
-    case PROCESSOR_3931_Z16:
-      if (get_attr_z16_cracked (insn))
-	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_z16_expanded (insn))
-	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_z16_endgroup (insn))
-	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_z16_groupalone (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      if (get_attr_z16_groupoftwo (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
-      break;
-    case PROCESSOR_9175_Z17:
-      if (get_attr_z17_cracked (insn))
-	mask |= S390_SCHED_ATTR_MASK_CRACKED;
-      if (get_attr_z17_expanded (insn))
-	mask |= S390_SCHED_ATTR_MASK_EXPANDED;
-      if (get_attr_z17_endgroup (insn))
-	mask |= S390_SCHED_ATTR_MASK_ENDGROUP;
-      if (get_attr_z17_groupalone (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
-      if (get_attr_z17_groupoftwo (insn))
-	mask |= S390_SCHED_ATTR_MASK_GROUPOFTWO;
-      break;
-    default:
-      gcc_unreachable ();
+      while (unit < UNIT_COUNT && !insn_descr->unit_p (unit))
+	unit = static_cast<s390_sched_unit>(unit + 1);
     }
-  return mask;
-}
 
-static unsigned int
-s390_get_unit_mask (rtx_insn *insn, int *units)
-{
-  unsigned int mask = 0;
-
-  switch (s390_tune)
+  public:
+    unit_iterator (const s390_sched_insn_descr *d, s390_sched_unit u)
+      : insn_descr (d), unit (u)
     {
-    case PROCESSOR_2964_Z13:
-      *units = 4;
-      if (get_attr_z13_unit_lsu (insn))
-	mask |= 1 << 0;
-      if (get_attr_z13_unit_fxa (insn))
-	mask |= 1 << 1;
-      if (get_attr_z13_unit_fxb (insn))
-	mask |= 1 << 2;
-      if (get_attr_z13_unit_vfu (insn))
-	mask |= 1 << 3;
-      break;
-    case PROCESSOR_3906_Z14:
-      *units = 4;
-      if (get_attr_z14_unit_lsu (insn))
-	mask |= 1 << 0;
-      if (get_attr_z14_unit_fxa (insn))
-	mask |= 1 << 1;
-      if (get_attr_z14_unit_fxb (insn))
-	mask |= 1 << 2;
-      if (get_attr_z14_unit_vfu (insn))
-	mask |= 1 << 3;
-      break;
-    case PROCESSOR_8561_Z15:
-      *units = 4;
-      if (get_attr_z15_unit_lsu (insn))
-	mask |= 1 << 0;
-      if (get_attr_z15_unit_fxa (insn))
-	mask |= 1 << 1;
-      if (get_attr_z15_unit_fxb (insn))
-	mask |= 1 << 2;
-      if (get_attr_z15_unit_vfu (insn))
-	mask |= 1 << 3;
-      break;
-    case PROCESSOR_3931_Z16:
-      *units = 4;
-      if (get_attr_z16_unit_lsu (insn))
-	mask |= 1 << 0;
-      if (get_attr_z16_unit_fxa (insn))
-	mask |= 1 << 1;
-      if (get_attr_z16_unit_fxb (insn))
-	mask |= 1 << 2;
-      if (get_attr_z16_unit_vfu (insn))
-	mask |= 1 << 3;
-      break;
-    case PROCESSOR_9175_Z17:
-      *units = 4;
-      if (get_attr_z17_unit_lsu (insn))
-	mask |= 1 << 0;
-      if (get_attr_z17_unit_fxa (insn))
-	mask |= 1 << 1;
-      if (get_attr_z17_unit_fxb (insn))
-	mask |= 1 << 2;
-      if (get_attr_z17_unit_vfu (insn))
-	mask |= 1 << 3;
-      break;
-    default:
-      gcc_unreachable ();
+      next_set_unit ();
     }
-  return mask;
-}
 
-static bool
-s390_is_fpd (rtx_insn *insn)
+    s390_sched_unit operator* () const
+    {
+      return unit;
+    }
+
+    unit_iterator& operator++ ()
+    {
+      unit = static_cast<s390_sched_unit>(unit + 1);
+      next_set_unit ();
+      return *this;
+    }
+
+    bool operator!= (const unit_iterator &x) const
+    {
+      return unit != x.unit;
+    }
+
+    bool operator== (const unit_iterator &x) const
+    {
+      return unit == x.unit;
+    }
+  };
+
+  unit_iterator begin () const
+  {
+    return unit_iterator (this, FIRST_UNIT);
+  }
+
+  unit_iterator end () const
+  {
+    return unit_iterator (this, UNIT_COUNT);
+  }
+};
+
+static const s390_sched_insn_descr *sched_insn_descr;
+
+static s390_sched_insn_descr
+get_sched_insn_descr (rtx_insn *insn)
 {
-  if (insn == NULL_RTX)
-    return false;
-
-  return get_attr_z13_unit_fpd (insn) || get_attr_z14_unit_fpd (insn)
-    || get_attr_z15_unit_fpd (insn) || get_attr_z16_unit_fpd (insn)
-    || get_attr_z17_unit_fpd (insn);
+  gcc_checking_assert (sched_insn_descr != nullptr);
+  attr_mnemonic mnemonic = get_attr_mnemonic (insn);
+  return sched_insn_descr[mnemonic];
 }
 
-static bool
-s390_is_fxd (rtx_insn *insn)
-{
-  if (insn == NULL_RTX)
-    return false;
+#include "2827.h" /* zEC12 */
+#include "2964.h" /* z13 */
+#include "3906.h" /* z14 */
+#include "8561.h" /* z15 */
+#include "3931.h" /* z16 */
+#include "9175.h" /* z17 */
 
-  return get_attr_z13_unit_fxd (insn) || get_attr_z14_unit_fxd (insn)
-    || get_attr_z15_unit_fxd (insn) || get_attr_z16_unit_fxd (insn)
-    || get_attr_z17_unit_fxd (insn);
-}
-
-/* Returns TRUE if INSN is a long-running instruction.  */
-static bool
-s390_is_longrunning (rtx_insn *insn)
-{
-  if (insn == NULL_RTX)
-    return false;
-
-  return s390_is_fxd (insn) || s390_is_fpd (insn);
-}
-
+static int last_scheduled_unit_distance[UNIT_COUNT][NUM_SIDES];
 
 /* Return the scheduling score for INSN.  The higher the score the
    better.  The score is calculated from the OOO scheduling attributes
@@ -15662,75 +15671,62 @@ s390_is_longrunning (rtx_insn *insn)
 static int
 s390_sched_score (rtx_insn *insn)
 {
-  unsigned int mask = s390_get_sched_attrmask (insn);
   int score = 0;
+  auto insn_descr = get_sched_insn_descr (insn);
 
   switch (sched_state.group_state)
     {
     case 0:
       /* Try to put insns into the first slot which would otherwise
 	 break a group.  */
-      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
-	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0)
+      if (insn_descr.cracked || insn_descr.expanded)
 	score += 5;
-      if ((mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0)
+      if (insn_descr.groupalone)
 	score += 10;
       break;
     case 1:
       /* Prefer not cracked insns while trying to put together a
 	 group.  */
-      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) == 0
-	  && (mask & S390_SCHED_ATTR_MASK_EXPANDED) == 0
-	  && (mask & S390_SCHED_ATTR_MASK_GROUPALONE) == 0)
+      if (!insn_descr.cracked && !insn_descr.expanded && !insn_descr.groupalone)
 	score += 10;
-      if ((mask & S390_SCHED_ATTR_MASK_ENDGROUP) == 0)
+      if (!insn_descr.endgroup)
 	score += 5;
       /* If we are in a group of two already, try to schedule another
 	 group-of-two insn to avoid shortening another group.  */
-      if (sched_state.group_of_two
-	  && (mask & S390_SCHED_ATTR_MASK_GROUPOFTWO) != 0)
+      if (sched_state.group_of_two && insn_descr.groupoftwo)
 	score += 15;
       break;
     case 2:
       /* Prefer not cracked insns while trying to put together a
 	 group.  */
-      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) == 0
-	  && (mask & S390_SCHED_ATTR_MASK_EXPANDED) == 0
-	  && (mask & S390_SCHED_ATTR_MASK_GROUPALONE) == 0)
+      if (!insn_descr.cracked && !insn_descr.expanded && !insn_descr.groupalone)
 	score += 10;
       /* Prefer endgroup insns in the last slot.  */
-      if ((mask & S390_SCHED_ATTR_MASK_ENDGROUP) != 0)
+      if (insn_descr.endgroup)
 	score += 10;
       /* Try to avoid group-of-two insns in the last slot as they will
 	 shorten this group as well as the next one.  */
-      if ((mask & S390_SCHED_ATTR_MASK_GROUPOFTWO) != 0)
+      if (insn_descr.groupoftwo)
 	score = MAX (0, score - 15);
       break;
     }
 
   if (s390_tune >= PROCESSOR_2964_Z13)
     {
-      int units, i;
-      unsigned unit_mask, m = 1;
-
-      unit_mask = s390_get_unit_mask (insn, &units);
-      gcc_assert (units <= MAX_SCHED_UNITS);
-
       /* Add a score in range 0..MAX_SCHED_MIX_SCORE depending on how long
 	 ago the last insn of this unit type got scheduled.  This is
 	 supposed to help providing a proper instruction mix to the
 	 CPU.  */
-      for (i = 0; i < units; i++, m <<= 1)
-	if (m & unit_mask)
-	  score += (last_scheduled_unit_distance[i][sched_state.side]
-	      * MAX_SCHED_MIX_SCORE / MAX_SCHED_MIX_DISTANCE);
+      for (auto unit : insn_descr)
+	score += (last_scheduled_unit_distance[unit][sched_state.side]
+	    * MAX_SCHED_MIX_SCORE / MAX_SCHED_MIX_DISTANCE);
 
       int other_side = 1 - sched_state.side;
 
       /* Try to delay long-running insns when side is busy.  */
-      if (s390_is_longrunning (insn))
+      if (insn_descr.longrunning_p ())
 	{
-	  if (s390_is_fxd (insn))
+	  if (insn_descr.unit_fxd)
 	    {
 	      if (fxd_longrunning[sched_state.side]
 		  && fxd_longrunning[other_side]
@@ -15742,7 +15738,7 @@ s390_sched_score (rtx_insn *insn)
 		score += 10;
 	    }
 
-	  if (s390_is_fpd (insn))
+	  if (insn_descr.unit_fpd)
 	    {
 	      if (fpd_longrunning[sched_state.side]
 		  && fpd_longrunning[other_side]
@@ -15827,36 +15823,31 @@ s390_sched_reorder (FILE *file, int verbose,
 
 	  for (i = last_index; i >= 0; i--)
 	    {
-	      unsigned int sched_mask;
 	      rtx_insn *insn = ready[i];
 
 	      if (recog_memoized (insn) < 0)
 		continue;
 
-	      sched_mask = s390_get_sched_attrmask (insn);
-	      fprintf (file, ";;\t\tBACKEND: insn %d score: %d: ",
+	      auto insn_descr = get_sched_insn_descr (insn);
+	      fprintf (file, ";;\t\tBACKEND: insn %d score: %d:",
 		       INSN_UID (insn),
 		       s390_sched_score (insn));
-#define PRINT_SCHED_ATTR(M, ATTR) fprintf (file, "%s ",\
-					   ((M) & sched_mask) ? #ATTR : "");
-	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_CRACKED, cracked);
-	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_EXPANDED, expanded);
-	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_ENDGROUP, endgroup);
-	      PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_GROUPALONE, groupalone);
-#undef PRINT_SCHED_ATTR
+	      if (insn_descr.cracked)
+		fputs (" cracked", file);
+	      if (insn_descr.expanded)
+		fputs (" expanded", file);
+	      if (insn_descr.endgroup)
+		fputs (" endgroup", file);
+	      if (insn_descr.groupalone)
+		fputs (" groupalone", file);
 	      if (s390_tune >= PROCESSOR_2964_Z13)
 		{
-		  unsigned int unit_mask, m = 1;
-		  int units, j;
-
-		  unit_mask  = s390_get_unit_mask (insn, &units);
-		  fprintf (file, "(units:");
-		  for (j = 0; j < units; j++, m <<= 1)
-		    if (m & unit_mask)
-		      fprintf (file, " u%d", j);
-		  fprintf (file, ")");
+		  fputs (" (units:", file);
+		  for (auto unit : insn_descr)
+		    fprintf (file, " u%d", unit);
+		  fputs (")", file);
 		}
-	      fprintf (file, "\n");
+	      fputs ("\n", file);
 	    }
 	}
     }
@@ -15880,9 +15871,9 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
       && reload_completed
       && recog_memoized (insn) >= 0)
     {
-      unsigned int mask = s390_get_sched_attrmask (insn);
+      auto insn_descr = get_sched_insn_descr (insn);
 
-      if ((mask & S390_SCHED_ATTR_MASK_GROUPOFTWO) != 0)
+      if (insn_descr.groupoftwo)
 	sched_state.group_of_two = true;
 
       /* If this is a group-of-two insn, we actually ended the last group
@@ -15901,34 +15892,27 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 	}
 
       unsigned latency = insn_default_latency (insn);
-      if (s390_is_longrunning (insn))
-	{
-	  if (s390_is_fxd (insn))
-	    fxd_longrunning[sched_state.side] = latency;
-	  else
-	    fpd_longrunning[sched_state.side] = latency;
-	}
+      if (insn_descr.unit_fxd)
+	fxd_longrunning[sched_state.side] = latency;
+      else if (insn_descr.unit_fpd)
+	fpd_longrunning[sched_state.side] = latency;
 
       if (s390_tune >= PROCESSOR_2964_Z13)
 	{
-	  int units, i;
-	  unsigned unit_mask, m = 1;
-
-	  unit_mask = s390_get_unit_mask (insn, &units);
-	  gcc_assert (units <= MAX_SCHED_UNITS);
-
-	  for (i = 0; i < units; i++, m <<= 1)
-	    if (m & unit_mask)
-	      last_scheduled_unit_distance[i][sched_state.side] = 0;
-	    else if (last_scheduled_unit_distance[i][sched_state.side]
-		< MAX_SCHED_MIX_DISTANCE)
-	      last_scheduled_unit_distance[i][sched_state.side]++;
+	  for (s390_sched_unit unit = FIRST_UNIT;
+	       unit < UNIT_COUNT;
+	       unit = static_cast<s390_sched_unit>(unit + 1))
+	    if (insn_descr.unit_p (unit))
+	      last_scheduled_unit_distance[unit][sched_state.side] = 0;
+	    else if (last_scheduled_unit_distance[unit][sched_state.side]
+		     < MAX_SCHED_MIX_DISTANCE)
+	      last_scheduled_unit_distance[unit][sched_state.side]++;
 	}
 
-      if ((mask & S390_SCHED_ATTR_MASK_CRACKED) != 0
-	  || (mask & S390_SCHED_ATTR_MASK_EXPANDED) != 0
-	  || (mask & S390_SCHED_ATTR_MASK_GROUPALONE) != 0
-	  || (mask & S390_SCHED_ATTR_MASK_ENDGROUP) != 0)
+      if (insn_descr.cracked
+	  || insn_descr.expanded
+	  || insn_descr.groupalone
+	  || insn_descr.endgroup)
 	{
 	  sched_state.group_state = 0;
 	  ends_group = true;
@@ -15957,43 +15941,35 @@ s390_sched_variable_issue (FILE *file, int verbose, rtx_insn *insn, int more)
 
       if (verbose > 5)
 	{
-	  unsigned int sched_mask;
-
-	  sched_mask = s390_get_sched_attrmask (insn);
-
-	  fprintf (file, ";;\t\tBACKEND: insn %d: ", INSN_UID (insn));
-#define PRINT_SCHED_ATTR(M, ATTR) fprintf (file, "%s ", ((M) & sched_mask) ? #ATTR : "");
-	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_CRACKED, cracked);
-	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_EXPANDED, expanded);
-	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_ENDGROUP, endgroup);
-	  PRINT_SCHED_ATTR (S390_SCHED_ATTR_MASK_GROUPALONE, groupalone);
-#undef PRINT_SCHED_ATTR
-
+	  fprintf (file, ";;\t\tBACKEND: insn %d:", INSN_UID (insn));
+	  if (insn_descr.cracked)
+	    fputs (" cracked", file);
+	  if (insn_descr.expanded)
+	    fputs (" expanded", file);
+	  if (insn_descr.endgroup)
+	    fputs (" endgroup", file);
+	  if (insn_descr.groupalone)
+	    fputs (" groupalone", file);
 	  if (s390_tune >= PROCESSOR_2964_Z13)
 	    {
-	      unsigned int unit_mask, m = 1;
-	      int units, j;
-
-	      unit_mask  = s390_get_unit_mask (insn, &units);
-	      fprintf (file, "(units:");
-	      for (j = 0; j < units; j++, m <<= 1)
-		if (m & unit_mask)
-		  fprintf (file, " %d", j);
-	      fprintf (file, ")");
+	      fprintf (file, " (units:");
+	      for (auto unit : insn_descr)
+		fprintf (file, " %d", unit);
+	      fputs (")", file);
 	    }
 	  fprintf (file, " sched state: %d\n", sched_state.group_state);
 
 	  if (s390_tune >= PROCESSOR_2964_Z13)
 	    {
-	      int units, j;
-
-	      s390_get_unit_mask (insn, &units);
-
-	      fprintf (file, ";;\t\tBACKEND: units on this side (%d) unused for: ", sched_state.side);
-	      for (j = 0; j < units; j++)
-		fprintf (file, "%d:%d ", j,
-		    last_scheduled_unit_distance[j][sched_state.side]);
-	      fprintf (file, "\n");
+	      fprintf (file,
+		       ";;\t\tBACKEND: units on this side (%d) unused for:",
+		       sched_state.side);
+	      for (s390_sched_unit unit = FIRST_UNIT;
+		   unit < UNIT_COUNT;
+		   unit = static_cast<s390_sched_unit>(unit + 1))
+		fprintf (file, " %d:%d", unit,
+		    last_scheduled_unit_distance[unit][sched_state.side]);
+	      fputs ("\n", file);
 	    }
 	}
 
@@ -16029,10 +16005,39 @@ s390_sched_init (FILE *file ATTRIBUTE_UNUSED,
      */
   last_scheduled_insn = NULL;
   memset (last_scheduled_unit_distance, 0,
-	  MAX_SCHED_UNITS * NUM_SIDES * sizeof (int));
+	  UNIT_COUNT * NUM_SIDES * sizeof (int));
   memset (fpd_longrunning, 0, NUM_SIDES * sizeof (int));
   memset (fxd_longrunning, 0, NUM_SIDES * sizeof (int));
   sched_state = {};
+}
+
+static void
+s390_sched_init_global (FILE *, int, int)
+{
+  switch (s390_tune)
+    {
+    case PROCESSOR_2827_ZEC12:
+      sched_insn_descr = sched_descr_zEC12.data ();
+      break;
+    case PROCESSOR_2964_Z13:
+      sched_insn_descr = sched_descr_z13.data ();
+      break;
+    case PROCESSOR_3906_Z14:
+      sched_insn_descr = sched_descr_z14.data ();
+      break;
+    case PROCESSOR_8561_Z15:
+      sched_insn_descr = sched_descr_z15.data ();
+      break;
+    case PROCESSOR_3931_Z16:
+      sched_insn_descr = sched_descr_z16.data ();
+      break;
+    case PROCESSOR_9175_Z17:
+      sched_insn_descr = sched_descr_z17.data ();
+      break;
+    default:
+      sched_insn_descr = nullptr;
+      break;
+    }
 }
 
 /* This target hook implementation for TARGET_LOOP_UNROLL_ADJUST calculates
@@ -18439,6 +18444,8 @@ s390_bitint_type_info (int n, struct bitint_info *info)
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS s390_init_builtins
+#undef  TARGET_GIMPLE_FOLD_BUILTIN
+#define TARGET_GIMPLE_FOLD_BUILTIN s390_gimple_fold_builtin
 #undef  TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN s390_expand_builtin
 #undef  TARGET_BUILTIN_DECL
@@ -18468,6 +18475,8 @@ s390_bitint_type_info (int n, struct bitint_info *info)
 #define TARGET_SCHED_REORDER s390_sched_reorder
 #undef TARGET_SCHED_INIT
 #define TARGET_SCHED_INIT s390_sched_init
+#undef TARGET_SCHED_INIT_GLOBAL
+#define TARGET_SCHED_INIT_GLOBAL s390_sched_init_global
 
 #undef TARGET_CANNOT_COPY_INSN_P
 #define TARGET_CANNOT_COPY_INSN_P s390_cannot_copy_insn_p

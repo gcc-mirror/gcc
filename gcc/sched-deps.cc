@@ -709,7 +709,7 @@ sched_insn_is_legitimate_for_speculation_p (const rtx_insn *insn, ds_t ds)
    This function is used to switch sd_iterator to the next list.
    !!! For internal use only.  Might consider moving it to sched-int.h.  */
 void
-sd_next_list (const_rtx insn, sd_list_types_def *types_ptr,
+sd_next_list (const rtx_insn *insn, sd_list_types_def *types_ptr,
 	      deps_list_t *list_ptr, bool *resolved_p_ptr)
 {
   sd_list_types_def types = *types_ptr;
@@ -754,7 +754,7 @@ sd_next_list (const_rtx insn, sd_list_types_def *types_ptr,
 
 /* Return the summary size of INSN's lists defined by LIST_TYPES.  */
 int
-sd_lists_size (const_rtx insn, sd_list_types_def list_types)
+sd_lists_size (const rtx_insn *insn, sd_list_types_def list_types)
 {
   int size = 0;
 
@@ -774,7 +774,7 @@ sd_lists_size (const_rtx insn, sd_list_types_def list_types)
 /* Return true if INSN's lists defined by LIST_TYPES are all empty.  */
 
 bool
-sd_lists_empty_p (const_rtx insn, sd_list_types_def list_types)
+sd_lists_empty_p (const rtx_insn *insn, sd_list_types_def list_types)
 {
   while (list_types != SD_LIST_NONE)
     {
@@ -830,7 +830,7 @@ sd_finish_insn (rtx_insn *insn)
    otherwise return the dependency and initialize SD_IT_PTR [if it is nonnull]
    with an iterator pointing to it.  */
 static dep_t
-sd_find_dep_between_no_cache (rtx pro, rtx con, bool resolved_p,
+sd_find_dep_between_no_cache (rtx_insn *pro, rtx_insn *con, bool resolved_p,
 			      sd_iterator_def *sd_it_ptr)
 {
   sd_list_types_def pro_list_type;
@@ -889,7 +889,7 @@ sd_find_dep_between_no_cache (rtx pro, rtx con, bool resolved_p,
    Search through resolved dependency lists if RESOLVED_P is true.
    If the dependency or NULL if none found.  */
 dep_t
-sd_find_dep_between (rtx pro, rtx con, bool resolved_p)
+sd_find_dep_between (rtx_insn *pro, rtx_insn *con, bool resolved_p)
 {
   if (true_dependency_cache != NULL)
     /* Avoiding the list walk below can cut compile times dramatically
@@ -1470,7 +1470,7 @@ sd_delete_dep (sd_iterator_def sd_it)
    If FLAGS has the very first bit set, then dump all information about
    the lists and propagate this bit into the callee dump functions.  */
 static void
-dump_lists (FILE *dump, rtx insn, sd_list_types_def types, int flags)
+dump_lists (FILE *dump, rtx_insn *insn, sd_list_types_def types, int flags)
 {
   sd_iterator_def sd_it;
   dep_t dep;
@@ -1499,7 +1499,7 @@ dump_lists (FILE *dump, rtx insn, sd_list_types_def types, int flags)
 /* Dump all information about deps_lists of INSN specified by TYPES
    to STDERR.  */
 void
-sd_debug_lists (rtx insn, sd_list_types_def types)
+sd_debug_lists (rtx_insn *insn, sd_list_types_def types)
 {
   dump_lists (stderr, insn, types, 1);
   fprintf (stderr, "\n");
@@ -1943,7 +1943,7 @@ create_insn_reg_use (int regno, rtx_insn *insn)
 
 /* Allocate reg_set_data structure for REGNO and INSN.  */
 static void
-create_insn_reg_set (int regno, rtx insn)
+create_insn_reg_set (int regno, rtx_insn *insn)
 {
   struct reg_set_data *set;
 
@@ -1995,7 +1995,7 @@ static struct reg_pressure_data reg_pressure_info[N_REG_CLASSES];
 
 /* Return TRUE if INSN has the use structure for REGNO.  */
 static bool
-insn_use_p (rtx insn, int regno)
+insn_use_p (rtx_insn *insn, int regno)
 {
   struct reg_use_data *use;
 
@@ -2009,7 +2009,8 @@ insn_use_p (rtx insn, int regno)
    in INSN.  Arguments CLOBBER_P and UNUSED_P say correspondingly that
    the register is in clobber or unused after the insn.  */
 static void
-mark_insn_pseudo_birth (rtx insn, int regno, bool clobber_p, bool unused_p)
+mark_insn_pseudo_birth (rtx_insn *insn, int regno, bool clobber_p,
+			bool unused_p)
 {
   int incr, new_incr;
   enum reg_class cl;
@@ -2044,7 +2045,7 @@ mark_insn_pseudo_birth (rtx insn, int regno, bool clobber_p, bool unused_p)
 /* Like mark_insn_pseudo_regno_birth except that NREGS saying how many
    hard registers involved in the birth.  */
 static void
-mark_insn_hard_regno_birth (rtx insn, int regno, int nregs,
+mark_insn_hard_regno_birth (rtx_insn *insn, int regno, int nregs,
 			    bool clobber_p, bool unused_p)
 {
   enum reg_class cl;
@@ -2088,7 +2089,7 @@ mark_insn_hard_regno_birth (rtx insn, int regno, int nregs,
    correspondingly that the register is in clobber or unused after the
    insn.  */
 static void
-mark_insn_reg_birth (rtx insn, rtx reg, bool clobber_p, bool unused_p)
+mark_insn_reg_birth (rtx_insn *insn, rtx reg, bool clobber_p, bool unused_p)
 {
   int regno;
 
@@ -2171,7 +2172,7 @@ mark_insn_reg_store (rtx reg, const_rtx setter, void *data)
   if (setter != NULL_RTX && GET_CODE (setter) != SET)
     return;
   mark_insn_reg_birth
-    ((rtx) data, reg, false,
+    ((rtx_insn *) data, reg, false,
      find_reg_note ((const_rtx) data, REG_UNUSED, reg) != NULL_RTX);
 }
 
@@ -2180,7 +2181,7 @@ static void
 mark_insn_reg_clobber (rtx reg, const_rtx setter, void *data)
 {
   if (GET_CODE (setter) == CLOBBER)
-    mark_insn_reg_birth ((rtx) data, reg, true, false);
+    mark_insn_reg_birth ((rtx_insn *) data, reg, true, false);
 }
 
 /* Set up reg pressure info related to INSN.  */
@@ -2944,6 +2945,7 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 
   /* Group compare and branch insns for macro-fusion.  */
   if (!deps->readonly
+      && (!sel_sched_p () || sched_emulate_haifa_p)
       && targetm.sched.macro_fusion_p
       && targetm.sched.macro_fusion_p ())
     sched_macro_fuse_insns (insn);
@@ -3209,10 +3211,10 @@ sched_analyze_insn (class deps_desc *deps, rtx x, rtx_insn *insn)
 	  EXECUTE_IF_SET_IN_REG_SET (&set_or_clobbered, 0, i, rsi)
 	    {
 	      struct deps_reg *reg_last = &deps->reg_last[i];
-	      rtx list;
-	      for (list = reg_last->uses; list; list = XEXP (list, 1))
+	      for (rtx_insn_list *list = reg_last->uses;
+		   list; list = list->next ())
 		{
-		  rtx other = XEXP (list, 0);
+		  rtx_insn *other = list->insn ();
 		  if (INSN_CACHED_COND (other) != const_true_rtx
 		      && refers_to_regno_p (i, INSN_CACHED_COND (other)))
 		    INSN_CACHED_COND (other) = const_true_rtx;

@@ -1440,6 +1440,14 @@ omp_declare_simd_clauses_equal (tree clauses1, tree clauses2)
 	  if (simple_cst_equal (OMP_CLAUSE_SIMDLEN_EXPR (cl1),
 				OMP_CLAUSE_SIMDLEN_EXPR (cl2)) != 1)
 	    return false;
+	  if (OMP_CLAUSE_SIMDLEN_TYPE (cl1) != OMP_CLAUSE_SIMDLEN_TYPE (cl2))
+	    return false;
+	  if ((OMP_CLAUSE_SIMDLEN_DIVISOR (cl1) == NULL_TREE)
+	      != (OMP_CLAUSE_SIMDLEN_DIVISOR (cl2) == NULL_TREE)
+	      || (OMP_CLAUSE_SIMDLEN_DIVISOR (cl1)
+		  && simple_cst_equal (OMP_CLAUSE_SIMDLEN_DIVISOR (cl1),
+				       OMP_CLAUSE_SIMDLEN_DIVISOR (cl2)) != 1))
+	    return false;
 	default:
 	  break;
 	}

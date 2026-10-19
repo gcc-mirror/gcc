@@ -2657,7 +2657,7 @@ create_trace_edges (rtx_insn *insn)
 	  n = GET_NUM_ELEM (vec);
 	  for (i = 0; i < n; ++i)
 	    {
-	      rtx_insn *lab = as_a <rtx_insn *> (XEXP (RTVEC_ELT (vec, i), 0));
+	      rtx_insn *lab = label_ref_label (RTVEC_ELT (vec, i));
 	      maybe_record_trace_start (lab, insn);
 	    }
 
@@ -2683,7 +2683,7 @@ create_trace_edges (rtx_insn *insn)
 	  for (i = 0; i < n; ++i)
 	    {
 	      rtx_insn *lab =
-		as_a <rtx_insn *> (XEXP (ASM_OPERANDS_LABEL (tmp, i), 0));
+		label_ref_label (ASM_OPERANDS_LABEL (tmp, i));
 	      maybe_record_trace_start (lab, insn);
 	    }
 	}

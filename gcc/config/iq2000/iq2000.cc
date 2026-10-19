@@ -678,6 +678,8 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 		ret = "ori\t%0,%%0,%x1\t\t\t# %1";
 	      else if (SMALL_INT (op1))
 		ret = "addiu\t%0,%%0,%1\t\t\t# %1";
+	      else if (CONST_INT_P (op1) && (INTVAL (op1) & 0xffff) == 0)
+		ret = "lui\t%0,%X1\t\t\t# %1";
 	      else
 		ret = "lui\t%0,%X1\t\t\t# %1\n\tori\t%0,%0,%x1";
 	    }

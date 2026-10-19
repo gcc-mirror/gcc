@@ -116,7 +116,7 @@ sel_print_rtl (rtx x)
 
 /* Dump insn INSN honoring FLAGS.  */
 void
-dump_insn_rtx_1 (rtx insn, int flags)
+dump_insn_rtx_1 (rtx_insn *insn, int flags)
 {
   int all;
 
@@ -146,7 +146,7 @@ dump_insn_rtx_1 (rtx insn, int flags)
 
 /* Dump INSN with default flags.  */
 void
-dump_insn_rtx (rtx insn)
+dump_insn_rtx (rtx_insn *insn)
 {
   dump_insn_rtx_1 (insn, dump_insn_rtx_flags);
 }
@@ -154,7 +154,7 @@ dump_insn_rtx (rtx insn)
 
 /* Dump INSN to stderr.  */
 DEBUG_FUNCTION void
-debug_insn_rtx (rtx insn)
+debug_insn_rtx (rtx_insn *insn)
 {
   switch_dump (stderr);
   dump_insn_rtx_1 (insn, debug_insn_rtx_flags);

@@ -3451,7 +3451,10 @@ HOOK_VECTOR (TARGET_ADDR_SPACE_HOOKS, addr_space)
 DEFHOOK
 (pointer_mode,
  "Define this to return the machine mode to use for pointers to\n\
-@var{address_space} if the target supports named address spaces.\n\
+@var{address_space} if the target supports named address spaces.\n\n\
+Targets that support vectors of pointers should return only the scalar base\n\
+mode here, but permit the vector modes in\n\
+@code{TARGET_ADDR_SPACE_VALID_POINTER_MODE}.\n\n\
 The default version of this hook returns @code{ptr_mode}.",
  scalar_int_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
@@ -3460,7 +3463,11 @@ The default version of this hook returns @code{ptr_mode}.",
 DEFHOOK
 (address_mode,
  "Define this to return the machine mode to use for addresses in\n\
-@var{address_space} if the target supports named address spaces.\n\
+@var{address_space} if the target supports named address spaces.\n\n\
+Targets that support vectors of addresses should return only the scalar base\n\
+mode here, but permit the vector modes in\n\
+@code{TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P} and\n\
+@code{TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS}.\n\n\
 The default version of this hook returns @code{Pmode}.",
  scalar_int_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
@@ -3470,13 +3477,16 @@ The default version of this hook returns @code{Pmode}.",
 DEFHOOK
 (valid_pointer_mode,
  "Define this to return nonzero if the port can handle pointers\n\
-with machine mode @var{mode} to address space @var{as}.  This target\n\
-hook is the same as the @code{TARGET_VALID_POINTER_MODE} target hook,\n\
-except that it includes explicit named address space support.  The default\n\
-version of this hook returns true for the modes returned by either the\n\
-@code{TARGET_ADDR_SPACE_POINTER_MODE} or @code{TARGET_ADDR_SPACE_ADDRESS_MODE}\n\
-target hooks for the given address space.",
- bool, (scalar_int_mode mode, addr_space_t as),
+with machine mode @var{mode} to address space @var{as}.  This hook can\n\
+also be used to allow pointers to use vector modes (e.g. to permit\n\
+@samp{(mem:V4SI (reg:V4DI))}).  This target hook is the same as the\n\
+@code{TARGET_VALID_POINTER_MODE} target hook, except that it includes\n\
+explicit named address space support, and does not mandate\n\
+@code{scalar_int_mode}.  The default version of this hook returns true for\n\
+the modes returned by either the @code{TARGET_ADDR_SPACE_POINTER_MODE}\n\
+or @code{TARGET_ADDR_SPACE_ADDRESS_MODE} target hooks for the given address\n\
+space.",
+ bool, (machine_mode mode, addr_space_t as),
  default_addr_space_valid_pointer_mode)
 
 /* True if an address is a valid memory address to a given named address

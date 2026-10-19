@@ -1959,6 +1959,21 @@
   DONE;
 })
 
+;; Integer addition of product, preserving shifts for power-of-two factors.
+(define_expand "fma<mode>4"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(plus:VDQ_BHSI
+	  (mult:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand")
+	    (match_operand:VDQ_BHSI 2 "nonmemory_operand"))
+	  (match_operand:VDQ_BHSI 3 "register_operand")))]
+  "TARGET_SIMD"
+  {
+    if (aarch64_prepare_int_fma (operands, PLUS))
+      DONE;
+  }
+)
+
 (define_insn "aarch64_mla<mode><vczle><vczbe>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (plus:VDQ_BHSI (mult:VDQ_BHSI
@@ -2017,6 +2032,21 @@
  "TARGET_SIMD"
  "mla\t%0.<Vtype>, %2.<Vtype>, %3.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
+)
+
+;; Integer subtraction of product.
+(define_expand "fnma<mode>4"
+  [(set (match_operand:VDQ_BHSI 0 "register_operand")
+	(minus:VDQ_BHSI
+	  (match_operand:VDQ_BHSI 3 "register_operand")
+	  (mult:VDQ_BHSI
+	    (match_operand:VDQ_BHSI 1 "register_operand")
+	    (match_operand:VDQ_BHSI 2 "nonmemory_operand"))))]
+  "TARGET_SIMD"
+  {
+    if (aarch64_prepare_int_fma (operands, MINUS))
+      DONE;
+  }
 )
 
 (define_insn "aarch64_mls<mode><vczle><vczbe>"
@@ -3760,16 +3790,6 @@
 
 ;; 'across lanes' add.
 
-(define_insn "aarch64_faddp<mode><vczle><vczbe>"
- [(set (match_operand:VHSDF 0 "register_operand" "=w")
-       (unspec:VHSDF [(match_operand:VHSDF 1 "register_operand" "w")
-		      (match_operand:VHSDF 2 "register_operand" "w")]
-	UNSPEC_FADDV))]
- "TARGET_SIMD"
- "faddp\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>"
-  [(set_attr "type" "neon_fp_reduc_add_<stype><q>")]
-)
-
 (define_insn "reduc_plus_scal_<mode>"
  [(set (match_operand:<VEL> 0 "register_operand" "=w")
        (unspec:<VEL> [(match_operand:VDQV 1 "register_operand" "w")]
@@ -3799,12 +3819,31 @@
   [(set_attr "type" "neon_reduc_add<VDQV_E:q>")]
 )
 
-(define_insn "reduc_plus_scal_<mode>"
- [(set (match_operand:<VEL> 0 "register_operand" "=w")
-       (unspec:<VEL> [(match_operand:V2F 1 "register_operand" "w")]
-		   UNSPEC_FADDV))]
- "TARGET_SIMD"
- "faddp\\t%<Vetype>0, %1.<Vtype>"
+(define_expand "reduc_plus_scal_<mode>"
+  [(match_operand:<VEL> 0 "register_operand")
+   (match_operand:V2F 1 "register_operand")]
+  "TARGET_SIMD"
+  {
+    rtx hi = aarch64_gen_stepped_int_parallel (1, ENDIAN_LANE_N (2, 1), 1);
+    rtx x = force_reg (<MODE>mode, operands[1]);
+    emit_insn (gen_aarch64_faddp_scal<mode> (operands[0], x, hi,
+					    gen_lowpart (<VEL>mode, x)));
+    DONE;
+  }
+)
+
+;; The sum of the two elements of a vector.  RTL simplification describes
+;; the low element as a lowpart of the vector, so operand 3 is that lowpart
+;; of operand 1.
+(define_insn "aarch64_faddp_scal<mode>"
+  [(set (match_operand:<VEL> 0 "register_operand" "=w")
+	(plus:<VEL>
+	  (vec_select:<VEL>
+	    (match_operand:V2F 1 "register_operand" "w")
+	    (match_operand:V2F 2 "vect_par_cnst_hi_half"))
+	  (match_operand:<VEL> 3 "register_operand" "w")))]
+  "TARGET_SIMD && aarch64_simd_lowpart_of_p (operands[3], operands[1])"
+  "faddp\t%<Vetype>0, %1.<Vtype>"
   [(set_attr "type" "neon_fp_reduc_add_<Vetype><q>")]
 )
 
@@ -8304,54 +8343,95 @@
   [(set_attr "type" "neon_fp_compare_<stype><q>")]
 )
 
-;; addp
+;; addp and faddp
 
-;; ADDP with two registers semantically concatenates them and performs
-;; a pairwise addition on the result.  For 128-bit input modes represent this
-;; as a concatenation of the pairwise addition results of the two input
-;; registers.  This allow us to avoid using intermediate 256-bit modes.
-(define_insn "aarch64_addp<mode>_insn"
-  [(set (match_operand:VQ_I 0 "register_operand" "=w")
-	(vec_concat:VQ_I
+;; ADDP and FADDP with two registers semantically concatenate them and
+;; perform a pairwise addition on the result.  For 128-bit input modes
+;; represent this as a concatenation of the pairwise addition results of the
+;; two input registers.  This allows us to avoid using intermediate 256-bit
+;; modes.  The RTL uses GCC's lane numbering, so on big-endian targets
+;; operand 1 provides the architecturally high half of the result.
+(define_insn "@aarch64_addp<mode>_concat"
+  [(set (match_operand:VQ_ADDP 0 "register_operand" "=w")
+	(vec_concat:VQ_ADDP
 	  (plus:<VHALF>
 	    (vec_select:<VHALF>
-	      (match_operand:VQ_I 1 "register_operand" "w")
-	      (match_operand:VQ_I 3 "vect_par_cnst_even_or_odd_half"))
+	      (match_operand:VQ_ADDP 1 "register_operand" "w")
+	      (match_operand:VQ_ADDP 3 "vect_par_cnst_even_or_odd_half"))
 	    (vec_select:<VHALF>
 	      (match_dup 1)
-	      (match_operand:VQ_I 4 "vect_par_cnst_even_or_odd_half")))
+	      (match_operand:VQ_ADDP 4 "vect_par_cnst_even_or_odd_half")))
 	  (plus:<VHALF>
 	    (vec_select:<VHALF>
-	      (match_operand:VQ_I 2 "register_operand" "w")
+	      (match_operand:VQ_ADDP 2 "register_operand" "w")
 	      (match_dup 3))
 	    (vec_select:<VHALF>
 	      (match_dup 2)
 	      (match_dup 4)))))]
   "TARGET_SIMD && !rtx_equal_p (operands[3], operands[4])"
-  "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
-  [(set_attr "type" "neon_reduc_add<q>")]
+  {
+    if (BYTES_BIG_ENDIAN)
+      return "<f>addp\t%<v>0<Vmtype>, %<v>2<Vmtype>, %<v>1<Vmtype>";
+    return "<f>addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>";
+  }
+  [(set_attr "type" "<addp_type>")]
 )
 
-;; For 64-bit input modes an ADDP is represented as a concatenation
+;; For 64-bit input modes an ADDP or FADDP is represented as a concatenation
 ;; of the input registers into an 128-bit register which is then fed
 ;; into a pairwise add.  That way we avoid having to create intermediate
-;; 32-bit vector modes.
-(define_insn "aarch64_addp<mode><vczle><vczbe>_insn"
-  [(set (match_operand:VD_BHSI 0 "register_operand" "=w")
-	(plus:VD_BHSI
-	  (vec_select:VD_BHSI
+;; 32-bit vector modes.  vpadd_f32 uses @aarch64_faddp_scal_pair<mode>
+;; instead.  As above, operand 1 provides the architecturally high half of
+;; the result on big-endian targets.
+(define_insn "@aarch64_addp<mode>_select<vczle><vczbe>"
+  [(set (match_operand:VD_ADDP 0 "register_operand" "=w")
+	(plus:VD_ADDP
+	  (vec_select:VD_ADDP
 	    (vec_concat:<VDBL>
-	      (match_operand:VD_BHSI 1 "register_operand" "w")
-	      (match_operand:VD_BHSI 2 "register_operand" "w"))
+	      (match_operand:VD_ADDP 1 "register_operand" "w")
+	      (match_operand:VD_ADDP 2 "register_operand" "w"))
 	    (match_operand:<VDBL> 3 "vect_par_cnst_even_or_odd_half"))
-	  (vec_select:VD_BHSI
+	  (vec_select:VD_ADDP
 	    (vec_concat:<VDBL>
 	      (match_dup 1)
 	      (match_dup 2))
 	    (match_operand:<VDBL> 4 "vect_par_cnst_even_or_odd_half"))))]
   "TARGET_SIMD && !rtx_equal_p (operands[3], operands[4])"
-  "addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>"
-  [(set_attr "type" "neon_reduc_add<q>")]
+  {
+    if (BYTES_BIG_ENDIAN)
+      return "<f>addp\t%<v>0<Vmtype>, %<v>2<Vmtype>, %<v>1<Vmtype>";
+    return "<f>addp\t%<v>0<Vmtype>, %<v>1<Vmtype>, %<v>2<Vmtype>";
+  }
+  [(set_attr "type" "<addp_type>")]
+)
+
+;; FADDP of two-lane vectors, represented as the concatenation of the sums of
+;; the two elements of each input.  RTL simplification describes the low
+;; element of a vector as a lowpart of the vector, so operands 4 and 5 are
+;; those lowparts of operands 1 and 2.  As above, operand 1 provides the
+;; architecturally high half of the result on big-endian targets.
+(define_insn "@aarch64_faddp_scal_pair<mode><vczle><vczbe>"
+  [(set (match_operand:V2F 0 "register_operand" "=w")
+	(vec_concat:V2F
+	  (plus:<VEL>
+	    (vec_select:<VEL>
+	      (match_operand:V2F 1 "register_operand" "w")
+	      (match_operand:V2F 3 "vect_par_cnst_hi_half"))
+	    (match_operand:<VEL> 4 "register_operand" "w"))
+	  (plus:<VEL>
+	    (vec_select:<VEL>
+	      (match_operand:V2F 2 "register_operand" "w")
+	      (match_dup 3))
+	    (match_operand:<VEL> 5 "register_operand" "w"))))]
+  "TARGET_SIMD
+   && aarch64_simd_lowpart_of_p (operands[4], operands[1])
+   && aarch64_simd_lowpart_of_p (operands[5], operands[2])"
+  {
+    if (BYTES_BIG_ENDIAN)
+      return "faddp\t%0.<Vtype>, %2.<Vtype>, %1.<Vtype>";
+    return "faddp\t%0.<Vtype>, %1.<Vtype>, %2.<Vtype>";
+  }
+  [(set_attr "type" "<addp_type>")]
 )
 
 ;; A common usecase of 64-bit ADDP is to have both operands come from the same
@@ -8361,11 +8441,11 @@
   [(set (match_operand:<VHALF> 0 "register_operand" "=w")
 	(plus:<VHALF>
 	  (vec_select:<VHALF>
-	    (match_operand:VQ_I 1 "register_operand" "w")
-	    (match_operand:VQ_I 2 "vect_par_cnst_even_or_odd_half"))
+	    (match_operand:VQ_ADDP 1 "register_operand" "w")
+	    (match_operand:VQ_ADDP 2 "vect_par_cnst_even_or_odd_half"))
 	  (vec_select:<VHALF>
 	    (match_dup 1)
-	    (match_operand:VQ_I 3 "vect_par_cnst_even_or_odd_half"))))]
+	    (match_operand:VQ_ADDP 3 "vect_par_cnst_even_or_odd_half"))))]
   "TARGET_SIMD && !rtx_equal_p (operands[2], operands[3])"
   "#"
   "&& 1"
@@ -8377,26 +8457,48 @@
     else
       scratch = lowpart_subreg (<MODE>mode, operands[0], <VHALF>mode);
 
-    emit_insn (gen_aarch64_addp<mode>_insn (scratch, operands[1], operands[1],
-					    operands[2], operands[3]));
+    emit_insn (gen_aarch64_addp_concat (<MODE>mode, scratch, operands[1],
+					operands[1], operands[2],
+					operands[3]));
     emit_move_insn (operands[0], gen_lowpart (<VHALF>mode, scratch));
     DONE;
   }
 )
 
-(define_expand "aarch64_addp<mode>"
-  [(match_operand:VDQ_I 0 "register_operand")
-   (match_operand:VDQ_I 1 "register_operand")
-   (match_operand:VDQ_I 2 "register_operand")]
+(define_expand "aarch64_<f>addp<mode>"
+  [(match_operand:VDQ_ADDP 0 "register_operand")
+   (match_operand:VDQ_ADDP 1 "register_operand")
+   (match_operand:VDQ_ADDP 2 "register_operand")]
   "TARGET_SIMD"
   {
+    /* The intrinsic uses architectural lane numbering.  */
+    if (BYTES_BIG_ENDIAN)
+      std::swap (operands[1], operands[2]);
     int nunits = GET_MODE_NUNITS (<MODE>mode).to_constant ();
-    if (known_eq (GET_MODE_BITSIZE (<MODE>mode), 128))
-      nunits /= 2;
-    rtx par_even = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
-    rtx par_odd = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
-    emit_insn (gen_aarch64_addp<mode>_insn (operands[0], operands[1],
-					    operands[2], par_even, par_odd));
+    if (nunits == 2 && FLOAT_MODE_P (<MODE>mode))
+      {
+	rtx hi = aarch64_gen_stepped_int_parallel (1, ENDIAN_LANE_N (2, 1), 1);
+	rtx x = force_reg (<MODE>mode, operands[1]);
+	rtx y = force_reg (<MODE>mode, operands[2]);
+	emit_insn (gen_aarch64_faddp_scal_pair (<MODE>mode, operands[0], x, y,
+						hi, gen_lowpart (<VEL>mode, x),
+						gen_lowpart (<VEL>mode, y)));
+      }
+    else
+      {
+	if (known_eq (GET_MODE_BITSIZE (<MODE>mode), 128))
+	  nunits /= 2;
+	rtx even = aarch64_gen_stepped_int_parallel (nunits, 0, 2);
+	rtx odd = aarch64_gen_stepped_int_parallel (nunits, 1, 2);
+	if (known_eq (GET_MODE_BITSIZE (<MODE>mode), 128))
+	  emit_insn (gen_aarch64_addp_concat (<MODE>mode, operands[0],
+					    operands[1], operands[2], even,
+					    odd));
+	else
+	  emit_insn (gen_aarch64_addp_select (<MODE>mode, operands[0],
+					    operands[1], operands[2], even,
+					    odd));
+      }
     DONE;
   }
 )

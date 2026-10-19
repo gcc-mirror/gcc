@@ -37,7 +37,8 @@ namespace Rust {
 namespace Resolver2_0 {
 
 Late::Late (NameResolutionContext &ctx)
-  : DefaultResolver (ctx), funny_error (false), block_big_self (false)
+  : DefaultResolver (ctx), funny_error (false), block_big_self (false),
+    in_bodyless_params (false)
 {}
 
 void
@@ -227,14 +228,32 @@ Late::visit (AST::AltPattern &pattern)
 }
 
 void
+Late::visit (AST::FunctionParam &param)
+{
+  visit_outer_attrs (param);
+  // we can't handle bindings for bodyless functions
+  // since, ex, `fn foo (a: i32, a: f64);` is valid
+  // (parameter names are ignored)
+  if (param.has_name () && !in_bodyless_params)
+    visit (param.get_pattern ());
+
+  visit (param.get_type ());
+}
+
+void
 Late::visit_function_params (AST::Function &function)
 {
+  bool was_in_bodyless_params = in_bodyless_params;
+  in_bodyless_params = !function.has_body ();
+
   ctx.bindings.enter (BindingSource::Param);
 
   for (auto &param : function.get_function_params ())
     visit (param);
 
   ctx.bindings.exit ();
+
+  in_bodyless_params = was_in_bodyless_params;
 }
 
 void

@@ -2,7 +2,9 @@
 BEGIN REAL r = 0.0;
       LONG REAL rr = LONG 45.0;
       LONG LONG REAL rrr = LONG LONG 60.0;
+      WORD REAL w = WORD 0.0;
       ASSERT (sin (r) = 0.0);
       long sin (rr);
-      long long sin (rrr)
+      long long sin (rrr);
+      ASSERT (word sin (w) = WORD 0.0)
 END

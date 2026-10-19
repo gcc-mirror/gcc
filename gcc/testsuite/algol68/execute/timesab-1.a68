@@ -1,0 +1,37 @@
+begin begin int i := 10;
+            i *:= 3;
+            assert (i = 30);
+            i TIMESAB 2;
+            assert (i = 60)
+      end;
+      begin short short int i := short short 10;
+            i *:= short short 3;
+            assert (i = short short 30);
+            i TIMESAB short short 2;
+            assert (i = short short 60)
+      end;
+      begin short int i := short 10;
+            i *:= short 3;
+            assert (i = short 30);
+            i TIMESAB short 2;
+            assert (i = short 60)
+      end;
+      begin long int i := long 10;
+            i *:= long 3;
+            assert (i = long 30);
+            i TIMESAB long 2;
+            assert (i = long 60)
+      end;
+      begin long long int i := long long 10;
+            i *:= long long 3;
+            assert (i = long long 30);
+            i TIMESAB long long 2;
+            assert (i = long long 60)
+      end;
+      begin word int i := word 10;
+            i *:= word 3;
+            assert (i = word 30);
+            i TIMESAB word 2;
+            assert (i = word 60)
+      end
+end

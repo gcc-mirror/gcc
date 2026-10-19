@@ -197,8 +197,8 @@ static tree fold_negate_expr (location_t, tree);
    The form is "(exp0 CMP cst1) ? exp0 : cst2". */
 tree_code
 minmax_from_comparison (tree_code cmp, tree exp0,
-			const widest_int cst1,
-			const widest_int cst2)
+			const widest_int &cst1,
+			const widest_int &cst2)
 {
   if (cst1 == cst2)
     {
@@ -3085,7 +3085,9 @@ combine_comparisons (enum tree_code code, enum tree_code lcode,
 		     && (rcompcode != COMPCODE_ORD);
 	bool trap = (compcode & COMPCODE_UNORD) == 0
 		    && (compcode != COMPCODE_EQ)
-		    && (compcode != COMPCODE_ORD);
+		    && (compcode != COMPCODE_ORD)
+		    && (compcode != COMPCODE_FALSE)
+		    && (compcode != COMPCODE_TRUE);
 
         /* In a short-circuited boolean expression the LHS might be
 	   such that the RHS, if evaluated, will never trap.  For
@@ -7136,9 +7138,10 @@ fold_real_zero_addition_p (const_tree type, const_tree arg,
    due to truncation/rounding.
 */
 bool
-fold_cmp_float_cst_p (wide_int lo, wide_int hi, enum tree_code cmp,
+fold_cmp_float_cst_p (const wide_int &lo, const wide_int &hi,
+		      enum tree_code cmp,
 		      const REAL_VALUE_TYPE *r, format_helper fmt,
-		      wide_int i, signop isign)
+		      const wide_int &i, signop isign)
 {
   REAL_VALUE_TYPE raw;
   REAL_VALUE_TYPE rnd;
@@ -14415,6 +14418,13 @@ tree_expr_maybe_signaling_nan_p (const_tree x)
     {
     case REAL_CST:
       return real_issignaling_nan (TREE_REAL_CST_PTR (x));
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case MULT_EXPR:
+    case RDIV_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+    case FIX_TRUNC_EXPR:
     case FLOAT_EXPR:
       return false;
     case ABS_EXPR:
@@ -14423,10 +14433,6 @@ tree_expr_maybe_signaling_nan_p (const_tree x)
     case NON_LVALUE_EXPR:
     case SAVE_EXPR:
       return tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 0));
-    case MIN_EXPR:
-    case MAX_EXPR:
-      return tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 0))
-	     || tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 1));
     case COND_EXPR:
       return tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 1))
 	     || tree_expr_maybe_signaling_nan_p (TREE_OPERAND (x, 2));
@@ -14436,12 +14442,44 @@ tree_expr_maybe_signaling_nan_p (const_tree x)
 	CASE_CFN_FABS:
 	CASE_CFN_FABS_FN:
 	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0));
+	CASE_CFN_COPYSIGN:
+	CASE_CFN_COPYSIGN_FN:
+	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0));
+	CASE_CFN_ATAN:
+	CASE_CFN_ATAN_FN:
+	CASE_CFN_CEIL:
+	CASE_CFN_CEIL_FN:
+	CASE_CFN_COS:
+	CASE_CFN_COS_FN:
+	CASE_CFN_ERF:
+	CASE_CFN_ERF_FN:
+	CASE_CFN_EXP:
+	CASE_CFN_EXP_FN:
+	CASE_CFN_FLOOR:
+	CASE_CFN_FLOOR_FN:
 	CASE_CFN_FMAX:
 	CASE_CFN_FMAX_FN:
 	CASE_CFN_FMIN:
 	CASE_CFN_FMIN_FN:
-	  return tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 0))
-		 || tree_expr_maybe_signaling_nan_p (CALL_EXPR_ARG (x, 1));
+	CASE_CFN_FMOD:
+	CASE_CFN_FMOD_FN:
+	CASE_CFN_HYPOT:
+	CASE_CFN_HYPOT_FN:
+	CASE_CFN_MODF:
+	CASE_CFN_MODF_FN:
+	CASE_CFN_POW:
+	CASE_CFN_POW_FN:
+	CASE_CFN_ROUND:
+	CASE_CFN_ROUND_FN:
+	CASE_CFN_SIN:
+	CASE_CFN_SIN_FN:
+	CASE_CFN_SQRT:
+	CASE_CFN_SQRT_FN:
+	CASE_CFN_TAN:
+	CASE_CFN_TAN_FN:
+	CASE_CFN_TRUNC:
+	CASE_CFN_TRUNC_FN:
+	  return false;
 	default:
 	  return true;
 	}
@@ -17802,12 +17840,11 @@ test_vec_unpack_folding ()
       poly_uint64 out_nelts = exact_div (in_nelts, 2);
       tree out_type = build_vector_type (out_inner_type, out_nelts);
 
-      tree_vector_builder builder (in_type, in_nelts.coeffs[0], 2);
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+      tree_vector_builder builder (in_type, min_out_nelts, 2);
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
 	builder.quick_push (build_int_cst (in_inner_type, i + 1));
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
-	builder.quick_push (build_int_cst (in_inner_type,
-					   i < min_out_nelts ? 100 + i : 77));
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
+	builder.quick_push (build_int_cst (in_inner_type, 77));
       tree arg = builder.build ();
 
       /* Check integer unpacking with a duplicated scalable high half.  */
@@ -17878,17 +17915,15 @@ test_vec_unpack_folding ()
 
       /* Check float-to-int unpacking with the same scalable shape.  */
       tree float_in_type = build_vector_type (float_type_node, in_nelts);
-      tree_vector_builder fix_builder (float_in_type, in_nelts.coeffs[0], 2);
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+      tree_vector_builder fix_builder (float_in_type, min_out_nelts, 2);
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
 	fix_builder.quick_push
 	  (build_real_from_int_cst (float_type_node,
 				    build_int_cst (integer_type_node, i + 1)));
-      for (unsigned int i = 0; i < in_nelts.coeffs[0]; ++i)
+      for (unsigned int i = 0; i < min_out_nelts; ++i)
 	fix_builder.quick_push
 	  (build_real_from_int_cst (float_type_node,
-				    build_int_cst (integer_type_node,
-						   i < min_out_nelts
-						   ? 100 + i : 77)));
+				    build_int_cst (integer_type_node, 77)));
       tree fix_arg = fix_builder.build ();
       tree fix_out_type = build_vector_type (integer_type_node, out_nelts);
       tree fix_lo = const_unop (VEC_UNPACK_FIX_TRUNC_LO_EXPR, fix_out_type,
@@ -17937,10 +17972,6 @@ test_vec_unpack_folding ()
       ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, out_type,
 					stepped.build ()));
 
-      /* Reject result types with the wrong number of elements.  */
-      tree wrong_out_type = build_vector_type (out_inner_type, in_nelts);
-      ASSERT_EQ (NULL_TREE, const_unop (VEC_UNPACK_LO_EXPR, wrong_out_type,
-					arg));
       return;
     }
 }

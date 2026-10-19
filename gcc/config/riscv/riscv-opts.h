@@ -159,8 +159,6 @@ enum rvv_vector_bits_enum {
   RVV_VECTOR_BITS_ZVL,
 };
 
-#define TARGET_ZICOND_LIKE (TARGET_ZICOND || (TARGET_XVENTANACONDOPS && TARGET_64BIT))
-
 /* Bit of riscv_zvl_flags will set continually, N-1 bit will set if N-bit is
    set, e.g. MASK_ZVL64B has set then MASK_ZVL32B is set, so we can use
    popcount to calculate the minimal VLEN.  */

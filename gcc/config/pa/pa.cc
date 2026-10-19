@@ -1667,23 +1667,43 @@ hppa_address_cost (rtx X, machine_mode mode ATTRIBUTE_UNUSED,
 static bool
 hppa_rtx_costs_shadd_p (rtx x)
 {
-  if (GET_CODE (x) != PLUS
-      || !REG_P (XEXP (x, 1)))
+  if (GET_CODE (x) != PLUS)
     return false;
+
+  /* Check if operand 1 is a REG or a SUBREG of a REG.  */
+  rtx op1 = XEXP (x, 1);
+  if (SUBREG_P (op1))
+    op1 = SUBREG_REG (op1);
+  if (!REG_P (op1))
+    return false;
+
   rtx op0 = XEXP (x, 0);
   if (GET_CODE (op0) == ASHIFT
-      && CONST_INT_P (XEXP (op0, 1))
-      && REG_P (XEXP (op0, 0)))
+      && CONST_INT_P (XEXP (op0, 1)))
     {
-      unsigned HOST_WIDE_INT x = UINTVAL (XEXP (op0, 1));
-      return x == 1 || x == 2 || x == 3;
+      rtx inner0 = XEXP (op0, 0);
+
+      if (SUBREG_P (inner0))
+	inner0 = SUBREG_REG (inner0);
+
+      if (REG_P (inner0))
+	{
+	  unsigned HOST_WIDE_INT shift_val = UINTVAL (XEXP (op0, 1));
+	  return shift_val == 1 || shift_val == 2 || shift_val == 3;
+	}
     }
   if (GET_CODE (op0) == MULT
-      && CONST_INT_P (XEXP (op0, 1))
-      && REG_P (XEXP (op0, 0)))
+      && CONST_INT_P (XEXP (op0, 1)))
     {
-      unsigned HOST_WIDE_INT x = UINTVAL (XEXP (op0, 1));
-      return x == 2 || x == 4 || x == 8;
+      rtx inner0 = XEXP (op0, 0);
+      if (SUBREG_P (inner0))
+	inner0 = SUBREG_REG (inner0);
+
+      if (REG_P (inner0))
+	{
+	  unsigned HOST_WIDE_INT mult_val = UINTVAL (XEXP (op0, 1));
+	  return mult_val == 2 || mult_val == 4 || mult_val == 8;
+	}
     }
   return false;
 }
@@ -2207,6 +2227,49 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 	 point.  */
       emit_move_insn (operand0, scratch_reg);
       return 1;
+    }
+
+  if ((mode == SFmode || mode == DFmode)
+      && MEM_P (operand1)
+      && (scratch_reg || can_create_pseudo_p ())
+      && (GET_CODE (XEXP (operand1, 0)) == SYMBOL_REF
+	  || GET_CODE (XEXP (operand1, 0)) == LABEL_REF
+	  || GET_CODE (XEXP (operand1, 0)) == CONST))
+    {
+      rtx addr = XEXP (operand1, 0);
+      rtx scratch;
+
+      if (scratch_reg)
+	{
+	  scratch = scratch_reg;
+	  if (GET_MODE (scratch) != Pmode)
+	    scratch = gen_rtx_REG (Pmode, REGNO (scratch));
+	}
+      else
+	scratch = gen_reg_rtx (Pmode);
+
+      if (flag_pic)
+	{
+	  /* Handle PIC compilations.  */
+	  rtx pic_reg = legitimize_pic_address (addr, Pmode, scratch);
+	  operand1 = replace_equiv_address (operand1, pic_reg);
+	}
+      else if (INT14_OK_STRICT)
+	{
+	  /* Non-PIC 32-bit PA 2.0 targets can use the 14-bit
+	     displacement optimization.  */
+	  emit_insn (gen_rtx_SET (scratch, gen_rtx_HIGH (Pmode, addr)));
+	  operand1 = replace_equiv_address (operand1,
+					    gen_rtx_LO_SUM (Pmode,
+							    scratch,
+							    addr));
+	}
+      else
+	{
+	  /* 32-bit PA 1.x fallback.  */
+	  emit_move_insn (scratch, addr);
+	  operand1 = replace_equiv_address (operand1, scratch);
+	}
     }
 
   /* Handle the most common case: storing into a register.  */
@@ -6358,54 +6421,54 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
   /* Strip the SUBREG to find the true underlying register entity.  */
   if (GET_CODE (x) == SUBREG)
-    {
-      rtx inner = SUBREG_REG (x);
-      machine_mode inner_mode = GET_MODE (inner);
-
-      /* Check if we are bridging a 32 or 64-bit Float/Integer Type-Pun.  */
-      if (REG_P (inner)
-	  && ((mode == DImode && inner_mode == DFmode)
-	      || (mode == DFmode && inner_mode == DImode)
-	      || (mode == SImode && inner_mode == SFmode)
-	      || (mode == SFmode && inner_mode == SImode)))
-	{
-	  regno = REGNO (inner);
-
-	  /* If the inner register has not been assigned or is bound
-	     to a floating-point class, we may need a general register
-	     scratchpad to handle the secondary reload.  */
-	  if (regno >= FIRST_PSEUDO_REGISTER
-	      || FP_REG_CLASS_P (REGNO_REG_CLASS (regno)))
-	    {
-	      /* If we need to load/store into an FP register block
-		 but our current instruction class is floating, force
-		 a general register scratchpad.  */
-	      if (FP_REG_CLASS_P (rclass))
-		{
-		  sri->icode = (in_p
-		    ? direct_optab_handler (reload_in_optab, mode)
-		    : direct_optab_handler (reload_out_optab, mode));
-		  return GENERAL_REGS;
-		}
-	    }
-	}
-
-      /* Let normal processing handle the un-wrapped inner rtx if needed.  */
-      x = inner;
-    }
+    x = SUBREG_REG (x);
 
   /* Handle the easy stuff first.  */
   if ((rclass == GENERAL_REGS || FP_REG_CLASS_P (rclass))
       && reg_plus_base_memory_operand (x, mode))
     {
-      /* Guard this fallback check against narrow modes.  This guarantees
-	 QImode/HImode will completely bypass direct_optab_handler loops. */
-      if (mode == SImode || mode == DImode)
-	sri->icode = (in_p
-	  ? direct_optab_handler (reload_in_optab, mode)
-	  : direct_optab_handler (reload_out_optab, mode));
+      /* If we are using soft-float, floating point modes live in the
+	 general registers, meaning they follow the standard 14-bit
+	 integer displacement rules.  */
+      bool hard_float_fp = (!TARGET_SOFT_FLOAT && FP_REG_CLASS_P (rclass));
+
+      if (hard_float_fp)
+	{
+	  rtx offset = XEXP (XEXP (x, 0), 1);
+
+	  /* PA 1.x hard-float instructions only have a 5-bit displacement.
+	     PA 2.0 expands this to a wider 14-bit displacement range.  */
+	  bool legal_fp_disp = TARGET_PA_20 ? INT_14_BITS (offset)
+					    : INT_5_BITS (offset);
+
+	  if (!legal_fp_disp)
+	    {
+	      /* An out-of-range displacement for a hard-float register
+		 requires a general purpose register to fix the address.  */
+	      sri->icode = (in_p
+		? direct_optab_handler (reload_in_optab, mode)
+		: direct_optab_handler (reload_out_optab, mode));
+	      return GENERAL_REGS;
+	    }
+	}
       else
-	sri->icode = CODE_FOR_nothing;
+	{
+	  /* For GENERAL_REGS (and soft-float FP targets), check if the
+	     offset fits the standard 14-bit integer load/store range.  */
+	  rtx offset = XEXP (XEXP (x, 0), 1);
+
+	  if (!INT_14_BITS (offset) && (mode == SImode || mode == DImode))
+	    {
+	      sri->icode = (in_p
+		? direct_optab_handler (reload_in_optab, mode)
+		: direct_optab_handler (reload_out_optab, mode));
+
+	      /* Let expander use its internal clobber */
+	      return NO_REGS;
+	    }
+	}
+
+      sri->icode = CODE_FOR_nothing;
       return NO_REGS;
     }
 
@@ -6456,33 +6519,40 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	default:
 	  gcc_unreachable ();
 	}
-      return NO_REGS;
+      return R1_REGS;
     }
 
-  /* Secondary reloads of symbolic expressions require %r1 as a scratch
-     register when we're generating PIC code or when the operand isn't
-     readonly.  */
-  if (pa_symbolic_expression_p (x))
-    {
-      if (GET_CODE (x) == HIGH)
-	x = XEXP (x, 0);
+  /* If we are given a MEM wrapper, look through it to extract the true
+     underlying address entity.  */
+  rtx addr = MEM_P (x) ? XEXP (x, 0) : x;
 
-      if (flag_pic || !read_only_operand (x, VOIDmode))
+  /* Secondary reloads of symbolic address expressions require %r1 as a
+     scratch register when we're generating PIC code or when the operand
+     isn't readonly.  */
+  if (pa_symbolic_expression_p (addr))
+    {
+      if (GET_CODE (addr) == HIGH)
+	addr = XEXP (addr, 0);
+
+      if (flag_pic || !read_only_operand (addr, VOIDmode))
 	{
 	  switch (mode)
 	    {
 	    case E_SImode:
 	      sri->icode = CODE_FOR_reload_insi_r1;
-	      break;
+	      return R1_REGS;
 
 	    case E_DImode:
 	      sri->icode = CODE_FOR_reload_indi_r1;
+	      return R1_REGS;
+
+	    case E_SFmode:
+	    case E_DFmode:
 	      break;
 
 	    default:
 	      gcc_unreachable ();
 	    }
-	  return NO_REGS;
 	}
     }
 
@@ -6513,7 +6583,7 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
       sri->icode = (in_p
 		    ? direct_optab_handler (reload_in_optab, mode)
 		    : direct_optab_handler (reload_out_optab, mode));
-      return NO_REGS;
+      return GENERAL_REGS;
     }
 
   /* A SAR<->FP register copy requires an intermediate general register
@@ -6533,7 +6603,7 @@ pa_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	  sri->icode = (in_p
 			? direct_optab_handler (reload_in_optab, mode)
 			: direct_optab_handler (reload_out_optab, mode));
-	  return NO_REGS;
+	  return GENERAL_REGS;
 	}
 
       /* Handle FP copy.  */
@@ -10552,9 +10622,6 @@ pa_can_change_mode_class (machine_mode from, machine_mode to,
   if (from == to)
     return true;
 
-  if (GET_MODE_SIZE (from) == GET_MODE_SIZE (to))
-    return true;
-
   /* Reject changes to/from modes with zero size.  */
   if (!GET_MODE_SIZE (from) || !GET_MODE_SIZE (to))
     return false;
@@ -10564,13 +10631,28 @@ pa_can_change_mode_class (machine_mode from, machine_mode to,
       || COMPLEX_MODE_P (to) || VECTOR_MODE_P (to))
     return false;
 
+  /* Prevent cross-class type punning impacting the general registers
+     before reload completes.  If the allocator is forced to use
+     GENERAL_REGS, disallow the mode change so it forces a proper
+     instruction breakdown.  */
+  if (!TARGET_SOFT_FLOAT
+      && (rclass == GENERAL_REGS || rclass == R1_REGS)
+      && !reload_completed
+      && GET_MODE_SIZE (to) <= GET_MODE_SIZE (DFmode)
+      && GET_MODE_SIZE (from) <= GET_MODE_SIZE (DFmode)
+      && ((GET_MODE_CLASS (from) == MODE_INT
+	   && GET_MODE_CLASS (to) == MODE_FLOAT)
+	  || (GET_MODE_CLASS (from) == MODE_FLOAT
+	      && GET_MODE_CLASS (to) == MODE_INT)))
+    return false;
+
   /* There is no way to load QImode or HImode values directly from memory
      to a FP register.  SImode loads to the FP registers are not zero
      extended.  On the 64-bit target, this conflicts with the definition
      of LOAD_EXTEND_OP.  Thus, we reject all mode changes in the FP registers
      except for DImode to SImode on the 64-bit target.  It is handled by
      register renaming in pa_print_operand.  */
-  if (MAYBE_FP_REG_CLASS_P (rclass))
+  if (!TARGET_SOFT_FLOAT && MAYBE_FP_REG_CLASS_P (rclass))
     return TARGET_64BIT && from == DImode && to == SImode;
 
   /* TARGET_HARD_REGNO_MODE_OK places modes with sizes larger than a word
@@ -10917,6 +10999,41 @@ pa_function_section (tree decl, enum node_frequency freq,
 static bool
 pa_legitimate_constant_p (machine_mode mode, rtx x)
 {
+  /* Fix early multi-word constant leaks on 32-bit targets.  */
+  if (!TARGET_64BIT
+      && mode == DImode
+      && CONST_INT_P (x)
+      && !INT_14_BITS (x))
+    return false;
+
+  /* Reject naked symbolic and constant SF and DF mode addresses
+     unconditionally on 32-bit targets.  We intentionally do not unwrap
+     LO_SUM expressions here, as those are valid address calculations
+     for 14-bit displacement optimizations on PA 2.0.  */
+  if (!TARGET_64BIT && (mode == SFmode || mode == DFmode))
+    {
+      rtx base = x;
+      if (GET_CODE (base) == PLUS)
+	{
+	  /* Check both components of the addition for symbolic links.  */
+	  rtx op0 = XEXP (base, 0);
+	  rtx op1 = XEXP (base, 1);
+	  if (GET_CODE (op0) == SYMBOL_REF
+	      || GET_CODE (op0) == LABEL_REF
+	      || GET_CODE (op0) == CONST
+	      || GET_CODE (op1) == SYMBOL_REF
+	      || GET_CODE (op1) == LABEL_REF
+	      || GET_CODE (op1) == CONST)
+	    return false;
+	}
+
+      if (GET_CODE (base) == SYMBOL_REF
+	  || GET_CODE (base) == LABEL_REF
+	  || GET_CODE (base) == CONST)
+	return false;
+    }
+
+  /* All non-zero float constants are illegitimate. */
   if (GET_MODE_CLASS (mode) == MODE_FLOAT && x != CONST0_RTX (mode))
     return false;
 
@@ -11119,6 +11236,18 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	}
       return false;
     }
+
+  /* Reject symbolic and constant pool SF and DF mode addresses
+     unconditionally on 32-bit targets.  Even when 14-bit displacements
+     are active (PA 2.0), naked symbolic addresses cannot be loaded
+     directly into floating-point registers and must be forced through
+     a HIGH/LO_SUM split or reload.  */
+  if (!TARGET_64BIT
+      && (mode == SFmode || mode == DFmode)
+      && (GET_CODE (x) == SYMBOL_REF
+	  || GET_CODE (x) == LABEL_REF
+	  || GET_CODE (x) == CONST))
+    return false;
 
   if (GET_CODE (x) == CONST_INT && INT_5_BITS (x))
     return true;

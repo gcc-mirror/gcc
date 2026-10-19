@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -mno-movbe -msse2 -mno-avx" } */
+/* { dg-options "-O2 -ftree-vectorize -mno-movbe -msse2 -mno-avx -mtune=generic" } */
 /* { dg-final { scan-assembler-times "bswap\[\t ]+" 3 } } */
 
 void

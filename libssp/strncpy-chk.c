@@ -33,13 +33,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "config.h"
 #include <ssp/ssp.h>
-#ifdef HAVE_STRING_H
-# include <string.h>
-#endif
+#include <string.h>
 
 extern void __chk_fail (void) __attribute__((__noreturn__));
 
-#ifdef HAVE_STRNCPY
 char *
 __strncpy_chk (char *__restrict__ dest, const char *__restrict__ src,
                size_t len, size_t slen)
@@ -48,4 +45,3 @@ __strncpy_chk (char *__restrict__ dest, const char *__restrict__ src,
     __chk_fail ();
   return strncpy (dest, src, len);
 }
-#endif

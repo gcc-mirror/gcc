@@ -1,5 +1,7 @@
 /* { dg-do compile { target aarch64*-*-* arm*-*-* x86_64-*-* } } */
+/* { dg-require-effective-target arm_neon_ok { target arm*-*-* } } */
 /* { dg-options "-O2 -fdump-tree-forwprop3" } */
+/* { dg-add-options arm_neon } */
 
 typedef int __attribute__((vector_size(16))) v4si;
 

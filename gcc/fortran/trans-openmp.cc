@@ -5985,27 +5985,27 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 
   if (clauses->simdlen_expr)
     {
-      if (declare_simd)
+      c = build_omp_clause (gfc_get_location (&clauses->simdlen_expr->where),
+			    OMP_CLAUSE_SIMDLEN);
+      OMP_CLAUSE_SIMDLEN_EXPR (c)
+	= gfc_conv_constant_to_tree (clauses->simdlen_expr);
+      if (clauses->simdlen_type.type != BT_UNKNOWN)
 	{
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_SIMDLEN);
-	  OMP_CLAUSE_SIMDLEN_EXPR (c)
-	    = gfc_conv_constant_to_tree (clauses->simdlen_expr);
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+	  gfc_typespec ts = {};
+	  ts.type = clauses->simdlen_type.type;
+	  ts.kind = clauses->simdlen_type.kind;
+	  OMP_CLAUSE_SIMDLEN_TYPE (c)
+		= gfc_typenode_for_spec (&ts, 0);
 	}
-      else
-	{
-	  tree simdlen_var;
+      if (clauses->simdlen_divisor)
+	OMP_CLAUSE_SIMDLEN_DIVISOR (c)
+	  = gfc_conv_constant_to_tree (clauses->simdlen_divisor);
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
 
-	  gfc_init_se (&se, NULL);
-	  gfc_conv_expr (&se, clauses->simdlen_expr);
-	  gfc_add_block_to_block (block, &se.pre);
-	  simdlen_var = gfc_evaluate_now (se.expr, block);
-	  gfc_add_block_to_block (block, &se.post);
-
-	  c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_SIMDLEN);
-	  OMP_CLAUSE_SIMDLEN_EXPR (c) = simdlen_var;
-	  omp_clauses = gfc_trans_add_clause (c, omp_clauses);
-	}
+      if (declare_simd && OMP_CLAUSE_SIMDLEN_TYPE (c))
+	/* By contrast, for 'simd', the sorry is in the middle end.  */
+	sorry_at (OMP_CLAUSE_LOCATION (c),
+		  "%<simdlen%> clause with %<scaled%> modifier");
     }
 
   if (clauses->num_teams_list)
@@ -8589,8 +8589,6 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->device_type;
 	  clausesa[GFC_OMP_SPLIT_TARGET].message
 	    = code->ext.omp_clauses->message;
-	  clausesa[GFC_OMP_SPLIT_TARGET].severity
-	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_TEAMS)
 	{
@@ -8614,8 +8612,6 @@ gfc_split_omp_clauses (gfc_code *code,
 	  /* Message is used on target, teams, and parallel.  */
 	  clausesa[GFC_OMP_SPLIT_TEAMS].message
 	    = code->ext.omp_clauses->message;
-	  clausesa[GFC_OMP_SPLIT_TEAMS].severity
-	    = code->ext.omp_clauses->severity;
 	}
       if (mask & GFC_OMP_MASK_DISTRIBUTE)
 	{
@@ -8706,6 +8702,10 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->safelen_expr;
 	  clausesa[GFC_OMP_SPLIT_SIMD].simdlen_expr
 	    = code->ext.omp_clauses->simdlen_expr;
+	  clausesa[GFC_OMP_SPLIT_SIMD].simdlen_type
+	    = code->ext.omp_clauses->simdlen_type;
+	  clausesa[GFC_OMP_SPLIT_SIMD].simdlen_divisor
+	    = code->ext.omp_clauses->simdlen_divisor;
 	  clausesa[GFC_OMP_SPLIT_SIMD].lists[OMP_LIST_ALIGNED]
 	    = code->ext.omp_clauses->lists[OMP_LIST_ALIGNED];
 	  /* Duplicate collapse.  */

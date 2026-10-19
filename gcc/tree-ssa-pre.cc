@@ -1444,7 +1444,7 @@ translate_vuse_through_block (vec<vn_reference_op_s> operands,
 	 non-clobbering statements.  */
       unsigned int cnt = param_sccvn_max_alias_queries_per_access;
       vuse = get_continuation_for_phi (phi, &ref, true,
-				       cnt, &visited, false, NULL, NULL);
+				       cnt, &visited, NULL, NULL);
       if (visited)
 	BITMAP_FREE (visited);
     }
@@ -2950,7 +2950,7 @@ create_component_ref_by_pieces_1 (basic_block block, vn_reference_t ref,
 	    if (!genop2)
 	      return NULL_TREE;
 	  }
-	return build3 (COMPONENT_REF, TREE_TYPE (op1), op0, op1, genop2);
+	return build3 (COMPONENT_REF, currop->type, op0, op1, genop2);
       }
 
     case SSA_NAME:
@@ -4693,7 +4693,7 @@ pass_pre::execute (function *fun)
   scev_initialize ();
   calculate_dominance_info (CDI_DOMINATORS);
 
-  run_rpo_vn (VN_WALK);
+  vn_driver *vn = new vn_driver (fun, true, false, true, VN_WALK);
 
   init_pre ();
 
@@ -4727,7 +4727,7 @@ pass_pre::execute (function *fun)
   statistics_counter_event (fun, "HOIST inserted", pre_stats.hoist_insert);
   statistics_counter_event (fun, "New PHIs", pre_stats.phis);
 
-  todo |= eliminate_with_rpo_vn (inserted_exprs);
+  todo |= vn->finalize (inserted_exprs);
 
   vn_valueize = NULL;
 
@@ -4761,7 +4761,7 @@ pass_pre::execute (function *fun)
      - mark TODO_cleanup_cfg when necessary.  */
   todo |= tail_merge_optimize (need_crit_edge_split);
 
-  free_rpo_vn ();
+  delete vn;
 
   /* Tail merging invalidates the virtual SSA web, together with
      cfg-cleanup opportunities exposed by PRE this will wreck the

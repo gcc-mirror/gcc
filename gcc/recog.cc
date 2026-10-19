@@ -1633,7 +1633,8 @@ address_operand (rtx op, machine_mode mode)
 {
   /* Wrong mode for an address expr.  */
   if (GET_MODE (op) != VOIDmode
-      && ! SCALAR_INT_MODE_P (GET_MODE (op)))
+      && ! SCALAR_INT_MODE_P (GET_MODE (op))
+      && ! (GET_MODE_CLASS (GET_MODE (op)) == MODE_VECTOR_INT))
     return false;
 
   return memory_address_p (mode, op);

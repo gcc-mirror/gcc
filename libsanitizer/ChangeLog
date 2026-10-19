@@ -1,3 +1,19 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	* configure.ac: Add comment for AC_CHECK_SIZEOF use in configure.tgt.
+
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for alloca.h.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
 2026-07-23  Harmen Stoppels  <me@harmenstoppels.nl>
 
 	* Makefile.am: Override all-recursive and define explicit

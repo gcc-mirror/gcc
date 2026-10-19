@@ -495,6 +495,8 @@ enum omp_clause_code {
   OMP_CLAUSE_SAFELEN,
 
   /* OpenMP clause: simdlen (constant-integer-expression).  */
+  /* OpenMP clause: simdlen ([scaled-mod:] constant-integer-expression)
+     with scaled-modifier: scaled(type [, const-integer-expression]).  */
   OMP_CLAUSE_SIMDLEN,
 
   /* OpenMP clause: device_type ({host,nohost,any}).  */
@@ -610,7 +612,9 @@ enum omp_clause_code {
      If the string expr is not null terminated, the length needs to be
      stored in OMP_CLAUSE_MESSAGE_LEN.
      Note that the 'severity' clause is handled as flag to 'message':
-     OMP_CLAUSE_MESSAGE_SEVERITY_WARN.  */
+     OMP_CLAUSE_MESSAGE_SEVERITY_WARN; however, not all directives accepting the
+     message clause also accept the severity clause.  Without severity clause
+     (not permitted or not specified) the error action is error termination.  */
   OMP_CLAUSE_MESSAGE
 };
 

@@ -34,7 +34,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       // If _M_type corresponds to a new value of _Arg_t introduced after GCC 16,
       // this function should return a handle that refers to the union member of
-      // _M_val corresponding to that _Arg_t value.	    
+      // _M_val corresponding to that _Arg_t value.
       __throw_format_error("format error: unrecognized argument type");
     }
 

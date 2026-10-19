@@ -57,7 +57,7 @@
 # include <bits/stl_algo.h>     // upper_bound
 # include <bits/range_access.h> // begin/end for arrays
 #endif
-#if __cpp_lib_chrono >= 201803L // C++20 && HOSTED && USE_CXX11_ABI
+#if __cpp_lib_chrono >= 201803L // C++20 && HOSTED
 # include <sstream>
 # include <string>
 # include <vector>
@@ -2529,7 +2529,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if _GLIBCXX_HOSTED
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
     // C++20 [time.zones] Time zones
 
     struct tzdb;
@@ -3204,7 +3204,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
     using zoned_seconds = zoned_time<seconds>;
-#endif // _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#endif // __cpp_lib_chrono >= 201803L
 
 namespace __detail
 {
@@ -3255,11 +3255,11 @@ namespace __detail
 
       // The list above is known to be valid until (at least) this date
       // and only contains positive leap seconds.
-      constexpr sys_seconds __expires(1798416000s); // 2026-12-28 00:00:00 UTC
+      constexpr sys_seconds __expires(1814140800s); // 2027-06-28 00:00:00 UTC
 
       if (__ss > __expires)
 	{
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI // use chrono::tzdb
+#if __cpp_lib_chrono >= 201803L // use chrono::tzdb
 	  // Call into the library because it might have knowledge of new
 	  // leap seconds loaded at runtime from the tzdata files.
 
@@ -3358,7 +3358,7 @@ namespace __detail
        ((__res = (__res << (sizeof(_Ts) * __CHAR_BIT__) | _ResT(__vs))), ...);
        return __res;
      }
-    
+
    template<typename _Tp>
      [[__gnu__::__always_inline__]]
      constexpr auto
@@ -3416,7 +3416,7 @@ namespace __detail
       size_t
       operator()(const chrono::duration<_Rep, _Period>& __val) const
       noexcept(__is_nothrow_copy_hashable<_Rep>)
-      {	
+      {
 	if constexpr (is_integral_v<_Rep>)
 	  return chrono::__int_hash(__val.count());
 	else
@@ -3567,7 +3567,7 @@ namespace __detail
     {
       size_t
       operator()(chrono::year_month_weekday __val) const noexcept
-      { 
+      {
 	return chrono::__hash(__val.year(), __val.month(),
 			      __val.weekday_indexed());
       }
@@ -3579,14 +3579,14 @@ namespace __detail
     {
       size_t
       operator()(chrono::year_month_weekday_last __val) const noexcept
-      { 
+      {
 	return chrono::__hash(__val.year(), __val.month(),
 			      __val.weekday_last());
       }
     };
 
 #if _GLIBCXX_HOSTED
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
   // zoned_time
   template<typename _Duration, typename _TimeZonePtr>
     requires __is_hash_enabled_for<
@@ -3637,13 +3637,13 @@ namespace __detail
     {
       size_t
       operator()(chrono::leap_second __val) const noexcept
-      { 
+      {
 	return chrono::__int_hash(
 		 __val.date().time_since_epoch().count(),
 		 __val.value().count());
       }
     };
-#endif // _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#endif // __cpp_lib_chrono >= 201803L
 #endif // _GLIBCXX_HOSTED
 #endif // __glibcxx_chrono_cxx20 >= 202306
 

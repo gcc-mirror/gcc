@@ -131,7 +131,6 @@ static void do_pragma_warning_or_error (cpp_reader *, bool error);
 static void do_pragma_warning (cpp_reader *);
 static void do_pragma_error (cpp_reader *);
 static void do_linemarker (cpp_reader *);
-static const cpp_token *get_token_no_padding (cpp_reader *);
 static const cpp_token *get__Pragma_string (cpp_reader *);
 static void destringize_and_run (cpp_reader *, const cpp_string *,
 				 location_t);
@@ -825,7 +824,7 @@ glue_header_name (cpp_reader *pfile)
   buffer = XNEWVEC (char, capacity);
   for (;;)
     {
-      token = get_token_no_padding (pfile);
+      token = _cpp_get_token_no_padding (pfile);
 
       if (token->type == CPP_GREATER)
 	break;
@@ -868,7 +867,7 @@ parse_include (cpp_reader *pfile, int *pangle_brackets,
   const cpp_token *header;
 
   /* Allow macro expansion.  */
-  header = get_token_no_padding (pfile);
+  header = _cpp_get_token_no_padding (pfile);
   *location = header->src_loc;
   if ((header->type == CPP_STRING && header->val.str.text[0] != 'R')
       || header->type == CPP_HEADER_NAME)
@@ -2399,18 +2398,6 @@ do_pragma_error (cpp_reader *pfile)
   do_pragma_warning_or_error (pfile, true);
 }
 
-/* Get a token but skip padding.  */
-static const cpp_token *
-get_token_no_padding (cpp_reader *pfile)
-{
-  for (;;)
-    {
-      const cpp_token *result = cpp_get_token (pfile);
-      if (result->type != CPP_PADDING)
-	return result;
-    }
-}
-
 /* Check syntax is "(string-literal)".  Returns the string on success,
    or NULL on failure.  */
 static const cpp_token *
@@ -2419,23 +2406,17 @@ get__Pragma_string (cpp_reader *pfile)
   const cpp_token *string;
   const cpp_token *paren;
 
-  paren = get_token_no_padding (pfile);
-  if (paren->type == CPP_EOF)
-    _cpp_backup_tokens (pfile, 1);
+  paren = _cpp_get_token_no_padding (pfile);
   if (paren->type != CPP_OPEN_PAREN)
     return NULL;
 
-  string = get_token_no_padding (pfile);
-  if (string->type == CPP_EOF)
-    _cpp_backup_tokens (pfile, 1);
+  string = _cpp_get_token_no_padding (pfile);
   if (string->type != CPP_STRING && string->type != CPP_WSTRING
       && string->type != CPP_STRING32 && string->type != CPP_STRING16
       && string->type != CPP_UTF8STRING)
     return NULL;
 
-  paren = get_token_no_padding (pfile);
-  if (paren->type == CPP_EOF)
-    _cpp_backup_tokens (pfile, 1);
+  paren = _cpp_get_token_no_padding (pfile);
   if (paren->type != CPP_CLOSE_PAREN)
     return NULL;
 

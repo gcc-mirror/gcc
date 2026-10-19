@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx512f" } */
+/* { dg-options "-O3 -mavx512f -mprefer-vector-width=512" } */
 
 int sumint(const int arr[]) {
     arr = __builtin_assume_aligned(arr, 64);

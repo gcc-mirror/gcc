@@ -1,0 +1,3 @@
+begin bits foo = word 16r0; { dg-error "" }
+      skip
+end

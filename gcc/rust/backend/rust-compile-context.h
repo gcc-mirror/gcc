@@ -87,6 +87,28 @@ public:
     return type;
   }
 
+  bool lookup_compiled_adt (const TyTy::ADTType &adt, tree *type) const
+  {
+    auto it = compiled_adt_types.find (compiled_adt_key (adt));
+    if (it == compiled_adt_types.end ())
+      return false;
+
+    *type = it->second;
+    return true;
+  }
+
+  void insert_compiled_adt (const TyTy::ADTType &adt, tree type)
+  {
+    auto key = compiled_adt_key (adt);
+    rust_assert (compiled_adt_types.find (key) == compiled_adt_types.end ());
+    compiled_adt_types.insert ({key, type});
+  }
+
+  void erase_compiled_adt (const TyTy::ADTType &adt)
+  {
+    rust_assert (compiled_adt_types.erase (compiled_adt_key (adt)) == 1);
+  }
+
   tree insert_main_variant (tree type)
   {
     hashval_t h = type_hasher (type);
@@ -478,6 +500,8 @@ private:
   friend class DropBuilder;
   Context ();
 
+  static hashval_t type_hasher (tree type, hash_set<tree> &active_types);
+
   tree pop_block_impl (tree cleanup, location_t cleanup_locus)
   {
     auto block = scope_stack.back ();
@@ -512,6 +536,15 @@ private:
     return block;
   }
 
+  // we cant just use DefId because we can setup Adt<u32> vs Adt<i32> so the
+  // tyref gets us the uniqueness we need
+  static std::pair<DefId, HirId> compiled_adt_key (const TyTy::ADTType &adt)
+  {
+    HirId substitution
+      = adt.has_substitutions_defined () ? adt.get_ty_ref () : UNKNOWN_HIRID;
+    return {adt.get_id (), substitution};
+  }
+
   Resolver::TypeCheckContext *tyctx;
   Analysis::Mappings &mappings;
   Mangler mangler;
@@ -521,6 +554,7 @@ private:
   std::map<HirId, ::Bvariable *> compiled_var_decls;
   std::map<std::pair<tree, HirId>, ::Bvariable *> drop_flags;
   std::map<hashval_t, tree> compiled_type_map;
+  std::map<std::pair<DefId, HirId>, tree> compiled_adt_types;
   std::map<HirId, tree> compiled_fn_map;
   std::map<HirId, tree> compiled_consts;
   std::map<HirId, tree> compiled_labels;

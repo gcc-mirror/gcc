@@ -490,7 +490,6 @@ DEF_RTL_EXPR(UMOD, "umod", "ee", RTX_BIN_ARITH)
 DEF_RTL_EXPR(AND, "and", "ee", RTX_COMM_ARITH)
 DEF_RTL_EXPR(IOR, "ior", "ee", RTX_COMM_ARITH)
 DEF_RTL_EXPR(XOR, "xor", "ee", RTX_COMM_ARITH)
-DEF_RTL_EXPR(AOP, "aop", "ee", RTX_COMM_ARITH)
 DEF_RTL_EXPR(NOT, "not", "e", RTX_UNARY)
 
 /* Operand:

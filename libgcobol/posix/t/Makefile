@@ -9,7 +9,7 @@
 COBC = gcobol
 LDFLAGS = -L $$(pwd) -Wl,-rpath -Wl,$$(pwd)
 
-TESTS = errno exit localtime stat
+TESTS = errno exit localtime stat gettime
 
 # Default target builds the tests
 all: $(TESTS)
@@ -18,13 +18,15 @@ all: $(TESTS)
 	$(COBC) -o $@ $(COBCFLAGS) -I. -I../cpy -I../udf $(LDFLAGS) $<
 
 
-exit: ../udf/posix-exit.cbl 
+exit: ../udf/posix-exit.cbl
 
 errno: ../udf/posix-mkdir.cbl
 
-stat: ../udf/posix-stat.cbl 
+stat: ../udf/posix-stat.cbl
 
-localtime: ../udf/posix-stat.cbl 
+gettime: ../udf/posix-gettime.cbl
+
+localtime: ../udf/posix-stat.cbl
 
 # Run the tests
 test: $(TESTS)

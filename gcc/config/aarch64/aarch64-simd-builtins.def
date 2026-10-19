@@ -711,28 +711,7 @@
   BUILTIN_VDQSF (QUADOP_LANE, float_mls_lane, 0, FP)
   BUILTIN_VDQSF (QUADOP_LANE, float_mla_laneq, 0, FP)
   BUILTIN_VDQSF (QUADOP_LANE, float_mls_laneq, 0, FP)
-
-  /* Implemented by aarch64_crypto_aes<op><mode>.  */
-  VAR1 (BINOPU, crypto_aese, 0, DEFAULT, v16qi)
-  VAR1 (BINOPU, crypto_aesd, 0, DEFAULT, v16qi)
-  VAR1 (UNOPU, crypto_aesmc, 0, DEFAULT, v16qi)
-  VAR1 (UNOPU, crypto_aesimc, 0, DEFAULT, v16qi)
-
-  /* Implemented by aarch64_crypto_sha1<op><mode>.  */
-  VAR1 (UNOPU, crypto_sha1h, 0, DEFAULT, si)
-  VAR1 (BINOPU, crypto_sha1su1, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1c, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1m, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1p, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha1su0, 0, DEFAULT, v4si)
-
-  /* Implemented by aarch64_crypto_sha256<op><mode>.  */
-  VAR1 (TERNOPU, crypto_sha256h, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha256h2, 0, DEFAULT, v4si)
-  VAR1 (BINOPU, crypto_sha256su0, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, crypto_sha256su1, 0, DEFAULT, v4si)
-
-  /* Implemented by aarch64_crypto_pmull<mode>.  */
+ /* Implemented by aarch64_crypto_pmull<mode>.  */
   VAR1 (BINOPP, crypto_pmull, 0, DEFAULT, di)
   VAR1 (BINOPP, crypto_pmull, 0, DEFAULT, v2di)
 
@@ -851,29 +830,6 @@
   BUILTIN_GPI_I16 (UNOPUS, fixuns_trunchf, 2, FP)
   BUILTIN_GPI (UNOPUS, fixuns_truncsf, 2, FP)
   BUILTIN_GPI (UNOPUS, fixuns_truncdf, 2, FP)
-
-  /* Implemented by aarch64_sm3ss1qv4si.  */
-  VAR1 (TERNOPU, sm3ss1q, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm3tt<sm3tt_op>qv4si.  */
-  VAR1 (QUADOPUI, sm3tt1aq, 0, DEFAULT, v4si)
-  VAR1 (QUADOPUI, sm3tt1bq, 0, DEFAULT, v4si)
-  VAR1 (QUADOPUI, sm3tt2aq, 0, DEFAULT, v4si)
-  VAR1 (QUADOPUI, sm3tt2bq, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm3partw<sm3part_op>qv4si.  */
-  VAR1 (TERNOPU, sm3partw1q, 0, DEFAULT, v4si)
-  VAR1 (TERNOPU, sm3partw2q, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm4eqv4si.  */
-  VAR1 (BINOPU, sm4eq, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_sm4ekeyqv4si.  */
-  VAR1 (BINOPU, sm4ekeyq, 0, DEFAULT, v4si)
-  /* Implemented by aarch64_crypto_sha512hqv2di.  */
-  VAR1 (TERNOPU, crypto_sha512hq, 0, DEFAULT, v2di)
-  /* Implemented by aarch64_sha512h2qv2di.  */
-  VAR1 (TERNOPU, crypto_sha512h2q, 0, DEFAULT, v2di)
-  /* Implemented by aarch64_crypto_sha512su0qv2di.  */
-  VAR1 (BINOPU, crypto_sha512su0q, 0, DEFAULT, v2di)
-  /* Implemented by aarch64_crypto_sha512su1qv2di.  */
-  VAR1 (TERNOPU, crypto_sha512su1q, 0, DEFAULT, v2di)
 
   /* Implemented by aarch64_fml<f16mac1>l<f16quad>_low<mode>.  */
   VAR1 (TERNOP, fmlal_low, 0, FP, v2sf)

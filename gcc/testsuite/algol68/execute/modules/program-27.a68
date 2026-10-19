@@ -1,0 +1,9 @@
+{ dg-modules "module27" }
+
+access Module27
+begin assert (wb = word 16rabcd);
+      assert (wi = word 666);
+      assert (IM wc = word 1.0 AND RE wc = word 2.0);
+      assert (IM wc2 = word 10.0 AND RE wc2 = word 0.0);
+      skip
+end

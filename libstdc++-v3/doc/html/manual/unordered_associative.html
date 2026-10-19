@@ -6,7 +6,7 @@
      Here is how the hinting works in the libstdc++ implementation of unordered
      containers, and the rationale behind this behavior.
     </p><p>
-      In the following text, the phrase <span class="emphasis"><em>equivalent to</em></span> refer
+      In the following text, the phrase <span class="emphasis"><em>equivalent to</em></span> refers
       to the result of the invocation of the equal predicate imposed on the
       container by its <code class="code">key_equal</code> object, which defaults to (basically)
       <span class="quote">“<span class="quote">==</span>”</span>.
@@ -22,7 +22,7 @@
       In the case of <code class="code">std::unordered_set</code> and
       <code class="code">std::unordered_map</code> you need to look through all bucket's
       elements for an equivalent one. If there is none the insertion can be
-      achieved, otherwise the insertion fails. As we always need to loop though
+      achieved, otherwise the insertion fails. As we always need to loop through
       all bucket's elements, the hint doesn't tell us if the element is already
       present, and we don't have any constraint on where the new element is to
       be inserted, the hint won't be of any help and will then be ignored.

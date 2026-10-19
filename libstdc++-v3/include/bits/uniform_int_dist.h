@@ -97,7 +97,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct _Select_uint_least_t<__s, 2>
       { using type = unsigned long long; };
 
-// Alternate specialization for  
 #if __SIZEOF_INT128__ > __SIZEOF_LONG_LONG__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>

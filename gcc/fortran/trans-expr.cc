@@ -4501,26 +4501,13 @@ conv_scalar_char_value (gfc_symbol *sym, gfc_se *se, gfc_expr **expr)
 					(*expr)->value.character.string[0]);
       gfc_replace_expr (*expr, tmp);
     }
-  else if (se != NULL && (*expr)->expr_type == EXPR_VARIABLE)
+  else if (se != NULL)
     {
-      if ((*expr)->ref == NULL)
-	{
-	  se->expr = gfc_string_to_single_character
-	    (integer_one_node,
-	      gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
-				  gfc_get_symbol_decl
-				  ((*expr)->symtree->n.sym)),
-	      (*expr)->ts.kind);
-	}
-      else
-	{
-	  gfc_conv_variable (se, *expr);
-	  se->expr = gfc_string_to_single_character
-	    (integer_one_node,
-	      gfc_build_addr_expr (gfc_get_pchar_type ((*expr)->ts.kind),
-				  se->expr),
-	      (*expr)->ts.kind);
-	}
+      gfc_conv_expr (se, *expr);
+      gfc_conv_string_parameter (se);
+      se->expr = gfc_string_to_single_character (integer_one_node,
+						 se->expr, (*expr)->ts.kind);
+      se->string_length = integer_one_node;
     }
 }
 
@@ -7068,7 +7055,9 @@ conv_null_actual (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym)
 	    }
 	}
     }
-  else if (fsym->ts.type == BT_DERIVED)
+  else if (fsym->ts.type == BT_DERIVED
+	   || ((fsym->attr.allocatable || fsym->attr.pointer)
+	       && fsym->ts.type != BT_CLASS))
     {
       if (e->ts.type != BT_UNKNOWN)
 	/* MOLD is present.  Pass a corresponding temporary NULL pointer.
@@ -7299,7 +7288,7 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	      : fsym->attr.allocatable)
 	  && e->symtree
 	  && e->symtree->n.sym
-	  && gfc_variable_attr (e, NULL).allocatable)
+	  && gfc_variable_attr (e).allocatable)
 	{
 	  force_eval_args = true;
 	  break;
@@ -7407,9 +7396,11 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	    }
 	}
       else if (e->expr_type == EXPR_NULL
-	       && (e->ts.type == BT_UNKNOWN || e->ts.type == BT_DERIVED)
 	       && fsym && attr && (attr->pointer || attr->allocatable)
-	       && fsym->ts.type == BT_DERIVED)
+	       && ((fsym->ts.type == BT_DERIVED
+		    && (e->ts.type == BT_UNKNOWN || e->ts.type == BT_DERIVED))
+		   || (fsym->attr.allocatable && fsym->ts.type != BT_CLASS
+		       && fsym->ts.type != BT_CHARACTER)))
 	{
 	  gfc_init_se (&parmse, NULL);
 	  gfc_conv_expr_reference (&parmse, e);
@@ -10348,10 +10339,7 @@ alloc_scalar_allocatable_subcomponent (stmtblock_t *block, tree comp,
 	    }
 	  else
 	    {
-	      if (expr2->ts.type == BT_DERIVED)
-		tmp = gfc_get_symbol_decl (expr2->ts.u.derived);
-	      else
-		tmp = gfc_typenode_for_spec (&expr2->ts);
+	      tmp = gfc_typenode_for_spec (&expr2->ts);
 	      size = TYPE_SIZE_UNIT (tmp);
 	    }
 	}
@@ -10465,6 +10453,39 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 					gfc_class_initializer (&cm->ts, expr),
 					false);
       gfc_add_expr_to_block (&block, tmp);
+    }
+  else if (cm->ts.type == BT_CLASS && CLASS_DATA (cm)->attr.class_pointer
+	   && expr->ts.type != BT_CLASS)
+    {
+      /* Associate a CLASS pointer component with a non-class target.  */
+      gfc_init_se (&se, NULL);
+      if (CLASS_DATA (cm)->attr.dimension)
+	{
+	  se.direct_byref = 1;
+	  se.expr = gfc_class_data_get (dest);
+	  gfc_conv_expr_descriptor (&se, expr);
+	  gfc_add_block_to_block (&block, &se.pre);
+	}
+      else
+	{
+	  gfc_conv_expr_reference (&se, expr);
+	  gfc_add_block_to_block (&block, &se.pre);
+	  tmp = gfc_class_data_get (dest);
+	  gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), se.expr));
+	}
+      vtab = gfc_get_symbol_decl (gfc_find_vtab (&expr->ts));
+      vtab = gfc_build_addr_expr (NULL_TREE, vtab);
+      tmp = gfc_class_vptr_get (dest);
+      gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), vtab));
+      if (UNLIMITED_POLY (cm))
+	{
+	  tmp = gfc_class_len_get (dest);
+	  gfc_add_modify (&block, tmp,
+			  expr->ts.type == BT_CHARACTER
+			  ? fold_convert (TREE_TYPE (tmp), se.string_length)
+			  : build_zero_cst (TREE_TYPE (tmp)));
+	}
+      gfc_add_block_to_block (&block, &se.post);
     }
   else if ((cm->attr.dimension || cm->attr.codimension)
 	   && !cm->attr.proc_pointer)
@@ -10596,6 +10617,14 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm,
 			      fold_convert (TREE_TYPE (tmp),
 			      se.string_length));
 	    }
+	}
+      else if (cm->ts.type == BT_CHARACTER)
+	{
+	  /* Copy into the explicit-length allocatable character component.  */
+	  gfc_conv_string_parameter (&se);
+	  gfc_trans_string_copy (&block, cm->ts.u.cl->backend_decl, dest,
+				 cm->ts.kind, se.string_length, se.expr,
+				 expr->ts.kind);
 	}
       else
 	{

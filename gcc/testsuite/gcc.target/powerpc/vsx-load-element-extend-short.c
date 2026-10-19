@@ -43,53 +43,53 @@ sign extended test.
 long long buffer[8];
 unsigned long verbose=0;
 
-char initbuffer[64] = {
-	0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
-			0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f, 0x80,
-	0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28,
-			0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f, 0x90,
-	0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38,
-			0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xa0,
-	0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48,
-			0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf, 0xb0
+unsigned short initbuffer[32] = {
+	0x1112, 0x1314, 0x1516, 0x1718,
+			0x898a, 0x8b8c, 0x8d8e, 0x8f80,
+	0x2122, 0x2324, 0x2526, 0x2728,
+			0x999a, 0x9b9c, 0x9d9e, 0x9f90,
+	0x3132, 0x3334, 0x3536, 0x3738,
+			0xa9aa, 0xabac, 0xadae, 0xafa0,
+	0x4142, 0x4344, 0x4546, 0x4748,
+			0xb9ba, 0xbbbc, 0xbdbe, 0xbfb0
 };
 
 vector signed __int128 signed_expected[16] = {
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001211},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001312},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001413},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001514},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001615},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001716},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000001817},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8918},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8a89},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8b8a},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8c8b},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8d8c},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8e8d},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8f8e},
-	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff808f},
-	{ (__int128) 0x0000000000000000 << 64 | (__int128) 0x0000000000002180}
+	{ (__int128) 0x0 << 64 | (__int128) 0x1112},
+	{ (__int128) 0x0 << 64 | (__int128) 0x1314},
+	{ (__int128) 0x0 << 64 | (__int128) 0x1516},
+	{ (__int128) 0x0 << 64 | (__int128) 0x1718},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff898a},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8b8c},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8d8e},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff8f80},
+	{ (__int128) 0x0 << 64 | (__int128) 0x2122},
+	{ (__int128) 0x0 << 64 | (__int128) 0x2324},
+	{ (__int128) 0x0 << 64 | (__int128) 0x2526},
+	{ (__int128) 0x0 << 64 | (__int128) 0x2728},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff999a},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff9b9c},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff9d9e},
+	{ (__int128) 0xffffffffffffffff << 64 | (__int128) 0xffffffffffff9f90}
 };
 
 vector unsigned __int128 unsigned_expected[16] = {
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001211},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001312},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001413},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001514},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001615},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001716},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000001817},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008918},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008a89},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008b8a},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008c8b},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008d8c},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008e8d},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000008f8e},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x0000000000000808f},
-	{ (unsigned __int128) 0x0000000000000000  << 64 | (unsigned __int128) 0x00000000000002180}
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x1112},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x1314},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x1516},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x1718},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x898a},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x8b8c},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x8d8e},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x8f80},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x2122},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x2324},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x2526},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x2728},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x999a},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x9b9c},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x9d9e},
+	{ (unsigned __int128) 0x0 << 64 | (unsigned __int128) 0x9f90}
 };
 
 __attribute__ ((noinline))
@@ -117,46 +117,46 @@ int main (int argc, char *argv [])
 
    if (verbose) {
 	   printf("input buffer:\n");
-	   for (int k=0;k<64;k++) {
-		   printf("%x ",initbuffer[k]);
-		   if (k && (k+1)%16==0) printf("\n");
+	   for (int k=0;k<32;k++) {
+		   printf("%4x ",(unsigned short)initbuffer[k]);
+		   if (k && (k+1)%4==0) printf("\n");
 	   }
 	   printf("signed_expected:\n");
 	   for (int k=0;k<ITERS;k++) {
-		printf("%llx ",signed_expected[iteration][0]>>64);
-		printf(" %llx \n",signed_expected[iteration][0]&0xffffffffffffffff);
+		printf("%llx",(unsigned long long)(signed_expected[k][0] >> 64));
+		printf(" %llx \n",(unsigned long long)(signed_expected[k][0]));
 		   printf("\n");
 	   }
 	   printf("unsigned_expected:\n");
 	   for (int k=0;k<ITERS;k++) {
-		printf("%llx ",signed_expected[iteration][0]>>64);
-		printf(" %llx \n",signed_expected[iteration][0]&0xffffffffffffffff);
+		printf("%llx ",(unsigned long long)(unsigned_expected[k][0]>>64));
+		printf(" %llx \n",(unsigned long long)(unsigned_expected[k][0]));
 		   printf("\n");
 	   }
    }
 
    for (iteration = 0; iteration < ITERS ; iteration++ ) {
-      signed_result_v = test_sign_extended_load (iteration, (signed short*)buffer);
+      signed_result_v = test_sign_extended_load (iteration*2, (signed short*)buffer);
       if (signed_result_v[0] != signed_expected[iteration][0] ) {
 		mismatch++;
 		printf("Unexpected results from signed load. i=%d \n", iteration);
-		printf("got:      %llx ",signed_result_v[0]>>64);
-		printf(" %llx \n",signed_result_v[0]&0xffffffffffffffff);
-		printf("expected: %llx ",signed_expected[iteration][0]>>64);
-		printf(" %llx \n",signed_expected[iteration][0]&0xffffffffffffffff);
+		printf("got:      %llx ",(unsigned long long)(signed_result_v[0] >> 64));
+		printf(" %llx \n",(unsigned long long)(signed_result_v[0]));
+		printf("expected: %llx ",(unsigned long long)(signed_expected[iteration][0] >> 64));
+		printf(" %llx \n",(unsigned long long)(signed_expected[iteration][0]));
 		fflush(stdout);
       }
    }
 
    for (iteration = 0; iteration < ITERS ; iteration++ ) {
-      unsigned_result_v = test_zero_extended_unsigned_load (iteration, (unsigned short*)buffer);
+      unsigned_result_v = test_zero_extended_unsigned_load (iteration*2, (unsigned short*)buffer);
       if (unsigned_result_v[0] != unsigned_expected[iteration][0]) {
 		mismatch++;
 		printf("Unexpected results from unsigned load. i=%d \n", iteration);
-		printf("got:      %llx ",unsigned_result_v[0]>>64);
-		printf(" %llx \n",unsigned_result_v[0]&0xffffffffffffffff);
-		printf("expected: %llx ",unsigned_expected[iteration][0]>>64);
-		printf(" %llx \n",unsigned_expected[iteration][0]&0xffffffffffffffff);
+		printf("got:      %llx ",(unsigned long long)(unsigned_result_v[0]>>64));
+		printf(" %llx \n",(unsigned long long)(unsigned_result_v[0]));
+		printf("expected: %llx ",(unsigned long long)(unsigned_expected[iteration][0]>>64));
+		printf(" %llx \n",(unsigned long long)(unsigned_expected[iteration][0]));
 		fflush(stdout);
       }
    }

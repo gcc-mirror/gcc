@@ -6126,7 +6126,6 @@ csky_legitimize_pic_address (rtx orig, rtx reg, bool gotrel_p)
   if (GET_CODE (orig) == SYMBOL_REF || GET_CODE (orig) == LABEL_REF)
     {
       rtx pic_ref, address, rtx_tmp;
-      rtx insn;
       rtx pic_reg = gen_rtx_REG (SImode, PIC_OFFSET_TABLE_REGNUM);
       int subregs = 0;
 
@@ -6189,7 +6188,7 @@ csky_legitimize_pic_address (rtx orig, rtx reg, bool gotrel_p)
 	    }
 	}
 
-      insn = emit_move_insn (reg, pic_ref);
+      rtx_insn *insn = emit_move_insn (reg, pic_ref);
       /* Put a REG_EQUAL note on this insn,
 	 so that it can be optimized by loop.  */
       if (optimize_p)

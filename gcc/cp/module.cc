@@ -13970,7 +13970,7 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 
   /* Propagate to all variants.  */
   if (installing)
-    fixup_type_variants (type);
+    fixup_type_variants (type, /*update_align=*/true);
 
   /* IS_FAKE_BASE_TYPE is inaccurate at this point, because if this is
      the fake base, we've not hooked it into the containing class's
@@ -22220,6 +22220,37 @@ set_originating_module (tree decl, bool friend_p ATTRIBUTE_UNUSED)
     DECL_MODULE_EXPORT_P (decl) = true;
 }
 
+/* True if it's OK to redefine DECL under P1811 because it is attached to the
+   global module and its definition was imported; [basic.def.odr]/12 "there can
+   be more than one definition...provided that each definition appears in a
+   different translation unit"
+
+   This does not depend on whether DECL was already defined, so that for
+   instance it can affect redefinition of default arguments.  This should only
+   be used when we notice a redefinition.  */
+
+bool
+redefinable_import_p (tree decl)
+{
+  if (!modules_p () || named_module_attach_p ())
+    return false;
+
+  decl = STRIP_TEMPLATE (decl);
+
+  if (TREE_CODE (decl) == TYPE_DECL
+      && !DECL_IMPLICIT_TYPEDEF_P (decl)
+      && !TYPE_DECL_FOR_LINKAGE_PURPOSES_P (decl))
+    /* Typedefs are always redefinable, use normal handling.  */
+    return false;
+
+  return (DECL_LANG_SPECIFIC (decl)
+	  && DECL_MODULE_ENTITY_P (decl)
+	  /* Use this instead of DECL_MODULE_IMPORT_P so we don't get confused
+	     by partitions or set_instantiating_module.  */
+	  /* FIXME this also means we allow multiple redefinitions.  */
+	  && get_importing_module (decl, /*flexible*/true) > 0);
+}
+
 /* Checks whether DECL within a module unit has valid linkage for its kind.
    Must be called after visibility for DECL has been finalised.  */
 
@@ -23171,7 +23202,7 @@ static char *
 maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 			 _cpp_file *file, bool angle, const char **alternate)
 {
-  if (!modules_p ())
+  if (!modules_p () || !flag_module_include_translate)
     {
       /* Turn off.  */
       cpp_get_callbacks (reader)->translate_include = NULL;

@@ -1,3 +1,133 @@
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Include ../config/mmap.m4.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-07  Robert Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Include libgcobol.map, libgcobol_compat_gnu.map, and
+	libgcobol_posix.map as -Wl,--version-script inputs.
+	* Makefile.in: Regenerated.
+	* compat/gnu/lib/cbl_gpi.cc (__gg__get_module_names): Minor change
+	to how the external is declared and referenced.
+	(callstack): Likewise.
+	* libgcobol.cc (NO_RDIGITS): Lengthy comment about "How to use
+	symbol versioning".
+	(__gg__module_name_pop): Likewise.
+	* libgcobol.map: New file.
+	* libgcobol_compat_gnu.map: New file.
+	* libgcobol_posix.map: New file.
+
+2026-10-01  Nick Rozinsky  <nick.rozinsky@gmail.com>
+
+	* Makefile.am: Add gettime.cc and posix-clock-gettime.{cbl,cpy}
+	* Makefile.in: Likewise.
+	* posix/t/Makefile: Add gettime smoke test.
+	* posix/cpy/posix-clock-gettime.cpy: New file.
+	* posix/shim/gettime.cc: New file.
+	* posix/shim/timespec.h: New file.
+	* posix/t/gettime.cbl: New file.
+	* posix/udf/posix-clock-gettime.cbl: New file.
+
+2026-10-01  Robert Dubner  <rdubner@symas.com>
+
+	* gfileio.cc (SLASH_CHAR): Support for copied routines, including
+	a copy of the enabling software license.
+	(SLASH_STR): Likewise.
+	(NUM_PREFIX): Likewise.
+	(COB_MODULE_PTR): Likewise.
+	(cob_chk_file_env): Copied routine.
+	(has_directory_separator): Likewise.
+	(looks_absolute): Likewise.
+	(has_acu_hyphen): Likewise.
+	(do_acu_hyphen_translation): Likewise.
+	(prepend_file_path): Likewise.
+	(cob_chk_file_mapping): Likewise.
+	(cob_setup_filename): Likewise.
+	(establish_filename): Use the dollar sign handling routine.
+	* libgcobol.cc (ec_priority): Suppress compiler warning.
+	(default_exception_handler): Eliminate unused variable.
+
+2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/lib/cobrt-file-status.cbl: COPY prototype.
+
+2026-09-30  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/cpy/cblproto.cpy: Remove unused parameter.
+	* compat/gnu/lib/CBL_CLOSE_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_CREATE_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_DELETE_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_READ_FILE.cbl: Likewise.
+	* compat/gnu/lib/CBL_WRITE_FILE.cbl: Likewise.
+	* compat/gnu/lib/cobrt-file-status.cbl: Likewise.
+
+2026-09-30  James K. Lowden  <jklowden@cobolworx.com>
+
+	* ec.h (enum ec_type_t): Whitespace.
+	* libgcobol.cc (ec_priority): New function.
+	(default_exception_handler): use ec_priority.
+
+2026-09-30  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (__gg__propagate_linkage_offsets): New routine for
+	applying the tables of offsets.
+
+2026-09-29  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* posix/cpy/posix-errno.cpy: Add new OPTIONAL arg.
+	* posix/shim/errno.cc (posix_errno): Set errno if required.
+	* posix/udf/posix-errno.cbl: Add new OPTIONAL arg.
+
+2026-09-29  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (defined): Remove always-on MATCH_DECLARATIVE
+	debugging condition.
+	(__gg__compare_numdisp_alpha): Appease cppcheck.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/lib/cbl_get_program_info.3: Update to status quo.
+	* compat/gnu/lib/cbl_gpi.cc (setbasename): Honor return values and
+		return-buf{-len}.
+	(cbl_gpi_cur_status): Likewise.
+	(cbl_gpi_named_status): Likewise.
+	(cbl_gpi_parent_status): Likewise.
+	(cbl_gpi_close_handle): Likewise.
+	(cbl_gpi_first_ep): Update function signature.
+	(cbl_gpi_next_ep): Update function signature.
+	(cbl_gpi_cancel_search_ep): Update function signature.
+	(cbl_gpi_prg_name): Update function signature.
+	(cbl_gpi_nargs): Update function signature.
+	(cbl_gpi_reserved): Update function signature.
+	(cbl_gpi_path_prg_name): Update function signature.
+	(checkflags): Remove old debug messages.
+	(cbl_gpi): Honor return values.
+
+2026-09-28  Xavier Del Campo Romero  <xdelcampo@symas.com>
+
+	* compat/gnu/cpy/stored-char-length.cpy: Add PROTOTYPE.
+	* compat/gnu/lib/stored-char-length.cbl: Add COPY to validate
+		prototype.
+
+2026-09-28  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* libgcobol.cc (format_for_display_internal): Numeric-edited
+	handling.
+	(__gg__move): Likewise.
+	(__gg__compare_numdisp_alpha): Likewise.
+
+2026-09-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* libgcobol.cc (default_exception_handler): Use ec_status.source_file.
+	(__gg__move_stash_release): Delete blank line.
+
 2026-09-25  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (__gg__call_warning_message): Moved here from

@@ -111,16 +111,20 @@ along with GCC; see the file COPYING3.  If not see
   (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 INTEGER_CST@1)) integer_zerop)
 	 integer_minus_onep (realpart @2))
   (if (types_match (type, @0) && int_fits_type_p (@1, type))))
+ /* The overflow flag of SUM describes X + Y only when the parts of SUM have
+    the type of X + Y.  */
  (match (unsigned_integer_sat_add @0 @1)
   /* SUM = ADD_OVERFLOW (X, Y)
      SAT_U_ADD = IMAGPART (SUM) == 0 ? X + Y : -1.  */
-  (cond^ (eq (imagpart (IFN_ADD_OVERFLOW @0 @1)) integer_zerop)
-	 (plus @0 @1) integer_minus_onep))
+  (cond^ (eq (imagpart (IFN_ADD_OVERFLOW@2 @0 @1)) integer_zerop)
+	 (plus @0 @1) integer_minus_onep)
+  (if (types_match (type, TREE_TYPE (TREE_TYPE (@2))))))
  (match (unsigned_integer_sat_add @0 @1)
   /* SUM = ADD_OVERFLOW (X, Y)
      SAT_U_ADD = IMAGPART (SUM) != 0 ? -1 : X + Y.  */
-  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW @0 @1)) integer_zerop)
-	 integer_minus_onep (plus @0 @1)))
+  (cond^ (ne (imagpart (IFN_ADD_OVERFLOW@2 @0 @1)) integer_zerop)
+	 integer_minus_onep (plus @0 @1))
+  (if (types_match (type, TREE_TYPE (TREE_TYPE (@2))))))
  /* A source that tests for overflow against the complement of an operand,
     such as a > MAX - b ? MAX : a + b, reaches the recognisers as a compare
     with ~Y, since ~Y is MAX - Y.  The strict and non-strict forms are both
@@ -452,7 +456,12 @@ along with GCC; see the file COPYING3.  If not see
       SAT_S_ADD = IMAGPART_EXPR (SUM) != 0 ? (-(T)(X < 0) ^ MAX) : SUM  */
   (cond^ (ne (imagpart (IFN_ADD_OVERFLOW:c@2 @0 @1)) integer_zerop)
 	 (signed_integer_sat_val @0)
-	 (realpart @2)))
+	 (realpart @2))
+  /* The overflow flag describes X + Y in T only when X and Y are values
+     of T.  The callers convert a constant Y to T.  */
+  (if (types_match (type, @0)
+       && (types_match (type, @1)
+	   || (TREE_CODE (@1) == INTEGER_CST && int_fits_type_p (@1, type))))))
  (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)Y)
      SAT_S_ADD = (X ^ SUM) < 0 & ~((X ^ Y) < 0) ? (-(T)(X < 0) ^ MAX) : SUM  */
@@ -471,7 +480,9 @@ along with GCC; see the file COPYING3.  If not see
 			(bit_xor:c @0 INTEGER_CST@3)) integer_zerop)
 	 (signed_integer_sat_val @0)
 	 @2)
-  (if (wi::bit_and (wi::to_wide (@1), wi::to_wide (@3)) == 0)))
+  /* (X ^ C3) < 0 has to test that X has the sign of IMM, so C3 and IMM
+     need opposite signs.  The source form above has C3 == ~IMM.  */
+  (if (tree_int_cst_sign_bit (@1) != tree_int_cst_sign_bit (@3))))
 
 (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)-1);
@@ -488,7 +499,9 @@ along with GCC; see the file COPYING3.  If not see
      wide_int c2 = wi::to_wide (@2);
      wide_int sum = wi::add (c1, c2);
     }
-    (if (wi::eq_p (sum, wi::max_value (precision, SIGNED))))))
+    /* The outer conversion must not change the type of X.  */
+    (if (types_match (type, @0)
+	 && wi::eq_p (sum, wi::max_value (precision, SIGNED))))))
 
 (match (signed_integer_sat_add @0 @1)
   /* T SUM = (T)((UT)X + (UT)IMM)

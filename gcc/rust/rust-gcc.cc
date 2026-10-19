@@ -1127,7 +1127,7 @@ arithmetic_or_logical_expression (ArithmeticOrLogicalOperator op, tree left,
 	}
     }
 
-  ret = fold_build2_loc (location, tree_code, tree_type, left, right);
+  ret = build2_loc (location, tree_code, tree_type, left, right);
   TREE_CONSTANT (ret) = TREE_CONSTANT (left) & TREE_CONSTANT (right);
 
   // TODO: How do we handle floating point?

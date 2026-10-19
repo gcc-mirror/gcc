@@ -38,7 +38,8 @@ TyTy::BaseType *unify_site_and (HirId id, TyTy::TyWithLocation lhs,
 				TyTy::TyWithLocation rhs,
 				location_t unify_locus, bool emit_errors,
 				bool commit_if_ok, bool implicit_infer_vars,
-				bool cleanup, bool check_bounds = true);
+				bool cleanup, bool check_bounds = true,
+				bool allow_never_coercion = true);
 
 TyTy::BaseType *coercion_site (HirId id, TyTy::TyWithLocation lhs,
 			       TyTy::TyWithLocation rhs,

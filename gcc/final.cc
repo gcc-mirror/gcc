@@ -195,7 +195,7 @@ static void output_asm_operand_names (rtx *, int *, int);
 #ifdef LEAF_REGISTERS
 static void leaf_renumber_regs (rtx_insn *);
 #endif
-static int align_fuzz (rtx, rtx, int, unsigned);
+static int align_fuzz (rtx_insn *, rtx_insn *, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
 
 /* Initialize data in final at the beginning of a compilation.  */
@@ -303,7 +303,7 @@ int insn_current_align;
    for each insn we'll call the alignment chain of this insn in the following
    comments.  */
 
-static rtx *uid_align;
+static rtx_insn **uid_align;
 static int *uid_shuid;
 static vec<align_flags> label_align;
 
@@ -527,10 +527,11 @@ label_to_alignment (rtx label)
    The return value is undefined for any other value of GROWTH.  */
 
 static int
-align_fuzz (rtx start, rtx end, int known_align_log, unsigned int growth)
+align_fuzz (rtx_insn *start, rtx_insn *end, int known_align_log,
+	    unsigned int growth)
 {
   int uid = INSN_UID (start);
-  rtx align_label;
+  rtx_insn *align_label;
   int known_align = 1 << known_align_log;
   int end_shuid = INSN_SHUID (end);
   int fuzz = 0;
@@ -568,7 +569,6 @@ align_fuzz (rtx start, rtx end, int known_align_log, unsigned int growth)
 int
 insn_current_reference_address (rtx_insn *branch)
 {
-  rtx dest;
   int seq_uid;
 
   if (! INSN_ADDRESSES_SET_P ())
@@ -583,7 +583,7 @@ insn_current_reference_address (rtx_insn *branch)
        We assume here that FUNCTION_BOUNDARY / BITS_PER_UNIT is larger than
        any alignment we'd encounter, so we skip the call to align_fuzz.  */
     return insn_current_address;
-  dest = JUMP_LABEL (branch);
+  rtx_insn *dest = as_a<rtx_insn *> (JUMP_LABEL (branch));
 
   /* BRANCH has no proper alignment chain set, so use SEQ.
      BRANCH also has no INSN_SHUID.  */
@@ -826,7 +826,7 @@ shorten_branches (rtx_insn *first)
   char *varying_length;
   rtx body;
   int uid;
-  rtx align_tab[MAX_CODE_ALIGN + 1];
+  rtx_insn *align_tab[MAX_CODE_ALIGN + 1];
 
   /* Compute maximum UID and allocate label_align / uid_shuid.  */
   max_uid = get_max_uid ();
@@ -909,10 +909,10 @@ shorten_branches (rtx_insn *first)
      that does an alignment of at least n+1, i.e. the successor
      in the alignment chain for an insn that does / has a known
      alignment of n.  */
-  uid_align = XCNEWVEC (rtx, max_uid);
+  uid_align = XCNEWVEC (rtx_insn *, max_uid);
 
   for (i = MAX_CODE_ALIGN + 1; --i >= 0;)
-    align_tab[i] = NULL_RTX;
+    align_tab[i] = nullptr;
   seq = get_last_insn ();
   for (; seq; seq = PREV_INSN (seq))
     {
@@ -1173,8 +1173,8 @@ shorten_branches (rtx_insn *first)
 	      int old_length = insn_lengths[uid];
 	      rtx_insn *rel_lab =
 		safe_as_a <rtx_insn *> (XEXP (XEXP (body, 0), 0));
-	      rtx min_lab = XEXP (XEXP (body, 2), 0);
-	      rtx max_lab = XEXP (XEXP (body, 3), 0);
+	      rtx_insn *min_lab = label_ref_label (XEXP (body, 2));
+	      rtx_insn *max_lab = label_ref_label (XEXP (body, 3));
 	      int rel_addr = INSN_ADDRESSES (INSN_UID (rel_lab));
 	      int min_addr = INSN_ADDRESSES (INSN_UID (min_lab));
 	      int max_addr = INSN_ADDRESSES (INSN_UID (max_lab));
@@ -1283,15 +1283,13 @@ shorten_branches (rtx_insn *first)
 
 	  if (! (varying_length[uid]))
 	    {
+	      rtx_sequence *seq;
 	      if (NONJUMP_INSN_P (insn)
-		  && GET_CODE (PATTERN (insn)) == SEQUENCE)
+		  && (seq = dyn_cast<rtx_sequence *> (PATTERN (insn))))
 		{
-		  int i;
-
-		  body = PATTERN (insn);
-		  for (i = 0; i < XVECLEN (body, 0); i++)
+		  for (int i = 0; i < seq->len (); i++)
 		    {
-		      rtx inner_insn = XVECEXP (body, 0, i);
+		      rtx_insn *inner_insn = seq->insn (i);
 		      int inner_uid = INSN_UID (inner_insn);
 
 		      INSN_ADDRESSES (inner_uid) = insn_current_address;

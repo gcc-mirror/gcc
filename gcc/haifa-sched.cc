@@ -558,7 +558,7 @@ haifa_classify_rtx (const_rtx x)
 }
 
 int
-haifa_classify_insn (const_rtx insn)
+haifa_classify_insn (const rtx_insn *insn)
 {
   return haifa_classify_rtx (PATTERN (insn));
 }
@@ -2583,7 +2583,8 @@ static rank_for_schedule_stats_t rank_for_schedule_stats;
 /* Return the result of comparing insns TMP and TMP2 and update
    Rank_For_Schedule statistics.  */
 static int
-rfs_result (enum rfs_decision decision, int result, rtx tmp, rtx tmp2)
+rfs_result (enum rfs_decision decision, int result, rtx_insn *tmp,
+	    rtx_insn *tmp2)
 {
   ++rank_for_schedule_stats.stats[decision];
   if (result < 0)

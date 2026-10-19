@@ -91,12 +91,28 @@ PROCEDURE MemIncr (MemDiag: Diagnostic; paramno: CARDINAL; incr: CARDINAL) ;
 
 
 (*
+   MemIncrLong - allow the appropriate parameter to be incremented by a LONGCARD
+                 data type.
+*)
+
+PROCEDURE MemIncrLong (MemDiag: Diagnostic; paramno: CARDINAL; incr: LONGCARD) ;
+
+
+(*
    MemDecr - allow the appropriate parameter to be decremented.
              All parameters are initially set to zero and are stored
              as LONGCARD.
 *)
 
 PROCEDURE MemDecr (MemDiag: Diagnostic; paramno: CARDINAL; decr: CARDINAL) ;
+
+
+(*
+   MemDecrLong - allow the appropriate parameter to be decremented using a
+                 LONGCARD data type.
+*)
+
+PROCEDURE MemDecrLong (MemDiag: Diagnostic; paramno: CARDINAL; decr: LONGCARD) ;
 
 
 (*
@@ -108,6 +124,14 @@ PROCEDURE MemSet (MemDiag: Diagnostic; paramno: CARDINAL; value: CARDINAL) ;
 
 
 (*
+   MemSetLong - allow the appropriate parameter to be set to value.
+                All parameters are initially set to zero.
+*)
+
+PROCEDURE MemSetLong (MemDiag: Diagnostic; paramno: CARDINAL; value: LONGCARD) ;
+
+
+(*
    TotalHeapIncr - increments the total heap used.
 *)
 
@@ -115,10 +139,24 @@ PROCEDURE TotalHeapIncr (incr: CARDINAL) ;
 
 
 (*
+   TotalHeapIncrLong - increments the total heap used.
+*)
+
+PROCEDURE TotalHeapIncrLong (incr: LONGCARD) ;
+
+
+(*
    TotalHeapDecr - decrements the total heap used.
 *)
 
 PROCEDURE TotalHeapDecr (incr: CARDINAL) ;
+
+
+(*
+   TotalHeapDecrLong - decrements the total heap used.
+*)
+
+PROCEDURE TotalHeapDecrLong (incr: LONGCARD) ;
 
 
 (*

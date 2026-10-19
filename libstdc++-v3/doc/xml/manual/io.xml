@@ -274,7 +274,7 @@
    output &lt;&lt; "a line of text" &lt;&lt; endl;
    output &lt;&lt; some_data_variable &lt;&lt; endl;
    output &lt;&lt; "another line of text" &lt;&lt; endl; </programlisting>
-   <para>The proper thing to do in this case to just write the data out
+   <para>The proper thing to do in this case is to just write the data out
       and let the libraries and the system worry about the buffering.
       If you need a newline, just write a newline:
    </para>
@@ -435,7 +435,7 @@
    <para>Why a <emphasis>pointer</emphasis> to streambuf and not just a streambuf?  Well,
       the [io]streams hold pointers (or references, depending on the
       implementation) to their buffers, not the actual
-      buffers.  This allows polymorphic behavior on the chapter of the buffers
+      buffers.  This allows polymorphic behavior on the part of the buffers
       as well as the streams themselves.  The pointer is easily retrieved
       using the <code>rdbuf()</code> member function.  Therefore, the easiest
       way to copy the file is:
@@ -487,7 +487,7 @@
       under Windows won't accidentally get mapped to a '\n' character, etc.
       Binary mode is not supposed to suddenly give you a bitstream, and
       if it is doing so in your program then you've discovered a bug in
-      your vendor's compiler (or some other chapter of the C++ implementation,
+      your vendor's compiler (or some other part of the C++ implementation,
       possibly the runtime system).
    </para>
    <para>Second, using <code>&lt;&lt;</code> to write and <code>&gt;&gt;</code> to

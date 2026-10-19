@@ -2838,11 +2838,19 @@ compare_parameter (gfc_symbol *formal, gfc_expr *actual,
       && (actual->symtree->n.sym->attr.asynchronous
          || actual->symtree->n.sym->attr.volatile_)
       &&  (formal->attr.asynchronous || formal->attr.volatile_)
-      && actual->rank && formal->as
-      && !gfc_is_simply_contiguous (actual, true, false)
-      && ((formal->as->type != AS_ASSUMED_SHAPE
-	   && formal->as->type != AS_ASSUMED_RANK && !formal->attr.pointer)
-	  || formal->attr.contiguous))
+      && actual->rank
+      && ((formal->ts.type == BT_CLASS
+	   && formal->ts.u.derived->attr.is_class
+	   && CLASS_DATA (formal)->as
+	   && !(CLASS_DATA (formal)->as->type == AS_ASSUMED_SHAPE
+		|| CLASS_DATA (formal)->as->type == AS_ASSUMED_RANK)
+	   && !CLASS_DATA (formal)->attr.class_pointer)
+	  || (formal->as
+	      && !(formal->as->type == AS_ASSUMED_SHAPE
+		   || formal->as->type == AS_ASSUMED_RANK)
+	      && !formal->attr.pointer)
+	  || formal->attr.contiguous)
+      && !gfc_is_simply_contiguous (actual, true, false))
     {
       if (where)
 	gfc_error ("Dummy argument %qs has to be a pointer, assumed-shape or "

@@ -38,6 +38,7 @@
 
 #include <ctime>
 #include <climits>
+#include <cstdlib>
 #include <debug/debug.h>
 #include <tr1/random>
 
@@ -61,7 +62,11 @@ namespace __gnu_pbds
 
       static unsigned int
       get_time_determined_seed()
-      { return(static_cast<unsigned int>(std::time(0))); }
+      {
+	if (const char* v = std::getenv("GLIBCXX_SEED_TEST_RNG"))
+	  return std::strtoul(v, 0, 10);
+	return(static_cast<unsigned int>(std::time(0)));
+      }
 
       unsigned long
       get_unsigned_long(unsigned long min = 0,

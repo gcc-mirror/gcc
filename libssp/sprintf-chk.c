@@ -35,12 +35,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include "config.h"
 #include <ssp/ssp.h>
 #include <stdarg.h>
-#ifdef HAVE_LIMITS_H
-# include <limits.h>
-#endif
-#ifdef HAVE_STDIO_H
-# include <stdio.h>
-#endif
+#include <limits.h>
+#include <stdio.h>
 
 extern void __chk_fail (void) __attribute__((__noreturn__));
 

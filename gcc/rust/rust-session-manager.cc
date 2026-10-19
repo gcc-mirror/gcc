@@ -482,7 +482,6 @@ void
 Session::handle_crate_name (const char *filename,
 			    const AST::Crate &parsed_crate)
 {
-  auto &mappings = Analysis::Mappings::get ();
   auto crate_name_found = false;
   auto error = Error (UNDEF_LOCATION, std::string ());
 
@@ -544,8 +543,11 @@ Session::handle_crate_name (const char *filename,
   if (saw_errors ())
     return;
 
-  CrateNum crate_num = mappings.get_next_crate_num (options.get_crate_name ());
-  mappings.set_current_crate (crate_num);
+  auto &crate_mappings = Analysis::Mappings::get ().crate;
+
+  CrateNum crate_num
+    = crate_mappings.get_next_crate_num (options.get_crate_name ());
+  crate_mappings.set_current_crate (crate_num);
 }
 
 /** Parse additional attributes injected from the command line
@@ -667,9 +669,9 @@ Session::compile_crate (const char *filename)
     }
 
   // setup the mappings for this AST
-  CrateNum current_crate = mappings.get_current_crate ();
+  CrateNum current_crate = mappings.crate.get_current_crate ();
   AST::Crate &parsed_crate
-    = mappings.insert_ast_crate (std::move (ast_crate), current_crate);
+    = mappings.crate.insert_ast_crate (std::move (ast_crate), current_crate);
 
   /* basic pipeline:
    *  - lex
@@ -808,6 +810,9 @@ Session::compile_crate (const char *filename)
   // type resolve
   Compile::Context *ctx = Compile::Context::get ();
   Resolver::TypeResolution::Resolve (hir);
+
+  if (saw_errors ())
+    return;
 
   Resolver::TypeCheckContext::get ()->get_variance_analysis_ctx ().solve ();
 
@@ -1250,10 +1255,11 @@ Session::dump_hir_pretty (HIR::Crate &crate) const
 tl::expected<Session::LoadedCrate, Session::LoadingError>
 Session::load_extern_crate (const std::string &crate_name, location_t locus)
 {
+  auto &crate_mapping = mappings.crate;
   // has it already been loaded?
-  if (auto crate_num = mappings.lookup_crate_name (crate_name))
+  if (auto crate_num = crate_mapping.lookup_crate_name (crate_name))
     {
-      auto resolved_node_id = mappings.crate_num_to_nodeid (*crate_num);
+      auto resolved_node_id = crate_mapping.crate_num_to_nodeid (*crate_num);
       rust_assert (resolved_node_id);
 
       return tl::make_unexpected (
@@ -1306,7 +1312,8 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     }
 
   // ensure the current vs this crate name don't collide
-  const std::string current_crate_name = mappings.get_current_crate_name ();
+  const std::string current_crate_name
+    = crate_mapping.get_current_crate_name ();
   if (current_crate_name.compare (extern_crate.get_crate_name ()) == 0)
     {
       rust_error_at (locus, "current crate name %qs collides with this",
@@ -1315,10 +1322,10 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
     }
 
   // setup mappings
-  CrateNum saved_crate_num = mappings.get_current_crate ();
+  CrateNum saved_crate_num = crate_mapping.get_current_crate ();
   CrateNum crate_num
-    = mappings.get_next_crate_num (extern_crate.get_crate_name ());
-  mappings.set_current_crate (crate_num);
+    = crate_mapping.get_next_crate_num (extern_crate.get_crate_name ());
+  crate_mapping.set_current_crate (crate_num);
 
   // then lets parse this as a 2nd crate
   Lexer lex (extern_crate.get_metadata (), linemap);
@@ -1326,7 +1333,7 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
   std::unique_ptr<AST::Crate> metadata_crate = parser.parse_crate ();
 
   AST::Crate &parsed_crate
-    = mappings.insert_ast_crate (std::move (metadata_crate), crate_num);
+    = mappings.crate.insert_ast_crate (std::move (metadata_crate), crate_num);
 
   auto ctx = Resolver2_0::NameResolutionContext ();
   Resolver2_0::Builtins::setup_lang_prelude (ctx);
@@ -1357,12 +1364,12 @@ Session::load_extern_crate (const std::string &crate_name, location_t locus)
 	}
     }
 
-  mappings.insert_attribute_proc_macros (crate_num, attribute_macros);
-  mappings.insert_bang_proc_macros (crate_num, bang_macros);
-  mappings.insert_derive_proc_macros (crate_num, derive_macros);
+  mappings.crate.attributes.insert (crate_num, attribute_macros);
+  mappings.crate.bangs.insert (crate_num, bang_macros);
+  mappings.crate.derives.insert (crate_num, derive_macros);
 
   // always restore the crate_num
-  mappings.set_current_crate (saved_crate_num);
+  crate_mapping.set_current_crate (saved_crate_num);
 
   return LoadedCrate{crate_name, parsed_crate.get_node_id (), std::move (ctx)};
 }

@@ -4627,7 +4627,7 @@ package body Exp_Ch7 is
                --  to the component. Signal the nearest suitable scope that it
                --  is safe to manage the secondary stack.
 
-               if Manage_Sec_Stack and then Within_Init_Proc then
+               if Manage_Sec_Stack and then Inside_Init_Proc then
                   Delegate_Sec_Stack_Management;
                end if;
 

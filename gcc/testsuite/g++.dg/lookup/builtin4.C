@@ -10,6 +10,6 @@ namespace std
   union abort;
 }
 
-union abort;
+union abort;			// { dg-warning "built-in" }
 
 using std::abort; // { dg-error "" }

@@ -2563,18 +2563,11 @@
   [(set_attr "sve_type" "sve_int_general")]
 )
 
-;; Define single step widening for reduc_widen_ssum using SADDWB and SADDWT
+;; Define single step widening for reduc_widen_ssum using SADALP.
 (define_expand "reduc_widen_ssum<mode><Vnarrow>3"
-  [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
-	(unspec:SVE_FULL_HSDI
-	  [(match_operand:SVE_FULL_HSDI 2 "register_operand")
-	   (match_operand:<VNARROW> 1 "register_operand")]
-	  UNSPEC_SADDWB))
-   (set (match_dup 0)
-	(unspec:SVE_FULL_HSDI
-	  [(match_dup 0)
-	   (match_dup 1)]
-	  UNSPEC_SADDWT))]
+  [(match_operand:SVE_FULL_HSDI 0 "register_operand")
+   (match_operand:<VNARROW> 1 "register_operand")
+   (match_operand:SVE_FULL_HSDI 2 "register_operand")]
   "TARGET_SVE2"
 {
   /* Use dot product to perform double widening sum reductions by
@@ -2588,20 +2581,18 @@
 					    ones, operands[2]));
       DONE;
     }
+
+  rtx pred = aarch64_ptrue_reg (<VPRED>mode);
+  emit_insn (gen_cond_sadalp<mode> (operands[0], pred, operands[2],
+				    operands[1], operands[2]));
+  DONE;
 })
 
-;; Define single step widening for reduc_widen_usum using UADDWB and UADDWT
+;; Define single step widening for reduc_widen_usum using UADALP.
 (define_expand "reduc_widen_usum<mode><Vnarrow>3"
-  [(set (match_operand:SVE_FULL_HSDI 0 "register_operand" "=w")
-	(unspec:SVE_FULL_HSDI
-	  [(match_operand:SVE_FULL_HSDI 2 "register_operand" "w")
-	   (match_operand:<VNARROW> 1 "register_operand" "w")]
-	  UNSPEC_UADDWB))
-   (set (match_dup 0)
-	(unspec:SVE_FULL_HSDI
-	  [(match_dup 0)
-	   (match_dup 1)]
-	  UNSPEC_UADDWT))]
+  [(match_operand:SVE_FULL_HSDI 0 "register_operand")
+   (match_operand:<VNARROW> 1 "register_operand")
+   (match_operand:SVE_FULL_HSDI 2 "register_operand")]
   "TARGET_SVE2"
 {
   if (TARGET_SVE2p1_OR_SME2
@@ -2613,6 +2604,11 @@
 					    ones, operands[2]));
       DONE;
     }
+
+  rtx pred = aarch64_ptrue_reg (<VPRED>mode);
+  emit_insn (gen_cond_uadalp<mode> (operands[0], pred, operands[2],
+				    operands[1], operands[2]));
+  DONE;
 })
 
 ;; -------------------------------------------------------------------------
@@ -3344,7 +3340,7 @@
 ;; - UADALP
 ;; -------------------------------------------------------------------------
 
-;; Predicated pairwise absolute difference and accumulate with merging.
+;; Predicated add long pairwise and accumulate with merging.
 (define_expand "@cond_<sve_int_op><mode>"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
 	(unspec:SVE_FULL_HSDI
@@ -3364,8 +3360,7 @@
 	      || CONSTANT_P (operands[4]));
 })
 
-;; Predicated pairwise absolute difference and accumulate, merging with
-;; the first input.
+;; Predicated add long pairwise and accumulate, merging with the first input.
 (define_insn_and_rewrite "*cond_<sve_int_op><mode>_2"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
 	(unspec:SVE_FULL_HSDI
@@ -3389,7 +3384,7 @@
   [(set_attr "sve_type" "sve_int_accum")]
 )
 
-;; Predicated pairwise absolute difference and accumulate, merging with zero.
+;; Predicated add long pairwise and accumulate, merging with zero.
 (define_insn_and_rewrite "*cond_<sve_int_op><mode>_z"
   [(set (match_operand:SVE_FULL_HSDI 0 "register_operand")
 	(unspec:SVE_FULL_HSDI

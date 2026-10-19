@@ -1,5 +1,6 @@
 begin assert (NOT (16rff TEST 8));
       assert (NOT (16rff TEST -1));
       assert (NOT (16rff TEST -2));
+      assert (NOT (word 16rff TEST -2));
       assert (2r100 TEST 2)
 end

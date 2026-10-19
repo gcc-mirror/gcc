@@ -1,3 +1,274 @@
+2026-10-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127738
+	* caf/shmem.c (new_team_id): New function.
+	(_gfortran_caf_form_team): Use it.  Count the FORM TEAM statements
+	of the current team.
+	(_gfortran_caf_change_team): Derive the coarray ids from the team's
+	id.
+	* caf/shmem/supervisor.c (ensure_shmem_initialization): Initialize
+	the id of the initial team and the next team id.
+	* caf/shmem/supervisor.h (struct supervisor): Add next_team_id.
+	* caf/shmem/teams_mgmt.h (struct caf_shmem_team): Add teams_formed.
+	(struct shmem_image_info): Replace lastmemid by id.  Add new_teams
+	and new_teams_gen.
+
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127753
+	* caf/shmem/shared_memory.c (ENV_FD): New.
+	(shared_memory_init): Pass the descriptor to the images through
+	ENV_FD and unlink the object.  Use the inherited descriptor in an
+	image.  Exclude the mapping from core dumps.
+	(shared_memory_cleanup): Do not unlink an unlinked object.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* caf/shmem/thread_support.c (initialize_shared_mutex)
+	(initialize_shared_errorcheck_mutex): Do not make the mutex robust.
+	* caf/shmem/thread_support.h: Remove the executable bit.
+
+2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* caf/shmem.c (_gfortran_caf_register): Handle a failed allocation
+	of a component.
+	(_gfortran_caf_form_team): Report a failed allocation.
+	* caf/shmem/alloc.c (get_memory_by_id_internal): Return NULL when
+	the shared memory is exhausted.
+	* caf/shmem/alloc.h (alloc_get_memory_by_id): Document it.
+	* caf/shmem/allocator.c (allocator_shared_malloc_or_die): New
+	function.
+	* caf/shmem/allocator.h (allocator_shared_malloc): Document the null
+	result.
+	(allocator_shared_malloc_or_die): Declare.
+	* caf/shmem/collective_subroutine.c (collsub_init_supervisor)
+	(get_collsub_buf): Use allocator_shared_malloc_or_die.
+	* caf/shmem/hashmap.c (hashmap_init_supervisor)
+	(enlarge_hashmap_mem): Likewise.
+	* caf/shmem/sync.c (sync_init_supervisor): Likewise.
+	* caf/shmem/shared_memory.c (shared_memory_get_mem_with_alignment):
+	Return a null pointer when the shared memory is exhausted.
+	* caf/shmem/supervisor.c (ensure_shmem_initialization): Terminate
+	when the initial team cannot be allocated.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* Makefile.in: Regenerate.
+	* acinclude.m4: Include ../config/mmap.m4.
+
+2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+
+2026-10-13  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127845
+	* generated/findloc1_c10.c (mfindloc1_c10): Regenerate.
+	* generated/findloc1_c16.c (mfindloc1_c16): Likewise.
+	* generated/findloc1_c17.c (mfindloc1_c17): Likewise.
+	* generated/findloc1_c4.c (mfindloc1_c4): Likewise.
+	* generated/findloc1_c8.c (mfindloc1_c8): Likewise.
+	* generated/findloc1_i1.c (mfindloc1_i1): Likewise.
+	* generated/findloc1_i16.c (mfindloc1_i16): Likewise.
+	* generated/findloc1_i2.c (mfindloc1_i2): Likewise.
+	* generated/findloc1_i4.c (mfindloc1_i4): Likewise.
+	* generated/findloc1_i8.c (mfindloc1_i8): Likewise.
+	* generated/findloc1_r10.c (mfindloc1_r10): Likewise.
+	* generated/findloc1_r16.c (mfindloc1_r16): Likewise.
+	* generated/findloc1_r17.c (mfindloc1_r17): Likewise.
+	* generated/findloc1_r4.c (mfindloc1_r4): Likewise.
+	* generated/findloc1_r8.c (mfindloc1_r8): Likewise.
+	* generated/findloc1_s1.c (mfindloc1_s1): Likewise.
+	* generated/findloc1_s4.c (mfindloc1_s4): Likewise.
+	* m4/ifindloc1.m4: Properly advance through MASK array argument when
+	MASK and DIM are present.
+
+2026-10-13  Harald Anlauf  <anlauf@gmx.de>
+	    Federico Perini  <federico.perini@gmail.com>
+
+	PR fortran/127846
+	* generated/maxloc0_16_i1.c (mmaxloc0_16_i1): Regenerate.
+	* generated/maxloc0_16_i16.c (mmaxloc0_16_i16): Likewise.
+	* generated/maxloc0_16_i2.c (mmaxloc0_16_i2): Likewise.
+	* generated/maxloc0_16_i4.c (mmaxloc0_16_i4): Likewise.
+	* generated/maxloc0_16_i8.c (mmaxloc0_16_i8): Likewise.
+	* generated/maxloc0_16_m1.c (mmaxloc0_16_m1): Likewise.
+	* generated/maxloc0_16_m16.c (mmaxloc0_16_m16): Likewise.
+	* generated/maxloc0_16_m2.c (mmaxloc0_16_m2): Likewise.
+	* generated/maxloc0_16_m4.c (mmaxloc0_16_m4): Likewise.
+	* generated/maxloc0_16_m8.c (mmaxloc0_16_m8): Likewise.
+	* generated/maxloc0_16_r10.c (mmaxloc0_16_r10): Likewise.
+	* generated/maxloc0_16_r16.c (mmaxloc0_16_r16): Likewise.
+	* generated/maxloc0_16_r17.c (mmaxloc0_16_r17): Likewise.
+	* generated/maxloc0_16_r4.c (mmaxloc0_16_r4): Likewise.
+	* generated/maxloc0_16_r8.c (mmaxloc0_16_r8): Likewise.
+	* generated/maxloc0_4_i1.c (mmaxloc0_4_i1): Likewise.
+	* generated/maxloc0_4_i16.c (mmaxloc0_4_i16): Likewise.
+	* generated/maxloc0_4_i2.c (mmaxloc0_4_i2): Likewise.
+	* generated/maxloc0_4_i4.c (mmaxloc0_4_i4): Likewise.
+	* generated/maxloc0_4_i8.c (mmaxloc0_4_i8): Likewise.
+	* generated/maxloc0_4_m1.c (mmaxloc0_4_m1): Likewise.
+	* generated/maxloc0_4_m16.c (mmaxloc0_4_m16): Likewise.
+	* generated/maxloc0_4_m2.c (mmaxloc0_4_m2): Likewise.
+	* generated/maxloc0_4_m4.c (mmaxloc0_4_m4): Likewise.
+	* generated/maxloc0_4_m8.c (mmaxloc0_4_m8): Likewise.
+	* generated/maxloc0_4_r10.c (mmaxloc0_4_r10): Likewise.
+	* generated/maxloc0_4_r16.c (mmaxloc0_4_r16): Likewise.
+	* generated/maxloc0_4_r17.c (mmaxloc0_4_r17): Likewise.
+	* generated/maxloc0_4_r4.c (mmaxloc0_4_r4): Likewise.
+	* generated/maxloc0_4_r8.c (mmaxloc0_4_r8): Likewise.
+	* generated/maxloc0_8_i1.c (mmaxloc0_8_i1): Likewise.
+	* generated/maxloc0_8_i16.c (mmaxloc0_8_i16): Likewise.
+	* generated/maxloc0_8_i2.c (mmaxloc0_8_i2): Likewise.
+	* generated/maxloc0_8_i4.c (mmaxloc0_8_i4): Likewise.
+	* generated/maxloc0_8_i8.c (mmaxloc0_8_i8): Likewise.
+	* generated/maxloc0_8_m1.c (mmaxloc0_8_m1): Likewise.
+	* generated/maxloc0_8_m16.c (mmaxloc0_8_m16): Likewise.
+	* generated/maxloc0_8_m2.c (mmaxloc0_8_m2): Likewise.
+	* generated/maxloc0_8_m4.c (mmaxloc0_8_m4): Likewise.
+	* generated/maxloc0_8_m8.c (mmaxloc0_8_m8): Likewise.
+	* generated/maxloc0_8_r10.c (mmaxloc0_8_r10): Likewise.
+	* generated/maxloc0_8_r16.c (mmaxloc0_8_r16): Likewise.
+	* generated/maxloc0_8_r17.c (mmaxloc0_8_r17): Likewise.
+	* generated/maxloc0_8_r4.c (mmaxloc0_8_r4): Likewise.
+	* generated/maxloc0_8_r8.c (mmaxloc0_8_r8): Likewise.
+	* generated/minloc0_16_i1.c (mminloc0_16_i1): Likewise.
+	* generated/minloc0_16_i16.c (mminloc0_16_i16): Likewise.
+	* generated/minloc0_16_i2.c (mminloc0_16_i2): Likewise.
+	* generated/minloc0_16_i4.c (mminloc0_16_i4): Likewise.
+	* generated/minloc0_16_i8.c (mminloc0_16_i8): Likewise.
+	* generated/minloc0_16_m1.c (mminloc0_16_m1): Likewise.
+	* generated/minloc0_16_m16.c (mminloc0_16_m16): Likewise.
+	* generated/minloc0_16_m2.c (mminloc0_16_m2): Likewise.
+	* generated/minloc0_16_m4.c (mminloc0_16_m4): Likewise.
+	* generated/minloc0_16_m8.c (mminloc0_16_m8): Likewise.
+	* generated/minloc0_16_r10.c (mminloc0_16_r10): Likewise.
+	* generated/minloc0_16_r16.c (mminloc0_16_r16): Likewise.
+	* generated/minloc0_16_r17.c (mminloc0_16_r17): Likewise.
+	* generated/minloc0_16_r4.c (mminloc0_16_r4): Likewise.
+	* generated/minloc0_16_r8.c (mminloc0_16_r8): Likewise.
+	* generated/minloc0_4_i1.c (mminloc0_4_i1): Likewise.
+	* generated/minloc0_4_i16.c (mminloc0_4_i16): Likewise.
+	* generated/minloc0_4_i2.c (mminloc0_4_i2): Likewise.
+	* generated/minloc0_4_i4.c (mminloc0_4_i4): Likewise.
+	* generated/minloc0_4_i8.c (mminloc0_4_i8): Likewise.
+	* generated/minloc0_4_m1.c (mminloc0_4_m1): Likewise.
+	* generated/minloc0_4_m16.c (mminloc0_4_m16): Likewise.
+	* generated/minloc0_4_m2.c (mminloc0_4_m2): Likewise.
+	* generated/minloc0_4_m4.c (mminloc0_4_m4): Likewise.
+	* generated/minloc0_4_m8.c (mminloc0_4_m8): Likewise.
+	* generated/minloc0_4_r10.c (mminloc0_4_r10): Likewise.
+	* generated/minloc0_4_r16.c (mminloc0_4_r16): Likewise.
+	* generated/minloc0_4_r17.c (mminloc0_4_r17): Likewise.
+	* generated/minloc0_4_r4.c (mminloc0_4_r4): Likewise.
+	* generated/minloc0_4_r8.c (mminloc0_4_r8): Likewise.
+	* generated/minloc0_8_i1.c (mminloc0_8_i1): Likewise.
+	* generated/minloc0_8_i16.c (mminloc0_8_i16): Likewise.
+	* generated/minloc0_8_i2.c (mminloc0_8_i2): Likewise.
+	* generated/minloc0_8_i4.c (mminloc0_8_i4): Likewise.
+	* generated/minloc0_8_i8.c (mminloc0_8_i8): Likewise.
+	* generated/minloc0_8_m1.c (mminloc0_8_m1): Likewise.
+	* generated/minloc0_8_m16.c (mminloc0_8_m16): Likewise.
+	* generated/minloc0_8_m2.c (mminloc0_8_m2): Likewise.
+	* generated/minloc0_8_m4.c (mminloc0_8_m4): Likewise.
+	* generated/minloc0_8_m8.c (mminloc0_8_m8): Likewise.
+	* generated/minloc0_8_r10.c (mminloc0_8_r10): Likewise.
+	* generated/minloc0_8_r16.c (mminloc0_8_r16): Likewise.
+	* generated/minloc0_8_r17.c (mminloc0_8_r17): Likewise.
+	* generated/minloc0_8_r4.c (mminloc0_8_r4): Likewise.
+	* generated/minloc0_8_r8.c (mminloc0_8_r8): Likewise.
+	* m4/maxloc0.m4: Fix looping through array argument when BACK=.true.
+	* m4/minloc0.m4: Likewise.
+
+2026-10-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127837
+	* caf/shmem.c (_gfortran_caf_end_team): Wait with
+	counter_barrier_wait and set STAT= with TEAM_HEALTH_CHECK when
+	an image of the team stopped or failed.  Do not pass STAT= to
+	_gfortran_caf_deregister.
+	* caf/shmem/counter_barrier.c (counter_barrier_wait): Add
+	TERMINATED argument.
+	* caf/shmem/counter_barrier.h (counter_barrier_wait): Likewise.
+	* caf/shmem/sync.c (sync_team): Update call.
+
+2026-10-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127684
+	* caf/shmem.c (_gfortran_caf_sync_images): Do not return early for
+	a stopped or failed image.  Check the images only when one of them
+	terminated.
+	(mark_stopped): Use notify_image_terminated.
+	(_gfortran_caf_fail_image): Likewise.
+	* caf/shmem/supervisor.c (supervisor_main_loop): Likewise.  Do not
+	signal the images waiting in sync_table.
+	* caf/shmem/sync.c (stopped_image_in): New function.
+	(sync_table): Return whether an image of the set terminated.  Stop
+	waiting when an image of the set stopped.
+	(notify_image_terminated): New function.
+	* caf/shmem/sync.h (sync_table): Return bool.
+	(notify_image_terminated): Declare.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127702
+	* caf/shmem.c (_gfortran_caf_num_images, _gfortran_caf_image_status)
+	(_gfortran_caf_form_team): Take the size of a team from its image
+	map.
+	* caf/shmem/collective_subroutine.c (collsub_reduce_array):
+	Likewise.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (_gfortran_caf_register): Allocate a part for every
+	image of the program.
+
+2026-10-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127347
+	* caf/shmem.c (_gfortran_caf_init): Synchronize without the checks
+	of the SYNC ALL statement.
+	(_gfortran_caf_sync_all, _gfortran_caf_sync_team): Report the images
+	of the team that terminated before the images synchronized.
+	(_gfortran_caf_form_team): Register the team.
+	* caf/shmem/collective_subroutine.c (collsub_sync): Adjust.
+	* caf/shmem/counter_barrier.c (counter_barrier_init): Initialize the
+	new fields.
+	(counter_barrier_add_locked): Count the images removed from the
+	barrier.
+	(next_round): Take that count as a completed round ends.
+	(wait_round, counter_barrier_wait_abortable): Report it for the round
+	the image took part in.
+	* caf/shmem/counter_barrier.h (counter_barrier): Add terminated and
+	round_terminated.
+	(counter_barrier_wait_abortable): Adjust.
+	* caf/shmem/supervisor.c (ensure_shmem_initialization): Initialize
+	the list of teams.  Register the initial team.
+	(supervisor_main_loop): Drop an image that terminated without
+	leaving its teams from them.
+	* caf/shmem/supervisor.h (supervisor): Add teams.
+	* caf/shmem/sync.c (sync_all, sync_team_unless_stopped): Report the
+	images that terminated.
+	* caf/shmem/sync.h (sync_all, sync_team_unless_stopped): Adjust.
+	* caf/shmem/teams_mgmt.c (team_terminated_images)
+	(update_teams_images_locked, leave_team): Take the team's image
+	info.
+	(register_team, update_registered_teams): New functions.
+	* caf/shmem/teams_mgmt.h (shmem_image_info): Add next_team.
+	(register_team, update_registered_teams): Declare.
+
+2026-10-02  LIU Hao  <lh_mouse@126.com>
+
+	* configure.ac: Set `enable_caf_shmem` to true for Cygwin and MinGW hosts.
+	* configure: Regenerate.
+
 2026-09-25  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127347

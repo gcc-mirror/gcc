@@ -1,0 +1,3 @@
+begin word real w = - word 10;
+      assert (ABS w = word 10.0)
+end

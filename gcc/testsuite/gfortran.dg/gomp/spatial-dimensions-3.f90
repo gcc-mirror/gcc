@@ -256,3 +256,18 @@ subroutine seven
   !$omp teams num_teams(strict : 4 : 5 )  ! { dg-error "Expected either '\\\[lower-expr : \\\] upper-expr' or 'dims\\(N\\): expr-list' at .1." }
   block; end block
 end
+
+! While teams and target take 'message', they do not take 'severity':
+subroutine eight
+  !$omp teams num_teams (2:2) severity(fatal)  ! { dg-error "31: Failed to match clause at .1." }
+  block; end block
+
+  !$omp teams num_teams (2) message("abc") severity(fatal)  ! { dg-error "44: Failed to match clause at .1." }
+  block; end block
+
+  !$omp target severity(fatal)  ! { dg-error "16: Failed to match clause at .1." }
+  block; end block
+
+  !$omp target teams message("abc") severity(fatal)  ! { dg-error "37: Failed to match clause at .1." }
+  block; end block
+end

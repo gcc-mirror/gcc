@@ -8,7 +8,7 @@
     The Library<br />
     -----------<br />
 <br />
-    This paper is covers two major areas:<br />
+    This paper covers two major areas:<br />
 <br />
     - Features and policies not mentioned in the standard that<br />
     the quality of the library implementation depends on, including<br />
@@ -42,10 +42,10 @@
     When these hooks are not used, any time and code expended to<br />
     support that flexibility is wasted.<br />
 <br />
-    - Templates are often described as causing to "code bloat". In<br />
+    - Templates are often described as causing "code bloat". In<br />
     practice, this refers (when it refers to anything real) to several<br />
     independent processes. First, when a class template is manually<br />
-    instantiated in its entirely, current compilers place the definitions<br />
+    instantiated in its entirety, current compilers place the definitions<br />
     for all members in a single object file, so that a program linking<br />
     to one member gets definitions of all. Second, template functions<br />
     which do not actually depend on the template argument are, under<br />
@@ -564,7 +564,7 @@
     pointers and iterators, and that must be fixed before safer iterators<br />
     can be introduced.<br />
 <br />
-    Some of the functions in &lt;cstring&gt; are different from the C version.<br />
+    Some of the functions in &lt;cstring&gt; are different from the C version,<br />
     generally overloaded on const and non-const argument pointers. For<br />
     example, in &lt;cstring&gt; strchr is overloaded. The functions isupper<br />
     etc. in &lt;cctype&gt; typically implemented as macros in C are functions<br />
@@ -820,7 +820,7 @@
     interesting problem. It is possible to define an inline std::fprintf()<br />
     implemented in terms of the 'extern "C"' vfprintf(), but there is no<br />
     standard vfscanf() to use to implement std::fscanf(). It appears that<br />
-    vfscanf but be re-implemented in C++ for targets where no vfscanf<br />
+    vfscanf must be re-implemented in C++ for targets where no vfscanf<br />
     extension has been defined. This is interesting in that it seems<br />
     to be the only significant case in the C library where this kind of<br />
     rewriting is necessary. (Of course Glibc provides the vfscanf()<br />

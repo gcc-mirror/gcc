@@ -105,6 +105,20 @@ assign_discriminators_to_bb (basic_block bb,
 			     unsigned int multiplicity_factor,
 			     unsigned int copyid)
 {
+  if (current_ir_type () != IR_GIMPLE)
+    {
+      rtx_insn *insn;
+      FOR_BB_INSNS (bb, insn)
+	{
+	  if (!INSN_P (insn) || !INSN_HAS_LOCATION (insn))
+	    continue;
+	  location_t loc = INSN_LOCATION (insn);
+	  INSN_LOCATION (insn)
+	    = update_location_discriminator (loc, multiplicity_factor, copyid);
+	}
+      return;
+    }
+
   gimple_stmt_iterator gsi;
   gphi_iterator phi_gsi;
   edge e;

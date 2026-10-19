@@ -37,8 +37,8 @@ main () {
   signed long long int *psll;
   
 #if DEBUG
-  val.vsi128 = store_data;
-  printf("Data to store [%d] = 0x%llx %llx\n", i, val.ull[1], val.ull[0]);
+  conv.vsi128 = store_data;
+  printf("Data to store 0x%llx %llx\n", conv.ull[1], conv.ull[0]);
 #endif
 
   psc = &sc[0];
@@ -60,7 +60,11 @@ main () {
 #endif
 
   ss[0] = 0x52;
+#ifdef __BIG_ENDIAN__
+  expected_ss = 0x0032;
+#else
   expected_ss = 0x1752;
+#endif
   __builtin_altivec_tr_stxvrhx (store_data, sl, pss);
 
   if (expected_ss != ss[0] & 0xFFFF)
@@ -72,7 +76,11 @@ main () {
 #endif
 
   si[0] = 0x21;
+#ifdef __BIG_ENDIAN__
+  expected_si = 0x00765432;
+#else
   expected_si = 0x54321721;
+#endif
   __builtin_altivec_tr_stxvrwx (store_data, sl, psi);
 
   if (expected_si != si[0])
@@ -84,7 +92,11 @@ main () {
 #endif
 
   sll[0] = 0x12FFULL;
+#ifdef __BIG_ENDIAN__
+  expected_sll = 0x00fedcba98765432;
+#else
   expected_sll = 0xdcba9876543217FF;
+#endif
   __builtin_altivec_tr_stxvrdx (store_data, sl, psll);
 
   if (expected_sll != sll[0])

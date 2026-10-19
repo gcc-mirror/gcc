@@ -3957,7 +3957,8 @@ static void gen_const_die (tree, dw_die_ref);
 static void gen_label_die (tree, dw_die_ref);
 static void gen_lexical_block_die (tree, dw_die_ref);
 static void gen_inlined_subroutine_die (tree, dw_die_ref);
-static void gen_field_die (tree, struct vlr_context *, dw_die_ref);
+static dw_die_ref gen_field_die (tree, struct vlr_context *, dw_die_ref,
+				 bool = false);
 static void gen_ptr_to_mbr_type_die (tree, dw_die_ref);
 static dw_die_ref gen_compile_unit_die (const char *);
 static void gen_inheritance_die (tree, tree, tree, dw_die_ref);
@@ -25563,18 +25564,21 @@ gen_inlined_subroutine_die (tree stmt, dw_die_ref context_die)
 }
 
 /* Generate a DIE for a field in a record, or structure.  CTX is required: see
-   the comment for VLR_CONTEXT.  */
+   the comment for VLR_CONTEXT.  If ANONYMOUS is true, create an anonymous DIE
+   and do not equate it to the field.  */
 
-static void
-gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
+static dw_die_ref
+gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die,
+	       bool anonymous)
 {
   dw_die_ref decl_die;
 
   if (TREE_TYPE (decl) == error_mark_node)
-    return;
+    return NULL;
 
   decl_die = new_die (DW_TAG_member, context_die, decl);
-  add_name_and_src_coords_attributes (decl_die, decl);
+  if (!anonymous)
+    add_name_and_src_coords_attributes (decl_die, decl);
   add_type_attribute (decl_die, member_declared_type (decl), decl_quals (decl),
 		      TYPE_REVERSE_STORAGE_ORDER (DECL_FIELD_CONTEXT (decl)),
 		      context_die);
@@ -25608,7 +25612,9 @@ gen_field_die (tree decl, struct vlr_context *ctx, dw_die_ref context_die)
 	}
 
   /* Equate decl number to die, so that we can look up this decl later on.  */
-  equate_decl_number_to_die (decl, decl_die);
+  if (!anonymous)
+    equate_decl_number_to_die (decl, decl_die);
+  return decl_die;
 }
 
 /* Generate a DIE for a pointer to a member type.  TYPE can be an
@@ -25932,21 +25938,37 @@ is_variant_part (tree decl)
 	  && TREE_CODE (TREE_TYPE (decl)) == QUAL_UNION_TYPE);
 }
 
-/* Check that OPERAND is a reference to a field in STRUCT_TYPE.  If it is,
-   return the FIELD_DECL.  Return NULL_TREE otherwise.  */
+/* Check that OPERAND is a reference to a field or sub-field of STRUCT_TYPE
+   whose prefix is a PLACEHOLDER_EXPR and, in the case of a sub-field, check
+   that the containing fields are at offset 0.  If it is, return the field or
+   sub-field, or else return NULL_TREE.  */
 
 static tree
-analyze_discr_in_predicate (tree operand, tree struct_type)
+extract_discr_in_expr (tree operand, tree struct_type)
 {
   while (CONVERT_EXPR_P (operand))
     operand = TREE_OPERAND (operand, 0);
 
-  /* Match field access to members of struct_type only.  */
-  if (TREE_CODE (operand) == COMPONENT_REF
-      && TREE_CODE (TREE_OPERAND (operand, 0)) == PLACEHOLDER_EXPR
-      && TREE_TYPE (TREE_OPERAND (operand, 0)) == struct_type
-      && TREE_CODE (TREE_OPERAND (operand, 1)) == FIELD_DECL)
-    return TREE_OPERAND (operand, 1);
+  if (TREE_CODE (operand) != COMPONENT_REF)
+    return NULL_TREE;
+
+  tree op0 = TREE_OPERAND (operand, 0);
+  tree op1 = TREE_OPERAND (operand, 1);
+  tree field;
+
+  /* The direct case of a field of STRUCT_TYPE.  */
+  if (TREE_CODE (op0) == PLACEHOLDER_EXPR
+      && TREE_TYPE (op0) == struct_type
+      && TREE_CODE (op1) == FIELD_DECL)
+    return op1;
+
+  /* The case of a sub-field of STRUCT_TYPE with containing field at 0.  */
+  else if ((field = extract_discr_in_expr (op0, struct_type))
+	   && integer_zerop (DECL_FIELD_OFFSET (field))
+	   && integer_zerop (DECL_FIELD_BIT_OFFSET (field)))
+    return op1;
+
+  /* Otherwise, neither field nor sub-field.  */
   else
     return NULL_TREE;
 }
@@ -26081,8 +26103,8 @@ analyze_variants_discr (tree variant_part_decl,
 	      tree integer_cst = TREE_OPERAND (match_expr, 1);
 
 	      candidate_discr
-	       = analyze_discr_in_predicate (TREE_OPERAND (match_expr, 0),
-					     struct_type);
+		= extract_discr_in_expr (TREE_OPERAND (match_expr, 0),
+					 struct_type);
 
 	      new_node = ggc_cleared_alloc<dw_discr_list_node> ();
 	      if (!get_discr_value (integer_cst,
@@ -26126,11 +26148,11 @@ analyze_variants_discr (tree variant_part_decl,
 		 is consistent with the same analysis in the second
 		 operand.  */
 	      candidate_discr_1
-	        = analyze_discr_in_predicate (TREE_OPERAND (lower_op, 0),
-					      struct_type);
+		= extract_discr_in_expr (TREE_OPERAND (lower_op, 0),
+					 struct_type);
 	      candidate_discr_2
-	        = analyze_discr_in_predicate (TREE_OPERAND (upper_op, 0),
-					      struct_type);
+		= extract_discr_in_expr (TREE_OPERAND (upper_op, 0),
+					 struct_type);
 	      if (candidate_discr_1 == candidate_discr_2)
 		candidate_discr = candidate_discr_1;
 	      else
@@ -26160,7 +26182,7 @@ analyze_variants_discr (tree variant_part_decl,
 	    }
 
 	  else if ((candidate_discr
-		      = analyze_discr_in_predicate (match_expr, struct_type))
+		      = extract_discr_in_expr (match_expr, struct_type))
 		   && (TREE_TYPE (candidate_discr) == boolean_type_node
 		       || TREE_TYPE (TREE_TYPE (candidate_discr))
 			  == boolean_type_node))
@@ -26207,9 +26229,9 @@ abort:
   *discr_decl = NULL_TREE;
 }
 
-/* Generate a DIE to represent VARIANT_PART_DECL, a variant part that is part
-   of STRUCT_TYPE, a record type.  This new DIE is emitted as the next child
-   under CONTEXT_DIE.
+/* Generate a DIE to represent VARIANT_PART_DECL, a variant part of the record
+   type VLR_CTX->STRUCT_TYPE.  This new DIE is emitted as the next child under
+   CONTEXT_DIE.
 
    Variant parts are supposed to be implemented as a FIELD_DECL whose type is a
    QUAL_UNION_TYPE: this is the VARIANT_PART_DECL parameter.  The members for
@@ -26251,12 +26273,20 @@ gen_variant_part (tree variant_part_decl, struct vlr_context *vlr_ctx,
     {
       dw_die_ref discr_die = lookup_decl_die (discr_decl);
 
-      if (discr_die)
-	add_AT_die_ref (variant_part_die, DW_AT_discr, discr_die);
-      else
-	/* We have no DIE for the discriminant, so just discard all
-	   discrimimant information in the output.  */
-	discr_decl = NULL_TREE;
+      /* If we have no DIE for the discriminant, this may be a sub-field of
+	 VLR_CTX->STRUCT_TYPE.  Generate an anonymous DIE for the sub-field
+	 in the non-variant part of VLR_CTX->STRUCT_TYPE.  This is necessary
+	 to work around a limitation of the DWARF description, which requires
+	 the DW_AT_discr attribute of the DW_TAG_variant_part DIE to be the
+	 reference to a DW_TAG_member DIE of the same record type.  */
+      if (!discr_die)
+	{
+	  vlr_ctx->variant_part_offset = NULL_TREE;
+	  discr_die = gen_field_die (discr_decl, vlr_ctx, context_die, true);
+	  vlr_ctx->variant_part_offset = variant_part_offset;
+	}
+
+       add_AT_die_ref (variant_part_die, DW_AT_discr, discr_die);
     }
 
   /* If the offset for this variant part is more complex than a constant,

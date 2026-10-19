@@ -534,18 +534,24 @@
 	      (use (match_operand 3 ""))])]	;; struct_value_size_rtx
   ""
 {
-  rtx target = XEXP (operands[0], 0);
+  rtx target = bpf_check_call_target (XEXP (operands[0], 0));
   emit_call_insn (gen_call_internal (target, operands[1]));
   DONE;
 })
 
+;; Emit a direct call for a constant address (S), or an indirect call
+;; for a register (r), the latter unless disabled by -mno-callx.
+;; Indirect calls are spelled `callx rN' in the pseudo-C dialect but
+;; `call %rN' in the normal one.
 (define_insn "call_internal"
-  [(call (mem:DI (match_operand:DI 0 "call_operand" "Sr"))
+  [(call (mem:DI (match_operand:DI 0 "call_operand" "S,r"))
          (match_operand:SI 1 "general_operand" ""))]
   ;; operands[2] is next_arg_register
   ;; operands[3] is struct_value_size_rtx.
   ""
-  { return bpf_output_call ("call\t%0", operands, 0); }
+  "@
+   *return bpf_output_call (\"call\t%0\", operands, 0);
+   *return bpf_output_call (\"{call\t%0|callx\t%0}\", operands, 0);"
   [(set_attr "type" "jmp")])
 
 (define_expand "call_value"
@@ -555,7 +561,7 @@
 	      (use (match_operand 3 ""))])]		;; next_arg_reg
   ""
 {
-  rtx target = XEXP (operands[1], 0);
+  rtx target = bpf_check_call_target (XEXP (operands[1], 0));
   emit_call_insn (gen_call_value_internal (operands[0], target,
                                            operands[2]));
   DONE;
@@ -563,12 +569,14 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "")
-	(call (mem:DI (match_operand:DI 1 "call_operand" "Sr"))
+	(call (mem:DI (match_operand:DI 1 "call_operand" "S,r"))
 	      (match_operand:SI 2 "general_operand" "")))]
   ;; operands[3] is next_arg_register
   ;; operands[4] is struct_value_size_rtx.
   ""
-  { return bpf_output_call ("call\t%1", operands, 1); }
+  "@
+   *return bpf_output_call (\"call\t%1\", operands, 1);
+   *return bpf_output_call (\"{call\t%1|callx\t%1}\", operands, 1);"
   [(set_attr "type" "jmp")])
 
 (define_insn "sibcall"

@@ -131,6 +131,7 @@ MASKED_FOREACH_FUNCTION(
 		    dest[n * dstride] = count[n] + 1;
 		}
 	      base += sstride[0];
+	      mbase += mstride[0];
 	    }
 	  while (++count[0] != extent[0]);
 	else
@@ -142,6 +143,5 @@ MASKED_FOREACH_FUNCTION(
 		  for (n = 0; n < rank; n++)
 		    dest[n * dstride] = count[n] + 1;
 	        }')
-
 SCALAR_FOREACH_FUNCTION(`0')
 #endif

@@ -170,7 +170,7 @@ namespace __unicode
       { return _M_curr(); }
 
       [[nodiscard]]
-      constexpr iter_difference_t<_Iter> 
+      constexpr iter_difference_t<_Iter>
       _M_units() const requires forward_iterator<_Iter>
       { return _M_to_increment; }
 

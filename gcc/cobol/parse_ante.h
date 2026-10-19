@@ -648,9 +648,11 @@ struct arith_t {
  protected:
   static bool is_numeric( const cbl_loc_t& loc, const cbl_refer_t& r ) {
     if( r.field && ! ::is_numeric(r.field) ) {
-      error_msg(loc, "%qs (%s) is not numeric",
-                nice_name_of(r.field),
-                cbl_field_type_name(r.field->type));
+      if( r.field->type != FldInvalid ) {
+        error_msg(loc, "%qs (%s) is not numeric",
+                  nice_name_of(r.field),
+                  cbl_field_type_name(r.field->type));
+      }
       return false;
     }
     return true;
@@ -1309,7 +1311,7 @@ struct refer_list_t {
   }
   // the source is not always to be deleted
   explicit refer_list_t( const cbl_refer_t& refer ) : refers(1, refer) {}
-  
+
   refer_list_t * push_back( cbl_refer_t *refer ) {
     refers.push_back(*refer);
     delete refer;
@@ -2399,6 +2401,7 @@ static class current_t {
     if( enabled_exceptions.size() ) {
       declaratives_evaluate();
     }
+    parser_check_fatal_exception();
 
     assert(!programs.empty());
 
@@ -3316,32 +3319,13 @@ group_attr( const cbl_field_t * field ) {
   return p->attr;
 }
 
-/*       
+/*
  * 13.16.3 Syntax rules
  * a) if the literal is alphanumeric, 'PICTURE X(length)'
  * b) if the literal is boolean, 'PICTURE 1(length)'
  * c) if the literal is national, 'PICTURE N(length)'
  * (We don't support boolean yet.)
  */
-static void
-update_prior_invalid_field( const cbl_field_t *field = nullptr) {
-  symbol_elem_t *e = field? symbol_at(field->our_index) :  symbols_end();
-  e--;
-  if( e->type == SymDataSection ) e--;
-  if( (e)->type == SymField ) {
-    auto f = cbl_field_of(e);
-    if( ! field ) field = f; // fake it
-    if( field->level <= f->level ) {
-      if( f->type == FldInvalid && f->data.has_initial_value() ) {
-        if( f->has_attr(quoted_e) || is_figconst(f) ) {
-          f->type = FldAlphanumeric;
-          assert(0 < f->char_capacity());
-        }
-      }
-    }
-  }
-}
-
 static struct cbl_field_t *
 field_add( const cbl_loc_t& loc, cbl_field_t *field ) {
   switch(current_data_section) {
@@ -3376,7 +3360,7 @@ field_add( const cbl_loc_t& loc, cbl_field_t *field ) {
       return NULL;
       break;
     }
-  } 
+  }
 
   update_prior_invalid_field(field);
 
@@ -3695,6 +3679,11 @@ parser_subtract2(  const cbl_num_result_t& to,
 }
 
 static bool
+valid_operands( const cbl_refer_t& src, const cbl_refer_t& tgt ) {
+  return ! (src.field->type == FldInvalid || tgt.field->type == FldInvalid);
+}
+
+static bool
 parser_move_carefully( const char */*F*/, int /*L*/,
                        tgt_list_t *tgt_list,
                        const cbl_refer_t& src,
@@ -3708,23 +3697,25 @@ parser_move_carefully( const char */*F*/, int /*L*/,
       return false;
     }
 
-    if( is_index ) {
-      if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
-        auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
-                             name_of(tgt.field), cbl_field_type_name(tgt.field->type),
-                             name_of(src.field), cbl_field_type_name(src.field->type));
-        dialect_ok(src.loc, MfSetNumeric, msg);
-        free(msg);
-      }
-    } else {
-      if( ! valid_move( tgt.field, src.field ) ) {
-        if( src.field->type == FldPointer &&
-            tgt.field->type == FldPointer ) {
-          dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
-        } else {
-          error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
-                    nice_name_of(src.field), cbl_field_type_name(src.field->type),
-                    nice_name_of(tgt.field), cbl_field_type_name(tgt.field->type));
+    if( valid_operands(src, tgt) ) {
+      if( is_index ) {
+        if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
+          auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
+                               name_of(tgt.field), cbl_field_type_name(tgt.field->type),
+                               name_of(src.field), cbl_field_type_name(src.field->type));
+          dialect_ok(src.loc, MfSetNumeric, msg);
+          free(msg);
+        }
+      } else {
+        if( ! valid_move( tgt.field, src.field ) ) {
+          if( src.field->type == FldPointer &&
+              tgt.field->type == FldPointer ) {
+            dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
+          } else {
+            error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
+                      nice_name_of(src.field), cbl_field_type_name(src.field->type),
+                      nice_name_of(tgt.field), cbl_field_type_name(tgt.field->type));
+          }
         }
       }
     }
@@ -3737,10 +3728,10 @@ parser_move_carefully( const char */*F*/, int /*L*/,
   delete tgt_list;
   return true;
 }
-#define parser_move2(P, S) \
-        parser_move_carefully(__func__, __LINE__, (P), (S), false)
-#define parser_index(P, S) \
-        parser_move_carefully(__func__, __LINE__, (P), (S), true)
+#define parser_move2(P, S)                                      \
+  parser_move_carefully(__func__, __LINE__, (P), (S), false)
+#define parser_index(P, S)                                      \
+  parser_move_carefully(__func__, __LINE__, (P), (S), true)
 
 static void
 ast_set_pointers( const list<cbl_num_result_t>& tgts, cbl_refer_t src ) {

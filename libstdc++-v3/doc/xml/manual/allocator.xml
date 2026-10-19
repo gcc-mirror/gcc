@@ -273,7 +273,7 @@
      system's environment before running the program. If your program
      crashes with <constant>GLIBCXX_FORCE_NEW</constant> in the
      environment, it likely means that you linked against objects
-     built against the older library (objects which might still using the
+     built against the older library (objects which might still be using the
      cached allocations...).
   </para>
 
@@ -318,9 +318,9 @@
    </para>
 
    <para>
-     Since C++11 the minimal interface require for an allocator is
+     Since C++11 the minimal interface required for an allocator is
      much smaller, as <classname>std::allocator_traits</classname>
-     can provide default for much of the interface.
+     can provide defaults for much of the interface.
    </para>
 
 

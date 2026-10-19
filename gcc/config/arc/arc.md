@@ -4600,7 +4600,7 @@ archs4x, archs4xd"
   emit_insn
     (gen_rtx_COND_EXEC
       (VOIDmode,
-       gen_rtx_GE (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
+       gen_rtx_GT (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
        gen_rtx_SET (operands[0], plus_constant (SImode, operands[0], 1))));
   DONE;
 }
@@ -4645,7 +4645,7 @@ archs4x, archs4xd"
     (gen_rtx_COND_EXEC
       (VOIDmode,
        gen_rtx_LT (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
-       gen_rtx_SET (operands[0], GEN_INT (32))));
+       gen_rtx_SET (operands[0], GEN_INT (31))));
   emit_insn
     (gen_rtx_COND_EXEC
       (VOIDmode,
@@ -4786,7 +4786,7 @@ archs4x, archs4xd"
   [(set_attr "type" "load")])
 
 (define_insn "stdi<mode>"
-  [(unspec_volatile [(match_operand:ALLI 0 "memory_operand"    "m,m,Usc")
+  [(unspec_volatile [(match_operand:ALLI 0 "move_dest_operand" "m,m,Usc")
 		     (match_operand:ALLI 1 "nonmemory_operand" "r,Cm3,i")]
 		    VUNSPEC_ARC_STDI)]
   ""
@@ -4795,7 +4795,7 @@ archs4x, archs4xd"
    (set_attr "type" "store")])
 
 (define_insn_and_split "*stdidi_split"
-  [(unspec_volatile [(match_operand:DI 0 "memory_operand"   "m")
+  [(unspec_volatile [(match_operand:DI 0 "non_mod_move_dest_operand" "m")
 		     (match_operand:DI 1 "register_operand" "r")]
 		    VUNSPEC_ARC_STDI)]
   "!TARGET_LL64"

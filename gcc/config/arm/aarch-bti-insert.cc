@@ -183,7 +183,7 @@ rest_of_insert_bti (void)
     {
       bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
       insn = BB_HEAD (bb);
-      if (!aarch_pac_insn_p (get_first_nonnote_insn ()))
+      if (!aarch_pac_insn_p (get_first_nonnote_nondebug_insn ()))
 	{
 	  bti_insn = aarch_gen_bti_c ();
 	  emit_insn_before (bti_insn, insn);

@@ -2229,7 +2229,6 @@ DEFINE_RISCV_EXT(
 #include "riscv-ext-corev.def"
 #include "riscv-ext-sifive.def"
 #include "riscv-ext-thead.def"
-#include "riscv-ext-ventana.def"
 #include "riscv-ext-mips.def"
 #include "riscv-ext-andes.def"
 #include "riscv-ext-spacemit.def"

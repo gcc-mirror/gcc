@@ -1,4 +1,4 @@
-// { dg-additional-options "-frust-c-style-string-literals -frust-compat-version=1.90" }
+// { dg-additional-options "-frust-compat-version=1.90" }
 #![feature(no_core, intrinsics, staged_api, lang_items)]
 #![no_core]
 

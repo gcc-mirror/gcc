@@ -253,7 +253,7 @@ The _S_initialize() function:
   - Initialize the free and used counters of each bin_record:
     - bin_record-&gt;free = An array of size_t. This keeps track of the number
       of blocks on a specific thread's freelist in each bin. I.e., if a thread
-      has 12 32-byte blocks on it's freelists and allocates one of these, this
+      has 12 32-byte blocks on its freelists and allocates one of these, this
       counter would be decreased to 11.
 
     - bin_record-&gt;used = An array of size_t. This keeps track of the number
@@ -444,7 +444,7 @@ What's the use? Well, when a deallocation occurs we can now look at
 the thread id and find out if it was allocated by another thread id
 and decrease the used counter of that thread instead, thus keeping the
 free and used counters correct. And keeping the free and used counters
-corrects is very important since the relationship between these two
+correct is very important since the relationship between these two
 variables decides if memory should be returned to the global pool or
 not when a deallocation occurs.
 </para>
@@ -536,8 +536,8 @@ deallocation made the used counter of the allocating thread is
 decreased and the freelist of the deallocation thread gets longer and
 longer. But the calculation made in deallocate() will limit the length
 of the freelist in the deallocation thread to _S_freelist_headroom %
-of it's used counter.  In this case, when the freelist (given that the
-_S_freelist_headroom is at it's default value of 10%) exceeds 52
+of its used counter.  In this case, when the freelist (given that the
+_S_freelist_headroom is at its default value of 10%) exceeds 52
 (516/10) blocks will be returned to the global pool where the
 allocating thread may pick them up and reuse them.
 </para>

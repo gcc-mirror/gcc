@@ -8,7 +8,6 @@
  * * Redistributions of source code must retain the above copyright
  *   notice, this list of conditions and the following disclaimer.
  * * Redistributions in binary form must reproduce the above
- * * Redistributions in binary form must reproduce the above
  *   copyright notice, this list of conditions and the following disclaimer
  *   in the documentation and/or other materials provided with the
  *   distribution.
@@ -82,6 +81,76 @@
 
 #define NO_RDIGITS (0)
 
+/*  How to use symbol versioning.
+    (Disclaimer:  As of this writing, I have gotten this far looking at
+    documentation.  The .map files seem to work; I haven't yet tried to
+    incorporate altered versions of existing functions.)
+
+    Imagine we discover a bug in __gg__acos(), but it is a bug that somebody
+    is counting on.  That's kind of absurd, but ride with me, here.
+
+    We want to create a second version of __gg__acos() for GCC17.2 that will
+    become the default in libgcobol.so going forward.  But we need the library
+    to continue to support the one released with GCC17.1 because people are
+    still using the older compiler, or running executables created with the
+    older compiler, even in the face up updating their libgcobol.so file.
+
+    The process:
+
+    Rename the __gg__acos() routine to __gg__acos_17_1().  The contents of that
+    routine must stay functionally the same, for ever and ever.
+
+    Write the new __gg__acos_17_2() routine.
+
+    The libgcobol/libgcobol.map file needs to be modified as well:
+
+        GCOBOL_17.1
+          {
+          global:
+            // The entire list, including __gg__acos, is left alone
+
+          local:
+            *;
+          };
+
+        GCOBOL_17.2
+          {
+          global:
+            __gg__acos;
+          } GCOBOL_17.1;
+
+    There are two ways of routing the symbol versions in the source code.
+
+    First method:
+
+    Add the following directives at file scope in the .cc file that contains
+    __gg__acos_17_1() and __gg__acos_17_1():
+
+        __asm__(".symver __gg__acos_17_1,__gg__acos@GCOBOL_17.1");
+        __asm__(".symver __gg__acos_17_2,__gg__acos@@GCOBOL_17.2");
+
+    Second method:
+
+        extern "C" void
+        __attribute__((symver("__gg__acos@GCOBOL_17.1")))
+        __gg__acos_17_1()
+          {
+          // Preserved implementation.
+          }
+
+        extern "C" void
+        __attribute__((symver("__gg__acos@@GCOBOL_17.2")))
+        __gg__acos_17_2()
+          {
+          // New implementation.
+          }
+
+    In either case, those specify that somebody trying to link to
+    __gg__acos@GCOBOL_17.1 will actually link to __gg__acos_17_1().  The @@
+    in __gg__acos@@GCOBOL_17.2 means that somebody linking to __gg__acos()
+    will actually be linked to __gg__acos_17_2().
+
+    And that's supposedly how symbol versioning works.   */
 
 static inline char *
 as_chars(unsigned char *p)
@@ -183,7 +252,7 @@ strfromf64 (char *s, size_t n, const char *f, double v)
 #endif
 
 // Enable Declarative tracing via "match_declarative" environment variable.
-#if defined(MATCH_DECLARATIVE) || true
+#if defined(MATCH_DECLARATIVE)
 # undef  MATCH_DECLARATIVE
 # define MATCH_DECLARATIVE getenv("match_declarative")
 #else
@@ -2617,6 +2686,8 @@ extern "C"
 int
 __gg__setop_compare(
   const cblc_field_t *candidate_field,
+  size_t candidate_offset,
+  size_t candidate_size,
   char *domain)
   {
   // This routine is called to compare the characters of 'candidate'
@@ -2639,8 +2710,8 @@ __gg__setop_compare(
   size_t nbytes_converted;
   const char *candidate = __gg__iconverter(candidate_field->encoding,
                                             HOST_32_ENCODING,
-                                            candidate_field->data,
-                                            candidate_field->capacity,
+                                            candidate_field->data+candidate_offset,
+                                            candidate_size,
                                             &nbytes_converted);
   const char *candidate_end = candidate + nbytes_converted;
   while(candidate < candidate_end)
@@ -3364,7 +3435,6 @@ format_for_display_internal(char **dest,
                         + (var->attr & leading_e  ? 1 : 0);
         unsigned char *signloc;
         unsigned char *digits;
-        const unsigned char *digits_r = nullptr;
         // This is the running index into our output destination.
         int index = 0;
         bool is_negative=false;
@@ -3378,7 +3448,6 @@ format_for_display_internal(char **dest,
             // not signable
             signloc  = converted;
             digits   = converted;
-            digits_r = converted + outlength;
             is_negative = false;
             break;
           case 4:
@@ -3386,7 +3455,6 @@ format_for_display_internal(char **dest,
             // internal trailing
             signloc  = converted + outlength-1;
             digits   = converted;
-            digits_r = converted + outlength;
             /*  In ascii, negative is indicated by turning bit 0x40 on.
                 In ebcdic, by turning bit 0x20 off.  In both cases, the result
                 is outside of the range '0' through '9'.  Working this way is
@@ -3474,7 +3542,6 @@ format_for_display_internal(char **dest,
             // internal leading
             signloc  = converted;
             digits   = converted;
-            digits_r = converted + outlength;
             const charmap_t *charmap_src = __gg__get_charmap(var->encoding);
             if( charmap_src->is_like_ebcdic() )
               {
@@ -3555,7 +3622,6 @@ format_for_display_internal(char **dest,
             // separate trailing
             signloc  = converted + outlength-1;
             digits   = converted;
-            digits_r = converted + outlength-1;
             switch(*signloc)
               {
               case ascii_plus:
@@ -3578,7 +3644,6 @@ format_for_display_internal(char **dest,
             // separate leading
             signloc  = converted;
             digits   = converted+1;
-            digits_r = converted + outlength;
             is_negative = *signloc == ascii_minus;
             switch(*signloc)
               {
@@ -3598,21 +3663,9 @@ format_for_display_internal(char **dest,
             break;
             }
           }
-        // We have the sign sorted out; make sure that the digits are valid:
-        unsigned char *running_location = digits;
-        while(running_location < digits_r)
-          {
-          if( *running_location < ascii_0 || *running_location > ascii_9 )
-            {
-            // An invalid digit becomes '0', and the value is flagged positive
-            *running_location = ascii_0;
-            is_negative = false;
-            }
-          running_location += 1;
-          }
 
-        // converted[] is now full of valid digits, and is_negative has been
-        // established.
+        // is_negative has been established.  Everything but the sign byte is
+        // shown verbatim.
 
         switch(signtype)
           {
@@ -3637,7 +3690,7 @@ format_for_display_internal(char **dest,
             (*dest)[index++] = is_negative ? ascii_minus : ascii_plus;
             break;
           }
-        running_location = digits;
+        const unsigned char *running_location = digits;
 
         // copy over the characters to the left of the decimal point:
         for(int i=0; i<ldigits; i++ )
@@ -6423,33 +6476,157 @@ __gg__move( cblc_field_t        *fdest,
               }
             else
               {
-              // We are moving a integer NumericDisplay to an
-              // alphanumeric.  We ignore any sign bit, and just
-              // move the characters:
+              // We are moving a integer NumericDisplay to an alphanumeric.
+              // In accordance with the specification, we skip any separate
+              // sign character.  We also turn a sign character into its
+              // positive form, and then do the move verbatim.
+              char ach_source[256];
+              memcpy(ach_source, fsource->data + source_offset, source_size);
 
-              size_t source_digits
-                = fsource->digits + ( fsource->rdigits < 0
-                                      ? -fsource->rdigits : 0) ;
+              char *source_p = ach_source;
 
-              // Pick up the absolute value of the source
-              value = __gg__int128_from_qualified_field(fsource,
-                                                        source_offset,
-                                                        source_size);
+              charmap_t *charmap_source = __gg__get_charmap(fsource->encoding);
+              int source_stride = charmap_source->stride();
+              cbl_char_t source_zero =
+                                  charmap_source->mapped_character(ascii_zero);
 
-              char ach[128];
+              int ssl =   (fsource->attr & signable_e ? 4 : 0 )
+                        + (fsource->attr & separate_e ? 2 : 0 )
+                        + (fsource->attr & leading_e  ? 1 : 0 );
+              switch(ssl)
+                {
+                case 0:
+                case 1:
+                case 2:
+                case 3:
+                  // not signable
+                  break;
+                case 4:
+                  {
+                  // signable, internal, trailing.
+                  char *signloc = source_p + source_size - source_stride;
+                  if( charmap_source->is_big_endian() && signloc)
+                    {
+                    signloc += source_stride-1;
+                    }
+                  if( charmap_source->is_like_ebcdic() )
+                    {
+                    // Turn on the "ebcdic is positive" bit.
+                    *signloc |= 0x20;
+                    }
+                  else
+                    {
+                    // Turn off the "ascii is negative" bit.
+                    *signloc &= ~0x40;
+                    }
+                  break;
+                  }
+                case 5:
+                  {
+                  // signable, internal, leading.
+                  char *signloc = source_p;
+                  if( charmap_source->is_big_endian() && signloc)
+                    {
+                    signloc += source_stride-1;
+                    }
+                  if( charmap_source->is_like_ebcdic() )
+                    {
+                    // Turn on the "ebcdic is positive" bit.
+                    *signloc |= 0x20;
+                    }
+                  else
+                    {
+                    // Turn off the "ascii is negative" bit.
+                    *signloc &= ~0x40;
+                    }
+                  break;
+                  }
+                case 6:
+                  {
+                  // signable, separate, trailing.
+                  char *signloc = source_p + source_size - source_stride;
+                  source_size -= 1;
+                  if( charmap_source->is_big_endian() && signloc)
+                    {
+                    signloc += source_stride-1;
+                    }
+                  if( charmap_source->is_like_ebcdic() )
+                    {
+                    // Turn on the "ebcdic is positive" bit.
+                    *signloc |= 0x20;
+                    }
+                  else
+                    {
+                    // Turn off the "ascii is negative" bit.
+                    *signloc &= ~0x40;
+                    }
+                  break;
+                  }
+                case 7:
+                  {
+                  // signable, separate, leading.
+                  char *signloc = source_p;
+                  source_size -= source_stride;
+                  source_p += source_stride;
+                  if( charmap_source->is_big_endian() && signloc)
+                    {
+                    signloc += source_stride-1;
+                    }
+                  if( charmap_source->is_like_ebcdic() )
+                    {
+                    // Turn on the "ebcdic is positive" bit.
+                    *signloc |= 0x20;
+                    }
+                  else
+                    {
+                    // Turn off the "ascii is negative" bit.
+                    *signloc &= ~0x40;
+                    }
+                  break;
+                  }
+                }
+              // source_p, source_size, and signloc (if any) have been
+              // adjusted.
 
-              // Convert it to the full complement of digits available
-              // from the source...but no more
-              __gg__binary_to_string_encoded(ach,
-                                             source_digits,
-                                             value,
-                                             fdest->encoding);
+
+              if( fsource->attr & scaled_e )
+                {
+                if( fsource->rdigits < 0 )
+                  {
+                  // We are dealing with 9999PPP.  We need to tack zeroes onto
+                  // the end of source_p
+                  charmap_source->memset(source_p+source_size,
+                                         source_zero,
+                                         -fsource->rdigits * source_stride);
+                  source_size += -fsource->rdigits * source_stride;
+                  }
+                else
+                  {
+                  // We are dealing with PPP999, and we need to insert zeroes
+                  // at the front of source_p:
+                  memmove(source_p + fsource->rdigits * source_stride,
+                          source_p,
+                          fsource->rdigits * source_stride);
+                  charmap_source->memset(source_p,
+                                         source_zero,
+                                         fsource->rdigits * source_stride);
+                  source_size += fsource->rdigits * source_stride;
+                  }
+                }
+
+              // We convert the source to the destination character set
+              size_t nbytes;
+              char *converted = __gg__iconverter(fsource->encoding,
+                                                 fdest->encoding,
+                                                 source_p,
+                                                 source_size,
+                                                 &nbytes);
 
               if( !(fdest->attr & rjust_e) )
                 {
-                min_length = std::min(  source_digits*stride,
+                min_length = std::min(  source_size,
                                         dest_size);
-                memmove(fdest->data + dest_offset, ach, min_length);
+                memmove(fdest->data + dest_offset, converted, min_length);
                 if( min_length < dest_size )
                   {
                   // min_length is smaller than dest_length, so we
@@ -6464,14 +6641,13 @@ __gg__move( cblc_field_t        *fdest,
                 {
                 // Destination is right-justified, so things are
                 // slightly more complex
-                if( source_digits*stride >= dest_size )
+                if( source_size >= dest_size )
                   {
                   // We need to truncate the source data on the
                   // left:
-                  memmove(
-                    fdest->data + dest_offset,
-                    ach + (source_digits*stride - dest_size),
-                    dest_size );
+                  memmove(fdest->data + dest_offset,
+                          converted + (source_size - dest_size),
+                          dest_size );
                   }
                 else
                   {
@@ -6479,12 +6655,12 @@ __gg__move( cblc_field_t        *fdest,
                   // the right side of the destination, and space-fill
                   //  the prefix:
                   memmove(fdest->data
-                            + dest_offset + (dest_size - source_digits*stride),
-                          ach,
-                          source_digits*stride );
+                            + dest_offset + (dest_size - source_size),
+                          converted,
+                          source_size );
                   charmap->memset( fdest->data + dest_offset,
-                                  charmap->mapped_character(ascii_space),
-                                  dest_size - source_digits*stride);
+                                   charmap->mapped_character(ascii_space),
+                                   dest_size - source_size);
                   }
                 }
               }
@@ -9629,7 +9805,7 @@ __gg__routine_to_call(const char *name,
                       int         program_id)
   {
   // The list of names is sorted, so at the very least this should be replaced
-  // with a binary search:
+  // with a binary search.
 
   std::unordered_map<int, char***>::const_iterator it =
          accessible_programs.find(program_id);
@@ -9640,20 +9816,22 @@ __gg__routine_to_call(const char *name,
     }
 
   char **names = *(it->second);
-
   int retval = -1;
+
+  // The entries are of the form "parent.child".  We are looking for an entry
+  // where the "name" matches "child".
 
   if( names )
     {
     int i=0;
-    while(*names)
+    while( *names )
       {
-      if( strstr(*names, name) )
+      const char *pdot = strrchr(*names, '.');
+      if( pdot )
         {
-        // The first part of the names match
-        if( (*names)[strlen(name)] == '.' )
+        if( strcmp(pdot+1, name) == 0 )
           {
-          // And the first character after the match is a '.'
+          // We have a match
           retval = i;
           break;
           }
@@ -9842,6 +10020,22 @@ void open_syslog(int option, int facility)
   }
 }
 
+static int
+ec_priority( ec_disposition_t disposition ) {
+  switch( disposition ) {
+  case ec_category_none_e:
+    break;
+  case ec_category_fatal_e:
+    return LOG_ERR;
+  case ec_category_nonfatal_e:
+  case ec_category_implementor_e:
+    return LOG_WARNING;
+  default:
+    return LOG_INFO;
+  }
+return LOG_INFO;
+}
+
 /*
  * The default exception handler is called if:
  *   1.  The EC is enabled and was not handled by a Declarative, or
@@ -9851,13 +10045,11 @@ void open_syslog(int option, int facility)
 static void
 default_exception_handler( ec_type_t ec )
 {
-  static const int priority = LOG_INFO;
   static const int option   = LOG_PERROR;
   static const int facility = LOG_USER;
   open_syslog(option, facility);
 
   ec_disposition_t disposition = ec_category_fatal_e;
-
 
   if( ec != ec_none_e ) {
     auto pec = std::find_if( __gg__exception_table, __gg__exception_table_end,
@@ -9869,6 +10061,8 @@ default_exception_handler( ec_type_t ec )
     } else {
       warnx("logic error: unknown exception %x", ec );
     }
+    const int priority = ec_priority(disposition);
+
     /*
      * An enabled, unhandled fatal EC normally results in termination. But
      * EC-I-O is a special case becase a SELECT statement with FILE STATUS
@@ -9922,7 +10116,7 @@ default_exception_handler( ec_type_t ec )
     case uc_category_fatal_e:
       if( filename ) {
         syslog(priority, "fatal exception: %s:%d: %s %s: %s (%s)",
-               program_name,
+               ec_status.source_file,
                ec_status.lineno,
                ec_status.statement,
                filename, // show affected file before EC name
@@ -9930,7 +10124,7 @@ default_exception_handler( ec_type_t ec )
                pec->description);
       } else {
         syslog(priority, "fatal exception: %s:%d: %s: %s (%s)",
-               program_name,
+               ec_status.source_file,
                ec_status.lineno,
                ec_status.statement,
                pec->name,
@@ -9941,7 +10135,7 @@ default_exception_handler( ec_type_t ec )
     case ec_category_nonfatal_e:
     case uc_category_nonfatal_e:
       syslog(priority, "%s:%d: %s: %s (%s)",
-             program_name,
+             ec_status.source_file,
              ec_status.lineno,
              ec_status.statement,
              pec->name,
@@ -11417,6 +11611,28 @@ __gg__function_handle_from_name(int                 program_id,
 
 extern "C"
 void
+__gg__propagate_linkage_offsets(void * const fields[],
+                               unsigned char * const *base_address,
+                               size_t count)
+  {
+  for( size_t i = 0; i < count; ++i )
+    {
+    cblc_field_t *field = static_cast<cblc_field_t *>(fields[i]);
+    unsigned char *base = *base_address;
+    if( base )
+      {
+      field->data = base + field->offset;
+      }
+    else
+      {
+      // Do not read offset, or perform pointer arithmetic, for a null base.
+      field->data = nullptr;
+      }
+    }
+  }
+
+extern "C"
+void
 __gg__variables_to_init(cblc_field_t *array[], const int flag_bits)
   {
   int i=0;
@@ -11858,6 +12074,7 @@ __gg__module_name_pop()
   module_name_stack.pop_back();
   }
 
+extern "C"
 const std::vector<std::string> &
 __gg__get_module_names()
   {
@@ -13919,3 +14136,48 @@ __gg__move_stash_release(const unsigned char *stash)
   move_stashes.depth -= 1;
   }
 
+extern "C"
+int
+__gg__compare_numdisp_alpha(      cblc_field_t  *left,
+                                  size_t         left_offset,
+                                  cblc_field_t  *right,
+                                  size_t         right_offset,
+                                  size_t         right_length,
+                                  int            flags)
+  {
+  // 'left' is numdisp.  We MOVE it to an alphanumeric of the correct size.
+  const charmap_t *charmap_left = __gg__get_charmap(left->encoding);
+  size_t left_size = left->capacity;
+  if( left->attr & separate_e )
+    {
+    left_size -= charmap_left->stride();
+    }
+
+  cblc_field_t numdisp = {};
+  unsigned char numdisp_data[256];
+
+  numdisp.type = FldAlphanumeric;
+  numdisp.encoding = left->encoding;
+  numdisp.data = numdisp_data,
+  numdisp.capacity = left_size;
+  __gg__move( &numdisp,
+              0, // Offset
+              numdisp.capacity,
+              left,
+              left_offset,
+              left->capacity,
+              0,
+              truncation_e );
+
+  int retval;
+  retval = __gg__compare(&numdisp,
+                          0,
+                          numdisp.capacity,
+                          flags & 2 ? REFER_T_MOVE_ALL : 0,
+                          right,
+                          right_offset,
+                          right_length,
+                          flags & 1 ? REFER_T_MOVE_ALL : 0,
+                          0 );
+  return retval;
+  }

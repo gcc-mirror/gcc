@@ -2181,7 +2181,7 @@ since C++14 and the implementation is complete.
     </row>
     <row>
       <entry>30.10</entry>
-      <entry>File systemss</entry>
+      <entry>File systems</entry>
       <entry>Y</entry>
       <entry/>
     </row>
@@ -2992,7 +2992,7 @@ since C++14 and the implementation is complete.
    <para>
       <emphasis>29.4.1 [cfenv.syn]</emphasis>
       The effects of the <filename>&lt;cfenv&gt;</filename> functions
-      depends on whether the <code>FENV_ACCESS</code> pragma is supported,
+      depend on whether the <code>FENV_ACCESS</code> pragma is supported,
       and on the C library that provides the header.
    </para>
 
@@ -3084,7 +3084,7 @@ since C++14 and the implementation is complete.
 
      <para>
         <emphasis>9.3 [parallel.simd.abi]</emphasis>
-        <code>max_fixed_size&lt;T&gt;</code> is 32, except when targetting
+        <code>max_fixed_size&lt;T&gt;</code> is 32, except when targeting
         AVX512BW and <code>sizeof(T)</code> is 1.
      </para>
 

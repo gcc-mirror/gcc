@@ -117,7 +117,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "cfganal.h"
 #include "internal-fn.h"
-#include "fold-const.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-cfgcleanup.h"
 #include "tree-ssa-dse.h"
@@ -1816,12 +1815,13 @@ strip_nop_cond_scalar_reduction (bool has_nop, tree op)
 
    ARG_0 and ARG_1 are correspondent PHI arguments.
    REDUC, OP0 and OP1 contain reduction stmt and its operands.
+   INTERMEDIATE is true if PHI does not directly feed the loop-header PHI.
    EXTENDED is true if PHI has > 2 arguments.  */
 
 static bool
 is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
 			  tree *op0, tree *op1, bool extended, bool* has_nop,
-			  gimple **nop_reduc)
+			  gimple **nop_reduc, bool *intermediate)
 {
   tree lhs, r_op1, r_op2, r_nop1, r_nop2;
   gimple *stmt;
@@ -1834,7 +1834,7 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
   use_operand_p use_p;
   edge e;
   edge_iterator ei;
-  bool result = *has_nop = false;
+  bool result = *has_nop = *intermediate = false;
   if (TREE_CODE (arg_0) != SSA_NAME || TREE_CODE (arg_1) != SSA_NAME)
     return false;
 
@@ -1855,8 +1855,8 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
   if (gimple_bb (header_phi) != loop->header)
     return false;
 
-  if (PHI_ARG_DEF_FROM_EDGE (header_phi, latch_e) != PHI_RESULT (phi))
-    return false;
+  tree latch_value = PHI_ARG_DEF_FROM_EDGE (header_phi, latch_e);
+  *intermediate = latch_value != PHI_RESULT (phi);
 
   if (gimple_code (stmt) != GIMPLE_ASSIGN
       || gimple_has_volatile_ops (stmt))
@@ -1920,6 +1920,12 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
       reduction_op = gimple_assign_rhs_code (stmt);
     }
 
+  /* A reduction with a further latch update must keep the PLUS outside
+     the conditional expression.  The no-op conversion case is not needed
+     for this form.  */
+  if (*intermediate && (*has_nop || reduction_op != PLUS_EXPR))
+    return false;
+
   if (reduction_op != PLUS_EXPR
       && reduction_op != MINUS_EXPR
       && reduction_op != MULT_EXPR
@@ -1942,6 +1948,21 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
     }
   else if (r_nop1 != PHI_RESULT (header_phi))
     return false;
+
+  if (*intermediate)
+    {
+      tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+      if (!SCALAR_FLOAT_TYPE_P (type)
+	  && (!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_TRAPS (type)))
+	return false;
+
+      tree zero = neutral_op_for_reduction (type, PLUS_EXPR, NULL_TREE,
+					    false);
+      /* The inactive addend must leave the reduction value unchanged.  */
+      if (SCALAR_FLOAT_TYPE_P (type)
+	  && !fold_real_zero_addition_p (type, r_op1, zero, 0))
+	return false;
+    }
 
   if (*has_nop)
     {
@@ -1990,7 +2011,8 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
     _ifc__1 = _5 != 0 ? 1 : 0;
     res_2 = res_13 + _ifc__1;
   Argument SWAP tells that arguments of conditional expression should be
-  swapped.
+  swapped.  INTERMEDIATE says that this is not the latch value, so the
+  PLUS must remain unconditional.
   We can assume that we versioned the loop for vectorization, so can
   create a COND_OP.
   Returns rhs of resulting PHI assignment.  */
@@ -1998,7 +2020,8 @@ is_cond_scalar_reduction (gimple *phi, gimple **reduc, tree arg_0, tree arg_1,
 static tree
 convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
 			       tree cond, tree op0, tree op1, bool swap,
-			       bool has_nop, gimple* nop_reduc)
+			       bool has_nop, gimple* nop_reduc,
+			       bool intermediate)
 {
   gimple_stmt_iterator stmt_it;
   gimple *new_assign;
@@ -2022,7 +2045,8 @@ convert_scalar_cond_reduction (gimple *reduc, gimple_stmt_iterator *gsi,
      The COND_OP will have a neutral_op else value.  */
   internal_fn ifn;
   ifn = get_conditional_internal_fn (reduction_op);
-  if (ifn != IFN_LAST
+  if (!intermediate
+      && ifn != IFN_LAST
       && vectorized_internal_fn_supported_p (ifn, TREE_TYPE (lhs))
       && !VECTOR_TYPE_P (TREE_TYPE (lhs))
       && !swap)
@@ -2407,7 +2431,7 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
   edge e;
   basic_block bb;
   unsigned int i;
-  bool has_nop;
+  bool has_nop, intermediate;
 
   res = gimple_phi_result (phi);
   if (virtual_operand_p (res))
@@ -2478,12 +2502,12 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 
       if (is_cond_scalar_reduction (phi, &reduc, arg0, arg1,
 				    &op0, &op1, false, &has_nop,
-				    &nop_reduc))
+				    &nop_reduc, &intermediate))
 	{
 	  /* Convert reduction stmt into vectorizable form.  */
 	  rhs = convert_scalar_cond_reduction (reduc, gsi, cond, op0, op1,
 					       true_bb != gimple_bb (reduc),
-					       has_nop, nop_reduc);
+					       has_nop, nop_reduc, intermediate);
 	  redundant_ssa_names.safe_push (std::make_pair (res, rhs));
 	}
       else
@@ -2573,7 +2597,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
       cond = force_gimple_operand_gsi (gsi, unshare_expr (cond), true,
 				       NULL_TREE, true, GSI_SAME_STMT);
       if (!(is_cond_scalar_reduction (phi, &reduc, arg0 , arg1,
-				      &op0, &op1, true, &has_nop, &nop_reduc)))
+				      &op0, &op1, true, &has_nop, &nop_reduc,
+				      &intermediate)))
 	rhs = fold_build_cond_expr (TREE_TYPE (res), unshare_expr (cond),
 				    swap ? arg1 : arg0,
 				    swap ? arg0 : arg1);
@@ -2581,7 +2606,8 @@ predicate_scalar_phi (gphi *phi, gimple_stmt_iterator *gsi)
 	{
 	  /* Convert reduction stmt into vectorizable form.  */
 	  rhs = convert_scalar_cond_reduction (reduc, gsi, cond, op0, op1,
-					       swap, has_nop, nop_reduc);
+					       swap, has_nop, nop_reduc,
+					       intermediate);
 	  redundant_ssa_names.safe_push (std::make_pair (res, rhs));
 	}
       new_stmt = gimple_build_assign (res, rhs);

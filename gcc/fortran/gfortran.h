@@ -1716,6 +1716,13 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *chunk_size;
   struct gfc_expr *safelen_expr;
   struct gfc_expr *simdlen_expr;
+  struct
+    {
+      bt type;
+      int kind;
+    }
+  simdlen_type;
+  struct gfc_expr *simdlen_divisor;
   struct gfc_expr_list *num_teams_list;
   struct gfc_expr *device;
   struct gfc_expr_list *thread_limit_list;
@@ -3236,6 +3243,8 @@ typedef struct gfc_forall_iterator
   gfc_loop_annot annot;
   /* index-name shadows a variable from outer scope.  */
   bool shadow;
+  /* The shadowed outer-scope symbol, set when SHADOW is true.  */
+  gfc_symbol *shadow_outer_sym;
   struct gfc_forall_iterator *next;
 }
 gfc_forall_iterator;
@@ -4331,7 +4340,7 @@ const char *gfc_dt_lower_string (const char *);
 const char *gfc_dt_upper_string (const char *);
 
 /* primary.cc */
-symbol_attribute gfc_variable_attr (gfc_expr *, gfc_typespec *);
+symbol_attribute gfc_variable_attr (gfc_expr *);
 symbol_attribute gfc_expr_attr (gfc_expr *);
 symbol_attribute gfc_caf_attr (gfc_expr *, bool i = false, bool *r = NULL);
 bool is_inquiry_ref (const char *, gfc_ref **);
@@ -4486,6 +4495,7 @@ gfc_expr *gfc_simplify_ieee_functions (gfc_expr *);
 bool gfc_is_constant_array_expr (gfc_expr *);
 bool gfc_is_size_zero_array (gfc_expr *);
 void gfc_convert_mpz_to_unsigned (mpz_t, int, bool sign = true);
+gfc_expr *gfc_simplify_len (gfc_expr *, gfc_expr *);
 
 /* trans-array.cc  */
 

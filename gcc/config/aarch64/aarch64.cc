@@ -32,6 +32,7 @@
 #include "tree.h"
 #include "memmodel.h"
 #include "gimple.h"
+#include "internal-fn.h"
 #include "cfghooks.h"
 #include "cfgloop.h"
 #include "df.h"
@@ -2332,6 +2333,40 @@ aarch64_try_widen_mult_by_pow2 (const gassign *convert,
   return true;
 }
 
+/* Try to use the sdiv_pow2 optab for signed vector division by a constant
+   power of two.  */
+static bool
+aarch64_try_sdiv_pow2 (const gassign *assign, gimple_stmt_iterator *gsi)
+{
+  tree lhs = gimple_assign_lhs (assign);
+  tree type = TREE_TYPE (lhs);
+
+  if (!VECTOR_INTEGER_TYPE_P (type)
+      || TYPE_UNSIGNED (type)
+      || !direct_internal_fn_supported_p (IFN_DIV_POW2, type,
+					   OPTIMIZE_FOR_BOTH))
+    return false;
+
+  tree dividend = gimple_assign_rhs1 (assign);
+  tree divisor = uniform_integer_cst_p (gimple_assign_rhs2 (assign));
+
+  /* Check that the divisor is a constant positive power of two.  */
+  if (!divisor
+      || tree_int_cst_sgn (divisor) != 1
+      || !integer_pow2p (divisor))
+    return false;
+
+  tree shift = build_int_cst (TREE_TYPE (type), tree_log2 (divisor));
+  shift = build_vector_from_val (type, shift);
+
+  gcall *call = gimple_build_call_internal (IFN_DIV_POW2, 2,
+					     dividend, shift);
+  gimple_call_set_lhs (call, lhs);
+  gimple_set_location (call, gimple_location (assign));
+  gsi_replace (gsi, call, false);
+  return true;
+}
+
 /* Implement TARGET_MAX_NOCE_IFCVT_SEQ_COST.  If an explicit max was set then
    honor it, otherwise apply a tuning specific scale to branch costs.  */
 
@@ -4551,6 +4586,10 @@ aarch64_instruction_selection (function *fun, gimple_stmt_iterator *gsi)
 
   if (!assign)
     return false;
+
+  if (gimple_assign_rhs_code (assign) == TRUNC_DIV_EXPR
+      && aarch64_try_sdiv_pow2 (assign, gsi))
+    return true;
 
   if (CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (assign))
       && aarch64_try_widen_mult_by_pow2 (assign, gsi))
@@ -15068,7 +15107,9 @@ aarch64_extr_rtx_p (rtx x, rtx *res_op0, rtx *res_op1)
   *res_op0 = NULL_RTX;
   *res_op1 = NULL_RTX;
 
-  if (GET_CODE (x) != IOR)
+  if (GET_CODE (x) != IOR
+      && GET_CODE (x) != XOR
+      && GET_CODE (x) != PLUS)
     return false;
 
   op0 = XEXP (x, 0);
@@ -24187,6 +24228,12 @@ aarch64_autovectorize_vector_modes (vector_modes *modes, bool)
     V2SImode
   };
 
+  if (aarch64_force_autovec_mode != VOIDmode)
+    {
+      modes->safe_push (aarch64_force_autovec_mode);
+      return 0;
+    }
+
   /* Try using N-byte SVE modes only after trying N-byte Advanced SIMD mode.
      This is because:
 
@@ -25544,6 +25591,15 @@ aarch64_simd_check_vect_par_cnst_half (rtx op, machine_mode mode,
 	return false;
     }
   return true;
+}
+
+/* Return true if X is the low element of vector V, in the lowpart form
+   that RTL simplification uses for it.  */
+
+bool
+aarch64_simd_lowpart_of_p (rtx x, rtx v)
+{
+  return rtx_equal_p (x, lowpart_subreg (GET_MODE (x), v, GET_MODE (v)));
 }
 
 /* Return a PARALLEL containing NELTS elements, with element I equal
@@ -26914,14 +26970,14 @@ aarch64_convert_mult_to_shift (rtx value, rtx_code &code)
   return builder.build ();
 }
 
-/* Prepare for an integer SVE multiply-add or multiply-subtract pattern;
+/* Prepare for an integer vector multiply-add or multiply-subtract pattern.
    CODE is PLUS for the former and MINUS for the latter.  OPERANDS is the
    operands array, in the same order as for fma_optab.  Return true if
    the function emitted all the necessary instructions, false if the caller
    should generate the pattern normally with the new OPERANDS array.  */
 
 bool
-aarch64_prepare_sve_int_fma (rtx *operands, rtx_code code)
+aarch64_prepare_int_fma (rtx *operands, rtx_code code)
 {
   machine_mode mode = GET_MODE (operands[0]);
   if (rtx shifts = aarch64_convert_mult_to_shift (operands[2], code))

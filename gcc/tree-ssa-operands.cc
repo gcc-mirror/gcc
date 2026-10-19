@@ -953,6 +953,7 @@ operands_scanner::parse_ssa_operands ()
 {
   enum gimple_code code = gimple_code (stmt);
   size_t i, n, start = 0;
+  int flags = 0;
 
   switch (code)
     {
@@ -985,6 +986,8 @@ operands_scanner::parse_ssa_operands ()
     case GIMPLE_CALL:
       /* Add call-clobbered operands, if needed.  */
       maybe_add_call_vops (as_a <gcall *> (stmt));
+      if (gimple_call_internal_p (stmt, IFN_ASSUME))
+	flags |= opf_non_addressable;
       /* FALLTHRU */
 
     case GIMPLE_ASSIGN:
@@ -996,7 +999,7 @@ operands_scanner::parse_ssa_operands ()
     do_default:
       n = gimple_num_ops (stmt);
       for (i = start; i < n; i++)
-	get_expr_operands (gimple_op_ptr (stmt, i), opf_use);
+	get_expr_operands (gimple_op_ptr (stmt, i), opf_use | flags);
       break;
     }
 }

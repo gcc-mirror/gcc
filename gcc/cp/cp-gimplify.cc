@@ -2387,13 +2387,35 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       *walk_subtrees = 0;
       break;
 
+    case INDIRECT_REF:
+      /* A pointer to a class might point to a base subobject, which is
+	 only guaranteed the alignment of the class as a base (the ABI
+	 "nvalign").  That is less than TYPE_ALIGN if a virtual base needs
+	 more alignment than the rest of the class, so don't let the middle
+	 end assume more (PR c++/103303).  */
+      {
+	tree type = TREE_TYPE (stmt);
+	if (CLASS_TYPE_P (type)
+	    && COMPLETE_TYPE_P (type)
+	    && CLASSTYPE_AS_BASE (type)
+	    && CLASSTYPE_ALIGN (type) < TYPE_ALIGN (type)
+	    && resolves_to_fixed_type_p (stmt) <= 0
+	    /* Respect an alignment the user specified on a variant.  */
+	    && TYPE_ALIGN (type) == TYPE_ALIGN (TYPE_MAIN_VARIANT (type)))
+	  TREE_TYPE (stmt) = build_aligned_type (type, CLASSTYPE_ALIGN (type));
+      }
+      break;
+
     case NOP_EXPR:
       *stmt_p = predeclare_vla (*stmt_p);
 
       /* Warn of new allocations that are not big enough for the target
-	 type.  */
+	 type.  Don't warn for calls from new expressions, new TYPE[0]
+	 is fine and new expansion should arrange for the right size
+	 to be provided.  */
       if (warn_alloc_size
 	  && TREE_CODE (TREE_OPERAND (stmt, 0)) == CALL_EXPR
+	  && !CALL_FROM_NEW_OR_DELETE_P (TREE_OPERAND (stmt, 0))
 	  && POINTER_TYPE_P (TREE_TYPE (stmt)))
 	{
 	  if (tree fndecl = get_callee_fndecl (TREE_OPERAND (stmt, 0)))

@@ -16,5 +16,11 @@ BEGIN BEGIN REAL i := 10.0;
             ASSERT (i > LONG LONG 10999.9);
             i PLUSAB LONG LONG 1000.0;
             ASSERT (i > LONG LONG 11999.9)
+      END;
+            BEGIN WORD REAL i := WORD 1000.0;
+            i +:= WORD 100.0;
+            ASSERT (i > WORD 1099.9);
+            i PLUSAB WORD 100.0;
+            ASSERT (i > WORD 1199.9)
       END
 END

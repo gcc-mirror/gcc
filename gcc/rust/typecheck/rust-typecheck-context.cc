@@ -98,6 +98,43 @@ TypeCheckContext::insert_implicit_type (HirId id, TyTy::BaseType *type)
   resolved[id] = type;
 }
 
+static std::pair<DefId, std::vector<HirId>>
+make_adt_substitution_key (DefId id,
+			   const TyTy::SubstitutionArgumentMappings &mappings)
+{
+  std::vector<HirId> arguments;
+  arguments.reserve (mappings.size ());
+  for (const auto &mapping : mappings.get_mappings ())
+    arguments.push_back (mapping.get_tyty ()->get_ty_ref ());
+
+  return {id, std::move (arguments)};
+}
+
+bool
+TypeCheckContext::lookup_adt_substitution (
+  DefId id, const TyTy::SubstitutionArgumentMappings &mappings,
+  TyTy::ADTType **type) const
+{
+  auto it = adt_substitutions.find (make_adt_substitution_key (id, mappings));
+  if (it == adt_substitutions.end ())
+    return false;
+
+  *type = it->second;
+  return true;
+}
+
+void
+TypeCheckContext::insert_adt_substitution (
+  DefId id, const TyTy::SubstitutionArgumentMappings &mappings,
+  TyTy::ADTType *type)
+{
+  rust_assert (type != nullptr);
+  auto inserted
+    = adt_substitutions.emplace (make_adt_substitution_key (id, mappings),
+				 type);
+  rust_assert (inserted.second);
+}
+
 bool
 TypeCheckContext::lookup_type (HirId id, TyTy::BaseType **type) const
 {
@@ -298,12 +335,20 @@ TypeCheckContext::find_matching_impl_trait_frame (
 	    unresolved_trait_self = param->is_implicit_self_trait ();
 	}
 
-      bool compatible_self
-	= unresolved_trait_self
-	  || types_compatable (TyTy::TyWithLocation (i.self),
-			       TyTy::TyWithLocation (resolved_self),
-			       UNDEF_LOCATION, false /* emit_errors */,
-			       false /* check_bounds */);
+      // Select an existing impl context without inferring a new Self
+      // binding
+      bool compatible_self = unresolved_trait_self;
+      if (!compatible_self)
+	{
+	  auto res
+	    = unify_site_and (UNKNOWN_HIRID, TyTy::TyWithLocation (i.self),
+			      TyTy::TyWithLocation (resolved_self),
+			      UNDEF_LOCATION, false /* emit_errors */,
+			      false /* commit */, false /* infer */,
+			      true /* cleanup */, false /* check_bounds */);
+	  compatible_self = res->get_kind () != TyTy::TypeKind::ERROR;
+	}
+
       if (compatible_self)
 	{
 	  *find = i;
@@ -597,6 +642,87 @@ TypeCheckContext::lookup_predicate (HirId id, TyTy::TypeBoundPredicate *result)
 
   *result = it->second;
   return true;
+}
+
+std::vector<TyTy::TypeBoundPredicate>
+TypeCheckContext::predicates_for_type (const TyTy::BaseType *receiver) const
+{
+  std::vector<TyTy::TypeBoundPredicate> result
+    = receiver->get_specified_bounds ();
+
+  for (const auto &entry : predicates)
+    {
+      const auto &predicate = entry.second;
+      const auto &args = predicate.get_substitution_arguments ();
+      if (args.get_mappings ().empty ())
+	continue;
+
+      TyTy::BaseType *bound_self = args.get_mappings ().front ().get_tyty ();
+      if (bound_self == nullptr
+	  || bound_self->get_kind () == TyTy::TypeKind::ERROR)
+	continue;
+
+      if (receiver->get_kind () != TyTy::TypeKind::PROJECTION
+	  || bound_self->get_kind () != TyTy::TypeKind::PROJECTION)
+	continue;
+
+      const auto *receiver_projection
+	= static_cast<const TyTy::ProjectionType *> (receiver);
+      const auto *bound_projection
+	= static_cast<const TyTy::ProjectionType *> (bound_self);
+
+      DefId receiver_item_defid = receiver_projection->get_item_defid ();
+      DefId bound_item_defid = bound_projection->get_item_defid ();
+      bool same_item = receiver_item_defid == bound_item_defid;
+      if (!same_item)
+	continue;
+
+      DefId receiver_trait_defid
+	= receiver_projection->get_trait_ref ()->get_mappings ().get_defid ();
+      DefId bound_trait_defid
+	= bound_projection->get_trait_ref ()->get_mappings ().get_defid ();
+      bool same_trait = receiver_trait_defid == bound_trait_defid;
+      if (!same_trait)
+	continue;
+
+      // Compatibility can unify unrelated parameters. Match their declaration
+      // identities instead; copies and synthetic bound parameters retain them.
+      const TyTy::BaseType *receiver_self = receiver_projection->get_self ();
+      const TyTy::BaseType *bound_self_ty = bound_projection->get_self ();
+      const auto *receiver_param
+	= receiver_self->try_as<const TyTy::ParamType> ();
+      const auto *bound_param = bound_self_ty->try_as<const TyTy::ParamType> ();
+
+      bool either_self_is_param
+	= receiver_param != nullptr || bound_param != nullptr;
+      if (either_self_is_param)
+	{
+	  bool both_selfs_are_param
+	    = receiver_param != nullptr && bound_param != nullptr;
+	  bool same_declaration
+	    = both_selfs_are_param
+	      && receiver_param->get_decl_id () == bound_param->get_decl_id ();
+	  if (!same_declaration)
+	    continue;
+	}
+      else
+	{
+	  bool selfs_compatible = types_compatable (
+	    TyTy::TyWithLocation (const_cast<TyTy::BaseType *> (receiver_self)),
+	    TyTy::TyWithLocation (const_cast<TyTy::BaseType *> (bound_self_ty)),
+	    UNKNOWN_LOCATION, false, false);
+	  if (!selfs_compatible)
+	    continue;
+	}
+
+      bool projections_compatible = types_compatable (
+	TyTy::TyWithLocation (const_cast<TyTy::BaseType *> (receiver)),
+	TyTy::TyWithLocation (bound_self), UNKNOWN_LOCATION, false, false);
+      if (projections_compatible)
+	result.push_back (predicate);
+    }
+
+  return result;
 }
 
 void

@@ -2083,7 +2083,7 @@ namespace __format
 	}
     };
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   template<typename _CharT>
     struct __formatter_chrono_info
     {
@@ -3004,7 +3004,7 @@ namespace __format
       = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   template<__format::__char _CharT>
     struct formatter<chrono::sys_info, _CharT>
     {
@@ -3395,7 +3395,7 @@ namespace __format
       = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   template<typename _Duration, typename _TimeZonePtr, __format::__char _CharT>
     struct formatter<chrono::zoned_time<_Duration, _TimeZonePtr>, _CharT>
     : formatter<chrono::__detail::__local_time_fmt_for<_Duration>, _CharT>
@@ -3450,7 +3450,7 @@ namespace __detail
       year_month_day _M_ymd{};
       weekday _M_wd{};
       __format::_ChronoParts _M_need;
-      unsigned _M_is_leap_second : 1 {};
+      unsigned _M_60th_second : 1 {};
       unsigned _M_reserved : 15 {};
 
       template<typename _CharT, typename _Traits, typename _Alloc>
@@ -3872,7 +3872,7 @@ namespace __detail
 	return __detail::__chrono_write<64>(__os, __hms, __os.getloc());
     }
 
-#if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
+#if __glibcxx_chrono >= 201803L // C++ >= 20
   /// Writes a sys_info object to an ostream in an unspecified format.
   template<typename _CharT, typename _Traits>
     basic_ostream<_CharT, _Traits>&
@@ -3923,7 +3923,7 @@ namespace __detail
       __detail::_Parser_t<_Duration> __p(__need);
       if (__p(__is, __fmt, __abbrev, __offset))
 	{
-	  if (__p._M_is_leap_second)
+	  if (__p._M_60th_second)
 	    __is.setstate(ios_base::failbit);
 	  else
 	    {
@@ -3961,7 +3961,13 @@ namespace __detail
 	  // "23:59:60" to correctly produce a time within a leap second.
 	  auto __ut = utc_clock::from_sys(__p._M_sys_days) + __p._M_time
 			- *__offset;
-	  __tp = __detail::__round<_Duration>(__ut);
+	  // Reject ":60" seconds unless the utc_time is a known leap second.
+	  if (__p._M_60th_second
+		&& (chrono::floor<seconds>(__p._M_time - *__offset) != hours(24)
+		      || !chrono::get_leap_second_info(__ut).is_leap_second))
+	    __is.setstate(ios_base::failbit);
+	  else
+	    __tp = __detail::__round<_Duration>(__ut);
 	}
       return __is;
     }
@@ -3989,7 +3995,7 @@ namespace __detail
       __detail::_Parser_t<_Duration> __p(__need);
       if (__p(__is, __fmt, __abbrev, __offset))
 	{
-	  if (__p._M_is_leap_second)
+	  if (__p._M_60th_second)
 	    __is.setstate(ios_base::failbit);
 	  else
 	    {
@@ -4024,7 +4030,7 @@ namespace __detail
       __detail::_Parser_t<_Duration> __p(__need);
       if (__p(__is, __fmt, __abbrev, __offset))
 	{
-	  if (__p._M_is_leap_second)
+	  if (__p._M_60th_second)
 	    __is.setstate(ios_base::failbit);
 	  else
 	    {
@@ -4769,7 +4775,7 @@ namespace __detail
 		      __h = hours(__val);
 
 		      __val = __read_unsigned(2);
-		      if (__val == -1 || __val > 60) [[unlikely]]
+		      if (__val == -1 || __val > 59) [[unlikely]]
 			if ((_M_need & _ChronoParts::_TimeOfDay) != 0)
 			  {
 			    __err |= ios_base::failbit;
@@ -4802,10 +4808,12 @@ namespace __detail
 				       && !__is_floating)
 		    {
 		      auto __val = __read_unsigned(__num ? __num : 2);
-		      if (0 <= __val && __val <= 59) [[likely]]
+		      if (0 <= __val && __val <= 60) [[likely]]
 			__s = seconds(__val);
 		      else
 			{
+			  // Not a valid second, but we only fail if we're
+			  // parsing into a type that cares about that.
 			  if ((_M_need & _ChronoParts::_TimeOfDay) != 0)
 			    __err |= ios_base::failbit;
 			  break;
@@ -5451,7 +5459,9 @@ namespace __detail
 		    {
 		      __ok = true;
 		      __t += __s;
-		      _M_is_leap_second = __s >= seconds(60);
+		      // Record that we had "60" or "60.ddd" for seconds.
+		      // Caller checks for valid leap second, if needed.
+		      _M_60th_second = __s >= seconds(60);
 		    }
 
 		  if (__ok)

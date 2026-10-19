@@ -18,9 +18,7 @@
 #ifndef GCC_INTL_H
 #define GCC_INTL_H
 
-#ifdef HAVE_LOCALE_H
-# include <locale.h>
-#endif
+#include <locale.h>
 
 #ifndef HAVE_SETLOCALE
 # define setlocale(category, locale) (locale)

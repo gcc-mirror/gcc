@@ -1078,6 +1078,32 @@ numeric_alpha_compare(tree        &left,
       compared = true;
       }
     }
+
+  if( !compared )
+    {
+    if( left_side.field->type == FldNumericDisplay )
+      {
+      right = integer_zero_node;
+
+      int flags =   left_side.all  ? 2: 0
+                  + right_side.all ? 1: 0 ;
+
+      tree right_offset = gg_cast(SIZE_T, refer_offset(right_side));
+      tree length_right   = refer_size_source(right_side);
+      tree left_offset = gg_cast(SIZE_T, refer_offset(left_side));
+      left = gg_call_expr(INT,
+                          "__gg__compare_numdisp_alpha",
+                          gg_get_address_of(left_side.field->var_decl_node),
+                          left_offset,
+                          gg_get_address_of(right_side.field->var_decl_node),
+                          right_offset,
+                          length_right,
+                          build_int_cst_type(INT, flags),
+                          NULL_TREE);
+      compared = true;
+      }
+    }
+
   if( !compared )
     {
     // The left side is a fixed-point numeric of some kind.  First, we pick

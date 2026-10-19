@@ -70,6 +70,7 @@ arm port                Richard Earnshaw        <richard.earnshaw@arm.com>
 arm port                Ramana Radhakrishnan    <ramanara@nvidia.com>
 avr port                Denis Chertykov         <chertykov@gmail.com>
 bfin port               Jie Zhang               <jzhang918@gmail.com>
+bpf port                David Faust             <david.faust@oss.qualcomm.com>
 bpf port                Jose E. Marchesi        <jose.marchesi@oracle.com>
 c-sky port              Xianmiao Qu             <cooper.qu@linux.alibaba.com>
 c-sky port              Yunhai Shang            <yunhai@linux.alibaba.com>
@@ -295,7 +296,7 @@ C front end             Marek Polacek           <polacek@redhat.com>
 c++                     Patrick Palka           <ppalka@gcc.gnu.org>
 callgraph               Martin Jambor           <mjambor@suse.cz>
 CTF, BTF                Indu Bhagat             <indu.bhagat@oracle.com>
-CTF, BTF, bpf port      David Faust             <david.faust@oss.qualcomm.com>
+CTF, BTF                David Faust             <david.faust@oss.qualcomm.com>
 dataflow                Paolo Bonzini           <bonzini@gnu.org>
 dataflow                Seongbae Park           <seongbae.park@gmail.com>
 dataflow                Kenneth Zadeck          <zadeck@naturalbridge.com>
@@ -471,6 +472,7 @@ Wilco Dijkstra                  wilco           <wilco.dijkstra@arm.com>
 Dimitar Dimitrov                dimitar         <dimitar@dinux.eu>
 Benoit Dupont de Dinechin       bd3             <benoit.dupont-de-dinechin@st.com>
 Lehua Ding                      lhtin           <lehua.ding@rivai.ai>
+Gabriel Dos Reis                gdr             <gdr@integrable-solutions.net>
 Ulrich Drepper                  drepper         <drepper@gmail.com>
 Robert Dubner                   rdubner         <rdubner@symas.com>
 François Dumont                 fdumont         <fdumont@gcc.gnu.org>
@@ -692,6 +694,7 @@ David Malcolm                   dmalcolm        <dmalcolm@redhat.com>
 Matthew Malcomson               matmal01        <mmalcomson@nvidia.com>
 Mikhail Maltsev                 miyuki          <maltsevm@gmail.com>
 Jose E. Marchesi                jemarch         <jose.marchesi@oracle.com>
+Simon Marchi                    simark          <simon.marchi@efficios.com>
 Stamatis Markianos-Wright       stammark        <stam.markianos-wright@arm.com>
 Patrick Marlier                 pmarlier        <patrick.marlier@gmail.com>
 Simon Martin                    simartin        <simartin@users.sourceforge.net>
@@ -843,6 +846,7 @@ Nathaniel Shead                 nshead          <nathanieloshead@gmail.com>
 Tim Shen                        timshen         <timshen@google.com>
 Joel Sherrill                   joel            <joel@oarcorp.com>
 David Sherwood                  davids          <david.sherwood@arm.com>
+Igor Shevlyakov                 ishevlyakov     <igor.shevlyakov@gmail.com>
 Nathan Sidwell                  nathan          <nathan@acm.org>
 Sharad Singhai                  singhai         <singhai@google.com>
 Johannes Singler                singler         <singler@kit.edu>
@@ -996,6 +1000,7 @@ Giuseppe D'Angelo                               <giuseppe.dangelo@kdab.com>
 Robin Dapp                                      <rdapp.gcc@gmail.com>
 Robin Dapp                                      <rdapp@qti.qualcomm.com>
 Robin Dapp                                      <rdapp@ventanamicro.com>
+Gabriel Dos Reis                                <gdr@integrable-solutions.net>
 David Faust                                     <david.faust@oss.qualcomm.com>
 Kael Andrew Franco                              <kaelfandrew@gmail.com>
 Prachi Godbole                                  <pgodbole@nvidia.com>
@@ -1039,6 +1044,8 @@ Egas                                            <egas.g.ribeiro@gmail.com>
 Trevor Saunders                                 <tbsaunde+gcc@tbsaunde.org>
 Bill Schmidt                                    <bill.schmidt@fastmail.com>
 Nathaniel Shead                                 <nathanieloshead@gmail.org>
+Igor Shevlyakov                                 <igor.shevlyakov@gmail.com>
+Igor Shevlyakov                                 <igor@tachyum.com>
 Nathan Sidwell                                  <nathan@acm.org>
 Edward Smith-Rowland                            <esmithrowland@gmail.com>
 Fangrui Song                                    <maskray@gcc.gnu.org>

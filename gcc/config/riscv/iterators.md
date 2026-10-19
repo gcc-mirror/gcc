@@ -246,6 +246,7 @@
 ;; This code iterator allows ior and xor instructions to be generated
 ;; from the same template.
 (define_code_iterator any_or [ior xor])
+(define_code_iterator oxp [ior xor plus])
 
 ;; This code iterator allows unsigned and signed division to be generated
 ;; from the same template.

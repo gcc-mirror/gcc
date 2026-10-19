@@ -33,7 +33,9 @@ current_timestamp = datetime.datetime.now().strftime('%Y%m%d\n')
 # Skip the following commits, they cannot be correctly processed
 ignored_commits = {
         '843b49269eaca82860ab4171f9644b5c411f05fc',
-        '5c0785d62ca44b9073e543b2b3dbb04f0aca83af'}
+        '5c0785d62ca44b9073e543b2b3dbb04f0aca83af',
+        'ea3a617121455260ffff00a3b3744548ea45b6e1',
+        'c2eee09d92ddf1b676efd756e9f82c12f3e0a767'}
 
 FORMAT = '%(asctime)s:%(levelname)s:%(name)s:%(message)s'
 logging.basicConfig(level=logging.INFO, format=FORMAT,

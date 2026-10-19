@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512vl -O2" } */
+/* { dg-options "-mavx512vl -O2 -mtune=generic" } */
 /* { dg-final { scan-assembler-times "(?:vinserti128|vmovdqu)\[ \\t\]+\[^\{\n\]*\\)\[^\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 2 } } */
 
 #include <immintrin.h>

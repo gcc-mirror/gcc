@@ -1292,6 +1292,11 @@ of iterations of a loop known, it adds a bonus of
 @option{ipa-cp-loop-hint-bonus} to the profitability score of
 the candidate.
 
+@paindex ipa-cp-profile-runtime-scaling
+@item ipa-cp-profile-runtime-scaling
+When using profile feedback, by how many bits to shift the run-time
+before it is used as the basis for IPA-CP evaluations.
+
 @paindex ipa-max-loop-predicates
 @item ipa-max-loop-predicates
 The maximum number of different predicates IPA uses to describe when
@@ -1884,6 +1889,11 @@ the value as unknown.
 The maximum number of infeasible edges to reject before declaring
 a diagnostic as infeasible.
 
+@paindex analyzer-max-macro-alias-depth
+@item analyzer-max-macro-alias-depth
+The maximum number of macro aliases to follow when resolving named constants
+in the analyzer.
+
 @paindex gimple-fe-computed-hot-bb-threshold
 @item gimple-fe-computed-hot-bb-threshold
 The number of executions of a basic block that is considered hot.
@@ -2026,6 +2036,10 @@ approximation is enabled.  The default value is 2.
 An old alias for @option{-mautovec-preference}.  If both
 @option{-mautovec-preference} and @option{--param=aarch64-autovec-preference}
 are passed, the @option{--param} value is used.
+
+@paindex aarch64-autovec-mode
+@item aarch64-autovec-preference
+Force a specific mode to be the only one considered for auto vectorization.
 
 @paindex aarch64-ldp-policy
 @item aarch64-ldp-policy

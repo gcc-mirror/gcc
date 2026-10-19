@@ -1,5 +1,5 @@
 <section xmlns="http://docbook.org/ns/docbook" version="5.0"
-	 xml:id="appendix.porting.internals" xreflabel="Portin Internals">
+	 xml:id="appendix.porting.internals" xreflabel="Porting Internals">
 <?dbhtml filename="internals.html"?>
 
 <info><title>Porting to New Hardware or Operating Systems</title>

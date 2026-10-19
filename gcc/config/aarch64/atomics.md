@@ -805,10 +805,10 @@
   {
     switch (INTVAL (operands[4]))
     {
-      case 0:
+      case 3:
 	output_asm_insn ("shuh", operands);
 	break;
-      case 1:
+      case 4:
 	output_asm_insn ("shuh\tph", operands);
 	break;
       default:

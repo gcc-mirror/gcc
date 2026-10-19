@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do run { target c++11 } }
+// { dg-skip-if "Target libm lacks complete C99 math library" { hppa*-*-hpux* } }
 
 #include <testsuite_hooks.h>
 

@@ -2819,13 +2819,17 @@ cleanup:
 }
 
 
+/* Counter used to uniquify shadow-variable names created below.  */
+
+static int shadow_var_num = 0;
+
 /* Apply type-spec to iterator and create shadow variable if needed.  */
 
 static void
 apply_typespec_to_iterator (gfc_forall_iterator *iter, gfc_typespec *ts,
 			     locus *loc)
 {
-  char *name;
+  const char *name;
   gfc_expr *v;
   gfc_symtree *st;
 
@@ -2846,13 +2850,14 @@ apply_typespec_to_iterator (gfc_forall_iterator *iter, gfc_typespec *ts,
   else
     {
       /* Variable exists in outer scope - must create shadow to comply
-	 with F2018 19.4(6) scoping rules.  */
-      name = (char *) alloca (strlen (v->symtree->name) + 2);
-      strcpy (name, "_");
-      strcat (name, v->symtree->name);
+	 with F2018 19.4(6) scoping rules.  Number the shadow so sibling
+	 constructs do not share it.  */
+      name = gfc_get_string ("_%s_%d", v->symtree->name, shadow_var_num++);
       if (gfc_get_sym_tree (name, NULL, &st, false) != 0)
 	gfc_internal_error ("Failed to create shadow variable symtree for "
 			    "DO CONCURRENT type-spec at %L", loc);
+
+      iter->shadow_outer_sym = iter->var->symtree->n.sym;
 
       v = gfc_get_expr ();
       v->where = gfc_current_locus;

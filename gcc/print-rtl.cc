@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "predict.h"
 #include "function.h"
 #include "cfg.h"
-#include "basic-block.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
 #include "alloc-pool.h"

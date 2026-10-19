@@ -20,6 +20,6 @@ program test
   call co_min(val3, result_image=res,stat=stat3, errmsg=errmesg3)
 end program test
 
-! { dg-final { scan-tree-dump-times "_gfortran_caf_co_max \\(&desc.., 0, &stat1, errmesg1, 0, 6\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_co_sum \\(&val2, 4, &stat2, errmesg2, 7\\);" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_co_min \\(&desc.., res, &stat3, errmesg3, 99, 8\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_co_max \\(&desc.., 0, &stat1, &errmesg1, 0, 6\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_co_sum \\(&val2, 4, &stat2, &errmesg2, 7\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_co_min \\(&desc.., res, &stat3, &errmesg3, 99, 8\\);" 1 "original" } }

@@ -2278,7 +2278,7 @@ determine_known_aggregate_parts (struct ipa_func_body_info *fbi,
 	{
 	  dom_vuse = get_continuation_for_phi (phi, &r, true,
 					       fbi->aa_walk_budget,
-					       &visited, false, NULL, NULL);
+					       &visited, NULL, NULL);
 	  continue;
 	}
 

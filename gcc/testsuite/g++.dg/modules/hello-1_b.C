@@ -1,7 +1,7 @@
-// { dg-additional-options -fmodules-ts }
+// { dg-additional-options "-fmodules -fno-module-lazy" }
 
-#include <string_view>
 import hello;
+#include <string_view>
 int main (void)
 {
   greeter ("world");

@@ -1016,8 +1016,8 @@ a68_low_assignation (NODE_T *p,
 	     is performed.  XXX but bound checking in contained values may be
 	     necessary, ghost elements.  */
 	  if (POINTER_TYPE_P (TREE_TYPE (lhs))
-	      && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
-		  == TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
+	      && (TYPE_CANONICAL (TREE_TYPE (TREE_TYPE (lhs)))
+		  == TYPE_CANONICAL (TREE_TYPE (rhs))))
 	    {
 	      /* Make sure to not evaluate the expression yielding the pointer
 		 more than once.  */
@@ -1097,8 +1097,8 @@ a68_low_assignation (NODE_T *p,
 	rhs = a68_low_dup (rhs, true /* use_heap */);
 
       if (POINTER_TYPE_P (TREE_TYPE (lhs))
-	  && (TYPE_MAIN_VARIANT (TREE_TYPE (TREE_TYPE (lhs)))
-	      == TYPE_MAIN_VARIANT (TREE_TYPE (rhs))))
+	  && (TYPE_CANONICAL (TREE_TYPE (TREE_TYPE (lhs)))
+	      == TYPE_CANONICAL (TREE_TYPE (rhs))))
 	{
 	  /* If the left hand side is a pointer, deref it, but return the
 	     pointer.  Make sure to not evaluate the expression yielding the

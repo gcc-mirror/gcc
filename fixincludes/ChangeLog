@@ -1,3 +1,48 @@
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't check for errno.
+	* system.h: Drop errno fallback.
+
+2026-10-17  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for abort. Don't search for strings.h.
+	* system.h: Drop abort fallback. Drop strings.h fallback.
+
+2026-10-15  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Drop AC_C_CONST.
+
+2026-10-13  Simon Marchi  <simon.marchi@polymtl.ca>
+
+	* configure.ac: Add AC_CONFIG_MACRO_DIRS.
+	* configure: Regenerate.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Don't search for stddef.h or stdlib.h.
+	* system.h (HAVE_STDDEF_H): Delete.
+	Include stddef.h unconditionally.
+	(HAVE_STDLIB_H): Delete.
+	Include stdlib.h unconditionally.
+
+2026-10-09  Sam James  <sam@gentoo.org>
+
+	PR bootstrap/112422
+	* configure: Regenerate.
+	* configure.ac: Drop AC_HEADER_STDC.
+
 2026-09-20  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* fixincl.x: Regenerate.

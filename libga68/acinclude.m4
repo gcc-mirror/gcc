@@ -8,4 +8,5 @@ dnl but WITHOUT ANY WARRANTY, to the extent permitted by law; without
 dnl even the implied warranty of MERCHANTABILITY or FITNESS FOR A
 dnl PARTICULAR PURPOSE.
 
+m4_include([../config/mmap.m4])
 m4_include([m4/autoconf.m4])

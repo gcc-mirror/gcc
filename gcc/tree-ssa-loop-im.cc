@@ -1742,10 +1742,7 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
 		 a canonical ref which is a bare MEM_REF.  */
 	      if (TREE_CODE (*mem) == MEM_REF
 		  || TREE_CODE (*mem) == TARGET_MEM_REF)
-		{
-		  (*slot)->mem.ref = *mem;
-		  (*slot)->mem.base_alias_set = ao_ref_base_alias_set (&aor);
-		}
+		(*slot)->mem = aor;
 	      else
 		{
 		  tree ref_alias_type = reference_alias_ptr_type (*mem);

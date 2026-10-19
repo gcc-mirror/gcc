@@ -380,6 +380,9 @@ case ${host} in
     # These versions define PTHREAD_PROCESS_SHARED but the functionality
     # is not available at runtime, so the configure check misleads.
     enable_caf_shmem=false;;
+  *-*-cygwin* | *-*-mingw*)
+    # The specific implementation for these platforms does not use pthread.
+    enable_caf_shmem=true;;
 esac
 AM_CONDITIONAL([ENABLE_CAF_SHMEM], [test x$enable_caf_shmem = xtrue])
 

@@ -2473,54 +2473,28 @@ package body Sem_Type is
          return False;
       end if;
 
+      --  Non-overloaded case. Note that we do not special case the operations
+      --  whose result is of an universal type like below, because we want to
+      --  give a specific error message for them in Check_For_Visible_Operator.
+
       if Nkind (N) = N_Subtype_Indication or else not Is_Overloaded (N) then
          if Covers (Typ, Etype (N))
-
-            --  Ada 2005 (AI-345): The context may be a synchronized interface.
-            --  If the type is already frozen, use the corresponding_record to
-            --  check whether it is a proper descendant.
-
-           or else
-             (Is_Record_Type (Typ)
-               and then Is_Concurrent_Type (Etype (N))
-               and then Present (Corresponding_Record_Type (Etype (N)))
-               and then Covers (Typ, Corresponding_Record_Type (Etype (N))))
-
-           or else
-             (Is_Concurrent_Type (Typ)
-               and then Is_Record_Type (Etype (N))
-               and then Present (Corresponding_Record_Type (Typ))
-               and then Covers (Corresponding_Record_Type (Typ), Etype (N)))
-
            or else Is_User_Defined_Literal (N, Typ)
-
          then
             return True;
          end if;
 
-      --  Overloaded case
+      --  Overloaded case. For an operation whose result is of an universal
+      --  numeric type, we need to check that the interpretation would be
+      --  a visible operator, because this cannot be done without context.
 
       else
          Get_First_Interp (N, I, It);
          while Present (It.Typ) loop
             if Covers (Typ, It.Typ)
-
-               --  Ada 2005 (AI-345)
-
-              or else
-                (Is_Record_Type (Typ)
-                  and then Is_Concurrent_Type (It.Typ)
-                  and then Present (Corresponding_Record_Type (Etype (It.Typ)))
-                  and then
-                    Covers (Typ, Corresponding_Record_Type (Etype (It.Typ))))
-
-              or else
-                (Is_Concurrent_Type (Typ)
-                  and then Is_Record_Type (It.Typ)
-                  and then Present (Corresponding_Record_Type (Typ))
-                  and then
-                    Covers (Corresponding_Record_Type (Typ), Etype (It.Typ)))
-
+              and then (Nkind (N) not in N_Op
+                         or else not Is_Universal_Numeric_Type (It.Typ)
+                         or else Is_Visible_Operator (N, Base_Type (Typ)))
             then
                return True;
             end if;

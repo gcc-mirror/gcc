@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 /* { dg-additional-options "-mbmi -mlzcnt" { target i?86-*-* x86_64-*-* } } */
+/* { dg-additional-options "-march=z17" { target s390x-*-* } } */
 /* { dg-require-effective-target clz } */
 /* { dg-require-effective-target ctz } */
 

@@ -18,6 +18,7 @@
 
 #include "rust-derive.h"
 #include "rust-derive-clone.h"
+#include "rust-derive-coerce-pointee.h"
 #include "rust-derive-copy.h"
 #include "rust-derive-debug.h"
 #include "rust-derive-default.h"
@@ -83,6 +84,8 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
 		       ? "RustcEncodable"
 		       : "RustcDecodable");
       return {};
+    case BuiltinMacro::CoercePointee:
+      return vec (DeriveCoercePointee (loc, item_source).go (item));
     default:
       rust_unreachable ();
     };

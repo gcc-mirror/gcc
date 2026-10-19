@@ -95,3 +95,25 @@ if test $gcc_cv_func_mmap_anon = yes; then
 	    [Define if mmap with MAP_ANON(YMOUS) works.])
 fi
 ])
+
+dnl
+dnl Avoid the sanitizer run-time memory leak failure in the mmap configure
+dnl test.  This should be removed when autoconf with commit:
+dnl
+dnl commit 09b6e78d1592ce10fdc975025d699ee41444aa3f
+dnl Author: Paul Eggert <eggert@cs.ucla.edu>
+dnl Date:   Fri Feb 5 21:06:20 2016 -0800
+dnl Fix memory leak in AC_FUNC_MMAP
+dnl
+dnl * lib/autoconf/functions.m4 (AC_FUNC_MMAP): Fix memory leak
+dnl in test case, found by configuring with gcc -fsanitize=address.
+dnl
+dnl is in use.
+dnl
+AC_DEFUN([GCC_AC_FUNC_MMAP],
+  save_ASAN_OPTIONS="$ASAN_OPTIONS"
+  ASAN_OPTIONS=detect_leaks=0
+  export ASAN_OPTIONS
+  m4_defn([AC_FUNC_MMAP])
+  ASAN_OPTIONS="$save_ASAN_OPTIONS"
+)

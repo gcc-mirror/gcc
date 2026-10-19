@@ -21,9 +21,7 @@ test_abs_max_f16 (float16x4_t a, float16x4_t b)
 
 /*
 ** test_abs_maxnm_f16:
-**	fabs	v1.4h, v1.4h
-**	fabs	v0.4h, v0.4h
-**	fmaxnm	v0.4h, v0.4h, v1.4h
+**	famax	v0.4h, (v0.4h, v1.4h|v1.4h, v0.4h)
 **	ret
 */
 float16x4_t
@@ -47,9 +45,7 @@ test_abs_maxq_f16 (float16x8_t a, float16x8_t b)
 
 /*
 ** test_abs_maxnmq_f16:
-**	fabs	v1.8h, v1.8h
-**	fabs	v0.8h, v0.8h
-**	fmaxnm	v0.8h, v0.8h, v1.8h
+**	famax	v0.8h, (v0.8h, v1.8h|v1.8h, v0.8h)
 **	ret
 */
 float16x8_t
@@ -73,9 +69,7 @@ test_abs_max_f32 (float32x2_t a, float32x2_t b)
 
 /*
 ** test_abs_maxnm_f32:
-**	fabs	v1.2s, v1.2s
-**	fabs	v0.2s, v0.2s
-**	fmaxnm	v0.2s, v0.2s, v1.2s
+**	famax	v0.2s, (v0.2s, v1.2s|v1.2s, v0.2s)
 **	ret
 */
 float32x2_t
@@ -99,9 +93,7 @@ test_abs_maxq_f32 (float32x4_t a, float32x4_t b)
 
 /*
 ** test_abs_maxnmq_f32:
-**	fabs	v1.4s, v1.4s
-**	fabs	v0.4s, v0.4s
-**	fmaxnm	v0.4s, v0.4s, v1.4s
+**	famax	v0.4s, (v0.4s, v1.4s|v1.4s, v0.4s)
 **	ret
 */
 float32x4_t
@@ -125,9 +117,7 @@ test_abs_maxq_f64 (float64x2_t a, float64x2_t b)
 
 /*
 ** test_abs_maxnmq_f64:
-**	fabs	v1.2d, v1.2d
-**	fabs	v0.2d, v0.2d
-**	fmaxnm	v0.2d, v0.2d, v1.2d
+**	famax	v0.2d, (v0.2d, v1.2d|v1.2d, v0.2d)
 **	ret
 */
 float64x2_t
@@ -151,9 +141,7 @@ test_abs_min_f16 (float16x4_t a, float16x4_t b)
 
 /*
 ** test_abs_minnm_f16:
-**	fabs	v1.4h, v1.4h
-**	fabs	v0.4h, v0.4h
-**	fminnm	v0.4h, v0.4h, v1.4h
+**	famin	v0.4h, (v0.4h, v1.4h|v1.4h, v0.4h)
 **	ret
 */
 float16x4_t
@@ -177,9 +165,7 @@ test_abs_minq_f16 (float16x8_t a, float16x8_t b)
 
 /*
 ** test_abs_minnmq_f16:
-**	fabs	v1.8h, v1.8h
-**	fabs	v0.8h, v0.8h
-**	fminnm	v0.8h, v0.8h, v1.8h
+**	famin	v0.8h, (v0.8h, v1.8h|v1.8h, v0.8h)
 **	ret
 */
 float16x8_t
@@ -203,9 +189,7 @@ test_abs_min_f32 (float32x2_t a, float32x2_t b)
 
 /*
 ** test_abs_minnm_f32:
-**	fabs	v1.2s, v1.2s
-**	fabs	v0.2s, v0.2s
-**	fminnm	v0.2s, v0.2s, v1.2s
+**	famin	v0.2s, (v0.2s, v1.2s|v1.2s, v0.2s)
 **	ret
 */
 float32x2_t
@@ -229,9 +213,7 @@ test_abs_minq_f32 (float32x4_t a, float32x4_t b)
 
 /*
 ** test_abs_minnmq_f32:
-**	fabs	v1.4s, v1.4s
-**	fabs	v0.4s, v0.4s
-**	fminnm	v0.4s, v0.4s, v1.4s
+**	famin	v0.4s, (v0.4s, v1.4s|v1.4s, v0.4s)
 **	ret
 */
 float32x4_t
@@ -255,9 +237,7 @@ test_abs_minq_f64 (float64x2_t a, float64x2_t b)
 
 /*
 ** test_abs_minnmq_f64:
-**	fabs	v1.2d, v1.2d
-**	fabs	v0.2d, v0.2d
-**	fminnm	v0.2d, v0.2d, v1.2d
+**	famin	v0.2d, (v0.2d, v1.2d|v1.2d, v0.2d)
 **	ret
 */
 float64x2_t

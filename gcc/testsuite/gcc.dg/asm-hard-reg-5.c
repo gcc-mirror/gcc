@@ -1,4 +1,4 @@
-/* { dg-do compile { target { { aarch64*-*-* powerpc64*-*-* riscv64-*-* s390*-*-* } || { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } } */
+/* { dg-do compile { target { { aarch64*-*-* riscv64-*-* s390*-*-* } || { { powerpc64*-*-* && powerpc_altivec_ok } || { x86_64-*-* && { ! ia32 } } } } } } */
 
 typedef int V __attribute__ ((vector_size (4 * sizeof (int))));
 
@@ -7,6 +7,7 @@ typedef int V __attribute__ ((vector_size (4 * sizeof (int))));
 /* { dg-final { scan-assembler-times "foo\tv20" 2 { target { aarch64*-*-* } } } } */
 #elif defined (__powerpc__) || defined (__POWERPC__)
 # define VR "{v5}"
+/* { dg-additional-options "-maltivec" { target { powerpc64*-*-* && powerpc_altivec_ok } } } */
 /* { dg-final { scan-assembler-times "foo\t5" 2 { target { powerpc64*-*-* } } } } */
 #elif defined (__riscv)
 # define VR "{v5}"

@@ -445,11 +445,11 @@ struct to_text
     pp_emit_prefix (&m_pp);
   }
 
-  void push_html_tag (std::string, bool)
+  void push_html_tag (const char *, bool)
   {
     // no-op for text
   }
-  void push_html_tag_with_class (std::string, std::string, bool)
+  void push_html_tag_with_class (const char *, const char *, bool)
   {
     // no-op for text
   }
@@ -458,7 +458,7 @@ struct to_text
     // no-op for text
   }
 
-  void add_html_tag_with_class (std::string, std::string, bool)
+  void add_html_tag_with_class (const char *, const char *, bool)
   {
     // no-op for text
   }
@@ -571,19 +571,17 @@ struct to_html
     // no-op for HTML
   }
 
-  void push_html_tag (std::string name,
+  void push_html_tag (const char *name,
 		      bool preserve_whitespace)
   {
-    m_xp.push_tag (std::move (name), preserve_whitespace);
+    m_xp.push_tag (name, preserve_whitespace);
   }
 
-  void push_html_tag_with_class (std::string name,
-				 std::string class_,
+  void push_html_tag_with_class (const char *name,
+				 const char *class_,
 				 bool preserve_whitespace)
   {
-    m_xp.push_tag_with_class (std::move (name),
-			      std::move (class_),
-			      preserve_whitespace);
+    m_xp.push_tag_with_class (name, class_, preserve_whitespace);
   }
 
   void pop_html_tag (const char *expected_name)
@@ -591,13 +589,12 @@ struct to_html
     m_xp.pop_tag (expected_name);
   }
 
-  void add_html_tag_with_class (std::string name,
-				std::string class_,
+  void add_html_tag_with_class (const char *name,
+				const char *class_,
 				bool preserve_whitespace)
   {
-    auto element = std::make_unique<xml::element> (std::move (name),
-						   preserve_whitespace);
-    element->set_attr ("class", std::move (class_));
+    auto element = std::make_unique<xml::element> (name, preserve_whitespace);
+    element->set_attr ("class", class_);
     m_xp.append (std::move (element));
   }
 

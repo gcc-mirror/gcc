@@ -35,7 +35,7 @@ static_assert(std::enable_nonlocking_formatter_optimization<
 static_assert(std::enable_nonlocking_formatter_optimization<
 		std::chrono::year_month_weekday_last>);
 
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
 static_assert(std::enable_nonlocking_formatter_optimization<
 		std::chrono::local_info>);
 static_assert(std::enable_nonlocking_formatter_optimization<
@@ -132,7 +132,7 @@ static_assert(std::enable_nonlocking_formatter_optimization<
 static_assert(std::enable_nonlocking_formatter_optimization<
 		local_time_fmt<NonBufferedDuration>>);
 
-#if _GLIBCXX_USE_CXX11_ABI || !_GLIBCXX_USE_DUAL_ABI
+#if __cpp_lib_chrono >= 201803L
 static_assert(std::enable_nonlocking_formatter_optimization<
 		std::chrono::zoned_time<std::chrono::seconds>>);
 static_assert(!std::enable_nonlocking_formatter_optimization<

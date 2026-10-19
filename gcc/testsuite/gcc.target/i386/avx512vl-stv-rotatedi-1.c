@@ -1,5 +1,5 @@
 /* { dg-do compile { target ia32 } } */
-/* { dg-options "-O2 -mavx512vl -mstv -mno-stackrealign" } */
+/* { dg-options "-O2 -mavx512vl -mstv -mno-stackrealign -mtune=generic" } */
 
 unsigned long long rot1(unsigned long long x) { return (x>>1) | (x<<63); }
 unsigned long long rot2(unsigned long long x) { return (x>>2) | (x<<62); }

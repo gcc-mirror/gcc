@@ -225,8 +225,8 @@ else return false.</para></listitem>
 
   <para>
     This has nothing to do with the algorithm per-se,
-    only with some vales that must be chosen correctly to ensure that the
-    allocator performs well in a real word scenario, and maintains a good
+    only with some values that must be chosen correctly to ensure that the
+    allocator performs well in a real world scenario, and maintains a good
     balance between the memory consumption and the allocation/deallocation
     speed.
   </para>
@@ -464,7 +464,7 @@ Block a bitmap as well?
       have nothing to do with the memory that is given to the user. As
       I have earlier mentioned, a 1 in the bitmap's bit field
       indicates free, while a 0 indicates allocated. This lets us
-      check 32 bits at a time to check whether there is at lease one
+      check 32 bits at a time to check whether there is at least one
       free block in those 32 blocks by testing for equality with
       (0). Now, the allocate function will given a memory block find
       the corresponding bit in the bitmap, and will reset it (i.e.,
@@ -482,7 +482,7 @@ Block a bitmap as well?
     <para>
       Now, when the first request for allocation of a single object
       comes along, the first block in address order is returned. And
-      since the bit-maps in the reverse order to that of the address
+      since the bit-maps are in the reverse order to that of the address
       order, the last bit (LSB if the bit-map is considered as a
       binary word of 64-bits) is re-set to 0.
     </para>
@@ -497,7 +497,7 @@ Block a bitmap as well?
 <section xml:id="bitmap.impl.locality" xreflabel="Locality"><info><title>Locality</title></info>
 
   <para>
-    Another issue would be whether to keep the all bitmaps in a
+    Another issue would be whether to keep all the bitmaps in a
     separate area in memory, or to keep them near the actual blocks
     that will be given out or allocated for the client. After some
     testing, I've decided to keep these bitmaps close to the actual
@@ -505,7 +505,7 @@ Block a bitmap as well?
   </para>
 
   <orderedlist>
-  <listitem><para>Constant time access for the bitmap themselves, since no kind of
+  <listitem><para>Constant time access for the bitmaps themselves, since no kind of
 look up will be needed to find the correct bitmap list or its
 equivalent.</para></listitem>
   <listitem><para>And also this would preserve the cache as far as possible.</para></listitem>

@@ -1088,12 +1088,18 @@ instruction pattern for integer and integer vector modes.
 @cindex @code{IFN_CLZ} internal function
 @item @samp{IFN_CLZ}
 The @code{IFN_CLZ} internal function directly maps to the @code{clz}
-instruction pattern for integer and integer vector modes.
+instruction pattern for integer and integer vector modes.  In case the value
+for zero is defined, then this is recorded in the optional second argument.
+Note, this is always a scalar value even for vector modes where it represents
+the scalar value of a lane.
 
 @cindex @code{IFN_CTZ} internal function
 @item @samp{IFN_CTZ}
 The @code{IFN_CTZ} internal function directly maps to the @code{ctz}
-instruction pattern for integer and integer vector modes.
+instruction pattern for integer and integer vector modes.  In case the value
+for zero is defined, then this is recorded in the optional second argument.
+Note, this is always a scalar value even for vector modes where it represents
+the scalar value of a lane.
 
 @cindex @code{IFN_FFS} internal function
 @item @samp{IFN_FFS}

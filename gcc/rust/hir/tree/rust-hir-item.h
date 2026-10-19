@@ -966,6 +966,8 @@ class Function : public VisItem, public ImplItem
 public:
   std::string to_string () const override;
 
+  tl::optional<std::vector<size_t>> get_legacy_const_generic_indexes () const;
+
   // Returns whether function has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
 

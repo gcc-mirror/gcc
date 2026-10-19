@@ -1311,7 +1311,7 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg)
 
   if (integer_cst_p (arg))
     {
-      if (SCALAR_INT_MODE_P (mode))
+      if (INTEGRAL_TYPE_P (type))
 	{
 	  wide_int result;
 	  if (fold_const_call_ss (&result, fn, wi::to_wide (arg),
@@ -1762,7 +1762,7 @@ fold_const_call_1 (combined_fn fn, tree type, tree arg0, tree arg1)
 
   if (integer_cst_p (arg0) && integer_cst_p (arg1))
     {
-      if (SCALAR_INT_MODE_P (mode))
+      if (INTEGRAL_TYPE_P (type))
 	{
 	  wide_int result;
 	  if (fold_const_call_sss (&result, fn, wi::to_wide (arg0),

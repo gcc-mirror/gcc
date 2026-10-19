@@ -210,8 +210,6 @@ fi
 AC_SUBST(NO_MINUS_C_MINUS_O)
 AC_SUBST(OUTPUT_OPTION)
 
-AC_C_CONST
-AC_C_INLINE
 AC_C_BIGENDIAN
 
 dnl When we start using libtool:

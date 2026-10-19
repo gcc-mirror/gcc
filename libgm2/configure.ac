@@ -86,7 +86,6 @@ AC_ARG_WITH(cross-host,
 [  --with-cross-host=HOST           Configuring with a cross compiler])
 
 # Checks for header files.
-AC_HEADER_STDC
 AC_HEADER_SYS_WAIT
 AC_HEADER_TIME
 

@@ -48,4 +48,4 @@ foo (char const *buf, size_t len)
 /* { dg-final { scan-assembler-not {vmv2r} } } */
 /* { dg-final { scan-assembler-not {vmv4r} } } */
 /* { dg-final { scan-assembler-not {vmv8r} } } */
-/* { dg-final { scan-assembler-not {csrr} { xfail riscv*-*-* } } } */
+/* { dg-final { scan-assembler-not {csrr} } } */

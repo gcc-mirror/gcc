@@ -50,17 +50,7 @@ ACX_PROG_CC_WARNING_OPTS([-fno-lto], [nolto_flags])
 ACX_PROG_CC_WARNINGS_ARE_ERRORS([manual])
 
 # Checks for header files.
-AC_CHECK_HEADERS(ctype.h stddef.h string.h stdio.h)
 GCC_HEADER_STDINT(gstdint.h)
-
-# Checks for typedefs, structures, and compiler characteristics.
-AC_C_CONST
-AC_TYPE_OFF_T
-AC_CHECK_SIZEOF(int)
-AC_CHECK_SIZEOF(long)
-
-# Checks for library functions.
-AC_HEADER_STDC
 
 AC_ARG_ENABLE(maintainer-mode,
 [  --enable-maintainer-mode enable rules only needed by maintainers],,

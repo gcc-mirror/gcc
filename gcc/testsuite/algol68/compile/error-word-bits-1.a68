@@ -1,0 +1,4 @@
+begin
+      word bits address = word word 16rffffff3c; { dg-error "" }
+      skip
+end

@@ -327,18 +327,29 @@ END CheckParam ;
 
 PROCEDURE MemIncr (MemDiag: Diagnostic; paramno: CARDINAL; incr: CARDINAL) ;
 BEGIN
+   MemIncrLong (MemDiag, paramno, VAL (LONGCARD, incr))
+END MemIncr ;
+
+
+(*
+   MemIncrLong - allow the appropriate parameter to be incremented by a LONGCARD
+                 data type.
+*)
+
+PROCEDURE MemIncrLong (MemDiag: Diagnostic; paramno: CARDINAL; incr: LONGCARD) ;
+BEGIN
    IF EnableDiagnostics AND (MemDiag # NIL)
    THEN
       CheckParam (paramno) ;
       CASE MemDiag^.type OF
 
-      memdiag:  INC (MemDiag^.mdiag.param[paramno], VAL (LONGCARD, incr))
+      memdiag:  INC (MemDiag^.mdiag.param[paramno], incr)
 
       ELSE
          HALT
       END
    END
-END MemIncr ;
+END MemIncrLong ;
 
 
 (*
@@ -349,18 +360,29 @@ END MemIncr ;
 
 PROCEDURE MemDecr (MemDiag: Diagnostic; paramno: CARDINAL; decr: CARDINAL) ;
 BEGIN
+   MemDecrLong (MemDiag, paramno, VAL (LONGCARD, decr))
+END MemDecr ;
+
+
+(*
+   MemDecrLong - allow the appropriate parameter to be decremented using a
+                 LONGCARD data type.
+*)
+
+PROCEDURE MemDecrLong (MemDiag: Diagnostic; paramno: CARDINAL; decr: LONGCARD) ;
+BEGIN
    IF EnableDiagnostics AND (MemDiag # NIL)
    THEN
       CheckParam (paramno) ;
       CASE MemDiag^.type OF
 
-      memdiag:  DEC (MemDiag^.mdiag.param[paramno], VAL (LONGCARD, decr))
+      memdiag:  DEC (MemDiag^.mdiag.param[paramno], decr)
 
       ELSE
          HALT
       END
    END
-END MemDecr ;
+END MemDecrLong ;
 
 
 (*
@@ -370,18 +392,29 @@ END MemDecr ;
 
 PROCEDURE MemSet (MemDiag: Diagnostic; paramno: CARDINAL; value: CARDINAL) ;
 BEGIN
+   MemSetLong (MemDiag, paramno, VAL (LONGCARD, value))
+END MemSet ;
+
+
+(*
+   MemSetLong - allow the appropriate parameter to be set to value.
+                All parameters are initially set to zero.
+*)
+
+PROCEDURE MemSetLong (MemDiag: Diagnostic; paramno: CARDINAL; value: LONGCARD) ;
+BEGIN
    IF EnableDiagnostics AND (MemDiag # NIL)
    THEN
       CheckParam (paramno) ;
       CASE MemDiag^.type OF
 
-      memdiag:  MemDiag^.mdiag.param[paramno] := VAL (LONGCARD, value)
+      memdiag:  MemDiag^.mdiag.param[paramno] := value
 
       ELSE
          HALT
       END
    END
-END MemSet ;
+END MemSetLong ;
 
 
 (*
@@ -390,11 +423,21 @@ END MemSet ;
 
 PROCEDURE TotalHeapIncr (incr: CARDINAL) ;
 BEGIN
+   TotalHeapIncrLong (VAL (LONGCARD, incr))
+END TotalHeapIncr ;
+
+
+(*
+   TotalHeapIncrLong - increments the total heap used.
+*)
+
+PROCEDURE TotalHeapIncrLong (incr: LONGCARD) ;
+BEGIN
    IF EnableDiagnostics
    THEN
-      TotalHeap := TotalHeap + VAL (LONGCARD, incr)
+      TotalHeap := TotalHeap + incr
    END
-END TotalHeapIncr ;
+END TotalHeapIncrLong ;
 
 
 (*
@@ -403,11 +446,21 @@ END TotalHeapIncr ;
 
 PROCEDURE TotalHeapDecr (incr: CARDINAL) ;
 BEGIN
+   TotalHeapDecrLong (VAL (LONGCARD, incr))
+END TotalHeapDecr ;
+
+
+(*
+   TotalHeapDecrLong - decrements the total heap used.
+*)
+
+PROCEDURE TotalHeapDecrLong (incr: LONGCARD) ;
+BEGIN
    IF EnableDiagnostics
    THEN
-      TotalHeap := TotalHeap - VAL (LONGCARD, incr)
+      TotalHeap := TotalHeap - incr
    END
-END TotalHeapDecr ;
+END TotalHeapDecrLong ;
 
 
 (*

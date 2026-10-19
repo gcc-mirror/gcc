@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Routines implemented in bpf.cc.  */
 
 extern HOST_WIDE_INT bpf_initial_elimination_offset (int, int);
+extern rtx bpf_check_call_target (rtx);
 extern const char *bpf_output_call (const char *templ, rtx *, int target_index);
 extern void bpf_target_macros (cpp_reader *);
 extern void bpf_print_operand (FILE *, rtx, int);

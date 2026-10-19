@@ -69,7 +69,6 @@ class expr_hash_elt
 {
  public:
   expr_hash_elt (gimple *, tree);
-  expr_hash_elt (tree);
   expr_hash_elt (struct hashable_expr *, tree);
   expr_hash_elt (class expr_hash_elt &);
   ~expr_hash_elt ();
@@ -156,11 +155,6 @@ class avail_exprs_stack
   vec<std::pair<expr_hash_elt_t, expr_hash_elt_t> > m_stack;
   hash_table<expr_elt_hasher> *m_avail_exprs;
 
-  /* For some assignments where the RHS is a binary operator, if we know
-     a equality relationship between the operands, we may be able to compute
-     a result, even if we don't know the exact value of the operands.  */
-  tree simplify_binary_operation (gimple *, class expr_hash_elt);
-
   /* We do not allow copying this object or initializing one
      from another.  */
   avail_exprs_stack& operator= (const avail_exprs_stack&);
@@ -206,7 +200,6 @@ class const_and_copies
   const_and_copies (class const_and_copies &);
 };
 
-void initialize_expr_from_cond (tree cond, struct hashable_expr *expr);
 void record_conditions (vec<cond_equivalence> *p, tree, tree);
 
 #endif /* GCC_TREE_SSA_SCOPED_TABLES_H */

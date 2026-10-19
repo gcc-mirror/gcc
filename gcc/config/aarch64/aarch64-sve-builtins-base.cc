@@ -506,9 +506,7 @@ public:
 	&& f.type_suffix (0).element_bytes == 1
 	&& f.type_suffix (0).integer_p)
       {
-	gimple_seq stmts = NULL;
-	rhs2 = f.force_vector (stmts, TREE_TYPE (rhs1), rhs2);
-	gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+	rhs2 = f.force_vector (TREE_TYPE (rhs1), rhs2);
 	return gimple_build_assign (f.lhs, m_code, rhs1, rhs2);
       }
 
@@ -1065,10 +1063,8 @@ public:
     /* svdup_z (pg, x) == VEC_COND_EXPR <pg, VEC_DUPLICATE_EXPR <x>, 0>.  */
     if (f.pred == PRED_z)
       {
-	gimple_seq stmts = NULL;
-	tree pred = f.convert_pred (stmts, vec_type, 0);
-	rhs = f.force_vector (stmts, vec_type, rhs);
-	gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+	tree pred = f.convert_pred (vec_type, 0);
+	rhs = f.force_vector (vec_type, rhs);
 	return gimple_build_assign (f.lhs, VEC_COND_EXPR, pred, rhs,
 				    build_zero_cst (vec_type));
       }
@@ -1165,8 +1161,7 @@ private:
     tree tmp = make_ssa_name_fn (cfun, vq_type, 0);
     gimple *g = gimple_build_assign (tmp, vec);
 
-    gimple_seq stmts = NULL;
-    gimple_seq_add_stmt_without_update (&stmts, g);
+    gimple_seq_add_stmt_without_update (&f.stmts, g);
 
     poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
     vec_perm_builder sel (lhs_len, nargs, 1);
@@ -1177,10 +1172,7 @@ private:
     tree mask_type = build_vector_type (ssizetype, lhs_len);
     tree mask = vec_perm_indices_to_tree (mask_type, indices);
 
-    gimple *g2 = gimple_build_assign (lhs, VEC_PERM_EXPR, tmp, tmp, mask);
-    gimple_seq_add_stmt_without_update (&stmts, g2);
-    gsi_replace_with_seq (f.gsi, stmts, false);
-    return g2;
+    return gimple_build_assign (lhs, VEC_PERM_EXPR, tmp, tmp, mask);
   }
 
 public:
@@ -1736,23 +1728,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    if (f.vectors_per_tuple () != 1)
-      return nullptr;
-
-    tree vectype = f.vector_type (0);
-
-    /* Get the predicate and base pointer.  */
-    gimple_seq stmts = NULL;
-    tree pred = f.convert_pred (stmts, vectype, 0);
-    tree base = f.fold_contiguous_base (stmts, vectype);
-    tree els = build_zero_cst (vectype);
-    gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
-
-    tree cookie = f.load_store_cookie (TREE_TYPE (vectype));
-    gcall *new_call = gimple_build_call_internal (IFN_MASK_LOAD, 4,
-						  base, cookie, pred, els);
-    gimple_call_set_lhs (new_call, f.lhs);
-    return new_call;
+    return f.fold_contiguous_load (IFN_MASK_LOAD);
   }
 
   rtx
@@ -1905,8 +1881,7 @@ public:
 	gimple *mem_ref_stmt
 	  = gimple_build_assign (mem_ref_lhs, mem_ref_op);
 
-	gimple_seq stmts = NULL;
-	gimple_seq_add_stmt_without_update (&stmts, mem_ref_stmt);
+	gimple_seq_add_stmt_without_update (&f.stmts, mem_ref_stmt);
 
 	int source_nelts = TYPE_VECTOR_SUBPARTS (access_type).to_constant ();
 
@@ -1915,14 +1890,9 @@ public:
 	   register and no replication is needed.  Just convert the
 	   loaded value from the Advanced SIMD type to the SVE type.  */
 	if (known_eq (lhs_len, (unsigned int) source_nelts))
-	  {
-	    gimple *g
-	      = gimple_build_assign (lhs, build1 (VIEW_CONVERT_EXPR,
-						  lhs_type, mem_ref_lhs));
-	    gimple_seq_add_stmt_without_update (&stmts, g);
-	    gsi_replace_with_seq_vops (f.gsi, stmts);
-	    return g;
-	  }
+	  return gimple_build_assign (lhs, build1 (VIEW_CONVERT_EXPR,
+						   lhs_type, mem_ref_lhs));
+
 	vec_perm_builder sel (lhs_len, source_nelts, 1);
 	for (int i = 0; i < source_nelts; i++)
 	  sel.quick_push (i);
@@ -1933,11 +1903,8 @@ public:
 						   indices));
 	tree mask_type = build_vector_type (ssizetype, lhs_len);
 	tree mask = vec_perm_indices_to_tree (mask_type, indices);
-	gimple *g2 = gimple_build_assign (lhs, VEC_PERM_EXPR,
-					  mem_ref_lhs, mem_ref_lhs, mask);
-	gimple_seq_add_stmt_without_update (&stmts, g2);
-	gsi_replace_with_seq_vops (f.gsi, stmts);
-	return g2;
+	return gimple_build_assign (lhs, VEC_PERM_EXPR,
+				    mem_ref_lhs, mem_ref_lhs, mask);
       }
 
     return NULL;
@@ -1980,11 +1947,9 @@ public:
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
-    gimple_seq stmts = NULL;
-    tree pred = f.convert_pred (stmts, vectype, 0);
+    tree pred = f.convert_pred (vectype, 0);
     tree els = build_zero_cst (vectype);
-    tree base = f.fold_contiguous_base (stmts, vectype);
-    gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+    tree base = f.fold_contiguous_base (vectype);
 
     /* Emit two statements: a clobber of the lhs, so that it isn't
        upwards exposed, and then the load itself.
@@ -2140,7 +2105,7 @@ public:
 
     insn_code icode = code_for_aarch64_ldf1 (m_unspec, extend_rtx_code (),
 					     mode, e.memory_vector_mode ());
-    rtx res = e.use_contiguous_load_insn (icode);
+    rtx res = e.use_contiguous_load_insn (icode, true);
     /* See the block comment in aarch64-sve.md for details about the
        FFR handling.  */
     emit_ldf1_ffr_update (get_last_insn ());
@@ -3017,9 +2982,7 @@ public:
       return nullptr;
 
     /* svsel corresponds exactly to VEC_COND_EXPR.  */
-    gimple_seq stmts = NULL;
-    tree pred = f.convert_pred (stmts, f.vector_type (0), 0);
-    gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+    tree pred = f.convert_pred (f.vector_type (0), 0);
     return gimple_build_assign (f.lhs, VEC_COND_EXPR, pred,
 				gimple_call_arg (f.call, 1),
 				gimple_call_arg (f.call, 2));
@@ -3139,10 +3102,8 @@ public:
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
-    gimple_seq stmts = NULL;
-    tree pred = f.convert_pred (stmts, vectype, 0);
-    tree base = f.fold_contiguous_base (stmts, vectype);
-    gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+    tree pred = f.convert_pred (vectype, 0);
+    tree base = f.fold_contiguous_base (vectype);
 
     tree cookie = f.load_store_cookie (TREE_TYPE (vectype));
     tree rhs = gimple_call_arg (f.call, gimple_call_num_args (f.call) - 1);
@@ -3238,10 +3199,8 @@ public:
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
-    gimple_seq stmts = NULL;
-    tree pred = f.convert_pred (stmts, vectype, 0);
-    tree base = f.fold_contiguous_base (stmts, vectype);
-    gsi_insert_seq_before (f.gsi, stmts, GSI_SAME_STMT);
+    tree pred = f.convert_pred (vectype, 0);
+    tree base = f.fold_contiguous_base (vectype);
 
     /* View the stored data as an array of vectors.  */
     unsigned int num_args = gimple_call_num_args (f.call);

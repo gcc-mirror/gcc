@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "tree.h"
 #include "stringpool.h"
-#include "stor-layout.h"
 #include "rtl.h"
 #include "pretty-print.h"
 #include "cfgbuild.h"

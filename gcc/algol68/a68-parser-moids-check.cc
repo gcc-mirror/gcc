@@ -1000,6 +1000,13 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
 	    }
 	  if (a68_is_coercible (x, M_LONG_LONG_COMPLEX, STRONG, SAFE_DEFLEXING))
 	    z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_LONG_COMPLEX, NO_MOID);
+	  if (a68_is_coercible (x, M_WORD_COMPLEX, STRONG, SAFE_DEFLEXING))
+	    {
+	      z= search_table_for_operator (OPERATORS (A68_STANDENV), n,
+					    M_WORD_COMPLEX, NO_MOID);
+	      if (z != NO_TAG)
+		return z;
+	    }
 	}
       return NO_TAG;
     }
@@ -1089,6 +1096,14 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
       if (z != NO_TAG)
 	return z;
     }
+  if (a68_is_coercible_series (u, M_WORD_COMPLEX, STRONG, SAFE_DEFLEXING))
+    {
+      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+				     M_WORD_COMPLEX, M_WORD_COMPLEX);
+      if (z != NO_TAG)
+	return z;
+    }
+
   /* (C.4) Now allow for depreffing for REF REAL +:= INT and alike.  */
   v = a68_get_balanced_mode (u, STRONG, A68_DEPREF, SAFE_DEFLEXING);
   z = search_table_for_operator (OPERATORS (A68_STANDENV), n, v, v);

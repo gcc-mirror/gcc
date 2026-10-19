@@ -121,11 +121,7 @@ void test01()
 #endif
 
   TEST_ERRC(operation_in_progress);
-
-#ifdef EPERM
   TEST_ERRC(operation_not_permitted);
-#endif
-
   TEST_ERRC(operation_not_supported);
 
 #ifdef EWOULDBLOCK

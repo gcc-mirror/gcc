@@ -152,6 +152,7 @@ public:
 struct insn_ent
 {
   struct insn_ent *next;	/* Next in chain.  */
+  struct insn_ent *prev;	/* Previous in chain, or null if first.  */
   class insn_def *def;		/* Instruction definition.  */
 };
 
@@ -249,6 +250,10 @@ static alternative_mask *insn_alternatives;
 
 static rtx true_rtx, false_rtx;
 
+/* The expressions that copy_rtx_unchanging has marked with
+   ATTR_CURR_SIMPLIFIED_P since the last call to clear_curr_simplified.  */
+static vec<rtx> curr_simplified;
+
 /* Used to reduce calls to `strcmp' */
 
 static const char *alternative_name;
@@ -287,7 +292,7 @@ static rtx simplify_test_exp_in_temp (rtx, int, int);
 static rtx copy_rtx_unchanging	   (rtx);
 static bool attr_alt_subset_p      (rtx, rtx);
 static bool attr_alt_subset_of_compl_p (rtx, rtx);
-static void clear_struct_flag      (rtx);
+static void clear_curr_simplified (void);
 static void write_attr_valueq	   (FILE *, class attr_desc *, const char *);
 static struct attr_value *find_most_used  (class attr_desc *);
 static void write_attr_set	   (FILE *, class attr_desc *, int, rtx,
@@ -777,14 +782,22 @@ check_attr_test (file_location loc, rtx exp, attr_desc *attr)
 	    }
 	  else
 	    {
-	      /* Make an IOR tree of the possible values.  */
-	      orexp = false_rtx;
+	      /* Make an IOR tree of the values, nested to the right, keeping
+		 the first occurrence of each.  A list with no values is
+		 false.  */
+	      auto_vec<rtx> values;
+	      hash_set<rtx> seen;
 	      name_ptr = XSTR (exp, 1);
 	      while ((p = next_comma_elt (&name_ptr)) != NULL)
 		{
 		  newexp = attr_eq (XSTR (exp, 0), p);
-		  orexp = insert_right_side (IOR, orexp, newexp, -2, -2);
+		  if (!seen.add (newexp))
+		    values.safe_push (newexp);
 		}
+
+	      orexp = values.is_empty () ? false_rtx : values.pop ();
+	      while (!values.is_empty ())
+		orexp = attr_rtx (IOR, values.pop (), orexp);
 
 	      return check_attr_test (loc, orexp, attr);
 	    }
@@ -1782,16 +1795,16 @@ simplify_cond (rtx exp, int insn_code, int insn_index)
 static void
 remove_insn_ent (struct attr_value *av, struct insn_ent *ie)
 {
-  struct insn_ent *previe;
-
-  if (av->first_insn == ie)
-    av->first_insn = ie->next;
+  gcc_checking_assert (!ie->prev || ie->prev->next == ie);
+  if (ie->prev)
+    ie->prev->next = ie->next;
   else
     {
-      for (previe = av->first_insn; previe->next != ie; previe = previe->next)
-	;
-      previe->next = ie->next;
+      gcc_checking_assert (av->first_insn == ie);
+      av->first_insn = ie->next;
     }
+  if (ie->next)
+    ie->next->prev = ie->prev;
 
   av->num_insns--;
   if (ie->def->insn_code == -1)
@@ -1805,7 +1818,10 @@ remove_insn_ent (struct attr_value *av, struct insn_ent *ie)
 static void
 insert_insn_ent (struct attr_value *av, struct insn_ent *ie)
 {
+  ie->prev = NULL;
   ie->next = av->first_insn;
+  if (ie->next)
+    ie->next->prev = ie;
   av->first_insn = ie;
   av->num_insns++;
   if (ie->def->insn_code == -1)
@@ -3138,6 +3154,45 @@ write_derived_attr_get (FILE *outf, class attr_desc *attr)
 	   attr->cxx_type, attr->name, y->name, y->name);
 }
 
+/* Hash traits for the lists in INSN_CODE_VALUES.  Two lists are equal if
+   their insns have the same alternatives and the same value for each
+   attribute.  */
+
+struct insn_values_hasher : nofree_ptr_hash <attr_value_list>
+{
+  static inline hashval_t hash (const attr_value_list *);
+  static inline bool equal (const attr_value_list *, const attr_value_list *);
+};
+
+/* Return the hash of the insn alternatives and attribute values in the
+   non-empty list LIST.  */
+
+inline hashval_t
+insn_values_hasher::hash (const attr_value_list *list)
+{
+  inchash::hash h;
+  h.add_object (insn_alternatives[list->ie->def->insn_code]);
+  for (; list; list = list->next)
+    h.add_ptr (list->av);
+  return h.end ();
+}
+
+/* Return true if the non-empty lists LIST1 and LIST2 belong to insns with
+   the same alternatives and have the same attribute values.  */
+
+inline bool
+insn_values_hasher::equal (const attr_value_list *list1,
+			   const attr_value_list *list2)
+{
+  if (insn_alternatives[list1->ie->def->insn_code]
+      != insn_alternatives[list2->ie->def->insn_code])
+    return false;
+  for (; list1 && list2; list1 = list1->next, list2 = list2->next)
+    if (list1->av != list2->av)
+      return false;
+  return !list1 && !list2;
+}
+
 /* Optimize the attribute lists by seeing if we can determine conditional
    values from the known values of other attributes.  This will save subroutine
    calls during the compilation.  NUM_INSN_CODES is the number of unique
@@ -3190,13 +3245,55 @@ optimize_attrs (int num_insn_codes)
   /* Sanity check on num_insn_ents.  */
   gcc_assert (iv == ivbuf + num_insn_ents);
 
+  /* Insns that have the same values for all attributes and the same
+     alternatives simplify in the same way.  Record for each insn code the
+     first insn code with the same values, before the loop below changes
+     them.  */
+  int *same_as = XNEWVEC (int, num_insn_codes);
+  {
+    hash_table<insn_values_hasher> values_table (num_insn_codes);
+    for (i = 0; i < num_insn_codes; i++)
+      {
+	same_as[i] = i;
+	if (insn_code_values[i])
+	  {
+	    attr_value_list **slot
+	      = values_table.find_slot (insn_code_values[i], INSERT);
+	    if (*slot)
+	      same_as[i] = (*slot)->ie->def->insn_code;
+	    else
+	      *slot = insn_code_values[i];
+	  }
+      }
+  }
+
   /* Process one insn code at a time.  */
   for (i = -2; i < num_insn_codes; i++)
     {
-      /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere relevant.
+      if (i >= 0 && same_as[i] != i)
+	{
+	  /* Move the insn to the values chosen for the first insn with the
+	     same values.  Both lists have the attributes in the same
+	     order.  */
+	  struct attr_value_list *first_iv = insn_code_values[same_as[i]];
+	  for (iv = insn_code_values[i]; iv;
+	       iv = iv->next, first_iv = first_iv->next)
+	    {
+	      gcc_checking_assert (iv->attr == first_iv->attr);
+	      if (iv->av != first_iv->av)
+		{
+		  remove_insn_ent (iv->av, iv->ie);
+		  iv->av = first_iv->av;
+		  insert_insn_ent (iv->av, iv->ie);
+		}
+	    }
+	  gcc_checking_assert (!first_iv);
+	  continue;
+	}
+
+      /* Clear the ATTR_CURR_SIMPLIFIED_P flag everywhere.
 	 We use it to mean "already simplified for this insn".  */
-      for (iv = insn_code_values[i]; iv; iv = iv->next)
-	clear_struct_flag (iv->av->value);
+      clear_curr_simplified ();
 
       for (iv = insn_code_values[i]; iv; iv = iv->next)
 	{
@@ -3239,62 +3336,11 @@ optimize_attrs (int num_insn_codes)
 	}
     }
 
+  clear_curr_simplified ();
+  free (same_as);
   free (ivbuf);
   free (insn_code_values - 2);
   insn_code_values = NULL;
-}
-
-/* Clear the ATTR_CURR_SIMPLIFIED_P flag in EXP and its subexpressions.  */
-
-static void
-clear_struct_flag (rtx x)
-{
-  int i;
-  int j;
-  enum rtx_code code;
-  const char *fmt;
-
-  ATTR_CURR_SIMPLIFIED_P (x) = 0;
-  if (ATTR_IND_SIMPLIFIED_P (x))
-    return;
-
-  code = GET_CODE (x);
-
-  switch (code)
-    {
-    case REG:
-    CASE_CONST_ANY:
-    case MATCH_TEST:
-    case SYMBOL_REF:
-    case CODE_LABEL:
-    case PC:
-    case EQ_ATTR:
-    case ATTR_FLAG:
-      return;
-
-    default:
-      break;
-    }
-
-  /* Compare the elements.  If any pair of corresponding elements
-     fail to match, return 0 for the whole things.  */
-
-  fmt = GET_RTX_FORMAT (code);
-  for (i = GET_RTX_LENGTH (code) - 1; i >= 0; i--)
-    {
-      switch (fmt[i])
-	{
-	case 'V':
-	case 'E':
-	  for (j = 0; j < XVECLEN (x, i); j++)
-	    clear_struct_flag (XVECEXP (x, i, j));
-	  break;
-
-	case 'e':
-	  clear_struct_flag (XEXP (x, i));
-	  break;
-	}
-    }
 }
 
 /* Add attribute value NAME to the beginning of ATTR's list.  */
@@ -5006,7 +5052,19 @@ copy_rtx_unchanging (rtx orig)
     return orig;
 
   ATTR_CURR_SIMPLIFIED_P (orig) = 1;
+  curr_simplified.safe_push (orig);
   return orig;
+}
+
+/* Clear ATTR_CURR_SIMPLIFIED_P on every expression that copy_rtx_unchanging
+   has marked since the last call.  */
+
+static void
+clear_curr_simplified (void)
+{
+  for (rtx x : curr_simplified)
+    ATTR_CURR_SIMPLIFIED_P (x) = 0;
+  curr_simplified.truncate (0);
 }
 
 /* Determine if an insn has a constant number of delay slots, i.e., the

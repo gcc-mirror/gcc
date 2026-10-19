@@ -55,7 +55,7 @@ static bool schedule_more_p (void);
 static const char *ebb_print_insn (const rtx_insn *, int);
 static int rank (rtx_insn *, rtx_insn *);
 static bool ebb_contributes_to_priority (rtx_insn *, rtx_insn *);
-static basic_block earliest_block_with_similiar_load (basic_block, rtx);
+static basic_block earliest_block_with_similiar_load (basic_block, rtx_insn *);
 static void add_deps_for_risky_insns (rtx_insn *, rtx_insn *);
 static void debug_ebb_dependencies (rtx_insn *, rtx_insn *);
 
@@ -252,7 +252,7 @@ ebb_contributes_to_priority (rtx_insn *next ATTRIBUTE_UNUSED,
     must be considered as used by this jump in USED.  */
 
 void
-ebb_compute_jump_reg_dependencies (rtx insn, regset used)
+ebb_compute_jump_reg_dependencies (rtx_insn *insn, regset used)
 {
   basic_block b = BLOCK_FOR_INSN (insn);
   edge e;
@@ -321,7 +321,7 @@ static struct haifa_sched_info ebb_sched_info =
    blocks in EBB.  The list is formed in `add_deps_for_risky_insns'.  */
 
 static basic_block
-earliest_block_with_similiar_load (basic_block last_block, rtx load_insn)
+earliest_block_with_similiar_load (basic_block last_block, rtx_insn *load_insn)
 {
   sd_iterator_def back_sd_it;
   dep_t back_dep;

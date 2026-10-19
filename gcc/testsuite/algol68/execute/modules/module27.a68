@@ -1,0 +1,9 @@
+module Module27 =
+def
+    pub word bits wb = word 16rabcd;
+    pub word int wi = word 666;
+    pub word real wr = word 3.14;
+    pub word compl wc = word 1.0 I word 2.0;
+    pub word compl wc2 = word 10.0; { widening }
+    skip
+fed

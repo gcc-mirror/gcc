@@ -1344,6 +1344,9 @@ calculate_capacity( struct symbol_elem_t *e) {
     // Stop if field isn't a member of the group.
     if( end_of_group(group, field) ) break;
 
+    // Exclude 78-level entries from groups.
+    if (field->level == 78) continue;
+
     if( field->type == FldGroup ) {
       e = calculate_capacity(e);
       e--; // set e to last symbol processed (not next one, because ++e)
@@ -1828,7 +1831,6 @@ operator<<( std::ostream& os, const cbl_field_t& field ) {
 #pragma GCC diagnostic pop
 
 static std::map<size_t, std::set<size_t>> same_record_areas;
-size_t parse_error_count();
 
 /*
  * This function produces a zero-filled level number, so 1 becomes "01".  It's
@@ -1908,7 +1910,7 @@ symbols_update( size_t first, bool parsed_ok ) {
     if( !field->is_valid() )
     {
       size_t isym = p - symbols_begin();
-      symbols_dump(symbols.first_program, true);
+      symbols_dump(symbols.first_program + 18, true);
       if( symbol_at(field->parent)->type == SymFile ) {
         assert(field->parent == field_index(field) + 1);
         auto e = std::find_if( symbols_begin(field->parent), symbols_end(),
@@ -2082,7 +2084,7 @@ symbols_update( size_t first, bool parsed_ok ) {
       }
       if( parsed_ok ) {
         parser_file_add(&file);
-        update_symbol_map2(file); // Add FD name as a name for the default record. 
+        update_symbol_map2(file); // Add FD name as a name for the default record.
       }
     } else {
       if( p->type == SymField ) {
@@ -2186,6 +2188,25 @@ symbol_parent( const struct symbol_elem_t *e ) {
   return p;
 }
 
+void
+update_prior_invalid_field( const cbl_field_t *field) {
+  symbol_elem_t *e = field? symbol_at(field->our_index) :  symbols_end();
+  e--;
+  if( e->type == SymDataSection ) e--;
+  if( (e)->type == SymField ) {
+    auto f = cbl_field_of(e);
+    if( ! field ) field = f; // fake it
+    if( field->level <= f->level ) {
+      if( f->type == FldInvalid && f->data.has_initial_value() ) {
+        if( f->has_attr(quoted_e) || is_figconst(f) ) {
+          f->type = FldAlphanumeric;
+          assert(0 < f->char_capacity());
+        }
+      }
+    }
+  }
+}
+
 static bool
 had_picture( const cbl_field_t *field ) {
   if( is_elementary(field->type) ) {
@@ -2212,7 +2233,7 @@ had_picture( const cbl_field_t *field ) {
 
 void
 name_queue_t::dump( const char tag[] ) const {
-  if( ! (yydebug ) ) return;
+  if( yydebug ) {
     int i=0;
     for( const auto& namelocs : this->c ) {
       static char line[256];
@@ -2228,6 +2249,7 @@ name_queue_t::dump( const char tag[] ) const {
       dbgmsg("name_queue: %s: is empty", tag);
     }
   }
+}
 
 #if 0
 /*
@@ -2272,7 +2294,10 @@ symbol_field_parent_set( cbl_field_t *field )
       case 66: case 88:
         break;
       default:
-        return NULL; // 77/78 cannot be a parent
+        // 77 cannot be a parent
+        if (prior->level == 77) return NULL;
+        // 78 cannot be a parent, try previous element
+        if (prior->level == 78) continue;
       }
     }
 
@@ -3087,7 +3112,7 @@ struct symbol_elem_t *
 symbol_file( size_t program, const char name[] ) {
   auto key( elem_key_t(program, name) );
   auto p = symbols.files.find(key);
-  
+
   if( p == symbols.files.end() ) { // Look for global FD in containing program.
     while( key.program ) {
       key.program = symbol_at(key.program)->program;
@@ -3106,7 +3131,7 @@ symbol_file( size_t program, const char name[] ) {
            name, (unsigned long)p->second);
     auto e = symbol_at(p->second);
     return e;
-  }    
+  }
 
   dbgmsg("%s:%d: not found: %s", __func__, __LINE__, name);
   return nullptr;
@@ -3701,7 +3726,7 @@ static class program_temporaries_t : private symbol_temporaries_t {
     alphas.clear();
   }
 } program_temporaries;
-        
+
 /*
  * Supply a reference to the current list of temporaries for use by codegen to free
  * the memory if it decides to return to the caller.
@@ -4368,18 +4393,35 @@ cbl_field_t::encode( size_t srclen, cbl_loc_t loc ) {
         gcc_assert(0 < inbytesleft);
         if( loc.first_line == 0 )
           loc = symbol_field_location(field_index(this));
-        if( type == FldNumericEdited ) {
+        switch( type ) {
+        case FldNumericEdited:
           // Tolerate trailing zeros for P-values
           if( data.rdigits < 0 ) {
             if( inbytesleft <= size_t(data.rdigits * -1) ) {
-             bool all_zeros = std::all_of(reinterpret_cast<const char*>(inbuf),
-                                          data.original() + srclen,
-                                          [](char ch) {
-                                            return '0' == ch;
-                                          });
+              bool all_zeros = std::all_of(reinterpret_cast<const char*>(inbuf),
+                                           data.original() + srclen,
+                                           [](char ch) {
+                                             return '0' == ch;
+                                           });
               if( all_zeros ) return nullptr;
             }
           }
+          break;
+        default:
+          if( ! is_numeric(this) ) {
+            bool all_blank = std::all_of(reinterpret_cast<const char*>(inbuf),
+                                         data.original() + srclen,
+                                         [](char ch) {
+                                           return 0x20 == ch;
+                                         });
+            if( all_blank ) {
+              cbl_message(loc, MfValueClause,
+                          "VALUE %qs is too long to initialize %qs, discarded %qs",
+                          data.original(), name, inbuf);
+              return nullptr;
+            }
+          }
+          break;
         }
         error_msg( loc,
                    "VALUE %qs is too long to initialize %qs, discarded %qs",
@@ -4854,7 +4896,7 @@ expand_picture(const char *picture)
   if( currency_symbol )
     {
     size_t sign_length = __gg__currency_signs[currency_symbol].size();
-    assert(0 < sign_length);    
+    assert(0 < sign_length);
     if( --sign_length )
       {
       char *pcurrency = strchr(retval, currency_symbol);
@@ -4870,6 +4912,9 @@ expand_picture(const char *picture)
       }
     }
   retval[dest_length] = NULLCH;
+
+  // The 'V'
+
 
   // To ease the workload on interpreting the PICTURE string at run time, we
   // are going to convert everything we can to upper case.  We also convert
@@ -4887,18 +4932,15 @@ expand_picture(const char *picture)
       case ascii_s:
       case ascii_x:
       case ascii_z:
-        retval[i] = TOUPPER(retval[i]);
-        break;
-      case ascii_V:
       case ascii_v:
-        retval[i] = __gg__decimal_point;
+        retval[i] = TOUPPER(retval[i]);
         break;
 
       // We need special processing for DB.  When they appear as the final two
       // characters, they are the accounting sign "DB" indicator and we have to
-      // leave the case as the programmer established it.  Otherwise we have to 
+      // leave the case as the programmer established it.  Otherwise we have to
       // make the 'B' uppercase.
-      
+
       case ascii_B:
       case ascii_b:
         if( i < dest_length-1 )
@@ -4916,13 +4958,12 @@ expand_picture(const char *picture)
       }
     }
 
-  // AD HOC FIX for an improper trailing space
-  char *pspace = strchr(retval, ascii_space);
-  if( pspace )
+  // The V character is virtual in numeric_editing, so get rid of it
+  char *pV = strchr(retval, ascii_V);
+  if( pV )
     {
-    *pspace = NULLCH;
+    memmove(pV, pV+1, strlen(pV));
     }
-
   return retval;
   }
 
@@ -4939,23 +4980,23 @@ expand_expanded(char *expanded)
   /* In order to make __gg__string_to_numeric_edited() run quickly, we are
      going to process the expanded picture string especially for it.  What we
      do here:
-     
+
      Convert B to space, taking care not to touch a final 'DB'
 
      Find the currency picture symbol
-     
+
      Find the span of any '$$', '++', '--' 'Z', and '*' runs.
 
      For any '$$', '++' and '--' runs, replace the first such char with a
      space, and all the others with '9'
-     
+
      For any 'Z' and '*' runs, replace all the characters with '9'.
-     
+
      Figure out if any of the original picture characters are '9'.
-     
+
      That information gets encoded into six characters that are appended to
-     the modified string.  
-     
+     the modified string.
+
      Offset 0:   The currency character
      Offset 1:   The floating character (space if empty)
      Offset 2-3: The starting index of the float.
@@ -4963,7 +5004,7 @@ expand_expanded(char *expanded)
 
      When there are '9' characters in the original, the 0x40 bit of offset 2
      is turned on, turning '0'-'9' into 'q'-'y'
-     
+
      Is everybody ready?  Then we'll begin.    */
 
   int length_d = strlen(expanded);
@@ -5805,7 +5846,7 @@ cbl_file_t::filename_of() const {
   if( filename != 0 ) { return cbl_field_of(symbol_at(filename))->name; }
   if( device != 0 ) {
     auto dev = cbl_special_name_of(symbol_at(device));
-    if( dev->os_filename[0] != '\0' ) return dev->os_filename; 
+    if( dev->os_filename[0] != '\0' ) return dev->os_filename;
   }
   return nullptr;
 }

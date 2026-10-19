@@ -536,7 +536,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       of @code{declare_target} @tab N @tab
 @item @code{groupprivate} directive @tab P @tab
       Only Fortran with @code{device_type(nohost)} with only nvptx GPUs
-@item @code{local} clause to @code{declare_target} directive @tab N @tab
+@item @code{local} clause to @code{declare_target} directive @tab Y @tab
 @item @code{part_size} allocator trait for @code{interleaved} allocator
       partitions @tab N @tab
 @item @code{pin_device}, @code{preferred_device} and @code{target_access}
@@ -693,6 +693,7 @@ Technical Report (TR) 15 is the second preview for OpenMP 6.1.
 @item @code{grid} and @code{tile} modifier to the @code{size} clause @tab N @tab
 @item New @code{flatten} loop-transforming directive @tab N @tab
 @item @code{scaled} modifier to @code{simdlen} clause @tab N @tab
+      (@uref{https://gcc.gnu.org/PR127723,PR127723})
 @item Lifted restriction on the first chunk size for the @code{schedule} clause
       with @code{simd} modifier @tab N @tab
 @item Change to the used chunk-size with the @code{schedule} clause and no

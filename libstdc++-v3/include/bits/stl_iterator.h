@@ -1508,8 +1508,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  __base_ref>;
 #endif
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4125. move_iterator's default constructor should be constrained
       _GLIBCXX17_CONSTEXPR
       move_iterator()
+#ifdef __glibcxx_concepts
+	requires default_initializable<_Iterator>
+#endif
       : _M_current() { }
 
       explicit _GLIBCXX17_CONSTEXPR

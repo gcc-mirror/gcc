@@ -37,10 +37,11 @@ TypeCoercionRules::Coerce (TyTy::BaseType *receiver, TyTy::BaseType *expected,
 TypeCoercionRules::CoercionResult
 TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
 			      TyTy::BaseType *expected, location_t locus,
-			      bool allow_autoderef, bool is_cast_site)
+			      bool allow_autoderef, bool is_cast_site,
+			      bool allow_never_coercion)
 {
   TypeCoercionRules resolver (expected, locus, false, allow_autoderef, true,
-			      is_cast_site);
+			      is_cast_site, allow_never_coercion);
   bool ok = resolver.do_coercion (receiver);
   return ok ? resolver.try_result : CoercionResult::get_error ();
 }
@@ -48,11 +49,13 @@ TypeCoercionRules::TryCoerce (TyTy::BaseType *receiver,
 TypeCoercionRules::TypeCoercionRules (TyTy::BaseType *expected,
 				      location_t locus, bool emit_errors,
 				      bool allow_autoderef, bool try_flag,
-				      bool is_cast_site)
+				      bool is_cast_site,
+				      bool allow_never_coercion)
   : AutoderefCycle (!allow_autoderef), mappings (Analysis::Mappings::get ()),
     context (TypeCheckContext::get ()), expected (expected), locus (locus),
     try_result (CoercionResult::get_error ()), emit_errors (emit_errors),
-    try_flag (try_flag), is_cast_site (is_cast_site)
+    try_flag (try_flag), is_cast_site (is_cast_site),
+    allow_never_coercion (allow_never_coercion)
 {}
 
 bool
@@ -121,7 +124,8 @@ TypeCoercionRules::do_coercion (TyTy::BaseType *receiver)
 			    TyTy::TyWithLocation (receiver),
 			    locus /*unify_locus*/, false /*emit_errors*/,
 			    !try_flag /*commit_if_ok*/, try_flag /*infer*/,
-			    try_flag /*cleanup on error*/);
+			    try_flag /*cleanup on error*/,
+			    true /*check_bounds*/, allow_never_coercion);
 	if (result->get_kind () != TyTy::TypeKind::ERROR)
 	  {
 	    try_result = CoercionResult{{}, result};
@@ -248,7 +252,8 @@ TypeCoercionRules::coerce_unsafe_ptr (TyTy::BaseType *receiver,
 		      locus /*unify_locus*/, !try_flag /*emit_errors*/,
 		      !try_flag /*commit_if_ok*/,
 		      try_flag && !is_cast_site /*infer*/,
-		      try_flag /*cleanup on error*/);
+		      try_flag /*cleanup on error*/, true /*check_bounds*/,
+		      allow_never_coercion);
   bool unsafe_ptr_coerceion_ok = result->get_kind () != TyTy::TypeKind::ERROR;
   if (unsafe_ptr_coerceion_ok)
     return CoercionResult{{}, result};
@@ -284,7 +289,8 @@ TypeCoercionRules::coerce_borrowed_pointer (TyTy::BaseType *receiver,
 			    TyTy::TyWithLocation (expected), locus,
 			    false /*emit_errors*/, !try_flag /*commit_if_ok*/,
 			    try_flag /* infer */,
-			    try_flag /*cleanup_on_failure*/);
+			    try_flag /*cleanup_on_failure*/,
+			    true /*check_bounds*/, allow_never_coercion);
 	bool default_coerceion_ok
 	  = result->get_kind () != TyTy::TypeKind::ERROR;
 	if (default_coerceion_ok)
@@ -625,7 +631,8 @@ TypeCoercionRules::select (TyTy::BaseType &autoderefed)
 		      TyTy::TyWithLocation (&autoderefed),
 		      UNDEF_LOCATION /* locus */, false /*emit_errors*/,
 		      !try_flag /*commit_if_ok*/, try_flag /*infer*/,
-		      try_flag /*cleanup*/);
+		      try_flag /*cleanup*/, true /*check_bounds*/,
+		      allow_never_coercion);
   bool ok = result->get_kind () != TyTy::TypeKind::ERROR;
   if (!ok)
     return false;

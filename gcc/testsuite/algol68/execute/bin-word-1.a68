@@ -1,0 +1,2 @@
+begin assert (BIN word 255 = word 16rff)
+end

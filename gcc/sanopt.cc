@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
 #include "gimplify.h"
-#include "gimple-iterator.h"
 #include "gimple-walk.h"
 #include "cfghooks.h"
 #include "tree-dfa.h"

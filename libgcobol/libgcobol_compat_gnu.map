@@ -1,0 +1,20 @@
+GCOBOL_17.1
+  {
+  global:
+
+    cbl_alloc_mem;
+    cbl_check_file_exist;
+    cbl_close_file;
+    cbl_create_file;
+    cbl_delete_file;
+    cbl_free_mem;
+    cbl_get_program_info;
+    cbl_open_file;
+    cbl_read_file;
+    cbl_write_file;
+
+    stored$char$length;
+
+  local:
+    *;
+  };

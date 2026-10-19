@@ -1816,12 +1816,12 @@ set_switch_stmt_execution_predicate (struct ipa_func_body_info *fbi,
       /* The case value might not have same type as switch expression,
 	 extend the value based on the expression type.  */
       if (TREE_TYPE (min) != type)
-	min = wide_int_to_tree (type, wi::to_wide (min));
+	min = wide_int_to_tree (type, wi::to_widest (min));
 
       if (!max)
 	max = min;
       else if (TREE_TYPE (max) != type)
-	max = wide_int_to_tree (type, wi::to_wide (max));
+	max = wide_int_to_tree (type, wi::to_widest (max));
 
       /* The case's target basic block is in convergence point of all switch
 	 cases, its predicate should be at least as that of the switch

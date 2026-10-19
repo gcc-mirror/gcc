@@ -34,3 +34,10 @@ test (int *x, float *y, float *z, float *w)
     if (x[i] > 10)
       x[i] = f5 (x[i], i);
 }
+
+// See PR middle-end/127850 for several issues related to handling simdlen clauses in the context selector,
+// those below are only the tip of the iceberg:
+
+// { dg-bogus "cannot convert 'float' to '__v4sf' {aka '__vector\\(4\\) float'}" "" { xfail c++ } 12 }
+// { dg-bogus "cannot convert 'float' to '__v8sf' {aka '__vector\\(8\\) float'}" "" { xfail c++ } 13 }
+// { dg-bogus "cannot convert 'int' to '__v4si' {aka '__vector\\(4\\) int'}" "" { xfail c++ } 16 }

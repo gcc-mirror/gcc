@@ -50,7 +50,7 @@ exception neutrality and exception safety.
     Please note that using exceptions in combination with templates
     imposes an additional requirement for exception
     safety. Instantiating types are required to have destructors that
-    do no throw.
+    do not throw.
   </para>
 
   <para>
@@ -83,7 +83,7 @@ exception neutrality and exception safety.
   </para>
 
   <para>
-    This applicable throughout the standard library.
+    This is applicable throughout the standard library.
   </para>
   </listitem>
 
@@ -117,9 +117,9 @@ exception neutrality and exception safety.
     propagating exceptions should not be swallowed in
     gratuitous <literal>catch(...)</literal> blocks. Instead,
     matching <literal>try</literal> and <literal>catch</literal>
-    blocks should have specific catch handlers and allow un-handed
+    blocks should have specific catch handlers and allow unhandled
     exception objects to propagate. If a
-    terminating <literal>catch(...)</literal> blocks exist then it
+    terminating <literal>catch(...)</literal> block exists then it
     should end with a <literal>throw</literal> to re-throw the current
     exception.
   </para>
@@ -306,7 +306,7 @@ exception neutrality and exception safety.
     configuration of the C++ compiler. On recent hardware with GNU
     system software of the same age, the combined code and data size
     overhead for enabling exception handling is around 7%. Of course,
-    if code size is of singular concern than using the appropriate
+    if code size is of singular concern then using the appropriate
     optimizer setting with exception handling enabled
     (ie, <literal>-Os -fexceptions</literal>) may save up to twice
     that, and preserve error checking.

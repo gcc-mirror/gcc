@@ -521,6 +521,10 @@ FEATURE_ACTIVE ("destructuring_assignment", DESTRUCTURING_ASSIGNMENT, "1.49.0",
 		ISSUE_SOME (71126), EDITION_NONE)
 FEATURE_ACTIVE ("cfg_panic", CFG_PANIC, "1.49.0", ISSUE_SOME (77443),
 		EDITION_NONE)
+FEATURE_ACTIVE ("derive_coerce_pointee", DERIVE_COERCE_POINTEE,
+		"1.84.0" /* Not sure about the version number for this one */,
+		/* We also need a compatibility check to enable this */
+		ISSUE_SOME (123430), EDITION_NONE)
 FEATURE_REMOVED ("import_shadowing", IMPORT_SHADOWING, "1.0.0", ISSUE_NONE,
 		 REASON_NONE)
 FEATURE_REMOVED ("managed_boxes", MANAGED_BOXES, "1.0.0", ISSUE_NONE,

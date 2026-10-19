@@ -1,4 +1,4 @@
-/* Header file for mma-builtin-3.c test - contains test functions only */
+/* Header file for mma-builtin-3.*.c test - contains test functions only */
 
 void
 foo0 (void)

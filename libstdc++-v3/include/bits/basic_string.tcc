@@ -171,9 +171,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     basic_string<_CharT, _Traits, _Alloc>::
     _M_create(size_type& __capacity, size_type __old_capacity)
     {
-      _Alloc_result __r = _M_create_plus(__capacity, __old_capacity);
-      __capacity = __r.__count - 1;  // Leave room for NUL.
-      return __r.__ptr;
+      if (__capacity > max_size())
+	std::__throw_length_error(__N("basic_string::_M_create"));
+      if (__capacity > __old_capacity && __capacity < 2 * __old_capacity)
+	{
+	  __capacity = 2 * __old_capacity;
+	  if (__capacity > max_size())
+	    __capacity = max_size();
+	}
+      return _S_allocate(_M_get_allocator(), __capacity + 1);
     }
 
   // NB: This is the special case for Input Iterators, used in

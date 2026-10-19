@@ -5,5 +5,7 @@ BEGIN COMPL z = 4.0I5.0;
       CONJ zz;
       LONG LONG COMPL zzz = LONG LONG 4.0 I LONG LONG 7.0;
       CONJ zzz;
+      WORD COMPL w = WORD 4.0 I WORD 7.0;
+      CONJ w;
       SKIP
 END

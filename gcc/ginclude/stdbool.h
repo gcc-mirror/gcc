@@ -46,6 +46,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif /* __cplusplus */
 
 /* Signal that all the definitions are present.  */
+/* Added in C99, made obsolescent in C23.
+   Also defined in C++ since C++11, but deprecated in C++23.  */
 #define __bool_true_false_are_defined	1
 
 #endif	/* stdbool.h */

@@ -34,7 +34,7 @@
  * Contains a progress bar - idea taken from boost::timer by Beman Dawes.
  */
 
-#include <util/io/prog_bar.hpp>
+#include "prog_bar.hpp"
 
 namespace __gnu_pbds
 {

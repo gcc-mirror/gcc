@@ -149,7 +149,11 @@ static bool
 unite (unsigned int to, unsigned int from)
 {
   gcc_checking_assert (to < graph->size && from < graph->size);
-  if (to != from && graph->rep[from] != to)
+  if (to != from
+      && graph->rep[from] != to
+      /* Do not merge an artificial variable into another, this will
+	 explode solution sets unnecessarily.  */
+      && (from >= FIRST_REF_NODE || !get_varinfo (from)->is_artificial_var))
     {
       graph->rep[from] = to;
       return true;
@@ -959,8 +963,8 @@ scc_visit (constraint_graph_t graph, class scc_info *si, unsigned int n)
 		}
 	      else
 		{
-		  unite (lowest_node, i);
-		  graph->indirect_cycles[i - FIRST_REF_NODE] = lowest_node;
+		  if (unite (lowest_node, i))
+		    graph->indirect_cycles[i - FIRST_REF_NODE] = lowest_node;
 		}
 	    }
 	  bitmap_set_bit (si->deleted, lowest_node);
@@ -1977,8 +1981,10 @@ find_equivalent_node (constraint_graph_t graph,
 	{
 	  /* Unify the two variables since we know they are equivalent.  */
 	  if (unite (graph->eq_rep[label], node))
-	    unify_nodes (graph, graph->eq_rep[label], node, false);
-	  return graph->eq_rep[label];
+	    {
+	      unify_nodes (graph, graph->eq_rep[label], node, false);
+	      return graph->eq_rep[label];
+	    }
 	}
       else
 	{

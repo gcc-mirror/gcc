@@ -156,7 +156,7 @@
    <para>
      For <code>multimap</code> and <code>multiset</code>, the
      restrictions are slightly looser: <quote>greater than</quote>
-     should be replaced by <quote>not less than</quote>and <quote>less
+     should be replaced by <quote>not less than</quote> and <quote>less
      than</quote> should be replaced by <quote>not greater
      than.</quote> (Why not replace greater with
      greater-than-or-equal-to?  You probably could in your head, but
@@ -343,7 +343,7 @@
      containers, and the rationale behind this behavior.
     </para>
     <para>
-      In the following text, the phrase <emphasis>equivalent to</emphasis> refer
+      In the following text, the phrase <emphasis>equivalent to</emphasis> refers
       to the result of the invocation of the equal predicate imposed on the
       container by its <code>key_equal</code> object, which defaults to (basically)
       <quote>==</quote>.
@@ -361,7 +361,7 @@
       In the case of <code>std::unordered_set</code> and
       <code>std::unordered_map</code> you need to look through all bucket's
       elements for an equivalent one. If there is none the insertion can be
-      achieved, otherwise the insertion fails. As we always need to loop though
+      achieved, otherwise the insertion fails. As we always need to loop through
       all bucket's elements, the hint doesn't tell us if the element is already
       present, and we don't have any constraint on where the new element is to
       be inserted, the hint won't be of any help and will then be ignored.

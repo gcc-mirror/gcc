@@ -1,5 +1,6 @@
 /* { dg-require-effective-target fopenmp } */
 /* { dg-additional-options "-fopenmp -Wall" } */
+/* { dg-additional-options "--param=analyzer-max-svalue-depth=20" } */
 
 typedef struct _Image
 {

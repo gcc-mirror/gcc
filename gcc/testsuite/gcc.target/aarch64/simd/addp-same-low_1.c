@@ -1,6 +1,5 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-O" } */
-/* { dg-require-effective-target aarch64_little_endian } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_neon.h>

@@ -1,4 +1,4 @@
-/* Header file for mma-builtin-8.c test - contains test functions only */
+/* Header file for mma-builtin-8.*.c test - contains test functions only */
 
 void
 foo (__vector_pair *dst, __vector_pair *src, long idx)

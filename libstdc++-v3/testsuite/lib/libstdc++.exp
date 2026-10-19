@@ -119,7 +119,6 @@ proc libstdc++_init { testfile } {
     global flags_file
     global tool_timeout
     global DEFAULT_CXXFLAGS
-    global STATIC_LIBCXXFLAGS
 
     # We set LC_ALL and LANG to C so that we get the same error
     # messages as expected.
@@ -219,15 +218,6 @@ proc libstdc++_init { testfile } {
 	}
     }
     v3track v3-sharedlib 3
-
-    set STATIC_LIBCXXFLAGS ""
-    set staticlibdir [lookfor_file $blddir src/.libs/libstdc++.a]
-    if {$staticlibdir != ""} {
-	set staticlibdir [file dirname $staticlibdir]
-	# Some targets use libstdc++.a%s in their specs, so they need a
-	# -B option for uninstalled testing.
-	set STATIC_LIBCXXFLAGS " -B${staticlibdir} "
-    }
 
     # Compute what needs to be added to the existing LD_LIBRARY_PATH.
     if {$gccdir != ""} {
@@ -594,7 +584,6 @@ proc v3_target_compile { source dest type options } {
     global cxxvtvflags
     global cxxldflags
     global includes
-    global STATIC_LIBCXXFLAGS
     global tool
 
     lappend options "additional_flags=-fdiagnostics-plain-output"
@@ -608,7 +597,6 @@ proc v3_target_compile { source dest type options } {
     set cxx_final $cxx
     set cxxlibglossflags  [libgloss_link_flags]
     set cxx_final [concat $cxx_final $cxxlibglossflags]
-    set cxx_final [concat $cxx_final $STATIC_LIBCXXFLAGS]
     set cxx_final [concat $cxx_final $cxxflags]
     set cxx_final [concat $cxx_final $cxxvtvflags]
     set cxx_final [concat $cxx_final $includes]
@@ -686,7 +674,6 @@ proc v3_target_compile_as_c { source dest type options } {
     global blddir
     global cc
     global cxxflags
-    global STATIC_LIBCXXFLAGS
     global tool
 
     if { [target_info needs_status_wrapper] != "" && [info exists gluefile] } {
@@ -698,7 +685,6 @@ proc v3_target_compile_as_c { source dest type options } {
     set cc_final $cc
     set cxxlibglossflags [libgloss_link_flags]
     set cc_final [concat $cc_final $cxxlibglossflags]
-    set cc_final [concat $cc_final $STATIC_LIBCXXFLAGS]
     set cc_final [concat $cc_final $cxxflags]
     set cc_final [concat $cc_final $includes]
     regsub -all {\s[-]nostdinc[+][+]} $cc_final "" cc_final
@@ -845,7 +831,7 @@ proc v3-build_support { } {
 	# do not prevent compilation.
 	# Disable LTO so that ar/ranlib don't need the LTO plugin.
 	if { [v3_target_compile $srcdir/util/$f $object_file "object" \
-		  [list "incdir=$srcdir" "additional_flags=-w -fno-lto -fno-freestanding"]]
+		  [list "additional_flags=-w -fno-lto -fno-freestanding"]]
 	     != "" } {
 	    error "could not compile $f"
 	}
@@ -884,7 +870,7 @@ proc v3-build_support { } {
 	    # Compile with "-w" so that warnings issued by the compiler
 	    # do not prevent compilation.
 	    if { [v3_target_compile $srcdir/util/$f $object_file "sharedlib" \
-	     [list "incdir=$srcdir" "additional_flags=-fno-inline -w -shared -fPIC -DPIC -std=gnu++98 -fno-freestanding"]]
+	     [list "additional_flags=-fno-inline -w -shared -fPIC -DPIC -std=gnu++98 -fno-freestanding"]]
 		 != "" } {
 		error "could not compile $f"
 	    }
@@ -1643,9 +1629,11 @@ proc check_effective_target_hosted { } {
 
 # Return 1 if std::chrono::tzdb is supported.
 proc check_effective_target_tzdb { } {
-    if {![check_effective_target_cxx11_abi]} {
+    # Check the feature test macro (which depends on hosted and ABI macros).
+    if {![check_v3_target_cpp_feature_test "__cpp_lib_chrono >= 201803L"]} {
 	return 0
     }
+    # Also require that we have tzdata available on-disk or in-memory.
     return [check_v3_target_prop_cached et_tzdb {
 	set cond "defined _GLIBCXX_ZONEINFO_DIR || _GLIBCXX_STATIC_TZDATA"
 	return [v3_check_preprocessor_condition tzdb $cond]

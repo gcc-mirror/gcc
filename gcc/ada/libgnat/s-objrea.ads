@@ -129,8 +129,11 @@ package System.Object_Reader is
       AARCH64,
       --  64-bit ARM
 
-      RISCV);
+      RISCV,
       --  RISC-V
+
+      LOONGARCH);
+      --  LoongArch
 
    ------------------
    -- Target types --

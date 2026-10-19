@@ -87,6 +87,7 @@ AC_SUBST(enable_static)
 
 AM_CONDITIONAL([ENABLE_DARWIN_AT_RPATH], [test x$enable_darwin_at_rpath = xyes])
 
+dnl cache variable in configure.tgt
 AC_CHECK_SIZEOF([void *])
 
 if test "${multilib}" = "yes"; then
@@ -266,7 +267,7 @@ AC_SUBST(BACKTRACE_SUPPORTED)
 
 GCC_HEADER_STDINT(gstdint.h)
 
-AC_CHECK_HEADERS(sys/mman.h alloca.h)
+AC_CHECK_HEADERS(sys/mman.h)
 if test "$ac_cv_header_sys_mman_h" = "no"; then
   have_mmap=no
 else

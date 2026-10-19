@@ -647,9 +647,10 @@ public:
   gimple_folder (const function_instance &, tree,
 		 gimple_stmt_iterator *, gcall *);
 
-  tree force_vector (gimple_seq &, tree, tree);
-  tree convert_pred (gimple_seq &, tree, unsigned int);
-  tree fold_contiguous_base (gimple_seq &, tree);
+  tree force_vector (tree, tree);
+  tree convert_pred (tree, unsigned int);
+  tree fold_contiguous_base (tree);
+  gimple *fold_contiguous_load (internal_fn);
   tree load_store_cookie (tree);
 
   gcall *redirect_call (const function_instance &);
@@ -660,8 +661,6 @@ public:
 
   tree force_val (tree expr);
   gassign *assign (tree lhs, tree rhs);
-  gassign *assign (tree lhs, tree_code code, tree rhs1, tree rhs2 = NULL_TREE,
-		   tree rhs3 = NULL_TREE);
 
   gimple *fold_to_cstu (poly_uint64);
   gimple *fold_to_pfalse ();
@@ -670,7 +669,6 @@ public:
   gimple *fold_const_binary (enum tree_code);
   gimple *fold_active_lanes_to (tree);
   gimple *fold_call_to (tree);
-  gimple *fold_to_stmt_vops (gimple *);
 
   gimple *fold ();
 
@@ -682,6 +680,10 @@ public:
 
   /* The result of the call, or null if none.  */
   tree lhs;
+
+  /* The sequence of statements that should be emitted before the original
+     call.  */
+  gimple_seq stmts;
 };
 
 /* A class for expanding a function call into RTL.  */
@@ -1392,6 +1394,18 @@ function_expander::result_mode () const
    _u32 _u64.  */
 #define TYPES_s_float_sd_integer(S, D, T) \
   TYPES_s_float (S, D, T), TYPES_sd_integer (S, D, T)
+
+/* _f32
+   _s8 _s16 _s32
+   _u8 _u16 _u32.  */
+#define TYPES_s_float_bhs_integer(S, D, T) \
+  TYPES_s_float (S, D, T), TYPES_bhs_integer (S, D, T)
+
+/* _f32 _f64
+   _s8 _s16 _s32 _s64
+   _u8 _u16 _u32 _u64.  */
+#define TYPES_sd_float_all_integer(S, D, T) \
+  TYPES_sd_float (S, D, T), TYPES_all_integer (S, D, T)
 
 /* _s32.  */
 #define TYPES_s_signed(S, D, T) \
@@ -2108,6 +2122,8 @@ DEF_SVE_TYPES_ARRAY (hsd_integer);
 DEF_SVE_TYPES_ARRAY (hsd_data);
 DEF_SVE_TYPES_ARRAY (s_float);
 DEF_SVE_TYPES_ARRAY (s_float_hsd_integer);
+DEF_SVE_TYPES_ARRAY (s_float_bhs_integer);
+DEF_SVE_TYPES_ARRAY (sd_float_all_integer);
 DEF_SVE_TYPES_ARRAY (s_float_mf8);
 DEF_SVE_TYPES_ARRAY (s_float_sd_integer);
 DEF_SVE_TYPES_ARRAY (s_signed);

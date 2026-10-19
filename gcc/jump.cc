@@ -1263,8 +1263,8 @@ delete_related_insns (rtx uncast_insn)
       int len = GET_NUM_ELEM (labels);
 
       for (i = 0; i < len; i++)
-	if (LABEL_NUSES (XEXP (RTVEC_ELT (labels, i), 0)) == 0)
-	  delete_related_insns (XEXP (RTVEC_ELT (labels, i), 0));
+	if (LABEL_NUSES (label_ref_label (RTVEC_ELT (labels, i))) == 0)
+	  delete_related_insns (label_ref_label (RTVEC_ELT (labels, i)));
       while (next && next->deleted ())
 	next = NEXT_INSN (next);
       return next;
@@ -1281,7 +1281,7 @@ delete_related_insns (rtx uncast_insn)
 	if (LABEL_NUSES (XEXP (note, 0)) == 0)
 	  delete_related_insns (XEXP (note, 0));
 
-  while (prev && (prev->deleted () || NOTE_P (prev)))
+  while (prev && (prev->deleted () || NOTE_P (prev) || DEBUG_INSN_P (prev)))
     prev = PREV_INSN (prev);
 
   /* If INSN was a label and a dispatch table follows it,

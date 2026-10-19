@@ -37,7 +37,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "addresses.h"
 #include "dumpfile.h"
 #include "rtl-iter.h"
-#include "target.h"
 #include "function-abi.h"
 
 #define MOVE_MAX_WORDS (MOVE_MAX / UNITS_PER_WORD)

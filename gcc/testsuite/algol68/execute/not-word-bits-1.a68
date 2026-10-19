@@ -1,0 +1,18 @@
+begin
+      if word_bits_width = 64
+      then
+           word bits address   = word 16rfff0ffff;
+           assert ((NOT address AND word 16rffffffff) = word 16r000f0000);
+           assert ((~address AND word 16rffffffff) = word 16r000f0000)
+      elif word_bits_width = 32
+      then word bits address = word 16rfff0ffff;
+           assert (NOT address = word 16r000f0000);
+           assert (~address = word 16r000f0000)
+      elif word_bits_width = 16
+      then word bits address = word 16r0fff;
+           assert (NOT address = word 16rf000);
+           assert (~address = word 16rf000)
+      else
+           assert(false)
+      fi
+end

@@ -726,8 +726,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       /// @cond undocumented
       // Error if construction from _U1 and _U2 would create a dangling ref.
-#if __has_builtin(__reference_constructs_from_temporary) \
-      && defined _GLIBCXX_DEBUG
+#if __has_builtin(__reference_constructs_from_temporary)
 # define __glibcxx_no_dangling_refs(_U1, _U2) \
   static_assert(!__reference_constructs_from_temporary(_T1, _U1) \
 	       && !__reference_constructs_from_temporary(_T2, _U2), \

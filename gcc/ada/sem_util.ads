@@ -3614,9 +3614,6 @@ package Sem_Util is
    --  generate the list of visible ancestors; otherwise their partial
    --  view is added to the resulting list.
 
-   function Within_Init_Proc return Boolean;
-   --  Determines if Current_Scope is within an init proc
-
    function Within_Protected_Type (E : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within a protected type
 

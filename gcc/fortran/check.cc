@@ -1080,7 +1080,7 @@ allocatable_check (gfc_expr *e, int n)
 {
   symbol_attribute attr;
 
-  attr = gfc_variable_attr (e, NULL);
+  attr = gfc_variable_attr (e);
   if (!attr.allocatable
      || (attr.associate_var && !attr.select_rank_temporary))
     {
@@ -4933,7 +4933,7 @@ gfc_check_null (gfc_expr *mold)
   if (!variable_check (mold, 0, true))
     return false;
 
-  attr = gfc_variable_attr (mold, NULL);
+  attr = gfc_variable_attr (mold);
 
   if (!attr.pointer && !attr.proc_pointer && !attr.allocatable)
     {
@@ -6462,7 +6462,7 @@ gfc_check_c_funloc (gfc_expr *x)
 
   attr = gfc_expr_attr (x);
 
-  if (attr.function && !attr.proc_pointer && x->expr_type == EXPR_VARIABLE
+  if (!attr.proc_pointer && x->expr_type == EXPR_VARIABLE
       && x->symtree->n.sym == x->symtree->n.sym->result)
     for (gfc_namespace *ns = gfc_current_ns; ns; ns = ns->parent)
       if (x->symtree->n.sym == ns->proc_name)

@@ -129,8 +129,13 @@ main (int argc, char *argv [])
 				       18, 19, 20, 21, 22, 23, 24, 25 };
   vresult_ch = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_ch = (vector unsigned char) { 0, 1, 17, 3, 4, 5, 6, 7,
+				       8, 9, 10, 11, 12, 13, 14, 15 };
+#else
   expected_vresult_ch = (vector unsigned char) { 0, 1, 18, 3, 4, 5, 6, 7,
 				       8, 9, 10, 11, 12, 13, 14, 15 };
+#endif
 						 
   vresult_ch = vec_insertl (src_vb_ch, src_va_ch, index);
 
@@ -149,7 +154,11 @@ main (int argc, char *argv [])
   src_va_sh = (vector unsigned short) { 0, 1, 2, 3, 4, 5, 6, 7 };
   src_vb_sh = (vector unsigned short) { 10, 11, 12, 13, 14, 15, 16, 17 };
   vresult_sh = (vector unsigned short) { 0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_sh = (vector unsigned short) { 0, 1, 13, 3, 4, 5, 6, 7 };
+#else
   expected_vresult_sh = (vector unsigned short) { 0, 1, 14, 3, 4, 5, 6, 7 };
+#endif
 						 
   vresult_sh = vec_insertl (src_vb_sh, src_va_sh, index);
 
@@ -168,7 +177,11 @@ main (int argc, char *argv [])
   src_va_int = (vector unsigned int) { 0, 1, 2, 3 };
   src_vb_int = (vector unsigned int) { 10, 11, 12, 13 };
   vresult_int = (vector unsigned int) { 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_int = (vector unsigned int) { 0, 1, 11, 3 };
+#else
   expected_vresult_int = (vector unsigned int) { 0, 1, 12, 3 };
+#endif
 						 
   vresult_int = vec_insertl (src_vb_int, src_va_int, index);
 
@@ -264,7 +277,7 @@ main (int argc, char *argv [])
 #endif
   }
 
-  /* Vector insert, left index, from vector */
+  /* Vector insert, high index, from vector */
   index = 2;
   src_va_ch = (vector unsigned char) { 0, 1, 2, 3, 4, 5, 6, 7,
 				       8, 9, 10, 11, 12, 13, 14, 15 };
@@ -272,8 +285,13 @@ main (int argc, char *argv [])
 				       18, 19, 20, 21, 22, 23, 24, 25 };
   vresult_ch = (vector unsigned char) { 0, 0, 0, 0, 0, 0, 0, 0,
 					0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_ch = (vector unsigned char) { 0, 1, 2, 3, 4, 5, 6, 7,
+				       8, 9, 10, 11, 12, 17, 14, 15 };
+#else
   expected_vresult_ch = (vector unsigned char) { 0, 1, 2, 3, 4, 5, 6, 7,
 				       8, 9, 10, 11, 12, 18, 14, 15 };
+#endif
 						 
   vresult_ch = vec_inserth (src_vb_ch, src_va_ch, index);
 
@@ -292,7 +310,11 @@ main (int argc, char *argv [])
   src_va_sh = (vector unsigned short) { 0, 1, 2, 3, 4, 5, 6, 7 };
   src_vb_sh = (vector unsigned short) { 10, 11, 12, 13, 14, 15, 16, 17 };
   vresult_sh = (vector unsigned short) { 0, 0, 0, 0, 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_sh = (vector unsigned short) { 0, 1, 2, 3, 4, 13, 6, 7 };
+#else
   expected_vresult_sh = (vector unsigned short) { 0, 1, 2, 3, 4, 14, 6, 7 };
+#endif
 						 
   vresult_sh = vec_inserth (src_vb_sh, src_va_sh, index);
 
@@ -311,7 +333,11 @@ main (int argc, char *argv [])
   src_va_int = (vector unsigned int) { 0, 1, 2, 3 };
   src_vb_int = (vector unsigned int) { 10, 11, 12, 13 };
   vresult_int = (vector unsigned int) { 0, 0, 0, 0 };
+#ifdef __BIG_ENDIAN__
+  expected_vresult_int = (vector unsigned int) { 0, 11, 2, 3 };
+#else
   expected_vresult_int = (vector unsigned int) { 0, 12, 2, 3 };
+#endif
 						 
   vresult_int = vec_inserth (src_vb_int, src_va_int, index);
 

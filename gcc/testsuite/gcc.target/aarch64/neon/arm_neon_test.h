@@ -1,6 +1,6 @@
 #include "arm_neon.h"
 
-#pragma GCC target "+simd+fp16+bf16+sha3"
+#pragma GCC target "+simd+fp16+bf16+sha2+sha3+aes+sm4"
 
 #define VEC_LEN(VEC) (sizeof (VEC) / sizeof (VEC[0]))
 

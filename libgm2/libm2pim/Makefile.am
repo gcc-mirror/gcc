@@ -112,6 +112,7 @@ M2MODS = ASCII.mod \
        TimeString.mod Environment.mod \
        FpuIO.mod Debug.mod \
        SysStorage.mod Storage.mod \
+       LongSysStorage.mod LongStorage.mod \
        StdIO.mod SEnvironment.mod \
        DynamicStrings.mod SFIO.mod \
        SArgs.mod SCmdArgs.mod \
@@ -147,6 +148,7 @@ M2DEFS = Args.def   ASCII.def \
          IO.def  ldtoa.def \
          LegacyReal.def  libc.def \
          libm.def  LMathLib0.def \
+         LongSysStorage.def LongStorage.def \
          M2Dependent.def \
          M2Diagnostic.def \
          M2EXCEPTION.def \

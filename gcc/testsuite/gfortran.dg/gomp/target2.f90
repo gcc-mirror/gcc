@@ -1,8 +1,9 @@
 ! { dg-do compile }
 ! { dg-additional-options "-ffree-line-length-160" }
 
-subroutine foo (n, s, t, u, v, w)
-  integer :: n, i, s, t, u, v, w
+subroutine foo (n, t, u, v, w)
+  integer :: n, i, t, u, v, w
+  integer, parameter :: s  = 4
   common /bar/ i
   !$omp simd safelen(s + 1)
   do i = 1, n

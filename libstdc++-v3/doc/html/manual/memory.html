@@ -179,7 +179,7 @@
      system's environment before running the program. If your program
      crashes with <code class="constant">GLIBCXX_FORCE_NEW</code> in the
      environment, it likely means that you linked against objects
-     built against the older library (objects which might still using the
+     built against the older library (objects which might still be using the
      cached allocations...).
   </p></div></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.using"></a>Using a Specific Allocator</h4></div></div></div><p>
      You can specify different memory management schemes on a
@@ -202,9 +202,9 @@
    extension allocators: say a simple one like
    <code class="classname">new_allocator</code>.
    </p><p>
-     Since C++11 the minimal interface require for an allocator is
+     Since C++11 the minimal interface required for an allocator is
      much smaller, as <code class="classname">std::allocator_traits</code>
-     can provide default for much of the interface.
+     can provide defaults for much of the interface.
    </p></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.ext"></a>Extension Allocators</h4></div></div></div><p>
     Several other allocators are provided as part of this
     implementation.  The location of the extension allocators and their
@@ -316,7 +316,7 @@
      AP is not meant to be a supersmart solution to all resource
       leaks everywhere.  Neither is it meant to be an effective form
       of garbage collection (although it can help, a little bit).
-      And it can <span class="emphasis"><em>not</em></span>be used for arrays!
+      And it can <span class="emphasis"><em>not</em></span> be used for arrays!
    </p><p>
      <acronym class="acronym">AP</acronym> is meant to prevent nasty leaks in the
      presence of exceptions.  That's <span class="emphasis"><em>all</em></span>.  This

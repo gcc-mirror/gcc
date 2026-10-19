@@ -16,5 +16,11 @@ BEGIN BEGIN REAL i := 10.0;
             ASSERT (i = LONG LONG 9000.0);
             i MINUSAB LONG LONG 1000.0;
             ASSERT (i = LONG LONG 8000.0)
+      END;
+      BEGIN WORD REAL i := WORD 1000.0;
+            i -:= WORD 100.0;
+            ASSERT (i = WORD 900.0);
+            i MINUSAB WORD 100.0;
+            ASSERT (i = WORD 800.0)
       END
 END
