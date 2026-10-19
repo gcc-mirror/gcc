@@ -192,6 +192,7 @@
 		 (match_operand:DI 4 "register_operand" "r")))
    (clobber (match_scratch:DI 5 "=&r"))]
   "TARGET_64BIT && TARGET_ZBA
+   && popcount_hwi (UINTVAL (operands[3])) < 32
    && riscv_shamt_matches_mask_p (UINTVAL (operands[2]), UINTVAL (operands[3]))
    && IN_RANGE (clz_hwi (UINTVAL (operands[3])), 29, 31)"
   "#"
@@ -1624,7 +1625,13 @@
   "(TARGET_ZBS
     && (UINTVAL (operands[2]) & UINTVAL (operands[3])) == 0
     && popcount_hwi (~(UINTVAL (operands[2]) | UINTVAL (operands[3]))) == 1
-    && num_sign_bit_copies (operands[1], DImode) >= 33)"
+    && num_sign_bit_copies (operands[1], DImode) >= 33
+    /* Be careful with the SI sign bit.  We're relying on not changing the
+       sign bit or the extension in this transformation.  */
+    && ((UINTVAL (operands[2]) & HOST_WIDE_INT_C (0xffffffff80000000))
+	== HOST_WIDE_INT_C (0xffffffff80000000))
+    && ((UINTVAL (operands[3]) & HOST_WIDE_INT_C (0xffffffff80000000))
+	== 0))"
   [(set (match_dup 0) (and:DI (match_dup 1) (match_dup 2)))
    (set (match_dup 0) (ior:DI (match_dup 0) (match_dup 3)))]
   { operands[2] = GEN_INT (UINTVAL (operands[2]) | UINTVAL (operands[3])); })
