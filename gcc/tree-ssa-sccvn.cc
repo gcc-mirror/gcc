@@ -7510,16 +7510,17 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 				 TYPE_UNSIGNED (TREE_TYPE (lhs)));
 	      if (TREE_CODE (lhs) == COMPONENT_REF)
 		{
-		  tree foff = component_ref_field_offset (lhs);
+		  tree bpos, foff = component_ref_field_offset (lhs);
 		  tree f = TREE_OPERAND (lhs, 1);
-		  if (!poly_int_tree_p (foff))
+		  if (!poly_int_tree_p (foff)
+		      || !tree_fits_poly_uint64_p
+			   (bpos = bit_from_pos (foff,
+						 DECL_FIELD_BIT_OFFSET (f))))
 		    lookup_lhs = NULL_TREE;
 		  else
 		    lookup_lhs = build3 (BIT_FIELD_REF, ltype,
 					 TREE_OPERAND (lhs, 0),
-					 TYPE_SIZE (TREE_TYPE (lhs)),
-					 bit_from_pos
-					   (foff, DECL_FIELD_BIT_OFFSET (f)));
+					 TYPE_SIZE (TREE_TYPE (lhs)), bpos);
 		}
 	      else
 		lookup_lhs = build2 (MEM_REF, ltype,
