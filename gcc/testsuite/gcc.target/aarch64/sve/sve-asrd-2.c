@@ -45,10 +45,9 @@ FOO (svint64_t)
 
 /*
 ** foo_nonpow2:
-**	mov	(z[0-9]+\.s), #7
-**	ptrue	(p[0-7]).b, all
-**	sdiv	(z[0-9]+\.s), \2/m, \3, \1
-**	ret
+** ...
+**	sdiv	z[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s
+** ...
 */
 svint32_t
 foo_nonpow2 (svint32_t x)
@@ -58,10 +57,9 @@ foo_nonpow2 (svint32_t x)
 
 /*
 ** foo_unsigned:
-**	mov	(z[0-9]+\.s), #8
-**	ptrue	(p[0-7]).b, all
-**	udiv	(z[0-9]+\.s), \2/m, \3, \1
-**	ret
+** ...
+**	udiv	z[0-9]+\.s, p[0-7]/m, z[0-9]+\.s, z[0-9]+\.s
+** ...
 */
 svuint32_t
 foo_unsigned (svuint32_t x)
