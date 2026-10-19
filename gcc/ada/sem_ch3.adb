@@ -6438,7 +6438,7 @@ package body Sem_Ch3 is
               and then not (Is_Internal (Id)
                              and then Is_TSS (Scope (Id),
                                               TSS_Composite_Equality))
-              and then not Within_Init_Proc
+              and then not Inside_Init_Proc
               and then not All_Composite_Constraints_Static (Cstr)
             then
                Check_Restriction (No_Dynamic_Sized_Objects, Cstr);
@@ -11196,7 +11196,7 @@ package body Sem_Ch3 is
             Mutate_Ekind (Def_Id, Ekind (T));
          end if;
 
-         if For_Access and then Within_Init_Proc then
+         if For_Access and then Inside_Init_Proc then
             null;
          else
             Append_Elmt (Def_Id, Private_Dependents (T));

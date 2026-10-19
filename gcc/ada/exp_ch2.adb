@@ -322,7 +322,7 @@ package body Exp_Ch2 is
             --  because the pragma is analyzed in the task declaration
             --  but is expanded in the call to Create_Task in the init_proc.
 
-         elsif Within_Init_Proc then
+         elsif Inside_Init_Proc then
             Set_Entity (N, Discriminal (CR_Discriminant (Entity (N))));
          else
             Set_Entity (N, Discriminal (Entity (N)));
