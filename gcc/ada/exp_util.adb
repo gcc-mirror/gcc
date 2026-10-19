@@ -6090,7 +6090,7 @@ package body Exp_Util is
             --  generate the proper actual subtype for it.
 
             if Nkind (Exp) = N_Selected_Component
-              and then Within_Init_Proc
+              and then Inside_Init_Proc
             then
                declare
                   Decl : constant Node_Id :=

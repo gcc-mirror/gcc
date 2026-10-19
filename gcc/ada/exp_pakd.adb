@@ -1169,13 +1169,11 @@ package body Exp_Pakd is
       --  out-of-range value by design. Compile this value without checks,
       --  because a call to the array init_proc must not raise an exception.
 
-      --  Condition is not consistent with description above, Within_Init_Proc
+      --  Condition is not consistent with description above, Inside_Init_Proc
       --  is True also when we are building the IP for a record or protected
       --  type that has a packed array component???
 
-      if Within_Init_Proc
-        and then Initialize_Scalars
-      then
+      if Inside_Init_Proc and then Initialize_Scalars then
          Analyze_And_Resolve (Rhs, Ctyp, Suppress => All_Checks);
       else
          Analyze_And_Resolve (Rhs, Ctyp);

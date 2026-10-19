@@ -2950,7 +2950,7 @@ package body Exp_Aggr is
                     Build_Initialization_Call (N,
                       Id_Ref            => Ref,
                       Typ               => Init_Typ,
-                      In_Init_Proc      => Within_Init_Proc,
+                      In_Init_Proc      => Inside_Init_Proc,
                       With_Default_Init => Has_Default_Init_Comps (N)
                                              or else
                                            Has_Task (Base_Type (Init_Typ))));
@@ -2985,7 +2985,7 @@ package body Exp_Aggr is
                  Build_Initialization_Call (N,
                    Id_Ref            => Ref,
                    Typ               => Init_Typ,
-                   In_Init_Proc      => Within_Init_Proc,
+                   In_Init_Proc      => Inside_Init_Proc,
                    With_Default_Init => Has_Default_Init_Comps (N),
                    Constructor_Ref   => Ancestor));
 
