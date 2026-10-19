@@ -1430,9 +1430,13 @@ proc scan-symbol-common { scan_directive args } {
 	return
     }
 
-    set fd [open "| $nm_cmd $output_file" r]
-    set text [read $fd]
-    close $fd
+    set output [remote_exec host "$nm_cmd" "$output_file"]
+    set status [lindex $output 0]
+    if { $status != 0 } {
+	verbose -log "$scan_directive $args: $nm_cmd failed"
+	return 0
+    }
+    set text [lindex $output 1]
 
     if [regexp -- [lindex $args 0] $text] {
 	return 1
