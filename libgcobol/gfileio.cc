@@ -5493,6 +5493,11 @@ gcobol_io_funcs() {
   return gcobol_io;
 }
 
+gcobol_io_t *
+__gg__file_io_funcs() {
+  return gcobol_io_funcs();
+}
+
 extern "C"
 void
 __gg__file_open(cblc_file_t *file,
@@ -5576,4 +5581,3 @@ __gg__file_remove(      cblc_file_t *file,
   }
 
 /* end interface functions */
-
