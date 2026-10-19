@@ -757,32 +757,80 @@
   DONE;
 })
 
-(define_insn_and_split "neg<mode>2"
-  [(set (match_operand:SDF 0 "register_operand")
-        (neg:SDF (match_operand:SDF 1 "register_operand")))
-   (clobber (match_scratch:SI 2))]
+(define_insn "neg<mode>2"
+  [(set (match_operand:SDF 0 "register_operand" "=f")
+        (neg:SDF (match_operand:SDF 1 "register_operand" "f")))]
   "TARGET_FLOAT<sdf_mode_bits>"
-  {@ [cons: =0, 1, =2; attrs: type, length]
-     [D, D, &a; arith , 7] #
-     [f, f,  X; farith, 3] neg.<sd>\t%0, %1
-  }
-  "&& reload_completed && REG_P (operands[2])"
-  [(set (match_dup 2)
+  "neg.<sd>\t%0, %1"
+  [(set_attr "type"	"farith")
+   (set_attr "mode"	"<MODE>")
+   (set_attr "length"	"3")])
+
+(define_peephole2
+  [(set (match_operand:SF 0 "register_operand")
+	(match_operand:SF 1 "register_operand"))
+   (set (match_dup 0)
+	(neg:SF (match_dup 0)))
+   (set (match_operand:SF 2 "register_operand")
+	(match_dup 0))]
+  "TARGET_FLOAT32 && TARGET_DENSITY && optimize_size
+   && FP_REG_P (REGNO (operands[0]))
+   && GP_REG_P (REGNO (operands[1]))
+   && GP_REG_P (REGNO (operands[2]))"
+  [(set (match_dup 0)
 	(const_int 1))
-   (set (match_dup 2)
-	(ashift:SI (match_dup 2)
+   (set (match_dup 0)
+	(ashift:SI (match_dup 0)
 		   (const_int 31)))
-   (set (match_dup 3)
-	(plus:SI (match_dup 4)
-		 (match_dup 2)))]
+   (set (match_dup 2)
+	(plus:SI (match_dup 1)
+		 (match_dup 0)))]
 {
-  if (GET_MODE_SIZE (SImode) < GET_MODE_SIZE (<MODE>mode))
-    emit_insn (gen_movsi (gen_rtx_SUBREG (SImode, operands[0], subreg_lowpart_offset (SImode, <MODE>mode)),
-			  gen_rtx_SUBREG (SImode, operands[1], subreg_lowpart_offset (SImode, <MODE>mode))));
-  operands[3] = gen_rtx_SUBREG (SImode, operands[0], subreg_highpart_offset (SImode, <MODE>mode));
-  operands[4] = gen_rtx_SUBREG (SImode, operands[1], subreg_highpart_offset (SImode, <MODE>mode));
-}
-  [(set_attr "mode" "<MODE>")])
+  rtx scratch;
+  HARD_REG_SET regset;
+  CLEAR_HARD_REG_SET (regset);
+  scratch = peep2_find_free_register (0, 2, "a", SImode, &regset);
+  if (!scratch)
+    FAIL;
+  operands[0] = scratch;
+  operands[1] = gen_rtx_REG (SImode, REGNO (operands[1]));
+  operands[2] = gen_rtx_REG (SImode, REGNO (operands[2]));
+})
+
+(define_peephole2
+  [(set (match_operand:DF 0 "register_operand")
+	(match_operand:DF 1 "register_operand"))
+   (set (match_dup 0)
+	(neg:DF (match_dup 0)))
+   (set (match_operand:DF 2 "register_operand")
+	(match_dup 0))]
+  "TARGET_FLOAT64 && TARGET_DENSITY && optimize_size
+   && FP_REG_P (REGNO (operands[0]))
+   && GP_REG_P (REGNO (operands[1]))
+   && GP_REG_P (REGNO (operands[2]))"
+  [(set (match_dup 0)
+	(const_int 1))
+   (set (match_dup 0)
+	(ashift:SI (match_dup 0)
+		   (const_int 31)))
+   (set (match_dup 2)
+	(plus:SI (match_dup 1)
+		 (match_dup 0)))]
+{
+  rtx scratch, lo_src, lo_dest;
+  HARD_REG_SET regset;
+  CLEAR_HARD_REG_SET (regset);
+  scratch = peep2_find_free_register (0, 2, "a", SImode, &regset);
+  if (!scratch)
+    FAIL;
+  lo_src = gen_lowpart (SImode, operands[1]);
+  lo_dest = gen_lowpart (SImode, operands[2]);
+  if (! rtx_equal_p (lo_dest, lo_src))
+    emit_insn (gen_movsi (lo_dest, lo_src));
+  operands[0] = scratch;
+  operands[1] = gen_highpart (SImode, operands[1]);
+  operands[2] = gen_highpart (SImode, operands[2]);
+})
 
 
 ;; Logical instructions.
