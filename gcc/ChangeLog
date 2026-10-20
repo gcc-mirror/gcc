@@ -1,3 +1,18 @@
+2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.cc (get_scratch_register_on_entry): Never return
+	the DRAP register.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-10-16  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127357
+	PR tree-optimization/127916
+	* match.pd (signed_integer_sat_add): Require opposite signs
+	for the two constants of the single AND IMM form.
+
 2026-10-16  Rasmus Villemoes  <rv@rasmusvillemoes.dk>
 
 	* doc/extend.texi (Common Attributes): Fix typo in example.
