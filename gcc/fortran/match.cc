@@ -2432,6 +2432,7 @@ match_derived_type_spec (gfc_typespec *ts)
   bool is_pdt_template = false;
 
   old_locus = gfc_current_locus;
+  type_param_spec_list = NULL;
 
   if (gfc_match ("%n", name) != MATCH_YES)
     {
@@ -5346,17 +5347,24 @@ gfc_match_allocate (void)
 	  goto cleanup;
 	}
 
-      if (tail->expr->ts.deferred
-	  || (tail->expr->symtree->n.sym->param_list
-	      && spec_list_type (tail->expr->symtree->n.sym->param_list)
+      bool deferrable = !(tail->expr->ts.type != BT_UNKNOWN
+			   && tail->expr->ts.type != BT_CHARACTER
+			   && !IS_PDT (tail->expr) && !IS_CLASS_PDT (tail->expr)
+			   && (gfc_expr_attr (tail->expr).allocatable
+			       || gfc_expr_attr (tail->expr).pointer));
+
+      if ((tail->expr->ts.deferred
+	   || (tail->expr->symtree->n.sym->param_list
+	       && spec_list_type (tail->expr->symtree->n.sym->param_list)
 				 == SPEC_DEFERRED))
+	  && deferrable)
 	{
 	  saw_deferred = true;
 	  deferred_locus = tail->expr->where;
 	}
       else if ((tail->expr->ts.type == BT_DERIVED
 		|| tail->expr->ts.type == BT_CLASS)
-	       && tail->expr->ref)
+	       && tail->expr->ref && deferrable)
 	{
 	  for (ref = tail->expr->ref; ref; ref = ref->next)
 	    if (ref->type == REF_COMPONENT
