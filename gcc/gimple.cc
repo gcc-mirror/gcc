@@ -2807,6 +2807,9 @@ gimple_signed_or_unsigned_type (bool unsignedp, tree type)
       || TYPE_UNSIGNED (type) == unsignedp)
     return type;
 
+  if (BITINT_TYPE_P (type))
+    return build_bitint_type (TYPE_PRECISION (type), unsignedp);
+
 #define TYPE_OK(node)							    \
   (TYPE_MODE (type) == TYPE_MODE (node)					    \
    && TYPE_PRECISION (type) == TYPE_PRECISION (node))
@@ -2891,7 +2894,8 @@ gimple_get_alias_set (tree t)
     return 0;
 
   /* Allow aliasing between signed and unsigned variants of the same
-     type.  We treat the signed variant as canonical.  */
+     type.  We treat the signed variant as canonical.  BITINT_TYPEs
+     are handled by canonical type merging.  */
   if (TREE_CODE (t) == INTEGER_TYPE && TYPE_UNSIGNED (t))
     {
       tree t1 = gimple_signed_type (t);

@@ -14211,10 +14211,16 @@ type_with_interoperable_signedness (const_tree type)
      signed char and unsigned char.  Similarly fortran FE builds
      C_SIZE_T as signed type, while C defines it unsigned.  */
 
-  return tree_code_for_canonical_type_merging (TREE_CODE (type))
-	   == INTEGER_TYPE
-         && (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node)
-	     || TYPE_PRECISION (type) == TYPE_PRECISION (size_type_node));
+  if (tree_code_for_canonical_type_merging (TREE_CODE (type)) == INTEGER_TYPE)
+    return (TYPE_PRECISION (type) == TYPE_PRECISION (signed_char_type_node)
+	    || TYPE_PRECISION (type) == TYPE_PRECISION (size_type_node));
+
+  /* The C standard allows aliasing between signed and unsigned variants
+     of the same type.  For INTEGER_TYPEs gimple_get_alias_set handles
+     this and this works because the integer type cache is pre-loaded
+     during streaming.  We do not do this for bitint_type_cache, so handle
+     the aliasing via assigning the same canonical type.  */
+  return TREE_CODE (type) == BITINT_TYPE;
 }
 
 /* Return true iff T1 and T2 are structurally identical for what
