@@ -1112,12 +1112,42 @@ ctor_ref_range::accumulate_range_from_component_ref (tree init, unsigned i,
 {
   unsigned ix;
   tree index, val;
-  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), ix, index, val)
+  if (TYPE_MAIN_VARIANT (TREE_TYPE (init)) == DECL_CONTEXT (fld))
+    FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), ix, index, val)
+      {
+	if (index != fld)
+	  continue;
+	return accumulate_range (val, i);
+      }
+  else if (TYPE_CANONICAL (TYPE_MAIN_VARIANT (TREE_TYPE (init)))
+	   == TYPE_CANONICAL (DECL_CONTEXT (fld)))
     {
-      if (index != fld)
-	continue;
-      return accumulate_range (val, i);
+      // If fld is from a different record/union than the CONSTRUCTOR,
+      // fallback to bit offset/size comparison.  This happens e.g.
+      // with C++ pointer-to-members, where we can get different
+      // __ptrmemfunc_type RECORD_TYPEs with __pfn and __delta
+      // FIELD_DECLs at the same offsets.
+      tree off = bit_position (fld);
+      tree sz = DECL_SIZE (fld);
+      if (TREE_CODE (off) != INTEGER_CST
+	  || TREE_CODE (sz) != INTEGER_CST
+	  || int_size_in_bytes (TREE_TYPE (init)) == -1)
+	return false;
+      offset_int woff = wi::to_offset (off);
+      offset_int wsz = wi::to_offset (sz);
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), ix, index, val)
+	{
+	  off = bit_position (index);
+	  sz = DECL_SIZE (index);
+	  if (TREE_CODE (off) != INTEGER_CST || TREE_CODE (sz) != INTEGER_CST)
+	    return false;
+	  if (wi::to_offset (off) != woff || wi::to_offset (sz) != wsz)
+	    continue;
+	  return accumulate_range (val, i);
+	}
     }
+  else
+    return false;
   if (TREE_CODE (TREE_TYPE (init)) == RECORD_TYPE)
     {
       accumulate_range_from_missing_constructor_elt ();
