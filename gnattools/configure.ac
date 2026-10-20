@@ -76,7 +76,7 @@ case "${target}" in
   *-*-vxworks*)
     TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     ;;
-  *-*-cygwin32* | *-*-mingw32* | *-*-pe)
+  *-*-cygwin* | *-*-mingw32* | *-*-pe)
     TOOLS_TARGET_PAIRS="indepsw.adb<indepsw-gnu.adb"
     EXTRA_GNATTOOLS='../../gnatdll$(exeext)'
     ;;
