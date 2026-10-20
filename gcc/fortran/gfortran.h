@@ -3646,7 +3646,7 @@ size_t gfc_wide_strlen (const gfc_char_t *);
 int gfc_wide_strncasecmp (const gfc_char_t *, const char *, size_t);
 gfc_char_t *gfc_wide_memset (gfc_char_t *, gfc_char_t, size_t);
 char *gfc_widechar_to_char (const gfc_char_t *, int);
-gfc_char_t *gfc_char_to_widechar (const char *);
+gfc_char_t *gfc_char_to_widechar (const char *, gfc_charlen_t = -1);
 
 #define gfc_get_wide_string(n) XCNEWVEC (gfc_char_t, n)
 

@@ -203,7 +203,7 @@ gfc_widechar_to_char (const gfc_char_t *s, int length)
 }
 
 gfc_char_t *
-gfc_char_to_widechar (const char *s)
+gfc_char_to_widechar (const char *s, gfc_charlen_t length)
 {
   size_t len, i;
   gfc_char_t *res;
@@ -211,7 +211,9 @@ gfc_char_to_widechar (const char *s)
   if (s == NULL)
     return NULL;
 
-  len = strlen (s);
+  /* Passing a negative length is used to indicate that length should be
+     calculated using strlen().  */
+  len = (length >= 0 ? (size_t) length : strlen (s));
   res = gfc_get_wide_string (len + 1);
 
   for (i = 0; i < len; i++)
