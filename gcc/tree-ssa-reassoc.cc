@@ -1190,7 +1190,7 @@ oecount_cmp (const void *p1, const void *p2)
 }
 
 /* Return TRUE iff STMT represents a builtin call that raises OP
-   to some exponent.  */
+   to some constant integer exponent, as required by decrement_power.  */
 
 static bool
 stmt_is_power_of_op (gimple *stmt, tree op)
@@ -1201,8 +1201,22 @@ stmt_is_power_of_op (gimple *stmt, tree op)
   switch (gimple_call_combined_fn (stmt))
     {
     CASE_CFN_POW:
+      {
+	tree arg1 = gimple_call_arg (stmt, 1);
+	if (TREE_CODE (arg1) != REAL_CST)
+	  return false;
+	REAL_VALUE_TYPE c = TREE_REAL_CST (arg1);
+	REAL_VALUE_TYPE cint;
+	real_from_integer (&cint, VOIDmode, real_to_integer (&c), SIGNED);
+	if (!real_identical (&c, &cint))
+	  return false;
+	return operand_equal_p (gimple_call_arg (stmt, 0), op, 0);
+      }
+
     CASE_CFN_POWI:
-      return (operand_equal_p (gimple_call_arg (stmt, 0), op, 0));
+      if (!tree_fits_shwi_p (gimple_call_arg (stmt, 1)))
+	return false;
+      return operand_equal_p (gimple_call_arg (stmt, 0), op, 0);
 
     default:
       return false;
