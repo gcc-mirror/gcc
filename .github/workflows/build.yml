@@ -1,0 +1,75 @@
+name: Compile GCC
+
+on:
+  push:
+    branches: [ "master", "p4395", "p4395ci" ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Build Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential flex bison libgmp-dev libmpfr-dev libmpc-dev texinfo zlib1g-dev dejagnu
+
+      - name: Configure GCC
+        run: |
+          mkdir build
+          cd build
+          ../configure --prefix=/opt/gcc --enable-languages=c,c++ --disable-bootstrap --disable-multilib
+
+      - name: Build GCC
+        run: |
+          cd build
+          make -j$(nproc)
+
+      - name: Test Reflection
+        run: |
+          cd build/gcc
+          make check-g++ RUNTESTFLAGS="dg.exp=reflect/*.C"
+          ! grep -E '^(FAIL|XPASS|UNRESOLVED|ERROR):' testsuite/g++/g++.sum
+
+      - name: Install into staging dir
+        if: github.event_name != 'pull_request'
+        run: |
+          cd build
+          make install-strip DESTDIR=$GITHUB_WORKSPACE/dist
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Docker metadata
+        id: meta
+        if: github.event_name != 'pull_request'
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=branch
+            type=sha,format=short
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+
+      - name: Build and push image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: dist
+          file: docker/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
