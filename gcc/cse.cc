@@ -493,21 +493,25 @@ struct cse_vec_duplicate_match
   rtx scalar;
   rtx_insn *first_insn;
   rtx_insn *widest_insn;
+  rtx_insn *last_checked_insn;
   auto_vec<rtx_insn *> related_dups;
 
   cse_vec_duplicate_match (basic_block bb_, machine_mode widest_mode_,
 			   rtx scalar_, rtx_insn *first_insn_,
-			   rtx_insn *widest_insn_)
+			   rtx_insn *widest_insn_,
+			   rtx_insn *last_checked_insn_)
     : bb (bb_), widest_mode (widest_mode_), scalar (scalar_),
-      first_insn (first_insn_), widest_insn (widest_insn_)
+      first_insn (first_insn_), widest_insn (widest_insn_),
+      last_checked_insn (last_checked_insn_)
   {}
 
   cse_vec_duplicate_match (const cse_vec_duplicate_match &other)
     : bb (other.bb), widest_mode (other.widest_mode), scalar (other.scalar),
-      first_insn (other.first_insn), widest_insn (other.widest_insn)
+      first_insn (other.first_insn), widest_insn (other.widest_insn),
+      last_checked_insn (other.last_checked_insn)
   {
-    related_dups.reserve(other.related_dups.length ());
-    related_dups.splice(other.related_dups);
+    related_dups.reserve (other.related_dups.length ());
+    related_dups.splice (other.related_dups);
   }
 };
 
@@ -6591,30 +6595,43 @@ cse_prescan_cache_vec_dup (struct cse_basic_block_data *data, basic_block bb,
 
   /* Check for matching cached vec_duplicates and save the match if found.  */
   for (auto &entry : data->vec_duplicate_cache)
-    {
-      /* Create a match with existing cache entry if both scalar register
-	 pseudos are matching and the new vec_duplicate mode is wider.  */
-      if (REG_P (dest) && rtx_equal_p (entry.scalar, scalar)
-	  && known_gt (GET_MODE_SIZE (mode), GET_MODE_SIZE (entry.widest_mode))
-	  && GET_MODE_INNER (mode) == GET_MODE_INNER (entry.widest_mode))
-	{
-	  entry.widest_mode = mode;
-	  entry.widest_insn = insn;
-	  entry.related_dups.safe_push (insn);
-	  return;
-	}
-      else if (GET_MODE_INNER (mode) == GET_MODE_INNER (entry.widest_mode)
-	       && rtx_equal_p (entry.scalar, scalar)
-	       && known_le (GET_MODE_SIZE (mode),
-			    GET_MODE_SIZE (entry.widest_mode)))
-	{
-	  entry.related_dups.safe_push (insn);
-	  return;
-	}
-    }
+    /* Create a match with existing cache entry if both scalar register
+       pseudos are matching and the new vec_duplicate mode is wider.  */
+    if (GET_MODE_INNER (mode) == GET_MODE_INNER (entry.widest_mode)
+	&& rtx_equal_p (entry.scalar, scalar)
+	&& entry.last_checked_insn)
+      {
+	if (REG_P (dest)
+	    && known_gt (GET_MODE_SIZE (mode),
+			 GET_MODE_SIZE (entry.widest_mode)))
+	  {
+	    if (reg_set_between_p (scalar, entry.last_checked_insn, insn))
+	      {
+		entry.last_checked_insn = NULL;
+		continue;
+	      }
+	    entry.widest_mode = mode;
+	    entry.widest_insn = insn;
+	    entry.last_checked_insn = insn;
+	    entry.related_dups.safe_push (insn);
+	    return;
+	  }
+	else if (known_le (GET_MODE_SIZE (mode),
+			   GET_MODE_SIZE (entry.widest_mode)))
+	  {
+	    if (reg_set_between_p (scalar, entry.last_checked_insn, insn))
+	      {
+		entry.last_checked_insn = NULL;
+		continue;
+	      }
+	    entry.last_checked_insn = insn;
+	    entry.related_dups.safe_push (insn);
+	    return;
+	  }
+      }
 
   /* Cache vec_duplicate as a new entry if no match was found.  */
-  cse_vec_duplicate_match new_entry (bb, mode, scalar, insn, NULL);
+  cse_vec_duplicate_match new_entry (bb, mode, scalar, insn, NULL, insn);
   new_entry.related_dups.safe_push (insn);
   data->vec_duplicate_cache.safe_push (new_entry);
 }
@@ -6925,112 +6942,117 @@ cse_main (rtx_insn *f ATTRIBUTE_UNUSED, int nregs)
 	  if (ebb_data.nsets == 0)
 	    continue;
 
-	/* If prescan discovers any vec_duplicate pairs where a wider duplicate
-	   appears after a narrow duplicate of the same scalar, move the
-	   widest duplicate before the first vec_duplicate of this scalar and
-	   rewrite all related duplicates to reuse it.  */
-	for (auto &match : ebb_data.vec_duplicate_matches)
-	  {
-	    rtx wide_set = single_set (match.widest_insn);
-	    if (!wide_set)
-	      continue;
-	    rtx wide_reg = SET_DEST (wide_set);
-	    rtx_insn *insert_after = PREV_INSN (match.first_insn);
-	    if (!REG_P (wide_reg) || !insert_after)
-	      continue;
-
-	    /* Safety check that WIDE_REG is not otherwise used or redefined
-	       before its original defining insn.  */
-	    if (reg_used_between_p (wide_reg, match.first_insn,
-				    match.widest_insn)
-		|| reg_set_between_p (wide_reg, match.first_insn,
-				      match.widest_insn))
-	      continue;
-
-	    /* Rewrite all related duplicates as a group so we either keep the
-	       whole transformation or none of it.  */
-	    int prev_changes = num_changes_pending ();
-	    bool abort_changes = false;
-
-	    for (auto &dup_insn : match.related_dups)
-	      {
-		rtx dup_set;
-		rtx dup_src;
-		machine_mode dup_mode;
-
-		if (dup_insn == match.widest_insn)
-		  continue;
-
-		/* The earlier safety check already covered the range from
-		   FIRST_INSN up to WIDEST_INSN.  Only check the remaining
-		   suffix for duplicates that come later in the block.  This
-		   also covers call-clobbered hard registers via
-		   reg_set_between_p.  */
-		bool reg_set = false;
-		bool reg_set_with_widest_after = false;
-		for (rtx_insn *scan = NEXT_INSN (match.widest_insn);
-		     scan != NEXT_INSN (BB_END (match.bb)) && scan != NULL_RTX;
-		     scan = NEXT_INSN (scan))
-		  {
-		    if (scan == dup_insn)
-		      {
-			reg_set_with_widest_after = reg_set;
-			break;
-		      }
-		    if (!reg_set && INSN_P (scan) && reg_set_p (wide_reg, scan))
-		      reg_set = true;
-		  }
-
-		if (reg_set_with_widest_after)
-		  continue;
-
-		dup_set = single_set (dup_insn);
-		if (!dup_set)
-		  {
-		    abort_changes = true;
-		    break;
-		  }
-
-		dup_mode = GET_MODE (SET_DEST (dup_set));
-		if (dup_mode == GET_MODE (wide_reg))
-		  dup_src = wide_reg;
-		else
-		  {
-		    dup_src = gen_lowpart (dup_mode, wide_reg);
-		    if (!dup_src)
-		      {
-			abort_changes = true;
-			break;
-		      }
-		  }
-
-		if (rtx_equal_p (dup_src, SET_DEST (dup_set)))
-		  continue;
-
-		if (!validate_change (dup_insn, &SET_SRC (dup_set), dup_src, 1))
-		  {
-		    abort_changes = true;
-		    break;
-		  }
-	      }
-
-	    if (abort_changes)
-	      {
-		cancel_changes (prev_changes);
+	  /* If prescan discovers any vec_duplicate pairs where a wider
+	     duplicate appears after a narrow duplicate of the same scalar,
+	     move the widest duplicate before the first vec_duplicate of this
+	     scalar and rewrite all related duplicates to reuse it.  */
+	  for (auto &match : ebb_data.vec_duplicate_matches)
+	    {
+	      rtx wide_set = single_set (match.widest_insn);
+	      if (!wide_set)
 		continue;
-	      }
+	      rtx wide_reg = SET_DEST (wide_set);
+	      rtx_insn *insert_after = PREV_INSN (match.first_insn);
+	      if (!REG_P (wide_reg) || !insert_after)
+		continue;
 
-	    if (num_changes_pending () == prev_changes)
-	      continue;
+	      /* Safety check that WIDE_REG is not otherwise used or redefined
+		 before its original defining insn.  */
+	      if (reg_used_between_p (wide_reg, match.first_insn,
+				      match.widest_insn)
+		  || reg_set_between_p (wide_reg, match.first_insn,
+					match.widest_insn))
+		continue;
 
-	    if (!apply_change_group ())
-	      continue;
+	      /* Rewrite all related duplicates as a group so we either keep
+		 the whole transformation or none of it.  */
+	      int prev_changes = num_changes_pending ();
+	      bool abort_changes = false;
 
-	    reorder_insns (match.widest_insn, match.widest_insn, insert_after);
+	      for (auto &dup_insn : match.related_dups)
+		{
+		  rtx dup_set;
+		  rtx dup_src;
+		  machine_mode dup_mode;
 
-	    if (match.related_dups.contains (match.widest_insn))
-	      df_insn_rescan (match.widest_insn);
-	}
+		  if (dup_insn == match.widest_insn)
+		    continue;
+
+		  /* The earlier safety check already covered the range from
+		     FIRST_INSN up to WIDEST_INSN.  Only check the remaining
+		     suffix for duplicates that come later in the block.  This
+		     also covers call-clobbered hard registers via
+		     reg_set_between_p.  */
+		  bool reg_set = false;
+		  bool reg_set_with_widest_after = false;
+		  for (rtx_insn *scan = NEXT_INSN (match.widest_insn);
+		       scan != NEXT_INSN (BB_END (match.bb))
+		       && scan != NULL_RTX;
+		       scan = NEXT_INSN (scan))
+		    {
+		      if (scan == dup_insn)
+			{
+			  reg_set_with_widest_after = reg_set;
+			  break;
+			}
+		      if (!reg_set
+			  && INSN_P (scan)
+			  && reg_set_p (wide_reg, scan))
+			reg_set = true;
+		    }
+
+		  if (reg_set_with_widest_after)
+		    continue;
+
+		  dup_set = single_set (dup_insn);
+		  if (!dup_set)
+		    {
+		      abort_changes = true;
+		      break;
+		    }
+
+		  dup_mode = GET_MODE (SET_DEST (dup_set));
+		  if (dup_mode == GET_MODE (wide_reg))
+		    dup_src = wide_reg;
+		  else
+		    {
+		      dup_src = gen_lowpart (dup_mode, wide_reg);
+		      if (!dup_src)
+			{
+			  abort_changes = true;
+			  break;
+			}
+		    }
+
+		  if (rtx_equal_p (dup_src, SET_DEST (dup_set)))
+		    continue;
+
+		  if (!validate_change (dup_insn, &SET_SRC (dup_set),
+					dup_src, 1))
+		    {
+		      abort_changes = true;
+		      break;
+		    }
+		}
+
+	      if (abort_changes)
+		{
+		  cancel_changes (prev_changes);
+		  continue;
+		}
+
+	      if (num_changes_pending () == prev_changes)
+		continue;
+
+	      if (!apply_change_group ())
+		continue;
+
+	      reorder_insns (match.widest_insn, match.widest_insn,
+			     insert_after);
+
+	      if (match.related_dups.contains (match.widest_insn))
+		df_insn_rescan (match.widest_insn);
+	    }
 
 	  /* Get a reasonable estimate for the maximum number of qty's
 	     needed for this path.  For this, we take the number of sets
