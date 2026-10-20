@@ -1,3 +1,13 @@
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127357
+	PR tree-optimization/127916
+	* match.pd (signed_integer_sat_add): Require opposite signs
+	for the two constants of the single AND IMM form.
+
 2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (hppa_rtx_costs_shadd_p): Strip SUBREG wrappers

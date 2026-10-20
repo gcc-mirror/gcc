@@ -1,3 +1,12 @@
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	Backported from master:
+	2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/127357
+	PR tree-optimization/127916
+	* gcc.dg/torture/pr127357.c: New test.
+
 2026-10-18  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:
