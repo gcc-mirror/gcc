@@ -1705,6 +1705,14 @@ merge_attribute_bits (tree newdecl, tree olddecl)
   TREE_DEPRECATED (olddecl) |= TREE_DEPRECATED (newdecl);
   TREE_UNAVAILABLE (newdecl) |= TREE_UNAVAILABLE (olddecl);
   TREE_UNAVAILABLE (olddecl) |= TREE_UNAVAILABLE (newdecl);
+  DECL_NO_LIMIT_STACK (newdecl) |= DECL_NO_LIMIT_STACK (olddecl);
+  DECL_NO_LIMIT_STACK (olddecl) |= DECL_NO_LIMIT_STACK (newdecl);
+  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl)
+    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl);
+  DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (olddecl)
+    |= DECL_NO_INSTRUMENT_FUNCTION_ENTRY_EXIT (newdecl);
+  DECL_IS_NOVOPS (newdecl) |= DECL_IS_NOVOPS (olddecl);
+  DECL_IS_NOVOPS (olddecl) |= DECL_IS_NOVOPS (newdecl);
 }
 
 #define GNU_INLINE_P(fn) (DECL_DECLARED_INLINE_P (fn)			\
