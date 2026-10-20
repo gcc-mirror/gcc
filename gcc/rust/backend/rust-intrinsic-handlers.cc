@@ -1724,6 +1724,9 @@ assert_zero_valid_handler (IntrinsicCtx &ctx)
   // TODO: Implement layout verification via template_parameter_type once
   // niche-filling and valid scalar ranges are supported in the layout engine.
   // If invalid, this should emit a panic.
+  rust_warning_at (ctx.loc, 0,
+		   "%<assert_zero_valid<T>%> is currently always emitted as a "
+		   "no-op and will not trigger");
 
   // we always return unit for now.
   auto return_statement

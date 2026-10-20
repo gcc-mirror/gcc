@@ -10,7 +10,7 @@ extern "rust-intrinsic" {
 
 fn main() {
     unsafe {
-        assert_zero_valid::<i32>();
-        assert_zero_valid::<&i32>();
+        assert_zero_valid::<i32>(); // { dg-warning "no-op" }
+        assert_zero_valid::<&i32>(); // { dg-warning "no-op" }
     }
 }
