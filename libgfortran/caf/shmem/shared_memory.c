@@ -38,6 +38,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef HAVE_SYS_MMAN_H
 #include <sys/mman.h>
 #elif defined(WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <memoryapi.h>
 #endif

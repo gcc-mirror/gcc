@@ -37,6 +37,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #include <sys/wait.h>
 #endif
 #if !defined(_SC_PAGE_SIZE) && defined(WIN32)
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
 #if defined(__hpux__)

@@ -15,6 +15,7 @@
 
 #if defined(_WIN32)
 // <windows.h> should always be the first include on Windows.
+# define WIN32_LEAN_AND_MEAN
 # include <windows.h>
 // MSVS headers define max/min as macros, so std::max/min gets crazy.
 # undef max

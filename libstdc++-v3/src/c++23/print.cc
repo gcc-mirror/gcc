@@ -44,6 +44,7 @@
 # include <stdio.h>   // _fileno
 # include <io.h>      // _get_osfhandle, _open_osfhandle, _write
 # include <fcntl.h>   // _O_APPEND
+# define WIN32_LEAN_AND_MEAN
 # include <windows.h> // GetLastError, WriteConsoleW
 #elifdef _GLIBCXX_HAVE_UNISTD_H
 # include <stdio.h>   // fileno

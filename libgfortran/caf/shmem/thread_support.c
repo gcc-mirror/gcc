@@ -78,6 +78,7 @@ initialize_shared_condition (caf_shmem_condvar *cond, const int)
 #include "../caf_error.h"
 #include "supervisor.h"
 #include "teams_mgmt.h"
+#define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <assert.h>
 

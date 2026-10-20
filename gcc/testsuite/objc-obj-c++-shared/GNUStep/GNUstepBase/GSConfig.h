@@ -307,6 +307,7 @@ typedef	struct {
 #define WINVER Windows2000
 #endif
 
+#define WIN32_LEAN_AND_MEAN
 #if defined(__WIN64__)
 #include <winsock2.h>
 #include <windows.h>
