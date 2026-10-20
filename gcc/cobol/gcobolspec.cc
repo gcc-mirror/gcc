@@ -428,6 +428,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   if( n_infiles == 0 )
     {
     need_libgcobol   = false;
+    need_libposix    = false;
     need_libdl       = false;
     need_libstdc     = false;
     }

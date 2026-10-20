@@ -208,13 +208,13 @@ AC_SUBST(extra_ldflags_libgcobol)
 # in programs produced by a cross compiler.  Native Linux installations can
 # find their runtime without changing the system-wide loader configuration.
 AC_ARG_ENABLE([libgcobol-rpath],
-  [AS_HELP_STRING([--disable-libgcobol-rpath],
-    [do not embed the native Linux libgcobol installation directory in RUNPATH])],
+  [AS_HELP_STRING([--enable-libgcobol-rpath],
+    [embed the native Linux libgcobol installation directory in RUNPATH (default: no)])],
   [case $enableval in
      yes|no) ;;
      *) AC_MSG_ERROR([--enable-libgcobol-rpath expects yes or no]) ;;
    esac],
-  [enable_libgcobol_rpath=yes])
+  [enable_libgcobol_rpath=no])
 LIBGCOBOL_RPATH_SPEC=
 case $host in
   *-*-linux*)

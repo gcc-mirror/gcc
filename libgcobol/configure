@@ -1466,9 +1466,9 @@ Optional Features:
                           install libraries with @rpath/library-name, requires
                           rpaths to be added to executables
   --disable-rpath         do not hardcode runtime library paths
-  --disable-libgcobol-rpath
-                          do not embed the native Linux libgcobol installation
-                          directory in RUNPATH
+  --enable-libgcobol-rpath
+                          embed the native Linux libgcobol installation
+                          directory in RUNPATH (default: no)
   --disable-libquadmath   disable libquadmath support for libgcobol
 
 Optional Packages:
@@ -17704,7 +17704,7 @@ if test "${enable_libgcobol_rpath+set}" = set; then :
      *) as_fn_error $? "--enable-libgcobol-rpath expects yes or no" "$LINENO" 5 ;;
    esac
 else
-  enable_libgcobol_rpath=yes
+  enable_libgcobol_rpath=no
 fi
 
 LIBGCOBOL_RPATH_SPEC=
