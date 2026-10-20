@@ -5025,7 +5025,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 					TYPE_VECTOR_SUBPARTS (rtype), &k))
 		gcc_unreachable ();
 	      gcc_assert ((k & (k - 1)) == 0);
-	      if ((j & (k - 1)) == 0)
+	      if (!ret_ctor_elts)
 		vec_alloc (ret_ctor_elts, k);
 	      if (ratype)
 		{
@@ -5047,12 +5047,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		}
 	      else
 		CONSTRUCTOR_APPEND_ELT (ret_ctor_elts, NULL_TREE, new_temp);
-	      if ((j & (k - 1)) != k - 1)
+	      if (ret_ctor_elts->length () != k)
 		continue;
 	      vec_oprnd0 = build_constructor (vectype, ret_ctor_elts);
 	      new_stmt
 		= gimple_build_assign (make_ssa_name (vec_dest), vec_oprnd0);
 	      vect_finish_stmt_generation (vinfo, stmt_info, new_stmt, gsi);
+	      ret_ctor_elts = NULL;
 
 	      SLP_TREE_VEC_DEFS (slp_node)
 		.quick_push (gimple_assign_lhs (new_stmt));
