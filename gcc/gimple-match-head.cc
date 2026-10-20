@@ -91,7 +91,7 @@ types_match (tree t1, tree t2, tree t3)
   return types_match (t1, t2) && types_match (t2, t3);
 }
 
-/* Return if T has a single use.  For GIMPLE, we also allow any
+/* Return if T has uses in a single stmt.  For GIMPLE, we also allow any
    non-SSA_NAME (ie constants) and zero uses to cope with uses
    that aren't linked up yet.  */
 
@@ -107,14 +107,14 @@ single_use (const_tree t)
   /* Inline return has_zero_uses (t) || has_single_use (t);  */
   const ssa_use_operand_t *const head = &(SSA_NAME_IMM_USE_NODE (t));
   const ssa_use_operand_t *ptr;
-  bool single = false;
+  gimple *single = NULL;
 
   for (ptr = head->next; ptr != head; ptr = ptr->next)
-    if (USE_STMT(ptr) && !is_gimple_debug (USE_STMT (ptr)))
+    if (USE_STMT (ptr) && !is_gimple_debug (USE_STMT (ptr)))
       {
-        if (single)
+	if (single && single != USE_STMT (ptr))
           return false;
-	single = true;
+	single = USE_STMT (ptr);
       }
   return true;
 }
