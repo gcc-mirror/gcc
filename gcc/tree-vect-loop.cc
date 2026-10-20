@@ -1148,6 +1148,8 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
   if (!iv_type)
     return false;
 
+  bool ok = true;
+
   /* Produce the rgroup controls.  */
   for (auto const &mask : LOOP_VINFO_MASKS (loop_vinfo).mask_set)
     {
@@ -1168,14 +1170,29 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
 	masks->rgc_vec.safe_grow_cleared (nscalars_per_iter, true);
       rgroup_controls *rgm = &(*masks).rgc_vec[nscalars_per_iter - 1];
 
+      /* For now vect_get_loop_mask only supports integer mode masks
+	 when we need to split it.  */
+      tree mask_type = truth_type_for (vectype);
+      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_INT
+	  || TYPE_PRECISION (TREE_TYPE (mask_type)) != 1)
+	{
+	  ok = false;
+	  break;
+	}
+
       if (!rgm->type || rgm->factor > nvectors)
 	{
-	  rgm->type = truth_type_for (vectype);
+	  rgm->type = mask_type;
 	  rgm->compare_type = NULL_TREE;
 	  rgm->max_nscalars_per_iter = nscalars_per_iter;
 	  rgm->factor = nvectors;
 	  rgm->bias_adjusted_ctrl = NULL_TREE;
 	}
+    }
+  if (!ok)
+    {
+      release_vec_loop_controls (&LOOP_VINFO_MASKS (loop_vinfo).rgc_vec);
+      return false;
     }
 
   /* There is no fixed compare type we are going to use but we have to
@@ -1183,21 +1200,11 @@ vect_verify_full_masking_avx512 (loop_vec_info loop_vinfo)
   unsigned int min_ni_width
     = wi::min_precision (vect_max_vf (loop_vinfo), UNSIGNED);
 
-  bool ok = true;
   for (auto &rgc : LOOP_VINFO_MASKS (loop_vinfo).rgc_vec)
     {
       tree mask_type = rgc.type;
       if (!mask_type)
 	continue;
-
-      /* For now vect_get_loop_mask only supports integer mode masks
-	 when we need to split it.  */
-      if (GET_MODE_CLASS (TYPE_MODE (mask_type)) != MODE_INT
-	  || TYPE_PRECISION (TREE_TYPE (mask_type)) != 1)
-	{
-	  ok = false;
-	  break;
-	}
 
       /* If iv_type is usable as compare type use that - we can elide the
 	 saturation in that case.   */
