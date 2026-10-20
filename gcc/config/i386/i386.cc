@@ -26752,10 +26752,10 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	  if (kind == vector_stmt && GET_MODE_INNER (mode) == DImode)
 	    {
 	      /* ix86_expand_umulvndi_highpart, 4 SImode -> DImode
-		 widening multiplies.  */
-	      stmt_cost = ix86_multiplication_cost (ix86_cost, SImode) * 4;
-	      /* 5 shifts by 32bit, 1 and, 4 adds.  */
-	      stmt_cost += ix86_vec_cost (mode, ix86_cost->sse_op) * 10;
+		 widening multiplies plus 5 shifts by 32bit, 1 and,
+		 4 adds.  */
+	      stmt_cost = ix86_vec_cost (mode, ix86_cost->mulss * 4
+					       + ix86_cost->sse_op * 10);
 	    }
 	  else
 	    /* For MULT_HIGHPART_EXPR, x86 only supports pmulhw,
@@ -27021,10 +27021,10 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 	    if (kind == vector_stmt && GET_MODE_INNER (mode) == DImode)
 	      {
 		/* ix86_expand_umulvndi_highpart, 4 SImode -> DImode
-		   widening multiplies.  */
-		stmt_cost = ix86_multiplication_cost (ix86_cost, SImode) * 4;
-		/* 5 shifts by 32bit, 1 and, 4 adds.  */
-		stmt_cost += ix86_vec_cost (mode, ix86_cost->sse_op) * 10;
+		   widening multiplies plus 5 shifts by 32bit, 1 and,
+		   4 adds.  */
+		stmt_cost = ix86_vec_cost (mode, ix86_cost->mulss * 4
+						 + ix86_cost->sse_op * 10);
 	      }
 	    else
 	      stmt_cost = ix86_multiplication_cost (ix86_cost, mode);
