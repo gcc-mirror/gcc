@@ -10454,7 +10454,11 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree) = 1;
       gimple *vec_stmt = SSA_NAME_DEF_STMT (vec_lhs);
-      if (TREE_CODE (vec_lhs) != SSA_NAME || SSA_NAME_IS_DEFAULT_DEF (vec_lhs))
+      if (TREE_CODE (vec_lhs) != SSA_NAME
+	  || SSA_NAME_IS_DEFAULT_DEF (vec_lhs)
+	  || (vinfo->bbs[0] != gimple_bb (vec_stmt)
+	      && dominated_by_p (CDI_DOMINATORS, vinfo->bbs[0],
+				 gimple_bb (vec_stmt))))
 	vinfo->insert_seq_on_entry (stmt_info, stmts);
       else if (is_a <gphi *> (vec_stmt))
 	{
