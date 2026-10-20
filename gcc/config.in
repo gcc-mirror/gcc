@@ -2143,6 +2143,12 @@
 #endif
 
 
+/* Define if zstd is available. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_ZSTD
+#endif
+
+
 /* Define if you have a working <zstd.h> header file. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_ZSTD_H
