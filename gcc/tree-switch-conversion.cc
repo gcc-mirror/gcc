@@ -1550,7 +1550,7 @@ jump_table_cluster::emit (tree index_expr, tree,
       tree this_low = low, type;
       gimple *g;
       gimple_seq seq = NULL;
-      if (!TYPE_OVERFLOW_WRAPS (TREE_TYPE (index_expr)))
+      if (!TYPE_UNSIGNED (TREE_TYPE (index_expr)))
 	{
 	  type = unsigned_type_for (TREE_TYPE (index_expr));
 	  index_expr = gimple_convert (&seq, type, index_expr);
