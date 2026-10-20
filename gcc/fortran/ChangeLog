@@ -1,3 +1,18 @@
+2026-10-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127881
+	* trans-expr.cc (conv_scalar_char_value): Fix passing of the case of
+	non-constant strings: always pass first first character by value.
+
+2026-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* trans-array.cc (structure_alloc_comps): While recursing into
+	PDT components, it has to be checked that all the components of
+	the param_list are explicit before allocating the paramterized
+	components. If this not the case, use the components own param_
+	list to replace the assumed expressions.
+
 2026-10-17  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	* trans-intrinsic.cc (conv_co_collective): Pass errmsg by

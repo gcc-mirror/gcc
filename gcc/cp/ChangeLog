@@ -1,3 +1,9 @@
+2026-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126680
+	* name-lookup.cc (set_decl_context_in_fn): Check DECL_THIS_EXTERN
+	instead of DECL_EXTERNAL.
+
 2026-10-17  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/127559

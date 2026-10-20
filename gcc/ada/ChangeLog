@@ -1,3 +1,35 @@
+2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127994
+	* exp_aggr.adb (Late_Expansion): Add Ptr_Typ formal parameter and
+	pass it in the call to Build_Record_Aggr_Code.
+	(Build_Record_Aggr_Code): Add Ptr_Typ formal parameter and pass it
+	in the call to Build_Initialization_Call.
+	(Convert_Aggr_In_Allocator): Remove useless test and pass the type
+	of the temporary in the call to Late_Expansion.
+
+2026-10-19  Liam Powell  <liam@liampwll.com>
+
+	PR ada/127974
+	* libgnat/s-fatgen.adb (Valid): Turn Rep into an imported constant
+	and mask out the sign for the test on its Most Significant Word.
+
+2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/127994
+	* checks.adb (Build_Discriminant_Checks): Replace all calls to
+	Sem_Util.Within_Init_Proc by calls to Exp_Util.Inside_Init_Proc.
+	* exp_aggr.adb (Build_Record_Aggr_Code): Likewise.
+	* exp_ch2.adb (Expand_Discriminant): Likewise.
+	* exp_ch7.adb (Establish_Transient_Scope): Likewise.
+	* exp_pakd.adb (Expand_Bit_Packed_Element_Set): Likewise.
+	* exp_util.adb (Expand_Subtype_From_Expr): Likewise.
+	* sem_ch3.adb (Analyze_Subtype_Declaration): Likewise.
+	(Build_Discriminated_Subtype): Likewise.
+	* sem_util.adb (Normalize_Actuals): Likewise.
+	(Within_Init_Proc): Delete.
+	* sem_util.ads (Within_Init_Proc): Likewise.
+
 2026-10-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/126321

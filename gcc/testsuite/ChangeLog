@@ -1,3 +1,197 @@
+2026-10-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126680
+	* g++.dg/reflect/decomp1.C: New test.
+
+2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/task7.adb: New test.
+	* gnat.dg/task7_pkg.ads: New helper package.
+
+2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127957
+	* gcc.target/i386/pr127957.c: New test.
+
+2026-10-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127881
+	* gfortran.dg/bind_c_char_value.f90: New test.
+	* gfortran.dg/bind_c_char_value_aux.c: New test.
+
+2026-10-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug11.f90: New test.
+	* gfortran.dg/pdt_bug21.f90: New test.
+
+2026-10-19  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127865
+	* gcc.target/riscv/pr127865.c: New test.
+
+2026-10-19  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127862
+	* gcc.dg/torture/vec-perm-merge-wide-input-1.c: New test.
+	* gcc.dg/torture/vec-perm-merge-wide-input-2.c: New test.
+	* gcc.dg/torture/vec-perm-merge-wide-input-3.c: New test.
+	* gcc.target/aarch64/sve/pr127862.c: New test.
+	* gcc.target/aarch64/sve/pr127862_run.c: New test.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/111280
+	* gcc.dg/tree-ssa/pr111280.c: New test.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/torture/niter-bitcount-1.c: New test.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/ctz-cmp-value-at-zero-1.c: New test.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/tree-ssa/clz-ctz-min-value-at-zero-1.c: New test.
+	* gcc.dg/vect/vect-clz-ctz-min-1.c: New test.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* lib/target-supports.exp (check_effective_target_clzsi)
+	(check_effective_target_ctzsi): New procedures.
+
+2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/128001
+	* gfortran.dg/gomp/metadirective-14.f90: New test.
+
+2026-10-19  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/127899
+	* gcc.dg/builtin-dynamic-object-size-pr127899-1.c: New test.
+	* gcc.dg/builtin-dynamic-object-size-pr127899-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-pr127899-3.c: Likewise.
+
+2026-10-19  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/tree-ssa/forwprop-vec-cond-float.c: New test.
+	* gcc.dg/vect/vect-cond-15.c: New test.
+
+2026-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127966
+	* gcc.dg/torture/pr127966.c: New testcase.
+
+2026-10-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126551
+	* gcc.dg/vect/cond-reduc-ifcvt-1.c: New test.
+	* gcc.dg/vect/cond-reduc-ifcvt-2.c: Likewise.
+	* gcc.dg/vect/cond-reduc-ifcvt-3.c: Likewise.
+	* gcc.dg/vect/cond-reduc-ifcvt-4.c: Likewise.
+	* gcc.dg/vect/cond-reduc-ifcvt-5.c: Likewise.
+	* gcc.dg/vect/cond-reduc-ifcvt-6.c: Likewise.
+	* gcc.dg/vect/vect-switch-ifcvt-2.c: Expect one loop to be vectorized.
+	* gcc.target/aarch64/sve/cond-reduc-ifcvt-trap.c: New test.
+
+2026-10-19  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/torture/vec-perm-bitfield-ref-narrow-input-1.c: New test.
+	* gcc.dg/torture/vec-perm-bitfield-ref-wide-input-1.c: New test.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/sve2/pr122069_1.c: Expect UADALP.
+	* gcc.target/aarch64/sve2/widen-sum-adalp-1.c: New test.
+	* gcc.target/aarch64/sve2/widen-sum-adalp-run.c: Likewise.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/faddp-concat-1.c: New test.
+	* gcc.target/aarch64/faddp-concat-3.c: Likewise.
+	* gcc.target/aarch64/faddp-concat-be.c: Likewise.
+	* gcc.target/aarch64/simd/faddp_lane_1.c: Likewise.
+	* gcc.target/aarch64/simd/faddp_lane_2.c: Likewise.
+	* gcc.target/aarch64/simd/faddp_reinterpret_1.c: Likewise.
+
+2026-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/127942
+	* gcc.dg/vect/bb-slp-pr126306-1.c: Do not use dg-optimized,
+	instead scan slp2.
+
+2026-10-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR tree-optimization/127876
+	* gcc.dg/vect/vect-pr127876-1.c: Add -fno-associative-math.
+
+2026-10-19  Mariam Arutunian  <mariamarutunian@gmail.com>
+	    Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* lib/target-supports.exp: Added new pclmul check function.
+	* gcc.target/i386/crc-1-pclmul.c: New test.
+	* gcc.target/i386/crc-10-pclmul.c: New test.
+	* gcc.target/i386/crc-12-pclmul.c: New test.
+	* gcc.target/i386/crc-13-pclmul.c: New test.
+	* gcc.target/i386/crc-14-pclmul.c: New test.
+	* gcc.target/i386/crc-17-pclmul.c: New test.
+	* gcc.target/i386/crc-18-pclmul.c: New test.
+	* gcc.target/i386/crc-21-pclmul.c: New test.
+	* gcc.target/i386/crc-22-pclmul.c: New test.
+	* gcc.target/i386/crc-23-pclmul.c: New test.
+	* gcc.target/i386/crc-4-pclmul.c: New test.
+	* gcc.target/i386/crc-5-pclmul.c: New test.
+	* gcc.target/i386/crc-6-pclmul.c: New test.
+	* gcc.target/i386/crc-7-pclmul.c: New test.
+	* gcc.target/i386/crc-8-pclmul.c: New test.
+	* gcc.target/i386/crc-9-pclmul.c: New test.
+	* gcc.target/i386/crc-CCIT-data16-pclmul.c: New test.
+	* gcc.target/i386/crc-CCIT-data8-pclmul.c: New test.
+	* gcc.target/i386/crc-coremark-16bitdata-pclmul.c: New test.
+	* gcc.target/i386/crc-crc32-data16.c: New test.
+	* gcc.target/i386/crc-crc32-data32.c: New test.
+	* gcc.target/i386/crc-crc32-data8.c: New test.
+
+2026-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127904
+	* gcc.dg/torture/bitint-111.c: New test.
+
+2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+	    Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR target/127851
+	* gcc.target/i386/volatile-fuse-order-1.c: New test.
+	* gcc.target/i386/volatile-fuse-order-2.c: Likewise.
+	* gcc.target/i386/volatile-fuse-order-3.c: Likewise.
+
+2026-10-19  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/fold-vecperm-insert-1.c: Require effective target
+	arm_neon for arm*-*-*.
+
+2026-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127897
+	* gcc.target/i386/pr127897-1.c: New test.
+	* gcc.target/i386/pr127897-2.c: Likewise.
+	* gcc.target/i386/pr127897-3.c: Likewise.
+
+2026-10-19  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/127156
+	* gcc.target/powerpc/vsx_mask-move-runnable.c: Use
+	endian-dependent expected values for vec_genbm, vec_genhm,
+	vec_genwm and vec_gendm.
+
+2026-10-19  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/127025
+	* gcc.target/powerpc/vec-insert-word-runnable.c: Fix expected
+	results for vec_insertl and vec_inserth on big-endian targets.
+
 2026-10-18  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* gcc.dg/fold-signaling-nan-1.c: New test case.

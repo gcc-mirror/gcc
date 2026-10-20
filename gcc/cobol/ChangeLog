@@ -1,3 +1,41 @@
+2026-10-19  Robert Dubner  <rdubner@symas.com>
+
+	* gcobolspec.cc (lang_specific_driver): Adjust the generation of
+	libgcobol.spec.
+	(lang_specific_pre_link): Likewise.
+
+2026-10-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cobol1.cc (cobol_langhook_handle_option): Use ParErrno for Werrno.
+	* lexio.cc (parse_replace_pairs): Whitespace.
+	(parse_copy_directive): Same.
+	(inode_of): Same.
+	(cdftext::lex_open): Use new cmd_line::source_format.
+	(valid_sequence_area): Whitespace
+	(cdftext::free_form_reference_format): Use new cmd_line::source_format.
+	(output_segment): Whitespace.
+	(cdftext::process_file): Same.
+	* lexio.h (struct bytespan_t): Same.
+	(struct filespan_t): Same.
+	(class cdftext): Remove command_line_indicator_column.
+	* parse.y: Associate messasge with Werror.
+	* scan.l: Support DEFLIT directive.
+
+2026-10-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* parse.y: For SEQUENTIAL, default to AFTER ADVANCING 1 LINE.
+
+2026-10-19  Robert Dubner  <rdubner@symas.com>
+
+	* cobol1.cc (cobol_set_decl_assembler_name): Support full name.
+	* genapi.cc (create_cblc_string_variable): Likewise.
+	(parser_call_target_update): Likewise.
+	(parser_enter_program): Likewise.
+	(parser_call_exception_end): Formatting.
+	(create_and_call): Support full name.
+	(parser_program_hierarchy): Likewise.
+	* gengen.cc (gg_build_fn_decl): Likewise.
+
 2026-10-14  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (dirty_to_binary): Formatting.

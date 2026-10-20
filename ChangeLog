@@ -1,3 +1,14 @@
+2026-10-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR bootstrap/127376
+	* Makefile.in: Renegerate.
+	* Makefile.tpl: Strip checking flags for mpfr and gmp.
+
+2026-10-19  David Faust  <david.faust@oss.qualcomm.com>
+
+	* MAINTAINERS: Regenerate.
+	* MAINTAINERS.yml: Add myself as a bpf port maintainer.
+
 2026-10-18  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
 
 	* MAINTAINERS: Regenerate.

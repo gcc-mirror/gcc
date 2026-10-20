@@ -1,3 +1,8 @@
+2026-10-19  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc_update: Add a new option, --no-fetch.  If specified, run
+	git rebase rather than git pull.
+
 2026-10-08  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	PR target/127137

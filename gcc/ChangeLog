@@ -1,3 +1,335 @@
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* resource.cc (return_insn_p): Take a const rtx_insn *.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* except.h (get_eh_region_from_rtx): Take a const rtx_insn *.
+	* except.cc (get_eh_region_from_rtx): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* reorg.cc (mostly_true_jump): Take an rtx_insn *.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (label_is_jump_target_p): Take a const rtx_insn *.
+	* rtlanal.cc (label_is_jump_target_p): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (replace_label): Take rtx_insn * labels.
+	* rtlanal.cc (replace_label): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (multiple_sets): Take a const rtx_insn *.
+	* rtlanal.cc (multiple_sets): Likewise.
+	(find_reg_equal_equiv_note): Cast after the INSN_P check.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgrtl.cc (delete_insn): Use dyn_cast for the label case.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* sched-int.h (reg_set_data): Store an rtx_insn * in insn.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* sched-int.h (sel_mark_hard_insn): Take an rtx_insn *.
+	* sel-sched-ir.cc (sel_mark_hard_insn): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* predict.h (invert_br_probabilities): Take an rtx_insn *.
+	* predict.cc (invert_br_probabilities): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* function.h (maybe_copy_prologue_epilogue_insn): Take rtx_insn * arguments.
+	* function.cc (maybe_copy_prologue_epilogue_insn): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgrtl.h (delete_insn_chain): Take an rtx_insn * for the start.
+	* cfgrtl.cc (delete_insn_chain): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (next_real_nondebug_insn): Take an rtx_insn *.
+	* emit-rtl.cc (next_real_nondebug_insn): Likewise.
+	* reorg.cc (relax_delay_slots): Cast the label argument.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* cfgrtl.cc (delete_insn): Use label_ref_label.
+	(force_nonfallthru_and_redirect): Likewise.
+	* cse.cc (cse_insn): Likewise.
+	* dwarf2cfi.cc (create_trace_edges): Likewise.
+	* jump.cc (delete_related_insns): Likewise.
+	* reload.cc (subst_reloads): Likewise.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/i386/i386.cc (zero_all_st_registers): Declare the insn
+	local as rtx_insn *.
+	(ix86_emit_save_reg_using_mov): Likewise.
+	(pro_epilogue_adjust_stack): Likewise.
+	(release_scratch_register_on_entry): Likewise.
+	(ix86_adjust_stack_and_probe): Likewise.
+	(ix86_expand_prologue): Likewise.
+	* reorg.cc (make_return_insns): Likewise.
+	* config/i386/i386.md (restore_stack_nonlocal): Declare label locals as rtx_code_label *.
+
+2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* lra-constraints.cc (struct usage_insns): Make insns an
+	rtx_insn_list *.
+	(setup_next_usage_insn): Take an rtx_insn * and wrap it in an
+	INSN_LIST.
+	(add_next_usage_insn): Use insn and next instead of XEXP.
+	(skip_usage_debug_insns): Return the last element's insn.
+	(check_secondary_memory_needed_p): Take an rtx_insn_list *.
+	(inherit_reload_reg): Likewise.
+	(split_reg): Likewise.
+	(split_if_necessary): Likewise.
+	(struct to_inherit): Make insns an rtx_insn_list *.
+	(add_to_inherit): Likewise.
+	(inherit_in_ebb): Likewise.
+
+2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/127957
+	* config/i386/i386.md (extendhfdf2): Require TARGET_80387
+	or TARGET_SSE2 && TARGET_SSE_MATH when not using
+	TARGET_AVX512FP16.
+
+2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/i386/i386.cc (get_scratch_register_on_entry): Never return
+	the DRAP register.
+
+2026-10-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (neg<mode>2):
+	Change to define_insn pattern, without alternatives and split.
+	(The two peephole2 patterns immediately following the above):
+	New, for single and double precision, respectively.
+
+2026-10-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_zero_call_used_regs):
+	Reimplement the zeroing of double-precision FP registers using the
+	asm statement infrastructure.
+	* config/xtensa/xtensa.md
+	(UNSPEC_CONCAT, movdf_concat): Remove.
+
+2026-10-19  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127865
+	* config/riscv/riscv.md (aop<mode>3): Steer more operations towards
+	PLUS for rv64.
+
+2026-10-19  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127862
+	* match.pd (vec_perm (vec_perm) merges): Handle inputs and results
+	with different numbers of elements.
+	* tree-ssa-forwprop.cc (simplify_permutation): Don't check for an
+	identity when the permutes have different widths.
+
+2026-10-19  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/bitmanip.md (shift_then_shNadd.uw): Ensure popcount of
+	mask is < 32.
+	(and+bclr+addiw -> bclr+ior splitter): Ensure the operation preserves
+	the SI mode sign extension to DI.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/111280
+	* tree-ssa-loop-niter.cc (build_cltz_expr): Pass the precision
+	as the value at zero of the internal function instead of a
+	select.  Unshare SRC in the select of the builtins.
+	(number_of_iterations_cltz_complement): Ask for a value at zero
+	only if SRC can be zero on entry.  If the IV is modified before
+	the test and SRC can be zero, count the zeros of the first value
+	tested.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-loop-niter.cc (number_of_iterations_popcount): Fail if
+	the exit test uses another header PHI than the recurrence.
+	(number_of_iterations_cltz): Likewise.
+	(number_of_iterations_cltz_complement): Likewise.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (.CTZ (x, V) >= C -> (x & ((1 << C) - 1)) == 0):
+	Require that the value at zero is at least C.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* match.pd (min (clz (x), clz (y)) -> clz (x | y)): Compare the
+	value at zero with element_precision as a signed value.
+	(min (ctz (x), ctz (y)) -> ctz (x | y)): Likewise.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* doc/sourcebuild.texi (clzsi, ctzsi): Document.
+
+2026-10-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR middle-end/128001
+	* tree.cc (walk_tree_1): Add comment; handle
+	OMP_METADIRECTIVE explicitly.
+
+2026-10-19  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/127899
+	* tree-object-size.cc (plus_stmt_object_size): Reset WHOLESIZE
+	if BYTES is unknown.
+	(dynamic_object_size): Return bool.
+	(cond_expr_object_size): Adjust calls and return REEXAMINE.
+	(collect_object_sizes_for): Add assert that size is unknown for
+	reexamined objects.
+
+2026-10-19  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	* tree-object-size.cc (addr_object_size): Fix typo.
+
+2026-10-19  Igor Shevlyakov  <igor@tachyum.com>
+
+	* match.pd (convert (vec_cond)): Also handle float and fix_trunc.
+
+2026-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127966
+	* tree-ssa-loop-niter.cc (loop_niter_by_eval): Perform
+	the comparison of the STRING_CST element with the
+	terminating constant in uint8_t type.
+
+2026-10-19  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/126551
+	* tree-if-conv.cc (is_cond_scalar_reduction): Recognize intermediate
+	conditional additions in reduction update chains.
+	(convert_scalar_cond_reduction): Keep the addition unconditional
+	for intermediate reduction.
+	(predicate_scalar_phi): Pass the intermediate flag.
+
+2026-10-19  linden  <bestxmg@gmail.com>
+
+	* fold-const.h (minmax_from_comparison, fold_cmp_float_cst_p):
+	Take widest_int and wide_int arguments by const reference.
+	* fold-const.cc (minmax_from_comparison, fold_cmp_float_cst_p):
+	Likewise.
+
+2026-10-19  linden  <bestxmg@gmail.com>
+
+	* tree-ssa-ccp.cc (valid_lattice_transition): Take old_val and
+	new_val by const reference.
+	(bit_value_binop): In the shift case, use r2val directly instead
+	of a local copy.
+
+2026-10-19  linden  <bestxmg@gmail.com>
+
+	* range-op.cc (operator_div::wi_fold): Rename the bound
+	parameters to dividend_min, dividend_max, divisor_min and
+	divisor_max, and remove the local copies.
+
+2026-10-19  Igor Shevlyakov  <igor@tachyum.com>
+
+	* match.pd (BIT_FIELD_REF (vec_perm ...)): Take the element count
+	from the inputs, not the selector.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-sve2.md
+	(reduc_widen_ssum<mode><Vnarrow>3): Emit cond_sadalp.
+	(reduc_widen_usum<mode><Vnarrow>3): Emit cond_uadalp.
+	(cond_<sve_int_op><mode>, *cond_<sve_int_op><mode>_2,
+	*cond_<sve_int_op><mode>_z): Fix comments.
+
+2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_simd_lowpart_of_p):
+	Declare.
+	* config/aarch64/aarch64.cc (aarch64_simd_lowpart_of_p): New
+	function.
+	* config/aarch64/iterators.md (VD_ADDP, VQ_ADDP, VDQ_ADDP): New mode
+	iterators.
+	(addp_type): New mode attribute.
+	* config/aarch64/aarch64-simd.md (aarch64_faddp<mode><vczle><vczbe>):
+	Remove.
+	(reduc_plus_scal_<mode>): Use standard RTL for V2F.
+	(aarch64_faddp_scal<mode>): New pattern.
+	(aarch64_addp<mode>_insn): Rename to...
+	(@aarch64_addp<mode>_concat): ...this.  Handle FADDP.
+	(aarch64_addp<mode><vczle><vczbe>_insn): Rename to...
+	(@aarch64_addp<mode>_select<vczle><vczbe>): ...this.  Handle FADDP.
+	(@aarch64_faddp_scal_pair<mode><vczle><vczbe>): New pattern.
+	(*aarch64_addp_same_reg<mode>): Handle FADDP.
+	(aarch64_addp<mode>): Rename to...
+	(aarch64_<f>addp<mode>): ...this.  Handle FADDP.
+
+2026-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127958
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Check whether the offset for a BIT_FIELD_REF fits before
+	using it as a lookup ref for redundant store elimination.
+
+2026-10-19  Mariam Arutunian  <mariamarutunian@gmail.com>
+	    Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_crc_using_pclmul): New
+	function that implements pclmul expansion for Bit-Forward CRC
+	computation.
+	(ix86_expand_reversed_crc_using_pclmul): New function that
+	implements pclmul expansion for Bit-Reversed CRC computation.
+	* config/i386/i386-protos.h (ix86_expand_crc_using_pclmul): New
+	extern function declaration.
+	(ix86_expand_reversed_crc_using_pclmul): Likewise.
+	* config/i386/i386.md (crc_rev<SWI124:mode>si4): Removed older
+	expansion for Bit-Reversed CRC.
+	(crc<SWI248x:mode><SWI24:mode>4): Added new expander for
+	Bit-Forward CRC.
+	(crc_rev<SWI1248x:mode><SWI24:mode>4): Added new expander for
+	Bit-Reversed CRC which extends previous CRC32 expansion.
+
+2026-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127921
+	* gimple-lower-bitint.cc (gimple_lower_bitint) <case LROTATE_EXPR>:
+	Fix up cast to utype if rhs1 is not INTEGER_CST.
+
+2026-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127904
+	* tree-outof-ssa.h (remove_gimple_phi_args): Declare.
+	* tree-outof-ssa.cc (remove_gimple_phi_args): No longer static.
+	* gimple-lower-bitint.cc: Include tree-outof-ssa.h.
+	(gimple_lower_bitint): Remove zero uses large/huge _BitInt
+	PHI results.
+
+2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+	    Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR target/127851
+	* config/i386/i386.md (@ccmp<mode>, *cmp<mode>_1)
+	(*cmp<mode>_minus_1): Reject operands that are both volatile
+	memory references.
+
+2026-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127897
+	* config/i386/i386-expand.cc (ix86_expand_vector_move): Only
+	broadcast floating-point constants when a broadcast instruction
+	is available.  Guard integer broadcasts with
+	TARGET_PREFER_BCST_FROM_INTEGER.
+
 2026-10-18  Roger Sayle  <roger@nextmovesoftware.com>
 
 	* optabs.def (aop_optab): Change from OPTAB_DC to OPTAB_C.

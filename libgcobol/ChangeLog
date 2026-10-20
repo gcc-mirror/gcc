@@ -1,3 +1,36 @@
+2026-10-19  Robert Dubner  <rdubner@symas.com>
+
+	* Makefile.am: Incorporate new files.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Specify linker targets.
+	* libgcobol.spec.in: Switch to LIBGCOBOL_RPATH_SPEC.
+	* README.runpath: New file.
+	* mk-rpath-spec.sh: New file.
+
+2026-10-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* gcobolio.h (class gcobol_io_t): Class is public for plugin use.
+	(__gg__file_io_funcs): New function.
+	* gfileio.cc (class gcobol_io_t): Use header-file definition.
+
+2026-10-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* gfileio.cc (sequential_file_write): SEQUENTIAL as 0 ADVANCING, ever.
+
+2026-10-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* gfileio.cc (__gg__file_io_funcs): New public function.
+	(__gg__file_remove): Whitespace.
+
+2026-10-19  James K. Lowden  <jklowden@cobolworx.com>
+
+	* valconv.cc: Change uc_category_fatal_e to ec_category_fatal_e.
+
+2026-10-19  Robert Dubner  <rdubner@symas.com>
+
+	* libgcobol.cc (__gg__routine_to_call): Support full name.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.
