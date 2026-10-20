@@ -8306,6 +8306,7 @@ gfc_match_class_is (void)
   c = gfc_get_case ();
   c->where = gfc_current_locus;
 
+  type_param_spec_list = NULL;
   m = match_derived_type_spec (&c->ts);
   if (m == MATCH_NO)
     goto syntax;
@@ -8314,6 +8315,9 @@ gfc_match_class_is (void)
 
   if (c->ts.type == BT_DERIVED)
     c->ts.type = BT_CLASS;
+
+  /* Distinguish CLASS IS cases to prevent collisions.  */
+  c->ts.u.derived->hash_value = gfc_hash_value (c->ts.u.derived);
 
   if (gfc_match_char (')') != MATCH_YES)
     goto syntax;

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-const.h"
 #include "trans-descriptor.h"
 #include "dependency.h"
+#include "constructor.h"
 
 typedef struct iter_info
 {
@@ -6603,6 +6604,72 @@ gfc_trans_exit (gfc_code * code)
 }
 
 
+/* Add the type parameter list to a PDT structure expression.  */
+
+static void
+convert_structure_to_type_list (gfc_symbol *derived, gfc_expr *init)
+{
+  gfc_constructor *ctr;
+  gfc_component *cmp;
+  gfc_actual_arglist *parms = NULL;
+  ctr = gfc_constructor_first (init->value.constructor);
+  cmp = derived->components;
+  init->param_list = NULL;
+  for (; ctr && cmp; ctr = gfc_constructor_next (ctr), cmp = cmp->next)
+    {
+      if (!cmp->attr.pdt_kind && !cmp->attr.pdt_len)
+	break;
+      if (!init->param_list)
+	init->param_list = parms = gfc_get_actual_arglist ();
+      else
+	{
+	  parms->next = gfc_get_actual_arglist ();
+	  parms = parms->next;
+	}
+      parms->name = cmp->name;
+      parms->spec_type = ctr->expr ? SPEC_EXPLICIT : SPEC_ASSUMED;
+      parms->expr = gfc_copy_expr (ctr->expr);
+    }
+}
+
+
+/* Build param_list from explicit allocation parameters.  */
+
+static void
+build_param_list_from_expr (gfc_expr *init, gfc_actual_arglist *expr_param_list,
+			     gfc_symbol *derived)
+{
+  gfc_component *cmp;
+  gfc_actual_arglist *param, *parms = NULL;
+
+  if (!expr_param_list)
+    return;
+
+  init->param_list = NULL;
+  cmp = derived->components;
+  param = expr_param_list;
+
+  /* Build param_list using explicit parameters, matching components.  */
+  for (; cmp && param; cmp = cmp->next)
+    {
+      if (!cmp->attr.pdt_kind && !cmp->attr.pdt_len)
+	break;
+
+      if (!init->param_list)
+	init->param_list = parms = gfc_get_actual_arglist ();
+      else
+	{
+	  parms->next = gfc_get_actual_arglist ();
+	  parms = parms->next;
+	}
+      parms->name = cmp->name;
+      parms->spec_type = param->spec_type;
+      parms->expr = gfc_copy_expr (param->expr);
+      param = param->next;
+    }
+}
+
+
 /* Get the initializer expression for the code and expr of an allocate.
    When no initializer is needed return NULL.  */
 
@@ -6616,7 +6683,21 @@ allocate_get_initializer (gfc_code * code, gfc_expr * expr)
   if (code->ext.alloc.ts.type == BT_DERIVED
       && (code->ext.alloc.ts.u.derived->attr.alloc_comp
 	  || gfc_has_default_initializer (code->ext.alloc.ts.u.derived)))
-    return gfc_default_initializer (&code->ext.alloc.ts);
+    {
+      gfc_expr *init = gfc_default_initializer (&code->ext.alloc.ts);
+      if (code->ext.alloc.ts.u.derived->attr.pdt_type
+	  && init && init->expr_type == EXPR_STRUCTURE)
+	{
+	  /* Use explicit parameters from the allocate statement if available,
+	     otherwise extract from the structure constructor.  */
+	  if (expr && expr->param_list)
+	    build_param_list_from_expr (init, expr->param_list,
+					code->ext.alloc.ts.u.derived);
+	  else
+	    convert_structure_to_type_list (code->ext.alloc.ts.u.derived, init);
+	}
+      return init;
+    }
 
   if (gfc_bt_struct (expr->ts.type)
       && (expr->ts.u.derived->attr.alloc_comp
@@ -7712,15 +7793,51 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	  if (tmp != NULL_TREE)
 	    gfc_add_expr_to_block (&block, tmp);
 	}
-      else if ((init_expr = allocate_get_initializer (code, expr)))
+      else if ((init_expr = allocate_get_initializer (code, expr))
+	       || (code->expr3 && code->expr3->expr_type == EXPR_STRUCTURE
+		   && code->expr3->mold && IS_PDT (code->expr3)))
 	{
 	  /* Use class_init_assign to initialize expr.  */
 	  gfc_code *ini;
 	  int realloc_lhs = flag_realloc_lhs;
+	  tree dealloc_pdt = NULL_TREE;
+
 	  ini = gfc_get_code (EXEC_INIT_ASSIGN);
 	  ini->expr1 = gfc_expr_to_initialize (expr);
-	  ini->expr2 = init_expr;
 	  flag_realloc_lhs = 0;
+
+	  if (init_expr == NULL)
+	    {
+	      init_expr = gfc_copy_expr (code->expr3);
+	      if (!init_expr->param_list)
+		convert_structure_to_type_list (code->expr3->ts.u.derived,
+						init_expr);
+	    }
+
+	  if (IS_PDT (init_expr) && init_expr->param_list)
+	    {
+	      gfc_expr *var;
+	      tree decl;
+	      var = gfc_get_temp_from_expr (init_expr, gfc_current_ns, false);
+	      decl = gfc_get_symbol_decl (var->symtree->n.sym);
+	      tmp = gfc_allocate_pdt_comp (init_expr->ts.u.derived, decl,
+					   0, init_expr->param_list);
+	      dealloc_pdt = gfc_deallocate_pdt_comp (init_expr->ts.u.derived,
+						     decl, 0);
+	      gfc_add_expr_to_block (&block, tmp);
+	      gfc_free_actual_arglist (init_expr->param_list);
+	      init_expr->param_list = NULL;
+	      gfc_replace_expr (init_expr, var);
+	      /* Deallocate temporary PDT's allocatable components.  */
+	      if (var->symtree->n.sym->ts.u.derived->attr.alloc_comp)
+		{
+		  tree var_decl = gfc_get_symbol_decl (var->symtree->n.sym);
+		  tmp = gfc_deallocate_pdt_comp (var->symtree->n.sym->ts.u.derived,
+						var_decl, 0);
+		  gfc_add_expr_to_block (&block, tmp);
+		}
+	    }
+	  ini->expr2 = init_expr;
 	  tmp= gfc_trans_init_assign (ini);
 	  flag_realloc_lhs = realloc_lhs;
 	  gfc_free_statements (ini);
@@ -7728,6 +7845,8 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	     it here.  */
 	  init_expr = NULL;
 	  gfc_add_expr_to_block (&block, tmp);
+	  if (dealloc_pdt != NULL_TREE)
+	    gfc_add_expr_to_block (&block, dealloc_pdt);
 	}
 
       /* Nullify all pointers in derived type coarrays.  This registers a

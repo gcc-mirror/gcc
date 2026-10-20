@@ -9674,7 +9674,15 @@ resolve_allocate_expr (gfc_expr *e, gfc_code *code, bool *array_alloc_wo_spec)
       if (code->expr3)
 	ts = &code->expr3->ts;
       else
-	ts = &code->ext.alloc.ts;
+	{
+	  ts = &code->ext.alloc.ts;
+	  if (ts->type == BT_DERIVED && ts->u.derived->attr.pdt_type)
+	    {
+	      code->expr3 = gfc_default_initializer (ts);
+	      code->expr3->mold = 1;
+	      code->ext.alloc.expr3_not_explicit = 1;
+	    }
+	}
 
       gcc_assert (ts);
 
@@ -10063,6 +10071,7 @@ done_errmsg:
 	 once here.  */
       if (code->expr3 && code->expr3->mold
 	  && code->expr3->ts.type == BT_DERIVED
+	  && !IS_PDT (code->expr3) && !IS_CLASS_PDT (code->expr3)
 	  && !(code->expr3->ref && code->expr3->ref->type == REF_ARRAY))
 	{
 	  /* Default initialization via MOLD (non-polymorphic).  */
@@ -11605,16 +11614,20 @@ resolve_select_type (gfc_code *code, gfc_namespace *old_ns)
 	      swapped = false;
 	      for (c1 = &class_is; (*c1) && (*c1)->block; c1 = &((*c1)->block))
 		{
+#define C1_DERIVED (*c1)->ext.block.case_list->ts.u.derived
+#define C2_DERIVED c2->ext.block.case_list->ts.u.derived
 		  c2 = (*c1)->block;
+
 		  /* F03:C817 (check for doubles).  */
-		  if ((*c1)->ext.block.case_list->ts.u.derived->hash_value
-		      == c2->ext.block.case_list->ts.u.derived->hash_value)
+		  if (C1_DERIVED->hash_value == C2_DERIVED->hash_value)
 		    {
 		      gfc_error ("Double CLASS IS block in SELECT TYPE "
 				 "statement at %L",
 				 &c2->ext.block.case_list->where);
 		      return;
 		    }
+#undef C1_DERIVED
+#undef C2_DERIVED
 		  if ((*c1)->ext.block.case_list->ts.u.derived->attr.extension
 		      < c2->ext.block.case_list->ts.u.derived->attr.extension)
 		    {
@@ -13644,6 +13657,14 @@ get_temp_from_expr (gfc_expr *e, gfc_namespace *ns,
       e->ref = gfc_copy_ref (ref);
     }
   return e;
+}
+
+
+gfc_expr*
+gfc_get_temp_from_expr (gfc_expr *e, gfc_namespace *ns,
+			bool allocatable = false)
+{
+  return get_temp_from_expr (e, ns, allocatable);
 }
 
 
