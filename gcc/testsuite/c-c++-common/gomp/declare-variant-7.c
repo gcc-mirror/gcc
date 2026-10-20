@@ -35,3 +35,20 @@ int f14 (int x, int q);
 int f15 (int x, int q);
 #pragma omp declare variant (f3) match (construct={simd(inbranch, simdlen (5-1) linear (q:4-3))})	/* { dg-error "clauses in 'simd' trait should be separated by ','" } */
 int f16 (int x, int q);
+
+// See PR middle-end/127850 for several issues related to handling simdlen clauses in the context selector,
+// those below are only the tip of the iceberg:
+
+// { dg-bogus "cannot convert 'float' to '__v4sf' {aka '__vector\\(4\\) float'}" "" { xfail c++ } 12 }
+// { dg-bogus "cannot convert 'float' to '__v4sf' {aka '__vector\\(4\\) float'}" "" { xfail c++ } 14 }
+// { dg-bogus "cannot convert 'float' to '__v4sf' {aka '__vector\\(4\\) float'}" "" { xfail c++ } 16 }
+// { dg-bogus "cannot convert 'float' to '__v4sf' {aka '__vector\\(4\\) float'}" "" { xfail c++ } 18 }
+// { dg-bogus "cannot convert 'float' to '__v4sf' {aka '__vector\\(4\\) float'}" "" { xfail c++ } 20 }
+// { dg-bogus "cannot convert 'float' to '__v8sf' {aka '__vector\\(8\\) float'}" "" { xfail c++ } 22 }
+// { dg-bogus "cannot convert 'float' to '__v8sf' {aka '__vector\\(8\\) float'}" "" { xfail c++ } 24 }
+// { dg-bogus "cannot convert 'float' to '__v8sf' {aka '__vector\\(8\\) float'}" "" { xfail c++ } 26 }
+// { dg-bogus "cannot convert 'int' to '__v4si' {aka '__vector\\(4\\) int'}" "" { xfail c++ } 28 }
+// { dg-bogus "cannot convert 'int' to '__v4si' {aka '__vector\\(4\\) int'}" "" { xfail c++ } 30 }
+// { dg-bogus "cannot convert 'int' to '__v4si' {aka '__vector\\(4\\) int'}" "" { xfail c++ } 32 }
+// { dg-bogus "cannot convert 'int' to '__v4si' {aka '__vector\\(4\\) int'}" "" { xfail c++ } 34 }
+// { dg-bogus "cannot convert 'int' to '__v4si' {aka '__vector\\(4\\) int'}" "" { xfail c++ } 36 }

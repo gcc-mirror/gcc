@@ -4486,7 +4486,7 @@ mio_omp_declare_simd_clauses (gfc_omp_clauses **clausesp)
 	      break;
 	    case 6:
 	      {
-		gfc_typespec ts;
+		gfc_typespec ts = {};
 		mio_typespec (&ts);
 		clauses->simdlen_type.type = ts.type;
 		clauses->simdlen_type.kind = ts.kind;

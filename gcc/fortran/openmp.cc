@@ -11823,10 +11823,11 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
      we need to repeat some const check as the program still continues
      after the error diagnostic above.  */
   if (omp_clauses->safelen_expr && omp_clauses->simdlen_expr
-
       && omp_clauses->safelen_expr->expr_type == EXPR_CONSTANT
-      && omp_clauses->simdlen_expr->ts.type == BT_INTEGER
       && omp_clauses->simdlen_expr->expr_type == EXPR_CONSTANT
+      && omp_clauses->safelen_expr->rank == 0
+      && omp_clauses->simdlen_expr->rank == 0
+      && omp_clauses->safelen_expr->ts.type == BT_INTEGER
       && omp_clauses->simdlen_expr->ts.type == BT_INTEGER
       && mpz_cmp (omp_clauses->safelen_expr->value.integer,
 		  omp_clauses->simdlen_expr->value.integer) < 0)
