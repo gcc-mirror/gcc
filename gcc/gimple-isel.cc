@@ -666,7 +666,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 		     _7 = ~_2;
 		     _5 = (_Bool) _7;
 		     to
-		     _1 = __atomic_fetch_or_4 (ptr_6, ~1, _3);
+		     _1 = __atomic_fetch_or_4 (ptr_6, 1, _3);
 		     _8 = _1 & 1;
 		     _5 = _8 == 0;
 		     and convert
@@ -675,7 +675,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 		     _7 = ~_2;
 		     _5 = (_Bool) _7;
 		     to
-		     _1 = __atomic_fetch_and_4 (ptr_6, 1, _3);
+		     _1 = __atomic_fetch_and_4 (ptr_6, ~1, _3);
 		     _8 = _1 & 1;
 		     _5 = _8 == 0;
 		   */
@@ -709,6 +709,8 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 		    }
 		  if (rhs_code != GE_EXPR && rhs_code != LT_EXPR)
 		    return false;
+		  if (TYPE_UNSIGNED (TREE_TYPE (use_lhs)))
+		    return false;
 		  if (use_lhs != cmp_rhs1)
 		    return false;
 		  if (!integer_zerop (cmp_rhs2))
@@ -716,9 +718,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 
 		  tree and_mask;
 
-		  unsigned HOST_WIDE_INT bytes
-		    = tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (use_rhs)));
-		  ibit = bytes * BITS_PER_UNIT - 1;
+		  ibit = TYPE_PRECISION (TREE_TYPE (use_lhs)) - 1;
 		  unsigned HOST_WIDE_INT highest
 		    = HOST_WIDE_INT_1U << ibit;
 
@@ -777,7 +777,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 		       */
 		    }
 		  var = make_ssa_name (TREE_TYPE (use_rhs));
-		  gimple* use_stmt_removal = use_stmt;
+		  gimple *use_stmt_removal = use_stmt;
 		  g = gimple_build_assign (var, BIT_AND_EXPR, use_rhs,
 					   and_mask);
 		  gsi = gsi_for_stmt (use_nop_stmt);
@@ -839,7 +839,7 @@ optimize_atomic_bit_test_and (gimple_stmt_iterator *gsip,
 		 _12 = _3 & mask_7;
 		 _5 = (int) _12;
 
-		 and Convert
+		 and convert
 		 _1 = __atomic_fetch_and_4 (ptr_6, ~mask, _3);
 		 _2 = (short int) _1;
 		 _5 = _2 & mask;
@@ -1288,7 +1288,7 @@ gimple_isel_builtin_call (gcall *call, gimple_stmt_iterator *gsi)
     return;
 
   tree callee = gimple_call_fndecl (call);
-  
+
   switch (DECL_FUNCTION_CODE (callee))
     {
 #define CASE_ATOMIC(NAME) 			\
