@@ -4551,7 +4551,7 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 
 	  name = s2->name;
 	}
-      else if (rvalue->expr_type == EXPR_NULL)
+      else if (rvalue->expr_type == EXPR_NULL && !rvalue->symtree)
 	return true;
       else
 	{
