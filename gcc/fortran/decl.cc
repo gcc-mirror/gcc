@@ -4677,7 +4677,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  if (gfc_derived_parameter_expr (c2->initializer))
 	    gfc_insert_parameter_exprs (c2->initializer, type_param_spec_list);
 	  c2->initializer->ts = c2->ts;
-	  if (!!gfc_is_constant_expr (c2->initializer))
+	  if (!gfc_is_constant_expr (c2->initializer))
 	    gfc_simplify_expr (c2->initializer, 1);
 	}
     }
