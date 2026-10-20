@@ -3411,27 +3411,31 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
       if (POINTER_TYPE_P (decl_type)
 	  && (TYPE_RESTRICT (decl_type) || add_restrict))
 	vi->only_restrict_pointers = 1;
-      if (vi->only_restrict_pointers
-	  && !type_contains_placeholder_p (TREE_TYPE (decl_type))
-	  && handle_param
-	  && !bitmap_bit_p (handled_struct_type,
-			    TYPE_UID (TREE_TYPE (decl_type))))
+      if (handle_param
+	  && vi->only_restrict_pointers)
 	{
-	  varinfo_t rvi;
-	  tree heapvar = build_fake_var_decl (TREE_TYPE (decl_type));
-	  DECL_EXTERNAL (heapvar) = 1;
-	  if (var_can_have_subvars (heapvar))
-	    bitmap_set_bit (handled_struct_type,
-			    TYPE_UID (TREE_TYPE (decl_type)));
-	  rvi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS", true,
-					    true, handled_struct_type);
-	  if (var_can_have_subvars (heapvar))
-	    bitmap_clear_bit (handled_struct_type,
-			      TYPE_UID (TREE_TYPE (decl_type)));
-	  rvi->is_restrict_var = 1;
-	  insert_vi_for_tree (heapvar, rvi);
-	  make_constraint_from (vi, rvi->id);
-	  make_param_constraints (rvi);
+	  if (!bitmap_bit_p (handled_struct_type,
+			     TYPE_UID (TREE_TYPE (decl_type)))
+	      && !type_contains_placeholder_p (TREE_TYPE (decl_type)))
+	    {
+	      varinfo_t rvi;
+	      tree heapvar = build_fake_var_decl (TREE_TYPE (decl_type));
+	      DECL_EXTERNAL (heapvar) = 1;
+	      if (var_can_have_subvars (heapvar))
+		bitmap_set_bit (handled_struct_type,
+				TYPE_UID (TREE_TYPE (decl_type)));
+	      rvi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS", true,
+						true, handled_struct_type);
+	      if (var_can_have_subvars (heapvar))
+		bitmap_clear_bit (handled_struct_type,
+				  TYPE_UID (TREE_TYPE (decl_type)));
+	      rvi->is_restrict_var = 1;
+	      insert_vi_for_tree (heapvar, rvi);
+	      make_constraint_from (vi, rvi->id);
+	      make_param_constraints (rvi);
+	    }
+	  else
+	    make_constraint_from (vi, nonlocal_id);
 	}
       fieldstack.release ();
       return vi;
@@ -3471,26 +3475,30 @@ create_variable_info_for_1 (tree decl, const char *name, bool add_id,
       newvi->may_have_pointers = fo->may_have_pointers;
       newvi->only_restrict_pointers = fo->only_restrict_pointers;
       if (handle_param
-	  && newvi->only_restrict_pointers
-	  && !type_contains_placeholder_p (fo->restrict_pointed_type)
-	  && !bitmap_bit_p (handled_struct_type,
-			    TYPE_UID (fo->restrict_pointed_type)))
+	  && newvi->only_restrict_pointers)
 	{
-	  varinfo_t rvi;
-	  tree heapvar = build_fake_var_decl (fo->restrict_pointed_type);
-	  DECL_EXTERNAL (heapvar) = 1;
-	  if (var_can_have_subvars (heapvar))
-	    bitmap_set_bit (handled_struct_type,
-			    TYPE_UID (fo->restrict_pointed_type));
-	  rvi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS", true,
-					    true, handled_struct_type);
-	  if (var_can_have_subvars (heapvar))
-	    bitmap_clear_bit (handled_struct_type,
-			      TYPE_UID (fo->restrict_pointed_type));
-	  rvi->is_restrict_var = 1;
-	  insert_vi_for_tree (heapvar, rvi);
-	  make_constraint_from (newvi, rvi->id);
-	  make_param_constraints (rvi);
+	  if (!bitmap_bit_p (handled_struct_type,
+			     TYPE_UID (fo->restrict_pointed_type))
+	      && !type_contains_placeholder_p (fo->restrict_pointed_type))
+	    {
+	      varinfo_t rvi;
+	      tree heapvar = build_fake_var_decl (fo->restrict_pointed_type);
+	      DECL_EXTERNAL (heapvar) = 1;
+	      if (var_can_have_subvars (heapvar))
+		bitmap_set_bit (handled_struct_type,
+				TYPE_UID (fo->restrict_pointed_type));
+	      rvi = create_variable_info_for_1 (heapvar, "PARM_NOALIAS", true,
+						true, handled_struct_type);
+	      if (var_can_have_subvars (heapvar))
+		bitmap_clear_bit (handled_struct_type,
+				  TYPE_UID (fo->restrict_pointed_type));
+	      rvi->is_restrict_var = 1;
+	      insert_vi_for_tree (heapvar, rvi);
+	      make_constraint_from (newvi, rvi->id);
+	      make_param_constraints (rvi);
+	    }
+	  else
+	    make_constraint_from (newvi, nonlocal_id);
 	}
       if (i + 1 < fieldstack.length ())
 	{
