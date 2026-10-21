@@ -14321,6 +14321,8 @@ tree
 finish_structured_binding_size (location_t loc, tree type,
 				tsubst_flags_t complain)
 {
+  if (!check_trait_type (type, /* kind = */ 4, complain))
+    return error_mark_node;
   if (TYPE_REF_P (type))
     {
       if (complain & tf_error)
