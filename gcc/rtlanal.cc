@@ -4800,7 +4800,7 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
   enum rtx_code code = GET_CODE (x);
   machine_mode inner_mode;
   unsigned int inner_width;
-  scalar_int_mode xmode;
+  scalar_int_mode xmode, op_imode;
 
   unsigned int mode_width = GET_MODE_PRECISION (mode);
 
@@ -5230,25 +5230,26 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 
     case CLZ:
       /* If CLZ has a known value at zero, then the nonzero bits are
-	 that value, plus the number of bits in the mode minus one.
-	 If we have a different operand mode, don't try to get nonzero
-	 bits as currently nonzero is not a poly_int.  */
-      if (op_mode == mode
-	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
+	 that value, plus the number of bits in the operand minus one.
+	 The operand mode may differ from MODE, but if it is not a scalar
+	 integer mode, don't try to get nonzero bits as currently nonzero
+	 is not a poly_int.  */
+      if (is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &op_imode)
+	  && CLZ_DEFINED_VALUE_AT_ZERO (op_imode, nonzero))
 	nonzero
-	  |= (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
+	  |= (HOST_WIDE_INT_1U << (floor_log2 (op_mode_width))) - 1;
       else
 	nonzero = -1;
       break;
 
     case CTZ:
       /* If CTZ has a known value at zero, then the nonzero bits are
-	 that value, plus the number of bits in the mode minus one.
-	 See above for op_mode != mode.  */
-      if (op_mode == mode
-	  && CLZ_DEFINED_VALUE_AT_ZERO (mode, nonzero))
+	 that value, plus the number of bits in the operand minus one.
+	 See above for the operand mode.  */
+      if (is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &op_imode)
+	  && CTZ_DEFINED_VALUE_AT_ZERO (op_imode, nonzero))
 	nonzero
-	  |= (HOST_WIDE_INT_1U << (floor_log2 (mode_width))) - 1;
+	  |= (HOST_WIDE_INT_1U << (floor_log2 (op_mode_width))) - 1;
       else
 	nonzero = -1;
       break;

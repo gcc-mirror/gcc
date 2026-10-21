@@ -477,6 +477,43 @@ ext_dce_try_optimize_rshift (rtx_insn *insn, rtx set, rtx new_src, rtx_insn *new
     }
 }
 
+/* Return true if the extension of INNER to OUTER_MODE is already
+   guaranteed by its definition, making the SIGN_EXTEND redundant.  */
+static bool
+is_trivially_redundant_extension (rtx inner, scalar_int_mode inner_mode,
+				  scalar_int_mode outer_mode)
+{
+  rtx def_reg = inner;
+
+  if (SUBREG_P (def_reg) && subreg_lowpart_p (def_reg))
+    def_reg = SUBREG_REG (def_reg);
+
+  if (!REG_P (def_reg))
+    return false;
+
+  unsigned int regno = REGNO (def_reg);
+  if (HARD_REGISTER_NUM_P (regno) || DF_REG_DEF_COUNT (regno) != 1)
+    return false;
+
+  df_ref def = DF_REG_DEF_CHAIN (regno);
+  if (!def)
+    return false;
+
+  rtx_insn *def_insn = DF_REF_INSN (def);
+  rtx def_set = def_insn ? single_set (def_insn) : NULL_RTX;
+  if (!def_set)
+    return false;
+
+  rtx def_src = SET_SRC (def_set);
+
+  unsigned int diff = GET_MODE_PRECISION (outer_mode)
+		      - GET_MODE_PRECISION (inner_mode);
+
+  if (num_sign_bit_copies (def_src, outer_mode) > diff)
+    return true;
+
+  return false;
+}
 
 /* INSN has a sign/zero extended source inside SET that we will
    try to turn into a SUBREG.  If NEW_SRC is non-null, use that
@@ -539,6 +576,18 @@ ext_dce_try_optimize_extension (rtx_insn *insn, rtx set)
   if (!(REG_P (inner) || (SUBREG_P (inner) && REG_P (SUBREG_REG (inner)))))
     return;
 
+  /* If the extension is trivially redundant, then we leave it in the IL
+     as we know combine can easily remove it.  By doing so those sign
+     bits keep a known state rather than unknown state which helps combine
+     make more improvements.  */
+  scalar_int_mode inner_mode, outer_mode;
+  if (GET_CODE (src) == SIGN_EXTEND
+      && is_a <scalar_int_mode> (GET_MODE (inner), &inner_mode)
+      && is_a <scalar_int_mode> (GET_MODE (src), &outer_mode))
+    {
+      if (is_trivially_redundant_extension (inner, inner_mode, outer_mode))
+	return;
+    }
   rtx new_pattern;
   if (dump_file)
     {
