@@ -14109,8 +14109,7 @@ s390_function_profiler (FILE *file, int labelno ATTRIBUTE_UNUSED)
       else
 	output_asm_insn ("brasl\t0,%2%K2", op);
     }
-
-  if (flag_nop_mcount)
+  else if (flag_nop_mcount)
     output_asm_nops ("-mnop-mcount", /* stg */ 3 + /* brasl */ 3 +
 		     /* lg */ 3);
   else
