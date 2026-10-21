@@ -7988,7 +7988,8 @@ decode_field_reference (tree *pexp, HOST_WIDE_INT *pbitsize,
 	  if (prec_in >= prec_op)
 	    {
 	      if (prec_in > prec_op)
-		and_mask = wide_int::from (and_mask, prec_in, UNSIGNED);
+		and_mask = wide_int::from (and_mask, prec_in,
+					   TYPE_SIGN (TREE_TYPE (res_ops[1])));
 	      and_mask &= *pand_mask;
 	    }
 	  else
