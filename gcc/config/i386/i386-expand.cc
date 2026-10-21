@@ -30823,15 +30823,17 @@ ix86_expand_crc_using_pclmul (scalar_mode crc_mode,
 
   unsigned HOST_WIDE_INT crc_size = GET_MODE_BITSIZE (crc_mode);
   unsigned HOST_WIDE_INT data_size = GET_MODE_BITSIZE (data_mode);
-  gcc_assert (crc_size <= 32);
+  gcc_assert (crc_size <= 64);
   gcc_assert (data_size <= crc_size);
+
+  machine_mode op_mode = crc_size == 64 ? DImode : SImode;
 
   /* Calculate the quotient.  */
   unsigned HOST_WIDE_INT
       q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
 
   if (crc_size > data_size)
-    crc = expand_shift (RSHIFT_EXPR, SImode, crc, crc_size - data_size,
+    crc = expand_shift (RSHIFT_EXPR, op_mode, crc, crc_size - data_size,
 			NULL_RTX, 1);
 
   /* Keep the quotient and polynomial in V2DImode.  */
@@ -30843,29 +30845,53 @@ ix86_expand_crc_using_pclmul (scalar_mode crc_mode,
   emit_move_insn (constants_reg, constants_v2di);
 
   /* crc ^ data and keep in V2DImode.  */
-  rtx cd_xor = expand_binop (SImode, xor_optab, crc, data, NULL_RTX, 1,
-			     OPTAB_WIDEN);
-  rtx res = gen_reg_rtx (V4SImode);
-  emit_insn (gen_vec_setv4si_0 (res, CONST0_RTX (V4SImode), cd_xor));
-  res = gen_lowpart (V2DImode, res);
-  /* Perform carry-less multiplication with quotient.  */
-  emit_insn (gen_pclmulqdq (res, res, constants_reg, const0_rtx));
+  rtx cd_xor = expand_binop (op_mode, xor_optab, crc, data,
+			     NULL_RTX, 1, OPTAB_WIDEN);
+  rtx crc_temp;
+  if (op_mode == DImode)
+    {
+      crc_temp = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vec_concatv2di (crc_temp, cd_xor, cd_xor));
+    }
+  else
+    {
+      crc_temp = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vec_setv4si_0 (crc_temp, CONST0_RTX (V4SImode), cd_xor));
+      crc_temp = gen_lowpart (V2DImode, crc_temp);
+    }
 
-  res = expand_shift (RSHIFT_EXPR, V2DImode, res, crc_size, NULL_RTX, 1);
+  /* Perform carry-less multiplication with quotient.  */
+  rtx res = gen_reg_rtx (V2DImode);
+  emit_insn (gen_pclmulqdq (res, crc_temp, constants_reg, const0_rtx));
+
+  if (op_mode == DImode)
+    {
+      /* Perform res ^ crc_temp to handle 65th bit of quotient.  */
+      res = expand_binop (V2DImode, xor_optab, res, crc_temp,
+			  NULL_RTX, 1, OPTAB_DIRECT);
+    }
+  else
+    res = expand_shift (RSHIFT_EXPR, V2DImode, res, crc_size, NULL_RTX, 1);
 
   /* Perform carry-less multiplication with polynomial and get low part.  */
   emit_insn (gen_pclmulqdq (res, res, constants_reg,
-			    gen_int_mode (0x10, SImode)));
-  rtx crc_part = gen_reg_rtx (SImode);
-  res = gen_lowpart (V4SImode, res);
-  emit_insn (gen_vec_extractv4sisi (crc_part, res, const0_rtx));
+			    GEN_INT (op_mode == DImode ? 0x11 : 0x10)));
+
+  rtx crc_part = gen_reg_rtx (op_mode);
+  if (op_mode == DImode)
+    emit_insn (gen_vec_extractv2didi (crc_part, res, const0_rtx));
+  else
+    {
+      res = gen_lowpart (V4SImode, res);
+      emit_insn (gen_vec_extractv4sisi (crc_part, res, const0_rtx));
+    }
 
   if (crc_size > data_size)
     {
-      rtx shift = expand_shift (LSHIFT_EXPR, SImode, operands[1], data_size,
+      rtx shift = expand_shift (LSHIFT_EXPR, op_mode, operands[1], data_size,
 				NULL_RTX, 1);
-      crc_part = expand_binop (SImode, xor_optab, crc_part, shift, NULL_RTX, 1,
-			       OPTAB_DIRECT);
+      crc_part = expand_binop (op_mode, xor_optab, crc_part, shift,
+			       NULL_RTX, 1, OPTAB_DIRECT);
     }
   emit_move_insn (operands[0], gen_lowpart (crc_mode, crc_part));
 }
@@ -30889,14 +30915,16 @@ ix86_expand_reversed_crc_using_pclmul (scalar_mode crc_mode,
 
   unsigned HOST_WIDE_INT crc_size = GET_MODE_BITSIZE (crc_mode);
   unsigned HOST_WIDE_INT data_size = GET_MODE_BITSIZE (data_mode);
-  gcc_assert (crc_size <= 32);
+  gcc_assert (crc_size <= 64);
   gcc_assert (data_size <= crc_size);
+
+  machine_mode op_mode = crc_size == 64 ? DImode : SImode;
 
   /* Calculate the quotient.  */
   unsigned HOST_WIDE_INT
       q = gf2n_poly_long_div_quotient (UINTVAL (polynomial), crc_size);
   /* Reflect the calculated quotient.  */
-  q = reflect_hwi (q, crc_size + 1);
+  q = (reflect_hwi (q, crc_size) << 1) + 1;
 
   unsigned HOST_WIDE_INT reflected_op3 = reflect_hwi (UINTVAL (polynomial),
 						      crc_size);
@@ -30909,30 +30937,55 @@ ix86_expand_reversed_crc_using_pclmul (scalar_mode crc_mode,
   emit_move_insn (constants_reg, constants_v2di);
 
   /* crc ^ data and keep in V2DImode.  */
-  rtx cd_xor = expand_binop (SImode, xor_optab, crc, data, NULL_RTX, 1,
-			     OPTAB_WIDEN);
+  rtx cd_xor = expand_binop (op_mode, xor_optab, crc, data,
+			     NULL_RTX, 1, OPTAB_WIDEN);
+  rtx crc_temp;
+  if (op_mode == DImode)
+    {
+      crc_temp = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vec_concatv2di (crc_temp, cd_xor, const0_rtx));
+    }
+  else
+    {
+      crc_temp = gen_reg_rtx (V4SImode);
+      emit_insn (gen_vec_setv4si_0 (crc_temp, CONST0_RTX (V4SImode), cd_xor));
+      crc_temp = gen_lowpart (V2DImode, crc_temp);
+    }
 
   /* Perform carry-less multiplication with quotient.  */
-  rtx res = gen_reg_rtx (V4SImode);
-  emit_insn (gen_vec_setv4si_0 (res, CONST0_RTX (V4SImode), cd_xor));
-  res = gen_lowpart (V2DImode, res);
-  emit_insn (gen_pclmulqdq (res, res, constants_reg, const0_rtx));
+  emit_insn (gen_pclmulqdq (crc_temp, crc_temp, constants_reg, const0_rtx));
+  if (data_size < 64)
+    crc_temp = expand_shift (LSHIFT_EXPR, V2DImode, crc_temp, 64 - data_size,
+			     NULL_RTX, 0);
 
-  res = expand_shift (LSHIFT_EXPR, V2DImode, res, 64 - data_size, NULL_RTX, 0);
+  rtx res = gen_reg_rtx (V2DImode);
+  /* Perform carry-less multiplication with polynomial.  */
+  emit_insn (gen_pclmulqdq (res, crc_temp, constants_reg, GEN_INT (0x10)));
+  if (op_mode == DImode && (UINTVAL (polynomial) & 1))
+    {
+      /* Perform xor of res[127:64] with crc_temp[63:0].
+	 This is needed when the 65th bit of reflected polynomial is 1.  */
+      rtx tmp = gen_reg_rtx (V2DImode);
+      emit_insn (gen_vec_interleave_lowv2di (tmp, crc_temp, crc_temp));
+      res = expand_binop (V2DImode, xor_optab, res, tmp,
+			  NULL_RTX, 1, OPTAB_DIRECT);
+    }
 
-  /* Perform carry-less multiplication with polynomial and get high part.  */
-  emit_insn (gen_pclmulqdq (res, res, constants_reg,
-			    gen_int_mode (0x10, SImode)));
-  rtx res_high = gen_reg_rtx (SImode);
-  res = gen_lowpart (V4SImode, res);
-  emit_insn (gen_vec_extractv4sisi (res_high, res, const2_rtx));
+  rtx res_high = gen_reg_rtx (op_mode);
+  if (op_mode == DImode)
+    emit_insn (gen_vec_extractv2didi (res_high, res, const1_rtx));
+  else
+    {
+      res = gen_lowpart (V4SImode, res);
+      emit_insn (gen_vec_extractv4sisi (res_high, res, const2_rtx));
+    }
 
   if (crc_size > data_size)
     {
-      rtx shift = expand_shift (RSHIFT_EXPR, SImode, crc, data_size,
+      rtx shift = expand_shift (RSHIFT_EXPR, op_mode, crc, data_size,
 				NULL_RTX, 1);
-      res_high = expand_binop (SImode, xor_optab, res_high, shift, NULL_RTX, 1,
-			       OPTAB_DIRECT);
+      res_high = expand_binop (op_mode, xor_optab, res_high, shift,
+			       NULL_RTX, 1, OPTAB_DIRECT);
     }
   emit_move_insn (operands[0], gen_lowpart (crc_mode, res_high));
 }

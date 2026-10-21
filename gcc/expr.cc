@@ -14587,8 +14587,10 @@ unsigned HOST_WIDE_INT
 gf2n_poly_long_div_quotient (unsigned HOST_WIDE_INT polynomial,
 			     unsigned short n)
 {
-  /* The result has degree N, so needs N + 1 bits.  */
-  gcc_assert (n < 64);
+  /* The result has degree N, so needs N + 1 bits.
+     For 64-bit CRC, compute the lower 64 bits of the division.
+     The 65th bit is 1 since the leading bit of polynomial is 1.  */
+  gcc_assert (n <= 64);
 
   /* Perform a division step for the x^2N coefficient.  At this point the
      quotient and remainder have N implicit trailing zeros.  */
