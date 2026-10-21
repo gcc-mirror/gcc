@@ -4483,8 +4483,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  if (SCALAR_INT_MODE_P (bestn_inbranch->simdclone->mask_mode))
 		    {
 		      callee_nelements
-			  = exact_div (bestn_inbranch->simdclone->simdlen,
-				       bestn_inbranch->simdclone->args[i].linear_step);
+			= exact_div (bestn_inbranch->simdclone->simdlen,
+				     bestn_inbranch->simdclone->args[i].linear_step);
 		      masktype = get_related_vectype_for_scalar_type
 			  (vinfo->vector_mode, TREE_TYPE (vectype),
 			   callee_nelements);
@@ -4503,10 +4503,22 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			   TYPE_MODE (masktype));
 		      callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 		    }
-		  auto o = vector_unroll_factor (nunits, callee_nelements);
-		  vect_record_loop_mask (loop_vinfo,
-					 &LOOP_VINFO_MASKS (loop_vinfo),
-					 ncopies  * o, masktype, NULL_TREE);
+		  if (!masktype)
+		    {
+		      if (dump_enabled_p ())
+			dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+					 "can't use a fully-masked loop because"
+					 " no suitable vector type was found for"
+					 " the mask.\n");
+		      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+		    }
+		  else
+		    {
+		      auto o = vector_unroll_factor (nunits, callee_nelements);
+		      vect_record_loop_mask (loop_vinfo,
+					     &LOOP_VINFO_MASKS (loop_vinfo),
+					     ncopies * o, masktype, NULL_TREE);
+		    }
 		}
 	    }
 	  else if ((bestn->simdclone->args[i].arg_type
