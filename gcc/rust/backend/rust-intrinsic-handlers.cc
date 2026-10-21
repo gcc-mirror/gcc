@@ -20,6 +20,7 @@
 #include "optional.h"
 #include "rust-backend.h"
 #include "rust-compile-context.h"
+#include "rust-compile-item.h"
 #include "rust-compile-type.h"
 #include "rust-compile-fnparam.h"
 #include "rust-builtins.h"
@@ -33,6 +34,8 @@
 #include "rust-gcc.h"
 #include "fold-const.h"
 #include "rust-constexpr.h"
+#include "rust-hir-item.h"
+#include "tree.h"
 
 // declaration taken from "stringpool.h"
 // the get_identifier macro causes compilation issues
@@ -40,6 +43,26 @@ extern tree get_identifier (const char *);
 
 namespace Rust {
 namespace Compile {
+
+static tree
+lang_item_call (IntrinsicCtx &ctx, LangItem::Kind lang_item,
+		const std::vector<tree> &args)
+{
+  auto defid = ctx.get_mappings ().lookup_lang_item (lang_item);
+  rust_assert (defid);
+
+  auto lang_item_def = ctx.get_mappings ().lookup_defid (*defid);
+  rust_assert (lang_item_def);
+
+  // Let's make sure we're not calling a lang item that's a type...
+  rust_assert (lang_item_def.value ()->get_item_kind ()
+	       == HIR::Item::ItemKind::Function);
+
+  // Compile the lang item function
+  auto fn = CompileItem::compile (*lang_item_def, &ctx.ctx);
+
+  return Backend::call_expression (fn, args, nullptr, ctx.loc);
+}
 
 tree
 Intrinsic::compile (Context *ctx, TyTy::FnType *fntype, location_t loc)
@@ -1773,6 +1796,65 @@ float_to_int_unchecked (IntrinsicCtx &ctx)
     = Backend::return_statement (ctx.fn, convert_expr, ctx.loc);
 
   ctx.add_statement (return_statement);
+}
+
+static tree
+build_rust_string (IntrinsicCtx &ctx, const std::string &content)
+{
+  TyTy::BaseType *str = nullptr;
+  TyTy::BaseType *usize = nullptr;
+  rust_assert (ctx.get_tyctx ()->lookup_builtin ("str", &str));
+  rust_assert (ctx.get_tyctx ()->lookup_builtin ("usize", &usize));
+
+  tree meta_pointer = TyTyResolveCompile::compile (ctx.inner (), str);
+  tree usize_ty = TyTyResolveCompile::compile (ctx.inner (), usize);
+
+  auto base = Backend::string_constant_expression (content);
+  tree data = build_fold_addr_expr (base);
+
+  tree size = build_int_cstu (usize_ty, content.size ());
+
+  return Backend::constructor_expression (meta_pointer, false, {data, size}, -1,
+					  ctx.loc);
+}
+
+void
+assert_inhabited (IntrinsicCtx &ctx)
+{
+  /**
+   * This function checks whether a type is uninhabited *statically* - if the
+   * given generic is never or an empty enum, then panic at runtime, otherwise
+   * do nothing
+   */
+
+  auto t_param = ctx.fntype.get_substs ().at (0);
+  auto t_ty = t_param.get_param_ty ();
+  auto t = t_ty->resolve ();
+  auto t_name = t->get_name ();
+
+  auto inhabited = true;
+
+  if (auto adt = t->try_as<TyTy::ADTType> ())
+    if (adt->is_enum () && adt->number_of_variants () == 0)
+      inhabited = false;
+
+  if (t->is<TyTy::NeverType> ())
+    inhabited = false;
+
+  if (!inhabited)
+    {
+      auto fmt = "attempted to instantiate uninhabited type `" + t_name + "`";
+      auto arg = build_rust_string (ctx, fmt);
+
+      auto panic_call = lang_item_call (ctx, LangItem::Kind::PANIC, {arg});
+
+      ctx.add_statement (panic_call);
+    }
+
+  // buh :(
+  TREE_READONLY (ctx.fn) = 0;
+  TREE_USED (ctx.fn) = 1;
+  TREE_SIDE_EFFECTS (ctx.fn) = 1;
 }
 
 } // namespace handlers

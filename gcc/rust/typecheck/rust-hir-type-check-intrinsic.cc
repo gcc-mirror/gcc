@@ -311,8 +311,11 @@ const std::unordered_map<std::string, IntrinsicRules>
     // fn write_bytes<T>(dst: *mut T, val: u8, count: usize)
     {IValue::WRITE_BYTES,
      {1, {IRT::MutPtrFirstGeneric, IRT::U8, IRT::Usize}, IRT::Unit}},
+
     // pub fn assert_zero_valid<T>();
     {IValue::ASSERT_ZERO_VALID, {1, {}, IRT::Unit}},
+    // fn assert_inhabited<T>();
+    {IValue::ASSERT_INHABITED, {1, {}, IRT::Unit}},
 
     // pub fn fadd_fast<T>(a: T, b: T) -> T
     // same for fsub_fast, fmul_fast, fdiv_fast and frem_fast

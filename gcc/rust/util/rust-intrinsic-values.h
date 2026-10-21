@@ -174,7 +174,9 @@ public:
   static constexpr auto &BLACK_BOX = "black_box";
   static constexpr auto &ARITH_OFFSET = "arith_offset";
   static constexpr auto &WRITE_BYTES = "write_bytes";
+
   static constexpr auto &ASSERT_ZERO_VALID = "assert_zero_valid";
+  static constexpr auto &ASSERT_INHABITED = "assert_inhabited";
 
   static constexpr auto &FADD_FAST = "fadd_fast";
   static constexpr auto &FSUB_FAST = "fsub_fast";

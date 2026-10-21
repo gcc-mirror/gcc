@@ -195,6 +195,8 @@ Intrinsic::CompileFn try_handler (bool is_new_api);
  */
 Intrinsic::CompileFn fop_fast (ArithmeticOrLogicalOperator op);
 
+void assert_inhabited (IntrinsicCtx &ctx);
+
 } // namespace handlers
 
 } // namespace Compile

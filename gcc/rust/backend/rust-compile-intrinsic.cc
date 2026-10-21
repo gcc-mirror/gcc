@@ -92,6 +92,7 @@ static const std::map<std::string, Intrinsic::CompileFn> intrinsics = {
    handlers::fop_fast (ArithmeticOrLogicalOperator::MODULUS)},
   {IValue::FLOAT_TO_INT_UNCHECKED, handlers::float_to_int_unchecked},
   {IValue::EXACT_DIV, handlers::exact_div_handler},
+  {IValue::ASSERT_INHABITED, handlers::assert_inhabited},
 };
 
 Intrinsics::Intrinsics (Context *ctx) : ctx (ctx) {}
