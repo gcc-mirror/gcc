@@ -49,12 +49,19 @@ along with GCC; see the file COPYING3.  If not see
    -lmingwex %{!mcrtdll=*:-lmsvcrt} %{mcrtdll=*:-l%*} \
    -lkernel32 " MCFGTHREAD_SPEC
 
+/* For -mpc32, -mpc64 and -mpc80, link the mingw-w64 runtime's CRT_fp4.o,
+   CRT_fp8.o or CRT_fp10.o.  Each provides an _fpreset that sets the x87
+   precision; the CRT calls it at startup and from fesetenv (FE_DFL_ENV).
+   They must come before libmingw32.a, which contains CRT_fp10.o.  */
 #undef STARTFILE_SPEC
 #define STARTFILE_SPEC "%{shared|mdll:dllcrt2%O%s} \
   %{!shared:%{!mdll:%{!municode:crt2%O%s}}} \
   %{!shared:%{!mdll:%{municode:crt2u%O%s}}} \
   %{pg:gcrt2%O%s} \
   crtbegin.o%s \
+  %{mpc32:CRT_fp4.o%s} \
+  %{mpc64:CRT_fp8.o%s} \
+  %{mpc80:CRT_fp10.o%s} \
   %{fvtable-verify=none:%s; \
     fvtable-verify=preinit:vtv_start.o%s; \
     fvtable-verify=std:vtv_start.o%s}"

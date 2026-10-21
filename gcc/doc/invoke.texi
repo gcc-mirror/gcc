@@ -36679,6 +36679,13 @@ are enabled by default; routines in such libraries could suffer significant
 loss of accuracy, typically through so-called ``catastrophic cancellation'',
 when this option is used to set the precision to less than extended precision.
 
+On MinGW targets, the precision is set when the program starts and is
+restored by @code{fesetenv (FE_DFL_ENV)}.  Threads created with
+@code{pthread_create} inherit it from the creating thread, but threads
+created with @code{CreateThread} or @code{_beginthreadex} start with the
+Windows default of 53-bit precision.  Loading a DLL built with these
+options does not change the precision.
+
 @opindex mdaz-ftz
 @opindex mno-daz-ftz
 @item -mdaz-ftz
