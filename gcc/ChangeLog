@@ -1,3 +1,14 @@
+2026-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+		    Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR target/127851
+	* config/i386/i386.md (@ccmp<mode>, *cmp<mode>_1)
+	(*cmp<mode>_minus_1): Reject operands that are both volatile
+	memory references.
+
 2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/i386/i386.cc (get_scratch_register_on_entry): Never return

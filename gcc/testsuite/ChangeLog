@@ -1,3 +1,14 @@
+2026-10-20  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-19  Uros Bizjak  <ubizjak@gmail.com>
+		    Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR target/127851
+	* gcc.target/i386/volatile-fuse-order-1.c: New test.
+	* gcc.target/i386/volatile-fuse-order-2.c: Likewise.
+	* gcc.target/i386/volatile-fuse-order-3.c: Likewise.
+
 2026-10-19  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
