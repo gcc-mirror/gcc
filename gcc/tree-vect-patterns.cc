@@ -2540,9 +2540,15 @@ vect_recog_pow_pattern (vec_info *vinfo,
       return stmt;
     }
 
-  /* Catch square root.  */
+  /* Catch square root.  Transforming pow(x,0.5) to sqrt(x) is unsafe
+     for signed zeroes and negative infinity.
+     pow(-0,0.5) = +0, while sqrt(-0) = -0.
+     pow(-Inf,0.5) = +Inf, while sqrt(-Inf) is NaN.  */
   if (TREE_CODE (exp) == REAL_CST
-      && real_equal (&TREE_REAL_CST (exp), &dconsthalf))
+      && real_equal (&TREE_REAL_CST (exp), &dconsthalf)
+      && !tree_expr_maybe_real_minus_zero_p (base)
+      && (!tree_expr_maybe_infinite_p (base)
+	  || tree_expr_nonnegative_p (base)))
     {
       *type_out = get_vectype_for_scalar_type (vinfo, TREE_TYPE (base));
       if (*type_out
