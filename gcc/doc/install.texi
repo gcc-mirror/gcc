@@ -3104,6 +3104,26 @@ If none of these options are specified, the library is assumed in
 default locations.
 @end table
 
+The following options apply to the creation of COBOL executables.
+
+@table @code
+@item --enable-libgcobol-rpath
+@itemx --enable-libgcobol-rpath=yes
+
+Specify that COBOL executables are created with embedded RUNPATH information
+specifying the location of shared libraries needed by the executable.
+
+The default behavior is @option{--disable-libgcobol-rpath} or
+@option{--enable-libgcobol-rpath=no}, which specify that RUNPATH information
+is not included.
+
+The libgcobol-rpath feature has been introduced so that GCOBOL installation
+packages can be created which install the experimental GCOBOL and its shared
+libraries in a way that won't interfere with libraries already installed by
+package managers.
+@end table
+
+
 @html
 <hr />
 <p>
