@@ -9448,7 +9448,9 @@ package body Sem_Ch3 is
       --  type, mark it accordingly.
 
       if Is_Private_Type (Parent_Type) then
-         if Scope (Parent_Base) = Scope (Derived_Type) then
+         if Scope (Parent_Base) = Scope (Derived_Type)
+           and then not Is_Generic_Type (Parent_Base)
+         then
             null;
 
          elsif In_Open_Scopes (Scope (Parent_Base))
@@ -9593,14 +9595,15 @@ package body Sem_Ch3 is
             New_Discrs := No_Elist;
          end if;
 
+         --  RM 7.3(13) says that the constraints on the full view must
+         --  statically match those given in the partial view, but we
+         --  implement full conformance instead for historical reasons.
+
          if Has_Discriminants (Derived_Type)
            and then Has_Private_Declaration (Derived_Type)
            and then Present (Discriminant_Constraint (Derived_Type))
            and then Present (New_Discrs)
          then
-            --  Verify that constraints of the full view statically match
-            --  those given in the partial view.
-
             declare
                C1, C2 : Elmt_Id;
 
@@ -9620,8 +9623,8 @@ package body Sem_Ch3 is
                   else
                      if Constraint_Present then
                         Error_Msg_N
-                          ("constraint not conformant to previous declaration",
-                           Node (C1));
+                          ("constraint not conformant with previous "
+                           & "declaration", Node (C1));
                      else
                         Error_Msg_N
                           ("constraint of full view is incompatible "
@@ -9935,17 +9938,19 @@ package body Sem_Ch3 is
 
             Discs := Build_Discriminant_Constraints (Parent_Type, Indic, True);
 
-            --  For untagged types all new discriminants must rename
-            --  discriminants in the parent. For private extensions new
-            --  discriminants cannot rename old ones (implied by [7.3(13)]).
-
             Discrim := First_Discriminant (Derived_Type);
             while Present (Discrim) loop
+               --  For untagged types, all new discriminants must rename
+               --  discriminants in the parent.
+
                if not Is_Tagged
                  and then No (Corresponding_Discriminant (Discrim))
                then
                   Error_Msg_N
                     ("new discriminants must constrain old ones", Discrim);
+
+               --  For private extensions, new discriminants cannot rename
+               --  old ones (implied by RM 7.3(13)).
 
                elsif Private_Extension
                  and then Present (Corresponding_Discriminant (Discrim))
@@ -9953,14 +9958,12 @@ package body Sem_Ch3 is
                   Error_Msg_N
                     ("only static constraints allowed for parent"
                      & " discriminants in the partial view", Indic);
-                  exit;
-               end if;
 
                --  If a new discriminant is used in the constraint, then its
                --  subtype must be statically compatible with the subtype of
                --  the parent discriminant (RM 3.7(15)).
 
-               if Present (Corresponding_Discriminant (Discrim)) then
+               elsif Present (Corresponding_Discriminant (Discrim)) then
                   Check_Constraining_Discriminant
                     (Discrim, Corresponding_Discriminant (Discrim));
                end if;
@@ -9968,10 +9971,14 @@ package body Sem_Ch3 is
                Next_Discriminant (Discrim);
             end loop;
 
-            --  Check whether the constraints of the full view statically
-            --  match those imposed by the parent subtype [7.3(13)].
+            --  RM 7.3(13) says that the constraints on the full view must
+            --  statically match those given in the partial view, but we
+            --  implement full conformance instead for historical reasons.
 
-            if Present (Stored_Constraint (Derived_Type)) then
+            if Has_Private_Declaration (Derived_Type)
+              and then Present (Stored_Constraint (Derived_Type))
+              and then Present (Discs)
+            then
                declare
                   C1, C2 : Elmt_Id;
 
@@ -9979,12 +9986,19 @@ package body Sem_Ch3 is
                   C1 := First_Elmt (Discs);
                   C2 := First_Elmt (Stored_Constraint (Derived_Type));
                   while Present (C1) and then Present (C2) loop
-                     if not
-                       Fully_Conformant_Expressions (Node (C1), Node (C2))
+                     if Fully_Conformant_Expressions (Node (C1), Node (C2))
+                       or else
+                         (Is_OK_Static_Expression (Node (C1))
+                           and then Is_OK_Static_Expression (Node (C2))
+                           and then
+                            Expr_Value (Node (C1)) = Expr_Value (Node (C2)))
                      then
+                        null;
+
+                     else
                         Error_Msg_N
-                          ("not conformant with previous declaration",
-                           Node (C1));
+                          ("constraint not conformant with previous "
+                           & "declaration", Node (C1));
                      end if;
 
                      Next_Elmt (C1);
@@ -16949,7 +16963,8 @@ package body Sem_Ch3 is
 
       --  Derived subprograms of a tagged type must inherit the convention
       --  of the parent subprogram (a requirement of AI95-117). Derived
-      --  subprograms of untagged types simply get convention Ada by default.
+      --  subprograms of untagged types get convention Ada by default for
+      --  historical reasons, although RM 6.3.1(7) says it is intrinsic.
 
       --  If the derived type is a tagged generic formal type with unknown
       --  discriminants, its convention is intrinsic (RM 6.3.1 (8)).
@@ -22020,12 +22035,6 @@ package body Sem_Ch3 is
                  ("full view must define a constrained type if partial view "
                   & "has no discriminants", Full_T);
             end if;
-
-            --  Do we implement the following properly???
-            --  If the ancestor subtype of a private extension has constrained
-            --  discriminants, then the parent subtype of the full view shall
-            --  impose a statically matching constraint on those discriminants
-            --  [7.3(13)].
          end if;
 
       else
