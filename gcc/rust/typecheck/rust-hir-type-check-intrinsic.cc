@@ -316,6 +316,8 @@ const std::unordered_map<std::string, IntrinsicRules>
     {IValue::ASSERT_ZERO_VALID, {1, {}, IRT::Unit}},
     // fn assert_inhabited<T>();
     {IValue::ASSERT_INHABITED, {1, {}, IRT::Unit}},
+    // fn assert_maybe_uninit<T>();
+    {IValue::ASSERT_UNINIT_VALID, {1, {}, IRT::Unit}},
 
     // pub fn fadd_fast<T>(a: T, b: T) -> T
     // same for fsub_fast, fmul_fast, fdiv_fast and frem_fast
