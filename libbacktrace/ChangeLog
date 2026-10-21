@@ -1,3 +1,15 @@
+2026-10-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* config.h.in: Regenerate.
+
+2026-10-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* aclocal.m4: Include pkg.m4 and zstd.m4.
+	* configure: Regenerate.
+	* configure.ac: Use AC_ZSTD for zstd detection.
+	* Makefile.am: Use the detected zstd flags.
+	* Makefile.in: Regenerate.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

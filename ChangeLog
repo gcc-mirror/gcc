@@ -1,3 +1,10 @@
+2026-10-20  Achim Gratz  <Achim.Gratz@Stromeko.DE>
+	    Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* configure.ac (jit): Don't disable jit for Cygwin without
+	-enable-host-shared, like MinGW.
+	* configure: Regenerate.
+
 2026-10-19  Tamar Christina  <tamar.christina@arm.com>
 
 	PR bootstrap/127376

@@ -1,3 +1,144 @@
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/interface_64.f90: New test.
+
+2026-10-20  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/tree-ssa/copysign-signbit.c: New test.
+
+2026-10-20  Christopher Bazley  <chris.bazley@arm.com>
+
+	* gcc.target/aarch64/sve/slp_rev_32_1.c: New test.
+	* gcc.target/aarch64/sve/slp_rev_32_2.c: New test.
+	* gcc.target/aarch64/sve/slp_rev_32_3.c: New test.
+
+2026-10-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.target/aarch64/ccmp_8.c: New test.
+	* gcc.target/aarch64/fccmp_4.c: Likewise.
+	* gcc.target/aarch64/fccmp_7.c: Likewise.
+
+2026-10-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c++/127734
+	* c-c++-common/gomp/declare-variant-7.c: Add dg-bogus + xfail to
+	silence C++ fails.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127978
+	* gcc.dg/vect/vect-simd-21.c: New testcase.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR lto/127922
+	* gcc.dg/lto/bitint-lto-1_0.c: New testcase.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128014
+	* gcc.dg/vect/bb-slp-pr128014.c: New testcase.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug18.f90: New test.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug14.f90: New test.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug13.f90: New test.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127685
+	* g++.dg/torture/pr127685.C: New test.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128003
+	* gcc.dg/torture/bitint-113.c: New test.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/127983
+	* gcc.target/i386/avx2-pr127983.c: New test.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127965
+	* gcc.dg/pr127965-1.c: New test.
+	* gcc.dg/pr127965-2.c: New test.
+	* gcc.target/i386/pr127965-1.c: New test.
+	* gcc.target/i386/pr127965-2.c: New test.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127905
+	* gcc.dg/torture/bitint-112.c: New test.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128013
+	* gcc.dg/vect/bb-slp-pr128013.c: New testcase.
+
+2026-10-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/torture/clz-ctz-table-2.c: New test.
+	* gcc.dg/tree-ssa/clz-ctz-table-3.c: New test.
+
+2026-10-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/111280
+	* gcc.dg/torture/bitint-112.c: New test.
+	* gcc.dg/torture/clz-ctz-value-at-zero-1.c: New test.
+	* gcc.target/aarch64/clz-ctz-value-at-zero-1.c: New test.
+	* gcc.target/i386/clzg-target-clones-1.c: New test.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128006
+	* gcc.dg/tree-ssa/reassoc-52.c: New test.
+	* gcc.dg/tree-ssa/reassoc-53.c: New test.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128008
+	* gcc.dg/torture/pr128008.c: New testcase.
+
+2026-10-20  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vect-umulv4di_high.c: Add -mtune=znver5.
+	* gcc.target/i386/vect-umulv4di_high-2.c: New test.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/opt/mem-notrap-load-builtin.C: Restore previous order
+	of scan-rtl-dump arguments.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+	    assisted by Claude Haiku  <claude@anthropic.com>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug9.f90: New test.
+	* gfortran.dg/pdt_bug10.f90: New test.
+
+2026-10-20  Shubham Nayak  <shubhamnayak392reborn@gmail.com>
+
+	PR c++/87638
+	PR c++/90789
+	PR c++/95069
+	PR c++/104411
+	PR c++/115471
+	* g++.dg/cpp1y/lambda-init-const-ref.C: New test.
+	* g++.dg/cpp1y/lambda-init21.C: New test.
+
 2026-10-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/126680

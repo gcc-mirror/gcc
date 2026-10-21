@@ -1,3 +1,21 @@
+2026-10-20  Achim Gratz  <Achim.Gratz@Stromeko.DE>
+	    Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* Make-lang.in: Treat Cygwin like MinGW.
+	(SHARED_PFX): New variable, default to lib, set to cyg for
+	Cygwin targets.
+
+2026-10-20  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR lto/115300
+	* Make-lang.in (LIBGCCJIT_DEF_FILE): New variable, dynamically
+	generated from libgccjit.exports.
+	(LIBGCCJIT_EXTRA_OPTS): Add LIBGCCJIT_DEF_FILE and disable
+	automatic exports.
+	(libgccjit): Add LIBGCCJIT_DEF_FILE to the link dependencies.
+	(jit.mostlyclean): Remove LIBGCCJIT_DEF_FILE and its temporary
+	file.
+
 2026-10-09  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	PR jit/125229

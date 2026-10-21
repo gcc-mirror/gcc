@@ -1,3 +1,8 @@
+2026-10-20  Robert Dubner  <rdubner@symas.com>
+
+	* configure.ac: Make --disable-libgcobol-rpath the default.
+	* configure: Regenerate.
+
 2026-10-19  Robert Dubner  <rdubner@symas.com>
 
 	* Makefile.am: Incorporate new files.

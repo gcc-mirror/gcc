@@ -1,3 +1,10 @@
+2026-10-20  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR libgcc/109270
+	* ssp/ssp.h.in [_FORTIFY_SOURCE > 2]: Set __SSP_FORTIFY_LEVEL to
+	3 if compiler supports __builtin_dynamic_object_size.
+	[__SSP_FORTIFY_LEVEL > 2]: Use __builtin_dynamic_object_size.
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

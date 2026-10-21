@@ -1,3 +1,15 @@
+2026-10-20  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR lto/115300
+	* bootstrap-lto-lean.mk (STAGE3_CFLAGS): Add -ffat-lto-objects for
+	mingw targets.
+	(STAGEfeedback_CFLAGS): Likewise.
+
+2026-10-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* zstd.m4 (AC_ZSTD): Set up zstd options and check the library
+	and header.
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	* ax_check_define.m4: Update to serial 12.

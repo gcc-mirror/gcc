@@ -1,3 +1,71 @@
+2026-10-20  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* expr.cc (gfc_copy_expr): Ensure that the result representation
+	length is the same as that of the source.
+	* gfortran.h (gfc_char_to_widechar): Adjust prototype.
+	* scanner.cc (gfc_char_to_widechar): Add optional argument for
+	the result representation length, instead of deriving it from the
+	string argument.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* expr.cc (gfc_check_pointer_assign): As well as rvalue being
+	expr_NULL, it must not have a symtree, aring from an interface,
+	to return true.
+
+2026-10-20  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/128032
+	PR fortran/127995
+	* module.cc (mio_omp_declare_simd_clauses): {} initialize a var.
+	* openmp.cc (resolve_omp_clauses): Fix safelen >= simdlen
+	const-scalar-int-ness check.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* trans-io.cc (nml_get_addr_expr): Remove nops from the data
+	pointer.
+	(transfer_namelist_element): Pass descriptors of PDT arrays.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* match.cc (match_derived_type_spec): Null type_param_spec_list.
+	(gfc_match_allocate): Detect deferrable components; ie ordinary
+	allocatable arrays with deferred SHAPE and no type parameters,
+	so that 'saw_deferrable' and 'deferred_locus' can be set
+	appropriately.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* decl.cc (gfc_get_pdt_instance): Eliminate double !.
+	* expr.cc (gfc_check_pointer_assign): If rvalue is expr_NULL,
+	return true.
+
+2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
+	    assisted by Claude Haiku  <claude@anthropic.com>
+
+	PR fortran/82173
+	* gfortran.h: Add param_list field to gfc_code allocate structure.
+	Add extern declaration for gfc_get_temp_from_expr wrapper.
+	* match.cc (gfc_match_class_is): Clear global type_param_spec_list
+	before matching derived type spec to prevent residual state corruption
+	in assumed parameter CLASS IS matching. Compute hash_value for CLASS
+	IS cases to prevent collisions.
+	* resolve.cc (resolve_allocate_expr): Add PDT instantiation from
+	allocate-typespec parameters. Skip vtab lookup for PDT templates
+	which don't have vtabs. Add macros for CLASS IS case comparison
+	to prevent double-definition errors.
+	* trans-stmt.cc: Add convert_structure_to_type_list and
+	build_param_list_from_expr functions for PDT parameter handling.
+	Update allocate_get_initializer to handle PDT types. Improve
+	gfc_trans_allocate to properly handle PDT initialization with
+	temporary deallocation. Add include for constructor.h.
+
 2026-10-19  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/127881

@@ -1,3 +1,7 @@
+2026-10-20  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* resolver.cc: Directly #include <stdlib.h> for malloc & free.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

@@ -1,3 +1,9 @@
+2026-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127476
+	* include/std/memory [!_GLIBCXX_HOSTED]: Do not include
+	bits/indirect.h.
+
 2026-10-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* testsuite/lib/libstdc++.exp: Remove STATIC_LIBCXXFLAGS, it is

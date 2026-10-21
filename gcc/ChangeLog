@@ -1,3 +1,167 @@
+2026-10-20  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR lto/115300
+	* config/i386/x-mingw32: Avoid exporting compiler-internal symbols
+	from frontends without a plugin API.  Add -fno-lto when linking
+	cc1 and cc1plus with fat LTO objects.
+
+2026-10-20  Igor Shevlyakov  <igor@tachyum.com>
+
+	* match.pd (signbit (x) cmp signbit (y) ? y : -y): New
+	simplification.
+
+2026-10-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_ccmp_first_preference): New function.
+	(TARGET_CCMP_FIRST_PREFERENCE): Define.
+	* coretypes.h (ccmp_first_kind): New enum.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (TARGET_CCMP_FIRST_PREFERENCE): Add hook.
+	* target.def (ccmp_first_preference): New hook.
+	* targhooks.cc (default_ccmp_first_preference): New function.
+	* targhooks.h (default_ccmp_first_preference): Declare.
+	* tree-ssa-reassoc.cc (ccmp_first_preference): New function.
+	(prepare_ccmp_chain): Use it to select one head.  Reject unsupported
+	comparisons and multiple required heads.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127978
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Simplify
+	vector CTOR filling accounting.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR lto/127922
+	* tree.cc (type_with_interoperable_signedness): Return true
+	for BITINT_TYPE.
+	* gimple.cc (gimple_signed_or_unsigned_type): Properly
+	handle BITINT_TYPE.
+	(gimple_get_alias_set): Add comment about signed/unsigned
+	BITINT_TYPE.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128014
+	* tree-vect-loop.cc (vectorizable_live_operation): Also
+	insert extracts from external vector defs on region entry.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127685
+	* gimple-range-fold.cc
+	(ctor_ref_range::accumulate_range_from_component_ref): Workaround
+	for the case where the fld FIELD_DECL isn't from the same aggregate
+	type as the CONSTRUCTOR, but a canonically compatible one - fallback
+	to bit offset/size comparisons.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128003
+	* tree-switch-conversion.cc (jump_table_cluster::emit): Cast to
+	unsigned_type_for whenever !TYPE_UNSIGNED rather than when
+	!TYPE_OVERFLOW_WRAPS.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/127983
+	* cse.cc (struct cse_vec_duplicate_match): Add last_checked_insn,
+	initialize it in both constructors.  Formatting fix.
+	(cse_prescan_cache_vec_dup): Check common subconditions between
+	if and else if once.  Also give up if entry.last_checked_insn
+	is NULL.  If scalar is set in between last_checked_insn and
+	insn, clear last_checked_insn and don't record a dup, otherwise
+	update last_checked_insn.  Adjust new_entry construction.
+	(cse_main): Reindent the vec_duplicate_match code.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127965
+	* gimple-isel.cc (optimize_atomic_bit_test_and): For the
+	< 0 and >= 0 cases, punt if TREE_TYPE (use_lhs) is unsigned.
+	Compute ibit from TYPE_PRECISION of TREE_TYPE (use_lhs)
+	rather than TYPE_SIZE_UNIT of TREE_TYPE (use_rhs).  Fix comment
+	pastos and other nits.  Formatting fix.
+	(gimple_isel_builtin_call): Formatting fix.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127905
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't add to
+	m_single_use_names versions of SSA_NAMEs where their single use
+	is within a different loop from the definition (or if use is
+	in irreducible loop, in a different bb than def).
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128013
+	* tree-vect-slp.cc (vect_build_slp_tree_3): Exclude existing
+	vector defs that take part in abnormal coalescing.
+
+2026-10-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-ssa-forwprop.cc (simplify_count_zeroes): If the table entry
+	for zero does not survive the computation in int, select it in the
+	type of the table after the conversion.
+
+2026-10-20  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/111280
+	* doc/ifn.texi (IFN_CLZ, IFN_CTZ): Document the second argument
+	for scalar and vector calls.
+	* internal-fn.cc (expand_bitquery): Use both arguments to fold a
+	two-argument .CLZ or .CTZ of a constant.
+	(expand_clz_ctz): New function.
+	(expand_CLZ, expand_CTZ): Use it.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128006
+	* tree-ssa-reassoc.cc (stmt_is_power_of_op): Require a
+	constant integer exponent.
+
+2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128008
+	* gimple-ssa-pta-constraints.cc (create_variable_info_for_1):
+	Upon detecting recursion to the same structure type add
+	a constraint from nonlocal.
+
+2026-10-20  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Use
+	mulss for the widening multiplies of VnDI MULT_HIGHPART_EXPR and
+	CFN_MULH, and apply ix86_vec_cost to the whole cost.
+
+2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/128015
+	* config/i386/sgxintrin.h (__enclv_generic): Fix a typo.
+
+2026-10-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* aclocal.m4: Regenerate.
+	* config.in: Regenerate.
+
+2026-10-20  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* aclocal.m4: Add includes for pkg.m4 and zstd.m4.
+	* configure: Regenerate.
+	* configure.ac: Use AC_ZSTD and define HAVE_ZSTD_H when enabled.
+	* Makefile.in: Use @ZSTD_CFLAGS@ and @ZSTD_LIBS@.
+
+2026-10-20  Max Filippov  <jcmvbkbc@gmail.com>
+
+	* config/xtensa/xtensa.md (movdf_internal): Fix condition when
+	splitting is not performed.  Replace output patterns for
+	alternatives that must be split with '#' for better diagnostic.
+
+2026-10-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range.h (prange::set_pt_unknown): If the result is varying
+	compatible set the kind to VR_VARYING.
+
 2026-10-19  Trevor Saunders  <tbsaunde@tbsaunde.org>
 
 	* resource.cc (return_insn_p): Take a const rtx_insn *.
