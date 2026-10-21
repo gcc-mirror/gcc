@@ -3267,10 +3267,14 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	  && size2.is_constant (&size2i))
 	{
 	  if (data->partial_defs.is_empty ()
+	      && (maxsizei
+		  <= (HOST_WIDE_INT) vn_walk_cb_data::bufsize * BITS_PER_UNIT)
 	      && known_subrange_p (offseti, maxsizei, offset2, size2))
 	    {
-	      /* We support up to 512-bit values (for V8DFmode).  */
-	      unsigned char buffer[65];
+	      /* We support up to 512-bit values (for V8DFmode).  An
+		 unaligned access can need one more byte from the
+		 encoding, plus one for the shift carry-over.  */
+	      unsigned char buffer[vn_walk_cb_data::bufsize + 2];
 	      int len;
 
 	      tree rhs = gimple_assign_rhs1 (def_stmt);
@@ -3279,7 +3283,9 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	      len = native_encode_expr (rhs,
 					buffer, sizeof (buffer) - 1,
 					(offseti - offset2i) / BITS_PER_UNIT);
-	      if (len > 0 && len * BITS_PER_UNIT >= maxsizei)
+	      if (len > 0
+		  && (len * BITS_PER_UNIT
+		      >= ((offseti - offset2i) % BITS_PER_UNIT) + maxsizei))
 		{
 		  tree type = vr->type;
 		  unsigned char *buf = buffer;
