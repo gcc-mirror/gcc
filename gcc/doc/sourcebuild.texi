@@ -2336,8 +2336,8 @@ ARM target supports the @code{-mfloat-abi=hard} option.
 @anchor{arm_mve}
 ARM target supports generating MVE instructions.
 
-@item arm_v8_1_lob_ok
-@anchor{arm_v8_1_lob_ok}
+@item arm_v8_1m_lob_hw
+@anchor{arm_v8_1m_lob_hw}
 ARM Target supports executing the Armv8.1-M Mainline Low Overhead Loop
 instructions @code{DLS} and @code{LE}.
 Some multilibs may be incompatible with these options.
