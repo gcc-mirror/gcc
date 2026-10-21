@@ -10866,6 +10866,15 @@ vect_slp_function (function *fun)
 			     bb->loop_father->num, bb->index);
 	  split = true;
 	}
+      else if (!bbs.is_empty ()
+	       && bb_has_abnormal_pred (bb))
+	{
+	  if (dump_enabled_p ())
+	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "splitting region at incoming abnormal edge "
+			     "at bb%d\n", bb->index);
+	  split = true;
+	}
 
       if (split && !bbs.is_empty ())
 	{
