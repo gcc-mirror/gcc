@@ -710,7 +710,6 @@ find_implicit_erroneous_behavior (void)
       if (has_abnormal_or_eh_outgoing_edge_p (bb))
 	continue;
 
-
       /* If BB has an edge to itself, then duplication of BB below
 	 could result in reallocation of BB's PHI nodes.   If that happens
 	 then the loop below over the PHIs would use the old PHI and
@@ -724,74 +723,65 @@ find_implicit_erroneous_behavior (void)
  	 is then dereferenced within BB.  This is somewhat overly
 	 conservative, but probably catches most of the interesting
 	 cases.   */
-      basic_block duplicate = NULL;
-      for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
+      edge e;
+      for (edge_iterator ei = ei_start (bb->preds); (e = ei_safe_edge (ei));)
 	{
-	  gphi *phi = si.phi ();
-	  tree lhs = gimple_phi_result (phi);
-
-	  /* PHI produces a pointer result.  See if any of the PHI's
-	     arguments are NULL.
-
-	     When we remove an edge, we want to reprocess the current
-	     index since the argument at that index will have been
-	     removed, hence the ugly way we update I for each iteration.  */
-	  for (unsigned i = 0, next_i = 0;
-	       i < gimple_phi_num_args (phi); i = next_i)
+	  auto_vec <std::pair<gimple *, tree>, 4> uses_in_bb;
+	  for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	    {
-	      tree arg = gimple_phi_arg_def (phi, i);
-	      edge e = gimple_phi_arg_edge (phi, i);
+	      gphi *phi = si.phi ();
+	      tree lhs = gimple_phi_result (phi);
+	      tree arg = gimple_phi_arg_def_from_edge (phi, e);
 
-	      /* Advance the argument index unless a path involving
-		 the current argument has been isolated.  */
-	      next_i = i + 1;
-
+	      /* PHI produces a pointer result.  See if any of the PHI's
+		 arguments are NULL.  */
 	      if (!integer_zerop (arg))
 		continue;
 
-	      location_t phi_arg_loc = gimple_phi_arg_location (phi, i);
+	      location_t phi_arg_loc
+		= gimple_phi_arg_location_from_edge (phi, e);
 
 	      imm_use_iterator iter;
 	      gimple *use_stmt;
 
 	      /* We've got a NULL PHI argument.  Now see if the
- 	         PHI's result is dereferenced within BB.  */
-	      auto_vec <gimple *, 4> uses_in_bb;
+		 PHI's result is dereferenced within BB.  */
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
-	        {
-	          /* We only care about uses in BB.  Catching cases in
+		{
+		  /* We only care about uses in BB.  Catching cases in
 		     in other blocks would require more complex path
 		     isolation code.   */
 		  if (gimple_bb (use_stmt) != bb)
 		    continue;
 
-		  location_t loc = gimple_location (use_stmt)
-		    ? gimple_location (use_stmt)
-		    : phi_arg_loc;
+		  location_t loc = (gimple_location (use_stmt)
+				    ? gimple_location (use_stmt)
+				    : phi_arg_loc);
 
 		  if (stmt_uses_name_in_undefined_way (use_stmt, lhs, loc))
 		    {
 		      if (!can_duplicate_block_p (bb))
 			break;
-		      uses_in_bb.safe_push (use_stmt);
+		      uses_in_bb.safe_push (std::make_pair (use_stmt, lhs));
 		    }
 		}
-	      for (gimple *use_stmt : uses_in_bb)
-		{
-		  duplicate = isolate_path (bb, duplicate, e,
-					    use_stmt, lhs, false);
-
-		  /* When we remove an incoming edge, we need to
-		     reprocess the Ith element.  */
-		  next_i = i;
-		  cfg_altered = true;
-		}
 	    }
+	  basic_block duplicate = NULL;
+	  for (auto use : uses_in_bb)
+	    {
+	      duplicate = isolate_path (bb, duplicate, e,
+					use.first, use.second, false);
+
+	      cfg_altered = true;
+	    }
+
+	  if (!duplicate)
+	    ei_next (&ei);
 	}
 
       /* Then look for a PHI which have addresses of locals that
 	 are then returned.  */
-      duplicate = NULL;
+      basic_block duplicate = NULL;
       for (si = gsi_start_phis (bb); !gsi_end_p (si); gsi_next (&si))
 	{
 	  gphi *phi = si.phi ();
