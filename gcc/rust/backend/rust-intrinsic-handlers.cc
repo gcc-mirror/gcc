@@ -1896,6 +1896,26 @@ float_to_int_unchecked (IntrinsicCtx &ctx)
   ctx.add_statement (return_statement);
 }
 
+void
+breakpoint (IntrinsicCtx &ctx)
+{
+  // For now, we don't have access to an equivalent of LLVM's debugtrap inst. We
+  // work around the problem by emitting a regular trap and we hope that the
+  // user's debugger can catch it :) Ideally, this would emit an `int3` on x86
+  // rather than a `ud2`
+
+  auto trap = BuiltinsContext::get ().lookup_simple_builtin ("__builtin_trap");
+  rust_assert (trap);
+
+  tree trap_call = build_call_expr_loc (ctx.loc, *trap, 0);
+
+  ctx.add_statement (trap_call);
+
+  TREE_READONLY (ctx.fn) = 0;
+  TREE_USED (ctx.fn) = 1;
+  TREE_SIDE_EFFECTS (ctx.fn) = 1;
+}
+
 } // namespace handlers
 } // namespace Compile
 } // namespace Rust

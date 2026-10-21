@@ -312,6 +312,9 @@ const std::unordered_map<std::string, IntrinsicRules>
     {IValue::WRITE_BYTES,
      {1, {IRT::MutPtrFirstGeneric, IRT::U8, IRT::Usize}, IRT::Unit}},
 
+    // fn breakpoint()
+    {IValue::BREAKPOINT, {0, {}, IRT::Unit}},
+
     // pub fn assert_zero_valid<T>();
     {IValue::ASSERT_ZERO_VALID, {1, {}, IRT::Unit}},
     // fn assert_inhabited<T>();

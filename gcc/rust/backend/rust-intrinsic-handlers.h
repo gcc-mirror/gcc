@@ -208,6 +208,8 @@ Intrinsic::CompileFn fop_fast (ArithmeticOrLogicalOperator op);
  */
 Intrinsic::CompileFn type_assert (TyAssert assert);
 
+void breakpoint (IntrinsicCtx &ctx);
+
 } // namespace handlers
 
 } // namespace Compile
