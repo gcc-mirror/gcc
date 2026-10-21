@@ -111,7 +111,7 @@ namespace __gnu_parallel
 	(1, std::min<_DifferenceType>(__input_length,
 				      __get_max_threads()));
 
-      _DifferenceType __advances[__pattern_length];
+      _DifferenceType __advances[__pattern_length + 1];
       __calc_borders(__begin2, __pattern_length, __advances);
 
 #     pragma omp parallel num_threads(__num_threads)
