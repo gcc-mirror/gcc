@@ -543,6 +543,9 @@ extern void real_copysign (REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);
 extern bool real_isinteger (const REAL_VALUE_TYPE *, format_helper);
 extern bool real_isinteger (const REAL_VALUE_TYPE *, HOST_WIDE_INT *);
 
+/* Check whether the real constant value given is an odd integer.  */
+extern bool real_isoddinteger (const REAL_VALUE_TYPE *, format_helper);
+
 /* Calculate nextafter (X, Y) in format FMT.  */
 extern bool real_nextafter (REAL_VALUE_TYPE *, format_helper,
 			    const REAL_VALUE_TYPE *, const REAL_VALUE_TYPE *);

@@ -516,6 +516,91 @@ fold_const_pow (real_value *result, const real_value *arg0,
       return true;
     }
 
+  if (!flag_errno_math
+      && format->b == 2)
+    {
+      /* For any value of y (including NaN), if x is +1, 1.0 is returned. */
+      if (real_equal (arg0, &dconst1))
+	{
+	  *result = dconst1;
+	  return true;
+	}
+
+      /* For any value of x (including NaN), if y is +-0, 1.0 is returned.  */
+      if (arg1->cl == rvc_zero)
+	{
+	  *result = dconst1;
+	  return true;
+	}
+
+      /* If x is -1 and y is +-Inf, 1.0 shall be returned.  */
+      if (arg1->cl == rvc_inf
+	  && real_equal (arg0, &dconstm1))
+	{
+	  *result = dconst1;
+	  return true;
+	}
+
+      /* If |x| < 1, and y is -Inf, +Inf shall be returned.  */
+      /* If |x| > 1, and y is -Inf, +0 shall be returned.  */
+      if (arg1->cl == rvc_inf && arg1->sign == 1
+	  && arg0->cl == rvc_normal)
+	{
+	  *result = REAL_EXP (arg0) <= 0 ? dconstinf : dconst0;
+	  return true;
+	}
+
+      if (arg1->cl == rvc_inf && arg1->sign == 1
+	  && arg0->cl == rvc_inf)
+	{
+	  *result = dconst0;
+	  return true;
+	}
+
+      /* If |x| < 1, and y is +Inf, +0 shall be returned.  */
+      /* If |x| > 1, and y is +Inf, +Inf shall be returned.  */
+      if (arg1->cl == rvc_inf && arg1->sign == 0
+	  && arg0->cl == rvc_normal)
+	{
+	  *result = REAL_EXP (arg0) <= 0 ? dconst0 : dconstinf;
+	  return true;
+	}
+
+      if (arg1->cl == rvc_inf && arg1->sign == 0
+	  && arg0->cl == rvc_inf)
+	{
+	  *result = dconstinf;
+	  return true;
+	}
+
+      /* For y an odd integer < 0, if x is -Inf, -0 shall be returned.  */
+      /* For y < 0 and not an odd integer, if x is -Inf, +0 is returned.  */
+      if (arg0->cl == rvc_inf && arg0->sign == 1
+	  && arg1->cl == rvc_normal && arg1->sign == 1)
+	{
+	  *result = real_isoddinteger (arg1, format) ? dconstm0 : dconst0;
+	  return true;
+	}
+
+      /* For y an odd integer > 0, if x is -Inf, -Inf shall be returned.  */
+      /* For y > 0 and not an odd integer, if x is -Inf, +Inf is returned.  */
+      if (arg0->cl == rvc_inf && arg0->sign == 1
+	  && arg1->cl == rvc_normal && arg1->sign == 0)
+	{
+	  *result = real_isoddinteger (arg1, format) ? dconstninf : dconstinf;
+	  return true;
+	}
+
+      /* For y < 0, if x is +Inf, +0 shall be returned.  */
+      /* For y > 0, if x is +Inf, +Inf shall be returned.  */
+      if (arg0->cl == rvc_inf && arg0->sign == 0
+	  && arg1->cl == rvc_normal)
+	{
+	  *result = arg1->sign ? dconst0 : dconstinf;
+	  return true;
+	}
+    }
+
   return false;
 }
 

@@ -5327,15 +5327,55 @@ real_copysign (REAL_VALUE_TYPE *r, const REAL_VALUE_TYPE *x)
 }
 
 /* Check whether the real constant value given is an integer.
-   Returns false for signaling NaN.  */
+   Returns false for sNaN, qNaN, +Inf, -Inf and -0.0.  */
 
 bool
 real_isinteger (const REAL_VALUE_TYPE *c, format_helper fmt)
 {
-  REAL_VALUE_TYPE cint;
+  switch (c->cl)
+    {
+    case rvc_zero:
+      if (c->sign)
+	return false;
+      return true;
 
-  real_trunc (&cint, fmt, c);
-  return real_identical (c, &cint);
+    case rvc_inf:
+    case rvc_nan:
+      return false;
+
+    case rvc_normal:
+      break;
+    }
+
+  if (c->decimal)
+    {
+      REAL_VALUE_TYPE cint;
+      decimal_do_fix_trunc (&cint, c);
+      if (fmt)
+	decimal_real_convert (&cint, fmt, &cint);
+      return real_identical (c, &cint);
+    }
+
+  int e = REAL_EXP (c);
+  if (e <= 0)
+    return false;
+  if (e >= SIGNIFICAND_BITS)
+    return true;
+  unsigned int n = SIGNIFICAND_BITS - e;
+  int w = n / HOST_BITS_PER_LONG;
+  int i;
+  for (i = 0; i < w; ++i)
+    if (c->sig[i] != 0)
+      return false;
+
+  unsigned int t = n % HOST_BITS_PER_LONG;
+  if (t != 0)
+    {
+      unsigned long mask = ((unsigned long)1 << t) - 1;
+      if ((c->sig[w] & mask) != 0)
+	return false;
+    }
+  return true;
 }
 
 /* Check whether C is an integer that fits in a HOST_WIDE_INT,
@@ -5344,8 +5384,23 @@ real_isinteger (const REAL_VALUE_TYPE *c, format_helper fmt)
 bool
 real_isinteger (const REAL_VALUE_TYPE *c, HOST_WIDE_INT *int_out)
 {
-  REAL_VALUE_TYPE cint;
+  switch (c->cl)
+    {
+    case rvc_zero:
+      if (c->sign)
+	return false;
+      *int_out = 0;
+      return true;
 
+    case rvc_inf:
+    case rvc_nan:
+      return false;
+
+    case rvc_normal:
+      break;
+    }
+
+  REAL_VALUE_TYPE cint;
   HOST_WIDE_INT n = real_to_integer (c);
   real_from_integer (&cint, VOIDmode, n, SIGNED);
   if (real_identical (c, &cint))
@@ -5354,6 +5409,45 @@ real_isinteger (const REAL_VALUE_TYPE *c, HOST_WIDE_INT *int_out)
       return true;
     }
   return false;
+}
+
+/* Check whether C is an odd integer.  */
+
+bool
+real_isoddinteger (const REAL_VALUE_TYPE *c, format_helper fmt)
+{
+  if (c->cl != rvc_normal)
+    return false;
+
+  if (c->decimal)
+    {
+      /* Step 1. c is not an integer if c != trunc (c).  */
+      REAL_VALUE_TYPE cint;
+      decimal_do_fix_trunc (&cint, c);
+      if (fmt)
+	decimal_real_convert (&cint, fmt, &cint);
+      if (real_identical (c, &cint))
+	return false;
+
+      /* Step 2. t = c / 2.  */
+      cint.uexp--;
+
+      /* Step 3. c is an odd integer if t != trunc (t).  */
+      REAL_VALUE_TYPE hint;
+      decimal_do_fix_trunc (&hint, &cint);
+      if (fmt)
+	decimal_real_convert (&hint, fmt, &hint);
+      return !real_identical (&cint, &hint);
+    }
+
+  int e = REAL_EXP (c);
+  if (e <= 0 && e > SIGNIFICAND_BITS)
+    return false;
+  unsigned int n = SIGNIFICAND_BITS - e;
+  int w = n / HOST_BITS_PER_LONG;
+  unsigned int t = n % HOST_BITS_PER_LONG;
+  unsigned long mask = (unsigned long)1 << t;
+  return (c->sig[w] & mask) != 0;
 }
 
 /* Calculate nextafter (X, Y) or nexttoward (X, Y).  Return true if
