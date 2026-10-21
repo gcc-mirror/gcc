@@ -2449,7 +2449,7 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
       if (!single_pred_p (cond2_bb) || !cond_only_block_p (cond2_bb))
 	return false;
       cond3_bb = single_pred (cond2_bb);
-      if (EDGE_COUNT (cond2_bb->succs) != 2)
+      if (EDGE_COUNT (cond3_bb->succs) != 2)
 	return false;
       if (EDGE_SUCC (cond3_bb, 0)->dest == cond2_bb)
 	{
