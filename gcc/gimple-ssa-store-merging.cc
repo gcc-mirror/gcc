@@ -1087,7 +1087,7 @@ find_bswap_or_nop (gimple *stmt, struct symbolic_number *n, bool *bswap,
      cover signed -> unsigned conversions of the src operand as can be seen
      in libgcc, and for initial shift/and operation of the src operand.  */
   int limit = tree_to_uhwi (type_size);
-  limit += 2 * (1 + (int) ceil_log2 ((unsigned HOST_WIDE_INT) limit));
+  limit += 2 * (1 + ceil_log2 ((unsigned HOST_WIDE_INT) limit));
   gimple *ins_stmt = find_bswap_or_nop_2 (stmt, n, limit);
   if (!ins_stmt)
     return NULL;
