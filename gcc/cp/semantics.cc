@@ -14753,6 +14753,8 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2,
       return maybe_wrap_with_location (type_order_value (type1, type2), loc);
 
     case CPTK_STRUCTURED_BINDING_SIZE:
+      if (!check_trait_type (type1, /* kind = */ 4, complain))
+	return error_mark_node;
       return finish_structured_binding_size (loc, type1, complain);
 
     case CPTK_IS_LAYOUT_COMPATIBLE:
