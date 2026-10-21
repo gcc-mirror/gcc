@@ -16,10 +16,6 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 #
-#
-# Make local_includedir relative to EXEC_PREFIX 
-#
-local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include
 
 # Add Windows socket library.
 LIBS += -lws2_32
