@@ -1665,11 +1665,12 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	  int n = ASM_OPERANDS_LABEL_LENGTH (note);
 
 	  for (int i = 0; i < n; ++i)
-	    if (XEXP (ASM_OPERANDS_LABEL (note, i), 0) == BB_HEAD (e->dest))
+	    if (label_ref_label (ASM_OPERANDS_LABEL (note, i))
+		== BB_HEAD (e->dest))
 	      {
 		LABEL_NUSES (label_ref_label (ASM_OPERANDS_LABEL (note, i)))--;
-		XEXP (ASM_OPERANDS_LABEL (note, i), 0)
-		  = block_label (jump_block);
+		set_label_ref_label (ASM_OPERANDS_LABEL (note, i),
+				     block_label (jump_block));
 		LABEL_NUSES (label_ref_label (ASM_OPERANDS_LABEL (note, i)))++;
 	      }
 
