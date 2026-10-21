@@ -2426,34 +2426,60 @@ aarch64_noce_conversion_profitable_p (rtx_insn *seq,
       && !SUBREG_P (if_info->b))
     is_csel_p = false;
 
-  for (rtx_insn *insn = seq; is_csel_p && insn; insn = NEXT_INSN (insn))
+  /* A CSINC selects between a register and another register plus or minus
+     one, so an increment that feeds a select costs no extra instruction.
+     Treat such a sequence like the cases above, but only if the increment
+     and the select are all it computes apart from comparisons.  An
+     increment elsewhere in a longer sequence says nothing about the rest of
+     it.  */
+  if (is_csel_p)
     {
-      rtx set = single_set (insn);
-      if (!set)
-	continue;
+      /* INC is the destination of a set that adds or subtracts one from a
+	 register, such as R101 in
 
-      rtx src = SET_SRC (set);
-      rtx dst = SET_DEST (set);
-      machine_mode mode = GET_MODE (src);
-      if (GET_MODE_CLASS (mode) != MODE_INT)
-	continue;
+	   (set (reg:SI 101) (plus:SI (reg:SI 100) (const_int 1)))
 
-      switch (GET_CODE (src))
+	 SEL is the source of a conditional select, such as
+
+	   (if_then_else:SI (gt (reg:CC 66) (const_int 0))
+			    (reg:SI 101) (reg:SI 100))
+
+	 NSETS counts the instructions that do not set a condition-code
+	 register.  */
+      rtx inc = NULL_RTX, sel = NULL_RTX;
+      unsigned int nsets = 0;
+      for (rtx_insn *insn = seq; insn; insn = NEXT_INSN (insn))
 	{
-	case PLUS:
-	case MINUS:
-	  {
-	    /* Likely a CINC.  */
-	    if (REG_P (dst)
-		&& (REG_P (XEXP (src, 0)) || SUBREG_P (XEXP (src, 0)))
-		&& (XEXP (src, 1) == CONST1_RTX (mode)
-		    || XEXP (src, 1) == CONSTM1_RTX (mode)))
-	      is_csel_p = false;
-	    break;
-	  }
-	default:
-	  break;
+	  if (!NONDEBUG_INSN_P (insn))
+	    continue;
+	  rtx set = single_set (insn);
+	  if (set && GET_MODE_CLASS (GET_MODE (SET_DEST (set))) == MODE_CC)
+	    continue;
+	  nsets++;
+	  if (!set)
+	    continue;
+
+	  rtx src = SET_SRC (set);
+	  machine_mode mode = GET_MODE (src);
+	  if (GET_CODE (src) == IF_THEN_ELSE)
+	    sel = src;
+	  else if ((GET_CODE (src) == PLUS || GET_CODE (src) == MINUS)
+		   && GET_MODE_CLASS (mode) == MODE_INT
+		   && REG_P (SET_DEST (set))
+		   && (REG_P (XEXP (src, 0)) || SUBREG_P (XEXP (src, 0)))
+		   && (XEXP (src, 1) == CONST1_RTX (mode)
+		       || XEXP (src, 1) == CONSTM1_RTX (mode)))
+	    inc = SET_DEST (set);
 	}
+
+      /* The sequence becomes a single CSINC if it is only INC and SEL, and
+	 one arm of SEL is INC.  */
+      if (nsets == 2
+	  && inc
+	  && sel
+	  && (rtx_equal_p (XEXP (sel, 1), inc)
+	      || rtx_equal_p (XEXP (sel, 2), inc)))
+	is_csel_p = false;
     }
 
   /* For now accept every variant but csel unconditionally because CSEL usually
