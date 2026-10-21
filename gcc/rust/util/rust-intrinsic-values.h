@@ -177,6 +177,8 @@ public:
 
   static constexpr auto &BREAKPOINT = "breakpoint";
 
+  static constexpr auto &PREF_ALIGN_OF = "pref_align_of";
+
   static constexpr auto &ASSERT_ZERO_VALID = "assert_zero_valid";
   static constexpr auto &ASSERT_INHABITED = "assert_inhabited";
   static constexpr auto &ASSERT_UNINIT_VALID = "assert_uninit_valid";
