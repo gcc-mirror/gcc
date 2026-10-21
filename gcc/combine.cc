@@ -9825,7 +9825,9 @@ make_field_assignment (rtx x)
       && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (src)), &src_mode))
     src = SUBREG_REG (src);
 
-  if (GET_CODE (src) != IOR && GET_CODE (src) != XOR)
+  if (GET_CODE (src) != IOR
+      && GET_CODE (src) != XOR
+      && GET_CODE (src) != PLUS)
     return x;
 
   rhs = expand_compound_operation (XEXP (src, 0));
