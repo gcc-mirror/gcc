@@ -11199,7 +11199,12 @@ and,
 	       ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
 		  || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
 	       : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
-	 op0 = vec_perm_indices_to_tree (TREE_TYPE (@5), sel2);
+	 /* Give the new mask ssizetype elements, as the vectorizer does:
+	    the element type of VCST1 can be too narrow to index both a
+	    and b.  */
+	 op0
+	   = vec_perm_indices_to_tree (build_vector_type (ssizetype, nelts),
+				       sel2);
      }
      (if (op0)
       (view_convert (vec_perm @2 @3 { op0; }))))))))
@@ -11266,7 +11271,12 @@ and,
 		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
-	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+	   /* Give the new mask ssizetype elements, as the vectorizer does:
+	      the element type of d's mask can be too narrow to index both
+	      inputs.  */
+	   op0
+	     = vec_perm_indices_to_tree (build_vector_type (ssizetype, nelts),
+					 sel2);
        }
        (if (op0)
 	(switch
@@ -11330,7 +11340,12 @@ and,
 		 ? (!can_vec_perm_const_p (result_mode, op_mode, sel0, false)
 		    || !can_vec_perm_const_p (result_mode, op_mode, sel1, false))
 		 : !can_vec_perm_const_p (result_mode, op_mode, sel1, false)))
-	   op0 = vec_perm_indices_to_tree (TREE_TYPE (@4), sel2);
+	   /* Give the new mask ssizetype elements, as the vectorizer does:
+	      the element type of d's mask can be too narrow to index both
+	      inputs.  */
+	   op0
+	     = vec_perm_indices_to_tree (build_vector_type (ssizetype, nelts),
+					 sel2);
        }
        (if (op0)
 	(switch
