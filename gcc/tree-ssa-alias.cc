@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
    a generation count for memory references.
 
    SSA_NAME pointers may have associated points-to information
-   accessible via the SSA_NAME_PTR_INFO macro.  Flow-insensitive
+   accessible via ssa_name_pt_solution.  Flow-insensitive
    points-to information is (re-)computed by the TODO_rebuild_alias
    pass manager todo.  Points-to information is also used for more
    precise tracking of call-clobbered and call-used variables and
@@ -220,22 +220,22 @@ dump_alias_stats (FILE *s)
 bool
 ptr_deref_may_alias_global_p (tree ptr, bool escaped_local_p)
 {
-  struct ptr_info_def *pi;
+  const pt_solution *pt;
 
   /* If we end up with a pointer constant here that may point
      to global memory.  */
   if (TREE_CODE (ptr) != SSA_NAME || !POINTER_TYPE_P (TREE_TYPE (ptr)))
     return true;
 
-  pi = SSA_NAME_PTR_INFO (ptr);
+  pt = ssa_name_pt_solution (ptr);
 
   /* If we do not have points-to information for this variable,
      we have to punt.  */
-  if (!pi)
+  if (!pt)
     return true;
 
   /* ???  This does not use TBAA to prune globals ptr may not access.  */
-  return pt_solution_includes_global (&pi->pt, escaped_local_p);
+  return pt_solution_includes_global (pt, escaped_local_p);
 }
 
 /* Return true, if dereferencing PTR may alias with a local automatic
@@ -244,21 +244,21 @@ ptr_deref_may_alias_global_p (tree ptr, bool escaped_local_p)
 bool
 ptr_deref_may_alias_auto_p (tree ptr)
 {
-  struct ptr_info_def *pi;
+  const pt_solution *pt;
 
   /* If we end up with a pointer constant here that may point
      to local stack memory.  */
   if (TREE_CODE (ptr) != SSA_NAME || !POINTER_TYPE_P (TREE_TYPE (ptr)))
     return true;
 
-  pi = SSA_NAME_PTR_INFO (ptr);
+  pt = ssa_name_pt_solution (ptr);
 
   /* If we do not have points-to information for this variable,
      we have to punt.  */
-  if (!pi)
+  if (!pt)
     return true;
 
-  return pt_solution_includes_auto (&pi->pt);
+  return pt_solution_includes_auto (pt);
 }
 
 
@@ -269,7 +269,7 @@ ptr_deref_may_alias_auto_p (tree ptr)
 static bool
 ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 {
-  struct ptr_info_def *pi;
+  const pt_solution *pt;
 
   /* Conversions are irrelevant for points-to information and
      data-dependence analysis can feed us those.  */
@@ -326,11 +326,11 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 
   /* If we do not have useful points-to information for this pointer
      we cannot disambiguate anything else.  */
-  pi = SSA_NAME_PTR_INFO (ptr);
-  if (!pi)
+  pt = ssa_name_pt_solution (ptr);
+  if (!pt)
     return true;
 
-  return pt_solution_includes (&pi->pt, decl);
+  return pt_solution_includes (pt, decl);
 }
 
 /* Return true if dereferenced PTR1 and PTR2 may alias.
@@ -340,7 +340,7 @@ ptr_deref_may_alias_decl_p (tree ptr, tree decl)
 bool
 ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
 {
-  struct ptr_info_def *pi1, *pi2;
+  const pt_solution *pt1, *pt2;
 
   /* Conversions are irrelevant for points-to information and
      data-dependence analysis can feed us those.  */
@@ -413,14 +413,14 @@ ptr_derefs_may_alias_p (tree ptr1, tree ptr2)
 
   /* If we do not have useful points-to information for either pointer
      we cannot disambiguate anything else.  */
-  pi1 = SSA_NAME_PTR_INFO (ptr1);
-  pi2 = SSA_NAME_PTR_INFO (ptr2);
-  if (!pi1 || !pi2)
+  pt1 = ssa_name_pt_solution (ptr1);
+  pt2 = ssa_name_pt_solution (ptr2);
+  if (!pt1 || !pt2)
     return true;
 
   /* ???  This does not use TBAA to prune decls from the intersection
      that not both pointers may access.  */
-  return pt_solutions_intersect (&pi1->pt, &pi2->pt);
+  return pt_solutions_intersect (pt1, pt2);
 }
 
 /* Return true if dereferencing PTR may alias *REF.
@@ -489,13 +489,13 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
     /* Other code handles this correctly, no need to duplicate it here.  */;
   else if (obj1 && TREE_CODE (ptr2) == SSA_NAME)
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr2);
+      const pt_solution *pt = ssa_name_pt_solution (ptr2);
       /* We may not use restrict to optimize pointer comparisons.
          See PR71062.  So we have to assume that restrict-pointed-to
 	 may be in fact obj1.  */
-      if (!pi
-	  || pi->pt.vars_contains_restrict
-	  || pi->pt.vars_contains_interposable)
+      if (!pt
+	  || pt->vars_contains_restrict
+	  || pt->vars_contains_interposable)
 	return false;
       if (VAR_P (obj1)
 	  && (TREE_STATIC (obj1) || DECL_EXTERNAL (obj1)))
@@ -507,34 +507,34 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	      || ! decl_binds_to_current_def_p (obj1))
 	    return false;
 	}
-      return !pt_solution_includes (&pi->pt, obj1);
+      return !pt_solution_includes (pt, obj1);
     }
   else if (TREE_CODE (ptr1) == SSA_NAME)
     {
-      struct ptr_info_def *pi1 = SSA_NAME_PTR_INFO (ptr1);
-      if (!pi1
-	  || pi1->pt.vars_contains_restrict
-	  || pi1->pt.vars_contains_interposable)
+      const pt_solution *pt1 = ssa_name_pt_solution (ptr1);
+      if (!pt1
+	  || pt1->vars_contains_restrict
+	  || pt1->vars_contains_interposable)
 	return false;
-      if (integer_zerop (ptr2) && !pi1->pt.null)
+      if (integer_zerop (ptr2) && !pt1->null)
 	return true;
       if (TREE_CODE (ptr2) == SSA_NAME)
 	{
-	  struct ptr_info_def *pi2 = SSA_NAME_PTR_INFO (ptr2);
-	  if (!pi2
-	      || pi2->pt.vars_contains_restrict
-	      || pi2->pt.vars_contains_interposable)
+	  const pt_solution *pt2 = ssa_name_pt_solution (ptr2);
+	  if (!pt2
+	      || pt2->vars_contains_restrict
+	      || pt2->vars_contains_interposable)
 	    return false;
-	  if ((!pi1->pt.null || !pi2->pt.null)
+	  if ((!pt1->null || !pt2->null)
 	      /* ???  We do not represent FUNCTION_DECL and LABEL_DECL
 		 in pt.vars but only set pt.vars_contains_nonlocal.  This
 		 makes compares involving those and other nonlocals
 		 imprecise.  */
-	      && (!pi1->pt.vars_contains_nonlocal
-		  || !pi2->pt.vars_contains_nonlocal)
-	      && (!pt_solution_includes_const_pool (&pi1->pt)
-		  || !pt_solution_includes_const_pool (&pi2->pt)))
-	    return !pt_solutions_intersect (&pi1->pt, &pi2->pt);
+	      && (!pt1->vars_contains_nonlocal
+		  || !pt2->vars_contains_nonlocal)
+	      && (!pt_solution_includes_const_pool (pt1)
+		  || !pt_solution_includes_const_pool (pt2)))
+	    return !pt_solutions_intersect (pt1, pt2);
 	}
     }
 
@@ -642,14 +642,14 @@ dump_alias_info (FILE *file)
 
   FOR_EACH_SSA_NAME (i, ptr, cfun)
     {
-      struct ptr_info_def *pi;
+      const pt_solution *pt;
 
       if (!POINTER_TYPE_P (TREE_TYPE (ptr))
 	  || SSA_NAME_IN_FREE_LIST (ptr))
 	continue;
 
-      pi = SSA_NAME_PTR_INFO (ptr);
-      if (pi)
+      pt = ssa_name_pt_solution (ptr);
+      if (pt)
 	dump_points_to_info_for (file, ptr);
     }
 
@@ -669,7 +669,7 @@ debug_alias_info (void)
 /* Dump the points-to set *PT into FILE.  */
 
 void
-dump_points_to_solution (FILE *file, struct pt_solution *pt)
+dump_points_to_solution (FILE *file, const pt_solution *pt)
 {
   if (pt->anything)
     fprintf (file, ", points-to anything");
@@ -752,12 +752,12 @@ debug (pt_solution *ptr)
 void
 dump_points_to_info_for (FILE *file, tree ptr)
 {
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+  const pt_solution *pt = ssa_name_pt_solution (ptr);
 
   print_generic_expr (file, ptr, dump_flags);
 
-  if (pi)
-    dump_points_to_solution (file, &pi->pt);
+  if (pt)
+    dump_points_to_solution (file, pt);
   else
     fprintf (file, ", points-to anything");
 
@@ -3006,11 +3006,11 @@ ref_maybe_used_by_call_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	    || TREE_CODE (base) == TARGET_MEM_REF)
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
-      if (!pi)
+      const pt_solution *pt = ssa_name_pt_solution (TREE_OPERAND (base, 0));
+      if (!pt)
 	return true;
 
-      if (pt_solutions_intersect (gimple_call_use_set (call), &pi->pt))
+      if (pt_solutions_intersect (gimple_call_use_set (call), pt))
 	return true;
     }
   else
@@ -3266,11 +3266,11 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref, bool tbaa_p)
 	    || TREE_CODE (base) == TARGET_MEM_REF)
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
-      if (!pi)
+      const pt_solution *pt = ssa_name_pt_solution (TREE_OPERAND (base, 0));
+      if (!pt)
 	return true;
 
-      return pt_solutions_intersect (gimple_call_clobber_set (call), &pi->pt);
+      return pt_solutions_intersect (gimple_call_clobber_set (call), pt);
     }
 
   return true;
@@ -3391,15 +3391,15 @@ same_addr_size_stores_p (tree base1, poly_int64 offset1, poly_int64 size1,
   tree ptr = TREE_OPERAND (memref, 0);
   if (TREE_CODE (ptr) != SSA_NAME)
     return false;
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (ptr);
+  const pt_solution *pt = ssa_name_pt_solution (ptr);
   unsigned int pt_uid;
-  if (pi == NULL
-      || !pt_solution_singleton_or_null_p (&pi->pt, &pt_uid))
+  if (pt == NULL
+      || !pt_solution_singleton_or_null_p (pt, &pt_uid))
     return false;
 
   /* Be conservative with non-call exceptions when the address might
      be NULL.  */
-  if (cfun->can_throw_non_call_exceptions && pi->pt.null)
+  if (cfun->can_throw_non_call_exceptions && pt->null)
     return false;
 
   /* Check that ptr points relative to obj.  */

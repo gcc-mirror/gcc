@@ -2717,11 +2717,11 @@ fold_builtin_alloca_with_align (gimple *stmt)
      as it might need to handle more than one instance being
      live at the same time.  Instead of trying to detect this case
      (using the first UID would be OK) just give up for now.  */
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (lhs);
+  const pt_solution *pt = ssa_name_pt_solution (lhs);
   unsigned uid = 0;
-  if (pi != NULL
-      && !pi->pt.anything
-      && !pt_solution_singleton_or_null_p (&pi->pt, &uid))
+  if (pt != NULL
+      && !pt->anything
+      && !pt_solution_singleton_or_null_p (pt, &uid))
     return NULL_TREE;
 
   /* Declare array.  */

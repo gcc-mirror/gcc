@@ -126,7 +126,8 @@ public:
   bool fits_p (const prange &r) const;
   void dump () const;
 
-  // Pointer aliasing information.  Managed seperately via SSA_NAME_PTR_INFO.
+  // Pointer aliasing information.  Managed separately, and reached only
+  // through the accessors in tree-ssanames.h.
   struct ptr_info_def *ptr_info;
 
 private:

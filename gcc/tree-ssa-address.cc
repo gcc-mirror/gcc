@@ -1026,23 +1026,24 @@ copy_ref_info (tree new_ref, tree old_ref)
      or decl base to the new one.  */
   if (new_ptr_base
       && TREE_CODE (new_ptr_base) == SSA_NAME
-      && !SSA_NAME_PTR_INFO (new_ptr_base))
+      && !ssa_name_pt_solution (new_ptr_base))
     {
       if ((TREE_CODE (base) == MEM_REF
 	   || TREE_CODE (base) == TARGET_MEM_REF)
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
-	  && SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)))
+	  && ssa_name_pt_solution (TREE_OPERAND (base, 0)))
 	{
-	  duplicate_ssa_name_ptr_info
-	    (new_ptr_base, SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0)));
+	  duplicate_ssa_name_ptr_info (new_ptr_base,
+				       TREE_OPERAND (base, 0));
 	  reset_flow_sensitive_info (new_ptr_base);
 	}
       else if (VAR_P (base)
 	       || TREE_CODE (base) == PARM_DECL
 	       || TREE_CODE (base) == RESULT_DECL)
 	{
-	  struct ptr_info_def *pi = get_ptr_info (new_ptr_base);
-	  pt_solution_set_var (&pi->pt, base);
+	  pt_solution pt;
+	  pt_solution_set_var (&pt, base);
+	  set_ssa_name_pt_solution (new_ptr_base, pt);
 	}
     }
 

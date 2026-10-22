@@ -172,7 +172,7 @@ extern int walk_aliased_vdefs (ao_ref *, tree,
 			       unsigned int limit = 0);
 extern void dump_alias_info (FILE *);
 extern void debug_alias_info (void);
-extern void dump_points_to_solution (FILE *, struct pt_solution *);
+extern void dump_points_to_solution (FILE *, const pt_solution *);
 extern void debug (pt_solution &ref);
 extern void debug (pt_solution *ptr);
 extern void dump_points_to_info_for (FILE *, tree);
@@ -183,12 +183,12 @@ extern void dump_alias_stats (FILE *);
 /* In tree-ssa-structalias.cc  */
 extern unsigned int compute_may_aliases (void);
 extern bool pt_solution_empty_p (const pt_solution *);
-extern bool pt_solution_singleton_or_null_p (struct pt_solution *, unsigned *);
-extern bool pt_solution_includes_global (struct pt_solution *, bool);
-extern bool pt_solution_includes_auto (struct pt_solution *);
-extern bool pt_solution_includes (struct pt_solution *, const_tree);
-extern bool pt_solution_includes_const_pool (struct pt_solution *);
-extern bool pt_solutions_intersect (struct pt_solution *, struct pt_solution *);
+extern bool pt_solution_singleton_or_null_p (const pt_solution *, unsigned *);
+extern bool pt_solution_includes_global (const pt_solution *, bool);
+extern bool pt_solution_includes_auto (const pt_solution *);
+extern bool pt_solution_includes (const pt_solution *, const_tree);
+extern bool pt_solution_includes_const_pool (const pt_solution *);
+extern bool pt_solutions_intersect (const pt_solution *, const pt_solution *);
 extern void pt_solution_reset (struct pt_solution *);
 extern void pt_solution_set (struct pt_solution *, bitmap, bool);
 extern void pt_solution_set_var (struct pt_solution *, tree);

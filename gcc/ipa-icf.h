@@ -589,7 +589,7 @@ private:
   void fixup_points_to_sets (void);
 
   /* Fixup points to set PT.  */
-  void fixup_pt_set (struct pt_solution *pt);
+  void fixup_pt_set (const pt_solution *pt);
 
   /* Adds a newly created congruence class CLS to worklist.  */
   void worklist_push (congruence_class *cls);

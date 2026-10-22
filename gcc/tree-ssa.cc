@@ -1075,7 +1075,7 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
       /* Keep track of SSA names present in the IL.  */
       size_t i;
       tree name;
-      hash_map <void *, tree> ssa_info;
+      hash_map <const void *, tree> ssa_info;
 
       FOR_EACH_SSA_NAME (i, name, cfun)
 	{
@@ -1093,9 +1093,9 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
 		goto err;
 	    }
 
-	  void *info = NULL;
+	  const void *info = NULL;
 	  if (POINTER_TYPE_P (TREE_TYPE (name)))
-	    info = SSA_NAME_PTR_INFO (name);
+	    info = ssa_name_pt_solution (name);
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name)))
 	    info = SSA_NAME_RANGE_INFO (name);
 	  if (info)

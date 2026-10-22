@@ -2754,7 +2754,7 @@ predicate_load_or_store (gimple_stmt_iterator *gsi, gassign *stmt, tree mask)
   tree ptr = build_int_cst (reference_alias_ptr_type (ref),
 			    get_object_alignment (ref));
   /* Copy points-to info if possible.  */
-  if (TREE_CODE (addr) == SSA_NAME && !SSA_NAME_PTR_INFO (addr))
+  if (TREE_CODE (addr) == SSA_NAME && !ssa_name_pt_solution (addr))
     copy_ref_info (build2 (MEM_REF, TREE_TYPE (ref), addr, ptr),
 		   ref);
   if (TREE_CODE (lhs) == SSA_NAME)

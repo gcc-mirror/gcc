@@ -616,7 +616,7 @@ gimple_ranger::reset_range_info (tree name)
 }
 
 // This routine will export whatever global ranges are known to GCC
-// SSA_RANGE_NAME_INFO and SSA_NAME_PTR_INFO fields.
+// SSA_NAME_RANGE_INFO field.
 
 void
 gimple_ranger::export_global_ranges ()

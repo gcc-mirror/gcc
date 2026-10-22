@@ -5550,21 +5550,17 @@ static void
 vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
 {
   if (DR_PTR_INFO (dr_info->dr))
-    {
-      duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr_info->dr));
-      /* DR_PTR_INFO is for a base SSA name, not including constant or
-	 variable offsets in the ref so its alignment info does not apply.  */
-      mark_ptr_info_alignment_unknown (name);
-    }
-  else if (!SSA_NAME_PTR_INFO (name))
+    duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr_info->dr));
+  else if (!ssa_name_pt_solution (name))
     {
       tree base = get_base_address (dr_info->dr->ref);
       if (VAR_P (base)
 	  || TREE_CODE (base) == PARM_DECL
 	  || TREE_CODE (base) == RESULT_DECL)
 	{
-	  struct ptr_info_def *pi = get_ptr_info (name);
-	  pt_solution_set_var (&pi->pt, base);
+	  pt_solution pt;
+	  pt_solution_set_var (&pt, base);
+	  set_ssa_name_pt_solution (name, pt);
 	}
     }
 }
@@ -5687,7 +5683,7 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
       /* We should only duplicate pointer info to newly created SSA names.  */
       && SSA_NAME_VAR (addr_base) == dest)
     {
-      gcc_assert (!SSA_NAME_PTR_INFO (addr_base));
+      gcc_assert (!ssa_name_pt_solution (addr_base));
       vect_duplicate_ssa_name_ptr_info (addr_base, dr_info);
     }
 

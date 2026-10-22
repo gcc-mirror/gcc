@@ -868,7 +868,7 @@ find_what_var_points_to (tree fndecl, varinfo_t orig_vi)
   *slot = pt = XOBNEW (&final_solutions_obstack, struct pt_solution);
   memset (pt, 0, sizeof (struct pt_solution));
 
-  /* Translate artificial variables into SSA_NAME_PTR_INFO
+  /* Translate artificial variables into points-to info
      attributes.  */
   EXECUTE_IF_SET_IN_BITMAP (vi->solution, 0, i, bi)
     {
@@ -929,7 +929,6 @@ find_what_var_points_to (tree fndecl, varinfo_t orig_vi)
 static void
 find_what_p_points_to (tree fndecl, tree p)
 {
-  struct ptr_info_def *pi;
   tree lookup_p = p;
   varinfo_t vi;
   prange vr;
@@ -948,10 +947,10 @@ find_what_p_points_to (tree fndecl, tree p)
   if (!vi)
     return;
 
-  pi = get_ptr_info (p);
-  pi->pt = find_what_var_points_to (fndecl, vi);
+  pt_solution pt = find_what_var_points_to (fndecl, vi);
   /* Conservatively set to NULL from PTA (to true). */
-  pi->pt.null = 1;
+  pt.null = 1;
+  set_ssa_name_pt_solution (p, pt);
   /* Preserve pointer nonnull globally computed.  */
   if (nonnull)
     set_ptr_nonnull (p);
@@ -1090,7 +1089,7 @@ pt_solution_empty_p (const pt_solution *pt)
    return the var uid in *UID.  */
 
 bool
-pt_solution_singleton_or_null_p (struct pt_solution *pt, unsigned *uid)
+pt_solution_singleton_or_null_p (const pt_solution *pt, unsigned *uid)
 {
   if (pt->anything || pt->nonlocal || pt->escaped || pt->ipa_escaped
       || pt->vars == NULL
@@ -1106,7 +1105,7 @@ pt_solution_singleton_or_null_p (struct pt_solution *pt, unsigned *uid)
    considered global.  */
 
 bool
-pt_solution_includes_global (struct pt_solution *pt, bool escaped_local_p)
+pt_solution_includes_global (const pt_solution *pt, bool escaped_local_p)
 {
   if (pt->anything
       || pt->nonlocal
@@ -1136,7 +1135,7 @@ pt_solution_includes_global (struct pt_solution *pt, bool escaped_local_p)
    storage.  */
 
 bool
-pt_solution_includes_auto (struct pt_solution *pt)
+pt_solution_includes_auto (const pt_solution *pt)
 {
   if (pt->anything
       || pt->vars_contains_auto)
@@ -1157,7 +1156,7 @@ pt_solution_includes_auto (struct pt_solution *pt)
    declaration DECL.  */
 
 static bool
-pt_solution_includes_1 (struct pt_solution *pt, const_tree decl)
+pt_solution_includes_1 (const pt_solution *pt, const_tree decl)
 {
   if (pt->anything)
     return true;
@@ -1184,7 +1183,7 @@ pt_solution_includes_1 (struct pt_solution *pt, const_tree decl)
 }
 
 bool
-pt_solution_includes (struct pt_solution *pt, const_tree decl)
+pt_solution_includes (const pt_solution *pt, const_tree decl)
 {
   bool res = pt_solution_includes_1 (pt, decl);
   if (res)
@@ -1198,7 +1197,7 @@ pt_solution_includes (struct pt_solution *pt, const_tree decl)
    constant pool entry.  */
 
 bool
-pt_solution_includes_const_pool (struct pt_solution *pt)
+pt_solution_includes_const_pool (const pt_solution *pt)
 {
   return (pt->const_pool
 	  || pt->nonlocal
@@ -1210,7 +1209,7 @@ pt_solution_includes_const_pool (struct pt_solution *pt)
    intersection.  */
 
 static bool
-pt_solutions_intersect_1 (struct pt_solution *pt1, struct pt_solution *pt2)
+pt_solutions_intersect_1 (const pt_solution *pt1, const pt_solution *pt2)
 {
   if (pt1->anything || pt2->anything)
     return true;
@@ -1259,7 +1258,7 @@ pt_solutions_intersect_1 (struct pt_solution *pt1, struct pt_solution *pt2)
 }
 
 bool
-pt_solutions_intersect (struct pt_solution *pt1, struct pt_solution *pt2)
+pt_solutions_intersect (const pt_solution *pt1, const pt_solution *pt2)
 {
   bool res = pt_solutions_intersect_1 (pt1, pt2);
   if (res)

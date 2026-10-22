@@ -234,7 +234,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  && DECL_IGNORED_P (var)
 	  && !DECL_NAME (var)))
     {
-      struct ptr_info_def *pi;
+      const pt_solution *pt;
       new_tree = make_ssa_name (remap_type (TREE_TYPE (name), id));
       if (!var && SSA_NAME_IDENTIFIER (name))
 	SET_SSA_NAME_VAR_OR_IDENTIFIER (new_tree, SSA_NAME_IDENTIFIER (name));
@@ -245,12 +245,9 @@ remap_ssa_name (tree name, copy_body_data *id)
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
 	  && POINTER_TYPE_P (TREE_TYPE (name))
-	  && (pi = SSA_NAME_PTR_INFO (name))
-	  && !pi->pt.anything)
-	{
-	  struct ptr_info_def *new_pi = get_ptr_info (new_tree);
-	  new_pi->pt = pi->pt;
-	}
+	  && (pt = ssa_name_pt_solution (name))
+	  && !pt->anything)
+	set_ssa_name_pt_solution (new_tree, *pt);
       /* So can range-info.  */
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && SSA_NAME_RANGE_INFO (name))
@@ -273,7 +270,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  || TREE_CODE (SSA_NAME_VAR (name)) != RESULT_DECL
 	  || !id->transform_return_to_modify))
     {
-      struct ptr_info_def *pi;
+      const pt_solution *pt;
       new_tree = make_ssa_name (new_tree);
       insert_decl_map (id, name, new_tree);
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
@@ -282,12 +279,9 @@ remap_ssa_name (tree name, copy_body_data *id)
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
 	  && POINTER_TYPE_P (TREE_TYPE (name))
-	  && (pi = SSA_NAME_PTR_INFO (name))
-	  && !pi->pt.anything)
-	{
-	  struct ptr_info_def *new_pi = get_ptr_info (new_tree);
-	  new_pi->pt = pi->pt;
-	}
+	  && (pt = ssa_name_pt_solution (name))
+	  && !pt->anything)
+	set_ssa_name_pt_solution (new_tree, *pt);
       /* So can range-info.  */
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && SSA_NAME_RANGE_INFO (name))

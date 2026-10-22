@@ -1070,7 +1070,7 @@ typedef hash_map<unsigned, bitmap, part_traits> part_hashmap;
    variables bitmap.  */
 
 static void
-add_partitioned_vars_to_ptset (struct pt_solution *pt,
+add_partitioned_vars_to_ptset (const pt_solution *pt,
 			       part_hashmap *decls_to_partitions,
 			       hash_set<bitmap> *visited, bitmap temp)
 {
@@ -1121,7 +1121,6 @@ update_alias_info_with_stack_vars (void)
     {
       bitmap part = NULL;
       tree name;
-      struct ptr_info_def *pi;
 
       /* Not interested in partitions with single variable.  */
       if (stack_vars[i].representative != i
@@ -1156,8 +1155,9 @@ update_alias_info_with_stack_vars (void)
 	}
 
       /* Make the SSA name point to all partition members.  */
-      pi = get_ptr_info (name);
-      pt_solution_set (&pi->pt, part, false);
+      pt_solution pt;
+      pt_solution_set (&pt, part, false);
+      set_ssa_name_pt_solution (name, pt);
     }
 
   /* Make all points-to sets that contain one member of a partition
@@ -1171,11 +1171,10 @@ update_alias_info_with_stack_vars (void)
 
       FOR_EACH_SSA_NAME (i, name, cfun)
 	{
-	  struct ptr_info_def *pi;
+	  const pt_solution *pt = ssa_name_pt_solution (name);
 
-	  if (POINTER_TYPE_P (TREE_TYPE (name))
-	      && ((pi = SSA_NAME_PTR_INFO (name)) != NULL))
-	    add_partitioned_vars_to_ptset (&pi->pt, decls_to_partitions,
+	  if (pt)
+	    add_partitioned_vars_to_ptset (pt, decls_to_partitions,
 					   &visited, temp);
 	}
 

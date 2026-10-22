@@ -1699,8 +1699,8 @@ default_ref_may_alias_errno (ao_ref *ref)
   else if (TREE_CODE (base) == MEM_REF
 	   && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME)
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (TREE_OPERAND (base, 0));
-      return !pi || pi->pt.anything || pi->pt.nonlocal;
+      const pt_solution *pt = ssa_name_pt_solution (TREE_OPERAND (base, 0));
+      return !pt || pt->anything || pt->nonlocal;
     }
   return false;
 }

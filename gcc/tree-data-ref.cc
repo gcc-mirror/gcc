@@ -1508,7 +1508,7 @@ dr_analyze_alias (struct data_reference *dr)
     {
       addr = TREE_OPERAND (base, 0);
       if (TREE_CODE (addr) == SSA_NAME)
-	DR_PTR_INFO (dr) = SSA_NAME_PTR_INFO (addr);
+	DR_PTR_INFO (dr) = ssa_name_pt_solution (addr);
     }
 }
 
@@ -3109,13 +3109,12 @@ dr_may_alias_p (const struct data_reference *a, const struct data_reference *b,
   /* Try the points-to information recorded for the base pointers the
      references were originally analyzed from.  DR_BASE_OBJECT can be less
      precise, rooting at another SSA name or at one created after points-to
-     information was computed and thus without SSA_NAME_PTR_INFO.  A
+     information was computed and thus without points-to info.  A
      recorded solution is not revalidated.  It covers every dynamic value
      of its SSA name, so it holds for cross-iteration queries as well.  */
-  struct ptr_info_def *pi_a = DR_PTR_INFO (a);
-  struct ptr_info_def *pi_b = DR_PTR_INFO (b);
-  if (pi_a && pi_b
-      && !pt_solutions_intersect (&pi_a->pt, &pi_b->pt))
+  const pt_solution *pt_a = DR_PTR_INFO (a);
+  const pt_solution *pt_b = DR_PTR_INFO (b);
+  if (pt_a && pt_b && !pt_solutions_intersect (pt_a, pt_b))
     return false;
 
   if ((TREE_CODE (addr_a) == MEM_REF || TREE_CODE (addr_a) == TARGET_MEM_REF)

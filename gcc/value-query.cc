@@ -592,14 +592,14 @@ get_ssa_name_range_info (vrange &r, const_tree name)
     r.set_varying (type);
 }
 
-// Return nonnull attribute of pointer NAME from SSA_NAME_PTR_INFO.
+// Return nonnull attribute of pointer NAME from its points-to solution.
 
 static inline bool
 get_ssa_name_ptr_info_nonnull (const_tree name)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
-  if (pi == NULL)
+  const pt_solution *pt = ssa_name_pt_solution (name);
+  if (pt == NULL)
     return false;
   /* TODO Now pt->null is conservatively set to true in PTA
      analysis. vrp is the only pass (including ipa-vrp)
@@ -609,7 +609,7 @@ get_ssa_name_ptr_info_nonnull (const_tree name)
      When PTA analysis is improved, pt.anything, pt.nonlocal
      and pt.escaped may also has to be considered before
      deciding that pointer cannot point to NULL.  */
-  return !pi->pt.null;
+  return !pt->null;
 }
 
 // Update the global range for NAME into the SSA_RANGE_NAME_INFO and

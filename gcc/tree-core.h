@@ -1739,7 +1739,7 @@ struct GTY(()) tree_ssa_name {
 
   /* Value range information for every type of SSA name.
      The aliasing information for a prange is stored in prange_storage.
-     See SSA_NAME_PTR_INFO in tree-ssanames.h.  */
+     See ssa_name_pt_solution in tree-ssanames.h.  */
   struct GTY (()) vrange_storage *range_info;
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_t imm_uses;

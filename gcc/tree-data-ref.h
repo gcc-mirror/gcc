@@ -129,9 +129,9 @@ struct indices
 
 struct dr_alias
 {
-  /* The alias information that should be used for new pointers to this
-     location.  */
-  struct ptr_info_def *ptr_info;
+  /* The base pointer whose points-to information should be used for new
+     pointers to this location or NULL.  */
+  const pt_solution *ptr_info;
 };
 
 /* An integer vector.  A vector formally consists of an element of a vector

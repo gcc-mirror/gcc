@@ -114,13 +114,35 @@ range_info_free (tree name)
 /* Return the aliasing information for ssa-name NAME, or NULL if there
    is none.  Return NULL for non pointer types.  */
 
-struct ptr_info_def *
+static inline struct ptr_info_def *
 ssa_name_ptr_info (const_tree name)
 {
   vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
   if (!mem || mem->m_discriminator != VR_PRANGE)
     return NULL;
   return static_cast <prange_storage *> (mem)->ptr_info;
+}
+
+/* Defined below.  */
+static struct ptr_info_def *get_ptr_info (tree);
+
+/* Return the points-to solution for ssa-name NAME.  Return NULL if it has
+   none or is a non pointer types.  */
+
+const pt_solution *
+ssa_name_pt_solution (const_tree name)
+{
+  struct ptr_info_def *pi = ssa_name_ptr_info (name);
+  return pi ? &pi->pt : NULL;
+}
+
+/* Make PT the points-to solution for NAME, which must have pointer type.  */
+
+void
+set_ssa_name_pt_solution (tree name, const pt_solution &pt)
+{
+  /* get_ptr_info asserts NAME is a pointer type.  */
+  get_ptr_info (name)->pt = pt;
 }
 
 /* Return the global range for NAME in R.  */
@@ -142,7 +164,7 @@ range_info_set_range (tree name, const vrange &r)
       // Aliasing info belongs to NAME, not to the prange storage object which
       // might get reallocated.  ptr_info_def addresses may be cached
       // elsewhere, so save and copy it back after any reallocation.
-      ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+      ptr_info_def *pi = ssa_name_ptr_info (name);
       if (range_info_p (name))
 	range_info_free (name);
 
@@ -754,7 +776,7 @@ bool
 get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 			unsigned int *misalignp)
 {
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+  struct ptr_info_def *pi = ssa_name_ptr_info (name);
 
   if (pi && pi->align)
     {
@@ -773,7 +795,7 @@ get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 void
 mark_ptr_info_alignment_unknown (tree name)
 {
-  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+  struct ptr_info_def *pi = ssa_name_ptr_info (name);
 
   if (pi)
     {
@@ -817,14 +839,14 @@ set_ssa_name_ptr_info (tree name, struct ptr_info_def *pi)
 /* Return the alias information associated with pointer T.  It creates a
    new instance if none existed.  */
 
-struct ptr_info_def *
+static struct ptr_info_def *
 get_ptr_info (tree t)
 {
   struct ptr_info_def *pi;
 
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
 
-  pi = SSA_NAME_PTR_INFO (t);
+  pi = ssa_name_ptr_info (t);
   if (pi == NULL)
     {
       // The cleared allocation leaves align and misalign zero, which is
@@ -857,25 +879,40 @@ copy_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
   return new_name;
 }
 
-
-/* Creates a duplicate of the ptr_info_def at PTR_INFO for use by
-   the SSA name NAME.  */
+/* Give DEST its own copy of the points-to and alignment information of
+   the SSA name SRC.  SRC may be NULL_TREE or carry no information, in
+   which case DEST is left alone.  */
 
 void
-duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
+duplicate_ssa_name_ptr_info (tree dest, const pt_solution* pt)
 {
-  struct ptr_info_def *new_ptr_info;
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (dest)));
+  gcc_assert (!ssa_name_ptr_info (dest));
 
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  gcc_assert (!SSA_NAME_PTR_INFO (name));
+  if (!pt)
+    return;
 
+  struct ptr_info_def *new_ptr_info = ggc_alloc<ptr_info_def> ();
+  new_ptr_info->pt = *pt;
+
+  // Alignment info is not copied, so its set to zero.
+  new_ptr_info->align = 0;
+  new_ptr_info->misalign = 0;
+  set_ssa_name_ptr_info (dest, new_ptr_info);
+}
+
+/* Give DEST its own copy of the points-to and alignment information of
+   the SSA name SRC.  SRC may be NULL_TREE or carry no information, in
+   which case DEST is left alone.  */
+
+void
+duplicate_ssa_name_ptr_info (tree dest, tree src)
+{
+  struct ptr_info_def *ptr_info = (src ? ssa_name_ptr_info (src) : NULL);
   if (!ptr_info)
     return;
 
-  new_ptr_info = ggc_alloc<ptr_info_def> ();
-  *new_ptr_info = *ptr_info;
-
-  set_ssa_name_ptr_info (name, new_ptr_info);
+  duplicate_ssa_name_ptr_info (dest, &(ptr_info->pt));
 }
 
 /* Copy any global range and aliasing information from SRC to NAME.  */
@@ -895,7 +932,11 @@ duplicate_ssa_name_range_info (tree name, tree src)
   /* For a pointer the aliasing info lives in the storage just created,
      so it has to be copied as part of the same operation.  */
   if (POINTER_TYPE_P (TREE_TYPE (src)))
-    duplicate_ssa_name_ptr_info (name, SSA_NAME_PTR_INFO (src));
+    duplicate_ssa_name_ptr_info (name, src);
+
+  unsigned align, misalign;
+  if (get_ptr_info_alignment (src, &align, &misalign))
+     set_ptr_info_alignment (name, align, misalign);
 }
 
 /* For a SSA copy DEST = SRC duplicate SSA info present on DEST to SRC
@@ -937,7 +978,7 @@ void
 reset_flow_sensitive_info (tree name)
 {
   /* Aliasing info is not flow sensitive, so preserve it if present.  */
-  ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+  ptr_info_def *pi = ssa_name_ptr_info (name);
   SSA_NAME_RANGE_INFO (name) = NULL;
   if (pi)
     {
@@ -1101,7 +1142,7 @@ flow_sensitive_info_storage::save (tree name)
       align = 0;
       misalign = 0;
     }
-  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  auto ptr_info = ssa_name_ptr_info (name);
   null = ptr_info ? ptr_info->pt.null : true;
 }
 
@@ -1118,7 +1159,7 @@ flow_sensitive_info_storage::restore (tree name)
       return;
     }
   gcc_assert (state == -1);
-  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  auto ptr_info = ssa_name_ptr_info (name);
   /* If there was no flow sensitive info on the pointer
      just return, there is nothing to restore to.  */
   if (!ptr_info)
@@ -1127,7 +1168,7 @@ flow_sensitive_info_storage::restore (tree name)
     set_ptr_info_alignment (name, align, misalign);
   else
     mark_ptr_info_alignment_unknown (name);
-  SSA_NAME_PTR_INFO (name)->pt.null = null;
+  ssa_name_ptr_info (name)->pt.null = null;
 }
 
 /* Save off the flow sensitive info from NAME.
