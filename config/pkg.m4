@@ -151,7 +151,7 @@ dnl Check whether $pkg_cv_[]$1[]_LIBS works.
 if test $pkg_failed = no; then
   pkg_save_LDFLAGS="$LDFLAGS"
   LDFLAGS="$LDFLAGS $pkg_cv_[]$1[]_LIBS"
-  AC_TRY_LINK([],[], [], [pkg_failed=yes])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[],[pkg_failed=yes])
   LDFLAGS=$pkg_save_LDFLAGS
 fi
 
