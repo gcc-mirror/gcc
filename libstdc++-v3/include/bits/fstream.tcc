@@ -657,14 +657,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  // Try once more for partial conversions.
 	  if (__r == codecvt_base::partial && __elen == __plen)
 	    {
-	      const char_type* __iresume = __iend;
-	      streamsize __rlen = this->pptr() - __iend;
-	      __r = _M_codecvt->out(_M_state_cur, __iresume,
-				    __iresume + __rlen, __iend, __buf,
-				    __buf + __blen, __bend);
+	      __r = _M_codecvt->out(_M_state_cur,
+				    __iend, __ibuf + __ilen, __iend,
+				    __buf, __buf + __blen, __bend);
 	      if (__r != codecvt_base::error)
 		{
-		  __rlen = __bend - __buf;
+		  const streamsize __rlen = __bend - __buf;
 		  __elen = _M_file.xsputn(__buf, __rlen);
 		  __plen = __rlen;
 		}
