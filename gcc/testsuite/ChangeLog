@@ -1,3 +1,188 @@
+2026-10-21  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	PR rtl-optimization/123905
+	* gcc.target/riscv/pr123905.c: New test case.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128069
+	* gcc.dg/vect/bb-slp-pr128069.c: New testcase.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128052
+	* gcc.dg/torture/bitint-115.c: New test.
+
+2026-10-21  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.target/riscv/builtin-ecf.c: New.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128054
+	* gcc.dg/torture/pr128054.c: New testcase.
+
+2026-10-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_ok_nocache): Iterate to find
+	suitable flags.
+
+2026-10-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/mve/general-c/nomve_fp_1.c: Add -mthumb to
+	dg-options.
+
+2026-10-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_thumb2_no_arm_v8_1m_lob): Remove.
+	(check_effective_target_arm_thumb2_ok_no_arm_v8_1m_lob): Likewise.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128051
+	* gcc.dg/torture/pr128051.c: New testcase.
+
+2026-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.dg/fold-pow-1.c: New test case.
+
+2026-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/126562
+	* gcc.dg/vect/no-math-errno-slp-32.c: Update test case.
+	* gcc.dg/vect/no-math-errno-vect-pow-1.c: Likewise.
+	* gcc.dg/vect/pr126562-1.c: New execution test.
+	* gcc.dg/vect/pr126562-2.c: Likewise.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* gcc.dg/vect/vect-simd-22.c: New testcase.
+
+2026-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/pr15184-3.c: New test case.
+
+2026-10-21  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/sve/sve-asrd-2.c (foo_nonpow2): Match only
+	the predicated SDIV.
+	(foo_unsigned): Likewise for UDIV.
+
+2026-10-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/include-supper.a68: Likewise.
+	* algol68/compile/error-pragmat-access-2.a68: Likewise.
+	* algol68/compile/error-pragmat-access-1.a68: Likewise.
+	* algol68/compile/error-pragmat-1.a68: Use nestable pragmats in
+	test.
+	* algol68/compile/error-fbrackets-1.a68: New test.
+	* algol68/compile/supper-pr-is-tag-1.a68: Likewise.
+
+2026-10-21  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* rust/compile/wrong_meta_list_delims.rs: Added new test.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/exhaustiveness5.rs: New test.
+	* rust/compile/issues/issue-4973.rs: New test.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/execute/torture/float_to_int_unchecked.rs: New test.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/issue-3764.rs: New test.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/fop_fast_intrinsics.rs: New test.
+
+2026-10-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/doc_macro.rs: Remove explicit enabling of
+	extended_key_value_attributes feature.
+	* rust/compile/issues/3661.rs: Likewise.
+	* rust/compile/early_feature_gate_in_macro.rs: Removed.
+	* rust/compile/parse_time_feature_gate.rs: Removed.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/float-rem.rs: New test.
+
+2026-10-21  Enes Cevik  <enes@nsvke.com>
+
+	* rust/alloc/alloc.exp: Switch from testing alloc until
+	nameresolution to testing alloc until typecheck.
+
+2026-10-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/trait-alias-gate.rs: New test.
+	* rust/compile/trait-alias-lowering.rs: New test.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/execute/torture/eval-order-call-args.rs: New test.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/match-guard-exhaustive.rs: New test.
+	* rust/compile/match-guard-type.rs: New test.
+	* rust/compile/match-guard-unsafe.rs: New test.
+	* rust/execute/torture/match-guard.rs: New test.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/used-attr4.rs: New test.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/used-attr1.rs: New test.
+	* rust/compile/used-attr2.rs: New test.
+	* rust/compile/used-attr3.rs: New test.
+	* rust/compile/used-attr5.rs: New file.
+
+2026-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/private4.ads: New test.
+
+2026-10-21  Reshma Roy  <Reshma.Roy@amd.com>
+
+	* gcc.dg/tree-ssa/popcount11.c: New test.
+
+2026-10-21  xiezhiheng  <xiezhiheng@huawei.com>
+
+	* g++.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp:
+	Add -fno-schedule-insns2 option.
+	* gcc.target/aarch64/sve2/acle/aarch64-sve2-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sve/pred_clobber_4.c: Adjust instruction order.
+	* gcc.target/aarch64/sve2/acle/asm/pmlal_pair_u64.c: Likewise.
+
+2026-10-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/mfentry-m64.c: Test for exactly one call.
+
+2026-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/bitint-112.c: Move 2026-10-20 test to ...
+	* gcc.dg/torture/bitint-114.c: ... here.  New test.
+
+2026-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127766
+	* g++.dg/ext/builtin-structured-binding-size2.C: Expect different
+	diagnostics.
+	* g++.dg/ext/builtin-structured-binding-size7.C: New test.
+
+2026-10-21  Merlin Warner-Huish  <merlin.warner-huish@embecosm.com>
+
+	PR tree-optimization/126566
+	* gcc.dg/torture/pr126566.c: New test.
+
 2026-10-20  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173

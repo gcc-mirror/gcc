@@ -1,3 +1,12 @@
+2026-10-21  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rustc-lib-patches/patches/0001-core-ffi-c-str.for-rfl-patch: Backported patch to
+	support CStr parsing.
+	* rustc-lib-patches/patches/0002-alloc-vec-extract-if.for-rfl-patch: Backported vec's
+	implementation of extract_if.
+	* rustc-lib-patches/rustc-lib-patch.py: Script to apply the patch files to rustc-lib.
+	* rustc-lib-patches/README.md: the README file for this dir.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.

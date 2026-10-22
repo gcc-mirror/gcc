@@ -1,3 +1,147 @@
+2026-10-21  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	PR rtl-optimization/123905
+	* ext-dce.cc (is_trivially_redundant_extension): New helper function.
+	(ext_dce_try_optimize_extension): Keep trivially redundant extensions.
+	* rtlanal.cc (nonzero_bits1): Improve CLZ and CTZ handling.
+
+2026-10-21  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR rtl-optimization/127142
+	* config/pa/pa.md: Remove ldil/addl alternative from insns
+	to load the high part of a symbolic operand.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128069
+	* tree-vect-slp.cc (vect_slp_function): Split region
+	at blocks with incoming abnormal edges.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128052
+	* tree-ssa-sccvn.cc (vn_reference_lookup_3): Guard single-store
+	lookup with maxsizei <= bufsize * BITS_PER_UNIT.  Increase
+	buffer size to bufsize + 2.  Account for the bit remainder
+	(offseti - offset2i) % BITS_PER_UNIT when verifying that
+	sufficient bits were encoded.
+
+2026-10-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi: Correct arm_v8_1_lob_ok to
+	arm_v8_1m_lob_hw.
+
+2026-10-21  Nathan Sidwell  <nathan@acm.org>
+
+	* config/riscv/riscv-builtins.cc (riscv_builtin_description): Repack
+	fields to add ecf_flags member.
+	(RISCV_BUILTIN_NO_PREFIX, RISCV_BUILTIN, DIRECT_BUILTIN): Add ECF arg.
+	(riscv_builtins): Adjust DIRECT_BUILTINs.
+	(riscv_init_builtins): Set the ECF flags.
+	* config/riscv/andes.def: Add ECF flags.
+	* config/riscv/corev.def: Likewise.
+	* config/riscv/riscv-cmo.def: Likewise.
+	* config/riscv/riscv-scalar-crypto.def: Likewise.
+
+2026-10-21  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/bitmanip.md (shNadduw): Use const_int_operand rather
+	than immediate_operand and const_arith_oprerand instead of
+	arith_operand.
+	(slliuw, bexti): Similarly.
+	(bclr splitter with masked position): Similarly.
+	* config/riscv/predicates.md (x1x5_operand): Only allow REGs.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128054
+	* gimple-ssa-isolate-paths.cc (find_implicit_erroneous_behavior):
+	Iterate over edges and then PHIs for NULL dereference discovery.
+	Duplicate each path exactly once and apply all transforms for
+	UB on that edge to that duplicate.
+
+2026-10-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* doc/sourcebuild.texi: Remove arm_thumb2_no_arm_v8_1_lob and
+	arm_thumb2_ok_no_arm_v8_1_lob.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128051
+	* gimple-fold.cc (decode_field_reference): Use TYPE_SIGN of mask
+	operand when extending and_mask to prec_in.
+
+2026-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* fold-const-call.cc (fold_const_pow): Add compile-time evaluation
+	for more cases (of infinite arguments).
+	* real.cc (real_isinteger): Improve (both) implementations.
+	(real_isoddinteger): New function to test if REAL_VALUE_TYPE
+	is an odd integer.
+	* real.h (real_isoddinteger): Prototype here.
+
+2026-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR tree-optimization/126562
+	* tree-vect-patterns.cc (vect_recog_pow_pattern): Update
+	square root case to check for signed zero or negative infinity.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Disable
+	partial vectors if get_related_vectype_for_scalar_type returns
+	NULL_TREE for the mask.
+
+2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* tree-vect-loop.cc (vect_verify_full_masking_avx512):
+	Require all loop masks to be integer mode masks.
+
+2026-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* combine.cc (make_field_assignment): Treat PLUS like IOR and XOR.
+
+2026-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgrtl.cc (force_nonfallthru_and_redirect): Use label_ref_label
+	and set_label_ref_label calls instead of the remaining two XEXP uses.
+
+2026-10-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR bootstrap/112422
+	* configure.ac: Check that gmp.h can be used.
+	* configure: Regenerate.
+
+2026-10-21  Reshma Roy  <Reshma.Roy@amd.com>
+
+	PR tree-optimization/127748
+	* match.pd: Fix incorrect POPCOUNT identification in the first 32-bit
+	Hacker's Delight matcher.
+
+2026-10-21  xiezhiheng  <xiezhiheng@huawei.com>
+
+	* config/aarch64/aarch64-sve.md: Add sve_type for SVE instructions.
+	* config/aarch64/aarch64.md: Likewise.
+
+2026-10-21  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_function_profiler): Make the
+	-mnop-mcount/default handling an else branch of the
+	flag_fentry case.
+
+2026-10-21  Benjamin Wu  <soggysocks206@gmail.com>
+
+	* gimple-ssa-store-merging.cc (find_bswap_or_nop): Remove unneeded cast
+	to int.
+
+2026-10-21  Merlin Warner-Huish  <merlin.warner-huish@embecosm.com>
+
+	PR tree-optimization/126566
+	* tree-ssa-phiopt.cc (spaceship_replacement): Check the number of
+	successors of cond3_bb rather than cond2_bb.
+
 2026-10-20  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	PR lto/115300

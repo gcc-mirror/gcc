@@ -1,3 +1,15 @@
+2026-10-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/18762
+	PR ada/31417
+	PR ada/38330
+	* sem_ch3.adb (Build_Derived_Record_Type): Set Has_Private_Ancestor
+	on the extension of a formal tagged private type.  Implement the RM
+	7.3(13) subclause consistently independently of whether the derived
+	type itself is declared with discriminants.
+	(Derive_Subprogram): Document the implementation of RM 6.3.1(7).
+	(Process_Full_View): Remove obsolete comment about RM 7.3(13).
+
 2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/127994

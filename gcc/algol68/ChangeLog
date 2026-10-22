@@ -1,3 +1,31 @@
+2026-10-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-lang.cc (a68_post_options): Fix diagnostic format.
+
+2026-10-21  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* ga68.vw: Add syntax for nested pragmats.
+	* ga68.texi (Dialect options): Document that -fbrackets can only
+	be used in upper storpping.
+	* a68-parser-scanner.cc (skip_pragmat): Likewise.
+	(next_preprocessor_item): Likewise.
+	(pragment): Likewise.
+	(get_next_token): Likewise.
+	(tokenise_source): Likewise.
+	* a68-parser-pragmat.cc (handle_access_in_pragmat): Handle nested
+	pragmats.
+	(handle_pragmat): Likewise.
+	* a68-parser-keywords.cc (a68_set_up_tables): Add symbols for
+	BOLD_PRAGMAT_SYMBOL and STYLE_I_PRAGMAT_SYMBOL in both upper and
+	supper stropping.
+	* a68-parser-attrs.def (BOLD_PRAGMAT_BEGIN_SYMBOL): New AST
+	attribute.
+	(BOLD_PRAGMAT_END_SYMBOL): Likewise.
+	(STYLE_I_PRAGMAT_BEGIN_SYMBOL): Likewise.
+	(STYLE_I_PRAGMAT_END_SYMBOL): Likewise.
+	* a68-lang.cc (a68_post_options): -fbrackets is not compatible
+	with supper stropping.
+
 2026-10-18  Jose E. Marchesi  <jemarch@gnu.org>
 
 	PR algol68/127977

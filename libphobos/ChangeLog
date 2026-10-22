@@ -1,3 +1,9 @@
+2026-10-21  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure: Regenerate.
+	* m4/libtool.m4 (_LT_LANG_D_CONFIG): Use AC_LANG_PUSH,
+	AC_LANG_POP instead of AC_LANG_SAVE, AC_LANG_RESTORE.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

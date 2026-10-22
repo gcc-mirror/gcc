@@ -1,3 +1,13 @@
+2026-10-21  Alexey Pavlov  <alexey.pawlow@gmail.com>
+
+	* Makefile.in: Enable EXTRA_GNATTOOLS for gnattools-native
+	target.
+
+2026-10-21  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* configure: Regenerate.
+	* configure.ac: Correct cygwin32 to cygwin.
+
 2026-06-29  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

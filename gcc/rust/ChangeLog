@@ -1,3 +1,190 @@
+2026-10-21  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* checks/errors/rust-attribute-checker.cc
+	(AttributeChecker::visit): Added check.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* checks/errors/rust-hir-pattern-analysis.cc
+	(PatStack::pop_head_constructor): Insert the sub-patterns in front of
+	the remaining columns.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Declare the new intrinsic.
+	* backend/rust-intrinsic-handlers.cc (float_to_int_unchecked): New handler.
+	* backend/rust-intrinsic-handlers.h (float_to_int_unchecked): Declare it.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Add the intrinsic to the typecheck
+	info.
+	* util/rust-intrinsic-values.h: New value for float_to_int_unchecked.
+
+2026-10-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/feature/rust-feature-defs.h
+	(DERIVE_COERCE_POINTEE): Move to...
+	* checks/errors/feature/rust-feature-defs-rfl.h
+	(DERIVE_COERCE_POINTEE): ...here.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* resolve/rust-forever-stack.h (ForeverStack::forward_declared): Also
+	flag params declared after the current one.
+	* resolve/rust-late-name-resolver-2.0.cc (resolve_type_path_like): Skip
+	the check for Self.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Reformat the table and add entries for
+	f<op>_fast intrinsics.
+	* backend/rust-intrinsic-handlers.cc (fop_fast): New handler for f<op>_fast
+	intrinsics.
+	* backend/rust-intrinsic-handlers.h (fop_fast): New declaration.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Add typecheck info for f<op>_fast
+	intrinsics.
+	* util/rust-intrinsic-values.h: New intrinsics.
+
+2026-10-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/feature/rust-feature-collector.cc
+	(FeatureCollector::collect (Crate)): Do not automatically enable
+	extended_key_value_attributes when targetting rustc versions
+	before 1.50.
+	* checks/errors/feature/rust-feature-defs-rfl.h
+	(EXTENDED_KEY_VALUE_ATTRIBUTES): Remove feature definition.
+	* parse/rust-parse-impl-attribute.hxx
+	(Parser::parse_attr_input): Remove EXTENDED_KEY_VALUE_ATTRIBUTES
+	feature gate.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust-gcc.cc (builtin_remainder_float_call): New function.
+	(maybe_extend_precision): Likewise.
+	(arithmetic_or_logical_expression): Call them and adapt logic.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-builtins.cc (BuiltinsContext::lookup_simple_builtin): Improve API
+	to return an optional<tree> instead.
+	(BuiltinsContext::lookup_gcc_builtin): Likewise.
+	(BuiltinsContext::map_llvm_to_gcc_builtin): Return an expected<T> instead to avoid
+	passing two parameters by pointer.
+	* backend/rust-builtins.h (enum class LlvmBuiltinMappingResult): Rename and improve into...
+	(struct LlvmBuiltinMappingError): ...This. In order to have a better interface, associated
+	functions and an associated `emit` method on the error.
+	* backend/rust-compile-extern.h: Use these new interfaces.
+	* backend/rust-compile-intrinsic.cc (Intrinsics::compile): Likewise.
+	* backend/rust-intrinsic-handlers.cc (expect): Likewise.
+	(op_with_overflow): Likewise.
+	(copy): Likewise.
+	(atomic_store): Likewise.
+	(atomic_load): Likewise.
+	(ctlz_handler): Likewise.
+	(cttz_handler): Likewise.
+	(move_val_init): Likewise.
+	(uninit): Likewise.
+	(prefetch_data): Likewise.
+	(bswap_handler): Likewise.
+	(write_bytes_handler): Likewise.
+	* rust-gcc.cc (fetch_overflow_builtins): Likewise.
+
+2026-10-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-collector.cc
+	(TokenCollector::visit (TraitAlias)): New function definition.
+	* ast/rust-ast-collector.h (TokenCollector::visit (TraitAlias)):
+	New function declaration.
+	* ast/rust-ast-visitor.cc
+	(DefaultASTVisitor::visit (TraitAlias)): New function
+	definition.
+	* ast/rust-ast-visitor.h (ASTVisitor::visit (TraitAlias)):
+	Likewise.
+	(DefaultASTVisitor::visit (TraitAlias)): New function
+	declaration.
+	* ast/rust-ast.cc (TraitAlias::as_string): New function
+	definition.
+	(TraitAlias::accept_vis): Likewise.
+	* ast/rust-ast.h (Item::Kind::TraitAlias): New enumerator.
+	* ast/rust-item.h (class TraitAlias): New.
+	* checks/errors/feature/rust-feature-gate.cc
+	(FeatureGate::visit (TraitAlias)): New function definition, gate
+	trait alias usage.
+	* checks/errors/feature/rust-feature-gate.h
+	(FeatureGate::visit (TraitAlias)): New function declaration.
+	* expand/rust-derive.h (DeriveVisitor::visit (TraitAlias)): New
+	function definition.
+	* hir/rust-ast-lower-base.cc
+	(ASTLoweringBase::visit (TraitAlias)): Likewise.
+	* hir/rust-ast-lower-base.h
+	(ASTLoweringBase::visit (TraitAlias)): New function declaration.
+	* hir/rust-ast-lower-item.cc
+	(ASTLoweringItem::visit (TraitAlias)): New function definition,
+	left as a stub for now.
+	* hir/rust-ast-lower-item.h
+	(ASTLoweringItem::visit (TraitAlias)): New function declaration.
+	* parse/rust-parse-impl.hxx (Parser::parse_trait): Handle trait
+	aliases in addition to normal trait definitions.
+	* parse/rust-parse.h (Parser::parse_trait): Change return type
+	to allow returning trait aliases.
+	* resolve/rust-default-resolver.cc
+	(DefaultResolver::visit (TraitAlias)): New function definition.
+	* resolve/rust-default-resolver.h
+	(DefaultResolver::Visit (TraitAlias)): New function declaration.
+	* resolve/rust-toplevel-name-resolver-2.0.cc
+	(TopLevel::visit (TraitAlias)): New function definition.
+	* resolve/rust-toplevel-name-resolver-2.0.h
+	(TopLevel::visit (TraitAlias)): New function declaration.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust-gcc.cc (save_call_operands): New function.
+	(call_expression): Use it to evaluate the callee and the arguments
+	from left to right.
+
+2026-10-21  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc
+	(TypeCheckExpr::visit (MatchExpr)): Type check match arm guards as
+	bool.
+	* backend/rust-compile-expr.cc (CompileExpr::visit (MatchExpr)): Only
+	run the arm body when its guard holds.
+	* checks/errors/rust-unsafe-checker.cc
+	(UnsafeChecker::visit (MatchExpr)): Visit match arm guards.
+	* checks/errors/rust-const-checker.cc
+	(ConstChecker::visit (MatchExpr)): Likewise.
+	* checks/errors/rust-hir-pattern-analysis.cc
+	(PatternChecker::visit (MatchExpr)): Likewise.
+
+2026-10-21  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/feature/contrib/Makefile: Remove copyright year
+	templating.
+	* checks/errors/feature/contrib/copyright-stub.h: Fill in
+	copyright year.
+	* checks/errors/feature/contrib/parse.y: Handle incomplete and
+	__status_to_bool.
+	* checks/errors/feature/contrib/scan.l: Likewise and improve
+	string literal escape handling.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-item.cc (handle_used_attr): New function.
+	(CompileItem::visit): Call it.
+
+2026-10-21  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* checks/errors/feature/rust-feature-defs-rfl.h (FEATURE_ACTIVE): Add `used_with_arg`
+	feature.
+	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::check_used_attribute):
+	New function.
+	(FeatureGate::visit): Implement feature gating visits for static items.
+	* checks/errors/feature/rust-feature-gate.h: Declare them.
+	* checks/errors/rust-builtin-attribute-checker.cc (used): New handler.
+	(check_valid_attribute_for_item): Handle `used` attribute for static items.
+	* util/rust-attribute-values.h: Add new attribute value for `used`.
+	* util/rust-attributes.cc: Likewise.
+	* backend/rust-compile-item.cc (CompileItem::visit): Add note about implementing the
+	`#[used]` attribute properly in our backend.
+
 2026-10-13  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
 
 	* rust-gcc.cc (arithmetic_or_logical_expression): Use build2_loc
