@@ -700,7 +700,7 @@ ctlz_handler (IntrinsicCtx &ctx, bool nonzero)
 
   auto builtin_decl
     = BuiltinsContext::get ().lookup_simple_builtin (builtin_name);
-  rust_assert (builtin_decl != error_mark_node);
+  rust_assert (builtin_decl);
 
   tree builtin_fn = build_fold_addr_expr_loc (locus, *builtin_decl);
   tree clz_expr
