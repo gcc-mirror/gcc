@@ -904,9 +904,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      ceil (BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL IFN_CEIL
 	   BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL IFN_CEIL)
  (simplify
-  (cond (op:c (minus:s SSA_NAME@0 (floor SSA_NAME@0))
-	      (minus:s (ceil SSA_NAME@0) SSA_NAME@0))
-	(bt SSA_NAME@0) (bf SSA_NAME@0))
+  (cond (op:c (minus:s @0 (floor @0))
+	      (minus:s (ceil @0) @0))
+	(bt @0) (bf @0))
   (if (!HONOR_SIGNED_ZEROS (type) && !HONOR_SIGN_DEPENDENT_ROUNDING (type))
    (floor (plus @0 { build_real (type, dconsthalf); })))))
 
