@@ -9986,7 +9986,7 @@ gfc_caf_is_dealloc_only (int caf_mode)
 enum {DEALLOCATE_ALLOC_COMP = 1, NULLIFY_ALLOC_COMP,
       COPY_ALLOC_COMP, COPY_ONLY_ALLOC_COMP, REASSIGN_CAF_COMP,
       ALLOCATE_PDT_COMP, DEALLOCATE_PDT_COMP, CHECK_PDT_DUMMY,
-      BCAST_ALLOC_COMP};
+      CHECK_PDT_INTENT_OUT_DUMMY, BCAST_ALLOC_COMP};
 
 static gfc_actual_arglist *pdt_param_list;
 static bool generating_copy_helper;
@@ -10161,6 +10161,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
   int caf_dereg_mode;
   symbol_attribute *attr;
   bool deallocate_called;
+  bool intent_out = purpose == CHECK_PDT_INTENT_OUT_DUMMY;
 
   gfc_init_block (&fnblock);
 
@@ -11381,6 +11382,7 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	  break;
 
 	case CHECK_PDT_DUMMY:
+	case CHECK_PDT_INTENT_OUT_DUMMY:
 
 	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
 				  decl, cdecl, NULL_TREE);
@@ -11397,18 +11399,58 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	    {
 	      tmp = gfc_check_pdt_dummy (c->ts.u.derived, comp,
 					 c->as ? c->as->rank : 0,
-					 pdt_param_list);
+					 pdt_param_list, intent_out);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 
 	  if (!c->attr.pdt_len)
-	    continue;
+	    {
+	      gfc_se tse;
+	      if (!intent_out
+		  || c->attr.codimension
+		  || c->attr.pointer
+		  || IS_PDT (c) || IS_CLASS_PDT (c)
+		  || c->attr.pdt_comp || c->attr.pdt_kind
+		  || !c->initializer
+		  || !gfc_is_constant_expr (c->initializer)) // Just in case!
+		continue;
+
+	      /* F2023 19.6.5(24) "Invocation of a procedure that has a
+		 nonpointer, nonallocatable INTENT (OUT) dummy argument causes
+		 all nonpointer default-initialized subcomponents of the dummy
+		 argument to become defined."  */
+	      if (c->initializer->expr_type == EXPR_CONSTANT)
+		{
+		  gfc_init_se (&tse, NULL);
+		  gfc_conv_expr (&tse, c->initializer);
+		  gfc_add_modify (&fnblock, comp, tse.expr);
+		}
+	      else if (c->initializer->expr_type == EXPR_STRUCTURE)
+		{
+		  tmp = gfc_trans_structure_assign (comp, c->initializer,
+						    true, false);
+		  gfc_add_expr_to_block (&fnblock, tmp);
+		}
+	      else if (c->initializer->expr_type == EXPR_ARRAY)
+		{
+		  tree type = TREE_TYPE (TREE_TYPE (comp));
+		  tree len = GFC_TYPE_ARRAY_SIZE (TREE_TYPE (comp));
+		  len = fold_build2_loc (input_location, MULT_EXPR,
+					 TREE_TYPE (len), len,
+					 TYPE_SIZE_UNIT (type));
+
+		  tmp = gfc_build_constant_array_constructor (c->initializer, type);
+		  tmp = gfc_build_memcpy_call (gfc_conv_array_data (comp), tmp, len);
+		  gfc_add_expr_to_block (&fnblock, tmp);
+		}
+	      else
+		continue;
+	    }
 	  else
 	    {
 	      gfc_se tse;
 	      gfc_expr *c_expr = NULL;
 	      gfc_actual_arglist *param = pdt_param_list;
-
 	      gfc_init_se (&tse, NULL);
 	      for (; param; param = param->next)
 		if (!strcmp (c->name, param->name)
@@ -11612,13 +11654,15 @@ gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
 
 tree
 gfc_check_pdt_dummy (gfc_symbol * der_type, tree decl, int rank,
-		     gfc_actual_arglist *param_list)
+		     gfc_actual_arglist *param_list, bool intent_out)
 {
   tree res;
   gfc_actual_arglist *old_param_list = pdt_param_list;
   pdt_param_list = param_list;
   res = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
-			       CHECK_PDT_DUMMY, 0, NULL);
+			       intent_out ? CHECK_PDT_INTENT_OUT_DUMMY :
+					    CHECK_PDT_DUMMY,
+			       0, NULL);
   pdt_param_list = old_param_list;
   return res;
 }

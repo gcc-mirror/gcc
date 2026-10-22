@@ -1749,7 +1749,8 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       && (gfc_current_ns == sym->ns
 	  || (gfc_current_ns == sym->ns->parent
 	      && gfc_current_ns->proc_name->attr.flavor != FL_MODULE))
-      && !(sym->attr.use_assoc || sym->attr.dummy || sym->attr.result))
+      && !(sym->attr.use_assoc || sym->attr.result
+	   || (sym->attr.dummy && sym->attr.intent != INTENT_OUT)))
     gfc_defer_symbol_init (sym);
 
   if ((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_comp)
@@ -5204,11 +5205,25 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	  else if (sym->attr.dummy)
 	    {
+	      bool intent_out = false;
+	      tree present = NULL_TREE;
+	      /* F2023 19.6.5(24)  */
+	      if (sym->attr.intent == INTENT_OUT)
+		intent_out = true;
 	      tmp = gfc_check_pdt_dummy (sym->ts.u.derived,
 					 sym->backend_decl,
 					 sym->as ? sym->as->rank : 0,
-					 sym->param_list);
+					 sym->param_list, intent_out);
+	      if (sym->attr.optional)
+		{
+		  present = gfc_conv_expr_present (sym, false);
+		  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
+				    present, tmp,
+				    build_empty_stmt (input_location));
+		}
+
 	      gfc_add_expr_to_block (&tmpblock, tmp);
+
 	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
 	    }
 	}
