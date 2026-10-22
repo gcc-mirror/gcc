@@ -145,9 +145,15 @@ replace_phi_edge_with_variable (basic_block cond_block,
     {
       basic_block bb1 = EDGE_SUCC (cond_block, 0)->dest;
       basic_block bb2 = EDGE_SUCC (cond_block, 1)->dest;
+      // If the new phi entry does not refer to either of
+      // the middle bb, then either middle bbs can be deleted
+      // as long as the middle bbs only reach the phi bb and only
+      // reachable from the conditional bb.
       if (single_pred_p (bb1) && single_pred_p (bb2)
 	  && single_succ_p (bb1) && single_succ_p (bb2)
-	  && empty_block_p (bb1) && empty_block_p (bb2))
+	  && (TREE_CODE (new_tree) != SSA_NAME
+	      || (gimple_bb (SSA_NAME_DEF_STMT (new_tree)) != bb1
+		  && gimple_bb (SSA_NAME_DEF_STMT (new_tree)) != bb2)))
 	deleteboth = true;
     }
   else
@@ -1250,6 +1256,12 @@ match_simplify_replacement (basic_block cond_bb, basic_block middle_bb,
       && !SSA_NAME_IS_DEFAULT_DEF (gimple_cond_rhs (stmt)))
     bitmap_set_bit (exprs_maybe_dce,
 		    SSA_NAME_VERSION (gimple_cond_rhs (stmt)));
+  if (TREE_CODE (arg_true) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (arg_true))
+    bitmap_set_bit (exprs_maybe_dce, SSA_NAME_VERSION (arg_true));
+  if (TREE_CODE (arg_false) == SSA_NAME
+      && !SSA_NAME_IS_DEFAULT_DEF (arg_false))
+    bitmap_set_bit (exprs_maybe_dce, SSA_NAME_VERSION (arg_false));
 
   gsi = gsi_last_bb (cond_bb);
   /* Insert the sequence generated from gimple_simplify_phiopt.  */
