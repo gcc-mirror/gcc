@@ -436,10 +436,20 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       virtual int_type
       overflow(int_type __c = _Traits::eof());
 
-      // Convert internal byte sequence to external, char-based
+      // Convert internal _CharT sequence to external, char-based
       // sequence via codecvt.
       bool
-      _M_convert_to_external(char_type*, streamsize);
+      _M_convert_to_external(const char_type*, streamsize);
+
+#if ! _GLIBCXX_INLINE_VERSION // ABI compat
+      __attribute__((__always_inline__))
+      bool
+      _M_convert_to_external(char_type* __ibuf, streamsize __ilen)
+      {
+	const char_type* __cibuf = __ibuf;
+	return _M_convert_to_external(__cibuf, __ilen);
+      }
+#endif
 
       /**
        *  @brief  Manipulates the buffer.

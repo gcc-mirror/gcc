@@ -434,7 +434,9 @@ GLIBCXX_3.4 {
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE15*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE16*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE19*;
-    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE2*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE22_M_convert_to_externalEP[cw][ilx];
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE26_M_destroy_internal_buffer*;
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE27_M_allocate_internal_buffer*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE3*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4openEPKc*;
     _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE4sync*;
@@ -2640,6 +2642,9 @@ GLIBCXX_3.4.37 {
     # basic_string::allocate_at_least
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE*_S_allocate_*;
     _ZNSt7__cxx1112basic_stringI[cw]St11char_traitsI[cw]ESaI[cw]EE*_M_create_*;
+
+    # basic_filebuf::_M_convert_to_external(const C*, streamsize)
+    _ZNSt13basic_filebufI[cw]St11char_traitsI[cw]EE22_M_convert_to_externalEPK[cw][ilx];
 
 } GLIBCXX_3.4.36;
 

@@ -561,26 +561,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
             }
 	  if (this->pbase() < this->pptr())
 	    {
-	      struct _Guard {
-		~_Guard() { if (_M_p) _M_p->pbump(-1); }
-		basic_filebuf* _M_p;
-	      };
-	      _Guard __g = { };
+	      const _CharT* const __pbase = this->pbase();
+	      _CharT* const __pptr = this->pptr();
+	      streamsize __n = __pptr - __pbase;
 
 	      // If appropriate, append the overflow char.
 	      if (!__testeof)
 		{
-		  *this->pptr() = traits_type::to_char_type(__c);
-		  this->pbump(1);
-		  __g._M_p = this;
+		  *__pptr = traits_type::to_char_type(__c);
+		  ++__n;
 		}
 
 	      // Convert pending sequence to external representation,
-	      // and output.
-	      if (_M_convert_to_external(this->pbase(),
-					 this->pptr() - this->pbase()))
+	      // and output. Include the overflow char if appropriate.
+	      if (_M_convert_to_external(__pbase, __n))
 		{
-		  __g._M_p = 0;
 		  _M_set_buffer(0);
 		  __ret = traits_type::not_eof(__c);
 		}
@@ -599,10 +594,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		}
 	      __ret = traits_type::not_eof(__c);
 	    }
-	  else
+	  else // Unbuffered.
 	    {
-	      // Unbuffered.
-	      char_type __conv = traits_type::to_char_type(__c);
+	      const char_type __conv = traits_type::to_char_type(__c);
 	      if (__testeof || _M_convert_to_external(&__conv, 1))
 		{
 		  _M_writing = true;
@@ -616,62 +610,48 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _CharT, typename _Traits>
     bool
     basic_filebuf<_CharT, _Traits>::
-    _M_convert_to_external(_CharT* __ibuf, streamsize __ilen)
+    _M_convert_to_external(const _CharT* __ibuf, streamsize __ilen)
     {
-      // Sizes of external and pending output.
-      streamsize __elen;
-      streamsize __plen;
       if (__check_facet(_M_codecvt).always_noconv())
-	{
-	  __elen = _M_file.xsputn(reinterpret_cast<char*>(__ibuf), __ilen);
-	  __plen = __ilen;
-	}
-      else
-	{
-	  // Worst-case number of external bytes needed.
-	  // XXX Not done encoding() == -1.
-	  streamsize __blen = __ilen * _M_codecvt->max_length();
-	  char* __buf = static_cast<char*>(__builtin_alloca(__blen));
+	return _M_file.xsputn(reinterpret_cast<const char*>(__ibuf), __ilen)
+		 == __ilen;
 
-	  char* __bend;
-	  const char_type* __iend;
-	  codecvt_base::result __r;
-	  __r = _M_codecvt->out(_M_state_cur, __ibuf, __ibuf + __ilen,
-				__iend, __buf, __buf + __blen, __bend);
+      // Worst-case number of external bytes needed.
+      // XXX Not done encoding() == -1.
+      const streamsize __maxlen = __ilen * _M_codecvt->max_length();
+      char* const __buf = static_cast<char*>(__builtin_alloca(__maxlen));
+      streamsize __blen = __maxlen;
 
-	  if (__r == codecvt_base::ok || __r == codecvt_base::partial)
-	    __blen = __bend - __buf;
-	  else if (__r == codecvt_base::noconv)
-	    {
-	      // Same as the always_noconv case above.
-	      __buf = reinterpret_cast<char*>(__ibuf);
-	      __blen = __ilen;
-	    }
-	  else
-	    __throw_ios_failure(__N("basic_filebuf::_M_convert_to_external "
-				    "conversion error"));
-  
-	  __elen = _M_file.xsputn(__buf, __blen);
-	  __plen = __blen;
+      char* __bend;
+      const char_type* __iend;
+      codecvt_base::result __r;
+      __r = _M_codecvt->out(_M_state_cur, __ibuf, __ibuf + __ilen, __iend,
+			    __buf, __buf + __blen, __bend);
+      __blen = __bend - __buf;
 
-	  // Try once more for partial conversions.
-	  if (__r == codecvt_base::partial && __elen == __plen)
-	    {
-	      __r = _M_codecvt->out(_M_state_cur,
-				    __iend, __ibuf + __ilen, __iend,
-				    __buf, __buf + __blen, __bend);
-	      if (__r != codecvt_base::error)
-		{
-		  const streamsize __rlen = __bend - __buf;
-		  __elen = _M_file.xsputn(__buf, __rlen);
-		  __plen = __rlen;
-		}
-	      else
-		__throw_ios_failure(__N("basic_filebuf::_M_convert_to_external "
-					"conversion error"));
-	    }
-	}
-      return __elen == __plen;
+      if (__r == codecvt_base::ok)
+	return _M_file.xsputn(__buf, __blen) == __blen;
+      else if (__r == codecvt_base::noconv)
+	return _M_file.xsputn(reinterpret_cast<const char*>(__ibuf), __ilen)
+		 == __ilen;
+      else if (__r == codecvt_base::error)
+	__throw_ios_failure(__N("basic_filebuf::_M_convert_to_external "
+				"conversion error"));
+
+      // Conversion was partial, some output is in __buf.
+      if (_M_file.xsputn(__buf, __blen) != __blen)
+	return false;
+
+      // Try once more for partial conversions.
+      __r = _M_codecvt->out(_M_state_cur, __iend, __ibuf + __ilen, __iend,
+			    __buf, __buf + __maxlen, __bend);
+
+      if (__r == codecvt_base::error)
+	__throw_ios_failure(__N("basic_filebuf::_M_convert_to_external "
+				"conversion error"));
+
+      __blen = __bend - __buf;
+      return _M_file.xsputn(__buf, __blen) == __blen;
     }
 
   template<typename _CharT, typename _Traits>
