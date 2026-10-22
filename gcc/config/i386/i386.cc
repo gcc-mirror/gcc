@@ -11642,8 +11642,29 @@ ix86_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT size,
   if (cfun->machine->by_pieces_in_use)
     return true;
 
+  /* compare_by_pieces pairs up word-sized pieces before branching (see
+     ix86_compare_by_pieces_branch_ratio), which is the code a double-word
+     compare expands to.  Halve SIZE so the word-mode estimate gives the
+     same cutoff as the double-word path.  */
+  if (op == COMPARE_BY_PIECES
+      && COMPARE_MAX_PIECES == UNITS_PER_WORD
+      && speed_p)
+    size = (size >> 1) + (size & 1);
+
   return default_use_by_pieces_infrastructure_p (size, align, op,
 						 speed_p);
+}
+
+/* Implement TARGET_COMPARE_BY_PIECES_BRANCH_RATIO.  */
+
+static int
+ix86_compare_by_pieces_branch_ratio (machine_mode mode)
+{
+  if (mode == word_mode
+      && COMPARE_MAX_PIECES == UNITS_PER_WORD
+      && optimize_insn_for_speed_p ())
+    return 2;
+  return 1;
 }
 
 /* Allow {LABEL | SYMBOL}_REF - SYMBOL_REF-FOR-PICBASE for Mach-O as
@@ -29210,6 +29231,10 @@ static const scoped_attribute_specs *const ix86_attribute_table[] =
 #undef TARGET_USE_BY_PIECES_INFRASTRUCTURE_P
 #define TARGET_USE_BY_PIECES_INFRASTRUCTURE_P \
   ix86_use_by_pieces_infrastructure_p
+
+#undef TARGET_COMPARE_BY_PIECES_BRANCH_RATIO
+#define TARGET_COMPARE_BY_PIECES_BRANCH_RATIO \
+  ix86_compare_by_pieces_branch_ratio
 
 #undef TARGET_OVERLAP_OP_BY_PIECES_P
 #define TARGET_OVERLAP_OP_BY_PIECES_P hook_bool_void_true
