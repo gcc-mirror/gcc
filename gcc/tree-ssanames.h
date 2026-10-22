@@ -34,9 +34,10 @@ struct GTY(()) ptr_info_def
   /* When known, this is the power-of-two byte alignment of the object this
      pointer points into.  This is usually DECL_ALIGN_UNIT for decls and
      MALLOC_ABI_ALIGNMENT for allocated storage.  When the alignment is not
-     known, it is zero.  Do not access directly but use functions
-     get_ptr_info_alignment, set_ptr_info_alignment,
-     mark_ptr_info_alignment_unknown and similar.  */
+     known, it is zero.  Do not access directly: the only accessors are
+     get_ptr_info_alignment, set_ptr_info_alignment and
+     mark_ptr_info_alignment_unknown, and they take the SSA name rather
+     than this structure, so that the representation can move.  */
   unsigned int align;
 
   /* When alignment is known, the byte offset this pointer differs from the
@@ -73,12 +74,10 @@ extern tree make_ssa_name_fn (struct function *, tree, gimple *,
 			      unsigned int version = 0);
 extern void init_ssa_name_imm_use (tree);
 extern void release_ssa_name_fn (struct function *, tree);
-extern bool get_ptr_info_alignment (struct ptr_info_def *, unsigned int *,
+extern bool get_ptr_info_alignment (const_tree, unsigned int *,
 				    unsigned int *);
-extern void mark_ptr_info_alignment_unknown (struct ptr_info_def *);
-extern void set_ptr_info_alignment (struct ptr_info_def *, unsigned int,
-				    unsigned int);
-extern void adjust_ptr_info_misalignment (struct ptr_info_def *, poly_uint64);
+extern void mark_ptr_info_alignment_unknown (tree);
+extern void set_ptr_info_alignment (tree, unsigned int, unsigned int);
 extern struct ptr_info_def *get_ptr_info (tree);
 extern void set_ptr_nonnull (tree);
 

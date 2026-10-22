@@ -545,10 +545,10 @@ get_nonzero_bits_1 (const_tree name)
 
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
-      if (pi && pi->align)
-	return wi::shwi (-(HOST_WIDE_INT) pi->align
-			 | (HOST_WIDE_INT) pi->misalign, precision);
+      unsigned int align, misalign;
+      if (get_ptr_info_alignment (name, &align, &misalign))
+	return wi::shwi (-(HOST_WIDE_INT) align
+			 | (HOST_WIDE_INT) misalign, precision);
       return wi::shwi (-1, precision);
     }
 
@@ -745,15 +745,18 @@ release_ssa_name_fn (struct function *fn, tree var)
     }
 }
 
-/* If the alignment of the pointer described by PI is known, return true and
-   store the alignment and the deviation from it into *ALIGNP and *MISALIGNP
-   respectively.  Otherwise return false.  */
+/* If the alignment of the pointer NAME is known, return true and store the
+   alignment and the deviation from it into *ALIGNP and *MISALIGNP
+   respectively.  Otherwise return false.  A name with no aliasing info has
+   no known alignment, so this is safe to ask about any name.  */
 
 bool
-get_ptr_info_alignment (struct ptr_info_def *pi, unsigned int *alignp,
+get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 			unsigned int *misalignp)
 {
-  if (pi->align)
+  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+
+  if (pi && pi->align)
     {
       *alignp = pi->align;
       *misalignp = pi->misalign;
@@ -763,46 +766,36 @@ get_ptr_info_alignment (struct ptr_info_def *pi, unsigned int *alignp,
     return false;
 }
 
-/* State that the pointer described by PI has unknown alignment.  */
+/* State that the pointer NAME has unknown alignment.  A name with no
+   aliasing info already has unknown alignment, so this is a no-op rather
+   than a reason for the caller to check.  */
 
 void
-mark_ptr_info_alignment_unknown (struct ptr_info_def *pi)
+mark_ptr_info_alignment_unknown (tree name)
 {
-  pi->align = 0;
-  pi->misalign = 0;
+  struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);
+
+  if (pi)
+    {
+      pi->align = 0;
+      pi->misalign = 0;
+    }
 }
 
 /* Store the power-of-two byte alignment and the deviation from that
-   alignment of pointer described by PI to ALIOGN and MISALIGN
-   respectively.  */
+  alignment of the pointer NAME to ALIGN and MISALIGN respectively.
+  Aliasing info is created for NAME if it does not have any yet.  */
 
 void
-set_ptr_info_alignment (struct ptr_info_def *pi, unsigned int align,
-			    unsigned int misalign)
+set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
 {
   gcc_checking_assert (align != 0);
   gcc_assert ((align & (align - 1)) == 0);
   gcc_assert ((misalign & ~(align - 1)) == 0);
 
+  struct ptr_info_def *pi = get_ptr_info (name);
   pi->align = align;
   pi->misalign = misalign;
-}
-
-/* If pointer described by PI has known alignment, increase its known
-   misalignment by INCREMENT modulo its current alignment.  */
-
-void
-adjust_ptr_info_misalignment (struct ptr_info_def *pi, poly_uint64 increment)
-{
-  if (pi->align != 0)
-    {
-      increment += pi->misalign;
-      if (!known_misalignment (increment, pi->align, &pi->misalign))
-	{
-	  pi->align = known_alignment (increment);
-	  pi->misalign = 0;
-	}
-    }
 }
 
 /* Make PI the aliasing information for NAME.  Allocate a VARYING range if
@@ -834,9 +827,10 @@ get_ptr_info (tree t)
   pi = SSA_NAME_PTR_INFO (t);
   if (pi == NULL)
     {
+      // The cleared allocation leaves align and misalign zero, which is
+      // what unknown alignment is, so there is nothing more to initialize.
       pi = ggc_cleared_alloc<ptr_info_def> ();
       pt_solution_reset (&pi->pt);
-      mark_ptr_info_alignment_unknown (pi);
       set_ssa_name_ptr_info (t, pi);
     }
 
@@ -950,7 +944,7 @@ reset_flow_sensitive_info (tree name)
       set_ssa_name_ptr_info (name, pi);
       /* [E]VRP can derive context sensitive alignment info and
 	 non-nullness properties.  We must reset both.  */
-      mark_ptr_info_alignment_unknown (pi);
+      mark_ptr_info_alignment_unknown (name);
       pi->pt.null = 1;
     }
 
@@ -1102,19 +1096,13 @@ flow_sensitive_info_storage::save (tree name)
       return;
     }
   state = -1;
-  auto ptr_info = SSA_NAME_PTR_INFO (name);
-  if (ptr_info)
-    {
-      align = ptr_info->align;
-      misalign = ptr_info->misalign;
-      null = SSA_NAME_PTR_INFO (name)->pt.null;
-    }
-  else
+  if (!get_ptr_info_alignment (name, &align, &misalign))
     {
       align = 0;
       misalign = 0;
-      null = true;
     }
+  auto ptr_info = SSA_NAME_PTR_INFO (name);
+  null = ptr_info ? ptr_info->pt.null : true;
 }
 
 /* Restore the flow sensitive info from NAME. */
@@ -1136,9 +1124,9 @@ flow_sensitive_info_storage::restore (tree name)
   if (!ptr_info)
     return;
   if (align != 0)
-    set_ptr_info_alignment (ptr_info, align, misalign);
+    set_ptr_info_alignment (name, align, misalign);
   else
-    mark_ptr_info_alignment_unknown (ptr_info);
+    mark_ptr_info_alignment_unknown (name);
   SSA_NAME_PTR_INFO (name)->pt.null = null;
 }
 

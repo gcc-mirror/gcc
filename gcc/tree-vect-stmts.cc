@@ -227,7 +227,7 @@ create_array_ref (tree type, tree ptr, tree alias_ptr_type)
 
   mem_ref = build2 (MEM_REF, type, ptr, build_int_cst (alias_ptr_type, 0));
   /* Arrays have the same alignment as their type.  */
-  set_ptr_info_alignment (get_ptr_info (ptr), TYPE_ALIGN_UNIT (type), 0);
+  set_ptr_info_alignment (ptr, TYPE_ALIGN_UNIT (type), 0);
   return mem_ref;
 }
 
@@ -9497,7 +9497,7 @@ vectorizable_store (vec_info *vinfo,
 	misalign = misalignment;
       if (dataref_offset == NULL_TREE
 	  && TREE_CODE (dataref_ptr) == SSA_NAME)
-	set_ptr_info_alignment (get_ptr_info (dataref_ptr), align, misalign);
+	set_ptr_info_alignment (dataref_ptr, align, misalign);
       align = least_bit_hwi (misalign | align);
 
       /* Compute IFN when LOOP_LENS or final_mask valid.  */
@@ -11563,8 +11563,7 @@ vectorizable_load (vec_info *vinfo,
 	      misalign = misalignment;
 	    if (dataref_offset == NULL_TREE
 		&& TREE_CODE (dataref_ptr) == SSA_NAME)
-	      set_ptr_info_alignment (get_ptr_info (dataref_ptr), align,
-				      misalign);
+	      set_ptr_info_alignment (dataref_ptr, align, misalign);
 	    align = least_bit_hwi (misalign | align);
 
 	    /* Compute IFN when LOOP_LENS or final_mask valid.  */

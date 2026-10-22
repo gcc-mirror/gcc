@@ -2408,7 +2408,7 @@ dump_ssaname_info (pretty_printer *pp, tree node, int spc)
       pp_string (pp, "# PT = ");
       pp_points_to_solution (pp, &pi->pt);
       newline_and_indent (pp, spc);
-      if (get_ptr_info_alignment (pi, &align, &misalign))
+      if (get_ptr_info_alignment (node, &align, &misalign))
 	{
 	  pp_printf (pp, "# ALIGN = %u, MISALIGN = %u", align, misalign);
 	  newline_and_indent (pp, spc);

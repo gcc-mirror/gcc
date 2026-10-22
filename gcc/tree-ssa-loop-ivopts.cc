@@ -7547,8 +7547,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
 	  duplicate_ssa_name_ptr_info (comp, SSA_NAME_PTR_INFO (tgt));
 	  /* As this isn't a plain copy we have to reset alignment
 	     information.  */
-	  if (SSA_NAME_PTR_INFO (comp))
-	    mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (comp));
+	  mark_ptr_info_alignment_unknown (comp);
 	}
     }
 

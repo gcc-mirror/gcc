@@ -1036,7 +1036,7 @@ ccp_finalize (bool nonzero_p)
 	  tem = val->mask.to_uhwi ();
 	  align = least_bit_hwi (tem);
 	  if (align > 1)
-	    set_ptr_info_alignment (get_ptr_info (name), align,
+	    set_ptr_info_alignment (name, align,
 				    (TREE_INT_CST_LOW (val->value)
 				     & (align - 1)));
 	}

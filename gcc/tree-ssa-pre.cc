@@ -3169,8 +3169,7 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	      if ((halign & (halign - 1)) == 0
 		  && (hmisalign & ~(halign - 1)) == 0
 		  && (unsigned int)halign != 0)
-		set_ptr_info_alignment (get_ptr_info (forcedname),
-					halign, hmisalign);
+		set_ptr_info_alignment (forcedname, halign, hmisalign);
 	    }
 	  gimple_set_vuse (call, BB_LIVE_VOP_ON_EXIT (block));
 	  gimple_seq_add_stmt_without_update (&forced_stmts, call);

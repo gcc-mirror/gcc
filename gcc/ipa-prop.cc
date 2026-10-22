@@ -6694,9 +6694,9 @@ ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 				 align, misalign);
 
 		      unsigned old_align, old_misalign;
-		      struct ptr_info_def *pi = get_ptr_info (ddef);
-		      bool old_known = get_ptr_info_alignment (pi, &old_align,
-							       &old_misalign);
+		      bool old_known
+			= get_ptr_info_alignment (ddef, &old_align,
+						  &old_misalign);
 
 		      if (old_known && old_align > align)
 			{
@@ -6722,7 +6722,7 @@ ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 				 "mismatch\n",
 				 old_misalign, misalign);
 
-		      set_ptr_info_alignment (pi, align, misalign);
+		      set_ptr_info_alignment (ddef, align, misalign);
 		    }
 		}
 	      else if (dump_file && INTEGRAL_TYPE_P (TREE_TYPE (parm)))

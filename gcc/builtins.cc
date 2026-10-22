@@ -454,9 +454,8 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
 	   && POINTER_TYPE_P (TREE_TYPE (exp)))
     {
       unsigned int ptr_align, ptr_misalign;
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (exp);
 
-      if (pi && get_ptr_info_alignment (pi, &ptr_align, &ptr_misalign))
+      if (get_ptr_info_alignment (exp, &ptr_align, &ptr_misalign))
 	{
 	  *bitposp = ptr_misalign * BITS_PER_UNIT;
 	  *alignp = ptr_align * BITS_PER_UNIT;

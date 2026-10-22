@@ -1214,8 +1214,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
 	  duplicate_ssa_name_ptr_info (addr, SSA_NAME_PTR_INFO (addr_base));
 	  /* As this isn't a plain copy we have to reset alignment
 	     information.  */
-	  if (SSA_NAME_PTR_INFO (addr))
-	    mark_ptr_info_alignment_unknown (SSA_NAME_PTR_INFO (addr));
+	  mark_ptr_info_alignment_unknown (addr);
 	}
 
       /* Create the prefetch instruction.  */

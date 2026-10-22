@@ -1255,16 +1255,17 @@ maybe_set_nonzero_bits (edge e, tree var)
   cst = gimple_assign_rhs2 (stmt);
   if (POINTER_TYPE_P (TREE_TYPE (var)))
     {
-      struct ptr_info_def *pi = SSA_NAME_PTR_INFO (var);
-      if (pi && pi->misalign)
+      unsigned int old_align, old_misalign;
+      bool known = get_ptr_info_alignment (var, &old_align, &old_misalign);
+      if (known && old_misalign)
 	return;
       wide_int w = wi::bit_not (wi::to_wide (cst));
       unsigned int bits = wi::ctz (w);
       if (bits == 0 || bits >= HOST_BITS_PER_INT)
 	return;
       unsigned int align = 1U << bits;
-      if (pi == NULL || pi->align < align)
-	set_ptr_info_alignment (get_ptr_info (var), align, 0);
+      if (!known || old_align < align)
+	set_ptr_info_alignment (var, align, 0);
     }
   else
     set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
