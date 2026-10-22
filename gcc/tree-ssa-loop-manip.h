@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 typedef void (*transform_callback)(class loop *, void *);
 
+extern void reset_debug_uses_outside_loop (class loop *, basic_block *,
+					   unsigned);
 extern void insert_iv_increment (gimple_stmt_iterator *, bool, gimple_seq);
 extern void create_iv (tree, tree_code, tree, tree, class loop *,
 		       gimple_stmt_iterator *, bool, tree *, tree *,

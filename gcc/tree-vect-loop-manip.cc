@@ -3513,41 +3513,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   /* Before doing any peeling make sure to reset debug binds outside of
      the loop referring to defs not in LC SSA.  */
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-  for (unsigned i = 0; i < loop->num_nodes; ++i)
-    {
-      basic_block bb = LOOP_VINFO_BBS (loop_vinfo)[i];
-      imm_use_iterator ui;
-      gimple *use_stmt;
-      for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  FOR_EACH_IMM_USE_STMT (use_stmt, ui, gimple_phi_result (gsi.phi ()))
-	    if (gimple_debug_bind_p (use_stmt)
-		&& loop != gimple_bb (use_stmt)->loop_father
-		&& !flow_loop_nested_p (loop,
-					gimple_bb (use_stmt)->loop_father))
-	      {
-		gimple_debug_bind_reset_value (use_stmt);
-		update_stmt (use_stmt);
-	      }
-	}
-      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  ssa_op_iter op_iter;
-	  def_operand_p def_p;
-	  FOR_EACH_SSA_DEF_OPERAND (def_p, gsi_stmt (gsi), op_iter, SSA_OP_DEF)
-	    FOR_EACH_IMM_USE_STMT (use_stmt, ui, DEF_FROM_PTR (def_p))
-	      if (gimple_debug_bind_p (use_stmt)
-		  && loop != gimple_bb (use_stmt)->loop_father
-		  && !flow_loop_nested_p (loop,
-					  gimple_bb (use_stmt)->loop_father))
-		{
-		  gimple_debug_bind_reset_value (use_stmt);
-		  update_stmt (use_stmt);
-		}
-	}
-    }
+  reset_debug_uses_outside_loop (loop, LOOP_VINFO_BBS (loop_vinfo),
+				 loop->num_nodes);
 
   prob_vector = profile_probability::guessed_always ().apply_scale (9, 10);
   estimated_vf = vect_vf_for_cost (loop_vinfo);

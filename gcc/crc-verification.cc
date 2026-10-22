@@ -45,6 +45,10 @@ crc_symbolic_execution::is_used_outside_the_loop (tree def)
   gimple *use_stmt;
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
     {
+      /* Debug uses must not affect whether the loop is recognized.  Stale
+	 outside-loop binds are reset if the loop is transformed.  */
+      if (is_gimple_debug (use_stmt))
+	continue;
       if (!flow_bb_inside_loop_p (m_crc_loop, use_stmt->bb))
 	{
 	  if (is_a<gphi *> (use_stmt)

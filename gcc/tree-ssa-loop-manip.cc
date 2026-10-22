@@ -47,6 +47,51 @@ along with GCC; see the file COPYING3.  If not see
    so that we can free them all at once.  */
 static bitmap_obstack loop_renamer_obstack;
 
+/* Reset debug binds outside LOOP that use values defined in the NUM_NODES
+   basic blocks in BBS.  */
+
+void
+reset_debug_uses_outside_loop (class loop *loop, basic_block *bbs,
+			       unsigned num_nodes)
+{
+  for (unsigned i = 0; i < num_nodes; ++i)
+    {
+      basic_block bb = bbs[i];
+      imm_use_iterator ui;
+      gimple *use_stmt;
+      for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
+	   gsi_next (&gpi))
+	{
+	  FOR_EACH_IMM_USE_STMT (use_stmt, ui,
+				 gimple_phi_result (gpi.phi ()))
+	    if (gimple_debug_bind_p (use_stmt)
+		&& loop != gimple_bb (use_stmt)->loop_father
+		&& !flow_loop_nested_p (loop,
+					gimple_bb (use_stmt)->loop_father))
+	      {
+		gimple_debug_bind_reset_value (use_stmt);
+		update_stmt (use_stmt);
+	      }
+	}
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  ssa_op_iter op_iter;
+	  def_operand_p def_p;
+	  FOR_EACH_SSA_DEF_OPERAND (def_p, gsi_stmt (gsi), op_iter, SSA_OP_DEF)
+	    FOR_EACH_IMM_USE_STMT (use_stmt, ui, DEF_FROM_PTR (def_p))
+	      if (gimple_debug_bind_p (use_stmt)
+		  && loop != gimple_bb (use_stmt)->loop_father
+		  && !flow_loop_nested_p (loop,
+					  gimple_bb (use_stmt)->loop_father))
+		{
+		  gimple_debug_bind_reset_value (use_stmt);
+		  update_stmt (use_stmt);
+		}
+	}
+    }
+}
+
 /* Insert IV increment statements STMTS before or after INCR_POS;
    AFTER selects which.  INCR_POS and AFTER can be computed using
    standard_iv_increment_position.  */

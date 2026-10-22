@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "cfgloop.h"
 #include "tree-scalar-evolution.h"
+#include "tree-ssa-loop-manip.h"
 #include "crc-verification.h"
 #include "internal-fn.h"
 #include "predict.h"
@@ -1273,6 +1274,10 @@ crc_optimization::optimize_crc_loop (class loop *loop, gphi *output_crc)
       if (!direct_internal_fn_supported_p (ifn, ty_pair, OPTIMIZE_FOR_BOTH))
 	return false;
     }
+
+  basic_block *bbs = get_loop_body (loop);
+  reset_debug_uses_outside_loop (loop, bbs, loop->num_nodes);
+  free (bbs);
 
   /* Add IFN call and write the return value in the phi_result.  */
   gcall *call = gimple_build_call_internal (ifn, 3, m_crc_arg, m_data_arg,
