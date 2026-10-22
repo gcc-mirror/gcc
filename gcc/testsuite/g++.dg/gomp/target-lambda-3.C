@@ -18,7 +18,7 @@ f1 (int x)
     __builtin_abort ();
 }
 
-/* { dg-final { scan-tree-dump {map\(to:c1\.x \[len: [0-9]+\]\) map\(tofrom:\*c1\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:c1\.x\.__x \[pointer assign, bias: 0\]\)} original { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump {map\(to:c1\.x \[len: [0-9]+\]\) map\(tofrom:\*c1\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:c1\.x\.__x \[pointer assign, bias: 0\]\)} original } } */
 
 void
 f2 (int x, int y)
@@ -30,8 +30,8 @@ f2 (int x, int y)
     __builtin_abort ();
 }
 
-/* { dg-final { scan-tree-dump {map\(to:d2\[1\]\.x \[len: [0-9]+\]\) map\(tofrom:\*d2\[1\]\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:d2\[1\]\.x\.__x \[pointer assign, bias: 0\]\)} original { xfail *-*-* } } }
-   { dg-final { scan-tree-dump {map\(to:d2\[y\]\.x \[len: [0-9]+\]\) map\(tofrom:\*d2\[y\]\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:d2\[y\]\.x\.__x \[pointer assign, bias: 0\]\)} original { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump {map\(to:d2\[1\]\.x \[len: [0-9]+\]\) map\(tofrom:\*d2\[1\]\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:d2\[1\]\.x\.__x \[pointer assign, bias: 0\]\)} original } }
+   { dg-final { scan-tree-dump {map\(to:d2\[y\]\.x \[len: [0-9]+\]\) map\(tofrom:\*d2\[y\]\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:d2\[y\]\.x\.__x \[pointer assign, bias: 0\]\)} original } } */
 
 void
 f3 (int x)
@@ -43,7 +43,7 @@ f3 (int x)
     __builtin_abort ();
 }
 
-/* { dg-final { scan-tree-dump {map\(to:e3\.x\.x \[len: [0-9]+\]\) map\(tofrom:\*e3\.x\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:e3\.x\.x\.__x \[pointer assign, bias: 0\]\)} original { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump {map\(to:e3\.x\.x \[len: [0-9]+\]\) map\(tofrom:\*e3\.x\.x\.__x \[len: [0-9]+\]\) map\(always_pointer:e3\.x\.x\.__x \[pointer assign, bias: 0\]\)} original } } */
 
 void
 f4 (int x)

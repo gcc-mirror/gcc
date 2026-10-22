@@ -11289,6 +11289,10 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
       {
 	gcc_assert (CLASS_TYPE_P (lt));
 
+	if (location_wrapper_p (t))
+	  /* The wrapped DECL gets handled when walking its operand.  */
+	  return NULL_TREE;
+
 	if (TREE_CODE (t) == TARGET_EXPR
 	    && !data->local_decls.contains (TARGET_EXPR_SLOT (t)))
 	  data->local_decls.add (TARGET_EXPR_SLOT (t));
@@ -11302,6 +11306,7 @@ finish_omp_target_clauses_r (tree *tp, int *walk_subtrees, void *ptr)
 		  local to the target region.  */
 	       || TREE_CODE (b) == ARRAY_REF)
 	  b = TREE_OPERAND (b, 0);
+	STRIP_ANY_LOCATION_WRAPPER (b);
 	if ((VAR_P (b)
 	     || TREE_CODE (b) == PARM_DECL
 	     || TREE_CODE (b) == RESULT_DECL)
