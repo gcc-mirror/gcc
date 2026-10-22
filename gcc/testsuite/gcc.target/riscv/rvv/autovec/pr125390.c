@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -mrvv-vector-bits=zvl -O2 --param=riscv-autovec-mode=RVVMF8QI -fno-vect-cost-model" } */
+/* { dg-options "-march=rv64gcv_zvl256b -mabi=lp64d -mrvv-vector-bits=zvl -O2 --param=riscv-autovec-mode=RVVMF8QI -fno-vect-cost-model -fdump-rtl-expand-details" } */
 
 int a, b[64], c[64];
 
@@ -32,3 +32,5 @@ baz (void)
       b[e] = 0;
     }
 }
+
+/* { dg-final { scan-rtl-dump-not "virtual-stack-vars" "expand" } } */

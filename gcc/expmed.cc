@@ -1698,6 +1698,205 @@ extract_bit_field_as_subreg (machine_mode mode, rtx op0,
   return NULL_RTX;
 }
 
+/* Try to extract a subvector of mode SUBVEC_MODE (which has BITSIZE bits)
+   from vector VEC, starting at bit BITNUM, then extract the MODE lowpart of
+   the subvector.  Return the result on success or NULL_RTX on failure.  */
+
+static rtx
+extract_vector_from_vector (rtx vec, rtx target, machine_mode mode,
+			    machine_mode subvec_mode, poly_uint64 bitsize,
+			    poly_uint64 bitnum, rtx *alt_rtl)
+{
+  machine_mode vec_mode = GET_MODE (vec);
+  if (!VECTOR_MODE_P (vec_mode)
+      || MEM_P (vec)
+      || !VECTOR_MODE_P (subvec_mode)
+      || maybe_ne (bitsize, GET_MODE_PRECISION (subvec_mode))
+      || known_le (GET_MODE_SIZE (GET_MODE (vec)),
+		   GET_MODE_SIZE (subvec_mode)))
+    return NULL_RTX;
+
+  /* Try to find a fitting mode for extracting.  */
+  if (GET_MODE_INNER (vec_mode) != GET_MODE_INNER (subvec_mode))
+    {
+      scalar_mode inner_mode = GET_MODE_INNER (subvec_mode);
+      poly_uint64 nunits;
+      if (!multiple_p (GET_MODE_BITSIZE (vec_mode),
+		       GET_MODE_UNIT_BITSIZE (subvec_mode), &nunits)
+	  || !related_vector_mode (subvec_mode, inner_mode,
+				   nunits).exists (&vec_mode)
+	  || maybe_ne (GET_MODE_SIZE (vec_mode),
+		       GET_MODE_SIZE (GET_MODE (vec))))
+	return NULL_RTX;
+    }
+
+  poly_uint64 pos;
+  enum insn_code icode = convert_optab_handler (vec_extract_optab, vec_mode,
+						subvec_mode);
+  if (icode != CODE_FOR_nothing
+      && multiple_p (bitnum, GET_MODE_BITSIZE (subvec_mode), &pos))
+    {
+      if (vec_mode != GET_MODE (vec))
+	vec = gen_lowpart (vec_mode, vec);
+
+      class expand_operand ops[3];
+      create_output_operand (&ops[0], target, subvec_mode);
+      ops[0].target = 1;
+      create_input_operand (&ops[1], vec, GET_MODE (vec));
+      create_integer_operand (&ops[2], pos);
+      if (maybe_expand_insn (icode, 3, ops))
+	{
+	  if (alt_rtl && ops[0].target)
+	    *alt_rtl = target;
+	  target = ops[0].value;
+	  if (GET_MODE (target) != mode)
+	    return gen_lowpart (subvec_mode, target);
+	  return target;
+	}
+    }
+
+  return NULL_RTX;
+}
+
+/* Extract an element of OP0 of size BITSIZE, starting at bit position BITNUM.
+   Pun the result with mode TMODE if necessary.  Return the extracted element
+   if successful or NULL_RTX otherwise.  */
+
+static rtx
+extract_element_from_vector (rtx op0, rtx target, machine_mode mode,
+			     machine_mode tmode, poly_uint64 bitsize,
+			     poly_uint64 bitnum, rtx *alt_rtl)
+{
+  /* See if we can get a better vector mode before extracting.  */
+  machine_mode outermode = GET_MODE (op0);
+  if (VECTOR_MODE_P (outermode)
+      && !MEM_P (op0)
+      && GET_MODE_INNER (outermode) != tmode)
+    {
+      machine_mode new_mode;
+
+      if (GET_MODE_CLASS (tmode) == MODE_FLOAT)
+	new_mode = MIN_MODE_VECTOR_FLOAT;
+      else if (GET_MODE_CLASS (tmode) == MODE_FRACT)
+	new_mode = MIN_MODE_VECTOR_FRACT;
+      else if (GET_MODE_CLASS (tmode) == MODE_UFRACT)
+	new_mode = MIN_MODE_VECTOR_UFRACT;
+      else if (GET_MODE_CLASS (tmode) == MODE_ACCUM)
+	new_mode = MIN_MODE_VECTOR_ACCUM;
+      else if (GET_MODE_CLASS (tmode) == MODE_UACCUM)
+	new_mode = MIN_MODE_VECTOR_UACCUM;
+      else
+	new_mode = MIN_MODE_VECTOR_INT;
+
+      FOR_EACH_MODE_FROM (new_mode, new_mode)
+	if (known_eq (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (outermode))
+	    && known_eq (GET_MODE_UNIT_SIZE (new_mode), GET_MODE_SIZE (tmode))
+	    && known_eq (bitsize, GET_MODE_UNIT_PRECISION (new_mode))
+	    && multiple_p (bitnum, GET_MODE_UNIT_PRECISION (new_mode))
+	    && targetm.vector_mode_supported_p (new_mode)
+	    && targetm.modes_tieable_p (outermode, new_mode))
+	  break;
+      if (new_mode != VOIDmode)
+	op0 = gen_lowpart (new_mode, op0);
+    }
+
+  outermode = GET_MODE (op0);
+  if (VECTOR_MODE_P (outermode) && !MEM_P (op0))
+    {
+      scalar_mode innermode = GET_MODE_INNER (outermode);
+
+      enum insn_code icode
+	= convert_optab_handler (vec_extract_optab, outermode, innermode);
+
+      poly_uint64 pos;
+      if (icode != CODE_FOR_nothing
+	  && known_eq (bitsize, GET_MODE_PRECISION (innermode))
+	  && multiple_p (bitnum, GET_MODE_PRECISION (innermode), &pos))
+	{
+	  class expand_operand ops[3];
+
+	  create_output_operand (&ops[0], target,
+				 insn_data[icode].operand[0].mode);
+	  ops[0].target = 1;
+	  create_input_operand (&ops[1], op0, outermode);
+	  create_integer_operand (&ops[2], pos);
+	  if (maybe_expand_insn (icode, 3, ops))
+	    {
+	      if (alt_rtl && ops[0].target)
+		*alt_rtl = target;
+	      target = ops[0].value;
+	      if (GET_MODE (target) != mode)
+		return gen_lowpart (tmode, target);
+	      return target;
+	    }
+	}
+      /* Using subregs is useful if we're extracting one register vector
+	 from a multi-register vector.  extract_bit_field_as_subreg checks
+	 for valid bitsize and bitnum, so we don't need to do that here.  */
+      if (VECTOR_MODE_P (mode))
+	{
+	  rtx sub = extract_bit_field_as_subreg (mode, op0, outermode,
+						 bitsize, bitnum);
+	  if (sub)
+	    return sub;
+	}
+    }
+
+  return NULL_RTX;
+}
+
+/* Check whether:
+
+   (a) OP0 is a vector that spans multiple registers (which might
+       mean that it is a tuple mode) and
+
+   (b) a sequence of BITSIZE bits, starting at bit *BITNUM, fits within
+       a single vector register.
+
+   Return the vector register if so and update *BITNUM so that it
+   is relative to the returned register.  Return NULL_RTX otherwise.  */
+
+static rtx
+extract_vector_from_multireg (rtx op0, machine_mode tmode,
+			      poly_uint64 bitsize, poly_uint64 *bitnum)
+{
+  machine_mode outermode = GET_MODE (op0);
+  poly_uint64 outer_natural_sz = REGMODE_NATURAL_SIZE (outermode);
+  scalar_mode elmode = GET_MODE_INNER (outermode);
+  HOST_WIDE_INT vec_idx;
+  poly_uint64 off;
+  poly_uint64 nelts;
+  if (VECTOR_MODE_P (outermode)
+      && !MEM_P (op0)
+      && known_gt (GET_MODE_SIZE (outermode), outer_natural_sz)
+      && known_eq (bitsize, GET_MODE_PRECISION (tmode))
+      && can_div_trunc_p (*bitnum, outer_natural_sz * BITS_PER_UNIT,
+			  &vec_idx, &off)
+      && known_le (off + bitsize, outer_natural_sz * BITS_PER_UNIT)
+      && multiple_p (outer_natural_sz, GET_MODE_SIZE (elmode), &nelts))
+    {
+      /* Get a single-vector mode from the outer multi-vector mode.
+	 If it exists and we can pun the outer mode with a subreg,
+	 do so and return it.  */
+      multiple_p (outer_natural_sz, GET_MODE_SIZE (elmode), &nelts);
+      opt_machine_mode vmode
+	= related_vector_mode (outermode, GET_MODE_INNER (outermode), nelts);
+
+      machine_mode vmode_onevec;
+      rtx subreg;
+      if (vmode.exists (&vmode_onevec)
+	  && (subreg = simplify_gen_subreg
+	      (vmode_onevec, op0, outermode,
+	       vec_idx * GET_MODE_SIZE (vmode_onevec))))
+	{
+	  *bitnum = off;
+	  return subreg;
+	}
+    }
+
+  return NULL_RTX;
+}
+
 /* A subroutine of extract_bit_field, with the same arguments.
    If UNSIGNEDP is -1, the result need not be sign or zero extended.
    If FALLBACK_P is true, fall back to extract_fixed_bit_field
@@ -1740,130 +1939,39 @@ extract_bit_field_1 (rtx str_rtx, poly_uint64 bitsize, poly_uint64 bitnum,
     }
 
   /* First try to check for vector from vector extractions.  */
-  if (VECTOR_MODE_P (GET_MODE (op0))
-      && !MEM_P (op0)
-      && VECTOR_MODE_P (tmode)
-      && known_eq (bitsize, GET_MODE_PRECISION (tmode))
-      && maybe_gt (GET_MODE_SIZE (GET_MODE (op0)), GET_MODE_SIZE (tmode)))
-    {
-      machine_mode new_mode = GET_MODE (op0);
-      if (GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode))
-	{
-	  scalar_mode inner_mode = GET_MODE_INNER (tmode);
-	  poly_uint64 nunits;
-	  if (!multiple_p (GET_MODE_BITSIZE (GET_MODE (op0)),
-			   GET_MODE_UNIT_BITSIZE (tmode), &nunits)
-	      || !related_vector_mode (tmode, inner_mode,
-				       nunits).exists (&new_mode)
-	      || maybe_ne (GET_MODE_SIZE (new_mode),
-			   GET_MODE_SIZE (GET_MODE (op0))))
-	    new_mode = VOIDmode;
-	}
-      poly_uint64 pos;
-      if (new_mode != VOIDmode
-	  && (convert_optab_handler (vec_extract_optab, new_mode, tmode)
-	      != CODE_FOR_nothing)
-	  && multiple_p (bitnum, GET_MODE_BITSIZE (tmode), &pos))
-	{
-	  class expand_operand ops[3];
-	  machine_mode outermode = new_mode;
-	  machine_mode innermode = tmode;
-	  enum insn_code icode
-	    = convert_optab_handler (vec_extract_optab, outermode, innermode);
-
-	  if (new_mode != GET_MODE (op0))
-	    op0 = gen_lowpart (new_mode, op0);
-	  create_output_operand (&ops[0], target, innermode);
-	  ops[0].target = 1;
-	  create_input_operand (&ops[1], op0, outermode);
-	  create_integer_operand (&ops[2], pos);
-	  if (maybe_expand_insn (icode, 3, ops))
-	    {
-	      if (alt_rtl && ops[0].target)
-		*alt_rtl = target;
-	      target = ops[0].value;
-	      if (GET_MODE (target) != mode)
-		return gen_lowpart (tmode, target);
-	      return target;
-	    }
-	}
-    }
-
-  /* See if we can get a better vector mode before extracting.  */
-  if (VECTOR_MODE_P (GET_MODE (op0))
-      && !MEM_P (op0)
-      && GET_MODE_INNER (GET_MODE (op0)) != tmode)
-    {
-      machine_mode new_mode;
-
-      if (GET_MODE_CLASS (tmode) == MODE_FLOAT)
-	new_mode = MIN_MODE_VECTOR_FLOAT;
-      else if (GET_MODE_CLASS (tmode) == MODE_FRACT)
-	new_mode = MIN_MODE_VECTOR_FRACT;
-      else if (GET_MODE_CLASS (tmode) == MODE_UFRACT)
-	new_mode = MIN_MODE_VECTOR_UFRACT;
-      else if (GET_MODE_CLASS (tmode) == MODE_ACCUM)
-	new_mode = MIN_MODE_VECTOR_ACCUM;
-      else if (GET_MODE_CLASS (tmode) == MODE_UACCUM)
-	new_mode = MIN_MODE_VECTOR_UACCUM;
-      else
-	new_mode = MIN_MODE_VECTOR_INT;
-
-      FOR_EACH_MODE_FROM (new_mode, new_mode)
-	if (known_eq (GET_MODE_SIZE (new_mode), GET_MODE_SIZE (GET_MODE (op0)))
-	    && known_eq (GET_MODE_UNIT_SIZE (new_mode), GET_MODE_SIZE (tmode))
-	    && known_eq (bitsize, GET_MODE_UNIT_PRECISION (new_mode))
-	    && multiple_p (bitnum, GET_MODE_UNIT_PRECISION (new_mode))
-	    && targetm.vector_mode_supported_p (new_mode)
-	    && targetm.modes_tieable_p (GET_MODE (op0), new_mode))
-	  break;
-      if (new_mode != VOIDmode)
-	op0 = gen_lowpart (new_mode, op0);
-    }
+  rtx res = extract_vector_from_vector (op0, target, mode, tmode, bitsize,
+					bitnum, alt_rtl);
+  if (res)
+    return res;
 
   /* Use vec_extract patterns for extracting parts of vectors whenever
      available.  If that fails, see whether the current modes and bitregion
      give a natural subreg.  */
-  machine_mode outermode = GET_MODE (op0);
-  if (VECTOR_MODE_P (outermode) && !MEM_P (op0))
+  res = extract_element_from_vector (op0, target, mode, tmode, bitsize, bitnum,
+				     alt_rtl);
+  if (res)
+    return res;
+
+  /* If this mode occupies multiple registers and we're extracting
+     a single one, we can usually get to that vector directly
+     without actual extraction.
+     This helps targets see through multi-vector modes.  */
+  poly_uint64 bitnum_new = bitnum;
+  res = extract_vector_from_multireg (op0, tmode, bitsize, &bitnum_new);
+  if (res)
     {
-      scalar_mode innermode = GET_MODE_INNER (outermode);
+      rtx vec = extract_vector_from_vector (res, target, mode, tmode, bitsize,
+					    bitnum_new, alt_rtl);
+      if (vec)
+	return vec;
 
-      enum insn_code icode
-	= convert_optab_handler (vec_extract_optab, outermode, innermode);
+      rtx el = extract_element_from_vector (res, target, mode, tmode, bitsize,
+					    bitnum_new, alt_rtl);
+      if (el)
+	return el;
 
-      poly_uint64 pos;
-      if (icode != CODE_FOR_nothing
-	  && known_eq (bitsize, GET_MODE_PRECISION (innermode))
-	  && multiple_p (bitnum, GET_MODE_PRECISION (innermode), &pos))
-	{
-	  class expand_operand ops[3];
-
-	  create_output_operand (&ops[0], target,
-				 insn_data[icode].operand[0].mode);
-	  ops[0].target = 1;
-	  create_input_operand (&ops[1], op0, outermode);
-	  create_integer_operand (&ops[2], pos);
-	  if (maybe_expand_insn (icode, 3, ops))
-	    {
-	      if (alt_rtl && ops[0].target)
-		*alt_rtl = target;
-	      target = ops[0].value;
-	      if (GET_MODE (target) != mode)
-		return gen_lowpart (tmode, target);
-	      return target;
-	    }
-	}
-      /* Using subregs is useful if we're extracting one register vector
-	 from a multi-register vector.  extract_bit_field_as_subreg checks
-	 for valid bitsize and bitnum, so we don't need to do that here.  */
-      if (VECTOR_MODE_P (mode))
-	{
-	  rtx sub = extract_bit_field_as_subreg (mode, op0, outermode,
-						 bitsize, bitnum);
-	  if (sub)
-	    return sub;
-	}
+      op0 = res;
+      bitnum = bitnum_new;
     }
 
   /* Make sure we are playing with integral modes.  Pun with subregs
