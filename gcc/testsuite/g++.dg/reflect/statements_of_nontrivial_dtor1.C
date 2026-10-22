@@ -4,11 +4,17 @@
 // class with a non-trivial destructor.
 
 #include <meta>
+#include <type_traits>
 
 using namespace std::meta;
 
+void destroyed (double);
+
 struct T { double v; };
-struct D { double v; ~D () {} };
+struct D { double v; ~D () { destroyed (v); } };
+
+static_assert (std::is_trivially_destructible_v<T>);
+static_assert (!std::is_trivially_destructible_v<D>);
 
 T make_t (double x) { return {x}; }
 D make_d (double x) { return {x}; }
