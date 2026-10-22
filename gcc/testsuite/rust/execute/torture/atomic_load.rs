@@ -68,6 +68,7 @@ extern "rust-intrinsic" {
     pub fn atomic_load_acquire<T: Copy>(src: *const T) -> T;
     pub fn atomic_load_relaxed<T: Copy>(src: *const T) -> T;
     pub fn atomic_load_unordered<T: Copy>(src: *const T) -> T;
+    pub fn atomic_fence();
 }
 
 fn main() -> u32 {
@@ -88,6 +89,8 @@ fn main() -> u32 {
 
         src = 4;
         four = atomic_load_unordered(&src);
+
+        atomic_fence();
     }
 
     (four + three + two + one) - 10

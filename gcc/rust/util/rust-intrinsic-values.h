@@ -196,6 +196,18 @@ public:
   static constexpr auto &ATOMIC_CXCHGWEAK_ACQREL_FAILRELAXED
     = "atomic_cxchgweak_acqrel_failrelaxed";
 
+  static constexpr auto &ATOMIC_FENCE = "atomic_fence";
+  static constexpr auto &ATOMIC_FENCE_ACQ = "atomic_fence_acq";
+  static constexpr auto &ATOMIC_FENCE_REL = "atomic_fence_rel";
+  static constexpr auto &ATOMIC_FENCE_ACQREL = "atomic_fence_acqrel";
+  static constexpr auto &ATOMIC_SINGLETHREADFENCE = "atomic_singlethreadfence";
+  static constexpr auto &ATOMIC_SINGLETHREADFENCE_ACQ
+    = "atomic_singlethreadfence_acq";
+  static constexpr auto &ATOMIC_SINGLETHREADFENCE_REL
+    = "atomic_singlethreadfence_rel";
+  static constexpr auto &ATOMIC_SINGLETHREADFENCE_ACQREL
+    = "atomic_singlethreadfence_acqrel";
+
   static constexpr auto &UNCHECKED_ADD = "unchecked_add";
   static constexpr auto &UNCHECKED_SUB = "unchecked_sub";
   static constexpr auto &UNCHECKED_MUL = "unchecked_mul";

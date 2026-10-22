@@ -794,6 +794,27 @@ atomic_minmax (IntrinsicCtx &ctx, AtomicMinMaxKind kind, int ordering)
     Backend::return_statement (ctx.fn, expected, UNDEF_LOCATION));
 }
 
+static void
+atomic_fence (IntrinsicCtx &ctx, bool is_multithread, int ordering)
+{
+  // Most intrinsic functions are pure but not the atomic ones
+  TREE_READONLY (ctx.fn) = 0;
+  TREE_SIDE_EFFECTS (ctx.fn) = 1;
+
+  auto builtin_decl = BuiltinsContext::get ().lookup_simple_builtin (
+    is_multithread ? "__atomic_thread_fence" : "__atomic_signal_fence");
+  rust_assert (builtin_decl);
+
+  auto fence = build_fold_addr_expr_loc (UNDEF_LOCATION, *builtin_decl);
+  auto memorder = make_unsigned_long_tree (ordering);
+  auto fence_call
+    = Backend::call_expression (fence, {memorder}, nullptr, UNDEF_LOCATION);
+  TREE_READONLY (fence_call) = 0;
+  TREE_SIDE_EFFECTS (fence_call) = 1;
+
+  ctx.add_statement (fence_call);
+}
+
 // Shared inner implementation for ctlz and ctlz_nonzero.
 //
 // nonzero=false → ctlz: ctlz(0) is well-defined in Rust and must return
@@ -1288,6 +1309,14 @@ atomic_minmax (AtomicMinMaxKind kind, int ordering)
 {
   return [kind, ordering] (IntrinsicCtx &ctx) {
     return inner::atomic_minmax (ctx, kind, ordering);
+  };
+}
+
+Intrinsic::CompileFn
+atomic_fence (bool is_multithread, int ordering)
+{
+  return [is_multithread, ordering] (IntrinsicCtx &ctx) {
+    return inner::atomic_fence (ctx, is_multithread, ordering);
   };
 }
 

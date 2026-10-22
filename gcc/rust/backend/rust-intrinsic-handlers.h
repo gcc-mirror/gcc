@@ -214,6 +214,7 @@ Intrinsic::CompileFn atomic_compare_exchange (bool weak, int success_ordering,
 					      int failure_ordering);
 Intrinsic::CompileFn atomic_minmax (handlers::AtomicMinMaxKind kind,
 				    int ordering);
+Intrinsic::CompileFn atomic_fence (bool is_multithread, int ordering);
 
 Intrinsic::CompileFn unchecked_op (tree_code op);
 

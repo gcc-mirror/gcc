@@ -359,6 +359,15 @@ const std::unordered_map<std::string, IntrinsicRules>
      {1,
       {IRT::MutPtrFirstGeneric, IRT::FirstGeneric, IRT::FirstGeneric},
       IRT::TupleFirstGenericAndBool}},
+    // pub fn atomic_fence*/atomic_singlethreadfence*();
+    {IValue::ATOMIC_FENCE, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_FENCE_ACQ, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_FENCE_REL, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_FENCE_ACQREL, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_SINGLETHREADFENCE, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_SINGLETHREADFENCE_ACQ, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_SINGLETHREADFENCE_REL, {0, {}, IRT::Unit}},
+    {IValue::ATOMIC_SINGLETHREADFENCE_ACQREL, {0, {}, IRT::Unit}},
     // pub fn unchecked_add<T: Copy>(x: T, y: T) -> T;
     {IValue::UNCHECKED_ADD,
      {1, {IRT::FirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},

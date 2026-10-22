@@ -68,6 +68,7 @@ extern "rust-intrinsic" {
     pub fn atomic_store_release<T: Copy>(dst: *mut T, val: T);
     pub fn atomic_store_relaxed<T: Copy>(dst: *mut T, val: T);
     pub fn atomic_store_unordered<T: Copy>(dst: *mut T, val: T);
+    pub fn atomic_fence();
 }
 
 fn main() -> u32 {
@@ -89,6 +90,8 @@ fn main() -> u32 {
 
         atomic_store_unordered(&mut dst, 4);
         four = dst;
+
+        atomic_fence();
     }
 
     (four + three + two + one) - 10
