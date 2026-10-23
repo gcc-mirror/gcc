@@ -1,3 +1,30 @@
+2026-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst11.ads: New test.
+	* gnat.dg/specs/generic_inst11_pkg.ads: New helper package.
+	* gnat.dg/specs/generic_inst11_pkg-g1.ads: Likewise.
+	* gnat.dg/specs/generic_inst11_pkg-g1-parser.ads: Likewise.
+	* gnat.dg/specs/generic_inst11_pkg-g1-parser-g2.ads: Likewise.
+	* gnat.dg/specs/generic_inst11_pkg-g1-parser-g2-parser.ads: Likewise
+
+2026-10-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-10-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR testsuite/126082
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_ok_nocache): Iterate to find
+	suitable flags.
+
+2026-10-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-10-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/mve/general-c/nomve_fp_1.c: Add -mthumb to
+	dg-options.
+
 2026-10-20  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

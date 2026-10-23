@@ -1,3 +1,9 @@
+2026-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/128044
+	* sem_ch12.adb (Save_Global_References.Reset_Entity): Remove old
+	kludge short-circuiting the resolution of expanded names.
+
 2026-10-19  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/127994
