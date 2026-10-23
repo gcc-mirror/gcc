@@ -512,15 +512,6 @@ get_live_virtual_operand_on_edge (edge e)
   while (1);
 }
 
-/* If this is a loop where the latch condition should be rewritten to reflect
-   a control flow change from a while-do to a do-while loop.  */
-
-static bool
-vect_use_loop_latch_condition_p (loop_vec_info loop_vinfo)
-{
-  return (loop_vinfo && LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo));
-}
-
 /* Helper for vect_set_loop_condition_partial_vectors.  Generate definitions
    for all the rgroup controls in RGC and return a control that is nonzero
    when the loop needs to iterate.  Add any new preheader statements to
@@ -800,7 +791,7 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 
       /* A do-while loop always executes the body once, as such the limit
 	 the end counter should be lowered by 1 iteration.  */
-      if (vect_use_loop_latch_condition_p (loop_vinfo))
+      if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
 	this_test_limit = gimple_build (preheader_seq, MINUS_EXPR,
 					compare_type, this_test_limit,
 					build_one_cst (compare_type));
@@ -1088,7 +1079,7 @@ vect_set_loop_condition_partial_vectors (class loop *loop, edge exit_edge,
       cond_stmt
 	= gimple_build_cond (code, test_ctrl, zero_ctrl, NULL_TREE, NULL_TREE);
     }
-  if (vect_use_loop_latch_condition_p (loop_vinfo))
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     vect_reuse_loop_latch (loop_vinfo, loop->latch, exit_edge,
 			   as_a<gcond *> (gsi_stmt (loop_cond_gsi)), cond_stmt);
   else
@@ -1343,7 +1334,7 @@ vect_set_loop_condition_partial_vectors_avx512 (class loop *loop,
      iv_type.  */
   gcond *cond_stmt = gimple_build_cond (code, index_before_incr, iv_step,
 					NULL_TREE, NULL_TREE);
-  if (vect_use_loop_latch_condition_p (loop_vinfo))
+  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     vect_reuse_loop_latch (loop_vinfo, loop->latch, exit_edge,
 			   as_a<gcond *> (gsi_stmt (loop_cond_gsi)), cond_stmt);
   else
@@ -1488,7 +1479,7 @@ vect_set_loop_condition_normal (loop_vec_info loop_vinfo, edge exit_edge,
   cond_stmt = gimple_build_cond (code, indx_after_incr, limit, NULL_TREE,
 				 NULL_TREE);
 
-  if (vect_use_loop_latch_condition_p (loop_vinfo))
+  if (loop_vinfo && LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     vect_reuse_loop_latch (loop_vinfo, loop->latch, exit_edge,
 			   as_a<gcond *> (gsi_stmt (loop_cond_gsi)), cond_stmt);
   else
@@ -1606,7 +1597,7 @@ vect_set_loop_condition (class loop *loop, edge loop_e, loop_vec_info loop_vinfo
 
   /* Remove old loop exit test.  */
   stmt_vec_info orig_cond_info;
-  if (!vect_use_loop_latch_condition_p (loop_vinfo))
+  if (!loop_vinfo || !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
     {
       if (loop_vinfo
 	  && (orig_cond_info = loop_vinfo->lookup_stmt (orig_cond)))
