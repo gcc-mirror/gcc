@@ -4670,37 +4670,16 @@
   "bytepick.w\t%0,%1,%2,<bytepick_imm>"
   [(set_attr "mode" "SI")])
 
-(define_mode_attr bitsize [(QI "8") (HI "16")])
-(define_mode_attr bytepick_imm [(QI "3") (HI "2")])
-(define_mode_attr bytepick_w_ashift_amount [(QI "24") (HI "16")])
-
-(define_insn "bytepick_w_<bytepick_imm>_extend"
+(define_insn "*bytepick_w_<bytepick_imm>_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI
-	  (ashift:DI
-	    (sign_extend:DI
-	      (subreg:SHORT (match_operand:DI 1 "register_operand" "r") 0))
-	    (const_int <bytepick_w_ashift_amount>))
-	  (zero_extract:DI (match_operand:DI 2 "register_operand" "r")
-			   (const_int <bytepick_w_ashift_amount>)
-			   (const_int <bitsize>))))]
-  "TARGET_64BIT || TARGET_32BIT_S"
-  "bytepick.w\t%0,%2,%1,<bytepick_imm>"
-  [(set_attr "mode" "SI")])
-
-(define_insn "bytepick_w_1_extend"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI
-	  (ashift:DI
-	    (sign_extract:DI (match_operand:DI 1 "register_operand" "r")
-                         (const_int 24)
-                         (const_int 0))
-        (const_int 8))
-	  (zero_extract:DI (match_operand:DI 2 "register_operand" "r")
-			   (const_int 8)
-			   (const_int 24))))]
-  "TARGET_64BIT || TARGET_32BIT_S"
-  "bytepick.w\t%0,%2,%1,1"
+	(sign_extend:DI
+	  (any_or_plus:SI
+	    (lshiftrt:SI (match_operand:SI 1 "register_operand" "r")
+			 (const_int <bytepick_w_lshiftrt_amount>))
+	    (ashift:SI (match_operand:SI 2 "register_operand" "r")
+		       (const_int bytepick_w_ashift_amount)))))]
+  "TARGET_64BIT"
+  "bytepick.w\t%0,%1,%2,<bytepick_imm>"
   [(set_attr "mode" "SI")])
 
 (define_insn "*bytepick_d_<bytepick_imm>"
