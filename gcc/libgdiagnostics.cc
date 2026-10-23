@@ -1701,7 +1701,7 @@ diagnostic_manager_add_sarif_sink (diagnostic_manager *diag_mgr,
       break;
     case DIAGNOSTIC_SARIF_VERSION_2_2_PRERELEASE:
       sarif_gen_opts.m_version
-	= diagnostics::sarif_version::v2_2_prerelease_2024_08_08;
+	= diagnostics::sarif_version::v2_2_prerelease_csd01;
       break;
     }
 

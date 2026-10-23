@@ -97,7 +97,7 @@ private:
 enum class sarif_version
 {
   v2_1_0,
-  v2_2_prerelease_2024_08_08,
+  v2_2_prerelease_csd01,
 
   num_versions
 };

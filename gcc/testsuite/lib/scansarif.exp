@@ -113,7 +113,7 @@ proc verify-sarif-file { args } {
     if { $version == "2.1" } {
 	set schema_file $srcdir/lib/sarif-schema-2.1.0.json
     } elseif { $version == "2.2" } {
-	set schema_file $srcdir/lib/sarif-schema-2.2-prerelease-2024-08-08.json
+	set schema_file $srcdir/lib/sarif-schema-2.2-prerelease-csd01.json
     } else {
 	fail "unrecognized sarif version: $version"
 	return

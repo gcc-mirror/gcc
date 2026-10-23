@@ -20,7 +20,7 @@ def sarif():
 def test_basics(sarif):
     # We expect SARIF 2.2
     schema = sarif['$schema']
-    assert schema == "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/refs/tags/2.2-prerelease-2024-08-08/sarif-2.2/schema/sarif-2-2.schema.json"
+    assert schema == "https://docs.oasis-open.org/sarif/sarif/v2.2/csd01/schema/sarif.json"
 
     version = sarif['version']
     assert version == "2.2"

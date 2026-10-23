@@ -558,7 +558,7 @@ sarif_scheme_handler::maybe_handle_kv (const context &ctxt,
       static const std::array<std::pair<const char *, enum sarif_version>,
 			      (size_t)sarif_version::num_versions> value_names
 	{{{"2.1", sarif_version::v2_1_0},
-	  {"2.2-prerelease", sarif_version::v2_2_prerelease_2024_08_08}}};
+	  {"2.2-prerelease", sarif_version::v2_2_prerelease_csd01}}};
       return parse_enum_value<enum sarif_version>
 	(ctxt,
 	 key, value,

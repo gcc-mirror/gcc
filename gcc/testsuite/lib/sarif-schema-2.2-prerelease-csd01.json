@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Static Analysis Results Format (SARIF) Version 2.2 JSON Schema",
-  "$id": "https://docs.oasis-open.org/sarif/sarif/v2.2/schemas/sarif-2.2.schema.json",
+  "$id": "https://docs.oasis-open.org/sarif/sarif/v2.2/schema/sarif.json",
   "description": "Static Analysis Results Format (SARIF) Version 2.2 JSON Schema: a standard format for the output of static analysis tools.",
   "additionalProperties": false,
   "type": "object",
@@ -146,6 +146,7 @@
             "enum": [
               "analysisTarget",
               "attachment",
+              "conversionSource",
               "responseFile",
               "resultFile",
               "scannedFile",
@@ -159,10 +160,12 @@
               "uncontrolled",
               "driver",
               "extension",
+              "externalPropertyFile",
               "translation",
               "taxonomy",
               "policy",
               "referencedOnCommandLine",
+              "repositoryRoot",
               "memoryContents",
               "directory",
               "userSpecifiedConfiguration",
@@ -1738,6 +1741,18 @@
             "$ref": "#/$defs/reportingDescriptorRelationship"
           }
         },
+        "precision": {
+          "description": "A number between 0.0 and 100.0 inclusive, representing the tool or tool maintainer's confidence that results produced by the rule are true positives.",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "securitySeverity": {
+          "description": "A number between 0.0 and 100.0 inclusive, representing the severity of the class of vulnerabilities found by results produced by the rule.",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
         "properties": {
           "description": "Key/value pairs that provide additional information about the report.",
           "$ref": "#/$defs/propertyBag"
@@ -2027,6 +2042,18 @@
           "type": "number",
           "default": -1.0,
           "minimum": -1.0,
+          "maximum": 100.0
+        },
+        "precision": {
+          "description": "A number between 0.0 and 100.0 inclusive, representing the tool or tool maintainer's confidence that this result is a true positive.",
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 100.0
+        },
+        "securitySeverity": {
+          "description": "A number between 0.0 and 100.0 inclusive, representing the severity of the class of vulnerabilities found by this result.",
+          "type": "number",
+          "minimum": 0.0,
           "maximum": 100.0
         },
         "attachments": {
