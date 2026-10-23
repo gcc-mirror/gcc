@@ -142,14 +142,27 @@ TopLevel::visit (AST::ExternCrate &crate)
 {
   auto &name = crate.has_as_clause () ? crate.get_as_clause ()
 				      : crate.get_referenced_crate ();
-  Analysis::Mappings::get ().insert_extern_crate_id (crate.get_node_id ());
+  auto &mappings = Analysis::Mappings::get ();
+  mappings.insert_extern_crate_id (crate.get_node_id ());
   insert_or_error_out (name, crate, Namespace::Types);
 
   DefaultResolver::visit (crate);
 
-  // Insert the crate within the extern prelude only after the scope has been
-  // created
-  ctx.insert_crate_in_prelude (name, crate.get_node_id ());
+  if (crate.get_referenced_crate () != Values::Keywords::SELF)
+    {
+      if (auto extern_crate_num
+	  = mappings.crate.lookup_crate_name (crate.get_referenced_crate ()))
+	{
+	  auto &extern_crate
+	    = mappings.crate.get_ast_crate (extern_crate_num.value ());
+	  if (!mappings.lookup_glob_container (extern_crate.get_node_id ()))
+	    mappings.insert_glob_container (extern_crate.get_node_id (),
+					    &extern_crate);
+	  // Insert the crate within the extern prelude only after the scope has
+	  // been created
+	  ctx.insert_crate_in_prelude (name, extern_crate.get_node_id ());
+	}
+    }
 }
 
 void

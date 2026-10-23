@@ -205,14 +205,12 @@ ForeverStack<Namespace::Values>::insert_variant (Identifier name, NodeId node)
 
 template <Namespace N>
 void
-ForeverStack<N>::insert_crate_in_prelude (Identifier crate_name, NodeId id)
+ForeverStack<N>::insert_crate_in_prelude (Identifier crate_name,
+					  NodeId extern_crate_node_id)
 {
   auto &extern_prelude_rib = extern_prelude.rib (N);
-  auto inner = insert_inner (extern_prelude_rib, crate_name,
-			     Rib::Definition::NonShadowable (id));
-
-  if (inner)
-    map_usage (Usage (inner.value ()), Definition (id));
+  auto definition = Rib::Definition::NonShadowable (extern_crate_node_id);
+  insert_inner (extern_prelude_rib, crate_name, definition);
 }
 
 template <Namespace N>
