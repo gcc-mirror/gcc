@@ -8377,8 +8377,7 @@ gfc_resolve_expr (gfc_expr *e)
       else
 	t = resolve_variable (e);
 
-      if (e->ts.type == BT_CHARACTER && e->ts.u.cl == NULL && e->ref
-	  && e->ref->type != REF_SUBSTRING)
+      if (e->ts.type == BT_CHARACTER && e->ts.u.cl == NULL && e->ref)
 	gfc_resolve_substring_charlen (e);
 
       break;

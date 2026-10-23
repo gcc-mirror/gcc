@@ -835,7 +835,10 @@ create_var (gfc_expr * e, const char *vname)
       else if (e->expr_type == EXPR_VARIABLE
 	       && e->symtree->n.sym->ts.type == BT_CHARACTER
 	       && e->ts.u.cl->length)
-	symbol->ts.u.cl->length = get_len_call (gfc_copy_expr (e));
+	{
+	  symbol->ts.u.cl->length = get_len_call (gfc_copy_expr (e));
+	  symbol->ts.deferred = 0;
+	}
       else
 	{
 	  symbol->attr.allocatable = 1;
