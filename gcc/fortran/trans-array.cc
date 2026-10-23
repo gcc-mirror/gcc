@@ -8587,7 +8587,13 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 	     subobject for a subreference of the array.  */
 	  if (expr->ts.type == BT_CHARACTER
 	      || (subref_array_target && !se->direct_byref))
-	    parmtype = gfc_typenode_for_spec (&expr->ts);
+	    {
+	      gfc_typespec *ts = &expr->ts;
+	      if (ts->type == BT_CLASS
+		  && ts->u.derived->attr.is_class)
+		ts = &ts->u.derived->components->ts;
+	      parmtype = gfc_typenode_for_spec (ts);
+	    }
 	  else
 	    parmtype = gfc_get_element_type (TREE_TYPE (desc));
 
