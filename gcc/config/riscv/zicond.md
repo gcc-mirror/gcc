@@ -82,7 +82,7 @@
   [(set (match_operand:X 0 "register_operand")
 	(and:X (sign_extract:X (match_operand:X 1 "register_operand")
 			       (const_int 1)
-			       (match_operand 2 "immediate_operand"))
+			       (match_operand 2 "const_int_operand"))
 	       (match_operand:X 3 "register_operand")))
    (clobber (match_operand:X 4 "register_operand"))]
   "TARGET_ZICOND && !TARGET_ZBS && (UINTVAL (operands[2]) < 11)"

@@ -110,7 +110,7 @@
 (define_insn "riscv_xpack_<code>_<X:mode>_<HX:mode>_2"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(oxp:X (ashift:X (match_operand:X 1 "register_operand" "r")
-			 (match_operand 2 "immediate_operand" "n"))
+			 (match_operand 2 "const_int_operand" "n"))
 	       (zero_extend:X
 		 (match_operand:HX 3 "register_operand" "r"))))]
   "TARGET_ZBKB && INTVAL (operands[2]) == BITS_PER_WORD / 2"
