@@ -63,5 +63,26 @@ int32_t rev_crc32_data32 (int32_t x)
 {
   return __builtin_rev_crc32_data32 (x, 0x123546ff, 0x4002123);
 }
-/* { dg-final { scan-assembler-times "clmul\t" 18 } } */
+
+int64_t rev_crc64_data8 (int64_t x)
+{
+  return __builtin_rev_crc64_data8 (x, 0x32, 0x4002123);
+}
+
+int64_t rev_crc64_data16 (int64_t x)
+{
+  return __builtin_rev_crc64_data16 (x, 0x3232, 0x4002123);
+}
+
+int64_t rev_crc64_data32 (int64_t x)
+{
+  return __builtin_rev_crc64_data32 (x, 0x123546ff, 0x4002123);
+}
+
+int64_t rev_crc64_data64 (int64_t x)
+{
+  return __builtin_rev_crc64_data64 (x, 0x123546ff123546ff, 0x4002123);
+}
+/* { dg-final { scan-assembler-times "clmul\t" 22 } } */
 /* { dg-final { scan-assembler-times "clmulh" 6 } } */
+/* { dg-final { scan-assembler-times "clmulr" 4 } } */
