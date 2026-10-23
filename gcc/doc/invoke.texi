@@ -36988,11 +36988,13 @@ all of the reciprocal approximations, except for square root.
 Specifies the ABI type to use for vectorizing intrinsics using an external
 library.  Supported values for @var{type} are @samp{svml} for the Intel short
 vector math library, @samp{aocl} for the math library (LibM) from AMD
-Optimizing CPU Libraries (AOCL) and @samp{acml} for the end-of-life AMD core
-math library (to which AOCL-LibM is the successor).
+Optimizing CPU Libraries (AOCL), @samp{acml} for the end-of-life AMD core
+math library (to which AOCL-LibM is the successor), and @samp{hvml} for the
+HYGON vector math library (HVML).
 To use this option, both @option{-ftree-vectorize} and
-@option{-funsafe-math-optimizations} have to be enabled, and an SVML or ACML
-ABI-compatible library must be specified at link time.
+@option{-funsafe-math-optimizations} have to be enabled, and an SVML, ACML,
+AOCL, or HVML ABI-compatible library must be specified at link time.
+ACML, AOCL, and HVML are supported only on 64-bit targets.
 
 GCC currently emits calls to @code{vmldExp2}, @code{vmldLn2},
 @code{vmldLog102}, @code{vmldPow2}, @code{vmldTanh2}, @code{vmldTan2},
@@ -37035,7 +37037,73 @@ type when @option{-mveclibabi=aocl} is used, and @code{__vrd2_sin},
 @code{__vrd2_log10}, @code{__vrs4_sinf}, @code{__vrs4_cosf},
 @code{__vrs4_expf}, @code{__vrs4_logf}, @code{__vrs4_log2f},
 @code{__vrs4_log10f} and @code{__vrs4_powf} for the corresponding function type
-when @option{-mveclibabi=acml} is used.
+when @option{-mveclibabi=acml} is used, and @code{hvml_vs4_acos},
+@code{hvml_vs8_acos}, @code{hvml_vd2_acos}, @code{hvml_vd4_acos},
+@code{hvml_vd8_acos}, @code{hvml_vs4_acosh}, @code{hvml_vs8_acosh},
+@code{hvml_vd2_acosh}, @code{hvml_vd4_acosh}, @code{hvml_vs4_acospi},
+@code{hvml_vs8_acospi}, @code{hvml_vd2_acospi}, @code{hvml_vd4_acospi},
+@code{hvml_vs4_asin}, @code{hvml_vs8_asin}, @code{hvml_vs16_asin},
+@code{hvml_vd2_asin}, @code{hvml_vd4_asin}, @code{hvml_vd8_asin},
+@code{hvml_vs4_asinh}, @code{hvml_vs8_asinh}, @code{hvml_vd2_asinh},
+@code{hvml_vd4_asinh}, @code{hvml_vs4_asinpi}, @code{hvml_vs8_asinpi},
+@code{hvml_vd2_asinpi}, @code{hvml_vd4_asinpi}, @code{hvml_vs4_atan},
+@code{hvml_vs8_atan}, @code{hvml_vs16_atan}, @code{hvml_vd2_atan},
+@code{hvml_vd4_atan}, @code{hvml_vd8_atan}, @code{hvml_vs4_atan2},
+@code{hvml_vs8_atan2}, @code{hvml_vs16_atan2}, @code{hvml_vd2_atan2},
+@code{hvml_vd4_atan2}, @code{hvml_vd8_atan2}, @code{hvml_vs4_atan2pi},
+@code{hvml_vs8_atan2pi}, @code{hvml_vd2_atan2pi}, @code{hvml_vd4_atan2pi},
+@code{hvml_vs4_atanh}, @code{hvml_vs8_atanh}, @code{hvml_vs16_atanh},
+@code{hvml_vd2_atanh}, @code{hvml_vd4_atanh}, @code{hvml_vd8_atanh},
+@code{hvml_vs4_atanpi}, @code{hvml_vs8_atanpi}, @code{hvml_vd2_atanpi},
+@code{hvml_vd4_atanpi}, @code{hvml_vs4_cbrt}, @code{hvml_vs8_cbrt},
+@code{hvml_vs16_cbrt}, @code{hvml_vd2_cbrt}, @code{hvml_vd4_cbrt},
+@code{hvml_vd8_cbrt}, @code{hvml_vs4_cos}, @code{hvml_vs8_cos},
+@code{hvml_vs16_cos}, @code{hvml_vd2_cos}, @code{hvml_vd4_cos},
+@code{hvml_vd8_cos}, @code{hvml_vs4_cosh}, @code{hvml_vs8_cosh},
+@code{hvml_vs16_cosh}, @code{hvml_vd2_cosh}, @code{hvml_vd4_cosh},
+@code{hvml_vd8_cosh}, @code{hvml_vs4_cospi}, @code{hvml_vs8_cospi},
+@code{hvml_vd2_cospi}, @code{hvml_vd4_cospi}, @code{hvml_vs4_erf},
+@code{hvml_vs16_erf}, @code{hvml_vd2_erf}, @code{hvml_vd4_erf},
+@code{hvml_vs4_erfc}, @code{hvml_vs8_erfc}, @code{hvml_vd2_erfc},
+@code{hvml_vd4_erfc}, @code{hvml_vs4_exp}, @code{hvml_vs8_exp},
+@code{hvml_vs16_exp}, @code{hvml_vd2_exp}, @code{hvml_vd4_exp},
+@code{hvml_vd8_exp}, @code{hvml_vs4_exp2}, @code{hvml_vs8_exp2},
+@code{hvml_vd2_exp2}, @code{hvml_vd4_exp2}, @code{hvml_vd8_exp2},
+@code{hvml_vs4_exp10}, @code{hvml_vs8_exp10}, @code{hvml_vd2_exp10},
+@code{hvml_vd4_exp10}, @code{hvml_vs4_expm1}, @code{hvml_vs8_expm1},
+@code{hvml_vs16_expm1}, @code{hvml_vd2_expm1}, @code{hvml_vd4_expm1},
+@code{hvml_vd8_expm1}, @code{hvml_vs4_fdim}, @code{hvml_vs8_fdim},
+@code{hvml_vd2_fdim}, @code{hvml_vd4_fdim}, @code{hvml_vs4_fmod},
+@code{hvml_vs8_fmod}, @code{hvml_vd2_fmod}, @code{hvml_vd4_fmod},
+@code{hvml_vd8_fmod}, @code{hvml_vs4_hypot}, @code{hvml_vs8_hypot},
+@code{hvml_vd2_hypot}, @code{hvml_vd4_hypot}, @code{hvml_vs4_ln},
+@code{hvml_vs8_ln}, @code{hvml_vs16_ln}, @code{hvml_vd2_ln},
+@code{hvml_vd4_ln}, @code{hvml_vd8_ln}, @code{hvml_vs4_log1p},
+@code{hvml_vs8_log1p}, @code{hvml_vs16_log1p}, @code{hvml_vd2_log1p},
+@code{hvml_vd4_log1p}, @code{hvml_vd8_log1p}, @code{hvml_vs4_log2},
+@code{hvml_vs8_log2}, @code{hvml_vd2_log2}, @code{hvml_vd4_log2},
+@code{hvml_vd8_log2}, @code{hvml_vs4_log10}, @code{hvml_vs8_log10},
+@code{hvml_vs16_log10}, @code{hvml_vd2_log10}, @code{hvml_vd4_log10},
+@code{hvml_vd8_log10}, @code{hvml_vs4_logb}, @code{hvml_vs8_logb},
+@code{hvml_vd2_logb}, @code{hvml_vd4_logb}, @code{hvml_vs4_nextafter},
+@code{hvml_vs8_nextafter}, @code{hvml_vd2_nextafter}, @code{hvml_vd4_nextafter},
+@code{hvml_vs4_pow}, @code{hvml_vs8_pow}, @code{hvml_vs16_pow},
+@code{hvml_vd2_pow}, @code{hvml_vd4_pow}, @code{hvml_vd8_pow},
+@code{hvml_vs4_remainder}, @code{hvml_vs8_remainder}, @code{hvml_vd2_remainder},
+@code{hvml_vd4_remainder}, @code{hvml_vs4_sin}, @code{hvml_vs8_sin},
+@code{hvml_vs16_sin}, @code{hvml_vd2_sin}, @code{hvml_vd4_sin},
+@code{hvml_vd8_sin}, @code{hvml_vs4_sinh}, @code{hvml_vs8_sinh},
+@code{hvml_vs16_sinh}, @code{hvml_vd2_sinh}, @code{hvml_vd4_sinh},
+@code{hvml_vd8_sinh}, @code{hvml_vs4_sinpi}, @code{hvml_vs8_sinpi},
+@code{hvml_vd2_sinpi}, @code{hvml_vd4_sinpi}, @code{hvml_vs4_tan},
+@code{hvml_vs8_tan}, @code{hvml_vs16_tan}, @code{hvml_vd2_tan},
+@code{hvml_vd4_tan}, @code{hvml_vd8_tan}, @code{hvml_vs4_tanh},
+@code{hvml_vs8_tanh}, @code{hvml_vs16_tanh}, @code{hvml_vd2_tanh},
+@code{hvml_vd4_tanh}, @code{hvml_vd8_tanh}, @code{hvml_vs4_tanpi},
+@code{hvml_vs8_tanpi}, @code{hvml_vd2_tanpi}, @code{hvml_vd4_tanpi},
+@code{hvml_vs4_tgamma}, @code{hvml_vs8_tgamma}, @code{hvml_vd2_tgamma} and
+@code{hvml_vd4_tgamma} for the corresponding function type when
+@option{-mveclibabi=hvml} is used.
 
 @opindex mabi
 @item -mabi=@var{name}

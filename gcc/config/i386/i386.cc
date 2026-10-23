@@ -20785,6 +20785,209 @@ ix86_veclibabi_aocl (combined_fn fn, tree type_out, tree type_in)
   return new_fndecl;
 }
 
+/* Handler for an HVML-style interface to
+   a library with vectorized intrinsics.  */
+
+tree
+ix86_veclibabi_hvml (combined_fn fn, tree type_out, tree type_in)
+{
+  /* This accommodates the longest current HVML symbol.  The operation-name
+     append below asserts the bound for future additions.  */
+  char name[30] = "hvml_v";
+  /* sizeof includes the trailing NUL, so the prefix length is 6.  */
+  int name_len = sizeof ("hvml_v") - 1;
+  tree fntype, new_fndecl, args;
+  unsigned arity;
+  machine_mode el_mode, in_mode;
+  int n, in_n;
+
+  /* HVML is 64-bit only and is suitable only for unsafe math, since it
+     trades off some accuracy for increased performance.  */
+  if (!TARGET_64BIT || !flag_unsafe_math_optimizations)
+    return NULL_TREE;
+
+  el_mode = TYPE_MODE (TREE_TYPE (type_out));
+  n = TYPE_VECTOR_SUBPARTS (type_out);
+  in_mode = TYPE_MODE (TREE_TYPE (type_in));
+  in_n = TYPE_VECTOR_SUBPARTS (type_in);
+  if (el_mode != in_mode || n != in_n)
+    return NULL_TREE;
+
+  gcc_checking_assert (n > 0);
+
+  /* Decide whether there exists a function for the combination of FN, the
+     mode and the vector width.  Return early if it doesn't.  */
+  if (el_mode != DFmode && el_mode != SFmode)
+    return NULL_TREE;
+
+  /* Select supported vector widths for FN in supported_n, with single
+     precision first and double precision second.  Zeros pad unused widths.
+     Keep each set with its case so the mapping cannot get out of sync.  */
+  const int (*supported_n)[3];
+#define GET_VW_INFO(...) \
+  { \
+    static const int widths[2][3] = { __VA_ARGS__ }; \
+    supported_n = widths; \
+    break; \
+  }
+  switch (fn)
+    {
+    CASE_CFN_ACOS:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  8 });
+    CASE_CFN_ACOSH:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_ACOSPI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_ASIN:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_ASINH:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_ASINPI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_ATAN:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_ATAN2:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_ATAN2PI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_ATANH:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_ATANPI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_CBRT:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_COS:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_COSH:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_COSPI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_ERF:
+      GET_VW_INFO ({  4, 16,  0 }, {  2,  4,  0 });
+    CASE_CFN_ERFC:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_EXP:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_EXP2:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  8 });
+    CASE_CFN_EXP10:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_EXPM1:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_FDIM:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_FMOD:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  8 });
+    CASE_CFN_HYPOT:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_LOG:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_LOG1P:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_LOG2:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  8 });
+    CASE_CFN_LOG10:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_LOGB:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_NEXTAFTER:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_POW:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_REMAINDER:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_SIN:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_SINH:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_SINPI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_TAN:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_TANH:
+      GET_VW_INFO ({  4,  8, 16 }, {  2,  4,  8 });
+    CASE_CFN_TANPI:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    CASE_CFN_TGAMMA:
+      GET_VW_INFO ({  4,  8,  0 }, {  2,  4,  0 });
+    default: return NULL_TREE;
+    }
+#undef GET_VW_INFO
+
+  int j = el_mode == DFmode;
+  bool n_is_supported = false;
+  for (unsigned k = 0; k < 3; k++)
+    if (supported_n[j][k] == n)
+      {
+	n_is_supported = true;
+	break;
+      }
+  if (!n_is_supported)
+    return NULL_TREE;
+
+  /* Append the precision and vector width to the function name.  */
+  name[name_len++] = el_mode == DFmode ? 'd' : 's';
+  switch (n)
+    {
+    case 2:
+    case 4:
+    case 8:
+      name[name_len++] = '0' + n;
+      break;
+    case 16:
+      name[name_len++] = '1';
+      name[name_len++] = '6';
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  name[name_len++] = '_';
+
+  tree fndecl = mathfn_built_in (el_mode == DFmode
+				 ? double_type_node : float_type_node, fn);
+  if (!fndecl)
+    return NULL_TREE;
+
+  /* HVML spells the natural logarithm operation "ln".  */
+  if (DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LOGF
+      || DECL_FUNCTION_CODE (fndecl) == BUILT_IN_LOG)
+    {
+      gcc_checking_assert (name_len + sizeof ("ln") <= sizeof (name));
+      sprintf (name + name_len, "%s", "ln");
+    }
+  else
+    {
+      /* Append the operation name (steal it from the name of a builtin).  */
+      const char *bname = IDENTIFIER_POINTER (DECL_NAME (fndecl)) + 10;
+      size_t bname_len = strlen (bname);
+      gcc_checking_assert (name_len + bname_len < sizeof (name));
+      sprintf (name + name_len, "%s", bname);
+
+      /* Single-precision scalar builtins end in 'f'; HVML symbols do not.  */
+      if (el_mode == SFmode)
+	name[name_len + bname_len - 1] = '\0';
+    }
+
+  arity = 0;
+  for (args = DECL_ARGUMENTS (fndecl); args; args = TREE_CHAIN (args))
+    arity++;
+
+  if (arity == 1)
+    fntype = build_function_type_list (type_out, type_in, NULL);
+  else
+    fntype = build_function_type_list (type_out, type_in, type_in, NULL);
+
+  /* Build a function declaration for the vectorized function.  */
+  new_fndecl = build_decl (BUILTINS_LOCATION, FUNCTION_DECL,
+			   get_identifier (name), fntype);
+  TREE_PUBLIC (new_fndecl) = 1;
+  DECL_EXTERNAL (new_fndecl) = 1;
+  DECL_IS_NOVOPS (new_fndecl) = 1;
+  TREE_READONLY (new_fndecl) = 1;
+
+  return new_fndecl;
+}
+
 /* Returns a decl of a function that implements scatter store with
    register type VECTYPE and index type INDEX_TYPE and SCALE.
    Return NULL_TREE if it is not available.  */
