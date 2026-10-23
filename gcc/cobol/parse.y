@@ -4500,6 +4500,10 @@ data_descr1:    level_name
 
                   // Set Packed-Decimal capacity
                   if( $field->type == FldPacked ) {
+                    if( ! ($data_clauses & picture_clause_e) ) {
+                      error_msg(@field, "%qs requires PICTURE clause",
+                                cbl_field_type_name($field->type));
+                    }
                     // COMP-6 is like COMP-3 but with no sign nybble.  The
                     // code in type_capacity assumes a sign nybble.
                     auto one_less = $field->has_attr(separate_e) ? 1 : 0;
@@ -13933,7 +13937,7 @@ ast_relop( const cbl_loc_t& loc, cbl_field_t *tgt,
 
 static void
 ast_add( arith_t *arith ) {
-  arith->numeric_ok();
+  arith->numeric_ok(true);
   size_t nC = arith->tgts.size(), nA = arith->A.size();
   std::vector <cbl_num_result_t> C(nC);
   cbl_num_result_t *pC;
@@ -13951,7 +13955,7 @@ ast_add( arith_t *arith ) {
 
 static bool
 ast_subtract( arith_t *arith ) {
-  arith->numeric_ok();
+  arith->numeric_ok(true);
   size_t nC = arith->tgts.size(), nA = arith->A.size(), nB = arith->B.size();
   std::vector <cbl_refer_t> A(nA);
   std::vector <cbl_refer_t> B(nB);

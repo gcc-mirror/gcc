@@ -638,35 +638,45 @@ struct arith_t {
     return "???";
   }
 
-  void numeric_ok() {
-    are_numeric(locs.A, A);
-    are_numeric(locs.B, B);
-    are_numeric(locs.tgts, tgts);
-    is_numeric(locs.remainder, cbl_num_result_t{prohibited_e,remainder});
+  void numeric_ok( bool index_acceptable = false ) {
+    are_numeric(locs.A, A, false);
+    are_numeric(locs.B, B, index_acceptable);
+    are_numeric(locs.tgts, tgts, index_acceptable);
+    is_numeric(locs.remainder, cbl_num_result_t{prohibited_e,remainder}, false);
   }
 
  protected:
-  static bool is_numeric( const cbl_loc_t& loc, const cbl_refer_t& r ) {
-    if( r.field && ! ::is_numeric(r.field) ) {
-      if( r.field->type != FldInvalid ) {
-        error_msg(loc, "%qs (%s) is not numeric",
-                  nice_name_of(r.field),
-                  cbl_field_type_name(r.field->type));
+  static bool is_numeric( const cbl_loc_t& loc,
+                          const cbl_refer_t& r, bool index_acceptable ) {
+    if( r.field ) {
+      bool operand_ok = ::is_numeric(r.field);
+
+      if( operand_ok && r.field->type == FldIndex  ) {
+        operand_ok = index_acceptable;
       }
-      return false;
+
+      if( ! operand_ok ) {
+        if( r.field->type != FldInvalid ) {
+          error_msg(loc, "%qs (%s) is not numeric",
+                    nice_name_of(r.field),
+                    cbl_field_type_name(r.field->type));
+        }
+        return false;
+      }
     }
     return true;
   }
-  static bool is_numeric( const cbl_loc_t& loc, const cbl_num_result_t& res ) {
+  static bool is_numeric( const cbl_loc_t& loc,
+                          const cbl_num_result_t& res, bool index_acceptable ) {
     // only targets have rounding, and may be numeric-edited
     bool edited = res.refer.field && res.refer.field->type == FldNumericEdited;
-    return edited || is_numeric( loc, res.refer );
+    return edited || is_numeric( loc, res.refer, index_acceptable );
   }
   template <typename T>
-  static bool are_numeric( const cbl_loc_t& loc, const T& args ) {
+  static bool are_numeric( const cbl_loc_t& loc, const T& args, bool index_acceptable ) {
     bool ok = true;
     for (const auto& elem : args) {
-      ok = ok && is_numeric(loc, elem);
+      ok = ok && is_numeric(loc, elem, index_acceptable);
     }
     return ok;
   }
@@ -3679,11 +3689,6 @@ parser_subtract2(  const cbl_num_result_t& to,
 }
 
 static bool
-valid_operands( const cbl_refer_t& src, const cbl_refer_t& tgt ) {
-  return ! (src.field->type == FldInvalid || tgt.field->type == FldInvalid);
-}
-
-static bool
 parser_move_carefully( const char */*F*/, int /*L*/,
                        tgt_list_t *tgt_list,
                        const cbl_refer_t& src,
@@ -3697,29 +3702,38 @@ parser_move_carefully( const char */*F*/, int /*L*/,
       return false;
     }
 
-    if( valid_operands(src, tgt) ) {
-      if( is_index ) {
-        if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
-          auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
-                               name_of(tgt.field), cbl_field_type_name(tgt.field->type),
-                               name_of(src.field), cbl_field_type_name(src.field->type));
-          dialect_ok(src.loc, MfSetNumeric, msg);
-          free(msg);
-        }
-      } else {
-        if( ! valid_move( tgt.field, src.field ) ) {
-          if( src.field->type == FldPointer &&
-              tgt.field->type == FldPointer ) {
-            dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
-          } else {
-            error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
-                      nice_name_of(src.field), cbl_field_type_name(src.field->type),
-                      nice_name_of(tgt.field), cbl_field_type_name(tgt.field->type));
-          }
+    // Neither operand is FldInvalid.
+    if( is_index ) { // index move
+      if( tgt.field->type != FldIndex && src.field->type != FldIndex) {
+        auto msg = xasprintf("invalid SET %s (%s) TO %s (%s): not a field index",
+                             name_of(tgt.field), cbl_field_type_name(tgt.field->type),
+                             name_of(src.field), cbl_field_type_name(src.field->type));
+        dialect_ok(src.loc, MfSetNumeric, msg);
+        free(msg);
+      }
+    } else {
+      if( ! valid_move( tgt.field, src.field ) ) {
+        if( src.field->type == FldPointer &&
+            tgt.field->type == FldPointer ) {
+          dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
+        } else {
+          // other invalid move
+          const char * src_type = src.field->type == FldInvalid?
+            "undefined" : cbl_field_type_name(src.field->type);
+          const char * tgt_type = tgt.field->type == FldInvalid?
+            "undefined" : cbl_field_type_name(tgt.field->type);
+
+          if( 0 < src.field->data.rdigits ) src_type = "non-integer";
+          if( 0 < src.field->has_attr(all_alpha_e) ) src_type = "ALPHABETIC";
+
+          error_msg(src.loc, "cannot MOVE %qs (%s) TO %qs (%s)",
+                    nice_name_of(src.field), src_type,
+                    nice_name_of(tgt.field), tgt_type);
         }
       }
     }
-  }
+  } // end target list
+
   size_t ntgt = tgt_list->targets.size();
   std::vector <cbl_refer_t>  tgts(ntgt);
   std::transform( tgt_list->targets.begin(), tgt_list->targets.end(), tgts.begin(),

@@ -2366,6 +2366,19 @@ valid_move( const cbl_refer_t& tgt_ref, const cbl_refer_t& src_ref )
   assert(tgt->type < sizeof(matrix[0]));
   assert(src->type < sizeof(matrix[0]));
 
+  if( tgt->type != FldGroup ) {
+    if( ! is_numericish(effective_type(tgt_ref)) ) {
+      if( is_numeric(effective_type(src_ref)) ) {
+        if( 0 < src_ref.field->data.rdigits ) {
+          dbgmsg("%s:%d: src not integer %s, %s rdigits=%d", __func__, __LINE__,
+                 cbl_field_type_str(src->type), cbl_field_type_str(tgt->type),
+                 src_ref.field->data.rdigits);
+          dbgmsg("%s:%d: %s", __func__, __LINE__, field_str(src));
+          return false;
+        }
+      }
+    }
+  }
   /*
    * 8.4.3.3.3 Syntax rules
    * A refmod may apply to:

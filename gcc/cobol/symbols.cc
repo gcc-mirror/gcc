@@ -4707,7 +4707,9 @@ symbol_program_add( size_t program, cbl_label_t *input )
                         if( program == elem.program ) {
                           auto L = cbl_label_of(&elem);
                           if( ! L->prototype ) { // prototypes don't count
-                            return 0 == strcasecmp(name, L->name);
+                            if( L->type == LblProgram ) {
+                              return 0 == strcasecmp(name, L->name);
+                            }
                           }
                         }
                       }

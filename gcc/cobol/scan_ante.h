@@ -875,6 +875,10 @@ typed_name( const char name[] ) {
         yylval.numstr.radix =
           f->has_attr(hex_encoded_e)? hexadecimal_e : decimal_e;
         yylval.numstr.string = xstrdup(f->data.original());
+        const auto estring = yylval.numstr.string + strlen(yylval.numstr.string);
+        yylval.numstr.is_float = ! std::all_of(yylval.numstr.string,
+                                               estring,
+                                               fisdigit);
         return NUMSTR;
       }
       if( !f->has_attr(record_key_e) ) { // not a key-name literal
