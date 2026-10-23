@@ -4312,6 +4312,23 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 
 	  switch (code_lhs)
 	    {
+	    case AND:
+	      if (CONST_INT_P (XEXP (lhs, 1))
+		  && GET_CODE (XEXP (x, 1)) == ASHIFT)
+		{
+		  unsigned HOST_WIDE_INT mask = UINTVAL (XEXP (lhs, 1));
+		  rtx rhs = XEXP (x, 1);
+		  if (CONST_INT_P (XEXP (rhs, 1))
+		      && (HWIT_1U << INTVAL (XEXP (rhs, 1))) - 1 == mask)
+		    {
+		      /* This is a bstrins instruction.  */
+		      *total = COSTS_N_INSNS (1);
+		      *total += set_src_cost (XEXP (lhs, 0), mode, speed);
+		      *total += set_src_cost (XEXP (rhs, 0), mode, speed);
+		      return true;
+		    }
+		}
+	      break;
 	    case ASHIFT:
 	      if (CONST_INT_P (XEXP (lhs, 1)))
 		shamt = INTVAL (XEXP (lhs, 1));

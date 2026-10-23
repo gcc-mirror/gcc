@@ -1695,25 +1695,23 @@
 ;; Optimize (a << imm1) | (b & imm2) to use bstrins.d instruction, the size of
 ;; a and b are 8 bits, 16 bits or 64bits, imm2 value should be equal to
 ;; (1LL << imm1) - 1.
-(define_insn_and_split "*bstrins_d_for_ior_ashift_and"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(any_or_plus:DI
-	  (and:DI (match_operand:DI 1 "register_operand" "r")
-		  (match_operand:DI 2 "const_int_operand" "i"))
-	  (ashift:DI
-	      (match_operand:DI 3 "register_operand" "r")
-	      (match_operand:DI 4 "const_uimm63_operand"))))]
-  "TARGET_64BIT && loongarch_pre_reload_split ()
-   && !reg_overlap_mentioned_p (operands[0], operands[3])
-   && INTVAL (operands[2]) != 0 && INTVAL (operands[4]) != 0
-   && INTVAL (operands[2]) == (1LL << INTVAL (operands[4])) - 1"
+(define_insn_and_split "*bstrins_for_ior_ashift_and"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(any_or_plus:GPR
+	  (and:GPR (match_operand:GPR 1 "register_operand" "0")
+		   (match_operand     2 "const_int_operand"))
+	  (ashift:GPR
+	      (match_operand:GPR 3 "register_operand" "r")
+	      (match_operand     4 "const_int_operand"))))]
+  "(TARGET_64BIT || TARGET_32BIT_S)
+   && IN_RANGE (INTVAL (operands[4]), 1, GET_MODE_BITSIZE (<MODE>mode) - 1)
+   && UINTVAL (operands[2]) == (HWIT_1U << INTVAL (operands[4])) - 1"
   "#"
-  "&& true"
-  [(set (match_dup 0) (match_dup 1))
-   (set (zero_extract:DI (match_dup 0) (match_dup 2) (match_dup 4))
+  "&& reload_completed"
+  [(set (zero_extract:GPR (match_dup 0) (match_dup 2) (match_dup 4))
 	(match_dup 3))]
   {
-    operands[2] = GEN_INT (64 - INTVAL (operands[4]));
+    operands[2] = GEN_INT (GET_MODE_BITSIZE (<MODE>mode) - INTVAL (operands[4]));
   })
 
 (define_insn "and_load_zero_extend<mode>"
