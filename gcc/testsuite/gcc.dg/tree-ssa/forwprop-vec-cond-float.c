@@ -35,6 +35,10 @@ __BB(2):
   return r_5;
 }
 
-/* { dg-final { scan-tree-dump-not "= \\(v4s\[fi\]\\)" "forwprop1" } } */
-/* { dg-final { scan-tree-dump "<m_3, { 0\\.0, 0\\.0, 0\\.0, 0\\.0 }, { 1\\.0e\\+0, 1\\.0e\\+0, 1\\.0e\\+0, 1\\.0e\\+0 }>" "forwprop1" } } */
+/* The conversion in f is not sunk when the target can select between
+   int vectors but not between float vectors, as on arm without
+   -funsafe-math-optimizations.  */
+/* { dg-final { scan-tree-dump-not "= \\(v4sf\\)" "forwprop1" { target vect_float_strict } } } */
+/* { dg-final { scan-tree-dump "<m_3, { 0\\.0, 0\\.0, 0\\.0, 0\\.0 }, { 1\\.0e\\+0, 1\\.0e\\+0, 1\\.0e\\+0, 1\\.0e\\+0 }>" "forwprop1" { target vect_float_strict } } } */
+/* { dg-final { scan-tree-dump-not "= \\(v4si\\)" "forwprop1" } } */
 /* { dg-final { scan-tree-dump "<m_3, { 2, 2, 2, 2 }, { 3, 3, 3, 3 }>" "forwprop1" } } */
