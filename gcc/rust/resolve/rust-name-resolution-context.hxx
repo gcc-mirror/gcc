@@ -345,6 +345,10 @@ NameResolutionContext::resolve_segments (
 		}
 	      else
 		{
+		  // Non glob containers such as structures, we insert the
+		  // segment but we let the type checker handle the rest since
+		  // it has to resolve methode resolution & cie
+
 		  // FIXME: Resolve segments always resolves in the Types NS
 		  // correct? If so, we should remove the template parameter for
 		  // this function - and use NS::Types directly here instead of
