@@ -1,3 +1,84 @@
+2026-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127973
+	* gfortran.dg/coarray/collective_pool_exhausted_1.f90: New test.
+
+2026-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst11.ads: New test.
+	* gnat.dg/specs/generic_inst11_pkg.ads: New helper package.
+	* gnat.dg/specs/generic_inst11_pkg-g1.ads: Likewise.
+	* gnat.dg/specs/generic_inst11_pkg-g1-parser.ads: Likewise.
+	* gnat.dg/specs/generic_inst11_pkg-g1-parser-g2.ads: Likewise.
+	* gnat.dg/specs/generic_inst11_pkg-g1-parser-g2-parser.ads: Likewise
+
+2026-10-22  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR middle-end/108300
+	* g++.dg/asan/sanitizer_test_utils.h: Define
+	`WIN32_LEAN_AND_MEAN` before <windows.h>.
+	* gcc.dg/di-sync-multithread.c: Likewise.
+	* objc-obj-c++-shared/GNUStep/GNUstepBase/GSConfig.h: Likewise.
+
+2026-10-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug12.f90: New test.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR middle-end/125390
+	* gcc.target/riscv/rvv/autovec/pr125390.c: Adjust test
+	expectation.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR tree-optimization/121908
+	* gcc.dg/tree-prof/update-loopch.c: Disable vectorization.
+	* gcc.dg/tree-ssa/scev-12.c: Ditto.
+	* gcc.dg/tree-ssa/scev-8.c: Ditto.
+	* gcc.target/aarch64/sve2/niter-convert-range.c: Expect one more
+	dump instance.
+	* gcc.dg/vect/vect-unsigned-assump-1.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-2.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-3.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-4.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-5.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-6.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-7.c: New test.
+	* gcc.dg/vect/vect-unsigned-assump-8.c: New test.
+
+2026-10-22  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/sha-builtins-1.c: New test.
+	* gcc.target/powerpc/sha-builtins-2.c: New test.
+	* gcc.target/powerpc/sha-builtins-3.c: New test.
+	* gcc.target/powerpc/sha-builtins-4.c: New test.
+
+2026-10-22  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.dg/torture/crc-34.c: New test.
+	* gcc.dg/torture/crc-35.c: New test.
+	* gcc.dg/torture/crc-36.c: New test.
+	* gcc.dg/torture/crc-37.c: New test.
+	* gcc.dg/torture/crc-38.c: New test.
+	* gcc.dg/torture/crc-39.c: New test.
+	* gcc.dg/torture/crc-40.c: New test.
+	* gcc.dg/torture/crc-41.c: New test.
+	* gcc.target/i386/crc-34-pclmul.c: New test.
+	* gcc.target/i386/crc-35-pclmul.c: New test.
+	* gcc.target/i386/crc-36-pclmul.c: New test.
+	* gcc.target/i386/crc-37-pclmul.c: New test.
+	* gcc.target/i386/crc-38-pclmul.c: New test.
+	* gcc.target/i386/crc-39-pclmul.c: New test.
+	* gcc.target/i386/crc-40-pclmul.c: New test.
+	* gcc.target/i386/crc-41-pclmul.c: New test.
+
+2026-10-22  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/119468
+	* gcc.target/powerpc/pr119468.c: New test.
+
 2026-10-21  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
 
 	PR rtl-optimization/123905

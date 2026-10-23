@@ -1,3 +1,158 @@
+2026-10-22  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR tree-optimization/128045
+	* match.pd: Remove SSA_NAME check.
+
+2026-10-22  Peter Damianov  <peter0x44@disroot.org>
+
+	* config/i386/mingw-w64.h (STARTFILE_SPEC): Link CRT_fp4.o,
+	CRT_fp8.o or CRT_fp10.o for -mpc32, -mpc64 or -mpc80.
+	* doc/invoke.texi (x86 Options): Describe -mpc32, -mpc64 and
+	-mpc80 on MinGW targets.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR middle-end/125390
+	* expmed.cc (extract_bit_field_1): Call new functions.
+	(extract_vector_from_vector): New function.
+	(extract_element_from_vector): Likewise.
+	(extract_vector_from_multireg): Likewise.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* lra-constraints.cc (get_dependent_filter): Handle subregs
+	properly.
+	* ira-lives.cc (process_dependent_filters): Don't look through
+	subregs.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* tree-vect-loop.cc (vect_estimate_min_profitable_iters): Adjust
+	niter assumption costing.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR tree-optimization/121908
+	* tree-vect-data-refs.cc (vect_find_stmt_data_reference):
+	Allow non-wrapping DR analysis.
+	* tree-vect-loop.cc (vect_analyze_loop_form): Defer assumption
+	checking.
+	(vect_get_loop_datarefs): New function.
+	(vect_build_assumptions): New function.
+	(vect_analyze_loop): Use new functions.
+	* tree-vectorizer.h (struct vect_loop_form_info): Add BB param.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* tree-data-ref.cc (dr_analyze_innermost): Add nowrap-bound param.
+	(dr_analyze_indices): Likewise.
+	(create_data_ref): Likewise.
+	(find_data_references_in_stmt): Add record_nowrap_assumptions
+	param.
+	* tree-data-ref.h (struct data_reference): Add nowrap_bound.
+	(DR_NOWRAP_BOUND): New.
+	(dr_analyze_innermost): Pass on nowrap_bound.
+	(find_data_references_in_stmt): Likewise.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* tree-chrec.cc (convert_affine_scev): Add nowrap_bound param.
+	(chrec_convert_rhs): Ditto.
+	(chrec_convert_1): Ditto.
+	(chrec_convert): Ditto.
+	* tree-chrec.h (chrec_convert): Ditto.
+	(chrec_convert_rhs): Ditto.
+	(convert_affine_scev): Ditto.
+	* tree-scalar-evolution.cc (analyze_scalar_evolution_1): Ditto.
+	(analyze_scalar_evolution_for_address_of): Ditto.
+	(struct scev_info_str): Add nowrap_assumed.
+	(new_scev_info_str): Ditto.
+	(scev_info_hasher::hash): Ditto.
+	(scev_info_hasher::equal): Ditto.
+	(find_var_scev_info): Ditto.
+	(scev_combine_nowrap_bound): New function to accumulate bounds.
+	(set_scalar_evolution): Add nowrap_bound param.
+	(get_scalar_evolution): Ditto.
+	(simplify_peeled_chrec): Ditto.
+	(analyze_evolution_in_loop): Ditto.
+	(interpret_loop_phi): Ditto.
+	(interpret_condition_phi): Ditto.
+	(interpret_rhs_expr): Ditto.
+	(interpret_expr): Ditto.
+	(interpret_gimple_assign): Ditto.
+	(analyze_scalar_evolution): Ditto.
+	(analyze_scalar_evolution_in_loop): Ditto.
+	(simple_iv_with_niters): Add allow_wrapping.
+	(simple_iv): Ditto.
+	* tree-scalar-evolution.h (analyze_scalar_evolution): Add new
+	param.
+	(simple_iv_with_niters): Ditto.
+	(scev_combine_nowrap_bound): Declare.
+	* tree-ssa-loop-niter.cc (scev_probably_wraps_p): Build no-wrap
+	bound.
+	* tree-ssa-loop-niter.h (scev_probably_wraps_p): Add param.
+	* tree-ssa-loop.h (struct affine_iv): Add nowrap_bound.
+
+2026-10-22  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* tree-scalar-evolution.cc (derive_simple_iv_with_niters): Use
+	new function.
+	* tree-ssa-loop-niter.cc (loop_exits_before_overflow): Use new
+	function.
+	(get_niter_type_bound): New function.
+	* tree-ssa-loop-niter.h (get_niter_type_bound): Declare.
+
+2026-10-22  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* config/rs6000/crypto.md (UNSPEC_DMSHA2HASH): New unspec entry.
+	(UNSPEC_DMSHA256HASH): Likewise.
+	(UNSPEC_DMSHA512HASH): Likewise.
+	(UNSPEC_DMXXSHAPAD): Likewise.
+	(UNSPEC_DMXXSHA3512PAD): Likewise.
+	(UNSPEC_DMXXSHA3384PAD): Likewise.
+	(UNSPEC_DMXXSHA3256PAD): Likewise.
+	(UNSPEC_DMXXSHA3224PAD): Likewise.
+	(UNSPEC_DMXXSHAKE256PAD): Likewise.
+	(UNSPEC_DMXXSHAKE128PAD): Likewise.
+	(UNSPEC_DMXXSHA384512PAD): Likewise.
+	(UNSPEC_DMXXSHA224256PAD): Likewise.
+	(SHA2_code): Iterator for sha2 extended mnemonics.
+	(SHA2_insn): Attribute for sha2 extended mnemonics.
+	(SHAPAD_code): Iterator for sha3/shake padding extended mnemonics.
+	(SHAPAD_insn): Attribute for sha3/shake padding extended mnemonics.
+	(SHA2PAD_code): Iterator for sha2 padding extended mnemonics.
+	(SHA2PAD_insn): Attribute for sha2 padding extended mnemonics.
+	(dmsha2hash): New define_insn for base sha2.
+	(<SHA2_insn>): New define_insn for sha2 extended mnemonics.
+	(dmshapad): New define_insn for base shapad.
+	(<SHAPAD_insn>): New define_insn for sha3/shake padding extended
+	mnemonics.
+	(<SHA2PAD_insn>): New define_insn for sha2 padding extended mnemonics.
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin): Error
+	handling for shapad builtin arguments.
+	* config/rs6000/rs6000-builtins.def: Add new builtin definitions for
+	SHA2/3.
+	* doc/extend.texi: Document the added builtins.
+
+2026-10-22  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_crc_using_pclmul):
+	Modified to allow 64-bit CRC.
+	(ix86_expand_reversed_crc_using_pclmul): Likewise.
+	* config/i386/i386.md (crc<SWI248x:mode><SWI24:mode>4): Renamed
+	the second iterator to allow 64-bit CRC.
+	(crc<SWI1248x:mode><SWI248x:mode>4): Likewise.
+	(crc_rev<SWI1248x:mode><SWI24:mode>4): Likewise.
+	(crc_rev<SWI1248x:mode><SWI248x:mode>4): Likewise.
+	* expr.cc (gf2n_poly_long_div_quotient): Relaxed assert to allow
+	computing lower 64-bit of quotient for 64-bit CRC.
+
+2026-10-22  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/119468
+	* config/rs6000/rs6000.cc (rs6000_emit_parity): Add code to generate
+	popcntd if available.
+
 2026-10-21  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
 
 	PR rtl-optimization/123905

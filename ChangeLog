@@ -1,3 +1,10 @@
+2026-10-22  LIU Hao  <lh_mouse@126.com>
+	    Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR middle-end/108300
+	* libgo/misc/cgo/test/callback_c.c: Define `WIN32_LEAN_AND_MEAN`
+	before <windows.h>.
+
 2026-10-21  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	PR bootstrap/112422

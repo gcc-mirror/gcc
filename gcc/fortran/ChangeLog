@@ -1,3 +1,23 @@
+2026-10-22  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* trans-array.cc (structure_alloc_comps): CHECK_PDT_INTENT_OUT_
+	DUMMY added to enum and flag 'intent_out' set. If any of -
+	'intent_out' is false, the component has a codimension, is a
+	pointer, is a parmeterized kind, a KIND or LEN parameter, does
+	not have an initializer then continue through the components.
+	Otherwise, convert the initializer and set the component for
+	constants, array constructors or structure constructors.
+	(gfc_check_pdt_dummy): Incorporate a new argument 'intent_out';
+	use it to switch to the above path in structure_alloc_comps.
+	* trans-array.h : Add the new argument to the prototype of
+	gfc_check_pdt_dummy.
+	* trans-decl.cc (gfc_get_symbol_decl): gfc_defer_symbol_init is
+	now called for intent_out dummies.
+	(gfc_trans_deferred_vars): Call gfc_check_pdt_dummy with the
+	new argument set. For optional arguments, gfc_conv_expr_present
+	is used to apply a condition to the gfc_check_pdt_dummy result.
+
 2026-10-20  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/127892

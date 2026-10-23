@@ -1,3 +1,35 @@
+2026-10-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/128044
+	* sem_ch12.adb (Save_Global_References.Reset_Entity): Remove old
+	kludge short-circuiting the resolution of expanded names.
+
+2026-10-22  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* gcc-interface/Make-lang.in: Add compilation of `attr-handlers.c` in
+	Ada front-end.
+	* gcc-interface/utils.cc (handle_novops_attribute)
+	(handle_noinline_attribute, handle_always_inline_attribute)
+	(handle_type_generic_attribute, handle_used_attribute)
+	(handle_target_attribute): Remove functions provided by
+	`attr-handlers.c`.
+	(ada_handle_const_attribute, ada_handle_nothrow_attribute)
+	(ada_handle_expected_throw_attribute, ada_handle_pure_attribute)
+	(ada_handle_nonnull_attribute, ada_handle_sentinel_attribute)
+	(ada_handle_noreturn_attribute, ada_handle_stack_protect_attribute)
+	(ada_handle_no_stack_protector_attribute, ada_handle_strub_attribute)
+	(ada_handle_noclone_attribute, ada_handle_noicf_attribute)
+	(ada_handle_noipa_attribute, ada_handle_leaf_attribute)
+	(ada_handle_malloc_attribute, ada_handle_flatten_attribute)
+	(ada_handle_uninitialized_attribute, ada_handle_cold_attribute)
+	(ada_handle_hot_attribute, ada_handle_simd_attribute)
+	(ada_handle_target_clones_attribute, ada_handle_vector_size_attribute)
+	(ada_handle_vector_type_attribute)
+	(ada_handle_zero_call_used_regs_attribute): Rename from `handle_*` to
+	`ada_handle_*` to avoid conflicts with the functions declared in
+	`attr-handlers.h`.
+	(gnat_internal_attributes): Update accordingly.
+
 2026-10-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/18762

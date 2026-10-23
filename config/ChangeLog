@@ -1,3 +1,7 @@
+2026-10-22  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* pkg.m4 (PKG_CHECK_MODULES): Replace AC_TRY_LINK with AC_LINK_IFELSE.
+
 2026-10-20  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	PR lto/115300

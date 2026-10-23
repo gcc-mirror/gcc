@@ -1,3 +1,15 @@
+2026-10-22  Guillaume Gomez  <contact@guillaume-gomez.fr>
+
+	* Make-lang.in: Add compilation of `attr-handlers.c` in
+	D front-end.
+	* d-attribs.cc (handle_leaf_attribute) (handle_const_attribute)
+	(handle_pure_attribute) (handle_novops_attribute)
+	(handle_nothrow_attribute) (handle_type_generic_attribute)
+	(handle_returns_twice_attribute) (handle_fnspec_attribute)
+	(d_handle_noinline_attribute) (d_handle_used_attribute)
+	(d_handle_simd_attribute): Remove the functions provided by
+	`attr-handlers.c`.
+
 2026-09-08  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR middle-end/126622
