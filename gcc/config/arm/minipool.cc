@@ -462,7 +462,7 @@ barrier_cost (rtx_insn *insn)
      the moment, the basic block information seems to be corrupt by this
      stage of the compilation.  */
   int base_cost = 50;
-  rtx_insn *next = next_nonnote_insn (insn);
+  rtx_insn *next = next_nonnote_nondebug_insn (insn);
 
   if (next != NULL && LABEL_P (next))
     base_cost -= 20;
@@ -1108,7 +1108,7 @@ minipool::create_fix_barrier (Mfix *fix, minipool_address max_address)
 	    }
 
 	  /* Continue after the dispatch table.  */
-	  from = NEXT_INSN (tmp);
+	  from = next_nonnote_nondebug_insn (tmp);
 	  continue;
 	}
 
@@ -1122,7 +1122,7 @@ minipool::create_fix_barrier (Mfix *fix, minipool_address max_address)
 	  selected_address = fix->address + count;
 	}
 
-      from = NEXT_INSN (from);
+      from = next_nonnote_nondebug_insn (from);
     }
 
   /* Make sure that we found a place to insert the jump.  */
@@ -1328,8 +1328,8 @@ place_minipools (void)
   gcc_assert (NOTE_P (insn));
 
   /* Scan all the insns and record the operands that will need fixing.  */
-  for (insn = next_nonnote_insn (insn); insn;
-       insn = next_nonnote_insn (insn))
+  for (insn = next_nonnote_nondebug_insn (insn); insn;
+       insn = next_nonnote_nondebug_insn (insn))
     {
       if (BARRIER_P (insn))
 	push_minipool_barrier (insn, address);
