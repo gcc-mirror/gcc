@@ -37,7 +37,7 @@ constexpr float plain(float x) {
 }
 
 consteval info ret_of(info fn) {
-  return return_value_of(statements_of(body_of(fn)).back());
+  return return_operand_of(statements_of(body_of(fn)).back());
 }
 
 // relu: x > 0 ? x : 0

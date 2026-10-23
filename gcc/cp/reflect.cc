@@ -3807,8 +3807,8 @@ strip_return_slot_temporary (tree v)
 }
 
 static tree
-eval_return_value_of (location_t loc, const constexpr_ctx *ctx, tree r,
-		      bool *non_constant_p, tree *jump_target, tree fun)
+eval_return_operand_of (location_t loc, const constexpr_ctx *ctx, tree r,
+			bool *non_constant_p, tree *jump_target, tree fun)
 {
   r = unwrap_statement_wrappers (r);
   if (!r)
@@ -9204,8 +9204,8 @@ process_metafunction (const constexpr_ctx *ctx, tree fun, tree call,
       return eval_declared_variable_of (loc, ctx, h, non_constant_p, jump_target, fun);
     case METAFN_INITIALIZER_OF:
       return eval_initializer_of (loc, ctx, h, non_constant_p, jump_target, fun);
-    case METAFN_RETURN_VALUE_OF:
-      return eval_return_value_of (loc, ctx, h, non_constant_p, jump_target, fun);
+    case METAFN_RETURN_OPERAND_OF:
+      return eval_return_operand_of (loc, ctx, h, non_constant_p, jump_target, fun);
     case METAFN_IS_LITERAL:
       return eval_is_literal (h);
     case METAFN_IS_UNARY_OPERATOR:
