@@ -9430,7 +9430,8 @@ pass_fre::execute (function *fun)
   bool iterate_p = may_iterate && (optimize > 1);
   calculate_dominance_info (CDI_DOMINATORS);
   if (iterate_p)
-    loop_optimizer_init (AVOID_CFG_MODIFICATIONS);
+    /* When iterating make sure to minimize the number of backedges.  */
+    loop_optimizer_init (LOOPS_HAVE_SIMPLE_LATCHES);
 
   {
     /* When iterating, finalize below does the elimination; otherwise the

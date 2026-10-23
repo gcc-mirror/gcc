@@ -12,5 +12,5 @@ int foo()
   return i;
 }
 
-/* { dg-final { scan-tree-dump "RPO iteration over 3 blocks visited 3 blocks" "fre1" } } */
+/* { dg-final { scan-tree-dump "RPO iteration over 4 blocks visited 3 blocks" "fre1" } } */
 /* { dg-final { scan-tree-dump "return 1;" "fre1" } } */
