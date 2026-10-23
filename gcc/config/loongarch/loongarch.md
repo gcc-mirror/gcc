@@ -1665,32 +1665,23 @@
 ;;     or  $r12,$r12,$r13
 ;; Optimized to use bstrins.w instruction as below:
 ;;     bstrins.w   $r13,$r12,31,1
-(define_insn_and_split "*bstrins_w_for_ior_ashift_and_extend"
+(define_insn "*bstrins_w_for_ior_ashift_and_extend"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(any_or_plus:DI
-	  (and:DI (match_operand:DI 1 "register_operand" "r")
-		  (match_operand:SI 2 "const_int_operand" "i"))
-	  (ashift:DI
-	    (sign_extract:DI
-	      (match_operand:DI 3 "register_operand" "r")
-	      (match_operand:SI 4 "const_uimm5_operand")
-	      (const_int 0))
-	    (match_operand:SI 5 "const_uimm5_operand"))))]
-  "TARGET_64BIT && loongarch_pre_reload_split ()
-   && !reg_overlap_mentioned_p (operands[0], operands[3])
-   && INTVAL (operands[2]) != 0 && INTVAL (operands[5]) != 0
-   && INTVAL (operands[2]) == (1LL << INTVAL (operands[5])) - 1
-   && INTVAL (operands[4]) + INTVAL (operands[5]) == 0x20"
-  "#"
-  "&& true"
-  [(const_int 0)]
-  {
-    emit_move_insn (operands[0], operands[1]);
-    rtx len = GEN_INT (32 - INTVAL (operands[5]));
-    rtx dest = gen_lowpart (SImode, operands[0]);
-    rtx op = gen_lowpart (SImode, operands[3]);
-    emit_insn (gen_insvsi (dest, len, operands[5], op));
-  })
+	(sign_extend:DI
+	  (any_or_plus:SI
+	    (ashift:SI
+		(match_operand:SI 3 "register_operand" "r")
+		(match_operand    4 "const_uimm5_operand"))
+	    (subreg:SI
+	      (and:DI (match_operand:DI 1 "register_operand" "0")
+		      (match_operand    2 "const_int_operand"))
+	      0))))]
+  "TARGET_64BIT
+   && INTVAL (operands[4]) != 0
+   && UINTVAL (operands[2]) == (HWIT_1U << INTVAL (operands[4])) - 1"
+  "bstrins.w\t%0,%3,31,%4"
+  [(set_attr "move_type" "pick_ins")
+   (set_attr "mode" "SI")])
 
 ;; Optimize (a << imm1) | (b & imm2) to use bstrins.d instruction, the size of
 ;; a and b are 8 bits, 16 bits or 64bits, imm2 value should be equal to
