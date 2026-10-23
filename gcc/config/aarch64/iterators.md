@@ -2264,6 +2264,8 @@
 			    (VNx2SI "VNx2HI") (VNx2DI "VNx2SI")])
 (define_mode_attr Vnarrowq [(V8HI "v8qi") (V4SI "v4hi")
 			    (V2DI "v2si")
+			    (DI	  "si")	  (SI	"hi")
+			    (HI	  "qi")
 			    (VNx8HI "vnx8qi") (VNx4HI "vnx4qi")
 			    (VNx2HI "vnx2qi") (VNx4SI "vnx4hi")
 			    (VNx2SI "vnx2hi") (VNx2DI "vnx2si")])

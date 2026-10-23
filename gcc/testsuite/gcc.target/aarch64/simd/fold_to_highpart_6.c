@@ -13,9 +13,9 @@ int8x16_t z;
 
 /*
 ** test_addressable:
-**	adrp	x([0-9]+), \.LANCHOR0
-**	ldr	q([0-9]+), \[x\1, #?:lo12:\.LANCHOR0\]
-**	sxtl2	v0\.8h, v\2\.16b
+**	adrp	x([0-9]+), \.LANCHOR0\+8
+**	ldr	d([0-9]+), \[x\1, #?:lo12:\.LANCHOR0\+8\]
+**	sxtl	v0\.8h, v\2\.8b
 **	ret
 */
 int16x8_t

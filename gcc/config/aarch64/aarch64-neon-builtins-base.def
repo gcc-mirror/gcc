@@ -59,6 +59,30 @@ DEF_NEON_FUNCTION (vcopyq_lane, neon_copy_lane,
 		   ("Q0,Q0,ss32,D0,ss32", lane<1>, lane<3>))
 DEF_NEON_FUNCTION (vcopyq_laneq, neon_copy_lane,
 		   ("Q0,Q0,ss32,Q0,ss32", lane<1>, lane<3>))
+
+// Width-changing integer conversions
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+// Widening
+DEF_NEON_FUNCTION (vmovl,       bhs_integer, ("Qd0,D0"))
+DEF_NEON_FUNCTION (vmovl_high,  bhs_integer, ("Qd0,Q0"))
+
+// Narrowing
+DEF_NEON_FUNCTION (vmovn,       hsd_integer, ("Dh0,Q0"))
+DEF_NEON_FUNCTION (vmovn_high,  hsd_integer, ("Qh0,Dh0,Q0"))
+
+// Narrowing (saturating)
+DEF_NEON_FUNCTION (vqmovnh,     h_integer,   ("sh0,s0"))
+DEF_NEON_FUNCTION (vqmovns,     s_integer,   ("sh0,s0"))
+DEF_NEON_FUNCTION (vqmovnd,     d_integer,   ("sh0,s0"))
+DEF_NEON_FUNCTION (vqmovn,      hsd_integer, ("Dh0,Q0"))
+DEF_NEON_FUNCTION (vqmovn_high, hsd_integer, ("Qh0,Dh0,Q0"))
+
+// Narrowing (saturating, unsigned)
+DEF_NEON_FUNCTION (vqmovunh,     h_signed,   ("shu0,s0"))
+DEF_NEON_FUNCTION (vqmovuns,     s_signed,   ("shu0,s0"))
+DEF_NEON_FUNCTION (vqmovund,     d_signed,   ("shu0,s0"))
+DEF_NEON_FUNCTION (vqmovun,      hsd_signed, ("Dhu0,Q0"))
+DEF_NEON_FUNCTION (vqmovun_high, hsd_signed, ("Qhu0,Dhu0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
 // Lanewise arithmetic

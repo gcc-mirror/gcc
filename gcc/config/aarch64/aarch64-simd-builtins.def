@@ -132,14 +132,6 @@
   BUILTIN_VQN (TERNOP, rsubhn2, 0, DEFAULT)
   BUILTIN_VQN (TERNOPU, rsubhn2, 0, DEFAULT)
 
-  /* Implemented by aarch64_<us>xtl<mode>.  */
-  BUILTIN_VQN (UNOP, sxtl, 0, DEFAULT)
-  BUILTIN_VQN (UNOPU, uxtl, 0, DEFAULT)
-
-  /* Implemented by aarch64_xtn<mode>.  */
-  BUILTIN_VQN (UNOP, xtn, 0, DEFAULT)
-  BUILTIN_VQN (UNOPU, xtn, 0, DEFAULT)
-
   /* Implemented by aarch64_<su>mlsl_n<mode>.  */
   BUILTIN_VD_HSI (TERNOP, smlsl_n, 0, DEFAULT)
   BUILTIN_VD_HSI (TERNOPU, umlsl_n, 0, DEFAULT)
@@ -163,23 +155,6 @@
   /* Implemented by aarch64_<su>mlal_hi_n<mode>.  */
   BUILTIN_VQ_HSI (TERNOP, smlal_hi_n, 0, DEFAULT)
   BUILTIN_VQ_HSI (TERNOPU, umlal_hi_n, 0, DEFAULT)
-
-  /* Implemented by aarch64_sqmovun<mode>.  */
-  BUILTIN_VQN (UNOPUS, sqmovun, 0, DEFAULT)
-  BUILTIN_SD_HSDI (UNOPUS, sqmovun, 0, DEFAULT)
-
-  /* Implemented by aarch64_sqxtun2<mode>.  */
-  BUILTIN_VQN (BINOP_UUS, sqxtun2, 0, DEFAULT)
-
-  /* Implemented by aarch64_<su>qmovn<mode>.  */
-  BUILTIN_VQN (UNOP, sqmovn, 0, DEFAULT)
-  BUILTIN_SD_HSDI (UNOP, sqmovn, 0, DEFAULT)
-  BUILTIN_VQN (UNOP, uqmovn, 0, DEFAULT)
-  BUILTIN_SD_HSDI (UNOP, uqmovn, 0, DEFAULT)
-
-  /* Implemented by aarch64_<su>qxtn2<mode>.  */
-  BUILTIN_VQN (BINOP, sqxtn2, 0, DEFAULT)
-  BUILTIN_VQN (BINOPU, uqxtn2, 0, DEFAULT)
 
   /* Implemented by aarch64_s<optab><mode>.  */
   BUILTIN_VSDQ_I (UNOP, sqabs, 0, DEFAULT)
@@ -297,10 +272,6 @@
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0, FP)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0, FP)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0, FP)
-
-  /* Implemented by aarch64_xtn2<mode>.  */
-  BUILTIN_VQN (BINOP, xtn2, 0, DEFAULT)
-  BUILTIN_VQN (BINOPU, xtn2, 0, DEFAULT)
 
   /* Implemented by vec_unpack<su>_hi_<mode>.  */
   BUILTIN_VQW (UNOP, vec_unpacks_hi_, 10, DEFAULT)

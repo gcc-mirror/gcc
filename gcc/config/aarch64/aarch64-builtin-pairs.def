@@ -35,14 +35,6 @@
   LO_HI_PAIR_V_WI (T, s##LO, s##HI) \
   LO_HI_PAIR_V_WI (T##U, u##LO, u##HI)
 
-#define UNOP_LONG_LH_PAIRS \
-  LO_HI_PAIR (UNOP_sxtlv8hi,  UNOP_vec_unpacks_hi_v16qi) \
-  LO_HI_PAIR (UNOP_sxtlv4si,  UNOP_vec_unpacks_hi_v8hi) \
-  LO_HI_PAIR (UNOP_sxtlv2di,  UNOP_vec_unpacks_hi_v4si) \
-  LO_HI_PAIR (UNOPU_uxtlv8hi, UNOPU_vec_unpacku_hi_v16qi) \
-  LO_HI_PAIR (UNOPU_uxtlv4si, UNOPU_vec_unpacku_hi_v8hi) \
-  LO_HI_PAIR (UNOPU_uxtlv2di, UNOPU_vec_unpacku_hi_v4si)
-
 #define BINOP_LONG_LH_PAIRS \
   LO_HI_PAIR_V_US_WI (BINOP,  addl, addl2) \
   LO_HI_PAIR_V_US_WI (BINOP,  subl, subl2) \

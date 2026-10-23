@@ -15,7 +15,7 @@ uint16x8_t foo1 (...);
 uint16x8_t
 foo2 (uint8x8_t __a)
 {
-  return __builtin_aarch64_uxtlv8hi_uu (__a);
+  return vmovl_u8 (__a);
 }
 
 __inline int __attribute__ ((__gnu_inline__)) foo3 (...);

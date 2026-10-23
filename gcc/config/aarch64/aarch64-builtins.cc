@@ -481,7 +481,6 @@ static aarch64_simd_builtin_datum aarch64_simd_builtin_data[] = {
 #include "aarch64-builtin-pairs.def"
 
 #define LO_HI_PAIRINGS \
-  UNOP_LONG_LH_PAIRS \
   BINOP_LONG_LH_PAIRS \
   BINOP_LONG_N_LH_PAIRS \
   BINOP_WIDE_LH_PAIRS \

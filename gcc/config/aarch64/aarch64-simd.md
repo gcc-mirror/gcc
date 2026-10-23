@@ -2154,22 +2154,6 @@
   [(set_attr "type" "neon_move_narrow_q")]
 )
 
-(define_expand "aarch64_xtn2<mode>"
-  [(match_operand:<VNARROWQ2> 0 "register_operand")
-   (match_operand:<VNARROWQ> 1 "register_operand")
-   (truncate:<VNARROWQ> (match_operand:VQN 2 "register_operand"))]
-  "TARGET_SIMD"
-  {
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_xtn2<mode>_insn_be (operands[0], operands[1],
-						 operands[2]));
-    else
-      emit_insn (gen_aarch64_xtn2<mode>_insn_le (operands[0], operands[1],
-						 operands[2]));
-    DONE;
-  }
-)
-
 (define_insn "*aarch64_narrow_trunc<mode>"
   [(set (match_operand:<VNARROWQ2> 0 "register_operand" "=w")
 	(vec_concat:<VNARROWQ2>
@@ -6156,6 +6140,12 @@
   "TARGET_SIMD"
 )
 
+(define_expand "<sat_trunc_op>trunc<mode><Vnarrowq>2"
+  [(set (match_operand:<VNARROWQ> 0 "register_operand")
+	(SAT_TRUNC:<VNARROWQ> (match_operand:SD_HSDI 1 "register_operand")))]
+  "TARGET_SIMD"
+)
+
 ;; sqmovn and uqmovn
 
 (define_insn "aarch64_<su>qmovn<mode><vczle><vczbe>"
@@ -6198,33 +6188,27 @@
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_<su>qxtn2<mode>"
-  [(match_operand:<VNARROWQ2> 0 "register_operand")
-   (match_operand:<VNARROWQ> 1 "register_operand")
-   (SAT_TRUNC:<VNARROWQ>
-     (match_operand:VQN 2 "register_operand"))]
-  "TARGET_SIMD"
-  {
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_<su>qxtn2<mode>_be (operands[0], operands[1],
-						 operands[2]));
-    else
-      emit_insn (gen_aarch64_<su>qxtn2<mode>_le (operands[0], operands[1],
-						 operands[2]));
-    DONE;
-  }
-)
-
 ;; sqmovun
 
 (define_insn "aarch64_sqmovun<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(us_truncate:<VNARROWQ>
-	  (smax:SD_HSDI
-	    (match_operand:SD_HSDI 1 "register_operand" "w")
+	  (smax:GPI
+	    (match_operand:GPI 1 "register_operand" "w")
 	    (const_int 0))))]
    "TARGET_SIMD"
    "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
+   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
+)
+(define_insn "aarch64_sqmovunhi"
+  [(set (match_operand:QI 0 "register_operand" "=w")
+	(us_truncate:QI
+	  (subreg:HI
+	    (smax:SI
+	      (sign_extend:SI (match_operand:HI 1 "register_operand" "w"))
+	      (const_int 0)) 0)))]
+   "TARGET_SIMD"
+   "sqxtun\t%b0, %h1"
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
 )
 
@@ -6236,17 +6220,6 @@
   "TARGET_SIMD"
   "sqxtun\\t%<vn2>0<Vmntype>, %<v>1<Vmtype>"
   [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
-)
-
-(define_expand "aarch64_sqmovun<mode>"
-  [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
-	(us_truncate:<VNARROWQ>
-	  (smax:VQN (match_operand:VQN 1 "register_operand" "w")
-		    (match_dup 2))))]
-  "TARGET_SIMD"
-  {
-    operands[2] = CONST0_RTX (<MODE>mode);
-  }
 )
 
 (define_insn "aarch64_sqxtun2<mode>_le"
@@ -6273,23 +6246,6 @@
   "TARGET_SIMD && BYTES_BIG_ENDIAN"
   "sqxtun2\\t%0.<V2ntype>, %2.<Vtype>"
    [(set_attr "type" "neon_sat_shift_imm_narrow_q")]
-)
-
-(define_expand "aarch64_sqxtun2<mode>"
-  [(match_operand:<VNARROWQ2> 0 "register_operand")
-   (match_operand:<VNARROWQ> 1 "register_operand")
-   (match_operand:VQN 2 "register_operand")]
-  "TARGET_SIMD"
-  {
-    rtx zeros = CONST0_RTX (<MODE>mode);
-    if (BYTES_BIG_ENDIAN)
-      emit_insn (gen_aarch64_sqxtun2<mode>_be (operands[0], operands[1],
-					       operands[2], zeros));
-    else
-      emit_insn (gen_aarch64_sqxtun2<mode>_le (operands[0], operands[1],
-					       operands[2], zeros));
-    DONE;
-  }
 )
 
 ;; <su>q<absneg>
@@ -10276,13 +10232,6 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_expand "aarch64_<su>xtl<mode>"
-  [(set (match_operand:VQN 0 "register_operand" "=w")
-	(ANY_EXTEND:VQN (match_operand:<VNARROWQ> 1 "register_operand" "w")))]
-  "TARGET_SIMD"
-  ""
-)
-
 ;; Truncate a 128-bit integer vector to a 64-bit vector.
 (define_insn "trunc<mode><Vnarrowq>2<vczle><vczbe>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
@@ -10290,15 +10239,6 @@
   "TARGET_SIMD"
   "xtn\t%0.<Vntype>, %1.<Vtype>"
   [(set_attr "type" "neon_move_narrow_q")]
-)
-
-;; Expander for the intrinsics that only takes one mode unlike the two-mode
-;; trunc optab.
-(define_expand "aarch64_xtn<mode>"
-  [(set (match_operand:<VNARROWQ> 0 "register_operand")
-       (truncate:<VNARROWQ> (match_operand:VQN 1 "register_operand")))]
-  "TARGET_SIMD"
-  {}
 )
 
 (define_insn "aarch64_bfdot<mode>"

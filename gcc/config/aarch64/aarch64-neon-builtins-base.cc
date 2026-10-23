@@ -118,13 +118,17 @@ build_lane_set (tree vec, tree index, tree elem)
   return fold_build3 (BIT_INSERT_EXPR, vec_type, vec, elem, offset);
 }
 
-/* Build an extract of type TYPE (which must be a 64-bit vector type) for half
-   of the 128-bit vector VEC.  HIGH_P selects the upper half.  */
+/* Build an extract of half of the 128-bit vector VEC.  HIGH_P selects the upper
+   half. */
 tree
-build_vec_extract_half (tree type, tree vec, bool high_p)
+build_vec_extract_half (tree vec, bool high_p)
 {
-  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (type)), 64));
-  return fold_build3 (BIT_FIELD_REF, type, vec, bitsize_int (64),
+  auto vec_type = TREE_TYPE (vec);
+  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (vec_type)), 128));
+  auto ret_type
+    = build_vector_type (TREE_TYPE (vec_type),
+			 TYPE_VECTOR_SUBPARTS (vec_type).to_constant () / 2);
+  return fold_build3 (BIT_FIELD_REF, ret_type, vec, bitsize_int (64),
 		      bitsize_int (high_p ^ BYTES_BIG_ENDIAN ? 64 : 0));
 }
 
@@ -579,27 +583,34 @@ struct gimple_create : public gimple_function_base
   }
 };
 
+/* Concatenate LOW_HALF and HIGH_HALF into a single vector.  */
+static tree
+build_combine (gimple_folder &f, tree low_half, tree high_half)
+{
+  auto arg_type = TREE_TYPE (low_half);
+  auto elem_type = TREE_TYPE (arg_type);
+  auto ret_type
+    = build_vector_type (elem_type, TYPE_VECTOR_SUBPARTS (arg_type) * 2);
+
+  if (one_element_vector_type_p (arg_type))
+    {
+      low_half = f.force_val (fold_build1 (VIEW_CONVERT_EXPR, elem_type, low_half));
+      high_half = f.force_val (fold_build1 (VIEW_CONVERT_EXPR, elem_type, high_half));
+    }
+
+  if (BYTES_BIG_ENDIAN)
+    std::swap (low_half, high_half);
+
+  return build_constructor_va (ret_type, 2, NULL_TREE, low_half, NULL_TREE, high_half);
+}
+
 struct gimple_combine : public gimple_function_base
 {
   gimple *fold (gimple_folder &f) const override
   {
     auto arg1 = gimple_call_arg (f.call, 0);
     auto arg2 = gimple_call_arg (f.call, 1);
-    auto arg_type = TREE_TYPE (arg1);
-    auto elem_type = TREE_TYPE (arg_type);
-
-    if (known_eq (TYPE_VECTOR_SUBPARTS (arg_type), 1U))
-      {
-	arg1 = f.force_val (fold_build1 (VIEW_CONVERT_EXPR, elem_type, arg1));
-	arg2 = f.force_val (fold_build1 (VIEW_CONVERT_EXPR, elem_type, arg2));
-      }
-
-    if (BYTES_BIG_ENDIAN)
-      std::swap (arg1, arg2);
-
-    return gimple_build_assign (f.lhs (),
-				build_constructor_va (f.ret_type, 2, NULL_TREE,
-						      arg1, NULL_TREE, arg2));
+    return gimple_build_assign (f.lhs (), build_combine (f, arg1, arg2));
   }
 };
 
@@ -619,7 +630,7 @@ struct gimple_get_half : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto src = gimple_call_arg (f.call, 0);
-    auto half = build_vec_extract_half (f.ret_type, src, high_half_p);
+    auto half = build_vec_extract_half (src, high_half_p);
     return gimple_build_assign (f.lhs (), half);
   }
 };
@@ -659,6 +670,71 @@ struct gimple_dup : public gimple_function_base
   {
     auto elem = gimple_call_arg (f.call, 0);
     return gimple_build_assign (f.lhs (), build_vec_dup (f.ret_type, elem));
+  }
+};
+
+template <bool high_p>
+struct gimple_widen : public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto arg = gimple_call_arg (f.call, 0);
+    auto ret_type = TREE_TYPE (f.lhs ());
+
+    if (high_p)
+      arg = f.force_val (build_vec_extract_half (arg, true));
+
+    return gimple_build_assign (f.lhs (),
+				fold_build1 (CONVERT_EXPR, ret_type, arg));
+  }
+};
+
+template <bool high_p>
+struct gimple_narrow: public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto src = gimple_call_arg (f.call, 0);
+    auto arg = gimple_call_arg (f.call, high_p);
+
+    auto ret_type = TREE_TYPE (f.lhs ());
+    auto src_type = TREE_TYPE (src);
+    auto arg_type = TREE_TYPE (arg);
+    auto trunc_type = high_p ? src_type : ret_type;
+
+    if (TYPE_SIGN (arg_type) != TYPE_SIGN (ret_type))
+      arg = f.force_val (
+	fold_build2 (MAX_EXPR, arg_type, arg, build_zero_cst (arg_type)));
+
+    auto truncated = f.force_val (fold_build1 (CONVERT_EXPR, trunc_type, arg));
+    auto ret = high_p ? build_combine (f, src, truncated) : truncated;
+    return gimple_build_assign (f.lhs (), ret);
+  }
+};
+
+template <bool high_p>
+struct gimple_narrow_saturate : public gimple_function_base
+{
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto src = gimple_call_arg (f.call, 0);
+    auto arg = gimple_call_arg (f.call, high_p);
+
+    auto ret_type = TREE_TYPE (f.lhs ());
+    auto src_type = TREE_TYPE (src);
+    auto arg_type = TREE_TYPE (arg);
+    auto trunc_type = high_p ? src_type : ret_type;
+
+    if (TYPE_SIGN (arg_type) != TYPE_SIGN (ret_type))
+      arg = f.force_val (
+	fold_build2 (MAX_EXPR, arg_type, arg, build_zero_cst (arg_type)));
+
+    auto_vec<tree> ifn_args{};
+    ifn_args.safe_push (arg);
+    auto truncated
+      = f.force_val (build_ifn_call (f, IFN_SAT_TRUNC, trunc_type, ifn_args));
+    auto ret = high_p ? build_combine (f, src, truncated) : truncated;
+    return gimple_build_assign (f.lhs (), ret);
   }
 };
 
@@ -2008,10 +2084,8 @@ public:
 		== TYPE_PRECISION (TREE_TYPE (TREE_TYPE (a))) * 2);
     if (high_p)
       {
-	tree half_type = build_vector_type (TREE_TYPE (TREE_TYPE (a)),
-					    TYPE_VECTOR_SUBPARTS (wide_type));
-	a = f.force_val (build_vec_extract_half (half_type, a, true));
-	b = f.force_val (build_vec_extract_half (half_type, b, true));
+	a = f.force_val (build_vec_extract_half (a, true));
+	b = f.force_val (build_vec_extract_half (b, true));
       }
     a = f.force_val (fold_build1 (CONVERT_EXPR, wide_type, a));
     b = f.force_val (fold_build1 (CONVERT_EXPR, wide_type, b));
@@ -2081,6 +2155,15 @@ NEON_FUNCTION (vdup_n,		gimple_dup,)
 NEON_FUNCTION (vdupq_n,		gimple_dup,)
 NEON_FUNCTION (vmov_n,		gimple_dup,)
 NEON_FUNCTION (vmovq_n,		gimple_dup,)
+
+// Widening and narrowing integer conversions
+NEON_FUNCTION (vmovl,		gimple_widen<false>,)
+NEON_FUNCTION (vmovl_high,	gimple_widen<true>,)
+NEON_FUNCTION (vmovn,		gimple_narrow<false>,)
+NEON_FUNCTION (vmovn_high,	gimple_narrow<true>,)
+NEON_FUNCTION (vqmovn,  vqmovnh,  vqmovns,  vqmovnd,
+	       vqmovun, vqmovunh, vqmovuns, vqmovund, gimple_narrow_saturate<false>,)
+NEON_FUNCTION (vqmovn_high, vqmovun_high, gimple_narrow_saturate<true>,)
 
 // Lane get/set
 NEON_FUNCTION (vget_lane, vgetq_lane,   gimple_get_lane,)
