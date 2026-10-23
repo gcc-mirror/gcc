@@ -8288,9 +8288,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (ltgt @0 @0)
  (if (!flag_trapping_math || !tree_expr_maybe_nan_p (@0))
   { constant_boolean_node (false, type); }))
+/* LTGT raises an exception for a quiet NaN, ORDERED and NE do not.  */
 (simplify
  (bit_and:c (ordered @0 @1) (ne @0 @1))
- (ltgt @0 @1))
+ (if (!flag_trapping_math || !HONOR_NANS (@0))
+  (ltgt @0 @1)))
 
 /* x == ~x -> false */
 /* x != ~x -> true */
