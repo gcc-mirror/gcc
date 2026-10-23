@@ -6229,7 +6229,8 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
   if (TREE_CODE (binrhs) == SSA_NAME)
     {
       binrhsdef = SSA_NAME_DEF_STMT (binrhs);
-      binrhsisreassoc = (is_reassociable_op (binrhsdef, rhscode, loop)
+      binrhsisreassoc = (is_associative
+			 && is_reassociable_op (binrhsdef, rhscode, loop)
 			 && !stmt_could_throw_p (cfun, binrhsdef));
     }
 
@@ -6296,9 +6297,10 @@ linearize_expr_tree (vec<operand_entry *> *ops, gimple *stmt,
       binrhs = gimple_assign_rhs2 (stmt);
     }
 
-  gcc_assert (TREE_CODE (binrhs) != SSA_NAME
-	      || !is_reassociable_op (SSA_NAME_DEF_STMT (binrhs),
-				      rhscode, loop));
+  gcc_checking_assert (TREE_CODE (binrhs) != SSA_NAME
+		       || !is_associative
+		       || !is_reassociable_op (SSA_NAME_DEF_STMT (binrhs),
+					       rhscode, loop));
   linearize_expr_tree (ops, SSA_NAME_DEF_STMT (binlhs),
 		       is_associative, set_visited);
 
