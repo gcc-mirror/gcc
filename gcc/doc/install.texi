@@ -4181,7 +4181,7 @@ that @code{gfx9-generic} does not include @code{gfx908} or @code{gfx90a},
 that linking specific ISA code with generic code is currently not supported,
 and that only ROCm 6.4.0 or newer is able to execute generic code.
 
-Use Newlib (4.6.0 or newer).
+Use Newlib (commit bd71cc6c4 from 2026-10-20, or newer).
 
 To run the binaries, install the HSA Runtime from the
 @uref{https://rocm.docs.amd.com/,,ROCm Platform}, and use
