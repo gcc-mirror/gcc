@@ -2315,7 +2315,13 @@ likely_spilled_retval_p (rtx_insn *insn)
   unsigned mask;
   struct likely_spilled_retval_info info;
 
-  if (!NONJUMP_INSN_P (use) || GET_CODE (PATTERN (use)) != USE || insn == use)
+  /* With -g, BB_END may be a DEBUG_INSN.  Ignore trailing debug
+     instructions without changing how notes are handled.  */
+  if (DEBUG_INSN_P (use))
+    use = prev_nondebug_insn (use);
+  if (!NONJUMP_INSN_P (use)
+      || GET_CODE (PATTERN (use)) != USE
+      || insn == use)
     return false;
   reg = XEXP (PATTERN (use), 0);
   if (!REG_P (reg) || !targetm.calls.function_value_regno_p (REGNO (reg)))
