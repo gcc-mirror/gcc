@@ -477,8 +477,8 @@ fold_or_predicates (location_t loc, tree c1, tree c2)
 
   if (code1 != ERROR_MARK && code2 != ERROR_MARK)
     {
-      tree t = maybe_fold_or_comparisons (boolean_type_node, code1, op1a, op1b,
-					  code2, op2a, op2b);
+      tree t = maybe_fold_or_comparisons (boolean_type_node, TRUTH_OR_EXPR,
+					  code1, op1a, op1b, code2, op2a, op2b);
       if (t)
 	return t;
     }

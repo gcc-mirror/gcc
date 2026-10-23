@@ -36,10 +36,12 @@ extern tree follow_all_ssa_edges (tree);
 extern bool fold_stmt (gimple_stmt_iterator *, bitmap = nullptr);
 extern bool fold_stmt (gimple_stmt_iterator *, tree (*) (tree), bitmap = nullptr);
 extern bool fold_stmt_inplace (gimple_stmt_iterator *, tree (*) (tree) = no_follow_ssa_edges);
-extern tree maybe_fold_and_comparisons (tree, enum tree_code, tree, tree,
+extern tree maybe_fold_and_comparisons (tree, enum tree_code,
+					enum tree_code, tree, tree,
 					enum tree_code, tree, tree,
 					basic_block = nullptr);
-extern tree maybe_fold_or_comparisons (tree, enum tree_code, tree, tree,
+extern tree maybe_fold_or_comparisons (tree, enum tree_code,
+				       enum tree_code, tree, tree,
 				       enum tree_code, tree, tree,
 				       basic_block = nullptr);
 extern bool optimize_atomic_compare_exchange_p (gimple *);

@@ -1318,7 +1318,7 @@ simplify_1b (pred_chain &chain)
 	    b_code = invert_tree_comparison (b_code, false);
 	  /* Try to combine X a_code Y && X b_code Y'.  */
 	  tree comb = maybe_fold_and_comparisons (boolean_type_node,
-						  a_code,
+						  TRUTH_ANDIF_EXPR, a_code,
 						  a_pred.pred_lhs,
 						  a_pred.pred_rhs,
 						  b_code,

@@ -1117,7 +1117,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	return false;
       /* Don't return false so fast, try maybe_fold_or_comparisons?  */
 
-      if (!(t = maybe_fold_and_comparisons (boolean_type_node, outer_cond_code,
+      if (!(t = maybe_fold_and_comparisons (boolean_type_node,
+					    TRUTH_ANDIF_EXPR, outer_cond_code,
 					    gimple_cond_lhs (outer_cond),
 					    gimple_cond_rhs (outer_cond),
 					    inner_cond_code,
