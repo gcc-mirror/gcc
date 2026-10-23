@@ -36,4 +36,10 @@ F3 (signed long, sl)
 
 /* We match addi and addiw here on purpose.  */
 /* { dg-final { scan-assembler-times "addi" 24 } } */
-/* { dg-final { scan-assembler-times "andn\t" 24 } } */
+
+/* The transformation we want to apply for one class of test requires
+   nonzero bits information to be safe on rv64.  That information is
+   not available for the long of that test. Hence the difference
+   in andn instrutions seen across rv32 and rv64.  */
+/* { dg-final { scan-assembler-times "andn\t" 24 { target rv32 } } } */
+/* { dg-final { scan-assembler-times "andn\t" 22 { target rv64 } } } */

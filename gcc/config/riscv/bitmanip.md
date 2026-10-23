@@ -1527,6 +1527,8 @@
    (clobber (match_operand:DI 3 "register_operand"))]
   "(TARGET_64BIT
     && TARGET_ZBB
+    && (nonzero_bits (operands[2], DImode)
+	& HOST_WIDE_INT_UC (0xffffffff00000000)) == 0
     && (REG_P (operands[2]) && SUBREG_P (operands[1])
 	 ? REGNO (operands[2]) == REGNO (SUBREG_REG (operands[1]))
 	 : REG_P (operands[1]) && SUBREG_P (operands[2])
