@@ -199,6 +199,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	_M_init_local_buf();
 
+	// NB: size() (i.e. _M_length) is initialized only at the end.
 	while (__beg != __end && __len < __capacity)
 	  {
 	    _M_local_buf[__len++] = *__beg;
@@ -228,6 +229,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		_M_data(__another.__ptr);
 		_M_capacity(__capacity);
 	      }
+
+#if __cplusplus >= 201103L
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+
+	    using _SbufIter = istreambuf_iterator<_CharT, char_traits<_CharT>>;
+	    if constexpr (is_same<_InIterator, _SbufIter>::value &&
+			  is_same<_Traits, char_traits<_CharT>>::value)
+	      {
+		auto __r = std::__copy_n_a(__beg, __capacity - __len,
+			    _M_data() + __len, false);
+		__len = __r - data();
+		// We continue using __beg after passing it to copy_n_a.
+		// That is permitted for streambuf iterators.
+		continue;
+	      }
+
+# pragma GCC diagnostic pop
+#endif
 	    traits_type::assign(_M_data()[__len++],
 				static_cast<_CharT>(*__beg));
 	    ++__beg;

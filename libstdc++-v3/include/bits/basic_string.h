@@ -826,7 +826,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	basic_string(from_range_t, _Rg&& __rg, const _Alloc& __a = _Alloc())
 	: basic_string(__a)
 	{
-	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
+	  using _SbufIter = istreambuf_iterator<_CharT, char_traits<_CharT>>;
+	  if constexpr (requires {
+	    requires is_same_v<ranges::iterator_t<_Rg>, _SbufIter>;
+	    requires is_same_v<ranges::sentinel_t<_Rg>, _SbufIter> ||
+		     is_same_v<ranges::sentinel_t<_Rg>, default_sentinel_t>; })
+	    {
+	      _M_construct(ranges::begin(__rg), _SbufIter(),
+		input_iterator_tag{});
+	    }
+	  else if constexpr (ranges::forward_range<_Rg>
+			  || ranges::sized_range<_Rg>)
 	    {
 	      const auto __n = static_cast<size_type>(ranges::distance(__rg));
 	      reserve(__n);
