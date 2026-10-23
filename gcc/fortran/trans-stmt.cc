@@ -7827,15 +7827,15 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	      gfc_add_expr_to_block (&block, tmp);
 	      gfc_free_actual_arglist (init_expr->param_list);
 	      init_expr->param_list = NULL;
-	      gfc_replace_expr (init_expr, var);
 	      /* Deallocate temporary PDT's allocatable components.  */
 	      if (var->symtree->n.sym->ts.u.derived->attr.alloc_comp)
 		{
+		  gfc_symbol *derived = var->symtree->n.sym->ts.u.derived;
 		  tree var_decl = gfc_get_symbol_decl (var->symtree->n.sym);
-		  tmp = gfc_deallocate_pdt_comp (var->symtree->n.sym->ts.u.derived,
-						var_decl, 0);
+		  tmp = gfc_deallocate_pdt_comp (derived, var_decl, 0);
 		  gfc_add_expr_to_block (&block, tmp);
 		}
+	      gfc_replace_expr (init_expr, var);
 	    }
 	  ini->expr2 = init_expr;
 	  tmp= gfc_trans_init_assign (ini);
