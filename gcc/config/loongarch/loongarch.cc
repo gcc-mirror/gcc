@@ -4062,6 +4062,43 @@ loongarch_address_cost (rtx addr, machine_mode mode,
 				    la_addr_reg_reg_cost);
 }
 
+static bool
+loongarch_cost_bstrins_for_any_or_plus (rtx x, machine_mode mode,
+					int *total, bool speed)
+{
+  rtx op[2] = {XEXP (x, 0), XEXP (x, 1)};
+
+  if (GET_CODE (op[0]) == AND && GET_CODE (op[1]) == AND
+      && (mode == SImode || (TARGET_64BIT && mode == DImode)))
+    {
+      rtx rtx_mask0 = XEXP (op[0], 1), rtx_mask1 = XEXP (op[1], 1);
+      if (CONST_INT_P (rtx_mask0) && CONST_INT_P (rtx_mask1))
+	{
+	  unsigned HOST_WIDE_INT mask0 = UINTVAL (rtx_mask0);
+	  unsigned HOST_WIDE_INT mask1 = UINTVAL (rtx_mask1);
+	  if (loongarch_use_bstrins_for_ior_with_mask_1 (mode,
+							 mask0,
+							 mask1))
+	    {
+	      /* A bstrins instruction.  */
+	      *total = COSTS_N_INSNS (1);
+
+	      /* A srai instruction.  */
+	      if (low_bitmask_len (mode, mask0) == -1
+		  && low_bitmask_len (mode, mask1) == -1)
+		*total += COSTS_N_INSNS (1);
+
+	      for (int i = 0; i < 2; i++)
+		*total += set_src_cost (XEXP (op[i], 0), mode, speed);
+
+	      return true;
+	    }
+	}
+    }
+
+  return false;
+}
+
 /* Implement TARGET_RTX_COSTS.  */
 
 static bool
@@ -4178,45 +4215,18 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	  return true;
 	}
 
-      /* Fall through.  */
-
-    case IOR:
-      {
-	rtx op[2] = {XEXP (x, 0), XEXP (x, 1)};
-	if (GET_CODE (op[0]) == AND && GET_CODE (op[1]) == AND
-	    && (mode == SImode || (TARGET_64BIT && mode == DImode)))
-	  {
-	    rtx rtx_mask0 = XEXP (op[0], 1), rtx_mask1 = XEXP (op[1], 1);
-	    if (CONST_INT_P (rtx_mask0) && CONST_INT_P (rtx_mask1))
-	      {
-		unsigned HOST_WIDE_INT mask0 = UINTVAL (rtx_mask0);
-		unsigned HOST_WIDE_INT mask1 = UINTVAL (rtx_mask1);
-		if (loongarch_use_bstrins_for_ior_with_mask_1 (mode,
-							       mask0,
-							       mask1))
-		  {
-		    /* A bstrins instruction */
-		    *total = COSTS_N_INSNS (1);
-
-		    /* A srai instruction */
-		    if (low_bitmask_len (mode, mask0) == -1
-			&& low_bitmask_len (mode, mask1) == -1)
-		      *total += COSTS_N_INSNS (1);
-
-		    for (int i = 0; i < 2; i++)
-		      *total += set_src_cost (XEXP (op[i], 0), mode, speed);
-
-		    return true;
-		  }
-	      }
-	  }
-      }
-
-      /* Fall through.  */
-    case XOR:
       /* Double-word operations use two single-word operations.  */
-      *total = loongarch_binary_cost (x, COSTS_N_INSNS (1), COSTS_N_INSNS (2),
-				      speed);
+      *total = loongarch_binary_cost (x, COSTS_N_INSNS (1),
+				      COSTS_N_INSNS (2), speed);
+      return true;
+    case IOR:
+    case XOR:
+      if (loongarch_cost_bstrins_for_any_or_plus (x, mode, total, speed))
+	return true;
+
+      /* Double-word operations use two single-word operations.  */
+      *total = loongarch_binary_cost (x, COSTS_N_INSNS (1),
+				      COSTS_N_INSNS (2), speed);
       return true;
 
     case LSHIFTRT:
@@ -4328,6 +4338,9 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 		      return true;
 		    }
 		}
+	      if (loongarch_cost_bstrins_for_any_or_plus (x, mode, total,
+							  speed))
+		return true;
 	      break;
 	    case ASHIFT:
 	      if (CONST_INT_P (XEXP (lhs, 1)))
