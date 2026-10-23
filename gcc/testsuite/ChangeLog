@@ -1,3 +1,21 @@
+2026-10-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-10-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	PR testsuite/126082
+	* lib/target-supports.exp
+	(check_effective_target_arm_fp16_ok_nocache): Iterate to find
+	suitable flags.
+
+2026-10-22  Christophe Lyon  <christophe.lyon@arm.com>
+
+	Backported from master:
+	2026-10-21  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* gcc.target/arm/mve/general-c/nomve_fp_1.c: Add -mthumb to
+	dg-options.
+
 2026-10-19  Kyrylo Tkachov  <ktkachov@nvidia.com>
 
 	Backported from master:
