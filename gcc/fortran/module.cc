@@ -5685,7 +5685,9 @@ load_needed (pointer_info *p)
      but not used warnings; don't mark internal symbols such as __vtab,
      __def_init etc. Only mark them if they have been explicitly loaded.  */
 
-  if (only_flag && sym->name[0] != '_' && sym->name[1] != '_')
+  if (only_flag
+      && sym->name[0] != '\0'
+      && !(sym->name[0] == '_' && sym->name[1] == '_'))
     {
       gfc_use_rename *u;
 
