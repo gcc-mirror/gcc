@@ -14452,6 +14452,16 @@ else
 fi
 
 
+# External libzstd is optional; do not require it for cross-target builds.
+zstd_failure_is_fatal=yes
+if test -n "$with_target_subdir" \
+   && test -n "$with_cross_host" && test "$with_cross_host" != no; then
+  zstd_cross_host=`$SHELL "$ac_aux_dir/config.sub" "$with_cross_host"` \
+    || as_fn_error $? "invalid cross host: $with_cross_host" "$LINENO" 5
+  if test "$zstd_cross_host" != "$host"; then
+    zstd_failure_is_fatal=no
+  fi
+fi
 
 
 
@@ -14871,11 +14881,13 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 $as_echo "#define HAVE_ZSTD 1" >>confdefs.h
 
-  elif test "$with_zstd" != auto; then
+  elif test "$with_zstd" != auto \
+       && test "x$zstd_failure_is_fatal" != xno; then
     as_fn_error $? "Unable to find a usable zstd library and zstd.h.  See
       config.log for details." "$LINENO" 5
   else
-    # In auto mode, an unusable installation simply disables zstd.
+    { $as_echo "$as_me:${as_lineno-$LINENO}: no usable external libzstd; continuing without it" >&5
+$as_echo "$as_me: no usable external libzstd; continuing without it" >&6;}
     zstd_enabled=no
   fi
 

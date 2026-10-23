@@ -545,7 +545,17 @@ AC_LINK_IFELSE([AC_LANG_PROGRAM(,)],
 LDFLAGS=$LDFLAGS_hold])
 AM_CONDITIONAL(HAVE_COMPRESSED_DEBUG_ZLIB_GABI, test "$libgo_cv_ld_compress_zlib_gabi" = yes)
 
-AC_ZSTD
+# External libzstd is optional; do not require it for cross-target builds.
+zstd_failure_is_fatal=yes
+if test -n "$with_target_subdir" \
+   && test -n "$with_cross_host" && test "$with_cross_host" != no; then
+  zstd_cross_host=`$SHELL "$ac_aux_dir/config.sub" "$with_cross_host"` \
+    || AC_MSG_ERROR([invalid cross host: $with_cross_host])
+  if test "$zstd_cross_host" != "$host"; then
+    zstd_failure_is_fatal=no
+  fi
+fi
+AC_ZSTD([$zstd_failure_is_fatal])
 AM_CONDITIONAL(HAVE_ZSTD, test "$zstd_enabled" = yes)
 
 dnl Test whether the linker supports --compress-debug-sections=zstd option.
