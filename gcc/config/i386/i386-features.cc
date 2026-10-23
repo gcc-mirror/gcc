@@ -3866,6 +3866,10 @@ replace_vector_const (machine_mode vector_mode, rtx vector_const,
       PATTERN (insn) = set;
       INSN_CODE (insn) = -1;
       recog_memoized (insn);
+      /* Add a REG_EQUAL note with the original CONST_VECTOR so that LRA
+	 can rematerialize it instead of spilling DEST.  */
+      if (REG_P (dest) && !CONST_INT_P (replace) && CONST_VECTOR_P (src))
+	set_unique_reg_note (insn, REG_EQUAL, copy_rtx (src));
       if (dump_file)
 	{
 	  fprintf (dump_file, "\nwith:\n\n");
