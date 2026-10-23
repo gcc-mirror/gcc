@@ -1509,28 +1509,28 @@ context::report_diagnostic (diagnostic_info *diagnostic)
   va_list *orig_args = diagnostic->m_message.m_args_ptr;
   for (auto sink_ : m_sinks)
     {
-      /* Formatting the message is done per-output-format,
-	 so that each output format gets its own set of pp_token_lists
+      /* Formatting the message is done per-diagnostic-sink
+	 so that each diagnostic sink gets its own set of pp_token_lists
 	 to work with.
 
 	 Run phases 1 and 2 of formatting the message before calling
-	 the format's on_report_diagnostic.
+	 the sink's on_report_diagnostic.
 	 In particular, some format codes may have side-effects here which
-	 need to happen before sending the diagnostic to the output format.
+	 need to happen before sending the diagnostic to the diagnostic sink.
 	 For example, Fortran's %C and %L formatting codes populate the
 	 rich_location.
 	 Such side-effects must be idempotent, since they are run per
-	 output-format.
+	 diagnostic sink.
 
 	 Make a duplicate of the varargs for each call to pp_format,
-	 so that each has its own set to consume.  */
+	 so that each sink has its own set to consume.  */
       va_list copied_args;
       va_copy (copied_args, *orig_args);
       diagnostic->m_message.m_args_ptr = &copied_args;
       pp_format (sink_->get_printer (), &diagnostic->m_message);
       va_end (copied_args);
 
-      /* Call vfunc in the output format.  This is responsible for
+      /* Call vfunc in the diagnostic sink.  This is responsible for
 	 phase 3 of formatting, and for printing the result.  */
       sink_->on_report_diagnostic (*diagnostic, orig_diag_kind);
     }
