@@ -7155,7 +7155,8 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
       /* We expect dest to be NULL_RTX here.  If the insn may throw,
 	 or if it cannot be deleted due to side-effects, mark this fact
 	 by setting DEST to pc_rtx.  */
-      if ((!cfun->can_delete_dead_exceptions && !insn_nothrow_p (x))
+      if ((!cfun->can_delete_dead_exceptions
+	   && !insn_nothrow_p (as_a <rtx_insn *> (x)))
 	  || side_effects_p (PATTERN (x)))
 	dest = pc_rtx;
       if (code == CALL_INSN)

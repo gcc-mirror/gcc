@@ -209,7 +209,7 @@ action_record_hasher::equal (const action_record *entry,
 
 typedef hash_table<action_record_hasher> action_hash_type;
 
-static bool get_eh_region_and_lp_from_rtx (const_rtx, eh_region *,
+static bool get_eh_region_and_lp_from_rtx (const rtx_insn *, eh_region *,
 					   eh_landing_pad *);
 
 static void dw2_build_landing_pads (void);
@@ -1752,7 +1752,7 @@ make_reg_eh_region_note_nothrow_nononlocal (rtx_insn *insn)
    to the contrary.  */
 
 bool
-insn_could_throw_p (const_rtx insn)
+insn_could_throw_p (const rtx_insn *insn)
 {
   if (!flag_exceptions)
     return false;
@@ -1817,7 +1817,7 @@ copy_reg_eh_region_note_backward (rtx note_or_insn, rtx_insn *last, rtx first)
    was marked NOTHROW.  */
 
 static bool
-get_eh_region_and_lp_from_rtx (const_rtx insn, eh_region *pr,
+get_eh_region_and_lp_from_rtx (const rtx_insn *insn, eh_region *pr,
 			       eh_landing_pad *plp)
 {
   rtx note;
@@ -1855,7 +1855,7 @@ get_eh_region_and_lp_from_rtx (const_rtx insn, eh_region *pr,
    have a reachable landing pad within this function.  */
 
 eh_landing_pad
-get_eh_landing_pad_from_rtx (const_rtx insn)
+get_eh_landing_pad_from_rtx (const rtx_insn *insn)
 {
   eh_landing_pad lp;
   eh_region r;
@@ -1880,7 +1880,7 @@ get_eh_region_from_rtx (const rtx_insn *insn)
 /* Return true if INSN throws and is caught by something in this function.  */
 
 bool
-can_throw_internal (const_rtx insn)
+can_throw_internal (const rtx_insn *insn)
 {
   return get_eh_landing_pad_from_rtx (insn) != NULL;
 }
@@ -1888,7 +1888,7 @@ can_throw_internal (const_rtx insn)
 /* Return true if INSN throws and escapes from the current function.  */
 
 bool
-can_throw_external (const_rtx insn)
+can_throw_external (const rtx_insn *insn)
 {
   eh_landing_pad lp;
   eh_region r;
@@ -1903,7 +1903,7 @@ can_throw_external (const_rtx insn)
       int i, n = seq->len ();
 
       for (i = 0; i < n; i++)
-	if (can_throw_external (seq->element (i)))
+	if (can_throw_external (seq->insn (i)))
 	  return true;
 
       return false;
@@ -1932,7 +1932,7 @@ can_throw_external (const_rtx insn)
 /* Return true if INSN cannot throw at all.  */
 
 bool
-insn_nothrow_p (const_rtx insn)
+insn_nothrow_p (const rtx_insn *insn)
 {
   eh_landing_pad lp;
   eh_region r;
@@ -1946,7 +1946,7 @@ insn_nothrow_p (const_rtx insn)
       int i, n = seq->len ();
 
       for (i = 0; i < n; i++)
-	if (!insn_nothrow_p (seq->element (i)))
+	if (!insn_nothrow_p (seq->insn (i)))
 	  return false;
 
       return true;
@@ -2569,7 +2569,7 @@ maybe_add_nop_after_section_switch (void)
 static unsigned int
 convert_to_eh_region_ranges (void)
 {
-  rtx insn;
+  rtx_insn *insn;
   rtx_insn *iter;
   rtx_note *note;
   action_hash_type ar_hash (31);
@@ -2598,7 +2598,7 @@ convert_to_eh_region_ranges (void)
 	insn = iter;
 	rtx_sequence *seq = dyn_cast<rtx_sequence *> (PATTERN (insn));
 	if (NONJUMP_INSN_P (insn) && seq)
-	  insn = seq->element (0);
+	  insn = seq->insn (0);
 
 	nothrow = get_eh_region_and_lp_from_rtx (insn, &region, &lp);
 	if (nothrow)

@@ -3285,7 +3285,7 @@ relax_delay_slots (rtx_insn *first)
       trial = next_real_nondebug_insn (as_a<rtx_insn *> (target_label));
       if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
 	  && redundant_insn (trial, insn, vNULL)
-	  && ! can_throw_internal (trial))
+	  && ! can_throw_internal (as_a <rtx_insn *> (trial)))
 	{
 	  /* Figure out where to emit the special USE insn so we don't
 	     later incorrectly compute register live/death info.  */

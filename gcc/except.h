@@ -279,7 +279,7 @@ extern tree lookup_type_for_runtime (tree);
 extern void assign_filter_values (void);
 
 extern eh_region get_eh_region_from_rtx (const rtx_insn *);
-extern eh_landing_pad get_eh_landing_pad_from_rtx (const_rtx);
+extern eh_landing_pad get_eh_landing_pad_from_rtx (const rtx_insn *);
 
 extern void finish_eh_generation (void);
 
