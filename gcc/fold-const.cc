@@ -3010,13 +3010,21 @@ inverse_conditions_p (const_tree cond1, const_tree cond2)
 
 enum tree_code
 combine_comparisons (enum tree_code code, enum tree_code lcode,
-		       enum tree_code rcode, tree truth_type,
-		       bool honor_nans, tree *res)
+		     enum tree_code rcode, tree truth_type,
+		     tree inner_truth_type,
+		     bool honor_nans, tree *res)
 {
   enum comparison_code lcompcode = comparison_to_compcode (lcode);
   enum comparison_code rcompcode = comparison_to_compcode (rcode);
   int compcode;
   *res = NULL_TREE;
+  if (TREE_CODE (inner_truth_type) == VECTOR_TYPE)
+    inner_truth_type = TREE_TYPE (inner_truth_type);
+  bool signed_bool = false;
+  if (TYPE_SIGN (inner_truth_type) == SIGNED
+      && (TREE_CODE (inner_truth_type) == BOOLEAN_TYPE
+          || TYPE_PRECISION (inner_truth_type) == 1))
+    signed_bool = true;
 
   switch (code)
     {
@@ -3039,24 +3047,40 @@ combine_comparisons (enum tree_code code, enum tree_code lcode,
       compcode = ~(lcompcode ^ rcompcode);
       break;
 
-    //`bool0 < bool1` is `!bool0 & bool1`
+    //`bool0 < bool1` is `!bool0 & bool1` for unsigned
+    //`bool0 < bool1` is `bool0 & !bool1` for signed
     case LT_EXPR:
-      compcode = ~lcompcode & rcompcode;
+      if (signed_bool)
+        compcode = lcompcode & ~rcompcode;
+      else
+        compcode = ~lcompcode & rcompcode;
       break;
 
-    //`bool0 > bool1` is `bool0 & !bool1`
+    //`bool0 > bool1` is `bool0 & !bool1` for unsigned
+    //`bool0 > bool1` is `!bool0 & bool1` for signed
     case GT_EXPR:
-      compcode = lcompcode & ~rcompcode;
+      if (signed_bool)
+        compcode = ~lcompcode & rcompcode;
+      else
+        compcode = lcompcode & ~rcompcode;
       break;
 
-    // `bool0 <= bool1` as !bool0 | bool1
+    // `bool0 <= bool1` as !bool0 | bool1 for unsigned
+    // `bool0 <= bool1` as bool0 | !bool1 for signed
     case LE_EXPR:
-      compcode = ~lcompcode | rcompcode;
+      if (signed_bool)
+        compcode = lcompcode | ~rcompcode;
+      else
+        compcode = ~lcompcode | rcompcode;
       break;
 
-    //`bool0 >= bool1` is `bool0 | !bool1`
+    //`bool0 >= bool1` is `bool0 | !bool1` for unsigned
+    //`bool0 >= bool1` is `bool0 | !bool1` for signed
     case GE_EXPR:
-      compcode = lcompcode | ~rcompcode;
+      if (signed_bool)
+        compcode = ~lcompcode | rcompcode;
+      else
+        compcode = lcompcode | ~rcompcode;
       break;
 
     default:
@@ -3136,12 +3160,14 @@ tree
 combine_comparisons (location_t loc,
 		     enum tree_code code, enum tree_code lcode,
 		     enum tree_code rcode, tree truth_type,
+		     tree inner_truth_type,
 		     tree ll_arg, tree lr_arg)
 {
   bool honor_nans = HONOR_NANS (ll_arg);
   tree_code rescode;
   tree res;
-  rescode = combine_comparisons (code, lcode, rcode, truth_type,
+  rescode = combine_comparisons (code, lcode, rcode,
+				 truth_type, inner_truth_type, 
 				 honor_nans, &res);
   if (rescode == ERROR_MARK)
     return NULL_TREE;
@@ -6504,7 +6530,8 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
           && operand_equal_p (lr_arg, rr_arg, 0))
 	{
           result = combine_comparisons (loc, code, lcode, rcode,
-					truth_type, ll_arg, lr_arg);
+					truth_type, TREE_TYPE (lhs),
+					ll_arg, lr_arg);
 	  if (result)
 	    return result;
 	}
@@ -6513,7 +6540,8 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 	{
           result = combine_comparisons (loc, code, lcode,
 					swap_tree_comparison (rcode),
-					truth_type, ll_arg, lr_arg);
+					truth_type,  TREE_TYPE (lhs),
+					ll_arg, lr_arg);
 	  if (result)
 	    return result;
 	}

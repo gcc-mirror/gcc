@@ -865,14 +865,16 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
      if (!inner_inv && !outer_inv)
 	res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ANDIF_EXPR,
 				   outer_cond_code, inner_cond_code,
-				   boolean_type_node, larg, rarg);
+				   boolean_type_node, boolean_type_node,
+				   larg, rarg);
       // If both are inverse, `!a && !b`, then handle it as `!(a || b)`
       // As that !a or !b are most likely not producing a comparison code.
       else if (inner_inv && outer_inv)
 	{
 	  res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ORIF_EXPR,
 				     outer_cond_code, inner_cond_code,
-				     boolean_type_node, larg, rarg);
+				     boolean_type_node, boolean_type_node,
+				     larg, rarg);
 	  if (res)
 	    res = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (res), res);
 	}
@@ -891,7 +893,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	  if (inner_cond_code1 != ERROR_MARK && outer_cond_code1 != ERROR_MARK)
 	    res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ANDIF_EXPR,
 				       outer_cond_code1, inner_cond_code1,
-				       boolean_type_node, larg, rarg);
+				       boolean_type_node, boolean_type_node,
+				       larg, rarg);
 	  // Otherwise, we need to try `!(!a || b)
 	  else if (inner_cond_code1 == ERROR_MARK)
 	    {
@@ -901,7 +904,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	      if (outer_cond_code1 != ERROR_MARK)
 		res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ORIF_EXPR,
 					   outer_cond_code1, inner_cond_code,
-					   boolean_type_node, larg, rarg);
+					   boolean_type_node, boolean_type_node,
+					   larg, rarg);
 	      if (res)
 		res = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (res), res);
 	    }
@@ -914,7 +918,8 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	      if (inner_cond_code1 != ERROR_MARK)
 		res = combine_comparisons (UNKNOWN_LOCATION, TRUTH_ORIF_EXPR,
 					   outer_cond_code, inner_cond_code1,
-					   boolean_type_node, larg, rarg);
+					   boolean_type_node, boolean_type_node,
+					   larg, rarg);
 	      if (res)
 		res = fold_build1 (TRUTH_NOT_EXPR, TREE_TYPE (res), res);
 	    }

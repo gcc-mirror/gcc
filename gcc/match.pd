@@ -3780,14 +3780,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (for cmp1 (tcc_comparison)
   (for cmp2 (tcc_comparison)
    (simplify
-    (bitop (cmp1 @0 @1) (cmp2 @0 @1))
+    (bitop (cmp1@2 @0 @1) (cmp2 @0 @1))
     (with rescmpcode (tcc_comparison)
       {
         tree_code rescmpcode;
         tree res;
         bool honor_nans = HONOR_NANS (@0);
         rescmpcode = combine_comparisons (bitop, cmp1, cmp2,
-					  type, honor_nans, &res);
+					  type, TREE_TYPE (@2),
+					  honor_nans, &res);
       }
      (if (rescmpcode == INTEGER_CST)
       { res; }

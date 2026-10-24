@@ -7602,7 +7602,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
       /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1, code2,
-				    truth_type, op1a, op1b);
+				    truth_type, truth_type, op1a, op1b);
       if (t)
 	return t;
     }
@@ -7615,7 +7615,7 @@ and_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ANDIF_EXPR, code1,
 				    swap_tree_comparison (code2),
-				    truth_type, op1a, op1b);
+				    truth_type, truth_type, op1a, op1b);
       if (t)
 	return t;
     }
@@ -9574,7 +9574,7 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
       /* Result will be either NULL_TREE, or a combined comparison.  */
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1, code2,
-				    truth_type, op1a, op1b);
+				    truth_type, truth_type, op1a, op1b);
       if (t)
 	return t;
     }
@@ -9587,7 +9587,7 @@ or_comparisons_1 (tree type, enum tree_code code1, tree op1a, tree op1b,
       tree t = combine_comparisons (UNKNOWN_LOCATION,
 				    TRUTH_ORIF_EXPR, code1,
 				    swap_tree_comparison (code2),
-				    truth_type, op1a, op1b);
+				    truth_type, truth_type, op1a, op1b);
       if (t)
 	return t;
     }

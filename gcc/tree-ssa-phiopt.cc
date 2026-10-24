@@ -1410,7 +1410,7 @@ comparison_combine (basic_block cond_bb, basic_block middle_bb,
   tree result;
   tree_code newcmp_code;
   newcmp_code = combine_comparisons (logical, outer_code, inner_code,
-				     boolean_type_node,
+				     boolean_type_node, boolean_type_node,
 				     HONOR_NANS (larg), &result);
   if (newcmp_code == ERROR_MARK)
     return false;

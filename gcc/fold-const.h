@@ -180,9 +180,9 @@ extern bool fold_cmp_float_cst_p (const wide_int &lo, const wide_int &hi,
 				  const wide_int &i, signop isign);
 
 extern tree combine_comparisons (location_t, enum tree_code, enum tree_code,
-				 enum tree_code, tree, tree, tree);
+				 enum tree_code, tree, tree, tree, tree);
 extern tree_code combine_comparisons (enum tree_code, enum tree_code,
-				      enum tree_code, tree, bool, tree*);
+				      enum tree_code, tree, tree, bool, tree*);
 extern void debug_fold_checksum (const_tree);
 extern bool may_negate_without_overflow_p (const_tree);
 #define round_up(T,N) round_up_loc (UNKNOWN_LOCATION, T, N)
