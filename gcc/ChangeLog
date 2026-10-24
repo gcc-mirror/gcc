@@ -1,3 +1,74 @@
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_can_change_mode_class): Don't reject
+	cross-class mode changes when floating-point registers are
+	disabled.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/127843
+	* config/pa/pa.cc (pa_emit_move_sequence): Don't check constant
+	pool address.
+	(pa_legitimate_constant_p): Likewise.
+	(pa_legitimate_address_p): Likewise.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_emit_move_sequence): Handle SFmode and DFmode
+	symbolic, constant pool, or CONST memory references on both 32-bit
+	and 64-bit targets by emitting proper PIC, 14-bit HIGH/LO_SUM, or
+	1.x fallback move sequences using a scratch register.
+	(pa_secondary_reload): Strip SUBREG early. Update hard-float memory
+	displacement checks to account for 5-bit vs 14-bit constraints on
+	PA 1.x vs PA 2.0. Look through MEM wrappers when evaluating symbolic
+	address expressions. For symbolic address expressions under flag_pic
+	or non-readonly conditions, return R1_REGS for SImode and DImode, but
+	explicitly break out for SFmode and DFmode to let them safely fall
+	back to GENERAL_REGS. Return GENERAL_REGS instead of NO_REGS for shifted
+	and coprocessor/SAR reload fallbacks.
+	(pa_can_change_mode_class): Remove equal-size mode change shortcut.
+	Prevent cross-class type punning between integer and floating-point
+	modes within GENERAL_REGS or R1_REGS before reload is completed.
+	(pa_legitimate_constant_p): Reject out-of-range multi-word constants
+	in DImode on 32-bit targets. Reject naked symbolic or constant pool
+	SFmode and DFmode addresses unconditionally on 32-bit targets, while
+	intentionally allowing fully-formed LO_SUM expressions to preserve
+	PA 2.0 optimizations.
+	(pa_legitimate_address_p): Reject naked symbolic, constant pool, or
+	CONST expressions for SFmode and DFmode unconditionally on 32-bit
+	targets to force a proper HIGH/LO_SUM split or reload.
+
+2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_spill_class): Declare.
+	(pa_legitimize_address_displacement): Declare.
+	(TARGET_SPILL_CLASS): Define.
+	(TARGET_LEGITIMIZE_ADDRESS_DISPLACEMENT): Define.
+	(pa_secondary_reload): Handle 32 and 64-bit
+	float/integer type puns.  We need a secondary
+	reload for SImode/DImode REG+D moves to general
+	and float registers.
+	(pa_legitimate_address_p): Allow 14-bit displacements
+	when lra_in_progress is true.
+	(pa_spill_class): Implement.
+	(pa_legitimize_address_displacement): Implement.
+
+2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128105
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA_SSE2_UNSET):
+	Add OPTION_MASK_ISA_AES_UNSET, OPTION_MASK_ISA_SHA_UNSET and
+	OPTION_MASK_ISA_PCLMUL_UNSET.
+
+2026-10-23  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127692
+	* config/s390/s390.md: Fix bswap:HI reg-reg splitter.
+
 2026-10-21  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	Backported from master:

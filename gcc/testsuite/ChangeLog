@@ -1,3 +1,41 @@
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127232
+	* g++.dg/reflect/extract2.C: Adjust dg-error.
+	* g++.dg/reflect/extract3.C: Add dg-error.  Add tests using
+	object_of.
+	* g++.dg/reflect/extract13.C: New test.
+	* g++.dg/reflect/extract14.C: New test.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126794
+	* g++.dg/reflect/member16.C: Adjust dg-error.
+	* g++.dg/reflect/member25.C: New test.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127749
+	* g++.dg/reflect/dep17.C: New test.
+
+2026-10-23  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127692
+	* gcc.target/s390/pr127692-1.c: New test.
+
 2026-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/generic_inst11.ads: New test.
