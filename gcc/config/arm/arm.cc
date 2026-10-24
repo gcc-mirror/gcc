@@ -21207,7 +21207,7 @@ arm_emit_strd_push (unsigned long saved_regs_mask)
   int i, j, dwarf_index  = 0;
   int offset = 0;
   rtx dwarf = NULL_RTX;
-  rtx insn = NULL_RTX;
+  rtx_insn *insn = nullptr;
   rtx tmp, mem;
 
   /* TODO: A more efficient code can be emitted by changing the
@@ -22465,7 +22465,7 @@ get_scratch_register_on_entry (struct scratch_reg *sr, unsigned int regno1,
   if (sr->saved)
     {
       rtx addr = gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx);
-      rtx insn = emit_set_insn (gen_frame_mem (SImode, addr), sr->reg);
+      rtx_insn *insn = emit_set_insn (gen_frame_mem (SImode, addr), sr->reg);
       rtx x = gen_rtx_SET (stack_pointer_rtx,
 		           plus_constant (Pmode, stack_pointer_rtx, -4));
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -22481,7 +22481,7 @@ release_scratch_register_on_entry (struct scratch_reg *sr)
   if (sr->saved)
     {
       rtx addr = gen_rtx_POST_INC (Pmode, stack_pointer_rtx);
-      rtx insn = emit_set_insn (sr->reg, gen_frame_mem (SImode, addr));
+      rtx_insn *insn = emit_set_insn (sr->reg, gen_frame_mem (SImode, addr));
       rtx x = gen_rtx_SET (stack_pointer_rtx,
 			   plus_constant (Pmode, stack_pointer_rtx, 4));
       RTX_FRAME_RELATED_P (insn) = 1;

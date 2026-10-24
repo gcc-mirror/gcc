@@ -5719,10 +5719,10 @@
    && (true_regnum (operands[0]) < 16) != (true_regnum (operands[1]) < 16)"
   [(const_int 0)]
 {
-  rtx insn, tos;
+  rtx tos;
 
   tos = gen_tmp_stack_mem (DFmode, gen_rtx_PRE_DEC (Pmode, stack_pointer_rtx));
-  insn = emit_insn (gen_movdf_i4 (tos, operands[1]));
+  rtx_insn *insn = emit_insn (gen_movdf_i4 (tos, operands[1]));
   add_reg_note (insn, REG_INC, stack_pointer_rtx);
   tos = gen_tmp_stack_mem (DFmode, gen_rtx_POST_INC (Pmode, stack_pointer_rtx));
   insn = emit_insn (gen_movdf_i4 (operands[0], tos));
@@ -5880,13 +5880,13 @@
   [(const_int 0)]
 {
   int regno = true_regnum (operands[0]);
-  rtx insn;
   rtx mem = SET_SRC (XVECEXP (PATTERN (curr_insn), 0, 0));
   rtx mem2
     = change_address (mem, SFmode, gen_rtx_POST_INC (Pmode, operands[1]));
-  insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
-					       regno + SH_REG_MSW_OFFSET),
-				  mem2));
+  rtx_insn *insn
+    = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
+					    regno + SH_REG_MSW_OFFSET),
+			       mem2));
   add_reg_note (insn, REG_INC, operands[1]);
   insn = emit_insn (gen_movsf_ie (gen_rtx_REG (SFmode,
 					       regno + SH_REG_LSW_OFFSET),
@@ -5904,7 +5904,8 @@
   [(const_int 0)]
 {
   int regno = true_regnum (operands[0]);
-  rtx addr, insn;
+  rtx addr;
+  rtx_insn *insn;
   rtx mem2 = change_address (operands[1], SFmode, NULL_RTX);
   rtx reg0 = gen_rtx_REG (SFmode, regno + SH_REG_MSW_OFFSET);
   rtx reg1 = gen_rtx_REG (SFmode, regno + SH_REG_LSW_OFFSET);
@@ -5971,7 +5972,8 @@
   [(const_int 0)]
 {
   int regno = true_regnum (operands[1]);
-  rtx insn, addr;
+  rtx_insn *insn;
+  rtx addr;
   rtx reg0 = gen_rtx_REG (SFmode, regno + SH_REG_MSW_OFFSET);
   rtx reg1 = gen_rtx_REG (SFmode, regno + SH_REG_LSW_OFFSET);
 
@@ -6503,7 +6505,8 @@
   [(const_int 0)]
 {
   int regno = true_regnum (operands[0]);
-  rtx addr, insn;
+  rtx addr;
+  rtx_insn *insn;
   rtx mem2 = change_address (operands[1], SFmode, NULL_RTX);
   rtx reg0 = gen_rtx_REG (SFmode, regno + SH_REG_MSW_OFFSET);
   rtx reg1 = gen_rtx_REG (SFmode, regno + SH_REG_LSW_OFFSET);
@@ -6567,7 +6570,8 @@
   [(const_int 0)]
 {
   int regno = true_regnum (operands[1]);
-  rtx insn, addr;
+  rtx_insn *insn;
+  rtx addr;
   rtx reg0 = gen_rtx_REG (SFmode, regno + SH_REG_MSW_OFFSET);
   rtx reg1 = gen_rtx_REG (SFmode, regno + SH_REG_LSW_OFFSET);
 

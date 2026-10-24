@@ -8368,7 +8368,7 @@ ix86_adjust_stack_and_probe (HOST_WIDE_INT size,
       for (i = probe_interval; i <= size; i += probe_interval)
 	{
 	  /* Allocate PROBE_INTERVAL bytes.  */
-	  rtx insn
+	  rtx_insn *insn
 	    = pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 					 GEN_INT (-probe_interval), -1,
 					 m->fs.cfa_reg == stack_pointer_rtx);

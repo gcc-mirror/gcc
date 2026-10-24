@@ -4299,7 +4299,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
   rtx sp_reg_rtx = gen_rtx_REG (Pmode, 1);
   rtx frame_reg_rtx = sp_reg_rtx;
   rtx cfa_restores = NULL_RTX;
-  rtx insn;
+  rtx_insn *insn;
   rtx cr_save_reg = NULL_RTX;
   machine_mode reg_mode = Pmode;
   int reg_size = TARGET_32BIT ? 4 : 8;
@@ -4577,7 +4577,7 @@ rs6000_emit_epilogue (enum epilogue_type epilogue_type)
       emit_insn (generate_set_vrsave (reg, info, 1));
     }
 
-  insn = NULL_RTX;
+  insn = nullptr;
   /* If we have a large stack frame, restore the old stack pointer
      using the backchain.  */
   if (use_backchain_to_restore_sp)

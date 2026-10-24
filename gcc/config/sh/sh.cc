@@ -6710,7 +6710,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
       else
 	{
 	  rtx const_reg;
-	  rtx insn;
+	  rtx_insn *insn;
 	  int temp = epilogue_p ? 7 : 1;
 	  int i;
 
