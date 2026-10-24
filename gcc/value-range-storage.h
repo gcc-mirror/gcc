@@ -131,6 +131,7 @@ public:
   void get_prange (prange &r, tree type) const;
   bool equal_p (const prange &r) const;
   bool fits_p (const prange &r) const;
+  irange_bitmask get_bitmask (tree type) const;
   void dump () const;
 
   // The points-to solution for the SSA name is flow insensitive and is

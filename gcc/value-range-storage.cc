@@ -883,6 +883,42 @@ prange_storage::fits_p (const prange &r) const
   return num_words <= m_trailing_ints.num_elements ();
 }
 
+irange_bitmask
+prange_storage::get_bitmask (tree type) const
+{
+  gcc_checking_assert (m_kind != PR_UNDEFINED);
+  unsigned prec = TYPE_PRECISION (type);
+  unsigned index = 0;
+
+  switch (m_kind)
+    {
+      case PR_VARYING:
+	return irange_bitmask (prec);
+
+      case PR_ZERO:
+	return irange_bitmask (type, wi::zero (prec), wi::zero (prec));
+
+      case PR_NONZERO:
+      case PR_FULL:
+	break;
+
+      case PR_OTHER:
+	index = 2;
+	break;
+
+      default:
+	gcc_unreachable ();
+    }
+
+  if (m_has_bitmask)
+    {
+      wide_int value = get_word (index++, type);
+      wide_int mask = get_word (index++, type);
+      return irange_bitmask (value, mask);
+    }
+  return irange_bitmask (prec);
+}
+
 
 static vrange_allocator ggc_vrange_allocator (true);
 

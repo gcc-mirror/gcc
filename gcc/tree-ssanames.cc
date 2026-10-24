@@ -589,9 +589,9 @@ get_nonzero_bits_1 (const_tree name)
   // need to extract the bitmask like integers do.
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      prange tmp;
-      range_info_get_range (name, tmp);
-      return tmp.get_bitmask ().get_nonzero_bits ();
+      prange_storage *s = ssa_name_prange_storage (name);
+      gcc_checking_assert (s);
+      return s->get_bitmask (TREE_TYPE (name)).get_nonzero_bits ();
     }
 
   if (!irange::supports_p (TREE_TYPE (name)))
@@ -841,16 +841,15 @@ get_ptr_info_alignment (const_tree name, unsigned int *alignp,
   if (!POINTER_TYPE_P (TREE_TYPE (name)) || !SSA_NAME_RANGE_INFO (name))
     return false;
 
-  prange r;
-  range_info_get_range (name, r);
-  if (r.undefined_p ())
+  prange_storage *s = ssa_name_prange_storage (name);
+  if (!s)
     return false;
 
-  bool known = bitmask_to_alignment (r.get_bitmask (), alignp, misalignp);
+  bool known = bitmask_to_alignment (s->get_bitmask (TREE_TYPE (name)),
+				     alignp, misalignp);
 
   /* Legacy fields may know less, but useful alignment must be implied
      by the bitmask.  Alignment one carries no information.  */
-  prange_storage *s = ssa_name_prange_storage (name);
   gcc_checking_assert (s->align <= 1
 		       || (known && *alignp >= s->align
 			   && (*misalignp & (s->align - 1)) == s->misalign));
