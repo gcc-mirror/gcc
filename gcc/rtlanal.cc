@@ -2570,7 +2570,7 @@ find_regno_note (const_rtx insn, enum reg_note kind, unsigned int regno)
    has such a note.  */
 
 rtx
-find_reg_equal_equiv_note (const_rtx insn)
+find_reg_equal_equiv_note (const rtx_insn *insn)
 {
   rtx link;
 
@@ -2588,7 +2588,7 @@ find_reg_equal_equiv_note (const_rtx insn)
 
 	   This should be changed into an assert.  */
 	if (GET_CODE (PATTERN (insn)) == PARALLEL
-	    && multiple_sets (as_a<const rtx_insn *> (insn)))
+	    && multiple_sets (insn))
 	  return 0;
 	return link;
       }

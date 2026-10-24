@@ -7165,7 +7165,7 @@ count_reg_usage (rtx x, int *counts, rtx dest, int incr)
       /* Things used in a REG_EQUAL note aren't dead since loop may try to
 	 use them.  */
 
-      note = find_reg_equal_equiv_note (x);
+      note = find_reg_equal_equiv_note (as_a <rtx_insn *> (x));
       if (note)
 	{
 	  rtx eqv = XEXP (note, 0);

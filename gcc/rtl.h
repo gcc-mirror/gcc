@@ -3764,7 +3764,7 @@ extern bool dead_or_set_p (const rtx_insn *, const_rtx);
 extern bool dead_or_set_regno_p (const rtx_insn *, unsigned int);
 extern rtx find_reg_note (const_rtx, enum reg_note, const_rtx);
 extern rtx find_regno_note (const_rtx, enum reg_note, unsigned int);
-extern rtx find_reg_equal_equiv_note (const_rtx);
+extern rtx find_reg_equal_equiv_note (const rtx_insn *);
 extern rtx find_constant_src (const rtx_insn *);
 extern bool find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
 extern bool find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
