@@ -3,6 +3,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdiagnostics-add-output=sarif:cfgs=yes" } */
 /* { dg-additional-options "-fdiagnostics-add-output=experimental-html:javascript=no,cfgs=yes" } */
+/* { dg-prune-output "error trying to exec 'dot'" } */
 
 int
 test (int i, int j, int k)
