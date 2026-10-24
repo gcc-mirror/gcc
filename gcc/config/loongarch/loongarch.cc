@@ -1082,7 +1082,7 @@ loongarch_save_reg (rtx reg, rtx mem)
 static void
 loongarch_restore_reg (rtx reg, rtx mem)
 {
-  rtx insn = loongarch_emit_move (reg, mem);
+  rtx_insn *insn = loongarch_emit_move (reg, mem);
   rtx dwarf = NULL_RTX;
   dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
   REG_NOTES (insn) = dwarf;

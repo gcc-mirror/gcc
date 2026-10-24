@@ -308,7 +308,7 @@ expand_save_restore (struct lm32_frame_info *info, int op)
   unsigned int reg_save_mask = info->reg_save_mask;
   int regno;
   HOST_WIDE_INT offset;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Callee saves are below locals and above outgoing arguments.  */
   offset = info->args_size + info->callee_size;
@@ -359,7 +359,7 @@ expand_save_restore (struct lm32_frame_info *info, int op)
 static void
 stack_adjust (HOST_WIDE_INT amount)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (!IN_RANGE (amount, -32776, 32768))
     {
@@ -387,7 +387,7 @@ stack_adjust (HOST_WIDE_INT amount)
 void
 lm32_expand_prologue (void)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   lm32_compute_frame_size (get_frame_size ());
 

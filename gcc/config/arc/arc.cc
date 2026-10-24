@@ -3021,7 +3021,7 @@ push_reg (rtx reg)
 static int
 frame_restore_reg (rtx reg, HOST_WIDE_INT offset)
 {
-  rtx addr, insn;
+  rtx addr;
 
   if (offset)
     {
@@ -3035,7 +3035,7 @@ frame_restore_reg (rtx reg, HOST_WIDE_INT offset)
   else
     addr = gen_frame_mem (GET_MODE (reg), gen_rtx_POST_INC (Pmode,
 							    stack_pointer_rtx));
-  insn = frame_move_inc (reg, addr, stack_pointer_rtx, 0);
+  rtx_insn *insn = frame_move_inc (reg, addr, stack_pointer_rtx, 0);
   add_reg_note (insn, REG_CFA_RESTORE, reg);
 
   if (reg == hard_frame_pointer_rtx)
@@ -3202,8 +3202,8 @@ arc_restore_callee_saves (uint64_t gmask,
     {
       rtx addr = plus_constant (Pmode, stack_pointer_rtx, offs);
       reg = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-      rtx insn = frame_move_inc (reg, gen_frame_mem (Pmode, addr),
-				 stack_pointer_rtx, NULL_RTX);
+      rtx_insn *insn = frame_move_inc (reg, gen_frame_mem (Pmode, addr),
+				       stack_pointer_rtx, NULL_RTX);
       add_reg_note (insn, REG_CFA_RESTORE, reg);
       restore_blink = false;
     }
@@ -3691,7 +3691,7 @@ arc_restore_callee_milli (uint64_t gmask,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  off));
-      rtx tmp = frame_move_inc (reg, mem, stack_pointer_rtx, 0);
+      rtx_insn *tmp = frame_move_inc (reg, mem, stack_pointer_rtx, 0);
       add_reg_note (tmp, REG_CFA_RESTORE, reg);
       off += UNITS_PER_WORD;
     }

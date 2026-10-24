@@ -3776,7 +3776,7 @@ visium_save_regs (int alloc, int offset, int low_regno, int high_regno)
     {
       enum reg_type reg_type = GET_REG_TYPE (regno);
       int mask_bit = 1 << (regno - first_regno[reg_type]);
-      rtx insn;
+      rtx_insn *insn;
 
       if (current_frame_info.mask[reg_type] & mask_bit)
 	{
@@ -3916,11 +3916,11 @@ visium_expand_prologue (void)
 
       if (alloc_size > 65535)
 	{
-	  rtx tmp = gen_rtx_REG (SImode, PROLOGUE_TMP_REGNUM), insn;
+	  rtx tmp = gen_rtx_REG (SImode, PROLOGUE_TMP_REGNUM);
 	  emit_insn (gen_movsi (tmp, GEN_INT (alloc_size)));
-	  insn = emit_frame_insn (gen_subsi3_flags (stack_pointer_rtx,
-						    stack_pointer_rtx,
-						    tmp));
+	  rtx_insn *insn = emit_frame_insn (gen_subsi3_flags (stack_pointer_rtx,
+							      stack_pointer_rtx,
+							      tmp));
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			gen_rtx_SET (stack_pointer_rtx,
 				     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
@@ -4108,7 +4108,7 @@ visium_restore_regs (int dealloc, int offset, int high_regno, int low_regno)
     }
 
   /* Deallocate the stack space.  */
-  rtx insn = emit_frame_insn (gen_stack_pop (GEN_INT (dealloc)));
+  rtx_insn *insn = emit_frame_insn (gen_stack_pop (GEN_INT (dealloc)));
   add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 		gen_rtx_SET (stack_pointer_rtx,
 			     gen_rtx_PLUS (Pmode, stack_pointer_rtx,
@@ -4161,7 +4161,8 @@ visium_expand_epilogue (void)
       else
 	src = gen_frame_mem (SImode, stack_pointer_rtx);
 
-      rtx insn = emit_frame_insn (gen_movsi (hard_frame_pointer_rtx, src));
+      rtx_insn *insn = emit_frame_insn (gen_movsi (hard_frame_pointer_rtx,
+						   src));
       add_reg_note (insn, REG_CFA_ADJUST_CFA,
 		    gen_rtx_SET (stack_pointer_rtx,
 				 hard_frame_pointer_rtx));
@@ -4204,7 +4205,7 @@ visium_expand_epilogue (void)
   else if (fsize)
     {
       const int pop_size = reg_size ? local_frame_offset + var_size : fsize;
-      rtx insn;
+      rtx_insn *insn;
 
       if (pop_size > 65535)
 	{

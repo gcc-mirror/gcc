@@ -4601,7 +4601,7 @@
 
   rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
   rtx cond = gen_rtx_EQ (DImode, status, const0_rtx);
-  rtx jump = alpha_emit_unlikely_jump (cond, label_ref);
+  rtx_insn *jump = alpha_emit_unlikely_jump (cond, label_ref);
   JUMP_LABEL (jump) = label;
 
   cfun->split_basic_blocks_after_reload = 1;
@@ -4655,7 +4655,7 @@
       rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
       rtx cond = gen_rtx_EQ (DImode, gen_rtx_SUBREG (DImode, status, 0),
 			     const0_rtx);
-      rtx jump = alpha_emit_unlikely_jump (cond, label_ref);
+      rtx_insn *jump = alpha_emit_unlikely_jump (cond, label_ref);
       JUMP_LABEL (jump) = label;
 
       cfun->split_basic_blocks_after_reload = 1;

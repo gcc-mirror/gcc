@@ -738,7 +738,7 @@ try_merge_compare (struct comparison *cmp)
 					   copy_rtx (src),
 					   CONST0_RTX (GET_MODE (src))));
   rtx arith_set = copy_rtx (PATTERN (def_insn));
-  rtx par = try_validate_parallel (flag_set, arith_set);
+  rtx_insn *par = try_validate_parallel (flag_set, arith_set);
   if (!par)
     {
       /* We may already have a change group going through maybe_select_cc_mode.

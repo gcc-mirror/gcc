@@ -1236,7 +1236,7 @@ sh_treg_combine::try_combine_comparisons (cbranch_trace& trace,
 	  log_msg ("replacing comparison and cstore with inverting reg move "
 		   "in [bb %d]\n", i->bb->index);
 
-	  rtx new_i = make_not_reg_insn (comp_op0, i_comp_op0);
+	  rtx_insn *new_i = make_not_reg_insn (comp_op0, i_comp_op0);
 	  if (REG_P (i_comp_op0)
 	      && reg_dead_after_insn (i_comp_op0, i->setcc.insn))
 	    add_reg_note (new_i, REG_DEAD, copy_rtx (i_comp_op0));

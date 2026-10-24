@@ -22655,7 +22655,7 @@ void
 arm_expand_prologue (void)
 {
   rtx amount;
-  rtx insn;
+  rtx_insn *insn;
   rtx ip_rtx;
   unsigned long live_regs_mask;
   unsigned long func_type;
@@ -22999,15 +22999,15 @@ arm_expand_prologue (void)
       /* Create the new frame pointer.  */
       if (TARGET_APCS_FRAME)
 	{
-	  insn = GEN_INT (-(4 + args_to_push + fp_offset));
-	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx, ip_rtx, insn));
+	  rtx x = GEN_INT (-(4 + args_to_push + fp_offset));
+	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx, ip_rtx, x));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else
 	{
-	  insn = GEN_INT (saved_regs - (4 + fp_offset));
+	  rtx x = GEN_INT (saved_regs - (4 + fp_offset));
 	  insn = emit_insn (gen_addsi3 (hard_frame_pointer_rtx,
-					stack_pointer_rtx, insn));
+					stack_pointer_rtx, x));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
     }
@@ -23047,14 +23047,15 @@ arm_expand_prologue (void)
   /* Recover the static chain register.  */
   if (clobber_ip)
     {
+      rtx x;
       if (!arm_r3_live_at_start_p () || saved_pretend_args)
-	insn = gen_rtx_REG (SImode, 3);
+	x = gen_rtx_REG (SImode, 3);
       else
 	{
-	  insn = plus_constant (Pmode, hard_frame_pointer_rtx, 4);
-	  insn = gen_frame_mem (SImode, insn);
+	  x = plus_constant (Pmode, hard_frame_pointer_rtx, 4);
+	  x = gen_frame_mem (SImode, x);
 	}
-      emit_set_insn (ip_rtx, insn);
+      emit_set_insn (ip_rtx, x);
       emit_insn (gen_force_register_use (ip_rtx));
     }
 

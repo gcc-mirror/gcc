@@ -2879,7 +2879,8 @@ cris_expand_prologue (void)
   int cfoa_size = crtl->outgoing_args_size;
   int last_movem_reg = -1;
   int framesize = 0;
-  rtx mem, insn;
+  rtx mem;
+  rtx_insn *insn;
   int return_address_on_stack = cris_return_address_on_stack ();
   int n_movem_regs = 0;
   int pretend = crtl->args.pretend_args_size;

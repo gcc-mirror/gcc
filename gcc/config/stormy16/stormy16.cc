@@ -1189,7 +1189,7 @@ xstormy16_expand_prologue (void)
 {
   struct xstormy16_stack_layout layout;
   int regno;
-  rtx insn;
+  rtx_insn *insn;
   rtx mem_push_rtx;
   const int ifun = xstormy16_interrupt_function_p ();
 

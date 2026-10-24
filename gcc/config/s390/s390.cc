@@ -12318,7 +12318,8 @@ allocate_stack_space (rtx size, HOST_WIDE_INT last_probe_offset,
 void
 s390_emit_prologue (void)
 {
-  rtx insn, addr;
+  rtx_insn *insn;
+  rtx addr;
   rtx temp_reg;
   int i;
   int offset;
