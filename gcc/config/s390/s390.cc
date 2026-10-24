@@ -12727,7 +12727,8 @@ s390_emit_epilogue (bool sibcall)
 
   if (cfun_frame_layout.first_restore_gpr != -1)
     {
-      rtx insn, addr;
+      rtx addr;
+      rtx_insn *insn;
       int i;
 
       /* Check for global register and save them
@@ -12794,14 +12795,14 @@ s390_emit_epilogue (bool sibcall)
 	  cfun_frame_layout.save_return_addr_p = true;
 	}
 
-      insn = restore_gprs (frame_pointer,
-			   offset + cfun_frame_layout.gprs_offset
-			   + (cfun_frame_layout.first_restore_gpr
-			      - cfun_frame_layout.first_save_gpr_slot)
-			   * UNITS_PER_WORD,
-			   cfun_frame_layout.first_restore_gpr,
-			   cfun_frame_layout.last_restore_gpr);
-      insn = emit_insn (insn);
+      rtx pat = restore_gprs (frame_pointer,
+			      offset + cfun_frame_layout.gprs_offset
+			      + (cfun_frame_layout.first_restore_gpr
+				 - cfun_frame_layout.first_save_gpr_slot)
+			      * UNITS_PER_WORD,
+			      cfun_frame_layout.first_restore_gpr,
+			      cfun_frame_layout.last_restore_gpr);
+      insn = emit_insn (pat);
       REG_NOTES (insn) = cfa_restores;
       add_reg_note (insn, REG_CFA_DEF_CFA,
 		    plus_constant (Pmode, stack_pointer_rtx,

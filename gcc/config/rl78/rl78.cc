@@ -746,8 +746,8 @@ need_to_save (unsigned int regno)
 }
 
 /* We use this to wrap all emitted insns in the prologue.  */
-static rtx
-F (rtx x)
+static rtx_insn *
+F (rtx_insn *x)
 {
   RTX_FRAME_RELATED_P (x) = 1;
   return x;
@@ -1474,11 +1474,9 @@ rl78_expand_prologue (void)
 	 smaller to move SP into AX and perform the subtraction there.  */
       if (fs > 254 * 3)
 	{
-	  rtx insn;
-
 	  emit_move_insn (ax, sp);
 	  emit_insn (gen_subhi3 (ax, ax, GEN_INT (fs)));
-	  insn = F (emit_move_insn (sp, ax));
+	  rtx_insn *insn = F (emit_move_insn (sp, ax));
 	  add_reg_note (insn, REG_FRAME_RELATED_EXPR,
 			gen_rtx_SET (sp, gen_rtx_PLUS (HImode, sp,
 						       GEN_INT (-fs))));

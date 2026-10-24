@@ -3273,7 +3273,7 @@ arc_save_callee_enter (uint64_t gmask,
   int start_reg = ENTER_LEAVE_START_REG;
   int end_reg = ENTER_LEAVE_END_REG;
   int regno, indx, off, nregs;
-  rtx insn, reg, mem;
+  rtx reg, mem;
   int frame_allocated = 0;
 
   for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
@@ -3287,8 +3287,8 @@ arc_save_callee_enter (uint64_t gmask,
   if (offset)
     frame_stack_add (offset);
 
-  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + (save_fp ? 1 : 0)
-						  + 1));
+  rtx body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + (save_fp ? 1 : 0)
+						      + 1));
   indx = 0;
 
   reg = gen_rtx_SET (stack_pointer_rtx,
@@ -3296,7 +3296,7 @@ arc_save_callee_enter (uint64_t gmask,
 				    stack_pointer_rtx,
 				    -nregs * UNITS_PER_WORD));
   RTX_FRAME_RELATED_P (reg) = 1;
-  XVECEXP (insn, 0, indx++) = reg;
+  XVECEXP (body, 0, indx++) = reg;
   off = nregs * UNITS_PER_WORD;
 
   if (save_blink)
@@ -3305,8 +3305,8 @@ arc_save_callee_enter (uint64_t gmask,
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
 						 -off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (mem, reg);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
       save_blink = false;
     }
@@ -3319,8 +3319,8 @@ arc_save_callee_enter (uint64_t gmask,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  -off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (mem, reg);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx)) = 1;
       gmask = gmask & ~(1ULL << regno);
     }
 
@@ -3329,18 +3329,18 @@ arc_save_callee_enter (uint64_t gmask,
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
 						 -off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, hard_frame_pointer_rtx);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (mem, hard_frame_pointer_rtx);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
 
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (hard_frame_pointer_rtx,
+      XVECEXP (body, 0, indx) = gen_rtx_SET (hard_frame_pointer_rtx,
 					     stack_pointer_rtx);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx++)) = 1;
       save_fp = false;
     }
 
   gcc_assert (off == 0);
-  insn = frame_insn (insn);
+  rtx_insn *insn = frame_insn (body);
 
   add_reg_note (insn, REG_INC, stack_pointer_rtx);
 
@@ -3502,7 +3502,7 @@ arc_save_callee_milli (uint64_t gmask,
   int start_reg = 13;
   int end_reg = 25;
   int regno, indx, off, nregs;
-  rtx insn, reg, mem;
+  rtx body, reg, mem;
   int frame_allocated = 0;
 
   for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
@@ -3531,12 +3531,12 @@ arc_save_callee_milli (uint64_t gmask,
     }
 
   /* Start generate millicode call.  */
-  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1));
+  body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1));
   indx = 0;
 
   /* This is a call, we clobber blink.  */
-  XVECEXP (insn, 0, nregs) =
-    gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
+  XVECEXP (body, 0, nregs)
+    = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
 
   for (regno = start_reg, indx = 0, off = 0;
        regno <= end_reg;
@@ -3546,11 +3546,11 @@ arc_save_callee_milli (uint64_t gmask,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (mem, reg);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (mem, reg);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx)) = 1;
       gmask = gmask & ~(1ULL << regno);
     }
-  insn = frame_insn (insn);
+  rtx_insn *insn = frame_insn (body);
 
   /* Add DWARF info.  */
   for (regno = start_reg, off = 0;

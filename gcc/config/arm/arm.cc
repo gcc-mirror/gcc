@@ -21563,10 +21563,10 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
       tmp = gen_frame_mem (SImode,
 			   gen_rtx_POST_INC (Pmode,
 					     stack_pointer_rtx));
-      tmp = emit_insn (gen_rtx_SET (reg, tmp));
-      REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
-					dwarf);
-      arm_add_cfa_adjust_cfa_note (tmp, UNITS_PER_WORD,
+      rtx_insn *insn = emit_insn (gen_rtx_SET (reg, tmp));
+      REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
+					 dwarf);
+      arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
 				   stack_pointer_rtx, stack_pointer_rtx);
       return;
     }

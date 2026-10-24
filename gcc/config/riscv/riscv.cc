@@ -10371,7 +10371,8 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
 {
   rtx tmp = RISCV_PROLOGUE_TEMP (Pmode);
   rtx adjust_size = RISCV_PROLOGUE_TEMP2 (Pmode);
-  rtx insn, dwarf, adjust_frame_rtx;
+  rtx dwarf, adjust_frame_rtx;
+  rtx_insn *insn;
 
   riscv_legitimize_poly_move (Pmode, adjust_size, tmp,
 			      gen_int_mode (offset, Pmode));
@@ -10432,12 +10433,13 @@ riscv_v_adjust_scalable_frame (rtx target, poly_int64 offset, bool epilogue)
       return;
     }
 
+  rtx pat;
   if (epilogue)
-    insn = gen_add3_insn (target, target, adjust_size);
+    pat = gen_add3_insn (target, target, adjust_size);
   else
-    insn = gen_sub3_insn (target, target, adjust_size);
+    pat = gen_sub3_insn (target, target, adjust_size);
 
-  insn = emit_insn (insn);
+  insn = emit_insn (pat);
 
   RTX_FRAME_RELATED_P (insn) = 1;
 
@@ -10581,7 +10583,8 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
       /* Compute the ending address.  */
       rtx temp2 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP2_REGNUM);
       temp2 = riscv_force_temporary (temp2, gen_int_mode (rounded_size, Pmode));
-      insn = emit_insn (gen_sub3_insn (temp2, stack_pointer_rtx, temp2));
+      rtx_insn *insn
+	= emit_insn (gen_sub3_insn (temp2, stack_pointer_rtx, temp2));
 
       /* The size does not represent actual stack pointer address shift
 	 from the top of the frame, as it might be lowered before.

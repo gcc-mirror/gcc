@@ -1707,6 +1707,13 @@ msp430_insn_cost (rtx_insn *insn, bool speed ATTRIBUTE_UNUSED)
 
 /* We use this to wrap all emitted insns in the prologue, so they get
    the "frame-related" (/f) flag set.  */
+static rtx_insn *
+F (rtx_insn *x)
+{
+  RTX_FRAME_RELATED_P (x) = 1;
+  return x;
+}
+
 static rtx
 F (rtx x)
 {
@@ -2886,7 +2893,7 @@ msp430_expand_prologue (void)
      that there is a single rtx representing the stack pointer,
      namely stack_pointer_rtx, and uses == to recognize it.  */
   rtx sp = stack_pointer_rtx;
-  rtx p;
+  rtx_insn *p;
 
   if (is_naked_func ())
     {
@@ -3007,7 +3014,7 @@ msp430_expand_epilogue (int is_eh)
   int i, j;
   int fs;
   rtx sp = stack_pointer_rtx;
-  rtx p;
+  rtx_insn *p;
   int helper_n = 0;
 
   if (is_naked_func ())

@@ -1186,8 +1186,9 @@ sh_treg_combine::try_combine_comparisons (cbranch_trace& trace,
   log_rtx (common_comp_pat);
   log_msg ("\n");
 
-  rtx common_comp_insn = touched_insn (emit_insn_after (common_comp_pat,
-							trace.setcc.insn));
+  rtx_insn *common_comp_insn
+    = emit_insn_after (common_comp_pat, trace.setcc.insn);
+  touched_insn (common_comp_insn);
 
   if (REG_P (comp_op0))
     add_reg_note (common_comp_insn, REG_DEAD, copy_rtx (comp_op0));
@@ -1211,9 +1212,10 @@ sh_treg_combine::try_combine_comparisons (cbranch_trace& trace,
 	  log_msg ("replacing comparison and cstore with reg move "
 		   "in [bb %d]\n", i->bb->index);
 
-	  rtx new_i = touched_insn (
-		emit_insn_after (gen_move_insn (comp_op0, i_comp_op0),
-				 i->setcc.insn));
+	  rtx_insn *new_i
+	    = emit_insn_after (gen_move_insn (comp_op0, i_comp_op0),
+			       i->setcc.insn);
+	  touched_insn (new_i);
 
 	  if (REG_P (i_comp_op0)
 	      && reg_dead_after_insn (i_comp_op0, i->setcc.insn))
@@ -1223,9 +1225,9 @@ sh_treg_combine::try_combine_comparisons (cbranch_trace& trace,
 	  // Otherwise assume it's a const_int and just reference it.
 	  if (REG_P (comp_op1))
 	    {
-	      new_i = touched_insn (
-		  emit_insn_after (gen_move_insn (comp_op1, i_comp_op1),
-				   i->setcc.insn));
+	      new_i = emit_insn_after (gen_move_insn (comp_op1, i_comp_op1),
+				       i->setcc.insn);
+	      touched_insn (new_i);
 
 	      if (reg_dead_after_insn (i_comp_op1, i->setcc.insn))
 		add_reg_note (new_i, REG_DEAD, copy_rtx (i_comp_op1));
