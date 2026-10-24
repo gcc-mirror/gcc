@@ -1,3 +1,13 @@
+2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128105
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA_SSE2_UNSET):
+	Add OPTION_MASK_ISA_AES_UNSET, OPTION_MASK_ISA_SHA_UNSET and
+	OPTION_MASK_ISA_PCLMUL_UNSET.
+
 2026-10-13  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (hppa_rtx_costs_shadd_p): Strip SUBREG wrappers
