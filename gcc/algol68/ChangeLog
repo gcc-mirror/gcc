@@ -1,3 +1,7 @@
+2026-10-23  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-lang.cc (a68_post_options): Fix typo in comment.
+
 2026-10-21  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-lang.cc (a68_post_options): Fix diagnostic format.

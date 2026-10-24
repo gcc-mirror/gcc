@@ -1,3 +1,130 @@
+2026-10-23  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/tree-ssa/forwprop-vec-cond-float.c: Check the conversion
+	in f only for vect_float_strict targets.
+
+2026-10-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127731
+	* gfortran.dg/pointer_function_span_1.f90: New test.
+	* gfortran.dg/pointer_function_span_2.f90: New test.
+
+2026-10-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125763
+	* gfortran.dg/char_pointer_substring_init.f90: New test.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127232
+	* g++.dg/reflect/extract2.C: Adjust dg-error.
+	* g++.dg/reflect/extract3.C: Add dg-error.  Add tests using
+	object_of.
+	* g++.dg/reflect/extract13.C: New test.
+	* g++.dg/reflect/extract14.C: New test.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126653
+	* g++.dg/reflect/ns10.C: New test.
+
+2026-10-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/128103
+	* gfortran.dg/associated_9.f90: New test.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126794
+	* g++.dg/reflect/member16.C: Adjust dg-error.
+	* g++.dg/reflect/member25.C: New test.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127749
+	* g++.dg/reflect/dep17.C: New test.
+
+2026-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/crash-test-ice-in-header-sarif-2_2.py: Update
+	expected URL for schema.
+	* lib/sarif-schema-2.2-prerelease-2024-08-08.json: Replace with...
+	* lib/sarif-schema-2.2-prerelease-csd01.json: ...this.
+	* lib/scansarif.exp (verify-sarif-file): Update for change in
+	name of schema file.
+
+2026-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128089
+	* gcc.dg/pr128089.c: New testcase.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126017
+	PR c++/127856
+	* g++.dg/reflect/diag6.C: Adjust expected diagnostic.
+	* g++.dg/reflect/init2.C: Likewise.
+	* g++.dg/lto/pr126017_0.C: New test.
+	* g++.dg/lto/pr126017_1.C: New test.
+	* g++.dg/reflect/pr127856.C: New test.
+	* g++.target/powerpc/reflection1.C: New test.
+
+2026-10-23  Loeka Rogge  <loeka.rogge@globalfoundries.com>
+
+	* gcc.target/riscv/crc-builtin-zbc64.c: test whether clmulr is
+	applied for crc64
+	* gcc.target/riscv/crc-rev-crc64-rv64-zbc.c: New test.
+
+2026-10-23  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.target/i386/crc64-builtins-ia32.c: New test.
+
+2026-10-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/121268
+	* gcc.target/riscv/pr121268.c: Adjust expected output.
+	* gcc.target/riscv/pr121268-2.c: New test.
+
+2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128105
+	* gcc.target/i386/pr128105.c: New test.
+
+2026-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/127981
+	* gcc.dg/torture/pr127981.c: New test.
+
+2026-10-23  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/127559
+	* g++.dg/gomp/target-lambda-3.C: Un-XFAIL.
+
+2026-10-23  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/127559
+	* g++.dg/gomp/target-lambda-3.C: New.
+
+2026-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128035
+	* gcc.target/i386/pr128035.c: New test.
+	* gcc.target/i386/pr128035-2.c: New test.
+
+2026-10-23  Kewen Lin  <linkewen@hygon.cn>
+	    Zhizheng Yang  <yangzhizheng@hygon.cn>
+	    Yushuai Xing  <xingyushuai@hygon.cn>
+
+	* gcc.target/i386/vectorize-hvml-1.c: New test.
+	* gcc.target/i386/vectorize-hvml-2.c: Likewise.
+	* gcc.target/i386/vectorize-hvml-3.c: Likewise.
+
+2026-10-23  Yongqiang Tian  <yqtian668@gmail.com>
+
+	* gcc.dg/rtl/mips/combine-likely-spilled-retval.c: New test.
+	* gcc.dg/rtl/mips/combine-likely-spilled-retval-note.c: New test.
+
 2026-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127973

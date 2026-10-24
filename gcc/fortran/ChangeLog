@@ -1,3 +1,37 @@
+2026-10-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/127731
+	* expr.cc (gfc_check_pointer_assign): Set subref_array_pointer
+	on the pointer object when the target is a pointer array
+	function result.
+	* resolve.cc (resolve_assoc_var): Likewise on the associate name
+	when the selector is a pointer array function result.
+	* trans-expr.cc (pointer_array_result_p): New function.
+	(pointer_result_var): New function.
+	(gfc_conv_procedure_call): Pass a pointer array function result
+	to a non-pointer dummy through gfc_conv_subref_array_arg.  Mark
+	the temporary for a pointer array result GFC_DECL_PTR_ARRAY_P.
+
+2026-10-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/125763
+	* frontend-passes.cc (create_var): Clear ts.deferred when the
+	temporary gets an explicit length from LEN().
+	* resolve.cc (gfc_resolve_expr): Resolve the substring length
+	also when the first reference is the substring.
+
+2026-10-23  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/128103
+	* trans-array.cc (gfc_conv_expr_descriptor): Unwrap any class
+	container from the type to use as array descriptor element type.
+
+2026-10-23  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/128093
+	* trans-stmt.cc (gfc_trans_allocate): Move gfc_replace_expr to
+	after deallocation of PDT components.
+
 2026-10-22  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173

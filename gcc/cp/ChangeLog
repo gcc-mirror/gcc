@@ -1,3 +1,68 @@
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127232
+	* constexpr.cc (constexpr_global_ctx::in_eval_lifetime_p): New.
+	(cxx_constexpr_in_eval_lifetime_p): New.
+	* cp-tree.h (cxx_constexpr_in_eval_lifetime_p): Declare.
+	* reflect.cc (extract_ref): Check decl_constant_var_p and
+	cxx_constexpr_in_eval_lifetime_p instead of
+	is_constant_expression.  Use cxx_eval_constant_expression
+	instead of DECL_INITIAL for references.  Adjust the checking
+	assert.  Drop the maybe_get_reference_referent call.  Build
+	a NOP_EXPR around the result.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126653
+	* cp-tree.h (check_namespace_splice): Declare.
+	* parser.cc (cp_parser_namespace_alias_definition): Call
+	check_namespace_splice.
+	(cp_parser_using_directive): Likewise.  Give an error if the
+	nested-name-specifier, namespace-name, or splice-specifier is
+	dependent.
+	* pt.cc (type_dependent_expression_p): Return false for
+	NAMESPACE_DECL.
+	* reflect.cc (check_namespace_splice): New.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/126794
+	* pt.cc (tsubst_expr) <case COMPONENT_REF>: Don't call
+	finish_non_static_data_member on a FIELD_DECL of a COMPONENT_REF
+	when COMPONENT_REF_SPLICE_P is set.  Don't check
+	dependent_splice_p in an assert.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127749
+	* reflect.cc (process_metafunction): Add
+	processing_template_decl_sentinel.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126017
+	PR c++/127856
+	* cxx-pretty-print.cc (cxx_pretty_printer::simple_type_specifier)
+	<case LANG_TYPE>: Rename to OPAQUE_TYPE.
+	(cxx_pretty_printer::type_id) <case LANG_TYPE>: Likewise.
+	* mangle.cc (write_type) <case LANG_TYPE>: Likewise.
+	* module.cc (trees_out::type_node) <case LANG_TYPE>: Likewise.
+	(trees_in::tree_node) <case LANG_TYPE>: Likewise.
+	* name-lookup.cc (name_lookup::adl_type) <case LANG_TYPE>:
+	Don't check REFLECTION_TYPE_P here.
+	<case OPAQUE_TYPE>: New.
+	* reflect.cc (init_reflection): Create an OPAQUE_TYPE node instead
+	of a LANG_TYPE node.
+	* tree.cc (type_has_unique_obj_representations) <case LANG_TYPE>:
+	Rename to OPAQUE_TYPE.
+
+2026-10-23  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/127559
+	* semantics.cc (finish_omp_target_clauses_r): Strip location
+	wrappers while looking for the base of a lambda object.
+
 2026-10-22  Nathan Sidwell  <nathan@acm.org>
 
 	* decl.cc (merge_attribute_bits): Propagate DECL_NO_LIMIT_STACK,

@@ -1,3 +1,20 @@
+2026-10-23  Thomas Schwinge  <thomas@codesourcery.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* testsuite/libgomp.fortran/reverse-offload-5.f90: For NVIDIA GPU
+	code offloading, shorten timeout to 10 s.
+
+2026-10-23  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/127559
+	* testsuite/libgomp.c++/target-lambda-6.C: Un-XFAIL.
+
+2026-10-23  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/127559
+	* testsuite/libgomp.c++/target-lambda-5.C: Enhance testing.
+	* testsuite/libgomp.c++/target-lambda-6.C: Likewise.
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

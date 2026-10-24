@@ -1,3 +1,172 @@
+2026-10-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/crypto.md (riscv_xpack_<code>_<X:mode>_<HX:mode>_2):
+	Restrict operand 2 to const_int_operand.
+	* config/riscv/zicond.md (and of sign extract splitter): Similarly.
+
+2026-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc
+	(sarif_scheme_handler::maybe_handle_kv): Update enum value for
+	SARIF 2.2 from sarif_version::v2_2_prerelease_2024_08_08
+	to sarif_version::v2_2_prerelease_csd01.
+	* diagnostics/sarif-sink.cc
+	(sarif_invocation::add_notification_for_ice): Likewise.
+	(add_related_location): Likewise.
+	(sarif_version_to_url): Likewise.  Update URL for SARIF 2.2
+	schema.
+	(sarif_version_to_property): Update enum value for SARIF 2.2.
+	(get_dump_string_for_sarif_version): Likewise, also updating
+	description.
+	* diagnostics/sarif-sink.h (enum class sarif_version): Replace
+	v2_2_prerelease_2024_08_08 with v2_2_prerelease_csd01.
+	* libgdiagnostics.cc (diagnostic_manager_add_sarif_sink):
+	Likewise.
+
+2026-10-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/context.cc (context::report_diagnostic): Update
+	comment to refer to "diagnostic sinks" rather than
+	"output formats".
+
+2026-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128089
+	* tree-ssa-reassoc.cc (linearize_expr_tree): Do not make
+	binrhsisreassoc true unless is_associative.
+
+2026-10-23  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/126017
+	PR c++/127856
+	* doc/generic.texi: Update OPAQUE_TYPE description.
+	* dwarf2out.cc (gen_type_die_with_usage) <case OPAQUE_TYPE>: If
+	SCALAR_INT_MODE_P, goto unspecified_type.
+	* tree.cc (wide_int_to_tree_1) <case LANG_TYPE>: Rename to
+	OPAQUE_TYPE.  Assert SCALAR_INT_MODE_P.
+	(cache_integer_cst) <case LANG_TYPE>: Likewise.
+	(verify_opaque_type): Allow SCALAR_INT_MODE_P mode.
+	* tree.def (OPAQUE_TYPE): Update description.
+
+2026-10-23  Loeka Rogge  <loeka.rogge@globalfoundries.com>
+
+	* config/riscv/bitmanip.md (crc_rev<ANYI1:mode><ANYI:mode>4):
+	Remove 64 bit guard.
+	* config/riscv/riscv.cc (riscv_optab_supported_p): Likewise.
+	64 bit guard.
+	(expand_reversed_crc_using_clmul): Adapt quotient calculation
+	for 65 bits.
+
+2026-10-23  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* builtin-types.def (BT_FN_UINT8_UINT8_UINT8_CONST_SIZE):
+	Renamed the CONST_SIZE to be specific type like UINT8.
+	(BT_FN_UINT16_UINT16_UINT8_CONST_SIZE): Likewise.
+	(BT_FN_UINT16_UINT16_UINT16_CONST_SIZE): Likewise.
+	(BT_FN_UINT32_UINT32_UINT8_CONST_SIZE): Likewise.
+	(BT_FN_UINT32_UINT32_UINT16_CONST_SIZE): Likewise.
+	(BT_FN_UINT32_UINT32_UINT32_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT8_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT16_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT32_CONST_SIZE): Likewise.
+	(BT_FN_UINT64_UINT64_UINT64_CONST_SIZE): Likewise.
+	(BT_FN_UINT8_UINT8_UINT8_UINT8): Likewise.
+	(BT_FN_UINT16_UINT16_UINT8_UINT16): Likewise.
+	(BT_FN_UINT16_UINT16_UINT16_UINT16): Likewise.
+	(BT_FN_UINT32_UINT32_UINT8_UINT32): Likewise.
+	(BT_FN_UINT32_UINT32_UINT16_UINT32): Likewise.
+	(BT_FN_UINT32_UINT32_UINT32_UINT32): Likewise.
+	(BT_FN_UINT64_UINT64_UINT8_UINT64): Likewise.
+	(BT_FN_UINT64_UINT64_UINT16_UINT64): Likewise.
+	(BT_FN_UINT64_UINT64_UINT32_UINT64): Likewise.
+	(BT_FN_UINT64_UINT64_UINT64_UINT64): Likewise.
+	* builtins.def (BUILT_IN_CRC8_DATA8): Used the renamed builtin
+	type to have specific type like UINT8 for the polynomial arg.
+	(BUILT_IN_CRC16_DATA8): Likewise.
+	(BUILT_IN_CRC16_DATA16): Likewise.
+	(BUILT_IN_CRC32_DATA8): Likewise.
+	(BUILT_IN_CRC32_DATA16): Likewise.
+	(BUILT_IN_CRC32_DATA32): Likewise.
+	(BUILT_IN_CRC64_DATA8): Likewise.
+	(BUILT_IN_CRC64_DATA16): Likewise.
+	(BUILT_IN_CRC64_DATA32): Likewise.
+	(BUILT_IN_CRC64_DATA64): Likewise.
+	(BUILT_IN_REV_CRC8_DATA8): Likewise.
+	(BUILT_IN_REV_CRC16_DATA8): Likewise.
+	(BUILT_IN_REV_CRC16_DATA16): Likewise.
+	(BUILT_IN_REV_CRC32_DATA8): Likewise.
+	(BUILT_IN_REV_CRC32_DATA16): Likewise.
+	(BUILT_IN_REV_CRC32_DATA32): Likewise.
+	(BUILT_IN_REV_CRC64_DATA8): Likewise.
+	(BUILT_IN_REV_CRC64_DATA16): Likewise.
+	(BUILT_IN_REV_CRC64_DATA32): Likewise.
+	(BUILT_IN_REV_CRC64_DATA64): Likewise.
+
+2026-10-23  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/121268
+	* config/riscv/bitmanip.md ((x & -x) - 1 -> (x - 1) & ~x): Ensure
+	input register has zeros in bits 32..63 for extended SI variant.
+
+2026-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* tree-vect-loop-manip.cc (vect_use_loop_latch_condition_p):
+	Remove.
+	(vect_set_loop_controls_directly): Change uses of
+	vect_use_loop_latch_condition_p to
+	LOOP_VINFO_EARLY_BREAKS_VECT_PEELED.
+	(vect_set_loop_condition_partial_vectors): Likewise.
+	(vect_set_loop_condition_partial_vectors_avx512): Likewise.
+	(vect_set_loop_condition_normal): Likewise.
+	(vect_set_loop_condition): Likewise.
+
+2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128105
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA_SSE2_UNSET):
+	Add OPTION_MASK_ISA_AES_UNSET, OPTION_MASK_ISA_SHA_UNSET and
+	OPTION_MASK_ISA_PCLMUL_UNSET.
+
+2026-10-23  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/127981
+	* cfgexpand.cc (add_scope_conflicts_1): Use visit rather than
+	visit_op for PHI results.
+
+2026-10-23  Kees Cook  <kees@kernel.org>
+
+	* ipa-icf.cc (redirect_all_callers): Step to the next caller, not
+	the next callee, past a thunk.
+
+2026-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/128035
+	* config/i386/i386.cc (ix86_use_by_pieces_infrastructure_p): Halve
+	SIZE for COMPARE_BY_PIECES when COMPARE_MAX_PIECES is
+	UNITS_PER_WORD and optimizing for speed.
+	(ix86_compare_by_pieces_branch_ratio): New function.
+	(TARGET_COMPARE_BY_PIECES_BRANCH_RATIO): Define.
+
+2026-10-23  Kewen Lin  <linkewen@hygon.cn>
+	    Zhizheng Yang  <yangzhizheng@hygon.cn>
+	    Yushuai Xing  <xingyushuai@hygon.cn>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Handle ix86_veclibabi_type_hvml case.
+	* config/i386/i386-options.h (ix86_veclibabi_hvml): New declare.
+	* config/i386/i386-opts.h (enum ix86_veclibabi): Add
+	ix86_veclibabi_type_hvml into the ix86_veclibabi enum.
+	* config/i386/i386.cc (ix86_veclibabi_hvml): New function.
+	* config/i386/i386.opt: Add the hvml type.
+	* doc/invoke.texi: Document -mveclibabi=hvml and clarify the 64-bit
+	restriction for ACML and AOCL.
+
+2026-10-23  Yongqiang Tian  <yqtian668@gmail.com>
+
+	* combine.cc (likely_spilled_retval_p): Skip trailing debug insns
+	when locating the return-value USE.
+
 2026-10-22  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR tree-optimization/128045
