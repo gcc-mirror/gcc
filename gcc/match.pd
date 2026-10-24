@@ -13004,7 +13004,12 @@ and,
    to
      d = VEC_PERM_EXPR <x, {a,b}, NEW_VCST>;
    when all elements from a or b are replaced by the later
-   permutation.  */
+   permutation.
+
+   If x is a, the elements c takes from a can be read from x instead,
+   so only b remains and d becomes VEC_PERM_EXPR <a, b, NEW_VCST>
+   whatever mix of a and b it uses.  Likewise if x is b.  Do this only
+   when c has no other use, as the new mask may be more costly.  */
 
 (simplify
  (vec_perm @5 (vec_perm@0 @1 @2 VECTOR_CST@3) VECTOR_CST@4)
@@ -13026,6 +13031,9 @@ and,
     (with
      {
        bool use_1 = false, use_2 = false;
+       /* Whether to read the elements c takes from a or b from x.  */
+       bool x_is_1 = single_use (@0) && operand_equal_p (@5, @1, 0);
+       bool x_is_2 = single_use (@0) && operand_equal_p (@5, @2, 0);
 
        vec_perm_builder builder2 (nelts, nelts, 2);
        for (int i = 0; i < nelts; i++)
@@ -13036,18 +13044,23 @@ and,
 	     {
 	       poly_uint64 j = sel0[(sel1[i] - sel1.nelts_per_input ())
 				    .to_constant ()];
+	       bool from_x;
 	       if (known_lt (j, sel0.nelts_per_input ()))
-	         use_1 = true;
+		 {
+		   from_x = x_is_1;
+		   use_1 |= !from_x;
+		 }
 	       else
 	         {
-		   use_2 = true;
+		   from_x = x_is_2;
+		   use_2 |= !from_x;
 		   j -= sel0.nelts_per_input ();
 		 }
-	       builder2.quick_push (j + sel1.nelts_per_input ());
+	       builder2.quick_push (from_x ? j : j + sel1.nelts_per_input ());
 	     }
 	 }
      }
-     (if (use_1 ^ use_2)
+     (if (x_is_1 || x_is_2 || (use_1 ^ use_2))
       (with
        {
 	 vec_perm_indices sel2 (builder2, 2, sel1.nelts_per_input ());
@@ -13074,7 +13087,8 @@ and,
 	 (if (use_1)
 	  (vec_perm @5 @1 { op0; }))
 	 (if (use_2)
-	  (vec_perm @5 @2 { op0; })))))))))))
+	  (vec_perm @5 @2 { op0; }))
+	 (vec_perm @5 @5 { op0; }))))))))))
 
 /* And the case with swapped outer permute sources.  */
 
@@ -13098,6 +13112,9 @@ and,
     (with
      {
        bool use_1 = false, use_2 = false;
+       /* Whether to read the elements c takes from a or b from x.  */
+       bool x_is_1 = single_use (@0) && operand_equal_p (@5, @1, 0);
+       bool x_is_2 = single_use (@0) && operand_equal_p (@5, @2, 0);
 
        vec_perm_builder builder2 (nelts, nelts, 2);
        for (int i = 0; i < nelts; i++)
@@ -13107,18 +13124,23 @@ and,
 	   else
 	     {
 	       poly_uint64 j = sel0[sel1[i].to_constant ()];
+	       bool from_x;
 	       if (known_lt (j, sel0.nelts_per_input ()))
-	         use_1 = true;
+		 {
+		   from_x = x_is_1;
+		   use_1 |= !from_x;
+		 }
 	       else
 	         {
-		   use_2 = true;
+		   from_x = x_is_2;
+		   use_2 |= !from_x;
 		   j -= sel0.nelts_per_input ();
 		 }
-	       builder2.quick_push (j);
+	       builder2.quick_push (from_x ? j + sel1.nelts_per_input () : j);
 	     }
 	 }
      }
-     (if (use_1 ^ use_2)
+     (if (x_is_1 || x_is_2 || (use_1 ^ use_2))
       (with
        {
 	 vec_perm_indices sel2 (builder2, 2, sel1.nelts_per_input ());
@@ -13145,7 +13167,8 @@ and,
 	 (if (use_1)
 	  (vec_perm @1 @5 { op0; }))
 	 (if (use_2)
-	  (vec_perm @2 @5 { op0; })))))))))))
+	  (vec_perm @2 @5 { op0; }))
+	 (vec_perm @5 @5 { op0; }))))))))))
 
 
 #if GIMPLE
