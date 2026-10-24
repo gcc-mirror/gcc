@@ -5112,8 +5112,8 @@ expand_mask_reduction (rtx *ops, rtx_code code)
   else
     gcc_unreachable ();
 
-  rtx els = gen_label_rtx ();
-  rtx end = gen_label_rtx ();
+  rtx_code_label *els = gen_label_rtx ();
+  rtx_code_label *end = gen_label_rtx ();
 
   riscv_expand_conditional_branch (els, eq_zero ? EQ : NE, tmp, const0_rtx);
   emit_move_insn (dest, const0_rtx);
@@ -5222,8 +5222,8 @@ expand_fold_extract_last (rtx *ops)
   rtx anchor = gen_reg_rtx (Pmode);
   rtx index = gen_reg_rtx (Pmode);
   rtx vect = ops[3];
-  rtx else_label = gen_label_rtx ();
-  rtx end_label = gen_label_rtx ();
+  rtx_code_label *else_label = gen_label_rtx ();
+  rtx_code_label *end_label = gen_label_rtx ();
   rtx len = ops[4];
   machine_mode mode = GET_MODE (vect);
   machine_mode mask_mode = GET_MODE (mask);

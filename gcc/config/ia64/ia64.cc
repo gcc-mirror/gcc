@@ -2375,7 +2375,7 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 		       rtx old_dst, rtx new_dst, enum memmodel model)
 {
   machine_mode mode = GET_MODE (mem);
-  rtx old_reg, new_reg, cmp_reg, ar_ccv, label;
+  rtx old_reg, new_reg, cmp_reg, ar_ccv;
   enum insn_code icode;
 
   /* Special case for using fetchadd.  */
@@ -2438,7 +2438,7 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 
   old_reg = gen_reg_rtx (DImode);
   cmp_reg = gen_reg_rtx (DImode);
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
 
   if (mode != DImode)
     {

@@ -15175,7 +15175,7 @@ avr_emit_skip_pixop (rtx_code pix, rtx dest, rtx op0, rtx op1,
   emit_move_insn (dest, op0);
 
   // Skip if bits.bitno <eqne> bitno.
-  rtx xlabel = gen_label_rtx ();
+  rtx_code_label *xlabel = gen_label_rtx ();
   rtx zerox = gen_rtx_ZERO_EXTRACT (QImode, bits, const1_rtx, GEN_INT (bitno));
   rtx cond = gen_rtx_fmt_ee (eqne, VOIDmode, zerox, const0_rtx);
   emit (gen_sbrx_branchqi_split (cond, bits, const0_rtx, xlabel));
@@ -15220,7 +15220,7 @@ avr_emit_skip_clear (rtx dest, rtx src, rtx_code eqne, rtx bits, int bitno)
   emit_move_insn (dest, src);
 
   // Skip if bits.bitno <eqne> bitno.
-  rtx xlabel = gen_label_rtx ();
+  rtx_code_label *xlabel = gen_label_rtx ();
   rtx zerox = gen_rtx_ZERO_EXTRACT (QImode, bits, const1_rtx, GEN_INT (bitno));
   rtx cond = gen_rtx_fmt_ee (eqne, VOIDmode, zerox, const0_rtx);
   emit (gen_sbrx_branchqi_split (cond, bits, const0_rtx, xlabel));

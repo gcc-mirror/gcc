@@ -1030,11 +1030,11 @@ expand_compare_loop (rtx operands[])
     return false;
 
   bool no_remainder_code = false;
-  rtx final_label = gen_label_rtx ();
+  rtx_code_label *final_label = gen_label_rtx ();
   rtx final_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
-  rtx diff_label = gen_label_rtx ();
-  rtx library_call_label = NULL;
-  rtx cleanup_label = gen_label_rtx ();
+  rtx_code_label *diff_label = gen_label_rtx ();
+  rtx_code_label *library_call_label = nullptr;
+  rtx_code_label *cleanup_label = gen_label_rtx ();
 
   rtx cr;
 
@@ -1170,7 +1170,7 @@ expand_compare_loop (rtx operands[])
 	}
       else
 	{
-	  rtx lab_after = gen_label_rtx ();
+	  rtx_code_label *lab_after = gen_label_rtx ();
 	  do_ifelse (CCmode, LE, bytes_rtx, GEN_INT (max_bytes),
 		     NULL_RTX, lab_after, profile_probability::even ());
 	  emit_move_insn (loop_cmp, mb_reg);
@@ -1206,7 +1206,7 @@ expand_compare_loop (rtx operands[])
       emit_move_insn (iv2, GEN_INT (load_mode_size));
 
       /* inner loop to compare 2*word_mode */
-      rtx loop_top_label = gen_label_rtx ();
+      rtx_code_label *loop_top_label = gen_label_rtx ();
       emit_label (loop_top_label);
 
       rtx src1_ix1 = gen_rtx_PLUS (word_mode, src1_addr, iv1);
@@ -1330,7 +1330,7 @@ expand_compare_loop (rtx operands[])
 		     NULL_RTX, final_label, profile_probability::unlikely ());
 	}
 
-      rtx final_cleanup = gen_label_rtx ();
+      rtx_code_label *final_cleanup = gen_label_rtx ();
       rtx cmp_rem_before = gen_reg_rtx (word_mode);
       /* Compare one more word_mode chunk if needed.  */
       if (!bytes_is_const || bytes_remaining >= load_mode_size)
@@ -1426,8 +1426,8 @@ expand_compare_loop (rtx operands[])
 	}
       else if (!bytes_is_const)
 	{
-	  rtx handle4k_label = gen_label_rtx ();
-	  rtx nonconst_overlap = gen_label_rtx ();
+	  rtx_code_label *handle4k_label = gen_label_rtx ();
+	  rtx_code_label *nonconst_overlap = gen_label_rtx ();
 	  emit_label (nonconst_overlap);
 
 	  /* Here we have to handle the case where we have runtime
@@ -1508,7 +1508,7 @@ expand_compare_loop (rtx operands[])
 	  rtx d1 = gen_reg_rtx (word_mode);
 	  rtx d2 = gen_reg_rtx (word_mode);
 
-	  rtx fc_loop = gen_label_rtx ();
+	  rtx_code_label *fc_loop = gen_label_rtx ();
 	  emit_label (fc_loop);
 
 	  do_load_for_compare_from_addr (QImode, d1, src1_ix, orig_src1);
@@ -1739,8 +1739,8 @@ expand_block_compare_gpr(unsigned HOST_WIDE_INT bytes, unsigned int base_align,
   rtx tmp_reg_src1 = gen_reg_rtx (word_mode);
   rtx tmp_reg_src2 = gen_reg_rtx (word_mode);
   bool need_6432_conv = false;
-  rtx convert_label = NULL;
-  rtx final_label = NULL;
+  rtx_code_label *convert_label = nullptr;
+  rtx_code_label *final_label = nullptr;
   machine_mode load_mode;
 
   while (bytes > 0)
@@ -2025,7 +2025,7 @@ expand_block_compare (rtx operands[])
 
   if (use_vec)
     {
-      rtx final_move_label = gen_label_rtx ();
+      rtx_code_label *final_move_label = gen_label_rtx ();
       rtx s1addr = gen_reg_rtx (Pmode);
       rtx s2addr = gen_reg_rtx (Pmode);
       rtx off_reg = gen_reg_rtx (Pmode);
@@ -2517,15 +2517,15 @@ expand_strn_compare (rtx operands[], int no_length)
     }
 
   rtx result_reg = gen_reg_rtx (word_mode);
-  rtx final_move_label = gen_label_rtx ();
-  rtx final_label = gen_label_rtx ();
-  rtx begin_compare_label = NULL;
+  rtx_code_label *final_move_label = gen_label_rtx ();
+  rtx_code_label *final_label = gen_label_rtx ();
+  rtx_code_label *begin_compare_label = nullptr;
 
   if (base_align < required_align)
     {
       /* Generate code that checks distance to 4k boundary for this case.  */
       begin_compare_label = gen_label_rtx ();
-      rtx strncmp_label = gen_label_rtx ();
+      rtx_code_label *strncmp_label = gen_label_rtx ();
       rtx jmp;
 
       /* Strncmp for power8 in glibc does this:

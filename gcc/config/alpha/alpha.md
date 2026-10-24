@@ -4589,7 +4589,7 @@
     emit_move_insn (areg, addr);
   emit_move_insn (aligned_addr, gen_rtx_AND (DImode, areg, GEN_INT (-8)));
 
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
   LABEL_NUSES (label) = 1;
 
@@ -4643,7 +4643,7 @@
   get_aligned_mem (operands[0], &aligned_mem, &bitnum);
   if (TARGET_SAFE_BWA)
     {
-      rtx label = gen_label_rtx ();
+      rtx_code_label *label = gen_label_rtx ();
       emit_label (label);
       LABEL_NUSES (label) = 1;
 

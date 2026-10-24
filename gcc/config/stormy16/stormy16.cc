@@ -311,7 +311,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
     {
       int unsigned_p = (code == GTU || code == LEU);
       int gt_p = (code == GT || code == GTU);
-      rtx lab = NULL_RTX;
+      rtx_code_label *lab = nullptr;
 
       if (gt_p)
 	lab = gen_label_rtx ();
@@ -328,7 +328,7 @@ xstormy16_emit_cbranch (enum rtx_code code, rtx op0, rtx op1, rtx loc)
 	   && op1 != const0_rtx)
     {
       rtx op0_word, op1_word;
-      rtx lab = NULL_RTX;
+      rtx_code_label *lab = nullptr;
       int num_words = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
       int i;
 

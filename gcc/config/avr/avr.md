@@ -8646,7 +8646,7 @@
               (match_operand:PSI 1 "register_operand" "")])]
   ""
   {
-    rtx label = gen_label_rtx ();
+    rtx_code_label *label = gen_label_rtx ();
     emit (gen_flash_segment1 (operands[0], operands[1], label));
     emit_label (label);
     DONE;

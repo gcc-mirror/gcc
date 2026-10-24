@@ -4030,7 +4030,8 @@ xtensa_set_return_address (rtx address, rtx scratch)
 rtx
 xtensa_return_addr (int count, rtx frame)
 {
-  rtx result, retaddr, curaddr, label;
+  rtx result, retaddr, curaddr;
+  rtx_code_label *label;
 
   if (!TARGET_WINDOWED_ABI)
     {

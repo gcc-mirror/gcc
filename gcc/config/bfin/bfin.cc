@@ -3453,7 +3453,7 @@ hwloop_optimize (hwloop_info loop)
 {
   basic_block bb;
   rtx_insn *insn, *last_insn;
-  rtx loop_init, start_label, end_label;
+  rtx loop_init, start_label;
   rtx iter_reg, scratchreg, scratch_init;
   rtx_insn *scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
@@ -3676,7 +3676,7 @@ hwloop_optimize (hwloop_info loop)
 
   /* The loop is good for replacement.  */
   start_label = loop->start_label;
-  end_label = gen_label_rtx ();
+  rtx_code_label *end_label = gen_label_rtx ();
   iter_reg = loop->iter_reg;
 
   if (loop->depth == 1 && !clobber1)

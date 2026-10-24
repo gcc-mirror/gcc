@@ -1864,7 +1864,8 @@ cris_simple_epilogue (void)
 void
 cris_emit_trap_for_misalignment (rtx mem)
 {
-  rtx addr, reg, ok_label, andop;
+  rtx addr, reg;
+  rtx andop;
   rtx_insn *jmp;
   int natural_alignment;
   gcc_assert (MEM_P (mem));
@@ -1872,7 +1873,7 @@ cris_emit_trap_for_misalignment (rtx mem)
   natural_alignment = GET_MODE_SIZE (GET_MODE (mem));
   addr = XEXP (mem, 0);
   reg = force_reg (Pmode, addr);
-  ok_label = gen_label_rtx ();
+  rtx_code_label *ok_label = gen_label_rtx ();
 
   /* This will yield a btstq without a separate register used, usually -
      with the exception for PRE hoisting the "and" but not the branch

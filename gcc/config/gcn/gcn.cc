@@ -4977,7 +4977,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 					  SImode, EXPAND_NORMAL));
 	rtx wavefront = gcn_oacc_dim_pos (1);
 	rtx cond = gen_rtx_NE (VOIDmode, wavefront, const0_rtx);
-	rtx not_zero = gen_label_rtx ();
+	rtx_code_label *not_zero = gen_label_rtx ();
 	emit_insn (gen_cbranchsi4 (cond, wavefront, const0_rtx, not_zero));
 	emit_move_insn (blk, const0_rtx);
 	emit_label (not_zero);
@@ -5091,7 +5091,7 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	emit_move_insn (result, const0_rtx);
 	if (cfun->machine->args.reg[QUEUE_PTR_ARG] >= 0)
 	  {
-	    rtx not_first = gen_label_rtx ();
+	    rtx_code_label *not_first = gen_label_rtx ();
 	    rtx reg = gen_rtx_REG (DImode,
 			cfun->machine->args.reg[QUEUE_PTR_ARG]);
 	    reg = gcn_operand_part (DImode, reg, 1);

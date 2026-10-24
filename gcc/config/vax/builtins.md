@@ -37,7 +37,7 @@
   ""
   "
 {
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
   rtx cond = gen_rtx_NE (VOIDmode, operands[1], const0_rtx);
   rtx target = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label_ref, pc_rtx);
@@ -167,12 +167,11 @@
   ""
   "
 {
-  rtx label;
 
   if (operands[2] != const1_rtx)
     FAIL;
 
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_move_insn (operands[0], const1_rtx);
   emit_jump_insn (gen_jbbssi<mode> (operands[1], const0_rtx, label));
   emit_move_insn (operands[0], const0_rtx);
@@ -186,12 +185,11 @@
   ""
   "
 {
-  rtx label;
 
   if (operands[1] != const0_rtx)
     FAIL;
 
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_jump_insn (gen_jbbcci<mode> (operands[0], const0_rtx, label));
   emit_label (label);
   DONE;

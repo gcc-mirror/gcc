@@ -9806,12 +9806,12 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 		rs6000_emit_move (got, gsym, Pmode);
 	      else
 		{
-		  rtx mem, lab;
+		  rtx mem;
 
 		  tmp1 = gen_reg_rtx (Pmode);
 		  tmp2 = gen_reg_rtx (Pmode);
 		  mem = gen_const_mem (Pmode, tmp1);
-		  lab = gen_label_rtx ();
+		  rtx_code_label *lab = gen_label_rtx ();
 		  emit_insn (gen_load_toc_v4_PIC_1b (gsym, lab));
 		  emit_move_insn (tmp1, gen_rtx_REG (Pmode, LR_REGNO));
 		  if (TARGET_LINK_STACK)
@@ -15665,7 +15665,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	{
 	  rtx ne_rtx, normal_dest, unord_dest;
 	  rtx unord_func = optab_libfunc (unord_optab, mode);
-	  rtx join_label = gen_label_rtx ();
+	  rtx_code_label *join_label = gen_label_rtx ();
 	  rtx join_ref = gen_rtx_LABEL_REF (VOIDmode, join_label);
 	  rtx unord_cmp = gen_reg_rtx (comp_mode);
 
@@ -26658,7 +26658,7 @@ rs6000_call_darwin_1 (rtx value, rtx func_desc, rtx tlsarg,
 
       if (no_previous_def (funname))
 	{
-	  rtx label_rtx = gen_label_rtx ();
+	  rtx_code_label *label_rtx = gen_label_rtx ();
 	  char *label_buf, temp_buf[256];
 	  ASM_GENERATE_INTERNAL_LABEL (temp_buf, "L",
 				       CODE_LABEL_NUMBER (label_rtx));

@@ -3534,7 +3534,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx /* subtarget */,
 	error ("invalid arguments to builtin");
 
       // Create a label for the end of the function.
-      rtx done_label = gen_label_rtx ();
+      rtx_code_label *done_label = gen_label_rtx ();
 
       /* Standard Semantics: Update 'expected' ONLY on failure.
 	 If target (the boolean result) is NOT 0, the CAS succeeded.

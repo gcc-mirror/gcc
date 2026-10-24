@@ -1091,8 +1091,8 @@
     rtx default_value = operands[1];
     rtx mask = operands[2];
     rtx vect = operands[3];
-    rtx else_label = gen_label_rtx ();
-    rtx end_label = gen_label_rtx ();
+    rtx_code_label *else_label = gen_label_rtx ();
+    rtx_code_label *end_label = gen_label_rtx ();
 
     rtx cond = gen_rtx_EQ (VOIDmode, mask, const0_rtx);
     emit_jump_insn (gen_cbranchdi4 (cond, mask, const0_rtx, else_label));

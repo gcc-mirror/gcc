@@ -119,7 +119,7 @@ test_dumping_insns ()
   ASSERT_RTL_DUMP_EQ ("(cbarrier 0)\n", barrier);
 
   /* Labels.  */
-  rtx_insn *label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   CODE_LABEL_NUMBER (label) = 42;
   ASSERT_RTL_DUMP_EQ ("(clabel 0 42)\n", label);
 
@@ -199,7 +199,7 @@ static void
 test_uncond_jump ()
 {
   set_new_first_and_last_insn (NULL, NULL);
-  rtx_insn *label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   rtx jump_pat = gen_rtx_SET (pc_rtx,
 			      gen_rtx_LABEL_REF (VOIDmode,
 						 label));

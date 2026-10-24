@@ -2143,7 +2143,7 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 
   if (residual != CONST0_RTX (Pmode))
     {
-      rtx label = NULL_RTX;
+      rtx_code_label *label = nullptr;
       /* RESIDUAL could be zero at runtime and in that case *sp could
 	 hold live data.  Furthermore, we do not want to probe into the
 	 red zone.

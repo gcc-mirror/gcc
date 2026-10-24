@@ -2410,7 +2410,7 @@ setup_incoming_varargs (cumulative_args_t cum,
     {
       int fregno = next_cum.fregno, nregs;
       rtx cr1 = gen_rtx_REG (CCmode, CR1_REGNO);
-      rtx lab = gen_label_rtx ();
+      rtx_code_label *lab = gen_label_rtx ();
       int off = (GP_ARG_NUM_REG * reg_size) + ((fregno - FP_ARG_MIN_REG)
 					       * UNITS_PER_FP_WORD);
 

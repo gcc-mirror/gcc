@@ -1303,11 +1303,11 @@ rs6000_emit_load_toc_table (int fromprolog)
 	}
       else
 	{
-	  rtx tocsym, lab;
+	  rtx tocsym;
 
 	  tocsym = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (toc_label_name));
 	  need_toc_init = 1;
-	  lab = gen_label_rtx ();
+	  rtx_code_label *lab = gen_label_rtx ();
 	  emit_insn (gen_load_toc_v4_PIC_1b (tocsym, lab));
 	  emit_move_insn (dest, gen_rtx_REG (Pmode, LR_REGNO));
 	  if (TARGET_LINK_STACK)
@@ -2973,7 +2973,7 @@ emit_split_stack_prologue (rs6000_stack_t *info, rtx_insn *sp_adjust,
       rtx r12 = gen_rtx_REG (Pmode, 12);
       rtx r29 = gen_rtx_REG (Pmode, 29);
       rtx cr7 = gen_rtx_REG (CCUNSmode, CR7_REGNO);
-      rtx not_more = gen_label_rtx ();
+      rtx_code_label *not_more = gen_label_rtx ();
       rtx jump;
 
       jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
@@ -3449,7 +3449,8 @@ rs6000_emit_prologue (void)
   /* In AIX ABI we need to make sure r2 is really saved.  */
   if (TARGET_AIX && crtl->calls_eh_return)
     {
-      rtx tmp_reg, tmp_reg_si, hi, lo, compare_result, toc_save_done, jump;
+      rtx tmp_reg, tmp_reg_si, hi, lo, compare_result;
+      rtx jump;
       rtx join_insn, note;
       rtx_insn *save_insn;
       long toc_restore_insn;
@@ -3479,7 +3480,7 @@ rs6000_emit_prologue (void)
       lo = gen_int_mode (toc_restore_insn & 0xffff, SImode);
       emit_insn (gen_rtx_SET (compare_result,
 			      gen_rtx_COMPARE (CCUNSmode, tmp_reg_si, lo)));
-      toc_save_done = gen_label_rtx ();
+      rtx_code_label *toc_save_done = gen_label_rtx ();
       jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
 				   gen_rtx_EQ (VOIDmode, compare_result,
 					       const0_rtx),
@@ -5551,7 +5552,8 @@ rs6000_expand_split_stack_prologue (void)
   rs6000_stack_t *info = rs6000_stack_info ();
   unsigned HOST_WIDE_INT allocate;
   long alloc_hi, alloc_lo;
-  rtx r0, r1, r12, lr, ok_label, compare, jump, call_fusage;
+  rtx r0, r1, r12, lr;
+  rtx compare, jump, call_fusage;
   rtx_insn *insn;
 
   gcc_assert (flag_split_stack && reload_completed);
@@ -5616,7 +5618,7 @@ rs6000_expand_split_stack_prologue (void)
 
   compare = gen_rtx_REG (CCUNSmode, CR7_REGNO);
   emit_insn (gen_rtx_SET (compare, gen_rtx_COMPARE (CCUNSmode, r12, r0)));
-  ok_label = gen_label_rtx ();
+  rtx_code_label *ok_label = gen_label_rtx ();
   jump = gen_rtx_IF_THEN_ELSE (VOIDmode,
 			       gen_rtx_GEU (VOIDmode, compare, const0_rtx),
 			       gen_rtx_LABEL_REF (VOIDmode, ok_label),

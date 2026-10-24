@@ -1627,7 +1627,7 @@
 
   if (code == EQ)
     {
-      rtx label_fallthrough = gen_label_rtx ();
+      rtx_code_label *label_fallthrough = gen_label_rtx ();
       rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
 
       rtx cond_hi = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
@@ -1682,7 +1682,7 @@
       LABEL_NUSES (label3)++;
 
       /* Check for "DI comparison obviously not true".  */
-      rtx label_fallthrough = gen_label_rtx ();
+      rtx_code_label *label_fallthrough = gen_label_rtx ();
       rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
       rtx cond_hine = gen_rtx_fmt_ee (NE, VOIDmode, op1_hi, op2_hi);
       rtx check_hine = gen_rtx_IF_THEN_ELSE (VOIDmode, cond_hine,
@@ -1709,7 +1709,7 @@
     {
       /* Check for "DI comparison obviously not true".  */
       const enum rtx_code reversed_code = reverse_condition (code);
-      rtx label_fallthrough = gen_label_rtx ();
+      rtx_code_label *label_fallthrough = gen_label_rtx ();
       rtx label_fallthrough_ref = gen_rtx_LABEL_REF (Pmode, label_fallthrough);
       rtx cond_hi = gen_rtx_fmt_ee (pru_noteq_condition (reversed_code),
 				    VOIDmode, op1_hi, op2_hi);

@@ -232,7 +232,7 @@ prepare_call_address (tree fndecl_or_type, rtx funexp, rtx static_chain_value,
       if ((flags & ECF_BY_DESCRIPTOR) && !flag_trampolines)
 	{
 	  const int bit_val = targetm.calls.custom_function_descriptors;
-	  rtx call_lab = gen_label_rtx ();
+	  rtx_code_label *call_lab = gen_label_rtx ();
 
 	  gcc_assert (fndecl_or_type && TYPE_P (fndecl_or_type));
 	  fndecl_or_type

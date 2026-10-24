@@ -8003,7 +8003,7 @@ hwloop_optimize (hwloop_info loop)
   edge entry_edge;
   basic_block entry_bb, bb;
   rtx iter_reg;
-  rtx_insn *insn, *seq, *entry_after, *last_insn, *end_label;
+  rtx_insn *insn, *seq, *entry_after, *last_insn;
   unsigned int length;
   bool need_fix = false;
   rtx lp_reg = gen_rtx_REG (SImode, LP_COUNT);
@@ -8227,7 +8227,7 @@ hwloop_optimize (hwloop_info loop)
       return false;
     }
   /* The loop is good.  */
-  end_label = gen_label_rtx ();
+  rtx_code_label *end_label = gen_label_rtx ();
   loop->end_label = end_label;
 
   /* Place the zero_cost_loop_start instruction before the loop.  */
@@ -10371,7 +10371,9 @@ arc_expand_compare_and_swap_qh (rtx bool_result, rtx result, rtx mem,
   rtx newvalue = gen_reg_rtx (SImode);
   rtx res = gen_reg_rtx (SImode);
   rtx resv = gen_reg_rtx (SImode);
-  rtx memsi, val, mask, end_label, loop_label, cc, x;
+  rtx memsi, val, mask;
+  rtx_code_label *end_label, *loop_label;
+  rtx cc, x;
   machine_mode mode;
   bool is_weak = (weak != const0_rtx);
 
@@ -10541,7 +10543,7 @@ arc_split_compare_and_swap (rtx operands[])
   machine_mode mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
-  rtx label1, label2, x, cond;
+  rtx x, cond;
 
   rval = operands[0];
   mem = operands[1];
@@ -10557,13 +10559,13 @@ arc_split_compare_and_swap (rtx operands[])
 
   arc_pre_atomic_barrier (mod_s);
 
-  label1 = NULL_RTX;
+  rtx_code_label *label1 = nullptr;
   if (!is_weak)
     {
       label1 = gen_label_rtx ();
       emit_label (label1);
     }
-  label2 = gen_label_rtx ();
+  rtx_code_label *label2 = gen_label_rtx ();
 
   /* Load exclusive.  */
   emit_insn (gen_arc_load_exclusivesi (rval, mem));

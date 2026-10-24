@@ -2560,7 +2560,8 @@ alpha_expand_movmisalign (machine_mode mode, rtx *operands)
 void
 alpha_emit_floatuns (rtx operands[2])
 {
-  rtx neglab, donelab, i0, i1, f0, in, out;
+  rtx_code_label *neglab, *donelab;
+  rtx i0, i1, f0, in, out;
   machine_mode mode;
 
   out = operands[0];

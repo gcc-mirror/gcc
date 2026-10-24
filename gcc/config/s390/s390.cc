@@ -6668,9 +6668,9 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   rtx str_addr_base_reg = gen_reg_rtx (Pmode);
   rtx str_idx_reg = gen_reg_rtx (Pmode);
   rtx result_reg = gen_reg_rtx (V16QImode);
-  rtx is_aligned_label = gen_label_rtx ();
-  rtx into_loop_label = NULL_RTX;
-  rtx loop_start_label = gen_label_rtx ();
+  rtx_code_label *is_aligned_label = gen_label_rtx ();
+  rtx_code_label *into_loop_label = nullptr;
+  rtx_code_label *loop_start_label = gen_label_rtx ();
   rtx temp;
   rtx len = gen_reg_rtx (QImode);
   rtx cond;
@@ -6779,10 +6779,10 @@ s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
   rtx loadlen = gen_reg_rtx (SImode);
   rtx gpos_qi = gen_reg_rtx(QImode);
   rtx gpos = gen_reg_rtx (SImode);
-  rtx done_label = gen_label_rtx ();
-  rtx loop_label = gen_label_rtx ();
-  rtx exit_label = gen_label_rtx ();
-  rtx full_label = gen_label_rtx ();
+  rtx_code_label *done_label = gen_label_rtx ();
+  rtx_code_label *loop_label = gen_label_rtx ();
+  rtx_code_label *exit_label = gen_label_rtx ();
+  rtx_code_label *full_label = gen_label_rtx ();
 
   /* Perform a quick check for string ending on the first up to 16
      bytes and exit early if successful.  */
@@ -7318,7 +7318,7 @@ s390_expand_cstoreti4 (rtx dst, rtx cmp, rtx op1, rtx op2)
 				  gen_rtx_VEC_SELECT (DImode, op1, lane0),
 				  gen_rtx_VEC_SELECT (DImode, op2, lane0))));
   rtx ccs_reg = gen_rtx_REG (CCSmode, CC_REGNUM);
-  rtx lab = gen_label_rtx ();
+  rtx_code_label *lab = gen_label_rtx ();
   s390_emit_jump (lab, gen_rtx_NE (VOIDmode, ccs_reg, const0_rtx));
   /* At this point we have that high(op1) == high(op2).  Thus, test the low
      part, now.  For unsigned comparisons
@@ -8299,7 +8299,7 @@ s390_expand_int_spaceship (rtx op0, rtx op1, rtx op2, rtx op3)
 	= force_reg (V2DImode, simplify_gen_subreg (V2DImode, op1, TImode, 0));
       op2
 	= force_reg (V2DImode, simplify_gen_subreg (V2DImode, op2, TImode, 0));
-      rtx lab = gen_label_rtx ();
+      rtx_code_label *lab = gen_label_rtx ();
       rtx ccz = gen_rtx_REG (CCZmode, CC_REGNUM);
       /* Compare high halves for equality.
 	 VEC[L]G op1, op2 sets
@@ -8398,10 +8398,10 @@ s390_expand_fp_spaceship (rtx op0, rtx op1, rtx op2, rtx op3)
   rtx cond_eq = gen_rtx_EQ (mode, cc_reg, const0_rtx);
   rtx cond_gt = gen_rtx_GT (mode, cc_reg, const0_rtx);
   rtx_insn *insn;
-  rtx l_unordered = gen_label_rtx ();
-  rtx l_eq = gen_label_rtx ();
-  rtx l_gt = gen_label_rtx ();
-  rtx l_end = gen_label_rtx ();
+  rtx_code_label *l_unordered = gen_label_rtx ();
+  rtx_code_label *l_eq = gen_label_rtx ();
+  rtx_code_label *l_gt = gen_label_rtx ();
+  rtx_code_label *l_end = gen_label_rtx ();
 
   s390_emit_compare (VOIDmode, LTGT, op1, op2);
   if (!flag_finite_math_only)
@@ -17325,8 +17325,8 @@ s390_rawmemchr (machine_mode elt_mode, rtx dst, rtx src, rtx pat)
 					   16 / GET_MODE_SIZE (elt_mode)).require();
   rtx lens = gen_reg_rtx (V16QImode);
   rtx pattern = gen_reg_rtx (vec_mode);
-  rtx loop_start = gen_label_rtx ();
-  rtx loop_end = gen_label_rtx ();
+  rtx_code_label *loop_start = gen_label_rtx ();
+  rtx_code_label *loop_end = gen_label_rtx ();
   rtx addr = gen_reg_rtx (Pmode);
   rtx offset = gen_reg_rtx (Pmode);
   rtx loadlen = gen_reg_rtx (SImode);

@@ -3187,10 +3187,10 @@ ix86_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx op2)
       && GET_MODE (dest) == SImode)
     zero = force_reg (SImode, const0_rtx);
   rtx gt = ix86_expand_fp_compare (GT, op0, op1);
-  rtx l0 = op2 == const0_rtx ? gen_label_rtx () : NULL_RTX;
-  rtx l1 = op2 == const0_rtx ? gen_label_rtx () : NULL_RTX;
-  rtx l2 = TARGET_IEEE_FP ? gen_label_rtx () : NULL_RTX;
-  rtx lend = gen_label_rtx ();
+  rtx_code_label *l0 = op2 == const0_rtx ? gen_label_rtx () : nullptr;
+  rtx_code_label *l1 = op2 == const0_rtx ? gen_label_rtx () : nullptr;
+  rtx_code_label *l2 = TARGET_IEEE_FP ? gen_label_rtx () : nullptr;
+  rtx_code_label *lend = gen_label_rtx ();
   rtx tmp;
   rtx_insn *jmp;
   if (l2)

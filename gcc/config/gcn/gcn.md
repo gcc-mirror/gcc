@@ -1847,7 +1847,7 @@
         : shiftval < 64 ? SMALL
         : LARGE);
 
-    rtx large_label, zero_label, exit_label;
+    rtx_code_label *large_label, *zero_label, *exit_label;
 
     if (shiftcomparison == RUNTIME)
       {

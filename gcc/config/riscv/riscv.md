@@ -2345,10 +2345,10 @@
   else
     {
       rtx reg;
-      rtx label1 = gen_label_rtx ();
-      rtx label2 = gen_label_rtx ();
-      rtx label3 = gen_label_rtx ();
-      rtx end_label = gen_label_rtx ();
+      rtx_code_label *label1 = gen_label_rtx ();
+      rtx_code_label *label2 = gen_label_rtx ();
+      rtx_code_label *label3 = gen_label_rtx ();
+      rtx_code_label *end_label = gen_label_rtx ();
       rtx abs_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx coeff_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx tmp_reg = gen_reg_rtx (<ANYF:MODE>mode);
@@ -4578,11 +4578,11 @@
       emit_insn (gen_ssrdp (word_mode, cur_ssp));
 
       /* Compare and jump over adjustment code.  */
-      rtx noadj_label = gen_label_rtx ();
+      rtx_code_label *noadj_label = gen_label_rtx ();
       emit_cmp_and_jump_insns (cur_ssp, const0_rtx, EQ, NULL_RTX,
 			       word_mode, 1, noadj_label);
 
-      rtx loop_label = gen_label_rtx ();
+      rtx_code_label *loop_label = gen_label_rtx ();
       emit_label (loop_label);
       LABEL_NUSES (loop_label) = 1;
 
@@ -4606,7 +4606,7 @@
       emit_barrier ();
 
       /* Adjust the ssp in a loop.  */
-      rtx cmp_4k_label = gen_label_rtx ();
+      rtx_code_label *cmp_4k_label = gen_label_rtx ();
       emit_label (cmp_4k_label);
       LABEL_NUSES (cmp_4k_label) = 1;
 

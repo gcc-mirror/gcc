@@ -34059,10 +34059,10 @@ aarch64_expand_fp_spaceship (rtx dest, rtx op0, rtx op1, rtx hint)
 
   if (hint == const0_rtx)
     {
-      rtx un_label = gen_label_rtx ();
-      rtx lt_label = gen_label_rtx ();
-      rtx gt_label = gen_label_rtx ();
-      rtx end_label = gen_label_rtx ();
+      rtx_code_label *un_label = gen_label_rtx ();
+      rtx_code_label *lt_label = gen_label_rtx ();
+      rtx_code_label *gt_label = gen_label_rtx ();
+      rtx_code_label *end_label = gen_label_rtx ();
 
       rtx temp = gen_rtx_IF_THEN_ELSE (VOIDmode, cc_un,
 			gen_rtx_LABEL_REF (Pmode, un_label), pc_rtx);

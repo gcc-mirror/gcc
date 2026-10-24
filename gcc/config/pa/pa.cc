@@ -5069,7 +5069,7 @@ hppa_profile_hook (int label_no)
 rtx
 pa_return_addr_rtx (int count, rtx frameaddr)
 {
-  rtx label;
+  rtx_code_label *label;
   rtx rp;
   rtx saved_rp;
   rtx ins;

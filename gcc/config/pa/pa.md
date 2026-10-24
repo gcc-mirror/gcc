@@ -10029,7 +10029,7 @@ add,l %2,%3,%3\;bv,n %%r0(%3)"
 {
   rtx start = gen_reg_rtx (Pmode);
   rtx line_size = gen_reg_rtx (Pmode);
-  rtx lab = gen_label_rtx ();
+  rtx_code_label *lab = gen_label_rtx ();
   rtx op0 = operands[0];
   rtx op1 = operands[1];
 

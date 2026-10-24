@@ -10346,7 +10346,7 @@ riscv_allocate_and_probe_stack_loop (rtx tmp, enum rtx_code code,
   tmp = riscv_force_temporary (tmp, gen_int_mode (offset, Pmode));
 
   /* Loop.  */
-  rtx label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
 
   /* Allocate and probe stack.  */

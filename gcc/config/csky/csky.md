@@ -3548,7 +3548,7 @@
   [(label_ref (match_operand 0 "" ""))]
   "flag_pic"
   "{
-    rtx l1 = gen_label_rtx();
+    rtx_code_label *l1 = gen_label_rtx ();
     rtx grs_label = gen_rtx_LABEL_REF (SImode, l1);
     rtx reg_gb = gen_rtx_REG (SImode, PIC_OFFSET_TABLE_REGNUM);
     rtx reg_temp = gen_rtx_REG (SImode, 12);
