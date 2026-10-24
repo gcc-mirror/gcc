@@ -4793,7 +4793,7 @@
 (define_int_attr last_op [(UNSPEC_CLASTA "after_last")
 			  (UNSPEC_CLASTB "last")
 			  (UNSPEC_LASTA "after_last")
-			  (UNSPEC_LASTB "last")])
+			  (UNSPEC_LASTB "last_active")])
 
 ;; "s" for signed operations and "u" for unsigned ones.
 (define_int_attr su [(UNSPEC_SADDV "s")

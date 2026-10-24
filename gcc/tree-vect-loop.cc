@@ -10245,7 +10245,7 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo, basic_block exit_bb,
     {
       /* Emit:
 
-	 SCALAR_RES = EXTRACT_LAST <VEC_LHS, MASK>
+	 SCALAR_RES = EXTRACT_LAST_ACTIVE <VEC_LHS, MASK>
 
 	 where VEC_LHS is the vectorized live-out result and MASK is
 	 the loop mask for the final iteration.  */
@@ -10259,7 +10259,7 @@ vectorizable_live_operation_1 (loop_vec_info loop_vinfo, basic_block exit_bb,
       tree scalar_res;
       gimple_seq_add_seq (&stmts, tem);
 
-      scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST, scalar_type,
+      scalar_res = gimple_build (&stmts, CFN_EXTRACT_LAST_ACTIVE, scalar_type,
 				 mask, vec_lhs_phi);
 
       /* Convert the extracted vector element to the scalar type.  */
@@ -10418,7 +10418,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 	    }
 	  else
 	    {
-	      if (direct_internal_fn_supported_p (IFN_EXTRACT_LAST, vectype,
+	      if (direct_internal_fn_supported_p (IFN_EXTRACT_LAST_ACTIVE, vectype,
 						  OPTIMIZE_FOR_SPEED))
 		vect_record_loop_mask (loop_vinfo,
 				       &LOOP_VINFO_MASKS (loop_vinfo),

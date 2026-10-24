@@ -1063,7 +1063,7 @@
     DONE;
   })
 
-(define_expand "extract_last_<mode>"
+(define_expand "extract_last_active_<mode>"
   [(match_operand:<SCALAR_MODE> 0 "register_operand")
    (match_operand:DI 1 "gcn_alu_operand")
    (match_operand:V_MOV 2 "register_operand")]
@@ -1096,7 +1096,7 @@
 
     rtx cond = gen_rtx_EQ (VOIDmode, mask, const0_rtx);
     emit_jump_insn (gen_cbranchdi4 (cond, mask, const0_rtx, else_label));
-    emit_insn (gen_extract_last_<mode> (dst, mask, vect));
+    emit_insn (gen_extract_last_active_<mode> (dst, mask, vect));
     emit_jump_insn (gen_jump (end_label));
     emit_barrier ();
     emit_label (else_label);

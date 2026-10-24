@@ -3154,7 +3154,8 @@
 	/* For VLA, extract the last element with a LASTB and a false
 	   predicate. */
 	rtx sel = aarch64_pfalse_reg (<VPRED>mode);
-	emit_insn (gen_extract_last_<mode> (operands[0], sel, operands[1]));
+	emit_insn (gen_extract_last_active_<mode> (operands[0], sel,
+					    operands[1]));
 	DONE;
       }
     if (!CONST_INT_P (operands[2]))
@@ -3173,7 +3174,8 @@
 	emit_insn (gen_vec_cmp<v_int_equiv><vpred> (sel, cmp, series, zero));
 
 	/* Select the element using LASTB.  */
-	emit_insn (gen_extract_last_<mode> (operands[0], sel, operands[1]));
+	emit_insn (gen_extract_last_active_<mode> (operands[0], sel,
+					    operands[1]));
 	DONE;
       }
   }

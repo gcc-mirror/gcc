@@ -507,10 +507,10 @@ The @code{IFN_REDUC_SBOOL_IOR} internal function directly maps to the
 The @code{IFN_REDUC_SBOOL_XOR} internal function directly maps to the
 @code{reduc_sbool_xor_scal} instruction pattern.
 
-@cindex @code{IFN_EXTRACT_LAST} internal function
-@item @samp{IFN_EXTRACT_LAST}
-The @code{IFN_EXTRACT_LAST} internal function directly maps to the
-@code{extract_last} instruction pattern.
+@cindex @code{IFN_EXTRACT_LAST_ACTIVE} internal function
+@item @samp{IFN_EXTRACT_LAST_ACTIVE}
+The @code{IFN_EXTRACT_LAST_ACTIVE} internal function directly maps to the
+@code{extract_last_active} instruction pattern.
 
 @cindex @code{IFN_FOLD_EXTRACT_LAST} internal function
 @item @samp{IFN_FOLD_EXTRACT_LAST}
