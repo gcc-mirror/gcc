@@ -58,9 +58,6 @@ struct aarch64_core_data
 #define INVALID_IMP ((unsigned char) -1)
 #define INVALID_CORE ((unsigned)-1)
 #define ALL_VARIANTS ((unsigned)-1)
-/* Default architecture to use if -mcpu=native did not detect a known CPU.  */
-#define DEFAULT_ARCH "8A"
-#define DEFAULT_CPU "generic-armv8-a"
 
 #define AARCH64_CORE(CORE_NAME, CORE_IDENT, SCHED, ARCH, FLAGS, COSTS, IMP, PART, VARIANT) \
   { CORE_NAME, #ARCH, IMP, PART, unsigned(VARIANT), feature_deps::cpu_##CORE_IDENT },
@@ -70,7 +67,6 @@ static constexpr const aarch64_core_data aarch64_cpu_data[] =
 #include "aarch64-cores.def"
   { NULL, NULL, INVALID_IMP, INVALID_CORE, ALL_VARIANTS, 0 }
 };
-
 
 struct aarch64_arch_driver_info
 {
@@ -117,6 +113,15 @@ get_cpu_from_id (const char* name)
       return &aarch64_cpu_data[i];
 
   return NULL;
+}
+
+/* Choose a generic CPU for unknown cores using FLAGS.  Include extensions
+   that require SVE2, since cpuinfo flags aren't transitively closed.  */
+static const aarch64_core_data *
+get_cpu_from_ext (aarch64_feature_flags flags)
+{
+  return get_cpu_from_id (flags & feature_deps::get_flags_off (AARCH64_FL_SVE2)
+			  ? "generic-armv9-a" : "generic-armv8-a");
 }
 
 /* Check whether the CORE array is the same as the big.LITTLE BL_CORE.
@@ -428,12 +433,13 @@ host_detect_local_cpu (int argc, const char **argv)
                 || variants[0] == aarch64_cpu_data[i].variant))
 	  break;
 
+      auto cpu_info = (aarch64_cpu_data[i].name
+			   ? &aarch64_cpu_data[i]
+			   : get_cpu_from_ext (extension_flags));
+      gcc_assert (cpu_info);
       if (arch)
 	{
-	  const char *arch_id = (aarch64_cpu_data[i].name
-				 ? aarch64_cpu_data[i].arch
-				 : DEFAULT_ARCH);
-	  auto arch_info = get_arch_from_id (arch_id);
+	  auto arch_info = get_arch_from_id (cpu_info->arch);
 
 	  /* We got some arch identifier that's not in aarch64-arches.def?  */
 	  if (!arch_info)
@@ -444,9 +450,6 @@ host_detect_local_cpu (int argc, const char **argv)
 	}
       else if (cpu || aarch64_cpu_data[i].name)
 	{
-	  auto cpu_info = (aarch64_cpu_data[i].name
-			   ? &aarch64_cpu_data[i]
-			   : get_cpu_from_id (DEFAULT_CPU));
 	  default_flags = cpu_info->flags;
 	  res = concat ("-m",
 			cpu ? "cpu" : "tune", "=",
@@ -476,7 +479,7 @@ host_detect_local_cpu (int argc, const char **argv)
 	 the feature flags from any of the cpus.  */
       if (cpu && aarch64_cpu_data[i].name == NULL)
 	{
-	  auto cpu_info = get_cpu_from_id (DEFAULT_CPU);
+	  auto cpu_info = get_cpu_from_ext (extension_flags);
 
 	  gcc_assert (cpu_info);
 
@@ -490,6 +493,12 @@ host_detect_local_cpu (int argc, const char **argv)
 
   if (tune)
     return res;
+
+  /* An inferred architecture does not establish support for features that
+     cpuinfo cannot report.  Only retain the Armv8-A baseline in that case;
+     the extension string below disables other unverified defaults.  */
+  if (aarch64_cpu_data[i].name == NULL)
+    unchecked_extension_flags &= feature_deps::V8A ().enable;
 
   /* Add any features that should be present, but can't be verified using
      the /proc/cpuinfo "Features" list.  */
