@@ -118,11 +118,11 @@ have real and imaginary parts of type @code{short int}; this is not
 likely to be useful, but it shows that the set of complex types is
 complete.
 
-To write a constant with a complex data type, use the suffix @samp{i},
-@samp{I}, @samp{j} or @samp{J} (any one; they are equivalent).  For
+To write a constant with a complex data type, use any of the suffixes
+@samp{i}, @samp{I}, @samp{j}, or @samp{J} (which are equivalent).  For
 example, @code{2.5fi} has type @code{_Complex float} and @code{3i} has type
-@code{_Complex int}.  Such a constant always has a pure imaginary
-value, but you can form any complex value you like by adding one to a
+@code{_Complex int}.  Such a constant always has a purely imaginary
+value, and you can form any complex value you like by adding it to a
 real constant.  This is part of ISO C2Y and for older C revisions
 a GNU extension.  If you have an ISO C99 conforming C library
 (such as the GNU C Library), and want to construct complex
@@ -134,7 +134,7 @@ For C++ if @code{-fext-numeric-literals} option is enabled, it is also
 a GNU extension, otherwise it is handled like any other C++ user-defined
 literal.  The ISO C++14 library also defines the @samp{i} suffix, so C++14
 code that includes the @samp{<complex>} header cannot use @samp{i} for the
-GNU extension.  The @samp{I}, @samp{j} or @samp{J} suffixes still have
+GNU extension.  The @samp{I}, @samp{j}, and @samp{J} suffixes still have
 the GNU meaning.
 
 GCC handles both implicit and explicit casts between the
