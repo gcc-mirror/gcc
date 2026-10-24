@@ -1491,7 +1491,7 @@ ia64_rse_skip_regs (unw_word *addr, int num_regs)
 }
 
 
-/* Copy register backing store from SRC to DST, LEN words
+/* Copy register backing store from SRC to DST, LEN bytes
    (which include both saved registers and nat collections).
    DST_RNAT is a partial nat collection for DST.  SRC and DST
    don't have to be equal modulo 64 slots, so it cannot be
@@ -1505,7 +1505,6 @@ ia64_copy_rbs (struct _Unwind_Context *info, unw_word dst,
   unw_word src_rnat;
   unw_word shift1, shift2;
 
-  len <<= 3;
   dst_rnat &= (1ULL << ((dst >> 3) & 0x3f)) - 1;
   src_rnat = src >= info->regstk_top
 	     ? info->rnat : *(unw_word *) (src | 0x1f8);
