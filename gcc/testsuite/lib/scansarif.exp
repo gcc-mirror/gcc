@@ -182,17 +182,17 @@ proc run-sarif-pytest { args } {
     set prefix "\[^\r\n\]*"
     set timeout 300
     expect {
-      -re "FAILED($prefix)\[^\r\n\]+\r\n" {
+      -re "FAILED($prefix)\r\n" {
        set output [sarif-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
        fail $output
        exp_continue
       }
-      -re "ERROR($prefix)\[^\r\n\]+\r\n" {
+      -re "ERROR($prefix)\r\n" {
        set output [sarif-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
        fail $output
        exp_continue
       }
-      -re "PASSED($prefix)\[^\r\n\]+\r\n" {
+      -re "PASSED($prefix)\r\n" {
        set output [sarif-pytest-format-line $testcase $pytest_script $expect_out(1,string)]
        pass $output
        exp_continue
