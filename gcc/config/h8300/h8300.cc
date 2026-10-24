@@ -573,7 +573,7 @@ compute_saved_regs (void)
 
 /* Emit an insn to push register RN.  */
 
-static rtx
+static rtx_insn *
 push (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
@@ -583,14 +583,14 @@ push (int rn)
     x = gen_push_h8300hs_advanced (reg);
   else
     x = gen_push_h8300hs_normal (reg);
-  x = F (emit_insn (x), 0);
-  add_reg_note (x, REG_INC, stack_pointer_rtx);
-  return x;
+  rtx_insn *insn = F (emit_insn (x), 0);
+  add_reg_note (insn, REG_INC, stack_pointer_rtx);
+  return insn;
 }
 
 /* Emit an insn to pop register RN.  */
 
-static rtx
+static rtx_insn *
 pop (int rn)
 {
   rtx reg = gen_rtx_REG (word_mode, rn);
@@ -600,9 +600,9 @@ pop (int rn)
     x = gen_pop_h8300hs_advanced (reg);
   else
     x = gen_pop_h8300hs_normal (reg);
-  x = emit_insn (x);
-  add_reg_note (x, REG_INC, stack_pointer_rtx);
-  return x;
+  rtx_insn *insn = emit_insn (x);
+  add_reg_note (insn, REG_INC, stack_pointer_rtx);
+  return insn;
 }
 
 /* Emit an instruction to push or pop NREGS consecutive registers

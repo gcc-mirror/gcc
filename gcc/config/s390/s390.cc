@@ -11751,7 +11751,7 @@ s390_initial_elimination_offset (int from, int to)
 /* Emit insn to save fpr REGNUM at offset OFFSET relative
    to register BASE.  Return generated insn.  */
 
-static rtx
+static rtx_insn *
 save_fpr (rtx base, int offset, int regnum)
 {
   rtx addr;
@@ -11782,7 +11782,7 @@ save_fpr (rtx base, int offset, int regnum)
 /* Emit insn to restore fpr REGNUM from offset OFFSET relative
    to register BASE.  Return generated insn.  */
 
-static rtx
+static rtx_insn *
 restore_fpr (rtx base, int offset, int regnum)
 {
   rtx addr;
@@ -12138,7 +12138,7 @@ make_pass_s390_early_mach (gcc::context *ctxt)
    - push too big immediates to the literal pool and annotate the refs
    - emit frame related notes for stack pointer changes.  */
 
-static rtx
+static rtx_insn *
 s390_prologue_plus_offset (rtx target, rtx reg, rtx offset, bool frame_related_p)
 {
   rtx_insn *insn;

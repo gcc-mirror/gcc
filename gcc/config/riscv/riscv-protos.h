@@ -115,7 +115,7 @@ extern int riscv_address_insns (rtx, machine_mode, bool);
 extern int riscv_const_insns (rtx, bool);
 extern int riscv_split_const_insns (rtx);
 extern int riscv_load_store_insns (rtx, rtx_insn *);
-extern rtx riscv_emit_move (rtx, rtx);
+extern rtx_insn *riscv_emit_move (rtx, rtx);
 extern bool riscv_split_symbol (rtx, rtx, machine_mode, rtx *);
 extern bool riscv_split_symbol_type (enum riscv_symbol_type);
 extern rtx riscv_unspec_address (rtx, enum riscv_symbol_type);

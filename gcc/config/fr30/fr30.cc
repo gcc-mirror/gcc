@@ -878,7 +878,7 @@ fr30_const_double_is_zero (rtx operand)
    address of the second word into the second destination register
    before we can use it.  */
 
-rtx
+rtx_insn *
 fr30_move_double (rtx * operands)
 {
   rtx src  = operands[1];

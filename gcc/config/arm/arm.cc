@@ -173,7 +173,7 @@ static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
 static void arm_add_cfa_adjust_cfa_note (rtx, int, rtx, rtx);
-static rtx emit_multi_reg_push (unsigned long, unsigned long);
+static rtx_insn *emit_multi_reg_push (unsigned long, unsigned long);
 static void arm_emit_multi_reg_pop (unsigned long);
 static int vfp_emit_fstmd (int, int);
 static void arm_emit_vfp_multi_reg_pop (int, int, rtx);
@@ -21340,7 +21340,7 @@ arm_emit_strd_push (unsigned long saved_regs_mask)
    of DWARF2 frame unwind information.  DWARF_REGS_MASK is a subset of
    MASK for registers that should be annotated for DWARF2 frame unwind
    information.  */
-static rtx
+static rtx_insn *
 emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 {
   int num_regs = 0;
@@ -21492,16 +21492,16 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 	}
     }
 
-  par = emit_insn (par);
+  rtx_insn *insn = emit_insn (par);
 
   tmp = gen_rtx_SET (stack_pointer_rtx,
 		     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
-  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 
-  return par;
+  return insn;
 }
 
 /* Add a REG_CFA_ADJUST_CFA REG note to INSN.

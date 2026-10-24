@@ -3809,7 +3809,7 @@ aarch64_load_symref_appropriately (rtx dest, rtx imm,
    important because, unlike emit_move_insn, the move expanders know
    how to force Pmode objects into the constant pool even when the
    constant pool address is not itself legitimate.  */
-static rtx
+static rtx_insn *
 aarch64_emit_move (rtx dest, rtx src)
 {
   return (can_create_pseudo_p ()

@@ -2540,7 +2540,7 @@ cris_init_machine_status (void)
 /* Split a 2 word move (DI or presumably DF) into component parts.
    Originally a copy of gen_split_move_double in m32r.cc.  */
 
-rtx
+rtx_insn *
 cris_split_movdx (rtx *operands)
 {
   machine_mode mode = GET_MODE (operands[0]);
@@ -3376,7 +3376,7 @@ cris_emit_insn (rtx x)
 /* Worker function for generating movem to mem.  If FRAME_RELATED, notes
    are added that the dwarf2 machinery understands.  */
 
-rtx
+rtx_insn *
 cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
 		       bool frame_related)
 {

@@ -3748,12 +3748,12 @@ visium_epilogue_uses (int regno)
 
 /* Wrapper around emit_insn that sets RTX_FRAME_RELATED_P on the insn.  */
 
-static rtx
+static rtx_insn *
 emit_frame_insn (rtx x)
 {
-  x = emit_insn (x);
-  RTX_FRAME_RELATED_P (x) = 1;
-  return x;
+  rtx_insn *insn = emit_insn (x);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  return insn;
 }
 
 /* Allocate ALLOC bytes on the stack and save the registers LOW_REGNO to

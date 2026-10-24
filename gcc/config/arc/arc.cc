@@ -588,7 +588,7 @@ static rtx arc_delegitimize_address (rtx);
 static bool arc_can_follow_jump (const rtx_insn *follower,
 				 const rtx_insn *followee);
 
-static rtx frame_insn (rtx);
+static rtx_insn *frame_insn (rtx);
 static void arc_function_arg_advance (cumulative_args_t,
 				      const function_arg_info &);
 static rtx arc_legitimize_address_0 (rtx, rtx, machine_mode mode);
@@ -2491,17 +2491,17 @@ arc_address_cost (rtx addr, machine_mode, addr_space_t, bool speed)
 
 /* Emit instruction X with the frame related bit set.  */
 
-static rtx
+static rtx_insn *
 frame_insn (rtx x)
 {
-  x = emit_insn (x);
-  RTX_FRAME_RELATED_P (x) = 1;
-  return x;
+  rtx_insn *insn = emit_insn (x);
+  RTX_FRAME_RELATED_P (insn) = 1;
+  return insn;
 }
 
 /* Emit a frame insn to move SRC to DST.  */
 
-static rtx
+static rtx_insn *
 frame_move (rtx dst, rtx src)
 {
   rtx tmp = gen_rtx_SET (dst, src);
@@ -2512,10 +2512,10 @@ frame_move (rtx dst, rtx src)
 /* Like frame_move, but add a REG_INC note for REG if ADDR contains an
    auto increment address, or is zero.  */
 
-static rtx
+static rtx_insn *
 frame_move_inc (rtx dst, rtx src, rtx reg, rtx addr)
 {
-  rtx insn = frame_move (dst, src);
+  rtx_insn *insn = frame_move (dst, src);
 
   if (!addr
       || GET_CODE (addr) == PRE_DEC || GET_CODE (addr) == POST_INC
@@ -2526,18 +2526,18 @@ frame_move_inc (rtx dst, rtx src, rtx reg, rtx addr)
 
 /* Emit a frame insn which adjusts a frame address register REG by OFFSET.  */
 
-static rtx
+static rtx_insn *
 frame_add (rtx reg, HOST_WIDE_INT offset)
 {
   gcc_assert ((offset & 0x3) == 0);
   if (!offset)
-    return NULL_RTX;
+    return nullptr;
   return frame_move (reg, plus_constant (Pmode, reg, offset));
 }
 
 /* Emit a frame insn which adjusts stack pointer by OFFSET.  */
 
-static rtx
+static rtx_insn *
 frame_stack_add (HOST_WIDE_INT offset)
 {
   return frame_add (stack_pointer_rtx, offset);

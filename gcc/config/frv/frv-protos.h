@@ -54,11 +54,11 @@ extern const char *output_condmove_single
 					(rtx *, rtx);
 extern int frv_emit_cond_branch		(rtx *);
 extern int frv_emit_scc			(rtx *);
-extern rtx frv_split_scc		(rtx, rtx, rtx, rtx, HOST_WIDE_INT);
+extern rtx_insn *frv_split_scc (rtx, rtx, rtx, rtx, HOST_WIDE_INT);
 extern int frv_emit_cond_move		(rtx, rtx, rtx, rtx);
-extern rtx frv_split_cond_move		(rtx *);
-extern rtx frv_split_minmax		(rtx *);
-extern rtx frv_split_abs		(rtx *);
+extern rtx_insn *frv_split_cond_move (rtx *);
+extern rtx_insn *frv_split_minmax (rtx *);
+extern rtx_insn *frv_split_abs (rtx *);
 extern void frv_split_double_load	(rtx, rtx);
 extern void frv_split_double_store	(rtx, rtx);
 #ifdef BB_HEAD

@@ -586,7 +586,7 @@ private:
 
   // Create an insn rtx that performs a logical not (test != 0) on the src_reg
   // and stores the result in dst_reg.
-  rtx make_not_reg_insn (rtx dst_reg, rtx src_reg) const;
+  rtx_insn *make_not_reg_insn (rtx dst_reg, rtx src_reg) const;
 
   // Create an insn rtx that inverts the ccreg.
   rtx_insn *make_inv_ccreg_insn (void) const;
@@ -919,7 +919,7 @@ sh_treg_combine::can_remove_comparison (const bb_entry& e,
   return true;
 }
 
-rtx
+rtx_insn *
 sh_treg_combine::make_not_reg_insn (rtx dst_reg, rtx src_reg) const
 {
   // On SH we can do only SImode and DImode comparisons.

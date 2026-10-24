@@ -1061,7 +1061,7 @@ loongarch_for_each_saved_reg (HOST_WIDE_INT sp_offset,
    how to force Pmode objects into the constant pool even when the
    constant pool address is not itself legitimate.  */
 
-rtx
+rtx_insn *
 loongarch_emit_move (rtx dest, rtx src)
 {
   return (can_create_pseudo_p () ? emit_move_insn (dest, src)

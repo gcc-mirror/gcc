@@ -25,7 +25,7 @@ extern unsigned int fr30_compute_frame_size (int, int);
 extern int   fr30_check_multiple_regs (rtx *, int, int);
 extern void  fr30_print_operand (FILE *, rtx, int);
 extern void  fr30_print_operand_address (FILE *, rtx);
-extern rtx   fr30_move_double (rtx *);
+extern rtx_insn *fr30_move_double (rtx *);
 #ifdef HAVE_MACHINE_MODES
 extern int   fr30_const_double_is_zero (rtx);
 #endif /* HAVE_MACHINE_MODES */

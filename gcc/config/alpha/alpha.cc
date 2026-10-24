@@ -5120,7 +5120,7 @@ alpha_expand_builtin_vector_binop (rtx (*gen) (rtx, rtx, rtx),
 /* A subroutine of the atomic operation splitters.  Jump to LABEL if
    COND is true.  Mark the jump as unlikely to be taken.  */
 
-rtx
+rtx_insn *
 alpha_emit_unlikely_jump (rtx cond, rtx label)
 {
   rtx x = gen_rtx_IF_THEN_ELSE (VOIDmode, cond, label, pc_rtx);

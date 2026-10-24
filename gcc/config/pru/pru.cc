@@ -161,7 +161,7 @@ pru_compute_frame_layout (void)
      addendum	  - Second addendum operand (a constant).
      kind	  - Note kind.  REG_NOTE_MAX if no note must be added.
  */
-static rtx
+static rtx_insn *
 pru_add3_frame_adjust (rtx op0, rtx op1, int addendum,
 		       const enum reg_note kind)
 {
@@ -200,7 +200,7 @@ pru_add3_frame_adjust (rtx op0, rtx op1, int addendum,
 }
 
 /* Add a const_int to the stack pointer register.  */
-static rtx
+static rtx_insn *
 pru_add_to_sp (int addendum, const enum reg_note kind)
 {
   return pru_add3_frame_adjust (stack_pointer_rtx, stack_pointer_rtx,

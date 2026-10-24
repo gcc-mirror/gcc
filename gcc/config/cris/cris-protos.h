@@ -29,7 +29,7 @@ extern int cris_side_effect_mode_ok (enum rtx_code, rtx *, int, int,
                                      int, int, int);
 extern rtx cris_return_addr_rtx (int, rtx);
 extern rtx cris_eh_return_handler_rtx ();
-extern rtx cris_split_movdx (rtx *);
+extern rtx_insn *cris_split_movdx (rtx *);
 extern bool cris_base_p (const_rtx, bool);
 extern bool cris_base_or_autoincr_p (const_rtx, bool);
 extern bool cris_bdap_index_p (const_rtx, bool);
@@ -41,7 +41,7 @@ extern bool cris_movem_load_rest_p (rtx);
 extern void cris_asm_output_symbol_ref (FILE *, rtx);
 extern void cris_asm_output_case_end (FILE *, int, rtx_insn *);
 extern rtx cris_gen_movem_load (rtx, rtx);
-extern rtx cris_emit_movem_store (rtx, rtx, int, bool);
+extern rtx_insn *cris_emit_movem_store (rtx, rtx, int, bool);
 extern rtx_insn *cris_emit_insn (rtx x);
 extern void cris_order_for_addsi3 (rtx *, int);
 extern void cris_emit_trap_for_misalignment (rtx);

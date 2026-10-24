@@ -2360,13 +2360,13 @@ rs6000_savres_routine_sym (rs6000_stack_t *info, int sel)
    reset the stack pointer, but move the base of the frame into
    reg UPDT_REGNO for use by out-of-line register restore routines.  */
 
-static rtx
+static rtx_insn *
 rs6000_emit_stack_reset (rtx frame_reg_rtx, HOST_WIDE_INT frame_off,
 			 unsigned updt_regno)
 {
   /* If there is nothing to do, don't do anything.  */
   if (frame_off == 0 && REGNO (frame_reg_rtx) == updt_regno)
-    return NULL_RTX;
+    return nullptr;
 
   rtx updt_reg_rtx = gen_rtx_REG (Pmode, updt_regno);
 
@@ -2386,7 +2386,7 @@ rs6000_emit_stack_reset (rtx frame_reg_rtx, HOST_WIDE_INT frame_off,
   else
     return emit_move_insn (updt_reg_rtx, frame_reg_rtx);
 
-  return NULL_RTX;
+  return nullptr;
 }
 
 /* Return the register number used as a pointer by out-of-line

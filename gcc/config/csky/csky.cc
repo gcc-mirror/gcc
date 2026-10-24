@@ -5513,7 +5513,7 @@ expand_csky_stack_adjust (int offset)
    MASK for registers that should be annotated for DWARF2 frame unwind
    information.  */
 
-static rtx
+static rtx_insn *
 emit_csky_regs_push (unsigned long mask)
 {
   int num_regs = 0;
@@ -5609,17 +5609,17 @@ emit_csky_regs_push (unsigned long mask)
 	j++;
       }
 
-  par = emit_insn (par);
+  rtx_insn *insn = emit_insn (par);
 
   tmp = gen_rtx_SET (stack_pointer_rtx,
 		     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
-  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
-  RTX_FRAME_RELATED_P (par) = 1;
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+  RTX_FRAME_RELATED_P (insn) = 1;
 
-  return par;
+  return insn;
 }
 
 

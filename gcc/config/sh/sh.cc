@@ -188,7 +188,7 @@ static void sh_option_override (void);
 static void sh_override_options_after_change (void);
 static void output_stack_adjust (int, rtx, int, HARD_REG_SET *, bool);
 static rtx_insn* emit_frame_insn (rtx);
-static rtx push (int);
+static rtx_insn *push (int);
 static void pop (int);
 static void push_regs (HARD_REG_SET* mask, bool interrupt_handler);
 static int calc_live_regs (HARD_REG_SET *);
@@ -6845,7 +6845,7 @@ emit_frame_insn (rtx x)
 }
 
 /* Output RTL to push register RN onto the stack.  */
-static rtx
+static rtx_insn *
 push (int rn)
 {
   rtx x;
@@ -6857,7 +6857,7 @@ push (int rn)
 	   && ! TARGET_FPU_SINGLE && FP_OR_XD_REGISTER_P (rn))
     {
       if (FP_REGISTER_P (rn) && (rn - FIRST_FP_REG) & 1)
-	return NULL_RTX;
+	return nullptr;
       x = gen_push_4 (gen_rtx_REG (DFmode, rn));
     }
   else if (TARGET_SH2E && FP_REGISTER_P (rn))
@@ -6865,9 +6865,9 @@ push (int rn)
   else
     x = gen_push (gen_rtx_REG (SImode, rn));
 
-  x = emit_frame_insn (x);
-  add_reg_note (x, REG_INC, gen_rtx_REG (SImode, STACK_POINTER_REGNUM));
-  return x;
+  rtx_insn *insn = emit_frame_insn (x);
+  add_reg_note (insn, REG_INC, gen_rtx_REG (SImode, STACK_POINTER_REGNUM));
+  return insn;
 }
 
 /* Output RTL to pop register RN from the stack.  */
@@ -10736,7 +10736,7 @@ sh_register_move_cost (machine_mode mode,
   return 2 * ((GET_MODE_SIZE (mode) + 3) / 4U);
 }
 
-static rtx
+static rtx_insn *
 emit_load_ptr (rtx reg, rtx addr)
 {
   rtx mem = gen_const_mem (ptr_mode, addr);

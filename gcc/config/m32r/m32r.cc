@@ -1046,7 +1046,7 @@ gen_cond_store (enum rtx_code code, rtx op0, rtx op1, rtx op2)
 
 /* Split a 2 word move (DI or DF) into component parts.  */
 
-rtx
+rtx_insn *
 gen_split_move_double (rtx operands[])
 {
   machine_mode mode = GET_MODE (operands[0]);

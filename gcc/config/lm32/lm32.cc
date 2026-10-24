@@ -64,7 +64,7 @@ struct lm32_frame_info
 };
 
 /* Prototypes for static functions.  */
-static rtx emit_add (rtx dest, rtx src0, rtx src1);
+static rtx_insn *emit_add (rtx dest, rtx src0, rtx src1);
 static void expand_save_restore (struct lm32_frame_info *info, int op);
 static void stack_adjust (HOST_WIDE_INT amount);
 static bool lm32_in_small_data_p (const_tree);
@@ -163,7 +163,7 @@ lm32_return_in_memory (tree type)
 
 /* Generate an emit a word sized add instruction.  */
 
-static rtx
+static rtx_insn *
 emit_add (rtx dest, rtx src0, rtx src1)
 {
   rtx_insn *insn;

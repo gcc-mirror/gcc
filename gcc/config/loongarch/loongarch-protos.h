@@ -59,7 +59,7 @@ enum loongarch_symbol_type {
 #define NUM_SYMBOL_TYPES (SYMBOL_TLSLDM + 1)
 
 /* Routines implemented in loongarch.cc.  */
-extern rtx loongarch_emit_move (rtx, rtx);
+extern rtx_insn *loongarch_emit_move (rtx, rtx);
 extern HOST_WIDE_INT loongarch_initial_elimination_offset (int, int);
 extern void loongarch_expand_prologue (void);
 extern void loongarch_expand_epilogue (int);

@@ -54,7 +54,7 @@
 /* This file should be included last.  */
 #include "target-def.h"
 
-static rtx emit_addhi3_postreload (rtx, rtx, rtx);
+static rtx_insn *emit_addhi3_postreload (rtx, rtx, rtx);
 static void xstormy16_asm_out_constructor (rtx, int);
 static void xstormy16_asm_out_destructor (rtx, int);
 static void xstormy16_asm_output_mi_thunk (FILE *, tree, HOST_WIDE_INT,
@@ -1161,7 +1161,7 @@ xstormy16_initial_elimination_offset (int from, int to)
   return result;
 }
 
-static rtx
+static rtx_insn *
 emit_addhi3_postreload (rtx dest, rtx src0, rtx src1)
 {
   rtx set, clobber;

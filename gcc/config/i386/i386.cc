@@ -7866,7 +7866,7 @@ ix86_add_queued_cfa_restore_notes (rtx insn)
    zero if %r11 register is live and cannot be freely used and positive
    otherwise.  */
 
-static rtx
+static rtx_insn *
 pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 			   int style, bool set_cfa)
 {

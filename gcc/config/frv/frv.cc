@@ -4734,7 +4734,7 @@ frv_emit_scc (rtx operands[])
 /* Split a SCC instruction into component parts, returning a SEQUENCE to hold
    the separate insns.  */
 
-rtx
+rtx_insn *
 frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
 {
   rtx_insn *ret;
@@ -4845,7 +4845,7 @@ frv_emit_cond_move (rtx dest, rtx test_rtx, rtx src1, rtx src2)
 /* Split a conditional move into constituent parts, returning a SEQUENCE
    containing all of the insns.  */
 
-rtx
+rtx_insn *
 frv_split_cond_move (rtx operands[])
 {
   rtx dest	= operands[0];
@@ -4994,7 +4994,7 @@ frv_split_double_store (rtx dest, rtx source)
 /* Split a min/max operation returning a SEQUENCE containing all of the
    insns.  */
 
-rtx
+rtx_insn *
 frv_split_minmax (rtx operands[])
 {
   rtx dest	= operands[0];
@@ -5068,7 +5068,7 @@ frv_split_minmax (rtx operands[])
 /* Split an integer abs operation returning a SEQUENCE containing all of the
    insns.  */
 
-rtx
+rtx_insn *
 frv_split_abs (rtx operands[])
 {
   rtx dest	= operands[0];

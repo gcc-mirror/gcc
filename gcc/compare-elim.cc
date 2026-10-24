@@ -660,7 +660,7 @@ can_merge_compare_into_arith (rtx_insn *cmp_insn, rtx_insn *arith_insn)
    a recognizable pattern when emitted in parallel.  Return that parallel
    if so.  Otherwise return NULL.  */
 
-static rtx
+static rtx_insn *
 try_validate_parallel (rtx set_a, rtx set_b)
 {
   rtx par = gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set_a, set_b));
@@ -669,7 +669,7 @@ try_validate_parallel (rtx set_a, rtx set_b)
   if (insn_invalid_p (insn, false))
     {
       crtl->emit.x_cur_insn_uid--;
-      return NULL_RTX;
+      return nullptr;
     }
 
   SET_PREV_INSN (insn) = NULL_RTX;
