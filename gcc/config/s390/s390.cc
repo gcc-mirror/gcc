@@ -14918,7 +14918,6 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
 {
   rtx set = single_set (insn);
   rtx label_ref;
-  rtx_insn *uncond_jump;
   rtx_insn *cur_insn;
   rtx tmp;
   int distance;
@@ -14960,7 +14959,7 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
       return false;
 
   rtx_code_label *new_label = gen_label_rtx ();
-  uncond_jump = emit_jump_insn_after (
+  rtx_jump_insn *uncond_jump = emit_jump_insn_after (
 		  gen_rtx_SET (pc_rtx,
 			       gen_rtx_LABEL_REF (VOIDmode, code_label)),
 		  insn);

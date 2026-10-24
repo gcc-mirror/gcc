@@ -3735,10 +3735,10 @@ microblaze_expand_divide (rtx operands[])
   rtx div_table_rtx = gen_rtx_SYMBOL_REF (QImode,"_divsi3_table");
   rtx mem_rtx;
   rtx ret;
-  rtx_insn *jump, *cjump, *insn;
+  rtx_insn *insn;
 
   insn = emit_insn (gen_iorsi3 (regt1, operands[1], operands[2]));
-  cjump = emit_jump_insn_after (gen_cbranchsi4 (
+  rtx_jump_insn *cjump = emit_jump_insn_after (gen_cbranchsi4 (
 					gen_rtx_GTU (SImode, regt1, GEN_INT (15)),
 					regt1, GEN_INT (15), div_label), insn);
   LABEL_NUSES (div_label) = 1;
@@ -3752,7 +3752,7 @@ microblaze_expand_divide (rtx operands[])
 
   insn = emit_insn (gen_movqi (regqi, mem_rtx));
   insn = emit_insn (gen_movsi (operands[0], gen_rtx_SUBREG (SImode, regqi, 0)));
-  jump = emit_jump_insn_after (gen_jump (div_end_label), insn);
+  rtx_jump_insn *jump = emit_jump_insn_after (gen_jump (div_end_label), insn);
   JUMP_LABEL (jump) = div_end_label;
   LABEL_NUSES (div_end_label) = 1;
   emit_barrier ();

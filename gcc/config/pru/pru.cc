@@ -2914,8 +2914,8 @@ pru_reorg_loop (rtx_insn *insns)
 	/* Replace the others with branches to REPEAT_LABEL.  */
 	for (end = loop->end->next; end != 0; end = end->next)
 	  {
-	    rtx_insn *newjmp;
-	    newjmp = emit_jump_insn_before (gen_jump (repeat_label), end->insn);
+	    rtx_jump_insn *newjmp
+	      = emit_jump_insn_before (gen_jump (repeat_label), end->insn);
 	    JUMP_LABEL (newjmp) = repeat_label;
 	    delete_insn (end->insn);
 	    delete_insn (end->fallthrough);

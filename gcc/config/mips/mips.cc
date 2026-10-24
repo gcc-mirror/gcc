@@ -18124,11 +18124,11 @@ mips16_lay_out_constants (bool split_p)
 	  if (barrier == 0 && pool.insn_address + 4 > pool.highest_address)
 	    {
 	      rtx_code_label *label;
-	      rtx_insn *jump;
 
 	      label = gen_label_rtx ();
 
-	      jump = emit_jump_insn_before (gen_jump (label), insn);
+	      rtx_jump_insn *jump
+		= emit_jump_insn_before (gen_jump (label), insn);
 	      JUMP_LABEL (jump) = label;
 	      LABEL_NUSES (label) = 1;
 	      barrier = emit_barrier_after (jump);
