@@ -96,7 +96,7 @@ extern int insn_current_reference_address (rtx_insn *);
 
 /* Find the alignment associated with a CODE_LABEL.
    Defined in final.cc.  */
-extern align_flags label_to_alignment (rtx);
+extern align_flags label_to_alignment (rtx_insn *);
 
 /* Output a LABEL_REF, or a bare CODE_LABEL, as an assembler symbol.  */
 extern void output_asm_label (rtx);

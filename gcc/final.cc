@@ -491,7 +491,7 @@ static int min_labelno, max_labelno;
 /* For the benefit of port specific code do this also as a function.  */
 
 align_flags
-label_to_alignment (rtx label)
+label_to_alignment (rtx_insn *label)
 {
   if (CODE_LABEL_NUMBER (label) <= max_labelno)
     return LABEL_TO_ALIGNMENT (label);
