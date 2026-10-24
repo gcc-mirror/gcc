@@ -603,6 +603,11 @@
 	]
        (const_string "no")))
 
+;; This attribute marks the vector indexed load alternatives that let the
+;; destination overlap the index.
+(define_attr "index_load_overlap" "no,yes"
+  (const_string "no"))
+
 ;; Attribute to control enable or disable instructions.
 (define_attr "enabled" "no,yes"
   (cond [
@@ -613,6 +618,10 @@
     (const_string "no")
 
     (eq_attr "spec_restriction_disabled" "yes")
+    (const_string "no")
+
+    (and (eq_attr "index_load_overlap" "yes")
+	 (match_test "RISCV_ERRATUM_P (SIFIVE_MAL_9174)"))
     (const_string "no")
   ]
   (const_string "yes")))

@@ -2612,27 +2612,30 @@
 ;; - 7.6. Vector Indexed Instructions
 ;; -------------------------------------------------------------------------------
 
-;; DEST eew is same as SOURCE eew, DEST register can overlap SOURCE.
+;; DEST eew is same as SOURCE eew, DEST register can overlap SOURCE,
+;; except for the last four alternatives, which are for SiFive erratum
+;; MAL-9174 (also MAL-9191).
 (define_insn "@pred_indexed_<order>load<mode>_same_eew"
-  [(set (match_operand:VINDEXED 0 "register_operand"        "=vd, vr,vd, vr")
+  [(set (match_operand:VINDEXED 0 "register_operand"        "=vd, vr,vd, vr,?&vd,?&vr,?&vd,?&vr")
 	(if_then_else:VINDEXED
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand"    " vm,Wc1,vm,Wc1")
-	     (match_operand 5 "vector_length_operand"       "rvl,rvl,rvl,rvl")
-	     (match_operand 6 "const_int_operand"           "  i,  i, i,  i")
-	     (match_operand 7 "const_int_operand"           "  i,  i, i,  i")
-	     (match_operand 8 "const_int_operand"           "  i,  i, i,  i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"    " vm,Wc1,vm,Wc1, vm,Wc1, vm,Wc1")
+	     (match_operand 5 "vector_length_operand"       "rvl,rvl,rvl,rvl,rvl,rvl,rvl,rvl")
+	     (match_operand 6 "const_int_operand"           "  i,  i, i,  i,  i,  i,  i,  i")
+	     (match_operand 7 "const_int_operand"           "  i,  i, i,  i,  i,  i,  i,  i")
+	     (match_operand 8 "const_int_operand"           "  i,  i, i,  i,  i,  i,  i,  i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VINDEXED
-	    [(match_operand 3 "pmode_reg_or_0_operand"      " rJ, rJ,rJ, rJ")
+	    [(match_operand 3 "pmode_reg_or_0_operand"      " rJ, rJ,rJ, rJ, rJ, rJ, rJ, rJ")
 	     (mem:BLK (scratch))
-	     (match_operand:<VINDEX> 4 "register_operand"   " vr, vr,vr, vr")] ORDER)
-	  (match_operand:VINDEXED 2 "vector_merge_operand"  " vu, vu, 0,  0")))]
+	     (match_operand:<VINDEX> 4 "register_operand"   " vr, vr,vr, vr, vr, vr, vr, vr")] ORDER)
+	  (match_operand:VINDEXED 2 "vector_merge_operand"  " vu, vu, 0,  0, vu, vu,  0,  0")))]
   "TARGET_VECTOR"
   "vl<order>xei<sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "index_load_overlap" "yes,yes,yes,yes,no,no,no,no")])
 
 ;; DEST eew is greater than SOURCE eew.
 (define_insn "@pred_indexed_<order>load<mode>_x2_greater_eew"
@@ -2718,7 +2721,8 @@
   "TARGET_VECTOR"
   "vl<order>xei<double_ext_sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "index_load_overlap" "yes,yes,yes,yes,no,no")])
 
 (define_insn "@pred_indexed_<order>load<mode>_x4_smaller_eew"
   [(set (match_operand:VEEWTRUNC4 0 "register_operand"             "=vd, vd, vr, vr,  &vr,  &vr")
@@ -2739,7 +2743,8 @@
   "TARGET_VECTOR"
   "vl<order>xei<quad_ext_sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "index_load_overlap" "yes,yes,yes,yes,no,no")])
 
 (define_insn "@pred_indexed_<order>load<mode>_x8_smaller_eew"
   [(set (match_operand:VEEWTRUNC8 0 "register_operand"            "=vd, vd, vr, vr,  &vr,  &vr")
@@ -2760,7 +2765,8 @@
   "TARGET_VECTOR"
   "vl<order>xei<oct_ext_sew>.v\t%0,(%z3),%4%p1"
   [(set_attr "type" "vld<order>x")
-   (set_attr "mode" "<MODE>")])
+   (set_attr "mode" "<MODE>")
+   (set_attr "index_load_overlap" "yes,yes,yes,yes,no,no")])
 
 (define_insn "@pred_indexed_<order>store<mode>_same_eew"
   [(set (mem:BLK (scratch))

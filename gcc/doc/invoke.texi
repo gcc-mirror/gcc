@@ -1342,6 +1342,7 @@ See RS/6000 and PowerPC Options.
 -msave-restore  -mno-shorten-memrefs
 -mstrict-align  -mscalar-strict-align  -mno-vector-strict-align
 -mzilsd-word-align  -mzilsd-strict-align
+-mfix-sifive-mal-9174  -mfix-sifive-mal-9191
 -mcmodel=medlow  -mcmodel=medany  -mcmodel=large
 -mexplicit-relocs  -mrelax  -mriscv-attribute
 -malign-data=@var{type}
@@ -31694,6 +31695,30 @@ The precedence among @option{-mzilsd-word-align},
 @option{-mzilsd-strict-align}, @option{-mstrict-align},
 @option{-mno-strict-align}, @option{-mscalar-strict-align}, and
 @option{-mno-scalar-strict-align} is determined by the last one specified.
+
+@opindex mfix-sifive-mal-9174
+@opindex mno-fix-sifive-mal-9174
+@opindex mfix-sifive-mal-9191
+@opindex mno-fix-sifive-mal-9191
+@item -mfix-sifive-mal-9174
+@itemx -mno-fix-sifive-mal-9174
+@itemx -mfix-sifive-mal-9191
+@itemx -mno-fix-sifive-mal-9191
+Enable or disable the workaround for SiFive erratum MAL-9174, also known
+as MAL-9191, which keeps the destination of a vector indexed load from
+overlapping its index.  On the affected cores, a trap in the middle of
+such a load can clobber the index, so the load reads from the wrong
+address when it is restarted.
+
+By default, the workarounds for the errata of the processor selected by
+@option{-mcpu} are enabled, along with the ones given by the
+@option{--with-errata} configure option.  @option{-mtune} has no effect
+on them.  The errata of each processor are:
+
+@table @samp
+@item sifive-p870-d
+@samp{sifive-mal-9174} (also @samp{sifive-mal-9191})
+@end table
 
 @opindex mmax-vectorization
 @opindex mno-max-vectorization

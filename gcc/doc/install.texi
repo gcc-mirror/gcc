@@ -1934,6 +1934,12 @@ comma-separated @var{list} by default, as if the matching
 @option{-mfix-@var{erratum}} options were given.  @var{list} can also be
 @samp{all} for every erratum GCC knows about, or @samp{none}, which is the
 default.  The @option{-mno-fix-@var{erratum}} options still disable them.
+The errata GCC knows about are:
+@table @code
+@item sifive-mal-9174
+@itemx sifive-mal-9191
+See @option{-mfix-sifive-mal-9174}.
+@end table
 
 @item --enable-__cxa_atexit
 Define if you want to use @code{__cxa_atexit}, rather than @code{atexit},

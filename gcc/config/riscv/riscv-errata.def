@@ -42,5 +42,8 @@
 #define RISCV_ERRATUM_ALIAS(ALIAS, ID)
 #endif
 
+RISCV_ERRATUM(SIFIVE_MAL_9174, "sifive-mal-9174", riscv_fix_sifive_mal_9174)
+RISCV_ERRATUM_ALIAS("sifive-mal-9191", SIFIVE_MAL_9174)
+
 #undef RISCV_ERRATUM
 #undef RISCV_ERRATUM_ALIAS

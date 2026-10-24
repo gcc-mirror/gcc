@@ -144,6 +144,14 @@ mvector-strict-align
 Target Save Var(rvv_vector_strict_align) Init(1)
 Do not create element-misaligned vector memory accesses.
 
+mfix-sifive-mal-9174
+Target Save Var(riscv_fix_sifive_mal_9174) Init(-1)
+Work around SiFive erratum MAL-9174.
+
+mfix-sifive-mal-9191
+Target Alias(mfix-sifive-mal-9174)
+Work around SiFive erratum MAL-9191.
+
 Enum
 Name(code_model) Type(enum riscv_code_model)
 Known code models (for use with the -mcmodel= option):

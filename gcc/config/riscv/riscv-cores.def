@@ -204,6 +204,7 @@ RISCV_CORE("sifive-p870-d",   "rv64imafdcbv_zic64b_zicbom_zicbop_zicboz_"
 			      /* MVENDORID */ 0x489,
 			      /* MARCHID */ 0x8000000000000109ULL,
 			      /* MIMPID */ 0x14250606ULL)
+RISCV_CORE_ERRATUM("sifive-p870-d", SIFIVE_MAL_9174)
 
 RISCV_CORE("thead-c906",      "rv64imafdc_xtheadba_xtheadbb_xtheadbs_xtheadcmo_"
 			      "xtheadcondmov_xtheadfmemidx_xtheadmac_"
