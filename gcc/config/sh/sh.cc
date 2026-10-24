@@ -6891,19 +6891,19 @@ pop (int rn)
   else
     x = gen_pop (gen_rtx_REG (SImode, rn));
 
-  x = emit_insn (x);
+  rtx_insn *insn = emit_insn (x);
 
   sp_reg = gen_rtx_REG (SImode, STACK_POINTER_REGNUM);
-  reg = copy_rtx (GET_CODE (PATTERN (x)) == PARALLEL
-		  ? SET_DEST (XVECEXP (PATTERN (x), 0, 0))
-		  : SET_DEST (PATTERN (x)));
-  add_reg_note (x, REG_CFA_RESTORE, reg);
-  add_reg_note (x, REG_CFA_ADJUST_CFA,
+  reg = copy_rtx (GET_CODE (PATTERN (insn)) == PARALLEL
+		  ? SET_DEST (XVECEXP (PATTERN (insn), 0, 0))
+		  : SET_DEST (PATTERN (insn)));
+  add_reg_note (insn, REG_CFA_RESTORE, reg);
+  add_reg_note (insn, REG_CFA_ADJUST_CFA,
 		gen_rtx_SET (sp_reg,
 			     plus_constant (SImode, sp_reg,
 					    GET_MODE_SIZE (GET_MODE (reg)))));
-  add_reg_note (x, REG_INC, gen_rtx_REG (SImode, STACK_POINTER_REGNUM));
-  RTX_FRAME_RELATED_P (x) = 1;
+  add_reg_note (insn, REG_INC, gen_rtx_REG (SImode, STACK_POINTER_REGNUM));
+  RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 /* Generate code to push the regs specified in the mask.  */
@@ -6974,16 +6974,16 @@ push_regs (HARD_REG_SET *mask, bool interrupt_handler)
 	     insns.  */
 	  emit_insn (gen_blockage ());
 	  x = gen_movml_push_banked (sp_reg);
-	  x = emit_frame_insn (x);
+	  rtx_insn *insn = emit_frame_insn (x);
 	  for (int i = FIRST_BANKED_REG; i <= LAST_BANKED_REG; i++)
 	    {
 	      mem = gen_rtx_MEM (SImode, plus_constant (Pmode, sp_reg, i * 4));
 	      reg = gen_rtx_REG (SImode, i);
-	      add_reg_note (x, REG_CFA_OFFSET, gen_rtx_SET (mem, reg));
+	      add_reg_note (insn, REG_CFA_OFFSET, gen_rtx_SET (mem, reg));
 	    }
 
 	  set = gen_rtx_SET (sp_reg, plus_constant (Pmode, sp_reg, - 32));
-	  add_reg_note (x, REG_CFA_ADJUST_CFA, set);
+	  add_reg_note (insn, REG_CFA_ADJUST_CFA, set);
 	  emit_insn (gen_blockage ());
 	}
       else

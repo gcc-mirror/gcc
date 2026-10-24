@@ -19015,9 +19015,9 @@ vfp_emit_fstmd (int base_reg, int count)
       XVECEXP (dwarf, 0, i + 1) = tmp;
     }
 
-  par = emit_insn (par);
-  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
-  RTX_FRAME_RELATED_P (par) = 1;
+  rtx_insn *insn = emit_insn (par);
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+  RTX_FRAME_RELATED_P (insn) = 1;
 
   return count * 8;
 }
@@ -21259,11 +21259,11 @@ arm_emit_strd_push (unsigned long saved_regs_mask)
 
             tmp = gen_rtx_SET (mem, gen_rtx_REG (DImode, j));
             RTX_FRAME_RELATED_P (tmp) = 1;
-            tmp = emit_insn (tmp);
+	    rtx_insn *tmp1 = emit_insn (tmp);
 
             /* Record the first store insn.  */
             if (dwarf_index == 1)
-              insn = tmp;
+	      insn = tmp1;
 
             /* Generate dwarf info.  */
             mem = gen_frame_mem (SImode,
@@ -21306,11 +21306,11 @@ arm_emit_strd_push (unsigned long saved_regs_mask)
 
             tmp = gen_rtx_SET (mem, gen_rtx_REG (SImode, j));
             RTX_FRAME_RELATED_P (tmp) = 1;
-            tmp = emit_insn (tmp);
+	    rtx_insn *tmp1 = emit_insn (tmp);
 
             /* Record the first store insn.  */
             if (dwarf_index == 1)
-              insn = tmp;
+	      insn = tmp1;
 
             /* Generate dwarf info.  */
             mem = gen_frame_mem (SImode,
@@ -21617,14 +21617,14 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
       elt++;
     }
 
-  par = return_in_pc ? emit_jump_insn (par) : emit_insn (par);
-  REG_NOTES (par) = dwarf;
+  rtx_insn *insn = return_in_pc ? emit_jump_insn (par) : emit_insn (par);
+  REG_NOTES (insn) = dwarf;
 
   if (!return_in_pc && emit_update)
-    arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD * num_regs,
+    arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD * num_regs,
 				 stack_pointer_rtx, stack_pointer_rtx);
   else if (!return_in_pc)
-    RTX_FRAME_RELATED_P (par) = 1;
+    RTX_FRAME_RELATED_P (insn) = 1;
 }
 
 /* Generate and emit an insn pattern that we will recognize as a pop_multi
@@ -21690,17 +21690,17 @@ arm_emit_vfp_multi_reg_pop (int first_reg, int num_regs, rtx base_reg)
       j++;
     }
 
-  par = emit_insn (par);
-  REG_NOTES (par) = dwarf;
+  rtx_insn *insn = emit_insn (par);
+  REG_NOTES (insn) = dwarf;
 
   /* Make sure cfa doesn't leave with IP_REGNUM to allow unwinding from FP.  */
   if (REGNO (base_reg) == IP_REGNUM)
     {
-      RTX_FRAME_RELATED_P (par) = 1;
-      add_reg_note (par, REG_CFA_DEF_CFA, hard_frame_pointer_rtx);
+      RTX_FRAME_RELATED_P (insn) = 1;
+      add_reg_note (insn, REG_CFA_DEF_CFA, hard_frame_pointer_rtx);
     }
   else
-    arm_add_cfa_adjust_cfa_note (par, 2 * UNITS_PER_WORD * num_regs,
+    arm_add_cfa_adjust_cfa_note (insn, 2 * UNITS_PER_WORD * num_regs,
 				 base_reg, base_reg);
 }
 
@@ -21773,9 +21773,9 @@ thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
             /* When saved-register index (i) is odd, RTXs for both the registers
                to be loaded are generated in above given LDRD pattern, and the
                pattern can be emitted now.  */
-            par = emit_insn (par);
-            REG_NOTES (par) = dwarf;
-	    RTX_FRAME_RELATED_P (par) = 1;
+	    rtx_insn *insn = emit_insn (par);
+	    REG_NOTES (insn) = dwarf;
+	    RTX_FRAME_RELATED_P (insn) = 1;
           }
 
         i++;
@@ -21791,10 +21791,10 @@ thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
   tmp = gen_rtx_SET (stack_pointer_rtx,
                      plus_constant (Pmode, stack_pointer_rtx, 4 * i));
   RTX_FRAME_RELATED_P (tmp) = 1;
-  tmp = emit_insn (tmp);
+  rtx_insn *insn = emit_insn (tmp);
   if (!return_in_pc)
     {
-      arm_add_cfa_adjust_cfa_note (tmp, UNITS_PER_WORD * i,
+      arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD * i,
 				   stack_pointer_rtx, stack_pointer_rtx);
     }
 
@@ -21829,9 +21829,9 @@ thumb2_emit_ldrd_pop (unsigned long saved_regs_mask)
         }
       else
         {
-          par = emit_insn (tmp);
-	  REG_NOTES (par) = dwarf;
-	  arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD,
+	  rtx_insn *insn = emit_insn (tmp);
+	  REG_NOTES (insn) = dwarf;
+	  arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
 				       stack_pointer_rtx, stack_pointer_rtx);
         }
 
@@ -21888,8 +21888,8 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
               mem = gen_frame_mem (DImode, stack_pointer_rtx);
 
             tmp = gen_rtx_SET (gen_rtx_REG (DImode, j), mem);
-            tmp = emit_insn (tmp);
-	    RTX_FRAME_RELATED_P (tmp) = 1;
+	    rtx_insn *insn = emit_insn (tmp);
+	    RTX_FRAME_RELATED_P (insn) = 1;
 
             /* Generate dwarf info.  */
 
@@ -21900,7 +21900,7 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
                                     gen_rtx_REG (SImode, j + 1),
                                     dwarf);
 
-            REG_NOTES (tmp) = dwarf;
+	    REG_NOTES (insn) = dwarf;
 
             offset += 8;
             j += 2;
@@ -21917,11 +21917,11 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
               mem = gen_frame_mem (SImode, stack_pointer_rtx);
 
             tmp = gen_rtx_SET (gen_rtx_REG (SImode, j), mem);
-            tmp = emit_insn (tmp);
-	    RTX_FRAME_RELATED_P (tmp) = 1;
+	    rtx_insn *insn = emit_insn (tmp);
+	    RTX_FRAME_RELATED_P (insn) = 1;
 
             /* Generate dwarf info.  */
-            REG_NOTES (tmp) = alloc_reg_note (REG_CFA_RESTORE,
+	    REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
                                               gen_rtx_REG (SImode, j),
                                               NULL_RTX);
 
@@ -21941,8 +21941,8 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
                          plus_constant (Pmode,
                                         stack_pointer_rtx,
                                         offset));
-      tmp = emit_insn (tmp);
-      arm_add_cfa_adjust_cfa_note (tmp, offset,
+      rtx_insn *insn = emit_insn (tmp);
+      arm_add_cfa_adjust_cfa_note (insn, offset,
 				   stack_pointer_rtx, stack_pointer_rtx);
       offset = 0;
     }
@@ -21958,14 +21958,14 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
                                                           stack_pointer_rtx)));
       RTX_FRAME_RELATED_P (tmp) = 1;
       XVECEXP (par, 0, 1) = tmp;
-      par = emit_jump_insn (par);
+      rtx_insn *insn = emit_jump_insn (par);
 
       /* Generate dwarf info.  */
       dwarf = alloc_reg_note (REG_CFA_RESTORE,
                               gen_rtx_REG (SImode, PC_REGNUM),
                               NULL_RTX);
-      REG_NOTES (par) = dwarf;
-      arm_add_cfa_adjust_cfa_note (par, UNITS_PER_WORD,
+      REG_NOTES (insn) = dwarf;
+      arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
 				   stack_pointer_rtx, stack_pointer_rtx);
     }
 }
@@ -27133,12 +27133,13 @@ arm_expand_epilogue (bool really_return)
                   }
                 else
                   {
-                    insn = emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
-                                                 addr));
-                    REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
+		    rtx_insn *move
+		      = emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
+					      addr));
+		    REG_NOTES (move) = alloc_reg_note (REG_CFA_RESTORE,
                                                        gen_rtx_REG (SImode, i),
                                                        NULL_RTX);
-		    arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
+		    arm_add_cfa_adjust_cfa_note (move, UNITS_PER_WORD,
 						 stack_pointer_rtx,
 						 stack_pointer_rtx);
                   }

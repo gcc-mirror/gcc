@@ -3365,7 +3365,7 @@ arc_restore_callee_leave (uint64_t gmask,
   int start_reg = ENTER_LEAVE_START_REG;
   int end_reg = ENTER_LEAVE_END_REG;
   int regno, indx, off, nregs;
-  rtx insn, reg, mem;
+  rtx body, reg, mem;
   int frame_allocated = 0;
 
   for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
@@ -3376,12 +3376,12 @@ arc_restore_callee_leave (uint64_t gmask,
   nregs += restore_blink ? 1 : 0;
   nregs += restore_fp ? 1 : 0;
 
-  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1
+  body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (nregs + 1
 						  + (return_p ? 1 : 0)));
   indx = 0;
 
   if (return_p)
-    XVECEXP (insn, 0, indx++) = ret_rtx;
+    XVECEXP (body, 0, indx++) = ret_rtx;
 
   if (restore_fp)
     {
@@ -3405,7 +3405,7 @@ arc_restore_callee_leave (uint64_t gmask,
 				    stack_pointer_rtx,
 				    offset + nregs * UNITS_PER_WORD));
   RTX_FRAME_RELATED_P (reg) = 1;
-  XVECEXP (insn, 0, indx++) = reg;
+  XVECEXP (body, 0, indx++) = reg;
   off = nregs * UNITS_PER_WORD;
 
   if (restore_blink)
@@ -3414,8 +3414,8 @@ arc_restore_callee_leave (uint64_t gmask,
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
 						 off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (reg, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
     }
 
@@ -3427,8 +3427,8 @@ arc_restore_callee_leave (uint64_t gmask,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (reg, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx)) = 1;
       gmask = gmask & ~(1ULL << regno);
     }
 
@@ -3437,19 +3437,20 @@ arc_restore_callee_leave (uint64_t gmask,
       mem = gen_frame_mem (Pmode, plus_constant (Pmode,
 						 stack_pointer_rtx,
 						 off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (hard_frame_pointer_rtx, mem);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx++)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (hard_frame_pointer_rtx, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx++)) = 1;
       off -= UNITS_PER_WORD;
     }
 
   gcc_assert (off == 0);
+  rtx_insn *insn;
   if (return_p)
     {
-      insn = emit_jump_insn (insn);
+      insn = emit_jump_insn (body);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
-    insn = frame_insn (insn);
+    insn = frame_insn (body);
 
   add_reg_note (insn, REG_INC, stack_pointer_rtx);
 
@@ -3615,7 +3616,7 @@ arc_restore_callee_milli (uint64_t gmask,
   int start_reg = 13;
   int end_reg = 25;
   int regno, indx, off, nregs;
-  rtx insn, reg, mem;
+  rtx body, reg, mem;
   int frame_allocated = 0;
 
   for (regno = start_reg; regno <= end_reg && (gmask & (1ULL << regno));)
@@ -3646,7 +3647,7 @@ arc_restore_callee_milli (uint64_t gmask,
     }
 
   /* Start generate millicode call.  */
-  insn = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc ((return_p ? 1 : 0)
+  body = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc ((return_p ? 1 : 0)
 						  + nregs + 1));
   indx = 0;
 
@@ -3655,17 +3656,17 @@ arc_restore_callee_milli (uint64_t gmask,
       /* sibling call, the blink is restored with the help of the
 	 value held into r12.  */
       reg = gen_rtx_REG (Pmode, 12);
-      XVECEXP (insn, 0, indx++) = ret_rtx;
-      XVECEXP (insn, 0, indx++) =
-	gen_rtx_SET (stack_pointer_rtx,
-		     gen_rtx_PLUS (Pmode, stack_pointer_rtx, reg));
+      XVECEXP (body, 0, indx++) = ret_rtx;
+      XVECEXP (body, 0, indx++)
+	= gen_rtx_SET (stack_pointer_rtx,
+		       gen_rtx_PLUS (Pmode, stack_pointer_rtx, reg));
       frame_allocated += UNITS_PER_WORD;
     }
   else
     {
       /* This is a call, we clobber blink.  */
-      XVECEXP (insn, 0, nregs) =
-	gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
+      XVECEXP (body, 0, nregs)
+	= gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM));
     }
 
   for (regno = start_reg, off = 0;
@@ -3676,8 +3677,8 @@ arc_restore_callee_milli (uint64_t gmask,
       mem = gen_frame_mem (SImode, plus_constant (Pmode,
 						  stack_pointer_rtx,
 						  off));
-      XVECEXP (insn, 0, indx) = gen_rtx_SET (reg, mem);
-      RTX_FRAME_RELATED_P (XVECEXP (insn, 0, indx)) = 1;
+      XVECEXP (body, 0, indx) = gen_rtx_SET (reg, mem);
+      RTX_FRAME_RELATED_P (XVECEXP (body, 0, indx)) = 1;
       gmask = gmask & ~(1ULL << regno);
     }
 
@@ -3697,16 +3698,17 @@ arc_restore_callee_milli (uint64_t gmask,
     }
 
   /* Emit millicode call.  */
+  rtx_insn *insn;
   if (return_p)
     {
       reg = gen_rtx_REG (Pmode, 12);
       frame_insn (gen_rtx_SET (reg, GEN_INT (off)));
       frame_allocated += off;
-      insn = emit_jump_insn (insn);
+      insn = emit_jump_insn (body);
       RTX_FRAME_RELATED_P (insn) = 1;
     }
   else
-    insn = frame_insn (insn);
+    insn = frame_insn (body);
 
   /* Add DWARF info.  */
   for (regno = start_reg; regno <= end_reg; regno++)
@@ -8584,7 +8586,7 @@ arc_reorg (void)
 	      else
 		{
 		  /* Check if this is a data dependency.  */
-		  rtx op, cc_clob_rtx, op0, op1, brcc_insn, note;
+		  rtx op, cc_clob_rtx, op0, op1, brcc_body, note;
 		  rtx cmp0, cmp1;
 
 		  /* Make sure we can use it for brcc insns.  */
@@ -8664,14 +8666,15 @@ arc_reorg (void)
 		  else
 		    cc_clob_rtx = gen_rtx_REG (CCmode, CC_REG);
 
-		  brcc_insn
+		  brcc_body
 		    = gen_rtx_IF_THEN_ELSE (VOIDmode, op, label, pc_rtx);
-		  brcc_insn = gen_rtx_SET (pc_rtx, brcc_insn);
+		  brcc_body = gen_rtx_SET (pc_rtx, brcc_body);
 		  cc_clob_rtx = gen_rtx_CLOBBER (VOIDmode, cc_clob_rtx);
-		  brcc_insn
+		  brcc_body
 		    = gen_rtx_PARALLEL
-			(VOIDmode, gen_rtvec (2, brcc_insn, cc_clob_rtx));
-		  brcc_insn = emit_jump_insn_before (brcc_insn, insn);
+			(VOIDmode, gen_rtvec (2, brcc_body, cc_clob_rtx));
+		  rtx_jump_insn *brcc_insn
+		    = emit_jump_insn_before (brcc_body, insn);
 
 		  JUMP_LABEL (brcc_insn) = JUMP_LABEL (insn);
 		  note = find_reg_note (insn, REG_BR_PROB, 0);

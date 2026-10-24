@@ -733,7 +733,7 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
   rtx mem;
   rtx push_rtx;
   rtx adjust_sp_rtx;
-  rtx parallel_insn;
+  rtx parallel_body;
   rtx dwarf;
 
   /* We need to provide a customized rtx which contains
@@ -771,7 +771,7 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
 
   /* In addition to used registers,
      we need one more space for (set sp sp-x) rtx.  */
-  parallel_insn = gen_rtx_PARALLEL (VOIDmode,
+  parallel_body = gen_rtx_PARALLEL (VOIDmode,
 				    rtvec_alloc (num_use_regs + 1));
   par_index = 0;
 
@@ -791,7 +791,7 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       push_rtx = gen_rtx_SET (mem, reg);
-      XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+      XVECEXP (parallel_body, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -805,7 +805,7 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       push_rtx = gen_rtx_SET (mem, reg);
-      XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+      XVECEXP (parallel_body, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -817,7 +817,7 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       push_rtx = gen_rtx_SET (mem, reg);
-      XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+      XVECEXP (parallel_body, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -829,7 +829,7 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       push_rtx = gen_rtx_SET (mem, reg);
-      XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+      XVECEXP (parallel_body, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -842,10 +842,10 @@ nds32_emit_stack_push_multiple (unsigned Rb, unsigned Re,
   adjust_sp_rtx
     = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode, stack_pointer_rtx, offset));
-  XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
+  XVECEXP (parallel_body, 0, par_index) = adjust_sp_rtx;
   RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
-  parallel_insn = emit_insn (parallel_insn);
+  rtx_insn *parallel_insn = emit_insn (parallel_body);
 
   /* The insn rtx 'parallel_insn' will change frame layout.
      We need to use RTX_FRAME_RELATED_P so that GCC is able to
@@ -881,7 +881,7 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
   rtx mem;
   rtx pop_rtx;
   rtx adjust_sp_rtx;
-  rtx parallel_insn;
+  rtx parallel_body;
   rtx dwarf = NULL_RTX;
 
   /* We need to provide a customized rtx which contains
@@ -919,7 +919,7 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
 
   /* In addition to used registers,
      we need one more space for (set sp sp+x) rtx.  */
-  parallel_insn = gen_rtx_PARALLEL (VOIDmode,
+  parallel_body = gen_rtx_PARALLEL (VOIDmode,
 				    rtvec_alloc (num_use_regs + 1));
   par_index = 0;
 
@@ -939,7 +939,7 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       pop_rtx = gen_rtx_SET (reg, mem);
-      XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+      XVECEXP (parallel_body, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -955,7 +955,7 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       pop_rtx = gen_rtx_SET (reg, mem);
-      XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+      XVECEXP (parallel_body, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -969,7 +969,7 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       pop_rtx = gen_rtx_SET (reg, mem);
-      XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+      XVECEXP (parallel_body, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -983,7 +983,7 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
 						  stack_pointer_rtx,
 						  offset));
       pop_rtx = gen_rtx_SET (reg, mem);
-      XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+      XVECEXP (parallel_body, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -997,12 +997,12 @@ nds32_emit_stack_pop_multiple (unsigned Rb, unsigned Re,
   adjust_sp_rtx
     = gen_rtx_SET (stack_pointer_rtx,
 		   plus_constant (Pmode, stack_pointer_rtx, offset));
-  XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
+  XVECEXP (parallel_body, 0, par_index) = adjust_sp_rtx;
 
   /* Tell gcc we adjust SP in this insn.  */
   dwarf = alloc_reg_note (REG_CFA_ADJUST_CFA, copy_rtx (adjust_sp_rtx), dwarf);
 
-  parallel_insn = emit_insn (parallel_insn);
+  rtx_insn *parallel_insn = emit_insn (parallel_body);
 
   /* The insn rtx 'parallel_insn' will change frame layout.
      We need to use RTX_FRAME_RELATED_P so that GCC is able to
@@ -1032,7 +1032,7 @@ nds32_emit_stack_v3push (unsigned Rb,
   rtx mem;
   rtx push_rtx;
   rtx adjust_sp_rtx;
-  rtx parallel_insn;
+  rtx parallel_body;
 
   /* We need to provide a customized rtx which contains
      necessary information for data analysis,
@@ -1062,7 +1062,7 @@ nds32_emit_stack_v3push (unsigned Rb,
 
   /* In addition to used registers,
      we need one more space for (set sp sp-x-imm8u) rtx.  */
-  parallel_insn = gen_rtx_PARALLEL (VOIDmode,
+  parallel_body = gen_rtx_PARALLEL (VOIDmode,
 				    rtvec_alloc (num_use_regs + 1));
   par_index = 0;
 
@@ -1079,7 +1079,7 @@ nds32_emit_stack_v3push (unsigned Rb,
 						  stack_pointer_rtx,
 						  offset));
       push_rtx = gen_rtx_SET (mem, reg);
-      XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+      XVECEXP (parallel_body, 0, par_index) = push_rtx;
       RTX_FRAME_RELATED_P (push_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -1091,7 +1091,7 @@ nds32_emit_stack_v3push (unsigned Rb,
 					      stack_pointer_rtx,
 					      offset));
   push_rtx = gen_rtx_SET (mem, reg);
-  XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+  XVECEXP (parallel_body, 0, par_index) = push_rtx;
   RTX_FRAME_RELATED_P (push_rtx) = 1;
   offset = offset + 4;
   par_index++;
@@ -1101,7 +1101,7 @@ nds32_emit_stack_v3push (unsigned Rb,
 					      stack_pointer_rtx,
 					      offset));
   push_rtx = gen_rtx_SET (mem, reg);
-  XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+  XVECEXP (parallel_body, 0, par_index) = push_rtx;
   RTX_FRAME_RELATED_P (push_rtx) = 1;
   offset = offset + 4;
   par_index++;
@@ -1111,7 +1111,7 @@ nds32_emit_stack_v3push (unsigned Rb,
 					      stack_pointer_rtx,
 					      offset));
   push_rtx = gen_rtx_SET (mem, reg);
-  XVECEXP (parallel_insn, 0, par_index) = push_rtx;
+  XVECEXP (parallel_body, 0, par_index) = push_rtx;
   RTX_FRAME_RELATED_P (push_rtx) = 1;
   offset = offset + 4;
   par_index++;
@@ -1125,10 +1125,10 @@ nds32_emit_stack_v3push (unsigned Rb,
 		   plus_constant (Pmode,
 				  stack_pointer_rtx,
 				  offset - imm8u));
-  XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
+  XVECEXP (parallel_body, 0, par_index) = adjust_sp_rtx;
   RTX_FRAME_RELATED_P (adjust_sp_rtx) = 1;
 
-  parallel_insn = emit_insn (parallel_insn);
+  rtx_insn *parallel_insn = emit_insn (parallel_body);
 
   /* The insn rtx 'parallel_insn' will change frame layout.
      We need to use RTX_FRAME_RELATED_P so that GCC is able to
@@ -1155,7 +1155,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
   rtx mem;
   rtx pop_rtx;
   rtx adjust_sp_rtx;
-  rtx parallel_insn;
+  rtx parallel_body;
   rtx dwarf = NULL_RTX;
 
   /* We need to provide a customized rtx which contains
@@ -1186,7 +1186,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 
   /* In addition to used registers,
      we need one more space for (set sp sp+x+imm8u) rtx.  */
-  parallel_insn = gen_rtx_PARALLEL (VOIDmode,
+  parallel_body = gen_rtx_PARALLEL (VOIDmode,
 				    rtvec_alloc (num_use_regs + 1));
   par_index = 0;
 
@@ -1203,7 +1203,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 						  stack_pointer_rtx,
 						  offset));
       pop_rtx = gen_rtx_SET (reg, mem);
-      XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+      XVECEXP (parallel_body, 0, par_index) = pop_rtx;
       RTX_FRAME_RELATED_P (pop_rtx) = 1;
       offset = offset + 4;
       par_index++;
@@ -1217,7 +1217,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 					      stack_pointer_rtx,
 					      offset));
   pop_rtx = gen_rtx_SET (reg, mem);
-  XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+  XVECEXP (parallel_body, 0, par_index) = pop_rtx;
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
   par_index++;
@@ -1229,7 +1229,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 					      stack_pointer_rtx,
 					      offset));
   pop_rtx = gen_rtx_SET (reg, mem);
-  XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+  XVECEXP (parallel_body, 0, par_index) = pop_rtx;
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
   par_index++;
@@ -1241,7 +1241,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 					      stack_pointer_rtx,
 					      offset));
   pop_rtx = gen_rtx_SET (reg, mem);
-  XVECEXP (parallel_insn, 0, par_index) = pop_rtx;
+  XVECEXP (parallel_body, 0, par_index) = pop_rtx;
   RTX_FRAME_RELATED_P (pop_rtx) = 1;
   offset = offset + 4;
   par_index++;
@@ -1255,7 +1255,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 		   plus_constant (Pmode,
 				  stack_pointer_rtx,
 				  offset + imm8u));
-  XVECEXP (parallel_insn, 0, par_index) = adjust_sp_rtx;
+  XVECEXP (parallel_body, 0, par_index) = adjust_sp_rtx;
 
   if (frame_pointer_needed)
     {
@@ -1273,7 +1273,7 @@ nds32_emit_stack_v3pop (unsigned Rb,
 			      copy_rtx (adjust_sp_rtx), dwarf);
     }
 
-  parallel_insn = emit_insn (parallel_insn);
+  rtx_insn *parallel_insn = emit_insn (parallel_body);
 
   /* The insn rtx 'parallel_insn' will change frame layout.
      We need to use RTX_FRAME_RELATED_P so that GCC is able to
@@ -1324,7 +1324,7 @@ static void
 nds32_emit_adjust_frame (rtx to_reg, rtx from_reg, int adjust_value)
 {
   rtx tmp_reg;
-  rtx frame_adjust_insn;
+  rtx_insn *frame_adjust_insn;
   rtx adjust_value_rtx = GEN_INT (adjust_value);
 
   if (adjust_value == 0)
@@ -1344,11 +1344,11 @@ nds32_emit_adjust_frame (rtx to_reg, rtx from_reg, int adjust_value)
       emit_move_insn (tmp_reg, adjust_value_rtx);
 
       /* Create new 'add' rtx.  */
-      frame_adjust_insn = gen_addsi3 (to_reg,
-				      from_reg,
-				      tmp_reg);
+      rtx adj_pat = gen_addsi3 (to_reg,
+				from_reg,
+				tmp_reg);
       /* Emit rtx into insn list and receive its transformed insn rtx.  */
-      frame_adjust_insn = emit_insn (frame_adjust_insn);
+      frame_adjust_insn = emit_insn (adj_pat);
 
       /* Because (tmp_reg <- full_value) may be split into two
 	 rtl patterns, we cannot set its RTX_FRAME_RELATED_P.
@@ -1367,11 +1367,11 @@ nds32_emit_adjust_frame (rtx to_reg, rtx from_reg, int adjust_value)
   else
     {
       /* Generate sp adjustment instruction if and only if sp_adjust != 0.  */
-      frame_adjust_insn = gen_addsi3 (to_reg,
-				      from_reg,
-				      adjust_value_rtx);
+      rtx adj_pat = gen_addsi3 (to_reg,
+				from_reg,
+				adjust_value_rtx);
       /* Emit rtx into instructions list and receive INSN rtx form.  */
-      frame_adjust_insn = emit_insn (frame_adjust_insn);
+      frame_adjust_insn = emit_insn (adj_pat);
     }
 
     /* The insn rtx 'sp_adjust_insn' will change frame layout.

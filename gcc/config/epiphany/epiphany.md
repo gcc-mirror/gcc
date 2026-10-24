@@ -2623,7 +2623,7 @@
   gcc_assert (!reg_overlap_mentioned_p (operands[5], operands[4]));
   operands[9] = XVECEXP (operands[3], 0, XVECLEN (operands[3], 0) - 2);
   operands[10] = XVECEXP (operands[3], 0, XVECLEN (operands[3], 0) - 1);
-  rtx insn
+  rtx body
     = (gen_rtx_PARALLEL
 	(VOIDmode,
 	 gen_rtvec
@@ -2632,10 +2632,10 @@
 			gen_rtx_MULT (SImode, operands[6], operands[4])),
 	   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CC_FPmode, CCFP_REGNUM)),
 	   operands[9], operands[10])));
-  insn = emit_insn (insn);
+  rtx_insn *insn = emit_insn (body);
   add_reg_note (insn, REG_EQUAL,
 		gen_rtx_ASHIFT (SImode, operands[6], operands[2]));
-  insn
+  body
     = (gen_rtx_PARALLEL
 	(VOIDmode,
 	 gen_rtvec
@@ -2644,7 +2644,7 @@
 			gen_rtx_MULT (SImode, operands[8], operands[4])),
 	   gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (CC_FPmode, CCFP_REGNUM)),
 	   operands[9], operands[10])));
-  insn = emit_insn (insn);
+  insn = emit_insn (body);
   add_reg_note (insn, REG_EQUAL,
 		gen_rtx_ASHIFT (SImode, operands[7], operands[2]));
   DONE;

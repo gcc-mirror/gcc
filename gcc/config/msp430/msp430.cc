@@ -3321,8 +3321,8 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
 
   c = gen_call_value_internal (gen_rtx_REG (arg0mode, 12), fsym, GEN_INT (0));
 
-  c = emit_call_insn (c);
-  RTL_CONST_CALL_P (c) = 1;
+  rtx_insn *call = emit_call_insn (c);
+  RTL_CONST_CALL_P (call) = 1;
 
   /* Add register usage information for the arguments to the call.  */
   fusage = NULL;
@@ -3336,7 +3336,7 @@ msp430_expand_helper (rtx *operands, const char *helper_name,
       else
 	use_regs (&fusage, arg2, arg1sz);
     }
-  add_function_usage_to (c, fusage);
+  add_function_usage_to (call, fusage);
 
   emit_move_insn (operands[0],
 		  /* Return value will always start in R12.  */
