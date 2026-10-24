@@ -599,18 +599,25 @@ gfc_target_interpret_expr (unsigned char *buffer, size_t buffer_size,
   switch (result->ts.type)
     {
     case BT_INTEGER:
+      /* 'result->value.integer' is already mpz_initialized by the caller.  */
+      mpz_clear (result->value.integer);
       result->representation.length =
         gfc_interpret_integer (result->ts.kind, buffer, buffer_size,
 			       result->value.integer);
       break;
 
     case BT_REAL:
+      /* 'result->value.real' is already mpfr_initialized by the caller.  */
+      mpfr_clear (result->value.real);
       result->representation.length =
         gfc_interpret_float (result->ts.kind, buffer, buffer_size,
     			     result->value.real);
       break;
 
     case BT_COMPLEX:
+      /* 'result->value.complex' is already initialized by the caller.  */
+      mpfr_clear (mpc_realref (result->value.complex));
+      mpfr_clear (mpc_imagref (result->value.complex));
       result->representation.length =
         gfc_interpret_complex (result->ts.kind, buffer, buffer_size,
 			       result->value.complex);

@@ -9098,7 +9098,6 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
   size_t source_size;
   size_t result_size;
   size_t buffer_size;
-  mpz_t tmp;
   unsigned char *buffer;
   size_t result_length;
 
@@ -9115,12 +9114,33 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
     return NULL;
 
   /* Calculate the size of the source.  */
-  if (source->expr_type == EXPR_ARRAY && !gfc_array_size (source, &tmp))
-    gfc_internal_error ("Failure getting length of a constant array.");
+  if (source->expr_type == EXPR_ARRAY)
+    {
+      mpz_t tmp;
 
-  /* Create an empty new expression with the appropriate characteristics.  */
-  result = gfc_get_constant_expr (mold->ts.type, mold->ts.kind,
-				  &source->where);
+      if (!gfc_array_size (source, &tmp))
+	gfc_internal_error ("Failure getting length of a constant array.");
+      mpz_clear (tmp);
+    }
+
+  /* Set the number of elements in the result, and determine its size.  */
+
+  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
+    {
+      result = gfc_get_array_expr (mold->ts.type, mold->ts.kind,
+				   &source->where);
+      result->rank = 1;
+      result->shape = gfc_get_shape (1);
+      mpz_init_set_ui (result->shape[0], result_length);
+    }
+  else
+    {
+      /* Create an empty expression with the appropriate characteristics.  */
+      result = gfc_get_constant_expr (mold->ts.type, mold->ts.kind,
+				      &source->where);
+      result->rank = 0;
+    }
+
   result->ts = mold->ts;
 
   mold_element = (mold->expr_type == EXPR_ARRAY && mold->value.constructor)
@@ -9143,18 +9163,6 @@ gfc_simplify_transfer (gfc_expr *source, gfc_expr *mold, gfc_expr *size)
 	  gfc_get_int_expr (gfc_charlen_int_kind, NULL,
 			    mold_element->value.character.length);
     }
-
-  /* Set the number of elements in the result, and determine its size.  */
-
-  if (mold->expr_type == EXPR_ARRAY || mold->rank || size)
-    {
-      result->expr_type = EXPR_ARRAY;
-      result->rank = 1;
-      result->shape = gfc_get_shape (1);
-      mpz_init_set_ui (result->shape[0], result_length);
-    }
-  else
-    result->rank = 0;
 
   /* Allocate the buffer to store the binary version of the source.  */
   buffer_size = MAX (source_size, result_size);
