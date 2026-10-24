@@ -29,6 +29,7 @@
 	(ashift:DI (match_dup 3) (match_operand 5 "const_int_operand")))]
   "TARGET_64BIT
    && INTVAL (operands[5]) < INTVAL (operands[2])
+   && REG_P (operands[3]) && REG_P (operands[4])
    && (REGNO (operands[3]) == REGNO (operands[4])
        || peep2_reg_dead_p (3, operands[3]))"
   [(set (match_dup 0)
