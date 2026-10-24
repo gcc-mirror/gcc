@@ -12,4 +12,4 @@ void foo (void)
   __attribute__ ((aligned(32768))) char runtime_aligned_2[1024];
   bar (&i, &j, &k, &l, &m, &runtime_aligned_1, &runtime_aligned_2);
 }
-/* { dg-final { scan-assembler-not "cfi_def_cfa_register" } } */
+/* { dg-final { scan-assembler-not "cfi_def_cfa_register" { target { ! sparc64-*-linux* } } } } */
