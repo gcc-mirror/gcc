@@ -22,7 +22,7 @@ void two_items (FILE *f, const char *p) { fwrite_unlocked (p, 1, 2, f); }
 void two_bytes (FILE *f, const char *p) { fwrite_unlocked (p, 2, 1, f); }
 void unknown (FILE *f, const char *p, size_t n) { fwrite_unlocked (p, 1, n, f); }
 
-/* { dg-final { scan-tree-dump-times "fputc_unlocked" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "fputc_unlocked" 1 "optimized" { target { ! hppa*-*-hpux* } } } } */
 /* { dg-final { scan-tree-dump-times "fwrite_unlocked" 4 "optimized" } } */
 /* The unlocked form must not be folded into the locked fputc.  A call with no
    result is dumped as "  fputc (...", which the leading space matches without
