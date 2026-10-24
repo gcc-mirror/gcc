@@ -109,7 +109,7 @@ _fatal_insn (const char *msgid, const_rtx insn, const char *file, int line,
 }
 
 void
-_fatal_insn_not_found (const_rtx insn, const char *file, int line,
+_fatal_insn_not_found (const rtx_insn *insn, const char *file, int line,
 		       const char *function)
 {
   if (INSN_CODE (insn) < 0)
