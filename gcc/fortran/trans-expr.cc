@@ -3325,10 +3325,6 @@ gfc_conv_variable (gfc_se * se, gfc_expr * expr)
       free (msg);
     }
 
-  /* Some expressions leak through that haven't been fixed up.  */
-  if (IS_INFERRED_TYPE (expr) && expr->ref)
-    gfc_fixup_inferred_type_refs (expr);
-
   gfc_typespec *ts = &sym->ts;
   while (ref)
     {

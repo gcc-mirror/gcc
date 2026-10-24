@@ -5682,6 +5682,15 @@ find_array_spec (gfc_expr *e)
 	      gfc_internal_error ("find_array_spec(): unused as(1)");
 	    as = c->as;
 	  }
+	else if (c->ts.type == BT_CLASS && CLASS_DATA (c)
+		 && CLASS_DATA (c)->attr.dimension
+		 && ref->next && ref->next->type == REF_ARRAY)
+	  {
+	    /* CLASS array component with an implicit '_data' reference.  */
+	    if (as != NULL)
+	      gfc_internal_error ("find_array_spec(): unused as(1)");
+	    as = CLASS_DATA (c)->as;
+	  }
 
 	break;
 
@@ -8048,6 +8057,52 @@ resolve_compcall (gfc_expr* e, const char **name)
 static bool resolve_fl_derived (gfc_symbol *sym);
 
 
+/* Fix up the references of the EXPR_COMPCALL or EXPR_PPC E, whose base
+   object is an inferred type associate name, as for the equivalent
+   variable.  Look up the type-bound procedure again in the corrected
+   type.  */
+
+static void
+fixup_inferred_compcall_refs (gfc_expr *e)
+{
+  gfc_symbol *sym, *dt;
+  gfc_symtree *tbp;
+  gfc_expr *var;
+  bool t;
+
+  sym = e->symtree->n.sym;
+  if (!sym->assoc || !sym->assoc->inferred_type
+      || (sym->ts.type != BT_DERIVED && sym->ts.type != BT_CLASS))
+    return;
+
+  if (e->ref)
+    {
+      var = gfc_get_expr ();
+      var->expr_type = EXPR_VARIABLE;
+      var->symtree = e->symtree;
+      var->ref = e->ref;
+      var->ts = sym->ts;
+      var->where = e->where;
+      gfc_fixup_inferred_type_refs (var);
+      e->ref = var->ref;
+      var->ref = NULL;
+      gfc_free_expr (var);
+    }
+
+  if (e->expr_type != EXPR_COMPCALL || !e->value.compcall.name)
+    return;
+
+  dt = get_declared_from_expr (NULL, NULL, e, true);
+  if (dt->attr.is_class && dt->components)
+    dt = dt->components->ts.u.derived;
+
+  tbp = gfc_find_typebound_proc (dt, &t, e->value.compcall.name, false,
+				 &e->where);
+  if (tbp && t)
+    e->value.compcall.tbp = tbp->n.tb;
+}
+
+
 /* Resolve a typebound function, or 'method'. First separate all
    the non-CLASS references by calling resolve_compcall directly.  */
 
@@ -8115,6 +8170,8 @@ resolve_typebound_function (gfc_expr* e)
 
   if (st == NULL)
     return resolve_compcall (e, NULL);
+
+  fixup_inferred_compcall_refs (e);
 
   if (!gfc_resolve_ref (e))
     return false;
@@ -8265,6 +8322,8 @@ resolve_typebound_subroutine (gfc_code *code)
   if (st == NULL)
     return resolve_typebound_call (code, NULL, NULL);
 
+  fixup_inferred_compcall_refs (code->expr1);
+
   if (!gfc_resolve_ref (code->expr1))
     return false;
 
@@ -8319,6 +8378,8 @@ resolve_ppc_call (gfc_code* c)
 {
   gfc_component *comp;
 
+  fixup_inferred_compcall_refs (c->expr1);
+
   comp = gfc_get_proc_ptr_comp (c->expr1);
   gcc_assert (comp != NULL);
 
@@ -8356,6 +8417,8 @@ static bool
 resolve_expr_ppc (gfc_expr* e)
 {
   gfc_component *comp;
+
+  fixup_inferred_compcall_refs (e);
 
   comp = gfc_get_proc_ptr_comp (e);
   gcc_assert (comp != NULL);
