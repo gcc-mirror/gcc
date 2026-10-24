@@ -2605,14 +2605,23 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   @0))
 
  /* Fold ((x + y) >> 1 into IFN_AVG_FLOOR (x, y) if x and y are vectors in
-    which each element is known to have at least one leading zero bit.  */
+    which x + y cannot wrap: each element is known to have at least one
+    leading zero bit, or two if the type is signed and its overflow is
+    defined, since the sum of two nonnegative values can then wrap to a
+    negative one.  */
 (simplify
  (rshift (plus:cs @0 @1) integer_onep)
  (if (VECTOR_TYPE_P (type)
-      && direct_internal_fn_supported_p (IFN_AVG_FLOOR, type, OPTIMIZE_FOR_BOTH)
-      && wi::clz (get_nonzero_bits (@0)) > 0
-      && wi::clz (get_nonzero_bits (@1)) > 0)
-  (IFN_AVG_FLOOR @0 @1)))
+      && direct_internal_fn_supported_p (IFN_AVG_FLOOR, type,
+					 OPTIMIZE_FOR_BOTH))
+  (with
+   {
+     int min_clz = (TYPE_UNSIGNED (type) || TYPE_OVERFLOW_UNDEFINED (type)
+		    ? 1 : 2);
+   }
+   (if (wi::clz (get_nonzero_bits (@0)) >= min_clz
+	&& wi::clz (get_nonzero_bits (@1)) >= min_clz)
+    (IFN_AVG_FLOOR @0 @1)))))
 #endif
 
 /* Try to fold (type) X op CST -> (type) (X op ((type-x) CST))
