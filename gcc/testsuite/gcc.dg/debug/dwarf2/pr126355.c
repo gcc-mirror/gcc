@@ -32,4 +32,4 @@ main (int argc, char **argv)
    pr_icf_wrapper_b, the wrapper.  */
 /* { dg-final { scan-ipa-dump "Semantic equality hit:pr_icf_wrapper_a/\[0-9+\]+->pr_icf_wrapper_b/\[0-9+\]+" "icf" } } */
 /* { dg-final { scan-ipa-dump "Wrapper has been created" "icf" } } */
-/* { dg-final { scan-assembler "\\(DIE \\(0x\[0-9a-f\]+\\) DW_TAG_subprogram\\)\[\r\n\]+(\[^\r\n\]*\[\r\n\]+){1,12}\[^\r\n\]*DW_AT_name: \"pr_icf_wrapper_b\"\[\r\n\]+(\[^\r\n\]*\[\r\n\]+){1,12}\[^\r\n\]*DW_AT_low_pc" } } */
+/* { dg-final { scan-assembler "\\(DIE \\(0x\[0-9a-f\]+\\) DW_TAG_subprogram\\)\[\r\n\]+(\[^\r\n\]*\[\r\n\]+){1,12}\[^\r\n\]*(DW_AT_name: \"pr_icf_wrapper_b\"|\"pr_icf_wrapper_b\\\\0\"\[^\r\n\]*DW_AT_name)\[\r\n\]+(\[^\r\n\]*\[\r\n\]+){1,12}\[^\r\n\]*DW_AT_low_pc" } } */
