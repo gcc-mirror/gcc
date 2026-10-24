@@ -9830,7 +9830,7 @@ s390_end_pool (struct constant_pool *pool, rtx_insn *insn)
 /* Add INSN to the list of insns covered by POOL.  */
 
 static void
-s390_add_pool_insn (struct constant_pool *pool, rtx insn)
+s390_add_pool_insn (struct constant_pool *pool, rtx_insn *insn)
 {
   bitmap_set_bit (pool->insns, INSN_UID (insn));
 }

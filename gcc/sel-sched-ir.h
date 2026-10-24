@@ -1593,7 +1593,7 @@ extern void sel_register_cfg_hooks (void);
 extern void sel_unregister_cfg_hooks (void);
 
 /* Expression transformation routines.  */
-extern rtx_insn *create_insn_rtx_from_pattern (rtx, rtx);
+extern rtx_insn *create_insn_rtx_from_pattern (rtx, rtx_insn *);
 extern vinsn_t create_vinsn_from_insn_rtx (rtx_insn *, bool);
 extern rtx_insn *create_copy_of_insn_rtx (rtx_insn *);
 extern void change_vinsn_in_expr (expr_t, vinsn_t);

@@ -7847,7 +7847,7 @@ ix86_add_cfa_restore_note (rtx_insn *insn, rtx reg, HOST_WIDE_INT cfa_offset)
 /* Add queued REG_CFA_RESTORE notes if any to INSN.  */
 
 static void
-ix86_add_queued_cfa_restore_notes (rtx insn)
+ix86_add_queued_cfa_restore_notes (rtx_insn *insn)
 {
   rtx last;
   if (!queued_cfa_restores)

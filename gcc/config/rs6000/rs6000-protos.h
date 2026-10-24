@@ -154,7 +154,7 @@ extern void rs6000_emit_parity (rtx, rtx);
 extern rtx rs6000_machopic_legitimize_pic_address (rtx, machine_mode,
 						   rtx);
 extern rtx rs6000_allocate_stack_temp (machine_mode, bool, bool);
-extern align_flags rs6000_loop_align (rtx);
+extern align_flags rs6000_loop_align (rtx_insn *);
 extern void rs6000_split_logical (rtx [], enum rtx_code, bool, bool, bool);
 extern bool rs6000_function_pcrel_p (struct function *);
 extern bool rs6000_pcrel_p (void);

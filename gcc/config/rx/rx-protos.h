@@ -57,7 +57,7 @@ extern char *		rx_gen_move_template (rtx *, bool);
 extern bool		rx_is_legitimate_constant (machine_mode, rtx);
 extern bool		rx_is_restricted_memory_address (rtx,
 							 machine_mode);
-extern bool		rx_match_ccmode (rtx, machine_mode);
+extern bool		rx_match_ccmode (rtx_insn *, machine_mode);
 extern rtx		rx_maybe_pidify_operand (rtx, int);
 extern void		rx_notice_update_cc (rtx, rtx);
 extern void		rx_split_cbranch (machine_mode, enum rtx_code,

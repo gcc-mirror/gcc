@@ -926,7 +926,7 @@ reload (rtx_insn *first, int global)
 	if (reg_renumber[i] < 0 && reg_equiv_memory_loc (i))
 	  {
 	    rtx x = eliminate_regs (reg_equiv_memory_loc (i), VOIDmode,
-				    NULL_RTX);
+				    nullptr);
 
 	    if (strict_memory_address_addr_space_p
 		  (GET_MODE (regno_reg_rtx[i]), XEXP (x, 0),
@@ -2941,7 +2941,7 @@ eliminate_regs_1 (rtx x, machine_mode mem_mode, rtx insn,
 }
 
 rtx
-eliminate_regs (rtx x, machine_mode mem_mode, rtx insn)
+eliminate_regs (rtx x, machine_mode mem_mode, rtx_insn *insn)
 {
   if (reg_eliminate == NULL)
     {
@@ -4495,7 +4495,7 @@ reload_as_needed (int live_known)
 	    XEXP (XEXP (PATTERN (insn), 0), 0)
 	      = eliminate_regs (XEXP (XEXP (PATTERN (insn), 0), 0),
 				GET_MODE (XEXP (PATTERN (insn), 0)),
-				NULL_RTX);
+				nullptr);
 
 	  /* If we need to do register elimination processing, do so.
 	     This might delete the insn, in which case we are done.  */
@@ -8728,7 +8728,7 @@ delete_output_reload (rtx_insn *insn, int j, int last_reload_reg,
   if (substed)
     n_occurrences += count_occurrences (PATTERN (insn),
 					eliminate_regs (substed, VOIDmode,
-							NULL_RTX), 0);
+							nullptr), 0);
   for (rtx i1 = reg_equiv_alt_mem_list (REGNO (reg)); i1; i1 = XEXP (i1, 1))
     {
       gcc_assert (!rtx_equal_p (XEXP (i1, 0), substed));

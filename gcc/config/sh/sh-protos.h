@@ -45,7 +45,7 @@ extern const char *output_branch (int, rtx_insn *, rtx *);
 extern const char *output_ieee_ccmpeq (rtx_insn *, rtx *);
 extern const char *output_branchy_insn (enum rtx_code, const char *,
 					rtx_insn *, rtx *);
-extern const char *output_movedouble (rtx, rtx[], machine_mode);
+extern const char *output_movedouble (rtx_insn *, rtx[], machine_mode);
 extern const char *output_movepcrel (rtx, rtx[], machine_mode);
 extern const char *output_far_jump (rtx_insn *, rtx);
 
@@ -78,11 +78,11 @@ extern void gen_shifty_hi_op (int, rtx *);
 extern bool expand_ashiftrt (rtx *);
 extern bool sh_dynamicalize_shift_p (rtx);
 extern int shl_and_kind (rtx, rtx, int *);
-extern int shl_and_length (rtx);
-extern int shl_and_scr_length (rtx);
+extern int shl_and_length (rtx_insn *);
+extern int shl_and_scr_length (rtx_insn *);
 extern bool gen_shl_and (rtx, rtx, rtx, rtx);
 extern int shl_sext_kind (rtx, rtx, int *);
-extern int shl_sext_length (rtx);
+extern int shl_sext_length (rtx_insn *);
 extern bool gen_shl_sext (rtx, rtx, rtx, rtx);
 extern int regs_used (rtx, int);
 extern void fixup_addr_diff_vecs (rtx_insn *);
@@ -354,8 +354,8 @@ extern void sh_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree,
 				     signed int, machine_mode);
 extern rtx sh_dwarf_register_span (rtx);
 
-extern bool sh_contains_memref_p (rtx);
-extern bool sh_loads_bankedreg_p (rtx);
+extern bool sh_contains_memref_p (rtx_insn *);
+extern bool sh_loads_bankedreg_p (rtx_insn *);
 extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);

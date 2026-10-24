@@ -48,10 +48,10 @@ extern const char *frv_asm_output_opcode
 extern void frv_final_prescan_insn	(rtx_insn *, rtx *, int);
 extern void frv_emit_move		(machine_mode, rtx, rtx);
 extern int frv_emit_movsi		(rtx, rtx);
-extern const char *output_move_single	(rtx *, rtx);
-extern const char *output_move_double	(rtx *, rtx);
+extern const char *output_move_single	(rtx *, rtx_insn *);
+extern const char *output_move_double	(rtx *, rtx_insn *);
 extern const char *output_condmove_single
-					(rtx *, rtx);
+					(rtx *, rtx_insn *);
 extern int frv_emit_cond_branch		(rtx *);
 extern int frv_emit_scc			(rtx *);
 extern rtx_insn *frv_split_scc (rtx, rtx, rtx, rtx, HOST_WIDE_INT);
@@ -82,7 +82,7 @@ extern machine_mode frv_select_cc_mode (enum rtx_code, rtx, rtx);
 extern int frv_trampoline_size		(void);
 extern int direct_return_p		(void);
 extern int frv_issue_rate		(void);
-extern int frv_acc_group		(rtx);
+extern int frv_acc_group (rtx_insn *);
 
 #ifdef TREE_CODE
 extern int frv_adjust_field_align	(tree, int);

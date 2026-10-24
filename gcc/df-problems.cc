@@ -4118,7 +4118,7 @@ find_memory_stores (rtx x, const_rtx pat ATTRIBUTE_UNUSED,
    lifetimes, up to insn POINT.  The result is stored in LIVE.  */
 
 void
-simulate_backwards_to_point (basic_block bb, regset live, rtx point)
+simulate_backwards_to_point (basic_block bb, regset live, rtx_insn *point)
 {
   rtx_insn *insn;
   bitmap_copy (live, df_get_live_out (bb));

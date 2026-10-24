@@ -4976,7 +4976,7 @@ rs6000_option_override (void)
 
 /* Implement LOOP_ALIGN. */
 align_flags
-rs6000_loop_align (rtx label)
+rs6000_loop_align (rtx_insn *label)
 {
   basic_block bb;
   int ninsns;

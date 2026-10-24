@@ -588,7 +588,7 @@ get_secondary_mem (rtx x ATTRIBUTE_UNUSED, machine_mode mode,
   /* Get a version of the address doing any eliminations needed.  If that
      didn't give us a new MEM, make a new one if it isn't valid.  */
 
-  loc = eliminate_regs (secondary_memlocs[(int) mode], VOIDmode, NULL_RTX);
+  loc = eliminate_regs (secondary_memlocs[(int) mode], VOIDmode, nullptr);
   mem_valid = strict_memory_address_addr_space_p (mode, XEXP (loc, 0),
 						  MEM_ADDR_SPACE (loc));
 
@@ -4818,7 +4818,7 @@ make_memloc (rtx ad, int regno)
   /* We must rerun eliminate_regs, in case the elimination
      offsets have changed.  */
   rtx tem
-    = XEXP (eliminate_regs (reg_equiv_memory_loc (regno), VOIDmode, NULL_RTX),
+    = XEXP (eliminate_regs (reg_equiv_memory_loc (regno), VOIDmode, nullptr),
 	    0);
 
   /* If TEM might contain a pseudo, we must copy it to avoid

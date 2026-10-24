@@ -883,7 +883,7 @@ static alias_set_type setjmp_alias_set = -1;
    exception handling code.  */
 
 void
-expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
+expand_builtin_setjmp_setup (rtx buf_addr, rtx_insn *receiver_label)
 {
   machine_mode sa_mode = STACK_SAVEAREA_MODE (SAVE_NONLOCAL);
   rtx stack_save;
@@ -930,7 +930,7 @@ expand_builtin_setjmp_setup (rtx buf_addr, rtx receiver_label)
    If RECEIVER_LABEL is NULL, instead construct a nonlocal goto handler.  */
 
 void
-expand_builtin_setjmp_receiver (rtx receiver_label)
+expand_builtin_setjmp_receiver (rtx_insn *receiver_label)
 {
   rtx chain;
 

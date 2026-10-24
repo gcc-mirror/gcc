@@ -8312,7 +8312,7 @@ vms_output_aligned_decl_common(FILE *file, tree decl, const char *name,
 #endif
 
 bool
-alpha_find_lo_sum_using_gp (rtx insn)
+alpha_find_lo_sum_using_gp (rtx_insn *insn)
 {
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)

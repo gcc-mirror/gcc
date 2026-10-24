@@ -425,7 +425,7 @@ extern void mark_home_live (int);
 
 /* Scan X and replace any eliminable registers (such as fp) with a
    replacement (such as sp), plus an offset.  */
-extern rtx eliminate_regs (rtx, machine_mode, rtx);
+extern rtx eliminate_regs (rtx, machine_mode, rtx_insn *);
 extern bool elimination_target_reg_p (rtx);
 
 /* Called from the register allocator to estimate costs of eliminating

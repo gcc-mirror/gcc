@@ -3317,7 +3317,7 @@ rx_split_cbranch (machine_mode cc_mode, enum rtx_code cmp1,
 /* A helper function for matching parallels that set the flags.  */
 
 bool
-rx_match_ccmode (rtx insn, machine_mode cc_mode)
+rx_match_ccmode (rtx_insn *insn, machine_mode cc_mode)
 {
   rtx op1, flags;
   machine_mode flags_mode;

@@ -102,7 +102,7 @@ static void       layout_mcore_frame            (struct mcore_frame *);
 static void       mcore_setup_incoming_varargs	(cumulative_args_t,
 						 const function_arg_info &,
 						 int *, int);
-static cond_type  is_cond_candidate             (rtx);
+static cond_type  is_cond_candidate (rtx_insn *);
 static rtx_insn  *emit_new_cond_insn            (rtx_insn *, int);
 static rtx_insn  *conditionalize_block          (rtx_insn *);
 static void       conditionalize_optimization   (void);
@@ -2277,7 +2277,7 @@ mcore_output_jump_label_table (void)
 /* Check whether insn is a candidate for a conditional.  */
 
 static cond_type
-is_cond_candidate (rtx insn)
+is_cond_candidate (rtx_insn *insn)
 {
   /* The only things we conditionalize are those that can be directly
      changed into a conditional.  Only bother with SImode items.  If

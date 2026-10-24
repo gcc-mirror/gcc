@@ -75,7 +75,7 @@ extern rtx disi_highpart (rtx);
 extern int arc_adjust_insn_length (rtx_insn *, int, bool);
 extern int arc_corereg_hazard (rtx, rtx);
 extern int arc_hazard (rtx_insn *, rtx_insn *);
-extern int arc_write_ext_corereg (rtx);
+extern int arc_write_ext_corereg (rtx_insn *);
 extern rtx gen_acc1 (void);
 extern rtx gen_acc2 (void);
 extern bool arc_branch_size_unknown_p (void);

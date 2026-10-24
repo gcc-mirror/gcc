@@ -351,7 +351,7 @@ rtx_interchangeable_p (const_rtx a, const_rtx b)
 
 static bool
 cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
-			 rtx_insn *start, rtx end, rtx test,
+			 rtx_insn *start, rtx_insn *end, rtx test,
 			 profile_probability prob_val, bool mod_ok)
 {
   bool must_be_last = false;

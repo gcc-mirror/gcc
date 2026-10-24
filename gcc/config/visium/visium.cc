@@ -1095,7 +1095,7 @@ gr5_hazard_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 /* Return true if INSN is an empty asm instruction.  */
 
 static bool
-empty_asm_p (rtx insn)
+empty_asm_p (rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
   const char *templ;
@@ -3980,7 +3980,7 @@ visium_add_cfa_restore_note (rtx reg)
 /* Add queued REG_CFA_RESTORE notes to INSN, if any.  */
 
 static void
-visium_add_queued_cfa_restore_notes (rtx insn)
+visium_add_queued_cfa_restore_notes (rtx_insn *insn)
 {
   rtx last;
   if (!cfa_restores)

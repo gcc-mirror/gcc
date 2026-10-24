@@ -291,7 +291,7 @@ extract_nth_access_reg (rtx_insn *insn, int index)
 /* Determine if the latency is occurred when the consumer PBSADA_INSN uses the
    value of DEF_REG in its Ra or Rb fields.  */
 bool
-pbsada_insn_ra_rb_dep_reg_p (rtx pbsada_insn, rtx def_reg)
+pbsada_insn_ra_rb_dep_reg_p (rtx_insn *pbsada_insn, rtx def_reg)
 {
   rtx unspec_rtx = SET_SRC (PATTERN (pbsada_insn));
   gcc_assert (GET_CODE (unspec_rtx) == UNSPEC);
@@ -309,7 +309,7 @@ pbsada_insn_ra_rb_dep_reg_p (rtx pbsada_insn, rtx def_reg)
 /* Determine if the latency is occurred when the consumer PBSADA_INSN uses the
    value of DEF_REG in its Rt field.  */
 bool
-pbsada_insn_rt_dep_reg_p (rtx pbsada_insn, rtx def_reg)
+pbsada_insn_rt_dep_reg_p (rtx_insn *pbsada_insn, rtx def_reg)
 {
   rtx pbsada_rt = SET_DEST (PATTERN (pbsada_insn));
 
@@ -350,7 +350,7 @@ movd44_even_dep_p (rtx_insn *insn, rtx def_reg)
 
 /* Check if INSN is a wext insn consuming DEF_REG.  */
 bool
-wext_odd_dep_p (rtx insn, rtx def_reg)
+wext_odd_dep_p (rtx_insn *insn, rtx def_reg)
 {
   rtx shift_rtx = XEXP (SET_SRC (PATTERN (insn)), 0);
   rtx use_reg = XEXP (shift_rtx, 0);
@@ -397,7 +397,7 @@ wext_odd_dep_p (rtx insn, rtx def_reg)
 
 /* Check if INSN is a bpick insn consuming DEF_REG.  */
 bool
-bpick_ra_rb_dep_p (rtx insn, rtx def_reg)
+bpick_ra_rb_dep_p (rtx_insn *insn, rtx def_reg)
 {
   rtx ior_rtx = SET_SRC (PATTERN (insn));
   rtx and1_rtx = XEXP (ior_rtx, 0);

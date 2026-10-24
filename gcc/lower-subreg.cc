@@ -794,7 +794,7 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
 /* Look for SUBREGs in *LOC which need to be decomposed.  */
 
 static bool
-resolve_subreg_use (rtx *loc, rtx insn)
+resolve_subreg_use (rtx *loc, rtx_insn *insn)
 {
   subrtx_ptr_iterator::array_type array;
   FOR_EACH_SUBRTX_PTR (iter, array, loc, NONCONST)
@@ -841,7 +841,7 @@ resolve_reg_notes (rtx_insn *insn)
   if (note)
     {
       int old_count = num_validated_changes ();
-      if (resolve_subreg_use (&XEXP (note, 0), NULL_RTX))
+      if (resolve_subreg_use (&XEXP (note, 0), nullptr))
 	remove_note (insn, note);
       else
 	if (old_count != num_validated_changes ())
@@ -1025,7 +1025,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 
   /* It's possible for the code to use a subreg of a decomposed
      register while forming an address.  We need to handle that before
-     passing the address to emit_move_insn.  We pass NULL_RTX as the
+     passing the address to emit_move_insn.  We pass nullptr as the
      insn parameter to resolve_subreg_use because we cannot validate
      the insn yet.  */
   if (MEM_P (src) || MEM_P (dest))
@@ -1033,9 +1033,9 @@ resolve_simple_move (rtx set, rtx_insn *insn)
       int acg;
 
       if (MEM_P (src))
-	resolve_subreg_use (&XEXP (src, 0), NULL_RTX);
+	resolve_subreg_use (&XEXP (src, 0), nullptr);
       if (MEM_P (dest))
-	resolve_subreg_use (&XEXP (dest, 0), NULL_RTX);
+	resolve_subreg_use (&XEXP (dest, 0), nullptr);
       acg = apply_change_group ();
       gcc_assert (acg);
     }
@@ -1175,7 +1175,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
 
   insns = end_sequence ();
 
-  copy_reg_eh_region_note_forward (insn, insns, NULL_RTX);
+  copy_reg_eh_region_note_forward (insn, insns, nullptr);
 
   emit_insn_before (insns, insn);
 

@@ -1349,7 +1349,7 @@ delete_redundant_insns (void)
    due to spilling.  */
 
 static void
-gcse_after_reload_main (rtx f ATTRIBUTE_UNUSED)
+gcse_after_reload_main (rtx_insn *f ATTRIBUTE_UNUSED)
 {
   /* Disable computing transparentness if it is too expensive.  */
   bool do_transp

@@ -65,7 +65,7 @@ static char m32r_punct_chars[256];
 static void  m32r_option_override (void);
 static void  init_reg_tables (void);
 static void  block_move_call (rtx, rtx, rtx);
-static int   m32r_is_insn (rtx);
+static int   m32r_is_insn (rtx_insn *);
 static bool  m32r_legitimate_address_p (machine_mode, rtx, bool,
 					code_helper = ERROR_MARK);
 static rtx   m32r_legitimize_address (rtx, rtx, machine_mode);
@@ -1319,7 +1319,7 @@ m32r_setup_incoming_varargs (cumulative_args_t cum,
 /* Return true if INSN is real instruction bearing insn.  */
 
 static int
-m32r_is_insn (rtx insn)
+m32r_is_insn (rtx_insn *insn)
 {
   return (NONDEBUG_INSN_P (insn)
 	  && GET_CODE (PATTERN (insn)) != USE
@@ -2613,7 +2613,7 @@ m32r_expand_block_move (rtx operands[])
    operands[4] is a temp register.  */
 
 void
-m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
+m32r_output_block_move (rtx_insn *insn ATTRIBUTE_UNUSED, rtx operands[])
 {
   HOST_WIDE_INT bytes = INTVAL (operands[2]);
   int		first_time;

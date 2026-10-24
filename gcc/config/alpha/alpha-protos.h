@@ -87,7 +87,7 @@ extern rtx alpha_va_arg (tree, tree);
 extern void alpha_start_function (FILE *, const char *, tree);
 extern void alpha_end_function (FILE *, const char *, tree);
 
-extern bool alpha_find_lo_sum_using_gp (rtx);
+extern bool alpha_find_lo_sum_using_gp (rtx_insn *);
 
 extern int alpha_store_data_bypass_p (rtx_insn *, rtx_insn *);
 

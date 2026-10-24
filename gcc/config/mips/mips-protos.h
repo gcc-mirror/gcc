@@ -214,9 +214,9 @@ extern bool mips_legitimize_move (machine_mode, rtx, rtx);
 
 extern rtx mips_subword (rtx, bool);
 extern bool mips_split_move_p (rtx, rtx, enum mips_split_type);
-extern void mips_split_move (rtx, rtx, enum mips_split_type, rtx);
-extern bool mips_split_move_insn_p (rtx, rtx, rtx);
-extern void mips_split_move_insn (rtx, rtx, rtx);
+extern void mips_split_move (rtx, rtx, enum mips_split_type, rtx_insn *);
+extern bool mips_split_move_insn_p (rtx, rtx, rtx_insn *);
+extern void mips_split_move_insn (rtx, rtx, rtx_insn *);
 extern void mips_split_128bit_move (rtx, rtx);
 extern bool mips_split_128bit_move_p (rtx, rtx);
 extern void mips_split_msa_copy_d (rtx, rtx, rtx, rtx (*)(rtx, rtx, rtx));
@@ -237,7 +237,7 @@ extern void mips_expand_conditional_trap (rtx);
 extern bool mips_use_pic_fn_addr_reg_p (const_rtx);
 extern rtx_insn *mips_expand_call (enum mips_call_type, rtx, rtx, rtx, rtx,
 				   bool);
-extern void mips_split_call (rtx, rtx);
+extern void mips_split_call (rtx_insn *, rtx);
 extern bool mips_get_pic_call_symbol (rtx *, int);
 extern void mips_set_return_address (rtx, rtx);
 extern bool mips_move_by_pieces_p (unsigned HOST_WIDE_INT, unsigned int);
@@ -322,7 +322,7 @@ extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern bool mips_hard_regno_rename_ok (unsigned int, unsigned int);
 extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
 extern bool mips_store_data_bypass_p (rtx_insn *, rtx_insn *);
-extern int mips_dspalu_bypass_p (rtx, rtx);
+extern int mips_dspalu_bypass_p (rtx_insn *, rtx_insn *);
 extern rtx mips_prefetch_cookie (rtx, rtx);
 extern rtx mips_loongson_ext2_prefetch_cookie (rtx, rtx);
 

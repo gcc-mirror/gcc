@@ -2450,7 +2450,7 @@ branch_dest (rtx_insn *branch)
    it's a branch that's predicted taken.  */
 
 static int
-cbranch_predicted_taken_p (rtx insn)
+cbranch_predicted_taken_p (rtx_insn *insn)
 {
   rtx x = find_reg_note (insn, REG_BR_PROB, 0);
 
@@ -3147,7 +3147,7 @@ analyze_pop_multiple_operation (rtx op)
    operands in OPERANDS.  */
 
 void
-output_push_multiple (rtx insn, rtx *operands)
+output_push_multiple (rtx_insn *insn, rtx *operands)
 {
   char buf[80];
   int ok;
@@ -3171,7 +3171,7 @@ output_push_multiple (rtx insn, rtx *operands)
    operands in OPERANDS.  */
 
 void
-output_pop_multiple (rtx insn, rtx *operands)
+output_pop_multiple (rtx_insn *insn, rtx *operands)
 {
   char buf[80];
   int ok;

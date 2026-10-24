@@ -389,7 +389,7 @@ nds32_group_insns (rtx_insn *sethi)
 /* Convert relax group id in rtl.  */
 
 static void
-nds32_group_tls_insn (rtx insn)
+nds32_group_tls_insn (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   rtx unspec_relax_group = XEXP (XVECEXP (pat, 0, 1), 0);

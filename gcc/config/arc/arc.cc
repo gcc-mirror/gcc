@@ -198,7 +198,7 @@ static void arc_encode_section_info (tree decl, rtx rtl, int first);
 static void arc_init_builtins (void);
 static rtx arc_expand_builtin (tree, rtx, rtx, machine_mode, int);
 
-static int branch_dest (rtx);
+static int branch_dest (rtx_insn *);
 
 static void  arc_output_pic_addr_const (FILE *,  rtx, int);
 static bool arc_function_ok_for_sibcall (tree, tree);
@@ -5630,7 +5630,7 @@ arc_frame_pointer_required (void)
 /* Return the destination address of a branch.  */
 
 static int
-branch_dest (rtx branch)
+branch_dest (rtx_insn *branch)
 {
   rtx pat = PATTERN (branch);
   rtx dest = (GET_CODE (pat) == PARALLEL
@@ -9584,7 +9584,7 @@ arc_predicate_delay_insns (void)
 /* Return nonzreo iff INSN writes to an extension core register.  */
 
 int
-arc_write_ext_corereg (rtx insn)
+arc_write_ext_corereg (rtx_insn *insn)
 {
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)

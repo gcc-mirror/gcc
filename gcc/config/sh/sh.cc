@@ -174,7 +174,7 @@ char sh_additional_register_names[ADDREGNAMES_SIZE] \
 int assembler_dialect;
 
 static void split_branches (rtx_insn *);
-static int branch_dest (rtx);
+static int branch_dest (rtx_insn *);
 static void print_slot (rtx_sequence *);
 static rtx_code_label *add_constant (rtx, machine_mode, rtx);
 static void dump_table (rtx_insn *, rtx_insn *);
@@ -223,7 +223,7 @@ static int sh_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int sh_issue_rate (void);
 static int sh_dfa_new_cycle (FILE *, int, rtx_insn *, int, int, int *sort_p);
 static short find_set_regmode_weight (rtx, machine_mode);
-static short find_insn_regmode_weight (rtx, machine_mode);
+static short find_insn_regmode_weight (rtx_insn *, machine_mode);
 static void find_regmode_weight (basic_block, machine_mode);
 static int find_r0_life_regions (basic_block);
 static void  sh_md_init_global (FILE *, int, int);
@@ -2485,7 +2485,7 @@ sh_emit_compare_and_set (rtx *operands, machine_mode mode)
    Since the SH cannot move a DI or DF in one instruction, we have
    to take care when we see overlapping source and dest registers.  */
 const char *
-output_movedouble (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
+output_movedouble (rtx_insn *insn ATTRIBUTE_UNUSED, rtx operands[],
 		   machine_mode mode)
 {
   rtx dst = operands[0];
@@ -4043,7 +4043,7 @@ shl_and_kind (rtx left_rtx, rtx mask_rtx, int *attrp)
 /* This is used in length attributes of the unnamed instructions
    corresponding to shl_and_kind return values of 1 and 2.  */
 int
-shl_and_length (rtx insn)
+shl_and_length (rtx_insn *insn)
 {
   rtx set_src, left_rtx, mask_rtx;
   int attributes[3];
@@ -4057,7 +4057,7 @@ shl_and_length (rtx insn)
 
 /* This is used in length attribute of the and_shl_scratch instruction.  */
 int
-shl_and_scr_length (rtx insn)
+shl_and_scr_length (rtx_insn *insn)
 {
   rtx set_src = SET_SRC (XVECEXP (PATTERN (insn), 0, 0));
   int len = ashl_lshr_seq[INTVAL (XEXP (set_src, 1)) & 31].insn_count;
@@ -4299,7 +4299,7 @@ shl_sext_kind (rtx left_rtx, rtx size_rtx, int *costp)
 /* Function to be used in the length attribute of the instructions
    implementing this pattern.  */
 int
-shl_sext_length (rtx insn)
+shl_sext_length (rtx_insn *insn)
 {
   rtx set_src, left_rtx, size_rtx;
   int cost;
@@ -8733,7 +8733,7 @@ tls_symbolic_operand (rtx op, machine_mode mode ATTRIBUTE_UNUSED)
 
 /* Return the destination address of a branch.  */
 static int
-branch_dest (rtx branch)
+branch_dest (rtx_insn *branch)
 {
   rtx dest = SET_SRC (PATTERN (branch));
 
@@ -9660,7 +9660,7 @@ find_set_regmode_weight (rtx x, machine_mode mode)
 
 /* Get regmode weight for insn.  */
 static short
-find_insn_regmode_weight (rtx insn, machine_mode mode)
+find_insn_regmode_weight (rtx_insn *insn, machine_mode mode)
 {
   /* Increment weight for each register born here.  */
   rtx x = PATTERN (insn);
@@ -11045,7 +11045,7 @@ sh_expand_t_scc (rtx operands[])
 
 /* INSN is an sfunc; return the rtx that describes the address used.  */
 static rtx
-extract_sfunc_addr (rtx insn)
+extract_sfunc_addr (rtx_insn *insn)
 {
   rtx pattern = PATTERN (insn);
   const int len = XVECLEN (pattern, 0);
@@ -11205,7 +11205,7 @@ sh_gen_truncate (machine_mode mode, rtx x, int need_sign_ext)
 
    Return true iff INSN contains a MEM.  */
 bool
-sh_contains_memref_p (rtx insn)
+sh_contains_memref_p (rtx_insn *insn)
 {
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
@@ -11216,7 +11216,7 @@ sh_contains_memref_p (rtx insn)
 
 /* Return true iff INSN loads a banked register.  */
 bool
-sh_loads_bankedreg_p (rtx insn)
+sh_loads_bankedreg_p (rtx_insn *insn)
 {
   if (GET_CODE (PATTERN (insn)) == SET)
     {

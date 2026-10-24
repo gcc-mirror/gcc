@@ -1057,7 +1057,7 @@ extern void df_simulate_one_insn_backwards (basic_block, rtx_insn *, bitmap);
 extern void df_simulate_finalize_backwards (basic_block, bitmap);
 extern void df_simulate_initialize_forwards (basic_block, bitmap);
 extern void df_simulate_one_insn_forwards (basic_block, rtx_insn *, bitmap);
-extern void simulate_backwards_to_point (basic_block, regset, rtx);
+extern void simulate_backwards_to_point (basic_block, regset, rtx_insn *);
 extern bool can_move_insns_across (rtx_insn *, rtx_insn *,
 				   rtx_insn *, rtx_insn *,
 				   basic_block, regset,

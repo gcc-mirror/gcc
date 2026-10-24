@@ -5027,7 +5027,8 @@ mips_split_move_p (rtx dest, rtx src, enum mips_split_type split_type)
    split, if we know it, NULL otherwise.  */
 
 void
-mips_split_move (rtx dest, rtx src, enum mips_split_type split_type, rtx insn_)
+mips_split_move (rtx dest, rtx src, enum mips_split_type split_type,
+		 rtx_insn *insn_)
 {
   rtx low_dest;
 
@@ -5118,7 +5119,7 @@ mips_split_move (rtx dest, rtx src, enum mips_split_type split_type, rtx insn_)
 /* Return the split type for instruction INSN.  */
 
 static enum mips_split_type
-mips_insn_split_type (rtx insn)
+mips_insn_split_type (rtx_insn *insn)
 {
   basic_block bb = BLOCK_FOR_INSN (insn);
   if (bb)
@@ -5329,7 +5330,7 @@ mips_split_msa_fill_d (rtx dest, rtx src)
 /* Return true if a move from SRC to DEST in INSN should be split.  */
 
 bool
-mips_split_move_insn_p (rtx dest, rtx src, rtx insn)
+mips_split_move_insn_p (rtx dest, rtx src, rtx_insn *insn)
 {
   return mips_split_move_p (dest, src, mips_insn_split_type (insn));
 }
@@ -5338,7 +5339,7 @@ mips_split_move_insn_p (rtx dest, rtx src, rtx insn)
    holds.  */
 
 void
-mips_split_move_insn (rtx dest, rtx src, rtx insn)
+mips_split_move_insn (rtx dest, rtx src, rtx_insn *insn)
 {
   mips_split_move (dest, src, mips_insn_split_type (insn), insn);
 }
@@ -8308,7 +8309,7 @@ mips_expand_call (enum mips_call_type type, rtx result, rtx addr,
    CALL_PATTERN is the pattern of the new call.  */
 
 void
-mips_split_call (rtx insn, rtx call_pattern)
+mips_split_call (rtx_insn *insn, rtx call_pattern)
 {
   emit_call_insn (call_pattern);
   if (!find_reg_note (insn, REG_NORETURN, 0))
@@ -10035,7 +10036,7 @@ enum insn_code dspalu_bypass_table[][2] =
 };
 
 int
-mips_dspalu_bypass_p (rtx out_insn, rtx in_insn)
+mips_dspalu_bypass_p (rtx_insn *out_insn, rtx_insn *in_insn)
 {
   int i;
   int num_bypass = ARRAY_SIZE (dspalu_bypass_table);

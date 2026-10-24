@@ -313,13 +313,13 @@ find_set_of_reg_bb (rtx reg, rtx_insn *insn)
 }
 
 static bool
-reg_dead_after_insn (const_rtx reg, const_rtx insn)
+reg_dead_after_insn (const_rtx reg, const rtx_insn *insn)
 {
   return find_regno_note (insn, REG_DEAD, REGNO (reg)) != NULL_RTX;
 }
 
 static bool
-reg_unused_after_insn (const_rtx reg, const_rtx insn)
+reg_unused_after_insn (const_rtx reg, const rtx_insn *insn)
 {
   return find_regno_note (insn, REG_UNUSED, REGNO (reg)) != NULL_RTX;
 }
@@ -344,7 +344,7 @@ is_adjacent_bb (basic_block a, basic_block b)
 // Internal function of trace_reg_uses.
 static void
 trace_reg_uses_1 (rtx reg, rtx_insn *start_insn, basic_block bb, int& count,
-		  std::vector<basic_block>& visited_bb, rtx abort_at_insn)
+		  std::vector<basic_block>& visited_bb, rtx_insn *abort_at_insn)
 {
   if (bb == NULL)
     return;
@@ -401,7 +401,7 @@ trace_reg_uses_1 (rtx reg, rtx_insn *start_insn, basic_block bb, int& count,
 // that insn.  If the insn 'abort_at_insn' uses the specified reg, it is also
 // counted.
 static int
-trace_reg_uses (rtx reg, rtx_insn *start_insn, rtx abort_at_insn)
+trace_reg_uses (rtx reg, rtx_insn *start_insn, rtx_insn *abort_at_insn)
 {
   log_msg ("\ntrace_reg_uses\nreg = ");
   log_rtx (reg);

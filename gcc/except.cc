@@ -1768,7 +1768,8 @@ insn_could_throw_p (const rtx_insn *insn)
    to look for a note, or the note itself.  */
 
 void
-copy_reg_eh_region_note_forward (rtx note_or_insn, rtx_insn *first, rtx last)
+copy_reg_eh_region_note_forward (rtx note_or_insn, rtx_insn *first,
+				 rtx_insn *last)
 {
   rtx_insn *insn;
   rtx note = note_or_insn;
@@ -1792,7 +1793,8 @@ copy_reg_eh_region_note_forward (rtx note_or_insn, rtx_insn *first, rtx last)
 /* Likewise, but iterate backward.  */
 
 void
-copy_reg_eh_region_note_backward (rtx note_or_insn, rtx_insn *last, rtx first)
+copy_reg_eh_region_note_backward (rtx note_or_insn, rtx_insn *last,
+				  rtx_insn *first)
 {
   rtx_insn *insn;
   rtx note = note_or_insn;

@@ -962,7 +962,7 @@ push_csky_minipool_barrier (rtx_insn *insn, HOST_WIDE_INT address)
 /* Compute the size of a vector jump table.  */
 
 static HOST_WIDE_INT
-get_csky_jump_table_size (rtx insn)
+get_csky_jump_table_size (rtx_insn *insn)
 {
   /* ADDR_VECs only take room if read-only data does into the text
      section.  */

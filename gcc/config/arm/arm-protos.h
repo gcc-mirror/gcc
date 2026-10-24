@@ -28,7 +28,7 @@
 rtl_opt_pass *make_pass_insert_bti (gcc::context *ctxt);
 
 extern enum unwind_info_type arm_except_unwind_info (struct gcc_options *);
-extern int use_return_insn (int, rtx);
+extern int use_return_insn (int, rtx_insn *);
 extern bool use_simple_return_p (void);
 extern enum reg_class arm_regno_class (int);
 extern bool arm_check_builtin_call (location_t, vec<location_t>, tree, tree,
@@ -79,7 +79,7 @@ extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
 extern void thumb1_gen_const_int_rtl (rtx, HOST_WIDE_INT);
 extern void thumb1_gen_const_int_print (rtx, HOST_WIDE_INT);
-extern int arm_split_constant (RTX_CODE, machine_mode, rtx,
+extern int arm_split_constant (RTX_CODE, machine_mode, rtx_insn *,
 			       HOST_WIDE_INT, rtx, rtx, int);
 extern int legitimate_pic_operand_p (rtx);
 extern rtx legitimize_pic_address (rtx, machine_mode, rtx, rtx, bool);

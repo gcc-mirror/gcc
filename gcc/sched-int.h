@@ -115,7 +115,7 @@ extern vec<int> sched_luids;
 /* The highest INSN_LUID.  */
 extern int sched_max_luid;
 
-extern int insn_luid (rtx);
+extern int insn_luid (rtx_insn *);
 
 /* This list holds ripped off notes from the current block.  These notes will
    be attached to the beginning of the block when its scheduling is

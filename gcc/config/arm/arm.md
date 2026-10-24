@@ -901,7 +901,7 @@
   "
   if (TARGET_32BIT && CONST_INT_P (operands[2]))
     {
-      arm_split_constant (PLUS, SImode, NULL_RTX,
+      arm_split_constant (PLUS, SImode, nullptr,
 	                  INTVAL (operands[2]), operands[0], operands[1],
 			  optimize && can_create_pseudo_p ());
       DONE;
@@ -1995,7 +1995,7 @@
 	    operands[1] = force_reg (SImode, operands[1]);
 	  else
 	    {
-	      arm_split_constant (MINUS, SImode, NULL_RTX,
+	      arm_split_constant (MINUS, SImode, nullptr,
 				  INTVAL (operands[1]), operands[0],
 				  operands[2],
 				  optimize && can_create_pseudo_p ());
@@ -2946,7 +2946,7 @@
 	    operands[2] = force_reg (SImode, operands[2]);
 	  else
 	    {
-	      arm_split_constant (AND, SImode, NULL_RTX,
+	      arm_split_constant (AND, SImode, nullptr,
 				  INTVAL (operands[2]), operands[0],
 				  operands[1],
 				  optimize && can_create_pseudo_p ());
@@ -3702,7 +3702,7 @@
 	    operands[2] = force_reg (SImode, operands[2]);
 	  else
 	    {
-	      arm_split_constant (IOR, SImode, NULL_RTX,
+	      arm_split_constant (IOR, SImode, nullptr,
 				  INTVAL (operands[2]), operands[0],
 				  operands[1],
 				  optimize && can_create_pseudo_p ());
@@ -3809,7 +3809,7 @@
 	    operands[2] = force_reg (SImode, operands[2]);
 	  else
 	    {
-	      arm_split_constant (XOR, SImode, NULL_RTX,
+	      arm_split_constant (XOR, SImode, nullptr,
 				  INTVAL (operands[2]), operands[0],
 				  operands[1],
 				  optimize && can_create_pseudo_p ());
@@ -6477,7 +6477,7 @@
 	     }
 	  else
 	     {
-		arm_split_constant (SET, SImode, NULL_RTX,
+		arm_split_constant (SET, SImode, nullptr,
 	                            INTVAL (operands[1]), operands[0], NULL_RTX,
 			            optimize && can_create_pseudo_p ());
 		DONE;
@@ -6565,7 +6565,7 @@
         || const_ok_for_arm (~INTVAL (operands[1]))))"
   [(clobber (const_int 0))]
   "
-  arm_split_constant (SET, SImode, NULL_RTX, 
+  arm_split_constant (SET, SImode, nullptr,
                       INTVAL (operands[1]), operands[0], NULL_RTX, 0);
   DONE;
   "

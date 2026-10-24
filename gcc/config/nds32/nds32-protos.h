@@ -252,7 +252,7 @@ extern const char *nds32_output_cbranchsi4_greater_less_zero (rtx_insn *, rtx *)
 
 extern const char *nds32_output_unpkd8 (rtx, rtx, rtx, rtx, bool);
 
-extern const char *nds32_output_call (rtx, rtx *, rtx,
+extern const char *nds32_output_call (rtx_insn *, rtx *, rtx,
 				      const char *, const char *, bool);
 extern const char *nds32_output_tls_desc (rtx *);
 extern const char *nds32_output_tls_ie (rtx *);

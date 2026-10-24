@@ -45,7 +45,7 @@ extern char *xstormy16_output_cbranch_hi (rtx, const char *, int, rtx_insn *);
 extern char *xstormy16_output_cbranch_si (rtx, const char *, int, rtx_insn *);
 
 extern void xstormy16_expand_casesi (rtx, rtx, rtx, rtx, rtx);
-extern void xstormy16_output_addr_vec (FILE *, rtx, rtx);
+extern void xstormy16_output_addr_vec (FILE *, rtx_insn *, rtx);
 extern void xstormy16_expand_call (rtx, rtx, rtx);
 extern void xstormy16_expand_iorqi3 (rtx *);
 extern void xstormy16_expand_andqi3 (rtx *);

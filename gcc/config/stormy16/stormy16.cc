@@ -2051,7 +2051,8 @@ xstormy16_expand_casesi (rtx index, rtx lower_bound, rtx range,
    all reach.  */
 
 void
-xstormy16_output_addr_vec (FILE *file, rtx label ATTRIBUTE_UNUSED, rtx table)
+xstormy16_output_addr_vec (FILE *file, rtx_insn *label ATTRIBUTE_UNUSED,
+			   rtx table)
 {
   int vlen, idx;
 

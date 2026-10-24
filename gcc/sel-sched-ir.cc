@@ -1980,7 +1980,7 @@ speculate_expr (expr_t expr, ds_t ds)
     case 1:
       {
 	rtx_insn *spec_insn_rtx =
-	  create_insn_rtx_from_pattern (spec_pat, NULL_RTX);
+	  create_insn_rtx_from_pattern (spec_pat, nullptr);
 	vinsn_t spec_vinsn = create_vinsn_from_insn_rtx (spec_insn_rtx, false);
 
 	change_vinsn_in_expr (expr, spec_vinsn);
@@ -5715,7 +5715,7 @@ sel_unregister_cfg_hooks (void)
 /* Emit an insn rtx based on PATTERN.  If a jump insn is wanted,
    LABEL is where this jump should be directed.  */
 rtx_insn *
-create_insn_rtx_from_pattern (rtx pattern, rtx label)
+create_insn_rtx_from_pattern (rtx pattern, rtx_insn *label)
 {
   rtx_insn *insn_rtx;
 
@@ -5770,7 +5770,7 @@ create_copy_of_insn_rtx (rtx_insn *insn_rtx)
   gcc_assert (NONJUMP_INSN_P (insn_rtx));
 
   res = create_insn_rtx_from_pattern (copy_rtx (PATTERN (insn_rtx)),
-                                      NULL_RTX);
+				      nullptr);
 
   /* Locate the end of existing REG_NOTES in NEW_RTX.  */
   rtx *ptail = &REG_NOTES (res);

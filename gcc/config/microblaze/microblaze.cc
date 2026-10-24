@@ -3829,7 +3829,7 @@ microblaze_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 }
 
 static rtx
-get_branch_target (rtx branch)
+get_branch_target (rtx_insn *branch)
 {
   if (CALL_P (branch))
     {

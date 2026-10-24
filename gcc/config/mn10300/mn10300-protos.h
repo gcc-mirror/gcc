@@ -34,7 +34,7 @@ extern unsigned int mn10300_store_multiple_regs (rtx);
 extern int   mn10300_symbolic_operand (rtx, machine_mode);
 extern void  mn10300_split_cbranch (machine_mode, rtx, rtx);
 extern int   mn10300_split_and_operand_count (rtx);
-extern bool  mn10300_match_ccmode (rtx, machine_mode);
+extern bool  mn10300_match_ccmode (rtx_insn *, machine_mode);
 #endif /* RTX_CODE */
 
 extern bool  mn10300_regno_in_class_p (unsigned, int, bool);

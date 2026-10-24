@@ -10145,7 +10145,7 @@ vt_initialize (void)
 #endif
       elim = (ira_use_lra_p
 	      ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
-	      : eliminate_regs (reg, VOIDmode, NULL_RTX));
+	      : eliminate_regs (reg, VOIDmode, nullptr));
       if (elim != reg)
 	{
 	  if (GET_CODE (elim) == PLUS)
@@ -10167,7 +10167,7 @@ vt_initialize (void)
 #endif
       elim = (ira_use_lra_p
 	      ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
-	      : eliminate_regs (reg, VOIDmode, NULL_RTX));
+	      : eliminate_regs (reg, VOIDmode, nullptr));
       if (elim != reg)
 	{
 	  if (GET_CODE (elim) == PLUS)
@@ -10201,7 +10201,7 @@ vt_initialize (void)
 #endif
       elim = (ira_use_lra_p
 	      ? lra_eliminate_regs (reg, VOIDmode, NULL_RTX)
-	      : eliminate_regs (reg, VOIDmode, NULL_RTX));
+	      : eliminate_regs (reg, VOIDmode, nullptr));
       if (elim != reg)
 	{
 	  if (GET_CODE (elim) == PLUS)

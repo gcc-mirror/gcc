@@ -164,7 +164,7 @@ vax_option_override (void)
 }
 
 static void
-vax_add_reg_cfa_offset (rtx insn, int offset, rtx src)
+vax_add_reg_cfa_offset (rtx_insn *insn, int offset, rtx src)
 {
   rtx x;
 
@@ -272,7 +272,7 @@ vax_init_libfuncs (void)
 /* This is like nonimmediate_operand with a restriction on the type of MEM.  */
 
 static void
-split_quadword_operands (rtx insn, enum rtx_code code, rtx * operands,
+split_quadword_operands (rtx_insn *insn, enum rtx_code code, rtx * operands,
 			 rtx * low, int n)
 {
   int i;
@@ -1250,7 +1250,7 @@ vax_maybe_split_dimode_move (rtx *operands)
 }
 
 const char *
-vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
+vax_output_int_move (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *operands,
 		     machine_mode mode)
 {
   rtx hi[3], lo[3];

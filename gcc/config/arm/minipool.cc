@@ -280,7 +280,7 @@ class minipool
   void assign_offsets (Mfix *);
   void dump (rtx_insn *);
   Mfix *create_fix_barrier (Mfix *, minipool_address);
-  HOST_WIDE_INT get_label_padding (rtx label) const;
+  HOST_WIDE_INT get_label_padding (rtx_insn *label) const;
   HOST_WIDE_INT get_alignment_size (void) const;
   minipool_address forwards (void) const
     { return m_max_address; }
@@ -825,7 +825,7 @@ subpool::debug (void) const
 /* Return the maximum amount of padding that will be inserted before label
    LABEL.  */
 HOST_WIDE_INT
-minipool::get_label_padding (rtx label) const
+minipool::get_label_padding (rtx_insn *label) const
 {
   HOST_WIDE_INT align;
 

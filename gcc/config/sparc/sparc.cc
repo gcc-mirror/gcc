@@ -4035,7 +4035,7 @@ emit_cbcond_nop (rtx_insn *insn)
    instruction.  */
 
 static int
-eligible_for_restore_insn (rtx trial, bool return_p)
+eligible_for_restore_insn (rtx_insn *trial, bool return_p)
 {
   rtx pat = PATTERN (trial);
   rtx src = SET_SRC (pat);
@@ -12339,7 +12339,7 @@ sparc_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
    function calls, with the possible exception of calls to the GOT helper.  */
 
 static void
-emit_and_preserve (rtx seq, rtx reg, rtx reg2)
+emit_and_preserve (rtx_insn *seq, rtx reg, rtx reg2)
 {
   /* We must preserve the lowest 16 words for the register save area.  */
   HOST_WIDE_INT offset = 16*UNITS_PER_WORD;

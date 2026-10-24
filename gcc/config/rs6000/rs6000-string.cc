@@ -2088,7 +2088,8 @@ expand_block_compare (rtx operands[])
    SRC_ADDR is the string address to be examined.
    BYTES is the max number of bytes to compare.  */
 static void
-expand_strncmp_align_check (rtx strncmp_label, rtx src_addr, HOST_WIDE_INT bytes)
+expand_strncmp_align_check (rtx_code_label *strncmp_label, rtx src_addr,
+			    HOST_WIDE_INT bytes)
 {
   rtx lab_ref = gen_rtx_LABEL_REF (VOIDmode, strncmp_label);
   rtx src_pgoff = gen_reg_rtx (GET_MODE (src_addr));

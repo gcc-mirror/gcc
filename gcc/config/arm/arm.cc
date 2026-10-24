@@ -4394,7 +4394,7 @@ static inline bool reg_needs_saving_p (unsigned reg)
    call.  SIBLING is the call insn, so we can examine its register usage.  */
 
 int
-use_return_insn (int iscond, rtx sibling)
+use_return_insn (int iscond, rtx_insn *sibling)
 {
   int regno;
   unsigned int func_type;
@@ -4716,7 +4716,7 @@ const_ok_for_dimode_op (HOST_WIDE_INT i, enum rtx_code code)
 
 /* ??? Tweak this for thumb2.  */
 int
-arm_split_constant (enum rtx_code code, machine_mode mode, rtx insn,
+arm_split_constant (enum rtx_code code, machine_mode mode, rtx_insn *insn,
 		    HOST_WIDE_INT val, rtx target, rtx source, int subtargets)
 {
   rtx cond;
@@ -21998,7 +21998,7 @@ thumb_force_lr_save (void)
    we do have an indirect tailcall happening in this
    particular case.  */
 static bool
-is_indirect_tailcall_p (rtx call)
+is_indirect_tailcall_p (rtx_insn *call)
 {
   rtx pat = PATTERN (call);
 
@@ -28295,7 +28295,7 @@ arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
 
   /* Add DELTA to THIS_RTX.  */
   if (delta != 0)
-    arm_split_constant (PLUS, Pmode, NULL_RTX,
+    arm_split_constant (PLUS, Pmode, nullptr,
 			delta, this_rtx, this_rtx, false);
 
   /* Add *(*THIS_RTX + VCALL_OFFSET) to THIS_RTX.  */
@@ -28304,7 +28304,7 @@ arm32_output_mi_thunk (FILE *file, tree, HOST_WIDE_INT delta,
       /* Load *THIS_RTX.  */
       emit_move_insn (temp, gen_rtx_MEM (Pmode, this_rtx));
       /* Compute *THIS_RTX + VCALL_OFFSET.  */
-      arm_split_constant (PLUS, Pmode, NULL_RTX, vcall_offset, temp, temp,
+      arm_split_constant (PLUS, Pmode, nullptr, vcall_offset, temp, temp,
 			  false);
       /* Compute *(*THIS_RTX + VCALL_OFFSET).  */
       emit_move_insn (temp, gen_rtx_MEM (Pmode, temp));
@@ -32272,7 +32272,7 @@ aarch_bti_j_insn_p (rtx_insn *insn)
 
 /* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
 bool
-aarch_pac_insn_p (rtx x)
+aarch_pac_insn_p (rtx_insn *x)
 {
   if (!x || !INSN_P (x))
     return false;

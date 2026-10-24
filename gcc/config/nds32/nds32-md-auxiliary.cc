@@ -3015,8 +3015,8 @@ nds32_symbol_binds_local_p (const_rtx x)
 }
 
 const char *
-nds32_output_call (rtx insn, rtx *operands, rtx symbol, const char *long_call,
-		   const char *call, bool align_p)
+nds32_output_call (rtx_insn *insn, rtx *operands, rtx symbol,
+		   const char *long_call, const char *call, bool align_p)
 {
   char pattern[100];
   bool noreturn_p;

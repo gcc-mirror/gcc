@@ -212,7 +212,7 @@ static bool own_thread_p (rtx, rtx, bool);
 static void update_block (rtx_insn *, rtx_insn *);
 static bool reorg_redirect_jump (rtx_jump_insn *, rtx);
 static void update_reg_dead_notes (rtx_insn *, rtx_insn *);
-static void fix_reg_dead_note (rtx_insn *, rtx);
+static void fix_reg_dead_note (rtx_insn *, rtx_insn *);
 static void update_reg_unused_notes (rtx_insn *, rtx);
 static void fill_simple_delay_slots (bool);
 static void fill_slots_from_thread (rtx_jump_insn *, rtx, rtx, rtx,
@@ -1704,7 +1704,7 @@ update_reg_dead_notes (rtx_insn *insn, rtx_insn *delayed_insn)
    confused into thinking the register is dead.  */
 
 static void
-fix_reg_dead_note (rtx_insn *start_insn, rtx stop_insn)
+fix_reg_dead_note (rtx_insn *start_insn, rtx_insn *stop_insn)
 {
   rtx link, next;
   rtx_insn *p;
@@ -3024,7 +3024,7 @@ delete_jump (rtx_insn *insn)
 }
 
 static rtx_insn *
-label_before_next_insn (rtx_insn *x, rtx scan_limit)
+label_before_next_insn (rtx_insn *x, rtx_insn *scan_limit)
 {
   rtx_insn *insn = next_active_insn (x);
   while (insn)

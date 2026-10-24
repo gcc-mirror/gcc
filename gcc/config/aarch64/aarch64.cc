@@ -9643,7 +9643,7 @@ aarch64_gcs_enabled (void)
 
 /* Check if X (or any sub-rtx of X) is a PACIASP/PACIBSP instruction.  */
 bool
-aarch_pac_insn_p (rtx x)
+aarch_pac_insn_p (rtx_insn *x)
 {
   if (!INSN_P (x))
     return false;

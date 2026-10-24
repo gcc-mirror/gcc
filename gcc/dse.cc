@@ -2435,7 +2435,7 @@ check_mem_read_use (rtx *loc, void *data)
    So far it only handles arguments passed in registers.  */
 
 static bool
-get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
+get_call_args (rtx_insn *call_insn, tree fn, rtx *args, int nargs)
 {
   CUMULATIVE_ARGS args_so_far_v;
   cumulative_args_t args_so_far;

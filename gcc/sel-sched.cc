@@ -840,7 +840,7 @@ create_insn_rtx_with_rhs (vinsn_t vi, rtx rhs_rtx)
   lhs_rtx = copy_rtx (VINSN_LHS (vi));
 
   pattern = gen_rtx_SET (lhs_rtx, rhs_rtx);
-  insn_rtx = create_insn_rtx_from_pattern (pattern, NULL_RTX);
+  insn_rtx = create_insn_rtx_from_pattern (pattern, nullptr);
 
   return insn_rtx;
 }
@@ -921,7 +921,7 @@ create_insn_rtx_with_lhs (vinsn_t vi, rtx lhs_rtx)
   rhs_rtx = copy_rtx (VINSN_RHS (vi));
 
   pattern = gen_rtx_SET (lhs_rtx, rhs_rtx);
-  insn_rtx = create_insn_rtx_from_pattern (pattern, NULL_RTX);
+  insn_rtx = create_insn_rtx_from_pattern (pattern, nullptr);
 
   return insn_rtx;
 }
@@ -1816,7 +1816,7 @@ create_speculation_check (expr_t c_expr, ds_t check_ds, insn_t orig_insn)
       rtx twin_rtx;
 
       twin_rtx = copy_rtx (PATTERN (EXPR_INSN_RTX (c_expr)));
-      twin_rtx = create_insn_rtx_from_pattern (twin_rtx, NULL_RTX);
+      twin_rtx = create_insn_rtx_from_pattern (twin_rtx, nullptr);
       sel_gen_recovery_insn_from_rtx_after (twin_rtx,
 					    INSN_EXPR (orig_insn),
 					    INSN_SEQNO (insn),
