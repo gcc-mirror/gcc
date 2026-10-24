@@ -1499,9 +1499,9 @@ ia64_rse_skip_regs (unw_word *addr, int num_regs)
    at different relative offsets and need to be combined together.  */
 static void
 ia64_copy_rbs (struct _Unwind_Context *info, unw_word dst,
-               unw_word src, unw_word len, unw_word dst_rnat)
+               unw_word src, unw_sword len, unw_word dst_rnat)
 {
-  unw_word count;
+  unw_sword count;
   unw_word src_rnat;
   unw_word shift1, shift2;
 
