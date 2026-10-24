@@ -2535,7 +2535,7 @@ add_functions (void)
 
   add_sym_1 ("leadz", GFC_ISYM_LEADZ, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_i, gfc_simplify_leadz, NULL,
+	     gfc_check_iu, gfc_simplify_leadz, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("leadz", GFC_ISYM_LEADZ, GFC_STD_F2008);
@@ -3427,7 +3427,7 @@ add_functions (void)
 
   add_sym_1 ("trailz", GFC_ISYM_TRAILZ, CLASS_ELEMENTAL, ACTUAL_NO,
 	     BT_INTEGER, di, GFC_STD_F2008,
-	     gfc_check_i, gfc_simplify_trailz, NULL,
+	     gfc_check_iu, gfc_simplify_trailz, NULL,
 	     i, BT_INTEGER, di, REQUIRED);
 
   make_generic ("trailz", GFC_ISYM_TRAILZ, GFC_STD_F2008);

@@ -9773,7 +9773,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or @code{UNSIGNED}.
 @end multitable
 
 @item @emph{Return value}:
@@ -12268,7 +12268,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or @code{UNSIGNED}.
 @end multitable
 
 @item @emph{Return value}:
@@ -12316,7 +12316,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or @code{UNSIGNED}.
 @end multitable
 
 @item @emph{Return value}:
@@ -15434,7 +15434,7 @@ Elemental function
 
 @item @emph{Arguments}:
 @multitable @columnfractions .15 .70
-@item @var{I} @tab Shall be of type @code{INTEGER}.
+@item @var{I} @tab Shall be of type @code{INTEGER} or @code{UNSIGNED}.
 @end multitable
 
 @item @emph{Return value}:
