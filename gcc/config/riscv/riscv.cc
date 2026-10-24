@@ -330,6 +330,9 @@ bool riscv_vector_unaligned_access_p;
 /* Whether user explicitly passed -mstrict-align.  */
 bool riscv_user_wants_strict_align;
 
+/* Mask of the errata to work around, see RISCV_ERRATUM_P.  */
+unsigned HOST_WIDE_INT riscv_errata;
+
 /* Stack alignment to assume/maintain.  */
 unsigned riscv_stack_boundary;
 
@@ -1381,6 +1384,72 @@ riscv_parse_tune (const char *tune_string, bool null_p)
 
   error ("unknown cpu %qs for %<-mtune%>", tune_string);
   return riscv_tune_info_table;
+}
+
+/* Return the mask of errata of the processor named by -mcpu=CPU_STRING.
+   CPU_STRING may be NULL.  */
+
+static unsigned HOST_WIDE_INT
+riscv_cpu_errata (const char *cpu_string)
+{
+  const riscv_cpu_info *cpu = cpu_string ? riscv_find_cpu (cpu_string) : NULL;
+  if (!cpu)
+    return 0;
+
+  unsigned HOST_WIDE_INT errata = 0;
+#define RISCV_CORE_ERRATUM(CORE_NAME, ERRATUM)		\
+  if (strcmp (cpu->name, CORE_NAME) == 0)		\
+    errata |= RISCV_ERRATUM_MASK (ERRATUM);
+#include "riscv-cores.def"
+  return errata;
+}
+
+/* Return the mask of errata given by --with-errata.  */
+
+static unsigned HOST_WIDE_INT
+riscv_default_errata (void)
+{
+  unsigned HOST_WIDE_INT errata = 0;
+#ifdef TARGET_DEFAULT_ERRATA
+  /* config.gcc has checked the names.  */
+  const char *p = TARGET_DEFAULT_ERRATA;
+  while (*p)
+    {
+      const char *end = strchr (p, ',');
+      size_t len = end ? (size_t) (end - p) : strlen (p);
+#define RISCV_ERRATUM(ID, NAME, VAR)				\
+      if ((len == 3 && strncmp (p, "all", 3) == 0)		\
+	  || (len == strlen (NAME) && strncmp (p, NAME, len) == 0))	\
+	errata |= RISCV_ERRATUM_MASK (ID);
+#define RISCV_ERRATUM_ALIAS(ALIAS, ID)				\
+      if (len == strlen (ALIAS) && strncmp (p, ALIAS, len) == 0)	\
+	errata |= RISCV_ERRATUM_MASK (ID);
+#include "riscv-errata.def"
+      p += len;
+      if (*p == ',')
+	p++;
+    }
+#endif
+  return errata;
+}
+
+/* Return the mask of errata to work around for OPTS, which is a
+   gcc_options or a cl_target_option.  An explicit -m[no-]fix-NAME wins,
+   otherwise use the errata of -mcpu and of --with-errata.  */
+
+template <typename T>
+static unsigned HOST_WIDE_INT
+riscv_resolve_errata (const T *opts)
+{
+  unsigned HOST_WIDE_INT errata
+    = riscv_cpu_errata (opts->x_riscv_cpu_string) | riscv_default_errata ();
+#define RISCV_ERRATUM(ID, NAME, VAR)		\
+  if (opts->x_##VAR == 0)			\
+    errata &= ~RISCV_ERRATUM_MASK (ID);		\
+  else if (opts->x_##VAR == 1)			\
+    errata |= RISCV_ERRATUM_MASK (ID);
+#include "riscv-errata.def"
+  return errata;
 }
 
 /* Helper function for riscv_build_integer; arguments are as for
@@ -9901,6 +9970,9 @@ riscv_can_inline_p (tree caller, tree callee)
       != callee_opts->x_rvv_vector_strict_align)
     return false;
 
+  if (riscv_resolve_errata (caller_opts) != riscv_resolve_errata (callee_opts))
+    return false;
+
   if (riscv_zilsd_required_align (caller_opts)
       != riscv_zilsd_required_align (callee_opts))
     return false;
@@ -12680,6 +12752,8 @@ riscv_override_options_internal (struct gcc_options *opts)
   if ((target_flags_explicit & MASK_STRICT_ALIGN) == 0
       && cpu->tune_param->slow_unaligned_access)
     opts->x_target_flags |= MASK_STRICT_ALIGN;
+
+  riscv_errata = riscv_resolve_errata (opts);
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */

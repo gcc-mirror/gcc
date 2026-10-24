@@ -97,7 +97,15 @@ RISCV_TUNE("arc-v-rmx-100-series", arcv_rmx100, arcv_rmx100_tune_info)
       RISCV_CORE_ALIAS(CANONICAL_NAME, ALIAS_NAME)
 
    CANONICAL_NAME is the normal name of the core, represented as a string.
-   ALIAS_NAME is the alternate name for the core, represented as a string.  */
+   ALIAS_NAME is the alternate name for the core, represented as a string.
+
+   If the core has a hardware erratum that GCC can work around, list it
+   with this macro, once for each erratum:
+
+      RISCV_CORE_ERRATUM(CORE_NAME, ERRATUM)
+
+   CORE_NAME is the canonical name of the core, represented as a string.
+   ERRATUM is the ID of the erratum in riscv-errata.def.  */
 
 #ifndef UNKNOWN_ID
 #define UNKNOWN_ID ((riscv_core_id_t) -1)
@@ -107,6 +115,9 @@ RISCV_TUNE("arc-v-rmx-100-series", arcv_rmx100, arcv_rmx100_tune_info)
 #endif
 #ifndef RISCV_CORE_ALIAS
 #define RISCV_CORE_ALIAS(CANONICAL_NAME, ALIAS_NAME)
+#endif
+#ifndef RISCV_CORE_ERRATUM
+#define RISCV_CORE_ERRATUM(CORE_NAME, ERRATUM)
 #endif
 
 RISCV_CORE("sifive-e20",      "rv32imc",    "rocket",
@@ -416,3 +427,4 @@ RISCV_CORE("spacemit-a100",   "rva23u64_zfh_zbc_zbkc_zfbfmin_smepmp_smnpm_"
 
 #undef RISCV_CORE
 #undef RISCV_CORE_ALIAS
+#undef RISCV_CORE_ERRATUM

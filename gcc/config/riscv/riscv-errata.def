@@ -1,0 +1,46 @@
+/* List of hardware errata that GCC can work around for RISC-V.
+   Copyright (C) 2026 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* Before using #include to read this file, define a macro:
+
+      RISCV_ERRATUM(ID, NAME, VAR)
+
+   ID is the identifier of the erratum, RISCV_ERRATUM_<ID> is its index.
+   NAME is the name of the erratum, represented as a string, as used by
+   -mfix-NAME and --with-errata.
+   VAR is the variable of the -mfix-NAME option, which is -1 if the option
+   is not given.
+
+   Every erratum needs a -mfix-NAME option in riscv.opt.  The cores that
+   have the erratum are listed in riscv-cores.def with RISCV_CORE_ERRATUM.
+
+   An erratum that has more than one name can also use:
+
+      RISCV_ERRATUM_ALIAS(ALIAS, ID)
+
+   ALIAS is the other name, represented as a string, as used by
+   --with-errata.  Its -mfix-ALIAS option is an Alias of -mfix-NAME in
+   riscv.opt.  */
+
+#ifndef RISCV_ERRATUM_ALIAS
+#define RISCV_ERRATUM_ALIAS(ALIAS, ID)
+#endif
+
+#undef RISCV_ERRATUM
+#undef RISCV_ERRATUM_ALIAS

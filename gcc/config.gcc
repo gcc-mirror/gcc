@@ -4944,6 +4944,25 @@ case "${target}" in
 			;;
 		esac
 
+		# Handle --with-errata.
+		case "${with_errata}" in
+		"" | none)
+			;;
+		*)
+			errata_def=${srcdir}/config/riscv/riscv-errata.def
+			for erratum in `echo "${with_errata}" | tr ',' ' '`; do
+				if test "x${erratum}" != xall \
+				   && ! grep "^RISCV_ERRATUM\(_ALIAS\)\{0,1\}(.*\"${erratum}\"" \
+					${errata_def} > /dev/null; then
+					echo "Unknown erratum ${erratum}" \
+					     "in --with-errata" 1>&2
+					exit 1
+				fi
+			done
+			tm_defines="${tm_defines} TARGET_DEFAULT_ERRATA=\\\"${with_errata}\\\""
+			;;
+		esac
+
 		# Handle --with-multilib-list.
 		if test "x${with_multilib_list}" != xdefault; then
 			tmake_file="${tmake_file} riscv/t-withmultilib"

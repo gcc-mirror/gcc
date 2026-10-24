@@ -205,4 +205,17 @@ enum
 
 #define BITMASK_NOT_YET_ALLOCATED -1
 
+/* Hardware errata that GCC can work around.  */
+enum riscv_erratum
+{
+#define RISCV_ERRATUM(ID, NAME, VAR) RISCV_ERRATUM_##ID,
+#include "riscv-errata.def"
+  RISCV_ERRATUM_MAX
+};
+
+#define RISCV_ERRATUM_MASK(ID) (HOST_WIDE_INT_1U << RISCV_ERRATUM_##ID)
+
+/* True if we work around erratum ID.  */
+#define RISCV_ERRATUM_P(ID) ((riscv_errata & RISCV_ERRATUM_MASK (ID)) != 0)
+
 #endif /* ! GCC_RISCV_OPTS_H */

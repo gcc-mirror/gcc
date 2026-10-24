@@ -1928,6 +1928,13 @@ Produce code conforming to version 20191213.
 @end table
 In the absence of this configuration option the default version is 20191213.
 
+@item --with-errata=@var{list}
+On RISC-V targets, enable the workarounds for the hardware errata in the
+comma-separated @var{list} by default, as if the matching
+@option{-mfix-@var{erratum}} options were given.  @var{list} can also be
+@samp{all} for every erratum GCC knows about, or @samp{none}, which is the
+default.  The @option{-mno-fix-@var{erratum}} options still disable them.
+
 @item --enable-__cxa_atexit
 Define if you want to use @code{__cxa_atexit}, rather than @code{atexit},
 to register C++ destructors for local statics and global objects.
