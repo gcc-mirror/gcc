@@ -964,7 +964,7 @@ xstormy16_split_move (machine_mode mode, rtx dest, rtx src)
   end = direction < 0 ? -1 : num_words;
   for (i = direction < 0 ? num_words - 1 : 0; i != end; i += direction)
     {
-      rtx w_src, w_dest, insn;
+      rtx w_src, w_dest;
 
       if (src_modifies)
 	w_src = gen_rtx_MEM (word_mode, mem_operand);
@@ -984,7 +984,7 @@ xstormy16_split_move (machine_mode mode, rtx dest, rtx src)
       gcc_assert (GET_CODE (w_src) != SUBREG
 		  && GET_CODE (w_dest) != SUBREG);
 
-      insn = emit_insn (gen_rtx_SET (w_dest, w_src));
+      rtx_insn *insn = emit_insn (gen_rtx_SET (w_dest, w_src));
       if (auto_inc_reg_rtx)
         REG_NOTES (insn) = alloc_EXPR_LIST (REG_INC,
                                             auto_inc_reg_rtx,
@@ -1164,7 +1164,8 @@ xstormy16_initial_elimination_offset (int from, int to)
 static rtx
 emit_addhi3_postreload (rtx dest, rtx src0, rtx src1)
 {
-  rtx set, clobber, insn;
+  rtx set, clobber;
+  rtx_insn *insn;
 
   set = gen_rtx_SET (dest, gen_rtx_PLUS (HImode, src0, src1));
   clobber = gen_rtx_CLOBBER (VOIDmode, gen_rtx_REG (BImode, CARRY_REGNUM));

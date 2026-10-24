@@ -18092,7 +18092,8 @@ cmse_clear_registers (sbitmap to_clear_bitmap, uint32_t *padding_bits_to_clear,
     {
       rtvec vunspec_vec;
       int i, j, k, nb_regs;
-      rtx use_seq, par, reg, set, vunspec;
+      rtx_insn *use_seq;
+      rtx par, reg, set, vunspec;
       int to_clear_bitmap_size = SBITMAP_SIZE (to_clear_bitmap);
       auto_sbitmap core_regs_bitmap (to_clear_bitmap_size);
       auto_sbitmap to_clear_core_bitmap (to_clear_bitmap_size);
@@ -19044,9 +19045,7 @@ detect_cmse_nonsecure_call (tree addr)
 void
 arm_emit_call_insn (rtx pat, rtx addr, bool sibcall)
 {
-  rtx insn;
-
-  insn = emit_call_insn (pat);
+  rtx_insn *insn = emit_call_insn (pat);
 
   /* The PIC register is live on entry to VxWorks PIC PLT entries.
      If the call might use such an entry, add a use of the PIC register
@@ -21084,7 +21083,7 @@ thumb2_emit_strd_push (unsigned long saved_regs_mask)
      64-bit aligned).  */
   if ((num_regs & 1) != 0)
     {
-      rtx reg, mem, insn;
+      rtx reg, mem;
 
       reg = gen_rtx_REG (SImode, regno);
       if (num_regs == 1)
@@ -21099,7 +21098,7 @@ thumb2_emit_strd_push (unsigned long saved_regs_mask)
 
       tmp = gen_rtx_SET (mem, reg);
       RTX_FRAME_RELATED_P (tmp) = 1;
-      insn = emit_insn (tmp);
+      rtx_insn *insn = emit_insn (tmp);
       RTX_FRAME_RELATED_P (insn) = 1;
       add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
       tmp = gen_rtx_SET (gen_frame_mem (Pmode, stack_pointer_rtx), reg);
@@ -21127,7 +21126,6 @@ thumb2_emit_strd_push (unsigned long saved_regs_mask)
 
 	if (first)
 	  {
-	    rtx insn;
 
 	    first = false;
 	    mem1 = gen_frame_mem (Pmode, plus_constant (Pmode,
@@ -21148,7 +21146,7 @@ thumb2_emit_strd_push (unsigned long saved_regs_mask)
 	    XVECEXP (par, 0, 0) = tmp0;
 	    XVECEXP (par, 0, 1) = tmp1;
 	    XVECEXP (par, 0, 2) = tmp2;
-	    insn = emit_insn (par);
+	    rtx_insn *insn = emit_insn (par);
 	    RTX_FRAME_RELATED_P (insn) = 1;
 	    add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
 	  }
@@ -22383,7 +22381,8 @@ static void
 thumb_set_frame_pointer (arm_stack_offsets *offsets)
 {
   HOST_WIDE_INT amount;
-  rtx insn, dwarf;
+  rtx_insn *insn;
+  rtx dwarf;
 
   amount = offsets->outgoing_args - offsets->locals_base;
   if (amount < 1024)

@@ -3976,13 +3976,12 @@ emit_tfmode_cvt (enum rtx_code code, rtx *operands)
 int
 empty_delay_slot (rtx_insn *insn)
 {
-  rtx seq;
 
   /* If no previous instruction (should not happen), return true.  */
   if (PREV_INSN (insn) == NULL)
     return 1;
 
-  seq = NEXT_INSN (PREV_INSN (insn));
+  rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
   if (GET_CODE (PATTERN (seq)) == SEQUENCE)
     return 0;
 
@@ -12506,7 +12505,8 @@ sparc_output_mi_thunk (FILE *file, tree thunk_fndecl ATTRIBUTE_UNUSED,
     {
       /* The hoops we have to jump through in order to generate a sibcall
 	 without using delay slots...  */
-      rtx spill_reg, seq, scratch = gen_rtx_REG (Pmode, 1);
+      rtx spill_reg, scratch = gen_rtx_REG (Pmode, 1);
+      rtx_insn *seq;
 
       if (flag_pic)
         {

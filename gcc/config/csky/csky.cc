@@ -1163,7 +1163,7 @@ get_csky_barrier_cost (rtx_insn *insn)
      but at the moment, the basic block information seems to be
      corrupt by this stage of the compilation.  */
   int base_cost = 50;
-  rtx next = next_nonnote_insn (insn);
+  rtx_insn *next = next_nonnote_insn (insn);
 
   if (next != NULL && GET_CODE (next) == CODE_LABEL)
     base_cost -= 20;
@@ -5755,8 +5755,9 @@ csky_expand_prologue (void)
 				       plus_constant (Pmode,
 						      stack_pointer_rtx,
 						      offset));
-		rtx insn = emit_insn (gen_movsi (dst,
-						 gen_rtx_REG (SImode, regno)));
+		rtx_insn *insn = emit_insn (gen_movsi (dst,
+						       gen_rtx_REG (SImode,
+								    regno)));
 		RTX_FRAME_RELATED_P (insn) = 1;
 		if (offset == stm_size)
 		  break;

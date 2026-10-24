@@ -278,7 +278,7 @@ void
 moxie_expand_prologue (void)
 {
   int regno;
-  rtx insn;
+  rtx_insn *insn;
 
   moxie_compute_frame ();
 

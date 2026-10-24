@@ -1726,7 +1726,7 @@ expand_prologue (void)
 	  code = recog (save_all, NULL, NULL);
 	  if (code >= 0)
 	    {
-	      rtx insn = emit_insn (save_all);
+	      rtx_insn *insn = emit_insn (save_all);
 	      INSN_CODE (insn) = code;
 	      actual_fsize -= alloc_stack;
 
@@ -1873,12 +1873,11 @@ expand_epilogue (void)
 
 	  if (code >= 0)
 	    {
-	      rtx insn;
 
 	      actual_fsize -= alloc_stack;
 	      increment_stack (actual_fsize, false);
 
-	      insn = emit_jump_insn (restore_all);
+	      rtx_insn *insn = emit_jump_insn (restore_all);
 	      INSN_CODE (insn) = code;
 	    }
 	  else

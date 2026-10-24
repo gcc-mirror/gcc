@@ -1225,7 +1225,7 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
   for (trial = thread; !stop_search_p (trial, true); trial = next_trial)
     {
       rtx pat = PATTERN (trial);
-      rtx oldtrial = trial;
+      rtx_insn *oldtrial = trial;
 
       next_trial = next_nonnote_insn (trial);
 
@@ -2340,7 +2340,8 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
        ! stop_search_p (trial, ! thread_if_true) && (! lose || own_thread);
        trial = next_nonnote_insn (trial))
     {
-      rtx pat, old_trial;
+      rtx pat;
+      rtx_insn *old_trial;
 
       /* If we have passed a label, we no longer own this thread.  */
       if (LABEL_P (trial))
@@ -3501,7 +3502,8 @@ make_return_insns (rtx_insn *first)
   for (insn = first; insn; insn = NEXT_INSN (insn))
     {
       int flags;
-      rtx kind, real_label;
+      rtx kind;
+      rtx_insn *real_label;
 
       /* Only look at filled JUMP_INSNs that go to the end of function
 	 label.  */

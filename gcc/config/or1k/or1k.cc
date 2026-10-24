@@ -190,7 +190,7 @@ or1k_save_reg (int regno, HOST_WIDE_INT offset)
   rtx reg = gen_rtx_REG (Pmode, regno);
   rtx mem = gen_frame_mem (SImode, plus_constant (Pmode, stack_pointer_rtx,
 						  offset));
-  rtx insn = emit_move_insn (mem, reg);
+  rtx_insn *insn = emit_move_insn (mem, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
@@ -214,7 +214,7 @@ or1k_expand_prologue (void)
 {
   HOST_WIDE_INT sp_offset = -cfun->machine->total_size;
   HOST_WIDE_INT reg_offset, this_offset;
-  rtx insn;
+  rtx_insn *insn;
 
   if (flag_stack_usage_info)
     current_function_static_stack_size = -sp_offset;
@@ -324,7 +324,8 @@ void
 or1k_expand_epilogue (void)
 {
   HOST_WIDE_INT reg_offset, sp_offset;
-  rtx insn, cfa_restores = NULL;
+  rtx_insn *insn;
+  rtx cfa_restores = NULL;
 
   sp_offset = cfun->machine->total_size;
   if (sp_offset == 0)

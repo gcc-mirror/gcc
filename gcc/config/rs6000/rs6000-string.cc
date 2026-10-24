@@ -1853,7 +1853,7 @@ expand_block_compare_gpr(unsigned HOST_WIDE_INT bytes, unsigned int base_align,
 	      if (final_label)
 		{
 		  rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
-		  rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+		  rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
 		  JUMP_LABEL (j) = final_label;
 		  LABEL_NUSES (final_label) += 1;
 		  emit_barrier ();
@@ -2305,7 +2305,7 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 	      do_sub3 (result_reg, tmp_reg_src1, tmp_reg_src2);
 
 	      rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_move_label);
-	      rtx j = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+	      rtx_insn *j = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
 	      JUMP_LABEL (j) = final_move_label;
 	      LABEL_NUSES (final_move_label) += 1;
 	      emit_barrier ();
@@ -2526,7 +2526,7 @@ expand_strn_compare (rtx operands[], int no_length)
       /* Generate code that checks distance to 4k boundary for this case.  */
       begin_compare_label = gen_label_rtx ();
       rtx_code_label *strncmp_label = gen_label_rtx ();
-      rtx jmp;
+      rtx_insn *jmp;
 
       /* Strncmp for power8 in glibc does this:
 	 rldicl r8,r3,0,52
@@ -2657,7 +2657,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	}
 
       rtx fin_ref = gen_rtx_LABEL_REF (VOIDmode, final_label);
-      rtx jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
+      rtx_insn *jmp = emit_jump_insn (gen_rtx_SET (pc_rtx, fin_ref));
       JUMP_LABEL (jmp) = final_label;
       LABEL_NUSES (final_label) += 1;
       emit_barrier ();

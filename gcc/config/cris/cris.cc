@@ -2546,7 +2546,7 @@ cris_split_movdx (rtx *operands)
   machine_mode mode = GET_MODE (operands[0]);
   rtx dest = operands[0];
   rtx src  = operands[1];
-  rtx val;
+  rtx_insn *val;
 
   /* We used to have to handle (SUBREG (MEM)) here, but that should no
      longer happen; after reload there are no SUBREGs any more, and we're
@@ -2602,14 +2602,14 @@ cris_split_movdx (rtx *operands)
           if (GET_CODE (addr) == POST_INC)
 	    {
 	      rtx mem;
-	      rtx insn;
 
 	      /* Whenever we emit insns with post-incremented
 		 addresses ourselves, we must add a post-inc note
 		 manually.  */
 	      mem = change_address (src, SImode, addr);
-	      insn = emit_move_insn (operand_subword (dest, 0, TRUE, mode),
-				     mem);
+	      rtx_insn *insn
+		= emit_move_insn (operand_subword (dest, 0, TRUE, mode),
+				  mem);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 		REG_NOTES (insn)
 		  = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
@@ -2658,12 +2658,12 @@ cris_split_movdx (rtx *operands)
       if (GET_CODE (addr) == POST_INC)
 	{
 	  rtx mem;
-	  rtx insn;
 
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
 	  mem = change_address (dest, SImode, addr);
-	  insn = emit_move_insn (mem, operand_subword (src, 0, TRUE, mode));
+	  rtx_insn *insn
+	    = emit_move_insn (mem, operand_subword (src, 0, TRUE, mode));
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
 	    REG_NOTES (insn)
 	      = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
@@ -3162,7 +3162,6 @@ cris_expand_epilogue (void)
        regno--)
     if (cris_reg_saved_in_regsave_area (regno))
       {
-	rtx insn;
 
 	if (argspace_offset)
 	  {
@@ -3177,7 +3176,7 @@ cris_expand_epilogue (void)
 	mem = gen_rtx_MEM (SImode, gen_rtx_POST_INC (SImode,
 						     stack_pointer_rtx));
 	set_mem_alias_set (mem, get_frame_alias_set ());
-	insn = emit_move_insn (gen_raw_REG (SImode, regno), mem);
+	rtx_insn *insn = emit_move_insn (gen_raw_REG (SImode, regno), mem);
 
 	/* Whenever we emit insns with post-incremented addresses
 	   ourselves, we must add a post-inc note manually.  */
@@ -3188,7 +3187,6 @@ cris_expand_epilogue (void)
   /* If we have any movem-restore, do it now.  */
   if (last_movem_reg != -1)
     {
-      rtx insn;
 
       if (argspace_offset)
 	{
@@ -3199,7 +3197,7 @@ cris_expand_epilogue (void)
       mem = gen_rtx_MEM (SImode,
 			 gen_rtx_POST_INC (SImode, stack_pointer_rtx));
       set_mem_alias_set (mem, get_frame_alias_set ());
-      insn
+      rtx_insn *insn
 	= emit_insn (cris_gen_movem_load (mem, GEN_INT (last_movem_reg + 1)));
       /* Whenever we emit insns with post-incremented addresses
 	 ourselves, we must add a post-inc note manually.  */
@@ -3221,7 +3219,6 @@ cris_expand_epilogue (void)
   /* Restore frame pointer if necessary.  */
   if (frame_pointer_needed)
     {
-      rtx insn;
 
       emit_insn (gen_cris_frame_deallocated_barrier ());
 
@@ -3229,7 +3226,7 @@ cris_expand_epilogue (void)
       mem = gen_rtx_MEM (SImode, gen_rtx_POST_INC (SImode,
 						   stack_pointer_rtx));
       set_mem_alias_set (mem, get_frame_alias_set ());
-      insn = emit_move_insn (hard_frame_pointer_rtx, mem);
+      rtx_insn *insn = emit_move_insn (hard_frame_pointer_rtx, mem);
 
       /* Whenever we emit insns with post-incremented addresses
 	 ourselves, we must add a post-inc note manually.  */
@@ -3258,13 +3255,12 @@ cris_expand_epilogue (void)
       if (crtl->calls_eh_return)
 	{
 	  rtx mem;
-	  rtx insn;
 	  rtx srpreg = gen_raw_REG (SImode, CRIS_SRP_REGNUM);
 	  mem = gen_rtx_MEM (SImode,
 			     gen_rtx_POST_INC (SImode,
 					       stack_pointer_rtx));
 	  set_mem_alias_set (mem, get_frame_alias_set ());
-	  insn = emit_move_insn (srpreg, mem);
+	  rtx_insn *insn = emit_move_insn (srpreg, mem);
 
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
@@ -3291,13 +3287,12 @@ cris_expand_epilogue (void)
 	{
 	  rtx mem;
 	  rtx srpreg = gen_raw_REG (SImode, CRIS_SRP_REGNUM);
-	  rtx insn;
 
 	  mem = gen_rtx_MEM (SImode,
 			     gen_rtx_POST_INC (SImode,
 					       stack_pointer_rtx));
 	  set_mem_alias_set (mem, get_frame_alias_set ());
-	  insn = emit_move_insn (srpreg, mem);
+	  rtx_insn *insn = emit_move_insn (srpreg, mem);
 
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
@@ -3389,7 +3384,7 @@ cris_emit_movem_store (rtx dest, rtx nregs_rtx, int increment,
   rtvec vec;
   int eltno = 1;
   int i;
-  rtx insn;
+  rtx_insn *insn;
   rtx destreg = XEXP (dest, 0);
   unsigned int regno = nregs - 1;
   int regno_inc = -1;

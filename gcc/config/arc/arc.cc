@@ -2907,7 +2907,8 @@ arc_compute_frame_size (void)
 static void
 arc_dwarf_emit_irq_save_regs (void)
 {
-  rtx tmp, par, insn, reg;
+  rtx tmp, par, reg;
+  rtx_insn *insn;
   int i, offset, j;
 
   par = gen_rtx_SEQUENCE (VOIDmode,
@@ -3004,7 +3005,7 @@ push_reg (rtx reg)
 {
   rtx stkslot = gen_rtx_MEM (GET_MODE (reg), gen_rtx_PRE_DEC (Pmode,
 						   stack_pointer_rtx));
-  rtx insn = emit_move_insn (stkslot, reg);
+  rtx_insn *insn = emit_move_insn (stkslot, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_CFA_ADJUST_CFA,
 		gen_rtx_SET (stack_pointer_rtx,
@@ -3058,7 +3059,7 @@ pop_reg (rtx reg)
 {
   rtx stkslot = gen_rtx_MEM (GET_MODE (reg), gen_rtx_POST_INC (Pmode,
 						   stack_pointer_rtx));
-  rtx insn = emit_move_insn (reg, stkslot);
+  rtx_insn *insn = emit_move_insn (reg, stkslot);
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_CFA_ADJUST_CFA,
 		gen_rtx_SET (stack_pointer_rtx,
@@ -3933,7 +3934,7 @@ arc_expand_epilogue (int sibcall_p)
   /* Restore accumulator registers.  */
   if (arc_must_save_register (R58_REG, cfun, true))
     {
-      rtx insn;
+      rtx_insn *insn;
       rtx reg0 = gen_rtx_REG (SImode, R0_REG);
       rtx reg1 = gen_rtx_REG (SImode, R1_REG);
       size_to_deallocate -= pop_reg (reg0);
@@ -7935,7 +7936,7 @@ static void
 hwloop_fail (hwloop_info loop)
 {
   rtx test;
-  rtx insn = loop->loop_end;
+  rtx_insn *insn = loop->loop_end;
 
   if (TARGET_DBNZ
       && (loop->length && (loop->length <= ARC_MAX_LOOP_LENGTH))

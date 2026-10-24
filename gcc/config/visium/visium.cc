@@ -980,13 +980,12 @@ ok_for_simple_arith_logic_operands (rtx *, machine_mode)
 int
 empty_delay_slot (rtx_insn *insn)
 {
-  rtx seq;
 
   /* If no previous instruction (should not happen), return true.  */
   if (PREV_INSN (insn) == NULL)
     return 1;
 
-  seq = NEXT_INSN (PREV_INSN (insn));
+  rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
   if (GET_CODE (PATTERN (seq)) == SEQUENCE)
     return 0;
 

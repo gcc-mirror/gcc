@@ -347,7 +347,8 @@ th_mempair_save_regs (rtx operands[4])
   rtx set1 = gen_rtx_SET (operands[0], operands[1]);
   rtx set2 = gen_rtx_SET (operands[2], operands[3]);
   rtx dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (2));
-  rtx insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2)));
+  rtx_insn *insn = emit_insn (gen_rtx_PARALLEL (VOIDmode,
+						gen_rtvec (2, set1, set2)));
   RTX_FRAME_RELATED_P (insn) = 1;
 
   XVECEXP (dwarf, 0, 0) = copy_rtx (set1);
@@ -365,7 +366,8 @@ th_mempair_restore_regs (rtx operands[4])
 {
   rtx set1 = gen_rtx_SET (operands[0], operands[1]);
   rtx set2 = gen_rtx_SET (operands[2], operands[3]);
-  rtx insn = emit_insn (gen_rtx_PARALLEL (VOIDmode, gen_rtvec (2, set1, set2)));
+  rtx_insn *insn = emit_insn (gen_rtx_PARALLEL (VOIDmode,
+						gen_rtvec (2, set1, set2)));
   RTX_FRAME_RELATED_P (insn) = 1;
   add_reg_note (insn, REG_CFA_RESTORE, operands[0]);
   add_reg_note (insn, REG_CFA_RESTORE, operands[2]);

@@ -4602,7 +4602,7 @@ nvptx_propagate (bool is_call, basic_block block, rtx_insn *insn,
 	}
       emit_insn (gen_rtx_CLOBBER (GET_MODE (tmp), tmp));
       emit_insn (gen_rtx_CLOBBER (GET_MODE (ptr), ptr));
-      rtx cpy = end_sequence ();
+      rtx_insn *cpy = end_sequence ();
       insn = emit_insn_after (cpy, insn);
     }
 

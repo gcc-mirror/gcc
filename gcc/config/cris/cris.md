@@ -535,7 +535,6 @@
       && ! reload_completed
       && ! lra_in_progress)
     {
-      rtx insns;
       rtx op0 = operands[0];
       rtx op1 = operands[1];
 
@@ -544,7 +543,7 @@
 		      operand_subword (op1, 0, 1, DImode));
       emit_move_insn (operand_subword (op0, 1, 1, DImode),
 		      operand_subword (op1, 1, 1, DImode));
-      insns = end_sequence ();
+      rtx_insn *insns = end_sequence ();
 
       emit_insn (insns);
       DONE;

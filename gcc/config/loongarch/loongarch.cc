@@ -799,9 +799,7 @@ loongarch_setup_incoming_varargs (cumulative_args_t cum,
 static void
 loongarch_set_frame_expr (rtx frame_pattern)
 {
-  rtx insn;
-
-  insn = get_last_insn ();
+  rtx_insn *insn = get_last_insn ();
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR, frame_pattern,
 				      REG_NOTES (insn));
@@ -1447,7 +1445,7 @@ loongarch_expand_epilogue (int style)
   HOST_WIDE_INT step1 = frame->total_size;
   HOST_WIDE_INT step2 = 0;
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
-  rtx insn;
+  rtx_insn *insn;
 
   /* We need to add memory barrier to prevent read from deallocated stack.  */
   bool need_barrier_p

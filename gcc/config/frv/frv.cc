@@ -1557,7 +1557,7 @@ frv_dwarf_store (rtx reg, int offset)
 static void
 frv_frame_insn (rtx pattern, rtx dwarf_pattern)
 {
-  rtx insn = emit_insn (pattern);
+  rtx_insn *insn = emit_insn (pattern);
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 				      dwarf_pattern,
@@ -4737,7 +4737,7 @@ frv_emit_scc (rtx operands[])
 rtx
 frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
 {
-  rtx ret;
+  rtx_insn *ret;
 
   start_sequence ();
 
@@ -4854,7 +4854,7 @@ frv_split_cond_move (rtx operands[])
   rtx src1	= operands[3];
   rtx src2	= operands[4];
   rtx cr_reg	= operands[5];
-  rtx ret;
+  rtx_insn *ret;
   machine_mode cr_mode = GET_MODE (cr_reg);
 
   start_sequence ();
@@ -5003,7 +5003,7 @@ frv_split_minmax (rtx operands[])
   rtx src2	= operands[3];
   rtx cc_reg	= operands[4];
   rtx cr_reg	= operands[5];
-  rtx ret;
+  rtx_insn *ret;
   enum rtx_code test_code;
   machine_mode cr_mode = GET_MODE (cr_reg);
 
@@ -5075,7 +5075,7 @@ frv_split_abs (rtx operands[])
   rtx src	= operands[1];
   rtx cc_reg	= operands[2];
   rtx cr_reg	= operands[3];
-  rtx ret;
+  rtx_insn *ret;
 
   start_sequence ();
 

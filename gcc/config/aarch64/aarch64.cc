@@ -9410,14 +9410,14 @@ aarch64_pushwb_single_reg (machine_mode mode, unsigned regno,
 			   HOST_WIDE_INT adjustment)
  {
   rtx base_rtx = stack_pointer_rtx;
-  rtx insn, reg, mem;
+  rtx reg, mem;
 
   reg = gen_rtx_REG (mode, regno);
   mem = gen_rtx_PRE_MODIFY (Pmode, base_rtx,
 			    plus_constant (Pmode, base_rtx, -adjustment));
   mem = gen_frame_mem (mode, mem);
 
-  insn = emit_move_insn (mem, reg);
+  rtx_insn *insn = emit_move_insn (mem, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
 }
 
@@ -11255,7 +11255,7 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
       rtx_code_label *label = gen_label_rtx ();
       rtx x = aarch64_gen_compare_zero_and_branch (EQ, EH_RETURN_TAKEN_RTX,
 						   label);
-      rtx jump = emit_jump_insn (x);
+      rtx_insn *jump = emit_jump_insn (x);
       JUMP_LABEL (jump) = label;
       LABEL_NUSES (label)++;
       emit_insn (gen_add2_insn (stack_pointer_rtx,

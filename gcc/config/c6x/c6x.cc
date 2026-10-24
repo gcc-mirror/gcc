@@ -4989,7 +4989,7 @@ static void
 reorg_emit_nops (rtx_code_label **call_labels)
 {
   bool first;
-  rtx last_call;
+  rtx_insn *last_call;
   rtx_insn *prev;
   int prev_clock, earliest_bb_end;
   int prev_implicit_nops;
@@ -5054,7 +5054,7 @@ reorg_emit_nops (rtx_code_label **call_labels)
 		  && insn_get_clock (last_call) + 6 <= this_clock)
 		{
 		  emit_label_before (call_labels[INSN_UID (last_call)], insn);
-		  last_call = NULL_RTX;
+		  last_call = nullptr;
 		}
 	      prev_implicit_nops = 0;
 	    }
@@ -5106,7 +5106,7 @@ reorg_emit_nops (rtx_code_label **call_labels)
 
 	  if (last_call)
 	    emit_label_after (call_labels[INSN_UID (last_call)], prev);
-	  last_call = NULL_RTX;
+	  last_call = nullptr;
 	}
       insn = next;
     }

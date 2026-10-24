@@ -948,7 +948,8 @@ shorten_branches (rtx_insn *first)
 
       for (insn = first; insn != 0; insn = NEXT_INSN (insn))
 	{
-	  rtx min_lab = NULL_RTX, max_lab = NULL_RTX, pat;
+	  rtx_insn *min_lab = nullptr, *max_lab = nullptr;
+	  rtx pat;
 	  int len, i, min, max, insn_shuid;
 	  int min_align;
 	  addr_diff_vec_flags flags;

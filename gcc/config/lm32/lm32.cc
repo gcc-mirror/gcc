@@ -166,7 +166,7 @@ lm32_return_in_memory (tree type)
 static rtx
 emit_add (rtx dest, rtx src0, rtx src1)
 {
-  rtx insn;
+  rtx_insn *insn;
   insn = emit_insn (gen_addsi3 (dest, src0, src1));
   return insn;
 }

@@ -8613,7 +8613,7 @@ alpha_expand_prologue (void)
       HOST_WIDE_INT leftover = probed_size + 4096 - blocks * 8192;
       rtx ptr = gen_rtx_REG (DImode, 22);
       rtx count = gen_rtx_REG (DImode, 23);
-      rtx seq;
+      rtx_insn *seq;
 
       emit_move_insn (count, GEN_INT (blocks));
       emit_insn (gen_adddi3 (ptr, stack_pointer_rtx, GEN_INT (4096)));
@@ -8963,7 +8963,8 @@ alpha_expand_epilogue (void)
   HOST_WIDE_INT reg_offset;
   int fp_is_frame_pointer, fp_offset;
   rtx sa_reg, sa_reg_exp = NULL;
-  rtx sp_adj1, sp_adj2, mem, reg, insn;
+  rtx sp_adj1, sp_adj2, mem, reg;
+  rtx_insn *insn;
   rtx eh_ofs;
   rtx cfa_restores = NULL_RTX;
 

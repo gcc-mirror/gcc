@@ -189,7 +189,7 @@ vax_expand_prologue (void)
   int regno, offset;
   int mask = 0;
   HOST_WIDE_INT size;
-  rtx insn;
+  rtx_insn *insn;
 
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))

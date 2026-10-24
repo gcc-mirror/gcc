@@ -1501,7 +1501,7 @@
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
   {
-    rtx insn;
+    rtx_insn *insn;
     rtx sym = XEXP (operands[0], 0);
 
     if (TARGET_ICT_MODEL_LARGE
@@ -1587,7 +1587,7 @@
 	      (clobber (reg:SI TA_REGNUM))])]
   ""
   {
-    rtx insn;
+    rtx_insn *insn;
     rtx sym = XEXP (operands[1], 0);
 
     if (TARGET_ICT_MODEL_LARGE

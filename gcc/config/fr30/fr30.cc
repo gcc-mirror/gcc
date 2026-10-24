@@ -280,7 +280,7 @@ void
 fr30_expand_prologue (void)
 {
   int regno;
-  rtx insn;
+  rtx_insn *insn;
 
   if (! current_frame_info.initialised)
     fr30_compute_frame_size (0, 0);
@@ -886,7 +886,6 @@ fr30_move_double (rtx * operands)
   enum rtx_code src_code = GET_CODE (src);
   enum rtx_code dest_code = GET_CODE (dest);
   machine_mode mode = GET_MODE (dest);
-  rtx val;
 
   start_sequence ();
 
@@ -976,7 +975,7 @@ fr30_move_double (rtx * operands)
     /* This should have been prevented by the constraints on movdi_insn.  */
     gcc_unreachable ();
 
-  val = end_sequence ();
+  rtx_insn *val = end_sequence ();
 
   return val;
 }

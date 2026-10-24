@@ -1715,7 +1715,7 @@ ok_for_max_constant (HOST_WIDE_INT val)
 static void
 gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (val == NULL_RTX || INTVAL (val) == 0)
     {
@@ -1748,7 +1748,7 @@ gen_safe_add (rtx dest, rtx src, rtx val, bool is_frame_related)
 static void
 push_regs (unsigned int high, unsigned int low)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (low == high)
     insn = emit_insn (gen_stack_push (gen_rtx_REG (SImode, low)));

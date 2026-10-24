@@ -308,7 +308,7 @@ insert_partition_copy_on_edge (edge e, int dest, int src, location_t locus)
 static void
 insert_value_copy_on_edge (edge e, int dest, tree src, location_t locus)
 {
-  rtx dest_rtx, seq, x;
+  rtx dest_rtx, x;
   machine_mode dest_mode, src_mode;
   int unsignedp;
 
@@ -356,7 +356,7 @@ insert_value_copy_on_edge (edge e, int dest, tree src, location_t locus)
     emit_move_insn (dest_rtx, x);
   do_pending_stack_adjust ();
 
-  seq = end_sequence ();
+  rtx_insn *seq = end_sequence ();
 
   insert_insn_on_edge (seq, e);
 }

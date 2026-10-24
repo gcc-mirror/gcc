@@ -165,7 +165,7 @@ static rtx
 pru_add3_frame_adjust (rtx op0, rtx op1, int addendum,
 		       const enum reg_note kind)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   rtx op0_adjust = gen_rtx_SET (op0, plus_constant (Pmode, op1, addendum));
 

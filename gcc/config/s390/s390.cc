@@ -11755,7 +11755,7 @@ static rtx
 save_fpr (rtx base, int offset, int regnum)
 {
   rtx addr;
-  rtx insn;
+  rtx_insn *insn;
 
   addr = gen_rtx_MEM (DFmode, plus_constant (Pmode, base, offset));
 

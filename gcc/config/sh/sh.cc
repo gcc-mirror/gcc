@@ -5937,7 +5937,8 @@ sh_reorg (void)
 
       for (insn = first; insn; insn = NEXT_INSN (insn))
 	{
-	  rtx pattern, reg, set, dies;
+	  rtx pattern, reg, set;
+	  rtx_insn *dies;
 	  rtx_code_label *label;
 	  rtx_insn *link, *scan;
 	  int rescan = 0, foundinsn = 0;
@@ -6010,7 +6011,7 @@ sh_reorg (void)
 	     by reload, since there may not be a REG_DEAD note for the
 	     register.  */
 
-	  dies = NULL_RTX;
+	  dies = nullptr;
 	  for (scan = NEXT_INSN (link); scan; scan = NEXT_INSN (scan))
 	    {
 	      rtx scanset;

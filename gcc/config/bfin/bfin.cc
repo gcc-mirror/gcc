@@ -3456,7 +3456,7 @@ hwloop_optimize (hwloop_info loop)
   rtx iter_reg, scratchreg, scratch_init;
   rtx_insn *scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;
-  rtx seq_end;
+  rtx_insn *seq_end;
   rtx_insn *seq;
   int length;
   bool clobber0, clobber1;
@@ -3853,13 +3853,14 @@ hwloop_optimize (hwloop_info loop)
 static void
 hwloop_fail (hwloop_info loop)
 {
-  rtx insn = loop->loop_end;
+  rtx_insn *insn = loop->loop_end;
 
   if (DPREG_P (loop->iter_reg))
     {
       /* If loop->iter_reg is a DREG or PREG, we can split it here
 	 without scratch register.  */
-      rtx insn, test;
+      rtx_insn *insn;
+      rtx test;
 
       emit_insn_before (gen_addsi3 (loop->iter_reg,
 				    loop->iter_reg,
@@ -3879,7 +3880,7 @@ hwloop_fail (hwloop_info loop)
   else
     {
       splitting_loops = 1;
-      try_split (PATTERN (insn), safe_as_a <rtx_insn *> (insn), 1);
+      try_split (PATTERN (insn), insn, 1);
       splitting_loops = 0;
     }
 }

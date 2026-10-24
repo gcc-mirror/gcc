@@ -437,7 +437,7 @@ void
 ft32_expand_prologue (void)
 {
   int regno;
-  rtx insn;
+  rtx_insn *insn;
 
   ft32_compute_frame ();
 

@@ -3240,7 +3240,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	saved_scalars++;
       }
 
-  rtx move_scalars = end_sequence ();
+  rtx_insn *move_scalars = end_sequence ();
   start_sequence ();
 
   /* Ensure that all vector lanes are moved.  */
@@ -3290,9 +3290,10 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 
 	if (prologue)
 	  {
-	    rtx insn = emit_insn (gen_movv64si_exec (vspmem, reg,
-						     gcn_gen_undef (V64SImode),
-						     exec));
+	    rtx_insn *insn
+	      = emit_insn (gen_movv64si_exec (vspmem, reg,
+					      gcn_gen_undef (V64SImode),
+					      exec));
 
 	    /* Add CFI metadata.  */
 	    rtx note;
@@ -3377,7 +3378,7 @@ move_callee_saved_registers (rtx sp, machine_function *offsets,
 	offset += size;
       }
 
-  rtx move_vectors = end_sequence ();
+  rtx_insn *move_vectors = end_sequence ();
 
   if (prologue)
     {
@@ -3466,8 +3467,9 @@ gcn_expand_prologue ()
 	     the note.  */
 	  rtx scc = gen_rtx_REG (BImode, SCC_REG);
 	  rtx adjustment = gen_int_mode (sp_adjust, SImode);
-	  rtx insn = emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo,
-							 adjustment, scc));
+	  rtx_insn *insn = emit_insn (gen_addsi3_scalar_carry (sp_lo, sp_lo,
+							       adjustment,
+							       scc));
 	  if (!offsets->need_frame_pointer)
 	    {
 	      RTX_FRAME_RELATED_P (insn) = 1;
@@ -3487,8 +3489,9 @@ gcn_expand_prologue ()
 	  rtx scc = gen_rtx_REG (BImode, SCC_REG);
 	  int fp_adjust = -(offsets->local_vars + offsets->outgoing_args_size);
 	  rtx adjustment = gen_int_mode (fp_adjust, SImode);
-	  rtx insn = emit_insn (gen_addsi3_scalar_carry(fp_lo, sp_lo,
-							adjustment, scc));
+	  rtx_insn *insn = emit_insn (gen_addsi3_scalar_carry (fp_lo, sp_lo,
+							       adjustment,
+							       scc));
 	  emit_insn (gen_addcsi3_scalar (fp_hi, sp_hi,
 					 (fp_adjust < 0 ? GEN_INT (-1)
 					  : const0_rtx),
@@ -3613,7 +3616,7 @@ gcn_expand_prologue ()
          make a notional adjustment to the DWARF frame offset here.  */
       rtx dbg_adjustment = gen_int_mode (sp_adjust + offsets->callee_saves,
 					 DImode);
-      rtx insn;
+      rtx_insn *insn;
       if (sp_adjust > 0)
 	{
 	  rtx scc = gen_rtx_REG (BImode, SCC_REG);

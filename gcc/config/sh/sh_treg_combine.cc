@@ -361,7 +361,7 @@ trace_reg_uses_1 (rtx reg, rtx_insn *start_insn, basic_block bb, int& count,
   if (start_insn == NULL_RTX)
     log_return_void ("[bb %d] start_insn is null\n", bb->index);
 
-  rtx end_insn = NEXT_INSN (BB_END (bb));
+  rtx_insn *end_insn = NEXT_INSN (BB_END (bb));
   if (end_insn == NULL_RTX)
     log_return_void ("[bb %d] end_insn is null\n", bb->index);
 

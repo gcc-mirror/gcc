@@ -3451,7 +3451,7 @@ rs6000_emit_prologue (void)
     {
       rtx tmp_reg, tmp_reg_si, hi, lo, compare_result;
       rtx jump;
-      rtx join_insn, note;
+      rtx note;
       rtx_insn *save_insn;
       long toc_restore_insn;
 
@@ -3512,7 +3512,7 @@ rs6000_emit_prologue (void)
 			       copy_rtx (PATTERN (save_insn)), NULL_RTX);
       RTX_FRAME_RELATED_P (save_insn) = 0;
 
-      join_insn = emit_insn (gen_blockage ());
+      rtx_insn *join_insn = emit_insn (gen_blockage ());
       REG_NOTES (join_insn) = note;
       RTX_FRAME_RELATED_P (join_insn) = 1;
 
@@ -4182,8 +4182,9 @@ restore_saved_cr (rtx reg, bool using_mfcr_multiple, bool exit_func)
     for (i = 0; i < 8; i++)
       if (save_reg_p (CR0_REGNO + i))
 	{
-	  rtx insn = emit_insn (gen_movsi_to_cr_one
-				 (gen_rtx_REG (CCmode, CR0_REGNO + i), reg));
+	  rtx_insn *insn = emit_insn (gen_movsi_to_cr_one
+				      (gen_rtx_REG (CCmode, CR0_REGNO + i),
+				       reg));
 
 	  /* For the ELFv2 ABI we generate a CFA_RESTORE for each
 	     CR field separately, attached to the insn that in fact

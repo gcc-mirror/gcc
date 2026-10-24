@@ -4986,7 +4986,7 @@ nds32_expand_epilogue (bool sibcall_p)
 	 CFA is described using $ta then SP is modified.  */
 
       rtx ta_reg;
-      rtx insn;
+      rtx_insn *insn;
 
       ta_reg = gen_rtx_REG (SImode, TA_REGNUM);
 

@@ -1227,7 +1227,7 @@ nds32_expand_float_movcc (rtx *operands)
 void
 nds32_emit_push_fpr_callee_saved (int base_offset)
 {
-  rtx fpu_insn;
+  rtx_insn *fpu_insn;
   rtx reg, mem;
   unsigned int regno = cfun->machine->callee_saved_first_fpr_regno;
   unsigned int last_fpr = cfun->machine->callee_saved_last_fpr_regno;
@@ -1249,7 +1249,7 @@ nds32_emit_push_fpr_callee_saved (int base_offset)
 void
 nds32_emit_pop_fpr_callee_saved (int gpr_padding_size)
 {
-  rtx fpu_insn;
+  rtx_insn *fpu_insn;
   rtx reg, mem, addr;
   rtx dwarf, adjust_sp_rtx;
   unsigned int regno = cfun->machine->callee_saved_first_fpr_regno;
@@ -1289,7 +1289,7 @@ nds32_emit_v3pop_fpr_callee_saved (int base)
 {
   int fpu_base_addr = base;
   int regno;
-  rtx fpu_insn;
+  rtx_insn *fpu_insn;
   rtx reg, mem;
   rtx dwarf;
 
@@ -3672,7 +3672,8 @@ nds32_legitimize_tls_address (rtx x)
 {
   rtx tmp_reg;
   rtx tp_reg = gen_rtx_REG (Pmode, TP_REGNUM);
-  rtx pat, insns, reg0;
+  rtx pat, reg0;
+  rtx_insn *insns;
   int relax_group_id = nds32_alloc_relax_group_id ();
 
   if (GET_CODE (x) == SYMBOL_REF)

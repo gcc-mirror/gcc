@@ -1584,7 +1584,8 @@ ia64_split_tmode (rtx out[2], rtx in, bool reversed, bool dead)
 void
 ia64_split_tmode_move (rtx operands[])
 {
-  rtx in[2], out[2], insn;
+  rtx in[2], out[2];
+  rtx_insn *insn;
   rtx fixup[2];
   bool dead = false;
   bool reversed = false;

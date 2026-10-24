@@ -9296,9 +9296,7 @@ riscv_elf_select_rtx_section (machine_mode mode, rtx x,
 static void
 riscv_set_frame_expr (rtx frame_pattern)
 {
-  rtx insn;
-
-  insn = get_last_insn ();
+  rtx_insn *insn = get_last_insn ();
   RTX_FRAME_RELATED_P (insn) = 1;
   REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
 				      frame_pattern,
@@ -10098,7 +10096,7 @@ riscv_for_each_saved_v_reg (poly_int64 &remaining_size,
       else
 	{
 	  vlen = RISCV_PROLOGUE_TEMP (Pmode);
-	  rtx insn
+	  rtx_insn *insn
 	    = emit_move_insn (vlen, gen_int_mode (UNITS_PER_V_REG, Pmode));
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
@@ -10117,7 +10115,7 @@ riscv_for_each_saved_v_reg (poly_int64 &remaining_size,
 	    bool handle_reg = !cfun->machine->reg_is_wrapped_separately[regno];
 	    if (handle_reg)
 	      {
-		rtx insn = NULL_RTX;
+		rtx_insn *insn = nullptr;
 		if (CONST_INT_P (vlen))
 		  {
 		    gcc_assert (SMALL_OPERAND (-INTVAL (vlen)));
@@ -10146,7 +10144,7 @@ riscv_for_each_saved_v_reg (poly_int64 &remaining_size,
 	    if (handle_reg)
 	      {
 		riscv_save_restore_reg (m1_mode, regno, 0, fn);
-		rtx insn = emit_insn (
+		rtx_insn *insn = emit_insn (
 		  gen_add3_insn (stack_pointer_rtx, stack_pointer_rtx, vlen));
 		gcc_assert (insn != NULL_RTX);
 		RTX_FRAME_RELATED_P (insn) = 1;
@@ -10884,7 +10882,7 @@ static void
 riscv_gen_multi_pop_insn (bool use_popret, unsigned mask,
 			  unsigned multipop_size)
 {
-  rtx insn;
+  rtx_insn *insn;
   unsigned regs_count = riscv_multi_push_regs_count (mask);
 
   if (!use_popret)
@@ -10931,7 +10929,7 @@ riscv_expand_epilogue (int style)
   rtx ra = gen_rtx_REG (Pmode, RETURN_ADDR_REGNUM);
   rtx t0 = gen_rtx_REG (Pmode, RISCV_PROLOGUE_TEMP_REGNUM);
   unsigned th_int_mask = 0;
-  rtx insn;
+  rtx_insn *insn;
 
   /* Avoid referencing an unused frame pointer.  */
   rtx stack_tie_reg = frame_pointer_needed

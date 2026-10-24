@@ -2127,7 +2127,7 @@ mmix_expand_prologue (void)
 
   if (frame_pointer_needed)
     {
-      rtx insn;
+      rtx_insn *insn;
 
       if (offset < 0)
 	{
@@ -2159,7 +2159,7 @@ mmix_expand_prologue (void)
   if (MMIX_CFUN_NEEDS_SAVED_EH_RETURN_ADDRESS)
     {
       rtx tmpreg, retreg;
-      rtx insn;
+      rtx_insn *insn;
 
       /* Store the return-address, if one is needed on the stack.  We
 	 usually store it in a register when needed, but that doesn't work
@@ -2260,7 +2260,7 @@ mmix_expand_prologue (void)
 	 && df_regs_ever_live_p (regno) && !call_used_or_fixed_reg_p (regno))
 	|| IS_MMIX_EH_RETURN_DATA_REG (regno))
       {
-	rtx insn;
+	rtx_insn *insn;
 
 	if (offset < 0)
 	  {
@@ -2570,7 +2570,7 @@ mmix_gen_compare_reg (RTX_CODE code, rtx x, rtx y)
 static void
 mmix_emit_sp_add (HOST_WIDE_INT offset)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (offset < 0)
     {

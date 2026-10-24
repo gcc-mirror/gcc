@@ -1052,7 +1052,7 @@ gen_split_move_double (rtx operands[])
   machine_mode mode = GET_MODE (operands[0]);
   rtx dest = operands[0];
   rtx src  = operands[1];
-  rtx val;
+  rtx_insn *val;
 
   /* We might have (SUBREG (MEM)) here, so just get rid of the
      subregs to make this code simpler.  It is safe to call
@@ -1777,10 +1777,8 @@ m32r_output_function_prologue (FILE * file)
 static void
 pop (int regno)
 {
-  rtx x;
-
-  x = emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno),
-				stack_pointer_rtx));
+  rtx_insn *x = emit_insn (gen_movsi_pop (gen_rtx_REG (Pmode, regno),
+					  stack_pointer_rtx));
   add_reg_note (x, REG_INC, stack_pointer_rtx);
 }
 

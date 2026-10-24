@@ -4148,7 +4148,8 @@
 					    operands[1]));
   else
     {
-      rtx call = emit_call_insn (gen_sibcall_internal (target, operands[1]));
+      rtx_insn *call
+	= emit_call_insn (gen_sibcall_internal (target, operands[1]));
 
       if (TARGET_CMODEL_MEDIUM && !REG_P (target))
 	clobber_reg (&CALL_INSN_FUNCTION_USAGE (call),
@@ -4219,7 +4220,7 @@
 							   arg2));
       else
 	{
-	  rtx call
+	  rtx_insn *call
 	    = emit_call_insn (gen_sibcall_value_multiple_internal (arg1,
 								   target,
 								   operands[2],
@@ -4243,9 +4244,10 @@
 						  operands[2]));
       else
 	{
-	  rtx call = emit_call_insn (gen_sibcall_value_internal (operands[0],
-								 target,
-								 operands[2]));
+	  rtx_insn *call
+	    = emit_call_insn (gen_sibcall_value_internal (operands[0],
+							  target,
+							  operands[2]));
 
 	  if (TARGET_CMODEL_MEDIUM && !REG_P (target))
 	    clobber_reg (&CALL_INSN_FUNCTION_USAGE (call),
