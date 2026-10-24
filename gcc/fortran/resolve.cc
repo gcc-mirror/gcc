@@ -6717,7 +6717,8 @@ resolve_variable (gfc_expr *e)
      TODO Understand why class scalar expressions must be excluded.  */
   if (sym->assoc && !(sym->ts.type == BT_CLASS && e->rank == 0))
     {
-      if (sym->ts.type == BT_CLASS)
+      /* Inferred-type references are already fixed up above.  */
+      if (sym->ts.type == BT_CLASS && !IS_INFERRED_TYPE (e))
 	gfc_fix_class_refs (e);
       if (!sym->attr.dimension && !sym->attr.codimension && e->ref
 	  && e->ref->type == REF_ARRAY)
