@@ -21508,8 +21508,9 @@ dynamically linked.  This is the default code model.
 
 @opindex mcmodel=large
 @item -mcmodel=large
-Generate code for the large code model.  This allows large .bss and .data
-sections, however .text and .rodata must still be < 2GiB in total.
+Generate code for the large code model.  This allows large @code{.bss}
+and @code{.data} sections, whereas @code{.text} and @code{.rodata}
+must still be < 2GiB in total.
 The @option{-moutline-atomics} is turned off by default.  Static linking
 with small/tiny model object files is not supported.
 
