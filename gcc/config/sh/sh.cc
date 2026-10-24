@@ -4908,7 +4908,8 @@ untangle_mova (int *num_mova, rtx_insn **first_mova, rtx_insn *new_mova)
 	return -1;
 
       n_addr = INSN_ADDRESSES (INSN_UID (new_mova));
-      n_target = INSN_ADDRESSES (INSN_UID (XEXP (MOVA_LABELREF (new_mova), 0)));
+      n_target = INSN_ADDRESSES
+	(INSN_UID (label_ref_label (MOVA_LABELREF (new_mova))));
       if (n_addr > n_target || n_addr + 1022 < n_target)
 	{
 	  /* Change the mova into a load.
@@ -4924,7 +4925,8 @@ untangle_mova (int *num_mova, rtx_insn **first_mova, rtx_insn *new_mova)
     }
   if (!optimize
       || ((f_target
-	   = INSN_ADDRESSES (INSN_UID (XEXP (MOVA_LABELREF (*first_mova), 0))))
+	   = INSN_ADDRESSES
+	     (INSN_UID (label_ref_label (MOVA_LABELREF (*first_mova)))))
 	  >= n_target))
     return -1;
 
@@ -5504,7 +5506,7 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
     }
   /* We can't use JUMP_LABEL here because it might be undefined
      when not optimizing.  */
-  rtx dest = XEXP (SET_SRC (PATTERN (jump)), 0);
+  rtx_insn *dest = label_ref_label (SET_SRC (PATTERN (jump)));
   /* If the branch is out of range, try to find a scratch register for it.  */
   if (optimize
       && (INSN_ADDRESSES (INSN_UID (dest)) - addr + (unsigned) 4092
@@ -5573,13 +5575,13 @@ gen_block_redirect (rtx_insn *jump, int addr, int need_block)
 
   else if (optimize && need_block >= 0)
     {
-      rtx_insn *next = next_active_insn (as_a<rtx_insn *> (dest));
+      rtx_insn *next = next_active_insn (dest);
       next = next_active_insn (next);
       if (next && JUMP_P (next)
 	  && GET_CODE (PATTERN (next)) == SET
 	  && recog_memoized (next) == CODE_FOR_jump_compact)
 	{
-	  dest = JUMP_LABEL (next);
+	  dest = JUMP_LABEL_AS_INSN (next);
 	  if (dest
 	      && (INSN_ADDRESSES (INSN_UID (dest)) - addr + (unsigned) 4092
 		  > 4092 + 4098))
@@ -6476,7 +6478,8 @@ split_branches (rtx_insn *first)
 		    && GET_CODE (PATTERN (beyond)) == SET
 		    && recog_memoized (beyond) == CODE_FOR_jump_compact
 		    && ((INSN_ADDRESSES
-			 (INSN_UID (XEXP (SET_SRC (PATTERN (beyond)), 0)))
+			 (INSN_UID (label_ref_label
+				    (SET_SRC (PATTERN (beyond)))))
 			 - INSN_ADDRESSES (INSN_UID (insn)) + (unsigned) 252)
 			> 252 + 258 + 2))
 		  gen_block_redirect (beyond,
@@ -6492,7 +6495,7 @@ split_branches (rtx_insn *first)
 		&& GET_CODE (PATTERN (next)) == SET
 		&& recog_memoized (next) == CODE_FOR_jump_compact
 		&& ((INSN_ADDRESSES
-		     (INSN_UID (XEXP (SET_SRC (PATTERN (next)), 0)))
+		     (INSN_UID (label_ref_label (SET_SRC (PATTERN (next)))))
 		     - INSN_ADDRESSES (INSN_UID (insn)) + (unsigned) 252)
 		    > 252 + 258 + 2))
 	      gen_block_redirect (next, INSN_ADDRESSES (INSN_UID (next)), 1);
@@ -8736,7 +8739,7 @@ branch_dest (rtx branch)
   if (GET_CODE (dest) == IF_THEN_ELSE)
     dest = XEXP (dest, 1);
 
-  return INSN_ADDRESSES (INSN_UID (XEXP (dest, 0)));
+  return INSN_ADDRESSES (INSN_UID (label_ref_label (dest)));
 }
 
 /* Return nonzero if REG is not used after INSN.
@@ -10657,7 +10660,7 @@ sh_mark_label (rtx address, int nuses)
     }
   if (GET_CODE (address) == LABEL_REF
       && LABEL_P (XEXP (address, 0)))
-    LABEL_NUSES (XEXP (address, 0)) += nuses;
+    LABEL_NUSES (label_ref_label (address)) += nuses;
 }
 
 /* Compute extra cost of moving data between one register class

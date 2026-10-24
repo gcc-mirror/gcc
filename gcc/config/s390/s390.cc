@@ -10329,7 +10329,7 @@ s390_chunkify_start (void)
 
 	  for (i = 0; i < XVECLEN (vec_pat, diff_p); i++)
 	    {
-	      rtx label = XEXP (XVECEXP (vec_pat, diff_p, i), 0);
+	      rtx_insn *label = label_ref_label (XVECEXP (vec_pat, diff_p, i));
 
 	      if (s390_find_pool (pool_list, label)
 		  != s390_find_pool (pool_list, insn))
@@ -14917,7 +14917,7 @@ static bool
 s390_fix_long_loop_prediction (rtx_insn *insn)
 {
   rtx set = single_set (insn);
-  rtx code_label, label_ref;
+  rtx label_ref;
   rtx_insn *uncond_jump;
   rtx_insn *cur_insn;
   rtx tmp;
@@ -14945,7 +14945,7 @@ s390_fix_long_loop_prediction (rtx_insn *insn)
 
   gcc_assert (GET_CODE (label_ref) == LABEL_REF);
 
-  code_label = XEXP (label_ref, 0);
+  rtx_insn *code_label = label_ref_label (label_ref);
 
   if (INSN_ADDRESSES (INSN_UID (code_label)) == -1
       || INSN_ADDRESSES (INSN_UID (insn)) == -1

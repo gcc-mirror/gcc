@@ -2616,7 +2616,7 @@ frv_print_operand_jump_hint (rtx_insn *insn)
       labelref = condjump_label (insn);
       if (labelref)
 	{
-	  rtx label = XEXP (labelref, 0);
+	  rtx_insn *label = label_ref_label (labelref);
 	  jump_type = (insn_current_address > INSN_ADDRESSES (INSN_UID (label))
 		       ? BACKWARD
 		       : FORWARD);

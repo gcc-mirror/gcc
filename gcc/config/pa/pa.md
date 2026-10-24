@@ -2630,7 +2630,7 @@
       /* If we're trying to load the address of a label that happens to be
 	 close, then we can use a shorter sequence.  */
       if (INSN_ADDRESSES_SET_P ()
-	  && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
+	  && abs (INSN_ADDRESSES (INSN_UID (label_ref_label (operands[1])))
 		  - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
 	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
       else
@@ -2681,7 +2681,7 @@
       /* If we're trying to load the address of a label that happens to be
 	 close, then we can use a shorter sequence.  */
       if (INSN_ADDRESSES_SET_P ()
-	  && abs (INSN_ADDRESSES (INSN_UID (XEXP (operands[1], 0)))
+	  && abs (INSN_ADDRESSES (INSN_UID (label_ref_label (operands[1])))
 		  - INSN_ADDRESSES (INSN_UID (insn))) < 8100)
 	output_asm_insn (\"ldo %1-%2(%0),%0\", xoperands);
       else

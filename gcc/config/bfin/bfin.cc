@@ -2442,8 +2442,7 @@ branch_dest (rtx_insn *branch)
   dest = SET_SRC (pat);
   if (GET_CODE (dest) == IF_THEN_ELSE)
     dest = XEXP (dest, 1);
-  dest = XEXP (dest, 0);
-  dest_uid = INSN_UID (dest);
+  dest_uid = INSN_UID (label_ref_label (dest));
   return INSN_ADDRESSES (dest_uid);
 }
 

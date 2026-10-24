@@ -1322,7 +1322,7 @@ print_csky_value (FILE *f, rtx x)
       return;
 
     case LABEL_REF:
-      fprintf (f, "L%d", INSN_UID (XEXP (x, 0)));
+      fprintf (f, "L%d", INSN_UID (label_ref_label (x)));
       return;
 
     case CONST:

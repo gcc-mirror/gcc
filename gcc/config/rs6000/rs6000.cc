@@ -17543,7 +17543,7 @@ rs6000_hash_constant (rtx k)
   switch (code)
     {
     case LABEL_REF:
-      return result * 1231 + (unsigned) INSN_UID (XEXP (k, 0));
+      return result * 1231 + (unsigned) INSN_UID (label_ref_label (k));
 
     case CONST_WIDE_INT:
       {
