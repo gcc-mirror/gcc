@@ -4561,7 +4561,7 @@ remove_insn (rtx_insn *insn)
 /* Append CALL_FUSAGE to the CALL_INSN_FUNCTION_USAGE for CALL_INSN.  */
 
 void
-add_function_usage_to (rtx call_insn, rtx call_fusage)
+add_function_usage_to (rtx_insn *call_insn, rtx call_fusage)
 {
   gcc_assert (call_insn && CALL_P (call_insn));
 

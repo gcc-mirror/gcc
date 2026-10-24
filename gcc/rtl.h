@@ -3459,7 +3459,7 @@ extern rtx_insn *emit_clobber (rtx);
 extern rtx_insn *gen_use (rtx);
 extern rtx_insn *emit_use (rtx);
 extern rtx_insn *make_insn_raw (rtx);
-extern void add_function_usage_to (rtx, rtx);
+extern void add_function_usage_to (rtx_insn *, rtx);
 extern rtx_call_insn *last_call_insn (void);
 extern rtx_insn *previous_insn (rtx_insn *);
 extern rtx_insn *next_insn (rtx_insn *);
