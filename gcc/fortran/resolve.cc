@@ -6998,6 +6998,61 @@ resolve_procedure:
 }
 
 
+/* The reference at *LINK follows a reference to component C in the
+   inferred type expression E.  Make it agree with the array spec of C.  */
+
+static void
+fixup_inferred_component_array_ref (gfc_expr *e, gfc_component *c,
+				    gfc_ref **link)
+{
+  gfc_ref *ref = *link;
+  gfc_array_spec *as;
+
+  if (c->ts.type == BT_CLASS)
+    as = CLASS_DATA (c) ? CLASS_DATA (c)->as : NULL;
+  else
+    as = c->as;
+
+  if (ref && ref->type == REF_ARRAY)
+    {
+      if (as)
+	ref->u.ar.as = as;
+      else if (ref->u.ar.type == AR_FULL)
+	{
+	  /* Drop the full array ref of a component guessed to be an array.  */
+	  *link = ref->next;
+	  free (ref);
+	}
+      else if (c->ts.type == BT_CHARACTER && ref->u.ar.dimen == 1
+	       && ref->u.ar.dimen_type[0] == DIMEN_RANGE
+	       && !ref->u.ar.stride[0])
+	{
+	  /* A substring misidentified as an array section.  */
+	  gfc_expr *start = ref->u.ar.start[0];
+	  gfc_expr *end = ref->u.ar.end[0];
+	  ref->type = REF_SUBSTRING;
+	  ref->u.ss.start = start;
+	  ref->u.ss.end = end;
+	  ref->u.ss.length = c->ts.u.cl;
+	}
+      else
+	/* Leave the array ref of a scalar to find_array_spec to diagnose.  */
+	ref->u.ar.as = NULL;
+    }
+  else if (as)
+    {
+      /* Supply the full array ref of a component guessed to be scalar.  */
+      ref = gfc_get_ref ();
+      ref->type = REF_ARRAY;
+      ref->u.ar.type = AR_FULL;
+      ref->u.ar.as = as;
+      ref->u.ar.where = e->where;
+      ref->next = *link;
+      *link = ref;
+    }
+}
+
+
 /* 'sym' was initially guessed to be derived type but has been corrected
    in resolve_assoc_var to be a class entity or the derived type correcting.
    If a class entity it will certainly need the _data reference or the
@@ -7008,7 +7063,7 @@ void
 gfc_fixup_inferred_type_refs (gfc_expr *e)
 {
   gfc_ref *ref, *new_ref;
-  gfc_symbol *sym, *derived;
+  gfc_symbol *sym, *derived, *dt, *container;
   gfc_expr *target;
   sym = e->symtree->n.sym;
 
@@ -7109,17 +7164,82 @@ gfc_fixup_inferred_type_refs (gfc_expr *e)
 	}
     }
 
-  /* Proceed as far as the first component reference and ensure that the
-     correct derived type is being used.  */
-  for (ref = e->ref; ref; ref = ref->next)
-    if (ref->type == REF_COMPONENT)
-      {
-	if (ref->u.c.component->name[0] != '_')
-	  ref->u.c.sym = derived;
-	else
-	  ref->u.c.sym = sym->ts.u.derived;
+  /* The type used to build the component references at parse time was only
+     a guess, so they can point into a different derived type that happens
+     to have a component of the same name.  Bind each one by name to the
+     corrected type and fix up the array ref that follows it.  */
+  dt = derived;
+  container = sym->ts.type == BT_CLASS ? sym->ts.u.derived : NULL;
+  gfc_component *comp = NULL;
+  gfc_ref **link;
+  for (link = &e->ref; ; link = &(*link)->next)
+    {
+      gfc_component *c;
+
+      ref = *link;
+      if (comp && !(ref && ref->type == REF_COMPONENT
+		    && ref->u.c.component->name[0] == '_'))
+	{
+	  fixup_inferred_component_array_ref (e, comp, link);
+	  comp = NULL;
+	  ref = *link;
+	}
+
+      if (!ref)
 	break;
-      }
+
+      if (ref->type != REF_COMPONENT)
+	continue;
+
+      /* '_data', '_vptr' and '_len' are fields of the preceding class
+	 container; 'dt' already is the declared type that follows '_data'.  */
+      if (ref->u.c.component->name[0] == '_')
+	{
+	  if (!container)
+	    break;
+	  c = gfc_find_component (container, ref->u.c.component->name,
+				  true, true, NULL);
+	  if (!c)
+	    break;
+	  ref->u.c.sym = container;
+	  ref->u.c.component = c;
+	  container = NULL;
+	  if (strcmp (c->name, "_data") != 0)
+	    break;
+	  continue;
+	}
+
+      if (!dt)
+	break;
+
+      c = gfc_find_component (dt, ref->u.c.component->name, false, true, NULL);
+      if (!c)
+	{
+	  if (gfc_find_component (dt, ref->u.c.component->name,
+				  true, true, NULL))
+	    gfc_error ("Component %qs at %L is a PRIVATE component of %qs",
+		       ref->u.c.component->name, &e->where, dt->name);
+	  else
+	    gfc_error ("%qs at %L is not a member of the %qs structure",
+		       ref->u.c.component->name, &e->where, dt->name);
+	  return;
+	}
+
+      ref->u.c.sym = dt;
+      ref->u.c.component = c;
+      comp = c;
+
+      container = NULL;
+      if (c->ts.type == BT_DERIVED)
+	dt = c->ts.u.derived;
+      else if (c->ts.type == BT_CLASS && CLASS_DATA (c))
+	{
+	  container = c->ts.u.derived;
+	  dt = CLASS_DATA (c)->ts.u.derived;
+	}
+      else
+	dt = NULL;
+    }
 
   /* Verify that the type inference mechanism has not introduced a spurious
      array reference.  This can happen with an associate name, whose selector
