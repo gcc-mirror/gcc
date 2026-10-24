@@ -50,6 +50,27 @@ uint64_t mulh_ladder_comm (uint64_t x, uint64_t y)
   return hw64;
 }
 
+/* mulh_ladder with y = x.  */
+uint64_t mulh_ladder_square (uint64_t x)
+{
+  uint64_t x_lo = x & 0xFFFFFFFF;
+  uint64_t x_hi = x >> 32;
+  uint64_t t0 = x_lo * x_lo;
+  uint64_t t1 = x_lo * x_hi;
+  uint64_t t2 = x_hi * x_lo;
+  uint64_t t3 = x_hi * x_hi;
+  uint64_t t0_hi = t0 >> 32;
+  uint64_t u0 = t0_hi + t1;
+  uint64_t u0_lo = u0 & 0xFFFFFFFF;
+  uint64_t u0_hi = u0 >> 32;
+  uint64_t u1 = u0_lo + t2;
+  uint64_t u1_hi = u1 >> 32;
+  uint64_t u2 = u0_hi + t3;
+  uint64_t hw64 = u2 + u1_hi;
+
+  return hw64;
+}
+
 uint32_t mulh_ladder_32 (uint32_t x, uint32_t y)
 {
   uint32_t x_lo = x & 0xFFFF;
@@ -108,6 +129,60 @@ v2i64 full_mul_ladder (uint64_t x, uint64_t y)
   uint64_t shr_y = y >> 32;
   uint64_t mul_i28 = shr_y * and_x;
   uint64_t mul_i29 = shr_y * shr_x;
+  uint64_t shr10 = mul_i >> 32;
+  uint64_t and11 = mul_i27 & 0xFFFFFFFF;
+  uint64_t add = and11 + mul_i28;
+  uint64_t add12 = add + shr10;
+  uint64_t shr13 = mul_i27 >> 32;
+  uint64_t shr14 = add12 >> 32;
+  uint64_t add15 = shr13 + mul_i29;
+  uint64_t add16 = add15 + shr14;
+  uint64_t shl = add12 << 32;
+  uint64_t and17 = mul_i & 0xFFFFFFFF;
+  uint64_t or_val = shl | and17;
+  v2i64 result;
+  result.v[0] = or_val;
+  result.v[1] = add16;
+  return result;
+}
+
+/* full_mul_ladder with x and y swapped, masking the other cross product.  */
+v2i64 full_mul_ladder_comm (uint64_t x, uint64_t y)
+{
+  uint64_t and_x = x & 0xFFFFFFFF;
+  uint64_t and_y = y & 0xFFFFFFFF;
+  uint64_t mul_i = and_x * and_y;
+  uint64_t shr_y = y >> 32;
+  uint64_t mul_i27 = and_x * shr_y;
+  uint64_t shr_x = x >> 32;
+  uint64_t mul_i28 = shr_x * and_y;
+  uint64_t mul_i29 = shr_x * shr_y;
+  uint64_t shr10 = mul_i >> 32;
+  uint64_t and11 = mul_i27 & 0xFFFFFFFF;
+  uint64_t add = and11 + mul_i28;
+  uint64_t add12 = add + shr10;
+  uint64_t shr13 = mul_i27 >> 32;
+  uint64_t shr14 = add12 >> 32;
+  uint64_t add15 = shr13 + mul_i29;
+  uint64_t add16 = add15 + shr14;
+  uint64_t shl = add12 << 32;
+  uint64_t and17 = mul_i & 0xFFFFFFFF;
+  uint64_t or_val = shl | and17;
+  v2i64 result;
+  result.v[0] = or_val;
+  result.v[1] = add16;
+  return result;
+}
+
+/* full_mul_ladder with y = x.  */
+v2i64 full_mul_ladder_square (uint64_t x)
+{
+  uint64_t and_x = x & 0xFFFFFFFF;
+  uint64_t mul_i = and_x * and_x;
+  uint64_t shr_x = x >> 32;
+  uint64_t mul_i27 = and_x * shr_x;
+  uint64_t mul_i28 = shr_x * and_x;
+  uint64_t mul_i29 = shr_x * shr_x;
   uint64_t shr10 = mul_i >> 32;
   uint64_t and11 = mul_i27 & 0xFFFFFFFF;
   uint64_t add = and11 + mul_i28;
@@ -323,10 +398,10 @@ v2i32 mul_ladder_long_v2i32 (v2i32 x, v2i32 y)
 
 /* On targets with __int128 support the 128-bit highpart also folds;
    without it it is elided by #ifdef and the count drops by 2.  */
-/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 10 "forwprop1" { target { oi_mode && int128 } } } } */
-/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 8 "forwprop1" { target { ! { oi_mode && int128 } } } } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 13 "forwprop1" { target { oi_mode && int128 } } } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 11 "forwprop1" { target { ! { oi_mode && int128 } } } } } */
 /* { dg-final { scan-tree-dump-times "Long multiplication high part folded\\." 2 "forwprop2" } } */
-/* { dg-final { scan-tree-dump-times "Long multiplication low part folded\\." 2 "forwprop1" } } */
+/* { dg-final { scan-tree-dump-times "Long multiplication low part folded\\." 4 "forwprop1" } } */
 /* Only the two 128-bit (OImode) chains are lowered.  sparc64 and hppa64
    have OImode and __int128 but no native DImode high part, so their u64
    chains lower too and the count would exceed 2; exclude them.  */

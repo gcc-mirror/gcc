@@ -4381,6 +4381,38 @@ long_mul_check_two_carries (const vec<long_mul_summand> &summands,
   return true;
 }
 
+/* Extra check for xh*yh + (hilo >> N) + (ladder_sum1 >> N).  hilo must be
+   the product that ladder_sum1 masks, since the high half of the unmasked
+   one is already in the sum.  */
+
+static bool
+long_mul_check_ladder_sum1 (const vec<long_mul_summand> &summands,
+			    gimple *)
+{
+  const long_mul_summand *hilo
+    = long_mul_find_summand (summands, LMK_MUL_HILO);
+  const long_mul_summand *sum
+    = long_mul_find_summand (summands, LMK_LADDER_SUM1);
+  return long_mul_hilo_orientation (sum->hilo[0], hilo->op0, hilo->op1) == 0;
+}
+
+/* Likewise for xh*yh + (ladder_sum2 >> N) + (ladder_part_sum >> N):
+   ladder_part_sum must hold the product that ladder_sum2 masks.  */
+
+static bool
+long_mul_check_ladder_sum2 (const vec<long_mul_summand> &summands,
+			    gimple *)
+{
+  const long_mul_summand *part
+    = long_mul_find_summand (summands, LMK_LADDER_PART_SUM);
+  const long_mul_summand *sum
+    = long_mul_find_summand (summands, LMK_LADDER_SUM2);
+  tree masked[LONG_MUL_MAX_CAPTURES];
+  return (gimple_mul_hilo (sum->hilo[0], masked, NULL)
+	  && (long_mul_hilo_orientation (part->hilo[0], masked[0], masked[1])
+	      == 0));
+}
+
 /* The lolo + cross_shifted shape is also the low half of a two-carry
    long-multiply, where an unsigned overflow compare against one of
    the PLUS operands is the low-carry term consumed by the matching
@@ -4478,7 +4510,7 @@ static const long_mul_row long_mul_table[] = {
     { { LMK_MUL_HIHI, LMX_NONE },
       { LMK_MUL_HILO, LMX_HI },
       { LMK_LADDER_SUM1, LMX_HI } },
-    NULL },
+    long_mul_check_ladder_sum1 },
   /* xh*yh + (ladder_sum2 >> N) + (ladder_part_sum >> N),
      ladder_part_sum = (xl*yl >> N) + hilo,
      ladder_sum2 = (ladder_part_sum & mask) + hilo'.  */
@@ -4486,7 +4518,7 @@ static const long_mul_row long_mul_table[] = {
     { { LMK_MUL_HIHI, LMX_NONE },
       { LMK_LADDER_SUM2, LMX_HI },
       { LMK_LADDER_PART_SUM, LMX_HI } },
-    NULL },
+    long_mul_check_ladder_sum2 },
   /* xh*yh + (hilo >> N) + (hilo' >> N) + (ladder_sum3 >> N),
      ladder_sum3 = (hilo & mask) + (hilo' & mask) + (xl*yl >> N).  */
   { long_mul_row::HIGH_PART, PLUS_EXPR, 4,
