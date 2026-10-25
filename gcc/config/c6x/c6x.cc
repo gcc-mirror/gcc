@@ -3695,7 +3695,7 @@ record_jump (int cycle, rtx cond)
 /* Set the clock cycle of INSN to CYCLE.  Also clears the insn's entry in
    new_conditions.  */
 static void
-insn_set_clock (rtx insn, int cycle)
+insn_set_clock (rtx_insn *insn, int cycle)
 {
   unsigned uid = INSN_UID (insn);
 
@@ -3717,7 +3717,7 @@ insn_uid_get_clock (int uid)
 
 /* Return the clock cycle we set for INSN.  */
 static int
-insn_get_clock (rtx insn)
+insn_get_clock (rtx_insn *insn)
 {
   return insn_uid_get_clock (INSN_UID (insn));
 }

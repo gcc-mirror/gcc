@@ -7303,7 +7303,7 @@
   [(const_int 0)]
 {
   rtx lab = PATTERN (gen_call_site ());
-  rtx call_insn;
+  rtx_insn *call_insn;
 
   sh_expand_sym_label2reg (operands[2], operands[0], lab, true);
   call_insn = emit_call_insn (gen_sibcalli_pcrel (operands[2], operands[1],

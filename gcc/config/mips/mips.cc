@@ -7865,7 +7865,8 @@ mips16_build_function_stub (void)
 static void
 mips16_copy_fpr_return_value (void)
 {
-  rtx fn, insn, retval;
+  rtx fn, retval;
+  rtx_insn *insn;
   tree return_type;
   machine_mode return_mode;
   const char *name;

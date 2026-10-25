@@ -8334,7 +8334,7 @@ ia64_get_insn_checked_ds (rtx_insn *insn)
    MODE_NO and with ZERO_EXTEND (if EXTEND_P is true).
    If GEN_P is false, just calculate the index of needed speculation check.  */
 static rtx
-ia64_gen_spec_load (rtx insn, ds_t ts, int mode_no)
+ia64_gen_spec_load (rtx_insn *insn, ds_t ts, int mode_no)
 {
   rtx pat, new_pat;
   gen_func_t gen_load;

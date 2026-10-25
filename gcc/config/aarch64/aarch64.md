@@ -8546,7 +8546,7 @@
   rtx bcomp;
   rtx loc_ref;
   rtx cc_reg;
-  rtx insn;
+  rtx_insn *insn;
   rtx cmp;
 
   /* Currently SMS relies on the do-loop pattern to recognize loops

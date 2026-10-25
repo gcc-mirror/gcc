@@ -9950,7 +9950,7 @@ s390_execute_label (rtx insn)
    the pool to the location of the execute target.  */
 
 static rtx
-s390_find_execute (struct constant_pool *pool, rtx insn)
+s390_find_execute (struct constant_pool *pool, rtx_insn *insn)
 {
   struct constant *c;
 
