@@ -1620,7 +1620,7 @@
   rtx op1_hi = simplify_gen_subreg (SImode, operands[1], DImode, 4);
   rtx op2_lo = simplify_gen_subreg (SImode, operands[2], DImode, 0);
   rtx op2_hi = simplify_gen_subreg (SImode, operands[2], DImode, 4);
-  rtx j;
+  rtx_insn *j;
 
   if (code == EQ)
     {

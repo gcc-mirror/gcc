@@ -3822,7 +3822,7 @@ rl78_alloc_physical_registers (void)
    encounter when scanning backwards) triggers a REG_DEAD note if the
    reg was previously in DEAD[].  */
 static void
-rl78_note_reg_uses (char *dead, rtx s, rtx insn)
+rl78_note_reg_uses (char *dead, rtx s, rtx_insn *insn)
 {
   const char *fmt;
   int i, r;
@@ -3884,7 +3884,7 @@ rl78_note_reg_uses (char *dead, rtx s, rtx insn)
 
 /* Like the previous function, but scan for SETs instead.  */
 static void
-rl78_note_reg_set (char *dead, rtx d, rtx insn)
+rl78_note_reg_set (char *dead, rtx d, rtx_insn *insn)
 {
   int r, i;
   bool is_dead;

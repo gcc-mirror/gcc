@@ -2020,8 +2020,8 @@ compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
 
    LAST addr is the value for SP which stops the loop.  */
 void
-emit_stack_clash_protection_probe_loop_start (rtx *loop_lab,
-					      rtx *end_lab,
+emit_stack_clash_protection_probe_loop_start (rtx_code_label **loop_lab,
+					      rtx_code_label **end_lab,
 					      rtx last_addr,
 					      bool rotated)
 {
@@ -2122,7 +2122,7 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	}
       else
 	{
-	  rtx loop_lab, end_loop;
+	  rtx_code_label *loop_lab, *end_loop;
 	  bool rotate_loop = CONST_INT_P (rounded_size);
 	  emit_stack_clash_protection_probe_loop_start (&loop_lab, &end_loop,
 							last_addr, rotate_loop);

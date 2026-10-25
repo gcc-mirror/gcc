@@ -7226,7 +7226,7 @@ find_cc_set (rtx x, const_rtx pat, void *data)
    loop was generated successfully.  */
 
 static bool
-expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx seq)
+expand_compare_and_swap_loop (rtx mem, rtx old_reg, rtx new_reg, rtx_insn *seq)
 {
   machine_mode mode = GET_MODE (mem);
   rtx_code_label *label;
@@ -7374,7 +7374,7 @@ maybe_emit_compare_and_swap_exchange_loop (rtx target, rtx mem, rtx val)
 	val = force_reg (mode, val);
       if (!target || !register_operand (target, mode))
 	target = gen_reg_rtx (mode);
-      if (expand_compare_and_swap_loop (mem, target, val, NULL_RTX))
+      if (expand_compare_and_swap_loop (mem, target, val, nullptr))
 	return target;
       else
 	delete_insns_since (start);

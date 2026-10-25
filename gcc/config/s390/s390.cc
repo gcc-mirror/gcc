@@ -5619,7 +5619,7 @@ static GTY(()) rtx s390_tls_symbol;
 static void
 s390_emit_tls_call_insn (rtx result_reg, rtx tls_call)
 {
-  rtx insn;
+  rtx_insn *insn;
 
   if (!flag_pic)
     emit_insn (s390_load_got ());
@@ -13973,7 +13973,7 @@ s390_expand_tbegin (rtx dest, rtx tdb, rtx retry, bool clobber_fprs_p)
       const int CC0 = 1 << 3;
       const int CC1 = 1 << 2;
       const int CC3 = 1 << 0;
-      rtx jump;
+      rtx_insn *jump;
       rtx count = gen_reg_rtx (SImode);
       rtx_code_label *leave_label = gen_label_rtx ();
 

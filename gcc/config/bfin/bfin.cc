@@ -3452,7 +3452,8 @@ hwloop_optimize (hwloop_info loop)
 {
   basic_block bb;
   rtx_insn *insn, *last_insn;
-  rtx loop_init, start_label;
+  rtx loop_init;
+  rtx_insn *start_label;
   rtx iter_reg, scratchreg, scratch_init;
   rtx_insn *scratch_init_insn;
   rtx lc_reg, lt_reg, lb_reg;

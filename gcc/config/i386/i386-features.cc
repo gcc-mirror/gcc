@@ -914,7 +914,7 @@ general_scalar_chain::compute_convert_gain ()
    instruction has EH region attached.  */
 
 void
-scalar_chain::emit_conversion_insns (rtx insns, rtx_insn *after)
+scalar_chain::emit_conversion_insns (rtx_insn *insns, rtx_insn *after)
 {
   if (!control_flow_insn_p (after))
     {

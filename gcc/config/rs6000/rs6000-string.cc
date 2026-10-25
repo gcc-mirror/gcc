@@ -380,7 +380,8 @@ do_load_for_compare_from_addr (machine_mode mode, rtx dest, rtx addr,
 
 static void
 do_ifelse (machine_mode cmpmode, rtx_code comparison,
-	   rtx a, rtx b, rtx cr, rtx true_label, profile_probability br_prob)
+	   rtx a, rtx b, rtx cr,
+	   rtx_code_label *true_label, profile_probability br_prob)
 {
   gcc_assert ((a == NULL_RTX && b == NULL_RTX && cr != NULL_RTX)
 	      || (a != NULL_RTX && b != NULL_RTX));
@@ -645,8 +646,9 @@ expand_cmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 			 rtx orig_src1, rtx orig_src2,
 			 rtx s1addr, rtx s2addr, rtx off_reg,
 			 rtx s1data, rtx s2data, rtx vec_result,
-			 bool equality_compare_rest, rtx *p_cleanup_label,
-			 rtx final_move_label, bool checkzero)
+			 bool equality_compare_rest,
+			 rtx_code_label **p_cleanup_label,
+			 rtx_code_label *final_move_label, bool checkzero)
 {
   machine_mode load_mode;
   unsigned int load_mode_size;
@@ -655,7 +657,7 @@ expand_cmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
   rtx zero_reg = NULL;
 
   gcc_assert (p_cleanup_label != NULL);
-  rtx cleanup_label = *p_cleanup_label;
+  rtx_code_label *cleanup_label = *p_cleanup_label;
 
   emit_move_insn (s1addr, force_reg (Pmode, XEXP (orig_src1, 0)));
   emit_move_insn (s2addr, force_reg (Pmode, XEXP (orig_src2, 0)));
@@ -752,7 +754,7 @@ expand_cmp_vec_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 
       bool branch_to_cleanup = (remain > 0 || equality_compare_rest);
       rtx cr6 = gen_rtx_REG (CCmode, CR6_REGNO);
-      rtx dst_label;
+      rtx_code_label *dst_label;
       rtx cmp_rtx;
       if (branch_to_cleanup)
 	{
@@ -2029,7 +2031,7 @@ expand_block_compare (rtx operands[])
       rtx s1addr = gen_reg_rtx (Pmode);
       rtx s2addr = gen_reg_rtx (Pmode);
       rtx off_reg = gen_reg_rtx (Pmode);
-      rtx cleanup_label = NULL;
+      rtx_code_label *cleanup_label = NULL;
       rtx vec_result = gen_reg_rtx (V16QImode);
       rtx s1data = gen_reg_rtx (V16QImode);
       rtx s2data = gen_reg_rtx (V16QImode);
@@ -2127,8 +2129,9 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 			     unsigned int base_align,
 			     rtx orig_src1, rtx orig_src2,
 			     rtx tmp_reg_src1, rtx tmp_reg_src2, rtx result_reg,
-			     bool equality_compare_rest, rtx *p_cleanup_label,
-			     rtx final_move_label)
+			     bool equality_compare_rest,
+			     rtx_code_label **p_cleanup_label,
+			     rtx_code_label *final_move_label)
 {
   unsigned int word_mode_size = GET_MODE_SIZE (word_mode);
   machine_mode load_mode;
@@ -2138,7 +2141,7 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
   rtx src1_addr = force_reg (Pmode, XEXP (orig_src1, 0));
   rtx src2_addr = force_reg (Pmode, XEXP (orig_src2, 0));
   gcc_assert (p_cleanup_label != NULL);
-  rtx cleanup_label = *p_cleanup_label;
+  rtx_code_label *cleanup_label = *p_cleanup_label;
 
   while (bytes_to_compare > 0)
     {
@@ -2241,7 +2244,7 @@ expand_strncmp_gpr_sequence (unsigned HOST_WIDE_INT bytes_to_compare,
 	 A == B: branch to result 0.
 	 A != B: cleanup code to compute result.  */
 
-      rtx dst_label;
+      rtx_code_label *dst_label;
       if (remain > 0 || equality_compare_rest)
 	{
 	  /* Branch to cleanup code, otherwise fall through to do
@@ -2601,7 +2604,7 @@ expand_strn_compare (rtx operands[], int no_length)
       emit_label (begin_compare_label);
     }
 
-  rtx cleanup_label = NULL;
+  rtx_code_label *cleanup_label = NULL;
   rtx s1addr = NULL, s2addr = NULL, off_reg = NULL, vec_result = NULL;
 
   /* Generate a sequence of GPR or VEC/VSX instructions to compare out

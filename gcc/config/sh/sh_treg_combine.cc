@@ -593,7 +593,7 @@ private:
 
   // Adds the specified insn to the set of modified or newly added insns that
   // might need splitting at the end of the pass.
-  rtx touched_insn (rtx i);
+  rtx_insn *touched_insn (rtx_insn *i);
 
   // Try to invert the branch condition of the specified trace.
   bool try_invert_branch_condition (cbranch_trace& trace);
@@ -959,8 +959,8 @@ sh_treg_combine::make_inv_ccreg_insn (void) const
   return i;
 }
 
-rtx
-sh_treg_combine::touched_insn (rtx i)
+rtx_insn *
+sh_treg_combine::touched_insn (rtx_insn *i)
 {
   m_touched_insns.push_back (i);
   return i;
@@ -1078,7 +1078,7 @@ sh_treg_combine::try_combine_comparisons (cbranch_trace& trace,
   // Check that all ccset insns are comparisons and all comparison types in
   // all BBs are the same and could be combined into one single comparison.
   rtx comp = NULL_RTX;
-  rtx comp_insn = NULL_RTX;
+  rtx_insn *comp_insn = nullptr;
 
   for (std::list<bb_entry>::const_iterator i = trace.bb_entries.begin ();
        i != trace.bb_entries.end (); ++i)

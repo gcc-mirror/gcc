@@ -3400,7 +3400,7 @@ get_unit_operand_masks (rtx_insn *insn, unsigned int *pmask1,
    it only if we managed to improve the balance.  */
 static void
 try_rename_operands (rtx_insn *head, rtx_insn *tail, unit_req_table reqs,
-		     rtx insn,
+		     rtx_insn *insn,
 		     insn_rr_info *info, unsigned int op_mask, int orig_side)
 {
   enum reg_class super_class = orig_side == 0 ? B_REGS : A_REGS;
@@ -3726,7 +3726,7 @@ insn_get_clock (rtx insn)
    the opposite of the condition in which it branches.  Otherwise,
    return NULL_RTX.  */
 static rtx
-condjump_opposite_condition (rtx insn)
+condjump_opposite_condition (rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   int icode = INSN_CODE (insn);
@@ -4786,7 +4786,7 @@ find_next_cycle_insn (rtx_insn *insn, int clock)
    around PAT.  Return PAT either unchanged or modified in this
    way.  */
 static rtx
-duplicate_cond (rtx pat, rtx cond_insn)
+duplicate_cond (rtx pat, rtx_insn *cond_insn)
 {
   rtx cond_pat = PATTERN (cond_insn);
   if (GET_CODE (cond_pat) == COND_EXEC)
@@ -5044,7 +5044,7 @@ reorg_emit_nops (rtx_code_label **call_labels)
 		  cycles -= prev_implicit_nops;
 		  if (cycles > 1)
 		    {
-		      rtx nop = emit_nop_after (cycles - 1, prev);
+		      rtx_insn *nop = emit_nop_after (cycles - 1, prev);
 		      insn_set_clock (nop, prev_clock + prev_implicit_nops + 1);
 		    }
 		}
@@ -5671,7 +5671,7 @@ hwloop_optimize (hwloop_info loop)
 
   for (i = 0; i < n_real_insns; i++)
     {
-      rtx insn = insn_copies[0][i];
+      rtx_insn *insn = insn_copies[0][i];
       int uid = INSN_UID (insn);
       int stage = insn_uid_get_clock (uid) / sp_ii;
 

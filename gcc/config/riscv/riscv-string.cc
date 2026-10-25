@@ -138,7 +138,7 @@ do_load_from_addr (machine_mode mode, rtx dest, rtx addr_reg, rtx addr)
 
 static void
 emit_strcmp_scalar_compare_byte (rtx result, rtx data1, rtx data2,
-				 rtx final_label)
+				 rtx_code_label *final_label)
 {
   do_sub3 (result, data1, data2);
   emit_jump_insn (gen_jump (final_label));
@@ -156,7 +156,7 @@ emit_strcmp_scalar_compare_byte (rtx result, rtx data1, rtx data2,
 static void
 emit_strcmp_scalar_compare_subword (rtx data1, rtx data2, rtx orc1,
 				    unsigned HOST_WIDE_INT cmp_bytes,
-				    rtx end_label)
+				    rtx_code_label *end_label)
 {
   /* Set a NUL-byte after the relevant data (behind the string).  */
   long long im = -256ll;
@@ -186,7 +186,8 @@ emit_strcmp_scalar_compare_subword (rtx data1, rtx data2, rtx orc1,
 
 static void
 emit_strcmp_scalar_compare_word (rtx data1, rtx data2, rtx orc1, rtx testval,
-				 rtx end_label, rtx nonul_end_label)
+				 rtx_code_label *end_label,
+				 rtx_code_label *nonul_end_label)
 {
   /* Check if data1 contains a NUL character.  */
   if (TARGET_ZBB)
@@ -221,8 +222,9 @@ static void
 emit_strcmp_scalar_load_and_compare (rtx result, rtx src1, rtx src2,
 				     unsigned HOST_WIDE_INT nbytes,
 				     rtx data1, rtx data2, rtx orc1,
-				     rtx end_label, rtx nonul_end_label,
-				     rtx final_label)
+				     rtx_code_label *end_label,
+				     rtx_code_label *nonul_end_label,
+				     rtx_code_label *final_label)
 {
   const unsigned HOST_WIDE_INT xlen = GET_MODE_SIZE (Xmode);
   unsigned HOST_WIDE_INT offset = 0;
@@ -635,7 +637,8 @@ static void
 emit_memcmp_scalar_load_and_compare (rtx result, rtx src1, rtx src2,
 				     unsigned HOST_WIDE_INT nbytes,
 				     rtx data1, rtx data2,
-				     rtx diff_label, rtx final_label)
+				     rtx_code_label *diff_label,
+				     rtx_code_label *final_label)
 {
   const unsigned HOST_WIDE_INT xlen = GET_MODE_SIZE (Xmode);
   unsigned HOST_WIDE_INT offset = 0;

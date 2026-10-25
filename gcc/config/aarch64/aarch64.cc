@@ -5907,7 +5907,7 @@ aarch64_sub_sp (rtx temp1, rtx temp2, poly_int64 delta,
    Emit instructions to branch around the mode switch if PSTATE.SM already
    matches LOCAL_MODE.  Return the label that the branch jumps to.  */
 
-static rtx_insn *
+static rtx_code_label *
 aarch64_guard_switch_pstate_sm (rtx old_svcr, aarch64_isa_mode local_mode)
 {
   local_mode &= AARCH64_ISA_MODE_SM_STATE;
@@ -10717,7 +10717,7 @@ aarch64_read_old_svcr (unsigned int regno)
    load the incoming value of SVCR from its save slot into temporary
    register REGNO.  */
 
-static rtx_insn *
+static rtx_code_label *
 aarch64_guard_switch_pstate_sm (unsigned int regno,
 				aarch64_isa_mode local_mode)
 {
@@ -11023,7 +11023,7 @@ aarch64_expand_prologue (void)
   /* Enable PSTATE.SM, if required.  */
   if (aarch64_cfun_enables_pstate_sm ())
     {
-      rtx_insn *guard_label = nullptr;
+      rtx_code_label *guard_label = nullptr;
       if (known_ge (cfun->machine->frame.old_svcr_offset, 0))
 	{
 	  /* The current function is streaming-compatible.  Save the
@@ -11137,7 +11137,7 @@ aarch64_expand_epilogue (rtx_call_insn *sibcall)
   /* Reset PSTATE.SM, if required.  */
   if (aarch64_cfun_enables_pstate_sm ())
     {
-      rtx_insn *guard_label = nullptr;
+      rtx_code_label *guard_label = nullptr;
       if (known_ge (cfun->machine->frame.old_svcr_offset, 0))
 	guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
 						      AARCH64_ISA_MODE);
@@ -29640,8 +29640,8 @@ aarch64_expand_cpymem (rtx *operands, bool is_memmove)
 	mode = V4SImode;
 
       rtx reg = gen_reg_rtx (mode);
-      rtx load = gen_move_insn (reg, adjust_address (src, mode, offset));
-      rtx store = gen_move_insn (adjust_address (dst, mode, offset), reg);
+      rtx_insn *load = gen_move_insn (reg, adjust_address (src, mode, offset));
+      rtx_insn *store = gen_move_insn (adjust_address (dst, mode, offset), reg);
       ops.safe_push ({ load, store });
       size -= mode_bytes;
       offset += mode_bytes;
@@ -33572,7 +33572,7 @@ aarch64_switch_pstate_sm_for_landing_pad (basic_block bb)
     return false;
 
   start_sequence ();
-  rtx_insn *guard_label = nullptr;
+  rtx_code_label *guard_label = nullptr;
   if (TARGET_STREAMING_COMPATIBLE)
     guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
 						  AARCH64_ISA_MODE_SM_OFF);
@@ -33599,7 +33599,7 @@ aarch64_switch_pstate_sm_for_jump (rtx_insn *jump)
     return false;
 
   start_sequence ();
-  rtx_insn *guard_label = nullptr;
+  rtx_code_label *guard_label = nullptr;
   if (TARGET_STREAMING_COMPATIBLE)
     guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
 						  AARCH64_ISA_MODE_SM_OFF);
@@ -33629,7 +33629,7 @@ aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
   /* Switch mode before the call, preserving any argument registers
      across the switch.  */
   start_sequence ();
-  rtx_insn *args_guard_label = nullptr;
+  rtx_code_label *args_guard_label = nullptr;
   if (TARGET_STREAMING_COMPATIBLE)
     args_guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
 						       callee_isa_mode);
@@ -33649,7 +33649,7 @@ aarch64_switch_pstate_sm_for_call (rtx_call_insn *call)
   /* Switch mode after the call, preserving any return registers across
      the switch.  */
   start_sequence ();
-  rtx_insn *return_guard_label = nullptr;
+  rtx_code_label *return_guard_label = nullptr;
   if (TARGET_STREAMING_COMPATIBLE)
     return_guard_label = aarch64_guard_switch_pstate_sm (IP0_REGNUM,
 							 callee_isa_mode);

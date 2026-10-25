@@ -12846,7 +12846,9 @@ mips_expand_prologue (void)
       offset = frame->hard_frame_pointer_offset;
       if (offset == 0)
 	{
-	  rtx insn = mips_emit_move (hard_frame_pointer_rtx, stack_pointer_rtx);
+	  rtx_insn *insn
+	    = mips_emit_move (hard_frame_pointer_rtx,
+			      stack_pointer_rtx);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 	}
       else if (SMALL_OPERAND (offset))

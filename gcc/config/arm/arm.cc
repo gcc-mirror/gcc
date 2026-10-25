@@ -172,7 +172,7 @@ static int arm_register_move_cost (machine_mode, reg_class_t, reg_class_t);
 static int arm_memory_move_cost (machine_mode, reg_class_t, bool);
 static void emit_constant_insn (rtx cond, rtx pattern);
 static rtx_insn *emit_set_insn (rtx, rtx);
-static void arm_add_cfa_adjust_cfa_note (rtx, int, rtx, rtx);
+static void arm_add_cfa_adjust_cfa_note (rtx_insn *, int, rtx, rtx);
 static rtx_insn *emit_multi_reg_push (unsigned long, unsigned long);
 static void arm_emit_multi_reg_pop (unsigned long);
 static int vfp_emit_fstmd (int, int);
@@ -18374,8 +18374,8 @@ cmse_nonsecure_call_inline_register_clear (void)
 
 	  if (clear_callee_saved)
 	    {
-	      rtx push_insn =
-		emit_multi_reg_push (callee_saved_mask, callee_saved_mask);
+	      rtx_insn *push_insn
+		= emit_multi_reg_push (callee_saved_mask, callee_saved_mask);
 	      /* Disable frame debug info in push because it needs to be
 		 disabled for pop (see below).  */
 	      RTX_FRAME_RELATED_P (push_insn) = 0;
@@ -21508,7 +21508,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
    SIZE is the offset to be adjusted.
    DEST and SRC might be stack_pointer_rtx or hard_frame_pointer_rtx.  */
 static void
-arm_add_cfa_adjust_cfa_note (rtx insn, int size, rtx dest, rtx src)
+arm_add_cfa_adjust_cfa_note (rtx_insn *insn, int size, rtx dest, rtx src)
 {
   rtx dwarf;
 

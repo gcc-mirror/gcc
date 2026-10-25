@@ -5477,7 +5477,7 @@ reemit_notes (rtx_insn *insn)
 
 /* Move INSN.  Reemit notes if needed.  Update CFG, if needed.  */
 static void
-move_insn (rtx_insn *insn, rtx_insn *last, rtx nt)
+move_insn (rtx_insn *insn, rtx_insn *last, rtx_insn *nt)
 {
   if (PREV_INSN (insn) != last)
     {

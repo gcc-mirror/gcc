@@ -206,7 +206,7 @@ enum special_handling_values {
 /* Union INSN with all insns containing definitions that reach USE.
    Detect whether USE is live-in to the current function.  */
 static void
-union_defs (swap_web_entry *insn_entry, rtx insn, df_ref use)
+union_defs (swap_web_entry *insn_entry, rtx_insn *insn, df_ref use)
 {
   struct df_link *link = DF_REF_CHAIN (use);
 
@@ -220,7 +220,7 @@ union_defs (swap_web_entry *insn_entry, rtx insn, df_ref use)
 
       if (DF_REF_INSN_INFO (link->ref))
 	{
-	  rtx def_insn = DF_REF_INSN (link->ref);
+	  rtx_insn *def_insn = DF_REF_INSN (link->ref);
 	  gcc_assert (NONDEBUG_INSN_P (def_insn));
 	  unionfind_union (insn_entry + INSN_UID (insn),
 			   insn_entry + INSN_UID (def_insn));
@@ -233,7 +233,7 @@ union_defs (swap_web_entry *insn_entry, rtx insn, df_ref use)
 /* Union INSN with all insns containing uses reached from DEF.
    Detect whether DEF is live-out from the current function.  */
 static void
-union_uses (swap_web_entry *insn_entry, rtx insn, df_ref def)
+union_uses (swap_web_entry *insn_entry, rtx_insn *insn, df_ref def)
 {
   struct df_link *link = DF_REF_CHAIN (def);
 
@@ -249,7 +249,7 @@ union_uses (swap_web_entry *insn_entry, rtx insn, df_ref def)
 
       if (DF_REF_INSN_INFO (link->ref))
 	{
-	  rtx use_insn = DF_REF_INSN (link->ref);
+	  rtx_insn *use_insn = DF_REF_INSN (link->ref);
 	  if (NONDEBUG_INSN_P (use_insn))
 	    unionfind_union (insn_entry + INSN_UID (insn),
 			     insn_entry + INSN_UID (use_insn));
@@ -277,7 +277,7 @@ pattern_is_rotate64 (rtx pat)
 /* Return 1 iff INSN is a load insn, including permuting loads that
    represent an lvxd2x instruction; else return 0.  */
 static unsigned int
-insn_is_load_p (rtx insn)
+insn_is_load_p (rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
 
@@ -310,7 +310,7 @@ insn_is_load_p (rtx insn)
 /* Return 1 iff INSN is a store insn, including permuting stores that
    represent an stvxd2x instruction; else return 0.  */
 static unsigned int
-insn_is_store_p (rtx insn)
+insn_is_store_p (rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
   if (GET_CODE (body) == SET && MEM_P (SET_DEST (body)))
@@ -326,7 +326,7 @@ insn_is_store_p (rtx insn)
 /* Return 1 iff INSN swaps doublewords.  This may be a reg-reg swap,
    a permuting load, or a permuting store.  */
 static unsigned int
-insn_is_swap_p (rtx insn)
+insn_is_swap_p (rtx_insn *insn)
 {
   rtx body = PATTERN (insn);
   if (GET_CODE (body) != SET)
@@ -410,7 +410,7 @@ quad_aligned_load_p (swap_web_entry *insn_entry, rtx_insn *insn)
       || def_link->next)
     return false;
 
-  rtx def_insn = DF_REF_INSN (def_link->ref);
+  rtx_insn *def_insn = DF_REF_INSN (def_link->ref);
   unsigned uid2 = INSN_UID (def_insn);
   /* We're looking for a load-with-swap insn.  If this is not that,
      return false.  */
@@ -469,7 +469,7 @@ quad_aligned_store_p (swap_web_entry *insn_entry, rtx_insn *insn)
 	  || def_link->next)
 	return false;
 
-      rtx def_insn = DF_REF_INSN (def_link->ref);
+      rtx_insn *def_insn = DF_REF_INSN (def_link->ref);
       unsigned uid2 = INSN_UID (def_insn);
 
       /* If this source value is not a simple swap, return false */
@@ -499,7 +499,7 @@ quad_aligned_store_p (swap_web_entry *insn_entry, rtx_insn *insn)
 static unsigned int
 swap_feeds_both_load_and_store (swap_web_entry *insn_entry)
 {
-  rtx insn = insn_entry->insn;
+  rtx_insn *insn = insn_entry->insn;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
   df_ref def, use;
   struct df_link *link = 0;
@@ -528,7 +528,7 @@ swap_feeds_both_load_and_store (swap_web_entry *insn_entry)
 
 /* Return TRUE if insn is a swap fed by a load from the constant pool.  */
 static bool
-const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
+const_load_sequence_p (swap_web_entry *insn_entry, rtx_insn *insn)
 {
   unsigned uid = INSN_UID (insn);
   if (!insn_entry[uid].is_swap || insn_entry[uid].is_load)
@@ -551,7 +551,7 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  || def_link->next)
 	return false;
 
-      rtx def_insn = DF_REF_INSN (def_link->ref);
+      rtx_insn *def_insn = DF_REF_INSN (def_link->ref);
       unsigned uid2 = INSN_UID (def_insn);
       /* If this is not a load or is not a swap, return false.  */
       if (!insn_entry[uid2].is_load || !insn_entry[uid2].is_swap)
@@ -594,7 +594,7 @@ const_load_sequence_p (swap_web_entry *insn_entry, rtx insn)
 	  if (DF_REF_IS_ARTIFICIAL (base_def_link->ref))
 	    return false;
 
-	  rtx tocrel_insn = DF_REF_INSN (base_def_link->ref);
+	  rtx_insn *tocrel_insn = DF_REF_INSN (base_def_link->ref);
 	  rtx tocrel_body = PATTERN (tocrel_insn);
 	  rtx base, offset;
 	  if (GET_CODE (tocrel_body) != SET)
@@ -871,7 +871,7 @@ rtx_is_swappable_p (rtx op, unsigned int *special)
    if vector doublewords are swapped in memory (in which case
    *SPECIAL is changed to a value indicating how).  */
 static unsigned int
-insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
+insn_is_swappable_p (swap_web_entry *insn_entry, rtx_insn *insn,
 		     unsigned int *special)
 {
   /* Calls are always bad.  */
@@ -945,7 +945,7 @@ insn_is_swappable_p (swap_web_entry *insn_entry, rtx insn,
 	    return 0;
 
 	  for (; link; link = link->next) {
-	    rtx use_insn = DF_REF_INSN (link->ref);
+	    rtx_insn *use_insn = DF_REF_INSN (link->ref);
 	    rtx use_body = PATTERN (use_insn);
 	    if (GET_CODE (use_body) != SET
 		|| GET_CODE (SET_SRC (use_body)) != UNSPEC
@@ -1031,7 +1031,7 @@ chain_contains_only_swaps (swap_web_entry *insn_entry, struct df_link *link,
       if (DF_REF_IS_ARTIFICIAL (link->ref))
 	return false;
 
-      rtx reached_insn = DF_REF_INSN (link->ref);
+      rtx_insn *reached_insn = DF_REF_INSN (link->ref);
       unsigned uid = INSN_UID (reached_insn);
       struct df_insn_info *insn_info = DF_INSN_INFO_GET (reached_insn);
 
@@ -1051,7 +1051,7 @@ chain_contains_only_swaps (swap_web_entry *insn_entry, struct df_link *link,
 		  if (DF_REF_IS_ARTIFICIAL (link->ref))
 		    return false;
 
-		  rtx swap_def_insn = DF_REF_INSN (swap_link->ref);
+		  rtx_insn *swap_def_insn = DF_REF_INSN (swap_link->ref);
 		  unsigned uid2 = INSN_UID (swap_def_insn);
 
 		  /* Only permuting loads are allowed.  */
@@ -1074,7 +1074,7 @@ chain_contains_only_swaps (swap_web_entry *insn_entry, struct df_link *link,
 		  if (DF_REF_IS_ARTIFICIAL (link->ref))
 		    return false;
 
-		  rtx swap_use_insn = DF_REF_INSN (swap_link->ref);
+		  rtx_insn *swap_use_insn = DF_REF_INSN (swap_link->ref);
 		  unsigned uid2 = INSN_UID (swap_use_insn);
 
 		  /* Permuting stores or register swaps are allowed.  */
@@ -1097,7 +1097,7 @@ chain_contains_only_swaps (swap_web_entry *insn_entry, struct df_link *link,
 static void
 mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
 {
-  rtx insn = insn_entry[i].insn;
+  rtx_insn *insn = insn_entry[i].insn;
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 
   if (insn_entry[i].is_load)
@@ -1111,7 +1111,7 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
 	     them confidently.  */
 	  while (link)
 	    {
-	      rtx use_insn = DF_REF_INSN (link->ref);
+	      rtx_insn *use_insn = DF_REF_INSN (link->ref);
 	      insn_entry[INSN_UID (use_insn)].will_delete = 1;
 	      link = link->next;
 	    }
@@ -1133,7 +1133,7 @@ mark_swaps_for_removal (swap_web_entry *insn_entry, unsigned int i)
 	     them confidently.  */
 	  while (link)
 	    {
-	      rtx def_insn = DF_REF_INSN (link->ref);
+	      rtx_insn *def_insn = DF_REF_INSN (link->ref);
 	      insn_entry[INSN_UID (def_insn)].will_delete = 1;
 	      link = link->next;
 	    }
@@ -1749,7 +1749,7 @@ rs6000_gen_lvx (enum machine_mode mode, rtx dest_exp, rtx src_exp)
    load-with-swap, replace the load with an aligned load (without
    swap) and replace the swap with a copy insn.  */
 static void
-replace_swapped_aligned_load (swap_web_entry *insn_entry, rtx swap_insn)
+replace_swapped_aligned_load (swap_web_entry *insn_entry, rtx_insn *swap_insn)
 {
   /* Find the load.  */
   unsigned uid = INSN_UID (swap_insn);
@@ -1866,7 +1866,7 @@ replace_swapped_aligned_load (swap_web_entry *insn_entry, rtx swap_insn)
   A better solution is to fix the code generator to emit lvx/stvx for
   those.  */
 static void
-replace_swapped_load_constant (swap_web_entry *insn_entry, rtx swap_insn)
+replace_swapped_load_constant (swap_web_entry *insn_entry, rtx_insn *swap_insn)
 {
   /* Find the load.  */
   struct df_insn_info *insn_info = DF_INSN_INFO_GET (swap_insn);
@@ -2476,7 +2476,7 @@ rs6000_analyze_swaps (function *fun)
 		 use.  */
 	      if (mode == DImode && DF_REF_INSN_INFO (mention))
 		{
-		  rtx feeder = DF_REF_INSN (mention);
+		  rtx_insn *feeder = DF_REF_INSN (mention);
 		  /* FIXME:  It is pretty hard to get from the df mention
 		     to the mode of the use in the insn.  We arbitrarily
 		     pick a vector mode here, even though the use might
@@ -2602,7 +2602,7 @@ rs6000_analyze_swaps (function *fun)
 	 by a register swap, the optimization isn't appropriate.  */
       else if (insn_entry[i].is_load && insn_entry[i].is_swap)
 	{
-	  rtx insn = insn_entry[i].insn;
+	  rtx_insn *insn = insn_entry[i].insn;
 	  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 	  df_ref def;
 
@@ -2619,7 +2619,7 @@ rs6000_analyze_swaps (function *fun)
 	}
       else if (insn_entry[i].is_store && insn_entry[i].is_swap)
 	{
-	  rtx insn = insn_entry[i].insn;
+	  rtx_insn *insn = insn_entry[i].insn;
 	  struct df_insn_info *insn_info = DF_INSN_INFO_GET (insn);
 	  df_ref use;
 

@@ -1130,8 +1130,8 @@ static int rs6000_debug_adjust_cost (rtx_insn *, int, rtx_insn *, int,
 static bool is_microcoded_insn (rtx_insn *);
 static bool is_nonpipeline_insn (rtx_insn *);
 static bool is_cracked_insn (rtx_insn *);
-static bool is_load_insn (rtx, rtx *);
-static bool is_store_insn (rtx, rtx *);
+static bool is_load_insn (rtx_insn *, rtx *);
+static bool is_store_insn (rtx_insn *, rtx *);
 static bool set_to_load_agen (rtx_insn *,rtx_insn *);
 static bool insn_terminates_group_p (rtx_insn *, enum group_termination);
 static bool insn_must_be_first_in_group (rtx_insn *);
@@ -19143,7 +19143,7 @@ is_load_insn1 (rtx pat, rtx *load_mem)
 /* Determine if INSN loads from memory.  */
 
 static bool
-is_load_insn (rtx insn, rtx *load_mem)
+is_load_insn (rtx_insn *insn, rtx *load_mem)
 {
   if (!insn || !INSN_P (insn))
     return false;
@@ -19185,7 +19185,7 @@ is_store_insn1 (rtx pat, rtx *str_mem)
 /* Determine if INSN stores to memory.  */
 
 static bool
-is_store_insn (rtx insn, rtx *str_mem)
+is_store_insn (rtx_insn *insn, rtx *str_mem)
 {
   if (!insn || !INSN_P (insn))
     return false;
@@ -19221,8 +19221,6 @@ is_power9_pairable_vec_type (enum attr_type type)
 static bool
 rs6000_is_costly_dependence (dep_t dep, int cost, int distance)
 {
-  rtx insn;
-  rtx next;
   rtx load_mem, str_mem;
 
   /* If the flag is not enabled - no dependence is considered costly;
@@ -19237,8 +19235,8 @@ rs6000_is_costly_dependence (dep_t dep, int cost, int distance)
   if (rs6000_sched_costly_dep == all_deps_costly)
     return true;
 
-  insn = DEP_PRO (dep);
-  next = DEP_CON (dep);
+  rtx_insn *insn = DEP_PRO (dep);
+  rtx_insn *next = DEP_CON (dep);
 
   if (rs6000_sched_costly_dep == store_to_load_dep_costly
       && is_load_insn (next, &load_mem)
@@ -20124,7 +20122,7 @@ is_costly_group (rtx_insn **group_insns, rtx next_insn)
 
       FOR_EACH_DEP (insn, SD_LIST_RES_FORW, sd_it, dep)
 	{
-	  rtx next = DEP_CON (dep);
+	  rtx_insn *next = DEP_CON (dep);
 
 	  if (next == next_insn
 	      && rs6000_is_costly_dependence (dep, dep_cost (dep), 0))

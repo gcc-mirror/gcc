@@ -266,7 +266,7 @@ static int insert_bundle_state (struct bundle_state *);
 static void initiate_bundle_state_table (void);
 static void finish_bundle_state_table (void);
 static int try_issue_nops (struct bundle_state *, int);
-static int try_issue_insn (struct bundle_state *, rtx);
+static int try_issue_insn (struct bundle_state *, rtx_insn *);
 static void issue_nops_and_insn (struct bundle_state *, int, rtx_insn *,
 				 int, int);
 static int get_max_pos (state_t);
@@ -8257,7 +8257,7 @@ ia64_skip_rtx_p (const_rtx x)
 /* If INSN is a speculative load, return its UNSPEC code.
    Return -1 otherwise.  */
 static int
-get_insn_spec_code (const_rtx insn)
+get_insn_spec_code (const rtx_insn *insn)
 {
   rtx pat, reg, mem;
 
@@ -8849,7 +8849,7 @@ try_issue_nops (struct bundle_state *curr_state, int nops_num)
    function returns FALSE and frees the current state.  */
 
 static int
-try_issue_insn (struct bundle_state *curr_state, rtx insn)
+try_issue_insn (struct bundle_state *curr_state, rtx_insn *insn)
 {
   if (insn && state_transition (curr_state->dfa_state, insn) >= 0)
     {

@@ -6204,7 +6204,7 @@ sh_reorg (void)
 		{
 		  rtx *patp = &PATTERN (scan), pat = *patp;
 		  rtx src, dst;
-		  rtx lab;
+		  rtx_code_label *lab;
 		  rtx newsrc;
 		  machine_mode mode;
 
@@ -7173,14 +7173,14 @@ sh_expand_prologue (void)
   /* If we're supposed to switch stacks at function entry, do so now.  */
   if (sp_switch_attr)
     {
-      rtx lab, newsrc;
+      rtx newsrc;
       /* The argument specifies a variable holding the address of the
 	 stack the interrupt function should switch to/from at entry/exit.  */
       tree arg = TREE_VALUE ( TREE_VALUE (sp_switch_attr));
       const char* s = ggc_strdup (TREE_STRING_POINTER (arg));
       rtx sp_switch = gen_rtx_SYMBOL_REF (Pmode, s);
 
-      lab = add_constant (sp_switch, SImode, 0);
+      rtx_code_label *lab = add_constant (sp_switch, SImode, 0);
       newsrc = gen_rtx_LABEL_REF (VOIDmode, lab);
 
       emit_insn (gen_sp_switch_1 (newsrc));

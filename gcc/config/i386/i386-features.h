@@ -164,7 +164,7 @@ class scalar_chain
 
  protected:
   void add_to_queue (unsigned insn_uid);
-  void emit_conversion_insns (rtx insns, rtx_insn *pos);
+  void emit_conversion_insns (rtx_insn *insns, rtx_insn *pos);
   rtx convert_compare (rtx op1, rtx op2, rtx_insn *insn);
   void mark_dual_mode_def (df_ref def);
   void convert_reg (rtx_insn *insn, rtx dst, rtx src);

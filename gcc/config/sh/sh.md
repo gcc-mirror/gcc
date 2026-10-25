@@ -7332,8 +7332,9 @@
   rtx lab = PATTERN (gen_call_site ());
 
   sh_expand_sym_label2reg (operands[2], operands[0], lab, true);
-  rtx i = emit_call_insn (gen_sibcalli_pcrel_fdpic (operands[2], operands[1],
-						    copy_rtx (lab)));
+  rtx_insn *i
+    = emit_call_insn (gen_sibcalli_pcrel_fdpic (operands[2], operands[1],
+						copy_rtx (lab)));
   SIBLING_CALL_P (i) = 1;
   DONE;
 }
@@ -7472,10 +7473,11 @@
   rtx tmp =  gen_rtx_REG (SImode, R1_REG);
 
   sh_expand_sym_label2reg (tmp, operands[1], lab, true);
-  rtx call_insn = emit_call_insn (gen_sibcall_valuei_pcrel (operands[0],
-							tmp,
-							operands[2],
-							copy_rtx (lab)));
+  rtx_insn *call_insn
+    = emit_call_insn (gen_sibcall_valuei_pcrel (operands[0],
+						tmp,
+						operands[2],
+						copy_rtx (lab)));
   SIBLING_CALL_P (call_insn) = 1;
   DONE;
 }
@@ -7504,10 +7506,11 @@
   rtx tmp = gen_rtx_REG (SImode, R1_REG);
 
   sh_expand_sym_label2reg (tmp, operands[1], lab, true);
-  rtx i = emit_call_insn (gen_sibcall_valuei_pcrel_fdpic (operands[0],
-							  tmp,
-							  operands[2],
-							  copy_rtx (lab)));
+  rtx_insn *i
+    = emit_call_insn (gen_sibcall_valuei_pcrel_fdpic (operands[0],
+						      tmp,
+						      operands[2],
+						      copy_rtx (lab)));
   SIBLING_CALL_P (i) = 1;
   DONE;
 }
@@ -7838,11 +7841,11 @@
   [(match_operand 0 "" "") (match_operand 1 "" "")]
   ""
 {
-  rtx gotsym, insn;
+  rtx gotsym;
 
   gotsym = gen_sym2GOT (operands[1]);
   PUT_MODE (gotsym, Pmode);
-  insn = emit_insn (gen_symGOT_load (operands[0], gotsym));
+  rtx_insn *insn = emit_insn (gen_symGOT_load (operands[0], gotsym));
 
   MEM_READONLY_P (SET_SRC (PATTERN (insn))) = 1;
 
@@ -7859,7 +7862,7 @@
 {
   rtx gotsym = gen_sym2GOTFUNCDESC (operands[1]);
   PUT_MODE (gotsym, Pmode);
-  rtx insn = emit_insn (gen_symGOT_load (operands[0], gotsym));
+  rtx_insn *insn = emit_insn (gen_symGOT_load (operands[0], gotsym));
 
   MEM_READONLY_P (SET_SRC (PATTERN (insn))) = 1;
 
