@@ -1,3 +1,9 @@
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127785
+	* match.pd ((ordered @0 @1) & (ne @0 @1)): Only fold to LTGT
+	without trapping math or when NaNs are not honored.
+
 2026-10-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa.cc (pa_can_change_mode_class): Don't reject
