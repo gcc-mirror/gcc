@@ -29,6 +29,63 @@ def
 
     { L bits_width are implemented in compiler. }
 
+    { 10.2.3.7 Operations on complex operands }
+
+    {iter L {} {long} {long long}}
+    {iter K  {} {LENG}  {LENG LENG}}
+    {iter L_ {} {long_} {long_long_}}
+    pub op = = ({L} compl a,b) bool: (re'a = re'b AND im'a = im'b);
+    pub op EQ = ({L} compl a,b) bool: a = b;
+
+    pub op /= = ({L} compl a,b) bool: NOT (a = b);
+    pub op NE = ({L} compl a,b) bool: a /= b;
+
+    pub op + = ({L} compl a,b) {L} compl: (re'a + re'b, im'a + im'b);
+    pub op +:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a + b; a);
+    pub op PLUSAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a +:= b;
+
+    pub op - = ({L} compl a) {L} compl: (-re'a, -im'a);
+    pub op - = ({L} compl a,b) {L} compl: (re'a - re'b, im'a - im'b);
+    pub op -:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a - b; a);
+    pub op MINUSAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a -:= b;
+
+    pub op * = ({L} compl a,b) {L} compl:
+       (re'a * re'b - im'a * im'b, re'a * im'b + im'a * re'b);
+    pub op *:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a * b; a);
+    pub op TIMESAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a *:= b;
+
+    pub op / = ({L} compl a,b) {L} compl:
+    begin
+          {L} real d = re'(b * CONJ b);
+          {L} compl n = a * CONJ b;
+          (re'n/d, im'n/d)
+    end;
+
+    pub op /:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a / b; a);
+    pub op DIVAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a /:= b;
+
+    pub op CONJ = ({L} compl z) {L} compl: (re'z, -im'z);
+    pub op ABS  = ({L} compl z) {L} real: {L_}sqrt(re'z*re'z + im'z*im'z);
+
+    pub op ARG = ({L} compl z) {L} real:
+       if {L} real zr = re'z, zi = im'z;
+          zr /= {L} 0 OR zi /= {L} 0
+       then if ABS zr > ABS zi
+            then {L_}arctan(zi/zr)
+                 + {L_}pi/{L} 2*(zi<{L} 0 | {K} SIGN zr - {L} 1 | {L} 1 - {K} SIGN zr)
+            else -{L_}arctan(zr/zi) + {L_}pi/{L} 2*{K} SIGN zi
+            fi
+       fi;
+    {reti}
+
     { 10.2.3.8.l L bitspack. }
 
     {iter L  {short short}  {short}  {} {long}  {long long}}
@@ -59,19 +116,19 @@ def
                   );
 
     { The definition of mode Integer used by both the RR subwhole and this one.  }
-    
+
     mode Integer = union (
                       {iter L {long long } {long } {} {short } {short short }}
                       {L}int
                       {reti {,}}
                    );
-    
+
     { The whole_powers_of_10 row is used to look up the appropriate power of 10 for
       each integer division required to select the leading in the conversion
       process, for each integer multiplication to eliminate the leading digit,
       and in the lookup operator WHOLEDIGITS to determine the number of digits in
       the integer to be converted.  }
-    
+
     int whole_max_entry := 1;
     long long int whole_p10 := long long 1;
     long long int whole_stop_after = long_long_max_int % long long 10;
@@ -87,11 +144,11 @@ def
        whole_p10 %:= long long 10;
        whole_max_entry -:= 1
     od;
-    
+
     { The WHOLEDIGITS operator is used to determine the number of decimal digits in a
       number.  We convert the operand to long long and make it negative if
       necessary, to allow for twos-complement minimum (negative) integer.  }
-    
+
     op WHOLEDIGITS = (Integer number) int:
     begin
           long long int work =
@@ -108,15 +165,15 @@ def
           do num_digits +:= 1 od;
           num_digits
     end { WHOLEDIGITS };
-    
+
     { proc whole checks for a too-small width, returning a string of the error
       character if so; it left-pads the result with blanks as necessary and the
       sign as necessary; and it relies on subwhole to do the actual digit
       conversion.  The [] result returned is either exactly the number of chars
       needed (width = 0) to hold the converted integer and negative sign if < 0
       or width characters (width ≠ 0).  }
-    
-    
+
+
     pub proc whole = (Number v, int width) string:
        case v in
           {iter L {long long } {long } {} {short } {short short }}
@@ -205,22 +262,22 @@ def
         esac;
 
     { The RR proc subwhole looks like
-    
+
       proc ℵ₀ subwhole = (number v, int width) string: { implementation };
-    
+
       We deviate from that design below.  This means that, should someone copy
       proc putf from the RR, they must recognize that the subwhole mentioned
       there is no longer defined here, and make adjustments.
-    
+
       I considered calling this subwhole something else (whole_do_conv for example)
       but that would mean anyone else calling subwhole hoping to get the new
       version would silently get the old subwhole instead.
-    
+
       This subwhole converts digit by digit from left to right.  It relies on the
       caller having padded out the buffer with spaces and sign as required and
       begins filling digits starting at the value passed in buf_ch.  The final
       []char array and final value of buf_ch are returned.  }
-    
+
     proc subwhole = (Integer v, ref []char buffer, ref int buf_ch) void:
        case int char_zero = ABS "0"; v in
           {iter L {long long } {long } {} {short } {short short }}

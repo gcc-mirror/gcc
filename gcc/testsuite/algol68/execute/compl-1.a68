@@ -1,0 +1,84 @@
+begin real eps := 1e-5;
+      long real epsl := long 1e-13;
+      long long real epsll := long long 1e-13;
+
+      { COMPL -------------------------------------------}
+      compl a := (1.2, 3.4);
+      compl b := (5.6, -7.8);
+      long compl aa := (Leng 1.2, Leng 3.4);
+      long compl bb := (Leng 5.6, Leng -7.8);
+      long long compl aaa := (Leng Leng 1.2, Leng Leng 3.4);
+      long long compl bbb := (Leng Leng 5.6, Leng Leng-7.8);
+
+      compl c, rt;
+      long compl cc, rtl;
+      long long compl ccc, rtll;
+
+      { first verify absolute value, and subtraction so they can be
+        used for testing }
+      assert( (Abs(b) - 9.602083107326242) < eps);
+      assert( (Abs(bb) - Leng 9.602083107326242) < epsl);
+      assert( (Abs(bbb) - Leng Leng 9.602083107326242) < epsll);
+
+      c := a-b;
+      cc := aa-bb;
+      ccc := aaa-bbb;
+      assert( Abs(re'c - -4.4) < eps); assert( Abs(im'c - 11.2) < eps);
+      assert( Abs(re'cc - Leng -4.4) < epsl);
+      assert( Abs(im'cc - Leng 11.2) < epsl);
+      assert( Abs(re'ccc - Leng Leng -4.4) < epsll);
+      assert( Abs(im'ccc - Leng Leng 11.2) < epsll);
+
+      { now, we proceed with the rest }
+      c := a+b;
+      cc := aa+bb;
+      ccc := aaa+bbb;
+
+      { right answers }
+      rt := (6.8, -4.4);
+      rtl := (Leng 6.8, Leng -4.4);
+      rtll := (Leng Leng 6.8, Leng Leng -4.4);
+      assert( Abs(c-rt) < eps );
+      assert( Abs(cc-rtl) < epsl );
+      assert( Abs(ccc-rtll) < epsll );
+
+      c := a*b;
+      cc := aa*bb;
+      ccc := aaa*bbb;
+
+      { right answers }
+      rt := (33.24, 9.68);
+      rtl := (Leng 33.24, Leng 9.68);
+      rtll := (Leng Leng 33.24, Leng Leng 9.68);
+      assert( Abs(c-rt) < eps );
+      assert( Abs(cc-rtl) < epsl );
+      assert( Abs(ccc-rtll) < epsll );
+
+      c := a/b;
+      cc := aa/bb;
+      ccc := aaa/bbb;
+
+      { right answers }
+      rt := (-0.214750542299349, 0.308026030368764);
+      rtl := (Leng -0.214750542299349, Leng 0.308026030368764);
+      rtll := (Leng Leng-0.214750542299349, Leng Leng 0.308026030368764);
+      assert( Abs(c-rt) < eps );
+      assert( Abs(cc-rtl) < epsl );
+      assert( Abs(ccc-rtll) < epsll );
+
+      c := Conj a;
+      cc := Conj aa;
+      ccc := Conj aaa;
+      assert( re'c = re'a And im'c = -im'a );
+      assert( re'cc = re'aa And im'cc = -im'aa );
+      assert( re'ccc = re'aaa And im'ccc = -im'aaa );
+
+      assert( Abs(Arg(a)-  1.231503712340852) < eps );
+      assert( Abs(Arg(b) - -0.948125538037829) < eps);
+      assert( Abs(Arg(aa)-  Leng 1.231503712340852) < epsl );
+      assert( Abs(Arg(bb) - -Leng 0.948125538037829) < epsl);
+      assert( Abs(Arg(aaa)-  Leng Leng 1.231503712340852) < epsll);
+      assert( Abs(Arg(bbb) - Leng Leng -0.948125538037829) < epsll);
+
+      skip
+end

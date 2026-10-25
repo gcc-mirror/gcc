@@ -1155,35 +1155,10 @@ stand_prelude (void)
   m = a68_proc (M_REAL, M_COMPLEX, NO_MOID);
   a68_op (A68_STD, "RE", m, a68_lower_re2);
   a68_op (A68_STD, "IM", m, a68_lower_im2);
-  a68_op (A68_STD, "ABS", m);
-  a68_op (A68_STD, "ARG", m);
-  m = A68_MCACHE (proc_complex_complex);
-  a68_op (A68_STD, "+", m);
-  a68_op (A68_STD, "-", m);
-  a68_op (A68_STD, "CONJ", m, a68_lower_conj2);
-  m = a68_proc (M_BOOL, M_COMPLEX, M_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "=", m);
-  a68_op (A68_STD, "/=", m);
-  a68_op (A68_STD, "EQ", m);
-  a68_op (A68_STD, "NE", m);
-  m = a68_proc (M_COMPLEX, M_COMPLEX, M_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+", m);
-  a68_op (A68_STD, "-", m);
-  a68_op (A68_STD, "*", m);
-  a68_op (A68_STD, "/", m);
   m = a68_proc (M_COMPLEX, M_COMPLEX, M_INT, NO_MOID);
   a68_op (A68_STD, "**", m);
   a68_op (A68_STD, "UP", m);
   a68_op (A68_STD, "^", m);
-  m = a68_proc (M_REF_COMPLEX, M_REF_COMPLEX, M_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+:=", m);
-  a68_op (A68_STD, "-:=", m);
-  a68_op (A68_STD, "*:=", m);
-  a68_op (A68_STD, "/:=", m);
-  a68_op (A68_STD, "PLUSAB", m);
-  a68_op (A68_STD, "MINUSAB", m);
-  a68_op (A68_STD, "TIMESAB", m);
-  a68_op (A68_STD, "DIVAB", m);
   m = a68_proc (M_COMPLEX, M_COMPLEX, NO_MOID);
   a68_op (A68_STD, "SHORTEN", m);
   /* LONG COMPLEX  operators */
@@ -1204,35 +1179,10 @@ stand_prelude (void)
   m = a68_proc (M_LONG_REAL, M_LONG_COMPLEX, NO_MOID);
   a68_op (A68_STD, "RE", m, a68_lower_re2);
   a68_op (A68_STD, "IM", m, a68_lower_im2);
-  a68_op (A68_STD, "ARG", m);
-  a68_op (A68_STD, "ABS", m);
-  m = a68_proc (M_LONG_COMPLEX, M_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+", m);
-  a68_op (A68_STD, "-", m);
-  a68_op (A68_STD, "CONJ", m, a68_lower_conj2);
-  m = a68_proc (M_LONG_COMPLEX, M_LONG_COMPLEX, M_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+", m);
-  a68_op (A68_STD, "-", m);
-  a68_op (A68_STD, "*", m);
-  a68_op (A68_STD, "/", m);
   m = a68_proc (M_LONG_COMPLEX, M_LONG_COMPLEX, M_INT, NO_MOID);
   a68_op (A68_STD, "**", m);
   a68_op (A68_STD, "UP", m);
   a68_op (A68_STD, "^", m);
-  m = a68_proc (M_BOOL, M_LONG_COMPLEX, M_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "=", m);
-  a68_op (A68_STD, "EQ", m);
-  a68_op (A68_STD, "/=", m);
-  a68_op (A68_STD, "NE", m);
-  m = a68_proc (M_REF_LONG_COMPLEX, M_REF_LONG_COMPLEX, M_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+:=", m);
-  a68_op (A68_STD, "-:=", m);
-  a68_op (A68_STD, "*:=", m);
-  a68_op (A68_STD, "/:=", m);
-  a68_op (A68_STD, "PLUSAB", m);
-  a68_op (A68_STD, "MINUSAB", m);
-  a68_op (A68_STD, "TIMESAB", m);
-  a68_op (A68_STD, "DIVAB", m);
   /* LONG LONG COMPLEX operators.  */
   m = a68_proc (M_LONG_LONG_COMPLEX, M_LONG_LONG_INT, M_LONG_LONG_INT, NO_MOID);
   a68_op (A68_STD, "I", m, a68_lower_longlonginti);
@@ -1243,35 +1193,10 @@ stand_prelude (void)
   m = a68_proc (M_LONG_LONG_REAL, M_LONG_LONG_COMPLEX, NO_MOID);
   a68_op (A68_STD, "RE", m, a68_lower_re2);
   a68_op (A68_STD, "IM", m, a68_lower_im2);
-  a68_op (A68_STD, "ARG", m);
-  a68_op (A68_STD, "ABS", m);
-  m = a68_proc (M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+", m);
-  a68_op (A68_STD, "-", m);
-  a68_op (A68_STD, "CONJ", m, a68_lower_conj2);
-  m = a68_proc (M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+", m);
-  a68_op (A68_STD, "-", m);
-  a68_op (A68_STD, "*", m);
-  a68_op (A68_STD, "/", m);
   m = a68_proc (M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, M_INT, NO_MOID);
   a68_op (A68_STD, "**", m);
   a68_op (A68_STD, "UP", m);
   a68_op (A68_STD, "^", m);
-  m = a68_proc (M_BOOL, M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "=", m);
-  a68_op (A68_STD, "EQ", m);
-  a68_op (A68_STD, "/=", m);
-  a68_op (A68_STD, "NE", m);
-  m = a68_proc (M_REF_LONG_LONG_COMPLEX, M_REF_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, NO_MOID);
-  a68_op (A68_STD, "+:=", m);
-  a68_op (A68_STD, "-:=", m);
-  a68_op (A68_STD, "*:=", m);
-  a68_op (A68_STD, "/:=", m);
-  a68_op (A68_STD, "PLUSAB", m);
-  a68_op (A68_STD, "MINUSAB", m);
-  a68_op (A68_STD, "TIMESAB", m);
-  a68_op (A68_STD, "DIVAB", m);
   m = a68_proc (M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX, NO_MOID);
   a68_op (A68_STD, "LENG", m);
   /* SEMA operators.  */
@@ -1282,7 +1207,6 @@ stand_prelude (void)
   m = a68_proc (M_VOID, M_SEMA, NO_MOID);
   a68_op (A68_STD, "UP", m);
   a68_op (A68_STD, "DOWN", m);
-
 
   /* Load Algol 68 parts.  */
   if (!flag_building_libga68)
