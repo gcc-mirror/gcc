@@ -419,13 +419,6 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
-  // we dont care about the result of the unify from a compound assignment
-  // since this is a unit-type expr
-  coercion_site (expr.get_mappings ().get_hirid (),
-		 TyTy::TyWithLocation (lhs, expr.get_lhs ().get_locus ()),
-		 TyTy::TyWithLocation (rhs, expr.get_rhs ().get_locus ()),
-		 expr.get_locus ());
-
   auto lang_item_type
     = LangItem::CompoundAssignmentOperatorToLangItem (expr.get_expr_type ());
   bool operator_overloaded
@@ -443,6 +436,26 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 		     expr.get_operator_str ().c_str (),
 		     lhs->as_string ().c_str (), rhs->as_string ().c_str ());
       return;
+    }
+
+  switch (expr.get_expr_type ())
+    {
+    case ArithmeticOrLogicalOperator::LEFT_SHIFT:
+    case ArithmeticOrLogicalOperator::RIGHT_SHIFT:
+      {
+	TyTy::TyWithLocation from (rhs, expr.get_rhs ().get_locus ());
+	TyTy::TyWithLocation to (lhs, expr.get_lhs ().get_locus ());
+	cast_site (expr.get_mappings ().get_hirid (), from, to,
+		   expr.get_locus ());
+	break;
+      }
+    default:
+      // we dont care about the result of the unify from a compound assignment
+      // since this is a unit-type expr
+      coercion_site (expr.get_mappings ().get_hirid (),
+		     TyTy::TyWithLocation (lhs, expr.get_lhs ().get_locus ()),
+		     TyTy::TyWithLocation (rhs, expr.get_rhs ().get_locus ()),
+		     expr.get_locus ());
     }
 }
 
