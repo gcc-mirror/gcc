@@ -1645,10 +1645,6 @@ factor_operation_ok (code_helper code, int opnum,
       && code == VEC_PERM_EXPR && opnum == 2)
     return false;
 
-  /*  Some builtins should not be factored out with constants being involved.  */
-  if (!all_ssa_names && code.is_fn_code ())
-    return !fn_arg_must_be_const_p (combined_fn (code), opnum);
-
   // The types are need to be compatible.
   if (opnum >= 0)
     {
@@ -1656,6 +1652,11 @@ factor_operation_ok (code_helper code, int opnum,
 	if (!types_compatible_p (TREE_TYPE (args[0]), TREE_TYPE (args[1])))
 	  return false;
     }
+
+  // Some builtins should not be factored out with constants being involved.
+  if (!all_ssa_names && code.is_fn_code ()
+      && fn_arg_must_be_const_p (combined_fn (code), opnum))
+    return false;
 
   return true;
 }
