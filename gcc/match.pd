@@ -7858,6 +7858,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 (convert (negate (absu:utype (convert:stype @2))))))
 	(convert (negate (abs @2))))))
  )
+ /* A </<= 0 ? -A : A    same as abs (A)
+    A >/>= 0 ? -A : A    same as -abs (A)
+    For integers these are reached by inverting the comparison of the
+    forms above, but a floating-point comparison that may trap on NaNs
+    cannot be inverted.  ABS does not trap, so the ordered compare may
+    be removed only when this operand cannot be a NaN or the invalid
+    exception is not observable.  */
+ (for cmp (lt le)
+  (simplify
+   (cnd (cmp @0 real_zerop) (negate @0) @0)
+    (if (!HONOR_SIGNED_ZEROS (type)
+	 && !(tree_expr_maybe_nan_p (@0) && flag_trapping_math)
+	 && (!VECTOR_TYPE_P (type)
+	     || target_supports_op_p (type, ABS_EXPR, optab_vector)))
+     (abs @0))))
+ (for cmp (gt ge)
+  (simplify
+   (cnd (cmp @0 real_zerop) (negate @0) @0)
+    (if (!HONOR_SIGNED_ZEROS (type)
+	 && !(tree_expr_maybe_nan_p (@0) && flag_trapping_math)
+	 && (!VECTOR_TYPE_P (type)
+	     || (target_supports_op_p (type, ABS_EXPR, optab_vector)
+		 && target_supports_op_p (type, NEGATE_EXPR, optab_vector))))
+     (negate (abs @0)))))
 
  /* (A - B) == 0 ? (A - B) : (B - A)    same as (B - A) */
  (for cmp (eq uneq)
