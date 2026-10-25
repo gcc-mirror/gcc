@@ -1,3 +1,8 @@
+2026-10-24  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* include/bits/simd_details.h: Use __GCC_IEC_559_COMPLEX to
+	determine IEC60559 complex support.
+
 2026-10-22  Zhongteng Gui  <dragon-archer@outlook.com>
 
 	PR middle-end/108300

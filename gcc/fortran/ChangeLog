@@ -1,3 +1,31 @@
+2026-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126798
+	* resolve.cc (resolve_assoc_var): Move the procedure pointer check
+	out of the EXPR_VARIABLE branch and diagnose a function reference
+	whose result is a procedure pointer.
+
+2026-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* resolve.cc (resolve_variable): Do not call gfc_fix_class_refs
+	for an inferred-type reference.
+
+2026-10-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128124
+	* gfortran.texi: Note that LEADZ, POPCNT, POPPAR and TRAILZ take
+	unsigned arguments.
+	* intrinsic.cc (add_functions): LEADZ and TRAILZ also take unsigned
+	arguments.
+	* intrinsic.texi: Document unsigned arguments for LEADZ, POPCNT, POPPAR
+	and TRAILZ.
+
+2026-10-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128067
+	* module.cc (load_needed): Prevent scanning of empty name for
+	prefix "__".
+
 2026-10-23  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127731

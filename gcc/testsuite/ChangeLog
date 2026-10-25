@@ -1,3 +1,104 @@
+2026-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/fwrite-3.c: Restrict fputc_unlocked tree dump scan to
+	exclude hppa*-*-hpux* targets.
+
+2026-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/diagnostic-cfgs.c: Add dg-prune-output for missing
+	'dot' executable errors.
+
+2026-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126798
+	* gfortran.dg/associate_85.f90: New test.
+
+2026-10-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* gcc.dg/debug/dwarf2/pr126355.c: Adjust scan-assembler regex
+	to accommodate HPPA trailing assembler comment layout.
+
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127785
+	* gcc.dg/opt-ordered-and-nonequal-1.c: Add -fno-trapping-math and
+	scan the optimized dump.
+	* gcc.dg/opt-ordered-and-nonequal-2.c: New test.
+	* gcc.dg/torture/cmp-of-cmp-fenv-1.c: New test.
+	* gcc.target/i386/opt-comi-1.c: Add -fno-trapping-math.
+	* gcc.target/i386/avx10_2-compare-1b.c: Likewise.
+
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128080
+	* gcc.dg/torture/pr128080.c: New test.
+	* gcc.dg/torture/pr128080-2.c: New test.
+
+2026-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	* gfortran.dg/associate_92.f90: New test.
+
+2026-10-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* lib/gcov.exp (run-gcov-pytest): Drop excess non-newline pattern
+	after parentheses in regexps.
+	* lib/scanhtml.exp (run-html-pytest): Likewise.
+	* lib/scansarif.exp (run-sarif-pytest): Likewise.
+
+2026-10-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128124
+	* gfortran.dg/unsigned_45.f90: New test.
+
+2026-10-24  Matt Turner  <mattst88@gmail.com>
+
+	* gcc.target/ia64/sigaltstack-unwind-1.c: New test.
+
+2026-10-24  Stian Halseth  <stian@itx.no>
+
+	PR target/128091
+	* gcc.dg/stack-layout-dynamic-1.c: Do not scan for
+	cfi_def_cfa_register on sparc64 Linux.
+
+2026-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128082
+	* gcc.dg/tree-ssa/ssa-fre-67.c: Adjust.
+
+2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/cpunative/native_cpu_16.c: Update the expected
+	architecture and extensions for the generic Armv9 fallback.
+	* gcc.target/aarch64/cpunative/native_cpu_17.c: Likewise.
+	* gcc.target/aarch64/cpunative/native_cpu_34.c: Likewise.
+	* gcc.target/aarch64/cpunative/info_37: New cpuinfo fixture for an
+	unknown CPU with SVE2.1 and missing Armv9 baseline features.
+	* gcc.target/aarch64/cpunative/info_38: New cpuinfo fixture for an
+	unknown CPU without SVE2.
+	* gcc.target/aarch64/cpunative/info_41: New cpuinfo fixture for an
+	unknown CPU with SVE2 and all reportable Armv9-A baseline features.
+	* gcc.target/aarch64/cpunative/native_cpu_37.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_38.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_39.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_40.c: New test.
+	* gcc.target/aarch64/cpunative/native_cpu_41.c: New test.
+
+2026-10-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-60.c: New test.
+
+2026-10-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwsub_wv-f32-mf2.c: New test.
+
 2026-10-23  Igor Shevlyakov  <igor@tachyum.com>
 
 	* gcc.dg/tree-ssa/forwprop-vec-cond-float.c: Check the conversion

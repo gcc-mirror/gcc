@@ -1,3 +1,109 @@
+2026-10-24  Robert Dubner  <rdubner@symas.com>
+
+	* doc/install.texi: Configure.html documentation for
+	--enable-libgcobol-rpath
+
+2026-10-24  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/invoke.texi (AArch64 Options): Improve markup
+	for -mcmodel=large.
+
+2026-10-24  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-phiopt.cc (replace_phi_edge_with_variable): Handle non-empty
+	middle bbs for diamond case.
+	(match_simplify_replacement): Mark phi args to be maybe dce'd also.
+
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127785
+	* match.pd ((ordered @0 @1) & (ne @0 @1)): Remove.
+
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127785
+	* match.pd ((ordered @0 @1) & (ne @0 @1)): Only fold to LTGT
+	without trapping math or when NaNs are not honored.
+
+2026-10-24  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128080
+	* match.pd (vec_perm (vec_perm) merges): Give the new mask
+	ssizetype elements.
+
+2026-10-24  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/andes.md (branch-on-bit pattern): Reference the forward
+	label correctly in the long branch sequence.
+	* config/riscv/peephole.md: Require operands to be a REG before asking
+	for the REGNO.
+
+2026-10-24  Stian Halseth  <stian@itx.no>
+
+	PR target/128091
+	* common/config/sparc/sparc-common.cc
+	(sparc_option_optimization_table)
+	[TARGET_DEFAULT_ASYNC_UNWIND_TABLES]: Enable
+	-fasynchronous-unwind-tables and -funwind-tables.
+	* config.gcc (sparc64-*-linux*): Define
+	TARGET_DEFAULT_ASYNC_UNWIND_TABLES.
+
+2026-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128082
+	* tree-ssa-sccvn.cc (pass_fre::execute): Use LOOPS_NORMAL
+	to force simple latches.
+
+2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/driver-aarch64.cc (DEFAULT_ARCH, DEFAULT_CPU):
+	Remove.
+	(get_cpu_from_ext): New function.  Select a generic CPU using
+	SVE2 and extensions that depend on it.
+	(host_detect_local_cpu): Use the inferred generic CPU and its
+	architecture for unknown CPUs, including heterogeneous systems.
+	Limit inherited features without cpuinfo tokens to the Armv8-A
+	baseline when the CPU is unknown.
+
+2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_ifn_vect_stmt_p): Rename to...
+	(aarch64_vect_stmt_cost): ...this.  Accept a fractional_cost and
+	return the adjusted statement cost instead of an additional
+	instruction count.
+	(aarch64_vector_costs::count_ops): Pass a unit cost and scale and
+	round the extra operation count after applying count.
+	(aarch64_vector_costs::add_stmt_cost): Use the adjusted statement
+	cost and leave count scaling to record_stmt_cost.
+
+2026-10-24  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (vec_extract<mode><Vel>): Call
+	gen_extract_last_active_<mode>.
+	(@extract_<last_op>_<mode>): Generate extract_last_active_<mode>
+	for UNSPEC_LASTB through the last_op attribute.
+	* config/aarch64/iterators.md (last_op): Change the UNSPEC_LASTB
+	mapping from last to last_active.
+	* config/gcn/gcn-valu.md (extract_last_<mode>): Rename to...
+	(extract_last_active_<mode>): ...this.
+	(fold_extract_last_<mode>): Call gen_extract_last_active_<mode>.
+	* doc/ifn.texi (IFN_EXTRACT_LAST): Rename to IFN_EXTRACT_LAST_ACTIVE
+	and update the corresponding pattern name.
+	* doc/md.texi (extract_last_m): Rename to extract_last_active_m.
+	* internal-fn.def (EXTRACT_LAST): Rename to EXTRACT_LAST_ACTIVE and
+	use the extract_last_active optab.
+	* optabs.def (extract_last_optab): Rename to
+	extract_last_active_optab and use the extract_last_active pattern.
+	* tree-vect-loop.cc (vectorizable_live_operation_1): Emit
+	CFN_EXTRACT_LAST_ACTIVE and update the comment.
+	(vectorizable_live_operation): Check IFN_EXTRACT_LAST_ACTIVE support.
+
+2026-10-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Take the Wn4 constraint for the
+	operand 3 and the Wvr constraint for the operand 4 of the
+	vfwsub.wv.
+
 2026-10-23  Jeff Law  <jeffreyalaw@gmail.com>
 
 	* config/riscv/crypto.md (riscv_xpack_<code>_<X:mode>_<HX:mode>_2):
