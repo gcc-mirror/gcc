@@ -36,7 +36,7 @@ extern int arm_early_load_addr_dep_ptr (rtx_insn *, rtx_insn *);
 extern int arm_early_store_addr_dep (rtx_insn *, rtx_insn *);
 extern int arm_early_store_addr_dep_ptr (rtx_insn *, rtx_insn *);
 extern int arm_mac_accumulator_is_mul_result (rtx_insn *, rtx_insn *);
-extern int arm_mac_accumulator_is_result (rtx, rtx);
+extern int arm_mac_accumulator_is_result (rtx_insn *, rtx_insn *);
 extern int arm_no_early_alu_shift_dep (rtx_insn *, rtx_insn *);
 extern int arm_no_early_alu_shift_value_dep (rtx_insn *, rtx_insn *);
 extern int arm_no_early_mul_dep (rtx_insn *, rtx_insn *);

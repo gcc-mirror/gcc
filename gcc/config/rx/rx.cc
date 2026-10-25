@@ -1662,17 +1662,17 @@ gen_rx_store_vector (unsigned int low, unsigned int high)
    then mark each element as being frame related as well.  */
 
 static void
-mark_frame_related (rtx insn)
+mark_frame_related (rtx_insn *insn)
 {
   RTX_FRAME_RELATED_P (insn) = 1;
-  insn = PATTERN (insn);
+  rtx body = PATTERN (insn);
 
-  if (GET_CODE (insn) == PARALLEL)
+  if (GET_CODE (body) == PARALLEL)
     {
       unsigned int i;
 
-      for (i = 0; i < (unsigned) XVECLEN (insn, 0); i++)
-	RTX_FRAME_RELATED_P (XVECEXP (insn, 0, i)) = 1;
+      for (i = 0; i < (unsigned) XVECLEN (body, 0); i++)
+	RTX_FRAME_RELATED_P (XVECEXP (body, 0, i)) = 1;
     }
 }
 

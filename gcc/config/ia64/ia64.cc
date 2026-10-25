@@ -178,7 +178,7 @@ static bool ia64_skip_rtx_p (const_rtx);
 static int ia64_speculate_insn (rtx_insn *, ds_t, rtx *);
 static bool ia64_needs_block_p (ds_t);
 static rtx ia64_gen_spec_check (rtx_insn *, rtx_insn *, ds_t);
-static int ia64_spec_check_p (rtx);
+static int ia64_spec_check_p (rtx_insn *);
 static int ia64_spec_check_src_p (rtx);
 static rtx gen_tls_get_addr (void);
 static rtx gen_thread_pointer (void);
@@ -8573,9 +8573,9 @@ ia64_gen_spec_check (rtx_insn *insn, rtx_insn *label, ds_t ds)
 
 /* Return nonzero, if X is branchy recovery check.  */
 static int
-ia64_spec_check_p (rtx x)
+ia64_spec_check_p (rtx_insn *insn)
 {
-  x = PATTERN (x);
+  rtx x = PATTERN (insn);
   if (GET_CODE (x) == COND_EXEC)
     x = COND_EXEC_CODE (x);
   if (GET_CODE (x) == SET)

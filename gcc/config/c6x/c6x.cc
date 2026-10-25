@@ -4938,13 +4938,14 @@ reorg_split_calls (rtx_code_label **call_labels)
 	      if (TARGET_INSNS_64)
 		{
 		  rtx x1 = gen_addkpc (reg, labelref, const0_rtx);
-		  x1 = emit_insn_after (duplicate_cond (x1, insn), after1);
-		  insn_set_clock (x1, this_clock + 1);
-		  INSN_INFO_ENTRY (INSN_UID (x1)).reservation = RESERVATION_S2;
+		  rtx_insn *i1
+		    = emit_insn_after (duplicate_cond (x1, insn), after1);
+		  insn_set_clock (i1, this_clock + 1);
+		  INSN_INFO_ENTRY (INSN_UID (i1)).reservation = RESERVATION_S2;
 		  if (after1 == last_same_clock)
-		    PUT_MODE (x1, TImode);
+		    PUT_MODE (i1, TImode);
 		  else
-		    INSN_INFO_ENTRY (INSN_UID (x1)).unit_mask
+		    INSN_INFO_ENTRY (INSN_UID (i1)).unit_mask
 		      = INSN_INFO_ENTRY (INSN_UID (after1)).unit_mask;
 		}
 	      else
@@ -4955,22 +4956,24 @@ reorg_split_calls (rtx_code_label **call_labels)
 		  if (after2 == NULL_RTX)
 		    after2 = after1;
 		  x2 = gen_movsi_lo_sum (reg, reg, labelref);
-		  x2 = emit_insn_after (duplicate_cond (x2, insn), after2);
+		  rtx_insn *i2
+		    = emit_insn_after (duplicate_cond (x2, insn), after2);
 		  x1 = gen_movsi_high (reg, labelref);
-		  x1 = emit_insn_after (duplicate_cond (x1, insn), after1);
-		  insn_set_clock (x1, this_clock + 1);
-		  insn_set_clock (x2, this_clock + 2);
-		  INSN_INFO_ENTRY (INSN_UID (x1)).reservation = RESERVATION_S2;
-		  INSN_INFO_ENTRY (INSN_UID (x2)).reservation = RESERVATION_S2;
+		  rtx_insn *i1
+		    = emit_insn_after (duplicate_cond (x1, insn), after1);
+		  insn_set_clock (i1, this_clock + 1);
+		  insn_set_clock (i2, this_clock + 2);
+		  INSN_INFO_ENTRY (INSN_UID (i1)).reservation = RESERVATION_S2;
+		  INSN_INFO_ENTRY (INSN_UID (i2)).reservation = RESERVATION_S2;
 		  if (after1 == last_same_clock)
-		    PUT_MODE (x1, TImode);
+		    PUT_MODE (i1, TImode);
 		  else
-		    INSN_INFO_ENTRY (INSN_UID (x1)).unit_mask
+		    INSN_INFO_ENTRY (INSN_UID (i1)).unit_mask
 		      = INSN_INFO_ENTRY (INSN_UID (after1)).unit_mask;
 		  if (after1 == after2)
-		    PUT_MODE (x2, TImode);
+		    PUT_MODE (i2, TImode);
 		  else
-		    INSN_INFO_ENTRY (INSN_UID (x2)).unit_mask
+		    INSN_INFO_ENTRY (INSN_UID (i2)).unit_mask
 		      = INSN_INFO_ENTRY (INSN_UID (after2)).unit_mask;
 		}
 	    }

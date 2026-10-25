@@ -21346,7 +21346,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
   int num_regs = 0;
   int num_dwarf_regs = 0;
   int i, j;
-  rtx par;
+  rtx_insn *par;
   rtx dwarf;
   int dwarf_par_index;
   rtx tmp, reg;
@@ -21405,7 +21405,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 
      For more see PR43399.  */
 
-  par = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
+  rtx parallel = gen_rtx_PARALLEL (VOIDmode, rtvec_alloc (num_regs));
   dwarf = gen_rtx_SEQUENCE (VOIDmode, rtvec_alloc (num_dwarf_regs + 1));
   dwarf_par_index = 1;
 
@@ -21441,7 +21441,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 	  if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
 	    dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
 
-	  XVECEXP (par, 0, 0)
+	  XVECEXP (parallel, 0, 0)
 	    = gen_rtx_SET (gen_frame_mem
 			   (BLKmode,
 			    gen_rtx_PRE_MODIFY (Pmode,
@@ -21474,7 +21474,7 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 	  if (arm_current_function_pac_enabled_p () && i == IP_REGNUM)
 	    dwarf_reg = gen_rtx_REG (SImode, RA_AUTH_CODE);
 
-	  XVECEXP (par, 0, j) = gen_rtx_USE (VOIDmode, reg);
+	  XVECEXP (parallel, 0, j) = gen_rtx_USE (VOIDmode, reg);
 
 	  if (dwarf_regs_mask & (1 << i))
 	    {
@@ -21492,16 +21492,16 @@ emit_multi_reg_push (unsigned long mask, unsigned long dwarf_regs_mask)
 	}
     }
 
-  rtx_insn *insn = emit_insn (par);
+  par = emit_insn (parallel);
 
   tmp = gen_rtx_SET (stack_pointer_rtx,
 		     plus_constant (Pmode, stack_pointer_rtx, -4 * num_regs));
   RTX_FRAME_RELATED_P (tmp) = 1;
   XVECEXP (dwarf, 0, 0) = tmp;
 
-  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf);
+  add_reg_note (par, REG_FRAME_RELATED_EXPR, dwarf);
 
-  return insn;
+  return par;
 }
 
 /* Add a REG_CFA_ADJUST_CFA REG note to INSN.

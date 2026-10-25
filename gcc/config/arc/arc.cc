@@ -10618,7 +10618,7 @@ arc_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 {
   enum memmodel model = (enum memmodel) INTVAL (model_rtx);
   machine_mode mode = GET_MODE (mem);
-  rtx label, x, cond;
+  rtx x, cond;
   rtx before = orig_before, after = orig_after;
 
   /* ARC atomic ops work only with 32-bit aligned memories.  */
@@ -10626,9 +10626,9 @@ arc_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 
   arc_pre_atomic_barrier (model);
 
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
-  label = gen_rtx_LABEL_REF (VOIDmode, label);
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
 
   if (before == NULL_RTX)
     before = gen_reg_rtx (mode);
@@ -10669,7 +10669,7 @@ arc_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   cond = gen_rtx_REG (CC_Zmode, CC_REG);
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
   x = gen_rtx_IF_THEN_ELSE (VOIDmode, x,
-			    label, pc_rtx);
+			    label_ref, pc_rtx);
   emit_unlikely_jump (gen_rtx_SET (pc_rtx, x));
 
   arc_post_atomic_barrier (model);

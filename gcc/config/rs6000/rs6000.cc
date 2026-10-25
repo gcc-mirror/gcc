@@ -17151,7 +17151,7 @@ void
 rs6000_expand_atomic_compare_and_swap (rtx operands[], bool local)
 {
   rtx boolval, retval, mem, oldval, newval, cond;
-  rtx label1, label2, x, mask, shift;
+  rtx label_ref1, x, mask, shift;
   machine_mode mode, orig_mode;
   enum memmodel mod_s, mod_f;
   bool is_weak;
@@ -17203,13 +17203,15 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[], bool local)
 
   mem = rs6000_pre_atomic_barrier (mem, mod_s);
 
-  label1 = NULL_RTX;
+  label_ref1 = NULL_RTX;
   if (!is_weak)
     {
-      label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-      emit_label (XEXP (label1, 0));
+      rtx_code_label *label1 = gen_label_rtx ();
+      label_ref1 = gen_rtx_LABEL_REF (VOIDmode, label1);
+      emit_label (label1);
     }
-  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  rtx_code_label *label2 = gen_label_rtx ();
+  rtx label_ref2 = gen_rtx_LABEL_REF (VOIDmode, label2);
 
   emit_load_locked (mode, retval, mem, local ? const1_rtx : const0_rtx);
 
@@ -17241,7 +17243,7 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[], bool local)
   emit_insn (gen_rtx_SET (cond, x));
 
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label2);
+  emit_unlikely_jump (x, label_ref2);
 
   x = newval;
   if (mask)
@@ -17252,16 +17254,16 @@ rs6000_expand_atomic_compare_and_swap (rtx operands[], bool local)
   if (!is_weak)
     {
       x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-      emit_unlikely_jump (x, label1);
+      emit_unlikely_jump (x, label_ref1);
     }
 
   if (!is_mm_relaxed (mod_f))
-    emit_label (XEXP (label2, 0));
+    emit_label (label2);
 
   rs6000_post_atomic_barrier (mod_s);
 
   if (is_mm_relaxed (mod_f))
-    emit_label (XEXP (label2, 0));
+    emit_label (label2);
 
   if (shift)
     rs6000_finish_atomic_subword (operands[1], retval, shift);
@@ -17281,7 +17283,7 @@ rs6000_expand_atomic_exchange (rtx operands[])
   rtx retval, mem, val, cond;
   machine_mode mode;
   enum memmodel model;
-  rtx label, x, mask, shift;
+  rtx x, mask, shift;
 
   retval = operands[0];
   mem = operands[1];
@@ -17306,8 +17308,9 @@ rs6000_expand_atomic_exchange (rtx operands[])
 
   mem = rs6000_pre_atomic_barrier (mem, model);
 
-  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+  emit_label (label);
 
   emit_load_locked (mode, retval, mem, const0_rtx);
 
@@ -17319,7 +17322,7 @@ rs6000_expand_atomic_exchange (rtx operands[])
   emit_store_conditional (mode, cond, mem, x);
 
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label);
+  emit_unlikely_jump (x, label_ref);
 
   rs6000_post_atomic_barrier (model);
 
@@ -17340,7 +17343,7 @@ rs6000_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   enum memmodel model = memmodel_base (INTVAL (model_rtx));
   machine_mode mode = GET_MODE (mem);
   machine_mode store_mode = mode;
-  rtx label, x, cond, mask, shift;
+  rtx x, cond, mask, shift;
   rtx before = orig_before, after = orig_after;
 
   mask = shift = NULL_RTX;
@@ -17407,9 +17410,9 @@ rs6000_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
 
   mem = rs6000_pre_atomic_barrier (mem, model);
 
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
-  label = gen_rtx_LABEL_REF (VOIDmode, label);
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
 
   if (before == NULL_RTX)
     before = gen_reg_rtx (mode);
@@ -17442,7 +17445,7 @@ rs6000_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
   emit_store_conditional (store_mode, cond, mem, x);
 
   x = gen_rtx_NE (VOIDmode, cond, const0_rtx);
-  emit_unlikely_jump (x, label);
+  emit_unlikely_jump (x, label_ref);
 
   rs6000_post_atomic_barrier (model);
 

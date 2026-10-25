@@ -583,25 +583,26 @@
   [(const_int 0)]
 {
   rtx x;
-  rtx label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
 
   /* Generated a *cbranch pattern.  */
   if (rtx_equal_p (operands[0], operands[2]))
     {
       PUT_CODE (operands[3], (GET_CODE (operands[3]) == NE) ? EQ : NE);
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, operands[3], label, pc_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, operands[3], label_ref, pc_rtx);
       emit_jump_insn (gen_rtx_SET (pc_rtx, x));
       emit_move_insn (operands[0], operands[1]);
     }
   else
     {
-      x = gen_rtx_IF_THEN_ELSE (VOIDmode, operands[3], label, pc_rtx);
+      x = gen_rtx_IF_THEN_ELSE (VOIDmode, operands[3], label_ref, pc_rtx);
       emit_move_insn (operands[0], operands[1]);
       emit_jump_insn (gen_rtx_SET (pc_rtx, x));
       emit_move_insn (operands[0], operands[2]);
     }
 
-  emit_label (XEXP (label, 0));
+  emit_label (label);
   DONE;
 })
 

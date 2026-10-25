@@ -2427,8 +2427,9 @@ alpha_expand_mov_safe_bwa (machine_mode mode, rtx *operands)
     {
       if (aligned_memory_operand (operands[0], mode))
 	{
-	  rtx label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-	  emit_label (XEXP (label, 0));
+	  rtx_code_label *label = gen_label_rtx ();
+	  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+	  emit_label (label);
 
 	  rtx aligned_mem, bitnum;
 	  rtx status = gen_reg_rtx (SImode);
@@ -2440,7 +2441,7 @@ alpha_expand_mov_safe_bwa (machine_mode mode, rtx *operands)
 	  rtx cond = gen_rtx_EQ (DImode,
 				 gen_rtx_SUBREG (DImode, status, 0),
 				 const0_rtx);
-	  alpha_emit_unlikely_jump (cond, label);
+	  alpha_emit_unlikely_jump (cond, label_ref);
 	}
       else
 	{
@@ -2451,8 +2452,9 @@ alpha_expand_mov_safe_bwa (machine_mode mode, rtx *operands)
 	  emit_insn (gen_rtx_SET (aligned_addr,
 				  gen_rtx_AND (DImode, addr, GEN_INT (-8))));
 
-	  rtx label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-	  emit_label (XEXP (label, 0));
+	  rtx_code_label *label = gen_label_rtx ();
+	  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+	  emit_label (label);
 
 	  rtx status = gen_reg_rtx (DImode);
 	  rtx temp = gen_reg_rtx (DImode);
@@ -2462,7 +2464,7 @@ alpha_expand_mov_safe_bwa (machine_mode mode, rtx *operands)
 	  emit_insn (seq);
 
 	  rtx cond = gen_rtx_EQ (DImode, status, const0_rtx);
-	  alpha_emit_unlikely_jump (cond, label);
+	  alpha_emit_unlikely_jump (cond, label_ref);
 	}
       return true;
     }
@@ -3916,8 +3918,9 @@ alpha_expand_unaligned_store_safe_partial (rtx dst, rtx src,
 	  gcc_unreachable ();
 	}
 
-      rtx labelh = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-      emit_label (XEXP (labelh, 0));
+      rtx_code_label *label = gen_label_rtx ();
+      rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+      emit_label (label);
 
       rtx dsth = gen_reg_rtx (DImode);
       emit_insn (gen_load_locked (DImode, dsth, memh));
@@ -3951,7 +3954,8 @@ alpha_expand_unaligned_store_safe_partial (rtx dst, rtx src,
 
       emit_insn (gen_store_conditional (DImode, dsth, memh, dsth));
 
-      alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, dsth, const0_rtx), labelh);
+      alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, dsth, const0_rtx),
+				label_ref);
     }
 
   /* Now handle low.  */
@@ -4023,8 +4027,9 @@ alpha_expand_unaligned_store_safe_partial (rtx dst, rtx src,
 	gcc_unreachable ();
       }
 
-  rtx labell = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (labell, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+  emit_label (label);
 
   rtx dstl = gen_reg_rtx (DImode);
   emit_insn (gen_load_locked (DImode, dstl, meml));
@@ -4062,7 +4067,7 @@ alpha_expand_unaligned_store_safe_partial (rtx dst, rtx src,
 
   emit_insn (gen_store_conditional (DImode, dstl, meml, dstl));
 
-  alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, dstl, const0_rtx), labell);
+  alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, dstl, const0_rtx), label_ref);
 }
 
 /* The block move code tries to maximize speed by separating loads and
@@ -4293,8 +4298,9 @@ alpha_expand_unaligned_store_words_safe_partial (rtx *data_regs, rtx dmem,
 			     expand_simple_binop (Pmode, AND, dreg, im8,
 						  NULL_RTX, 1, OPTAB_DIRECT));
 
-      rtx label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-      emit_label (XEXP (label, 0));
+      rtx_code_label *label = gen_label_rtx ();
+      rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+      emit_label (label);
 
       emit_insn (gen_load_locked (DImode, temp, mem));
       emit_insn (gen_mskql (temp, temp, dreg));
@@ -4303,7 +4309,8 @@ alpha_expand_unaligned_store_words_safe_partial (rtx *data_regs, rtx dmem,
 				    temp, 1, OPTAB_DIRECT);
       emit_insn (gen_store_conditional (DImode, temp, mem, temp));
 
-      alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, temp, const0_rtx), label);
+      alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, temp, const0_rtx),
+				label_ref);
     }
 
   for (i = words - 1; i > 0; --i)
@@ -4327,8 +4334,9 @@ alpha_expand_unaligned_store_words_safe_partial (rtx *data_regs, rtx dmem,
 			     expand_simple_binop (Pmode, AND, addr, im8,
 						  NULL_RTX, 1, OPTAB_DIRECT));
 
-      rtx label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-      emit_label (XEXP (label, 0));
+      rtx_code_label *label = gen_label_rtx ();
+      rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+      emit_label (label);
 
       emit_insn (gen_load_locked (DImode, temp, mem));
       emit_insn (gen_mskqh (temp, temp, dreg));
@@ -4337,7 +4345,8 @@ alpha_expand_unaligned_store_words_safe_partial (rtx *data_regs, rtx dmem,
 				    temp, 1, OPTAB_DIRECT);
       emit_insn (gen_store_conditional (DImode, temp, mem, temp));
 
-      alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, temp, const0_rtx), label);
+      alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, temp, const0_rtx),
+				label_ref);
     }
 }
 
@@ -4755,8 +4764,9 @@ static void
 alpha_expand_clear_safe_partial_nobwx (rtx mem, machine_mode mode,
 				       HOST_WIDE_INT mask)
 {
-  rtx label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+  emit_label (label);
 
   rtx temp = gen_reg_rtx (mode);
   rtx status = mode == DImode ? temp : gen_rtx_SUBREG (DImode, temp, 0);
@@ -4765,7 +4775,7 @@ alpha_expand_clear_safe_partial_nobwx (rtx mem, machine_mode mode,
   emit_insn (gen_rtx_SET (temp, gen_rtx_AND (mode, temp, GEN_INT (mask))));
   emit_insn (gen_store_conditional (mode, status, mem, temp));
 
-  alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, status, const0_rtx), label);
+  alpha_emit_unlikely_jump (gen_rtx_EQ (DImode, status, const0_rtx), label_ref);
 }
 
 int
@@ -5190,13 +5200,13 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
 		       rtx after, rtx scratch, enum memmodel model)
 {
   machine_mode mode = GET_MODE (mem);
-  rtx label, x, cond = gen_rtx_REG (DImode, REGNO (scratch));
+  rtx x, cond = gen_rtx_REG (DImode, REGNO (scratch));
 
   alpha_pre_atomic_barrier (model);
 
-  label = gen_label_rtx ();
+  rtx_code_label *label = gen_label_rtx ();
   emit_label (label);
-  label = gen_rtx_LABEL_REF (DImode, label);
+  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
 
   if (before == NULL)
     before = scratch;
@@ -5218,7 +5228,7 @@ alpha_split_atomic_op (enum rtx_code code, rtx mem, rtx val, rtx before,
   emit_insn (gen_store_conditional (mode, cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  alpha_emit_unlikely_jump (x, label);
+  alpha_emit_unlikely_jump (x, label_ref);
 
   alpha_post_atomic_barrier (model);
 }
@@ -5232,7 +5242,7 @@ alpha_split_compare_and_swap (rtx operands[])
   bool is_weak;
   enum memmodel mod_s, mod_f;
   machine_mode mode;
-  rtx label1, label2, x;
+  rtx label_ref1, x;
 
   cond = operands[0];
   retval = operands[1];
@@ -5246,13 +5256,15 @@ alpha_split_compare_and_swap (rtx operands[])
 
   alpha_pre_atomic_barrier (mod_s);
 
-  label1 = NULL_RTX;
+  label_ref1 = NULL_RTX;
   if (!is_weak)
     {
-      label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-      emit_label (XEXP (label1, 0));
+      rtx_code_label *label1 = gen_label_rtx ();
+      label_ref1 = gen_rtx_LABEL_REF (DImode, label1);
+      emit_label (label1);
     }
-  label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  rtx_code_label *label2 = gen_label_rtx ();
+  rtx label_ref2 = gen_rtx_LABEL_REF (DImode, label2);
 
   emit_insn (gen_load_locked (mode, retval, mem));
 
@@ -5268,7 +5280,7 @@ alpha_split_compare_and_swap (rtx operands[])
       emit_insn (gen_rtx_SET (cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
-  alpha_emit_unlikely_jump (x, label2);
+  alpha_emit_unlikely_jump (x, label_ref2);
 
   emit_move_insn (cond, newval);
   emit_insn (gen_store_conditional
@@ -5277,16 +5289,16 @@ alpha_split_compare_and_swap (rtx operands[])
   if (!is_weak)
     {
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
-      alpha_emit_unlikely_jump (x, label1);
+      alpha_emit_unlikely_jump (x, label_ref1);
     }
 
   if (!is_mm_relaxed (mod_f))
-    emit_label (XEXP (label2, 0));
+    emit_label (label2);
 
   alpha_post_atomic_barrier (mod_s);
 
   if (is_mm_relaxed (mod_f))
-    emit_label (XEXP (label2, 0));
+    emit_label (label2);
 }
 
 void
@@ -5333,7 +5345,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
   machine_mode mode;
   bool is_weak;
   enum memmodel mod_s, mod_f;
-  rtx label1, label2, mem, addr, width, mask, x;
+  rtx label_ref1, mem, addr, width, mask, x;
 
   cond = operands[0];
   dest = operands[1];
@@ -5355,13 +5367,15 @@ alpha_split_compare_and_swap_12 (rtx operands[])
 
   alpha_pre_atomic_barrier (mod_s);
 
-  label1 = NULL_RTX;
+  label_ref1 = NULL_RTX;
   if (!is_weak)
     {
-      label1 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-      emit_label (XEXP (label1, 0));
+      rtx_code_label *label1 = gen_label_rtx ();
+      label_ref1 = gen_rtx_LABEL_REF (DImode, label1);
+      emit_label (label1);
     }
-  label2 = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
+  rtx_code_label *label2 = gen_label_rtx ();
+  rtx label_ref2 = gen_rtx_LABEL_REF (DImode, label2);
 
   emit_insn (gen_load_locked (DImode, scratch, mem));
 
@@ -5380,7 +5394,7 @@ alpha_split_compare_and_swap_12 (rtx operands[])
       emit_insn (gen_rtx_SET (cond, x));
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
     }
-  alpha_emit_unlikely_jump (x, label2);
+  alpha_emit_unlikely_jump (x, label_ref2);
 
   emit_insn (gen_mskxl (cond, scratch, mask, addr));
 
@@ -5392,16 +5406,16 @@ alpha_split_compare_and_swap_12 (rtx operands[])
   if (!is_weak)
     {
       x = gen_rtx_EQ (DImode, cond, const0_rtx);
-      alpha_emit_unlikely_jump (x, label1);
+      alpha_emit_unlikely_jump (x, label_ref1);
     }
 
   if (!is_mm_relaxed (mod_f))
-    emit_label (XEXP (label2, 0));
+    emit_label (label2);
 
   alpha_post_atomic_barrier (mod_s);
 
   if (is_mm_relaxed (mod_f))
-    emit_label (XEXP (label2, 0));
+    emit_label (label2);
 }
 
 /* Expand an atomic exchange operation.  */
@@ -5412,7 +5426,7 @@ alpha_split_atomic_exchange (rtx operands[])
   rtx retval, mem, val, scratch;
   enum memmodel model;
   machine_mode mode;
-  rtx label, x, cond;
+  rtx x, cond;
 
   retval = operands[0];
   mem = operands[1];
@@ -5424,15 +5438,16 @@ alpha_split_atomic_exchange (rtx operands[])
 
   alpha_pre_atomic_barrier (model);
 
-  label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+  emit_label (label);
 
   emit_insn (gen_load_locked (mode, retval, mem));
   emit_move_insn (scratch, val);
   emit_insn (gen_store_conditional (mode, cond, mem, scratch));
 
   x = gen_rtx_EQ (DImode, cond, const0_rtx);
-  alpha_emit_unlikely_jump (x, label);
+  alpha_emit_unlikely_jump (x, label_ref);
 
   alpha_post_atomic_barrier (model);
 }
@@ -5471,7 +5486,7 @@ void
 alpha_split_atomic_exchange_12 (rtx operands[])
 {
   rtx dest, orig_mem, addr, val, align, scratch;
-  rtx label, mem, width, mask, x;
+  rtx mem, width, mask, x;
   machine_mode mode;
   enum memmodel model;
 
@@ -5491,8 +5506,9 @@ alpha_split_atomic_exchange_12 (rtx operands[])
 
   alpha_pre_atomic_barrier (model);
 
-  label = gen_rtx_LABEL_REF (DImode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (DImode, label);
+  emit_label (label);
 
   emit_insn (gen_load_locked (DImode, scratch, mem));
 
@@ -5506,7 +5522,7 @@ alpha_split_atomic_exchange_12 (rtx operands[])
   emit_insn (gen_store_conditional (DImode, scratch, mem, scratch));
 
   x = gen_rtx_EQ (DImode, scratch, const0_rtx);
-  alpha_emit_unlikely_jump (x, label);
+  alpha_emit_unlikely_jump (x, label_ref);
 
   alpha_post_atomic_barrier (model);
 }

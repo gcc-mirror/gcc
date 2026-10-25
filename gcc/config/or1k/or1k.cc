@@ -1837,7 +1837,7 @@ void
 or1k_expand_atomic_compare_and_swap (rtx operands[])
 {
   rtx boolval, retval, mem, oldval, newval;
-  rtx label1, label2;
+  rtx label_ref1;
   machine_mode mode;
   bool is_weak;
 
@@ -1852,24 +1852,26 @@ or1k_expand_atomic_compare_and_swap (rtx operands[])
   if (reg_overlap_mentioned_p (retval, oldval))
     oldval = copy_to_reg (oldval);
 
-  label1 = NULL_RTX;
+  label_ref1 = NULL_RTX;
   /* If strong, create a label to try again.  */
   if (!is_weak)
     {
-      label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-      emit_label (XEXP (label1, 0));
+      rtx_code_label *label1 = gen_label_rtx ();
+      label_ref1 = gen_rtx_LABEL_REF (VOIDmode, label1);
+      emit_label (label1);
     }
-  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  rtx_code_label *label2 = gen_label_rtx ();
+  rtx label_ref2 = gen_rtx_LABEL_REF (VOIDmode, label2);
 
   emit_load_locked (mode, retval, mem);
   emit_compare (EQ, retval, oldval);
-  emit_unlikely_jump (EQ, label2);
+  emit_unlikely_jump (EQ, label_ref2);
   emit_store_conditional (mode, mem, newval);
 
   /* If strong, jump back to try again on fails.  */
   if (!is_weak)
-    emit_unlikely_jump (EQ, label1);
-  emit_label (XEXP (label2, 0));
+    emit_unlikely_jump (EQ, label_ref1);
+  emit_label (label2);
 
   /* In all cases, SR_F contains 1 on success, and 0 on failure.  */
   emit_insn (gen_sne_sr_f (boolval));
@@ -1879,7 +1881,7 @@ void
 or1k_expand_atomic_compare_and_swap_qihi (rtx operands[])
 {
   rtx boolval, orig_retval, retval, scratch, mem, oldval, newval;
-  rtx label1, label2, mask, shift;
+  rtx label_ref1, mask, shift;
   machine_mode mode;
   bool is_weak;
 
@@ -1907,13 +1909,15 @@ or1k_expand_atomic_compare_and_swap_qihi (rtx operands[])
 			     NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
 
-  label1 = NULL_RTX;
+  label_ref1 = NULL_RTX;
   if (!is_weak)
     {
-      label1 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-      emit_label (XEXP (label1, 0));
+      rtx_code_label *label1 = gen_label_rtx ();
+      label_ref1 = gen_rtx_LABEL_REF (VOIDmode, label1);
+      emit_label (label1);
     }
-  label2 = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
+  rtx_code_label *label2 = gen_label_rtx ();
+  rtx label_ref2 = gen_rtx_LABEL_REF (VOIDmode, label2);
 
   scratch = gen_reg_rtx (SImode);
   emit_load_locked (SImode, scratch, mem);
@@ -1924,7 +1928,7 @@ or1k_expand_atomic_compare_and_swap_qihi (rtx operands[])
 			  scratch, 1, OPTAB_LIB_WIDEN);
 
   emit_compare (EQ, retval, oldval);
-  emit_unlikely_jump (EQ, label2);
+  emit_unlikely_jump (EQ, label_ref2);
 
   if (newval != const0_rtx)
     scratch = expand_binop (SImode, ior_optab, scratch, newval,
@@ -1933,8 +1937,8 @@ or1k_expand_atomic_compare_and_swap_qihi (rtx operands[])
   emit_store_conditional (SImode, mem, scratch);
 
   if (!is_weak)
-    emit_unlikely_jump (EQ, label1);
-  emit_label (XEXP (label2, 0));
+    emit_unlikely_jump (EQ, label_ref1);
+  emit_label (label2);
 
   or1k_finish_atomic_subword (mode, orig_retval, retval, shift);
 
@@ -1955,7 +1959,7 @@ or1k_expand_atomic_compare_and_swap_qihi (rtx operands[])
 void
 or1k_expand_atomic_exchange (rtx operands[])
 {
-  rtx retval, mem, val, label;
+  rtx retval, mem, val;
   machine_mode mode;
 
   retval = operands[0];
@@ -1966,19 +1970,20 @@ or1k_expand_atomic_exchange (rtx operands[])
   if (reg_overlap_mentioned_p (retval, val))
     val = copy_to_reg (val);
 
-  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+  emit_label (label);
 
   emit_load_locked (mode, retval, mem);
   emit_store_conditional (mode, mem, val);
-  emit_unlikely_jump (EQ, label);
+  emit_unlikely_jump (EQ, label_ref);
 }
 
 void
 or1k_expand_atomic_exchange_qihi (rtx operands[])
 {
   rtx orig_retval, retval, mem, val, scratch;
-  rtx label, mask, shift;
+  rtx mask, shift;
   machine_mode mode;
 
   orig_retval = operands[0];
@@ -1996,8 +2001,9 @@ or1k_expand_atomic_exchange_qihi (rtx operands[])
 			  NULL_RTX, 1, OPTAB_LIB_WIDEN);
     }
 
-  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+  emit_label (label);
 
   scratch = gen_reg_rtx (SImode);
   emit_load_locked (SImode, scratch, mem);
@@ -2011,7 +2017,7 @@ or1k_expand_atomic_exchange_qihi (rtx operands[])
 			    scratch, 1, OPTAB_LIB_WIDEN);
 
   emit_store_conditional (SImode, mem, scratch);
-  emit_unlikely_jump (EQ, label);
+  emit_unlikely_jump (EQ, label_ref);
 
   or1k_finish_atomic_subword (mode, orig_retval, retval, shift);
 }
@@ -2028,10 +2034,10 @@ or1k_expand_atomic_op (rtx_code code, rtx mem, rtx val,
 {
   machine_mode mode = GET_MODE (mem);
   rtx before = orig_before, after = orig_after;
-  rtx label;
 
-  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+  emit_label (label);
 
   if (before == NULL_RTX)
     before = gen_reg_rtx (mode);
@@ -2049,7 +2055,7 @@ or1k_expand_atomic_op (rtx_code code, rtx mem, rtx val,
 				 after, 1, OPTAB_LIB_WIDEN);
 
   emit_store_conditional (mode, mem, after);
-  emit_unlikely_jump (EQ, label);
+  emit_unlikely_jump (EQ, label_ref);
 
   if (orig_before)
     emit_move_insn (orig_before, before);
@@ -2062,7 +2068,7 @@ or1k_expand_atomic_op_qihi (rtx_code code, rtx mem, rtx val,
 			    rtx orig_before, rtx orig_after)
 {
   machine_mode mode = GET_MODE (mem);
-  rtx label, mask, shift, x;
+  rtx mask, shift, x;
   rtx before, after, scratch;
 
   mem = or1k_adjust_atomic_subword (mem, &shift, &mask);
@@ -2099,8 +2105,9 @@ or1k_expand_atomic_op_qihi (rtx_code code, rtx mem, rtx val,
       gcc_unreachable ();
     }
 
-  label = gen_rtx_LABEL_REF (VOIDmode, gen_label_rtx ());
-  emit_label (XEXP (label, 0));
+  rtx_code_label *label = gen_label_rtx ();
+  rtx label_ref = gen_rtx_LABEL_REF (VOIDmode, label);
+  emit_label (label);
 
   before = scratch = gen_reg_rtx (SImode);
   emit_load_locked (SImode, before, mem);
@@ -2142,7 +2149,7 @@ or1k_expand_atomic_op_qihi (rtx_code code, rtx mem, rtx val,
     }
 
   emit_store_conditional (SImode, mem, scratch);
-  emit_unlikely_jump (EQ, label);
+  emit_unlikely_jump (EQ, label_ref);
 
   if (orig_before)
     or1k_finish_atomic_subword (mode, orig_before, before, shift);

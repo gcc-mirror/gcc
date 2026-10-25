@@ -291,9 +291,9 @@ nds32_pic_tls_group (rtx_insn *def_insn,
 }
 
 static int
-nds32_pic_tls_symbol_type (rtx x)
+nds32_pic_tls_symbol_type (rtx_insn *insn)
 {
-  x = XEXP (SET_SRC (PATTERN (x)), 1);
+  rtx x = XEXP (SET_SRC (PATTERN (insn)), 1);
 
   if (GET_CODE (x) == CONST)
     {
