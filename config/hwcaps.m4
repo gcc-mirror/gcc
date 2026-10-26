@@ -42,7 +42,7 @@ dnl  LD (as a side effect of testing)
 dnl
 AC_DEFUN([GCC_CHECK_LINKER_HWCAP], [
   test -z "$HWCAP_LDFLAGS" && HWCAP_LDFLAGS=''
-  AC_REQUIRE([AC_PROG_LD])
+  AC_REQUIRE([LT_PATH_LD])
 
   ac_save_LDFLAGS="$LDFLAGS"
   LDFLAGS="$LFLAGS -mclear-hwcap"

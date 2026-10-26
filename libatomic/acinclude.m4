@@ -300,7 +300,7 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   # by now (in libtool), but require it now just to be safe...
   test -z "$SECTION_LDFLAGS" && SECTION_LDFLAGS=''
   test -z "$OPT_LDFLAGS" && OPT_LDFLAGS=''
-  AC_REQUIRE([AC_PROG_LD])
+  AC_REQUIRE([LT_PATH_LD])
   AC_REQUIRE([AC_PROG_AWK])
 
   # The name set by libtool depends on the version of libtool.  Shame on us
@@ -311,7 +311,7 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   # set (hence we're using an older libtool), then set it.
   if test x${with_gnu_ld+set} != xset; then
     if test x${ac_cv_prog_gnu_ld+set} != xset; then
-      # We got through "ac_require(ac_prog_ld)" and still not set?  Huh?
+      # We got through "ac_require(lt_path_ld)" and still not set?  Huh?
       with_gnu_ld=no
     else
       with_gnu_ld=$ac_cv_prog_gnu_ld
