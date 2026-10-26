@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mdejagnu-cpu=future -O2" } */
-/* { dg-require-effective-target powerpc_future_ok } */
+/* { dg-require-effective-target powerpc_future_assemble_ok } */
 
 /* Check that saturating subtract (subfus) is generated.  Check that all
    combinations of >, >=, <, and <= are optimized.  */
