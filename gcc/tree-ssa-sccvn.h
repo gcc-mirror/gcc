@@ -325,6 +325,8 @@ private:
   DISABLE_COPY_AND_ASSIGN (vn_driver);
   class rpo_elim *m_avail;
   int *m_bb_to_rpo;
+  /* The walk's executable dominators, by RPO number.  */
+  int *m_exec_idom;
   unsigned m_todo;
   /* Whether the walk eliminated.  */
   bool m_eliminate;

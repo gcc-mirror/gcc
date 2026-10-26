@@ -8861,15 +8861,15 @@ do_unwind (unwind_state *to, rpo_elim &avail)
    executed and iterate.  If ELIMINATE is true then perform
    elimination, otherwise leave that to the caller.  If SKIP_ENTRY_PHIS
    is true then force PHI nodes in ENTRY->dest to VARYING.  AVAIL,
-   BB_TO_RPO and ELIMINATOR belong to the caller, which can keep them
-   past the walk.  Elimination stops short of eliminate_cleanup, which
+   BB_TO_RPO, EXEC_IDOM and ELIMINATOR belong to the caller, which can
+   keep them past the walk.  Elimination stops short of eliminate_cleanup, which
    is left to the caller.  */
 
 static unsigned
 do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	     bool iterate, bool eliminate, bool skip_entry_phis,
 	     vn_lookup_kind kind, rpo_elim &avail, int *bb_to_rpo,
-	     eliminate_dom_walker *eliminator)
+	     int *exec_idom, eliminate_dom_walker *eliminator)
 {
   unsigned todo = 0;
   default_vn_walk_kind = kind;
@@ -8922,7 +8922,7 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
   /* When not iterating we can end up with executable edges from unvisited
      but backward reachable blocks, so we cannot rely on the idom being
      up-to-date.  Initialize it with a conservative default.  */
-  vn_exec_idom = XNEWVEC (int, n);
+  vn_exec_idom = exec_idom;
   vn_exec_idom[0] = -1;
   for (int i = 1; i < n; ++i)
     {
@@ -9280,7 +9280,6 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
   rpo_avail = NULL;
   vn_bb_to_rpo = NULL;
 
-  XDELETEVEC (vn_exec_idom);
   vn_exec_idom = NULL;
 
   XDELETEVEC (rpo);
@@ -9331,18 +9330,20 @@ vn_driver::vn_driver (function *fn, edge entry, bitmap exit_bbs,
     = entry ? entry->dest : single_succ (ENTRY_BLOCK_PTR_FOR_FN (fn));
   m_avail = new rpo_elim (entry_bb);
   m_bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (fn));
+  m_exec_idom = XNEWVEC (int, n_basic_blocks_for_fn (fn));
   /* When iterating, elimination is a walk of its own.  */
   m_eliminator = (iterate && eliminate
 		  ? new eliminate_dom_walker (CDI_DOMINATORS, NULL) : m_avail);
   m_todo = do_rpo_vn_1 (fn, entry, exit_bbs, iterate, eliminate,
 			skip_entry_phis, kind, *m_avail, m_bb_to_rpo,
-			m_eliminator);
+			m_exec_idom, m_eliminator);
 }
 
 vn_driver::~vn_driver ()
 {
   free_rpo_vn ();
   XDELETEVEC (m_bb_to_rpo);
+  XDELETEVEC (m_exec_idom);
   if (m_eliminator != m_avail)
     delete m_eliminator;
   delete m_avail;
@@ -9355,7 +9356,14 @@ vn_driver::finalize (bitmap inserted_exprs)
 {
   /* If ELIMINATE was passed to the constructor, finish the elimination.  */
   if (m_eliminate)
-    return m_todo | m_eliminator->eliminate_cleanup (m_region_p);
+    {
+      vn_bb_to_rpo = m_bb_to_rpo;
+      vn_exec_idom = m_exec_idom;
+      unsigned todo = m_todo | m_eliminator->eliminate_cleanup (m_region_p);
+      vn_bb_to_rpo = NULL;
+      vn_exec_idom = NULL;
+      return todo;
+    }
 
   /* PRE eliminates after its insertions, when the RPO map no longer
      describes the IL.  Return only its flags, as PRE always has, to avoid
