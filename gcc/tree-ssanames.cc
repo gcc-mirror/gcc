@@ -582,19 +582,19 @@ get_nonzero_bits_1 (const_tree name)
 	return get_nonzero_bits_1 (elem);
     }
 
-  if (TREE_CODE (name) != SSA_NAME)
+  if (TREE_CODE (name) != SSA_NAME || !SSA_NAME_RANGE_INFO (name))
     return wi::shwi (-1, precision);
 
+  // Alignment information is encoded in the bitmask, so pointers simply
+  // need to extract the bitmask like integers do.
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      unsigned int align, misalign;
-      if (get_ptr_info_alignment (name, &align, &misalign))
-	return wi::shwi (-(HOST_WIDE_INT) align
-			 | (HOST_WIDE_INT) misalign, precision);
-      return wi::shwi (-1, precision);
+      prange tmp;
+      range_info_get_range (name, tmp);
+      return tmp.get_bitmask ().get_nonzero_bits ();
     }
 
-  if (!SSA_NAME_RANGE_INFO (name) || !irange::supports_p (TREE_TYPE (name)))
+  if (!irange::supports_p (TREE_TYPE (name)))
     return wi::shwi (-1, precision);
 
   int_range_max tmp;
@@ -787,30 +787,77 @@ release_ssa_name_fn (struct function *fn, tree var)
     }
 }
 
-/* If the alignment of the pointer NAME is known, return true and store the
-   alignment and the deviation from it into *ALIGNP and *MISALIGNP
-   respectively.  Otherwise return false.  A name with no aliasing info has
-   no known alignment, so this is safe to ask about any name.  */
+/* Return the bitmask expressing byte alignment ALIGN with byte offset
+   MISALIGN for a pointer of type TYPE.  */
+
+static irange_bitmask
+alignment_to_bitmask (tree type, unsigned int align, unsigned int misalign)
+{
+  /* ptr & (ALIGN - 1) == MISALIGN says the low log2(ALIGN) bits of the pointer
+     are known and hold MISALIGN, so the unknown-bit mask is ~(ALIGN - 1) and
+     the known value is MISALIGN.
+     An ALIGN of 1 carries no information and yields an unknown bitmask.  */
+  unsigned int prec = TYPE_PRECISION (type);
+  wide_int value = wi::uhwi (misalign, prec);
+  wide_int low_bits = wi::uhwi (align - 1, prec);
+  return irange_bitmask (value, ~low_bits);
+}
+
+/* if BM contains usable alignment info, return the byte alignment and offset
+   in ALIGNP and MISALIGNP.  Otherwise return FALSE.  */
+
+static bool
+bitmask_to_alignment (const irange_bitmask &bm, unsigned int *alignp,
+		      unsigned int *misalignp)
+{
+  if (bm.unknown_p ())
+    return false;
+
+  wide_int mask = bm.mask ();
+  unsigned int bit;
+
+  /* A fully known pointer supports any representable alignment, with
+     the corresponding offset.  Otherwise stop at the first unknown bit.  */
+  bit = mask == 0 ? bm.value ().get_precision () : wi::ctz (mask);
+  if (bit == 0)
+    return false;
+
+  /* A more strongly calculated alignment should simply be max alignment.  */
+  if (bit > HOST_BITS_PER_INT - 1)
+    bit = HOST_BITS_PER_INT - 1;
+
+  *alignp = 1u << bit;
+  *misalignp = wi::extract_uhwi (bm.value (), 0, bit);
+  return true;
+}
+
+/* Extract useful alignment information from NAME's global range.  Return
+   false if no alignment beyond byte alignment is known.  */
 
 bool
 get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 			unsigned int *misalignp)
 {
-  prange_storage *pi = ssa_name_prange_storage (name);
-
-  if (pi && pi->align)
-    {
-      *alignp = pi->align;
-      *misalignp = pi->misalign;
-      return true;
-    }
-  else
+  if (!POINTER_TYPE_P (TREE_TYPE (name)) || !SSA_NAME_RANGE_INFO (name))
     return false;
+
+  prange r;
+  range_info_get_range (name, r);
+  if (r.undefined_p ())
+    return false;
+
+  bool known = bitmask_to_alignment (r.get_bitmask (), alignp, misalignp);
+
+  /* Legacy fields may know less, but useful alignment must be implied
+     by the bitmask.  Alignment one carries no information.  */
+  prange_storage *s = ssa_name_prange_storage (name);
+  gcc_checking_assert (s->align <= 1
+		       || (known && *alignp >= s->align
+			   && (*misalignp & (s->align - 1)) == s->misalign));
+  return known;
 }
 
-/* State that the pointer NAME has unknown alignment.  A name with no
-   aliasing info already has unknown alignment, so this is a no-op rather
-   than a reason for the caller to check.  */
+/* Clear NAME's known bits independently of the legacy alignment fields.  */
 
 void
 mark_ptr_info_alignment_unknown (tree name)
@@ -822,11 +869,23 @@ mark_ptr_info_alignment_unknown (tree name)
       pi->align = 0;
       pi->misalign = 0;
     }
+
+  if (!SSA_NAME_RANGE_INFO (name))
+    return;
+
+  prange r (TREE_TYPE (name));
+  range_info_get_range (name, r);
+  if (r.undefined_p ())
+    return;
+
+  /* Withdraw the known bits or the alignment survives in the bitmask.  */
+  irange_bitmask unknown (TYPE_PRECISION (TREE_TYPE (name)));
+  r.update_bitmask (unknown);
+  range_info_set_range (name, r);
 }
 
-/* Store the power-of-two byte alignment and the deviation from that
-  alignment of the pointer NAME to ALIGN and MISALIGN respectively.
-  Aliasing info is created for NAME if it does not have any yet.  */
+/* Refine NAME's bitmask with ALIGN and MISALIGN.  Preserve the existing
+   information if the requested alignment conflicts with known bits.  */
 
 void
 set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
@@ -834,13 +893,32 @@ set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
   gcc_checking_assert (align != 0);
   gcc_assert ((align & (align - 1)) == 0);
   gcc_assert ((misalign & ~(align - 1)) == 0);
-
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  if (!SSA_NAME_RANGE_INFO (name))
-    SSA_NAME_RANGE_INFO (name) = ggc_alloc_vrange_storage (TREE_TYPE (name));
-  prange_storage *pi = ssa_name_prange_storage (name);
-  pi->align = align;
-  pi->misalign = misalign;
+
+  tree type = TREE_TYPE (name);
+  irange_bitmask bm = alignment_to_bitmask (type, align, misalign);
+  if (bm.unknown_p ())
+    return;
+
+  prange r (type);
+  if (SSA_NAME_RANGE_INFO (name))
+    range_info_get_range (name, r);
+  if (r.undefined_p ())
+    return;
+
+  irange_bitmask cur = r.get_bitmask ();
+  if (!cur.intersect (bm))
+    return;
+
+  r.update_bitmask (cur);
+  if (r.undefined_p () || !range_info_set_range (name, r))
+    return;
+
+  /* Transitional fields are updated only after the range accepts the
+     refinement.  Reacquire storage since the update may reallocate it.  */
+  prange_storage *s = ssa_name_prange_storage (name);
+  s->align = align;
+  s->misalign = misalign;
 }
 
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -fdump-tree-pre-stats -fdump-tree-optimized" } */
+/* { dg-options "-Os -fno-tree-ccp -fdump-tree-pre-stats -fdump-tree-optimized" } */
 
 void foo(void);
 static int c = 76, f, g;
