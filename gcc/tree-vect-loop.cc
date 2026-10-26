@@ -9679,6 +9679,14 @@ vectorizable_induction (loop_vec_info loop_vinfo,
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_induction_def)
     return false;
 
+  for (auto phi_info : SLP_TREE_SCALAR_STMTS (slp_node))
+    if (phi_info)
+      {
+	gcc_assert (STMT_VINFO_DEF_TYPE (phi_info) == vect_induction_def);
+	if (STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE (phi_info) != induction_type)
+	  return false;
+      }
+
   /* Handle nonlinear induction in a separate place.  */
   if (induction_type != vect_step_op_add)
     return vectorizable_nonlinear_induction (loop_vinfo, stmt_info,
