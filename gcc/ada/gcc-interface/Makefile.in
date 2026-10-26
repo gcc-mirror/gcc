@@ -902,7 +902,6 @@ tracebak.o  : tracebak.c
 adadecode.o : adadecode.c adadecode.h
 aux-io.o  : aux-io.c
 argv.o    : argv.c
-cal.o     : cal.c
 errno.o   : errno.c
 exit.o    : adaint.h exit.c
 expect.o  : expect.c
