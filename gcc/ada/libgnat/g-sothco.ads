@@ -61,8 +61,7 @@ package GNAT.Sockets.Thin_Common is
    type socklen_t is mod 2 ** (8 * SOSC.SIZEOF_socklen_t);
    for socklen_t'Size use (8 * SOSC.SIZEOF_socklen_t);
 
-   Immediat : constant System.C_Time.timeval
-     := System.C_Time.Milliseconds_To_Timeval (0);
+   Immediat : constant System.C_Time.timeval := (0, 0);
 
    -------------------------------------------
    -- Mapping tables to low level constants --
