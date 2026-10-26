@@ -1,3 +1,12 @@
+2026-10-25  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/modules/program-27.a68: Fix expected values.p
+
+2026-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* gfortran.dg/transfer_simplify_16.f90: New test.
+
 2026-10-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* gcc.dg/fwrite-3.c: Restrict fputc_unlocked tree dump scan to

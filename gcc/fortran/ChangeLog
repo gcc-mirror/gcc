@@ -1,3 +1,12 @@
+2026-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127892
+	* simplify.cc (gfc_simplify_transfer): Fix a GMP memleak.
+	Reorganize the generation of the result expression so that its
+	known rank is directly used.
+	* target-memory.cc (gfc_target_interpret_expr): Use mpfr_clear /
+	mpz_clear before reinitializing scalar numerical value components.
+
 2026-10-24  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/126798
