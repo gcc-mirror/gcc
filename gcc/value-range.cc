@@ -673,12 +673,12 @@ prange::set (tree type, const wide_int &min, const wide_int &max,
   m_type = type;
   m_min = min;
   m_max = max;
-  set_pt_unknown ();
 
   if (m_min == 0 && m_max == -1)
     {
       m_kind = VR_VARYING;
       m_bitmask.set_unknown (TYPE_PRECISION (type));
+      set_pt_unknown ();
       if (flag_checking)
 	verify_range ();
       return;
@@ -686,6 +686,7 @@ prange::set (tree type, const wide_int &min, const wide_int &max,
 
   m_kind = VR_RANGE;
   m_bitmask = irange_bitmask (type, min, max);
+  set_pt_unknown ();
   if (flag_checking)
     verify_range ();
 }
