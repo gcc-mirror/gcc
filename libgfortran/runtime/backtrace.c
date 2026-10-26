@@ -67,7 +67,7 @@ has_gfortran_prefix (const char *s)
 static void
 error_callback (void *data, const char *msg, int errnum)
 {
-  struct mystate *state = (struct mystate *) data;
+  struct mystate *state = data;
   struct iovec iov[5];
 #define ERRHDR "\nCould not print backtrace: "
 
@@ -114,7 +114,7 @@ error_callback (void *data, const char *msg, int errnum)
 static int
 simple_callback (void *data, uintptr_t pc)
 {
-  struct mystate *state = (struct mystate *) data;
+  struct mystate *state = data;
   st_printf ("#%d  0x%lx\n", state->frame, (unsigned long) pc);
   (state->frame)++;
   return 0;
@@ -124,7 +124,7 @@ static int
 full_callback (void *data, uintptr_t pc, const char *filename,
 	       int lineno, const char *function)
 {
-  struct mystate *state = (struct mystate *) data;
+  struct mystate *state = data;
 
   if (has_gfortran_prefix (function))
     return 0;
