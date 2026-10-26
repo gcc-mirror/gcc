@@ -1,3 +1,16 @@
+2026-10-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128124
+	* gfortran.texi: Note that LEADZ, POPCNT, POPPAR and TRAILZ take
+	unsigned arguments.
+	* intrinsic.cc (add_functions): LEADZ and TRAILZ also take unsigned
+	arguments.
+	* intrinsic.texi: Document unsigned arguments for LEADZ, POPCNT, POPPAR
+	and TRAILZ.
+
 2026-10-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
