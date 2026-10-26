@@ -323,8 +323,9 @@
 ;; <su> is like <u>, but the signed form expands to "s" rather than "".
 (define_code_attr su [(sign_extend "s") (zero_extend "u")])
 
-;; eq expand to "c" and ne expand to "s".
+;; eq expand to "c" and ne expand to "s" and it inversion
 (define_code_attr cs [(eq "c") (ne "s")])
+(define_code_attr sc [(eq "s") (ne "c")])
 
 ;; <optab> expands to the name of the optab for a particular code.
 (define_code_attr optab [(ashift "ashl")
@@ -364,6 +365,8 @@
 			 (zero_extract "zero_extract")
 			 (fix "fix_trunc")
 			 (unsigned_fix "fixuns_trunc")])
+
+(define_code_attr any_eq_inv [(eq "ne") (ne "eq")])
 
 (define_code_attr bit_optab [(ior "bset")
 			     (xor "binv")])

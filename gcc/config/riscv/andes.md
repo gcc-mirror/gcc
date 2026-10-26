@@ -42,7 +42,7 @@
   "TARGET_XANDESPERF"
 {
   if (get_attr_length (insn) == 12)
-    return "nds.b<optab>c\t%1,%2,1f; jump\t%l0,ra; 1:";
+    return "nds.b<any_eq:any_eq_inv>c\t%1,%2,1f; jump\t%l0,ra; 1:";
 
   return "nds.b<optab>c\t%1,%2,%l0";
 }
@@ -61,7 +61,7 @@
    "TARGET_XANDESPERF"
 {
   if (get_attr_length (insn) == 12)
-    return "nds.bb<any_eq:cs>\t%1,%2,1f; jump\t%l0,ra; 1:";
+    return "nds.bb<any_eq:sc>\t%1,%2,1f; jump\t%l0,ra; 1:";
 
   return "nds.bb<any_eq:cs>\t%1,%2,%l0";
 }
