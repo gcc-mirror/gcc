@@ -3896,15 +3896,6 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
 
-(define_insn "*sge<u>_<X:mode><GPR:mode>"
-  [(set (match_operand:GPR           0 "register_operand" "=r")
-	(any_ge:GPR (match_operand:X 1 "register_operand" " r")
-		    (const_int 1)))]
-  ""
-  "slti<u>\t%0,zero,%1"
-  [(set_attr "type" "slt")
-   (set_attr "mode" "<X:MODE>")])
-
 (define_insn "@slt<u>_<X:mode><GPR:mode>3"
   [(set (match_operand:GPR           0 "register_operand" "= r")
 	(any_lt:GPR (match_operand:X 1 "register_operand" "  r")
