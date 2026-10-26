@@ -268,7 +268,7 @@ extern bool gimple_stmt_nonnegative_p (gimple *, int = 0);
 extern bool gimple_stmt_integer_valued_real_p (gimple *, int = 0);
 extern void mark_lhs_in_seq_for_dce (bitmap, gimple_seq);
 
-/* In gimple-match.cc.  */
+/* In gimple-match-exports.cc.  */
 extern tree gimple_simplify (enum tree_code, tree, tree,
 			     gimple_seq *, tree (*)(tree));
 extern tree gimple_simplify (enum tree_code, tree, tree, tree,
