@@ -376,6 +376,68 @@
   return SIGNED_INTEGER_34BIT_P (INTVAL (op));
 })
 
+;; Return 1 if op is a 64-bit constant that uses the paddis instruction
+(define_predicate "paddis_operand"
+  (match_code "const_int")
+{
+  if (!TARGET_PADDIS)
+    return false;
+
+  if (mode != VOIDmode && mode != DImode)
+    return false;
+
+  HOST_WIDE_INT value = INTVAL (op);
+
+  if (!SIGNED_INTEGER_64BIT_P (value))
+    return false;
+
+  /* If paddi alone can handle the number, don't return true.  */
+  if (SIGNED_INTEGER_34BIT_P (value))
+    return false;
+
+  /* If the bottom 32-bits are non-zero, paddis alone can't handle it.  */
+  if ((value & HOST_WIDE_INT_C(0xffffffff)) != 0)
+    return false;
+
+  return true;
+})
+
+;; Return 1 if op is a 64-bit constant that can be created with a
+;; combination of paddi and paddis.  Don't generate paddi and paddis if
+;; we can do it via addis and rldicl.
+(define_predicate "paddis_paddi_operand"
+  (match_code "const_int")
+{
+  if (!TARGET_PADDIS)
+    return false;
+
+  if (mode != VOIDmode && mode != DImode)
+    return false;
+
+  HOST_WIDE_INT value = INTVAL (op);
+
+  if (!SIGNED_INTEGER_64BIT_P (value))
+    return false;
+
+  /* Don't worry about negative values at the moment.  */
+  if (value < 0)
+    return false;
+
+  /* If paddi alone can handle the number, don't return true.  */
+  if (SIGNED_INTEGER_34BIT_P (value))
+    return false;
+
+  /* If we can do the add or generate the constant via addis/rldicl, fail.  */
+  if (rs6000_is_valid_and_mask (op, mode))
+    return false;
+
+  /* Only return true if we need both paddi and paddis.  */
+  if ((value & HOST_WIDE_INT_C(0xffffffff)) == 0)
+    return false;
+
+  return true;
+})
+
 ;; Return 1 if op is a register that is not special.
 ;; Disallow (SUBREG:SF (REG:SI)) and (SUBREG:SI (REG:SF)) on VSX systems where
 ;; you need to be careful in moving a SFmode to SImode and vice versa due to
@@ -569,18 +631,22 @@
   (ior (match_operand 0 "zero_constant")
        (match_operand 0 "gpc_reg_operand")))
 
-;; Return 1 if op is a constant integer valid for addition with addis, addi.
+;; Return 1 if op is a constant integer valid for addition with addis,
+;; addi, paddi, or paddis.
 (define_predicate "add_cint_operand"
   (and (match_code "const_int")
-       (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)
-		       + (mode == SImode ? 0x80000000 : 0x80008000))
-		    < (unsigned HOST_WIDE_INT) 0x100000000ll")))
+       (ior (match_test "((unsigned HOST_WIDE_INT) INTVAL (op)
+			   + (mode == SImode ? 0x80000000 : 0x80008000))
+		    	< (unsigned HOST_WIDE_INT) 0x100000000ll")
+	    (match_operand 0 "cint34_operand")
+	    (match_operand 0 "paddis_operand"))))
 
 ;; Return 1 if op is a constant integer valid for addition
 ;; or non-special register.
 (define_predicate "reg_or_add_cint_operand"
   (if_then_else (match_code "const_int")
-    (match_operand 0 "add_cint_operand")
+    (ior (match_operand 0 "add_cint_operand")
+	 (match_operand 0 "paddis_paddi_operand"))
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if op is a constant integer valid for subtraction
@@ -1123,7 +1189,8 @@
   (if_then_else (match_code "const_int")
     (match_test "satisfies_constraint_I (op)
 		 || satisfies_constraint_L (op)
-		 || satisfies_constraint_eI (op)")
+		 || satisfies_constraint_eI (op)
+		 || satisfies_constraint_eU (op)")
     (match_operand 0 "gpc_reg_operand")))
 
 ;; Return 1 if the operand is either a non-special register, or 0, or -1.

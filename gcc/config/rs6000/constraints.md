@@ -223,6 +223,16 @@
   "An IEEE 128-bit constant that can be loaded into VSX registers."
   (match_operand 0 "easy_vector_constant_ieee128"))
 
+(define_constraint "eU"
+  "@internal integer constant that can be loaded with paddis"
+  (and (match_code "const_int")
+       (match_operand 0 "paddis_operand")))
+
+(define_constraint "eV"
+  "@A signed integer constant that paddis and paddi instructions generate."
+  (and (match_code "const_int")
+       (match_operand 0 "paddis_paddi_operand")))
+
 ;; Floating-point constraints.  These two are defined so that insn
 ;; length attributes can be calculated exactly.
 

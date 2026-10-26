@@ -6149,7 +6149,18 @@ num_insns_constant_gpr (HOST_WIDE_INT value)
   else if (TARGET_PREFIXED && SIGNED_INTEGER_34BIT_P (value))
     return 1;
 
-  else if (TARGET_POWERPC64)
+  /* PADDIS support.  */
+  else if (TARGET_PADDIS)
+    {
+      rtx num = GEN_INT (value);
+      if (paddis_operand (num, VOIDmode))
+	return 1;	/* paddis alone.  */
+
+      if (paddis_paddi_operand (num, VOIDmode))
+	return 2;	/* paddis + paddi/addi.  */
+    }
+
+  if (TARGET_POWERPC64)
     {
       int num_insns = 0;
       rs6000_emit_set_long_const (nullptr, value, &num_insns);
@@ -14284,6 +14295,14 @@ print_operand (FILE *file, rtx x, int code)
 	output_operand_lossage ("invalid %%A value");
       else
 	fprintf (file, "%d", (REGNO (x) - FIRST_FPR_REGNO) / 4);
+      return;
+
+    case 'B':
+      /* Upper 32-bits of a constant.  */
+      if (!CONST_INT_P (x))
+	output_operand_lossage ("Not a constant.");
+
+      fprintf (file, "%" HOST_LONG_FORMAT "d", INTVAL (x) >> 32);
       return;
 
     case 'D':
