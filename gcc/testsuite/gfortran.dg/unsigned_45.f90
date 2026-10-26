@@ -1,5 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-options "-funsigned" }
+! { dg-require-effective-target fortran_integer_16 }
+
 ! Check for implementation of leadz and trailz for unsigned types.
 program memain
   integer(kind=1) :: i1
