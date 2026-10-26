@@ -4399,6 +4399,28 @@
   [(set_attr "type" "mul")]
 )
 
+;; Unsigned saturating multiplication: test the upper half of the full
+;; product to select either its low half or UINT32_MAX.
+(define_expand "usmulsi3"
+  [(set (match_operand:SI 0 "register_operand")
+	(us_mult:SI (match_operand:SI 1 "register_operand")
+		    (match_operand:SI 2 "register_operand")))]
+  ""
+{
+  rtx product = gen_reg_rtx (DImode);
+  emit_insn (gen_umulsidi3 (product, operands[1], operands[2]));
+
+  rtx high = gen_rtx_ZERO_EXTRACT (DImode, product, GEN_INT (32),
+				   GEN_INT (32));
+  rtx cc_reg = aarch64_gen_compare_reg (EQ, high, const0_rtx);
+  rtx cond = gen_rtx_EQ (VOIDmode, cc_reg, const0_rtx);
+  rtx low = gen_lowpart (SImode, product);
+  emit_insn (gen_rtx_SET (operands[0],
+			  gen_rtx_IF_THEN_ELSE (SImode, cond, low,
+						constm1_rtx)));
+  DONE;
+})
+
 (define_insn "madd<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (mult:GPI (match_operand:GPI 1 "register_operand" "r")
