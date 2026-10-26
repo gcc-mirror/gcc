@@ -138,7 +138,7 @@ estr_writev (const struct iovec *iov, int iovcnt)
 
 #ifndef HAVE_VSNPRINTF
 static int
-gf_vsnprintf (char *str, size_t size, const char *format, va_list ap)
+gf_vsnprintf (char *buffer, size_t size, const char *format, va_list ap)
 {
   int written;
 
