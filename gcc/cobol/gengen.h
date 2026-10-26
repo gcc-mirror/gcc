@@ -187,6 +187,15 @@ struct gg_function_t
     tree var_decl_return;
 
     tree first_time_through;
+    tree saved_currency_state; // Static pointer to this program's immutable table.
+    tree saved_currency_view;  // Debugger-readable view for this program.
+
+    struct debug_field_binding_t
+      {
+      tree data = NULL_TREE;
+      tree capacity = NULL_TREE;
+      };
+    std::unordered_map<size_t, debug_field_binding_t> debug_field_bindings;
 
     tree skip_init_goto;
     tree skip_init_label;

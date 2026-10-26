@@ -1504,13 +1504,6 @@ namespace cmd_line {
 
 FILE *
 cdftext::lex_open( const char filename[] ) {
-  /*
-   * The source_format stack should be instantiated here with one element, the
-   * source format that lexio determined from the command-line options and
-   * heuristics.  The recently added command_line_indicator_column is probably
-   * redundant.
-   */
-
   source_format_stack_t source_format;
   source_format.push(cmd_line::source_format);
 
@@ -1539,6 +1532,8 @@ cdftext::lex_open( const char filename[] ) {
   }
   included_files.clear();
   dbgmsg("lex_open: '%s'", filename);
+
+  source_format.top() = cmd_line::source_format;
 
   cobol_filename(filename, inode_of(input));
   filespan_t mfile( free_form_reference_format( input, source_format ) );

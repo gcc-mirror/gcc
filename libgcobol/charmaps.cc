@@ -38,6 +38,7 @@
 #include <ctime>
 
 #include <algorithm>
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <langinfo.h>
@@ -82,6 +83,71 @@ uint32_t   __gg__wsclear       = NOT_A_CHARACTER;
 std::vector<std::string> __gg__currency_signs(256) ;
 int __gg__default_currency_sign;
 char *__gg__ct_currency_signs[256];  // Compile-time currency signs
+
+// Each program's currency setup creates one state.  Completed states are
+// immutable; only their vector storage changes owners on activation.
+struct currency_state
+  {
+  std::vector<std::string> signs;
+  const char *debug_signs[256] = {};
+
+  currency_state() : signs(256)
+    {
+    }
+  };
+
+// Heap allocation keeps views stable when this ownership registry grows.
+// Retain the states for the lifetime of their programs, including saved
+// callers whose tables are temporarily inactive.
+static std::vector<std::unique_ptr<currency_state>> currency_states;
+currency_state *__gg__active_currency_state = nullptr;
+
+extern "C"
+  {
+  const char *const *__gg__debug_currency_signs = nullptr;
+  }
+
+extern "C"
+currency_state *
+__gg__get_currency_state()
+  {
+  return __gg__active_currency_state;
+  }
+
+extern "C"
+void
+__gg__activate_currency_state(currency_state *state)
+  {
+  if( state != __gg__active_currency_state )
+    {
+    if( __gg__active_currency_state != nullptr )
+      {
+      __gg__currency_signs.swap(__gg__active_currency_state->signs);
+      }
+    __gg__currency_signs.swap(state->signs);
+    __gg__active_currency_state = state;
+    }
+
+  // std::vector::swap preserves the string objects and their c_str pointers,
+  // including short strings.  Publish the existing view with one store.
+  __gg__debug_currency_signs = state->debug_signs;
+  }
+
+void
+__gg__new_currency_state()
+  {
+  std::unique_ptr<currency_state> state(new currency_state);
+  currency_states.push_back(std::move(state));
+  __gg__activate_currency_state(currency_states.back().get());
+  }
+
+void
+__gg__update_debug_currency_sign(unsigned symbol)
+  {
+  const std::string &sign = __gg__currency_signs[symbol];
+  __gg__active_currency_state->debug_signs[symbol] =
+    sign.empty() ? nullptr : sign.c_str();
+  }
 
 cbl_encoding_t __gg__console_encoding  = no_encoding_e    ;
 cbl_encoding_t __gg__display_encoding  = no_encoding_e;

@@ -573,7 +573,7 @@ struct program_state
   int rt_quote_character;
   int rt_low_value_character;
   int rt_high_value_character;
-  std::vector<std::string> rt_currency_signs;
+  currency_state *rt_currency_signs;
   const unsigned short *rt_collation;  // Points to a table of 256 values;
   cbl_encoding_t rt_display_encoding;
   cbl_encoding_t rt_national_encoding;
@@ -581,7 +581,7 @@ struct program_state
   cbl_char_t rt_working_init;
   cbl_char_t rt_local_init;
 
-  program_state() : rt_currency_signs(256)
+  program_state() : rt_currency_signs(nullptr)
     {
     // IBM defaults to the \" QUOTE compiler option.  quote_character must
     // be set to \' when the APOST compiler option is in effect
@@ -701,7 +701,8 @@ initialize_program_state()
   console_init();
   program_state initial_value = {};
   program_states.push_back(initial_value);
-  __gg__currency_signs = program_states.back().rt_currency_signs;
+  __gg__currency_sign_init();
+  program_states.back().rt_currency_signs = __gg__active_currency_state;
   }
 
 extern "C"
@@ -715,9 +716,11 @@ extern "C"
 void
 __gg__push_program_state()
   {
+  // Save the immutable state by pointer, without copying its strings or view.
+  program_states.back().rt_currency_signs = __gg__active_currency_state;
   // Duplicate the state at the back of the stack
   program_states.push_back(program_states.back());
-  __gg__currency_signs = program_states.back().rt_currency_signs;
+  __gg__activate_currency_state(program_states.back().rt_currency_signs);
   }
 
 extern "C"
@@ -732,7 +735,7 @@ __gg__pop_program_state()
   __gg__high_value_character = program_states.back().rt_high_value_character ;
   __gg__display_encoding     = program_states.back().rt_display_encoding     ;
   __gg__national_encoding    = program_states.back().rt_national_encoding    ;
-  __gg__currency_signs       = program_states.back().rt_currency_signs       ;
+  __gg__activate_currency_state(program_states.back().rt_currency_signs);
   __gg__working_init         = program_states.back().rt_working_init         ;
   __gg__local_init           = program_states.back().rt_local_init           ;
 
@@ -10997,6 +11000,7 @@ typedef struct LV_DATA
   size_t         unique_id;
   cblc_field_t  *field;
   unsigned char *data;
+  size_t         capacity;
   }LV_DATA;
 
 static std::vector<LV_DATA> lv_variables;
@@ -11009,6 +11013,7 @@ __gg__push_local_variable(cblc_field_t *field)
   lv_data.unique_id     = __gg__unique_prog_id;
   lv_data.field         = field;
   lv_data.data          = field->data;
+  lv_data.capacity      = field->capacity;
   lv_variables.push_back(lv_data);
   }
 
@@ -11020,6 +11025,7 @@ __gg__pop_local_variables()
           && lv_variables.back().unique_id == __gg__unique_prog_id)
     {
     lv_variables.back().field->data = lv_variables.back().data;
+    lv_variables.back().field->capacity = lv_variables.back().capacity;
     lv_variables.pop_back();
     }
   }

@@ -571,17 +571,21 @@ extern "C"
 void
 __gg__currency_sign_init() // This duplicates the constructor.
   {
-  for( auto str : __gg__currency_signs ) {
-    str.clear();
-  }
+  // A program's one-time currency setup starts a fresh immutable state.
+  __gg__new_currency_state();
   }
 
 extern "C"
 void
 __gg__currency_sign(int symbol, const char *sign)
   {
+  if( __gg__active_currency_state == nullptr )
+    {
+    __gg__new_currency_state();
+    }
   __gg__currency_signs[symbol] = sign;
   __gg__default_currency_sign = *sign;
+  __gg__update_debug_currency_sign(symbol);
   }
 
 extern "C"

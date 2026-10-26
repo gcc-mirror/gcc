@@ -32,6 +32,7 @@
 
 #include "coretypes.h"
 #include "tree.h"
+#include "options.h"
 #include "stor-layout.h"
 #include "ggc.h"
 #include "gtype-desc.h"
@@ -3016,6 +3017,19 @@ enter_program_common(const char *funcname, const char *funcname_)
                                                       "_first_time_through",
                                                       vs_static,
                                                       integer_one_node);
+
+  current_function->saved_currency_state =
+    gg_define_variable(VOID_P, "_currency_state", vs_static,
+                       gg_cast(VOID_P, null_pointer_node));
+
+  // This once-written marker is read by the debugger, not the program.
+  // Keep its store and storage even when compiling optimized code.
+  current_function->saved_currency_view =
+    gg_define_variable(build_qualified_type(VOID_P, TYPE_QUAL_VOLATILE),
+                       "_currency_view", vs_static,
+                       gg_cast(VOID_P, null_pointer_node));
+  TREE_THIS_VOLATILE(current_function->saved_currency_view) = 1;
+  TREE_SIDE_EFFECTS(current_function->saved_currency_view) = 1;
 
   gg_create_goto_pair(&current_function->skip_init_goto,
                       &current_function->skip_init_label);
@@ -6538,6 +6552,18 @@ initialize_the_data()
             NULL_TREE);
     }
 
+  // Retain this program's completed table across calls.  This assignment is
+  // in the one-time initialization block; activation is emitted at entry.
+  gg_assign(current_function->saved_currency_state,
+            gg_call_expr(VOID_P, "__gg__get_currency_state", NULL_TREE));
+  // Give the debugger this program's view without exposing runtime C++
+  // layout or changing the active runtime state during frame inspection.
+  tree active_currency_view = gg_declare_variable(
+    VOID_P, "__gg__debug_currency_signs", NULL_TREE, vs_extern);
+  gg_assign(current_function->saved_currency_view,
+            gg_cast(TREE_TYPE(current_function->saved_currency_view),
+                    active_currency_view));
+
   // It's time to tell the library about DECIMAL-POINT IS COMMA:
   if( symbol_decimal_point() == ',' )
     {
@@ -6561,6 +6587,56 @@ initialize_the_data()
           init_local   ? gg_get_address_of(init_local->var_decl_node)
                        : null_pointer_node,
           NULL_TREE);
+  }
+
+/* Shared descriptors describe the active invocation.  Debug builds also
+   keep each invocation's binding in its own frame, updating it after
+   SET ADDRESS OF as well as entry.  No stores are emitted without debug info. */
+static void
+save_debug_field_binding(cbl_field_t *field)
+  {
+  if( debug_info_level == DINFO_LEVEL_NONE )
+    {
+    return;
+    }
+  auto &binding = current_function->debug_field_bindings[field->our_index];
+  if( binding.data == NULL_TREE )
+    {
+    tree binding_type = build_qualified_type(SIZE_T, TYPE_QUAL_VOLATILE);
+    for( const char *member_name : {"data", "capacity"} )
+      {
+      char name[128];
+      snprintf(name, sizeof(name), "_gdb_%s_" HOST_SIZE_T_PRINT_DEC,
+               member_name, (fmt_size_t)field->our_index);
+      tree decl = gg_define_variable(binding_type, name, vs_stack);
+      TREE_THIS_VOLATILE(decl) = 1;
+      TREE_SIDE_EFFECTS(decl) = 1;
+      if( strcmp(member_name, "data") == 0 )
+        {
+        binding.data = decl;
+        }
+      else
+        {
+        binding.capacity = decl;
+        }
+      }
+    }
+  gg_assign(binding.data,
+            gg_cast(TREE_TYPE(binding.data), member(field->var_decl_node, "data")));
+  gg_assign(binding.capacity,
+            gg_cast(TREE_TYPE(binding.capacity), member(field->var_decl_node, "capacity")));
+  }
+
+static void
+save_debug_linkage_bindings(cbl_field_t *field)
+  {
+  save_debug_field_binding(field);
+  std::vector<cbl_field_t *> fields;
+  collect_linkage_offsets(field, member(field->var_decl_node, "data"), fields);
+  for( cbl_field_t *child : fields )
+    {
+    save_debug_field_binding(child);
+    }
   }
 
 static
@@ -6676,19 +6752,24 @@ establish_using(size_t nusing,
           }
         }
 
-      // We need to be able to restore prior arguments when doing recursive
-      // calls:
-      IF( member(args[i].refer.field->var_decl_node, "data"),
-          ne_op,
-          gg_cast(UCHAR_P, null_pointer_node) )
+      // Restore group children as well as the USING root after recursion.
+      std::vector<cbl_field_t *> linkage_fields;
+      collect_linkage_offsets(new_var, member(new_var->var_decl_node, "data"), linkage_fields);
+      linkage_fields.push_back(new_var);
+      for( cbl_field_t *field : linkage_fields )
         {
-        gg_call(VOID,
-                "__gg__push_local_variable",
-                gg_get_address_of(args[i].refer.field->var_decl_node),
-                NULL_TREE);
+        IF( member(field->var_decl_node, "data"),
+            ne_op,
+            gg_cast(UCHAR_P, null_pointer_node) )
+          {
+          gg_call(VOID,
+                  "__gg__push_local_variable",
+                  gg_get_address_of(field->var_decl_node),
+                  NULL_TREE);
+          }
+        ELSE
+          ENDIF
         }
-      ELSE
-        ENDIF
 
       if( crv == by_reference_e )
         {
@@ -6815,7 +6896,7 @@ establish_using(size_t nusing,
         tree array_type = build_array_type_nelts(UCHAR, new_var->data.capacity());
         tree data_decl_node = gg_define_variable( array_type,
                                                   NULL,
-                                                  vs_static);
+                                                  vs_stack);
         gg_assign( member(new_var->var_decl_node, "data"),
                           gg_pointer_to_array(data_decl_node) );
 
@@ -6871,6 +6952,7 @@ establish_using(size_t nusing,
           next_index += 1;
           }
         }
+      save_debug_linkage_bindings(new_var);
       }
     }
   }
@@ -7040,7 +7122,16 @@ parser_division(cbl_division_t division,
         ENDIF
       }
 
+    // Programs without a DATA DIVISION still need their default currency
+    // state initialized before the common entry label.
+    initialize_the_data();
     gg_append_statement(current_function->skip_init_label);
+    // Every invocation, including reentry, selects this program's immutable
+    // currency state before CANCEL handling or executable COBOL statements.
+    gg_call(VOID,
+            "__gg__activate_currency_state",
+            current_function->saved_currency_state,
+            NULL_TREE);
     // This is where we check to see if somebody tried to cancel us
     IF( gg_call_expr( INT,
                       "__gg__is_canceled",
@@ -13891,6 +13982,10 @@ parser_set_pointers( size_t ntgt, cbl_refer_t *tgts, cbl_refer_t source )
         // through the level01 variable's children:
         propagate_linkage_offsets(tgts[i].field,
                                   member(tgts[i].field->var_decl_node, "data"));
+        if( tgts[i].field->attr & linkage_e )
+          {
+          save_debug_linkage_bindings(tgts[i].field);
+          }
         }
       }
     }
@@ -15039,9 +15134,19 @@ parser_local_add(struct cbl_field_t *new_var )
     gg_assign( member(new_var->var_decl_node, "data"),
                       gg_pointer_to_array(data_decl_node) );
     }
+  else if( const cbl_field_t *parent = parent_of(new_var) )
+    {
+    // A recursive invocation has a new root allocation.  Rebase children
+    // even when their shared descriptors still point into the caller's data.
+    gg_assign(member(new_var->var_decl_node, "data"),
+              gg_add(member(parent->var_decl_node, "data"),
+                     gg_subtract(member(new_var->var_decl_node, "offset"),
+                                 member(parent->var_decl_node, "offset"))));
+    }
   cbl_refer_t wrapper;
   wrapper.field = new_var;
   initialize_variable_internal(wrapper);
+  save_debug_field_binding(new_var);
   }
 
 void

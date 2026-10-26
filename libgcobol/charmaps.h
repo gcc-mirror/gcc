@@ -128,6 +128,17 @@ extern int    __gg__quote_character      ;
 extern int    __gg__low_value_character  ;
 extern int    __gg__high_value_character ;
 extern std::vector<std::string> __gg__currency_signs       ;
+// Debugger ABI: pointer to the active state's 256 target string pointers.
+// Entries are NUL-terminated strings, or null for unregistered symbols.
+// The runtime owns each view and its strings for the process lifetime.
+// Read the exported pointer again after every program-state transition.
+extern "C" const char *const *__gg__debug_currency_signs;
+struct currency_state;
+extern currency_state *__gg__active_currency_state;
+void __gg__new_currency_state();
+extern "C" currency_state *__gg__get_currency_state();
+extern "C" void __gg__activate_currency_state(currency_state *state);
+void __gg__update_debug_currency_sign(unsigned symbol);
 extern int    __gg__default_currency_sign;
 extern cbl_encoding_t __gg__display_encoding ;
 extern cbl_encoding_t __gg__national_encoding ;

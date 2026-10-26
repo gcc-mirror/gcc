@@ -399,7 +399,10 @@ do_acu_hyphen_translation (char *src)
   memcpy(file_open_buff, src, len);
   file_open_buff[len + 1] = 0;
 
-  strncpy(file_open_name, file_open_buff, (size_t)COB_FILE_MAX);
+  // We know that len is no more than 4096 at this writing.  That means
+  // the file_open_buff[4098] has no more than 4096 characters.  That means
+  // it is absolutely safe to copy file_open_buff into file_open_name[4098].
+  strcpy(file_open_name, file_open_buff);
   }
 
 static void
@@ -3170,7 +3173,7 @@ sequential_file_write(cblc_file_t    *file,
   uint8_t chvert = '\0';
   size_t bytes_to_write;
 
-  int lcount;
+  int lcount=0;
 
   switch(file->org) {
   case file_disorganized_e:

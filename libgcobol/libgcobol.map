@@ -6,6 +6,7 @@ GCOBOL_17.1
     __gg__accept_arg_value;
     __gg__accept_envar;
     __gg__acos;
+    __gg__activate_currency_state;
     __gg__allocate;
     __gg__alphabet_create;
     __gg__alphabet_use;
@@ -63,6 +64,7 @@ GCOBOL_17.1
     __gg__day_to_yyyyddd;
     __gg__deallocate;
     __gg__decimal_point_is_comma;
+    __gg__debug_currency_signs;
     __gg__default_compute_error;
     __gg__dialects;
     __gg__display;
@@ -123,6 +125,7 @@ GCOBOL_17.1
     __gg__get_argc;
     __gg__get_argv;
     __gg__get_command_line;
+    __gg__get_currency_state;
     __gg__get_date_dow;
     __gg__get_date_hhmmssff;
     __gg__get_date_yyddd;
@@ -283,6 +286,8 @@ GCOBOL_17.1
     __gg__year_to_yyyy;
 
     __compat_file_status_word;
+
+    gcobol_fileops;
 
     posix_clock_gettime;
     posix_errno;
