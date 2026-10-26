@@ -2310,8 +2310,8 @@ again:
 
   /* Update the phi node too. */
   gimple_phi_set_result (phi, new_res);
-  gimple_phi_arg (phi, 0)->def = new_arg0;
-  gimple_phi_arg (phi, 1)->def = new_arg1;
+  SET_PHI_ARG_DEF (phi, 0, new_arg0);
+  SET_PHI_ARG_DEF (phi, 1, new_arg1);
   update_stmt (phi);
 
   repeated = true;
