@@ -809,6 +809,56 @@ symbol_exists( const char name[] ) {
   return e;
 }
 
+/*
+ * 8.3.3.3.3 Floating-point numeric literals 2) The literal to the left of the
+ * 'E' represents the significand. It may be signed and shall include a decimal
+ * point.
+ */
+static bool
+is_numeric_literal( size_t len, const char input[] ) {
+  const char * enput = input + len;
+
+  if( *input == '+' || *input == '-' ) ++input;
+  gcc_assert(input < enput);
+  // lexer dfc pattern admits trailing dot/comma.
+  if( enput[-1] == '.' || enput[-1] == ',' ) enput--;
+
+  auto p = std::find(input, enput, symbol_decimal_point());
+
+  bool digits_only = std::all_of( input, p,
+                                  [](char ch) {
+                                    return ISDIGIT(ch);
+                                  } );
+  if( digits_only ) {
+    if( p == enput ) return true; // integer, no decimal point
+
+    ++p;
+    // fixed or floating point
+    auto pE = std::find_if(p, enput,
+                           [](char ch) {
+                             return 'E' == TOUPPER(ch);
+                           } );
+    if( pE < enput ) { // floating point
+      digits_only = std::all_of(p, pE,
+                                [](char ch) {
+                                  return ISDIGIT(ch);
+                                } );
+      if( ! digits_only ) {
+        return false; // non-numeric "fraction" between . and E
+      }
+      p = ++pE;
+      if( *p == '+' || *p == '-' ) ++p;
+      if( p == enput ) return false;    // no digits after E
+      if( p + 5 < enput ) return false; // up to 4 digits
+    }
+    return std::all_of(p, enput,
+                       [](char ch) {
+                         return ISDIGIT(ch);
+                           } ); // all digits after decimal point or E
+  }
+  return false;
+}
+
 static int
 typed_name( const char name[] ) {
   if( 0 == PROGRAM ) return NAME;

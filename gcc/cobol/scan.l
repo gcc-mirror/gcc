@@ -1262,10 +1262,14 @@ USE({SPC}FOR)?		{ return USE; }
 			  //  the literal except as the rightmost character."
 			  size_t len = strlen(s);
 			  assert(len);
-			  if( s[--len] == '.' ) {
-			    s[len] = '\0';
+			  if( s[len - 1] == '.' ) {
+			    s[--len] = '\0';
 			    myless(len);
 			  }
+                          if( ! is_numeric_literal(len, s) ) {
+                            ydflval.string = yylval.string = s;
+                            return NAME;
+                          }
 			  numstr_of(s); free(s);
 			  return NUMSTR;
 			}
