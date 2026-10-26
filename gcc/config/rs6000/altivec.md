@@ -2018,6 +2018,20 @@
 }
   [(set_attr "type" "vecperm")])
 
+;; -mcpu=future adds a vector rotate left word variant.  There is no vector
+;; byte/half-word/double-word/quad-word rotate left.  This insn occurs before
+;; altivec_vrl<VI_char> and will match for -mcpu=future, while other cpus will
+;; match the generic insn.
+(define_insn "*xvrlw"
+  [(set (match_operand:V4SI 0 "register_operand" "=v,wa")
+	(rotate:V4SI (match_operand:V4SI 1 "register_operand" "v,wa")
+		     (match_operand:V4SI 2 "register_operand" "v,wa")))]
+  "TARGET_XVRLW"
+  "@
+   vrlw %0,%1,%2
+   xvrlw %x0,%x1,%x2"
+  [(set_attr "type" "vecsimple")])
+
 (define_insn "altivec_vrl<VI_char>"
   [(set (match_operand:VI2 0 "register_operand" "=v")
         (rotate:VI2 (match_operand:VI2 1 "register_operand" "v")
