@@ -3805,7 +3805,7 @@
   "f<quiet_pattern>q.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fcmp")
    (set_attr "mode" "<UNITMODE>")
-   (set (attr "length") (const_int 16))])
+   (set (attr "length") (const_int 4))])
 
 ;; fclass instruction output bitmap
 ;;   0 negative infinity
@@ -4295,7 +4295,7 @@
     return "lpad\t0";
   }
   [(set_attr "type" "call")
-   (set_attr "length" "8,12,12")])
+   (set_attr "length" "10,14,14")])
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "")
@@ -4356,7 +4356,7 @@
     return "lpad\t0";
   }
   [(set_attr "type" "call")
-   (set_attr "length" "8,12,12")])
+   (set_attr "length" "10,14,14")])
 
 ;; Call subroutine returning any type.
 
@@ -4418,7 +4418,7 @@
   }
   [(set_attr "type" "call")
    (set (attr "length") (if_then_else (match_test "is_zicfilp_p ()")
-				      (const_string "12")
+				      (const_string "14")
 				      (const_string "8")))])
 
 (define_insn "gpr_restore"
@@ -4714,7 +4714,7 @@
     return "xor\t%0, %3, %0\;li\t%3, 0";
   }
   [(set_attr "type" "multi")
-   (set_attr "length" "12")])
+   (set_attr "length" "16")])
 
 (define_insn "riscv_clean_<mode>"
   [(unspec_volatile:X [(match_operand:X 0 "register_operand" "r")]
