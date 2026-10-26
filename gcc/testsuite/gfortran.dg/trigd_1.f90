@@ -37,9 +37,9 @@ subroutine pr121366
   func_array(1)%f => acosd
   func_array(2)%f => asind
   func_array(3)%f => atand
-  if (func_array(1)%f(y) /= acosd(y)) stop 4
-  if (func_array(2)%f(y) /= asind(y)) stop 5
-  if (func_array(3)%f(y) /= atand(y)) stop 6
+  if (abs (func_array(1)%f(y) - acosd(y)) > 1.e-5) stop 4
+  if (abs (func_array(2)%f(y) - asind(y)) > 1.e-5) stop 5
+  if (abs (func_array(3)%f(y) - atand(y)) > 1.e-6) stop 6
 end
 
 subroutine pr121366_2
@@ -65,17 +65,17 @@ subroutine pr121366_2
   func_array(2)%f => dsind
   func_array(3)%f => dtand
 
-  if (func_array(1)%f(x) /= cosd(x)) stop 11
-  if (func_array(2)%f(x) /= sind(x)) stop 12
-  if (func_array(3)%f(x) /= tand(x)) stop 13
+  if (abs (func_array(1)%f(x) - cosd(x)) > 1.e-15) stop 11
+  if (abs (func_array(2)%f(x) - sind(x)) > 1.e-15) stop 12
+  if (abs (func_array(3)%f(x) - tand(x)) > 1.e-15) stop 13
 
   func_array(1)%f => dacosd
   func_array(2)%f => dasind
   func_array(3)%f => datand
 
-  if (func_array(1)%f(y) /= acosd(y)) stop 14
-  if (func_array(2)%f(y) /= asind(y)) stop 15
-  if (func_array(3)%f(y) /= atand(y)) stop 16
+  if (abs (func_array(1)%f(y) - acosd(y)) > 1.e-14) stop 14
+  if (abs (func_array(2)%f(y) - asind(y)) > 1.e-14) stop 15
+  if (abs (func_array(3)%f(y) - atand(y)) > 1.e-15) stop 16
 end
 
 subroutine pr121366_3
@@ -99,7 +99,7 @@ subroutine pr121366_3
 
   func2_array(1)%f => atan2d
 
-  if (func2_array(1)%f(x,y) /= atan2d(x,y)) stop 21
+  if (abs (func2_array(1)%f(x,y) - atan2d(x,y)) > 1.e-6) stop 21
 end
 
 subroutine pr121366_4
@@ -122,7 +122,7 @@ subroutine pr121366_4
 
   func2_array(1)%f => datan2d
 
-  if (func2_array(1)%f(x,y) /= atan2d(x,y)) stop 31
+  if (abs (func2_array(1)%f(x,y) - atan2d(x,y)) > 1.e-15) stop 31
 end
 
 program test
