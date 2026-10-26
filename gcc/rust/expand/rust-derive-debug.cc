@@ -54,11 +54,13 @@ DeriveDebug::stub_debug_fn ()
 
   auto self = builder.self_ref_param ();
 
-  auto return_type = ptrify (
-    builder.type_path ({builder.get_path_start (), "fmt", "Result"}, true));
+  auto return_type
+    = ptrify (builder.type_path ({builder.get_path_start (), "fmt", "Result"},
+				 builder.has_opening_scope ()));
 
   auto mut_fmt_type_inner = ptrify (
-    builder.type_path ({builder.get_path_start (), "fmt", "Formatter"}, true));
+    builder.type_path ({builder.get_path_start (), "fmt", "Formatter"},
+		       builder.has_opening_scope ()));
 
   auto mut_fmt_type
     = builder.reference_type (std::move (mut_fmt_type_inner), true);
@@ -83,7 +85,7 @@ DeriveDebug::stub_derive_impl (
 
   auto debug = [this] () {
     return builder.type_path ({builder.get_path_start (), "fmt", "Debug"},
-			      true);
+			      builder.has_opening_scope ());
   };
   auto generics = setup_impl_generics (name, type_generics, [&, this] () {
     return builder.trait_bound (debug ());

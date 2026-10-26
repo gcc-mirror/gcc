@@ -44,7 +44,7 @@ DeriveDefault::default_call (std::unique_ptr<Type> &&type)
 {
   auto default_trait
     = builder.type_path ({builder.get_path_start (), "default", "Default"},
-			 true);
+			 builder.has_opening_scope ());
 
   auto default_fn
     = builder.qualified_path_in_expression (std::move (type), default_trait,
@@ -73,7 +73,7 @@ DeriveDefault::default_impl (
 {
   auto default_path = [this] () {
     return builder.type_path ({builder.get_path_start (), "default", "Default"},
-			      true);
+			      builder.has_opening_scope ());
   };
 
   auto trait_items = vec (std::move (default_fn));

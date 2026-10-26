@@ -548,7 +548,7 @@ Builder::discriminant_value (std::string binding_name, std::string instance)
 {
   auto intrinsic = ptrify (
     path_in_expression ({get_path_start (), "intrinsics", "discriminant_value"},
-			true));
+			has_opening_scope ()));
 
   return let (identifier_pattern (binding_name), nullptr,
 	      call (std::move (intrinsic), identifier (instance)));
@@ -742,10 +742,11 @@ Builder::new_generic_args (GenericArgs &args)
 
 std::unique_ptr<Expr>
 Builder::qualified_call (std::vector<std::string> &&segments,
+			 bool has_opening_scope,
 			 std::vector<std::unique_ptr<Expr>> &&args) const
 {
-  auto path = std::unique_ptr<Expr> (
-    new PathInExpression (path_in_expression (std::move (segments))));
+  auto path = std::unique_ptr<Expr> (new PathInExpression (
+    path_in_expression (std::move (segments), has_opening_scope)));
 
   return call (std::move (path), std::move (args));
 }

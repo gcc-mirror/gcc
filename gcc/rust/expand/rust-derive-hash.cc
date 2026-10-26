@@ -45,7 +45,7 @@ DeriveHash::hash_call (std::unique_ptr<Expr> &&value)
 {
   auto hash = builder.path_in_expression ({builder.get_path_start (), "hash",
 					   "Hash", "hash"},
-					  true);
+					  builder.has_opening_scope ());
 
   return builder.call (ptrify (hash),
 		       vec (std::move (value),
@@ -67,7 +67,8 @@ DeriveHash::hash_fn (std::unique_ptr<BlockExpr> &&block)
 
   auto params = vec (builder.self_ref_param (), std::move (state_param));
   auto bounds = vec (builder.trait_bound (
-    builder.type_path ({builder.get_path_start (), "hash", "Hasher"}, true)));
+    builder.type_path ({builder.get_path_start (), "hash", "Hasher"},
+		       builder.has_opening_scope ())));
   auto generics = vec (
     builder.generic_type_param (DeriveHash::state_type, std::move (bounds)));
 
@@ -82,7 +83,7 @@ DeriveHash::hash_impl (
 {
   auto hash_path = [this] () {
     return builder.type_path ({builder.get_path_start (), "hash", "Hash"},
-			      true);
+			      builder.has_opening_scope ());
   };
 
   auto trait_items = vec (std::move (hash_fn));

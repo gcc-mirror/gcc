@@ -44,6 +44,7 @@ DeriveClone::clone_call (std::unique_ptr<Expr> &&to_clone)
   // FIXME: Misses :: prefix to avoid collision with potential core module
   return builder.qualified_call ({builder.get_path_start (), "clone", "Clone",
 				  "clone"},
+				 builder.has_opening_scope (),
 				 std::move (args));
 }
 

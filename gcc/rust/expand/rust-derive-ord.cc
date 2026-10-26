@@ -43,8 +43,10 @@ std::unique_ptr<Expr>
 DeriveOrd::cmp_call (std::unique_ptr<Expr> &&self_expr,
 		     std::unique_ptr<Expr> &&other_expr)
 {
-  auto cmp_fn_path = builder.path_in_expression (
-    {builder.get_path_start (), "cmp", trait (ordering), fn (ordering)}, true);
+  auto cmp_fn_path
+    = builder.path_in_expression ({builder.get_path_start (), "cmp",
+				   trait (ordering), fn (ordering)},
+				  builder.has_opening_scope ());
 
   return builder.call (ptrify (cmp_fn_path),
 		       vec (builder.ref (std::move (self_expr)),
@@ -60,7 +62,8 @@ DeriveOrd::cmp_impl (
 
   auto trait = ordering == Ordering::Partial ? "PartialOrd" : "Ord";
   auto trait_path = [&, this] () {
-    return builder.type_path ({builder.get_path_start (), "cmp", trait}, true);
+    return builder.type_path ({builder.get_path_start (), "cmp", trait},
+			      builder.has_opening_scope ());
   };
 
   auto trait_bound
@@ -81,7 +84,8 @@ DeriveOrd::cmp_fn (std::unique_ptr<BlockExpr> &&block, Identifier type_name)
 {
   // Ordering
   auto return_type
-    = builder.type_path ({builder.get_path_start (), "cmp", "Ordering"}, true);
+    = builder.type_path ({builder.get_path_start (), "cmp", "Ordering"},
+			 builder.has_opening_scope ());
 
   // In the case of PartialOrd, we return an Option<Ordering>
   if (ordering == Ordering::Partial)
@@ -96,7 +100,7 @@ DeriveOrd::cmp_fn (std::unique_ptr<BlockExpr> &&block, Identifier type_name)
       return_type
 	= builder.type_path (vec (std::move (core), std::move (option),
 				  std::move (generic_seg)),
-			     true);
+			     builder.has_opening_scope ());
     }
 
   // &self, other: &Self
@@ -118,8 +122,10 @@ DeriveOrd::cmp_fn (std::unique_ptr<BlockExpr> &&block, Identifier type_name)
 std::unique_ptr<Pattern>
 DeriveOrd::make_equal ()
 {
-  std::unique_ptr<Pattern> equal = ptrify (builder.path_in_expression (
-    {builder.get_path_start (), "cmp", "Ordering", "Equal"}, true));
+  std::unique_ptr<Pattern> equal
+    = ptrify (builder.path_in_expression ({builder.get_path_start (), "cmp",
+					   "Ordering", "Equal"},
+					  builder.has_opening_scope ()));
 
   // We need to wrap the pattern in Option::Some if we are doing partial
   // ordering
@@ -153,8 +159,10 @@ DeriveOrd::recursive_match (std::vector<SelfOther> &&members)
 {
   if (members.empty ())
     {
-      std::unique_ptr<Expr> value = ptrify (builder.path_in_expression (
-	{builder.get_path_start (), "cmp", "Ordering", "Equal"}, true));
+      std::unique_ptr<Expr> value
+	= ptrify (builder.path_in_expression ({builder.get_path_start (), "cmp",
+					       "Ordering", "Equal"},
+					      builder.has_opening_scope ()));
 
       if (ordering == Ordering::Partial)
 	value = builder.call (ptrify (builder.path_in_expression (
