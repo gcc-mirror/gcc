@@ -6423,7 +6423,8 @@ ipcp_modif_dom_walker::before_dom_children (basic_block bb)
 	continue;
 
       if (!ipa_load_from_parm_agg (m_fbi, m_descriptors, stmt, rhs, &index,
-				   &bit_offset, &size, &by_ref))
+				   &bit_offset, &size, &by_ref)
+	  || (bit_offset % BITS_PER_UNIT) != 0)
 	continue;
       unsigned unit_offset = bit_offset / BITS_PER_UNIT;
       ipa_argagg_value_list avl (m_ts);
@@ -6492,7 +6493,11 @@ ipcp_get_aggregate_const (struct function *func, tree parm, bool by_ref,
   cgraph_node *node = cgraph_node::get (func->decl);
   ipcp_transformation *ts = ipcp_get_transformation_summary (node);
 
-  if (!ts || !ts->m_agg_values)
+  if (!ts
+      || !ts->m_agg_values
+      || bit_offset < 0
+      || (bit_offset % BITS_PER_UNIT) != 0
+      || (HOST_WIDE_INT) (bit_offset / BITS_PER_UNIT) > UINT_MAX)
     return NULL_TREE;
 
   int index = ts->get_param_index (func->decl, parm);
