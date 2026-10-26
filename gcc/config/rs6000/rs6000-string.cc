@@ -2786,6 +2786,7 @@ expand_block_move (rtx operands[], bool might_overlap)
 
       if (TARGET_MMA && TARGET_BLOCK_OPS_UNALIGNED_VSX
 	  && TARGET_BLOCK_OPS_VECTOR_PAIR
+	  && TARGET_POWERPC64
 	  && bytes >= 32
 	  && (align >= 256 || !STRICT_ALIGNMENT))
 	{

@@ -5746,20 +5746,32 @@
   DONE;
 })
 
-;; Load VSX Vector with Length
+;; Load VSX Vector with Length.  If we have lxvrl, we don't have to do an
+;; explicit shift left into a pseudo.
 (define_expand "lxvl"
-  [(set (match_dup 3)
-        (ashift:DI (match_operand:DI 2 "register_operand")
-                   (const_int 56)))
-   (set (match_operand:V16QI 0 "vsx_register_operand")
-	(unspec:V16QI
-	 [(match_operand:DI 1 "gpc_reg_operand")
-          (mem:V16QI (match_dup 1))
-	  (match_dup 3)]
-	 UNSPEC_LXVL))]
+  [(use (match_operand:V16QI 0 "vsx_register_operand"))
+   (use (match_operand:DI 1 "gpc_reg_operand"))
+   (use (match_operand:DI 2 "gpc_reg_operand"))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
-  operands[3] = gen_reg_rtx (DImode);
+  rtx shift_len = gen_rtx_ASHIFT (DImode, operands[2], GEN_INT (56));
+  rtx len;
+
+  if (TARGET_FUTURE)
+    len = shift_len;
+  else
+    {
+      len = gen_reg_rtx (DImode);
+      emit_insn (gen_rtx_SET (len, shift_len));
+    }
+
+  rtx dest = operands[0];
+  rtx addr = operands[1];
+  rtx mem = gen_rtx_MEM (V16QImode, addr);
+  rtvec rv = gen_rtvec (3, addr, mem, len);
+  rtx lxvl = gen_rtx_UNSPEC (V16QImode, rv, UNSPEC_LXVL);
+  emit_insn (gen_rtx_SET (dest, lxvl));
+  DONE;
 })
 
 (define_insn "*lxvl"
@@ -5781,6 +5793,34 @@
 		      UNSPEC_LXVLL))]
   "TARGET_P9_VECTOR"
   "lxvll %x0,%1,%2"
+  [(set_attr "type" "vecload")])
+
+;; For lxvrl and lxvrll, use the combiner to eliminate the shift.  The
+;; define_expand for lxvl will already incorporate the shift in generating the
+;; insn.  The lxvll buitl-in function required the user to have already done
+;; the shift.  Defining lxvrll this way, will optimize cases where the user has
+;; done the shift immediately before the built-in.
+(define_insn "*lxvrl"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI
+	 [(match_operand:DI 1 "gpc_reg_operand" "b")
+	  (mem:V16QI (match_dup 1))
+	  (ashift:DI (match_operand:DI 2 "register_operand" "r")
+		     (const_int 56))]
+	 UNSPEC_LXVL))]
+  "TARGET_FUTURE && TARGET_64BIT"
+  "lxvrl %x0,%1,%2"
+  [(set_attr "type" "vecload")])
+
+(define_insn "*lxvrll"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI [(match_operand:DI 1 "gpc_reg_operand" "b")
+                       (mem:V16QI (match_dup 1))
+		       (ashift:DI (match_operand:DI 2 "register_operand" "r")
+				  (const_int 56))]
+		      UNSPEC_LXVLL))]
+  "TARGET_FUTURE"
+  "lxvrll %x0,%1,%2"
   [(set_attr "type" "vecload")])
 
 ;; Expand for builtin xl_len_r
@@ -5814,18 +5854,29 @@
 
 ;; Store VSX Vector with Length
 (define_expand "stxvl"
-  [(set (match_dup 3)
-	(ashift:DI (match_operand:DI 2 "register_operand")
-		   (const_int 56)))
-   (set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand"))
-	(unspec:V16QI
-	 [(match_operand:V16QI 0 "vsx_register_operand")
-	  (mem:V16QI (match_dup 1))
-	  (match_dup 3)]
-	 UNSPEC_STXVL))]
+  [(use (match_operand:V16QI 0 "vsx_register_operand"))
+   (use (match_operand:DI 1 "gpc_reg_operand"))
+   (use (match_operand:DI 2 "gpc_reg_operand"))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
-  operands[3] = gen_reg_rtx (DImode);
+  rtx shift_len = gen_rtx_ASHIFT (DImode, operands[2], GEN_INT (56));
+  rtx len;
+
+  if (TARGET_FUTURE)
+    len = shift_len;
+  else
+    {
+      len = gen_reg_rtx (DImode);
+      emit_insn (gen_rtx_SET (len, shift_len));
+    }
+
+  rtx src = operands[0];
+  rtx addr = operands[1];
+  rtx mem = gen_rtx_MEM (V16QImode, addr);
+  rtvec rv = gen_rtvec (3, src, mem, len);
+  rtx stxvl = gen_rtx_UNSPEC (V16QImode, rv, UNSPEC_STXVL);
+  emit_insn (gen_rtx_SET (mem, stxvl));
+  DONE;
 })
 
 ;; Define optab for vector access with length vectorization exploitation.
@@ -5868,6 +5919,35 @@
 	 UNSPEC_STXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
   "stxvl %x0,%1,%2"
+  [(set_attr "type" "vecstore")])
+
+;; For stxvrl and stxvrll, use the combiner to eliminate the shift.  The
+;; define_expand for stxvl will already incorporate the shift in generating the
+;; insn.  The stxvll buitl-in function required the user to have already done
+;; the shift.  Defining stxvrll this way, will optimize cases where the user
+;; has done the shift immediately before the built-in.
+
+(define_insn "*stxvrl"
+  [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
+	(unspec:V16QI
+	 [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+	  (mem:V16QI (match_dup 1))
+	  (ashift:DI (match_operand:DI 2 "register_operand" "r")
+		     (const_int 56))]
+	 UNSPEC_STXVL))]
+  "TARGET_FUTURE && TARGET_64BIT"
+  "stxvrl %x0,%1,%2"
+  [(set_attr "type" "vecstore")])
+
+(define_insn "*stxvrll"
+  [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
+	(unspec:V16QI [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+		       (mem:V16QI (match_dup 1))
+		       (ashift:DI (match_operand:DI 2 "register_operand" "r")
+				  (const_int 56))]
+	              UNSPEC_STXVLL))]
+  "TARGET_FUTURE"
+  "stxvrll %x0,%1,%2"
   [(set_attr "type" "vecstore")])
 
 ;; Expand for builtin xst_len_r
