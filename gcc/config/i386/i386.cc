@@ -27380,8 +27380,8 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 			/* vpdpbssd.  */
 			native_vnni_p
 			  = (GET_MODE_SIZE (mode) == 64
-			     ? TARGET_AVX10_2
-			     : (TARGET_AVXVNNIINT8 || TARGET_AVX10_2));
+			     ? TARGET_AVX10V1AUX
+			     : (TARGET_AVXVNNIINT8 || TARGET_AVX10V1AUX));
 		    }
 		  m_num_reduc[X86_REDUC_DOT_PROD] += count * scale;
 
