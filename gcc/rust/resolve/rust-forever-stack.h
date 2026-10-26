@@ -457,10 +457,17 @@ public:
   std::string as_string () const
   {
     std::string ret;
+    auto it = segments.cbegin ();
     if (lang_prefix)
-      ret = "#[lang]::";
-    for (auto &seg : segments)
-      ret += "::" + seg.name;
+      ret = "#[lang]";
+    else
+      {
+	ret += it->name;
+	it++;
+      }
+
+    for (; it != segments.cend (); it++)
+      ret += "::" + it->name;
     return ret;
   }
 
