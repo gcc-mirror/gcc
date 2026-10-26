@@ -9958,6 +9958,15 @@ vectorizable_load (vec_info *vinfo,
   bool type_mode_padding_p
     = TYPE_PRECISION (scalar_type) < GET_MODE_PRECISION (GET_MODE_INNER (mode));
 
+  if (TREE_CODE (scalar_type) == BITINT_TYPE
+      && !type_has_mode_precision_p (scalar_type))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "_BitInt loads are not fully supported.\n");
+      return false;
+    }
+
   if (slp_node->ldst_lanes
       && memory_access_type != VMAT_LOAD_STORE_LANES)
     {
