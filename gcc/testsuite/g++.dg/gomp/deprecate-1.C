@@ -116,7 +116,7 @@ bar ()
   ;
   #pragma omp metadirective when (device={arch("blahblah")}: nothing) default (nothing)		/* { dg-warning "'default' clause on metadirectives deprecated since OpenMP 5.2, use 'otherwise'" } */
 /* { dg-begin-multiline-output "" }
-   .*pragma omp metadirective when (device={arch("blahblah")}: nothing) default (nothing)
+   #pragma omp metadirective when (device={arch("blahblah")}: nothing) default (nothing)
                                                                        ^~~~~~~
                                                                        otherwise
    { dg-end-multiline-output "" } */
