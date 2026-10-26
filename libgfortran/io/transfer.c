@@ -3757,8 +3757,13 @@ data_transfer_init_worker (st_parameter_dt *dtp, int read_flag)
       __gthread_mutex_lock (&old_locale_lock);
       if (!old_locale_ctr++)
 	{
-	  old_locale = setlocale (LC_NUMERIC, NULL);
-	  setlocale (LC_NUMERIC, "C");
+	  /* The next setlocale call may free this string; keep a copy.  */
+	  const char *cur_locale = setlocale (LC_NUMERIC, NULL);
+	  if (cur_locale != NULL && strcmp (cur_locale, "C") != 0)
+	    {
+	      old_locale = strdup (cur_locale);
+	      setlocale (LC_NUMERIC, "C");
+	    }
 	}
       __gthread_mutex_unlock (&old_locale_lock);
 #endif
@@ -4598,9 +4603,10 @@ finalize_transfer (st_parameter_dt *dtp)
     }
 #else
   __gthread_mutex_lock (&old_locale_lock);
-  if (!--old_locale_ctr)
+  if (!--old_locale_ctr && old_locale != NULL)
     {
       setlocale (LC_NUMERIC, old_locale);
+      free (old_locale);
       old_locale = NULL;
     }
   __gthread_mutex_unlock (&old_locale_lock);
