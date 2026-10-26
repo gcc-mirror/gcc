@@ -3377,10 +3377,10 @@
 
 ;; Conditional branches
 
-(define_insn_and_split "*branch<ANYI:mode>_shiftedarith_equals_zero"
+(define_insn_and_split "*branch<mode>_shiftedarith_equals_zero"
   [(set (pc)
 	(if_then_else (match_operator 1 "equality_operator"
-		       [(and:ANYI (match_operand:ANYI 2 "register_operand" "r")
+		       [(and:X (match_operand:X 2 "register_operand" "r")
 				  (match_operand 3 "shifted_const_arith_operand" "i"))
 			(const_int 0)])
 	 (label_ref (match_operand 0 "" ""))
@@ -3389,7 +3389,7 @@
   "!SMALL_OPERAND (INTVAL (operands[3]))"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4) (lshiftrt:X (subreg:X (match_dup 2) 0) (match_dup 6)))
+  [(set (match_dup 4) (lshiftrt:X (match_dup 2) (match_dup 6)))
    (set (match_dup 4) (match_dup 8))
    (set (pc) (if_then_else (match_op_dup 1 [(match_dup 4) (const_int 0)])
 			   (label_ref (match_dup 0)) (pc)))]
@@ -3412,10 +3412,10 @@
 }
 [(set_attr "type" "branch")])
 
-(define_insn_and_split "*branch<ANYI:mode>_shiftedarith_<optab>_shifted"
+(define_insn_and_split "*branch<mode>_shiftedarith_<optab>_shifted"
   [(set (pc)
 	(if_then_else (any_eq
-		    (and:ANYI (match_operand:ANYI 1 "register_operand" "r")
+		    (and:X (match_operand:X 1 "register_operand" "r")
 			  (match_operand 2 "shifted_const_arith_operand" "i"))
 		    (match_operand 3 "shifted_const_arith_operand" "i"))
 	 (label_ref (match_operand 0 "" ""))
@@ -3454,11 +3454,11 @@
 }
 [(set_attr "type" "branch")])
 
-(define_insn_and_split "*branch<ANYI:mode>_shiftedmask_equals_zero"
+(define_insn_and_split "*branch<mode>_shiftedmask_equals_zero"
   [(set (pc)
 	(if_then_else (match_operator 1 "equality_operator"
-		       [(and:ANYI (match_operand:ANYI 2 "register_operand" "r")
-				  (match_operand 3 "consecutive_bits_operand" "i"))
+		       [(and:X (match_operand:X 2 "register_operand" "r")
+			       (match_operand 3 "consecutive_bits_operand" "i"))
 			(const_int 0)])
 	 (label_ref (match_operand 0 "" ""))
 	 (pc)))
@@ -3468,7 +3468,7 @@
     && !SMALL_OPERAND (INTVAL (operands[3]))"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4) (ashift:X (subreg:X (match_dup 2) 0) (match_dup 6)))
+  [(set (match_dup 4) (ashift:X (match_dup 2) (match_dup 6)))
    (set (match_dup 4) (lshiftrt:X (match_dup 4) (match_dup 7)))
    (set (pc) (if_then_else (match_op_dup 1 [(match_dup 4) (const_int 0)])
 			   (label_ref (match_dup 0)) (pc)))]
