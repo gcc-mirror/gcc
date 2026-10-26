@@ -229,6 +229,11 @@ AM_CONDITIONAL(LIBGA68_USE_SYMVER, [test "x$ga68_use_symver" != xno])
 AM_CONDITIONAL(LIBGA68_USE_SYMVER_GNU, [test "x$ga68_use_symver" = xgnu])
 AM_CONDITIONAL(LIBGA68_USE_SYMVER_SUN, [test "x$ga68_use_symver" = xsun])
 
+# Some standard operators require non-trivial math.
+
+LT_LIB_M
+SPEC_LIBGA68_DEPS="$SPEC_LIBGA68_DEPS $LIBM"
+
 # The Boehm GC
 
 AC_ARG_ENABLE(algol68-gc,
