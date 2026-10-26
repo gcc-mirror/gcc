@@ -1771,7 +1771,17 @@ CNS(MAX_tv_sec, "")
    --  Sizes (in bytes) of the components of struct timespec.
    --  The tv_sec field is the same as in struct timeval.
 */
-#define SIZEOF_tv_nsec (sizeof (ts.tv_nsec))
+
+/**
+ ** On GNU libc, this accounts for an anonymous padding field in some cases
+ ** (https://sourceware.org/glibc/wiki/Y2038ProofnessDesign#struct_timespec)
+ ** and also ensures that the sizes of the Ada record and C struct match.
+ **/
+#if defined (__GLIBC__)
+# define SIZEOF_tv_nsec (sizeof (ts) - sizeof (ts.tv_sec))
+#else
+# define SIZEOF_tv_nsec (sizeof (ts.tv_nsec))
+#endif
 CND(SIZEOF_tv_nsec, "tv_nsec");
 }
 
