@@ -1,5 +1,5 @@
-/* { dg-do run { target { { sse4_runtime && pclmul_runtime } && { ! ia32 } } } } */
-/* { dg-options "-msse4.2 -mpclmul -O2 -save-temps -fdump-rtl-dfinish -fdump-tree-crc" } */
+/* { dg-do run { target { sse4_runtime && pclmul_runtime } } } */
+/* { dg-options "-O2 -msse4.2 -mpclmul -masm=att -save-temps" } */
 /* { dg-skip-if "" { *-*-* } { "-flto"} } */
 
 #include <stdint.h>
@@ -50,5 +50,6 @@ int main ()
     }
 }
 
-/* { dg-final { scan-assembler "crc32q"} } */
+/* { dg-final { scan-assembler "crc32q" { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler "crc32l" { target ia32 } } } */
 /* { dg-final { scan-assembler-not "pclmul"} } */
