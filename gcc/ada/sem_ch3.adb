@@ -22029,10 +22029,10 @@ package body Sem_Ch3 is
 
             elsif not Has_Unknown_Discriminants (Priv_T)
               and then not Has_Discriminants (Priv_T)
-              and then not Is_Constrained (Full_T)
+              and then not Is_Definite_Subtype (Full_T)
             then
                Error_Msg_N
-                 ("full view must define a constrained type if partial view "
+                 ("full view must define a definite type if partial view "
                   & "has no discriminants", Full_T);
             end if;
          end if;
