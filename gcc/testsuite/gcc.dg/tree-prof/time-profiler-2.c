@@ -1,6 +1,8 @@
 /* { dg-options "-O2 -fdump-ipa-profile -fno-ipa-vrp" } */
+/* { dg-require-fork "" } */
 
 #include <unistd.h>
+#include <sys/wait.h>
 
 __attribute__ ((noinline))
 int foo()
@@ -39,7 +41,10 @@ int main ()
   if(f == 0) /* Child process.  */
     r = bar() - foo();
   else /* Parent process.  */
-    r = foo() - foo();
+    {
+      r = foo() - foo();
+      waitpid (f, NULL, 0); /* Wait for child to flush gcov data.  */
+    }
 
   return r;
 }
