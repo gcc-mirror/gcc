@@ -221,6 +221,8 @@ Intrinsic::CompileFn type_assert (TyAssert assert);
 
 void breakpoint (IntrinsicCtx &ctx);
 
+void ptr_offset_from (IntrinsicCtx &ctx);
+
 } // namespace handlers
 
 } // namespace Compile

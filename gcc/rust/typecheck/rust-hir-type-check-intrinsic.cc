@@ -537,6 +537,10 @@ const std::unordered_map<std::string, IntrinsicRules>
     // fn nontemporal_store<T>(ptr: *mut T, value: T)
     {IValue::NONTEMPORAL_STORE,
      {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::Unit}},
+
+    // fn ptr_offset_from<T>(ptr: *const T, base: *const T) -> isize;
+    {IValue::PTR_OFFSET_FROM,
+     {1, {IRT::ConstPtrFirstGeneric, IRT::ConstPtrFirstGeneric}, IRT::Isize}},
 };
 
 IntrinsicCheckResult

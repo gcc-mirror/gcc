@@ -286,6 +286,8 @@ public:
   static constexpr auto &EXACT_DIV = "exact_div";
 
   static constexpr auto &NONTEMPORAL_STORE = "nontemporal_store";
+
+  static constexpr auto &PTR_OFFSET_FROM = "ptr_offset_from";
 };
 } // namespace Values
 } // namespace Rust

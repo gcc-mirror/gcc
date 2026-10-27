@@ -27,6 +27,7 @@
 #include "rust-diagnostics.h"
 #include "rust-location.h"
 #include "rust-constexpr.h"
+#include "rust-operators.h"
 #include "rust-session-manager.h"
 #include "rust-tree.h"
 #include "rust-tyty.h"
@@ -2213,6 +2214,45 @@ breakpoint (IntrinsicCtx &ctx)
   TREE_READONLY (ctx.fn) = 0;
   TREE_USED (ctx.fn) = 1;
   TREE_SIDE_EFFECTS (ctx.fn) = 1;
+}
+
+void
+ptr_offset_from (IntrinsicCtx &ctx)
+{
+  // Per offset_from's documentation
+  // https://doc.rust-lang.org/std/primitive.pointer.html#method.offset_from
+  //
+  // This calculates the distance between two pointers in terms of units of `T`
+  // - the distance in bytes divided by `size_of::<T>()`
+
+  auto &param_mapping = ctx.fntype.get_substs ().at (0);
+  auto param_tyty = param_mapping.get_param_ty ();
+  auto resolved_tyty = param_tyty->resolve ();
+  tree ty = TyTyResolveCompile::compile (ctx.inner (), resolved_tyty);
+
+  auto pointee_size_unsigned = TYPE_SIZE_UNIT (ty);
+  auto pointee_size
+    = Backend::convert_expression (signed_size_type_node, pointee_size_unsigned,
+				   ctx.loc);
+
+  auto addr = Backend::var_expression (ctx.param_vars[0], ctx.loc);
+  auto base = Backend::var_expression (ctx.param_vars[1], ctx.loc);
+
+  // Convert the pointers to integers
+  auto addr_int
+    = Backend::convert_expression (signed_size_type_node, addr, ctx.loc);
+  auto base_int
+    = Backend::convert_expression (signed_size_type_node, base, ctx.loc);
+
+  auto byte_diff = Backend::arithmetic_or_logical_expression (
+    ArithmeticOrLogicalOperator::SUBTRACT, addr_int, base_int, ctx.loc);
+
+  auto result = build2_loc (ctx.loc, EXACT_DIV_EXPR, signed_size_type_node,
+			    byte_diff, pointee_size);
+
+  auto return_stmt = Backend::return_statement (ctx.fn, result, ctx.loc);
+
+  ctx.add_statement (return_stmt);
 }
 
 } // namespace handlers
