@@ -692,7 +692,7 @@ search_line_neon (const uchar *s, const uchar *end ATTRIBUTE_UNUSED)
       t = (uint16x8_t) vceqq_u8 (vqtbl1q_u8 (tab, vandq_u8 (d, m)), d);
       mask = vget_lane_u64 ((uint64x1_t)vaddhn_u16 (t, t), 0);
       if (mask != 0)
-	return s + (__builtin_ctzl (mask & 0x1111111111111111UL) >> 2);
+	return s + (__builtin_ctzll (mask & 0x1111111111111111UL) >> 2);
       s += 16;
       d = vld1q_u8 (s);
     }
