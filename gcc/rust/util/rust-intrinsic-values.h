@@ -284,6 +284,8 @@ public:
   static constexpr auto &FLOAT_TO_INT_UNCHECKED = "float_to_int_unchecked";
 
   static constexpr auto &EXACT_DIV = "exact_div";
+
+  static constexpr auto &NONTEMPORAL_STORE = "nontemporal_store";
 };
 } // namespace Values
 } // namespace Rust

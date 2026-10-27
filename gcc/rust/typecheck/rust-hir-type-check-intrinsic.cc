@@ -533,6 +533,10 @@ const std::unordered_map<std::string, IntrinsicRules>
     // fn exact_div<T>(lhs: T, rhs: T) -> T
     {IValue::EXACT_DIV,
      {1, {IRT::FirstGeneric, IRT::FirstGeneric}, IRT::FirstGeneric}},
+
+    // fn nontemporal_store<T>(ptr: *mut T, value: T)
+    {IValue::NONTEMPORAL_STORE,
+     {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::Unit}},
 };
 
 IntrinsicCheckResult
