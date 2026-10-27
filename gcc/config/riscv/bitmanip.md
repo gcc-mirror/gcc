@@ -958,6 +958,21 @@
   "bclr\t%0,%1,%2"
   [(set_attr "type" "bitmanip")])
 
+;; BCLR uses only the low log2(XLEN) bits of the index, just like
+;; BSET and BINV, so an explicit XLEN - 1 mask is redundant.
+(define_insn "*bclr<mode>_mask"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X
+	  (rotate:X
+	    (const_int -2)
+	    (subreg:QI
+	      (and:X (match_operand:X 2 "register_operand" "r")
+		     (match_operand 3 "<X:shiftm1>" "<X:shiftm1p>")) 0))
+	  (match_operand:X 1 "register_operand" "r")))]
+  "TARGET_ZBS"
+  "bclr\t%0,%1,%2"
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*bclri<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
 	(and:X (match_operand:X 1 "register_operand" "r")
