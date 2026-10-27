@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_VRP_H
 
 #include "value-range.h"
+#include "value-range-storage.h"
 
 extern int compare_values (tree, tree);
 

@@ -22,7 +22,15 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Return NAME's points-to solution, or NULL if it has none.  Returns NULL
    for a non pointer type.  */
-extern const pt_solution *ssa_name_pt_solution (const_tree name);
+inline const pt_solution *
+ssa_name_pt_solution (const_tree name)
+{
+  vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
+  if (!mem || mem->m_discriminator != VR_PRANGE)
+    return NULL;
+  prange_storage *s = static_cast <prange_storage *> (mem);
+  return s->pt;
+}
 
 /* Make PT the points-to solution for NAME, which must have pointer type.  */
 extern void set_ssa_name_pt_solution (tree name, const pt_solution &pt);

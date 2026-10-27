@@ -140,15 +140,6 @@ get_pt_solution (tree name)
   return pt;
 }
 
-/* Return NAME's points-to solution, or NULL if none exists.  */
-
-const pt_solution *
-ssa_name_pt_solution (const_tree name)
-{
-  prange_storage *s = ssa_name_prange_storage (name);
-  return s ? s->pt : NULL;
-}
-
 /* Make PT the points-to solution for NAME.  */
 
 void

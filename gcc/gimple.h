@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-expr.h"
 #include "bitmap.h"
 #include "value-range.h"
+#include "value-range-storage.h"
 #include "value-query.h"
 
 typedef gimple *gimple_seq_node;
