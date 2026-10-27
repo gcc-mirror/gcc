@@ -34,6 +34,7 @@
         integer, parameter :: omp_sync_hint_kind = 4
         integer, parameter :: omp_lock_hint_kind = omp_sync_hint_kind
         integer, parameter :: omp_pause_resource_kind = 4
+        integer, parameter :: omp_access_kind = c_int
         integer, parameter :: omp_allocator_handle_kind = c_intptr_t
         integer, parameter :: omp_alloctrait_key_kind = c_int
         integer, parameter :: omp_alloctrait_val_kind = c_intptr_t
@@ -219,6 +220,8 @@
         integer (omp_interop_rc_kind), parameter :: omp_irc_type_ptr = -4
         integer (omp_interop_rc_kind), parameter :: omp_irc_type_str = -5
         integer (omp_interop_rc_kind), parameter :: omp_irc_other = -6
+        integer (omp_access_kind), parameter :: omp_access_cgroup = 0
+        integer (omp_access_kind), parameter :: omp_access_pteam = 1
         integer (omp_control_tool_kind), parameter :: omp_control_tool_start = 1
         integer (omp_control_tool_kind), parameter :: omp_control_tool_pause = 2
         integer (omp_control_tool_kind), parameter :: omp_control_tool_flush = 3
@@ -708,6 +711,16 @@
           function omp_get_teams_thread_limit ()
             integer (4) :: omp_get_teams_thread_limit
           end function omp_get_teams_thread_limit
+        end interface
+
+        interface
+          integer (kind=c_size_t) function omp_get_gprivate_limit (&
+              device_num, access_group)
+            use, intrinsic :: iso_c_binding, only : c_size_t, c_int
+            import :: omp_access_kind
+            integer (kind=c_int), value :: device_num
+            integer (kind=omp_access_kind), value, optional :: access_group
+          end function omp_get_gprivate_limit
         end interface
 
         interface

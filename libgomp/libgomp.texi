@@ -3955,7 +3955,7 @@ They have C linkage and do not throw exceptions.
 @c * omp_get_dyn_gprivate_nofb_ptr:: <fixme>/TR15
 @c * omp_get_dyn_gprivate_size:: <fixme>/TR15
 @c * omp_get_dyn_gprivate_memspace:: <fixme>/TR15
-@c * omp_get_gprivate_limit:: <fixme>/TR15
+* omp_get_gprivate_limit:: Absolute limit of groupprivate memory
 @end menu
 
 
@@ -4414,6 +4414,49 @@ was already deallocated or when the used allocator has already been destroyed.
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.0}, Section 3.7.7
+@end table
+
+
+
+@node omp_get_gprivate_limit
+@subsection @code{omp_get_gprivate_limit} -- Absolute limit of groupprivate memory
+@table @asis
+@item @emph{Description}:
+The @code{omp_get_gprivate_limit} routine returns the maximally possible limit
+on groupprivate memory, which consists of memory allocatable via the
+@code{dyn_groupprivate} clause and of variables that appear in the
+@code{groupprivate} directive.  @var{device_num} must be a conforming device
+number and @var{access_group} takes @code{omp_access_cgroup} as argument.  The
+effect of running this routine in a @code{target} region is unspecified.
+
+@item @emph{C}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{size_t omp_get_gprivate_limit(int *dev_num,}
+@item                   @tab @code{  omp_access_t access_group)}
+@end multitable
+
+@item @emph{C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{size_t omp_get_gprivate_limit(int *dev_num,}
+@item                   @tab @code{  omp_access_t access_group = omp_access_cgroup)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer (kind=c_size_t) function omp_get_gprivate_limit( &}
+@item                   @tab @code{  device_num, access_group)}
+@item                   @tab @code{use, intrinsic :: iso_c_binding, only : c_size_t, c_int}
+@item                   @tab @code{integer (kind=c_int), value :: device_num}
+@item                   @tab @code{integer (kind=omp_access_kind), value, optional :: access_group}
+@end multitable
+
+@c @item @emph{See also}:
+@c @ref{omp_alloc}, @ref{omp_aligned_alloc}, @ref{omp_calloc},
+@c @ref{omp_aligned_calloc}, @ref{omp_realloc}
+
+@item @emph{Reference}:
+@c TODO: Update once OpenMP 6.1 is released
+@uref{https://www.openmp.org, OpenMP Technical Report 15}, Section 34.13.5
 @end table
 
 

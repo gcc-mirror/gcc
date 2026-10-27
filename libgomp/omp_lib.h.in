@@ -89,6 +89,13 @@
       integer omp_event_handle_kind
       integer omp_interop_kind, omp_interop_fr_kind
       integer omp_interop_property_kind, omp_interop_rc_kind
+
+      integer omp_access_kind
+      parameter (omp_access_kind = 4)
+      integer (omp_access_kind) omp_access_cgroup
+      integer (omp_access_kind) omp_access_pteam
+      parameter (omp_access_cgroup = 0)
+      parameter (omp_access_pteam = 1)
       integer omp_control_tool_kind
       integer omp_control_tool_result_kind
       parameter (omp_allocator_handle_kind = @INTPTR_T_KIND@)
@@ -771,6 +778,15 @@
         end function omp_get_supported_threads_dim
       end interface
 
+      interface
+        integer (kind=c_size_t) function omp_get_gprivate_limit (               &
+     &      device_num, access_group)
+          use, intrinsic :: iso_c_binding, only : c_size_t, c_int
+          import :: omp_access_kind
+          integer (kind=c_int), value :: device_num
+          integer (kind=omp_access_kind),value,optional :: access_group
+        end function omp_get_gprivate_limit
+      end interface
 
       interface
 !       This function only supports integer(4) for simplicity.

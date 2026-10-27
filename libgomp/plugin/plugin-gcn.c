@@ -3744,6 +3744,18 @@ GOMP_OFFLOAD_supported_threads_dim (int ord, int dim)
   return limit_worker_threads (__INT_MAX__);
 }
 
+/* The maximum amount of memory available in a groupprivate memory space,
+   inclusive of groupprivate variables and any groupprivate copy of an
+   instantiated dynamic groupprivate block. */
+
+size_t
+GOMP_OFFLOAD_get_gprivate_limit (int ord, omp_access_t access)
+{
+  if (access != omp_access_cgroup)
+    return 0;
+  return 0;  /* FIXME. dyn_groupprivate unsupported, but otherwise supported. */
+}
+
 /* Return the specific capabilities the HSA accelerator have.  */
 
 unsigned int

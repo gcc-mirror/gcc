@@ -16410,15 +16410,23 @@ OpenMP Application Program Interface v6.0}.
 named constants:
 
 @table @asis
+@item @code{omp_access_kind}
 @item @code{omp_allocator_handle_kind}
 @item @code{omp_alloctrait_key_kind}
 @item @code{omp_alloctrait_val_kind}
+@item @code{omp_control_tool_kind}
+@item @code{omp_control_tool_result_kind}
 @item @code{omp_depend_kind}
+@item @code{omp_event_handle_kind}
+@item @code{omp_interop_fr_kind}
+@item @code{omp_interop_kind}
+@item @code{omp_interop_property_kind}
+@item @code{omp_interop_rc_kind}
 @item @code{omp_lock_kind}
 @item @code{omp_lock_hint_kind}
+@item @code{omp_memspace_handle_kind}
 @item @code{omp_nest_lock_kind}
 @item @code{omp_pause_resource_kind}
-@item @code{omp_memspace_handle_kind}
 @item @code{omp_proc_bind_kind}
 @item @code{omp_sched_kind}
 @item @code{omp_sync_hint_kind}
@@ -16543,6 +16551,8 @@ The following scalar integer named constants are of the kind
 @item @code{omp_cgroup_mem_alloc}
 @item @code{omp_pteam_mem_alloc}
 @item @code{omp_thread_mem_alloc}
+@item @code{ompx_gnu_pinned_mem_alloc} (GCC specific)
+@item @code{ompx_gnu_managed_mem_alloc} (GCC specific)
 @end table
 
 The following scalar integer named constants are of the kind
@@ -16554,6 +16564,66 @@ The following scalar integer named constants are of the kind
 @item @code{omp_const_mem_space}
 @item @code{omp_high_bw_mem_space}
 @item @code{omp_low_lat_mem_space}
+@item @code{ompx_gnu_managed_mem_space} (GCC specific)
+@end table
+
+The following scalar integer named constant is of the kind
+@code{omp_interop_kind}:
+
+@table @asis
+@item @code{omp_interop_none}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_interop_fr_kind}:
+
+@table @asis
+@item @code{omp_ifr_cuda}
+@item @code{omp_ifr_cuda_driver}
+@item @code{omp_ifr_opencl}
+@item @code{omp_ifr_sycl}
+@item @code{omp_ifr_hip}
+@item @code{omp_ifr_level_zero}
+@item @code{omp_ifr_hsa}
+@item @code{omp_ifr_last}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_interop_property_kind}:
+
+@table @asis
+@item @code{omp_ipr_fr_id}
+@item @code{omp_ipr_fr_name}
+@item @code{omp_ipr_vendor}
+@item @code{omp_ipr_vendor_name}
+@item @code{omp_ipr_device_num}
+@item @code{omp_ipr_platform}
+@item @code{omp_ipr_device}
+@item @code{omp_ipr_device_context}
+@item @code{omp_ipr_targetsync}
+@item @code{omp_ipr_first}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_interop_rc_kind}:
+
+@table @asis
+@item @code{omp_irc_no_value}
+@item @code{omp_irc_success}
+@item @code{omp_irc_empty}
+@item @code{omp_irc_out_of_range}
+@item @code{omp_irc_type_int}
+@item @code{omp_irc_type_ptr}
+@item @code{omp_irc_type_str}
+@item @code{omp_irc_other}
+@end table
+
+The following scalar integer named constants are of the kind
+@code{omp_access_kind}:
+
+@table @asis
+@item @code{omp_access_cgroup}
+@item @code{omp_access_pteam}
 @end table
 
 The following scalar integer named constants are of the kind

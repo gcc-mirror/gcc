@@ -1428,6 +1428,18 @@ GOMP_OFFLOAD_supported_threads_dim (int ord, int dim)
   return max_warps_block;
 }
 
+/* The maximum amount of memory available in a groupprivate memory space,
+   inclusive of groupprivate variables and any groupprivate copy of an
+   instantiated dynamic groupprivate block. */
+
+size_t
+GOMP_OFFLOAD_get_gprivate_limit (int ord, omp_access_t access)
+{
+  if (access != omp_access_cgroup)
+    return 0;
+  return 0;  /* FIXME. dyn_groupprivate unsupported, but otherwise supported. */
+}
+
 unsigned int
 GOMP_OFFLOAD_get_caps (void)
 {

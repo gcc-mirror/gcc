@@ -1460,6 +1460,7 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_get_numa_node) *get_numa_node_func;
   __typeof (GOMP_OFFLOAD_supported_teams_dim) *supported_teams_dim_func;
   __typeof (GOMP_OFFLOAD_supported_threads_dim) *supported_threads_dim_func;
+  __typeof (GOMP_OFFLOAD_get_gprivate_limit) *get_gprivate_limit_func;
   __typeof (GOMP_OFFLOAD_get_caps) *get_caps_func;
   __typeof (GOMP_OFFLOAD_get_dev_caps) *get_dev_caps_func;
   __typeof (GOMP_OFFLOAD_get_type) *get_type_func;

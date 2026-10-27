@@ -4021,6 +4021,7 @@ omp_runtime_api_procname (const char *name)
       "get_device_from_uid",
       "get_device_num",
       "get_dynamic",
+      "get_gprivate_limit",
       "get_initial_device",
       "get_interop_name",
       "get_interop_rc_desc",

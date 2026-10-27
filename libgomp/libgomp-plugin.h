@@ -169,6 +169,7 @@ extern const char *GOMP_OFFLOAD_get_uid (int);
 extern int GOMP_OFFLOAD_get_numa_node (int);
 extern int GOMP_OFFLOAD_supported_teams_dim (int, int);
 extern int GOMP_OFFLOAD_supported_threads_dim (int, int);
+extern size_t GOMP_OFFLOAD_get_gprivate_limit (int, omp_access_t);
 
 extern unsigned int GOMP_OFFLOAD_get_caps (void);
 extern unsigned int GOMP_OFFLOAD_get_dev_caps (int);

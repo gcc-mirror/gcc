@@ -104,6 +104,7 @@ ialias_redirect (omp_get_interop_name)
 ialias_redirect (omp_get_interop_type_desc)
 ialias_redirect (omp_get_interop_rc_desc)
 ialias_redirect (omp_control_tool)
+ialias_redirect (omp_get_gprivate_limit)
 ialias_redirect (omp_get_supported_active_team_dims)
 ialias_redirect (omp_get_supported_active_league_dims)
 #endif
@@ -873,6 +874,14 @@ int
 omp_get_supported_active_league_dims_ (int *device_num, int *native_support)
 {
   return omp_get_supported_active_league_dims (*device_num, *native_support);
+}
+
+size_t
+omp_get_gprivate_limit_ (int device_num, int access_group, bool present_agrp)
+{
+  if (!present_agrp)
+    access_group = omp_access_cgroup;
+  return omp_get_gprivate_limit (device_num, access_group);
 }
 
 void

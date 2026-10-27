@@ -6387,6 +6387,27 @@ omp_get_device_from_uid (const char *uid)
   return omp_invalid_device;
 }
 
+/* The maximum amount of memory available in a groupprivate memory space,
+   inclusive of groupprivate variables and any groupprivate copy of an
+   instantiated dynamic groupprivate block. */
+
+size_t
+omp_get_gprivate_limit (int device_num, omp_access_t access_group)
+{
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
+  if (device_num == omp_initial_device
+      || device_num == omp_get_initial_device ())
+    /* FIXME - update once dyn_groupprivate is supported on the host.  */
+    return access_group != omp_access_cgroup ? 0 : 0;
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL || !devicep->get_gprivate_limit_func)
+    return 0;
+  return devicep->get_gprivate_limit_func (devicep->target_id, access_group);
+}
+
 /* Return the numa distance between the numa node of the calling host
    thread and each of the NDEV devices in DEVICES.
    Special values:
@@ -6447,6 +6468,7 @@ ialias (omp_get_supported_active_team_dims)
 ialias (omp_get_supported_active_league_dims)
 ialias (omp_get_supported_threads_dim)
 ialias (omp_get_supported_teams_dim)
+ialias (omp_get_gprivate_limit)
 ialias (omp_get_uid_from_device)
 ialias (omp_get_device_from_uid)
 ialias (omp_get_device_distances)
@@ -6497,6 +6519,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM_OPT (get_numa_node, get_numa_node);
   DLSYM_OPT (supported_threads_dim, supported_threads_dim);
   DLSYM_OPT (supported_teams_dim, supported_teams_dim);
+  DLSYM_OPT (get_gprivate_limit, get_gprivate_limit);
   DLSYM (get_caps);
   DLSYM_OPT (get_dev_caps, get_dev_caps);
   DLSYM (get_type);

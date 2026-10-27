@@ -250,6 +250,8 @@ OMP_6.0 {
 OMP_6.1 {
   global:
 	omp_get_device_distances;
+	omp_get_gprivate_limit;
+	omp_get_gprivate_limit_;
 	omp_get_num_teams_dim;
 	omp_get_num_threads_dim;
 	omp_get_supported_active_league_dims;

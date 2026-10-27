@@ -115,6 +115,11 @@ typedef __UINTPTR_TYPE__ omp_uintptr_t;
 # define __GOMP_UINTPTR_T_ENUM
 #endif
 
+typedef enum omp_access_t {
+  omp_access_cgroup = 0,
+  omp_access_pteam = 1
+} omp_access_t;
+
 typedef enum omp_memspace_handle_t __GOMP_UINTPTR_T_ENUM
 {
   omp_default_mem_space = 0,
@@ -259,6 +264,7 @@ typedef enum omp_control_tool_result_t {
 #ifdef __cplusplus
 extern "C" {
 # define __GOMP_NOTHROW throw ()
+# define __GOMP_DEFAULT_ACCESS = omp_access_cgroup
 # define __GOMP_DEFAULT_NULL_ALLOCATOR = omp_null_allocator
 # define __GOMP_DEFAULT_NULL = __null
 #else
@@ -342,6 +348,9 @@ extern int omp_get_team_num_dim (int) __GOMP_NOTHROW;
 extern int omp_is_initial_device (void) __GOMP_NOTHROW;
 extern int omp_get_initial_device (void) __GOMP_NOTHROW;
 extern int omp_get_max_task_priority (void) __GOMP_NOTHROW;
+
+extern __SIZE_TYPE__ omp_get_gprivate_limit (int,
+		       omp_access_t __GOMP_DEFAULT_ACCESS) __GOMP_NOTHROW;
 
 extern void omp_fulfill_event (omp_event_handle_t) __GOMP_NOTHROW;
 
