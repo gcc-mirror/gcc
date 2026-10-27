@@ -1,5 +1,7 @@
 /* PR tree-optimization/128080 */
 /* { dg-do run } */
+/* The permutations are merged only when optimizing.  */
+/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
 /* { dg-additional-options "-Wno-psabi" } */
 
 typedef signed char V __attribute__((vector_size (256)));
