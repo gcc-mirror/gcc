@@ -7754,10 +7754,16 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 
 	  if (code->expr3 && code->expr3->param_list)
 	    param_list = code->expr3->param_list;
+	  else if (code->expr3 && code->expr3->mold
+		   && code->expr3->expr_type == EXPR_VARIABLE)
+	    param_list = code->expr3->symtree->n.sym->param_list;
 	  else if (expr->param_list)
 	    param_list = expr->param_list;
 	  else
 	    param_list = expr->symtree->n.sym->param_list;
+
+	  gcc_assert (param_list);
+
 	  /* For array allocations the allocate-shape-spec expression has
 	     rank 0 even though the symbol is an array.  Use the rank from
 	     the array descriptor when se.expr is a GFC descriptor so that

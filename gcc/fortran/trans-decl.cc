@@ -5071,7 +5071,10 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 
   if (sym && !sym->attr.allocatable && !sym->attr.pointer
       && sym->attr.referenced
-      && IS_PDT (sym) && !gfc_has_default_initializer (sym->ts.u.derived))
+      && IS_PDT (sym)
+      && sym->param_list
+      && (!gfc_has_default_initializer (sym->ts.u.derived)
+	  || proc_sym->attr.used_in_submodule))
     {
       gfc_init_block (&tmpblock);
       tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,

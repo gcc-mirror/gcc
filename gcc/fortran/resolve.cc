@@ -18766,6 +18766,14 @@ resolve_pdt (gfc_symbol* sym)
 
   gcc_assert (derived->attr.pdt_type);
 
+  /* Now that the result symbol has been corrected for these module
+     procedures, we can transfer the param_list from the proc sym.  */
+  if (sym->abr_modproc_decl && sym->result && sym != sym->result)
+    {
+      sym->result->param_list = sym->param_list;
+      sym->param_list = NULL;
+    }
+
   for (param = sym->param_list; param; param = param->next)
     {
       c = gfc_find_component (derived, param->name, false, true, NULL);
@@ -18787,7 +18795,6 @@ resolve_pdt (gfc_symbol* sym)
 		   "or ALLOCATABLE attribute",
 		   sym->name, &sym->declared_at,
 		   param->name);
-
     }
 
   if (!const_len_exprs

@@ -1378,6 +1378,7 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
 
   if (sym->attr.module_procedure && sym->attr.if_source == IFSRC_IFBODY)
     {
+      gfc_actual_arglist *parms = NULL;
       /* Create a partially populated interface symbol to carry the
 	 characteristics of the procedure and the result.  */
       sym->tlink = gfc_new_symbol (name, sym->ns);
@@ -1385,6 +1386,13 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
       gfc_copy_attr (&sym->tlink->attr, &sym->attr, NULL);
       if (sym->attr.dimension)
 	sym->tlink->as = gfc_copy_array_spec (sym->as);
+
+      /* The result parameters coming from the interface have to be copied
+	 to the procedure symbol itself because of the modifications to
+	 the result further downstream. This is required in trans-decl.cc
+	 when the result is initialized.  */
+      if (sym->result && IS_PDT (sym->result) && sym->result->param_list)
+	  parms = gfc_copy_actual_arglist (sym->result->param_list);
 
       /* Ideally, at this point, a copy would be made of the formal
 	 arguments and their namespace. However, this does not appear
@@ -1394,11 +1402,13 @@ get_proc_name (const char *name, gfc_symbol **result, bool module_fcn_entry)
       if (sym->result && sym->result != sym)
 	{
 	  sym->tlink->result = sym->result;
+	  sym->tlink->param_list = parms;
 	  sym->result = NULL;
 	}
       else if (sym->result)
 	{
 	  sym->tlink->result = sym->tlink;
+	  sym->tlink->param_list = parms;
 	}
     }
   else if (sym && !sym->gfc_new
@@ -10811,6 +10821,7 @@ gfc_match_submod_proc (void)
 	      st->n.sym = sym->result;
 	      sym->result->refs++;
 	    }
+	  sym->param_list = gfc_copy_actual_arglist (sym->tlink->param_list);
 	}
       else
 	sym->result = sym;
