@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       inplace_vector(size_type __n)
       {
 	_M_init();
-	_S_reserve(__n);
+	_S_check_size(__n);
 	std::uninitialized_value_construct_n(data(), __n);
 	_M_size = __n;
       }
@@ -95,7 +95,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       inplace_vector(size_type __n, const _Tp& __value)
       {
 	_M_init();
-	_S_reserve(__n);
+	_S_check_size(__n);
 	std::uninitialized_fill_n(data(), __n, __value);
 	_M_size = __n;
       }
@@ -105,9 +105,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	inplace_vector(_InputIterator __first, _InputIterator __last)
 	: inplace_vector()
 	{
-	  if (const auto __n = _S_distance(__first, __last))
+	  if constexpr (__any_sizeable_iterator<_InputIterator>)
 	    {
-	      _S_reserve(__n);
+	      const size_type __n = _S_distance_if_fits(0, __first, __last);
 	      std::uninitialized_copy(__first, __last, data());
 	      _M_size = __n;
 	    }
@@ -135,7 +135,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       inplace_vector(initializer_list<_Tp> __il)
       {
 	_M_init();
-	_S_reserve(__il.size());
+	_S_check_size(__il.size());
 	std::uninitialized_copy(__il.begin(), __il.end(), data());
 	_M_size = __il.size();
       }
@@ -220,9 +220,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	constexpr void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  if (const auto __n = _S_distance(__first, __last))
+	  if constexpr (__any_sizeable_iterator<_InputIterator>)
 	    {
-	      _S_reserve(__n);
+	      const size_type __n = _S_distance_if_fits(0, __first, __last);
 	      if (_M_size <= __n)
 		{
 		  for (size_t __i = 0; __i < _M_size; ++__i, (void)++__first)
@@ -257,11 +257,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
-	      const auto __len = ranges::distance(__rg);
-	      if (__len > _Nm)
-		__throw_bad_alloc();
-
-	      const size_t __sz = size_t(__len);
+	      const size_type __sz = _S_distance_if_fits(0, __rg);
 	      if (__sz <= size())
 		{
 		  ranges::copy_n(ranges::begin(__rg), __sz, data());
@@ -308,7 +304,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       constexpr void
       assign(size_type __n, const _Tp& __u)
       {
-	_S_reserve(__n);
+	_S_check_size(__n);
 	if (_M_size <= __n)
 	  std::uninitialized_fill_n(std::fill_n(data(), _M_size, __u),
 				    __n - _M_size, __u);
@@ -399,7 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       constexpr void
       resize(size_type __n)
       {
-	_S_reserve(__n);
+	_S_check_size(__n);
 	if (__n > _M_size)
 	  std::uninitialized_value_construct_n(data() + _M_size, __n - _M_size);
 	else if (__n < _M_size)
@@ -410,7 +406,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       constexpr void
       resize(size_type __n, const _Tp& __c)
       {
-	_S_reserve(__n);
+	_S_check_size(__n);
 	if (__n > _M_size)
 	  std::uninitialized_fill_n(data() + _M_size, __n - _M_size, __c);
 	else if (__n < _M_size)
@@ -420,7 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       static constexpr void
       reserve(size_type __n)
-      { _S_reserve(__n); }
+      { _S_check_size(__n); }
 
       static constexpr void
       shrink_to_fit() { }
@@ -534,16 +530,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	{
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
-	      const auto __len = ranges::distance(__rg);
-	      if (__len > (_Nm - size()))
-		__throw_bad_alloc();
-
-	      const size_t __sz = size_t(__len);
+	      const size_t __sz = _S_distance_if_fits(_M_size, __rg);
 	      // Bounded on output range due PR121143
 	      ranges::uninitialized_copy(
 		ranges::begin(__rg), unreachable_sentinel,
 		data() + _M_size, data() + _M_size + __sz);
-	      _M_size += size_type(__sz);
+	      _M_size += __sz;
 	    }
 	  else
 	    {
@@ -654,10 +646,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  __glibcxx_assert(__b <= _M_size);
 	  iterator __pos = begin() + __b;
 	  const size_t __s = _M_size;
-	  if (const auto __n = _S_distance(__first, __last))
+	  if constexpr (__any_sizeable_iterator<_InputIterator>)
 	    {
-	      if ((_Nm - _M_size) < __n)
-		__throw_bad_alloc();
+	      const size_type __n = _S_distance_if_fits(_M_size, __first, __last);
 	      std::uninitialized_copy(__first, __last, data() + _M_size);
 	      _M_size += __n;
 	    }
@@ -666,7 +657,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	      while (__first != __last)
 		emplace_back(*__first++);
 	    }
-	  if (__s)
+	  if (__b < __s)
 	    std::rotate(__pos, begin() + __s, end());
 	  return __pos;
 	}
@@ -679,20 +670,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  const auto __end = end();
 	  if constexpr (ranges::forward_range<_Rg> || ranges::sized_range<_Rg>)
 	    {
-	      const auto __len = ranges::distance(__rg);
-	      if (__len > (_Nm - size()))
-		__throw_bad_alloc();
-	      if (!__len) [[unlikely]]
+	      const size_type __sz = _S_distance_if_fits(_M_size, __rg);
+	      if (!__sz) [[unlikely]]
 		return __pos;
 
-	      const size_type __n = size_type(__len);
 	      const size_type __num_after = __end - __pos;
-	      if (__num_after >= __n)
+	      if (__num_after >= __sz)
 		{
-		  ranges::uninitialized_move(__end - __n, __end,
+		  ranges::uninitialized_move(__end - __sz, __end,
 					     __end, unreachable_sentinel);
-		  _M_size += __n;
-		  ranges::move_backward(__pos, __end - __n, __end);
+		  _M_size += __sz;
+		  ranges::move_backward(__pos, __end - __sz, __end);
 		  ranges::copy(__rg, __pos);
 		}
 	      else if constexpr (ranges::forward_range<_Rg>)
@@ -700,9 +688,9 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  auto __mid = ranges::next(ranges::begin(__rg), __num_after);
 		  ranges::uninitialized_copy(__mid, ranges::end(__rg),
 					     __end, unreachable_sentinel);
-		  _M_size += __n - __num_after;
+		  _M_size += __sz - __num_after;
 		  ranges::uninitialized_move(__pos, __end,
-					     __pos + __n, unreachable_sentinel);
+					     __pos + __sz, unreachable_sentinel);
 		  _M_size += __num_after;
 		  ranges::copy(ranges::begin(__rg), __mid, __pos);
 		}
@@ -711,7 +699,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 		  ranges::uninitialized_copy(
 		    ranges::begin(__rg), ranges::end(__rg),
 		    __end, unreachable_sentinel);
-		  _M_size += __n;
+		  _M_size += __sz;
 		  std::rotate(__pos, __end, end());
 		}
 	    }
@@ -875,25 +863,56 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
       }
 
-      static constexpr void
-      _S_reserve(size_t __n)
-      {
-	if (__n > _Nm)
-	  __throw_bad_alloc();
-      }
-
-      template<typename _InputIterator>
-	constexpr static auto
-	_S_distance(_InputIterator __first, _InputIterator __last)
+      template<typename _Integer>
+	static constexpr size_type
+	_S_check_size(_Integer __n, size_type __used = 0)
 	{
-	  if constexpr (sized_sentinel_for<_InputIterator, _InputIterator>
-			  || forward_iterator<_InputIterator>)
-	    return (size_type)ranges::distance(__first, __last);
-	  else if constexpr (derived_from<__iter_category_t<_InputIterator>,
-				     forward_iterator_tag>)
-	    return (size_type)std::distance(__first, __last);
+	  if constexpr (__detail::__is_signed_integer_like<_Integer>)
+	    if (__n < 0)
+	      __throw_bad_alloc();
+	  if (__n > (_Nm - __used))
+	    __throw_bad_alloc();
+	  return static_cast<size_type>(__n);
+	}
+
+      template<typename _Iterator, typename _Sentinel>
+	static constexpr size_type
+	_S_check_distance(_Iterator __first, _Sentinel __last, size_type __used)
+	{
+	  for (size_type __i = __used; __i < _Nm; ++__i)
+	    if (__first == __last)
+	      return __i - __used;
+	    else
+	      ++__first;
+
+	  if (__first == __last)
+	    return _Nm - __used;
+
+	  __throw_bad_alloc();
+	}
+
+      // Returns the size of the range if it will fit in the remaining
+      // capacity (_Nm - used), otherwise throws bad_alloc.
+      template<typename _InputIterator>
+	constexpr static size_t
+	_S_distance_if_fits(size_t __used, _InputIterator __first, _InputIterator __last)
+	{
+	  if constexpr (sized_sentinel_for<_InputIterator, _InputIterator>)
+	    return _S_check_size(__last - __first, __used);
 	  else
-	    return false_type{};
+	    return _S_check_distance(__first, __last, __used);
+	}
+
+      // See above.
+      template<typename _Rg>
+	constexpr static size_t
+	_S_distance_if_fits(size_t __used, _Rg& __rg)
+	{
+	  if constexpr (ranges::sized_range<_Rg>)
+	    return _S_check_size(ranges::size(__rg), __used);
+	  else
+	    return _S_check_distance(ranges::begin(__rg), ranges::end(__rg),
+				     __used);
 	}
     };
 

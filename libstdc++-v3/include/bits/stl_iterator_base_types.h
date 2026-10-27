@@ -267,6 +267,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _InIterator>
     concept __any_input_iterator
       = input_iterator<_InIterator> || __has_input_iter_cat<_InIterator>;
+
+  // Is a Cpp17ForwardIterator or satisfies std::forward_iterator or sized_sentinel_for
+  template<typename _InIterator>
+    concept __any_sizeable_iterator
+      = forward_iterator<_InIterator>
+	|| is_convertible_v<__iter_category_t<_InIterator>, forward_iterator_tag>
+	|| sized_sentinel_for<_InIterator, _InIterator>;
 #endif
 #endif
 
