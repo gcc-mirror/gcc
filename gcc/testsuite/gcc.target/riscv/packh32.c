@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=rv32gc_zbkb -mabi=ilp32" } */
+/* { dg-options "-O2 -march=rv32gc_zbb_zbkb -mabi=ilp32" } */
 /* { dg-skip-if "" { *-*-* } { "-g" "-flto" "-O0" } } */
 
 #include <stdint-gcc.h>

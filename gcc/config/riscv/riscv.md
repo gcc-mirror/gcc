@@ -3156,6 +3156,8 @@
   "(!SMALL_OPERAND (INTVAL (operands[3]))
     && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))
     && (!TARGET_ZBS || popcount_hwi (INTVAL (operands[3])) > 1)
+    && !(TARGET_ZBKB && <CODE> == AND
+         && INTVAL (operands[2]) == 8 && INTVAL (operands[3]) == 0xff00)
     && (INTVAL (operands[3]) & ((1ULL << INTVAL (operands[2])) - 1)) == 0)"
   "#"
   "&& 1"

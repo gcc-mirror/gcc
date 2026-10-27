@@ -4730,6 +4730,23 @@ riscv_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno ATTRIBUTE_UN
       return false;
 
     case AND:
+      /* The masked byte shift can be implemented with packh and a zero
+	 first operand.  Cost it as one instruction so that combine can
+	 use it as a bridge to the two-register packh pattern, even when
+	 Zbb makes the separate zero extension inexpensive.  */
+      if (TARGET_ZBKB
+	  && mode == word_mode
+	  && GET_CODE (XEXP (x, 0)) == ASHIFT
+	  && register_operand (XEXP (XEXP (x, 0), 0), mode)
+	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
+	  && INTVAL (XEXP (XEXP (x, 0), 1)) == 8
+	  && CONST_INT_P (XEXP (x, 1))
+	  && INTVAL (XEXP (x, 1)) == 0xff00)
+	{
+	  *total = COSTS_N_INSNS (1);
+	  return true;
+	}
+
       /* Andes bfo patterns.  */
       if (TARGET_XANDESPERF && GET_CODE (XEXP (x, 0)) == ASHIFT)
 	{
