@@ -380,6 +380,8 @@ static class eliminate_dom_walker *rpo_avail;
 basic_block vn_context_bb;
 int *vn_bb_to_rpo;
 static int *vn_exec_idom;
+static int vn_bb_in_region_flag;
+static edge vn_entry_edge;
 
 
 /* Valueization hook for simplify_replace_tree.  Valueize NAME if it is
@@ -4105,9 +4107,22 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 static bool
 vn_is_backedge (edge e, void *)
 {
-  /* During PRE elimination we no longer have access to this info.  */
-  return (!vn_bb_to_rpo
-	  || vn_bb_to_rpo[e->dest->index] <= vn_bb_to_rpo[e->src->index]);
+  /* During PRE elimination and ANTIC compute we no longer have
+     vn_bb_to_rpo and the region is no longer marked.  */
+  if (!vn_bb_to_rpo)
+    return true;
+
+  gcc_assert (vn_bb_in_region_flag != 0);
+
+  /* The entry edge is a forward edge.  */
+  if (e == vn_entry_edge)
+    return false;
+  /* For out-of region edges conservatively return true.  */
+  if (!(e->src->flags & vn_bb_in_region_flag))
+    return true;
+  /* We should never ask for region exit edges.  */
+  gcc_checking_assert (e->dest->flags & vn_bb_in_region_flag);
+  return vn_bb_to_rpo[e->dest->index] <= vn_bb_to_rpo[e->src->index];
 }
 
 /* Return a reference op vector from OP that can be used for
@@ -8935,37 +8950,6 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 
   rpo_avail = &avail;
 
-  /* Verify we have no extra entries into the region.  */
-  if (flag_checking && do_region)
-    {
-      auto_bb_flag bb_in_region (fn);
-      for (int i = 0; i < n; ++i)
-	{
-	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
-	  bb->flags |= bb_in_region;
-	}
-      /* We can't merge the first two loops because we cannot rely
-         on EDGE_DFS_BACK for edges not within the region.  But if
-	 we decide to always have the bb_in_region flag we can
-	 do the checking during the RPO walk itself (but then it's
-	 also easy to handle MEME conservatively).  */
-      for (int i = 0; i < n; ++i)
-	{
-	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
-	  edge e;
-	  edge_iterator ei;
-	  FOR_EACH_EDGE (e, ei, bb->preds)
-	    gcc_assert (e == entry
-			|| (skip_entry_phis && bb == entry->dest)
-			|| (e->src->flags & bb_in_region));
-	}
-      for (int i = 0; i < n; ++i)
-	{
-	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
-	  bb->flags &= ~bb_in_region;
-	}
-    }
-
   /* Create the VN state.  For the initial size of the various hashtables
      use a heuristic based on region size and number of SSA names.  */
   unsigned region_size = (((unsigned HOST_WIDE_INT)n * num_ssa_names)
@@ -8988,11 +8972,17 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 
   vn_valueize = rpo_vn_valueize;
 
+  /* The blocks in the value-numbered region are marked with bb_in_region.  */
+  auto_bb_flag bb_in_region (fn);
+  vn_bb_in_region_flag = bb_in_region;
+  vn_entry_edge = entry;
+
   /* Initialize the unwind state and edge/BB executable state.  */
   unsigned curr_scc = 0;
   for (int i = 0; i < n; ++i)
     {
       basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+      bb->flags |= bb_in_region;
       rpo_state[i].visited = 0;
       rpo_state[i].max_rpo = i;
       if (!iterate && curr_scc < toplevel_scc_extents.length ())
@@ -9019,6 +9009,23 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
     }
   entry->flags |= EDGE_EXECUTABLE;
   entry->dest->flags |= BB_EXECUTABLE;
+
+  /* Verify we have no extra entries into the region.  */
+  if (flag_checking && do_region)
+    {
+      /* We can't merge the first two loops because we cannot rely
+	 on EDGE_DFS_BACK for edges not within the region.  */
+      for (int i = 0; i < n; ++i)
+	{
+	  basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+	  edge e;
+	  edge_iterator ei;
+	  FOR_EACH_EDGE (e, ei, bb->preds)
+	    gcc_assert (e == entry
+			|| (skip_entry_phis && bb == entry->dest)
+			|| (e->src->flags & bb_in_region));
+	}
+    }
 
   /* As heuristic to improve compile-time we handle only the N innermost
      loops and the outermost one optimistically.  */
@@ -9276,9 +9283,18 @@ do_rpo_vn_1 (function *fn, edge entry, bitmap exit_bbs,
 	}
     }
 
+  /* Clear the bb_in_region flag.  */
+  for (int i = 0; i < n; ++i)
+    {
+      basic_block bb = BASIC_BLOCK_FOR_FN (fn, rpo[i]);
+      bb->flags &= ~bb_in_region;
+    }
+
   vn_valueize = NULL;
   rpo_avail = NULL;
   vn_bb_to_rpo = NULL;
+  vn_bb_in_region_flag = 0;
+  vn_entry_edge = NULL;
 
   vn_exec_idom = NULL;
 
