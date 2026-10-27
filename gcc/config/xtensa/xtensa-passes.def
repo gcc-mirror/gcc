@@ -19,3 +19,4 @@ along with GCC; see the file COPYING3.  If not see
 
 INSERT_PASS_AFTER (pass_postreload_cse, 1, pass_xtensa_largeconst1);
 INSERT_PASS_BEFORE (pass_regrename, 1, pass_xtensa_largeconst2);
+INSERT_PASS_BEFORE (pass_combine, 1, pass_xtensa_before_combine);

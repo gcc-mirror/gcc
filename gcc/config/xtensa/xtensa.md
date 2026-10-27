@@ -339,8 +339,9 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(minus:SI (match_operand:SI 1 "const_int_operand" "")
 		  (match_operand:SI 2 "register_operand" "r")))]
-  "xtensa_simm8 (-INTVAL (operands[1]))
-   || xtensa_simm8x256 (-INTVAL (operands[1]))"
+  "xtensa_rtl_combine_reached_p ()
+   && (xtensa_simm8 (-INTVAL (operands[1]))
+       || xtensa_simm8x256 (-INTVAL (operands[1])))"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -757,6 +758,25 @@
   DONE;
 })
 
+(define_insn_and_split "*one_cmplsi2"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(not:SI (match_operand:SI 1 "register_operand" "r")))]
+  "xtensa_rtl_combine_reached_p ()"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0)
+	(plus:SI (match_dup 1)
+		 (const_int 1)))
+   (set (match_dup 0)
+	(neg:SI (match_dup 0)))]
+  ""
+  [(set_attr "type"	"arith")
+   (set_attr "mode"	"SI")
+   (set (attr "length")
+	(if_then_else (match_test "TARGET_DENSITY")
+		      (const_int 5)
+		      (const_int 6)))])
+
 (define_insn "neg<mode>2"
   [(set (match_operand:SDF 0 "register_operand" "=f")
         (neg:SDF (match_operand:SDF 1 "register_operand" "f")))]
@@ -872,7 +892,8 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(and:SI (match_operand:SI 1 "register_operand" "r")
 		(match_operand:SI 2 "const_int_operand" "")))]
-  "IN_RANGE (exact_log2 (INTVAL (operands[2]) + 1), 17, 31)"
+  "xtensa_rtl_combine_reached_p ()
+   && IN_RANGE (exact_log2 (INTVAL (operands[2]) + 1), 17, 31)"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -896,7 +917,8 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(and:SI (match_operand:SI 1 "register_operand" "r")
 		(match_operand:SI 2 "const_int_operand" "")))]
-  "IN_RANGE (exact_log2 (-INTVAL (operands[2])), 12, 31)"
+  "xtensa_rtl_combine_reached_p ()
+   && IN_RANGE (exact_log2 (-INTVAL (operands[2])), 12, 31)"
   "#"
   "&& 1"
   [(set (match_dup 0)
@@ -916,7 +938,8 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(and:SI (match_operand:SI 1 "register_operand" "r")
 		(match_operand:SI 2 "shifted_mask_operand" "")))]
-  "! xtensa_simm12b (INTVAL (operands[2]))"
+  "xtensa_rtl_combine_reached_p ()
+   && ! xtensa_simm12b (INTVAL (operands[2]))"
   "#"
   "&& 1"
   [(set (match_dup 0)

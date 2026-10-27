@@ -62,6 +62,7 @@ extern bool xtensa_postreload_completed_p (void);
 extern char *xtensa_bswapsi2_output (rtx_insn *, const char *);
 extern bool xtensa_expand_load_force_l32 (rtx *, machine_mode, machine_mode,
 					  int);
+extern bool xtensa_rtl_combine_reached_p (void);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, int);
@@ -84,5 +85,6 @@ extern HOST_WIDE_INT xtensa_initial_elimination_offset (int from, int to);
 extern const char **xtensa_get_config_strings (void);
 extern rtl_opt_pass *make_pass_xtensa_largeconst1 (gcc::context *);
 extern rtl_opt_pass *make_pass_xtensa_largeconst2 (gcc::context *);
+extern rtl_opt_pass *make_pass_xtensa_before_combine (gcc::context *);
 
 #endif /* !__XTENSA_PROTOS_H__ */

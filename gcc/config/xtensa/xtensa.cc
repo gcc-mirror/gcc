@@ -110,6 +110,7 @@ struct GTY(()) machine_function
   rtx last_logues_a9_content;
   HARD_REG_SET eliminated_callee_saved;
   bool postreload_completed;
+  bool rtl_combine_reached;
 };
 
 /* Referenced by the REGNO_REG_CLASS() macro.  */
@@ -2633,6 +2634,16 @@ xtensa_bswapsi2_output (rtx_insn *insn, const char *output)
   strcat (result, output);
 
   return result;
+}
+
+
+/* Return true if the current optimization pass has reached the RTL insn
+   combination.  */
+
+bool
+xtensa_rtl_combine_reached_p (void)
+{
+  return cfun && cfun->machine->rtl_combine_reached;
 }
 
 
@@ -6899,6 +6910,49 @@ rtl_opt_pass *
 make_pass_xtensa_largeconst2 (gcc::context *ctxt)
 {
   return new pass_xtensa_largeconst2 (ctxt);
+}
+
+/* "Hidden" machine-specific pass only in order to detect when the current
+   pass has reached the RTL instruction combination pass.  */
+
+namespace
+{
+
+const pass_data pass_data_xtensa_before_combine =
+{
+  RTL_PASS, /* type */
+  "*xt_before_combine", /* name */
+  OPTGROUP_NONE, /* optinfo_flags */
+  TV_MACH_DEP, /* tv_id */
+  0, /* properties_required */
+  0, /* properties_provided */
+  0, /* properties_destroyed */
+  0, /* todo_flags_start */
+  0, /* todo_flags_finish */
+};
+
+class pass_xtensa_before_combine : public rtl_opt_pass
+{
+public:
+  pass_xtensa_before_combine (gcc::context *ctxt)
+    : rtl_opt_pass (pass_data_xtensa_before_combine, ctxt)
+  {}
+
+  /* opt_pass methods: */
+  unsigned int execute (function *fun) final override
+  {
+    fun->machine->rtl_combine_reached = true;
+    return 0;
+  }
+
+};  // class pass_xtensa_before_combine
+
+} // anon namespace
+
+rtl_opt_pass *
+make_pass_xtensa_before_combine (gcc::context *ctxt)
+{
+  return new pass_xtensa_before_combine (ctxt);
 }
 
 #include "gt-xtensa.h"
