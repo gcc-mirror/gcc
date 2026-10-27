@@ -339,7 +339,7 @@ public:
     gcc_assert (TYPE_MODE (TREE_TYPE (pg)) == TYPE_MODE (TREE_TYPE (pn)));
 
     if (is_pfalse (pg) || is_pfalse (pn))
-      return f.fold_call_to (build_minus_one_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_minus_one_cst (f.ret_type));
 
     if (TREE_CODE (pg) != VECTOR_CST
 	|| TREE_CODE (pn) != VECTOR_CST)
@@ -359,14 +359,13 @@ public:
       {
 	unsigned int idx = m_first ? i : nelts - 1 - i;
 	if (tree_to_shwi (VECTOR_CST_ENCODED_ELT (pa, idx)) != 0)
-	  return f.fold_call_to (build_int_cst (TREE_TYPE (f.lhs),
-						m_first
-						? i / elt_size
-						: (nelts_full_vector - 1
-						   - i / elt_size)));
+	  return f.fold_call_to (
+	    build_int_cst (f.ret_type,
+			   m_first ? i / elt_size
+				   : (nelts_full_vector - 1 - i / elt_size)));
       }
 
-    return f.fold_call_to (build_minus_one_cst (TREE_TYPE (f.lhs)));
+    return f.fold_call_to (build_minus_one_cst (f.ret_type));
   }
 
   rtx

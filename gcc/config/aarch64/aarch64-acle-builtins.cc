@@ -2784,6 +2784,17 @@ function_checker::check ()
   return shape->check (*this);
 }
 
+/* Return a variable of type TYPE that is suitable for holding an
+   intermediate value, in a form appropriate to the current stage of
+   compilation.  */
+tree
+build_var (tree type)
+{
+  return gimple_in_ssa_p (cfun) && is_gimple_reg_type (type)
+	   ? make_ssa_name (type)
+	   : create_tmp_var (type);
+}
+
 /* Return true if V is a vector constant and if, for every in-range integer I,
    element STEP*I is equal to element 0.  */
 bool
@@ -2827,8 +2838,8 @@ is_pfalse (tree v)
 gimple_folder::gimple_folder (const function_instance &instance, tree fndecl,
 			      gimple_stmt_iterator *gsi_in, gcall *call_in)
   : function_call_info (gimple_location (call_in), instance, fndecl),
-    gsi (gsi_in), call (call_in), lhs (gimple_call_lhs (call_in)),
-    stmts (nullptr)
+    gsi (gsi_in), call (call_in), m_lhs (gimple_call_lhs (call_in)),
+    ret_type (TREE_TYPE (TREE_TYPE (fndecl))), stmts (nullptr)
 {
 }
 
@@ -2892,7 +2903,7 @@ gimple_folder::fold_contiguous_load (internal_fn ifn_code)
   tree cookie = load_store_cookie (TREE_TYPE (vectype));
   gcall *new_call = gimple_build_call_internal (ifn_code, 4,
 						base, cookie, pred, els);
-  gimple_call_set_lhs (new_call, lhs);
+  gimple_call_set_lhs (new_call, lhs ());
   return new_call;
 }
 
@@ -2973,15 +2984,14 @@ gimple_folder::fold_pfalse ()
       return nullptr;
     }
   if ((pred == PRED_x || pred == PRED_z) && is_pfalse (gp))
-    return fold_call_to (build_zero_cst (TREE_TYPE (lhs)));
+    return fold_call_to (build_zero_cst (ret_type));
   if (pred == PRED_implicit && is_pfalse (gp))
     {
       unsigned int flags = call_properties ();
       /* Folding to lhs = {0, ...} is not appropriate for intrinsics with
 	 AGGREGATE types as lhs.  */
-      if ((flags & CP_READ_MEMORY)
-	  && !AGGREGATE_TYPE_P (TREE_TYPE (lhs)))
-	return fold_call_to (build_zero_cst (TREE_TYPE (lhs)));
+      if ((flags & CP_READ_MEMORY) && !AGGREGATE_TYPE_P (ret_type))
+	return fold_call_to (build_zero_cst (ret_type));
       if (flags & (CP_WRITE_MEMORY | CP_PREFETCH_MEMORY))
 	return gimple_build_nop ();
     }
@@ -3000,9 +3010,9 @@ gimple_folder::convert_and_fold (tree type,
 {
   gcc_assert (VECTOR_TYPE_P (type)
 	      && TYPE_MODE (type) != VNx16BImode);
-  tree old_ty = TREE_TYPE (lhs);
+  tree old_ty = ret_type;
   bool convert_lhs_p = !useless_type_conversion_p (type, old_ty);
-  tree lhs_conv = convert_lhs_p ? make_ssa_name (type) : lhs;
+  tree lhs_conv = convert_lhs_p ? make_ssa_name (type) : lhs ();
   unsigned int num_args = gimple_call_num_args (call);
   auto_vec<tree, 16> args_conv;
   args_conv.safe_grow (num_args);
@@ -3021,7 +3031,7 @@ gimple_folder::convert_and_fold (tree type,
   if (convert_lhs_p)
     {
       tree t = build1 (VIEW_CONVERT_EXPR, old_ty, lhs_conv);
-      gimple *g = gimple_build_assign (lhs, VIEW_CONVERT_EXPR, t);
+      gimple *g = gimple_build_assign (lhs (), VIEW_CONVERT_EXPR, t);
       gsi_insert_after (gsi, g, GSI_SAME_STMT);
     }
   return new_stmt;
@@ -3031,14 +3041,14 @@ gimple_folder::convert_and_fold (tree type,
 gimple *
 gimple_folder::fold_to_cstu (poly_uint64 val)
 {
-  return gimple_build_assign (lhs, build_int_cstu (TREE_TYPE (lhs), val));
+  return gimple_build_assign (lhs (), build_int_cstu (ret_type, val));
 }
 
 /* Fold the call to a PTRUE, taking the element size from type suffix 0.  */
 gimple *
 gimple_folder::fold_to_ptrue ()
 {
-  tree svbool_type = TREE_TYPE (lhs);
+  tree svbool_type = ret_type;
   tree bool_type = TREE_TYPE (svbool_type);
   unsigned int element_bytes = type_suffix (0).element_bytes;
 
@@ -3048,7 +3058,7 @@ gimple_folder::fold_to_ptrue ()
   builder.quick_push (build_all_ones_cst (bool_type));
   for (unsigned int i = 1; i < element_bytes; ++i)
     builder.quick_push (build_zero_cst (bool_type));
-  return gimple_build_assign (lhs, builder.build ());
+  return gimple_build_assign (lhs (), builder.build ());
 }
 
 /* Fold the call to a PFALSE.  */
@@ -3056,7 +3066,7 @@ gimple *
 gimple_folder::fold_to_pfalse ()
 {
   if (type_suffix (0).tclass == TYPE_bool)
-    return gimple_build_assign (lhs, build_zero_cst (TREE_TYPE (lhs)));
+    return gimple_build_assign (lhs (), build_zero_cst (ret_type));
 
   if (type_suffix (0).tclass == TYPE_count)
     {
@@ -3073,10 +3083,10 @@ gimple_folder::fold_to_pfalse ()
 gimple *
 gimple_folder::fold_to_vl_pred (unsigned int vl)
 {
-  tree vectype = TREE_TYPE (lhs);
+  tree vectype = ret_type;
   unsigned int element_bytes = type_suffix (0).element_bytes;
   tree pred = aarch64_fold_sve_ptrue_vl (vectype, vl, element_bytes);
-  return gimple_build_assign (lhs, pred);
+  return gimple_build_assign (lhs (), pred);
 }
 
 /* Try to fold the call to a constant, given that, for integers, the call
@@ -3093,7 +3103,7 @@ gimple_folder::fold_const_binary (enum tree_code code)
   if (type_suffix (0).integer_p
       && (pred == PRED_x || is_ptrue (pg, type_suffix (0).element_bytes)))
     if (tree res = vector_const_binop (code, op1, op2, aarch64_const_binop))
-      return gimple_build_assign (lhs, res);
+      return gimple_build_assign (lhs (), res);
 
   return NULL;
 }
@@ -3106,33 +3116,44 @@ gimple_folder::fold_active_lanes_to (tree x)
   /* If predication is _x or the predicate is ptrue, fold to X.  */
   if (pred == PRED_x
       || is_ptrue (gimple_call_arg (call, 0), type_suffix (0).element_bytes))
-    return gimple_build_assign (lhs, x);
+    return gimple_build_assign (lhs (), x);
 
   /* If the predication is _z or _m, calculate a vector that supplies the
      values of inactive lanes (the first vector argument for m and a zero
      vector from z).  */
   tree vec_inactive;
   if (pred == PRED_z)
-    vec_inactive = build_zero_cst (TREE_TYPE (lhs));
+    vec_inactive = build_zero_cst (ret_type);
   else
     vec_inactive = gimple_call_arg (call, 1);
   if (operand_equal_p (x, vec_inactive, 0))
-    return gimple_build_assign (lhs, x);
+    return gimple_build_assign (lhs (), x);
 
   tree pred = convert_pred (vector_type (0), 0);
-  x = force_vector (TREE_TYPE (lhs), x);
-  return gimple_build_assign (lhs, VEC_COND_EXPR, pred, x, vec_inactive);
+  x = force_vector (ret_type, x);
+  return gimple_build_assign (lhs (), VEC_COND_EXPR, pred, x, vec_inactive);
 }
 
 /* Fold call to assignment statement lhs = t.  */
 gimple *
 gimple_folder::fold_call_to (tree t)
 {
-  if (types_compatible_p (TREE_TYPE (lhs), TREE_TYPE (t)))
-    return gimple_build_assign (lhs, t);
+  if (types_compatible_p (ret_type, TREE_TYPE (t)))
+    return gimple_build_assign (lhs (), t);
 
-  tree rhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (lhs), t);
-  return gimple_build_assign (lhs, VIEW_CONVERT_EXPR, rhs);
+  tree rhs = build1 (VIEW_CONVERT_EXPR, ret_type, t);
+  return gimple_build_assign (lhs (), VIEW_CONVERT_EXPR, rhs);
+}
+
+/* Return an lhs that callers can use to represent the result of the call.
+   If the original call had no lhs, create a temporary of the appropriate
+   form for the current stage of compilation.  */
+tree
+gimple_folder::lhs () const
+{
+  if (!m_lhs)
+    m_lhs = build_var (ret_type);
+  return m_lhs;
 }
 
 /* Try to fold the call.  Return the new statement on success and null
@@ -3144,12 +3165,6 @@ gimple_folder::fold ()
      expansion instead.  */
   if (!TARGET_SIMD && !TARGET_SVE)
     return NULL;
-
-  /* Create a placeholder variable for the result.
-     This allows implementers of `fold` to assume `lhs` will never be null.
-     If the result is unused, it will be optimized away later.  */
-  if (!lhs && TREE_TYPE (gimple_call_fntype (call)) != void_type_node)
-    lhs = create_tmp_var (TREE_TYPE (gimple_call_fntype (call)));
 
   /* First try some simplifications that are common to many functions.  */
   gimple *res = redirect_pred_x ();
@@ -3181,10 +3196,7 @@ gimple_folder::force_val (tree expr)
   if (is_gimple_val (expr))
     return expr;
 
-  auto type = TREE_TYPE (expr);
-  auto var = gimple_in_ssa_p (cfun) && is_gimple_reg_type (type)
-	       ? make_ssa_name (type)
-	       : create_tmp_var (type);
+  auto var = build_var (TREE_TYPE (expr));
   auto stmt = gimple_build_assign (var, expr);
   gimple_seq_add_stmt_without_update (&stmts, stmt);
   return var;

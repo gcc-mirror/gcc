@@ -688,10 +688,10 @@ public:
       return NULL;
 
     unsigned int nargs = gimple_call_num_args (f.call);
-    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (f.ret_type);
     vec_perm_indices indices (builder, nargs, nelts);
     tree perm_type = build_vector_type (ssizetype, nelts);
-    return gimple_build_assign (f.lhs, VEC_PERM_EXPR,
+    return gimple_build_assign (f.lhs (), VEC_PERM_EXPR,
 				gimple_call_arg (f.call, 0),
 				gimple_call_arg (f.call, nargs == 1 ? 0 : 1),
 				vec_perm_indices_to_tree (perm_type, indices));
@@ -942,7 +942,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (f.pred == PRED_x && is_pfalse (gimple_call_arg (f.call, 1)))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 

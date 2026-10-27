@@ -267,7 +267,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (is_pfalse (gimple_call_arg (f.call, 0)))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 };
@@ -304,7 +304,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (is_pfalse (gimple_call_arg (f.call, 0)))
-      return f.fold_call_to (build_all_ones_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_all_ones_cst (f.ret_type));
     return NULL;
   }
 };
@@ -507,7 +507,7 @@ public:
 	&& f.type_suffix (0).integer_p)
       {
 	rhs2 = f.force_vector (TREE_TYPE (rhs1), rhs2);
-	return gimple_build_assign (f.lhs, m_code, rhs1, rhs2);
+	return gimple_build_assign (f.lhs (), m_code, rhs1, rhs2);
       }
 
     if (is_pfalse (pg))
@@ -711,7 +711,7 @@ public:
   {
     tree pg = gimple_call_arg (f.call, 0);
     if (is_pfalse (pg))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 
@@ -738,7 +738,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (is_pfalse (gimple_call_arg (f.call, 0)))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 };
@@ -753,7 +753,7 @@ public:
   fold (gimple_folder &f) const override
   {
     unsigned int nargs = gimple_call_num_args (f.call);
-    tree lhs_type = TREE_TYPE (f.lhs);
+    tree lhs_type = f.ret_type;
 
     /* Replace the call with a clobber of the result (to prevent it from
        becoming upwards exposed) followed by stores into each individual
@@ -762,14 +762,14 @@ public:
        The fold routines expect the replacement statement to have the
        same lhs as the original call, so return the clobber statement
        rather than the final vector store.  */
-    gassign *clobber = gimple_build_assign (f.lhs, build_clobber (lhs_type));
+    gassign *clobber = gimple_build_assign (f.lhs (), build_clobber (lhs_type));
 
     for (unsigned int i = nargs; i-- > 0; )
       {
 	tree rhs_vector = gimple_call_arg (f.call, i);
-	tree field = tuple_type_field (TREE_TYPE (f.lhs));
+	tree field = tuple_type_field (f.ret_type);
 	tree lhs_array = build3 (COMPONENT_REF, TREE_TYPE (field),
-				 unshare_expr (f.lhs), field, NULL_TREE);
+				 unshare_expr (f.lhs ()), field, NULL_TREE);
 	tree lhs_vector = build4 (ARRAY_REF, TREE_TYPE (rhs_vector),
 				  lhs_array, size_int (i),
 				  NULL_TREE, NULL_TREE);
@@ -905,7 +905,7 @@ public:
 
     /* If one of the operands is all zeros, fold to zero vector.  */
     if (integer_zerop (op1) || integer_zerop (op2))
-      return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_active_lanes_to (build_zero_cst (f.ret_type));
 
     /* If the divisor is all integer -1, fold to svneg.  */
     tree pg = gimple_call_arg (f.call, 0);
@@ -1032,7 +1032,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree vec_type = TREE_TYPE (f.lhs);
+    tree vec_type = f.ret_type;
     tree rhs = gimple_call_arg (f.call, f.pred == PRED_none ? 0 : 1);
 
     if (f.pred == PRED_none || f.pred == PRED_x)
@@ -1045,14 +1045,14 @@ public:
 		      : f.fold_to_pfalse ());
 
 	    tree rhs_vector = build_vector_from_val (vec_type, rhs);
-	    return gimple_build_assign (f.lhs, rhs_vector);
+	    return gimple_build_assign (f.lhs (), rhs_vector);
 	  }
 
 	/* Avoid folding _b to a VEC_DUPLICATE_EXPR, since to do that we
 	   would need to introduce an extra and unwanted conversion to
 	   the truth vector element type.  */
 	if (!f.type_suffix (0).bool_p)
-	  return gimple_build_assign (f.lhs, VEC_DUPLICATE_EXPR, rhs);
+	  return gimple_build_assign (f.lhs (), VEC_DUPLICATE_EXPR, rhs);
       }
 
     /* svdup_z (pg, x) == VEC_COND_EXPR <pg, VEC_DUPLICATE_EXPR <x>, 0>.  */
@@ -1060,7 +1060,7 @@ public:
       {
 	tree pred = f.convert_pred (vec_type, 0);
 	rhs = f.force_vector (vec_type, rhs);
-	return gimple_build_assign (f.lhs, VEC_COND_EXPR, pred, rhs,
+	return gimple_build_assign (f.lhs (), VEC_COND_EXPR, pred, rhs,
 				    build_zero_cst (vec_type));
       }
 
@@ -1140,8 +1140,8 @@ private:
 	|| BYTES_BIG_ENDIAN)
       return NULL;
 
-    tree lhs = gimple_call_lhs (f.call);
-    tree lhs_type = TREE_TYPE (lhs);
+    tree lhs = f.lhs ();
+    tree lhs_type = f.ret_type;
     tree elt_type = TREE_TYPE (lhs_type);
     scalar_mode elt_mode = SCALAR_TYPE_MODE (elt_type);
     machine_mode vq_mode = aarch64_v128_mode (elt_mode).require ();
@@ -1174,7 +1174,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree vec_type = TREE_TYPE (f.lhs);
+    tree vec_type = f.ret_type;
     unsigned int nargs = gimple_call_num_args (f.call);
     /* For predicates, pad out each argument so that we have one element
        per bit.  */
@@ -1190,7 +1190,7 @@ public:
 	for (unsigned int j = 1; j < factor; ++j)
 	  builder.quick_push (build_zero_cst (TREE_TYPE (vec_type)));
       }
-    return gimple_build_assign (f.lhs, builder.build ());
+    return gimple_build_assign (f.lhs (), builder.build ());
   }
 
   rtx
@@ -1308,7 +1308,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (is_pfalse (gimple_call_arg (f.call, 0)))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 };
@@ -1321,7 +1321,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (is_pfalse (gimple_call_arg (f.call, 0)))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 };
@@ -1346,10 +1346,10 @@ public:
       return NULL;
 
     tree op = gimple_call_arg (f.call, 2);
-    tree mask = build_int_cstu (TREE_TYPE (TREE_TYPE (f.lhs)),
-				GET_MODE_MASK (m_from_mode));
-    tree mask_vec = build_vector_from_val (TREE_TYPE (f.lhs), mask);
-    return gimple_build_assign (f.lhs, BIT_AND_EXPR, op, mask_vec);
+    tree mask
+      = build_int_cstu (TREE_TYPE (f.ret_type), GET_MODE_MASK (m_from_mode));
+    tree mask_vec = build_vector_from_val (f.ret_type, mask);
+    return gimple_build_assign (f.lhs (), BIT_AND_EXPR, op, mask_vec);
   }
 
   rtx
@@ -1402,9 +1402,9 @@ public:
     tree field = tuple_type_field (TREE_TYPE (rhs_tuple));
     tree rhs_array = build3 (COMPONENT_REF, TREE_TYPE (field),
 			     rhs_tuple, field, NULL_TREE);
-    tree rhs_vector = build4 (ARRAY_REF, TREE_TYPE (f.lhs),
-			      rhs_array, index, NULL_TREE, NULL_TREE);
-    return gimple_build_assign (f.lhs, rhs_vector);
+    tree rhs_vector
+      = build4 (ARRAY_REF, f.ret_type, rhs_array, index, NULL_TREE, NULL_TREE);
+    return gimple_build_assign (f.lhs (), rhs_vector);
   }
 
   rtx
@@ -1425,9 +1425,9 @@ public:
     if (BYTES_BIG_ENDIAN)
       return NULL;
     tree rhs_sve_vector = gimple_call_arg (f.call, 0);
-    tree rhs_vector = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs),
-			     rhs_sve_vector, bitsize_int (128), bitsize_int (0));
-    return gimple_build_assign (f.lhs, rhs_vector);
+    tree rhs_vector = build3 (BIT_FIELD_REF, f.ret_type, rhs_sve_vector,
+			      bitsize_int (128), bitsize_int (0));
+    return gimple_build_assign (f.lhs (), rhs_vector);
   }
 
   rtx
@@ -1493,15 +1493,13 @@ public:
     tree rhs_vector = gimple_call_arg (f.call, 0);
     unsigned HOST_WIDE_INT neon_nelts
       = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs_vector)).to_constant ();
-    poly_uint64 sve_nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    poly_uint64 sve_nelts = TYPE_VECTOR_SUBPARTS (f.ret_type);
     vec_perm_builder builder (sve_nelts, neon_nelts, 1);
     for (unsigned int i = 0; i < neon_nelts; i++)
       builder.quick_push (i);
     vec_perm_indices indices (builder, 1, neon_nelts);
     tree perm_type = build_vector_type (ssizetype, sve_nelts);
-    return gimple_build_assign (f.lhs, VEC_PERM_EXPR,
-				rhs_vector,
-				rhs_vector,
+    return gimple_build_assign (f.lhs (), VEC_PERM_EXPR, rhs_vector, rhs_vector,
 				vec_perm_indices_to_tree (perm_type, indices));
   }
 
@@ -1535,12 +1533,12 @@ public:
   fold (gimple_folder &f) const override
   {
     /* Apply constant folding if base and step are integer constants.  */
-    tree vec_type = TREE_TYPE (f.lhs);
+    tree vec_type = f.ret_type;
     tree base = gimple_call_arg (f.call, 0);
     tree step = gimple_call_arg (f.call, 1);
     if (TREE_CODE (base) != INTEGER_CST || TREE_CODE (step) != INTEGER_CST)
       return NULL;
-    return gimple_build_assign (f.lhs,
+    return gimple_build_assign (f.lhs (),
 				build_vec_series (vec_type, base, step));
   }
 
@@ -1561,7 +1559,7 @@ public:
     gcall *new_call = gimple_build_call_internal (IFN_VEC_SHL_INSERT, 2,
 						  gimple_call_arg (f.call, 0),
 						  gimple_call_arg (f.call, 1));
-    gimple_call_set_lhs (new_call, f.lhs);
+    gimple_call_set_lhs (new_call, f.lhs ());
     return new_call;
   }
 
@@ -1610,9 +1608,9 @@ public:
 	   2.  LASTA if predicate all false, return element 0.  */
 	if (is_lasta () && vector_cst_all_same (pred, step_1))
 	  {
-	    b = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), val,
+	    b = build3 (BIT_FIELD_REF, f.ret_type, val,
 			bitsize_int (step * BITS_PER_UNIT), bitsize_int (0));
-	    return gimple_build_assign (f.lhs, b);
+	    return gimple_build_assign (f.lhs (), b);
 	  }
 
 	/* Handle the all-false case for LASTB where SVE VL == 128b -
@@ -1621,11 +1619,11 @@ public:
 	    && vector_cst_all_same (pred, step_1)
 	    && integer_zerop (VECTOR_CST_ENCODED_ELT (pred, 0)))
 	  {
-	    b = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), val,
+	    b = build3 (BIT_FIELD_REF, f.ret_type, val,
 			bitsize_int (step * BITS_PER_UNIT),
 			bitsize_int ((16 - step) * BITS_PER_UNIT));
 
-	    return gimple_build_assign (f.lhs, b);
+	    return gimple_build_assign (f.lhs (), b);
 	  }
 
 	/* Determine if there are any repeating non-zero elements in variable
@@ -1692,11 +1690,11 @@ public:
 	if (pos < 0 || pos > 15)
 	  return NULL;
 
-	b = build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), val,
+	b = build3 (BIT_FIELD_REF, f.ret_type, val,
 		    bitsize_int (step * BITS_PER_UNIT),
 		    bitsize_int (pos * BITS_PER_UNIT));
 
-	return gimple_build_assign (f.lhs, b);
+	return gimple_build_assign (f.lhs (), b);
       }
     return NULL;
   }
@@ -1854,8 +1852,8 @@ public:
 	&& integer_all_onesp (arg0)
 	&& !flag_non_call_exceptions)
       {
-	tree lhs = gimple_call_lhs (f.call);
-	tree lhs_type = TREE_TYPE (lhs);
+	tree lhs = f.lhs ();
+	tree lhs_type = f.ret_type;
 	poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
 	tree eltype = TREE_TYPE (lhs_type);
 
@@ -1938,7 +1936,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree tuple_type = TREE_TYPE (f.lhs);
+    tree tuple_type = f.ret_type;
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
@@ -1952,12 +1950,13 @@ public:
        The fold routines expect the replacement statement to have the
        same lhs as the original call, so return the clobber statement
        rather than the load.  */
-    gimple *clobber = gimple_build_assign (f.lhs, build_clobber (tuple_type));
+    gimple *clobber
+      = gimple_build_assign (f.lhs (), build_clobber (tuple_type));
 
     /* View the loaded data as an array of vectors.  */
     tree field = tuple_type_field (tuple_type);
-    tree lhs_array = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (field),
-			     unshare_expr (f.lhs));
+    tree lhs_array
+      = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (field), unshare_expr (f.lhs ()));
 
     /* Emit the load itself.  */
     tree cookie = f.load_store_cookie (TREE_TYPE (vectype));
@@ -2119,9 +2118,8 @@ public:
   {
     /* The argument only exists for its type.  */
     tree rhs_type = TREE_TYPE (gimple_call_arg (f.call, 0));
-    tree count = build_int_cstu (TREE_TYPE (f.lhs),
-				 TYPE_VECTOR_SUBPARTS (rhs_type));
-    return gimple_build_assign (f.lhs, count);
+    tree count = build_int_cstu (f.ret_type, TYPE_VECTOR_SUBPARTS (rhs_type));
+    return gimple_build_assign (f.lhs (), count);
   }
 
   rtx
@@ -2167,8 +2165,8 @@ public:
     if (is_pfalse (gimple_call_arg (f.call, 0)))
       {
 	tree rhs = f.type_suffix (0).integer_p
-	  ? TYPE_MAX_VALUE (TREE_TYPE (f.lhs))
-	  : build_real (TREE_TYPE (f.lhs), dconstinf);
+		     ? TYPE_MAX_VALUE (f.ret_type)
+		     : build_real (f.ret_type, dconstinf);
 	return f.fold_call_to (rhs);
       }
     return NULL;
@@ -2186,7 +2184,7 @@ public:
       {
 	REAL_VALUE_TYPE rnan = dconst0;
 	rnan.cl = rvc_nan;
-	return f.fold_call_to (build_real (TREE_TYPE (f.lhs), rnan));
+	return f.fold_call_to (build_real (f.ret_type, rnan));
       }
     return NULL;
   }
@@ -2204,8 +2202,8 @@ public:
     if (is_pfalse (gimple_call_arg (f.call, 0)))
       {
 	tree rhs = f.type_suffix (0).integer_p
-	  ? TYPE_MIN_VALUE (TREE_TYPE (f.lhs))
-	  : build_real (TREE_TYPE (f.lhs), dconstninf);
+		     ? TYPE_MIN_VALUE (f.ret_type)
+		     : build_real (f.ret_type, dconstninf);
 	return f.fold_call_to (rhs);
       }
     return NULL;
@@ -2223,7 +2221,7 @@ public:
       {
 	REAL_VALUE_TYPE rnan = dconst0;
 	rnan.cl = rvc_nan;
-	return f.fold_call_to (build_real (TREE_TYPE (f.lhs), rnan));
+	return f.fold_call_to (build_real (f.ret_type, rnan));
       }
     return NULL;
   }
@@ -2276,7 +2274,7 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    return gimple_build_assign (f.lhs, BIT_AND_EXPR,
+    return gimple_build_assign (f.lhs (), BIT_AND_EXPR,
 				gimple_call_arg (f.call, 0),
 				gimple_call_arg (f.call, 1));
   }
@@ -2371,7 +2369,7 @@ public:
 
     /* If one of the operands is all zeros, fold to zero vector.  */
     if (integer_zerop (op1) || integer_zerop (op2))
-      return f.fold_active_lanes_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_active_lanes_to (build_zero_cst (f.ret_type));
 
     /* If one of the operands is all integer -1, fold to svneg.  */
     if (integer_minus_onep (op1) || integer_minus_onep (op2))
@@ -2515,7 +2513,7 @@ public:
   fold (gimple_folder &f) const override
   {
     if (is_pfalse (gimple_call_arg (f.call, 0)))
-      return f.fold_call_to (build_zero_cst (TREE_TYPE (f.lhs)));
+      return f.fold_call_to (build_zero_cst (f.ret_type));
     return NULL;
   }
 };
@@ -2898,9 +2896,9 @@ public:
 
     /* Otherwise svreinterpret corresponds directly to a VIEW_CONVERT_EXPR
        reinterpretation.  */
-    tree rhs = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (f.lhs),
-		       gimple_call_arg (f.call, 0));
-    return gimple_build_assign (f.lhs, VIEW_CONVERT_EXPR, rhs);
+    tree rhs
+      = build1 (VIEW_CONVERT_EXPR, f.ret_type, gimple_call_arg (f.call, 0));
+    return gimple_build_assign (f.lhs (), VIEW_CONVERT_EXPR, rhs);
   }
 
   rtx
@@ -2926,7 +2924,7 @@ public:
       return NULL;
 
     /* Permute as { nelts - 1, nelts - 2, nelts - 3, ... }.  */
-    poly_int64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    poly_int64 nelts = TYPE_VECTOR_SUBPARTS (f.ret_type);
     vec_perm_builder builder (nelts, 1, 3);
     for (int i = 0; i < 3; ++i)
       builder.quick_push (nelts - i - 1);
@@ -2976,7 +2974,7 @@ public:
 
     /* svsel corresponds exactly to VEC_COND_EXPR.  */
     tree pred = f.convert_pred (f.vector_type (0), 0);
-    return gimple_build_assign (f.lhs, VEC_COND_EXPR, pred,
+    return gimple_build_assign (f.lhs (), VEC_COND_EXPR, pred,
 				gimple_call_arg (f.call, 1),
 				gimple_call_arg (f.call, 2));
   }
@@ -3014,12 +3012,12 @@ public:
        The fold routines expect the replacement statement to have the
        same lhs as the original call, so return the copy statement
        rather than the field update.  */
-    gassign *copy = gimple_build_assign (f.lhs, rhs_tuple);
+    gassign *copy = gimple_build_assign (f.lhs (), rhs_tuple);
 
     /* Get a reference to the individual vector.  */
-    tree field = tuple_type_field (TREE_TYPE (f.lhs));
+    tree field = tuple_type_field (f.ret_type);
     tree lhs_array = build3 (COMPONENT_REF, TREE_TYPE (field),
-			     unshare_expr (f.lhs), field, NULL_TREE);
+			     unshare_expr (f.lhs ()), field, NULL_TREE);
     tree lhs_vector = build4 (ARRAY_REF, TREE_TYPE (rhs_vector),
 			      lhs_array, index, NULL_TREE, NULL_TREE);
     gassign *update = gimple_build_assign (lhs_vector, rhs_vector);
@@ -3266,7 +3264,7 @@ public:
   {
     /* svtrn1: { 0, nelts, 2, nelts + 2, 4, nelts + 4, ... }
        svtrn2: as for svtrn1, but with 1 added to each index.  */
-    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (f.ret_type);
     vec_perm_builder builder (nelts, 2, 3);
     for (unsigned int i = 0; i < 3; ++i)
       {
@@ -3313,7 +3311,7 @@ public:
        and VEC_UNPACK_HI_EXPR for big-endian.  */
     bool high_p = BYTES_BIG_ENDIAN ? !m_high_p : m_high_p;
     tree_code code = high_p ? VEC_UNPACK_HI_EXPR : VEC_UNPACK_LO_EXPR;
-    return gimple_build_assign (f.lhs, code, gimple_call_arg (f.call, 0));
+    return gimple_build_assign (f.lhs (), code, gimple_call_arg (f.call, 0));
   }
 
   rtx
@@ -3377,7 +3375,7 @@ public:
   {
     /* svuzp1: { 0, 2, 4, 6, ... }
        svuzp2: { 1, 3, 5, 7, ... }.  */
-    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (f.ret_type);
     vec_perm_builder builder (nelts, 1, 3);
     for (unsigned int i = 0; i < 3; ++i)
       builder.quick_push (m_base + i * 2);
@@ -3503,7 +3501,7 @@ public:
   {
     /* svzip1: { 0, nelts, 1, nelts + 1, 2, nelts + 2, ... }
        svzip2: as for svzip1, but with nelts / 2 added to each index.  */
-    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (f.lhs));
+    poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (f.ret_type);
     poly_uint64 base = m_base * exact_div (nelts, 2);
     vec_perm_builder builder (nelts, 2, 3);
     for (unsigned int i = 0; i < 3; ++i)

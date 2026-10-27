@@ -672,14 +672,22 @@ public:
 
   gimple *fold ();
 
+  tree lhs () const;
+
   /* Where to insert extra statements that feed the final replacement.  */
   gimple_stmt_iterator *gsi;
 
   /* The call we're folding.  */
   gcall *call;
 
-  /* The result of the call, or null if none.  */
-  tree lhs;
+private:
+  /* The result of the call, or null if none.  Call lhs() instead of referring
+     to this directly.  Filled in lazily hence mutable.  */
+  mutable tree m_lhs;
+
+public:
+  /* The type that the function returns.  */
+  tree ret_type;
 
   /* The sequence of statements that should be emitted before the original
      call.  */
@@ -861,6 +869,7 @@ extern tree acle_vector_types[MAX_TUPLE_SIZE][NUM_VECTOR_TYPES + 1];
 extern tree acle_svpattern;
 extern tree acle_svprfop;
 
+tree build_var (tree);
 bool vector_cst_all_same (tree, unsigned int);
 bool is_ptrue (tree, unsigned int);
 bool is_pfalse (tree);

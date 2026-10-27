@@ -216,14 +216,6 @@ one_element_vector_type_p (tree type)
   return VECTOR_TYPE_P (type) && known_eq (TYPE_VECTOR_SUBPARTS (type), 1U);
 }
 
-tree
-build_var (tree type)
-{
-  return gimple_in_ssa_p (cfun) && is_gimple_reg_type (type)
-	   ? make_ssa_name (type)
-	   : create_tmp_var (type);
-}
-
 /* Build a call to the internal function IFN.
    Handles singleton vector arguments specially: they are cast to their
    inner element type before the function is called, and then the return value
@@ -270,11 +262,11 @@ public:
   {
     if (f.call_properties () & CP_RAISE_FP_EXCEPTIONS)
       {
-	f.assign (f.lhs, ret);
-	return build_optimization_barrier (f.lhs);
+	f.assign (f.lhs (), ret);
+	return build_optimization_barrier (f.lhs ());
       }
     else
-      return gimple_build_assign (f.lhs, ret);
+      return gimple_build_assign (f.lhs (), ret);
   }
 
   tree memory_scalar_type (const function_instance &f) const override
@@ -467,11 +459,11 @@ public:
       {
       case TYPE_signed:
       case TYPE_unsigned:
-	return gimple_build_assign (f.lhs, m_int_code, arg0, arg1, arg2);
+	return gimple_build_assign (f.lhs (), m_int_code, arg0, arg1, arg2);
       case TYPE_float:
-	return gimple_build_assign (f.lhs, m_float_code, arg0, arg1, arg2);
+	return gimple_build_assign (f.lhs (), m_float_code, arg0, arg1, arg2);
       case TYPE_poly:
-	return gimple_build_assign (f.lhs, m_poly_code, arg0, arg1, arg2);
+	return gimple_build_assign (f.lhs (), m_poly_code, arg0, arg1, arg2);
       default:
 	gcc_unreachable ();
       }
@@ -570,8 +562,8 @@ struct gimple_create : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto arg = gimple_call_arg (f.call, 0);
-    return gimple_build_assign (f.lhs, fold_build1 (VIEW_CONVERT_EXPR,
-						    TREE_TYPE (f.lhs), arg));
+    return gimple_build_assign (f.lhs (), fold_build1 (VIEW_CONVERT_EXPR,
+						       f.ret_type, arg));
   }
 };
 
@@ -583,7 +575,7 @@ struct gimple_combine : public gimple_function_base
     auto arg2 = gimple_call_arg (f.call, 1);
     auto arg_type = TREE_TYPE (arg1);
     auto elem_type = TREE_TYPE (arg_type);
-    auto ret_type = TREE_TYPE (f.lhs);
+    auto ret_type = f.ret_type;
 
     if (known_eq (TYPE_VECTOR_SUBPARTS (arg_type), 1U))
       {
@@ -594,7 +586,7 @@ struct gimple_combine : public gimple_function_base
     if (BYTES_BIG_ENDIAN)
       std::swap (arg1, arg2);
 
-    return gimple_build_assign (f.lhs,
+    return gimple_build_assign (f.lhs (),
 				build_constructor_va (ret_type, 2, NULL_TREE,
 						      arg1, NULL_TREE, arg2));
   }
@@ -606,7 +598,7 @@ struct gimple_get_lane : public gimple_function_base
   {
     auto src = gimple_call_arg (f.call, 0);
     auto lane = gimple_call_arg (f.call, 1);
-    return gimple_build_assign (f.lhs, build_lane_get (src, lane));
+    return gimple_build_assign (f.lhs (), build_lane_get (src, lane));
   }
 };
 
@@ -617,9 +609,9 @@ struct gimple_get_half : public gimple_function_base
   {
     auto src = gimple_call_arg (f.call, 0);
     auto half
-      = fold_build3 (BIT_FIELD_REF, TREE_TYPE (f.lhs), src, bitsize_int (64),
+      = fold_build3 (BIT_FIELD_REF, f.ret_type, src, bitsize_int (64),
 		     bitsize_int (high_half_p ^ BYTES_BIG_ENDIAN ? 64 : 0));
-    return gimple_build_assign (f.lhs, half);
+    return gimple_build_assign (f.lhs (), half);
   }
 };
 
@@ -630,7 +622,7 @@ struct gimple_set_lane : public gimple_function_base
     auto elem = gimple_call_arg (f.call, 0);
     auto src = gimple_call_arg (f.call, 1);
     auto lane = gimple_call_arg (f.call, 2);
-    return gimple_build_assign (f.lhs, build_lane_set (src, lane, elem));
+    return gimple_build_assign (f.lhs (), build_lane_set (src, lane, elem));
   }
 };
 
@@ -648,7 +640,7 @@ struct gimple_copy_lane : public gimple_function_base
 
     // vec1[lane1] = tmp1
     // lhs = vec1
-    return gimple_build_assign (f.lhs, build_lane_set (vec1, lane1, tmp1));
+    return gimple_build_assign (f.lhs (), build_lane_set (vec1, lane1, tmp1));
   }
 };
 
@@ -657,8 +649,8 @@ struct gimple_dup : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto elem = gimple_call_arg (f.call, 0);
-    auto ret_type = TREE_TYPE (f.lhs);
-    return gimple_build_assign (f.lhs, build_vec_dup (ret_type, elem));
+    auto ret_type = f.ret_type;
+    return gimple_build_assign (f.lhs (), build_vec_dup (ret_type, elem));
   }
 };
 
@@ -668,13 +660,13 @@ struct gimple_dup_lane : public gimple_function_base
   {
     auto vec = gimple_call_arg (f.call, 0);
     auto lane = gimple_call_arg (f.call, 1);
-    auto type = TREE_TYPE (f.lhs);
+    auto type = f.ret_type;
 
     // tmp1 = vec[lane]
     auto tmp1 = f.force_val (build_lane_get (vec, lane));
 
     // lhs = VEC_DUP (vec[lane])
-    return gimple_build_assign (f.lhs, build_vec_dup (type, tmp1));
+    return gimple_build_assign (f.lhs (), build_vec_dup (type, tmp1));
   }
 };
 
@@ -697,7 +689,7 @@ public:
 
     // tmp1 = ~rhs
     auto tmp1 = f.force_val (fold_build1 (BIT_NOT_EXPR, type, rhs));
-    return gimple_build_assign (f.lhs, this->m_code, lhs, tmp1);
+    return gimple_build_assign (f.lhs (), this->m_code, lhs, tmp1);
   }
 };
 
@@ -712,7 +704,7 @@ public:
     auto m = gimple_call_arg (f.call, 2);
 
     auto uint_type = TREE_TYPE (d);
-    auto ret_type = TREE_TYPE (f.lhs);
+    auto ret_type = f.ret_type;
 
     // Cast to unsigned integer type if necessary.
     m = f.force_val (build_cast (uint_type, m));
@@ -727,7 +719,7 @@ public:
     // tmp3 = m ^ ((m ^ n) & d)
     auto tmp3 = f.force_val (fold_build2 (BIT_XOR_EXPR, uint_type, m, tmp2));
 
-    return gimple_build_assign (f.lhs, build_cast (ret_type, tmp3));
+    return gimple_build_assign (f.lhs (), build_cast (ret_type, tmp3));
   }
 };
 
@@ -746,13 +738,13 @@ public:
     auto n = gimple_call_arg (f.call, 0);
     auto m = gimple_call_arg (f.call, 1);
     auto a = gimple_call_arg (f.call, 2);
-    auto type = TREE_TYPE (f.lhs);
+    auto type = f.ret_type;
 
     // tmp1 = n ^ m
     auto tmp1 = f.force_val (fold_build2 (BIT_XOR_EXPR, type, n, m));
 
     // lhs = (n ^ m) ^ a
-    return gimple_build_assign (f.lhs, BIT_XOR_EXPR, tmp1, a);
+    return gimple_build_assign (f.lhs (), BIT_XOR_EXPR, tmp1, a);
   }
 
   rtx expand (function_expander &e) const override
@@ -782,7 +774,7 @@ public:
     auto tmp2 = f.force_val (fold_build2 (BIT_AND_EXPR, arg_type, m, tmp1));
 
     // lhs = n ^ (m & ~a)
-    return gimple_build_assign (f.lhs, BIT_XOR_EXPR, n, tmp2);
+    return gimple_build_assign (f.lhs (), BIT_XOR_EXPR, n, tmp2);
   }
 
   rtx expand (function_expander &e) const override
@@ -809,7 +801,7 @@ public:
       fold_build2 (LROTATE_EXPR, arg_type, m, build_one_cst (arg_type)));
 
     // lhs = n ^ rotl (m, 1)
-    return gimple_build_assign (f.lhs, BIT_XOR_EXPR, n, tmp1);
+    return gimple_build_assign (f.lhs (), BIT_XOR_EXPR, n, tmp1);
   }
 
   rtx expand (function_expander &e) const override
@@ -830,13 +822,13 @@ public:
     auto n = gimple_call_arg (f.call, 0);
     auto m = gimple_call_arg (f.call, 1);
     auto imm6 = gimple_call_arg (f.call, 2);
-    auto type = TREE_TYPE (f.lhs);
+    auto type = f.ret_type;
 
     // tmp1 = n ^ m
     auto tmp1 = f.force_val (fold_build2 (BIT_XOR_EXPR, type, n, m));
 
     // lhs = rotr (n ^ m, imm6)
-    return gimple_build_assign (f.lhs, RROTATE_EXPR, tmp1, imm6);
+    return gimple_build_assign (f.lhs (), RROTATE_EXPR, tmp1, imm6);
   }
 
   rtx expand (function_expander &e) const override
@@ -858,7 +850,7 @@ public:
 
   gimple *fold (gimple_folder &f) const override
   {
-    tree lhs_type = TREE_TYPE (f.lhs);
+    tree lhs_type = f.ret_type;
     auto_vec<tree> args{};
     for (unsigned i = 0; i < gimple_call_num_args (f.call); i++)
       {
@@ -870,8 +862,8 @@ public:
 					 arg));
 	args.safe_push (arg);
       }
-    return gimple_build_assign (f.lhs, build_ifn_call (f, this->m_ifn, lhs_type,
-						       args));
+    return gimple_build_assign (f.lhs (), build_ifn_call (f, this->m_ifn,
+							  lhs_type, args));
   }
 };
 
@@ -899,7 +891,7 @@ public:
       std::swap (a, b);
 
     auto mask = this->m_mask_fn (f);
-    return gimple_build_assign (f.lhs, VEC_PERM_EXPR, a, b, mask);
+    return gimple_build_assign (f.lhs (), VEC_PERM_EXPR, a, b, mask);
   }
 };
 
@@ -924,7 +916,7 @@ public:
     auto arg_type = TREE_TYPE (a);
     gcc_assert (types_compatible_p (arg_type, TREE_TYPE (b)));
 
-    auto tuple_type = TREE_TYPE (f.lhs);
+    auto tuple_type = f.ret_type;
     auto tuple = build_var (tuple_type);
     f.assign (tuple, build_clobber (tuple_type));
     for (auto i = 0; i < 2; i++)
@@ -935,7 +927,7 @@ public:
 	build_tuple_set (f, tuple, size_int (i), permuted);
       }
 
-    return gimple_build_assign (f.lhs, tuple);
+    return gimple_build_assign (f.lhs (), tuple);
   }
 };
 
@@ -1257,9 +1249,9 @@ struct gimple_reinterpret : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto input = gimple_call_arg (f.call, 0);
-    auto ret_type = TREE_TYPE (f.lhs);
+    auto ret_type = f.ret_type;
     auto reinterpret = fold_build1 (VIEW_CONVERT_EXPR, ret_type, input);
-    return gimple_build_assign (f.lhs, reinterpret);
+    return gimple_build_assign (f.lhs (), reinterpret);
   }
 };
 
@@ -1272,9 +1264,9 @@ struct gimple_abs : public gimple_function_base
 
     if (!FLOAT_TYPE_P (arg_type))
       return gimple_build_assign (
-	f.lhs, build_cast (arg_type,
-			   f.force_val (fold_build1 (
-			     ABSU_EXPR, unsigned_type_for (arg_type), arg))));
+	f.lhs (), build_cast (arg_type, f.force_val (fold_build1 (
+					  ABSU_EXPR,
+					  unsigned_type_for (arg_type), arg))));
 
     auto ret = fold_build1 (ABS_EXPR, arg_type, arg);
     return this->maybe_optimization_barrier (f, ret);
@@ -1346,7 +1338,7 @@ struct multiply_accumulate : public gimple_function_base
     tree lhs = gimple_call_arg (f.call, 1);
     tree rhs = gimple_call_arg (f.call, 2);
     tree lane_index;
-    tree ret_type = TREE_TYPE (f.lhs);
+    tree ret_type = f.ret_type;
 
     switch (kind)
       {
@@ -1386,12 +1378,12 @@ struct multiply_accumulate : public gimple_function_base
 	acc = f.force_val (build_cast (unsigned_type, acc));
 	auto mul = f.force_val (fold_build2 (MULT_EXPR, unsigned_type, lhs, rhs));
 	auto addsub = f.force_val (fold_build2 (code, unsigned_type, acc, mul));
-	return gimple_build_assign (f.lhs, build_cast (signed_type, addsub));
+	return gimple_build_assign (f.lhs (), build_cast (signed_type, addsub));
       }
     else
       {
 	auto mul = f.force_val (fold_build2 (MULT_EXPR, ret_type, lhs, rhs));
-	return gimple_build_assign (f.lhs, code, acc, mul);
+	return gimple_build_assign (f.lhs (), code, acc, mul);
       }
   }
 };
@@ -1407,7 +1399,7 @@ struct gimple_fused_mla : public gimple_function_base
     tree lhs = gimple_call_arg (f.call, 1);
     tree rhs = gimple_call_arg (f.call, 2);
     tree lane_index;
-    tree ret_type = TREE_TYPE (f.lhs);
+    tree ret_type = f.ret_type;
 
     switch (kind)
       {
@@ -1470,10 +1462,11 @@ struct gimple_minmax : public gimple_function_base
   {
     auto lhs = gimple_call_arg (f.call, 0);
     auto rhs = gimple_call_arg (f.call, 1);
-    auto ret_type = TREE_TYPE (f.lhs);
+    auto ret_type = f.ret_type;
     if (FLOAT_TYPE_P (ret_type))
       return nullptr;
-    return gimple_build_assign (f.lhs, min_p ? MIN_EXPR : MAX_EXPR, lhs, rhs);
+    return gimple_build_assign (f.lhs (), min_p ? MIN_EXPR : MAX_EXPR, lhs,
+				rhs);
   }
 };
 
@@ -1493,14 +1486,15 @@ struct gimple_reduce_minmax : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto arg = gimple_call_arg (f.call, 0);
-    auto ret_type = TREE_TYPE (f.lhs);
+    auto ret_type = f.ret_type;
     if (FLOAT_TYPE_P (ret_type))
       return nullptr;
 
     auto_vec<tree> args{};
     args.safe_push (arg);
     auto ifn = min_p ? IFN_REDUC_MIN : IFN_REDUC_MAX;
-    return gimple_build_assign (f.lhs, build_ifn_call (f, ifn, ret_type, args));
+    return gimple_build_assign (f.lhs (),
+				build_ifn_call (f, ifn, ret_type, args));
   }
 };
 
@@ -1527,14 +1521,15 @@ struct gimple_load_store_multiple : public gimple_function_base
   {
     auto ptr = gimple_call_arg (f.call, 0);
     auto mem_type
-      = load_p ? TREE_TYPE (f.lhs) : TREE_TYPE (gimple_call_arg (f.call, 1));
+      = load_p ? f.ret_type : TREE_TYPE (gimple_call_arg (f.call, 1));
 
     /* LD1x1 and LDR are just a normal load.  */
     if (load_p && !AGGREGATE_TYPE_P (mem_type))
       {
 	if (VECTOR_TYPE_P (mem_type))
 	  aarch64_record_vector_load_arg (ptr);
-	return gimple_build_assign (f.lhs, aarch64_dereference (ptr, mem_type));
+	return gimple_build_assign (f.lhs (),
+				    aarch64_dereference (ptr, mem_type));
       }
 
     /* ST1x1 and STR are just a normal store.  */
@@ -1567,7 +1562,7 @@ public:
 
   gimple *fold (gimple_folder &f) const override
   {
-    auto type = TREE_TYPE (f.lhs);
+    auto type = f.ret_type;
     int first = first_shift_arg ();
     auto val = gimple_call_arg (f.call, first);
     auto amount = gimple_call_arg (f.call, first + 1);
@@ -1578,7 +1573,7 @@ public:
 
     /* Non-accumulating intrinsic.  */
     if (m_acc_code == ERROR_MARK)
-      return gimple_build_assign (f.lhs, shifted);
+      return gimple_build_assign (f.lhs (), shifted);
 
     /* Accumulating intrinsic.  */
     auto acc = gimple_call_arg (f.call, 0);
@@ -1595,8 +1590,8 @@ public:
       }
 
     return gimple_build_assign (
-      f.lhs, build_cast (type, f.force_val (fold_build2 (m_acc_code, utype, acc,
-							 shifted))));
+      f.lhs (), build_cast (type, f.force_val (fold_build2 (m_acc_code, utype,
+							    acc, shifted))));
   }
 };
 
@@ -1623,13 +1618,13 @@ public:
       return nullptr;
 
     if (!wi::neg_p (wcst))
-      return gimple_build_assign (f.lhs, LSHIFT_EXPR, val, amount);
+      return gimple_build_assign (f.lhs (), LSHIFT_EXPR, val, amount);
 
     /* A negative amount shifts right by its magnitude.  */
     auto rhs
       = build_uniform_cst (TREE_TYPE (amount),
 			   wide_int_to_tree (TREE_TYPE (cst), wi::abs (wcst)));
-    return gimple_build_assign (f.lhs, RSHIFT_EXPR, val, rhs);
+    return gimple_build_assign (f.lhs (), RSHIFT_EXPR, val, rhs);
   }
 };
 
@@ -1670,7 +1665,8 @@ struct gimple_load_store_interleaved : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto ptr = gimple_call_arg (f.call, 0);
-    auto tuple_type = load_p ? TREE_TYPE (f.lhs) : TREE_TYPE (gimple_call_arg (f.call, 1));
+    auto tuple_type
+      = load_p ? f.ret_type : TREE_TYPE (gimple_call_arg (f.call, 1));
     auto array_type = TREE_TYPE (tuple_type_field (tuple_type));
     auto vec_type = TREE_TYPE (array_type);
 
@@ -1688,7 +1684,7 @@ struct gimple_load_store_interleaved : public gimple_function_base
 	auto call = gimple_build_call_internal (IFN_LOAD_LANES, 1, deref);
 	gimple_seq_add_stmt_without_update (&f.stmts,call);
 	gimple_call_set_lhs (call, array);
-	return gimple_build_assign (f.lhs, build_cast (tuple_type, array));
+	return gimple_build_assign (f.lhs (), build_cast (tuple_type, array));
       }
     else
       {
@@ -1738,7 +1734,7 @@ public:
 	auto deref = aarch64_dereference (ptr, elem_type);
 	if (load_p)
 	  /* tuple[lane] = *ptr;  */
-	  return gimple_build_assign (f.lhs,
+	  return gimple_build_assign (f.lhs (),
 				      build_lane_set (tuple, index,
 						      f.force_val (deref)));
 	else
@@ -1796,7 +1792,7 @@ struct gimple_load_dup : public gimple_function_base
   gimple *fold (gimple_folder &f) const override
   {
     auto ptr = gimple_call_arg (f.call, 0);
-    auto ret_type = TREE_TYPE (f.lhs);
+    auto ret_type = f.ret_type;
     auto elem_type = this->memory_scalar_type (f);
     auto vec_count = tuple_len (ret_type);
 
@@ -1804,7 +1800,7 @@ struct gimple_load_dup : public gimple_function_base
       {
 	/* lhs = dup (*ptr)  */
 	auto load = f.force_val (aarch64_dereference (ptr, elem_type));
-	return gimple_build_assign (f.lhs, build_vec_dup (ret_type, load));
+	return gimple_build_assign (f.lhs (), build_vec_dup (ret_type, load));
       }
 
     return nullptr;
