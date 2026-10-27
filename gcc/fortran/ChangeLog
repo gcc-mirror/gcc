@@ -1,3 +1,21 @@
+2026-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128067
+	* module.cc (load_needed): Prevent scanning of empty name for
+	prefix "__".
+
+2026-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127881
+	* trans-expr.cc (conv_scalar_char_value): Fix passing of the case of
+	non-constant strings: always pass first first character by value.
+
 2026-10-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:

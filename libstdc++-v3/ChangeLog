@@ -1,3 +1,16 @@
+2026-10-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/mdspan (layout_stride::mapping::_M_check_unique):
+	Define.
+	(layout_stride::mapping(const extents_type&, span<....>)):
+	Add __glibcxx_assert on _M_check_unique.
+	* testsuite/23_containers/mdspan/layouts/stride_neg.cc:
+	Test for the new added assertions.
+	* testsuite/23_containers/mdspan/layouts/stride_debug_neg.cc:
+	New test covering cases detected only in debug mode.
+	(cherry picked from commits 1a4d8dc0d2dc045bbb93654ae66fb80276dc6690)
+	(0b3c5e87f6c5a93076227883fa2f882a4e879e63)
+
 2026-10-24  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/abi/post/hppa-linux-gnu/baseline_symbols.txt: Update.
