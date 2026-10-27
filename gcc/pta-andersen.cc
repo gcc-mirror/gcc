@@ -557,9 +557,10 @@ clear_edges_for_node (constraint_graph_t graph, unsigned int node)
     BITMAP_FREE (graph->succs[node]);
 }
 
-/* Merge GRAPH nodes FROM and TO into node TO.  */
+/* Merge GRAPH nodes FROM and TO into node TO.  Return whether TO
+   received new successor edges.  */
 
-static void
+static bool
 merge_graph_nodes (constraint_graph_t graph, unsigned int to,
 		   unsigned int from)
 {
@@ -576,15 +577,17 @@ merge_graph_nodes (constraint_graph_t graph, unsigned int to,
     }
 
   /* Merge all the successor edges.  */
+  bool new_succs = false;
   if (graph->succs[from])
     {
       if (!graph->succs[to])
 	graph->succs[to] = BITMAP_ALLOC (&pta_obstack);
-      bitmap_ior_into (graph->succs[to],
-		       graph->succs[from]);
+      new_succs = bitmap_ior_into (graph->succs[to],
+				   graph->succs[from]);
     }
 
   clear_edges_for_node (graph, from);
+  return new_succs;
 }
 
 
@@ -995,7 +998,15 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
   else
     stats.unified_vars_static++;
 
-  merge_graph_nodes (graph, to, from);
+  varinfo_t tovi = get_varinfo (to);
+  if (merge_graph_nodes (graph, to, from))
+    {
+      /* If from brings new successors and the TO solution is not a
+	 subset of FROM we have to forward the TO solution along these
+	 edges.  */
+      if (update_changed)
+	bitmap_set_bit (changed, to);
+    }
   if (merge_node_constraints (graph, to, from))
     {
       if (update_changed)
@@ -1013,7 +1024,6 @@ unify_nodes (constraint_graph_t graph, unsigned int to, unsigned int from,
     {
       /* If the solution changes because of the merging, we need to mark
 	 the variable as changed.  */
-      varinfo_t tovi = get_varinfo (to);
       if (bitmap_ior_into (tovi->solution, fromvi->solution))
 	{
 	  if (update_changed)
