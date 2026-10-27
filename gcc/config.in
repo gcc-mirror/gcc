@@ -1771,12 +1771,6 @@
 #endif
 
 
-/* Define to 1 if the system has the type `long long'. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LONG_LONG
-#endif
-
-
 /* Define to 1 if the system has the type `long long int'. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LONG_LONG_INT

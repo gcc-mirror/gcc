@@ -317,11 +317,7 @@ set_asan_shadow_offset (const char *val)
   char *endp;
 
   errno = 0;
-#ifdef HAVE_LONG_LONG
   asan_shadow_offset_value = strtoull (val, &endp, 0);
-#else
-  asan_shadow_offset_value = strtoul (val, &endp, 0);
-#endif
   if (!(*val != '\0' && *endp == '\0' && errno == 0))
     return false;
 

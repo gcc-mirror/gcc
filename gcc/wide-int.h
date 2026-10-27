@@ -1948,7 +1948,6 @@ namespace wi
   struct int_traits <unsigned long>
     : public primitive_int_traits <unsigned long, false> {};
 
-#if defined HAVE_LONG_LONG
   template <>
   struct int_traits <long long>
     : public primitive_int_traits <long long, true> {};
@@ -1956,7 +1955,6 @@ namespace wi
   template <>
   struct int_traits <unsigned long long>
     : public primitive_int_traits <unsigned long long, false> {};
-#endif
 }
 
 namespace wi

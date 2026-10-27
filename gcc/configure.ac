@@ -522,7 +522,7 @@ AC_CHECK_SIZEOF(void *)
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
 AC_CHECK_SIZEOF(long)
-AC_CHECK_TYPES([long long], [AC_CHECK_SIZEOF(long long)])
+AC_CHECK_SIZEOF(long long)
 GCC_STDINT_TYPES
 if test x"$ac_cv_c_uint64_t" = x"no" -o x"$ac_cv_c_int64_t" = x"no"; then
   AC_MSG_ERROR([uint64_t or int64_t not found])

@@ -3982,7 +3982,6 @@ asm_fprintf (FILE *file, const char *p, ...)
 
 	  case 'l':
 	    *q++ = c;
-#ifdef HAVE_LONG_LONG
 	    if (*p == 'l')
 	      {
 		*q++ = *p++;
@@ -3991,7 +3990,6 @@ asm_fprintf (FILE *file, const char *p, ...)
 		fprintf (file, buf, va_arg (argptr, long long));
 	      }
 	    else
-#endif
 	      {
 		*q++ = *p++;
 		*q = 0;

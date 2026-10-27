@@ -15,6 +15,7 @@
 #define HOST_BITS_PER_INT   (CHAR_BIT * SIZEOF_INT)
 #define HOST_BITS_PER_LONG  (CHAR_BIT * SIZEOF_LONG)
 #define HOST_BITS_PER_PTR   (CHAR_BIT * SIZEOF_VOID_P)
+#define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF_LONG_LONG)
 
 /* The string that should be inserted into a printf style format to
    indicate a "long" operand.  */
@@ -26,24 +27,6 @@
    indicate a "long long" operand.  */
 #ifndef HOST_LONG_LONG_FORMAT
 #define HOST_LONG_LONG_FORMAT "ll"
-#endif
-
-/* If HAVE_LONG_LONG and SIZEOF_LONG_LONG aren't defined, but
-   GCC_VERSION >= 3000, assume this is the second or later stage of a
-   bootstrap, we do have long long, and it's 64 bits.  (This is
-   required by C99; we do have some ports that violate that assumption
-   but they're all cross-compile-only.)  Just in case, force a
-   constraint violation if that assumption is incorrect.  */
-#if !defined HAVE_LONG_LONG
-# if GCC_VERSION >= 3000
-#  define HAVE_LONG_LONG 1
-#  define SIZEOF_LONG_LONG 8
-extern char sizeof_long_long_must_be_8[sizeof (long long) == 8 ? 1 : -1];
-# endif
-#endif
-
-#ifdef HAVE_LONG_LONG
-# define HOST_BITS_PER_LONGLONG (CHAR_BIT * SIZEOF_LONG_LONG)
 #endif
 
 /* Set HOST_WIDE_INT, this should be always 64 bits.
@@ -144,12 +127,8 @@ typedef HOST_WIDE_INT __gcc_host_wide_int__;
    for details.  */
 
 #ifdef USE_LONG_LONG_FOR_WIDEST_FAST_INT
-#  ifdef HAVE_LONG_LONG
-#    define HOST_WIDEST_FAST_INT long long
-#    define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER_LONGLONG
-#  else
-#    error "Your host said it wanted to use long long but that does not exist"
-#  endif
+#  define HOST_WIDEST_FAST_INT long long
+#  define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER_LONGLONG
 #else
 #  define HOST_WIDEST_FAST_INT long
 #  define HOST_BITS_PER_WIDEST_FAST_INT HOST_BITS_PER_LONG

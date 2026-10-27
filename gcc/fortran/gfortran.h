@@ -1135,10 +1135,8 @@ symbol_attribute;
 typedef unsigned int gfc_char_t;
 #elif HOST_BITS_PER_LONG >= 32
 typedef unsigned long gfc_char_t;
-#elif defined(HAVE_LONG_LONG) && (HOST_BITS_PER_LONGLONG >= 32)
-typedef unsigned long long gfc_char_t;
 #else
-# error "Cannot find an integer type with at least 32 bits"
+typedef unsigned long long gfc_char_t;
 #endif
 
 
