@@ -4728,6 +4728,34 @@ aarch64_general_fold_builtin (unsigned int fcode, tree type,
 	if (aarch64_fold_builtin_lane_check (args[0], args[1], args[2]))
 	  return void_node;
 	break;
+      case AARCH64_BUILTIN_crc32b:
+      case AARCH64_BUILTIN_crc32h:
+      case AARCH64_BUILTIN_crc32w:
+      case AARCH64_BUILTIN_crc32x:
+      case AARCH64_BUILTIN_crc32cb:
+      case AARCH64_BUILTIN_crc32ch:
+      case AARCH64_BUILTIN_crc32cw:
+      case AARCH64_BUILTIN_crc32cx:
+	gcc_assert (n_args == 2);
+	if (tree_fits_uhwi_p (args[0]) && tree_fits_uhwi_p (args[1]))
+	  {
+	    unsigned HOST_WIDE_INT crc = tree_to_uhwi (args[0]);
+	    unsigned HOST_WIDE_INT data = tree_to_uhwi (args[1]);
+	    unsigned short data_bits = TYPE_PRECISION (TREE_TYPE (args[1]));
+	    unsigned HOST_WIDE_INT polynomial;
+	    if (fcode == AARCH64_BUILTIN_crc32b
+		|| fcode == AARCH64_BUILTIN_crc32h
+		|| fcode == AARCH64_BUILTIN_crc32w
+		|| fcode == AARCH64_BUILTIN_crc32x)
+	      polynomial = 0x04C11DB7;
+	    else
+	      polynomial = 0x1EDC6F41;
+	    unsigned HOST_WIDE_INT res = calculate_reversed_crc (crc, data,
+								 polynomial,
+								 32, data_bits);
+	    return build_int_cstu (type, res);
+	  }
+	break;
       default:
 	break;
     }
