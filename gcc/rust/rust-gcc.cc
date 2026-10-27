@@ -2388,41 +2388,6 @@ function (tree functype, GGC::Ident name, tl::optional<GGC::Ident> asm_name,
   return decl;
 }
 
-// Create a statement that runs all deferred calls for FUNCTION.  This should
-// be a statement that looks like this in C++:
-//   finish:
-//     try { UNDEFER; } catch { CHECK_DEFER; goto finish; }
-
-tree
-function_defer_statement (tree function, tree undefer_tree, tree defer_tree,
-			  location_t location)
-{
-  if (error_operand_p (undefer_tree) || error_operand_p (defer_tree)
-      || error_operand_p (function))
-    return error_mark_node;
-
-  if (DECL_STRUCT_FUNCTION (function) == NULL)
-    push_struct_function (function);
-  else
-    push_cfun (DECL_STRUCT_FUNCTION (function));
-
-  tree stmt_list = NULL;
-  tree label = Backend::label (function, tl::nullopt, location);
-  tree label_def = label_definition_statement (label);
-  append_to_statement_list (label_def, &stmt_list);
-
-  tree jump_stmt = goto_statement (label, location);
-  tree catch_body
-    = build2 (COMPOUND_EXPR, void_type_node, defer_tree, jump_stmt);
-  catch_body = build2 (CATCH_EXPR, void_type_node, NULL, catch_body);
-  tree try_catch
-    = build2 (TRY_CATCH_EXPR, void_type_node, undefer_tree, catch_body);
-  append_to_statement_list (try_catch, &stmt_list);
-  pop_cfun ();
-
-  return stmt_list;
-}
-
 // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
 // This will only be called for a function definition.
 

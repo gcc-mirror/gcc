@@ -431,13 +431,6 @@ static const unsigned int function_in_unique_section = 1 << 3;
 tree function (tree fntype, GGC::Ident name, tl::optional<GGC::Ident> asm_name,
 	       unsigned int flags, location_t);
 
-// Create a statement that runs all deferred calls for FUNCTION.  This should
-// be a statement that looks like this in C++:
-//   finish:
-//     try { DEFER_RETURN; } catch { CHECK_DEFER; goto finish; }
-tree function_defer_statement (tree function, tree undefer, tree check_defer,
-			       location_t);
-
 // Record PARAM_VARS as the variables to use for the parameters of FUNCTION.
 // This will only be called for a function definition.  Returns true on
 // success, false on failure.
