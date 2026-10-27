@@ -213,7 +213,7 @@ static void update_block (rtx_insn *, rtx_insn *);
 static bool reorg_redirect_jump (rtx_jump_insn *, rtx);
 static void update_reg_dead_notes (rtx_insn *, rtx_insn *);
 static void fix_reg_dead_note (rtx_insn *, rtx_insn *);
-static void update_reg_unused_notes (rtx_insn *, rtx);
+static void update_reg_unused_notes (rtx_insn *, rtx_insn *);
 static void fill_simple_delay_slots (bool);
 static void fill_slots_from_thread (rtx_jump_insn *, rtx, rtx, rtx,
 				    bool, bool, bool, int,
@@ -1734,7 +1734,7 @@ fix_reg_dead_note (rtx_insn *start_insn, rtx_insn *stop_insn)
    make sure that INSN calculates as many results as OTHER_INSN does.  */
 
 static void
-update_reg_unused_notes (rtx_insn *insn, rtx other_insn)
+update_reg_unused_notes (rtx_insn *insn, rtx_insn *other_insn)
 {
   rtx link, next;
 
@@ -2274,7 +2274,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 			bool thread_if_true, bool own_thread, int slots_to_fill,
 			int *pslots_filled, vec<rtx_insn *> *delay_list)
 {
-  rtx new_thread;
+  rtx_insn *new_thread;
   struct resources opposite_needed, set, needed;
   rtx_insn *trial;
   bool lose = false;
@@ -2528,8 +2528,7 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 			     to call update_block and delete_insn.  */
 			  fix_reg_dead_note (prior_insn, insn);
 			  update_reg_unused_notes (prior_insn, new_thread);
-			  new_thread
-			    = next_active_insn (as_a<rtx_insn *> (new_thread));
+			  new_thread = next_active_insn (new_thread);
 			}
 		      break;
 		    }
@@ -2593,6 +2592,8 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 	}
     }
 
+  /* Past here the thread can be a RETURN or a label.  */
+  rtx thread_tail = new_thread;
   /* If we stopped on a branch insn that has delay slots, see if we can
      steal some of the insns in those slots.  */
   if (trial && NONJUMP_INSN_P (trial)
@@ -2602,17 +2603,17 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
       rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (trial));
       /* If this is the `true' thread, we will want to follow the jump,
 	 so we can only do this if we have taken everything up to here.  */
-      if (thread_if_true && trial == new_thread)
+      if (thread_if_true && trial == thread_tail)
 	{
 	  steal_delay_list_from_target (insn, condition, sequence,
 					delay_list, &set, &needed,
 					&opposite_needed, slots_to_fill,
 					pslots_filled, &must_annul,
-					&new_thread);
+					&thread_tail);
 	  /* If we owned the thread and are told that it branched
 	     elsewhere, make sure we own the thread at the new location.  */
-	  if (own_thread && trial != new_thread)
-	    own_thread = own_thread_p (new_thread, new_thread, false);
+	  if (own_thread && trial != thread_tail)
+	    own_thread = own_thread_p (thread_tail, thread_tail, false);
 	}
       else if (! thread_if_true)
 	steal_delay_list_from_fallthrough (insn, condition, sequence,
@@ -2628,19 +2629,19 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
      arithmetic insn after the jump insn and put the arithmetic insn in the
      delay slot.  If we can't do this, return.  */
   if (delay_list->is_empty () && likely
-      && new_thread
-      && !ANY_RETURN_P (new_thread)
-      && NONJUMP_INSN_P (new_thread)
-      && !RTX_FRAME_RELATED_P (new_thread)
-      && GET_CODE (PATTERN (new_thread)) != ASM_INPUT
-      && asm_noperands (PATTERN (new_thread)) < 0)
+      && thread_tail
+      && !ANY_RETURN_P (thread_tail)
+      && NONJUMP_INSN_P (thread_tail)
+      && !RTX_FRAME_RELATED_P (thread_tail)
+      && GET_CODE (PATTERN (thread_tail)) != ASM_INPUT
+      && asm_noperands (PATTERN (thread_tail)) < 0)
     {
       rtx dest;
       rtx src;
 
-      /* We know "new_thread" is an insn due to NONJUMP_INSN_P (new_thread)
+      /* We know "thread_tail" is an insn due to NONJUMP_INSN_P (thread_tail)
 	 above.  */
-      trial = as_a <rtx_insn *> (new_thread);
+      trial = as_a <rtx_insn *> (thread_tail);
       rtx pat = PATTERN (trial);
 
       if (!NONJUMP_INSN_P (trial)
@@ -2687,13 +2688,13 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
 	      if (trial == thread)
 		{
 		  thread = next_active_insn (thread);
-		  if (new_thread == trial)
-		    new_thread = thread;
+		  if (thread_tail == trial)
+		    thread_tail = thread;
 		}
 	      delete_related_insns (trial);
 	    }
 	  else
-	    new_thread = next_active_insn (trial);
+	    thread_tail = next_active_insn (trial);
 
 	  ninsn = own_thread ? trial : copy_delay_slot_insn (trial);
 	  if (thread_if_true)
@@ -2710,28 +2711,28 @@ fill_slots_from_thread (rtx_jump_insn *insn, rtx condition,
   /* If we are to branch into the middle of this thread, find an appropriate
      label or make a new one if none, and redirect INSN to it.  If we hit the
      end of the function, use the end-of-function label.  */
-  if (new_thread != thread)
+  if (thread_tail != thread)
     {
       rtx label;
       bool crossing = false;
 
       gcc_assert (thread_if_true);
 
-      if (new_thread
-	  && simplejump_or_return_p (new_thread)
+      if (thread_tail
+	  && simplejump_or_return_p (thread_tail)
 	  && redirect_with_delay_list_safe_p (insn,
-					      JUMP_LABEL (new_thread),
+					      JUMP_LABEL (thread_tail),
 					      *delay_list))
-	new_thread = follow_jumps (JUMP_LABEL (new_thread), insn, &crossing);
+	thread_tail = follow_jumps (JUMP_LABEL (thread_tail), insn, &crossing);
 
-      if (!new_thread)
+      if (!thread_tail)
 	label = find_end_label (simple_return_rtx);
-      else if (ANY_RETURN_P (new_thread))
-	label = find_end_label (new_thread);
-      else if (LABEL_P (new_thread))
-	label = new_thread;
+      else if (ANY_RETURN_P (thread_tail))
+	label = find_end_label (thread_tail);
+      else if (LABEL_P (thread_tail))
+	label = thread_tail;
       else
-	label = get_label_before (as_a <rtx_insn *> (new_thread),
+	label = get_label_before (as_a <rtx_insn *> (thread_tail),
 				  JUMP_LABEL (insn));
 
       if (label)
