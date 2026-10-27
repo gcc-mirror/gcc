@@ -1498,7 +1498,7 @@ mcdc027b (int a) /* conditions(1/2) false(0) */
     int v = mcdc027_inlined (a);
 
     if (v > 10) /* conditions(1/2) true(0) */
-		/* condiitions(end) */
+		/* conditions(end) */
 	x = 10;
 }
 
@@ -1512,7 +1512,7 @@ mcdc027c (int a, int b) /* conditions(1/2) false(0) */
     int v = mcdc027_inlined (a);
 
     if (v > 10 && b) /* conditions(1/4) true(0 1) false(1) */
-		     /* condiitions(end) */
+		     /* conditions(end) */
 	x = 10;
 }
 
