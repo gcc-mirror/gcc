@@ -8304,7 +8304,8 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   for (unsigned i = 0; i < num; ++i)
     {
       gimple *new_stmt;
-      tree vop[3] = { vec_oprnds[0][i], vec_oprnds[1][i], NULL_TREE };
+      tree vop[3] = { vec_oprnds[0][i], vec_oprnds[1][i],
+		      op.num_ops >= 3 ? vec_oprnds[2][i] : NULL_TREE };
       if (!vop[0] || !vop[1])
 	{
 	  tree reduc_vop = vec_oprnds[reduc_index][i];
@@ -8331,23 +8332,25 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	     yet.  */
 	  gcc_assert (!lane_reducing);
 
+	  auto_vec<tree> args (op.num_ops + (cond_fn_p ? 0 : 2));
 	  tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					  vec_in_num, vectype_in,
 					  mask_index++);
-	  gcall *call;
-	  if (code.is_internal_fn () && cond_fn_p)
+	  if (cond_fn_p)
 	    {
-	      gcc_assert (op.num_ops >= 3
-			  && internal_fn_mask_index (internal_fn (code)) == 0);
-	      vop[2] = vec_oprnds[2][i];
+	      gcc_assert (internal_fn_mask_index (internal_fn (code)) == 0);
 	      mask = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask),
 				       mask, vop[0], gsi);
-	      call = gimple_build_call_internal (cond_fn, 4, mask, vop[1],
-						 vop[2], vop[reduc_index]);
 	    }
-	  else
-	    call = gimple_build_call_internal (cond_fn, 4, mask, vop[0],
-					       vop[1], vop[reduc_index]);
+	  gcc_assert (internal_fn_mask_index (internal_fn (cond_fn)) == 0);
+	  args.quick_push (mask);
+	  for (unsigned j = cond_fn_p ? 1 : 0;
+	       j < op.num_ops - (cond_fn_p ? 1 : 0); ++j)
+	    args.quick_push (vop[j]);
+	  gcc_assert (internal_fn_else_index (internal_fn (cond_fn))
+		      == (int) args.length ());
+	  args.quick_push (vop[reduc_index]);
+	  gcall *call = gimple_build_call_internal_vec (cond_fn, args);
 	  new_temp = make_ssa_name (vec_dest, call);
 	  gimple_call_set_lhs (call, new_temp);
 	  gimple_call_set_nothrow (call, true);
@@ -8356,9 +8359,6 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	}
       else
 	{
-	  if (op.num_ops >= 3)
-	    vop[2] = vec_oprnds[2][i];
-
 	  if (masked_loop_p && mask_by_cond_expr)
 	    {
 	      tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
