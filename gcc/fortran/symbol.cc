@@ -2494,6 +2494,10 @@ static void
 find_derived_types (gfc_symbol *sym, gfc_symtree *st, const char *name,
 		    bool contained, bool stash)
 {
+  /* Visit in order so that the result does not depend on the tree shape.  */
+  if (st->left)
+    find_derived_types (sym, st->left, name, contained, stash);
+
   if (st->n.sym && st->n.sym->attr.flavor == FL_DERIVED
       && !st->n.sym->attr.is_class
       && ((contained && st->n.sym->attr.use_assoc) || !contained)
@@ -2512,9 +2516,6 @@ find_derived_types (gfc_symbol *sym, gfc_symtree *st, const char *name,
 	  sym->assoc->derived_types = st->n.sym;
 	}
     }
-
-  if (st->left)
-    find_derived_types (sym, st->left, name, contained, stash);
 
   if (st->right)
     find_derived_types (sym, st->right, name, contained, stash);

@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! PR fortran/126968
 ! Array references after components of an associate name whose type was
-! guessed wrongly ('g*_t') must follow the array spec of the real component.
+! guessed wrongly ('w*_t') must follow the array spec of the real component.
 !
 module m
   type :: leaf_t
@@ -10,7 +10,7 @@ module m
   type :: w1_t
      type(leaf_t) :: b(2)
   end type
-  type :: g_t
+  type :: w_t
      type(w1_t) :: a(4)
      integer :: v(3) = 9
      character(4) :: s(3) = 'gggg'
@@ -25,7 +25,7 @@ module m
      character(4) :: s = 'abcd'
      integer :: m(2,2) = reshape ([1, 2, 3, 4], [2, 2])
   end type
-  type :: g2_t
+  type :: w2_t
      integer :: w = 9
      character(4) :: t = 'gggg'
      class(leaf_t), allocatable :: c

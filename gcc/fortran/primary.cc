@@ -2173,6 +2173,99 @@ is_inquiry_ref (const char *name, gfc_ref **ref)
 }
 
 
+/* Skip any parenthesized or bracketed groups at the current locus.  */
+
+static void
+skip_ref_groups (void)
+{
+  for (;;)
+    {
+      gfc_gobble_whitespace ();
+      gfc_char_t c = gfc_peek_char ();
+      if (c != '(' && c != '[')
+	return;
+
+      int depth = 0;
+      gfc_char_t quote = ' ';
+      do
+	{
+	  c = gfc_next_char_literal (quote == ' ' ? NONSTRING
+						  : INSTRING_NOWARN);
+	  if (c == '\n')
+	    return;
+	  if (quote != ' ')
+	    {
+	      if (c == quote)
+		quote = ' ';
+	    }
+	  else if (c == '\'' || c == '"')
+	    quote = c;
+	  else if (c == '(' || c == '[')
+	    depth++;
+	  else if (c == ')' || c == ']')
+	    depth--;
+	}
+      while (depth > 0);
+    }
+}
+
+
+/* Return true if the component references at the current locus can be
+   followed starting from derived type DT.  The locus is not changed.  */
+
+static bool
+inferred_type_chain_ok (gfc_symbol *dt)
+{
+  char name[GFC_MAX_SYMBOL_LEN + 1];
+  locus old_loc = gfc_current_locus;
+  bool ok = true;
+
+  while (gfc_match_name (name) == MATCH_YES)
+    {
+      gfc_component *c = gfc_find_component (dt, name, true, true, NULL);
+      if (!c)
+	{
+	  ok = dt->f2k_derived
+	       && gfc_find_typebound_proc (dt, NULL, name, true, NULL);
+	  break;
+	}
+
+      /* A subscript needs an array, a substring or a procedure pointer.  */
+      gfc_gobble_whitespace ();
+      if (gfc_peek_ascii_char () == '('
+	  && !c->as && c->ts.type != BT_CHARACTER && !c->attr.proc_pointer
+	  && !(c->ts.type == BT_CLASS && c->attr.class_ok
+	       && CLASS_DATA (c)->as))
+	{
+	  ok = false;
+	  break;
+	}
+      skip_ref_groups ();
+
+      if (gfc_match_char ('%') != MATCH_YES)
+	break;
+
+      if (c->ts.type == BT_DERIVED)
+	dt = c->ts.u.derived;
+      else if (c->ts.type == BT_CLASS)
+	{
+	  if (!c->attr.class_ok || !CLASS_DATA (c))
+	    break;
+	  dt = CLASS_DATA (c)->ts.u.derived;
+	}
+      else
+	{
+	  ok = gfc_match_name (name) == MATCH_YES
+	       && is_inquiry_ref (name, NULL);
+	  break;
+	}
+    }
+
+  gfc_current_locus = old_loc;
+  return ok;
+}
+
+
 /* Check to see if functions in operator expressions can be resolved now.  */
 
 static bool
@@ -2456,6 +2549,7 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
     {
       bool sym_present, resolved = false;
       gfc_symbol *tgt_sym;
+      int ndt;
 
       sym_present = tgt_expr && tgt_expr->symtree && tgt_expr->symtree->n.sym;
       tgt_sym = sym_present ? tgt_expr->symtree->n.sym : NULL;
@@ -2492,15 +2586,23 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
 	      || (!resolved && tgt_expr->expr_type == EXPR_OP))
 	  && (sym->ts.type == BT_UNKNOWN
 	      || (inferred_type && sym->ts.type != BT_COMPLEX))
-	  && gfc_find_derived_types (sym, gfc_current_ns, name, true))
+	  && (ndt = gfc_find_derived_types (sym, gfc_current_ns, name, true)))
 	{
 	  sym->assoc->inferred_type = 1;
-	  /* The first returned type is as good as any at this stage. The final
-	     determination is made in 'gfc_fixup_inferred_type_refs'*/
+	  /* Pick a candidate type for now. The final determination is made in
+	     'gfc_fixup_inferred_type_refs'.  Prefer the first candidate that
+	     has the whole component chain.  */
 	  gfc_symbol **dts = &sym->assoc->derived_types;
+	  gfc_symbol *dt = *dts;
+	  for (gfc_symbol *cand = *dts; cand && ndt-- > 0; cand = cand->dt_next)
+	    if (inferred_type_chain_ok (cand))
+	      {
+		dt = cand;
+		break;
+	      }
 	  tgt_expr->ts.type = BT_DERIVED;
 	  tgt_expr->ts.kind = 0;
-	  tgt_expr->ts.u.derived = *dts;
+	  tgt_expr->ts.u.derived = dt;
 	  sym->ts = tgt_expr->ts;
 	  primary->ts = sym->ts;
 	  /* Delete the dt list even if this process has to be done again for

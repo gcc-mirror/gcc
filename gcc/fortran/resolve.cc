@@ -7048,6 +7048,21 @@ fixup_inferred_component_array_ref (gfc_expr *e, gfc_component *c,
 	/* Leave the array ref of a scalar to find_array_spec to diagnose.  */
 	ref->u.ar.as = NULL;
     }
+  else if (as && as->rank == 1 && ref && ref->type == REF_SUBSTRING)
+    {
+      /* An array section misidentified as a substring.  */
+      gfc_expr *start = ref->u.ss.start;
+      gfc_expr *end = ref->u.ss.end;
+      memset (&ref->u, 0, sizeof (ref->u));
+      ref->type = REF_ARRAY;
+      ref->u.ar.type = AR_SECTION;
+      ref->u.ar.dimen = 1;
+      ref->u.ar.dimen_type[0] = DIMEN_RANGE;
+      ref->u.ar.start[0] = start;
+      ref->u.ar.end[0] = end;
+      ref->u.ar.as = as;
+      ref->u.ar.where = e->where;
+    }
   else if (as)
     {
       /* Supply the full array ref of a component guessed to be scalar.  */
