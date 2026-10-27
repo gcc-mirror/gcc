@@ -47,31 +47,25 @@ public:
 	unsigned char c = in[i];
 
 	// https://stackoverflow.com/questions/28868367/getting-the-high-part-of-64-bit-integer-multiplication
+	// modified since a is sub-32-bit
 	uint64_t a = prime128Lower;
 	uint64_t b = buf[1];
 
-	uint64_t a_lo = (uint32_t) a;
-	uint64_t a_hi = a >> 32;
 	uint64_t b_lo = (uint32_t) b;
 	uint64_t b_hi = b >> 32;
 
-	uint64_t a_x_b_hi = a_hi * b_hi;
-	uint64_t a_x_b_mid = a_hi * b_lo;
-	uint64_t b_x_a_mid = b_hi * a_lo;
-	uint64_t a_x_b_lo = a_lo * b_lo;
+	uint64_t a_x_b_mid = a * b_hi;
+	uint64_t a_x_b_lo = a * b_lo;
 
 	uint64_t carry_bit
-	  = ((uint64_t) (uint32_t) a_x_b_mid + (uint64_t) (uint32_t) b_x_a_mid
-	     + (a_x_b_lo >> 32))
-	    >> 32;
+	  = ((uint64_t) (uint32_t) a_x_b_mid + (a_x_b_lo >> 32)) >> 32;
 
-	uint64_t multhi
-	  = a_x_b_hi + (a_x_b_mid >> 32) + (b_x_a_mid >> 32) + carry_bit;
+	uint64_t multhi = (a_x_b_mid >> 32) + carry_bit;
 
 	uint64_t s0 = multhi;		      // high
 	uint64_t s1 = prime128Lower * buf[1]; // low
 
-	s0 += buf[1] << (prime128Shift + prime128Lower * buf[0]);
+	s0 += (buf[1] << prime128Shift) + prime128Lower * buf[0];
 
 	// Update the values
 	buf[1] = s1;
