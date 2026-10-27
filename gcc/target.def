@@ -1662,6 +1662,16 @@ DEFHOOK
 "Return number of threads in SIMT thread group on the target.",
 int, (void), NULL)
 
+DEFHOOK
+(can_duplicate_calls,
+"Return false if the current function may be executed in SIMT fashion,\n\
+with the threads of a SIMT thread group executing both arms of a divergent\n\
+branch in turn.  A call that the threads must make together, such as an\n\
+OpenMP barrier or a function that uses cross-lane operations, must then not\n\
+be duplicated into the arms of a branch, because the group would make it once\n\
+for each arm.  The default returns true.",
+bool, (void), hook_bool_void_true)
+
 /* Allow the target to pad stack variables.  */
 DEFHOOK
 (stack_variable_padding,

@@ -341,6 +341,7 @@ extern bool GOMP_sections_end_cancel (void);
 extern bool GOMP_single_start (void);
 extern void *GOMP_single_copy_start (void);
 extern void GOMP_single_copy_end (void *);
+extern void *GOMP_single_copy_wait (void *);
 
 /* scope.c */
 

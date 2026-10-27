@@ -6374,6 +6374,44 @@ gimple_split_block_before_cond_jump (basic_block bb)
 }
 
 
+/* Return true if the call G must not be duplicated into the arms of a
+   branch because the current function may be executed SIMT-fashion: the
+   threads of a SIMT thread group execute both arms of a divergent branch in
+   turn, so a call that the threads must make together (a libgomp barrier,
+   work-sharing or SINGLE call, or any function that uses cross-lane
+   operations) would be made once per arm.  Internal functions and ordinary
+   builtins are exempt.  */
+
+static bool
+simt_no_duplicate_call_p (const gimple *g)
+{
+  if (gimple_call_internal_p (g))
+    return false;
+  tree fndecl = gimple_call_fndecl (g);
+  if (fndecl && fndecl_built_in_p (fndecl, BUILT_IN_NORMAL))
+    {
+      const char *name = IDENTIFIER_POINTER (DECL_NAME (fndecl));
+      if (!startswith (name, "__builtin_GOMP_")
+	  && !startswith (name, "__builtin_GOACC_"))
+	return false;
+    }
+  if (!targetm.simt.can_duplicate_calls ())
+    return true;
+#ifndef ACCEL_COMPILER
+  /* The host compiler optimizes offloaded code before it is streamed to
+     the offload compiler, which uses SIMT only in the SIMT offload modes.  */
+  if (ENABLE_OFFLOADING && current_function_decl
+      && (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT_DIRECTED
+	  || param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT))
+    {
+      cgraph_node *node = cgraph_node::get (current_function_decl);
+      if (node && node->offloadable)
+	return true;
+    }
+#endif
+  return false;
+}
+
 /* Return true if basic_block can be duplicated.  */
 
 static bool
@@ -6420,6 +6458,9 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_REDUCE)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_IDX)))
+	return false;
+
+      if (is_gimple_call (g) && simt_no_duplicate_call_p (g))
 	return false;
     }
 

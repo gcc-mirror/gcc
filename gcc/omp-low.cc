@@ -9601,6 +9601,34 @@ lower_omp_single_simple (gomp_single *single_stmt, gimple_seq *pre_p)
 	GOMP_barrier ();
       }
 
+  In "simt" offload mode each lane of a wavefront is a thread, and a lane
+  cannot wait for another lane of its own wavefront, so the threads that
+  don't execute BODY cannot wait for it inside GOMP_single_copy_start.
+  Instead emit:
+
+      {
+	copyout_p = NULL;
+	if (GOMP_single_start ())
+	  {
+	    BODY;
+	    copyout.a = a;
+	    copyout.b = b;
+	    copyout.c = c;
+	    copyout_p = &copyout;
+	  }
+	if ((copyin_p = GOMP_single_copy_wait (copyout_p)) != NULL)
+	  {
+	    a = copyin_p->a;
+	    b = copyin_p->b;
+	    c = copyin_p->c;
+	  }
+	GOMP_barrier ();
+      }
+
+  The test after GOMP_single_copy_wait must depend only on its result, not
+  on COPYOUT_P, or jump threading duplicates the call into both arms of the
+  first IF, and a wavefront that executes both arms calls it twice.
+
   FIXME.  It may be better to delay expanding the logic of this until
   pass_expand_omp.  The expanded logic may make the job more difficult
   to a synchronization analysis pass.  */
@@ -9617,6 +9645,48 @@ lower_omp_single_copy (gomp_single *single_stmt, gimple_seq *pre_p,
 
   ptr_type = build_pointer_type (ctx->record_type);
   ctx->receiver_decl = create_tmp_var (ptr_type, ".omp_copy_i");
+
+  if (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT
+      && omp_maybe_offloaded_ctx (ctx))
+    {
+      tree copyout_p = create_tmp_var (ptr_type, ".omp_copy_p");
+      gimplify_assign (copyout_p, build_int_cst (ptr_type, 0), pre_p);
+
+      l0 = create_artificial_label (loc);
+      l1 = create_artificial_label (loc);
+      l2 = create_artificial_label (loc);
+
+      bfn_decl = builtin_decl_explicit (BUILT_IN_GOMP_SINGLE_START);
+      t = build_call_expr_loc (loc, bfn_decl, 0);
+      t = build3 (COND_EXPR, void_type_node, t,
+		  build_and_jump (&l0), build_and_jump (&l1));
+      gimplify_and_add (t, pre_p);
+
+      gimple_seq_add_stmt (pre_p, gimple_build_label (l0));
+      gimple_seq_add_seq (pre_p, gimple_omp_body (single_stmt));
+      copyin_seq = NULL;
+      lower_copyprivate_clauses (gimple_omp_single_clauses (single_stmt),
+				 pre_p, &copyin_seq, ctx);
+      t = build_fold_addr_expr_loc (loc, ctx->sender_decl);
+      gimplify_assign (copyout_p, t, pre_p);
+
+      gimple_seq_add_stmt (pre_p, gimple_build_label (l1));
+      bfn_decl = builtin_decl_explicit (BUILT_IN_GOMP_SINGLE_COPY_WAIT);
+      t = build_call_expr_loc (loc, bfn_decl, 1, copyout_p);
+      t = fold_convert_loc (loc, ptr_type, t);
+      gimplify_assign (ctx->receiver_decl, t, pre_p);
+
+      l0 = create_artificial_label (loc);
+      t = build2 (EQ_EXPR, boolean_type_node, ctx->receiver_decl,
+		  build_int_cst (ptr_type, 0));
+      t = build3 (COND_EXPR, void_type_node, t,
+		  build_and_jump (&l2), build_and_jump (&l0));
+      gimplify_and_add (t, pre_p);
+      gimple_seq_add_stmt (pre_p, gimple_build_label (l0));
+      gimple_seq_add_seq (pre_p, copyin_seq);
+      gimple_seq_add_stmt (pre_p, gimple_build_label (l2));
+      return;
+    }
 
   l0 = create_artificial_label (loc);
   l1 = create_artificial_label (loc);

@@ -484,6 +484,7 @@ GOMP_6.0.1 {
 
 GOMP_6.0.2 {
   global:
+	GOMP_single_copy_wait;
 	GOMP_has_masked_thread_num;
 	GOMP_loop_static_worksharing;
 	GOMP_distribute_static_worksharing;

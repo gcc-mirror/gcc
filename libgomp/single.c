@@ -150,3 +150,34 @@ GOMP_single_copy_end (void *data)
 
   gomp_work_share_end_nowait ();
 }
+
+/* This routine is called by every thread at the end of a SINGLE construct
+   with a COPYPRIVATE clause, when the construct was compiled for "simt"
+   offload mode.  There GOMP_single_start chooses the thread that executes
+   the body, because a lane can't wait for another lane of its own
+   wavefront in GOMP_single_copy_start.  DATA is the copyout structure in
+   the thread that executed the body, and NULL in every other thread.
+   Returns NULL in the thread that executed the body, and its copyout
+   structure in every other thread.  */
+
+void *
+GOMP_single_copy_wait (void *data)
+{
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  void *ret;
+
+  if (team == NULL)
+    return NULL;
+
+  if (gomp_work_share_start (0))
+    gomp_work_share_init_done ();
+
+  if (data != NULL)
+    thr->ts.work_share->copyprivate = data;
+  gomp_team_barrier_wait (&team->barrier, thr->ts.team_id);
+
+  ret = thr->ts.work_share->copyprivate;
+  gomp_work_share_end_nowait ();
+  return data != NULL ? NULL : ret;
+}

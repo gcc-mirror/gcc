@@ -6635,6 +6635,15 @@ is, the more desirable it is to use it.
 Return number of threads in SIMT thread group on the target.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_SIMT_CAN_DUPLICATE_CALLS (void)
+Return false if the current function may be executed in SIMT fashion,
+with the threads of a SIMT thread group executing both arms of a divergent
+branch in turn.  A call that the threads must make together, such as an
+OpenMP barrier or a function that uses cross-lane operations, must then not
+be duplicated into the arms of a branch, because the group would make it once
+for each arm.  The default returns true.
+@end deftypefn
+
 @deftypefn {Target Hook} int TARGET_OMP_DEVICE_KIND_ARCH_ISA (enum omp_device_kind_arch_isa @var{trait}, const char *@var{name})
 Return 1 if @var{trait} @var{name} is present in the OpenMP context's
 device trait set, return 0 if not present in any OpenMP context in the

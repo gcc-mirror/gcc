@@ -4366,6 +4366,8 @@ address;  but often a machine-dependent strategy can generate better code.
 
 @hook TARGET_SIMT_VF
 
+@hook TARGET_SIMT_CAN_DUPLICATE_CALLS
+
 @hook TARGET_OMP_DEVICE_KIND_ARCH_ISA
 
 @hook TARGET_GOACC_VALIDATE_DIMS

@@ -8680,6 +8680,11 @@ nvptx_asm_output_def_from_decls (FILE *stream, tree name,
 #undef TARGET_SIMT_VF
 #define TARGET_SIMT_VF nvptx_simt_vf
 
+/* All code may run SIMT-fashion: the threads of a warp execute both arms of
+   a divergent branch in turn.  */
+#undef TARGET_SIMT_CAN_DUPLICATE_CALLS
+#define TARGET_SIMT_CAN_DUPLICATE_CALLS hook_bool_void_false
+
 #undef TARGET_OMP_DEVICE_KIND_ARCH_ISA
 #define TARGET_OMP_DEVICE_KIND_ARCH_ISA nvptx_omp_device_kind_arch_isa
 

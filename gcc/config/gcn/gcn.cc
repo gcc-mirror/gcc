@@ -6419,6 +6419,15 @@ gcn_simt_vf (void)
   return 1;
 }
 
+/* Implement TARGET_SIMT_CAN_DUPLICATE_CALLS.  In SIMT mode both arms of a
+   divergent branch are executed in turn by the wavefront.  */
+
+static bool
+gcn_simt_can_duplicate_calls (void)
+{
+  return !flag_simt_mode;
+}
+
 /* Implement TARGET_STACK_VARIABLE_PADDING.  */
 
 poly_uint64
@@ -8994,6 +9003,8 @@ gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
 #define TARGET_SIMD_CLONE_USABLE gcn_simd_clone_usable
 #undef  TARGET_SIMT_VF
 #define TARGET_SIMT_VF gcn_simt_vf
+#undef  TARGET_SIMT_CAN_DUPLICATE_CALLS
+#define TARGET_SIMT_CAN_DUPLICATE_CALLS gcn_simt_can_duplicate_calls
 #undef  TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P \
   gcn_small_register_classes_for_mode_p
