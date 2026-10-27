@@ -1903,7 +1903,8 @@
   /* If the source is a suitably extended subreg, then this is just
      a simple move.  */
   if (SUBREG_P (operands[1]) && SUBREG_PROMOTED_VAR_P (operands[1])
-      && SUBREG_PROMOTED_UNSIGNED_P (operands[1]))
+      && SUBREG_PROMOTED_UNSIGNED_P (operands[1])
+      && GET_MODE (SUBREG_REG (operands[1])) == <GPR:MODE>mode)
     {
       emit_insn (gen_mov<GPR:mode> (operands[0], SUBREG_REG (operands[1])));
       DONE;

@@ -335,8 +335,9 @@
   [(set (match_dup 4) (if_then_else:X (ne:X (match_dup 1) (const_int 0))
 				      (match_dup 3)
 				      (const_int 0)))
-   (set (match_dup 0) (any_shift_rotate:X (match_dup 2) (subreg:QI (match_dup 4) 0)))]
-  "operands[3] = gen_lowpart (word_mode, operands[3]);")
+   (set (match_dup 0) (any_shift_rotate:X (match_dup 2) (match_dup 5)))]
+  "operands[3] = gen_lowpart (word_mode, operands[3]);
+   operands[5] = gen_lowpart (QImode, operands[4]);")
 
 ;; AND is special as the czero doesn't produce the neutral operand.  It
 ;; would be a natural 4->3 split, but combine doesn't support that, so

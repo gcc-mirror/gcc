@@ -310,14 +310,15 @@
 ;; bit of extra help for combine (i.e., the below split), we end up emitting
 ;; not/srai/and instead of combining the not into an andn.
 (define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(and:DI (neg:DI (ge:DI (match_operand:DI 1 "register_operand")
-			       (const_int 0)))
-		(match_operand:DI 2 "register_operand")))
-   (clobber (match_operand:DI 3 "register_operand"))]
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (neg:X (ge:X (match_operand:DI 1 "register_operand")
+			    (const_int 0)))
+	       (match_operand:X 2 "register_operand")))
+   (clobber (match_operand:X 3 "register_operand"))]
   "TARGET_ZBB || TARGET_ZBKB"
-  [(set (match_dup 3) (ashiftrt:DI (match_dup 1) (const_int 63)))
-   (set (match_dup 0) (and:DI (not:DI (match_dup 3)) (match_dup 2)))])
+  [(set (match_dup 3) (ashiftrt:X (match_dup 1) (match_dup 4)))
+   (set (match_dup 0) (and:X (not:X (match_dup 3)) (match_dup 2)))]
+  { operands[4] = GEN_INT (BITS_PER_WORD - 1); })
 
 (define_insn "*xor_not<mode>"
   [(set (match_operand:X 0 "register_operand" "=r")
