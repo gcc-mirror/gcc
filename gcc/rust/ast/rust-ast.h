@@ -28,6 +28,7 @@
 #include "rust-keyword-values.h"
 #include "rust-cloneable.h"
 #include "rust-ast-identifier.h"
+#include "rust-util-path.h"
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
@@ -410,6 +411,12 @@ public:
   const SimplePathSegment &get_final_segment () const
   {
     return segments.back ();
+  }
+
+  UtilPath<SimplePathSegment> as_util_path () const
+  {
+    return UtilPath<SimplePathSegment> (get_segments (),
+					has_opening_scope_resolution ());
   }
 };
 

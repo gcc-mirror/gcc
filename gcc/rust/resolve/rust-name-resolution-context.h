@@ -26,6 +26,7 @@
 #include "rust-stacked-contexts.h"
 #include "rust-item.h"
 #include "rust-name-resolution.h"
+#include "rust-util-path.h"
 
 namespace Rust {
 namespace Resolver2_0 {
@@ -686,12 +687,12 @@ public:
     ResolutionBuilder (NameResolutionContext &ctx) : ctx (&ctx) {}
 
     template <typename S>
-    void set_path (const std::vector<S> &path_segments, NodeId node_id,
-		   bool has_opening_scope)
+    void set_path (const UtilPath<S> &util_path, NodeId node_id)
     {
-      path = ResolutionPath (path_segments, node_id);
+      path = ResolutionPath (util_path.get_segments (),
+			     util_path.has_opening_scope (), node_id);
       mode = ResolutionMode::Normal;
-      if (has_opening_scope)
+      if (util_path.has_opening_scope ())
 	{
 	  if (get_rust_edition () == Edition::E2015)
 	    mode = ResolutionMode::FromRoot;
@@ -702,30 +703,28 @@ public:
     }
 
     template <typename S>
-    void set_path (const std::vector<S> &path_segments, NodeId node_id,
+    void set_path (const UtilPath<S> &util_path, NodeId node_id,
 		   ResolutionMode mode)
     {
-      path = ResolutionPath (path_segments, node_id);
+      path = ResolutionPath (util_path.get_segments (),
+			     util_path.has_opening_scope (), node_id);
       this->mode = mode;
       has_path_set = true;
     }
 
     void set_path (const AST::SimplePath &path)
     {
-      set_path (path.get_segments (), path.get_node_id (),
-		path.has_opening_scope_resolution ());
+      set_path (path.as_util_path (), path.get_node_id ());
     }
 
     void set_path (const AST::PathInExpression &path)
     {
-      set_path (path.get_segments (), path.get_node_id (),
-		path.opening_scope_resolution ());
+      set_path (path.as_util_path (), path.get_node_id ());
     }
 
     void set_path (const AST::TypePath &path)
     {
-      set_path (path.get_segments (), path.get_node_id (),
-		path.has_opening_scope_resolution_op ());
+      set_path (path.as_util_path (), path.get_node_id ());
     }
 
     void set_mode (ResolutionMode mode) { this->mode = mode; }
@@ -786,12 +785,12 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const std::vector<S> &path_segments, ResolutionMode mode,
+  resolve_path (const UtilPath<S> &path, ResolutionMode mode,
 		tl::optional<std::vector<Error> &> collect_errors,
 		Namespace ns_first, Args... ns_args)
   {
     ResolutionBuilder builder (*this);
-    builder.set_path (path_segments, UNKNOWN_NODEID, mode);
+    builder.set_path (path, UNKNOWN_NODEID, mode);
     builder.add_namespaces (ns_first, ns_args...);
     builder.set_collect_errors (collect_errors);
 
@@ -800,14 +799,13 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const std::vector<S> &path_segments,
-		bool has_opening_scope_resolution,
+  resolve_path (const UtilPath<S> &path,
 		tl::optional<std::vector<Error> &> collect_errors,
 		Namespace ns_first, Args... ns_args)
   {
     ResolutionBuilder builder (*this);
-    builder.set_path (path_segments, UNKNOWN_NODEID,
-		      has_opening_scope_resolution);
+    builder.set_path (path.get_segments (), path.has_opening_scope (),
+		      UNKNOWN_NODEID);
     builder.add_namespaces (ns_first, ns_args...);
     builder.set_collect_errors (collect_errors);
 
@@ -816,13 +814,10 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const std::vector<S> &path_segments,
-		bool has_opening_scope_resolution, Namespace ns_first,
-		Args... ns_args)
+  resolve_path (const UtilPath<S> &path, Namespace ns_first, Args... ns_args)
   {
     ResolutionBuilder builder (*this);
-    builder.set_path (path_segments, UNKNOWN_NODEID,
-		      has_opening_scope_resolution);
+    builder.set_path (path, UNKNOWN_NODEID);
     builder.add_namespaces (ns_first, ns_args...);
 
     return builder.resolve ();
@@ -830,11 +825,11 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const std::vector<S> &path_segments, ResolutionMode mode,
+  resolve_path (const UtilPath<S> &path, ResolutionMode mode,
 		Namespace ns_first, Args... ns_args)
   {
     ResolutionBuilder builder (*this);
-    builder.set_path (path_segments, UNKNOWN_NODEID, mode);
+    builder.set_path (path, UNKNOWN_NODEID, mode);
     builder.add_namespaces (ns_first, ns_args...);
 
     return builder.resolve ();
@@ -844,26 +839,29 @@ public:
   tl::optional<NamespacedDefinition> resolve_path (const AST::SimplePath &path,
 						   Args &&...args)
   {
-    return resolve_path (path.get_segments (),
-			 path.has_opening_scope_resolution (),
-			 std::forward<Args> (args)...);
+    auto util_path
+      = UtilPath<AST::SimplePathSegment> (path.get_segments (),
+					  path.has_opening_scope_resolution ());
+    return resolve_path (util_path, std::forward<Args> (args)...);
   }
 
   template <typename... Args>
   tl::optional<NamespacedDefinition>
   resolve_path (const AST::PathInExpression &path, Args &&...args)
   {
-    return resolve_path (path.get_segments (), path.opening_scope_resolution (),
-			 std::forward<Args> (args)...);
+    auto util_path
+      = UtilPath<AST::PathExprSegment> (path.get_segments (),
+					path.opening_scope_resolution ());
+    return resolve_path (util_path, std::forward<Args> (args)...);
   }
 
   template <typename... Args>
   tl::optional<NamespacedDefinition> resolve_path (const AST::TypePath &path,
 						   Args &&...args)
   {
-    return resolve_path (path.get_segments (),
-			 path.has_opening_scope_resolution_op (),
-			 std::forward<Args> (args)...);
+    auto util_path = UtilPath<std::unique_ptr<AST::TypePathSegment>> (
+      path.get_segments (), path.has_opening_scope_resolution_op ());
+    return resolve_path (util_path, std::forward<Args> (args)...);
   }
 
   /*

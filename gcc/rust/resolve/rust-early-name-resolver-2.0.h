@@ -221,6 +221,7 @@ private:
   resolve_path_in_all_ns (const P &path)
   {
     auto &segments = path.get_segments ();
+    bool opening_scope_resolution = path.has_opening_scope_resolution ();
     auto mode = import_resolution_mode (path);
 
     std::vector<NameResolutionContext::NamespacedDefinition> resolved;
@@ -234,11 +235,15 @@ private:
 	  resolved.emplace_back (new_def);
 	};
 
-    ctx.resolve_path (segments, mode, value_errors, Namespace::Values)
+    auto util_path = UtilPath<
+      typename std::remove_reference_t<decltype (segments)>::value_type> (
+      segments, opening_scope_resolution);
+
+    ctx.resolve_path (util_path, mode, value_errors, Namespace::Values)
       .map (resolved_fn);
-    ctx.resolve_path (segments, mode, type_errors, Namespace::Types)
+    ctx.resolve_path (util_path, mode, type_errors, Namespace::Types)
       .map (resolved_fn);
-    ctx.resolve_path (segments, mode, macro_errors, Namespace::Macros)
+    ctx.resolve_path (util_path, mode, macro_errors, Namespace::Macros)
       .map (resolved_fn);
 
     if (!value_errors.empty () && !type_errors.empty ()

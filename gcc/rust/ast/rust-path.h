@@ -811,6 +811,12 @@ public:
     return Expr::Kind::PathInExpression;
   }
 
+  UtilPath<PathExprSegment> as_util_path () const
+  {
+    return UtilPath<PathExprSegment> (get_segments (),
+				      has_opening_scope_resolution);
+  }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -1369,6 +1375,12 @@ public:
   size_t get_num_segments () const { return segments.size (); }
 
   Type::Kind get_type_kind () const override { return Type::Kind::TypePath; }
+
+  UtilPath<std::unique_ptr<TypePathSegment>> as_util_path () const
+  {
+    return UtilPath<std::unique_ptr<TypePathSegment>> (
+      get_segments (), has_opening_scope_resolution_op ());
+  }
 };
 
 struct QualifiedPathType

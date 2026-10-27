@@ -111,9 +111,12 @@ Early::import_resolution_mode (const AST::SimplePath &path)
 bool
 Early::resolve_glob_import (NodeId use_dec_id, TopLevel::ImportKind &&glob)
 {
-  auto resolved = ctx.resolve_path (glob.to_resolve.get_segments (),
-				    import_resolution_mode (glob.to_resolve),
-				    Namespace::Types);
+  auto path = UtilPath<AST::SimplePathSegment> (
+    glob.to_resolve.get_segments (),
+    glob.to_resolve.has_opening_scope_resolution ());
+  auto resolved
+    = ctx.resolve_path (path, import_resolution_mode (glob.to_resolve),
+			Namespace::Types);
   if (!resolved.has_value ())
     return false;
 
