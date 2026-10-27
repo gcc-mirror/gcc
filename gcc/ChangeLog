@@ -1,3 +1,241 @@
+2026-10-26  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR bootstrap/128182
+	* tree-ssa-sccvn.h (class vn_driver): Add m_exec_idom.
+	* tree-ssa-sccvn.cc (do_rpo_vn_1): Take the table of executable
+	dominators from the caller and do not free it.
+	(vn_driver::vn_driver): Allocate it.
+	(vn_driver::~vn_driver): Free it.
+	(vn_driver::finalize): Point vn_bb_to_rpo and vn_exec_idom at the
+	walk's tables while cleaning up.
+
+2026-10-26  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/128143
+	* gimple-match-exports.cc (factor_operation_ok): Move the
+	type matching code before the function check. Also don't
+	return early for some builtin functions.
+
+2026-10-26  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/128123
+	* fold-const.cc (combine_comparisons): Take new argument,
+	inner_truth_type and look to see if it is signed boolean
+	and support that for LT/LE/GT/GE.
+	(fold_truth_andor_1): Update call to combine_comparisons.
+	* fold-const.h (combine_comparisons): Add new argument.
+	* gimple-fold.cc (and_comparisons_1): Update call to
+	combine_comparisons.
+	(or_comparisons_1): Likewise.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Likewise.
+	* tree-ssa-phiopt.cc (comparison_combine): Likewise.
+	* match.pd (`(CMP) OP (CMP)`): Update call to
+	combine_comparisons.
+
+2026-10-26  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* match.pd (vec_perm (vec_perm) merges): When the outer operand
+	is one of the inner permute's inputs, take the inner permute's
+	elements of it from the outer operand.
+
+2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128142
+	* match.pd ((x + y) >> 1 -> IFN_AVG_FLOOR (x, y)): Require two
+	leading zero bits for a signed type whose overflow is defined.
+
+2026-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.md (branch<ANYI:mode>_shiftedarith_equals_zero):
+	Use X rather than ANYI.  Drop subreg to X in split RTL.  Simplify
+	pattern name accordingly.
+	(branch<ANYI:mode>_shiftedmask_equals_zero): Similarly.
+	(branch<ANYI:mode>_shiftedarith_<optab>_shifted): Similalry, but no
+	change in split RTL.
+
+2026-10-26  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv.md (call_internal_cfi): Account for .p2align in
+	size computation.
+	(call_value_internal_cfi, gpr_save): Likewise
+	(f<quiet_pattern>_quiet<ANYF:mode><X:mode>4_zfa): Fix size computation.
+	(stack_protect_test_<mode>): Likewise.
+
+2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/122307
+	* jump.cc (reversed_comparison_code_parts): Do not reverse LTGT
+	and UNEQ if traps are honored and NaNs are possible.
+	* expmed.cc (emit_store_flag): Split NE as UNORDERED || !UNEQ
+	instead of UNORDERED || LTGT; do not treat LTGT as non-trapping.
+
+2026-10-26  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/i386/i386.md (crc_rev<SWI1248x:mode><SWI248x:mode>4):
+	Enable for 64-bit TARGET_CRC32 with DImode CRC and data.
+	Expand to crc32q for the 0x1EDC6F4100000000 polynomial.
+	Do not use the crc32 instruction for SImode CRC with DImode data.
+
+2026-10-26  Filip Kastl  <fkastl@suse.cz>
+
+	* gimple-fold.h (gimple_simplify): Update comment wrongly
+	claiming this function is defined in gimple-match.cc.
+
+2026-10-26  Aldy Hernandez  <aldy@quesejoda.com>
+
+	PR tree-optimization/126904
+	* tree-ssa-sccvn.h (vn_driver::todo): Remove.
+	(class vn_driver): Add m_region_p and m_eliminator.
+	* tree-ssa-sccvn.cc (do_rpo_vn_1): Take the walker that eliminates
+	when iterating.  Leave eliminate_cleanup to the caller.
+	(do_rpo_vn): Pass ELIMINATE through.  Return what finalize
+	returns.
+	(vn_driver::vn_driver): When iterating and eliminating, make a
+	walker of its own for the elimination.
+	(vn_driver::~vn_driver): Free it.
+	(vn_driver::finalize): Call eliminate_cleanup on the walker that
+	eliminated.  Remove the full elimination.
+	(pass_fre::execute): Have the walk eliminate when iterating too.
+
+2026-10-26  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127716
+	* crc-verification.cc
+	(crc_symbolic_execution::is_used_outside_the_loop): Ignore debug
+	statements when checking for outside-loop uses.
+	* gimple-crc-optimization.cc
+	(crc_optimization::optimize_crc_loop): Reset outside-loop debug binds
+	before replacing the loop.
+	* tree-ssa-loop-manip.cc (reset_debug_uses_outside_loop): New function,
+	factored from vect_do_peeling.
+	* tree-ssa-loop-manip.h (reset_debug_uses_outside_loop): Declare.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Use it.
+
+2026-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128132
+	* tree-vect-loop.cc (vectorizable_induction): Reject SLP
+	groups with different induction subtype.
+
+2026-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/127967
+	* ipa-prop.cc (ipcp_modif_dom_walker::before_dom_children): Add a
+	check that bit_offset aligns to byte boundary.
+	(ipcp_get_aggregate_const): Likewise and also add bounds checks.
+
+2026-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128133
+	* tree-vect-stmts.cc (vectorizable_load): Reject _BitInt
+	loads of non-mode precision.
+
+2026-10-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.cc (vn_exec_idom): New static variable.
+	(exec_idom_intersect): New static function.
+	(update_exec_idom): Likewise.
+	(dominated_by_p_w_unex): Rewrite using vn_exec_idom ancestor
+	walk.  Drop allow_back parameter.
+	(vn_nary_op_get_predicated_value): Adjust caller.
+	(rpo_elim::eliminate_avail): Likewise.
+	(process_bb): Call update_exec_idom.
+	(do_rpo_vn_1): Allocate and initialize vn_exec_idom to static
+	immediate dominators; clean it up on exit.
+
+2026-10-26  Vijay Shankar  <vijay@linux.ibm.com>
+
+	PR target/108018
+	* config/rs6000/rs6000.md (largetoc_high): Add guards.
+	(largetoc_high_aix<mode>): Likewise.
+	(largetoc_high_plus): Likewise.
+	(largetoc_high_plus_aix<mode>): Likewise.
+	(largetoc_low): Likewise.
+	(largetoc_low_aix<mode>): Likewise.
+	(largetocp10): New define_insn.
+	(largetocp10_aix<mode>): Likewise.
+	(largetocp10_plus): Likewise.
+	(largetocp10_plus_aix<mode>): Likewise.
+	(tocref<mode>): Add guards.
+
+2026-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* tree-if-conv.cc (factor_out_operators): Fix PHI update.
+
+2026-10-26  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/constraints.md (eU): New constraint.
+	(eV): Likewise.
+	* config/rs6000/predicates.md (paddis_operand): New predicate.
+	(paddis_paddi_operand): Likewise.
+	(add_cint_operand): Add paddis support.
+	(reg_or_add_cint_operand): Add support for adds that can be done with
+	paddis and paddi/addi.
+	(add_operand): Add support for adds that can be done with paddis, but
+	not paddis + paddi/addi..
+	* config/rs6000/rs6000.cc (num_insns_constant_gpr): Add support for adds
+	that can be done with paddis and also paddis combined with paddi/addi.
+	(print_operand): Add %B<n> for paddis support.
+	* config/rs6000/rs6000.h (TARGET_PADDIS): New macro.
+	(SIGNED_INTEGER_64BIT_P): Likewise.
+	* config/rs6000/rs6000.md (add<mode>3 define_expand): Add paddis
+	support.
+	(*add<mode>3 define_insn): Likewise.
+	(movdi_internal64): Likewise.
+	(movdi splitter): New splitter for paddis + paddi/addi.
+	* doc/md.texi (PowerPC constraints): Add eU and eV documentation.
+
+2026-10-26   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000-string.cc (expand_block_move): Do not generate
+	lxvl and stxvl on 32-bit.
+	* config/rs6000/vsx.md (lxvl): If -mcpu=future, generate the lxvl with
+	the shift count automaticaly used in the insn.
+	(lxvrl): New insn for -mcpu=future.
+	(lxvrll): Likewise.
+	(stxvl): If -mcpu=future, generate the stxvl with the shift count
+	automaticaly used in the insn.
+	(stxvrl): New insn for -mcpu=future.
+	(stxvrll): Likewise.
+
+2026-10-26  Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/altivec.md (xvrlw): New insn.
+	* config/rs6000/rs6000.h (TARGET_XVRLW): New macro.
+
+2026-10-26   Michael Meissner  <meissner@linux.ibm.com>
+
+	* config/rs6000/rs6000.md (gtu_geu): New code iterator.
+	(subfus<mode>3_<code>): New insns.
+
+2026-10-26  Kevin Stefanov  <kevinstefanov15@gmail.com>
+
+	PR rtl-optimization/126726
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Detect smax(a, -a) for integers and optimize it to abs(a).
+
+2026-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/andes.md (branch patterns): Invert condition when
+	branching around long unconditional branch when short direct
+	branch doesn't fit.
+	* config/riscv/iterators.md (sc): New iterator, inverted from "cs".
+	(any_eq_inv): New iterator, eq->ne and ne->eq mapping.
+
+2026-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/v850/v850.md (conditional branch patterns): Fix length
+	computation for designs without long conditional branches.
+
+2026-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.md (scc >= 1 pattern): Remove dead/buggy pattern.
+
+2026-10-26  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	* match.pd (A </<= 0 ? -A : A, A >/>= 0 ? -A : A): New patterns.
+
 2026-10-24  Robert Dubner  <rdubner@symas.com>
 
 	* doc/install.texi: Configure.html documentation for

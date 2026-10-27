@@ -1,3 +1,8 @@
+2026-10-26  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Update AC_PROG_LD to LT_PATH_LD.
+	* configure: Regenerate.
+
 2026-10-24  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* include/bits/simd_details.h: Use __GCC_IEC_559_COMPLEX to

@@ -1,3 +1,9 @@
+2026-10-26  James LeBlanc  <jpl.algol68@gmail.com>
+	    Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-prelude.cc (stand_prelude): Do not declare compl
+	operators, as these are now defined in standard.a68.
+
 2026-10-23  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-lang.cc (a68_post_options): Fix typo in comment.

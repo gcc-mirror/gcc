@@ -1,3 +1,158 @@
+2026-10-26  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR c/128120
+	* gcc.dg/pr128120.c: New test.
+
+2026-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	Revert:
+	2026-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/gomp/deprecate-1.C: Use a wildcard pattern in the
+	multiline output verification to accommodate targets where
+	the leading '#' character is missing from the diagnostic
+	output.
+
+2026-10-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127991
+	* gm2.dg/dump/pim/pass/anonymousconst.mod: New test.
+	* gm2.dg/dump/pim/pass/dg-dump-pim-pass.exp: New test.
+	Authored-by: Yongqiang Tian <yqtian668@gmail.com>
+
+2026-10-26  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/gomp/deprecate-1.C: Use a wildcard pattern in the
+	multiline output verification to accommodate targets where
+	the leading '#' character is missing from the diagnostic
+	output.
+
+2026-10-26  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121366
+	PR fortran/127063
+	* gfortran.dg/trigd_1.f90: Set suitable thresholds.
+
+2026-10-26  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/128143
+	* gcc.dg/torture/sub-overflow-1.c: New test.
+
+2026-10-26  Andrea Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/128123
+	* gcc.dg/tree-ssa/vect-cmp-cmp-1.c: New test.
+
+2026-10-26  Igor Shevlyakov  <igor.shevlyakov@gmail.com>
+
+	* gcc.dg/torture/vec-perm-merge-two-inputs-1.c: New test.
+	* gcc.dg/tree-ssa/vec-perm-merge-two-inputs.c: New test.
+	* gcc.dg/tree-ssa/vec-perm-merge-two-inputs-2.c: New test.
+
+2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/128142
+	* gcc.dg/torture/pr128142.c: New test.
+	* gcc.target/aarch64/pr128142.c: New test.
+
+2026-10-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128124
+	* gfortran.dg/unsigned_45.f90: Require effective target
+	fortran_integer_16.
+	* gfortran.dg/unsigned_46.f90: New test.
+
+2026-10-26  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/122307
+	* gcc.c-torture/execute/ieee/pr122307.c: New test.
+
+2026-10-26  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.target/i386/crc-crc32-data64-negative.c: New test.
+	* gcc.target/i386/crc-crc32-data64.c: New test.
+
+2026-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126968
+	* gfortran.dg/associate_89.f90: New test.
+	* gfortran.dg/associate_91.f90: New test.
+	* gfortran.dg/associate_93.f90: New test.
+	* gfortran.dg/associate_94.f90: New test.
+
+2026-10-26  James LeBlanc  <jpl.algol68@gmail.com>
+	    Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/compl-1.a68: New test.
+
+2026-10-26  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR tree-optimization/127716
+	* gcc.dg/pr127716.c: New test.
+
+2026-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128132
+	* gcc.dg/vect/vect-pr128132.c: New testcase.
+
+2026-10-26  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/127967
+	* gcc.dg/ipa/pr127967.c: New test.
+
+2026-10-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128133
+	* gcc.dg/vect/vect-pr128133.c: New testcase.
+
+2026-10-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-115.c: New testcase.
+
+2026-10-26  Vijay Shankar  <vijay@linux.ibm.com>
+
+	PR target/108018
+	* gcc.target/powerpc/pr108018-aix.c: New test.
+	* gcc.target/powerpc/pr108018-elf.c: New test.
+
+2026-10-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/128095
+	* gcc.dg/vect/pr128095.c: New test.
+
+2026-10-26  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/prefixed-addis.c: New test.
+
+2026-10-26   Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/lxvrl.c: New test.
+
+2026-10-26  Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/vector-rotate-left.c: New test.
+
+2026-10-26   Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/saturate-subtract-1.c: Use the correct
+	target flags.
+	* gcc.target/powerpc/saturate-subtract-2.c: Likewise.
+
+2026-10-26   Michael Meissner  <meissner@linux.ibm.com>
+
+	* gcc.target/powerpc/saturate-subtract-1.c: New test.
+	* gcc.target/powerpc/saturate-subtract-2.c: Likewise.
+
+2026-10-26  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/v850/min_bit.c: New test.
+
+2026-10-26  Alexey Lapshin  <alexey.lapshin@espressif.com>
+
+	* gcc.dg/tree-ssa/abs-5.c: New test.
+	* gcc.dg/tree-ssa/abs-6.c: New test.
+	* gcc.dg/tree-ssa/phi-opt-53.c: New test.
+
 2026-10-25  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* algol68/execute/modules/program-27.a68: Fix expected values.p

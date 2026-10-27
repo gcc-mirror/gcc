@@ -1,3 +1,8 @@
+2026-10-26  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Update AC_PROG_LD to LT_PATH_LD.
+	* configure: Regenerate.
+
 2026-10-23  Thomas Schwinge  <thomas@codesourcery.com>
 	    Thomas Schwinge  <tschwinge@baylibre.com>
 

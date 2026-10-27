@@ -1,3 +1,9 @@
+2026-10-26  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR c/128120
+	* c-attribs.cc (has_attribute): Fix ICE on
+	__builtin_has_attribute (var, pure).
+
 2026-10-16  Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
 
 	* c-cppbuiltin.cc (c_cpp_builtins_optimize_pragma): Define or

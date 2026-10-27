@@ -1,3 +1,15 @@
+2026-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126968
+	* resolve.cc (fixup_inferred_component_array_ref): New function.
+	(gfc_fixup_inferred_type_refs): Look each component reference up
+	again by name in the corrected derived type and update both
+	u.c.sym and u.c.component.  Walk the whole reference chain instead
+	of stopping at the first component.  Look up '_data', '_vptr' and
+	'_len' in the class container of the preceding CLASS component.
+	Check component access.  Use fixup_inferred_component_array_ref on
+	the reference after each rebound component.
+
 2026-10-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/127892

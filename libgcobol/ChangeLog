@@ -1,3 +1,29 @@
+2026-10-26  Robert Dubner  <rdubner@symas.com>
+
+	* charmaps.cc (struct currency_state): Currency state follows
+	its program-id during debugging. Likewise.
+	(__gg__get_currency_state): Likewise.
+	(__gg__activate_currency_state): Likewise.
+	(__gg__new_currency_state): Likewise.
+	(__gg__update_debug_currency_sign): Likewise.
+	* charmaps.h (struct currency_state): Likewise.
+	(__gg__new_currency_state): Likewise.
+	(__gg__get_currency_state): Likewise.
+	(__gg__activate_currency_state): Likewise.
+	(__gg__update_debug_currency_sign): Likewise.
+	* gfileio.cc (do_acu_hyphen_translation): Get rid of compiler
+	warning.
+	(sequential_file_write): Likewise.
+	* libgcobol.cc (struct program_state): Currency state.
+	(initialize_program_state): Likewise.
+	(__gg__push_program_state): Likewise.
+	(__gg__pop_program_state): Likewise.
+	(__gg__push_local_variable): Likewise.
+	(__gg__pop_local_variables): Likewise.
+	* libgcobol.map: Likewise.
+	* valconv.cc (__gg__currency_sign_init): Likewise.
+	(__gg__currency_sign): Likewise.
+
 2026-10-20  Robert Dubner  <rdubner@symas.com>
 
 	* configure.ac: Make --disable-libgcobol-rpath the default.

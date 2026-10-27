@@ -1,3 +1,19 @@
+2026-10-26  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/114065
+	* s-oscons-tmplt.c (SIZEOF_tv_nsec): Adjust for Glibc platforms.
+
+2026-10-26  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/114065
+	* libgnat/g-sothco.ads (Immediat): Use aggregate initial value.
+	* libgnat/s-c_time.ads (Milliseconds_To_Timeval): Remove comment.
+
+2026-10-26  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/114065
+	* gcc-interface/Makefile.in (cal.o): Remove.
+
 2026-10-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/128044

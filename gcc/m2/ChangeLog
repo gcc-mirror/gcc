@@ -1,3 +1,9 @@
+2026-10-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/127991
+	* gm2-gcc/m2decl.cc (m2decl_DeclareKnownConstant): Build the
+	anonymous constant declaration without a name.
+
 2026-10-12  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* Make-lang.in: Do not makr m2.pod as .INTERMEDIATE but delete it

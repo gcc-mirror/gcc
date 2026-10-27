@@ -1,3 +1,21 @@
+2026-10-26  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (enter_program_common): Save currency state on entry.
+	(initialize_the_data): Likewise.
+	(save_debug_field_binding): Associate field contents with a frame.
+	(save_debug_linkage_bindings): Likewise.
+	(establish_using): Bug fix of subordinate local storare field
+	offsets during recursion.
+	(parser_division): Initial currency state.
+	(parser_set_pointers): Save debug linkage bindings.
+	(parser_local_add): Rebase linkage offset during recursion.
+	* gengen.h (struct gg_function_t): Linkage binding for data and
+	capacity.
+	* lexio.cc (cdftext::lex_open): Remove comment; adjust source
+	format.
+	* symbols.cc (symbol_program_callables): Make sure a recursive
+	program can call itself.
+
 2026-10-23  James K. Lowden  <jklowden@cobolworx.com>
 
 	* parse.y: Require PICTURE for PACKED-DECIMAL.

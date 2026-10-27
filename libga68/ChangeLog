@@ -1,3 +1,37 @@
+2026-10-26  James LeBlanc  <jpl.algol68@gmail.com>
+	    Jose E. Marchesi  <jemarch@gnu.org>
+
+	* standard.a68.in (=): New operator on SIZETY compl.
+	(EQ): Likewise.
+	(/=): Likewise.
+	(NE): Likewise.
+	(+): Likewise
+	(+:=): Likewise.
+	(PLUSAB): Likewise.
+	(-): Likewise.
+	(-:=): Likewise.
+	(MINUSAB): Likewise.
+	(*): Likewise.
+	(*:=): Likewise.
+	(TIMESAB): Likewise.
+	(/): Likewise.
+	(/:=): Likewise.
+	(DIVAB): Likewise.
+	(CONJ): Likewise.
+	(ABS): Likewise.
+	(ARG): Likewise.
+
+2026-10-26  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* Makefile.in: Regenerate.
+
+2026-10-26  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* configure.ac: Invoke LT_LIB_M and add $LIBM to
+	SPEC_LIBGA68_DEPS.
+	* configure: Regenerate.
+	* Makefile.am (libga68_la_LDFLAGS): Link with $(LIBM).
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.
