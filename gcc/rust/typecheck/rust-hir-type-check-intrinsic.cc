@@ -157,12 +157,18 @@ const std::unordered_map<std::string, IntrinsicRules>
      {1,
       {IRT::ConstPtrFirstGeneric, IRT::MutPtrFirstGeneric, IRT::Usize},
       IRT::Unit}},
-    // pub fn prefetch_read_data<T>(data: *const T, locality: i32);
+
+    // pub fn prefetch_{read,write}_{data,instruction}<T>(data: *const T,
+    // locality: i32);
     {IValue::PREFETCH_READ_DATA,
      {1, {IRT::ConstPtrFirstGeneric, IRT::I32}, IRT::Unit}},
-    // pub fn prefetch_write_data<T>(data: *const T, locality: i32);
     {IValue::PREFETCH_WRITE_DATA,
      {1, {IRT::ConstPtrFirstGeneric, IRT::I32}, IRT::Unit}},
+    {IValue::PREFETCH_READ_INSTRUCTION,
+     {1, {IRT::ConstPtrFirstGeneric, IRT::I32}, IRT::Unit}},
+    {IValue::PREFETCH_WRITE_INSTRUCTION,
+     {1, {IRT::ConstPtrFirstGeneric, IRT::I32}, IRT::Unit}},
+
     // pub unsafe fn atomic_store_seqcst<T: Copy>(_dst: *mut T, _val: T);
     {IValue::ATOMIC_STORE_SEQCST,
      {1, {IRT::MutPtrFirstGeneric, IRT::FirstGeneric}, IRT::Unit}},

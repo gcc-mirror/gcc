@@ -96,6 +96,10 @@ public:
 
   static constexpr auto &PREFETCH_READ_DATA = "prefetch_read_data";
   static constexpr auto &PREFETCH_WRITE_DATA = "prefetch_write_data";
+  static constexpr auto &PREFETCH_READ_INSTRUCTION
+    = "prefetch_read_instruction";
+  static constexpr auto &PREFETCH_WRITE_INSTRUCTION
+    = "prefetch_write_instruction";
 
   static constexpr auto &ATOMIC_STORE = "atomic_store";
   // atomic_store is renamed to atomic_store_seqcst from 1.64.0, the latter is

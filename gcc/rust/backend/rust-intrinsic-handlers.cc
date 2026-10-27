@@ -1193,6 +1193,62 @@ type_assert (IntrinsicCtx &ctx, TyAssert assert)
     }
 }
 
+void
+prefetch (IntrinsicCtx &ctx, Mode mode, Cache cache)
+{
+  // The core library technically allows you to pass any i32 value as a
+  // locality, but LLVM will then complain if the value cannot be constant
+  // evaluated. For now, we ignore the locality argument and instead always
+  // pass `3` (the most restrictive value). This allows us to still have
+  // prefetch behavior, just not as granular as expected. In future Rust
+  // versions, we hope that prefetch intrinsics will be split up according to
+  // locality, similarly to atomic intrinsics.
+  // The solution is to try and perform constant folding for the locality
+  // argument, or instead of creating a new function definition, modify the call
+  // site directly This has the bad side-effect of creating warnings about
+  // `unused name - locality`, which we hack away here:
+  // TODO: Take care of handling locality properly
+  Backend::var_expression (ctx.param_vars[1], UNDEF_LOCATION);
+
+  // If we are doing prefetches on the instruction cache, then emit a no-op. GCC
+  // currently has no support for prefetching the instruction cache, and
+  // prefetches are allowed to be completely ignored anyways. Revisit once
+  // __builtin_prefetch() accepts another argument for the `cache` to use, in
+  // the same way that llvm.prefetch does. In the same vein as above, mark the
+  // given addr as used so there's no complaints.
+  if (cache == Cache::Instruction)
+    {
+      Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
+
+      return;
+    }
+
+  // prefetching isn't pure and shouldn't be discarded after GIMPLE
+  TREE_READONLY (ctx.fn) = 0;
+  TREE_SIDE_EFFECTS (ctx.fn) = 1;
+
+  auto addr = Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
+
+  auto rw_flag = make_unsigned_long_tree (mode == Mode::Write ? 1 : 0);
+
+  auto prefetch_raw
+    = BuiltinsContext::get ().lookup_simple_builtin ("__builtin_prefetch");
+  rust_assert (prefetch_raw);
+
+  auto prefetch = build_fold_addr_expr_loc (UNKNOWN_LOCATION, *prefetch_raw);
+
+  auto prefetch_call = Backend::call_expression (prefetch,
+						 {addr, rw_flag,
+						  // locality arg
+						  make_unsigned_long_tree (3)},
+						 nullptr, UNDEF_LOCATION);
+
+  TREE_READONLY (prefetch_call) = 0;
+  TREE_SIDE_EFFECTS (prefetch_call) = 1;
+
+  ctx.add_statement (prefetch_call);
+}
+
 } // namespace inner
 
 Intrinsic::CompileFn
@@ -1343,6 +1399,14 @@ try_handler (bool is_new_api)
 {
   return [is_new_api] (IntrinsicCtx &ctx) {
     return inner::try_handler (ctx, is_new_api);
+  };
+}
+
+Intrinsic::CompileFn
+prefetch (Mode mode, Cache cache)
+{
+  return [mode, cache] (IntrinsicCtx &ctx) {
+    return inner::prefetch (ctx, mode, cache);
   };
 }
 
@@ -1518,60 +1582,6 @@ uninit (IntrinsicCtx &ctx)
   auto return_statement
     = Backend::return_statement (ctx.fn, dst, UNDEF_LOCATION);
   ctx.add_statement (return_statement);
-}
-
-void
-prefetch_read_data (IntrinsicCtx &ctx)
-{
-  return prefetch_data (ctx, Prefetch::Read);
-}
-void
-prefetch_write_data (IntrinsicCtx &ctx)
-{
-  return prefetch_data (ctx, Prefetch::Write);
-}
-
-void
-prefetch_data (IntrinsicCtx &ctx, Prefetch kind)
-{
-  // prefetching isn't pure and shouldn't be discarded after GIMPLE
-  TREE_READONLY (ctx.fn) = 0;
-  TREE_SIDE_EFFECTS (ctx.fn) = 1;
-
-  auto addr = Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
-
-  // The core library technically allows you to pass any i32 value as a
-  // locality, but LLVM will then complain if the value cannot be constant
-  // evaluated. For now, we ignore the locality argument and instead always
-  // pass `3` (the most restrictive value). This allows us to still have
-  // prefetch behavior, just not as granular as expected. In future Rust
-  // versions, we hope that prefetch intrinsics will be split up according to
-  // locality, similarly to atomic intrinsics.
-  // The solution is to try and perform constant folding for the locality
-  // argument, or instead of creating a new function definition, modify the call
-  // site directly This has the bad side-effect of creating warnings about
-  // `unused name - locality`, which we hack away here:
-  // TODO: Take care of handling locality properly
-  Backend::var_expression (ctx.param_vars[1], UNDEF_LOCATION);
-
-  auto rw_flag = make_unsigned_long_tree (kind == Prefetch::Write ? 1 : 0);
-
-  auto prefetch_raw
-    = BuiltinsContext::get ().lookup_simple_builtin ("__builtin_prefetch");
-  rust_assert (prefetch_raw);
-
-  auto prefetch = build_fold_addr_expr_loc (UNKNOWN_LOCATION, *prefetch_raw);
-
-  auto prefetch_call = Backend::call_expression (prefetch,
-						 {addr, rw_flag,
-						  // locality arg
-						  make_unsigned_long_tree (3)},
-						 nullptr, UNDEF_LOCATION);
-
-  TREE_READONLY (prefetch_call) = 0;
-  TREE_SIDE_EFFECTS (prefetch_call) = 1;
-
-  ctx.add_statement (prefetch_call);
 }
 
 void
