@@ -65,8 +65,7 @@ int clzdi_z9_109 (unsigned long x)
 /*
 ** clzsi_z17:
 **	clzg	%r2,%r2
-**	ahi	%r2,-32
-**	lgfr	%r2,%r2
+**	lxab	%r2,-32\(%r2,0\)
 **	br	%r14
 */
 
