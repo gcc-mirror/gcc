@@ -41,20 +41,21 @@
 
 ; When using strength-reduction, we will reduce a multiplication to a
 ; sequence of shifts and adds.  If this is performed with 32-bit types
-; and followed by a division, the lack of w-form sh[123]add will make
-; combination impossible and lead to a slli + addw being generated.
-; Split the sequence with the knowledge that a w-form div will perform
-; implicit sign-extensions.
+; and followed by a division or remainder, the lack of w-form sh[123]add
+; will make combination impossible and lead to a slli + addw being
+; generated.  Split the sequence with the knowledge that word division
+; and remainder only use the low word of their inputs and sign-extend
+; their results, including for unsigned operations.
 (define_split
   [(set (match_operand:DI 0 "register_operand")
-	(sign_extend:DI (div:SI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
+	(sign_extend:DI (any_div:SI (plus:SI (ashift:SI (subreg:SI (match_operand:DI 1 "register_operand") 0)
 						    (match_operand:QI 2 "imm123_operand"))
 					 (subreg:SI (match_operand:DI 3 "register_operand") 0))
 				(match_operand:SI 4 "register_operand"))))
    (clobber (match_operand:DI 5 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA"
    [(set (match_dup 5) (plus:DI (ashift:DI (match_dup 1) (match_dup 2)) (match_dup 3)))
-    (set (match_dup 0) (sign_extend:DI (div:SI (subreg:SI (match_dup 5) 0) (match_dup 4))))])
+    (set (match_dup 0) (sign_extend:DI (any_div:SI (subreg:SI (match_dup 5) 0) (match_dup 4))))])
 
 ; Zba does not provide W-forms of sh[123]add(.uw)?, which leads to an
 ; interesting irregularity: we can generate a signed 32-bit result
