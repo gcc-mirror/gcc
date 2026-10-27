@@ -265,7 +265,7 @@ calculate_reversed_crc (unsigned HOST_WIDE_INT crc,
 
   gcc_checking_assert (crc_bits <= 64);
   gcc_checking_assert (data_bits <= 64);
-  gcc_checking_assert (crc_bits >= data_bits);
+  /* allow data_bits > crc_bits for folding _mm_crc32_u64.  */
 
   unsigned HOST_WIDE_INT rev_polynom = reflect_hwi (polynomial, crc_bits);
   crc ^= data;

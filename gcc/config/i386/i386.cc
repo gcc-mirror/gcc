@@ -19315,6 +19315,24 @@ ix86_fold_builtin (tree fndecl, int n_args,
 	    }
 	  break;
 
+	case IX86_BUILTIN_CRC32QI:
+	case IX86_BUILTIN_CRC32HI:
+	case IX86_BUILTIN_CRC32SI:
+	case IX86_BUILTIN_CRC32DI:
+	  gcc_assert (n_args == 2);
+	  if (tree_fits_uhwi_p (args[0]) && tree_fits_uhwi_p (args[1]))
+	  {
+	    unsigned HOST_WIDE_INT crc = tree_to_uhwi (args[0]);
+	    crc &= 0xffffffff;
+	    unsigned HOST_WIDE_INT data = tree_to_uhwi (args[1]);
+	    unsigned short data_bits = TYPE_PRECISION (TREE_TYPE (args[1]));
+	    unsigned HOST_WIDE_INT res = calculate_reversed_crc (crc, data,
+								 0x1EDC6F41,
+								 32, data_bits);
+	    return build_int_cstu (TREE_TYPE (TREE_TYPE (fndecl)), res);
+	  }
+	  break;
+
 	case IX86_BUILTIN_BEXTR32:
 	case IX86_BUILTIN_BEXTR64:
 	case IX86_BUILTIN_BEXTRI32:
