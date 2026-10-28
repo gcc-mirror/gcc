@@ -8011,12 +8011,18 @@
 (define_mode_attr vunpck_extract_mode
   [(V32HF "v32hf") (V16HF "v16hf") (V8HF "v16hf")])
 
+;; HFmode vectors that can be unpacked to float by vcvtph2ps.
+(define_mode_iterator VHF_F16C
+  [(V32HF "TARGET_AVX512F")
+   (V16HF "TARGET_F16C || TARGET_AVX512VL")
+   (V8HF "TARGET_F16C || TARGET_AVX512VL")])
+
 (define_expand "vec_unpacks_lo_<mode>"
   [(match_operand:<ssePSmode> 0 "register_operand")
-   (match_operand:VHF_AVX512VL 1 "register_operand")]
-  "TARGET_AVX512FP16"
+   (match_operand:VHF_F16C 1 "register_operand")]
+  ""
 {
-  rtx tem = operands[1];
+  rtx tem;
   rtx (*gen) (rtx, rtx);
   if (<MODE>mode != V8HFmode)
     {
@@ -8026,7 +8032,11 @@
       gen = gen_extend<ssehalfvecmodelower><ssePSmodelower>2;
     }
   else
-    gen = gen_avx512fp16_float_extend_phv4sf2;
+    {
+      tem = force_reg (V8HFmode, operands[1]);
+      tem = lowpart_subreg (V4HFmode, tem, V8HFmode);
+      gen = gen_extendv4hfv4sf2;
+    }
 
   emit_insn (gen (operands[0], tem));
   DONE;
@@ -8034,10 +8044,10 @@
 
 (define_expand "vec_unpacks_hi_<mode>"
   [(match_operand:<ssePSmode> 0 "register_operand")
-   (match_operand:VHF_AVX512VL 1 "register_operand")]
-  "TARGET_AVX512FP16"
+   (match_operand:VHF_F16C 1 "register_operand")]
+  ""
 {
-  rtx tem = operands[1];
+  rtx tem;
   rtx (*gen) (rtx, rtx);
   if (<MODE>mode != V8HFmode)
     {
@@ -8055,8 +8065,9 @@
 
       rtx selector = gen_rtx_PARALLEL (VOIDmode, tmp);
       emit_move_insn (tem,
-		     gen_rtx_VEC_SELECT (V8HFmode, operands[1], selector));
-      gen = gen_avx512fp16_float_extend_phv4sf2;
+		      gen_rtx_VEC_SELECT (V8HFmode, operands[1], selector));
+      tem = lowpart_subreg (V4HFmode, tem, V8HFmode);
+      gen = gen_extendv4hfv4sf2;
     }
 
   emit_insn (gen (operands[0], tem));
@@ -8673,21 +8684,37 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+;; V4SF -> V8HF, upper half zero.  Shared by truncv4sfv4hf2 and
+;; vec_pack_trunc_v4sf so neither needs to go through V4HFmode.
+(define_expand "f16c_truncv4sfv8hf2"
+  [(match_operand:V8HF 0 "register_operand")
+   (match_operand:V4SF 1 "vector_operand")]
+  "TARGET_F16C || TARGET_AVX512VL"
+{
+  if (TARGET_AVX512FP16 && TARGET_AVX512VL)
+    emit_insn (gen_avx512fp16_truncv4sfv4hf2 (operands[0], operands[1]));
+  else
+    {
+      rtx tem = gen_reg_rtx (V8HImode);
+      emit_insn (gen_vcvtps2ph (tem, force_reg (V4SFmode, operands[1]),
+				GEN_INT (4)));
+      emit_move_insn (operands[0], lowpart_subreg (V8HFmode, tem, V8HImode));
+    }
+  DONE;
+})
+
 (define_expand "trunc<mode>v4hf2"
   [(set (match_operand:V4HF 0 "register_operand")
 	(float_truncate:V4HF (match_operand:VF4_128_8_256 1 "vector_operand")))]
   "TARGET_F16C || TARGET_AVX512VL"
 {
   rtx dest = gen_reg_rtx (V8HFmode);
-  if (TARGET_AVX512FP16 && TARGET_AVX512VL)
-    emit_insn (gen_avx512fp16_trunc<mode>v4hf2 (dest, operands[1]));
+
+  if (<MODE>mode == V4SFmode)
+    emit_insn (gen_f16c_truncv4sfv8hf2 (dest, operands[1]));
   else
-    {
-      rtx tem = gen_reg_rtx (V8HImode);
-      emit_insn (gen_vcvtps2ph (tem, force_reg (V4SFmode, operands[1]),
-				GEN_INT (4)));
-      emit_move_insn (dest, lowpart_subreg (V8HFmode, tem, V8HImode));
-    }
+    emit_insn (gen_avx512fp16_trunc<mode>v4hf2 (dest, operands[1]));
+
   emit_move_insn (operands[0], lowpart_subreg (V4HFmode, dest, V8HFmode));
   DONE;
 })
@@ -11584,18 +11611,24 @@
   operands[4] = gen_reg_rtx (<sf2dfmode>mode);
 })
 
+;; HFmode vectors that can be packed from float by vcvtps2ph.
+(define_mode_iterator VF1_F16C
+  [(V16SF "TARGET_AVX512F")
+   (V8SF "TARGET_F16C || TARGET_AVX512VL")
+   (V4SF "TARGET_F16C || TARGET_AVX512VL")])
+
 (define_expand "vec_pack_trunc_<mode>"
   [(match_operand:<ssepackPHmode> 0 "register_operand")
-   (match_operand:VF1_AVX512VL 1 "register_operand")
-   (match_operand:VF1_AVX512VL 2 "register_operand")]
-  "TARGET_AVX512FP16"
+   (match_operand:VF1_F16C 1 "register_operand")
+   (match_operand:VF1_F16C 2 "register_operand")]
+  ""
 {
   rtx r1 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
   rtx r2 = gen_reg_rtx (<vpckfloat_temp_mode>mode);
   rtx (*gen) (rtx, rtx);
 
   if (<MODE>mode == V4SFmode)
-    gen = gen_avx512fp16_truncv4sfv4hf2;
+    gen = gen_f16c_truncv4sfv8hf2;
   else
     gen = gen_trunc<mode><vpckfloat_op_mode>2;
   emit_insn (gen (r1, operands[1]));
@@ -11606,7 +11639,6 @@
     emit_insn (gen_avx_vec_concat<vpckfloat_concat_mode> (operands[0],
 							  r1, r2));
   DONE;
-
 })
 
 (define_expand "vec_pack_trunc_v2df"
