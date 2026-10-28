@@ -1073,11 +1073,14 @@ expand_arith_set_overflow (tree lhs, rtx target)
 /* Helper for expand_*_overflow.  Store RES into the __real__ part
    of TARGET.  If RES has larger MODE than __real__ part of TARGET,
    set the __imag__ part to 1 if RES doesn't fit into it.  Similarly
-   if LHS has smaller precision than its mode.  */
+   if LHS has smaller precision than its mode, unless OVERFLOW_CHECKED
+   is true in which case the caller has already performed the
+   overflow check and recorded the result.  */
 
 static void
 expand_arith_overflow_result_store (tree lhs, rtx target,
-				    scalar_int_mode mode, rtx res)
+				    scalar_int_mode mode, rtx res,
+				    bool overflow_checked = false)
 {
   scalar_int_mode tgtmode
     = as_a <scalar_int_mode> (GET_MODE_INNER (GET_MODE (target)));
@@ -1096,7 +1099,7 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
     }
   int prec = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (lhs)));
   int tgtprec = GET_MODE_PRECISION (tgtmode);
-  if (prec < tgtprec)
+  if (prec < tgtprec && !overflow_checked)
     {
       rtx_code_label *done_label = gen_label_rtx ();
       int uns = TYPE_UNSIGNED (TREE_TYPE (TREE_TYPE (lhs)));
@@ -1121,6 +1124,28 @@ expand_arith_overflow_result_store (tree lhs, rtx target,
 			       profile_probability::very_likely ());
       expand_arith_set_overflow (lhs, target);
       emit_label (done_label);
+    }
+  else if (prec < tgtprec)
+    {
+      /* overflow_checked: the caller already detected and recorded overflow
+	 via the hipart comparison.  */
+      int uns = TYPE_UNSIGNED (TREE_TYPE (TREE_TYPE (lhs)));
+      res = lres;
+      if (uns)
+	{
+	  rtx mask
+	    = immed_wide_int_const (wi::shifted_mask (0, prec, false, tgtprec),
+				    tgtmode);
+	  lres = expand_simple_binop (tgtmode, AND, res, mask, NULL_RTX,
+				      true, OPTAB_LIB_WIDEN);
+	}
+      else
+	{
+	  lres = expand_shift (LSHIFT_EXPR, tgtmode, res, tgtprec - prec,
+			       NULL_RTX, 1);
+	  lres = expand_shift (RSHIFT_EXPR, tgtmode, lres, tgtprec - prec,
+			       NULL_RTX, 0);
+	}
     }
   write_complex_part (target, lres, false, false);
 }
@@ -1617,7 +1642,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
 	    res = expand_binop (mode, add_optab, res, sgn, NULL_RTX, false,
 				OPTAB_LIB_WIDEN);
 
-	  expand_arith_overflow_result_store (lhs, target, mode, res);
+	  expand_arith_overflow_result_store (lhs, target, mode, res, false);
 	}
     }
 }
@@ -1709,7 +1734,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
       if (is_ubsan)
 	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
-	expand_arith_overflow_result_store (lhs, target, mode, res);
+	expand_arith_overflow_result_store (lhs, target, mode, res, false);
     }
 }
 
@@ -1785,6 +1810,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   op1 = expand_normal (arg1);
 
   bool uns = unsr_p;
+  bool overflow_checked = false;
   if (lhs)
     {
       target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
@@ -2197,23 +2223,42 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
 	  && can_widen_mult_without_libcall (wmode, mode, op0, op1, uns))
 	{
 	twoxwider:
+	  int ovf_prec = prec;
+	  if (!is_ubsan && lhs && unsr_p)
+	    ovf_prec = TYPE_PRECISION (TREE_TYPE (TREE_TYPE (lhs)));
 	  ops.code = WIDEN_MULT_EXPR;
 	  ops.type
 	    = build_nonstandard_integer_type (GET_MODE_PRECISION (wmode), uns);
 
 	  res = expand_expr_real_2 (&ops, NULL_RTX, wmode, EXPAND_NORMAL);
-	  rtx hipart = expand_shift (RSHIFT_EXPR, wmode, res, prec,
+	  rtx hipart = expand_shift (RSHIFT_EXPR, wmode, res, ovf_prec,
 				     NULL_RTX, uns);
-	  hipart = convert_modes (mode, wmode, hipart, uns);
-	  res = convert_modes (mode, wmode, res, uns);
 	  if (uns)
-	    /* For the unsigned multiplication, there was overflow if
-	       HIPART is non-zero.  */
-	    do_compare_rtx_and_jump (hipart, const0_rtx, EQ, true, mode,
-				     NULL_RTX, NULL, done_label,
-				     profile_probability::very_likely ());
+	    {
+	      /* For the unsigned multiplication, there was overflow if
+		 HIPART is non-zero. Convert RES before the branch so that
+		 both the no-overflow fall-through and the overflow path see
+		 RES in MODE.  */
+	      res = convert_modes (mode, wmode, res, uns);
+	      if (ovf_prec < prec)
+		{
+		  overflow_checked = true;
+		  do_compare_rtx_and_jump (hipart, const0_rtx, EQ, true, wmode,
+					   NULL_RTX, NULL, done_label,
+					   profile_probability::very_likely ());
+		}
+	      else
+		{
+		  hipart = convert_modes (mode, wmode, hipart, uns);
+		  do_compare_rtx_and_jump (hipart, const0_rtx, EQ, true, mode,
+					   NULL_RTX, NULL, done_label,
+					   profile_probability::very_likely ());
+		}
+	    }
 	  else
 	    {
+	      hipart = convert_modes (mode, wmode, hipart, uns);
+	      res = convert_modes (mode, wmode, res, uns);
 	      /* RES is used more than once, place it in a pseudo.  */
 	      res = force_reg (mode, res);
 
@@ -2615,7 +2660,8 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       if (is_ubsan)
 	expand_ubsan_result_store (lhs, target, mode, res, do_error);
       else
-	expand_arith_overflow_result_store (lhs, target, mode, res);
+	expand_arith_overflow_result_store (lhs, target, mode, res,
+					    overflow_checked);
     }
   flag_trapv = save_flag_trapv;
 }
