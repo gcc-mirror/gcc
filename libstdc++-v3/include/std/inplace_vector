@@ -865,28 +865,28 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
       template<typename _Integer>
 	static constexpr size_type
-	_S_check_size(_Integer __n, size_type __used = 0)
+	_S_check_size(_Integer __n, size_type __size = 0)
 	{
 	  if constexpr (__detail::__is_signed_integer_like<_Integer>)
 	    if (__n < 0)
 	      __throw_bad_alloc();
-	  if (__n > (_Nm - __used))
+	  if (__n > (_Nm - __size))
 	    __throw_bad_alloc();
 	  return static_cast<size_type>(__n);
 	}
 
       template<typename _Iterator, typename _Sentinel>
 	static constexpr size_type
-	_S_check_distance(_Iterator __first, _Sentinel __last, size_type __used)
+	_S_check_distance(_Iterator __first, _Sentinel __last, size_type __size)
 	{
-	  for (size_type __i = __used; __i < _Nm; ++__i)
+	  for (size_type __i = __size; __i < _Nm; ++__i)
 	    if (__first == __last)
-	      return __i - __used;
+	      return __i - __size;
 	    else
 	      ++__first;
 
 	  if (__first == __last)
-	    return _Nm - __used;
+	    return _Nm - __size;
 
 	  __throw_bad_alloc();
 	}
@@ -895,24 +895,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       // capacity (_Nm - used), otherwise throws bad_alloc.
       template<typename _InputIterator>
 	constexpr static size_t
-	_S_distance_if_fits(size_t __used, _InputIterator __first, _InputIterator __last)
+	_S_distance_if_fits(size_t __size, _InputIterator __first, _InputIterator __last)
 	{
 	  if constexpr (sized_sentinel_for<_InputIterator, _InputIterator>)
-	    return _S_check_size(__last - __first, __used);
+	    return _S_check_size(__last - __first, __size);
 	  else
-	    return _S_check_distance(__first, __last, __used);
+	    return _S_check_distance(__first, __last, __size);
 	}
 
       // See above.
       template<typename _Rg>
 	constexpr static size_t
-	_S_distance_if_fits(size_t __used, _Rg& __rg)
+	_S_distance_if_fits(size_t __size, _Rg& __rg)
 	{
 	  if constexpr (ranges::sized_range<_Rg>)
-	    return _S_check_size(ranges::size(__rg), __used);
+	    return _S_check_size(ranges::size(__rg), __size);
 	  else
 	    return _S_check_distance(ranges::begin(__rg), ranges::end(__rg),
-				     __used);
+				     __size);
 	}
     };
 
