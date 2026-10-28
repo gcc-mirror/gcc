@@ -3762,12 +3762,12 @@ extern void note_stores (const rtx_insn *,
 extern void note_uses (rtx *, void (*) (rtx *, void *), void *);
 extern bool dead_or_set_p (const rtx_insn *, const_rtx);
 extern bool dead_or_set_regno_p (const rtx_insn *, unsigned int);
-extern rtx find_reg_note (const_rtx, enum reg_note, const_rtx);
-extern rtx find_regno_note (const_rtx, enum reg_note, unsigned int);
+extern rtx find_reg_note (const rtx_insn *, enum reg_note, const_rtx);
+extern rtx find_regno_note (const rtx_insn *, enum reg_note, unsigned int);
 extern rtx find_reg_equal_equiv_note (const rtx_insn *);
 extern rtx find_constant_src (const rtx_insn *);
-extern bool find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
-extern bool find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
+extern bool find_reg_fusage (const rtx_insn *, enum rtx_code, const_rtx);
+extern bool find_regno_fusage (const rtx_insn *, enum rtx_code, unsigned int);
 extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
 extern void add_reg_note (rtx_insn *, enum reg_note, rtx);
 extern void add_int_reg_note (rtx_insn *, enum reg_note, int);

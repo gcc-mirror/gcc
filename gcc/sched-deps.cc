@@ -2173,7 +2173,7 @@ mark_insn_reg_store (rtx reg, const_rtx setter, void *data)
     return;
   mark_insn_reg_birth
     ((rtx_insn *) data, reg, false,
-     find_reg_note ((const_rtx) data, REG_UNUSED, reg) != NULL_RTX);
+     find_reg_note ((const rtx_insn *) data, REG_UNUSED, reg) != NULL_RTX);
 }
 
 /* Like mark_insn_reg_store except notice just CLOBBERs; ignore SETs.  */

@@ -1771,20 +1771,20 @@ void
 copy_reg_eh_region_note_forward (rtx note_or_insn, rtx_insn *first,
 				 rtx_insn *last)
 {
-  rtx_insn *insn;
   rtx note = note_or_insn;
 
-  if (INSN_P (note_or_insn))
+  if (rtx_insn *insn = dyn_cast <rtx_insn *> (note_or_insn))
     {
-      note = find_reg_note (note_or_insn, REG_EH_REGION, NULL_RTX);
+      if (!INSN_P (insn))
+	return;
+
+      note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
       if (note == NULL)
 	return;
     }
-  else if (is_a <rtx_insn *> (note_or_insn))
-    return;
   note = XEXP (note, 0);
 
-  for (insn = first; insn != last ; insn = NEXT_INSN (insn))
+  for (rtx_insn *insn = first; insn != last ; insn = NEXT_INSN (insn))
     if (!find_reg_note (insn, REG_EH_REGION, NULL_RTX)
         && insn_could_throw_p (insn))
       add_reg_note (insn, REG_EH_REGION, note);
@@ -1796,20 +1796,20 @@ void
 copy_reg_eh_region_note_backward (rtx note_or_insn, rtx_insn *last,
 				  rtx_insn *first)
 {
-  rtx_insn *insn;
   rtx note = note_or_insn;
 
-  if (INSN_P (note_or_insn))
+  if (rtx_insn *insn = dyn_cast <rtx_insn *> (note_or_insn))
     {
-      note = find_reg_note (note_or_insn, REG_EH_REGION, NULL_RTX);
+      if (!INSN_P (insn))
+	return;
+
+      note = find_reg_note (insn, REG_EH_REGION, NULL_RTX);
       if (note == NULL)
 	return;
     }
-  else if (is_a <rtx_insn *> (note_or_insn))
-    return;
   note = XEXP (note, 0);
 
-  for (insn = last; insn != first; insn = PREV_INSN (insn))
+  for (rtx_insn *insn = last; insn != first; insn = PREV_INSN (insn))
     if (insn_could_throw_p (insn))
       add_reg_note (insn, REG_EH_REGION, note);
 }

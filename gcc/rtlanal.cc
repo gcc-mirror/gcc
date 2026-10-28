@@ -1235,8 +1235,12 @@ reg_set_between_p (const_rtx reg, const rtx_insn *from_insn,
 /* Return true if REG is set or clobbered inside INSN.  */
 
 bool
-reg_set_p (const_rtx reg, const_rtx insn)
+reg_set_p (const_rtx reg, const_rtx uncast_insn)
 {
+  const rtx_insn *insn = dyn_cast <const rtx_insn *> (uncast_insn);
+  if (!insn)
+    return set_of (reg, uncast_insn) != NULL_RTX;
+
   /* After delay slot handling, call and branch insns might be in a
      sequence.  Check all the elements there.  */
   if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
@@ -1255,7 +1259,7 @@ reg_set_p (const_rtx reg, const_rtx insn)
 	  || (CALL_P (insn)
 	      && ((REG_P (reg)
 		   && REGNO (reg) < FIRST_PSEUDO_REGISTER
-		   && (insn_callee_abi (as_a<const rtx_insn *> (insn))
+		   && (insn_callee_abi (insn)
 		       .clobbers_reg_p (GET_MODE (reg), REGNO (reg))))
 		  || MEM_P (reg)
 		  || find_reg_fusage (insn, CLOBBER, reg)))))
@@ -2518,7 +2522,7 @@ dead_or_set_regno_p (const rtx_insn *insn, unsigned int test_regno)
    If DATUM is nonzero, look for one whose datum is DATUM.  */
 
 rtx
-find_reg_note (const_rtx insn, enum reg_note kind, const_rtx datum)
+find_reg_note (const rtx_insn *insn, enum reg_note kind, const_rtx datum)
 {
   rtx link;
 
@@ -2547,7 +2551,7 @@ find_reg_note (const_rtx insn, enum reg_note kind, const_rtx datum)
    it might be the case that the note overlaps REGNO.  */
 
 rtx
-find_regno_note (const_rtx insn, enum reg_note kind, unsigned int regno)
+find_regno_note (const rtx_insn *insn, enum reg_note kind, unsigned int regno)
 {
   rtx link;
 
@@ -2623,7 +2627,7 @@ find_constant_src (const rtx_insn *insn)
    in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
 
 bool
-find_reg_fusage (const_rtx insn, enum rtx_code code, const_rtx datum)
+find_reg_fusage (const rtx_insn *insn, enum rtx_code code, const_rtx datum)
 {
   /* If it's not a CALL_INSN, it can't possibly have a
      CALL_INSN_FUNCTION_USAGE field, so don't bother checking.  */
@@ -2668,7 +2672,7 @@ find_reg_fusage (const_rtx insn, enum rtx_code code, const_rtx datum)
    in the CALL_INSN_FUNCTION_USAGE information of INSN.  */
 
 bool
-find_regno_fusage (const_rtx insn, enum rtx_code code, unsigned int regno)
+find_regno_fusage (const rtx_insn *insn, enum rtx_code code, unsigned int regno)
 {
   rtx link;
 

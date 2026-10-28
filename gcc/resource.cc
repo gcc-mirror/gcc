@@ -299,13 +299,14 @@ mark_referenced_resources (rtx x, struct resources *res,
 	     However, we may have moved some of the parameter loading insns
 	     into the delay slot of this CALL.  If so, the USE's for them
 	     don't count and should be skipped.  */
-	  rtx_insn *insn = PREV_INSN (as_a <rtx_insn *> (x));
+	  rtx_insn *call_insn = as_a <rtx_insn *> (x);
+	  rtx_insn *insn = PREV_INSN (call_insn);
 	  rtx_sequence *sequence = 0;
 	  int seq_size = 0;
 	  int i;
 
 	  /* If we are part of a delay slot sequence, point at the SEQUENCE.  */
-	  if (NEXT_INSN (insn) != x)
+	  if (NEXT_INSN (insn) != call_insn)
 	    {
 	      sequence = as_a <rtx_sequence *> (PATTERN (NEXT_INSN (insn)));
 	      seq_size = sequence->len ();
@@ -333,13 +334,13 @@ mark_referenced_resources (rtx x, struct resources *res,
 	     registers ensures that a register will not be considered dead
 	     just because it crosses a setjmp call.  A register should be
 	     considered dead only if the setjmp call returns nonzero.  */
-	  if (find_reg_note (x, REG_SETJMP, NULL))
+	  if (find_reg_note (call_insn, REG_SETJMP, NULL))
 	    SET_HARD_REG_SET (res->regs);
 
 	  {
 	    rtx link;
 
-	    for (link = CALL_INSN_FUNCTION_USAGE (x);
+	    for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
 		 link;
 		 link = XEXP (link, 1))
 	      if (GET_CODE (XEXP (link, 0)) == USE)
