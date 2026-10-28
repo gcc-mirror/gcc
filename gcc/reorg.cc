@@ -207,7 +207,8 @@ static void steal_delay_list_from_fallthrough (rtx_insn *, rtx, rtx_sequence *,
 					       struct resources *,
 					       int, int *, bool *);
 static void try_merge_delay_insns (rtx_insn *, rtx_insn *);
-static rtx_insn *redundant_insn (rtx, rtx_insn *, const vec<rtx_insn *> &);
+static rtx_insn *redundant_insn (rtx_insn *, rtx_insn *,
+				 const vec<rtx_insn *> &);
 static bool own_thread_p (rtx, rtx, bool);
 static void update_block (rtx_insn *, rtx_insn *);
 static bool reorg_redirect_jump (rtx_jump_insn *, rtx);
@@ -1390,7 +1391,8 @@ try_merge_delay_insns (rtx_insn *insn, rtx_insn *thread)
    gain in rare cases.  */
 
 static rtx_insn *
-redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
+redundant_insn (rtx_insn *insn, rtx_insn *target,
+		const vec<rtx_insn *> &delay_list)
 {
   rtx target_main = target;
   rtx ipat = PATTERN (insn);
@@ -1446,8 +1448,8 @@ redundant_insn (rtx insn, rtx_insn *target, const vec<rtx_insn *> &delay_list)
 	     resource requirements as we go.  */
 	  for (i = seq->len () - 1; i > 0; i--)
 	    if (GET_CODE (seq->element (i)) == GET_CODE (insn)
-		&& rtx_equal_p (PATTERN (seq->element (i)), ipat)
-		&& ! find_reg_note (seq->element (i), REG_UNUSED, NULL_RTX))
+		&& rtx_equal_p (PATTERN (seq->insn (i)), ipat)
+		&& ! find_reg_note (seq->insn (i), REG_UNUSED, NULL_RTX))
 	      break;
 
 	  /* If found a match, exit this loop early.  */
@@ -3283,23 +3285,24 @@ relax_delay_slots (rtx_insn *first)
 	 We use next_real_nondebug_insn instead of next_active_insn so we
 	 don't skip USE-markers, or we'll end up with incorrect
 	 liveness info.  */
-      trial = next_real_nondebug_insn (as_a<rtx_insn *> (target_label));
-      if (trial && GET_CODE (PATTERN (trial)) != SEQUENCE
-	  && redundant_insn (trial, insn, vNULL)
-	  && ! can_throw_internal (as_a <rtx_insn *> (trial)))
+      rtx_insn *next_insn
+	= next_real_nondebug_insn (as_a<rtx_insn *> (target_label));
+      if (next_insn && GET_CODE (PATTERN (next_insn)) != SEQUENCE
+	  && redundant_insn (next_insn, insn, vNULL)
+	  && ! can_throw_internal (next_insn))
 	{
 	  /* Figure out where to emit the special USE insn so we don't
 	     later incorrectly compute register live/death info.  */
-	  rtx_insn *tmp = next_active_insn (as_a<rtx_insn *> (trial));
+	  rtx_insn *tmp = next_active_insn (next_insn);
 	  if (tmp == 0)
 	    tmp = find_end_label (simple_return_rtx);
 
 	  if (tmp)
 	    {
 	      /* Insert the special USE insn and update dataflow info.
-		 We know "trial" is an insn here as it is the output of
+		 We know "next_insn" is an insn here as it is the output of
 		 next_real_nondebug_insn () above.  */
-	      update_block (as_a <rtx_insn *> (trial), tmp);
+	      update_block (next_insn, tmp);
 
 	      /* Now emit a label before the special USE insn, and
 		 redirect our jump to the new label.  */
@@ -3313,7 +3316,7 @@ relax_delay_slots (rtx_insn *first)
       /* Similarly, if it is an unconditional jump with one insn in its
 	 delay list and that insn is redundant, thread the jump.  */
       rtx_sequence *trial_seq =
-	trial ? dyn_cast <rtx_sequence *> (PATTERN (trial)) : NULL;
+	next_insn ? dyn_cast <rtx_sequence *> (PATTERN (next_insn)) : NULL;
       if (trial_seq
 	  && trial_seq->len () == 2
 	  && JUMP_P (trial_seq->insn (0))
