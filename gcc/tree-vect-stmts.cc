@@ -4051,8 +4051,8 @@ vect_simd_lane_linear (tree op, class loop *loop,
 	  arginfo->linear_step = linear_step;
 	  arginfo->op = base;
 	  arginfo->simd_lane_linear = true;
-	  return;
 	}
+      return;
     }
 }
 
