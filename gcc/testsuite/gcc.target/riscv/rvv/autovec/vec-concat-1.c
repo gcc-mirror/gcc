@@ -60,9 +60,5 @@
 
 TEST_MODES (DEF_CONCAT)
 
-/* LMUL <= 1: 11 funcs x 3 slideups (using vec_concat, from spills + 1 slideup
-				     to no spills + 3 slideups).
-   LMUL > 1:  24 funcs x 1 slideup  (no vec_concat, using fallback instead,
-				     nothing changed from trunk).  */
-/* { dg-final { scan-assembler-times "vslideup" 57 } } */
+/* { dg-final { scan-assembler-times "vslideup" 105 } } */
 /* { dg-final { scan-assembler-not "vslide1down" } } */

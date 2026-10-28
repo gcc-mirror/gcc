@@ -13378,18 +13378,6 @@ riscv_can_change_mode_class (machine_mode from, machine_mode to,
       && !ordered_p (GET_MODE_PRECISION (from), GET_MODE_PRECISION (to)))
     return false;
 
-  /* Subregs of modes larger than one vector are ambiguous.
-     A V4DImode with rv64gcv_zvl128b could, for example, span two registers/one
-     register group of two at VLEN = 128 or one register at VLEN >= 256 and
-     we cannot, statically, determine which part of it to extract.
-     Therefore prevent that.  */
-  if (reg_classes_intersect_p (V_REGS, rclass)
-      && VECTOR_MODE_P (from)
-      && GET_MODE_NUNITS (from).is_constant ()
-      && maybe_ne (GET_MODE_PRECISION (from), GET_MODE_PRECISION (to))
-      && !ordered_p (BITS_PER_RISCV_VECTOR, GET_MODE_PRECISION (from)))
-      return false;
-
   return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
@@ -13816,10 +13804,9 @@ riscv_regmode_natural_size (machine_mode mode)
 	  if (known_lt (size, BYTES_PER_RISCV_VECTOR))
 	    return size;
 	}
-      if (!size.is_constant ())
+      if (ordered_p (size, BYTES_PER_RISCV_VECTOR))
 	return BYTES_PER_RISCV_VECTOR;
-      else
-	return TARGET_MIN_VLEN / BITS_PER_UNIT;
+      return size;
     }
   return UNITS_PER_WORD;
 }
