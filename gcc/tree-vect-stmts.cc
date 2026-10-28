@@ -4381,6 +4381,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  {
 	    gcc_assert (n->simdclone->args[n->simdclone->nargs - 1].arg_type ==
 			SIMD_CLONE_ARG_TYPE_MASK);
+	    if (!SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+		&& n->simdclone->mask_mode != VOIDmode)
+	      continue;
 	    /* Penalize using a masked SIMD clone in a non-masked loop, that is
 	       not in a branch, as we'd have to construct an all-true mask.  */
 	    this_badness += 64;
@@ -4492,15 +4495,20 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  else
 		    {
 		      masktype = bestn_inbranch->simdclone->args[i].vector_type;
-		      /* The aarch64 port will add custom attributes to types
-			 for SVE simdclones which make the types different.  We
-			 should use canonincal types for masks within the
-			 vectorizer, hence we construct the related vectype
-			 here.  */
-		      masktype
-			= build_truth_vector_type_for_mode
-			  (TYPE_VECTOR_SUBPARTS (masktype),
-			   TYPE_MODE (masktype));
+		      if (VECTOR_BOOLEAN_TYPE_P (masktype))
+			{
+			  if (VECTOR_MODE_P (TYPE_MODE (masktype)))
+			    /* The aarch64 port will add custom attributes to
+			       types for SVE simdclones which make the types
+			       different.  We should use canonincal types for
+			       masks within the vectorizer, hence we
+			       re-construct the vectype from its mode.  */
+			    masktype = build_truth_vector_type_for_mode
+					 (TYPE_VECTOR_SUBPARTS (masktype),
+					  TYPE_MODE (masktype));
+			}
+		      else
+			masktype = truth_type_for (masktype);
 		      callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 		    }
 		  if (!masktype)
