@@ -54,25 +54,31 @@ EXTERN FIO_File FIO_StdOut;
 EXTERN FIO_File FIO_StdErr;
 
 /*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns TRUE if no error has occured on file f.
 */
 
 EXTERN bool FIO_IsNoError (FIO_File f);
 
 /*
-   IsActive - returns TRUE if the file, f, is still active.
+   IsError - returns TRUE if an error has occured on file f.
+*/
+
+EXTERN bool FIO_IsError (FIO_File f);
+
+/*
+   IsActive - returns TRUE if the file f is still active.
 */
 
 EXTERN bool FIO_IsActive (FIO_File f);
 
 /*
-   Exists - returns TRUE if a file named, fname exists for reading.
+   Exists - returns TRUE if a file fname exists for reading.
 */
 
 EXTERN bool FIO_Exists (const char *fname_, unsigned int _fname_high);
 
 /*
-   OpenToRead - attempts to open a file, fname, for reading and
+   OpenToRead - attempts to open a file fname for reading and
                 it returns this file.
                 The success of this operation can be checked by
                 calling IsNoError.
@@ -81,7 +87,7 @@ EXTERN bool FIO_Exists (const char *fname_, unsigned int _fname_high);
 EXTERN FIO_File FIO_OpenToRead (const char *fname_, unsigned int _fname_high);
 
 /*
-   OpenToWrite - attempts to open a file, fname, for write and
+   OpenToWrite - attempts to open a file fname for write and
                  it returns this file.
                  The success of this operation can be checked by
                  calling IsNoError.
@@ -90,7 +96,7 @@ EXTERN FIO_File FIO_OpenToRead (const char *fname_, unsigned int _fname_high);
 EXTERN FIO_File FIO_OpenToWrite (const char *fname_, unsigned int _fname_high);
 
 /*
-   OpenForRandom - attempts to open a file, fname, for random access
+   OpenForRandom - attempts to open a file fname for random access
                    read or write and it returns this file.
                    The success of this operation can be checked by
                    calling IsNoError.
@@ -109,9 +115,14 @@ EXTERN FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_high,
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 */
 
-EXTERN void FIO_Close (FIO_File f);
+EXTERN bool FIO_Close (FIO_File f);
 EXTERN bool FIO_exists (void * fname, unsigned int flength);
 EXTERN FIO_File FIO_openToRead (void * fname, unsigned int flength);
 EXTERN FIO_File FIO_openToWrite (void * fname, unsigned int flength);

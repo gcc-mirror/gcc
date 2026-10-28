@@ -115,10 +115,16 @@ static Indexing_Index FileInfo;
 static FIO_File Error;
 
 /*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns a TRUE if no error has occured on file f.
 */
 
 extern "C" bool FIO_IsNoError (FIO_File f);
+
+/*
+   IsError - returns a TRUE if an error has occured on file f.
+*/
+
+extern "C" bool FIO_IsError (FIO_File f);
 
 /*
    IsActive - returns TRUE if the file, f, is still active.
@@ -134,9 +140,14 @@ extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_h
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 */
 
-extern "C" void FIO_Close (FIO_File f);
+extern "C" bool FIO_Close (FIO_File f);
 
 /*
    exists - returns TRUE if a file named, fname exists for reading.
@@ -1362,7 +1373,7 @@ static void Init (void)
 
 
 /*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns a TRUE if no error has occured on file f.
 */
 
 extern "C" bool FIO_IsNoError (FIO_File f)
@@ -1377,6 +1388,28 @@ extern "C" bool FIO_IsNoError (FIO_File f)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       return (fd != NULL) && (((fd->state == FIO_successful) || (fd->state == FIO_endoffile)) || (fd->state == FIO_endofline));
+    }
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   IsError - returns a TRUE if an error has occured on file f.
+*/
+
+extern "C" bool FIO_IsError (FIO_File f)
+{
+  FIO_FileDescriptor fd;
+
+  if (f == Error)
+    {
+      return false;
+    }
+  else
+    {
+      fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
+      return (fd != NULL) && (((fd->state != FIO_successful) && (fd->state != FIO_endoffile)) && (fd->state != FIO_endofline));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1457,18 +1490,21 @@ extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_h
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 */
 
-extern "C" void FIO_Close (FIO_File f)
+extern "C" bool FIO_Close (FIO_File f)
 {
   FIO_FileDescriptor fd;
 
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
-      /*
-         we allow users to close files which have an error status
-  */
+      /* We allow users to close files which have an error status.  */
       if (fd != NULL)
         {
           FIO_FlushBuffer (f);
@@ -1477,7 +1513,8 @@ extern "C" void FIO_Close (FIO_File f)
               if ((libc_close (fd->unixfd)) != 0)
                 {
                   FormatError1 ((const char *) "failed to close file (%s)\\n", 27, (const unsigned char *) &fd->name.address, (sizeof (fd->name.address)-1));
-                  fd->state = FIO_failed;  /* --fixme-- too late to notify user (unless we return a BOOLEAN)  */
+                  fd->state = FIO_failed;
+                  return false;
                 }
             }
           if (fd->name.address != NULL)
@@ -1496,7 +1533,14 @@ extern "C" void FIO_Close (FIO_File f)
           Storage_DEALLOCATE ((void **) &fd, sizeof (FIO_fds));
           Indexing_PutIndice (FileInfo, f, NULL);
         }
+      return true;
     }
+  else
+    {
+      return false;
+    }
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
 }
 
 

@@ -69,7 +69,8 @@ PROCEDURE GetBuiltinTypeInfoType (ident: ConstCharStar) : CARDINAL ;
                         RType tree       if ident is large, small.
 *)
 
-PROCEDURE GetBuiltinTypeInfo (location: location_t; type: tree; ident: ConstCharStar) : tree ;
+PROCEDURE GetBuiltinTypeInfo (location: location_t; tokno: CARDINAL;
+                              type: tree; ident: ConstCharStar) : tree ;
 
 
 (*

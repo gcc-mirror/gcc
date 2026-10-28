@@ -27,13 +27,14 @@ FROM M2Debug IMPORT Assert ;
 FROM NameKey IMPORT Name, WriteKey, MakeKey, GetKey ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM NumberIO IMPORT WriteCard ;
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
 
 FROM M2Error IMPORT InternalError ;
 FROM M2Batch IMPORT GetModuleNo ;
 FROM M2Quiet IMPORT qprintf1 ;
 FROM M2Scope IMPORT ScopeBlock, InitScopeBlock, KillScopeBlock ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord, PushWord, PopWord, PeepWord ;
-FROM M2Options IMPORT CompilerDebugging ;
+FROM M2Options IMPORT GetInternalDebuggingFlag ;
 FROM Lists IMPORT InitList, KillList, List, IncludeItemIntoList, IsItemInList ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
 
@@ -93,12 +94,12 @@ BEGIN
       IF writtenOnce (variable)
       THEN
          PutVariableSSA (variable, TRUE) ;
-         IF CompilerDebugging
+         IF GetInternalDebuggingFlag (BuiltinTokenNo)
          THEN
             printf1 ("  temporary:  %a  SSA found\n", name)
          END
       ELSE
-         IF CompilerDebugging
+         IF GetInternalDebuggingFlag (BuiltinTokenNo)
          THEN
             printf1 ("  temporary:  %a  not SSA\n", name)
          END
@@ -116,7 +117,7 @@ VAR
    n,
    variable: CARDINAL ;
 BEGIN
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (BuiltinTokenNo)
    THEN
       printf1 ("examining scope %d\n", scope)
    END ;
@@ -144,17 +145,17 @@ BEGIN
       IncludeItemIntoList (visited, scope) ;
       sb := InitScopeBlock (scope) ;
       PushWord (stack, scope) ;
-      IF CompilerDebugging
+      IF GetInternalDebuggingFlag (BuiltinTokenNo)
       THEN
          printf1 ("DiscoverSSA %d\n", scope)
       END ;
 
-      IF CompilerDebugging
+      IF GetInternalDebuggingFlag (BuiltinTokenNo)
       THEN
          printf0 ("ForeachInnerModuleDo\n")
       END ;
       ForeachInnerModuleDo(scope, DiscoverSSA) ;
-      IF CompilerDebugging
+      IF GetInternalDebuggingFlag (BuiltinTokenNo)
       THEN
          printf0 ("ForeachProcedureDo\n")
       END ;

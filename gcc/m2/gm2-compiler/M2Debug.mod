@@ -24,17 +24,18 @@ IMPLEMENTATION MODULE M2Debug ;
 
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM M2Error IMPORT InternalError ;
-FROM M2Options IMPORT CompilerDebugging ;
+FROM M2Options IMPORT GetInternalDebuggingFlag ;
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
 
 
 (*
-   Assert - tests the boolean, q. If false then an error is reported
+   Assert - tests the boolean condition. If false then an error is reported
             and the execution is HALTed.
 *)
 
-PROCEDURE Assert (q: BOOLEAN) ;
+PROCEDURE Assert (condition: BOOLEAN) ;
 BEGIN
-   IF NOT q
+   IF NOT condition
    THEN
       InternalError ('assert failed')
    END
@@ -42,14 +43,14 @@ END Assert ;
 
 
 (*
-   WriteDebug - only writes a string if the debugging mode is on.
+   WriteDebug - only write string msg if the debugging mode is on.
 *)
 
-PROCEDURE WriteDebug (a: ARRAY OF CHAR) ;
+PROCEDURE WriteDebug (msg: ARRAY OF CHAR) ;
 BEGIN
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (BuiltinTokenNo)
    THEN
-      WriteString(a) ; WriteLn
+      WriteString (msg) ; WriteLn
    END
 END WriteDebug ;
 

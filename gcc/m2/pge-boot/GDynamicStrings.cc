@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,12 +42,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
 #   include "GStorage.h"
-#include <unistd.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -295,7 +292,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveComment (DynamicStrings_St
 extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicStrings_String s);
 
 /*
-   RemoveWhitePostfix - removes any leading white space from String, s.
+   RemoveWhitePostfix - removes any trailing white space from String, s.
                         A new string is returned.
 */
 
@@ -656,7 +653,7 @@ static void writeStringDesc (DynamicStrings_String__opaque s)
   writeString ((const char *) ":", 1);
   writeCstring (s->debug.proc);
   writeString ((const char *) " ", 1);
-  writeAddress (reinterpret_cast<void *> (s));
+  writeAddress (reinterpret_cast <void *> (s));
   writeString ((const char *) " ", 1);
   switch (s->head->state)
     {
@@ -780,7 +777,7 @@ static void DSdbExit (DynamicStrings_String__opaque s)
 
 static unsigned int Capture (DynamicStrings_String__opaque s)
 {
-  /*
+  /* 
  *   #undef GM2_DEBUG_DYNAMICSTINGS
  *   #if defined(GM2_DEBUG_DYNAMICSTINGS)
  *   #  define DSdbEnter doDSdbEnter
@@ -1335,7 +1332,7 @@ static void ConcatContentsAddress (DynamicStrings_Contents *c, void * a, unsigne
       (*c).next->head = NULL;
       (*c).next->contents.len = 0;
       (*c).next->contents.next = static_cast<DynamicStrings_String__opaque> (NULL);
-      ConcatContentsAddress (&(*c).next->contents, reinterpret_cast<void *> (p), h-j);
+      ConcatContentsAddress (&(*c).next->contents, reinterpret_cast <void *> (p), h-j);
       AddDebugInfo ((*c).next);
       if (TraceOn)
         {
@@ -1365,7 +1362,7 @@ static DynamicStrings_String__opaque AddToGarbage (DynamicStrings_String__opaque
       a = CheckPoisoned (a);
       b = CheckPoisoned (b);
     }
-  /*
+  /* 
    IF (a#NIL) AND (a#b) AND (a^.head^.state=marked)
    THEN
       writeString('warning trying to add to a marked string') ; writeLn
@@ -1475,7 +1472,7 @@ static void DumpStringSynopsis (DynamicStrings_String__opaque s)
   writeString ((const char *) ":", 1);
   writeCstring (s->debug.proc);
   writeString ((const char *) " string ", 8);
-  writeAddress (reinterpret_cast<void *> (s));
+  writeAddress (reinterpret_cast <void *> (s));
   writeString ((const char *) " ", 1);
   DumpState (s);
   if (IsOnAllocated (s))
@@ -2348,7 +2345,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicString
 
 
 /*
-   RemoveWhitePostfix - removes any leading white space from String, s.
+   RemoveWhitePostfix - removes any trailing white space from String, s.
                         A new string is returned.
 */
 

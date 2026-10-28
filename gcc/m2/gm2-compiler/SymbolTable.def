@@ -36,6 +36,7 @@ FROM gcctypes IMPORT tree ;
 FROM DynamicStrings IMPORT String ;
 FROM M2Error IMPORT ErrorScope ;
 FROM Lists IMPORT List ;
+FROM M2Options IMPORT Options ;
 
 
 (*
@@ -1910,7 +1911,7 @@ PROCEDURE RequestSym (tok: CARDINAL; SymName: Name) : CARDINAL ;
    PutImported - places a symbol, Sym, into the current main scope.
 *)
 
-PROCEDURE PutImported (Sym: CARDINAL) ;
+PROCEDURE PutImported (tokno: CARDINAL; Sym: CARDINAL) ;
 
 
 (*
@@ -3423,7 +3424,7 @@ PROCEDURE PutProcedureParameterHeapVars (sym: CARDINAL) ;
                                  for the target architecture.
 *)
 
-PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
+PROCEDURE IsProcedureBuiltinAvailable (tokno: CARDINAL; procedure: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -3559,6 +3560,141 @@ PROCEDURE GetNthParamAnyClosest (sym: CARDINAL; ParamNo: CARDINAL;
 *)
 
 PROCEDURE IsConstVar (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   MakePragmaOption - create and return a pragma option.
+*)
+
+PROCEDURE MakePragmaOption (tok: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetPragmaOptions - return the options associated with the pragma.
+*)
+
+PROCEDURE GetPragmaOptions (sym: CARDINAL) : Options ;
+
+
+(*
+   MakePragmaLoop - create and return a loop pragma.
+*)
+
+PROCEDURE MakePragmaLoop (tok: CARDINAL) : CARDINAL ;
+
+
+(*
+   IsPragmaLoop - returns TRUE if sym is a pragma loop.
+*)
+
+PROCEDURE IsPragmaLoop (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPragmaOption - returns TRUE if sym is a pragma option.
+*)
+
+PROCEDURE IsPragmaOption (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPragmaFunc - return TRUE if sym is a pragma function.
+*)
+
+PROCEDURE IsPragmaFunc (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   PutPragmaMessage - place msg into the pragma function sym.
+*)
+
+PROCEDURE PutPragmaMessage (tok: CARDINAL; sym: CARDINAL; msg: String) ;
+
+
+(*
+   MakePragmaInfo - create and return a pragma info call.
+*)
+
+PROCEDURE MakePragmaInfo (tok: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakePragmaFatal - create and return a pragma fatal call.
+*)
+
+PROCEDURE MakePragmaFatal (tok: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakePragmaError - create and return a pragma error call.
+*)
+
+PROCEDURE MakePragmaError (tok: CARDINAL) : CARDINAL ;
+
+
+(*
+   MakePragmaWarn - create and return a pragma warn call.
+*)
+
+PROCEDURE MakePragmaWarn (tok: CARDINAL) : CARDINAL ;
+
+
+(*
+   GetPragmaMessage - return the pragma function string.
+*)
+
+PROCEDURE GetPragmaMessage (sym: CARDINAL) : String ;
+
+
+(*
+   IsPragmaWarn - return TRUE if sym is a pragma warn function.
+*)
+
+PROCEDURE IsPragmaWarn (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPragmaError - return TRUE if sym is a pragma error function.
+*)
+
+PROCEDURE IsPragmaError (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPragmaInfo - return TRUE if sym is a pragma info function.
+*)
+
+PROCEDURE IsPragmaInfo (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   IsPragmaFatal - return TRUE if sym is a pragma fatal function.
+*)
+
+PROCEDURE IsPragmaFatal (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetScopePragma - return the pragma symbol associated with
+                    a procedure, module or defimp symbol.
+*)
+
+PROCEDURE GetScopePragma (sym: CARDINAL) : CARDINAL ;
+
+
+(*
+   PragmaAppend - append pragma symbol to defimp, module or procedure sym.
+*)
+
+PROCEDURE PragmaAppend (sym: CARDINAL; pragma: CARDINAL) ;
+
+
+(*
+   GetNthPragma - return the nth pragma from procedure, module
+                  or defimp sym.
+*)
+
+PROCEDURE GetNthPragma (sym: CARDINAL; nth: CARDINAL) : CARDINAL ;
 
 
 END SymbolTable.

@@ -25,7 +25,7 @@ IMPLEMENTATION MODULE M2MetaError ;
 FROM M2Base IMPORT ZType, RType, IsPseudoBaseFunction, IsPseudoBaseProcedure ;
 FROM NameKey IMPORT Name, KeyToCharStar, NulName ;
 FROM StrLib IMPORT StrLen ;
-FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo ;
+FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo, CommandTokenNo ;
 
 FROM M2Error IMPORT Error, NewError, KillError,
                     NewWarning, NewNote, ErrorString, InternalError,
@@ -35,7 +35,7 @@ FROM FIO IMPORT StdOut, WriteLine ;
 FROM SFIO IMPORT WriteS ;
 FROM StringConvert IMPORT ctos ;
 FROM M2Printf IMPORT printf1, printf0 ;
-FROM M2Options IMPORT LowerCaseKeywords ;
+FROM M2Options IMPORT GetLowerCaseKeyword ;
 FROM StrCase IMPORT Lower ;
 FROM libc IMPORT printf ;
 FROM SYSTEM IMPORT ADDRESS ;
@@ -132,6 +132,7 @@ TYPE
 VAR
    lastRoot     : Error ;
    lastColor    : colorType ;
+   seenCmdLine,
    seenAbort    : BOOLEAN ;
    dictionary   : Index ;
    outputStack  : Index ;
@@ -1248,6 +1249,10 @@ END updateTokSym ;
 
 PROCEDURE chooseError (VAR eb: errorBlock; tok: CARDINAL; sym: CARDINAL) ;
 BEGIN
+   IF tok = CommandTokenNo
+   THEN
+      seenCmdLine := TRUE
+   END ;
    IF eb.chain
    THEN
       doChain (eb, tok)
@@ -2269,7 +2274,7 @@ BEGIN
    THEN
       flushColor (eb) ;
       ch := char (eb.in, eb.ini) ;
-      IF LowerCaseKeywords
+      IF GetLowerCaseKeyword (eb.token)
       THEN
          ch := Lower (ch)
       END ;
@@ -2814,13 +2819,14 @@ END MetaErrorString4 ;
 
 
 (*
-   checkAbort - checks to see if the boolean flag seenAbort has been set,
-                if so it flushes all existing errors and terminates.
+   checkAbort - checks to see if the boolean flag seenAbort or seenCmdLine
+                has been set, if so it flushes all existing errors and
+                terminates.
 *)
 
 PROCEDURE checkAbort ;
 BEGIN
-   IF seenAbort
+   IF seenAbort OR seenCmdLine
    THEN
       FlushWarnings ;
       FlushErrors
@@ -3042,6 +3048,7 @@ BEGIN
    lastRoot := NIL ;
    lastColor := noColor ;
    seenAbort := FALSE ;
+   seenCmdLine := FALSE ;
    outputStack := InitIndex (1) ;
    dictionary := InitIndex (1) ;
    freeEntry := NIL ;

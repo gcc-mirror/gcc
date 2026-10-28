@@ -36,9 +36,9 @@ FROM Indexing IMPORT InitIndex, InBounds, LowIndice, HighIndice,
 FROM Sets IMPORT Set, InitSet, IncludeElementIntoSet, IsElementInSet ;
 FROM gcctypes IMPORT location_t ;
 
-FROM M2Options IMPORT Pedantic, ExtendedOpaque,
-                      GetDebugFunctionLineNumbers, ScaffoldDynamic,
-                      DebugBuiltins ;
+FROM M2Options IMPORT GetPedantic, GetExtendedOpaque,
+                      GetDebugFunctionLineNumbers, GetScaffoldDynamicFlag,
+                      GetDebugBuiltinFlag, InitOptions ;
 
 FROM M2LexBuf IMPORT UnknownTokenNo, TokenToLineNo,
                      FindFileNameFromToken, TokenToLocation,
@@ -100,8 +100,6 @@ FROM M2SymInit IMPORT InitDesc, InitSymInit, GetInitialized, ConfigSymInit,
                       SetInitialized, SetFieldInitialized, GetFieldInitialized,
                       PrintSymInit ;
 
-IMPORT Indexing ;
-
 
 CONST
    DebugUnknowns        =  FALSE ;   (* Debug unknown symbols.  *)
@@ -140,7 +138,10 @@ TYPE
 
    LRInitDesc = ARRAY [RightValue..LeftValue] OF InitDesc ;
 
-   TypeOfSymbol = (RecordSym, VarientSym, DummySym,
+   TypeOfSymbol = (PragmaOptionSym, PragmaLoopSym,
+                   PragmaWarnSym, PragmaErrorSym,
+                   PragmaFatalSym, PragmaInfoSym,
+                   RecordSym, VarientSym, DummySym,
                    VarSym, EnumerationSym, SubrangeSym, ArraySym,
                    ConstStringSym, ConstVarSym, ConstLitSym,
                    VarParamSym, ParamSym, PointerSym,
@@ -441,6 +442,8 @@ TYPE
                Scope         : CARDINAL ;   (* Scope of declaration.         *)
                errorScope    : ErrorScope ; (* The title scope.              *)
                ListOfModules : List ;       (* List of all inner modules.    *)
+               PragmaArray   : Indexing.Index ;  (* Array of pragmas.        *)
+               PragmaScope   : CARDINAL ;   (* Associate Options block.      *)
                Begin, End    : CARDINAL ;   (* Tokens marking the BEGIN END  *)
                At            : Where ;      (* Where was sym declared/used   *)
             END ;
@@ -764,8 +767,10 @@ TYPE
                ListOfProcs   : List ;       (* List of all procedures        *)
                                             (* declared within this module.  *)
                ListOfModules : List ;       (* List of all inner modules.    *)
+               PragmaArray   : Indexing.Index ;  (* Array of pragmas.        *)
                errorScope    : ErrorScope ; (* The title scope.              *)
-               At            : Where ;      (* Where was sym declared/used *)
+               PragmaScope   : CARDINAL ;   (* Associate Options block.      *)
+               At            : Where ;      (* Where was sym declared/used.  *)
             END ;
 
    SymModule =
@@ -833,9 +838,42 @@ TYPE
                ListOfProcs   : List ;       (* List of all procedures        *)
                                             (* declared within this module.  *)
                ListOfModules : List ;       (* List of all inner modules.    *)
+               PragmaArray   : Indexing.Index ;  (* Array of pragmas.        *)
+               PragmaScope   : CARDINAL ;   (* Associate Options block.      *)
                errorScope    : ErrorScope ; (* The title scope.              *)
                At            : Where ;      (* Where was sym declared/used   *)
             END ;
+
+   SymPragmaOption = RECORD
+                        options: Options ;  (* The option block associate    *)
+                        At     : Where ;    (* with the pragma.              *)
+                     END ;
+
+   SymPragmaLoop = RECORD
+                      UnrollLimit: CARDINAL ;  (* The unroll limit.         *)
+                      LoopBits   : LoopSettings ;  (* Attribute loop bits.  *)
+                      At         : Where ;
+                   END ;
+
+   SymPragmaWarn = RECORD
+                      Message: String ;
+                      At     : Where ;
+                   END ;
+
+   SymPragmaError = RECORD
+                       Message: String ;
+                       At     : Where ;
+                    END ;
+
+   SymPragmaFatal = RECORD
+                       Message: String ;
+                       At     : Where ;
+                    END ;
+
+   SymPragmaInfo = RECORD
+                       Message: String ;
+                       At     : Where ;
+                   END ;
 
    SymDummy =
             RECORD
@@ -847,8 +885,15 @@ TYPE
                CASE SymbolType : TypeOfSymbol OF
                                             (* Determines the type of symbol *)
 
+
                OAFamilySym         : OAFamily         : SymOAFamily |
                ObjectSym           : Object           : SymObject |
+               PragmaOptionSym     : PragmaOption     : SymPragmaOption |
+               PragmaLoopSym       : PragmaLoop       : SymPragmaLoop |
+               PragmaWarnSym       : PragmaWarn       : SymPragmaWarn |
+               PragmaErrorSym      : PragmaError      : SymPragmaError |
+               PragmaFatalSym      : PragmaFatal      : SymPragmaFatal |
+               PragmaInfoSym       : PragmaInfo       : SymPragmaInfo |
                EquivSym            : Equiv            : SymEquiv |
                RecordSym           : Record           : SymRecord |
                VarientSym          : Varient          : SymVarient |
@@ -897,6 +942,10 @@ TYPE
    PtrToCallFrame = POINTER TO CallFrame ;
 
    CheckProcedure = PROCEDURE (CARDINAL) ;
+
+   LoopAttribs = (novector, ivdep) ;
+
+   LoopSettings = SET OF LoopAttribs ;
 
 VAR
    Symbols       : Indexing.Index ;   (* ARRAY [1..MaxSymbols] OF Symbol.   *)
@@ -3042,6 +3091,422 @@ END CheckScopeForSym ;
 
 
 (*
+   GetScopePragma - return the pragma symbol associated with
+                    a procedure, module or defimp symbol.
+*)
+
+PROCEDURE GetScopePragma (sym: CARDINAL) : CARDINAL ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      ProcedureSym:  RETURN Procedure.PragmaScope |
+      ModuleSym   :  RETURN Module.PragmaScope |
+      DefImpSym   :  RETURN DefImp.PragmaScope
+
+      ELSE
+         InternalError ('expecting procedure, module or defimp symbol')
+      END
+   END
+END GetScopePragma ;
+
+
+(*
+   MakePragmaOption - create and return a pragma option.
+*)
+
+PROCEDURE MakePragmaOption (tok: CARDINAL) : CARDINAL ;
+VAR
+   sym : CARDINAL ;
+   pSym: PtrToSymbol ;
+BEGIN
+   NewSym (sym) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      SymbolType := PragmaOptionSym ;
+      WITH PragmaOption DO
+         options := InitOptions ('local') ;
+         InitWhereDeclaredTok (tok, At) ;  (* Where the symbol was declared.  *)
+      END
+   END ;
+   RETURN sym
+END MakePragmaOption ;
+
+
+(*
+   GetPragmaOptions - return the options associated with the pragma.
+*)
+
+PROCEDURE GetPragmaOptions (sym: CARDINAL) : Options ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      Assert (SymbolType = PragmaOptionSym) ;
+      RETURN PragmaOption.options
+   END
+END GetPragmaOptions ;
+
+
+(*
+   MakePragmaLoop - create and return a loop pragma.
+*)
+
+PROCEDURE MakePragmaLoop (tok: CARDINAL) : CARDINAL ;
+VAR
+   sym : CARDINAL ;
+   pSym: PtrToSymbol ;
+BEGIN
+   NewSym (sym) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      SymbolType := PragmaLoopSym ;
+      WITH PragmaLoop DO
+         UnrollLimit := NulSym ;
+         LoopBits := LoopSettings {} ;
+         InitWhereDeclaredTok (tok, At) ;  (* Where the symbol was declared.  *)
+      END
+   END ;
+   RETURN sym
+END MakePragmaLoop ;
+
+
+(*
+   IsPragmaLoop - returns TRUE if sym is a pragma loop.
+*)
+
+PROCEDURE IsPragmaLoop (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      RETURN SymbolType = PragmaLoopSym
+   END
+END IsPragmaLoop ;
+
+
+(*
+   IsPragmaOption - returns TRUE if sym is a pragma option.
+*)
+
+PROCEDURE IsPragmaOption (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      RETURN SymbolType = PragmaOptionSym
+   END
+END IsPragmaOption ;
+
+
+(*
+   MakePragmaWarn - create and return a pragma warn call.
+*)
+
+PROCEDURE MakePragmaWarn (tok: CARDINAL) : CARDINAL ;
+VAR
+   sym : CARDINAL ;
+   pSym: PtrToSymbol ;
+BEGIN
+   NewSym (sym) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      SymbolType := PragmaWarnSym ;
+      WITH PragmaWarn DO
+         Message := NIL ;
+         InitWhereDeclaredTok (tok, At) ;  (* Where the symbol was declared.  *)
+      END
+   END ;
+   RETURN sym
+END MakePragmaWarn ;
+
+
+(*
+   MakePragmaError - create and return a pragma error call.
+*)
+
+PROCEDURE MakePragmaError (tok: CARDINAL) : CARDINAL ;
+VAR
+   sym : CARDINAL ;
+   pSym: PtrToSymbol ;
+BEGIN
+   NewSym (sym) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      SymbolType := PragmaErrorSym ;
+      WITH PragmaError DO
+         Message := NIL ;
+         InitWhereDeclaredTok (tok, At) ;  (* Where the symbol was declared.  *)
+      END
+   END ;
+   RETURN sym
+END MakePragmaError ;
+
+
+(*
+   MakePragmaFatal - create and return a pragma fatal call.
+*)
+
+PROCEDURE MakePragmaFatal (tok: CARDINAL) : CARDINAL ;
+VAR
+   sym : CARDINAL ;
+   pSym: PtrToSymbol ;
+BEGIN
+   NewSym (sym) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      SymbolType := PragmaFatalSym ;
+      WITH PragmaFatal DO
+         Message := NIL ;
+         InitWhereDeclaredTok (tok, At) ;  (* Where the symbol was declared.  *)
+      END
+   END ;
+   RETURN sym
+END MakePragmaFatal ;
+
+
+(*
+   MakePragmaInfo - create and return a pragma info call.
+*)
+
+PROCEDURE MakePragmaInfo (tok: CARDINAL) : CARDINAL ;
+VAR
+   sym : CARDINAL ;
+   pSym: PtrToSymbol ;
+BEGIN
+   NewSym (sym) ;
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      SymbolType := PragmaInfoSym ;
+      WITH PragmaInfo DO
+         Message := NIL ;
+         InitWhereDeclaredTok (tok, At) ;  (* Where the symbol was declared.  *)
+      END
+   END ;
+   RETURN sym
+END MakePragmaInfo ;
+
+
+(*
+   PutPragmaMessage - place msg into the pragma function sym.
+*)
+
+PROCEDURE PutPragmaMessage (tok: CARDINAL; sym: CARDINAL; msg: String) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      PragmaWarnSym :  PragmaWarn.Message := msg |
+      PragmaErrorSym:  PragmaError.Message := msg |
+      PragmaFatalSym:  PragmaFatal.Message := msg |
+      PragmaInfoSym :  PragmaInfo.Message := msg
+
+      ELSE
+         MetaErrorT1 (tok, 'cannot attribute a pragma message to {%E1d}', sym)
+      END
+   END
+END PutPragmaMessage ;
+
+
+(*
+   GetPragmaMessage - return the pragma function string.
+*)
+
+PROCEDURE GetPragmaMessage (sym: CARDINAL) : String ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      PragmaWarnSym :  RETURN PragmaWarn.Message |
+      PragmaErrorSym:  RETURN PragmaError.Message |
+      PragmaFatalSym:  RETURN PragmaFatal.Message |
+      PragmaInfoSym :  RETURN PragmaInfo.Message
+
+      ELSE
+         InternalError ('expecting a pragma func')
+      END
+   END
+END GetPragmaMessage ;
+
+
+(*
+   IsPragmaFunc - return TRUE if sym is a pragma function.
+*)
+
+PROCEDURE IsPragmaFunc (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      PragmaWarnSym,
+      PragmaErrorSym,
+      PragmaFatalSym,
+      PragmaInfoSym :  RETURN TRUE
+
+      ELSE
+         RETURN FALSE
+      END
+   END
+END IsPragmaFunc ;
+
+
+(*
+   IsPragmaWarn - return TRUE if sym is a pragma warn function.
+*)
+
+PROCEDURE IsPragmaWarn (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      RETURN SymbolType = PragmaWarnSym
+   END
+END IsPragmaWarn ;
+
+
+(*
+   IsPragmaError - return TRUE if sym is a pragma error function.
+*)
+
+PROCEDURE IsPragmaError (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      RETURN SymbolType = PragmaErrorSym
+   END
+END IsPragmaError ;
+
+
+(*
+   IsPragmaInfo - return TRUE if sym is a pragma info function.
+*)
+
+PROCEDURE IsPragmaInfo (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      RETURN SymbolType = PragmaInfoSym
+   END
+END IsPragmaInfo ;
+
+
+(*
+   IsPragmaFatal - return TRUE if sym is a pragma fatal function.
+*)
+
+PROCEDURE IsPragmaFatal (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      RETURN SymbolType = PragmaFatalSym
+   END
+END IsPragmaFatal ;
+
+
+(*
+   GetNthPragma - return the nth pragma from procedure, module
+                  or defimp sym.
+*)
+
+PROCEDURE GetNthPragma (sym: CARDINAL; nth: CARDINAL) : CARDINAL ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      DefImpSym   :  RETURN ArrayValue (DefImp.PragmaArray, nth) |
+      ModuleSym   :  RETURN ArrayValue (Module.PragmaArray, nth) |
+      ProcedureSym:  RETURN ArrayValue (Procedure.PragmaArray, nth)
+
+      ELSE
+         InternalError ('expecting defimp, module or procedure scope')
+      END
+   END ;
+   RETURN NulSym
+END GetNthPragma ;
+
+
+(*
+   ArrayValue - return the nth CARDINAL in array.
+*)
+
+PROCEDURE ArrayValue (array: Indexing.Index; nth: CARDINAL) : CARDINAL ;
+VAR
+   ptr: POINTER TO CARDINAL ;
+BEGIN
+   ptr := Indexing.GetIndice (array, nth) ;
+   RETURN ptr^
+END ArrayValue ;
+
+
+(*
+   AppendArray - appends value to the array.
+*)
+
+PROCEDURE AppendArray (VAR array: Indexing.Index; value: CARDINAL) ;
+VAR
+   ptr: POINTER TO CARDINAL ;
+BEGIN
+   NEW (ptr) ;
+   ptr^ := value ;
+   IF array = NIL
+   THEN
+      array := InitIndex (1) ;
+      PutIndice (array, 1, ptr)
+   ELSE
+      PutIndice (array, Indexing.HighIndice (array) + 1, ptr)
+   END
+END AppendArray ;
+
+
+(*
+   PragmaAppend - append pragma symbol to defimp, module or procedure sym.
+*)
+
+PROCEDURE PragmaAppend (sym: CARDINAL; pragma: CARDINAL) ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   pSym := GetPsym (sym) ;
+   WITH pSym^ DO
+      CASE SymbolType OF
+
+      DefImpSym   :  AppendArray (DefImp.PragmaArray, pragma) |
+      ModuleSym   :  AppendArray (Module.PragmaArray, pragma) |
+      ProcedureSym:  AppendArray (Procedure.PragmaArray, pragma)
+
+      ELSE
+         InternalError ('expecting defimp, module or procedure scope')
+      END
+   END
+END PragmaAppend ;
+
+
+(*
    DisplayScopes - displays the scopes that will be searched to find
                    a requested symbol.
 *)
@@ -3269,7 +3734,7 @@ PROCEDURE InitCtorFields (moduleTok, beginTok, finallyTok: CARDINAL;
                           VAR ctor: ModuleCtor; name: Name;
                           inner, pub: BOOLEAN) ;
 BEGIN
-   IF ScaffoldDynamic AND (NOT inner)
+   IF GetScaffoldDynamicFlag (moduleTok) AND (NOT inner)
    THEN
       (* The ctor procedure must be public.  *)
       ctor.ctor := MakeProcedure (moduleTok,
@@ -3367,9 +3832,10 @@ END CheckTok ;
 
 PROCEDURE MakeModule (tok: CARDINAL; ModuleName: Name) : CARDINAL ;
 VAR
-   pSym : PtrToSymbol ;
-   pCall: PtrToCallFrame ;
-   Sym  : CARDINAL ;
+   pSym  : PtrToSymbol ;
+   pCall : PtrToCallFrame ;
+   pragma,
+   Sym   : CARDINAL ;
 BEGIN
    (* tok := CheckTok (tok, 'module') ; *)
    (*
@@ -3379,8 +3845,9 @@ BEGIN
       Therefore we must not call DeclareSym but create a symbol
       directly.
    *)
-   NewSym(Sym) ;
-   pSym := GetPsym(Sym) ;
+   pragma := MakePragmaOption (tok) ;
+   NewSym (Sym) ;
+   pSym := GetPsym (Sym) ;
    WITH pSym^ DO
       SymbolType := ModuleSym ;
       WITH Module DO
@@ -3445,6 +3912,8 @@ BEGIN
          InitList(ListOfProcs) ;            (* List of all procedures        *)
                                             (* declared within this module.  *)
          InitList(ListOfModules) ;          (* List of all inner modules.    *)
+         PragmaArray := NIL ;               (* Array of pragmas.             *)
+         PragmaScope := pragma ;            (* Associate Options block.      *)
          InitWhereDeclaredTok(tok, At) ;    (* Where symbol declared.        *)
          InitWhereFirstUsedTok(tok, At) ;   (* Where symbol first used.      *)
          pCall := GetPcall(ScopePtr) ;
@@ -3641,12 +4110,14 @@ END AddModuleToParent ;
 
 PROCEDURE MakeInnerModule (tok: CARDINAL; ModuleName: Name) : CARDINAL ;
 VAR
-   pSym: PtrToSymbol ;
-   Sym : CARDINAL ;
+   pSym  : PtrToSymbol ;
+   pragma,
+   Sym   : CARDINAL ;
 BEGIN
    Sym := DeclareSym (tok, ModuleName) ;
    IF NOT IsError(Sym)
    THEN
+      pragma := MakePragmaOption (tok) ;
       pSym := GetPsym(Sym) ;
       WITH pSym^ DO
          SymbolType := ModuleSym ;
@@ -3709,6 +4180,7 @@ BEGIN
             InitList(ListOfProcs) ;         (* List of all procedures        *)
                                             (* declared within this module.  *)
             InitList(ListOfModules) ;       (* List of all inner modules.    *)
+            PragmaScope := pragma ;         (* Associate Options block.      *)
             InitWhereDeclaredTok(tok, At) ;   (* Where symbol declared.        *)
             InitWhereFirstUsedTok(tok, At) ;  (* Where symbol first used.      *)
             IF GetCurrentScope()=GetBaseModule()
@@ -3734,18 +4206,20 @@ END MakeInnerModule ;
 
 PROCEDURE MakeDefImp (tok: CARDINAL; DefImpName: Name) : CARDINAL ;
 VAR
-   pSym: PtrToSymbol ;
-   Sym : CARDINAL ;
+   pSym  : PtrToSymbol ;
+   pragma,
+   Sym   : CARDINAL ;
 BEGIN
    (* Make a new symbol since we are at the outer scope level.  *)
    (* We cannot use DeclareSym as it examines the current scope *)
    (* for any symbols which have the correct name, but are yet  *)
    (* undefined.  *)
    (* tok := CheckTok (tok, 'defimp') ;  *)
+   pragma := MakePragmaOption (tok) ;
    NewSym(Sym) ;
    pSym := GetPsym(Sym) ;
    WITH pSym^ DO
-      SymbolType := DefImpSym ;
+         SymbolType := DefImpSym ;
       WITH DefImp DO
          name := DefImpName ;         (* Index into name array, name   *)
                                       (* of record field.              *)
@@ -3842,6 +4316,8 @@ BEGIN
          InitList(ListOfProcs) ;      (* List of all procedures        *)
                                       (* declared within this module.  *)
          InitList(ListOfModules) ;    (* List of all inner modules.    *)
+         PragmaScope := pragma ;      (* Associate Options block.      *)
+         PragmaArray := NIL ;         (* Array of pragmas.             *)
          InitWhereDeclaredTok(tok, At) ;  (* Where symbol declared.    *)
          InitWhereFirstUsedTok(tok, At) ; (* Where symbol first used.  *)
          errorScope := GetCurrentErrorScope () ; (* Title error scope. *)
@@ -4007,15 +4483,17 @@ END InitProcedureDeclaration ;
 
 PROCEDURE MakeProcedure (tok: CARDINAL; ProcedureName: Name) : CARDINAL ;
 VAR
-   pSym: PtrToSymbol ;
-   Sym : CARDINAL ;
-   kind: ProcedureKind ;
+   pSym  : PtrToSymbol ;
+   pragma,
+   Sym   : CARDINAL ;
+   kind  : ProcedureKind ;
 BEGIN
    tok := CheckTok (tok, 'procedure') ;
-   Sym := DeclareSym(tok, ProcedureName) ;
+   Sym := DeclareSym (tok, ProcedureName) ;
    CheckBreak (Sym) ;
    IF NOT IsError(Sym)
    THEN
+      pragma := MakePragmaOption (tok) ;
       pSym := GetPsym(Sym) ;
       WITH pSym^ DO
          SymbolType := ProcedureSym ;
@@ -4067,6 +4545,8 @@ BEGIN
             Size := InitValue() ;        (* Activation record size.       *)
             TotalParamSize
                        := InitValue() ;  (* size of all parameters.       *)
+            PragmaArray := NIL ;         (* Array of pragmas.             *)
+            PragmaScope := pragma ;      (* Associate Options block.      *)
             Begin := 0 ;                 (* token number for BEGIN        *)
             End := 0 ;                   (* token number for END          *)
             InitWhereDeclaredTok(tok, At) ;  (* Where the symbol was declared.  *)
@@ -5133,7 +5613,7 @@ BEGIN
             name   := TypeName ;    (* Index into name array, name *)
                                     (* of type.                    *)
             IsHidden := GetMainModule()#GetCurrentScope() ;
-            IF ExtendedOpaque OR (NOT IsHidden)
+            IF GetExtendedOpaque (tok) OR (NOT IsHidden)
             THEN
                Type := NulSym       (* will be filled in later     *)
             ELSE
@@ -5142,16 +5622,16 @@ BEGIN
             Align := NulSym ;       (* Alignment of this type.     *)
             Scope := GetCurrentScope() ; (* Which scope created it *)
             oafamily := NulSym ;
-            IF NOT ExtendedOpaque
+            IF NOT GetExtendedOpaque (tok)
             THEN
                IncludeItemIntoList(AddressTypes, Sym)
             END ;
             Size := InitValue() ;   (* Runtime size of symbol.     *)
-            InitWhereDeclaredTok(tok, At) (* Declared here         *)
+            InitWhereDeclaredTok (tok, At) (* Declared here         *)
          END
       END ;
       PutExportUnImplemented (tok, Sym) ;
-      IF ExtendedOpaque OR (GetMainModule()=GetCurrentScope())
+      IF GetExtendedOpaque (tok) OR (GetMainModule()=GetCurrentScope())
       THEN
          PutHiddenTypeDeclared
       END ;
@@ -5706,7 +6186,6 @@ BEGIN
 END GetConstStringKind ;
 
 
-
 (*
    GetString - returns the contents of the string symbol sym, note that
                this is not the same as GetName (unless it was a literal).
@@ -6036,9 +6515,9 @@ END IsProcedureBuiltin ;
                    inlined via a builtin function.
 *)
 
-PROCEDURE CanUseBuiltin (Sym: CARDINAL) : BOOLEAN ;
+PROCEDURE CanUseBuiltin (tokno: CARDINAL; Sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( (NOT DebugBuiltins) AND
+   RETURN( (NOT GetDebugBuiltinFlag (tokno)) AND
            (BuiltinExists (KeyToCharStar (GetProcedureBuiltin (Sym))) OR
             BuiltinExists (KeyToCharStar (GetSymName (Sym)))) )
 END CanUseBuiltin ;
@@ -6049,9 +6528,9 @@ END CanUseBuiltin ;
                                  for the target architecture.
 *)
 
-PROCEDURE IsProcedureBuiltinAvailable (procedure: CARDINAL) : BOOLEAN ;
+PROCEDURE IsProcedureBuiltinAvailable (tokno: CARDINAL; procedure: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN IsProcedureBuiltin (procedure) AND CanUseBuiltin (procedure)
+   RETURN IsProcedureBuiltin (procedure) AND CanUseBuiltin (tokno, procedure)
 END IsProcedureBuiltinAvailable ;
 
 
@@ -7974,6 +8453,7 @@ VAR
    oSym,
    pSym : PtrToSymbol ;
    s    : String ;
+   t,
    Field: CARDINAL ;
 BEGIN
    Field := CheckForHiddenType(FieldName) ;
@@ -8004,7 +8484,9 @@ BEGIN
 
          EnumerationSym: WITH Enumeration DO
                             INC(NoOfElements) ;
-                            IF GetSymKey(LocalSymbols, FieldName)#NulSym
+                            t := GetSymKey(LocalSymbols, FieldName) ;
+                            (* IF GetSymKey(LocalSymbols, FieldName)#NulSym *)
+                            IF t#NulSym
                             THEN
                                s := Mark(InitStringCharStar(KeyToCharStar(FieldName))) ;
                                AlreadyDeclaredError(Sprintf1(Mark(InitString('enumeration field (%s) is already declared elsewhere, use a different name or remove the declaration')), s),
@@ -8152,7 +8634,13 @@ BEGIN
          GnuAsmSym           : n := NulName |
          InterfaceSym        : n := NulName |
          ImportSym           : n := NulName |
-         ImportStatementSym  : n := NulName
+         ImportStatementSym  : n := NulName |
+         PragmaOptionSym     : n := NulName |
+         PragmaLoopSym       : n := NulName |
+         PragmaWarnSym       : n := NulName |
+         PragmaErrorSym      : n := NulName |
+         PragmaFatalSym      : n := NulName |
+         PragmaInfoSym       : n := NulName
 
          ELSE
             InternalError ('unexpected symbol type')
@@ -8443,7 +8931,8 @@ BEGIN
       ELSE
          InternalError ('not expecting this type')
       END
-   END
+   END ;
+   RETURN( NoValue )
 END GetMode ;
 
 
@@ -8717,58 +9206,53 @@ END RequestSym ;
    PutImported - places a symbol, Sym, into the current main scope.
 *)
 
-PROCEDURE PutImported (Sym: CARDINAL) ;
+PROCEDURE PutImported (tokno: CARDINAL; Sym: CARDINAL) ;
 VAR
    pSym  : PtrToSymbol ;
    ModSym: CARDINAL ;
-   n     : Name ;
 BEGIN
    (*
       We have currently imported Sym, now place it into the current module.
    *)
-   ModSym := GetCurrentModuleScope() ;
-   Assert(IsDefImp(ModSym) OR IsModule(ModSym)) ;
-   pSym := GetPsym(ModSym) ;
+   ModSym := GetCurrentModuleScope () ;
+   Assert (IsDefImp (ModSym) OR IsModule (ModSym)) ;
+   pSym := GetPsym (ModSym) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ModuleSym: IF GetSymKey(Module.ImportTree, GetSymName(Sym))=Sym
+      ModuleSym: IF GetSymKey (Module.ImportTree, GetSymName (Sym)) = Sym
                  THEN
-                    IF Pedantic
+                    IF GetPedantic (tokno)
                     THEN
-                       n := GetSymName(Sym) ;
-                       WriteFormat1('symbol (%a) has already been imported', n)
+                       MetaErrorT1 (tokno, 'symbol {%1Ead} has already been imported', Sym)
                     END
-                 ELSIF GetSymKey(Module.ImportTree, GetSymName(Sym))=NulKey
+                 ELSIF GetSymKey (Module.ImportTree, GetSymName (Sym)) = NulKey
                  THEN
-                    IF GetSymKey(Module.WhereImported, Sym)=NulKey
+                    IF GetSymKey (Module.WhereImported, Sym) = NulKey
                     THEN
-                       PutSymKey(Module.WhereImported, Sym, GetTokenNo())
+                       PutSymKey (Module.WhereImported, Sym, GetTokenNo ())
                     END ;
-                    PutSymKey(Module.ImportTree, GetSymName(Sym), Sym) ;
-                    AddSymToModuleScope(ModSym, Sym)
+                    PutSymKey (Module.ImportTree, GetSymName (Sym), Sym) ;
+                    AddSymToModuleScope (ModSym, Sym)
                  ELSE
-                    n := GetSymName(Sym) ;
-                    WriteFormat1('name clash when trying to import (%a)', n)
+                    MetaErrorT1 (tokno, 'name clash when trying to import symbol {%1Ead}', Sym)
                  END |
-      DefImpSym: IF GetSymKey(DefImp.ImportTree, GetSymName(Sym))=Sym
+      DefImpSym: IF GetSymKey (DefImp.ImportTree, GetSymName (Sym)) = Sym
                  THEN
-                    IF Pedantic
+                    IF GetPedantic (tokno)
                     THEN
-                       n := GetSymName(Sym) ;
-                       WriteFormat1('symbol (%a) has already been imported', n)
+                       MetaErrorT1 (tokno, 'symbol {%1Ead} has already been imported', Sym)
                     END
-                 ELSIF GetSymKey(DefImp.ImportTree, GetSymName(Sym))=NulKey
+                 ELSIF GetSymKey (DefImp.ImportTree, GetSymName (Sym)) = NulKey
                  THEN
-                    IF GetSymKey(DefImp.WhereImported, Sym)=NulKey
+                    IF GetSymKey (DefImp.WhereImported, Sym) = NulKey
                     THEN
-                       PutSymKey(DefImp.WhereImported, Sym, GetTokenNo())
+                       PutSymKey (DefImp.WhereImported, Sym, GetTokenNo ())
                     END ;
-                    PutSymKey(DefImp.ImportTree, GetSymName(Sym), Sym) ;
-                    AddSymToModuleScope(ModSym, Sym)
+                    PutSymKey (DefImp.ImportTree, GetSymName(Sym), Sym) ;
+                    AddSymToModuleScope (ModSym, Sym)
                  ELSE
-                    n := GetSymName(Sym) ;
-                    WriteFormat1('name clash when trying to import (%a)', n)
+                    MetaErrorT1 (tokno, 'name clash when trying to import symbol {%1Ead}', Sym)
                  END
 
       ELSE
@@ -13343,7 +13827,8 @@ BEGIN
       ELSE
          InternalError ('not implemented yet')
       END
-   END
+   END ;
+   RETURN NulSym
 END GetParent ;
 
 

@@ -105,7 +105,7 @@ PROCEDURE GetSystemTypeMinMax (type: CARDINAL; VAR min, max: CARDINAL) ;
    IsPseudoSystemFunction - returns true if Sym is a SYSTEM pseudo function.
 *)
 
-PROCEDURE IsPseudoSystemFunction (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsPseudoSystemFunction (tokno: CARDINAL; sym: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -120,7 +120,8 @@ PROCEDURE IsPseudoSystemProcedure (sym: CARDINAL) : BOOLEAN ;
                                            is legal in a constant expression.
 *)
 
-PROCEDURE IsPseudoSystemFunctionConstExpression (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsPseudoSystemFunctionConstExpression (tokno: CARDINAL;
+                                                 sym: CARDINAL) : BOOLEAN ;
 
 
 (*

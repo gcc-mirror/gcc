@@ -292,7 +292,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveComment (DynamicStrings_St
 extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicStrings_String s);
 
 /*
-   RemoveWhitePostfix - removes any leading white space from String, s.
+   RemoveWhitePostfix - removes any trailing white space from String, s.
                         A new string is returned.
 */
 
@@ -2345,7 +2345,7 @@ extern "C" DynamicStrings_String DynamicStrings_RemoveWhitePrefix (DynamicString
 
 
 /*
-   RemoveWhitePostfix - removes any leading white space from String, s.
+   RemoveWhitePostfix - removes any trailing white space from String, s.
                         A new string is returned.
 */
 

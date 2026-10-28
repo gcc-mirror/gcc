@@ -29,7 +29,7 @@ DEFINITION MODULE M2Quiet ;
     Last edit  : $Date: 2010/10/03 19:01:07 $
     Revision   : $Version$
     Description: provides a wrapper to M2Printf the output only occurs if
-                 M2Options.Quiet is set.
+                 M2Options.GetSourcesFlag is set.
 *)
 
 FROM SYSTEM IMPORT BYTE ;

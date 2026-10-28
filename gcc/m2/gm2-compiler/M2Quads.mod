@@ -76,6 +76,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetQuads, GetReadQuads, GetWriteQuads,
                         GetWriteLimitQuads, GetReadLimitQuads,
                         GetVarScope,
+                        GetDeclaredModule,
                         GetModuleQuads, GetProcedureQuads,
                         GetModuleCtors,
                         MakeProcedure,
@@ -143,10 +144,11 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         GetVarDeclFullTok,
 
                         ForeachFieldEnumerationDo, ForeachLocalSymDo,
-                        GetExported, PutImported, GetSym, GetLibName,
+                        GetExported, GetSym, GetLibName,
                         GetTypeMode,
                         IsVarConditional, PutVarConditional,
                         IsUnused,
+                        GetPragmaOptions,
                         NulSym ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
@@ -220,22 +222,18 @@ FROM M2ALU IMPORT PushInt, Gre, Less, PushNulSet, AddBitRange, AddBit,
 FROM Lists IMPORT List, InitList, GetItemFromList, NoOfItemsInList, PutItemIntoList,
                   IsItemInList, KillList, IncludeItemIntoList ;
 
-FROM M2Options IMPORT NilChecking,
-                      WholeDivChecking, WholeValueChecking,
-                      IndexChecking, RangeChecking,
-                      CaseElseChecking, ReturnChecking,
-                      UnusedVariableChecking, UnusedParameterChecking,
-                      Iso, Pim, Pim2, Pim3, Pim4, PositiveModFloorDiv,
-                      Pedantic, CompilerDebugging, GenerateDebugging,
-                      GenerateLineDebug, Exceptions,
-                      Profiling, Coding, Optimizing,
-                      UninitVariableChecking,
-                      StrictTypeAssignment,
-                      ScaffoldDynamic, ScaffoldStatic, cflag,
-                      ScaffoldMain, SharedFlag, WholeProgram,
+FROM M2Options IMPORT GetNilFlag,
+                      GetWholeDivFlag, GetWholeValueFlag,
+                      GetIndexFlag, GetRangeFlag,
+                      GetReturnFlag,
+                      GetISO, GetPIM,
+                      GetPedantic, GetInternalDebuggingFlag,
+                      GetExceptionsFlag,
+                      GetScaffoldDynamicFlag, GetScaffoldStaticFlag, GetCFlag,
+                      GetScaffoldMainFlag, GetSharedFlag, GetWholeProgramFlag,
                       GetDumpDir, GetM2DumpFilter,
                       GetRuntimeModuleOverride, GetDebugTraceQuad,
-                      GetDumpQuad ;
+                      GetDumpQuad, PushOptions ;
 
 FROM M2LangDump IMPORT CreateDumpQuad, CloseDumpQuad, GetDumpFile ;
 FROM M2Pass IMPORT IsPassCodeGeneration, IsNoPass ;
@@ -480,59 +478,66 @@ END DSdbExit ;
 
 
 (*
-   SetOptionProfiling - builds a profile quadruple if the profiling
-                        option was given to the compiler.
+   BuildNoVector -
 *)
 
-PROCEDURE SetOptionProfiling (b: BOOLEAN) ;
+PROCEDURE BuildNoVector ;
 BEGIN
-   IF b#Profiling
-   THEN
-      IF b
-      THEN
-         BuildProfileOn
-      ELSE
-         BuildProfileOff
-      END ;
-      Profiling := b
-   END
-END SetOptionProfiling ;
+
+END BuildNoVector ;
 
 
 (*
-   SetOptionCoding - builds a code quadruple if the profiling
-                     option was given to the compiler.
+   BuildIVDep -
 *)
 
-PROCEDURE SetOptionCoding (b: BOOLEAN) ;
+PROCEDURE BuildIVDep ;
 BEGIN
-   IF b#Coding
-   THEN
-      IF b
-      THEN
-         BuildCodeOn
-      ELSE
-         BuildCodeOff
-      END ;
-      Coding := b
-   END
-END SetOptionCoding ;
+
+END BuildIVDep ;
 
 
 (*
-   SetOptionOptimizing - builds a quadruple to say that the optimization option
-                         has been found in a comment.
+   BuildUnroll -
 *)
 
-PROCEDURE SetOptionOptimizing (b: BOOLEAN) ;
+PROCEDURE BuildUnroll ;
 BEGIN
-   IF b
-   THEN
-      BuildOptimizeOn
-   ELSE
-      BuildOptimizeOff
-   END
-END SetOptionOptimizing ;
+
+END BuildUnroll ;
+
+
+(*
+   BuildUnrollExpr -
+*)
+
+PROCEDURE BuildUnrollExpr ;
+BEGIN
+
+END BuildUnrollExpr ;
+
+
+(*
+   BuildLocalPragma - generate a pragma quad containing operand pragma symbol.
+
+                           Entry                      Exit
+                           =====                      ====
+
+                   Ptr ->
+                           +------------------+
+                           | pragmasymbol     |       Empty
+                           |------------------|
+*)
+
+PROCEDURE BuildLocalPragma ;
+VAR
+   pragsym: CARDINAL ;
+   pragtok: CARDINAL ;
+BEGIN
+   PopTtok (pragsym, pragtok) ;
+   GenQuadO (pragtok, PragmaOp, NulSym, NulSym, pragsym, FALSE) ;
+   PushOptions (GetPragmaOptions (pragsym))
+END BuildLocalPragma ;
 
 
 (*
@@ -1062,99 +1067,6 @@ END IsConditionalBooleanQuad ;
 
 
 (*
-   IsOptimizeOn - returns true if the Optimize flag was true at QuadNo.
-*)
-
-PROCEDURE IsOptimizeOn (QuadNo: CARDINAL) : BOOLEAN ;
-VAR
-   f : QuadFrame ;
-   n,
-   q : CARDINAL ;
-   On: BOOLEAN ;
-BEGIN
-   On := Optimizing ;
-   q := Head ;
-   WHILE (q#0) AND (q#QuadNo) DO
-      f := GetQF(q) ;
-      WITH f^ DO
-         IF Operator=OptimizeOnOp
-         THEN
-            On := TRUE
-         ELSIF Operator=OptimizeOffOp
-         THEN
-            On := FALSE
-         END ;
-         n := Next
-      END ;
-      q := n
-   END ;
-   RETURN( On )
-END IsOptimizeOn ;
-
-
-(*
-   IsProfileOn - returns true if the Profile flag was true at QuadNo.
-*)
-
-PROCEDURE IsProfileOn (QuadNo: CARDINAL) : BOOLEAN ;
-VAR
-   f : QuadFrame ;
-   n,
-   q : CARDINAL ;
-   On: BOOLEAN ;
-BEGIN
-   On := Profiling ;
-   q := Head ;
-   WHILE (q#0) AND (q#QuadNo) DO
-      f := GetQF(q) ;
-      WITH f^ DO
-         IF Operator=ProfileOnOp
-         THEN
-            On := TRUE
-         ELSIF Operator=ProfileOffOp
-         THEN
-            On := FALSE
-         END ;
-         n := Next
-      END ;
-      q := n
-   END ;
-   RETURN( On )
-END IsProfileOn ;
-
-
-(*
-   IsCodeOn - returns true if the Code flag was true at QuadNo.
-*)
-
-PROCEDURE IsCodeOn (QuadNo: CARDINAL) : BOOLEAN ;
-VAR
-   f : QuadFrame ;
-   n,
-   q : CARDINAL ;
-   On: BOOLEAN ;
-BEGIN
-   On := Coding ;
-   q := Head ;
-   WHILE (q#0) AND (q#QuadNo) DO
-      f := GetQF(q) ;
-      WITH f^ DO
-         IF Operator=CodeOnOp
-         THEN
-            On := TRUE
-         ELSIF Operator=CodeOffOp
-         THEN
-            On := FALSE
-         END ;
-         n := Next
-      END ;
-      q := n
-   END ;
-   RETURN( On )
-END IsCodeOn ;
-
-
-(*
    IsDefOrModFile - returns TRUE if QuadNo is a start of Module or Def file
                     directive.
 *)
@@ -1182,10 +1094,7 @@ VAR
 BEGIN
    f := GetQF(QuadNo) ;
    WITH f^ DO
-      RETURN( (Operator=CodeOnOp) OR (Operator=CodeOffOp) OR
-              (Operator=ProfileOnOp) OR (Operator=ProfileOffOp) OR
-              (Operator=OptimizeOnOp) OR (Operator=OptimizeOffOp) OR
-              (Operator=EndFileOp) OR
+      RETURN( (Operator=EndFileOp) OR
               (Operator=StartDefFileOp) OR (Operator=StartModFileOp)
             )
    END
@@ -2122,7 +2031,7 @@ END CheckVariablesAt ;
 
 PROCEDURE GetTurnInterrupts (tok: CARDINAL) : CARDINAL ;
 BEGIN
-   IF Iso
+   IF GetISO (tok)
    THEN
       RETURN GetQualidentImport (tok,
                                  MakeKey ('TurnInterrupts'), MakeKey ('COROUTINES'))
@@ -2139,7 +2048,7 @@ END GetTurnInterrupts ;
 
 PROCEDURE GetProtection (tok: CARDINAL) : CARDINAL ;
 BEGIN
-   IF Iso
+   IF GetISO (tok)
    THEN
       RETURN GetQualidentImport (tok,
                                  MakeKey ('PROTECTION'), MakeKey ('COROUTINES'))
@@ -2316,7 +2225,7 @@ BEGIN
    CheckNeedPriorityBegin(tok, ModuleSym, ModuleSym) ;
    PushWord(TryStack, NextQuad) ;
    PushWord(CatchStack, 0) ;
-   IF HasExceptionBlock(ModuleSym)
+   IF HasExceptionBlock (ModuleSym)
    THEN
       GenQuad(TryOp, NulSym, NulSym, 0)
    END
@@ -2329,7 +2238,7 @@ END StartBuildInit ;
 
 PROCEDURE EndBuildInit (tok: CARDINAL) ;
 BEGIN
-   IF HasExceptionBlock(GetCurrentModule())
+   IF HasExceptionBlock (GetCurrentModule ())
    THEN
       BuildRTExceptLeave (tok, TRUE) ;
       GenQuadO (tok, CatchEndOp, NulSym, NulSym, NulSym, FALSE)
@@ -2377,7 +2286,7 @@ END StartBuildFinally ;
 
 PROCEDURE EndBuildFinally (tok: CARDINAL) ;
 BEGIN
-   IF HasExceptionFinally(GetCurrentModule())
+   IF HasExceptionFinally (GetCurrentModule ())
    THEN
       BuildRTExceptLeave (tok, TRUE) ;
       GenQuadO (tok, CatchEndOp, NulSym, NulSym, NulSym, FALSE)
@@ -2400,7 +2309,7 @@ VAR
    old,
    ProcSym: CARDINAL ;
 BEGIN
-   IF Exceptions
+   IF GetExceptionsFlag (tok)
    THEN
       (* now inform the Modula-2 runtime we are in the exception state *)
       ProcSym := GetQualidentImport (tok,
@@ -2432,7 +2341,7 @@ VAR
    old,
    ProcSym: CARDINAL ;
 BEGIN
-   IF Exceptions
+   IF GetExceptionsFlag (tok)
    THEN
       (* now inform the Modula-2 runtime we are in the exception state *)
       ProcSym := GetQualidentImport (tok,
@@ -2659,7 +2568,7 @@ VAR
    requestDep,
    ctor, init, fini, dep: CARDINAL ;
 BEGIN
-   IF ScaffoldDynamic
+   IF GetScaffoldDynamicFlag (tokno)
    THEN
       (* Scaffold required and dynamic dependency graph should be produced.  *)
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
@@ -2689,7 +2598,7 @@ END BuildM2DepFunction ;
 
 PROCEDURE BuildM2LinkFunction (tokno: CARDINAL) ;
 BEGIN
-   IF ScaffoldDynamic
+   IF GetScaffoldDynamicFlag (tokno)
    THEN
       IF linkFunction # NulSym
       THEN
@@ -2719,7 +2628,7 @@ END BuildM2LinkFunction ;
 
 PROCEDURE BuildTry (tokno: CARDINAL) ;
 BEGIN
-   IF Exceptions
+   IF GetExceptionsFlag (tokno)
    THEN
       PushWord (TryStack, NextQuad) ;
       PushWord (CatchStack, 0) ;
@@ -2736,7 +2645,7 @@ PROCEDURE BuildExcept (tokno: CARDINAL) ;
 VAR
    catchProcedure: CARDINAL ;
 BEGIN
-   IF Exceptions
+   IF GetExceptionsFlag (tokno)
    THEN
       BuildExceptInitial (tokno) ;
       catchProcedure := GetQualidentImport (tokno,
@@ -2760,7 +2669,8 @@ END BuildExcept ;
 
 PROCEDURE BuildM2MainFunction (tokno: CARDINAL) ;
 BEGIN
-   IF (ScaffoldDynamic OR ScaffoldStatic) AND (NOT SharedFlag)
+   IF (GetScaffoldDynamicFlag (tokno) OR GetScaffoldStaticFlag (tokno)) AND
+      (NOT GetSharedFlag (tokno))
    THEN
       (* Scaffold required and main should be produced.  *)
       (*
@@ -2864,7 +2774,7 @@ PROCEDURE BuildM2InitFunction (tok: CARDINAL; moduleSym: CARDINAL) ;
 VAR
    constructModules: CARDINAL ;
 BEGIN
-   IF ScaffoldDynamic OR ScaffoldStatic
+   IF GetScaffoldDynamicFlag (tok) OR GetScaffoldStaticFlag (tok)
    THEN
       (* Scaffold required and main should be produced.  *)
       (* int
@@ -2877,7 +2787,7 @@ BEGIN
       BuildProcedureStart ;
       BuildProcedureBegin ;
       StartScope (initFunction) ;
-      IF ScaffoldDynamic
+      IF GetScaffoldDynamicFlag (tok)
       THEN
          IF linkFunction # NulSym
          THEN
@@ -2906,7 +2816,7 @@ BEGIN
             PushT (6) ;
             BuildProcedureCall (tok) ;
          END
-      ELSIF ScaffoldStatic
+      ELSIF GetScaffoldStaticFlag (tok)
       THEN
          ForeachModuleCallInit (tok,
                                 SafeRequestSym (tok, MakeKey ("argc")),
@@ -2928,14 +2838,14 @@ PROCEDURE BuildM2FiniFunction (tok: CARDINAL; moduleSym: CARDINAL) ;
 VAR
    deconstructModules: CARDINAL ;
 BEGIN
-   IF ScaffoldDynamic OR ScaffoldStatic
+   IF GetScaffoldDynamicFlag (tok) OR GetScaffoldStaticFlag (tok)
    THEN
       (* Scaffold required and main should be produced.  *)
       PushT (finiFunction) ;
       BuildProcedureStart ;
       BuildProcedureBegin ;
       StartScope (finiFunction) ;
-      IF ScaffoldDynamic
+      IF GetScaffoldDynamicFlag (tok)
       THEN
          (* static void
             _M2_finish (int argc, char *argv[], char *envp[])
@@ -2966,7 +2876,7 @@ BEGIN
             PushT (5) ;
             BuildProcedureCall (tok)
          END
-      ELSIF ScaffoldStatic
+      ELSIF GetScaffoldStaticFlag (tok)
       THEN
          ForeachModuleCallFinish (tok,
                                   SafeRequestSym (tok, MakeKey ("argc")),
@@ -2996,7 +2906,7 @@ VAR
    RegisterModule       : CARDINAL ;
    ctor, init, fini, dep: CARDINAL ;
 BEGIN
-   IF ScaffoldDynamic
+   IF GetScaffoldDynamicFlag (tok)
    THEN
       GetModuleCtors (moduleSym, ctor, init, fini, dep) ;
       IF ctor # NulSym
@@ -3048,7 +2958,7 @@ BEGIN
    IF GetMainModule () = moduleSym
    THEN
       DeclareScaffold (tok) ;
-      IF (ScaffoldMain OR (NOT cflag))
+      IF GetScaffoldMainFlag (tok) OR (NOT GetCFlag (tok))
       THEN
          (* There are module init/fini functions and
             application init/fini functions.
@@ -3062,7 +2972,7 @@ BEGIN
       (* Each module needs a ctor to register the module
          init/finish/dep with M2RTS.  *)
       BuildM2CtorFunction (tok, moduleSym)
-   ELSIF WholeProgram
+   ELSIF GetWholeProgramFlag (tok)
    THEN
       DeclareScaffold (tok) ;
       BuildM2DepFunction (tok, moduleSym) ;  (* Per module dependency.  *)
@@ -3098,7 +3008,7 @@ BEGIN
    CheckNeedPriorityBegin (tok, GetCurrentModule(), GetCurrentModule()) ;
    PushWord (TryStack, NextQuad) ;
    PushWord (CatchStack, 0) ;
-   IF HasExceptionFinally (GetCurrentModule())
+   IF HasExceptionFinally (GetCurrentModule ())
    THEN
       GenQuadO (tok, TryOp, NulSym, NulSym, 0, FALSE)
    END
@@ -3111,7 +3021,7 @@ END StartBuildInnerInit ;
 
 PROCEDURE EndBuildInnerInit (tok: CARDINAL) ;
 BEGIN
-   IF HasExceptionBlock (GetCurrentModule())
+   IF HasExceptionBlock (GetCurrentModule ())
    THEN
       BuildRTExceptLeave (tok, TRUE) ;
       GenQuadO (tok, CatchEndOp, NulSym, NulSym, NulSym, FALSE)
@@ -3157,7 +3067,7 @@ VAR
    i, n   : CARDINAL ;
    forDesc: ForLoopInfo ;
 BEGIN
-   IF Pedantic
+   IF GetPedantic (BuiltinTokenNo)
    THEN
       n := HighIndice (ForInfo) ;
       i := 1 ;
@@ -3180,7 +3090,7 @@ PROCEDURE AddForInfo (Start, End, IncQuad: CARDINAL; Sym: CARDINAL; idtok: CARDI
 VAR
    forDesc: ForLoopInfo ;
 BEGIN
-   IF Pedantic
+   IF GetPedantic (idtok)
    THEN
       NEW (forDesc) ;
       WITH forDesc^ DO
@@ -3912,10 +3822,7 @@ BEGIN
       THEN
          MetaErrorT1 (combinedtok, 'combined {%1Oad}', Des)
       END ;
-      IF StrictTypeAssignment
-      THEN
-         BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp))
-      END ;
+      BuildRange (InitTypesAssignmentCheck (combinedtok, Des, Exp)) ;
       IF (GetSType (Des) # NulSym) AND (NOT IsSet (GetDType (Des)))
       THEN
          (* Tell code generator to test runtime values of assignment so ensure we
@@ -5611,7 +5518,7 @@ BEGIN
    THEN
       (* ReturnVar has the type of the procedure.  *)
       resulttok := MakeVirtualTok (proctok, proctok, paramtok) ;
-      IF ConstExpr AND (NOT IsProcedureBuiltinAvailable (Proc))
+      IF ConstExpr AND (NOT IsProcedureBuiltinAvailable (proctok, Proc))
       THEN
          MetaError1('{%1d} {%1ad} cannot be used in a constant expression', Proc) ;
          ParamConstant := FALSE
@@ -5696,7 +5603,7 @@ BEGIN
                      Proc)
       END
    END ;
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (proctok)
    THEN
       n1 := GetSymName(Proc) ;
       printf1('  %a ( ', n1)
@@ -5714,7 +5621,7 @@ BEGIN
       THEN
          (* FormalI := GetParam(Proc, i) ;  *)
          FormalI := GetNthParamAnyClosest (Proc, i, GetCurrentModule ()) ;
-         IF CompilerDebugging
+         IF GetInternalDebuggingFlag (proctok)
          THEN
             n1 := GetSymName(FormalI) ;
             n2 := GetSymName(GetSType(FormalI)) ;
@@ -5780,7 +5687,7 @@ BEGIN
       END ;
       INC(i) ;
       DEC(pi) ;
-      IF CompilerDebugging
+      IF GetInternalDebuggingFlag (proctok)
       THEN
          IF i<=ParamTotal
          THEN
@@ -6322,10 +6229,7 @@ BEGIN
       GenQuadOtok (tok, IndrXOp, des, GetSType (des), exp, TRUE,
                    tok, tok, tok)
    ELSE
-      IF StrictTypeAssignment
-      THEN
-         BuildRange (InitTypesIndrXCheck (tok, des, exp))
-      END ;
+      BuildRange (InitTypesIndrXCheck (tok, des, exp)) ;
       t := MakeTemporary (tok, RightValue) ;
       PutVar (t, GetSType (exp)) ;
       GenQuadOtok (tok, IndrXOp, t, GetSType (exp), exp, TRUE,
@@ -7370,7 +7274,7 @@ BEGIN
       expr := ConvertToAddress (tokenpos, expr) ;
       etype := Address
    END ;
-   IF WholeValueChecking AND (NOT MustNotCheckBounds)
+   IF GetWholeValueFlag (tokenpos) AND (NOT MustNotCheckBounds)
    THEN
       IF tok=PlusTok
       THEN
@@ -7833,7 +7737,7 @@ BEGIN
    THEN
       ManipulatePseudoCallParameters ;
       BuildTypeCoercion (ConstExpr)
-   ELSIF IsPseudoSystemFunction (ProcSym) OR
+   ELSIF IsPseudoSystemFunction (functok, ProcSym) OR
          IsPseudoBaseFunction (ProcSym)
    THEN
       ManipulatePseudoCallParameters ;
@@ -7885,7 +7789,7 @@ BEGIN
    PopT(NoOfParam) ;
    ProcSym := OperandT (NoOfParam + 1) ;
    functok := OperandTtok (NoOfParam + 1) ;
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (functok)
    THEN
       printf2 ('procsym = %d  token = %d\n', ProcSym, functok) ;
       (* ErrorStringAt (InitString ('constant function'), functok).  *)
@@ -7893,7 +7797,7 @@ BEGIN
    PushT (NoOfParam) ;
    IF (ProcSym # Convert) AND
       (IsPseudoBaseFunction (ProcSym) OR
-       IsPseudoSystemFunctionConstExpression (ProcSym) OR
+       IsPseudoSystemFunctionConstExpression (functok, ProcSym) OR
        (IsProcedure (ProcSym) AND IsProcedureBuiltin (ProcSym)))
    THEN
       BuildFunctionCall (TRUE)
@@ -7917,7 +7821,7 @@ BEGIN
          END
       ELSE
          (* Error issue message and fake return stack.  *)
-         IF Iso
+         IF GetISO (functok)
          THEN
             MetaErrorT0 (functok, 'the only functions permissible in a constant expression are: {%kCAP}, {%kCHR}, {%kCMPLX}, {%kFLOAT}, {%kHIGH}, {%kIM}, {%kLENGTH}, {%kMAX}, {%kMIN}, {%kODD}, {%kORD}, {%kRE}, {%kSIZE}, {%kTSIZE}, {%kTBITSIZE}, {%kTRUNC}, {%kVAL} and gcc builtins')
          ELSE
@@ -11094,7 +10998,7 @@ BEGIN
    CheckNeedPriorityBegin(GetTokenNo(), ProcSym, GetCurrentModule()) ;
    PushWord(TryStack, NextQuad) ;
    PushWord(CatchStack, 0) ;
-   IF HasExceptionBlock(ProcSym)
+   IF HasExceptionBlock (ProcSym)
    THEN
       GenQuad(TryOp, NulSym, NulSym, 0)
    END
@@ -11129,7 +11033,7 @@ VAR
    ProcSym: CARDINAL ;
 BEGIN
    PopTtok(ProcSym, tok) ;
-   IF HasExceptionBlock(ProcSym)
+   IF HasExceptionBlock (ProcSym)
    THEN
       BuildRTExceptLeave(tok, TRUE) ;
       GenQuad(CatchEndOp, NulSym, NulSym, NulSym)
@@ -11283,7 +11187,7 @@ VAR
    op           : QuadOperator ;
    op1, op2, op3: CARDINAL ;
 BEGIN
-   IF Pedantic
+   IF GetPedantic (GetDeclaredModule (Scope))
    THEN
       WHILE (Current<=End) AND (Current#0) DO
          GetQuad(Current, op, op1, op2, op3) ;
@@ -12168,7 +12072,7 @@ VAR
    i, n: CARDINAL ;
    f   : WithFrame ;
 BEGIN
-   IF Pedantic
+   IF GetPedantic (Tok)
    THEN
       n := NoOfItemsInStackAddress(WithStack) ;
       i := 1 ;  (* Top of the stack.  *)
@@ -12435,7 +12339,7 @@ VAR
    NulSet : CARDINAL ;
 BEGIN
    PopTtok (Type, typepos) ;  (* type of set we are building *)
-   IF (Type = NulSym) AND Pim
+   IF (Type = NulSym) AND GetPIM (tokpos)
    THEN
       (* allowed generic {} in PIM Modula-2 *)
       typepos := tokpos
@@ -12456,7 +12360,7 @@ BEGIN
    NulSet := MakeTemporary (typepos, ImmediateValue) ;
    PutVar (NulSet, Type) ;
    PutConstSet (NulSet) ;
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (typepos)
    THEN
       n := GetSymName (Type) ;
       printf1 ('set type = %a\n', n)
@@ -12467,7 +12371,7 @@ BEGIN
    (* and now construct the M2Quads stack as defined by the comments above *)
    PushTtok (Type, typepos) ;
    PushTtok (NulSet, typepos) ;
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (typepos)
    THEN
       n := GetSymName (Type) ;
       printf2 ('Type = %a  (%d)  built empty set\n', n, Type) ;
@@ -13482,7 +13386,7 @@ BEGIN
       PushBooltok (Merge (NextQuad-1, t1), Merge (NextQuad-2, f1), tokpos)
    ELSIF (OperandT (2) = HashTok) OR (OperandT (2) = LessGreaterTok)
    THEN
-      IF CompilerDebugging
+      IF GetInternalDebuggingFlag (tokpos)
       THEN
          printf0 ("BuildRelOpFromBoolean (NotEqualTok)\n") ;
          DisplayStack
@@ -13491,7 +13395,7 @@ BEGIN
       PopBool (t1, f1) ;
       PopT (Tok) ;
       PopBool (t2, f2) ;
-      IF CompilerDebugging
+      IF GetInternalDebuggingFlag (tokpos)
       THEN
          printf2 ("t1 = %d, f1 = %d\n", t1, f1) ;
          printf2 ("t2 = %d, f2 = %d\n", t2, f2) ;
@@ -13530,7 +13434,7 @@ BEGIN
       (* Spellcheck.  *)
       MetaErrorT1 (tokpos, '{%1EUad} has not been declared {%1&s}', sym) ;
       UnknownReported (sym)
-   ELSIF IsPseudoSystemFunction (sym) OR IsPseudoBaseFunction (sym)
+   ELSIF IsPseudoSystemFunction (tokpos, sym) OR IsPseudoBaseFunction (sym)
    THEN
       MetaErrorT1 (tokpos,
                    '{%1Ead} expected a variable, procedure, constant or expression, not an intrinsic procedure function',
@@ -13592,7 +13496,7 @@ VAR
    right, left        : CARDINAL ;
    s                  : String ;
 BEGIN
-   IF CompilerDebugging
+   IF GetInternalDebuggingFlag (optokpos)
    THEN
       DisplayStack    (* Debugging info *)
    END ;
@@ -14110,7 +14014,8 @@ PROCEDURE Annotate (a: ARRAY OF CHAR) ;
 VAR
    f: BoolFrame ;
 BEGIN
-   IF DebugStackOn AND CompilerDebugging AND (NoOfItemsInStackAddress(BoolStack)>0)
+   IF DebugStackOn AND GetInternalDebuggingFlag (BuiltinTokenNo) AND
+      (NoOfItemsInStackAddress(BoolStack)>0)
    THEN
       f := PeepAddress(BoolStack, 1) ;    (* top of stack *)
       WITH f^ DO
@@ -14144,7 +14049,7 @@ END OperandAnno ;
 
 PROCEDURE DisplayStack ;
 BEGIN
-   IF DebugStackOn AND CompilerDebugging
+   IF DebugStackOn AND GetInternalDebuggingFlag (BuiltinTokenNo)
    THEN
       DebugStack (NoOfItemsInStackAddress (BoolStack),
                   OperandTno, OperandFno, OperandA,
@@ -14280,6 +14185,7 @@ BEGIN
       EndFileOp         : n1 := GetSymName(Operand3) ;
                           fprintf1 (GetDumpFile (), '%a', n1) |
 
+      PragmaOp,
       ThrowOp,
       ReturnOp,
       CallOp,
@@ -14339,13 +14245,7 @@ BEGIN
                           WriteOperand(Operand2) ;
                           fprintf0 (GetDumpFile (), '  ') ;
                           WriteOperand(Operand3) |
-      DummyOp,
-      CodeOnOp,
-      CodeOffOp,
-      ProfileOnOp,
-      ProfileOffOp,
-      OptimizeOnOp,
-      OptimizeOffOp     : |
+      DummyOp           : |
       BuiltinConstOp    : WriteOperand(Operand1) ;
                           fprintf1 (GetDumpFile (), '   %a', Operand3) |
       BuiltinTypeInfoOp : WriteOperand(Operand1) ;
@@ -14449,12 +14349,6 @@ BEGIN
    ConvertOp                : fprintf0 (GetDumpFile (), 'Convert           ') |
    CastOp                   : fprintf0 (GetDumpFile (), 'Cast              ') |
    HighOp                   : fprintf0 (GetDumpFile (), 'High              ') |
-   CodeOnOp                 : fprintf0 (GetDumpFile (), 'CodeOn            ') |
-   CodeOffOp                : fprintf0 (GetDumpFile (), 'CodeOff           ') |
-   ProfileOnOp              : fprintf0 (GetDumpFile (), 'ProfileOn         ') |
-   ProfileOffOp             : fprintf0 (GetDumpFile (), 'ProfileOff        ') |
-   OptimizeOnOp             : fprintf0 (GetDumpFile (), 'OptimizeOn        ') |
-   OptimizeOffOp            : fprintf0 (GetDumpFile (), 'OptimizeOff       ') |
    InlineOp                 : fprintf0 (GetDumpFile (), 'Inline            ') |
    StatementNoteOp          : fprintf0 (GetDumpFile (), 'StatementNote     ') |
    LineNumberOp             : fprintf0 (GetDumpFile (), 'LineNumber        ') |
@@ -14471,7 +14365,8 @@ BEGIN
    StringConvertM2nulOp     : fprintf0 (GetDumpFile (), 'StringConvertM2nul') |
    StringLengthOp           : fprintf0 (GetDumpFile (), 'StringLength      ') |
    SubrangeHighOp           : fprintf0 (GetDumpFile (), 'SubrangeHigh      ') |
-   SubrangeLowOp            : fprintf0 (GetDumpFile (), 'SubrangeLow       ')
+   SubrangeLowOp            : fprintf0 (GetDumpFile (), 'SubrangeLow       ') |
+   PragmaOp                 : fprintf0 (GetDumpFile (), 'Pragma            ')
 
    ELSE
       InternalError ('operator not expected')
@@ -14874,84 +14769,6 @@ END PutRangeDep ;
 
 
 (*
-   BuildCodeOn - generates a quadruple declaring that code should be
-                 emmitted from henceforth.
-
-                 The Stack is unnaffected.
-*)
-
-PROCEDURE BuildCodeOn ;
-BEGIN
-   GenQuad(CodeOnOp, NulSym, NulSym, NulSym)
-END BuildCodeOn ;
-
-
-(*
-   BuildCodeOff - generates a quadruple declaring that code should not be
-                  emmitted from henceforth.
-
-                  The Stack is unnaffected.
-*)
-
-PROCEDURE BuildCodeOff ;
-BEGIN
-   GenQuad(CodeOffOp, NulSym, NulSym, NulSym)
-END BuildCodeOff ;
-
-
-(*
-   BuildProfileOn - generates a quadruple declaring that profile timings
-                    should be emmitted from henceforth.
-
-                    The Stack is unnaffected.
-*)
-
-PROCEDURE BuildProfileOn ;
-BEGIN
-   GenQuad(ProfileOnOp, NulSym, NulSym, NulSym)
-END BuildProfileOn ;
-
-
-(*
-   BuildProfileOn - generates a quadruple declaring that profile timings
-                    should be emmitted from henceforth.
-
-                    The Stack is unnaffected.
-*)
-
-PROCEDURE BuildProfileOff ;
-BEGIN
-   GenQuad(ProfileOffOp, NulSym, NulSym, NulSym)
-END BuildProfileOff ;
-
-
-(*
-   BuildOptimizeOn - generates a quadruple declaring that optimization
-                     should occur from henceforth.
-
-                     The Stack is unnaffected.
-*)
-
-PROCEDURE BuildOptimizeOn ;
-BEGIN
-   GenQuad(OptimizeOnOp, NulSym, NulSym, NulSym)
-END BuildOptimizeOn ;
-
-
-(*
-   BuildOptimizeOff - generates a quadruple declaring that optimization
-                      should not occur from henceforth.
-
-                      The Stack is unnaffected.
-*)
-
-PROCEDURE BuildOptimizeOff ;
-BEGIN
-   GenQuad (OptimizeOffOp, NulSym, NulSym, NulSym)
-END BuildOptimizeOff ;
-
-
-(*
    BuildAsm - builds an Inline pseudo quadruple operator.
               The inline interface, Sym, is stored as the operand
               to the operator InlineOp.
@@ -14975,38 +14792,6 @@ BEGIN
    PopT (Sym) ;
    GenQuadO (tok, InlineOp, NulSym, NulSym, Sym, FALSE)
 END BuildAsm ;
-
-
-(*
-   BuildLineNo - builds a LineNumberOp pseudo quadruple operator.
-                 This quadruple indicates which source line has been
-                 processed, these quadruples are only generated if we
-                 are producing runtime debugging information.
-
-                 The stack is not affected, read or altered in any way.
-
-
-                        Entry                   Exit
-                        =====                   ====
-
-                 Ptr ->                              <- Ptr
-*)
-
-PROCEDURE BuildLineNo ;
-VAR
-   filename: Name ;
-   f       : QuadFrame ;
-BEGIN
-   IF (NextQuad#Head) AND (GenerateLineDebug OR GenerateDebugging) AND FALSE
-   THEN
-      filename := makekey (string (GetFileName ())) ;
-      f := GetQF (NextQuad-1) ;
-      IF NOT ((f^.Operator = LineNumberOp) AND (f^.Operand1 = WORD (filename)))
-      THEN
-         GenQuad (LineNumberOp, WORD (filename), NulSym, WORD (GetLineNo ()))
-      END
-   END
-END BuildLineNo ;
 
 
 (*

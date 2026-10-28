@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -32,8 +34,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#include <limits.h>
-#   include "Gmcrts.h"
 #define _M2EXCEPTION_C
 
 #include "GM2EXCEPTION.h"
@@ -50,18 +50,19 @@ extern "C" M2EXCEPTION_M2Exceptions M2EXCEPTION_M2Exception (void)
 
   /* If the program or coroutine is in the exception state then return the enumeration
    value representing the exception cause.  If it is not in the exception state then
-   raises and exception (exException).  */
+   raises an exException exception.  */
   e = RTExceptions_GetExceptionBlock ();
   n = RTExceptions_GetNumber (e);
   if (n == (UINT_MAX))
     {
       RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_exException)), const_cast<void*> (static_cast<const void*>("../../gcc/m2/gm2-libs/M2EXCEPTION.mod")), 47, 6, const_cast<void*> (static_cast<const void*>("M2Exception")), const_cast<void*> (static_cast<const void*>("current coroutine is not in the exceptional execution state")));
+      return M2EXCEPTION_exException;
     }
   else
     {
       return (M2EXCEPTION_M2Exceptions) (n);
     }
-  ReturnException ("../../gcc/m2/gm2-libs/M2EXCEPTION.def", 25, 1);
+  /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
 }
 
@@ -77,11 +78,11 @@ extern "C" bool M2EXCEPTION_IsM2Exception (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2EXCEPTION_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   RTExceptions_SetExceptionBlock (RTExceptions_InitExceptionBlock ());
 }
 
-extern "C" void _M2_M2EXCEPTION_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2EXCEPTION_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

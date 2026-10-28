@@ -29,7 +29,6 @@ FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3 ;
 FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToColumnNo, GetTokenNo ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
-FROM M2Options IMPORT Xcode ;
 FROM M2RTS IMPORT ExitOnHalt ;
 FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Emit IMPORT EmitError ;
@@ -1183,7 +1182,7 @@ END EnterDefinitionScope ;
 
 (*
    EnterProcedureScope - signifies to the error routines that the front end
-                         has started to compile definition module scopeName.
+                         has started to compile procedure scopeName.
 *)
 
 PROCEDURE EnterProcedureScope (scopename: Name) ;

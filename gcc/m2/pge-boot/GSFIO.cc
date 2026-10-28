@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -32,7 +34,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#include <stddef.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -97,6 +98,13 @@ extern "C" DynamicStrings_String SFIO_WriteS (FIO_File file, DynamicStrings_Stri
 */
 
 extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file);
+
+/*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*/
+
+extern "C" DynamicStrings_String SFIO_GetFileName (FIO_File file);
 
 
 /*
@@ -206,10 +214,23 @@ extern "C" DynamicStrings_String SFIO_ReadS (FIO_File file)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_SFIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+
+/*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*/
+
+extern "C" DynamicStrings_String SFIO_GetFileName (FIO_File file)
+{
+  return DynamicStrings_InitStringCharStar (FIO_getFileName (file));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+extern "C" void _M2_SFIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_SFIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SFIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

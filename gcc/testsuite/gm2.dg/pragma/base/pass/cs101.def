@@ -1,0 +1,5 @@
+DEFINITION MODULE cs101 ;  (*!m2iso+gm2*)
+
+PROCEDURE foo ;
+
+END cs101.

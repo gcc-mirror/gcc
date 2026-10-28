@@ -1,0 +1,178 @@
+(* M2Pragma.def build and interpret pragma symbols.
+
+Copyright (C) 2026 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Pragma ;  (*!m2iso+gm2*)
+
+(*
+    Title      : M2Pragma
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Mon Feb  9 18:54:07 2026
+    Revision   : $Version$
+    Description: provides an interface to manipulating pragmas.
+*)
+
+
+(*
+   BuildPragmaOption - create or retrieve a pragma symbol and optionally
+                       push it to the pragma stack.  In both cases the
+                       options block is pushed to the option stack.
+*)
+
+PROCEDURE BuildPragmaOption (tokno: CARDINAL;
+                             create, push: BOOLEAN) ;
+
+
+(*
+   BuildPragmaLoop - create or retrieve a pragma loop symbol and
+                     push it to the quad stack.
+*)
+
+PROCEDURE BuildPragmaLoop (tokno: CARDINAL) ;
+
+
+(*
+   PopPragma - pops the top of stack from the pragma stack.
+*)
+
+PROCEDURE PopPragma ;
+
+
+(*
+   PragmaBinary - pops the top two elements from the stack and
+                  pushes the result after the binary operator
+                  has been interpreted.
+*)
+
+PROCEDURE PragmaBinary ;
+
+
+(*
+   PragmaEval - execute the func on the top of the stack providing the value
+                under func is the same as condition.
+
+                +-------------+  top of stack
+                | func        |
+                |-------------|
+                | value       |
+                |-------------|
+*)
+
+PROCEDURE PragmaEval (condition: BOOLEAN) ;
+
+
+(*
+   PragmaInvert - invert the boolean value on the top of the stack.
+*)
+
+PROCEDURE PragmaInvert (nottok: CARDINAL) ;
+
+
+(*
+   BuildPragmaName - merge the top two idents on the stack and
+                     push the combined ident to the stack with
+                     a combined virtual token.
+*)
+
+PROCEDURE BuildPragmaName ;
+
+
+(*
+   BuildPragmaDomain - merge the top two idents on the stack and
+                       push the combined ident to the stack with
+                       a combined virtual token.  It ensures that
+                       the domain is valid with either "gcc." or
+                       "gm2.".
+*)
+
+PROCEDURE BuildPragmaDomain ;
+
+
+(*
+   BuildPragmaFalse - pushes false to the quad stack.
+*)
+
+PROCEDURE BuildPragmaFalse (tokno: CARDINAL) ;
+
+
+(*
+   BuildPragmaTrue - pushes true to the quad stack.
+*)
+
+PROCEDURE BuildPragmaTrue (tokno: CARDINAL) ;
+
+
+(*
+   BuildPragmaAssignment - assigns top of stack to the pragma ident underneath.
+                           True is pushed on success and False otherwise.
+*)
+
+PROCEDURE BuildPragmaAssignment ;
+
+
+(*
+   BuildPragmaValue - look up pragma value and push the value to stack.
+                      If the value cannot be found push False.
+*)
+
+PROCEDURE BuildPragmaValue ;
+
+
+(*
+   BuildPragmaExists - If the pragma name is known push True
+                       else push False.
+*)
+
+PROCEDURE BuildPragmaExists ;
+
+
+(*
+   BuildPragmaMessageValue - appends the value of the top of stack string
+                             to the pragma func.
+*)
+
+PROCEDURE BuildPragmaMessageValue ;
+
+
+(*
+   BuildPragmaMessage - assigns the top of stack string to the pragma func.
+*)
+
+PROCEDURE BuildPragmaMessage ;
+
+
+(*
+   EnterPragmaOptions - push the options associated with procedure,
+                        module or defimp sym.
+*)
+
+PROCEDURE EnterPragmaOptions (sym: CARDINAL) ;
+
+
+(*
+   EndPragmaOptions - pop the options associated with procedure,
+                      module or defimp.
+*)
+
+PROCEDURE EndPragmaOptions (sym: CARDINAL) ;
+
+
+END M2Pragma.

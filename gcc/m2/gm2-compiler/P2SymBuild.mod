@@ -32,12 +32,13 @@ FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, Mark, Slice, 
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2, Sprintf3, Sprintf4 ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3 ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, PushWord, PopWord ;
-FROM M2Options IMPORT PedanticParamNames, ExtendedOpaque ;
+FROM M2Options IMPORT GetPedanticParamNames, GetExtendedOpaque ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM M2Base IMPORT ZType ;
 FROM Storage IMPORT ALLOCATE ;
 FROM gcctypes IMPORT location_t ;
 FROM M2LexBuf IMPORT TokenToLocation ;
+FROM M2Pragma IMPORT EnterPragmaOptions, EndPragmaOptions ;
 
 FROM M2Reserved IMPORT ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
                        NulTok, VarTok, ArrayTok ;
@@ -66,7 +67,7 @@ FROM SymbolTable IMPORT NulSym,
                         PutMode, PutDeclared, GetParameterShadowVar,
                         PutFieldEnumeration, PutSubrange, PutVar, PutVarTok, PutConst,
                         PutConstSet, PutConstructor,
-                        IsDefImp, IsType, IsRecord, IsRecordField, IsPointer,
+                        IsDefImp, IsType, IsRecord, IsRecordField, IsPointer, IsModule,
                         IsSubrange, IsEnumeration, IsConstString,
                         IsError, IsAModula2Type, IsParameterVar, IsParameterUnbounded,
                         GetSym, GetDeclareSym, IsUnknown, RenameSym,
@@ -195,6 +196,19 @@ END Debug ;
 
 
 (*
+   EndPragma -
+*)
+
+PROCEDURE EndPragma (sym: CARDINAL) ;
+BEGIN
+   IF (sym # NulSym) AND (IsModule (sym) OR IsDefImp (sym) OR IsProcedure (sym))
+   THEN
+      EndPragmaOptions (sym)
+   END
+END EndPragma ;
+
+
+(*
    BlockStart - tokno is the module/procedure/implementation/definition token
 *)
 
@@ -319,7 +333,8 @@ BEGIN
    Assert(CompilingDefinitionModule()) ;
    PushT(name) ;
    Annotate("%1n||definition module name") ;
-   M2Error.EnterDefinitionScope (name)
+   M2Error.EnterDefinitionScope (name) ;
+   EnterPragmaOptions (ModuleSym)
 END P2StartBuildDefModule ;
 
 
@@ -345,6 +360,7 @@ VAR
    NameEnd  : Name ;
 BEGIN
    Assert(CompilingDefinitionModule()) ;
+   EndPragma (GetCurrentScope ()) ;
    CheckForUndeclaredExports(GetCurrentModule()) ;
    EndScope ;
    PopT(NameStart) ;
@@ -393,7 +409,8 @@ BEGIN
    Assert(CompilingImplementationModule()) ;
    PushT(name) ;
    Annotate("%1n||implementation module name") ;
-   M2Error.EnterImplementationScope (name)
+   M2Error.EnterImplementationScope (name) ;
+   EnterPragmaOptions (ModuleSym)
 END P2StartBuildImplementationModule ;
 
 
@@ -420,6 +437,7 @@ VAR
 BEGIN
    Assert(CompilingImplementationModule()) ;
    CheckForUnImplementedExports ;
+   EndPragma (GetCurrentScope ()) ;
    EndScope ;
    PopT (NameStart) ;
    PopT (NameEnd) ;
@@ -462,7 +480,8 @@ BEGIN
    Assert(NOT IsDefImp(ModuleSym)) ;
    PushT(name) ;
    Annotate("%1n||program module name") ;
-   M2Error.EnterProgramScope (name)
+   M2Error.EnterProgramScope (name) ;
+   EnterPragmaOptions (ModuleSym)
 END P2StartBuildProgramModule ;
 
 
@@ -489,6 +508,7 @@ VAR
 BEGIN
    Assert(CompilingProgramModule()) ;
    CheckForUndeclaredExports(GetCurrentModule()) ;  (* Not really allowed exports here though! *)
+   EndPragma (GetCurrentScope ()) ;
    EndScope ;
    PopT (NameStart) ;
    PopT (NameEnd) ;
@@ -813,10 +833,6 @@ VAR
 BEGIN
    PopTtok (name, tok) ;
    (* slice off the leading and trailing quotes *)
-   IF name = 1140
-   THEN
-      stop
-   END ;
    Sym := MakeConstString (tok, makekey (string (Mark (Slice (Mark (InitStringCharStar (KeyToCharStar (name))), 1, -1))))) ;
    PushTFtok (Sym, NulSym, tok) ;
    Annotate ("%1s(%1d)|%3d||constant string")
@@ -1284,7 +1300,7 @@ BEGIN
             THEN
                IF isunknown
                THEN
-                  (* --fixme-- spellcheck.  *)      
+                  (* --fixme-- spellcheck.  *)
                   MetaError2('attempting to declare a type {%1ad} to a type which is itself and also unknown {%2ad}',
                              Sym, Type)
                ELSE
@@ -1365,18 +1381,24 @@ BEGIN
    PushTtok (ProcSym, tokno) ;
    Annotate ("%1s(%1d)||procedure start symbol") ;
    StartScope (ProcSym) ;
+   EnterPragmaOptions (ProcSym) ;
    M2Error.EnterProcedureScope (name)
 END StartBuildProcedure ;
 
 
 (*
    EndBuildProcedure - Ends building a Procedure.
+                       Note that this is not called when definition modules
+                       are parsed.  BuildProcedureHeading shuts down the scope
+                       created by StartBuildProcedure during the definition module
+                       parsing.  Also EndBuildForward will shutdown a FORWARD procedure
+                       declaration.
                        It checks the start procedure name matches the end
                        procedure name.
 
                        The Stack:
 
-                       (Procedure Not Defined in definition module)
+                       (This only occurs for procedures _not_ defined in definition module)
 
                        Entry                 Exit
 
@@ -1410,6 +1432,7 @@ BEGIN
    END ;
    PutProcedureParameterHeapVars (ProcSym) ;
    PutProcedureDefined (ProcSym, kind) ;
+   EndPragma (ProcSym) ;
    EndScope ;
    M2Error.LeaveErrorScope
 END EndBuildProcedure ;
@@ -1420,8 +1443,13 @@ END EndBuildProcedure ;
 *)
 
 PROCEDURE EndBuildForward ;
+VAR
+   ProcSym: CARDINAL ;
 BEGIN
+   ProcSym := OperandT (1) ;
+   Assert (IsProcedure (ProcSym)) ;
    PopN (2) ;
+   EndPragma (ProcSym) ;
    EndScope ;
    M2Error.LeaveErrorScope
 END EndBuildForward ;
@@ -1462,6 +1490,7 @@ BEGIN
       PopT (ProcSym) ;
       Assert (IsProcedure (ProcSym)) ;
       PopT (NameStart) ;
+      EndPragma (ProcSym) ;
       EndScope
    END
 END BuildProcedureHeading ;
@@ -1721,10 +1750,10 @@ BEGIN
    (* +4 to skip over the top restored elements.  *)
    pi := NoOfIds + 4 ;  (* Stack index referencing stacked parameter i.  *)
    WHILE i <= NoOfIds DO
-      IF CompilingDefinitionModule () AND (NOT PedanticParamNames) AND
+      IF CompilingDefinitionModule () AND (NOT GetPedanticParamNames (tok)) AND
          (* We will see the parameters in the implementation module.  *)
          ((GetMainModule () = GetCurrentModule ()) OR
-          (IsHiddenTypeDeclared (GetCurrentModule ()) AND ExtendedOpaque))
+          (IsHiddenTypeDeclared (GetCurrentModule ()) AND GetExtendedOpaque (tok)))
       THEN
          ParamName := NulName
       ELSE
@@ -1873,7 +1902,7 @@ BEGIN
                             ParamTotal+i, ProcSym, curkind, prevkind)
          END ;
          ParamI := GetNthParam (ProcSym, prevkind, ParamTotal+i) ;
-         IF PedanticParamNames
+         IF GetPedanticParamNames (OperandTok (pi))
          THEN
             IF GetSymName (ParamI) # OperandT (pi)
             THEN
@@ -1893,7 +1922,7 @@ BEGIN
             ParamIType := GetType (ParamI)
          END ;
          IF ((SkipType(ParamIType)#SkipType(TypeSym)) OR
-             (PedanticParamNames AND (ParamIType#TypeSym))) AND
+             (GetPedanticParamNames (OperandTok (pi)) AND (ParamIType#TypeSym))) AND
             (NOT IsUnknown(SkipType(TypeSym))) AND
             (NOT IsUnknown(SkipType(ParamIType)))
          THEN

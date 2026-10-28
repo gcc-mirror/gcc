@@ -27,7 +27,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #define EXTERN extern
 #endif /* !m2treelib_c.  */
 
-EXTERN void m2treelib_do_jump_if_bit (location_t location, enum tree_code code,
+EXTERN void m2treelib_do_jump_if_bit (location_t location, unsigned int tokno,
+				      enum tree_code code,
                                       tree word, tree bit, char *label);
 EXTERN tree m2treelib_build_modify_expr (location_t location, tree des,
                                          enum tree_code modifycode, tree copy);
@@ -43,19 +44,20 @@ EXTERN tree m2treelib_DoCall3 (location_t location, tree rettype, tree funcptr,
                                tree arg0, tree arg1, tree arg2);
 EXTERN tree m2treelib_get_field_no (tree type, tree op, bool is_const,
                                     unsigned int fieldNo);
-EXTERN tree m2treelib_get_set_value (location_t location, tree p, tree field,
+EXTERN tree m2treelib_get_set_value (location_t location, unsigned int tokno,
+				     tree p, tree field,
                                      bool is_const, bool is_lvalue, tree op,
                                      unsigned int fieldNo);
 EXTERN tree m2treelib_get_set_address (location_t location, tree op1,
                                        bool is_lvalue);
-EXTERN tree m2treelib_get_set_field_lhs (location_t location, tree p,
-                                         tree field);
-EXTERN tree m2treelib_get_set_field_rhs (location_t location, tree p,
-                                         tree field);
+EXTERN tree m2treelib_get_set_field_lhs (location_t location, unsigned int tokno,
+					 tree p, tree field);
+EXTERN tree m2treelib_get_set_field_rhs (location_t location, unsigned int tokno,
+					 tree p, tree field);
 EXTERN tree m2treelib_get_set_address_if_var (location_t location, tree op,
                                               bool is_lvalue, bool is_const);
-EXTERN tree m2treelib_get_set_field_des (location_t location, tree p,
-                                         tree field);
+EXTERN tree m2treelib_get_set_field_des (location_t location, unsigned int tokno,
+					 tree p, tree field);
 
 EXTERN tree add_stmt (location_t location, tree t);
 EXTERN tree build_stmt (location_t loc, enum tree_code code, ...);

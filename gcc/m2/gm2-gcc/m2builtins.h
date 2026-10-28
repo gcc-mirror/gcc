@@ -41,8 +41,8 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 EXTERN tree m2builtins_GetBuiltinConst (char *name);
 EXTERN unsigned int m2builtins_GetBuiltinConstType (char *name);
 EXTERN unsigned int m2builtins_GetBuiltinTypeInfoType (const char *ident);
-EXTERN tree m2builtins_GetBuiltinTypeInfo (location_t location, tree type,
-                                           const char *ident);
+EXTERN tree m2builtins_GetBuiltinTypeInfo (location_t location, unsigned int tokno,
+					   tree type, const char *ident);
 EXTERN tree m2builtins_BuiltinMemCopy (location_t location, tree dest,
                                        tree src, tree n);
 EXTERN tree m2builtins_BuiltinMemSet (location_t location, tree dest,

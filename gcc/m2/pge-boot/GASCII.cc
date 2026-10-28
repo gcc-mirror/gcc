@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -76,10 +78,10 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   define ASCII_del (char) 0177
 #   define ASCII_EOL ASCII_nl
 
-extern "C" void _M2_ASCII_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_ASCII_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_ASCII_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_ASCII_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

@@ -499,6 +499,7 @@ GM2_C_OBJS        = m2/gm2-lang.o \
                     m2/gm2-gcc/m2convert.o \
                     m2/gm2-gcc/m2decl.o \
                     m2/gm2-gcc/m2expr.o \
+                    m2/gm2-gcc/m2gccopt.o \
                     m2/gm2-gcc/m2linemap.o \
                     m2/gm2-gcc/m2spellcheck.o \
                     m2/gm2-gcc/m2statement.o \
@@ -752,6 +753,7 @@ GM2-COMP-BOOT-DEFS = \
    M2Optimize.def \
    M2Options.def \
    M2Pass.def \
+   M2Pragma.def \
    M2Preprocess.def \
    M2Printf.def \
    M2Quads.def \
@@ -829,6 +831,7 @@ GM2-COMP-BOOT-MODS = \
    M2Optimize.mod \
    M2Options.mod \
    M2Pass.mod \
+   M2Pragma.mod \
    M2Preprocess.mod \
    M2Printf.mod \
    M2Quads.mod \
@@ -876,6 +879,8 @@ GM2-GCC-DEFS = \
    m2except.def \
    m2except.def \
    m2expr.def \
+   m2gccopt.def \
+   m2lexbuf.def \
    m2linemap.def \
    m2misc.def \
    m2pp.def \
@@ -1047,6 +1052,7 @@ GM2-COMP-DEFS = \
    M2Optimize.def \
    M2Options.def \
    M2Pass.def \
+   M2Pragma.def \
    M2Preprocess.def \
    M2Printf.def \
    M2Quads.def     \
@@ -1121,6 +1127,7 @@ GM2-COMP-MODS = \
    M2Optimize.mod \
    M2Options.mod \
    M2Pass.mod \
+   M2Pragma.mod \
    M2Preprocess.mod \
    M2Printf.mod \
    M2Quads.mod \

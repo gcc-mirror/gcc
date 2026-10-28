@@ -1,0 +1,8 @@
+DEFINITION MODULE cs103 ;  (*!m2iso+gm2*)
+
+<* gm2.default.fm2_whole_program=TRUE *>
+<* gm2.default.I="." *>
+<* gm2.default.g=TRUE *>
+<* gm2.default.fsources=TRUE *>
+
+END cs103.

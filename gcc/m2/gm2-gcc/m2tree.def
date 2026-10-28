@@ -27,7 +27,7 @@ FROM gcctypes IMPORT tree ;
 
 PROCEDURE IsAConstant (t: tree) : BOOLEAN ;
 PROCEDURE IsOrdinal (type: tree) : BOOLEAN ;
-PROCEDURE IstreeOverflow (value: tree) : BOOLEAN ;
+PROCEDURE IsTreeOverflow (value: tree) : BOOLEAN ;
 PROCEDURE skip_const_decl (exp: tree) : tree ;
 PROCEDURE skip_type_decl (type: tree) : tree ;
 PROCEDURE is_type (type: tree) : BOOLEAN ;

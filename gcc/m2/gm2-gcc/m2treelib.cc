@@ -33,28 +33,27 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #include "m2statement.h"
 #include "m2tree.h"
 #include "m2treelib.h"
-#include "m2treelib.h"
 #include "m2type.h"
 
 /* do_jump_if_bit - tests bit in word against integer zero using
    operator, code.  If the result is true then jump to label.  */
 
 void
-m2treelib_do_jump_if_bit (location_t location, enum tree_code code, tree word,
+m2treelib_do_jump_if_bit (location_t location, unsigned int tokno,
+			  enum tree_code code, tree word,
                           tree bit, char *label)
 {
-  word = m2convert_ToWord (location, word);
-  bit = m2convert_ToWord (location, bit);
-  m2statement_IfExprJump (
-      location,
-      m2expr_build_binary_op (
-          location, code,
-          m2expr_build_binary_op (
-              location, BIT_AND_EXPR, word,
-              m2expr_BuildLSL (location, m2expr_GetWordOne (location), bit,
-                               FALSE),
+  word = m2convert_ToWord (location, tokno, word);
+  bit = m2convert_ToWord (location, tokno, bit);
+  m2statement_IfExprJump (location, tokno,
+      m2expr_build_binary_op (location, tokno, code,
+          m2expr_build_binary_op (location, tokno,
+				  BIT_AND_EXPR, word,
+				  m2expr_BuildLSL (location, tokno,
+						   m2expr_GetWordOne (location, tokno),
+			       bit, FALSE),
               FALSE),
-          m2expr_GetWordZero (location), FALSE),
+          m2expr_GetWordZero (location, tokno), FALSE),
       label);
 }
 
@@ -257,7 +256,8 @@ m2treelib_get_field_no (tree type, tree op, bool is_const, unsigned int fieldNo)
    Either p->field or the constant(op.fieldNo) is returned.  */
 
 tree
-m2treelib_get_set_value (location_t location, tree p, tree field, bool is_const,
+m2treelib_get_set_value (location_t location, unsigned int tokno,
+			 tree p, tree field, bool is_const,
                          bool is_lvalue, tree op, unsigned int fieldNo)
 {
   tree value;
@@ -281,9 +281,9 @@ m2treelib_get_set_value (location_t location, tree p, tree field, bool is_const,
   else if (is_lvalue)
     {
       if (TREE_CODE (TREE_TYPE (p)) == POINTER_TYPE)
-        value = m2expr_BuildComponentRef (
-            location, m2expr_BuildIndirect (location, p, TREE_TYPE (p)),
-            field);
+        value = m2expr_BuildComponentRef (location,
+					  m2expr_BuildIndirect (location, tokno, p, TREE_TYPE (p)),
+					  field);
       else
         {
           ASSERT_CONDITION (TREE_CODE (TREE_TYPE (p)) == REFERENCE_TYPE);
@@ -300,7 +300,7 @@ m2treelib_get_set_value (location_t location, tree p, tree field, bool is_const,
                             && (TREE_CODE (TREE_TYPE (type)) == RECORD_TYPE)));
       value = m2expr_BuildComponentRef (location, op, field);
     }
-  value = m2convert_ToBitset (location, value);
+  value = m2convert_ToBitset (location, tokno, value);
   return value;
 }
 
@@ -318,20 +318,22 @@ m2treelib_get_set_address (location_t location, tree op1, bool is_lvalue)
 /* get_set_field_lhs - returns the address of p->field.  */
 
 tree
-m2treelib_get_set_field_lhs (location_t location, tree p, tree field)
+m2treelib_get_set_field_lhs (location_t location, unsigned int tokno,
+			     tree p, tree field)
 {
-  return m2expr_BuildAddr (
-      location, m2convert_ToBitset (
-                    location, m2expr_BuildComponentRef (location, p, field)),
-      FALSE);
+  return m2expr_BuildAddr (location,
+			   m2convert_ToBitset (location, tokno,
+					       m2expr_BuildComponentRef (location, p, field)),
+			   FALSE);
 }
 
 /* get_set_field_rhs - returns the value of p->field.  */
 
 tree
-m2treelib_get_set_field_rhs (location_t location, tree p, tree field)
+m2treelib_get_set_field_rhs (location_t location, unsigned int tokno,
+			     tree p, tree field)
 {
-  return m2convert_ToBitset (location,
+  return m2convert_ToBitset (location, tokno,
                              m2expr_BuildComponentRef (location, p, field));
 }
 
@@ -339,10 +341,10 @@ m2treelib_get_set_field_rhs (location_t location, tree p, tree field)
    designator.  */
 
 tree
-m2treelib_get_set_field_des (location_t location, tree p, tree field)
+m2treelib_get_set_field_des (location_t location, unsigned int tokno,
+			     tree p, tree field)
 {
-  return m2expr_BuildIndirect (
-      location,
+  return m2expr_BuildIndirect (location, tokno,
       m2expr_BuildAddr (location,
                         m2expr_BuildComponentRef (location, p, field), FALSE),
       m2type_GetBitsetType ());
@@ -359,14 +361,6 @@ m2treelib_get_set_address_if_var (location_t location, tree op, bool is_lvalue,
     return NULL;
   else
     return m2treelib_get_set_address (location, op, is_lvalue);
-}
-
-/* add_stmt add stmt to the statement-tree.  */
-
-tree
-add_stmt (location_t location, tree stmt)
-{
-  return m2block_add_stmt (location, stmt);
 }
 
 /* taken from gcc/c-semantics.cc.  */

@@ -32,33 +32,6 @@ DEFINITION MODULE M2Reserved ;
 
 FROM NameKey IMPORT Name ;
 
-EXPORT QUALIFIED IsReserved, tokToTok,
-
-   NulTok, PlusTok, MinusTok, TimesTok, DivideTok, BecomesTok,
-   AmbersandTok, PeriodTok, CommaTok, SemiColonTok, LParaTok,
-   LSBraTok, LCBraTok, UpArrowTok, SingleQuoteTok, EqualTok,
-   HashTok, LessTok, GreaterTok, LessGreaterTok, LessEqualTok,
-   GreaterEqualTok, PeriodPeriodTok, ColonTok, RParaTok,
-   RSBraTok, RCBraTok, BarTok, DoubleQuotesTok,
-
-   AndTok, ArrayTok, BeginTok, ByTok, CaseTok, ConstTok,
-   DefinitionTok, DivTok, DoTok, ElseTok, ElsifTok, EndTok,
-   ExceptTok,
-   ExitTok, ExportTok, FinallyTok, ForTok, ForwardTok,
-   FromTok, IfTok,
-   ImplementationTok, ImportTok, InTok, LoopTok, ModTok,
-   ModuleTok, NotTok, OfTok, OrTok,
-   PackedSetTok, PointerTok, ProcedureTok,
-   QualifiedTok, UnQualifiedTok, RecordTok, RetryTok,
-   RemTok, RepeatTok,
-   ReturnTok, SetTok, ThenTok, ToTok, TypeTok, UntilTok, VarTok,
-   WhileTok, WithTok,
-
-   (* additional tokens which extend PIM Modula-2 slightly *)
-   EofTok, AsmTok, VolatileTok, DateTok, LineTok, FileTok,
-   AttributeTok, BuiltinTok, InlineTok,
-   toktype ;
-
 TYPE
    toktype = (eoftok, plustok, minustok, timestok, dividetok,
               becomestok, ambersandtok, periodtok, commatok,
@@ -81,6 +54,15 @@ TYPE
               settok, thentok,
               totok, typetok, untiltok, vartok, whiletok, withtok,
               asmtok, volatiletok, periodperiodperiodtok,
+              (* Pragma tokens seen between <* *> delimiters.  *)
+              gm2tok, gcctok, pragmatok,
+              truetok, falsetok,
+              novectortok,
+              ivdeptok, unrolltok,
+              dollartok, questiontok, msgtok, testtok,
+              warntok,
+              infotok, errortok, fataltok,
+              (* Additional tokens.  *)
               datetok, linetok, filetok,
               attributetok, builtintok, inlinetok,
               integertok, identtok, realtok, stringtok,
@@ -105,7 +87,13 @@ VAR
    QualifiedTok, UnQualifiedTok, RecordTok, RemTok, RepeatTok,
    RetryTok, ReturnTok, SetTok, ThenTok, ToTok, TypeTok,
    UntilTok, VarTok, WhileTok, WithTok,
-
+   (* The are only seen as keywords within a pragma.  *)
+   GccTok, Gm2Tok, PragmaTok,
+   VectorTok, IvdepTok, UnrollTok,
+   DollarTok, QuestionTok, MsgTok, TestTok,
+   TrueTok, FalseTok,
+   WARNTok, INFOTok, ERRORTok, FATALTok,
+   (* End of the pragma keyword list.  *)
    EofTok, AsmTok, VolatileTok,
    DateTok, LineTok, FileTok,
    AttributeTok, BuiltinTok, InlineTok: Name ;

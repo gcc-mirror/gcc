@@ -21,14 +21,14 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 IMPLEMENTATION MODULE M2Quiet ;
 
-(* importing from M2Options is the reason why it is not a good idea to put this into M2Printf *)
-FROM M2Options IMPORT Quiet ;
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
+FROM M2Options IMPORT GetSourcesFlag ;
 FROM M2Printf IMPORT printf0, printf1, printf2, printf3, printf4 ;
 
 
 PROCEDURE qprintf0 (a: ARRAY OF CHAR) ;
 BEGIN
-   IF NOT Quiet
+   IF GetSourcesFlag (BuiltinTokenNo)
    THEN
       printf0(a)
    END
@@ -37,7 +37,7 @@ END qprintf0 ;
 
 PROCEDURE qprintf1 (a: ARRAY OF CHAR; w: ARRAY OF BYTE) ;
 BEGIN
-   IF NOT Quiet
+   IF GetSourcesFlag (BuiltinTokenNo)
    THEN
       printf1(a, w)
    END
@@ -46,7 +46,7 @@ END qprintf1 ;
 
 PROCEDURE qprintf2 (a: ARRAY OF CHAR; w1, w2: ARRAY OF BYTE) ;
 BEGIN
-   IF NOT Quiet
+   IF GetSourcesFlag (BuiltinTokenNo)
    THEN
       printf2(a, w1, w2)
    END
@@ -55,7 +55,7 @@ END qprintf2 ;
 
 PROCEDURE qprintf3 (a: ARRAY OF CHAR; w1, w2, w3: ARRAY OF BYTE) ;
 BEGIN
-   IF NOT Quiet
+   IF GetSourcesFlag (BuiltinTokenNo)
    THEN
       printf3(a, w1, w2, w3)
    END
@@ -64,7 +64,7 @@ END qprintf3 ;
 
 PROCEDURE qprintf4 (a: ARRAY OF CHAR; w1, w2, w3, w4: ARRAY OF BYTE) ;
 BEGIN
-   IF NOT Quiet
+   IF GetSourcesFlag (BuiltinTokenNo)
    THEN
       printf4(a, w1, w2, w3, w4)
    END

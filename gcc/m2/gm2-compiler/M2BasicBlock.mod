@@ -26,7 +26,6 @@ FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM NumberIO IMPORT WriteCard ;
 FROM M2Debug IMPORT Assert ;
-FROM M2Options IMPORT OptimizeBasicBlock ;
 
 FROM M2Quads IMPORT IsReferenced, IsConditional, IsUnConditional, IsCall,
                     IsReturn, IsNewLocalVar, IsKillLocalVar,

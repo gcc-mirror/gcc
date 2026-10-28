@@ -81,6 +81,7 @@ static int cpreprocessor = 0;  /* Replace this with correct getter.  */
   static bool                 seenEnd=false;
   static bool                 seenModuleStart=false;
   static bool                 isDefinitionModule=false;
+  static bool                 inPragma=false;
   static int                  totalLines=0;
 
 static  void pushLine                 (void);
@@ -102,6 +103,8 @@ static  void handleColumn             (void);
 static  void pushFunction             (char *function, bool module);
 static  void popFunction              (void);
 static  void checkFunction            (void);
+static  void addTokOrIdent            (char *str, M2Reserved_toktype tok);
+
 EXTERN  void m2flex_M2Error           (const char *);
 EXTERN  location_t m2flex_GetLocation (void);
 EXTERN  int  m2flex_GetColumnNo       (void);
@@ -238,8 +241,16 @@ extern  void  yylex                   (void);
 \<\>                       { updatepos(); M2LexBuf_AddTok(M2Reserved_lessgreatertok); return; }
 \<\=                       { updatepos(); M2LexBuf_AddTok(M2Reserved_lessequaltok); return; }
 \>\=                       { updatepos(); M2LexBuf_AddTok(M2Reserved_greaterequaltok); return; }
-"<*"                       { updatepos(); M2LexBuf_AddTok(M2Reserved_ldirectivetok); return; }
-"*>"                       { updatepos(); M2LexBuf_AddTok(M2Reserved_rdirectivetok); return; }
+"<*"                       { updatepos();
+                             if (inPragma)
+			       m2flex_M2Error ("nested attributes are not allowed");
+                             inPragma = true;
+                             M2LexBuf_AddTok(M2Reserved_ldirectivetok);
+			     return; }
+"*>"                       { updatepos();
+                             inPragma = false;
+                             M2LexBuf_AddTok(M2Reserved_rdirectivetok);
+			     return; }
 \.\.                       { updatepos(); M2LexBuf_AddTok(M2Reserved_periodperiodtok); return; }
 \.\.\.                     { updatepos(); M2LexBuf_AddTok(M2Reserved_periodperiodperiodtok); return; }
 \:                         { updatepos(); M2LexBuf_AddTok(M2Reserved_colontok); return; }
@@ -300,6 +311,22 @@ WHILE                      { updatepos(); M2LexBuf_AddTok(M2Reserved_whiletok); 
 WITH                       { updatepos(); M2LexBuf_AddTok(M2Reserved_withtok); return; }
 ASM                        { updatepos(); M2LexBuf_AddTok(M2Reserved_asmtok); return; }
 VOLATILE                   { updatepos(); M2LexBuf_AddTok(M2Reserved_volatiletok); return; }
+gcc                        { updatepos(); addTokOrIdent (yytext, M2Reserved_gcctok); return; }
+gm2                        { updatepos(); addTokOrIdent (yytext, M2Reserved_gm2tok); return; }
+pragma                     { updatepos(); addTokOrIdent (yytext, M2Reserved_pragmatok); return; }
+novector                   { updatepos(); addTokOrIdent (yytext, M2Reserved_novectortok); return; }
+ivdep                      { updatepos(); addTokOrIdent (yytext, M2Reserved_ivdeptok); return; }
+unroll                     { updatepos(); addTokOrIdent (yytext, M2Reserved_unrolltok); return; }
+\$                         { updatepos(); M2LexBuf_AddTok(M2Reserved_dollartok); return; }
+\?                         { updatepos(); M2LexBuf_AddTok(M2Reserved_questiontok); return; }
+MSG                        { updatepos(); addTokOrIdent (yytext, M2Reserved_msgtok); return; }
+TEST                       { updatepos(); addTokOrIdent (yytext, M2Reserved_testtok); return; }
+TRUE                       { updatepos(); addTokOrIdent (yytext, M2Reserved_truetok); return; }
+FALSE                      { updatepos(); addTokOrIdent (yytext, M2Reserved_falsetok); return; }
+WARN                       { updatepos(); addTokOrIdent (yytext, M2Reserved_warntok); return; }
+INFO                       { updatepos(); addTokOrIdent (yytext, M2Reserved_infotok); return; }
+ERROR                      { updatepos(); addTokOrIdent (yytext, M2Reserved_errortok); return; }
+FATAL                      { updatepos(); addTokOrIdent (yytext, M2Reserved_fataltok); return; }
 \_\_DATE\_\_               { updatepos(); handleDate(); return; }
 \_\_LINE\_\_               { updatepos(); handleLine(); return; }
 \_\_FILE\_\_               { updatepos(); handleFile(); return; }
@@ -851,6 +878,16 @@ EXTERN location_t m2flex_GetLocation (void)
 EXTERN int m2flex_GetTotalLines (void)
 {
   return totalLines;
+}
+
+static
+void
+addTokOrIdent (char *str, M2Reserved_toktype tok)
+{
+  if (inPragma)
+    M2LexBuf_AddTok (tok);
+  else
+    M2LexBuf_AddTokCharStar (M2Reserved_identtok, str);
 }
 
 /*

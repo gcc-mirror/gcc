@@ -35,7 +35,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* !m2statement_c.  */
 
-EXTERN void m2statement_BuildCallInner (location_t location, tree fndecl);
+EXTERN void m2statement_BuildCallInner (location_t location, unsigned int tokno, tree fndecl);
 EXTERN void m2statement_BuildEnd (location_t location, tree fndecl,
                                   int nested);
 EXTERN tree m2statement_BuildStart (location_t location, char *name,
@@ -52,9 +52,10 @@ EXTERN void m2statement_BuildExcludeVarVar (location_t location, tree type,
 EXTERN void m2statement_BuildExcludeVarConst (location_t location, tree type,
                                               tree op1, tree op2,
                                               bool is_lvalue, int fieldno);
-EXTERN void m2statement_BuildAsm (location_t location, tree instr,
-                                  bool isVolatile, bool isSimple, tree inputs,
-                                  tree outputs, tree trash, tree labels);
+EXTERN void m2statement_BuildAsm (location_t location, unsigned int tokno,
+				  tree instr,
+				  bool isVolatile, bool isSimple, tree inputs,
+				  tree outputs, tree trash, tree labels);
 EXTERN tree m2statement_BuildFunctValue (location_t location, tree value);
 EXTERN tree m2statement_BuildIndirectProcedureCallTree (location_t location,
                                                         tree procedure,
@@ -69,22 +70,21 @@ EXTERN tree m2statement_BuildIfThenElseEnd (tree condition, tree then_block,
                                             tree else_block);
 EXTERN tree m2statement_BuildIfThenDoEnd (tree condition, tree then_block);
 
-EXTERN void m2statement_DeclareLabel (location_t location, char *name);
-EXTERN void m2statement_BuildGoto (location_t location, char *name);
-EXTERN void m2statement_BuildAssignmentTree (location_t location, tree des,
-                                             tree expr);
-EXTERN void m2statement_BuildAssignmentStatement (location_t location, tree des,
-						  tree expr);
+EXTERN void m2statement_DeclareLabel (location_t location, unsigned int tokno, char *name);
+EXTERN void m2statement_BuildGoto (location_t location, unsigned int tokno, char *name);
+EXTERN void m2statement_BuildAssignmentStatement (location_t location, unsigned int tokno,
+						  tree des, tree expr);
 EXTERN void m2statement_BuildPopFunctionContext (void);
 EXTERN void m2statement_BuildPushFunctionContext (void);
-EXTERN void m2statement_BuildReturnValueCode (location_t location, tree fndecl,
-                                              tree value);
+EXTERN void m2statement_BuildReturnValueCode (location_t location, unsigned int tokno,
+					      tree fndecl, tree value);
 EXTERN void m2statement_BuildEndFunctionCode (location_t location, tree fndecl,
                                               bool nested);
 EXTERN void m2statement_BuildStartFunctionCode (location_t location,
                                                 tree fndecl, bool isexported,
                                                 bool isinline);
-EXTERN void m2statement_IfExprJump (location_t location, tree exp, char *label);
+EXTERN void m2statement_IfExprJump (location_t location, unsigned int tokno,
+				    tree exp, char *label);
 EXTERN tree m2statement_BuildCall2 (location_t location, tree function,
                                     tree rettype, tree arg1, tree arg2);
 EXTERN tree m2statement_BuildCall3 (location_t location, tree function,
@@ -103,10 +103,13 @@ EXTERN tree m2statement_BuildBuiltinCallTree (tree func);
 EXTERN tree m2statement_BuildTryFinally (location_t location, tree call,
                                          tree cleanups);
 EXTERN tree m2statement_BuildCleanUp (tree param);
-EXTERN void m2statement_IfBitInSetJump (location_t location, bool invertCondition,
-					tree setvalue, tree bit, char *label);
-EXTERN void m2statement_CopyByField (location_t location, tree des, tree expr);
-EXTERN void m2statement_CopyMemcpy (location_t location, tree dest, tree src, tree bytes);
+EXTERN void m2statement_IfBitInSetJump (location_t location, unsigned int tokno,
+					bool invertCondition,
+ 					tree setvalue, tree bit, char *label);
+EXTERN void m2statement_CopyByField (location_t location, unsigned int tokno,
+				     tree des, tree expr);
+EXTERN void m2statement_CopyMemcpy (location_t location, unsigned int tokno,
+				    tree dest, tree src, tree bytes);
 
 #undef EXTERN
 #endif /* m2statement_h.  */

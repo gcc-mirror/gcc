@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,17 +42,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
 #endif
-#define _StringConvert_H
 #define _StringConvert_C
 
+#include "GStringConvert.h"
 #   include "GSYSTEM.h"
 #   include "Glibc.h"
 #   include "Glibm.h"
@@ -1774,11 +1772,11 @@ extern "C" DynamicStrings_String StringConvert_LongrealToString (long double x, 
   if (TotalWidth == 0)
     {
       maxprecision = true;
-      r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
+      r = ldtoa_ldtoa (x, static_cast<int> (ldtoa_decimaldigits), 100, &point, &sign);
     }
   else
     {
-      r = ldtoa_ldtoa (x, ldtoa_decimaldigits, 100, &point, &sign);
+      r = ldtoa_ldtoa (x, static_cast<int> (ldtoa_decimaldigits), 100, &point, &sign);
     }
   s = DynamicStrings_InitStringCharStar (r);
   libc_free (r);
@@ -1997,10 +1995,10 @@ extern "C" DynamicStrings_String StringConvert_ToDecimalPlaces (DynamicStrings_S
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_StringConvert_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StringConvert_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_StringConvert_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StringConvert_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

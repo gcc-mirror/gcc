@@ -50,61 +50,6 @@ extern "C" {
 
 #   define SYSTEM_BITSPERBYTE 8
 #   define SYSTEM_BYTESPERWORD 4
-
-/*
-   ShiftVal - is a runtime procedure whose job is to implement
-              the SHIFT procedure of ISO SYSTEM. GNU Modula-2 will
-              inline a SHIFT of a single WORD sized set and will only
-              call this routine for larger sets.
-*/
-
-EXTERN void SYSTEM_ShiftVal (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, int ShiftCount);
-
-/*
-   ShiftLeft - performs the shift left for a multi word set.
-               This procedure might be called by the back end of
-               GNU Modula-2 depending whether amount is known at
-               compile time.
-*/
-
-EXTERN void SYSTEM_ShiftLeft (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, unsigned int ShiftCount);
-
-/*
-   ShiftRight - performs the shift left for a multi word set.
-                This procedure might be called by the back end of
-                GNU Modula-2 depending whether amount is known at
-                compile time.
-*/
-
-EXTERN void SYSTEM_ShiftRight (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, unsigned int ShiftCount);
-
-/*
-   RotateVal - is a runtime procedure whose job is to implement
-               the ROTATE procedure of ISO SYSTEM. GNU Modula-2 will
-               inline a ROTATE of a single WORD (or less)
-               sized set and will only call this routine for larger
-               sets.
-*/
-
-EXTERN void SYSTEM_RotateVal (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, int RotateCount);
-
-/*
-   RotateLeft - performs the rotate left for a multi word set.
-                This procedure might be called by the back end of
-                GNU Modula-2 depending whether amount is known at
-                compile time.
-*/
-
-EXTERN void SYSTEM_RotateLeft (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, unsigned int RotateCount);
-
-/*
-   RotateRight - performs the rotate right for a multi word set.
-                 This procedure might be called by the back end of
-                 GNU Modula-2 depending whether amount is known at
-                 compile time.
-*/
-
-EXTERN void SYSTEM_RotateRight (unsigned int *s, unsigned int _s_high, unsigned int *d, unsigned int _d_high, unsigned int SetSizeInBits, unsigned int RotateCount);
 #   ifdef __cplusplus
 }
 #   endif

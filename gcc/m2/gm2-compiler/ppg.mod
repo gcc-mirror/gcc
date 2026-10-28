@@ -27,12 +27,12 @@ FROM bnflex IMPORT IsSym, SymIs, TokenType, GetCurrentToken, GetCurrentTokenType
                    PushBackToken, SetDebugging ;
 FROM StrLib IMPORT StrCopy, StrEqual, StrLen, StrConCat ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
-FROM NameKey IMPORT Name, MakeKey, WriteKey, LengthKey, GetKey, KeyToCharStar, NulName ;
+FROM NameKey IMPORT Name, MakeKey, WriteKey, LengthKey, GetKey, KeyToCharStar, makekey, NulName ;
 FROM NumberIO IMPORT CardToStr, WriteCard ;
 FROM SymbolKey IMPORT InitTree, SymbolTree, PutSymKey, GetSymKey, ForeachNodeDo, ContainsSymKey, NulKey ;
 FROM Lists IMPORT InitList, IsItemInList, IncludeItemIntoList, RemoveItemFromList, KillList, List ;
 FROM DynamicStrings IMPORT String, InitString, KillString, ConCat, Mark, ConCatChar,
-                           InitStringCharStar, char, Length ;
+                           InitStringCharStar, char, Length, Index, string ;
 FROM ASCII IMPORT nul, lf, tab ;
 FROM StrIO IMPORT WriteString, WriteLn ;
 FROM StdIO IMPORT Write ;
@@ -47,10 +47,10 @@ CONST
    MaxCodeHunkLength = 8192 ;
    MaxFileName       = 8192 ;
    MaxString         = 8192 ;
-   DefaultRecovery   = TRUE ;   (* default is to generate a parser which will recover from errors.  *)
+   DefaultRecovery   = TRUE ;   (* Default is to generate a parser which will recover from errors.  *)
    MaxElementsInSet  =   32 ;
 
-   (* formatting constants *)
+   (* Formatting constants.  *)
    BaseRightLimit    = 75 ;
    BaseRightMargin   = 50 ;
    BaseNewLine       =  3 ;
@@ -63,7 +63,8 @@ TYPE
    TraverseResult = (unknown, true, false) ;
 
    IdentDesc      = POINTER TO RECORD
-                                  definition: ProductionDesc ;   (* where this idents production is defined *)
+                                  definition: ProductionDesc ;   (* Where this idents production is defined.  *)
+                                  codename,
                                   name      : Name ;
                                   line      : CARDINAL ;
                                END ;
@@ -79,7 +80,7 @@ TYPE
                                   END
                                END ;
 
-(* note that epsilon refers to whether we can satisfy this component part
+(* Note that epsilon refers to whether we can satisfy this component part
    of a sentance without consuming a token. Reachend indicates we can get
    to the end of the sentance without consuming a token.
 
@@ -88,10 +89,10 @@ TYPE
 *)
 
    FollowDesc     = POINTER TO RECORD
-                                  calcfollow  : BOOLEAN ;          (* have we solved the follow set yet? *)
-                                  follow      : SetDesc ;          (* the follow set *)
-                                  reachend    : TraverseResult ;   (* can we see the end of the sentance (due to multiple epsilons) *)
-                                  epsilon     : TraverseResult ;   (* potentially no token may be consumed within this component of the sentance *)
+                                  calcfollow  : BOOLEAN ;          (* Have we solved the follow set yet?  *)
+                                  follow      : SetDesc ;          (* The follow set.  *)
+                                  reachend    : TraverseResult ;   (* Can we see the end of the sentance (due to multiple epsilons).  *)
+                                  epsilon     : TraverseResult ;   (* Potentially no token may be consumed within this component of the sentance.  *)
                                   line        : CARDINAL ;
                     END ;
 
@@ -142,15 +143,15 @@ TYPE
 
    termdesc       =            RECORD
                                   factor    : FactorDesc ;
-                                  next      : TermDesc ;  (* chain of alternative terms *)
+                                  next      : TermDesc ;  (* Chain of alternative terms.  *)
                                   followinfo: FollowDesc ;
                                   line      : CARDINAL ;
                                END ;
 
    ProductionDesc = POINTER TO RECORD
-                                  next        : ProductionDesc ;   (* the chain of productions *)
+                                  next        : ProductionDesc ;   (* The chain of productions.  *)
                                   statement   : StatementDesc ;
-                                  first       : SetDesc ;          (* the first set *)
+                                  first       : SetDesc ;          (* The first set.  *)
                                   firstsolved : BOOLEAN ;
                                   followinfo  : FollowDesc ;
                                   line        : CARDINAL ;
@@ -188,16 +189,16 @@ VAR
    CurrentStatement   : StatementDesc ;
    CurrentSetDesc     : SetDesc ;
    ReverseValues,
-   Values,                           (* tree of tokens and their ORD value        *)
+   Values,                           (* Tree of tokens and their ORD value.        *)
    ReverseAliases,
    Aliases            : SymbolTree ;
    ModuleName         : Name ;
    LastLiteral        : Name ;
    LastIdent          : Name ;
-   SymIsProc,                        (* the name of the SymIs function tests and consumes token *)
-   TokenTypeProc,                    (* the name of the function which yields the current token type *)
+   SymIsProc,                        (* The name of the SymIs function tests and consumes token.  *)
+   TokenTypeProc,                    (* The name of the function which yields the current token type.  *)
    ErrorProcArray,
-   ErrorProcString    : Name ;       (* the name of the error procedures *)
+   ErrorProcString    : Name ;       (* The name of the error procedures.  *)
    ArgName,
    FileName           : ARRAY [0..MaxFileName] OF CHAR ;
    OnLineStart,
@@ -848,6 +849,36 @@ BEGIN
 END GetName ;
 
 
+(*
+   MakeCodeName - mangle the name to codename and return.
+*)
+
+PROCEDURE MakeCodeName (name: Name) : Name ;
+VAR
+   ins, outs: String ;
+   codename : Name ;
+   i, l     : CARDINAL ;
+   ch       : CHAR ;
+BEGIN
+   ins := InitStringCharStar (KeyToCharStar (name)) ;
+   l := Length (ins) ;
+   i := 0 ;
+   outs := InitString ('') ;
+   WHILE i < l DO
+      ch := char (ins, i) ;
+      IF (ch # '<') AND (ch # '>')
+      THEN
+         outs := ConCatChar (outs, ch)
+      END ;
+      INC (i)
+   END ;
+   ins := KillString (ins) ;
+   codename := makekey (string (outs)) ;
+   outs := KillString (outs) ;
+   RETURN codename
+END MakeCodeName ;
+
+
 (* % rules *)
 
 (*
@@ -875,6 +906,7 @@ BEGIN
       WITH CurrentIdent^ DO
          definition := NIL ;
          name       := GetName() ;
+         codename   := MakeCodeName (name) ;
          line       := GetCurrentLine()
       END ;
       RETURN( TRUE )
@@ -1067,6 +1099,7 @@ BEGIN
       WITH CurrentIdent^ DO
          definition := NIL ;
          name       := GetName() ;
+         codename   := MakeCodeName (name) ;
          line       := GetCurrentLine()
       END ;
    END
@@ -1894,6 +1927,25 @@ END GetDefinitionName ;
 
 
 (*
+   GetCodeName - returns the codename of the rule inside, p.
+*)
+
+PROCEDURE GetCodeName (p: ProductionDesc) : Name ;
+BEGIN
+   IF p#NIL
+   THEN
+      WITH p^ DO
+         IF (statement#NIL) AND (statement^.ident#NIL)
+         THEN
+            RETURN( statement^.ident^.codename )
+         END
+      END
+   END ;
+   RETURN( NulName )
+END GetCodeName ;
+
+
+(*
    FindDefinition - searches and returns the rule which defines, n.
 *)
 
@@ -2135,7 +2187,7 @@ PROCEDURE KeyWord (n: Name) ;
 BEGIN
    IF KeywordFormatting
    THEN
-      Output.WriteString('{%K') ;
+      Output.WriteString('{%k') ;
       IF (n = MakeKey('}')) OR (n = MakeKey('{')) OR (n = MakeKey('%'))
       THEN
          Output.Write('%')   (* escape }, { or % *)
@@ -2194,6 +2246,48 @@ END WriteKeyTexinfo ;
 
 
 (*
+   PrettyIdentName -
+*)
+
+PROCEDURE PrettyIdentName (ident: IdentDesc) ;
+VAR
+   on  : BOOLEAN ;
+   ds  : String ;
+   ch  : CHAR ;
+   i, l: CARDINAL ;
+BEGIN
+   IF Texinfo
+   THEN
+      ds := InitStringCharStar (KeyToCharStar (ident^.name)) ;
+      l := Length (ds) ;
+      i := 0 ;
+      on := TRUE ;
+      WHILE i < l DO
+         ch := char (ds, i) ;
+         IF ch = '<'
+         THEN
+            on := FALSE
+         ELSIF ch = '>'
+         THEN
+            on := TRUE
+         ELSIF on
+         THEN
+            Output.Write (ch) ;
+            INC (Indent)
+         END ;
+         INC (i)
+      END ;
+      Output.WriteString (' ') ;
+      INC (Indent) ;
+      ds := KillString (ds)
+   ELSE
+      Output.WriteKey (ident^.codename) ; Output.WriteString (' ') ;
+      INC (Indent, LengthKey (ident^.codename)+1)
+   END
+END PrettyIdentName ;
+
+
+(*
    PrettyCommentFactor -
 *)
 
@@ -2207,8 +2301,7 @@ BEGIN
       WITH f^ DO
          CASE type OF
 
-         id  :  Output.WriteKey(ident^.name) ; Output.WriteString(' ') ;
-                INC(Indent, LengthKey(ident^.name)+1) |
+         id  :  PrettyIdentName (ident) |
          lit :  IF MakeKey("'")=string
                 THEN
                    Output.Write('"') ; WriteKeyTexinfo(string) ; Output.WriteString('" ')
@@ -2292,7 +2385,7 @@ BEGIN
       WITH f^ DO
          CASE type OF
 
-         id  :  INC(l, LengthKey(ident^.name)+1) |
+         id  :  INC(l, LengthKey(ident^.codename)+1) |
          lit :  INC(l, LengthKey(string)+3) |
          opt ,
          mult,
@@ -2361,6 +2454,22 @@ END PrettyCommentStatement ;
 
 
 (*
+   IsAlternateProduction - returns TRUE if the definition name contains '<'.
+*)
+
+PROCEDURE IsAlternateProduction (p: ProductionDesc) : BOOLEAN ;
+VAR
+   result: BOOLEAN ;
+   ds    : String ;
+BEGIN
+   ds := InitStringCharStar (KeyToCharStar (GetDefinitionName (p))) ;
+   result := Index (ds, '<', 0) >= 0 ;
+   ds := KillString (ds) ;
+   RETURN result
+END IsAlternateProduction ;
+
+
+(*
    PrettyCommentProduction - generates the comment for rule, p.
 *)
 
@@ -2370,33 +2479,36 @@ VAR
 BEGIN
    IF p#NIL
    THEN
-      BeginningOfLine := TRUE ;
-      Indent          := 0 ;
-      Output.WriteString('(*') ; NewLine(3) ;
-      Output.WriteKey(GetDefinitionName(p)) ;
-      Output.WriteString(' := ') ;
-      INC(Indent, LengthKey(GetDefinitionName(p))+4) ;
-      PrettyCommentStatement(p^.statement, Indent) ;
-      NewLine(0) ;
-      IF ErrorRecovery
+      IF NOT (Texinfo AND IsAlternateProduction (p))
       THEN
-         NewLine(3) ;
-         Output.WriteString('first  symbols:') ;
-         EmitSet(p^.first, 0, 0) ;
-         NewLine(3) ;
-         PrettyFollow('<p:', ':p>', p^.followinfo) ;
-         NewLine(3) ;
-         CASE GetReachEnd(p^.followinfo) OF
+         BeginningOfLine := TRUE ;
+         Indent          := 0 ;
+         Output.WriteString('(*') ; NewLine(3) ;
+         Output.WriteKey(GetCodeName(p)) ;
+         Output.WriteString(' := ') ;
+         INC(Indent, LengthKey(GetCodeName(p))+4) ;
+         PrettyCommentStatement(p^.statement, Indent) ;
+         NewLine(0) ;
+         IF ErrorRecovery
+         THEN
+            NewLine(3) ;
+            Output.WriteString('first  symbols:') ;
+            EmitSet(p^.first, 0, 0) ;
+            NewLine(3) ;
+            PrettyFollow('<p:', ':p>', p^.followinfo) ;
+            NewLine(3) ;
+            CASE GetReachEnd(p^.followinfo) OF
 
-         true   :  Output.WriteString('reachend') |
-         false  :  Output.WriteString('cannot reachend') |
-         unknown:  Output.WriteString('unknown...')
+            true   :  Output.WriteString('reachend') |
+            false  :  Output.WriteString('cannot reachend') |
+            unknown:  Output.WriteString('unknown...')
 
-         ELSE
+            ELSE
+            END ;
+            NewLine(0)
          END ;
-         NewLine(0)
-      END ;
-      Output.WriteString('*)') ; NewLine(0) ;
+         Output.WriteString('*)') ; NewLine(0)
+      END
    END
 END PrettyCommentProduction ;
 
@@ -2407,41 +2519,49 @@ END PrettyCommentProduction ;
 
 PROCEDURE PrettyPrintProduction (p: ProductionDesc) ;
 VAR
-   to: SetDesc ;
+   to  : SetDesc ;
+   name: Name ;
 BEGIN
    IF p#NIL
    THEN
-      BeginningOfLine := TRUE ;
-      Indent          := 0 ;
-      IF Texinfo
+      IF NOT (Texinfo AND IsAlternateProduction (p))
       THEN
-         Output.WriteString('@example') ; NewLine(0)
-      ELSIF Sphinx
-      THEN
-         Output.WriteString('.. code-block:: ebnf') ; NewLine(0)
-      END ;
-      Output.WriteKey(GetDefinitionName(p)) ;
-      Output.WriteString(' := ') ;
-      INC(Indent, LengthKey(GetDefinitionName(p))+4) ;
-      PrettyCommentStatement(p^.statement, Indent) ;
-      IF p^.description#NulName
-      THEN
-         Output.WriteKey(p^.description)
-      END ;
-      NewLine(0) ;
-      WriteIndent(LengthKey(GetDefinitionName(p))+1) ;
-      Output.WriteString(' =: ') ;
-      NewLine(0) ;
-      IF Texinfo
-      THEN
-         Output.WriteString('@findex ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString(' (ebnf)') ; NewLine(0) ;
-         Output.WriteString('@end example') ; NewLine(0)
-      ELSIF Sphinx
-      THEN
-         Output.WriteString('.. index::') ; NewLine(0) ;
-         Output.WriteString('  pair: ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString('; (ebnf)') ; NewLine(0)
-      END ;
-      NewLine(0)
+         BeginningOfLine := TRUE ;
+         Indent          := 0 ;
+         IF Texinfo
+         THEN
+            Output.WriteString('@example') ; NewLine(0) ;
+            name := GetCodeName (p)
+         ELSIF Sphinx
+         THEN
+            Output.WriteString('.. code-block:: ebnf') ; NewLine(0) ;
+            name := GetCodeName (p)
+         ELSE
+            name := GetDefinitionName (p)
+         END ;
+         Output.WriteKey(name) ;
+         Output.WriteString(' := ') ;
+         INC(Indent, LengthKey(name)+4) ;
+         PrettyCommentStatement(p^.statement, Indent) ;
+         IF p^.description#NulName
+         THEN
+            Output.WriteKey(p^.description)
+         END ;
+         NewLine(0) ;
+         WriteIndent(LengthKey(name)+1) ;
+         Output.WriteString(' =: ') ;
+         NewLine(0) ;
+         IF Texinfo
+         THEN
+            Output.WriteString('@findex ') ; Output.WriteKey(name) ; Output.WriteString(' (ebnf)') ; NewLine(0) ;
+            Output.WriteString('@end example') ; NewLine(0)
+         ELSIF Sphinx
+         THEN
+            Output.WriteString('.. index::') ; NewLine(0) ;
+            Output.WriteString('  pair: ') ; Output.WriteKey(name) ; Output.WriteString('; (ebnf)') ; NewLine(0)
+         END ;
+         NewLine(0)
+      END
    END
 END PrettyPrintProduction ;
 
@@ -2555,7 +2675,7 @@ BEGIN
          WITH f^ DO
             CASE type OF
 
-            id  :  Output.Write("'") ; Output.WriteKey(ident^.name) ; Output.WriteString(' - expected') ; Output.WriteString("') ;") |
+            id  :  Output.Write("'") ; Output.WriteKey(ident^.codename) ; Output.WriteString(' - expected') ; Output.WriteString("') ;") |
             lit :  IF MakeKey("'")=string
                    THEN
                       Output.Write('"') ;
@@ -2713,7 +2833,7 @@ BEGIN
 
          id  :  FlushCode(codeStack) ;
                 CodeCondition(n) ;
-                Output.WriteKey(ident^.name) ; Output.WriteString('()') ;
+                Output.WriteKey(ident^.codename) ; Output.WriteString('()') ;
                 CodeThenDo(n) ;
                 INC(Indent, 3) ;
                 CodeFactor(f^.next, NIL, n, m2none, inopt, inwhile, TRUE, NIL) ;
@@ -2831,7 +2951,7 @@ BEGIN
       Output.WriteLn ;
       EmitFileLineTag(p^.line) ;
       IndentString('PROCEDURE ') ;
-      Output.WriteKey(GetDefinitionName(p)) ;
+      Output.WriteKey(GetCodeName(p)) ;
       Output.WriteString(' () : BOOLEAN ;') ;
       VarProduction(p) ;
       Output.WriteLn ;
@@ -2844,7 +2964,7 @@ BEGIN
       CodeStatement(p^.statement, m2none) ;
       Output.WriteLn ;
       Indent := 0 ;
-      IndentString('END ') ; WriteKey(GetDefinitionName(p)) ; Output.WriteString(' ;') ;
+      IndentString('END ') ; WriteKey(GetCodeName(p)) ; Output.WriteString(' ;') ;
       Output.WriteLn ;
       Output.WriteLn ;
       Output.WriteLn
@@ -3082,7 +3202,7 @@ BEGIN
                 END ;
                 FlushRecoverCode(codeStack) ;
                 IndentString('') ;
-                Output.WriteKey(ident^.name) ; Output.Write('(') ;
+                Output.WriteKey(ident^.codename) ; Output.Write('(') ;
                 EmitStopParametersAndFollow(f, m) ; Output.WriteString(') ;') ; Output.WriteLn ;
                 RecoverFactor(f^.next, m2none, codeStack) ;
                 IF (to#NIL) AND (m#m2none)
@@ -3630,7 +3750,7 @@ BEGIN
       OnLineStart := FALSE ;
       EmitFileLineTag(p^.line) ;
       IndentString('PROCEDURE ') ;
-      Output.WriteKey(GetDefinitionName(p)) ;
+      Output.WriteKey(GetCodeName(p)) ;
       Output.WriteString(' (') ;
       ParametersUsed := {} ;
       Output.StartBuffer ;
@@ -3646,7 +3766,7 @@ BEGIN
       Indent := 3 ;
       RecoverStatement(p^.statement, m2none) ;
       Indent := 0 ;
-      IndentString('END ') ; Output.WriteKey(GetDefinitionName(p)) ; Output.WriteString(' ;') ;
+      IndentString('END ') ; Output.WriteKey(GetCodeName(p)) ; Output.WriteString(' ;') ;
       Output.WriteLn ;
       Output.WriteLn ;
       Output.WriteLn ;

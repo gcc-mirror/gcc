@@ -31,131 +31,6 @@ DEFINITION MODULE M2Quads ;
 FROM SYSTEM IMPORT WORD ;
 FROM DynamicStrings IMPORT String ;
 
-EXPORT QUALIFIED StartBuildDefFile, StartBuildModFile, EndBuildFile,
-                 BuildModuleStart, BuildScaffold,
-                 StartBuildInit, EndBuildInit,
-                 StartBuildFinally, EndBuildFinally,
-                 BuildExceptInitial, BuildExceptFinally,
-                 BuildExceptProcedure,
-                 BuildRetry,
-                 BuildReThrow,
-                 BuildBuiltinConst, BuildBuiltinTypeInfo,
-                 BuildAssignment, BuildAssignConstant,
-                 BuildAlignment,
-                 BuildDefaultFieldAlignment, BuildPragmaField,
-                 BuildRepeat, BuildUntil,
-                 BuildWhile, BuildDoWhile, BuildEndWhile,
-                 BuildLoop, BuildExit, BuildEndLoop,
-                 BuildThenIf, BuildElse, BuildEndIf,
-                 BuildElsif1, BuildElsif2,
-                 BuildForToByDo, BuildPseudoBy, BuildEndFor,
-                 BuildCaseStartStatementSequence,
-                 BuildCaseEndStatementSequence,
-                 BuildCaseList,
-                 BuildCaseStart,
-                 BuildCaseOr,
-                 BuildCaseElse, BuildCaseEnd, BuildCaseCheck,
-                 BuildCaseRange, BuildCaseEquality,
-                 BuildNulParam, BuildProcedureCall,
-                 CheckBuildFunction,
-                 BuildFunctionCall, BuildConstFunctionCall,
-                 BuildProcedureStart, BuildProcedureEnd,
-                 BuildProcedureBegin,
-                 BuildReturn,
-                 BuildModulePriority,
-                 BuildBooleanVariable,
-                 BuildSizeCheckStart,
-                 StartBuildWith, EndBuildWith, CheckWithReference,
-                 BuildDesignatorRecord,
-                 BuildDesignatorArray,
-                 BuildDesignatorPointer,
-      	       	 BuildSetStart, BuildSetEnd,
-                 BuildEmptySet,
-                 BuildInclRange, BuildInclBit,
-                 BuildNulExpression,
-                 BuildNot,
-                 BuildRelOp,
-                 BuildBinaryOp,
-                 BuildUnaryOp,
-                 RecordOp,
-                 Top, DupFrame,
-                 PopTF, PushTF, PopT, PushT, PopNothing, PopN, PushTFA,
-                 PushTtok, PushTFtok, PopTFtok, PopTtok, PushTFAtok,
-                 PushTFn, PushTFntok, PopTFn,
-                 OperandT, OperandF, OperandA, OperandAnno, OperandTok,
-                 DisplayStack, WriteOperand, Annotate,
-
-                 BuildCodeOn, BuildCodeOff,
-                 BuildProfileOn, BuildProfileOff,
-                 BuildOptimizeOn, BuildOptimizeOff,
-                 BuildAsm, BuildStmtNote, BuildLineNo, PushLineNo,
-                 BuildConstructor,
-                 BuildConstructorStart,
-                 BuildConstructorEnd,
-                 NextConstructorField, BuildTypeForConstructor,
-                 PopConstructor,
-                 BuildComponentValue,
-                 SilentBuildConstructor, SilentBuildConstructorStart,
-
-                 SetOptionOptimizing, SetOptionCoding, SetOptionProfiling,
-
-                 QuadOperator,
-                 Opposite,
-
-                 IsReferenced,
-                 IsBackReference,
-                 IsUnConditional,
-                 IsConditional, IsBackReferenceConditional,
-                 IsGoto,
-                 IsCall,
-                 IsReturn,
-                 IsProcedureScope,
-                 IsNewLocalVar,
-                 IsKillLocalVar,
-                 IsCatchBegin,
-                 IsCatchEnd,
-                 IsInitStart,
-                 IsInitEnd,
-                 IsFinallyStart,
-                 IsFinallyEnd,
-                 IsCodeOn,          (* Compiler flag testing routines *)
-                 IsProfileOn,
-                 IsOptimizeOn,
-                 IsPseudoQuad,
-                 IsDefOrModFile,
-                 IsInitialisingConst, IsConstQuad, IsConditionalBooleanQuad,
-                 IsQuadConstExpr,
-                 IsBecomes,
-                 IsDummy,
-                 GetQuadOp1, GetQuadOp2, GetQuadOp3, GetQuadDest,
-                 SetQuadConstExpr,
-
-                 DumpQuadruples, DisplayQuadRange, DisplayQuad,
-                 WriteOperator, BackPatchSubrangesAndOptParam,
-
-                 GetQuad, GetFirstQuad, GetNextQuad, PutQuad,
-                 SubQuad, EraseQuad, GetRealQuad,
-                 GetQuadtok, GetQuadOtok, PutQuadOtok,
-                 GetQuadOp, GetM2OperatorDesc,
-                 GetQuadOTypetok,
-                 CountQuads,
-                 GetLastFileQuad,
-                 GetLastQuadNo,
-                 QuadToLineNo, QuadToTokenNo,
-                 LoopAnalysis, ForLoopAnalysis,
-                 AddVarientFieldToList, AddRecordToList,
-                 AddVarientToList,
-                 AddVarientRange, AddVarientEquality,
-                 BeginVarient, EndVarient, ElseVarient,
-                 BeginVarientList, EndVarientList,
-                 IsAutoPushOn, PushAutoOn, PushAutoOff, PopAuto,
-                 PushInConstExpression, PopInConstExpression,
-                 IsInConstExpression,
-                 PushInConstParameters, PopInConstParameters,
-                 IsInConstParameters,
-                 MustCheckOverflow, BuildAsmElement, BuildAsmTrash,
-                 GetQuadTrash ;
-
 
 TYPE
    QuadOperator = (AddOp,
@@ -169,8 +44,6 @@ TYPE
                    CastOp,
                    CatchBeginOp,
                    CatchEndOp,
-                   CodeOffOp,
-                   CodeOnOp,
                    CoerceOp,
                    ConvertOp,
                    DivCeilOp,
@@ -218,13 +91,10 @@ TYPE
                    MultOp,
                    NegateOp,
                    NewLocalVarOp,
-                   OptimizeOffOp,
-                   OptimizeOnOp,
                    OptParamOp,
                    ParamOp,
+                   PragmaOp,
                    ProcedureScopeOp,
-                   ProfileOffOp,
-                   ProfileOnOp,
                    RangeCheckOp,
                    RecordFieldOp,
                    RestoreExceptionOp,
@@ -249,30 +119,6 @@ TYPE
                    TryOp,
                    UnboundedOp,
                    XIndrOp) ;
-
-
-(*
-   SetOptionCoding - builds a code quadruple if the profiling
-                     option was given to the compiler.
-*)
-
-PROCEDURE SetOptionCoding (b: BOOLEAN) ;
-
-
-(*
-   SetOptionProfiling - builds a profile quadruple if the profiling
-                        option was given to the compiler.
-*)
-
-PROCEDURE SetOptionProfiling (b: BOOLEAN) ;
-
-
-(*
-   SetOptionOptimizing - builds a code quadruple if the profiling
-                         option was given to the compiler.
-*)
-
-PROCEDURE SetOptionOptimizing (b: BOOLEAN) ;
 
 
 (*
@@ -478,27 +324,6 @@ PROCEDURE IsConstQuad (quad: CARDINAL) : BOOLEAN ;
 *)
 
 PROCEDURE IsConditionalBooleanQuad (quad: CARDINAL) : BOOLEAN ;
-
-
-(*
-   IsOptimizeOn - returns true if the Optimize flag was true at QuadNo.
-*)
-
-PROCEDURE IsOptimizeOn (QuadNo: CARDINAL) : BOOLEAN ;
-
-
-(*
-   IsProfileOn - returns true if the Profile flag was true at QuadNo.
-*)
-
-PROCEDURE IsProfileOn (QuadNo: CARDINAL) : BOOLEAN ;
-
-
-(*
-   IsCodeOn - returns true if the Code flag was true at QuadNo.
-*)
-
-PROCEDURE IsCodeOn (QuadNo: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -2621,66 +2446,6 @@ PROCEDURE AddVarientEquality ;
 
 
 (*
-   BuildCodeOn - generates a quadruple declaring that code should be
-                 emitted from henceforth.
-
-                 The Stack is unnaffected.
-*)
-
-PROCEDURE BuildCodeOn ;
-
-
-(*
-   BuildCodeOff - generates a quadruple declaring that code should not be
-                  emmitted from henceforth.
-
-                  The Stack is unnaffected.
-*)
-
-PROCEDURE BuildCodeOff ;
-
-
-(*
-   BuildProfileOn - generates a quadruple declaring that profile timings
-                    should be emmitted from henceforth.
-
-                    The Stack is unnaffected.
-*)
-
-PROCEDURE BuildProfileOn ;
-
-
-(*
-   BuildProfileOn - generates a quadruple declaring that profile timings
-                    should be emmitted from henceforth.
-
-                    The Stack is unnaffected.
-*)
-
-PROCEDURE BuildProfileOff ;
-
-
-(*
-   BuildOptimizeOn - generates a quadruple declaring that optimization
-                     should occur from henceforth.
-
-                     The Stack is unnaffected.
-*)
-
-PROCEDURE BuildOptimizeOn ;
-
-
-(*
-   BuildOptimizeOff - generates a quadruple declaring that optimization
-                      should not occur from henceforth.
-
-                      The Stack is unnaffected.
-*)
-
-PROCEDURE BuildOptimizeOff ;
-
-
-(*
    BuildAsm - builds an Inline pseudo quadruple operator.
               The inline interface, Sym, is stored as the operand
               to the operator InlineOp.
@@ -2698,24 +2463,6 @@ PROCEDURE BuildOptimizeOff ;
 *)
 
 PROCEDURE BuildAsm (tok: CARDINAL) ;
-
-
-(*
-   BuildLineNo - builds a LineNumberOp pseudo quadruple operator.
-                 This quadruple indicates which source line has been
-                 processed, these quadruples are only generated if we
-                 are producing runtime debugging information.
-
-                 The stack is not affected, read or altered in any way.
-
-
-                        Entry                   Exit
-                        =====                   ====
-
-                 Ptr ->                              <- Ptr
-*)
-
-PROCEDURE BuildLineNo ;
 
 
 (*
@@ -2961,6 +2708,49 @@ PROCEDURE BuildAsmTrash ;
 *)
 
 PROCEDURE GetQuadTrash (quad: CARDINAL) : CARDINAL ;
+
+
+(*
+   BuildNoVector -
+*)
+
+PROCEDURE BuildNoVector ;
+
+
+(*
+   BuildIVDep -
+*)
+
+PROCEDURE BuildIVDep ;
+
+
+(*
+   BuildUnroll -
+*)
+
+PROCEDURE BuildUnroll ;
+
+
+(*
+   BuildUnrollExpr -
+*)
+
+PROCEDURE BuildUnrollExpr ;
+
+
+(*
+   BuildLocalPragma - generate a pragma quad containing operand pragma symbol.
+
+                           Entry                      Exit
+                           =====                      ====
+
+                   Ptr ->
+                           +------------------+
+                           | pragmasymbol     |       Empty
+                           |------------------|
+*)
+
+PROCEDURE BuildLocalPragma ;
 
 
 END M2Quads.

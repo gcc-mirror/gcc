@@ -58,6 +58,7 @@ IMPORT PHBuild ;
 IMPORT PCSymBuild ;
 IMPORT DynamicStrings ;
 IMPORT M2Diagnostic ;
+IMPORT M2Error ;
 
 FROM M2Batch IMPORT GetSource, GetModuleNo, GetDefinitionModuleFile, GetModuleFile,
                     AssociateModule, AssociateDefinition, MakeImplementationSource,
@@ -82,9 +83,12 @@ FROM NameKey IMPORT Name, GetKey, KeyToCharStar, makekey ;
 FROM M2Printf IMPORT fprintf0, fprintf1 ;
 FROM M2Quiet IMPORT qprintf0, qprintf1, qprintf2 ;
 
-FROM M2Options IMPORT Verbose, GetM2Prefix, GetM, GetMM, GetDepTarget, GetMF, GetMP,
-                      GetObj, PPonly, Quiet, WholeProgram, GetMD, GetMMD,
-                      ExtendedOpaque, GenModuleList, TimeReport, MemReport ;
+FROM M2Options IMPORT GetVerboseFlag, GetM2Prefix, GetM, GetMM, GetDepTarget, GetMF, GetMP,
+                      GetObj, GetPPOnly, GetWholeProgramFlag, GetMD, GetMMD,
+                      GetExtendedOpaque, GetGenModuleListFlag, GetTimeReport, GetMemReport,
+                      GetDefaultOptions, GetCommandOptions, SetReadOnly, SetModified,
+                      DumpDefaultPragmas, GetDumpPragmas,
+                      IsModified, FlushGccOptions ;
 
 FROM PathName IMPORT DumpPathName ;
 FROM Lists IMPORT List, NoOfItemsInList, GetItemFromList ;
@@ -144,9 +148,9 @@ END CompilingProgramModule ;
 
 PROCEDURE NeedToParseImplementation (sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN (IsDefImp(sym) AND IsHiddenTypeDeclared(sym) AND ExtendedOpaque) OR
+   RETURN (IsDefImp(sym) AND IsHiddenTypeDeclared(sym) AND GetExtendedOpaque (BuiltinTokenNo)) OR
           (IsDefImp(sym) AND IsBuiltinInModule(sym)) OR
-          (WholeProgram AND (NOT IsDefinitionForC(sym)))
+          (GetWholeProgramFlag (BuiltinTokenNo) AND (NOT IsDefinitionForC(sym)))
 END NeedToParseImplementation ;
 
 
@@ -248,32 +252,36 @@ END GenerateDependencies ;
 
 PROCEDURE Compile (s: String) ;
 BEGIN
-   DoPass0 (s) ;
-   FlushWarnings ; FlushErrors ;
-   ResetForNewPass ; ResetErrorScope ;
-   qprintf0('Pass 1: scopes, enumerated types, imports and exports\n') ;
-   DoPass1 ;
-   FlushWarnings ; FlushErrors ;
-   IF GetM () OR GetMM ()
+   IF DoPass0 (s)
    THEN
-      GenerateDependencies
-   END ;
-   IF NOT PPonly
-   THEN
-      qprintf0('Pass 2: constants and types\n') ;
-      ResetForNewPass ; ResetErrorScope ;
-      DoPass2 ;
       FlushWarnings ; FlushErrors ;
-      qprintf0('Pass C: aggregate constants\n') ;
       ResetForNewPass ; ResetErrorScope ;
-      DoPassC ;
+      qprintf0('Pass 1: scopes, enumerated types, imports and exports\n') ;
+      DoPass1 ;
       FlushWarnings ; FlushErrors ;
-      qprintf0('Pass 3: quadruple generation\n') ;
-      ResetForNewPass ; ResetErrorScope ;
-      DoPass3 ;
-      FlushWarnings ; FlushErrors ;
-      qprintf0('Pass 4: gcc tree generation\n') ;
-      Code ;
+      IF GetM () OR GetMM ()
+      THEN
+         GenerateDependencies
+      END ;
+      IF NOT GetPPOnly ()
+      THEN
+         qprintf0('Pass 2: constants and types\n') ;
+         ResetForNewPass ; ResetErrorScope ;
+         DoPass2 ;
+         FlushWarnings ; FlushErrors ;
+         qprintf0('Pass C: aggregate constants\n') ;
+         ResetForNewPass ; ResetErrorScope ;
+         DoPassC ;
+         FlushWarnings ; FlushErrors ;
+         qprintf0('Pass 3: quadruple generation\n') ;
+         ResetForNewPass ; ResetErrorScope ;
+         DoPass3 ;
+         FlushWarnings ; FlushErrors ;
+         qprintf0('Pass 4: gcc tree generation\n') ;
+         Code ;
+         FlushWarnings ; FlushErrors
+      END
+   ELSE
       FlushWarnings ; FlushErrors
    END
 END Compile ;
@@ -287,12 +295,16 @@ PROCEDURE compile (filename: ADDRESS) ;
 VAR
    f, s: String ;
 BEGIN
-   M2Diagnostic.Configure (TimeReport, MemReport) ;
+   M2Diagnostic.Configure (GetTimeReport (BuiltinTokenNo), GetMemReport (BuiltinTokenNo)) ;
    f := InitStringCharStar (filename) ;
+   IF GetDumpPragmas (BuiltinTokenNo)
+   THEN
+      DumpDefaultPragmas
+   END ;
    Compile (f) ;
    f := KillString (f) ;
    PopulateResource ;
-   IF TimeReport OR MemReport
+   IF GetTimeReport (BuiltinTokenNo) OR GetMemReport (BuiltinTokenNo)
    THEN
       s := WriteS (StdOut, M2Diagnostic.Generate (FALSE)) ;
       FlushOutErr ;
@@ -309,7 +321,7 @@ PROCEDURE PopulateResource ;
 VAR
    StatsMemDiag: Diagnostic ;
 BEGIN
-   IF MemReport
+   IF GetMemReport (BuiltinTokenNo)
    THEN
       StatsMemDiag
          := InitMemDiagnostic
@@ -931,7 +943,7 @@ BEGIN
                implementation) providing that it is not the main program module and the
                definition module does not declare a hidden type when -fextended-opaque
                is used.  *)
-            IF (NOT WholeProgram) OR (sym = Main) OR IsHiddenTypeDeclared (sym)
+            IF (NOT GetWholeProgramFlag (BuiltinTokenNo)) OR (sym = Main) OR IsHiddenTypeDeclared (sym)
             THEN
                (* Unrecoverable error.  *)
                MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found {%%1&Ds}'),
@@ -939,7 +951,7 @@ BEGIN
             END
          END
       END
-   ELSIF GenModuleList
+   ELSIF GetGenModuleListFlag (BuiltinTokenNo)
    THEN
       IF IsDefImp (sym) AND (NOT IsDefinitionForC (sym))
       THEN
@@ -980,10 +992,10 @@ END Pass0CheckMod ;
 
 
 (*
-   DoPass0 -
+   TryPass0 - attempt a complete pass0.
 *)
 
-PROCEDURE DoPass0 (filename: String) ;
+PROCEDURE TryPass0 (filename: String) : BOOLEAN ;
 VAR
    sym       : CARDINAL ;
    i         : CARDINAL ;
@@ -1003,7 +1015,7 @@ BEGIN
    THEN
       DumpPathName ('DoPass0')
    END ;
-   IF Verbose
+   IF GetVerboseFlag (BuiltinTokenNo)
    THEN
       fprintf1 (StdOut, 'Compiling: %s\n', PPSource)
    END ;
@@ -1011,16 +1023,49 @@ BEGIN
    WHILE sym # NulSym DO
       IF NOT Pass0CheckDef (sym)
       THEN
-         RETURN
+         SetPassToNoPass ;
+         RETURN FALSE
       END ;
       IF NOT Pass0CheckMod (sym, PPSource)
       THEN
-         RETURN
+         SetPassToNoPass ;
+         RETURN FALSE
       END ;
       INC (i) ;
       sym := GetModuleNo (i)
    END ;
-   SetPassToNoPass
+   SetPassToNoPass ;
+   RETURN TRUE
+END TryPass0 ;
+
+
+(*
+   DoPass0 - perform pass 0, checking to see that the default options are not changed.
+             If any pragma changes the defaults, rerun pass 0 with the new default options
+             set to read only.  TRUE is returned if no error was seen.
+*)
+
+PROCEDURE DoPass0 (filename: String) : BOOLEAN ;
+BEGIN
+   SetModified (GetDefaultOptions (), FALSE) ;
+   SetModified (GetCommandOptions (), FALSE) ;
+   SetReadOnly (GetCommandOptions (), TRUE) ;
+   IF TryPass0 (filename)
+   THEN
+      IF IsModified (GetDefaultOptions ())
+      THEN
+         FlushGccOptions ;  (* Tell GCC which options have changed.  *)
+         SetModified (GetDefaultOptions (), FALSE) ;
+         SetReadOnly (GetDefaultOptions (), TRUE) ;
+         qprintf0 ('Pass 0: pragma changed option defaults, recompiling using new defaults set to read only\n') ;
+         ReInitialize ;
+         M2Error.Init ;
+         RETURN TryPass0 (filename)
+      END ;
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
+   END
 END DoPass0 ;
 
 
@@ -1284,7 +1329,7 @@ BEGIN
       THEN
          IF OpenSource(FileName)
          THEN
-            IF (Main=Sym) OR WholeProgram
+            IF (Main=Sym) OR GetWholeProgramFlag (BuiltinTokenNo)
             THEN
                IF NOT P3Build.CompilationUnit()
                THEN

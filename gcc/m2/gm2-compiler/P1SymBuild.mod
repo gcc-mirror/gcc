@@ -32,7 +32,7 @@ FROM M2MetaError IMPORT MetaErrorString2, MetaError0, MetaError1,
 
 FROM DynamicStrings IMPORT String, Slice, InitString, KillString, EqualCharStar, RIndex, Mark, ConCat ;
 FROM M2Printf IMPORT printf0, printf1, printf2 ;
-FROM M2Options IMPORT Iso, GetEnableForward ;
+FROM M2Options IMPORT GetForward ;
 
 FROM M2Reserved IMPORT ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
                        NulTok, VarTok, ArrayTok, BuiltinTok, InlineTok ;
@@ -458,9 +458,9 @@ BEGIN
       (* Ident list contains Module Names *)
       i := 1 ;
       WHILE i<=n DO
-         ModSym := LookupModule(OperandTok(n+1-i),
-                                OperandT(n+1-i)) ;
-         PutImported(ModSym) ;
+         ModSym := LookupModule (OperandTok (n+1-i),
+                                 OperandT (n+1-i)) ;
+         PutImported (OperandTok (n+1-i), ModSym) ;
          IF definition
          THEN
             PutIncludedByDefinition(ModSym)
@@ -469,13 +469,13 @@ BEGIN
       END
    ELSE
       (* Ident List contains list of objects *)
-      ModSym := LookupModule(OperandTok(n+1),
-                             OperandT(n+1)) ;
+      ModSym := LookupModule (OperandTok (n+1),
+                              OperandT (n+1)) ;
       i := 1 ;
       WHILE i<=n DO
          Sym := GetExported (OperandTok (n+1-i),
                              ModSym, OperandT (n+1-i)) ;
-         PutImported (Sym) ;
+         PutImported (OperandTok (n+1-i), Sym) ;
          INC (i)
       END
    END ;
@@ -624,7 +624,7 @@ BEGIN
          ModSym := GetLocalSym (OuterMod, OperandT (i)) ;
          IF (ModSym # NulSym) AND (IsDefImp (ModSym) OR IsModule (ModSym))
          THEN
-            PutImported (ModSym)
+            PutImported (OperandTok (i), ModSym)
          END ;
          INC (i)
       END
@@ -635,7 +635,7 @@ BEGIN
       i := 1 ;
       WHILE i<=n DO
          Sym := GetExported (OperandTok (n+1-i), ModSym, OperandT (n+1-i)) ;
-         PutImported (Sym) ;
+         PutImported (OperandTok (n+1-i), Sym) ;
          INC (i)
       END
    END ;
@@ -1044,7 +1044,7 @@ VAR
 BEGIN
    ProcSym := OperandT (1) ;
    tok := OperandTok (1) ;
-   IF NOT GetEnableForward ()
+   IF NOT GetForward (forwardPos)
    THEN
       MetaErrorT0 (forwardPos,
                    'forward declaration has not been enabled, use -fiso or -fenable-forward to enable forward procedure declarations')

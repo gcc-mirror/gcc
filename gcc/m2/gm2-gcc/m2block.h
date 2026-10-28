@@ -60,8 +60,6 @@ EXTERN tree m2block_global_constant (tree t);
 EXTERN bool m2block_toplevel (void);
 EXTERN tree m2block_GetErrorNode (void);
 
-EXTERN void m2block_addStmtNote (location_t location);
-
 EXTERN tree m2block_cur_stmt_list (void);
 EXTERN tree *m2block_cur_stmt_list_addr (void);
 EXTERN int m2block_is_building_stmt_list (void);
@@ -69,8 +67,10 @@ EXTERN tree m2block_GetGlobals (void);
 EXTERN tree m2block_GetGlobalContext (void);
 EXTERN void m2block_finishGlobals (void);
 EXTERN void m2block_includeDecl (tree);
-EXTERN tree m2block_add_stmt (location_t location, tree t);
-EXTERN void m2block_addStmtNote (location_t location);
+EXTERN tree m2block_add_stmt (location_t location,
+			      unsigned int tokno, tree t);
+EXTERN void m2block_addStmtNote (location_t location,
+				 unsigned int tokno);
 EXTERN void m2block_removeStmtNote (void);
 EXTERN int m2block_GetTotalConstants (void);
 EXTERN int m2block_GetGlobalTypes (void);

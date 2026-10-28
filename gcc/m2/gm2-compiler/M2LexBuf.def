@@ -39,12 +39,34 @@ FROM NameKey IMPORT Name ;
 CONST
    UnknownTokenNo = 0 ;
    BuiltinTokenNo = 1 ;
+   CommandTokenNo = 2 ;
 
 VAR
    currenttoken  : toktype ;
    currentstring : ADDRESS ;
    currentcolumn : CARDINAL ;
    currentinteger: INTEGER ;
+
+
+(*
+   GetBuiltinToken - return the BuiltinTokenNo.
+*)
+
+PROCEDURE GetBuiltinToken () : CARDINAL ;
+
+
+(*
+   GetUnknownToken - return the UnknownTokenNo.
+*)
+
+PROCEDURE GetUnknownToken () : CARDINAL ;
+
+
+(*
+   GetCommandToken - return the CommandTokenNo.
+*)
+
+PROCEDURE GetCommandToken () : CARDINAL ;
 
 
 (*

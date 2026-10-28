@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -36,8 +38,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <string.h>
-#include <limits.h>
 #define _StrIO_C
 
 #include "GStrIO.h"
@@ -267,12 +267,12 @@ extern "C" void StrIO_WriteString (const char *a_, unsigned int _a_high)
     }
 }
 
-extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StrIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   /* IsATTY := isatty()  */
   IsATTY = false;
 }
 
-extern "C" void _M2_StrIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StrIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

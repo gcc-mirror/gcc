@@ -26,15 +26,19 @@ FROM M2Printf IMPORT printf0, printf1, printf2 ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, RemoveItemFromList, NoOfItemsInList, GetItemFromList, IsItemInList ;
 FROM Indexing IMPORT Index, InitIndex, HighIndice, LowIndice, GetIndice, RemoveIndiceFromIndex, IncludeIndiceIntoIndex ;
 FROM M2Batch IMPORT MakeDefinitionSource, MakeProgramSource, MakeImplementationSource ;
-FROM SymbolTable IMPORT NulSym, MakeInnerModule, SetCurrentModule, SetFileModule, MakeError, PutDefinitionForC ;
 FROM NameKey IMPORT Name, NulName ;
 FROM M2Quads IMPORT PushT, PushTF, PopT, PopTF, PopN, OperandT, PopTtok, PushTtok, OperandTok ;
 FROM M2Reserved IMPORT ImportTok ;
 FROM M2Debug IMPORT Assert ;
 FROM M2MetaError IMPORT MetaErrorT1, MetaErrorT2, MetaError1, MetaError2 ;
 FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo ;
-IMPORT M2Error ;
+FROM M2Pragma IMPORT EnterPragmaOptions, EndPragmaOptions ;
 
+FROM SymbolTable IMPORT NulSym, MakeInnerModule, SetCurrentModule,
+                        SetFileModule, MakeError, PutDefinitionForC,
+                        IsModule, IsDefImp ;
+
+IMPORT M2Error ;
 
 CONST
    Debugging = FALSE ;
@@ -152,6 +156,19 @@ BEGIN
       END
    END
 END Display ;
+
+
+(*
+   EndPragma -
+*)
+
+PROCEDURE EndPragma (sym: CARDINAL) ;
+BEGIN
+   IF (sym # NulSym) AND (IsModule (sym) OR IsDefImp (sym))
+   THEN
+      EndPragmaOptions (sym)
+   END
+END EndPragma ;
 
 
 (*
@@ -279,8 +296,14 @@ END FlushImports ;
               modules.
 *)
 
-PROCEDURE EndBlock ;
+PROCEDURE EndBlock (popPragma: BOOLEAN) ;
 BEGIN
+   IF popPragma
+   THEN
+      (* We must pop the pragma before calling FlushImports as sym
+         might change.  *)
+      EndPragma (curBP^.sym)
+   END ;
    FlushImports (curBP) ;
    curBP := curBP^.toUp ;
    DEC (Level) ;
@@ -411,7 +434,8 @@ BEGIN
    SetCurrentModule (sym) ;
    SetFileModule (sym) ;
    BeginBlock (n, program, sym, tok) ;
-   M2Error.EnterProgramScope (n)
+   M2Error.EnterProgramScope (n) ;
+   EnterPragmaOptions (sym)
 END RegisterProgramModule ;
 
 
@@ -433,7 +457,8 @@ BEGIN
    SetCurrentModule (sym) ;
    SetFileModule (sym) ;
    BeginBlock (n, defimp, sym, tok) ;
-   M2Error.EnterImplementationScope (n)
+   M2Error.EnterImplementationScope (n) ;
+   EnterPragmaOptions (sym)
 END RegisterImplementationModule ;
 
 
@@ -459,7 +484,8 @@ BEGIN
       PutDefinitionForC (sym)
    END ;
    BeginBlock (n, defimp, sym, tok) ;
-   M2Error.EnterDefinitionScope (n)
+   M2Error.EnterDefinitionScope (n) ;
+   EnterPragmaOptions (sym)
 END RegisterDefinitionModule ;
 
 
@@ -501,7 +527,8 @@ END RegisterProcedure ;
 
 
 (*
-   EndBuildProcedure - ends building a Procedure.
+   EndProcedure - shutdown the procedure and create any inner module
+                  and create definition symbols for all imported modules.
 *)
 
 PROCEDURE EndProcedure ;
@@ -531,7 +558,7 @@ BEGIN
                       MakeError (end, NameEnd), MakeError (start, curBP^.name))
       END
    END ;
-   EndBlock ;
+   EndBlock (FALSE) ;
    M2Error.LeaveErrorScope
 END EndProcedure ;
 
@@ -543,16 +570,22 @@ END EndProcedure ;
 PROCEDURE EndForward ;
 BEGIN
    PopN (1) ;
-   EndBlock ;
+   EndBlock (FALSE) ;
    M2Error.LeaveErrorScope
 END EndForward ;
 
 
 (*
-   EndModule -
+   EndModule - finish a module.
 *)
 
 PROCEDURE EndModule ;
+BEGIN
+   EndBlockPragma (TRUE)
+END EndModule ;
+
+
+PROCEDURE EndBlockPragma (popPragma: BOOLEAN) ;
 VAR
    NameEnd, NameStart: Name ;
    end, start        : CARDINAL ;
@@ -579,9 +612,20 @@ BEGIN
                       MakeError (end, NameEnd), MakeError (start, curBP^.name))
       END
    END ;
-   EndBlock ;
+   EndBlock (popPragma) ;
    M2Error.LeaveErrorScope
-END EndModule ;
+END EndBlockPragma ;
+
+
+(*
+   EndInnerModule - shutdown the inner module and create definition symbols
+                    for all imported modules.
+*)
+
+PROCEDURE EndInnerModule ;
+BEGIN
+   EndBlockPragma (FALSE)
+END EndInnerModule ;
 
 
 (*

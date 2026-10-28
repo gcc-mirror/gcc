@@ -714,9 +714,9 @@ do_add_stmt (tree t)
 /* flush_pending_note flushes a pending_statement note if necessary.  */
 
 static void
-flush_pending_note (void)
+flush_pending_note (unsigned int tokno)
 {
-  if (pending_statement && (M2Options_GetM2g ()))
+  if (pending_statement && (M2Options_GetM2gFlag (tokno)))
     {
       tree note = build_empty_stmt (pending_location);
       pending_statement = false;
@@ -727,13 +727,13 @@ flush_pending_note (void)
 /* add_stmt t is a statement.  Add it to the statement-tree.  */
 
 tree
-m2block_add_stmt (location_t location, tree t)
+m2block_add_stmt (location_t location, unsigned int tokno, tree t)
 {
   if ((CAN_HAVE_LOCATION_P (t)) && (!EXPR_HAS_LOCATION (t)))
     SET_EXPR_LOCATION (t, location);
 
   if (pending_statement && (pending_location != location))
-    flush_pending_note ();
+    flush_pending_note (tokno);
 
   pending_statement = false;
   return do_add_stmt (t);
@@ -744,10 +744,10 @@ m2block_add_stmt (location_t location, tree t)
    is generated or another tree is given to add_stmt.  */
 
 void
-m2block_addStmtNote (location_t location)
+m2block_addStmtNote (location_t location, unsigned int tokno)
 {
   if (pending_statement && (pending_location != location))
-    flush_pending_note ();
+    flush_pending_note (tokno);
 
   pending_statement = true;
   pending_location = location;

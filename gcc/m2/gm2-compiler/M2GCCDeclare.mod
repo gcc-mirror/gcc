@@ -39,17 +39,17 @@ FROM m2pp IMPORT DumpGimpleFd ;
 
 IMPORT FIO ;
 
-FROM M2Options IMPORT GenerateDebugging, GenerateLineDebug, Iso, Optimizing, WholeProgram,
-                      ScaffoldStatic, GetRuntimeModuleOverride ;
-
+FROM M2Options IMPORT GetISO, GetOptimizing, GetWholeProgramFlag ;
 FROM M2AsmUtil IMPORT GetFullSymName, GetFullScopeAsmName ;
 FROM FormatStrings IMPORT Sprintf1 ;
+
+FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation,
+                     UnknownTokenNo, BuiltinTokenNo ;
 
 FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM NameKey IMPORT Name, MakeKey, NulName, KeyToCharStar, makekey ;
 FROM M2FileName IMPORT CalculateFileName ;
 FROM DynamicStrings IMPORT String, string, InitString, KillString, InitStringCharStar, InitStringChar, Mark ;
-FROM M2LexBuf IMPORT TokenToLineNo, FindFileNameFromToken, TokenToLocation, UnknownTokenNo, BuiltinTokenNo ;
 FROM M2MetaError IMPORT MetaError1, MetaError2, MetaError3 ;
 FROM M2Error IMPORT FlushErrors, InternalError ;
 FROM M2LangDump IMPORT GetDumpFile ;
@@ -137,6 +137,9 @@ FROM SymbolTable IMPORT NulSym,
       	       	     	ForeachProcedureDo, ForeachModuleDo,
                         ForeachInnerModuleDo, ForeachImportedDo,
                         ForeachExportedDo, PrintInitialized,
+                        IsPragmaFunc, IsPragmaWarn, IsPragmaInfo,
+                        IsPragmaFatal, IsPragmaError, GetPragmaMessage,
+                        IsPragmaOption, IsPragmaLoop,
                         FinalSymbol ;
 
 FROM M2Base IMPORT IsPseudoBaseProcedure, IsPseudoBaseFunction,
@@ -682,7 +685,7 @@ END PutEnumList ;
 
 PROCEDURE MarkExported (sym: CARDINAL) ;
 BEGIN
-   IF Optimizing
+   IF GetOptimizing (BuiltinTokenNo) > 0
    THEN
       MarkFunctionReferenced(Mod2Gcc(sym)) ;
       IF IsDefImp(sym) OR IsModule(sym)
@@ -1785,10 +1788,10 @@ VAR
    location: location_t ;
 BEGIN
    Assert (IsConstStringKnown (sym)) ;
-   location := TokenToLocation(tokenno) ;
-   PreAddModGcc(sym, BuildCharConstant(location, KeyToCharStar(GetString(sym)))) ;
-   WatchRemoveList(sym, todolist) ;
-   WatchIncludeList(sym, fullydeclared)
+   location := TokenToLocation (tokenno) ;
+   PreAddModGcc (sym, BuildCharConstant (location, tokenno, KeyToCharStar (GetString(sym)))) ;
+   WatchRemoveList (sym, todolist) ;
+   WatchIncludeList (sym, fullydeclared)
 END DeclareCharConstant ;
 
 
@@ -2158,11 +2161,13 @@ BEGIN
          ELSIF IsRealType (GetDType (sym)) OR IsRealN (GetDType (sym))
          THEN
             type := GetDType(sym) ;
-            DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopRealTree(), TRUE))
+            DeclareConstantFromTree(sym, BuildConvert (TokenToLocation(tokenno), tokenno,
+                                                       Mod2Gcc(type), PopRealTree(), TRUE))
          ELSIF IsComplexType(GetDType(sym))
          THEN
             type := GetDType(sym) ;
-            DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopComplexTree(), TRUE))
+            DeclareConstantFromTree(sym, BuildConvert (TokenToLocation(tokenno), tokenno,
+                                                       Mod2Gcc(type), PopComplexTree(), TRUE))
          ELSE
             IF GetSType(sym)=NulSym
             THEN
@@ -2170,7 +2175,8 @@ BEGIN
             ELSE
                type := GetDType(sym)
             END ;
-            DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopIntegerTree(), TRUE))
+            DeclareConstantFromTree(sym, BuildConvert (TokenToLocation(tokenno), tokenno,
+                                                       Mod2Gcc(type), PopIntegerTree(), TRUE))
          END
       ELSE
          TraverseDependants(sym)
@@ -2212,11 +2218,13 @@ BEGIN
       ELSIF IsRealType(GetDType(sym))
       THEN
          type := GetDType(sym) ;
-         DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopRealTree(), TRUE))
+         DeclareConstantFromTree(sym, BuildConvert (TokenToLocation(tokenno), tokenno,
+                                                    Mod2Gcc(type), PopRealTree(), TRUE))
       ELSIF IsComplexType(GetDType(sym))
       THEN
          type := GetDType(sym) ;
-         DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopComplexTree(), TRUE))
+         DeclareConstantFromTree(sym, BuildConvert (TokenToLocation(tokenno), tokenno,
+                                                    Mod2Gcc(type), PopComplexTree(), TRUE))
       ELSE
          IF GetSType(sym)=NulSym
          THEN
@@ -2224,7 +2232,8 @@ BEGIN
          ELSE
             type := GetDType(sym)
          END ;
-         DeclareConstantFromTree(sym, BuildConvert(TokenToLocation(tokenno), Mod2Gcc(type), PopIntegerTree(), TRUE))
+         DeclareConstantFromTree(sym, BuildConvert (TokenToLocation(tokenno), tokenno,
+                                                    Mod2Gcc(type), PopIntegerTree(), TRUE))
       END
    END ;
    IF GccKnowsAbout(sym)
@@ -2569,7 +2578,7 @@ PROCEDURE IsPseudoProcFunc (Sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN(
           IsPseudoBaseProcedure(Sym) OR IsPseudoBaseFunction(Sym) OR
-          IsPseudoSystemFunction(Sym)
+          IsPseudoSystemFunction (BuiltinTokenNo, Sym)
          )
 END IsPseudoProcFunc ;
 
@@ -2812,7 +2821,7 @@ PROCEDURE DeclareProcedureToGcc (sym: CARDINAL) ;
 BEGIN
    IF sym # NulSym
    THEN
-      IF WholeProgram
+      IF GetWholeProgramFlag (BuiltinTokenNo)
       THEN
          DeclareProcedureToGccWholeProgram (sym)
       ELSE
@@ -3159,7 +3168,7 @@ END StartDeclareModuleScopeWholeProgram ;
 
 PROCEDURE StartDeclareModuleScope (scope: CARDINAL) ;
 BEGIN
-   IF WholeProgram
+   IF GetWholeProgramFlag (BuiltinTokenNo)
    THEN
       StartDeclareModuleScopeWholeProgram(scope)
    ELSE
@@ -3363,6 +3372,7 @@ END DeclareBoolean ;
 PROCEDURE DeclareFixedSizedType (name: ARRAY OF CHAR; type: CARDINAL; t: tree) ;
 VAR
    location : location_t ;
+   tokno    : CARDINAL ;
    typetype,
    low, high: CARDINAL ;
 BEGIN
@@ -3372,9 +3382,10 @@ BEGIN
       THEN
          typetype := GetSType(type) ;
          GetSubrange(typetype, high, low) ;
+         tokno := GetDeclaredMod(typetype) ;
          DeclareConstant(GetDeclaredMod(type), high) ;
          DeclareConstant(GetDeclaredMod(type), low) ;
-         location := TokenToLocation(GetDeclaredMod(typetype)) ;
+         location := TokenToLocation(tokno) ;
          PreAddModGcc(typetype, BuildSubrangeType(location,
                                                   KeyToCharStar(GetFullSymName(typetype)),
                                                   Mod2Gcc(GetSType(typetype)),
@@ -3406,7 +3417,7 @@ BEGIN
    DeclareDefaultType(Char        , "CHAR"        , GetM2CharType()) ;
    DeclareDefaultType(Loc         , "LOC"         , GetISOLocType()) ;
 
-   IF Iso
+   IF GetISO (BuiltinTokenNo)
    THEN
       DeclareDefaultType(Byte     , "BYTE"        , GetISOByteType()) ;
       DeclareDefaultType(Word     , "WORD"        , GetISOWordType())
@@ -3507,7 +3518,7 @@ END DeclareDefaultTypes ;
 
 PROCEDURE DeclareDefaultConstants ;
 BEGIN
-   AddModGcc(Nil, GetPointerZero(BuiltinsLocation ())) ;
+   AddModGcc (Nil, GetPointerZero (BuiltinsLocation (), BuiltinTokenNo)) ;
    IncludeElementIntoSet(GlobalGroup^.FullyDeclared, Nil)
 END DeclareDefaultConstants ;
 
@@ -3935,11 +3946,13 @@ VAR
    enumlist,
    gccenum : tree ;
    location: location_t ;
+   tokno   : CARDINAL ;
 BEGIN
-   location := TokenToLocation (GetDeclaredMod (sym)) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
    gccenum := BuildStartEnumeration (location, KeyToCharStar (GetFullSymName (sym)), FALSE) ;
    enumlist := GetEnumList (sym) ;
-   RETURN BuildEndEnumeration (location, gccenum, enumlist)
+   RETURN BuildEndEnumeration (location, tokno, gccenum, enumlist)
 END DeclareEnumeration ;
 
 
@@ -3948,7 +3961,7 @@ END DeclareEnumeration ;
                            low..high fits in the C data type.
 *)
 
-PROCEDURE DeclareSubrangeNarrow (location: location_t;
+PROCEDURE DeclareSubrangeNarrow (location: location_t; tokno: CARDINAL;
                                  high, low: CARDINAL; type: tree) : tree ;
 VAR
    m2low, m2high,
@@ -3959,18 +3972,18 @@ BEGIN
       unsigned int, int, or ZTYPE assuming the low..high range fits.  *)
    lowtree := Mod2Gcc (low) ;
    hightree := Mod2Gcc (high) ;
-   IF CompareTrees (lowtree, GetIntegerZero (location)) >= 0
+   IF CompareTrees (lowtree, GetIntegerZero (location, tokno)) >= 0
    THEN
       (* low..high is always positive, can we use unsigned int?  *)
-      m2high := GetMaxFrom (location, GetM2CardinalType ()) ;
+      m2high := GetMaxFrom (location, tokno, GetM2CardinalType ()) ;
       IF CompareTrees (hightree, m2high) <= 0
       THEN
          RETURN GetM2CardinalType ()
       END
    ELSE
       (* Must be a signed subrange base, can we use int?  *)
-      m2high := GetMaxFrom (location, GetM2IntegerType ()) ;
-      m2low := GetMinFrom (location, GetM2IntegerType ()) ;
+      m2high := GetMaxFrom (location, tokno, GetM2IntegerType ()) ;
+      m2low := GetMinFrom (location, tokno, GetM2IntegerType ()) ;
       IF (CompareTrees (lowtree, m2low) >= 0) AND (CompareTrees (hightree, m2high) <= 0)
       THEN
          RETURN GetM2IntegerType ()
@@ -3991,17 +4004,19 @@ VAR
    gccsym   : tree ;
    align,
    high, low: CARDINAL ;
-   location: location_t ;
+   tokno    : CARDINAL ;
+   location : location_t ;
 BEGIN
-   location := TokenToLocation (GetDeclaredMod (sym)) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
    GetSubrange (sym, high, low) ;
    align := GetAlignment (sym) ;
    type := Mod2Gcc (GetSType (sym)) ;
    IF align # NulSym
    THEN
-      IF AreConstantsEqual (GetIntegerZero (location), Mod2Gcc (align))
+      IF AreConstantsEqual (GetIntegerZero (location, tokno), Mod2Gcc (align))
       THEN
-         type := BuildSmallestTypeRange (location, Mod2Gcc (low), Mod2Gcc (high))
+         type := BuildSmallestTypeRange (location, tokno, Mod2Gcc (low), Mod2Gcc (high))
       ELSE
          MetaError1 ('a non-zero alignment in a subrange type {%1Wa} is currently not implemented and will be ignored',
                      sym)
@@ -4009,7 +4024,7 @@ BEGIN
    ELSIF GetSType (sym) = ZType
    THEN
       (* Can we narrow the ZType subrange to CARDINAL or INTEGER?  *)
-      type := DeclareSubrangeNarrow (location, high, low, type)
+      type := DeclareSubrangeNarrow (location, tokno, high, low, type)
    END ;
    gccsym := BuildSubrangeType (location,
                                 KeyToCharStar (GetFullSymName (sym)),
@@ -4673,6 +4688,32 @@ BEGIN
       low := GetNth(sym, 1) ;
       high := GetNth(sym, 2) ;
       fprintf2 (GetDumpFile (), '%d, %d\n', low, high)
+   ELSIF IsPragmaFunc (sym)
+   THEN
+      IF IsPragmaWarn (sym)
+      THEN
+         fprintf2 (GetDumpFile (), 'sym %d IsPragmaWarn (%a)', sym, n)
+      ELSIF IsPragmaError (sym)
+      THEN
+         fprintf2 (GetDumpFile (), 'sym %d IsPragmaError (%a)', sym, n)
+      ELSIF IsPragmaInfo (sym)
+      THEN
+         fprintf2 (GetDumpFile (), 'sym %d IsPragmaInfo (%a)', sym, n)
+      ELSIF IsPragmaFatal (sym)
+      THEN
+         fprintf2 (GetDumpFile (), 'sym %d IsPragmaFatal (%a)', sym, n)
+      END ;
+      IF GetPragmaMessage (sym) # NIL
+      THEN
+         n := makekey (string (GetPragmaMessage (sym))) ;
+         fprintf1 (GetDumpFile (), '  message: %a', n)
+      END
+   ELSIF IsPragmaOption (sym)
+   THEN
+      fprintf2 (GetDumpFile (), 'sym %d IsPragmaOption (%a)', sym, n)
+   ELSIF IsPragmaLoop (sym)
+   THEN
+      fprintf2 (GetDumpFile (), 'sym %d IsPragmaLoop (%a)', sym, n)
    ELSIF IsGnuAsm(sym)
    THEN
       IF IsGnuAsmVolatile(sym)
@@ -5020,11 +5061,14 @@ VAR
    gccsym   : tree ;
    high, low: CARDINAL ;
    location : location_t ;
+   tokno    : CARDINAL ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
+   tokno := GetDeclaredMod(sym) ;
+   location := TokenToLocation (tokno) ;
    GetSubrange(sym, high, low) ;
-   type := BuildSmallestTypeRange(location, Mod2Gcc(low), Mod2Gcc(high)) ;
-   gccsym := BuildSubrangeType(location, KeyToCharStar(GetFullSymName(sym)),
+   type := BuildSmallestTypeRange(location, tokno, Mod2Gcc(low), Mod2Gcc(high)) ;
+   gccsym := BuildSubrangeType(location,
+                               KeyToCharStar(GetFullSymName(sym)),
                                type, Mod2Gcc(low), Mod2Gcc(high)) ;
    AddModGcc(equiv, gccsym)
 END DeclarePackedSubrange ;
@@ -5041,19 +5085,22 @@ VAR
    gccsym   : tree ;
    type,
    high, low: CARDINAL ;
-   location: location_t ;
+   tokno    : CARDINAL ;
+   location : location_t ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
    Assert(IsSet(sym)) ;
    type := GetDType(sym) ;   (* Was GetSType.  *)
    low := GetTypeMin (type) ;
    high := GetTypeMax (type) ;
-   highLimit := BuildSub(location, Mod2Gcc(high), Mod2Gcc(low), FALSE) ;
+   highLimit := BuildSub (location, tokno, Mod2Gcc(high), Mod2Gcc(low), FALSE) ;
    (* --fixme-- we need to check that low <= WORDLENGTH.  *)
-   highLimit := BuildLSL(location, GetIntegerOne(location), highLimit, FALSE) ;
-   range := BuildSmallestTypeRange(location, GetIntegerZero(location), highLimit) ;
-   gccsym := BuildSubrangeType(location, KeyToCharStar(GetFullSymName(sym)),
-                               range, GetIntegerZero(location), highLimit) ;
+   highLimit := BuildLSL(location, tokno, GetIntegerOne (location, tokno), highLimit, FALSE) ;
+   range := BuildSmallestTypeRange(location, tokno, GetIntegerZero (location, tokno), highLimit) ;
+   gccsym := BuildSubrangeType(location,
+                               KeyToCharStar(GetFullSymName(sym)),
+                               range, GetIntegerZero (location, tokno), highLimit) ;
    AddModGcc(equiv, gccsym)
 END DeclarePackedSet ;
 
@@ -5069,7 +5116,7 @@ VAR
    field,
    enumlist: tree ;
 BEGIN
-   (* add relationship between gccSym and sym *)
+   (* Add relationship between gccSym and sym.  *)
    type := GetSType (sym) ;
    equiv := GetPackedEquivalent (type) ;
    enumlist := GetEnumList (equiv) ;
@@ -5089,12 +5136,14 @@ VAR
    enumlist,
    gccenum : tree ;
    location: location_t ;
+   tokno   : CARDINAL ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
    gccenum := BuildStartEnumeration(location, KeyToCharStar(GetFullSymName(sym)), TRUE) ;
    ForeachLocalSymDo(sym, DeclarePackedFieldEnumeration) ;
    enumlist := GetEnumList (equiv) ;
-   gccenum := BuildEndEnumeration(location, gccenum, enumlist) ;
+   gccenum := BuildEndEnumeration (location, tokno, gccenum, enumlist) ;
    AddModGcc(equiv, gccenum)
 END DeclarePackedEnumeration ;
 
@@ -5197,16 +5246,18 @@ VAR
    f, ftype,
    nbits   : tree ;
    location: location_t ;
+   tokno   : CARDINAL ;
 BEGIN
    f := Mod2Gcc(field) ;
    IF IsDeclaredPacked(field)
    THEN
-      location := TokenToLocation(GetDeclaredMod(field)) ;
+      tokno := GetDeclaredMod(field) ;
+      location := TokenToLocation(tokno) ;
       f := SetDeclPacked(f) ;
       ftype := GetPackedType(GetSType(field)) ;
-      nbits := BuildTBitSize(location, ftype) ;
+      nbits := BuildTBitSize(location, tokno, ftype) ;
       f := SetRecordFieldOffset(f, byteOffset, bitOffset, ftype, nbits) ;
-      bitOffset := BuildAdd(location, bitOffset, nbits, FALSE) ;
+      bitOffset := BuildAdd (location, tokno, bitOffset, nbits, FALSE) ;
       RETURN( f )
    ELSE
       RETURN( CheckAlignment(f, field) )
@@ -5231,13 +5282,15 @@ VAR
    FieldList,
    RecordType: tree ;
    location  : location_t ;
+   tokno     : CARDINAL ;
 BEGIN
    i := 1 ;
    FieldList := tree(NIL) ;
    RecordType := DoStartDeclaration(Sym, BuildStartRecord) ;
-   location := TokenToLocation(GetDeclaredMod(Sym)) ;
-   byteOffset := GetIntegerZero(location) ;
-   bitOffset := GetIntegerZero(location) ;
+   tokno := GetDeclaredMod(Sym) ;
+   location := TokenToLocation (tokno) ;
+   byteOffset := GetIntegerZero (location, tokno) ;
+   bitOffset := GetIntegerZero (location, tokno) ;
    REPEAT
       Field := GetNth(Sym, i) ;
       IF Field#NulSym
@@ -5251,16 +5304,19 @@ BEGIN
             field := Mod2Gcc(Field) ;
             IF IsDeclaredPacked(Field)
             THEN
-               location := TokenToLocation(GetDeclaredMod(Field)) ;
+               tokno := GetDeclaredMod(Field) ;
+               location := TokenToLocation (tokno) ;
                field := SetDeclPacked(field) ;
                ftype := GetPackedType(GetSType(Field)) ;
-               nbits := BuildTBitSize(location, ftype) ;
+               nbits := BuildTBitSize(location, tokno, ftype) ;
                field := SetRecordFieldOffset(field, byteOffset, bitOffset, ftype, nbits) ;
-               bitOffset := BuildAdd(location, bitOffset, nbits, FALSE) ;
-               byteOffset := BuildAdd(location, byteOffset,
-                                      BuildDivTrunc(location, bitOffset, BuildIntegerConstant(8), FALSE),
-                                      FALSE) ;
-               bitOffset := BuildModTrunc(location, bitOffset, BuildIntegerConstant(8), FALSE)
+               bitOffset := BuildAdd (location, tokno, bitOffset, nbits, FALSE) ;
+               byteOffset := BuildAdd (location, tokno, byteOffset,
+                                       BuildDivTrunc (location, tokno,
+                                                      bitOffset, BuildIntegerConstant(8), FALSE),
+                                       FALSE) ;
+               bitOffset := BuildModTrunc (location, tokno, bitOffset,
+                                           BuildIntegerConstant(8), FALSE)
             END ;
             FieldList := ChainOn(FieldList, field)
          ELSE
@@ -5312,13 +5368,15 @@ VAR
    FieldList,
    VarientType : tree ;
    location    : location_t ;
+   tokno       : CARDINAL ;
 BEGIN
    i := 1 ;
    FieldList := tree(NIL) ;
    VarientType := DoStartDeclaration(sym, BuildStartVarient) ;
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
-   byteOffset := GetIntegerZero(location) ;
-   bitOffset := GetIntegerZero(location) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
+   byteOffset := GetIntegerZero (location, tokno) ;
+   bitOffset := GetIntegerZero (location, tokno) ;
    WHILE GetNth(sym, i)#NulSym DO
       Field := GetNth(sym, i) ;
       IF IsRecordField(Field) AND IsRecordFieldAVarientTag(Field) AND (GetSymName(Field)=NulName)
@@ -5354,14 +5412,16 @@ VAR
    bitOffset,
    GccFieldType: tree ;
    location    : location_t ;
+   tokno       : CARDINAL ;
 BEGIN
-   location := TokenToLocation(GetDeclaredMod(sym)) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
    i := 1 ;
    VarientList := tree(NIL) ;
    VarientType := DoStartDeclaration(sym, BuildStartFieldVarient) ;
    (* no need to store the [sym, RecordType] tuple as it is stored by DeclareRecord which calls us *)
-   byteOffset := GetIntegerZero(location) ;
-   bitOffset := GetIntegerZero(location) ;
+   byteOffset := GetIntegerZero (location, tokno) ;
+   bitOffset := GetIntegerZero (location, tokno) ;
    WHILE GetNth(sym, i)#NulSym DO
       f := GetNth(sym, i) ;
       IF IsFieldVarient(f) AND IsEmptyFieldVarient(f)
@@ -5432,7 +5492,7 @@ VAR
    low, high: tree ;
    location : location_t ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
+   location := TokenToLocation (tokenno) ;
    Subscript := GetArraySubscript (array) ;
    Assert (IsSubscript (Subscript)) ;
    Type := GetDType (Subscript) ;
@@ -5445,7 +5505,8 @@ BEGIN
    IF ExceedsTypeRange (GetIntegerType (), low, high)
    THEN
       location := TokenToLocation (tokenno) ;
-      n := BuildConvert (location, GetIntegerType (), BuildSub (location, high, low, FALSE), FALSE) ;
+      n := BuildConvert (location, tokenno,
+                         GetIntegerType (), BuildSub (location, tokenno, high, low, FALSE), FALSE) ;
       IF TreeOverflow(n) OR ValueOutOfTypeRange (GetIntegerType (), n)
       THEN
          IF isset
@@ -5456,14 +5517,15 @@ BEGIN
             MetaError3('implementation restriction, array is too large {%1EDM}, the range {%2ad}..{%3ad} exceeds the integer range',
                        array, Low, High)
          END ;
-         indexType := BuildArrayIndexType (GetIntegerZero (location), GetIntegerZero (location))
+         indexType := BuildArrayIndexType (GetIntegerZero (location, tokenno),
+                                           GetIntegerZero (location, tokenno))
       ELSE
          PutArrayLarge (array) ;
-	 indexType := BuildArrayIndexType (GetIntegerZero (location), n)
+	 indexType := BuildArrayIndexType (GetIntegerZero (location, tokenno), n)
       END
    ELSE
-      low := BuildConvert (location, GetIntegerType (), low, FALSE) ;
-      high := BuildConvert (location, GetIntegerType (), high, FALSE) ;
+      low := BuildConvert (location, tokenno, GetIntegerType (), low, FALSE) ;
+      high := BuildConvert (location, tokenno, GetIntegerType (), high, FALSE) ;
       indexType := BuildArrayIndexType (low, high)
    END ;
    RETURN indexType
@@ -5691,14 +5753,16 @@ PROCEDURE DeclareSetArrayOrBitSet (sym: CARDINAL;
                                    n: Name; type: CARDINAL; low, high: CARDINAL) : tree ;
 VAR
    location: location_t ;
+   tokno   : CARDINAL ;
 BEGIN
    PushNoOfBits (type, low, high) ;
    PushCard (GetBitsPerBitset()) ;
-   location := TokenToLocation (GetDeclaredMod (sym)) ;
+   tokno := GetDeclaredMod (sym) ;
+   location := TokenToLocation (tokno) ;
    IF Less (GetDeclaredMod (type))
    THEN
       PutSetInWord (sym, TRUE) ;
-      RETURN BuildSetType (location, KeyToCharStar (n),
+      RETURN BuildSetType (location, tokno, KeyToCharStar (n),
                            Mod2Gcc (type), Mod2Gcc (low), Mod2Gcc (high), TRUE)
    ELSE
       PutSetInWord (sym, FALSE) ;

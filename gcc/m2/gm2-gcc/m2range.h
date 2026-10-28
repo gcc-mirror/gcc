@@ -28,10 +28,12 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 
 EXTERN tree M2Range_BuildIfCallWholeHandlerLoc (location_t location,
+						unsigned int tokno,
                                                 tree condition,
 						const char *scope,
                                                 const char *message);
 EXTERN tree M2Range_BuildIfCallRealHandlerLoc (location_t location,
+					       unsigned int tokno,
                                                tree condition,
 					       const char *scope,
                                                const char *message);

@@ -53,9 +53,9 @@ FROM SFIO IMPORT OpenToWrite, WriteS, ReadS, OpenToRead, Exists ;
 FROM FIO IMPORT File, EOF, IsNoError, Close ;
 FROM FormatStrings IMPORT Sprintf1 ;
 
-FROM M2Options IMPORT GetUselist, ScaffoldStatic, ScaffoldDynamic, GenModuleList,
-                      GetGenModuleFilename, GetUselistFilename, GetUselist, cflag,
-                      SharedFlag, WholeProgram ;
+FROM M2Options IMPORT GetUselist, GetScaffoldDynamicFlag, GetGenModuleListFlag,
+                      GetGenModuleFilename, GetUselistFilename, GetUselist, GetCFlag,
+                      GetSharedFlag, GetWholeProgramFlag ;
 
 FROM M2Base IMPORT Proc ;
 
@@ -265,7 +265,7 @@ BEGIN
          PutLibName (sym, makekey (string (LibName))) ;
          IF sym # GetMainModule ()
          THEN
-            PutModuleCtorExtern (tok, sym, NOT WholeProgram)
+            PutModuleCtorExtern (tok, sym, NOT GetWholeProgramFlag (tok))
          END
       ELSE
          MetaErrorStringT0 (tok,
@@ -413,7 +413,8 @@ BEGIN
    THEN
       IF (moduleSym # GetMainModule ()) AND (NOT IsModuleBuiltin (moduleSym))
       THEN
-         PutModuleCtorExtern (ctorTok, moduleSym, NOT WholeProgram) ;
+         PutModuleCtorExtern (ctorTok, moduleSym,
+                              NOT GetWholeProgramFlag (ctorTok)) ;
          IncludeItemIntoList (uselistModules, moduleSym)
       END
    END
@@ -471,7 +472,7 @@ VAR
    newlist: List ;
    i, n   : CARDINAL ;
 BEGIN
-   IF GenModuleList
+   IF GetGenModuleListFlag (tok)
    THEN
       InitList (uselistModules) ;
       ctorTok := tok ;
@@ -548,7 +549,8 @@ BEGIN
       module := GetItemFromList (uselistModules, i) ;
       IF module # GetMainModule ()
       THEN
-         PutModuleCtorExtern (tokenno, module, NOT WholeProgram)
+         PutModuleCtorExtern (tokenno, module,
+                              NOT GetWholeProgramFlag (tokenno))
       END ;
       GetModuleCtors (module, ctor, init, fini, dep) ;
       IncludeItemIntoList (ctorModules, ctor) ;
@@ -577,7 +579,7 @@ BEGIN
       linkFunction := MakeProcedure (tokenno, MakeKey ("_M2_link")) ;
       PutMonoName (linkFunction, TRUE) ;
       PutProcedureDefined (linkFunction, ProperProcedure) ;
-   ELSIF ScaffoldDynamic AND (NOT cflag)
+   ELSIF GetScaffoldDynamicFlag (tokenno) AND (NOT GetCFlag (tokenno))
    THEN
       MetaErrorT0 (tokenno,
                    '{%O}dynamic module registration enabled but no module ctor list has been created, hint use -fuse-list=filename or -fgen-module-list=-')
@@ -589,7 +591,7 @@ BEGIN
    finiFunction := MakeProcedure (tokenno, MakeKey ("_M2_fini")) ;
    PutMonoName (finiFunction, TRUE) ;
    PutProcedureDefined (initFunction, ProperProcedure) ;
-   IF SharedFlag
+   IF GetSharedFlag (tokenno)
    THEN
       PutCtor (initFunction, TRUE) ;
       PutCtor (finiFunction, TRUE)

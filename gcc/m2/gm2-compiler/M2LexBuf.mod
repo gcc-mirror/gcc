@@ -54,7 +54,7 @@ CONST
    Debugging          = FALSE ;
    DebugRecover       = FALSE ;
    BadTokenNo         = 32579 ;
-   InitialSourceToken = 2 ;   (* 0 is unknown, 1 is builtin.  *)
+   InitialSourceToken = 3 ;   (* 0 is unknown, 1 is builtin.  *)
 
 TYPE
    SourceList = POINTER TO RECORD
@@ -80,15 +80,47 @@ VAR
    CurrentSource    : SourceList ;
    UseBufferedTokens,
    CurrentUsed      : BOOLEAN ;
+   ListOfVirtual,
    ListOfTokens     : Index ;
    CurrentTokNo     : CARDINAL ;
    InsertionIndex   : CARDINAL ;
+   VirtualEnd       : CARDINAL ;
    SeenEof          : BOOLEAN ;  (* Have we seen eof since the last call
                                     to OpenSource.  *)
 
 
 PROCEDURE stop ;
 END stop ;
+
+
+(*
+   GetBuiltinToken - return the BuiltinToken.
+*)
+
+PROCEDURE GetBuiltinToken () : CARDINAL ;
+BEGIN
+   RETURN BuiltinTokenNo
+END GetBuiltinToken ;
+
+
+(*
+   GetUnknownToken - return the UnknownToken.
+*)
+
+PROCEDURE GetUnknownToken () : CARDINAL ;
+BEGIN
+   RETURN UnknownTokenNo
+END GetUnknownToken ;
+
+
+(*
+   GetCommandToken - return the CommandLineToken.
+*)
+
+PROCEDURE GetCommandToken () : CARDINAL ;
+BEGIN
+   RETURN CommandTokenNo
+END GetCommandToken ;
 
 
 (*
@@ -155,7 +187,11 @@ BEGIN
    (* 65K elements in the array and when it becomes full it will grow to 1M, 16M etc elements.  *)
    ListOfTokens := InitIndexTuned (0, 1024*1024 DIV 16, 16) ;
    Append (ListOfTokens, InitTokenDesc (eoftok, NulName, 0, 0, 0, NIL, UnknownLocation ())) ;
-   Append (ListOfTokens, InitTokenDesc (eoftok, NulName, 0, 0, 0, NIL, BuiltinsLocation ()))
+   Append (ListOfTokens, InitTokenDesc (eoftok, NulName, 0, 0, 0, NIL, BuiltinsLocation ())) ;
+   Append (ListOfTokens, InitTokenDesc (eoftok, NulName, 0, 0, 0, NIL, BuiltinsLocation ())) ;
+   (* All virtual tokens are held seperately, allowing virtual tokens to be created during pass 0.  *)
+   VirtualEnd := MAX (CARDINAL) ;  (* Virtual tokens start at MAX (CARDINAL) and grows towards 0.  *)
+   ListOfVirtual := InitIndexTuned (0, 1024*1024 DIV 16, 16)
 END InitTokenList ;
 
 
@@ -855,6 +891,32 @@ END GetTokenName ;
 
 
 (*
+   SkipToDepth - return the tokdesc at the correct depth or NIL.
+*)
+
+PROCEDURE SkipToDepth (tokdesc: TokenDesc; depth: CARDINAL) : SourceList ;
+VAR
+   level: SourceList ;
+BEGIN
+   IF depth = 0
+   THEN
+      RETURN tokdesc^.file
+   ELSE
+      level := tokdesc^.file^.left ;
+      WHILE depth > 0 DO
+         level := level^.left ;
+         IF level = tokdesc^.file^.left
+         THEN
+            RETURN NIL
+         END ;
+         DEC (depth)
+      END ;
+      RETURN level
+   END
+END SkipToDepth ;
+
+
+(*
    TokenToLineNo - returns the line number of the current file for the
                    tokenno. The depth refers to the include depth.
                    A depth of 0 is the current file, depth of 1 is the file
@@ -864,32 +926,15 @@ END GetTokenName ;
 
 PROCEDURE TokenToLineNo (tokenno: CARDINAL; depth: CARDINAL) : CARDINAL ;
 VAR
-   tokdesc: TokenDesc ;
-   level  : SourceList ;
- BEGIN
-   IF (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
+   level: SourceList ;
+BEGIN
+   level := LookupSourceList (tokenno, depth) ;
+   IF level = NIL
    THEN
-      IF InBounds (ListOfTokens, tokenno)
-      THEN
-         tokdesc := GetIndice (ListOfTokens, tokenno) ;
-         IF depth = 0
-         THEN
-            RETURN tokdesc^.line
-         ELSE
-            level := tokdesc^.file^.left ;
-            WHILE depth > 0 DO
-               level := level^.left ;
-               IF level = tokdesc^.file^.left
-               THEN
-                  RETURN 0
-               END ;
-               DEC (depth)
-            END ;
-            RETURN level^.line
-         END
-      END
-   END ;
-   RETURN 0
+      RETURN NIL
+   ELSE
+      RETURN level^.line
+   END
 END TokenToLineNo ;
 
 
@@ -903,32 +948,15 @@ END TokenToLineNo ;
 
 PROCEDURE TokenToColumnNo (tokenno: CARDINAL; depth: CARDINAL) : CARDINAL ;
 VAR
-   tokdesc: TokenDesc ;
-   level  : SourceList ;
+   level: SourceList ;
 BEGIN
-   IF (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
+   level := LookupSourceList (tokenno, depth) ;
+   IF level = NIL
    THEN
-      IF InBounds (ListOfTokens, tokenno)
-      THEN
-         tokdesc := GetIndice (ListOfTokens, tokenno) ;
-         IF depth = 0
-         THEN
-            RETURN tokdesc^.col
-         ELSE
-            level := tokdesc^.file^.left ;
-            WHILE depth > 0 DO
-               level := level^.left ;
-               IF level = tokdesc^.file^.left
-               THEN
-                  RETURN 0
-               END ;
-               DEC (depth)
-            END ;
-            RETURN level^.col
-         END
-      END
-   END ;
-   RETURN 0
+      RETURN NIL
+   ELSE
+      RETURN level^.col
+   END
 END TokenToColumnNo ;
 
 
@@ -950,42 +978,61 @@ BEGIN
    THEN
       tokdesc := GetIndice (ListOfTokens, tokenno) ;
       RETURN tokdesc^.loc
+   ELSIF (tokenno > VirtualEnd) AND InBounds (ListOfVirtual, MAX (CARDINAL) - tokenno)
+   THEN
+      tokdesc := GetIndice (ListOfVirtual, MAX (CARDINAL) - tokenno) ;
+      RETURN tokdesc^.loc
    END ;
    RETURN UnknownLocation ()
 END TokenToLocation ;
 
 
 (*
+   LookupSourceList - returns the SourceList relating to tokenno at depth.
+*)
+
+PROCEDURE LookupSourceList (tokenno: CARDINAL; depth: CARDINAL) : SourceList ;
+VAR
+   tokdesc: TokenDesc ;
+BEGIN
+   IF (tokenno # UnknownTokenNo) AND
+      (tokenno # BuiltinTokenNo) AND
+      (tokenno # CommandTokenNo)
+   THEN
+      IF InBounds (ListOfTokens, tokenno)
+      THEN
+         tokdesc := GetIndice (ListOfTokens, tokenno) ;
+         RETURN SkipToDepth (tokdesc, depth)
+      ELSIF tokenno > VirtualEnd
+      THEN
+         tokdesc := GetIndice (ListOfVirtual, MAX (CARDINAL) - tokenno) ;
+         RETURN SkipToDepth (tokdesc, depth)
+      END
+   END ;
+   RETURN NIL
+END LookupSourceList ;
+
+
+(*
    FindFileNameFromToken - returns the complete FileName for the appropriate
-                           source file yields the token number, TokenNo.
-                           The, Depth, indicates the include level: 0..n
+                           source file containing the token associated with
+                           token number TokenNo.
+                           The depth indicates the include level: 0..n
                            Level 0 is the current. NIL is returned if n+1
                            is requested.
 *)
 
 PROCEDURE FindFileNameFromToken (tokenno: CARDINAL; depth: CARDINAL) : String ;
 VAR
-   tokdesc: TokenDesc ;
-   level  : SourceList ;
+   level: SourceList ;
 BEGIN
-   IF (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
+   level := LookupSourceList (tokenno, depth) ;
+   IF level = NIL
    THEN
-      IF InBounds (ListOfTokens, tokenno)
-      THEN
-         tokdesc := GetIndice (ListOfTokens, tokenno) ;
-         level := tokdesc^.file^.left ;
-         WHILE depth > 0 DO
-            level := level^.left ;
-            IF level = tokdesc^.file^.left
-            THEN
-               RETURN NIL
-            END ;
-            DEC (depth)
-         END ;
-         RETURN level^.name
-      END
-   END ;
-   RETURN NIL
+      RETURN NIL
+   ELSE
+      RETURN level^.name
+   END
 END FindFileNameFromToken ;
 
 
@@ -1010,6 +1057,21 @@ BEGIN
    Append (ListOfTokens, InitTokenDesc (token, str, int, line,
                                         col, file, location))
 END AddTokToList ;
+
+
+(*
+   AddVirtualTok - adds a token to a dynamic list.
+*)
+
+PROCEDURE AddVirtualTok (token: toktype; str: Name;
+                        int: INTEGER; line: CARDINAL; col: CARDINAL;
+                        file: SourceList; location: location_t) : CARDINAL ;
+BEGIN
+   Append (ListOfVirtual, InitTokenDesc (token, str, int, line,
+                                         col, file, location)) ;
+   DEC (VirtualEnd) ;
+   RETURN MAX (CARDINAL) - HighIndice (ListOfVirtual)
+END AddVirtualTok ;
 
 
 (*
@@ -1052,8 +1114,42 @@ END PrintTokenNo ;
 
 PROCEDURE isSrcToken (tokenno: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN (tokenno # UnknownTokenNo) AND (tokenno # BuiltinTokenNo)
+   RETURN (tokenno # UnknownTokenNo) AND
+          (tokenno # BuiltinTokenNo) AND
+          (tokenno # CommandTokenNo)
 END isSrcToken ;
+
+
+(*
+   IsTokenDesc - return TRUE if tokno can be matched to a TokenDesc.
+*)
+
+PROCEDURE IsTokenDesc (tokno: CARDINAL) : BOOLEAN ;
+BEGIN
+   RETURN GetTokenDesc (tokno) # NIL
+END IsTokenDesc ;
+
+
+(*
+   GetTokenDesc - return the TokenDesc matching tokno or NIL.
+*)
+
+PROCEDURE GetTokenDesc (tokno: CARDINAL) : TokenDesc ;
+VAR
+   tokdesc: TokenDesc ;
+BEGIN
+   IF isSrcToken (tokno)
+   THEN
+      IF InBounds (ListOfTokens, tokno)
+      THEN
+         tokdesc := GetIndice (ListOfTokens, tokno)
+      ELSIF (tokno > VirtualEnd) AND InBounds (ListOfVirtual, MAX (CARDINAL) - tokno)
+      THEN
+         tokdesc := GetIndice (ListOfVirtual, MAX (CARDINAL) - tokno)
+      END
+   END ;
+   RETURN tokdesc
+END GetTokenDesc ;
 
 
 (*
@@ -1087,18 +1183,17 @@ BEGIN
       lc := TokenToLocation (caret) ;
       ll := TokenToLocation (left) ;
       lr := TokenToLocation (right) ;
-      IF InBounds (ListOfTokens, left) AND InBounds (ListOfTokens, right)
+      IF IsTokenDesc (left) AND IsTokenDesc (right)
       THEN
-         descLeft := GetIndice (ListOfTokens, left) ;
-         descRight := GetIndice (ListOfTokens, right) ;
+         descLeft := GetTokenDesc (left) ;
+         descRight := GetTokenDesc (right) ;
          IF (descLeft^.line = descRight^.line) AND
             (descLeft^.file = descRight^.file)
          THEN
             (* On the same line, create a new token and location.  *)
-            AddTokToList (virtualrangetok, NulName, 0,
-                          descLeft^.line, descLeft^.col, descLeft^.file,
-                          GetLocationBinary (lc, ll, lr)) ;
-            caret := HighIndice (ListOfTokens)
+            caret := AddVirtualTok (virtualrangetok, NulName, 0,
+                                    descLeft^.line, descLeft^.col, descLeft^.file,
+                                    GetLocationBinary (lc, ll, lr))
          END
       END
    END ;
@@ -1125,7 +1220,7 @@ BEGIN
    THEN
       right := left
    END ;
-   RETURN MakeVirtualTok (left, left, right) ;
+   RETURN MakeVirtualTok (left, left, right)
 END MakeVirtual2Tok ;
 
 

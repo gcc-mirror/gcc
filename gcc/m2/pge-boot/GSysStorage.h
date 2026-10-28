@@ -68,6 +68,11 @@ EXTERN void SysStorage_DEALLOCATE (void * *a, unsigned int size);
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 */
 
 EXTERN void SysStorage_REALLOCATE (void * *a, unsigned int size);

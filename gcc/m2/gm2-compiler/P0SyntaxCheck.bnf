@@ -49,29 +49,39 @@ FROM M2LexBuf IMPORT currentstring, currenttoken, GetToken, InsertToken,
 
 FROM M2Quads IMPORT PushT, PushTF, IsAutoPushOn, PushAutoOff, PushAutoOn,
                     PopAuto, DisplayStack, PushTFtok, PushTtok, DupFrame,
-                    Top ;
+                    Top, PopNothing ;
 
 FROM M2Reserved IMPORT tokToTok, toktype, NulTok, ImportTok, ExportTok,
                        QualifiedTok, UnQualifiedTok, BuiltinTok, InlineTok ;
 
 FROM M2MetaError IMPORT MetaErrorStringT0 ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
-FROM NameKey IMPORT Name, NulName, makekey ;
+FROM NameKey IMPORT Name, NulName, makekey, MakeKey ;
 FROM StrLib IMPORT StrCopy, StrConCat, StrEqual ;
 FROM M2Batch IMPORT MakeProgramSource, MakeDefinitionSource, MakeImplementationSource ;
 FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatChar ;
 FROM M2Debug IMPORT Assert ;
 FROM M2Printf IMPORT printf0 ;
 
-(* imports for Pass0 *)
+FROM M2Pragma IMPORT BuildPragmaOption, BuildPragmaLoop, PopPragma,
+                     BuildPragmaFalse, BuildPragmaTrue, BuildPragmaName,
+		     PragmaInvert, PragmaBinary, BuildPragmaAssignment,
+		     PragmaEval,
+		     BuildPragmaValue, BuildPragmaExists,
+		     BuildPragmaMessage, BuildPragmaDomain,
+		     BuildPragmaMessageValue ;
+
+(* Imports for Pass0.  *)
 
 FROM P0SymBuild IMPORT RegisterImports, RegisterInnerImports,
                        RegisterProgramModule,
                        RegisterImplementationModule, RegisterDefinitionModule,
-                       RegisterInnerModule, EndModule,
+                       RegisterInnerModule, EndModule, EndInnerModule,
                        RegisterProcedure, EndProcedure, EndForward ;
 
-FROM SymbolTable IMPORT NulSym, PutModuleContainsBuiltin, PutHiddenTypeDeclared ;
+FROM SymbolTable IMPORT NulSym, PutModuleContainsBuiltin, PutHiddenTypeDeclared,
+                        MakePragmaInfo, MakePragmaFatal, MakePragmaWarn,
+			MakePragmaError ;
 
 IMPORT M2Error ;
 
@@ -80,10 +90,7 @@ CONST
    Debugging    = FALSE ;
    DebugRecover = FALSE ;
    Pass0        = TRUE ;
-   Pass1        = FALSE ;
-   Pass2        = FALSE ;          (* permanently disabled for the time being *)
-   Pass3        = FALSE ;          (* permanently disabled for the time being *)
-   MaxInsert    = 10 ;             (* allow 10 tokens to be inserted before   *)
+   MaxInsert    = 10 ;             (* Allow 10 tokens to be inserted before   *)
                                    (* giving up.                              *)
 
 VAR
@@ -123,7 +130,8 @@ END ErrorArray ;
                  a stop symbol.
 *)
 
-PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE SyntaxError (stopset0: SetOfStop0; stopset1: SetOfStop1;
+	               stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    DescribeError ;
    IF Debugging
@@ -133,7 +141,8 @@ BEGIN
    (* --fixme-- this assumes a 32 bit word size.  *)
    WHILE NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
               ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
-              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+              ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)) OR
+              ((ORD(currenttoken)>=96) AND (currenttoken IN stopset3)))
    DO
       GetToken
    END ;
@@ -148,14 +157,16 @@ END SyntaxError ;
    SyntaxCheck -
 *)
 
-PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE SyntaxCheck (stopset0: SetOfStop0; stopset1: SetOfStop1;
+	               stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    (* --fixme-- this assumes a 32 bit word size.  *)
    IF NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
      	   ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
-           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))
+           ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)) OR
+           ((ORD(currenttoken)>=96) AND (currenttoken IN stopset3)))
    THEN
-      SyntaxError (stopset0, stopset1, stopset2)
+      SyntaxError (stopset0, stopset1, stopset2, stopset3)
    END
 END SyntaxCheck ;
 
@@ -169,21 +180,26 @@ VAR
    s0 : SetOfStop0 ;
    s1 : SetOfStop1 ;
    s2 : SetOfStop2 ;
+   s3 : SetOfStop3 ;
    str: String ;
 BEGIN
-   s0 := SetOfStop0{} ;
-   s1 := SetOfStop1{} ;
-   s2 := SetOfStop2{} ;
-   IF ORD(t)<32
+   s0 := SetOfStop0 {} ;
+   s1 := SetOfStop1 {} ;
+   s2 := SetOfStop2 {} ;
+   s3 := SetOfStop3 {} ;
+   IF ORD(t) < 32
    THEN
-      s0 := SetOfStop0{t}
-   ELSIF ORD(t)<64
+      s0 := SetOfStop0 {t}
+   ELSIF ORD(t) < 64
    THEN
-      s1 := SetOfStop1{t}
+      s1 := SetOfStop1 {t}
+   ELSIF ORD(t) < 64
+   THEN
+      s2 := SetOfStop2 {t}
    ELSE
-      s2 := SetOfStop2{t}
+      s3 := SetOfStop3 {t}
    END ;
-   str := DescribeStop (s0, s1, s2) ;
+   str := DescribeStop (s0, s1, s2, s3) ;
    RETURN str
 END GetMissingTokenMessage ;
 
@@ -203,16 +219,16 @@ END ErrorMissingToken ;
 
 
 (*
-   WarnMissingToken - generates a warning message about a missing token, t.
+   WarnMissingToken - generates a warning message about a missing token.
 *)
 
-PROCEDURE WarnMissingToken (t: toktype) ;
+PROCEDURE WarnMissingToken (tokno: CARDINAL; token: toktype) ;
 VAR
    str: String ;
 BEGIN
-   str := GetMissingTokenMessage (t) ;
-   str := ConCat (InitString ('{%W}syntax warning,'), Mark (str)) ;
-   MetaErrorStringT0 (GetTokenNo (), str) ;
+   str := GetMissingTokenMessage (token) ;
+   str := ConCat (InitString ('{%W}syntax warning, '), Mark (str)) ;
+   MetaErrorStringT0 (tokno, str) ;
    IF DebugRecover
    THEN
       printf0 ("warning note created\n")
@@ -234,7 +250,7 @@ BEGIN
          printf0 ("missing token detected and going to be inserted: ");
          DisplayToken (t)
       END ;
-      WarnMissingToken (t) ;
+      WarnMissingToken (GetTokenNo (), t) ;
       INC (InsertCount) ;
       IF DebugRecover
       THEN
@@ -256,16 +272,19 @@ END MissingToken ;
    CheckInsertCandidate -
 *)
 
-PROCEDURE CheckInsertCandidate (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+PROCEDURE CheckInsertCandidate (t: toktype;
+                                stopset0: SetOfStop0; stopset1: SetOfStop1;
+				stopset2: SetOfStop2; stopset3: SetOfStop3) : BOOLEAN ;
 BEGIN
    IF ((ORD(t)<32) AND (t IN stopset0)) OR
       ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
-      ((ORD(t)>=64) AND (t IN stopset2))
+      ((ORD(t)>=64) AND (t IN stopset2)) OR
+      ((ORD(t)>=96) AND (t IN stopset3))
    THEN
       INC (InsertCount) ;
       IF InsertCount < MaxInsert
       THEN
-         WarnMissingToken (t) ;
+         WarnMissingToken (GetTokenNo (), t) ;
          IF DebugRecover
          THEN
             printf0 ('buffer before\n') ;
@@ -288,11 +307,14 @@ END CheckInsertCandidate ;
    InStopSet
 *)
 
-PROCEDURE InStopSet (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) : BOOLEAN ;
+PROCEDURE InStopSet (t: toktype;
+                     stopset0: SetOfStop0; stopset1: SetOfStop1;
+		     stopset2: SetOfStop2; stopset3: SetOfStop3) : BOOLEAN ;
 BEGIN
    IF ((ORD(t)<32) AND (t IN stopset0)) OR
       ((ORD(t)>=32) AND (ORD(t)<64) AND (t IN stopset1)) OR
-      ((ORD(t)>=64) AND (t IN stopset2))
+      ((ORD(t)>=64) AND (t IN stopset2)) OR
+      ((ORD(t)>=96) AND (t IN stopset3))
    THEN
       RETURN( TRUE )
    ELSE
@@ -304,31 +326,33 @@ END InStopSet ;
 (*
    PeepToken - peep token checks to see whether the stopset is satisfied by currenttoken
                If it is not then it will insert a token providing the token
-               is one of ; ] ) } . OF END ,
+               is one of : ; ] ) } . OF END ,
 
                if the stopset contains <identtok> then we do not insert a token
 *)
 
-PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE PeepToken (stopset0: SetOfStop0; stopset1: SetOfStop1;
+                     stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
-   (* and again (see above re: ORD)
-    *)
+   (* And again (see above re: ORD).  *)
    IF (NOT (((ORD(currenttoken)<32)  AND (currenttoken IN stopset0)) OR
      	    ((ORD(currenttoken)>=32) AND (ORD(currenttoken)<64) AND (currenttoken IN stopset1)) OR
-            ((ORD(currenttoken)>=64) AND (currenttoken IN stopset2)))) AND
-      (NOT InStopSet(identtok, stopset0, stopset1, stopset2))
+            ((ORD(currenttoken)>=64) AND (ORD(currenttoken)<96) AND (currenttoken IN stopset2)) OR
+            ((ORD(currenttoken)>=96) AND (currenttoken IN stopset3)))) AND
+      (NOT InStopSet (identtok, stopset0, stopset1, stopset2, stopset3))
    THEN
       (* SyntaxCheck will fail since currentoken is not part of the stopset
          we check to see whether one of the following is in the stopset and
          if not emit a warning and also the token.  *)
-      IF CheckInsertCandidate (semicolontok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (rsbratok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (rparatok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (rcbratok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (periodtok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (oftok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (endtok, stopset0, stopset1, stopset2) OR
-         CheckInsertCandidate (commatok, stopset0, stopset1, stopset2)
+      IF CheckInsertCandidate (semicolontok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (colontok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (rsbratok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (rparatok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (rcbratok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (periodtok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (oftok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (endtok, stopset0, stopset1, stopset2, stopset3) OR
+         CheckInsertCandidate (commatok, stopset0, stopset1, stopset2, stopset3)
       THEN
       END
    END
@@ -354,7 +378,9 @@ END DetectImport ;
    Expect -
 *)
 
-PROCEDURE Expect (t: toktype; stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE Expect (t: toktype;
+                  stopset0: SetOfStop0; stopset1: SetOfStop1;
+		  stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    IF currenttoken=t
    THEN
@@ -365,12 +391,12 @@ BEGIN
       END ;
       IF Pass0
       THEN
-         PeepToken (stopset0, stopset1, stopset2)
+         PeepToken (stopset0, stopset1, stopset2, stopset3)
       END
    ELSE
       MissingToken (t)
    END ;
-   SyntaxCheck (stopset0, stopset1, stopset2)
+   SyntaxCheck (stopset0, stopset1, stopset2, stopset3)
 END Expect ;
 
 
@@ -384,7 +410,7 @@ BEGIN
    seenError := FALSE ;
    EnableImportCheck := FALSE ;
    InsertCount := 0 ;
-   FileUnit (SetOfStop0{eoftok}, SetOfStop1{}, SetOfStop2{}) ;
+   FileUnit (SetOfStop0 {eoftok}, SetOfStop1 {}, SetOfStop2 {}, SetOfStop3 {}) ;
    RETURN NOT seenError
 END CompilationUnit ;
 
@@ -393,14 +419,15 @@ END CompilationUnit ;
    Ident - error checking varient of Ident
 *)
 
-PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE Ident (stopset0: SetOfStop0; stopset1: SetOfStop1;
+                 stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    LastIdent := makekey (currentstring) ;
    IF IsAutoPushOn ()
    THEN
       PushTFtok (LastIdent, identtok, GetTokenNo())
    END ;
-   Expect (identtok, stopset0, stopset1, stopset2)
+   Expect (identtok, stopset0, stopset1, stopset2, stopset3)
 END Ident ;
 
 
@@ -408,14 +435,15 @@ END Ident ;
    string -
 *)
 
-PROCEDURE string (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE string (stopset0: SetOfStop0; stopset1: SetOfStop1;
+                  stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    IF IsAutoPushOn ()
    THEN
-      PushTF (makekey (currentstring), stringtok) ;
+      PushTFtok (makekey (currentstring), stringtok, GetTokenNo ()) ;
       BuildString
    END ;
-   Expect (stringtok, stopset0, stopset1, stopset2)
+   Expect (stringtok, stopset0, stopset1, stopset2, stopset3)
 END string ;
 
 
@@ -423,14 +451,15 @@ END string ;
    Integer -
 *)
 
-PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE Integer (stopset0: SetOfStop0; stopset1: SetOfStop1;
+                   stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    IF IsAutoPushOn()
    THEN
       PushTFtok (makekey (currentstring), integertok, GetTokenNo ()) ;
       BuildNumber
    END ;
-   Expect(integertok, stopset0, stopset1, stopset2)
+   Expect(integertok, stopset0, stopset1, stopset2, stopset3)
 END Integer ;
 
 
@@ -438,14 +467,15 @@ END Integer ;
    Real -
 *)
 
-PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+PROCEDURE Real (stopset0: SetOfStop0; stopset1: SetOfStop1;
+                stopset2: SetOfStop2; stopset3: SetOfStop3) ;
 BEGIN
    IF IsAutoPushOn()
    THEN
       PushTFtok (makekey (currentstring), realtok, GetTokenNo ()) ;
       BuildNumber
    END ;
-   Expect(realtok, stopset0, stopset1, stopset2)
+   Expect(realtok, stopset0, stopset1, stopset2, stopset3)
 END Real ;
 
 % module P0SyntaxCheck end
@@ -535,6 +565,22 @@ token   'WITH'            withtok
 token   'ASM'             asmtok
 token   'VOLATILE'        volatiletok
 token   '...'             periodperiodperiodtok
+token   'gcc'             gcctok
+token   'gm2'             gm2tok
+token   'pragma'          pragmatok
+token   'novector'        novectortok
+token   'ivdep'           ivdeptok
+token   'unroll'          unrolltok
+token   '$'               dollartok
+token   '?'               questiontok
+token   'MSG'             msgtok
+token   'TEST'            testtok
+token   'TRUE'            truetok
+token   'FALSE'           falsetok
+token   'WARN'            warntok
+token   'INFO'            infotok
+token   'ERROR'           errortok
+token   'FATAL'           fataltok
 token   '__DATE__'        datetok
 token   '__LINE__'        linetok
 token   '__FILE__'        filetok
@@ -577,7 +623,7 @@ ProgramModule := "MODULE"                                                  % Pus
                                                                            % PushAutoOff ; %
                   [ Priority ]
                   ";"
-                                                                           % PushAutoOn ; %
+                  { PragmaGlobal }                                         % PushAutoOn ; %
                   { Import                                                 % RegisterImports %
                   }                                                        % PopAuto %
                   Block                                                    % PopAuto %
@@ -589,7 +635,8 @@ ImplementationModule := "IMPLEMENTATION"                                   % M2E
                                          "MODULE"                          % PushAutoOn ; %
                          Ident                                             % RegisterImplementationModule ; %
                                                                            % PushAutoOff ; %
-                         [ Priority ] ";"                                  % PushAutoOn ; %
+                         [ Priority ] ";"
+			 { PragmaGlobal }                                  % PushAutoOn ; %
                          { Import                                          % RegisterImports %
                            }                                               % PopAuto %
                          Block                                             % PopAuto %
@@ -784,8 +831,7 @@ SimpleDes := { "." Ident | "[" ExpList "]" | "^" } =:
 ActualParameters := "(" [ ExpList ] ")" =:
 
 Statement := [ AssignmentOrProcedureCall | IfStatement | CaseStatement |
-               WhileStatement | RepeatStatement | LoopStatement |
-               ForStatement | WithStatement | AsmStatement |
+               LoopStatements | WithStatement | AsmStatement |
                "EXIT" | "RETURN" [ Expression ] | RetryStatement ] =:
 
 RetryStatement := "RETRY" =:
@@ -808,6 +854,221 @@ CaseStatement := "CASE" Expression "OF" Case { "|" Case }
                  [ "ELSE" StatementSequence ] "END" =:
 
 Case := [ CaseLabelList ":" StatementSequence ] =:
+
+LoopStatements := { PragmaLoopStatement } LoopComponents =:
+
+LoopComponents := WhileStatement | RepeatStatement | LoopStatement |
+                  ForStatement =:
+
+-- LoopPragma ebnf rule is only parsed during P0.
+-- Local procedure scoped pragma are also only parsed during P0.
+
+-- PragmaDesignatorGcc and PragmaDesignatorGm2 create
+-- and store a PragmaOption symbol during P0 inside the module/defimp
+-- symbol of the outer scope.
+
+-- Pragmas inside inner modules are also only parsed during P0.
+
+PragmaMessageMode := "INFO"                                                            % PushTtok (MakePragmaInfo (GetTokenNo () -1),
+	                                                                                           GetTokenNo () -1) %
+                     | "WARN"                                                          % PushTtok (MakePragmaWarn (GetTokenNo () -1),
+	                                                                                           GetTokenNo () -1) %
+                     | "ERROR"                                                         % PushTtok (MakePragmaError (GetTokenNo () -1),
+	                                                                                           GetTokenNo () -1) %
+                     | "FATAL"                                                         % PushTtok (MakePragmaFatal (GetTokenNo () -1),
+	                                                                                           GetTokenNo () -1) %
+		   =:
+
+PragmaProcedure := "<*" LocalPragma "*>"
+                 =:
+
+LocalPragma := <Silent>PragmaDesignatorGm2
+                | <Silent>PragmaMessage
+                | <Silent>PragmaTest
+             =:
+
+PragmaLoopStatement := "<*" LoopPragma "*>"
+                     =:
+
+-- None of the <Silent> rules appear in the texinfo ebnf rules as they are
+-- duplicate rules with no code.  <Silent> rules are only added if there is
+-- a corresponding non Silent version otherwise it will not appear in the
+-- texinfo ebnf.
+
+-- <Silent>PragmeGlobal := "<*" <Silent>PragmeGlobalComponent "*>" =:
+
+-- <Silent>PragmeGlobalComponent := <Silent>PragmeDesignatorGcc |
+--                                  <Silent>PragmeDesignatorGm2 |
+--                                  <Silent>PragmeMessage |
+--                                  <Silent>PragmeTest
+-- 			       =:
+
+LoopPragma := "gcc" "." "pragma" "." PragmaLoopDirective =:
+
+PragmaGlobal := "<*"                                                                   % PushAutoOn %
+                     PragmaGlobalComponent
+				                                                       % PopAuto %
+				           "*>" =:
+
+PragmaGlobalComponent := PragmaDesignatorGcc |
+                         PragmaDesignatorGm2 |
+                         PragmaMessage |
+                         PragmaTest
+                       =:
+
+PragmaTest := "TEST" ( PragmaConstExpr
+               [ "&" PragmaSubStatement                                                % PragmaEval (TRUE) %
+	                                                ]
+	       [ "|" PragmaSubStatement                                                % PragmaEval (FALSE) %
+	                                                ] )                            % PopNothing %
+	    =:
+
+PragmaSubStatement := PragmaMessageMode OptPragmaMessage
+                    =:
+
+PragmaMessage := "MSG" ( "="                                                           % BuildPragmaTrue (GetTokenNo () -1) %
+                             PragmaMessageMode PragmaMsgText                           % PragmaEval (TRUE) %
+			                                     )                         % PopNothing %
+               =:
+
+OptPragmaMessage := [ ":" PragmaMsgText ] =:
+
+-- PragmaMessageComponent is missing constQualident at the moment.
+
+PragmaMessageComponent := string                                                       % BuildPragmaMessage %
+                          | "$" "(" PragmaSymbol                                       % BuildPragmaMessageValue %
+				                ")" =:
+
+PragmaMsgText := [ PragmaMessageComponent { "," PragmaMessageComponent } ] =:
+
+PragmaDesignatorGcc :=                                                                 % BuildPragmaOption (GetTokenNo () -1, TRUE, FALSE) %
+                       PragmaGccSymbol "=" PragmaConstExpr                             % BuildPragmaAssignment %
+		      =:
+
+PragmaDesignatorGm2 :=                                                                 % BuildPragmaOption (GetTokenNo () -1, TRUE, FALSE) %
+                       PragmaGm2Symbol "=" PragmaConstExpr                             % BuildPragmaAssignment %
+		     =:
+
+PragmaConstExpr := PragmaTerm { "OR"                                                   % PushTtok (bartok, GetTokenNo () -1) %
+                                    PragmaTerm                                         % PragmaBinary %
+				               } =:
+
+PragmaTerm := PragmaFactor { "AND"                                                     % PushTtok (ambersandtok, GetTokenNo () -1) %
+                                   PragmaFactor                                        % PragmaBinary %
+				                } =:
+
+PragmaGccSymbol := "gcc"                                                               % PushTtok (MakeKey ('gcc'), GetTokenNo () -1) %
+                         "." PragmaQualident =:
+
+PragmaGm2Symbol := "gm2"                                                               % PushTtok (MakeKey ('gm2'), GetTokenNo () -1) %
+                         "." PragmaQualident =:
+
+PragmaFactor := PragmaLit |
+                PragmaExist |
+		PragmaValue |
+                PragmaNot |
+		"(" PragmaConstExpr ")" =:
+
+PragmaExist := "?" "(" PragmaSymbol                                                    % BuildPragmaExists %
+                                    ")" =:
+
+PragmaValue := "$" "(" PragmaSymbol                                                    % BuildPragmaValue %
+                                    ")" =:
+
+PragmaNot :=                                                                           % VAR tokno: CARDINAL ; %
+                                                                                       % tokno := GetTokenNo () %
+             "NOT" PragmaFactor                                                        % PragmaInvert (tokno) %
+           =:
+
+PragmaLit := Integer | PragmaTrue | PragmaFalse | string =:
+
+PragmaTrue := "TRUE"                                                                   % BuildPragmaTrue (GetTokenNo () -1) %
+            =:
+
+PragmaFalse := "FALSE"                                                                 % BuildPragmaFalse (GetTokenNo () -1) %
+             =:
+
+PragmaSymbol := PragmaGccSymbol | PragmaGm2Symbol =:
+
+PragmaQualident := PragmaDomain
+                                { "." Ident                                            % BuildPragmaName %
+                                            }
+                                              =:
+
+PragmaDomain := Ident                                                                  % BuildPragmaDomain %
+                     =:
+
+PragmaLoopDirective := "novector" | "ivdep" | PragmaUnroll =:
+
+PragmaUnroll := "unroll" [ "=" ConstExpression ] =:
+
+<Silent>PragmaMessageMode := "INFO" | "WARN" | "ERROR" | "FATAL" =:
+
+<Silent>PragmaTest := "TEST" <Silent>PragmaConstExpr
+                        [ "&" <Silent>PragmaMessageMode <Silent>OptPragmaMessage ]
+                        [ "|" <Silent>PragmaMessageMode <Silent>OptPragmaMessage ]
+                    =:
+
+<Silent>PragmaMessage := "MSG" "=" <Silent>PragmaMessageMode <Silent>PragmaMsgText =:
+
+<Silent>OptPragmaMessage := [ ":" <Silent>PragmaMsgText ] =:
+
+-- <Silent>PragmaMessageComponent is missing constQualident at the moment.
+
+<Silent>PragmaMessageComponent := string
+                          | "$" "(" <Silent>PragmaSymbol
+				                ")" =:
+
+<Silent>PragmaMsgText := [ <Silent>PragmaMessageComponent { "," <Silent>PragmaMessageComponent } ] =:
+
+<Silent>PragmaDesignatorGm2 :=
+                       <Silent>PragmaGm2Symbol "=" <Silent>PragmaConstExpr
+		     =:
+
+<Silent>PragmaConstExpr := <Silent>PragmaTerm { "OR" <Silent>PragmaTerm } =:
+
+<Silent>PragmaTerm := <Silent>PragmaFactor { "AND" <Silent>PragmaFactor } =:
+
+<Silent>PragmaGccSymbol := "gcc"
+                         "." <Silent>PragmaQualident =:
+
+<Silent>PragmaGm2Symbol := "gm2"
+                         "." <Silent>PragmaQualident =:
+
+<Silent>PragmaFactor := <Silent>PragmaLit |
+                <Silent>PragmaExist |
+		<Silent>PragmaValue |
+                <Silent>PragmaNot |
+		"(" <Silent>PragmaConstExpr ")" =:
+
+<Silent>PragmaExist := "?" "(" <Silent>PragmaSymbol
+                                    ")" =:
+
+<Silent>PragmaValue := "$" "(" <Silent>PragmaSymbol
+                                    ")" =:
+
+<Silent>PragmaNot :=
+
+             "NOT" <Silent>PragmaFactor
+           =:
+
+<Silent>PragmaLit := Integer | <Silent>PragmaTrue | <Silent>PragmaFalse | string =:
+
+<Silent>PragmaTrue := "TRUE"
+            =:
+
+<Silent>PragmaFalse := "FALSE"
+             =:
+
+<Silent>PragmaSymbol := <Silent>PragmaGccSymbol | <Silent>PragmaGm2Symbol =:
+
+<Silent>PragmaQualident := <Silent>PragmaDomain
+                                { "." Ident
+                                            }
+                                              =:
+
+<Silent>PragmaDomain := Ident
+                     =:
 
 WhileStatement := "WHILE" Expression "DO" StatementSequence "END" =:
 
@@ -866,7 +1127,8 @@ DefProcedureHeading := "PROCEDURE"                                        % M2Er
 -- introduced procedure block so we can produce more informative
 -- error messages
 
-ProcedureBlock := { Declaration } [ "BEGIN" BlockBody ] "END" =:
+ProcedureBlock := { PragmaProcedure } { Declaration }
+                  [ "BEGIN" BlockBody ] "END" =:
 
 Block := { Declaration } InitialBlock FinalBlock "END" =:
 
@@ -920,7 +1182,7 @@ ModuleDeclaration := "MODULE"                                              % Pus
                      { Import                                              % RegisterInnerImports %
                               }                                            % PopAuto %
                                 [ Export ] Block                           % PopAuto %
-                                                 Ident                     % EndModule %
+                                                 Ident                     % EndInnerModule %
                                                                            % PopAuto %
                   =:
 
@@ -945,6 +1207,8 @@ DefinitionModule :=                                                        % VAR
                                                           ]                % PushAutoOn %
                     Ident                                                  % RegisterDefinitionModule (forC) %
                     ";"
+		                                                           % PushAutoOff %
+                    { PragmaGlobal }                                       % PopAuto %
                     { Import                                               % RegisterImports %
                              }                                             % PushAutoOff %
                                [ Export

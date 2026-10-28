@@ -1,0 +1,8 @@
+DEFINITION MODULE cs102 ;  (*!m2iso+gm2*)
+
+<* gm2.default.fm2_whole_program=TRUE *>
+<* gm2.default.fm2_g=TRUE *>
+<* gm2.default.fsoft_check_all=TRUE *>
+<* gcc.default.O=0 *>
+
+END cs102.

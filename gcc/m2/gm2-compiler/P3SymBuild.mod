@@ -64,9 +64,23 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 FROM FifoQueue IMPORT GetSubrangeFromFifoQueue ;
 FROM M2Reserved IMPORT NulTok, ImportTok ;
 FROM M2MetaError IMPORT MetaError2 ;
+FROM M2Pragma IMPORT EnterPragmaOptions, EndPragmaOptions ;
 
 IMPORT M2Error ;
 IMPORT M2StackSpell ;
+
+
+(*
+   EndPragma -
+*)
+
+PROCEDURE EndPragma (sym: CARDINAL) ;
+BEGIN
+   IF (sym # NulSym) AND (IsModule (sym) OR IsDefImp (sym) OR IsProcedure (sym))
+   THEN
+      EndPragmaOptions (sym)
+   END
+END EndPragma ;
 
 
 (*
@@ -100,7 +114,8 @@ BEGIN
    M2StackSpell.Push (GetBaseModule ()) ;
    M2StackSpell.Push (ModuleSym) ;
    PushT (name) ;
-   M2Error.EnterDefinitionScope (name)
+   M2Error.EnterDefinitionScope (name) ;
+   EnterPragmaOptions (ModuleSym)
 END P3StartBuildDefModule ;
 
 
@@ -126,6 +141,7 @@ VAR
    NameEnd  : CARDINAL ;
 BEGIN
    Assert(CompilingDefinitionModule()) ;
+   EndPragma (GetCurrentScope ()) ;
    CheckForUnknownInModule (tokno) ;
    EndScope ;
    M2StackSpell.Pop ;
@@ -172,7 +188,8 @@ BEGIN
    PushT (name) ;
    M2Error.EnterImplementationScope (name) ;
    M2StackSpell.Push (GetBaseModule ()) ;
-   M2StackSpell.Push (ModuleSym)
+   M2StackSpell.Push (ModuleSym) ;
+   EnterPragmaOptions (ModuleSym)
 END P3StartBuildImpModule ;
 
 
@@ -199,6 +216,7 @@ VAR
 BEGIN
    Assert(CompilingImplementationModule()) ;
    CheckForUnknownInModule (tokno) ;
+   EndPragma (GetCurrentScope ()) ;
    EndScope ;
    M2StackSpell.Pop ;
    M2StackSpell.Pop ;
@@ -249,7 +267,8 @@ BEGIN
    PushT(name) ;
    M2Error.EnterProgramScope (name) ;
    M2StackSpell.Push (GetBaseModule ()) ;
-   M2StackSpell.Push (ModuleSym)
+   M2StackSpell.Push (ModuleSym) ;
+   EnterPragmaOptions (ModuleSym)
 END P3StartBuildProgModule ;
 
 
@@ -276,6 +295,7 @@ VAR
 BEGIN
    Assert(CompilingProgramModule()) ;
    CheckForUnknownInModule (tokno) ;
+   EndPragma (GetCurrentScope ()) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -490,6 +510,7 @@ BEGIN
    Assert (IsProcedure (ProcSym)) ;
    PushTtok (ProcSym, tok) ;
    StartScope (ProcSym) ;
+   EnterPragmaOptions (ProcSym) ;
    M2Error.EnterProcedureScope (name) ;
    M2StackSpell.Push (ProcSym)
 END StartBuildProcedure ;
@@ -534,6 +555,7 @@ BEGIN
       WriteFormat0('too many errors in pass 3') ;
       FlushErrors
    END ;
+   EndPragma (ProcSym) ;
    EndScope ;
    M2Error.LeaveErrorScope ;
    M2StackSpell.Pop
@@ -568,6 +590,7 @@ VAR
 BEGIN
    IF CompilingDefinitionModule()
    THEN
+      EndPragma (GetCurrentScope ()) ;
       PopT(ProcSym) ;
       PopT(NameStart) ;
       EndScope ;
@@ -583,6 +606,7 @@ END BuildProcedureHeading ;
 PROCEDURE EndBuildForward ;
 BEGIN
    PopN (2) ;
+   EndPragma (GetCurrentScope ()) ;
    EndScope ;
    M2Error.LeaveErrorScope ;
    M2StackSpell.Pop

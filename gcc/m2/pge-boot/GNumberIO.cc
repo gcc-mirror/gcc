@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,9 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
 #define _NumberIO_C
 
 #include "GNumberIO.h"
@@ -769,10 +768,10 @@ extern "C" void NumberIO_StrToOctInt (const char *a_, unsigned int _a_high, int 
     }
 }
 
-extern "C" void _M2_NumberIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_NumberIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_NumberIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_NumberIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

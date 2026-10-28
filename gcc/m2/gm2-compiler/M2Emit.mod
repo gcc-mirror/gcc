@@ -23,7 +23,7 @@ IMPLEMENTATION MODULE M2Emit ;
 
 IMPORT m2linemap ;
 
-FROM M2LexBuf IMPORT TokenToLocation ;
+FROM M2LexBuf IMPORT TokenToLocation, CommandTokenNo ;
 FROM m2linemap IMPORT ErrorAtf, WarningAtf, NoteAtf, internal_error ;
 FROM DynamicStrings IMPORT string ;
 FROM SYSTEM IMPORT ADR ;
@@ -35,7 +35,10 @@ FROM SYSTEM IMPORT ADR ;
 
 PROCEDURE EmitError (error, note: BOOLEAN; token: CARDINAL; message: String) ;
 BEGIN
-   IF error
+   IF token = CommandTokenNo
+   THEN
+      m2linemap.error (string (message))
+   ELSIF error
    THEN
       ErrorAtf (TokenToLocation (token), string (message))
    ELSIF note

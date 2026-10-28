@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -36,13 +38,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
 #   include "GStorage.h"
 #   include "Gmcrts.h"
-#include <unistd.h>
 #ifndef __cplusplus
 extern void throw (unsigned int);
 #endif
@@ -1212,12 +1209,12 @@ extern "C" void * RTExceptions_GetExceptionSource (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_RTExceptions_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_RTExceptions_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_RTExceptions_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_RTExceptions_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   TidyUp ();
 }

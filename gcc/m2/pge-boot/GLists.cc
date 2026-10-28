@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -35,7 +37,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
 #   include "GStorage.h"
 #if defined(__cplusplus)
 #   undef NULL
@@ -416,10 +417,10 @@ extern "C" Lists_List Lists_DuplicateList (Lists_List l)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_Lists_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Lists_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Lists_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Lists_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

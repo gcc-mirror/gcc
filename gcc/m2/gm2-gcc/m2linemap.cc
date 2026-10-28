@@ -257,6 +257,14 @@ m2linemap_internal_error (const char *message)
   internal_error ("%s", message);
 }
 
+/* m2linemap_error - allow Modula-2 to use the GCC error function.  */
+
+void
+m2linemap_error (const char *message)
+{
+  error (message);
+}
+
 
 /* Code derived from rust.  */
 

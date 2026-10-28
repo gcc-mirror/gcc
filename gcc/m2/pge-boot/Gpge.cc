@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -35,9 +37,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
 #   include "GStorage.h"
 #   include "Gmcrts.h"
 #if defined(__cplusplus)
@@ -139,6 +138,7 @@ struct pge_DoProcedure_p { pge_DoProcedure_t proc; };
 
 struct pge__T1_r {
                    pge_ProductionDesc definition;
+                   NameKey_Name codename;
                    NameKey_Name name;
                    unsigned int line;
                  };
@@ -455,6 +455,12 @@ static void ConsHunk (pge_CodeHunk *p, pge_CodeHunk q);
 static NameKey_Name GetName (void);
 
 /*
+   MakeCodeName - mangle the name to codename and return.
+*/
+
+static NameKey_Name MakeCodeName (NameKey_Name name);
+
+/*
    SyntaxError - after a syntax error we skip all tokens up until we reach
                  a stop symbol.
 */
@@ -504,20 +510,20 @@ static void EndModName (pge_SetOfStop stop);
 static void DoDeclaration (pge_SetOfStop stop);
 
 /*
-   CollectLiteral :=
+   CollectLiteral := 
                      % LastLiteral := GetCurrentToken() ;
                        AdvanceToken ;  %
-
+                     
 
    first  symbols:literaltok
-
+   
    cannot reachend
 */
 
 static void CollectLiteral (pge_SetOfStop stopset);
 
 /*
-   CollectTok :=
+   CollectTok := 
                  % CurrentSetDesc := NewSetDesc() ;
                    WITH CurrentSetDesc^ DO
                       type   := tokel ;
@@ -532,46 +538,46 @@ static void CollectLiteral (pge_SetOfStop stopset);
                       INC(LargestValue)
                    END ;
                    AdvanceToken() ;  %
-
+                 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void CollectTok (pge_SetOfStop stopset);
 
 /*
-   DefineToken :=
+   DefineToken := 
                   % AddEntry(Aliases, LastLiteral, GetCurrentToken()) ;
                     AddEntry(ReverseAliases, GetCurrentToken(), LastLiteral) ;
                     AddEntry(Values, GetCurrentToken(), LargestValue) ;
                     AddEntry(ReverseValues, Name(LargestValue), GetCurrentToken()) ;
                     INC(LargestValue) ;
                     AdvanceToken ;  %
-
+                  
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void DefineToken (pge_SetOfStop stopset);
 
 /*
-   Rules := '%' 'rules' { Defs  } ExtBNF
+   Rules := '%' 'rules' { Defs  } ExtBNF 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Rules (pge_SetOfStop stopset);
 
 /*
-   Special := Ident
+   Special := Ident 
               % VAR p: ProductionDesc ;  %
-
+              
               % p                           := NewProduction() ;
                 p^.statement                := NewStatement() ;
                 p^.statement^.followinfo^.calcfollow := TRUE ;
@@ -583,31 +589,31 @@ static void Rules (pge_SetOfStop stopset);
                 p^.followinfo^.calcfollow   := TRUE ;
                 p^.followinfo^.epsilon      := false ;
                 p^.followinfo^.reachend     := false  %
-              First Follow [ 'epsilon'
-                             % p^.statement^.followinfo^.epsilon  := true ;   these are not used - but they are displayed when debugging
+              First Follow [ 'epsilon' 
+                             % p^.statement^.followinfo^.epsilon  := true ;   these are not used - but they are displayed when debugging 
                                p^.statement^.followinfo^.reachend := true ;
                                p^.followinfo^.epsilon  := true ;
                                p^.followinfo^.reachend := true
                                 %
-                              ] [ Literal
+                              ] [ Literal 
                                   % p^.description := LastLiteral  %
-                                   ]
+                                   ] 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void Special (pge_SetOfStop stopset);
 
 /*
-   Factor := '%' Modula2Code '%'  |
-             Ident
+   Factor := '%' Modula2Code '%'  | 
+             Ident 
              % WITH CurrentFactor^ DO
                   type  := id ;
                   ident := CurrentIdent
                END ;  %
-              | Literal
+              | Literal 
              % WITH CurrentFactor^ DO
                   type   := lit ;
                   string := LastLiteral ;
@@ -616,39 +622,39 @@ static void Special (pge_SetOfStop stopset);
                      WarnError1('no token defined for literal %s', LastLiteral)
                   END
                END ;  %
-              | '{'
+              | '{' 
              % WITH CurrentFactor^ DO
                   type := mult ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression '}'  | '['
+             Expression '}'  | '[' 
              % WITH CurrentFactor^ DO
                   type := opt ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression ']'  | '('
+             Expression ']'  | '(' 
              % WITH CurrentFactor^ DO
                   type := sub ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression ')'
+             Expression ')' 
 
    first  symbols:dquotetok, squotetok, lparatok, lsparatok, lcparatok, identtok, codetok
-
+   
    cannot reachend
 */
 
 static void Factor (pge_SetOfStop stopset);
 
 /*
-   Statement :=
+   Statement := 
                 % VAR i: IdentDesc ;  %
-                Ident
+                Ident 
                 % VAR p: ProductionDesc ;  %
-
+                
                 % p := FindDefinition(CurrentIdent^.name) ;
                   IF p=NIL
                   THEN
@@ -660,264 +666,264 @@ static void Factor (pge_SetOfStop stopset);
                      END
                   END ;
                   i := CurrentIdent ;  %
-                ':='
+                ':=' 
                 % VAR e: ExpressionDesc ;  %
-
+                
                 % e := NewExpression() ;
                   CurrentExpression := e ;  %
-
+                
                 % VAR s: StatementDesc ;  %
-
+                
                 % s := NewStatement() ;
                   WITH s^ DO
                      ident := i ;
                      expr  := e
                   END ;  %
-                Expression
+                Expression 
                 % p^.statement := s ;  %
-                '=:'
+                '=:' 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void Statement (pge_SetOfStop stopset);
 
 /*
-   Defs := 'special' Special  | 'token' Token  |
-           'error' ErrorProcedures  |
-           'tokenfunc' TokenProcedure  |
-           'symfunc' SymProcedure
+   Defs := 'special' Special  | 'token' Token  | 
+           'error' ErrorProcedures  | 
+           'tokenfunc' TokenProcedure  | 
+           'symfunc' SymProcedure 
 
    first  symbols:symfunctok, tfunctok, errortok, tokentok, specialtok
-
+   
    cannot reachend
 */
 
 static void Defs (pge_SetOfStop stopset);
 
 /*
-   ExtBNF := 'BNF' { Production  } 'FNB'
+   ExtBNF := 'BNF' { Production  } 'FNB' 
 
    first  symbols:BNFtok
-
+   
    cannot reachend
 */
 
 static void ExtBNF (pge_SetOfStop stopset);
 
 /*
-   Main := Header Decls Footer Rules
+   Main := Header Decls Footer Rules 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Main (pge_SetOfStop stopset);
 
 /*
-   Header := '%' 'module' StartModName
+   Header := '%' 'module' StartModName 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Header (pge_SetOfStop stopset);
 
 /*
-   Decls := '%' 'declaration' DoDeclaration
+   Decls := '%' 'declaration' DoDeclaration 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Decls (pge_SetOfStop stopset);
 
 /*
-   Footer := '%' 'module' EndModName
+   Footer := '%' 'module' EndModName 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Footer (pge_SetOfStop stopset);
 
 /*
-   First := 'first' '{' { LitOrTokenOrIdent
+   First := 'first' '{' { LitOrTokenOrIdent 
                           % WITH CurrentSetDesc^ DO
                                next := TailProduction^.first ;
                             END ;
                             TailProduction^.first := CurrentSetDesc
                              %
-                           } '}'
+                           } '}' 
 
    first  symbols:firsttok
-
+   
    cannot reachend
 */
 
 static void First (pge_SetOfStop stopset);
 
 /*
-   Follow := 'follow' '{' { LitOrTokenOrIdent
+   Follow := 'follow' '{' { LitOrTokenOrIdent 
                             % WITH CurrentSetDesc^ DO
                                  next := TailProduction^.followinfo^.follow ;
                               END ;
                               TailProduction^.followinfo^.follow := CurrentSetDesc
                                %
-                             } '}'
+                             } '}' 
 
    first  symbols:followtok
-
+   
    cannot reachend
 */
 
 static void Follow (pge_SetOfStop stopset);
 
 /*
-   LitOrTokenOrIdent := Literal
+   LitOrTokenOrIdent := Literal 
                         % CurrentSetDesc := NewSetDesc() ;
                           WITH CurrentSetDesc^ DO
                              type   := litel ;
                              string := LastLiteral ;
                           END ;
                            %
-                         | '<' CollectTok '>'  |
-                        Ident
+                         | '<' CollectTok '>'  | 
+                        Ident 
                         % CurrentSetDesc := NewSetDesc() ;
                           WITH CurrentSetDesc^ DO
                              type   := idel ;
                              ident  := CurrentIdent ;
                           END ;
                            %
-
+                        
 
    first  symbols:dquotetok, squotetok, identtok, lesstok
-
+   
    cannot reachend
 */
 
 static void LitOrTokenOrIdent (pge_SetOfStop stopset);
 
 /*
-   Literal := '"' CollectLiteral '"'  |
-              "'" CollectLiteral "'"
+   Literal := '"' CollectLiteral '"'  | 
+              "'" CollectLiteral "'" 
 
    first  symbols:squotetok, dquotetok
-
+   
    cannot reachend
 */
 
 static void Literal (pge_SetOfStop stopset);
 
 /*
-   Token := Literal DefineToken
+   Token := Literal DefineToken 
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void Token (pge_SetOfStop stopset);
 
 /*
-   ErrorProcedures := Literal
+   ErrorProcedures := Literal 
                       % ErrorProcArray := LastLiteral  %
-                      Literal
+                      Literal 
                       % ErrorProcString := LastLiteral  %
-
+                      
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void ErrorProcedures (pge_SetOfStop stopset);
 
 /*
-   TokenProcedure := Literal
+   TokenProcedure := Literal 
                      % TokenTypeProc := LastLiteral  %
-
+                     
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void TokenProcedure (pge_SetOfStop stopset);
 
 /*
-   SymProcedure := Literal
+   SymProcedure := Literal 
                    % SymIsProc := LastLiteral  %
-
+                   
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void SymProcedure (pge_SetOfStop stopset);
 
 /*
-   Production := Statement
+   Production := Statement 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void Production (pge_SetOfStop stopset);
 
 /*
-   Expression :=
+   Expression := 
                  % VAR t1, t2: TermDesc ;
                        e     : ExpressionDesc ;  %
-
+                 
                  % e := CurrentExpression ;
                    t1 := NewTerm() ;
                    CurrentTerm := t1 ;  %
-                 Term
+                 Term 
                  % e^.term := t1 ;  %
-                 { '|'
+                 { '|' 
                    % t2 := NewTerm() ;
                      CurrentTerm := t2  %
-                   Term
+                   Term 
                    % t1^.next := t2 ;
                      t1 := t2  %
-                    }
+                    } 
 
    first  symbols:dquotetok, squotetok, lparatok, lsparatok, lcparatok, identtok, codetok
-
+   
    cannot reachend
 */
 
 static void Expression (pge_SetOfStop stopset);
 
 /*
-   Term :=
+   Term := 
            % VAR    t1: TermDesc ; f1, f2: FactorDesc ;  %
-
+           
            % CurrentFactor := NewFactor() ;
              f1 := CurrentFactor ;
              t1 := CurrentTerm ;  %
-           Factor
+           Factor 
            % t1^.factor := f1 ;
              f2 := NewFactor() ;
              CurrentFactor := f2  %
-           { Factor
+           { Factor 
              % f1^.next := f2 ;
                f1 := f2 ;
                f2 := NewFactor() ;
                CurrentFactor := f2 ;  %
-              }
+              } 
 
    first  symbols:squotetok, dquotetok, codetok, identtok, lcparatok, lsparatok, lparatok
-
+   
    cannot reachend
 */
 
@@ -928,6 +934,12 @@ static void Term (pge_SetOfStop stopset);
 */
 
 static NameKey_Name GetDefinitionName (pge_ProductionDesc p);
+
+/*
+   GetCodeName - returns the codename of the rule inside, p.
+*/
+
+static NameKey_Name GetCodeName (pge_ProductionDesc p);
 
 /*
    FindDefinition - searches and returns the rule which defines, n.
@@ -1028,6 +1040,12 @@ static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_,
 static void WriteKeyTexinfo (NameKey_Name s);
 
 /*
+   PrettyIdentName -
+*/
+
+static void PrettyIdentName (pge_IdentDesc ident);
+
+/*
    PrettyCommentFactor -
 */
 
@@ -1068,6 +1086,12 @@ static void PrettyCommentExpression (pge_ExpressionDesc e, unsigned int Left);
 */
 
 static void PrettyCommentStatement (pge_StatementDesc s, unsigned int Left);
+
+/*
+   IsAlternateProduction - returns TRUE if the definition name contains '<'.
+*/
+
+static bool IsAlternateProduction (pge_ProductionDesc p);
 
 /*
    PrettyCommentProduction - generates the comment for rule, p.
@@ -1945,6 +1969,12 @@ static void ConsHunk (pge_CodeHunk *p, pge_CodeHunk q);
 static NameKey_Name GetName (void);
 
 /*
+   MakeCodeName - mangle the name to codename and return.
+*/
+
+static NameKey_Name MakeCodeName (NameKey_Name name);
+
+/*
    SyntaxError - after a syntax error we skip all tokens up until we reach
                  a stop symbol.
 */
@@ -1994,20 +2024,20 @@ static void EndModName (pge_SetOfStop stop);
 static void DoDeclaration (pge_SetOfStop stop);
 
 /*
-   CollectLiteral :=
+   CollectLiteral := 
                      % LastLiteral := GetCurrentToken() ;
                        AdvanceToken ;  %
-
+                     
 
    first  symbols:literaltok
-
+   
    cannot reachend
 */
 
 static void CollectLiteral (pge_SetOfStop stopset);
 
 /*
-   CollectTok :=
+   CollectTok := 
                  % CurrentSetDesc := NewSetDesc() ;
                    WITH CurrentSetDesc^ DO
                       type   := tokel ;
@@ -2022,46 +2052,46 @@ static void CollectLiteral (pge_SetOfStop stopset);
                       INC(LargestValue)
                    END ;
                    AdvanceToken() ;  %
-
+                 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void CollectTok (pge_SetOfStop stopset);
 
 /*
-   DefineToken :=
+   DefineToken := 
                   % AddEntry(Aliases, LastLiteral, GetCurrentToken()) ;
                     AddEntry(ReverseAliases, GetCurrentToken(), LastLiteral) ;
                     AddEntry(Values, GetCurrentToken(), LargestValue) ;
                     AddEntry(ReverseValues, Name(LargestValue), GetCurrentToken()) ;
                     INC(LargestValue) ;
                     AdvanceToken ;  %
-
+                  
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void DefineToken (pge_SetOfStop stopset);
 
 /*
-   Rules := '%' 'rules' { Defs  } ExtBNF
+   Rules := '%' 'rules' { Defs  } ExtBNF 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Rules (pge_SetOfStop stopset);
 
 /*
-   Special := Ident
+   Special := Ident 
               % VAR p: ProductionDesc ;  %
-
+              
               % p                           := NewProduction() ;
                 p^.statement                := NewStatement() ;
                 p^.statement^.followinfo^.calcfollow := TRUE ;
@@ -2073,31 +2103,31 @@ static void Rules (pge_SetOfStop stopset);
                 p^.followinfo^.calcfollow   := TRUE ;
                 p^.followinfo^.epsilon      := false ;
                 p^.followinfo^.reachend     := false  %
-              First Follow [ 'epsilon'
-                             % p^.statement^.followinfo^.epsilon  := true ;   these are not used - but they are displayed when debugging
+              First Follow [ 'epsilon' 
+                             % p^.statement^.followinfo^.epsilon  := true ;   these are not used - but they are displayed when debugging 
                                p^.statement^.followinfo^.reachend := true ;
                                p^.followinfo^.epsilon  := true ;
                                p^.followinfo^.reachend := true
                                 %
-                              ] [ Literal
+                              ] [ Literal 
                                   % p^.description := LastLiteral  %
-                                   ]
+                                   ] 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void Special (pge_SetOfStop stopset);
 
 /*
-   Factor := '%' Modula2Code '%'  |
-             Ident
+   Factor := '%' Modula2Code '%'  | 
+             Ident 
              % WITH CurrentFactor^ DO
                   type  := id ;
                   ident := CurrentIdent
                END ;  %
-              | Literal
+              | Literal 
              % WITH CurrentFactor^ DO
                   type   := lit ;
                   string := LastLiteral ;
@@ -2106,39 +2136,39 @@ static void Special (pge_SetOfStop stopset);
                      WarnError1('no token defined for literal %s', LastLiteral)
                   END
                END ;  %
-              | '{'
+              | '{' 
              % WITH CurrentFactor^ DO
                   type := mult ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression '}'  | '['
+             Expression '}'  | '[' 
              % WITH CurrentFactor^ DO
                   type := opt ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression ']'  | '('
+             Expression ']'  | '(' 
              % WITH CurrentFactor^ DO
                   type := sub ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression ')'
+             Expression ')' 
 
    first  symbols:dquotetok, squotetok, lparatok, lsparatok, lcparatok, identtok, codetok
-
+   
    cannot reachend
 */
 
 static void Factor (pge_SetOfStop stopset);
 
 /*
-   Statement :=
+   Statement := 
                 % VAR i: IdentDesc ;  %
-                Ident
+                Ident 
                 % VAR p: ProductionDesc ;  %
-
+                
                 % p := FindDefinition(CurrentIdent^.name) ;
                   IF p=NIL
                   THEN
@@ -2150,264 +2180,264 @@ static void Factor (pge_SetOfStop stopset);
                      END
                   END ;
                   i := CurrentIdent ;  %
-                ':='
+                ':=' 
                 % VAR e: ExpressionDesc ;  %
-
+                
                 % e := NewExpression() ;
                   CurrentExpression := e ;  %
-
+                
                 % VAR s: StatementDesc ;  %
-
+                
                 % s := NewStatement() ;
                   WITH s^ DO
                      ident := i ;
                      expr  := e
                   END ;  %
-                Expression
+                Expression 
                 % p^.statement := s ;  %
-                '=:'
+                '=:' 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void Statement (pge_SetOfStop stopset);
 
 /*
-   Defs := 'special' Special  | 'token' Token  |
-           'error' ErrorProcedures  |
-           'tokenfunc' TokenProcedure  |
-           'symfunc' SymProcedure
+   Defs := 'special' Special  | 'token' Token  | 
+           'error' ErrorProcedures  | 
+           'tokenfunc' TokenProcedure  | 
+           'symfunc' SymProcedure 
 
    first  symbols:symfunctok, tfunctok, errortok, tokentok, specialtok
-
+   
    cannot reachend
 */
 
 static void Defs (pge_SetOfStop stopset);
 
 /*
-   ExtBNF := 'BNF' { Production  } 'FNB'
+   ExtBNF := 'BNF' { Production  } 'FNB' 
 
    first  symbols:BNFtok
-
+   
    cannot reachend
 */
 
 static void ExtBNF (pge_SetOfStop stopset);
 
 /*
-   Main := Header Decls Footer Rules
+   Main := Header Decls Footer Rules 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Main (pge_SetOfStop stopset);
 
 /*
-   Header := '%' 'module' StartModName
+   Header := '%' 'module' StartModName 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Header (pge_SetOfStop stopset);
 
 /*
-   Decls := '%' 'declaration' DoDeclaration
+   Decls := '%' 'declaration' DoDeclaration 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Decls (pge_SetOfStop stopset);
 
 /*
-   Footer := '%' 'module' EndModName
+   Footer := '%' 'module' EndModName 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
 static void Footer (pge_SetOfStop stopset);
 
 /*
-   First := 'first' '{' { LitOrTokenOrIdent
+   First := 'first' '{' { LitOrTokenOrIdent 
                           % WITH CurrentSetDesc^ DO
                                next := TailProduction^.first ;
                             END ;
                             TailProduction^.first := CurrentSetDesc
                              %
-                           } '}'
+                           } '}' 
 
    first  symbols:firsttok
-
+   
    cannot reachend
 */
 
 static void First (pge_SetOfStop stopset);
 
 /*
-   Follow := 'follow' '{' { LitOrTokenOrIdent
+   Follow := 'follow' '{' { LitOrTokenOrIdent 
                             % WITH CurrentSetDesc^ DO
                                  next := TailProduction^.followinfo^.follow ;
                               END ;
                               TailProduction^.followinfo^.follow := CurrentSetDesc
                                %
-                             } '}'
+                             } '}' 
 
    first  symbols:followtok
-
+   
    cannot reachend
 */
 
 static void Follow (pge_SetOfStop stopset);
 
 /*
-   LitOrTokenOrIdent := Literal
+   LitOrTokenOrIdent := Literal 
                         % CurrentSetDesc := NewSetDesc() ;
                           WITH CurrentSetDesc^ DO
                              type   := litel ;
                              string := LastLiteral ;
                           END ;
                            %
-                         | '<' CollectTok '>'  |
-                        Ident
+                         | '<' CollectTok '>'  | 
+                        Ident 
                         % CurrentSetDesc := NewSetDesc() ;
                           WITH CurrentSetDesc^ DO
                              type   := idel ;
                              ident  := CurrentIdent ;
                           END ;
                            %
-
+                        
 
    first  symbols:dquotetok, squotetok, identtok, lesstok
-
+   
    cannot reachend
 */
 
 static void LitOrTokenOrIdent (pge_SetOfStop stopset);
 
 /*
-   Literal := '"' CollectLiteral '"'  |
-              "'" CollectLiteral "'"
+   Literal := '"' CollectLiteral '"'  | 
+              "'" CollectLiteral "'" 
 
    first  symbols:squotetok, dquotetok
-
+   
    cannot reachend
 */
 
 static void Literal (pge_SetOfStop stopset);
 
 /*
-   Token := Literal DefineToken
+   Token := Literal DefineToken 
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void Token (pge_SetOfStop stopset);
 
 /*
-   ErrorProcedures := Literal
+   ErrorProcedures := Literal 
                       % ErrorProcArray := LastLiteral  %
-                      Literal
+                      Literal 
                       % ErrorProcString := LastLiteral  %
-
+                      
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void ErrorProcedures (pge_SetOfStop stopset);
 
 /*
-   TokenProcedure := Literal
+   TokenProcedure := Literal 
                      % TokenTypeProc := LastLiteral  %
-
+                     
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void TokenProcedure (pge_SetOfStop stopset);
 
 /*
-   SymProcedure := Literal
+   SymProcedure := Literal 
                    % SymIsProc := LastLiteral  %
-
+                   
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
 static void SymProcedure (pge_SetOfStop stopset);
 
 /*
-   Production := Statement
+   Production := Statement 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
 static void Production (pge_SetOfStop stopset);
 
 /*
-   Expression :=
+   Expression := 
                  % VAR t1, t2: TermDesc ;
                        e     : ExpressionDesc ;  %
-
+                 
                  % e := CurrentExpression ;
                    t1 := NewTerm() ;
                    CurrentTerm := t1 ;  %
-                 Term
+                 Term 
                  % e^.term := t1 ;  %
-                 { '|'
+                 { '|' 
                    % t2 := NewTerm() ;
                      CurrentTerm := t2  %
-                   Term
+                   Term 
                    % t1^.next := t2 ;
                      t1 := t2  %
-                    }
+                    } 
 
    first  symbols:dquotetok, squotetok, lparatok, lsparatok, lcparatok, identtok, codetok
-
+   
    cannot reachend
 */
 
 static void Expression (pge_SetOfStop stopset);
 
 /*
-   Term :=
+   Term := 
            % VAR    t1: TermDesc ; f1, f2: FactorDesc ;  %
-
+           
            % CurrentFactor := NewFactor() ;
              f1 := CurrentFactor ;
              t1 := CurrentTerm ;  %
-           Factor
+           Factor 
            % t1^.factor := f1 ;
              f2 := NewFactor() ;
              CurrentFactor := f2  %
-           { Factor
+           { Factor 
              % f1^.next := f2 ;
                f1 := f2 ;
                f2 := NewFactor() ;
                CurrentFactor := f2 ;  %
-              }
+              } 
 
    first  symbols:squotetok, dquotetok, codetok, identtok, lcparatok, lsparatok, lparatok
-
+   
    cannot reachend
 */
 
@@ -2418,6 +2448,12 @@ static void Term (pge_SetOfStop stopset);
 */
 
 static NameKey_Name GetDefinitionName (pge_ProductionDesc p);
+
+/*
+   GetCodeName - returns the codename of the rule inside, p.
+*/
+
+static NameKey_Name GetCodeName (pge_ProductionDesc p);
 
 /*
    FindDefinition - searches and returns the rule which defines, n.
@@ -2518,6 +2554,12 @@ static void PrettyPara (const char *c1_, unsigned int _c1_high, const char *c2_,
 static void WriteKeyTexinfo (NameKey_Name s);
 
 /*
+   PrettyIdentName -
+*/
+
+static void PrettyIdentName (pge_IdentDesc ident);
+
+/*
    PrettyCommentFactor -
 */
 
@@ -2558,6 +2600,12 @@ static void PrettyCommentExpression (pge_ExpressionDesc e, unsigned int Left);
 */
 
 static void PrettyCommentStatement (pge_StatementDesc s, unsigned int Left);
+
+/*
+   IsAlternateProduction - returns TRUE if the definition name contains '<'.
+*/
+
+static bool IsAlternateProduction (pge_ProductionDesc p);
 
 /*
    PrettyCommentProduction - generates the comment for rule, p.
@@ -3792,7 +3840,7 @@ static pge_TraverseResult GetEpsilon (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetEpsilon", 10, 597);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetEpsilon", 10, 598);
     }
   else
     {
@@ -3828,7 +3876,7 @@ static pge_TraverseResult GetReachEnd (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetReachEnd", 11, 632);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetReachEnd", 11, 633);
     }
   else
     {
@@ -3847,7 +3895,7 @@ static void AssignFollow (pge_FollowDesc f, pge_SetDesc s)
 {
   if (f->calcfollow)
     {
-      Debug_Halt ((const char *) "why are we reassigning this follow set?", 39, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "AssignFollow", 12, 649);
+      Debug_Halt ((const char *) "why are we reassigning this follow set?", 39, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "AssignFollow", 12, 650);
     }
   f->follow = s;
   f->calcfollow = true;
@@ -3862,7 +3910,7 @@ static pge_SetDesc GetFollow (pge_FollowDesc f)
 {
   if (f == NULL)
     {
-      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetFollow", 9, 666);
+      Debug_Halt ((const char *) "why is the follow info NIL?", 27, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetFollow", 9, 667);
     }
   else
     {
@@ -3872,7 +3920,7 @@ static pge_SetDesc GetFollow (pge_FollowDesc f)
         }
       else
         {
-          Debug_Halt ((const char *) "not calculated the follow set yet..", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetFollow", 9, 674);
+          Debug_Halt ((const char *) "not calculated the follow set yet..", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "GetFollow", 9, 675);
         }
     }
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
@@ -4287,6 +4335,41 @@ static NameKey_Name GetName (void)
 
 
 /*
+   MakeCodeName - mangle the name to codename and return.
+*/
+
+static NameKey_Name MakeCodeName (NameKey_Name name)
+{
+  DynamicStrings_String ins;
+  DynamicStrings_String outs;
+  NameKey_Name codename;
+  unsigned int i;
+  unsigned int l;
+  char ch;
+
+  ins = DynamicStrings_InitStringCharStar (NameKey_KeyToCharStar (name));
+  l = DynamicStrings_Length (ins);
+  i = 0;
+  outs = DynamicStrings_InitString ((const char *) "", 0);
+  while (i < l)
+    {
+      ch = DynamicStrings_char (ins, static_cast<int> (i));
+      if ((ch != '<') && (ch != '>'))
+        {
+          outs = DynamicStrings_ConCatChar (outs, ch);
+        }
+      i += 1;
+    }
+  ins = DynamicStrings_KillString (ins);
+  codename = NameKey_makekey (DynamicStrings_string (outs));
+  outs = DynamicStrings_KillString (outs);
+  return codename;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    SyntaxError - after a syntax error we skip all tokens up until we reach
                  a stop symbol.
 */
@@ -4354,6 +4437,7 @@ static void Ident (pge_SetOfStop stop)
       Storage_ALLOCATE ((void **) &CurrentIdent, sizeof (pge__T1));
       CurrentIdent->definition = NULL;
       CurrentIdent->name = GetName ();
+      CurrentIdent->codename = MakeCodeName (CurrentIdent->name);
       CurrentIdent->line = PushBackInput_GetCurrentLine ();
     }
 }
@@ -4466,13 +4550,13 @@ static void DoDeclaration (pge_SetOfStop stop)
 
 
 /*
-   CollectLiteral :=
+   CollectLiteral := 
                      % LastLiteral := GetCurrentToken() ;
                        AdvanceToken ;  %
-
+                     
 
    first  symbols:literaltok
-
+   
    cannot reachend
 */
 
@@ -4484,7 +4568,7 @@ static void CollectLiteral (pge_SetOfStop stopset)
 
 
 /*
-   CollectTok :=
+   CollectTok := 
                  % CurrentSetDesc := NewSetDesc() ;
                    WITH CurrentSetDesc^ DO
                       type   := tokel ;
@@ -4499,10 +4583,10 @@ static void CollectLiteral (pge_SetOfStop stopset)
                       INC(LargestValue)
                    END ;
                    AdvanceToken() ;  %
-
+                 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
@@ -4524,17 +4608,17 @@ static void CollectTok (pge_SetOfStop stopset)
 
 
 /*
-   DefineToken :=
+   DefineToken := 
                   % AddEntry(Aliases, LastLiteral, GetCurrentToken()) ;
                     AddEntry(ReverseAliases, GetCurrentToken(), LastLiteral) ;
                     AddEntry(Values, GetCurrentToken(), LargestValue) ;
                     AddEntry(ReverseValues, Name(LargestValue), GetCurrentToken()) ;
                     INC(LargestValue) ;
                     AdvanceToken ;  %
-
+                  
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
@@ -4550,10 +4634,10 @@ static void DefineToken (pge_SetOfStop stopset)
 
 
 /*
-   Rules := '%' 'rules' { Defs  } ExtBNF
+   Rules := '%' 'rules' { Defs  } ExtBNF 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
@@ -4571,9 +4655,9 @@ static void Rules (pge_SetOfStop stopset)
 
 
 /*
-   Special := Ident
+   Special := Ident 
               % VAR p: ProductionDesc ;  %
-
+              
               % p                           := NewProduction() ;
                 p^.statement                := NewStatement() ;
                 p^.statement^.followinfo^.calcfollow := TRUE ;
@@ -4585,18 +4669,18 @@ static void Rules (pge_SetOfStop stopset)
                 p^.followinfo^.calcfollow   := TRUE ;
                 p^.followinfo^.epsilon      := false ;
                 p^.followinfo^.reachend     := false  %
-              First Follow [ 'epsilon'
-                             % p^.statement^.followinfo^.epsilon  := true ;   these are not used - but they are displayed when debugging
+              First Follow [ 'epsilon' 
+                             % p^.statement^.followinfo^.epsilon  := true ;   these are not used - but they are displayed when debugging 
                                p^.statement^.followinfo^.reachend := true ;
                                p^.followinfo^.epsilon  := true ;
                                p^.followinfo^.reachend := true
                                 %
-                              ] [ Literal
+                              ] [ Literal 
                                   % p^.description := LastLiteral  %
-                                   ]
+                                   ] 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
@@ -4635,13 +4719,13 @@ static void Special (pge_SetOfStop stopset)
 
 
 /*
-   Factor := '%' Modula2Code '%'  |
-             Ident
+   Factor := '%' Modula2Code '%'  | 
+             Ident 
              % WITH CurrentFactor^ DO
                   type  := id ;
                   ident := CurrentIdent
                END ;  %
-              | Literal
+              | Literal 
              % WITH CurrentFactor^ DO
                   type   := lit ;
                   string := LastLiteral ;
@@ -4650,28 +4734,28 @@ static void Special (pge_SetOfStop stopset)
                      WarnError1('no token defined for literal %s', LastLiteral)
                   END
                END ;  %
-              | '{'
+              | '{' 
              % WITH CurrentFactor^ DO
                   type := mult ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression '}'  | '['
+             Expression '}'  | '[' 
              % WITH CurrentFactor^ DO
                   type := opt ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression ']'  | '('
+             Expression ']'  | '(' 
              % WITH CurrentFactor^ DO
                   type := sub ;
                   expr := NewExpression() ;
                   CurrentExpression := expr ;
                END ;  %
-             Expression ')'
+             Expression ')' 
 
    first  symbols:dquotetok, squotetok, lparatok, lsparatok, lcparatok, identtok, codetok
-
+   
    cannot reachend
 */
 
@@ -4740,11 +4824,11 @@ static void Factor (pge_SetOfStop stopset)
 
 
 /*
-   Statement :=
+   Statement := 
                 % VAR i: IdentDesc ;  %
-                Ident
+                Ident 
                 % VAR p: ProductionDesc ;  %
-
+                
                 % p := FindDefinition(CurrentIdent^.name) ;
                   IF p=NIL
                   THEN
@@ -4756,25 +4840,25 @@ static void Factor (pge_SetOfStop stopset)
                      END
                   END ;
                   i := CurrentIdent ;  %
-                ':='
+                ':=' 
                 % VAR e: ExpressionDesc ;  %
-
+                
                 % e := NewExpression() ;
                   CurrentExpression := e ;  %
-
+                
                 % VAR s: StatementDesc ;  %
-
+                
                 % s := NewStatement() ;
                   WITH s^ DO
                      ident := i ;
                      expr  := e
                   END ;  %
-                Expression
+                Expression 
                 % p^.statement := s ;  %
-                '=:'
+                '=:' 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
@@ -4812,13 +4896,13 @@ static void Statement (pge_SetOfStop stopset)
 
 
 /*
-   Defs := 'special' Special  | 'token' Token  |
-           'error' ErrorProcedures  |
-           'tokenfunc' TokenProcedure  |
-           'symfunc' SymProcedure
+   Defs := 'special' Special  | 'token' Token  | 
+           'error' ErrorProcedures  | 
+           'tokenfunc' TokenProcedure  | 
+           'symfunc' SymProcedure 
 
    first  symbols:symfunctok, tfunctok, errortok, tokentok, specialtok
-
+   
    cannot reachend
 */
 
@@ -4862,10 +4946,10 @@ static void Defs (pge_SetOfStop stopset)
 
 
 /*
-   ExtBNF := 'BNF' { Production  } 'FNB'
+   ExtBNF := 'BNF' { Production  } 'FNB' 
 
    first  symbols:BNFtok
-
+   
    cannot reachend
 */
 
@@ -4882,10 +4966,10 @@ static void ExtBNF (pge_SetOfStop stopset)
 
 
 /*
-   Main := Header Decls Footer Rules
+   Main := Header Decls Footer Rules 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
@@ -4899,10 +4983,10 @@ static void Main (pge_SetOfStop stopset)
 
 
 /*
-   Header := '%' 'module' StartModName
+   Header := '%' 'module' StartModName 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
@@ -4915,10 +4999,10 @@ static void Header (pge_SetOfStop stopset)
 
 
 /*
-   Decls := '%' 'declaration' DoDeclaration
+   Decls := '%' 'declaration' DoDeclaration 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
@@ -4931,10 +5015,10 @@ static void Decls (pge_SetOfStop stopset)
 
 
 /*
-   Footer := '%' 'module' EndModName
+   Footer := '%' 'module' EndModName 
 
    first  symbols:codetok
-
+   
    cannot reachend
 */
 
@@ -4947,16 +5031,16 @@ static void Footer (pge_SetOfStop stopset)
 
 
 /*
-   First := 'first' '{' { LitOrTokenOrIdent
+   First := 'first' '{' { LitOrTokenOrIdent 
                           % WITH CurrentSetDesc^ DO
                                next := TailProduction^.first ;
                             END ;
                             TailProduction^.first := CurrentSetDesc
                              %
-                           } '}'
+                           } '}' 
 
    first  symbols:firsttok
-
+   
    cannot reachend
 */
 
@@ -4976,16 +5060,16 @@ static void First (pge_SetOfStop stopset)
 
 
 /*
-   Follow := 'follow' '{' { LitOrTokenOrIdent
+   Follow := 'follow' '{' { LitOrTokenOrIdent 
                             % WITH CurrentSetDesc^ DO
                                  next := TailProduction^.followinfo^.follow ;
                               END ;
                               TailProduction^.followinfo^.follow := CurrentSetDesc
                                %
-                             } '}'
+                             } '}' 
 
    first  symbols:followtok
-
+   
    cannot reachend
 */
 
@@ -5005,25 +5089,25 @@ static void Follow (pge_SetOfStop stopset)
 
 
 /*
-   LitOrTokenOrIdent := Literal
+   LitOrTokenOrIdent := Literal 
                         % CurrentSetDesc := NewSetDesc() ;
                           WITH CurrentSetDesc^ DO
                              type   := litel ;
                              string := LastLiteral ;
                           END ;
                            %
-                         | '<' CollectTok '>'  |
-                        Ident
+                         | '<' CollectTok '>'  | 
+                        Ident 
                         % CurrentSetDesc := NewSetDesc() ;
                           WITH CurrentSetDesc^ DO
                              type   := idel ;
                              ident  := CurrentIdent ;
                           END ;
                            %
-
+                        
 
    first  symbols:dquotetok, squotetok, identtok, lesstok
-
+   
    cannot reachend
 */
 
@@ -5060,11 +5144,11 @@ static void LitOrTokenOrIdent (pge_SetOfStop stopset)
 
 
 /*
-   Literal := '"' CollectLiteral '"'  |
-              "'" CollectLiteral "'"
+   Literal := '"' CollectLiteral '"'  | 
+              "'" CollectLiteral "'" 
 
    first  symbols:squotetok, dquotetok
-
+   
    cannot reachend
 */
 
@@ -5092,10 +5176,10 @@ static void Literal (pge_SetOfStop stopset)
 
 
 /*
-   Token := Literal DefineToken
+   Token := Literal DefineToken 
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
@@ -5107,14 +5191,14 @@ static void Token (pge_SetOfStop stopset)
 
 
 /*
-   ErrorProcedures := Literal
+   ErrorProcedures := Literal 
                       % ErrorProcArray := LastLiteral  %
-                      Literal
+                      Literal 
                       % ErrorProcString := LastLiteral  %
-
+                      
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
@@ -5128,12 +5212,12 @@ static void ErrorProcedures (pge_SetOfStop stopset)
 
 
 /*
-   TokenProcedure := Literal
+   TokenProcedure := Literal 
                      % TokenTypeProc := LastLiteral  %
-
+                     
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
@@ -5145,12 +5229,12 @@ static void TokenProcedure (pge_SetOfStop stopset)
 
 
 /*
-   SymProcedure := Literal
+   SymProcedure := Literal 
                    % SymIsProc := LastLiteral  %
-
+                   
 
    first  symbols:dquotetok, squotetok
-
+   
    cannot reachend
 */
 
@@ -5162,10 +5246,10 @@ static void SymProcedure (pge_SetOfStop stopset)
 
 
 /*
-   Production := Statement
+   Production := Statement 
 
    first  symbols:identtok
-
+   
    cannot reachend
 */
 
@@ -5176,25 +5260,25 @@ static void Production (pge_SetOfStop stopset)
 
 
 /*
-   Expression :=
+   Expression := 
                  % VAR t1, t2: TermDesc ;
                        e     : ExpressionDesc ;  %
-
+                 
                  % e := CurrentExpression ;
                    t1 := NewTerm() ;
                    CurrentTerm := t1 ;  %
-                 Term
+                 Term 
                  % e^.term := t1 ;  %
-                 { '|'
+                 { '|' 
                    % t2 := NewTerm() ;
                      CurrentTerm := t2  %
-                   Term
+                   Term 
                    % t1^.next := t2 ;
                      t1 := t2  %
-                    }
+                    } 
 
    first  symbols:dquotetok, squotetok, lparatok, lsparatok, lcparatok, identtok, codetok
-
+   
    cannot reachend
 */
 
@@ -5223,25 +5307,25 @@ static void Expression (pge_SetOfStop stopset)
 
 
 /*
-   Term :=
+   Term := 
            % VAR    t1: TermDesc ; f1, f2: FactorDesc ;  %
-
+           
            % CurrentFactor := NewFactor() ;
              f1 := CurrentFactor ;
              t1 := CurrentTerm ;  %
-           Factor
+           Factor 
            % t1^.factor := f1 ;
              f2 := NewFactor() ;
              CurrentFactor := f2  %
-           { Factor
+           { Factor 
              % f1^.next := f2 ;
                f1 := f2 ;
                f2 := NewFactor() ;
                CurrentFactor := f2 ;  %
-              }
+              } 
 
    first  symbols:squotetok, dquotetok, codetok, identtok, lcparatok, lsparatok, lparatok
-
+   
    cannot reachend
 */
 
@@ -5281,6 +5365,25 @@ static NameKey_Name GetDefinitionName (pge_ProductionDesc p)
       if ((p->statement != NULL) && (p->statement->ident != NULL))
         {
           return p->statement->ident->name;
+        }
+    }
+  return NameKey_NulName;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   GetCodeName - returns the codename of the rule inside, p.
+*/
+
+static NameKey_Name GetCodeName (pge_ProductionDesc p)
+{
+  if (p != NULL)
+    {
+      if ((p->statement != NULL) && (p->statement->ident != NULL))
+        {
+          return p->statement->ident->codename;
         }
     }
   return NameKey_NulName;
@@ -5556,7 +5659,7 @@ static void KeyWord (NameKey_Name n)
 {
   if (KeywordFormatting)
     {
-      Output_WriteString ((const char *) "{%K", 3);
+      Output_WriteString ((const char *) "{%k", 3);
       if (((n == (NameKey_MakeKey ((const char *) "}", 1))) || (n == (NameKey_MakeKey ((const char *) "{", 1)))) || (n == (NameKey_MakeKey ((const char *) "%", 1))))
         {
           Output_Write ('%');  /* escape }, { or %  */
@@ -5628,6 +5731,57 @@ static void WriteKeyTexinfo (NameKey_Name s)
 
 
 /*
+   PrettyIdentName -
+*/
+
+static void PrettyIdentName (pge_IdentDesc ident)
+{
+  bool on;
+  DynamicStrings_String ds;
+  char ch;
+  unsigned int i;
+  unsigned int l;
+
+  if (Texinfo)
+    {
+      ds = DynamicStrings_InitStringCharStar (NameKey_KeyToCharStar (ident->name));
+      l = DynamicStrings_Length (ds);
+      i = 0;
+      on = true;
+      while (i < l)
+        {
+          ch = DynamicStrings_char (ds, static_cast<int> (i));
+          if (ch == '<')
+            {
+              on = false;
+            }
+          else if (ch == '>')
+            {
+              /* avoid dangling else.  */
+              on = true;
+            }
+          else if (on)
+            {
+              /* avoid dangling else.  */
+              Output_Write (ch);
+              Indent += 1;
+            }
+          i += 1;
+        }
+      Output_WriteString ((const char *) " ", 1);
+      Indent += 1;
+      ds = DynamicStrings_KillString (ds);
+    }
+  else
+    {
+      Output_WriteKey (ident->codename);
+      Output_WriteString ((const char *) " ", 1);
+      Indent += (NameKey_LengthKey (ident->codename))+1;
+    }
+}
+
+
+/*
    PrettyCommentFactor -
 */
 
@@ -5642,9 +5796,7 @@ static void PrettyCommentFactor (pge_FactorDesc f, unsigned int Left)
       switch (f->type)
         {
           case pge_id:
-            Output_WriteKey (f->ident->name);
-            Output_WriteString ((const char *) " ", 1);
-            Indent += (NameKey_LengthKey (f->ident->name))+1;
+            PrettyIdentName (f->ident);
             break;
 
           case pge_lit:
@@ -5762,7 +5914,7 @@ static unsigned int PeepFactor (pge_FactorDesc f)
       switch (f->type)
         {
           case pge_id:
-            l += (NameKey_LengthKey (f->ident->name))+1;
+            l += (NameKey_LengthKey (f->ident->codename))+1;
             break;
 
           case pge_lit:
@@ -5844,6 +5996,24 @@ static void PrettyCommentStatement (pge_StatementDesc s, unsigned int Left)
 
 
 /*
+   IsAlternateProduction - returns TRUE if the definition name contains '<'.
+*/
+
+static bool IsAlternateProduction (pge_ProductionDesc p)
+{
+  bool result;
+  DynamicStrings_String ds;
+
+  ds = DynamicStrings_InitStringCharStar (NameKey_KeyToCharStar (GetDefinitionName (p)));
+  result = (DynamicStrings_Index (ds, '<', 0)) >= 0;
+  ds = DynamicStrings_KillString (ds);
+  return result;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    PrettyCommentProduction - generates the comment for rule, p.
 */
 
@@ -5853,45 +6023,48 @@ static void PrettyCommentProduction (pge_ProductionDesc p)
 
   if (p != NULL)
     {
-      BeginningOfLine = true;
-      Indent = 0;
-      Output_WriteString ((const char *) "(*", 2);
-      NewLine (3);
-      Output_WriteKey (GetDefinitionName (p));
-      Output_WriteString ((const char *) " := ", 4);
-      Indent += (NameKey_LengthKey (GetDefinitionName (p)))+4;
-      PrettyCommentStatement (p->statement, Indent);
-      NewLine (0);
-      if (ErrorRecovery)
+      if (! (Texinfo && (IsAlternateProduction (p))))
         {
+          BeginningOfLine = true;
+          Indent = 0;
+          Output_WriteString ((const char *) "(*", 2);
           NewLine (3);
-          Output_WriteString ((const char *) "first  symbols:", 15);
-          EmitSet (p->first, static_cast<unsigned int> (0), static_cast<unsigned int> (0));
-          NewLine (3);
-          PrettyFollow ((const char *) "<p:", 3, (const char *) ":p>", 3, p->followinfo);
-          NewLine (3);
-          switch (GetReachEnd (p->followinfo))
+          Output_WriteKey (GetCodeName (p));
+          Output_WriteString ((const char *) " := ", 4);
+          Indent += (NameKey_LengthKey (GetCodeName (p)))+4;
+          PrettyCommentStatement (p->statement, Indent);
+          NewLine (0);
+          if (ErrorRecovery)
             {
-              case pge_true:
-                Output_WriteString ((const char *) "reachend", 8);
-                break;
+              NewLine (3);
+              Output_WriteString ((const char *) "first  symbols:", 15);
+              EmitSet (p->first, static_cast<unsigned int> (0), static_cast<unsigned int> (0));
+              NewLine (3);
+              PrettyFollow ((const char *) "<p:", 3, (const char *) ":p>", 3, p->followinfo);
+              NewLine (3);
+              switch (GetReachEnd (p->followinfo))
+                {
+                  case pge_true:
+                    Output_WriteString ((const char *) "reachend", 8);
+                    break;
 
-              case pge_false:
-                Output_WriteString ((const char *) "cannot reachend", 15);
-                break;
+                  case pge_false:
+                    Output_WriteString ((const char *) "cannot reachend", 15);
+                    break;
 
-              case pge_unknown:
-                Output_WriteString ((const char *) "unknown...", 10);
-                break;
+                  case pge_unknown:
+                    Output_WriteString ((const char *) "unknown...", 10);
+                    break;
 
 
-              default:
-                break;
+                  default:
+                    break;
+                }
+              NewLine (0);
             }
+          Output_WriteString ((const char *) "*)", 2);
           NewLine (0);
         }
-      Output_WriteString ((const char *) "*)", 2);
-      NewLine (0);
     }
 }
 
@@ -5903,54 +6076,65 @@ static void PrettyCommentProduction (pge_ProductionDesc p)
 static void PrettyPrintProduction (pge_ProductionDesc p)
 {
   pge_SetDesc to;
+  NameKey_Name name;
 
   if (p != NULL)
     {
-      BeginningOfLine = true;
-      Indent = 0;
-      if (Texinfo)
+      if (! (Texinfo && (IsAlternateProduction (p))))
         {
-          Output_WriteString ((const char *) "@example", 8);
+          BeginningOfLine = true;
+          Indent = 0;
+          if (Texinfo)
+            {
+              Output_WriteString ((const char *) "@example", 8);
+              NewLine (0);
+              name = GetCodeName (p);
+            }
+          else if (Sphinx)
+            {
+              /* avoid dangling else.  */
+              Output_WriteString ((const char *) ".. code-block:: ebnf", 20);
+              NewLine (0);
+              name = GetCodeName (p);
+            }
+          else
+            {
+              /* avoid dangling else.  */
+              name = GetDefinitionName (p);
+            }
+          Output_WriteKey (name);
+          Output_WriteString ((const char *) " := ", 4);
+          Indent += (NameKey_LengthKey (name))+4;
+          PrettyCommentStatement (p->statement, Indent);
+          if (p->description != NameKey_NulName)
+            {
+              Output_WriteKey (p->description);
+            }
+          NewLine (0);
+          WriteIndent ((NameKey_LengthKey (name))+1);
+          Output_WriteString ((const char *) " =: ", 4);
+          NewLine (0);
+          if (Texinfo)
+            {
+              Output_WriteString ((const char *) "@findex ", 8);
+              Output_WriteKey (name);
+              Output_WriteString ((const char *) " (ebnf)", 7);
+              NewLine (0);
+              Output_WriteString ((const char *) "@end example", 12);
+              NewLine (0);
+            }
+          else if (Sphinx)
+            {
+              /* avoid dangling else.  */
+              Output_WriteString ((const char *) ".. index::", 10);
+              NewLine (0);
+              Output_WriteString ((const char *) "  pair: ", 8);
+              Output_WriteKey (name);
+              Output_WriteString ((const char *) "; (ebnf)", 8);
+              NewLine (0);
+            }
           NewLine (0);
         }
-      else if (Sphinx)
-        {
-          /* avoid dangling else.  */
-          Output_WriteString ((const char *) ".. code-block:: ebnf", 20);
-          NewLine (0);
-        }
-      Output_WriteKey (GetDefinitionName (p));
-      Output_WriteString ((const char *) " := ", 4);
-      Indent += (NameKey_LengthKey (GetDefinitionName (p)))+4;
-      PrettyCommentStatement (p->statement, Indent);
-      if (p->description != NameKey_NulName)
-        {
-          Output_WriteKey (p->description);
-        }
-      NewLine (0);
-      WriteIndent ((NameKey_LengthKey (GetDefinitionName (p)))+1);
-      Output_WriteString ((const char *) " =: ", 4);
-      NewLine (0);
-      if (Texinfo)
-        {
-          Output_WriteString ((const char *) "@findex ", 8);
-          Output_WriteKey (GetDefinitionName (p));
-          Output_WriteString ((const char *) " (ebnf)", 7);
-          NewLine (0);
-          Output_WriteString ((const char *) "@end example", 12);
-          NewLine (0);
-        }
-      else if (Sphinx)
-        {
-          /* avoid dangling else.  */
-          Output_WriteString ((const char *) ".. index::", 10);
-          NewLine (0);
-          Output_WriteString ((const char *) "  pair: ", 8);
-          Output_WriteKey (GetDefinitionName (p));
-          Output_WriteString ((const char *) "; (ebnf)", 8);
-          NewLine (0);
-        }
-      NewLine (0);
     }
 }
 
@@ -6027,7 +6211,7 @@ static void CodeCondition (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeCondition", 13, 2686);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeCondition", 13, 2805);
         break;
     }
 }
@@ -6059,7 +6243,7 @@ static void CodeThenDo (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeThenDo", 10, 2712);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeThenDo", 10, 2831);
         break;
     }
   OnLineStart = true;
@@ -6094,7 +6278,7 @@ static void CodeElseEnd (const char *end_, unsigned int _end_high, bool consumed
             {
               case pge_id:
                 Output_Write ('\'');
-                Output_WriteKey (f->ident->name);
+                Output_WriteKey (f->ident->codename);
                 Output_WriteString ((const char *) " - expected", 11);
                 Output_WriteString ((const char *) "') ;", 4);
                 break;
@@ -6180,7 +6364,7 @@ static void CodeEnd (pge_m2condition m, pge_TermDesc t, bool consumed, pge_Facto
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeEnd", 7, 2796);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "CodeEnd", 7, 2915);
         break;
     }
   OnLineStart = false;
@@ -6295,7 +6479,7 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
           case pge_id:
             FlushCode (&codeStack);
             CodeCondition (n);
-            Output_WriteKey (f->ident->name);
+            Output_WriteKey (f->ident->codename);
             Output_WriteString ((const char *) "()", 2);
             CodeThenDo (n);
             Indent += 3;
@@ -6321,7 +6505,7 @@ static void CodeFactor (pge_FactorDesc f, pge_TermDesc t, pge_m2condition l, pge
             CodeExpression (f->expr, pge_m2none, inopt, inwhile, consumed, NULL);
             if (f->next != NULL)
               {
-                /*
+                /* 
                     *  the test above makes sure that we don't emit a RETURN( TRUE )
                     *  after a subexpression. Remember sub expressions are not conditional
   */
@@ -6438,7 +6622,7 @@ static void CodeProduction (pge_ProductionDesc p)
       Output_WriteLn ();
       EmitFileLineTag (p->line);
       IndentString ((const char *) "PROCEDURE ", 10);
-      Output_WriteKey (GetDefinitionName (p));
+      Output_WriteKey (GetCodeName (p));
       Output_WriteString ((const char *) " () : BOOLEAN ;", 15);
       VarProduction (p);
       Output_WriteLn ();
@@ -6453,7 +6637,7 @@ static void CodeProduction (pge_ProductionDesc p)
       Output_WriteLn ();
       Indent = 0;
       IndentString ((const char *) "END ", 4);
-      NameKey_WriteKey (GetDefinitionName (p));
+      NameKey_WriteKey (GetCodeName (p));
       Output_WriteString ((const char *) " ;", 2);
       Output_WriteLn ();
       Output_WriteLn ();
@@ -6488,7 +6672,7 @@ static void RecoverCondition (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "RecoverCondition", 16, 3054);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "RecoverCondition", 16, 3173);
         break;
     }
 }
@@ -6520,7 +6704,7 @@ static unsigned int ConditionIndent (pge_m2condition m)
 
 
       default:
-        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "ConditionIndent", 15, 3074);
+        Debug_Halt ((const char *) "unrecognised m2condition", 24, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "ConditionIndent", 15, 3193);
         break;
     }
   ReturnException ("m2/gm2-auto/pge.mod", 1, 7);
@@ -6725,7 +6909,7 @@ static void EmitIsInFirst (pge_SetDesc to, pge_m2condition m)
 
 static void FlushRecoverCode (pge_FactorDesc *codeStack)
 {
-  /*
+  /* 
    FlushCode -
   */
   if ((*codeStack) != NULL)
@@ -6766,7 +6950,7 @@ static void RecoverFactor (pge_FactorDesc f, pge_m2condition m, pge_FactorDesc c
               }
             FlushRecoverCode (&codeStack);
             IndentString ((const char *) "", 0);
-            Output_WriteKey (f->ident->name);
+            Output_WriteKey (f->ident->codename);
             Output_Write ('(');
             EmitStopParametersAndFollow (f, m);
             Output_WriteString ((const char *) ") ;", 3);
@@ -7382,7 +7566,7 @@ static void EmitStopParametersAndFollow (pge_FactorDesc f, pge_m2condition m)
   pge_SetDesc to;
 
   to = NULL;
-  /*
+  /* 
    IF m=m2while
    THEN
       CalcFirstFactor(f, NIL, to)
@@ -7434,7 +7618,7 @@ static void RecoverProduction (pge_ProductionDesc p)
       OnLineStart = false;
       EmitFileLineTag (p->line);
       IndentString ((const char *) "PROCEDURE ", 10);
-      Output_WriteKey (GetDefinitionName (p));
+      Output_WriteKey (GetCodeName (p));
       Output_WriteString ((const char *) " (", 2);
       ParametersUsed = (unsigned int) 0;
       Output_StartBuffer ();
@@ -7452,7 +7636,7 @@ static void RecoverProduction (pge_ProductionDesc p)
       RecoverStatement (p->statement, pge_m2none);
       Indent = 0;
       IndentString ((const char *) "END ", 4);
-      Output_WriteKey (GetDefinitionName (p));
+      Output_WriteKey (GetCodeName (p));
       Output_WriteString ((const char *) " ;", 2);
       Output_WriteLn ();
       Output_WriteLn ();
@@ -7804,7 +7988,7 @@ static void OrSet (pge_SetDesc *to, pge_SetDesc from)
 
 
           default:
-            Debug_Halt ((const char *) "unknown element in enumeration type", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "OrSet", 5, 4134);
+            Debug_Halt ((const char *) "unknown element in enumeration type", 35, (const char *) "m2/gm2-auto/pge.mod", 19, (const char *) "OrSet", 5, 4253);
             break;
         }
       from = from->next;
@@ -7832,7 +8016,7 @@ static void CalcFirstFactor (pge_FactorDesc f, pge_ProductionDesc from, pge_SetD
             OrSet (to, f->ident->definition->first);
             if ((GetReachEnd (f->ident->definition->followinfo)) == pge_false)
               {
-                return ;
+                return;
               }
             break;
 
@@ -7846,7 +8030,7 @@ static void CalcFirstFactor (pge_FactorDesc f, pge_ProductionDesc from, pge_SetD
               {
                 AddSet (to, SymbolKey_GetSymKey (Aliases, f->string));
               }
-            return ;
+            return;
             break;
 
           case pge_sub:
@@ -7953,7 +8137,7 @@ static void WorkOutFollowFactor (pge_FactorDesc f, pge_SetDesc *followset, pge_S
   pge_TraverseResult foundepsilon;
   pge_TraverseResult canreachend;
 
-  /*
+  /* 
    WorkOutFollow -
   */
   foundepsilon = pge_true;
@@ -8324,7 +8508,7 @@ static void CalcEpsilonProduction (pge_ProductionDesc p)
 {
   if (p != NULL)
     {
-      /*
+      /* 
       IF p^.statement^.ident^.name=MakeKey('DefinitionModule')
       THEN
          stop

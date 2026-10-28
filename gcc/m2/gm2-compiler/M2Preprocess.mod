@@ -33,9 +33,10 @@ FROM libc IMPORT system, exit, unlink, printf, atexit ;
 FROM Lists IMPORT List, InitList, KillList, IncludeItemIntoList, ForeachItemInListDo ;
 FROM FIO IMPORT StdErr, StdOut ;
 FROM M2Printf IMPORT fprintf1 ;
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
 
-FROM M2Options IMPORT Verbose, PPonly, GetObj, GetMD, GetMMD, GetCpp, GetMQ,
-                      CppCommandLine, SaveTemps, GetSaveTempsDir, GetDumpDir,
+FROM M2Options IMPORT GetVerboseFlag, GetPPOnly, GetObj, GetMD, GetMMD, GetCpp, GetMQ,
+                      CppCommandLine, GetSaveTemps, GetSaveTempsDir, GetDumpDir,
                       GetM, GetMM ;
 
 FROM NameKey IMPORT Name, MakeKey, KeyToCharStar, makekey ;
@@ -175,7 +176,7 @@ BEGIN
    commandLine := Dup (command) ;
    tempfile := NIL ;
    (* We support MD and MMD for the main file only, at present.  *)
-   IF topSource OR PPonly
+   IF topSource OR GetPPOnly ()
    THEN
       IF GetMD ()
       THEN
@@ -198,13 +199,13 @@ BEGIN
    (* The output file depends on whether we are in stand-alone PP mode, and
       if an output file is specified.  *)
    tempfile := NIL ;
-   IF PPonly
+   IF GetPPOnly ()
    THEN
       IF GetObj () # NIL
       THEN
          tempfile := InitStringCharStar (GetObj ())
       END
-   ELSIF SaveTemps
+   ELSIF GetSaveTemps ()
    THEN
       tempfile := MakeSaveTempsFileName (filename)
    ELSE
@@ -220,7 +221,7 @@ BEGIN
    THEN
       commandLine := ConCat (commandLine, ConCat (Mark (InitString (' -MF ')),
                                                   outputdep)) ;
-      IF deleteDep AND (NOT SaveTemps)
+      IF deleteDep AND (NOT GetSaveTemps ())
       THEN
          outputdep := OnExitDelete (outputdep)
       END
@@ -228,7 +229,7 @@ BEGIN
    (* use pexecute in the future
       res := pexecute(string(Slice(commandLine, 0, Index(commandLine, ' ', 0))), etc etc );  *)
    (* for now we'll use system *)
-   IF Verbose
+   IF GetVerboseFlag (BuiltinTokenNo)
    THEN
       fprintf1 (StdOut, "preprocess: %s\n", commandLine)
    END ;
@@ -238,7 +239,7 @@ BEGIN
       exit (1)
    END ;
    commandLine := KillString (commandLine) ;
-   IF SaveTemps
+   IF GetSaveTemps ()
    THEN
       RETURN tempfile
    ELSE

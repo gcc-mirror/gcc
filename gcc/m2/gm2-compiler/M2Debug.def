@@ -32,18 +32,18 @@ EXPORT QUALIFIED Assert, WriteDebug ;
 
 
 (*
-   Assert - tests the boolean, q. If false then an error is reported
+   Assert - tests the boolean condition. If false then an error is reported
             and the execution is HALTed.
 *)
 
-PROCEDURE Assert (q: BOOLEAN) ;
+PROCEDURE Assert (condition: BOOLEAN) ;
 
 
 (*
-   WriteDebug - only writes a string if the debugging mode is on.
+   WriteDebug - only write string msg if the debugging mode is on.
 *)
 
-PROCEDURE WriteDebug (a: ARRAY OF CHAR) ;
+PROCEDURE WriteDebug (msg: ARRAY OF CHAR) ;
 
 
 END M2Debug.

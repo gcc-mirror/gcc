@@ -41,14 +41,16 @@ PROCEDURE get_set_address_if_var (location: location_t; op: tree; is_lvalue, is_
     get_set_field_rhs - returns the value of p->field.
 *)
 
-PROCEDURE get_set_field_rhs (location: location_t; p: tree; field: tree) : tree ;
+PROCEDURE get_set_field_rhs (location: location_t; tokno: CARDINAL;
+                             p: tree; field: tree) : tree ;
 
 
 (*
     get_set_field_lhs - returns the address of p->field.
 *)
 
-PROCEDURE get_set_field_lhs (location: location_t; p: tree; field: tree) : tree ;
+PROCEDURE get_set_field_lhs (location: location_t; tokno: CARDINAL;
+                             p: tree; field: tree) : tree ;
 
 
 (*
@@ -63,7 +65,9 @@ PROCEDURE get_set_address (location: location_t; op1: tree; is_lvalue: BOOLEAN) 
                     Either p->field or the constant(op.fieldNo) is returned.
 *)
 
-PROCEDURE get_set_value (location: location_t; p: tree; field: tree; is_const: BOOLEAN; op: tree; fieldNo: CARDINAL) : tree ;
+PROCEDURE get_set_value (location: location_t; tokno: CARDINAL;
+                         p: tree; field: tree; is_const, is_lvalue: BOOLEAN;
+                         op: tree; fieldNo: CARDINAL) : tree ;
 
 
 (*
@@ -94,7 +98,7 @@ PROCEDURE build_modify_expr (location: location_t; des: tree; modifycode: tree_c
                      If the result is true then jump to label.
 *)
 
-PROCEDURE do_jump_if_bit (location: location_t; code: tree_code; word: tree; bit: tree; label: ADDRESS) ;
+PROCEDURE do_jump_if_bit (location: location_t; tokno: CARDINAL; code: tree_code; word: tree; bit: tree; label: ADDRESS) ;
 
 
 (*

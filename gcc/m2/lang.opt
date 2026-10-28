@@ -102,6 +102,10 @@ fdump-builtins
 Modula-2
 Display all builtin procedure functions.
 
+fdump-pragmas
+Modula-2
+display all supported pragma qualidents
+
 fdump-system-exports
 Modula-2
 Display all inbuilt system items.
@@ -442,6 +446,10 @@ Modula-2
 ; Documented in c.opt
 
 fworking-directory
+Modula-2
+; Documented in c.opt
+
+g
 Modula-2
 ; Documented in c.opt
 

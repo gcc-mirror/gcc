@@ -37,7 +37,7 @@ FROM Indexing IMPORT Index, InitIndex, GetIndice, PutIndice, InBounds, IncludeIn
 FROM M2Quads IMPORT PushT, PopT, OperandT, PopN, PopTF, PushTF, IsAutoPushOn,
                     PopNothing, PushTFn, PopTFn, PushTtok, PopTtok, PushTFtok, PopTFtok, OperandTok ;
 
-FROM M2Options IMPORT Iso ;
+FROM M2Options IMPORT GetISO ;
 FROM StdIO IMPORT Write ;
 FROM M2System IMPORT Cast, IsPseudoSystemFunctionConstExpression ;
 
@@ -1483,7 +1483,7 @@ PROCEDURE ErrorConstFunction (func: CARDINAL; functok: CARDINAL) ;
 BEGIN
    IF func = NulSym
    THEN
-      IF Iso
+      IF GetISO (functok)
       THEN
          ErrorFormat0 (NewError (functok),
                        'the only functions permissible in a constant expression are: CAP, CAST, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
@@ -1492,7 +1492,7 @@ BEGIN
                        'the only functions permissible in a constant expression are: CAP, CHR, FLOAT, HIGH, MAX, MIN, ODD, ORD, SIZE, TSIZE, TRUNC, VAL and gcc builtins')
       END
    ELSE
-      IF Iso
+      IF GetISO (functok)
       THEN
          MetaErrorT1 (functok,
                       'the only functions permissible in a constant expression are: CAP, CAST, CHR, CMPLX, FLOAT, HIGH, IM, LENGTH, MAX, MIN, ODD, ORD, RE, SIZE, TSIZE, TRUNC, VAL and gcc builtins, but not {%1Ead}',
@@ -1525,7 +1525,7 @@ BEGIN
          ErrorConstFunction (func, functok)
       ELSIF (func#Convert) AND
          (IsPseudoBaseFunction(func) OR
-          IsPseudoSystemFunctionConstExpression(func) OR
+          IsPseudoSystemFunctionConstExpression (functok, func) OR
           (IsProcedure(func) AND IsProcedureBuiltin(func)))
       THEN
          buildConstFunction (func, n)

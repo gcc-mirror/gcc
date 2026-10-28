@@ -60,7 +60,7 @@ FROM SymbolTable IMPORT NulSym, IsRecord, IsSet, GetDType, GetType, IsType,
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax ;
 FROM M2System IMPORT Address ;
 FROM M2ALU IMPORT Equ, PushIntegerTree ;
-FROM M2Options IMPORT StrictTypeReason ;
+FROM M2Options IMPORT GetStrictTypeReason ;
 FROM m2expr IMPORT AreConstantsEqual ;
 FROM SymbolConversion IMPORT Mod2Gcc, GccKnowsAbout ;
 FROM DynamicStrings IMPORT String, InitString, KillString, ConCat, Mark ;
@@ -2081,7 +2081,7 @@ VAR
 BEGIN
    tinfo := newtInfo () ;
    tinfo^.reason := NIL ;
-   tinfo^.reasonEnable := enableReason AND StrictTypeReason ;
+   tinfo^.reasonEnable := enableReason AND GetStrictTypeReason (token) ;
    tinfo^.format := collapseString (format) ;
    tinfo^.token := token ;
    tinfo^.kind := assignment ;
@@ -2126,7 +2126,7 @@ BEGIN
    tinfo := newtInfo () ;
    formalT := getSType (formal) ;
    actualT := getSType (actual) ;
-   tinfo^.reasonEnable := StrictTypeReason ;
+   tinfo^.reasonEnable := GetStrictTypeReason (token) ;
    tinfo^.reason := NIL ;
    tinfo^.format := collapseString (format) ;
    tinfo^.token := token ;
@@ -2172,7 +2172,7 @@ VAR
    tinfo: tInfo ;
 BEGIN
    tinfo := newtInfo () ;
-   tinfo^.reasonEnable := StrictTypeReason ;
+   tinfo^.reasonEnable := GetStrictTypeReason (token) ;
    tinfo^.reason := NIL ;
    tinfo^.format := collapseString (format) ;
    tinfo^.token := token ;

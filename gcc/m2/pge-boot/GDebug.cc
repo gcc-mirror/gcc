@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -32,8 +34,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
        typedef struct { PROC_t proc; } PROC;
 #   endif
 
-#include <string.h>
-#include <limits.h>
 #define _Debug_C
 
 #include "GDebug.h"
@@ -56,7 +56,7 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, co
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets
+                 It interprets 
  as carriage return, linefeed.
 */
 
@@ -121,7 +121,7 @@ extern "C" void Debug_Halt (const char *Message_, unsigned int _Message_high, co
 
 /*
    DebugString - writes a string to the debugging device (Scn.Write).
-                 It interprets
+                 It interprets 
  as carriage return, linefeed.
 */
 
@@ -165,10 +165,10 @@ extern "C" void Debug_DebugString (const char *a_, unsigned int _a_high)
     }
 }
 
-extern "C" void _M2_Debug_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Debug_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Debug_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Debug_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

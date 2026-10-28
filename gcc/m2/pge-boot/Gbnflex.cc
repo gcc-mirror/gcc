@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -35,8 +37,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <string.h>
-#include <limits.h>
 #define _bnflex_C
 
 #include "Gbnflex.h"
@@ -227,7 +227,7 @@ static void SkipComments (void)
           /* no second '-' found thus restore first '-'  */
           if ((bnflex_PutChar ('-')) == '-')
             {}  /* empty.  */
-          return ;
+          return;
         }
     }
 }
@@ -591,11 +591,11 @@ extern "C" void bnflex_SetDebugging (bool flag)
   Debugging = flag;
 }
 
-extern "C" void _M2_bnflex_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_bnflex_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_bnflex_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_bnflex_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

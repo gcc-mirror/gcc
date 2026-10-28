@@ -32,7 +32,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, ToUpper, InitStringCh
 FROM FormatStrings IMPORT Sprintf0, Sprintf1, Sprintf2 ;
 FROM M2LexBuf IMPORT GetTokenNo ;
 FROM ASCII IMPORT nul ;
-FROM M2Options IMPORT StyleChecking ;
+FROM M2Options IMPORT GetStyleFlag ;
 
 
 VAR
@@ -80,7 +80,7 @@ END IsNotADuplicateName ;
 
 PROCEDURE CheckVariableAgainstKeyword (tok: CARDINAL; name: Name) ;
 BEGIN
-   IF StyleChecking
+   IF GetStyleFlag (tok)
    THEN
       PerformVariableKeywordCheck (tok, name)
    END

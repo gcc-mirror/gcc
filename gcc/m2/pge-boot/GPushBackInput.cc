@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -36,9 +38,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -479,12 +478,12 @@ extern "C" unsigned int PushBackInput_GetCurrentLine (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_PushBackInput_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   PushBackInput_SetDebug (false);
   Init ();
 }
 
-extern "C" void _M2_PushBackInput_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_PushBackInput_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

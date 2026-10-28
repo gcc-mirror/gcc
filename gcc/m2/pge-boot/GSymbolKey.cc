@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -31,7 +33,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
 #   include "GStorage.h"
 #if defined(__cplusplus)
 #   undef NULL
@@ -286,7 +287,7 @@ extern "C" void SymbolKey_InitTree (SymbolKey_SymbolTree *t)
 
 extern "C" void SymbolKey_KillTree (SymbolKey_SymbolTree *t)
 {
-  /*
+  /* 
     we used to get problems compiling KillTree below - so it was split
     into the two procedures below.
 
@@ -295,10 +296,10 @@ PROCEDURE KillTree (VAR t: SymbolTree) ;
 BEGIN
    IF t#NIL
    THEN
-      Kill(t) ;   Would like to place Kill in here but the compiler
-                  gives a type incompatible error... so i've split
-                  the procedure into two. - Problem i think with
-                  VAR t at the top?
+      Kill(t) ;   Would like to place Kill in here but the compiler 
+                  gives a type incompatible error... so i've split  
+                  the procedure into two. - Problem i think with    
+                  VAR t at the top?                                 
       t := NIL
    END
 END KillTree ;

@@ -43,7 +43,7 @@ FROM FormatStrings IMPORT Sprintf2 ;
 FROM StrLib IMPORT StrLen ;
 
 FROM M2MetaError IMPORT MetaError0, MetaError1, MetaError2, MetaErrors3,
-                        MetaErrorT1, MetaErrorT2, MetaErrorT4,
+                        MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT4,
                         MetaErrorStringT2, MetaErrorStringT1,
                         MetaErrorDecl ;
 
@@ -91,13 +91,13 @@ FROM M2System IMPORT Address, Byte, Word, System, Loc, InitSystem,
                      IsGenericSystemType, IsSameSizePervasiveType,
                      IsSystemType ;
 
-FROM M2Options IMPORT NilChecking,
-                      WholeDivChecking, WholeValueChecking,
-                      IndexChecking, RangeChecking,
-                      ReturnChecking, CaseElseChecking, Exceptions,
-		      WholeValueChecking,
-                      DebugBuiltins, GetWideset,
-                      Iso, Pim, Pim2, Pim3 ;
+FROM M2Options IMPORT GetNilFlag,
+                      GetWholeDivFlag, GetWholeValueFlag,
+                      GetIndexFlag, GetRangeFlag,
+                      GetReturnFlag, GetCaseElseFlag, GetExceptionsFlag,
+		      GetWholeValueFlag,
+                      GetDebugBuiltinFlag, GetWidesetFlag,
+                      GetISO, GetPIM, GetPIM2, GetPIM3 ;
 
 FROM m2type IMPORT GetIntegerType,
                    GetM2IntegerType, GetM2CharType,
@@ -189,17 +189,17 @@ VAR
    InitBuiltins -
 *)
 
-PROCEDURE InitBuiltins ;
+PROCEDURE InitBuiltins (tokno: CARDINAL) ;
 VAR
    builtins: CARDINAL ;
 BEGIN
-   IF DebugBuiltins
+   IF GetDebugBuiltinFlag (tokno)
    THEN
       (* We will need to parse this module as functions alloca/memcpy will be used.  *)
-      builtins := MakeDefinitionSource (BuiltinTokenNo, MakeKey ('Builtins')) ;
+      builtins := MakeDefinitionSource (tokno, MakeKey ('Builtins')) ;
       IF builtins = NulSym
       THEN
-         MetaError0 ('unable to find core module Builtins')
+         MetaErrorT0 (tokno, 'unable to find core module Builtins')
       END
    END
 END InitBuiltins ;
@@ -235,7 +235,7 @@ BEGIN
             when all other scopes fail to deliver a symbol.
    *)
    EndScope ;
-   InitBuiltins ;
+   InitBuiltins (BuiltinTokenNo) ;
    InitCompatibilityMatrices
 END InitBase ;
 
@@ -276,7 +276,7 @@ END InitBaseConstants ;
 
 PROCEDURE InitBaseSimpleTypes (location: location_t) ;
 BEGIN
-   InitBaseTypes (location) ;
+   InitBaseTypes (location, BuiltinTokenNo) ;
 
    ZType := MakeType (BuiltinTokenNo, MakeKey('Modula-2 base Z')) ;
    PutType(ZType, NulSym) ;                   (* Base Type       *)
@@ -376,123 +376,123 @@ BEGIN
 
    (* MinChar *)
    MinChar := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(location, GetM2CharType())) ;
+   PushIntegerTree (GetMinFrom (location, BuiltinTokenNo, GetM2CharType ())) ;
    PopValue(MinChar) ;
    PutVar(MinChar, Char) ;
 
    (* MaxChar *)
    MaxChar := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(location, GetM2CharType())) ;
+   PushIntegerTree (GetMaxFrom (location, BuiltinTokenNo, GetM2CharType ())) ;
    PopValue(MaxChar) ;
    PutVar(MaxChar, Char) ;
 
    (* MinInteger *)
    MinInteger := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(location, GetM2IntegerType())) ;
+   PushIntegerTree (GetMinFrom (location, BuiltinTokenNo, GetM2IntegerType ())) ;
    PopValue(MinInteger) ;
    PutVar(MinInteger, Integer) ;
 
    (* MaxInteger *)
    MaxInteger := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(location, GetM2IntegerType())) ;
+   PushIntegerTree (GetMaxFrom (location, BuiltinTokenNo, GetM2IntegerType ())) ;
    PopValue(MaxInteger) ;
    PutVar(MaxInteger, Integer) ;
 
    (* MinCardinal *)
    MinCardinal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(BuiltinsLocation(), GetM2CardinalType())) ;
+   PushIntegerTree (GetMinFrom (BuiltinsLocation (), BuiltinTokenNo, GetM2CardinalType())) ;
    PopValue(MinCardinal) ;
    PutVar(MinCardinal, Cardinal) ;
 
    (* MaxCardinal *)
    MaxCardinal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(location, GetM2CardinalType())) ;
+   PushIntegerTree (GetMaxFrom (location, BuiltinTokenNo, GetM2CardinalType ())) ;
    PopValue(MaxCardinal) ;
    PutVar(MaxCardinal, Cardinal) ;
 
    (* MinLongInt *)
    MinLongInt := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(location, GetM2LongIntType())) ;
-   PopValue(MinLongInt) ;
-   PutVar(MinLongInt, LongInt) ;
+   PushIntegerTree (GetMinFrom (location, BuiltinTokenNo, GetM2LongIntType ())) ;
+   PopValue (MinLongInt) ;
+   PutVar (MinLongInt, LongInt) ;
 
    (* MaxLongInt *)
    MaxLongInt := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(location, GetM2LongIntType())) ;
-   PopValue(MaxLongInt) ;
-   PutVar(MaxLongInt, LongInt) ;
+   PushIntegerTree (GetMaxFrom (location, BuiltinTokenNo, GetM2LongIntType ())) ;
+   PopValue (MaxLongInt) ;
+   PutVar (MaxLongInt, LongInt) ;
 
    (* MinLongCard *)
    MinLongCard := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(location, GetM2LongCardType())) ;
+   PushIntegerTree (GetMinFrom (location, BuiltinTokenNo, GetM2LongCardType ())) ;
    PopValue(MinLongCard) ;
    PutVar(MinLongCard, LongCard) ;
 
    (* MinLongCard *)
    MaxLongCard := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(BuiltinsLocation(), GetM2LongCardType())) ;
-   PopValue(MaxLongCard) ;
-   PutVar(MaxLongCard, LongCard) ;
+   PushIntegerTree(GetMaxFrom(location, BuiltinTokenNo, GetM2LongCardType ())) ;
+   PopValue (MaxLongCard) ;
+   PutVar (MaxLongCard, LongCard) ;
 
    (* MinReal *)
    MinReal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushRealTree(GetMinFrom(location, GetM2RealType())) ;
-   PopValue(MinReal) ;
-   PutVar(MinReal, Real) ;
+   PushRealTree (GetMinFrom (location, BuiltinTokenNo, GetM2RealType ())) ;
+   PopValue (MinReal) ;
+   PutVar (MinReal, Real) ;
 
    (* MaxReal *)
-   MaxReal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushRealTree(GetMaxFrom(location, GetM2RealType())) ;
-   PopValue(MaxReal) ;
-   PutVar(MaxReal, Real) ;
+   MaxReal := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushRealTree (GetMaxFrom (location, BuiltinTokenNo, GetM2RealType ())) ;
+   PopValue (MaxReal) ;
+   PutVar (MaxReal, Real) ;
 
    (* MinShortReal *)
-   MinShortReal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushRealTree(GetMinFrom(location, GetM2ShortRealType())) ;
-   PopValue(MinShortReal) ;
-   PutVar(MinShortReal, ShortReal) ;
+   MinShortReal := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushRealTree (GetMinFrom (location, BuiltinTokenNo, GetM2ShortRealType ())) ;
+   PopValue (MinShortReal) ;
+   PutVar (MinShortReal, ShortReal) ;
 
    (* MaxShortReal *)
-   MaxShortReal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushRealTree(GetMaxFrom(location, GetM2ShortRealType())) ;
-   PopValue(MaxShortReal) ;
-   PutVar(MaxShortReal, ShortReal) ;
+   MaxShortReal := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushRealTree (GetMaxFrom (location, BuiltinTokenNo, GetM2ShortRealType ())) ;
+   PopValue (MaxShortReal) ;
+   PutVar (MaxShortReal, ShortReal) ;
 
    (* MinLongReal *)
    MinLongReal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushRealTree(GetMinFrom(location, GetM2LongRealType())) ;
-   PopValue(MinLongReal) ;
-   PutVar(MinLongReal, LongReal) ;
+   PushRealTree (GetMinFrom (location, BuiltinTokenNo, GetM2LongRealType ())) ;
+   PopValue (MinLongReal) ;
+   PutVar (MinLongReal, LongReal) ;
 
    (* MaxLongReal *)
-   MaxLongReal := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushRealTree(GetMaxFrom(location, GetM2LongRealType())) ;
-   PopValue(MaxLongReal) ;
-   PutVar(MaxLongReal, LongReal) ;
+   MaxLongReal := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushRealTree (GetMaxFrom (location, BuiltinTokenNo, GetM2LongRealType ())) ;
+   PopValue (MaxLongReal) ;
+   PutVar (MaxLongReal, LongReal) ;
 
    (* MaxShortInt *)
-   MaxShortInt := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(location, GetM2ShortIntType())) ;
-   PopValue(MaxShortInt) ;
-   PutVar(MaxShortInt, ShortInt) ;
+   MaxShortInt := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushIntegerTree (GetMaxFrom (location, BuiltinTokenNo, GetM2ShortIntType ())) ;
+   PopValue (MaxShortInt) ;
+   PutVar (MaxShortInt, ShortInt) ;
 
    (* MinShortInt *)
-   MinShortInt := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(location, GetM2ShortIntType())) ;
-   PopValue(MinShortInt) ;
-   PutVar(MinShortInt, ShortInt) ;
+   MinShortInt := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushIntegerTree (GetMinFrom(location, BuiltinTokenNo, GetM2ShortIntType ())) ;
+   PopValue (MinShortInt) ;
+   PutVar (MinShortInt, ShortInt) ;
 
    (* MaxShortCard *)
-   MaxShortCard := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMaxFrom(location, GetM2ShortCardType())) ;
-   PopValue(MaxShortCard) ;
-   PutVar(MaxShortCard, ShortCard) ;
+   MaxShortCard := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushIntegerTree (GetMaxFrom (location, BuiltinTokenNo, GetM2ShortCardType ())) ;
+   PopValue (MaxShortCard) ;
+   PutVar (MaxShortCard, ShortCard) ;
 
    (* MinShortCard *)
-   MinShortCard := MakeTemporary(BuiltinTokenNo, ImmediateValue) ;
-   PushIntegerTree(GetMinFrom(location, GetM2ShortCardType())) ;
-   PopValue(MinShortCard) ;
-   PutVar(MinShortCard, ShortCard)
+   MinShortCard := MakeTemporary (BuiltinTokenNo, ImmediateValue) ;
+   PushIntegerTree (GetMinFrom (location, BuiltinTokenNo, GetM2ShortCardType ())) ;
+   PopValue (MinShortCard) ;
+   PutVar (MinShortCard, ShortCard)
 
 END InitBaseSimpleTypes ;
 
@@ -600,8 +600,8 @@ END GetBaseTypeMinMax ;
 PROCEDURE ImportFrom (tok: CARDINAL;
                       module: CARDINAL; name: ARRAY OF CHAR) : CARDINAL ;
 BEGIN
-   PutImported(GetExported(tok, module, MakeKey(name))) ;
-   RETURN( GetSym(MakeKey(name)) )
+   PutImported (tok, GetExported (tok, module, MakeKey (name))) ;
+   RETURN( GetSym (MakeKey (name)) )
 END ImportFrom ;
 
 
@@ -629,14 +629,14 @@ BEGIN
    Incl := MakeProcedure(BuiltinTokenNo, MakeKey('INCL')) ;
    Excl := MakeProcedure(BuiltinTokenNo, MakeKey('EXCL')) ;
 
-   IF NOT Pim2
+   IF NOT GetPIM2 (BuiltinTokenNo)
    THEN
       MakeSize  (* SIZE is declared as a standard function in *)
                 (* ISO Modula-2 and PIM-[34] Modula-2 but not *)
                 (* PIM-2 Modula-2                             *)
    END ;
 
-   IF GetWideset ()
+   IF GetWidesetFlag (BuiltinTokenNo)
    THEN
       (* Ensure that M2WIDESET is available if needed by M2GenGCC.mod.
          By default -fwideset is TRUE however the user may override using
@@ -652,7 +652,7 @@ BEGIN
       within the BaseType module scope.
    *)
    m2rts := MakeDefinitionSource(BuiltinTokenNo, MakeKey('M2RTS')) ;
-   PutImported(GetExported(BuiltinTokenNo, m2rts, MakeKey('HALT'))) ;
+   PutImported (BuiltinTokenNo, GetExported (BuiltinTokenNo, m2rts, MakeKey ('HALT'))) ;
 
    ExceptionAssign          := NulSym ;
    ExceptionReturn          := NulSym ;
@@ -680,11 +680,11 @@ BEGIN
 
    ExceptionNo              := NulSym ;
 
-   IF NilChecking
+   IF GetNilFlag (BuiltinTokenNo)
    THEN
-      ExceptionPointerNil := ImportFrom(BuiltinTokenNo, m2rts, 'PointerNilException')
+      ExceptionPointerNil := ImportFrom (BuiltinTokenNo, m2rts, 'PointerNilException')
    END ;
-   IF RangeChecking
+   IF GetRangeFlag (BuiltinTokenNo)
    THEN
       ExceptionAssign := ImportFrom(BuiltinTokenNo, m2rts, 'AssignmentException') ;
       ExceptionReturn := ImportFrom(BuiltinTokenNo, m2rts, 'ReturnException') ;
@@ -699,32 +699,32 @@ BEGIN
       ExceptionForLoopEnd := ImportFrom(BuiltinTokenNo, m2rts, 'ForLoopEndException') ;
       ExceptionParameterBounds := ImportFrom(BuiltinTokenNo, m2rts, 'ParameterException') ;
    END ;
-   IF IndexChecking
+   IF GetIndexFlag (BuiltinTokenNo)
    THEN
       ExceptionStaticArray := ImportFrom(BuiltinTokenNo, m2rts, 'StaticArraySubscriptException') ;
       ExceptionDynamicArray := ImportFrom(BuiltinTokenNo, m2rts, 'DynamicArraySubscriptException')
    END ;
-   IF WholeDivChecking
+   IF GetWholeDivFlag (BuiltinTokenNo)
    THEN
       ExceptionNonPosDiv := ImportFrom(BuiltinTokenNo, m2rts, 'WholeNonPosDivException') ;
       ExceptionNonPosMod := ImportFrom(BuiltinTokenNo, m2rts, 'WholeNonPosModException') ;
       ExceptionZeroDiv := ImportFrom(BuiltinTokenNo, m2rts, 'WholeZeroDivException') ;
       ExceptionZeroRem := ImportFrom(BuiltinTokenNo, m2rts, 'WholeZeroRemException')
    END ;
-   IF ReturnChecking
+   IF GetReturnFlag (BuiltinTokenNo)
    THEN
       ExceptionNoReturn := ImportFrom(BuiltinTokenNo, m2rts, 'NoReturnException')
    END ;
-   IF CaseElseChecking
+   IF GetCaseElseFlag (BuiltinTokenNo)
    THEN
       ExceptionCase := ImportFrom(BuiltinTokenNo, m2rts, 'CaseException')
    END ;
-   IF WholeValueChecking
+   IF GetWholeValueFlag (BuiltinTokenNo)
    THEN
       ExceptionWholeValue := ImportFrom(BuiltinTokenNo, m2rts, 'WholeValueException') ;
       ExceptionRealValue := ImportFrom(BuiltinTokenNo, m2rts, 'RealValueException')
    END ;
-   IF Exceptions
+   IF GetExceptionsFlag (BuiltinTokenNo)
    THEN
       ExceptionNo := ImportFrom(BuiltinTokenNo, m2rts, 'NoException') ;
       (* ensure that this module is included *)
@@ -780,7 +780,8 @@ END IsTrunc ;
 
 PROCEDURE BuildTruncFunctions ;
 BEGIN
-   IF Pim2 OR Pim3 OR Iso
+   IF GetPIM2 (BuiltinTokenNo) OR GetPIM3 (BuiltinTokenNo) OR
+      GetISO (BuiltinTokenNo)
    THEN
       Trunc := MakeProcedure(BuiltinTokenNo, MakeKey('TRUNC')) ;
       PutFunction (BuiltinTokenNo, Trunc, DefProcedure, Cardinal) ;
@@ -882,7 +883,7 @@ BEGIN
    (* and the base functions *)
 
    Convert := MakeProcedure(BuiltinTokenNo, MakeKey('CONVERT')) ;  (* Internal function CONVERT    *)
-   IF Iso
+   IF GetISO (BuiltinTokenNo)
    THEN
       LengthS := MakeProcedure(BuiltinTokenNo, MakeKey('LENGTH')) ; (* Pseudo Base function LENGTH  *)
       PutFunction (BuiltinTokenNo, LengthS, DefProcedure, ZType)
@@ -930,7 +931,7 @@ END InitBaseFunctions ;
 
 PROCEDURE IsISOPseudoBaseFunction (Sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( Iso AND (Sym#NulSym) AND
+   RETURN( GetISO (BuiltinTokenNo) AND (Sym#NulSym) AND
            ((Sym=LengthS) OR (Sym=Size) OR
             (Sym=Cmplx) OR (Sym=Re) OR (Sym=Im) OR IsInt(Sym)) )
 END IsISOPseudoBaseFunction ;
@@ -942,7 +943,8 @@ END IsISOPseudoBaseFunction ;
 
 PROCEDURE IsPIMPseudoBaseFunction (Sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN( (NOT Iso) AND (NOT Pim2) AND (Sym#NulSym) AND (Sym=Size) )
+   RETURN( (NOT GetISO (BuiltinTokenNo)) AND (NOT GetPIM2 (BuiltinTokenNo)) AND
+           (Sym#NulSym) AND (Sym=Size) )
 END IsPIMPseudoBaseFunction ;
 
 
@@ -2366,13 +2368,13 @@ BEGIN
    CASE t OF
 
    const    :   InternalError ('do not know the size of a constant') |
-   word     :   IF Iso
+   word     :   IF GetISO (BuiltinTokenNo)
                 THEN
                    PushIntegerTree(GetSizeOf(BuiltinsLocation(), GetISOWordType()))
                 ELSE
                    PushIntegerTree(GetSizeOf(BuiltinsLocation(), GetWordType()))
                 END |
-   byte     :   IF Iso
+   byte     :   IF GetISO (BuiltinTokenNo)
                 THEN
                    PushIntegerTree(GetSizeOf(BuiltinsLocation(), GetISOByteType()))
                 ELSE
@@ -2483,7 +2485,7 @@ BEGIN
             INC(x) |
       '2':  c[x, y] := second ;
             INC(x) |
-      'W':  IF Pim
+      'W':  IF GetPIM (BuiltinTokenNo)
             THEN
                IF IsSizeSame(x, y)
                THEN
@@ -2495,7 +2497,7 @@ BEGIN
                c[x, y] := no
             END ;
             INC(x) |
-      'w':  IF Pim
+      'w':  IF GetPIM (BuiltinTokenNo)
             THEN
                IF IsSizeSame(x, y)
                THEN
@@ -2507,28 +2509,28 @@ BEGIN
                c[x, y] := no
             END ;
             INC(x) |
-      'P':  IF Pim
+      'P':  IF GetPIM (BuiltinTokenNo)
             THEN
                c[x, y] := second
             ELSE
                c[x, y] := no
             END ;
             INC(x) |
-      'p':  IF Pim
+      'p':  IF GetPIM (BuiltinTokenNo)
             THEN
                c[x, y] := first
             ELSE
                c[x, y] := no
             END ;
             INC(x) |
-      's':  IF IsSizeSame(x, y)
+      's':  IF IsSizeSame (x, y)
             THEN
                c[x, y] := first
             ELSE
                c[x, y] := no
             END ;
             INC(x) |
-      'S':  IF IsSizeSame(x, y)
+      'S':  IF IsSizeSame (x, y)
             THEN
                c[x, y] := second
             ELSE

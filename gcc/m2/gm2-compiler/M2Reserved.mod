@@ -145,7 +145,6 @@ BEGIN
    DoubleQuotesTok := MakeKey('"') ;
    AddKeyword(DoubleQuotesTok, doublequotestok) ;
 
-
    AndTok := MakeKey('AND') ;
    AddKeyword(AndTok, andtok) ;
 
@@ -295,6 +294,24 @@ BEGIN
 
    VolatileTok := MakeKey('VOLATILE') ;
    AddKeyword(VolatileTok, volatiletok) ;
+
+   Gm2Tok := MakeKey ('gm2') ;
+   GccTok := MakeKey ('gcc') ;
+   PragmaTok := MakeKey ('pragma') ;
+   TrueTok := MakeKey ('TRUE') ;
+   FalseTok := MakeKey ('FALSE') ;
+
+   VectorTok := MakeKey ('vector') ;
+   IvdepTok := MakeKey ('ivdep') ;
+   UnrollTok := MakeKey ('unroll') ;
+   DollarTok := MakeKey ('$') ;
+   QuestionTok := MakeKey ('?') ;
+   MsgTok := MakeKey ('MSG') ;
+   TestTok := MakeKey ('TEST')  ;
+   WARNTok := MakeKey ('WARN') ;
+   INFOTok := MakeKey ('INFO') ;
+   ERRORTok := MakeKey ('ERROR') ;
+   FATALTok := MakeKey ('FATAL') ;
 
    DateTok := MakeKey('__DATE__') ;     (* C compatible preprocessor primatives *)
    AddKeyword(DateTok, datetok) ;

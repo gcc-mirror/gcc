@@ -28,9 +28,7 @@ FROM libc IMPORT printf ;
 FROM NameKey IMPORT Name, NulName, KeyToCharStar, MakeKey ;
 FROM M2Base IMPORT Nil ;
 
-FROM M2Options IMPORT UninitVariableChecking, UninitVariableConditionalChecking,
-                      CompilerDebugging ;
-
+FROM M2Options IMPORT GetUninitVariableFlag, GetUninitVariableConditionalFlag ;
 FROM M2MetaError IMPORT MetaErrorT1, MetaErrorStringT1, MetaErrorStringT2 ;
 FROM M2LexBuf IMPORT UnknownTokenNo ;
 FROM DynamicStrings IMPORT String, InitString, Mark, ConCat, InitString ;
@@ -63,7 +61,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, IsVar, IsRecord, GetSType,
                         IsVarArrayRef, GetSymName,
                         IsType, IsPointer, IsTuple,
                         GetParameterShadowVar, IsParameter, GetLType,
-                        GetParameterHeapVar, GetVarDeclTok ;
+                        GetParameterHeapVar, GetVarDeclTok, GetDeclaredModule ;
 
 FROM M2Quads IMPORT QuadOperator, GetQuadOtok, GetQuad, GetNextQuad,
                     IsNewLocalVar, IsReturn, IsKillLocalVar, IsConditional,
@@ -1390,12 +1388,6 @@ BEGIN
    StartDefFileOp,
    StartModFileOp,
    EndFileOp,
-   CodeOnOp,
-   CodeOffOp,
-   ProfileOnOp,
-   ProfileOffOp,
-   OptimizeOnOp,
-   OptimizeOffOp,
    InlineOp,
    LineNumberOp,
    StatementNoteOp,
@@ -1722,7 +1714,7 @@ BEGIN
          ELSIF iPtr^.endGoto
          THEN
             CreateBBPermultations (procSym, iPtr^.nextBB, duplst)
-         ELSIF UninitVariableConditionalChecking AND iPtr^.endCond
+         ELSIF GetUninitVariableConditionalFlag (GetDeclaredModule (procSym)) AND iPtr^.endCond
          THEN
             CreateBBPermultations (procSym, iPtr^.nextBB, duplst) ;
             CreateBBPermultations (procSym, iPtr^.condBB, duplst)
@@ -1750,7 +1742,7 @@ VAR
    bb : BasicBlock ;
    lst: List ;
 BEGIN
-   IF UninitVariableChecking
+   IF GetUninitVariableFlag (GetDeclaredModule (Scope))
    THEN
       bbArray := Indexing.InitIndex (1) ;
       bb := InitBasicBlocksFromRange (Scope, Start, End) ;
@@ -1763,7 +1755,7 @@ BEGIN
          IF Debugging
          THEN
             DumpBBArray (Scope) ;
-            IF UninitVariableConditionalChecking
+            IF GetUninitVariableConditionalFlag (GetDeclaredModule (Scope))
             THEN
                printf0 ("UninitVariableConditionalChecking is TRUE\n")
             END

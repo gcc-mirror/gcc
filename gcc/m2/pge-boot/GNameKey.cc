@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -35,9 +37,6 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
 #   include "GStorage.h"
 #   include "Gmcrts.h"
 #if defined(__cplusplus)
@@ -188,25 +187,37 @@ static NameKey_Name DoMakeKey (NameKey_PtrToChar n, unsigned int higha)
           Storage_ALLOCATE ((void **) &child, sizeof (NameKey_Node));
           father->Left = child;
         }
+      /* 
+         MemIncr (NameKeyTreeMemDiag, 1, 1) ;
+         MemIncr (NameKeyTreeMemDiag, 2, SIZE (child^))
+  */
       else if (result == NameKey_greater)
         {
           /* avoid dangling else.  */
           Storage_ALLOCATE ((void **) &child, sizeof (NameKey_Node));
           father->Right = child;
         }
+      /* 
+         MemIncr (NameKeyTreeMemDiag, 1, 1) ;
+         MemIncr (NameKeyTreeMemDiag, 2, SIZE (child^))
+  */
       child->Right = NULL;
       child->Left = NULL;
       LastIndice += 1;
       child->Key = LastIndice;
       child->Data = n;
-      Indexing_PutIndice (KeyIndex, child->Key, reinterpret_cast<void *> (n));
+      Indexing_PutIndice (KeyIndex, child->Key, reinterpret_cast <void *> (n));
       k = LastIndice;
     }
   else
     {
-      Storage_DEALLOCATE (reinterpret_cast<void **> (&n), higha+1);
+      Storage_DEALLOCATE (reinterpret_cast <void **> (&n), higha+1);
       k = child->Key;
     }
+  /* 
+      MemDecr (NameKeyWordMemDiag, 1, 1) ;
+      MemDecr (NameKeyWordMemDiag, 2, higha + 1)
+  */
   return k;
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -312,10 +323,14 @@ extern "C" NameKey_Name NameKey_MakeKey (const char *a_, unsigned int _a_high)
   memcpy (a, a_, _a_high+1);
 
   higha = StrLib_StrLen ((const char *) a, _a_high);
-  Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
+  Storage_ALLOCATE (reinterpret_cast <void **> (&p), higha+1);
+  /* 
+   MemIncr (NameKeyWordMemDiag, 1, 1) ;
+   MemIncr (NameKeyWordMemDiag, 2, higha + 1) ;
+  */
   if (p == NULL)
     {
-      M2RTS_HALT (-1);  /* out of memory error  */
+      M2RTS_HALT (-1);  /* Out of memory error.  */
       __builtin_unreachable ();
     }
   else
@@ -359,10 +374,10 @@ extern "C" NameKey_Name NameKey_makekey (void * a)
   else
     {
       higha = static_cast<unsigned int> (libc_strlen (a));
-      Storage_ALLOCATE (reinterpret_cast<void **> (&p), higha+1);
+      Storage_ALLOCATE (reinterpret_cast <void **> (&p), higha+1);
       if (p == NULL)
         {
-          M2RTS_HALT (-1);  /* out of memory error  */
+          M2RTS_HALT (-1);  /* Out of memory error.  */
           __builtin_unreachable ();
         }
       else
@@ -603,14 +618,24 @@ extern "C" char NameKey_CharKey (NameKey_Name key, unsigned int i)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_NameKey_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_NameKey_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
+  /* 
+   NameKeyWordMemDiag
+      := InitMemDiagnostic
+            ('NameKey:Words',
+            '{0N} total words {1d} consuming {2M} ({2P})') ;
+   NameKeyTreeMemDiag
+      := InitMemDiagnostic
+            ('NameKey:Tree',
+            '{0N} total tree nodes {1d} consuming {2M} ({2P})') ;
+  */
   LastIndice = 0;
   KeyIndex = Indexing_InitIndex (1);
   Storage_ALLOCATE ((void **) &BinaryTree, sizeof (NameKey_Node));
   BinaryTree->Left = NULL;
 }
 
-extern "C" void _M2_NameKey_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_NameKey_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

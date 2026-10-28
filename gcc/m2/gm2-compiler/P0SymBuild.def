@@ -42,6 +42,22 @@ PROCEDURE EndModule ;
 
 
 (*
+   EndInnerModule - shutdown the inner module and create definition symbols
+                    for all imported modules.
+*)
+
+PROCEDURE EndInnerModule ;
+
+
+(*
+   EndProcedure - shutdown the procedure and create any inner module
+                  and create definition symbols for all imported modules.
+*)
+
+PROCEDURE EndProcedure ;
+
+
+(*
    RegisterImports - remember all imported modules.
 *)
 
@@ -94,13 +110,6 @@ PROCEDURE RegisterInnerImports ;
 *)
 
 PROCEDURE RegisterProcedure ;
-
-
-(*
-   EndBuildProcedure - ends building a Procedure.
-*)
-
-PROCEDURE EndProcedure ;
 
 
 (*

@@ -42,6 +42,7 @@ FROM StringConvert IMPORT ostoi, bstoi, stoi, hstoi ;
 FROM M2GCCDeclare IMPORT GetTypeMin, GetTypeMax, CompletelyResolved, DeclareConstant ;
 FROM M2GenGCC IMPORT PrepareCopyString, StringToChar ;
 FROM M2Bitset IMPORT Bitset ;
+FROM M2LexBuf IMPORT UnknownTokenNo, MakeVirtual2Tok ;
 FROM SymbolConversion IMPORT Mod2Gcc, GccKnowsAbout ;
 FROM M2Printf IMPORT printf0, printf2 ;
 FROM M2Base IMPORT MixTypes, GetBaseTypeMinMax, Char, IsRealType, IsComplexType, ZType ;
@@ -66,7 +67,7 @@ FROM m2linemap IMPORT UnknownLocation ;
 FROM m2expr IMPORT BuildAdd, BuildSub, BuildMult,
                    BuildDivTrunc, BuildModTrunc, BuildDivFloor, BuildModFloor,
                    BuildLSL, BuildLSR,
-                   BuildLogicalOr, BuildLogicalAnd, BuildSymmetricDifference,
+                   BuildLogicalOr, BuildLogicalAnd,
                    GetWordOne, GetCardinalZero, TreeOverflow, RemoveOverflow,
                    GetCstInteger ;
 
@@ -123,6 +124,7 @@ TYPE
    PtrToValue = POINTER TO cell ;
    cell       = RECORD
                    location       : location_t ;
+                   tokno          : CARDINAL ;
                    areAllConstants,
                    solved         : BOOLEAN ;
                    constructorType: CARDINAL ;
@@ -192,6 +194,7 @@ PROCEDURE InitRecord (v: PtrToValue) : PtrToValue ;
 BEGIN
    WITH v^ DO
       location := UnknownLocation () ;
+      tokno := UnknownTokenNo ;
       areAllConstants := FALSE ;
       solved := FALSE ;
       constructorType := NulSym ;
@@ -491,6 +494,7 @@ BEGIN
    ELSE
       WITH v^ DO
          location        := UnknownLocation () ;
+         tokno           := UnknownTokenNo ;
          type            := none ;
          areAllConstants := TRUE ;
          solved          := FALSE ;
@@ -858,16 +862,16 @@ BEGIN
    range := NIL ;
    i := 0 ;
    WHILE (i < GetBitsPerBitset ()) AND
-         (CompareTrees (GetIntegerZero (loc), value) # 0) DO
-      IF CompareTrees (GetIntegerOne (loc),
-                       BuildLogicalAnd (loc, value, GetIntegerOne (loc))) = 0
+         (CompareTrees (GetIntegerZero (loc, tokenno), value) # 0) DO
+      IF CompareTrees (GetIntegerOne (loc, tokenno),
+                       BuildLogicalAnd (loc, tokenno, value, GetIntegerOne (loc, tokenno))) = 0
       THEN
          PushCard (i) ;
          c := Val (tokenno, SkipType (sym), PopIntegerTree ()) ;
          DeclareConstant (tokenno, c) ;
          range := AddRange (range, c, c)
       END ;
-      value := BuildLSR (loc, value, GetIntegerOne (loc), FALSE) ;
+      value := BuildLSR (loc, tokenno, value, GetIntegerOne (loc, tokenno), FALSE) ;
       INC (i)
    END ;
    SortElements (tokenno, range) ;
@@ -875,6 +879,7 @@ BEGIN
    newVal := New () ;
    WITH newVal^ DO
       location        := loc ;
+      tokno           := tokenno ;
       type            := set ;
       constructorType := sym ;
       areAllConstants := FALSE ;
@@ -1237,19 +1242,19 @@ BEGIN
 
       'H': (* hexadecimal *)
            b := DynamicStrings.Slice (a, 0, -1) ;
-           PushIntegerTree (BuildConstLiteralNumber (location,
+           PushIntegerTree (BuildConstLiteralNumber (location, tokenno,
                                                      DynamicStrings.string (b),
                                                      16, issueError)) |
       'A': (* binary *)
            b := DynamicStrings.Slice (a, 0, -1) ;
-           PushIntegerTree (BuildConstLiteralNumber (location,
+           PushIntegerTree (BuildConstLiteralNumber (location, tokenno,
                                                      DynamicStrings.string (b),
                                                      2, issueError)) |
       'C', (* --fixme-- question:
               should we type this as a char rather than an int? *)
       'B': (* octal *)
            b := DynamicStrings.Slice (a, 0, -1) ;
-           PushIntegerTree (BuildConstLiteralNumber (location,
+           PushIntegerTree (BuildConstLiteralNumber (location, tokenno,
                                                      DynamicStrings.string (b),
                                                      8, issueError))
 
@@ -1258,7 +1263,8 @@ BEGIN
          THEN
             PushRealTree (RealToTree (KeyToCharStar (s)))
          ELSE
-            PushIntegerTree (BuildConstLiteralNumber (location, KeyToCharStar (s),
+            PushIntegerTree (BuildConstLiteralNumber (location, tokenno,
+                                                      KeyToCharStar (s),
                                                       10, issueError))
          END
       END
@@ -1304,7 +1310,8 @@ BEGIN
    WITH v^ DO
       IF type=real
       THEN
-         numberValue     := ConvertConstantAndCheck(location, GetIntegerType(), numberValue) ;
+         numberValue     := ConvertConstantAndCheck (location, tokno,
+                                                     GetIntegerType(), numberValue) ;
          type            := integer ;
          areAllConstants := TRUE ;
          solved          := TRUE
@@ -1328,7 +1335,8 @@ BEGIN
    WITH v^ DO
       IF type=real
       THEN
-         numberValue     := ConvertConstantAndCheck(location, GetIntegerType(), numberValue) ;
+         numberValue     :=  ConvertConstantAndCheck (location, tokno,
+                                                      GetIntegerType(), numberValue) ;
          type            := integer ;
          areAllConstants := TRUE ;
          solved          := TRUE
@@ -1352,7 +1360,8 @@ BEGIN
    WITH v^ DO
       IF type=integer
       THEN
-         numberValue     := ConvertConstantAndCheck(location, GetLongRealType(), numberValue) ;
+         numberValue     :=  ConvertConstantAndCheck (location, tokno,
+                                                      GetLongRealType(), numberValue) ;
          type            := real ;
          areAllConstants := TRUE ;
          solved          := TRUE
@@ -1378,7 +1387,8 @@ BEGIN
    WITH v^ DO
       IF type=integer
       THEN
-         numberValue     := ConvertConstantAndCheck(location, GetIntegerType(), numberValue) ;
+         numberValue     :=  ConvertConstantAndCheck (location, tokno,
+                                                      GetIntegerType(), numberValue) ;
          solved          := TRUE ;
          areAllConstants := TRUE
       ELSE
@@ -1403,7 +1413,8 @@ BEGIN
       WITH v^ DO
          IF type=integer
          THEN
-            numberValue     := ConvertConstantAndCheck(location, Mod2Gcc(t), numberValue) ;
+            numberValue     :=  ConvertConstantAndCheck (location, tokno,
+                                                         Mod2Gcc(t), numberValue) ;
             solved          := TRUE ;
             areAllConstants := TRUE
          ELSE
@@ -1499,9 +1510,11 @@ BEGIN
    ELSE
       Temp := New() ;    (* as it is a temp *)
       WITH Temp^ DO
-         location     := Op1^.location ;
+         tokno        := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location     := TokenToLocation (tokno) ;
          type         := integer ;
-         numberValue  := BuildAdd(location, Op1^.numberValue, Op2^.numberValue, FALSE) ;
+         numberValue  := BuildAdd (location, tokno,
+                                   Op1^.numberValue, Op2^.numberValue, FALSE) ;
          solved       := TRUE
       END ;
       Push(Temp)
@@ -1533,8 +1546,10 @@ BEGIN
    END ;
    Temp := New() ;
    WITH Temp^ DO
-      location    := Op1^.location ;
-      numberValue := BuildAdd(location, Op1^.numberValue, Op2^.numberValue, FALSE) ;
+      tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+      location    := TokenToLocation (tokno) ;
+      numberValue := BuildAdd (location, tokno,
+                               Op1^.numberValue, Op2^.numberValue, FALSE) ;
       type        := real ;
       solved      := TRUE
    END ;
@@ -1554,8 +1569,10 @@ BEGIN
    THEN
       Temp := New() ;
       WITH Temp^ DO
-         location    := Op1^.location ;
-         numberValue := BuildAdd(location, Op1^.numberValue, Op2^.numberValue, FALSE) ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
+         numberValue := BuildAdd (location, tokno,
+                                  Op1^.numberValue, Op2^.numberValue, FALSE) ;
          type        := complex ;
          solved      := TRUE
       END ;
@@ -1597,9 +1614,11 @@ BEGIN
    ELSE
       Temp := New() ;      (* as it is a temp *)
       WITH Temp^ DO
-         location    := Op1^.location ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
          type        := integer ;
-         numberValue := BuildSub(location, Op2^.numberValue, Op1^.numberValue, TRUE) ;
+         numberValue := BuildSub (location, tokno,
+                                  Op2^.numberValue, Op1^.numberValue, TRUE) ;
          solved      := TRUE
       END ;
       Push(Temp)
@@ -1631,8 +1650,10 @@ BEGIN
    END ;
    Temp := New() ;
    WITH Temp^ DO
-      location    := Op1^.location ;
-      numberValue := BuildSub(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+      tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+      location    := TokenToLocation (tokno) ;
+      numberValue := BuildSub (location, tokno,
+                               Op2^.numberValue, Op1^.numberValue, FALSE) ;
       type        := real ;
       solved      := TRUE
    END ;
@@ -1652,8 +1673,10 @@ BEGIN
    THEN
       Temp := New() ;
       WITH Temp^ DO
-         location    := Op1^.location ;
-         numberValue := BuildSub(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
+         numberValue := BuildSub (location, tokno,
+                                  Op2^.numberValue, Op1^.numberValue, FALSE) ;
          type        := complex ;
          solved      := TRUE
       END ;
@@ -1695,9 +1718,11 @@ BEGIN
    ELSE
       Temp := New() ;     (* as it is a temp *)
       WITH Temp^ DO
-         location    := Op1^.location ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
          type        := integer ;
-         numberValue := BuildMult(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         numberValue := BuildMult (location, tokno,
+                                   Op2^.numberValue, Op1^.numberValue, FALSE) ;
          solved      := TRUE
       END ;
       Push(Temp)
@@ -1729,8 +1754,10 @@ BEGIN
    END ;
    Temp := New() ;     (* as it is a temp *)
    WITH Temp^ DO
-      location    := Op1^.location ;
-      numberValue := BuildMult(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+      tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+      location    := TokenToLocation (tokno) ;
+      numberValue := BuildMult (location, tokno,
+                                Op2^.numberValue, Op1^.numberValue, FALSE) ;
       type        := real ;
       solved      := TRUE
    END ;
@@ -1750,8 +1777,10 @@ BEGIN
    THEN
       Temp := New() ;
       WITH Temp^ DO
-         location    := Op1^.location ;
-         numberValue := BuildMult(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
+         numberValue := BuildMult (location, tokno,
+                                   Op2^.numberValue, Op1^.numberValue, FALSE) ;
          type        := complex ;
          solved      := TRUE
       END ;
@@ -1793,9 +1822,11 @@ BEGIN
    ELSE
       Temp := New() ;     (* as it is a temp *)
       WITH Temp^ DO
-         location    := Op1^.location ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
          type        := integer ;
-         numberValue := BuildDivTrunc(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         numberValue := BuildDivTrunc (location, tokno,
+                                       Op2^.numberValue, Op1^.numberValue, FALSE) ;
          solved      := TRUE
       END ;
       Push(Temp)
@@ -1836,9 +1867,11 @@ BEGIN
    ELSE
       Temp := New() ;     (* as it is a temp *)
       WITH Temp^ DO
-         location    := Op1^.location ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
          type        := integer ;
-         numberValue := BuildDivFloor(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         numberValue := BuildDivFloor (location, tokno,
+                                       Op2^.numberValue, Op1^.numberValue, FALSE) ;
          solved      := TRUE
       END ;
       Push(Temp)
@@ -1870,8 +1903,10 @@ BEGIN
    END ;
    Temp := New() ;     (* as it is a temp *)
    WITH Temp^ DO
-      location    := Op1^.location ;
-      numberValue := BuildDivTrunc(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+      tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+      location    := TokenToLocation (tokno) ;
+      numberValue := BuildDivTrunc (location, tokno,
+                                    Op2^.numberValue, Op1^.numberValue, FALSE) ;
       type        := real ;
       solved      := TRUE
    END ;
@@ -1891,8 +1926,10 @@ BEGIN
    THEN
       Temp := New() ;
       WITH Temp^ DO
-         location    := Op1^.location ;
-         numberValue := BuildDivTrunc(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
+         numberValue := BuildDivTrunc (location, tokno,
+                                       Op2^.numberValue, Op1^.numberValue, FALSE) ;
          type        := complex ;
          solved      := TRUE
       END ;
@@ -1934,9 +1971,11 @@ BEGIN
    ELSE
       Temp := New() ;     (* as it is a temp *)
       WITH Temp^ DO
-         location    := Op1^.location ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
          type        := integer ;
-         numberValue := BuildModFloor(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         numberValue := BuildModFloor (location, tokno,
+                                       Op2^.numberValue, Op1^.numberValue, FALSE) ;
          solved      := TRUE
       END ;
       Push(Temp)
@@ -1977,9 +2016,11 @@ BEGIN
    ELSE
       Temp := New() ;     (* as it is a temp *)
       WITH Temp^ DO
-         location    := Op1^.location ;
+         tokno       := MakeVirtual2Tok (Op1^.tokno, Op2^.tokno) ;
+         location    := TokenToLocation (tokno) ;
          type        := integer ;
-         numberValue := BuildModTrunc(location, Op2^.numberValue, Op1^.numberValue, FALSE) ;
+         numberValue := BuildModTrunc (location, tokno,
+                                       Op2^.numberValue, Op1^.numberValue, FALSE) ;
          solved      := TRUE
       END ;
       Push(Temp)
@@ -4435,7 +4476,7 @@ BEGIN
    IF GetSetInWord (settype)
    THEN
       (* Narrow set.  *)
-      RETURN BuildConvert (TokenToLocation (tokenno),
+      RETURN BuildConvert (TokenToLocation (tokenno), tokenno,
                            Mod2Gcc (settype),
                            BuildBitset (tokenno, v, Mod2Gcc (low), Mod2Gcc (high)),
                            FALSE)
@@ -4486,7 +4527,7 @@ BEGIN
          PushIntegerTree (low) ;
          PushCard (BitsPerByte - 1) ;
          Addn ;
-         BuildSetConstructorElement (location,
+         BuildSetConstructorElement (location, tokenno,
                                      cons, BuildByte (tokenno, v, low, PopIntegerTree ())) ;
          PushIntegerTree (low) ;
          PushCard (BitsPerByte) ;
@@ -4497,7 +4538,7 @@ BEGIN
          Sub ;
          BitsInSet := PopIntegerTree ()
       ELSE
-         BuildSetConstructorElement (location,
+         BuildSetConstructorElement (location, tokenno,
                                      cons, BuildByte (tokenno, v, low, high)) ;
          PushCard (0) ;
          BitsInSet := PopIntegerTree ()
@@ -4559,7 +4600,8 @@ BEGIN
       END ;
       RETURN initT
    ELSE
-      RETURN( ConvertConstantAndCheck(TokenToLocation(tokenno), Mod2Gcc(GetType(field)), Mod2Gcc(init)) )
+      RETURN( ConvertConstantAndCheck (TokenToLocation(tokenno), tokenno,
+                                       Mod2Gcc(GetType(field)), Mod2Gcc(init)) )
    END
 END ConvertConstToType ;
 
@@ -4596,7 +4638,9 @@ BEGIN
             THEN
                IF GccKnowsAbout(GetType(Field))
                THEN
-                  BuildRecordConstructorElement(cons, ConvertConstToType(tokenno, Field, GetConstructorField(v, i)))
+                  BuildRecordConstructorElement(cons,
+                                                ConvertConstToType (tokenno, Field,
+                                                                    GetConstructorField(v, i)))
                ELSE
                   MetaErrorT0 (tokenno, 'trying to construct a compound literal and using a record field which does not exist')
                END
@@ -4720,7 +4764,7 @@ VAR
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
-   PushIntegerTree(BuildNumberOfArrayElements(location, Mod2Gcc(arrayType))) ;
+   PushIntegerTree(BuildNumberOfArrayElements(location, tokenno, Mod2Gcc(arrayType))) ;
    IF IsConstString(el)
    THEN
       PushCard(GetStringLength(tokenno, el))
@@ -4806,12 +4850,12 @@ BEGIN
          ELSE
             letter := Slice(s, i, 0)
          END ;
-         value := BuildCharConstant(location, string(letter)) ;
+         value := BuildCharConstant (location, tokenno, string(letter)) ;
       ELSE
          letter := InitStringChar(nul) ;
-         value := BuildCharConstant(location, string(letter))
+         value := BuildCharConstant (location, tokenno, string(letter))
       END ;
-      value := ConvertConstantAndCheck(location, Mod2Gcc(arrayType), value) ;
+      value := ConvertConstantAndCheck (location, tokenno, Mod2Gcc (arrayType), value) ;
       letter := KillString(letter) ;
       BuildArrayConstructorElement(cons, value, indice) ;
       PushValue(low) ;
@@ -4881,9 +4925,9 @@ BEGIN
       IF value = NIL
       THEN
          MetaErrorT0 (tokenno, '{%W}too few characters found when trying to construct a compound literal array') ;
-         value := GetCardinalZero (location)
+         value := GetCardinalZero (location, tokenno)
       END ;
-      value := ConvertConstantAndCheck (location, Mod2Gcc (arrayType), value) ;
+      value := ConvertConstantAndCheck (location, tokenno, Mod2Gcc (arrayType), value) ;
       BuildArrayConstructorElement (cons, value, indice) ;
       PushValue (low) ;
       ConvertToInt ;
@@ -4933,7 +4977,7 @@ BEGIN
          THEN
             key := GetString (element) ;
             DEC (arrayIndex, offset) ;
-            value := BuildCharConstantChar (location, CharKey (key, arrayIndex)) ;
+            value := BuildCharConstantChar (location, tokenno, CharKey (key, arrayIndex)) ;
             RETURN TRUE
          END
       ELSIF IsConst (element) AND (SkipType (GetType (element)) = Char) AND IsValueSolved (element)
@@ -4942,7 +4986,8 @@ BEGIN
          IF totalLength > arrayIndex
          THEN
             PushValue (element) ;
-            value := ConvertConstantAndCheck (location, GetM2CharType (), PopIntegerTree ()) ;
+            value := ConvertConstantAndCheck (location, tokenno,
+                                              GetM2CharType (), PopIntegerTree ()) ;
             RETURN TRUE
          END
       ELSE
@@ -4952,13 +4997,13 @@ BEGIN
             MetaErrorT3 (tokenno,
                          'expecting {%kCHAR} datatype and not {%1Ea} a {%1tad} in the {%2N} component of the {%3a} {%3d}',
                          element, arrayIndex, consType) ;
-            value := GetCardinalZero (location) ;
+            value := GetCardinalZero (location, tokenno) ;
             RETURN FALSE
          END
       END ;
       INC (elementIndex)
    UNTIL element = NulSym ;
-   value := GetCardinalZero (location) ;
+   value := GetCardinalZero (location, tokenno) ;
    MetaErrorT2 (tokenno,
                 'unable to obtain a {%kCHAR} at the {%1EN} position in {%2ad}',
                 arrayIndex, consType) ;
@@ -4995,7 +5040,8 @@ BEGIN
                       arrayIndex, consType) ;
          *)
       END ;
-      value := ConvertConstantAndCheck (location, Mod2Gcc (arrayType), value) ;
+      value := ConvertConstantAndCheck (location, tokenno,
+                                        Mod2Gcc (arrayType), value) ;
       BuildArrayConstructorElement (cons, value, indice) ;
       PushValue (low) ;
       ConvertToInt ;
@@ -5085,12 +5131,16 @@ BEGIN
    REPEAT
       IF t=tree(NIL)
       THEN
-         t := BuildLSL(location, GetWordOne(location), ToWord(location, i), FALSE)
+         t := BuildLSL (location, tokenno, GetWordOne (location, tokenno),
+                        ToWord (location, tokenno, i), FALSE)
       ELSE
-         t := BuildLogicalOr (location, t, BuildLSL(location, GetWordOne(location), ToWord(location, i), FALSE))
+         t := BuildLogicalOr (location, tokenno,
+                              t, BuildLSL (location, tokenno,
+                                           GetWordOne (location, tokenno),
+                                           ToWord (location, tokenno, i), FALSE))
       END ;
       PushIntegerTree(i) ;
-      PushIntegerTree(GetIntegerOne(location)) ;
+      PushIntegerTree (GetIntegerOne (location, tokenno)) ;
       Addn ;
       i := PopIntegerTree() ;
       PushIntegerTree(i) ;
@@ -5115,24 +5165,24 @@ VAR
    location: location_t ;
 BEGIN
    location := TokenToLocation(tokenno) ;
-   low := ToInteger(location, low) ;
-   high := ToInteger(location, high) ;
+   low := ToInteger(location, tokenno, low) ;
+   high := ToInteger(location, tokenno, high) ;
    n := 1 ;
-   t := GetCardinalZero(location) ;
+   t := GetCardinalZero (location, tokenno) ;
    WHILE GetRange(v, n, r1, r2) DO
       PushValue(r1) ;
-      tl := ToInteger(location, PopIntegerTree()) ;
+      tl := ToInteger (location, tokenno, PopIntegerTree()) ;
       PushValue(r2) ;
-      th := ToInteger(location, PopIntegerTree()) ;
-      IF IsIntersectionTree(tokenno, tl, th, low, high)
+      th := ToInteger (location, tokenno, PopIntegerTree()) ;
+      IF IsIntersectionTree (tokenno, tl, th, low, high)
       THEN
-         tl := ToCardinal(location, SubTree(MaxTree(tokenno, tl, low), low)) ;
-         th := ToCardinal(location, SubTree(MinTree(tokenno, th, high), low)) ;
-         t := BuildLogicalOr(location, t, BuildRange(tokenno, tl, th))
+         tl := ToCardinal (location, tokenno, SubTree(MaxTree(tokenno, tl, low), low)) ;
+         th := ToCardinal (location, tokenno, SubTree(MinTree(tokenno, th, high), low)) ;
+         t := BuildLogicalOr (location, tokenno, t, BuildRange(tokenno, tl, th))
       END ;
       INC(n)
    END ;
-   RETURN( ToBitset(location, t) )
+   RETURN( ToBitset (location, tokenno, t) )
 END BuildBitset ;
 
 
@@ -5151,24 +5201,24 @@ VAR
    location: location_t ;
 BEGIN
    location := TokenToLocation (tokenno) ;
-   low := ToInteger (location, low) ;
-   high := ToInteger (location, high) ;
+   low := ToInteger (location, tokenno, low) ;
+   high := ToInteger (location, tokenno, high) ;
    n := 1 ;
-   t := GetCardinalZero (location) ;
+   t := GetCardinalZero (location, tokenno) ;
    WHILE GetRange (v, n, r1, r2) DO
       PushValue (r1) ;
-      tl := ToInteger (location, PopIntegerTree ()) ;
+      tl := ToInteger (location, tokenno, PopIntegerTree ()) ;
       PushValue (r2) ;
-      th := ToInteger (location, PopIntegerTree ()) ;
+      th := ToInteger (location, tokenno, PopIntegerTree ()) ;
       IF IsIntersectionTree (tokenno, tl, th, low, high)
       THEN
-         tl := ToCardinal (location, SubTree (MaxTree (tokenno, tl, low), low)) ;
-         th := ToCardinal (location, SubTree (MinTree (tokenno, th, high), low)) ;
-         t := BuildLogicalOr (location, t, BuildRange (tokenno, tl, th))
+         tl := ToCardinal (location, tokenno, SubTree (MaxTree (tokenno, tl, low), low)) ;
+         th := ToCardinal (location, tokenno, SubTree (MinTree (tokenno, th, high), low)) ;
+         t := BuildLogicalOr (location, tokenno, t, BuildRange (tokenno, tl, th))
       END ;
       INC(n)
    END ;
-   RETURN ToPIMByte (location, t)
+   RETURN ToPIMByte (location, tokenno, t)
 END BuildByte ;
 
 

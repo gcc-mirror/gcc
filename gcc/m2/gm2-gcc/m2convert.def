@@ -29,49 +29,49 @@ FROM gcctypes IMPORT location_t, tree ;
             a WORD.
 *)
 
-PROCEDURE ToWord (location: location_t; expr: tree) : tree ;
+PROCEDURE ToWord (location: location_t; tokno: CARDINAL; expr: tree) : tree ;
 
 
 (*
    ToCardinal - convert an expression, expr, to a CARDINAL.
 *)
 
-PROCEDURE ToCardinal (location: location_t; expr: tree) : tree ;
+PROCEDURE ToCardinal (location: location_t; tokno: CARDINAL; expr: tree) : tree ;
 
 
 (*
    ToInteger - convert an expression, expr, to an INTEGER.
 *)
 
-PROCEDURE ToInteger (location: location_t; expr: tree) : tree ;
+PROCEDURE ToInteger (location: location_t; tokno: CARDINAL; expr: tree) : tree ;
 
 
 (*
    ToBitset - convert an expression, expr, to a BITSET.
 *)
 
-PROCEDURE ToBitset (location: location_t; expr: tree) : tree ;
+PROCEDURE ToBitset (location: location_t; tokno: CARDINAL; expr: tree) : tree ;
 
 
 (*
    ToLoc - convert an expression, expr, to a LOC.
 *)
 
-PROCEDURE ToLoc (location: location_t; expr: tree) : tree ;
+PROCEDURE ToLoc (location: location_t; tokno: CARDINAL; expr: tree) : tree ;
 
 
 (*
    ToPIMByte - convert an expression expr to a PIM BYTE.
 *)
 
-PROCEDURE ToPIMByte (location: location_t; expr: tree) : tree ;
+PROCEDURE ToPIMByte (location: location_t; tokno: CARDINAL; expr: tree) : tree ;
 
 
 (*
    ConvertToPtr - convert an expression to a void *.
 *)
 
-PROCEDURE ConvertToPtr (p: tree) : tree ;
+PROCEDURE ConvertToPtr (location: location_t; tokno: CARDINAL; p: tree) : tree ;
 
 
 (*
@@ -80,7 +80,8 @@ PROCEDURE ConvertToPtr (p: tree) : tree ;
                    should suppress overflow checking.
 *)
 
-PROCEDURE BuildConvert (location: location_t; type: tree; value: tree; checkOverflow: BOOLEAN) : tree ;
+PROCEDURE BuildConvert (location: location_t; tokno: CARDINAL;
+                        type: tree; value: tree; checkOverflow: BOOLEAN) : tree ;
 
 
 (*
@@ -89,7 +90,8 @@ PROCEDURE BuildConvert (location: location_t; type: tree; value: tree; checkOver
                              overflow checking is performed.
 *)
 
-PROCEDURE ConvertConstantAndCheck (location: location_t; type: tree; expr: tree) : tree ;
+PROCEDURE ConvertConstantAndCheck (location: location_t; tokno: CARDINAL;
+                                   type: tree; expr: tree) : tree ;
 
 
 (*
@@ -105,7 +107,8 @@ PROCEDURE ConvertString (type, expr: tree) : tree ;
                    expr is returned unaltered.
 *)
 
-PROCEDURE GenericToType (location: location_t; type, expr: tree) : tree ;
+PROCEDURE GenericToType (location: location_t; tokno: CARDINAL;
+                         type, expr: tree) : tree ;
 
 
 END m2convert.

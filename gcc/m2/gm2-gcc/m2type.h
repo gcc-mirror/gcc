@@ -48,12 +48,13 @@ EXTERN tree m2type_BuildStartArrayType (tree index_type, tree elt_type,
 EXTERN void m2type_PutArrayType (tree array, tree type);
 EXTERN tree m2type_BuildEndArrayType (tree arraytype, tree elementtype,
                                       tree indextype, int type);
-EXTERN tree m2type_GetArrayNoOfElements (location_t location, tree arraytype);
+EXTERN tree m2type_GetArrayNoOfElements (location_t location, unsigned int tokno,
+					 tree arraytype);
 EXTERN tree m2type_BuildArrayIndexType (tree low, tree high);
 EXTERN void m2type_GarbageCollect (void);
 EXTERN void m2type_MarkFunctionReferenced (tree f);
-EXTERN void m2type_AddStatement (location_t location, tree t);
-EXTERN tree m2type_BuildNumberOfArrayElements (location_t location,
+EXTERN void m2type_AddStatement (location_t location, unsigned int tokno, tree t);
+EXTERN tree m2type_BuildNumberOfArrayElements (location_t location, unsigned int tokno,
                                                tree arrayType);
 EXTERN tree m2type_BuildPackedFieldRecord (location_t location, char *name,
                                            tree fieldtype);
@@ -83,7 +84,7 @@ EXTERN tree m2type_BuildStartVarient (location_t location, char *name);
 EXTERN tree m2type_BuildStartUnion (location_t location, char *name);
 EXTERN tree m2type_BuildStartRecord (location_t location, char *name);
 EXTERN tree m2type_RealToTree (char *name);
-EXTERN tree m2type_BuildArrayStringConstructor (location_t location,
+EXTERN tree m2type_BuildArrayStringConstructor (location_t location, unsigned int tokno,
                                                 tree arrayType, tree str,
                                                 tree length);
 
@@ -151,9 +152,10 @@ EXTERN tree m2type_GetPackedBooleanType (void);
 EXTERN tree m2type_GetBooleanTrue (void);
 EXTERN tree m2type_GetBooleanFalse (void);
 EXTERN tree m2type_GetBooleanType (void);
-EXTERN tree m2type_BuildSmallestTypeRange (location_t location, tree low,
-                                           tree high);
-EXTERN tree m2type_BuildSetTypeFromSubrange (location_t location, char *name,
+EXTERN tree m2type_BuildSmallestTypeRange (location_t location, unsigned int tokno,
+					   tree low, tree high);
+EXTERN tree m2type_BuildSetTypeFromSubrange (location_t location, unsigned int tokno,
+					     char *name,
                                              tree subrangeType, tree lowval,
                                              tree highval, bool ispacked);
 EXTERN int m2type_GetBitsPerBitset (void);
@@ -168,29 +170,31 @@ EXTERN tree m2type_BuildEndFunctionType (tree func, tree type,
 EXTERN tree m2type_BuildStartFunctionType (
     location_t location ATTRIBUTE_UNUSED, char *name ATTRIBUTE_UNUSED);
 EXTERN void m2type_InitFunctionTypeParameters (void);
-EXTERN tree m2type_BuildVariableArrayAndDeclare (location_t location,
+EXTERN tree m2type_BuildVariableArrayAndDeclare (location_t location, unsigned int tokno,
                                                  tree elementtype, tree high,
                                                  char *name, tree scope);
-EXTERN void m2type_InitSystemTypes (location_t location, int loc);
-EXTERN void m2type_InitBaseTypes (location_t location);
+EXTERN void m2type_InitSystemTypes (location_t location, unsigned int tokno, int loc);
+EXTERN void m2type_InitBaseTypes (location_t location, unsigned int tokno);
 EXTERN tree m2type_BuildStartType (location_t location, char *name, tree type);
 EXTERN tree m2type_BuildEndType (location_t location, tree type);
 EXTERN tree m2type_GetDefaultType (location_t location, char *name, tree type);
-EXTERN tree m2type_GetMinFrom (location_t location, tree type);
-EXTERN tree m2type_GetMaxFrom (location_t location, tree type);
+EXTERN tree m2type_GetMinFrom (location_t location, unsigned int tokno, tree type);
+EXTERN tree m2type_GetMaxFrom (location_t location, unsigned int tokno, tree type);
 EXTERN void m2type_BuildTypeDeclaration (location_t location, tree type);
 EXTERN tree m2type_BuildStartEnumeration (location_t location, char *name,
                                           bool ispacked);
-EXTERN tree m2type_BuildEndEnumeration (location_t location, tree enumtype,
-                                        tree enumvalues);
+EXTERN tree m2type_BuildEndEnumeration (location_t location, unsigned int tokno,
+					tree enumtype, tree enumvalues);
 EXTERN tree m2type_BuildEnumerator (location_t location, const char *name,
                                     tree value, tree *enumvalues);
 EXTERN tree m2type_BuildPointerType (tree totype);
 EXTERN tree m2type_BuildConstPointerType (tree totype);
-EXTERN tree m2type_BuildSetType (location_t location, char *name, tree type,
+EXTERN tree m2type_BuildSetType (location_t location, unsigned int tokno,
+				 char *name, tree type,
                                  tree lowval, tree highval, bool ispacked);
 EXTERN void *m2type_BuildStartSetConstructor (tree type);
-EXTERN void m2type_BuildSetConstructorElement (location_t location, void *p, tree value);
+EXTERN void m2type_BuildSetConstructorElement (location_t location, unsigned int tokno,
+					       void *p, tree value);
 EXTERN tree m2type_BuildEndSetConstructor (void *p);
 EXTERN void *m2type_BuildStartRecordConstructor (tree type);
 EXTERN tree m2type_BuildEndRecordConstructor (void *p);
@@ -199,8 +203,10 @@ EXTERN void *m2type_BuildStartArrayConstructor (tree type);
 EXTERN tree m2type_BuildEndArrayConstructor (void *p);
 EXTERN void m2type_BuildArrayConstructorElement (void *p, tree value,
                                                  tree indice);
-EXTERN tree m2type_BuildCharConstant (location_t location, const char *string);
-EXTERN tree m2type_BuildCharConstantChar (location_t location, char ch);
+EXTERN tree m2type_BuildCharConstant (location_t location, unsigned int tokno,
+				      const char *string);
+EXTERN tree m2type_BuildCharConstantChar (location_t location, unsigned int tokno,
+					  char ch);
 EXTERN tree m2type_BuildSubrangeType (location_t location, char *name,
                                       tree type, tree lowval, tree highval);
 EXTERN tree m2type_gm2_unsigned_type (tree type);

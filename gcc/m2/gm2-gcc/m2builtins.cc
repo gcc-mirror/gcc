@@ -392,7 +392,7 @@ struct builtin_type_info
 {
   const char *name;
   unsigned int returnType;
-  tree (*functionHandler) (location_t, tree);
+  tree (*functionHandler) (location_t, unsigned int, tree);
 };
 
 struct GTY(()) builtin_macro_definition
@@ -442,21 +442,21 @@ static tree DoBuiltinIsfinite (location_t location, tree value);
 static tree DoBuiltinIsnan (location_t location, tree value);
 static void create_function_prototype (location_t location,
                                        struct builtin_function_entry *fe);
-static tree doradix (location_t location, tree type);
-static tree doplaces (location_t location, tree type);
-static tree doexponentmin (location_t location, tree type);
-static tree doexponentmax (location_t location, tree type);
-static tree dolarge (location_t location, tree type);
-static tree dosmall (location_t location, tree type);
-static tree doiec559 (location_t location, tree type);
-static tree dolia1 (location_t location, tree type);
-static tree doiso (location_t location, tree type);
-static tree doieee (location_t location, tree type);
-static tree dorounds (location_t location, tree type);
-static tree dogUnderflow (location_t location, tree type);
-static tree doexception (location_t location, tree type);
-static tree doextend (location_t location, tree type);
-static tree donModes (location_t location, tree type);
+static tree doradix (location_t location, unsigned int tokno, tree type);
+static tree doplaces (location_t location, unsigned int tokno, tree type);
+static tree doexponentmin (location_t location, unsigned int tokno, tree type);
+static tree doexponentmax (location_t location, unsigned int tokno, tree type);
+static tree dolarge (location_t location, unsigned int tokno, tree type);
+static tree dosmall (location_t location, unsigned int tokno, tree type);
+static tree doiec559 (location_t location, unsigned int tokno, tree type);
+static tree dolia1 (location_t location, unsigned int tokno, tree type);
+static tree doiso (location_t location, unsigned int tokno, tree type);
+static tree doieee (location_t location, unsigned int tokno, tree type);
+static tree dorounds (location_t location, unsigned int tokno, tree type);
+static tree dogUnderflow (location_t location, unsigned int tokno, tree type);
+static tree doexception (location_t location, unsigned int tokno, tree type);
+static tree doextend (location_t location, unsigned int tokno, tree type);
+static tree donModes (location_t location, unsigned int tokno, tree type);
 /* Prototypes finish here.  */
 
 #define m2builtins_c
@@ -563,15 +563,15 @@ m2builtins_GetBuiltinTypeInfoType (const char *ident)
    RType Tree if ident is large, small.  */
 
 tree
-m2builtins_GetBuiltinTypeInfo (location_t location, tree type,
-                               const char *ident)
+m2builtins_GetBuiltinTypeInfo (location_t location, unsigned int tokno,
+			       tree type, const char *ident)
 {
   int i = 0;
 
   type = m2tree_skip_type_decl (type);
   while (m2_type_info[i].name != NULL)
     if (strcmp (m2_type_info[i].name, ident) == 0)
-      return (*m2_type_info[i].functionHandler) (location, type);
+      return (*m2_type_info[i].functionHandler) (location, tokno, type);
     else
       i++;
   return NULL_TREE;
@@ -580,7 +580,8 @@ m2builtins_GetBuiltinTypeInfo (location_t location, tree type,
 /* doradix - returns the radix of the floating point, type.  */
 
 static tree
-doradix (location_t location ATTRIBUTE_UNUSED, tree type)
+doradix (location_t location ATTRIBUTE_UNUSED,
+	 unsigned int tokno ATTRIBUTE_UNUSED, tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     {
@@ -596,7 +597,8 @@ doradix (location_t location ATTRIBUTE_UNUSED, tree type)
    places used to store values of the corresponding real number type.  */
 
 static tree
-doplaces (location_t location ATTRIBUTE_UNUSED, tree type)
+doplaces (location_t location ATTRIBUTE_UNUSED,
+	  unsigned int tokno ATTRIBUTE_UNUSED, tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     {
@@ -620,7 +622,8 @@ doplaces (location_t location ATTRIBUTE_UNUSED, tree type)
 /* doexponentmin - returns the whole number of the exponent minimum.  */
 
 static tree
-doexponentmin (location_t location ATTRIBUTE_UNUSED, tree type)
+doexponentmin (location_t location ATTRIBUTE_UNUSED,
+	       unsigned int tokno ATTRIBUTE_UNUSED, tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     {
@@ -635,7 +638,8 @@ doexponentmin (location_t location ATTRIBUTE_UNUSED, tree type)
 /* doexponentmax - returns the whole number of the exponent maximum.  */
 
 static tree
-doexponentmax (location_t location ATTRIBUTE_UNUSED, tree type)
+doexponentmax (location_t location ATTRIBUTE_UNUSED,
+	       unsigned int tokno ATTRIBUTE_UNUSED, tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     {
@@ -668,7 +672,8 @@ computeLarge (tree type)
 /* dolarge - return the largest value of the corresponding real type.  */
 
 static tree
-dolarge (location_t location ATTRIBUTE_UNUSED, tree type)
+dolarge (location_t location ATTRIBUTE_UNUSED,
+	 unsigned int tokno ATTRIBUTE_UNUSED, tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     return computeLarge (type);
@@ -695,7 +700,8 @@ computeSmall (tree type)
    real type.  */
 
 static tree
-dosmall (location_t location ATTRIBUTE_UNUSED, tree type)
+dosmall (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	 tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     return computeSmall (type);
@@ -707,13 +713,14 @@ dosmall (location_t location ATTRIBUTE_UNUSED, tree type)
    IEC 559:1989 (also known as IEEE 754:1987) in all regards.  */
 
 static tree
-doiec559 (location_t location, tree type)
+doiec559 (location_t location, unsigned int tokno,
+	  tree type)
 {
-  if (m2expr_IsTrue (m2expr_BuildEqualTo (location,
+  if (m2expr_IsTrue (m2expr_BuildEqualTo (location, tokno,
                                           m2decl_BuildIntegerConstant (32),
                                           m2expr_GetSizeOfInBits (type))))
     return m2type_GetBooleanTrue ();
-  if (m2expr_IsTrue (m2expr_BuildEqualTo (location,
+  if (m2expr_IsTrue (m2expr_BuildEqualTo (location, tokno,
                                           m2decl_BuildIntegerConstant (64),
                                           m2expr_GetSizeOfInBits (type))))
     return m2type_GetBooleanTrue ();
@@ -723,23 +730,24 @@ doiec559 (location_t location, tree type)
 /* dolia1 - returns TRUE if using ieee (currently always TRUE).  */
 
 static tree
-dolia1 (location_t location, tree type)
+dolia1 (location_t location, unsigned int tokno, tree type)
 {
-  return doieee (location, type);
+  return doieee (location, tokno, type);
 }
 
 /* doiso - returns TRUE if using ieee (--fixme--).  */
 
 static tree
-doiso (location_t location, tree type)
+doiso (location_t location, unsigned int tokno, tree type)
 {
-  return doieee (location, type);
+  return doieee (location, tokno, type);
 }
 
 /* doieee - returns TRUE if ieee arithmetic is being used.  */
 
 static tree
-doieee (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
+doieee (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	tree ATTRIBUTE_UNUSED)
 {
   /* --fixme-- maybe we should look for the -mno-ieee flag and return this
      result.  */
@@ -751,7 +759,8 @@ doieee (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
    type nearest to the mathematical result.  */
 
 static tree
-dorounds (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
+dorounds (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	  tree type ATTRIBUTE_UNUSED)
 {
   if (FLT_ROUNDS)
     return m2type_GetBooleanTrue ();
@@ -763,7 +772,8 @@ dorounds (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
    corresponding real number type between 0.0 and small.  */
 
 static tree
-dogUnderflow (location_t location ATTRIBUTE_UNUSED, tree type)
+dogUnderflow (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	      tree type)
 {
   if (SCALAR_FLOAT_TYPE_P (type))
     {
@@ -780,7 +790,8 @@ dogUnderflow (location_t location ATTRIBUTE_UNUSED, tree type)
 /* doexception - */
 
 static tree
-doexception (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
+doexception (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	     tree type ATTRIBUTE_UNUSED)
 {
   return m2type_GetBooleanTrue ();
 }
@@ -788,7 +799,8 @@ doexception (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
 /* doextend - */
 
 static tree
-doextend (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
+doextend (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	  tree type ATTRIBUTE_UNUSED)
 {
   return m2type_GetBooleanTrue ();
 }
@@ -796,7 +808,8 @@ doextend (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
 /* donModes - */
 
 static tree
-donModes (location_t location ATTRIBUTE_UNUSED, tree type ATTRIBUTE_UNUSED)
+donModes (location_t location ATTRIBUTE_UNUSED, unsigned int ATTRIBUTE_UNUSED,
+	  tree type ATTRIBUTE_UNUSED)
 {
   return m2decl_BuildIntegerConstant (1);
 }

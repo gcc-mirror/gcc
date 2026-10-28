@@ -350,4 +350,11 @@ PROCEDURE GetCurrentErrorScope () : ErrorScope ;
 PROCEDURE ResetErrorScope ;
 
 
+(*
+   Init - initializes the error list.
+*)
+
+PROCEDURE Init ;
+
+
 END M2Error.

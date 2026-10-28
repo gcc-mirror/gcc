@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,8 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stdlib.h>
-#include <unistd.h>
 #define _IO_C
 
 #include "GIO.h"
@@ -177,7 +177,7 @@ static void doWrite (int fd, FIO_File f, char ch)
             r = static_cast<int> (libc_write (FIO_GetUnixFileDescriptor (f), &ch, static_cast<size_t> (1)));
             if (r == 1)
               {
-                return ;
+                return;
               }
             else if (r == -1)
               {
@@ -186,7 +186,7 @@ static void doWrite (int fd, FIO_File f, char ch)
                 if ((r != errno_EAGAIN) && (r != errno_EINTR))
                   {
                     fdState.array[fd].IsEof = true;
-                    return ;
+                    return;
                   }
               }
           }
@@ -217,7 +217,7 @@ static void setFlag (termios_TERMIOS t, termios_Flag f, bool b)
 
 static void doraw (termios_TERMIOS term)
 {
-  /*
+  /* 
     * from man 3 termios
     *           termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
     *                                   | INLCR | IGNCR | ICRNL | IXON);
@@ -252,7 +252,7 @@ static void doraw (termios_TERMIOS term)
 
 static void dononraw (termios_TERMIOS term)
 {
-  /*
+  /* 
     * we undo these settings, (although we leave the character size alone)
     *
     * from man 3 termios
@@ -319,7 +319,7 @@ extern "C" void IO_Read (char *ch)
             r = static_cast<int> (libc_read (FIO_GetUnixFileDescriptor (FIO_StdIn), ch, static_cast<size_t> (1)));
             if (r == 1)
               {
-                return ;
+                return;
               }
             else if (r == -1)
               {
@@ -329,7 +329,7 @@ extern "C" void IO_Read (char *ch)
                   {
                     fdState.array[0].IsEof = true;
                     (*ch) = ASCII_eof;
-                    return ;
+                    return;
                   }
               }
           }
@@ -471,11 +471,11 @@ extern "C" void IO_EchoOff (int fd, bool input)
   term = termios_KillTermios (term);
 }
 
-extern "C" void _M2_IO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_IO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_IO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_IO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

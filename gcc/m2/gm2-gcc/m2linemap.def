@@ -28,7 +28,7 @@ EXPORT QUALIFIED StartFile, EndFile, StartLine, GetLocationColumn, GetLocationRa
                  GetLocationBinary, UnknownLocation, BuiltinsLocation,
                  GetLineNoFromLocation, GetColumnNoFromLocation,
                  GetFilenameFromLocation, ErrorAt, ErrorAtf,
-                 WarningAtf, NoteAtf, internal_error ;
+                 WarningAtf, NoteAtf, internal_error, error ;
 
 
 PROCEDURE StartFile (filename: ADDRESS; linebegin: CARDINAL) ;
@@ -49,6 +49,7 @@ PROCEDURE ErrorAtf (location: location_t; message: ADDRESS) ;
 PROCEDURE WarningAtf (location: location_t; message: ADDRESS) ;
 PROCEDURE NoteAtf (location: location_t; message: ADDRESS) ;
 PROCEDURE internal_error (message: ADDRESS) ;
+PROCEDURE error (message: ADDRESS) ;
 
 
 END m2linemap.

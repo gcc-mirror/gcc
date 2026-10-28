@@ -23,11 +23,11 @@ IMPLEMENTATION MODULE M2Code ;
 
 
 FROM SYSTEM IMPORT WORD ;
-FROM M2Options IMPORT Statistics, OptimizeUncalledProcedures,
-                      OptimizeCommonSubExpressions,
-                      StyleChecking, Optimizing, WholeProgram,
+FROM M2Options IMPORT GetStatisticsFlag, GetStyleFlag,
+                      GetOptimizing, GetWholeProgramFlag,
                       GetDumpDecl, GetDumpGimple ;
 
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
 FROM M2LangDump IMPORT CreateDumpDecl, CloseDumpDecl, MakeGimpleTemplate ;
 FROM M2Error IMPORT InternalError ;
 FROM M2Students IMPORT StudentVariableCheck ;
@@ -128,7 +128,7 @@ PROCEDURE ResourceAnalysis ;
 VAR
    value: CARDINAL ;
 BEGIN
-   IF Statistics
+   IF GetStatisticsFlag (BuiltinTokenNo)
    THEN
       Count := CountQuads() ;
 
@@ -157,7 +157,7 @@ END ResourceAnalysis ;
 
 PROCEDURE RemoveUnreachableCode ;
 BEGIN
-   IF WholeProgram
+   IF GetWholeProgramFlag (BuiltinTokenNo)
    THEN
       ForeachSourceModuleDo(RemoveProcedures)
    ELSE
@@ -178,7 +178,7 @@ BEGIN
       CreateDumpDecl ("symbol resolver of filtered symbols\n") ;
       DumpFilteredResolver
    END ;
-   IF WholeProgram
+   IF GetWholeProgramFlag (BuiltinTokenNo)
    THEN
       ForeachSourceModuleDo (StartDeclareScope)
    ELSE
@@ -237,7 +237,7 @@ END DoCodeBlock ;
 
 PROCEDURE DetermineSubExpTemporaries ;
 BEGIN
-   IF WholeProgram
+   IF GetWholeProgramFlag (BuiltinTokenNo)
    THEN
       ForeachSourceModuleDo (DiscoverSSA)
    ELSE
@@ -266,13 +266,13 @@ BEGIN
    (* now is a suitable time to check for student errors as *)
    (* we know all the front end symbols must be resolved.   *)
 
-   IF StyleChecking
+   IF GetStyleFlag (BuiltinTokenNo)
    THEN
       StudentVariableCheck
    END ;
 
    SetPassToCodeGeneration ;
-   SetFlagUnitAtATime (Optimizing) ;
+   SetFlagUnitAtATime (GetOptimizing (BuiltinTokenNo) > 0) ;
    StartGlobalContext ;
    InitDeclarations ;     (* default and fixed sized types are all declared from now on.  *)
 
@@ -466,7 +466,7 @@ BEGIN
          printf0('===============\n')
       END ;
       ForeachScopeBlockDo2 (sb, ConvertQuadsToTree)
-   ELSIF IsModuleWithinProcedure(scope)
+   ELSIF IsModuleWithinProcedure (scope)
    THEN
       IF TraceQuadruples
       THEN
@@ -476,7 +476,7 @@ BEGIN
          printf0('===============\n')
       END ;
       ForeachScopeBlockDo2 (sb, ConvertQuadsToTree) ;
-      ForeachProcedureDo(scope, CodeBlock)
+      ForeachProcedureDo (scope, CodeBlock)
    ELSE
       IF TraceQuadruples
       THEN
@@ -486,15 +486,15 @@ BEGIN
          printf0('===============\n')
       END ;
       ForeachScopeBlockDo2 (sb, ConvertQuadsToTree) ;
-      IF WholeProgram
+      IF GetWholeProgramFlag (BuiltinTokenNo)
       THEN
-         ForeachSourceModuleDo(CodeProcedures)
+         ForeachSourceModuleDo (CodeProcedures)
       ELSE
-         ForeachProcedureDo(scope, CodeBlock)
+         ForeachProcedureDo (scope, CodeBlock)
       END ;
-      ForeachInnerModuleDo(scope, CodeProceduresWithinBlock)
+      ForeachInnerModuleDo (scope, CodeProceduresWithinBlock)
    END ;
-   KillScopeBlock(sb)
+   KillScopeBlock (sb)
 END CodeBlock ;
 
 

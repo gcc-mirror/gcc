@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,10 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
-#include <unistd.h>
 #define _M2RTS_C
 
 #include "GM2RTS.h"
@@ -592,7 +590,7 @@ extern "C" unsigned int M2RTS_Length (const char *a_, unsigned int _a_high)
 
 extern "C" void M2RTS_AssignmentException (void * filename, unsigned int line, unsigned int column, void * scope, void * message)
 {
-  /*
+  /* 
    The following are the runtime exception handler routines.
   */
   RTExceptions_Raise ( ((unsigned int) (M2EXCEPTION_rangeException)), filename, line, column, scope, message);

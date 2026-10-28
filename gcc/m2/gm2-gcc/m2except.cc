@@ -47,12 +47,14 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 static tree build_exc_ptr (location_t location);
 static tree do_begin_catch (location_t location);
 static tree do_end_catch (location_t location);
-static tree begin_handler (location_t location);
+static tree begin_handler (location_t location, unsigned int tokno);
 static void finish_handler (location_t location, tree handler);
-static tree finish_handler_parms (location_t location, tree handler);
+static tree finish_handler_parms (location_t location,
+				  unsigned int tokno, tree handler);
 static void finish_handler_sequence (tree try_block);
 static tree begin_try_block (location_t location);
-static tree finish_expr_stmt (location_t location, tree expr);
+static tree finish_expr_stmt (location_t location,
+			      unsigned int tokno, tree expr);
 static tree maybe_cleanup_point_expr_void (tree expr);
 static tree build_target_expr_with_type (location_t location, tree init,
                                          tree type);
@@ -383,7 +385,7 @@ do_rethrow (location_t location)
    identical to the C++ front end.  */
 
 static tree
-gm2_build_throw (location_t location, tree exp)
+gm2_build_throw (location_t location, unsigned int tokno, tree exp)
 {
   m2assert_AssertLocation (location);
 
@@ -398,7 +400,7 @@ gm2_build_throw (location_t location, tree exp)
 
       exp = m2expr_FoldAndStrip (
           convert (m2type_GetIntegerType (), m2expr_FoldAndStrip (exp)));
-      exp = m2expr_GetIntegerOne (location);
+      exp = m2expr_GetIntegerOne (location, tokno);
 
       /* Allocate the space for the exception.  */
       allocate_expr = do_allocate_exception (location, TREE_TYPE (exp));
@@ -408,7 +410,7 @@ gm2_build_throw (location_t location, tree exp)
       CLEANUP_EH_ONLY (allocate_expr) = 1;
 
       object = build1 (NOP_EXPR, build_pointer_type (TREE_TYPE (exp)), ptr);
-      object = m2expr_BuildIndirect (location, object, TREE_TYPE (exp));
+      object = m2expr_BuildIndirect (location, tokno, object, TREE_TYPE (exp));
 
       /* And initialize the exception object.  */
       exp = build2 (INIT_EXPR, TREE_TYPE (object), object, exp);
@@ -434,9 +436,9 @@ gm2_build_throw (location_t location, tree exp)
 /* gccgm2_BuildThrow - builds a throw expression and return the tree.  */
 
 tree
-m2except_BuildThrow (location_t location, tree expr)
+m2except_BuildThrow (location_t location, unsigned int tokno, tree expr)
 {
-  return gm2_build_throw (location, expr);
+  return gm2_build_throw (location, tokno, expr);
 }
 
 /* Build up a call to __cxa_begin_catch, to tell the runtime that the
@@ -489,12 +491,12 @@ m2except_BuildTryEnd (tree try_block)
    'catch (...) {'.  It returns the handler tree.  */
 
 tree
-m2except_BuildCatchBegin (location_t location)
+m2except_BuildCatchBegin (location_t location, unsigned int tokno)
 {
-  tree handler = begin_handler (location);
+  tree handler = begin_handler (location, tokno);
 
   m2assert_AssertLocation (location);
-  return finish_handler_parms (location, handler);
+  return finish_handler_parms (location, tokno, handler);
 }
 
 /* BuildCatchEnd - completes a try catch block.  It returns the,
@@ -513,13 +515,13 @@ m2except_BuildCatchEnd (location_t location, tree handler, tree try_block)
 /* Begin a handler.  Returns a HANDLER if appropriate.  */
 
 static tree
-begin_handler (location_t location)
+begin_handler (location_t location, unsigned int tokno)
 {
   tree r;
 
   m2assert_AssertLocation (location);
   r = build_stmt (location, HANDLER, NULL_TREE, NULL_TREE);
-  add_stmt (location, r);
+  m2block_add_stmt (location, tokno, r);
 
   HANDLER_BODY (r) = m2block_begin_statement_list ();
 
@@ -549,11 +551,12 @@ finish_handler (location_t location, tree handler)
    HANDLER.  */
 
 static tree
-finish_handler_parms (location_t location, tree handler)
+finish_handler_parms (location_t location, unsigned int tokno,
+		      tree handler)
 {
   m2assert_AssertLocation (location);
   /* Equivalent to C++ catch (...).  */
-  finish_expr_stmt (location, do_begin_catch (location));
+  finish_expr_stmt (location, tokno, do_begin_catch (location));
 
   HANDLER_TYPE (handler) = NULL_TREE;
   return handler;
@@ -588,7 +591,7 @@ begin_try_block (location_t location)
 /* Finish an expression-statement, whose EXPRESSION is as indicated.  */
 
 static tree
-finish_expr_stmt (location_t location, tree expr)
+finish_expr_stmt (location_t location, unsigned int tokno, tree expr)
 {
   tree r = NULL_TREE;
 
@@ -605,7 +608,7 @@ finish_expr_stmt (location_t location, tree expr)
             expr = build_stmt (location, EXPR_STMT, expr);
           expr = maybe_cleanup_point_expr_void (expr);
         }
-      r = add_stmt (location, expr);
+      r = m2block_add_stmt (location, tokno, expr);
     }
 
   return r;

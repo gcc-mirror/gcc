@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,8 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <stdlib.h>
 #   include "GStorage.h"
 #   include "Gmcrts.h"
 #if defined(__cplusplus)
@@ -69,7 +69,7 @@ typedef unsigned char *Indexing_PtrToByte;
 typedef Indexing__T2 *Indexing_Index__opaque;
 
 struct Indexing__T2_r {
-                        void *ArrayStart;
+                        void * ArrayStart;
                         unsigned int ArraySize;
                         unsigned int Used;
                         unsigned int Low;
@@ -339,7 +339,7 @@ extern "C" void Indexing_PutIndice (Indexing_Index i, unsigned int n, void * a)
             }
           if (oldSize != static_cast<Indexing_Index__opaque> (i)->ArraySize)
             {
-              /*
+              /* 
                IF Debug
                THEN
                   printf2('increasing memory hunk from %d to %d
@@ -562,10 +562,10 @@ extern "C" unsigned int Indexing_FindIndice (Indexing_Index i, void * a)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_Indexing_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Indexing_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }
 
-extern "C" void _M2_Indexing_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_Indexing_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

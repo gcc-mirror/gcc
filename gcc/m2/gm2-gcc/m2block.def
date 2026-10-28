@@ -210,7 +210,7 @@ PROCEDURE pop_statement_list () : tree ;
                  generated or another tree is given to add_stmt.
 *)
 
-PROCEDURE addStmtNote (location: location_t) ;
+PROCEDURE addStmtNote (location: location_t; tokno: CARDINAL) ;
 
 
 (*

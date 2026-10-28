@@ -159,7 +159,8 @@ m2statement_SetEndLocation (location_t location)
 
 static
 void
-copy_record_fields (location_t location, tree left, tree right)
+copy_record_fields (location_t location, unsigned int tokno,
+		    tree left, tree right)
 {
   unsigned int i;
   tree right_value;
@@ -169,7 +170,7 @@ copy_record_fields (location_t location, tree left, tree right)
     {
       tree left_field = m2treelib_get_field_no (left_type, NULL_TREE, false, i);
       tree left_ref = m2expr_BuildComponentRef (location, left, left_field);
-      m2statement_CopyByField (location, left_ref, right_value);
+      m2statement_CopyByField (location, tokno, left_ref, right_value);
     }
 }
 
@@ -177,7 +178,7 @@ copy_record_fields (location_t location, tree left, tree right)
 
 static
 void
-copy_array (location_t location, tree left, tree right)
+copy_array (location_t location, unsigned int tokno, tree left, tree right)
 {
   unsigned int i;
   tree value;
@@ -187,14 +188,14 @@ copy_array (location_t location, tree left, tree right)
   tree elt_type = TREE_TYPE (array_type);
   tree low_indice = TYPE_MIN_VALUE (index_type);
   low_indice
-      = m2convert_BuildConvert (location, index_type, low_indice, false);
+    = m2convert_BuildConvert (location, tokno, index_type, low_indice, false);
   FOR_EACH_CONSTRUCTOR_VALUE (values, i, value)
     {
       tree idx = m2decl_BuildIntegerConstant (i);
-      idx = m2convert_BuildConvert (location, index_type, idx, false);
+      idx = m2convert_BuildConvert (location, tokno, index_type, idx, false);
       tree array_ref = build4_loc (location, ARRAY_REF, elt_type, left,
 				   idx, low_indice, NULL_TREE);
-      m2statement_CopyByField (location, array_ref, value);
+      m2statement_CopyByField (location, tokno, array_ref, value);
     }
 }
 
@@ -202,7 +203,8 @@ copy_array (location_t location, tree left, tree right)
 
 static
 void
-copy_strncpy (location_t location, tree left, tree cst)
+copy_strncpy (location_t location, unsigned int tokno,
+	      tree left, tree cst)
 {
   tree result = m2builtins_BuiltinStrNCopy (location,
 					    m2expr_BuildAddr (location, left, false),
@@ -211,13 +213,14 @@ copy_strncpy (location_t location, tree left, tree cst)
   TREE_SIDE_EFFECTS (result) = true;
   TREE_USED (left) = true;
   TREE_USED (cst) = true;
-  add_stmt (location, result);
+  m2block_add_stmt (location, tokno, result);
 }
 
 /* CopyMemcpy copy bytes from src into dest using builtin_memcpy.  */
 
 void
-m2statement_CopyMemcpy (location_t location, tree dest, tree src, tree bytes)
+m2statement_CopyMemcpy (location_t location, unsigned int tokno,
+			tree dest, tree src, tree bytes)
 {
   tree addr_dest = m2expr_BuildAddr (location, dest, false);
   tree result = m2builtins_BuiltinMemCopy (location,
@@ -227,7 +230,7 @@ m2statement_CopyMemcpy (location_t location, tree dest, tree src, tree bytes)
   TREE_SIDE_EFFECTS (result) = true;
   TREE_USED (dest) = true;
   TREE_USED (src) = true;
-  add_stmt (location, result);
+  m2block_add_stmt (location, tokno, result);
 }
 
 /* CopyByField_Lower copy right to left using memcpy for unions,
@@ -237,7 +240,7 @@ m2statement_CopyMemcpy (location_t location, tree dest, tree src, tree bytes)
 
 static
 void
-CopyByField_Lower (location_t location,
+CopyByField_Lower (location_t location, unsigned int tokno,
 		   tree left, tree right)
 {
   tree left_type = TREE_TYPE (left);
@@ -245,16 +248,17 @@ CopyByField_Lower (location_t location,
   enum tree_code left_code = TREE_CODE (left_type);
 
   if (left_code == RECORD_TYPE && right_code == CONSTRUCTOR)
-    copy_record_fields (location, left, right);
+    copy_record_fields (location, tokno, left, right);
   else if (left_code == ARRAY_TYPE && right_code == CONSTRUCTOR)
-    copy_array (location, left, right);
+    copy_array (location, tokno, left, right);
   else if (left_code == UNION_TYPE && right_code == CONSTRUCTOR)
-    m2statement_CopyMemcpy (location, left, right,
+    m2statement_CopyMemcpy (location, tokno, left, right,
 			    m2expr_GetSizeOf (location, left));
   else if (right_code == STRING_CST)
-    copy_strncpy (location, left, right);
+    copy_strncpy (location, tokno, left, right);
   else
-    m2statement_BuildAssignmentStatement (location, left, right);
+    m2statement_BuildAssignmentStatement (location, tokno,
+					  left, right);
 }
 
 /* CopyByField recursively checks each field to ensure GCC
@@ -262,19 +266,20 @@ CopyByField_Lower (location_t location,
    Otherwise use strncpy or memcpy depending upon type.  */
 
 void
-m2statement_CopyByField (location_t location, tree des, tree expr)
+m2statement_CopyByField (location_t location, unsigned int tokno,
+			 tree des, tree expr)
 {
   if (m2type_IsGccStrictTypeEquivalent (des, expr))
-    m2statement_BuildAssignmentStatement (location, des, expr);
+    m2statement_BuildAssignmentStatement (location, tokno, des, expr);
   else
-    CopyByField_Lower (location, des, expr);
+    CopyByField_Lower (location, tokno, des, expr);
 }
 
-/* BuildAssignmentTree builds the assignment of des and expr.
-   It returns des.  */
+/* BuildAssignmentStatement builds the assignment of des and expr.  */
 
 void
-m2statement_BuildAssignmentTree (location_t location, tree des, tree expr)
+m2statement_BuildAssignmentStatement (location_t location, unsigned int tokno,
+				      tree des, tree expr)
 {
   tree result;
 
@@ -290,7 +295,7 @@ m2statement_BuildAssignmentTree (location_t location, tree des, tree expr)
       if ((TREE_CODE (expr) == CONSTRUCTOR)
 	  && (TREE_CODE (TREE_TYPE (des)) == ARRAY_TYPE))
 	{
-	  m2statement_CopyMemcpy (location, des, expr,
+	  m2statement_CopyMemcpy (location, tokno, des, expr,
 				  m2expr_GetSizeOf (location,
 						    m2type_GetTreeType (des)));
 	  return;
@@ -300,44 +305,39 @@ m2statement_BuildAssignmentTree (location_t location, tree des, tree expr)
       else
         result = build2 (
             MODIFY_EXPR, TREE_TYPE (des), des,
-            m2convert_BuildConvert (location, TREE_TYPE (des), expr, false));
+            m2convert_BuildConvert (location, tokno,
+				    TREE_TYPE (des), expr, false));
     }
 
   TREE_SIDE_EFFECTS (result) = true;
   TREE_USED (des) = true;
   TREE_USED (expr) = true;
-  add_stmt (location, result);
-}
-
-/* BuildAssignmentStatement builds the assignment of des and expr.  */
-
-void
-m2statement_BuildAssignmentStatement (location_t location, tree des, tree expr)
-{
-  m2statement_BuildAssignmentTree (location, des, expr);
+  m2block_add_stmt (location, tokno, result);
 }
 
 /* BuildGoto builds a goto operation.  */
 
 void
-m2statement_BuildGoto (location_t location, char *name)
+m2statement_BuildGoto (location_t location, unsigned int tokno, char *name)
 {
   tree label = m2block_getLabel (location, name);
 
   m2assert_AssertLocation (location);
   TREE_USED (label) = true;
-  add_stmt (location, build1 (GOTO_EXPR, void_type_node, label));
+  m2block_add_stmt (location, tokno,
+		    build1 (GOTO_EXPR, void_type_node, label));
 }
 
 /* DeclareLabel create a label, name.  */
 
 void
-m2statement_DeclareLabel (location_t location, char *name)
+m2statement_DeclareLabel (location_t location, unsigned int tokno, char *name)
 {
   tree label = m2block_getLabel (location, name);
 
   m2assert_AssertLocation (location);
-  add_stmt (location, build1 (LABEL_EXPR, void_type_node, label));
+  m2block_add_stmt (location, tokno,
+		    build1 (LABEL_EXPR, void_type_node, label));
 }
 
 /* BuildParam build a list of parameters, ready for a subsequent
@@ -628,7 +628,8 @@ m2statement_BuildCleanUp (tree param)
 /* BuildAsm generates an inline assembler instruction.  */
 
 void
-m2statement_BuildAsm (location_t location, tree instr, bool isVolatile,
+m2statement_BuildAsm (location_t location, unsigned int tokno,
+		      tree instr, bool isVolatile,
                       bool isSimple, tree inputs, tree outputs, tree trash,
                       tree labels)
 {
@@ -643,7 +644,7 @@ m2statement_BuildAsm (location_t location, tree instr, bool isVolatile,
   ASM_BASIC_P (args) = isSimple;
   ASM_VOLATILE_P (args) = isVolatile;
 
-  add_stmt (location, args);
+  m2block_add_stmt (location, tokno, args);
 }
 
 /* BuildStart creates a module initialization function.  We make
@@ -696,11 +697,12 @@ m2statement_BuildEnd (location_t location, tree fndecl, bool nested)
    parameters and no return value.  */
 
 void
-m2statement_BuildCallInner (location_t location, tree fndecl)
+m2statement_BuildCallInner (location_t location, unsigned int tokno,
+			    tree fndecl)
 {
   m2assert_AssertLocation (location);
   param_list = NULL_TREE;
-  add_stmt (location,
+  m2block_add_stmt (location, tokno,
             m2statement_BuildProcedureCallTree (location, fndecl, NULL_TREE));
 }
 
@@ -736,7 +738,8 @@ m2statement_BuildIfThenElseEnd (tree condition, tree then_block,
    RETURN ( value ).  */
 
 void
-m2statement_BuildReturnValueCode (location_t location, tree fndecl, tree value)
+m2statement_BuildReturnValueCode (location_t location, unsigned int tokno,
+				  tree fndecl, tree value)
 {
   tree ret_stmt;
   tree t;
@@ -744,18 +747,18 @@ m2statement_BuildReturnValueCode (location_t location, tree fndecl, tree value)
   m2assert_AssertLocation (location);
   t = build2 (
       MODIFY_EXPR, TREE_TYPE (DECL_RESULT (fndecl)), DECL_RESULT (fndecl),
-      m2convert_BuildConvert (
-          location, m2tree_skip_type_decl (TREE_TYPE (DECL_RESULT (fndecl))),
-          value, false));
-
+      m2convert_BuildConvert (location, tokno,
+			      m2tree_skip_type_decl (TREE_TYPE (DECL_RESULT (fndecl))),
+			      value, false));
   ret_stmt = build_stmt (location, RETURN_EXPR, t);
-  add_stmt (location, ret_stmt);
+  m2block_add_stmt (location, tokno, ret_stmt);
 }
 
 /* IfExprJump if expr then jump to the label.  */
 
 void
-m2statement_IfExprJump (location_t location, tree exp, char *label)
+m2statement_IfExprJump (location_t location, unsigned int tokno,
+			tree exp, char *label)
 {
   tree if_jump;
 
@@ -764,33 +767,34 @@ m2statement_IfExprJump (location_t location, tree exp, char *label)
     exp = convert_loc (location, m2type_GetBooleanType (), exp);
 
   m2block_push_statement_list (m2block_begin_statement_list ());
-  m2statement_BuildGoto (location, label);
+  m2statement_BuildGoto (location, tokno, label);
   if_jump = build3 (COND_EXPR, void_type_node, exp,
 		    m2block_pop_statement_list (),
 		    alloc_stmt_list ());
-  add_stmt (location, if_jump);
+  m2block_add_stmt (location, tokno, if_jump);
 }
 
 
 /* IfBitInSetJump if bit in set jump to label.  */
 
 void
-m2statement_IfBitInSetJump (location_t location, bool invertCondition,
+m2statement_IfBitInSetJump (location_t location, unsigned int tokno,
+			    bool invertCondition,
 			    tree setvalue, tree bit, char *label)
 {
   tree condition;
 
-  condition = m2expr_BuildNotEqualTo (location,
-				      m2expr_BuildLogicalAnd (location,
-							      m2expr_BuildLSL (location,
-									       m2expr_GetWordOne (location),
+  condition = m2expr_BuildNotEqualTo (location, tokno,
+				      m2expr_BuildLogicalAnd (location, tokno,
+							      m2expr_BuildLSL (location, tokno,
+									       m2expr_GetWordOne (location, tokno),
 									       bit, false),
 							      setvalue),
-				      m2expr_GetWordZero (location)) ;
+				      m2expr_GetWordZero (location, tokno)) ;
   if (invertCondition)
-    condition = m2expr_BuildEqualTo (location, condition,
+    condition = m2expr_BuildEqualTo (location, tokno, condition,
 				     m2type_GetBooleanFalse ());
-  m2statement_IfExprJump (location, condition, label);
+  m2statement_IfExprJump (location, tokno, condition, label);
 }
 
 #include "gt-m2-m2statement.h"

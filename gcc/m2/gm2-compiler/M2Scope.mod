@@ -33,6 +33,7 @@ FROM M2Printf IMPORT printf0, printf1 ;
 FROM M2Quads IMPORT QuadOperator, GetFirstQuad, GetNextQuad, GetQuad, DisplayQuadRange ;
 FROM M2StackWord IMPORT StackOfWord, InitStackWord, KillStackWord,
                         PopWord, PushWord, PeepWord ;
+
 IMPORT M2Error ;
 
 
@@ -503,13 +504,15 @@ END enter ;
 
 PROCEDURE leave (sb: ScopeBlock) ;
 BEGIN
-   CASE sb^.kindScope OF
+   WITH sb^ DO
+      CASE kindScope OF
 
-   unsetscope,
-   ignorescope   : |
+      unsetscope,
+      ignorescope   : |
 
-   ELSE
-      M2Error.LeaveErrorScope
+      ELSE
+         M2Error.LeaveErrorScope
+      END
    END
 END leave ;
 

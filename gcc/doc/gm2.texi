@@ -240,6 +240,7 @@ such as the AVR and the ARM).
 * Alignment::             Data type alignment.
 * Packed::                Packing data types.
 * Built-ins::             Accessing GNU Modula-2 Built-ins.
+* Pragmas::               How to use pragmas.
 * The PIM system module:: SYSTEM data types and procedures.
 * The ISO system module:: SYSTEM data types, procedures and run time.
 @c @ifnothtml
@@ -409,6 +410,10 @@ default if a requested definition module is not found.
 @item -fdump-builtins
 Display all builtin procedure functions.
 This is an internal command line option.
+
+@item -fdump-pragmas
+display all supported pragma qualidents with their data type and
+initial value.
 
 @item -fdump-system-exports
 display all inbuilt system items.
@@ -597,8 +602,11 @@ behavior of @code{DIV} and @code{MOD} operators.
 @xref{Dialect}.
 
 @item -fpositive-mod-floor-div
-forces the @code{DIV} and @code{MOD} operators to behave as defined by PIM4.
-All modulus results are positive and the results from the division are
+forces the @code{DIV} and @code{MOD} operators to behave as defined by
+PIM4.  All modulus results are positive and the results from the
+division are rounded to the floor.  Note that if either
+@samp{-fpositive-mod-floor} or @samp{-fpim4} or @samp{-fiso} are used
+then all results are positive and the results from the division are
 rounded to the floor.
 @xref{Dialect}.
 
@@ -733,22 +741,22 @@ By default this option is on.
 Wideset provision can be disabled by @samp{-fno-wideset}
 and no reference will be made to the run time @samp{M2WIDESET} library.
 
+@item -Wall
+turn on all Modula-2 warnings.
+
+@item -Wpedantic
+forces the compiler to reject nested @code{WITH} statements
+referencing the same record type.  Does not allow multiple imports of
+the same item from a module.  It also checks that: procedure variables
+are written to before being read; variables are not only written to
+but read from; variables are declared and used.  If the compiler
+encounters a variable being read before written it will terminate with
+a message.  It will check that @code{FOR} loop indices are not used
+outside the end of this loop without being reset.
+
 @c the following warning options are complete but need to be
 @c regression tested against all other front ends
 @c to ensure the options do not conflict.
-
-@c @item -Wall
-@c turn on all Modula-2 warnings.
-
-@c @item -Wpedantic
-@c forces the compiler to reject nested @code{WITH} statements
-@c referencing the same record type.  Does not allow multiple imports of
-@c the same item from a module.  It also checks that: procedure variables
-@c are written to before being read; variables are not only written to
-@c but read from; variables are declared and used.  If the compiler
-@c encounters a variable being read before written it will terminate with
-@c a message.  It will check that @code{FOR} loop indices are not used
-@c outside the end of this loop without being reset.
 
 @c @item -Wpedantic-cast
 @c warns if the ISO system function is used and if the size of
@@ -762,12 +770,12 @@ and no reference will be made to the run time @samp{M2WIDESET} library.
 @c against their implementation module counterpart.  This is not
 @c necessary in ISO or PIM versions of Modula-2.
 
-@c @item -Wstyle
-@c checks for poor programming style.  This option is aimed at new users of
-@c Modula-2 in that it checks for situations which might cause confusion
-@c and thus mistakes.  It checks whether variables of the same name are
-@c declared in different scopes and whether variables look like keywords.
-@c Experienced users might find this option too aggressive.
+@item -Wstyle
+checks for poor programming style.  This option is aimed at new users of
+Modula-2 in that it checks for situations which might cause confusion
+and thus mistakes.  It checks whether variables of the same name are
+declared in different scopes and whether variables look like keywords.
+Experienced users might find this option too aggressive.
 
 @c @item -Wunused-variable
 @c warns if a variable has been declared and it not used.
@@ -3223,7 +3231,333 @@ The built-in mechanism will be applied to these generic
 libraries where appropriate.  Note for the mathematical routines to
 be in-lined you need to specify the @samp{-ffast-math -O} options.
 
-@node The PIM system module, The ISO system module, Built-ins, Using
+@node Pragmas, The PIM system module, Built-ins, Using
+@section Pragmas
+
+This section describes the pragma facility in GNU Modula-2.
+The pragma feature allows programmers to change compiler defaults,
+check compiler defaults or check command line options from
+within source code.  Pragmas also direct GCC loop vectorization
+control.
+
+The pragma facility is accessed using the ISO Modula-2 directives
+delimeters @code{<*} and @code{*>}.  These delimiters enable potentially
+non portable implementation specific features and therefore should be
+used sparingly.  The design of the pragma facility within the
+delimiters @code{<*} and @code{*>} attempts to follow the grammar of
+the pragma facility found in M2R10.
+
+The EBNF for the grammar can be found in @ref{EBNF}.  The root EBNF
+rules for the pragmas discussed in this section are
+@code{PragmaProcedure} and @code{PragmaGlobal}.  @code{PragmaGlobal}
+is only available directly after the module declaration of a
+definition, implementation or program module.  @code{PragmaProcedure}
+is available after the procedure declaration.  The combination of the
+per module and per procedure pragmas allow safe mixed dialect
+compilation when using @code{-fm2-whole-program}.
+
+For example suppose a mixed dialect project uses @code{DIV} and
+@code{MOD} with negative operands.  These modules can be safely
+combined by setting @samp{gm2.default.fpositive_mod_floor} and
+@samp{gm2.default.fiso} to @code{FALSE}.  Thereafter one module might
+be set @samp{gm2.local.fpim2} @code{TRUE} and @samp{gm2.local.fpim4}
+to @code{FALSE}.  The other module does the opposite
+and now when @samp{-fm2-whole-program} optimization is
+invoked the appropriate @code{DIV} and @code{MOD} operators will be
+selected according to the dialect specified.
+See the @samp{moddiv} example below for the same technique applied to
+procedures in the same module.
+
+@subsection Correspondence between options and pragmas
+
+This subsection describes how command line options can be queried and
+compiler defaults changed through pragmas.  Each option is mapped onto
+a pragma qualifier consisting of a @var{domain.scope.name}.  All
+supported pragma qualidents, their type and initial value can be
+obtained via @samp{-fdump-pragmas}.
+
+The @var{domain} is either @code{gcc} or @code{gm2} depending upon whether
+the option is a generic @code{gcc} option or a modula-2 front end
+specific option.  The scope is layered as shown in the diagram below
+and can be @code{local}, @code{option} or @code{default}.  In the
+diagram below the current @samp{-fpim2} flag value used by the compiler
+is obtained by examining the scopes @code{local}, @code{option} and
+@code{default} in order.
+
+@example
++----------+
+|  local   |    gm2.local.fpim2
+|----------|
+|  option  |    gm2.option.fpim2
+|----------|
+|  default |    gm2.default.fpim2
++----------+
+@end example
+
+In the diagram above the compiler defaults are in the bottom most
+layer.  A default value can be queried using the pragma qualident (in
+this case @code{gm2.default.fpim2}).  The values in the @code{default}
+scope may be set once by a pragma assignment.  Each default has a
+corresponding compiler option.  If a command line option is used the
+corresponding default value becomes immutable.  A @code{default} scope
+value exists for the complete translation unit whereas a @code{local}
+value exists for the scope of the module or procedure.  All
+@code{option} scope entities are read-only.  The @code{gcc} domain
+pragmas cannot be set in the @code{local} scope.
+
+The value of a pragma qualifier can be obtained by
+@code{$(}@var{domain.scope.name}@code{)}.  The existance of a pragma
+qualifier can be tested by @code{?(}@var{domain.scope.name}@code{)}.
+A designator pragma qualifier can be assigned and the designator takes
+the form @var{domain.scope.name}.
+
+@subsection Example of pragma enabling debug
+
+In all these pragma examples the program module can be compiled by:
+
+@example
+$ gm2 @var{programmodule}.mod
+@end example
+
+and the in code pragmas will enable the preset defaults.
+In the example below the @samp{-g} option is turned on for all
+translation units.
+
+@example
+MODULE debug ;
+
+<* gm2.default.g=TRUE *>
+
+BEGIN
+END debug.
+@end example
+
+@subsection Example of pragma enabling debug and whole program optimization
+
+In the example below the
+@samp{-fm2-whole-program},
+@samp{-fm2-g},
+@samp{-fsoft-check-all}
+and
+@samp{-O0}
+options are turned on for all translation units.  Note this can be
+achieved in a definition module if required.  A @code{default} scope
+pragma qualident may only be set once though.
+The minimal example below could to
+extended to contain normal code definitions.
+
+@example
+DEFINITION MODULE cs102 ;
+
+<* gm2.default.fm2_whole_program=TRUE *>
+<* gm2.default.fm2_g=TRUE *>
+<* gm2.default.fsoft_check_all=TRUE *>
+<* gcc.default.O=0 *>
+
+END cs102.
+@end example
+
+Below is a minimal implementation module.
+@example
+
+IMPLEMENTATION MODULE cs102 ;
+END cs102.
+
+@end example
+
+Finally the skeleton program module is shown below, which only needs
+to import the @code{cs102} module to initialize the desired defaults.
+
+@example
+MODULE coursework ;
+
+IMPORT cs102 ;
+
+BEGIN
+END coursework.
+@end example
+
+Now the compiler can be invoked by:
+
+@example
+$ gm2 coursework.mod
+@end example
+
+and a fully compiled application using full debugging support for
+all modules will be generated.
+
+@subsection Example of pragma enabling local settings
+
+The example below uses per procedure pragma settings to
+enable and disable positive modulus results when encountering
+a negative lhs operand.
+
+@example
+MODULE moddiv ;
+
+FROM libc IMPORT printf, exit ;
+
+PROCEDURE modpos (x, y: INTEGER) : INTEGER ;
+   <* gm2.local.fpositive_mod_floor_div=TRUE  *>
+BEGIN
+   RETURN x MOD y
+END modpos ;
+
+PROCEDURE modneg (x, y: INTEGER) : INTEGER ;
+   <* gm2.local.fpositive_mod_floor_div=FALSE  *>
+   <* gm2.local.fpim4=FALSE *>
+   <* gm2.local.fiso=FALSE *>
+BEGIN
+   RETURN x MOD y
+END modneg ;
+
+BEGIN
+   IF NOT (modpos (-31, 10) = 9)
+   THEN
+      printf ("modpos (-31, 10) should be 9\n");
+      exit (1)
+   END ;
+   IF NOT (modneg (-31, 10) = -1)
+   THEN
+      printf ("modneg (-31, 10) should be -1\n");
+      exit (1)
+   END ;
+   printf ("tests pass\n");
+END moddiv.
+@end example
+
+@subsection Example of pragma generated messages
+
+This section contains a test module showing how the fpim3 flag can be
+queried, enabled and displayed within a module.
+
+@example
+MODULE pim3opt ;
+
+<* TEST ?(gm2.option.fpim3)
+   | ERROR : "gm2.option.fpim3 is not supported."  *>
+<* MSG = INFO "the value of gm2.default.fpim3 is",
+              $(gm2.default.fpim3)  *>
+
+<* gm2.local.fpim3=TRUE *>
+
+PROCEDURE TestOn ;
+   <* TEST $(gm2.local.fpim3)
+      | ERROR : "gm2.local.fpim3 should be set."  *>
+VAR
+   i: CARDINAL ;
+BEGIN
+   i := 1
+END TestOn ;
+
+BEGIN
+   TestOn ;
+END pim3opt.
+@end example
+
+@subsection User generated info, warning, error and fatal messages
+
+The @code{FATAL}, @code{INFO}, @code{ERROR} and @code{WARNING} message
+facility has been implement for both the short and long form with
+optional message arguments.  The message facility can be conditionally
+invoked when querying pragma qualidents.
+
+@example
+MODULE supported ;
+
+(* Check -fpim2 is supported.  *)
+<* TEST ?(gm2.default.fpim2) | FATAL *>
+
+BEGIN
+END supported.
+@end example
+
+@example
+MODULE info ;
+
+<* MSG = INFO  *>
+
+BEGIN
+END info.
+@end example
+
+@example
+$ gm2 info.mod
+info.mod:3:10: note: In program module ‘info’:
+    3 | <* MSG = INFO  *>
+      |          ^~~~
+@end example
+
+@example
+MODULE info2 ;
+
+<* MSG = INFO "an info message appearing as a note"  *>
+
+BEGIN
+END info2.
+@end example
+
+@example
+$ gm2 info2.mod
+info2.mod:3:10: note: In program module ‘info2’: an info message appearing as a note
+    3 | <* MSG = INFO "an info message appearing as a note"  *>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@end example
+
+@example
+MODULE fatal ;
+
+<* MSG = FATAL  *>
+
+BEGIN
+END fatal.
+@end example
+
+@example
+$ gm2 fatal.mod
+fatal.mod:3:10: error: In program module ‘fatal’:
+    3 | <* MSG = FATAL  *>
+      |          ^~~~~
+@end example
+
+@example
+MODULE error ;
+
+<* MSG = ERROR  *>
+
+BEGIN
+END error.
+@end example
+
+@example
+$ gm2 error.mod
+error.mod:3:10: error: In program module ‘error’:
+    3 | <* MSG = ERROR  *>
+      |          ^~~~~
+@end example
+
+@example
+MODULE error2 ;
+
+<* MSG = ERROR "a user generated error message"  *>
+
+BEGIN
+END error2.
+@end example
+
+@example
+$ gm2 error2.mod
+error2.mod:3:10: error: In program module ‘error2’: a user generated error message
+    3 | <* MSG = ERROR "a user generated error message"  *>
+      |          ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+@end example
+
+@section Pragma limitations
+
+Pragmas cannot manipulate options relating to linking.  Pragma
+statements cannot be nested.
+
+@node The PIM system module, The ISO system module, Pragmas, Using
 @section The PIM system module
 
 @include m2/SYSTEM-pim.texi

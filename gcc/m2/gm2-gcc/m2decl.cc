@@ -289,19 +289,20 @@ m2decl_DeclareModuleCtor (tree decl)
    Modula-2.  It always returns a positive value.  */
 
 tree
-m2decl_BuildConstLiteralNumber (location_t location, const char *str,
+m2decl_BuildConstLiteralNumber (location_t location, unsigned int tokno,
+				const char *str,
 				unsigned int base, bool issueError)
 {
   widest_int wval;
   tree value;
   bool overflow = m2expr_OverflowZType (location, str, base, issueError);
   if (overflow)
-    value = m2expr_GetIntegerZero (location);
+    value = m2expr_GetIntegerZero (location, tokno);
   else
     {
       overflow = m2expr_StrToWideInt (location, str, base, wval, issueError);
       if (overflow)
-	value = m2expr_GetIntegerZero (location);
+	value = m2expr_GetIntegerZero (location, tokno);
       else
 	{
 	  value = wide_int_to_tree (m2type_GetM2ZType (), wval);
@@ -345,10 +346,11 @@ m2decl_BuildStringConstant (const char *string, int length)
 
 
 tree
-m2decl_BuildPtrToTypeString (location_t location, const char *string, tree type)
+m2decl_BuildPtrToTypeString (location_t location, unsigned int tokno,
+			     const char *string, tree type)
 {
   if ((string == NULL) || (strlen (string) == 0))
-    return m2convert_BuildConvert (location, type,
+    return m2convert_BuildConvert (location, tokno, type,
 				   m2decl_BuildIntegerConstant (0),
 				   FALSE);
   return build_string_literal (strlen (string), string);

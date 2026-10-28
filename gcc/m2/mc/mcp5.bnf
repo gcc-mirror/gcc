@@ -1080,7 +1080,7 @@ SubPointer :=                                                           % VAR n,
                                                                                 metaError2 ('attempting to access a field {%1k} from {%2ad} which does not have a record type', curident, type)
                                                                              END
                                                                           ELSE
-                                                                             metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', n, n)
+                                                                             metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', curident, n)
                                                                           END %
 
                                    |                                    % IF isPointer (type)

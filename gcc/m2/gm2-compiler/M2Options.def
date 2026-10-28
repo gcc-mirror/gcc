@@ -34,94 +34,855 @@ FROM SYSTEM IMPORT ADDRESS ;
 FROM DynamicStrings IMPORT String ;
 FROM gcctypes IMPORT location_t ;
 
+TYPE
+   Options ;
 
-VAR
-   PPonly,                       (* -E/M/MM present? - preprocessing only    *)
-   cflag,                        (* -c flag present?                         *)
-   Iso,                          (* -fiso use ISO SYSTEM.def                 *)
-   Pim,                          (* -fpim use PIM [234] SYSTEM.def           *)
-   Pim2,                         (* -fpim2 use strict rules.                 *)
-   Pim3,                         (* -fpim3 use strict rules.                 *)
-   Pim4,                         (* -fpim4 use strict rules.                 *)
-   PositiveModFloorDiv,          (* Force PIM4 behaviour for DIV and MOD     *)
-   CompilerDebugging,            (* -fd internal debugging messages          *)
-   GenerateDebugging,            (* -g option to generate info for gdb/dbx   *)
-   GenerateLineDebug,            (* -gline to generate line debugging.       *)
-   Verbose,                      (* -verbose produce verbose error messages. *)
-   Pedantic,                     (* -pedantic be pedantic on error checking. *)
-   PedanticParamNames,           (* -Wpedantic-param-names                   *)
-   PedanticCast,                 (* -Wpedantic-cast warns if sizes differ.   *)
-   Statistics,                   (* -fstatistics information about code      *)
-   StyleChecking,                (* -Wstudents checks for common student errs*)
-   UnboundedByReference,         (* -funbounded-by-reference                 *)
-   VerboseUnbounded,             (* -Wverbose-unbounded                      *)
-   OptimizeUncalledProcedures,   (* Removes uncalled procedures?             *)
-   OptimizeBasicBlock,           (* Create basic blocks and optimize?        *)
-   OptimizeCommonSubExpressions, (* Optimize common subexpressions?          *)
-   OptimizeSets,                 (* TRUE if -On when n>0.  False for -Os.    *)
-   WholeProgram,                 (* -fwhole-program optimization.            *)
-   NilChecking,                  (* -fnil makes compiler test for pointer    *)
-                                 (* NIL.                                     *)
-   WholeDivChecking,             (* -fwholediv produces code to raise an     *)
-                                 (* exception if a whole number divide by    *)
-                                 (* zero occurs.                             *)
-   WholeValueChecking,           (* -fwholevalue produces code to raise an   *)
-                                 (* exception if a whole value variable is   *)
-                                 (* about to exceed the type limits.         *)
-   FloatValueChecking,           (* -ffloatvalue produces code to raise an   *)
-                                 (* exception if a floating point variable   *)
-                                 (* is about to exceed the type limits.      *)
-   IndexChecking,                (* -findex array bounds checking.           *)
-   RangeChecking,                (* -frange assignment, set values,          *)
-                                 (* constructor values in range.             *)
-   ReturnChecking,               (* -freturn checks that functions always    *)
-                                 (* exit with a RETURN statement.            *)
-   CaseElseChecking,             (* -fcase checks program does not need an   *)
-                                 (* else statement within an case statement  *)
-                                 (* when the user omits one                  *)
-   VariantValueChecking,         (* Should we check all values are present   *)
-                                 (* in a variant record?  True for ISO and   *)
-                                 (* false for PIM.                           *)
-   CaseEnumChecking,             (* Should the compiler check for missing    *)
-                                 (* enumeration labels in a case statement?  *)
-   Quiet,                        (* -fquiet option specified.                *)
-   LineDirectives,               (* Should compiler understand preprocessor  *)
-                                 (* # linenumber "filename" markers?         *)
-   StrictTypeChecking,           (* -fm2-strict-type experimental checker.   *)
-   StrictTypeAssignment,         (* -fm2-strict-assignment.                  *)
-   StrictTypeReason,             (* -fm2-strict-reason.                      *)
-   CPreProcessor,                (* Must we run the cpp on the source?       *)
-   Xcode,                        (* Should errors follow Xcode format?       *)
-   ExtendedOpaque,               (* Do we allow non pointer opaque types?    *)
-   DumpSystemExports,            (* Print all inbuilt system items?          *)
-   GenerateSwig,                 (* Should we generate a swig interface file?*)
-   Exceptions,                   (* Should we generate exception code?       *)
-   UnusedVariableChecking,       (* Should we warn about unused variables?   *)
-   UnusedParameterChecking,      (* Should we warn about unused parameters?  *)
-   UninitVariableChecking,       (* Should we warn about accessing           *)
-                                 (* uninitialized variables in the first bb? *)
-   UninitVariableConditionalChecking,
-                                 (* Should we warn about accessing           *)
-                                 (* uninitialized variables in subsequent    *)
-                                 (* basic blocks? *)
-   LowerCaseKeywords,            (* Should keywords in errors be in lower?   *)
-   DebugBuiltins,                (* Should we always call a real function?   *)
-   AutoInit,                     (* -fauto-init assigns pointers to NIL.     *)
-   SaveTemps,                    (* -save-temps save all temporary files.    *)
-   ScaffoldDynamic,              (* Should we generate a dynamic scaffold?   *)
-   ScaffoldStatic,               (* Should we generate a static scaffold?    *)
-   ScaffoldMain,                 (* Should we generate a main function?      *)
-   GenModuleList,                (* Should the compiler generate a list of   *)
-                                 (* all modules used?                        *)
-   SharedFlag,                   (* -fshared indicating this module needs    *)
-                                 (* the shared library version of the        *)
-                                 (* scaffold.                                *)
-   TimeReport, MemReport,        (* -ftime-report and -fmem-report values.   *)
-   ForcedLocation,
-   GenerateStatementNote,
-   Optimizing,
-   Coding,
-   Profiling               : BOOLEAN ;
+
+
+(*
+   InitOptions - initialize an empty option block.
+*)
+
+PROCEDURE InitOptions (name: ARRAY OF CHAR) : Options ;
+
+
+(*
+   SetNamedOptionBoolean - attempt to set the named boolean to value.
+                           If the named boolean does not exist or conflicts
+                           then a user error is generated at tokno.
+*)
+
+PROCEDURE SetNamedOptionBoolean (tokno: CARDINAL;
+                                 name: String;
+                                 value: BOOLEAN) ;
+
+
+(*
+   SetNamedOptionInteger - assign value to the integer option name.
+*)
+
+PROCEDURE SetNamedOptionInteger (tokno: CARDINAL;
+                                 name: String; value: INTEGER) ;
+
+
+(*
+   PushOptions - push opt to the stack of visible option blocks.
+*)
+
+PROCEDURE PushOptions (opt: Options) ;
+
+
+(*
+   PopOptions - pop including.  Pops the stack until opt is seen
+                and then it pops opt.
+*)
+
+PROCEDURE PopOptions (opt: Options) ;
+
+
+(*
+   OptionExistsBoolean - return TRUE if option name exists and it
+                         was defined to contain a boolean value.
+*)
+
+PROCEDURE OptionExistsBoolean (name: String) : BOOLEAN ;
+
+
+(*
+   OptionExistsInteger - return TRUE if option name exists and it
+                         was defined to contain an integer value.
+*)
+
+PROCEDURE OptionExistsInteger (name: String) : BOOLEAN ;
+
+
+(*
+   OptionExistsName - return TRUE if option name exists and it
+                      was defined to contain a name value.
+*)
+
+PROCEDURE OptionExistsName (name: String) : BOOLEAN ;
+
+
+(*
+   GetOptionBoolean - return the boolean value associated with option name.
+*)
+
+PROCEDURE GetOptionBoolean (tokno: CARDINAL; name: String) : BOOLEAN ;
+
+
+(*
+   GetOptionInteger - return the integer value associated with option name.
+*)
+
+PROCEDURE GetOptionInteger (tokno: CARDINAL; name: String) : INTEGER ;
+
+
+(*
+   GetISO - get the -fiso flag.
+*)
+
+PROCEDURE GetISO (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetISO - set the -fiso flag.
+*)
+
+PROCEDURE SetISO (on: BOOLEAN) ;
+
+
+(*
+   SetPIM - set the -fpim flag.
+*)
+
+PROCEDURE SetPIM (on: BOOLEAN) ;
+
+
+(*
+   GetPIM - get the -fpim flag.
+*)
+
+PROCEDURE GetPIM (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPIM2 - set the fpim2 flag.
+*)
+
+PROCEDURE SetPIM2 (on: BOOLEAN) ;
+
+
+(*
+   GetPIM2 - return the value of the fpim2 flag.
+*)
+
+PROCEDURE GetPIM2 (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPIM3 - set the -fpim3 flag.
+*)
+
+PROCEDURE SetPIM3 (on: BOOLEAN) ;
+
+
+(*
+   GetPIM3 - get the -fpim3 flag.
+*)
+
+PROCEDURE GetPIM3 (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPIM4 - set the -fpim4 flag.
+*)
+
+PROCEDURE SetPIM4 (on: BOOLEAN) ;
+
+
+(*
+   GetPIM4 - get the -fpim4 flag.
+*)
+
+PROCEDURE GetPIM4 (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetDumpPragmas - set the -fdump-pragmas flag.
+*)
+
+PROCEDURE SetDumpPragmas (on: BOOLEAN) ;
+
+
+(*
+   GetDumpPragmas - get the -fdump-pragmas flag.
+*)
+
+PROCEDURE GetDumpPragmas (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   DumpDefaultPragmas - dump the supported pragma qualidents and
+                        their types and initial values.
+*)
+
+PROCEDURE DumpDefaultPragmas ;
+
+
+(*
+   SetDumpSystemExports - set the -fdump-system-exports flag.
+*)
+
+PROCEDURE SetDumpSystemExports (on: BOOLEAN) ;
+
+
+(*
+   GetDumpSystemExports - get the -fdump-system-exports flag.
+*)
+
+PROCEDURE GetDumpSystemExports (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetDumpBuiltins - set by -fdump_builtins.
+*)
+
+PROCEDURE SetDumpBuiltins (on: BOOLEAN) ;
+
+
+(*
+   GetDumpBuiltins - return the value of -fdump_builtins.
+*)
+
+PROCEDURE GetDumpBuiltins (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetForward - attempts to set the boolean indicating -fforward
+                is active or inactive.
+*)
+
+PROCEDURE SetForward (on: BOOLEAN) ;
+
+
+(*
+   GetForward - return the value of the -fforward flag.
+*)
+
+PROCEDURE GetForward (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetOptimizing - get the optimization level.
+*)
+
+PROCEDURE GetOptimizing (tokno: CARDINAL) : INTEGER ;
+
+
+(*
+   SetOptimizing - set the value representing -Ovalue.
+*)
+
+PROCEDURE SetOptimizing (value: INTEGER) ;
+
+
+(*
+   GetOptimizeBasicBlock - return TRUE if front end basic block optimization
+                           should be applied.
+*)
+
+PROCEDURE GetOptimizeBasicBlock (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetOptimizeUncalledProcedures - return TRUE if front end uncalled procedures
+                                   should be removed.
+*)
+
+PROCEDURE GetOptimizeUncalledProcedures (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetOptimizeCommonSubExpressions - return TRUE if the front end should remove
+                                     common sub expressions.
+*)
+
+PROCEDURE GetOptimizeCommonSubExpressions (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetOptimizeSets - return TRUE if the front end should optimize large
+                     set by inlining trees.
+*)
+
+PROCEDURE GetOptimizeSets (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetWholeProgramFlag - set the fm2-whole-program flag.
+*)
+
+PROCEDURE SetWholeProgramFlag (on: BOOLEAN) ;
+
+
+(*
+   GetWholeProgramFlag - return the value of the fm2-whole-program flag.
+*)
+
+PROCEDURE GetWholeProgramFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetScaffoldDynamic - set the fscaffold-dynamic flag.
+*)
+
+PROCEDURE SetScaffoldDynamicFlag (on: BOOLEAN) ;
+
+
+(*
+   GetScaffoldDynamic - return the value of the fscaffold-dynamic flag.
+*)
+
+PROCEDURE GetScaffoldDynamicFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetScaffoldStatic - set the fscaffold-static flag.
+*)
+
+PROCEDURE SetScaffoldStaticFlag (on: BOOLEAN) ;
+
+
+(*
+   GetScaffoldStatic - return the value of the fscaffold-static flag.
+*)
+
+PROCEDURE GetScaffoldStaticFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetScaffoldMain - set the fscaffold-main flag.
+*)
+
+PROCEDURE SetScaffoldMainFlag (on: BOOLEAN) ;
+
+
+(*
+   GetScaffoldMain - return the value of the fscaffold-main flag.
+*)
+
+PROCEDURE GetScaffoldMainFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetCaseEnumFlag - set the Wcase-enum flag.
+*)
+
+PROCEDURE SetCaseEnumFlag (on: BOOLEAN) ;
+
+
+(*
+   GetCaseEnumFlag - return the value of the Wcase-enum flag.
+*)
+
+PROCEDURE GetCaseEnumFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetStyleFlag - set the Wstyle flag.
+*)
+
+PROCEDURE SetStyleFlag (on: BOOLEAN) ;
+
+
+(*
+   GetStyleFlag - return the value of the Wstyle flag.
+*)
+
+PROCEDURE GetStyleFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPedantic - set the value of -Wpedantic.
+*)
+
+PROCEDURE SetPedantic (value: BOOLEAN) ;
+
+
+(*
+   GetPedantic - return the value of -Wpedantic.
+*)
+
+PROCEDURE GetPedantic (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPedanticParamNames - set the Wpedantic-param-names flag.
+*)
+
+PROCEDURE SetPedanticParamNames (on: BOOLEAN) ;
+
+
+(*
+   GetPedanticParamNames - return the value of the Wpedantic-param-names flag.
+*)
+
+PROCEDURE GetPedanticParamNames (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPedanticCast - set the Wpedantic-cast flag.
+*)
+
+PROCEDURE SetPedanticCast (on: BOOLEAN) ;
+
+
+(*
+   GetPedanticCast - return the value of the Wpedantic-cast flag.
+*)
+
+PROCEDURE GetPedanticCast (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetVariantValueFlag - return the internal flag indicating whether
+                         variant fields should be checked.  Currently
+                         this is force enabled if -fiso flag is active.
+                         It might be useful to allow user access in the
+                         future.  --hint--.
+*)
+
+PROCEDURE GetVariantValueFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetPositiveModFloorFlag - set the fpositive-mod-floor-div flag.
+*)
+
+PROCEDURE SetPositiveModFloorFlag (on: BOOLEAN) ;
+
+
+(*
+   GetPositiveModFloorFlag - return the value of the fpositive-mod-floor-div flag.
+*)
+
+PROCEDURE GetPositiveModFloorFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetIndexFlag - set the findex flag.
+*)
+
+PROCEDURE SetIndexFlag (on: BOOLEAN) ;
+
+
+(*
+   GetIndexFlag - return the value of the findex flag.
+*)
+
+PROCEDURE GetIndexFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetRangeFlag - set the frange flag.
+*)
+
+PROCEDURE SetRangeFlag (on: BOOLEAN) ;
+
+
+(*
+   GetRangeFlag - return the value of the frange flag.
+*)
+
+PROCEDURE GetRangeFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetExceptionsFlag - set the fexceptions flag.
+*)
+
+PROCEDURE SetExceptionsFlag (on: BOOLEAN) ;
+
+
+(*
+   GetExceptionsFlag - return the value of the fexceptions flag.
+*)
+
+PROCEDURE GetExceptionsFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetWholeValueFlag - set the fwholevalue flag.
+*)
+
+PROCEDURE SetWholeValueFlag (on: BOOLEAN) ;
+
+
+(*
+   GetWholeValueFlag - return the value of the fwholevalue flag.
+*)
+
+PROCEDURE GetWholeValueFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetReturnFlag - set the freturn flag.
+*)
+
+PROCEDURE SetReturnFlag (on: BOOLEAN) ;
+
+
+(*
+   GetReturnFlag - return the value of the freturn flag.
+*)
+
+PROCEDURE GetReturnFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetCaseElseFlag - set the fcase flag.
+*)
+
+PROCEDURE SetCaseElseFlag (on: BOOLEAN) ;
+
+
+(*
+   GetCaseElseFlag - return the value of the fcase flag.
+*)
+
+PROCEDURE GetCaseElseFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetWidesetFlag - set the fwideset flag.
+*)
+
+PROCEDURE SetWidesetFlag (on: BOOLEAN) ;
+
+
+(*
+   GetWidesetFlag - return the value of the fwideset flag.
+*)
+
+PROCEDURE GetWidesetFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetDebugBuiltinFlag - set the fdebug-builtins flag.
+*)
+
+PROCEDURE SetDebugBuiltinFlag (on: BOOLEAN) ;
+
+
+(*
+   GetDebugBuiltinFlag - return the value of the fdebug-builtins flag.
+*)
+
+PROCEDURE GetDebugBuiltinFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetNilFlag - set the fnil flag.
+*)
+
+PROCEDURE SetNilFlag (on: BOOLEAN) ;
+
+
+(*
+   GetNilFlag - return the value of the fnil flag.
+*)
+
+PROCEDURE GetNilFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetWholeDivFlag - set the fwholediv flag.
+*)
+
+PROCEDURE SetWholeDivFlag (on: BOOLEAN) ;
+
+
+(*
+   GetWholeDivFlag - return the value of the fwholediv flag.
+*)
+
+PROCEDURE GetWholeDivFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetSharedFlag - set the fshared flag.
+*)
+
+PROCEDURE SetSharedFlag (on: BOOLEAN) ;
+
+
+(*
+   GetSharedFlag - return the value of the fshared flag.
+*)
+
+PROCEDURE GetSharedFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetInternalDebuggingFlag - set the fd flag.
+*)
+
+PROCEDURE SetInternalDebuggingFlag (on: BOOLEAN) ;
+
+
+(*
+   GetInternalDebuggingFlag - return the value of the fd flag.
+*)
+
+PROCEDURE GetInternalDebuggingFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetGFlag - set the g flag.
+*)
+
+PROCEDURE SetGFlag (on: BOOLEAN) ;
+
+
+(*
+   GetGFlag - return the value of the g flag.
+*)
+
+PROCEDURE GetGFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetSwigFlag - set the fswig flag.
+*)
+
+PROCEDURE SetSwigFlag (on: BOOLEAN) ;
+
+
+(*
+   GetSwigFlag - return the value of the fswig flag.
+*)
+
+PROCEDURE GetSwigFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetM2gFlag - set the fm2_g flag.
+*)
+
+PROCEDURE SetM2gFlag (on: BOOLEAN) ;
+
+
+(*
+   GetM2gFlag - return the value of the fm2_g flag.
+*)
+
+PROCEDURE GetM2gFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetLowerCaseKeywordFlag - set the fm2_lower_case flag.
+*)
+
+PROCEDURE SetLowerCaseKeywordFlag (on: BOOLEAN) ;
+
+
+(*
+   GetLowerCaseKeywordFlag - return the value of the fm2_lower_case flag.
+*)
+
+PROCEDURE GetLowerCaseKeywordFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetVerboseFlag - set the v flag.
+*)
+
+PROCEDURE SetVerboseFlag (on: BOOLEAN) ;
+
+
+(*
+   GetVerboseFlag - return the value of the v flag.
+*)
+
+PROCEDURE GetVerboseFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetUnboundedByReference - set the funbounded_by_reference flag.
+*)
+
+PROCEDURE SetUnboundedByReference (on: BOOLEAN) ;
+
+
+(*
+   GetUnboundedByReference - return the value of the funbounded_by_reference flag.
+*)
+
+PROCEDURE GetUnboundedByReference (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetUnusedVariableFlag - set the Wunused_variable flag.
+*)
+
+PROCEDURE SetUnusedVariableFlag (on: BOOLEAN) ;
+
+
+(*
+   GetUnusedVariableFlag - return the value of the Wunused_variable flag.
+*)
+
+PROCEDURE GetUnusedVariableFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetStrictTypeFlag - set the fm2_strict_type flag.
+*)
+
+PROCEDURE SetStrictTypeFlag (on: BOOLEAN) ;
+
+
+(*
+   GetStrictTypeFlag - return the value of the fm2_strict_type flag.
+*)
+
+PROCEDURE GetStrictTypeFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetStrictTypeReason - set the fm2_strict_type_reason flag.
+*)
+
+PROCEDURE SetStrictTypeReason (on: BOOLEAN) ;
+
+
+(*
+   GetStrictTypeReason - return the value of the fm2_strict_type_reason flag.
+*)
+
+PROCEDURE GetStrictTypeReason (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetStrictTypeReasonFlag - set the fm2_strict_type_reason flag.
+*)
+
+PROCEDURE SetStrictTypeReasonFlag (on: BOOLEAN) ;
+
+
+(*
+   GetStrictTypeReasonFlag - return the value of the fm2_strict_type_reason flag.
+*)
+
+PROCEDURE GetStrictTypeReasonFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetAutoInitFlag - set the fauto_init flag.
+*)
+
+PROCEDURE SetAutoInitFlag (on: BOOLEAN) ;
+
+
+(*
+   GetAutoInitFlag - return the value of the fauto_init flag.
+*)
+
+PROCEDURE GetAutoInitFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetUninitVariableChecking - sets the UninitVariableChecking and
+                               UninitVariableConditionalChecking flags to value
+                               depending upon arg string.  The arg string
+                               can be: "all", "known,cond", "cond,known", "known"
+                               or "cond".
+*)
+
+PROCEDURE SetUninitVariableChecking (on: BOOLEAN; arg: ADDRESS) : INTEGER ;
+
+
+(*
+   SetUninitVariableConditionalFlag - set the Wuninit_variable_conditional_checking flag.
+*)
+
+PROCEDURE SetUninitVariableConditionalFlag (on: BOOLEAN) ;
+
+
+(*
+   GetUninitVariableConditionalFlag - return the value of the
+                                      Wuninit_variable_conditional_checking flag.
+*)
+
+PROCEDURE GetUninitVariableConditionalFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetUninitVariableFlag - set the Wuninit_variable_checking flag.
+*)
+
+PROCEDURE SetUninitVariableFlag (on: BOOLEAN) ;
+
+
+(*
+   GetUninitVariableFlag - return the value of the Wuninit_variable_checking flag.
+*)
+
+PROCEDURE GetUninitVariableFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(* End of the uninitialized option procedures and the start of the unused option
+   procedures.  *)
+
+(*
+   SetUnusedVariableCheckingFlag - set the Wunused_variable_checking flag.
+*)
+
+PROCEDURE SetUnusedVariableCheckingFlag (on: BOOLEAN) ;
+
+
+(*
+   GetUnusedVariableFlag - return the value of the Wunused_variable_checking flag.
+*)
+
+PROCEDURE GetUnusedVariableCheckingFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetUnusedParameterFlag - set the Wunused_parameter flag.
+*)
+
+PROCEDURE SetUnusedParameterFlag (on: BOOLEAN) ;
+
+
+(*
+   GetUnusedParameterFlag - return the value of the Wunused_parameter flag.
+*)
+
+PROCEDURE GetUnusedParameterFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetVerboseUnbounded - set the Wverbose_unbounded flag.
+*)
+
+PROCEDURE SetVerboseUnbounded (on: BOOLEAN) ;
+
+
+(*
+   GetVerboseUnbounded - return the value of the Wverbose_unbounded flag.
+*)
+
+PROCEDURE GetVerboseUnbounded (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetQuietFlag - set the fm2_quiet flag.
+*)
+
+PROCEDURE SetQuietFlag (on: BOOLEAN) ;
+
+
+(*
+   GetQuietFlag - return the value of the fm2_quiet flag.
+*)
+
+PROCEDURE GetQuietFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetCFlag - set the c flag.
+*)
+
+PROCEDURE SetCFlag (on: BOOLEAN) ;
+
+
+(*
+   GetCFlag - return the value of the c flag.
+*)
+
+PROCEDURE GetCFlag (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -167,34 +928,6 @@ PROCEDURE GetMF () : ADDRESS ;
 
 
 (*
-   SetM2Prefix - assign arg to M2Prefix.
-*)
-
-PROCEDURE SetM2Prefix (arg: ADDRESS) ;
-
-
-(*
-   GetM2Prefix - return M2Prefix as a C string.
-*)
-
-PROCEDURE GetM2Prefix () : ADDRESS ;
-
-
-(*
-   SetM2PathName - assign arg to M2PathName.
-*)
-
-PROCEDURE SetM2PathName (arg: ADDRESS) ;
-
-
-(*
-   GetM2PathName - return M2PathName as a C string.
-*)
-
-PROCEDURE GetM2PathName () : ADDRESS ;
-
-
-(*
    SetPPOnly - set the PPonly to value (on E, M, MM).
 *)
 
@@ -206,20 +939,6 @@ PROCEDURE SetPPOnly (value: BOOLEAN) ;
 *)
 
 PROCEDURE GetPPOnly () : BOOLEAN ;
-
-
-(*
-   Setc - set the cflag (compile only flag -c) to value.
-*)
-
-PROCEDURE Setc (value: BOOLEAN) ;
-
-
-(*
-   Getc - get the cflag (compile only flag -c).
-*)
-
-PROCEDURE Getc () : BOOLEAN ;
 
 
 (*
@@ -349,41 +1068,6 @@ PROCEDURE GetLineDirectives () : BOOLEAN ;
 
 
 (*
-   SetScaffoldDynamic - set the -fscaffold-dynamic flag.
-*)
-
-PROCEDURE SetScaffoldDynamic (value: BOOLEAN) ;
-
-
-(*
-   SetScaffoldStatic - set the -fscaffold-static flag.
-*)
-
-PROCEDURE SetScaffoldStatic (value: BOOLEAN) ;
-
-
-(*
-   GetScaffoldDynamic - get the -fscaffold-dynamic flag.
-*)
-
-PROCEDURE GetScaffoldDynamic () : BOOLEAN ;
-
-
-(*
-   GetScaffoldStatic - get the -fscaffold-static flag.
-*)
-
-PROCEDURE GetScaffoldStatic () : BOOLEAN ;
-
-
-(*
-   SetScaffoldMain - set the -fscaffold-main flag.
-*)
-
-PROCEDURE SetScaffoldMain (value: BOOLEAN) ;
-
-
-(*
    SetRuntimeModuleOverride - set the override sequence used for module
                               initialization and finialization.
 *)
@@ -422,62 +1106,103 @@ PROCEDURE GetUselistFilename () : String ;
 
 
 (*
-   SetWholeProgram - sets the WholeProgram flag (-fwhole-program).
+   SetMemReport - set the fmem_report flag.
 *)
 
-PROCEDURE SetWholeProgram (value: BOOLEAN) ;
+PROCEDURE SetMemReport (on: BOOLEAN) ;
 
 
 (*
-   SetAutoInit - set the auto initialization flag to value.  If the value
-                 is true then all pointers are automatically
-                 initialized to NIL.  TRUE is returned.
+   GetMemReport - return the value of the fmem_report flag.
 *)
 
-PROCEDURE SetAutoInit (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE GetMemReport (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
-   SetReturnCheck - set return statement checking in procedure functions
-                    to value.  TRUE is returned.
+   SetTimeReport - set the ftime_report flag.
 *)
 
-PROCEDURE SetReturnCheck (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE SetTimeReport (on: BOOLEAN) ;
 
 
 (*
-   SetNilCheck - set access through NIL violation runtime checking to value.
+   GetTimeReport - return the value of the ftime_report flag.
 *)
 
-PROCEDURE SetNilCheck (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE GetTimeReport (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
-   SetCaseCheck - set else case checking to, value.
+   SetLowerCaseKeyword - set the fm2-lower-case flag.
 *)
 
-PROCEDURE SetCaseCheck (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE SetLowerCaseKeyword (on: BOOLEAN) ;
+
+
+(*
+   GetLowerCaseKeyword - return the value of the fm2-lower-case flag.
+*)
+
+PROCEDURE GetLowerCaseKeyword (tokno: CARDINAL) : BOOLEAN ;
+
+
+(*
+   SetFloatValueFlag - set the ffloatvalue flag.
+*)
+
+PROCEDURE SetFloatValueFlag (on: BOOLEAN) ;
+
+
+(*
+   GetFloatValueFlag - return the value of the ffloatvalue flag.
+*)
+
+PROCEDURE GetFloatValueFlag (tokno: CARDINAL) : BOOLEAN ;
+
+
+(* ----- *)
+
+(*
+   SetM2Prefix - assign arg to M2Prefix.
+*)
+
+PROCEDURE SetM2Prefix (arg: ADDRESS) ;
+
+
+(*
+   GetM2Prefix - return M2Prefix as a C string.
+*)
+
+PROCEDURE GetM2Prefix () : ADDRESS ;
+
+
+(*
+   SetM2PathName - assign arg to M2PathName.
+*)
+
+PROCEDURE SetM2PathName (arg: ADDRESS) ;
+
+
+(*
+   GetM2PathName - return M2PathName as a C string.
+*)
+
+PROCEDURE GetM2PathName () : ADDRESS ;
 
 
 (*
    SetCheckAll - set all runtime checking to, value.
 *)
 
-PROCEDURE SetCheckAll (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE SetCheckAll (on: BOOLEAN) ;
 
 
 (*
-   SetVerboseUnbounded - sets the VerboseUnbounded flag to, value.
+   SetWallFlag - set all warning flags to, value.
 *)
 
-PROCEDURE SetVerboseUnbounded (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
-   SetQuiet - sets the quiet flag to, value.
-*)
-
-PROCEDURE SetQuiet (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE SetWallFlag (on: BOOLEAN) ;
 
 
 (*
@@ -488,55 +1213,6 @@ PROCEDURE SetCC1Quiet (value: BOOLEAN) ;
 
 
 (*
-   SetM2g - set the -fm2-g flag.
-*)
-
-PROCEDURE SetM2g (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
-   GetM2g - returns TRUE if the -fm2-g flags was used.
-*)
-
-PROCEDURE GetM2g () : BOOLEAN ;
-
-
-(*
-   SetLowerCaseKeywords - set the lower case keyword flag and return the result.
-*)
-
-PROCEDURE SetLowerCaseKeywords (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
-   SetMakeall -
-
-PROCEDURE SetMakeall (value: BOOLEAN) : BOOLEAN ;
-*)
-
-
-(*
-   SetMakeall0 -
-
-PROCEDURE SetMakeall0 (value: BOOLEAN) : BOOLEAN ;
-*)
-
-
-(*
-   SetIncludePath -
-
-PROCEDURE SetIncludePath (arg: ADDRESS) : BOOLEAN ;
-*)
-
-
-(*
-   SetUnboundedByReference -
-*)
-
-PROCEDURE SetUnboundedByReference (value: BOOLEAN) : BOOLEAN ;
-
-
-(*
    SetSearchPath -
 *)
 
@@ -544,123 +1220,17 @@ PROCEDURE SetSearchPath (arg: ADDRESS) ;
 
 
 (*
-   SetISO -
+   SetExtendedOpaque - sets the ExtendedOpaque flag.
 *)
 
-PROCEDURE SetISO (value: BOOLEAN) ;
+PROCEDURE SetExtendedOpaque (on: BOOLEAN) ;
 
 
 (*
-   SetPIM -
+   GetExtendedOpaque - returns the value of the -fextended-opaque flag.
 *)
 
-PROCEDURE SetPIM (value: BOOLEAN) ;
-
-
-(*
-   SetPIM2 -
-*)
-
-PROCEDURE SetPIM2 (value: BOOLEAN) ;
-
-
-(*
-   SetPIM3 -
-*)
-
-PROCEDURE SetPIM3 (value: BOOLEAN) ;
-
-
-(*
-   SetPIM4 -
-*)
-
-PROCEDURE SetPIM4 (value: BOOLEAN) ;
-
-
-(*
-   SetPositiveModFloor -
-*)
-
-PROCEDURE SetPositiveModFloor (value: BOOLEAN) ;
-
-
-(*
-   SetWholeDiv - sets the whole division flag.
-*)
-
-PROCEDURE SetWholeDiv (value: BOOLEAN) ;
-
-
-(*
-   SetIndex - sets the runtime array index checking flag.
-*)
-
-PROCEDURE SetIndex (value: BOOLEAN) ;
-
-
-(*
-   SetRange -  sets the runtime range checking flag.
-*)
-
-PROCEDURE SetRange (value: BOOLEAN) ;
-
-
-(*
-   SetExceptions -
-*)
-
-PROCEDURE SetExceptions (value: BOOLEAN) ;
-
-
-(*
-   SetStyle -
-*)
-
-PROCEDURE SetStyle (value: BOOLEAN) ;
-
-
-(*
-   SetPedantic -
-*)
-
-PROCEDURE SetPedantic (value: BOOLEAN) ;
-
-
-(*
-   SetPedanticParamNames -
-*)
-
-PROCEDURE SetPedanticParamNames (value: BOOLEAN) ;
-
-
-(*
-   SetPedanticCast -
-*)
-
-PROCEDURE SetPedanticCast (value: BOOLEAN) ;
-
-
-(*
-   SetExtendedOpaque -
-*)
-
-PROCEDURE SetExtendedOpaque (value: BOOLEAN) ;
-
-
-(*
-   SetXCode -
-*)
-
-PROCEDURE SetXCode (value: BOOLEAN) ;
-
-
-(*
-   SetCompilerDebugging - turn on internal compiler debugging.
-                          Enabled via the command line option -fd.
-*)
-
-PROCEDURE SetCompilerDebugging (value: BOOLEAN) ;
+PROCEDURE GetExtendedOpaque (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -695,45 +1265,17 @@ PROCEDURE SetGenerateStatementNote (value: BOOLEAN) ;
 
 
 (*
-   SetSources -
+   SetSourcesFlag - set the fsources flag.
 *)
 
-PROCEDURE SetSources (value: BOOLEAN) ;
+PROCEDURE SetSourcesFlag (on: BOOLEAN) ;
 
 
 (*
-   SetDumpSystemExports -
+   GetSourcesFlag - return the value of the fsources flag.
 *)
 
-PROCEDURE SetDumpSystemExports (value: BOOLEAN) ;
-
-
-(*
-   SetDumpBuiltins - set by -fdump_builtins.
-*)
-
-PROCEDURE SetDumpBuiltins (value: BOOLEAN) ;
-
-
-(*
-   GetDumpBuiltins - return the value of -fdump_builtins.
-*)
-
-PROCEDURE GetDumpBuiltins () : BOOLEAN ;
-
-
-(*
-   SetSwig -
-*)
-
-PROCEDURE SetSwig (value: BOOLEAN) ;
-
-
-(*
-   SetOptimizing -
-*)
-
-PROCEDURE SetOptimizing (value: CARDINAL) ;
+PROCEDURE GetSourcesFlag (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -753,41 +1295,6 @@ PROCEDURE SetForcedLocation (location: location_t) ;
 
 
 (*
-   SetUnusedVariableChecking - assigns the UnusedVariableChecking to value.
-*)
-
-PROCEDURE SetUnusedVariableChecking (value: BOOLEAN) ;
-
-
-(*
-   SetUnusedParameterChecking - assigns the UnusedParameterChecking to value.
-*)
-
-PROCEDURE SetUnusedParameterChecking (value: BOOLEAN) ;
-
-
-(*
-   SetStrictTypeChecking - assigns the StrictTypeChecking flag to value.
-*)
-
-PROCEDURE SetStrictTypeChecking (value: BOOLEAN) ;
-
-
-(*
-   SetStrictTypeAssignment - assigns the StrictTypeAssignment flag to value.
-*)
-
-PROCEDURE SetStrictTypeAssignment (value: BOOLEAN) ;
-
-
-(*
-   SetStrictTypeReason - assigns the StrictTypeReason flag to value.
-*)
-
-PROCEDURE SetStrictTypeReason (value: BOOLEAN) ;
-
-
-(*
    setdefextension - set the source file definition module extension to arg.
                      This should include the . and by default it is set to .def.
 *)
@@ -804,17 +1311,17 @@ PROCEDURE setmodextension (arg: ADDRESS) ;
 
 
 (*
-   SetStatistics - turn on/off generate of compile time statistics.
+   SetStatisticsFlag - set the fm2_statistics flag.
 *)
 
-PROCEDURE SetStatistics (on: BOOLEAN) ;
+PROCEDURE SetStatisticsFlag (on: BOOLEAN) ;
 
 
 (*
-   SetVerbose - set the Verbose flag to, value.  It returns TRUE.
+   GetStatisticsFlag - return the value of the fm2_statistics flag.
 *)
 
-PROCEDURE SetVerbose (value: BOOLEAN) : BOOLEAN ;
+PROCEDURE GetStatisticsFlag (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -840,90 +1347,17 @@ PROCEDURE CppRemember (s: String) ;
 
 
 (*
-   GetISO - return TRUE if -fiso was present on the command line.
-*)
-
-PROCEDURE GetISO () : BOOLEAN ;
-
-
-(*
-   GetPIM - return TRUE if -fpim was present on the command line.
-*)
-
-PROCEDURE GetPIM () : BOOLEAN ;
-
-
-(*
-   GetPIM2 - return TRUE if -fpim2 was present on the command line.
-*)
-
-PROCEDURE GetPIM2 () : BOOLEAN ;
-
-
-(*
-   GetPIM3 - return TRUE if -fpim3 was present on the command line.
-*)
-
-PROCEDURE GetPIM3 () : BOOLEAN ;
-
-
-(*
-   GetPIM4 - return TRUE if -fpim4 was present on the command line.
-*)
-
-PROCEDURE GetPIM4 () : BOOLEAN ;
-
-
-(*
-   GetPositiveModFloor - return TRUE if -fpositive-mod-floor was present
-                         on the command line.
-*)
-
-PROCEDURE GetPositiveModFloor () : BOOLEAN ;
-
-
-(*
-   GetFloatValueCheck - return TRUE if -ffloatvalue was present on the
-                        command line.
-*)
-
-PROCEDURE GetFloatValueCheck () : BOOLEAN ;
-
-
-(*
-   SetFloatValueCheck - set depending upon the -ffloatvalue.
-*)
-
-PROCEDURE SetFloatValueCheck (value: BOOLEAN) ;
-
-
-(*
-   GetWholeValueCheck - return TRUE if -fwholevalue was present on the
-                        command line.
-*)
-
-PROCEDURE GetWholeValueCheck () : BOOLEAN ;
-
-
-(*
-   SetWholeValueCheck - set depending upon the -fwholevalue.
-*)
-
-PROCEDURE SetWholeValueCheck (value: BOOLEAN) ;
-
-
-(*
-   SetWall - set all warnings to, value.
-*)
-
-PROCEDURE SetWall (value: BOOLEAN) ;
-
-
-(*
    SetSaveTemps - turn on/off -save-temps.
 *)
 
 PROCEDURE SetSaveTemps (value: BOOLEAN) ;
+
+
+(*
+   GetSaveTemps - return whether -save-temps was set.
+*)
+
+PROCEDURE GetSaveTemps () : BOOLEAN ;
 
 
 (*
@@ -956,11 +1390,10 @@ PROCEDURE GetDumpDir () : String ;
 
 
 (*
-   SetGenModuleList - set the GenModuleList flag to value and pass
-                      set GenModuleListFilename to filename.
+   SetGenModuleListFileName - set the fgen-module-list= flag and filename.
 *)
 
-PROCEDURE SetGenModuleList (value: BOOLEAN; filename: ADDRESS) ;
+PROCEDURE SetGenModuleListFileName (on: BOOLEAN; filename: ADDRESS) ;
 
 
 (*
@@ -971,34 +1404,17 @@ PROCEDURE GetGenModuleFilename () : String ;
 
 
 (*
-   SetShared - sets the SharedFlag to value.
+   SetGenModuleListFlag - set the fgen-module-list flag.
 *)
 
-PROCEDURE SetShared (value: BOOLEAN) ;
+PROCEDURE SetGenModuleListFlag (on: BOOLEAN) ;
 
 
 (*
-   SetUninitVariableChecking - sets the UninitVariableChecking flag to value
-                               or UninitVariableConditionalChecking to value.
-                               Arg can be "known", "known,cond", "cond,known"
-                               or "all".
+   GetGenModuleListFlag - return the value of the fgen-module-list flag.
 *)
 
-PROCEDURE SetUninitVariableChecking (value: BOOLEAN; arg: ADDRESS) : INTEGER ;
-
-
-(*
-   SetCaseEnumChecking - sets the CaseEnumChecking to value.
-*)
-
-PROCEDURE SetCaseEnumChecking (value: BOOLEAN) ;
-
-
-(*
-   SetDebugBuiltins - sets the DebugBuiltins to value.
-*)
-
-PROCEDURE SetDebugBuiltins (value: BOOLEAN) ;
+PROCEDURE GetGenModuleListFlag (tokno: CARDINAL) : BOOLEAN ;
 
 
 (*
@@ -1034,7 +1450,15 @@ PROCEDURE GetIEEELongDouble () : BOOLEAN ;
 
 
 (*
-   GetDumpDeclFilename - returns the DumpLangDeclFilename.
+   InitializeLongDoubleFlags - initialize the long double related flags
+                               with default values given during gcc configure.
+*)
+
+PROCEDURE InitializeLongDoubleFlags ;
+
+
+(*
+   GetDumpDeclFilename - returns the DumpDeclFilename.
 *)
 
 PROCEDURE GetDumpDeclFilename () : String ;
@@ -1077,7 +1501,8 @@ PROCEDURE SetDumpGimpleFilename (value: BOOLEAN; filename: ADDRESS) ;
 
 (*
    SetM2DumpFilter - sets the filter to a comma separated list of procedures
-                     and modules.
+                     and modules.  Not to be confused with SetM2Dump below
+                     which enables the class of data structures to be dumped.
 *)
 
 PROCEDURE SetM2DumpFilter (value: BOOLEAN; filter: ADDRESS) ;
@@ -1154,20 +1579,6 @@ PROCEDURE GetDebugFunctionLineNumbers () : BOOLEAN ;
 
 
 (*
-   GetEnableForward - return EnableForward.
-*)
-
-PROCEDURE GetEnableForward () : BOOLEAN ;
-
-
-(*
-   SetEnableForward - set EnableForward to value.
-*)
-
-PROCEDURE SetEnableForward (value: BOOLEAN) ;
-
-
-(*
    SetFileOffsetBits - set the number of bits used by SYSTEM.COFF_T to bits.
 *)
 
@@ -1182,31 +1593,52 @@ PROCEDURE GetFileOffsetBits () : CARDINAL ;
 
 
 (*
-   SetMemReport - set MemReport to value.
+   IsReadOnly - is option block read only?
 *)
 
-PROCEDURE SetMemReport (value: BOOLEAN) ;
+PROCEDURE IsReadOnly (opt: Options) : BOOLEAN ;
 
 
 (*
-   SetTimeReport - set TimeReport to value.
+   SetReadOnly - set option block read only to value.
 *)
 
-PROCEDURE SetTimeReport (value: BOOLEAN) ;
+PROCEDURE SetReadOnly (opt: Options; value: BOOLEAN) ;
 
 
 (*
-   SetWideset - set the Wideset flag to value.
+   IsModified - has any option been modified?
 *)
 
-PROCEDURE SetWideset (value: BOOLEAN) ;
+PROCEDURE IsModified (opt: Options) : BOOLEAN ;
 
 
 (*
-   GetWideset - return the Wideset flag value.
+   SetModified - set option block modified to value.
 *)
 
-PROCEDURE GetWideset () : BOOLEAN ;
+PROCEDURE SetModified (opt: Options; value: BOOLEAN) ;
+
+
+(*
+   GetDefaultOptions - return the default option block.
+*)
+
+PROCEDURE GetDefaultOptions () : Options ;
+
+
+(*
+   GetCommandOptions - return the command line option block.
+*)
+
+PROCEDURE GetCommandOptions () : Options ;
+
+
+(*
+   FlushGccOptions - changes any gcc option modified by a gm2 pragma back to libgcc.
+*)
+
+PROCEDURE FlushGccOptions ;
 
 
 (*

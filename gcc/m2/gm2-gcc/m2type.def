@@ -70,14 +70,14 @@ PROCEDURE BuildSubrangeType (location: location_t; name: CharStar; type: tree; l
     BuildCharConstant - creates a character constant given a, string.
 *)
 
-PROCEDURE BuildCharConstant (location: location_t; string: ConstCharStar) : tree ;
+PROCEDURE BuildCharConstant (location: location_t; tokno: CARDINAL; string: ConstCharStar) : tree ;
 
 
 (*
    BuildCharConstantChar - creates a character constant given a character, ch.
 *)
 
-PROCEDURE BuildCharConstantChar (location: location_t; ch: CHAR) : tree ;
+PROCEDURE BuildCharConstantChar (location: location_t; tokno: CARDINAL; ch: CHAR) : tree ;
 
 
 (*
@@ -144,7 +144,8 @@ PROCEDURE BuildEndSetConstructor (p: Constructor) : tree ;
     BuildSetConstructorElement - adds, value, to the constructor_element_list.
 *)
 
-PROCEDURE BuildSetConstructorElement (location: location_t; p: Constructor; value: tree) ;
+PROCEDURE BuildSetConstructorElement (location: location_t; tokno: CARDINAL;
+                                      p: Constructor; value: tree) ;
 
 
 (*
@@ -159,7 +160,9 @@ PROCEDURE BuildStartSetConstructor (type: tree) : Constructor ;
     BuildSetType - creates a SET OF [lowval..highval]
 *)
 
-PROCEDURE BuildSetType (location: location_t; name: CharStar; type: tree; lowval: tree; highval: tree; ispacked: BOOLEAN) : tree ;
+PROCEDURE BuildSetType (location: location_t; tokno: CARDINAL;
+                        name: CharStar; type: tree; lowval: tree;
+                        highval: tree; ispacked: BOOLEAN) : tree ;
 
 
 (*
@@ -190,7 +193,8 @@ PROCEDURE BuildEnumerator (location: location_t; name: ConstCharStar; value: tre
                           list, enumvalues, and returns a enumeration type tree.
 *)
 
-PROCEDURE BuildEndEnumeration (location: location_t; type: tree; enumvalues: tree) : tree ;
+PROCEDURE BuildEndEnumeration (location: location_t; tokno: CARDINAL;
+                               type: tree; enumvalues: tree) : tree ;
 
 
 (*
@@ -212,7 +216,7 @@ PROCEDURE BuildTypeDeclaration (location: location_t; type: tree) ;
                  legal value.
 *)
 
-PROCEDURE GetMaxFrom (location: location_t; type: tree) : tree ;
+PROCEDURE GetMaxFrom (location: location_t; tokno: CARDINAL; type: tree) : tree ;
 
 
 (*
@@ -220,7 +224,7 @@ PROCEDURE GetMaxFrom (location: location_t; type: tree) : tree ;
                  legal value.
 *)
 
-PROCEDURE GetMinFrom (location: location_t; type: tree) : tree ;
+PROCEDURE GetMinFrom (location: location_t; tokno: CARDINAL; type: tree) : tree ;
 
 
 (*
@@ -262,14 +266,14 @@ PROCEDURE BuildStartType (location: location_t; name: CharStar; type: tree) : tr
    InitSystemTypes -
 *)
 
-PROCEDURE InitSystemTypes (location: location_t; loc: INTEGER) ;
+PROCEDURE InitSystemTypes (location: location_t; tokno: CARDINAL; loc: INTEGER) ;
 
 
 (*
    InitBaseTypes -
 *)
 
-PROCEDURE InitBaseTypes (location: location_t) ;
+PROCEDURE InitBaseTypes (location: location_t; tokno: CARDINAL) ;
 
 
 (*
@@ -278,7 +282,8 @@ PROCEDURE InitBaseTypes (location: location_t) ;
                                    This creates and array index, array type and local variable.
 *)
 
-PROCEDURE BuildVariableArrayAndDeclare (location: location_t; elementtype: tree; high: tree; name: CharStar; scope: tree) : tree ;
+PROCEDURE BuildVariableArrayAndDeclare (location: location_t; tokno: CARDINAL;
+                                        elementtype: tree; high: tree; name: CharStar; scope: tree) : tree ;
 
 
 (*
@@ -346,7 +351,8 @@ PROCEDURE GetM2RType () : tree ;
     BuildSetTypeFromSubrange - constructs a set type from a subrangeType.
 *)
 
-PROCEDURE BuildSetTypeFromSubrange (location: location_t; name: CharStar;
+PROCEDURE BuildSetTypeFromSubrange (location: location_t; tokno: CARDINAL;
+                                    name: CharStar;
                                     subrangeType: tree;
                                     lowval: tree; highval: tree;
                                     ispacked: BOOLEAN) : tree ;
@@ -357,7 +363,8 @@ PROCEDURE BuildSetTypeFromSubrange (location: location_t; name: CharStar;
                              sufficient to contain values: low..high.
 *)
 
-PROCEDURE BuildSmallestTypeRange (location: location_t; low: tree; high: tree) : tree ;
+PROCEDURE BuildSmallestTypeRange (location: location_t; tokno: CARDINAL;
+                                  low: tree; high: tree) : tree ;
 
 
 (*
@@ -800,7 +807,8 @@ PROCEDURE GetCOffTType () : tree ;
                                   defined by, str, of, length, characters.
 *)
 
-PROCEDURE BuildArrayStringConstructor (location: location_t; arrayType: tree; str: tree; length: tree) : tree ;
+PROCEDURE BuildArrayStringConstructor (location: location_t; tokno: CARDINAL;
+                                       arrayType: tree; str: tree; length: tree) : tree ;
 
 
 (*
@@ -926,14 +934,15 @@ PROCEDURE BuildPackedFieldRecord (location: location_t; name: CharStar; fieldtyp
                                  arrayType.
 *)
 
-PROCEDURE BuildNumberOfArrayElements (location: location_t; arrayType: tree) : tree ;
+PROCEDURE BuildNumberOfArrayElements (location: location_t; tokno: CARDINAL;
+                                      arrayType: tree) : tree ;
 
 
 (*
     AddStatement - maps onto add_stmt.
 *)
 
-PROCEDURE AddStatement (location: location_t; t: tree) ;
+PROCEDURE AddStatement (location: location_t; tokno: CARDINAL; t: tree) ;
 
 
 (*
@@ -962,7 +971,8 @@ PROCEDURE BuildArrayIndexType (low: tree; high: tree) : tree ;
    GetArrayNoOfElements - returns the number of elements in, arraytype.
 *)
 
-PROCEDURE GetArrayNoOfElements (location: location_t; arraytype: tree) : tree ;
+PROCEDURE GetArrayNoOfElements (location: location_t; tokno: CARDINAL;
+                                arraytype: tree) : tree ;
 
 
 (*

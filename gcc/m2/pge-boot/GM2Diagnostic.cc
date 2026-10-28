@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -35,22 +37,20 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
 #   include "GStorage.h"
 #   include "Gmcrts.h"
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
 #endif
-#define _M2Diagnostic_H
 #define _M2Diagnostic_C
 
+#include "GM2Diagnostic.h"
 #   include "GASCII.h"
 #   include "GSelective.h"
 #   include "GStringConvert.h"
 #   include "GStorage.h"
+#   include "GIndexing.h"
 #   include "GDynamicStrings.h"
 #   include "GM2RTS.h"
 
@@ -60,7 +60,7 @@ typedef struct M2Diagnostic_DiagProc_p M2Diagnostic_DiagProc;
 #   define DefaultTimeEnableValue false
 #   define DefaultMemEnableValue false
 #   define MaxParam 4
-#   define MICROSEC 100000
+#   define MICROSEC (1000*1000)
 typedef struct M2Diagnostic_timeDiag_r M2Diagnostic_timeDiag;
 
 typedef struct M2Diagnostic_memDiag_r M2Diagnostic_memDiag;
@@ -74,10 +74,7 @@ typedef enum {M2Diagnostic_timediag, M2Diagnostic_memdiag} M2Diagnostic_DiagType
 #   define kilo 1024
 #   define mega (kilo*kilo)
 #   define giga (mega*kilo)
-typedef M2Diagnostic__T1 *M2Diagnostic_Diagnostic;
-
-typedef void (*M2Diagnostic_DiagProc_t) (M2Diagnostic_Diagnostic);
-struct M2Diagnostic_DiagProc_p { M2Diagnostic_DiagProc_t proc; };
+typedef M2Diagnostic__T1 *M2Diagnostic_Diagnostic__opaque;
 
 struct M2Diagnostic_timeDiag_r {
                                  unsigned int count;
@@ -95,7 +92,7 @@ struct M2Diagnostic__T1_r {
                             DynamicStrings_String name;
                             DynamicStrings_String format;
                             bool enable;
-                            M2Diagnostic_Diagnostic next;
+                            M2Diagnostic_Diagnostic__opaque next;
                             M2Diagnostic_DiagType type;  /* case tag */
                             union {
                                     M2Diagnostic_timeDiag tdiag;
@@ -105,7 +102,8 @@ struct M2Diagnostic__T1_r {
 
 static DynamicStrings_String Output;
 static long unsigned int TotalHeap;
-static M2Diagnostic_Diagnostic Head;
+static M2Diagnostic_Diagnostic__opaque Head;
+static bool EnableHierarchical;
 static bool DefaultTimeEnable;
 static bool DefaultMemEnable;
 static Selective_Timeval StartTime;
@@ -233,7 +231,7 @@ extern "C" void M2Diagnostic_Configure (bool time_, bool mem);
               all the diagnostics enabled.
 */
 
-extern "C" DynamicStrings_String M2Diagnostic_Generate (void);
+extern "C" DynamicStrings_String M2Diagnostic_Generate (bool hierarchical);
 
 /*
    Assert - halt if b is false.
@@ -290,14 +288,14 @@ static void UpdateTotalTime (void);
                   with Diag.
 */
 
-static Selective_Timeval GetTimeParam (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static Selective_Timeval GetTimeParam (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    GetMemParam - return the mem paramno from within Diag.  A paramno of 0
                  will return the total heap.
 */
 
-static long unsigned int GetMemParam (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static long unsigned int GetMemParam (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    CreateDecimalMem - converts c to a decimal string.
@@ -327,20 +325,20 @@ static DynamicStrings_String CreateHexadecimalTime (Selective_Timeval timeval);
    Decimal - convert paramno in Diag to a string.
 */
 
-static DynamicStrings_String Decimal (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static DynamicStrings_String Decimal (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    Hexadecimal - convert paramno in Diag to a hex string.
 */
 
-static DynamicStrings_String Hexadecimal (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static DynamicStrings_String Hexadecimal (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    Count - return the count field for a time diag or return the decimal
            value for a paramno in a mem diag.
 */
 
-static DynamicStrings_String Count (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static DynamicStrings_String Count (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    Microsec - convert timeval into microseconds and return the value as
@@ -365,29 +363,38 @@ static DynamicStrings_String CreateMemPercent (long unsigned int memval);
    DescribePercent - call the appropriate mem or time percentage procedure.
 */
 
-static DynamicStrings_String DescribePercent (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static DynamicStrings_String DescribePercent (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    DescribeMemory - return the memory diagnostic
 */
 
-static DynamicStrings_String DescribeMemory (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static DynamicStrings_String DescribeMemory (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    DescribeTime - returns the time diagnostic in seconds.
 */
 
-static DynamicStrings_String DescribeTime (M2Diagnostic_Diagnostic Diag, unsigned int paramno);
+static DynamicStrings_String DescribeTime (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno);
 
 /*
    ParamSpec - ebnf:
 
                ( '{' | '0' | '1' | '2' | '3' | '4' )
-               ( 'd' | 'x' | 'C' | 'T' | 'M' | 'N' | 'P' )
+               ( 'd' | 'x' | 'C' | 'H' | 'T' | 'M' | 'N' | 'P' )
                '}'
 */
 
-static unsigned int ParamSpec (M2Diagnostic_Diagnostic Diag, unsigned int i);
+static unsigned int ParamSpec (M2Diagnostic_Diagnostic__opaque Diag, unsigned int i);
+
+/*
+   HierarchicalName - if the hierarchical formatting of output
+                      has been enabled use the last component
+                      of the name separated by ':' else
+                      output full name.
+*/
+
+static DynamicStrings_String HierarchicalName (M2Diagnostic_Diagnostic__opaque Diag, unsigned int pos);
 
 /*
    FormatDiag - ebnf:
@@ -395,7 +402,33 @@ static unsigned int ParamSpec (M2Diagnostic_Diagnostic Diag, unsigned int i);
                 { ( '{' ParamSpec ) | any }
 */
 
-static void FormatDiag (M2Diagnostic_Diagnostic Diag);
+static void FormatDiag (M2Diagnostic_Diagnostic__opaque Diag);
+
+/*
+   Match -
+*/
+
+static bool Match (DynamicStrings_String stem, DynamicStrings_String name);
+
+/*
+   HierarchicalDiag - iterate over every diagnostic using a depth first search
+                      for each component of the diagnostic name.
+*/
+
+static DynamicStrings_String HierarchicalDiag (DynamicStrings_String stem, Indexing_Index visited);
+
+/*
+   GenerateRaw - return the output string after calling FormatDiag on
+                 every diagnostic rule.
+*/
+
+static DynamicStrings_String GenerateRaw (void);
+
+/*
+   GenerateHierarchical -
+*/
+
+static DynamicStrings_String GenerateHierarchical (void);
 
 
 /*
@@ -581,7 +614,7 @@ static void UpdateTotalTime (void)
                   with Diag.
 */
 
-static Selective_Timeval GetTimeParam (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static Selective_Timeval GetTimeParam (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   unsigned int sec;
   unsigned int usec;
@@ -605,7 +638,7 @@ static Selective_Timeval GetTimeParam (M2Diagnostic_Diagnostic Diag, unsigned in
                  will return the total heap.
 */
 
-static long unsigned int GetMemParam (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static long unsigned int GetMemParam (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   if (paramno == 0)
     {
@@ -680,7 +713,7 @@ static DynamicStrings_String CreateHexadecimalTime (Selective_Timeval timeval)
    Decimal - convert paramno in Diag to a string.
 */
 
-static DynamicStrings_String Decimal (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static DynamicStrings_String Decimal (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   switch (Diag->type)
     {
@@ -707,7 +740,7 @@ static DynamicStrings_String Decimal (M2Diagnostic_Diagnostic Diag, unsigned int
    Hexadecimal - convert paramno in Diag to a hex string.
 */
 
-static DynamicStrings_String Hexadecimal (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static DynamicStrings_String Hexadecimal (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   switch (Diag->type)
     {
@@ -735,7 +768,7 @@ static DynamicStrings_String Hexadecimal (M2Diagnostic_Diagnostic Diag, unsigned
            value for a paramno in a mem diag.
 */
 
-static DynamicStrings_String Count (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static DynamicStrings_String Count (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   switch (Diag->type)
     {
@@ -844,7 +877,7 @@ static DynamicStrings_String CreateMemPercent (long unsigned int memval)
    DescribePercent - call the appropriate mem or time percentage procedure.
 */
 
-static DynamicStrings_String DescribePercent (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static DynamicStrings_String DescribePercent (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   switch (Diag->type)
     {
@@ -871,7 +904,7 @@ static DynamicStrings_String DescribePercent (M2Diagnostic_Diagnostic Diag, unsi
    DescribeMemory - return the memory diagnostic
 */
 
-static DynamicStrings_String DescribeMemory (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static DynamicStrings_String DescribeMemory (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   long unsigned int param;
   DynamicStrings_String s;
@@ -887,11 +920,17 @@ static DynamicStrings_String DescribeMemory (M2Diagnostic_Diagnostic Diag, unsig
       param = param / kilo;
       s = DynamicStrings_ConCat (StringConvert_LongCardinalToString (param, 0, ' ', 10, false), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "KB", 2)));
     }
-  else
+  else if (param < giga)
     {
       /* avoid dangling else.  */
       param = param / mega;
       s = DynamicStrings_ConCat (StringConvert_LongCardinalToString (param, 0, ' ', 10, false), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "MB", 2)));
+    }
+  else
+    {
+      /* avoid dangling else.  */
+      param = param / giga;
+      s = DynamicStrings_ConCat (StringConvert_LongCardinalToString (param, 0, ' ', 10, false), DynamicStrings_Mark (DynamicStrings_InitString ((const char *) "GB", 2)));
     }
   return s;
   /* static analysis guarentees a RETURN statement will be used before here.  */
@@ -903,7 +942,7 @@ static DynamicStrings_String DescribeMemory (M2Diagnostic_Diagnostic Diag, unsig
    DescribeTime - returns the time diagnostic in seconds.
 */
 
-static DynamicStrings_String DescribeTime (M2Diagnostic_Diagnostic Diag, unsigned int paramno)
+static DynamicStrings_String DescribeTime (M2Diagnostic_Diagnostic__opaque Diag, unsigned int paramno)
 {
   unsigned int sec;
   unsigned int usec;
@@ -935,11 +974,11 @@ static DynamicStrings_String DescribeTime (M2Diagnostic_Diagnostic Diag, unsigne
    ParamSpec - ebnf:
 
                ( '{' | '0' | '1' | '2' | '3' | '4' )
-               ( 'd' | 'x' | 'C' | 'T' | 'M' | 'N' | 'P' )
+               ( 'd' | 'x' | 'C' | 'H' | 'T' | 'M' | 'N' | 'P' )
                '}'
 */
 
-static unsigned int ParamSpec (M2Diagnostic_Diagnostic Diag, unsigned int i)
+static unsigned int ParamSpec (M2Diagnostic_Diagnostic__opaque Diag, unsigned int i)
 {
   unsigned int paramno;
   unsigned int length;
@@ -1000,6 +1039,10 @@ static unsigned int ParamSpec (M2Diagnostic_Diagnostic Diag, unsigned int i)
                 Output = DynamicStrings_ConCat (Output, Count (Diag, paramno));
                 break;
 
+              case 'H':
+                Output = DynamicStrings_ConCat (Output, HierarchicalName (Diag, i));
+                break;
+
               case 'M':
                 Output = DynamicStrings_ConCat (Output, DescribeMemory (Diag, paramno));
                 break;
@@ -1039,12 +1082,43 @@ static unsigned int ParamSpec (M2Diagnostic_Diagnostic Diag, unsigned int i)
 
 
 /*
+   HierarchicalName - if the hierarchical formatting of output
+                      has been enabled use the last component
+                      of the name separated by ':' else
+                      output full name.
+*/
+
+static DynamicStrings_String HierarchicalName (M2Diagnostic_Diagnostic__opaque Diag, unsigned int pos)
+{
+  int i;
+  int j;
+
+  if (EnableHierarchical)
+    {
+      i = DynamicStrings_Index (Diag->name, '}', pos);
+      if (i > 0)
+        {
+          j = i-1;
+          i = DynamicStrings_RIndex (Diag->name, ':', static_cast<unsigned int> (j));
+          if ((i >= 0) && (i < j))
+            {
+              return DynamicStrings_Slice (Diag->name, i, j);
+            }
+        }
+    }
+  return Diag->name;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    FormatDiag - ebnf:
 
                 { ( '{' ParamSpec ) | any }
 */
 
-static void FormatDiag (M2Diagnostic_Diagnostic Diag)
+static void FormatDiag (M2Diagnostic_Diagnostic__opaque Diag)
 {
   unsigned int i;
   unsigned int length;
@@ -1071,6 +1145,71 @@ static void FormatDiag (M2Diagnostic_Diagnostic Diag)
 
 
 /*
+   Match -
+*/
+
+static bool Match (DynamicStrings_String stem, DynamicStrings_String name)
+{
+  return true;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   HierarchicalDiag - iterate over every diagnostic using a depth first search
+                      for each component of the diagnostic name.
+*/
+
+static DynamicStrings_String HierarchicalDiag (DynamicStrings_String stem, Indexing_Index visited)
+{
+  M2Diagnostic_Diagnostic__opaque diag;
+
+  diag = Head;
+  while (diag != NULL)
+    {
+      if (! (Indexing_IsIndiceInIndex (visited, reinterpret_cast <void *> (diag))))
+        {
+          if (Match (stem, diag->name))
+            {
+              Indexing_IncludeIndiceIntoIndex (visited, reinterpret_cast <void *> (diag));
+            }
+        }
+      diag = diag->next;
+    }
+  return Output;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   GenerateRaw - return the output string after calling FormatDiag on
+                 every diagnostic rule.
+*/
+
+static DynamicStrings_String GenerateRaw (void)
+{
+  M2Diagnostic_ForeachDiagDo ((M2Diagnostic_DiagProc) {(M2Diagnostic_DiagProc_t) FormatDiag});
+  return Output;
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   GenerateHierarchical -
+*/
+
+static DynamicStrings_String GenerateHierarchical (void)
+{
+  return HierarchicalDiag (DynamicStrings_InitString ((const char *) "", 0), Indexing_InitIndex (1));
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
    InitTimeDiagnostic - create and return a time diagnostic.
                         The format string can be free form and may
                         contain {1T}, {1C} or {1P}.
@@ -1084,7 +1223,7 @@ static void FormatDiag (M2Diagnostic_Diagnostic Diag)
 
 extern "C" M2Diagnostic_Diagnostic M2Diagnostic_InitTimeDiagnostic (const char *name_, unsigned int _name_high, const char *format_, unsigned int _format_high)
 {
-  M2Diagnostic_Diagnostic d;
+  M2Diagnostic_Diagnostic__opaque d;
   char name[_name_high+1];
   char format[_format_high+1];
 
@@ -1116,11 +1255,11 @@ extern "C" M2Diagnostic_Diagnostic M2Diagnostic_InitTimeDiagnostic (const char *
             break;
         }
       Head = d;
-      return d;
+      return static_cast<M2Diagnostic_Diagnostic> (d);
     }
   else
     {
-      return NULL;
+      return static_cast<M2Diagnostic_Diagnostic> (NULL);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1135,9 +1274,9 @@ extern "C" void M2Diagnostic_EnterDiagnostic (M2Diagnostic_Diagnostic TimeDiag)
 {
   if (EnableDiagnostics && (TimeDiag != NULL))
     {
-      Assert (TimeDiag->type == M2Diagnostic_timediag);
-      Assert ((Selective_GetTimeOfDay (TimeDiag->tdiag.enter)) == 0);
-      TimeDiag->tdiag.count += 1;
+      Assert (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->type == M2Diagnostic_timediag);
+      Assert ((Selective_GetTimeOfDay (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.enter)) == 0);
+      static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.count += 1;
     }
 }
 
@@ -1150,9 +1289,12 @@ extern "C" void M2Diagnostic_ExitDiagnostic (M2Diagnostic_Diagnostic TimeDiag)
 {
   if (EnableDiagnostics && (TimeDiag != NULL))
     {
-      Assert (TimeDiag->type == M2Diagnostic_timediag);
-      Assert ((Selective_GetTimeOfDay (TimeDiag->tdiag.exit_)) == 0);
-      Accumulate (TimeDiag->tdiag.total, TimeDiag->tdiag.enter, TimeDiag->tdiag.exit_);
+      Assert (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.enter != NULL);
+      Assert (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.exit_ != NULL);
+      Assert (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.total != NULL);
+      Assert (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->type == M2Diagnostic_timediag);
+      Assert ((Selective_GetTimeOfDay (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.exit_)) == 0);
+      Accumulate (static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.total, static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.enter, static_cast<M2Diagnostic_Diagnostic__opaque> (TimeDiag)->tdiag.exit_);
     }
 }
 
@@ -1172,7 +1314,7 @@ extern "C" void M2Diagnostic_ExitDiagnostic (M2Diagnostic_Diagnostic TimeDiag)
 extern "C" M2Diagnostic_Diagnostic M2Diagnostic_InitMemDiagnostic (const char *name_, unsigned int _name_high, const char *format_, unsigned int _format_high)
 {
   unsigned int i;
-  M2Diagnostic_Diagnostic d;
+  M2Diagnostic_Diagnostic__opaque d;
   char name[_name_high+1];
   char format[_format_high+1];
 
@@ -1204,11 +1346,11 @@ extern "C" M2Diagnostic_Diagnostic M2Diagnostic_InitMemDiagnostic (const char *n
             break;
         }
       Head = d;
-      return d;
+      return static_cast<M2Diagnostic_Diagnostic> (d);
     }
   else
     {
-      return NULL;
+      return static_cast<M2Diagnostic_Diagnostic> (NULL);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1226,10 +1368,10 @@ extern "C" void M2Diagnostic_MemIncr (M2Diagnostic_Diagnostic MemDiag, unsigned 
   if (EnableDiagnostics && (MemDiag != NULL))
     {
       CheckParam (paramno);
-      switch (MemDiag->type)
+      switch (static_cast<M2Diagnostic_Diagnostic__opaque> (MemDiag)->type)
         {
           case M2Diagnostic_memdiag:
-            MemDiag->mdiag.param.array[paramno-1] += (long unsigned int ) (incr);
+            static_cast<M2Diagnostic_Diagnostic__opaque> (MemDiag)->mdiag.param.array[paramno-1] += (long unsigned int ) (incr);
             break;
 
 
@@ -1253,10 +1395,10 @@ extern "C" void M2Diagnostic_MemDecr (M2Diagnostic_Diagnostic MemDiag, unsigned 
   if (EnableDiagnostics && (MemDiag != NULL))
     {
       CheckParam (paramno);
-      switch (MemDiag->type)
+      switch (static_cast<M2Diagnostic_Diagnostic__opaque> (MemDiag)->type)
         {
           case M2Diagnostic_memdiag:
-            MemDiag->mdiag.param.array[paramno-1] -= (long unsigned int ) (decr);
+            static_cast<M2Diagnostic_Diagnostic__opaque> (MemDiag)->mdiag.param.array[paramno-1] -= (long unsigned int ) (decr);
             break;
 
 
@@ -1279,10 +1421,10 @@ extern "C" void M2Diagnostic_MemSet (M2Diagnostic_Diagnostic MemDiag, unsigned i
   if (EnableDiagnostics && (MemDiag != NULL))
     {
       CheckParam (paramno);
-      switch (MemDiag->type)
+      switch (static_cast<M2Diagnostic_Diagnostic__opaque> (MemDiag)->type)
         {
           case M2Diagnostic_memdiag:
-            MemDiag->mdiag.param.array[paramno-1] = (long unsigned int ) (value);
+            static_cast<M2Diagnostic_Diagnostic__opaque> (MemDiag)->mdiag.param.array[paramno-1] = (long unsigned int ) (value);
             break;
 
 
@@ -1329,7 +1471,7 @@ extern "C" void M2Diagnostic_SetEnable (M2Diagnostic_Diagnostic Diag, bool value
 {
   if (EnableDiagnostics && (Diag != NULL))
     {
-      Diag->enable = value;
+      static_cast<M2Diagnostic_Diagnostic__opaque> (Diag)->enable = value;
     }
 }
 
@@ -1341,7 +1483,7 @@ extern "C" void M2Diagnostic_SetEnable (M2Diagnostic_Diagnostic Diag, bool value
 
 extern "C" M2Diagnostic_Diagnostic M2Diagnostic_Lookup (const char *name_, unsigned int _name_high)
 {
-  M2Diagnostic_Diagnostic ptr;
+  M2Diagnostic_Diagnostic__opaque ptr;
   DynamicStrings_String s;
   char name[_name_high+1];
 
@@ -1357,16 +1499,16 @@ extern "C" M2Diagnostic_Diagnostic M2Diagnostic_Lookup (const char *name_, unsig
           if (DynamicStrings_Equal (ptr->name, s))
             {
               s = DynamicStrings_KillString (s);
-              return ptr;
+              return static_cast<M2Diagnostic_Diagnostic> (ptr);
             }
           ptr = ptr->next;
         }
       s = DynamicStrings_KillString (s);
-      return NULL;
+      return static_cast<M2Diagnostic_Diagnostic> (NULL);
     }
   else
     {
-      return NULL;
+      return static_cast<M2Diagnostic_Diagnostic> (NULL);
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1381,7 +1523,7 @@ extern "C" DynamicStrings_String M2Diagnostic_GetName (M2Diagnostic_Diagnostic D
 {
   if (EnableDiagnostics && (Diag != NULL))
     {
-      return Diag->name;
+      return static_cast<M2Diagnostic_Diagnostic__opaque> (Diag)->name;
     }
   else
     {
@@ -1400,12 +1542,12 @@ extern "C" DynamicStrings_String M2Diagnostic_GetName (M2Diagnostic_Diagnostic D
 
 extern "C" void M2Diagnostic_ForeachDiagDo (M2Diagnostic_DiagProc dp)
 {
-  M2Diagnostic_Diagnostic ptr;
+  M2Diagnostic_Diagnostic__opaque ptr;
 
   ptr = Head;
   while (ptr != NULL)
     {
-      (*dp.proc) (ptr);
+      (*dp.proc) (static_cast<M2Diagnostic_Diagnostic> (ptr));
       ptr = ptr->next;
     }
 }
@@ -1418,13 +1560,13 @@ extern "C" void M2Diagnostic_ForeachDiagDo (M2Diagnostic_DiagProc dp)
 
 extern "C" void M2Diagnostic_SetDefaultConfig (M2Diagnostic_Diagnostic Diag)
 {
-  if (Diag->type == M2Diagnostic_timediag)
+  if (static_cast<M2Diagnostic_Diagnostic__opaque> (Diag)->type == M2Diagnostic_timediag)
     {
-      Diag->enable = DefaultTimeEnable;
+      static_cast<M2Diagnostic_Diagnostic__opaque> (Diag)->enable = DefaultTimeEnable;
     }
   else
     {
-      Diag->enable = DefaultMemEnable;
+      static_cast<M2Diagnostic_Diagnostic__opaque> (Diag)->enable = DefaultMemEnable;
     }
 }
 
@@ -1451,14 +1593,21 @@ extern "C" void M2Diagnostic_Configure (bool time_, bool mem)
               all the diagnostics enabled.
 */
 
-extern "C" DynamicStrings_String M2Diagnostic_Generate (void)
+extern "C" DynamicStrings_String M2Diagnostic_Generate (bool hierarchical)
 {
+  EnableHierarchical = hierarchical;
   if (EnableDiagnostics)
     {
       Output = DynamicStrings_KillString (Output);
       Output = DynamicStrings_InitString ((const char *) "", 0);
-      M2Diagnostic_ForeachDiagDo ((M2Diagnostic_DiagProc) {(M2Diagnostic_DiagProc_t) FormatDiag});
-      return Output;
+      if (hierarchical)
+        {
+          return GenerateHierarchical ();
+        }
+      else
+        {
+          return GenerateRaw ();
+        }
     }
   else
     {
@@ -1468,18 +1617,19 @@ extern "C" DynamicStrings_String M2Diagnostic_Generate (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_M2Diagnostic_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2Diagnostic_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   TotalHeap = 0;
   StartTime = NULL;
   TotalTime = NULL;
   CreateStartTime ();
-  Head = NULL;
+  Head = static_cast<M2Diagnostic_Diagnostic__opaque> (NULL);
   Output = static_cast<DynamicStrings_String> (NULL);
+  EnableHierarchical = false;
   DefaultTimeEnable = DefaultTimeEnableValue;
   DefaultMemEnable = DefaultMemEnableValue;
 }
 
-extern "C" void _M2_M2Diagnostic_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_M2Diagnostic_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

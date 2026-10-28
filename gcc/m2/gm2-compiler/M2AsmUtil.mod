@@ -28,8 +28,9 @@ FROM DynamicStrings IMPORT String, string, ConCat, KillString, InitString, Mark,
 FROM StdIO IMPORT Write ;
 FROM StrIO IMPORT WriteString ;
 FROM NameKey IMPORT WriteKey, GetKey, MakeKey, makekey, KeyToCharStar, NulName ;
-FROM M2Options IMPORT WholeProgram ;
+FROM M2Options IMPORT GetWholeProgramFlag ;
 FROM M2Printf IMPORT printf1 ;
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
 
 FROM SymbolTable IMPORT NulSym,
                         GetSymName, GetLibName,
@@ -159,11 +160,11 @@ BEGIN
       ELSE
          (* We need to force the prefix if whole program is used otherwise
             local symbols from multipl modules might conflict.  *)
-         RETURN WholeProgram OR IsExportQualified (sym)
+         RETURN GetWholeProgramFlag (BuiltinTokenNo) OR IsExportQualified (sym)
       END
    ELSIF IsModule (mod)
    THEN
-      RETURN WholeProgram
+      RETURN GetWholeProgramFlag (BuiltinTokenNo)
    END ;
    RETURN FALSE
 END SymNeedsModulePrefix ;

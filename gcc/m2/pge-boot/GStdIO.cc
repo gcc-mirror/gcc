@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -249,7 +251,7 @@ extern "C" StdIO_ProcRead StdIO_GetCurrentInput (void)
   __builtin_unreachable ();
 }
 
-extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   StackWPtr = 0;
   StackRPtr = 0;
@@ -257,6 +259,6 @@ extern "C" void _M2_StdIO_init (__attribute__((unused)) int argc,__attribute__((
   StdIO_PushInput ((StdIO_ProcRead) {(StdIO_ProcRead_t) IO_Read});
 }
 
-extern "C" void _M2_StdIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_StdIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

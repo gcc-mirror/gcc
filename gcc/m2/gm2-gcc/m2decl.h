@@ -41,13 +41,15 @@ EXTERN tree m2decl_DeclareM2linkStaticInitialization (location_t location,
 						      int ScaffoldStatic);
 EXTERN tree m2decl_DeclareM2linkForcedModuleInitOrder (location_t location,
 						       const char *RuntimeOverride);
-EXTERN tree m2decl_BuildPtrToTypeString (location_t location, const char *string, tree type);
+EXTERN tree m2decl_BuildPtrToTypeString (location_t location, unsigned int tokno,
+					 const char *string, tree type);
 EXTERN void m2decl_BuildModuleCtor (tree module_ctor);
 EXTERN tree m2decl_DeclareModuleCtor (tree decl);
 EXTERN tree m2decl_GetDeclContext (tree t);
 EXTERN tree m2decl_BuildStringConstant (const char *string, int length);
 EXTERN tree m2decl_BuildCStringConstant (const char *string, int length);
 EXTERN tree m2decl_BuildConstLiteralNumber (location_t location,
+					    unsigned int tokno,
 					    const char *str,
                                             unsigned int base,
 					    bool issueError);

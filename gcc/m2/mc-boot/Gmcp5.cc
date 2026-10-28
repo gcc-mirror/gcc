@@ -1108,7 +1108,7 @@ static void SubDesignator (mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, m
                                metaError2 ('attempting to access a field {%1k} from {%2ad} which does not have a record type', curident, type)
                             END
                          ELSE
-                            metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', n, n)
+                            metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', curident, n)
                          END  %
                         |
                        % IF isPointer (type)
@@ -5629,7 +5629,7 @@ static void SubDesignator (mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, m
                                metaError2 ('attempting to access a field {%1k} from {%2ad} which does not have a record type', curident, type)
                             END
                          ELSE
-                            metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', n, n)
+                            metaError2 ('trying to dereference {%1k} which was not declared as a pointer but a {%2tad}', curident, n)
                          END  %
                         |
                        % IF isPointer (type)
@@ -5680,7 +5680,7 @@ static void SubPointer (mcp5_SetOfStop0 stopset0, mcp5_SetOfStop1 stopset1, mcp5
         }
       else
         {
-          mcMetaError_metaError2 ((const char *) "trying to dereference {%1k} which was not declared as a pointer but a {%2tad}", 77, (const unsigned char *) &n, (sizeof (n)-1), (const unsigned char *) &n, (sizeof (n)-1));
+          mcMetaError_metaError2 ((const char *) "trying to dereference {%1k} which was not declared as a pointer but a {%2tad}", 77, (const unsigned char *) &curident, (sizeof (curident)-1), (const unsigned char *) &n, (sizeof (n)-1));
         }
     }
   else

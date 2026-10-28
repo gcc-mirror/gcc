@@ -174,10 +174,12 @@ EXTERN void M2Diagnostic_Configure (bool time_, bool mem);
 
 /*
    Generate - return a string containing the output from
-              all the diagnostics enabled.
+              all the diagnostics enabled.  If hierarchical is TRUE
+              then the output is displayed in a hierarchical format
+              using the name and ':' separators to signify grouping.
 */
 
-EXTERN DynamicStrings_String M2Diagnostic_Generate (void);
+EXTERN DynamicStrings_String M2Diagnostic_Generate (bool hierarchical);
 #   ifdef __cplusplus
 }
 #   endif

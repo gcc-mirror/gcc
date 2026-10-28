@@ -395,7 +395,8 @@ PROCEDURE IsGreater (a, b: tree) : BOOLEAN ;
    BuildIfCallWholeHandlerLoc - return a Tree containing a runtime test whether, condition, is true.
 *)
 
-PROCEDURE BuildIfCallWholeHandlerLoc (location: location_t; condition: tree;
+PROCEDURE BuildIfCallWholeHandlerLoc (location: location_t; tokno: CARDINAL;
+                                      condition: tree;
                                       scope, message: ConstCharStar) : tree ;
 
 
@@ -403,7 +404,8 @@ PROCEDURE BuildIfCallWholeHandlerLoc (location: location_t; condition: tree;
    BuildIfCallRealHandlerLoc - return a Tree containing a runtime test whether, condition, is true.
 *)
 
-PROCEDURE BuildIfCallRealHandlerLoc (location: location_t; condition: tree;
+PROCEDURE BuildIfCallRealHandlerLoc (location: location_t; tokno: CARDINAL;
+                                     condition: tree;
                                      scope, message: ConstCharStar) : tree ;
 
 

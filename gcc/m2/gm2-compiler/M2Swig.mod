@@ -22,7 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE M2Swig ;
 
 FROM Storage IMPORT ALLOCATE ;
-FROM M2Options IMPORT GenerateSwig ;
+FROM M2Options IMPORT GetSwigFlag ;
 FROM SFIO IMPORT OpenToWrite ;
 FROM FIO IMPORT File, Close ;
 FROM NameKey IMPORT Name, KeyToCharStar ;
@@ -30,6 +30,7 @@ FROM M2Error IMPORT InternalError ;
 FROM M2Printf IMPORT fprintf0, fprintf1, fprintf2, fprintf3, fprintf4 ;
 FROM M2AsmUtil IMPORT GetFullScopeAsmName ;
 FROM SYSTEM IMPORT WORD ;
+FROM M2LexBuf IMPORT BuiltinTokenNo ;
 
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar, ConCat, Mark,
                            KillString ;
@@ -955,7 +956,7 @@ END DoGenerateSwig ;
 
 PROCEDURE GenerateSwigFile (sym: CARDINAL) ;
 BEGIN
-   IF GenerateSwig
+   IF GetSwigFlag (BuiltinTokenNo)
    THEN
       DoGenerateSwig(sym)
    END

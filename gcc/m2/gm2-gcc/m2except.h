@@ -43,7 +43,8 @@ EXTERN void m2except_InitExceptions (location_t location);
 
 /* BuildThrow - builds a throw statement and return the tree.  */
 
-EXTERN tree m2except_BuildThrow (location_t location, tree exp);
+EXTERN tree m2except_BuildThrow (location_t location, unsigned int tokno,
+				 tree exp);
 
 /* BuildTryBegin - returns a tree representing the 'try' block.  */
 
@@ -57,7 +58,8 @@ EXTERN void m2except_BuildTryEnd (tree tryBlock);
 /* BuildCatchBegin - creates a handler tree for the C++ statement
    'catch (...) {'.  It returns the handler tree.  */
 
-EXTERN tree m2except_BuildCatchBegin (location_t location);
+EXTERN tree m2except_BuildCatchBegin (location_t location,
+				      unsigned int tokno);
 
 /* BuildCatchEnd - completes a try catch block.  It returns the,
    try_block, tree.  It creates the C++ statement

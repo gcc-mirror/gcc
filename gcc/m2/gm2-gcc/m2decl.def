@@ -53,7 +53,8 @@ PROCEDURE DeclareM2linkForcedModuleInitOrder (location: location_t;
 PROCEDURE DeclareM2linkStaticInitialization (location: location_t;
                                              ScaffoldStatic: INTEGER) : tree ;
 
-PROCEDURE BuildPtrToTypeString (location: location_t; string: ADDRESS; type: tree) : tree ;
+PROCEDURE BuildPtrToTypeString (location: location_t; tokno: CARDINAL;
+                                string: ADDRESS; type: tree) : tree ;
 
 
 (*
@@ -154,20 +155,13 @@ PROCEDURE BuildEndFunctionDeclaration (location_begin, location_end: location_t;
 
 
 (*
-    RememberVariables -
-*)
-
-PROCEDURE RememberVariables (l: tree) ;
-
-
-(*
     BuildConstLiteralNumber - returns a GCC TREE built from the string, str.
                               It assumes that, str, represents a legal
                               number in Modula-2. It always returns a
                               positive value.
 *)
 
-PROCEDURE BuildConstLiteralNumber (location: location_t;
+PROCEDURE BuildConstLiteralNumber (location: location_t; tokno: CARDINAL;
                                    str: ConstCharStar; base: CARDINAL;
                                    issueError: BOOLEAN) : tree ;
 

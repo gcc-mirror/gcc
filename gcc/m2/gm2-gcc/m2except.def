@@ -37,7 +37,7 @@ PROCEDURE InitExceptions (location: location_t) ;
    BuildThrow - builds a throw statement and return the tree.
 *)
 
-PROCEDURE BuildThrow (location: location_t; t: tree) : tree ;
+PROCEDURE BuildThrow (location: location_t; tokno: CARDINAL; t: tree) : tree ;
 
 
 (*
@@ -61,7 +61,7 @@ PROCEDURE BuildTryEnd (tryBlock: tree) ;
                      It returns the handler tree.
 *)
 
-PROCEDURE BuildCatchBegin (location: location_t) : tree ;
+PROCEDURE BuildCatchBegin (location: location_t; tokno: CARDINAL) : tree ;
 
 
 (*

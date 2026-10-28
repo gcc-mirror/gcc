@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,8 +42,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <stdlib.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -52,6 +52,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #   include "Glibc.h"
 #   include "GDebug.h"
 #   include "GSYSTEM.h"
+#   include "GM2Diagnostic.h"
 
 #   define enableDeallocation true
 #   define enableZero true
@@ -68,6 +69,11 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size);
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 */
 
 extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size);
@@ -78,6 +84,11 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size);
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 */
 
 extern "C" bool SysStorage_Available (unsigned int size);
@@ -94,7 +105,7 @@ extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
   (*a) = libc_malloc (static_cast<size_t> (size));
   if ((*a) == NULL)
     {
-      Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc/m2/gm2-libs/SysStorage.mod", 36, (const char *) "ALLOCATE", 8, 51);
+      Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc/m2/gm2-libs/SysStorage.mod", 36, (const char *) "ALLOCATE", 8, 53);
     }
   if (enableTrace && trace)
     {
@@ -102,6 +113,7 @@ extern "C" void SysStorage_ALLOCATE (void * *a, unsigned int size)
       libc_printf ((const char *) "<MEM-ALLOC> %ld %d\\n", 20, (*a), size);
       callno += 1;
     }
+  M2Diagnostic_TotalHeapIncr (size);
 }
 
 extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
@@ -119,7 +131,7 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
         }
       if ((libc_memset ((*a), 0, static_cast<size_t> (size))) != (*a))
         {
-          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, (const char *) "../../gcc/m2/gm2-libs/SysStorage.mod", 36, (const char *) "DEALLOCATE", 10, 78);
+          Debug_Halt ((const char *) "memset should have returned the first parameter", 47, (const char *) "../../gcc/m2/gm2-libs/SysStorage.mod", 36, (const char *) "DEALLOCATE", 10, 81);
         }
     }
   if (enableDeallocation)
@@ -131,6 +143,7 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
         }
       libc_free ((*a));
     }
+  M2Diagnostic_TotalHeapDecr (size);
   (*a) = NULL;
 }
 
@@ -141,6 +154,11 @@ extern "C" void SysStorage_DEALLOCATE (void * *a, unsigned int size)
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 */
 
 extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
@@ -164,7 +182,7 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
       (*a) = libc_realloc ((*a), static_cast<size_t> (size));
       if ((*a) == NULL)
         {
-          Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc/m2/gm2-libs/SysStorage.mod", 36, (const char *) "REALLOCATE", 10, 122);
+          Debug_Halt ((const char *) "out of memory error", 19, (const char *) "../../gcc/m2/gm2-libs/SysStorage.mod", 36, (const char *) "REALLOCATE", 10, 131);
         }
       if (enableTrace && trace)
         {
@@ -181,6 +199,11 @@ extern "C" void SysStorage_REALLOCATE (void * *a, unsigned int size)
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 */
 
 extern "C" bool SysStorage_Available (unsigned int size)
@@ -224,7 +247,7 @@ extern "C" void SysStorage_Init (void)
 {
 }
 
-extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   callno = 0;
   if (enableTrace)
@@ -245,6 +268,6 @@ extern "C" void _M2_SysStorage_init (__attribute__((unused)) int argc,__attribut
     }
 }
 
-extern "C" void _M2_SysStorage_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_SysStorage_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
 }

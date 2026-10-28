@@ -56,7 +56,7 @@ FROM SymbolTable IMPORT NulSym,
 
 FROM Assertion IMPORT Assert ;
 FROM M2LexBuf IMPORT BuiltinTokenNo ;
-FROM M2Options IMPORT Iso, Pim2, Pedantic, DumpSystemExports ;
+FROM M2Options IMPORT GetISO, GetPIM2, GetPedantic, GetDumpSystemExports ;
 FROM NameKey IMPORT Name, MakeKey, NulName ;
 FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM M2Base IMPORT Cardinal, ZType ;
@@ -125,9 +125,9 @@ BEGIN
    maxval := MakeConstVar (BuiltinTokenNo, MakeKey(max)) ;
    IF realtype
    THEN
-      PushRealTree (GetMaxFrom (BuiltinsLocation (), gccType))
+      PushRealTree (GetMaxFrom (BuiltinsLocation (), BuiltinTokenNo, gccType))
    ELSE
-      PushIntegerTree (GetMaxFrom (BuiltinsLocation (), gccType))
+      PushIntegerTree (GetMaxFrom (BuiltinsLocation (), BuiltinTokenNo, gccType))
    END ;
    PopValue (maxval) ;
    PutVar (maxval, type) ;
@@ -136,9 +136,9 @@ BEGIN
    minval := MakeConstVar (BuiltinTokenNo, MakeKey(min)) ;
    IF realtype
    THEN
-      PushRealTree (GetMinFrom (BuiltinsLocation (), gccType))
+      PushRealTree (GetMinFrom (BuiltinsLocation (), BuiltinTokenNo, gccType))
    ELSE
-      PushIntegerTree (GetMinFrom (BuiltinsLocation (), gccType))
+      PushIntegerTree (GetMinFrom (BuiltinsLocation (), BuiltinTokenNo, gccType))
    END ;
    PopValue (minval) ;
    PutVar (minval, type) ;
@@ -170,7 +170,7 @@ BEGIN
    THEN
       CreateMinMaxFor (type, min, max, gcctype, realtype)
    END ;
-   IF needsExporting AND DumpSystemExports
+   IF needsExporting AND GetDumpSystemExports (BuiltinTokenNo)
    THEN
       n := GetSymName (type) ;
       printf1('SYSTEM module creates type: %a\n', n)
@@ -303,7 +303,7 @@ END MakeFixedSizedTypes ;
 PROCEDURE InitPIMTypes ;
 BEGIN
    Loc := CreateType ('LOC', '', '', TRUE, GetISOLocType(), FALSE) ;
-   InitSystemTypes(BuiltinsLocation(), Loc) ;
+   InitSystemTypes(BuiltinsLocation(), BuiltinTokenNo, Loc) ;
    Word := CreateType ('WORD', '', '', TRUE, GetWordType(), FALSE) ;
    Byte := CreateType ('BYTE', '', '', TRUE, GetByteType(), FALSE) ;
 
@@ -322,7 +322,7 @@ END InitPIMTypes ;
 PROCEDURE InitISOTypes ;
 BEGIN
    Loc := CreateType ('LOC', 'MinLoc', 'MaxLoc', TRUE, GetISOLocType (), FALSE) ;
-   InitSystemTypes (BuiltinsLocation (), Loc) ;
+   InitSystemTypes (BuiltinsLocation (), BuiltinTokenNo, Loc) ;
 
    Address := MakePointer (BuiltinTokenNo, MakeKey ('ADDRESS')) ;
    PutPointer (Address, Loc) ;                (* Base Type       *)
@@ -366,7 +366,7 @@ BEGIN
    Previous := GetCurrentModule() ;
    SetCurrentModule(System) ;
 
-   IF Iso
+   IF GetISO (BuiltinTokenNo)
    THEN
       InitISOTypes ;
       MakeSize ;
@@ -374,9 +374,9 @@ BEGIN
    ELSE
       InitPIMTypes ;
       (* SIZE is declared in SYSTEM.def in PIM-2 but not PIM-[34] *)
-      IF Pedantic
+      IF GetPedantic (BuiltinTokenNo)
       THEN
-         IF Pim2
+         IF GetPIM2 (BuiltinTokenNo)
          THEN
             MakeSize ;
             PutExportQualified(BuiltinTokenNo, MakeKey('SIZE'))
@@ -470,11 +470,12 @@ END GetSystemTypeMinMax ;
    IsISOPseudoSystemFunction -
 *)
 
-PROCEDURE IsISOPseudoSystemFunction (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsISOPseudoSystemFunction (tokno: CARDINAL; sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN Iso AND ((sym=AddAdr) OR (sym=SubAdr) OR (sym=DifAdr) OR
-                   (sym=MakeAdr) OR (sym=Rotate) OR (sym=Shift) OR
-                   (sym=Cast))
+   RETURN (* GetISO (tokno) AND *)
+          ((sym=AddAdr) OR (sym=SubAdr) OR (sym=DifAdr) OR
+           (sym=MakeAdr) OR (sym=Rotate) OR (sym=Shift) OR
+           (sym=Cast))
 END IsISOPseudoSystemFunction ;
 
 
@@ -483,9 +484,9 @@ END IsISOPseudoSystemFunction ;
                                system function.
 *)
 
-PROCEDURE IsPIMPseudoSystemFunction (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsPIMPseudoSystemFunction (tokno: CARDINAL; sym: CARDINAL) : BOOLEAN ;
 BEGIN
-   RETURN (NOT Iso) AND ((sym=Size) OR (sym=Shift) OR (sym=Rotate))
+   RETURN (* (NOT GetISO (tokno)) AND *) ((sym=Size) OR (sym=Shift) OR (sym=Rotate))
 END IsPIMPseudoSystemFunction ;
 
 
@@ -493,11 +494,11 @@ END IsPIMPseudoSystemFunction ;
    IsPseudoSystemFunction - returns true if sym is a SYSTEM pseudo function.
 *)
 
-PROCEDURE IsPseudoSystemFunction (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsPseudoSystemFunction (tokno: CARDINAL; sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN( (sym=Adr) OR (sym=TSize) OR (sym=TBitSize) OR
-           IsPIMPseudoSystemFunction(sym) OR
-           IsISOPseudoSystemFunction(sym) )
+           IsPIMPseudoSystemFunction (tokno, sym) OR
+           IsISOPseudoSystemFunction (tokno, sym) )
 END IsPseudoSystemFunction ;
 
 
@@ -506,11 +507,11 @@ END IsPseudoSystemFunction ;
                                            is legal in a constant expression.
 *)
 
-PROCEDURE IsPseudoSystemFunctionConstExpression (sym: CARDINAL) : BOOLEAN ;
+PROCEDURE IsPseudoSystemFunctionConstExpression (tokno: CARDINAL; sym: CARDINAL) : BOOLEAN ;
 BEGIN
    RETURN(
           (sym=Size) OR (sym=TSize) OR (sym=TBitSize) OR (sym=Rotate) OR (sym=Shift) OR
-          (Iso AND ((sym=Cast) OR (sym=MakeAdr) OR (sym=TBitSize)))
+          ( (* GetISO (tokno) AND *) ((sym=Cast) OR (sym=MakeAdr) OR (sym=TBitSize)))
          )
 END IsPseudoSystemFunctionConstExpression ;
 

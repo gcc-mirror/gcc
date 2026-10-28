@@ -25,6 +25,8 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+#include "config.h"
+#include "system.h"
 #include <stdbool.h>
 #   if !defined (PROC_D)
 #      define PROC_D
@@ -40,13 +42,8 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #      define FALSE (1==0)
 #   endif
 
-#include <stddef.h>
-#include <string.h>
-#include <limits.h>
-#include <stdlib.h>
 #   include "GStorage.h"
 #   include "Gmcrts.h"
-#include <unistd.h>
 #if defined(__cplusplus)
 #   undef NULL
 #   define NULL 0
@@ -88,7 +85,7 @@ typedef enum {FIO_successful, FIO_outofmemory, FIO_toomanyfilesopen, FIO_failed,
 typedef enum {FIO_unused, FIO_openedforread, FIO_openedforwrite, FIO_openedforrandom} FIO_FileUsage;
 
 struct FIO_NameInfo_r {
-                        void *address;
+                        void * address;
                         unsigned int size;
                       };
 
@@ -96,11 +93,11 @@ struct FIO_buf_r {
                    bool valid;
                    long int bufstart;
                    unsigned int position;
-                   void *address;
+                   void * address;
                    unsigned int filled;
                    unsigned int size;
                    unsigned int left;
-                   FIO__T7 *contents;
+                   FIO__T7 * contents;
                  };
 
 struct FIO__T7_a { char array[MaxBufferLength+1]; };
@@ -118,10 +115,16 @@ static Indexing_Index FileInfo;
 static FIO_File Error;
 
 /*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns a TRUE if no error has occured on file f.
 */
 
 extern "C" bool FIO_IsNoError (FIO_File f);
+
+/*
+   IsError - returns a TRUE if an error has occured on file f.
+*/
+
+extern "C" bool FIO_IsError (FIO_File f);
 
 /*
    IsActive - returns TRUE if the file, f, is still active.
@@ -137,9 +140,14 @@ extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_h
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 */
 
-extern "C" void FIO_Close (FIO_File f);
+extern "C" bool FIO_Close (FIO_File f);
 
 /*
    exists - returns TRUE if a file named, fname exists for reading.
@@ -410,7 +418,7 @@ static int ReadFromBuffer (FIO_File f, void * a, unsigned int nBytes);
 static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest);
 
 /*
-   HandleEscape - translates
+   HandleEscape - translates 
  and \t into their respective ascii codes.
 */
 
@@ -588,7 +596,7 @@ static FIO_File InitializeFile (FIO_File f, void * fname, unsigned int flength, 
     }
   else
     {
-      Indexing_PutIndice (FileInfo, f, reinterpret_cast<void *> (fd));
+      Indexing_PutIndice (FileInfo, f, reinterpret_cast <void *> (fd));
       fd->name.size = flength+1;  /* need to guarantee the nul for C  */
       fd->usage = use;  /* need to guarantee the nul for C  */
       fd->output = towrite;
@@ -896,7 +904,7 @@ static int BufferedRead (FIO_File f, unsigned int nBytes, void * dest)
 
 
 /*
-   HandleEscape - translates
+   HandleEscape - translates 
  and \t into their respective ascii codes.
 */
 
@@ -1273,7 +1281,7 @@ static int BufferedWrite (FIO_File f, unsigned int nBytes, void * src)
                           dest = reinterpret_cast<void *> (reinterpret_cast<char *> (dest)+fd->buffer->position);
                           p = static_cast<BufferedWrite__T5> (libc_memcpy (dest, src, static_cast<size_t> ((unsigned int ) (n))));
                           fd->buffer->left -= n;  /* remove consumed bytes  */
-                          fd->buffer->position += n;  /* move onwards n bytes  */
+                          fd->buffer->position += n;
                           /* move ready for further writes  */
                           src = reinterpret_cast<void *> (reinterpret_cast<char *> (src)+n);
                           nBytes -= n;  /* reduce the amount for future writes  */
@@ -1365,7 +1373,7 @@ static void Init (void)
 
 
 /*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns a TRUE if no error has occured on file f.
 */
 
 extern "C" bool FIO_IsNoError (FIO_File f)
@@ -1380,6 +1388,28 @@ extern "C" bool FIO_IsNoError (FIO_File f)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
       return (fd != NULL) && (((fd->state == FIO_successful) || (fd->state == FIO_endoffile)) || (fd->state == FIO_endofline));
+    }
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
+}
+
+
+/*
+   IsError - returns a TRUE if an error has occured on file f.
+*/
+
+extern "C" bool FIO_IsError (FIO_File f)
+{
+  FIO_FileDescriptor fd;
+
+  if (f == Error)
+    {
+      return false;
+    }
+  else
+    {
+      fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
+      return (fd != NULL) && (((fd->state != FIO_successful) && (fd->state != FIO_endoffile)) && (fd->state != FIO_endofline));
     }
   /* static analysis guarentees a RETURN statement will be used before here.  */
   __builtin_unreachable ();
@@ -1411,7 +1441,7 @@ extern "C" bool FIO_Exists (const char *fname_, unsigned int _fname_high)
   /* make a local copy of each unbounded array.  */
   memcpy (fname, fname_, _fname_high+1);
 
-  /*
+  /* 
    The following functions are wrappers for the above.
   */
   return FIO_exists (const_cast<void*> (static_cast<const void*>(fname)), StrLib_StrLen ((const char *) fname, _fname_high));
@@ -1460,18 +1490,21 @@ extern "C" FIO_File FIO_OpenForRandom (const char *fname_, unsigned int _fname_h
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 */
 
-extern "C" void FIO_Close (FIO_File f)
+extern "C" bool FIO_Close (FIO_File f)
 {
   FIO_FileDescriptor fd;
 
   if (f != Error)
     {
       fd = static_cast<FIO_FileDescriptor> (Indexing_GetIndice (FileInfo, f));
-      /*
-         we allow users to close files which have an error status
-  */
+      /* We allow users to close files which have an error status.  */
       if (fd != NULL)
         {
           FIO_FlushBuffer (f);
@@ -1480,7 +1513,8 @@ extern "C" void FIO_Close (FIO_File f)
               if ((libc_close (fd->unixfd)) != 0)
                 {
                   FormatError1 ((const char *) "failed to close file (%s)\\n", 27, (const unsigned char *) &fd->name.address, (sizeof (fd->name.address)-1));
-                  fd->state = FIO_failed;  /* --fixme-- too late to notify user (unless we return a BOOLEAN)  */
+                  fd->state = FIO_failed;
+                  return false;
                 }
             }
           if (fd->name.address != NULL)
@@ -1499,7 +1533,14 @@ extern "C" void FIO_Close (FIO_File f)
           Storage_DEALLOCATE ((void **) &fd, sizeof (FIO_fds));
           Indexing_PutIndice (FileInfo, f, NULL);
         }
+      return true;
     }
+  else
+    {
+      return false;
+    }
+  /* static analysis guarentees a RETURN statement will be used before here.  */
+  __builtin_unreachable ();
 }
 
 
@@ -1801,7 +1842,7 @@ extern "C" bool FIO_EOLN (FIO_File f)
   FIO_FileDescriptor fd;
 
   CheckAccess (f, FIO_openedforread, false);
-  /*
+  /* 
       we will read a character and then push it back onto the input stream,
       having noted the file status, we also reset the status.
   */
@@ -2307,12 +2348,12 @@ extern "C" void FIO_FlushOutErr (void)
     }
 }
 
-extern "C" void _M2_FIO_init (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FIO_init (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   Init ();
 }
 
-extern "C" void _M2_FIO_fini (__attribute__((unused)) int argc,__attribute__((unused)) char *argv[],__attribute__((unused)) char *envp[])
+extern "C" void _M2_FIO_fini (__attribute__((unused)) int argc, __attribute__((unused)) char *argv[], __attribute__((unused)) char *envp[])
 {
   FIO_FlushOutErr ();
 }

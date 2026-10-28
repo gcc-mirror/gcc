@@ -59,7 +59,8 @@ PROCEDURE ResolveConstantExpressions (p: WalkAction; bb: BasicBlock) : BOOLEAN ;
                           param.HIGH.
 *)
 
-PROCEDURE GetHighFromUnbounded (location: location_t; dim, param: CARDINAL) : tree ;
+PROCEDURE GetHighFromUnbounded (location: location_t; tokno: CARDINAL;
+                                dim, param: CARDINAL) : tree ;
 
 
 (*
@@ -75,7 +76,8 @@ PROCEDURE StringToChar (t: tree; type, str: CARDINAL) : tree ;
                         It coerces a lvalue into an internal pointer type
 *)
 
-PROCEDURE LValueToGenericPtr (location: location_t; sym: CARDINAL) : tree ;
+PROCEDURE LValueToGenericPtr (location: location_t; tokno: CARDINAL;
+                              sym: CARDINAL) : tree ;
 
 
 (*

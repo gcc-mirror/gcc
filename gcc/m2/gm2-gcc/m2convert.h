@@ -35,22 +35,22 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 #endif /* !__GNUG__.  */
 #endif /* m2convert_c.  */
 
-EXTERN tree m2convert_BuildConvert (location_t location, tree type, tree value,
+EXTERN tree m2convert_BuildConvert (location_t location, unsigned int tokno,
+				    tree type, tree value,
                                     bool checkOverflow);
-EXTERN tree m2convert_ConvertToPtr (location_t location_t, tree p);
+EXTERN tree m2convert_ConvertToPtr (location_t location_t, unsigned int tokno, tree p);
 EXTERN tree m2convert_ConvertString (tree type, tree expr);
-EXTERN tree m2convert_ConvertConstantAndCheck (location_t location, tree type,
-                                               tree expr);
-EXTERN tree m2convert_convertToPtr (location_t location, tree type);
-EXTERN tree m2convert_ToCardinal (location_t location, tree expr);
-EXTERN tree m2convert_ToInteger (location_t location, tree expr);
-EXTERN tree m2convert_ToWord (location_t location, tree expr);
-EXTERN tree m2convert_ToBitset (location_t location, tree expr);
-EXTERN tree m2convert_ToLoc (location_t location, tree expr);
-EXTERN tree m2convert_ToPIMByte (location_t location, tree expr);
+EXTERN tree m2convert_ConvertConstantAndCheck (location_t location, unsigned int tokno,
+					       tree type, tree expr);
+EXTERN tree m2convert_ToCardinal (location_t location, unsigned int tokno, tree expr);
+EXTERN tree m2convert_ToInteger (location_t location, unsigned int tokno, tree expr);
+EXTERN tree m2convert_ToWord (location_t location, unsigned int tokno, tree expr);
+EXTERN tree m2convert_ToBitset (location_t location, unsigned int tokno, tree expr);
+EXTERN tree m2convert_ToLoc (location_t location, unsigned int tokno, tree expr);
+EXTERN tree m2convert_ToPIMByte (location_t location, unsigned int tokno, tree expr);
 
-EXTERN tree m2convert_GenericToType (location_t location, tree type,
-                                     tree expr);
+EXTERN tree m2convert_GenericToType (location_t location, unsigned int tokno,
+				     tree type, tree expr);
 
 #undef EXTERN
 #endif /* m2convert_h.  */

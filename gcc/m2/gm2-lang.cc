@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dynamicstrings.h"
 #include "m2options.h"
 #include "m2convert.h"
+#include "m2lexbuf.h"
 #include "m2linemap.h"
 #include "init.h"
 #include "m2-tree.h"
@@ -214,7 +215,7 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 	  M2Options_SetB (arg);
 	  break;
 	case OPT_c:
-	  M2Options_Setc (value);
+	  M2Options_SetCFlag (value);
 	  break;
 	case OPT_dumpdir:
 	  M2Options_SetDumpDir (arg);
@@ -334,13 +335,13 @@ gm2_langhook_init_options (unsigned int decoded_options_count,
 			      && !(option->flags & CL_SEPARATE));
 	  break;
 	case OPT_quiet:
-	  M2Options_SetQuiet (value);
+	  M2Options_SetQuietFlag (value);
 	  if (building_cpp_command)
 	    M2Options_CppArg (opt, arg, (option->flags & CL_JOINED)
 			      && !(option->flags & CL_SEPARATE));
 	  break;
 	case OPT_v:
-	  M2Options_SetVerbose (value);
+	  M2Options_SetVerboseFlag (value);
 	  /* FALLTHROUGH */
 	default:
 	  /* We handled input files above.  */
@@ -680,7 +681,7 @@ gm2_langhook_handle_option (
       iso = value ? false : iso;
       return 1;
     case OPT_fpositive_mod_floor_div:
-      M2Options_SetPositiveModFloor (value);
+      M2Options_SetPositiveModFloorFlag (value);
       return 1;
     case OPT_fm2_pathname_rootI_:
       push_back_lib_root (arg);
@@ -690,7 +691,7 @@ gm2_langhook_handle_option (
       flibs = arg;
       return 1;
     case OPT_fgen_module_list_:
-      M2Options_SetGenModuleList (value, arg);
+      M2Options_SetGenModuleListFileName (value, arg);
       return 1;
     case OPT_fmem_report:
       M2Options_SetMemReport (value);
@@ -699,49 +700,49 @@ gm2_langhook_handle_option (
       M2Options_SetTimeReport (value);
       return 1;
     case OPT_fnil:
-      M2Options_SetNilCheck (value);
+      M2Options_SetNilFlag (value);
       return 1;
     case OPT_fwholediv:
-      M2Options_SetWholeDiv (value);
+      M2Options_SetWholeDivFlag (value);
       return 1;
     case OPT_findex:
-      M2Options_SetIndex (value);
+      M2Options_SetIndexFlag (value);
       return 1;
     case OPT_frange:
-      M2Options_SetRange (value);
+      M2Options_SetRangeFlag (value);
       return 1;
     case OPT_ffloatvalue:
-      M2Options_SetFloatValueCheck (value);
+      M2Options_SetFloatValueFlag (value);
       return 1;
     case OPT_fwholevalue:
-      M2Options_SetWholeValueCheck (value);
+      M2Options_SetWholeValueFlag (value);
       return 1;
     case OPT_freturn:
-      M2Options_SetReturnCheck (value);
+      M2Options_SetReturnFlag (value);
       return 1;
     case OPT_fcase:
-      M2Options_SetCaseCheck (value);
+      M2Options_SetCaseElseFlag (value);
       return 1;
     case OPT_fd:
-      M2Options_SetCompilerDebugging (value);
+      M2Options_SetInternalDebuggingFlag (value);
       return 1;
     case OPT_fdebug_builtins:
-      M2Options_SetDebugBuiltins (value);
+      M2Options_SetDebugBuiltinFlag (value);
       return 1;
     case OPT_fdebug_function_line_numbers:
       M2Options_SetDebugFunctionLineNumbers (value);
       return 1;
     case OPT_fauto_init:
-      M2Options_SetAutoInit (value);
+      M2Options_SetAutoInitFlag (value);
       return 1;
     case OPT_fsoft_check_all:
       M2Options_SetCheckAll (value);
       return 1;
     case OPT_fexceptions:
-      M2Options_SetExceptions (value);
+      M2Options_SetExceptionsFlag (value);
       return 1;
     case OPT_Wstyle:
-      M2Options_SetStyle (value);
+      M2Options_SetStyleFlag (value);
       return 1;
     case OPT_Wpedantic:
       M2Options_SetPedantic (value);
@@ -755,14 +756,17 @@ gm2_langhook_handle_option (
     case OPT_fextended_opaque:
       M2Options_SetExtendedOpaque (value);
       return 1;
+    case OPT_g:
+      M2Options_SetGFlag (value);
+      return 1;
     case OPT_Wverbose_unbounded:
       M2Options_SetVerboseUnbounded (value);
       return 1;
     case OPT_Wunused_variable:
-      M2Options_SetUnusedVariableChecking (value);
+      M2Options_SetUnusedVariableFlag (value);
       return 1;
     case OPT_Wunused_parameter:
-      M2Options_SetUnusedParameterChecking (value);
+      M2Options_SetUnusedParameterFlag (value);
       return 1;
     case OPT_Wuninit_variable_checking:
       return M2Options_SetUninitVariableChecking (value, "known");
@@ -779,10 +783,10 @@ gm2_langhook_handle_option (
 	return 0;
       }
     case OPT_fm2_strict_type:
-      M2Options_SetStrictTypeChecking (value);
+      M2Options_SetStrictTypeFlag (value);
       return 1;
     case OPT_fm2_strict_type_reason:
-      M2Options_SetStrictTypeReason (value);
+      M2Options_SetStrictTypeReasonFlag (value);
       return 1;
     case OPT_fm2_debug_trace_:
       M2Options_SetM2DebugTraceFilter (value, arg);
@@ -802,10 +806,10 @@ gm2_langhook_handle_option (
       M2Options_SetM2DumpFilter (value, arg);
       return 1;
     case OPT_Wall:
-      M2Options_SetWall (value);
+      M2Options_SetWallFlag (value);
       return 1;
     case OPT_Wcase_enum:
-      M2Options_SetCaseEnumChecking (value);
+      M2Options_SetCaseEnumFlag (value);
       return 1;
 #if 0
     /* Not yet implemented.  */
@@ -814,7 +818,7 @@ gm2_langhook_handle_option (
       return 1;
 #endif
     case OPT_fm2_lower_case:
-      M2Options_SetLowerCaseKeywords (value);
+      M2Options_SetLowerCaseKeywordFlag (value);
       return 1;
     case OPT_fuse_list_:
       M2Options_SetUselist (value, arg);
@@ -829,13 +833,13 @@ gm2_langhook_handle_option (
       /* Handled in the driver.  */
       return 1;
     case OPT_fscaffold_dynamic:
-      M2Options_SetScaffoldDynamic (value);
+      M2Options_SetScaffoldDynamicFlag (value);
       return 1;
     case OPT_fscaffold_static:
-      M2Options_SetScaffoldStatic (value);
+      M2Options_SetScaffoldStaticFlag (value);
       return 1;
     case OPT_fscaffold_main:
-      M2Options_SetScaffoldMain (value);
+      M2Options_SetScaffoldMainFlag (value);
       return 1;
     case OPT_fcpp:
       M2Options_SetCpp (value);
@@ -853,7 +857,7 @@ gm2_langhook_handle_option (
       M2Options_SetQuadDebugging (value);
       return 1;
     case OPT_fsources:
-      M2Options_SetSources (value);
+      M2Options_SetSourcesFlag (value);
       return 1;
     case OPT_funbounded_by_reference:
       M2Options_SetUnboundedByReference (value);
@@ -867,20 +871,23 @@ gm2_langhook_handle_option (
     case OPT_fdump_builtins:
       M2Options_SetDumpBuiltins (value);
       return 1;
+    case OPT_fdump_pragmas:
+      M2Options_SetDumpPragmas (value);
+      return 1;
     case OPT_fdump_system_exports:
       M2Options_SetDumpSystemExports (value);
       return 1;
     case OPT_fswig:
-      M2Options_SetSwig (value);
+      M2Options_SetSwigFlag (value);
       return 1;
     case OPT_fshared:
-      M2Options_SetShared (value);
+      M2Options_SetSharedFlag (value);
       return 1;
     case OPT_fm2_statistics:
-      M2Options_SetStatistics (value);
+      M2Options_SetStatisticsFlag (value);
       return 1;
     case OPT_fm2_g:
-      M2Options_SetM2g (value);
+      M2Options_SetM2gFlag (value);
       return 1;
       break;
     case OPT_fm2_pathname_:
@@ -922,11 +929,11 @@ gm2_langhook_handle_option (
       return 1;
       break;
     case OPT_fm2_whole_program:
-      M2Options_SetWholeProgram (value);
+      M2Options_SetWholeProgramFlag (value);
       return 1;
       break;
     case OPT_fwideset:
-      M2Options_SetWideset (value);
+      M2Options_SetWidesetFlag (value);
       return 1;
       break;
 #ifdef OPT_mabi_ibmlongdouble
@@ -1325,7 +1332,8 @@ convert_loc (location_t location, tree type, tree expr)
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (TREE_TYPE (expr)))
     return fold_convert (type, expr);
 
-  expr = m2convert_GenericToType (location, type, expr);
+  expr = m2convert_GenericToType (location, M2LexBuf_UnknownTokenNo,
+				  type, expr);
   switch (TREE_CODE (type))
     {
     case VOID_TYPE:

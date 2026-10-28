@@ -60,6 +60,7 @@ EXTERN void m2linemap_WarningAtf (location_t location, const char *message);
 EXTERN void m2linemap_NoteAtf (location_t location, const char *message);
 EXTERN void m2linemap_internal_error (const char *message);
 EXTERN void m2linemap_internal_error_at (location_t location, const char *fmt, ...);
+EXTERN void m2linemap_error (const char *message);
 
 EXTERN location_t UnknownLocation (void);
 EXTERN location_t BuiltinsLocation (void);

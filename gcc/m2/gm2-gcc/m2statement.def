@@ -31,7 +31,7 @@ FROM SYSTEM IMPORT ADDRESS ;
    IfExprJump - if expr then jump to the label.
 *)
 
-PROCEDURE IfExprJump (location: location_t; exp: tree; label: CharStar) ;
+PROCEDURE IfExprJump (location: location_t; tokno: CARDINAL; exp: tree; label: CharStar) ;
 
 
 (*
@@ -52,7 +52,8 @@ PROCEDURE BuildEndFunctionCode (location: location_t; fndecl: tree; nested: BOOL
    BuildReturnValueCode - generates the code associated with: RETURN( value )
 *)
 
-PROCEDURE BuildReturnValueCode (location: location_t; fndecl: tree; value: tree) ;
+PROCEDURE BuildReturnValueCode (location: location_t; tokno: CARDINAL;
+                                fndecl: tree; value: tree) ;
 
 
 (*
@@ -75,21 +76,21 @@ PROCEDURE BuildPopFunctionContext ;
    BuildAssignmentStatement builds the assignment of, des, and, expr.
 *)
 
-PROCEDURE BuildAssignmentStatement (location: location_t; des, expr: tree) ;
+PROCEDURE BuildAssignmentStatement (location: location_t; tokno: CARDINAL; des, expr: tree) ;
 
 
 (*
    BuildGoto - builds a goto operation.
 *)
 
-PROCEDURE BuildGoto (location: location_t; name: CharStar) ;
+PROCEDURE BuildGoto (location: location_t; tokno: CARDINAL; name: CharStar) ;
 
 
 (*
    DeclareLabel - create a label, name.
 *)
 
-PROCEDURE DeclareLabel (location: location_t; name: CharStar) ;
+PROCEDURE DeclareLabel (location: location_t; tokno: CARDINAL; name: CharStar) ;
 
 
 (*
@@ -208,7 +209,8 @@ PROCEDURE BuildCleanUp (param: tree) : tree ;
     BuildAsm - generates an inline assembler instruction.
 *)
 
-PROCEDURE BuildAsm (location: location_t; instr: tree;
+PROCEDURE BuildAsm (location: location_t; tokno: CARDINAL;
+                    instr: tree;
                     isVolatile: BOOLEAN; isSimple: BOOLEAN;
                     inputs: tree; outputs: tree; trash: tree; labels: tree) ;
 
@@ -269,7 +271,7 @@ PROCEDURE BuildEnd (location: location_t; fndecl: tree; nested: BOOLEAN) ;
     BuildCallInner - call the inner module function.  It has no parameters and no return value.
 *)
 
-PROCEDURE BuildCallInner (location: location_t; fndecl: tree) ;
+PROCEDURE BuildCallInner (location: location_t; tokno: CARDINAL; fndecl: tree) ;
 
 
 (*
@@ -302,21 +304,25 @@ PROCEDURE BuildBuiltinCallTree (func: tree) : tree ;
                  an ARRAY [0..n] OF CHAR.
 *)
 
-PROCEDURE CopyByField (location: location_t; des, expr: tree) ;
+PROCEDURE CopyByField (location: location_t; tokno: CARDINAL;
+                       des, expr: tree) ;
+
 
 
 (*
    CopyMemcpy - copy bytes from src into dest using builtin_memcpy.
 *)
 
-PROCEDURE CopyMemcpy (location: location_t; dest, src, bytes: tree) ;
+PROCEDURE CopyMemcpy (location: location_t; tokno: CARDINAL;
+                      dest, src, bytes: tree) ;
 
 
 (*
    IfBitInSetJump - if bit in set jump to label.
 *)
 
-PROCEDURE IfBitInSetJump (location: location_t; invertCondition: BOOLEAN;
+PROCEDURE IfBitInSetJump (location: location_t; tokno: CARDINAL;
+                          invertCondition: BOOLEAN;
                           setvalue, bit: tree; label: ADDRESS) ;
 
 
