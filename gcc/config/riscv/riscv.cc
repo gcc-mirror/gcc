@@ -16270,12 +16270,18 @@ synthesize_ior_xor (rtx_code code, rtx operands[3])
 	 of leading zeros after masking off all but the low 11 bits.  */
       int rotcount = clz_hwi (ival & 0x7ff) - (BITS_PER_WORD - 11);
 
-      /* Rotate the constant left by MSB bits.  */
-      ival = (ival << rotcount) | (ival >> (BITS_PER_WORD - rotcount));
+      /* Rotate the constant left by MSB bits.  Avoid undefined behavior if
+	 rotcount is zero.  A rotcount of zero means there's no room to rotate
+	 in bits.  We can just set ival to all ones so is rejected later with
+	 the msb - lsb check.  */
+      if (rotcount != 0)
+	ival = (ival << rotcount) | (ival >> (BITS_PER_WORD - rotcount));
+      else
+	ival = HOST_WIDE_INT_M1U;
 
       /* Now we can do the same tests as before. */
       lsb = ctz_hwi (ival);
-      msb = BITS_PER_WORD - clz_hwi (ival);
+      msb = BITS_PER_WORD - 1 - clz_hwi (ival);
       if ((INTVAL (operands[2]) & HOST_WIDE_INT_UC (0x7ff)) != 0
 	  && msb - lsb + 1 <= 11)
 	{
@@ -16524,7 +16530,7 @@ synthesize_and (rtx operands[3])
       && budget >= 3
       && consecutive_bits_operand (GEN_INT (~t), word_mode)
       && ((TARGET_ZBA && popcount_hwi (t) == 32)
-	  || popcount_hwi (t) == 16
+	  || (TARGET_ZBB && popcount_hwi (t) == 16)
 	  || popcount_hwi (t) <= 11))
     {
       /* First rotate the relevant bits into the low position.  */
