@@ -1,3 +1,7 @@
+2026-10-27  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch3.adb (Process_Full_View): Fix test.
+
 2026-10-26  Nicolas Boulenguez  <nicolas@debian.org>
 
 	PR ada/114065

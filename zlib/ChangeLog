@@ -1,3 +1,7 @@
+2026-10-27  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* configure.ac: Update AC_PROG_LIBTOOL TO LT_INIT
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* Makefile.in: Regenerate.

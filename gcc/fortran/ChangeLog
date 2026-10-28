@@ -1,3 +1,32 @@
+2026-10-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* intrinsic.texi (OpenMP intrinsic modules): Update list of
+	kind value and parameters.
+
+2026-10-27  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR bootstrap/112422
+	* gfortran.h (gfc_char_t): Remove HAVE_LONG_LONG and
+	HOST_BITS_PER_LONGLONG >= 32 since it is at least
+	64 according to C++14 standard.
+
+2026-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* decl.cc (get_proc_name): Transfer the interface result parms
+	to the stashed procedure decl 'sym->tlink'...
+	(gfc_match_submod_proc): ... so that they can be copied to the
+	final procedure symbol.
+	* resolve.cc (resolve_pdt): Finally, transfer the parms to the
+	explicit result, if present.
+	* trans-decl.cc (gfc_trans_deferred_vars): If a PDT procedure
+	result has no default initializer or it is in a submodule then
+	allocate the parameterized components using its param_list if
+	present.
+	* trans-stmt.cc (gfc_trans_allocate): If a PDT MOLD expr3 is a
+	variable, use the symbol's param_list. Assert that there is a
+	param_list.
+
 2026-10-26  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/126968

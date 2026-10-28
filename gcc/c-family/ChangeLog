@@ -1,3 +1,10 @@
+2026-10-27  Jørgen Kvalsvik  <j@lambda.is>
+
+	* c-pragma.cc (handle_pragma_suppress_coverage): Don't warn on
+	nested begin.
+	* c-pragma.h (suppress_coverage_begin): Change return type to
+	void.
+
 2026-10-26  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR c/128120

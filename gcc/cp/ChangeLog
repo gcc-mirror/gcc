@@ -1,3 +1,15 @@
+2026-10-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125649
+	* constexpr.cc (addr_of_non_const_var): Use heap_var_p.
+	(non_const_var_error): Likewise.
+	(cxx_eval_constant_expression): Likewise.
+	(find_heap_var_refs): Likewise.
+	(heap_var_p): New.
+	* cp-tree.h (heap_var_p): Declare.
+	* pt.cc (invalid_tparm_referent_p): Add heap_var_p to an
+	assert.
+
 2026-10-23  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/127232

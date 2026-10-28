@@ -1,3 +1,12 @@
+2026-10-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* lex.cc (search_line_neon): Use ULL instead of UL.
+	(search_line_fast): Likewise.
+
+2026-10-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* lex.cc (search_line_neon): Use __builtin_ctzll for LLP64 targets.
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	PR bootstrap/112422

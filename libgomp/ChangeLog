@@ -1,3 +1,19 @@
+2026-10-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* fortran.c (omp_get_gprivate_limit_): Add.
+	* libgomp-plugin.h (GOMP_OFFLOAD_get_gprivate_limit): Add.
+	* libgomp.h (struct gomp_device_descr): Add get_gprivate_limit_func.
+	* libgomp.map: Add omp_get_gprivate_limit_.
+	* libgomp.texi (omp_get_gprivate_limit): Document new routine.
+	* omp.h.in (omp_access_t, omp_get_gprivate_limit): Add.
+	* omp_lib.f90.in (omp_access_kind, omp_get_gprivate_limit): Add.
+	* omp_lib.h.in (omp_access_kind, omp_get_gprivate_limit): Add.
+	* plugin/plugin-gcn.c (GOMP_OFFLOAD_get_gprivate_limit): Add.
+	* plugin/plugin-nvptx.c (GOMP_OFFLOAD_get_gprivate_limit): Add.
+	* target.c (omp_get_gprivate_limit): Add.
+	* testsuite/libgomp.c-c++-common/gprivate-1.c: New test.
+	* testsuite/libgomp.fortran/gprivate-1.f90: New test.
+
 2026-10-26  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* acinclude.m4 (LIBGOMP_CHECK_LINKER_FEATURES): Update AC_PROG_LD to LT_PATH_LD.

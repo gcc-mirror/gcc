@@ -1,3 +1,58 @@
+2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127815
+	* src/c++20/tzdb.cc (time_zone::_M_get_sys_info): Clamp
+	parameter to start of first info. Use unsigned type for argument
+	to vector::reserve.
+	* testsuite/std/time/time_zone/127815.cc: New test.
+
+2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono.h (floor, ceil, round): Change
+	preprocessor condition to __glibcxx_freestanding_chrono.
+	[!_GLIBCXX_HOSTED] (system_clock, steady_clock): Define.
+	[!_GLIBCXX_HOSTED] (__sys_t): Remove.
+	[!_GLIBCXX_HOSTED] (sys_time, sys_seconds, sys_days): Remove
+	freestanding definitions.
+	* include/bits/version.def (freestanding_chrono): Define
+	non-standard macro.
+	* include/bits/version.h: Regenerate.
+	* include/std/chrono [!_GLIBCXX_HOSTED] (utc_clock, tai_clock)
+	(gps_clock, zoned_time, hash<zoned_time<>>): Define.
+	(clock_time_conversion, clock_cast) [!_GLIBCXX_HOSTED]: Define
+	the same as for hosted.
+	* testsuite/20_util/system_clock/1.cc [!__STDC_HOSTED__]: Do not
+	test now, to_time_t and from_time_t for freestanding.
+	* testsuite/20_util/system_clock/99832.cc: Require hosted
+	effective target.
+	* testsuite/20_util/time_point/comparison_operators/three_way.cc
+	[!__cpp_lib_hosted]: Do not use system_clock::now() for
+	freestanding.
+	* testsuite/std/time/clock/file/members.cc: Require hosted
+	effective target.
+	* testsuite/std/time/clock/file/overview.cc [!__STDC_HOSTED__]:
+	Do not test now() for freestanding.
+	* testsuite/std/time/clock/gps/1.cc: Likewise.
+	* testsuite/std/time/clock/tai/1.cc: Likewise.
+	* testsuite/std/time/format/data_not_present_neg.cc: Require
+	hosted effective target.
+	* testsuite/std/time/format/pr120114.cc: Likewise.
+	* testsuite/std/time/format/pr120481.cc: Likewise.
+	* testsuite/std/time/format/precision.cc: Likewise.
+	* testsuite/std/time/format/whitespace.cc: Likewise.
+	* testsuite/std/time/syn_c++20.cc [!__STDC_HOSTED__]: Do not
+	test some components for freestanding.
+	* testsuite/std/time/time_zone/requirements.cc: Require hosted
+	effective target.
+	* testsuite/std/time/traits/is_clock.cc [!__STDC_HOSTED__]: Do
+	not test standard clocks for freestanding.
+	* testsuite/std/time/zoned_time/req_neg.cc: Likewise.
+	* testsuite/util/slow_clock.h [!_GLIBCXX_HOSTED]: Do not define
+	slow_clock::now() function for freestanding.
+	* testsuite/std/time/zoned_time/custom_freestanding.cc: New
+	test.
+
 2026-10-26  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* acinclude.m4 (GLIBCXX_CHECK_LINKER_FEATURES): Update AC_PROG_LD to LT_PATH_LD.

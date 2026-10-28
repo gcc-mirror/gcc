@@ -1,3 +1,348 @@
+2026-10-27  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* genmodes.cc (emit_mode_unit_size): Generate MODE_UNIT_SIZE_TYPE
+	macro based on values in mode_unit_size.
+	* machmode.h: Use the new macro.
+
+2026-10-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/aarch64/aarch64-builtins.cc (aarch64_general_fold_builtin): Add
+	constant folding for crc32 and crc32c intrinsics.
+
+2026-10-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/i386/i386.cc (ix86_fold_builtin) <IX86_BUILTIN_CRC32QI,
+	IX86_BUILTIN_CRC32HI, IX86_BUILTIN_CRC32SI, IX86_BUILTIN_CRC32DI>:
+	Add constant folding for the SSE4.2 crc32 intrinsics.
+	* hwint.cc (calculate_reversed_crc): Remove the crc_bits >=
+	data_bits assertion.
+
+2026-10-27  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Add
+	omp_get_gprivate_limit.
+
+2026-10-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-passes.def (pass_xtensa_before_combine):
+	New directive that inserts pass_xtensa_before_combine immediately
+	before pass_combine.
+	* config/xtensa/xtensa-protos.h
+	(xtensa_rtl_combine_reached_p, make_pass_xtensa_before_combine):
+	New function prototypes.
+	* config/xtensa/xtensa.cc (machine_function):
+	Add a new member "rtl_combine_reached".
+	(xtensa_rtl_combine_reached_p, make_pass_xtensa_before_combine):
+	New function definitions.
+	(pass_data_xtensa_before_combine, pass_xtensa_before_combine):
+	New target-specific hidden pass definition, whose sole purpose is
+	to set cfun->machine->rtl_combine_reached to true.
+	* config/xtensa/xtensa.md
+	(*subsi3_from_const, *andsi3_const_pow2_minus_one)
+	(*andsi3_const_negative_pow2, *andsi3_const_shifted_mask):
+	Add the condition that xtensa_rtl_combine_reached_p() is true to
+	the "condition" of each MD definition.
+	(*one_cmplsi2): New insn_and_split pattern.
+
+2026-10-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*andsi3_bitcmpl):
+	Rename it to andnsi3, which is listed in gccint's "Standard Pattern
+	Names For Generation".  Additionally, update the condition in the
+	split section to use an idiom that avoids can_create_pseudo_p().
+
+2026-10-27  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR bootstrap/112422
+	* configure.ac: Remove AC_CHECK_TYPES long long.
+	* config.in: Regenerate.
+	* configure: Regenerate.
+	* hwint.h (sizeof_long_long_must_be_8): Remove.
+	(USE_LONG_LONG_FOR_WIDEST_FAST_INT) Remove HAVE_LONG_LONG.
+	* final.cc: Remove HAVE_LONG_LONG.
+	* wide-int.h: Ditto.
+	* asan.cc (set_asan_shadow_offset): Ditto.
+
+2026-10-27  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/bitmanip.md (a >= 0 ? b : 0 splitter): Generalize for
+	rv32.
+	* config/riscv/zicond.md (conditional shift splitter): Use
+	subreg_lowpart rather than explicit subregs.
+	* config/riscv/riscv.md (zero_extendhi<GPR:mode>2): When optimizing
+	extension of promoted subreg, make sure inner mode matches final
+	destination's mode.
+
+2026-10-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* config/i386/i386.md (crc_rev<SWI1248x:mode><SWI248x:mode>4):
+	Allow CRC-32C expansion for 64-bit data on ia32 targets.
+
+2026-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128187
+	* tree-vect-loop.cc (vect_transform_reduction): Handle both
+	two and three argument masked internal functions.
+
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127786
+	* gimple-fold.h (maybe_fold_and_comparisons)
+	(maybe_fold_or_comparisons): Add a tree_code argument.
+	* gimple-fold.cc (truth_andor_compl): New function.
+	(and_comparisons_1, and_var_with_comparison)
+	(and_var_with_comparison_1, or_comparisons_1)
+	(or_var_with_comparison, or_var_with_comparison_1): Add a
+	tree_code argument and pass it down; pass its complement when
+	switching between AND and OR.
+	(maybe_fold_and_comparisons): Add a tree_code argument and pass it
+	to and_comparisons_1.
+	(maybe_fold_or_comparisons): Likewise for or_comparisons_1.  Try
+	the swapped order only for TRUTH_OR_EXPR.
+	* tree-ssa-ifcombine.cc (ifcombine_ifandif): Pass TRUTH_ANDIF_EXPR.
+	* gimple-predicate-analysis.cc (simplify_1b): Likewise.
+	* tree-ssa-reassoc.cc (eliminate_redundant_comparison)
+	(optimize_vec_cond_expr): Pass TRUTH_AND_EXPR or TRUTH_OR_EXPR.
+	* tree-if-conv.cc (fold_or_predicates): Pass TRUTH_OR_EXPR.
+
+2026-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/riscv.cc (riscv_rtx_costs): Cost the masked byte
+	shift matching packh as one instruction when Zbkb is enabled.
+	* config/riscv/riscv.md (<optab>_shift_reverse<X:mode>): Exclude
+	the masked byte shift handled by packh when Zbkb is enabled.
+
+2026-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md (*bclr<mode>_mask): New pattern.
+
+2026-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* config/riscv/bitmanip.md: Use any_div.
+
+2026-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128198
+	* pta-andersen.cc (merge_graph_nodes): Return whether we
+	got new successor edges.
+	(unify_nodes): Mark the target node changed if there were
+	new successor nodes.
+
+2026-10-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127988
+	* config/arm/minipool.cc (minipool::add_forward_ref): Allow
+	for pool alignment when checking if the current fix will fit.
+	(minipool::create_fix_barrier): Ensure we always have a suitable
+	insertion point and fix off-by-one issue when testing if a insn
+	is in range.
+	(place_minipools): Correctly account for padding and the pool
+	skip instruction before inserting a forced barrier.
+	(minipool::dump): Call the destructor on subpools before freeing
+	them.
+
+2026-10-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/128090
+	* config/arm/minipool.cc (barrier_cost): Advance through the insn
+	chain with next_nonnote_nondebug_insn.
+	(minipool::create_fix_barrier): Likewise.
+	(place_minipools): Likewise.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/109112
+	* ipa-prop.cc (ipa_analyze_call_uses): Create an internal
+	callback edge when dealing with a .ASSUME internal call.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* ipa-cp.cc (good_cloning_opportunity_p): Special case assume
+	functions.
+	* ipa-sra.cc (adjust_parameter_descriptions): Likewise.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): Add
+	redirection logic for internal edges.
+	* ipa-param-manipulation.cc (ipa_param_adjustments::modify_call):
+	Adjust argument modifications for callback edges.
+	(ipa_param_body_adjustments::modify_call_stmt): Likewise.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* cgraph.cc (cgraph_node::verify_node): Adjust checks for
+	internal callback edges, allow the checks to run in WPA.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* ipa-sra.cc (ipa_sra_preliminary_function_checks): Exclude
+	assume bodies without callback edges.
+	(ptr_parm_has_nonarg_uses): Adjust internal call guard.
+	(scan_function): Likewise.
+	(isra_analyze_call): Special case m_return_ignored for assume bodies.
+	(ipa_sra_generate_summary): Initialize callback_info sum.
+	(ipa_sra_ipa_function_checks): Don't disqualify assume bodies
+	when checking if a node is local.
+	(param_removal_cross_scc_edge): Remap param descriptors when
+	dealing with callback edges.
+	(propagate_param_hints_accross_call): Likewise.
+	(propagate_used_across_scc_edge): Likewise.
+	(param_splitting_across_edge): Replace assert with a special
+	case condition for callback edges, remap param flows for
+	callback edges.
+	(retval_used_p): Return true for assume bodies.
+	(propagate_hints_to_all_callees): Skip over regular
+	callback edges.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* ipa-fnsummary.cc (analyze_function_body): Adjust summary
+	generation for internal callback edges.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* ipa-polymorphic-call.cc
+	(ipa_polymorphic_call_context::get_dynamic_type): Exclude
+	IFN_ASSUME internal calls.
+	* ipa-prop.cc
+	(ipa_compute_jump_functions_for_edge): Remap arguments for
+	callback edges.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* callback-info.cc (callback_info::create_internal_summary): Add
+	implementation.
+	* callback-info.h: Add create_internal_summary method.  Creates
+	and initializes a callback summary for an internal callback edge.
+	a callback edge bound to an internal call.
+	* cgraph.cc (cgraph_edge::make_callback_internal): Add
+	implementation.
+	* cgraph.h: Add make_callback_internal method.  Creates a
+	callback edge bound to an internal call.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* gimple-low.cc (create_assumption_fn): Don't add attributes
+	disabling optimizations.
+	* tree-inline.cc (initialize_cfun): Copy over assume_function to
+	cfun when cloning.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* attr-callback.cc (callback_redirect_edge): Add implementation.
+	* attr-callback.h (callback_redirect_edge): New function,
+	redirects a callback edge.  Contains logic extracted from
+	redirect_call_stmt_to_callee.
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): Use
+	callback_redirect_edge.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* cgraph.cc (cgraph_node::get_edge): Use callback_with_carrying_edge_p.
+	(cgraph_edge::set_call_stmt): Likewise.
+	(cgraph_edge::callback_with_carrying_edge_p): Add implementation.
+	(cgraph_edge::redirect_call_stmt_to_callee): Use
+	callback_with_carrying_edge_p.
+	* cgraph.h: Add method callback_with_carrying_edge_p, returns
+	TRUE if THIS is a callback edge with an existing
+	callback-carrying edge.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* cgraph.cc (cgraph_edge::redirect_call_stmt_to_callee): Move
+	the printing logic before the callback edge branch, so that they
+	are also included in the dump.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* callback-info.cc (callback_call_arg_summary): Add
+	implementation.
+	(callback_call_num_args_summary): Likewise.
+	(callback_ifn_assume_call_p): Likewise.
+	(callback_ifn_assume_call_with_edge_p): Likewise.
+	* callback-info.h (callback_call_arg_summary): New function,
+	remaps arguments for callback calls.
+	(callback_call_num_args_summary): New function, returns the
+	correct number of arguments for callback calls.
+	(callback_ifn_assume_call_p): New function, returns TRUE if the
+	passed call is a call to IFN_ASSUME.
+	(callback_ifn_assume_call_with_edge_p): New function, returns
+	TRUE if the passed call is a call to IFN_ASSUME with an attached
+	cgraph_edge.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* callback-info.cc (invert_arg_mapping): New function,
+	calculates the inverted mapping.
+	(callback_info::stream_out): Stream out inverted_mapping.
+	(callback_info::stream_in): Stream in inverted mapping.
+	(callback_info::init): Use invert_arg_mapping.
+	(callback_info_sum_t::duplicate): Copy over inverted_mapping.
+	* callback-info.h: Add inverted_mapping auto_vec to
+	callback_info containing mapping from call args to callbacks
+	params.  Adjust decl of callback_info::init.
+	* cgraph.cc (cgraph_edge::make_callback): Adjust call to
+	callback_info::init.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* callback-info.cc (stream_vector_out): New function, streams an
+	auto_vec into an LTO output block.
+	(stream_vector_in): New function, reads an auto_vec from an LTO
+	input block.
+	(callback_info::stream_out): Use stream_vector_out.
+	(callback_info::stream_in): Use stream_vector_in.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	* cgraph.cc (cgraph_node::dump): Print the new flag.
+	* cgraph.h (struct cgraph_node): Add assume_function field.
+	(cgraph_node::finalize_function): Change return type to cgraph_node*.
+	(cgraph_node::add_new_function): Likewise.
+	* cgraphclones.cc (cgraph_node::create_clone): Copy over the
+	assume_function flag.
+	* cgraphunit.cc (cgraph_node::finalize_function): Change return
+	type to cgraph_node*, return the node.
+	(cgraph_node::add_new_function): Likewise.
+	* gimple-low.cc (lower_assumption): Set assume_function to TRUE
+	for assume bodies.
+	* lto-cgraph.cc (lto_output_node): Stream out assume_function.
+	(input_overwrite_node): Read assume_function.
+	* ipa-icf.cc (sem_function::get_hash): Hash
+	cgraph_node::assume_function.
+	(sem_function::equals_wpa): Check for assume_function equality.
+	(sem_function::equals_private): Likewise.
+
+2026-10-27  Jørgen Kvalsvik  <j@lambda.is>
+
+	* doc/extend.texi: Document nesting behavior.
+	* profile.cc (suppress_coverage_begin): Always push new range,
+	change return type.
+	(suppress_coverage_end): Search for last unclosed item.
+
+2026-10-27  Richard Biener  <rguenther@suse.de>
+
+	* gimple-match-head.cc (single_use): Track single use stmt.
+
+2026-10-27  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* configure: Regenerate.
+
+2026-10-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (*lxab_displacement_index): New pattern.
+	(*llxab_displacement_index): Ditto.
+
+2026-10-27  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Leverage Wvr constraint.
+
+2026-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-features.cc (replace_vector_const): Add a
+	REG_EQUAL note with the original CONST_VECTOR.
+
 2026-10-26  Aldy Hernandez  <aldy@quesejoda.com>
 
 	PR bootstrap/128182

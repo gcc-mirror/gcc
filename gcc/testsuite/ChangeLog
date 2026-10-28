@@ -1,3 +1,142 @@
+2026-10-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/125649
+	* g++.dg/reflect/reflect_constant10.C: New test.
+
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/torture/pr128080.c: Skip at -O0.
+
+2026-10-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.target/aarch64/crc32-zero.c: Remove constant folding
+	test cases.
+	* gcc.target/aarch64/crc32-const-fold.c: New test.
+	* gcc.target/aarch64/crc32c-const-fold.c: New test.
+
+2026-10-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.target/i386/crc32-const-fold.c: New test.
+
+2026-10-27  Shreesh Adiga  <16567adigashreesh@gmail.com>
+
+	* gcc.target/i386/crc-crc32-data64-negative.c: Run tests on ia32
+	and x86-64; check for the appropriate CRC32 instruction.
+	* gcc.target/i386/crc-crc32-data64.c: Likewise.
+
+2026-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128187
+	* gcc.dg/vect/vect-pr128187.c: New testcase.
+
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127786
+	* gcc.dg/torture/cmp-of-cmp-fenv-2.c: New test.
+	* gcc.dg/tree-ssa/fp-trapping-cmp-9.c: New test.
+
+2026-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/packh32.c: Enable Zbb alongside Zbkb.
+
+2026-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zbs-bclr.c: Select RV32 or RV64 options and add
+	masked-index, bitmap and narrower-mask cases.
+
+2026-10-27  Jiawei  <jiawei@iscas.ac.cn>
+
+	* gcc.target/riscv/zba-shNadd-05.c: Add unsigned div.
+	* gcc.target/riscv/zba-shNadd-12.c: New test.
+
+2026-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128198
+	* gcc.dg/torture/pr128198.c: New testcase.
+
+2026-10-27  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/109112
+	* g++.dg/ipa/ipa-cp-assume-2.C: New test.
+	* g++.dg/ipa/ipa-cp-assume-3.C: New test.
+	* g++.dg/ipa/ipa-cp-assume.C: New test.
+	* g++.dg/ipa/ipa-sra-assume-2.C: New test.
+	* g++.dg/ipa/ipa-sra-assume-3.C: New test.
+	* g++.dg/ipa/ipa-sra-assume.C: New test.
+	* g++.dg/lto/ipa-cp-assume_0.C: New test.
+	* g++.dg/lto/ipa-cp-assume_1.C: New test.
+	* g++.dg/lto/ipa-sra-assume_0.C: New test.
+	* g++.dg/lto/ipa-sra-assume_1.C: New test.
+	* g++.dg/lto/ipa-cp-assume-1_0.C: New test.
+	* g++.dg/lto/ipa-cp-assume-2_0.C: New test.
+	* g++.dg/lto/ipa-cp-assume-3_0.C: New test.
+	* g++.dg/lto/ipa-sra-assume-1_0.C: New test.
+	* g++.dg/lto/ipa-sra-assume-2_0.C: New test.
+	* g++.dg/lto/ipa-sra-assume-3_0.C: New test.
+
+2026-10-27  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcc.misc-tests/gcov-19.c: Fix typo in end marker.
+
+2026-10-27  Jørgen Kvalsvik  <j@lambda.is>
+
+	* gcc.dg/pragma-suppress-coverage.c: Add test case for nested
+	suppressions.
+	* gcc.misc-tests/gcov-39.c: Likewise.
+
+2026-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_bug16.f90: New test.
+	* gfortran.dg/pdt_bug23.f90: New test.
+
+2026-10-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/clz-ctz-1.c: Adapt expected output for
+	clzsi_z17.
+	* gcc.target/s390/llxa-4.c: New test.
+	* gcc.target/s390/lxa-5.c: New test.
+
+2026-10-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-61.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-62.c: New test.
+
+2026-10-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-mf2.c: New test.
+
+2026-10-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-mf2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-mf4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-mf2.c: New test.
+
+2026-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/x86-cse-remat-1.c: New test.
+
+2026-10-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/gomp/deprecate-1.C: Restrict the final literal multiline
+	verification block to non-hppa targets, and append trailing
+	dg-regexp directives to consume the unhashed diagnostic caret
+	fragments on hppa targets.
+
 2026-10-26  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
 
 	PR c/128120
