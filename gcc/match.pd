@@ -11214,7 +11214,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (IFN_FNMS @0 @1 @2))
   (simplify
    (negate (fmas@3 @0 @1 @2))
-   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	&& !HONOR_SIGNED_ZEROS (type)
+	&& single_use (@3))
     (IFN_FNMS @0 @1 @2)))
   (simplify
    (fmas:c (nop_convert (negate @0)) @1 @2)
@@ -11242,7 +11244,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FNMA @0 @1 @2))
  (simplify
   (negate (IFN_FMS@3 @0 @1 @2))
-   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	&& !HONOR_SIGNED_ZEROS (type)
+	&& single_use (@3))
     (IFN_FNMA @0 @1 @2)))
 
  (simplify
@@ -11256,7 +11260,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FMS @0 @1 @2))
  (simplify
   (negate (IFN_FNMA@3 @0 @1 @2))
-  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+       && !HONOR_SIGNED_ZEROS (type)
+       && single_use (@3))
    (IFN_FMS @0 @1 @2)))
 
  (simplify
@@ -11270,7 +11276,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_FMA @0 @1 @2))
  (simplify
   (negate (IFN_FNMS@3 @0 @1 @2))
-  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+       && !HONOR_SIGNED_ZEROS (type)
+       && single_use (@3))
    (IFN_FMA @0 @1 @2))))
 
 (if (canonicalize_math_after_vectorization_p ())
@@ -11286,7 +11294,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (IFN_COND_FNMS @3 @0 @1 @2 @4))
   (simplify
    (negate (fmas@3 @4 @0 @1 @2 @5))
-   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	&& !HONOR_SIGNED_ZEROS (type)
+	&& single_use (@3))
     (IFN_COND_FNMS @4 @0 @1 @2 (negate @5)))))
 
  (simplify
@@ -11300,7 +11310,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_COND_FNMA @3 @0 @1 @2 @4))
  (simplify
   (negate (IFN_COND_FMS@3 @4 @0 @1 @2 @5))
-   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+   (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+	&& !HONOR_SIGNED_ZEROS (type)
+	&& single_use (@3))
     (IFN_COND_FNMA @4 @0 @1 @2 (negate @5))))
 
  (simplify
@@ -11314,7 +11326,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_COND_FMS @3 @0 @1 @2 @4))
  (simplify
   (negate (IFN_COND_FNMA@3 @4 @0 @1 @2 @5))
-  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+       && !HONOR_SIGNED_ZEROS (type)
+       && single_use (@3))
    (IFN_COND_FMS @4 @0 @1 @2 (negate @5))))
 
  (simplify
@@ -11328,7 +11342,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (IFN_COND_FMA @3 @0 @1 @2 @4))
  (simplify
   (negate (IFN_COND_FNMS@3 @4 @0 @1 @2 @5))
-  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type) && single_use (@3))
+  (if (!HONOR_SIGN_DEPENDENT_ROUNDING (type)
+       && !HONOR_SIGNED_ZEROS (type)
+       && single_use (@3))
    (IFN_COND_FMA @4 @0 @1 @2 (negate @5)))))
 
 /* min (clz (x), clz (y)) -> clz (x | y) and

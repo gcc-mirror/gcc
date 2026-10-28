@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -Wno-attributes -mfpmath=sse -mfma" } */
+/* { dg-options "-O2 -Wno-attributes -mfpmath=sse -mfma -fno-signed-zeros" } */
 
 /* Test that the compiler properly optimizes floating point multiply
    and add instructions into FMA3 instructions.  */
