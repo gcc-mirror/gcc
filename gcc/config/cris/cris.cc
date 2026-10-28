@@ -2546,7 +2546,6 @@ cris_split_movdx (rtx *operands)
   machine_mode mode = GET_MODE (operands[0]);
   rtx dest = operands[0];
   rtx src  = operands[1];
-  rtx_insn *val;
 
   /* We used to have to handle (SUBREG (MEM)) here, but that should no
      longer happen; after reload there are no SUBREGs any more, and we're
@@ -2697,8 +2696,7 @@ cris_split_movdx (rtx *operands)
   else
     internal_error ("unknown dest");
 
-  val = end_sequence ();
-  return val;
+  return end_sequence ();
 }
 
 /* Try to split the constant WVAL into a number of separate insns of less cost

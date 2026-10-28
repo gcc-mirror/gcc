@@ -4737,8 +4737,6 @@ frv_emit_scc (rtx operands[])
 rtx_insn *
 frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
 {
-  rtx_insn *ret;
-
   start_sequence ();
 
   /* Set the appropriate CCR bit.  */
@@ -4759,8 +4757,7 @@ frv_split_scc (rtx dest, rtx test, rtx cc_reg, rtx cr_reg, HOST_WIDE_INT value)
 				gen_rtx_SET (dest, const0_rtx)));
 
   /* Finish up, return sequence.  */
-  ret = end_sequence ();
-  return ret;
+  return end_sequence ();
 }
 
 
@@ -4854,7 +4851,6 @@ frv_split_cond_move (rtx operands[])
   rtx src1	= operands[3];
   rtx src2	= operands[4];
   rtx cr_reg	= operands[5];
-  rtx_insn *ret;
   machine_mode cr_mode = GET_MODE (cr_reg);
 
   start_sequence ();
@@ -4930,8 +4926,7 @@ frv_split_cond_move (rtx operands[])
     }
 
   /* Finish up, return sequence.  */
-  ret = end_sequence ();
-  return ret;
+  return end_sequence ();
 }
 
 
@@ -5003,7 +4998,6 @@ frv_split_minmax (rtx operands[])
   rtx src2	= operands[3];
   rtx cc_reg	= operands[4];
   rtx cr_reg	= operands[5];
-  rtx_insn *ret;
   enum rtx_code test_code;
   machine_mode cr_mode = GET_MODE (cr_reg);
 
@@ -5060,8 +5054,7 @@ frv_split_minmax (rtx operands[])
     }
 
   /* Finish up, return sequence.  */
-  ret = end_sequence ();
-  return ret;
+  return end_sequence ();
 }
 
 
@@ -5075,7 +5068,6 @@ frv_split_abs (rtx operands[])
   rtx src	= operands[1];
   rtx cc_reg	= operands[2];
   rtx cr_reg	= operands[3];
-  rtx_insn *ret;
 
   start_sequence ();
 
@@ -5098,8 +5090,7 @@ frv_split_abs (rtx operands[])
 				  gen_rtx_SET (dest, src)));
 
   /* Finish up, return sequence.  */
-  ret = end_sequence ();
-  return ret;
+  return end_sequence ();
 }
 
 
