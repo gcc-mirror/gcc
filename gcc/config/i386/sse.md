@@ -14264,7 +14264,7 @@
 	(vec_select:<ssescalarmode>
 	  (match_operand:VHFBF 1 "nonimmediate_operand" "vm,v,m")
 	  (parallel [(const_int 0)])))]
-  "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "TARGET_AVX512BW && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
   "#"
   "&& reload_completed"
   [(set (match_dup 0) (match_dup 1))]
@@ -14273,7 +14273,7 @@
 (define_insn "*vec_extract<mode>"
   [(set (match_operand:HFBF 0 "register_sse4nonimm_operand" "=?r,jm,m,x,Yw")
 	(vec_select:HFBF
-	  (match_operand:<ssevecmode> 1 "register_operand" "v,x,v,0,YW")
+	  (match_operand:<ssevecmode> 1 "register_operand" "YW,x,YW,0,YW")
 	  (parallel
 	    [(match_operand:SI 2 "const_0_to_7_operand")])))]
   "TARGET_SSE2"
