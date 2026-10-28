@@ -1,3 +1,39 @@
+2026-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/128124
+	* gfortran.dg/unsigned_45.f90: Require effective target
+	fortran_integer_16.
+	* gfortran.dg/unsigned_46.f90: New test.
+
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-09  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/127784
+	* gcc.dg/vect/vect-simd-clone-allones-mask.c: New test.
+
+2026-10-27  Hugo Sales  <hugo@hsal.es>
+
+	Backported from master:
+	2026-10-16  Hugo Sales  <hugo@hsal.es>
+
+	PR ipa/127917
+	* g++.dg/ipa/pr127917.C: New test.
+
+2026-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127897
+	* gcc.target/i386/pr127897-1.c: New test.
+	* gcc.target/i386/pr127897-2.c: Likewise.
+	* gcc.target/i386/pr127897-3.c: Likewise.
+
 2026-10-26  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
