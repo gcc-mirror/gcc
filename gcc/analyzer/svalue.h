@@ -235,23 +235,11 @@ public:
     : m_type (type), m_reg (reg)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_reg);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type && m_reg == other.m_reg);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const region *m_reg;
@@ -301,12 +289,6 @@ is_a_helper <const region_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_REGION;
 }
 
-template <> struct default_hash_traits<region_svalue::key_t>
-: public member_function_hash_traits<region_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* Concrete subclass of svalue representing a specific constant value.
@@ -323,23 +305,12 @@ public:
     : m_type (type), m_cst (cst)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_cst);
-      return hstate.end ();
-    }
-
+    bool
+    operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type && m_cst == other.m_cst);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     tree m_cst;
@@ -397,12 +368,6 @@ is_a_helper <const constant_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_CONSTANT;
 }
-
-template <> struct default_hash_traits<constant_svalue::key_t>
-: public member_function_hash_traits<constant_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
 
 namespace ana {
 
@@ -473,23 +438,19 @@ public:
     : m_kind (kind), m_type (type)
     {}
 
-    hashval_t hash () const
+    bool
+    operator< (const key_t &other) const
     {
-      inchash::hash hstate;
-      hstate.add_int (static_cast<int> (m_kind));
-      hstate.add_ptr (m_type);
-      return hstate.end ();
+      if (m_kind < other.m_kind)
+	return true;
+      return cmp_types (m_type, other.m_type) < 0;
     }
 
-    bool operator== (const key_t &other) const
+    bool
+    operator== (const key_t &other) const
     {
       return (m_kind == other.m_kind && m_type == other.m_type);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     enum poison_kind m_kind;
     tree m_type;
@@ -536,12 +497,6 @@ is_a_helper <const poisoned_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_POISONED;
 }
 
-template <> struct default_hash_traits<poisoned_svalue::key_t>
-: public member_function_hash_traits<poisoned_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* A bundle of information recording a setjmp/sigsetjmp call, corresponding
@@ -563,19 +518,12 @@ struct setjmp_record
 	    && m_setjmp_call == other.m_setjmp_call);
   }
 
-  void add_to_hash (inchash::hash *hstate) const
-  {
-    hstate->add_ptr (m_enode);
-    hstate->add_ptr (m_sedge);
-    hstate->add_ptr (m_setjmp_call);
-  }
-
   static int cmp (const setjmp_record &rec1, const setjmp_record &rec2);
 
   const exploded_node *m_enode;
   const superedge *m_sedge;
   const gcall *m_setjmp_call;
-  // non-null, but we can't use a reference since we're putting these in a hash_map
+  // non-null, but we can't use a reference since we're putting these in a std::map
 };
 
 /* Concrete subclass of svalue representing buffers for setjmp/sigsetjmp,
@@ -592,23 +540,11 @@ public:
     : m_record (record), m_type (type)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      m_record.add_to_hash (&hstate);
-      hstate.add_ptr (m_type);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_record == other.m_record && m_type == other.m_type);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     setjmp_record m_record;
     tree m_type;
@@ -651,12 +587,6 @@ is_a_helper <const setjmp_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_SETJMP;
 }
-
-template <> struct default_hash_traits<setjmp_svalue::key_t>
-: public member_function_hash_traits<setjmp_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
 
 namespace ana {
 
@@ -726,26 +656,13 @@ public:
     : m_type (type), m_op (op), m_arg (arg)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_int (m_op);
-      hstate.add_ptr (m_arg);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
 	      && m_op == other.m_op
 	      && m_arg == other.m_arg);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     enum tree_code m_op;
@@ -800,12 +717,6 @@ is_a_helper <const unaryop_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_UNARYOP;
 }
 
-template <> struct default_hash_traits<unaryop_svalue::key_t>
-: public member_function_hash_traits<unaryop_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* Concrete subclass of svalue representing a binary operation of
@@ -822,16 +733,7 @@ public:
     : m_type (type), m_op (op), m_arg0 (arg0), m_arg1 (arg1)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_int (m_op);
-      hstate.add_ptr (m_arg0);
-      hstate.add_ptr (m_arg1);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
@@ -839,11 +741,6 @@ public:
 	      && m_arg0 == other.m_arg0
 	      && m_arg1 == other.m_arg1);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     enum tree_code m_op;
@@ -903,12 +800,6 @@ is_a_helper <const binop_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_BINOP;
 }
 
-template <> struct default_hash_traits<binop_svalue::key_t>
-: public member_function_hash_traits<binop_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* Concrete subclass of svalue representing the result of accessing a subregion
@@ -925,26 +816,13 @@ public:
     : m_type (type), m_parent_svalue (parent_svalue), m_subregion (subregion)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_parent_svalue);
-      hstate.add_ptr (m_subregion);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
 	      && m_parent_svalue == other.m_parent_svalue
 	      && m_subregion == other.m_subregion);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const svalue *m_parent_svalue;
@@ -989,12 +867,6 @@ is_a_helper <const sub_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_SUB;
 }
 
-template <> struct default_hash_traits<sub_svalue::key_t>
-: public member_function_hash_traits<sub_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* Concrete subclass of svalue representing repeating an inner svalue
@@ -1013,26 +885,13 @@ public:
     : m_type (type), m_outer_size (outer_size), m_inner_svalue (inner_svalue)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_outer_size);
-      hstate.add_ptr (m_inner_svalue);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
 	      && m_outer_size == other.m_outer_size
 	      && m_inner_svalue == other.m_inner_svalue);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const svalue *m_outer_size;
@@ -1084,12 +943,6 @@ is_a_helper <const repeated_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_REPEATED;
 }
 
-template <> struct default_hash_traits<repeated_svalue::key_t>
-: public member_function_hash_traits<repeated_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* A range of bits/bytes within another svalue
@@ -1109,25 +962,13 @@ public:
     : m_type (type), m_bits (bits), m_inner_svalue (inner_svalue)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_inner_svalue);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
 	      && m_bits == other.m_bits
 	      && m_inner_svalue == other.m_inner_svalue);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     bit_range m_bits;
@@ -1179,12 +1020,6 @@ is_a_helper <const bits_within_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_BITS_WITHIN;
 }
-
-template <> struct default_hash_traits<bits_within_svalue::key_t>
-: public member_function_hash_traits<bits_within_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
 
 namespace ana {
 
@@ -1289,10 +1124,10 @@ namespace ana {
    representing a possible fixed point in an iteration from the base to
    +ve infinity, or -ve infinity, and thus useful for representing a value
    within a loop.
-   We also need to capture the program_point at which the merger happens,
+   TODO: We also need to capture the program_point at which the merger happens,
    so that distinguish between different iterators, and thus handle
    nested loops.  (currently we capture the function_point instead, for
-   simplicity of hashing).  */
+   redundant historical reasons).  */
 
 class widening_svalue : public svalue
 {
@@ -1306,14 +1141,7 @@ public:
       m_base_sval (base_sval), m_iter_sval (iter_sval)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_base_sval);
-      hstate.add_ptr (m_iter_sval);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
@@ -1321,11 +1149,6 @@ public:
 	      && m_base_sval == other.m_base_sval
 	      && m_iter_sval == other.m_iter_sval);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const supernode *m_snode;
@@ -1394,12 +1217,6 @@ is_a_helper <const widening_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_WIDENING;
 }
 
-template <> struct default_hash_traits<widening_svalue::key_t>
-: public member_function_hash_traits<widening_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* Concrete subclass of svalue representing a mapping of bit-ranges
@@ -1429,24 +1246,12 @@ public:
     : m_type (type), m_map_ptr (map_ptr)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      //hstate.add_ptr (m_map_ptr); // TODO
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
 	      && *m_map_ptr == *other.m_map_ptr);
     }
-
-    void mark_deleted () { m_type = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_type = reinterpret_cast<tree> (2); }
-    bool is_deleted () const { return m_type == reinterpret_cast<tree> (1); }
-    bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
     const concrete_binding_map *m_map_ptr;
@@ -1503,12 +1308,6 @@ is_a_helper <const compound_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_COMPOUND;
 }
 
-template <> struct default_hash_traits<compound_svalue::key_t>
-: public member_function_hash_traits<compound_svalue::key_t>
-{
-  static const bool empty_zero_p = false;
-};
-
 namespace ana {
 
 /* A bundle of state for purging information from a program_state about
@@ -1559,15 +1358,7 @@ public:
     : m_type (type), m_stmt (stmt), m_id_reg (id_reg), m_idx (idx)
     {}
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_stmt);
-      hstate.add_ptr (m_id_reg);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
@@ -1575,16 +1366,6 @@ public:
 	      && m_id_reg == other.m_id_reg
 	      && m_idx == other.m_idx);
     }
-
-    /* Use m_stmt to mark empty/deleted, as m_type can be NULL_TREE for
-       legitimate instances.  */
-    void mark_deleted () { m_stmt = reinterpret_cast<const gimple *> (1); }
-    void mark_empty () { m_stmt = nullptr; }
-    bool is_deleted () const
-    {
-      return m_stmt == reinterpret_cast<const gimple *> (1);
-    }
-    bool is_empty () const { return m_stmt == nullptr; }
 
     tree m_type;
     const gimple *m_stmt;
@@ -1636,12 +1417,6 @@ is_a_helper <const conjured_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_CONJURED;
 }
 
-template <> struct default_hash_traits<conjured_svalue::key_t>
-: public member_function_hash_traits<conjured_svalue::key_t>
-{
-  static const bool empty_zero_p = true;
-};
-
 namespace ana {
 
 /* An output from a deterministic asm stmt, where we want to identify a
@@ -1673,17 +1448,7 @@ public:
 	m_input_arr[i] = inputs[i];
     }
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      /* We don't bother hashing m_asm_str.  */
-      hstate.add_int (m_output_idx);
-      for (unsigned i = 0; i < m_num_inputs; i++)
-	hstate.add_ptr (m_input_arr[i]);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       if (!(m_type == other.m_type
@@ -1696,16 +1461,6 @@ public:
 	  return false;
       return true;
     }
-
-    /* Use m_asm_string to mark empty/deleted, as m_type can be NULL_TREE for
-       legitimate instances.  */
-    void mark_deleted () { m_asm_string = reinterpret_cast<const char *> (1); }
-    void mark_empty () { m_asm_string = nullptr; }
-    bool is_deleted () const
-    {
-      return m_asm_string == reinterpret_cast<const char *> (1);
-    }
-    bool is_empty () const { return m_asm_string == nullptr; }
 
     tree m_type;
     const char *m_asm_string;
@@ -1782,12 +1537,6 @@ is_a_helper <const asm_output_svalue *>::test (const svalue *sval)
   return sval->get_kind () == SK_ASM_OUTPUT;
 }
 
-template <> struct default_hash_traits<asm_output_svalue::key_t>
-: public member_function_hash_traits<asm_output_svalue::key_t>
-{
-  static const bool empty_zero_p = true;
-};
-
 namespace ana {
 
 /* The return value from a function with __attribute((const)) for given
@@ -1818,16 +1567,7 @@ public:
 	m_input_arr[i] = inputs[i];
     }
 
-    hashval_t hash () const
-    {
-      inchash::hash hstate;
-      hstate.add_ptr (m_type);
-      hstate.add_ptr (m_fndecl);
-      for (unsigned i = 0; i < m_num_inputs; i++)
-	hstate.add_ptr (m_input_arr[i]);
-      return hstate.end ();
-    }
-
+    bool operator< (const key_t &other) const;
     bool operator== (const key_t &other) const
     {
       if (!(m_type == other.m_type
@@ -1839,15 +1579,6 @@ public:
 	  return false;
       return true;
     }
-
-    /* Use m_fndecl to mark empty/deleted.  */
-    void mark_deleted () { m_fndecl = reinterpret_cast<tree> (1); }
-    void mark_empty () { m_fndecl = NULL_TREE; }
-    bool is_deleted () const
-    {
-      return m_fndecl == reinterpret_cast<tree> (1);
-    }
-    bool is_empty () const { return m_fndecl == NULL_TREE; }
 
     tree m_type;
     tree m_fndecl;
@@ -1912,11 +1643,5 @@ is_a_helper <const const_fn_result_svalue *>::test (const svalue *sval)
 {
   return sval->get_kind () == SK_CONST_FN_RESULT;
 }
-
-template <> struct default_hash_traits<const_fn_result_svalue::key_t>
-: public member_function_hash_traits<const_fn_result_svalue::key_t>
-{
-  static const bool empty_zero_p = true;
-};
 
 #endif /* GCC_ANALYZER_SVALUE_H */

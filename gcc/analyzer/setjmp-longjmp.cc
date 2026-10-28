@@ -72,6 +72,14 @@ setjmp_record::cmp (const setjmp_record &rec1, const setjmp_record &rec2)
 
 /* class setjmp_svalue : public svalue.  */
 
+bool
+setjmp_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = setjmp_record::cmp (m_record, other.m_record))
+    return c < 0;
+  return cmp_types (m_type, other.m_type) < 0;
+}
+
 /* Implementation of svalue::accept vfunc for setjmp_svalue.  */
 
 void

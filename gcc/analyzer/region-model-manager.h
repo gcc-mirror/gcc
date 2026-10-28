@@ -214,68 +214,66 @@ private:
   heap_region m_heap_region;
 
   /* svalue consolidation.  */
-  typedef hash_map<constant_svalue::key_t, constant_svalue *> constants_map_t;
+  typedef std::map<constant_svalue::key_t, constant_svalue *> constants_map_t;
   constants_map_t m_constants_map;
 
-  typedef hash_map<tree, unknown_svalue *> unknowns_map_t;
+  typedef std::map<tree, unknown_svalue *> unknowns_map_t;
   unknowns_map_t m_unknowns_map;
   const unknown_svalue *m_unknown_NULL;
 
-  typedef hash_map<poisoned_svalue::key_t,
+  typedef std::map<poisoned_svalue::key_t,
 		   poisoned_svalue *> poisoned_values_map_t;
   poisoned_values_map_t m_poisoned_values_map;
 
-  typedef hash_map<setjmp_svalue::key_t,
+  typedef std::map<setjmp_svalue::key_t,
 		   setjmp_svalue *> setjmp_values_map_t;
   setjmp_values_map_t m_setjmp_values_map;
 
-  typedef hash_map<const region *, initial_svalue *> initial_values_map_t;
+  typedef std::map<const region *, initial_svalue *> initial_values_map_t;
   initial_values_map_t m_initial_values_map;
 
-  typedef hash_map<region_svalue::key_t, region_svalue *> pointer_values_map_t;
+  typedef std::map<region_svalue::key_t, region_svalue *> pointer_values_map_t;
   pointer_values_map_t m_pointer_values_map;
 
-  typedef hash_map<unaryop_svalue::key_t,
+  typedef std::map<unaryop_svalue::key_t,
 		   unaryop_svalue *> unaryop_values_map_t;
   unaryop_values_map_t m_unaryop_values_map;
 
-  typedef hash_map<binop_svalue::key_t, binop_svalue *> binop_values_map_t;
+  typedef std::map<binop_svalue::key_t, binop_svalue *> binop_values_map_t;
   binop_values_map_t m_binop_values_map;
 
-  typedef hash_map<sub_svalue::key_t, sub_svalue *> sub_values_map_t;
+  typedef std::map<sub_svalue::key_t, sub_svalue *> sub_values_map_t;
   sub_values_map_t m_sub_values_map;
 
-  typedef hash_map<repeated_svalue::key_t,
+  typedef std::map<repeated_svalue::key_t,
 		   repeated_svalue *> repeated_values_map_t;
   repeated_values_map_t m_repeated_values_map;
 
-  typedef hash_map<bits_within_svalue::key_t,
+  typedef std::map<bits_within_svalue::key_t,
 		   bits_within_svalue *> bits_within_values_map_t;
   bits_within_values_map_t m_bits_within_values_map;
 
-  typedef hash_map<const svalue *,
+  typedef std::map<const svalue *,
 		   unmergeable_svalue *> unmergeable_values_map_t;
   unmergeable_values_map_t m_unmergeable_values_map;
 
-  typedef hash_map<widening_svalue::key_t,
-		   widening_svalue */*,
-		   widening_svalue::key_t::hash_map_traits*/>
-    widening_values_map_t;
+  typedef std::map<widening_svalue::key_t,
+		   widening_svalue *> widening_values_map_t;
   widening_values_map_t m_widening_values_map;
 
-  typedef hash_map<compound_svalue::key_t,
+  typedef std::map<compound_svalue::key_t,
 		   compound_svalue *> compound_values_map_t;
   compound_values_map_t m_compound_values_map;
 
-  typedef hash_map<conjured_svalue::key_t,
+  typedef std::map<conjured_svalue::key_t,
 		   conjured_svalue *> conjured_values_map_t;
   conjured_values_map_t m_conjured_values_map;
 
-  typedef hash_map<asm_output_svalue::key_t,
+  typedef std::map<asm_output_svalue::key_t,
 		   asm_output_svalue *> asm_output_values_map_t;
   asm_output_values_map_t m_asm_output_values_map;
 
-  typedef hash_map<const_fn_result_svalue::key_t,
+  typedef std::map<const_fn_result_svalue::key_t,
 		   const_fn_result_svalue *> const_fn_result_values_map_t;
   const_fn_result_values_map_t m_const_fn_result_values_map;
 
@@ -292,16 +290,16 @@ private:
   /* region consolidation.  */
 
   code_region m_code_region;
-  typedef hash_map<tree, function_region *> fndecls_map_t;
+  typedef std::map<tree, function_region *> fndecls_map_t;
   typedef fndecls_map_t::iterator fndecls_iterator_t;
   fndecls_map_t m_fndecls_map;
 
-  typedef hash_map<tree, label_region *> labels_map_t;
+  typedef std::map<tree, label_region *> labels_map_t;
   typedef labels_map_t::iterator labels_iterator_t;
   labels_map_t m_labels_map;
 
   globals_region m_globals_region;
-  typedef hash_map<tree, decl_region *> globals_map_t;
+  typedef std::map<tree, decl_region *> globals_map_t;
   typedef globals_map_t::iterator globals_iterator_t;
   globals_map_t m_globals_map;
 
@@ -316,7 +314,7 @@ private:
   consolidation_map<frame_region> m_frame_regions;
   consolidation_map<symbolic_region> m_symbolic_regions;
 
-  typedef hash_map<tree, string_region *> string_map_t;
+  typedef std::map<tree, string_region *> string_map_t;
   string_map_t m_string_map;
 
   consolidation_map<bit_range_region> m_bit_range_regions;

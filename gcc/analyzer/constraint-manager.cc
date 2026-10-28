@@ -512,14 +512,6 @@ bounded_range::operator== (const bounded_range &other) const
 	  && tree_int_cst_equal (m_upper, other.m_upper));
 }
 
-static int
-cmp_types (const_tree type1, const_tree type2)
-{
-  int t1 = TYPE_UID (type1);
-  int t2 = TYPE_UID (type2);
-  return t1 - t2;
-}
-
 int
 bounded_range::cmp (const bounded_range &br1, const bounded_range &br2)
 {

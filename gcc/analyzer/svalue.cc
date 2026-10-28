@@ -513,6 +513,14 @@ cmp_csts_same_type (const_tree cst1, const_tree cst2)
     }
 }
 
+int
+cmp_types (const_tree a, const_tree b)
+{
+  int t1 = a ? TYPE_UID (a) : -1;
+  int t2 = b ? TYPE_UID (b) : -1;
+  return t1 - t2;
+}
+
 /* Comparator for imposing a deterministic order on constants that might
    not be of the same type.  */
 
@@ -923,6 +931,14 @@ svalue::maybe_get_value_range_1 (value_range &out) const
 
 /* class region_svalue : public svalue.  */
 
+bool
+region_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  return m_reg->get_id () < other.m_reg->get_id ();
+}
+
 /* Implementation of svalue::dump_to_pp vfunc for region_svalue.  */
 
 void
@@ -1013,6 +1029,17 @@ region_svalue::eval_condition (const region_svalue *lhs,
 }
 
 /* class constant_svalue : public svalue.  */
+
+bool
+constant_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = cmp_types (TREE_TYPE (m_cst), TREE_TYPE (other.m_cst)))
+    return c < 0;
+  gcc_assert (TREE_CODE (m_cst) == TREE_CODE (other.m_cst));
+  return cmp_csts_same_type (m_cst, other.m_cst) < 0;
+}
 
 /* Implementation of svalue::dump_to_pp vfunc for constant_svalue.  */
 
@@ -1453,6 +1480,18 @@ initial_svalue::initial_value_of_param_p () const
 
 /* class unaryop_svalue : public svalue.  */
 
+bool
+unaryop_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = (int)m_op - (int)other.m_op)
+    return c < 0;
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_arg, other.m_arg))
+    return c < 0;
+  return false;
+}
+
 /* Implementation of svalue::dump_to_pp vfunc for unaryop_svalue.  */
 
 void
@@ -1585,6 +1624,20 @@ unaryop_svalue::maybe_get_value_range_1 (value_range &out) const
 
 /* class binop_svalue : public svalue.  */
 
+bool
+binop_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = (int)m_op - (int)other.m_op)
+    return c < 0;
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_arg0, other.m_arg0))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_arg1, other.m_arg1))
+    return c < 0;
+  return false;
+}
+
 /* Return whether OP be printed as an infix operator.  */
 
 static bool
@@ -1684,6 +1737,18 @@ binop_svalue::implicitly_live_p (const svalue_set *live_svalues,
 }
 
 /* class sub_svalue : public svalue.  */
+
+bool
+sub_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_parent_svalue, other.m_parent_svalue))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_subregion, other.m_subregion))
+    return c < 0;
+  return false;
+}
 
 /* sub_svalue'c ctor.  */
 
@@ -1797,6 +1862,18 @@ sub_svalue::implicitly_live_p (const svalue_set *live_svalues,
 }
 
 /* class repeated_svalue : public svalue.  */
+
+bool
+repeated_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_outer_size, other.m_outer_size))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_inner_svalue, other.m_inner_svalue))
+    return c < 0;
+  return false;
+}
 
 /* repeated_svalue'c ctor.  */
 
@@ -1947,6 +2024,18 @@ repeated_svalue::maybe_fold_bits_within (tree type,
 
 /* class bits_within_svalue : public svalue.  */
 
+bool
+bits_within_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = bit_range::cmp (m_bits, other.m_bits))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_inner_svalue, other.m_inner_svalue))
+    return c < 0;
+  return false;
+}
+
 /* bits_within_svalue'c ctor.  */
 
 bits_within_svalue::bits_within_svalue (symbol::id_t id,
@@ -2051,6 +2140,20 @@ bits_within_svalue::implicitly_live_p (const svalue_set *live_svalues,
 }
 
 /* class widening_svalue : public svalue.  */
+
+bool
+widening_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = m_snode->m_id - other.m_snode->m_id)
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_base_sval, other.m_base_sval))
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_iter_sval, other.m_iter_sval))
+    return c < 0;
+  return false;
+}
 
 /* Implementation of svalue::dump_to_pp vfunc for widening_svalue.  */
 
@@ -2331,6 +2434,16 @@ unmergeable_svalue::implicitly_live_p (const svalue_set *live_svalues,
 
 /* class compound_svalue : public svalue.  */
 
+bool
+compound_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = concrete_binding_map::cmp (*m_map_ptr, *other.m_map_ptr))
+    return c < 0;
+  return false;
+}
+
 compound_svalue::compound_svalue (symbol::id_t id,
 				  tree type,
 				  concrete_binding_map &&map)
@@ -2484,6 +2597,20 @@ compound_svalue::maybe_fold_bits_within (tree type,
 
 /* class conjured_svalue : public svalue.  */
 
+bool
+conjured_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = m_stmt->uid - other.m_stmt->uid)
+    return c < 0;
+  if (int c = symbol::cmp_ids (m_id_reg, other.m_id_reg))
+    return c < 0;
+  if (int c = m_idx == other.m_idx)
+    return c < 0;
+  return false;
+}
+
 /* Implementation of svalue::dump_to_pp vfunc for conjured_svalue.  */
 
 void
@@ -2557,6 +2684,23 @@ conjured_svalue::lhs_value_p () const
 }
 
 /* class asm_output_svalue : public svalue.  */
+
+bool
+asm_output_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = strcmp (m_asm_string, other.m_asm_string))
+    return c < 0;
+  if (int c = (int)m_output_idx - (int)other.m_output_idx)
+    return c < 0;
+  if (int c = (int)m_num_inputs - (int)other.m_num_inputs)
+    return c < 0;
+  for (unsigned i = 0; i < m_num_inputs; i++)
+    if (int c = symbol::cmp_ids (m_input_arr[i], other.m_input_arr[i]))
+      return c < 0;
+  return false;
+}
 
 /* Implementation of svalue::dump_to_pp vfunc for asm_output_svalue.  */
 
@@ -2651,6 +2795,21 @@ asm_output_svalue::accept (visitor *v) const
 }
 
 /* class const_fn_result_svalue : public svalue.  */
+
+bool
+const_fn_result_svalue::key_t::operator< (const key_t &other) const
+{
+  if (int c = cmp_types (m_type, other.m_type))
+    return c < 0;
+  if (int c = DECL_UID (m_fndecl) - DECL_UID (other.m_fndecl))
+    return c < 0;
+  if (int c = (int)m_num_inputs - (int)other.m_num_inputs)
+    return c < 0;
+  for (unsigned i = 0; i < m_num_inputs; i++)
+    if (int c = symbol::cmp_ids (m_input_arr[i], other.m_input_arr[i]))
+      return c < 0;
+  return false;
+}
 
 /* Implementation of svalue::dump_to_pp vfunc for const_fn_result_svalue.  */
 

@@ -162,6 +162,7 @@ extern void print_expr_for_user (pretty_printer *pp, tree t);
 extern bool printable_expr_p (const_tree expr);
 extern int readability_comparator (const void *p1, const void *p2);
 extern int tree_cmp (const void *p1, const void *p2);
+extern int cmp_types (const_tree a, const_tree b);
 extern tree fixup_tree_for_diagnostic (tree);
 extern tree get_diagnostic_tree_for_gassign (const gassign *);
 
