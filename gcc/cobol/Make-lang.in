@@ -396,4 +396,7 @@ cobol.stagefeedback: stagefeedback-start
 selftest-cobol:
 
 lang_checks += check-cobol
+lang_checks_parallelized += check-cobol
+# For description see the check_$lang_parallelize comment in gcc/Makefile.in.
+check_cobol_parallelize = 10000
 

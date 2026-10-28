@@ -65,6 +65,10 @@
 
 extern int yylineno;
 
+// This timespec, established just once in parser_enter_file, is used by
+// both the WHEN_COMPILED variable, and the intrinsic FUNCITON WHEN-COMPILED.
+static struct timespec compilation_tp;
+
 #define TSI_BACK (tsi_last(current_function->statement_list_stack.back()))
 
 extern char *cobol_name_mangler(const char *cobol_name);
@@ -2847,6 +2851,17 @@ parser_enter_file(const char *filename)
     SHOW_PARSE_TEXT(psz);
     free(psz);
     SHOW_PARSE_END
+    }
+
+  static bool first_time = true;
+  if( first_time )
+    {
+    first_time = false;
+    // Here is where we calculate a common WHEN-COMPILED string to be used
+    // both by the WHEN-COMPILED variable and the FUNCTION WHEN-COMPILED
+    uint64_t now = get_time_nanoseconds();
+    compilation_tp.tv_sec  = now / 1000000000;
+    compilation_tp.tv_nsec = now % 1000000000;
     }
 
   current_filename.push_back(filename);
@@ -10933,18 +10948,13 @@ parser_intrinsic_call_0(cbl_field_t *tgt,
     }
   else if( strcmp(function_name, "__gg__when_compiled") == 0 )
     {
-    // Pass __gg__when_compiled() the time from right now.
-    struct timespec tp;
-    uint64_t now = get_time_nanoseconds();
-    tp.tv_sec  = now / 1000000000;
-    tp.tv_nsec = now % 1000000000;
-
+    // Pass __gg__when_compiled() the time from parser_enter_file
     store_location_stuff(function_name);
     gg_call(VOID,
             function_name,
             gg_get_address_of(tgt->var_decl_node),
-            build_int_cst(SIZE_T, tp.tv_sec),
-            build_int_cst(LONG,   tp.tv_nsec),
+            build_int_cst(SIZE_T, compilation_tp.tv_sec),
+            build_int_cst(LONG,   compilation_tp.tv_nsec),
             NULL_TREE);
     }
   else
@@ -15408,6 +15418,22 @@ parser_symbol_add(struct cbl_field_t *new_var )
          is often the one of interest when tracking down parsing in data
          definitions. So it can be convenient to set a trap here.  */
       trap_here = false;
+      }
+
+    if( strcmp(new_var->name, "WHEN-COMPILED") == 0 )
+      {
+      // Convert the epoch seconds
+      struct tm tm = {};
+      localtime_r(&compilation_tp.tv_sec, &tm);
+      snprintf(const_cast<char *>(new_var->data.initial),
+               17,
+               "%2.2d/%2.2d/%2.2d%2.2d.%2.2d.%2.2d",
+               static_cast<unsigned int>(tm.tm_mon + 1),
+               static_cast<unsigned int>(tm.tm_mday),
+               static_cast<unsigned int>(tm.tm_year % 100),
+               static_cast<unsigned int>(tm.tm_hour),
+               static_cast<unsigned int>(tm.tm_min),
+               static_cast<unsigned int>(tm.tm_sec));
       }
 
     switch( new_var->type )
