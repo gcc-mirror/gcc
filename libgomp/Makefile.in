@@ -192,14 +192,6 @@ am__DEPENDENCIES_1 =
 @PLUGIN_GCN_TRUE@	libgomp_plugin_gcn_la-simple-allocator.lo \
 @PLUGIN_GCN_TRUE@	libgomp_plugin_gcn_la-mutex.lo
 libgomp_plugin_gcn_la_OBJECTS = $(am_libgomp_plugin_gcn_la_OBJECTS)
-AM_V_lt = $(am__v_lt_@AM_V@)
-am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
-am__v_lt_0 = --silent
-am__v_lt_1 = 
-libgomp_plugin_gcn_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(libgomp_plugin_gcn_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgomp_plugin_gcn_la_LDFLAGS) $(LDFLAGS) -o $@
 @PLUGIN_GCN_TRUE@am_libgomp_plugin_gcn_la_rpath = -rpath \
 @PLUGIN_GCN_TRUE@	$(toolexeclibdir)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_DEPENDENCIES = libgomp.la \
@@ -208,10 +200,6 @@ libgomp_plugin_gcn_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 @PLUGIN_NVPTX_TRUE@	libgomp_plugin_nvptx_la-plugin-nvptx.lo
 libgomp_plugin_nvptx_la_OBJECTS =  \
 	$(am_libgomp_plugin_nvptx_la_OBJECTS)
-libgomp_plugin_nvptx_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
-	$(libgomp_plugin_nvptx_la_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
-	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
-	$(libgomp_plugin_nvptx_la_LDFLAGS) $(LDFLAGS) -o $@
 @PLUGIN_NVPTX_TRUE@am_libgomp_plugin_nvptx_la_rpath = -rpath \
 @PLUGIN_NVPTX_TRUE@	$(toolexeclibdir)
 @USE_FORTRAN_TRUE@am__objects_1 = openacc.lo
@@ -243,6 +231,10 @@ DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_@AM_V@)
+am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -580,6 +572,9 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBADD = libgomp.la \
 @PLUGIN_NVPTX_TRUE@	$(DL_LIBS)
 @PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LIBTOOLFLAGS = --tag=disable-static
+@PLUGIN_NVPTX_TRUE@libgomp_plugin_nvptx_la_LINK =  \
+@PLUGIN_NVPTX_TRUE@	$(libgomp_plugin_LINK) \
+@PLUGIN_NVPTX_TRUE@	$(libgomp_plugin_nvptx_la_LDFLAGS)
 # ... vs. linking it:
 #libgomp_plugin_nvptx_la_CPPFLAGS += -DPLUGIN_NVPTX_LINK_LIBCUDA
 #libgomp_plugin_nvptx_la_LDFLAGS += -L[CUDA]/lib64/stubs
@@ -596,12 +591,24 @@ libgomp_la_SOURCES = alloc.c atomic.c barrier.c critical.c env.c \
 
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LIBADD = libgomp.la $(DL_LIBS)
 @PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
+@PLUGIN_GCN_TRUE@libgomp_plugin_gcn_la_LINK = $(libgomp_plugin_LINK) \
+@PLUGIN_GCN_TRUE@	$(libgomp_plugin_gcn_la_LDFLAGS)
+
+# Like '../Makefile.am:LINK', but with '$(AM_LIBTOOLFLAGS)' replaced by
+# '$(libgomp_plugin_LIBTOOLFLAGS)' (equal for all libgomp plugins).
+libgomp_plugin_LIBTOOLFLAGS = --tag=disable-static
+libgomp_plugin_LINK = $(LIBTOOL) \
+	--tag CC $(libgomp_plugin_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
+
 nodist_noinst_HEADERS = libgomp_f.h
 nodist_libsubinclude_HEADERS = omp.h openacc.h acc_prof.h
 @USE_FORTRAN_TRUE@nodist_finclude_HEADERS = omp_lib.h omp_lib.f90 omp_lib.mod omp_lib_kinds.mod \
 @USE_FORTRAN_TRUE@	openacc_lib.h openacc.f90 openacc.mod openacc_kinds.mod
 
 LTLDFLAGS = $(shell $(SHELL) $(top_srcdir)/../libtool-ldflags $(LDFLAGS))
+
+# See also 'plugin/Makefrag.am:libgomp_plugin_LINK'.
 LINK = $(LIBTOOL) --tag CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
 	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
 
@@ -733,10 +740,10 @@ clean-toolexeclibLTLIBRARIES:
 	}
 
 libgomp-plugin-gcn.la: $(libgomp_plugin_gcn_la_OBJECTS) $(libgomp_plugin_gcn_la_DEPENDENCIES) $(EXTRA_libgomp_plugin_gcn_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgomp_plugin_gcn_la_LINK) $(am_libgomp_plugin_gcn_la_rpath) $(libgomp_plugin_gcn_la_OBJECTS) $(libgomp_plugin_gcn_la_LIBADD) $(LIBS)
+	$(AM_V_GEN)$(libgomp_plugin_gcn_la_LINK) $(am_libgomp_plugin_gcn_la_rpath) $(libgomp_plugin_gcn_la_OBJECTS) $(libgomp_plugin_gcn_la_LIBADD) $(LIBS)
 
 libgomp-plugin-nvptx.la: $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_DEPENDENCIES) $(EXTRA_libgomp_plugin_nvptx_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libgomp_plugin_nvptx_la_LINK) $(am_libgomp_plugin_nvptx_la_rpath) $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_LIBADD) $(LIBS)
+	$(AM_V_GEN)$(libgomp_plugin_nvptx_la_LINK) $(am_libgomp_plugin_nvptx_la_rpath) $(libgomp_plugin_nvptx_la_OBJECTS) $(libgomp_plugin_nvptx_la_LIBADD) $(LIBS)
 
 libgomp.la: $(libgomp_la_OBJECTS) $(libgomp_la_DEPENDENCIES) $(EXTRA_libgomp_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgomp_la_LINK) -rpath $(toolexeclibdir) $(libgomp_la_OBJECTS) $(libgomp_la_LIBADD) $(LIBS)

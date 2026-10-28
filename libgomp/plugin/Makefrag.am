@@ -38,6 +38,8 @@ libgomp_plugin_nvptx_la_LDFLAGS = $(libgomp_plugin_nvptx_version_info) \
 	$(lt_host_flags)
 libgomp_plugin_nvptx_la_LIBADD = libgomp.la
 libgomp_plugin_nvptx_la_LIBTOOLFLAGS = --tag=disable-static
+libgomp_plugin_nvptx_la_LINK = $(libgomp_plugin_LINK)
+libgomp_plugin_nvptx_la_LINK += $(libgomp_plugin_nvptx_la_LDFLAGS)
 
 # libgomp nvptx plugin developer's section.
 #
@@ -64,6 +66,15 @@ libgomp_plugin_gcn_la_LDFLAGS = $(libgomp_plugin_gcn_version_info) \
 	$(lt_host_flags)
 libgomp_plugin_gcn_la_LIBADD = libgomp.la
 libgomp_plugin_gcn_la_LIBTOOLFLAGS = --tag=disable-static
+libgomp_plugin_gcn_la_LINK = $(libgomp_plugin_LINK)
+libgomp_plugin_gcn_la_LINK += $(libgomp_plugin_gcn_la_LDFLAGS)
 
 libgomp_plugin_gcn_la_LIBADD += $(DL_LIBS)
 endif
+
+# Like '../Makefile.am:LINK', but with '$(AM_LIBTOOLFLAGS)' replaced by
+# '$(libgomp_plugin_LIBTOOLFLAGS)' (equal for all libgomp plugins).
+libgomp_plugin_LIBTOOLFLAGS = --tag=disable-static
+libgomp_plugin_LINK = $(LIBTOOL) \
+	--tag CC $(libgomp_plugin_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link \
+	$(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LTLDFLAGS) -o $@
