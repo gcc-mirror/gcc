@@ -1378,27 +1378,16 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block *bbs = LOOP_VINFO_BBS (loop_vinfo);
-  int nbbs = loop->num_nodes, factor;
-  int innerloop_iters, i;
+  int nbbs = loop->num_nodes, i;
 
   DUMP_VECT_SCOPE ("vect_compute_single_scalar_iteration_cost");
 
   /* Gather costs for statements in the scalar loop.  */
 
-  /* FORNOW.  */
-  innerloop_iters = 1;
-  if (loop->inner)
-    innerloop_iters = LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
-
   for (i = 0; i < nbbs; i++)
     {
       gimple_stmt_iterator si;
       basic_block bb = bbs[i];
-
-      if (bb->loop_father == loop->inner)
-        factor = innerloop_iters;
-      else
-        factor = 1;
 
       for (si = gsi_start_bb (bb); !gsi_end_p (si); gsi_next (&si))
         {
@@ -1431,10 +1420,9 @@ vect_compute_single_scalar_iteration_cost (loop_vec_info loop_vinfo)
 	  else
             kind = scalar_stmt;
 
-	  /* We are using vect_prologue here to avoid scaling twice
-	     by the inner loop factor.  */
+	  /* The target cost model applies the inner-loop frequency.  */
 	  record_stmt_cost (&LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo),
-			    factor, kind, stmt_info, 0, vect_body);
+			    1, kind, stmt_info, 0, vect_body);
         }
     }
 
@@ -4046,6 +4034,19 @@ vect_get_known_peeling_cost (loop_vec_info loop_vinfo, int peel_iters_prologue)
   return retval;
 }
 
+/* Return the count for SI in PEEL_ITERS scalar iterations, including the
+   inner-loop frequency.  */
+
+static int
+vect_scalar_peeling_stmt_count (loop_vec_info loop_vinfo,
+				const stmt_info_for_cost &si, int peel_iters)
+{
+  int count = si.count;
+  if (si.stmt_info && stmt_in_inner_loop_p (loop_vinfo, si.stmt_info))
+    count *= LOOP_VINFO_INNER_LOOP_COST_FACTOR (loop_vinfo);
+  return count * peel_iters;
+}
+
 /* Function vect_estimate_min_profitable_iters
 
    Return the number of iterations required for the vector version of the
@@ -4251,8 +4252,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (peel_iters_prologue)
     FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
       {
-	(void) add_stmt_cost (target_cost_data,
-			      si->count * peel_iters_prologue, si->kind,
+	int count = vect_scalar_peeling_stmt_count (loop_vinfo, *si,
+						    peel_iters_prologue);
+	(void) add_stmt_cost (target_cost_data, count, si->kind,
 			      si->stmt_info, si->node, si->vectype,
 			      si->misalign, vect_prologue);
       }
@@ -4261,8 +4263,9 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
   if (peel_iters_epilogue)
     FOR_EACH_VEC_ELT (LOOP_VINFO_SCALAR_ITERATION_COST (loop_vinfo), j, si)
       {
-	(void) add_stmt_cost (target_cost_data,
-			      si->count * peel_iters_epilogue, si->kind,
+	int count = vect_scalar_peeling_stmt_count (loop_vinfo, *si,
+						    peel_iters_epilogue);
+	(void) add_stmt_cost (target_cost_data, count, si->kind,
 			      si->stmt_info, si->node, si->vectype,
 			      si->misalign, vect_epilogue);
       }
