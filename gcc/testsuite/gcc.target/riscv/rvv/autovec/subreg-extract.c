@@ -16,8 +16,4 @@ foo ()
     }
 }
 
-/* Since the regmode-natural-size changes we cannot build half-vector subregs
-   of regs.  Xfail this until we have a better way of describing and especially
-   querying vec_extract support.  */
-
-/* { dg-final { scan-assembler-times "vslidedown" 2 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "vslidedown" 2 } } */

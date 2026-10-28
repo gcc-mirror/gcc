@@ -1799,76 +1799,6 @@ get_frm_mode (rtx operand)
   gcc_unreachable ();
 }
 
-/* Expand vector extraction from a SUBREG source using slidedown.
-   Handles patterns like (subreg:V4DI (reg:V8DI) 32) by emitting
-   a slidedown instruction when extracting non-low parts.
-   Return true if the move was handled and emitted.  */
-static bool
-expand_vector_subreg_extract (rtx dest, rtx src)
-{
-  gcc_assert (SUBREG_P (src) && REG_P (SUBREG_REG (src)));
-
-  machine_mode mode = GET_MODE (dest);
-  machine_mode inner_mode = GET_MODE (SUBREG_REG (src));
-
-  gcc_assert (VECTOR_MODE_P (mode));
-  gcc_assert (VECTOR_MODE_P (inner_mode));
-
-  poly_uint16 outer_size = GET_MODE_BITSIZE (mode);
-  poly_uint16 inner_size = GET_MODE_BITSIZE (inner_mode);
-
-  poly_uint16 factor;
-  if (riscv_tuple_mode_p (inner_mode)
-      || !multiple_p (inner_size, outer_size, &factor)
-      || !factor.is_constant ()
-      || !pow2p_hwi (factor.to_constant ())
-      || factor.to_constant () <= 1)
-    return false;
-
-  enum vlmul_type lmul = get_vlmul (mode);
-  enum vlmul_type inner_lmul = get_vlmul (inner_mode);
-
-  /* These are just "renames".  */
-  if ((inner_lmul == LMUL_2 || inner_lmul == LMUL_4 || inner_lmul == LMUL_8)
-      && (lmul == LMUL_1 || lmul == LMUL_2 || lmul == LMUL_4))
-    return false;
-
-  poly_uint64 outer_nunits = GET_MODE_NUNITS (mode);
-  poly_uint64 subreg_byte = SUBREG_BYTE (src);
-
-  /* Calculate which part we're extracting (0 for low half, 1 for
-     higher half/quarter, etc.)  */
-  uint64_t part;
-  if (!exact_div (subreg_byte * BITS_PER_UNIT, outer_size).is_constant (&part))
-    return false;
-
-  rtx inner_reg = SUBREG_REG (src);
-  rtx tmp_out = gen_reg_rtx (mode);
-
-  if (part == 0)
-    {
-      /* Emit a direct reg-reg set here instead of emit_move_insn as that
-	 would trigger another legitimize_move.  */
-      emit_insn (gen_rtx_SET (tmp_out, gen_lowpart (mode, inner_reg)));
-    }
-  else
-    {
-      /* Extracting a non-zero part means we need to slide down.  */
-      poly_uint64 slide_count = part * outer_nunits;
-
-      rtx tmp = gen_reg_rtx (inner_mode);
-      rtx ops[] = {tmp, inner_reg, gen_int_mode (slide_count, Pmode)};
-      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, inner_mode);
-      emit_vlmax_insn (icode, BINARY_OP, ops);
-
-      /* Extract the low part after sliding.  */
-      emit_insn (gen_rtx_SET (tmp_out, gen_lowpart (mode, tmp)));
-    }
-
-  emit_move_insn (dest, tmp_out);
-  return true;
-}
-
 /* Expand a pre-RA RVV data move from SRC to DEST.
    It expands move for RVV fractional vector modes.
    Return true if the move as already been emitted.  */
@@ -1881,24 +1811,6 @@ legitimize_move (rtx dest, rtx *srcp)
     {
       expand_const_vector (dest, src);
       return true;
-    }
-
-  /* The canonical way of extracting vectors from vectors is the vec_extract
-     optab with appropriate source and dest modes.  This is rather a VLS style
-     approach, though as we would need to enumerate all dest modes that are
-     half, quarter, etc. the size of the source.  It becomes particularly
-     cumbersome if we have a mix of VLA and VLS, i.e. extracting a smaller
-     VLS vector from a "VLA" vector.  Therefore we recognize patterns like
-       (set reg:V4DI
-	  (subreg:V4DI (reg:V8DI) offset))
-     and transform them into vector slidedowns.  */
-  if (SUBREG_P (src) && REG_P (SUBREG_REG (src))
-      && VECTOR_MODE_P (GET_MODE (SUBREG_REG (src)))
-      && VECTOR_MODE_P (mode)
-      && !lra_in_progress)
-    {
-      if (expand_vector_subreg_extract (dest, src))
-	return true;
     }
 
   if (riscv_vls_mode_p (mode))
@@ -3975,6 +3887,50 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
+/* Implement extraction of a D.OP_MODE sized part of D.OP0.  */
+static bool
+shuffle_extract_patterns (struct expand_vec_perm_d *d)
+{
+  poly_uint64 extract_size = GET_MODE_SIZE (d->vmode);
+  poly_uint64 full_size = GET_MODE_SIZE (d->op_mode);
+
+  if (maybe_ge (extract_size, full_size))
+    return false;
+
+  if (maybe_ne (GET_MODE_UNIT_SIZE (d->vmode),
+		GET_MODE_UNIT_SIZE (d->op_mode)))
+    return false;
+
+  if (!d->one_vector_p)
+    return false;
+
+  if (maybe_gt (GET_MODE_NUNITS (d->vmode) + d->perm[0],
+		GET_MODE_NUNITS (d->op_mode)))
+    return false;
+
+  /* We can only extract consecutive parts.  */
+  if (!d->perm.series_p (0, 1, d->perm[0], 1))
+    return false;
+
+  if (d->testing_p)
+    return true;
+
+  rtx tmp;
+  if (known_ne (d->perm[0], 0))
+    {
+      tmp = gen_reg_rtx (d->op_mode);
+      rtx ops[] = {tmp, d->op0, gen_int_mode (d->perm[0], Pmode)};
+      insn_code icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, d->op_mode);
+      emit_vlmax_insn (icode, BINARY_OP, ops);
+    }
+  else
+    tmp = d->op0;
+
+  emit_move_insn (d->target, gen_lowpart (d->vmode, tmp));
+
+  return true;
+}
+
 /* Recognize interleaving patterns like [0 4 1 5].  */
 
 static bool
@@ -4559,7 +4515,11 @@ expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
 	  return false;
 	}
       else
-	return false;
+	{
+	  if (shuffle_extract_patterns (d))
+	    return true;
+	  return false;
+	}
     }
   return false;
 }
@@ -4573,6 +4533,14 @@ expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
   /* RVV doesn't have Mask type pack/unpack instructions and we don't use
      mask to do the iteration loop control.  Just disable it directly.  */
   if (GET_MODE_CLASS (vmode) == MODE_VECTOR_BOOL)
+    return false;
+
+  if (riscv_tuple_mode_p (vmode)
+      || !riscv_vector_mode_p (op_mode)
+      || riscv_tuple_mode_p (op_mode))
+    return false;
+
+  if (!ordered_p (GET_MODE_SIZE (vmode), REGMODE_NATURAL_SIZE (op_mode)))
     return false;
 
   struct expand_vec_perm_d d;
@@ -4594,7 +4562,7 @@ expand_vec_perm_const (machine_mode vmode, machine_mode op_mode, rtx target,
     d.one_vector_p = false;
 
   d.perm.new_vector (sel.encoding (), d.one_vector_p ? 1 : 2,
-		     sel.nelts_per_input ());
+		     GET_MODE_NUNITS (op_mode));
   d.vmode = vmode;
   d.op_mode = op_mode;
   d.target = target;
