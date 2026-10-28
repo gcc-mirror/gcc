@@ -2304,7 +2304,7 @@ constinit tzdb_list::_Node::NumLeapSeconds tzdb_list::_Node::num_leap_seconds;
   {
     if (auto tz = do_locate_zone(zones, links, tz_name))
       return tz;
-    string_view err = "std::chrono::tzdb: cannot locate zone: ";
+    string_view err = "std::chrono::tzdb: cannot locate time zone: ";
     string str;
     str.reserve(err.size() + tz_name.size());
     str += err;
