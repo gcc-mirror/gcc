@@ -341,22 +341,43 @@ is_removable_allocation_p (gcall *stmt, bool non_null_check)
     }
 }
 
-/* Return true if STMT is a conditional
+/* Return true if STMT is an assignment
+     foo = (ptr != NULL)
+     foo = (ptr == NULL)
+   or a conditional
      if (ptr != NULL)
+     if (ptr == NULL)
    where ptr was returned by a removable allocation function.  */
 
 static bool
 checks_return_value_of_removable_allocation_p (gimple *stmt)
 {
-  gcall *def_stmt;
-  return gimple_code (stmt) == GIMPLE_COND
-	 && (gimple_cond_code (stmt) == EQ_EXPR
-	     || gimple_cond_code (stmt) == NE_EXPR)
-	 && integer_zerop (gimple_cond_rhs (stmt))
-	 && TREE_CODE (gimple_cond_lhs (stmt)) == SSA_NAME
-	 && (def_stmt = dyn_cast <gcall *>
-			 (SSA_NAME_DEF_STMT (gimple_cond_lhs (stmt))))
-	 && is_removable_allocation_p (def_stmt, true);
+  enum tree_code code;
+  tree ptr, value;
+
+  if (gassign *assign = dyn_cast <gassign *> (stmt))
+    {
+      code = gimple_assign_rhs_code (assign);
+      ptr = gimple_assign_rhs1 (assign);
+      value = gimple_assign_rhs2 (assign);
+    }
+  else if (gcond *cond = dyn_cast <gcond *> (stmt))
+    {
+      code = gimple_cond_code (cond);
+      ptr = gimple_cond_lhs (cond);
+      value = gimple_cond_rhs (cond);
+    }
+  else
+    return false;
+
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return false;
+
+  if (!integer_zerop (value) || TREE_CODE (ptr) != SSA_NAME)
+    return false;
+
+  gcall *def_stmt = dyn_cast <gcall *> (SSA_NAME_DEF_STMT (ptr));
+  return def_stmt && is_removable_allocation_p (def_stmt, true);
 }
 
 
@@ -1624,6 +1645,30 @@ eliminate_unnecessary_stmts (bool aggressive)
 		    gimple_set_plf (stmt, STMT_NECESSARY, false);
 		}
 	    }
+
+	  /* Comparisons of the return value of an allocation against NULL
+	     can be turned to a constant if the allocation itself is
+	     unnecessary.  */
+	  if (gimple_plf (stmt, STMT_NECESSARY) && is_gimple_assign (stmt)
+	      && (gimple_assign_rhs_code (stmt) == EQ_EXPR
+		  || gimple_assign_rhs_code (stmt) == NE_EXPR)
+	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+	    {
+	      tree rhs1 = gimple_assign_rhs1 (stmt);
+	      gimple *def_stmt = SSA_NAME_DEF_STMT (rhs1);
+	      if (!gimple_nop_p (def_stmt)
+		  && !gimple_plf (def_stmt, STMT_NECESSARY))
+		{
+		  gcc_checking_assert
+		    (checks_return_value_of_removable_allocation_p (stmt));
+		  tree lhs = gimple_assign_lhs (stmt);
+		  bool is_ne = gimple_assign_rhs_code (stmt) == NE_EXPR;
+		  tree cst = constant_boolean_node (is_ne, TREE_TYPE (lhs));
+		  gimple_assign_set_rhs_with_ops (&gsi, TREE_CODE (cst), cst);
+		  update_stmt (gsi_stmt (gsi));
+		}
+	    }
+
 	  /* Conditional checking that return value of allocation is non-NULL
 	     can be turned to constant if the allocation itself
 	     is unnecessary.  */

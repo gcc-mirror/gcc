@@ -2401,7 +2401,7 @@ Common Var(flag_malloc_dce,2) Init(2) Optimization
 Allow removal of malloc and free pairs when allocated block is unused.
 
 fmalloc-dce=
-Common Joined RejectNegative UInteger Var(flag_malloc_dse) Optimization IntegerRange(0, 2)
+Common Joined RejectNegative UInteger Var(flag_malloc_dce) Optimization IntegerRange(0, 2)
 
 fmem-report
 Common Var(mem_report)
