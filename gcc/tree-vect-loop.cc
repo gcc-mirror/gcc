@@ -11652,7 +11652,9 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
 		   && !STMT_VINFO_RELEVANT_P (stmt_info)
 		   && !STMT_VINFO_LIVE_P (stmt_info))
 	    {
-	      gcc_assert (!gimple_call_lhs (stmt_info->stmt));
+	      /* With -fno-tree-{dce,dse} we can end up with dead
+		 .MASK_CALL without side-effects and thus with a (dead)
+		 LHS.  So we cannot assert there is no LHS.  */
 	      loop_vinfo->remove_stmt (stmt_info);
 	    }
 	}
