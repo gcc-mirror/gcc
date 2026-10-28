@@ -73,20 +73,12 @@ unsigned int ssa_name_nodes_created;
 #define FREE_SSANAMES(fun) (fun)->gimple_df->free_ssanames
 #define FREE_SSANAMES_QUEUE(fun) (fun)->gimple_df->free_ssanames_queue
 
-/* Return TRUE if NAME has global range info.  */
-
-inline bool
-range_info_p (const_tree name)
-{
-  return SSA_NAME_RANGE_INFO (name);
-}
-
 /* Return TRUE if R fits in the global range of NAME.  */
 
 inline bool
 range_info_fits_p (tree name, const vrange &r)
 {
-  gcc_checking_assert (range_info_p (name));
+  gcc_checking_assert (SSA_NAME_RANGE_INFO (name));
   vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
   return mem->fits_p (r);
 }
@@ -111,38 +103,58 @@ range_info_free (tree name)
   ggc_free (mem);
 }
 
-/* Return the aliasing information for ssa-name NAME, or NULL if there
-   is none.  Return NULL for non pointer types.  */
+/* Return NAME's pointer range storage, or NULL if none exists.  */
 
-static inline struct ptr_info_def *
-ssa_name_ptr_info (const_tree name)
+static inline prange_storage *
+ssa_name_prange_storage (const_tree name)
 {
   vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
   if (!mem || mem->m_discriminator != VR_PRANGE)
     return NULL;
-  return static_cast <prange_storage *> (mem)->ptr_info;
+  return static_cast <prange_storage *> (mem);
 }
 
-/* Defined below.  */
-static struct ptr_info_def *get_ptr_info (tree);
+/* Attach PT to NAME, creating range storage if necessary.  */
 
-/* Return the points-to solution for ssa-name NAME.  Return NULL if it has
-   none or is a non pointer types.  */
+static void
+set_pt_solution (tree name, pt_solution *pt)
+{
+  gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+  if (!SSA_NAME_RANGE_INFO (name))
+    SSA_NAME_RANGE_INFO (name) = ggc_alloc_vrange_storage (TREE_TYPE (name));
+  ssa_name_prange_storage (name)->pt = pt;
+}
+
+/* Return NAME's solution, creating an unknown solution if necessary.  */
+
+static pt_solution *
+get_pt_solution (tree name)
+{
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+  prange_storage *s = ssa_name_prange_storage (name);
+  if (s && s->pt)
+    return s->pt;
+  pt_solution *pt = ggc_cleared_alloc<pt_solution> ();
+  pt_solution_reset (pt);
+  set_pt_solution (name, pt);
+  return pt;
+}
+
+/* Return NAME's points-to solution, or NULL if none exists.  */
 
 const pt_solution *
 ssa_name_pt_solution (const_tree name)
 {
-  struct ptr_info_def *pi = ssa_name_ptr_info (name);
-  return pi ? &pi->pt : NULL;
+  prange_storage *s = ssa_name_prange_storage (name);
+  return s ? s->pt : NULL;
 }
 
-/* Make PT the points-to solution for NAME, which must have pointer type.  */
+/* Make PT the points-to solution for NAME.  */
 
 void
 set_ssa_name_pt_solution (tree name, const pt_solution &pt)
 {
-  /* get_ptr_info asserts NAME is a pointer type.  */
-  get_ptr_info (name)->pt = pt;
+  *get_pt_solution (name) = pt;
 }
 
 /* Return the global range for NAME in R.  */
@@ -159,20 +171,29 @@ range_info_get_range (const_tree name, vrange &r)
 inline bool
 range_info_set_range (tree name, const vrange &r)
 {
-  if (!range_info_p (name) || !range_info_fits_p (name, r))
+  if (!SSA_NAME_RANGE_INFO (name) || !range_info_fits_p (name, r))
     {
-      // Aliasing info belongs to NAME, not to the prange storage object which
-      // might get reallocated.  ptr_info_def addresses may be cached
-      // elsewhere, so save and copy it back after any reallocation.
-      ptr_info_def *pi = ssa_name_ptr_info (name);
-      if (range_info_p (name))
+      // Preserve SSA-owned points-to and alignment information when the
+      // variable-sized range storage must grow.
+      pt_solution *pt = NULL;
+      unsigned int align = 0, misalign = 0;
+      if (prange_storage *old = ssa_name_prange_storage (name))
+	{
+	  pt = old->pt;
+	  align = old->align;
+	  misalign = old->misalign;
+	}
+      if (SSA_NAME_RANGE_INFO (name))
 	range_info_free (name);
 
       vrange_storage *mem = range_info_alloc (name, r);
-      if (pi && mem)
+      if (mem && (pt || align))
 	{
 	  gcc_checking_assert (mem->m_discriminator == VR_PRANGE);
-	  static_cast <prange_storage *> (mem)->ptr_info = pi;
+	  prange_storage *s = static_cast <prange_storage *> (mem);
+	  s->pt = pt;
+	  s->align = align;
+	  s->misalign = misalign;
 	}
       return mem != NULL;
     }
@@ -467,7 +488,7 @@ set_range_info (tree name, const vrange &r)
   // Pick up the current range, or VARYING if none.
   tree type = TREE_TYPE (name);
   value_range tmp (type);
-  if (range_info_p (name))
+  if (SSA_NAME_RANGE_INFO (name))
     range_info_get_range (name, tmp);
   else
     tmp.set_varying (type);
@@ -478,9 +499,9 @@ set_range_info (tree name, const vrange &r)
 
   if (POINTER_TYPE_P (type))
     {
-      // If R is nonnull and pi is not, set nonnull.
-      struct ptr_info_def *pi = get_ptr_info (name);
-      if (!tmp.contains_zero_p () && pi->pt.null)
+      // Preserve nonnullness in the points-to solution as well.
+      pt_solution *pt = get_pt_solution (name);
+      if (!tmp.contains_zero_p () && pt->null)
 	set_ptr_nonnull (name);
     }
 
@@ -508,8 +529,7 @@ void
 set_ptr_nonnull (tree name)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  struct ptr_info_def *pi = get_ptr_info (name);
-  pi->pt.null = 0;
+  get_pt_solution (name)->null = 0;
 }
 
 /* Update the non-zero bits bitmask of NAME.  */
@@ -574,7 +594,7 @@ get_nonzero_bits_1 (const_tree name)
       return wi::shwi (-1, precision);
     }
 
-  if (!range_info_p (name) || !irange::supports_p (TREE_TYPE (name)))
+  if (!SSA_NAME_RANGE_INFO (name) || !irange::supports_p (TREE_TYPE (name)))
     return wi::shwi (-1, precision);
 
   int_range_max tmp;
@@ -622,7 +642,7 @@ get_known_nonzero_bits_1 (const_tree name)
   if (TREE_CODE (name) != SSA_NAME || POINTER_TYPE_P (TREE_TYPE (name)))
     return wi::shwi (0, precision);
 
-  if (!range_info_p (name) || !irange::supports_p (TREE_TYPE (name)))
+  if (!SSA_NAME_RANGE_INFO (name) || !irange::supports_p (TREE_TYPE (name)))
     return wi::shwi (0, precision);
 
   int_range_max tmp;
@@ -776,7 +796,7 @@ bool
 get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 			unsigned int *misalignp)
 {
-  struct ptr_info_def *pi = ssa_name_ptr_info (name);
+  prange_storage *pi = ssa_name_prange_storage (name);
 
   if (pi && pi->align)
     {
@@ -795,7 +815,7 @@ get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 void
 mark_ptr_info_alignment_unknown (tree name)
 {
-  struct ptr_info_def *pi = ssa_name_ptr_info (name);
+  prange_storage *pi = ssa_name_prange_storage (name);
 
   if (pi)
     {
@@ -815,48 +835,12 @@ set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
   gcc_assert ((align & (align - 1)) == 0);
   gcc_assert ((misalign & ~(align - 1)) == 0);
 
-  struct ptr_info_def *pi = get_ptr_info (name);
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+  if (!SSA_NAME_RANGE_INFO (name))
+    SSA_NAME_RANGE_INFO (name) = ggc_alloc_vrange_storage (TREE_TYPE (name));
+  prange_storage *pi = ssa_name_prange_storage (name);
   pi->align = align;
   pi->misalign = misalign;
-}
-
-/* Make PI the aliasing information for NAME.  Allocate a VARYING range if
-   NAME does not already have a range.  */
-
-static void
-set_ssa_name_ptr_info (tree name, struct ptr_info_def *pi)
-{
-  gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-
-  if (!range_info_p (name))
-    SSA_NAME_RANGE_INFO (name) = ggc_alloc_vrange_storage (TREE_TYPE (name));
-
-  vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
-  gcc_checking_assert (mem && mem->m_discriminator == VR_PRANGE);
-  static_cast <prange_storage *> (mem)->ptr_info = pi;
-}
-
-/* Return the alias information associated with pointer T.  It creates a
-   new instance if none existed.  */
-
-static struct ptr_info_def *
-get_ptr_info (tree t)
-{
-  struct ptr_info_def *pi;
-
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (t)));
-
-  pi = ssa_name_ptr_info (t);
-  if (pi == NULL)
-    {
-      // The cleared allocation leaves align and misalign zero, which is
-      // what unknown alignment is, so there is nothing more to initialize.
-      pi = ggc_cleared_alloc<ptr_info_def> ();
-      pt_solution_reset (&pi->pt);
-      set_ssa_name_ptr_info (t, pi);
-    }
-
-  return pi;
 }
 
 
@@ -887,18 +871,13 @@ void
 duplicate_ssa_name_ptr_info (tree dest, const pt_solution* pt)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (dest)));
-  gcc_assert (!ssa_name_ptr_info (dest));
+  gcc_assert (!ssa_name_pt_solution (dest));
 
   if (!pt)
     return;
-
-  struct ptr_info_def *new_ptr_info = ggc_alloc<ptr_info_def> ();
-  new_ptr_info->pt = *pt;
-
-  // Alignment info is not copied, so its set to zero.
-  new_ptr_info->align = 0;
-  new_ptr_info->misalign = 0;
-  set_ssa_name_ptr_info (dest, new_ptr_info);
+  pt_solution *copy = ggc_alloc<pt_solution> ();
+  *copy = *pt;
+  set_pt_solution (dest, copy);
 }
 
 /* Give DEST its own copy of the points-to and alignment information of
@@ -908,11 +887,11 @@ duplicate_ssa_name_ptr_info (tree dest, const pt_solution* pt)
 void
 duplicate_ssa_name_ptr_info (tree dest, tree src)
 {
-  struct ptr_info_def *ptr_info = (src ? ssa_name_ptr_info (src) : NULL);
-  if (!ptr_info)
-    return;
+  if (!src)
+     return;
 
-  duplicate_ssa_name_ptr_info (dest, &(ptr_info->pt));
+  if (const pt_solution *pt = ssa_name_pt_solution (src))
+    duplicate_ssa_name_ptr_info (dest, pt);
 }
 
 /* Copy any global range and aliasing information from SRC to NAME.  */
@@ -920,9 +899,9 @@ duplicate_ssa_name_ptr_info (tree dest, tree src)
 void
 duplicate_ssa_name_range_info (tree name, tree src)
 {
-  gcc_checking_assert (!range_info_p (name));
+  gcc_checking_assert (!SSA_NAME_RANGE_INFO (name));
 
-  if (!range_info_p (src))
+  if (!SSA_NAME_RANGE_INFO (src))
     return;
 
   value_range src_range (TREE_TYPE (src));
@@ -964,7 +943,7 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
 {
   tree new_name = copy_ssa_name_fn (fn, name, stmt);
 
-  if (range_info_p (name))
+  if (SSA_NAME_RANGE_INFO (name))
     duplicate_ssa_name_range_info (new_name, name);
 
   return new_name;
@@ -978,15 +957,16 @@ void
 reset_flow_sensitive_info (tree name)
 {
   /* Aliasing info is not flow sensitive, so preserve it if present.  */
-  ptr_info_def *pi = ssa_name_ptr_info (name);
+  prange_storage *s = ssa_name_prange_storage (name);
+  pt_solution *pt = s ? s->pt : NULL;
   SSA_NAME_RANGE_INFO (name) = NULL;
-  if (pi)
+  if (pt)
     {
-      set_ssa_name_ptr_info (name, pi);
+      set_pt_solution (name, pt);
       /* [E]VRP can derive context sensitive alignment info and
-	 non-nullness properties.  We must reset both.  */
-      mark_ptr_info_alignment_unknown (name);
-      pi->pt.null = 1;
+	 non-nullness properties.  We must reset both.  The alignment went
+	 with the range storage above; only the nullness is left.  */
+      pt->null = 1;
     }
 
   // Clear range info in the current range query.
@@ -1137,13 +1117,8 @@ flow_sensitive_info_storage::save (tree name)
       return;
     }
   state = -1;
-  if (!get_ptr_info_alignment (name, &align, &misalign))
-    {
-      align = 0;
-      misalign = 0;
-    }
-  auto ptr_info = ssa_name_ptr_info (name);
-  null = ptr_info ? ptr_info->pt.null : true;
+  const pt_solution *pt = ssa_name_pt_solution (name);
+  null = pt ? pt->null : true;
 }
 
 /* Restore the flow sensitive info from NAME. */
@@ -1152,6 +1127,9 @@ void
 flow_sensitive_info_storage::restore (tree name)
 {
   gcc_assert (state != 0);
+  /* The storage carries the range, its bitmask and -- for now -- the
+     alignment, so reinstating it restores all three.  Only the nullness
+     lives outside it.  */
   SSA_NAME_RANGE_INFO (name) = range_info;
   if (!POINTER_TYPE_P (TREE_TYPE (name)))
     {
@@ -1159,16 +1137,9 @@ flow_sensitive_info_storage::restore (tree name)
       return;
     }
   gcc_assert (state == -1);
-  auto ptr_info = ssa_name_ptr_info (name);
-  /* If there was no flow sensitive info on the pointer
-     just return, there is nothing to restore to.  */
-  if (!ptr_info)
-    return;
-  if (align != 0)
-    set_ptr_info_alignment (name, align, misalign);
-  else
-    mark_ptr_info_alignment_unknown (name);
-  ssa_name_ptr_info (name)->pt.null = null;
+  prange_storage *s = ssa_name_prange_storage (name);
+  if (s && s->pt)
+    s->pt->null = null;
 }
 
 /* Save off the flow sensitive info from NAME.

@@ -113,6 +113,13 @@ const unsigned int PRANGE_STORAGE_NINTS = 4;
 // Efficient memory storage for a prange.
 class GTY((tag ("VR_PRANGE"))) prange_storage : public vrange_storage
 {
+private:
+  // vrange_storage ends after four bytes but the first pointer member below
+  // needs eight-byte alignment, so there is a four-byte hole.
+  enum prange_kind m_kind : 4;
+  unsigned int m_has_bitmask : 1;
+  unsigned int m_points_to_p : 1;
+
 public:
   friend void gt_ggc_mx_vrange_storage(void *);
   friend void gt_pch_nx_vrange_storage(void *);
@@ -126,18 +133,21 @@ public:
   bool fits_p (const prange &r) const;
   void dump () const;
 
-  // Pointer aliasing information.  Managed separately, and reached only
-  // through the accessors in tree-ssanames.h.
-  struct ptr_info_def *ptr_info;
+  // The points-to solution for the SSA name is flow insensitive and is
+  // reached only through ssa_name_pt_solution.
+  struct pt_solution *pt;
+
+  // Alignment and misalignment of the pointer in bytes.  Together
+  // align and misalign specify low known bits of the pointer.
+  // ptr & (align - 1) == misalign.
+  unsigned int align;
+  unsigned int misalign;
 
 private:
   DISABLE_COPY_AND_ASSIGN (prange_storage);
   prange_storage (const prange &r);
   static enum prange_kind prange_format (const prange &r, unsigned &num_words);
 
-  enum prange_kind m_kind;
-  bool m_has_bitmask;
-  bool m_points_to_p;
   tree m_pt;
 
   // We don't use TRAILING_WIDE_INT_ACCESSOR because the getters here

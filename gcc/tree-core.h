@@ -32,7 +32,6 @@ along with GCC; see the file COPYING3.  If not see
 struct function;
 struct real_value;
 struct fixed_value;
-struct ptr_info_def;
 struct die_struct;
 class irange;
 

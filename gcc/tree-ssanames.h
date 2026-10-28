@@ -20,32 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_TREE_SSANAMES_H
 #define GCC_TREE_SSANAMES_H
 
-/* Aliasing information for SSA_NAMEs representing pointer variables.  */
-
-struct GTY(()) ptr_info_def
-{
-  /* The points-to solution.  */
-  struct pt_solution pt;
-
-  /* Alignment and misalignment of the pointer in bytes.  Together
-     align and misalign specify low known bits of the pointer.
-     ptr & (align - 1) == misalign.  */
-
-  /* When known, this is the power-of-two byte alignment of the object this
-     pointer points into.  This is usually DECL_ALIGN_UNIT for decls and
-     MALLOC_ABI_ALIGNMENT for allocated storage.  When the alignment is not
-     known, it is zero.  Do not access directly: the only accessors are
-     get_ptr_info_alignment, set_ptr_info_alignment and
-     mark_ptr_info_alignment_unknown, and they take the SSA name rather
-     than this structure, so that the representation can move.  */
-  unsigned int align;
-
-  /* When alignment is known, the byte offset this pointer differs from the
-     above alignment.  Access only through the same helper functions as align
-     above.  */
-  unsigned int misalign;
-};
-
 /* Return NAME's points-to solution, or NULL if it has none.  Returns NULL
    for a non pointer type.  */
 extern const pt_solution *ssa_name_pt_solution (const_tree name);
@@ -158,11 +132,10 @@ private:
      -1 means a pointer type is saved.
      -2 means a pointer type is saved but no information was saved. */
   int state = 0;
-  /* The range info for non pointers */
+  /* The range info, which for a pointer also carries the bitmask and the
+     alignment, so those need no separate slot here.  */
   vrange_storage *range_info = nullptr;
-  /* Flow sensitive pointer information. */
-  unsigned int align = 0;
-  unsigned int misalign = 0;
+  /* Flow sensitive pointer information not held in the range.  */
   bool null = true;
 };
 
