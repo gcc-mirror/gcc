@@ -863,9 +863,6 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  HOST_WIDE_INT d = TREE_INT_CST_LOW (cst);
 	  unsigned HOST_WIDE_INT abs_d;
 
-	  if (d == -1)
-	    return NULL_TREE;
-
 	  /* Since d might be INT_MIN, we have to cast to
 	     unsigned HOST_WIDE_INT before negating to avoid
 	     undefined signed overflow.  */
