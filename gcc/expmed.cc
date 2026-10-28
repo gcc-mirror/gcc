@@ -1698,9 +1698,63 @@ extract_bit_field_as_subreg (machine_mode mode, rtx op0,
   return NULL_RTX;
 }
 
+/* Same as extract_vector_from_vector but try with a permutation.  */
+
+static rtx
+extract_vector_from_vector_perm (rtx vec, rtx target, machine_mode mode,
+				 machine_mode subvec_mode, poly_uint64 bitsize,
+				 poly_uint64 bitnum, rtx *alt_rtl)
+{
+  machine_mode vec_mode = GET_MODE (vec);
+  poly_uint64 extract_idx;
+  if (!VECTOR_MODE_P (vec_mode)
+      || MEM_P (vec)
+      || !VECTOR_MODE_P (subvec_mode)
+      || maybe_ne (bitsize, GET_MODE_PRECISION (subvec_mode))
+      || !multiple_p (bitnum, GET_MODE_UNIT_BITSIZE (subvec_mode),
+		      &extract_idx))
+    return NULL_RTX;
+
+  /* We don't handle single-element vector modes here, they should
+     go through vector-element vec_extract.  */
+  if (known_le (GET_MODE_NUNITS (subvec_mode), 1)
+      || known_le (GET_MODE_NUNITS (vec_mode), 1))
+    return NULL_RTX;
+
+  machine_mode punned_vec_mode;
+  if (!vec_extract_perm_p (vec_mode, subvec_mode, extract_idx).exists
+      (&punned_vec_mode))
+    return NULL_RTX;
+
+  if (punned_vec_mode != vec_mode)
+    vec = gen_lowpart (punned_vec_mode, vec);
+
+  poly_uint64 out_nunits = GET_MODE_NUNITS (subvec_mode);
+
+  vec_perm_builder sel (out_nunits, 1, 3);
+  for (unsigned int i = 0; i < 3; ++i)
+    sel.quick_push (extract_idx + i);
+
+  rtx tmp = subvec_mode == mode ? target : NULL_RTX;
+  rtx res = expand_vec_perm_const (subvec_mode, vec, vec, sel, BLKmode, tmp);
+  if (!res)
+    return NULL_RTX;
+
+  if (res == target && alt_rtl)
+    *alt_rtl = target;
+
+  if (subvec_mode != mode)
+    res = gen_lowpart (mode, res);
+
+  return res;
+}
+
 /* Try to extract a subvector of mode SUBVEC_MODE (which has BITSIZE bits)
    from vector VEC, starting at bit BITNUM, then extract the MODE lowpart of
-   the subvector.  Return the result on success or NULL_RTX on failure.  */
+   the subvector.  If the vec_extract-based attempt failed, build a vector
+   permute to extract the part and hand it to the target.
+
+   Return the result on success or NULL_RTX on failure.  */
 
 static rtx
 extract_vector_from_vector (rtx vec, rtx target, machine_mode mode,
@@ -1754,6 +1808,11 @@ extract_vector_from_vector (rtx vec, rtx target, machine_mode mode,
 	  return target;
 	}
     }
+
+  rtx res = extract_vector_from_vector_perm (vec, target, mode, subvec_mode,
+					     bitsize, bitnum, alt_rtl);
+  if (res)
+    return res;
 
   return NULL_RTX;
 }
