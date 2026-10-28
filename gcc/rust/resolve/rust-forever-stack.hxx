@@ -466,11 +466,12 @@ check_leading_kw_at_start (std::vector<Error> &collect_errors,
 template <Namespace N>
 tl::optional<typename std::vector<ResolutionPath::Segment>::const_iterator>
 ForeverStack<N>::find_starting_point (
-  const std::vector<ResolutionPath::Segment> &segments,
+  const UtilPath<ResolutionPath::Segment> &path,
   std::reference_wrapper<Node> &starting_point,
   std::function<void (Usage, Definition, Namespace)> insert_segment_resolution,
   std::vector<Error> &collect_errors)
 {
+  auto &segments = path.get_segments ();
   auto iterator = segments.begin ();
 
   for (; iterator != segments.end (); iterator++)

@@ -944,7 +944,7 @@ private:
   tl::optional<typename ForeverStack<N>::Node &>
   resolve_segments (ForeverStack<N> &stack,
 		    typename ForeverStack<N>::Node &starting_point,
-		    const std::vector<ResolutionPath::Segment> &segments,
+		    const UtilPath<ResolutionPath::Segment> &path,
 		    typename ForeverStack<N>::SegIterator iterator,
 		    std::function<void (Usage, Definition, Namespace)>
 		      insert_segment_resolution,

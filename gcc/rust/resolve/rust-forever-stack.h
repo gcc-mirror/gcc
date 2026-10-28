@@ -786,7 +786,7 @@ public:
   Node &find_closest_module (Node &starting_point);
 
   tl::optional<SegIterator>
-  find_starting_point (const std::vector<ResolutionPath::Segment> &segments,
+  find_starting_point (const UtilPath<ResolutionPath::Segment> &path,
 		       std::reference_wrapper<Node> &starting_point,
 		       std::function<void (Usage, Definition, Namespace)>
 			 insert_segment_resolution,

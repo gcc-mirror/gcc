@@ -190,9 +190,12 @@ NameResolutionContext::resolve_path (
     }
 
   auto iterator = segments.begin ();
+  auto util_path
+    = UtilPath<ResolutionPath::Segment> (segments,
+					 path.has_opening_scope_resolution ());
   if (can_descend)
     {
-      if (auto res = stack.find_starting_point (segments, starting_point,
+      if (auto res = stack.find_starting_point (util_path, starting_point,
 						insert_segment_resolution,
 						collect_errors))
 	iterator = *res;
@@ -214,7 +217,7 @@ NameResolutionContext::resolve_path (
 
   // nodes are shared between stacks
   auto node
-    = resolve_segments (types, starting_point.get (), segments, iterator,
+    = resolve_segments (types, starting_point.get (), util_path, iterator,
 			insert_segment_resolution, collect_errors);
 
   if (!node)
@@ -249,12 +252,13 @@ template <Namespace N>
 tl::optional<typename ForeverStack<N>::Node &>
 NameResolutionContext::resolve_segments (
   ForeverStack<N> &stack, typename ForeverStack<N>::Node &starting_point,
-  const std::vector<ResolutionPath::Segment> &segments,
+  const UtilPath<ResolutionPath::Segment> &path,
   typename ForeverStack<N>::SegIterator iterator,
   std::function<void (Usage, Definition, Namespace)> insert_segment_resolution,
   std::vector<Error> &collect_errors)
 {
   auto *current_node = &starting_point;
+  auto &segments = path.get_segments ();
   for (; !is_last (iterator, segments); iterator++)
     {
       auto &seg = *iterator;
