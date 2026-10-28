@@ -3010,8 +3010,7 @@ gimple_folder::convert_and_fold (tree type,
 {
   gcc_assert (VECTOR_TYPE_P (type)
 	      && TYPE_MODE (type) != VNx16BImode);
-  tree old_ty = ret_type;
-  bool convert_lhs_p = !useless_type_conversion_p (type, old_ty);
+  bool convert_lhs_p = !useless_type_conversion_p (type, ret_type);
   tree lhs_conv = convert_lhs_p ? make_ssa_name (type) : lhs ();
   unsigned int num_args = gimple_call_num_args (call);
   auto_vec<tree, 16> args_conv;
@@ -3030,7 +3029,7 @@ gimple_folder::convert_and_fold (tree type,
   gimple *new_stmt = fp (*this, lhs_conv, args_conv);
   if (convert_lhs_p)
     {
-      tree t = build1 (VIEW_CONVERT_EXPR, old_ty, lhs_conv);
+      tree t = build1 (VIEW_CONVERT_EXPR, ret_type, lhs_conv);
       gimple *g = gimple_build_assign (lhs (), VIEW_CONVERT_EXPR, t);
       gsi_insert_after (gsi, g, GSI_SAME_STMT);
     }

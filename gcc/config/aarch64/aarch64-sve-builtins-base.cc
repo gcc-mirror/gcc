@@ -753,7 +753,6 @@ public:
   fold (gimple_folder &f) const override
   {
     unsigned int nargs = gimple_call_num_args (f.call);
-    tree lhs_type = f.ret_type;
 
     /* Replace the call with a clobber of the result (to prevent it from
        becoming upwards exposed) followed by stores into each individual
@@ -762,7 +761,8 @@ public:
        The fold routines expect the replacement statement to have the
        same lhs as the original call, so return the clobber statement
        rather than the final vector store.  */
-    gassign *clobber = gimple_build_assign (f.lhs (), build_clobber (lhs_type));
+    gassign *clobber
+      = gimple_build_assign (f.lhs (), build_clobber (f.ret_type));
 
     for (unsigned int i = nargs; i-- > 0; )
       {
@@ -1032,7 +1032,6 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree vec_type = f.ret_type;
     tree rhs = gimple_call_arg (f.call, f.pred == PRED_none ? 0 : 1);
 
     if (f.pred == PRED_none || f.pred == PRED_x)
@@ -1044,7 +1043,7 @@ public:
 		      ? f.fold_to_ptrue ()
 		      : f.fold_to_pfalse ());
 
-	    tree rhs_vector = build_vector_from_val (vec_type, rhs);
+	    tree rhs_vector = build_vector_from_val (f.ret_type, rhs);
 	    return gimple_build_assign (f.lhs (), rhs_vector);
 	  }
 
@@ -1058,10 +1057,10 @@ public:
     /* svdup_z (pg, x) == VEC_COND_EXPR <pg, VEC_DUPLICATE_EXPR <x>, 0>.  */
     if (f.pred == PRED_z)
       {
-	tree pred = f.convert_pred (vec_type, 0);
-	rhs = f.force_vector (vec_type, rhs);
+	tree pred = f.convert_pred (f.ret_type, 0);
+	rhs = f.force_vector (f.ret_type, rhs);
 	return gimple_build_assign (f.lhs (), VEC_COND_EXPR, pred, rhs,
-				    build_zero_cst (vec_type));
+				    build_zero_cst (f.ret_type));
       }
 
     return NULL;
@@ -1141,8 +1140,7 @@ private:
       return NULL;
 
     tree lhs = f.lhs ();
-    tree lhs_type = f.ret_type;
-    tree elt_type = TREE_TYPE (lhs_type);
+    tree elt_type = TREE_TYPE (f.ret_type);
     scalar_mode elt_mode = SCALAR_TYPE_MODE (elt_type);
     machine_mode vq_mode = aarch64_v128_mode (elt_mode).require ();
     tree vq_type = build_vector_type_for_mode (elt_type, vq_mode);
@@ -1158,7 +1156,7 @@ private:
 
     gimple_seq_add_stmt_without_update (&f.stmts, g);
 
-    poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
+    poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (f.ret_type);
     vec_perm_builder sel (lhs_len, nargs, 1);
     for (unsigned i = 0; i < nargs; i++)
       sel.quick_push (i);
@@ -1174,13 +1172,12 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree vec_type = f.ret_type;
     unsigned int nargs = gimple_call_num_args (f.call);
     /* For predicates, pad out each argument so that we have one element
        per bit.  */
     unsigned int factor = (f.type_suffix (0).bool_p
 			   ? f.type_suffix (0).element_bytes : 1);
-    tree_vector_builder builder (vec_type, nargs * factor, 1);
+    tree_vector_builder builder (f.ret_type, nargs * factor, 1);
     for (unsigned int i = 0; i < nargs; ++i)
       {
 	tree elt = gimple_call_arg (f.call, i);
@@ -1188,7 +1185,7 @@ public:
 	  return fold_nonconst_dupq (f);
 	builder.quick_push (elt);
 	for (unsigned int j = 1; j < factor; ++j)
-	  builder.quick_push (build_zero_cst (TREE_TYPE (vec_type)));
+	  builder.quick_push (build_zero_cst (TREE_TYPE (f.ret_type)));
       }
     return gimple_build_assign (f.lhs (), builder.build ());
   }
@@ -1533,13 +1530,12 @@ public:
   fold (gimple_folder &f) const override
   {
     /* Apply constant folding if base and step are integer constants.  */
-    tree vec_type = f.ret_type;
     tree base = gimple_call_arg (f.call, 0);
     tree step = gimple_call_arg (f.call, 1);
     if (TREE_CODE (base) != INTEGER_CST || TREE_CODE (step) != INTEGER_CST)
       return NULL;
     return gimple_build_assign (f.lhs (),
-				build_vec_series (vec_type, base, step));
+				build_vec_series (f.ret_type, base, step));
   }
 
 public:
@@ -1853,11 +1849,10 @@ public:
 	&& !flag_non_call_exceptions)
       {
 	tree lhs = f.lhs ();
-	tree lhs_type = f.ret_type;
-	poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (lhs_type);
-	tree eltype = TREE_TYPE (lhs_type);
+	poly_uint64 lhs_len = TYPE_VECTOR_SUBPARTS (f.ret_type);
+	tree eltype = TREE_TYPE (f.ret_type);
 
-	scalar_mode elmode = GET_MODE_INNER (TYPE_MODE (lhs_type));
+	scalar_mode elmode = GET_MODE_INNER (TYPE_MODE (f.ret_type));
 	machine_mode vq_mode = aarch64_v128_mode (elmode).require ();
 	tree vectype = build_vector_type_for_mode (eltype, vq_mode);
 
@@ -1884,14 +1879,14 @@ public:
 	   loaded value from the Advanced SIMD type to the SVE type.  */
 	if (known_eq (lhs_len, (unsigned int) source_nelts))
 	  return gimple_build_assign (lhs, build1 (VIEW_CONVERT_EXPR,
-						   lhs_type, mem_ref_lhs));
+						   f.ret_type, mem_ref_lhs));
 
 	vec_perm_builder sel (lhs_len, source_nelts, 1);
 	for (int i = 0; i < source_nelts; i++)
 	  sel.quick_push (i);
 
 	vec_perm_indices indices (sel, 1, source_nelts);
-	gcc_checking_assert (can_vec_perm_const_p (TYPE_MODE (lhs_type),
+	gcc_checking_assert (can_vec_perm_const_p (TYPE_MODE (f.ret_type),
 						   TYPE_MODE (access_type),
 						   indices));
 	tree mask_type = build_vector_type (ssizetype, lhs_len);
@@ -1936,7 +1931,6 @@ public:
   gimple *
   fold (gimple_folder &f) const override
   {
-    tree tuple_type = f.ret_type;
     tree vectype = f.vector_type (0);
 
     /* Get the predicate and base pointer.  */
@@ -1951,10 +1945,10 @@ public:
        same lhs as the original call, so return the clobber statement
        rather than the load.  */
     gimple *clobber
-      = gimple_build_assign (f.lhs (), build_clobber (tuple_type));
+      = gimple_build_assign (f.lhs (), build_clobber (f.ret_type));
 
     /* View the loaded data as an array of vectors.  */
-    tree field = tuple_type_field (tuple_type);
+    tree field = tuple_type_field (f.ret_type);
     tree lhs_array
       = build1 (VIEW_CONVERT_EXPR, TREE_TYPE (field), unshare_expr (f.lhs ()));
 
