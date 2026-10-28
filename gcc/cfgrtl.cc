@@ -1533,7 +1533,6 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
       && any_condjump_p (BB_END (e->src))
       && JUMP_LABEL (BB_END (e->src)) == BB_HEAD (e->dest))
     {
-      rtx note;
       edge b = unchecked_make_edge (e->src, target, 0);
       bool redirected;
 
@@ -1541,8 +1540,7 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 				  block_label (target), 0);
       gcc_assert (redirected);
 
-      note = find_reg_note (BB_END (e->src), REG_BR_PROB, NULL_RTX);
-      if (note)
+      if (rtx note = find_reg_note (BB_END (e->src), REG_BR_PROB, NULL_RTX))
 	{
 	  int prob = XINT (note, 0);
 
@@ -1675,28 +1673,24 @@ force_nonfallthru_and_redirect (edge e, basic_block target, rtx jump_label)
 	      }
 
 	  rtx_insn *insn = BB_END (new_edge->src);
-	  rtx note;
 	  rtx_insn *old_label = BB_HEAD (e->dest);
 	  rtx_insn *new_label = BB_HEAD (jump_block);
 
 	  if (JUMP_LABEL (insn) == old_label)
 	    {
 	      JUMP_LABEL (insn) = new_label;
-	      note = find_reg_note (insn, REG_LABEL_TARGET, new_label);
-	      if (note)
+	      if (rtx note = find_reg_note (insn, REG_LABEL_TARGET, new_label))
 		remove_note (insn, note);
 	    }
 	  else
 	    {
-	      note = find_reg_note (insn, REG_LABEL_TARGET, old_label);
-	      if (note)
+	      if (rtx note = find_reg_note (insn, REG_LABEL_TARGET, old_label))
 		remove_note (insn, note);
 	      if (JUMP_LABEL (insn) != new_label
 		  && !find_reg_note (insn, REG_LABEL_TARGET, new_label))
 		add_reg_note (insn, REG_LABEL_TARGET, new_label);
 	    }
-	  while ((note = find_reg_note (insn, REG_LABEL_OPERAND, old_label))
-		 != NULL_RTX)
+	  while (rtx note = find_reg_note (insn, REG_LABEL_OPERAND, old_label))
 	    XEXP (note, 0) = new_label;
 	}
 
