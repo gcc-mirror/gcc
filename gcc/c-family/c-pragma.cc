@@ -270,6 +270,12 @@ apply_pragma_weak (tree decl, tree value)
 	     "results in unspecified behavior", decl);
 
   declare_weak (decl);
+
+  /* With VALUE, DECL is now an alias defined in this translation unit,
+     which binds no less locally than the declaration its TLS model was
+     chosen for, but decl_default_tls_model cannot see that yet.  */
+  if (!value)
+    weak_decl_tls_model (decl);
 }
 
 void

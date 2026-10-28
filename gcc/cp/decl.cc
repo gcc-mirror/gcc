@@ -3594,6 +3594,14 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
      Update OLDDECL to be the same.  */
   DECL_ATTRIBUTES (olddecl) = DECL_ATTRIBUTES (newdecl);
 
+  /* NEWDECL's TLS model was chosen for NEWDECL alone, which may not have
+     been weak until merge_weak.  */
+  if (VAR_P (olddecl)
+      && CP_DECL_THREAD_LOCAL_P (olddecl)
+      && DECL_WEAK (olddecl)
+      && !processing_template_decl)
+    weak_decl_tls_model (olddecl);
+
   /* If OLDDECL had its DECL_RTL instantiated, re-invoke make_decl_rtl
     so that encode_section_info has a chance to look at the new decl
     flags and attributes.  */

@@ -3198,7 +3198,13 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 		extern int __thread x;
 	     as we'll lose the "local-exec" model.  */
 	  if (VAR_P (olddecl) && DECL_THREAD_LOCAL_P (newdecl))
-	    set_decl_tls_model (olddecl, DECL_TLS_MODEL (newdecl));
+	    {
+	      set_decl_tls_model (olddecl, DECL_TLS_MODEL (newdecl));
+	      /* NEWDECL's model was chosen for NEWDECL alone, which may not
+		 have been weak until merge_weak.  */
+	      if (DECL_WEAK (olddecl))
+		weak_decl_tls_model (olddecl);
+	    }
 	  break;
 	}
 

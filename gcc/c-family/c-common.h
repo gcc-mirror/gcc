@@ -1693,6 +1693,8 @@ extern void check_for_xor_used_as_pow (location_t lhs_loc, tree lhs_val,
 
 /* In c-attribs.cc.  */
 extern bool attribute_takes_identifier_p (const_tree);
+extern bool parse_tls_model (const_tree, enum tls_model *);
+extern void weak_decl_tls_model (tree);
 extern tree handle_deprecated_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_unused_attribute (tree *, tree, tree, int, bool *);
 extern tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);

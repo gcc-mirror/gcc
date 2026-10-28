@@ -3010,13 +3010,55 @@ handle_weakref_attribute (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
+/* If ID, the STRING_CST argument of a "tls_model" attribute, names a TLS
+   access model, store that model in *KIND and return true.  Otherwise
+   return false.  */
+
+bool
+parse_tls_model (const_tree id, enum tls_model *kind)
+{
+  if (!strcmp (TREE_STRING_POINTER (id), "local-exec"))
+    *kind = TLS_MODEL_LOCAL_EXEC;
+  else if (!strcmp (TREE_STRING_POINTER (id), "initial-exec"))
+    *kind = TLS_MODEL_INITIAL_EXEC;
+  else if (!strcmp (TREE_STRING_POINTER (id), "local-dynamic"))
+    *kind = optimize ? TLS_MODEL_LOCAL_DYNAMIC : TLS_MODEL_GLOBAL_DYNAMIC;
+  else if (!strcmp (TREE_STRING_POINTER (id), "global-dynamic"))
+    *kind = TLS_MODEL_GLOBAL_DYNAMIC;
+  else
+    return false;
+
+  return true;
+}
+
+/* DECL has just become weak.  If it is a thread-local variable, the TLS
+   access model chosen for it may assume that it binds locally, which a
+   weak symbol need not, so recompute the model.  An explicit tls_model
+   attribute remains a lower bound.  */
+
+void
+weak_decl_tls_model (tree decl)
+{
+  if (!VAR_P (decl) || !DECL_THREAD_LOCAL_P (decl))
+    return;
+
+  tls_model model = decl_default_tls_model (decl);
+  tree attr = lookup_attribute ("tls_model", DECL_ATTRIBUTES (decl));
+  tls_model attr_model;
+  if (attr
+      && parse_tls_model (TREE_VALUE (TREE_VALUE (attr)), &attr_model)
+      && attr_model > model)
+    model = attr_model;
+  if (model < DECL_TLS_MODEL (decl))
+    set_decl_tls_model (decl, model);
+}
+
 /* Handle an "tls_model" attribute; arguments as in
    struct attribute_spec.handler.  */
 
 static tree
 handle_tls_model_attribute (tree *node, tree name, tree args,
-			    int ARG_UNUSED (flags),
-			    bool *ARG_UNUSED (no_add_attrs))
+			    int ARG_UNUSED (flags), bool *no_add_attrs)
 {
   tree id;
   tree decl = *node;
@@ -3042,18 +3084,11 @@ handle_tls_model_attribute (tree *node, tree name, tree args,
   if (TREE_CODE (id) != STRING_CST)
     {
       error ("%qE argument not a string", name);
+      *no_add_attrs = true;
       return NULL_TREE;
     }
 
-  if (!strcmp (TREE_STRING_POINTER (id), "local-exec"))
-    kind = TLS_MODEL_LOCAL_EXEC;
-  else if (!strcmp (TREE_STRING_POINTER (id), "initial-exec"))
-    kind = TLS_MODEL_INITIAL_EXEC;
-  else if (!strcmp (TREE_STRING_POINTER (id), "local-dynamic"))
-    kind = optimize ? TLS_MODEL_LOCAL_DYNAMIC : TLS_MODEL_GLOBAL_DYNAMIC;
-  else if (!strcmp (TREE_STRING_POINTER (id), "global-dynamic"))
-    kind = TLS_MODEL_GLOBAL_DYNAMIC;
-  else
+  if (!parse_tls_model (id, &kind))
     error ("%qE argument must be one of %qs, %qs, %qs, or %qs",
 	   name,
 	   "local-exec", "initial-exec", "local-dynamic", "global-dynamic");
