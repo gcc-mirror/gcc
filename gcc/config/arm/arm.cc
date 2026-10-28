@@ -21564,8 +21564,7 @@ arm_emit_multi_reg_pop (unsigned long saved_regs_mask)
 			   gen_rtx_POST_INC (Pmode,
 					     stack_pointer_rtx));
       rtx_insn *insn = emit_insn (gen_rtx_SET (reg, tmp));
-      REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE, dwarf_reg,
-					 dwarf);
+      add_reg_note (insn, REG_CFA_RESTORE, dwarf_reg);
       arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
 				   stack_pointer_rtx, stack_pointer_rtx);
       return;
@@ -21863,7 +21862,6 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
   int j = 0;
   int offset = 0;
   rtx par = NULL_RTX;
-  rtx dwarf = NULL_RTX;
   rtx tmp, mem;
 
   /* Restore saved registers.  */
@@ -21893,14 +21891,8 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
 
             /* Generate dwarf info.  */
 
-            dwarf = alloc_reg_note (REG_CFA_RESTORE,
-                                    gen_rtx_REG (SImode, j),
-                                    NULL_RTX);
-            dwarf = alloc_reg_note (REG_CFA_RESTORE,
-                                    gen_rtx_REG (SImode, j + 1),
-                                    dwarf);
-
-	    REG_NOTES (insn) = dwarf;
+	    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (SImode, j));
+	    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (SImode, j + 1));
 
             offset += 8;
             j += 2;
@@ -21921,9 +21913,7 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
 	    RTX_FRAME_RELATED_P (insn) = 1;
 
             /* Generate dwarf info.  */
-	    REG_NOTES (insn) = alloc_reg_note (REG_CFA_RESTORE,
-                                              gen_rtx_REG (SImode, j),
-                                              NULL_RTX);
+	    add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (SImode, j));
 
             offset += 4;
             j += 1;
@@ -21961,10 +21951,7 @@ arm_emit_ldrd_pop (unsigned long saved_regs_mask)
       rtx_insn *insn = emit_jump_insn (par);
 
       /* Generate dwarf info.  */
-      dwarf = alloc_reg_note (REG_CFA_RESTORE,
-                              gen_rtx_REG (SImode, PC_REGNUM),
-                              NULL_RTX);
-      REG_NOTES (insn) = dwarf;
+      add_reg_note (insn, REG_CFA_RESTORE, gen_rtx_REG (SImode, PC_REGNUM));
       arm_add_cfa_adjust_cfa_note (insn, UNITS_PER_WORD,
 				   stack_pointer_rtx, stack_pointer_rtx);
     }
@@ -27136,9 +27123,8 @@ arm_expand_epilogue (bool really_return)
 		    rtx_insn *move
 		      = emit_insn (gen_movsi (gen_rtx_REG (SImode, i),
 					      addr));
-		    REG_NOTES (move) = alloc_reg_note (REG_CFA_RESTORE,
-                                                       gen_rtx_REG (SImode, i),
-                                                       NULL_RTX);
+		    add_reg_note (move, REG_CFA_RESTORE,
+				  gen_rtx_REG (SImode, i));
 		    arm_add_cfa_adjust_cfa_note (move, UNITS_PER_WORD,
 						 stack_pointer_rtx,
 						 stack_pointer_rtx);

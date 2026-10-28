@@ -9298,9 +9298,7 @@ riscv_set_frame_expr (rtx frame_pattern)
 {
   rtx_insn *insn = get_last_insn ();
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      frame_pattern,
-				      REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, frame_pattern);
 }
 
 /* Return a frame-related rtx that stores REG at MEM.

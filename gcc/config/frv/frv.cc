@@ -1559,9 +1559,7 @@ frv_frame_insn (rtx pattern, rtx dwarf_pattern)
 {
   rtx_insn *insn = emit_insn (pattern);
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR,
-				      dwarf_pattern,
-				      REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, dwarf_pattern);
 }
 
 /* Emit instructions that transfer REG to or from the memory location (sp +

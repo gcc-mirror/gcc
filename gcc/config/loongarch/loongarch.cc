@@ -801,8 +801,7 @@ loongarch_set_frame_expr (rtx frame_pattern)
 {
   rtx_insn *insn = get_last_insn ();
   RTX_FRAME_RELATED_P (insn) = 1;
-  REG_NOTES (insn) = alloc_EXPR_LIST (REG_FRAME_RELATED_EXPR, frame_pattern,
-				      REG_NOTES (insn));
+  add_reg_note (insn, REG_FRAME_RELATED_EXPR, frame_pattern);
 }
 
 /* Return a frame-related rtx that stores REG at MEM.
@@ -1083,9 +1082,7 @@ static void
 loongarch_restore_reg (rtx reg, rtx mem)
 {
   rtx_insn *insn = loongarch_emit_move (reg, mem);
-  rtx dwarf = NULL_RTX;
-  dwarf = alloc_reg_note (REG_CFA_RESTORE, reg, dwarf);
-  REG_NOTES (insn) = dwarf;
+  add_reg_note (insn, REG_CFA_RESTORE, reg);
 
   RTX_FRAME_RELATED_P (insn) = 1;
 }

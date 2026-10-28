@@ -986,9 +986,7 @@ xstormy16_split_move (machine_mode mode, rtx dest, rtx src)
 
       rtx_insn *insn = emit_insn (gen_rtx_SET (w_dest, w_src));
       if (auto_inc_reg_rtx)
-        REG_NOTES (insn) = alloc_EXPR_LIST (REG_INC,
-                                            auto_inc_reg_rtx,
-					    REG_NOTES (insn));
+	add_reg_note (insn, REG_INC, auto_inc_reg_rtx);
     }
 }
 

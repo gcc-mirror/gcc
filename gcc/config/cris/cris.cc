@@ -2610,16 +2610,12 @@ cris_split_movdx (rtx *operands)
 		= emit_move_insn (operand_subword (dest, 0, TRUE, mode),
 				  mem);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
-		REG_NOTES (insn)
-		  = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
-				     REG_NOTES (insn));
+		add_reg_note (insn, REG_INC, XEXP (XEXP (mem, 0), 0));
 
 	      mem = copy_rtx (mem);
 	      insn = emit_move_insn (operand_subword (dest, 1, TRUE, mode), mem);
 	      if (GET_CODE (XEXP (mem, 0)) == POST_INC)
-		REG_NOTES (insn)
-		  = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
-				     REG_NOTES (insn));
+		add_reg_note (insn, REG_INC, XEXP (XEXP (mem, 0), 0));
 	    }
 	  else
 	    {
@@ -2664,16 +2660,12 @@ cris_split_movdx (rtx *operands)
 	  rtx_insn *insn
 	    = emit_move_insn (mem, operand_subword (src, 0, TRUE, mode));
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
-	    REG_NOTES (insn)
-	      = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
-				 REG_NOTES (insn));
+	    add_reg_note (insn, REG_INC, XEXP (XEXP (mem, 0), 0));
 
 	  mem = copy_rtx (mem);
 	  insn = emit_move_insn (mem, operand_subword (src, 1, TRUE, mode));
 	  if (GET_CODE (XEXP (mem, 0)) == POST_INC)
-	    REG_NOTES (insn)
-	      = alloc_EXPR_LIST (REG_INC, XEXP (XEXP (mem, 0), 0),
-				 REG_NOTES (insn));
+	    add_reg_note (insn, REG_INC, XEXP (XEXP (mem, 0), 0));
 	}
       else
 	{
@@ -3179,8 +3171,7 @@ cris_expand_epilogue (void)
 
 	/* Whenever we emit insns with post-incremented addresses
 	   ourselves, we must add a post-inc note manually.  */
-	REG_NOTES (insn)
-	  = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
+	add_reg_note (insn, REG_INC, stack_pointer_rtx);
       }
 
   /* If we have any movem-restore, do it now.  */
@@ -3201,8 +3192,7 @@ cris_expand_epilogue (void)
       /* Whenever we emit insns with post-incremented addresses
 	 ourselves, we must add a post-inc note manually.  */
       if (side_effects_p (PATTERN (insn)))
-	REG_NOTES (insn)
-	  = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
+	add_reg_note (insn, REG_INC, stack_pointer_rtx);
     }
 
   /* If we don't clobber all of the allocated stack area (we've already
@@ -3229,8 +3219,7 @@ cris_expand_epilogue (void)
 
       /* Whenever we emit insns with post-incremented addresses
 	 ourselves, we must add a post-inc note manually.  */
-      REG_NOTES (insn)
-	= alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
+      add_reg_note (insn, REG_INC, stack_pointer_rtx);
     }
   else if ((size + argspace_offset) != 0)
     {
@@ -3263,8 +3252,7 @@ cris_expand_epilogue (void)
 
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
-	  REG_NOTES (insn)
-	    = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
+	  add_reg_note (insn, REG_INC, stack_pointer_rtx);
 
 	  if (crtl->calls_eh_return)
 	    emit_insn (gen_add2_insn (stack_pointer_rtx,
@@ -3295,8 +3283,7 @@ cris_expand_epilogue (void)
 
 	  /* Whenever we emit insns with post-incremented addresses
 	     ourselves, we must add a post-inc note manually.  */
-	  REG_NOTES (insn)
-	    = alloc_EXPR_LIST (REG_INC, stack_pointer_rtx, REG_NOTES (insn));
+	  add_reg_note (insn, REG_INC, stack_pointer_rtx);
 	}
 
       emit_insn (gen_add2_insn (stack_pointer_rtx, GEN_INT (pretend)));
