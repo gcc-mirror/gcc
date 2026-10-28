@@ -494,6 +494,13 @@ ForeverStack<N>::find_starting_point (
 
       if (seg.is_crate_path_seg ())
 	{
+	  if (path.has_opening_scope ())
+	    {
+	      collect_errors.emplace_back (seg.locus, ErrorCode::E0433,
+					   "global paths cannot start with %qs",
+					   seg.name.c_str ());
+	      return tl::nullopt;
+	    }
 	  starting_point = root;
 	  insert_segment_resolution (Usage (seg.node_id),
 				     Definition (starting_point.get ().id), N);
