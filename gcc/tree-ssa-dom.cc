@@ -881,6 +881,9 @@ pass_dominator::execute (function *fun)
   while (!need_noreturn_fixup.is_empty ())
     {
       gimple *stmt = need_noreturn_fixup.pop ();
+      /* We might have elided the stmt and its BB above.  */
+      if (!gimple_bb (stmt))
+	continue;
       if (dump_file && dump_flags & TDF_DETAILS)
 	{
 	  fprintf (dump_file, "Fixing up noreturn call ");
