@@ -2929,7 +2929,8 @@ gen_and_emit_move (rtx to, rtx from, rtx_insn *where, bool before)
 	     cf. compiling gcc.dg/pr44545.c.  */
 	  if (note != NULL_RTX)
 	    {
-	      add_reg_note (move, REG_EH_REGION, XEXP (note, 0));
+	      add_reg_note (as_a <rtx_insn *> (move), REG_EH_REGION,
+			    XEXP (note, 0));
 	      remove_note (where, note);
 	    }
 

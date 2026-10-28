@@ -2734,7 +2734,7 @@ alloc_reg_note (enum reg_note kind, rtx datum, rtx list)
 /* Add register note with kind KIND and datum DATUM to INSN.  */
 
 void
-add_reg_note (rtx insn, enum reg_note kind, rtx datum)
+add_reg_note (rtx_insn *insn, enum reg_note kind, rtx datum)
 {
   REG_NOTES (insn) = alloc_reg_note (kind, datum, REG_NOTES (insn));
 }

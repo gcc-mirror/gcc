@@ -11799,7 +11799,8 @@ restore_fpr (rtx base, int offset, int regnum)
 static void
 save_gprs (rtx base, int offset, int first, int last, rtx_insn *before = NULL)
 {
-  rtx addr, insn, note;
+  rtx addr, note;
+  rtx_insn *insn;
   rtx_insn *out_insn;
   int i;
 
@@ -11809,7 +11810,8 @@ save_gprs (rtx base, int offset, int first, int last, rtx_insn *before = NULL)
   /* Special-case single register.  */
   if (first == last)
     {
-      insn = gen_movdi (addr, gen_rtx_REG (Pmode, first));
+      insn = as_a <rtx_insn *> (gen_movdi (addr,
+					   gen_rtx_REG (Pmode, first)));
 
       if (!global_not_special_regno_p (first))
 	RTX_FRAME_RELATED_P (insn) = 1;
@@ -11825,9 +11827,9 @@ save_gprs (rtx base, int offset, int first, int last, rtx_insn *before = NULL)
     }
 
 
-  insn = gen_store_multiple (addr,
-			     gen_rtx_REG (Pmode, first),
-			     GEN_INT (last - first + 1));
+  insn = as_a <rtx_insn *> (gen_store_multiple (addr,
+						gen_rtx_REG (Pmode, first),
+						GEN_INT (last - first + 1)));
 
   if (first <= 6 && cfun->stdarg)
     for (i = 0; i < XVECLEN (PATTERN (insn), 0); i++)

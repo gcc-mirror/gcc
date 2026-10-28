@@ -3769,7 +3769,7 @@ extern rtx find_constant_src (const rtx_insn *);
 extern bool find_reg_fusage (const_rtx, enum rtx_code, const_rtx);
 extern bool find_regno_fusage (const_rtx, enum rtx_code, unsigned int);
 extern rtx alloc_reg_note (enum reg_note, rtx, rtx);
-extern void add_reg_note (rtx, enum reg_note, rtx);
+extern void add_reg_note (rtx_insn *, enum reg_note, rtx);
 extern void add_int_reg_note (rtx_insn *, enum reg_note, int);
 extern void add_args_size_note (rtx_insn *, poly_int64);
 extern void add_shallow_copy_of_reg_note (rtx_insn *, rtx);
