@@ -15117,10 +15117,16 @@
   if (byte_offset % 16 == 0)
     {
       operands[2] = GEN_INT (byte_offset / 16);
-      if (byte_offset / 16 == 1)
-	return "vextract<shuffletype><extract_suf>\t{%2, %t1, %x0|%x0, %t1, %2}";
-      else
-	return "vextract<shuffletype><extract_suf>\t{%2, %1, %x0|%x0, %1, %2}";
+      /* The 256-bit source form needs AVX512VL and the 64x2 forms need
+	 AVX512DQ.  An unmasked 32x4 extract gives the same result.  */
+      bool ymm_p = (byte_offset / 16 == 1) && TARGET_AVX512VL;
+      if (GET_MODE_UNIT_SIZE (<MODE>mode) == 8 && !TARGET_AVX512DQ)
+	return (ymm_p
+		? "vextract<shuffletype>32x4\t{%2, %t1, %x0|%x0, %t1, %2}"
+		: "vextract<shuffletype>32x4\t{%2, %1, %x0|%x0, %1, %2}");
+      return (ymm_p
+	      ? "vextract<shuffletype><extract_suf>\t{%2, %t1, %x0|%x0, %t1, %2}"
+	      : "vextract<shuffletype><extract_suf>\t{%2, %1, %x0|%x0, %1, %2}");
     }
   else
     return "valign<ternlogsuffix>\t{%2, %1, %1, %<xtg_mode>0|%<xtg_mode>0, %1, %1, %2}";
