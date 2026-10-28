@@ -117,7 +117,7 @@ Link Cycle4_D Cycle4_A
     VERIFY( false );
   } catch (const std::runtime_error& e) {
     std::string_view what(e.what());
-    VERIFY( what.ends_with("cannot locate zone: BadLink") );
+    VERIFY( what.ends_with("cannot locate time zone: BadLink") );
   }
 
   // LinkSelf forms a link cycle with itself.
