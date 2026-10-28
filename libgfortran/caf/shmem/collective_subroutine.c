@@ -362,6 +362,7 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
   int imoffset;
   index_type elem_size;
   index_type this_image_size_bytes;
+  size_t buf_size;
   void *this_image_buf, *roll_iter, *src_iter;
   ass_op assign;
   const int this_img_id = caf_current_team->index;
@@ -373,9 +374,13 @@ collsub_reduce_array (gfc_descriptor_t *desc, int result_image,
   elem_size = GFC_DESCRIPTOR_SIZE (desc);
   this_image_size_bytes = elem_size * pi.num_elem;
 
-  if (!get_collsub_buf (this_image_size_bytes
-			  * caf_current_team->u.image_info->image_map_size,
-			&buffer))
+  /* Saturate at SIZE_MAX so the allocation fails instead of wrapping.  */
+  if (__builtin_mul_overflow ((size_t) this_image_size_bytes,
+			      (size_t) caf_current_team->u.image_info
+					 ->image_map_size,
+			      &buf_size))
+    buf_size = SIZE_MAX;
+  if (!get_collsub_buf (buf_size, &buffer))
     return collsub_no_memory ();
   this_image_buf = buffer + this_image_size_bytes * this_img_id;
 

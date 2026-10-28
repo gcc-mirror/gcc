@@ -91,6 +91,10 @@ allocator_shared_malloc (allocator *a, size_t size)
   size_t act_size;
   int bucket_list_index;
 
+  /* Sizes beyond the largest power of two of size_t cannot be served.  */
+  if (size > (size_t) 1 << (sizeof (size_t) * __CHAR_BIT__ - 1))
+    return SHMPTR_NULL;
+
   sz = next_power_of_two (size);
   act_size = sz > sizeof (bucket) ? sz : sizeof (bucket);
   bucket_list_index = __builtin_clzl (act_size);

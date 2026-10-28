@@ -196,6 +196,15 @@ _gfortran_caf_num_images (caf_team_t team, int32_t *team_number)
   return caf_current_team->u.image_info->image_map_size;
 }
 
+/* Return A * B, or SIZE_MAX on overflow.  The allocator rejects SIZE_MAX,
+   so a saturated size makes the allocation fail through STAT=.  */
+
+static size_t
+mul_size_sat (size_t a, size_t b)
+{
+  size_t r;
+  return __builtin_mul_overflow (a, b, &r) ? SIZE_MAX : r;
+}
 
 void
 _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
@@ -257,7 +266,7 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
       break;
     case CAF_REGTYPE_EVENT_ALLOC:
     case CAF_REGTYPE_EVENT_STATIC:
-      size *= sizeof (void *);
+      size = mul_size_sat (size, sizeof (void *));
       break;
     default:
       break;
@@ -266,7 +275,9 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
   if (type != CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY)
     *token = malloc (sizeof (struct caf_shmem_token));
 
-  size = alignto (size, sizeof (ptrdiff_t));
+  /* Saturate like mul_size_sat.  */
+  size = size > SIZE_MAX - sizeof (ptrdiff_t)
+	 ? SIZE_MAX : alignto (size, sizeof (ptrdiff_t));
   switch (type)
     {
     case CAF_REGTYPE_LOCK_STATIC:
@@ -281,13 +292,14 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 #if defined(WIN32) || defined(__CYGWIN__)
 	/* On Windows mutexes are not an object stored in the shmem but
 	   identified by an id.  */
-	alloc_size = size * caf_current_team->u.image_info->image_count.count;
+	alloc_size = mul_size_sat (
+	  size, caf_current_team->u.image_info->image_count.count);
 #else
 	alloc_size = size;
 #endif
-	addr = alloc_get_memory_by_id_created (&local->ai,
-					       alloc_size * sizeof (caf_shmem_lock_t),
-					       next_memid, &created);
+	addr = alloc_get_memory_by_id_created (
+	  &local->ai, mul_size_sat (alloc_size, sizeof (caf_shmem_lock_t)),
+	  next_memid, &created);
 
 	if (created)
 	  {
@@ -306,12 +318,13 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
     case CAF_REGTYPE_EVENT_ALLOC:
       {
 	bool created;
+	size_t alloc_size = mul_size_sat (size, local->total_num_images);
 
 	allocator_lock (&local->ai.alloc);
-	mem = alloc_get_memory_by_id_created (
-	  &local->ai, size * local->total_num_images, next_memid, &created);
+	mem = alloc_get_memory_by_id_created (&local->ai, alloc_size, next_memid,
+					      &created);
 	if (created)
-	  memset (mem, 0, size * local->total_num_images);
+	  memset (mem, 0, alloc_size);
 	allocator_unlock (&local->ai.alloc);
       }
       break;
@@ -334,7 +347,8 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
       break;
     default:
       /* Each image's part is at its index among all images.  */
-      mem = alloc_get_memory_by_id (&local->ai, size * local->total_num_images,
+      mem = alloc_get_memory_by_id (&local->ai,
+				    mul_size_sat (size, local->total_num_images),
 				    next_memid);
       break;
     }
