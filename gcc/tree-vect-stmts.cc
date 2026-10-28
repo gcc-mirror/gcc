@@ -4176,9 +4176,21 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  gcc_assert (cost_vec
 		      || thisarginfo.vectype != NULL_TREE);
 	  if (cost_vec)
-	    thisarginfo.vectype = get_vectype_for_scalar_type (vinfo,
-							       TREE_TYPE (op),
-							       slp_node);
+	    {
+	      thisarginfo.vectype = get_vectype_for_scalar_type (vinfo,
+								 TREE_TYPE (op),
+								 slp_node);
+	      /* ???  While for example uniform arguments might not need
+		 a vector type we are not set up to handle this case
+		 right now.  */
+	      if (!thisarginfo.vectype)
+		{
+		  if (dump_enabled_p ())
+		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				     "no vector type for argument.\n");
+		  return false;
+		}
+	    }
 	}
       else
 	gcc_assert (thisarginfo.vectype != NULL_TREE);
