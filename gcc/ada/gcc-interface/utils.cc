@@ -6164,6 +6164,19 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
       return unchecked_convert (type, expr, notrunc_p);
     }
 
+  /* If we are converting the result of a binary operation to an array type,
+     create a temporary to hold the result and convert the temporary.  This
+     will avoid problems downstream when slices of the array are taken.  */
+  else if (!AGGREGATE_TYPE_P (etype)
+	   && code == ARRAY_TYPE
+	   && (tem = remove_conversions (expr, false))
+	   && BINARY_CLASS_P (tem))
+    {
+      expr = build1 (SAVE_EXPR, etype, expr);
+      TREE_SIDE_EFFECTS (expr) = 1;
+      return unchecked_convert (type, expr, notrunc_p);
+    }
+
   /* If we are converting a string constant to a pointer to character, make
      sure that the string is not folded into an integer constant.  */
   else if (TREE_CODE (expr) == STRING_CST
