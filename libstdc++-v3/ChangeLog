@@ -1,3 +1,35 @@
+2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset (operator>>): Define __array_len to ensure
+	that the array size is never zero. Add uninitialized attribute
+	to __buf.
+
+2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/124370
+	* include/std/bitset (operator>>): Use array inside _Buffer
+	instead of __builtin_alloca.
+	* testsuite/20_util/bitset/io/input.cc: Suppress pedwarn about
+	C++14 binary literal.
+	* testsuite/20_util/bitset/io/wchar_t.cc: New test.
+
+2026-10-27  Dragon Archer  <dragon-archer@outlook.com>
+
+	Backported from master:
+	2026-05-16  Dragon Archer  <dragon-archer@outlook.com>
+
+	PR libstdc++/125228
+	* src/c++11/debug.cc: Replace assert with __glibcxx_assert,
+	and remove the include of <cassert>.
+	* src/c++17/floating_to_chars.cc: Likewise, but redefine
+	assert as __glibcxx_assert.
+
 2026-10-08  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/chrono (chrono::__detail::__get_leap_second_info):
