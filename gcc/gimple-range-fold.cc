@@ -1041,8 +1041,7 @@ ctor_ref_range::accumulate_range (tree init, unsigned i)
 {
   if (i == m_component_path.length ())
     return accumulate_range_from_scalar (init);
-  /* TODO: Perhaps handle RAW_DATA_CST too.  */
-  if (TREE_CODE (init) != CONSTRUCTOR)
+  if (TREE_CODE (init) != CONSTRUCTOR && TREE_CODE (init) != STRING_CST)
     return false;
 
   tree ref = m_component_path[i];
@@ -1112,6 +1111,8 @@ ctor_ref_range::accumulate_range_from_component_ref (tree init, unsigned i,
 {
   unsigned ix;
   tree index, val;
+  if (TREE_CODE (init) != CONSTRUCTOR)
+    return false;
   if (TYPE_MAIN_VARIANT (TREE_TYPE (init)) == DECL_CONTEXT (fld))
     FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (init), ix, index, val)
       {
@@ -1212,6 +1213,51 @@ ctor_ref_range::accumulate_range_from_array_ref (tree init, unsigned i,
   unsigned ix;
   tree index, val;
 
+  if (TREE_CODE (init) == STRING_CST)
+    {
+      if (i != m_component_path.length ()
+	  || !INTEGRAL_TYPE_P (m_type)
+	  || TYPE_PRECISION (m_type) != CHAR_BIT
+	  || !useless_type_conversion_p (m_type, TREE_TYPE (TREE_TYPE (init)))
+	  || wi::gtu_p (max + 1 - min, TREE_STRING_LENGTH (init)))
+	return false;
+      for (unsigned j = 0; j < idx_r.num_pairs (); ++j)
+	{
+	  wide_int l = idx_r.lower_bound (j);
+	  wide_int u = idx_r.upper_bound (j);
+	  if (wi::lt_p (u, min, TYPE_SIGN (type))
+	      || wi::gt_p (l, max, TYPE_SIGN (type)))
+	    continue;
+	  l = wi::max (l, min, TYPE_SIGN (type));
+	  u = wi::min (u, max, TYPE_SIGN (type));
+	  unsigned n = (l - min).to_uhwi ();
+	  unsigned e = (u - min).to_uhwi ();
+	  /* Note, if we'd have more than 256 iterations of the loops
+	     below or even across all the outer loop iterations, it might
+	     be more efficient to have a 256 bools array or 256-bit bitmask,
+	     gather which bytes are seen and then union_ those which were
+	     seen.  Given the current param limits this can't ever happen.  */
+	  wide_int wi_cst;
+	  if (TYPE_UNSIGNED (m_type))
+	    for (; n <= e; ++n)
+	      {
+		wi_cst
+		  = wi::uhwi ((unsigned char) TREE_STRING_POINTER (init)[n],
+			      CHAR_BIT);
+		m_r.union_ (int_range<1> (m_type, wi_cst, wi_cst));
+	      }
+	  else
+	    for (; n <= e; ++n)
+	      {
+		wi_cst
+		  = wi::shwi ((signed char) TREE_STRING_POINTER (init)[n],
+			      CHAR_BIT);
+		m_r.union_ (int_range<1> (m_type, wi_cst, wi_cst));
+	      }
+	}
+      return true;
+    }
+
   // Build a range with the entire domain, and take out any elements which are
   // initialized.  If there's anything left in that range, it means there are
   // missing elements and we should add a [0, 0] to the final range.
@@ -1238,7 +1284,61 @@ ctor_ref_range::accumulate_range_from_array_ref (tree init, unsigned i,
       missing.intersect (int_range<2> (type, lo, hi, VR_ANTI_RANGE));
       next = wi::add (hi, 1);
 
-      if (intersects_p (idx_r, lo, hi) && !accumulate_range (val, i))
+      if (TREE_CODE (val) == RAW_DATA_CST)
+	{
+	  if (!intersects_p (idx_r, lo, hi))
+	    continue;
+
+	  if (i != m_component_path.length ()
+	      || !INTEGRAL_TYPE_P (m_type)
+	      || TYPE_PRECISION (m_type) != CHAR_BIT
+	      || !useless_type_conversion_p (m_type,
+					     TREE_TYPE (val)))
+	    return false;
+
+	  for (unsigned j = 0; j < idx_r.num_pairs (); ++j)
+	    {
+	      wide_int l = idx_r.lower_bound (j);
+	      wide_int u = idx_r.upper_bound (j);
+	      if (wi::lt_p (u, lo, TYPE_SIGN (type))
+		  || wi::gt_p (l, hi, TYPE_SIGN (type)))
+		continue;
+	      l = wi::max (l, lo, TYPE_SIGN (type));
+	      u = wi::min (u, hi, TYPE_SIGN (type));
+	      unsigned n = (l - lo).to_uhwi ();
+	      unsigned e = (u - lo).to_uhwi ();
+	      /* Note, if we'd have more than 256 iterations of the loops
+		 below or even across all the outer loop iterations, it might
+		 be more efficient to have a 256 bools array or 256-bit
+		 bitmask, gather which bytes are seen and then union_ those
+		 which were seen.  Given the current param limits this can't
+		 ever happen.  */
+	      wide_int wi_cst;
+	      if (TYPE_UNSIGNED (m_type))
+		for (; n <= e; ++n)
+		  {
+		    wi_cst = wi::uhwi (RAW_DATA_UCHAR_ELT (val, n), CHAR_BIT);
+		    m_r.union_ (int_range<1> (m_type, wi_cst, wi_cst));
+		  }
+	      else
+		for (; n <= e; ++n)
+		  {
+		    wi_cst = wi::shwi (RAW_DATA_SCHAR_ELT (val, n), CHAR_BIT);
+		    m_r.union_ (int_range<1> (m_type, wi_cst, wi_cst));
+		  }
+	    }
+	  continue;
+	}
+
+      if (lo == hi)
+	{
+	  if (!idx_r.contains_p (lo))
+	    continue;
+	}
+      else if (!intersects_p (idx_r, lo, hi))
+	continue;
+
+      if (!accumulate_range (val, i))
 	return false;
     }
 
@@ -1308,7 +1408,8 @@ fold_using_range::range_from_readonly_var (vrange &r, gimple *stmt,
      the right part of the constructor then.  */
   tree ctor = ctor_for_folding (t);
   if (!ctor
-      || TREE_CODE (ctor) != CONSTRUCTOR)
+      || (TREE_CODE (ctor) != CONSTRUCTOR
+	  && TREE_CODE (ctor) != STRING_CST))
     return false;
 
   value_range tmp (type);
