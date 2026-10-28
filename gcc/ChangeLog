@@ -1,3 +1,31 @@
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-09  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/127784
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Pass a vector
+	of 1s as an all-true mask for a VOIDmode mask_mode.
+
+2026-10-27  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	Backported from master:
+	2026-10-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/127692
+	* config/s390/s390.md: Fix bswap:HI reg-reg splitter.
+
+2026-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127897
+	* config/i386/i386-expand.cc (ix86_expand_vector_move): Only
+	broadcast floating-point constants when a broadcast instruction
+	is available.
+
 2026-10-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

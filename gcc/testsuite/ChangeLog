@@ -1,3 +1,20 @@
+2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
+
+	Backported from master:
+	2026-10-09  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR tree-optimization/127784
+	* gcc.dg/vect/vect-simd-clone-allones-mask.c: New test.
+
+2026-10-27  liuhongt  <hongtao.liu@intel.com>
+
+	Backported from master:
+	2026-10-19  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/127897
+	* gcc.target/i386/pr127897-1.c: New test.
+	* gcc.target/i386/pr127897-3.c: Likewise.
+
 2026-10-22  Christophe Lyon  <christophe.lyon@arm.com>
 
 	Backported from master:
