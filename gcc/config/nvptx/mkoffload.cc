@@ -592,7 +592,7 @@ static void
 compile_native (const char *infile, const char *outfile, const char *compiler,
 		bool fPIC, bool fpic)
 {
-  const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  const char *collect_gcc_options = read_collect_gcc_options ();
   if (!collect_gcc_options)
     fatal_error (input_location,
 		 "environment variable COLLECT_GCC_OPTIONS must be set");

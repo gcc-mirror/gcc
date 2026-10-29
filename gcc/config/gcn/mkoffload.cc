@@ -826,7 +826,7 @@ static void
 compile_native (const char *infile, const char *outfile, const char *compiler,
 		bool fPIC, bool fpic)
 {
-  const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  const char *collect_gcc_options = read_collect_gcc_options ();
   if (!collect_gcc_options)
     fatal_error (input_location,
 		 "environment variable %<COLLECT_GCC_OPTIONS%> must be set");
@@ -1160,7 +1160,7 @@ main (int argc, char **argv)
 
   /* Add -msimt when in SIMT mode, but that option doesn't get passed directly
      to mkoffload, so let's check the environment.  */
-  const char *collect_gcc_options = getenv ("COLLECT_GCC_OPTIONS");
+  const char *collect_gcc_options = read_collect_gcc_options ();
   if (collect_gcc_options
       && strstr (collect_gcc_options, "--param=offload-gpu-mode=simt"))
     simt = true;
