@@ -5231,7 +5231,10 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
 	  || !directly_supported_p (VECT_REDUC_INFO_CODE (reduc_info),
 				    intermediate_vectype)
 	  || !can_vec_extract (TYPE_MODE (prev_vectype),
-			       TYPE_MODE (intermediate_vectype)))
+			       TYPE_MODE (intermediate_vectype)).exists ()
+	  /* We could actually extract VLA vectors but bit_field_ref and
+	     friends aren't yet prepared for it.  */
+	  || !TYPE_VECTOR_SUBPARTS (intermediate_vectype).is_constant ())
 	return false;
       prev_vectype = intermediate_vectype;
     }
@@ -5291,10 +5294,8 @@ vect_create_partial_epilog (tree vec_def, tree vectype, code_helper code,
 	 an integer mode punning.  */
       tree dst1, dst2;
       gimple *epilog_stmt;
-      if (convert_optab_handler (vec_extract_optab,
-				 TYPE_MODE (TREE_TYPE (new_temp)),
-				 TYPE_MODE (vectype1))
-	  != CODE_FOR_nothing)
+      if (can_vec_extract (TYPE_MODE (TREE_TYPE (new_temp)),
+			   TYPE_MODE (vectype1)).exists ())
 	{
 	  /* Extract sub-vectors directly once vec_extract becomes
 	     a conversion optab.  */
@@ -5319,10 +5320,8 @@ vect_create_partial_epilog (tree vec_def, tree vectype, code_helper code,
 	     vector.  */
 	  tree eltype = build_nonstandard_integer_type (bitsize, 1);
 	  tree etype = build_vector_type (eltype, 2);
-	  gcc_assert (convert_optab_handler (vec_extract_optab,
-					     TYPE_MODE (etype),
-					     TYPE_MODE (eltype))
-		      != CODE_FOR_nothing);
+	  gcc_assert (can_vec_extract (TYPE_MODE (etype),
+				       TYPE_MODE (eltype)).exists ());
 	  tree tem = make_ssa_name (etype);
 	  epilog_stmt = gimple_build_assign (tem, VIEW_CONVERT_EXPR,
 					     build1 (VIEW_CONVERT_EXPR,

@@ -173,7 +173,9 @@ bool supports_vec_gather_load_p (machine_mode = E_VOIDmode,
 bool supports_vec_scatter_store_p (machine_mode = E_VOIDmode);
 opt_machine_mode get_absneg_bit_mode (optab, machine_mode,
 				      scalar_float_mode, int *);
-bool can_vec_extract (machine_mode, machine_mode);
+
+opt_machine_mode vec_extract_perm_p (machine_mode, machine_mode, poly_uint64);
+opt_machine_mode can_vec_extract (machine_mode, machine_mode);
 bool can_open_code_p (optab, machine_mode);
 bool can_implement_p (optab, machine_mode);
 

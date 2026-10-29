@@ -8552,9 +8552,7 @@ vectorizable_store (vec_info *vinfo,
 	  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
 	      || !related_vector_mode (TYPE_MODE (vectype), elmode,
 				       n).exists (&vmode)
-	      || (convert_optab_handler (vec_extract_optab,
-					 TYPE_MODE (vectype), vmode)
-		  == CODE_FOR_nothing)
+	      || can_vec_extract (TYPE_MODE (vectype), vmode) != vmode
 	      || !(dr_align == dr_aligned
 		   || dr_align == dr_unaligned_supported))
 	    {
@@ -8572,9 +8570,7 @@ vectorizable_store (vec_info *vinfo,
 		  && VECTOR_MODE_P (TYPE_MODE (vectype))
 		  && related_vector_mode (TYPE_MODE (vectype), elmode,
 					  lnunits).exists (&vmode)
-		  && (convert_optab_handler (vec_extract_optab,
-					     vmode, elmode)
-		      != CODE_FOR_nothing))
+		  && can_vec_extract (vmode, elmode).exists ())
 		{
 		  nstores = lnunits;
 		  lnel = n;

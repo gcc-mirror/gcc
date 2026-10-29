@@ -792,33 +792,80 @@ supports_vec_scatter_store_p (machine_mode mode)
   return this_fn_optabs->supports_vec_scatter_store[mode] > 0;
 }
 
-/* Whether we can extract part of the vector mode MODE as
-   (scalar or vector) mode EXTR_MODE.  */
+/* See if we can extract a vector of mode SUBVEC_MODE from a larger vector
+   of mode VEC_MODE at EXTRACT_IDX.  EXTRACT_IDX counts in elements
+   of VEC_MODE and SUBVEC_MODE.  If we can, return the possibly punned
+   input mode.  */
 
-bool
+opt_machine_mode
+vec_extract_perm_p (machine_mode vec_mode, machine_mode subvec_mode,
+		    poly_uint64 extract_idx)
+{
+  if (!VECTOR_MODE_P (vec_mode) || !VECTOR_MODE_P (subvec_mode))
+    return opt_machine_mode ();
+
+  if (GET_MODE_UNIT_SIZE (vec_mode) != GET_MODE_UNIT_SIZE (subvec_mode))
+    return opt_machine_mode ();
+
+  if (maybe_gt (GET_MODE_NUNITS (subvec_mode) + extract_idx,
+		GET_MODE_NUNITS (vec_mode)))
+    return opt_machine_mode ();
+
+  /* Look for a matching mode for the vector elements.
+     Do not pun the whole vector with a mode of different element size
+     here (e.g. V2DI and V4SI).  We expect a target to do that itself.  */
+  if (GET_MODE_INNER (vec_mode) != GET_MODE_INNER (subvec_mode)
+      && !related_vector_mode (vec_mode, GET_MODE_INNER (subvec_mode),
+			       GET_MODE_NUNITS (vec_mode)).exists
+	   (&vec_mode))
+    return opt_machine_mode ();
+
+  poly_uint64 out_nunits = GET_MODE_NUNITS (subvec_mode);
+  poly_uint64 in_nunits = GET_MODE_NUNITS (vec_mode);
+
+  vec_perm_builder sel (out_nunits, 1, 3);
+  for (unsigned int i = 0; i < 3; ++i)
+    sel.quick_push (extract_idx + i);
+
+  vec_perm_indices indices (sel, 1, in_nunits);
+  if (can_vec_perm_const_p (subvec_mode, vec_mode, indices))
+    return vec_mode;
+  return opt_machine_mode ();
+}
+
+
+/* Whether we can extract part of the vector mode MODE as
+   (scalar or vector) mode EXTR_MODE.  Returns the extraction mode
+   we would use or no mode.  */
+
+opt_machine_mode
 can_vec_extract (machine_mode mode, machine_mode extr_mode)
 {
   unsigned m;
   if (!VECTOR_MODE_P (mode)
       || !constant_multiple_p (GET_MODE_SIZE (mode),
 			       GET_MODE_SIZE (extr_mode), &m))
-    return false;
+    return opt_machine_mode ();
 
   if (convert_optab_handler (vec_extract_optab, mode, extr_mode)
       != CODE_FOR_nothing)
-    return true;
+    return extr_mode;
 
   /* Besides a direct vec_extract we can also use an element extract from
      an integer vector mode with elements of the size of the extr_mode.  */
   scalar_int_mode imode;
   machine_mode vmode;
-  if (!int_mode_for_size (GET_MODE_BITSIZE (extr_mode), 0).exists (&imode)
-      || !related_vector_mode (mode, imode, m).exists (&vmode)
-      || (convert_optab_handler (vec_extract_optab, vmode, imode)
-	  == CODE_FOR_nothing))
-    return false;
-  /* We assume we can pun mode to vmode and imode to extr_mode.  */
-  return true;
+  if (int_mode_for_size (GET_MODE_BITSIZE (extr_mode), 0).exists (&imode)
+      && related_vector_mode (mode, imode, m).exists (&vmode)
+      && (convert_optab_handler (vec_extract_optab, vmode, imode)
+	  != CODE_FOR_nothing))
+    return imode;
+
+  /* We don't know yet where exactly to extract from, just use element 0.  */
+  if (vec_extract_perm_p (mode, extr_mode, 0).exists ())
+    return extr_mode;
+
+  return opt_machine_mode ();
 }
 
 /* OP is either neg_optab or abs_optab and FMODE is the floating-point inner
