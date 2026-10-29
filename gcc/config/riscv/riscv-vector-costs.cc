@@ -1216,25 +1216,6 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 	  return other_prefer_unrolled;
 	}
     }
-  else if (riscv_vla_mode_p (other_loop_vinfo->vector_mode))
-    {
-      /* We don't want modes that would span more scalar iterations than
-	 we actually have.
-	 ??? We might want to revisit this in the light of VLMAX-dependent
-	 vs VL-dependent latency.  */
-      if (LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
-	{
-	  if (maybe_gt (LOOP_VINFO_INT_NITERS (this_loop_vinfo),
-			LOOP_VINFO_VECT_FACTOR (this_loop_vinfo)))
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_NOTE, vect_location,
-				 "Keep current LMUL loop because"
-				 " known NITERS exceed the new VF\n");
-	      return false;
-	    }
-	}
-    }
 
   /* Fall back to generic costing if either iteration count is unknown.  For
      known iteration counts, include loop overhead when comparing different
