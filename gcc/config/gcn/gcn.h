@@ -120,6 +120,7 @@ extern const struct gcn_device_def {
 
 #define DATA_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 128 ? (ALIGN) : 128)
 #define LOCAL_ALIGNMENT(TYPE,ALIGN) ((ALIGN) > 64 ? (ALIGN) : 64)
+#define LOCAL_DECL_ALIGNMENT(DECL) gcn_local_decl_alignment (DECL)
 #define STACK_SLOT_ALIGNMENT(TYPE,MODE,ALIGN) ((ALIGN) > 64 ? (ALIGN) : 64)
 #define STRICT_ALIGNMENT 1
 

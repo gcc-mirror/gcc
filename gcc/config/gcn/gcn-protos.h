@@ -66,6 +66,7 @@ extern void gcn_hsa_declare_function_name (FILE *file, const char *name,
 extern HOST_WIDE_INT gcn_initial_elimination_offset (int, int);
 extern REAL_VALUE_TYPE gcn_dconst1over2pi (void);
 extern bool gcn_inline_constant64_p (rtx, bool);
+extern unsigned int gcn_local_decl_alignment (tree);
 extern bool gcn_inline_constant_p (rtx);
 extern int gcn_inline_fp_constant_p (rtx, bool);
 extern rtx gcn_oacc_dim_pos (int dim);
