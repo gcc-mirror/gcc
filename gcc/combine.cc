@@ -8667,7 +8667,11 @@ canon_reg_for_combine (rtx x, rtx reg)
 
 /* Return X converted to MODE.  If the value is already truncated to
    MODE we can just return a subreg even though in the general case we
-   would need an explicit truncation.  */
+   would need an explicit truncation.
+
+   If an explicit truncation is needed but either mode has no
+   equivalent integer mode (e.g. a wide vector mode), return
+   (clobber (const_int 0)) so that the combination fails.  */
 
 static rtx
 gen_lowpart_or_truncate (machine_mode mode, rtx x)
@@ -8677,11 +8681,15 @@ gen_lowpart_or_truncate (machine_mode mode, rtx x)
       && !TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x))
       && !(REG_P (x) && reg_truncated_to_mode (mode, x)))
     {
+      scalar_int_mode imode, omode;
+      if (!int_mode_for_mode (GET_MODE (x)).exists (&imode)
+	  || !int_mode_for_mode (mode).exists (&omode))
+	return gen_rtx_CLOBBER (mode, const0_rtx);
+
       /* Bit-cast X into an integer mode.  */
       if (!SCALAR_INT_MODE_P (GET_MODE (x)))
-	x = gen_lowpart (int_mode_for_mode (GET_MODE (x)).require (), x);
-      x = simplify_gen_unary (TRUNCATE, int_mode_for_mode (mode).require (),
-			      x, GET_MODE (x));
+	x = gen_lowpart (imode, x);
+      x = simplify_gen_unary (TRUNCATE, omode, x, GET_MODE (x));
     }
 
   return gen_lowpart (mode, x);
