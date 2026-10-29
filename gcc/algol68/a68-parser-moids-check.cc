@@ -1014,6 +1014,12 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
   z = search_table_chain_for_operator (s, n, x, y);
   if (z != NO_TAG)
     return z;
+
+  /* The checks below apply to operators covered by a) and b) in 10.2.3.5 but
+     not to the pow operator, which is covered by g) */
+  if (strcmp (n, "**") == 0 || strcmp (n, "^") == 0)
+    return z;
+
   /* (C.2) Vector and matrix "strong coercions" in standard environ.  */
   u = DEFLEX (a68_depref_completely (x));
   v = DEFLEX (a68_depref_completely (y));
@@ -1053,6 +1059,7 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
 	    return z;
 	}
     }
+
   /* (C.3) Look in standenv for an appropriate cross-term.  */
   u = a68_make_series_from_moids (x, y);
   u = a68_make_united_mode (u);
@@ -1109,6 +1116,7 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
   z = search_table_for_operator (OPERATORS (A68_STANDENV), n, v, v);
   if (z != NO_TAG)
     return z;
+
   return NO_TAG;
 }
 

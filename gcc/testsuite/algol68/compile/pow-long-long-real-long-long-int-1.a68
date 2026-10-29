@@ -1,0 +1,2 @@
+begin long long 3.14 ** long long 20 { dg-error "has not been declared" }
+end

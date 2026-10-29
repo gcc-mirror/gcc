@@ -1,0 +1,3 @@
+begin 10 * 3.14;
+      long 3.14 ** long 20 { dg-error "has not been declared" }
+end
