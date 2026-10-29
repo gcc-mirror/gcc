@@ -730,6 +730,7 @@ namespace
       __catch (...)
 	{
 	  __r->deallocate(__p, __bytes, __alignment);
+	  __throw_exception_again;
 	}
       if (_M_blocks_per_chunk < __opts.max_blocks_per_chunk)
 	{
@@ -824,9 +825,10 @@ namespace
 	  }
 	else if (size > 0)
 	  {
+	    const size_t new_cap = capacity * 1.5;
 	    polymorphic_allocator<value_type> __alloc(r);
 	    auto __mid = std::lower_bound(begin(), end() - 1, back());
-	    auto __p = __alloc.allocate(capacity * 1.5);
+	    auto __p = __alloc.allocate(new_cap);
 	    // move [begin,__mid) to new storage
 	    auto __p2 = std::move(begin(), __mid, __p);
 	    // move end-1 to new storage
@@ -836,12 +838,14 @@ namespace
 	    std::destroy(begin(), end());
 	    __alloc.deallocate(data, capacity);
 	    data = __p;
-	    capacity *= 1.5;
+	    capacity = new_cap;
 	  }
 	else
 	  {
+	    const size_t new_cap = 8;
 	    polymorphic_allocator<value_type> __alloc(r);
-	    data = __alloc.allocate(capacity = 8);
+	    data = __alloc.allocate(new_cap);
+	    capacity = new_cap;
 	  }
 	auto back = ::new (data + size) chunk(std::move(c));
 	__glibcxx_assert(std::is_sorted(begin(), back));
