@@ -2,6 +2,7 @@
 /* { dg-require-effective-target trampolines } */
 /* { dg-options "-Wtrampolines" } */
 /* { dg-skip-if "" { *-*-darwin2* } } */
+/* { dg-skip-if "trampolines not needed on ppc64" { powerpc64-*-* && lp64 } } */
 
 
 // Test that we do generate trampolines where this is required.
