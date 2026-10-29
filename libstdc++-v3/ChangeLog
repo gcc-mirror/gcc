@@ -1,3 +1,51 @@
+2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127476
+	* include/std/memory [!_GLIBCXX_HOSTED]: Do not include
+	bits/indirect.h.
+
+2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127675
+	* include/ext/pb_ds/detail/debug_map_base.hpp (split, join): Use
+	std::list::splice to move elements without reallocating.
+	* include/ext/pb_ds/detail/ov_tree_map_/constructors_destructor_fn_imps.hpp
+	(copy_from_ordered_range(It, It, It, It)): Do not allocate new
+	storage for an empty container.
+	* include/ext/pb_ds/detail/ov_tree_map_/erase_fn_imps.hpp
+	(erase_if): Do not modify this->debug_base::m_keys until all
+	allocations and other potentially-throwing operations have
+	completed successfully.
+	(erase_imp): Do not allocate new storage for an empty container.
+	* testsuite/ext/pb_ds/regression/127675.cc: New test.
+	* testsuite/util/testsuite_rng.h (get_time_determined_seed): Use
+	getenv("GLIBCXX_SEED_TEST_RNG") to allow the seed to be fixed.
+
+2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/ext/pb_ds/regression/hash_map_rand.cc: Remove c++17
+	target selector.
+	* testsuite/ext/pb_ds/regression/hash_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_map_rand.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_set_rand.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc:
+	Likewise.
+	* testsuite/ext/pb_ds/regression/tree_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_set_rand.cc: Likewise.
+
 2026-10-26  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/mdspan (layout_stride::mapping::_M_check_unique):

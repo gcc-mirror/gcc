@@ -1,3 +1,126 @@
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127858
+	* tree-ssa-loop-im.cc (gather_mem_refs_stmt): When merging
+	accesses with differing access path always reset base and
+	offset to the canonical form by re-using the already canonical
+	ao_ref.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127814
+	* tree-vect-loop-manip.cc (vect_loop_versioning): Emit
+	versioning for niter assumption conditions first and
+	split those to the separate BB together with the cost model
+	check after rewriting all of it to unconditional defined operations.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127764
+	* ipa-fnsummary.cc (set_switch_stmt_execution_predicate):
+	Use wi::to_widest to preserve sign when extending min to type.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127762
+	* gimple-fold.cc (decode_field_reference): Change psignbit to
+	int * and set it to 1 for sign extensions, -1 if all extension
+	bits are clear, or 0 otherwise.
+	(fold_truth_andor_for_ifcombine): Change ll_signbit, lr_signbit,
+	rl_signbit, and rr_signbit to int.  Check for signbit > 0 when
+	including sign bit in test, and signbit < 0 when checking for
+	zero-extension.  Only reject positive lr_signbit and
+	rr_signbit.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127601
+	* tree-vect-stmts.cc (get_load_store_type): Move overrun
+	flags and final handling to the relevant section, after
+	determining the step direction and the memory access type.
+	Only elide overrun with half-vector accesses for the
+	memory access types supporting that.  Do not claim
+	VMAT_STRIDED_SLP can handle overruns when the step is
+	negative.
+	(vectorizable_load): For the last memory access type group
+	analysis/transform assert what memory access type that covers.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127600
+	* tree-vect-loop.cc (vect_is_simple_iv_evolution): Explicitly
+	initialize STMT_VINFO_LOOP_PHI_EVOLUTION_TYPE.
+	(is_nonwrapping_integer_induction): Bail out for alternate
+	induction types.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127588
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Use an unsigned type to compute the epilog start value.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127521
+	* gimple-fold.cc (fold_truth_andor_for_ifcombine): Reject
+	non-constant compares that test the same bit in different ways.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127407
+	* tree-vect-data-refs.cc (vect_analyze_data_ref_dependence):
+	Also call vect_preserves_scalar_order_p for negative dependence
+	distance.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127405
+	* tree-ssa-loop-manip.cc (tree_transform_and_unroll_loop): Only
+	set nb_iterations_upper_bound of the epilogue loop and scale its
+	profile when the control IV is known not to wrap.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126563
+	* tree-ssa-ifcombine.cc (recognize_bits_test): Do not call
+	get_name_for_bit_test on rhs1.
+	(ifcombine_ifandif): Check all operands for abnormal PHIs.
+	Look through conversions via get_name_for_bit_test on the names
+	only when direct matching fails.
+
 2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
 
 	Backported from master:

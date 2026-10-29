@@ -1,3 +1,94 @@
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-13  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127858
+	* gcc.dg/torture/pr127858.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127814
+	* gcc.dg/vect/vect-pr127814.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127764
+	* gcc.dg/torture/pr127764.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127762
+	* gcc.dg/field-merge-27.c: New test.
+	* gcc.dg/field-merge-29.c: New test.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127601
+	* gcc.dg/vect/vect-pr127601.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127600
+	* gcc.dg/vect/vect-cond-reduc-7.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127588
+	* gcc.dg/vect/vect-iv-15.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127521
+	* gcc.dg/field-merge-30.c: New test.
+	* gcc.dg/field-merge-31.c: New test.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127407
+	* gcc.dg/vect/vect-pr127407.c: New testcase.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-09-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127405
+	* gcc.dg/tree-ssa/predcom-10.c: New test.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/126563
+	* gcc.dg/tree-ssa/ssa-ifcombine-14.c: New test.
+	* gcc.dg/tree-ssa/ssa-ifcombine-15.c: New test.
+
 2026-10-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	Backported from master:
