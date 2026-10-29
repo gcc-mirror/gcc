@@ -1,0 +1,3 @@
+begin real r;
+      r +:= 10
+end
