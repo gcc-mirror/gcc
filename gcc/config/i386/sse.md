@@ -33552,14 +33552,14 @@
    (set_attr "addr" "gpr16")
    (set_attr "mode" "<sseinsnmode>")])
 
-(define_insn "avx10_2_cvt2ps2phx_<mode><mask_name><round_name>"
+(define_insn "avx10v1aux_cvt2ps2phx_<mode><mask_name><round_name>"
   [(set (match_operand:VHF_AVX512VL 0 "register_operand" "=v")
 	(vec_concat:VHF_AVX512VL
 	  (float_truncate:<ssehalfvecmode>
 	    (match_operand:<ssePSmode> 2 "<round_nimm_predicate>" "<round_constraint>"))
 	  (float_truncate:<ssehalfvecmode>
 	    (match_operand:<ssePSmode> 1 "register_operand" "v"))))]
-  "TARGET_AVX10_2 && <round_mode512bit_condition>"
+  "TARGET_AVX10V1AUX && <round_mode512bit_condition>"
   "vcvt2ps2phx\t{<round_mask_op3>%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2<round_mask_op3>}")
 
 (define_mode_attr ssebvecmode
@@ -33581,7 +33581,7 @@
 	  [(match_operand:VHF_AVX512VL 1 "register_operand" "v")
 	   (match_operand:VHF_AVX512VL 2 "nonimmediate_operand" "vm")]
 	  UNSPEC_CONVERTFP8_PACK))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<convertfp8_pack>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "prefix" "evex")])
 
@@ -33610,7 +33610,7 @@
 	     (match_operand:V8HF 2 "nonimmediate_operand")]
 	      UNSPEC_VCVTBIASPH2FP8_PACK)
 	  (match_dup 3)))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "operands[3] = CONST0_RTX (V8QImode);")
 
 (define_insn "*vcvt<biasph2fp8_pack>v8hf"
@@ -33621,7 +33621,7 @@
 	     (match_operand:V8HF 2 "nonimmediate_operand" "vm")]
 	      UNSPEC_VCVTBIASPH2FP8_PACK)
 	  (match_operand:V8QI 3 "const0_operand")))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<biasph2fp8_pack>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "HF")])
@@ -33642,7 +33642,7 @@
 			 (const_int 6) (const_int 7)]))
 	    (match_operand:QI 4 "register_operand" "C"))
 	  (match_dup 5)))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "operands[5] = CONST0_RTX (V8QImode);")
 
 (define_insn "*vcvt<biasph2fp8_pack>v8hf_mask"
@@ -33661,25 +33661,22 @@
 			 (const_int 6) (const_int 7)]))
 	    (match_operand:QI 4 "register_operand" "Yk"))
 	  (match_operand:V8QI 5 "const0_operand")))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<biasph2fp8_pack>\t{%2, %1, %0%{%4%}%N3|%0%{%4%}%N3, %1, %2}"
   [(set_attr "prefix" "evex")])
 
-(define_mode_iterator VHF_AVX10_2_2
-  [V32HF V16HF])
+(define_mode_iterator VHF_256_512
+  [V16HF (V32HF "TARGET_AVX10V1AUX")])
 
 (define_insn "vcvt<biasph2fp8_pack><mode><mask_name>"
   [(set (match_operand:<ssebvecmode_2> 0 "register_operand" "=v")
 	(unspec:<ssebvecmode_2>
 	  [(match_operand:<ssebvecmode> 1 "register_operand" "v")
-	   (match_operand:VHF_AVX10_2_2 2 "nonimmediate_operand" "vm")]
+	   (match_operand:VHF_256_512 2 "nonimmediate_operand" "vm")]
 	  UNSPEC_VCVTBIASPH2FP8_PACK))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<biasph2fp8_pack>\t{%2, %1, %0<mask_operand3>|%0<mask_operand3>, %1, %2}"
   [(set_attr "prefix" "evex")])
-
-(define_mode_iterator VHF_256_512
-  [V16HF (V32HF "TARGET_AVX10_2")])
 
 (define_mode_attr ph2fp8suff
   [(V32HF "") (V16HF "{y}") (V8HF "{x}")])
@@ -33701,7 +33698,7 @@
 	    [(match_operand:V8HF 1 "nonimmediate_operand")]
 	      UNSPEC_CONVERTPH2FP8)
 	  (match_dup 2)))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "operands[2] = CONST0_RTX (V8QImode);")
 
 (define_insn "*vcvt<convertph2fp8>v8hf"
@@ -33711,7 +33708,7 @@
 	    [(match_operand:V8HF 1 "nonimmediate_operand" "vm")]
 	      UNSPEC_CONVERTPH2FP8)
 	  (match_operand:V8QI 2 "const0_operand")))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<convertph2fp8>{x}\t{%1, %0|%0, %1}"
   [(set_attr "prefix" "evex")
    (set_attr "mode" "HF")])
@@ -33731,7 +33728,7 @@
 			 (const_int 6) (const_int 7)]))
 	    (match_operand:QI 3 "register_operand"))
 	  (match_dup 4)))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "operands[4] = CONST0_RTX (V8QImode);")
 
 (define_insn "*vcvt<convertph2fp8>v8hf_mask"
@@ -33749,7 +33746,7 @@
 			 (const_int 6) (const_int 7)]))
 	    (match_operand:QI 3 "register_operand" "Yk"))
 	  (match_operand:V8QI 4 "const0_operand")))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<convertph2fp8>{x}\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
   [(set_attr "prefix" "evex")])
 
@@ -33758,7 +33755,7 @@
 	(unspec:<ssebvecmode_2>
 	  [(match_operand:VHF_256_512 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_CONVERTPH2FP8))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvt<convertph2fp8><ph2fp8suff>\t{%1, %0<mask_operand2>|%0<mask_operand2>, %1}"
   [(set_attr "prefix" "evex")])
 
@@ -33767,7 +33764,7 @@
 	(unspec:VHF_AVX512VL
 	  [(match_operand:<ssebvecmode_2> 1 "nonimmediate_operand" "vm")]
 	  UNSPEC_VCVTHF82PH))]
-  "TARGET_AVX10_2"
+  "TARGET_AVX10V1AUX"
   "vcvthf82ph\t{%1, %0<mask_operand2>|%0<mask_operand2>, %<iptrssebvec_2>1}"
   [(set_attr "prefix" "evex")])
 
