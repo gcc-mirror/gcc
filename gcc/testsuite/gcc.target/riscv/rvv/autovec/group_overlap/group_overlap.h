@@ -692,6 +692,36 @@
     ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
     ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
 
+/* A widening accumulate like vwabda.vv reads vd with EEW = 2 * SEW while vs2
+   and vs1 are read with EEW = SEW, thus neither vs2 nor vs1 may fall inside
+   the vd register group.  RI_F reinterprets the widened accumulator as the
+   narrowed element type and GET_F extracts its IDX-th piece, which lives in
+   the vd register group.  Then take that piece as vs2 for vd0 and as vs1 for
+   vd1 to ask for the overlap.  */
+#define LOOP_WIDEN_TERNARY_BODY_OVERLAP_X2(NT, WT, WNT, LD_NF, LD_WF, RI_F, \
+					   GET_F, IDX, OUT_F, ST_F, OUT,    \
+					   START, VL)                       \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+    NT vs0 = LD_NF ((void *)START, VL); START += VL;                        \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WNT vr0 = RI_F (vw0);                                                   \
+    WNT vr1 = RI_F (vw1);                                                   \
+                                                                            \
+    NT vt0 = GET_F (vr0, IDX);                                              \
+    NT vt1 = GET_F (vr1, IDX);                                              \
+                                                                            \
+    WT vd0 = OUT_F (vw0, vt0, vs0, VL);                                     \
+    WT vd1 = OUT_F (vw1, vs1, vt1, VL);                                     \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+
 #define DEF_GROUP_OVERLAP_UNARY_0(VL_F, NT, WT, LD_F, OUT_F, ST_F, NAME, \
 				  LOOP_BODY)                             \
   void test_group_overlap_##NAME##_##NT##_unary_0(uint8_t *data,         \
@@ -797,6 +827,23 @@
                                                                             \
     while (start < end) {                                                   \
       LOOP_BODY (NT, WT, LD_NF, RI_F, OUT_F, ST_F, out, start, vl);         \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_TERNARY_0(VL_F, NT, WT, WNT, LD_NF, LD_WF, RI_F,  \
+				    GET_F, IDX, OUT_F, ST_F, NAME,          \
+				    LOOP_BODY)                              \
+  void test_group_overlap_##NAME##_##NT##_ternary_0(uint8_t *data,          \
+						    uint8_t *out,           \
+						    size_t limit)           \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, WT, WNT, LD_NF, LD_WF, RI_F, GET_F, IDX, OUT_F, ST_F,  \
+		 out, start, vl);                                           \
     }                                                                       \
   }
 
