@@ -7841,7 +7841,10 @@ The implementation remark:
 @item The MI100 (gfx908) and gfx902 are not supported with the
       @code{GOMP_RUNTIME_USM} environment variable.
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
-      environment variable; the default is 32 kiB per thread.
+      environment variable; the default is 32 kiB per thread.  The size is
+      rounded up to an odd multiple of 4 kiB (so the default becomes 36 kiB)
+      because placing the stacks at a large power-of-two stride harms memory
+      performance.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
       the @code{access} trait is set to @code{cgroup}.  The default pool size
       is automatically scaled to share the 64 kiB LDS memory between the number

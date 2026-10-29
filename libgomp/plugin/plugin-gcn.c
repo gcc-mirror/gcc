@@ -1195,6 +1195,18 @@ init_environment_variables (void)
 	stack_size = tmp;;
     }
 
+  /* When the stride between the stacks of consecutive threads is a multiple
+     of a large power of two, the same stack offset in every thread maps to
+     the same memory channel, which can considerably harm the performance of
+     kernels that use the stack heavily, such as vectorized reductions.  Round
+     the stack size up to an odd multiple of 4 kiB to avoid this.  */
+  if (stack_size > 0)
+    {
+      stack_size = (stack_size + 4095) & ~4095;
+      if ((stack_size & 4096) == 0)
+	stack_size += 4096;
+    }
+
   const char *lowlat = secure_getenv ("GOMP_GCN_LOWLAT_POOL");
   if (lowlat)
     lowlat_size = atoi (lowlat);
