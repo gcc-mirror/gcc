@@ -1,3 +1,32 @@
+2026-10-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/inplace_vector (inplace_vector::_S_check_size)
+	(inplace_vector::_S_check_distance)
+	(inplace_vector::_S_distance_if_fits): Rename __used parameter
+	to __size.
+
+2026-10-28  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/stl_iterator_base_types.h (__any_sizeable_iterator):
+	Define.
+	* include/std/inplace_vector (inplace_vector::_S_reserve):
+	Replace with...
+	(inplace_vector::_S_check_size, inplace_vector::_S_check_distance):
+	Define.
+	(inplace_vector::_S_distance): Replace with..
+	(inplace_vector::_S_distance_if_fits): Rework _S_distance with
+	integrated bounds checking, and overloaded for rangs.
+	(inplace_vector::reserve, inplace_vector::resize): Replace
+	_S_reserve with _S_check_size.
+	(inplace_vector::inplace_vector, inplace_vector::assign): Replace
+	runtime check with if constexpr and use _S_distance_if_fits.
+	(inplace_vector::insert): Likewise, and skip rotate for insertion
+	at the end.
+	(inplace_vector::append_range): Use _S_distance_if_fits to compute
+	size.
+	* testsuite/23_containers/inplace_vector/modifiers/capacity_check.cc:
+	New test.
+
 2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/127815

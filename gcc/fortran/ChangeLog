@@ -1,3 +1,14 @@
+2026-10-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128144
+	* resolve.cc (find_array_spec): Handle CLASS array components
+	followed directly by an array reference.
+	(fixup_inferred_compcall_refs): New function.
+	(resolve_typebound_function, resolve_typebound_subroutine)
+	(resolve_ppc_call, resolve_expr_ppc): Use it.
+	* trans-expr.cc (gfc_conv_variable): Do not call
+	gfc_fixup_inferred_type_refs.
+
 2026-10-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* intrinsic.texi (OpenMP intrinsic modules): Update list of

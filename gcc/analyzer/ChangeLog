@@ -1,3 +1,244 @@
+2026-10-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* common.h (cmp_types): New decl.
+	* constraint-manager.cc (cmp_types): Move to svalue.c.
+	* region-model-manager.cc
+	(region_model_manager::get_or_create_constant_svalue): Port
+	m_constants_map from hash_map to std::map.
+	(region_model_manager::get_or_create_unknown_svalue): Likewise
+	for m_unknowns_map.
+	(region_model_manager::get_or_create_initial_value): Likewise for
+	m_initial_values_map.
+	(region_model_manager::get_or_create_setjmp_svalue): Likewise for
+	m_setjmp_values_map.
+	(region_model_manager::get_or_create_poisoned_svalue): Likewise for
+	m_poisoned_values_map.
+	(region_model_manager::get_ptr_svalue): Likewise for
+	m_pointer_values_map.
+	(region_model_manager::get_or_create_unaryop): Likewise for
+	m_unaryop_values_map.
+	(region_model_manager::get_or_create_binop): Likewise for
+	m_binop_values_map.
+	(region_model_manager::get_or_create_sub_svalue): Likewise for
+	m_sub_values_map.
+	(region_model_manager::get_or_create_repeated_svalue): Likewise for
+	m_repeated_values_map.
+	(region_model_manager::get_or_create_bits_within): Likewise for
+	m_bits_within_values_map.
+	(region_model_manager::get_or_create_unmergeable): Likewise for
+	m_unmergeable_values_map.
+	(region_model_manager::get_or_create_widening_svalue): Likewise
+	for m_widening_values_map.
+	(region_model_manager::get_or_create_compound_svalue): Likewise
+	for m_compound_values_map.
+	(region_model_manager::get_or_create_conjured_svalue): Likewise
+	for m_conjured_values_map.
+	(region_model_manager::get_or_create_asm_output_svalue): Likewise
+	for m_asm_output_values_map.
+	(region_model_manager::get_or_create_const_fn_result_svalue):
+	Likewise for m_const_fn_result_values_map.
+	(region_model_manager::get_region_for_fndecl): Likewise for
+	m_fndecls_map.
+	(region_model_manager::get_region_for_label): Likewise for
+	m_labels_map.
+	(region_model_manager::get_region_for_global): Likewise for
+	m_global_map.
+	(region_model_manager::get_field_region): Make "key" const.
+	(region_model_manager::get_element_region): Likewise.
+	(region_model_manager::get_offset_region): Likewise.
+	(region_model_manager::get_sized_region): Likewise.
+	(region_model_manager::get_cast_region): Likewise.
+	(region_model_manager::get_frame_region): Likewise.
+	(region_model_manager::get_region_for_string): Port
+	m_string_map from hash_map to std::map.
+	(region_model_manager::get_bit_range): Make "key" const.
+	(region_model_manager::get_var_arg_region): Likewise.
+	(log_uniq_map): Implement for std::map.
+	* region-model-manager.h (region_model_manager::constants_map_t):
+	Convert from hash_map to std::map.
+	(region_model_manager::unknowns_map_t): Likewise.
+	(region_model_manager::poisoned_values_map_t): Likewise.
+	(region_model_manager::setjmp_values_map_t): Likewise.
+	(region_model_manager::initial_values_map_t): Likewise.
+	(region_model_manager::pointer_values_map_t): Likewise.
+	(region_model_manager::unaryop_values_map_t): Likewise.
+	(region_model_manager::binop_values_map_t): Likewise.
+	(region_model_manager::sub_values_map_t): Likewise.
+	(region_model_manager::repeated_values_map_t): Likewise.
+	(region_model_manager::bits_within_values_map_t): Likewise.
+	(region_model_manager::unmergeable_values_map_t): Likewise.
+	(region_model_manager::widening_values_map_t): Likewise.
+	(region_model_manager::compound_values_map_t): Likewise.
+	(region_model_manager::conjured_values_map_t): Likewise.
+	(region_model_manager::asm_output_values_map_t): Likewise.
+	(region_model_manager::const_fn_result_values_map_t): Likewise.
+	(region_model_manager::fndecls_map_t): Likewise.
+	(region_model_manager::labels_map_t): Likewise.
+	(region_model_manager::globals_map_t): Likewise.
+	(region_model_manager::string_map_t): Likewise.
+	* setjmp-longjmp.cc (setjmp_svalue::key_t::operator<): New.
+	* svalue.cc (cmp_types) Move here from constraint-manager.cc and
+	make non-static.
+	(region_svalue::key_t::operator<): New.
+	(constant_svalue::key_t::operator<): New.
+	(unaryop_svalue::key_t::operator<): New.
+	(binop_svalue::key_t::operator<): New.
+	(sub_svalue::key_t::operator<): New.
+	(repeated_svalue::key_t::operator<): New.
+	(bits_within_svalue::key_t::operator<): New.
+	(widening_svalue::key_t::operator<): New.
+	(compound_svalue::key_t::operator<): New.
+	(conjured_svalue::key_t::operator<): New.
+	(asm_output_svalue::key_t::operator<): New.
+	(const_fn_result_svalue::key_t::operator<): New.
+	* svalue.h (region_svalue::key_t::hash): Delete.
+	(region_svalue::key_t::operator<): New decl.
+	(region_svalue::key_t::mark_deleted): Delete.
+	(region_svalue::key_t::mark_empty): Delete.
+	(region_svalue::key_t::is_deleted): Delete.
+	(region_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<region_svalue::key_t>): Delete.
+	(constant_svalue::key_t::hash): Delete.
+	(constant_svalue::key_t::operator<): New.
+	(constant_svalue::key_t::mark_deleted): Delete.
+	(constant_svalue::key_t::mark_empty): Delete.
+	(constant_svalue::key_t::is_deleted) Delete.
+	(constant_svalue::key_t::is_empty):  Delete.
+	(struct default_hash_traits<constant_svalue::key_t>): Delete.
+	(poisoned_svalue::key_t::hash): Delete.
+	(poisoned_svalue::key_t::operator<): New.
+	(poisoned_svalue::key_t::mark_deleted): Delete.
+	(poisoned_svalue::key_t::mark_empty): Delete.
+	(poisoned_svalue::key_t::is_deleted): Delete.
+	(poisoned_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<poisoned_svalue::key_t>): Delete.
+	(setjmp_record::add_to_hash): Delete.
+	(setjmp_svalue::key_t::hash): Delete.
+	(setjmp_svalue::key_t::operator<): New.
+	(setjmp_svalue::key_t::mark_deleted): Delete.
+	(setjmp_svalue::key_t::mark_empty): Delete.
+	(setjmp_svalue::key_t::is_deleted): Delete.
+	(setjmp_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<setjmp_svalue::key_t>): Delete.
+	(unaryop_svalue::key_t::hash): Delete.
+	(unaryop_svalue::key_t::operator<): New.
+	(unaryop_svalue::key_t::mark_deleted): Delete.
+	(unaryop_svalue::key_t::mark_empty): Delete.
+	(unaryop_svalue::key_t::is_deleted): Delete.
+	(unaryop_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<unaryop_svalue::key_t>): Delete.
+	(binop_svalue::key_t::hash): Delete.
+	(binop_svalue::key_t::operator<): New.
+	(binop_svalue::key_t::mark_deleted): Delete.
+	(binop_svalue::key_t::mark_empty): Delete.
+	(binop_svalue::key_t::is_deleted): Delete.
+	(binop_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<binop_svalue::key_t>): Delete.
+	(sub_svalue::key_t::hash): Delete.
+	(sub_svalue::key_t::operator<): New.
+	(sub_svalue::key_t::mark_deleted): Delete.
+	(sub_svalue::key_t::mark_empty): Delete.
+	(sub_svalue::key_t::is_deleted): Delete.
+	(sub_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<sub_svalue::key_t>): Delete.
+	(repeated_svalue::key_t::hash): Delete.
+	(repeated_svalue::key_t::operator<): New.
+	(repeated_svalue::key_t::mark_deleted): Delete.
+	(repeated_svalue::key_t::mark_empty): Delete.
+	(repeated_svalue::key_t::is_deleted): Delete.
+	(repeated_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<repeated_svalue::key_t>): Delete.
+	(bits_within_svalue::key_t::hash): Delete.
+	(bits_within_svalue::key_t::operator<): New.
+	(bits_within_svalue::key_t::mark_deleted): Delete.
+	(bits_within_svalue::key_t::mark_empty): Delete.
+	(bits_within_svalue::key_t::is_deleted): Delete.
+	(bits_within_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<bits_within_svalue::key_t>): Delete.
+	(class widening_svalue): Update leading comment.
+	(widening_svalue::key_t::hash): Delete.
+	(widening_svalue::key_t::operator<): New.
+	(widening_svalue::key_t::mark_deleted): Delete.
+	(widening_svalue::key_t::mark_empty): Delete.
+	(widening_svalue::key_t::is_deleted): Delete.
+	(widening_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<widening_svalue::key_t>): Delete.
+	(compound_svalue::key_t::hash): Delete.
+	(compound_svalue::key_t::operator<): New.
+	(compound_svalue::key_t::mark_deleted): Delete.
+	(compound_svalue::key_t::mark_empty): Delete.
+	(compound_svalue::key_t::is_deleted): Delete.
+	(compound_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<compound_svalue::key_t>): Delete.
+	(conjured_svalue::key_t::hash): Delete
+	(conjured_svalue::key_t::operator<): New.
+	(conjured_svalue::key_t::mark_deleted): Delete.
+	(conjured_svalue::key_t::mark_empty): Delete.
+	(conjured_svalue::key_t::is_deleted): Delete.
+	(conjured_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<conjured_svalue::key_t>): Delete.
+	(asm_output_svalue::key_t::hash): Delete.
+	(asm_output_svalue::key_t::operator<): New.
+	(asm_output_svalue::key_t::mark_deleted): Delete.
+	(asm_output_svalue::key_t::mark_empty): Delete.
+	(asm_output_svalue::key_t::is_deleted): Delete.
+	(asm_output_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<asm_output_svalue::key_t>): Delete.
+	(const_fn_result_svalue::key_t::hash): Delete.
+	(const_fn_result_svalue::key_t::operator<): New.
+	(const_fn_result_svalue::key_t::mark_deleted): Delete.
+	(const_fn_result_svalue::key_t::mark_empty): Delete.
+	(const_fn_result_svalue::key_t::is_deleted): Delete.
+	(const_fn_result_svalue::key_t::is_empty): Delete.
+	(struct default_hash_traits<const_fn_result_svalue::key_t>):
+	Delete.
+
+2026-10-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer-diagnostic-extensions.cc: New file.
+	* common.h (gcc::topics::analyzer_events::on_ana_done): New
+	struct.
+	(gcc::topics::analyzer_events::subscriber): Add on_message
+	vfunc for the above.
+	* diagnostic-manager.cc (saved_diagnostic::to_json):
+	Capture m_problem and m_duplicates.
+	* engine.cc (class exploded_graph_diagnostic_digraph): New.
+	(feasibility_problem::to_json): New.
+	(exploded_graph_annotator::print_enode_port): Update for change to
+	prefix of supernode IDs.
+	(impl_run_checkers): Publish the "on_ana_done" message.
+	* exploded-graph.h (exploded_graph::make_diagnostics_digraph): New
+	decl.
+	(exploded_graph::get_worklist): New decl.
+	(feasibility_problem::to_json): New decl.
+	* known-function-manager.cc (get_keys_as_json): New.
+	(known_function_manager::to_json): New.
+	* known-function-manager.h (known_function_manager::to_json): New decl.
+	* ops.cc (rejected_eh_dispatch::to_json): New.
+	* pending-diagnostic.cc: Include "diagnostics/sarif-sink.h".
+	(pending_diagnostic::to_json): New.
+	* pending-diagnostic.h (pending_diagnostic::to_json): New decl.
+	* region-model.cc (rejected_constraint::make_base_json): New.
+	(rejected_op_constraint::to_json): New.
+	(rejected_default_case::to_json): New.
+	(rejected_ranges_constraint::to_json): New.
+	* region-model.h (rejected_constraint::to_json): New decl.
+	(rejected_constraint::make_base_json): New decl.
+	(rejected_op_constraint::to_json): New decl.
+	(rejected_default_case::to_json): New decl.
+	(rejected_ranges_constraint::to_json): New decl.
+	* supergraph.cc: Include "tree-logical-location.h"
+	and "diagnostics/digraphs.h".
+	(class supergraph_diagnostic_digraph): New.
+	(supernode::dump_dot_id): Use "supernode_" as the prefix, rather
+	than just "node_".
+	* supergraph.h (make_diagnostics_digraph): New decl.
+
+2026-10-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-fd.cc (kf_bind::matches_call_types_p): Require arguments
+	0 and 2 to have integral type.
+
 2026-10-12  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
 
 	PR analyzer/125265

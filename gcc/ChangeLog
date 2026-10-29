@@ -1,3 +1,442 @@
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Revert Wvr constraint to the
+	early clobber vr.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (get_nonzero_bits_1): Use bitmask for pointers.
+	(alignment_to_bitmask): New.
+	(bitmask_to_alignment): New.
+	(get_ptr_info_alignment): Make the bitmask the authority, and
+	confirm it agrees with the alignment fields.
+	(mark_ptr_info_alignment_unknown): Clear range bitmask as well.
+	(set_ptr_info_alignment): Make the bitmask the authority.
+	(duplicate_ssa_name_ptr_info): Ensure the bitmask is updated.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-core.h (struct ptr_info_def): Remove declaration.
+	* tree-ssanames.cc (range_info_p): Remove.
+	(range_info_fits_p): Adjust.
+	(ssa_name_prange_storage): Rename from ssa_name_ptr_info and adjust.
+	(set_pt_solution): New.
+	(get_pt_solution): Rename from get_ptr_info and adjust.
+	(ssa_name_pt_solution): Adjust.
+	(set_ssa_name_pt_solution): Adjust.
+	(range_info_set_range): Adjust.
+	(set_range_info): Adjust.
+	(set_ptr_nonnull): Adjust.
+	(get_nonzero_bits_1): Adjust.
+	(get_known_nonzero_bits_1 ): Adjust.
+	(get_ptr_info_alignment): Adjust.
+	(mark_ptr_info_alignment_unknown): Adjust.
+	(set_ptr_info_alignment): Adjust.
+	(set_ssa_name_ptr_info): Remove.
+	(duplicate_ssa_name_ptr_info): Adjust.
+	(duplicate_ssa_name_range_info): Adjust.
+	(duplicate_ssa_name_fn): Adjust.
+	(reset_flow_sensitive_info): Adjust.
+	(flow_sensitive_info_storage::save): Adjust.
+	(flow_sensitive_info_storage::restore): Adjust.
+	* tree-ssanames.h (struct ptr_info_def): Remove.
+	(flow_sensitive_info_storage::align): Remove.
+	(flow_sensitive_info_storage::misalign): Remove.
+	* value-range-storage.cc (prange_storage::prange_storage): Set
+	new fields.
+	* value-range-storage.h (prange_storage::ptr_info): Remove.
+	(prange_storage::pt): New.
+	(prange_storage::align): New.
+	(prange_storage::misalign): New.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* cfgexpand.cc (add_partitioned_vars_to_ptset): Adjust parameter.
+	(update_alias_info_with_stack_vars): Adjust to new API.
+	* gimple-pretty-print.cc (dump_ssaname_info): Likewise, and
+	segregate alignment printing from pt_solution presence.
+	* gimple-range.cc: Adjust comment.
+	* ipa-icf.cc (sem_item_optimizer::fixup_pt_set): Adjust to new API.
+	* ipa-icf.h (fixup_pt_set): Adjust parameter in protoype.
+	* targhooks.cc (default_ref_may_alias_errno): Adjust to new API.
+	* tree-core.h: Adjust comment.
+	* tree-data-ref.cc (dr_analyze_alias): Adjust to new API.
+	(dr_may_alias_p): Likewise.
+	* tree-data-ref.h (struct dr_alias:ptr_info): Change type to
+	pt_solution pointer.
+	* tree-if-conv.cc (predicate_load_or_store): Adjust to new API.
+	* tree-inline.cc (remap_ssa_name): Likewise.
+	* tree-ssa-address.cc (copy_ref_info): Likewise.
+	* tree-ssa-alias.cc (ptr_deref_may_alias_global_p): Likewise.
+	(ptr_deref_may_alias_auto_p): Likewise.
+	(ptr_deref_may_alias_decl_p ): Likewise.
+	(ptr_derefs_may_alias_p): Likewise.
+	(ptrs_compare_unequal): Likewise.
+	(dump_alias_info): Likewise.
+	(dump_points_to_solution): Change parameter type.
+	(dump_points_to_info_for): Change to new API.
+	(ref_maybe_used_by_call_p_1): Likewise.
+	(call_may_clobber_ref_p_1): Likewise.
+	(same_addr_size_stores_p): Likewise.
+	* tree-ssa-alias.h (dump_points_to_solution): Adjust parameters.
+	(pt_solution_singleton_or_null_p): Likewise.
+	(pt_solution_includes_global): Likewise.
+	(pt_solution_includes_auto): Likewise.
+	(pt_solution_includes): Likewise.
+	(pt_solution_includes_const_pool): Likewise.
+	(pt_solutions_intersect): Likewise.
+	* tree-ssa-ccp.cc (fold_builtin_alloca_with_align): Adjust to new API.
+	* tree-ssa-loop-ivopts.cc (rewrite_use_nonlinear_expr): Likewise.
+	* tree-ssa-loop-prefetch.cc (issue_prefetch_ref): Likewise.
+	* tree-ssa-structalias.cc (find_what_p_points_to): Likewise.
+	(pt_solution_singleton_or_null_p): Parameter constification.
+	(pt_solution_includes_global): Likewise.
+	(pt_solution_includes_auto): Likewise.
+	(pt_solution_includes_1): Likewise.
+	(pt_solution_includes): Likewise.
+	(pt_solution_includes_const_pool): Likewise.
+	(pt_solutions_intersect_1): Likewise.
+	(pt_solutions_intersect): Likewise.
+	* tree-ssa.cc (verify_ssa): Adjust to new API.
+	* tree-ssanames.cc (ssa_name_ptr_info) Make static inline.
+	(ssa_name_pt_solution): New.
+	(set_ssa_name_pt_solution): New.
+	(range_info_set_range): Adjust to new API.
+	(get_ptr_info_alignment): Likewise.
+	(mark_ptr_info_alignment_unknown): Likewise.
+	(get_ptr_info): Make static.
+	(duplicate_ssa_name_ptr_info): Adjust to new API.  Do not copy
+	alignment info.
+	(duplicate_ssa_name_range_info): Adjust to new API and copy alignment
+	info.
+	(reset_flow_sensitive_info): Likewise.
+	(flow_sensitive_info_storage::save): Likewise.
+	(flow_sensitive_info_storage::restore): Likewise.
+	* tree-ssanames.h (ssa_name_ptr_info): Remove.
+	(ssa_name_pt_solution): New prototype.
+	(set_ssa_name_pt_solution): New prototype.
+	(get_ptr_info): Remove.
+	(duplicate_ssa_name_ptr_info): Adjust parameters.
+	* tree-vect-data-refs.cc (vect_duplicate_ssa_name_ptr_info): Adjust
+	to new API.
+	(vect_create_addr_base_for_vector_ref): Likewise.
+	(bump_vector_ptr): Likewise.
+	* value-query.cc (get_ssa_name_ptr_info_nonnull): Likewise.
+	* value-range-storage.h: Adjust comment.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* builtins.cc (get_pointer_alignment_1): Adjust call to new API.
+	* gimple-low.cc (lower_builtin_assume_aligned): Likewise.
+	* gimple-pretty-print.cc (dump_ssaname_info): Likewise.
+	* ipa-prop.cc (ipcp_update_vr): Likewise.
+	* tree-ssa-ccp.cc (ccp_finalize): Likewise.
+	* tree-ssa-dom.cc (maybe_set_nonzero_bits): Likewise.
+	* tree-ssa-loop-ivopts.cc (rewrite_use_nonlinear_expr): Likewise.
+	* tree-ssa-loop-prefetch.cc (issue_prefetch_ref): Likewise.
+	* tree-ssa-pre.cc (create_expression_by_pieces): Likewise.
+	* tree-ssanames.cc (get_nonzero_bits_1): Likewise.
+	(get_ptr_info_alignment): Adjust parameter.
+	(mark_ptr_info_alignment_unknown): Likewise.
+	(set_ptr_info_alignment): Likewise.
+	(adjust_ptr_info_misalignment): Remove.
+	(get_ptr_info): Use new API.
+	(reset_flow_sensitive_info): Likewise.
+	(flow_sensitive_info_storage::save): Likewise.
+	(flow_sensitive_info_storage::restore): Likewise.
+	* tree-ssanames.h (get_ptr_info_alignment): Adjust prototype.
+	(mark_ptr_info_alignment_unknown): Likewise.
+	(set_ptr_info_alignment): Likewise.
+	(adjust_ptr_info_misalignment): Remove prototype.
+	* tree-vect-data-refs.cc (vect_duplicate_ssa_name_ptr_info): Adjust
+	to new API.
+	* tree-vect-stmts.cc (create_array_ref): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* ipa-prop.cc (ipa_record_return_value_range_1): Also check for
+	points-away.
+	* range-op-ptr.cc (operator_equal::op1_range): Produce points-away
+	when appropriate.
+	(operator_not_equal::op1_range): Likewise.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-pretty-print.cc (dump_ssaname_info): Do not print
+	VARYING pointer ranges.
+	* ipa-prop.cc (ipa_set_jfunc_vr): Remove points to info from
+	pointers as necessary.
+	* tree-ssanames.cc (set_range_info): Handle prange.
+	* value-query.cc (get_ssa_name_range_info): Likewise.
+	(gimple_range_global): Likewise.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (duplicate_ssa_name_range_info): Integrate
+	pointer types.
+	(maybe_duplicate_ssa_info_at_copy): Simplify condition.
+	(duplicate_ssa_name_fn): Do not special case pointers.
+	(reset_flow_sensitive_info): Pointers also carry a range.
+	(flow_sensitive_info_storage::save): Likewise.
+	(flow_sensitive_info_storage::restore): Likewise.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	* ipa-icf.cc (sem_item_optimizer::merge_classes): Do not special
+	case pointer ranges.
+	* print-tree.cc (print_node): Print all range addresses, not
+	just pointers.
+	* tree-core.h (union ssa_name_info_type): Remove.
+	* tree-ssanames.cc (range_info_alloc): Change return type.
+	(ssa_name_ptr_info): New.
+	(range_info_set_range): Preserve ptr_info_def pointer.
+	(make_ssa_name_fn): Do not special case pointers.
+	(set_ssa_name_ptr_info): New.
+	(get_ptr_info): Use set_ssa_name_ptr_info.
+	(duplicate_ssa_name_ptr_info): Likewise.
+	* tree-ssanames.h (ssa_name_ptr_info): Add prototype.
+	(SSA_NAME_PTR_INFO): Relocate from tree.h and adjust.
+	* tree.h (SSA_NAME_PTR_INFO): Move to tree-ssanames.h.
+	(SSA_NAME_RANGE_INFO): Adjust.
+	* value-range-storage.cc (prange_storage::prange_storage): Set
+	ptr_info field.
+	* value-range-storage.h (prange_storage::ptr_info): New member.
+
+2026-10-28  Igor Shevlyakov  <igor@tachyum.com>
+
+	* tree-vect-generic.cc (expand_vector_divmod): Handle division by
+	a negative power of two.
+
+2026-10-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/128177
+	* value-range.cc (prange::set): Call set_unknown_pt last during
+	range construction.
+
+2026-10-28  Bohan Lei  <garthlei@linux.alibaba.com>
+	    Jin Ma  <jinma@linux.alibaba.com>
+	    Yunze Zhu  <yunzezhu@linux.alibaba.com>
+
+	* config.gcc: Add xuantie-vector-builtins-bases.o and
+	xuantie_vector.h.
+	* config/riscv/andes-23-series.md (andes_23_unknown): Add new types.
+	* config/riscv/andes-25-series.md (andes_25_vector_unknown): Ditto.
+	* config/riscv/andes-45-series.md (andes_45_vector_unknown): Ditto.
+	* config/riscv/arcv-rhx100.md (arcv_rhx100_unknown): Ditto.
+	* config/riscv/arcv-rmx100.md (arcv_rmx100_unknown): Ditto.
+	* config/riscv/generic-vector-ooo.md (vec_imul): Ditto.
+	(vec_perm): Ditto.
+	* config/riscv/mips-p8700.md (mips_p8700_unknown): Ditto.
+	* config/riscv/riscv-avlprop.cc (avl_can_be_propagated_p):
+	Exclude xt.vilo and xt.vcrcfold[nr].
+	* config/riscv/riscv-cores.def (RISCV_CORE): Add xxtvarith to
+	C950 arch string.
+	* config/riscv/riscv-ext.def: Include riscv-ext-xuantie.def.
+	* config/riscv/riscv-ext.opt: Regenerate.
+	* config/riscv/riscv-v.cc (shuffle_interleave_even_odd_patterns):
+	New function.
+	(expand_vec_perm_const_1): Add even-odd interleave case.
+	* config/riscv/riscv-vector-builtins-types.def (DEF_RVV_DIU_OPS):
+	New macro.
+	* config/riscv/riscv-vector-builtins.cc (DEF_RVV_DIU_OPS): New.
+	(function_groups): Include
+	xuantie-vector-builtins-functions.def.
+	(get_builtin_partition): Add XXTVARITH_EXT case.
+	* config/riscv/riscv-vector-builtins.h (enum required_ext): Add
+	XXTVARITH_EXT.
+	(enum rvv_builtin_partition): Add RVV_PARTITION_XXTVARITH.
+	(required_ext_to_isa_name): Add XXTVARITH_EXT case.
+	(required_extensions_specified): Ditto.
+	* config/riscv/riscv.md: New types.
+	* config/riscv/sifive-7.md (sifive_7_vec_unknown): Add new types.
+	* config/riscv/sifive-p400.md (sifive_p400_unknown): Ditto.
+	* config/riscv/sifive-p600.md (sifive_p600_unknown): Ditto.
+	* config/riscv/spacemit-x60.md (spacemit_x60_dummy): Ditto.
+	* config/riscv/t-riscv: Add new files.
+	* config/riscv/tt-ascalon-d8.md (tt_ascalon_d8_vec_unknown): Add new types.
+	* config/riscv/vector.md: Include xuantie-vector.md.
+	* config/riscv/xiangshan.md (xiangshan_alu_unknown): Add new types.
+	* config/riscv/xt-c908.md (xt_c908_dummy): Ditto.
+	* doc/riscv-ext.texi: Regenerate.
+	* config/riscv/riscv-ext-xuantie.def: New file.
+	* config/riscv/xuantie-vector-builtins-bases.cc: New file.
+	* config/riscv/xuantie-vector-builtins-bases.h: New file.
+	* config/riscv/xuantie-vector-builtins-functions.def: New file.
+	* config/riscv/xuantie-vector.md: New file.
+	* config/riscv/xuantie_vector.h: New file.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128189
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): When
+	the vector type of an argument cannot be computed, fail.
+
+2026-10-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (ANALYZER_OBJS): Add
+	analyzer/analyzer-diagnostic-extensions.o.
+	* diagnostics/sarif-sink.cc (make_sarif_node): Update
+	for json::object::set_string overload accepting a std::string.
+	(make_sarif_edge): Likewise.
+	(make_sarif_edge): Likewise.
+	(set_string_property_escaping_braces): Likewise.
+	* doc/invoke.texi: Add analyzer-graphs=yes|no to the SARIF sink keys for
+	GCC developers.
+	* json.cc: Define INCLUDE_STRING.
+	(object::set_string): New overload.
+	* json.h (object::set_string): New overload decl.
+	* opts-diagnostic.cc (gcc_extra_keys::gcc_extra_keys): Initialize
+	m_analyzer_graphs.
+	(gcc_extra_keys::maybe_handle_kv): Handle key "analyzer-graphs".
+	(gcc_extra_keys::get_keys): Add "analyzer-graphs".
+	(gcc_extra_keys::m_analyzer_graphs): New field.
+	(handle_gcc_specific_keys): Handle m_analyzer_graphs.
+	* opts-diagnostic.h
+	(gcc_extension_factory::make_analyzer_graphs_extension): New vfunc
+	decl.
+	* tree-diagnostic-sink-extensions.h
+	(compiler_extension_factory::make_analyzer_graphs_extension): New
+	decl.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128225
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Only
+	use build_truth_vector_type_for_mode for vector mode
+	vector boolean types.
+	Check mask_mode of the simdclone is a supported one even
+	if the inbranch clone is going to be used for a not-inbranch use.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128236
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Avoid
+	moving abnormal defs when rewriting complex loads.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128172
+	* tree-ssa-dom.cc (pass_dominator::execute): Check a stmt
+	is still in the IL before calling fixup_noreturn_call on it.
+
+2026-10-28  Merlin Warner-Huish  <merlin.warner-huish@embecosm.com>
+
+	PR middle-end/124820
+	* match.pd ((negate (fmas@3 @0 @1 @2)) -> (IFN_FNMS @0 @1 @2)):
+	Only enable for !HONOR_SIGNED_ZEROS.
+	((negate (IFN_FMS@3 @0 @1 @2)) -> (IFN_FNMA @0 @1 @2)): Likewise.
+	((negate (IFN_FNMA@3 @0 @1 @2)) -> (IFN_FMS @0 @1 @2)): Likewise.
+	((negate (IFN_FNMS@3 @0 @1 @2)) -> (IFN_FMA @0 @1 @2)): Likewise.
+	((negate (fmas@3 @4 @0 @1 @2 @5))
+	-> (IFN_COND_FNMS @4 @0 @1 @2 (negate @5))): Likewise.
+	((negate (IFN_COND_FMS@3 @4 @0 @1 @2 @5))
+	-> (IFN_COND_FNMA @4 @0 @1 @2 (negate @5))): Likewise.
+	((negate (IFN_COND_FNMA@3 @4 @0 @1 @2 @5))
+	-> (IFN_COND_FMS @4 @0 @1 @2 (negate @5))): Likewise.
+	((negate (IFN_COND_FNMS@3 @4 @0 @1 @2 @5))
+	-> (IFN_COND_FMA @4 @0 @1 @2 (negate @5))): Likewise.
+
+2026-10-28  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.cc (synthesize_xor): Avoid undefined shift when
+	using rotate to get key bits into useful position.  Fix off-by-one
+	error causing missed optimization in rotate case.
+	(synthesize_and): Do not use zext.h if ZBB is not enabled.
+	* config/riscv/riscv.md (addv<mode>4): Use make_safe_from to ensure inputs
+	are not overwritten by early assignments to the output.
+	(uaddv<mode>4, subv<mode>4, usubv<mode>4, <u>divmod<mode>4): Likewise.
+	(addition with masked shift splitter): Use HOST_WIDE_INT_1U rather than 1.
+
+2026-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* cfgrtl.cc (force_nonfallthru_and_redirect): Replace some note
+	variables in the function with C++ simple declaration as condition.
+
+2026-10-28  Xiaomei Xue  <xuexiaomei@hygon.cn>
+
+	PR tree-optimization/128232
+	* tree-ssa-loop-prefetch.cc (saturating_mul): New function.
+	(volume_of_dist_vector): Use it.
+	(determine_loop_nest_reuse): Likewise.
+
+2026-10-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127879
+	* gimple-range-fold.cc (ctor_ref_range::accumulate_range): Remove
+	comment about RAW_DATA_CST.  Allow also STRING_CST, not just
+	CONSTRUCTOR.
+	(ctor_ref_range::accumulate_range_from_component_ref): Punt if
+	init is not a CONSTRUCTOR.
+	(ctor_ref_range::accumulate_range_from_array_ref): Handle
+	init being a STRING_CST.  Handle RAW_DATA_CSTs inside of a
+	CONSTRUCTOR.
+	(fold_using_range::range_from_readonly_var): Allow ctor being
+	a STRING_CST, rather than only a CONSTRUCTOR.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128209
+	* tree-ssa-sccvn.cc (vn_bb_in_region_flag, vn_entry_edge):
+	New globals.
+	(vn_is_backedge): Treat out-of-region edges conservatively.
+	(do_rpo_vn_1): Split out region marking from verification-only
+	to be always done.
+
+2026-10-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128224
+	* tree-vect-loop.cc (vect_transform_loop): Drop assert that
+	only .MASK_CALL with side-effects prevail.
+
+2026-10-28  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR middle-end/116135
+	* internal-fn.cc (expand_arith_overflow_result_store): Add
+	overflow_checked argument. Skip the redundant fit check when
+	overflow has already been checked but normalize the result.
+	(expand_addsub_overflow, expand_neg_overflow): Update callers.
+	(expand_mul_overflow): Check unsigned multiplication overflow at
+	the result precision for sub-mode precision results.
+
 2026-10-27  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	* genmodes.cc (emit_mode_unit_size): Generate MODE_UNIT_SIZE_TYPE

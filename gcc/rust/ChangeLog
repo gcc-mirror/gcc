@@ -1,3 +1,248 @@
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* util/rust-intrinsic-values.h: New value for pref_align_of.
+	* backend/rust-compile-intrinsic.cc: Add the sorry handler for it.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Add tychk information for it.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Register the handler.
+	* backend/rust-intrinsic-handlers.cc (breakpoint): Define it.
+	* backend/rust-intrinsic-handlers.h (breakpoint): Declare it.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Add tychk entry for breakpoint.
+	* util/rust-intrinsic-values.h: Add new value for breakpoint.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Add new handler.
+	* backend/rust-intrinsic-handlers.cc (build_rust_string): Move in the file.
+	(is_uninhabited): New function.
+	(type_assert): New inner handler and associated handler.
+	(assert_zero_valid_handler): Remove.
+	(assert_inhabited): Remove.
+	* backend/rust-intrinsic-handlers.h (enum class TyAssert): New.
+	(assert_inhabited): Remove.
+	(type_assert): New declaration.
+	* typecheck/rust-hir-type-check-intrinsic.cc: New entry for assert_uninit_valid.
+	* util/rust-intrinsic-values.h: Likewise.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Add handler for assert_inhabited.
+	* backend/rust-intrinsic-handlers.cc (lang_item_call): New function for calling functions
+	which are lang items.
+	(build_rust_string): Helper for creating Rust &str from the handlers.
+	(assert_inhabited): New handler.
+	* backend/rust-intrinsic-handlers.h (assert_inhabited): Declare it.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Add typecheck info for assert_inhabited.
+	* util/rust-intrinsic-values.h: Add assert_inhabited.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* util/rust-intrinsic-values.h: Declare the new intrinsic.
+	* backend/rust-intrinsic-handlers.cc (exact_div_handler): Implement the new handler.
+	* backend/rust-intrinsic-handlers.h (exact_div_handler): Declare it.
+	* backend/rust-compile-intrinsic.cc: Use the new handler.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Give type information for exact_div.
+
+2026-10-28  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc
+	(TypeCheckExpr::visit (HIR::CompoundAssignmentExpr)): For bitshift cases,
+	cast rhs to lhs, similar to how ArithmeticOrLogicalExpr handles bitshift
+	cases too.
+
+2026-10-28  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* checks/errors/rust-hir-pattern-analysis.cc
+	(emit_exhaustiveness_error): Emit the error as E0004.
+
+2026-10-28  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): Only add the
+	requested auto trait when probing for a specific trait.
+
+2026-10-28  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* resolve/rust-early-name-resolver-2.0.h
+	(Early::import_resolution_mode): Declare.
+	(Early::resolve_path_in_all_ns): Use it.
+	* resolve/rust-early-name-resolver-2.0.cc
+	(Early::import_resolution_mode): New function.
+	(Early::resolve_glob_import): Use it.
+
+2026-10-28  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* parse/rust-parse-impl.hxx (Parser::parse_item): Emit an error when
+	parse_vis_item fails without one.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-intrinsic-handlers.cc (assert_zero_valid_handler): Always warn when emitting
+	the function that only a no-op will be emitted.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-intrinsic-handlers.cc (ctlz_handler): Fix assertion after builtin lookup.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-name-resolution-context.hxx: Document non glob container
+	path.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-forever-stack.hxx: Remove useless map.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Add
+	extern crate to glob containers.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-ast.cc (Crate::inject_extern_crate): Inject extern crates
+	at the beginning of the crate instead of the end.
+	* resolve/rust-forever-stack.h: Add function prototype to insert a
+	crate within the extern prelude.
+	* resolve/rust-forever-stack.hxx: Add function to insert extern crate
+	within extern prelude.
+	* resolve/rust-name-resolution-context.cc (NameResolutionContext::insert_crate_in_prelude):
+	Insert extern crate within all extern prelude namespaces.
+	* resolve/rust-name-resolution-context.h: Add function prototype.
+	* resolve/rust-toplevel-name-resolver-2.0.cc (TopLevel::visit): Inject
+	extern crate within extern prelude during top level nr.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.h: Assign a node id to extern and lang
+	nodes.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.hxx: Debug the forever stack cursor
+	position.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-forever-stack.hxx: Stream extern and lang prelude nodes.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.cc (Crate::inject_extern_crate): Return the injected
+	crate's node id.
+	* ast/rust-ast.h: Update the function's prototype.
+
+2026-10-28  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* metadata/rust-export-metadata.cc (PublicInterface::gather_export_data):
+	Do not emit macros separately anymore.
+
+2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-intrinsic-handlers.cc (Intrinsic::compile): New function to set
+	up the context around the compilation of an intrinsic's function block.
+	(maybe_override_ctx): Move function into...
+	(IntrinsicCtx::maybe_override_ctx): ...This class method.
+	(check_for_cached_intrinsic): Likewise.
+	(IntrinsicCtx::check_for_cached_intrinsic): Likewise.
+	(compile_intrinsic_function): Likewise.
+	(IntrinsicCtx::compile_intrinsic_function): Likewise.
+	(compile_fn_params): Likewise.
+	(IntrinsicCtx::compile_fn_params): Likewise.
+	(enter_intrinsic_block): Likewise.
+	(IntrinsicCtx::enter_intrinsic_block): Likewise.
+	(finalize_intrinsic_block): Likewise.
+	(IntrinsicCtx::finalize_intrinsic_block): Likewise.
+	(get_inner_dst): Use the new IntrinsicCtx API and deduplicate code.
+	(unchecked_op): Likewise.
+	(expect): Likewise.
+	(try_handler): Likewise.
+	(wrapping_op): Likewise.
+	(op_with_overflow): Likewise.
+	(copy): Likewise.
+	(atomic_store): Likewise.
+	(atomic_load): Likewise.
+	(ctlz_handler): Likewise.
+	(cttz_handler): Likewise.
+	(fop_fast): Likewise.
+	(rotate_left): Likewise.
+	(rotate_right): Likewise.
+	(sorry): Likewise.
+	(assume): Likewise.
+	(discriminant_value): Likewise.
+	(variant_count): Likewise.
+	(move_val_init): Likewise.
+	(uninit): Likewise.
+	(prefetch_read_data): Likewise.
+	(prefetch_write_data): Likewise.
+	(prefetch_data): Likewise.
+	(rotate): Likewise.
+	(transmute): Likewise.
+	(sizeof_handler): Likewise.
+	(size_of_val_handler): Likewise.
+	(min_align_of_handler): Likewise.
+	(min_align_of_val_handler): Likewise.
+	(offset): Likewise.
+	(bswap_handler): Likewise.
+	(ctlz_nonzero_handler): Likewise.
+	(cttz_nonzero_handler): Likewise.
+	(write_bytes_handler): Likewise.
+	(arith_offset_handler): Likewise.
+	(assert_zero_valid_handler): Likewise.
+	(float_to_int_unchecked): Likewise.
+	* backend/rust-intrinsic-handlers.h (struct IntrinsicCtx): New struct for containing
+	information which is shared between all complex intrinsic handlers.
+	(class Intrinsic): New wrapper class for setting up an intrinsic context and calling
+	the specific intrinsic compilation lambda.
+	(op_with_overflow): Adapt handler to use new API.
+	(rotate_left): Likewise.
+	(rotate_right): Likewise.
+	(wrapping_op): Likewise.
+	(offset): Likewise.
+	(sizeof_handler): Likewise.
+	(size_of_val_handler): Likewise.
+	(min_align_of_handler): Likewise.
+	(min_align_of_val_handler): Likewise.
+	(transmute): Likewise.
+	(rotate): Likewise.
+	(uninit): Likewise.
+	(move_val_init): Likewise.
+	(assume): Likewise.
+	(discriminant_value): Likewise.
+	(variant_count): Likewise.
+	(bswap_handler): Likewise.
+	(ctlz_handler): Likewise.
+	(ctlz_nonzero_handler): Likewise.
+	(cttz_handler): Likewise.
+	(cttz_nonzero_handler): Likewise.
+	(prefetch_data): Likewise.
+	(atomic_store): Likewise.
+	(atomic_load): Likewise.
+	(unchecked_op): Likewise.
+	(copy): Likewise.
+	(expect): Likewise.
+	(try_handler): Likewise.
+	(prefetch_read_data): Likewise.
+	(prefetch_write_data): Likewise.
+	(sorry): Likewise.
+	(write_bytes_handler): Likewise.
+	(arith_offset_handler): Likewise.
+	(assert_zero_valid_handler): Likewise.
+	(float_to_int_unchecked): Likewise.
+	(fop_fast): Likewise.
+	* backend/rust-compile-intrinsic.cc (Intrinsics::compile): Use new API for our
+	intrinsic table.
+
+2026-10-28  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* backend/rust-compile-pattern.cc
+	(CompilePatternCheckExpr::visit): Support rest patterns in enum tuple
+	variants.
+	(CompilePatternBindings::visit): Likewise.
+
+2026-10-28  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* parse/rust-parse-impl.hxx (Parser::parse_stmt_or_expr): Parse
+	const blocks as expressions.
+
 2026-10-21  Wesley Lewis  <lewis.wes.23@gmail.com>
 
 	* checks/errors/rust-attribute-checker.cc

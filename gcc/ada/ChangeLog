@@ -1,3 +1,9 @@
+2026-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/89786
+	* gcc-interface/utils.cc (unchecked_convert): Deal specially with
+	the conversion of the result of a binary operation to an array.
+
 2026-10-27  Ronan Desplanques  <desplanques@adacore.com>
 
 	* sem_ch3.adb (Process_Full_View): Fix test.

@@ -1,3 +1,10 @@
+2026-10-28  Robert Dubner  <rdubner@symas.com>
+
+	* Make-lang.in: Enable parallel computing for "make check-cobol"/
+	* genapi.cc (parser_enter_file): Initialize WHEN-COMPILED.
+	(parser_intrinsic_call_0): Likewise.
+	(parser_symbol_add): Likewise.
+
 2026-10-26  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (enter_program_common): Save currency state on entry.
