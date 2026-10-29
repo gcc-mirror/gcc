@@ -252,13 +252,21 @@ enum reg_class
   gen_frame_mem (Pmode,							\
 		 plus_constant (Pmode, stack_pointer_rtx, UNITS_PER_WORD))
 
+#define RETURN_ADDR_RTX(C,FA) C!=0?NULL_RTX:				\
+  gen_frame_mem (Pmode,							\
+		 plus_constant (Pmode, hard_frame_pointer_rtx, UNITS_PER_WORD))
+
 /* Describe how we implement __builtin_eh_return.  */
-#define EH_RETURN_DATA_REGNO(N)	((N) < 4 ? (N+2) : INVALID_REGNUM)
+#define EH_RETURN_DATA_REGNO(N)	((N) < 4 ? (N+8) : INVALID_REGNUM)
 
 /* Store the return handler into the call frame.  */
-#define EH_RETURN_HANDLER_RTX						\
+/*#define EH_RETURN_HANDLER_RTX						\
   gen_frame_mem (Pmode,							\
-		 plus_constant (Pmode, frame_pointer_rtx, UNITS_PER_WORD))
+		 plus_constant (Pmode, frame_pointer_rtx, UNITS_PER_WORD))*/
+#define EH_RETURN_STACKADJ_RTX	gen_rtx_REG (Pmode, MOXIE_R12)
+#define INCOMING_FRAME_SP_OFFSET 12
+#define ARG_POINTER_CFA_OFFSET(FUNDECL) 12
+#define DYNAMIC_CHAIN_ADDRESS(FRAMEADDR) plus_constant(Pmode, FRAMEADDR, -12)
 
 /* Storage Layout */
 
@@ -420,5 +428,6 @@ enum reg_class
   }
 
 #define HAS_LONG_UNCOND_BRANCH true
+#define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) DW_EH_PE_sdata4
 
 #endif /* GCC_MOXIE_H */
