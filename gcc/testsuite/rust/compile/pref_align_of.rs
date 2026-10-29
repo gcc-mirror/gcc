@@ -7,7 +7,7 @@
 trait Sized {}
 
 extern "rust-intrinsic" {
-    fn pref_align_of<T>();
+    fn pref_align_of<T>() -> usize;
 }
 
 fn foo() {

@@ -315,8 +315,8 @@ const std::unordered_map<std::string, IntrinsicRules>
     // fn breakpoint()
     {IValue::BREAKPOINT, {0, {}, IRT::Unit}},
 
-    // fn pref_align_of<T>()
-    {IValue::PREF_ALIGN_OF, {1, {}, IRT::Unit}},
+    // fn pref_align_of<T>() -> usize
+    {IValue::PREF_ALIGN_OF, {1, {}, IRT::Usize}},
 
     // pub fn assert_zero_valid<T>();
     {IValue::ASSERT_ZERO_VALID, {1, {}, IRT::Unit}},
