@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-profile_estimate" } */
+/* { dg-options "-O1 -fdump-tree-ccp1 -fdump-tree-profile_estimate" } */
 
 int foo(void);
 void bla(void);
@@ -118,7 +118,7 @@ void test5 (void)
     }
 }
 
-/* { dg-final { scan-tree-dump-times "Disambiguating loop" 5 "profile_estimate" } } */
+/* { dg-final { scan-tree-dump-times "Disambiguating loop" 5 "ccp1" } } */
 /* For the following xfail marks, see PR35629.  */
 /* { dg-final { scan-tree-dump-times "Found latch edge" 5 "profile_estimate" { xfail *-*-* } } } */
 /* { dg-final { scan-tree-dump-times "Merged latch edges" 2 "profile_estimate" { xfail *-*-* } } } */

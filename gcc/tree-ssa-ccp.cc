@@ -3049,6 +3049,10 @@ static unsigned int
 do_ssa_ccp (bool nonzero_p)
 {
   unsigned int todo = 0;
+
+  /* We want to minimize the number of latches to reduce iteration.  */
+  loop_optimizer_init (LOOPS_HAVE_SIMPLE_LATCHES);
+
   calculate_dominance_info (CDI_DOMINATORS);
 
   ccp_initialize ();
@@ -3063,6 +3067,9 @@ do_ssa_ccp (bool nonzero_p)
     }
 
   free_dominance_info (CDI_DOMINATORS);
+
+  loop_optimizer_finalize ();
+
   return todo;
 }
 
