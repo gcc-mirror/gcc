@@ -1,3 +1,41 @@
+2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-06-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120386
+	* include/bits/ranges_algo.h (__unique_copy_fn): Reorder
+	arguments for third case to match the first two cases.
+	* include/bits/stl_algo.h (__unique_copy): Replace three
+	overloads with two, depending only on the iterator category of
+	the input range.  Dispatch to __unique_copy_1 for the
+	non-forward case.
+	(__unique_copy_1): New overloads for the case where the input
+	range uses non-forward iterators.
+	(unique_copy): Only pass the input range category to
+	__unique_copy.
+	* testsuite/25_algorithms/unique_copy/lwg2439.cc: New test.
+
+2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-05-23  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/120384
+	* include/bits/stl_algo.h (__unique_copy): Remove all
+	_BinaryPredicateConcept concept checks.
+	(unique_copy): Check _BinaryPredicateConcept in overload that
+	takes a predicate.
+	* testsuite/25_algorithms/unique_copy/120384.cc: New test.
+
+2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-04-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h (test_container): Define
+	array constructor for C++98 as well.
+
 2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

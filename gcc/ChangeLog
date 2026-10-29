@@ -1,3 +1,38 @@
+2026-10-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-10-14  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/aarch64.md (movti):  Ensure we don't call
+	gen_highpart on a subreg.
+	(addti3): Use pure_register_operand for the destination.
+	(addvti4): Likewise.
+	(uaddvti4): Likewise.
+	(subti3): Likewise.
+	(subvti4): Likewise.
+	(usubti4): Likewise.
+	(<su_optab>mulditi3): Likewise.
+	(multi3): Require pure_register_operand for all operands.
+
+2026-10-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2026-09-22  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/127393
+	* config/aarch64/predicates.md (pure_register_operand): New predicate.
+	* config/aarch64/aarch64.md (negvti3): Use it.
+
+2026-10-28  Julio Sotoriva De Bastiani  <Julio.SotorivaDeBastiani@arm.com>
+
+	PR target/126096
+	* config/aarch64/aarch64-sve-builtins.cc
+	(gimple_folder::fold_to_pfalse): Punt for svcount_t.
+	* config/aarch64/aarch64-sve-builtins-base.cc
+	(svpfalse_impl::fold): Defer svcount_t check.
+	(svwhilelx_impl::fold_type): Punt for svcount_t.
+
 2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
 
 	Backported from master:
