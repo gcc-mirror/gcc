@@ -30561,10 +30561,10 @@ ix86_expand_vector_bf2sf_with_vec_perm (rtx dest, rtx src)
   emit_move_insn (dest, lowpart_subreg (GET_MODE (dest), target, vperm_mode));
 }
 
-/* Implement bitreverse<mode>2 using gf2p8affineqb.  */
+/* Implement bitreverse<mode>2 using vbitrevb or gf2p8affineqb.  */
 
 void
-ix86_expand_gfni_bitreverse (rtx dest, rtx src)
+ix86_expand_bitreverse (rtx dest, rtx src)
 {
   machine_mode mode = GET_MODE (dest);
   rtx temp;
@@ -30611,18 +30611,24 @@ ix86_expand_gfni_bitreverse (rtx dest, rtx src)
     }
   src = temp;
   temp = gen_reg_rtx (V16QImode);
-  rtx src2 = gen_rtx_CONST_VECTOR (V16QImode,
-				   gen_rtvec (16, GEN_INT (1), GEN_INT (2),
-					      GEN_INT (4), GEN_INT (8),
-					      GEN_INT (16), GEN_INT (32),
-					      GEN_INT (64), GEN_INT (-128),
-					      GEN_INT (1), GEN_INT (2),
-					      GEN_INT (4), GEN_INT (8),
-					      GEN_INT (16), GEN_INT (32),
-					      GEN_INT (64), GEN_INT (-128)));
-  src2 = validize_mem (force_const_mem (V16QImode, src2));
   src = lowpart_subreg (V16QImode, src, GET_MODE (src));
-  emit_insn (gen_vgf2p8affineqb_v16qi (temp, src, src2, const0_rtx));
+  if (TARGET_AVX512BMM && TARGET_AVX512VL)
+    emit_insn (gen_avx512bmm_vbitrevb_v16qi (temp, src));
+  else if (TARGET_GFNI)
+    {
+      rtx src2 = gen_rtx_CONST_VECTOR (V16QImode,
+				       gen_rtvec (16, GEN_INT (1), GEN_INT (2),
+						  GEN_INT (4), GEN_INT (8),
+						  GEN_INT (16), GEN_INT (32),
+						  GEN_INT (64), GEN_INT (-128),
+						  GEN_INT (1), GEN_INT (2),
+						  GEN_INT (4), GEN_INT (8),
+						  GEN_INT (16), GEN_INT (32),
+						  GEN_INT (64),
+						  GEN_INT (-128)));
+      src2 = validize_mem (force_const_mem (V16QImode, src2));
+      emit_insn (gen_vgf2p8affineqb_v16qi (temp, src, src2, const0_rtx));
+    }
   if (mode == QImode)
     {
       rtx temp1 = gen_reg_rtx (SImode);

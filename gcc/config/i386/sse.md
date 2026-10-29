@@ -34577,6 +34577,16 @@
   [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_expand "bitreverse<mode>2"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand")
+	(bitreverse:VI1_AVX512VL
+	  (match_operand:VI1_AVX512VL 1 "nonimmediate_operand")))]
+  "TARGET_AVX512BMM"
+{
+  emit_insn (gen_avx512bmm_vbitrevb_<mode> (operands[0], operands[1]));
+  DONE;
+})
+
 ;; AVX10V2AUX instructions
 ;; FP32 to FP8 single-source converts (VCVTPS2BF8, VCVTPS2BF8S,
 ;; VCVTPS2HF8, VCVTPS2HF8S, VCVTROPS2HF8, VCVTROPS2HF8S)
