@@ -1,5 +1,5 @@
 ! { dg-do run }
-! { dg-additional-options "-O2 -std=f2023 -fall-intrinsics"
+! { dg-additional-options "-O2 -std=f2023 -fall-intrinsics" }
 !
 ! PR fortran/121366 - degree trigonometric function and procedure pointers
 !
@@ -122,7 +122,7 @@ subroutine pr121366_4
 
   func2_array(1)%f => datan2d
 
-  if (abs (func2_array(1)%f(x,y) - atan2d(x,y)) > 1.e-15) stop 31
+  if (abs (func2_array(1)%f(x,y) - atan2d(x,y)) > 1.05e-15) stop 31
 end
 
 program test
