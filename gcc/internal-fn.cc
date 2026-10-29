@@ -647,6 +647,57 @@ expand_GOMP_SIMT_REDUCE (internal_fn, gcall *stmt)
   assign_call_lhs (lhs, target, &ops[0]);
 }
 
+/* The OpenMP threads are SIMT lanes: return nonzero if the encountering
+   threads are all the lanes of a wavefront, and the address in argument 0
+   is the same in all of them.  */
+
+static void
+expand_GOMP_SIMT_THREADS_UNIFORM (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  tree arg0 = gimple_call_arg (stmt, 0);
+  rtx addr = expand_normal (arg0);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  class expand_operand ops[2];
+  create_call_lhs_operand (&ops[0], target, mode);
+  create_input_operand (&ops[1], addr, TYPE_MODE (TREE_TYPE (arg0)));
+  gcc_assert (targetm.have_omp_simt_threads_uniform ());
+  expand_insn (targetm.code_for_omp_simt_threads_uniform, 2, ops);
+  assign_call_lhs (lhs, target, &ops[0]);
+}
+
+/* The OpenMP threads are SIMT lanes: reduce across them, as for
+   IFN_GOMP_SIMT_REDUCE.  */
+
+static void
+expand_GOMP_SIMT_THREADS_REDUCE (internal_fn fn, gcall *stmt)
+{
+  expand_GOMP_SIMT_REDUCE (fn, stmt);
+}
+
+/* The OpenMP threads are SIMT lanes: return nonzero in the first active
+   one.  */
+
+static void
+expand_GOMP_SIMT_THREADS_FIRST (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  machine_mode mode = TYPE_MODE (TREE_TYPE (lhs));
+  class expand_operand ops[1];
+  create_call_lhs_operand (&ops[0], target, mode);
+  gcc_assert (targetm.have_omp_simt_threads_first ());
+  expand_insn (targetm.code_for_omp_simt_threads_first, 1, ops);
+  assign_call_lhs (lhs, target, &ops[0]);
+}
+
 /* Exchange between SIMT lanes according to given source lane index.  */
 
 static void

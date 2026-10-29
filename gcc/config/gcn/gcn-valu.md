@@ -4759,6 +4759,51 @@
   }
   [(set_attr "type" "mult")])
   
+(define_insn_and_split "omp_simt_threads_uniform_v64si"
+  [(set (match_operand:V64SI 0 "register_operand" "=v")
+	(unspec:V64SI [(match_operand:V64DI 1 "register_operand" "v")]
+		      UNSPEC_SIMT_THREADS_UNIFORM))]
+  "flag_simt_mode && TARGET_DPP_FULL"
+  "#"
+  "can_create_pseudo_p ()"
+  [(const_int 0)]
+  {
+    /* Make a mask with a bit set for each lane that is inactive or whose
+       operand differs from lane 0's, and combine its halves into a scalar
+       that is zero iff there are none.  Lane 0 can be read even if it is
+       inactive, because then the answer is false anyway.  */
+    rtx first = gen_reg_rtx (DImode);
+    emit_insn (gen_vec_extractv64didi (first, operands[1], const0_rtx));
+    rtx vfirst = gen_reg_rtx (V64DImode);
+    emit_insn (gen_vec_duplicatev64di (vfirst, first));
+    rtx differ = gen_reg_rtx (DImode);
+    emit_insn (gen_vec_cmpv64didi (differ, gen_rtx_NE (VOIDmode, 0, 0),
+				   operands[1], vfirst));
+    rtx inactive = gen_reg_rtx (DImode);
+    emit_insn (gen_one_cmpldi2 (inactive, gen_rtx_REG (DImode, EXEC_REG)));
+    rtx bad = gen_reg_rtx (DImode);
+    emit_insn (gen_iordi3 (bad, differ, inactive));
+    rtx sreg = gen_reg_rtx (SImode);
+    emit_insn (gen_iorsi3 (sreg, gen_lowpart (SImode, bad),
+			   gen_highpart (SImode, bad)));
+
+    /* Set each lane to 1 iff SREG is zero.  */
+    rtx vbad = gen_reg_rtx (V64SImode);
+    emit_insn (gen_vec_duplicatev64si (vbad, sreg));
+    rtx ok = gen_reg_rtx (DImode);
+    emit_insn (gen_vec_cmpv64sidi (ok, gen_rtx_EQ (VOIDmode, 0, 0), vbad,
+				   gen_const_vec_duplicate (V64SImode,
+							    const0_rtx)));
+    rtx ones = force_reg (V64SImode,
+			  gen_const_vec_duplicate (V64SImode, const1_rtx));
+    emit_insn (gen_vcond_mask_v64sidi (operands[0], ones,
+				       gen_const_vec_duplicate (V64SImode,
+								const0_rtx),
+				       ok));
+    DONE;
+  }
+  [(set_attr "type" "mult")])
+
 (define_insn_and_split "omp_simt_last_lane_v64si"
   [(set (match_operand:V64SI 0 "register_operand" "=v")
         (unspec:V64SI [(match_operand:V64SI 1 "register_operand" "v")]

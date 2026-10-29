@@ -94,6 +94,7 @@
   UNSPEC_DIV_SCALE UNSPEC_DIV_FMAS UNSPEC_DIV_FIXUP
   UNSPEC_PAIR
   UNSPEC_SIMT_VOTE_ANY UNSPEC_SIMT_LAST_LANE UNSPEC_SIMT_XCHG_IDX
+  UNSPEC_SIMT_THREADS_UNIFORM
   UNSPEC_VSUBREG_WRITE UNSPEC_VSUBREG_READ
   UNSPEC_ENSURE_SCALAR
   UNSPEC_SIMT_MASK_MERGE
@@ -2744,6 +2745,33 @@
   "#"
   ""
   [(set (match_dup 0) (match_dup 1))])
+
+;; Implement IFN_GOMP_SIMT_THREADS_UNIFORM: set operand 0 to nonzero iff
+;; all the lanes of the wavefront are active and operand 1 is the same in all
+;; of them.
+; The simt_vect pass replaces this with omp_simt_threads_uniform_v64si in
+; SIMT code.  What remains is single-threaded (EXEC == 1), where the answer
+; is false.
+(define_insn_and_split "omp_simt_threads_uniform"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(unspec:SI [(match_operand:DI 1 "register_operand" "")]
+		   UNSPEC_SIMT_THREADS_UNIFORM))]
+  "flag_simt_mode && TARGET_DPP_FULL"
+  "#"
+  ""
+  [(set (match_dup 0) (const_int 0))])
+
+;; Implement IFN_GOMP_SIMT_THREADS_FIRST: set operand 0 to nonzero in the
+;; first active lane only.
+(define_expand "omp_simt_threads_first"
+  [(match_operand:SI 0 "register_operand")]
+  "flag_simt_mode && TARGET_DPP_FULL"
+  {
+    rtx first = gen_reg_rtx (BImode);
+    emit_insn (gen_simt_first_lane_p_bi (first));
+    convert_move (operands[0], first, 1);
+    DONE;
+  })
 
 ;; Implement IFN_GOMP_SIMT_LAST_LANE:
 ;; set operand 0 to the value of the last active lane

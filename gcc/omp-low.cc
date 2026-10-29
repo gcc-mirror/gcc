@@ -8475,6 +8475,42 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
   gimple_seq_add_seq (join_seq, after_join);
 }
 
+/* Return true if a reduction with operator CODE of a variable of TYPE in
+   CTX should first be combined across the wavefront, for "simt" offload
+   mode, where the OpenMP threads are the lanes of a wavefront.  These are
+   the cases that IFN_GOMP_SIMT_THREADS_REDUCE supports.  The logical
+   operators are combined as "int" truth values of any scalar or complex
+   type.  */
+
+static bool
+omp_simt_threads_reduction_p (enum tree_code code, tree type,
+			      omp_context *ctx)
+{
+  if (param_offload_gpu_mode != OFFLOAD_GPU_MODE_SIMT
+      || !omp_maybe_offloaded_ctx (ctx))
+    return false;
+
+  if (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
+    {
+      if (TREE_CODE (type) == COMPLEX_TYPE)
+	type = TREE_TYPE (type);
+      return INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type);
+    }
+
+  machine_mode mode = TYPE_MODE (type);
+  if (INTEGRAL_TYPE_P (type) && TREE_CODE (type) != BOOLEAN_TYPE)
+    return ((mode == QImode || mode == HImode || mode == SImode
+	     || mode == DImode)
+	    && (code == PLUS_EXPR || code == MULT_EXPR
+		|| code == MIN_EXPR || code == MAX_EXPR
+		|| code == BIT_AND_EXPR || code == BIT_IOR_EXPR
+		|| code == BIT_XOR_EXPR));
+  if (SCALAR_FLOAT_TYPE_P (type))
+    return ((mode == SFmode || mode == DFmode)
+	    && (code == PLUS_EXPR || code == MULT_EXPR));
+  return false;
+}
+
 /* Generate code to implement the REDUCTION clauses, append it
    to STMT_SEQP.  CLIST if non-NULL is a pointer to a sequence
    that should be emitted also inside of the critical section,
@@ -8590,6 +8626,69 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 	      ref2 = fold_build2_loc (clause_loc, NE_EXPR, boolean_type_node,
 				      ref, zero);
 	    }
+	  tree label = NULL_TREE;
+	  if (omp_simt_threads_reduction_p (code, TREE_TYPE (new_var), ctx))
+	    {
+	      /* The OpenMP threads may be the lanes of a wavefront.  If they
+		 all merge into the same variable, combine their values
+		 across the wavefront first, so that only one of them
+		 needs to do the atomic update.  The logical operators
+		 combine the truth values, as "int".  */
+	      tree type = TREE_TYPE (new_var);
+	      enum tree_code rcode = code;
+	      if (is_truth_op)
+		{
+		  type = integer_type_node;
+		  rcode = (code == TRUTH_ANDIF_EXPR
+			   ? BIT_AND_EXPR : BIT_IOR_EXPR);
+		}
+	      tree uniform = create_tmp_var (integer_type_node);
+	      tree first = create_tmp_var (integer_type_node);
+	      tree tmp = create_tmp_var (type);
+	      tree lab1 = create_artificial_label (UNKNOWN_LOCATION);
+	      tree lab3 = create_artificial_label (UNKNOWN_LOCATION);
+	      label = create_artificial_label (UNKNOWN_LOCATION);
+	      gimplify_assign (tmp, fold_convert (type, new_var2), stmt_seqp);
+	      tree a = create_tmp_var (TREE_TYPE (addr));
+	      gimplify_assign (a, addr, stmt_seqp);
+	      gcall *g
+		= gimple_build_call_internal (IFN_GOMP_SIMT_THREADS_UNIFORM,
+					      1, a);
+	      gimple_call_set_lhs (g, uniform);
+	      gimple_seq_add_stmt (stmt_seqp, g);
+	      gimple_seq_add_stmt (stmt_seqp,
+				   gimple_build_cond (NE_EXPR, uniform,
+						      integer_zero_node,
+						      lab1, lab3));
+	      gimple_seq_add_stmt (stmt_seqp, gimple_build_label (lab1));
+	      g = gimple_build_call_internal (IFN_GOMP_SIMT_THREADS_REDUCE,
+					      2, tmp,
+					      build_int_cst (unsigned_type_node,
+							     rcode));
+	      gimple_call_set_lhs (g, tmp);
+	      gimple_seq_add_stmt (stmt_seqp, g);
+	      g = gimple_build_call_internal (IFN_GOMP_SIMT_THREADS_FIRST, 0);
+	      gimple_call_set_lhs (g, first);
+	      gimple_seq_add_stmt (stmt_seqp, g);
+	      gimple_seq_add_stmt (stmt_seqp,
+				   gimple_build_cond (NE_EXPR, first,
+						      integer_zero_node,
+						      lab3, label));
+	      gimple_seq_add_stmt (stmt_seqp, gimple_build_label (lab3));
+	      new_var2 = tmp;
+	      ref = build1 (INDIRECT_REF, TREE_TYPE (TREE_TYPE (a)), a);
+	      ref2 = ref;
+	      addr = a;
+	      if (is_truth_op)
+		{
+		  new_var2 = fold_build2_loc (clause_loc, NE_EXPR,
+					      boolean_type_node, tmp,
+					      integer_zero_node);
+		  ref2 = fold_build2_loc (clause_loc, NE_EXPR,
+					  boolean_type_node, ref,
+					  build_zero_cst (TREE_TYPE (ref)));
+		}
+	    }
 	  x = fold_build2_loc (clause_loc, code, TREE_TYPE (new_var2), ref2,
 			       new_var2);
 	  if (is_truth_op)
@@ -8597,6 +8696,8 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 	  x = build2 (OMP_ATOMIC, void_type_node, addr, x);
 	  OMP_ATOMIC_MEMORY_ORDER (x) = OMP_MEMORY_ORDER_RELAXED;
 	  gimplify_and_add (x, stmt_seqp);
+	  if (label)
+	    gimple_seq_add_stmt (stmt_seqp, gimple_build_label (label));
 	  return;
 	}
       else if (TREE_CODE (OMP_CLAUSE_DECL (c)) == MEM_REF)

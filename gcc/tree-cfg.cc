@@ -6451,13 +6451,17 @@ gimple_can_duplicate_bb_p (const_basic_block bb)
 	 duplicated as part of its group, or not at all.
 	 The IFN_GOMP_SIMT_VOTE_ANY, IFN_GOMP_SIMT_XCHG_IDX and
 	 IFN_GOMP_SIMT_REDUCE are part of such a group, so the same holds
-	 there.  */
+	 there.  The IFN_GOMP_SIMT_THREADS_* calls depend on the active
+	 lanes, so must not be duplicated either.  */
       if (is_gimple_call (g)
 	  && (gimple_call_internal_p (g, IFN_GOMP_SIMT_ENTER_ALLOC)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_EXIT)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_VOTE_ANY)
 	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_REDUCE)
-	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_IDX)))
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_XCHG_IDX)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_THREADS_UNIFORM)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_THREADS_REDUCE)
+	      || gimple_call_internal_p (g, IFN_GOMP_SIMT_THREADS_FIRST)))
 	return false;
 
       if (is_gimple_call (g) && simt_no_duplicate_call_p (g))

@@ -11061,6 +11061,12 @@ execute_expand_omp (void)
 
   remove_exit_barriers (root_omp_region);
 
+  /* In "simt" offload mode, lower_reduction_clauses emits
+     IFN_GOMP_SIMT_THREADS_* calls, which pass_omp_device_lower must
+     resolve.  The functions outlined below inherit this.  */
+  if (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT)
+    cfun->curr_properties &= ~PROP_gimple_lomp_dev;
+
   expand_omp (root_omp_region);
 
   omp_free_regions ();

@@ -3389,6 +3389,20 @@ execute_omp_device_lower ()
 	  case IFN_GOMP_SIMT_XCHG_IDX:
 	    rhs = vf == 1 ? gimple_call_arg (stmt, 0) : NULL_TREE;
 	    break;
+	  /* These do not depend on VF: OpenMP threads are SIMT lanes only
+	     if the target says so, and each thread is on its own otherwise.  */
+	  case IFN_GOMP_SIMT_THREADS_UNIFORM:
+	    rhs = (targetm.have_omp_simt_threads_uniform ()
+		   ? NULL_TREE : build_zero_cst (type));
+	    break;
+	  case IFN_GOMP_SIMT_THREADS_REDUCE:
+	    rhs = (targetm.have_omp_simt_threads_uniform ()
+		   ? NULL_TREE : gimple_call_arg (stmt, 0));
+	    break;
+	  case IFN_GOMP_SIMT_THREADS_FIRST:
+	    rhs = (targetm.have_omp_simt_threads_uniform ()
+		   ? NULL_TREE : build_one_cst (type));
+	    break;
 	  case IFN_GOMP_SIMD_LANE:
 	  case IFN_GOMP_SIMD_LAST_LANE:
 	    rhs = vf != 1 ? build_zero_cst (type) : NULL_TREE;
