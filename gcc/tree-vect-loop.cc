@@ -2673,9 +2673,11 @@ start_over:
 	    niters_th += LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
 	}
 
-      /* Niters for at least one iteration of vectorized loop.  */
+      /* Niters for one vector iteration, excluding a header-only iteration.  */
       if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	niters_th += LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+      if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+	niters_th += 1;
       /* One additional iteration because of peeling for gap.  */
       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
 	niters_th += 1;
