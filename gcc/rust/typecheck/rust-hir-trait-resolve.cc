@@ -738,6 +738,14 @@ AssociatedImplTrait::bind_impl_for_projection (TyTy::ProjectionType &proj,
       bool ok = context->lookup_type (it->second, &r);
       if (!ok)
 	continue;
+
+      // r can keep the ref of whatever it was unified with, which may not
+      // map back to r, so point it at the infer var that does
+      if (r->get_ref () != it->second)
+	{
+	  r = r->clone ();
+	  r->set_ref (it->second);
+	}
       resolved_args.emplace_back (&p, r);
     }
 

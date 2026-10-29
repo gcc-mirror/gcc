@@ -780,10 +780,16 @@ normalize_projection (TyTy::ProjectionType *proj, location_t locus,
 		  if (query_type (impl_item->get_impl_mappings ().get_hirid (),
 				  &result))
 		    {
+		      // the impl might not have been checked yet, e.g. when a
+		      // bounds probe resolves a struct field before it
+		      HirId impl_id = impl_block->get_mappings ().get_hirid ();
 		      AssociatedImplTrait *associated = nullptr;
-		      if (ctx->lookup_associated_trait_impl (
-			    impl_block->get_mappings ().get_hirid (),
-			    &associated)
+		      if (!ctx->lookup_associated_trait_impl (impl_id,
+							      &associated))
+			TypeCheckItem::Resolve (*impl_block);
+
+		      if (ctx->lookup_associated_trait_impl (impl_id,
+							     &associated)
 			  && associated != nullptr)
 			{
 			  auto mapping

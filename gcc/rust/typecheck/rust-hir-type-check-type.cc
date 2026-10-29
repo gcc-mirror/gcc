@@ -265,6 +265,11 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   else
     translated = rebased_item;
 
+  // like a TypePath, give the result its own ref so &T and *T look up the
+  // substituted type and not the one the impl declared
+  translated = translated->clone ();
+  translated->set_ref (path.get_mappings ().get_hirid ());
+
   // turbo-fish segment path::<ty>
   if (item_seg.get_type () == HIR::TypePathSegment::SegmentType::GENERIC)
     {
