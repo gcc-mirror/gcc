@@ -119,6 +119,18 @@
   return VSX_REGNO_P (REGNO (op));
 })
 
+;; Return 1 if op is a register that can be used for vector fusion.  If XXEVAL
+;; is supported, return true for all VSX registers, otherwise the fusion is
+;; limited to Altivec registers since the machine only fuses Altivec
+;; operations.
+(define_predicate "vector_fusion_operand"
+  (match_operand 0 "register_operand")
+{
+  return (TARGET_XXEVAL
+	  ? vsx_register_operand (op, mode)
+	  : altivec_register_operand (op, mode));
+})
+
 ;; Return 1 if op is a vector register that operates on floating point vectors
 ;; (either altivec or VSX).
 (define_predicate "vfloat_operand"
