@@ -8322,6 +8322,19 @@ expand_omp_for (struct omp_region *region, gimple *inner_stmt)
   else if (fd.sched_kind == OMP_CLAUSE_SCHEDULE_STATIC
 	   && !fd.have_ordered)
     {
+      /* In "simt" offload mode each lane of a wavefront is a thread.  If
+	 the schedule is not specified then it is implementation defined,
+	 so give consecutive iterations to consecutive lanes, which lets
+	 their memory accesses coalesce.  */
+      if (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT
+	  && fd.chunk_size == NULL
+	  && gimple_omp_for_kind (fd.for_stmt) == GF_OMP_FOR_KIND_FOR
+	  && !fd.non_rect
+	  && !fd.have_scantemp
+	  && !omp_find_clause (gimple_omp_for_clauses (fd.for_stmt),
+			       OMP_CLAUSE_SCHEDULE)
+	  && is_in_offload_region (region))
+	fd.chunk_size = integer_one_node;
       if (fd.chunk_size == NULL)
 	expand_omp_for_static_nochunk (region, &fd, inner_stmt);
       else
