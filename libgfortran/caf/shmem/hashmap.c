@@ -194,19 +194,24 @@ hm_search_result_contains (hashmap_search_result *res)
   return !SHMPTR_IS_NULL (res->p);
 }
 
-/* Enlarge hashmap memory.  */
+/* Enlarge hashmap memory.  Returns false, leaving the hashmap unchanged, when
+   the shared memory is exhausted.  */
 
-static void
+static bool
 enlarge_hashmap_mem (hashmap *hm, hashmap_entry **data, bool f)
 {
-  shared_mem_ptr old_data_p;
+  shared_mem_ptr old_data_p, new_data_p;
   size_t old_size;
 
   old_data_p = hm->s->data;
   old_size = hm->s->size;
 
-  hm->s->data = allocator_shared_malloc_or_die (hm->a, (hm->s->size *= 2)
-							* sizeof (hashmap_entry));
+  new_data_p
+    = allocator_shared_malloc (hm->a, 2 * old_size * sizeof (hashmap_entry));
+  if (SHMPTR_IS_NULL (new_data_p))
+    return false;
+  hm->s->data = new_data_p;
+  hm->s->size = 2 * old_size;
   hm->s->bitnum++;
 
   *data = get_data (hm);
@@ -215,12 +220,15 @@ enlarge_hashmap_mem (hashmap *hm, hashmap_entry **data, bool f)
 	.id = 0, .p = SHMPTR_NULL, .s = 0, .max_lookahead = 0, .refcnt = 0 });
 
   if (f)
-    allocator_shared_free (hm->a, old_data_p, old_size);
+    allocator_shared_free (hm->a, old_data_p,
+			   old_size * sizeof (hashmap_entry));
+  return true;
 }
 
-/* Resize hashmap.  */
+/* Resize hashmap.  Returns false, leaving the hashmap unchanged, when the
+   shared memory is exhausted.  */
 
-static void
+static bool
 resize_hm (hashmap *hm, hashmap_entry **data)
 {
   shared_mem_ptr old_data_p;
@@ -229,6 +237,7 @@ resize_hm (hashmap *hm, hashmap_entry **data)
   ssize_t new_offset, inital_index, new_index;
   memid id;
   ssize_t max_lookahead;
+  int old_bitnum;
 
   /* old_data points to the old block containing the hashmap.  We
      redistribute the data from there into the new block.  */
@@ -236,8 +245,10 @@ resize_hm (hashmap *hm, hashmap_entry **data)
   old_data_p = hm->s->data;
   old_data = *data;
   old_size = hm->s->size;
+  old_bitnum = hm->s->bitnum;
 
-  enlarge_hashmap_mem (hm, &new_data, false);
+  if (!enlarge_hashmap_mem (hm, &new_data, false))
+    return false;
 retry_resize:
   for (size_t i = 0; i < old_size; i++)
     {
@@ -252,7 +263,16 @@ retry_resize:
 	 again.  */
       if (new_offset == -1)
 	{
-	  enlarge_hashmap_mem (hm, &new_data, true);
+	  if (!enlarge_hashmap_mem (hm, &new_data, true))
+	    {
+	      /* Drop the partly filled table and restore the old one.  */
+	      allocator_shared_free (hm->a, hm->s->data,
+				     hm->s->size * sizeof (hashmap_entry));
+	      hm->s->data = old_data_p;
+	      hm->s->size = old_size;
+	      hm->s->bitnum = old_bitnum;
+	      return false;
+	    }
 	  goto retry_resize; /* Sue me.  */
 	}
 
@@ -268,13 +288,15 @@ retry_resize:
 	  .max_lookahead = new_data[new_index].max_lookahead,
 	  .refcnt = old_data[i].refcnt });
     }
-  allocator_shared_free (hm->a, old_data_p, old_size);
+  allocator_shared_free (hm->a, old_data_p,
+			 old_size * sizeof (hashmap_entry));
   *data = new_data;
+  return true;
 }
 
 /* Set an entry in the hashmap.  */
 
-void
+bool
 hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,
 	     shared_mem_ptr p, size_t size)
 {
@@ -289,13 +311,14 @@ hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,
     {
       data[hsr->res_offset].s = size;
       data[hsr->res_offset].p = p;
-      return;
+      return true;
     }
 
   expected_offset = get_expected_offset (hm, id);
   while ((delta = scan_empty (hm, expected_offset)) == -1)
     {
-      resize_hm (hm, &data);
+      if (!resize_hm (hm, &data))
+	return false;
       expected_offset = get_expected_offset (hm, id);
     }
 
@@ -312,6 +335,7 @@ hashmap_set (hashmap *hm, memid id, hashmap_search_result *hsr,
   n_ent++;
   /* TODO: Shouldn't reset refcnt, but this doesn't matter at the
      moment because of the way the function is used.  */
+  return true;
 }
 
 /* Change the refcount of a hashmap entry.  */

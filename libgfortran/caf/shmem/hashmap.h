@@ -81,9 +81,10 @@ bool hm_search_result_contains (hashmap_search_result *);
 
 /* Sets the hashmap entry for memid to shared_mem_ptr and
    size_t.  Optionally, if a hashmap_search_result is supplied, it is
-   used to make the lookup faster.  */
+   used to make the lookup faster.  Returns false when the hashmap
+   cannot be enlarged.  */
 
-void hashmap_set (hashmap *, memid, hashmap_search_result *, shared_mem_ptr p,
+bool hashmap_set (hashmap *, memid, hashmap_search_result *, shared_mem_ptr p,
 		  size_t);
 
 /* Increments the hashmap entry for memid.  Optionally, if a

@@ -106,7 +106,13 @@ get_memory_by_id_internal (alloc *iface, size_t size, memid id, bool *created)
 	    *created = false;
 	  return NULL;
 	}
-      hashmap_set (&iface->hm, id, NULL, shared_ptr, size);
+      if (!hashmap_set (&iface->hm, id, NULL, shared_ptr, size))
+	{
+	  allocator_shared_free (&iface->alloc, shared_ptr, size);
+	  if (created)
+	    *created = false;
+	  return NULL;
+	}
 
       if (created)
 	*created = true;

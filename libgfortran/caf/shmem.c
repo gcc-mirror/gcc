@@ -362,7 +362,12 @@ _gfortran_caf_register (size_t size, caf_register_t type, caf_token_t *token,
 	 memory may be lost.  */
       if (mem)
 	alloc_free_memory_with_id (&local->ai, next_memid);
-      free (*token);
+      /* The token of a component was registered before; keep it.  */
+      if (type != CAF_REGTYPE_COARRAY_ALLOC_ALLOCATE_ONLY)
+	{
+	  free (*token);
+	  *token = NULL;
+	}
       caf_internal_error (alloc_fail_msg, stat, errmsg, errmsg_len);
       return;
     }
