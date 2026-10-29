@@ -109,14 +109,16 @@ bar ()
    { dg-end-multiline-output "" } */
   ;
   #pragma omp master				/* { dg-warning "'master' construct deprecated since OpenMP 5.1, use 'masked'" } */
-/* { dg-begin-multiline-output "" { target { ! hppa*-*-* } } }
+/* { dg-begin-multiline-output "" }
    #pragma omp master
                                                                                                                                     ^
    { dg-end-multiline-output "" } */
   ;
   #pragma omp metadirective when (device={arch("blahblah")}: nothing) default (nothing)		/* { dg-warning "'default' clause on metadirectives deprecated since OpenMP 5.2, use 'otherwise'" } */
-/* { dg-regexp ".*pragma omp metadirective when.*" { target hppa*-*-* } } */
-/* { dg-regexp ".*\\^~~~~~~.*" { target hppa*-*-* } } */
-/* { dg-regexp ".*otherwise.*" { target hppa*-*-* } } */
+/* { dg-begin-multiline-output "" }
+   #pragma omp metadirective when (device={arch("blahblah")}: nothing) default (nothing)
+                                                                       ^~~~~~~
+                                                                       otherwise
+   { dg-end-multiline-output "" } */
   ;
 }
