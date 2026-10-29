@@ -608,6 +608,21 @@ get_equiv_with_elimination (rtx x, rtx_insn *insn)
   return res;
 }
 
+/* Record invariant INVARIANT_RTX as an equivalence of REG.  */
+static void
+add_invariant (rtx reg, rtx invariant_rtx)
+{
+  int regno = REGNO (reg);
+
+  ira_expand_reg_equiv ();
+  ira_reg_equiv[regno].defined_p = true;
+  ira_reg_equiv[regno].profitable_p = true;
+  if (CONSTANT_P (invariant_rtx))
+    ira_reg_equiv[regno].constant = copy_rtx (invariant_rtx);
+  else
+    ira_reg_equiv[regno].invariant = copy_rtx (invariant_rtx);
+}
+
 /* Set up curr_operand_mode.  */
 static void
 init_curr_operand_mode (void)
@@ -7272,6 +7287,7 @@ process_invariant_for_inheritance (rtx dst_reg, rtx invariant_rtx)
 					"invariant inheritance");
 	  bitmap_set_bit (&lra_inheritance_pseudos, REGNO (new_reg));
 	  bitmap_set_bit (&check_only_regs, REGNO (new_reg));
+	  add_invariant (new_reg, invariant_rtx);
 	  lra_reg_info[REGNO (new_reg)].restore_rtx = PATTERN (insn);
 	  start_sequence ();
 	  lra_emit_move (new_reg, dst_reg);
