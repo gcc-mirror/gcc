@@ -9317,20 +9317,20 @@
    (set_attr "mode" "<MODE>")])
 
 (define_insn "@pred_widen_abd_plus<su><mode>"
-  [(set (match_operand:VWEXTI_HS 0 "register_operand"    "=vd,  vr")
+  [(set (match_operand:VWEXTI_HS 0 "register_operand"              "=&vr")
 	(if_then_else:VWEXTI_HS
 	  (unspec:<VM>
-	    [(match_operand:<VM> 1 "vector_mask_operand" " vm, Wc1")
-	     (match_operand 5 "vector_length_operand"    "rvl, rvl")
-	     (match_operand 6 "const_int_operand"	 " i,    i")
-	     (match_operand 7 "const_int_operand"	 " i,    i")
-	     (match_operand 8 "const_int_operand"	 " i,    i")
+	    [(match_operand:<VM> 1 "vector_mask_operand"          "vmWc1")
+	     (match_operand 5 "vector_length_operand"             "  rvl")
+	     (match_operand 6 "const_int_operand"                 "    i")
+	     (match_operand 7 "const_int_operand"                 "    i")
+	     (match_operand 8 "const_int_operand"                 "    i")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	  (unspec:VWEXTI_HS
-	    [(match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "Wvr, Wvr")
-	     (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "Wvr, Wvr")
-	     (match_operand:VWEXTI_HS 2 "register_operand"	  "  0,   0")]
+	    [(match_operand:<V_DOUBLE_TRUNC> 3 "register_operand" "   vr")
+	     (match_operand:<V_DOUBLE_TRUNC> 4 "register_operand" "   vr")
+	     (match_operand:VWEXTI_HS        2 "register_operand" "    0")]
 	    UNSPEC_VABDA)
 	  (match_dup 2)))]
   "TARGET_ZVABD"
