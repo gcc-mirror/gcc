@@ -4767,6 +4767,43 @@ ix86_expand_fp_movcc (rtx operands[])
   return true;
 }
 
+/* Expand a conditional fma: operands[0] = operands[1]
+   ? fma (operands[2], operands[3], operands[4]) : operands[5].  */
+
+void
+ix86_expand_cond_fma (rtx operands[], bool neg_mult, bool neg_add)
+{
+  machine_mode mode = GET_MODE (operands[0]);
+  rtx mask = operands[1];
+  rtx op1 = operands[2], op2 = operands[3], op3 = operands[4];
+  rtx op4 = operands[5];
+  rtx tmp, fma;
+
+  /* The multiplication is commutative, so an else value equal to the
+     second operand for mult can be merged just like first operand
+     after swapping.  */
+  if (rtx_equal_p (op4, op2))
+    std::swap (op1, op2);
+
+  fma = gen_rtx_FMA (mode, neg_mult ? gen_rtx_NEG (mode, op1) : op1,
+		     op2, neg_add ? gen_rtx_NEG (mode, op3) : op3);
+
+  /* Do not emit an extra move.  */
+  if (rtx_equal_p (op4, op1)
+      || rtx_equal_p (op4, op3)
+      || op4 == CONST0_RTX (mode))
+    {
+      emit_insn (gen_rtx_SET (operands[0],
+			      gen_rtx_VEC_MERGE (mode, fma, op4, mask)));
+      return;
+    }
+
+  tmp = gen_reg_rtx (mode);
+  emit_insn (gen_rtx_SET (tmp, gen_rtx_VEC_MERGE (mode, fma,
+						  CONST0_RTX (mode), mask)));
+  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (mode, tmp, op4, mask));
+}
+
 /* Helper for ix86_cmp_code_to_pcmp_immediate for int modes.  */
 
 static int

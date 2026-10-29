@@ -6415,15 +6415,7 @@
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_fma<mode>4 (tmp,
-			     operands[2],
-			     operands[3],
-			     operands[4]));
-  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
-						  tmp,
-						  operands[5],
-						  operands[1]));
+  ix86_expand_cond_fma (operands, false, false);
   DONE;
 })
 
@@ -6520,15 +6512,7 @@
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_fms<mode>4 (tmp,
-			     operands[2],
-			     operands[3],
-			     operands[4]));
-  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
-						  tmp,
-						  operands[5],
-						  operands[1]));
+  ix86_expand_cond_fma (operands, false, true);
   DONE;
 })
 
@@ -6627,15 +6611,7 @@
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_fnma<mode>4 (tmp,
-			      operands[2],
-			      operands[3],
-			      operands[4]));
-  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
-						  tmp,
-						  operands[5],
-						  operands[1]));
+  ix86_expand_cond_fma (operands, true, false);
   DONE;
 })
 
@@ -6737,15 +6713,7 @@
 	  (match_operand:<avx512fmaskmode> 1 "register_operand")))]
   "TARGET_AVX512F"
 {
-  rtx tmp = gen_reg_rtx (<MODE>mode);
-  emit_insn (gen_fnms<mode>4 (tmp,
-			      operands[2],
-			      operands[3],
-			      operands[4]));
-  emit_move_insn (operands[0], gen_rtx_VEC_MERGE (<MODE>mode,
-						  tmp,
-						  operands[5],
-						  operands[1]));
+  ix86_expand_cond_fma (operands, true, true);
   DONE;
 })
 

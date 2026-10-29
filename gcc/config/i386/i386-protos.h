@@ -158,6 +158,7 @@ extern void ix86_expand_branch (enum rtx_code, rtx, rtx, rtx);
 extern void ix86_expand_setcc (rtx, enum rtx_code, rtx, rtx);
 extern bool ix86_expand_int_movcc (rtx[]);
 extern bool ix86_expand_fp_movcc (rtx[]);
+extern void ix86_expand_cond_fma (rtx[], bool, bool);
 extern bool ix86_expand_fp_vcond (rtx[]);
 extern bool ix86_expand_int_vcond (rtx[]);
 extern void ix86_expand_vec_perm (rtx[]);
