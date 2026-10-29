@@ -5666,13 +5666,63 @@ gcn_related_vector_mode (machine_mode vector_mode,
   return VnMODE (n, element_mode);
 }
 
+/* Known GCN devices have 64-byte cache lines, but experimentation shows that
+   256-byte alignments are beneficial for some other part of the memory
+   system.  */
+
+#define GCN_VECTOR_STACK_ALIGNMENT (256 * BITS_PER_UNIT)
+
+/* Implement TARGET_VECTOR_ALIGNMENT.
+
+   Vector types default to their natural alignment, which is up to 1024
+   bytes for V64TImode.  Cap it at GCN_VECTOR_STACK_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+gcn_vector_alignment (const_tree type)
+{
+  return MIN (default_vector_alignment (type), GCN_VECTOR_STACK_ALIGNMENT);
+}
+
+/* Implement LOCAL_DECL_ALIGNMENT.
+
+   For most cases, the default alignment is probably fine, but "omp simd array"
+   variables are performance critical so this hook makes them a special case.
+   In particular, these are used for the per-lane accumulators for SIMD
+   reductions.  Aligning these arrays as if they were vectors means that
+   they're optimized for when they're are accessed as vectors.
+
+   FIXME can/should this be applied to all arrays?  */
+
+unsigned int
+gcn_local_decl_alignment (tree decl)
+{
+  unsigned int align = LOCAL_ALIGNMENT (TREE_TYPE (decl), DECL_ALIGN (decl));
+
+  if (VAR_P (decl)
+      && lookup_attribute ("omp simd array", DECL_ATTRIBUTES (decl))
+      && DECL_SIZE (decl)
+      && tree_fits_uhwi_p (DECL_SIZE (decl)))
+    {
+      unsigned HOST_WIDE_INT size = tree_to_uhwi (DECL_SIZE (decl));
+      unsigned HOST_WIDE_INT want = MIN (least_bit_hwi (size),
+					 GCN_VECTOR_STACK_ALIGNMENT);
+      if (want >= 128 * BITS_PER_UNIT && want > align)
+	align = want;
+    }
+
+  return align;
+}
+
 /* Implement TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT.
 
    Returns the preferred alignment in bits for accesses to vectors of type type
    in vectorized code. This might be less than or greater than the ABI-defined
    value returned by TARGET_VECTOR_ALIGNMENT. It can be equal to the alignment
    of a single element, in which case the vectorizer will not try to optimize
-   for alignment.  */
+   for alignment.
+
+   Note: Changing this to GCN_VECTOR_STACK_ALIGNMENT did not give a measurable
+   improvement running BabelStream.  FIXME Might other benchmarks benefit?  */
 
 static poly_uint64
 gcn_preferred_vector_alignment (const_tree type)
@@ -8753,6 +8803,8 @@ gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
 #undef  TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE
 #define TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE \
   gcn_vector_alignment_reachable
+#undef  TARGET_VECTOR_ALIGNMENT
+#define TARGET_VECTOR_ALIGNMENT gcn_vector_alignment
 #undef  TARGET_VECTOR_MODE_SUPPORTED_P
 #define TARGET_VECTOR_MODE_SUPPORTED_P gcn_vector_mode_supported_p
 
