@@ -823,8 +823,6 @@ pp_points_to_solution (pretty_printer *pp, const pt_solution *pt)
     pp_string (pp, "escaped ");
   if (pt->ipa_escaped)
     pp_string (pp, "unit-escaped ");
-  if (pt->null)
-    pp_string (pp, "null ");
   if (pt->const_pool)
     pp_string (pp, "const-pool ");
   if (pt->vars

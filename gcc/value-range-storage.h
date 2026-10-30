@@ -132,6 +132,8 @@ public:
   bool equal_p (const prange &r) const;
   bool fits_p (const prange &r) const;
   irange_bitmask get_bitmask (tree type) const;
+  bool nonnull_p (tree type) const;
+  void set_nonnull (tree type);
   void dump () const;
 
   // The points-to solution for the SSA name is flow insensitive and is
@@ -161,6 +163,28 @@ private:
 
   trailing_wide_ints<PRANGE_STORAGE_NINTS> m_trailing_ints;
 };
+
+// Return TRUE if this range of type TYPE does not contain zero.
+
+inline bool
+prange_storage::nonnull_p (tree type) const
+{
+  switch (m_kind)
+    {
+      case PR_UNDEFINED:
+      case PR_VARYING:
+      case PR_ZERO:
+      case PR_FULL:
+	return false;
+      case PR_NONZERO:
+	return true;
+      case PR_OTHER:
+	return (get_word (0, type) != 0);
+      default:
+	gcc_unreachable ();
+    }
+}
+
 
 // Efficient memory storage for an frange.
 

@@ -592,26 +592,6 @@ get_ssa_name_range_info (vrange &r, const_tree name)
     r.set_varying (type);
 }
 
-// Return nonnull attribute of pointer NAME from its points-to solution.
-
-static inline bool
-get_ssa_name_ptr_info_nonnull (const_tree name)
-{
-  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  const pt_solution *pt = ssa_name_pt_solution (name);
-  if (pt == NULL)
-    return false;
-  /* TODO Now pt->null is conservatively set to true in PTA
-     analysis. vrp is the only pass (including ipa-vrp)
-     that clears pt.null via set_ptr_nonnull when it knows
-     for sure. PTA will preserves the pt.null value set by VRP.
-
-     When PTA analysis is improved, pt.anything, pt.nonlocal
-     and pt.escaped may also has to be considered before
-     deciding that pointer cannot point to NULL.  */
-  return !pt->null;
-}
-
 // Update the global range for NAME into the SSA_RANGE_NAME_INFO and
 // Return the legacy global range for NAME if it has one, otherwise
 // return VARYING.
@@ -639,13 +619,12 @@ gimple_range_global (vrange &r, tree name, struct function *fun)
 	  // ~[0, 0].  Note that this is only valid with default definitions
 	  // of PARM_DECLs
 	  if (POINTER_TYPE_P (type)
-	      && ((cfun && fun == cfun && nonnull_arg_p (sym))
-		  || get_ssa_name_ptr_info_nonnull (name)))
-	    {
-	      prange nz (type);
-	      nz.set_nonzero (type);
-	      r.intersect (nz);
-	    }
+	      && ((cfun && fun == cfun && nonnull_arg_p (sym))))
+	   {
+	     prange nz (type);
+	     nz.set_nonzero (type);
+	     r.intersect (nz);
+	   }
 	}
       // If this is a local automatic with no definition, use undefined.
       else if (TREE_CODE (sym) != RESULT_DECL)
@@ -658,13 +637,6 @@ gimple_range_global (vrange &r, tree name, struct function *fun)
       get_ssa_name_range_info (r, name);
       if (r.undefined_p ())
 	r.set_varying (type);
-      // pt.null may still carry non-nullness the stored range does not.
-      if (POINTER_TYPE_P (type) && get_ssa_name_ptr_info_nonnull (name))
-	{
-	  prange nz (type);
-	  nz.set_nonzero (type);
-	  r.intersect (nz);
-	}
     }
   else
     r.set_varying (type);

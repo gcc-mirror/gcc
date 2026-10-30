@@ -874,11 +874,9 @@ find_what_var_points_to (tree fndecl, varinfo_t orig_vi)
     {
       varinfo_t vi = get_varinfo (i);
 
-      if (vi->is_artificial_var)
+      if (vi->is_artificial_var && vi->id != nothing_id)
 	{
-	  if (vi->id == nothing_id)
-	    pt->null = 1;
-	  else if (vi->id == escaped_id)
+	  if (vi->id == escaped_id)
 	    {
 	      if (in_ipa_mode)
 		pt->ipa_escaped = 1;
@@ -948,8 +946,6 @@ find_what_p_points_to (tree fndecl, tree p)
     return;
 
   pt_solution pt = find_what_var_points_to (fndecl, vi);
-  /* Conservatively set to NULL from PTA (to true). */
-  pt.null = 1;
   set_ssa_name_pt_solution (p, pt);
   /* Preserve pointer nonnull globally computed.  */
   if (nonnull)
@@ -993,7 +989,6 @@ pt_solution_reset (struct pt_solution *pt)
 {
   memset (pt, 0, sizeof (struct pt_solution));
   pt->anything = true;
-  pt->null = true;
 }
 
 /* Set the points-to solution *PT to point only to the variables
@@ -1046,7 +1041,6 @@ pt_solution_ior_into (struct pt_solution *dest, struct pt_solution *src)
   dest->nonlocal |= src->nonlocal;
   dest->escaped |= src->escaped;
   dest->ipa_escaped |= src->ipa_escaped;
-  dest->null |= src->null;
   dest->const_pool |= src->const_pool ;
   dest->vars_contains_nonlocal |= src->vars_contains_nonlocal;
   dest->vars_contains_escaped |= src->vars_contains_escaped;
@@ -1834,7 +1828,7 @@ make_pass_build_ealias (gcc::context *ctxt)
 
 /* IPA PTA solutions for ESCAPED.  */
 struct pt_solution ipa_escaped_pt
-  = { true, false, false, false, false, false,
+  = { true, false, false, false, false,
       false, false, false, false, false, false, NULL };
 
 

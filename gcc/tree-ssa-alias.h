@@ -43,10 +43,6 @@ struct GTY(()) pt_solution
      reference.  */
   unsigned int ipa_escaped : 1;
 
-  /* Nonzero if the points-to set includes 'nothing', the points-to set
-     includes memory at address NULL.  */
-  unsigned int null : 1;
-
   /* Nonzero if the points-to set includes a readonly object like a
      STRING_CST that does not have an underlying declaration but will
      end up in the constant pool.  */

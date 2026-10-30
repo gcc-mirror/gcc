@@ -488,14 +488,6 @@ set_range_info (tree name, const vrange &r)
   if (!tmp.intersect (r) || tmp.undefined_p ())
     return false;
 
-  if (POINTER_TYPE_P (type))
-    {
-      // Preserve nonnullness in the points-to solution as well.
-      pt_solution *pt = get_pt_solution (name);
-      if (!tmp.contains_zero_p () && pt->null)
-	set_ptr_nonnull (name);
-    }
-
   if (!range_info_set_range (name, tmp))
     return false;
 
@@ -514,13 +506,31 @@ set_range_info (tree name, const vrange &r)
   return true;
 }
 
+/* query nonnull attribute for pointer NAME.  */
+
+bool
+ptr_nonnull_p (tree name)
+{
+  gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
+  prange_storage *ps = ssa_name_prange_storage (name);
+  return ps ? ps->nonnull_p (TREE_TYPE (name)) : false;
+}
+
 /* Set nonnull attribute to pointer NAME.  */
 
 void
 set_ptr_nonnull (tree name)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  get_pt_solution (name)->null = 0;
+  prange_storage *ps = ssa_name_prange_storage (name);
+  if (ps)
+    {
+      ps->set_nonnull (TREE_TYPE (name));
+      return;
+    }
+  prange pr;
+  pr.set_nonzero (TREE_TYPE (name));
+  range_info_set_range (name, pr);
 }
 
 /* Update the non-zero bits bitmask of NAME.  */
@@ -1029,13 +1039,7 @@ reset_flow_sensitive_info (tree name)
   pt_solution *pt = s ? s->pt : NULL;
   SSA_NAME_RANGE_INFO (name) = NULL;
   if (pt)
-    {
-      set_pt_solution (name, pt);
-      /* [E]VRP can derive context sensitive alignment info and
-	 non-nullness properties.  We must reset both.  The alignment went
-	 with the range storage above; only the nullness is left.  */
-      pt->null = 1;
-    }
+    set_pt_solution (name, pt);
 
   // Clear range info in the current range query.
   get_range_query (cfun)->reset_range_info (name);
@@ -1168,61 +1172,4 @@ gimple_opt_pass *
 make_pass_release_ssa_names (gcc::context *ctxt)
 {
   return new pass_release_ssa_names (ctxt);
-}
-
-/* Save and restore of flow sensitive information. */
-
-/* Save off the flow sensitive info from NAME. */
-
-void
-flow_sensitive_info_storage::save (tree name)
-{
-  gcc_assert (state == 0);
-  range_info = SSA_NAME_RANGE_INFO (name);
-  if (!POINTER_TYPE_P (TREE_TYPE (name)))
-    {
-      state = 1;
-      return;
-    }
-  state = -1;
-  const pt_solution *pt = ssa_name_pt_solution (name);
-  null = pt ? pt->null : true;
-}
-
-/* Restore the flow sensitive info from NAME. */
-
-void
-flow_sensitive_info_storage::restore (tree name)
-{
-  gcc_assert (state != 0);
-  /* The storage carries the range, its bitmask and -- for now -- the
-     alignment, so reinstating it restores all three.  Only the nullness
-     lives outside it.  */
-  SSA_NAME_RANGE_INFO (name) = range_info;
-  if (!POINTER_TYPE_P (TREE_TYPE (name)))
-    {
-      gcc_assert (state == 1);
-      return;
-    }
-  gcc_assert (state == -1);
-  prange_storage *s = ssa_name_prange_storage (name);
-  if (s && s->pt)
-    s->pt->null = null;
-}
-
-/* Save off the flow sensitive info from NAME.
-   And reset the flow sensitive info of NAME. */
-
-void
-flow_sensitive_info_storage::save_and_clear (tree name)
-{
-  save (name);
-  reset_flow_sensitive_info (name);
-}
-
-/* Clear the storage. */
-void
-flow_sensitive_info_storage::clear_storage (void)
-{
-  state = 0;
 }

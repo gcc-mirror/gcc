@@ -64,6 +64,7 @@ extern bool get_ptr_info_alignment (const_tree, unsigned int *,
 extern void mark_ptr_info_alignment_unknown (tree);
 extern void set_ptr_info_alignment (tree, unsigned int, unsigned int);
 extern void set_ptr_nonnull (tree);
+extern bool ptr_nonnull_p (tree);
 
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
@@ -130,21 +131,35 @@ make_temp_ssa_name (tree type, gimple *stmt, const char *name)
 class flow_sensitive_info_storage
 {
 public:
-  void save (tree);
-  void save_and_clear (tree);
-  void restore (tree);
-  void clear_storage ();
+  /* Save the flow sensitive info from NAME. */
+  inline void save (tree name)
+    {
+      gcc_checking_assert (state == 0);
+      range_info = SSA_NAME_RANGE_INFO (name);
+      state = 1;
+    }
+
+  /* Restore the flow sensitive info from NAME. */
+  inline void restore (tree name) const
+    {
+      gcc_checking_assert (state == 1);
+      SSA_NAME_RANGE_INFO (name) = range_info;
+    }
+
+  /* Save the flow sensitive info from NAME and reset that info.  */
+  inline void save_and_clear (tree name)
+    {
+      save (name);
+      reset_flow_sensitive_info (name);
+    }
+
+  /* Clear the storage. */
+  inline void clear_storage () { state = 0; }
 private:
-  /* 0 means there is nothing saved.
-     1 means non pointer is saved.
-     -1 means a pointer type is saved.
-     -2 means a pointer type is saved but no information was saved. */
+  /* 0 means there is nothing saved.  1 means something is saved.  */
   int state = 0;
-  /* The range info, which for a pointer also carries the bitmask and the
-     alignment, so those need no separate slot here.  */
+  /* The range info contains all flow sensitive information now.  */
   vrange_storage *range_info = nullptr;
-  /* Flow sensitive pointer information not held in the range.  */
-  bool null = true;
 };
 
 #endif /* GCC_TREE_SSANAMES_H */

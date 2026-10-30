@@ -516,7 +516,7 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	  || pt1->vars_contains_restrict
 	  || pt1->vars_contains_interposable)
 	return false;
-      if (integer_zerop (ptr2) && !pt1->null)
+      if (integer_zerop (ptr2) && ptr_nonnull_p (ptr1))
 	return true;
       if (TREE_CODE (ptr2) == SSA_NAME)
 	{
@@ -525,7 +525,7 @@ ptrs_compare_unequal (tree ptr1, tree ptr2)
 	      || pt2->vars_contains_restrict
 	      || pt2->vars_contains_interposable)
 	    return false;
-	  if ((!pt1->null || !pt2->null)
+	  if ((ptr_nonnull_p (ptr1) || ptr_nonnull_p (ptr2))
 	      /* ???  We do not represent FUNCTION_DECL and LABEL_DECL
 		 in pt.vars but only set pt.vars_contains_nonlocal.  This
 		 makes compares involving those and other nonlocals
@@ -682,9 +682,6 @@ dump_points_to_solution (FILE *file, const pt_solution *pt)
 
   if (pt->ipa_escaped)
     fprintf (file, ", points-to unit escaped");
-
-  if (pt->null)
-    fprintf (file, ", points-to NULL");
 
   if (pt->const_pool)
     fprintf (file, ", points-to const-pool");
@@ -3399,7 +3396,7 @@ same_addr_size_stores_p (tree base1, poly_int64 offset1, poly_int64 size1,
 
   /* Be conservative with non-call exceptions when the address might
      be NULL.  */
-  if (cfun->can_throw_non_call_exceptions && pt->null)
+  if (cfun->can_throw_non_call_exceptions && !ptr_nonnull_p (ptr))
     return false;
 
   /* Check that ptr points relative to obj.  */
