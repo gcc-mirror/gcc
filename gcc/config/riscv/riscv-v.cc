@@ -3680,7 +3680,7 @@ shuffle_interleave_even_odd_patterns (struct expand_vec_perm_d *d)
   insn_code icode
     = code_for_xt_pred (even ? UNSPEC_XT_VILE : UNSPEC_XT_VILO, vmode);
 
-  emit_vlmax_insn (icode, __NORMAL_OP_TA2 | BINARY_OP_P, ops);
+  emit_vlmax_insn (icode, (unsigned) __NORMAL_OP_TA2 | BINARY_OP_P, ops);
 
   return true;
 }
