@@ -22,16 +22,6 @@
 
 #include "generic.h"
 
-static const struct cpu_regmove_cost neoversev3_regmove_cost =
-{
-  3, /* GP2GP  */
-  /* Spilling to int<->fp instead of memory is recommended so set
-     realistic costs compared to memmov_cost.  */
-  5, /* GP2FP  */
-  4, /* FP2GP  */
-  4 /* FP2FP  */
-};
-
 static const advsimd_vec_cost neoversev3_advsimd_vector_cost =
 {
   2, /* int_stmt_cost  */
@@ -192,7 +182,7 @@ static const struct tune_params neoversev3_tunings =
 {
   &cortexa76_extra_costs,
   &generic_armv9_a_addrcost_table,
-  &neoversev3_regmove_cost,
+  &generic_armv9_a_regmove_cost,
   &neoversev3_vector_cost,
   &generic_branch_cost,
   &generic_approx_modes,
