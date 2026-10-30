@@ -474,6 +474,45 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 				     { zeros; })
 			   { ones; } { zeros; })))))))))
 
+#if GIMPLE
+/* (x & lowhalf_mask) * (y & lowhalf_mask)
+   -> VEC_WIDEN_MULT_EVEN (VIEW_CONVERT (x), VIEW_CONVERT (y)), or
+   VEC_WIDEN_MULT_ODD on big-endian targets where the low halves are the
+   odd lanes.  */
+(simplify
+ (mult (bit_and @0 VECTOR_CST@2)
+       (bit_and @1 @2))
+ (if (uniform_vector_p (@2)
+      /* Single-element results are excluded since targets disagree
+	 on the mode of a vector(1) widening multiply result (V2DI -> TI
+	 on s390 but V2DI -> V1TI on rs6000).  */
+      && known_gt (TYPE_VECTOR_SUBPARTS (type), 1U))
+  (with
+   {
+     auto elem = wi::to_wide (uniform_vector_p (@2));
+     unsigned int outer_prec = TYPE_PRECISION (TREE_TYPE (type));
+     unsigned int inner_prec = outer_prec / 2;
+     /* The half-width lanes are zero-extended, so the multiply is
+	unsigned even for a signed TYPE.  */
+     tree inner_scalar = build_nonstandard_integer_type (inner_prec, 1);
+     tree inner_type
+       = build_vector_type (inner_scalar, TYPE_VECTOR_SUBPARTS (type) * 2);
+     optab op = (BYTES_BIG_ENDIAN
+		 ? vec_widen_umult_odd_optab : vec_widen_umult_even_optab);
+   }
+   (if (elem == wi::mask (inner_prec, false, outer_prec)
+	/* Without a mode of exactly INNER_PREC bits (e.g. for QImode
+	   elements) the half-width vector would be wider than TYPE.  */
+	&& type_has_mode_precision_p (inner_scalar)
+	&& GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_VECTOR_INT
+	&& optab_handler (op, TYPE_MODE (inner_type)) != CODE_FOR_nothing)
+    (if (BYTES_BIG_ENDIAN)
+     (vec_widen_mult_odd (view_convert:inner_type @0)
+			 (view_convert:inner_type @1))
+     (vec_widen_mult_even (view_convert:inner_type @0)
+			  (view_convert:inner_type @1)))))))
+#endif
+
 (for cmp (gt ge lt le)
      outp (convert convert negate negate)
      outn (negate negate convert convert)
