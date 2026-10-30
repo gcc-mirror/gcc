@@ -426,7 +426,7 @@ struct Foo {
 }
 
 impl PartialOrd for Foo {
-    fn partial_cmp(&self, other: &'_ Foo) -> Option<::crate::cmp::Ordering> {
+    fn partial_cmp(&self, other: &'_ Foo) -> Option<crate::cmp::Ordering> {
         self.a.partial_cmp(&other.a)
     }
 }
