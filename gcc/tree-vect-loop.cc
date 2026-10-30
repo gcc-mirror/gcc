@@ -9156,15 +9156,12 @@ vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 
     case vect_step_op_shr:
     case vect_step_op_shl:
-      skip_niters = fold_build1 (NOP_EXPR, type, skip_niters);
-      step_expr = fold_build1 (NOP_EXPR, type, step_expr);
-      step_expr = fold_build2 (MULT_EXPR, type, step_expr, skip_niters);
-      /* When shift mount >= precision, need to avoid UD.
+      /* When shift count >= precision, need to avoid UD.
 	 In the original loop, there's no UD, and according to semantic,
 	 init_expr should be 0 for lshr, ashl, and >>= (prec - 1) for ashr.  */
-      if ((!tree_fits_uhwi_p (step_expr)
-	  || tree_to_uhwi (step_expr) >= prec)
-	  && !early_exit_p)
+      if (!early_exit_p
+	  && wi::mul (wi::to_widest (step_expr),
+		      wi::to_widest (skip_niters)) >= prec)
 	{
 	  if (induction_type == vect_step_op_shl
 	      || TYPE_UNSIGNED (type))
@@ -9176,8 +9173,15 @@ vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 	}
       else
 	{
+	  /* ???  For not constant skip_niters we'd have to treat the
+	     overflow case.  */
+	  gcc_assert (!early_exit_p);
+	  step_expr = fold_build2 (MULT_EXPR, TREE_TYPE (skip_niters),
+				   skip_niters,
+				   fold_convert (TREE_TYPE (skip_niters),
+						 step_expr));
 	  init_expr = fold_build2 ((induction_type == vect_step_op_shr
-					  ? RSHIFT_EXPR : LSHIFT_EXPR),
+				    ? RSHIFT_EXPR : LSHIFT_EXPR),
 				    type, init_expr, step_expr);
 	  init_expr = force_gimple_operand (init_expr, stmts, false, NULL);
 	}

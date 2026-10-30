@@ -2321,12 +2321,16 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
     }
 
   if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-      && induction_type == vect_step_op_mul)
+      && (induction_type == vect_step_op_mul
+	  || induction_type == vect_step_op_shl
+	  || induction_type == vect_step_op_shr))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "Peeling for is not supported for nonlinear mult"
-			 " induction using partial vectorization.\n");
+			 "Peeling for is not supported for nonlinear %s"
+			 " induction using partial vectorization.\n",
+			 induction_type == vect_step_op_mul
+			 ? "mult" : "shift");
       return false;
     }
 
