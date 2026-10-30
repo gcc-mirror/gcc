@@ -18428,12 +18428,6 @@ s390_bitint_type_info (int n, struct bitint_info *info)
 #undef  TARGET_ASM_INTEGER
 #define TARGET_ASM_INTEGER s390_assemble_integer
 
-#undef  TARGET_ASM_OPEN_PAREN
-#define TARGET_ASM_OPEN_PAREN ""
-
-#undef  TARGET_ASM_CLOSE_PAREN
-#define TARGET_ASM_CLOSE_PAREN ""
-
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE s390_option_override
 

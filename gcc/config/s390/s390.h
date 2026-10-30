@@ -792,13 +792,13 @@ CUMULATIVE_ARGS;
 /* Sections.  */
 
 /* Output before read-only data.  */
-#define TEXT_SECTION_ASM_OP ".text"
+#define TEXT_SECTION_ASM_OP "\t.text"
 
 /* Output before writable (initialized) data.  */
-#define DATA_SECTION_ASM_OP ".data"
+#define DATA_SECTION_ASM_OP "\t.data"
 
 /* Output before writable (uninitialized) data.  */
-#define BSS_SECTION_ASM_OP ".bss"
+#define BSS_SECTION_ASM_OP "\t.bss"
 
 
 /* Position independent code.  */
