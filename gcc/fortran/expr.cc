@@ -6470,13 +6470,25 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
   if (!permit_element && expr->rank == 0)
     return false;
 
+  sym = expr->symtree->n.sym;
+  const gfc_typespec *prev_ts = &sym->ts;
   for (ref = expr->ref; ref; ref = ref->next)
     {
       if (ar)
 	return false; /* Array shall be last part-ref.  */
 
       if (ref->type == REF_COMPONENT)
-	part_ref  = ref;
+	{
+	  /* If the reference is to a class container's _data component, keep
+	     part_ref pointing to the class container, so that the attributes of
+	     both the class container and its _data component can be queried
+	     from part_ref.  */
+	  if (!(prev_ts->type == BT_CLASS
+		&& prev_ts->u.derived->attr.is_class
+		&& strcmp (ref->u.c.component->name, "_data") == 0))
+	    part_ref  = ref;
+	  prev_ts = &ref->u.c.component->ts;
+	}
       else if (ref->type == REF_SUBSTRING)
 	return false;
       else if (ref->type == REF_INQUIRY)
@@ -6485,17 +6497,25 @@ gfc_is_simply_contiguous (gfc_expr *expr, bool strict, bool permit_element)
 	ar = &ref->u.ar;
     }
 
-  sym = expr->symtree->n.sym;
   if ((part_ref
        && part_ref->u.c.component
        && !part_ref->u.c.component->attr.contiguous
        && IS_POINTER (part_ref->u.c.component))
       || (!part_ref
-	  && expr->ts.type != BT_CLASS
 	  && !sym->attr.contiguous
-	  && (sym->attr.pointer
-	      || (sym->as && sym->as->type == AS_ASSUMED_RANK)
-	      || (sym->as && sym->as->type == AS_ASSUMED_SHAPE))))
+	  /* Associate names may be associated with a simply contiguous target
+	     without having the contiguous attribute set.  Skip them here, and
+	     handle them below.  */
+	  && !sym->attr.associate_var
+	  && (IS_POINTER (sym)
+	      || (sym->ts.type == BT_CLASS
+		  && sym->ts.u.derived->attr.is_class
+		  && CLASS_DATA (sym)->as
+		  && (CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK
+		      || CLASS_DATA (sym)->as->type == AS_ASSUMED_SHAPE))
+	      || (sym->as
+		  && (sym->as->type == AS_ASSUMED_RANK
+		      || sym->as->type == AS_ASSUMED_SHAPE)))))
     return false;
 
   /* An associate variable may point to a non-contiguous target.  */
