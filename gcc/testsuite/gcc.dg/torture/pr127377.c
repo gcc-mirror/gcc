@@ -1,4 +1,5 @@
 /* { dg-do run } */
+/* { dg-xfail-run-if "PR127142 test fails on big-endian" { be } } */
 /* { dg-require-effective-target int32plus } */
 
 __attribute__((noipa))
