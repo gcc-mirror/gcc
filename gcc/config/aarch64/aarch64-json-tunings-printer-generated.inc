@@ -291,7 +291,9 @@ serialize_vec_costs_issue_info_sve (const T &sve)
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "ld4_st4_general_ops", sve.ld4_st4_general_ops);
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "pred_ops_per_cycle", sve.pred_ops_per_cycle);
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "while_pred_ops", sve.while_pred_ops);
+  SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "int_cmp_ops", sve.int_cmp_ops);
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "int_cmp_pred_ops", sve.int_cmp_pred_ops);
+  SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "fp_cmp_ops", sve.fp_cmp_ops);
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "fp_cmp_pred_ops", sve.fp_cmp_pred_ops);
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "gather_scatter_pair_general_ops", sve.gather_scatter_pair_general_ops);
   SERIALIZE_UNSIGNED_INTEGER_FIELD (sve_obj, "gather_scatter_pair_pred_ops", sve.gather_scatter_pair_pred_ops);

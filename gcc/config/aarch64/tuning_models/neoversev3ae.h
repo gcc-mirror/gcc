@@ -161,7 +161,9 @@ static const aarch64_sve_vec_issue_info neoversev3ae_sve_issue_info =
   },
   2, /* pred_ops_per_cycle  */
   1, /* while_pred_ops  */
+  1, /* int_cmp_ops  */
   0, /* int_cmp_pred_ops  */
+  1, /* fp_cmp_ops  */
   0, /* fp_cmp_pred_ops  */
   1, /* gather_scatter_pair_general_ops  */
   1 /* gather_scatter_pair_pred_ops  */

@@ -235,7 +235,9 @@ static const char *schema_json = R"json(
 	  "ld4_st4_general_ops": "uint",
 	  "pred_ops_per_cycle": "uint",
 	  "while_pred_ops": "uint",
+	  "int_cmp_ops": "uint",
 	  "int_cmp_pred_ops": "uint",
+	  "fp_cmp_ops": "uint",
 	  "fp_cmp_pred_ops": "uint",
 	  "gather_scatter_pair_general_ops": "uint",
 	  "gather_scatter_pair_pred_ops": "uint"

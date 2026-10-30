@@ -245,7 +245,9 @@ parse_vec_costs_issue_info_sve (gcc_json_context &ctxt, const json::object &jo, 
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "ld4_st4_general_ops", sve.ld4_st4_general_ops);
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "pred_ops_per_cycle", sve.pred_ops_per_cycle);
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "while_pred_ops", sve.while_pred_ops);
+  PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "int_cmp_ops", sve.int_cmp_ops);
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "int_cmp_pred_ops", sve.int_cmp_pred_ops);
+  PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "fp_cmp_ops", sve.fp_cmp_ops);
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "fp_cmp_pred_ops", sve.fp_cmp_pred_ops);
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "gather_scatter_pair_general_ops", sve.gather_scatter_pair_general_ops);
   PARSE_UNSIGNED_INTEGER_FIELD (ctxt, jo, "gather_scatter_pair_pred_ops", sve.gather_scatter_pair_pred_ops);

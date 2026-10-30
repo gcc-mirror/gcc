@@ -18878,16 +18878,24 @@ aarch64_vector_costs::count_ops (unsigned int count, vect_cost_for_stmt kind,
       && vect_reduc_type (m_vinfo, node) == COND_REDUCTION)
     ops->general_ops += count;
 
-  /* Count the predicate operations needed by an SVE comparison.  */
+  /* Count the general and predicate operations needed by an SVE comparison.  */
   if (stmt_info
       && sve_issue
       && (kind == vector_stmt || kind == vec_to_scalar))
     if (tree type = vect_comparison_type (stmt_info))
       {
-	unsigned int base = (FLOAT_TYPE_P (type)
-			     ? sve_issue->fp_cmp_pred_ops
-			     : sve_issue->int_cmp_pred_ops);
-	ops->pred_ops += base * count;
+	auto cmp_ops = (FLOAT_TYPE_P (type)
+			? sve_issue->fp_cmp_ops
+			: sve_issue->int_cmp_ops);
+	/* Subtracting 1 from cmp_ops because the basic operation count is
+	   already included above.  The effect of this is now the additional
+	   cost of cmp instructions.  */
+	ops->general_ops += (cmp_ops - 1) * count;
+
+	auto cmp_pred_ops = (FLOAT_TYPE_P (type)
+			    ? sve_issue->fp_cmp_pred_ops
+			    : sve_issue->int_cmp_pred_ops);
+	ops->pred_ops += cmp_pred_ops * count;
       }
 
   /* Add any extra overhead associated with LD[234] and ST[234] operations.  */
