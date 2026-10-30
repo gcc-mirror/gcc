@@ -1,3 +1,36 @@
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/128264
+	* src/c++17/memory_resource.cc (_Pool::replenish): Rethrow
+	exception.
+	(_Pool::vector::insert): Use named variables for new capacity.
+	For initial allocation only set capacity if allocation succeeds.
+	* testsuite/20_util/unsynchronized_pool_resource/128264.cc: New
+	test.
+
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (_M_check_and_initialize): New
+	function.
+	(vector(size_type, const bool&, const allocator_type&))
+	(vector(from_range_t, R&&, const Alloc&))
+	(_M_initialize_dispatch, _M_initialize_range): Use new function
+	instead of _M_initialize.
+	(_M_initialize): Add debug assertion.
+	* testsuite/23_containers/vector/bool/prX.cc: New test.
+
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdb::locate_zone): Adjust exception text
+	to say "time zone".
+	* testsuite/std/time/tzdb/links.cc: Adjust expected exception
+	text.
+
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/search.h (__search_template): Increase array
+	size.
+
 2026-10-28  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/std/inplace_vector (inplace_vector::_S_check_size)

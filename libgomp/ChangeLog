@@ -1,3 +1,8 @@
+2026-10-29  Andrew Stubbs  <ams@baylibre.com>
+
+	* plugin/plugin-gcn.c (drain_queue): Execute placeholder entries
+	with the queue lock held.
+
 2026-10-27  Tobias Burnus  <tburnus@baylibre.com>
 
 	* fortran.c (omp_get_gprivate_limit_): Add.

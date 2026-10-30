@@ -1,3 +1,147 @@
+2026-10-29  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR middle-end/128174
+	* lra-constraints.cc (add_invariant): New function.
+	(process_invariant_for_inheritance): Call add_invariant.
+
+2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128271
+	* config/i386/i386.md (rstorssp): Model
+	the memory operand as read and modified by the insn.
+	(clrssbsy): Ditto.  Clobber FLAGS_REG.
+	(@wrss<mode>, @wruss<mode>): Model
+	the memory operand as set by the insn.
+
+2026-10-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* tree-ssa-loop-ivopts.cc (struct iv_cand): Add nregs.
+	(struct ivopts_data): Add inv_var_nregs and inv_expr_nregs.
+	(class iv_ca): Add n_cand_regs and n_inv_regs.
+	(tree_ssa_iv_optimize_init): Create inv_var_nregs and
+	inv_expr_nregs.
+	(nregs_per_value): New function.
+	(determine_iv_cost): Set the candidate's nregs.
+	(ivopts_estimate_reg_pressure): Take register counts instead of
+	value counts.  Update comment.
+	(determine_set_costs): Fill inv_var_nregs and inv_expr_nregs.
+	Count regs_used in registers.  Dump the number of values too.
+	(iv_ca_recount_cost): Pass register counts.  Check them against
+	the value counts.
+	(iv_ca_set_remove_invs, iv_ca_set_add_invs): Add NREGS parameter
+	and update n_inv_regs.
+	(iv_ca_set_no_cp, iv_ca_set_cp): Update n_cand_regs and pass the
+	register tables.
+	(iv_ca_new): Initialize n_cand_regs and n_inv_regs.
+	(iv_ca_dump): Pass register counts.  Dump registers and values.
+	(free_loop_data): Truncate inv_var_nregs and inv_expr_nregs.
+	(tree_ssa_iv_optimize_finalize): Release them.
+
+2026-10-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* config/gcn/gcn.h (SWITCHABLE_TARGET): Define.
+	* config/gcn/gcn.cc: Include target-globals.h.
+	(normal_function_globals, old_is_kernel): New static variables.
+	(gcn_is_kernel): New function.
+	(gcn_set_current_function): New function.
+	(gcn_prepare_pch_save): New function.
+	(gcn_conditional_register_usage): Use gcn_is_kernel to detect
+	non-kernel functions and do not require cfun->machine for them.
+	(TARGET_SET_CURRENT_FUNCTION, TARGET_PREPARE_PCH_SAVE): Define.
+
+2026-10-29  Tamar Christina  <tamar.christina@arm.com>
+	    Alfie Richards  <alfie.richards@arm.com>
+
+	PR tree-optimization/128028
+	* tree-vect-loop-manip.cc (vect_set_loop_controls_directly):
+	Move the trip count adjustment to vect_gen_vector_loop_niters.
+	(vect_reuse_loop_latch): Remove.
+	(vect_set_loop_condition_partial_vectors): Leave condition insertion
+	and final IV updates to the caller.
+	(vect_set_loop_condition_partial_vectors_avx512): Likewise.
+	(vect_set_loop_condition_normal): Leave condition insertion to the
+	caller and use the completed iteration count.
+	(vect_set_loop_condition): Share exit relocation and partial-vector
+	final IV updates.
+	(vect_gen_vector_loop_niters): Exclude the header-only iteration.
+	(vect_gen_vector_loop_niters_mult_vf): Remove the VF subtraction.
+	(vect_do_peeling): Replay the main exit only for uncounted loops.
+	* tree-vect-loop.cc (vect_analyze_loop_2): Account for the header-only
+	iteration in the versioning threshold.
+
+2026-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128277
+	* tree-ssa-ccp.cc (do_ssa_ccp): Initialize loops with
+	LOOPS_HAVE_SIMPLE_LATCHES.
+
+2026-10-29  liuhongt  <hongtao.liu@intel.com>
+
+	* tree-vect-patterns.cc (vect_recog_divmod_pattern): Use a plain
+	arithmetic shift for EXACT_DIV_EXPR by a positive power of two.
+
+2026-10-29  wangzicong  <wangzicong@masscore.cn>
+
+	* tree-vect-loop.cc (vect_compute_single_scalar_iteration_cost):
+	Record unweighted scalar statement counts.
+	(vect_scalar_peeling_stmt_count): New function.
+	(vect_estimate_min_profitable_iters): Use it when costing scalar
+	prologue and epilogue iterations.
+
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* config/i386/sse.md (avx_vec_concat_isa): New.
+	(avx_vec_concat<mode>): Allow 256 bit vinsert*64x2/32*4 when
+	AVX512VL is enabled.
+
+2026-10-29  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.md (aop<mode>3): New expander.
+
+2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122382
+	* config/i386/sse.md (VHF_F16C, VF1_F16C): New mode iterators.
+	(vec_unpacks_lo_<mode>, vec_unpacks_hi_<mode>): Use VHF_F16C.
+	Remove the TARGET_AVX512FP16 condition.  Call gen_extendv4hfv4sf2
+	for V8HFmode.
+	(f16c_truncv4sfv8hf2): New expander.
+	(trunc<mode>v4hf2): Use it for V4SFmode.
+	(vec_pack_trunc_<mode>): Use VF1_F16C.  Remove the
+	TARGET_AVX512FP16 condition.  Call gen_f16c_truncv4sfv8hf2 for
+	V4SFmode.
+
+2026-10-29  Ondřej Machota  <ondrejmachota@gmail.com>
+
+	* common.opt (fmalloc-dce): Use flag_malloc_dce instead of
+	flag_malloc_dse.
+	* tree-ssa-dce.cc (checks_return_value_of_removable_allocation_p):
+	Also handle comparisons against NULL in assignments.
+	(eliminate_unnecessary_stmts): Fold such comparisons to a constant
+	when the allocation is removed.
+
+2026-10-29  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117251
+	* config/rs6000/fusion.md: Regenerate using the genfusion.pl changes.
+	* config/rs6000/genfusion.pl (gen_logical_addsubf): Add support for
+	generating XXEVAL to use for fusing logical operations on power10 and
+	later.
+	* config/rs6000/predicates.md (vector_fusion_operand): New predicate.
+	* config/rs6000/rs6000.h (TARGET_XXEVAL): New macro.
+	* config/rs6000/rs6000.md (isa attribute): Add prefixed isa attribute
+	for vector registers and prefixed.
+
+2026-10-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/128117
+	* tree-ssa-forwprop.cc (long_mul_check_ladder_sum1): New.
+	(long_mul_check_ladder_sum2): New.
+	(long_mul_table): Use them for the ladder_sum1 and ladder_sum2
+	high-part rows.
+
 2026-10-28  Pan Li  <pan2.li@intel.com>
 
 	PR target/128162

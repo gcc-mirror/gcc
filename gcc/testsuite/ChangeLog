@@ -1,3 +1,104 @@
+2026-10-29  John David Anglin  <danglin@gcc.gnu.org>
+
+	Revert:
+	2026-10-27  John David Anglin  <danglin@gcc.gnu.org>
+
+	* g++.dg/gomp/deprecate-1.C: Restrict the final literal multiline
+	verification block to non-hppa targets, and append trailing
+	dg-regexp directives to consume the unhashed diagnostic caret
+	fragments on hppa targets.
+
+2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128271
+	* gcc.target/i386/pr128271-1.c: New test.
+	* gcc.target/i386/pr128271-2.c: Ditto.
+
+2026-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126968
+	* gfortran.dg/associate_93.f90: Rename the guessed types so that
+	they are tried first.
+	* gfortran.dg/associate_97.f90: New test.
+
+2026-10-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.dg/tree-ssa/ivopts-reg-units-1.c: New test.
+	* gcc.target/gcn/ivopts-reg-units-1.c: New test.
+
+2026-10-29  Paul-Antoine Arras  <parras@baylibre.com>
+
+	* gcc.target/gcn/ivopts-reg-budget-1.c: New test.
+
+2026-10-29  Tamar Christina  <tamar.christina@arm.com>
+	    Alfie Richards  <alfie.richards@arm.com>
+
+	PR tree-optimization/128028
+	* gcc.dg/vect/vect-early-break-pr128028-unlimited.c: New test.
+	* gcc.dg/vect/vect-early-break-pr128028.c: New test.
+
+2026-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128277
+	* gcc.dg/tree-ssa/loop-25.c: Adjust.
+
+2026-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/execute/pow-real-1.a68: Update test.
+	* algol68/compile/pow-long-long-real-long-long-int-1.a68: New
+	test.
+	* algol68/compile/pow-long-real-long-int-1.a68: Likewise.
+
+2026-10-29  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/vect-exact-div-pow2.c: New test.
+
+2026-10-29  wangzicong  <wangzicong@masscore.cn>
+
+	* gcc.target/i386/vect-outer-scalar-cost-1.c: New test.
+
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* gcc.target/i386/pr127459-1a.c: New test.
+	* gcc.target/i386/pr127459-1b.c: Ditto.
+
+2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122382
+	* gcc.target/i386/pr122382.c: New test.
+	* gcc.target/i386/pr122382-1.c: Likewise.
+	* gcc.target/i386/pr122382-1a.c: Likewise.
+	* gcc.target/i386/pr122382-2.c: Likewise.
+	* gcc.target/i386/pr122382-2a.c: Likewise.
+	* gcc.target/i386/pr122382-3.c: Likewise.
+	* gcc.target/i386/pr122382-4.c: Likewise.
+	* gcc.target/i386/pr122382-5.c: Likewise.
+	* gcc.target/i386/pr122382-6.c: Likewise.
+	* gcc.target/i386/pr122382.h: New file.
+
+2026-10-29  Ondřej Machota  <ondrejmachota@gmail.com>
+
+	* g++.dg/tree-ssa/dce-2.C: New test.
+	* g++.dg/tree-ssa/dce-3.C: New test.
+	* gcc.dg/tree-ssa/malloc-dce-1.c: New test.
+	* gcc.dg/tree-ssa/malloc-dce-2.c: New test.
+
+2026-10-29  Michael Meissner  <meissner@linux.ibm.com>
+
+	PR target/117251
+	* gcc.target/powerpc/p10-vector-fused-1.c: New test.
+	* gcc.target/powerpc/p10-vector-fused-2.c: Likewise.
+
+2026-10-29  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+	    Konstantinos Eleftheriou  <konstantinos.eleftheriou@vrull.eu>
+
+	PR tree-optimization/128117
+	* gcc.dg/tree-ssa/long-mul-ladder.c: Add full_mul_ladder_comm,
+	mulh_ladder_square and full_mul_ladder_square, and update the fold
+	counts.
+	* gcc.dg/tree-ssa/pr128117.c: New test.
+
 2026-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/127063

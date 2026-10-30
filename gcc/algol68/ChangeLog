@@ -1,3 +1,8 @@
+2026-10-29  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-parser-moids-check.cc (find_operator): Do not apply shortcut
+	for cross real/int definitions to exponentiation.
+
 2026-10-26  James LeBlanc  <jpl.algol68@gmail.com>
 	    Jose E. Marchesi  <jemarch@gnu.org>
 

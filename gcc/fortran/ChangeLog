@@ -1,3 +1,14 @@
+2026-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/126968
+	* primary.cc (skip_ref_groups): New function.
+	(inferred_type_chain_ok): New function.
+	(gfc_match_varspec): Use it to choose among the candidate types of
+	an inferred-type associate name.
+	* resolve.cc (fixup_inferred_component_array_ref): Turn a substring
+	into an array section when the component is a rank-1 array.
+	* symbol.cc (find_derived_types): Walk the symtree in order.
+
 2026-10-28  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/128144
