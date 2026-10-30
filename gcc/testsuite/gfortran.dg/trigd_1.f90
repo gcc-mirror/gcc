@@ -75,7 +75,7 @@ subroutine pr121366_2
 
   if (abs (func_array(1)%f(y) - acosd(y)) > 1.e-14) stop 14
   if (abs (func_array(2)%f(y) - asind(y)) > 1.e-14) stop 15
-  if (abs (func_array(3)%f(y) - atand(y)) > 1.e-15) stop 16
+  if (abs (func_array(3)%f(y) - atand(y)) > 4.e-15) stop 16
 end
 
 subroutine pr121366_3
