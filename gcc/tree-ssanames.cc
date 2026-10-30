@@ -538,7 +538,13 @@ set_ptr_nonnull (tree name)
 void
 set_nonzero_bits (tree name, const wide_int &mask)
 {
-  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      prange p (TREE_TYPE (name));
+      p.set_nonzero_bits (mask);
+      set_range_info (name, p);
+      return;
+    }
 
   int_range<2> r (TREE_TYPE (name));
   r.set_nonzero_bits (mask);

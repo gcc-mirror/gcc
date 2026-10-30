@@ -1253,22 +1253,7 @@ maybe_set_nonzero_bits (edge e, tree var)
 	return;
     }
   cst = gimple_assign_rhs2 (stmt);
-  if (POINTER_TYPE_P (TREE_TYPE (var)))
-    {
-      unsigned int old_align, old_misalign;
-      bool known = get_ptr_info_alignment (var, &old_align, &old_misalign);
-      if (known && old_misalign)
-	return;
-      wide_int w = wi::bit_not (wi::to_wide (cst));
-      unsigned int bits = wi::ctz (w);
-      if (bits == 0 || bits >= HOST_BITS_PER_INT)
-	return;
-      unsigned int align = 1U << bits;
-      if (!known || old_align < align)
-	set_ptr_info_alignment (var, align, 0);
-    }
-  else
-    set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
+  set_nonzero_bits (var, wi::bit_and_not (get_nonzero_bits (var),
 					    wi::to_wide (cst)));
 }
 
