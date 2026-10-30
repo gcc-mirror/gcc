@@ -1,3 +1,91 @@
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128003
+	* tree-switch-conversion.cc (jump_table_cluster::emit): Cast to
+	unsigned_type_for whenever !TYPE_UNSIGNED rather than when
+	!TYPE_OVERFLOW_WRAPS.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127965
+	* gimple-isel.cc (optimize_atomic_bit_test_and): For the
+	< 0 and >= 0 cases, punt if TREE_TYPE (use_lhs) is unsigned.
+	Compute ibit from TYPE_PRECISION of TREE_TYPE (use_lhs)
+	rather than TYPE_SIZE_UNIT of TREE_TYPE (use_rhs).  Fix comment
+	pastos and other nits.  Formatting fix.
+	(gimple_isel_builtin_call): Formatting fix.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127905
+	* gimple-lower-bitint.cc (gimple_lower_bitint): Don't add to
+	m_single_use_names versions of SSA_NAMEs where their single use
+	is within a different loop from the definition (or if use is
+	in irreducible loop, in a different bb than def).
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/128015
+	* config/i386/sgxintrin.h (__enclv_generic): Fix a typo.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127904
+	* tree-outof-ssa.h (remove_gimple_phi_args): Declare.
+	* tree-outof-ssa.cc (remove_gimple_phi_args): No longer static.
+	* gimple-lower-bitint.cc: Include tree-outof-ssa.h.
+	(gimple_lower_bitint): Remove zero uses large/huge _BitInt
+	PHI results.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127848
+	* tree-tailcall.cc: Include target.h.
+	(process_assignment): Punt if one of dest and src_var types
+	is BITINT_TYPE_P and the other is not.  If both are BITINT_TYPE_P,
+	punt if TYPE_SIZE is different, or for narrowing or same precision
+	conversions on != bitint_ext_undef targets, or for widening
+	conversions on != bitint_ext_full targets or if signedness differs.
+
+2026-10-29  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR tree-optimization/127853
+	* tree-ssa-forwprop.cc (simplify_count_zeroes): Only pass the
+	value at zero to .CLZ/.CTZ when the target defines it.
+
+2026-10-29  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR rtl-optimization/127852
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Don't merge two equal operands with side effects in the PLUS and
+	MINUS coefficient folds and in the (X - 1) * Y + Y and
+	(X + 1) * Y - Y folds.
+
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* config/i386/sse.md (avx_vec_concat_isa): New.
+	(avx_vec_concat<mode>): Allow 256 bit vinsert*64x2/32*4 when
+	AVX512VL is enabled.
+
 2026-10-28  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

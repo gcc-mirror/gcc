@@ -1,3 +1,92 @@
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127766
+	* g++.dg/ext/builtin-structured-binding-size2.C: Expect different
+	diagnostics.
+	* g++.dg/ext/builtin-structured-binding-size7.C: New test.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/128003
+	* gcc.dg/torture/bitint-113.c: New test.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127965
+	* gcc.dg/pr127965-1.c: New test.
+	* gcc.dg/pr127965-2.c: New test.
+	* gcc.target/i386/pr127965-1.c: New test.
+	* gcc.target/i386/pr127965-2.c: New test.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127905
+	* gcc.dg/torture/bitint-114.c: New test.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/127904
+	* gcc.dg/torture/bitint-111.c: New test.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/127945
+	* g++.dg/cpp26/literals1.C: Drop bogus { target c++23 } from dg-error.
+	* g++.dg/cpp26/literals2.C: Likewise.
+
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/127848
+	* gcc.dg/pr127848-1.c: New test.
+	* gcc.dg/pr127848-2.c: New test.
+	* gcc.dg/pr127848-3.c: New test.
+	* gcc.dg/pr127848-4.c: New test.
+	* gcc.dg/pr127848-5.c: New test.
+
+2026-10-29  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR tree-optimization/127853
+	* gcc.dg/torture/clz-table-zero-1.c: New test.
+	* gcc.dg/torture/ctz-table-zero-1.c: New test.
+	* gcc.target/aarch64/clz-ctz-table-zero.c: New test.
+	* gcc.target/i386/clz-ctz-table-nonzero.c: New test.
+	* gcc.target/i386/clz-ctz-table-zero.c: New test.
+
+2026-10-29  Vineet Gupta  <vineet.gupta@linux.dev>
+
+	PR rtl-optimization/127852
+	* gcc.target/aarch64/volatile-fuse-minus-1.c: New test.
+	* gcc.target/aarch64/volatile-fuse-minus-2.c: New test.
+	* gcc.target/i386/volatile-fuse-minus-1.c: New test.
+	* gcc.target/i386/volatile-fuse-minus-2.c: New test.
+
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* gcc.target/i386/pr127459-1a.c: New test.
+	* gcc.target/i386/pr127459-1b.c: Ditto.
+
 2026-10-28  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

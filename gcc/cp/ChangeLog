@@ -1,3 +1,12 @@
+2026-10-29  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2026-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/127766
+	* semantics.cc (finish_structured_binding_size): Call
+	check_trait_type with kind 4.
+
 2026-10-23  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
