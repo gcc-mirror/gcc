@@ -692,12 +692,12 @@
     ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
     ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
 
-/* A widening accumulate like vwabda.vv reads vd with EEW = 2 * SEW while vs2
-   and vs1 are read with EEW = SEW, thus neither vs2 nor vs1 may fall inside
-   the vd register group.  RI_F reinterprets the widened accumulator as the
-   narrowed element type and GET_F extracts its IDX-th piece, which lives in
-   the vd register group.  Then take that piece as vs2 for vd0 and as vs1 for
-   vd1 to ask for the overlap.  */
+/* A widening ternary insn like vwmacc.vv or vwabda.vv reads vd with
+   EEW = 2 * SEW while vs2 and vs1 are read with EEW = SEW, thus neither vs2
+   nor vs1 may fall inside the vd register group.  RI_F reinterprets the
+   widened accumulator as the narrowed element type and GET_F extracts its
+   IDX-th piece, which lives in the vd register group.  Then take that piece
+   as vs2 for vd0 and as vs1 for vd1 to ask for the overlap.  */
 #define LOOP_WIDEN_TERNARY_BODY_OVERLAP_X2(NT, WT, WNT, LD_NF, LD_WF, RI_F, \
 					   GET_F, IDX, OUT_F, ST_F, OUT,    \
 					   START, VL)                       \
@@ -716,6 +716,61 @@
                                                                             \
     WT vd0 = OUT_F (vw0, vt0, vs0, VL);                                     \
     WT vd1 = OUT_F (vw1, vs1, vt1, VL);                                     \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+
+/* Like LOOP_WIDEN_TERNARY_BODY_OVERLAP_X2 but vs1 and vs2 have different
+   types, like vwmaccsu.vv or sf.vqmacc.4x8x4.  RI_F and RI_UF reinterpret
+   the widened accumulator as the element type of vs1 and vs2, then GET_F and
+   GET_UF extract the IDX-th piece of them respectively.  */
+#define LOOP_WIDEN_TERNARY_BODY_MIXED_OVERLAP_X2(NT, NUT, WT, WNT, WNUT,    \
+						 LD_NF, LD_NUF, LD_WF,      \
+						 RI_F, RI_UF, GET_F,        \
+						 GET_UF, IDX, OUT_F, ST_F,  \
+						 OUT, START, VL)            \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+    NUT vs0 = LD_NUF ((void *)START, VL); START += VL;                      \
+    NT vs1 = LD_NF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WNT vr0 = RI_F (vw0);                                                   \
+    WNUT vr1 = RI_UF (vw1);                                                 \
+                                                                            \
+    NT vt0 = GET_F (vr0, IDX);                                              \
+    NUT vt1 = GET_UF (vr1, IDX);                                            \
+                                                                            \
+    WT vd0 = OUT_F (vw0, vt0, vs0, VL);                                     \
+    WT vd1 = OUT_F (vw1, vs1, vt1, VL);                                     \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+
+/* Like LOOP_WIDEN_TERNARY_BODY_OVERLAP_X2 but for the vx or vf form, like
+   vwmacc.vx or vfwmacc.vf, thus only the vector source vs2 can be asked to
+   overlap.  */
+#define LOOP_WIDEN_TERNARY_VX_BODY_OVERLAP_X2(NT, WT, WNT, LD_WF, RI_F,     \
+					      GET_F, IDX, OUT_F, ST_F, OUT, \
+					      START, X, VL)                 \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    WNT vr0 = RI_F (vw0);                                                   \
+    WNT vr1 = RI_F (vw1);                                                   \
+                                                                            \
+    NT vt0 = GET_F (vr0, IDX);                                              \
+    NT vt1 = GET_F (vr1, IDX);                                              \
+                                                                            \
+    WT vd0 = OUT_F (vw0, X, vt0, VL);                                       \
+    WT vd1 = OUT_F (vw1, X, vt1, VL);                                       \
                                                                             \
     asm volatile("nop" ::: "memory");                                       \
                                                                             \
@@ -844,6 +899,42 @@
     while (start < end) {                                                   \
       LOOP_BODY (NT, WT, WNT, LD_NF, LD_WF, RI_F, GET_F, IDX, OUT_F, ST_F,  \
 		 out, start, vl);                                           \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_TERNARY_1(VL_F, NT, NUT, WT, WNT, WNUT, LD_NF,    \
+				    LD_NUF, LD_WF, RI_F, RI_UF, GET_F,      \
+				    GET_UF, IDX, OUT_F, ST_F, NAME,         \
+				    LOOP_BODY)                              \
+  void test_group_overlap_##NAME##_##NT##_ternary_1(uint8_t *data,          \
+						    uint8_t *out,           \
+						    size_t limit)           \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, NUT, WT, WNT, WNUT, LD_NF, LD_NUF, LD_WF, RI_F, RI_UF, \
+		 GET_F, GET_UF, IDX, OUT_F, ST_F, out, start, vl);          \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_TERNARY_2(VL_F, NT, WT, WNT, ST, LD_WF, RI_F,     \
+				    GET_F, IDX, OUT_F, ST_F, NAME,          \
+				    LOOP_BODY)                              \
+  void test_group_overlap_##NAME##_##NT##_ternary_2(uint8_t *data,          \
+						    uint8_t *out,           \
+						    ST x,                   \
+						    size_t limit)           \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, WT, WNT, LD_WF, RI_F, GET_F, IDX, OUT_F, ST_F, out,    \
+		 start, x, vl);                                             \
     }                                                                       \
   }
 

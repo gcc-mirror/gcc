@@ -1,0 +1,25 @@
+/* { dg-do compile } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d" } */
+
+#include "group_overlap.h"
+
+DEF_GROUP_OVERLAP_TERNARY_2(
+  __riscv_vsetvlmax_e8m2,
+  vuint8m2_t,
+  vuint16m4_t,
+  vuint8m4_t,
+  uint8_t,
+  __riscv_vle16_v_u16m4,
+  __riscv_vreinterpret_v_u16m4_u8m4,
+  __riscv_vget_v_u8m4_u8m2,
+  1,
+  __riscv_vwmaccu_vx_u16m4,
+  __riscv_vse16_v_u16m4,
+  vwmaccu_vx,
+  LOOP_WIDEN_TERNARY_VX_BODY_OVERLAP_X2)
+
+/* { dg-final { scan-assembler-times {vwmaccu\.vx\s+v12,a2,v10([^0-9]|$)} 1 } } */
+/* { dg-final { scan-assembler-times {vwmaccu\.vx\s+v8,a2,v6([^0-9]|$)} 1 } } */
+/* { dg-final { scan-assembler-not {vwmaccu\.vx\s+v12,[a-z0-9]+,v(12|13|14|15)([^0-9]|$)} } } */
+/* { dg-final { scan-assembler-not {vwmaccu\.vx\s+v8,[a-z0-9]+,v(8|9|10|11)([^0-9]|$)} } } */
+/* { dg-final { scan-assembler-not {vwmaccu\.vx\s+v4,[a-z0-9]+,v(4|5|6|7)([^0-9]|$)} } } */
