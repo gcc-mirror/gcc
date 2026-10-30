@@ -1008,13 +1008,10 @@ ccp_finalize (bool nonzero_p)
 
   do_dbg_cnt ();
 
-  /* Derive alignment and misalignment information from partially
-     constant pointers in the lattice or nonzero bits from partially
-     constant integers.  */
+  /* Derive nonzero and alignment bits from partially constant integers.  */
   FOR_EACH_SSA_NAME (i, name, cfun)
     {
       ccp_prop_value_t *val;
-      unsigned int tem, align;
 
       if (!POINTER_TYPE_P (TREE_TYPE (name))
 	  && (!INTEGRAL_TYPE_P (TREE_TYPE (name))
@@ -1029,25 +1026,11 @@ ccp_finalize (bool nonzero_p)
 	  || val->mask == 0)
 	continue;
 
-      if (POINTER_TYPE_P (TREE_TYPE (name)))
-	{
-	  /* Trailing mask bits specify the alignment, trailing value
-	     bits the misalignment.  */
-	  tem = val->mask.to_uhwi ();
-	  align = least_bit_hwi (tem);
-	  if (align > 1)
-	    set_ptr_info_alignment (name, align,
-				    (TREE_INT_CST_LOW (val->value)
-				     & (align - 1)));
-	}
-      else
-	{
-	  unsigned int precision = TYPE_PRECISION (TREE_TYPE (val->value));
-	  wide_int value = wi::to_wide (val->value);
-	  wide_int mask = wide_int::from (val->mask, precision, UNSIGNED);
-	  value = value & ~mask;
-	  set_bitmask (name, value, mask);
-	}
+      unsigned int precision = TYPE_PRECISION (TREE_TYPE (val->value));
+      wide_int value = wi::to_wide (val->value);
+      wide_int mask = wide_int::from (val->mask, precision, UNSIGNED);
+      value = value & ~mask;
+      set_bitmask (name, value, mask);
     }
 
   /* Perform substitutions based on the known constant values.  */

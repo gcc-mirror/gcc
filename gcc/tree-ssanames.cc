@@ -553,7 +553,13 @@ set_nonzero_bits (tree name, const wide_int &mask)
 void
 set_bitmask (tree name, const wide_int &value, const wide_int &mask)
 {
-  gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      prange p (TREE_TYPE (name));
+      p.update_bitmask (irange_bitmask (value, mask));
+      set_range_info (name, p);
+      return;
+    }
 
   int_range_max r (TREE_TYPE (name));
   r.update_bitmask (irange_bitmask (value, mask));
