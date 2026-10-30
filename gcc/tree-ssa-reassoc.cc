@@ -6152,7 +6152,9 @@ acceptable_pow_call (gcall *stmt, tree *base, HOST_WIDE_INT *exponent)
   /* Expanding negative exponents is generally unproductive, so we don't
      complicate matters with those.  Exponents of zero and one should
      have been handled by expression folding.  */
-  if (*exponent < 2 || TREE_CODE (*base) != SSA_NAME)
+  if (*exponent < 2
+      || TREE_CODE (*base) != SSA_NAME
+      || !can_reassociate_op_p (*base))
     return false;
 
   return true;
@@ -6193,6 +6195,8 @@ try_special_add_to_ops (vec<operand_entry *> *ops,
 	       || !DECIMAL_FLOAT_MODE_P (element_mode (op))))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
+      if (!can_reassociate_op_p (rhs1))
+	return false;
       tree cst = build_minus_one_cst (TREE_TYPE (op));
       add_to_ops_vec (ops, rhs1);
       add_to_ops_vec (ops, cst);
