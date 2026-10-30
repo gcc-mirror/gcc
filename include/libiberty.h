@@ -728,16 +728,21 @@ extern unsigned long int strtoul (const char *nptr,
                                   char **endptr, int base);
 #endif
 
-#if defined(HAVE_LONG_LONG) && defined(HAVE_DECL_STRTOLL) && !HAVE_DECL_STRTOLL
+/* hppa64-hp-hpux11.11 GCC bootstrap pass with this and
+   declare strto{u,}ll if at least C++11.  */
+#if (defined(HAVE_LONG_LONG) \
+     || (defined(__cplusplus) && __cplusplus >= 201103L))
+# if defined(HAVE_DECL_STRTOLL) && !HAVE_DECL_STRTOLL
 __extension__
 extern long long int strtoll (const char *nptr,
                               char **endptr, int base);
-#endif
+# endif
 
-#if defined(HAVE_LONG_LONG) && defined(HAVE_DECL_STRTOULL) && !HAVE_DECL_STRTOULL
+# if defined(HAVE_DECL_STRTOULL) && !HAVE_DECL_STRTOULL
 __extension__
 extern unsigned long long int strtoull (const char *nptr,
                                         char **endptr, int base);
+# endif
 #endif
 
 /* Set the title of a process */
