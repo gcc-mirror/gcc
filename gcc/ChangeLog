@@ -1,3 +1,10 @@
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* config/i386/sse.md (avx_vec_concat_isa): New.
+	(avx_vec_concat<mode>): Allow 256 bit vinsert*64x2/32*4 when
+	AVX512VL is enabled.
+
 2026-10-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
