@@ -21,6 +21,8 @@
 #ifndef RUST_UTIL_PATH_H
 #define RUST_UTIL_PATH_H
 
+namespace Rust {
+
 // Simple path container class to keep segments and opening scope flag together
 // whilst keeping the segment type generic.
 //
@@ -37,5 +39,7 @@ template <typename Segment> struct UtilPath
   bool has_opening_scope () const { return opening_scope; }
   const std::vector<Segment> &get_segments () const { return segments; }
 };
+
+} // namespace Rust
 
 #endif
