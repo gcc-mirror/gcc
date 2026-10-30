@@ -2140,6 +2140,14 @@ spilled_pseudo_p (rtx op)
 	  && REGNO (op) >= FIRST_PSEUDO_REGISTER && in_mem_p (REGNO (op)));
 }
 
+/* Return true if OP is (plus (reg) (const)).  */
+static inline bool
+reg_plus_const_p (rtx op)
+{
+  return (GET_CODE (op) == PLUS && REG_P (XEXP (op, 0))
+	  && CONSTANT_P (XEXP (op, 1)));
+}
+
 /* Return true if X is a general constant.  */
 static inline bool
 general_constant_p (rtx x)
@@ -2964,7 +2972,11 @@ process_alt_operands (int only_alternative)
 			  || MEM_P (op) || REG_P (op)
 			  /* We can restore the equiv insn by a
 			     reload.  */
-			  || equiv_substition_p[nop])
+			  || equiv_substition_p[nop]
+			  /* It can be a sum produced by elimination of a
+			     register. We can materialized into a register and
+			     then spill into memory.  */
+			  || reg_plus_const_p (op))
 			badop = false;
 		      constmemok = true;
 		      offmemok = true;
@@ -4429,9 +4441,7 @@ process_address_1 (int nop, bool check_only_p,
       if (REG_P (new_reg)
 	  && last_insn != insns
 	  && (set = single_set (last_insn)) != NULL_RTX
-	  && GET_CODE (SET_SRC (set)) == PLUS
-	  && REG_P (XEXP (SET_SRC (set), 0))
-	  && CONSTANT_P (XEXP (SET_SRC (set), 1)))
+	  && reg_plus_const_p (SET_SRC (set)))
 	{
 	  *ad.inner = SET_SRC (set);
 	  if (valid_address_p (op, &ad, cn))
@@ -5301,11 +5311,37 @@ curr_insn_transform (bool check_only_p)
 
 	      lra_emit_move (new_reg, addr);
 	      if (align_p)
-		emit_move_insn (new_reg, gen_rtx_AND (GET_MODE (new_reg), new_reg, XEXP (*loc, 1)));
+		emit_move_insn (new_reg, gen_rtx_AND (GET_MODE (new_reg),
+						      new_reg, XEXP (*loc, 1)));
 	    }
 	  before = end_sequence ();
 	  *loc = new_reg;
 	  lra_update_dup (curr_id, i);
+	}
+      else if (goal_alt_matched[i][0] == -1 && goal_alt_offmemok[i]
+	       && reg_plus_const_p (op))
+	{
+	  /* Materialize the sum probably produced by elimination of a register
+	     and then spill it into memory to satisfy the memory constraint.  */
+	  machine_mode mode = curr_operand_mode[i];
+	  enum reg_class rclass
+	    = base_reg_class (mode, ADDR_SPACE_GENERIC, PLUS, SCRATCH, op,
+			      curr_insn);
+	  rtx mem_pseudo;
+
+	  if (get_reload_reg (curr_static_id->operand[i].type, mode, op,
+			      rclass, NULL, false, false, "elimination sum",
+			      &new_reg))
+	    {
+	      push_to_sequence (before);
+	      lra_emit_move (new_reg, op);
+	      mem_pseudo = lra_create_new_reg (mode, NULL_RTX, NO_REGS,
+					       NULL, "elimination sum mem");
+	      emit_insn (emit_spill_move (true, mem_pseudo, new_reg));
+	      before = end_sequence ();
+	      *curr_id->operand_loc[i] = mem_pseudo;
+	      lra_update_dup (curr_id, i);
+	    }
 	}
       else if (goal_alt_matched[i][0] == -1)
 	{
