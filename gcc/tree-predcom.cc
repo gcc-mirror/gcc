@@ -3512,11 +3512,14 @@ tree_predictive_commoning (bool allow_unroll_p)
     {
       ret = TODO_update_ssa_only_virtuals;
 
+      /* Cached SCEV information is stale after any transformation, not
+	 only after unrolling: the data-reference analysis above queried
+	 SCEV before references were rewritten.  */
+      scev_reset ();
+
       /* Some loop(s) got unrolled.  */
       if (changed > 1)
 	{
-	  scev_reset ();
-
 	  /* Need to fix up loop closed SSA.  */
 	  if (changed >= 4)
 	    rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
