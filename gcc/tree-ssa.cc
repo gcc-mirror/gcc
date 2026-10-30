@@ -1093,11 +1093,24 @@ verify_ssa (bool check_modified_stmt, bool check_ssa_operands)
 		goto err;
 	    }
 
-	  const void *info = NULL;
-	  if (POINTER_TYPE_P (TREE_TYPE (name)))
-	    info = ssa_name_pt_solution (name);
-	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name)))
-	    info = SSA_NAME_RANGE_INFO (name);
+	  const pt_solution *pt_info = ssa_name_pt_solution (name);
+	  if (pt_info)
+	    {
+	      bool existed;
+	      tree &val = ssa_info.get_or_insert (pt_info, &existed);
+	      if (existed)
+		{
+		  error ("shared SSA name pt_solution info");
+		  print_generic_expr (stderr, val);
+		  fprintf (stderr, " and ");
+		  print_generic_expr (stderr, name);
+		  fprintf (stderr, "\n");
+		  goto err;
+		}
+	      else
+		val = name;
+	    }
+	  const void *info = SSA_NAME_RANGE_INFO (name);
 	  if (info)
 	    {
 	      bool existed;
