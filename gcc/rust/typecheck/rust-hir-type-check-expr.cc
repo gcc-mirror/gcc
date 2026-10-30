@@ -50,8 +50,10 @@ TypeCheckExpr::Resolve (HIR::Expr &expr)
   TypeCheckExpr resolver;
   expr.accept_vis (resolver);
 
+  // the error type has to go in the context like any other, autoderef
+  // looks this expression's type up by ref later and would get nullptr
   if (resolver.infered == nullptr)
-    return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
+    resolver.infered = new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 
   if (resolver.infered->get_kind () != TyTy::TypeKind::CONST)
     {
@@ -405,6 +407,9 @@ TypeCheckExpr::visit (HIR::AssignmentExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
+  if (lhs->is<TyTy::ErrorType> () || rhs->is<TyTy::ErrorType> ())
+    return;
+
   coercion_site (expr.get_mappings ().get_hirid (),
 		 TyTy::TyWithLocation (lhs, expr.get_lhs ().get_locus ()),
 		 TyTy::TyWithLocation (rhs, expr.get_rhs ().get_locus ()),
@@ -418,6 +423,9 @@ TypeCheckExpr::visit (HIR::CompoundAssignmentExpr &expr)
 
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
+
+  if (lhs->is<TyTy::ErrorType> () || rhs->is<TyTy::ErrorType> ())
+    return;
 
   auto lang_item_type
     = LangItem::CompoundAssignmentOperatorToLangItem (expr.get_expr_type ());
@@ -472,6 +480,9 @@ TypeCheckExpr::visit (HIR::ArithmeticOrLogicalExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
+  if (lhs->is<TyTy::ErrorType> () || rhs->is<TyTy::ErrorType> ())
+    return;
+
   auto lang_item_type = LangItem::OperatorToLangItem (expr.get_expr_type ());
   bool operator_overloaded
     = resolve_operator_overload (lang_item_type, expr, lhs, rhs);
@@ -520,6 +531,9 @@ TypeCheckExpr::visit (HIR::ComparisonExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
+  if (lhs->is<TyTy::ErrorType> () || rhs->is<TyTy::ErrorType> ())
+    return;
+
   auto borrowed_lhs
     = new TyTy::ReferenceType (mappings.get_next_hir_id (),
 			       TyTy::TyVar (lhs->get_ref ()), Mutability::Imm);
@@ -555,6 +569,9 @@ TypeCheckExpr::visit (HIR::LazyBooleanExpr &expr)
   auto lhs = TypeCheckExpr::Resolve (expr.get_lhs ());
   auto rhs = TypeCheckExpr::Resolve (expr.get_rhs ());
 
+  if (lhs->is<TyTy::ErrorType> () || rhs->is<TyTy::ErrorType> ())
+    return;
+
   // we expect the lhs and rhs must be bools at this point
   TyTy::BaseType *boolean_node = nullptr;
   bool ok = context->lookup_builtin ("bool", &boolean_node);
@@ -584,6 +601,9 @@ void
 TypeCheckExpr::visit (HIR::NegationExpr &expr)
 {
   auto negated_expr_ty = TypeCheckExpr::Resolve (expr.get_expr ());
+
+  if (negated_expr_ty->is<TyTy::ErrorType> ())
+    return;
 
   // check for operator overload
   auto lang_item_type
@@ -1232,12 +1252,20 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
 	  = TyTy::TyVar::get_implicit_infer_var (expr.get_locus ()).get_tyty ();
 	for (auto &type : types)
 	  {
+	    if (type->is<TyTy::ErrorType> ())
+	      return;
+
 	    element_type
 	      = unify_site (expr.get_mappings ().get_hirid (),
 			    TyTy::TyWithLocation (element_type),
 			    TyTy::TyWithLocation (type, type->get_locus ()),
 			    expr.get_locus ());
 	  }
+
+	// a failed unify leaves the shared error node here, whose ref
+	// isn't in the context
+	if (element_type->is<TyTy::ErrorType> ())
+	  return;
 
 	auto crate_num = mappings.crate.get_current_crate ();
 	Analysis::NodeMapping mapping (crate_num, UNKNOWN_NODEID,
