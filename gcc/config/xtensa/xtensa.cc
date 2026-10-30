@@ -4537,7 +4537,7 @@ xtensa_secondary_reload (bool in_p, rtx x, reg_class_t rclass,
 
   regno = xt_true_regnum (x);
   if (ACC_REG_P (regno))
-    return ((rclass == GR_REGS || rclass == RL_REGS) ? NO_REGS : RL_REGS);
+    return (reg_class_subset_p (rclass, GR_REGS) ? NO_REGS : RL_REGS);
   if (rclass == ACC_REG)
     return (GP_REG_P (regno) ? NO_REGS : RL_REGS);
 
