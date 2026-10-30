@@ -379,6 +379,14 @@ DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_TZCNT, "avoid_false_dep_for_tzcnt",
 DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_BLS, "avoid_false_dep_for_bls",
 	  m_ZNVER5)
 
+/* X86_TUNE_AVOID_FALSE_DEP_FOR_XCHG: Avoid xchg reg,reg.  Each result of
+   a register swap really depends on only one of the inputs, but xchg
+   reg,reg makes both results wait for both inputs, so a swap can delay
+   the half whose input was ready early.  Emit the swap as three moves
+   through a free scratch register instead.  */
+DEF_TUNE (X86_TUNE_AVOID_FALSE_DEP_FOR_XCHG, "avoid_false_dep_for_xchg",
+	  m_CORE_ALL | m_CORE_HYBRID)
+
 /* X86_TUNE_ADJUST_UNROLL: This enables adjusting the unroll factor based
    on hardware capabilities. Bdver3 hardware has a loop buffer which makes
    unrolling small loop less important. For, such architectures we adjust
