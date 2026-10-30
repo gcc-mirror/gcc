@@ -1,3 +1,9 @@
+2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/127459
+	* gcc.target/i386/pr127459-1a.c: New test.
+	* gcc.target/i386/pr127459-1b.c: Ditto.
+
 2026-10-27  Igor Shevlyakov  <igor@tachyum.com>
 
 	Backported from master:

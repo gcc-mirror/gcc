@@ -1,3 +1,34 @@
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_bvector.h (_M_check_and_initialize): New
+	function.
+	(vector(size_type, const bool&, const allocator_type&))
+	(_M_initialize_dispatch, _M_initialize_range): Use new function
+	instead of _M_initialize.
+	(_M_initialize): Add debug assertion.
+	* testsuite/23_containers/vector/bool/prX.cc: New test.
+
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/tzdb.cc (tzdb::locate_zone): Adjust exception text
+	to say "time zone".
+	* testsuite/std/time/tzdb/links.cc: Adjust expected exception
+	text.
+
+2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/parallel/search.h (__search_template): Increase array
+	size.
+
 2026-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
