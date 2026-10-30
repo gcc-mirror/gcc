@@ -7822,12 +7822,15 @@ static GTY(()) rtx queued_cfa_restores;
    manipulation insn.  The value is on the stack at CFA - CFA_OFFSET.
    Don't add the note if the previously saved value will be left untouched
    within stack red-zone till return, as unwinders can find the same value
-   in the register and on the stack.  */
+   in the register and on the stack.  This doesn't apply to DRAP frames,
+   where registers are saved using frame-pointer-relative expression rules
+   that become invalid once the frame pointer is restored.  */
 
 static void
 ix86_add_cfa_restore_note (rtx_insn *insn, rtx reg, HOST_WIDE_INT cfa_offset)
 {
   if (!crtl->shrink_wrapped
+      && !stack_realign_drap
       && cfa_offset <= cfun->machine->fs.red_zone_offset)
     return;
 
