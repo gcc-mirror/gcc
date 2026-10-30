@@ -20,4 +20,4 @@ main()
   test (&bb);
   return 0;
 }
-/* { dg-final { scan-ipa-dump "align: 2"  "cp"  } } */
+/* { dg-final { scan-ipa-dump "Setting value range of param 0 .*MASK 0xf+e VALUE 0x0" "cp" } } */

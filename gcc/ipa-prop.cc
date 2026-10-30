@@ -6669,68 +6669,11 @@ ipcp_update_vr (struct cgraph_node *node, ipcp_transformation *ts)
 		}
 	      set_range_info (ddef, tmp);
 
-	      if (POINTER_TYPE_P (TREE_TYPE (parm))
-		  && opt_for_fn (node->decl, flag_ipa_bit_cp))
+	      if (dump_file && (INTEGRAL_TYPE_P (TREE_TYPE (parm))
+				|| POINTER_TYPE_P (TREE_TYPE (parm))))
 		{
 		  irange_bitmask bm = tmp.get_bitmask ();
-		  unsigned tem = bm.mask ().to_uhwi ();
-		  unsigned HOST_WIDE_INT bitpos = bm.value ().to_uhwi ();
-		  unsigned align = tem & -tem;
-		  unsigned misalign = bitpos & (align - 1);
-
-		  if (align > 1)
-		    {
-		      if (dump_file)
-			{
-			  fprintf (dump_file,
-				   "Adjusting mask for param %u to ", i);
-			  print_hex (bm.mask (), dump_file);
-			  fprintf (dump_file, "\n");
-			}
-
-		      if (dump_file)
-			fprintf (dump_file,
-				 "Adjusting align: %u, misalign: %u\n",
-				 align, misalign);
-
-		      unsigned old_align, old_misalign;
-		      bool old_known
-			= get_ptr_info_alignment (ddef, &old_align,
-						  &old_misalign);
-
-		      if (old_known && old_align > align)
-			{
-			  if (dump_file)
-			    {
-			      fprintf (dump_file,
-				       "But alignment was already %u.\n",
-				       old_align);
-			      if ((old_misalign & (align - 1)) != misalign)
-				fprintf (dump_file,
-					 "old_misalign (%u) and misalign "
-					 "(%u) mismatch\n",
-					 old_misalign, misalign);
-			    }
-			  continue;
-			}
-
-		      if (dump_file
-			  && old_known
-			  && ((misalign & (old_align - 1)) != old_misalign))
-			fprintf (dump_file,
-				 "old_misalign (%u) and misalign (%u) "
-				 "mismatch\n",
-				 old_misalign, misalign);
-
-		      set_ptr_info_alignment (ddef, align, misalign);
-		    }
-		}
-	      else if (dump_file && INTEGRAL_TYPE_P (TREE_TYPE (parm)))
-		{
-		  irange &r = as_a<irange> (tmp);
-		  irange_bitmask bm = r.get_bitmask ();
-		  unsigned prec = TYPE_PRECISION (TREE_TYPE (parm));
-		  if (wi::ne_p (bm.mask (), wi::shwi (-1, prec)))
+		  if (!bm.unknown_p ())
 		    {
 		      fprintf (dump_file,
 			       "Adjusting mask for param %u to ", i);
