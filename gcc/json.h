@@ -529,12 +529,17 @@ namespace selftest {
 
 class location;
 
-extern void assert_print_eq (const location &loc,
-			     const json::value &jv,
-			     bool formatted,
-			     const char *expected_json);
+extern void assert_json_print_eq (const location &loc,
+				  const json::value &jv,
+				  bool formatted,
+				  const char *expected_json);
 
 } // namespace selftest
+
+#define ASSERT_JSON_PRINT_EQ(JV, FORMATTED, EXPECTED_JSON)		\
+  SELFTEST_BEGIN_STMT							\
+  assert_json_print_eq ((SELFTEST_LOCATION), (JV), (FORMATTED), (EXPECTED_JSON)); \
+  SELFTEST_END_STMT
 
 #endif /* #if CHECKING_P */
 

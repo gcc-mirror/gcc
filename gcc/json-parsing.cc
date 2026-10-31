@@ -1420,9 +1420,6 @@ namespace selftest {
 
 /* Selftests.  */
 
-#define ASSERT_PRINT_EQ(JV, FORMATTED, EXPECTED_JSON)	\
-  assert_print_eq (SELFTEST_LOCATION, JV, FORMATTED, EXPECTED_JSON)
-
 /* Implementation detail of ASSERT_RANGE_EQ.  */
 
 static void
@@ -1921,7 +1918,7 @@ test_parse_string ()
     const json::value *jv = tc.get_value ();
     ASSERT_EQ (jv->get_kind (), JSON_STRING);
     ASSERT_STREQ (as_a <const json::string *> (jv)->get_string (), "foo");
-    ASSERT_PRINT_EQ (*jv, true, "\"foo\"");
+    ASSERT_JSON_PRINT_EQ (*jv, true, "\"foo\"");
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -1937,7 +1934,7 @@ test_parse_string ()
     ASSERT_EQ (jv->get_kind (), JSON_STRING);
     ASSERT_STREQ (as_a <const json::string *> (jv)->get_string (),
 		  "before \"quoted\" after");
-    ASSERT_PRINT_EQ (*jv, true, contains_quotes);
+    ASSERT_JSON_PRINT_EQ (*jv, true, contains_quotes);
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -1976,7 +1973,7 @@ test_parse_string ()
     ASSERT_STREQ (as_a <const json::string *> (jv)->get_string (),
 		  "\346\226\207" "\345\255\227" "\345\214\226" "\343\201\221");
     /* Result of dump should be UTF-8 encoded, with quotes.  */
-    ASSERT_PRINT_EQ (*jv, false, mojibake);
+    ASSERT_JSON_PRINT_EQ (*jv, false, mojibake);
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -1995,7 +1992,7 @@ test_parse_string ()
     ASSERT_STREQ (as_a <const json::string *> (jv)->get_string (),
 		  "\346\226\207" "\345\255\227" "\345\214\226" "\343\201\221");
     /* Result of dump should be UTF-8 encoded, with quotes.  */
-    ASSERT_PRINT_EQ (*jv, false, mojibake);
+    ASSERT_JSON_PRINT_EQ (*jv, false, mojibake);
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -2017,7 +2014,7 @@ test_parse_number ()
     const json::value *jv = tc.get_value ();
     ASSERT_EQ (jv->get_kind (), JSON_INTEGER);
     ASSERT_EQ (as_a <const json::integer_number *> (jv)->get (), 42.0);
-    ASSERT_PRINT_EQ (*jv, true, "42");
+    ASSERT_JSON_PRINT_EQ (*jv, true, "42");
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -2032,7 +2029,7 @@ test_parse_number ()
     const json::value *jv = tc.get_value ();
     ASSERT_EQ (jv->get_kind (), JSON_INTEGER);
     ASSERT_EQ (as_a<const json::integer_number *> (jv)->get (), -17.0);
-    ASSERT_PRINT_EQ (*jv, true, "-17");
+    ASSERT_JSON_PRINT_EQ (*jv, true, "-17");
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -2074,7 +2071,7 @@ test_parse_number ()
       const json::value *jv = tc.get_value ();
       ASSERT_EQ (jv->get_kind (), JSON_INTEGER);
       ASSERT_EQ (as_a <const json::integer_number *> (jv)->get (), 4200);
-      ASSERT_PRINT_EQ (*jv, true, "4200");
+      ASSERT_JSON_PRINT_EQ (*jv, true, "4200");
       auto range = tc.get_range_for_value (jv);
       ASSERT_TRUE (range);
       ASSERT_RANGE_EQ (*range,
@@ -2126,7 +2123,7 @@ test_parse_array ()
 		       offset, line_1, offset,
 		       offset, line_1, offset);
     }
-  ASSERT_PRINT_EQ (*jv, false, "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]");
+  ASSERT_JSON_PRINT_EQ (*jv, false, "[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]");
 }
 
 /* Verify that JSON object parsing works.  */
@@ -2208,7 +2205,7 @@ test_parse_literals ()
     const json::value *jv = tc.get_value ();
     ASSERT_NE (jv, nullptr);
     ASSERT_EQ (jv->get_kind (), JSON_TRUE);
-    ASSERT_PRINT_EQ (*jv, false, "true");
+    ASSERT_JSON_PRINT_EQ (*jv, false, "true");
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -2222,7 +2219,7 @@ test_parse_literals ()
     const json::value *jv = tc.get_value ();
     ASSERT_NE (jv, nullptr);
     ASSERT_EQ (jv->get_kind (), JSON_FALSE);
-    ASSERT_PRINT_EQ (*jv, false, "false");
+    ASSERT_JSON_PRINT_EQ (*jv, false, "false");
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -2236,7 +2233,7 @@ test_parse_literals ()
     const json::value *jv = tc.get_value ();
     ASSERT_NE (jv, nullptr);
     ASSERT_EQ (jv->get_kind (), JSON_NULL);
-    ASSERT_PRINT_EQ (*jv, false, "null");
+    ASSERT_JSON_PRINT_EQ (*jv, false, "null");
     auto range = tc.get_range_for_value (jv);
     ASSERT_TRUE (range);
     ASSERT_RANGE_EQ (*range,
@@ -2284,7 +2281,7 @@ test_parse_empty_object ()
   const json::value *jv = tc.get_value ();
   ASSERT_NE (jv, nullptr);
   ASSERT_EQ (jv->get_kind (), JSON_OBJECT);
-  ASSERT_PRINT_EQ (*jv, true, "{}");
+  ASSERT_JSON_PRINT_EQ (*jv, true, "{}");
   auto range = tc.get_range_for_value (jv);
   ASSERT_TRUE (range);
   ASSERT_RANGE_EQ (*range,
