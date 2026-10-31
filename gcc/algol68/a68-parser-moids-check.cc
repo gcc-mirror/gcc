@@ -977,7 +977,7 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
   else if (y != NO_MOID && a68_is_mode_isnt_well (y))
     return A68_PARSER (error_tag);
 
-  /* (B) MONADs.  */
+  /* MONADs.  */
   if (x != NO_MOID && y == NO_MOID)
     {
       z = search_table_chain_for_operator (s, n, x, NO_MOID);
@@ -988,18 +988,21 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
 	  /* (B.2) A little trick to allow - (0, 1) or ABS (1, long pi).  */
 	  if (a68_is_coercible (x, M_COMPLEX, STRONG, SAFE_DEFLEXING))
 	    {
-	      z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_COMPLEX, NO_MOID);
+	      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+					     M_COMPLEX, NO_MOID);
 	      if (z != NO_TAG)
 		return z;
 	    }
 	  if (a68_is_coercible (x, M_LONG_COMPLEX, STRONG, SAFE_DEFLEXING))
 	    {
-	      z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_COMPLEX, NO_MOID);
+	      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+					     M_LONG_COMPLEX, NO_MOID);
 	      if (z != NO_TAG)
 		return z;
 	    }
 	  if (a68_is_coercible (x, M_LONG_LONG_COMPLEX, STRONG, SAFE_DEFLEXING))
-	    z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_LONG_COMPLEX, NO_MOID);
+	    z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+					   M_LONG_LONG_COMPLEX, NO_MOID);
 	  if (a68_is_coercible (x, M_WORD_COMPLEX, STRONG, SAFE_DEFLEXING))
 	    {
 	      z= search_table_for_operator (OPERATORS (A68_STANDENV), n,
@@ -1010,14 +1013,10 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
 	}
       return NO_TAG;
     }
-  /* (C) DYADs.  */
+
+  /* DYADs.  */
   z = search_table_chain_for_operator (s, n, x, y);
   if (z != NO_TAG)
-    return z;
-
-  /* The checks below apply to operators covered by a) and b) in 10.2.3.5 but
-     not to the pow operator, which is covered by g) */
-  if (strcmp (n, "**") == 0 || strcmp (n, "^") == 0)
     return z;
 
   /* (C.2) Vector and matrix "strong coercions" in standard environ.  */
@@ -1060,49 +1059,96 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
 	}
     }
 
-  /* (C.3) Look in standenv for an appropriate cross-term.  */
+  /* The RR abbreviated rules in RR 10.2.3.5:
+
+     a) op P = (L real a, L int b) L real: a P L real(b);
+     b) op P = (L int a, L real b) L real: L real(a) P b;
+     c) op R = (L real a, L int b) bool: a R L real(b);
+     d) op R = (L int a, L real b) bool: L real(a) R b;
+     g) op <^,**,UP> = (L real a, int b) L real: ...;
+
+     where P is one of +, -, ...
+           R is one of +, -, ...
+
+     define a full set of "cross-term" operators that combine int and real
+     operators.  Rather than enumerating all possible combinations in
+     stand_prelude, we resolve these here by "inlining" the corresponding `L
+     real(a) P b' expressions.
+
+     Likewise for "and become" operators in RR 10.2.3.11:
+
+     n) OP Q = (REF L REAL a, L INT b) REF L REAL: a Q L REAL (b);
+     o) OP Q = (REF L COMPL a, L INT b) REF L COMPL: a Q L COMPL (b);
+     p) OP Q = (REF L COMPL a, L REAL b) REF L COMPL: a Q L COMPL (b);
+     s) OP <PLUSAB,+:=> = (REF STRING a, CHAR b) REF STRING: a +:= STRING (b);
+     t) OP <PLUSTO,+=:> = (CHAR a, REF STRING b) REF STRING: STRING (a) +=: b;
+     
+     With Q being -:=, +:=, *:= or /:= or their synonyms.  */
+
+  if (strcmp (n, "**") == 0 || strcmp (n, "^") == 0)
+    return z;
+
   u = a68_make_series_from_moids (x, y);
   u = a68_make_united_mode (u);
   v = a68_get_balanced_mode (u, STRONG, A68_NO_DEPREF, SAFE_DEFLEXING);
   z = search_table_for_operator (OPERATORS (A68_STANDENV), n, v, v);
   if (z != NO_TAG)
     return z;
+
   if (a68_is_coercible_series (u, M_REAL, STRONG, SAFE_DEFLEXING))
     {
       z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_REAL, M_REAL);
       if (z != NO_TAG)
 	return z;
     }
+
   if (a68_is_coercible_series (u, M_LONG_REAL, STRONG, SAFE_DEFLEXING))
     {
-      z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_REAL, M_LONG_REAL);
+      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+				     M_LONG_REAL, M_LONG_REAL);
       if (z != NO_TAG)
 	return z;
     }
+
   if (a68_is_coercible_series (u, M_LONG_LONG_REAL, STRONG, SAFE_DEFLEXING))
     {
-      z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_LONG_REAL, M_LONG_LONG_REAL);
+      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+				     M_LONG_LONG_REAL, M_LONG_LONG_REAL);
       if (z != NO_TAG)
 	return z;
     }
+
+  if (a68_is_coercible_series (u, M_WORD_REAL, STRONG, SAFE_DEFLEXING))
+    {
+      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+				     M_WORD_REAL, M_WORD_REAL);
+      if (z != NO_TAG)
+	return z;
+    }
+
   if (a68_is_coercible_series (u, M_COMPLEX, STRONG, SAFE_DEFLEXING))
     {
       z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_COMPLEX, M_COMPLEX);
       if (z != NO_TAG)
 	return z;
     }
+
   if (a68_is_coercible_series (u, M_LONG_COMPLEX, STRONG, SAFE_DEFLEXING))
     {
-      z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_COMPLEX, M_LONG_COMPLEX);
+      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+				     M_LONG_COMPLEX, M_LONG_COMPLEX);
       if (z != NO_TAG)
 	return z;
     }
+
   if (a68_is_coercible_series (u, M_LONG_LONG_COMPLEX, STRONG, SAFE_DEFLEXING))
     {
-      z = search_table_for_operator (OPERATORS (A68_STANDENV), n, M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX);
+      z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
+				     M_LONG_LONG_COMPLEX, M_LONG_LONG_COMPLEX);
       if (z != NO_TAG)
 	return z;
     }
+
   if (a68_is_coercible_series (u, M_WORD_COMPLEX, STRONG, SAFE_DEFLEXING))
     {
       z = search_table_for_operator (OPERATORS (A68_STANDENV), n,
@@ -1111,7 +1157,7 @@ find_operator (TABLE_T *s, const char *n, MOID_T *x, MOID_T *y)
 	return z;
     }
 
-  /* (C.4) Now allow for depreffing for REF REAL +:= INT and alike.  */
+  /* Now allow for depreffing for REF REAL +:= INT and alike.  */
   v = a68_get_balanced_mode (u, STRONG, A68_DEPREF, SAFE_DEFLEXING);
   z = search_table_for_operator (OPERATORS (A68_STANDENV), n, v, v);
   if (z != NO_TAG)

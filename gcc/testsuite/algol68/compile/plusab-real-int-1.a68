@@ -1,3 +1,14 @@
-begin real r;
-      r +:= 10
+begin { 10.2.3.11.n }
+      real r; r +:= 10;
+      long real lr; lr +:= long 10;
+      long long real llr; llr +:= long long 10;
+      { 10.2.3.11.o }
+      compl c; c +:= 20;
+      long compl lc; lc +:= long 20;
+      long long compl llc; llc +:= long long 20;
+      { 10.2.3.11.p }
+      c +:= 20.0;
+      lc +:= long 20.0;
+      llc +:= long long 20.0;
+      skip
 end

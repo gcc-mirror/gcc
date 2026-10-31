@@ -1,0 +1,41 @@
+{ This test checks for the presence of "cross-check" operators in the
+  standard prelude.  These are implemented by "inlining" in
+  a68-parser-moids-check.cc:find_operator }
+
+begin real r; long real lr; long long real llr; word real wr;
+      compl c; long compl lc; long long compl llc; word compl wc;
+      bool b;
+      { 10.2.3.5.a }
+      r := r + 10;
+      lr := lr + long 10;
+      llr := llr + long long 10;
+      wr := wr + word 10;
+      { 10.2.3.5.b }
+      r := 10 + r;
+      lr :=  long 10 + lr;
+      llr := long long 10 + llr;
+      wr := word 10 + wr;
+      { 10.2.3.5.c }
+      b := 3.14 > 2;
+      b := long 3.14 > long 2;
+      b := word 3.14 > word 2;
+      { 10.2.3.5.d }
+      b := 2 < 3.14;
+      b := long 2 < long 3.14;
+      b := word 2 < word 3.14;
+      { 10.2.3.11.n }r +:= 10;
+      lr +:= long 10;
+      llr +:= long long 10;
+      wr +:= word 10;
+      { 10.2.3.11.o }
+      c +:= 20;
+      lc +:= long 20;
+      llc +:= long long 20;
+      wc +:= word 20;
+      { 10.2.3.11.p }
+      c +:= 20.0;
+      lc +:= long 20.0;
+      llc +:= long long 20.0;
+      wc +:= word 20.0;
+      skip
+end
