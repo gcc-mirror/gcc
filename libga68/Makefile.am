@@ -136,8 +136,8 @@ libga68_la_CFLAGS = $(LIBGA68_GCFLAGS) $(LIBGA68_BOEHM_GC_INCLUDES)
 libga68_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 		     $(version_arg) $(lt_host_flags) \
 		     $(LIBM) $(extra_darwin_ldflags_libga68)
-libga68_la_DEPENDENCIES = libga68.spec $(version_dep) standard.lo posix.lo
-libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS) standard.lo posix.lo
+libga68_la_DEPENDENCIES = libga68.spec $(version_dep) standard.lo posix.lo gnu.lo
+libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS) standard.lo posix.lo gnu.lo
 
 # Rules to build the Algol 68 code in the library.
 
@@ -153,7 +153,10 @@ LTA68COMPILE = $(LIBTOOL) --tag=A68 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 standard.a68 : standard.a68.in
 	$(AWK) -f $(srcdir)/sppp.awk $< > $@
 
-BUILT_SOURCES = standard.a68
+gnu.a68 : gnu.a68.in
+	$(AWK) -f $(srcdir)/sppp.awk $< > $@
+
+BUILT_SOURCES = standard.a68 gnu.a68
 
 # target overrides
 -include $(tmake_file)

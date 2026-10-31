@@ -730,21 +730,29 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
   if (em->moid != NO_MOID)
     return em->moid;
 
+#define SET_MOID(M)				\
+  do						\
+    {						\
+    gcc_assert ((M) != NO_MOID);		\
+    em->moid = (M);				\
+    }						\
+  while (0)
+
   switch (em->kind)
     {
-    case GA68_MODE_VOID:   em->moid = M_VOID; break;
-    case GA68_MODE_CHAR:   em->moid = M_CHAR; break;
-    case GA68_MODE_BOOL:   em->moid = M_BOOL; break;
-    case GA68_MODE_STRING: em->moid = M_FLEX_ROW_CHAR; break;
+    case GA68_MODE_VOID:   SET_MOID (M_VOID); break;
+    case GA68_MODE_CHAR:   SET_MOID (M_CHAR); break;
+    case GA68_MODE_BOOL:   SET_MOID (M_BOOL); break;
+    case GA68_MODE_STRING: SET_MOID (M_FLEX_ROW_CHAR); break;
     case GA68_MODE_INT:
       switch (em->sizety)
 	{
-	case 0: em->moid = M_INT; break;
-	case 1: em->moid = M_LONG_INT; break;
-	case 2: em->moid = M_LONG_LONG_INT; break;
-	case -1: em->moid = M_SHORT_INT; break;
-	case -2: em->moid = M_SHORT_SHORT_INT; break;
-	case 100: em->moid = M_WORD_INT; break;
+	case 0: SET_MOID (M_INT); break;
+	case 1: SET_MOID (M_LONG_INT); break;
+	case 2: SET_MOID (M_LONG_LONG_INT); break;
+	case -1: SET_MOID (M_SHORT_INT); break;
+	case -2: SET_MOID (M_SHORT_SHORT_INT); break;
+	case 100: SET_MOID (M_WORD_INT); break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -752,12 +760,12 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
     case GA68_MODE_BITS:
       switch (em->sizety)
 	{
-	case 0: em->moid = M_BITS; break;
-	case 1: em->moid = M_LONG_BITS; break;
-	case 2: em->moid = M_LONG_LONG_BITS; break;
-	case -1: em->moid = M_SHORT_BITS; break;
-	case -2: em->moid = M_SHORT_SHORT_BITS; break;
-	case 100: em->moid = M_WORD_BITS; break;
+	case 0: SET_MOID (M_BITS); break;
+	case 1: SET_MOID (M_LONG_BITS); break;
+	case 2: SET_MOID (M_LONG_LONG_BITS); break;
+	case -1: SET_MOID (M_SHORT_BITS); break;
+	case -2: SET_MOID (M_SHORT_SHORT_BITS); break;
+	case 100: SET_MOID (M_WORD_BITS); break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -765,20 +773,21 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
     case GA68_MODE_BYTES:
       switch (em->sizety)
 	{
-	case 0: em->moid = M_BYTES; break;
-	case 1: em->moid = M_LONG_BYTES; break;
-	case 100: em->moid = M_WORD_BYTES; break;
+	case 0: SET_MOID (M_BYTES); break;
+	case 1: SET_MOID (M_LONG_BYTES); break;
+	case 100: SET_MOID (M_WORD_BYTES); break;
 	default:
 	  gcc_unreachable ();
 	}
       break;
     case GA68_MODE_REAL:
+      gcc_assert (M_REAL != NO_MOID);
       switch (em->sizety)
 	{
-	case 0: em->moid = M_REAL; break;
-	case 1: em->moid = M_LONG_REAL; break;
-	case 2: em->moid = M_LONG_LONG_REAL; break;
-	case 100: em->moid = M_WORD_REAL; break;
+	case 0: SET_MOID (M_REAL); break;
+	case 1: SET_MOID (M_LONG_REAL); break;
+	case 2: SET_MOID (M_LONG_LONG_REAL); break;
+	case 100: SET_MOID (M_WORD_REAL); break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -786,10 +795,10 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
     case GA68_MODE_CMPL:
       switch (em->sizety)
 	{
-	case 0: em->moid = M_COMPLEX; break;
-	case 1: em->moid = M_LONG_COMPLEX; break;
-	case 2: em->moid = M_LONG_LONG_COMPLEX; break;
-	case 100: em->moid = M_WORD_COMPLEX; break;
+	case 0: SET_MOID (M_COMPLEX); break;
+	case 1: SET_MOID (M_LONG_COMPLEX); break;
+	case 2: SET_MOID (M_LONG_LONG_COMPLEX); break;
+	case 100: SET_MOID (M_WORD_COMPLEX); break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -900,6 +909,7 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
     default:
       gcc_unreachable ();
     }
+#undef SET_MOID
 
   return em->moid;
 }

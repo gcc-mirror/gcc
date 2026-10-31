@@ -1,0 +1,86 @@
+{ Process this file with sppp.awk  -*- mode: a68 -*- }
+
+{ gnu.a68 - GNU prelude.
+
+  Copyright (C) 2026 Jose E. Marchesi
+
+  GCC is free software; you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free
+  Software Foundation; either version 3, or (at your option) any later
+  version.
+
+  GCC is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
+
+  Under Section 7 of GPL version 3, you are granted additional
+  permissions described in the GCC Runtime Library Exception, version
+  3.1, as published by the Free Software Foundation.
+
+  You should have received a copy of the GNU General Public License
+  and a copy of the GCC Runtime Library Exception along with this
+  program; see the files COPYING3 and COPYING.RUNTIME respectively.
+  If not, see <http://www.gnu.org/licenses/>. }
+
+module GNU =
+def
+    { GNU68-2026-004-fixed-sized-modes }
+
+    {iter L  {} {word}}
+    {iter K  {} {WORDEN}}
+    {iter L_ {} {word_}}
+    pub op = = ({L} compl a,b) bool: (re'a = re'b AND im'a = im'b);
+    pub op EQ = ({L} compl a,b) bool: a = b;
+
+    pub op /= = ({L} compl a,b) bool: NOT (a = b);
+    pub op NE = ({L} compl a,b) bool: a /= b;
+
+    pub op + = ({L} compl a,b) {L} compl: (re'a + re'b, im'a + im'b);
+    pub op +:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a + b; a);
+    pub op PLUSAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a +:= b;
+
+    pub op - = ({L} compl a) {L} compl: (-re'a, -im'a);
+    pub op - = ({L} compl a,b) {L} compl: (re'a - re'b, im'a - im'b);
+    pub op -:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a - b; a);
+    pub op MINUSAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a -:= b;
+
+    pub op * = ({L} compl a,b) {L} compl:
+       (re'a * re'b - im'a * im'b, re'a * im'b + im'a * re'b);
+    pub op *:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a * b; a);
+    pub op TIMESAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a *:= b;
+
+    pub op / = ({L} compl a,b) {L} compl:
+    begin
+          {L} real d = re'(b * CONJ b);
+          {L} compl n = a * CONJ b;
+          (re'n/d, im'n/d)
+    end;
+
+    pub op /:= = (ref {L} compl a, {L} compl b) ref {L} compl:
+       (a := a / b; a);
+    pub op DIVAB = (ref {L} compl a, {L} compl b) ref {L} compl:
+       a /:= b;
+
+    pub op CONJ = ({L} compl z) {L} compl: (re'z, -im'z);
+    pub op ABS  = ({L} compl z) {L} real: {L_}sqrt(re'z*re'z + im'z*im'z);
+
+    pub op ARG = ({L} compl z) {L} real:
+       if {L} real zr = re'z, zi = im'z;
+          zr /= {L} 0 OR zi /= {L} 0
+       then if ABS zr > ABS zi
+            then {L_}arctan(zi/zr)
+                 + {L_}pi/{L} 2*(zi<{L} 0 | {K} SIGN zr - {L} 1 | {L} 1 - {K} SIGN zr)
+            else -{L_}arctan(zr/zi) + {L_}pi/{L} 2*{K} SIGN zi
+            fi
+       fi;
+    {reti}
+
+    skip
+fed
