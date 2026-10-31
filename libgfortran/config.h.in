@@ -1266,6 +1266,9 @@
 /* Define to 1 if you need to in order for `stat' and other things to work. */
 #undef _POSIX_SOURCE
 
+/* Define to 64 to enable 64-bit time_t on 32-bit systems. */
+#undef _TIME_BITS
+
 /* Define to the type of a signed integer type wide enough to hold a pointer,
    if such a type exists, and if the system does not define it. */
 #undef intptr_t

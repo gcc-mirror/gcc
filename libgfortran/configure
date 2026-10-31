@@ -16984,6 +16984,68 @@ rm -rf conftest*
 fi
 
 
+
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for 64-bit time_t" >&5
+$as_echo_n "checking for 64-bit time_t... " >&6; }
+if ${libgfor_cv_time_bits64+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#include <time.h>
+#include <sys/types.h>
+int verify_y2038[(sizeof (time_t) >= 8) ? 1 : -1];
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgfor_cv_time_bits64="already 64-bit"
+else
+
+      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#define _TIME_BITS 64
+#include <time.h>
+#include <sys/types.h>
+int verify_y2038[(sizeof (time_t) >= 8) ? 1 : -1];
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgfor_cv_time_bits64="yes"
+else
+  libgfor_cv_time_bits64="no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgfor_cv_time_bits64" >&5
+$as_echo "$libgfor_cv_time_bits64" >&6; }
+  if test "x$libgfor_cv_time_bits64" = xyes; then
+
+$as_echo "#define _TIME_BITS 64" >>confdefs.h
+
+  fi
+
+
 # Types
 ac_fn_c_check_type "$LINENO" "off_t" "ac_cv_type_off_t" "$ac_includes_default"
 if test "x$ac_cv_type_off_t" = xyes; then :

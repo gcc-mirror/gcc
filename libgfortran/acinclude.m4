@@ -178,6 +178,31 @@ if test x"$libgfor_cv_have_crlf" = xyes; then
   AC_DEFINE(HAVE_CRLF, 1, [Define if CRLF is line terminator.])
 fi])
 
+dnl Check for 64-bit time_t support on 32-bit platforms (Y2038 safety).
+dnl glibc only accepts _TIME_BITS=64 together with _FILE_OFFSET_BITS=64,
+dnl so rely on AC_SYS_LARGEFILE having put the latter into confdefs.h;
+dnl with --disable-largefile the probe fails and _TIME_BITS is not set.
+AC_DEFUN([LIBGFOR_CHECK_TIME_BITS64], [
+  AC_REQUIRE([AC_SYS_LARGEFILE])
+  AC_CACHE_CHECK([for 64-bit time_t], [libgfor_cv_time_bits64], [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#include <time.h>
+#include <sys/types.h>
+int verify_y2038[(sizeof (time_t) >= 8) ? 1 : -1];
+]])], [libgfor_cv_time_bits64="already 64-bit"], [
+      AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#define _TIME_BITS 64
+#include <time.h>
+#include <sys/types.h>
+int verify_y2038[(sizeof (time_t) >= 8) ? 1 : -1];
+]])], [libgfor_cv_time_bits64="yes"], [libgfor_cv_time_bits64="no"])
+    ])
+  ])
+  if test "x$libgfor_cv_time_bits64" = xyes; then
+    AC_DEFINE([_TIME_BITS], [64], [Define to 64 to enable 64-bit time_t on 32-bit systems.])
+  fi
+])
+
 dnl Check whether the st_ino and st_dev stat fields taken together uniquely
 dnl identify the file within the system. This is should be true for POSIX
 dnl systems; it is known to be false on mingw32.
