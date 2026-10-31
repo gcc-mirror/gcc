@@ -26,7 +26,7 @@
 #include "rust-hir-map.h"
 #include "rust-mapping-common.h"
 #include "rust-system.h"
-#include "system.h"
+#include "rust-raw-path.h"
 
 namespace Rust {
 namespace AST {
@@ -640,7 +640,7 @@ public:
 
 // AST node representing a pattern that involves a "path" - abstract base
 // class
-class Path : public Pattern
+class Path : public Pattern, public RawPath<PathExprSegment>
 {
 public:
   enum class Kind
@@ -649,20 +649,20 @@ public:
     Regular,
   };
 
-  Path (std::vector<PathExprSegment> segments)
-    : segments (std::move (segments)), lang_item (tl::nullopt),
-      kind (Kind::Regular)
+  Path (std::vector<PathExprSegment> segments, bool opening_scope_resolution)
+    : RawPath (std::move (segments), opening_scope_resolution),
+      lang_item (tl::nullopt), kind (Kind::Regular)
   {}
 
   Path (LangItem::Kind lang_item)
-    : segments ({}), lang_item (lang_item), kind (Kind::LangItem)
+    : RawPath ({}, false), lang_item (lang_item), kind (Kind::LangItem)
   {}
 
   // Returns whether path has segments.
   bool has_segments () const
   {
     rust_assert (kind == Kind::Regular);
-    return !segments.empty ();
+    return !is_empty ();
   }
 
   /* Converts path segments to their equivalent SimplePath segments if
@@ -674,7 +674,7 @@ public:
   bool is_single_segment () const
   {
     rust_assert (kind == Kind::Regular);
-    return segments.size () == 1;
+    return get_segments ().size () == 1;
   }
 
   std::string as_string () const override;
@@ -703,7 +703,6 @@ public:
   Path::Kind get_path_kind () { return kind; }
 
 protected:
-  std::vector<PathExprSegment> segments;
   tl::optional<LangItem::Kind> lang_item;
 
   Path::Kind kind;
@@ -714,7 +713,6 @@ protected:
 class PathInExpression : public Path, public ExprWithoutBlock
 {
   std::vector<Attribute> outer_attrs;
-  bool has_opening_scope_resolution;
   location_t locus;
   NodeId _node_id;
 
@@ -727,16 +725,15 @@ public:
   PathInExpression (std::vector<PathExprSegment> path_segments,
 		    std::vector<Attribute> outer_attrs, location_t locus,
 		    bool has_opening_scope_resolution = false)
-    : Path (std::move (path_segments)), outer_attrs (std::move (outer_attrs)),
-      has_opening_scope_resolution (has_opening_scope_resolution),
-      locus (locus), _node_id (Analysis::Mappings::get ().get_next_node_id ()),
+    : Path (std::move (path_segments), has_opening_scope_resolution),
+      outer_attrs (std::move (outer_attrs)), locus (locus),
+      _node_id (Analysis::Mappings::get ().get_next_node_id ()),
       marked_for_strip (false)
   {}
 
   PathInExpression (LangItem::Kind lang_item,
 		    std::vector<Attribute> outer_attrs, location_t locus)
-    : Path (lang_item), outer_attrs (std::move (outer_attrs)),
-      has_opening_scope_resolution (false), locus (locus),
+    : Path (lang_item), outer_attrs (std::move (outer_attrs)), locus (locus),
       _node_id (Analysis::Mappings::get ().get_next_node_id ()),
       marked_for_strip (false)
   {}
@@ -761,7 +758,7 @@ public:
      * public. Have to pass in opening scope resolution as parent class has no
      * access to it.
      */
-    return convert_to_simple_path (has_opening_scope_resolution);
+    return convert_to_simple_path (has_opening_scope_resolution ());
   }
 
   std::unique_ptr<PathInExpression> reconstruct () const
@@ -773,7 +770,7 @@ public:
 
     auto *new_path
       = new PathInExpression (std::move (new_segments), outer_attrs, locus,
-			      has_opening_scope_resolution);
+			      has_opening_scope_resolution ());
 
     return std::unique_ptr<PathInExpression> (new_path);
   }
@@ -785,11 +782,6 @@ public:
   void mark_for_strip () override { marked_for_strip = true; }
   bool is_marked_for_strip () const override { return marked_for_strip; }
 
-  bool opening_scope_resolution () const
-  {
-    return has_opening_scope_resolution;
-  }
-
   NodeId get_node_id () const override { return _node_id; }
 
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
@@ -800,21 +792,9 @@ public:
     outer_attrs = std::move (new_attrs);
   }
 
-  PathExprSegment &get_final_segment () { return get_segments ().back (); }
-  const PathExprSegment &get_final_segment () const
-  {
-    return get_segments ().back ();
-  }
-
   Expr::Kind get_expr_kind () const override
   {
     return Expr::Kind::PathInExpression;
-  }
-
-  UtilPath<PathExprSegment> as_util_path () const
-  {
-    return UtilPath<PathExprSegment> (get_segments (),
-				      has_opening_scope_resolution);
   }
 
 protected:
@@ -1261,10 +1241,9 @@ public:
   }
 };
 
-class TypePath : public TypeNoBounds
+class TypePath : public TypeNoBounds,
+		 public RawPath<std::unique_ptr<TypePathSegment>>
 {
-  bool has_opening_scope_resolution;
-  std::vector<std::unique_ptr<TypePathSegment>> segments;
   location_t locus;
 
 protected:
@@ -1276,18 +1255,11 @@ protected:
   }
   TypePath *reconstruct_impl () const override
   {
-    return new TypePath (reconstruct_vec (segments), locus,
-			 has_opening_scope_resolution);
+    return new TypePath (reconstruct_vec (get_segments ()), locus,
+			 has_opening_scope_resolution ());
   }
 
 public:
-  /* Returns whether the TypePath has an opening scope resolution operator
-   * (i.e. is global path or crate-relative path, not module-relative) */
-  bool has_opening_scope_resolution_op () const
-  {
-    return has_opening_scope_resolution;
-  }
-
   // Returns whether the TypePath is in an invalid state.
   bool is_error () const { return segments.empty (); }
 
@@ -1302,22 +1274,21 @@ public:
   TypePath (std::vector<std::unique_ptr<TypePathSegment>> segments,
 	    location_t locus, bool has_opening_scope_resolution = false)
     : TypeNoBounds (),
-      has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments)), locus (locus)
+      RawPath (std::move (segments), has_opening_scope_resolution),
+      locus (locus)
   {}
 
   TypePath (LangItem::Kind lang_item,
 	    std::vector<std::unique_ptr<TypePathSegment>> segments,
 	    location_t locus, bool has_opening_scope_resolution = false)
     : TypeNoBounds (),
-      has_opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (segments)), locus (locus)
+      RawPath (std::move (segments), has_opening_scope_resolution),
+      locus (locus)
   {}
 
   // Copy constructor with vector clone
   TypePath (TypePath const &other)
-    : TypeNoBounds (other),
-      has_opening_scope_resolution (other.has_opening_scope_resolution),
+    : TypeNoBounds (other), RawPath ({}, other.has_opening_scope_resolution ()),
       locus (other.locus)
   {
     segments.reserve (other.segments.size ());
@@ -1329,7 +1300,7 @@ public:
   TypePath &operator= (TypePath const &other)
   {
     TypeNoBounds::operator= (other);
-    has_opening_scope_resolution = other.has_opening_scope_resolution;
+    opening_scope_resolution = other.has_opening_scope_resolution ();
     locus = other.locus;
 
     segments.reserve (other.segments.size ());
@@ -1362,25 +1333,9 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: this seems kinda dodgy
-  std::vector<std::unique_ptr<TypePathSegment>> &get_segments ()
-  {
-    return segments;
-  }
-  const std::vector<std::unique_ptr<TypePathSegment>> &get_segments () const
-  {
-    return segments;
-  }
-
   size_t get_num_segments () const { return segments.size (); }
 
   Type::Kind get_type_kind () const override { return Type::Kind::TypePath; }
-
-  UtilPath<std::unique_ptr<TypePathSegment>> as_util_path () const
-  {
-    return UtilPath<std::unique_ptr<TypePathSegment>> (
-      get_segments (), has_opening_scope_resolution_op ());
-  }
 };
 
 struct QualifiedPathType
@@ -1502,7 +1457,8 @@ public:
 			     std::vector<PathExprSegment> path_segments,
 			     std::vector<Attribute> outer_attrs,
 			     location_t locus)
-    : Path (std::move (path_segments)), outer_attrs (std::move (outer_attrs)),
+    : Path (std::move (path_segments), false),
+      outer_attrs (std::move (outer_attrs)),
       path_type (std::move (qual_path_type)), locus (locus),
       _node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}

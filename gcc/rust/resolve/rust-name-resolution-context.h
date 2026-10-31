@@ -687,12 +687,12 @@ public:
     ResolutionBuilder (NameResolutionContext &ctx) : ctx (&ctx) {}
 
     template <typename S>
-    void set_path (const UtilPath<S> &util_path, NodeId node_id)
+    void set_path (const RawPath<S> &new_path, NodeId node_id)
     {
-      path = ResolutionPath (util_path.get_segments (),
-			     util_path.has_opening_scope (), node_id);
+      path = ResolutionPath (new_path.get_segments (),
+			     new_path.has_opening_scope_resolution (), node_id);
       mode = ResolutionMode::Normal;
-      if (util_path.has_opening_scope ())
+      if (new_path.has_opening_scope_resolution ())
 	{
 	  if (get_rust_edition () == Edition::E2015)
 	    mode = ResolutionMode::FromRoot;
@@ -703,28 +703,28 @@ public:
     }
 
     template <typename S>
-    void set_path (const UtilPath<S> &util_path, NodeId node_id,
+    void set_path (const RawPath<S> &new_path, NodeId node_id,
 		   ResolutionMode mode)
     {
-      path = ResolutionPath (util_path.get_segments (),
-			     util_path.has_opening_scope (), node_id);
+      path = ResolutionPath (new_path.get_segments (),
+			     new_path.has_opening_scope_resolution (), node_id);
       this->mode = mode;
       has_path_set = true;
     }
 
     void set_path (const AST::SimplePath &path)
     {
-      set_path (path.as_util_path (), path.get_node_id ());
+      set_path (path, path.get_node_id ());
     }
 
     void set_path (const AST::PathInExpression &path)
     {
-      set_path (path.as_util_path (), path.get_node_id ());
+      set_path (path, path.get_node_id ());
     }
 
     void set_path (const AST::TypePath &path)
     {
-      set_path (path.as_util_path (), path.get_node_id ());
+      set_path (path, path.get_node_id ());
     }
 
     void set_mode (ResolutionMode mode) { this->mode = mode; }
@@ -785,7 +785,7 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const UtilPath<S> &path, ResolutionMode mode,
+  resolve_path (const RawPath<S> &path, ResolutionMode mode,
 		tl::optional<std::vector<Error> &> collect_errors,
 		Namespace ns_first, Args... ns_args)
   {
@@ -799,7 +799,7 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const UtilPath<S> &path,
+  resolve_path (const RawPath<S> &path,
 		tl::optional<std::vector<Error> &> collect_errors,
 		Namespace ns_first, Args... ns_args)
   {
@@ -814,7 +814,7 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const UtilPath<S> &path, Namespace ns_first, Args... ns_args)
+  resolve_path (const RawPath<S> &path, Namespace ns_first, Args... ns_args)
   {
     ResolutionBuilder builder (*this);
     builder.set_path (path, UNKNOWN_NODEID);
@@ -825,43 +825,14 @@ public:
 
   template <typename S, typename... Args>
   tl::optional<NamespacedDefinition>
-  resolve_path (const UtilPath<S> &path, ResolutionMode mode,
-		Namespace ns_first, Args... ns_args)
+  resolve_path (const RawPath<S> &path, ResolutionMode mode, Namespace ns_first,
+		Args... ns_args)
   {
     ResolutionBuilder builder (*this);
     builder.set_path (path, UNKNOWN_NODEID, mode);
     builder.add_namespaces (ns_first, ns_args...);
 
     return builder.resolve ();
-  }
-
-  template <typename... Args>
-  tl::optional<NamespacedDefinition> resolve_path (const AST::SimplePath &path,
-						   Args &&...args)
-  {
-    auto util_path
-      = UtilPath<AST::SimplePathSegment> (path.get_segments (),
-					  path.has_opening_scope_resolution ());
-    return resolve_path (util_path, std::forward<Args> (args)...);
-  }
-
-  template <typename... Args>
-  tl::optional<NamespacedDefinition>
-  resolve_path (const AST::PathInExpression &path, Args &&...args)
-  {
-    auto util_path
-      = UtilPath<AST::PathExprSegment> (path.get_segments (),
-					path.opening_scope_resolution ());
-    return resolve_path (util_path, std::forward<Args> (args)...);
-  }
-
-  template <typename... Args>
-  tl::optional<NamespacedDefinition> resolve_path (const AST::TypePath &path,
-						   Args &&...args)
-  {
-    auto util_path = UtilPath<std::unique_ptr<AST::TypePathSegment>> (
-      path.get_segments (), path.has_opening_scope_resolution_op ());
-    return resolve_path (util_path, std::forward<Args> (args)...);
   }
 
   /*
@@ -906,7 +877,7 @@ private:
   bool
   should_search_prelude (const typename ForeverStack<N>::Node *current_node,
 			 const typename ForeverStack<N>::SegIterator &iterator,
-			 const std::vector<ResolutionPath::Segment> &segments);
+			 const std::vector<ResolutionPathSegment> &segments);
 
   /**
    * Resolve a path to its definition
@@ -944,7 +915,7 @@ private:
   tl::optional<typename ForeverStack<N>::Node &>
   resolve_segments (ForeverStack<N> &stack,
 		    typename ForeverStack<N>::Node &starting_point,
-		    const UtilPath<ResolutionPath::Segment> &path,
+		    const RawPath<ResolutionPathSegment> &path,
 		    typename ForeverStack<N>::SegIterator iterator,
 		    std::function<void (Usage, Definition, Namespace)>
 		      insert_segment_resolution,

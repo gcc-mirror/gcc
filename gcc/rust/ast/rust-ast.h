@@ -29,6 +29,7 @@
 #include "rust-cloneable.h"
 #include "rust-ast-identifier.h"
 #include "rust-util-path.h"
+#include "rust-raw-path.h"
 
 namespace Rust {
 // TODO: remove typedefs and make actual types for these
@@ -338,10 +339,8 @@ public:
 };
 
 // A simple path without generic or type arguments
-class SimplePath
+class SimplePath : public RawPath<SimplePathSegment>
 {
-  bool opening_scope_resolution;
-  std::vector<SimplePathSegment> segments;
   location_t locus;
   NodeId node_id;
 
@@ -350,14 +349,13 @@ public:
   explicit SimplePath (std::vector<SimplePathSegment> path_segments,
 		       bool has_opening_scope_resolution = false,
 		       location_t locus = UNDEF_LOCATION)
-    : opening_scope_resolution (has_opening_scope_resolution),
-      segments (std::move (path_segments)), locus (locus),
-      node_id (Analysis::Mappings::get ().get_next_node_id ())
+    : RawPath (std::move (path_segments), has_opening_scope_resolution),
+      locus (locus), node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
 
   explicit SimplePath (Identifier ident)
-    : opening_scope_resolution (false),
-      segments ({SimplePathSegment (ident.as_string (), ident.get_locus ())}),
+    : RawPath ({SimplePathSegment (ident.as_string (), ident.get_locus ())},
+	       false),
       locus (ident.get_locus ()),
       node_id (Analysis::Mappings::get ().get_next_node_id ())
   {}
@@ -368,15 +366,7 @@ public:
     return SimplePath (std::vector<SimplePathSegment> ());
   }
 
-  // Returns whether the SimplePath is empty, i.e. has path segments.
-  bool is_empty () const { return segments.empty (); }
-
   const std::string as_string () const;
-
-  bool has_opening_scope_resolution () const
-  {
-    return opening_scope_resolution;
-  }
 
   location_t get_locus () const { return locus; }
   NodeId get_node_id () const { return node_id; }
@@ -399,24 +389,6 @@ public:
     std::vector<AST::SimplePathSegment> single_segments
       = {AST::SimplePathSegment (std::move (str), locus)};
     return SimplePath (std::move (single_segments), false, locus);
-  }
-
-  const std::vector<SimplePathSegment> &get_segments () const
-  {
-    return segments;
-  }
-
-  std::vector<SimplePathSegment> &get_segments () { return segments; }
-
-  const SimplePathSegment &get_final_segment () const
-  {
-    return segments.back ();
-  }
-
-  UtilPath<SimplePathSegment> as_util_path () const
-  {
-    return UtilPath<SimplePathSegment> (get_segments (),
-					has_opening_scope_resolution ());
   }
 };
 

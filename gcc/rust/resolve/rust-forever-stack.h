@@ -402,13 +402,25 @@ enum class ResolutionMode
   FromExtern, // extern prelude
 };
 
-class ResolutionPath
+struct ResolutionPathSegment
+{
+  std::string name;
+  NodeId node_id;
+  location_t locus;
+
+  bool is_super_path_seg () const { return name.compare ("super") == 0; }
+  bool is_crate_path_seg () const { return name.compare ("crate") == 0; }
+  bool is_lower_self_seg () const { return name.compare ("self") == 0; }
+  bool is_big_self_seg () const { return name.compare ("Self") == 0; }
+};
+
+class ResolutionPath : public RawPath<ResolutionPathSegment>
 {
 public:
   template <typename T>
   ResolutionPath (const std::vector<T> &segments_in,
 		  bool opening_scope_resolution, NodeId node_id)
-    : opening_scope_resolution (opening_scope_resolution), node_id (node_id)
+    : RawPath ({}, opening_scope_resolution), node_id (node_id)
   {
     segments.clear ();
     segments.reserve (segments_in.size ());
@@ -424,7 +436,7 @@ public:
 
 	auto &seg = unwrap_type_segment (outer_seg);
 
-	Segment new_seg;
+	ResolutionPathSegment new_seg;
 	new_seg.name = seg.as_string ();
 	new_seg.node_id = unwrap_segment_node_id (outer_seg);
 	new_seg.locus = seg.get_locus ();
@@ -432,27 +444,17 @@ public:
       }
   }
 
-  ResolutionPath () : opening_scope_resolution (false), node_id (UNKNOWN_NODEID)
-  {}
-
-  struct Segment
-  {
-    std::string name;
-    NodeId node_id;
-    location_t locus;
-
-    bool is_super_path_seg () const { return name.compare ("super") == 0; }
-    bool is_crate_path_seg () const { return name.compare ("crate") == 0; }
-    bool is_lower_self_seg () const { return name.compare ("self") == 0; }
-    bool is_big_self_seg () const { return name.compare ("Self") == 0; }
-  };
+  ResolutionPath () : RawPath ({}, false), node_id (UNKNOWN_NODEID) {}
 
   tl::optional<std::pair<LangItem::Kind, NodeId>> get_lang_prefix () const
   {
     return lang_prefix;
   }
 
-  const std::vector<Segment> &get_segments () const { return segments; }
+  const std::vector<ResolutionPathSegment> &get_segments () const
+  {
+    return segments;
+  }
 
   bool has_opening_scope_resolution () const
   {
@@ -480,8 +482,6 @@ public:
 
 private:
   tl::optional<std::pair<LangItem::Kind, NodeId>> lang_prefix;
-  std::vector<Segment> segments;
-  bool opening_scope_resolution;
   NodeId node_id;
 };
 
@@ -781,12 +781,12 @@ public:
   /* Helper types and functions for `resolve_path` */
 
   using SegIterator =
-    typename std::vector<ResolutionPath::Segment>::const_iterator;
+    typename std::vector<ResolutionPathSegment>::const_iterator;
 
   Node &find_closest_module (Node &starting_point);
 
   tl::optional<SegIterator>
-  find_starting_point (const UtilPath<ResolutionPath::Segment> &path,
+  find_starting_point (const RawPath<ResolutionPathSegment> &path,
 		       std::reference_wrapper<Node> &starting_point,
 		       std::function<void (Usage, Definition, Namespace)>
 			 insert_segment_resolution,

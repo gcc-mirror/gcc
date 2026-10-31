@@ -145,7 +145,7 @@ ASTLowerTypePath::visit (AST::TypePath &path)
   translated
     = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
 			 path.get_locus (),
-			 path.has_opening_scope_resolution_op ());
+			 path.has_opening_scope_resolution ());
 }
 
 HIR::QualifiedPathInType *

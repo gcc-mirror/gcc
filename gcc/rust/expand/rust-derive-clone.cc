@@ -171,12 +171,12 @@ DeriveClone::clone_enum_identifier (PathInExpression variant_path,
   auto pattern = std::unique_ptr<Pattern> (new ReferencePattern (
     std::unique_ptr<Pattern> (new PathInExpression (
       variant_path.get_segments (), {}, variant_path.get_locus (),
-      variant_path.opening_scope_resolution ())),
+      variant_path.has_opening_scope_resolution ())),
     false, false, loc));
   auto expr = std::unique_ptr<Expr> (
     new PathInExpression (variant_path.get_segments (), {},
 			  variant_path.get_locus (),
-			  variant_path.opening_scope_resolution ()));
+			  variant_path.has_opening_scope_resolution ()));
 
   return builder.match_case (std::move (pattern), std::move (expr));
 }
@@ -211,14 +211,14 @@ DeriveClone::clone_enum_tuple (PathInExpression variant_path,
     std::unique_ptr<Pattern> (new TupleStructPattern (
       PathInExpression (variant_path.get_segments (), {},
 			variant_path.get_locus (),
-			variant_path.opening_scope_resolution ()),
+			variant_path.has_opening_scope_resolution ()),
       std::move (pattern_items))),
     false, false, loc));
 
   auto expr = builder.call (std::unique_ptr<Expr> (new PathInExpression (
 			      variant_path.get_segments (), {},
 			      variant_path.get_locus (),
-			      variant_path.opening_scope_resolution ())),
+			      variant_path.has_opening_scope_resolution ())),
 			    std::move (cloned_patterns));
 
   return builder.match_case (std::move (pattern), std::move (expr));
@@ -291,7 +291,7 @@ DeriveClone::clone_enum_struct (PathInExpression variant_path,
   PathInExpression new_path (variant_path.get_segments (),
 			     variant_path.get_outer_attrs (),
 			     variant_path.get_locus (),
-			     variant_path.opening_scope_resolution ());
+			     variant_path.has_opening_scope_resolution ());
 
   auto expr = std::unique_ptr<Expr> (
     new StructExprStructFields (new_path, std::move (cloned_fields), loc));

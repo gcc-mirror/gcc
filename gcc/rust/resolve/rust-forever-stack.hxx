@@ -447,8 +447,7 @@ ForeverStack<N>::find_closest_module (Node &starting_point)
  * segments */
 static inline bool
 check_leading_kw_at_start (std::vector<Error> &collect_errors,
-			   const ResolutionPath::Segment &segment,
-			   bool condition)
+			   const ResolutionPathSegment &segment, bool condition)
 {
   if (condition)
     collect_errors.emplace_back (
@@ -464,9 +463,9 @@ check_leading_kw_at_start (std::vector<Error> &collect_errors,
 // `super` segment, we go back to the cursor's parent until we reach the
 // correct one or the root.
 template <Namespace N>
-tl::optional<typename std::vector<ResolutionPath::Segment>::const_iterator>
+tl::optional<typename std::vector<ResolutionPathSegment>::const_iterator>
 ForeverStack<N>::find_starting_point (
-  const UtilPath<ResolutionPath::Segment> &path,
+  const RawPath<ResolutionPathSegment> &path,
   std::reference_wrapper<Node> &starting_point,
   std::function<void (Usage, Definition, Namespace)> insert_segment_resolution,
   std::vector<Error> &collect_errors)
@@ -494,7 +493,7 @@ ForeverStack<N>::find_starting_point (
 
       if (seg.is_crate_path_seg ())
 	{
-	  if (path.has_opening_scope ())
+	  if (path.has_opening_scope_resolution ())
 	    {
 	      collect_errors.emplace_back (seg.locus, ErrorCode::E0433,
 					   "global paths cannot start with %qs",

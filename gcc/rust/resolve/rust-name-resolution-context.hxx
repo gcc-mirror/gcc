@@ -33,7 +33,7 @@ bool
 NameResolutionContext::should_search_prelude (
   const typename ForeverStack<N>::Node *current_node,
   const typename ForeverStack<N>::SegIterator &iterator,
-  const std::vector<ResolutionPath::Segment> &segments)
+  const std::vector<ResolutionPathSegment> &segments)
 {
   // Check whether the current_node is a root node
   if (current_node->is_root ())
@@ -190,12 +190,9 @@ NameResolutionContext::resolve_path (
     }
 
   auto iterator = segments.begin ();
-  auto util_path
-    = UtilPath<ResolutionPath::Segment> (segments,
-					 path.has_opening_scope_resolution ());
   if (can_descend)
     {
-      if (auto res = stack.find_starting_point (util_path, starting_point,
+      if (auto res = stack.find_starting_point (path, starting_point,
 						insert_segment_resolution,
 						collect_errors))
 	iterator = *res;
@@ -216,9 +213,8 @@ NameResolutionContext::resolve_path (
   // gives us a node in which to resolve the last segment of the path.
 
   // nodes are shared between stacks
-  auto node
-    = resolve_segments (types, starting_point.get (), util_path, iterator,
-			insert_segment_resolution, collect_errors);
+  auto node = resolve_segments (types, starting_point.get (), path, iterator,
+				insert_segment_resolution, collect_errors);
 
   if (!node)
     return tl::nullopt;
@@ -252,7 +248,7 @@ template <Namespace N>
 tl::optional<typename ForeverStack<N>::Node &>
 NameResolutionContext::resolve_segments (
   ForeverStack<N> &stack, typename ForeverStack<N>::Node &starting_point,
-  const UtilPath<ResolutionPath::Segment> &path,
+  const RawPath<ResolutionPathSegment> &path,
   typename ForeverStack<N>::SegIterator iterator,
   std::function<void (Usage, Definition, Namespace)> insert_segment_resolution,
   std::vector<Error> &collect_errors)

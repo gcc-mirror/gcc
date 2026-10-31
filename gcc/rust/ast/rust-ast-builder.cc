@@ -660,7 +660,7 @@ Builder::new_type_param (
 	      }
 
 	    TypePath p (std::move (segments), path.get_locus (),
-			path.has_opening_scope_resolution_op ());
+			path.has_opening_scope_resolution ());
 
 	    type_param_bounds.emplace_back (new TraitBound (
 	      std::move (p), tb.get_locus (), tb.is_in_parens (),

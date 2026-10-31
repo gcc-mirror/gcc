@@ -492,7 +492,7 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
 
   translated = new HIR::PathInExpression (mapping, std::move (path_segments),
 					  expr.get_locus (),
-					  expr.opening_scope_resolution ());
+					  expr.has_opening_scope_resolution ());
 }
 
 HIR::QualifiedPathType

@@ -628,10 +628,7 @@ Late::visit (AST::Visibility &vis)
 	}
     }
 
-  auto util_path
-    = UtilPath<AST::SimplePathSegment> (path.get_segments (),
-					path.has_opening_scope_resolution ());
-  auto res = ctx.resolve_path (util_path, mode, Namespace::Types);
+  auto res = ctx.resolve_path (path, mode, Namespace::Types);
 
   if (!res.has_value ())
     {

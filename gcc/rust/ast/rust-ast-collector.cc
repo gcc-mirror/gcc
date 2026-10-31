@@ -610,7 +610,7 @@ TokenCollector::visit (PathInExpression &path)
 	return;
       }
 
-    if (path.opening_scope_resolution ())
+    if (path.has_opening_scope_resolution ())
       push (Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
 
     visit_items_joined_by_separator (path.get_segments (), SCOPE_RESOLUTION);
@@ -757,7 +757,7 @@ TokenCollector::visit (TypePath &path)
   // Syntax:
   //    `::`? TypePathSegment (`::` TypePathSegment)*
   describe_node (std::string ("TypePath"), [this, &path] () {
-    if (path.has_opening_scope_resolution_op ())
+    if (path.has_opening_scope_resolution ())
       push (Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
 
     visit_items_joined_by_separator (path.get_segments (), SCOPE_RESOLUTION);

@@ -144,7 +144,7 @@ Path::as_string () const
 
   std::string str;
 
-  for (const auto &segment : segments)
+  for (const auto &segment : get_segments ())
     str += segment.as_string () + "::";
 
   // basically a hack - remove last two characters of string (remove final ::)
@@ -200,7 +200,7 @@ PathInExpression::as_string () const
 {
   std::string str;
 
-  if (has_opening_scope_resolution)
+  if (has_opening_scope_resolution ())
     str = "::";
 
   return str + Path::as_string ();
@@ -227,7 +227,7 @@ TypePath::as_string () const
    * literalised */
   std::string str;
 
-  if (has_opening_scope_resolution)
+  if (has_opening_scope_resolution ())
     str = "::";
 
   for (const auto &segment : segments)
@@ -262,8 +262,8 @@ TypePath::as_simple_path () const
 				    segment->get_locus ());
     }
 
-  return SimplePath (std::move (simple_segments), has_opening_scope_resolution,
-		     locus);
+  return SimplePath (std::move (simple_segments),
+		     has_opening_scope_resolution (), locus);
 }
 
 std::string
@@ -278,7 +278,7 @@ TypePath::make_debug_string () const
       if (segment != nullptr && !segment->is_lang_item ()
 	  && !segment->is_error ())
 	{
-	  if (!output.empty () || has_opening_scope_resolution_op ())
+	  if (!output.empty () || has_opening_scope_resolution ())
 	    output.append ("::");
 	  output.append (segment->get_ident_segment ().as_string ());
 	}
