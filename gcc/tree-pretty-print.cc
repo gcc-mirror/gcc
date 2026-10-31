@@ -2347,6 +2347,7 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
     case BOOLEAN_TYPE:
     case BITINT_TYPE:
     case OPAQUE_TYPE:
+    case NULLPTR_TYPE:
       {
 	unsigned int quals = TYPE_QUALS (node);
 	enum tree_code_class tclass;
@@ -2483,6 +2484,8 @@ dump_generic_node (pretty_printer *pp, tree node, int spc, dump_flags_t flags,
 	      }
 	    else if (TREE_CODE (node) == VOID_TYPE)
 	      pp_string (pp, "void");
+	    else if (TREE_CODE (node) == NULLPTR_TYPE)
+	      pp_string (pp, "nullptr_t");
 	    else
               pp_string (pp, "<unnamed type>");
 	  }
