@@ -1375,6 +1375,16 @@ gnu_prelude (void)
   m = a68_proc (M_WORD_INT, M_WORD_INT, M_INT, NO_MOID);
   a68_op (A68_EXT, "**", m, a68_lower_pow_int);
   a68_op (A68_EXT, "^", m, a68_lower_pow_int);
+  m = a68_proc (M_WORD_INT, M_SHORT_SHORT_INT, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
+  m = a68_proc (M_WORD_INT, M_SHORT_INT, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
+  m = a68_proc (M_WORD_INT, M_INT, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
+  m = a68_proc (M_WORD_INT, M_LONG_INT, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
+  m = a68_proc (M_WORD_INT, M_LONG_LONG_INT, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
   /* SHORT SHORT BITS operators.  */
   m = a68_proc (M_SHORT_SHORT_BITS, M_SHORT_SHORT_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "SET", m, a68_lower_set3);
@@ -1438,6 +1448,16 @@ gnu_prelude (void)
   a68_op (A68_EXT, "CLEAR", m, a68_lower_clear3);
   m = a68_proc (M_BOOL, M_WORD_BITS, M_INT, NO_MOID);
   a68_op (A68_EXT, "TEST", m, a68_lower_test3);
+  m = a68_proc (M_WORD_BITS, M_SHORT_SHORT_BITS, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenint2);
+  m = a68_proc (M_WORD_BITS, M_SHORT_BITS, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenint2);
+  m = a68_proc (M_WORD_BITS, M_BITS, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenint2);
+  m = a68_proc (M_WORD_BITS, M_LONG_BITS, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenint2);
+  m = a68_proc (M_WORD_BITS, M_LONG_LONG_BITS, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenint2);
   /* REAL operators.  */
   m = a68_proc (M_INT, M_REAL, NO_MOID);
   a68_op (A68_EXT, "FLOOR", m, a68_lower_entier2);
@@ -1490,6 +1510,12 @@ gnu_prelude (void)
   m = a68_proc (M_WORD_REAL, M_WORD_REAL, M_INT, NO_MOID);
   a68_op (A68_EXT, "**", m, a68_lower_pow_real);
   a68_op (A68_EXT, "^", m, a68_lower_pow_real);
+  m = a68_proc (M_WORD_REAL, M_REAL, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
+  m = a68_proc (M_WORD_REAL, M_LONG_REAL, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
+  m = a68_proc (M_WORD_REAL, M_LONG_LONG_REAL, NO_MOID);
+  a68_op (A68_EXT, "WORDEN", m, a68_lower_wordenreal2);
   /* WORD COMPLEX  operators */
   m = a68_proc (M_WORD_COMPLEX, M_WORD_INT, M_WORD_INT, NO_MOID);
   a68_op (A68_STD, "I", m, a68_lower_wordinti);

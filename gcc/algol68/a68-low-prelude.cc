@@ -1964,6 +1964,13 @@ a68_lower_lengint2 (NODE_T *p, LOW_CTX_T ctx)
 }
 
 tree
+a68_lower_wordenint2 (NODE_T *p, LOW_CTX_T ctx)
+{
+  return a68_int_leng (MOID (p), MOID (NEXT (SUB (p))),
+		       a68_lower_tree (NEXT (SUB (p)), ctx));
+}
+
+tree
 a68_lower_shortenreal2 (NODE_T *p, LOW_CTX_T ctx)
 {
   return a68_real_shorten (MOID (p), MOID (NEXT (SUB (p))),
@@ -1972,6 +1979,13 @@ a68_lower_shortenreal2 (NODE_T *p, LOW_CTX_T ctx)
 
 tree
 a68_lower_lengreal2 (NODE_T *p, LOW_CTX_T ctx)
+{
+  return a68_real_leng (MOID (p), MOID (NEXT (SUB (p))),
+			a68_lower_tree (NEXT (SUB (p)), ctx));
+}
+
+tree
+a68_lower_wordenreal2 (NODE_T *p, LOW_CTX_T ctx)
 {
   return a68_real_leng (MOID (p), MOID (NEXT (SUB (p))),
 			a68_lower_tree (NEXT (SUB (p)), ctx));
