@@ -1,3 +1,8 @@
+2026-10-30  Kael Andrew Alonzo Franco  <kaelfandrew@gmail.com>
+
+	PR bootstrap/128228
+	* libiberty.h (strtoll, strtoull): Declare if C++11.
+
 2026-09-06  Matt Turner  <mattst88@gmail.com>
 
 	* longlong.h [__i370__, __s390__, __mvs__] (sdiv_qrnnd): Wrap

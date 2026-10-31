@@ -1,3 +1,17 @@
+2026-10-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.texi (AMD Radeon (GCN)): Document stack size rounding.
+	* plugin/plugin-gcn.c (init_environment_variables): Round stack_size
+	up to an odd multiple of 4 kiB.
+
+2026-10-30  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* plugin/Makefrag.am (libgomp_plugin_nvptx_la_LINK)
+	(libgomp_plugin_gcn_la_LINK): Set, to use...
+	(libgomp_plugin_LINK): ... this new variable.
+	* Makefile.am (LINK): Cross-reference it.
+	* Makefile.in: Regenerate.
+
 2026-10-29  Andrew Stubbs  <ams@baylibre.com>
 
 	* plugin/plugin-gcn.c (drain_queue): Execute placeholder entries

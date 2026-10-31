@@ -1,3 +1,122 @@
+2026-10-30  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/128251
+	* lra-constraints.cc (reg_plus_const_p): New function.
+	(process_alt_operands): Use it.
+	(process_address_1): Use reg_plus_const_p.
+	(curr_insn_transform): Spill (plus (reg) (const)) for memory
+	constraint.
+
+2026-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128267
+	* tree-vect-loop.cc (vect_peel_nonlinear_iv_init): For
+	vect_step_op_sh{lr} check whether the update shift is >= prec
+	using widest_int.
+	* tree-vect-loop-manip.cc (vect_can_peel_nonlinear_iv_p): Disallow
+	early break for vect_step_op_sh{lr} as well.
+
+2026-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128250
+	* tree-ssa-reassoc.cc (acceptable_pow_call): Ensure base satisfies
+	can_reassociate_op_p.
+	(try_special_add_to_ops): Likewise for negated operand.
+
+2026-10-30  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	PR target/128319
+	* config/riscv/riscv-v.cc (shuffle_interleave_even_odd_patterns):
+	Cast to unsigned.
+
+2026-10-30  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/autovec.md (<su>abd<mode>3): Adjust comment.
+	(<su>sad<mode><v_double_trunc>): New expander.
+	(<su>sad<mode><v_quad_trunc>): Likewise.
+	* config/riscv/vector-iterators.md: Split VWEXTI_HS into
+	VWEXTI_H and VWEXTI_S.
+
+2026-10-30  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/aarch64/aarch64-simd.md (<su>sadv8qi): Rename...
+	(<su>sadv2siv8qi): ...To this.
+	(<su>sadv16qi): Likewise.
+	(<su>sadv4siv16qi): Likewise.
+	* config/aarch64/aarch64-sve.md (<su>sad<vsi2qi>): Likewise.
+	(<su>sad<mode><vsi2qi>): Likewise.
+	* config/arm/neon.md (<sup>sadv16qi): Likewise.
+	(<sup>sadv4siv16qi): Likewise.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Change
+	name in comment.
+	* config/i386/mmx.md (usadv8qi): Rename...
+	(usadv2siv8qi): ...To this.
+	* config/i386/sse.md (usadv16qi): Likewise.
+	(usadv4siv16qi): Likewise.
+	(usadv32qi): Likewise.
+	(usadv8siv32qi): Likewise.
+	(usadv64qi): Likewise.
+	(usadv16siv64qi): Likewise.
+	* config/loongarch/lasx.md (usadv32qi): Likewise.
+	(usadv8siv32qi): Likewise.
+	(ssadv32qi): Likewise.
+	(ssadv8siv32qi): Likewise.
+	* config/loongarch/lsx.md (usadv16qi): Likewise.
+	(usadv4siv16qi): Likewise.
+	(ssadv16qi): Likewise.
+	(ssadv4siv16qi): Likewise.
+	* config/rs6000/altivec.md (usadv16qi): Likewise.
+	(usadv4siv16qi): Likewise.
+	(usadv8hi): Likewise.
+	(usadv4siv8hi): Likewise.
+	* doc/md.texi: Adjust docs.
+	* optabs.cc (expand_widen_pattern_expr): Add SAD_EXPR.
+	* optabs.def (OPTAB_CD): Ditto.
+	(OPTAB_D): Remove.
+	* tree-vect-patterns.cc (vect_recog_sad_pattern): Use
+	conv_optab.
+
+2026-10-30  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR driver/111527
+	* config/gcn/mkoffload.cc (compile_native): Use
+	read_collect_gcc_options instead of getenv.
+	* config/nvptx/mkoffload.cc (compile_native): Likewise.
+
+2026-10-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-protos.h (gcn_local_decl_alignment): New prototype.
+	* config/gcn/gcn.cc (GCN_VECTOR_STACK_ALIGNMENT): New define.
+	(gcn_vector_alignment): New function.
+	(gcn_local_decl_alignment): New function.
+	(TARGET_VECTOR_ALIGNMENT): Define.
+	* config/gcn/gcn.h (LOCAL_DECL_ALIGNMENT): Define.
+
+2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128310
+	* config/i386/i386.md (UNSPEC_CRC32): Remove.
+	(UNSPEC_CRC32B, UNSPEC_CRC32W)
+	(UNSPEC_CRC32L, UNSPEC_CRC32Q): New.
+	(sse4_2_crc32qi): Rename from sse4_2_crc32<mode>.
+	Use UNSPEC_CRC32B.
+	(*sse4_2_crc32qi_zext): New insn.
+	(sse4_2_crc32hi): New insn.
+	(sse4_2_crc32si): Ditto.
+	(sse4_2_crc32di): Use UNSPEC_CRC32Q.
+
+2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128270
+	* config/i386/i386.cc (ix86_add_cfa_restore_note): Do not skip
+	the note when stack_realign_drap.
+
+2026-10-30  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* config/riscv/vector.md: Take the early clobber vr instead of
+	the Wvr constraint for vwabda[u].vv.
+
 2026-10-29  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR middle-end/128174

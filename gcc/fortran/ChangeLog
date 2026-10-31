@@ -1,3 +1,29 @@
+2026-10-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/114024
+	PR fortran/128033
+	* trans-stmt.cc (gfc_trans_allocate): Remove automatic wrapping of
+	array subreferences in a parentheses expression.
+	* trans-array.cc (gfc_array_allocate): Find the single non-element
+	array reference in the source expression instead of getting the last
+	reference in the chain.  Use a gfc_array_ref pointer instead of a
+	gfc_ref pointer and simplify the references using it.
+
+2026-10-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127613
+	* expr.cc (gfc_is_simply_contiguous): Track the current type
+	during the data reference walk and only keep component references
+	that are not the _data component of a class container.  Query the
+	array type on the _data component of the class container for
+	polymorphic variables.
+
+2026-10-30  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128042
+	* target-memory.cc (encode_derived): Handle the case where an array
+	component of a derived type is initialized by a scalar.
+
 2026-10-29  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/126968
