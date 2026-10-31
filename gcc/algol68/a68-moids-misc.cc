@@ -737,7 +737,7 @@ a68_widens_to (MOID_T *p, MOID_T *q)
     }
   else if (p == M_LONG_INT)
     {
-      if (q == M_LONG_REAL)
+      if (q == M_LONG_REAL || q == M_LONG_COMPLEX)
 	{
 	  return M_LONG_REAL;
 	}
@@ -755,7 +755,7 @@ a68_widens_to (MOID_T *p, MOID_T *q)
     }
   else if (p == M_WORD_INT)
     {
-      if (q == M_WORD_REAL)
+      if (q == M_WORD_REAL || q == M_WORD_COMPLEX)
 	return M_WORD_REAL;
       else
 	return NO_MOID;
