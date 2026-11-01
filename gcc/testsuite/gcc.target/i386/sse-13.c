@@ -855,7 +855,7 @@
 #define __builtin_ia32_mpsadbw256_mask(A, B, C, D, E) __builtin_ia32_mpsadbw256_mask (A, B, 1, D, E)
 #define __builtin_ia32_mpsadbw128_mask(A, B, C, D, E) __builtin_ia32_mpsadbw128_mask (A, B, 1, D, E)
 
-/* avx10_2convertintrin.h */
+/* avx10v1auxintrin.h */
 #define __builtin_ia32_vcvt2ps2phx512_mask_round(A, B, C, D, E) __builtin_ia32_vcvt2ps2phx512_mask_round(A, B, C, D, 8)
 
 /* avx10_2bf16intrin.h */

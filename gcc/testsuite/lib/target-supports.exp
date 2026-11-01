@@ -11988,7 +11988,9 @@ proc check_effective_target_avx10v1aux { } {
 	void
 	foo ()
 	{
-	  __asm__ volatile ("vcvt2ph2bf8\t{%%zmm2, %%zmm1, %%zmm1|%%zmm1, %%zmm1, %%zmm2}");
+	  __asm__ volatile ("vpdpbssds\t{%%zmm2, %%zmm1, %%zmm0|%%zmm0, %%zmm1, %%zmm2}");
+	  __asm__ volatile ("vpdpwsud\t{%%zmm2, %%zmm1, %%zmm0|%%zmm0, %%zmm1, %%zmm2}");
+	  __asm__ volatile ("vcvt2ph2bf8\t{%%zmm2, %%zmm1, %%zmm0|%%zmm0, %%zmm1, %%zmm2}");
 	}
     } "-mavx10v1aux" ]
 }

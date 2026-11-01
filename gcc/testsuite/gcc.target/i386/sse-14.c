@@ -1045,7 +1045,7 @@ test_4 (_mm512_mask_mpsadbw_epu8, __m512i, __m512i, __mmask32, __m512i, __m512i,
 test_4 (_mm256_mask_mpsadbw_epu8, __m256i, __m256i, __mmask16, __m256i, __m256i, 1)
 test_4 (_mm_mask_mpsadbw_epu8, __m128i, __m128i, __mmask8, __m128i, __m128i, 1)
 
-/* avx10_2convertintrin.h */
+/* avx10v1auxintrin.h */
 test_2 (_mm512_cvtx_round2ps_ph, __m512h, __m512, __m512, 4)
 
 /* avx10_2bf16intrin.h */
