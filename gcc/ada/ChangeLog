@@ -1,3 +1,15 @@
+2026-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not return early for
+	the qualified expression of an allocator if the call returns on the
+	secondary stack.
+
+2026-10-31  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Structural_Associations): Even in the local
+	case, make sure that the implicit instantiation is performed in an
+	appropriate state by the semantic analyzer.
+
 2026-10-26  Nicolas Boulenguez  <nicolas@debian.org>
 
 	PR ada/114065
