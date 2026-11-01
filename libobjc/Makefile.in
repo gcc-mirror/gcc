@@ -290,15 +290,24 @@ AUTOCONF = autoconf
 ACLOCAL = aclocal
 ACLOCAL_AMFLAGS = -I ../config -I ..
 aclocal_deps = \
+	$(srcdir)/../config/acx.m4 \
+	$(srcdir)/../config/bitfields.m4 \
+	$(srcdir)/../config/cet.m4 \
+	$(srcdir)/../config/clang-plugin.m4 \
+	$(srcdir)/../config/enable.m4 \
+	$(srcdir)/../config/gcc-plugin.m4 \
+	$(srcdir)/../config/lthostflags.m4 \
+	$(srcdir)/../config/mmap.m4 \
 	$(srcdir)/../config/multi.m4 \
+	$(srcdir)/../config/no-executables.m4 \
 	$(srcdir)/../config/override.m4 \
-	$(srcdir)/../config/proginstall.m4 \
+	$(srcdir)/../config/tls.m4 \
 	$(srcdir)/../config/toolexeclibdir.m4 \
+	$(srcdir)/../libtool.m4 \
 	$(srcdir)/../ltoptions.m4 \
 	$(srcdir)/../ltsugar.m4 \
 	$(srcdir)/../ltversion.m4 \
 	$(srcdir)/../lt~obsolete.m4 \
-	$(srcdir)/../config/cet.m4 \
 	$(srcdir)/acinclude.m4
 
 $(srcdir)/configure: @MAINT@ configure.ac $(srcdir)/aclocal.m4
