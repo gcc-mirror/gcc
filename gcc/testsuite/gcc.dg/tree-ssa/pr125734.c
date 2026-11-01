@@ -29,4 +29,4 @@ nlz32_negative (int b)
   return c;
 }
 
-/* { dg-final { scan-tree-dump-times "\\.CLZ" 1 "optimized" { xfail hppa*-*-hpux* } } } */
+/* { dg-final { scan-tree-dump-times "\\.CLZ" 1 "optimized" { xfail { ! clz } } } } */
