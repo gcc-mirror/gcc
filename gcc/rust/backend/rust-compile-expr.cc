@@ -2993,7 +2993,7 @@ CompileExpr::visit (HIR::RangeFullExpr &expr)
 void
 CompileExpr::visit (HIR::ArrayIndexExpr &expr)
 {
-  tree array_reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
+  tree reference = CompileExpr::Compile (expr.get_array_expr (), ctx);
   tree index = CompileExpr::Compile (expr.get_index_expr (), ctx);
 
   // this might be an core::ops::index lang item situation
@@ -3004,8 +3004,8 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
     {
       auto lang_item_type = LangItem::Kind::INDEX;
       tree operator_overload_call
-	= resolve_operator_overload (lang_item_type, expr, array_reference,
-				     index, expr.get_array_expr (),
+	= resolve_operator_overload (lang_item_type, expr, reference, index,
+				     expr.get_array_expr (),
 				     expr.get_index_expr ());
 
       tree actual_type = TREE_TYPE (operator_overload_call);
@@ -3024,29 +3024,52 @@ CompileExpr::visit (HIR::ArrayIndexExpr &expr)
       return;
     }
 
-  // lets check if the array is a reference type then we can add an
+  // lets check if the array/slice is a reference type then we can add an
   // indirection if required
-  TyTy::BaseType *array_expr_ty = nullptr;
+  TyTy::BaseType *base_ty = nullptr;
   bool ok = ctx->get_tyctx ()->lookup_type (
-    expr.get_array_expr ().get_mappings ().get_hirid (), &array_expr_ty);
+    expr.get_array_expr ().get_mappings ().get_hirid (), &base_ty);
   rust_assert (ok);
-
   // do we need to add an indirect reference
-  if (array_expr_ty->get_kind () == TyTy::TypeKind::REF)
+  if (base_ty->get_kind () == TyTy::TypeKind::REF)
     {
-      array_reference
-	= indirect_expression (array_reference, expr.get_locus ());
+      auto ref = static_cast<TyTy::ReferenceType *> (base_ty);
+      base_ty = ref->get_base ();
+
+      if (base_ty->get_kind () == TyTy::TypeKind::ARRAY)
+	{
+	  // only array box is further deferenced to the underlying array
+	  // slice always uses fat ptr, which is handled in
+	  // slice_index_expression
+	  reference = indirect_expression (reference, expr.get_locus ());
+	}
     }
-  else if (TyTy::try_get_box_inner_type (array_expr_ty))
+  else if (auto inner = TyTy::try_get_box_inner_type (base_ty))
     {
-      array_reference
-	= build_box_inner_ptr (array_reference, expr.get_locus ());
-      array_reference
-	= indirect_expression (array_reference, expr.get_locus ());
+      base_ty = *inner;
+      reference = build_box_inner_ptr (reference, expr.get_locus ());
+
+      if (base_ty->get_kind () == TyTy::TypeKind::ARRAY)
+	{
+	  // only array box is further deferenced to the underlying array
+	  // slice always uses fat ptr, which is handled in
+	  // slice_index_expression
+	  reference = indirect_expression (reference, expr.get_locus ());
+	}
     }
 
-  translated = Backend::array_index_expression (array_reference, index,
-						expr.get_locus ());
+  if (base_ty->get_kind () == TyTy::TypeKind::ARRAY)
+    {
+      translated
+	= Backend::array_index_expression (reference, index, expr.get_locus ());
+    }
+  else
+    {
+      // it must be a slice here
+      rust_assert (base_ty->get_kind () == TyTy::TypeKind::SLICE);
+      translated
+	= Backend::slice_index_expression (reference, index, expr.get_locus ());
+    }
 }
 
 void

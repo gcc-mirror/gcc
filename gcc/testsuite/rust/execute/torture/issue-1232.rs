@@ -107,8 +107,7 @@ unsafe impl<T> SliceIndex<[T]> for usize {
 
     fn index(self, slice: &[T]) -> &T {
         // N.B., use intrinsic indexing
-        // &(*slice)[self]
-        unsafe { &*self.get_unchecked(slice) }
+        &(*slice)[self]
     }
 }
 

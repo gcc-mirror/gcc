@@ -1097,7 +1097,8 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
       // lets try and deref it since rust allows this
       auto ref = static_cast<TyTy::ReferenceType *> (direct_array_expr_ty);
       auto base = ref->get_base ();
-      if (base->get_kind () == TyTy::TypeKind::ARRAY)
+      if (base->get_kind () == TyTy::TypeKind::ARRAY
+	  || base->get_kind () == TyTy::TypeKind::SLICE)
 	direct_array_expr_ty = base;
     }
   // Box<T> autoderef
@@ -1114,8 +1115,11 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
     = types_compatable (TyTy::TyWithLocation (index_expr_ty),
 			TyTy::TyWithLocation (size_ty), expr.get_locus (),
 			false);
+
+  auto base_kind = direct_array_expr_ty->get_kind ();
   if (maybe_simple_array_access
-      && direct_array_expr_ty->get_kind () == TyTy::TypeKind::ARRAY)
+      && (base_kind == TyTy::TypeKind::ARRAY
+	  || base_kind == TyTy::TypeKind::SLICE))
     {
       unify_site (expr.get_index_expr ().get_mappings ().get_hirid (),
 		  TyTy::TyWithLocation (size_ty),
@@ -1123,9 +1127,21 @@ TypeCheckExpr::visit (HIR::ArrayIndexExpr &expr)
 					expr.get_index_expr ().get_locus ()),
 		  expr.get_locus ());
 
-      TyTy::ArrayType *array_type
-	= static_cast<TyTy::ArrayType *> (direct_array_expr_ty);
-      infered = array_type->get_element_type ()->clone ();
+      if (base_kind == TyTy::TypeKind::ARRAY)
+	{
+	  TyTy::ArrayType *array_type
+	    = static_cast<TyTy::ArrayType *> (direct_array_expr_ty);
+	  infered = array_type->get_element_type ()->clone ();
+	}
+      else
+	{
+	  // is slice type instead
+	  rust_assert (base_kind == TyTy::TypeKind::SLICE);
+	  TyTy::SliceType *slice_type
+	    = static_cast<TyTy::SliceType *> (direct_array_expr_ty);
+	  infered = slice_type->get_element_type ()->clone ();
+	}
+
       return;
     }
 

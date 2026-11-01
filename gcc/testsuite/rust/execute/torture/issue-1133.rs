@@ -102,8 +102,7 @@ unsafe impl<T> SliceIndex<[T]> for usize {
 
     fn index(self, slice: &[T]) -> &T {
         // N.B., use intrinsic indexing
-        // &(*slice)[self]
-        unsafe { &*self.get_unchecked(slice) }
+        &(*slice)[self]
     }
 }
 
@@ -149,5 +148,5 @@ fn main() -> i32 {
     let b = &a[1..3];
     let c = b[1];
 
-    0
+    c - 3
 }
