@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -moverride=sve_width=2048" } */
+/* { dg-options "-O2 -ftree-vectorize -moverride=sve_width=2048 -fno-signed-zeros" } */
 
 #include <stdint.h>
 

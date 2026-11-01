@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -moverride=sve_width=2048 -fno-trapping-math" } */
+/* { dg-options "-O2 -ftree-vectorize -moverride=sve_width=2048 -fno-trapping-math -fno-signed-zeros" } */
 
 #include "unpacked_fnmls_1.c"
 

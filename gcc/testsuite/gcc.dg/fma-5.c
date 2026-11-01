@@ -1,4 +1,4 @@
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-optimized -fno-signed-zeros" } */
 
 float
 f1 (float a, float b, float c)

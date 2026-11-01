@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -ftree-vectorize -fno-trapping-math" } */
+/* { dg-options "-O2 -ftree-vectorize -fno-trapping-math -fno-signed-zeros" } */
 
 #define N 119
 
