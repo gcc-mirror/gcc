@@ -24,6 +24,10 @@
 
 # Keep this sorted alphabetically by effective-target name.  */
 
+checking
+CHECKING_P
+the compiler was built with checking enabled
+
 code_6_gottpoff_reloc
 HAVE_AS_R_X86_64_CODE_6_GOTTPOFF
 assembler and linker support R_X86_64_CODE_6_GOTTPOFF
