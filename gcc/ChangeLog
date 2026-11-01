@@ -1,3 +1,53 @@
+2026-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/darwin.cc (output_objc_section_asm_op): Rename as
+	a file-scope var.
+	(machopic_finish): Reset values/pointers for JIT.
+	(finalize_ctors): Likewise.
+	(finalize_dtors): Likewise.
+	(darwin_file_start): Likewise.
+	(darwin_file_end): Likewise.
+
+2026-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128322
+	* tree-ssa-sccvn.cc (vn_walk_cb_data::push_partial_def):
+	Properly consider head padding when pruning the tail for
+	a non-constant def.
+
+2026-10-31  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR tree-optimization/115869
+	PR tree-optimization/105771
+	PR tree-optimization/120254
+	PR tree-optimization/109184
+	* tree-data-ref.cc (dist_vectors_agree_p): New function.
+	(mark_evolving_loops): Likewise.
+	(enum free_loop_distances): New.
+	(check_free_loop_distances): New function.
+	(add_free_loop_distances): Likewise.
+	(subscript_dependence_tester): Complete the distance vectors of
+	free loops, or give up.
+
+2026-10-31  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR tree-optimization/115869
+	* tree-data-ref.cc (add_multivariate_self_dist): Set
+	DDR_ARE_DEPENDENT to chrec_dont_know and release the distance
+	vectors when the dependence cannot be represented.
+	(add_other_self_distances): Likewise.  Release the distance
+	vectors when giving up on several subscripts.
+
+2026-10-31  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* tree-pretty-print.cc (dump_generic_node): Handle NULLPTR_TYPE.
+
+2026-10-31  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_secondary_reload):
+	Change to use reg_class_subset_p() for evaluating the provided
+	register class.
+
 2026-10-30  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/128251

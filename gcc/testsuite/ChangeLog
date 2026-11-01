@@ -1,3 +1,45 @@
+2026-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/test-bfloat16.c: Check Mach-O asm syntax.
+	* jit.dg/test-readonly.c: Likewise.
+
+2026-10-31  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* jit.dg/jit.exp: Do not try to run GDB tests on Darwin.
+
+2026-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128322
+	* gcc.dg/torture/pr128322.c: New testcase.
+
+2026-10-31  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR tree-optimization/115869
+	PR tree-optimization/105771
+	PR tree-optimization/120254
+	PR tree-optimization/109184
+	* gcc.dg/torture/pr105771.c: New test.
+	* gcc.dg/torture/pr109184.c: New test.
+	* gcc.dg/torture/pr115869.c: New test.
+	* gcc.dg/torture/pr115869-2.c: New test.
+	* gcc.dg/torture/pr115869-3.c: New test.
+	* gcc.dg/torture/pr115869-5.c: New test.
+	* gcc.dg/torture/pr120254.c: New test.
+
+2026-10-31  Rohith Kapelli  <kapellirohith@gmail.com>
+
+	PR tree-optimization/115869
+	* gcc.dg/torture/pr115869-4.c: New test.
+
+2026-10-31  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/lto/nullptr-1_0.c: New test.
+	* gcc.dg/lto/nullptr-1_1.c: New test.
+	* g++.dg/lto/nullptr-1_0.C: New test.
+	* g++.dg/lto/nullptr-1_1.C: New test.
+	* g++.dg/lto/nullptr-2_0.C: New test.
+	* g++.dg/lto/nullptr-2_1.C: New test.
+
 2026-10-30  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/127063
