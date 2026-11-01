@@ -853,22 +853,29 @@ riscv_block_move_straight (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
       if (step <= length)
 	{
 	  int i;
+	  /* Keep the trailing chunk in the group when it is a whole word:
+	     unlike a ragged tail, move_by_pieces cannot handle it any
+	     better (no overlapping access is possible for an aligned
+	     word), and keeping all loads ahead of all stores lets RTL DSE
+	     eliminate copies of words that later stores overwrite.  */
+	  bool group_last = bits == BITS_PER_WORD && length % delta == 0;
+	  unsigned HOST_WIDE_INT limit
+	    = group_last ? length - delta : length - 2 * delta;
+
 	  /* Allocate a buffer for the temporary registers.  */
-	  regs = XALLOCAVEC (rtx, length / delta - 1);
+	  regs = XALLOCAVEC (rtx, limit / delta + 1);
 
 	  /* Load as many BITS-sized chunks as possible.  Use a normal load
 	     if the source has enough alignment, otherwise use left/right
 	     pairs.  */
-	  for (offset = 0, i = 0; offset + step <= length;
-	       offset += delta, i++)
+	  for (offset = 0, i = 0; offset <= limit; offset += delta, i++)
 	    {
 	      regs[i] = gen_reg_rtx (mode);
 	      riscv_emit_move (regs[i], adjust_address (src, mode, offset));
 	    }
 
 	  /* Copy the chunks to the destination.  */
-	  for (offset = 0, i = 0; offset + step <= length;
-	       offset += delta, i++)
+	  for (offset = 0, i = 0; offset <= limit; offset += delta, i++)
 	    riscv_emit_move (adjust_address (dest, mode, offset), regs[i]);
 	}
 
