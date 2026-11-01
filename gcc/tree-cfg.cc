@@ -1874,7 +1874,7 @@ gimple_can_merge_blocks_p (basic_block a, basic_block b)
 
   /* If A ends by a statement causing exceptions or something similar, we
      cannot merge the blocks.  */
-  stmt = *gsi_last_bb (a);
+  stmt = *gsi_last_nondebug_bb (a);
   if (stmt && stmt_ends_bb_p (stmt))
     return false;
 
