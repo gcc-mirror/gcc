@@ -1,3 +1,12 @@
+2026-10-31  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127881
+	* gfortran.dg/bind_c_char_value.f90: New test.
+	* gfortran.dg/bind_c_char_value_aux.c: New test.
+
 2026-10-29  Haochen Jiang  <haochen.jiang@intel.com>
 
 	PR target/127459
