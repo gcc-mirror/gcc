@@ -16984,6 +16984,38 @@ riscv_can_tag_addresses ()
   return TARGET_64BIT && target_has_pointer_masking_p;
 }
 
+/* Implement TARGET_UNSPEC_MAY_TRAP_P.  */
+
+static int
+riscv_unspec_may_trap_p (const_rtx x, unsigned flags)
+{
+  /* The default implementation catches things with an FP mode on the UNSPEC.
+     Thus we don't need to list all those.  We can focus on cases where the
+     UNSPEC has no mode or an integer/vector mode.  */
+  switch (XINT (x, 1))
+    {
+    case UNSPEC_LRINT:
+    case UNSPEC_ROUND:
+    case UNSPEC_FLOOR:
+    case UNSPEC_CEIL:
+    case UNSPEC_BTRUNC:
+    case UNSPEC_ROUNDEVEN:
+    case UNSPEC_NEARBYINT:
+    case UNSPEC_FLT_QUIET:
+    case UNSPEC_FLE_QUIET:
+    case UNSPEC_VFCVT:
+    case UNSPEC_UNSIGNED_VFCVT:
+      /* If FLAG_TRAPPING_MATH is active, then these potentially trap, otherwise
+	 fall into the default case.  */
+      if (flag_trapping_math)
+	return 1;
+    default:
+      break;
+    }
+
+  return default_unspec_may_trap_p (x, flags);
+}
+
 
 /* libsanitizer expects 8 tag bits.  */
 
@@ -17436,6 +17468,9 @@ riscv_memtag_tag_bitsize ()
 
 #undef TARGET_MEMTAG_TAG_BITSIZE
 #define TARGET_MEMTAG_TAG_BITSIZE riscv_memtag_tag_bitsize
+
+#undef TARGET_UNSPEC_MAY_TRAP_P
+#define TARGET_UNSPEC_MAY_TRAP_P riscv_unspec_may_trap_p
 
 #undef TARGET_DOCUMENTATION_NAME
 #define TARGET_DOCUMENTATION_NAME "RISC-V"
