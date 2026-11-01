@@ -1394,8 +1394,8 @@ proc gdb-exists { args } {
 # Argument 0 is the regexp to match.
 # Argument 1 handles expected failures and the like
 proc scan-symbol-common { scan_directive args } {
-    global nm
-    global base_dir
+    global GCC_UNDER_TEST
+    global GCC_NM_UNDER_TEST
 
     # Access variable from gcc-dg-test-1 or lto-execute.
     upvar 3 output_file output_file
@@ -1409,15 +1409,20 @@ proc scan-symbol-common { scan_directive args } {
 	}
     }
 
-    # Find nm like we find g++ in g++.exp.
-    if ![info exists nm]  {
-	set nm [findfile $base_dir/../../../binutils/nm \
-		$base_dir/../../../binutils/nm \
-	        [findfile $base_dir/../../nm $base_dir/../../nm \
-		      [findfile $base_dir/nm $base_dir/nm \
-		       [transform nm]]]]
-	verbose -log "nm is $nm"
+    # For now find gcc-nm in the same directory as $GCC_UNDER_TEST, unless
+    # GCC_NM_UNDER_TEST is defined.
+
+    if ![info exists GCC_NM_UNDER_TEST] {
+	if { ![is_remote host] && [string match "*/*" [lindex $GCC_UNDER_TEST 0]] } {
+	    set nm_cmd [file dirname [lindex $GCC_UNDER_TEST 0]]/[gcc-transform-out-of-tree gcc-nm]
+	} else {
+	    set nm_cmd [gcc-transform-out-of-tree gcc-nm]
+	}
+	set nm_cmd "$nm_cmd [lrange $GCC_UNDER_TEST 1 end]"
+    } else {
+	set nm_cmd $GCC_NM_UNDER_TEST
     }
+    verbose -log "nm is $nm_cmd"
 
     set output_file "[glob -nocomplain $output_file]"
     if { $output_file == "" } {
@@ -1425,7 +1430,7 @@ proc scan-symbol-common { scan_directive args } {
 	return
     }
 
-    set fd [open "| $nm $output_file" r]
+    set fd [open "| $nm_cmd $output_file" r]
     set text [read $fd]
     close $fd
 
