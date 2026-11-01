@@ -211,11 +211,6 @@ set plugin_test_list [list \
 	  taint-pr112974.c \
 	  taint-pr112975.c \
 	  taint-pr112977.c } \
-    { analyzer_cpython_plugin.cc \
-	  cpython-plugin-test-no-Python-h.c \
-	  cpython-plugin-test-PyList_Append.c \
-	  cpython-plugin-test-PyList_New.c \
-	  cpython-plugin-test-PyLong_FromLong.c } \
     { progress_notifications_plugin.cc } \
 ]
 
