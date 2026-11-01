@@ -1,3 +1,12 @@
+2026-10-31  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2026-10-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/127881
+	* trans-expr.cc (conv_scalar_char_value): Fix passing of the case of
+	non-constant strings: always pass first first character by value.
+
 2026-10-15  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
