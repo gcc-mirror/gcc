@@ -16763,7 +16763,7 @@ synthesize_add (rtx operands[3])
 	  shcount = 3;
 	}
 
-      if (shcount != 0)
+      if (shcount != 0 && can_create_pseudo_p ())
 	{
 	  rtx x = force_reg (word_mode, GEN_INT (sext_hwi (ival >> shcount, 32)));
 	  x = gen_rtx_ASHIFT (word_mode, x, GEN_INT (shcount));
@@ -16787,7 +16787,8 @@ synthesize_add (rtx operands[3])
 	   || ((ival % 4) == 0 && budget1
 	       > riscv_integer_cost (ival >> 2, true))
 	   || ((ival % 8) == 0 && budget1
-	       > riscv_integer_cost (ival >> 3, true))))
+	       > riscv_integer_cost (ival >> 3, true)))
+      && can_create_pseudo_p ())
     {
       // Load the shifted constant into a temporary
       int shct = ctz_hwi (ival);
@@ -16813,7 +16814,8 @@ synthesize_add (rtx operands[3])
      then synthesize C' and use add.uw.  */
   if ((TARGET_64BIT && TARGET_ZBA)
       && (ival & HOST_WIDE_INT_UC (0xffffffff00000000)) == 0
-      && riscv_integer_cost (sext_hwi (ival, 32), true) < budget1)
+      && riscv_integer_cost (sext_hwi (ival, 32), true) < budget1
+      && can_create_pseudo_p ())
     {
       /* Load the sign extended constant into a temporary.  */
       rtx tempreg = force_reg (word_mode, GEN_INT (sext_hwi (ival, 32)));
@@ -16828,7 +16830,7 @@ synthesize_add (rtx operands[3])
 
   /* If the negated constant is cheaper than the original, then negate
      the constant and use sub.  */
-  if (budget2 < budget1)
+  if (budget2 < budget1 && can_create_pseudo_p ())
     {
       // load -INTVAL (operands[2]) into a temporary
       rtx tmp = force_reg (word_mode, GEN_INT (-INTVAL (operands[2])));
@@ -16841,10 +16843,14 @@ synthesize_add (rtx operands[3])
 
   /* No add synthesis was found.  Synthesize the constant into
      a temporary and use that.  */
-  rtx x = force_reg (word_mode, operands[2]);
-  x = gen_rtx_PLUS (word_mode, operands[1], x);
-  emit_insn (gen_rtx_SET (operands[0], x));
-  return true;
+  if (can_create_pseudo_p ())
+    {
+      rtx x = force_reg (word_mode, operands[2]);
+      x = gen_rtx_PLUS (word_mode, operands[1], x);
+      emit_insn (gen_rtx_SET (operands[0], x));
+      return true;
+    }
+  return false;
 }
 
 /*  Synthesize OPERANDS[0] = OPERANDS[1] + OPERANDS[2].
