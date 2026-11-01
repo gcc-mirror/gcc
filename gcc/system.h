@@ -203,7 +203,7 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
    poisoning the ctype macros through safe-ctype.h */
 
 #ifdef __cplusplus
-#if defined (INCLUDE_ALGORITHM) || !defined (HAVE_SWAP_IN_UTILITY)
+#ifdef INCLUDE_ALGORITHM
 # include <algorithm>
 #endif
 #ifdef INCLUDE_DEQUE

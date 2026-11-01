@@ -1964,12 +1964,6 @@
 #endif
 
 
-/* Define if <utility> defines std::swap. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_SWAP_IN_UTILITY
-#endif
-
-
 /* Define to 1 if you have the `sysconf' function. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SYSCONF
