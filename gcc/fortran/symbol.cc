@@ -5716,16 +5716,24 @@ gfc_dummy_requires_direct_arg (gfc_symbol *sym)
 {
   return sym->attr.dummy
 	 && sym->attr.target
-	 && sym->attr.dimension
 	 && !sym->attr.value
 	 && !sym->attr.contiguous
-	 && !sym->attr.pointer
-	 && !sym->attr.allocatable
-	 && sym->ts.type != BT_CLASS
+	 && !IS_POINTER (sym)
 	 && sym->ts.type != BT_ASSUMED
-	 && sym->as
-	 && (sym->as->type == AS_ASSUMED_SHAPE
-	     || sym->as->type == AS_ASSUMED_RANK);
+	 && ((sym->ts.type == BT_CLASS
+	      && sym->ts.u.derived->attr.is_class
+	      && CLASS_DATA (sym)->attr.dimension
+	      && !CLASS_DATA (sym)->attr.allocatable
+	      && CLASS_DATA (sym)->as
+	      && (CLASS_DATA (sym)->as->type == AS_ASSUMED_SHAPE
+		  || CLASS_DATA (sym)->as->type == AS_ASSUMED_RANK))
+	     || (!(sym->ts.type == BT_CLASS
+		   && sym->ts.u.derived->attr.is_class)
+		 && sym->attr.dimension
+		 && !sym->attr.allocatable
+		 && sym->as
+		 && (sym->as->type == AS_ASSUMED_SHAPE
+		     || sym->as->type == AS_ASSUMED_RANK)));
 }
 
 
