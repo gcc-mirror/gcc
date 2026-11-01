@@ -14063,6 +14063,38 @@ bool need_shadow_stack_push_pop_p ()
   return is_zicfiss_p () && riscv_save_return_addr_reg_p ();
 }
 
+/* Implement TARGET_UNSPEC_MAY_TRAP_P.  */
+
+static int
+riscv_unspec_may_trap_p (const_rtx x, unsigned flags)
+{
+  /* The default implementation catches things with an FP mode on the UNSPEC.
+     Thus we don't need to list all those.  We can focus on cases where the
+     UNSPEC has no mode or an integer/vector mode.  */
+  switch (XINT (x, 1))
+    {
+    case UNSPEC_LRINT:
+    case UNSPEC_ROUND:
+    case UNSPEC_FLOOR:
+    case UNSPEC_CEIL:
+    case UNSPEC_BTRUNC:
+    case UNSPEC_ROUNDEVEN:
+    case UNSPEC_NEARBYINT:
+    case UNSPEC_FLT_QUIET:
+    case UNSPEC_FLE_QUIET:
+    case UNSPEC_VFCVT:
+    case UNSPEC_UNSIGNED_VFCVT:
+      /* If FLAG_TRAPPING_MATH is active, then these potentially trap, otherwise
+	 fall into the default case.  */
+      if (flag_trapping_math)
+	return 1;
+    default:
+      break;
+    }
+
+  return default_unspec_may_trap_p (x, flags);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -14454,6 +14486,9 @@ bool need_shadow_stack_push_pop_p ()
 #undef TARGET_GET_FUNCTION_VERSIONS_DISPATCHER
 #define TARGET_GET_FUNCTION_VERSIONS_DISPATCHER \
   riscv_get_function_versions_dispatcher
+
+#undef TARGET_UNSPEC_MAY_TRAP_P
+#define TARGET_UNSPEC_MAY_TRAP_P riscv_unspec_may_trap_p
 
 #undef TARGET_DOCUMENTATION_NAME
 #define TARGET_DOCUMENTATION_NAME "RISC-V"
