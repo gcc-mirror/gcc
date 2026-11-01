@@ -797,6 +797,9 @@ internal_proto(unit_rwlock);
 extern int close_unit (gfc_unit *);
 internal_proto(close_unit);
 
+extern void recycle_unit (gfc_unit *);
+internal_proto(recycle_unit);
+
 extern gfc_unit *set_internal_unit (st_parameter_dt *, gfc_unit *, int);
 internal_proto(set_internal_unit);
 
