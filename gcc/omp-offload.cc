@@ -3403,6 +3403,12 @@ execute_omp_device_lower ()
 	    rhs = (targetm.have_omp_simt_threads_uniform ()
 		   ? NULL_TREE : build_one_cst (type));
 	    break;
+	  case IFN_GOMP_SIMT_THREADS_LANE:
+	    rhs = (targetm.have_omp_simt_threads_uniform ()
+		   ? NULL_TREE : build_zero_cst (type));
+	    if (rhs || !lhs)
+	      unlink_stmt_vdef (stmt);
+	    break;
 	  case IFN_GOMP_SIMD_LANE:
 	  case IFN_GOMP_SIMD_LAST_LANE:
 	    rhs = vf != 1 ? build_zero_cst (type) : NULL_TREE;

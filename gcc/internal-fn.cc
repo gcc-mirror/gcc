@@ -698,6 +698,21 @@ expand_GOMP_SIMT_THREADS_FIRST (internal_fn, gcall *stmt)
   assign_call_lhs (lhs, target, &ops[0]);
 }
 
+/* The OpenMP threads are SIMT lanes: return the lane number.  The call is
+   also a memory barrier in GIMPLE.  */
+
+static void
+expand_GOMP_SIMT_THREADS_LANE (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  if (!lhs)
+    return;
+
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  gcc_assert (targetm.have_omp_simt_lane ());
+  emit_insn (targetm.gen_omp_simt_lane (target));
+}
+
 /* Exchange between SIMT lanes according to given source lane index.  */
 
 static void

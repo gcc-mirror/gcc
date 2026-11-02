@@ -8475,6 +8475,16 @@ lower_oacc_reductions (location_t loc, tree clauses, tree level, bool inner,
   gimple_seq_add_seq (join_seq, after_join);
 }
 
+/* Return true if the OpenMP threads that run CTX may be the lanes of a
+   wavefront, as in "simt" offload mode.  */
+
+static bool
+omp_simt_threads_p (omp_context *ctx)
+{
+  return (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT
+	  && omp_maybe_offloaded_ctx (ctx));
+}
+
 /* Return true if a reduction with operator CODE of a variable of TYPE in
    CTX should first be combined across the wavefront, for "simt" offload
    mode, where the OpenMP threads are the lanes of a wavefront.  These are
@@ -8486,8 +8496,7 @@ static bool
 omp_simt_threads_reduction_p (enum tree_code code, tree type,
 			      omp_context *ctx)
 {
-  if (param_offload_gpu_mode != OFFLOAD_GPU_MODE_SIMT
-      || !omp_maybe_offloaded_ctx (ctx))
+  if (!omp_simt_threads_p (ctx))
     return false;
 
   if (code == TRUTH_ANDIF_EXPR || code == TRUTH_ORIF_EXPR)
@@ -8869,12 +8878,55 @@ lower_reduction_clauses (tree clauses, gimple_seq *stmt_seqp,
 			 0);
   gimple_seq_add_stmt (stmt_seqp, stmt);
 
+  /* The OpenMP threads may be the lanes of a wavefront, which hold the lock
+     together.  Merge one lane at a time: lane L merges in iteration L.
+     IFN_GOMP_SIMT_THREADS_LANE is called again in every iteration: it is a
+     memory barrier, which keeps the merges inside the loop, and because the
+     compiler cannot tell that it returns the same value, it cannot see that
+     the lane that merged leaves the loop next, and thread the merge to the
+     loop exit, where every lane would run it at once.  */
+  tree lane = NULL_TREE, l = NULL_TREE;
+  tree lane_body = NULL_TREE, lane_next = NULL_TREE, lane_end = NULL_TREE;
+  if (omp_simt_threads_p (ctx))
+    {
+      lane = create_tmp_var (integer_type_node);
+      l = create_tmp_var (integer_type_node);
+      lane_body = create_artificial_label (UNKNOWN_LOCATION);
+      lane_next = create_artificial_label (UNKNOWN_LOCATION);
+      lane_end = create_artificial_label (UNKNOWN_LOCATION);
+      tree lane_merge = create_artificial_label (UNKNOWN_LOCATION);
+      gimplify_assign (l, integer_zero_node, stmt_seqp);
+      gcall *g = gimple_build_call_internal (IFN_GOMP_SIMT_THREADS_LANE, 0);
+      gimple_call_set_lhs (g, lane);
+      gimple_seq_add_stmt (stmt_seqp, g);
+      gimple_seq_add_stmt (stmt_seqp, gimple_build_label (lane_body));
+      gimple_seq_add_stmt (stmt_seqp,
+			   gimple_build_cond (EQ_EXPR, lane, l, lane_merge,
+					      lane_next));
+      gimple_seq_add_stmt (stmt_seqp, gimple_build_label (lane_merge));
+    }
+
   gimple_seq_add_seq (stmt_seqp, sub_seq);
 
   if (clist)
     {
       gimple_seq_add_seq (stmt_seqp, *clist);
       *clist = NULL;
+    }
+
+  if (lane_end)
+    {
+      gimple_seq_add_stmt (stmt_seqp, gimple_build_label (lane_next));
+      gimple_seq_add_stmt (stmt_seqp,
+			   gimple_build_assign (l, PLUS_EXPR, l,
+						integer_one_node));
+      gcall *g = gimple_build_call_internal (IFN_GOMP_SIMT_THREADS_LANE, 0);
+      gimple_call_set_lhs (g, lane);
+      gimple_seq_add_stmt (stmt_seqp, g);
+      gimple_seq_add_stmt (stmt_seqp,
+			   gimple_build_cond (LE_EXPR, l, lane, lane_body,
+					      lane_end));
+      gimple_seq_add_stmt (stmt_seqp, gimple_build_label (lane_end));
     }
 
   stmt = gimple_build_call (builtin_decl_explicit (BUILT_IN_GOMP_REDUCTION_END),
