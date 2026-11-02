@@ -6,7 +6,7 @@
 
 extern unsigned int leaf;
 
-#define PCONFIG_KEY_PROGRAM 0x01
+#define PCONFIG_KEY_PROGRAM 0x00
 
 int test ()
 {
