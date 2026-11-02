@@ -1,3 +1,234 @@
+2026-11-02  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmaccbf16_vf-bf16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmaccbf16_vf-bf16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmaccbf16_vf-bf16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmaccbf16_vv-bf16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmaccbf16_vv-bf16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmaccbf16_vv-bf16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmacc_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwmsac_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmacc_vv-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vf-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vf-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vf-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vf-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vf-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vf-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vv-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vv-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vv-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vv-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vv-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwnmsac_vv-f32-m4.c: New test.
+
+2026-11-02  Pan Li  <pan2.li@intel.com>
+
+	PR target/128162
+	* gcc.target/riscv/rvv/autovec/group_overlap/group_overlap.h:
+	Add test helper macros.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotsu_vv-u16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dots_vv-i16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/nds_vd4dotu_vv-u16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_2x8x2-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_2x8x2-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_2x8x2-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_2x8x2-u8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_4x8x4-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_4x8x4-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccsu_4x8x4-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_2x8x2-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_2x8x2-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_2x8x2-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_2x8x2-i8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_4x8x4-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_4x8x4-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccus_4x8x4-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_2x8x2-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_2x8x2-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_2x8x2-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_2x8x2-u8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_4x8x4-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_4x8x4-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmaccu_4x8x4-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_2x8x2-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_2x8x2-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_2x8x2-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_2x8x2-i8-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_4x8x4-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_4x8x4-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/sf_vqmacc_4x8x4-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccsu_vx-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccus_vx-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vv-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmaccu_vx_undef-u32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vv-i32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i8-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vwmacc_vx-i32-m4.c: New test.
+
+2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128139
+	* gcc.target/riscv/pr128139.c: New test.
+
+2026-11-01  e0001533  <panciyan@eswincomputing.com>
+
+	* gcc.target/riscv/cpymem-dse-1.c: New test.
+
+2026-11-01  Merlin Warner-Huish  <merlin.warner-huish@embecosm.com>
+
+	PR middle-end/124820
+	* gcc.dg/fma-5.c: Add -fno-signed-zeros.
+	* gcc.dg/fma-6.c: Likewise.
+	* gcc.dg/fma-7.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmla_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_cond_fnmls_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmla_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmla_2.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmls_1.c: Likewise.
+	* gcc.target/aarch64/sve/unpacked_fnmls_2.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_13.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_14.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_15.c: Likewise.
+	* gcc.target/aarch64/sve/vcond_16.c: Likewise.
+
+2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127908
+	* gcc.target/riscv/pr127908.c: New test.
+
+2026-11-01  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR gcov-profile/128346
+	* gcc.misc-tests/gcov-45.c: New test.
+
+2026-11-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127827
+	* gfortran.dg/target_dummy_span_4.f90: New test.
+
 2026-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* jit.dg/test-bfloat16.c: Check Mach-O asm syntax.

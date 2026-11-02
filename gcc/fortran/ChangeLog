@@ -1,3 +1,11 @@
+2026-11-01  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/127827
+	* symbol.cc (gfc_dummy_requires_direct_arg): Allow CLASS type.
+	* trans-array.cc (get_main_decl): New function.
+	(gfc_get_array_span): If the array decl is not passed as input
+	directly, get it first before querying the span on it.
+
 2026-10-30  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/114024

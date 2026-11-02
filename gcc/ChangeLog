@@ -1,3 +1,34 @@
+2026-11-01  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	PR bootstrap/112422
+	* configure.ac (HAVE_SWAP_IN_UTILITY): Remove.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* system.h: Remove HAVE_SWAP_IN_UTILITY.
+
+2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128139
+	* config/riscv/riscv.cc (synthesize_add): Do not create pseudos
+	when !can_create_pseudos_p.
+
+2026-11-01  e0001533  <panciyan@eswincomputing.com>
+
+	* config/riscv/riscv-string.cc (riscv_block_move_straight): Adjust
+	generated code to encourage better DSE later.
+
+2026-11-01  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/127908
+	* config/riscv/riscv.cc (riscv_unspec_may_trap_p): New function.
+	(TARGET_UNSPEC_MAY_TRAP_P): Define.
+
+2026-11-01  Yongqiang Tian  <yqtian668@gmail.com>
+
+	PR gcov-profile/128346
+	* tree-cfg.cc (gimple_can_merge_blocks_p): Ignore debug statements
+	when examining the end of a block.
+
 2026-10-31  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/darwin.cc (output_objc_section_asm_op): Rename as
