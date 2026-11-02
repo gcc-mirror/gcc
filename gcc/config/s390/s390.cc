@@ -18167,9 +18167,11 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 	{ 7,  6,  5,  4,  3,  2,  1, 0, 15, 14, 13, 12, 11, 10, 9,  8  },
 	{ 15, 14, 13, 12, 11, 10, 9, 8, 7,  6,  5,  4,  3,  2,  1,  0  } };
 
-  if (!TARGET_VXE2 || d.vmode != V16QImode || d.op0 != d.op1)
+  if (d.vmode != V16QImode || d.op0 != d.op1)
     return false;
 
+  /* For halfwords a byte-swap is a rotate by 8 bits (verllh), which does not
+     require VXE2.  */
   if (memcmp (d.perm, perm[0], MAX_VECT_LEN) == 0)
     {
       if (!d.testing_p)
@@ -18180,6 +18182,9 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
 	}
       return true;
     }
+
+  if (!TARGET_VXE2)
+    return false;
 
   if (memcmp (d.perm, perm[1], MAX_VECT_LEN) == 0)
     {
