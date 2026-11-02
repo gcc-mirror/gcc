@@ -59,6 +59,9 @@ GOMP_teams4 (unsigned int num_teams_lower, unsigned int num_teams_upper,
       struct gomp_task_icv *icv = gomp_icv (true);
       icv->thread_limit_var
 	= thread_limit > INT_MAX ? UINT_MAX : thread_limit;
+      /* There are no more threads than the launch provides.  */
+      if (icv->thread_limit_var > gomp_global_icv.thread_limit_var)
+	icv->thread_limit_var = gomp_global_icv.thread_limit_var;
     }
   if (!num_teams_upper)
     num_teams_upper = ((GOMP_ADDITIONAL_ICVS.nteams > 0

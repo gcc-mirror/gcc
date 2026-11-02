@@ -103,6 +103,13 @@ gomp_gcn_enter_kernel (
       gomp_global_icv.nthreads_var = (simt_mode ? 1024 : 16);
       gomp_global_icv.thread_limit_var = (numwavefronts
 					  * (simt_mode ? 64 : 1));
+      /* The plugin launches whole wavefronts, and passes the number of
+	 OpenMP threads that was asked for.  */
+      int omp_thread_limit = ((struct kernargs_abi *)
+			      __builtin_gcn_kernarg_ptr ())->omp_thread_limit;
+      if (simt_mode && omp_thread_limit > 0
+	  && omp_thread_limit < gomp_global_icv.thread_limit_var)
+	gomp_global_icv.thread_limit_var = omp_thread_limit;
 #else
       gomp_global_icv.nthreads_var = 16;
       gomp_global_icv.thread_limit_var = numwavefronts;

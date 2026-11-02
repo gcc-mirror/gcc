@@ -72,6 +72,11 @@ struct kernargs_abi {
   int64_t stack_ptr;		/* Offset 40.  */
   int arena_size_per_team;	/* Offset 48.  */
   int stack_size_per_thread;	/* Offset 52.  */
+
+  /* For OpenMP kernels in "simt" mode, the number of OpenMP threads (lanes)
+     the launch is for, which may end part way through the last wavefront;
+     zero otherwise.  */
+  int omp_thread_limit;		/* Offset 56.  */
 };
 
 /* This struct is also used in Newlib's libc/sys/amdgcn/write.c.  */

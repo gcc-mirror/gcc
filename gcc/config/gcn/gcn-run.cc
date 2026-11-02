@@ -715,6 +715,7 @@ main (int argc, char *argv[])
   kernargs->abi.arena_ptr = 0;
   kernargs->abi.stack_ptr = (int64_t) stack;
   kernargs->abi.stack_size_per_thread = stack_size;
+  kernargs->abi.omp_thread_limit = 0;
 
   /* Run constructors on the GPU.  */
   run (init_array_kernel, kernargs);

@@ -148,6 +148,7 @@ main(int argc, char** argv)
   args.stack_ptr = (int64_t)omp_target_alloc (STACKSIZE, device_num);
   args.arena_size_per_team = ARENASIZE;
   args.stack_size_per_thread = STACKSIZE;
+  args.omp_thread_limit = 0;
 
   /* Build the HSA dispatch packet, and insert it into the queue.  */
   uint64_t packet_id = hsa_queue_load_write_index_relaxed (hsa_queue);

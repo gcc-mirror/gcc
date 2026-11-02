@@ -1304,6 +1304,18 @@ limit_worker_threads (int threads)
   return threads;
 }
 
+/* True if KERNEL is an OpenMP kernel compiled in "simt" mode, where each
+   lane of a wavefront is an OpenMP thread.  Its thread counts (the
+   thread_limit argument, GCN_NUM_THREADS, and gdims[2] of its launch
+   attributes until run_kernel converts them) count lanes, not wavefronts.  */
+
+static bool
+omp_simt_kernel_p (struct kernel_info *kernel)
+{
+  return (kernel->kind == KIND_OPENMP
+	  && kernel->description->simt_mode == GCN_KERNEL_SIMT_MODE);
+}
+
 /* This sets the maximum number of teams to twice the number of GPU Compute
    Units to avoid memory waste and corresponding memory access faults.  */
 
@@ -1326,10 +1338,13 @@ static bool
 parse_target_attributes (void **input,
 			 struct GOMP_kernel_launch_attributes *def,
 			 struct GOMP_kernel_launch_attributes **result,
-			 struct agent_info *agent)
+			 struct agent_info *agent, struct kernel_info *kernel)
 {
   if (!input)
     GOMP_PLUGIN_fatal ("No target arguments provided");
+
+  /* Threads per wavefront, as the thread counts here count.  */
+  int lanes = omp_simt_kernel_p (kernel) ? 64 : 1;
 
   bool grid_attrs_found = false;
   bool gcn_dims_found = false;
@@ -1363,7 +1378,8 @@ parse_target_attributes (void **input,
 	      gcn_teams = limit_teams (val, agent);
 	      break;
 	    case GOMP_TARGET_ARG_THREAD_LIMIT:
-	      gcn_threads = limit_worker_threads (val);
+	      /* run_kernel limits a count of lanes.  */
+	      gcn_threads = lanes == 1 ? limit_worker_threads (val) : val;
 	      break;
 	    default:
 	      ;
@@ -1393,7 +1409,7 @@ parse_target_attributes (void **input,
       if (gcn_teams <= 0 && gcn_threads <= 0)
 	{
 	  /* Set up a reasonable number of teams and threads.  */
-	  gcn_threads = gfx900_workaround_p ? 4 : 16; // 8;
+	  gcn_threads = (gfx900_workaround_p ? 4 : 16) * lanes; // 8;
 	  def->gdims[0] = get_cu_count (agent); // * (40 / gcn_threads);
 	  def->gdims[2] = gcn_threads;
 	}
@@ -1405,11 +1421,11 @@ parse_target_attributes (void **input,
 	}
       else if (gcn_teams > 0 && gcn_threads <= 0)
 	{
-	  int max_threads = gfx900_workaround_p ? 4 : 16;
+	  int max_threads = (gfx900_workaround_p ? 4 : 16) * lanes;
 
 	  /* Auto-scale the number of threads with the number of teams.  */
 	  def->gdims[0] = gcn_teams;
-	  def->gdims[2] = 16; // get_cu_count (agent) * 40 / gcn_teams;
+	  def->gdims[2] = 16 * lanes; // get_cu_count (agent) * 40 / gcn_teams;
 	  if (def->gdims[2] == 0)
 	    def->gdims[2] = 1;
 	  else if (def->gdims[2] > max_threads)
@@ -2453,6 +2469,18 @@ run_kernel (struct gomp_offload_session *session,
   GCN_DEBUG ("SGPRs: %d, VGPRs: %d\n", kernel->description->sgpr_count,
 	     kernel->description->vpgr_count);
 
+  /* An OpenMP kernel in "simt" mode counts its threads in lanes.  Launch
+     enough wavefronts for them, and pass the exact count to libgomp.  */
+  int omp_thread_limit = 0;
+  if (kla->ndim == 3 && omp_simt_kernel_p (kernel))
+    {
+      int max_threads = limit_worker_threads (INT_MAX) * 64;
+      omp_thread_limit = override_z_dim ? : kla->gdims[2];
+      if (omp_thread_limit > max_threads)
+	omp_thread_limit = max_threads;
+      kla->gdims[2] = (omp_thread_limit + 63) / 64;
+    }
+
   /* Reduce the number of threads/workers if there are insufficient
      VGPRs available to run the kernels together.  */
   if (kla->ndim == 3 && kernel->description->vpgr_count > 0)
@@ -2466,6 +2494,8 @@ run_kernel (struct gomp_offload_session *session,
 		       " per team/gang - reducing to %d threads/workers.\n",
 		       kla->gdims[2], max_threads);
 	  kla->gdims[2] = max_threads;
+	  if (omp_thread_limit > max_threads * 64)
+	    omp_thread_limit = max_threads * 64;
 	}
     }
 
@@ -2519,7 +2549,8 @@ run_kernel (struct gomp_offload_session *session,
   /* Do not allow the dimensions to be overridden when running
      constructors or destructors.  */
   int override_x = kernel->kind == KIND_UNKNOWN ? 0 : override_x_dim;
-  int override_z = kernel->kind == KIND_UNKNOWN ? 0 : override_z_dim;
+  int override_z = (kernel->kind == KIND_UNKNOWN || omp_thread_limit
+		    ? 0 : override_z_dim);
 
   hsa_kernel_dispatch_packet_t *packet;
   packet = ((hsa_kernel_dispatch_packet_t *) command_q->base_address)
@@ -2573,6 +2604,7 @@ run_kernel (struct gomp_offload_session *session,
   prepare_kernel_dispatch (&shadow, kernel, packet->grid_size_x,
 			   packet->grid_size_z, kernargs);
   shadow.queue = command_q;
+  kernargs->abi.omp_thread_limit = omp_thread_limit;
 
   if (debug)
     {
@@ -5511,7 +5543,7 @@ GOMP_OFFLOAD_run (struct gomp_offload_session *session, void *fn_ptr, void **arg
   /* If we get here then the kernel must be OpenMP.  */
   kernel->kind = KIND_OPENMP;
 
-  if (!parse_target_attributes (args, &def, &kla, agent))
+  if (!parse_target_attributes (args, &def, &kla, agent, kernel))
     {
       GCN_WARNING ("Will not run GCN kernel because the grid size is zero\n");
       return;
@@ -5539,7 +5571,7 @@ GOMP_OFFLOAD_async_run (struct gomp_offload_session *session,
   /* If we get here then the kernel must be OpenMP.  */
   kernel->kind = KIND_OPENMP;
 
-  if (!parse_target_attributes (args, &def, &kla, agent))
+  if (!parse_target_attributes (args, &def, &kla, agent, kernel))
     {
       GCN_WARNING ("Will not run GCN kernel because the grid size is zero\n");
       return;
