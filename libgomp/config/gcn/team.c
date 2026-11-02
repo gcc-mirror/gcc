@@ -80,7 +80,7 @@ gomp_gcn_enter_kernel (void)
       struct kernargs_abi *kernargs =
 	(struct kernargs_abi*) __builtin_gcn_kernarg_ptr ();
       void *team_arena = ((void*)kernargs->arena_ptr
-			  + kernargs->arena_size_per_team * teamid);
+			  + (size_t) kernargs->arena_size_per_team * teamid);
       void * __lds *arena_start = (void * __lds *)TEAM_ARENA_START;
       void * __lds *arena_free = (void * __lds *)TEAM_ARENA_FREE;
       void * __lds *arena_end = (void * __lds *)TEAM_ARENA_END;

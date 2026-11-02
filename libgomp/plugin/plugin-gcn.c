@@ -1991,9 +1991,9 @@ configure_ephemeral_memories (struct kernel_info *kernel,
 
   int actual_arena_size = (kernel->kind == KIND_OPENMP
 			   ? team_arena_size : 0);
-  int actual_arena_total_size = actual_arena_size * num_teams;
+  size_t actual_arena_total_size = (size_t) actual_arena_size * num_teams;
   size_t size = (actual_arena_total_size
-		 + num_teams * num_threads * stack_size);
+		 + (size_t) num_teams * num_threads * stack_size);
 
   for (item = *next_ptr; item; next_ptr = &item->next, item = item->next)
     {
