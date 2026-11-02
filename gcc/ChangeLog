@@ -1,3 +1,40 @@
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128310
+	* config/i386/i386.md (UNSPEC_CRC32): Remove.
+	(UNSPEC_CRC32B, UNSPEC_CRC32W)
+	(UNSPEC_CRC32L, UNSPEC_CRC32Q): New.
+	(sse4_2_crc32qi): Rename from sse4_2_crc32<mode>.
+	Use UNSPEC_CRC32B.
+	(*sse4_2_crc32qi_zext): New insn.
+	(sse4_2_crc32hi): New insn.
+	(sse4_2_crc32si): Ditto.
+	(sse4_2_crc32di): Use UNSPEC_CRC32Q.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128270
+	* config/i386/i386.cc (ix86_add_cfa_restore_note): Do not skip
+	the note when stack_realign_drap.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128271
+	* config/i386/i386.md (rstorssp): Model
+	the memory operand as read and modified by the insn.
+	(clrssbsy): Ditto.  Clobber FLAGS_REG.
+	(@wrss<mode>, @wruss<mode>): Model
+	the memory operand as set by the insn.
+
 2026-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

@@ -1,3 +1,31 @@
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128310
+	* gcc.target/i386/pr128310.c: New test.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128270
+	* gcc.target/i386/pr128270-1.c: New test.
+	* gcc.target/i386/pr128270-2.c: Ditto.
+	* gcc.target/i386/pr128270-3.c: Ditto.
+	* gcc.target/i386/pr128270-4.c: Ditto.
+
+2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2026-10-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128271
+	* gcc.target/i386/pr128271-1.c: New test.
+	* gcc.target/i386/pr128271-2.c: Ditto.
+
 2026-10-29  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
