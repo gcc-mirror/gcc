@@ -148,8 +148,7 @@ AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
 # Configure libtool
-AC_LIBTOOL_DLOPEN
-LT_INIT
+LT_INIT([dlopen])
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
 AC_SUBST(enable_static)
