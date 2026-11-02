@@ -6974,10 +6974,6 @@ fi
 
 # Configure libtool
 #AC_MSG_NOTICE([====== Starting libtool configuration])
-enable_dlopen=yes
-
-
-
 case `pwd` in
   *\ * | *\	*)
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Libtool does not cope well with whitespace in \`pwd\`" >&5
@@ -9686,6 +9682,7 @@ done
 
 
 # Set options
+enable_dlopen=yes
 
 
 
@@ -13245,7 +13242,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13248 "configure"
+#line 13245 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13351,7 +13348,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13354 "configure"
+#line 13351 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

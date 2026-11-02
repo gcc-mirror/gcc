@@ -258,8 +258,7 @@ AC_PROG_INSTALL
 
 # Configure libtool
 #AC_MSG_NOTICE([====== Starting libtool configuration])
-AC_LIBTOOL_DLOPEN
-LT_INIT
+LT_INIT([dlopen])
 LT_LIB_M
 ACX_LT_HOST_FLAGS
 AC_SUBST(enable_shared)
