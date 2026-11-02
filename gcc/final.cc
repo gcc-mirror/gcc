@@ -3789,7 +3789,9 @@ output_addr_const (FILE *file, rtx x)
       fprintf (file, "-");
       if ((CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) >= 0)
 	  || GET_CODE (XEXP (x, 1)) == PC
-	  || GET_CODE (XEXP (x, 1)) == SYMBOL_REF)
+	  || GET_CODE (XEXP (x, 1)) == SYMBOL_REF
+	  || GET_CODE (XEXP (x, 1)) == LABEL_REF
+	  || GET_CODE (XEXP (x, 1)) == CODE_LABEL)
 	output_addr_const (file, XEXP (x, 1));
       else
 	{
