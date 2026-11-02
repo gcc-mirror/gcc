@@ -5421,7 +5421,13 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  subelt = VECTOR_TYPE_P (TREE_TYPE (elt->value))
 		   ? ssa_uniform_vector_p (elt->value)
 		   : elt->value;
-	  if (!subelt)
+	  if (!subelt
+	      /* The splat of the element of a uniform vector is a new use
+		 of that element.  Do not extend the live range of an SSA
+		 name that occurs in an abnormal PHI.  */
+	      || (VECTOR_TYPE_P (TREE_TYPE (elt->value))
+		  && TREE_CODE (subelt) == SSA_NAME
+		  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (subelt)))
 	    return false;
 	  if (!one_nonconstant)
 	    one_nonconstant = subelt;
