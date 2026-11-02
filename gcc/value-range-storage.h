@@ -131,6 +131,7 @@ public:
   void get_prange (prange &r, tree type) const;
   bool equal_p (const prange &r) const;
   bool fits_p (const prange &r) const;
+  bool undefined_p () const { return m_kind == PR_UNDEFINED; }
   irange_bitmask get_bitmask (tree type) const;
   bool nonnull_p (tree type) const;
   void set_nonnull (tree type);

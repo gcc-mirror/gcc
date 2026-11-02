@@ -652,10 +652,24 @@ get_known_nonzero_bits_1 (const_tree name)
   /* Use element_precision instead of TYPE_PRECISION so complex and
      vector types get a non-zero precision.  */
   unsigned int precision = element_precision (TREE_TYPE (name));
-  if (TREE_CODE (name) != SSA_NAME || POINTER_TYPE_P (TREE_TYPE (name)))
+  if (TREE_CODE (name) != SSA_NAME)
     return wi::shwi (0, precision);
 
-  if (!SSA_NAME_RANGE_INFO (name) || !irange::supports_p (TREE_TYPE (name)))
+  if (!SSA_NAME_RANGE_INFO (name))
+    return wi::shwi (0, precision);
+
+  // Known pointer bits, including alignment, are encoded in the bitmask
+  if (POINTER_TYPE_P (TREE_TYPE (name)))
+    {
+      prange_storage *s = ssa_name_prange_storage (name);
+      gcc_checking_assert (s);
+      if (s->undefined_p ())
+	return wi::shwi (0, precision);
+      irange_bitmask bm = s->get_bitmask (TREE_TYPE (name));
+      return wi::bit_and_not (bm.value (), bm.mask ());
+    }
+
+  if (!irange::supports_p (TREE_TYPE (name)))
     return wi::shwi (0, precision);
 
   int_range_max tmp;
