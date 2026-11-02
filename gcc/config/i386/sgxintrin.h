@@ -31,81 +31,82 @@
 #endif /* __SGX__ */
 
 #define __encls_bc(leaf, b, c, retval)	    	 	\
-  __asm__ __volatile__ ("encls\n\t"		     	\
+  __asm__ __volatile__ ("encls"		     	 	\
 	   : "=a" (retval)			     	\
 	   : "a" (leaf), "b" (b), "c" (c)		\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __encls_bcd(leaf, b, c, d, retval)	     	\
-  __asm__ __volatile__("encls\n\t"		     	\
+  __asm__ __volatile__("encls"		     	 	\
 	   : "=a" (retval)			     	\
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __encls_c(leaf, c, retval)		     	\
-  __asm__ __volatile__("encls\n\t"		     	\
+  __asm__ __volatile__("encls"		     	 	\
 	   : "=a" (retval)			     	\
 	   : "a" (leaf), "c" (c)			\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __encls_edbgrd(leaf, b, c, retval)	     	\
-  __asm__ __volatile__("encls\n\t"		     	\
+  __asm__ __volatile__("encls"		     	 	\
 	   : "=a" (retval), "=b" (b)		     	\
-	   : "a" (leaf), "c" (c))
+	   : "a" (leaf), "c" (c)			\
+	   : "cc", "memory")
 
 #define __encls_generic(leaf, b, c, d, retval)   	\
-  __asm__ __volatile__("encls\n\t"		     	\
+  __asm__ __volatile__("encls"		     	 	\
 	   : "=a" (retval), "=b" (b), "=c" (c), "=d" (d)\
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclu_bc(leaf, b, c, retval)			\
-  __asm__ __volatile__("enclu\n\t"			\
+  __asm__ __volatile__("enclu"			 	\
 	   : "=a" (retval)				\
 	   : "a" (leaf), "b" (b), "c" (c)		\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclu_bcd(leaf, b, c, d, retval)		\
-  __asm__ __volatile__("enclu\n\t"			\
+  __asm__ __volatile__("enclu"			 	\
 	   : "=a" (retval)				\
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclu_eenter(leaf, b, c, retval)		\
-  __asm__  __volatile__("enclu\n\t"			\
+  __asm__ __volatile__("enclu"			 	\
 	   : "=a" (retval), "=c" (c)			\
 	   : "a" (leaf), "b" (b), "c" (c)		\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclu_eexit(leaf, b, c, retval)		\
-  __asm__  __volatile__("enclu\n\t"			\
+  __asm__ __volatile__("enclu"			 	\
 	   : "=a" (retval), "=c" (c)			\
 	   : "a" (leaf), "b" (b)			\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclu_generic(leaf, b, c, d, retval)		\
-  __asm__ __volatile__("enclu\n\t"			\
+  __asm__ __volatile__("enclu"			 	\
 	   : "=a" (retval), "=b" (b), "=c" (c), "=d" (d)\
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclv_bc(leaf, b, c, retval)			\
-  __asm__ __volatile__("enclv\n\t"			\
+  __asm__ __volatile__("enclv"			 	\
 	   : "=a" (retval)				\
 	   : "a" (leaf), "b" (b), "c" (c)		\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclv_cd(leaf, c, d, retval)			\
-  __asm__ __volatile__("enclv\n\t"			\
+  __asm__ __volatile__("enclv"			 	\
 	   : "=a" (retval)				\
 	   : "a" (leaf), "c" (c), "d" (d)		\
-	   : "cc")
+	   : "cc", "memory")
 
 #define __enclv_generic(leaf, b, c, d, retval)		\
-  __asm__ __volatile__("enclv\n\t"			\
+  __asm__ __volatile__("enclv"			 	\
 	   : "=a" (retval), "=b" (b), "=c" (c), "=d" (d)\
 	   : "a" (leaf), "b" (b), "c" (c), "d" (d)	\
-	   : "cc")
+	   : "cc", "memory")
 
 extern __inline unsigned int
 __attribute__((__gnu_inline__, __always_inline__, __artificial__))
