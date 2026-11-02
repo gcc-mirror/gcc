@@ -1024,10 +1024,8 @@ set_decl_section_name (tree node, const char *value)
       if (!snode)
 	return;
     }
-  else if (VAR_P (node))
-    snode = varpool_node::get_create (node);
   else
-    snode = cgraph_node::get_create (node);
+    snode = symtab_node::get_create (node);
   snode->set_section (value);
 }
 
@@ -1042,11 +1040,7 @@ set_decl_section_name (tree decl, const_tree other)
   struct symtab_node *other_node = symtab_node::get (other);
   if (other_node)
     {
-      struct symtab_node *decl_node;
-      if (VAR_P (decl))
-    decl_node = varpool_node::get_create (decl);
-      else
-    decl_node = cgraph_node::get_create (decl);
+      struct symtab_node *decl_node = symtab_node::get_create (decl);
       decl_node->set_section (*other_node);
     }
   else
@@ -6077,10 +6071,8 @@ decl_init_priority_insert (tree decl, priority_type priority)
       if (!snode)
 	return;
     }
-  else if (VAR_P (decl))
-    snode = varpool_node::get_create (decl);
   else
-    snode = cgraph_node::get_create (decl);
+    snode = symtab_node::get_create (decl);
   snode->set_init_priority (priority);
 }
 

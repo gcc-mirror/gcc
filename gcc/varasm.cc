@@ -6687,10 +6687,7 @@ assemble_alias (tree decl, tree target)
   TREE_USED (decl) = 1;
 
   /* Allow aliases to aliases.  */
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    cgraph_node::get_create (decl)->alias = true;
-  else
-    varpool_node::get_create (decl)->alias = true;
+  symtab_node::get_create (decl)->alias = true;
 
   /* If the target has already been emitted, we don't have to queue the
      alias.  This saves a tad of memory.  */
@@ -6938,10 +6935,7 @@ make_decl_one_only (tree decl, tree comdat_group)
 
   TREE_PUBLIC (decl) = 1;
 
-  if (VAR_P (decl))
-    symbol = varpool_node::get_create (decl);
-  else
-    symbol = cgraph_node::get_create (decl);
+  symbol = symtab_node::get_create (decl);
 
   if (SUPPORTS_ONE_ONLY)
     {

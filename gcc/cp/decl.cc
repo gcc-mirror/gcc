@@ -3573,10 +3573,7 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	  if (DECL_ONE_ONLY (newdecl))
 	    {
 	      struct symtab_node *oldsym, *newsym;
-	      if (TREE_CODE (olddecl) == FUNCTION_DECL)
-		oldsym = cgraph_node::get_create (olddecl);
-	      else
-		oldsym = varpool_node::get_create (olddecl);
+	      oldsym = symtab_node::get_create (olddecl);
 	      newsym = symtab_node::get (newdecl);
 	      oldsym->set_comdat_group (newsym->get_comdat_group ());
 	    }

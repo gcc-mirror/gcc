@@ -727,10 +727,7 @@ symbol_table::process_same_body_aliases (void)
   symtab_node *node;
   FOR_EACH_SYMBOL (node)
     if (node->cpp_implicit_alias && !node->analyzed)
-      node->resolve_alias
-	(VAR_P (node->alias_target)
-	 ? (symtab_node *)varpool_node::get_create (node->alias_target)
-	 : (symtab_node *)cgraph_node::get_create (node->alias_target));
+      node->resolve_alias (symtab_node::get_create (node->alias_target));
   cpp_implicit_aliases_done = true;
 }
 
