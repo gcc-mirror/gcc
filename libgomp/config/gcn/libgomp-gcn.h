@@ -31,6 +31,9 @@
 #define LIBGOMP_GCN_H 1
 
 #define DEFAULT_GCN_STACK_SIZE (32*1024)
+/* Kernels compiled in "simt" mode keep a copy of each stack variable for
+   every lane of the wavefront, so they need a larger default stack.  */
+#define DEFAULT_GCN_SIMT_STACK_SIZE (96*1024)
 #define DEFAULT_TEAM_ARENA_SIZE (64*1024)
 
 /* These define the LDS location of data needed by OpenMP.  */

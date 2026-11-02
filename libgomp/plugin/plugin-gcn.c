@@ -413,6 +413,17 @@ struct hsa_kernel_description
   int oacc_dims[3];  /* Only present for GCN kernels.  */
   int sgpr_count;
   int vpgr_count;
+  int simt_mode;  /* See GCN_KERNEL_SIMT_MODE.  */
+};
+
+/* The values of simt_mode in struct hsa_kernel_description, which must match
+   mkoffload.  */
+
+enum
+{
+  GCN_KERNEL_SIMD_MODE,
+  GCN_KERNEL_SIMT_DIRECTED_MODE,
+  GCN_KERNEL_SIMT_MODE
 };
 
 /* Mkoffload uses this structure to describe an offload variable.  */
@@ -626,7 +637,26 @@ static size_t gcn_kernel_heap_size = DEFAULT_GCN_HEAP_SIZE;
 
 static int team_arena_size = DEFAULT_TEAM_ARENA_SIZE;
 static int stack_size = DEFAULT_GCN_STACK_SIZE;
+static int simt_stack_size = DEFAULT_GCN_SIMT_STACK_SIZE;
 static int lowlat_size = -1;
+
+/* When the stride between the stacks of consecutive threads is a multiple
+   of a large power of two, the same stack offset in every thread maps to
+   the same memory channel, which can considerably harm the performance of
+   kernels that use the stack heavily, such as vectorized reductions.  Round
+   SIZE up to an odd multiple of 4 kiB to avoid this.  */
+
+static int
+round_stack_size (int size)
+{
+  if (size > 0)
+    {
+      size = (size + 4095) & ~4095;
+      if ((size & 4096) == 0)
+	size += 4096;
+    }
+  return size;
+}
 
 /* Flag to decide whether print to stderr information about what is going on.
    Set in init_debug depending on environment variables.  */
@@ -1187,25 +1217,17 @@ init_environment_variables (void)
 	team_arena_size = tmp;;
     }
 
+  /* GCN_STACK_SIZE applies to "simt" mode kernels too.  */
   const char *stack = secure_getenv ("GCN_STACK_SIZE");
   if (stack)
     {
       int tmp = atoi (stack);
       if (tmp)
-	stack_size = tmp;;
+	stack_size = simt_stack_size = tmp;
     }
 
-  /* When the stride between the stacks of consecutive threads is a multiple
-     of a large power of two, the same stack offset in every thread maps to
-     the same memory channel, which can considerably harm the performance of
-     kernels that use the stack heavily, such as vectorized reductions.  Round
-     the stack size up to an odd multiple of 4 kiB to avoid this.  */
-  if (stack_size > 0)
-    {
-      stack_size = (stack_size + 4095) & ~4095;
-      if ((stack_size & 4096) == 0)
-	stack_size += 4096;
-    }
+  stack_size = round_stack_size (stack_size);
+  simt_stack_size = round_stack_size (simt_stack_size);
 
   const char *lowlat = secure_getenv ("GOMP_GCN_LOWLAT_POOL");
   if (lowlat)
@@ -1991,9 +2013,12 @@ configure_ephemeral_memories (struct kernel_info *kernel,
 
   int actual_arena_size = (kernel->kind == KIND_OPENMP
 			   ? team_arena_size : 0);
-  int actual_arena_total_size = actual_arena_size * num_teams;
+  size_t actual_arena_total_size = (size_t) actual_arena_size * num_teams;
+  size_t actual_stack_size = (kernel->description->simt_mode
+			      == GCN_KERNEL_SIMT_MODE
+			      ? simt_stack_size : stack_size);
   size_t size = (actual_arena_total_size
-		 + num_teams * num_threads * stack_size);
+		 + (size_t) num_teams * num_threads * actual_stack_size);
 
   for (item = *next_ptr; item; next_ptr = &item->next, item = item->next)
     {
@@ -2052,7 +2077,7 @@ configure_ephemeral_memories (struct kernel_info *kernel,
 			 : 0);
   kernargs->stack_ptr = (uint64_t)item->address + actual_arena_total_size;
   kernargs->arena_size_per_team = actual_arena_size;
-  kernargs->stack_size_per_thread = stack_size;
+  kernargs->stack_size_per_thread = actual_stack_size;
 }
 
 /* Mark an ephemeral memory space available for reuse.  */
