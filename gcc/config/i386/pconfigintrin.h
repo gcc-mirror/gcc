@@ -52,7 +52,7 @@ _pconfig_u32 (const unsigned int __L, size_t __D[])
 {
   enum __pconfig_type
   {
-    __PCONFIG_KEY_PROGRAM = 0x01,
+    __PCONFIG_KEY_PROGRAM = 0x00,
   };
 
   unsigned int __R = 0;
