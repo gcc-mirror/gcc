@@ -1394,6 +1394,7 @@ predicate::simplify_2 ()
 	  if (neg_idx != -1U)
 	    {
 	      a_chain.ordered_remove (neg_idx);
+	      b_chain.release ();
 	      m_preds.ordered_remove (j);
 	      simplified = true;
 	      if (a_chain.is_empty ())
