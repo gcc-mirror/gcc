@@ -2829,15 +2829,14 @@ rest_of_insert_endbr_and_patchable_area (bool need_endbr,
 	 EB.  */
       if (!lookup_attribute ("nocf_check",
 			     TYPE_ATTRIBUTES (TREE_TYPE (cfun->decl)))
-	  && (!flag_manual_endbr
-	      || lookup_attribute ("cf_check",
-				   DECL_ATTRIBUTES (cfun->decl)))
-	  && (!cgraph_node::get (cfun->decl)->only_called_directly_p ()
-	      || ix86_cmodel == CM_LARGE
-	      || ix86_cmodel == CM_LARGE_PIC
-	      || flag_force_indirect_call
-	      || (TARGET_DLLIMPORT_DECL_ATTRIBUTES
-		  && DECL_DLLIMPORT_P (cfun->decl))))
+	  && (lookup_attribute ("cf_check", DECL_ATTRIBUTES (cfun->decl))
+	      || (!flag_manual_endbr
+		  && (!cgraph_node::get (cfun->decl)->only_called_directly_p ()
+		      || ix86_cmodel == CM_LARGE
+		      || ix86_cmodel == CM_LARGE_PIC
+		      || flag_force_indirect_call
+		      || (TARGET_DLLIMPORT_DECL_ATTRIBUTES
+			  && DECL_DLLIMPORT_P (cfun->decl))))))
 	{
 	  if (crtl->profile && flag_fentry)
 	    {
