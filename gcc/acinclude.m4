@@ -220,26 +220,6 @@ test -z "$INSTALL_DATA" && INSTALL_DATA='${INSTALL} -m 644'
 AC_SUBST(INSTALL_DATA)dnl
 ])
 
-dnl Determine if enumerated bitfields are unsigned.   ISO C says they can 
-dnl be either signed or unsigned.
-dnl
-AC_DEFUN([gcc_AC_C_ENUM_BF_UNSIGNED],
-[AC_CACHE_CHECK(for unsigned enumerated bitfields, gcc_cv_enum_bf_unsigned,
-[AC_RUN_IFELSE([AC_LANG_SOURCE([#include <stdlib.h>
-enum t { BLAH = 128 } ;
-struct s_t { enum t member : 8; } s ;
-int main(void)
-{            
-        s.member = BLAH;
-        if (s.member < 0) exit(1);
-        exit(0);
-
-}])], gcc_cv_enum_bf_unsigned=yes, gcc_cv_enum_bf_unsigned=no, gcc_cv_enum_bf_unsigned=yes)])
-if test $gcc_cv_enum_bf_unsigned = yes; then
-  AC_DEFINE(ENUM_BITFIELDS_ARE_UNSIGNED, 1,
-    [Define if enumerated bitfields are treated as unsigned values.])
-fi])
-
 dnl Probe number of bits in a byte.
 dnl Note C89 requires CHAR_BIT >= 8.
 dnl

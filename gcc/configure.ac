@@ -1484,9 +1484,6 @@ if test "$zstd_enabled" = yes; then
 	[Define if you have a working <zstd.h> header file.])
 fi
 
-dnl Disabled until we have a complete test for buggy enum bitfields.
-dnl gcc_AC_C_ENUM_BF_UNSIGNED
-
 define(gcc_UNLOCKED_FUNCS, clearerr_unlocked feof_unlocked dnl
   ferror_unlocked fflush_unlocked fgetc_unlocked fgets_unlocked dnl
   fileno_unlocked fprintf_unlocked fputc_unlocked fputs_unlocked dnl
