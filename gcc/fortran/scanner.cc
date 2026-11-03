@@ -1801,6 +1801,9 @@ gfc_gobble_whitespace (void)
    the first character of the line, which has already been read by the
    caller.  This avoids the use of ungetc().
 
+   If allow_bom is true, increase length of line buffer to allow for UTF-8 BOM
+   (byte order mark) at the beginning of the line.
+
    load_line returns whether the line was truncated.
 
    NOTE: The error machinery isn't available at this point, so we can't
@@ -1808,7 +1811,8 @@ gfc_gobble_whitespace (void)
 	 parts of gfortran.  */
 
 static bool
-load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
+load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char,
+	   bool allow_bom = false)
 {
   int c, maxlen, i, preprocessor_flag, buflen = *pbuflen;
   int quoted = ' ', comment_ix = -1;
@@ -1819,6 +1823,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
   bool seen_ampersand = false;
   bool found_tab = false;
   bool warned_tabs = false;
+  bool seen_utf8_bom = false;
   gfc_char_t *buffer;
 
   /* Determine the maximum allowed line length.  */
@@ -1840,6 +1845,10 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	buflen = maxlen;
       else
 	buflen = 132;
+
+      /* Increase line buffer length for BOM.  */
+      if (allow_bom)
+	buflen += 3;
 
       *pbuf = gfc_get_wide_string (buflen + 1);
     }
@@ -1977,6 +1986,18 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
       *buffer++ = c;
       i++;
 
+      /* Check for possible UTF-8 BOM.  */
+      if (allow_bom
+	  && i == 3
+	  && buffer[-3] == (unsigned char) '\xEF'
+	  && buffer[-2] == (unsigned char) '\xBB'
+	  && buffer[-1] == (unsigned char) '\xBF')
+	seen_utf8_bom = true;
+
+      /* Check for sentinel '#' after BOM.  */
+      if (i == 4 && seen_utf8_bom)
+	preprocessor_flag = (c == '#');
+
       if (maxlen == 0 || preprocessor_flag)
 	{
 	  if (i >= buflen)
@@ -1988,7 +2009,7 @@ load_line (FILE *input, gfc_char_t **pbuf, int *pbuflen, const int *first_char)
 	      buffer = (*pbuf) + i;
 	    }
 	}
-      else if (i >= maxlen)
+      else if (i >= maxlen + (seen_utf8_bom ? 3 : 0))
 	{
 	  bool trunc_warn = true;
 
@@ -2035,7 +2056,7 @@ next_char:
       && !preprocessor_flag
       && c != EOF)
     {
-      while (i++ < maxlen)
+      while (i++ < maxlen + (seen_utf8_bom ? 3 : 0))
 	*buffer++ = ' ';
     }
 
@@ -2541,6 +2562,7 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
   FILE *input;
   int len, line_len;
   bool first_line;
+  bool allow_bom;
   struct stat st;
   int stat_result;
   const char *filename;
@@ -2632,11 +2654,14 @@ load_file (const char *realfilename, const char *displayedname, bool initial)
 	}
     }
 
+  /* Allow BOM on very first line of file.  */
+  allow_bom = true;
   for (;;)
     {
-      int trunc = load_line (input, &line, &line_len, NULL);
+      int trunc = load_line (input, &line, &line_len, NULL, allow_bom);
       int inc_line;
 
+      allow_bom = false;
       len = gfc_wide_strlen (line);
       if (feof (input) && len == 0)
 	break;
