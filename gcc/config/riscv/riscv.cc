@@ -406,7 +406,7 @@ static const common_vector_cost rvv_vls_vector_cost = {
   1, /* segment_permute (8) */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
-  1, /* permute_cost  */
+  {1, 4, 16, 64}, /* permute_cost.  */
   1, /* align_load_cost  */
   1, /* align_store_cost  */
   2, /* unalign_load_cost  */
@@ -439,7 +439,7 @@ static const scalable_vector_cost rvv_vla_vector_cost = {
     1, /* segment_permute (8) */
     1, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
-    1, /* permute_cost  */
+    {1, 4, 16, 64}, /* permute_cost.  */
     1, /* align_load_cost  */
     1, /* align_store_cost  */
     2, /* unalign_load_cost  */
@@ -751,7 +751,7 @@ static const common_vector_cost xt_c9501_vls_vector_cost = {
   12, /* segment_permute (8) */
   2, /* vec_to_scalar_cost  */
   2, /* scalar_to_vec_cost  */
-  4, /* permute_cost  */
+  {4, 16, 64, 256}, /* permute_cost.  */
   6, /* align_load_cost  */
   1, /* align_store_cost  */
   8, /* unalign_load_cost  */
@@ -14639,7 +14639,7 @@ riscv_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
       return costs->cond_not_taken_branch_cost;
 
     case vec_perm:
-      return common_costs->permute_cost;
+      return common_costs->permute_cost[LMUL_1];
 
     case vec_promote_demote:
       return fp ? common_costs->fp_stmt_cost : common_costs->int_stmt_cost;

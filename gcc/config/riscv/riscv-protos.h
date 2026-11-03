@@ -270,8 +270,8 @@ struct common_vector_cost
   /* Cost of a scalar-to-vector operation.  */
   const int scalar_to_vec_cost;
 
-  /* Cost of a permute operation.  */
-  const int permute_cost;
+  /* Cost of a permute operation for LMUL 1, 2, 4, 8.  */
+  const int permute_cost[4];
 
   /* Cost of an aligned vector load.  */
   const int align_load_cost;
