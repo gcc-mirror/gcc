@@ -2112,7 +2112,7 @@ public:
   bool maybe_hot_p (sreal scale);
 
   /* Get unique identifier of the edge.  */
-  inline int get_uid ()
+  inline int get_uid () const
   {
     return m_uid;
   }
