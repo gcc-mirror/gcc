@@ -15111,23 +15111,39 @@ riscv_expand_ustrunc (rtx dest, rtx src)
   gcc_assert (precision < 64);
 
   uint64_t max = ((uint64_t)1u << precision) - 1u;
-  rtx xmode_src = riscv_extend_to_xmode_reg (src, GET_MODE (src), ZERO_EXTEND);
   rtx xmode_dest = gen_reg_rtx (Xmode);
-  rtx xmode_lt = gen_reg_rtx (Xmode);
 
   /* Step-1: max = half truncated max  */
   emit_move_insn (xmode_max, gen_int_mode (max, Xmode));
 
-  /* Step-2: lt = src < max  */
-  riscv_emit_binary (LTU, xmode_lt, xmode_src, xmode_max);
+  /* When possible, emit UMIN based sequence.  It's inherently smaller and more
+     and by being smaller may allow combine to work better as a bonus.  */
+  if (TARGET_ZBB)
+    {
+      machine_mode smode = GET_MODE (src);
+      rtx xmode_src
+	= riscv_extend_to_xmode_reg (src, smode,
+				     (smode == SImode
+				      ? SIGN_EXTEND
+				      : ZERO_EXTEND));
+      riscv_emit_binary (UMIN, xmode_dest, xmode_src, xmode_max);
+    }
+  else
+    {
+      rtx xmode_src = riscv_extend_to_xmode_reg (src, GET_MODE (src), ZERO_EXTEND);
+      rtx xmode_lt = gen_reg_rtx (Xmode);
 
-  /* Step-3: lt = lt - 1  */
-  riscv_emit_binary (PLUS, xmode_lt, xmode_lt, CONSTM1_RTX (Xmode));
+      /* Step-2: lt = src < max  */
+      riscv_emit_binary (LTU, xmode_lt, xmode_src, xmode_max);
 
-  /* Step-4: xmode_dest = lt | src  */
-  riscv_emit_binary (IOR, xmode_dest, xmode_lt, xmode_src);
+      /* Step-3: lt = lt - 1  */
+      riscv_emit_binary (PLUS, xmode_lt, xmode_lt, CONSTM1_RTX (Xmode));
 
-  /* Step-5: dest = xmode_dest  */
+      /* Step-4: xmode_dest = lt | src  */
+      riscv_emit_binary (IOR, xmode_dest, xmode_lt, xmode_src);
+    }
+
+  /* Final: dest = xmode_dest  */
   emit_move_insn (dest, gen_lowpart (mode, xmode_dest));
 }
 
