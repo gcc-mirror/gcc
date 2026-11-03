@@ -3862,27 +3862,27 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  gcall *tmp_call = gimple_build_call_internal (IFN_VARYING, 0);
 	  gimple_call_set_lhs (tmp_call, tmp_niters_vf);
 	  auto header_gsi = gsi_after_labels (loop->header);
-	  gsi_insert_after (&header_gsi, tmp_call, GSI_SAME_STMT);
+	  gsi_insert_before (&header_gsi, tmp_call, GSI_SAME_STMT);
 
 	  if (!(LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo)
 		&& get_loop_exit_edges (loop).length () == 1)
 	      && LOOP_VINFO_EARLY_BRK_NEEDS_EPILOG (loop_vinfo))
-	  {
-	    basic_block exit_bb = NULL;
-	    edge update_e = NULL;
+	    {
+	      basic_block exit_bb = NULL;
+	      edge update_e = NULL;
 
-	    /* Identify the early exit merge block.  I wish we had stored
-	       this.  */
-	    for (auto e : get_loop_exit_edges (loop))
-	      if (e != LOOP_VINFO_MAIN_EXIT (loop_vinfo))
-		{
-		  exit_bb = e->dest;
-		  update_e = single_succ_edge (exit_bb);
-		  break;
-		}
-	    vect_update_ivs_after_vectorizer (loop_vinfo, tmp_niters_vf,
-					      update_e, true);
-	  }
+	      /* Identify the early exit merge block.  I wish we had stored
+		 this.  */
+	      for (auto e : get_loop_exit_edges (loop))
+		if (e != LOOP_VINFO_MAIN_EXIT (loop_vinfo))
+		  {
+		    exit_bb = e->dest;
+		    update_e = single_succ_edge (exit_bb);
+		    break;
+		  }
+	      vect_update_ivs_after_vectorizer (loop_vinfo, tmp_niters_vf,
+						update_e, true);
+	    }
 	  if (uncounted_p)
 	    vector_iters_vf = tmp_niters_vf;
 
