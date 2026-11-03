@@ -659,6 +659,11 @@ public:
 	/* Convert V1DI/V1DF arguments to corresponding scalar modes.  */
 	if (scalar_lhs && one_element_vector_type_p (TREE_TYPE (arg)))
 	  arg = f.force_val (build_cast (TREE_TYPE (lhs_type), arg));
+	/* .CLZ and .POPCOUNT take an unsigned argument.  */
+	else if ((m_ifn == IFN_CLZ || m_ifn == IFN_POPCOUNT)
+		 && !TYPE_UNSIGNED (TREE_TYPE (arg)))
+	  arg = f.force_val (build_cast (unsigned_type_for (TREE_TYPE (arg)),
+					 arg));
 	args.safe_push (arg);
       }
 
