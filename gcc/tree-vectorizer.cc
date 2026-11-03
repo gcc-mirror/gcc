@@ -694,8 +694,11 @@ vec_info::insert_seq_on_entry (stmt_vec_info context, gimple_seq seq)
     }
   else
     {
-      gimple_stmt_iterator gsi_region_begin
-	= gsi_after_labels (bbs[0]);
+      gimple_stmt_iterator gsi_region_begin = gsi_after_labels (bbs[0]);
+      /* If the regions starts with a returns-twice call insert afte that.  */
+      if (gcall *call = safe_dyn_cast <gcall *> (gsi_stmt (gsi_region_begin)))
+	if (gimple_call_flags (call) & ECF_RETURNS_TWICE)
+	  gsi_next (&gsi_region_begin);
       gsi_insert_seq_before (&gsi_region_begin, seq, GSI_SAME_STMT);
     }
 }
