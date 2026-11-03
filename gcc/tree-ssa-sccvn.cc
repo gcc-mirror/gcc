@@ -7004,11 +7004,18 @@ vn_nary_may_trap (vn_nary_op_t nary)
   bool handled, ret;
   unsigned i;
 
+  if (nary->opcode == COND_EXPR || nary->opcode == VEC_COND_EXPR)
+    return false;
+
   if (TREE_CODE_CLASS (nary->opcode) == tcc_comparison
       || TREE_CODE_CLASS (nary->opcode) == tcc_unary
       || TREE_CODE_CLASS (nary->opcode) == tcc_binary)
     {
-      type = nary->type;
+      if (TREE_CODE_CLASS (nary->opcode) == tcc_comparison
+	  || nary->opcode == FIX_TRUNC_EXPR)
+	type = TREE_TYPE (nary->op[0]);
+      else
+	type = nary->type;
       fp_operation = FLOAT_TYPE_P (type);
       if (fp_operation)
 	{

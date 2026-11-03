@@ -2446,12 +2446,13 @@ gimple_could_trap_p_1 (const gimple *s, bool include_mem, bool include_stores)
       op = gimple_assign_rhs_code (s);
 
       /* COND_EXPR does not trap.  */
-      if (op == COND_EXPR)
+      if (op == COND_EXPR || op == VEC_COND_EXPR)
 	return false;
 
       /* For comparisons we need to check rhs operand types instead of lhs type
          (which is BOOLEAN_TYPE).  */
-      if (TREE_CODE_CLASS (op) == tcc_comparison)
+      if (TREE_CODE_CLASS (op) == tcc_comparison
+	  || op == FIX_TRUNC_EXPR)
 	t = TREE_TYPE (gimple_assign_rhs1 (s));
       else
 	t = TREE_TYPE (gimple_assign_lhs (s));
