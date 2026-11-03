@@ -17440,7 +17440,7 @@ ix86_output_indirect_branch_via_reg (rtx call_op, bool sibcall_p)
     {
       if (thunk_name != NULL)
 	{
-	  if ((REX_INT_REGNO_P (regno) || REX_INT_REGNO_P (regno))
+	  if ((REX_INT_REGNO_P (regno) || REX2_INT_REGNO_P (regno))
 	      && ix86_indirect_branch_cs_prefix)
 	    fprintf (asm_out_file, "\tcs\n");
 	  fprintf (asm_out_file, "\tcall\t");
