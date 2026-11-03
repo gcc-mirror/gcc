@@ -7106,20 +7106,22 @@ wi::to_poly_wide (const_tree t)
   return t;
 }
 
+/* The precision of extended_tree does not depend on the type of the tree,
+   so any zero INTEGER_CST is a valid zero.  */
 template <int N>
 inline generic_wide_int <wi::extended_tree <N> >
 wi::ints_for <generic_wide_int <wi::extended_tree <N> >,
-	      wi::INL_CONST_PRECISION>::zero (const extended &x)
+	      wi::INL_CONST_PRECISION>::zero (const extended &)
 {
-  return build_zero_cst (TREE_TYPE (x.get_tree ()));
+  return integer_zero_node;
 }
 
 template <int N>
 inline generic_wide_int <wi::extended_tree <N> >
 wi::ints_for <generic_wide_int <wi::extended_tree <N> >,
-	      wi::CONST_PRECISION>::zero (const extended &x)
+	      wi::CONST_PRECISION>::zero (const extended &)
 {
-  return build_zero_cst (TREE_TYPE (x.get_tree ()));
+  return integer_zero_node;
 }
 
 inline generic_wide_int <wi::unextended_tree>
