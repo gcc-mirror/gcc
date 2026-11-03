@@ -977,8 +977,9 @@ ix86_target_macros (void)
   cpp_define (parse_in, "__SEG_FS");
   cpp_define (parse_in, "__SEG_GS");
 
-  if (flag_cf_protection != CF_NONE)
-    cpp_define_formatted (parse_in, "__CET__=%d", flag_cf_protection & ~CF_SET);
+  if (flag_cf_protection & (CF_BRANCH | CF_RETURN))
+    cpp_define_formatted (parse_in, "__CET__=%d",
+			  flag_cf_protection & (CF_BRANCH | CF_RETURN));
 }
 
 
