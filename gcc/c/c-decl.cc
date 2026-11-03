@@ -10635,12 +10635,15 @@ build_enumerator (location_t decl_loc, location_t loc,
     }
   else
     {
+      tree tmp = value;
+
       /* In a redeclaration the type can already be the enumeral type.  */
       if (TREE_CODE (TREE_TYPE (value)) == ENUMERAL_TYPE)
-	value = convert (ENUM_UNDERLYING_TYPE (TREE_TYPE (value)), value);
+	tmp = convert (ENUM_UNDERLYING_TYPE (TREE_TYPE (tmp)), tmp);
+
       the_enum->enum_next_value
 	= build_binary_op (EXPR_LOC_OR_LOC (value, input_location),
-			   PLUS_EXPR, value, integer_one_node, false);
+			   PLUS_EXPR, tmp, integer_one_node, false);
     }
   the_enum->enum_overflow = tree_int_cst_lt (the_enum->enum_next_value, value);
   if (the_enum->enum_overflow
