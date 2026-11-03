@@ -10575,7 +10575,7 @@ ix86_expand_epilogue (int style)
 
 	      pro_epilogue_adjust_stack (stack_pointer_rtx, sa,
 					 const0_rtx, style,
-					 flag_cf_protection);
+					 flag_cf_protection & CF_RETURN);
 	    }
 	  else
 	    {
@@ -10767,7 +10767,7 @@ ix86_expand_epilogue (int style)
       /* In case of return from EH a simple return cannot be used
 	 as a return address will be compared with a shadow stack
 	 return address.  Use indirect jump instead.  */
-      if (style == 2 && flag_cf_protection)
+      if (style == 2 && (flag_cf_protection & CF_RETURN))
 	{
 	  /* Register used in indirect jump must be in word_mode.  But
 	     Pmode may not be the same as word_mode for x32.  */
