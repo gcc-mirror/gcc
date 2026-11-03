@@ -1,3 +1,10 @@
+2026-11-02  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR target/121007
+	* lra-constraints.cc (process_address_1): When changing base reg
+	on a reg of the base class, fall back to reload of whole inner address.
+	(process_address): Constrain the iteration number.
+
 2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
