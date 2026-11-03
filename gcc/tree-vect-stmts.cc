@@ -4741,7 +4741,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			      tree loop_mask
 				= vect_get_loop_mask (loop_vinfo, gsi,
 						      loop_masks, ncopies_in,
-						      vectype, j);
+						      vectype, m);
 			      vec_oprnd0
 				= prepare_vec_mask (loop_vinfo,
 						    TREE_TYPE (loop_mask),
@@ -4802,7 +4802,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			      tree loop_mask
 				= vect_get_loop_mask (loop_vinfo, gsi,
 						      loop_masks, ncopies_in,
-						      vectype, j);
+						      vectype, m);
 			      vec_oprnd0
 				= prepare_vec_mask (loop_vinfo,
 						    TREE_TYPE (loop_mask),
