@@ -1963,7 +1963,26 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   if (ifnnew == IFN_LAST)
     return NULL;
 
+  /* Only .FFS (X) = .CTZ (X) + 1 can be part of a reduction, and only
+     if the result for zero needs no select.  */
+  if (vect_is_reduction (stmt_vinfo)
+      && (ifnnew != IFN_CTZ
+	  || (defined_at_zero
+	      && (!defined_at_zero_new || val != val_new + 1))))
+    return NULL;
+
   vect_pattern_detected ("vec_recog_ctz_ffs_pattern", call_stmt);
+
+  /* .CLZ, .CTZ and .POPCOUNT take an unsigned argument.  */
+  if (!TYPE_UNSIGNED (rhs_type))
+    {
+      rhs_type = unsigned_type_for (rhs_type);
+      vec_rhs_type = get_vectype_for_scalar_type (vinfo, rhs_type);
+      new_var = vect_recog_temp_ssa_var (rhs_type, NULL);
+      pattern_stmt = gimple_build_assign (new_var, NOP_EXPR, rhs_oprnd);
+      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, vec_rhs_type);
+      rhs_oprnd = new_var;
+    }
 
   val_cmp = val_new;
   if ((ifnnew == IFN_CLZ
@@ -1973,25 +1992,11 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
        && val_new == prec)
       || (ifnnew == IFN_POPCOUNT && ifn == IFN_CTZ))
     {
-      if (vect_is_reduction (stmt_vinfo))
-	return NULL;
-
       /* .CTZ (X) = PREC - .CLZ ((X - 1) & ~X)
 	 .CTZ (X) = .POPCOUNT ((X - 1) & ~X).  */
       if (ifnnew == IFN_CLZ)
 	sub = prec;
       val_cmp = prec;
-
-      if (!TYPE_UNSIGNED (rhs_type))
-	{
-	  rhs_type = unsigned_type_for (rhs_type);
-	  vec_rhs_type = get_vectype_for_scalar_type (vinfo, rhs_type);
-	  new_var = vect_recog_temp_ssa_var (rhs_type, NULL);
-	  pattern_stmt = gimple_build_assign (new_var, NOP_EXPR, rhs_oprnd);
-	  append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt,
-				  vec_rhs_type);
-	  rhs_oprnd = new_var;
-	}
 
       tree m1 = vect_recog_temp_ssa_var (rhs_type, NULL);
       pattern_stmt = gimple_build_assign (m1, PLUS_EXPR, rhs_oprnd,
@@ -2014,9 +2019,6 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
     }
   else if (ifnnew == IFN_CLZ)
     {
-      if (vect_is_reduction (stmt_vinfo))
-	return NULL;
-
       /* .CTZ (X) = (PREC - 1) - .CLZ (X & -X)
 	 .FFS (X) = PREC - .CLZ (X & -X).  */
       sub = prec - (ifn == IFN_CTZ);
@@ -2036,9 +2038,6 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
     }
   else if (ifnnew == IFN_POPCOUNT)
     {
-      if (vect_is_reduction (stmt_vinfo))
-	return NULL;
-
       /* .CTZ (X) = PREC - .POPCOUNT (X | -X)
 	 .FFS (X) = (PREC + 1) - .POPCOUNT (X | -X).  */
       sub = prec + (ifn == IFN_FFS);
@@ -2061,11 +2060,6 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
       /* .FFS (X) = .CTZ (X) + 1.  */
       add = 1;
       val_cmp++;
-
-      if (vect_is_reduction (stmt_vinfo)
-	  && defined_at_zero
-	  && (!defined_at_zero_new || val != val_cmp))
-	return NULL;
     }
 
   /* Create B = .IFNNEW (A).  */
@@ -2331,12 +2325,22 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 			 call_stmt);
 
   tree orig_lhs_type = lhs_type;
-  gimple *cast_stmt = NULL;
   if (!type_has_mode_precision_p (lhs_type))
+    lhs_type = TREE_TYPE (vec_type);
+  tree arg_type = (lhs_type != orig_lhs_type
+		   ? lhs_type : TREE_TYPE (unprom_diff.op));
+  /* .CLZ, .CTZ and .POPCOUNT take an unsigned argument.  */
+  if (ifn != IFN_FFS && !TYPE_UNSIGNED (arg_type))
+    arg_type = unsigned_type_for (arg_type);
+  gimple *cast_stmt = NULL;
+  tree arg_vectype = vec_type;
+  if (arg_type != TREE_TYPE (unprom_diff.op))
     {
-      lhs_type = TREE_TYPE (vec_type);
+      arg_vectype = get_vectype_for_scalar_type (vinfo, arg_type);
+      if (!arg_vectype)
+	return NULL;
       cast_stmt
-	= gimple_build_assign (vect_recog_temp_ssa_var (lhs_type, NULL),
+	= gimple_build_assign (vect_recog_temp_ssa_var (arg_type, NULL),
 			       NOP_EXPR, unprom_diff.op);
       unprom_diff.op = gimple_assign_lhs (cast_stmt);
     }
@@ -2371,6 +2375,9 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "created pattern stmt: %G", pattern_stmt);
 
+  if (cast_stmt && supported)
+    append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, arg_vectype);
+
   if (addend)
     {
       gcc_assert (supported);
@@ -2388,15 +2395,13 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
       if (pattern_stmt == NULL)
 	return NULL;
       if (cast_stmt)
-	append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, vec_type);
+	append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, arg_vectype);
       if (gimple_seq seq = STMT_VINFO_PATTERN_DEF_SEQ (new_stmt_info))
 	{
 	  gimple_seq *pseq = &STMT_VINFO_PATTERN_DEF_SEQ (stmt_vinfo);
 	  gimple_seq_add_seq_without_update (pseq, seq);
 	}
     }
-  else if (cast_stmt)
-    append_pattern_def_seq (vinfo, stmt_vinfo, cast_stmt, vec_type);
 
   if (zero_val)
     {
@@ -2413,7 +2418,7 @@ vect_recog_popcount_clz_ctz_ffs_pattern (vec_info *vinfo,
 				  fold_convert (lhs_type, zero_val));
     }
 
-  if (cast_stmt)
+  if (lhs_type != orig_lhs_type)
     {
       append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, vec_type);
       tree ret_var = vect_recog_temp_ssa_var (orig_lhs_type, NULL);
