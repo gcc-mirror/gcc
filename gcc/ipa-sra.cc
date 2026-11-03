@@ -1974,6 +1974,13 @@ scan_expr_access (tree expr, gimple *stmt, isra_scan_context ctx,
     {
       gcc_checking_assert (call_info);
 
+      if (desc->param_number > UCHAR_MAX)
+	{
+	  disqualify_split_candidate (desc, "Caller parameter with a large "
+				      "index passed in a call.");
+	  return;
+	}
+
       if (!deref)
 	record_nonregister_call_use (desc, call_info, offset / BITS_PER_UNIT,
 				     size / BITS_PER_UNIT);
