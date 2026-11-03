@@ -1,3 +1,18 @@
+2026-11-02  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Remove AC_LIBTOOL_WIN_DLL and change LT_INIT to LT_INIT([win32-dll]).
+
+2026-11-02  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* Makefile.in (aclocal_deps): Depend on ../config/acx.m4,
+	../config/bitfields.m4, ../config/clang-plugin.m4,
+	../config/enable.m4, ../config/gcc-plugin.m4,
+	../config/lthostflags.m4, ../config/mmap.m4,
+	../config/no-executables.m4, ../config/tls.m4, and ../libtool.m4.
+	Stop depending on ../config/proginstall.m4.
+
 2026-10-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* acinclude.m4: Include ../config/mmap.m4.

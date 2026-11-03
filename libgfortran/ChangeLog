@@ -1,3 +1,56 @@
+2026-11-02  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Remove AC_LIBTOOL_DLOPEN and change LT_INIT to LT_INIT([dlopen]).
+
+2026-11-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127893
+	* io/io.h (recycle_unit): Declare.
+	* io/unit.c (CACHE_SIZE): Increase to 64.
+	(CACHE_SLOT): New macro.
+	(unit_free_list): New variable.
+	(insert_unit): Reuse a unit from the free list.
+	(recycle_unit, probe_unit_cache, set_unit_cache): New functions.
+	(check_for_recursive): Probe the unit cache first.  Hold
+	unit_rwlock while searching the unit tree.
+	(get_gfc_unit): Probe the unit cache before taking unit_rwlock.
+	Use the direct-mapped cache.  Recycle a closed unit instead of
+	freeing it.
+	(close_unit_1): Clear the unit's cache slot.  Recycle the unit
+	instead of freeing it.
+	(close_units): Free the units on the free list.
+	* io/unix.c (find_file): Take unit_rwlock for writing and recycle
+	a closed unit instead of freeing it.
+	(flush_all_units): Recycle a closed unit instead of freeing it.
+
+2026-11-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* caf/shmem.c (_gfortran_caf_register): Keep the token of a
+	component when its allocation fails.
+	* caf/shmem/alloc.c (get_memory_by_id_internal): Free the memory and
+	return NULL when the id cannot be entered into the hashmap.
+	* caf/shmem/hashmap.c (enlarge_hashmap_mem): Return false, leaving
+	the hashmap unchanged, when the shared memory is exhausted.  Free the
+	old table with its size in bytes.
+	(resize_hm): Return false and restore the old table on failure.
+	Free the old table with its size in bytes.
+	(hashmap_set): Return false when the hashmap cannot be enlarged.
+	* caf/shmem/hashmap.h (hashmap_set): Return bool.
+
+2026-11-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* caf/shmem.c (mul_size_sat): New function.
+	(_gfortran_caf_register): Use it for all size computations and
+	saturate the alignment of the size.
+	* caf/shmem/allocator.c (allocator_shared_malloc): Return a null
+	pointer for sizes that cannot be rounded up to a power of two.
+	* caf/shmem/collective_subroutine.c (collsub_reduce_array):
+	Saturate the buffer size on overflow.
+
 2026-10-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127973

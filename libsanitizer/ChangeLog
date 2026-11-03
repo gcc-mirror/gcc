@@ -1,3 +1,9 @@
+2026-11-02  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure: Regenerate.
+	* configure.ac: Remove AC_LIBTOOL_DLOPEN and change LT_INIT to LT_INIT([dlopen]).
+
 2026-10-17  Sam James  <sam@gentoo.org>
 
 	* configure.ac: Add comment for AC_CHECK_SIZEOF use in configure.tgt.

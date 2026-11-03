@@ -1,3 +1,350 @@
+2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
+
+	* match.pd ((x + y) >> 1 -> IFN_AVG_FLOOR (x, y)): Also fold
+	when overflow is undefined.
+	(((x + y) + 1) >> 1 -> IFN_AVG_CEIL (x, y)): New fold.
+
+2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127786
+	* simplify-rtx.cc (comparison_mask_signals_p): New function.
+	(simplify_context::simplify_logical_relational_operation): Don't
+	change whether the result traps for a quiet NaN.
+	(comparison_holds_p, comparison_signals_p, check_logical_comparison)
+	(simplify_logical_comparison, test_logical_comparisons_in_mode)
+	(logical_comparison_code, test_logical_comparisons): New functions.
+	(test_scalar_ops): Call test_logical_comparisons.
+
+2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
+
+	* simplify-rtx.cc (enum comparison_mask): New.
+	(unsigned_inequality_p): New function.
+	(unsigned_comparison_to_mask, mask_to_unsigned_comparison)
+	(comparison_to_mask, mask_to_comparison)
+	(simplify_context::simplify_logical_relational_operation): Use them.
+
+2026-11-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/124271
+	* match.pd ((x & lowhalf_mask) * (y & lowhalf_mask)): New
+	simplification to VEC_WIDEN_MULT_{EVEN,ODD}_EXPR.
+
+2026-11-02  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/extend.texi (Complex): Refine description of imaginary
+	constants.
+
+2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128360
+	* config/i386/i386-features.cc
+	(rest_of_insert_endbr_and_patchable_area): Emit ENDBR for
+	functions with cf_check attribute even when they are only
+	called directly.
+
+2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/pconfigintrin.h (_pconfig_u32):
+	Change the value of __PCONFIG_KEY_PROGRAM to 0x00.
+
+2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128283
+	* config/i386/sgxintrin.h (__encls_bc, __encls_bcd, __encls_c)
+	(__encls_edbgrd, __encls_generic, __enclu_bc, __enclu_bcd)
+	(__enclu_eenter, __enclu_eexit, __enclu_generic, __enclv_bc)
+	(__enclv_cd, __enclv_generic): Add "memory" clobber.
+	Remove "\n\t" from asm template.
+	(__encls_edbgrd): Also add "cc" clobber.
+	* config/i386/pconfigintrin.h (__pconfig_b, __pconfig_generic):
+	Add "memory" clobber.  Remove "\n\t" from asm template.
+
+2026-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* json-parsing.cc (ASSERT_PRINT_EQ): Move to json.h and rename
+	to ASSERT_JSON_PRINT_EQ.
+	(selftest::test_parse_string): Update for above renaming.
+	(selftest::test_parse_number): Likewise.
+	(selftest::test_parse_array): Likewise.
+	(selftest::test_parse_literals): Likewise.
+	(selftest::test_parse_empty_object): Likewise.
+	* json.cc (selftest::assert_print_eq): Rename to...
+	(selftest::assert_json_print_eq): ...this.
+	(ASSERT_PRINT_EQ): Delete.
+	(selftest::test_writing_objects): Update for renaming of
+	ASSERT_PRINT_EQ to ASSERT_JSON_PRINT_EQ.
+	(selftest::test_writing_arrays): Likewise.
+	(selftest::test_writing_float_numbers): Likewise.
+	(selftest::test_writing_integer_numbers): Likewise.
+	(selftest::test_writing_strings): Likewise.
+	(selftest::test_writing_literals): Likewise.
+	(selftest::test_formatting): Likewise.
+	(selftest::test_comparisons): Likewise.
+	* json.h (selftest::assert_print_eq): Rename decl to...
+	(selftest::assert_json_print_eq): ...this.
+	(ASSERT_JSON_PRINT_EQ): New, moved here from json-parsing.cc.
+
+2026-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/128311
+	* custom-sarif-properties/cfg.cc: Define INCLUDE_STRING.
+	* custom-sarif-properties/digraphs.cc: Likewise.
+	* custom-sarif-properties/state-graphs.cc: Likewise.
+	* gimple-pretty-print.cc: Likewise.
+	* optinfo-emit-json.cc: Likewise.
+	* optinfo.cc: Likewise.
+	* print-rtl.cc: Likewise.
+	* selftest-json.cc: Likewise.
+	* timevar.cc: Likewise.
+
+2026-11-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple.h: Include value-range-storage.h.
+	* tree-ssanames.cc (ssa_name_pt_solution): Move to...
+	* tree-ssanames.h (ssa_name_pt_solution): Here and adjust.
+	* tree-vrp.h: Include value-range-storage.h.
+
+2026-11-02  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (get_nonzero_bits_1): Call get_bitmask directly
+	from a prange_storage.
+	(get_ptr_info_alignment): Likewise.
+	* value-range-storage.cc (prange_storage::get_bitmask): New.
+	* value-range-storage.h (prange_storage::get_bitmask): New prototype.
+
+2026-11-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/128293
+	* doc/install.texi (GM2-prerequisite): Add paragraph
+	explaining m2rte.so is dependent upon stdc++.
+
+2026-11-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_get_vls_cc_attr): Let CHECK_ONLY
+	suppress the diagnostic only, not the validity test.
+	(riscv_lookup_vls_cc_attribute): New function.
+	(riscv_vls_cc_function_abi): Use it, and take the arguments from
+	the attribute that was found.
+	(riscv_abi_tag_present_p): New function.
+	(riscv_insert_attributes): New function.
+	(TARGET_INSERT_ATTRIBUTES): Define.
+
+2026-11-02  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/100867
+	* config/s390/s390.cc (expand_perm_as_a_vlbr_vstbr_candidate):
+	Handle the halfword byte-swap permutation also without VXE2.
+	* config/s390/vector.md (VT_HW_SDT): New mode iterator.
+	(V_HW_SD): Ditto.
+	(bswap<mode>): Deal with V8HI directly.
+	(bswapv8hi_vxe2): New insn.
+	(*bswap<mode>): Remove V8HI mode handling which is done in
+	bswap<mode>, now.
+	(*vec_splats_bswap_vecv8hi): New insn for V8HI and VXE2 which
+	doesn't make use of a permutation vector.
+	(*vstbr<mode>): Use mode iterator VI_HW_SDT instead of
+	VI_HW_HSDT.
+	* config/s390/vx-builtins.md (*vec_insert_and_zero_bswapv8hi):
+	New insn for V8HI and VXE2 which doesn't make use of a
+	permutation vector.
+	(*vec_set_bswap_vecv8hi): Ditto.
+
+2026-11-02  Jeevitha Palanisamy  <jeevitha@linux.ibm.com>
+
+	PR target/127274
+	* config/rs6000/emmintrin.h (_mm_movemask_pd): Reverse vector
+	element order on big-endian Power10 before calling vec_extractm().
+	(_mm_movemask_epi8): Likewise.
+	* config/rs6000/xmmintrin.h (_mm_movemask_ps): Likewise.
+
+2026-11-02  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/122583
+	* combine.cc (gen_lowpart_or_truncate): Return a CLOBBER if either
+	mode has no equivalent integer mode, instead of ICEing.
+	* config/gcn/gcn.cc (gcn_vectorize_support_vector_misalignment):
+	Allow packed accesses.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128013
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Do not use
+	an SSA name that occurs in an abnormal PHI.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* opts.cc (default_options_table): Enable
+	-fduplicate-switch-dispatch at -O2 for speed builds.
+	* doc/invoke.texi: Document it.  List it among the options that
+	-Os does not enable.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* config/riscv/riscv-vsetvl.cc (invalid_opt_bb_p): Keep local
+	configurations in blocks with incoming shared-table edges.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* cfgrtl.cc (rtl_verify_edges): Compare all shared-table destinations
+	with the dispatch's successors.
+	* passes.cc (execute_function_todo): Verify tablejump links before
+	CFG verification and after CFG teardown.
+	* rtl.h (verify_jump_tables): Declare.
+	* rtlanal.cc: Include hash-map.h and tree-pass.h.
+	(verify_jump_tables): New function.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* common.opt (fduplicate-switch-dispatch): New option.
+	* doc/invoke.texi: Document it.
+	* doc/params.texi (max-goto-duplication-insns): Mention switch
+	dispatches.
+	* doc/sourcebuild.texi (shared_jump_tables): Document.
+	* params.opt (max-goto-duplication-insns): Mention switch dispatches.
+	* common.opt.urls: Regenerate.
+	* bb-reorder.cc (dispatch_jump_p): New function.
+	(can_attach_dispatch_copy_p): New function.
+	(fallthru_unified_with_branch_p): New function.
+	(find_dispatch_chain): New function.
+	(maybe_duplicate_computed_goto): Rename to...
+	(maybe_duplicate_dispatch): ...this.  Copy a dispatch chain and
+	optionally require a DFS back edge into its head.
+	(duplicate_computed_gotos): Mark DFS back edges, select eligible
+	tablejumps, and scope PROP_rtl_allow_tablejump_duplication.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* config/arc/arc.cc (arc_can_share_jump_table_p): New function.
+	(TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/arm/arm.cc (TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/c6x/c6x.cc (c6x_can_share_jump_table_p): New function.
+	(TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/cris/cris.cc (TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/csky/csky.cc (csky_can_share_jump_table_p): New function.
+	(TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/m68k/m68k.cc (TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/mips/mips.cc (mips_can_share_jump_table_p): New function.
+	(TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/pa/pa.cc (pa_can_share_jump_table_p): New function.
+	(TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/rx/rx.cc (rx_can_share_jump_table_p): New function.
+	(TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/sh/sh.cc (TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/stormy16/stormy16.cc (TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+	* config/vax/vax.cc (TARGET_CAN_SHARE_JUMP_TABLE_P): Define.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* target.def (asm_out.jump_table_base): New hook.
+	(can_share_jump_table_p): Likewise.
+	* hooks.cc (hook_bool_rtx_insn_false): New function.
+	* hooks.h (hook_bool_rtx_insn_false): Declare.
+	* doc/tm.texi.in (Dispatch Tables): Document the hooks.
+	* doc/tm.texi: Regenerate.
+	* doc/md.texi (Standard Names): Refer to
+	TARGET_CAN_SHARE_JUMP_TABLE_P.
+	* final.cc (final_scan_insn_1): Call the jump-table base hook before
+	switching away from the function section or invoking target table
+	output.
+	* config/aarch64/aarch64.cc (aarch64_far_jump_table_base_p): New
+	function.
+	(aarch64_output_casesi): Emit the base label here for an unshared
+	table.  Use ADRP and ADD for a shared table outside the tiny code
+	model.
+	(aarch64_casesi_far_base_p): New function.
+	(aarch64_asm_jump_table_base): New function.
+	(TARGET_ASM_JUMP_TABLE_BASE): Define.
+	* config/aarch64/aarch64-protos.h (aarch64_casesi_far_base_p):
+	Declare.
+	* config/aarch64/aarch64.md (length): Account for the longer base
+	sequence.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* tree-pass.h (PROP_rtl_allow_tablejump_duplication): New property.
+	* cfgcleanup.cc (outgoing_edges_match): Reject matches involving a
+	shared jump table.
+	* cfgrtl.cc (shared_jump_table_component_p): New function.
+	(shared_jump_table_between_p): Likewise.
+	(hosted_shared_table): Likewise.
+	(other_table_user): Likewise.
+	(move_table_after): Likewise.
+	(delete_insn_chain): Assert that the range does not contain a shared
+	jump table.
+	(rtl_delete_block): Move a shared table that follows the block after
+	another jump through it.
+	(can_fallthru, rtl_can_merge_blocks, rtl_tidy_fallthru_edge): Do not
+	remove or cross a shared jump table between basic blocks.
+	(cfg_layout_can_duplicate_bb_p): Allow a tablejump when the new
+	property is set.
+	(duplicate_insn_chain): Retain a copied tablejump's table and mark it
+	shared.
+	(patch_jump_insn): Refuse to redirect through a shared table before
+	creating a label for the new destination.
+	(try_redirect_by_replacing_jump): Do not delete a shared table.
+	(get_last_bb_insn): Include a shared table only if it follows the
+	block.
+	(force_nonfallthru_and_redirect): Likewise.
+	(rtl_verify_edges): Check each shared table against the successors of
+	each dispatch that uses it.
+	* hw-doloop.cc (discover_loop): Reject a loop that is entered from a
+	shared tablejump.
+	* jump.cc (delete_related_insns): Do not delete a shared table.
+	* rtl.h (JUMP_TABLE_SHARED_P): New macro.
+	(rtx_def): Document the shared-table use of the unchanging flag.
+	(shared_tablejump_p): Declare.
+	* rtlanal.cc (shared_tablejump_p): New function.
+	* sched-rgn.cc (is_cfg_nonregular): Reject shared tablejumps.
+	* doc/cfg.texi: Document shared jump tables.
+	* doc/md.texi: Likewise.
+	* doc/rtl.texi (Flags): Document JUMP_TABLE_SHARED_P.
+	(Insns): Document shared jump tables.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* bb-reorder.cc: Include insn-attr.h.
+	(duplication_unit): New function.
+	(duplication_size): Likewise.
+	(maybe_duplicate_computed_goto): Use duplication_size.
+	(duplicate_computed_gotos): Use duplication_unit.
+
+2026-11-02  Steve Bezalel  <stevebezalel215@gmail.com>
+
+	PR tree-optimization/127211
+	* tree-predcom.cc (tree_predictive_commoning): Reset SCEV
+	whenever a loop was transformed, not only when unrolled.
+
+2026-11-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/i386.md (*movhi_internal): Use YW instead of v for
+	the vpinsrw and vpextrw alternatives.
+	(*mov<mode>_internal): Likewise for HFBF.
+	* config/i386/sse.md (*vec_extract<mode>_0): Require
+	TARGET_AVX512BW.
+	(*vec_extract<mode>): Use YW instead of v for the vpextrw
+	alternatives.
+
+2026-11-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* config/i386/sse.md (*vec_extract<mode><ssescalarmodelower>_valign):
+	Use the 256-bit source form only with TARGET_AVX512VL and the 64x2
+	forms only with TARGET_AVX512DQ.
+
+2026-11-02  Kael Andrew Franco  <kaelfandrew@gmail.com>
+
+	PR bootstrap/127224
+	* acinclude.m4 (gcc_AC_C_ENUM_BF_UNSIGNED): Remove.
+	* configure.ac (gcc_AC_C_ENUM_BF_UNSIGNED): Remove.
+	* configure: Regenerate.
+
 2026-11-01  Kael Andrew Franco  <kaelfandrew@gmail.com>
 
 	PR bootstrap/112422

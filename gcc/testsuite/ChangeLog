@@ -1,3 +1,201 @@
+2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
+
+	* gcc.dg/vect/vect-avg-17.c: New test.
+	* gcc.target/aarch64/vect_hadd_same_width_1.c: New test.
+	* gcc.target/aarch64/vect_hadd_same_width_2.c: New test.
+
+2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
+
+	PR middle-end/127786
+	* gcc.dg/torture/cmp-of-cmp-fenv-3.c: New test.
+
+2026-11-02  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/124271
+	* gcc.dg/torture/pr124271.c: New test.
+	* gcc.target/i386/pr124271-1.c: New test.
+	* gcc.target/i386/pr124271-2.c: New test.
+
+2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128360
+	* gcc.target/i386/pr128360-1.c: New test.
+	* gcc.target/i386/pr128360-2.c: Ditto.
+	* gcc.target/i386/pr128360-3.c: Ditto.
+
+2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pconfig-1.c (PCONFIG_KEY_PROGRAM):
+	Change to 0x00.
+
+2026-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128283
+	* gcc.target/i386/pr128283-1.c: New test.
+	* gcc.target/i386/pr128283-2.c: Ditto.
+
+2026-11-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Delete test plugin.
+	* gcc.dg/plugin/cpython-plugin-test-PyList_Append.c: Delete test.
+	* gcc.dg/plugin/cpython-plugin-test-PyList_New.c: Delete test.
+	* gcc.dg/plugin/cpython-plugin-test-PyLong_FromLong.c: Delete test.
+	* gcc.dg/plugin/cpython-plugin-test-no-Python-h.c: Delete test.
+	* gcc.dg/plugin/plugin.exp (plugin_test_list): Drop the above.
+
+2026-11-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/127802
+	PR c++/125631
+	* g++.dg/reflect/crash6.C: Adjust dg-error.
+	* g++.dg/reflect/mangle3.C: Remove some invalid tests and
+	replace them with valid tests.
+	* g++.dg/reflect/member22.C: Adjust dg-error.  Add more tests.
+	* g++.dg/reflect/splice15.C: Add dg-warning.
+	* g++.dg/reflect/splice18.C: New test.
+	* g++.dg/reflect/diag7.C: New test.
+	* g++.dg/reflect/error15.C: New test.
+
+2026-11-02  Christophe Lyon  <christophe.lyon@arm.com>
+
+	* g++.dg/modules/modules.exp: Reset module_do between ungrouped
+	tests.
+
+2026-11-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/mangle-vls-cc.C: Expect the tag on a template
+	whose type is dependent.
+
+2026-11-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.target/riscv/mangle-vls-cc.C: New test.
+
+2026-11-02  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR target/100867
+	* gcc.target/s390/vector/vec-perm-halfword-swap-1.c: New test.
+	* gcc.target/s390/zvector/vec-revb-halfword-1.c: New test.
+
+2026-11-02  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/122583
+	* gcc.dg/Wstringop-overflow-47.c: Don't xfail pr97027 on amdgcn.
+	* gcc.target/gcn/pr122583.c: New test.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128013
+	* gcc.dg/torture/pr128013.c: New test.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* gcc.dg/switch-dispatch-5.c: New test.
+	* gcc.target/aarch64/switch-dispatch-1.c: Test default enablement at
+	-O2.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* gcc.target/riscv/rvv/vsetvl/pr126236.c: New test.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* gcc.dg/plugin/plugin.exp: Register the tablejump tests.
+	* gcc.dg/plugin/tablejump_plugin.cc: New plugin.
+	* gcc.dg/plugin/tablejump-valid.c: New test.
+	* gcc.dg/plugin/tablejump-missing-edge.c: Likewise.
+	* gcc.dg/plugin/tablejump-extra-edge.c: Likewise.
+	* gcc.dg/plugin/tablejump-null-label.c: Likewise.
+	* gcc.dg/plugin/tablejump-stale-label.c: Likewise.
+	* gcc.dg/plugin/tablejump-missing-ref.c: Likewise.
+	* gcc.dg/plugin/tablejump-detached-label.c: Likewise.
+	* gcc.dg/plugin/tablejump-detached-table.c: Likewise.
+	* gcc.dg/plugin/tablejump-detached-pair.c: Likewise.
+	* gcc.dg/plugin/tablejump-deleted-table.c: Likewise.
+	* gcc.dg/plugin/tablejump-unmarked.c: Likewise.
+	* gcc.dg/plugin/tablejump-case-label.c: Likewise.
+	* gcc.dg/plugin/tablejump-base-label.c: Likewise.
+	* gcc.dg/plugin/tablejump-misplaced-table.c: Likewise.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* lib/target-supports.exp
+	(check_effective_target_shared_jump_tables): New.
+	* gcc.dg/plugin/plugin.exp: Register the capability test.
+	* gcc.dg/plugin/tablejump_capability_plugin.cc: New plugin.
+	* gcc.dg/plugin/tablejump-capability.c: New test.
+	* gcc.dg/plugin/tablejump-test.h: New test header.
+	* gcc.dg/switch-dispatch-2.c: New test.
+	* gcc.dg/switch-dispatch-3.c: New test.
+	* gcc.dg/switch-dispatch-4.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-1.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-2.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-3.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-4.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-5.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-6.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-7.c: New test.
+	* gcc.dg/torture/switch-dispatch-run-8.c: New test.
+	* gcc.dg/torture/switch-dispatch-hwloop.c: New test.
+	* gcc.dg/torture/switch-dispatch-placement.c: New test.
+	* gcc.target/bfin/switch-dispatch-1.c: New test.
+	* gcc.target/xtensa/switch-dispatch-1.c: New test.
+	* gcc.target/aarch64/switch-dispatch-1.c: New test.
+	* gcc.target/aarch64/switch-dispatch-2.c: New test.
+	* gcc.target/aarch64/switch-dispatch-3.c: New test.
+	* gcc.target/aarch64/switch-dispatch-4.c: New test.
+	* gcc.target/aarch64/switch-dispatch-5.c: New test.
+	* gcc.target/aarch64/switch-dispatch-6.c: New test.
+	* gcc.target/aarch64/switch-dispatch-7.c: New test.
+
+2026-11-02  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR middle-end/126236
+	* gcc.dg/duplicate-computed-goto-1.c: New test.
+	* gcc.dg/duplicate-computed-goto-2.c: New test.
+
+2026-11-02  Steve Bezalel  <stevebezalel215@gmail.com>
+
+	PR tree-optimization/127211
+	* gcc.dg/tree-ssa/pr127211.c: New test.
+
+2026-11-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/128169
+	* gcc.target/i386/vect-bfloat16-2b.c: Scan vpinsrw only for
+	!ia32.
+
+2026-11-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx512vl-no-avx512bw-pextrw-1.c: New test.
+
+2026-11-02  Hu, Lin1  <lin1.hu@intel.com>
+
+	* gcc.target/i386/avx512f-vec-extract-novl-1.c: New test.
+	* gcc.target/i386/avx512f-vec-extract-novl-2.c: Ditto.
+
+2026-11-02  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* gcc.dg/tree-ssa/pr125734.c: XFAIL on !clz.
+
+2026-11-02  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	* lib/gcc-dg.exp (scan-symbol-common): Use gcc-nm and honor
+	GCC_NM_UNDER_TEST.
+
+2026-11-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* gfortran.dg/coarray/alloc_pool_exhausted_3.f90: New test.
+
+2026-11-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/127751
+	* gfortran.dg/coarray/alloc_pool_exhausted_2.f90: New test.
+
 2026-11-02  Pan Li  <pan2.li@intel.com>
 
 	PR target/128162
