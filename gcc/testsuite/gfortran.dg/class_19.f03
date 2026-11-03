@@ -39,4 +39,4 @@ program main
 
 end program main
 
-! { dg-final { scan-tree-dump-times "__builtin_free" 12 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 14 "original" } }

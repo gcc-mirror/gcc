@@ -1004,6 +1004,41 @@ has_finalizer_component (gfc_symbol *derived)
 }
 
 
+/* Return the component of a PDT instance whose storage depends on a LEN
+   parameter: a component itself, or one of its nonpointer nonallocatable
+   subcomponents.  */
+
+static gfc_component *
+pdt_len_component (gfc_symbol *derived)
+{
+  for (gfc_component *c = derived->components; c; c = c->next)
+    {
+      if (c->attr.pointer || c->attr.proc_pointer || c->attr.allocatable)
+	continue;
+      if ((c->attr.pdt_array && c->as && c->as->type == AS_EXPLICIT)
+	  || c->attr.pdt_string)
+	return c;
+      if (c->ts.type == BT_DERIVED
+	  && !gfc_compare_derived_types (derived, c->ts.u.derived)
+	  && pdt_len_component (c->ts.u.derived))
+	return c;
+    }
+  return NULL;
+}
+
+
+/* Return true if COMP is a LEN-dependent array or string of a PDT.  */
+
+static bool
+pdt_len_storage_comp (gfc_component *comp)
+{
+  return (!comp->attr.pointer && !comp->attr.allocatable
+	  && ((comp->attr.pdt_array && comp->as
+	       && comp->as->type == AS_EXPLICIT)
+	      || comp->attr.pdt_string));
+}
+
+
 static bool
 comp_is_finalizable (gfc_component *comp)
 {
@@ -1011,8 +1046,11 @@ comp_is_finalizable (gfc_component *comp)
     return false;
   else if (comp->attr.allocatable && comp->ts.type != BT_CLASS)
     return true;
+  else if (pdt_len_storage_comp (comp))
+    return true;
   else if (comp->ts.type == BT_DERIVED && !comp->attr.pointer
 	   && (comp->ts.u.derived->attr.alloc_comp
+	       || pdt_len_component (comp->ts.u.derived)
 	       || has_finalizer_component (comp->ts.u.derived)
 	       || (comp->ts.u.derived->f2k_derived
 		   && comp->ts.u.derived->f2k_derived->finalizers)))
@@ -1086,6 +1124,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 
   /* Call DEALLOCATE (comp, stat=ignore).  */
   if (comp->attr.allocatable
+      || pdt_len_storage_comp (comp)
       || (comp->ts.type == BT_CLASS && CLASS_DATA (comp)
 	  && CLASS_DATA (comp)->attr.allocatable))
     {
@@ -1774,6 +1813,7 @@ generate_finalization_wrapper (gfc_symbol *derived, gfc_namespace *ns,
      an interface declaration.  */
   if ((!ancestor_wrapper || ancestor_wrapper->expr_type == EXPR_NULL)
       && !derived->attr.alloc_comp
+      && !pdt_len_component (derived)
       && (!derived->f2k_derived || !derived->f2k_derived->finalizers)
       && !has_finalizer_component (derived))
     {

@@ -102,5 +102,5 @@ contains
   end subroutine
 end program ch2701
 ! { dg-final { scan-tree-dump-times "PDTlink_8._deallocate " 5 "original" } }
-! { dg-final { scan-tree-dump-times ".n.data = 0B" 9 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_free" 15 "original" } }
+! { dg-final { scan-tree-dump-times ".n.data = 0B" 10 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 16 "original" } }

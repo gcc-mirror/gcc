@@ -58,6 +58,6 @@ contains
   end subroutine main2
 
 end program test
-! { dg-final { scan-tree-dump-times "__builtin_free" 16 "original" } }
-! { dg-final { scan-tree-dump-times "__builtin_malloc" 8 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_free" 19 "original" } }
+! { dg-final { scan-tree-dump-times "__builtin_malloc" 10 "original" } }
 ! { dg-final { scan-tree-dump-times "__builtin_calloc" 4 "original" } }

@@ -14245,16 +14245,33 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 						      && !lhs_attr.dimension),
 				    !realloc_flag && flag_realloc_lhs
 				    && !lhs_attr.pointer);
-      if (expr2->expr_type == EXPR_FUNCTION
+      /* Free the components of an rhs temporary after its deep copy.  */
+      if ((expr2->expr_type == EXPR_FUNCTION
+	   || (expr2->expr_type == EXPR_STRUCTURE && !expr2->rank
+	       && (use_vptr_copy
+		   || (lhs_attr.allocatable && !lhs_attr.dimension))))
 	  && expr2->ts.type == BT_DERIVED
-	  && expr2->ts.u.derived->attr.alloc_comp)
+	  && (expr2->ts.u.derived->attr.alloc_comp
+	      || (expr2->expr_type == EXPR_STRUCTURE && IS_PDT (expr2))))
 	{
-	  tree tmp2 = gfc_deallocate_alloc_comp (expr2->ts.u.derived,
-						 rse.expr, expr2->rank);
-	  if (lss == gfc_ss_terminator)
-	    gfc_add_expr_to_block (&rse.post, tmp2);
-	  else
-	    gfc_add_expr_to_block (&loop.post, tmp2);
+	  gfc_symbol *rhs_type = expr2->ts.u.derived;
+	  stmtblock_t free_rhs;
+	  gfc_init_block (&free_rhs);
+	  tree tmp2;
+	  if (rhs_type->attr.alloc_comp)
+	    {
+	      tmp2 = gfc_deallocate_alloc_comp (rhs_type, rse.expr,
+						expr2->rank);
+	      gfc_add_expr_to_block (&free_rhs, tmp2);
+	    }
+	  if (expr2->expr_type == EXPR_STRUCTURE && IS_PDT (expr2))
+	    {
+	      tmp2 = gfc_deallocate_pdt_comp (rhs_type, rse.expr, 0);
+	      gfc_add_expr_to_block (&free_rhs, tmp2);
+	    }
+	  gfc_add_expr_to_block (lss == gfc_ss_terminator ? &rse.post
+						     : &loop.post,
+				 gfc_finish_block (&free_rhs));
 	}
 
       expr1->must_finalize = 0;

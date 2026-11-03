@@ -1,5 +1,7 @@
 ! { dg-do run }
+! { dg-options "-fdump-tree-original" }
 ! Based on attachment to PR82173 comment 10 - reproducers/bug9-class-is-kind-ice.f90
+! pdt_bug9a.f90 adds the REAL(16) cases.
 !
 ! This was straightforward to fix; apart from line 36, which required considerable
 ! assistance from Claude Haiku  <claude@anthropic.com>.
@@ -33,8 +35,6 @@ contains
       class is (base(8, *))     ! distinct guards - C1168 permits this
         if (size(u%v, 1) /= sz) stop 3
         if (kind (u%v) /= 8) stop 4
-      class is (base(16, *))    ! Keyword argument ‘k’ at (1) is not in the procedure
-        if (size(u%v, 1) /= sz) stop 5
     end select
     if (allocated (u)) deallocate (u)
   end
@@ -43,9 +43,14 @@ contains
     call selector (u, 5)
     allocate (u, source = base(4, 3)([1,2,3]))
     call selector (u, 3)
-    allocate (u, mold = base(16, 4)([1.,2.,3.,4.])) ! This failed
+    allocate (u, mold = base(8, 4)([1.,2.,3.,4.])) ! This failed
     call selector (u, 4)
     u = base(4, 3)([1,2,3])
     call selector (u, 3)
   end
 end program
+! DEALLOCATE of u must free the LEN-dependent component v.
+! { dg-final { scan-tree-dump "_final=__final_mj_PDTbase_4\[,\}\]" "original" } }
+! { dg-final { scan-tree-dump "_final=__final_mj_PDTbase_8\[,\}\]" "original" } }
+! The constructor temporary's v is freed after its copy into u.
+! { dg-final { scan-tree-dump "__builtin_free \\(\\(void \\*\\) PDTbase_4\\.\[0-9\]+\\.v\\.data\\)" "original" } }
