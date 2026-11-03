@@ -4586,7 +4586,7 @@ finalize_transfer (st_parameter_dt *dtp)
 	  && dtp->u.p.current_unit->s)
 	{
 	  sclose (dtp->u.p.current_unit->s);
-	  dtp->u.p.current_unit->s = NULL;
+	  set_unit_stream (dtp->u.p.current_unit, NULL);
 	}
     }
 

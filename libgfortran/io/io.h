@@ -656,6 +656,8 @@ typedef struct gfc_unit
   int unit_number;
   stream *s;
 
+  uint64_t file_dev, file_ino;
+
   /* Treap links.  */
   struct gfc_unit *left, *right;
   int priority;
@@ -1020,6 +1022,54 @@ internal_proto(size_from_complex_kind);
 /* lock.c */
 extern void free_ionml (st_parameter_dt *);
 internal_proto(free_ionml);
+
+/* Accessors for u->s.  */
+
+static inline void
+set_unit_stream (gfc_unit *u, stream *s)
+{
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  __atomic_store_n (&u->s, s, __ATOMIC_RELEASE);
+#else
+  u->s = s;
+#endif
+}
+
+static inline stream *
+get_unit_stream (gfc_unit *u)
+{
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  return __atomic_load_n (&u->s, __ATOMIC_ACQUIRE);
+#else
+  return u->s;
+#endif
+}
+
+/* Record the unit's file identity.  Must be called before the matching
+   set_unit_stream.  */
+
+static inline void
+set_unit_file_id (gfc_unit *u, uint64_t dev, uint64_t ino)
+{
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  __atomic_store_n (&u->file_dev, dev, __ATOMIC_RELAXED);
+  __atomic_store_n (&u->file_ino, ino, __ATOMIC_RELAXED);
+#else
+  u->file_dev = dev;
+  u->file_ino = ino;
+#endif
+}
+
+static inline bool
+unit_file_id_matches (gfc_unit *u, uint64_t dev, uint64_t ino)
+{
+#ifdef HAVE_ATOMIC_FETCH_ADD
+  return (__atomic_load_n (&u->file_dev, __ATOMIC_RELAXED) == dev
+	  && __atomic_load_n (&u->file_ino, __ATOMIC_RELAXED) == ino);
+#else
+  return u->file_dev == dev && u->file_ino == ino;
+#endif
+}
 
 static inline void
 inc_waiting_locked (gfc_unit *u)

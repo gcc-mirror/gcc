@@ -138,6 +138,9 @@ internal_proto(error_stream);
 extern int compare_file_filename (gfc_unit *, const char *, gfc_charlen_type);
 internal_proto(compare_file_filename);
 
+extern void connect_unit_stream (gfc_unit *, stream *);
+internal_proto(connect_unit_stream);
+
 extern gfc_unit *find_file (const char *file, gfc_charlen_type file_len);
 internal_proto(find_file);
 

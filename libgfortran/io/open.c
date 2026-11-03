@@ -585,7 +585,7 @@ new_unit (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 
   if (u->unit_number != opp->common.unit)
     internal_error (&opp->common, "Unit number changed");
-  u->s = s;
+  connect_unit_stream (u, s);
   u->flags = *flags;
   u->read_bad = 0;
   u->endfile = NO_ENDFILE;
@@ -730,8 +730,8 @@ already_open (st_parameter_open *opp, gfc_unit *u, unit_flags *flags)
 	  return;
 	}
 
-      u->s = NULL;
- 
+      set_unit_stream (u, NULL);
+
 #if !HAVE_UNLINK_OPEN_FILE
       if (u->filename && u->flags.status == STATUS_SCRATCH)
 	remove (u->filename);

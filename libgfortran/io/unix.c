@@ -1704,6 +1704,18 @@ compare_file_filename (gfc_unit *u, const char *name, gfc_charlen_type len)
 # define FIND_FILE0_ARGS id, path
 #endif
 
+/* connect_unit_stream()-- Attach the stream to the unit.  */
+
+void
+connect_unit_stream (gfc_unit *u, stream *s)
+{
+  unix_stream *us = (unix_stream *) s;
+
+  set_unit_file_id (u, (uint64_t) us->st_dev, (uint64_t) us->st_ino);
+  set_unit_stream (u, s);
+}
+
+
 /* find_file0()-- Recursive work function for find_file() */
 
 static gfc_unit *
@@ -1718,15 +1730,15 @@ find_file0 (gfc_unit *u, FIND_FILE0_DECL)
     return NULL;
 
 #ifdef HAVE_WORKING_STAT
-  if (u->s != NULL)
-    {
-      unix_stream *s = (unix_stream *) (u->s);
-      if (st[0].st_dev == s->st_dev && st[0].st_ino == s->st_ino)
-	return u;
-    }
+  /* Match a connected unit by its file id.  */
+  if (get_unit_stream (u) != NULL
+      && unit_file_id_matches (u, (uint64_t) st[0].st_dev,
+			       (uint64_t) st[0].st_ino))
+    return u;
 #else
-# ifdef __MINGW32__ 
-  if (u->s && ((id1 = id_from_fd (((unix_stream *) u->s)->fd)) || id1))
+# ifdef __MINGW32__
+  unix_stream *s = (unix_stream *) get_unit_stream (u);
+  if (s && ((id1 = id_from_fd (s->fd)) || id1))
     {
       if (id == id1)
 	return u;

@@ -660,12 +660,14 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
     }
 
   /* Set initial values for unit parameters.  */
+  stream *s;
   if (kind == 4)
-    iunit->s = open_internal4 (iunit->internal_unit - start_record,
-				 iunit->internal_unit_len, -start_record);
+    s = open_internal4 (iunit->internal_unit - start_record,
+			iunit->internal_unit_len, -start_record);
   else
-    iunit->s = open_internal (iunit->internal_unit - start_record,
-			      iunit->internal_unit_len, -start_record);
+    s = open_internal (iunit->internal_unit - start_record,
+		       iunit->internal_unit_len, -start_record);
+  connect_unit_stream (iunit, s);
 
   iunit->bytes_left = iunit->recl;
   iunit->last_record=0;
@@ -787,7 +789,7 @@ init_units (void)
   if (options.stdin_unit >= 0)
     {				/* STDIN */
       u = insert_unit (options.stdin_unit);
-      u->s = input_stream ();
+      connect_unit_stream (u, input_stream ());
 
       u->flags.action = ACTION_READ;
 
@@ -819,7 +821,7 @@ init_units (void)
   if (options.stdout_unit >= 0)
     {				/* STDOUT */
       u = insert_unit (options.stdout_unit);
-      u->s = output_stream ();
+      connect_unit_stream (u, output_stream ());
 
       u->flags.action = ACTION_WRITE;
 
@@ -850,7 +852,7 @@ init_units (void)
   if (options.stderr_unit >= 0)
     {				/* STDERR */
       u = insert_unit (options.stderr_unit);
-      u->s = error_stream ();
+      connect_unit_stream (u, error_stream ());
 
       u->flags.action = ACTION_WRITE;
 
