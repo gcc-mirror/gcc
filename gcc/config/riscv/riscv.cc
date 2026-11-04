@@ -399,12 +399,12 @@ static const common_vector_cost rvv_vls_vector_cost = {
   1, /* gather_load_cost  */
   1, /* scatter_store_cost  */
   1, /* segment_permute (2) */
-  1, /* segment_permute (3) */
-  1, /* segment_permute (4) */
-  1, /* segment_permute (5) */
-  1, /* segment_permute (6) */
-  1, /* segment_permute (7) */
-  1, /* segment_permute (8) */
+  3, /* segment_permute (3) */
+  4, /* segment_permute (4) */
+  9, /* segment_permute (5) */
+  10, /* segment_permute (6) */
+  11, /* segment_permute (7) */
+  11, /* segment_permute (8) */
   1, /* vec_to_scalar_cost  */
   1, /* scalar_to_vec_cost  */
   {1, 4, 16, 64}, /* permute_cost.  */
@@ -432,12 +432,12 @@ static const scalable_vector_cost rvv_vla_vector_cost = {
     1, /* gather_load_cost  */
     1, /* scatter_store_cost  */
     1, /* segment_permute (2) */
-    1, /* segment_permute (3) */
-    1, /* segment_permute (4) */
-    1, /* segment_permute (5) */
-    1, /* segment_permute (6) */
-    1, /* segment_permute (7) */
-    1, /* segment_permute (8) */
+    3, /* segment_permute (3) */
+    4, /* segment_permute (4) */
+    9, /* segment_permute (5) */
+    10, /* segment_permute (6) */
+    11, /* segment_permute (7) */
+    11, /* segment_permute (8) */
     1, /* vec_to_scalar_cost  */
     1, /* scalar_to_vec_cost  */
     {1, 4, 16, 64}, /* permute_cost.  */

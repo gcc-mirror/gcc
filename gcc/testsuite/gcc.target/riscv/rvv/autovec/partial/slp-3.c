@@ -19,6 +19,4 @@ f (int8_t *restrict a, int8_t *restrict b, int n)
     }
 }
 
-/* FIXME: Since we don't have VECT cost model yet, LOAD_LANES/STORE_LANES are chosen
-   instead of SLP when rvv-autotec-max-lmul=m1.  */
-/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" { xfail { any-opts "-mrvv-max-lmul=m1" } } } } */
+/* { dg-final { scan-tree-dump-times "\.VEC_PERM" 1 "optimized" } } */

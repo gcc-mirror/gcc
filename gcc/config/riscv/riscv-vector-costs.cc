@@ -1603,6 +1603,16 @@ costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
       m_analyzed_vinfo = true;
     }
 
+  /* For store-lanes, the middle-end passes COUNT = NCOPIES * GROUP_SIZE
+     (one per vector in the group).  Normalize COUNT to segment store
+     instructions to avoid scaling the permute overhead.  */
+  if (kind == vector_store)
+    {
+      int group_size = segment_loadstore_group_size (kind, stmt_info, node);
+      if (group_size > 1)
+	count = CEIL (count, group_size);
+    }
+
   if (stmt_info)
     {
       /* If we're applying the VLA vs. VLS unrolling heuristic,
