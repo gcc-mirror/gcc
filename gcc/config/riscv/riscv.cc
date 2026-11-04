@@ -16940,11 +16940,29 @@ synthesize_add (rtx operands[3])
     }
 
   /* No add synthesis was found.  Synthesize the constant into
-     a temporary and use that.  */
+     a temporary and use that.  Reassociate so that the addi can
+     trivially merge into a subsequent memory reference.  This will
+     spoil fusion, but the merge seems more valuable.  */
   if (can_create_pseudo_p ())
     {
-      rtx x = force_reg (word_mode, operands[2]);
-      x = gen_rtx_PLUS (word_mode, operands[1], x);
+      /* The full offset.  */
+      HOST_WIDE_INT offset = INTVAL (operands[2]);
+
+      /* Get the upper bits into a temporary register and add that
+	 to operands[1], storing the result in another temporary. */
+      rtx temp1 = gen_reg_rtx (word_mode);
+      rtx high = gen_int_mode (CONST_HIGH_PART (offset), word_mode);
+      high = riscv_force_temporary (temp1, high);
+
+      /* Now add the temporary to operands[1], storing the result in
+	 a new temporary.  */
+      rtx temp2 = gen_reg_rtx (word_mode);
+      rtx x = gen_rtx_PLUS (word_mode, operands[1], high);
+      emit_insn (gen_rtx_SET (temp2, x));
+
+      /* And finally add the low bits as the last step.  This combines
+	 trivially with memory references.  */
+      x = plus_constant (word_mode, temp2, CONST_LOW_PART (offset));
       emit_insn (gen_rtx_SET (operands[0], x));
       return true;
     }
