@@ -113,6 +113,9 @@ omp_get_teams_thread_limit (void)
 
 ialias (omp_get_teams_thread_limit)
 
+/* Accepts thread_limits = 0 [which is well defined to mean implementation
+   defined], even though only positive values are permitted.  */
+
 void
 omp_set_teams_thread_limit (int thread_limit)
 {

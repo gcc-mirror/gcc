@@ -605,7 +605,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       @tab Y @tab
 @item @code{omp_get_device_num_teams}, @code{omp_set_device_num_teams},
       @code{omp_get_device_teams_thread_limit}, and
-      @code{omp_set_device_teams_thread_limit} routines @tab N @tab
+      @code{omp_set_device_teams_thread_limit} routines @tab Y @tab
 @item @code{omp_target_memset} and @code{omp_target_memset_async} routines
       @tab Y @tab
 @item Fortran version of the interop runtime routines @tab Y @tab
@@ -869,7 +869,8 @@ that does not use the clause @code{num_threads}.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_set_num_threads}, @ref{omp_set_dynamic}, @ref{omp_get_thread_limit}
+@ref{omp_set_num_threads}, @ref{omp_set_dynamic}, @ref{omp_get_thread_limit},
+@ref{omp_get_teams_thread_limit}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.3.
@@ -1182,7 +1183,8 @@ each team created by a teams construct.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_set_teams_thread_limit}, @ref{OMP_TEAMS_THREAD_LIMIT}
+@ref{omp_set_teams_thread_limit}, @ref{OMP_TEAMS_THREAD_LIMIT},
+@ref{omp_get_device_teams_thread_limit}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.6.
@@ -1453,7 +1455,8 @@ region.  They have C linkage and do not throw exceptions.
 @subsection @code{omp_get_num_teams} -- Number of teams
 @table @asis
 @item @emph{Description}:
-Returns the number of teams in the current team region.
+Returns the number of teams in the current team region and one if not inside
+a teams region.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1466,7 +1469,8 @@ Returns the number of teams in the current team region.
 @end multitable
 
 @item @emph{See also}:
-@ref{omp_get_num_teams_dim}, @ref{OMP_NUM_TEAMS}, @ref{omp_get_team_num}
+@ref{omp_get_num_teams_dim}, @ref{OMP_NUM_TEAMS}, @ref{omp_get_team_num},
+@ref{omp_get_device_num_teams}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.32.
@@ -1505,7 +1509,10 @@ Returns the team number of the calling thread.
 @item @emph{Description}:
 Specifies the upper bound for number of teams created by the teams construct
 which does not specify a @code{num_teams} clause.  The
-argument of @code{omp_set_num_teams} shall be a positive integer.
+argument of @code{omp_set_num_teams} shall be a non-negative integer; the value
+zero implies an implementation defined number of teams.  This routine may only
+be called on the host, strictly nested in the implicit parallel region of the
+OpenMP program.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1519,7 +1526,8 @@ argument of @code{omp_set_num_teams} shall be a positive integer.
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_NUM_TEAMS}, @ref{omp_get_num_teams}, @ref{omp_get_max_teams}
+@ref{OMP_NUM_TEAMS}, @ref{omp_get_num_teams}, @ref{omp_get_max_teams},
+@ref{omp_set_device_num_teams}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.3.
@@ -1560,7 +1568,9 @@ that does not use the clause @code{num_teams}.
 Specifies the upper bound for number of threads that are available
 for each team created by the teams construct which does not specify a
 @code{thread_limit} clause.  The argument of
-@code{omp_set_teams_thread_limit} shall be a positive integer.
+@code{omp_set_teams_thread_limit} shall be a positive integer.  This routine may
+only be called on the host, strictly nested in the implicit parallel region of
+the OpenMP program.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -1574,7 +1584,8 @@ for each team created by the teams construct which does not specify a
 @end multitable
 
 @item @emph{See also}:
-@ref{OMP_TEAMS_THREAD_LIMIT}, @ref{omp_get_teams_thread_limit}, @ref{omp_get_thread_limit}
+@ref{OMP_TEAMS_THREAD_LIMIT}, @ref{omp_get_teams_thread_limit}, @ref{omp_get_thread_limit},
+@ref{omp_set_device_teams_thread_limit}
 
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 3.4.5.
@@ -2158,10 +2169,10 @@ They have C linkage and do not throw exceptions.
 * omp_get_uid_from_device::     Obtain the unique id of a device
 * omp_is_initial_device::       Whether executing on the host device
 * omp_get_initial_device::      Device number of host device
-@c * omp_get_device_num_teams::  <fixme>/TR13
-@c * omp_set_device_num_teams::  <fixme>/TR13
-@c * omp_get_device_teams_thread_limit::  <fixme>/TR13
-@c * omp_set_device_teams_thread_limit::  <fixme>/TR13
+* omp_get_device_num_teams::    Number of teams of a device
+* omp_set_device_num_teams::    Set upper teams limit on a device
+* omp_get_device_teams_thread_limit:: Get upper thread limit of a device
+* omp_set_device_teams_thread_limit:: Set upper thread limit of a device
 * omp_get_device_distances:: Obtain the NUMA distance of a device
 @end menu
 
@@ -2439,6 +2450,153 @@ to @code{omp_initial_device}; and otherwise it is replaced with a call to
 @item @emph{Reference}:
 @uref{https://www.openmp.org, OpenMP specification v4.5}, Section 3.2.35.
 @end table
+
+
+
+@node omp_get_device_num_teams
+@subsection @code{omp_get_device_num_teams} -- Number of teams of a device
+@table @asis
+@item @emph{Description}:
+Returns the value of the @emph{nteams-var} ICV for the specified device number,
+which is used to determine the number of teams for a @code{teams} region on
+the device specified by the @var{device_num} argument, unless overridden by
+a @code{num_teams} clause on the construct.  If the @var{device_num} argument
+denotes the host device, the routine returns the same value as
+@code{omp_get_num_teams}.  If the @var{device_num} argument specifies a
+non-conforming device number or @code{omp_invalid_device}, the value zero is
+returned.  Invoking this routine on a non-host device has unspecified behavior.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_device_num_teams(int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_device_num_teams(device_num)}
+@item                   @tab @code{integer, intent(in) :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_set_device_num_teams}. @ref{omp_get_num_teams},
+@ref{omp_get_num_teams_dim}, @ref{OMP_NUM_TEAMS},
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 24.11
+@end table
+
+
+
+@node omp_set_device_num_teams
+@subsection @code{omp_set_device_num_teams} -- Set upper teams limit on a device
+@table @asis
+@item @emph{Description}:
+Sets the value of the @emph{nteams-var} ICV for the specified device number, which
+specifies the upper bound for number of teams created by a @code{teams} construct
+on the device specified by the @var{device_num} argument; this value is used if
+no @code{num_teams} clause is specified on the @code{teams} directive.  The
+@var{num_teams} argument shall be a non-negative integer; the value zero implies
+an implementation defined number of teams.  If the @var{device_num} argument
+denotes the host device, the routine is identical to the @code{omp_set_num_teams}
+routine.  The @var{device_num} argument must be a conforming device number other
+than @code{omp_invalid_device}, else error termination is performed.  Invoking
+this routine on a non-host device has unspecified behavior.  When the
+@code{device_num} arguments denotes the host, the @code{omp_set_device_num_teams}
+region must be strictly nested in the implicit parallel region of the OpenMP
+program.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_device_num_teams(int num_teams, int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_device_num_teams(num_teams, device_num)}
+@item                   @tab @code{integer, intent(in) :: num_teams, device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_device_num_teams}, @ref{omp_set_num_teams}, @ref{omp_get_num_teams},
+@ref{omp_get_max_teams}, @ref{omp_get_supported_teams_dim}, @ref{OMP_NUM_TEAMS}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 24.12
+@end table
+
+
+
+@node omp_get_device_teams_thread_limit
+@subsection @code{omp_get_device_teams_thread_limit} -- Get upper thread limit of a device
+@table @asis
+@item @emph{Description}:
+Returns the value of the @emph{teams-thread-limit-var} ICV for the specified
+device number, which is used to limits the number of threads that participate
+in each team created by a @code{teams} construct.  If the @var{device_num} argument
+denotes the host device, the routine returns the same value as
+@code{omp_get_teams_thread_limit}.  If the @var{device_num} argument specifies a
+non-conforming device number or @code{omp_invalid_device}, the value zero is
+returned.  Invoking this routine on a non-host device has unspecified behavior.
+When the @code{device_num} arguments denotes the host, the
+@code{omp_get_device_teams_thread_limit} region must be strictly nested in the
+implicit parallel region of the OpenMP program.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{int omp_get_device_teams_thread_limit(int device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{integer function omp_get_device_teams_thread_limit(device_num)}
+@item                   @tab @code{integer, intent(in) :: device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_device_teams_thread_limit}, @ref{omp_get_teams_thread_limit},
+@ref{OMP_TEAMS_THREAD_LIMIT}, @ref{OMP_THREAD_LIMIT}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 24.13
+@end table
+
+
+
+@node omp_set_device_teams_thread_limit
+@subsection @code{omp_set_device_teams_thread_limit} -- Set upper thread limit of a device
+@table @asis
+@item @emph{Description}:
+Sets the value of the @emph{teams-thread-limit-var} ICV for the specified device
+number, which specifies the upper bound for number of teams created by a
+@code{teams} construct on the device specified by the @var{device_num} argument.
+The @var{thread_limit} argument shall be positive integer.  If the @var{device_num}
+argument denotes the host device, the routine is identical to the
+@code{omp_set_teams_thread_limit} routine.  The @var{device_num} argument must be a
+conforming device number other than @code{omp_invalid_device}, else error
+termination is performed.  Invoking this routine on a non-host device has
+unspecified behavior.
+
+@item @emph{C/C++}:
+@multitable @columnfractions .20 .80
+@item @emph{Prototype}: @tab @code{void omp_set_device_teams_thread_limit(int thread_limit, device_num)}
+@end multitable
+
+@item @emph{Fortran}:
+@multitable @columnfractions .20 .80
+@item @emph{Interface}: @tab @code{subroutine omp_set_device_teams_thread_limit(thread_limit, device_num)}
+@item                   @tab @code{integer, intent(in) :: thread_limit, device_num}
+@end multitable
+
+@item @emph{See also}:
+@ref{omp_get_device_teams_thread_limit}, @ref{omp_set_teams_thread_limit},
+@ref{omp_get_teams_thread_limit},
+@ref{omp_get_thread_limit}, @ref{omp_get_supported_threads_dim},
+@ref{OMP_TEAMS_THREAD_LIMIT}, @ref{OMP_THREAD_LIMIT}
+
+@item @emph{Reference}:
+@uref{https://www.openmp.org, OpenMP specification v6.0}, Section 24.14
+@end table
+
 
 
 @node omp_get_device_distances
@@ -5007,7 +5165,7 @@ be a positive integer.  If undefined it defaults to 0 which means
 implementation defined upper bound.
 
 @item @emph{See also}:
-@ref{omp_set_num_teams}
+@ref{omp_set_num_teams}, @ref{omp_set_device_num_teams}
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 6.23
@@ -5226,7 +5384,8 @@ the value of 0 is used which stands for an implementation defined upper
 limit.
 
 @item @emph{See also}:
-@ref{OMP_THREAD_LIMIT}, @ref{omp_set_teams_thread_limit}
+@ref{OMP_THREAD_LIMIT}, @ref{omp_set_teams_thread_limit},
+@ref{omp_set_device_teams_thread_limit}
 
 @item @emph{Reference}: 
 @uref{https://www.openmp.org, OpenMP specification v5.1}, Section 6.24

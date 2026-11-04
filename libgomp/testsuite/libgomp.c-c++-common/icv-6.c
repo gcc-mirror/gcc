@@ -62,10 +62,24 @@ main ()
 	  abort ();
       }
 
+      /* The following is required per OpenMP semantic:
+
+	 An omp_set_num_teams region must be a strictly nested region of the
+	 implicit parallel region that surrounds the whole OpenMP program.
+
+	 And likewise for omp_set_teams_thread_limit.
+
+	 That's not the case inside 'target' and GCC fails unless the device ICVs
+	 are copied back to the host at the beginning or end of GOMP_target_ext.
+
+	 Hence set it on the host:  */
+
+      omp_set_device_num_teams (3 + i, i);
+      omp_set_device_teams_thread_limit (2 + i, i);
       #pragma omp target device (i)
       {
-	omp_set_num_teams (3 + i);
-	omp_set_teams_thread_limit (2 + i);
+	// invalid: omp_set_num_teams (3 + i);
+	// invalid: omp_set_teams_thread_limit (2 + i);
 	if (omp_get_max_teams () != 3 + i
 	    || omp_get_teams_thread_limit () != 2 + i)
 	  abort ();

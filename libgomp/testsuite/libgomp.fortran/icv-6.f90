@@ -52,9 +52,20 @@ implicit none (type, external)
       !$omp end target
       if (err) stop 2
 
+      ! The following is required per OpenMP semantic:
+      !
+      ! An omp_set_num_teams region must be a strictly nested region of the
+      ! implicit parallel region that surrounds the whole OpenMP program.
+      !
+      ! That's not the case inside 'target' and GCC fails unless the device ICVs
+      ! are copied back to the host at the beginning or end of GOMP_target_ext.
+      !
+      ! Hence set it on the host:
+
+      call omp_set_device_num_teams (3 + i, i)
       err = .false.
       !$omp target device(i) map(tofrom: err)
-      call omp_set_num_teams (3 + i)
+       ! invalid: call omp_set_num_teams (3 + i)
       if (omp_get_max_teams () /= 3 + i) err = .true.
       !$omp end target
       if (err) stop 3
@@ -94,9 +105,20 @@ implicit none (type, external)
       !$omp end target
       if (err) stop 7
 
+      ! The following is required per OpenMP 6.x semantic:
+      !
+      ! An omp_set_device_teams_thread_limit region must be a strictly nested region
+      ! of the implicit parallel region that surrounds the whole OpenMP program.
+      !
+      ! That's not the case inside 'target' and GCC fails unless the device ICVs
+      ! are copied back to the host at the beginning or end of GOMP_target_ext.
+      !
+      ! Hence set it on the host:
+
+      call omp_set_device_teams_thread_limit (2 + i, i)
       err = .false.
       !$omp target device(i) map(tofrom: err)
-      call omp_set_teams_thread_limit (2 + i)
+      ! invalid: call omp_set_teams_thread_limit (2 + i)
       if (omp_get_teams_thread_limit () /= 2 + i) err = .true.
       !$omp end target
       if (err) stop 8

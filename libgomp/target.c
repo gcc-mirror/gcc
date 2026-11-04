@@ -2622,6 +2622,20 @@ gomp_update (struct gomp_device_descr *devicep, size_t mapnum, void **hostaddrs,
     }
 }
 
+/* WARNING: This gets the original on-host values of the device ICV values.
+   That is fine for the following ICVs:
+   - nteams-var ICV:
+     'omp_set_num_teams' sets it only for the host and
+     'omp_set_device_num_teams' also only runs on the host (but needs then
+     to update also the device value)
+   - thread-limit-var and thread-limit-teams-var ICVs:
+     The former is only temporarily modifiable using a clause, the latter
+     is settable via 'omp_set_teams_thread_limit' and
+     'omp_set_device_teams_thread_limit' but those run also only on the host.
+
+   If you call this function for any other ICV than the listed ones, you
+   may need to call gomp_copy_back_icvs first.  */
+
 static struct gomp_offload_icv_list *
 gomp_get_offload_icv_item (int dev_num)
 {
@@ -3404,12 +3418,12 @@ clear_unsupported_flags (struct gomp_device_descr *devicep, unsigned int flags)
   return flags;
 }
 
-static void
+static struct gomp_offload_icvs *
 gomp_copy_back_icvs (struct gomp_device_descr *devicep, int device)
 {
   struct gomp_offload_icv_list *item = gomp_get_offload_icv_item (device);
   if (item == NULL)
-    return;
+    return NULL;
 
   gomp_mutex_lock (&devicep->lock);
 
@@ -3433,6 +3447,35 @@ gomp_copy_back_icvs (struct gomp_device_descr *devicep, int device)
   if (dev_ptr != NULL)
     gomp_copy_dev2host (devicep, NULL, host_ptr, dev_ptr,
 			sizeof (struct gomp_offload_icvs));
+  return &item->icvs;
+}
+
+void
+gomp_copy_icvs_to_device (struct gomp_device_descr *devicep,
+			  struct gomp_offload_icvs *icvs)
+{
+  gomp_mutex_lock (&devicep->lock);
+
+  struct splay_tree_s *mem_map = &devicep->mem_map;
+  struct splay_tree_key_s cur_node;
+  void *dev_ptr = NULL;
+
+  void *host_ptr = (void*) icvs;
+  cur_node.host_start = (uintptr_t) host_ptr;
+  cur_node.host_end = cur_node.host_start;
+  splay_tree_key n = gomp_map_0len_lookup (mem_map, &cur_node);
+
+  if (n)
+    {
+      uintptr_t offset = cur_node.host_start - n->host_start;
+      dev_ptr = (void *) (n->tgt->tgt_start + n->tgt_offset + offset);
+    }
+
+  gomp_mutex_unlock (&devicep->lock);
+
+  if (dev_ptr != NULL)
+    gomp_copy_host2dev (devicep, NULL, dev_ptr, host_ptr,
+			sizeof (struct gomp_offload_icvs), false, NULL);
 }
 
 /* Like GOMP_target, but KINDS is 16-bit, UNUSED is no longer present,
@@ -3769,12 +3812,6 @@ GOMP_target_ext (int device, void (*fn) (void *), size_t mapnum,
     }
   if (refcount_set)
     htab_free (refcount_set);
-
-  /* Copy back ICVs from device to host.
-     HOST_PTR is expected to exist since it was added in
-     gomp_load_image_to_device if not already available.  */
-  gomp_copy_back_icvs (devicep, device);
-
 }
 
 
@@ -6286,6 +6323,97 @@ GOMP_interop (int device_num, int n_init, struct interop_obj_t ***init,
     }
 }
 
+void
+omp_set_device_num_teams (int num_teams, int device_num)
+{
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
+  if (device_num == omp_initial_device || device_num == gomp_get_num_devices ())
+    {
+      if (num_teams >= 0)
+	gomp_nteams_var = num_teams;
+      return;
+    }
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL || num_teams < 0)
+    return;
+  struct gomp_offload_icvs *icvs = gomp_copy_back_icvs (devicep, device_num);
+  icvs->nteams = num_teams;
+  gomp_copy_icvs_to_device (devicep, icvs);
+}
+
+int
+omp_get_device_num_teams (int device_num)
+{
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
+  int num_devices = gomp_get_num_devices ();
+
+  if (device_num == omp_initial_device || device_num == num_devices)
+    {
+      struct gomp_thread *thr = gomp_thread ();
+      return thr->num_teams + 1;
+    }
+
+  if (device_num < 0 || device_num > num_devices)
+    return 0;
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL)
+    return 0;
+  struct gomp_offload_icv_list *item = gomp_get_offload_icv_item (device_num);
+  return item ? item->icvs.nteams : 0;
+}
+
+/* Accepts thread_limits = 0 [which is well defined to mean implementation
+   defined], even though only positive values are permitted.  */
+
+void
+omp_set_device_teams_thread_limit (int thread_limit, int device_num)
+{
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
+  if (device_num == omp_initial_device || device_num == gomp_get_num_devices ())
+    {
+      if (thread_limit >= 0)
+	gomp_teams_thread_limit_var = thread_limit;
+      return;
+    }
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL || thread_limit < 0)
+    return;
+  struct gomp_offload_icvs *icvs = gomp_copy_back_icvs (devicep, device_num);
+  icvs->teams_thread_limit = thread_limit;
+  gomp_copy_icvs_to_device (devicep, icvs);
+}
+
+int
+omp_get_device_teams_thread_limit (int device_num)
+{
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
+  int num_devices = gomp_get_num_devices ();
+
+  if (device_num == omp_initial_device || device_num == num_devices)
+    return gomp_teams_thread_limit_var;
+
+  if (device_num < 0 || device_num > num_devices)
+    return 0;
+
+  struct gomp_device_descr *devicep = resolve_device (device_num, false);
+  if (devicep == NULL)
+    return 0;
+
+  struct gomp_offload_icv_list *item = gomp_get_offload_icv_item (device_num);
+  return item ? item->icvs.teams_thread_limit : 0;
+}
+
 /* Query device-related data.  */
 
 int
@@ -6464,6 +6592,10 @@ omp_get_device_distances (int ndevs, const int *devs, int *distances)
     }
 }
 
+ialias (omp_set_device_num_teams)
+ialias (omp_get_device_num_teams)
+ialias (omp_set_device_teams_thread_limit)
+ialias (omp_get_device_teams_thread_limit)
 ialias (omp_get_supported_active_team_dims)
 ialias (omp_get_supported_active_league_dims)
 ialias (omp_get_supported_threads_dim)

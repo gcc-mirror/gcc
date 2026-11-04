@@ -342,6 +342,7 @@ extern int omp_get_num_devices (void) __GOMP_NOTHROW;
 extern int omp_get_device_num (void) __GOMP_NOTHROW;
 extern int omp_get_num_teams (void) __GOMP_NOTHROW;
 extern int omp_get_num_teams_dim (int) __GOMP_NOTHROW;
+extern int omp_get_device_num_teams (int) __GOMP_NOTHROW;
 extern int omp_get_team_num (void) __GOMP_NOTHROW;
 extern int omp_get_team_num_dim (int) __GOMP_NOTHROW;
 
@@ -355,9 +356,12 @@ extern __SIZE_TYPE__ omp_get_gprivate_limit (int,
 extern void omp_fulfill_event (omp_event_handle_t) __GOMP_NOTHROW;
 
 extern void omp_set_num_teams (int) __GOMP_NOTHROW;
+extern void omp_set_device_num_teams (int, int) __GOMP_NOTHROW;
 extern int omp_get_max_teams (void) __GOMP_NOTHROW;
 extern void omp_set_teams_thread_limit (int) __GOMP_NOTHROW;
+extern void omp_set_device_teams_thread_limit (int, int) __GOMP_NOTHROW;
 extern int omp_get_teams_thread_limit (void) __GOMP_NOTHROW;
+extern int omp_get_device_teams_thread_limit (int) __GOMP_NOTHROW;
 
 extern void *omp_target_alloc (__SIZE_TYPE__, int) __GOMP_NOTHROW;
 extern void omp_target_free (void *, int) __GOMP_NOTHROW;

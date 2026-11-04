@@ -372,12 +372,30 @@
       end interface
 
       interface
+!       Use bind(C) for simplicity; will fail with default-kind-8 integer
+        function omp_get_device_teams_thread_limit (device_num) bind(C)
+          use iso_c_binding, only: c_int
+          integer (c_int), value :: device_num
+          integer (c_int) :: omp_get_device_teams_thread_limit
+        end function omp_get_device_teams_thread_limit
+      end interface
+
+      interface
 !       Implementation choice: bind(C) and no default-kind-8 integer
         function omp_get_num_teams_dim (dim) bind(C)
           use, intrinsic :: iso_c_binding, only : c_int
           integer (c_int) :: omp_get_num_teams_dim
           integer (c_int), value :: dim
         end function omp_get_num_teams_dim
+      end interface
+
+      interface
+!       Use bind(C) for simplicity; will fail with default-kind-8 integer
+        function omp_get_device_num_teams (device_num) bind(C)
+          use iso_c_binding, only: c_int
+          integer (c_int), value :: device_num
+          integer (c_int) :: omp_get_device_num_teams
+        end function omp_get_device_num_teams
       end interface
 
       interface
@@ -403,6 +421,24 @@
       external omp_set_num_teams, omp_set_teams_thread_limit
       external omp_get_max_teams, omp_get_teams_thread_limit
       integer(4) omp_get_max_teams, omp_get_teams_thread_limit
+
+      interface
+!       Use bind(C) for simplicity; will fail with default-kind-8 integer
+        subroutine omp_set_device_num_teams (num_teams, device_num)             &
+     &      bind(C)
+          use iso_c_binding, only: c_int
+          integer (c_int), value, intent (in) :: num_teams, device_num
+        end subroutine omp_set_device_num_teams
+      end interface
+
+      interface
+!       Use bind(C) for simplicity; will fail with default-kind-8 integer
+        subroutine omp_set_device_teams_thread_limit (thread_limit,             &
+     &      device_num) bind(C)
+          use iso_c_binding, only: c_int
+          integer (c_int), value, intent (in) :: thread_limit,device_num
+        end subroutine omp_set_device_teams_thread_limit
+      end interface
 
       external omp_fulfill_event
 

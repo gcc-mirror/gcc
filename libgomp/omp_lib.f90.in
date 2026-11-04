@@ -476,6 +476,15 @@
           end function omp_get_thread_limit_dim
         end interface
 
+        interface
+          ! Use bind(C) for simplicity; will fail with default-kind-8 integer
+          function omp_get_device_teams_thread_limit (device_num) bind(C)
+            use iso_c_binding, only: c_int
+            integer (c_int), value :: device_num
+            integer (c_int) :: omp_get_device_teams_thread_limit
+          end function omp_get_device_teams_thread_limit
+        end interface
+
         interface omp_set_max_active_levels
           subroutine omp_set_max_active_levels (max_levels)
             integer (4), intent (in) :: max_levels
@@ -645,6 +654,15 @@
         end interface
 
         interface
+          ! Use bind(C) for simplicity; will fail with default-kind-8 integer
+          function omp_get_device_num_teams (device_num) bind(C)
+            use iso_c_binding, only: c_int
+            integer (c_int), value :: device_num
+            integer (c_int) :: omp_get_device_num_teams
+          end function omp_get_device_num_teams
+        end interface
+
+        interface
           function omp_get_team_num ()
             integer (4) :: omp_get_team_num
           end function omp_get_team_num
@@ -693,6 +711,14 @@
         end interface
 
         interface
+          ! Use bind(C) for simplicity; will fail with default-kind-8 integer
+          subroutine omp_set_device_num_teams (num_teams, device_num) bind(C)
+            use iso_c_binding, only: c_int
+            integer (c_int), value, intent (in) :: num_teams, device_num
+          end subroutine omp_set_device_num_teams
+        end interface
+
+        interface
           function omp_get_max_teams ()
             integer (4) :: omp_get_max_teams
           end function omp_get_max_teams
@@ -705,6 +731,15 @@
           subroutine omp_set_teams_thread_limit_8 (thread_limit)
             integer (8), intent (in) :: thread_limit
           end subroutine omp_set_teams_thread_limit_8
+        end interface
+
+        interface
+          ! Use bind(C) for simplicity; will fail with default-kind-8 integer
+          subroutine omp_set_device_teams_thread_limit (thread_limit, device_num) &
+              bind(C)
+            use iso_c_binding, only: c_int
+            integer (c_int), value, intent (in) :: thread_limit, device_num
+          end subroutine omp_set_device_teams_thread_limit
         end interface
 
         interface
