@@ -30,6 +30,20 @@
 #include <stdlib.h>
 
 
+#ifdef LIBGOMP_SIMT
+/* See gomp_iter_simt_lanes_init.  */
+
+void
+gomp_iter_simt_lanes_alloc (struct gomp_work_share *ws)
+{
+  if (!FIRST_LANE_P)
+    return;
+
+  ws->simt_lane_ranges
+    = team_malloc (SIMT_LANES * 2 * sizeof (*ws->simt_lane_ranges));
+}
+#endif
+
 /* This function implements the STATIC scheduling method.  The caller should
    iterate *pstart <= x < *pend.  Return zero if there are more iterations
    to perform; nonzero if not.  Return less than 0 if this thread had
@@ -41,7 +55,10 @@ gomp_iter_static_next (long *pstart, long *pend)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   struct gomp_work_share *ws = thr->ts.work_share;
-  unsigned long nthreads = team ? team->nthreads : 1;
+  unsigned long nthreads = team ? GOMP_TEAM_OMP_NTHR (team) : 1;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return !gomp_iter_simt_lanes_next (ws, pstart, pend);
 
   if (thr->ts.static_trip == -1)
     return -1;
@@ -70,7 +87,7 @@ gomp_iter_static_next (long *pstart, long *pend)
       /* Compute the total number of iterations.  */
       s = ws->incr + (ws->incr > 0 ? -1 : 1);
       n = (ws->end - ws->next + s) / ws->incr;
-      i = thr->ts.team_id;
+      i = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
 
       /* Compute the "zero-based" start and end points.  That is, as
          if the loop began at zero and incremented by one.  */
@@ -97,7 +114,7 @@ gomp_iter_static_next (long *pstart, long *pend)
 
       *pstart = s;
       *pend = e;
-      thr->ts.static_trip = (e0 == n ? -1 : 1);
+      thr->ts.static_trip = (SIMT_VOTE_ANY (e0 == n) ? -1 : 1);
       return 0;
     }
   else
@@ -110,7 +127,7 @@ gomp_iter_static_next (long *pstart, long *pend)
 
       s = ws->incr + (ws->incr > 0 ? -1 : 1);
       n = (ws->end - ws->next + s) / ws->incr;
-      i = thr->ts.team_id;
+      i = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
       c = ws->chunk_size;
 
       /* Initial guess is a C sized chunk positioned nthreads iterations
@@ -131,9 +148,9 @@ gomp_iter_static_next (long *pstart, long *pend)
       *pstart = s;
       *pend = e;
 
-      if (e0 == n)
+      if (SIMT_VOTE_ANY (e0 == n))
 	thr->ts.static_trip = -1;
-      else
+      else if (FIRST_LANE_P)
 	thr->ts.static_trip++;
       return 0;
     }
@@ -150,6 +167,9 @@ gomp_iter_dynamic_next_locked (long *pstart, long *pend)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_work_share *ws = thr->ts.work_share;
   long start, end, chunk, left;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_simt_lanes_next (ws, pstart, pend);
 
   start = ws->next;
   if (start == ws->end)
@@ -186,6 +206,9 @@ gomp_iter_dynamic_next (long *pstart, long *pend)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_work_share *ws = thr->ts.work_share;
   long start, end, nend, chunk, incr;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_simt_lanes_next (ws, pstart, pend);
 
   end = ws->end;
   incr = ws->incr;
@@ -267,6 +290,9 @@ gomp_iter_guided_next_locked (long *pstart, long *pend)
   unsigned long n, q;
   long start, end;
 
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_simt_lanes_next (ws, pstart, pend);
+
   if (ws->next == ws->end)
     return false;
 
@@ -300,6 +326,9 @@ gomp_iter_guided_next (long *pstart, long *pend)
   unsigned long nthreads = team ? team->nthreads : 1;
   long start, end, nend, incr;
   unsigned long chunk_size;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_simt_lanes_next (ws, pstart, pend);
 
   start = __atomic_load_n (&ws->next, MEMMODEL_RELAXED);
   end = ws->end;

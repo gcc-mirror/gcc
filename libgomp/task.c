@@ -2211,10 +2211,9 @@ GOMP_taskyield (void)
 }
 
 static inline struct gomp_taskgroup *
-gomp_taskgroup_init (struct gomp_taskgroup *prev)
+gomp_taskgroup_init_at (struct gomp_taskgroup *taskgroup,
+			struct gomp_taskgroup *prev)
 {
-  struct gomp_taskgroup *taskgroup
-    = gomp_malloc (sizeof (struct gomp_taskgroup));
   taskgroup->prev = prev;
   priority_queue_init (&taskgroup->taskgroup_queue);
   taskgroup->reductions = prev ? prev->reductions : NULL;
@@ -2224,6 +2223,13 @@ gomp_taskgroup_init (struct gomp_taskgroup *prev)
   taskgroup->num_children = 0;
   gomp_sem_init (&taskgroup->taskgroup_sem, 0);
   return taskgroup;
+}
+
+static inline struct gomp_taskgroup *
+gomp_taskgroup_init (struct gomp_taskgroup *prev)
+{
+  return gomp_taskgroup_init_at (gomp_malloc (sizeof (struct gomp_taskgroup)),
+				 prev);
 }
 
 void
@@ -2417,9 +2423,19 @@ GOMP_taskgroup_end (void)
   free (taskgroup);
 }
 
+/* NTHREADS counts OpenMP threads, so in SIMT mode it is lanes at level 1.
+
+   With LANES, every active lane registers its own reductions at once, and
+   the same lanes unregister them at once.  The private copies of all the
+   lanes are then allocated together, and data[3], the allocator, which is
+   otherwise unused, is set to GOMP_REDUCTION_LANES_ALLOCATOR to tell
+   GOMP_taskgroup_reduction_unregister to free them together.  */
+
+#define GOMP_REDUCTION_LANES_ALLOCATOR ((uintptr_t) -2)
+
 static inline __attribute__((always_inline)) void
 gomp_reduction_register (uintptr_t *data, uintptr_t *old, uintptr_t *orig,
-			 unsigned nthreads)
+			 unsigned nthreads, bool lanes)
 {
   size_t total_cnt = 0;
   uintptr_t *d = data;
@@ -2439,7 +2455,14 @@ gomp_reduction_register (uintptr_t *data, uintptr_t *old, uintptr_t *orig,
 	{
 	  size_t sz = d[1] * nthreads;
 	  /* Should use omp_alloc if d[3] is not -1.  */
-	  void *ptr = gomp_aligned_alloc (d[2], sz);
+	  void *ptr;
+	  if (lanes)
+	    {
+	      ptr = gomp_aligned_alloc_lanes (d[2], sz);
+	      d[3] = GOMP_REDUCTION_LANES_ALLOCATOR;
+	    }
+	  else
+	    ptr = gomp_aligned_alloc (d[2], sz);
 	  memset (ptr, '\0', sz);
 	  d[2] = (uintptr_t) ptr;
 	  d[6] = d[2] + sz;
@@ -2505,6 +2528,9 @@ gomp_reduction_register (uintptr_t *data, uintptr_t *old, uintptr_t *orig,
 static void
 gomp_create_artificial_team (void)
 {
+  if (!FIRST_LANE_P)
+    return;
+
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_task_icv *icv;
   struct gomp_team *team = gomp_new_team (1);
@@ -2576,9 +2602,10 @@ GOMP_taskgroup_reduction_register (uintptr_t *data)
       ialias_call (GOMP_taskgroup_start) ();
       team = thr->ts.team;
     }
-  nthreads = team->nthreads;
+  nthreads = GOMP_TEAM_OMP_NTHR (team);
   task = thr->task;
-  gomp_reduction_register (data, task->taskgroup->reductions, NULL, nthreads);
+  gomp_reduction_register (data, task->taskgroup->reductions, NULL, nthreads,
+			   false);
   task->taskgroup->reductions = data;
 }
 
@@ -2589,7 +2616,10 @@ GOMP_taskgroup_reduction_unregister (uintptr_t *data)
   htab_free ((struct htab *) data[5]);
   do
     {
-      gomp_aligned_free ((void *) d[2]);
+      if (d[3] == GOMP_REDUCTION_LANES_ALLOCATOR)
+	gomp_aligned_free_lanes ((void *) d[2]);
+      else
+	gomp_aligned_free ((void *) d[2]);
       d = (uintptr_t *) d[4];
     }
   while (d && !d[5]);
@@ -2607,7 +2637,8 @@ GOMP_task_reduction_remap (size_t cnt, size_t cntorig, void **ptrs)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_task *task = thr->task;
-  unsigned id = thr->ts.team_id;
+  /* The private copies are per OpenMP thread.  */
+  unsigned id = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
   uintptr_t *data = task->taskgroup->reductions;
   uintptr_t *d;
   struct htab *reduction_htab = (struct htab *) data[5];
@@ -2668,11 +2699,18 @@ GOMP_task_reduction_remap (size_t cnt, size_t cntorig, void **ptrs)
     }
 }
 
+/* In SIMT mode, every lane may start a team with reductions at once, and
+   those lanes finish at once, so allocate their memory together.  The
+   caller frees the taskgroup with gomp_aligned_free_lanes.  */
+
 struct gomp_taskgroup *
 gomp_parallel_reduction_register (uintptr_t *data, unsigned nthreads)
 {
-  struct gomp_taskgroup *taskgroup = gomp_taskgroup_init (NULL);
-  gomp_reduction_register (data, NULL, NULL, nthreads);
+  struct gomp_taskgroup *taskgroup
+    = gomp_aligned_alloc_lanes (__alignof__ (struct gomp_taskgroup),
+				sizeof (struct gomp_taskgroup));
+  gomp_taskgroup_init_at (taskgroup, NULL);
+  gomp_reduction_register (data, NULL, NULL, nthreads, SIMT_MODE_P);
   taskgroup->reductions = data;
   return taskgroup;
 }
@@ -2683,8 +2721,9 @@ gomp_workshare_task_reduction_register (uintptr_t *data, uintptr_t *orig)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   struct gomp_task *task = thr->task;
-  unsigned nthreads = team->nthreads;
-  gomp_reduction_register (data, task->taskgroup->reductions, orig, nthreads);
+  unsigned nthreads = GOMP_TEAM_OMP_NTHR (team);
+  gomp_reduction_register (data, task->taskgroup->reductions, orig, nthreads,
+			   false);
   task->taskgroup->reductions = data;
 }
 

@@ -122,7 +122,8 @@ gomp_team_barrier_wait_end (gomp_barrier_t *bar, gomp_barrier_state_t state)
 	  abort();
 	}
 
-      asm ("s_barrier" ::: "memory");
+      if (bar->total > 1)
+	asm ("s_barrier" ::: "memory");
       gen = __atomic_load_n (&bar->generation, MEMMODEL_ACQUIRE);
       if (__builtin_expect (gen & BAR_TASK_PENDING, 0))
 	{

@@ -172,6 +172,19 @@ gomp_new_team (unsigned nthreads)
   struct gomp_team *team;
   int i;
 
+  /* In SIMT mode every lane calls this, but the team belongs to the wave, so
+     only the first lane gets it; the others get NULL.  gomp_team_start
+     ignores the other lanes.  */
+  if (!FIRST_LANE_P)
+    return NULL;
+
+#ifdef LIBGOMP_SIMT
+  /* NTHREADS counts OpenMP threads, but the team's barrier and per-thread
+     arrays are per wave.  */
+  unsigned omp_nthreads = nthreads;
+  nthreads = OMP_NTHR_TO_GOMP_NTHR (nthreads);
+#endif
+
   team = get_last_team (nthreads);
   if (team == NULL)
     {
@@ -194,6 +207,9 @@ gomp_new_team (unsigned nthreads)
     }
 
   team->work_share_chunk = 8;
+#ifdef LIBGOMP_SIMT
+  team->omp_nthreads = omp_nthreads;
+#endif
 #ifdef HAVE_SYNC_BUILTINS
   team->single_count = 0;
 #endif
@@ -947,6 +963,9 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
 void
 gomp_team_end (void)
 {
+  if (!FIRST_LANE_P)
+    return;
+
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
 

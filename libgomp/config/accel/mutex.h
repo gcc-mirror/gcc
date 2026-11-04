@@ -48,13 +48,15 @@ gomp_mutex_destroy (gomp_mutex_t *mutex)
 static inline void
 gomp_mutex_lock (gomp_mutex_t *mutex)
 {
-  while (__sync_lock_test_and_set (mutex, 1))
-    /* spin */ ;
+  if (FIRST_LANE_P)
+    while (__sync_lock_test_and_set (mutex, 1))
+      /* spin */ ;
 }
 
 static inline void
 gomp_mutex_unlock (gomp_mutex_t *mutex)
 {
-  __sync_lock_release (mutex);
+  if (FIRST_LANE_P)
+    __sync_lock_release (mutex);
 }
 #endif /* GOMP_MUTEX_H */

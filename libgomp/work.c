@@ -134,6 +134,9 @@ gomp_init_work_share (struct gomp_work_share *ws, size_t ordered,
     ws->ordered_team_ids = ws->inline_ordered_team_ids;
   gomp_ptrlock_init (&ws->next_ws, NULL);
   ws->threads_completed = 0;
+#ifdef LIBGOMP_SIMT
+  ws->simt_lane_ranges = NULL;
+#endif
 }
 
 /* Do any needed destruction of gomp_work_share fields before it
@@ -145,6 +148,10 @@ gomp_fini_work_share (struct gomp_work_share *ws)
   gomp_mutex_destroy (&ws->lock);
   if (ws->ordered_team_ids != ws->inline_ordered_team_ids)
     team_free (ws->ordered_team_ids);
+#ifdef LIBGOMP_SIMT
+  if (ws->simt_lane_ranges != NULL)
+    team_free (ws->simt_lane_ranges);
+#endif
   gomp_ptrlock_destroy (&ws->next_ws);
 }
 
@@ -183,8 +190,8 @@ free_work_share (struct gomp_team *team, struct gomp_work_share *ws)
    structure.  In all cases the work_share lock is locked.  Return true
    if this was the first thread to reach this point.  */
 
-bool
-gomp_work_share_start (size_t ordered)
+static bool
+gomp_work_share_start_1 (size_t ordered)
 {
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
@@ -222,6 +229,20 @@ gomp_work_share_start (size_t ordered)
     }
 }
 
+/* In SIMT mode a gomp_thread is a whole wavefront, and the work share
+   belongs to the wavefront, so only one lane may take the ptrlock (a lane
+   that waited for another lane of its own wavefront would deadlock), but
+   every lane needs the result.  */
+
+bool
+gomp_work_share_start (size_t ordered)
+{
+  bool first = false;
+  if (FIRST_LANE_P)
+    first = gomp_work_share_start_1 (ordered);
+  return SIMT_VOTE_ANY (first);
+}
+
 /* The current thread is done with its current work sharing construct.
    This version does imply a barrier at the end of the work-share.  */
 
@@ -231,6 +252,10 @@ gomp_work_share_end (void)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   gomp_barrier_state_t bstate;
+
+  /* In SIMT mode the work share and barrier are per wavefront.  */
+  if (!FIRST_LANE_P)
+    return;
 
   /* Work sharing constructs can be orphaned.  */
   if (team == NULL)
@@ -268,7 +293,8 @@ gomp_work_share_end_cancel (void)
   /* Cancellable work sharing constructs cannot be orphaned.  */
   bstate = gomp_barrier_wait_cancel_start (&team->barrier);
 
-  if (gomp_barrier_last_thread (bstate))
+  /* In SIMT mode every lane of the last wavefront sees BAR_WAS_LAST.  */
+  if (gomp_barrier_last_thread (bstate) && FIRST_LANE_P)
     {
       if (__builtin_expect (thr->ts.last_work_share != NULL, 1))
 	{
@@ -291,6 +317,10 @@ gomp_work_share_end_nowait (void)
   struct gomp_team *team = thr->ts.team;
   struct gomp_work_share *ws = thr->ts.work_share;
   unsigned completed;
+
+  /* In SIMT mode the work share is per wavefront.  */
+  if (!FIRST_LANE_P)
+    return;
 
   /* Work sharing constructs can be orphaned.  */
   if (team == NULL)

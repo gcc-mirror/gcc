@@ -28,7 +28,6 @@
 #include "libgomp.h"
 #include <limits.h>
 
-
 /* Determine the number of threads to be launched for a PARALLEL construct.
    This algorithm is explicitly described in OpenMP 3.0 section 2.4.1.
    SPECIFIED is a combination of the NUM_THREADS clause and the IF clause.
@@ -47,6 +46,11 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
   icv = gomp_icv (false);
 
   if (specified == 1)
+    return 1;
+
+  /* In SIMT mode a nested team is a team of one per lane, even inside an
+     inactive team.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (thr->ts.level + 1))
     return 1;
 
   if (thr->ts.active_level >= 1
@@ -81,8 +85,10 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
 	max_num_threads = count;
     }
 
+  unsigned thread_limit = icv->thread_limit_var;
+
   /* UINT_MAX stands for infinity.  */
-  if (__builtin_expect (icv->thread_limit_var == UINT_MAX, 1)
+  if (__builtin_expect (thread_limit == UINT_MAX, 1)
       || max_num_threads == 1)
     return max_num_threads;
 
@@ -95,8 +101,8 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
   if (thr->ts.team == NULL || pool == NULL)
     {
       num_threads = max_num_threads;
-      if (num_threads > icv->thread_limit_var)
-	num_threads = icv->thread_limit_var;
+      if (num_threads > thread_limit)
+	num_threads = thread_limit;
       if (pool)
 	pool->threads_busy = num_threads;
       return num_threads;
@@ -107,8 +113,8 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
     {
       busy = pool->threads_busy;
       num_threads = max_num_threads;
-      if (icv->thread_limit_var - busy + 1 < num_threads)
-	num_threads = icv->thread_limit_var - busy + 1;
+      if (thread_limit - busy + 1 < num_threads)
+	num_threads = thread_limit - busy + 1;
     }
   while (__sync_val_compare_and_swap (&pool->threads_busy,
 				      busy, busy + num_threads - 1)
@@ -117,8 +123,8 @@ gomp_resolve_num_threads (unsigned specified, unsigned count)
   gomp_mutex_lock (&gomp_managed_threads_lock);
   num_threads = max_num_threads;
   busy = pool->threads_busy;
-  if (icv->thread_limit_var - busy + 1 < num_threads)
-    num_threads = icv->thread_limit_var - busy + 1;
+  if (thread_limit - busy + 1 < num_threads)
+    num_threads = thread_limit - busy + 1;
   pool->threads_busy += num_threads - 1;
   gomp_mutex_unlock (&gomp_managed_threads_lock);
 #endif
@@ -142,7 +148,7 @@ GOMP_parallel_end (void)
     {
       struct gomp_thread *thr = gomp_thread ();
       struct gomp_team *team = thr->ts.team;
-      unsigned int nthreads = team ? team->nthreads : 1;
+      unsigned int nthreads = team ? GOMP_TEAM_OMP_NTHR (team) : 1;
       gomp_team_end ();
       if (nthreads > 1)
 	{
@@ -175,7 +181,7 @@ GOMP_parallel (void (*fn) (void *), void *data, unsigned num_threads,
   num_threads = gomp_resolve_num_threads (num_threads, 0);
   gomp_team_start (fn, data, num_threads, flags, gomp_new_team (num_threads),
 		   NULL);
-  fn (data);
+  LAUNCH_MASTER_THREAD (fn, data);
   ialias_call (GOMP_parallel_end) ();
 }
 
@@ -189,10 +195,10 @@ GOMP_parallel_reductions (void (*fn) (void *), void *data,
   taskgroup = gomp_parallel_reduction_register (rdata, num_threads);
   gomp_team_start (fn, data, num_threads, flags, gomp_new_team (num_threads),
 		   taskgroup);
-  fn (data);
+  LAUNCH_MASTER_THREAD (fn, data);
   ialias_call (GOMP_parallel_end) ();
   gomp_sem_destroy (&taskgroup->taskgroup_sem);
-  free (taskgroup);
+  gomp_aligned_free_lanes (taskgroup);
   return num_threads;
 }
 
@@ -289,16 +295,31 @@ GOMP_loop_static_worksharing (void)
 bool
 GOMP_has_masked_thread_num (int tid)
 {
-  return tid == gomp_thread ()->ts.team_id;
+  return tid == GOMP_TID_TO_OMP_TID (gomp_thread ()->ts.team_id);
 }
+
+/* OMPT variant enabled by -fopenmp-ompt.  */
+
+bool
+GOMP_has_masked_thread_num_with_end (int tid)
+{
+  return tid == GOMP_TID_TO_OMP_TID (gomp_thread ()->ts.team_id);
+}
+
+/* Stub for OMPT callback enabled by -fopenmp-ompt.  */
+
+void
+GOMP_masked_end (void)
+{}
 
+
 /* The public OpenMP API for thread and team related inquiries.  */
 
 int
 omp_get_num_threads (void)
 {
   struct gomp_team *team = gomp_thread ()->ts.team;
-  return team ? team->nthreads : 1;
+  return team ? GOMP_TEAM_OMP_NTHR (team) : 1;
 }
 
 int
@@ -312,7 +333,7 @@ omp_get_num_threads_dim (int dim)
 int
 omp_get_thread_num (void)
 {
-  return gomp_thread ()->ts.team_id;
+  return GOMP_TID_TO_OMP_TID (gomp_thread ()->ts.team_id);
 }
 
 int
@@ -347,7 +368,11 @@ omp_get_ancestor_thread_num (int level)
     return -1;
   for (level = ts->level - level; level > 0; --level)
     ts = &ts->team->prev_ts;
-  return ts->team_id;
+  /* The initial thread (level 0) is not a SIMT team, so every lane
+     shares its thread number.  */
+  if (ts->team == NULL)
+    return ts->team_id;
+  return GOMP_TID_TO_OMP_TID_AT (ts->level, ts->team_id);
 }
 
 int
@@ -361,7 +386,7 @@ omp_get_team_size (int level)
   if (ts->team == NULL)
     return 1;
   else
-    return ts->team->nthreads;
+    return GOMP_TEAM_OMP_NTHR (ts->team);
 }
 
 int

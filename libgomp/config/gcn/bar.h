@@ -105,7 +105,12 @@ gomp_barrier_wait_start (gomp_barrier_t *bar)
      2.8.6 flush Construct, which says there is an implicit flush during
      a barrier region.  This is a convenient place to add the barrier,
      so we use MEMMODEL_ACQ_REL here rather than MEMMODEL_ACQUIRE.  */
-  if (__atomic_add_fetch (&bar->awaited, -1, MEMMODEL_RELAXED) == 0)
+  /* In SIMT mode a gomp_thread is a whole wavefront, so only one lane
+     may count it, but every lane must see the result.  */
+  int last = 0;
+  if (FIRST_LANE_P)
+    last = __atomic_add_fetch (&bar->awaited, -1, MEMMODEL_RELAXED) == 0;
+  if (SIMT_VOTE_ANY (last))
     ret |= BAR_WAS_LAST;
   return ret;
 }
@@ -125,7 +130,11 @@ gomp_barrier_wait_final_start (gomp_barrier_t *bar)
   unsigned int ret = __atomic_load_n (&bar->generation, MEMMODEL_RELAXED);
   ret &= -BAR_INCR | BAR_CANCELLED;
   /* See above gomp_barrier_wait_start comment.  */
-  if (__atomic_add_fetch (&bar->awaited_final, -1, MEMMODEL_RELAXED) == 0)
+  int last = 0;
+  if (FIRST_LANE_P)
+    last = (__atomic_add_fetch (&bar->awaited_final, -1, MEMMODEL_RELAXED)
+	    == 0);
+  if (SIMT_VOTE_ANY (last))
     ret |= BAR_WAS_LAST;
   return ret;
 }

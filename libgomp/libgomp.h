@@ -43,6 +43,7 @@
 
 #include "config.h"
 #include <stdint.h>
+#include <limits.h>
 
 /* Include omp.h by parts.  */
 #include "omp-lock.h"
@@ -211,6 +212,38 @@ extern void gomp_fatal (const char *, ...)
 struct gomp_task;
 struct gomp_taskgroup;
 struct htab;
+
+/* SIMT devices, on which the OpenMP threads of a team may be the lanes of
+   a wave, define LIBGOMP_SIMT and the lane primitives below.  The generic
+   code tests LIBGOMP_SIMT, never the target.  SIMT_MODE_P is true if this
+   kernel runs threads as lanes ("simt" offload mode), and false in
+   "simt-directed" mode.  These must be defined before the following
+   headers.  */
+#if defined(__AMDGCN__) && defined(__SIMT__)
+#define LIBGOMP_SIMT 1
+extern int __gcn_simt_mode;
+#define SIMT_MODE_P __gcn_simt_mode
+#define FIRST_LANE_P __builtin_gcn_simt_first_lane_p ()
+#define SIMT_VOTE_ANY(COND) __builtin_gcn_simt_vote_any (COND)
+#define SIMT_BROADCAST_FIRST_LANE(X) __builtin_gcn_simt_broadcast_first_lane (X)
+#define SIMT_LANE_ID __builtin_gcn_dim_pos (2)
+#define SIMT_LANES 64
+#else
+#define SIMT_MODE_P false
+#define FIRST_LANE_P true
+#define SIMT_VOTE_ANY(COND) (COND)
+#define SIMT_BROADCAST_FIRST_LANE(X) (X)
+#define SIMT_LANE_ID 0
+#define SIMT_LANES 1
+#endif
+
+#ifdef LIBGOMP_SIMT
+extern void *gomp_aligned_alloc_lanes (size_t, size_t);
+extern void gomp_aligned_free_lanes (void *);
+#else
+#define gomp_aligned_alloc_lanes gomp_aligned_alloc
+#define gomp_aligned_free_lanes gomp_aligned_free
+#endif
 
 #include "priority_queue.h"
 #include "sem.h"
@@ -401,6 +434,12 @@ struct gomp_work_share
 
   /* Task reductions for this work-sharing construct.  */
   uintptr_t *task_reductions;
+
+#ifdef LIBGOMP_SIMT
+  /* In a nested SIMT team, each lane's remaining iterations, as NEXT, END
+     pairs indexed by lane (see gomp_iter_simt_lanes_init).  */
+  unsigned long long *simt_lane_ranges;
+#endif
 
   /* If only few threads are in the team, ordered_team_ids can point
      to this array which fills the padding at the end of this struct.  */
@@ -827,6 +866,13 @@ struct gomp_team
   /* This is the number of threads in the current team.  */
   unsigned nthreads;
 
+#ifdef LIBGOMP_SIMT
+  /* The number of OpenMP threads in the team.  NTHREADS counts waves, and
+     in SIMT mode the threads of an outermost team are the first
+     OMP_NTHREADS lanes of those waves.  */
+  unsigned omp_nthreads;
+#endif
+
   /* This is number of gomp_work_share structs that have been allocated
      as a block last time.  */
   unsigned work_share_chunk;
@@ -961,6 +1007,57 @@ struct gomp_thread
   pthread_t handle;
 #endif
 };
+
+#ifdef LIBGOMP_SIMT
+/* True if the OpenMP threads at nesting LEVEL are the lanes of the team's
+   waves.  The outermost team (level 1) enters SIMT mode, so its lanes are
+   threads.  A parallel region nested inside it is reached from SIMT code,
+   and each lane becomes a team of one, sharing its wave's team structure.
+   Level 0, the initial thread, runs on lane 0 alone, so it maps the same
+   either way.  */
+#define GOMP_SIMT_LANES_P(LEVEL) (SIMT_MODE_P && (LEVEL) <= 1)
+/* True if each lane is a team of one at nesting LEVEL (a nested team).  */
+#define GOMP_SIMT_LANE_TEAMS_P(LEVEL) (SIMT_MODE_P && (LEVEL) > 1)
+
+/* Map gomp_thread IDs to the user-visible IDs.  These are the same
+   for non-SIMT devices, and also in "simt-directed" mode.  The _AT forms
+   are for the team at nesting LEVEL, the others for the current team.  */
+#define GOMP_TID_TO_OMP_TID_AT(LEVEL, GTID) \
+  (GOMP_SIMT_LANES_P (LEVEL) ? (GTID) * SIMT_LANES + SIMT_LANE_ID \
+   : (GTID))
+#define GOMP_TID_TO_OMP_TID(GTID) \
+  GOMP_TID_TO_OMP_TID_AT (gomp_thread ()->ts.level, GTID)
+#define OMP_TID_TO_GOMP_TID(OTID) \
+  (SIMT_MODE_P ? (OTID) / SIMT_LANES : (OTID))
+/* The number of OpenMP threads in TEAM.  */
+#define GOMP_TEAM_OMP_NTHR(TEAM) ((TEAM)->omp_nthreads)
+/* The number of waves needed for ONUM OpenMP threads.  */
+#define OMP_NTHR_TO_GOMP_NTHR(ONUM) \
+  (SIMT_MODE_P ? ((ONUM) + SIMT_LANES - 1) / SIMT_LANES : (ONUM))
+
+/* Call FN (DATA) on the master thread of a new team, switching the backend
+   into SIMT mode if the team's threads are lanes (an outermost team in a
+   kernel built that way).  The SIMT entry is out of line, in
+   gomp_simt_launch_master, so that the GOMP_parallel entry points contain
+   no simt_enter and are compiled SIMT throughout: a nested parallel region
+   calls them from SIMT code, with every lane of the team active, and then
+   FN is called directly.  */
+extern void gomp_simt_launch_master (void (*) (void *), void *);
+#define LAUNCH_MASTER_THREAD(FN, DATA)			\
+  if (GOMP_SIMT_LANES_P (gomp_thread ()->ts.level))	\
+    gomp_simt_launch_master (FN, DATA);			\
+  else							\
+    (FN) (DATA)
+
+#else
+#define GOMP_SIMT_LANE_TEAMS_P(LEVEL) false
+#define GOMP_TID_TO_OMP_TID_AT(LEVEL, GTID) (GTID)
+#define GOMP_TID_TO_OMP_TID(GTID) (GTID)
+#define OMP_TID_TO_GOMP_TID(OTID) (OTID)
+#define GOMP_TEAM_OMP_NTHR(TEAM) ((TEAM)->nthreads)
+#define OMP_NTHR_TO_GOMP_NTHR(ONUM) (ONUM)
+#define LAUNCH_MASTER_THREAD(FN, DATA) (FN) (DATA)
+#endif
 
 
 struct gomp_thread_pool
@@ -1100,6 +1197,76 @@ extern struct gomp_icv_list *gomp_get_initial_icv_item (int dev_num);
 extern bool gomp_get_icv_flag (uint32_t value, enum gomp_icvs icv);
 
 /* iter.c */
+
+#ifdef LIBGOMP_SIMT
+/* In a nested SIMT team each lane is a team of one, with its own loop
+   bounds, but the work share belongs to the wave.  The loop initialization
+   therefore records each lane's iterations, and the gomp_iter_* routines
+   give each lane all of them at once, which is a valid schedule of any kind
+   for a team of one.  END must already be canonicalized.  */
+
+extern void gomp_iter_simt_lanes_alloc (struct gomp_work_share *);
+
+static inline void
+gomp_iter_simt_lanes_init (struct gomp_work_share *ws,
+			   unsigned long long start, unsigned long long end)
+{
+  unsigned long long *r;
+
+  /* Every lane calls this, and only reads the pointer after the call.  An
+     inline "if (FIRST_LANE_P)" store followed by the load here lets the
+     compiler move the load of the other lanes ahead of the store.  */
+  gomp_iter_simt_lanes_alloc (ws);
+  r = ws->simt_lane_ranges + 2 * SIMT_LANE_ID;
+  r[0] = start;
+  r[1] = end;
+}
+
+#define GOMP_ITER_SIMT_LANES_P(WS) ((WS)->simt_lane_ranges != NULL)
+
+static inline bool
+gomp_iter_ull_simt_lanes_next (struct gomp_work_share *ws,
+			       unsigned long long *pstart,
+			       unsigned long long *pend)
+{
+  unsigned long long *r = ws->simt_lane_ranges + 2 * SIMT_LANE_ID;
+
+  *pstart = r[0];
+  *pend = r[1];
+  r[0] = r[1];
+  return *pstart != *pend;
+}
+
+static inline bool
+gomp_iter_simt_lanes_next (struct gomp_work_share *ws, long *pstart,
+			   long *pend)
+{
+  unsigned long long start, end;
+  bool ret = gomp_iter_ull_simt_lanes_next (ws, &start, &end);
+
+  *pstart = start;
+  *pend = end;
+  return ret;
+}
+
+/* Likewise, but give the lane a single iteration (for sections).  */
+
+static inline bool
+gomp_iter_simt_lanes_next_one (struct gomp_work_share *ws, long *pstart)
+{
+  unsigned long long *r = ws->simt_lane_ranges + 2 * SIMT_LANE_ID;
+
+  if (r[0] == r[1])
+    return false;
+  *pstart = r[0]++;
+  return true;
+}
+#else
+#define GOMP_ITER_SIMT_LANES_P(WS) false
+#define gomp_iter_simt_lanes_next(WS, PSTART, PEND) false
+#define gomp_iter_ull_simt_lanes_next(WS, PSTART, PEND) false
+#define gomp_iter_simt_lanes_next_one(WS, PSTART) false
+#endif
 
 extern int gomp_iter_static_next (long *, long *);
 extern bool gomp_iter_dynamic_next_locked (long *, long *);

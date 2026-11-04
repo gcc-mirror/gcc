@@ -47,6 +47,10 @@ gomp_ordered_first (void)
   if (team == NULL || team->nthreads == 1)
     return;
 
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
+    return;
+
   index = ws->ordered_cur + ws->ordered_num_used;
   if (index >= team->nthreads)
     index -= team->nthreads;
@@ -76,6 +80,10 @@ gomp_ordered_last (void)
 
   /* Work share constructs can be orphaned.  */
   if (team == NULL || team->nthreads == 1)
+    return;
+
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
     return;
 
   /* We're no longer the owner.  */
@@ -111,6 +119,10 @@ gomp_ordered_next (void)
 
   /* Work share constructs can be orphaned.  */
   if (team == NULL || team->nthreads == 1)
+    return;
+
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
     return;
 
   /* We're no longer the owner.  */
@@ -158,6 +170,10 @@ gomp_ordered_static_init (void)
   if (team == NULL || team->nthreads == 1)
     return;
 
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
+    return;
+
   gomp_sem_post (team->ordered_release[0]);
 }
 
@@ -176,6 +192,10 @@ gomp_ordered_static_next (void)
   unsigned id = thr->ts.team_id;
 
   if (team == NULL || team->nthreads == 1)
+    return;
+
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
     return;
 
   ws->ordered_owner = -1;
@@ -201,6 +221,10 @@ gomp_ordered_sync (void)
   /* Work share constructs can be orphaned.  But this clearly means that
      we are the only thread, and so we automatically own the section.  */
   if (team == NULL || team->nthreads == 1)
+    return;
+
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
     return;
 
   /* ??? I believe it to be safe to access this data without taking the
@@ -269,6 +293,10 @@ gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size,
   unsigned long ent, num_ents, elt_sz, shift_sz;
   struct gomp_doacross_work_share *doacross;
 
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
+    return;
+
   if (team == NULL || team->nthreads == 1)
     {
     empty:
@@ -308,7 +336,9 @@ gomp_doacross_init (unsigned ncounts, long *counts, long chunk_size,
     }
 
   if (ws->sched == GFS_STATIC)
-    num_ents = team->nthreads;
+    /* One entry per user-visible thread, matching the static schedule in
+       iter.c.  In SIMT mode each lane posts its own progress.  */
+    num_ents = GOMP_TEAM_OMP_NTHR (team);
   else if (ws->sched == GFS_GUIDED)
     num_ents = counts[0];
   else
@@ -387,7 +417,7 @@ GOMP_doacross_post (long *counts)
     }
 
   if (__builtin_expect (ws->sched == GFS_STATIC, 1))
-    ent = thr->ts.team_id;
+    ent = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
   else if (ws->sched == GFS_GUIDED)
     ent = counts[0];
   else
@@ -449,7 +479,8 @@ GOMP_doacross_wait (long first, ...)
 		  + doacross->t;
 	}
       else
-	ent = first / ws->chunk_size % thr->ts.team->nthreads;
+	ent = (first / ws->chunk_size
+	       % GOMP_TEAM_OMP_NTHR (thr->ts.team));
     }
   else if (ws->sched == GFS_GUIDED)
     ent = first;
@@ -519,6 +550,10 @@ gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts,
   unsigned long ent, num_ents, elt_sz, shift_sz;
   struct gomp_doacross_work_share *doacross;
 
+  /* SIMT work share is per-wave.  */
+  if (!FIRST_LANE_P)
+    return;
+
   if (team == NULL || team->nthreads == 1)
     {
     empty:
@@ -558,7 +593,9 @@ gomp_doacross_ull_init (unsigned ncounts, gomp_ull *counts,
     }
 
   if (ws->sched == GFS_STATIC)
-    num_ents = team->nthreads;
+    /* One entry per user-visible thread, matching the static schedule in
+       iter.c.  In SIMT mode each lane posts its own progress.  */
+    num_ents = GOMP_TEAM_OMP_NTHR (team);
   else if (ws->sched == GFS_GUIDED)
     num_ents = counts[0];
   else
@@ -643,7 +680,7 @@ GOMP_doacross_ull_post (gomp_ull *counts)
     }
 
   if (__builtin_expect (ws->sched == GFS_STATIC, 1))
-    ent = thr->ts.team_id;
+    ent = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
   else if (ws->sched == GFS_GUIDED)
     ent = counts[0];
   else
@@ -726,7 +763,8 @@ GOMP_doacross_ull_wait (gomp_ull first, ...)
 		  + doacross->t;
 	}
       else
-	ent = first / ws->chunk_size_ull % thr->ts.team->nthreads;
+	ent = (first / ws->chunk_size_ull
+	       % GOMP_TEAM_OMP_NTHR (thr->ts.team));
     }
   else if (ws->sched == GFS_GUIDED)
     ent = first;

@@ -42,7 +42,10 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_team *team = thr->ts.team;
   struct gomp_work_share *ws = thr->ts.work_share;
-  unsigned long nthreads = team ? team->nthreads : 1;
+  unsigned long nthreads = team ? GOMP_TEAM_OMP_NTHR (team) : 1;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return !gomp_iter_ull_simt_lanes_next (ws, pstart, pend);
 
   if (thr->ts.static_trip == -1)
     return -1;
@@ -71,7 +74,7 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
 	n = (ws->end_ull - ws->next_ull + ws->incr_ull - 1) / ws->incr_ull;
       else
 	n = (ws->next_ull - ws->end_ull - ws->incr_ull - 1) / -ws->incr_ull;
-      i = thr->ts.team_id;
+      i = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
 
       /* Compute the "zero-based" start and end points.  That is, as
 	 if the loop began at zero and incremented by one.  */
@@ -98,7 +101,7 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
 
       *pstart = s;
       *pend = e;
-      thr->ts.static_trip = (e0 == n ? -1 : 1);
+      thr->ts.static_trip = (SIMT_VOTE_ANY (e0 == n) ? -1 : 1);
       return 0;
     }
   else
@@ -112,7 +115,7 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
 	n = (ws->end_ull - ws->next_ull + ws->incr_ull - 1) / ws->incr_ull;
       else
 	n = (ws->next_ull - ws->end_ull - ws->incr_ull - 1) / -ws->incr_ull;
-      i = thr->ts.team_id;
+      i = GOMP_TID_TO_OMP_TID (thr->ts.team_id);
       c = ws->chunk_size_ull;
 
       /* Initial guess is a C sized chunk positioned nthreads iterations
@@ -133,9 +136,9 @@ gomp_iter_ull_static_next (gomp_ull *pstart, gomp_ull *pend)
       *pstart = s;
       *pend = e;
 
-      if (e0 == n)
+      if (SIMT_VOTE_ANY (e0 == n))
 	thr->ts.static_trip = -1;
-      else
+      else if (FIRST_LANE_P)
 	thr->ts.static_trip++;
       return 0;
     }
@@ -152,6 +155,9 @@ gomp_iter_ull_dynamic_next_locked (gomp_ull *pstart, gomp_ull *pend)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_work_share *ws = thr->ts.work_share;
   gomp_ull start, end, chunk, left;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_ull_simt_lanes_next (ws, pstart, pend);
 
   start = ws->next_ull;
   if (start == ws->end_ull)
@@ -188,6 +194,9 @@ gomp_iter_ull_dynamic_next (gomp_ull *pstart, gomp_ull *pend)
   struct gomp_thread *thr = gomp_thread ();
   struct gomp_work_share *ws = thr->ts.work_share;
   gomp_ull start, end, nend, chunk;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_ull_simt_lanes_next (ws, pstart, pend);
 
   end = ws->end_ull;
   chunk = ws->chunk_size_ull;
@@ -268,6 +277,9 @@ gomp_iter_ull_guided_next_locked (gomp_ull *pstart, gomp_ull *pend)
   gomp_ull n, q;
   gomp_ull start, end;
 
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_ull_simt_lanes_next (ws, pstart, pend);
+
   if (ws->next_ull == ws->end_ull)
     return false;
 
@@ -304,6 +316,9 @@ gomp_iter_ull_guided_next (gomp_ull *pstart, gomp_ull *pend)
   gomp_ull nthreads = team ? team->nthreads : 1;
   gomp_ull start, end, nend, incr;
   gomp_ull chunk_size;
+
+  if (GOMP_ITER_SIMT_LANES_P (ws))
+    return gomp_iter_ull_simt_lanes_next (ws, pstart, pend);
 
   start = __atomic_load_n (&ws->next_ull, MEMMODEL_RELAXED);
   end = ws->end_ull;

@@ -43,6 +43,14 @@ GOMP_single_start (void)
   if (__builtin_expect (team == NULL, 0))
     return true;
 
+  /* In SIMT mode a gomp_thread is a whole wavefront: one lane counts the
+     construct and competes for it, and only that lane can win.  In a nested
+     team each lane is a team of one, so every lane wins.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (thr->ts.level))
+    return true;
+  if (!FIRST_LANE_P)
+    return false;
+
   single_count = thr->ts.single_count++;
   return __sync_bool_compare_and_swap (&team->single_count, single_count,
 				       single_count + 1L);
@@ -54,6 +62,45 @@ GOMP_single_start (void)
   return ret;
 #endif
 }
+
+/* OMPT variant enabled by -fopenmp-ompt.  */
+
+bool
+GOMP_single_start_with_end (void)
+{
+#ifdef HAVE_SYNC_BUILTINS
+  struct gomp_thread *thr = gomp_thread ();
+  struct gomp_team *team = thr->ts.team;
+  unsigned long single_count;
+
+  if (__builtin_expect (team == NULL, 0))
+    return true;
+
+  /* In SIMT mode a gomp_thread is a whole wavefront: one lane counts the
+     construct and competes for it, and only that lane can win.  In a nested
+     team each lane is a team of one, so every lane wins.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (thr->ts.level))
+    return true;
+  if (!FIRST_LANE_P)
+    return false;
+
+  single_count = thr->ts.single_count++;
+  return __sync_bool_compare_and_swap (&team->single_count, single_count,
+				       single_count + 1L);
+#else
+  bool ret = gomp_work_share_start (0);
+  if (ret)
+    gomp_work_share_init_done ();
+  gomp_work_share_end_nowait ();
+  return ret;
+#endif
+}
+
+/* Stub for OMPT callback enabled by -fopenmp-ompt.  */
+
+void
+GOMP_single_end (void)
+{}
 
 /* This routine is called when first encountering a SINGLE construct that
    does have a COPYPRIVATE clause.  Returns NULL if this is the thread

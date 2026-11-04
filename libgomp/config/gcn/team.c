@@ -23,7 +23,18 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
-/* This file handles maintenance of threads on AMD GCN.  */
+/* This file handles maintenance of wavefronts and threads on AMD GCN.
+
+   In SIMD mode, and in SIMT-DIRECTED mode, and OpenMP "thread" corresponds
+   1-to-1 with a GPU "wavefront".
+
+   In SIMT mode (no "directed"), an OpenMP "thread" corresponds to a GPU
+   "work-item" (vector lane), conceptually.  However, the internal
+   implementation (i.e. here) still maps gomp_thread_pool to wavefronts,
+   since this is the smallest unit that can be assigned to a task.
+
+   The thread numbers are translated from wavefront/work-item to a flat
+   thread number only when presented to the user code.  */
 #include <assert.h>
 
 #include "libgomp.h"
@@ -39,25 +50,47 @@
 /* Defined in basic-allocator.c via config/amdgcn/allocator.c.  */
 void __gcn_lowlat_init (void *heap, size_t size);
 
-static void gomp_thread_start (struct gomp_thread_pool *);
+static void gomp_wavefront_start (struct gomp_thread_pool *);
 
 /* This externally visible function handles target region entry.  It
    sets up a per-team thread pool and transfers control by returning to
-   the kernel in the master thread or gomp_thread_start in other threads.
+   the kernel in the master thread (wavefront) or gomp_wavefront_start in
+   other threads (wavefronts).
 
    The name of this function is part of the interface with the compiler: for
    each OpenMP kernel the compiler configures the stack, then calls here.
 
    Likewise, gomp_gcn_exit_kernel is called during the kernel epilogue.  */
 
-void
-gomp_gcn_enter_kernel (void)
-{
-  int threadid = __builtin_gcn_dim_pos (1);
+#ifdef __SIMT__
+/* TODO: implement SIMT-DIRECTED vs. SIMT mode switching per kernel.
+   The global-variable implementation is simpler but requires all kernels
+   make the same choice.  There's not actually a way to compile per kernel
+   anyway, yet.
 
-  if (threadid == 0)
+   0 - SIMT-DIRECTED (vector-level)
+   1 - SIMT (thread-level)  */
+int __gcn_simt_mode = 0;
+#endif
+
+void
+gomp_gcn_enter_kernel (
+#ifdef __SIMT__
+		       int simt_mode
+#else
+		       void
+#endif
+		       )
+{
+#ifdef __SIMT__
+  __gcn_simt_mode = simt_mode;
+#endif
+
+  int wavefrontid = __builtin_gcn_dim_pos (1);
+
+  if (wavefrontid == 0)
     {
-      int numthreads = __builtin_gcn_dim_size (1);
+      int numwavefronts = __builtin_gcn_dim_size (1);
       int teamid = __builtin_gcn_dim_pos(0);
 
       /* Initialize indirect function support for older libgomp.  */
@@ -66,8 +99,14 @@ gomp_gcn_enter_kernel (void)
 
       /* Set up the global state.
 	 Every team will do this, but that should be harmless.  */
+#ifdef __SIMT__
+      gomp_global_icv.nthreads_var = (simt_mode ? 1024 : 16);
+      gomp_global_icv.thread_limit_var = (numwavefronts
+					  * (simt_mode ? 64 : 1));
+#else
       gomp_global_icv.nthreads_var = 16;
-      gomp_global_icv.thread_limit_var = numthreads;
+      gomp_global_icv.thread_limit_var = numwavefronts;
+#endif
       /* Starting additional threads is not supported.  */
       gomp_global_icv.dyn_var = true;
 
@@ -96,21 +135,21 @@ gomp_gcn_enter_kernel (void)
 
       /* Allocate and initialize the team-local-storage data.  */
       struct gomp_thread *thrs = team_malloc_cleared (sizeof (*thrs)
-						      * numthreads);
+						      * numwavefronts);
       set_gcn_thrs (thrs);
 
-      /* Allocate and initialize a pool of threads in the team.
-         The threads are already running, of course, we just need to manage
+      /* Allocate and initialize a pool of threads (wavefronts) in the team.
+         The wavefronts are already running, of course, we just need to manage
          the communication between them.  */
       struct gomp_thread_pool *pool = team_malloc (sizeof (*pool));
-      pool->threads = team_malloc (sizeof (void *) * numthreads);
-      for (int tid = 0; tid < numthreads; tid++)
+      pool->threads = team_malloc (sizeof (void *) * numwavefronts);
+      for (int tid = 0; tid < numwavefronts; tid++)
 	pool->threads[tid] = &thrs[tid];
-      pool->threads_size = numthreads;
-      pool->threads_used = numthreads;
+      pool->threads_size = numwavefronts;
+      pool->threads_used = numwavefronts;
       pool->threads_busy = 1;
       pool->last_team = NULL;
-      gomp_simple_barrier_init (&pool->threads_dock, numthreads);
+      gomp_simple_barrier_init (&pool->threads_dock, numwavefronts);
       thrs->thread_pool = pool;
 
       asm ("s_barrier" ::: "memory");
@@ -119,8 +158,8 @@ gomp_gcn_enter_kernel (void)
   else
     {
       asm ("s_barrier" ::: "memory");
-      gomp_thread_start (gcn_thrs ()[0].thread_pool);
-      /* gomp_thread_start does not return.  */
+      gomp_wavefront_start (gcn_thrs ()[0].thread_pool);
+      /* gomp_wavefront_start does not return.  */
     }
 }
 
@@ -158,11 +197,36 @@ gomp_prep_our_thread (struct gomp_thread *thr,
   thr->task->taskgroup = start_data->taskgroup;
 }
 
-/* This function contains the idle loop in which a thread waits
+#ifdef __SIMT__
+/* True if this lane of wave TEAM_ID is one of the OpenMP threads of TEAM,
+   an outermost team in SIMT mode.  The team's last wave may be partial.  */
+
+static inline bool
+gomp_simt_lane_in_team_p (struct gomp_team *team, unsigned team_id)
+{
+  return team_id * SIMT_LANES + SIMT_LANE_ID < team->omp_nthreads;
+}
+#endif
+
+/* Return a value that changes whenever the master wavefront passes a barrier
+   of its current team, or starts or ends a team.  */
+
+static inline uintptr_t
+gomp_master_progress (void)
+{
+  struct gomp_team *team = __atomic_load_n (&gcn_thrs ()[0].ts.team,
+					    MEMMODEL_RELAXED);
+  if (!team)
+    return 0;
+  return ((uintptr_t) team
+	  + __atomic_load_n (&team->barrier.generation, MEMMODEL_RELAXED));
+}
+
+/* This function contains the idle loop in which a wavefront (thread) waits
    to be called up to become part of a team.  */
 
 static void
-gomp_thread_start (struct gomp_thread_pool *pool)
+gomp_wavefront_start (struct gomp_thread_pool *pool)
 {
   struct gomp_thread *thr = gomp_thread ();
 
@@ -173,11 +237,22 @@ gomp_thread_start (struct gomp_thread_pool *pool)
      which contains "s_endpgm", or an infinite no-op loop is
      suspected (this happens when the thread master crashes).  */
   int nul_limit = 99;
+  uintptr_t progress = 0;
   do
     {
       gomp_simple_barrier_wait (&pool->threads_dock);
       if (!thr->fn)
 	{
+	  /* GCN barriers stop every wavefront, so the barriers of a team that
+	     does not use every wavefront also release the idle ones.  Count
+	     only the wake-ups during which the master made no progress.  */
+	  uintptr_t now = gomp_master_progress ();
+	  if (now != progress)
+	    {
+	      progress = now;
+	      nul_limit = 99;
+	      continue;
+	    }
 	  if (nul_limit-- > 0)
 	    continue;
 	  else
@@ -188,6 +263,11 @@ gomp_thread_start (struct gomp_thread_pool *pool)
 	      abort();
 	    }
 	}
+
+#if __SIMT__
+      /* Cleanup helpers have no team.  */
+      struct gomp_team *team = thr->start_data ? thr->start_data->team : NULL;
+#endif
 
       /* Perform rest of task initialization.  Populated from
 	 gomp_team_start.  */
@@ -201,7 +281,17 @@ gomp_thread_start (struct gomp_thread_pool *pool)
 	  thr->start_data = NULL;
 	}
 
-      thr->fn (thr->data);
+#if __SIMT__
+      if (__gcn_simt_mode)
+	{
+	  int _ = __builtin_gcn_simt_enter (1, 2);
+	  if (!team || gomp_simt_lane_in_team_p (team, thr->ts.team_id))
+	    thr->fn (thr->data);
+	  __builtin_gcn_simt_exit (_);
+	}
+      else
+#endif
+	thr->fn (thr->data);
       thr->fn = NULL;
 
       struct gomp_task *task = thr->task;
@@ -210,6 +300,20 @@ gomp_thread_start (struct gomp_thread_pool *pool)
     }
   while (1);
 }
+
+#ifdef __SIMT__
+/* See LAUNCH_MASTER_THREAD.  */
+
+void __attribute__((noinline))
+gomp_simt_launch_master (void (*fn) (void *), void *data)
+{
+  struct gomp_team *team = gomp_thread ()->ts.team;
+  int _ = __builtin_gcn_simt_enter (1, 2);
+  if (gomp_simt_lane_in_team_p (team, 0))
+    fn (data);
+  __builtin_gcn_simt_exit (_);
+}
+#endif
 
 /* Launch a team.  */
 
@@ -222,6 +326,10 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
   struct gomp_task *prev_task;
   struct gomp_task_icv *icv;
   struct gomp_thread_pool *pool;
+
+  /* A nested team is started from SIMT code, but THR is per wave.  */
+  if (!FIRST_LANE_P)
+    return;
 
   thr = gomp_thread ();
   pool = thr->thread_pool;
@@ -242,6 +350,11 @@ gomp_team_start (void (*fn) (void *), void *data, unsigned nthreads,
     .prev_icvs = *icv,
     .taskgroup = taskgroup
   };
+
+#ifdef __SIMT__
+  /* NTHREADS counts OpenMP threads; from here on it counts waves.  */
+  nthreads = team->nthreads;
+#endif
 
   unsigned actual_thread_count = __builtin_gcn_dim_size (1);
   if (nthreads > actual_thread_count)

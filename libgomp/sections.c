@@ -41,6 +41,12 @@ gomp_sections_init (struct gomp_work_share *ws, unsigned count)
   ws->end = count + 1L;
   ws->incr = 1;
   ws->next = 1;
+#ifdef LIBGOMP_SIMT
+  /* Every lane gets here.  In a nested team each runs every section.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (gomp_thread ()->ts.level)
+      && ws == gomp_thread ()->ts.work_share)
+    gomp_iter_simt_lanes_init (ws, 1, count + 1L);
+#endif
 #ifdef HAVE_SYNC_BUILTINS
   /* Prepare things to make each iteration faster.  */
   if (sizeof (long) > sizeof (unsigned))
@@ -80,6 +86,9 @@ GOMP_sections_start (unsigned count)
       gomp_sections_init (thr->ts.work_share, count);
       gomp_work_share_init_done ();
     }
+
+  if (GOMP_ITER_SIMT_LANES_P (thr->ts.work_share))
+    return gomp_iter_simt_lanes_next_one (thr->ts.work_share, &s) ? s : 0;
 
 #ifdef HAVE_SYNC_BUILTINS
   if (gomp_iter_dynamic_next (&s, &e))
@@ -158,6 +167,9 @@ GOMP_sections2_start (unsigned count, uintptr_t *reductions, void **mem)
 	}
     }
 
+  if (GOMP_ITER_SIMT_LANES_P (thr->ts.work_share))
+    return gomp_iter_simt_lanes_next_one (thr->ts.work_share, &s) ? s : 0;
+
 #ifdef HAVE_SYNC_BUILTINS
   if (gomp_iter_dynamic_next (&s, &e))
     ret = s;
@@ -189,6 +201,10 @@ GOMP_sections_next (void)
 {
   long s, e, ret;
 
+  if (GOMP_ITER_SIMT_LANES_P (gomp_thread ()->ts.work_share))
+    return (gomp_iter_simt_lanes_next_one (gomp_thread ()->ts.work_share, &s)
+	    ? s : 0);
+
 #ifdef HAVE_SYNC_BUILTINS
   if (gomp_iter_dynamic_next (&s, &e))
     ret = s;
@@ -219,8 +235,14 @@ GOMP_parallel_sections_start (void (*fn) (void *), void *data,
 
   num_threads = gomp_resolve_num_threads (num_threads, count);
   team = gomp_new_team (num_threads);
-  gomp_sections_init (&team->work_shares[0], count);
+  if (FIRST_LANE_P)
+    gomp_sections_init (&team->work_shares[0], count);
   gomp_team_start (fn, data, num_threads, 0, team, NULL);
+#ifdef LIBGOMP_SIMT
+  /* The work share was set up for the first lane only.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (gomp_thread ()->ts.level))
+    gomp_iter_simt_lanes_init (gomp_thread ()->ts.work_share, 1, count + 1L);
+#endif
 }
 
 ialias_redirect (GOMP_parallel_end)
@@ -233,9 +255,15 @@ GOMP_parallel_sections (void (*fn) (void *), void *data,
 
   num_threads = gomp_resolve_num_threads (num_threads, count);
   team = gomp_new_team (num_threads);
-  gomp_sections_init (&team->work_shares[0], count);
+  if (FIRST_LANE_P)
+    gomp_sections_init (&team->work_shares[0], count);
   gomp_team_start (fn, data, num_threads, flags, team, NULL);
-  fn (data);
+#ifdef LIBGOMP_SIMT
+  /* The work share was set up for the first lane only.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (gomp_thread ()->ts.level))
+    gomp_iter_simt_lanes_init (gomp_thread ()->ts.work_share, 1, count + 1L);
+#endif
+  LAUNCH_MASTER_THREAD (fn, data);
   GOMP_parallel_end ();
 }
 

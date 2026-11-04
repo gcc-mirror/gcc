@@ -50,6 +50,14 @@ gomp_loop_ull_init (struct gomp_work_share *ws, bool up, gomp_ull start,
   ws->incr_ull = incr;
   ws->next_ull = start;
   ws->mode = 0;
+#ifdef LIBGOMP_SIMT
+  /* Every lane gets here, each with its own bounds in a nested team.  */
+  if (GOMP_SIMT_LANE_TEAMS_P (gomp_thread ()->ts.level)
+      && ws == gomp_thread ()->ts.work_share)
+    gomp_iter_simt_lanes_init (ws, start,
+			       ((up && start > end) || (!up && start < end))
+			       ? start : end);
+#endif
   if (sched == GFS_DYNAMIC)
     {
       ws->chunk_size_ull *= incr;
@@ -60,7 +68,7 @@ gomp_loop_ull_init (struct gomp_work_share *ws, bool up, gomp_ull start,
 	   faster.  */
 	struct gomp_thread *thr = gomp_thread ();
 	struct gomp_team *team = thr->ts.team;
-	long nthreads = team ? team->nthreads : 1;
+	long nthreads = team ? GOMP_TEAM_OMP_NTHR (team) : 1;
 
 	if (__builtin_expect (up, 1))
 	  {
@@ -743,7 +751,7 @@ gomp_loop_ull_ordered_dynamic_next (gomp_ull *istart, gomp_ull *iend)
   gomp_ordered_sync ();
   gomp_mutex_lock (&thr->ts.work_share->lock);
   ret = gomp_iter_ull_dynamic_next_locked (istart, iend);
-  if (ret)
+  if (SIMT_VOTE_ANY (ret))
     gomp_ordered_next ();
   else
     gomp_ordered_last ();
