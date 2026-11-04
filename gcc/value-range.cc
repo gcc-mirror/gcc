@@ -464,11 +464,11 @@ add_vrange (const vrange &v, inchash::hash &hstate,
 	  hstate.add_wide_int (bm.value ());
 	  hstate.add_wide_int (bm.mask ());
 	  bool flag = false;
-	  tree tmp = r.pt_invariant ();
+	  tree tmp = r.addr_known ();
 	  if (tmp)
 	    flag = true;
 	  else
-	    tmp = r.pt_invariant_away ();
+	    tmp = r.addr_excluded ();
 	  hstate.add_ptr (tmp);
 	  hstate.add_flag (flag);
 	}
@@ -530,23 +530,23 @@ irange::set_nonnegative (tree type)
 }
 
 
-// Set the points to info for EXPR if possible.  POINTS_TO_P is true if it
-// points to EXPR, and FALSE if it points away.
+// Set the address info to EXPR if possible.  KNOWN_P is TRUE if this range
+// is known to be EXPR, and FALSE if it is known to exclude EXPR.
 
 void
-prange::set_pt (tree expr, bool points_to_p)
+prange::set_addr (tree expr, bool known_p)
 {
   gcc_checking_assert (m_kind != VR_UNDEFINED);
   gcc_checking_assert (!expr || TREE_CODE (expr) != SSA_NAME);
 
-  m_pt = NULL_TREE;
-  m_points_to_p = false;
+  m_addr = NULL_TREE;
+  m_known_p = false;
 
-  // A zero range means no points-to info.
+  // A zero range means no address info.
   if (zero_p ())
     return;
 
-  // No points to initially may make this VARYING.
+  // No address initially may make this VARYING.
   if (varying_compatible_p ())
     set_varying (type ());
   else
@@ -573,37 +573,38 @@ prange::set_pt (tree expr, bool points_to_p)
   if (!size.is_constant ())
     return;
 
-  m_pt = expr;
-  m_points_to_p = points_to_p;
+  m_addr = expr;
+  m_known_p = known_p;
   m_kind = VR_RANGE;
 }
 
 // Return object/allocation the pointer refers into, otherwise NULL_TREE.
 
 tree
-prange::pt_base () const
+prange::addr_base () const
 {
-  if (!m_pt)
+  if (!m_addr || !m_known_p)
     return NULL_TREE;
 
   aff_tree off;
   poly_widest_int sz;
 
-  gcc_checking_assert (m_pt);
-  return get_inner_reference_aff (m_pt, &off, &sz);
+  gcc_checking_assert (m_addr);
+  return get_inner_reference_aff (m_addr, &off, &sz);
 }
 
 // Return possible byte offset range from BASE.
 
 void
-prange::pt_offset (irange &r) const
+prange::addr_offset (irange &r) const
 {
   aff_tree off;
   poly_widest_int sz;
 
-  gcc_checking_assert (m_pt);
+  gcc_checking_assert (m_addr);
+  gcc_checking_assert (m_known_p);
 
-  get_inner_reference_aff (m_pt, &off, &sz);
+  get_inner_reference_aff (m_addr, &off, &sz);
   gcc_checking_assert (off.offset.is_constant ());
 
   widest_int w = off.offset.coeffs[0];
@@ -614,14 +615,15 @@ prange::pt_offset (irange &r) const
 // Return possible size range of the referenced object.
 
 void
-prange::pt_size (irange &r) const
+prange::addr_size (irange &r) const
 {
   aff_tree off;
   poly_widest_int sz;
 
-  gcc_checking_assert (m_pt);
+  gcc_checking_assert (m_addr);
+  gcc_checking_assert (m_known_p);
 
-  get_inner_reference_aff (m_pt, &off, &sz);
+  get_inner_reference_aff (m_addr, &off, &sz);
   gcc_checking_assert (sz.is_constant ());
 
   widest_int w = sz.coeffs[0];
@@ -678,7 +680,7 @@ prange::set (tree type, const wide_int &min, const wide_int &max,
     {
       m_kind = VR_VARYING;
       m_bitmask.set_unknown (TYPE_PRECISION (type));
-      set_pt_unknown ();
+      set_addr_unknown ();
       if (flag_checking)
 	verify_range ();
       return;
@@ -686,7 +688,7 @@ prange::set (tree type, const wide_int &min, const wide_int &max,
 
   m_kind = VR_RANGE;
   m_bitmask = irange_bitmask (type, min, max);
-  set_pt_unknown ();
+  set_addr_unknown ();
   if (flag_checking)
     verify_range ();
 }
@@ -756,10 +758,10 @@ prange::union_ (const vrange &v)
   new_range.m_bitmask.union_ (m_bitmask);
   new_range.m_bitmask.union_ (r.m_bitmask);
 
-  // Keep it simple, either both point to the same thing or both
-  // do not point to the same thing, or we drop the points to info.
-  if (pt_equal_p (r))
-    new_range.set_pt (*this);
+  // Keep it simple, either both name the same address or both do not,
+  // or we drop the address info.
+  if (addr_equal_p (r))
+    new_range.set_addr (*this);
 
   if (new_range.varying_compatible_p ())
     {
@@ -796,8 +798,9 @@ prange::intersect (const vrange &v)
       return true;
     }
 
-  // If this points to and away, results are undefined,
-  if (pt_inverted_p (r))
+  // If one knows the address and the other excludes it, the result is
+  // undefined.
+  if (addr_inverted_p (r))
     {
       set_undefined ();
       return true;
@@ -818,24 +821,24 @@ prange::intersect (const vrange &v)
     set_undefined ();
   else if (!m_bitmask.intersect (r.m_bitmask))
     set_undefined ();
-  // If only one object points to something, that is the intersection.
-  else if (pt_unknown_p () && !r.pt_unknown_p ())
-    set_pt (r);
-  else if (!pt_unknown_p () && !r.pt_unknown_p ())
+  // If only one has an address, that is the intersection.
+  else if (addr_unknown_p () && !r.addr_unknown_p ())
+    set_addr (r);
+  else if (!addr_unknown_p () && !r.addr_unknown_p ())
     {
-      // If both point to something, we want to be careful.  Without aliasing
-      // 2 different values can point to the same thing, so UNDEFINED is
+      // If both have an address, we want to be careful.  Without aliasing
+      // 2 different values can name the same address, so UNDEFINED is
       // not appropriate, but we want to keep the rule that intersection
       // never becomes larger.
-      // If the other object points to something specific, and this one does
-      // not, use the specific one. Otherwise leave the range as is.
-      if (pt_invariant_away () && r.pt_invariant ())
-	set_pt (r);
+      // If the other operand knows an address and this one only excludes
+      // one, use the known one.  Otherwise leave the range as is.
+      if (addr_excluded () && r.addr_known ())
+	set_addr (r);
     }
 
-  //  If this evolves to zero, clear all points-to info.
-  if (zero_p () && !pt_unknown_p ())
-    set_pt_unknown ();
+  //  If this evolves to zero, clear all address info.
+  if (zero_p () && !addr_unknown_p ())
+    set_addr_unknown ();
 
   if (varying_compatible_p ())
     {
@@ -858,7 +861,7 @@ prange::operator= (const prange &src)
   m_min = src.m_min;
   m_max = src.m_max;
   m_bitmask = src.m_bitmask;
-  set_pt (src);
+  set_addr (src);
   if (flag_checking)
     verify_range ();
   return *this;
@@ -875,7 +878,7 @@ prange::operator== (const prange &src) const
       if (varying_p ())
 	return types_compatible_p (type (), src.type ());
 
-      if (!pt_equal_p (src))
+      if (!addr_equal_p (src))
 	return false;
 
       return (m_min == src.m_min && m_max == src.m_max
@@ -895,10 +898,10 @@ prange::invert ()
     return false;
 
   // Invert the points_to object. If that worked, this is done.
-  if (pt_invert ())
+  if (addr_invert ())
     return true;
   else
-    set_pt_unknown ();
+    set_addr_unknown ();
 
   wide_int new_lb, new_ub;
   unsigned prec = TYPE_PRECISION (type ());
@@ -935,7 +938,7 @@ prange::verify_range () const
 
   if (m_kind == VR_UNDEFINED)
     {
-      gcc_checking_assert (pt_unknown_p ());
+      gcc_checking_assert (addr_unknown_p ());
       return;
     }
 
@@ -948,7 +951,7 @@ prange::verify_range () const
     }
   gcc_checking_assert (!varying_compatible_p ());
   gcc_checking_assert (m_kind == VR_RANGE);
-  if (!pt_unknown_p ())
+  if (!addr_unknown_p ())
     {
       gcc_checking_assert (!varying_p ());
       gcc_checking_assert (!undefined_p ());

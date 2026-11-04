@@ -372,7 +372,7 @@ pointer_plus_operator::fold_range (prange &r, tree type,
 
   // If op1 refers to an object, op1 + 0 will also refer to the object.
   if (rh_lb == rh_ub && rh_lb == 0)
-    r.set_pt (op1);
+    r.set_addr (op1);
 
   update_known_bitmask (r, POINTER_PLUS_EXPR, op1, op2);
   return true;
@@ -388,11 +388,11 @@ pointer_plus_operator::op2_range (irange &r, tree type,
   r.set_varying (type);
 
   // If the LHS and OP1 are equal, the op2 must be zero.
-  if (rel == VREL_EQ || lhs.pt_invariant_p (op1))
+  if (rel == VREL_EQ || lhs.addr_same_known_p (op1))
     r.set_zero (type);
   // If the LHS and OP1 are not equal, the offset must be non-zero.
   // AWM: Check if aliasing may mean we can't do the not_equal check.
-  else if (rel == VREL_NE || lhs.pt_inverted_p (op1))
+  else if (rel == VREL_NE || lhs.addr_inverted_p (op1))
     r.set_nonzero (type);
   else
     return false;
@@ -496,7 +496,7 @@ operator_pointer_diff::fold_range (irange &r, tree type,
   relation_kind rel = trio.op1_op2 ();
   op1_op2_relation_effect (r, type, op1, op2, rel);
   // if op1 and op2 point to the same object, the diff is 0.
-  if (op1.pt_invariant_p (op2))
+  if (op1.addr_same_known_p (op2))
     r.set_zero (type);
   update_bitmask (r, op1, op2);
   return true;
@@ -574,7 +574,7 @@ operator_cast::fold_range (prange &r, tree type,
   r.set (type, inner.lower_bound (), inner.upper_bound ());
 
   // The resulting pointer still points to the same object.
-  r.set_pt (inner);
+  r.set_addr (inner);
 
   r.update_bitmask (inner.get_bitmask ());
   return true;
@@ -741,9 +741,9 @@ operator_cast::lhs_op1_relation (const prange &lhs,
   // inequality in the points to fields.
   if (lhs_prec == op1_prec)
     {
-      if (lhs.pt_invariant_p (op1))
+      if (lhs.addr_same_known_p (op1))
 	return VREL_EQ;
-      if (lhs.pt_inverted_p (op1))
+      if (lhs.addr_inverted_p (op1))
 	return VREL_NE;
     }
   unsigned prec = MIN (lhs_prec, op1_prec);
@@ -900,9 +900,9 @@ operator_equal::fold_range (irange &r, tree type,
   bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
   bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
   // Check for points to equality and inequality first.
-  if (op1.pt_invariant_p (op2))
+  if (op1.addr_same_known_p (op2))
     r = range_true (type);
-  else if (op1.pt_inverted_p (op2))
+  else if (op1.addr_inverted_p (op2))
     r = range_false (type);
   else if (op1_const && op2_const)
     {
@@ -959,8 +959,8 @@ operator_equal::op1_range (prange &r, tree type,
 	{
 	  r.set_varying (type);
 	  // OP2 refers to OBJ, so OP1 does not refer to OBJ.
-	  if (tree obj = op2.pt_invariant ())
-	    r.set_pt (obj, false);
+	  if (tree obj = op2.addr_known ())
+	    r.set_addr (obj, false);
 	}
       break;
 
@@ -1010,9 +1010,9 @@ operator_not_equal::fold_range (irange &r, tree type,
   bool op1_const = wi::eq_p (op1.lower_bound (), op1.upper_bound ());
   bool op2_const = wi::eq_p (op2.lower_bound (), op2.upper_bound ());
   // Check for points to equality and inequality first.
-  if (op1.pt_inverted_p (op2))
+  if (op1.addr_inverted_p (op2))
     r = range_true (type);
-  else if (op1.pt_invariant_p (op2))
+  else if (op1.addr_same_known_p (op2))
     r = range_false (type);
   else if (op1_const && op2_const)
     {
@@ -1064,8 +1064,8 @@ operator_not_equal::op1_range (prange &r, tree type,
 	{
 	  r.set_varying (type);
 	  // Check if op1 is known not to refer to op2 points to object.
-	  if (tree obj = op2.pt_invariant ())
-	    r.set_pt (obj, false);
+	  if (tree obj = op2.addr_known ())
+	    r.set_addr (obj, false);
 	}
       break;
 

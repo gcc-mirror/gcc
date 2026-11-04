@@ -124,7 +124,7 @@ private:
   // needs eight-byte alignment, so there is a four-byte hole.
   enum prange_kind m_kind : 4;
   unsigned int m_has_bitmask : 1;
-  unsigned int m_points_to_p : 1;
+  unsigned int m_known_p : 1;
 
 public:
   friend void gt_ggc_mx_vrange_storage(void *);
@@ -158,7 +158,7 @@ private:
   prange_storage (const prange &r);
   static enum prange_kind prange_format (const prange &r, unsigned &num_words);
 
-  tree m_pt;
+  tree m_addr;
 
   // We don't use TRAILING_WIDE_INT_ACCESSOR because the getters here
   // must be const.  Perhaps TRAILING_WIDE_INT_ACCESSOR could be made

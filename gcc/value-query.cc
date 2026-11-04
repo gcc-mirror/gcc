@@ -433,7 +433,7 @@ range_query::get_tree_range (vrange &r, tree expr, gimple *stmt,
 	// Set points to field.
 	gcc_checking_assert (is_a <prange> (r));
 	prange &ptr = as_a <prange> (r);
-	ptr.set_pt (expr, true);
+	ptr.set_addr (expr, true);
 	return true;
       }
 

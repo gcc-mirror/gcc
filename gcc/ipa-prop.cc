@@ -2403,9 +2403,9 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
   if (is_a <prange> (tmp))
     {
       const prange &pr = as_a <prange> (tmp);
-      tree t = pr.pt_invariant ();
+      tree t = pr.addr_known ();
       if (!t)
-	t = pr.pt_invariant_away ();
+	t = pr.addr_excluded ();
       if (t && !is_gimple_ip_invariant (t))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2415,7 +2415,7 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
 	      fprintf (dump_file, "\n");
 	    }
 	  prange stripped = pr;
-	  stripped.set_pt_unknown ();
+	  stripped.set_addr_unknown ();
 	  jf->m_vr = ipa_get_value_range (stripped);
 	  return;
 	}
@@ -6038,9 +6038,9 @@ ipa_record_return_value_range_1 (cgraph_node *n, value_range val)
   if (is_a<prange> (val))
     {
       const prange &pr = as_a <prange> (val);
-      tree t = pr.pt_invariant ();
+      tree t = pr.addr_known ();
       if (!t)
-	t = pr.pt_invariant_away ();
+	t = pr.addr_excluded ();
       if (t && !is_gimple_ip_invariant (t))
         {
 	  if (dump_file && (dump_flags & TDF_DETAILS))

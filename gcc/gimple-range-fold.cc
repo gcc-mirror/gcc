@@ -761,7 +761,7 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
     {
       prange &p = as_a <prange> (r);
       // Check to see if points_to should be set.
-      if (p.pt_unknown_p () && name && gimple_code (s) == GIMPLE_ASSIGN)
+      if (p.addr_unknown_p () && name && gimple_code (s) == GIMPLE_ASSIGN)
 	{
 	  tree rhs = gimple_assign_rhs1 (s);
 	  tree_code code = gimple_assign_rhs_code (s);
@@ -769,7 +769,7 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
 	  if (code != SSA_NAME
 	      && get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS
 	      && TREE_CODE (rhs) == ADDR_EXPR)
-	    p.set_pt (rhs, true);
+	    p.set_addr (rhs, true);
 	  else
 	    {
 	      // If we couldn't find anything, try fold.
@@ -777,7 +777,7 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
 	      rhs = gimple_fold_stmt_to_constant_1 (s, pta_valueize,
 						    pta_valueize);
 	      if (rhs && TREE_CODE (rhs) == ADDR_EXPR)
-		p.set_pt (rhs, true);
+		p.set_addr (rhs, true);
 	    }
 	}
     }
@@ -1520,8 +1520,8 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	    {
 	      prange &ptr = as_a <prange> (arg_range);
 	      // If it doesn't already point at something, set points to.
-	      if (ptr.pt_unknown_p () && TREE_CODE (single_arg) == ADDR_EXPR)
-		ptr.set_pt (single_arg, true);
+	      if (ptr.addr_unknown_p () && TREE_CODE (single_arg) == ADDR_EXPR)
+		ptr.set_addr (single_arg, true);
 	      r = ptr;
 	      return true;
 	    }

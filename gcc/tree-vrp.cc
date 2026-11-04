@@ -981,7 +981,7 @@ public:
     if (is_a <prange> (r))
       {
 	prange &p = as_a <prange> (r);
-	ret = p.pt_invariant ();
+	ret = p.addr_known ();
 	// A const points has to be gimple_min_invariant.
 	gcc_checking_assert (!ret || is_gimple_min_invariant (ret));
       }
@@ -1014,7 +1014,7 @@ public:
     if (is_a <prange> (r))
       {
 	prange &p = as_a <prange> (r);
-	ret = p.pt_invariant ();
+	ret = p.addr_known ();
 	// A const points has to be gimple_min_invariant.
 	gcc_checking_assert (!ret || is_gimple_min_invariant (ret));
       }

@@ -443,43 +443,48 @@ public:
   irange_bitmask get_bitmask () const final override;
   void update_bitmask (const irange_bitmask &) final override;
 
-  // prange interface to points to information.
-  // It can point_to or point_away from an object.  This represents both
-  // sides of a conditional. ie:
+  // prange interface to address information.
+  // It can be known to be a particular address, or exclude that address.
+  // This represents both sides of a conditional. ie:
   //   if (p == &foo)
-  //     // p points to foo.
+  //     // p known to be foo.
   //   else
-  //     // p points away from foo.
-  // pt_invariant () and pt_invariant_away () - Return pt if this is invariant.
-  void set_pt (const prange &r);
-  void set_pt (tree ptr, bool points_to_p = true);
+  //     // p excludes foo.
 
-  // unknown_p () is true if no object is pointed to.
-  void set_pt_unknown ();
-  bool pt_unknown_p () const;
+  // The address is is_gimple_min_invariant, which is relative to the
+  // current function -- it is NOT is_gimple_ip_invariant, and may name a
+  // local.  Any consumer crossing a function boundary must re-check.
 
-  // Invariant points-to are is_gimple_min_invariant_p ().
-  // Return expression or NULL_TREE for points-to or away
-  tree pt_invariant () const;
-  tree pt_invariant_away () const;
+  // Set this address to the same as R, if any.
+  void set_addr (const prange &r);
+  void set_addr (tree addr, bool known_p = true);
 
-  // Return true if THIS and R both point to the same object.
-  bool pt_invariant_p (const prange &r) const;
-  // Return true if THIS and R both point away from the same object.
-  bool pt_invariant_away_p (const prange &r) const;
-  // Return true if THIS and R refer to the same object, and one is inverted
-  // from the other,  Ie, both to and away.
-  bool pt_inverted_p (const prange &r) const;
+  void set_addr_unknown ();
+  bool addr_unknown_p () const;
 
-  // Invert THIS if it points either to or away from an object.
-  bool pt_invert ();
+  // Return expression or NULL_TREE for known or excluded.
+  tree addr_known () const;
+  tree addr_excluded () const;
 
-  // pt_base () - object/allocation the pointer refers into.
-  tree pt_base () const;
-  // pt_offset () - possible byte offset range from BASE.
-  void pt_offset (irange &) const;
-  // pt_size () - possible size range of the referenced object.
-  void pt_size (irange &) const;
+  // Return true if THIS and R are known to be the same address.
+  bool addr_same_known_p (const prange &r) const;
+  // Return true if THIS and R both exclude the same address.
+  bool addr_same_excluded_p (const prange &r) const;
+
+  // If either known or excluded, invert and return TRUE.
+  bool addr_invert ();
+  // Return true if THIS and R refer to the same address, and one is inverted
+  // from the other,  Ie, both known and excluded
+  bool addr_inverted_p (const prange &r) const;
+
+  // These routines decompose addr to its component parts for a known address.
+
+  // addr_base () - object/allocation the pointer refers into.
+  tree addr_base () const;
+  // addr_offset () - possible byte offset range from BASE.
+  void addr_offset (irange &) const;
+  // addr_size () - possible size range of the referenced object.
+  void addr_size (irange &) const;
 
 protected:
   bool varying_compatible_p () const;
@@ -489,11 +494,12 @@ protected:
   wide_int m_max;
   irange_bitmask m_bitmask;
 
-   // A prange can point to an object, or NOT point to an object.
-  tree m_pt;		// object points-to refers to.
-  bool m_points_to_p;	// Does it point to it (TRUE), or not (FALSE).
-  // If P has the same points to fields as THIS.
-  bool pt_equal_p (const class prange &p) const;
+  // A prange can be known to be a particular address, or known to exclude
+  // one.
+  tree m_addr;		// Address referred to.
+  bool m_known_p;	// Is it known (TRUE), or excluded (FALSE).
+  // Return TRUE if P has the same address fields as THIS.
+  bool addr_equal_p (const class prange &p) const;
 };
 
 // Unsupported temporaries may be created by ranger before it's known
@@ -1400,7 +1406,7 @@ inline void
 prange::set_undefined ()
 {
   m_kind = VR_UNDEFINED;
-  set_pt_unknown ();
+  set_addr_unknown ();
 }
 
 inline void
@@ -1411,7 +1417,7 @@ prange::set_varying (tree type)
   m_min = wi::zero (TYPE_PRECISION (type));
   m_max = wi::max_value (TYPE_PRECISION (type), UNSIGNED);
   m_bitmask.set_unknown (TYPE_PRECISION (type));
-  set_pt_unknown ();
+  set_addr_unknown ();
 
   if (flag_checking)
     verify_range ();
@@ -1425,7 +1431,7 @@ prange::set_nonzero (tree type)
   m_min = wi::one (TYPE_PRECISION (type));
   m_max = wi::max_value (TYPE_PRECISION (type), UNSIGNED);
   m_bitmask.set_unknown (TYPE_PRECISION (type));
-  set_pt_unknown ();
+  set_addr_unknown ();
 
   if (flag_checking)
     verify_range ();
@@ -1439,7 +1445,7 @@ prange::set_zero (tree type)
   wide_int zero = wi::zero (TYPE_PRECISION (type));
   m_min = m_max = zero;
   m_bitmask = irange_bitmask (zero, zero);
-  set_pt_unknown ();
+  set_addr_unknown ();
 
   if (flag_checking)
     verify_range ();
@@ -1493,7 +1499,7 @@ inline bool
 prange::varying_compatible_p () const
 {
   return (!undefined_p () && m_min == 0 && m_max == -1
-	  && get_bitmask ().unknown_p () && pt_unknown_p ());
+	  && get_bitmask ().unknown_p () && addr_unknown_p ());
 }
 
 inline irange_bitmask
@@ -1508,18 +1514,17 @@ prange::fits_p (const vrange &) const
   return true;
 }
 
-// Set this range's point-to object to PTR, and POINTS_TO_P is TRUE if it
-// does point to it, and FALSE if it does not point to it.
+// Copy the address information from R, if it has any.
 
 inline void
-prange::set_pt (const prange &r)
+prange::set_addr (const prange &r)
 {
-  // Do not set points-to info if this is zero or undefined.
-  if (!r.pt_unknown_p () && (undefined_p () || zero_p()))
+  // Do not set address info if this is zero or undefined.
+  if (!r.addr_unknown_p () && (undefined_p () || zero_p()))
     return;
 
-  m_pt = r.m_pt;
-  m_points_to_p = r.m_points_to_p;
+  m_addr = r.m_addr;
+  m_known_p = r.m_known_p;
 
   if (r.undefined_p ())
     return;
@@ -1534,79 +1539,79 @@ prange::set_pt (const prange &r)
 // ------------------------------------------------------------------
 
 inline void
-prange::set_pt_unknown ()
+prange::set_addr_unknown ()
 {
-  m_pt = NULL_TREE;
-  m_points_to_p = false;
+  m_addr = NULL_TREE;
+  m_known_p = false;
   // If this is a transition from a range, check for varying compatibility.
   if (m_kind == VR_RANGE && varying_compatible_p ())
     m_kind = VR_VARYING;
 }
 
 inline bool
-prange::pt_unknown_p () const
+prange::addr_unknown_p () const
 {
-  return (m_pt == NULL_TREE);
+  return (m_addr == NULL_TREE);
 }
 
 inline bool
-prange::pt_equal_p (const prange &p) const
+prange::addr_equal_p (const prange &p) const
 {
   // A prange object invokes vrp_operand_equal_p as we want ranges to compare
   // equal to each other if they refer to the same object, even if the
   // tree has become unshared.
-  return (m_points_to_p == p.m_points_to_p
-	  && vrp_operand_equal_p (m_pt, p.m_pt));
+  return (m_known_p == p.m_known_p
+	  && vrp_operand_equal_p (m_addr, p.m_addr));
 }
 
 inline bool
-prange::pt_inverted_p (const prange &r) const
+prange::addr_inverted_p (const prange &r) const
 {
-  return m_pt && vrp_operand_equal_p (m_pt, r.m_pt)
-	 && m_points_to_p != r.m_points_to_p;
+  return m_addr && vrp_operand_equal_p (m_addr, r.m_addr)
+	 && m_known_p != r.m_known_p;
 }
 
 inline bool
-prange::pt_invert ()
+prange::addr_invert ()
 {
-  if (m_pt)
+  if (m_addr)
     {
-      m_points_to_p = !m_points_to_p;
+      m_known_p = !m_known_p;
       return true;
     }
   return false;
 }
 
 inline tree
-prange::pt_invariant () const
+prange::addr_known () const
 {
-  if (m_pt && m_points_to_p)
-    return m_pt;
+  if (m_addr && m_known_p)
+    return m_addr;
   return NULL_TREE;
 }
 
 inline tree
-prange::pt_invariant_away () const
+prange::addr_excluded () const
 {
-  if (m_pt && !m_points_to_p)
-    return m_pt;
+  if (m_addr && !m_known_p)
+    return m_addr;
   return NULL_TREE;
 }
 
 inline bool
-prange::pt_invariant_p (const prange &r) const
+prange::addr_same_known_p (const prange &r) const
 {
-  if (m_pt && m_points_to_p && vrp_operand_equal_p (r.m_pt, m_pt)
-      && m_points_to_p == r.m_points_to_p)
+  if (m_addr && m_known_p && vrp_operand_equal_p (r.m_addr, m_addr)
+      && m_known_p == r.m_known_p)
     return true;
   return false;
 }
 
 inline bool
-prange::pt_invariant_away_p (const prange &r) const
+prange::addr_same_excluded_p (const prange &r) const
 {
-  if (m_pt && !m_points_to_p && vrp_operand_equal_p (r.m_pt, m_pt)
-      && m_points_to_p == r.m_points_to_p)
+  if (m_addr && !m_known_p && vrp_operand_equal_p (r.m_addr, m_addr)
+      && m_known_p == r.m_known_p)
     return true;
   return false;
 }

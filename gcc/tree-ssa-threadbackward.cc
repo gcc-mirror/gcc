@@ -352,7 +352,7 @@ back_threader::find_taken_edge_goto (const vec<basic_block> &path,
       if (r.undefined_p ())
 	return UNREACHABLE_EDGE;
 
-      dest = r.pt_invariant ();
+      dest = r.addr_known ();
       if (!dest)
 	return NULL;
     }

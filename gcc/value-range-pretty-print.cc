@@ -113,30 +113,30 @@ vrange_printer::visit (const irange &r) const
 }
 
 void
-vrange_printer::print_pt (const prange &r) const
+vrange_printer::print_addr (const prange &r) const
 {
-  bool points_to_p = false;
-  tree pt = r.pt_invariant ();
-  if (pt)
-    points_to_p = true;
+  bool known_p = false;
+  tree addr = r.addr_known ();
+  if (addr)
+    known_p = true;
   else
-    pt = r.pt_invariant_away ();
+    addr = r.addr_excluded ();
 
-  if (pt)
+  if (addr)
     {
-      if (points_to_p)
+      if (known_p)
 	pp_string (pp, " -> ");
       else
 	pp_string (pp, " ! -> ");
-      dump_generic_node (pp, pt, 0, TDF_NONE | TDF_NOUID, false);
-      if (points_to_p)
+      dump_generic_node (pp, addr, 0, TDF_NONE | TDF_NOUID, false);
+      if (known_p)
 	{
 	  int_range_max sz;
 	  int_range_max off;
 	  tree b;
-	  b = r.pt_base ();
-	  r.pt_offset(off);
-	  r.pt_size (sz);
+	  b = r.addr_base ();
+	  r.addr_offset(off);
+	  r.addr_size (sz);
 	  pp_string (pp, " { Base: ");
 	  dump_generic_node (pp, b, 0, TDF_NONE | TDF_NOUID, false);
 	  if (!off.varying_p () && !off.undefined_p () && !off.zero_p ())
@@ -178,8 +178,8 @@ vrange_printer::visit (const prange &r) const
   print_int_bound (pp, r.upper_bound (), r.type ());
   pp_character (pp, ']');
   print_irange_bitmasks (pp, r.m_bitmask);
-  // Dump the points to field if there is one.
-  print_pt (r);
+  // Dump the address field if there is one.
+  print_addr (r);
 }
 
 void
