@@ -103,17 +103,6 @@ range_info_free (tree name)
   ggc_free (mem);
 }
 
-/* Return NAME's pointer range storage, or NULL if none exists.  */
-
-static inline prange_storage *
-ssa_name_prange_storage (const_tree name)
-{
-  vrange_storage *mem = SSA_NAME_RANGE_INFO (name);
-  if (!mem || mem->m_discriminator != VR_PRANGE)
-    return NULL;
-  return static_cast <prange_storage *> (mem);
-}
-
 /* Attach PT to NAME, creating range storage if necessary.  */
 
 static void
@@ -122,7 +111,7 @@ set_pt_solution (tree name, pt_solution *pt)
   gcc_checking_assert (POINTER_TYPE_P (TREE_TYPE (name)));
   if (!SSA_NAME_RANGE_INFO (name))
     SSA_NAME_RANGE_INFO (name) = ggc_alloc_vrange_storage (TREE_TYPE (name));
-  ssa_name_prange_storage (name)->pt = pt;
+  ssa_name_prange_info (name)->pt = pt;
 }
 
 /* Return NAME's solution, creating an unknown solution if necessary.  */
@@ -131,7 +120,7 @@ static pt_solution *
 get_pt_solution (tree name)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  prange_storage *s = ssa_name_prange_storage (name);
+  prange_storage *s = ssa_name_prange_info (name);
   if (s && s->pt)
     return s->pt;
   pt_solution *pt = ggc_cleared_alloc<pt_solution> ();
@@ -168,7 +157,7 @@ range_info_set_range (tree name, const vrange &r)
       // variable-sized range storage must grow.
       pt_solution *pt = NULL;
       unsigned int align = 0, misalign = 0;
-      if (prange_storage *old = ssa_name_prange_storage (name))
+      if (prange_storage *old = ssa_name_prange_info (name))
 	{
 	  pt = old->pt;
 	  align = old->align;
@@ -180,8 +169,7 @@ range_info_set_range (tree name, const vrange &r)
       vrange_storage *mem = range_info_alloc (name, r);
       if (mem && (pt || align))
 	{
-	  gcc_checking_assert (mem->m_discriminator == VR_PRANGE);
-	  prange_storage *s = static_cast <prange_storage *> (mem);
+	  prange_storage *s = mem->dyn_prange ();
 	  s->pt = pt;
 	  s->align = align;
 	  s->misalign = misalign;
@@ -512,7 +500,7 @@ bool
 ptr_nonnull_p (tree name)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  prange_storage *ps = ssa_name_prange_storage (name);
+  prange_storage *ps = ssa_name_prange_info (name);
   return ps ? ps->nonnull_p (TREE_TYPE (name)) : false;
 }
 
@@ -522,7 +510,7 @@ void
 set_ptr_nonnull (tree name)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (name)));
-  prange_storage *ps = ssa_name_prange_storage (name);
+  prange_storage *ps = ssa_name_prange_info (name);
   if (ps)
     {
       ps->set_nonnull (TREE_TYPE (name));
@@ -602,7 +590,7 @@ get_nonzero_bits_1 (const_tree name)
   // need to extract the bitmask like integers do.
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      prange_storage *s = ssa_name_prange_storage (name);
+      prange_storage *s = ssa_name_prange_info (name);
       gcc_checking_assert (s);
       return s->get_bitmask (TREE_TYPE (name)).get_nonzero_bits ();
     }
@@ -661,7 +649,7 @@ get_known_nonzero_bits_1 (const_tree name)
   // Known pointer bits, including alignment, are encoded in the bitmask
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
-      prange_storage *s = ssa_name_prange_storage (name);
+      prange_storage *s = ssa_name_prange_info (name);
       gcc_checking_assert (s);
       if (s->undefined_p ())
 	return wi::shwi (0, precision);
@@ -868,7 +856,7 @@ get_ptr_info_alignment (const_tree name, unsigned int *alignp,
   if (!POINTER_TYPE_P (TREE_TYPE (name)) || !SSA_NAME_RANGE_INFO (name))
     return false;
 
-  prange_storage *s = ssa_name_prange_storage (name);
+  prange_storage *s = ssa_name_prange_info (name);
   if (!s)
     return false;
 
@@ -888,7 +876,7 @@ get_ptr_info_alignment (const_tree name, unsigned int *alignp,
 void
 mark_ptr_info_alignment_unknown (tree name)
 {
-  prange_storage *pi = ssa_name_prange_storage (name);
+  prange_storage *pi = ssa_name_prange_info (name);
 
   if (pi)
     {
@@ -942,7 +930,7 @@ set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
 
   /* Transitional fields are updated only after the range accepts the
      refinement.  Reacquire storage since the update may reallocate it.  */
-  prange_storage *s = ssa_name_prange_storage (name);
+  prange_storage *s = ssa_name_prange_info (name);
   s->align = align;
   s->misalign = misalign;
 }
@@ -1062,8 +1050,9 @@ void
 reset_flow_sensitive_info (tree name)
 {
   /* Aliasing info is not flow sensitive, so preserve it if present.  */
-  prange_storage *s = ssa_name_prange_storage (name);
+  prange_storage *s = ssa_name_prange_info (name);
   pt_solution *pt = s ? s->pt : NULL;
+
   SSA_NAME_RANGE_INFO (name) = NULL;
   if (pt)
     set_pt_solution (name, pt);
