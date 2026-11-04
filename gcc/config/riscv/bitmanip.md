@@ -91,25 +91,20 @@
 
 ; Make sure that an andi followed by a sh[123]add remains a two instruction
 ; sequence--and is not torn apart into slli, slri, add.
-(define_insn_and_split "*andi_add.uw"
-  [(set (match_operand:DI 0 "register_operand" "=r")
-	(plus:DI (and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
-				    (match_operand:QI 2 "imm123_operand" "Ds3"))
-			 (match_operand:DI 3 "consecutive_bits_operand" ""))
-		 (match_operand:DI 4 "register_operand" "r")))
-   (clobber (match_scratch:DI 5 "=&r"))]
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI (and:DI (ashift:DI (match_operand:DI 1 "register_operand")
+				    (match_operand:QI 2 "imm123_operand"))
+			 (match_operand:DI 3 "consecutive_bits_operand"))
+		 (match_operand:DI 4 "register_operand")))
+   (clobber (match_operand:DI 5 "register_operand"))]
   "TARGET_64BIT && TARGET_ZBA
    && riscv_shamt_matches_mask_p (INTVAL (operands[2]), INTVAL (operands[3]))
    && SMALL_OPERAND (INTVAL (operands[3]) >> INTVAL (operands[2]))"
-  "#"
-  "&& reload_completed"
   [(set (match_dup 5) (and:DI (match_dup 1) (match_dup 3)))
    (set (match_dup 0) (plus:DI (ashift:DI (match_dup 5) (match_dup 2))
 			       (match_dup 4)))]
-{
-	operands[3] = GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2]));
-}
-[(set_attr "type" "bitmanip")])
+  { operands[3] = GEN_INT (INTVAL (operands[3]) >> INTVAL (operands[2])); })
 
 (define_insn "*shNadduw"
   [(set (match_operand:DI 0 "register_operand" "=r")
