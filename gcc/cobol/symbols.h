@@ -47,7 +47,8 @@
 #include <string>
 #include <vector>
 
-// The ISO spec says there is a
+// The ISO spec says there is a limit on the length of the PICTURE
+// string in the source code.
 #define PICTURE_MAX 64
 
 extern const char *numed_message;
@@ -549,6 +550,11 @@ public:
     if( nbyte == 0 ) nbyte = strlen(orig);
     this->orig = orig_t( orig, all );
     return this->orig.data;
+  }
+  // Save encoded data without deriving storage capacity from its bytes.
+  const char *original_without_capacity( const char *value ) {
+    orig = orig_t(value);
+    return orig.data;
   }
   // Set the computed cce value.  Do not impute capacity.
   void original( REAL_VALUE_TYPE value ) {
@@ -3307,7 +3313,7 @@ cbl_field_t *new_alphanumeric(const cbl_name_t name=nullptr,
                               cbl_encoding_t encoding=no_encoding_e );
 
 char *expand_picture(const char *picture);
-void expand_expanded(char *picture);
+char *expand_expanded(char *picture);
 
 // ENABLE_HIJACKING allows for code generation to be "hijacked" when the
 // program-id is "dubner_h" or "hijack_h".  See the mainline code in genapi.cc.

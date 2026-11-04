@@ -1966,7 +1966,7 @@ cbl_field_t::encode_numeric( const char input[], cbl_loc_t loc ) {
             char *expanded = expand_picture(data.picture);
             if( type == FldNumericEdited )
               {
-              expand_expanded(expanded);
+              expanded = expand_expanded(expanded);
               }
             __gg__string_to_numeric_edited( reinterpret_cast<char *>(retval),
                                             ach,

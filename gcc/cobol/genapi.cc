@@ -6838,12 +6838,19 @@ establish_using(size_t nusing,
 
           // That value is probably sixteen.  Subtract the length of our target
           // value from that.
-          tree offset =
+          IF( reference,
+              ne_op,
+              gg_cast(UCHAR_P, null_pointer_node) )
+            {
+            tree offset =
             gg_subtract(gg_array_value(var_decl_call_parameter_lengths, rt_i),
                        member(args[i].refer.field->var_decl_node, "capacity"));
-          // And add that value to 'reference'
-          gg_assign(reference,
-                    gg_add(reference, offset));
+            // And add that value to 'reference'
+            gg_assign(reference,
+                      gg_add(reference, offset));
+            }
+          ELSE
+            ENDIF
           // This code was added when I encountered a function call using
           // func( N - 1 ), where the function expected a single-byte value.
           // In little-endian, no problem, because the calculated value of 3
@@ -14811,7 +14818,7 @@ actually_create_the_static_field( cbl_field_t *new_var,
   char *expanded = expand_picture(new_var->data.picture);
   if( new_var->type == FldNumericEdited )
     {
-    expand_expanded(expanded);
+    expanded = expand_expanded(expanded);
     }
   tree picture = gg_string_literal(expanded);
   free(expanded);
@@ -15182,6 +15189,20 @@ void
 parser_symbol_add(struct cbl_field_t *new_var )
   {
   Analyze();
+
+  if( new_var->type == FldFloat )
+    {
+    /* Floating-point storage uses the target's native byte order. */
+    if( cobol_target_big_endian() )
+      {
+      new_var->attr |= big_endian_e;
+      }
+    else
+      {
+      new_var->attr &= ~big_endian_e;
+      }
+    }
+
   SHOW_PARSE
     {
     char ach[1024];
@@ -15634,7 +15655,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
 
     if( level_88_string )
       {
-      new_var->data.original(level_88_string);
+      new_var->data.original_without_capacity(level_88_string);
       new_initial = level_88_string;
       length_of_initial_string = level_88_string_size;
       }

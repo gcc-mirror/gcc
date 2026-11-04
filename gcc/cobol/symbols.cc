@@ -4840,19 +4840,10 @@ char *
 expand_picture(const char *picture)
   {
   // The caller should free() the return value.
-  assert(strlen(picture) < PICTURE_MAX); // guaranteed by picset() in scanner
-  size_t retval_length = PICTURE_MAX;
-
-  // In the expand_expanded routine, we are going to tack on some additional
-  // characters in order to speed up compile-time processin.
-  static const int PICTURE_EXTRA = 6;
-  retval_length += PICTURE_EXTRA;
-
-  char *retval = static_cast<char *>(xmalloc(retval_length));
+  std::string retval;
 
   int ch;
   int prior_ch = NULLCH;
-  char *d = retval;
   const char *p = picture;
   long repeat;
   int currency_symbol = NULLCH;
@@ -4873,16 +4864,16 @@ expand_picture(const char *picture)
       p = endchar + 1;
       while(repeat--)
         {
-        *d++ = prior_ch;
+        retval += prior_ch;
         }
       }
     else
       {
       prior_ch = ch;
-      *d++ = ch;
+      retval += ch;
       }
 
-    if( ! __gg__currency_signs[ch].empty() )
+    if( !__gg__currency_signs[ch].empty() )
       {
       // We are going to be mapping ch to a string in the final result:
       prior_ch = ch;
@@ -4890,39 +4881,36 @@ expand_picture(const char *picture)
       }
     }
 
-  size_t dest_length = d-retval;
-
   // We have to take into account the possibility that the currency symbol
   // mapping might be to a string of more than one character:
 
   if( currency_symbol )
     {
     size_t sign_length = __gg__currency_signs[currency_symbol].size();
-    assert(0 < sign_length);
+    gcc_assert(0 < sign_length);
     if( --sign_length )
       {
-      char *pcurrency = strchr(retval, currency_symbol);
-      assert(pcurrency);
-      memmove(    pcurrency + sign_length,
-                  pcurrency,
-                  dest_length - (pcurrency-retval));
+      // The currency sign text is more than one character.
+      // Copy everything up to the first currency symbol:
+      size_t nfound = retval.find(currency_symbol);
+      gcc_assert(nfound != std::string::npos);
+      std::string temp = retval.substr(0, nfound);
+      // Lay down 'B' to make room for the currency sign text
       for(size_t i=0; i<sign_length; i++)
         {
-        pcurrency[i] = ascii_B;
+        temp += ascii_B;
         }
-      dest_length += sign_length;
+      // And then tack on the rest of the original
+      temp += retval.substr(nfound);
+
+      // And that becomes the retval:
+      retval = temp;
       }
     }
-  retval[dest_length] = NULLCH;
-
-  // The 'V'
-
 
   // To ease the workload on interpreting the PICTURE string at run time, we
-  // are going to convert everything we can to upper case.  We also convert
-  // V to decimal point, for the same reason.  Characters that might be
-  // currency symbols have to be left in their uppercase or lowercase original
-  // state.
+  // are going to convert everything we can to upper case.
+  size_t dest_length = retval.size();
   for(size_t i=0; i<dest_length; i++)
     {
     switch(retval[i])
@@ -4961,23 +4949,30 @@ expand_picture(const char *picture)
     }
 
   // The V character is virtual in numeric_editing, so get rid of it
-  char *pV = strchr(retval, ascii_V);
-  if( pV )
+  size_t nfound = retval.find(ascii_V);
+  if( nfound != std::string::npos )
     {
-    memmove(pV, pV+1, strlen(pV));
+    retval.erase(nfound, 1);
     }
-  return retval;
+  return xstrdup(retval.c_str());
   }
 
-void
+char *
 expand_expanded(char *expanded)
   {
   if(strlen(expanded) == 0)
     {
-    return;
+    return expanded;
     }
 
-  unsigned char *dest = reinterpret_cast<unsigned char *>(expanded);
+  // expanded is a malloced numeric-edited string.  We need to make it six
+  // characters longer:
+
+  unsigned char *dest =
+                   static_cast<unsigned char *>(xmalloc(strlen(expanded)+ 7));
+  memcpy(dest, expanded, strlen(expanded)+1);
+  free(expanded);
+  expanded = reinterpret_cast<char *>(dest);
 
   /* In order to make __gg__string_to_numeric_edited() run quickly, we are
      going to process the expanded picture string especially for it.  What we
@@ -5176,6 +5171,7 @@ expand_expanded(char *expanded)
       }
     }
   strcat(expanded, extra);
+  return expanded;
   }
 
 int
