@@ -2,7 +2,7 @@
 # aclocal && autoconf && autoheader && automake
 
 AC_INIT([GCC Quad-precision Math Library], 0.1,,[libquadmath])
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 # Gets build, host, target, *_vendor, *_cpu, *_os, etc.
 #

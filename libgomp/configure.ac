@@ -2,7 +2,7 @@
 # aclocal -I ../config && autoconf && autoheader && automake
 
 AC_INIT([GNU Offloading and Multi Processing Runtime Library], 1.0,,[libgomp])
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 # -------
 # Options

@@ -2,7 +2,7 @@
 
 AC_INIT(package-unused, version-unused,, libstdc++)
 AC_CONFIG_SRCDIR(src/shared/hashtable-aux.cc)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 # This works around the fact that libtool configuration may change LD
 # for this particular configuration, but some shells, instead of

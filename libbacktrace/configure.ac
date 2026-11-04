@@ -31,7 +31,7 @@
 
 AC_INIT(package-unused, version-unused,, libbacktrace)
 AC_CONFIG_SRCDIR(backtrace.h)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 if test -n "${with_target_subdir}"; then
   AM_ENABLE_MULTILIB(, ..)

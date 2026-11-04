@@ -26,7 +26,7 @@
 # <http://www.gnu.org/licenses/>.
 #
 AC_INIT(ASCII.def, 1.9.5, gm2@nongnu.org)
-AC_CONFIG_HEADER(gm2-libs-host.h:gm2-libs-host.h.in)
+AC_CONFIG_HEADERS([gm2-libs-host.h:gm2-libs-host.h.in])
 
 # Checks for programs.
 

@@ -2,7 +2,7 @@
 # aclocal && autoconf && autoheader && automake
 
 AC_INIT([GNU Fortran Runtime Library], 0.3,,[libgfortran])
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 GCC_TOPLEV_SUBDIRS
 
 # -------

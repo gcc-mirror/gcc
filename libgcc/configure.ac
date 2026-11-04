@@ -48,7 +48,7 @@ else
 fi
 AC_SUBST(libgcc_topdir)
 AC_CONFIG_AUX_DIR($libgcc_topdir)
-AC_CONFIG_HEADER(auto-target.h:config.in)
+AC_CONFIG_HEADERS([auto-target.h:config.in])
 
 AC_ARG_ENABLE(shared,
 [  --disable-shared        don't provide a shared libgcc],

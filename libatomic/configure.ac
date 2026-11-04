@@ -23,7 +23,7 @@
 #  <http://www.gnu.org/licenses/>.
 
 AC_INIT([GNU Atomic Library], 1.0,,[libatomic])
-AC_CONFIG_HEADER(auto-config.h)
+AC_CONFIG_HEADERS([auto-config.h])
 
 # -------
 # Options

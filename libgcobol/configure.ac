@@ -24,7 +24,7 @@
 
 AC_INIT(package-unused, version-unused,,libgcobol)
 AC_CONFIG_SRCDIR(Makefile.am)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 AC_CONFIG_MACRO_DIRS([m4])
 

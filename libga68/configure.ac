@@ -19,7 +19,7 @@
 
 AC_INIT(package-unused, version-unused,,libga68)
 AC_CONFIG_SRCDIR(Makefile.am)
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 # Add --enable-multilib to configure, which defaults to enable.
 AM_ENABLE_MULTILIB(, ..)

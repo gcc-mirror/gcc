@@ -220,8 +220,6 @@ dnl AM_DISABLE_SHARED
 dnl When we start using libtool:
 dnl AM_PROG_LIBTOOL
 
-dnl When we start using automake:
-dnl AM_CONFIG_HEADER(config.h:config.in)
 AC_CONFIG_HEADERS([config.h:config.in])
 
 dnl When we start using automake:

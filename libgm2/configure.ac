@@ -25,7 +25,7 @@
 AC_INIT(package-unused, version-unused,,libgm2)
 AC_CONFIG_SRCDIR(Makefile.am)
 # AC_CONFIG_MACRO_DIR([config])
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 libtool_VERSION=21:0:0
 AC_SUBST(libtool_VERSION)

@@ -368,7 +368,7 @@ AM_CONDITIONAL(LIBBACKTRACE_SUPPORTED,
 
 AH_BOTTOM([#include "libbacktrace/backtrace-rename.h"])
 AC_CONFIG_FILES([Makefile libsanitizer.spec libbacktrace/backtrace-supported.h])
-AC_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 AC_CONFIG_FILES(m4_foreach_w([DIR], [interception sanitizer_common libbacktrace lsan asan ubsan], [DIR/Makefile ]),
   [cat > vpsed$$ << \_EOF
