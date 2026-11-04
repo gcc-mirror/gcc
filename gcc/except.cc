@@ -1152,8 +1152,8 @@ sjlj_mark_call_sites (void)
 
       /* Don't separate a call from it's argument loads.  */
       before = insn;
-      if (CALL_P (insn))
-	before = find_first_parameter_load (insn, NULL);
+      if (auto call = dyn_cast<rtx_call_insn *> (insn))
+	before = find_first_parameter_load (call, NULL);
 
       start_sequence ();
       mem = adjust_address (crtl->eh.sjlj_fc, TYPE_MODE (integer_type_node),

@@ -3826,7 +3826,7 @@ extern bool auto_inc_p (const_rtx);
 extern bool in_insn_list_p (const rtx_insn_list *, const rtx_insn *);
 extern void remove_node_from_insn_list (const rtx_insn *, rtx_insn_list **);
 extern bool loc_mentioned_in_p (rtx *, const_rtx);
-extern rtx_insn *find_first_parameter_load (rtx_insn *, rtx_insn *);
+extern rtx_insn *find_first_parameter_load (rtx_call_insn *, rtx_insn *);
 extern bool keep_with_call_p (const rtx_insn *);
 extern bool label_is_jump_target_p (const rtx_insn *, const rtx_insn *);
 extern int pattern_cost (rtx, bool);

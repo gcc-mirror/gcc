@@ -4548,7 +4548,7 @@ parms_set (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
    to the outer function is passed down as a parameter).
    Do not skip BOUNDARY.  */
 rtx_insn *
-find_first_parameter_load (rtx_insn *call_insn, rtx_insn *boundary)
+find_first_parameter_load (rtx_call_insn *call_insn, rtx_insn *boundary)
 {
   struct parms_set_data parm;
   rtx p;

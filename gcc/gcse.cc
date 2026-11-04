@@ -2153,7 +2153,8 @@ insert_insn_end_basic_block (rtx_insn *pat, basic_block bb)
       /* Since different machines initialize their parameter registers
 	 in different orders, assume nothing.  Collect the set of all
 	 parameter registers.  */
-      insn = find_first_parameter_load (insn, BB_HEAD (bb));
+      insn = find_first_parameter_load (as_a<rtx_call_insn *> (insn),
+					BB_HEAD (bb));
 
       /* If we found all the parameter loads, then we want to insert
 	 before the first parameter load.
