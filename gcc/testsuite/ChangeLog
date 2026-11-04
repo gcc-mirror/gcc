@@ -1,3 +1,18 @@
+2026-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/127475
+	* gnat.dg/specs/vect1.ads: New test.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127475
+	* gcc.dg/vect/vect-pr127475.c: New testcase.
+
+2026-11-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128388
+	* gcc.target/i386/pr128388.c: New test.
+
 2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:

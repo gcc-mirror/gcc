@@ -1,3 +1,15 @@
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127475
+	* tree-vect-loop.cc (vectorizable_induction): Use
+	signed_or_unsigned_type_for to get the step vectype.
+
+2026-11-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128388
+	* config/i386/i386.cc (ix86_output_indirect_branch_via_reg):
+	Check REX2_INT_REGNO_P instead of REX_INT_REGNO_P twice.
+
 2026-11-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backported from master:
