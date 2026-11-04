@@ -1,5 +1,5 @@
 /* PR target/128409 */
-/* { dg-do compile { target *-*-linux } } */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -fcf-protection=branch -march=x86-64" } */
 
 void
