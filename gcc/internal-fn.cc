@@ -156,46 +156,53 @@ init_internal_fns ()
 
 /* Create static initializers for the information returned by
    direct_internal_fn.  */
-#define not_direct { -2, -2, false }
-#define mask_load_direct { -1, 2, false }
-#define load_lanes_direct { -1, -1, false }
-#define mask_load_lanes_direct { -1, -1, false }
-#define gather_load_direct { 3, 1, false }
-#define strided_load_direct { -1, -1, false }
-#define len_load_direct { -1, -1, false }
-#define mask_len_load_direct { -1, 4, false }
-#define mask_store_direct { 3, 2, false }
-#define store_lanes_direct { 0, 0, false }
-#define mask_store_lanes_direct { 0, 0, false }
-#define vec_cond_mask_direct { 1, 0, false }
-#define vec_cond_mask_len_direct { 1, 1, false }
-#define vec_cond_direct { 2, 0, false }
-#define scatter_store_direct { 3, 1, false }
-#define strided_store_direct { 1, 1, false }
-#define len_store_direct { 3, 3, false }
-#define mask_len_store_direct { 4, 5, false }
-#define vec_set_direct { 3, 3, false }
-#define vec_extract_direct { 0, -1, false }
-#define unary_direct { 0, 0, true }
-#define unary_convert_direct { -1, 0, true }
-#define binary_direct { 0, 0, true }
-#define ternary_direct { 0, 0, true }
-#define cond_unary_direct { 1, 1, true }
-#define cond_binary_direct { 1, 1, true }
-#define cond_ternary_direct { 1, 1, true }
-#define cond_len_unary_direct { 1, 1, true }
-#define cond_len_binary_direct { 1, 1, true }
-#define cond_len_ternary_direct { 1, 1, true }
-#define while_direct { 0, 2, false }
-#define fold_extract_direct { 2, 2, false }
-#define fold_len_extract_direct { 2, 2, false }
-#define fold_left_direct { 1, 1, false }
-#define mask_fold_left_direct { 1, 1, false }
-#define mask_len_fold_left_direct { 1, 1, false }
-#define check_ptrs_direct { 0, 0, false }
-#define crc_direct { 1, -1, true }
-#define reduc_sbool_direct { 0, 0, true }
-#define select_vl_direct { 2, 0, false }
+#define not_direct { -2, -2, false, 0, 0 }
+#define mask_load_direct { -1, 2, false, 4, 4 }
+#define load_lanes_direct { -1, -1, false, 1, 1 }
+#define mask_load_lanes_direct { -1, -1, false, 4, 4 }
+#define mask_len_load_lanes_direct { -1, -1, false, 6, 6 }
+#define gather_load_direct { 3, 1, false, 5, 5 }
+#define mask_gather_load_direct { 3, 1, false, 7, 7 }
+#define mask_len_gather_load_direct { 3, 1, false, 9, 9 }
+#define strided_load_direct { -1, -1, false, 7, 7 }
+#define len_load_direct { -1, -1, false, 5, 5 }
+#define mask_len_load_direct { -1, 4, false, 6, 6 }
+#define mask_store_direct { 3, 2, false, 4, 4 }
+#define store_lanes_direct { 0, 0, false, 1, 1 }
+#define mask_store_lanes_direct { 0, 0, false, 4, 4 }
+#define mask_len_store_lanes_direct { 0, 0, false, 6, 6 }
+#define vec_cond_mask_direct { 1, 0, false, 3, 3 }
+#define vec_cond_mask_len_direct { 1, 1, false, 5, 5 }
+#define vec_cond_direct { 2, 0, false, 5, 5 }
+#define scatter_store_direct { 3, 1, false, 5, 5 }
+#define mask_scatter_store_direct { 3, 1, false, 6, 6 }
+#define mask_len_scatter_store_direct { 3, 1, false, 8, 8 }
+#define strided_store_direct { 1, 1, false, 6, 6 }
+#define len_store_direct { 3, 3, false, 5, 5 }
+#define mask_len_store_direct { 4, 5, false, 6, 6 }
+#define vec_set_direct { 3, 3, false, 3, 3 }
+#define vec_extract_direct { 0, -1, false, 2, 2 }
+#define unary_direct { 0, 0, true, 1, 1 }
+#define unary_opt_direct { 0, 0, true, 1, 2 }
+#define unary_convert_direct { -1, 0, true, 1, 1 }
+#define binary_direct { 0, 0, true, 2, 2 }
+#define ternary_direct { 0, 0, true, 3, 3 }
+#define cond_unary_direct { 1, 1, true, 3, 3 }
+#define cond_binary_direct { 1, 1, true, 4, 4 }
+#define cond_ternary_direct { 1, 1, true, 5, 5 }
+#define cond_len_unary_direct { 1, 1, true, 5, 5 }
+#define cond_len_binary_direct { 1, 1, true, 6, 6 }
+#define cond_len_ternary_direct { 1, 1, true, 7, 7 }
+#define while_direct { 0, 2, false, 3, 3 }
+#define fold_extract_direct { 2, 2, false, 3, 3 }
+#define fold_len_extract_direct { 2, 2, false, 5, 5 }
+#define fold_left_direct { 1, 1, false, 2, 2 }
+#define mask_fold_left_direct { 1, 1, false, 3, 3 }
+#define mask_len_fold_left_direct { 1, 1, false, 5, 5 }
+#define check_ptrs_direct { 0, 0, false, 4, 4 }
+#define crc_direct { 1, -1, true, 3, 3 }
+#define reduc_sbool_direct { 0, 0, true, 1, 1 }
+#define select_vl_direct { 2, 0, false, 3, 3 }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -3218,6 +3225,7 @@ expand_partial_load_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab)
 
 #define expand_mask_load_optab_fn expand_partial_load_optab_fn
 #define expand_mask_load_lanes_optab_fn expand_mask_load_optab_fn
+#define expand_mask_len_load_lanes_optab_fn expand_mask_load_optab_fn
 #define expand_len_load_optab_fn expand_partial_load_optab_fn
 #define expand_mask_len_load_optab_fn expand_partial_load_optab_fn
 
@@ -3262,6 +3270,7 @@ expand_partial_store_optab_fn (internal_fn ifn, gcall *stmt, convert_optab optab
 
 #define expand_mask_store_optab_fn expand_partial_store_optab_fn
 #define expand_mask_store_lanes_optab_fn expand_mask_store_optab_fn
+#define expand_mask_len_store_lanes_optab_fn expand_mask_store_optab_fn
 #define expand_len_store_optab_fn expand_partial_store_optab_fn
 #define expand_mask_len_store_optab_fn expand_partial_store_optab_fn
 
@@ -3863,6 +3872,9 @@ expand_scatter_store_optab_fn (internal_fn, gcall *stmt, direct_optab optab)
   expand_insn (icode, i, ops);
 }
 
+#define expand_mask_scatter_store_optab_fn expand_scatter_store_optab_fn
+#define expand_mask_len_scatter_store_optab_fn expand_scatter_store_optab_fn
+
 /* Expand {MASK_,}GATHER_LOAD call CALL using optab OPTAB.  */
 
 static void
@@ -3891,6 +3903,9 @@ expand_gather_load_optab_fn (internal_fn ifn, gcall *stmt, direct_optab optab)
   expand_insn (icode, i, ops);
   assign_call_lhs (lhs, lhs_rtx, &ops[0]);
 }
+
+#define expand_mask_gather_load_optab_fn expand_gather_load_optab_fn
+#define expand_mask_len_gather_load_optab_fn expand_gather_load_optab_fn
 
 /* Expand MASK_LEN_STRIDED_LOAD call CALL by optab OPTAB.  */
 
@@ -4139,6 +4154,8 @@ static void
 expand_direct_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab,
 			unsigned int nargs)
 {
+  gcc_checking_assert (direct_internal_fn_nargs_ok_p
+		       (fn, gimple_call_num_args (stmt)));
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = direct_optab_handler (optab, TYPE_MODE (types.first));
   expand_fn_using_insn (stmt, icode, 1, nargs);
@@ -4193,6 +4210,8 @@ static void
 expand_convert_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab,
 			 unsigned int nargs)
 {
+  gcc_checking_assert (direct_internal_fn_nargs_ok_p
+		       (fn, gimple_call_num_args (stmt)));
   tree_pair types = direct_internal_fn_types (fn, stmt);
   insn_code icode = convert_optab_handler (optab, TYPE_MODE (types.first),
 					  TYPE_MODE (types.second));
@@ -4327,6 +4346,8 @@ expand_reduc_sbool_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab)
 #define expand_unary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 1)
 
+#define expand_unary_opt_optab_fn expand_unary_optab_fn
+
 #define expand_binary_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 2)
 
@@ -4452,6 +4473,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 }
 
 #define direct_unary_optab_supported_p direct_optab_supported_p
+#define direct_unary_opt_optab_supported_p direct_optab_supported_p
 #define direct_unary_convert_optab_supported_p convert_optab_supported_p
 #define direct_binary_optab_supported_p direct_optab_supported_p
 #define direct_ternary_optab_supported_p direct_optab_supported_p
@@ -4465,16 +4487,25 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_mask_load_optab_supported_p convert_optab_supported_p
 #define direct_load_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_load_lanes_optab_supported_p multi_vector_optab_supported_p
+#define direct_mask_len_load_lanes_optab_supported_p \
+  multi_vector_optab_supported_p
 #define direct_gather_load_optab_supported_p convert_optab_supported_p
+#define direct_mask_gather_load_optab_supported_p convert_optab_supported_p
+#define direct_mask_len_gather_load_optab_supported_p convert_optab_supported_p
 #define direct_strided_load_optab_supported_p direct_optab_supported_p
 #define direct_len_load_optab_supported_p direct_optab_supported_p
 #define direct_mask_len_load_optab_supported_p convert_optab_supported_p
 #define direct_mask_store_optab_supported_p convert_optab_supported_p
 #define direct_store_lanes_optab_supported_p multi_vector_optab_supported_p
 #define direct_mask_store_lanes_optab_supported_p multi_vector_optab_supported_p
+#define direct_mask_len_store_lanes_optab_supported_p \
+  multi_vector_optab_supported_p
 #define direct_vec_cond_mask_optab_supported_p convert_optab_supported_p
 #define direct_vec_cond_optab_supported_p convert_optab_supported_p
 #define direct_scatter_store_optab_supported_p convert_optab_supported_p
+#define direct_mask_scatter_store_optab_supported_p convert_optab_supported_p
+#define direct_mask_len_scatter_store_optab_supported_p \
+  convert_optab_supported_p
 #define direct_strided_store_optab_supported_p direct_optab_supported_p
 #define direct_len_store_optab_supported_p direct_optab_supported_p
 #define direct_mask_len_store_optab_supported_p convert_optab_supported_p

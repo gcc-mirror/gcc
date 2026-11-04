@@ -51,13 +51,16 @@ along with GCC; see the file COPYING3.  If not see
    set of types if the associated optab is available for the modes
    of those types.  OPTAB says what optab to use (without the trailing
    "_optab") and TYPE categorizes the optab based on its inputs and
-   outputs.  The possible types of optab are:
+   outputs.  TYPE also gives the number of arguments of a call to the
+   function.  The possible types of optab are:
 
    - mask_load: currently just maskload
    - load_lanes: currently just vec_load_lanes
    - mask_load_lanes: currently just vec_mask_load_lanes
    - mask_len_load_lanes: currently just vec_mask_len_load_lanes
-   - gather_load: used for {mask_,mask_len_,}gather_load
+   - gather_load: currently just gather_load
+   - mask_gather_load: currently just mask_gather_load
+   - mask_len_gather_load: currently just mask_len_gather_load
    - strided_load: currently just mask_len_strided_load
    - len_load: currently just len_load
    - mask_len_load: currently just mask_len_load
@@ -66,12 +69,16 @@ along with GCC; see the file COPYING3.  If not see
    - store_lanes: currently just vec_store_lanes
    - mask_store_lanes: currently just vec_mask_store_lanes
    - mask_len_store_lanes: currently just vec_mask_len_store_lanes
-   - scatter_store: used for {mask_,mask_len_,}scatter_store
+   - scatter_store: currently just scatter_store
+   - mask_scatter_store: currently just mask_scatter_store
+   - mask_len_scatter_store: currently just mask_len_scatter_store
    - strided_store: currently just mask_len_strided_store
    - len_store: currently just len_store
    - mask_len_store: currently just mask_len_store
 
    - unary: a normal unary optab, such as vec_reverse_<mode>
+   - unary_opt: a normal unary optab for a function that has an optional
+     second argument, such as clz<mode>2
    - binary: a normal binary optab, such as vec_interleave_lo_<mode>
    - ternary: a normal ternary optab, such as fma<mode>4
 
@@ -229,13 +236,13 @@ DEF_INTERNAL_OPTAB_FN (LOAD_LANES, ECF_CONST, vec_load_lanes, load_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_LOAD_LANES, ECF_PURE,
 		       vec_mask_load_lanes, mask_load_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_LOAD_LANES, ECF_PURE,
-		       vec_mask_len_load_lanes, mask_load_lanes)
+		       vec_mask_len_load_lanes, mask_len_load_lanes)
 
 DEF_INTERNAL_OPTAB_FN (GATHER_LOAD, ECF_PURE, gather_load, gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_GATHER_LOAD, ECF_PURE,
-		       mask_gather_load, gather_load)
+		       mask_gather_load, mask_gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_GATHER_LOAD, ECF_PURE,
-		       mask_len_gather_load, gather_load)
+		       mask_len_gather_load, mask_len_gather_load)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_STRIDED_LOAD, ECF_PURE,
 		       mask_len_strided_load, strided_load)
 
@@ -244,9 +251,9 @@ DEF_INTERNAL_OPTAB_FN (MASK_LEN_LOAD, ECF_PURE, mask_len_load, mask_len_load)
 
 DEF_INTERNAL_OPTAB_FN (SCATTER_STORE, 0, scatter_store, scatter_store)
 DEF_INTERNAL_OPTAB_FN (MASK_SCATTER_STORE, 0,
-		       mask_scatter_store, scatter_store)
+		       mask_scatter_store, mask_scatter_store)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_SCATTER_STORE, 0,
-		       mask_len_scatter_store, scatter_store)
+		       mask_len_scatter_store, mask_len_scatter_store)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_STRIDED_STORE, 0,
 		       mask_len_strided_store, strided_store)
 
@@ -255,7 +262,7 @@ DEF_INTERNAL_OPTAB_FN (STORE_LANES, ECF_CONST, vec_store_lanes, store_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_STORE_LANES, 0,
 		       vec_mask_store_lanes, mask_store_lanes)
 DEF_INTERNAL_OPTAB_FN (MASK_LEN_STORE_LANES, 0,
-		       vec_mask_len_store_lanes, mask_store_lanes)
+		       vec_mask_len_store_lanes, mask_len_store_lanes)
 
 DEF_INTERNAL_OPTAB_FN (VCOND_MASK, ECF_CONST | ECF_NOTHROW,
 		       vcond_mask, vec_cond_mask)
@@ -486,11 +493,11 @@ DEF_INTERNAL_OPTAB_FN (COMPLEX_FMS_CONJ, ECF_CONST, cmls_conj, ternary)
 
 /* Unary integer ops.  */
 DEF_INTERNAL_INT_EXT_FN (CLRSB, ECF_CONST | ECF_NOTHROW, clrsb, unary)
-DEF_INTERNAL_INT_EXT_FN (CLZ, ECF_CONST | ECF_NOTHROW, clz, unary)
-DEF_INTERNAL_INT_EXT_FN (CTZ, ECF_CONST | ECF_NOTHROW, ctz, unary)
+DEF_INTERNAL_INT_EXT_FN (CLZ, ECF_CONST | ECF_NOTHROW, clz, unary_opt)
+DEF_INTERNAL_INT_EXT_FN (CTZ, ECF_CONST | ECF_NOTHROW, ctz, unary_opt)
 DEF_INTERNAL_INT_EXT_FN (FFS, ECF_CONST | ECF_NOTHROW, ffs, unary)
 DEF_INTERNAL_INT_EXT_FN (PARITY, ECF_CONST | ECF_NOTHROW, parity, unary)
-DEF_INTERNAL_INT_EXT_FN (POPCOUNT, ECF_CONST | ECF_NOTHROW, popcount, unary)
+DEF_INTERNAL_INT_EXT_FN (POPCOUNT, ECF_CONST | ECF_NOTHROW, popcount, unary_opt)
 DEF_INTERNAL_INTSZ_EXT_FN (BSWAP, ECF_CONST | ECF_NOTHROW, bswap, unary)
 DEF_INTERNAL_INTSZ_EXT_FN (BITREVERSE, ECF_CONST | ECF_NOTHROW, bitreverse,
 			   unary)

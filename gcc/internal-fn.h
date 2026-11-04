@@ -157,9 +157,13 @@ struct direct_internal_fn_info
      same number of elements.  E.g. we can vectorize an IFN_SQRT on
      floats as an IFN_SQRT on vectors of N floats.
 
-     This only needs 1 bit, but occupies the full 16 to ensure a nice
+     This only needs 1 bit, but occupies the full 8 to ensure a nice
      layout.  */
-  unsigned int vectorizable : 16;
+  unsigned int vectorizable : 8;
+  /* The minimum and maximum number of arguments of a call to the
+     function.  */
+  unsigned int nargs_min : 4;
+  unsigned int nargs_max : 4;
 };
 
 extern const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1];
@@ -191,6 +195,16 @@ direct_internal_fn (internal_fn fn)
 {
   gcc_checking_assert (direct_internal_fn_p (fn));
   return direct_internal_fn_array[fn];
+}
+
+/* Return true if a call to FN can have NARGS arguments.  FN must satisfy
+   direct_internal_fn_p.  */
+
+inline bool
+direct_internal_fn_nargs_ok_p (internal_fn fn, unsigned int nargs)
+{
+  const direct_internal_fn_info &info = direct_internal_fn (fn);
+  return nargs >= info.nargs_min && nargs <= info.nargs_max;
 }
 
 extern tree_pair direct_internal_fn_types (internal_fn, tree, tree *);
