@@ -220,7 +220,7 @@ struct GTY(()) eh_status
 
 /* Invokes CALLBACK for every exception handler label.  Only used by old
    loop hackery; should not be used by new code.  */
-extern void for_each_eh_label (void (*) (rtx));
+extern void for_each_eh_label (void (*) (rtx_code_label *));
 
 extern void init_eh_for_function (void);
 

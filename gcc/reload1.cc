@@ -3784,7 +3784,7 @@ set_initial_elim_offsets (void)
 /* Subroutine of set_initial_label_offsets called via for_each_eh_label.  */
 
 static void
-set_initial_eh_label_offset (rtx label)
+set_initial_eh_label_offset (rtx_code_label *label)
 {
   set_label_offsets (label, NULL, 1);
 }

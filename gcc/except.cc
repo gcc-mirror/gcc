@@ -1679,7 +1679,7 @@ remove_unreachable_eh_regions (sbitmap r_reachable)
    Only used by reload hackery; should not be used by new code.  */
 
 void
-for_each_eh_label (void (*callback) (rtx))
+for_each_eh_label (void (*callback) (rtx_code_label *))
 {
   eh_landing_pad lp;
   int i;
