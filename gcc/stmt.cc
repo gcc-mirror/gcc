@@ -132,7 +132,7 @@ jump_target_rtx (tree label)
 /* Add an unconditional jump to LABEL as the next sequential instruction.  */
 
 void
-emit_jump (rtx label)
+emit_jump (rtx_code_label *label)
 {
   do_pending_stack_adjust ();
   emit_jump_insn (targetm.gen_jump (label));

@@ -4413,7 +4413,7 @@ extern void print_inline_rtx (FILE *, const_rtx, int);
 /* In stmt.cc */
 extern void expand_null_return (void);
 extern void expand_naked_return (void);
-extern void emit_jump (rtx);
+extern void emit_jump (rtx_code_label *);
 
 /* Memory operation built-ins differ by return value.  Mapping
    of the enum values is following:
