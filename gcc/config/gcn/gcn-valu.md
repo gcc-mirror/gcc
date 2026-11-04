@@ -4715,6 +4715,24 @@
     DONE;
   })
 
+; The vector form of ensure_scalar<mode> (in gcn.md), for when the simt_vect
+; pass vectorizes one (e.g. from __builtin_gcn_simt_broadcast_first_lane):
+; copy the value of the first active lane to all active lanes.
+(define_insn "@ensure_scalar<mode>"
+  [(set (match_operand:V64_MOV 0 "register_operand" "=v")
+	(unspec:V64_MOV [(match_operand:V64_MOV 1 "register_operand" "v")]
+			UNSPEC_ENSURE_SCALAR))
+   (clobber (match_scratch:SI 2 "=Sg"))]
+  "flag_simt_mode"
+  {
+    return gcn_output_ensure_scalar (operands, <MODE>mode);
+  }
+  [(set_attr "type" "vmult")
+   (set_attr "exec" "none")
+   (set (attr "length")
+	(symbol_ref "MAX (1, GET_MODE_UNIT_SIZE (<MODE>mode) / 4)
+		     * (TARGET_CDNA3_NOPS ? 16 : 12)"))])
+
 (define_insn_and_split "omp_simt_vote_any_v64si"
   [(set (match_operand:V64SI 0 "register_operand" "=v")
 	(unspec:V64SI [(match_operand:V64SI 1 "register_operand" "v")]
@@ -4724,16 +4742,19 @@
   "can_create_pseudo_p ()"
   [(const_int 0)]
   {
-    rtx sreg = gen_reg_rtx (BImode);
+    /* The mask has a bit set for each active lane that votes.  Combine
+       its halves into a scalar that is zero iff no lane voted.  (Going
+       through a BImode cstore leaves a subreg of SCC or VCC, which LRA
+       cannot reload.)  */
+    rtx sreg = gen_reg_rtx (SImode);
     rtx vcc = gen_reg_rtx (DImode);
     emit_insn (gen_vec_cmpv64sidi (vcc, gen_rtx_NE (VOIDmode, 0, 0),
 				   operands[1],
 				   gen_const_vec_duplicate (V64SImode,
 							    const0_rtx)));
-    emit_insn (gen_cstoredi4 (sreg, gen_rtx_NE (VOIDmode, 0, 0), vcc,
-			      const0_rtx));
-    emit_insn (gen_vec_duplicatev64si (operands[0],
-				       gen_rtx_SUBREG (SImode, sreg, 0)));
+    emit_insn (gen_iorsi3 (sreg, gen_lowpart (SImode, vcc),
+			   gen_highpart (SImode, vcc)));
+    emit_insn (gen_vec_duplicatev64si (operands[0], sreg));
     DONE;
   }
   [(set_attr "type" "mult")])
@@ -4763,5 +4784,21 @@
 		UNSPEC_SIMT_XCHG_IDX))]
   "flag_simt_mode"
   "sorry, placeholder %0 = simt_xchg_idx %1")
+
+(define_insn "simt_first_lane_p_di"
+  [(set (match_operand:DI 0 "register_operand" "=SD")
+	(unspec:DI [(reg:V64SI LANE_ID_REG)]
+		   UNSPEC_SIMT_FIRST_LANE_P))
+   (clobber (match_scratch:SI 1 "=SD"))]
+  "flag_simt_mode"
+  {
+    output_asm_insn ("v_readfirstlane_b32\t%1, v1", operands);
+    /* CDNA3: VALU writes SGPR followed by VALU reads that SGPR as a
+       constant requires 1 wait state.  */
+    if (TARGET_CDNA3_NOPS)
+      output_asm_insn ("s_nop\t0", operands);
+    output_asm_insn ("v_cmp_eq_u32\t%0, v1, %1", operands);
+    return "";
+  })
 
 ;; }}}

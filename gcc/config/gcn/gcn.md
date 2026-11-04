@@ -96,7 +96,8 @@
   UNSPEC_SIMT_VOTE_ANY UNSPEC_SIMT_LAST_LANE UNSPEC_SIMT_XCHG_IDX
   UNSPEC_VSUBREG_WRITE UNSPEC_VSUBREG_READ
   UNSPEC_ENSURE_SCALAR
-  UNSPEC_SIMT_MASK_MERGE])
+  UNSPEC_SIMT_MASK_MERGE
+  UNSPEC_SIMT_FIRST_LANE_P UNSPEC_SIMT_BROADCAST_FIRST_LANE])
 
 ;; }}}
 ;; {{{ Attributes
@@ -2733,13 +2734,16 @@
 
 ;; Implement IFN_GOMP_SIMT_VOTE_ANY:
 ;; set operand 0 to zero iff all lanes supply zero in operand 1
-; This pseudo instruction should be replaced by the simt_vect pass
-(define_insn "omp_simt_vote_any"
+; The simt_vect pass replaces this with omp_simt_vote_any_v64si in SIMT code.
+; What remains is single-threaded (EXEC == 1), where operand 1 is the vote.
+(define_insn_and_split "omp_simt_vote_any"
   [(set (match_operand:SI 0 "register_operand" "")
 	(unspec:SI [(match_operand:SI 1 "register_operand" "")]
 		   UNSPEC_SIMT_VOTE_ANY))]
   "flag_simt_mode"
-  "sorry, unimplemented %0 = simt_vote_any %1")
+  "#"
+  ""
+  [(set (match_dup 0) (match_dup 1))])
 
 ;; Implement IFN_GOMP_SIMT_LAST_LANE:
 ;; set operand 0 to the value of the last active lane
@@ -2783,7 +2787,35 @@
 	(if_then_else (eq_attr "alternative" "0")
 		      (const_int 0)
 		      (symbol_ref "MAX (1, GET_MODE_SIZE (<MODE>mode) / 4)
-				   * (TARGET_CDNA3_NOPS ? 16 : 12)")))])
+				   * (TARGET_CDNA3_NOPS ? 16 : 12)")))
+   (set_attr "simt_clobber" "1")])
+
+;; Return true in the lowest numbered active thread, and false in all others.
+; The simt_vect pass replaces this with simt_first_lane_p_di in SIMT code.
+; What remains is single-threaded (EXEC == 1), where the answer is true.
+(define_insn_and_split "simt_first_lane_p_bi"
+  [(set (match_operand:BI 0 "register_operand" "=r")
+	(unspec:BI [(reg:SI LANE_ID_REG)]
+		   UNSPEC_SIMT_FIRST_LANE_P))
+   (clobber (match_scratch:SI 1 "=SD"))]
+  "flag_simt_mode"
+  "#"
+  ""
+  [(set (match_dup 0) (const_int 1))]
+  ""
+  [(set_attr "simt_clobber" "1")])
+
+;; Return the value from the lowest numbered active thread in all the active
+;; threads.  This is the same thing as ensure_scalar.
+(define_expand "simt_broadcast_first_lane_<mode>"
+  [(match_operand:SIDI 0 "register_operand")
+   (match_operand:SIDI 1 "register_operand")]
+  "flag_simt_mode"
+  {
+    emit_insn (gen_ensure_scalar (<MODE>mode, operands[0],
+				  force_reg (<MODE>mode, operands[1])));
+    DONE;
+  })
 
 ;; SIMT EXEC handling instructions that won't get optimized away
 

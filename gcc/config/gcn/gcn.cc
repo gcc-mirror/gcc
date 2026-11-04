@@ -3867,7 +3867,21 @@ gcn_expand_prologue ()
       rtx fn_reg = gen_rtx_REG (Pmode, FIRST_PARM_REG);
       emit_move_insn (fn_reg, gen_rtx_SYMBOL_REF (Pmode,
 						  "gomp_gcn_enter_kernel"));
-      emit_call_insn (gen_gcn_indirect_call (fn_reg, const0_rtx));
+      rtx simt_mode_arg = NULL_RTX;
+      if (flag_simt_mode)
+	{
+	  /* In SIMT mode, gomp_gcn_enter_kernel takes a parameter that
+	     indicates whether the kernel was compiled in "simt" mode (1), or
+	     "simt-directed" mode (0).  */
+	  simt_mode_arg = gen_rtx_REG (SImode, FIRST_VPARM_REG);
+	  emit_move_insn (simt_mode_arg,
+			  GEN_INT (param_offload_gpu_mode
+				   != OFFLOAD_GPU_MODE_SIMT_DIRECTED));
+	}
+      rtx_insn *call = emit_call_insn (gen_gcn_indirect_call (fn_reg,
+							       const0_rtx));
+      if (simt_mode_arg)
+	use_reg (&CALL_INSN_FUNCTION_USAGE (call), simt_mode_arg);
     }
 }
 
@@ -5355,6 +5369,40 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
 	emit_insn (gen_omp_simt_exit (arg1));
 	return target;
       }
+    case GCN_BUILTIN_SIMT_FIRST_LANE_P:
+      {
+	if (!target || !REG_P (target))
+	  target = gen_reg_rtx (BImode);
+	emit_insn (gen_simt_first_lane_p_bi (target));
+	return target;
+      }
+    case GCN_BUILTIN_SIMT_BROADCAST_FIRST_LANE:
+      {
+	if (!target || !REG_P (target))
+	  target = gen_reg_rtx (SImode);
+	rtx arg1 = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX, mode,
+				EXPAND_NORMAL);
+	emit_insn (gen_simt_broadcast_first_lane_si (target, arg1));
+	return target;
+      }
+    case GCN_BUILTIN_SIMT_BROADCAST_FIRST_LANE_DI:
+      {
+	if (!target || !REG_P (target))
+	  target = gen_reg_rtx (DImode);
+	rtx arg1 = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX, mode,
+				EXPAND_NORMAL);
+	emit_insn (gen_simt_broadcast_first_lane_di (target, arg1));
+	return target;
+      }
+    case GCN_BUILTIN_SIMT_VOTE_ANY:
+      {
+	if (!target || !REG_P (target))
+	  target = gen_reg_rtx (SImode);
+	rtx arg1 = expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX, mode,
+				EXPAND_NORMAL);
+	emit_insn (gen_omp_simt_vote_any (target, force_reg (SImode, arg1)));
+	return target;
+      }
     default:
       gcc_unreachable ();
     }
@@ -5403,6 +5451,70 @@ gcn_expand_builtin_binop (tree exp, rtx target, rtx /*subtarget */ ,
   rtx pat = GEN_FCN (icode) (target, arg1, arg2, exec, arg_prev);
   emit_insn (pat);
   return target;
+}
+
+/* Implement TARGET_RESOLVE_OVERLOADED_BUILTIN.
+
+   __builtin_gcn_simt_broadcast_first_lane is generic: it takes an integer,
+   pointer or floating-point value of up to 64 bits, and returns a value of
+   the same type.  Values of up to 32 bits go through the SImode builtin
+   itself, and larger ones through __builtin_gcn_simt_broadcast_first_lane_di.
+   Floating-point values are passed as their bits.  */
+
+static tree
+gcn_resolve_overloaded_builtin (location_t loc, tree fndecl, void *vargs,
+				bool complain)
+{
+  if (DECL_MD_FUNCTION_CODE (fndecl) != GCN_BUILTIN_SIMT_BROADCAST_FIRST_LANE)
+    return NULL_TREE;
+
+  const char *name = "__builtin_gcn_simt_broadcast_first_lane";
+  vec<tree, va_gc> *args = (vec<tree, va_gc> *) vargs;
+  if (vec_safe_length (args) != 1)
+    {
+      if (complain)
+	error_at (loc, "%qs expects 1 argument but %d given", name,
+		  (int) vec_safe_length (args));
+      return error_mark_node;
+    }
+
+  tree arg = (*args)[0];
+  tree type = TREE_TYPE (arg);
+  if (type == error_mark_node)
+    return error_mark_node;
+  type = TYPE_MAIN_VARIANT (type);
+
+  if (!(INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)
+	|| SCALAR_FLOAT_TYPE_P (type))
+      || !tree_fits_uhwi_p (TYPE_SIZE (type))
+      || tree_to_uhwi (TYPE_SIZE (type)) > 64)
+    {
+      if (complain)
+	error_at (loc, "%qs expects an integer, pointer or floating-point "
+		  "argument of at most 64 bits, not %qT", name, type);
+      return error_mark_node;
+    }
+
+  unsigned bits = tree_to_uhwi (TYPE_SIZE (type));
+  tree decl = (bits > 32
+	       ? gcn_builtin_decls[GCN_BUILTIN_SIMT_BROADCAST_FIRST_LANE_DI]
+	       : fndecl);
+  tree itype = TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (decl)));
+
+  /* Reinterpret a floating-point value as an integer of the same size.  */
+  tree bits_type = NULL_TREE;
+  if (SCALAR_FLOAT_TYPE_P (type))
+    {
+      bits_type = build_nonstandard_integer_type (bits, 1);
+      arg = fold_build1_loc (loc, VIEW_CONVERT_EXPR, bits_type, arg);
+    }
+
+  tree call = build_call_expr_loc (loc, decl, 1,
+				   fold_convert_loc (loc, itype, arg));
+  if (bits_type)
+    return fold_build1_loc (loc, VIEW_CONVERT_EXPR, type,
+			    fold_convert_loc (loc, bits_type, call));
+  return fold_convert_loc (loc, type, call);
 }
 
 /* Implement TARGET_EXPAND_BUILTIN.
@@ -8701,12 +8813,14 @@ gcn_dwarf_register_span (rtx rtl)
    operand 1 (a VGPR, valid in the first active lane) uniform across all
    lanes of operand 0, using SGPR operand 2 as a scratch.  This is output as
    a single insn because, in RTL terms, the two moves would just copy the
-   value out and back again, and later passes would delete the copy back.  */
+   value out and back again, and later passes would delete the copy back.
+   MODE may also be a vector mode (the V64 form of the pattern), whose
+   elements take the same number of VGPRs as the scalar mode.  */
 
 const char *
 gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
 {
-  int partcount = MAX (1, GET_MODE_SIZE (mode) / 4);
+  int partcount = MAX (1, GET_MODE_UNIT_SIZE (mode) / 4);
   for (int p = 0; p < partcount; p++)
     {
       rtx ops[3];
@@ -8857,6 +8971,8 @@ gcn_output_ensure_scalar (rtx *operands, machine_mode mode)
 #define TARGET_PROMOTE_FUNCTION_MODE gcn_promote_function_mode
 #undef  TARGET_REGISTER_MOVE_COST
 #define TARGET_REGISTER_MOVE_COST gcn_register_move_cost
+#undef  TARGET_RESOLVE_OVERLOADED_BUILTIN
+#define TARGET_RESOLVE_OVERLOADED_BUILTIN gcn_resolve_overloaded_builtin
 #undef  TARGET_RETURN_IN_MEMORY
 #define TARGET_RETURN_IN_MEMORY gcn_return_in_memory
 #undef  TARGET_RTX_COSTS

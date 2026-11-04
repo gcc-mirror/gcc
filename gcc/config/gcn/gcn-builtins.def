@@ -158,12 +158,20 @@ DEF_BUILTIN (ACC_SINGLE_COPY_END, -1, "single_copy_end", B_INSN,
 DEF_BUILTIN (ACC_BARRIER, -1, "acc_barrier", B_INSN, _A1 (GCN_BTI_VOID),
 	     gcn_expand_builtin_1)
 
-/* SIMT testing.  */
+/* SIMT.  */
 
 DEF_BUILTIN (SIMT_ENTER, -1, "simt_enter", B_INSN,
 	     _A3 (GCN_BTI_INT, GCN_BTI_INT, GCN_BTI_INT), gcn_expand_builtin_1)
 DEF_BUILTIN (SIMT_EXIT, -1, "simt_exit", B_INSN,
 	     _A2 (GCN_BTI_VOID, GCN_BTI_INT), gcn_expand_builtin_1)
+DEF_BUILTIN (SIMT_FIRST_LANE_P, -1, "simt_first_lane_p", B_INSN,
+	     _A1 (GCN_BTI_BOOL), gcn_expand_builtin_1)
+DEF_BUILTIN (SIMT_BROADCAST_FIRST_LANE, -1, "simt_broadcast_first_lane", B_INSN,
+	     _A2 (GCN_BTI_INT, GCN_BTI_INT), gcn_expand_builtin_1)
+DEF_BUILTIN (SIMT_BROADCAST_FIRST_LANE_DI, -1, "simt_broadcast_first_lane_di",
+	     B_INSN, _A2 (GCN_BTI_LLINT, GCN_BTI_LLINT), gcn_expand_builtin_1)
+DEF_BUILTIN (SIMT_VOTE_ANY, -1, "simt_vote_any", B_INSN,
+	     _A2 (GCN_BTI_INT, GCN_BTI_INT), gcn_expand_builtin_1)
 
 /* Kernel inputs.  */
 
