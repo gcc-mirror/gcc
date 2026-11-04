@@ -1,3 +1,173 @@
+2026-11-03  Loeka Rogge  <loeka.rogge@globalfoundries.com>
+
+	* gcc.target/riscv/arcv-sched-mul-mem-rpx100.c: New test.
+
+2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128409
+	* gcc.target/i386/pr128409-1.c: New test.
+	* gcc.target/i386/pr128409-2.c: Ditto.
+
+2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* gcc.target/i386/pr128373-1.c: New test.
+	* gcc.target/i386/pr128373-2.c: Ditto.
+
+2026-11-03  Sarvesh Chandra  <Sarvesh.Chandra@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	PR target/128372
+	* gcc.target/i386/avx512bmm-bitreverse-1.c: Test BMM scalar lowering.
+	* gcc.target/i386/gfni-bitreverse-scalar.c: Test the GFNI-only path.
+
+2026-11-03  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* gcc.target/riscv/ustrunc-zbb-1.c: New test.
+	* gcc.target/riscv/ustrunc-zbb-run.c: New test.
+	* gcc.target/riscv/ustrunc-zbb.h: New common file for ustrunc tests.
+
+2026-11-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128406
+	* gcc.target/aarch64/pr128406.c: New test.
+	* gcc.target/i386/pr128406.c: New test.
+
+2026-11-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/bb-slp-clz-ctz-value-at-zero-1.c: New test.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vaba.c: New test.
+	* gcc.target/aarch64/neon/vabd.c: New test.
+	* gcc.target/aarch64/neon/trapping_math.c: New tests.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vabs.c: New test.
+	* gcc.target/aarch64/neon/trapping_math.c: New tests.
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Mark `vabs_s64`
+	test as `xfail` because of codegen regression.
+	* gcc.target/aarch64/vabs_intrinsic_1.c: Fix test. The `asm
+	volatile` trick for disabling constant folding stopped
+	working. Replace with declaring variables `volatile`.
+	* gcc.target/aarch64/fneg-abs_1.c: Add `-fno-trapping-math`
+	to flags.
+	* gcc.target/aarch64/sve/fneg-abs_1.c: Likewise.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vneg.c: New test.
+	* gcc.target/aarch64/signbit-2.c: Fix test.
+	This is a codegen regression: since `vneg` on `INT_MIN` is no
+	longer UB, it is not correct to replace a `vneg` and a `vshr_n`
+	with a `vcgt` comparison.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vdiv.c: New test.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/arm_neon_test.h (TEST_BINARY_LANE):
+	New macro.
+	* gcc.target/aarch64/neon/vmul.c: New test.
+	* gcc.target/aarch64/fmul_intrinsic_1.c: Avoid compile errors
+	due to calling `vmul_lane` with an out-of-range lane index.
+	* gcc.target/aarch64/pr112105.c: Add `-fno-trapping-math` to
+	allow folding away redundant dups.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vsub.c: New test.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/no_trapping_math.c: New test.
+	* gcc.target/aarch64/neon/discarded_result.c: Update expected
+	assembly for `foo`.
+	* gcc.target/aarch64/neon/trapping_math.c: New test.
+	* gcc.target/aarch64/simd/pr99195_1.c: Add `-fno-trapping-math`
+	to `dg-options` to prevent unnecessary `fmov`s being generated.
+	* gcc.target/aarch64/simd/pr99195_2.c: Likewise.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/neon/vadd.c: Add tests for `vadd_f16`,
+	`vadd_f32`, `vadd_f64`.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127924
+	* gcc.target/i386/vect-simd-clone-avx512-4.c: New test.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128394
+	* gcc.dg/vect/vect-early-break_149-pr128394.c: New testcase.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128377
+	* gcc.dg/vect/bb-slp-pr128377.c: New testcase.
+
+2026-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/128349
+	* gfortran.dg/unlimited_polymorphic_34.f90: New test.
+
+2026-11-03  Jonathan Yong  <10walls@gmail.com>
+
+	PR testsuite/119789
+	* gcc.dg/20021029-1.c: permit rdata in addition to rodata.
+
+2026-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/128106
+	* g++.dg/ipa/pr128106.C: New test.
+
+2026-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/127475
+	* gnat.dg/specs/vect1.ads: New test.
+
+2026-11-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128388
+	* gcc.target/i386/pr128388.c: New test.
+
+2026-11-03  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/slp-exact-div-cost.c: New test.
+
+2026-11-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/128221
+	* gcc.target/i386/pr128221-1a.c: New test.
+	* gcc.target/i386/pr128221-1b.c: Ditto.
+	* gcc.target/i386/pr128221-2.c: Ditto.
+
+2026-11-03  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* gcc.target/i386/avx-1.c: Rename header avx10v1aux builtins.
+	* gcc.target/i386/avx10_2-builtin-1.c: Check builtins under avx10v1aux.
+	* gcc.target/i386/avx10_2-builtin-2.c: Likewise.
+	* gcc.target/i386/sse-13.c: Rename header avx10v1aux builtins.
+	* gcc.target/i386/sse-14.c: Likewise.
+	* gcc.target/i386/sse-22.c: Likewise.
+	* gcc.target/i386/sse-23.c: Likewise.
+	* lib/target-supports.exp: Add more check for avx10v1aux.
+	* gcc.target/i386/avx10v1aux-1b.c: New test.
+
+2026-11-03  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* gcc.target/i386/funcspec-56.inc: Check for avx10v1aux.
+	* lib/target-supports.exp: Ditto.
+	* gcc.target/i386/avx10v1aux-1a.c: New test.
+
 2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
 
 	* gcc.dg/vect/vect-avg-17.c: New test.

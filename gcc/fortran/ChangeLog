@@ -1,3 +1,16 @@
+2026-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	PR fortran/128349
+	* trans-expr.cc (gfc_conv_variable): Set class container
+	expression from the one saved by the scalarizer.
+	(trans_scalar_class_assign): Use previously set class container
+	expression if it's available.
+
+2026-11-03  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-expr.cc (trans_scalar_class_assign): Delay creation of tree
+	nodes after early return.
+
 2026-11-01  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/127827

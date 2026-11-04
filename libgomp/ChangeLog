@@ -1,3 +1,315 @@
+2026-11-03  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* configure: Regenerate
+
+2026-11-03  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	PR libgomp/119588
+	* libgomp.h (struct gomp_team): Add fields for communication
+	at team start time.  New `ti` member, new `ppv` member, new
+	`reused` boolean.
+	(struct gomp_thread): Add new `exit` boolean.
+	* team.c (gomp_thread_start): Initialise thread-local data using
+	members stored on team.
+	(get_last_team): Set `team->reused` member when reusing.
+	(gomp_new_team): Unset `team->reused` member when creating new
+	team.
+	(gomp_team_start): Primary thread stores data on team structure
+	instead of copying that data to each secondary threads
+	gomp_thread structure.  Skip re-calculation of places on a
+	reused team when inputs are the same.
+	(gomp_init_team_state): New function.
+	(gomp_thread_start_data): New `team_id`, `active_level`,
+	`place_partition_off`, `place_partition_len`, and `team`
+	members.  Remove the `fn`, `fn_data`, `num_teams`, `team_num`,
+	`ts`, and `task` members.
+
+2026-11-03  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* testsuite/libgomp.c/artificial-team-pause.c: New test.
+	* testsuite/libgomp.c/barrier-copyprivate-task.c: New test.
+	* testsuite/libgomp.c/barrier-nested-team-id.c: New test.
+	* testsuite/libgomp.c/barrier-task-reduction.c: New test.
+	* testsuite/libgomp.c/barrier-tree-flush.c: New test.
+	* testsuite/libgomp.c/barrier-tree-task.c: New test.
+	* testsuite/libgomp.c/barrier-workshare-task.c: New test.
+	* testsuite/libgomp.c/cancel-late-arrival-1.c: New test.
+	* testsuite/libgomp.c/cancel-late-arrival-2.c: New test.
+	* testsuite/libgomp.c/cancel-next-epoch-wrap.c: New test.
+	* testsuite/libgomp.c/team-held-pause.c: New test.
+	* testsuite/libgomp.c/team-held-pthread-exit.c: New test.
+
+2026-11-03  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* barrier.c (GOMP_barrier): Pass barrier ID argument.
+	(GOMP_barrier_ext): Likewise.
+	(GOMP_barrier_cancel): Likewise.
+	(GOMP_barrier_cancel_ext): Likewise.
+	* config/gcn/bar.c (gomp_barrier_wait_end): Add unused barrier ID
+	argument.
+	(gomp_barrier_wait): Take and pass barrier ID argument.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.  Pass barrier and increment
+	arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait): Take and pass barrier ID argument.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.  Pass barrier and
+	increment arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait_cancel): Take and pass barrier ID argument.
+	* config/gcn/bar.h (gomp_barrier_init): Add unused extra allocation
+	argument.
+	(gomp_barrier_extra_alloc): New function.
+	(gomp_barrier_wait): Add barrier ID argument.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait): Likewise.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_barrier_wait_start): Likewise.
+	(gomp_barrier_wait_cancel_start): Likewise.
+	(gomp_barrier_wait_final_start): Likewise.
+	(gomp_team_barrier_done): Add unused increment argument.
+	(gomp_barrier_has_completed): Take barrier and increment arguments.
+	(gomp_barrier_can_hold): New function.
+	(gomp_team_barrier_wake_on_increment): New function.
+	(gomp_team_barrier_done_final): New function.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Initialise prev_barrier.
+	(gomp_thread_start): Pass barrier ID argument to
+	gomp_team_barrier_wait_final.
+	* config/linux/bar.c (gomp_barrier_wait_end): Add unused barrier ID
+	argument.
+	(gomp_barrier_wait): Take and pass barrier ID argument.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.  Pass barrier and increment
+	arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait): Take and pass barrier ID argument.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.  Pass barrier and
+	increment arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait_cancel): Take and pass barrier ID argument.
+	* config/linux/bar.h (gomp_barrier_init): Add unused extra
+	allocation argument.
+	(gomp_barrier_wait): Add barrier ID argument.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait): Likewise.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_barrier_wait_start): Likewise.
+	(gomp_barrier_wait_cancel_start): Likewise.
+	(gomp_barrier_wait_final_start): Likewise.
+	(gomp_team_barrier_done): Add unused increment argument.
+	(gomp_barrier_has_completed): Take barrier and increment arguments.
+	(gomp_barrier_can_hold): New function.
+	(gomp_team_barrier_wake_on_increment): New function.
+	(gomp_team_barrier_done_final): New function.
+	(gomp_barrier_extra_alloc): New function.
+	* config/linux/futex_waitv/bar.c: New file.
+	* config/linux/futex_waitv/bar.h: New file.
+	* config/linux/futex_waitv/futex_waitv.h: New file.
+	* config/linux/futex_waitv/simple-bar.h: New file.
+	* config/linux/wait.h (do_spin): Use spin_count.
+	* config/nvptx/bar.c (gomp_barrier_wait_end): Add unused barrier ID
+	argument.
+	(gomp_barrier_wait): Take and pass barrier ID argument.
+	(gomp_barrier_wait_last): Add unused barrier ID argument.
+	(gomp_team_barrier_wait_end): Take barrier ID argument.  Pass barrier
+	and increment arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait): Take and pass barrier ID argument.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Take barrier ID argument.  Pass
+	barrier and increment arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait_cancel): Take and pass barrier ID argument.
+	* config/nvptx/bar.h (gomp_barrier_init): Add unused extra
+	allocation argument.
+	(gomp_barrier_extra_alloc): New function.
+	(gomp_barrier_wait): Add barrier ID argument.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait): Likewise.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_barrier_wait_start): Likewise.
+	(gomp_barrier_wait_cancel_start): Likewise.
+	(gomp_barrier_wait_final_start): Likewise.
+	(gomp_team_barrier_done): Add unused increment argument.
+	(gomp_barrier_has_completed): Take barrier and increment arguments.
+	(gomp_barrier_can_hold): New function.
+	(gomp_team_barrier_wake_on_increment): New function.
+	(gomp_team_barrier_done_final): New function.
+	* config/nvptx/team.c (gomp_nvptx_main): Initialise prev_barrier.
+	(gomp_thread_start): Pass barrier ID argument
+	to gomp_team_barrier_wait_final.
+	* config/posix/bar.c (gomp_barrier_init): Add unused extra
+	allocation argument.
+	(gomp_barrier_wait): Take and pass barrier ID argument.
+	(gomp_team_barrier_wait_end): Likewise.  Pass barrier and increment
+	arguments to gomp_barrier_handle_tasks.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_team_barrier_wait): Take and pass barrier ID argument.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	* config/posix/bar.h (gomp_barrier_init): Add extra allocation
+	argument.
+	(gomp_barrier_extra_alloc): New function.
+	(gomp_barrier_wait): Add barrier ID argument.
+	(gomp_team_barrier_wait): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_barrier_wait_start): Likewise.
+	(gomp_barrier_wait_cancel_start): Likewise.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_team_barrier_done): Add unused increment argument.
+	(gomp_barrier_has_completed): Take barrier and increment arguments.
+	(gomp_barrier_can_hold): New function.
+	(gomp_team_barrier_wake_on_increment): New function.
+	(gomp_team_barrier_done_final): New function.
+	* config/posix/pool.h (gomp_get_thread_pool): Initialise
+	prev_barrier.
+	* config/posix/simple-bar.h (gomp_simple_barrier_init): Pass extra
+	allocation argument.
+	(gomp_simple_barrier_reinit): Rename local argument and pass through.
+	(gomp_simple_barrier_wait): Pass dummy barrier ID argument.
+	(gomp_simple_barrier_wait_last): Likewise.
+	* config/rtems/bar.h (gomp_barrier_init): Add unused extra
+	allocation argument.
+	(gomp_barrier_extra_alloc): New function.
+	(gomp_barrier_wait): Add barrier ID argument.
+	(gomp_barrier_wait_last): Likewise.
+	(gomp_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait): Likewise.
+	(gomp_team_barrier_wait_final): Likewise.
+	(gomp_team_barrier_wait_end): Likewise.
+	(gomp_team_barrier_wait_cancel): Likewise.
+	(gomp_team_barrier_wait_cancel_end): Likewise.
+	(gomp_barrier_wait_start): Likewise.
+	(gomp_barrier_wait_cancel_start): Likewise.
+	(gomp_barrier_wait_final_start): Likewise.
+	(gomp_team_barrier_done): Add unused increment argument.
+	(gomp_barrier_has_completed): Take barrier and increment arguments.
+	(gomp_barrier_can_hold): New function.
+	(gomp_team_barrier_wake_on_increment): New function.
+	(gomp_team_barrier_done_final): New function.
+	* configure: Regenerate.
+	* configure.ac: Check for SYS_futex_waitv definition.  Add
+	--enable-linux-futex-waitv handling and futex_waitv link check.
+	* configure.tgt: Add linux_path and use linux/futex_waitv in config_path
+	when futex_waitv is enabled.
+	* env.c (gomp_barrier_request): New variable.
+	(gomp_forkjoin_barrier_request): Likewise.
+	(parse_barrier_choice): New function.
+	(omp_display_env): Display GOMP_BARRIER_TYPE and
+	GOMP_FORKJOIN_BARRIER_TYPE.
+	(initialize_env): Parse GOMP_BARRIER_TYPE and
+	GOMP_FORKJOIN_BARRIER_TYPE.
+	* libgomp.h: Include limits.h.
+	(gomp_assert): New macro.
+	(struct gomp_barrier_extra_alloc_needs): New structure.
+	(enum gomp_barrier_type): New enum.
+	(gomp_barrier_request): New declaration.
+	(gomp_forkjoin_barrier_request): Likewise.
+	(spin_count): New function.
+	(struct gomp_thread_pool): Add prev_barrier member.
+	(gomp_barrier_handle_tasks): Add barrier and increment arguments.
+	* libgomp.texi (GOMP_BARRIER_TYPE): Document.
+	(GOMP_FORKJOIN_BARRIER_TYPE): Likewise.
+	* single.c (GOMP_single_copy_start): Pass barrier ID argument.
+	(GOMP_single_copy_end): Likewise.
+	* task.c (gomp_barrier_handle_tasks): Take barrier and increment
+	arguments.  Load thr->ts.team atomically and return early when it no
+	longer matches the barrier being handled.  Pass increment argument to
+	barrier completion helpers.
+	(GOMP_taskgroup_end): Pass barrier ID argument.
+	(GOMP_workshare_task_reduction_unregister): Likewise.
+	* team.c (gomp_release_held_threads): New function.
+	(gomp_thread_start): Pass barrier ID arguments.  Avoid the second pool
+	barrier when the team barrier can hold secondary threads.
+	(get_last_team): Add assertions for cached team barrier state.
+	(gomp_new_team): Allocate aligned barrier extra storage as part of the
+	team allocation and pass it to gomp_barrier_init.
+	(gomp_free_thread): Release held threads and adjust pool barrier use.
+	(gomp_barrier_wait_n): New function.
+	(gomp_team_start): Track new and exiting threads, use pool barrier to
+	handle these if there are any, avoid pool barrier if none and
+	`gomp_barrier_can_hold` is true.
+	(gomp_team_end): Pass barrier ID arguments, release nested-team
+	threads explicitly, cache held top-level team barriers, and add
+	assertions before freeing or caching teams.
+	(gomp_pause_host): Release held threads and adjust pool barrier use.
+	* testsuite/lib/libgomp.exp
+	(check_effective_target_linux_futex_waitv): New effective target.
+	* testsuite/libgomp-site-extra.exp.in (libgomp_config_path): New
+	variable.
+	* testsuite/libgomp.c++/task-reduction-20.C: New test.
+	* testsuite/libgomp.c++/task-reduction-21.C: New test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-auto.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-flat.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-mixed-1.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-mixed-2.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-mixed-3.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-mixed-4.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env-unset.c: New
+	test.
+	* testsuite/libgomp.c-c++-common/gomp-barrier-type-env.c: New test.
+	* testsuite/libgomp.c/barrier_generation_overflow.c: New test.
+	* testsuite/libgomp.c/barrier-switch-1.c: New test.
+	* testsuite/libgomp.c/cancel_in_implicit_barrier.c: New test.
+	* testsuite/libgomp.c/cancel_in_implicit_barrier_while_primary_waiting.c:
+	New test.
+	* testsuite/libgomp.c/cancel_incr_wraparound.c: New test.
+	* testsuite/libgomp.c/futex_waitv_overflow.c: New test.
+	* testsuite/libgomp.c/primary-thread-tasking.c: New test.
+	* work.c (gomp_work_share_end): Pass barrier ID argument.
+	(gomp_work_share_end_cancel): Pass barrier ID argument.
+
+2026-11-03  Matthew Malcomson  <mmalcomson@nvidia.com>
+
+	* config/gcn/bar.c (gomp_team_barrier_wait_end): Inline
+	increment check.
+	(gomp_team_barrier_wait_cancel_end): Inline increment check.
+	* config/gcn/bar.h (gomp_barrier_state_is_incremented): Remove
+	function.
+	(gomp_barrier_has_completed): Perform via equality check.
+	* config/linux/bar.c (gomp_team_barrier_wait_end): Inline
+	increment check.
+	(gomp_team_barrier_wait_cancel_end): Inline increment check.
+	* config/linux/bar.h (gomp_barrier_state_is_incremented): Remove
+	function.
+	(gomp_barrier_has_completed): Perform via equality check.
+	* config/nvptx/bar.h (gomp_barrier_state_is_incremented): Remove
+	function.
+	(gomp_barrier_has_completed): Perform via equality check.
+	* config/posix/bar.c (gomp_team_barrier_wait_end): Inline
+	increment check.
+	(gomp_team_barrier_wait_cancel_end): Inline increment check.
+	* config/posix/bar.h (gomp_barrier_state_is_incremented): Remove
+	function.
+	(gomp_barrier_has_completed): Perform via equality check.
+	* config/rtems/bar.h (gomp_barrier_state_is_incremented): Remove
+	function.
+	(gomp_barrier_has_completed): Perform via equality check.
+
+2026-11-03  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/128366
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Use size_t to find the
+	start of the team_arena.
+	* plugin/plugin-gcn.c (configure_ephemeral_memories): Use size_t for
+	actual_arena_total_size.
+
 2026-11-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/127893

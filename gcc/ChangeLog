@@ -1,3 +1,877 @@
+2026-11-03  Loeka Rogge  <loeka.rogge@globalfoundries.com>
+
+	* config/riscv/arcv-rhx100.md (arcv_rhx100_mpy_insn): Rename to
+	mpy32.
+	(arcv_rhx100_mpy32_insn): Also apply for rpx_100 tune.
+	(arcv_rhx100_mpy64l_insn): rpx_100 mul low part.
+	(arcv_rhx100_mpy64h_insn): rpx_100 mul high part.
+	(arcv_rhx100_mpy*_insn): Apply bypass for both size mul.
+	(arcv_rhx100_div_insn): Also apply for rpx_100 tune.
+	(riscv_store_data_bypass_p): Add store bypass
+	(arcv_rhx100_store_insn): Likewise.
+	(arcv_rhx100_load_insn): Add load bypass.
+	* config/riscv/riscv-cores.def (RISCV_TUNE):
+	Add arcv_rpx100 tune
+	* config/riscv/riscv-opts.h (enum riscv_microarchitecture_type):
+	Add arcv_rpx100 microarchitecture type
+	* config/riscv/riscv.md (low,high): Add low/high mul_part
+	attribute, default value: low.
+	* doc/riscv-mtune.texi: Add rpx_100 tune
+
+2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128409
+	* config/i386/i386.cc (ix86_expand_epilogue): Check
+	flag_cf_protection & CF_RETURN instead of flag_cf_protection.
+
+2026-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128373
+	* config/i386/i386-c.cc (ix86_target_macros):
+	Define __CET__ only when CF_BRANCH or CF_RETURN is set.
+
+2026-11-03  Zhongteng Gui  <dragon-archer@outlook.com>
+
+	PR target/126608
+	* config/i386/x-mingw32: Don't override local_includedir.
+	* config/mingw/mingw32.h (NATIVE_SYSTEM_HEADER_DIR): Don't force
+	override to /mingw/include.
+
+2026-11-03  Sarvesh Chandra  <Sarvesh.Chandra@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	PR target/128372
+	* config/i386/i386-expand.cc (ix86_expand_bitreverse): Use vbitrevb only
+	when AVX512BMM and AVX512VL are available; retain GFNI otherwise.
+	* config/i386/i386-protos.h (ix86_expand_gfni_bitreverse): Rename to ...
+	(ix86_expand_bitreverse): ... this.
+	* config/i386/i386.md (bitreverse<mode>2): Require AVX512VL for BMM.
+	* config/i386/sse.md (bitreverse<mode>2): New expander for VI1_AVX512VL.
+
+2026-11-03  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/riscv.cc (riscv_expand_ustrunc): Generate umin based sequence
+	when Zbb is enabled.
+
+2026-11-03  Josef Melcr  <josef.melcr@suse.com>
+
+	* cgraph.h: Add consts to cgraph_edge::get_uid.
+	* symbol-summary.h (call_summary::get_create): Take const
+	cgraph_edge pointer.
+	(call_summary::get): Likewise.
+	(call_summary::remove): Likewise.
+	(call_summary::exists): Likewise.
+
+2026-11-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	PR tree-optimization/128406
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Do not splat
+	the element of a uniform vector if it is an SSA name that occurs in
+	an abnormal PHI.
+
+2026-11-03  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Check the value at zero of a two-argument .CLZ or .CTZ for all
+	precisions.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (build_abs_diff):
+	New function.
+	(struct gimple_abs_diff): New struct.
+	(vabdh, vabds, vabdd, vabd, vabdq, vaba, vabaq): New function
+	bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vabds, vabdd,
+	vabd, vabdq, vaba, vabaq, vabdh): New function declarations.
+	* config/aarch64/aarch64-simd-builtins.def (sabd, uabd, saba,
+	uaba): Delete builtin functions functions.
+	* config/aarch64/arm_neon.h (vaba_s8, vaba_s16, vaba_s32,
+	vaba_u8, vaba_u16, vaba_u32, vabaq_s8, vabaq_s16, vabaq_s32,
+	vabaq_u8, vabaq_u16, vabaq_u32, vabd_s8, vabd_s16, vabd_s32,
+	vabd_u8, vabd_u16, vabd_u32, vabdq_s8, vabdq_s16, vabdq_s32,
+	vabdq_u8, vabdq_u16, vabdq_u32, vabds_f32, vabdd_f64,
+	vabd_f32, vabd_f64, vabdq_f32, vabdq_f64, vabd_f16,
+	vabdq_f16): Delete function definitions.
+	* config/aarch64/arm_fp16.h (vabdh_f16): Use
+	`__builtin_fabs(a - b)` instead of `__builtin_aarch64_abdhf` now
+	that the latter has been deleted.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_general_fold_builtin): Delete case to handle `abs`.
+	* config/aarch64/aarch64-neon-builtins-base.cc (vabsd, vabsh,
+	vabs, vabsq): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vabsd): (vabs):
+	(vabsq): (vabsh): New function declarations.
+	* config/aarch64/aarch64-simd-builtins.def: Delete `abs` builtin
+	functions.
+	* config/aarch64/aarch64-simd.md
+	(aarch64_abs<mode><vczle><vczbe>): Replace UNSPEC_ABS with abs
+	expression.
+	(aarch64_abs_plus<mode>): Likewise.
+	* config/aarch64/iterators.md (UNSPEC_ABS): Delete unspec.
+	* config/aarch64/arm_neon.h (vabs_f32, vabs_f64, vabs_s8,
+	vabs_s16, vabs_s32, vabs_s64, vabsq_f32, vabsq_f64, vabsq_s8,
+	vabsq_s16, vabsq_s32, vabsq_s64, vabsd_s64, vabs_f16,
+	vabsq_f16): Delete function definitions.
+	* config/aarch64/arm_fp16.h (vabsh_f16): Use `__builtin_fabs`
+	instead of `__builtin_aarch64_abshf` now that the latter has
+	been deleted.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (vnegd, vnegh,
+	vneg, vnegq): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def
+	(vnegd, vneg, vnegq, vnegh): New function declarations.
+	* config/aarch64/aarch64-acle-builtins.h (TYPES_d_signed): New
+	type array.
+	* config/aarch64/arm_neon.h (vneg_f32, vneg_f64, vneg_s8,
+	vneg_s16, vneg_s32, vneg_s64, vnegd_s64, vnegq_f32, vnegq_f64,
+	vnegq_s8, vnegq_s16, vnegq_s32, vnegq_s64, vneg_f16,
+	vnegq_f16): Delete function definitions.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (vdivh, vdiv,
+	vdivq): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vdiv, vdivq,
+	vdivh): New function declarations.
+	* config/aarch64/arm_neon.h (vdiv_f32, vdiv_f64, vdivq_f32,
+	vdivq_f64, vdiv_f16, vdivq_f16): Delete function definitions.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (vmulh, vmul,
+	vmulq): New function bases.
+	(gimple_arith): Rename to `gimple_arith_base` and turn into a
+	template.
+	(gimple_arith, gimple_arith_dup, gimple_arith_lane): New
+	typedefs.
+	* config/aarch64/aarch64-acle-builtins.h (neon_mul): New type
+	array.
+	* config/aarch64/aarch64-neon-builtins-base.def (vmul, vmulq,
+	vmulh): New function declarations.
+	* config/aarch64/arm_neon.h (vmul_s8, vmul_s16, vmul_s32,
+	vmul_f32, vmul_f64, vmul_u8, vmul_u16, vmul_u32, vmulq_s8,
+	vmulq_s16, vmulq_s32, vmulq_f32, vmulq_f64, vmulq_u8,
+	vmulq_u16, vmulq_u32, vmul_f16, vmulq_f16): Delete function
+	definitions.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (vsubh, vsubd,
+	vsub, vsubq): New function bases.
+	* config/aarch64/aarch64-neon-builtins-base.def (vsubd, vsub,
+	vsubq, vsubh): New function declarations.
+	* config/aarch64/arm_neon.h (vsub_s8, vsub_s16, vsub_s32,
+	vsub_f32, vsub_f64, vsub_u8, vsub_u16, vsub_u32, vsub_s64,
+	vsub_u64, vsubq_s8, vsubq_s16, vsubq_s32, vsubq_s64,
+	vsubq_f32, vsubq_f64, vsubq_u8, vsubq_u16, vsubq_u32,
+	vsubq_u64, vsub_f16, vsubq_f16): Delete function definitions.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc
+	(build_optimization_barrier): New function.
+	(gimple_arith::fold): Insert an optimization barrier when
+	necessary.
+	(gimple_function_base::maybe_optimization_barrier): New
+	function.
+
+2026-11-03  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-neon-builtins-base.cc (gimple_arith):
+	New struct.
+	(vaddd, vadd, vaddq): Use `gimple_arith` rather than
+	`gimple_expr`.
+	* config/aarch64/aarch64-neon-builtins-base.def: Reorder
+	definitions and add comments.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127924
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use the
+	mask part index M rather than the copy index J when getting the
+	loop mask for explicit mask arguments.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128394
+	* tree-vect-loop-manip.cc (vect_do_peeling): Use gsi_insert_before
+	to insert after labels.
+
+2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128377
+	* tree-vectorizer.cc (vec_info::insert_seq_on_entry): Advance
+	the iterator if the region starts with a returns-twice call.
+
+2026-11-03  Andrew Stubbs  <ams@baylibre.com>
+
+	PR target/128366
+	* config/gcn/gcn.cc (gcn_expand_prologue): Use 64-bit to calculate
+	wave_offset and fp_hi.
+	(gcn_expand_builtin_1): Use 64-bit to calculate stack_limit_offset_di.
+
+2026-11-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR ipa/128106
+	* ipa-sra.cc (scan_expr_access): Add a check that the formal parameter
+	being passed in a call has index fitting an unsigned char.
+
+2026-11-03  Giuliano Belinassi  <giuliano.belinassi@gmail.com>
+
+	* cgraphunit.cc (symbol_table::process_same_body_aliases): Call
+	symtab_node::get_create.
+	* tree.cc (set_decl_section_name): Likewise.
+	(decl_init_priority_insert): Likewise.
+	* varasm.cc (assemble_alias): Likewise.
+	(make_decl_one_only): Likewise.
+
+2026-11-03  Hongyu Wang  <hongyu.wang@intel.com>
+
+	PR target/128388
+	* config/i386/i386.cc (ix86_output_indirect_branch_via_reg):
+	Check REX2_INT_REGNO_P instead of REX_INT_REGNO_P twice.
+
+2026-11-03  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.cc (ix86_const_divmod_cost): New function.
+	(ix86_vector_costs::add_stmt_cost): Use it for scalar
+	TRUNC_DIV_EXPR, TRUNC_MOD_EXPR and EXACT_DIV_EXPR by a nonzero
+	constant.
+
+2026-11-03  Haochen Jiang  <haochen.jiang@intel.com>
+
+	PR target/128221
+	* config/i386/i386-expand.cc
+	(ix86_expand_cond_fma): New function to expand conditional fma.
+	* config/i386/i386-protos.h (ix86_expand_cond_fma): Ditto.
+	* config/i386/sse.md
+	(cond_fma<mode>): Use new ix86_expand_cond_fma.
+	(cond_fms<mode>): Ditto.
+	(cond_fnma<mode>): Ditto.
+	(cond_fnms<mode>): Ditto.
+
+2026-11-03  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* config/i386/avx10_2mediaintrin.h: Moved VNNI byte and word
+	intrinsics to avx10v1auxintrin.h.
+	* config/i386/avx10v1auxintrin.h: Added VNNI byte and word intrinsics.
+	* config/i386/i386-builtin.def (BDESC): Updated option mask for
+	VNNIINT{8,16} and 10.2 builtins.
+	* config/i386/i386.md: Add target avx10v1aux.
+	* config/i386/i386-expand.cc (ix86_check_builtin_isa_match): Share builtins between
+	VNNIINT{8,16} and AVX10V1AUX.
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost): Update target guard
+	from AVX10_2 to AVX10V1AUX.
+	* config/i386/sse.md: Retarget avx10.2 subset VNNI
+	byte and word patterns to AVX10V1AUX.
+
+2026-11-03  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* config.gcc: Add avx10v1auxintrin.h.
+	* config/i386/avx10_2convertintrin.h: Moved convert intrins to avx10v1auxintrin.h.
+	* config/i386/i386-builtin.def (BDESC): Updated option mask for convert builtins.
+	* config/i386/immintrin.h: Include avx10v1auxintrin.h.
+	* config/i386/sse.md: Retarget avx10.2 subset convert patterns to AVX10V1AUX.
+	* config/i386/avx10v1auxintrin.h: New file.
+
+2026-11-03  Dipesh Sharma  <Dipesh.Sharma@amd.com>
+	    Venkataramanan Kumar  <Venkataramanan.Kumar@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_available_features): Add AVX10V1AUX.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AVX10_2_SET): Enable AVX10V1AUX.
+	(OPTION_MASK_ISA2_AVX10V1AUX_SET): New.
+	(OPTION_MASK_ISA2_AVX10_1_UNSET): Disable AVX10V1AUX.
+	(OPTION_MASK_ISA2_AVX10V1AUX_UNSET): New.
+	(ix86_handle_option): Handle AVX10V1AUX.
+	* common/config/i386/i386-cpuinfo.h (enum processor_features): Add FEATURE_AVX10V1AUX.
+	* common/config/i386/i386-isas.h: Handle avx10v1aux.
+	* config/i386/cpuid.h (bit_AVX10V1AUX): New.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Handle avx10v1aux.
+	* config/i386/i386-isa.def (AVX10V1AUX): New.
+	* config/i386/i386-options.cc (ix86_valid_target_attribute_inner_p): Handle avx10v1aux.
+	* config/i386/i386.h: Add PTA_AVX10V1AUX to targets using PTA_AVX10_2.
+	* config/i386/i386.opt: Add avx10v1aux.
+	* config/i386/i386.opt.urls: Regenerated.
+	* doc/extend.texi: Add avx10v1aux documentation.
+	* doc/invoke.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (find_reg_note, find_regno_note, find_reg_fusage,
+	find_regno_fusage): Take a const rtx_insn *.
+	* rtlanal.cc (find_reg_note, find_regno_note, find_reg_fusage,
+	find_regno_fusage): Likewise.
+	(reg_set_p): Pass a const rtx_insn *.
+	* sched-deps.cc (mark_insn_reg_store): Likewise.
+	* except.cc (copy_reg_eh_region_note_forward,
+	copy_reg_eh_region_note_backward): Likewise.
+	* resource.cc (mark_referenced_resources): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (add_reg_note): Take an rtx_insn *.
+	* rtlanal.cc (add_reg_note): Likewise.
+	* config/rl78/rl78.cc (gen_and_emit_move): Pass an rtx_insn *.
+	* config/s390/s390.cc (save_gprs): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arm/arm.cc (arm_emit_multi_reg_pop, arm_emit_ldrd_pop,
+	arm_expand_epilogue): Use add_reg_note.
+	* config/cris/cris.cc (cris_split_movdx, cris_expand_epilogue): Likewise.
+	* config/frv/frv.cc (frv_frame_insn): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_set_frame_expr,
+	loongarch_restore_reg): Likewise.
+	* config/riscv/riscv.cc (riscv_set_frame_expr): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_split_move): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/cris/cris.cc (cris_split_movdx): Return end_sequence directly.
+	* config/frv/frv.cc (frv_split_scc, frv_split_cond_move,
+	frv_split_minmax, frv_split_abs): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* reorg.cc (redundant_insn): Take an rtx_insn *.
+	(relax_delay_slots): Keep the next real insn in an rtx_insn *.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* reorg.cc (update_reg_unused_notes): Take an rtx_insn *.
+	(fill_slots_from_thread): Keep the scan cursor in an rtx_insn *.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/aarch64/aarch64.md (doloop_end): Use an rtx_insn *.
+	* config/c6x/c6x.cc (insn_set_clock, insn_get_clock): Pass an rtx_insn *.
+	* config/ia64/ia64.cc (ia64_gen_spec_load): Likewise.
+	* config/mips/mips.cc (mips16_copy_fpr_return_value): Use an rtx_insn *.
+	* config/rs6000/rs6000.md (allocate_stack): Likewise.
+	* config/s390/s390.cc (s390_find_execute): Pass an rtx_insn *.
+	* config/sh/sh.md (sibcall_pcrel): Use an rtx_insn *.
+	* var-tracking.cc (reemit_marker_as_note): Use an rtx_note *.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/alpha/alpha.cc (alpha_expand_mov_safe_bwa,
+	alpha_expand_unaligned_store_safe_partial,
+	alpha_expand_unaligned_store_words_safe_partial,
+	alpha_expand_clear_safe_partial_nobwx, alpha_split_atomic_op,
+	alpha_split_compare_and_swap, alpha_split_compare_and_swap_12,
+	alpha_split_atomic_exchange, alpha_split_atomic_exchange_12):
+	Keep the code label separate from the LABEL_REF.
+	* config/arc/arc.cc (arc_expand_atomic_op): Likewise.
+	* config/or1k/or1k.cc (or1k_expand_atomic_compare_and_swap,
+	or1k_expand_atomic_compare_and_swap_qihi,
+	or1k_expand_atomic_exchange, or1k_expand_atomic_exchange_qihi,
+	or1k_expand_atomic_op, or1k_expand_atomic_op_qihi): Likewise.
+	* config/or1k/or1k.md (*cmov<I:mode>): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_expand_atomic_compare_and_swap,
+	rs6000_expand_atomic_exchange, rs6000_expand_atomic_op): Likewise.
+	* config/s390/s390.md (indirect_jump, casesi_jump): Likewise.
+	* config/arm/aarch-common.cc (arm_mac_accumulator_is_result):
+	Keep the producer and consumer patterns in separate locals.
+	* config/arm/aarch-common-protos.h (arm_mac_accumulator_is_result):
+	Pass an rtx_insn *.
+	* config/arm/arm.cc (emit_multi_reg_push): Keep the PARALLEL
+	separate from the emitted insn.
+	* config/c6x/c6x.cc (reorg_split_calls): Keep each pattern separate
+	from the emitted insn.
+	* config/ia64/ia64.cc (ia64_spec_check_p): Keep the pattern in a
+	separate local.
+	* config/nds32/nds32-relax-opt.cc (nds32_pic_tls_symbol_type):
+	Likewise.
+	* config/rx/rx.cc (mark_frame_related): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* reorg.cc (redirect_with_delay_slots_safe_p): Pass an rtx_insn *.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/aarch64/aarch64.cc (aarch64_guard_switch_pstate_sm,
+	aarch64_expand_prologue, aarch64_expand_epilogue,
+	aarch64_switch_pstate_sm_for_landing_pad,
+	aarch64_switch_pstate_sm_for_jump,
+	aarch64_switch_pstate_sm_for_call): Use an rtx_code_label *
+	for the guard label.
+	(aarch64_expand_cpymem): Use an rtx_insn * for locals that only
+	hold an insn.
+	* config/arm/arm.cc (arm_add_cfa_adjust_cfa_note,
+	cmse_nonsecure_call_inline_register_clear): Pass an rtx_insn *
+	and use one for a local that already holds an insn.
+	* config/bfin/bfin.cc (hwloop_optimize): Use an rtx_insn * for a
+	local that only holds an insn.
+	* config/c6x/c6x.cc (condjump_opposite_condition, duplicate_cond,
+	reorg_emit_nops, try_rename_operands, hwloop_optimize): Pass an
+	rtx_insn * and use one for a local that already holds an insn.
+	* explow.cc (emit_stack_clash_protection_probe_loop_start,
+	anti_adjust_stack_and_probe_stack_clash): Pass an
+	rtx_code_label ** and use one for a local that only holds a
+	label.
+	* explow.h (emit_stack_clash_protection_probe_loop_start): Pass
+	an rtx_code_label **.
+	* haifa-sched.cc (move_insn): Pass an rtx_insn *.
+	* optabs.cc (expand_compare_and_swap_loop): Likewise.
+	(maybe_emit_compare_and_swap_exchange_loop): Pass nullptr.
+	* config/i386/i386-features.cc (emit_conversion_insns): Pass an
+	rtx_insn *.
+	* config/i386/i386-features.h (emit_conversion_insns): Likewise.
+	* config/ia64/ia64.cc (get_insn_spec_code, try_issue_insn):
+	Likewise.
+	* config/m68k/m68k.md (negdf2, negxf2, absdf2, absxf2): Use an
+	rtx_insn * for a local that only holds an insn.
+	* config/mips/mips.cc (mips_expand_prologue): Use an rtx_insn *
+	for a local that only holds an insn.
+	* config/pru/pru.md (cbranchdi4): Likewise.
+	* config/riscv/riscv-string.cc (emit_strcmp_scalar_compare_byte,
+	emit_strcmp_scalar_compare_subword,
+	emit_strcmp_scalar_compare_word,
+	emit_strcmp_scalar_load_and_compare,
+	emit_memcmp_scalar_load_and_compare): Pass an rtx_code_label *.
+	* config/rl78/rl78.cc (rl78_note_reg_uses, rl78_note_reg_set):
+	Pass an rtx_insn *.
+	* config/rs6000/rs6000-p8swap.cc (union_defs, union_uses,
+	insn_is_load_p, insn_is_store_p, insn_is_swap_p,
+	quad_aligned_load_p, quad_aligned_store_p,
+	swap_feeds_both_load_and_store, const_load_sequence_p,
+	insn_is_swappable_p, chain_contains_only_swaps,
+	mark_swaps_for_removal, replace_swapped_aligned_load,
+	replace_swapped_load_constant, rs6000_analyze_swaps): Pass an
+	rtx_insn * and use one for locals that already hold an insn.
+	* config/rs6000/rs6000.cc (is_load_insn, is_store_insn,
+	rs6000_is_costly_dependence, is_costly_group): Likewise.
+	* config/rs6000/rs6000-string.cc (do_ifelse,
+	expand_cmp_vec_sequence, expand_strncmp_gpr_sequence,
+	expand_block_compare, expand_strn_compare): Pass an
+	rtx_code_label * and use one for locals that only hold a
+	label.
+	* config/rs6000/rs6000.md (allocate_stack): Use an
+	rtx_code_label * for a local that only holds a label.
+	* config/s390/s390.cc (s390_emit_tls_call_insn,
+	s390_expand_tbegin): Use an rtx_insn * for a local that only
+	holds an insn.
+	* config/sh/sh.cc (sh_expand_prologue, sh_reorg): Use an
+	rtx_code_label * for a local that only holds a label.
+	* config/sh/sh.md (symGOT2reg, symGOTFUNCDESC2reg,
+	sibcall_pcrel_fdpic, sibcall_value_pcrel,
+	sibcall_value_pcrel_fdpic): Use an rtx_insn * for a local that
+	only holds an insn.
+	* config/sh/sh_treg_combine.cc (touched_insn,
+	try_combine_comparisons): Pass and return an rtx_insn *, and
+	use one for a local that already holds an insn.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arc/arc.cc (arc_save_callee_enter,
+	arc_save_callee_milli): Hold the emitted insn in an rtx_insn *.
+	* config/arm/arm.cc (arm_emit_multi_reg_pop): Likewise.
+	* config/msp430/msp430.cc (F, msp430_expand_prologue,
+	msp430_expand_epilogue): Likewise.
+	* config/riscv/riscv.cc (riscv_v_adjust_scalable_frame,
+	riscv_allocate_and_probe_stack_space): Likewise.
+	* config/rl78/rl78.cc (F, rl78_expand_prologue): Likewise.
+	* config/s390/s390.cc (s390_emit_epilogue): Likewise.
+	* config/sh/sh_treg_combine.cc (try_combine_comparisons):
+	Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arm/arm.cc (arm_emit_strd_push,
+	get_scratch_register_on_entry,
+	release_scratch_register_on_entry): Use an rtx_insn * for a
+	local that only holds an insn.
+	* config/i386/i386.cc (ix86_adjust_stack_and_probe): Likewise.
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_epilogue): Likewise.
+	* config/sh/sh.cc (output_stack_adjust): Likewise.
+	* config/sh/sh.md (define_split): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* emit-rtl.cc (add_function_usage_to): Take an rtx_insn *.
+	* rtl.h (add_function_usage_to): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arc/arc.cc (arc_restore_callee_leave,
+	arc_restore_callee_milli, arc_reorg): Split the pattern from
+	the emitted insn.
+	* config/arm/arm.cc (vfp_emit_fstmd, arm_emit_strd_push,
+	arm_emit_multi_reg_pop, arm_emit_vfp_multi_reg_pop,
+	thumb2_emit_ldrd_pop, arm_emit_ldrd_pop,
+	arm_expand_epilogue): Likewise.
+	* config/epiphany/epiphany.md (*ashlv2si3_i): Likewise.
+	* config/msp430/msp430.cc (msp430_expand_helper): Likewise.
+	* config/nds32/nds32.cc (nds32_emit_stack_push_multiple,
+	nds32_emit_stack_pop_multiple, nds32_emit_stack_v3push,
+	nds32_emit_stack_v3pop, nds32_emit_adjust_frame): Likewise.
+	* config/sh/sh.cc (pop, push_regs): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* final.cc (label_to_alignment): Take an rtx_insn *.
+	* output.h (label_to_alignment): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* builtins.cc (expand_builtin_setjmp_setup,
+	expand_builtin_setjmp_receiver): Take an rtx_insn *.
+	* builtins.h (expand_builtin_setjmp_setup,
+	expand_builtin_setjmp_receiver): Likewise.
+	* config/aarch64/aarch64.cc (aarch_pac_insn_p): Likewise.
+	* config/alpha/alpha-protos.h (alpha_find_lo_sum_using_gp): Likewise.
+	* config/alpha/alpha.cc (alpha_find_lo_sum_using_gp): Likewise.
+	* config/arc/arc-protos.h (arc_write_ext_corereg): Likewise.
+	* config/arc/arc.cc (arc_write_ext_corereg, branch_dest): Likewise.
+	* config/arm/aarch-common-protos.h (arm_early_load_addr_dep,
+	arm_early_load_addr_dep_ptr, arm_early_store_addr_dep,
+	arm_early_store_addr_dep_ptr, arm_mac_accumulator_is_mul_result,
+	arm_no_early_alu_shift_dep, arm_no_early_alu_shift_value_dep,
+	arm_no_early_mul_dep, arm_no_early_store_addr_dep, aarch_pac_insn_p):
+	Likewise.
+	* config/arm/aarch-common.cc (arm_get_set_operands,
+	arm_early_load_addr_dep, arm_early_load_addr_dep_ptr,
+	arm_no_early_alu_shift_dep, arm_no_early_alu_shift_value_dep,
+	arm_no_early_mul_dep, arm_no_early_store_addr_dep,
+	arm_early_store_addr_dep, arm_early_store_addr_dep_ptr,
+	arm_mac_accumulator_is_mul_result): Likewise.
+	* config/arm/arm-protos.h (arm_split_constant, use_return_insn):
+	Likewise.
+	* config/arm/arm.cc (use_return_insn, arm_split_constant,
+	is_indirect_tailcall_p, aarch_pac_insn_p): Likewise.
+	(arm32_output_mi_thunk): Pass nullptr.
+	* config/arm/arm.md (addsi3, subsi3, andsi3, iorsi3, xorsi3, movsi,
+	define_split): Likewise.
+	* config/arm/minipool.cc (minipool::get_label_padding):
+	Take an rtx_insn *.
+	* config/bfin/bfin-protos.h (output_push_multiple, output_pop_multiple):
+	Likewise.
+	* config/bfin/bfin.cc (output_push_multiple, output_pop_multiple,
+	cbranch_predicted_taken_p): Likewise.
+	* config/csky/csky.cc (get_csky_jump_table_size): Likewise.
+	* config/frv/frv-protos.h (output_move_single, output_move_double,
+	output_condmove_single, frv_acc_group): Likewise.
+	* config/frv/frv.cc (output_move_single, output_move_double,
+	output_condmove_single, frv_acc_group, frv_ifcvt_load_value,
+	frv_ifcvt_rewrite_mem): Likewise.
+	* config/i386/i386.cc (ix86_add_queued_cfa_restore_notes): Likewise.
+	* config/m32r/m32r-protos.h (m32r_output_block_move): Likewise.
+	* config/m32r/m32r.cc (m32r_is_insn, m32r_output_block_move): Likewise.
+	* config/mcore/mcore.cc (is_cond_candidate): Likewise.
+	* config/microblaze/microblaze.cc (get_branch_target): Likewise.
+	* config/mips/mips-protos.h (mips_split_move, mips_split_move_insn_p,
+	mips_split_move_insn, mips_split_call, mips_dspalu_bypass_p): Likewise.
+	* config/mips/mips.cc (mips_split_move, mips_insn_split_type,
+	mips_split_move_insn_p, mips_split_move_insn, mips_split_call,
+	mips_dspalu_bypass_p): Likewise.
+	* config/mn10300/mn10300-protos.h (mn10300_match_ccmode): Likewise.
+	* config/mn10300/mn10300.cc (mn10300_match_ccmode): Likewise.
+	* config/nds32/nds32-md-auxiliary.cc (nds32_output_call): Likewise.
+	* config/nds32/nds32-pipelines-auxiliary.cc (bpick_ra_rb_dep_p,
+	pbsada_insn_ra_rb_dep_reg_p, pbsada_insn_rt_dep_reg_p, wext_odd_dep_p):
+	Likewise.
+	* config/nds32/nds32-protos.h (nds32_output_call): Likewise.
+	* config/nds32/nds32-relax-opt.cc (nds32_group_tls_insn): Likewise.
+	* config/rs6000/rs6000-protos.h (rs6000_loop_align): Likewise.
+	* config/rs6000/rs6000-string.cc (expand_strncmp_align_check): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_loop_align): Likewise.
+	* config/rx/rx-protos.h (rx_match_ccmode): Likewise.
+	* config/rx/rx.cc (rx_match_ccmode): Likewise.
+	* config/s390/s390.cc (s390_add_pool_insn): Likewise.
+	* config/sh/sh-protos.h (output_movedouble, shl_and_length,
+	shl_and_scr_length, shl_sext_length, sh_contains_memref_p,
+	sh_loads_bankedreg_p): Likewise.
+	* config/sh/sh.cc (output_movedouble, shl_and_length,
+	shl_and_scr_length, shl_sext_length, sh_contains_memref_p,
+	sh_loads_bankedreg_p, branch_dest, extract_sfunc_addr,
+	find_insn_regmode_weight): Likewise.
+	* config/sh/sh_treg_combine.cc (reg_dead_after_insn,
+	reg_unused_after_insn, trace_reg_uses_1, trace_reg_uses): Likewise.
+	* config/sparc/sparc.cc (eligible_for_restore_insn, emit_and_preserve):
+	Likewise.
+	* config/stormy16/stormy16-protos.h (xstormy16_output_addr_vec):
+	Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_output_addr_vec): Likewise.
+	* config/vax/vax-protos.h (vax_output_int_move): Likewise.
+	* config/vax/vax.cc (vax_output_int_move, vax_add_reg_cfa_offset,
+	split_quadword_operands): Likewise.
+	* config/visium/visium.cc (empty_asm_p,
+	visium_add_queued_cfa_restore_notes): Likewise.
+	* df-problems.cc (simulate_backwards_to_point): Likewise.
+	* df.h (simulate_backwards_to_point): Likewise.
+	* dse.cc (get_call_args): Likewise.
+	* dwarf2out.cc (reg_loc_descriptor, based_loc_descr,
+	compute_frame_pointer_to_fb_displacement): Pass nullptr.
+	* except.cc (copy_reg_eh_region_note_forward,
+	copy_reg_eh_region_note_backward): Take an rtx_insn *.
+	* ifcvt.cc (cond_exec_process_insns): Likewise.
+	* lower-subreg.cc (resolve_subreg_use): Likewise.
+	(resolve_reg_notes, resolve_simple_move): Pass nullptr.
+	* postreload-gcse.cc (gcse_after_reload_main): Take an rtx_insn *.
+	* reload.cc (get_secondary_mem, make_memloc): Pass nullptr.
+	* reload.h (eliminate_regs): Take an rtx_insn *.
+	* reload1.cc (eliminate_regs): Likewise.
+	(reload, reload_as_needed, delete_output_reload): Pass nullptr.
+	* reorg.cc (fix_reg_dead_note, label_before_next_insn):
+	Take an rtx_insn *.
+	* rtl.h (copy_reg_eh_region_note_forward,
+	copy_reg_eh_region_note_backward): Likewise.
+	* sched-int.h (insn_luid): Likewise.
+	* sel-sched-ir.cc (create_insn_rtx_from_pattern): Likewise.
+	(speculate_expr, create_copy_of_insn_rtx): Pass nullptr.
+	* sel-sched-ir.h (create_insn_rtx_from_pattern): Take an rtx_insn *.
+	* sel-sched.cc (create_insn_rtx_with_rhs, create_insn_rtx_with_lhs,
+	create_speculation_check): Pass nullptr.
+	* var-tracking.cc (vt_initialize): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* compare-elim.cc (try_merge_compare): Use rtx_insn * for a local
+	set from a function that returns an insn.
+	* config/alpha/alpha.md (reload_out<mode>_safe_bwa,
+	reload_out<mode>_aligned): Likewise.
+	* config/arc/arc.cc (frame_restore_reg, arc_restore_callee_saves,
+	arc_restore_callee_milli): Likewise.
+	* config/arm/arm.cc (arm_expand_prologue): Likewise.
+	* config/cris/cris.cc (cris_expand_prologue): Likewise.
+	* config/lm32/lm32.cc (expand_save_restore, stack_adjust,
+	lm32_expand_prologue): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_restore_reg): Likewise.
+	* config/riscv/riscv.cc (riscv_restore_reg): Likewise.
+	* config/s390/s390.cc (s390_emit_prologue): Likewise.
+	* config/sh/sh_treg_combine.cc (try_combine_comparisons): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_expand_prologue): Likewise.
+	* config/visium/visium.cc (visium_save_regs, visium_expand_prologue,
+	visium_restore_regs, visium_expand_epilogue): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* except.cc (insn_could_throw_p, get_eh_region_and_lp_from_rtx,
+	get_eh_landing_pad_from_rtx, can_throw_internal, can_throw_external,
+	insn_nothrow_p, convert_to_eh_region_ranges): Take a const rtx_insn *.
+	* except.h (get_eh_landing_pad_from_rtx): Likewise.
+	* rtl.h (can_throw_internal, can_throw_external, insn_could_throw_p,
+	insn_nothrow_p): Likewise.
+	* cse.cc (count_reg_usage): Likewise.
+	* reorg.cc (relax_delay_slots): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* compare-elim.cc (try_validate_parallel): Return an rtx_insn *.
+	* config/aarch64/aarch64.cc (aarch64_emit_move): Likewise.
+	* config/alpha/alpha-protos.h (alpha_emit_unlikely_jump): Likewise.
+	* config/alpha/alpha.cc (alpha_emit_unlikely_jump): Likewise.
+	* config/arc/arc.cc (frame_insn, frame_move, frame_move_inc,
+	frame_add, frame_stack_add): Likewise.
+	* config/arm/arm.cc (emit_multi_reg_push): Likewise.
+	* config/cris/cris-protos.h (cris_split_movdx,
+	cris_emit_movem_store): Likewise.
+	* config/cris/cris.cc (cris_split_movdx, cris_emit_movem_store):
+	Likewise.
+	* config/csky/csky.cc (emit_csky_regs_push): Likewise.
+	* config/fr30/fr30-protos.h (fr30_move_double): Likewise.
+	* config/fr30/fr30.cc (fr30_move_double): Likewise.
+	* config/frv/frv-protos.h (frv_split_scc, frv_split_cond_move,
+	frv_split_minmax, frv_split_abs): Likewise.
+	* config/frv/frv.cc (frv_split_scc, frv_split_cond_move,
+	frv_split_minmax, frv_split_abs): Likewise.
+	* config/h8300/h8300.cc (push, pop): Likewise.
+	* config/i386/i386.cc (pro_epilogue_adjust_stack): Likewise.
+	* config/lm32/lm32.cc (emit_add): Likewise.
+	* config/loongarch/loongarch-protos.h (loongarch_emit_move):
+	Likewise.
+	* config/loongarch/loongarch.cc (loongarch_emit_move): Likewise.
+	* config/m32r/m32r-protos.h (gen_split_move_double): Likewise.
+	* config/m32r/m32r.cc (gen_split_move_double): Likewise.
+	* config/pru/pru.cc (pru_add3_frame_adjust, pru_add_to_sp):
+	Likewise.
+	* config/riscv/riscv-protos.h (riscv_emit_move): Likewise.
+	* config/riscv/riscv.cc (riscv_emit_move): Likewise.
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_stack_reset): Likewise.
+	* config/s390/s390.cc (save_fpr, restore_fpr,
+	s390_prologue_plus_offset): Likewise.
+	* config/sh/sh.cc (push, emit_load_ptr): Likewise.
+	* config/sh/sh_treg_combine.cc (make_not_reg_insn): Likewise.
+	* config/stormy16/stormy16.cc (emit_addhi3_postreload): Likewise.
+	* config/visium/visium.cc (emit_frame_insn): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (find_reg_equal_equiv_note): Take a const rtx_insn *.
+	* rtlanal.cc (find_reg_equal_equiv_note): Likewise.
+	* cse.cc (count_reg_usage): Pass an rtx_insn * from the insn arm.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/aarch64/aarch64.cc (aarch64_pushwb_single_reg, aarch64_expand_epilogue):
+	Use rtx_insn * for locals that already hold an insn.
+	* config/alpha/alpha.cc (alpha_expand_prologue, alpha_expand_epilogue): Likewise.
+	* config/arc/arc.cc (arc_dwarf_emit_irq_save_regs, push_reg, pop_reg, arc_expand_epilogue,
+	hwloop_fail): Likewise.
+	* config/arm/arm.cc (cmse_clear_registers, arm_emit_call_insn, thumb2_emit_strd_push,
+	thumb_set_frame_pointer): Likewise.
+	* config/bfin/bfin.cc (hwloop_optimize, hwloop_fail): Likewise.
+	* config/c6x/c6x.cc (reorg_emit_nops): Likewise.
+	* config/cris/cris.cc (cris_split_movdx, cris_expand_epilogue,
+	cris_emit_movem_store): Likewise.
+	* config/cris/cris.md (movdi): Likewise.
+	* config/csky/csky.cc (get_csky_barrier_cost, csky_expand_prologue): Likewise.
+	* config/fr30/fr30.cc (fr30_expand_prologue, fr30_move_double): Likewise.
+	* config/frv/frv.cc (frv_frame_insn, frv_split_scc, frv_split_cond_move, frv_split_minmax,
+	frv_split_abs): Likewise.
+	* config/ft32/ft32.cc (ft32_expand_prologue): Likewise.
+	* config/gcn/gcn.cc (move_callee_saved_registers, gcn_expand_prologue): Likewise.
+	* config/ia64/ia64.cc (ia64_split_tmode_move): Likewise.
+	* config/lm32/lm32.cc (emit_add): Likewise.
+	* config/loongarch/loongarch.cc (loongarch_set_frame_expr,
+	loongarch_expand_epilogue): Likewise.
+	* config/loongarch/loongarch.md (sibcall, sibcall_value): Likewise.
+	* config/m32r/m32r.cc (gen_split_move_double, pop): Likewise.
+	* config/mmix/mmix.cc (mmix_expand_prologue, mmix_emit_sp_add): Likewise.
+	* config/moxie/moxie.cc (moxie_expand_prologue): Likewise.
+	* config/nds32/nds32-md-auxiliary.cc (nds32_emit_push_fpr_callee_saved,
+	nds32_emit_pop_fpr_callee_saved, nds32_emit_v3pop_fpr_callee_saved,
+	nds32_legitimize_tls_address): Likewise.
+	* config/nds32/nds32.cc (nds32_expand_epilogue): Likewise.
+	* config/nds32/nds32.md (call, call_value): Likewise.
+	* config/nvptx/nvptx.cc (nvptx_propagate): Likewise.
+	* config/or1k/or1k.cc (or1k_save_reg, or1k_expand_prologue, or1k_expand_epilogue): Likewise.
+	* config/pru/pru.cc (pru_add3_frame_adjust): Likewise.
+	* config/pru/pru.md (insv<mode>, lshrdi3, ashldi3): Likewise.
+	* config/riscv/riscv.cc (riscv_set_frame_expr, riscv_for_each_saved_v_reg,
+	riscv_gen_multi_pop_insn, riscv_expand_epilogue): Likewise.
+	* config/riscv/thead.cc (th_mempair_save_regs, th_mempair_restore_regs): Likewise.
+	* config/rs6000/rs6000-logue.cc (rs6000_emit_prologue, restore_saved_cr): Likewise.
+	* config/rs6000/rs6000-string.cc (expand_block_compare_gpr, expand_strncmp_gpr_sequence,
+	expand_strn_compare): Likewise.
+	* config/rx/rx.cc (gen_safe_add, push_regs): Likewise.
+	* config/s390/s390.cc (save_fpr): Likewise.
+	* config/sh/sh.cc (sh_reorg): Likewise.
+	* config/sh/sh_treg_combine.cc (trace_reg_uses_1): Likewise.
+	* config/sparc/sparc.cc (empty_delay_slot, sparc_output_mi_thunk): Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_split_move, emit_addhi3_postreload): Likewise.
+	* config/v850/v850.cc (expand_prologue, expand_epilogue): Likewise.
+	* config/vax/vax.cc (vax_expand_prologue): Likewise.
+	* config/visium/visium.cc (empty_delay_slot): Likewise.
+	* config/xtensa/xtensa.cc (xtensa_copy_incoming_a7, xtensa_set_return_address): Likewise.
+	* final.cc (shorten_branches): Likewise.
+	* reorg.cc (try_merge_delay_insns, fill_slots_from_thread, make_return_insns): Likewise.
+	* tree-outof-ssa.cc (insert_value_copy_on_edge): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/microblaze/microblaze.cc (microblaze_expand_divide):
+	Use rtx_jump_insn * for locals set by emit_jump_insn_before
+	or emit_jump_insn_after.
+	* config/mips/mips.cc (mips16_lay_out_constants): Likewise.
+	* config/mn10300/mn10300.cc (mn10300_insert_setlb_lcc):
+	Likewise.
+	* config/pru/pru.cc (pru_reorg_loop): Likewise.
+	* config/s390/s390.cc (s390_fix_long_loop_prediction): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* config/arm/minipool.cc (print_value): Use label_ref_label
+	instead of XEXP on a LABEL_REF.
+	* config/avr/avr.cc (avr_jump_mode, jump_over_one_insn_p):
+	Likewise.
+	* config/bfin/bfin.cc (branch_dest): Likewise.
+	* config/csky/csky.cc (print_csky_value): Likewise.
+	* config/frv/frv.cc (frv_print_operand_jump_hint): Likewise.
+	* config/pa/pa.md: Likewise.
+	* config/rs6000/rs6000.cc (rs6000_hash_constant): Likewise.
+	* config/s390/s390.cc (s390_chunkify_start,
+	s390_fix_long_loop_prediction): Likewise.
+	* config/sh/sh.cc (untangle_mova, gen_block_redirect,
+	split_branches, branch_dest, sh_mark_label): Likewise.
+	* final.cc (shorten_branches): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* calls.cc (prepare_call_address): Use rtx_code_label * for a
+	local set only by gen_label_rtx.
+	* config/aarch64/aarch64.cc (aarch64_expand_fp_spaceship):
+	Likewise.
+	* config/alpha/alpha.cc (alpha_emit_floatuns): Likewise.
+	* config/alpha/alpha.md (@reload_out<mode>_safe_bwa,
+	reload_out<mode>_aligned): Likewise.
+	* config/arc/arc.cc (arc_expand_compare_and_swap_qh,
+	arc_split_compare_and_swap, hwloop_optimize): Likewise.
+	* config/avr/avr.cc (avr_emit_skip_clear, avr_emit_skip_pixop):
+	Likewise.
+	* config/avr/avr.md (flash_segment): Likewise.
+	* config/bfin/bfin.cc (hwloop_optimize): Likewise.
+	* config/cris/cris.cc (cris_emit_trap_for_misalignment):
+	Likewise.
+	* config/csky/csky.cc (csky_expand_prologue): Likewise.
+	* config/csky/csky.md (builtin_setjmp_receiver): Likewise.
+	* config/gcn/gcn-valu.md (fold_extract_last_<mode>): Likewise.
+	* config/gcn/gcn.cc (gcn_expand_builtin_1): Likewise.
+	* config/gcn/gcn.md (<expander>ti3): Likewise.
+	* config/i386/i386-expand.cc (ix86_expand_fp_spaceship):
+	Likewise.
+	* config/ia64/ia64.cc (ia64_expand_atomic_op): Likewise.
+	* config/nds32/nds32-memory-manipulation.cc
+	(emit_setmem_byte_loop, emit_setmem_doubleword_loop,
+	nds32_expand_cpymemsi_loop_known_size,
+	nds32_expand_cpymemsi_loop_unknown_size,
+	nds32_expand_setmem_loop_v3m, nds32_expand_strlen): Likewise.
+	* config/pa/pa.cc (pa_return_addr_rtx): Likewise.
+	* config/pa/pa.md (clear_cache): Likewise.
+	* config/pru/pru.md (cbranchdi4): Likewise.
+	* config/riscv/riscv-string.cc (expand_block_move,
+	expand_rawmemchr, expand_strcmp, riscv_block_move_loop,
+	riscv_expand_block_compare_scalar, riscv_expand_strcmp_scalar,
+	riscv_expand_strlen_scalar): Likewise.
+	* config/riscv/riscv-v.cc (expand_fold_extract_last,
+	expand_mask_reduction): Likewise.
+	* config/riscv/riscv.cc (riscv_allocate_and_probe_stack_loop):
+	Likewise.
+	* config/riscv/riscv.md (<round_pattern><ANYF:mode>2,
+	restore_stack_nonlocal): Likewise.
+	* config/rs6000/rs6000-builtin.cc (rs6000_expand_builtin):
+	Likewise.
+	* config/rs6000/rs6000-call.cc (setup_incoming_varargs):
+	Likewise.
+	* config/rs6000/rs6000-logue.cc (emit_split_stack_prologue,
+	rs6000_emit_load_toc_table, rs6000_emit_prologue,
+	rs6000_expand_split_stack_prologue): Likewise.
+	* config/rs6000/rs6000-string.cc (expand_block_compare,
+	expand_block_compare_gpr, expand_compare_loop,
+	expand_strn_compare): Likewise.
+	* config/rs6000/rs6000.cc (rs6000_call_darwin_1,
+	rs6000_generate_compare, rs6000_legitimize_tls_address):
+	Likewise.
+	* config/rs6000/rs6000.md (strlensi, floatdisf2, abs<mode>2):
+	Likewise.
+	* config/s390/s390.cc (s390_expand_vec_strlen,
+	s390_expand_vec_movstr, s390_expand_int_spaceship,
+	s390_expand_cstoreti4, s390_expand_fp_spaceship, s390_rawmemchr):
+	Likewise.
+	* config/stormy16/stormy16.cc (xstormy16_emit_cbranch):
+	Likewise.
+	* config/vax/builtins.md (ffs<mode>2,
+	sync_lock_test_and_set<mode>, sync_lock_release<mode>):
+	Likewise.
+	* config/xtensa/xtensa.cc (xtensa_return_addr): Likewise.
+	* explow.cc (anti_adjust_stack_and_probe_stack_clash): Likewise.
+	* rtl-tests.cc (test_dumping_insns, test_uncond_jump): Likewise.
+
+2026-11-03  Trevor Saunders  <tbsaunde@tbsaunde.org>
+
+	* rtl.h (_fatal_insn_not_found): Take a const rtx_insn *.
+	* rtl-error.cc (_fatal_insn_not_found): Likewise.
+
 2026-11-03  Igor Shevlyakov  <igor@tachyum.com>
 
 	* match.pd ((x + y) >> 1 -> IFN_AVG_FLOOR (x, y)): Also fold
