@@ -1371,8 +1371,9 @@ modified_in_p (const_rtx x, const_rtx insn)
 	return true;
       if (MEM_READONLY_P (x))
 	return false;
-      if (memory_modified_in_insn_p (x, insn))
-	return true;
+      if (const rtx_insn *mem_insn = dyn_cast<const rtx_insn *> (insn))
+	if (memory_modified_in_insn_p (x, mem_insn))
+	  return true;
       return false;
 
     case REG:

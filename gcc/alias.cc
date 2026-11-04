@@ -3332,7 +3332,7 @@ memory_modified_1 (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 /* Return true when INSN possibly modify memory contents of MEM
    (i.e. address can be modified).  */
 bool
-memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
+memory_modified_in_insn_p (const_rtx mem, const rtx_insn *insn)
 {
   if (!INSN_P (insn))
     return false;
@@ -3341,8 +3341,7 @@ memory_modified_in_insn_p (const_rtx mem, const_rtx insn)
   if (CALL_P (insn))
     return true;
   memory_modified = false;
-  note_stores (as_a<const rtx_insn *> (insn), memory_modified_1,
-	       const_cast<rtx> (mem));
+  note_stores (insn, memory_modified_1, const_cast<rtx> (mem));
   return memory_modified;
 }
 
