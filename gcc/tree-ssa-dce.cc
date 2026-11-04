@@ -2320,9 +2320,11 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup,
 	    {
 	      gphi *phi = as_a<gphi *> (t);
 	      tree zero = build_zero_cst (TREE_TYPE (def));
-	      for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
-		SET_PHI_ARG_DEF (phi, i, zero);
-	      update_stmt (phi);
+	      edge_iterator ei;
+	      edge e;
+	      FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
+		if (!(e->flags & EDGE_ABNORMAL))
+		  SET_PHI_ARG_DEF (phi, e->dest_idx, zero);
 	      reset_flow_sensitive_info (def);
 	    }
 	  else
