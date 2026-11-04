@@ -433,6 +433,11 @@ class styled_string
   explicit styled_string (style_manager &sm, const char *str);
   explicit styled_string (cppchar_t cppchar, bool emoji = false);
 
+  explicit styled_string (std::vector<styled_unichar> chars)
+  : m_chars (std::move (chars))
+  {
+  }
+
   styled_string (styled_string &&) = default;
   styled_string &operator= (styled_string &&) = default;
 

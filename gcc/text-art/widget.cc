@@ -85,6 +85,34 @@ vbox_widget::update_child_alloc_rects ()
 
 /* class text_art::text_widget : public text_art::leaf_widget.  */
 
+text_widget::text_widget (styled_string str)
+: m_max_line_width (0)
+{
+  // Split STR into multiple styled strings, one per line.
+  std::vector<styled_unichar> current_line;
+  int current_line_width = 0;
+  for (auto ch : str)
+    {
+      if (ch.get_code () == '\n')
+	{
+	  m_max_line_width = std::max (m_max_line_width, current_line_width);
+	  m_lines.push_back (styled_string (std::move (current_line)));
+	  current_line.clear ();
+	  current_line_width = 0;
+	}
+      else
+	{
+	  current_line.push_back (ch);
+	  current_line_width += ch.get_canvas_width ();
+	}
+    }
+  if (!current_line.empty ())
+    {
+      m_max_line_width = std::max (m_max_line_width, current_line_width);
+      m_lines.push_back (styled_string (std::move (current_line)));
+    }
+}
+
 const char *
 text_widget::get_desc () const
 {
@@ -94,13 +122,18 @@ text_widget::get_desc () const
 canvas::size_t
 text_widget::calc_req_size ()
 {
-  return canvas::size_t (m_str.size (), 1);
+  return canvas::size_t (m_max_line_width, m_lines.size ());
 }
 
 void
 text_widget::paint_to_canvas (canvas &canvas)
 {
-  canvas.paint_text (get_top_left (), m_str);
+  canvas::coord_t line_xy = get_top_left ();
+  for (auto &line : m_lines)
+    {
+      canvas.paint_text (line_xy, line);
+      ++line_xy.y;
+    }
 }
 
 /* class text_art::canvas_widget : public text_art::leaf_widget.  */
@@ -184,6 +217,34 @@ test_text_widget ()
   ASSERT_CANVAS_STREQ
     (c, false,
      ("hello world\n"));
+}
+
+static void
+test_multiline_text_widget ()
+{
+  style_manager sm;
+
+  // Without trailing newline:
+  {
+    text_widget w (styled_string (sm, "hello\n world"));
+    ASSERT_EQ (w.get_req_size ().w, 6);
+    ASSERT_EQ (w.get_req_size ().h, 2);
+    canvas c (w.to_canvas (sm));
+    ASSERT_CANVAS_STREQ
+      (c, false,
+       ("hello\n world\n"));
+  }
+
+  // With trailing newline:
+  {
+    text_widget w (styled_string (sm, "hello\n world\n"));
+    ASSERT_EQ (w.get_req_size ().w, 6);
+    ASSERT_EQ (w.get_req_size ().h, 2);
+    canvas c (w.to_canvas (sm));
+    ASSERT_CANVAS_STREQ
+      (c, false,
+       ("hello\n world\n"));
+  }
 }
 
 static void
@@ -271,6 +332,7 @@ text_art_widget_cc_tests ()
 {
   test_test_widget ();
   test_text_widget ();
+  test_multiline_text_widget ();
   test_wrapper_widget ();
   test_empty_wrapper_widget ();
   test_vbox_1 ();

@@ -214,17 +214,15 @@ class leaf_widget : public widget
 class text_widget : public leaf_widget
 {
  public:
-  text_widget (styled_string str)
-  : leaf_widget (), m_str (std::move (str))
-  {
-  }
+  text_widget (styled_string str);
 
   const char *get_desc () const override;
   canvas::size_t calc_req_size () final override;
   void paint_to_canvas (canvas &canvas) final override;
 
 private:
-  styled_string m_str;
+  std::vector<styled_string> m_lines;
+  int m_max_line_width;
 };
 
 /* Concrete widget subclass for a pre-rendered canvas.  */
