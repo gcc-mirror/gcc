@@ -87,6 +87,29 @@ single_non_singleton_phi_for_edges (gimple_seq seq, edge e0, edge e1)
   return phi;
 }
 
+/* Move the debug binds of BB, a basic block that is about to be removed,
+   before the statement at GSI_TO and reset their values, so that the
+   variables they bind do not keep an earlier value after it.  */
+
+static void
+move_reset_debug_binds (basic_block bb, gimple_stmt_iterator *gsi_to)
+{
+  if (!MAY_HAVE_DEBUG_BIND_STMTS)
+    return;
+  for (gimple_stmt_iterator gsi = gsi_after_labels (bb); !gsi_end_p (gsi);)
+    {
+      gimple *stmt = gsi_stmt (gsi);
+      if (gimple_debug_bind_p (stmt))
+	{
+	  gsi_move_before (&gsi, gsi_to);
+	  gimple_debug_bind_reset_value (stmt);
+	  update_stmt (stmt);
+	}
+      else
+	gsi_next (&gsi);
+    }
+}
+
 /* Replace PHI node element whose edge is E in block BB with variable NEW.
    Remove the edge from COND_BLOCK which does not lead to BB (COND_BLOCK
    is known to have two edges, one of which must reach BB).  */
@@ -175,16 +198,20 @@ replace_phi_edge_with_variable (basic_block cond_block,
       e->flags |= EDGE_FALLTHRU;
       e->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
       e->probability = profile_probability::always ();
+      gsi = gsi_last_bb (cond_block);
+      move_reset_debug_binds (edge_to_remove->dest, &gsi);
       delete_basic_block (edge_to_remove->dest);
 
       /* Eliminate the COND_EXPR at the end of COND_BLOCK.  */
-      gsi = gsi_last_bb (cond_block);
       gsi_remove (&gsi, true);
     }
   else if (deleteboth)
     {
       basic_block bb1 = EDGE_SUCC (cond_block, 0)->dest;
       basic_block bb2 = EDGE_SUCC (cond_block, 1)->dest;
+      gsi = gsi_last_bb (cond_block);
+      move_reset_debug_binds (bb1, &gsi);
+      move_reset_debug_binds (bb2, &gsi);
 
       edge newedge = redirect_edge_and_branch (keep_edge, bb);
 
