@@ -20,7 +20,7 @@
 
 #include "rust-linemap.h"
 
-Linemap *Linemap::instance_ = NULL;
+Linemap *Linemap::instance_ = nullptr;
 
 // Start getting locations from a new file.
 
@@ -28,7 +28,7 @@ void
 Linemap::start_file (const char *file_name, unsigned line_begin)
 {
   if (this->in_file_)
-    linemap_add (line_table, LC_LEAVE, 0, NULL, 0);
+    linemap_add (line_table, LC_LEAVE, 0, nullptr, 0);
   linemap_add (line_table, LC_ENTER, 0, file_name, line_begin);
   this->in_file_ = true;
 }
@@ -45,7 +45,7 @@ Linemap::location_to_string (location_t location)
   // only for simple file:line locations.
   resolved_location = linemap_resolve_location (line_table, location,
 						LRK_SPELLING_LOCATION, &lmo);
-  if (lmo == NULL || resolved_location < RESERVED_LOCATION_COUNT)
+  if (lmo == nullptr || resolved_location < RESERVED_LOCATION_COUNT)
     return "";
   const char *path = LINEMAP_FILE (lmo);
   if (!path)
