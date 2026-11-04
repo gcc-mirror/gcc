@@ -4331,7 +4331,7 @@ extern bool invert_jump (rtx_jump_insn *, rtx, int);
 extern bool rtx_renumbered_equal_p (const_rtx, const_rtx);
 extern int true_regnum (const_rtx);
 extern unsigned int reg_or_subregno (const_rtx);
-extern bool redirect_jump_1 (rtx_insn *, rtx);
+extern bool redirect_jump_1 (rtx_jump_insn *, rtx);
 extern void redirect_jump_2 (rtx_jump_insn *, rtx, rtx, int, int);
 extern bool redirect_jump (rtx_jump_insn *, rtx, int);
 extern void rebuild_jump_labels (rtx_insn *);

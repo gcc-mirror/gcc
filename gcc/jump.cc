@@ -63,7 +63,7 @@ static void mark_all_labels (rtx_insn *);
 static void mark_jump_label_1 (rtx, rtx_insn *, bool, bool);
 static void mark_jump_label_asm (rtx, rtx_insn *);
 static void redirect_exp_1 (rtx *, rtx, rtx, rtx_insn *);
-static bool invert_exp_1 (rtx, rtx_insn *);
+static bool invert_exp_1 (rtx, rtx_jump_insn *);
 
 /* Worker for rebuild_jump_labels and rebuild_jump_labels_chain.  */
 static void
@@ -1453,7 +1453,7 @@ redirect_exp_1 (rtx *loc, rtx olabel, rtx nlabel, rtx_insn *insn)
    not see how to do that.  */
 
 bool
-redirect_jump_1 (rtx_insn *jump, rtx nlabel)
+redirect_jump_1 (rtx_jump_insn *jump, rtx nlabel)
 {
   int ochanges = num_validated_changes ();
   rtx *loc, asmop;
@@ -1566,7 +1566,7 @@ redirect_jump_2 (rtx_jump_insn *jump, rtx olabel, rtx nlabel, int delete_unused,
 /* Invert the jump condition X contained in jump insn INSN.  Accrue the
    modifications into the change group.  Return true for success.  */
 static bool
-invert_exp_1 (rtx x, rtx_insn *insn)
+invert_exp_1 (rtx x, rtx_jump_insn *insn)
 {
   RTX_CODE code = GET_CODE (x);
 
