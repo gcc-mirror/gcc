@@ -52,6 +52,12 @@ public:
   bool fits_p (const vrange &r) const;
   bool equal_p (const vrange &r) const;
 
+  class irange_storage *dyn_irange ();
+  class prange_storage *dyn_prange ();
+  class frange_storage *dyn_frange ();
+  const irange_storage *dyn_irange () const;
+  const prange_storage *dyn_prange () const;
+  const frange_storage *dyn_frange () const;
   // Stack initialization disallowed.
   vrange_storage (enum value_range_discriminator d) : m_discriminator (d) { }
   const enum value_range_discriminator m_discriminator : 4;
@@ -211,6 +217,53 @@ class GTY((tag ("VR_FRANGE"))) frange_storage : public vrange_storage
   frange_pair m_pairs[1];
 };
 
+inline irange_storage *
+vrange_storage::dyn_irange ()
+{
+  if (m_discriminator == VR_IRANGE)
+    return static_cast <irange_storage *> (this);
+  return NULL;
+}
+
+inline prange_storage *
+vrange_storage::dyn_prange ()
+{
+  if (m_discriminator == VR_PRANGE)
+    return static_cast <prange_storage *> (this);
+  return NULL;
+}
+
+inline frange_storage *
+vrange_storage::dyn_frange ()
+{
+  if (m_discriminator == VR_FRANGE)
+    return static_cast <frange_storage *> (this);
+  return NULL;
+}
+
+inline const irange_storage *
+vrange_storage::dyn_irange () const
+{
+  if (m_discriminator == VR_IRANGE)
+    return static_cast <const irange_storage *> (this);
+  return NULL;
+}
+
+inline const prange_storage *
+vrange_storage::dyn_prange () const
+{
+  if (m_discriminator == VR_PRANGE)
+    return static_cast <const prange_storage *> (this);
+  return NULL;
+}
+
+inline const frange_storage *
+vrange_storage::dyn_frange () const
+{
+  if (m_discriminator == VR_FRANGE)
+    return static_cast <const frange_storage *> (this);
+  return NULL;
+}
 extern vrange_storage *ggc_alloc_vrange_storage (tree type);
 extern vrange_storage *ggc_alloc_vrange_storage (const vrange &,
 						 bool shared_p = true);

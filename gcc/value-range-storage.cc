@@ -158,21 +158,18 @@ vrange_storage::alloc (vrange_internal_alloc &allocator, const vrange &r,
 void
 vrange_storage::set_vrange (const vrange &r)
 {
-  if (is_a <irange> (r))
+  if (irange_storage *s = dyn_irange ())
     {
-      irange_storage *s = static_cast <irange_storage *> (this);
       gcc_checking_assert (s->fits_p (as_a <irange> (r)));
       s->set_irange (as_a <irange> (r));
     }
-  else if (is_a <prange> (r))
+  else if (prange_storage *s = dyn_prange ())
     {
-      prange_storage *s = static_cast <prange_storage *> (this);
       gcc_checking_assert (s->fits_p (as_a <prange> (r)));
       s->set_prange (as_a <prange> (r));
     }
-  else if (is_a <frange> (r))
+  else if (frange_storage *s = dyn_frange ())
     {
-      frange_storage *s = static_cast <frange_storage *> (this);
       gcc_checking_assert (s->fits_p (as_a <frange> (r)));
       s->set_frange (as_a <frange> (r));
     }
@@ -198,21 +195,12 @@ vrange_storage::set_vrange (const vrange &r)
 void
 vrange_storage::get_vrange (vrange &r, tree type) const
 {
-  if (is_a <irange> (r))
-    {
-      const irange_storage *s = static_cast <const irange_storage *> (this);
-      s->get_irange (as_a <irange> (r), type);
-    }
-  else if (is_a <prange> (r))
-    {
-      const prange_storage *s = static_cast <const prange_storage *> (this);
-      s->get_prange (as_a <prange> (r), type);
-    }
-  else if (is_a <frange> (r))
-    {
-      const frange_storage *s = static_cast <const frange_storage *> (this);
-      s->get_frange (as_a <frange> (r), type);
-    }
+  if (const irange_storage *s = dyn_irange ())
+    s->get_irange (as_a <irange> (r), type);
+  else if (const prange_storage *s = dyn_prange ())
+    s->get_prange (as_a <prange> (r), type);
+  else if (const frange_storage *s = dyn_frange ())
+    s->get_frange (as_a <frange> (r), type);
   else
     gcc_unreachable ();
 }
@@ -222,23 +210,13 @@ vrange_storage::get_vrange (vrange &r, tree type) const
 bool
 vrange_storage::fits_p (const vrange &r) const
 {
-  if (is_a <irange> (r))
-    {
-      const irange_storage *s = static_cast <const irange_storage *> (this);
-      return s->fits_p (as_a <irange> (r));
-    }
-  if (is_a <prange> (r))
-    {
-      const prange_storage *s = static_cast <const prange_storage *> (this);
-      return s->fits_p (as_a <prange> (r));
-    }
-  if (is_a <frange> (r))
-    {
-      const frange_storage *s = static_cast <const frange_storage *> (this);
-      return s->fits_p (as_a <frange> (r));
-    }
+  if (const irange_storage *s = dyn_irange ())
+    return s->fits_p (as_a <irange> (r));
+  if (const prange_storage *s = dyn_prange ())
+    return s->fits_p (as_a <prange> (r));
+  if (const frange_storage *s = dyn_frange ())
+    return s->fits_p (as_a <frange> (r));
   gcc_unreachable ();
-  return false;
 }
 
 // Return TRUE if the range in storage is equal to R.  It is the
@@ -248,21 +226,12 @@ vrange_storage::fits_p (const vrange &r) const
 bool
 vrange_storage::equal_p (const vrange &r) const
 {
-  if (is_a <irange> (r))
-    {
-      const irange_storage *s = static_cast <const irange_storage *> (this);
-      return s->equal_p (as_a <irange> (r));
-    }
-  if (is_a <prange> (r))
-    {
-      const prange_storage *s = static_cast <const prange_storage *> (this);
-      return s->equal_p (as_a <prange> (r));
-    }
-  if (is_a <frange> (r))
-    {
-      const frange_storage *s = static_cast <const frange_storage *> (this);
-      return s->equal_p (as_a <frange> (r));
-    }
+  if (const irange_storage *s = dyn_irange ())
+    return s->equal_p (as_a <irange> (r));
+  if (const prange_storage *s = dyn_prange ())
+    return s->equal_p (as_a <prange> (r));
+  if (const frange_storage *s = dyn_frange ())
+    return s->equal_p (as_a <frange> (r));
   gcc_unreachable ();
 }
 
