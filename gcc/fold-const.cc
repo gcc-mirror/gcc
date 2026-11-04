@@ -1506,10 +1506,14 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       /* Don't constant fold this floating point operation if the
 	 result may dependent upon the run-time rounding mode and
 	 flag_rounding_math is set, or if GCC's software emulation
-	 is unable to accurately represent the result.  */
+	 is unable to accurately represent the result.  When the
+	 result is known to be exactly zero, rounding may affect
+	 the sign for modes that support signed zeros.  */
       if ((flag_rounding_math
 	   || (MODE_COMPOSITE_P (mode) && !flag_unsafe_math_optimizations))
-	  && (inexact || !real_identical (&result, &value)))
+	  && (inexact
+	      || !real_identical (&result, &value)
+	      || (real_iszero (&value) && HONOR_SIGNED_ZEROS (mode))))
 	return NULL_TREE;
 
       t = build_real (type, result);

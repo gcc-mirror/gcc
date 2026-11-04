@@ -3524,12 +3524,16 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
       break;
 
     case MINUS:
-      /* We can't assume x-x is 0 even with non-IEEE floating point,
-	 but since it is zero except in very strange circumstances, we
-	 will treat it as zero with -ffinite-math-only.  */
+      /* We can't assume x-x is 0 even with non-IEEE floating point.
+	 This is unsafe if x is NaN or Inf, and with FE_DOWNWARD as the
+	 rounding mode x - x may be -0.0.  c.f. PR middle-end/98420.  */
       if (rtx_equal_p (trueop0, trueop1)
 	  && ! side_effects_p (op0)
-	  && (!FLOAT_MODE_P (mode) || !HONOR_NANS (mode)))
+	  && (!FLOAT_MODE_P (mode)
+	      || (!HONOR_NANS (mode)
+		  && !HONOR_INFINITIES (mode)
+		  && (!HONOR_SIGN_DEPENDENT_ROUNDING (mode)
+		      || !HONOR_SIGNED_ZEROS (mode)))))
 	return CONST0_RTX (mode);
 
       /* Change subtraction from zero into negation.  (0 - x) is the
@@ -6072,11 +6076,15 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
 	  /* Don't constant fold this floating point operation if the
 	     result may dependent upon the run-time rounding mode and
 	     flag_rounding_math is set, or if GCC's software emulation
-	     is unable to accurately represent the result.  */
+	     is unable to accurately represent the result. When the
+	     result is known to be exactly zero, rounding may affect
+	     the sign for modes that support signed zeros.  */
 
 	  if ((flag_rounding_math
 	       || (MODE_COMPOSITE_P (mode) && !flag_unsafe_math_optimizations))
-	      && (inexact || !real_identical (&result, &value)))
+	      && (inexact
+		  || !real_identical (&result, &value)
+		  || (real_iszero (&value) && HONOR_SIGNED_ZEROS (mode))))
 	    return NULL_RTX;
 
 	  return const_double_from_real_value (result, mode);
