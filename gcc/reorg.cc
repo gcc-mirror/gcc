@@ -187,8 +187,8 @@ static void delete_scheduled_jump (rtx_insn *);
 static void note_delay_statistics (int, int);
 static int get_jump_flags (const rtx_insn *, rtx);
 static int mostly_true_jump (rtx_insn *);
-static rtx get_branch_condition (const rtx_insn *, rtx);
-static bool condition_dominates_p (rtx, const rtx_insn *);
+static rtx get_branch_condition (const rtx_jump_insn *, rtx);
+static bool condition_dominates_p (rtx, const rtx_jump_insn *);
 static bool redirect_with_delay_slots_safe_p (rtx_jump_insn *,
 					      rtx, rtx_insn *);
 static bool redirect_with_delay_list_safe_p (rtx_jump_insn *, rtx,
@@ -808,7 +808,7 @@ mostly_true_jump (rtx_insn *jump_insn)
    type of jump, or it doesn't go to TARGET, return 0.  */
 
 static rtx
-get_branch_condition (const rtx_insn *insn, rtx target)
+get_branch_condition (const rtx_jump_insn *insn, rtx target)
 {
   rtx pat = PATTERN (insn);
   rtx src;
@@ -854,7 +854,7 @@ get_branch_condition (const rtx_insn *insn, rtx target)
    INSN, i.e., if INSN will always branch if CONDITION is true.  */
 
 static bool
-condition_dominates_p (rtx condition, const rtx_insn *insn)
+condition_dominates_p (rtx condition, const rtx_jump_insn *insn)
 {
   rtx other_condition = get_branch_condition (insn, JUMP_LABEL (insn));
   enum rtx_code code = GET_CODE (condition);
@@ -1024,7 +1024,8 @@ steal_delay_list_from_target (rtx_insn *insn, rtx condition, rtx_sequence *seq,
     }
 
   if (XVECLEN (seq, 0) - 1 > slots_remaining
-      || ! condition_dominates_p (condition, seq->insn (0))
+      || ! condition_dominates_p (condition,
+				  as_a<rtx_jump_insn *> (seq->insn (0)))
       || ! single_set (seq->insn (0)))
     return;
 
