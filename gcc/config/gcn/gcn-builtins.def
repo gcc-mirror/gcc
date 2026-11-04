@@ -158,6 +158,13 @@ DEF_BUILTIN (ACC_SINGLE_COPY_END, -1, "single_copy_end", B_INSN,
 DEF_BUILTIN (ACC_BARRIER, -1, "acc_barrier", B_INSN, _A1 (GCN_BTI_VOID),
 	     gcn_expand_builtin_1)
 
+/* SIMT testing.  */
+
+DEF_BUILTIN (SIMT_ENTER, -1, "simt_enter", B_INSN,
+	     _A3 (GCN_BTI_INT, GCN_BTI_INT, GCN_BTI_INT), gcn_expand_builtin_1)
+DEF_BUILTIN (SIMT_EXIT, -1, "simt_exit", B_INSN,
+	     _A2 (GCN_BTI_VOID, GCN_BTI_INT), gcn_expand_builtin_1)
+
 /* Kernel inputs.  */
 
 DEF_BUILTIN (FIRST_CALL_THIS_THREAD_P, -1, "first_call_this_thread_p", B_INSN,
