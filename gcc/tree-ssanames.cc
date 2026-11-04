@@ -953,7 +953,7 @@ copy_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
   return new_name;
 }
 
-/* Give DEST its own copy of the points-to and alignment information of
+/* Give DEST its own copy of the points-to information of
    the SSA name SRC.  SRC may be NULL_TREE or carry no information, in
    which case DEST is left alone.  */
 
@@ -970,7 +970,7 @@ duplicate_ssa_name_ptr_info (tree dest, const pt_solution* pt)
   set_pt_solution (dest, copy);
 }
 
-/* Give DEST its own copy of the points-to and alignment information of
+/* Give DEST its own copy of the points-to information of
    the SSA name SRC.  SRC may be NULL_TREE or carry no information, in
    which case DEST is left alone.  */
 
@@ -984,7 +984,7 @@ duplicate_ssa_name_ptr_info (tree dest, tree src)
     duplicate_ssa_name_ptr_info (dest, pt);
 }
 
-/* Copy any global range and aliasing information from SRC to NAME.  */
+/* Copy any global range information from SRC to NAME.  */
 
 void
 duplicate_ssa_name_range_info (tree name, tree src)
@@ -997,11 +997,6 @@ duplicate_ssa_name_range_info (tree name, tree src)
   value_range src_range (TREE_TYPE (src));
   range_info_get_range (src, src_range);
   range_info_set_range (name, src_range);
-
-  /* For a pointer the aliasing info lives in the storage just created,
-     so it has to be copied as part of the same operation.  */
-  if (POINTER_TYPE_P (TREE_TYPE (src)))
-    duplicate_ssa_name_ptr_info (name, src);
 
   unsigned align, misalign;
   if (get_ptr_info_alignment (src, &align, &misalign))
@@ -1021,7 +1016,10 @@ maybe_duplicate_ssa_info_at_copy (tree dest, tree src)
     return;
 
   if (SSA_NAME_RANGE_INFO (dest) && !SSA_NAME_RANGE_INFO (src))
-    duplicate_ssa_name_range_info (src, dest);
+    {
+      duplicate_ssa_name_range_info (src, dest);
+      duplicate_ssa_name_ptr_info (src, dest);
+    }
 }
 
 
@@ -1034,7 +1032,10 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
   tree new_name = copy_ssa_name_fn (fn, name, stmt);
 
   if (SSA_NAME_RANGE_INFO (name))
-    duplicate_ssa_name_range_info (new_name, name);
+    {
+      duplicate_ssa_name_range_info (new_name, name);
+      duplicate_ssa_name_ptr_info (new_name, name);
+    }
 
   return new_name;
 }
