@@ -468,6 +468,12 @@ process_asm (FILE *in, FILE *out, FILE *cfile, uint32_t omp_requires)
     char *kernel_name;
   } regcount = { -1, -1, NULL };
 
+  enum {
+    SIMD_MODE,
+    SIMT_DIRECTED_MODE,
+    SIMT_MODE
+  } simt_mode = SIMD_MODE;
+
   /* Always add _init_array and _fini_array as kernels.  */
   obstack_ptr_grow (&fns_os, xstrdup ("_init_array"));
   obstack_ptr_grow (&fns_os, xstrdup ("_fini_array"));
@@ -488,13 +494,26 @@ process_asm (FILE *in, FILE *out, FILE *cfile, uint32_t omp_requires)
 	{
 	case IN_CODE:
 	  {
+	    char *s;
 	    if (sscanf (buf, " ;; OPENACC-DIMS: %d, %d, %d : %ms\n",
 			&dim.d[0], &dim.d[1], &dim.d[2], &dim.name) == 4)
 	      {
 		obstack_grow (&dims_os, &dim, sizeof (dim));
 		dims_count++;
 	      }
-
+	    else if (sscanf (buf, " ;; SIMT-MODE: %ms\n",
+			     &s) == 1)
+	      {
+		int saved_mode = simt_mode;
+		if (strcmp (s, "simt-directed") == 0)
+		  simt_mode = SIMT_DIRECTED_MODE;
+		else if (strcmp (s, "simt") == 0)
+		  simt_mode = SIMT_MODE;
+		else
+		  gcc_unreachable ();
+		if (saved_mode && saved_mode != simt_mode)
+		  sorry ("Mixed SIMT/SIMT-DIRECTED is not yet supported.");
+	      }
 	    break;
 	  }
 	case IN_METADATA:
@@ -651,6 +670,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile, uint32_t omp_requires)
 	   "  int oacc_dims[3];\n"
 	   "  int sgpr_count;\n"
 	   "  int vgpr_count;\n"
+	   "  int simt_mode;\n"
 	   "} gcn_kernels[] = {\n  ");
   dim.d[0] = dim.d[1] = dim.d[2] = 0;
   const char *comma;
@@ -675,8 +695,8 @@ process_asm (FILE *in, FILE *out, FILE *cfile, uint32_t omp_requires)
 	    break;
 	  }
 
-      fprintf (cfile, "%s{\"%s\", {%d, %d, %d}, %d, %d}", comma,
-	       fns[i], d[0], d[1], d[2], sgpr_count, vgpr_count);
+      fprintf (cfile, "%s{\"%s\", {%d, %d, %d}, %d, %d, %d}", comma,
+	       fns[i], d[0], d[1], d[2], sgpr_count, vgpr_count, simt_mode);
 
       free (fns[i]);
     }

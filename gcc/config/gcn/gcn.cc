@@ -6299,8 +6299,10 @@ gcn_simt_vf (void)
     case OFFLOAD_GPU_MODE_SIMD:
       return 1;
     case OFFLOAD_GPU_MODE_SIMT_DIRECTED:
-    case OFFLOAD_GPU_MODE_SIMT:
       return 64;
+    case OFFLOAD_GPU_MODE_SIMT:
+      /* Disable SIMT transformations in the middle-end.  */
+      return 1;
     }
   return 1;
 }
@@ -7558,12 +7560,20 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
   fputs (",@function\n", file);
   ASM_OUTPUT_FUNCTION_LABEL (file, name, decl);
 
-  /* This comment is read by mkoffload.  */
+  /* These comments are read by mkoffload.  */
   if (flag_openacc)
     fprintf (file, "\t;; OPENACC-DIMS: %d, %d, %d : %s\n",
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_GANG),
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_WORKER),
 	     oacc_get_fn_dim_size (cfun->decl, GOMP_DIM_VECTOR), name);
+  if (flag_simt_mode)
+    fprintf (file, "\t;; SIMT-MODE: %s\n",
+	     (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT_DIRECTED
+	      ? "simt-directed"
+	      : (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT
+		 /*|| param_offload_gpu_mode == OFFLOAD_GPU_MODE_AUTO*/)
+	      ? "simt"
+	      : "unknown"));
 }
 
 /* Implement TARGET_ASM_INIT_SECTIONS.  */

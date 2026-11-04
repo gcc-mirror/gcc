@@ -1546,6 +1546,13 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
 	error ("%<-fopenmp-target=%> requires %<-fopenmp%> setting");
     }
 
+  /* The "simt" offload mode makes each SIMT lane an OpenMP thread.  OpenACC
+     has the "vector" level for that, so is the same as in "simt-directed"
+     mode.  */
+  if (opts->x_flag_openacc
+      && opts->x_param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMT)
+    opts->x_param_offload_gpu_mode = OFFLOAD_GPU_MODE_SIMT_DIRECTED;
+
   diagnose_options (opts, opts_set, loc);
 }
 

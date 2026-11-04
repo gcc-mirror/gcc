@@ -1024,7 +1024,9 @@ omp_max_vf (bool offload)
     {
       for (const char *c = getenv ("OFFLOAD_TARGET_NAMES"); c;)
 	{
-	  if (startswith (c, "amdgcn"))
+	  if (startswith (c, "amdgcn")
+	      && (param_offload_gpu_mode == OFFLOAD_GPU_MODE_SIMD
+		  || param_offload_gpu_mode == OFFLOAD_GPU_MODE_AUTO))
 	    return ordered_max (poly_uint64 (64), omp_max_vf (false));
 	  else if ((c = strchr (c, ':')))
 	    c++;
@@ -1066,9 +1068,12 @@ omp_max_simt_vf (void)
 	  {
 	    switch (param_offload_gpu_mode)
 	      {
-	      case OFFLOAD_GPU_MODE_SIMT: /* For now.  */
 	      case OFFLOAD_GPU_MODE_SIMT_DIRECTED:
 		return 64;
+	      case OFFLOAD_GPU_MODE_SIMT:
+		/* Do not emit SIMT IR here; the backend and libgomp
+		   will change mode to do SIMT for OMP threads.  */
+		return 0;
 	      case OFFLOAD_GPU_MODE_AUTO:
 	      case OFFLOAD_GPU_MODE_SIMD:
 		return 0;
