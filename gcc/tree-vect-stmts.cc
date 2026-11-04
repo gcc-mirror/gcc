@@ -1540,26 +1540,31 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
       return;
     }
 
-  /* We might load more scalars than we need for permuting SLP loads.
-     We checked in get_load_store_type that the extra elements
-     don't leak into a new vector.  */
-  auto group_memory_nvectors = [](poly_uint64 size, poly_uint64 nunits)
-  {
-    unsigned int nvectors;
-    if (can_div_away_from_zero_p (size, nunits, &nvectors))
-      return nvectors;
-    gcc_unreachable ();
-  };
-
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
   poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+
+  /* For permuted SLP loads the group accessed in one vector iteration
+     might not fill a whole number of vectors, for example when the
+     load permutation duplicates elements.  The loop masks and lengths
+     are computed based on NVECTORS * NUNITS / VF scalars per iteration
+     which would then enable more elements than the scalar loop accesses.  */
+  if (!constant_multiple_p (group_size * vf, nunits, &nvectors))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't operate on partial vectors because the"
+			 " access does not cover a whole number of"
+			 " vectors.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+      return;
+    }
+
   machine_mode mask_mode;
   machine_mode vmode;
   bool using_partial_vectors_p = false;
   if (get_len_load_store_mode
       (vecmode, is_load, nullptr, elsvals).exists (&vmode))
     {
-      nvectors = group_memory_nvectors (group_size * vf, nunits);
       unsigned factor = (vecmode == vmode) ? 1 : GET_MODE_UNIT_SIZE (vecmode);
       vect_record_loop_len (loop_vinfo, lens, nvectors, vectype, factor);
       using_partial_vectors_p = true;
@@ -1568,7 +1573,6 @@ check_load_store_for_partial_vectors (loop_vec_info loop_vinfo, tree vectype,
 	   && can_vec_mask_load_store_p (vecmode, mask_mode, is_load, NULL,
 					 elsvals))
     {
-      nvectors = group_memory_nvectors (group_size * vf, nunits);
       vect_record_loop_mask (loop_vinfo, masks, nvectors, vectype, scalar_mask);
       using_partial_vectors_p = true;
     }
