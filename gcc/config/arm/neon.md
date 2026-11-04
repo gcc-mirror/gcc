@@ -3566,13 +3566,13 @@ if (BYTES_BIG_ENDIAN)
 	(vec_duplicate:VDQW (match_dup 3)))]
   {
     unsigned HOST_WIDE_INT elt = UINTVAL (operands[2]);
-    if (BYTES_BIG_ENDIAN)
-      elt = GET_MODE_NUNITS (<V_double_vector_mode>mode) - 1 - elt;
     unsigned HOST_WIDE_INT size = GET_MODE_SIZE (<V_elem>mode);
     int base_regno = REGNO (operands[1]);
     int regno = (base_regno
 		 + subreg_regno_offset (base_regno, <V_double_vector_mode>mode,
 					elt * size, SImode));
+    if (BYTES_BIG_ENDIAN)
+      elt = GET_MODE_NUNITS (<V_double_vector_mode>mode) - 1 - elt;
     unsigned HOST_WIDE_INT offset = (elt * size) % GET_MODE_SIZE (SImode);
     if (offset != 0)
       {
@@ -3649,13 +3649,13 @@ if (BYTES_BIG_ENDIAN)
 	(vec_duplicate:VHFBF (match_dup 3)))]
   {
     unsigned HOST_WIDE_INT elt = UINTVAL (operands[2]);
-    if (BYTES_BIG_ENDIAN)
-      elt = GET_MODE_NUNITS (<V_double_vector_mode>mode) - 1 - elt;
     unsigned HOST_WIDE_INT size = GET_MODE_SIZE (<V_elem>mode);
     int base_regno = REGNO (operands[1]);
     int regno = (base_regno
 		 + subreg_regno_offset (base_regno, <V_double_vector_mode>mode,
 					elt * size, SImode));
+    if (BYTES_BIG_ENDIAN)
+      elt = GET_MODE_NUNITS (<V_double_vector_mode>mode) - 1 - elt;
     unsigned HOST_WIDE_INT offset = (elt * size) % GET_MODE_SIZE (SImode);
     if (offset != 0)
       {
