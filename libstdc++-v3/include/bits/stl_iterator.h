@@ -2226,8 +2226,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 3953. iter_move for common_iterator [...] should return decltype(auto)
     [[nodiscard]]
-    friend constexpr iter_rvalue_reference_t<_It>
+    friend constexpr decltype(auto)
     iter_move(const common_iterator& __i)
     noexcept(noexcept(ranges::iter_move(std::declval<const _It&>())))
     requires input_iterator<_It>
@@ -2600,8 +2602,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		    const counted_iterator<_It2>& __y) noexcept
 	{ return __y._M_length <=> __x._M_length; }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 3953. iter_move for [...] counted_iterator should return decltype(auto)
       [[nodiscard]]
-      friend constexpr iter_rvalue_reference_t<_It>
+      friend constexpr decltype(auto)
       iter_move(const counted_iterator& __i)
       noexcept(noexcept(ranges::iter_move(__i._M_current)))
       requires input_iterator<_It>
