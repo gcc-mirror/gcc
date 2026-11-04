@@ -4836,6 +4836,58 @@ widening_evenodd_fn_p (code_helper code)
     }
 }
 
+/* Check the NARGS arguments ARGS of a call to internal function FN.
+   Return true if they are valid.  Otherwise report an error at LOC
+   and return false.  */
+
+bool
+check_internal_fn_args (location_t loc, internal_fn fn, unsigned int nargs,
+			const tree *args)
+{
+  const char *name = internal_fn_name (fn);
+  if (direct_internal_fn_p (fn))
+    {
+      const direct_internal_fn_info &info = direct_internal_fn (fn);
+      if (nargs < info.nargs_min)
+	{
+	  error_at (loc, "%<.%s%> call with too few arguments", name);
+	  return false;
+	}
+      if (nargs > info.nargs_max)
+	{
+	  error_at (loc, "%<.%s%> call with too many arguments", name);
+	  return false;
+	}
+    }
+
+  switch (fn)
+    {
+    case IFN_CLZ:
+    case IFN_CTZ:
+      {
+	tree type = TREE_TYPE (args[0]);
+	if (!(INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
+	    || !TYPE_UNSIGNED (type))
+	  {
+	    error_at (loc, "%<.%s%> call with an argument that is not "
+		      "unsigned integer", name);
+	    return false;
+	  }
+	if (nargs == 2 && TREE_CODE (args[1]) != INTEGER_CST)
+	  {
+	    error_at (loc, "%<.%s%> call with a value at zero that is not "
+		      "constant", name);
+	    return false;
+	  }
+	break;
+      }
+
+    default:
+      break;
+    }
+  return true;
+}
+
 /* Return true if IFN_SET_EDOM is supported.  */
 
 bool

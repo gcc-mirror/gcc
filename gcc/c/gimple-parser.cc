@@ -791,6 +791,11 @@ c_parser_gimple_statement (gimple_parser &parser, gimple_seq *seq)
   loc = EXPR_LOCATION (lhs.value);
   rhs.set_error ();
 
+  /* The parser already reported the error in an invalid statement.  */
+  if (c_parser_next_token_is (parser, CPP_SEMICOLON)
+      && lhs.value == error_mark_node)
+    return;
+
   /* GIMPLE call statement without LHS.  */
   if (c_parser_next_token_is (parser, CPP_SEMICOLON)
       && TREE_CODE (lhs.value) == CALL_EXPR)
@@ -1439,7 +1444,9 @@ c_parser_gimple_call_internal (gimple_parser &parser)
       c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, "expected %<)%>");
       if (ifn == IFN_LAST)
 	error_at (loc, "unknown internal function %qE", id);
-      else
+      else if (!exprlist.contains (error_mark_node)
+	       && check_internal_fn_args (loc, ifn, exprlist.length (),
+					  exprlist.address ()))
 	{
 	  expr.value = build_call_expr_internal_loc_array
 	    (loc, ifn, void_type_node, exprlist.length (),

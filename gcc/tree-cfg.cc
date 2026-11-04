@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-expand.h"
 #include "tree-cfgcleanup.h"
 #include "gimplify.h"
+#include "internal-fn.h"
 #include "attribs.h"
 #include "selftest.h"
 #include "opts.h"
@@ -3507,6 +3508,16 @@ verify_gimple_call (gcall *stmt)
 	     "outside of the pass that introduced them");
       return true;
     }
+
+  if (gimple_call_internal_p (stmt))
+    {
+      unsigned nargs = gimple_call_num_args (stmt);
+      tree *args = nargs ? gimple_call_arg_ptr (stmt, 0) : NULL;
+      if (!check_internal_fn_args (gimple_location (stmt),
+				   gimple_call_internal_fn (stmt), nargs, args))
+	return true;
+    }
+
   /* ???  The C frontend passes unpromoted arguments in case it
      didn't see a function declaration before the call.  So for now
      leave the call arguments mostly unverified.  Once we gimplify

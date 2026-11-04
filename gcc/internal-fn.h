@@ -236,6 +236,8 @@ extern bool widening_fn_p (code_helper);
 extern bool widening_evenodd_fn_p (code_helper);
 
 extern bool set_edom_supported_p (void);
+extern bool check_internal_fn_args (location_t, internal_fn, unsigned int,
+				    const tree *);
 
 extern internal_fn get_conditional_internal_fn (tree_code);
 extern internal_fn get_conditional_internal_fn (internal_fn);
