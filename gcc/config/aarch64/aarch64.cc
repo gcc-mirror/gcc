@@ -20474,6 +20474,14 @@ aarch64_override_options_internal (struct gcc_options *opts,
       & AARCH64_EXTRA_TUNE_DISPATCH_SCHED)
     gcc_assert (aarch64_tune_params.dispatch_constraints != NULL);
 
+  /* Prefer SVE main loops that operate on full vectors, handling the
+     tail in a separate epilogue rather than with fully-masked WHILELO
+     loops.  */
+  if (aarch64_tune_params.extra_tuning_flags
+      & AARCH64_EXTRA_TUNE_PREFER_SVE_FULL_VECTORS)
+    SET_OPTION_IF_UNSET (opts, opts_set, param_vect_partial_vector_usage,
+			 1);
+
   /* Enable possible unprofitable vectorization.  */
   if (opts->x_flag_aarch64_max_vectorization)
     SET_OPTION_IF_UNSET (opts, opts_set,

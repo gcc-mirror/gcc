@@ -84,4 +84,8 @@ AARCH64_EXTRA_TUNING_OPTION ("narrow_gp_writes", NARROW_GP_WRITES)
 /* Enable when the target prefers SVE merging movimm over zeroing.  */
 AARCH64_EXTRA_TUNING_OPTION ("avoid_zeroing_movimm", AVOID_MOVIMM_Z)
 
+/* Enable if the target prefers full-vector main loops rather than
+   fully-masked whilelo loops (i.e. -param=vect-partial-vector-usage=1).  */
+AARCH64_EXTRA_TUNING_OPTION ("prefer_sve_full_vectors", PREFER_SVE_FULL_VECTORS)
+
 #undef AARCH64_EXTRA_TUNING_OPTION
