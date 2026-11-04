@@ -5,7 +5,7 @@
 
 #include <fenv.h>
 #include "avx512f-check.h"
-#include "pr128221-1.c"
+#include "pr128221-1a.c"
 
 #define W 1800.0
 #define E -1e34
