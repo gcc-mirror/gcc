@@ -327,6 +327,8 @@ inline bool operator!= (const match_elt_t &m, const match_elt_t &m2) { return m.
 inline bool operator== (const match_elt_t &m, const match_elt_t &m2) { return m.v == m2.v; }
 inline bool operator== (const match_elt_t &m, int v) { return m.v == v; }
 inline bool operator!= (const match_elt_t &m, int v) { return m.v != v; }
+inline bool operator< (const match_elt_t &m, int v) { return m.v < v; }
+inline bool operator> (const match_elt_t &m, int v) { return m.v > v; }
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
    stmts to be packed in a SIMD stmt.  */

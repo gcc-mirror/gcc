@@ -5090,23 +5090,34 @@ vect_analyze_slp_reductions (loop_vec_info loop_vinfo,
 	return true;
 
       /* When analysis as a single SLP reduction group failed try to
-	 form sub-groups by collecting matching lanes.  Do not recurse
-	 that on failure (to limit compile-time costs), but recurse
-	 for the initial non-matching parts.  Everything not covered
-	 by a sub-group gets single-reduction treatment.  */
-      /* ???  Improve this with the matches[] improvements.  */
+	 form sub-groups by collecting matching lanes.  Everything not
+	 covered by a sub-group gets single-reduction treatment.  */
       vec<stmt_vec_info> cands = vNULL;
-      while (matches[0] == 0)
+      int first_cand = matches[0] != -1 ? 0 : -1;
+      while (first_cand >= 0)
 	{
 	  cands.truncate (0);
 	  cands.reserve (group_size, true);
+	  int new_first_cand = -1;
 	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i] == 0)
-	      cands.quick_push (scalar_stmts[i]);
+	    if (matches[i] == first_cand)
+	      {
+		cands.quick_push (scalar_stmts[i]);
+		scalar_stmts[i] = NULL;
+	      }
+	    else if (new_first_cand == -1
+		     && matches[i] > first_cand)
+	      {
+		gcc_assert (matches[i] == (int)i);
+		new_first_cand = i;
+	      }
 
+	  if (cands.is_empty ())
+	    ;
 	  /* Try to form a reduction group.  */
-	  if (vect_analyze_slp_reduction_group (loop_vinfo, cands, bst_map,
-						max_tree_size, limit, NULL))
+	  else if (vect_analyze_slp_reduction_group (loop_vinfo, cands,
+						     bst_map, max_tree_size,
+						     limit, NULL))
 	    cands = vNULL;
 	  else
 	    {
@@ -5123,35 +5134,34 @@ vect_analyze_slp_reductions (loop_vec_info loop_vinfo,
 		    return false;
 		  }
 	    }
-	  /* Remove the handled stmts from scalar_stmts and try again,
-	     possibly repeating the above with updated matches[].  */
-	  unsigned j = 0;
-	  for (unsigned i = 0; i < group_size; ++i)
-	    if (matches[i] != 0)
-	      {
-		scalar_stmts[j] = scalar_stmts[i];
-		++j;
-	      }
-	  scalar_stmts.truncate (j);
-	  group_size = scalar_stmts.length ();
-	  if (group_size <= 1)
-	    break;
-	  if (vect_analyze_slp_reduction_group (loop_vinfo, scalar_stmts,
-						bst_map, max_tree_size, limit,
-						matches))
-	    return true;
+	  first_cand = new_first_cand;
 	}
+      cands.release ();
+
+      /* Handle unmatched entries as single-lane.  */
+      for (unsigned i = 0; i < group_size; ++i)
+	if (scalar_stmts[i] != NULL)
+	  if (! vect_analyze_slp_reduction (loop_vinfo,
+					    vect_stmt_to_vectorize
+					      (scalar_stmts[i]),
+					    max_tree_size, limit,
+					    bst_map, force_single_lane))
+	    {
+	      scalar_stmts.release ();
+	      return false;
+	    }
     }
-  /* Do SLP discovery for single-lane reductions.  */
-  for (auto stmt_info : scalar_stmts)
-    if (! vect_analyze_slp_reduction (loop_vinfo,
-				      vect_stmt_to_vectorize (stmt_info),
-				      max_tree_size, limit,
-				      bst_map, force_single_lane))
-      {
-	scalar_stmts.release ();
-	return false;
-      }
+  else
+    /* Do SLP discovery for single-lane reductions.  */
+    for (auto stmt_info : scalar_stmts)
+      if (! vect_analyze_slp_reduction (loop_vinfo,
+					vect_stmt_to_vectorize (stmt_info),
+					max_tree_size, limit,
+					bst_map, force_single_lane))
+	{
+	  scalar_stmts.release ();
+	  return false;
+	}
 
   scalar_stmts.release ();
   return true;
