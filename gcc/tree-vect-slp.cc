@@ -3028,7 +3028,15 @@ out:
 						      oprnd_info->ops.length (),
 						      TREE_TYPE (op0)))
 		{
+		  for (unsigned k = 0; k < j; ++k)
+		    matches[k] = 0;
 		  matches[j] = -1;
+		  for (unsigned k = j + 1; k < oprnd_info->ops.length (); ++k)
+		    if (oprnd_info->ops[k]
+			&& !operand_equal_p (op0, oprnd_info->ops[k]))
+		      matches[k] = -1;
+		    else
+		      matches[k] = 0;
 		  if (dump_enabled_p ())
 		    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 				     "Build SLP failed: invalid type of def "
