@@ -125,6 +125,25 @@ build_vec_dup (tree type, tree elem)
 	   : fold_build1 (VEC_DUPLICATE_EXPR, type, elem);
 }
 
+/* Build `VAL >> AMOUNT` for the integer vector type TYPE, conforming to ACLE
+   semantics.  AMOUNT is an integer constant.  */
+tree
+build_shift_right (tree type, tree val, tree amount)
+{
+  auto bits = element_precision (type);
+  if (wi::ltu_p (wi::to_wide (amount), bits))
+    return fold_build2 (RSHIFT_EXPR, type, val, amount);
+
+  /* A logical (unsigned) shift by the element width shifts every bit out.  */
+  if (TYPE_UNSIGNED (type))
+    return build_zero_cst (type);
+
+  /* An arithmetic (signed) shift by the element width leaves every bit equal to
+     the sign bit which a shift by one less already gives.  */
+  return fold_build2 (RSHIFT_EXPR, type, val,
+		      build_int_cst (TREE_TYPE (amount), bits - 1));
+}
+
 /* Build a `TUPLE.val[INDEX]` expression.  */
 tree
 build_tuple_get (tree tuple, tree index)
@@ -239,14 +258,123 @@ public:
   }
 };
 
-template <insn_code insn> struct gimple_exact_insn : gimple_function_base
+/* Base class for intrinsics that map to a single instruction.  Derived classes
+   name the instruction by overriding `code_for`.
+
+   M_MODE_ARG is the index of the argument whose mode selects the instruction,
+   or -1 if the intrinsic goes through use_exact_insn.  If the argument has a
+   one-element vector type, such as int64x1_t, there is no instruction for it,
+   so `code_for` is passed the element mode instead and the arguments and the
+   result are unwrapped to match.  This is what arm_neon.h did for these types
+   before they moved to the pragma-based framework.  */
+class gimple_insn_based_function : public gimple_function_base
 {
+  int m_mode_arg;
+
+protected:
+  /* Return the instruction to use for mode MODE.  */
+  virtual insn_code code_for (function_expander &e, machine_mode mode) const
+    = 0;
+
+public:
+  constexpr gimple_insn_based_function (int mode_arg) : m_mode_arg (mode_arg) {}
+
   gimple *fold (gimple_folder &) const override { return nullptr; }
+
   rtx expand (function_expander &e) const override
   {
-    return e.use_exact_insn (insn);
+    gcc_assert (m_mode_arg >= -1);
+    if (m_mode_arg == -1)
+      return e.use_exact_insn (code_for (e, VOIDmode));
+
+    auto type = TREE_TYPE (CALL_EXPR_ARG (e.call_expr, m_mode_arg));
+
+    /* Handle vector types.  */
+    if (!one_element_vector_type_p (type))
+      return e.use_exact_insn (code_for (e, TYPE_MODE (type)));
+
+    /* Handle scalar types.  This is similar to the handling in gimple_ifn for
+       V1DI and V1DF types.  */
+    auto icode = code_for (e, TYPE_MODE (TREE_TYPE (type)));
+    auto scalar_mode = GET_MODE_INNER (e.result_mode ());
+
+    for (unsigned int i = 0; i < e.args.length (); i++)
+      {
+	auto arg_type = TREE_TYPE (CALL_EXPR_ARG (e.call_expr, i));
+	if (one_element_vector_type_p (arg_type))
+	  e.args[i] = force_lowpart_subreg (scalar_mode, e.args[i],
+					    TYPE_MODE (arg_type));
+      }
+
+    auto res = e.use_exact_insn (icode);
+    return force_lowpart_subreg (e.result_mode (), res, scalar_mode);
   }
 };
+
+/* For intrinsics that always map to instruction INSN.  */
+template <insn_code INSN>
+struct gimple_exact_insn : public gimple_insn_based_function
+{
+  constexpr gimple_exact_insn () : gimple_insn_based_function (-1) {}
+
+  insn_code code_for (function_expander &, machine_mode) const override
+  {
+    return INSN;
+  }
+};
+
+/* For intrinsics whose instruction is selected by a mode through the
+   code_for_* helpers that insn-opinit.h generates for `@`-prefixed
+   pattterns.  */
+class gimple_code_for_mode_function : public gimple_insn_based_function
+{
+  insn_code (*m_code_for) (machine_mode);
+
+  insn_code code_for (function_expander &, machine_mode mode) const override
+  {
+    return this->m_code_for (mode);
+  }
+
+public:
+  constexpr gimple_code_for_mode_function (insn_code (*code_for) (machine_mode),
+					   int mode_arg = 0)
+    : gimple_insn_based_function (mode_arg), m_code_for (code_for)
+  {}
+};
+
+/* Like gimple_code_for_mode_function, but for a pattern whose name also
+   contains an attribute of an iterator that distinguishes signed forms from
+   unsigned ones, such as `<sra_op>` or `<sur>`.  SIGNED_VALUE and
+   UNSIGNED_VALUE give the iterator value to use for signed and unsigned type
+   suffixes respectively.
+
+   T is the type that insn-opinit.h uses for the iterator: `rtx_code` for a
+   code iterator and `int` for an int iterator.  */
+template <typename T>
+class gimple_iterator_function : public gimple_insn_based_function
+{
+  insn_code (*m_code_for) (T, machine_mode);
+  T m_signed_value;
+  T m_unsigned_value;
+
+  insn_code code_for (function_expander &e, machine_mode mode) const override
+  {
+    return m_code_for (e.type_suffix (0).unsigned_p ? m_unsigned_value
+						    : m_signed_value,
+		       mode);
+  }
+
+public:
+  constexpr gimple_iterator_function (insn_code (*code_for) (T, machine_mode),
+				      T signed_value, T unsigned_value,
+				      int mode_arg = 0)
+    : gimple_insn_based_function (mode_arg), m_code_for (code_for),
+      m_signed_value (signed_value), m_unsigned_value (unsigned_value)
+  {}
+};
+
+using gimple_rtx_code_function = gimple_iterator_function<rtx_code>;
+using gimple_unspec_based_function = gimple_iterator_function<int>;
 
 /* For intrinsics that map to a single GIMPLE expression with no argument
    preparation necessary.  */
@@ -477,14 +605,6 @@ struct gimple_dup : public gimple_function_base
     return gimple_build_assign (f.lhs, build_vec_dup (ret_type, elem));
   }
 };
-
-// Vector creation
-NEON_FUNCTION (vcreate,		gimple_create,)
-NEON_FUNCTION (vcombine,	gimple_combine,)
-NEON_FUNCTION (vdup_n,		gimple_dup,)
-NEON_FUNCTION (vdupq_n,		gimple_dup,)
-NEON_FUNCTION (vmov_n,		gimple_dup,)
-NEON_FUNCTION (vmovq_n,		gimple_dup,)
 
 struct gimple_dup_lane : public gimple_function_base
 {
@@ -1317,8 +1437,101 @@ struct gimple_reduce_minmax : public gimple_function_base
   }
 };
 
+/* Shift by an immediate with an optional accumulator.  */
+class gimple_shift_imm : public gimple_function_base
+{
+  /* LSHIFT_EXPR or RSHIFT_EXPR.  */
+  tree_code m_code;
+
+  /* PLUS_EXPR for vsra_n and ERROR_MARK for the non-accumulating forms.  */
+  tree_code m_acc_code;
+
+  /* The value to shift is operand 0, unless an accumulator comes first.  */
+  int first_shift_arg () const { return m_acc_code != ERROR_MARK; }
+
+public:
+  constexpr gimple_shift_imm (tree_code code, tree_code acc_code = ERROR_MARK)
+    : m_code (code), m_acc_code (acc_code)
+  {}
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto type = TREE_TYPE (f.lhs);
+    int first = first_shift_arg ();
+    auto val = gimple_call_arg (f.call, first);
+    auto amount = gimple_call_arg (f.call, first + 1);
+
+    auto shifted = m_code == LSHIFT_EXPR
+		     ? fold_build2 (LSHIFT_EXPR, type, val, amount)
+		     : build_shift_right (type, val, amount);
+
+    /* Non-accumulating intrinsic.  */
+    if (m_acc_code == ERROR_MARK)
+      return gimple_build_assign (f.lhs, shifted);
+
+    /* Accumulating intrinsic.  */
+    auto acc = gimple_call_arg (f.call, 0);
+    shifted = f.force_val (shifted);
+
+    /* Accumulate in an unsigned type so that signed overflow wraps as the
+       ACLE requires.  */
+    auto utype = type;
+    if (!TYPE_UNSIGNED (type))
+      {
+	utype = unsigned_type_for (type);
+	acc = f.force_val (build_cast (utype, acc));
+	shifted = f.force_val (build_cast (utype, shifted));
+      }
+
+    return gimple_build_assign (
+      f.lhs, build_cast (type, f.force_val (fold_build2 (m_acc_code, utype, acc,
+							 shifted))));
+  }
+};
+
+/* Shift by a vector amount.  The amount is signed and a negative
+   value shifts right, so this only folds to a GIMPLE shift when the amount is
+   a constant whose magnitude is in range.  */
+class gimple_shift_reg : public gimple_unspec_based_function
+{
+public:
+  using gimple_unspec_based_function::gimple_unspec_based_function;
+
+  gimple *fold (gimple_folder &f) const override
+  {
+    auto val = gimple_call_arg (f.call, 0);
+    auto amount = gimple_call_arg (f.call, 1);
+
+    /* Fold when the shift is a known constant value.  */
+    auto cst = uniform_integer_cst_p (amount);
+    if (!cst)
+      return nullptr;
+
+    auto wcst = wi::to_wide (cst);
+    if (wi::geu_p (wi::abs (wcst), element_precision (val)))
+      return nullptr;
+
+    if (!wi::neg_p (wcst))
+      return gimple_build_assign (f.lhs, LSHIFT_EXPR, val, amount);
+
+    /* A negative amount shifts right by its magnitude.  */
+    auto rhs
+      = build_uniform_cst (TREE_TYPE (amount),
+			   wide_int_to_tree (TREE_TYPE (cst), wi::abs (wcst)));
+    return gimple_build_assign (f.lhs, RSHIFT_EXPR, val, rhs);
+  }
+};
+
 // Reinterpret
 NEON_FUNCTION (vreinterpret, vreinterpretq, gimple_reinterpret,)
+
+// Vector creation
+NEON_FUNCTION (vcreate,		gimple_create,)
+NEON_FUNCTION (vcombine,	gimple_combine,)
+NEON_FUNCTION (vdup_n,		gimple_dup,)
+NEON_FUNCTION (vdupq_n,		gimple_dup,)
+NEON_FUNCTION (vmov_n,		gimple_dup,)
+NEON_FUNCTION (vmovq_n,		gimple_dup,)
 
 // Lane get/set
 NEON_FUNCTION (vget_lane, vgetq_lane,   gimple_get_lane,)
@@ -1409,6 +1622,7 @@ NEON_FUNCTION (vrndm, vrndmq,         gimple_ifn, (IFN_FLOOR))
 NEON_FUNCTION (vrndn, vrndnq, vrndns, gimple_ifn, (IFN_ROUNDEVEN))
 NEON_FUNCTION (vrndp, vrndpq,         gimple_ifn, (IFN_CEIL))
 NEON_FUNCTION (vrndx, vrndxq,         gimple_ifn, (IFN_RINT))
+
 
 // Bitwise operations
 NEON_FUNCTION (vand,  vandq,  gimple_expr,    (BIT_AND_EXPR))

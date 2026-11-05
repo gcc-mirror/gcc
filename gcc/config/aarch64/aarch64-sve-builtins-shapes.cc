@@ -112,6 +112,7 @@ apply_predication (function_instance &instance, tree return_type,
    f[01]   - a floating-point type with the same width as type suffix 0 or 1
    B       - bfloat16_t
    c       - a predicate-as-counter
+   d<elt>  - a double-width version of <elt>
    h<elt>  - a half-sized version of <elt>
    M       - mfloat8_t
    p       - a predicate (represented as TYPE_SUFFIX_b)
@@ -166,6 +167,13 @@ parse_element_type (const function_instance &instance, const char *&format)
       type_suffix_index suffix = parse_element_type (instance, format);
       return find_type_suffix (type_suffixes[suffix].tclass,
 			       type_suffixes[suffix].element_bits / 4);
+    }
+
+  if (ch == 'd')
+    {
+      type_suffix_index suffix = parse_element_type (instance, format);
+      return find_type_suffix (type_suffixes[suffix].tclass,
+			       type_suffixes[suffix].element_bits * 2);
     }
 
   if (ch == 'h')

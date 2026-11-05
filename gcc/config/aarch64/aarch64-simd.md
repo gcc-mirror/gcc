@@ -1661,7 +1661,7 @@
   }
 )
 
-(define_expand "aarch64_<sra_op>rsra_n<mode>"
+(define_expand "@aarch64_<sra_op>rsra_n<mode>"
   [(match_operand:VSDQ_I_DI 0 "register_operand")
    (match_operand:VSDQ_I_DI 1 "register_operand")
    (SHIFTRT:VSDQ_I_DI
@@ -7302,7 +7302,7 @@
 
 ;; vshl
 
-(define_insn "aarch64_<sur>shl<mode><vczle><vczbe>"
+(define_insn "@aarch64_<sur>shl<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
         (unspec:VSDQ_I_DI
 	  [(match_operand:VSDQ_I_DI 1 "register_operand" "w")
@@ -7316,7 +7316,7 @@
 
 ;; vqshl
 
-(define_insn "aarch64_<sur>q<r>shl<mode><vczle><vczbe>"
+(define_insn "@aarch64_<sur>q<r>shl<mode><vczle><vczbe>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
         (unspec:VSDQ_I
 	  [(match_operand:VSDQ_I 1 "register_operand" "w")
@@ -7343,7 +7343,7 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_expand "aarch64_<sur>shll_n<mode>"
+(define_expand "@aarch64_<sur>shll_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand")
 	(unspec:<VWIDE> [(match_operand:VD_BHSI 1 "register_operand")
 			 (match_operand:SI 2
@@ -7375,7 +7375,7 @@
   [(set_attr "type" "neon_shift_imm_long")]
 )
 
-(define_expand "aarch64_<sur>shll2_n<mode>"
+(define_expand "@aarch64_<sur>shll2_n<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand")
 	(unspec:<VWIDE> [(match_operand:VQW 1 "register_operand")
 			 (match_operand:SI 2
@@ -7408,7 +7408,7 @@
   [(set_attr "type" "neon_sat_shift_imm<q>")]
 )
 
-(define_expand "aarch64_<sra_op>rshr_n<mode>"
+(define_expand "@aarch64_<sra_op>rshr_n<mode>"
   [(match_operand:VSDQ_I_DI 0 "register_operand")
    (SHIFTRT:VSDQ_I_DI
      (match_operand:VSDQ_I_DI 1 "register_operand")
@@ -7450,7 +7450,7 @@
 
 ;; vs<lr>i_n
 
-(define_insn "aarch64_<sur>s<lr>i_n<mode>"
+(define_insn "@aarch64_<sur>s<lr>i_n<mode>"
   [(set (match_operand:VSDQ_I_DI 0 "register_operand" "=w")
 	(unspec:VSDQ_I_DI [(match_operand:VSDQ_I_DI 1 "register_operand" "0")
 		       (match_operand:VSDQ_I_DI 2 "register_operand" "w")
@@ -7464,7 +7464,7 @@
 
 ;; vqshl(u)
 
-(define_insn "aarch64_<sur>qshl<u>_n<mode>"
+(define_insn "@aarch64_<sur>qshl<u>_n<mode>"
   [(set (match_operand:VSDQ_I 0 "register_operand" "=w")
 	(unspec:VSDQ_I [(match_operand:VSDQ_I 1 "register_operand" "w")
 		       (match_operand:SI 2
@@ -7478,7 +7478,7 @@
 
 ;; vq(r)shr(u)n_n
 
-(define_insn "aarch64_<shrn_op>shrn_n<mode>"
+(define_insn "@aarch64_<shrn_op>shrn_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand" "=w")
 	(SAT_TRUNC:<VNARROWQ>
 	  (<TRUNC_SHIFT>:SD_HSDI
@@ -7500,7 +7500,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_<shrn_op>shrn_n<mode>"
+(define_expand "@aarch64_<shrn_op>shrn_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(ALL_TRUNC:<VNARROWQ>
 	  (<TRUNC_SHIFT>:VQN
@@ -7543,7 +7543,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_<shrn_op>rshrn_n<mode>"
+(define_expand "@aarch64_<shrn_op>rshrn_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(SAT_TRUNC:<VNARROWQ>
 	  (<TRUNC_SHIFT>:<V2XWIDE>
@@ -7563,7 +7563,7 @@
   }
 )
 
-(define_expand "aarch64_<shrn_op>rshrn_n<mode>"
+(define_expand "@aarch64_<shrn_op>rshrn_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(ALL_TRUNC:<VNARROWQ>
 	  (<TRUNC_SHIFT>:<V2XWIDE>
@@ -7633,7 +7633,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_sqshrun_n<mode>"
+(define_expand "@aarch64_sqshrun_n<mode>"
   [(match_operand:<VNARROWQ> 0 "register_operand")
    (match_operand:SD_HSDI 1 "register_operand")
    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>")]
@@ -7647,7 +7647,7 @@
   }
 )
 
-(define_expand "aarch64_sqshrun_n<mode>"
+(define_expand "@aarch64_sqshrun_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(us_truncate:<VNARROWQ>
 	  (smax:VQN
@@ -7698,7 +7698,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_sqrshrun_n<mode>"
+(define_expand "@aarch64_sqrshrun_n<mode>"
   [(match_operand:<VNARROWQ> 0 "register_operand")
    (match_operand:SD_HSDI 1 "register_operand")
    (match_operand:SI 2 "aarch64_simd_shift_imm_offset_<vn_mode>")]
@@ -7714,7 +7714,7 @@
   }
 )
 
-(define_expand "aarch64_sqrshrun_n<mode>"
+(define_expand "@aarch64_sqrshrun_n<mode>"
   [(set (match_operand:<VNARROWQ> 0 "register_operand")
 	(us_truncate:<VNARROWQ>
 	  (smax:<V2XWIDE>
@@ -7764,7 +7764,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_<shrn_op><sra_op>shrn2_n<mode>"
+(define_expand "@aarch64_<shrn_op><sra_op>shrn2_n<mode>"
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
    (ALL_TRUNC:<VNARROWQ>
@@ -7851,7 +7851,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_<shrn_op>rshrn2_n<mode>"
+(define_expand "@aarch64_<shrn_op>rshrn2_n<mode>"
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
    (ALL_TRUNC:<VNARROWQ> (match_operand:VQN 2 "register_operand"))
@@ -7920,7 +7920,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_sqshrun2_n<mode>"
+(define_expand "@aarch64_sqshrun2_n<mode>"
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
    (match_operand:VQN 2 "register_operand")
@@ -7980,7 +7980,7 @@
   [(set_attr "type" "neon_shift_imm_narrow_q")]
 )
 
-(define_expand "aarch64_sqrshrun2_n<mode>"
+(define_expand "@aarch64_sqrshrun2_n<mode>"
   [(match_operand:<VNARROWQ2> 0 "register_operand")
    (match_operand:<VNARROWQ> 1 "register_operand")
    (match_operand:VQN 2 "register_operand")

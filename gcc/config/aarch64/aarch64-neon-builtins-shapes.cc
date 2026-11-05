@@ -82,6 +82,38 @@ shift (function_checker &c)
   return c.require_immediate_range (PARAM_INDEX, 0, bits - 1);
 }
 
+/* Require that the parameter at PARAM_INDEX is a valid right shift amount (1 to
+   the element width).  */
+template <unsigned int PARAM_INDEX>
+bool
+shift_right (function_checker &c)
+{
+  auto bits = c.type_suffix (0).element_bits;
+  return c.require_immediate_range (PARAM_INDEX, 1, bits);
+}
+
+/* Require that the parameter at PARAM_INDEX is a valid right shift amount for
+   a narrowing shift (whose result elements are half the width of the ones
+   named by the type suffix).  */
+template <unsigned int PARAM_INDEX>
+bool
+shift_right_narrow (function_checker &c)
+{
+  auto bits = c.type_suffix (0).element_bits / 2;
+  return c.require_immediate_range (PARAM_INDEX, 1, bits);
+}
+
+/* Require that the parameter at PARAM_INDEX is a valid left shift amount for
+   a widening shift.  Unlike the other left shifts, these may name the element
+   width itself, which selects the SHLL form.  */
+template <unsigned int PARAM_INDEX>
+bool
+shift_left_long (function_checker &c)
+{
+  auto bits = c.type_suffix (0).element_bits;
+  return c.require_immediate_range (PARAM_INDEX, 0, bits);
+}
+
 /* A checker that always returns true.  */
 bool
 trivial (function_checker &)
