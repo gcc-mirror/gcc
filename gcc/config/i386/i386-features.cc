@@ -430,6 +430,17 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref,
 
       if (DF_REF_REG_DEF_P (chain->ref))
 	{
+	  /* An asm goto with outputs defines them on all outgoing edges,
+	     so a conversion copy can't be emitted after it.  */
+	  if (JUMP_P (DF_REF_INSN (chain->ref)))
+	    {
+	      if (dump_file)
+		fprintf (dump_file,
+			 "  r%d def in jump insn %d, aborting chain\n",
+			 DF_REF_REGNO (chain->ref), uid);
+	      return false;
+	    }
+
 	  if (dump_file)
 	    fprintf (dump_file, "  r%d def in insn %d isn't convertible\n",
 		     DF_REF_REGNO (chain->ref), uid);
