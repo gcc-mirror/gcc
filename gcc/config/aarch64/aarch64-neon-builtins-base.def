@@ -491,6 +491,12 @@ DEF_NEON_FUNCTION (vqrshruns_n,     s_signed,    ("shu0,s0,ss32",      shift_rig
 DEF_NEON_FUNCTION (vqrshrund_n,     d_signed,    ("shu0,s0,ss32",      shift_right_narrow<1>))
 #undef REQUIRED_EXTENSIONS
 
+// Widening shifts by an immediate
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vshll_n,      bhs_integer, ("Qd0,D0,ss32", shift_left_long<1>))
+DEF_NEON_FUNCTION (vshll_high_n, bhs_integer, ("Qd0,Q0,ss32", shift_left_long<1>))
+#undef REQUIRED_EXTENSIONS
+
 // Bitwise operations (FEAT_SHA3)
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SHA3)
 DEF_NEON_FUNCTION (vbcaxq, all_integer, ("Q0,Q0,Q0,Q0"))

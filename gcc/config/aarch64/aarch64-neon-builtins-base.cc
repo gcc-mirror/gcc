@@ -1701,6 +1701,9 @@ NEON_FUNCTION (vqrshrun_n, vqrshrunh_n, vqrshruns_n, vqrshrund_n,
 NEON_FUNCTION (vqshrun_high_n,  gimple_code_for_mode_function, (code_for_aarch64_sqshrun2_n, 1))
 NEON_FUNCTION (vqrshrun_high_n, gimple_code_for_mode_function, (code_for_aarch64_sqrshrun2_n, 1))
 
+// Widening shifts by an immediate
+NEON_FUNCTION (vshll_n,      gimple_unspec_based_function, (code_for_aarch64_shll_n, UNSPEC_SSHLL, UNSPEC_USHLL))
+NEON_FUNCTION (vshll_high_n, gimple_unspec_based_function, (code_for_aarch64_shll2_n, UNSPEC_SSHLL, UNSPEC_USHLL))
 
 // Bitwise operations
 NEON_FUNCTION (vand,  vandq,  gimple_expr,    (BIT_AND_EXPR))

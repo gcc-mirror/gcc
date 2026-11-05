@@ -344,10 +344,6 @@ static enum aarch64_type_qualifiers
 aarch64_types_fcvt_from_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_unsigned, qualifier_immediate };
 #define TYPES_FCVTIMM_SUS (aarch64_types_fcvt_from_unsigned_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate };
-#define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
