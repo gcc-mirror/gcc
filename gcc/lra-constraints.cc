@@ -5318,8 +5318,8 @@ curr_insn_transform (bool check_only_p)
 	  *loc = new_reg;
 	  lra_update_dup (curr_id, i);
 	}
-      else if (goal_alt_matched[i][0] == -1 && goal_alt_offmemok[i]
-	       && reg_plus_const_p (op))
+      else if (goal_alt_matched[i][0] == -1 && goal_alt[i] == NO_REGS
+	       && goal_alt_offmemok[i] && reg_plus_const_p (op))
 	{
 	  /* Materialize the sum probably produced by elimination of a register
 	     and then spill it into memory to satisfy the memory constraint.  */
@@ -5329,19 +5329,17 @@ curr_insn_transform (bool check_only_p)
 			      curr_insn);
 	  rtx mem_pseudo;
 
+	  push_to_sequence (before);
 	  if (get_reload_reg (curr_static_id->operand[i].type, mode, op,
 			      rclass, NULL, false, false, "elimination sum",
 			      &new_reg))
-	    {
-	      push_to_sequence (before);
-	      lra_emit_move (new_reg, op);
-	      mem_pseudo = lra_create_new_reg (mode, NULL_RTX, NO_REGS,
-					       NULL, "elimination sum mem");
-	      emit_insn (emit_spill_move (true, mem_pseudo, new_reg));
-	      before = end_sequence ();
-	      *curr_id->operand_loc[i] = mem_pseudo;
-	      lra_update_dup (curr_id, i);
-	    }
+	    lra_emit_move (new_reg, op);
+	  mem_pseudo = lra_create_new_reg (mode, NULL_RTX, NO_REGS,
+					   NULL, "elimination sum mem");
+	  emit_insn (emit_spill_move (true, mem_pseudo, new_reg));
+	  before = end_sequence ();
+	  *curr_id->operand_loc[i] = mem_pseudo;
+	  lra_update_dup (curr_id, i);
 	}
       else if (goal_alt_matched[i][0] == -1)
 	{
