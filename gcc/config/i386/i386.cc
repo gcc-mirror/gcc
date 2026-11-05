@@ -25472,6 +25472,40 @@ ix86_split_stlf_stall_load ()
     }
 }
 
+/* Recursive DCE run from sched2 doesn't delete dead const calls, so the
+   call of a 64-bit TLS local-dynamic base sequence can be left behind with
+   an unused result after its last @dtpoff user got deleted.  Remove such
+   calls, since print_operand's '%&' needs some remaining local-dynamic TLS
+   reference.  */
+
+static void
+ix86_remove_dead_tls_ld_base (void)
+{
+  rtx_insn *insn, *next;
+
+  for (insn = get_insns (); insn; insn = next)
+    {
+      next = NEXT_INSN (insn);
+
+      if (!CALL_P (insn)
+	  || !RTL_CONST_CALL_P (insn)
+	  || !insn_nothrow_p (insn))
+	continue;
+
+      if (!find_regno_note (insn, REG_UNUSED, AX_REG))
+	continue;
+
+      subrtx_iterator::array_type array;
+      FOR_EACH_SUBRTX (iter, array, PATTERN (insn), NONCONST)
+	if (GET_CODE (*iter) == UNSPEC
+	    && XINT (*iter, 1) == UNSPEC_TLS_LD_BASE)
+	  {
+	    delete_insn (insn);
+	    break;
+	  }
+    }
+}
+
 /* Implement machine specific optimizations.  We implement padding of returns
    for K8 CPUs and pass to avoid 4 jumps in the single 16 byte window.  */
 static void
@@ -25483,6 +25517,10 @@ ix86_reorg (void)
 
   if (TARGET_SEH && current_function_has_exception_handlers ())
     ix86_seh_fixup_eh_fallthru ();
+
+  if (optimize && TARGET_64BIT && TARGET_GNU_TLS
+      && ix86_tls_descriptor_calls_expanded_in_cfun)
+    ix86_remove_dead_tls_ld_base ();
 
   if (optimize && optimize_function_for_speed_p (cfun))
     {
