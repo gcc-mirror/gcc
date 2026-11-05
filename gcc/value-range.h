@@ -462,6 +462,9 @@ public:
   void set_addr_unknown ();
   bool addr_unknown_p () const;
 
+  // If addr is local to a function, clear it.
+  bool clear_function_local_addr ();
+
   // Return expression or NULL_TREE for known or excluded.
   tree addr_known () const;
   tree addr_excluded () const;

@@ -29,4 +29,4 @@ top (int a, int b)
   return flag;
 }
 
-/* { dg-final { scan-ipa-dump "Dropping non ipa invariant points-to" "cp" } } */
+/* { dg-final { scan-ipa-dump "Dropping function-local address" "cp" } } */

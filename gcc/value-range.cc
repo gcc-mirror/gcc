@@ -578,6 +578,21 @@ prange::set_addr (tree expr, bool known_p)
   m_kind = VR_RANGE;
 }
 
+
+// If addr is present and is an address that is local to its function,
+// clear it and return TRUE.  otherwise do nothing and retiurn false.
+
+bool
+prange::clear_function_local_addr ()
+{
+  if (m_addr && !is_gimple_ip_invariant (m_addr))
+    {
+      set_addr_unknown ();
+      return true;
+    }
+  return false;
+}
+
 // Return object/allocation the pointer refers into, otherwise NULL_TREE.
 
 tree

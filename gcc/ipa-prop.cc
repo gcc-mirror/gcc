@@ -2375,7 +2375,7 @@ ipa_get_callee_param_type (struct cgraph_edge *e, int i)
    ipa_vr_hash_table or allocate it in GC memory.  */
 
 static ipa_vr *
-ipa_get_value_range (const vrange &tmp)
+ipa_get_value_range_1 (const vrange &tmp)
 {
   inchash::hash hstate;
   inchash::add_vrange (tmp, hstate);
@@ -2389,11 +2389,11 @@ ipa_get_value_range (const vrange &tmp)
   return vr;
 }
 
-/* Assign to JF a pointer to a range just like TMP but either fetch a
-   copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
+/* Wrapper around ipa_get_value_range_1 which will remove any local pointer
+   information from prange.  */
 
-static void
-ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
+static ipa_vr *
+ipa_get_value_range (const vrange &tmp)
 {
   /* A points-to that names something only invariant within the caller --
      the address of one of its locals, say -- must not travel to the callee.
@@ -2402,24 +2402,27 @@ ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
      the bitmask remain valid.  */
   if (is_a <prange> (tmp))
     {
-      const prange &pr = as_a <prange> (tmp);
-      tree t = pr.addr_known ();
-      if (!t)
-	t = pr.addr_excluded ();
-      if (t && !is_gimple_ip_invariant (t))
+      prange pr = as_a <prange> (tmp);
+      if (pr.clear_function_local_addr ())
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      fprintf (dump_file, "Dropping non ipa invariant points-to from ");
+	      fprintf (dump_file, "Dropping function-local address from ");
 	      tmp.dump (dump_file);
 	      fprintf (dump_file, "\n");
 	    }
-	  prange stripped = pr;
-	  stripped.set_addr_unknown ();
-	  jf->m_vr = ipa_get_value_range (stripped);
-	  return;
 	}
+      return ipa_get_value_range_1 (pr);
     }
+  return ipa_get_value_range_1 (tmp);
+}
+
+/* Assign to JF a pointer to a range just like TMP but either fetch a
+   copy from ipa_vr_hash_table or allocate a new on in GC memory.  */
+
+static void
+ipa_set_jfunc_vr (ipa_jump_func *jf, const vrange &tmp)
+{
   jf->m_vr = ipa_get_value_range (tmp);
 }
 
@@ -6034,25 +6037,6 @@ ipa_prop_write_jump_functions (void)
 static void
 ipa_record_return_value_range_1 (cgraph_node *n, value_range val)
 {
-  // Remove local invariant from return values.
-  if (is_a<prange> (val))
-    {
-      const prange &pr = as_a <prange> (val);
-      tree t = pr.addr_known ();
-      if (!t)
-	t = pr.addr_excluded ();
-      if (t && !is_gimple_ip_invariant (t))
-        {
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Could not record return range of %s:", n->dump_name ());
-	      val.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	      fprintf (dump_file, "Because uses non ipa invariant\n");
-	    }
-	  return;
-        }
-    }
   if (!ipa_return_value_sum)
     {
       if (!ipa_vr_hash_table)
