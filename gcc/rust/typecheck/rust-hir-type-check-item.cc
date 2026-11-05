@@ -220,6 +220,15 @@ TyTy::BaseType *
 TypeCheckItem::ResolveImplBlockSelf (HIR::ImplBlock &impl_block)
 {
   TypeCheckItem resolver;
+
+  // method probing asks for this on every impl it looks at, and redoing
+  // the generics and bounds each time is what runs core out of memory
+  TyTy::BaseType *self = nullptr;
+  if (resolver.context->lookup_type (
+	impl_block.get_type ().get_mappings ().get_hirid (), &self)
+      && self->get_kind () != TyTy::TypeKind::ERROR)
+    return self;
+
   auto lifetime_pin = resolver.context->push_clean_lifetime_resolver (true);
 
   bool failed_flag = false;
