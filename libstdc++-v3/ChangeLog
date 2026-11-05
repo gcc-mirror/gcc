@@ -1,3 +1,20 @@
+2026-11-04  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/112925
+	* include/bits/basic_string.h (basic_string range ctor):
+	Special-case ranges of streambuf iterators.
+	* include/bits/basic_string.tcc (_M_construct): Special-case
+	streambuf iterators. These always consume the whole stream.
+	* testsuite/21_strings/basic_string/cons/char/from_sbufiter.cc:
+	New test, construction from two istreambuf_iterators.
+	* testsuite/21_strings/basic_string/cons/from_range2.cc:
+	New tests, construction from ranges.
+
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/128264

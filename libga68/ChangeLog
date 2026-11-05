@@ -1,3 +1,8 @@
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-10-26  James LeBlanc  <jpl.algol68@gmail.com>
 	    Jose E. Marchesi  <jemarch@gnu.org>
 

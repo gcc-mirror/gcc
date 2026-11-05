@@ -1,3 +1,18 @@
+2026-11-04  Jonathan Yong  <10walls@gmail.com>
+
+	Revert:
+	2026-11-04  Jürgen Pfeifer  <juergen@familiepfeifer.de>
+		    Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* gcc-interface/Makefile.in (gnatlib-shared-win32): Provide
+	import library.
+
+2026-11-04  Jürgen Pfeifer  <juergen@familiepfeifer.de>
+	    Zhongteng Gui  <dragon-archer@outlook.com>
+
+	* gcc-interface/Makefile.in (gnatlib-shared-win32): Provide
+	import library.
+
 2026-10-31  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Expand_Ctrl_Function_Call): Do not return early for

@@ -1,3 +1,190 @@
+2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* hir/tree/rust-hir-pattern-abstract.cc (StructPattern::is_refutable):
+	Handle enum patterns with multiple variants.
+
+2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* hir/tree/rust-hir-pattern-abstract.cc (PathPattern::is_refutable):
+	Resolve the path through name resolution instead of its final
+	segment, and handle associated constants and const generics.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (visit(HIR::ArrayIndexExpr)): Implement type check
+	support for slice types as well.
+	* backend/rust-compile-expr.cc (visit(HIR::ArrayIndexExpr)): Implement intrinsic codegen
+	support for slice indexing.
+
+2026-11-04  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* util/fnv-hash.h (FNV::write): Tweak calculation.
+
+2026-11-04  Sriram Raghunathan  <sriram@hcoop.net>
+
+	* rust-backend.h (function_defer_statement): Remove.
+	* rust-gcc.cc (function_defer_statement): Remove.
+
+2026-11-04  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* parse/rust-parse-impl-macro.hxx
+	(Parser<ManagedTokenSource>::parse_macro_invocation_semi): Added error.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* util/rust-util-path.h: Move UtilPath class to Rust namespace.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-forever-stack.hxx: Emit an error message on ::crate.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-forever-stack.h: Replace vector with UtilPath.
+	* resolve/rust-forever-stack.hxx: Likewise.
+	* resolve/rust-name-resolution-context.h: Likewise.
+	* resolve/rust-name-resolution-context.hxx: Likewise.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-ast.h: Add a new function to convert to util path.
+	* ast/rust-path.h: Likewise.
+	* resolve/rust-early-name-resolver-2.0.cc (Early::resolve_glob_import):
+	Create a UtilPath and use it.
+	* resolve/rust-early-name-resolver-2.0.h: Likewise.
+	* resolve/rust-forever-stack.h: Change ResolutionPath class to add an
+	opening_scope_resolution flag to mark extern prelude paths. Add a
+	getter for that flag.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Use a UtilPath.
+	* resolve/rust-name-resolution-context.h: Change set_path functions
+	to accept a UtilPath instead of a simple vector or segment.
+	* util/rust-util-path.h: New file.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* resolve/rust-forever-stack.h: Only output an opening scope double
+	semicolon when we use it.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* ast/rust-ast-builder.cc (Builder::discriminant_value): Add call to
+	get opening scope resolution value.
+	(Builder::qualified_call): Add opening scope resolution argument.
+	* ast/rust-ast-builder.h: Update function prototype and add a new
+	function to disambiguate opening scope from context.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_call): Fetch opening
+	scope value.
+	* expand/rust-derive-debug.cc (DeriveDebug::stub_debug_fn): Likewise.
+	* expand/rust-derive-default.cc (DeriveDefault::default_call):
+	Likewise.
+	* expand/rust-derive-eq.cc (get_eq_trait_path): Likewise.
+	* expand/rust-derive-hash.cc (DeriveHash::hash_call): Likewise.
+	(DeriveHash::hash_fn): Likewise.
+	* expand/rust-derive-ord.cc (DeriveOrd::cmp_call): Likewise.
+	(DeriveOrd::cmp_fn): Likewise.
+	(DeriveOrd::make_equal): Likewise.
+	(DeriveOrd::recursive_match): Likewise.
+	* expand/rust-expand-format-args.cc (format_arg): Likewise.
+	(expand_format_args): Likewise.
+
+2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* backend/rust-constexpr.cc (eval_call_expression): Only request an
+	insertion in the call table when the call will be cached.
+
+2026-11-04  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* backend/rust-compile-intrinsic.cc: Rework prefetch handlers, add them for
+	prefetch_{read, write}_instruction
+	* backend/rust-intrinsic-handlers.cc (prefetch): New function, to replace...
+	(prefetch_read_data): ...this one...
+	(prefetch_write_data): ...and this one...
+	(prefetch_data): ...and this one!
+	* backend/rust-intrinsic-handlers.h (enum class Prefetch): Rename to...
+	(enum class Mode): ...this.
+	(enum class Cache): New enum.
+	(prefetch_data): Remove.
+	(prefetch_read_data): Likewise.
+	(prefetch_write_data): Likewise.
+	(prefetch): New handler and internal implementation.
+	* util/rust-intrinsic-values.h: Add PREFETCH_{READ, WRITE}_INSTRUCTION.
+	* typecheck/rust-hir-type-check-intrinsic.cc: Add entries for
+	prefetch_{read, write}_instruction
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-intrinsic-values.h (Intrinsics): Add new entries for atomic fence
+	function names.
+	* backend/rust-intrinsic-handlers.h (inner::atomic_fence): New function for compiling
+	atomic fence intrinsics.
+	(atomic_fence): New function to handle atomic_fence and its variants.
+	* backend/rust-intrinsic-handlers.cc (inner:atomic_fence): Implement.
+	(atomic_fence): Implement.
+	* backend/rust-compile-intrinsic.cc (generic_intrinsics): Add entries for the new atomic
+	fence intrinsics.
+	* typecheck/rust-hir-type-check-intrinsic.cc (intrinsic_rules): Likewise, but for type
+	checking.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-intrinsic-values.h (Intrinsics): Add new entries for atomic min/max function
+	names.
+	* backend/rust-intrinsic-handlers.h (inner::atomic_minmax): New function for compiling
+	atomic min/max intrinsics.
+	(atomic_minmax): New function to handle atomic_min/max and their variants.
+	* backend/rust-intrinsic-handlers.cc (inner:atomic_minmax): Implement.
+	(atomic_minmax): Implement.
+	* backend/rust-compile-intrinsic.cc (generic_intrinsics): Add entries for the new atomic
+	min/max intrinsics.
+	* typecheck/rust-hir-type-check-intrinsic.cc (intrinsic_rules): Likewise, but for type
+	checking.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-intrinsic-values.h (Intrinsics): Add new entries for atomic compare-
+	exchange function names.
+	* backend/rust-intrinsic-handlers.h (inner::atomic_compare_exchange): New function
+	for compiling atomic commpare-exchange intrinsics.
+	(atomic_compare_exchange): New function to handle atomic_cxchg and its variants.
+	* backend/rust-intrinsic-handlers.cc (inner::atomic_compare_exchange): Implement.
+	(atomic_compare_exchange): Implement.
+	* backend/rust-compile-intrinsic.cc (generic_intrinsics): Add entries for the new atomic
+	compare-exchange intrinsics.
+	* typecheck/rust-hir-type-check-intrinsic.cc (intrinsic_rules): Likewise, but for type
+	checking.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* util/rust-intrinsic-values.h (Intrinsics): Add new entries for atomic binary op
+	function names.
+	* backend/rust-intrinsic-handlers.h (inner::atomic_binary_op): New function for compiling
+	atomic binary op intrinsics.
+	(atomic_xadd): New function to handle atomic_xadd and its variants.
+	(atomic_xsub): New function to handle atomic_xsub and its variants.
+	(atomic_and): New function to handle atomic_and and its variants.
+	(atomic_nand): New function to handle atomic_nand and its variants.
+	(atomic_or): New function to handle atomic_or and its variants.
+	(atomic_xor): New function to handle atomic_xor and its variants.
+	* backend/rust-intrinsic-handlers.cc (resolve_atomic_builtin): Renamed and repurposed from
+	build_atomic_builtin_name, now directly resolves the tree of the atomic builtin.
+	(inner::atomic_store): Add new assert for return type.
+	(inner::atomic_load): Likewise.
+	(inner::atomic_binary_op): Implement.
+	(atomic_xadd): Implement.
+	(atomic_xsub): Implement.
+	(atomic_and): Implement
+	(atomic_nand): Implement.
+	(atomic_or): Implement.
+	(atomic_xor): Implement.
+	* backend/rust-compile-intrinsic.cc (generic_intrinsics): Add entries for the new atomic
+	binary op intrinsics.
+	* typecheck/rust-hir-type-check-intrinsic.cc (intrinsic_rules): Likewise, but for type
+	checking.
+
+2026-11-04  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* typecheck/rust-hir-type-check-intrinsic.cc: Make it return a usize instead of a unit type.
+
 2026-10-28  Arthur Cohen  <arthur.cohen@opensrcsec.com>
 
 	* util/rust-intrinsic-values.h: New value for pref_align_of.

@@ -1,3 +1,20 @@
+2026-11-04  Sam Price  <thesamprice@gmail.com>
+
+	* config/microblaze/moddi3.S: Name the register-pair halves by
+	endianness.  Fix the divisor negation, the result sign and the
+	zero paths.  Do not normalize an already-normalized dividend.
+	Do not compute the quotient, which is not returned.  Drop the
+	dead comparison, the unreferenced label and the branch over it.
+	Name the working registers and the labels after the reference
+	algorithm, and state the invariant the trial subtraction relies
+	on.
+	Assisted-by: Claude (Anthropic)
+
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-10-24  Matt Turner  <mattst88@gmail.com>
 
 	* config/ia64/unwind-ia64.c (ia64_copy_rbs): Take LEN in bytes,

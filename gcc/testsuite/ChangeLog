@@ -1,3 +1,198 @@
+2026-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* gdc.dg/pr108945.d: Actully test for the absence of the floating
+	point constant, instead of using VEC_COND_EXPR; the latter is now
+	validly emitted.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/ipa/propalign-1.c: Adjust for new output.
+	* gcc.dg/ipa/propalign-2.c: Adjust for new output.
+	* gcc.dg/ipa/propalign-4.c: Adjust for new output.
+	* gcc.dg/ipa/propalign-5.c: Adjust for new output.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/torture/pr39074-2.c: Remove NULL from pt output.
+	* gcc.dg/torture/pr39074.c: Likewise.
+
+2026-11-04  Onalan, T  <tonalan@ebay.com>
+
+	* gcc.target/arm/neon-neg64.c: New test.
+	* gcc.target/arm/neon-neg64-autovec.c: Likewise.
+	Assisted-by: GPT-6.1 Sol
+
+2026-11-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/128004
+	PR rtl-optimization/128007
+	* gcc.dg/pr128004.c: New test case.
+	* gcc.dg/pr128007.c: Likewise.
+
+2026-11-04  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126644
+	* gcc.dg/tree-ssa/pr126644.c: New test.
+
+2026-11-04  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/115547
+	* gcc.dg/tree-ssa/pr115547.c: New test.
+
+2026-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* gcc.dg/vect/bb-slp-clz-ctz-value-at-zero-1.c: Expect vector counts
+	with a select on aarch64.
+
+2026-11-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/pr128409-1.c: Use *-*-linux* target selector.
+
+2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/irrefutable-struct-variant.rs: New test.
+	* rust/compile/refutable-struct.rs: Add regression tests for enum
+	variant patterns in function parameters and let bindings.
+
+2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/refutable-path.rs: Remove dg-ice and add associated
+	const and const generic cases.
+	* rust/compile/irrefutable-path-single-variant.rs: New test.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issues/2846.rs: New test.
+	* rust/compile/issues/3540.rs: New test.
+	* rust/compile/issues/3584.rs: New test.
+	* rust/compile/issues/3608.rs: New test.
+	* rust/compile/issues/3629.rs: New test.
+	* rust/compile/issues/3641.rs: New test.
+	* rust/compile/issues/3644.rs: New test.
+	* rust/compile/issues/3666.rs: New test.
+	* rust/compile/issues/3689.rs: New test.
+	* rust/compile/issues/issue-1178.rs: Renamed.
+	* rust/compile/issues/issue-2757.rs: Renamed.
+	* rust/compile/issues/issue-3868.rs: Renamed.
+	* rust/compile/issues/issue-4152.rs: Renamed.
+	* rust/compile/issues/issue-4153.rs: Renamed
+	* rust/compile/issues/issue-4668.rs: Renamed.
+	* rust/compile/issues/issue-4675.rs: Renamed.
+	* rust/compile/issues/issue-4709.rs: Renamed.
+	* rust/compile/issues/issue-4883.rs: Renamed.
+	* rust/compile/issues/issue-4885.rs: Renamed.
+	* rust/compile/issues/issue-4971.rs: Renamed.
+	* rust/compile/issues/issue-4973.rs: Renamed.
+	* rust/compile/issues/issue_4402_foo.rs: Update mentioned test file name.
+	* rust/compile/issues/1178.rs: New file.
+	* rust/compile/issues/2757.rs: New file.
+	* rust/compile/issues/3868.rs: New file.
+	* rust/compile/issues/4152.rs: New file.
+	* rust/compile/issues/4153.rs: New file.
+	* rust/compile/issues/4668.rs: New file.
+	* rust/compile/issues/4675.rs: New file.
+	* rust/compile/issues/4709.rs: New file.
+	* rust/compile/issues/4883.rs: New file.
+	* rust/compile/issues/4885.rs: New file.
+	* rust/compile/issues/4971.rs: New file.
+	* rust/compile/issues/4973.rs: New file.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/issue-1133.rs: Update index impl for SliceIndex for usize.
+	* rust/execute/torture/issue-1232.rs: Likewise.
+
+2026-11-04  Wesley Lewis  <lewis.wes.23@gmail.com>
+
+	* rust/compile/just_dollar.rs: New test.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* rust/compile/extern_prelude_crate_keyword.rs: New test.
+
+2026-11-04  Pierre-Emmanuel Patry  <pierre.emmanuel.patry@opensrcsec.com>
+
+	* rust/execute/torture/partial-ord-5.rs: Remove double semicolon
+	prefix.
+
+2026-11-04  Utkarsh Bahuguna  <utkarshbahuguna10@gmail.com>
+
+	* rust/compile/issues/issue-3949.rs: New test.
+	* rust/execute/torture/const-fn-recursion.rs: New test.
+
+2026-11-04  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/prefetch_all.rs: New test.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/atomic_load.rs: Add an atomic_fence.
+	* rust/execute/torture/atomic_store.rs: Likewise.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/atomic_minmax.rs: New file.
+	* rust/execute/torture/atomic_minmax.rs: New file.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/atomic_compare_exchange.rs: New file.
+
+2026-11-04  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/atomic_and.rs: New file.
+	* rust/execute/torture/atomic_nand.rs: New file.
+	* rust/execute/torture/atomic_or.rs: New file.
+	* rust/execute/torture/atomic_xadd.rs: New file.
+	* rust/execute/torture/atomic_xor.rs: New file.
+	* rust/execute/torture/atomic_xsub.rs: New file.
+
+2026-11-04  Arthur Cohen  <arthur.cohen@opensrcsec.com>
+
+	* rust/compile/pref_align_of.rs: Likewise.
+
+2026-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128426
+	* gcc.dg/torture/pr128426.c: New testcase.
+
+2026-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128398
+	PR tree-optimization/128237
+	* gcc.dg/torture/pr128398.c: New testcase.
+
+2026-11-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/base/pr112431-63.c: New test.
+	* gcc.target/riscv/rvv/base/pr112431-64.c: New test.
+
+2026-11-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredusum_vs-f32-m8.c: New test.
+
+2026-11-04  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f16-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f16-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f16-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f16-m8.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f32-m1.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f32-m2.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f32-m4.c: New test.
+	* gcc.target/riscv/rvv/autovec/group_overlap/vfwredosum_vs-f32-m8.c: New test.
+
+2026-11-04  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* gcc.target/i386/pr128221-2.c: Include pr128221-1a.c.
+
 2026-11-03  Loeka Rogge  <loeka.rogge@globalfoundries.com>
 
 	* gcc.target/riscv/arcv-sched-mul-mem-rpx100.c: New test.

@@ -1,3 +1,16 @@
+2026-11-04  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (establish_using): A run-time check for a NULL pointer
+	prevents adding a small number to it.
+	(actually_create_the_static_field): Use modified expand_expanded().
+	(parser_symbol_add): Use original_without_capacity().
+	* symbols.cc (expand_picture): Use std::string for retval instead of
+	allocated memory.
+	(expand_expanded): Return char* instead of modifying the caller.
+	* symbols.h (expand_expanded): Changed the declaration.
+	* util.cc (cbl_field_t::encode_numeric): Use modified
+	expand_expanded().
+
 2026-10-28  Robert Dubner  <rdubner@symas.com>
 
 	* Make-lang.in: Enable parallel computing for "make check-cobol"/

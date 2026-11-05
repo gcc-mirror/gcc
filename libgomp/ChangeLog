@@ -1,3 +1,35 @@
+2026-11-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	* icv-device.c (omp_set_teams_thread_limit): Add comment.
+	* libgomp.map (OMP_6.0): Add
+	omp_{s,g}et_device_{num_teams,teams_thread_limit}.
+	* libgomp.texi: Add some more @refs related to new new routines.
+	(Device Information Routines): Document new routines.
+	(6.0 Impl. Status): Mark them as implemented.
+	* omp.h.in: Add prototypes for them.
+	* omp_lib.f90.in: Add iterface for them.
+	* omp_lib.h.in: Likewise.
+	* target.c (gomp_get_offload_icv_item): Add usage comment.
+	(gomp_copy_back_icvs): Return gomp_offload_icvs instead of void.
+	(gomp_copy_icvs_to_device): New.
+	(GOMP_target_ext): Remove gomp_copy_back_icvs.
+	(omp_set_device_num_teams, omp_get_device_num_teams,
+	omp_set_device_teams_thread_limit,
+	omp_get_device_teams_thread_limit): New.
+	* testsuite/libgomp.c-c++-common/icv-5.c: Change from invalid ICV
+	setting on the device to setting it on the host.
+	* testsuite/libgomp.c-c++-common/icv-6.c: Likewise.
+	* testsuite/libgomp.fortran/icv-6.f90: Likewise.
+	* testsuite/libgomp.c-c++-common/omp-device-num-teams-thread-limit-1.c:
+	New test.
+	* testsuite/libgomp.fortran/omp-device-num-teams-thread-limit-1.f90:
+	New test.
+
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-11-03  Matthew Malcomson  <mmalcomson@nvidia.com>
 
 	* configure: Regenerate

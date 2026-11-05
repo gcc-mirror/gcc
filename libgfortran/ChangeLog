@@ -1,3 +1,18 @@
+2026-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR libfortran/103886
+	PR libfortran/114895
+	* acinclude.m4 (LIBGFOR_CHECK_TIME_BITS64): New check for
+	64-bit time_t support.
+	* configure.ac: Invoke LIBGFOR_CHECK_TIME_BITS64.
+	* configure: Regenerate.
+	* config.h.in: Regenerate.
+
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-11-02  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	PR bootstrap/103459

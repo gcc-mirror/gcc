@@ -1,3 +1,179 @@
+2026-11-04  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* dwarf2out.cc (output_call_frame_info): Check for unset cie/cfi
+	vector before iteration.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (get_known_nonzero_bits_1): Handle pointers.
+	* value-range-storage.h (prange_storage::undefined_p): New.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (duplicate_ssa_name_range_info): Do not copy
+	the pt_solution field.
+	(maybe_duplicate_ssa_info_at_copy): Copy both.
+	(duplicate_ssa_name_fn): Copy both.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa.cc (verify_ssa): Verify ranges and pt_solution.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* ipa-prop.cc (ipcp_update_vr): Pointers have global bitmasks
+	now which contain the alignment info.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-dom.cc (maybe_set_nonzero_bits): Don't specialize
+	pointers.
+	* tree-ssanames.cc (set_nonzero_bits): Handle pointers.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-ccp.cc (ccp_finalize): Pointers are handled by
+	set_bitmask.
+	* tree-ssanames.cc (set_bitmask): Handle pointers.
+
+2026-11-04  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-pretty-print.cc (pp_points_to_solution): Do not print
+	null field.
+	* tree-ssa-alias.cc (ptrs_compare_unequal): Use ptr_nonnull_p.
+	(dump_points_to_solution): Don't print null field.
+	(same_addr_size_stores_p): Use ptr_nonnull_p.
+	* tree-ssa-alias.h (pt_solution::null): Remove bit member.
+	* tree-ssa-structalias.cc (find_what_var_points_to): Ignore null.
+	(find_what_p_points_to): Likewise.
+	(pt_solution_reset): Likewise.
+	(pt_solution_ior_into): Likewise.
+	(ipa_escaped_pt): Don't set null field.
+	* tree-ssanames.cc (set_range_info): Do not check pt_solution
+	for the null field.
+	(ptr_nonnull_p): New.
+	(set_ptr_nonnull): Update to Remove 0 from the range.
+	(reset_flow_sensitive_info): No need to clear the null field
+	in pt_solution.
+	(flow_sensitive_info_storage::save): Move to header.
+	(flow_sensitive_info_storage::restore): Move to header.
+	(flow_sensitive_info_storage::save_and_clear): Move to header.
+	(flow_sensitive_info_storage::clear_storage): Move to header.
+	* tree-ssanames.h (ptr_nonnull_p): New prototype.
+	(flow_sensitive_info_storage::save): Simplify and inline.
+	(flow_sensitive_info_storage::restore): Likewise.
+	(flow_sensitive_info_storage::save_and_clear): Likewise.
+	(flow_sensitive_info_storage::clear_storage): Likewise.
+	(flow_sensitive_info_storage::null):  Remove member.
+	* value-query.cc (get_ssa_name_ptr_info_nonnull): Delete.
+	(gimple_range_global): Do not check pt_solution null field.
+	* value-range-storage.cc (prange_storage::set_nonnull): New.
+	* value-range-storage.h (prange_storage::nonnull_p): New.
+	(prange_storage::set_nonnull): New prototype.
+
+2026-11-04  Onalan, T  <tonalan@ebay.com>
+
+	* config/arm/neon.md (negv2di2): New expander.
+
+2026-11-04  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR middle-end/128004
+	PR rtl-optimization/128007
+	* fold-const.cc (const_binop): Don't fold subtractions when
+	the exact result is known to be zero with -frounding-math when
+	we honor signed zeros.  The result is -0.0 with FE_DOWNWARD.
+	* simplify-rtx.cc (simplify_binary_operation_1): Likewise, don't
+	simplify x-x to +0.0 in the RTL optimizers in the same conditions.
+	(simplify_const_binary_operation): Likewise, don't fold RTL
+	subtractions when the exact result is zero in the same conditions.
+
+2026-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* text-art/types.h (styled_string::styled_string): New ctor from
+	std::vector<styled_unichar>
+	* text-art/widget.cc (text_widget::text_widget): Move here from
+	header.  Reimplement to support multiple lines.
+	(text_widget::calc_req_size): Reimplement to support multiple
+	lines.
+	(text_widget::paint_to_canvas): Likewise.
+	(selftest::test_multiline_text_widget): New selftest.
+	(selftest::text_art_widget_cc_tests): Call it.
+	* text-art/widget.h (text_widget::text_widget): Move ctor
+	to widget.cc and reimplement.
+	(text_widget::m_str): Drop field.
+	(text_widget::m_lines): New field.
+	(text_widget::m_max_line_width): New field.
+
+2026-11-04  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/126644
+	* match.pd(`((A << N) >> N) -> N`): New pattern.
+
+2026-11-04  Daniel Barboza  <daniel.barboza@oss.qualcomm.com>
+
+	PR tree-optimization/115547
+	* match.pd(`(X ^ Y) & (X | Y)`): New pattern.
+	(`(X NE Y) & (X | Y)`): New pattern.
+	(`(X NE Y) & (Z | X | Y)`): New pattern.
+	(`(X ^ Y) & (Z | X | Y)`): New pattern.
+
+2026-11-04  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/riscv.cc (synthesize_add): Reorder instructions when we
+	do not find a good synthesis.
+
+2026-11-04  Kyrylo Tkachov  <ktkachov@nvidia.com>
+
+	* tree-vect-patterns.cc (vect_recog_popcount_clz_ctz_ffs_pattern):
+	Select the value at zero of a two-argument .CLZ or .CTZ if it is not
+	the value of the target for the vector mode.
+
+2026-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128426
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Keep
+	PHI defs on abnormal edges.
+
+2026-11-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128398
+	PR tree-optimization/128237
+	* tree-ssa-sccvn.cc (vn_nary_may_trap): Set fp_operation
+	correctly for comparisons and FIX_TRUNC_EXPR.  Also do not
+	trap for VEC_COND_EXPR.
+	* gimple.cc (gimple_could_trap_p_1): Likewise for
+	FIX_TRUNC_EXPR and VEC_COND_EXPR.
+
+2026-11-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	* omp-general.cc (omp_runtime_api_procname): Add
+	omp_{s,g}et_device_{num_teams,teams_thread_limit}.
+
+2026-11-04  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* config/riscv/riscv-protos.h (struct common_vector_cost): Change
+	permute_cost to array.
+	* config/riscv/riscv-vector-costs.cc (costs::adjust_stmt_cost): Look
+	up per-LMUL permute_cost for vec_perm.
+	* config/riscv/riscv.cc (rvv_vls_vector_cost, rvv_vla_vector_cost)
+	(xt_c9501_vls_vector_cost): Update permute_cost.
+	(riscv_builtin_vectorization_cost): Return permute_cost[LMUL_1].
+
+2026-11-04  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/vector.md: Take the Wn3 constraint for the
+	operand 4 of the widening float reduction.
+
+2026-11-04  Jeff Law  <jeffreyalaw@gmail.com>
+
+	PR target/128420
+	* config/riscv/bitmanip.md (andi_add.uw): Turn into define_split.
+
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* configure.ac: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-11-03  Loeka Rogge  <loeka.rogge@globalfoundries.com>
 
 	* config/riscv/arcv-rhx100.md (arcv_rhx100_mpy_insn): Rename to

@@ -1,3 +1,8 @@
+2026-11-04  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	PR bootstrap/103459
+	* gm2-libs/config-host.in: Replace AC_CONFIG_HEADER with AC_CONFIG_HEADERS.
+
 2026-10-26  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/127991
