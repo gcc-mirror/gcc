@@ -30,24 +30,8 @@ AC_ARG_WITH(cross-host,
 AC_ARG_WITH(ld,
 [  --with-ld               arrange to use the specified ld (full pathname)])
 
-if test "${srcdir}" = "."; then
-  if test -n "${with_build_subdir}"; then
-    libgcc_topdir="${srcdir}/../.."
-    with_target_subdir=
-  elif test -z "${with_target_subdir}"; then
-    libgcc_topdir="${srcdir}/.."
-  else
-    if test "${with_target_subdir}" != "."; then
-      libgcc_topdir="${srcdir}/${with_multisrctop}../.."
-    else
-      libgcc_topdir="${srcdir}/${with_multisrctop}.."
-    fi
-  fi
-else
-  libgcc_topdir="${srcdir}/.."
-fi
+libgcc_topdir="${srcdir}/.."
 AC_SUBST(libgcc_topdir)
-AC_CONFIG_AUX_DIR($libgcc_topdir)
 AC_CONFIG_HEADERS([auto-target.h:config.in])
 
 AC_ARG_ENABLE(shared,
