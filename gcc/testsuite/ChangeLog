@@ -1,3 +1,13 @@
+2026-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2026-10-19  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR tree-optimization/127899
+	* gcc.dg/builtin-dynamic-object-size-pr127899-1.c: New test.
+	* gcc.dg/builtin-dynamic-object-size-pr127899-2.c: Likewise.
+	* gcc.dg/builtin-dynamic-object-size-pr127899-3.c: Likewise.
+
 2026-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR tree-optimization/127475
