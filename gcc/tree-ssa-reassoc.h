@@ -26,7 +26,7 @@ struct operand_entry
   unsigned int rank;
   unsigned int id;
   tree op;
-  unsigned int count;
+  HOST_WIDE_INT count;
   gimple *stmt_to_insert;
 };
 

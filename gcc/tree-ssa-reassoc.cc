@@ -6141,8 +6141,10 @@ acceptable_pow_call (gcall *stmt, tree *base, HOST_WIDE_INT *exponent)
 
   /* Expanding negative exponents is generally unproductive, so we don't
      complicate matters with those.  Exponents of zero and one should
-     have been handled by expression folding.  */
+     have been handled by expression folding.  Exponents not fitting
+     the exponent argument of __builtin_powi are not handled either.  */
   if (*exponent < 2
+      || !wi::fits_to_tree_p (*exponent, integer_type_node)
       || TREE_CODE (*base) != SSA_NAME
       || !can_reassociate_op_p (*base))
     return false;
@@ -6526,7 +6528,10 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	{
 	  FOR_EACH_VEC_ELT (repeat_factor_vec, j, rf1)
 	    {
-	      if (rf1->factor == oe->op)
+	      /* If the occurrence count would overflow, record the
+		 factor in a separate element instead.  */
+	      if (rf1->factor == oe->op
+		  && oe->count <= HOST_WIDE_INT_MAX - rf1->count)
 		{
 		  rf1->count += oe->count;
 		  break;
@@ -6580,6 +6585,12 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 
   vec_len = repeat_factor_vec.length ();
 
+  /* The occurrence counts can exceed the range of the exponent argument
+     of __builtin_powi, in which case multiple calls are emitted.  */
+  HOST_WIDE_INT max_power = HOST_WIDE_INT_MAX;
+  if (!use_mults)
+    max_power = tree_to_shwi (TYPE_MAX_VALUE (integer_type_node));
+
   /* Repeatedly look for opportunities to create a builtin_powi call.  */
   while (true)
     {
@@ -6598,7 +6609,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 
       if (j < vec_len)
 	{
-	  power = rf1->count;
+	  power = MIN (rf1->count, max_power);
 
 	  if (power == 1)
 	    {
@@ -6682,7 +6693,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	  if (j >= vec_len)
 	    break;
 
-	  power = rf1->count;
+	  power = MIN (rf1->count, max_power);
 
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
@@ -6791,7 +6802,7 @@ attempt_builtin_powi (gimple *stmt, vec<operand_entry *> *ops)
 	 factor from OPS.  */
       for (i = j; i < vec_len; i++)
 	{
-	  unsigned k = power;
+	  HOST_WIDE_INT k = power;
 	  unsigned n;
 
 	  rf1 = &repeat_factor_vec[i];
