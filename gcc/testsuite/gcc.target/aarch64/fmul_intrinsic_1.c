@@ -17,7 +17,7 @@ test_vmul##q1##_lane##q2##_f##size (float##size##_t * res,		\
   float##size##x##in1_lanes##_t a = vld1##q1##_f##size (res);		\
   float##size##x##in1_lanes##_t b = vld1##q1##_f##size (in1);		\
   float##size##x##in2_lanes##_t c;					\
-  c = vld1##q2##_f##size (in2);						\
+  c = vld1##q2##_f##size (in2 + (in2_lanes <= 1));			\
   a = vmul##q1##_lane##q2##_f##size (b, c, in2_lanes > 1 ? 1 : 0);	\
   vst1##q1##_f##size (res, a);						\
 }
@@ -105,4 +105,4 @@ main (int argc, char **argv)
 /* vmulq_lane_f64.
    vmulq_laneq_f64.  */
 /* { dg-final { scan-assembler-times {fmul	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.d\[[0-9\]+\]} 3 { target aarch64_big_endian } } } */
-/* { dg-final { scan-assembler-times {fmul	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.d\[[0-9]+\]} 1 { target aarch64_little_endian } } } */
+/* { dg-final { scan-assembler-times {fmul	v[0-9]+\.2d, v[0-9]+\.2d, v[0-9]+\.d\[[0-9]+\]} 2 { target aarch64_little_endian } } } */
