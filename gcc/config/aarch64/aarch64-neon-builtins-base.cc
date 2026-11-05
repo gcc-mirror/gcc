@@ -344,6 +344,16 @@ code_for_si_n (int unspec, machine_mode mode)
   return code_for_aarch64_si_n (unspec, unspec, mode);
 }
 
+/* Wrapper for `aarch64_<shrn_op><sra_op>shrn2_n<mode>` as it names two
+   different code iterators.  AARCH64_VALID_SHRN_OP ties the shift to the
+   saturating truncation so derive the former from the latter.  */
+static insn_code
+code_for_shrn2_n (rtx_code code, machine_mode mode)
+{
+  auto shift = code == SS_TRUNCATE ? ASHIFTRT : LSHIFTRT;
+  return code_for_aarch64_shrn2_n (code, shift, mode);
+}
+
 /* For intrinsics whose instruction is selected by a mode through the
    code_for_* helpers that insn-opinit.h generates for `@`-prefixed
    pattterns.  */
@@ -1670,6 +1680,26 @@ NEON_FUNCTION (vqshlu_n, vqshluq_n, vqshlub_n, vqshluh_n, vqshlus_n, vqshlud_n,
 // Shift and insert
 NEON_FUNCTION (vsli_n, vsliq_n, vslid_n, gimple_unspec_based_function, (code_for_si_n, UNSPEC_SSLI, UNSPEC_USLI))
 NEON_FUNCTION (vsri_n, vsriq_n, vsrid_n, gimple_unspec_based_function, (code_for_si_n, UNSPEC_SSRI, UNSPEC_USRI))
+
+// Narrowing shifts by an immediate
+NEON_FUNCTION (vshrn_n,       gimple_rtx_code_function, (code_for_aarch64_shrn_n, TRUNCATE, TRUNCATE))
+NEON_FUNCTION (vqshrn_n, vqshrnh_n, vqshrns_n, vqshrnd_n,
+	       gimple_rtx_code_function, (code_for_aarch64_shrn_n, SS_TRUNCATE, US_TRUNCATE))
+NEON_FUNCTION (vshrn_high_n,  gimple_rtx_code_function, (code_for_shrn2_n, TRUNCATE, TRUNCATE, 1))
+NEON_FUNCTION (vqshrn_high_n, gimple_rtx_code_function, (code_for_shrn2_n, SS_TRUNCATE, US_TRUNCATE, 1))
+
+NEON_FUNCTION (vrshrn_n,       gimple_rtx_code_function, (code_for_aarch64_rshrn_n, TRUNCATE, TRUNCATE))
+NEON_FUNCTION (vqrshrn_n, vqrshrnh_n, vqrshrns_n, vqrshrnd_n,
+	       gimple_rtx_code_function, (code_for_aarch64_rshrn_n, SS_TRUNCATE, US_TRUNCATE))
+NEON_FUNCTION (vrshrn_high_n,  gimple_rtx_code_function, (code_for_aarch64_rshrn2_n, TRUNCATE, TRUNCATE, 1))
+NEON_FUNCTION (vqrshrn_high_n, gimple_rtx_code_function, (code_for_aarch64_rshrn2_n, SS_TRUNCATE, US_TRUNCATE, 1))
+
+NEON_FUNCTION (vqshrun_n, vqshrunh_n, vqshruns_n, vqshrund_n,
+	       gimple_code_for_mode_function, (code_for_aarch64_sqshrun_n))
+NEON_FUNCTION (vqrshrun_n, vqrshrunh_n, vqrshruns_n, vqrshrund_n,
+	       gimple_code_for_mode_function, (code_for_aarch64_sqrshrun_n))
+NEON_FUNCTION (vqshrun_high_n,  gimple_code_for_mode_function, (code_for_aarch64_sqshrun2_n, 1))
+NEON_FUNCTION (vqrshrun_high_n, gimple_code_for_mode_function, (code_for_aarch64_sqrshrun2_n, 1))
 
 
 // Bitwise operations

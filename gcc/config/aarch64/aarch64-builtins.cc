@@ -286,11 +286,6 @@ aarch64_types_ternopu_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_unsigned, qualifier_lane_index };
 #define TYPES_TERNOPU_LANE (aarch64_types_ternopu_lane_qualifiers)
 static enum aarch64_type_qualifiers
-aarch64_types_ternopu_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned,
-      qualifier_unsigned, qualifier_immediate };
-#define TYPES_TERNOPUI (aarch64_types_ternopu_imm_qualifiers)
-static enum aarch64_type_qualifiers
 aarch64_types_ternop_sssu_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_none, qualifier_none, qualifier_none, qualifier_unsigned };
 #define TYPES_TERNOP_SSSU (aarch64_types_ternop_sssu_qualifiers)
@@ -353,20 +348,6 @@ static enum aarch64_type_qualifiers
 aarch64_types_unsigned_shift_qualifiers[SIMD_MAX_BUILTIN_ARGS]
   = { qualifier_unsigned, qualifier_unsigned, qualifier_immediate };
 #define TYPES_USHIFTIMM (aarch64_types_unsigned_shift_qualifiers)
-#define TYPES_USHIFT2IMM (aarch64_types_ternopu_imm_qualifiers)
-static enum aarch64_type_qualifiers
-aarch64_types_shift2_to_unsigned_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_none, qualifier_immediate };
-#define TYPES_SHIFT2IMM_UUSS (aarch64_types_shift2_to_unsigned_qualifiers)
-
-static enum aarch64_type_qualifiers
-aarch64_types_ternop_s_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_none, qualifier_none, qualifier_none, qualifier_immediate};
-#define TYPES_SETREG (aarch64_types_ternop_s_imm_qualifiers)
-#define TYPES_SHIFTINSERT (aarch64_types_ternop_s_imm_qualifiers)
-#define TYPES_SHIFTACC (aarch64_types_ternop_s_imm_qualifiers)
-#define TYPES_SHIFT2IMM (aarch64_types_ternop_s_imm_qualifiers)
-
 
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]
