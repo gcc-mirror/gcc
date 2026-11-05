@@ -6152,43 +6152,22 @@ gcn_restore_exec (rtx_insn *insn, rtx_insn *last_exec_def, int64_t curr_exec,
   return exec_value;
 }
 
-/* Implement TARGET_MACHINE_DEPENDENT_REORG.
-
-   Ensure that pipeline dependencies and lane masking are set correctly.  */
+/* This pass ensures that the EXEC register is set correctly, according
+   to the "exec" attribute.  However, care must be taken so that the
+   value that reaches explicit uses of the EXEC register remains the
+   same as before.  */
 
 static void
-gcn_md_reorg (void)
+gcn_md_reorg_simd_execreg ()
 {
   basic_block bb;
   rtx exec_reg = gen_rtx_REG (DImode, EXEC_REG);
+
   regset_head live;
-
   INIT_REG_SET (&live);
-
-  compute_bb_for_insn ();
-
-  if (!optimize)
-    {
-      split_all_insns ();
-      if (dump_file && (dump_flags & TDF_DETAILS))
-	{
-	  fprintf (dump_file, "After split:\n");
-	  print_rtl_with_bb (dump_file, get_insns (), dump_flags);
-	}
-
-      /* Update data-flow information for split instructions.  */
-      df_insn_rescan_all ();
-    }
-
   df_live_add_problem ();
   df_live_set_all_dirty ();
   df_analyze ();
-
-  /* This pass ensures that the EXEC register is set correctly, according
-     to the "exec" attribute.  However, care must be taken so that the
-     value that reaches explicit uses of the EXEC register remains the
-     same as before.
-   */
 
   FOR_EACH_BB_FN (bb, cfun)
     {
@@ -6379,14 +6358,18 @@ gcn_md_reorg (void)
     }
 
   CLEAR_REG_SET (&live);
+}
 
-  /* "Manually Inserted Wait States (NOPs)."
+/* "Manually Inserted Wait States (NOPs)."
 
-     GCN hardware detects most kinds of register dependencies, but there
-     are some exceptions documented in the ISA manual.  This pass
-     detects the missed cases, and inserts the documented number of NOPs
-     required for correct execution.  */
+   GCN hardware detects most kinds of register dependencies, but there
+   are some exceptions documented in the ISA manual.  This pass
+   detects the missed cases, and inserts the documented number of NOPs
+   required for correct execution.  */
 
+static void
+gcn_md_reorg_manually_inserted_wait_states ()
+{
   /* RDNA4 (not yet implemented) differs from RNDA 2/3/3.5 and requires some
      s_nop, see 5.7 and esp. 5.7.2. in its ISA manual.
      The assert here is a reminder to add those.  */
@@ -6709,6 +6692,32 @@ gcn_md_reorg (void)
 
       last_insn = insn;
     }
+}
+
+/* Implement TARGET_MACHINE_DEPENDENT_REORG.
+
+   Ensure that pipeline dependencies and lane masking are set correctly.  */
+
+static void
+gcn_md_reorg (void)
+{
+  compute_bb_for_insn ();
+
+  if (!optimize)
+    {
+      split_all_insns ();
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "After split:\n");
+	  print_rtl_with_bb (dump_file, get_insns (), dump_flags);
+	}
+
+      /* Update data-flow information for split instructions.  */
+      df_insn_rescan_all ();
+    }
+
+  gcn_md_reorg_simd_execreg ();
+  gcn_md_reorg_manually_inserted_wait_states ();
 }
 
 /* }}}  */
