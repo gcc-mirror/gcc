@@ -3654,9 +3654,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	}
       bool new_var_p = false;
       niters = vect_build_loop_niters (loop_vinfo, &new_var_p);
-      /* It's guaranteed that vector loop bound before vectorization is at
-	 least VF, so set range information for newly generated var.  */
-      if (new_var_p)
+      /* Without partial vectors, it's guaranteed that vector loop bound
+	 before vectorization is at least VF, so set range information for
+	 newly generated var.  */
+      if (new_var_p
+	  && !LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
 	{
 	  int_range<1> vr (type,
 			   wi::to_wide (build_int_cst (type, lowest_vf)),
