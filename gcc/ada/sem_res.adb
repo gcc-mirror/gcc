@@ -10294,9 +10294,9 @@ package body Sem_Res is
       then
          T := Etype (R);
 
-      --  If the left operand is of a universal numeric type and the right
+      --  If the left operand is of type universal_integer and the right
       --  operand is not, we do not resolve the operands to the tested type
-      --  but to the universal type instead. If not conforming to the letter,
+      --  but to universal_integer instead. If not conforming to the letter,
       --  it's conforming to the spirit of the specification of membership
       --  tests, which are typically used to guard a specific operation and
       --  ought not to fail a check in doing so. Without this, in the case of
@@ -10315,16 +10315,17 @@ package body Sem_Res is
       --  does not cover all the values of all the supported integer types,
       --  for example the large values of Long_Long_Long_Unsigned.
 
+      --  This is not done for universal_real, whose conversion to the tested
+      --  type may round the value (RM 4.9(38)). The above issue cannot occur
+      --  for real types in practice: floating-point base types are wide, and
+      --  universal_real values are almost always static.
+
       elsif not Is_Overloaded (L)
-        and then Is_Universal_Numeric_Type (Etype (L))
-        and then (Is_Overloaded (R)
-                   or else
-                     (not Is_Universal_Numeric_Type (Etype (R))
-                       and then not Is_Generic_Type (Etype (R))
-                       and then
-                         (not Is_Integer_Type (Etype (R))
-                           or else
-                          RM_Size (Etype (R)) < RM_Size (Universal_Integer))))
+        and then Etype (L) = Universal_Integer
+        and then not Is_Overloaded (R)
+        and then Is_Integer_Type (Etype (R))
+        and then not Is_Generic_Type (Etype (R))
+        and then RM_Size (Etype (R)) < RM_Size (Universal_Integer)
       then
          T := Etype (L);
 
