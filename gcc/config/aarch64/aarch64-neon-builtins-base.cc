@@ -330,6 +330,13 @@ code_for_qshl (int unspec, machine_mode mode)
   return code_for_aarch64_qshl (unspec, unspec, mode);
 }
 
+/* Likewise for `aarch64_<sur>qshl<u>_n<mode>`.  */
+static insn_code
+code_for_qshl_n (int unspec, machine_mode mode)
+{
+  return code_for_aarch64_qshl_n (unspec, unspec, mode);
+}
+
 /* For intrinsics whose instruction is selected by a mode through the
    code_for_* helpers that insn-opinit.h generates for `@`-prefixed
    pattterns.  */
@@ -1646,6 +1653,12 @@ NEON_FUNCTION (vqrshl, vqrshlq, vqrshlb, vqrshlh, vqrshls, vqrshld,
 // Rounding shifts by an immediate
 NEON_FUNCTION (vrshr_n, vrshrq_n, vrshrd_n, gimple_rtx_code_function, (code_for_aarch64_rshr_n, ASHIFTRT, LSHIFTRT))
 NEON_FUNCTION (vrsra_n, vrsraq_n, vrsrad_n, gimple_rtx_code_function, (code_for_aarch64_rsra_n, ASHIFTRT, LSHIFTRT))
+
+// Saturating shifts by an immediate
+NEON_FUNCTION (vqshl_n,  vqshlq_n,  vqshlb_n,  vqshlh_n,  vqshls_n,  vqshld_n,
+	       gimple_unspec_based_function, (code_for_qshl_n, UNSPEC_SQSHL, UNSPEC_UQSHL))
+NEON_FUNCTION (vqshlu_n, vqshluq_n, vqshlub_n, vqshluh_n, vqshlus_n, vqshlud_n,
+	       gimple_unspec_based_function, (code_for_qshl_n, UNSPEC_SQSHLU, UNSPEC_SQSHLU))
 
 
 // Bitwise operations

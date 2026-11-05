@@ -439,10 +439,6 @@
   BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssli_n, 0, DEFAULT)
   BUILTIN_VALLP (SHIFTINSERTP, ssli_n, 0, DEFAULT)
   BUILTIN_VSDQ_I_DI (USHIFTACC, usli_n, 0, DEFAULT)
-  /* Implemented by aarch64_<sur>qshl<u>_n<mode>.  */
-  BUILTIN_VSDQ_I (SHIFTIMM_USS, sqshlu_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I (SHIFTIMM, sqshl_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I (USHIFTIMM, uqshl_n, 0, DEFAULT)
 
   /* Implemented by aarch64_xtn2<mode>.  */
   BUILTIN_VQN (BINOP, xtn2, 0, DEFAULT)
