@@ -1659,7 +1659,11 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
   tree vect_type = TREE_TYPE (vec0);
   tree mask_type = TREE_TYPE (mask);
   tree vect_elt_type = TREE_TYPE (vect_type);
-  tree mask_elt_type = TREE_TYPE (mask_type);
+  /* Perform the index computations in an unsigned type, the mask
+     elements are interpreted modulo the number of elements and with
+     a signed type masking with ELEMENTS - 1 can be a no-op when
+     ELEMENTS - 1 is not representable, leaving negative indices.  */
+  tree mask_elt_type = unsigned_type_for (TREE_TYPE (mask_type));
   unsigned HOST_WIDE_INT elements, in_elements;
   vec<constructor_elt, va_gc> *v;
   tree constr, t, si, i_val;
@@ -1708,6 +1712,7 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
     {
       si = size_int (i);
       i_val = vector_element (gsi, mask, si, &masktmp);
+      i_val = fold_convert (mask_elt_type, i_val);
 
       if (TREE_CODE (i_val) == INTEGER_CST)
         {
