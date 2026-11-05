@@ -192,6 +192,24 @@
 				  operands[2],
 				  CONST0_RTX (GET_MODE (operands[1]))); })
 
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (any_lt:X (match_operand:X 3 "register_operand")
+			 (match_operand:X 4 "arith_operand"))
+	       (match_operator:X 1 "equality_operator"
+		[(match_operand:X 2 "register_operand") (const_int 0)])))
+   (clobber (match_operand:X 5 "register_operand"))]
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 5) (any_lt:X (match_dup 3) (match_dup 4)))
+   (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
+				       [(match_dup 2) (const_int 0)])
+				      (const_int 0)
+				      (match_dup 5)))]
+  { operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == EQ ? NE : EQ,
+				  GET_MODE (operands[1]),
+				  operands[2],
+				  CONST0_RTX (GET_MODE (operands[1]))); })
+
 ;; Finally LE/LEU which requires sle_operand.
 (define_split
   [(set (match_operand:X 0 "register_operand")
@@ -199,6 +217,24 @@
 		[(match_operand:X 2 "register_operand") (const_int 0)])
 	       (any_le:X (match_operand:X 3 "register_operand")
 			 (match_operand:X 4 "sle_operand"))))
+   (clobber (match_operand:X 5 "register_operand"))]
+  "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
+  [(set (match_dup 5) (any_le:X (match_dup 3) (match_dup 4)))
+   (set (match_dup 0) (if_then_else:X (match_op_dup:X 1
+				       [(match_dup 2) (const_int 0)])
+				      (const_int 0)
+				      (match_dup 5)))]
+  { operands[1] = gen_rtx_fmt_ee (GET_CODE (operands[1]) == EQ ? NE : EQ,
+				  GET_MODE (operands[1]),
+				  operands[2],
+				  CONST0_RTX (GET_MODE (operands[1]))); })
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+	(and:X (any_le:X (match_operand:X 3 "register_operand")
+			 (match_operand:X 4 "sle_operand"))
+	       (match_operator:X 1 "equality_operator"
+		[(match_operand:X 2 "register_operand") (const_int 0)])))
    (clobber (match_operand:X 5 "register_operand"))]
   "TARGET_ZICOND || TARGET_XTHEADCONDMOV"
   [(set (match_dup 5) (any_le:X (match_dup 3) (match_dup 4)))
