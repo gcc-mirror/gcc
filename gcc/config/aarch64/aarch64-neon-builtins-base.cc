@@ -323,6 +323,13 @@ struct gimple_exact_insn : public gimple_insn_based_function
   }
 };
 
+/* Wrapper for `aarch64_<sur>q<r>shl<mode>` as it names its iterator twice.  */
+static insn_code
+code_for_qshl (int unspec, machine_mode mode)
+{
+  return code_for_aarch64_qshl (unspec, unspec, mode);
+}
+
 /* For intrinsics whose instruction is selected by a mode through the
    code_for_* helpers that insn-opinit.h generates for `@`-prefixed
    pattterns.  */
@@ -1627,6 +1634,14 @@ NEON_FUNCTION (vrndx, vrndxq,         gimple_ifn, (IFN_RINT))
 NEON_FUNCTION (vshl_n, vshlq_n, vshld_n, gimple_shift_imm, (LSHIFT_EXPR))
 NEON_FUNCTION (vshr_n, vshrq_n, vshrd_n, gimple_shift_imm, (RSHIFT_EXPR))
 NEON_FUNCTION (vsra_n, vsraq_n, vsrad_n, gimple_shift_imm, (RSHIFT_EXPR, PLUS_EXPR))
+
+// Shifts by a vector amount
+NEON_FUNCTION (vshl,  vshlq,  vshld,  gimple_shift_reg,             (code_for_aarch64_shl, UNSPEC_SSHL, UNSPEC_USHL))
+NEON_FUNCTION (vrshl, vrshlq, vrshld, gimple_unspec_based_function, (code_for_aarch64_shl, UNSPEC_SRSHL, UNSPEC_URSHL))
+NEON_FUNCTION (vqshl,  vqshlq,  vqshlb,  vqshlh,  vqshls,  vqshld,
+	       gimple_unspec_based_function, (code_for_qshl, UNSPEC_SQSHL, UNSPEC_UQSHL))
+NEON_FUNCTION (vqrshl, vqrshlq, vqrshlb, vqrshlh, vqrshls, vqrshld,
+	       gimple_unspec_based_function, (code_for_qshl, UNSPEC_SQRSHL, UNSPEC_UQRSHL))
 
 
 // Bitwise operations

@@ -58,11 +58,6 @@
   BUILTIN_VDQ_I (BINOP, addp, 0, DEFAULT)
   BUILTIN_VDQ_I (BINOPU, addp, 0, DEFAULT)
 
-  /* Implemented by aarch64_<sur>q<r>shl<mode>.  */
-  BUILTIN_VSDQ_I (BINOP, sqshl, 0, DEFAULT)
-  BUILTIN_VSDQ_I (BINOP_UUS, uqshl, 0, DEFAULT)
-  BUILTIN_VSDQ_I (BINOP, sqrshl, 0, DEFAULT)
-  BUILTIN_VSDQ_I (BINOP_UUS, uqrshl, 0, DEFAULT)
   /* Implemented by aarch64_<su_optab><optab><mode>.  */
   BUILTIN_VSDQ_I (BINOP, ssadd, 3, DEFAULT)
   BUILTIN_VSDQ_I (BINOPU, usadd, 3, DEFAULT)
@@ -380,12 +375,6 @@
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqdmulh_laneq, 0, DEFAULT)
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_lane, 0, DEFAULT)
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_laneq, 0, DEFAULT)
-
-  /* Implemented by aarch64_<sur>shl<mode>.  */
-  BUILTIN_VSDQ_I_DI (BINOP, sshl, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (BINOP, srshl, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (BINOP_UUS, urshl, 0, DEFAULT)
 
   /* Implemented by <sur><dotprod>_prod<dot_mode>.  */
   BUILTIN_VB (TERNOP, sdot_prod, 0, DEFAULT)
