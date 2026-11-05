@@ -1189,38 +1189,28 @@ oecount_cmp (const void *p1, const void *p2)
     return c1->id > c2->id ? 1 : -1;
 }
 
+static bool acceptable_pow_call (gcall *, tree *, HOST_WIDE_INT *);
+
 /* Return TRUE iff STMT represents a builtin call that raises OP
-   to some constant integer exponent, as required by decrement_power.  */
+   to some constant integer exponent, as required by decrement_power.
+   This has to agree with the calls linearize_expr_tree expands into
+   repeated operands, otherwise zero_one_operation can strip OP from
+   a call that was not accounted for, for example by decrementing
+   a negative exponent over and over.  */
 
 static bool
 stmt_is_power_of_op (gimple *stmt, tree op)
 {
+  tree base;
+  HOST_WIDE_INT exponent;
+
   if (!is_gimple_call (stmt))
     return false;
 
-  switch (gimple_call_combined_fn (stmt))
-    {
-    CASE_CFN_POW:
-      {
-	tree arg1 = gimple_call_arg (stmt, 1);
-	if (TREE_CODE (arg1) != REAL_CST)
-	  return false;
-	REAL_VALUE_TYPE c = TREE_REAL_CST (arg1);
-	REAL_VALUE_TYPE cint;
-	real_from_integer (&cint, VOIDmode, real_to_integer (&c), SIGNED);
-	if (!real_identical (&c, &cint))
-	  return false;
-	return operand_equal_p (gimple_call_arg (stmt, 0), op, 0);
-      }
-
-    CASE_CFN_POWI:
-      if (!tree_fits_shwi_p (gimple_call_arg (stmt, 1)))
-	return false;
-      return operand_equal_p (gimple_call_arg (stmt, 0), op, 0);
-
-    default:
-      return false;
-    }
+  return (reassoc_insert_powi_p
+	  && flag_unsafe_math_optimizations
+	  && acceptable_pow_call (as_a <gcall *> (stmt), &base, &exponent)
+	  && operand_equal_p (base, op, 0));
 }
 
 /* Given STMT which is a __builtin_pow* call, decrement its exponent
