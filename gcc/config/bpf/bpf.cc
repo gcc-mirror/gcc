@@ -1485,7 +1485,7 @@ bpf_expand_cpymem (rtx *operands, bool is_move)
 			       true, fwd_label, profile_probability::even ());
 
       /* Emit the "backwards" unrolled loop.  */
-      emit_move_loop (src, dst, mode, (size_bytes - 1), -inc, iters, remainder);
+      emit_move_loop (src, dst, mode, (size_bytes - inc), -inc, iters, remainder);
       emit_jump_insn (gen_jump (done_label));
       emit_barrier ();
 
