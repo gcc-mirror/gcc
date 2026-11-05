@@ -367,16 +367,6 @@ aarch64_types_ternop_s_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
 #define TYPES_SHIFTACC (aarch64_types_ternop_s_imm_qualifiers)
 #define TYPES_SHIFT2IMM (aarch64_types_ternop_s_imm_qualifiers)
 
-static enum aarch64_type_qualifiers
-aarch64_types_ternop_p_imm_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_poly, qualifier_poly, qualifier_poly, qualifier_immediate};
-#define TYPES_SHIFTINSERTP (aarch64_types_ternop_p_imm_qualifiers)
-
-static enum aarch64_type_qualifiers
-aarch64_types_unsigned_shiftacc_qualifiers[SIMD_MAX_BUILTIN_ARGS]
-  = { qualifier_unsigned, qualifier_unsigned, qualifier_unsigned,
-      qualifier_immediate };
-#define TYPES_USHIFTACC (aarch64_types_unsigned_shiftacc_qualifiers)
 
 static enum aarch64_type_qualifiers
 aarch64_types_load1_qualifiers[SIMD_MAX_BUILTIN_ARGS]

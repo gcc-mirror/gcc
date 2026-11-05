@@ -432,13 +432,6 @@
   BUILTIN_VQN (USHIFT2IMM, uqushrn2_n, 0, DEFAULT)
   BUILTIN_VQN (SHIFT2IMM, sqrshrn2_n, 0, DEFAULT)
   BUILTIN_VQN (USHIFT2IMM, uqrshrn2_n, 0, DEFAULT)
-  /* Implemented by aarch64_<sur>s<lr>i_n<mode>.  */
-  BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssri_n, 0, DEFAULT)
-  BUILTIN_VALLP (SHIFTINSERTP, ssri_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, usri_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (SHIFTINSERT, ssli_n, 0, DEFAULT)
-  BUILTIN_VALLP (SHIFTINSERTP, ssli_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, usli_n, 0, DEFAULT)
 
   /* Implemented by aarch64_xtn2<mode>.  */
   BUILTIN_VQN (BINOP, xtn2, 0, DEFAULT)
