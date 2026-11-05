@@ -396,12 +396,8 @@
 ;;  p  General address operand without GPR32.
 ;;  m  Memory operand without GPR32.
 ;;  M  Memory operand, with APX NDD check.
-;;  R  Integer register.  GENERAL_REGS.
 ;;  O  Offsettable memory operand, with APX NDD check.
 ;;  V  Non-offsetable memory operand without GPR32.
-
-;; Constraint that force to use EGPR, can only adopt to register class.
-(define_register_constraint  "jR" "GENERAL_REGS")
 
 (define_register_constraint  "jr"
  "TARGET_APX_EGPR ? GENERAL_GPR16 : GENERAL_REGS")

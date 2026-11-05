@@ -69,7 +69,6 @@
 (define_subst_attr "mask_prefix2" "mask" "maybe_vex" "evex")
 (define_subst_attr "mask_prefix3" "mask" "orig,vex" "evex,evex")
 (define_subst_attr "bcst_mask_prefix3" "mask" "orig,maybe_evex" "evex,evex")
-(define_subst_attr "mask_prefix4" "mask" "orig,orig,vex" "evex,evex,evex")
 (define_subst_attr "bcst_mask_prefix4" "mask" "orig,orig,maybe_evex" "evex,evex,evex")
 (define_subst_attr "mask_expand_op3" "mask" "3" "5")
 (define_subst_attr "mask3_dest_false_dep_for_glc_cond" "mask" "1" "operands[3] == CONST0_RTX(<MODE>mode)")
@@ -162,7 +161,6 @@
 	  (const_int 1)))])
 (define_subst_attr "sdc_maskz_name" "sdc" "" "_maskz_1")
 (define_subst_attr "sdc_mask_op4" "sdc" "" "%{%5%}%N4")
-(define_subst_attr "sdc_mask_op5" "sdc" "" "%{%6%}%N5")
 (define_subst_attr "sdc_mask_mode512bit_condition" "sdc" "1" "(<MODE_SIZE> == 64 || TARGET_AVX512VL)")
 
 (define_subst "sdc"
@@ -182,7 +180,6 @@
 (define_subst_attr "round_mask_operand2" "mask" "%R2" "%R4")
 (define_subst_attr "round_mask_operand3" "mask" "%R3" "%R5")
 (define_subst_attr "round_maskc_operand3" "maskc" "%R3" "%R5")
-(define_subst_attr "round_mask_operand4" "mask" "%R4" "%R6")
 (define_subst_attr "round_sd_mask_operand4" "sd" "%R4" "%R6")
 (define_subst_attr "round_sdc_mask_operand4" "sdc" "%R4" "%R6")
 (define_subst_attr "round_op2" "round" "" "%R2")
@@ -193,7 +190,6 @@
 (define_subst_attr "round_mask_op2" "round" "" "<round_mask_operand2>")
 (define_subst_attr "round_mask_op3" "round" "" "<round_mask_operand3>")
 (define_subst_attr "round_maskc_op3" "round" "" "<round_maskc_operand3>")
-(define_subst_attr "round_mask_op4" "round" "" "<round_mask_operand4>")
 (define_subst_attr "round_sd_mask_op4" "round" "" "<round_sd_mask_operand4>")
 (define_subst_attr "round_sdc_mask_op4" "round" "" "<round_sdc_mask_operand4>")
 (define_subst_attr "round_constraint" "round" "vm" "v")
@@ -212,8 +208,6 @@
 							      || <MODE>mode == V32HFmode)")
 
 (define_subst_attr "round_modev4sf_condition" "round" "1" "(<MODE>mode == V4SFmode)")
-(define_subst_attr "round_codefor" "round" "*" "")
-(define_subst_attr "round_opnum" "round" "5" "6")
 
 (define_subst "round"
   [(set (match_operand:SUBST_A 0)
@@ -232,9 +226,7 @@
 (define_subst_attr "round_saeonly_mask_scalar_merge_operand4" "mask_scalar_merge" "%r4" "%r5")
 (define_subst_attr "round_saeonly_maskz_scalar_operand5" "maskz_scalar" "%r5" "%r7")
 (define_subst_attr "round_saeonly_sd_mask_operand5" "sd" "%r5" "%r7")
-(define_subst_attr "round_saeonly_sdc_mask_operand5" "sdc" "%r5" "%r7")
 (define_subst_attr "round_saeonly_op2" "round_saeonly" "" "%r2")
-(define_subst_attr "round_saeonly_op3" "round_saeonly" "" "%r3")
 (define_subst_attr "round_saeonly_op4" "round_saeonly" "" "%r4")
 (define_subst_attr "round_saeonly_op5" "round_saeonly" "" "%r5")
 (define_subst_attr "round_saeonly_op6" "round_saeonly" "" "%r6")

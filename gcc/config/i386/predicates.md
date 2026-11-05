@@ -466,14 +466,6 @@
     }
 })
 
-;; Return true if size of VALUE can be stored in a sign
-;; extended immediate field.
-(define_predicate "x86_64_immediate_size_operand"
-  (and (match_code "symbol_ref")
-       (ior (not (match_test "TARGET_64BIT"))
-	    (match_test "ix86_cmodel == CM_SMALL")
-	    (match_test "ix86_cmodel == CM_KERNEL"))))
-
 ;; Return true if OP is general operand representable on x86_64.
 (define_predicate "x86_64_general_operand"
   (if_then_else (match_test "TARGET_64BIT")
@@ -888,14 +880,6 @@
   return i == 1 || i == 2 || i == 3;
 })
 
-;; Match 2, 3, 6, or 7
-(define_predicate "const2367_operand"
-  (match_code "const_int")
-{
-  HOST_WIDE_INT i = INTVAL (op);
-  return i == 2 || i == 3 || i == 6 || i == 7;
-})
-
 ;; Match 1, 2, 4, or 8
 (define_predicate "const1248_operand"
   (match_code "const_int")
@@ -938,16 +922,6 @@
 (define_predicate "const_0_to_3_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 3)")))
-
-;; Match 0 to 4.
-(define_predicate "const_0_to_4_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 4)")))
-
-;; Match 0 to 5.
-(define_predicate "const_0_to_5_operand"
-  (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 5)")))
 
 ;; Match 0 to 7.
 (define_predicate "const_0_to_7_operand"
