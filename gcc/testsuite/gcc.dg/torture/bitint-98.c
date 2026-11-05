@@ -1,5 +1,5 @@
 /* C2Y N3747 - Integer Sets, v5 */
-/* { dg-do compile { target bitint } } */
+/* { dg-do run { target bitint } } */
 /* { dg-options "-std=c2y -pedantic-errors" } */
 /* { dg-skip-if "" { ! run_expensive_tests }  { "*" } { "-O0" "-O2" } } */
 /* { dg-skip-if "" { ! run_expensive_tests } { "-flto" } { "" } } */
@@ -22,7 +22,6 @@ baz (_BitInt(256) x, _BitInt(256) y, _BitInt(1) *z)
 {
   return __builtin_mul_overflow (x, y, z);
 }
-
 #endif
 
 int

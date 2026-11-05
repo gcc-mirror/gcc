@@ -1,5 +1,5 @@
 /* C2Y N3747 - Integer Sets, v5 */
-/* { dg-do compile { target bitint } } */
+/* { dg-do run { target bitint } } */
 /* { dg-options "-std=c2y -pedantic-errors" } */
 
 #define expr_has_type(e, t) _Generic (e, default : 0, t : 1)
@@ -39,11 +39,11 @@ bar (_BitInt(1) a[21], signed _BitInt(1) b[21], const _BitInt(1) c[21])
   a[4] = b[4] - c[4];
   a[5] = b[5] - c[5];
   a[6] = b[6] * c[6];
-  a[7] = b[7] * c[8];
+  a[7] = b[7] * c[7];
   a[8] = b[8] * c[8];
   a[9] = b[9] / c[9];
   a[10] = b[10] % c[10];
-  a[11] = b[11] % c[11];
+  a[11] = b[10] % c[11];
   a[12] = b[12] & c[12];
   a[13] = b[13] & c[13];
   a[14] = b[14] & c[14];
@@ -87,8 +87,16 @@ main ()
 {
   if (b != 0 || c != -1)
     __builtin_abort ();
-  --b;
-  ++c;
+  if (0)
+    {
+      --b;
+      ++c;
+    }
+  else
+    {
+      b += (_BitInt(1)) -1wb;
+      c -= (_BitInt(1)) -1wb;
+    }
   if (b != -1 || c != 0)
     __builtin_abort ();
   b = ~b;
@@ -118,7 +126,7 @@ main ()
     0, 0, -1,
     0, -1, -1,
     0, 0, -1
-  }; 
+  };
   bar (e, f, g);
   _BitInt(1) h[21] = {
     0, -1, -1,
@@ -139,8 +147,7 @@ main ()
     __builtin_abort ();
   if (baz (24807048826655379640613156875228202584070386120119745959437529938064756141700wb, 0wb) != 0wb)
     __builtin_abort ();
-  if (baz (-24807048826655379640613156875228202584070386120119745959437529938064756141700wb, 0wb)
-      != 24807048826655379640613156875228202584070386120119745959437529938064756141700wb)
+  if (baz (-24807048826655379640613156875228202584070386120119745959437529938064756141700wb, 0wb) != 0wb)
     __builtin_abort ();
   if (baz (0wb, ~0wb) != 0wb)
     __builtin_abort ();

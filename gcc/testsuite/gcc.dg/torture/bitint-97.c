@@ -1,5 +1,5 @@
 /* C2Y N3747 - Integer Sets, v5 */
-/* { dg-do compile { target bitint } } */
+/* { dg-do run { target bitint } } */
 /* { dg-options "-std=c2y -pedantic-errors -fwrapv" } */
 
 [[gnu::noipa]] void
@@ -24,7 +24,7 @@ main ()
   };
   signed _BitInt(1) g[8] = {
     -1, -1, -1, -1, -1, 0, 0, -1,
-  }; 
+  };
   bar (e, f, g);
   _BitInt(1) h[8] = {
     0, -1, -1, -1, 0, 0, -1, -1
