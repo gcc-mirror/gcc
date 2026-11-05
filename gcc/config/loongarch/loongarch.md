@@ -2376,8 +2376,8 @@
 })
 
 (define_insn_and_split "*movdi_64bit"
-  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,w,*f,*f,*r,*m")
-	(match_operand:DI 1 "move_operand" "r,Yd,w,rJ,*r*J,*m,*f,*f"))]
+  [(set (match_operand:DI 0 "nonimmediate_operand" "=r,r,r,w,*f,f,*r,*m")
+	(match_operand:DI 1 "move_operand" "r,Yd,w,rJ,*r*J,m,*f,*f"))]
   "TARGET_64BIT
    && (register_operand (operands[0], DImode)
        || reg_or_0_operand (operands[1], DImode))"
