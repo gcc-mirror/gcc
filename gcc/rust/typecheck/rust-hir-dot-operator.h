@@ -135,6 +135,8 @@ private:
   // search
   const HIR::PathIdentSegment &segment_name;
   const HIR::Trait *specified_trait;
+  // the predicate items point into these
+  std::vector<TyTy::TypeBoundPredicate> predicate_bounds;
   std::vector<MethodResolver::predicate_candidate> predicate_items;
 
   // mutable fields

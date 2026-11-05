@@ -821,12 +821,8 @@ private:
 class TypeBoundPredicateItem
 {
 public:
-  TypeBoundPredicateItem (const TypeBoundPredicate parent,
+  TypeBoundPredicateItem (const TypeBoundPredicate *parent,
 			  const Resolver::TraitItemReference *trait_item_ref);
-
-  TypeBoundPredicateItem (const TypeBoundPredicateItem &other);
-
-  TypeBoundPredicateItem &operator= (const TypeBoundPredicateItem &other);
 
   static TypeBoundPredicateItem error ();
 
@@ -843,7 +839,9 @@ public:
   location_t get_locus () const;
 
 private:
-  TypeBoundPredicate parent;
+  // not owned, copying a predicate clones all of its types and nothing
+  // ever frees them. Null for the error item.
+  const TypeBoundPredicate *parent;
   const Resolver::TraitItemReference *trait_item_ref;
 };
 

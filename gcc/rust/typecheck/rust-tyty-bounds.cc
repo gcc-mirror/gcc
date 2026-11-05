@@ -625,7 +625,7 @@ TypeBoundPredicate::lookup_associated_item (const std::string &search) const
   const Resolver::TraitItemReference *trait_item_ref = nullptr;
   if (trait_ref->lookup_trait_item (search, &trait_item_ref,
 				    false /*lookup supers*/))
-    return TypeBoundPredicateItem (*this, trait_item_ref);
+    return TypeBoundPredicateItem (this, trait_item_ref);
 
   for (auto &super_trait : super_traits)
     {
@@ -638,41 +638,27 @@ TypeBoundPredicate::lookup_associated_item (const std::string &search) const
 }
 
 TypeBoundPredicateItem::TypeBoundPredicateItem (
-  const TypeBoundPredicate parent,
+  const TypeBoundPredicate *parent,
   const Resolver::TraitItemReference *trait_item_ref)
   : parent (parent), trait_item_ref (trait_item_ref)
 {}
 
-TypeBoundPredicateItem::TypeBoundPredicateItem (
-  const TypeBoundPredicateItem &other)
-  : parent (other.parent), trait_item_ref (other.trait_item_ref)
-{}
-
-TypeBoundPredicateItem &
-TypeBoundPredicateItem::operator= (const TypeBoundPredicateItem &other)
-{
-  parent = other.parent;
-  trait_item_ref = other.trait_item_ref;
-
-  return *this;
-}
-
 TypeBoundPredicateItem
 TypeBoundPredicateItem::error ()
 {
-  return TypeBoundPredicateItem (TypeBoundPredicate::error (), nullptr);
+  return TypeBoundPredicateItem (nullptr, nullptr);
 }
 
 bool
 TypeBoundPredicateItem::is_error () const
 {
-  return parent.is_error () || trait_item_ref == nullptr;
+  return parent == nullptr || parent->is_error () || trait_item_ref == nullptr;
 }
 
 const TypeBoundPredicate *
 TypeBoundPredicateItem::get_parent () const
 {
-  return &parent;
+  return parent;
 }
 
 tl::optional<TypeBoundPredicateItem>
@@ -688,11 +674,11 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
   auto ctx = Resolver::TypeCheckContext::get ();
 
   TyTy::BaseType *trait_item_tyty = get_raw_item ()->get_tyty ();
-  if (parent.get_substitution_arguments ().is_empty ())
+  if (parent->get_substitution_arguments ().is_empty ())
     return trait_item_tyty;
 
   // set up the self mapping
-  SubstitutionArgumentMappings gargs = parent.get_substitution_arguments ();
+  SubstitutionArgumentMappings gargs = parent->get_substitution_arguments ();
   rust_assert (!gargs.is_empty ());
 
   // The associated-type projection we are rebasing is stored in trait
@@ -707,7 +693,7 @@ TypeBoundPredicateItem::get_tyty_for_receiver (const TyTy::BaseType *receiver)
   // Building adjusted_mappings from those renamed mappings would make
   // name-based lookup (get_argument_for_symbol) miss the trait's Self/X
   // symbols inside the projection.
-  const auto &trait_substs = parent.get ()->get_trait_substs ();
+  const auto &trait_substs = parent->get ()->get_trait_substs ();
   rust_assert (gargs.get_mappings ().size () <= trait_substs.size ());
 
   std::vector<SubstitutionArg> adjusted_mappings;
@@ -851,7 +837,7 @@ TypeBoundPredicate::get_associated_type_items ()
 	= trait_item.get_trait_item_type ()
 	  == Resolver::TraitItemReference::TraitItemType::TYPE;
       if (is_associated_type)
-	items.emplace_back (*this, &trait_item);
+	items.emplace_back (this, &trait_item);
     }
   return items;
 }

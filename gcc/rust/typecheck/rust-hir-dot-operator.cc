@@ -106,8 +106,8 @@ MethodResolver::try_hook (const TyTy::BaseType &r)
 {
   rust_debug ("MethodResolver::try_hook get_predicate_items: [%s]",
 	      r.debug_str ().c_str ());
-  auto specified_bounds = context->predicates_for_type (&r);
-  predicate_items = get_predicate_items (segment_name, r, specified_bounds);
+  predicate_bounds = context->predicates_for_type (&r);
+  predicate_items = get_predicate_items (segment_name, r, predicate_bounds);
 
   if (predicate_items.size () > 0)
     return;
@@ -117,16 +117,16 @@ MethodResolver::try_hook (const TyTy::BaseType &r)
       const auto &ref = static_cast<const TyTy::ReferenceType &> (r);
       const auto &element = ref.get_var_element_type ();
       const auto &element_ty = *element.get_tyty ();
-      auto specified_bounds = context->predicates_for_type (&element_ty);
+      predicate_bounds = context->predicates_for_type (&element_ty);
       predicate_items
-	= get_predicate_items (segment_name, element_ty, specified_bounds);
+	= get_predicate_items (segment_name, element_ty, predicate_bounds);
     }
   else if (auto inner
 	   = TyTy::try_get_box_inner_type (const_cast<TyTy::BaseType *> (&r)))
     {
-      auto specified_bounds = context->predicates_for_type (*inner);
+      predicate_bounds = context->predicates_for_type (*inner);
       predicate_items
-	= get_predicate_items (segment_name, **inner, specified_bounds);
+	= get_predicate_items (segment_name, **inner, predicate_bounds);
     }
 }
 
