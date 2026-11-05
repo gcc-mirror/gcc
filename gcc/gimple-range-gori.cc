@@ -1105,11 +1105,16 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
 				 op1_def_p ? op1_range : op2_range,
 				 other_op, relation_trio::lhs_op1 (k)))
 	return false;
+      // Note: K arrives as an op1/op2 relation, and because of
+      // the definition chain requirement here, it is also an LHS relation on the
+      // defining statement, which is how it is passed to the range operators below.
       if (op1_def_p)
 	{
 	  change |= op2_range.intersect (new_result);
-	  // Recalculate op2.
-	  if (op_handler.fold_range (new_result, type, op2_range, other_op))
+	  // Recalculate the LHS passing the lhs-op1 relation so that
+	  // operator_plus::fold_range can tighten the no-overflow range.
+	  if (op_handler.fold_range (new_result, type, op2_range, other_op,
+				     relation_trio::lhs_op1 (k)))
 	    {
 	      change |= op1_range.intersect (new_result);
 	    }
@@ -1117,8 +1122,9 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
       else
 	{
 	  change |= op1_range.intersect (new_result);
-	  // Recalculate op1.
-	  if (op_handler.fold_range (new_result, type, op1_range, other_op))
+	  // Recalculate the LHS passing the lhs-op1 relation.
+	  if (op_handler.fold_range (new_result, type, op1_range, other_op,
+				     relation_trio::lhs_op1 (k)))
 	    {
 	      change |= op2_range.intersect (new_result);
 	    }
@@ -1137,11 +1143,15 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
 				 op1_def_p ? op1_range : op2_range,
 				 other_op, relation_trio::lhs_op2 (k)))
 	return false;
+      // Note: K arrives as an op1/op2 relation, and because of
+      // the definition chain requirement here, it is also an LHS relation on the
+      // defining statement, which is how it is passed to the range operators below.
       if (op1_def_p)
 	{
 	  change |= op2_range.intersect (new_result);
-	  // Recalculate op1.
-	  if (op_handler.fold_range (new_result, type, other_op, op2_range))
+	  // Recalculate the LHS passing the lhs-op2 relation.
+	  if (op_handler.fold_range (new_result, type, other_op, op2_range,
+				     relation_trio::lhs_op2 (k)))
 	    {
 	      change |= op1_range.intersect (new_result);
 	    }
@@ -1149,8 +1159,9 @@ gori_compute::refine_using_relation (tree op1, vrange &op1_range,
       else
 	{
 	  change |= op1_range.intersect (new_result);
-	  // Recalculate op2.
-	  if (op_handler.fold_range (new_result, type, other_op, op1_range))
+	  // Recalculate the LHS passing the lhs-op2 relation.
+	  if (op_handler.fold_range (new_result, type, other_op, op1_range,
+				     relation_trio::lhs_op2 (k)))
 	    {
 	      change |= op2_range.intersect (new_result);
 	    }

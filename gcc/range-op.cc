@@ -1716,6 +1716,58 @@ operator_plus::update_bitmask (irange &r, const irange &lh,
   update_known_bitmask (r, PLUS_EXPR, lh, rh);
 }
 
+// For unsigned wrapping addition lhs = op1 + op2, if the relation
+// lhs >= op1 (or lhs > op1) holds and op2 has a positive lower bound,
+// the addition could not have wrapped and therefore lhs >= op2_lb >= 1.
+// Tighten the computed range accordingly.  The symmetric case (lhs >= op2
+// with op1_lb > 0) is handled for completeness.
+//
+// Note: this override is only applicable during GORI recomputations and
+// refinements, where the LHS is an already-known value being intersected
+// against.  Under normal fold_range use the LHS is being freshly computed,
+// and an LHS/operand relation would be circular.
+
+bool
+operator_plus::fold_range (irange &r, tree type,
+			   const irange &lh, const irange &rh,
+			   relation_trio rel) const
+{
+  if (!range_operator::fold_range (r, type, lh, rh, rel))
+    return false;
+
+  if (r.undefined_p ()
+      || !TYPE_UNSIGNED (type)
+      || !TYPE_OVERFLOW_WRAPS (type)
+      || (rel.lhs_op1 () == VREL_VARYING && rel.lhs_op2 () == VREL_VARYING))
+    return true;
+
+  const unsigned prec = TYPE_PRECISION (type);
+  const wide_int zero = wi::zero (prec);
+  const wide_int max = irange_val_max (type);
+
+  // lhs >= op1 with op2 > 0 => no unsigned wrap => lhs >= op2_lb.
+  relation_kind lhs_op1 = rel.lhs_op1 ();
+  if ((lhs_op1 == VREL_GE || lhs_op1 == VREL_GT)
+      && !rh.undefined_p ()
+      && wi::gt_p (rh.lower_bound (), zero, UNSIGNED))
+    {
+      int_range<1> lb (type, rh.lower_bound (), max);
+      r.intersect (lb);
+    }
+
+  // lhs >= op2 with op1 > 0 => no unsigned wrap => lhs >= op1_lb.
+  relation_kind lhs_op2 = rel.lhs_op2 ();
+  if ((lhs_op2 == VREL_GE || lhs_op2 == VREL_GT)
+      && !lh.undefined_p ()
+      && wi::gt_p (lh.lower_bound (), zero, UNSIGNED))
+    {
+      int_range<1> lb (type, lh.lower_bound (), max);
+      r.intersect (lb);
+    }
+
+  return true;
+}
+
 // Check to see if the range of OP2 indicates anything about the relation
 // between LHS and OP1.
 

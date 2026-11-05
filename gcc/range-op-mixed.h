@@ -573,6 +573,10 @@ class operator_plus : public range_operator
 public:
   using range_operator::op1_range;
   using range_operator::op2_range;
+  using range_operator::fold_range;
+  bool fold_range (irange &r, tree type,
+		   const irange &lh, const irange &rh,
+		   relation_trio = TRIO_VARYING) const final override;
   using range_operator::lhs_op1_relation;
   using range_operator::lhs_op2_relation;
   using range_operator::update_bitmask;
