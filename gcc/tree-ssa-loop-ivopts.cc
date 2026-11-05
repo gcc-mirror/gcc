@@ -7622,7 +7622,7 @@ rewrite_use_nonlinear_expr (struct ivopts_data *data,
       comp = force_gimple_operand (comp, &seq, true, NULL);
       gimple_seq_add_seq (&stmt_list, seq);
       if (POINTER_TYPE_P (TREE_TYPE (tgt)))
-	duplicate_ssa_name_ptr_info (comp, tgt);
+	duplicate_ssa_name_pt_solution (comp, tgt);
     }
 
   gsi_insert_seq_before (&bsi, stmt_list, GSI_SAME_STMT);

@@ -960,7 +960,7 @@ copy_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
    which case DEST is left alone.  */
 
 void
-duplicate_ssa_name_ptr_info (tree dest, const pt_solution* pt)
+duplicate_ssa_name_pt_solution (tree dest, const pt_solution* pt)
 {
   gcc_assert (POINTER_TYPE_P (TREE_TYPE (dest)));
   gcc_assert (!ssa_name_pt_solution (dest));
@@ -977,13 +977,13 @@ duplicate_ssa_name_ptr_info (tree dest, const pt_solution* pt)
    which case DEST is left alone.  */
 
 void
-duplicate_ssa_name_ptr_info (tree dest, tree src)
+duplicate_ssa_name_pt_solution (tree dest, tree src)
 {
   if (!src)
      return;
 
   if (const pt_solution *pt = ssa_name_pt_solution (src))
-    duplicate_ssa_name_ptr_info (dest, pt);
+    duplicate_ssa_name_pt_solution (dest, pt);
 }
 
 /* Copy any global range information from SRC to NAME.  */
@@ -1020,7 +1020,7 @@ maybe_duplicate_ssa_info_at_copy (tree dest, tree src)
   if (SSA_NAME_RANGE_INFO (dest) && !SSA_NAME_RANGE_INFO (src))
     {
       duplicate_ssa_name_range_info (src, dest);
-      duplicate_ssa_name_ptr_info (src, dest);
+      duplicate_ssa_name_pt_solution (src, dest);
     }
 }
 
@@ -1036,7 +1036,7 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
   if (SSA_NAME_RANGE_INFO (name))
     {
       duplicate_ssa_name_range_info (new_name, name);
-      duplicate_ssa_name_ptr_info (new_name, name);
+      duplicate_ssa_name_pt_solution (new_name, name);
     }
 
   return new_name;

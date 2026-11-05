@@ -86,8 +86,8 @@ extern bool ptr_nonnull_p (tree);
 
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
-extern void duplicate_ssa_name_ptr_info (tree dest, const pt_solution *);
-extern void duplicate_ssa_name_ptr_info (tree dest, tree src);
+extern void duplicate_ssa_name_pt_solution (tree dest, const pt_solution *);
+extern void duplicate_ssa_name_pt_solution (tree dest, tree src);
 extern void duplicate_ssa_name_range_info (tree dest, tree src);
 extern void maybe_duplicate_ssa_info_at_copy (tree dest, tree src);
 extern void reset_flow_sensitive_info (tree);

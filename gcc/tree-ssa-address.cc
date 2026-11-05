@@ -1033,8 +1033,8 @@ copy_ref_info (tree new_ref, tree old_ref)
 	  && TREE_CODE (TREE_OPERAND (base, 0)) == SSA_NAME
 	  && ssa_name_pt_solution (TREE_OPERAND (base, 0)))
 	{
-	  duplicate_ssa_name_ptr_info (new_ptr_base,
-				       TREE_OPERAND (base, 0));
+	  duplicate_ssa_name_pt_solution (new_ptr_base,
+					  TREE_OPERAND (base, 0));
 	  reset_flow_sensitive_info (new_ptr_base);
 	}
       else if (VAR_P (base)

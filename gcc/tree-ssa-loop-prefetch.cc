@@ -1210,7 +1210,7 @@ issue_prefetch_ref (struct mem_ref *ref, unsigned unroll_factor, unsigned ahead)
       if (addr_base != addr
 	  && TREE_CODE (addr_base) == SSA_NAME
 	  && TREE_CODE (addr) == SSA_NAME)
-	duplicate_ssa_name_ptr_info (addr, addr_base);
+	duplicate_ssa_name_pt_solution (addr, addr_base);
 
       /* Create the prefetch instruction.  */
       prefetch = gimple_build_call (builtin_decl_explicit (BUILT_IN_PREFETCH),

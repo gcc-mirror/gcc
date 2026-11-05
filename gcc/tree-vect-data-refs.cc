@@ -5547,10 +5547,10 @@ vect_get_new_ssa_name (tree type, enum vect_var_kind var_kind, const char *name)
 /* Duplicate points-to info on NAME from DR_INFO.  */
 
 static void
-vect_duplicate_ssa_name_ptr_info (tree name, dr_vec_info *dr_info)
+vect_duplicate_ssa_name_pt_solution (tree name, dr_vec_info *dr_info)
 {
   if (DR_PTR_INFO (dr_info->dr))
-    duplicate_ssa_name_ptr_info (name, DR_PTR_INFO (dr_info->dr));
+    duplicate_ssa_name_pt_solution (name, DR_PTR_INFO (dr_info->dr));
   else if (!ssa_name_pt_solution (name))
     {
       tree base = get_base_address (dr_info->dr->ref);
@@ -5684,7 +5684,7 @@ vect_create_addr_base_for_vector_ref (vec_info *vinfo, stmt_vec_info stmt_info,
       && SSA_NAME_VAR (addr_base) == dest)
     {
       gcc_assert (!ssa_name_pt_solution (addr_base));
-      vect_duplicate_ssa_name_ptr_info (addr_base, dr_info);
+      vect_duplicate_ssa_name_pt_solution (addr_base, dr_info);
     }
 
   if (dump_enabled_p ())
@@ -5930,8 +5930,8 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
       incr = gsi_stmt (incr_gsi);
 
       /* Copy the points-to information if it exists. */
-      vect_duplicate_ssa_name_ptr_info (indx_before_incr, dr_info);
-      vect_duplicate_ssa_name_ptr_info (indx_after_incr, dr_info);
+      vect_duplicate_ssa_name_pt_solution (indx_before_incr, dr_info);
+      vect_duplicate_ssa_name_pt_solution (indx_after_incr, dr_info);
       if (ptr_incr)
 	*ptr_incr = incr;
 
@@ -5956,8 +5956,8 @@ vect_create_data_ref_ptr (vec_info *vinfo, stmt_vec_info stmt_info,
       incr = gsi_stmt (incr_gsi);
 
       /* Copy the points-to information if it exists. */
-      vect_duplicate_ssa_name_ptr_info (indx_before_incr, dr_info);
-      vect_duplicate_ssa_name_ptr_info (indx_after_incr, dr_info);
+      vect_duplicate_ssa_name_pt_solution (indx_before_incr, dr_info);
+      vect_duplicate_ssa_name_pt_solution (indx_after_incr, dr_info);
       if (ptr_incr)
 	*ptr_incr = incr;
 
@@ -6018,7 +6018,7 @@ bump_vector_ptr (vec_info *vinfo,
     }
 
   /* Copy the points-to information if it exists. */
-  duplicate_ssa_name_ptr_info (new_dataref_ptr, DR_PTR_INFO (dr));
+  duplicate_ssa_name_pt_solution (new_dataref_ptr, DR_PTR_INFO (dr));
 
   return new_dataref_ptr;
 }
