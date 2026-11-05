@@ -508,12 +508,12 @@ profile_probability::sqrt () const
     max_range = 0;
   if (m_val == max_probability)
     min_range = max_probability;
-  while (min_range != max_range)
+  while (min_range < max_range)
     {
       uint32_t val = (min_range + max_range) / 2;
       uint32_t val2 = RDIV ((uint64_t)val * val, max_probability);
       if (val2 == m_val)
-	min_range = max_range = m_val;
+	min_range = max_range = val;
       else if (val2 > m_val)
 	max_range = val - 1;
       else if (val2 < m_val)
