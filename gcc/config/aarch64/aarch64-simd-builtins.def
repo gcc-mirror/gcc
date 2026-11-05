@@ -381,7 +381,6 @@
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_lane, 0, DEFAULT)
   BUILTIN_VSDQ_HSI (TERNOP_LANE, sqrdmulh_laneq, 0, DEFAULT)
 
-  BUILTIN_VSDQ_I_DI (BINOP, ashl, 3, DEFAULT)
   /* Implemented by aarch64_<sur>shl<mode>.  */
   BUILTIN_VSDQ_I_DI (BINOP, sshl, 0, DEFAULT)
   BUILTIN_VSDQ_I_DI (BINOP_UUS, ushl, 0, DEFAULT)
@@ -420,17 +419,9 @@
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0, FP)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0, FP)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0, FP)
-
-  BUILTIN_VDQ_I (SHIFTIMM, ashr, 3, DEFAULT)
-  VAR1 (SHIFTIMM, ashr_simd, 0, DEFAULT, di)
-  BUILTIN_VDQ_I (USHIFTIMM, lshr, 3, DEFAULT)
-  VAR1 (USHIFTIMM, lshr_simd, 0, DEFAULT, di)
   /* Implemented by aarch64_<sur>shr_n<mode>.  */
   BUILTIN_VSDQ_I_DI (SHIFTIMM, srshr_n, 0, DEFAULT)
   BUILTIN_VSDQ_I_DI (USHIFTIMM, urshr_n, 0, DEFAULT)
-  /* Implemented by aarch64_<sur>sra_n<mode>.  */
-  BUILTIN_VSDQ_I_DI (SHIFTACC, ssra_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, usra_n, 0, DEFAULT)
   BUILTIN_VSDQ_I_DI (SHIFTACC, srsra_n, 0, DEFAULT)
   BUILTIN_VSDQ_I_DI (USHIFTACC, ursra_n, 0, DEFAULT)
   /* Implemented by aarch64_<sur>shll_n<mode>.  */

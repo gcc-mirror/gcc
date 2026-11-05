@@ -9,7 +9,7 @@
 	   : "w"(V1)						\
 	   : /* No clobbers */);
 
-/* { dg-final { scan-assembler-times "\\tadd\\tx\[0-9\]+" 2 } } */
+/* { dg-final { scan-assembler-times "\\tadd\\tx\[0-9\]+" 4 } } */
 
 uint64_t
 test_vaddd_u64 (uint64_t a, uint64_t b)
@@ -873,15 +873,14 @@ test_vshrd_n_u64 (uint64_t a)
   return vshrd_n_u64 (a, 3);
 }
 
-/* { dg-final { scan-assembler-times "\\tssra\\td\[0-9\]+" 1 } } */
+/* vsrad_n folds to a shifted add, which avoids moving the operands into FP
+   registers for the ssra.  */
 
 int64_t
 test_vsrad_n_s64 (int64_t a, int64_t b)
 {
   return vsrad_n_s64 (a, b, 2);
 }
-
-/* { dg-final { scan-assembler-times "\\tusra\\td\[0-9\]+" 1 } } */
 
 uint64_t
 test_vsrad_n_u64 (uint64_t a, uint64_t b)

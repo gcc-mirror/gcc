@@ -1623,6 +1623,11 @@ NEON_FUNCTION (vrndn, vrndnq, vrndns, gimple_ifn, (IFN_ROUNDEVEN))
 NEON_FUNCTION (vrndp, vrndpq,         gimple_ifn, (IFN_CEIL))
 NEON_FUNCTION (vrndx, vrndxq,         gimple_ifn, (IFN_RINT))
 
+// Shifts by an immediate
+NEON_FUNCTION (vshl_n, vshlq_n, vshld_n, gimple_shift_imm, (LSHIFT_EXPR))
+NEON_FUNCTION (vshr_n, vshrq_n, vshrd_n, gimple_shift_imm, (RSHIFT_EXPR))
+NEON_FUNCTION (vsra_n, vsraq_n, vsrad_n, gimple_shift_imm, (RSHIFT_EXPR, PLUS_EXPR))
+
 
 // Bitwise operations
 NEON_FUNCTION (vand,  vandq,  gimple_expr,    (BIT_AND_EXPR))

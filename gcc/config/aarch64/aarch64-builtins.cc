@@ -5268,12 +5268,6 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 	  break;
 	}
 
-      BUILTIN_VSDQ_I_DI (BINOP, ashl, 3, DEFAULT)
-	if (TREE_CODE (args[1]) == INTEGER_CST
-	    && wi::ltu_p (wi::to_wide (args[1]), element_precision (args[0])))
-	  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-					  LSHIFT_EXPR, args[0], args[1]);
-	break;
       /* lower saturating add/sub neon builtins to gimple.  */
       BUILTIN_VSDQ_I (BINOP, ssadd, 3, DEFAULT)
       BUILTIN_VSDQ_I (BINOPU, usadd, 3, DEFAULT)
@@ -5318,15 +5312,6 @@ aarch64_general_gimple_fold_builtin (unsigned int fcode, gcall *stmt,
 						LSHIFT_EXPR, args[0], args[1]);
 	    }
 	}
-	break;
-      BUILTIN_VDQ_I (SHIFTIMM, ashr, 3, DEFAULT)
-      VAR1 (SHIFTIMM, ashr_simd, 0, DEFAULT, di)
-      BUILTIN_VDQ_I (USHIFTIMM, lshr, 3, DEFAULT)
-      VAR1 (USHIFTIMM, lshr_simd, 0, DEFAULT, di)
-	if (TREE_CODE (args[1]) == INTEGER_CST
-	    && wi::ltu_p (wi::to_wide (args[1]), element_precision (args[0])))
-	  new_stmt = gimple_build_assign (gimple_call_lhs (stmt),
-					  RSHIFT_EXPR, args[0], args[1]);
 	break;
       BUILTIN_GPF (BINOP, fmulx, 0, ALL)
 	{

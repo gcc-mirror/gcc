@@ -3281,6 +3281,20 @@
   [(set_attr "type" "alus_sreg")]
 )
 
+(define_insn "*aarch64_<sra_op>sra_ndi"
+  [(set (match_operand:DI 0 "register_operand")
+	(plus:DI
+	  (SHIFTRT:DI
+	    (match_operand:DI 1 "register_operand")
+	    (match_operand:QI 2 "aarch64_simd_shift_imm_offset_di"))
+	  (match_operand:DI 3 "register_operand")))]
+  ""
+  {@ [ cons: =0 , 1 , 2 , 3 ; attrs: type                , arch ]
+     [ r        , r , n , r ; alu_shift_imm_other , *    ] add\t%x0, %x3, %x1, <shift> %2
+     [ w        , w , n , 0 ; neon_shift_acc      , simd ] <sra_op>sra\t%d0, %d1, %2
+  }
+)
+
 (define_insn "*add_<shift>_<mode>"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(plus:GPI (ASHIFT:GPI (match_operand:GPI 1 "register_operand" "r")

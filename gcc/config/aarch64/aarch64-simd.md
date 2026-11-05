@@ -1583,7 +1583,7 @@
   }
 )
 
-(define_insn "aarch64_<sra_op>sra_n<mode>_insn"
+(define_insn "*aarch64_<sra_op>sra_n<mode>"
  [(set (match_operand:VDQ_I 0 "register_operand" "=w")
 	(plus:VDQ_I
 	   (SHIFTRT:VDQ_I
@@ -1645,20 +1645,6 @@
    && aarch64_const_vec_rnd_cst_p (operands[4], operands[3])"
   "<sra_op>rsra\\t%<v>0<Vmtype>, %<v>2<Vmtype>, %3"
   [(set_attr "type" "neon_shift_acc<q>")]
-)
-
-(define_expand "aarch64_<sra_op>sra_n<mode>"
- [(set (match_operand:VDQ_I 0 "register_operand")
-	(plus:VDQ_I
-	   (SHIFTRT:VDQ_I
-		(match_operand:VDQ_I 2 "register_operand")
-		(match_operand:SI 3 "aarch64_simd_shift_imm_offset_<ve_mode>"))
-	   (match_operand:VDQ_I 1 "register_operand")))]
-  "TARGET_SIMD"
-  {
-    operands[3]
-      = aarch64_simd_gen_const_vector_dup (<MODE>mode, UINTVAL (operands[3]));
-  }
 )
 
 (define_expand "@aarch64_<sra_op>rsra_n<mode>"
@@ -1855,23 +1841,6 @@
   DONE;
 })
 
-;; DI vector shift
-(define_expand "aarch64_ashr_simddi"
-  [(match_operand:DI 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (match_operand:SI 2 "aarch64_shift_imm64_di")]
-  "TARGET_SIMD"
-  {
-    /* An arithmetic shift right by 64 fills the result with copies of the sign
-       bit, just like asr by 63 - however the standard pattern does not handle
-       a shift by 64.  */
-    if (INTVAL (operands[2]) == 64)
-      operands[2] = GEN_INT (63);
-    emit_insn (gen_ashrdi3 (operands[0], operands[1], operands[2]));
-    DONE;
-  }
-)
-
 (define_expand "vlshr<mode>3"
  [(match_operand:VDQ_I 0 "register_operand")
   (match_operand:VDQ_I 1 "register_operand")
@@ -1884,20 +1853,6 @@
 						      neg));
   DONE;
 })
-
-(define_expand "aarch64_lshr_simddi"
-  [(match_operand:DI 0 "register_operand")
-   (match_operand:DI 1 "register_operand")
-   (match_operand:SI 2 "aarch64_shift_imm64_di")]
-  "TARGET_SIMD"
-  {
-    if (INTVAL (operands[2]) == 64)
-      emit_move_insn (operands[0], const0_rtx);
-    else
-      emit_insn (gen_lshrdi3 (operands[0], operands[1], operands[2]));
-    DONE;
-  }
-)
 
 ;; For 64-bit modes we use ushl/r, as this does not require a SIMD zero.
 (define_insn "vec_shr_<mode><vczle><vczbe>"
@@ -7432,20 +7387,6 @@
 						      shft, rnd));
     DONE;
   }
-)
-
-;; v(r)sra_n
-
-(define_insn "aarch64_<sur>sra_ndi"
-  [(set (match_operand:DI 0 "register_operand" "=w")
-       (unspec:DI [(match_operand:DI 1 "register_operand" "0")
-                      (match_operand:DI 2 "register_operand" "w")
-                       (match_operand:SI 3
-                        "aarch64_simd_shift_imm_offset_di" "i")]
-                      VSRA))]
-  "TARGET_SIMD"
-  "<sur>sra\\t%d0, %d2, %3"
-  [(set_attr "type" "neon_shift_acc")]
 )
 
 ;; vs<lr>i_n

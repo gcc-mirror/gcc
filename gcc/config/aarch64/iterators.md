@@ -980,8 +980,6 @@
     UNSPEC_FMULX	; Used in aarch64-simd.md.
     UNSPEC_USQADD	; Used in aarch64-simd.md.
     UNSPEC_SUQADD	; Used in aarch64-simd.md.
-    UNSPEC_SSRA		; Used in aarch64-simd.md.
-    UNSPEC_USRA		; Used in aarch64-simd.md.
     UNSPEC_SRSHR	; Used in aarch64-simd.md.
     UNSPEC_URSHR	; Used in aarch64-simd.md.
     UNSPEC_SQSHLU	; Used in aarch64-simd.md.
@@ -3802,7 +3800,6 @@
 (define_int_iterator VQSHL [UNSPEC_SQSHL UNSPEC_UQSHL
                             UNSPEC_SQRSHL UNSPEC_UQRSHL])
 
-(define_int_iterator VSRA [UNSPEC_SSRA UNSPEC_USRA])
 
 (define_int_iterator VSLRI [UNSPEC_SSLI UNSPEC_USLI
 			      UNSPEC_SSRI UNSPEC_USRI])
@@ -4848,7 +4845,6 @@
 		      (UNSPEC_USQADD "us") (UNSPEC_SUQADD "su")
 		      (UNSPEC_SSLI  "s") (UNSPEC_USLI  "u")
 		      (UNSPEC_SSRI  "s") (UNSPEC_USRI  "u")
-		      (UNSPEC_USRA  "u") (UNSPEC_SSRA  "s")
 		      (UNSPEC_URSHR  "ur") (UNSPEC_SRSHR  "sr")
 		      (UNSPEC_SQSHLU "s") (UNSPEC_SQSHL   "s")
 		      (UNSPEC_UQSHL  "u")
