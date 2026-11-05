@@ -3561,7 +3561,7 @@ if (BYTES_BIG_ENDIAN)
     else
       return "vdup.<V_sz_elem>\t%q0, %P1[%c2]";
   }
-  "&& REGNO (operands[1]) <= LAST_ARM_REGNUM"
+  "&& reload_completed && REGNO (operands[1]) <= LAST_ARM_REGNUM"
   [(set (match_dup 0)
 	(vec_duplicate:VDQW (match_dup 3)))]
   {
@@ -3618,7 +3618,8 @@ if (BYTES_BIG_ENDIAN)
 	operands[2] = GEN_INT (elt);
       }
     else
-      operands[1] = gen_lowpart (<V_HALF>mode, operands[1]);
+      operands[1] = simplify_gen_subreg (<V_HALF>mode, operands[1],
+					 <MODE>mode, 0);
   }
   [(set_attr "type" "neon_dup<q>")
    (set_attr "length" "4,8")]
@@ -3644,7 +3645,7 @@ if (BYTES_BIG_ENDIAN)
     else
       return "vdup.<V_sz_elem>\t%q0, %P1[%c2]";
   }
-  "&& REGNO (operands[1]) <= LAST_ARM_REGNUM"
+  "&& reload_completed && REGNO (operands[1]) <= LAST_ARM_REGNUM"
   [(set (match_dup 0)
 	(vec_duplicate:VHFBF (match_dup 3)))]
   {
