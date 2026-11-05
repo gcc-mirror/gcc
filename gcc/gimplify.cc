@@ -18790,6 +18790,12 @@ computable_teams_clause (tree *tp, int *walk_subtrees, void *)
 static void
 optimize_target_teams (tree target, gimple_seq *pre_p)
 {
+  /* If the NUM_TEAMS clause is on TARGET, assume that the front end already
+     took care of the target-consistent clauses.  Note that user code cannot
+     specify 'num_teams' on 'target', only on 'teams'.  */
+  if (omp_find_clause (OMP_TARGET_CLAUSES (target), OMP_CLAUSE_NUM_TEAMS))
+    return;
+
   tree body = OMP_BODY (target);
   tree teams = walk_tree (&body, find_omp_teams, NULL, NULL);
   tree num_teams_lower = NULL_TREE;

@@ -165,7 +165,7 @@ end subroutine
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel num_threads\\(strict:2\\) shared\\(x\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(1234\\) thread_limit\\(2345\\) shared\\(x\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel num_threads\\(3456\\) shared\\(x\\)" 1 "gimple" } }
-! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(123, 456\\) shared\\(x\\)" 1 "gimple" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(123:456\\) shared\\(x\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(4567\\) thread_limit\\(5678\\) shared\\(x\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel num_threads\\(6789\\) shared\\(x\\)" 1 "gimple" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel num_threads\\(1, 2, 3\\) shared\\(x\\)" 1 "gimple" } }

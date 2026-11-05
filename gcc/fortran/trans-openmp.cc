@@ -5760,8 +5760,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	case OMP_FALLBACK_NONE:
 	  break;
 	}
-      c = build_omp_clause (gfc_get_location (&where),
-			    OMP_CLAUSE_DYN_GROUPPRIVATE);
+      location_t loc = gfc_get_location (&clauses->dyn_groupprivate->where);
+      c = build_omp_clause (loc, OMP_CLAUSE_DYN_GROUPPRIVATE);
       OMP_CLAUSE_DYN_GROUPPRIVATE_KIND (c) = kind;
       OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (c) = expr;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
@@ -6016,9 +6016,19 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 			       gfc_convert_expr_to_tree (block, el->expr),
 			       num_teams);
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_TEAMS);
-      OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = NULL_TREE;
-      OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = nreverse (num_teams);
-      OMP_CLAUSE_NUM_TEAMS_DIMS (c) = clauses->num_teams_dims;
+      if (clauses->num_teams_dims)
+	{
+	  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = NULL_TREE;
+	  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = nreverse (num_teams);
+	  OMP_CLAUSE_NUM_TEAMS_DIMS (c) = clauses->num_teams_dims;
+	}
+      else
+	{
+	  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = TREE_VALUE (num_teams);
+	  if (TREE_CHAIN(num_teams))
+	    OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+	      = TREE_VALUE (TREE_CHAIN (num_teams));
+	}
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
@@ -8565,6 +8575,10 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->lists[OMP_LIST_IS_DEVICE_PTR];
 	  clausesa[GFC_OMP_SPLIT_TARGET].lists[OMP_LIST_HAS_DEVICE_ADDR]
 	    = code->ext.omp_clauses->lists[OMP_LIST_HAS_DEVICE_ADDR];
+	  clausesa[GFC_OMP_SPLIT_TARGET].dyn_groupprivate
+	    = code->ext.omp_clauses->dyn_groupprivate;
+	  clausesa[GFC_OMP_SPLIT_TARGET].fallback
+	    = code->ext.omp_clauses->fallback;
 	  clausesa[GFC_OMP_SPLIT_TARGET].device
 	    = code->ext.omp_clauses->device;
 	  clausesa[GFC_OMP_SPLIT_TARGET].thread_limit_list
@@ -8603,6 +8617,10 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->thread_limit_strict;
 	  clausesa[GFC_OMP_SPLIT_TEAMS].thread_limit_dims
 	    = code->ext.omp_clauses->thread_limit_dims;
+	  clausesa[GFC_OMP_SPLIT_TEAMS].dyn_groupprivate
+	    = code->ext.omp_clauses->dyn_groupprivate;
+	  clausesa[GFC_OMP_SPLIT_TEAMS].fallback
+	    = code->ext.omp_clauses->fallback;
 	  /* Shared and default clauses are allowed on parallel, teams
 	     and taskloop.  */
 	  clausesa[GFC_OMP_SPLIT_TEAMS].lists[OMP_LIST_SHARED]
@@ -9405,16 +9423,181 @@ gfc_trans_omp_target (gfc_code *code)
   tree stmt, omp_clauses = NULL_TREE;
 
   gfc_start_block (&block);
+
+  /* For target + teams, evaluate some clauses on the host; as for those their
+     expressions must be target consistent, this is also permitted when
+     nested and not only for combined directives.  */
+  bool combined_teams_dir = false;
+  if (flag_openmp)
+    switch (code->op)
+      {
+      case EXEC_OMP_TARGET_TEAMS:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+      case EXEC_OMP_TARGET_TEAMS_DISTRIBUTE_SIMD:
+      case EXEC_OMP_TARGET_TEAMS_LOOP:
+	combined_teams_dir = true;
+	break;
+      default:
+	combined_teams_dir = false;
+	break;
+      }
+  tree tree_tgt_clauses = NULL_TREE, tree_teams_clauses = NULL_TREE;
+  gfc_omp_clauses *teams_clauses = NULL;
+  if (flag_openmp && code->op == EXEC_OMP_TARGET && code->block->next)
+    {
+      gfc_code *code2 = (code->block->next->op == EXEC_BLOCK
+			 ? code->block->next->ext.block.ns->code
+			 : code->block->next);
+      if (code2)
+	switch (code2->op)
+	  {
+	  case EXEC_OMP_TEAMS:
+	  case EXEC_OMP_TEAMS_DISTRIBUTE:
+	  case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO:
+	  case EXEC_OMP_TEAMS_DISTRIBUTE_PARALLEL_DO_SIMD:
+	  case EXEC_OMP_TEAMS_DISTRIBUTE_SIMD:
+	  case EXEC_OMP_TEAMS_LOOP:
+	    teams_clauses = code2->ext.omp_clauses;
+	    break;
+	  default:
+	    break;
+	  }
+     }
+  if ((teams_clauses && teams_clauses->num_teams_list)
+       || (combined_teams_dir && code->ext.omp_clauses->num_teams_list))
+    {
+      gfc_omp_clauses *num_teams_clauses
+	= teams_clauses ? teams_clauses : code->ext.omp_clauses;
+      tree c, t, num_teams = NULL_TREE;
+      for (gfc_expr_list *el = num_teams_clauses->num_teams_list;
+	   el; el = el->next)
+	{
+	  t = gfc_convert_expr_to_tree (&block, el->expr);
+	  if (DECL_P (t))
+	    {
+	      c = build_omp_clause (gfc_get_location (&el->expr->where),
+				    OMP_CLAUSE_FIRSTPRIVATE);
+	      OMP_CLAUSE_DECL (c) = t;
+	      tree_tgt_clauses = gfc_trans_add_clause (c, tree_tgt_clauses);
+	    }
+	  num_teams = tree_cons (NULL_TREE, t, num_teams);
+	}
+      locus *loc = &num_teams_clauses->num_teams_list->expr->where;
+      c = build_omp_clause (gfc_get_location (loc), OMP_CLAUSE_NUM_TEAMS);
+      if (num_teams_clauses->num_teams_dims)
+	{
+	  OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c) = NULL_TREE;
+	  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = nreverse (num_teams);
+	  OMP_CLAUSE_NUM_TEAMS_DIMS (c) = num_teams_clauses->num_teams_dims;
+	}
+      else
+	{
+	  OMP_CLAUSE_NUM_TEAMS_UPPER_EXPR (c) = TREE_VALUE (num_teams);
+	  if (TREE_CHAIN (num_teams))
+	    OMP_CLAUSE_NUM_TEAMS_LOWER_EXPR (c)
+	      = TREE_VALUE (TREE_CHAIN (num_teams));
+	}
+      tree_tgt_clauses = gfc_trans_add_clause (c, tree_tgt_clauses);
+      tree_teams_clauses = gfc_trans_add_clause (unshare_expr (c),
+						 tree_teams_clauses);
+      gfc_free_expr_list (num_teams_clauses->num_teams_list);
+      num_teams_clauses->num_teams_list = NULL;
+    }
+  if ((teams_clauses && teams_clauses->thread_limit_list)
+      || (combined_teams_dir && code->ext.omp_clauses->thread_limit_list))
+    {
+      /* thread_limit can be put on target and on teams, use the team one as
+	 having higher precedence.  */
+      gfc_omp_clauses *thread_limit_clauses
+	= (teams_clauses && teams_clauses->thread_limit_list
+	   ? teams_clauses : code->ext.omp_clauses);
+      tree c, t, thread_limit = NULL_TREE;
+      for (gfc_expr_list *el = thread_limit_clauses->thread_limit_list;
+	   el; el = el->next)
+	{
+	  t = gfc_convert_expr_to_tree (&block, el->expr);
+	  if (DECL_P (t))
+	    {
+	      c = build_omp_clause (gfc_get_location (&el->expr->where),
+				    OMP_CLAUSE_FIRSTPRIVATE);
+	      OMP_CLAUSE_DECL (c) = t;
+	      tree_tgt_clauses = gfc_trans_add_clause (c, tree_tgt_clauses);
+	    }
+	  thread_limit = tree_cons (NULL_TREE, t, thread_limit);
+	}
+      locus *loc = &thread_limit_clauses->thread_limit_list->expr->where;
+      c = build_omp_clause (gfc_get_location (loc), OMP_CLAUSE_THREAD_LIMIT);
+      OMP_CLAUSE_THREAD_LIMIT_EXPR (c) = nreverse (thread_limit);
+      OMP_CLAUSE_THREAD_LIMIT_STRICT (c)
+	= thread_limit_clauses->thread_limit_strict;
+      OMP_CLAUSE_THREAD_LIMIT_DIMS (c)
+	= thread_limit_clauses->thread_limit_dims;
+      tree_tgt_clauses = gfc_trans_add_clause (c, tree_tgt_clauses);
+      tree_teams_clauses = gfc_trans_add_clause (unshare_expr (c),
+						 tree_teams_clauses);
+      gfc_free_expr_list (thread_limit_clauses->thread_limit_list);
+      thread_limit_clauses->thread_limit_list = NULL;
+      gfc_free_expr_list (code->ext.omp_clauses->thread_limit_list);
+      code->ext.omp_clauses->thread_limit_list = NULL;
+    }
+  if ((teams_clauses && teams_clauses->dyn_groupprivate)
+      || (combined_teams_dir && code->ext.omp_clauses->dyn_groupprivate))
+    {
+      /* dyn_groupprivate can be put on target and on teams, use the team one as
+	 having higher precedence.  */
+      gfc_omp_clauses *dyn_gp_clauses
+	= (teams_clauses && teams_clauses->dyn_groupprivate
+	   ? teams_clauses : code->ext.omp_clauses);
+      gfc_omp_clauses tmp = {};
+      tmp.dyn_groupprivate = dyn_gp_clauses->dyn_groupprivate;
+      tmp.fallback = dyn_gp_clauses->fallback;
+      tree c = gfc_trans_omp_clauses (&block, &tmp, code->loc);
+      if (DECL_P (OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (c)))
+	{
+	  tree c2;
+	  OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (c)
+	    = gfc_evaluate_now (OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (c), &block);
+	  c2 = build_omp_clause (OMP_CLAUSE_LOCATION (c),
+				 OMP_CLAUSE_FIRSTPRIVATE);
+	  OMP_CLAUSE_DECL (c2) = OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (c);
+	  tree_tgt_clauses = gfc_trans_add_clause (c2, tree_tgt_clauses);
+	}
+      /* There is no need to put the clause also on teams.  */
+      tree_tgt_clauses = gfc_trans_add_clause (c, tree_tgt_clauses);
+      gfc_free_expr (dyn_gp_clauses->dyn_groupprivate);
+      dyn_gp_clauses->dyn_groupprivate = NULL;
+      gfc_free_expr (code->ext.omp_clauses->dyn_groupprivate);
+      code->ext.omp_clauses->dyn_groupprivate = NULL;
+    }
+  /* FIXME: also 'if' and 'allocate' are target consistent.  */
+
   gfc_split_omp_clauses (code, clausesa);
   if (flag_openmp)
     omp_clauses
-      = gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TARGET],
-			       code->loc);
+      = chainon (gfc_trans_omp_clauses (&block, &clausesa[GFC_OMP_SPLIT_TARGET],
+					code->loc), tree_tgt_clauses);
   switch (code->op)
     {
     case EXEC_OMP_TARGET:
       pushlevel ();
-      stmt = gfc_trans_omp_code (code->block->next, true);
+      if (tree_teams_clauses)
+	{
+	  gfc_code *code2 = code->block->next;
+	  if (code2->op == EXEC_BLOCK)
+	    {
+	      gcc_checking_assert (!code2->ext.block.ns->sym_root->left
+				   && !code2->ext.block.ns->sym_root->right);
+	      code2 = code2->ext.block.ns->code;
+	    }
+	  gcc_checking_assert (code2->next == NULL);
+	  stmt = gfc_trans_omp_teams (code2,
+				      combined_teams_dir ? clausesa : NULL,
+				      tree_teams_clauses);
+	}
+      else
+	stmt = gfc_trans_omp_code (code->block->next, true);
       stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
       break;
     case EXEC_OMP_TARGET_PARALLEL:
@@ -9464,38 +9647,8 @@ gfc_trans_omp_target (gfc_code *code)
 	poplevel (0, 0);
       break;
     default:
-      if (flag_openmp
-	  && (clausesa[GFC_OMP_SPLIT_TEAMS].num_teams_list
-	      || clausesa[GFC_OMP_SPLIT_TEAMS].thread_limit_list))
-	{
-	  gfc_omp_clauses clausesb;
-	  tree teams_clauses;
-	  /* For combined !$omp target teams, the num_teams and
-	     thread_limit clauses are evaluated before entering the
-	     target construct.  */
-	  memset (&clausesb, '\0', sizeof (clausesb));
-	  clausesb.num_teams_list
-	    = clausesa[GFC_OMP_SPLIT_TEAMS].num_teams_list;
-	  clausesb.num_teams_dims
-	    = clausesa[GFC_OMP_SPLIT_TEAMS].num_teams_dims;
-	  clausesb.thread_limit_list
-	    = clausesa[GFC_OMP_SPLIT_TEAMS].thread_limit_list;
-	  clausesb.thread_limit_strict
-	    = clausesa[GFC_OMP_SPLIT_TEAMS].thread_limit_strict;
-	  clausesb.thread_limit_dims
-	    = clausesa[GFC_OMP_SPLIT_TEAMS].thread_limit_dims;
-	  clausesa[GFC_OMP_SPLIT_TEAMS].num_teams_list = NULL;
-	  clausesa[GFC_OMP_SPLIT_TEAMS].thread_limit_list = NULL;
-	  teams_clauses
-	    = gfc_trans_omp_clauses (&block, &clausesb, code->loc);
-	  pushlevel ();
-	  stmt = gfc_trans_omp_teams (code, clausesa, teams_clauses);
-	}
-      else
-	{
-	  pushlevel ();
-	  stmt = gfc_trans_omp_teams (code, clausesa, NULL_TREE);
-	}
+      pushlevel ();
+      stmt = gfc_trans_omp_teams (code, clausesa, tree_teams_clauses);
       if (TREE_CODE (stmt) != BIND_EXPR)
 	stmt = build3_v (BIND_EXPR, NULL, stmt, poplevel (1, 0));
       else

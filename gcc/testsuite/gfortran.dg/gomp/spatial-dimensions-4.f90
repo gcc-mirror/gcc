@@ -32,17 +32,16 @@ end do
 block
   x = 1
 end block
-! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-1\\) thread_limit\\(31\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(dims\\(\\):33\\) thread_limit\\(31\\) shared\\(x\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target thread_limit\\(31\\) num_teams\\(dims\\(\\):33\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams thread_limit\\(31\\) num_teams\\(dims\\(\\):33\\) shared\\(x\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_teams4 \\(33, 33, 31, D.\[0-9]+\\);" 1 "ompexp" } }
-
 
 !$omp target teams distribute parallel do simd thread_limit(relaxed : 41) num_teams(dims(1) : 43) num_threads( dims ( 1 ) , relaxed : 44)
 do i = 1, 1
   x = 1
 end do
-! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-1\\) thread_limit\\(41\\) map\\(tofrom:i \\\[len: 4\\\] \\\[runtime_implicit\\\]\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(dims\\(\\):43\\) thread_limit\\(41\\) shared\\(i\\) shared\\(x\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target thread_limit\\(41\\) num_teams\\(dims\\(\\):43\\) map\\(tofrom:i \\\[len: 4\\\] \\\[runtime_implicit\\\]\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams thread_limit\\(41\\) num_teams\\(dims\\(\\):43\\) shared\\(i\\) shared\\(x\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp parallel _looptemp_\\(D.\[0-9\]+\\) _looptemp_\\(D.\[0-9\]+\\) num_threads\\(dims\\(\\):44\\) lastprivate\\(i\\) shared\\(x\\) \\\[child fn" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel \\(sub_._omp_fn.\[0-9]+, &.omp_data_o.\[0-9]+, 44, 0\\);" 1 "ompexp" } }
 
@@ -80,15 +79,15 @@ end block
 block
   x = 1
 end block
-! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(1, 93\\) thread_limit\\(91\\) shared\\(x\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(1:93\\) thread_limit\\(91\\) shared\\(x\\)" 1 "omplower" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_teams_reg \\(sub_._omp_fn.\[0-9\]+, &.omp_data_o.\[0-9\]+, 93, 91, 0\\);" 1 "ompexp" } }
 
 !$omp target teams thread_limit(relaxed : 991) num_teams(191 : 993)
 block
   x = 1
 end block
-! { dg-final { scan-tree-dump-times "#pragma omp target num_teams\\(-1\\) thread_limit\\(991\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
-! { dg-final { scan-tree-dump-times "#pragma omp teams num_teams\\(191, 993\\) thread_limit\\(991\\) shared\\(x\\)" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target thread_limit\\(991\\) num_teams\\(191:993\\) firstprivate\\(x\\) \\\[child fn" 1 "omplower" } }
+! { dg-final { scan-tree-dump-times "#pragma omp teams thread_limit\\(991\\) num_teams\\(191:993\\) shared\\(x\\)" 1 "omplower" } }
 
 !$omp teams thread_limit(relaxed : 1231) message("my1234")
 block
