@@ -408,11 +408,6 @@
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane90, 0, FP)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane180, 0, FP)
   BUILTIN_VQ_HSF (QUADOP_LANE_PAIR, fcmlaq_lane270, 0, FP)
-  /* Implemented by aarch64_<sur>shr_n<mode>.  */
-  BUILTIN_VSDQ_I_DI (SHIFTIMM, srshr_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (USHIFTIMM, urshr_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (SHIFTACC, srsra_n, 0, DEFAULT)
-  BUILTIN_VSDQ_I_DI (USHIFTACC, ursra_n, 0, DEFAULT)
   /* Implemented by aarch64_<sur>shll_n<mode>.  */
   BUILTIN_VD_BHSI (SHIFTIMM, sshll_n, 0, DEFAULT)
   BUILTIN_VD_BHSI (USHIFTIMM, ushll_n, 0, DEFAULT)

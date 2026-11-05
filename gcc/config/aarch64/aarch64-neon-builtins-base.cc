@@ -1643,6 +1643,10 @@ NEON_FUNCTION (vqshl,  vqshlq,  vqshlb,  vqshlh,  vqshls,  vqshld,
 NEON_FUNCTION (vqrshl, vqrshlq, vqrshlb, vqrshlh, vqrshls, vqrshld,
 	       gimple_unspec_based_function, (code_for_qshl, UNSPEC_SQRSHL, UNSPEC_UQRSHL))
 
+// Rounding shifts by an immediate
+NEON_FUNCTION (vrshr_n, vrshrq_n, vrshrd_n, gimple_rtx_code_function, (code_for_aarch64_rshr_n, ASHIFTRT, LSHIFTRT))
+NEON_FUNCTION (vrsra_n, vrsraq_n, vrsrad_n, gimple_rtx_code_function, (code_for_aarch64_rsra_n, ASHIFTRT, LSHIFTRT))
+
 
 // Bitwise operations
 NEON_FUNCTION (vand,  vandq,  gimple_expr,    (BIT_AND_EXPR))

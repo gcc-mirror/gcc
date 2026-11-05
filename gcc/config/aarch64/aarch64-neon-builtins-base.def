@@ -423,6 +423,16 @@ DEF_NEON_FUNCTION (vqrshls, s_integer,   ("s0,s0,ss0"))
 DEF_NEON_FUNCTION (vqrshld, d_integer,   ("s0,s0,ss0"))
 #undef REQUIRED_EXTENSIONS
 
+// Rounding shifts by an immediate
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vrshr_n,  all_integer, ("D0,D0,ss32",    shift_right<1>))
+DEF_NEON_FUNCTION (vrshrq_n, all_integer, ("Q0,Q0,ss32",    shift_right<1>))
+DEF_NEON_FUNCTION (vrsra_n,  all_integer, ("D0,D0,D0,ss32", shift_right<2>))
+DEF_NEON_FUNCTION (vrsraq_n, all_integer, ("Q0,Q0,Q0,ss32", shift_right<2>))
+DEF_NEON_FUNCTION (vrshrd_n, d_integer,   ("s0,s0,ss32",    shift_right<1>))
+DEF_NEON_FUNCTION (vrsrad_n, d_integer,   ("s0,s0,s0,ss32", shift_right<2>))
+#undef REQUIRED_EXTENSIONS
+
 // Bitwise operations (FEAT_SHA3)
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SHA3)
 DEF_NEON_FUNCTION (vbcaxq, all_integer, ("Q0,Q0,Q0,Q0"))
