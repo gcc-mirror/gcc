@@ -153,26 +153,19 @@ range_info_set_range (tree name, const vrange &r)
 {
   if (!SSA_NAME_RANGE_INFO (name) || !range_info_fits_p (name, r))
     {
-      // Preserve SSA-owned points-to and alignment information when the
+      // Preserve SSA-owned points-to information when the
       // variable-sized range storage must grow.
       pt_solution *pt = NULL;
-      unsigned int align = 0, misalign = 0;
       if (prange_storage *old = ssa_name_prange_info (name))
-	{
-	  pt = old->pt;
-	  align = old->align;
-	  misalign = old->misalign;
-	}
+	pt = old->pt;
       if (SSA_NAME_RANGE_INFO (name))
 	range_info_free (name);
 
       vrange_storage *mem = range_info_alloc (name, r);
-      if (mem && (pt || align))
+      if (mem && pt)
 	{
 	  prange_storage *s = mem->dyn_prange ();
 	  s->pt = pt;
-	  s->align = align;
-	  s->misalign = misalign;
 	}
       return mem != NULL;
     }
@@ -850,7 +843,7 @@ bitmask_to_alignment (const irange_bitmask &bm, unsigned int *alignp,
    false if no alignment beyond byte alignment is known.  */
 
 bool
-get_ptr_info_alignment (const_tree name, unsigned int *alignp,
+get_ssa_name_alignment (const_tree name, unsigned int *alignp,
 			unsigned int *misalignp)
 {
   if (!POINTER_TYPE_P (TREE_TYPE (name)) || !SSA_NAME_RANGE_INFO (name))
@@ -860,30 +853,15 @@ get_ptr_info_alignment (const_tree name, unsigned int *alignp,
   if (!s)
     return false;
 
-  bool known = bitmask_to_alignment (s->get_bitmask (TREE_TYPE (name)),
-				     alignp, misalignp);
-
-  /* Legacy fields may know less, but useful alignment must be implied
-     by the bitmask.  Alignment one carries no information.  */
-  gcc_checking_assert (s->align <= 1
-		       || (known && *alignp >= s->align
-			   && (*misalignp & (s->align - 1)) == s->misalign));
-  return known;
+  return bitmask_to_alignment (s->get_bitmask (TREE_TYPE (name)),
+			       alignp, misalignp);
 }
 
 /* Clear NAME's known bits independently of the legacy alignment fields.  */
 
 void
-mark_ptr_info_alignment_unknown (tree name)
+mark_ssa_name_alignment_unknown (tree name)
 {
-  prange_storage *pi = ssa_name_prange_info (name);
-
-  if (pi)
-    {
-      pi->align = 0;
-      pi->misalign = 0;
-    }
-
   if (!SSA_NAME_RANGE_INFO (name))
     return;
 
@@ -902,7 +880,7 @@ mark_ptr_info_alignment_unknown (tree name)
    information if the requested alignment conflicts with known bits.  */
 
 void
-set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
+set_ssa_name_alignment (tree name, unsigned int align, unsigned int misalign)
 {
   gcc_checking_assert (align != 0);
   gcc_assert ((align & (align - 1)) == 0);
@@ -925,14 +903,8 @@ set_ptr_info_alignment (tree name, unsigned int align, unsigned int misalign)
     return;
 
   r.update_bitmask (cur);
-  if (r.undefined_p () || !range_info_set_range (name, r))
-    return;
-
-  /* Transitional fields are updated only after the range accepts the
-     refinement.  Reacquire storage since the update may reallocate it.  */
-  prange_storage *s = ssa_name_prange_info (name);
-  s->align = align;
-  s->misalign = misalign;
+  if (!r.undefined_p ())
+    range_info_set_range (name, r);
 }
 
 
@@ -1007,10 +979,6 @@ duplicate_ssa_name_range_info (tree name, tree src, bool remove_local_addr)
   if (remove_local_addr && is_a <prange> (src_range))
     as_a <prange> (src_range).clear_function_local_addr ();
   range_info_set_range (name, src_range);
-
-  unsigned align, misalign;
-  if (get_ptr_info_alignment (src, &align, &misalign))
-     set_ptr_info_alignment (name, align, misalign);
 }
 
 /* For a SSA copy DEST = SRC duplicate SSA info present on DEST to SRC

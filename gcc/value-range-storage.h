@@ -147,12 +147,6 @@ public:
   // reached only through ssa_name_pt_solution.
   struct pt_solution *pt;
 
-  // Alignment and misalignment of the pointer in bytes.  Together
-  // align and misalign specify low known bits of the pointer.
-  // ptr & (align - 1) == misalign.
-  unsigned int align;
-  unsigned int misalign;
-
 private:
   DISABLE_COPY_AND_ASSIGN (prange_storage);
   prange_storage (const prange &r);

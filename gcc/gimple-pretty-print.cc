@@ -2407,7 +2407,7 @@ dump_ssaname_info (pretty_printer *pp, tree node, int spc)
     }
 
   unsigned int align, misalign;
-  if (get_ptr_info_alignment (node, &align, &misalign))
+  if (get_ssa_name_alignment (node, &align, &misalign))
     {
       pp_printf (pp, "# ALIGN = %u, MISALIGN = %u", align, misalign);
       newline_and_indent (pp, spc);

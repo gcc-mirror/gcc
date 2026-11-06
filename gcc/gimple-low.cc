@@ -1421,7 +1421,7 @@ lower_builtin_assume_aligned (gimple_stmt_iterator *gsi)
   /* For lowering we simply transfer alignment information to the
      result and leave the call otherwise unchanged, it will be elided
      at RTL expansion time.  */
-  set_ptr_info_alignment (lhs, aligni, misaligni);
+  set_ssa_name_alignment (lhs, aligni, misaligni);
 }
 
 

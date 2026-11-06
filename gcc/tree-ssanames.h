@@ -77,10 +77,10 @@ extern tree make_ssa_name_fn (struct function *, tree, gimple *,
 			      unsigned int version = 0);
 extern void init_ssa_name_imm_use (tree);
 extern void release_ssa_name_fn (struct function *, tree);
-extern bool get_ptr_info_alignment (const_tree, unsigned int *,
+extern bool get_ssa_name_alignment (const_tree, unsigned int *,
 				    unsigned int *);
-extern void mark_ptr_info_alignment_unknown (tree);
-extern void set_ptr_info_alignment (tree, unsigned int, unsigned int);
+extern void mark_ssa_name_alignment_unknown (tree);
+extern void set_ssa_name_alignment (tree, unsigned int, unsigned int);
 extern void set_ptr_nonnull (tree);
 extern bool ptr_nonnull_p (tree);
 

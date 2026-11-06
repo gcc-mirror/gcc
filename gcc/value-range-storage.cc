@@ -611,8 +611,6 @@ prange_storage::prange_storage (const prange &r) : vrange_storage (VR_PRANGE)
   // Only the accessors in tree-ssanames.cc ever make them non-zero, and
   // range_info_set_range carries them across a reallocation.
   pt = NULL;
-  align = 0;
-  misalign = 0;
 
   unsigned num_words;
   enum prange_kind kind = prange_format (r, num_words);

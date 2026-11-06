@@ -455,7 +455,7 @@ get_pointer_alignment_1 (tree exp, unsigned int *alignp,
     {
       unsigned int ptr_align, ptr_misalign;
 
-      if (get_ptr_info_alignment (exp, &ptr_align, &ptr_misalign))
+      if (get_ssa_name_alignment (exp, &ptr_align, &ptr_misalign))
 	{
 	  *bitposp = ptr_misalign * BITS_PER_UNIT;
 	  *alignp = ptr_align * BITS_PER_UNIT;
