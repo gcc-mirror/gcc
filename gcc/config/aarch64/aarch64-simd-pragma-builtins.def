@@ -78,36 +78,6 @@
   ENTRY_BINARY (NAME##q_f32, f32q, f32q, s32q, UNSPEC, FLAGS)	\
   ENTRY_BINARY (NAME##q_f64, f64q, f64q, s64q, UNSPEC, FLAGS)
 
-#undef ENTRY_TERNARY_VLUT8
-#define ENTRY_TERNARY_VLUT8(T)					\
-  ENTRY_BINARY_LANE (vluti2_lane_##T##8, T##8q, T##8, u8,	\
-		     UNSPEC_LUTI2, QUIET)			\
-  ENTRY_BINARY_LANE (vluti2_laneq_##T##8, T##8q, T##8, u8q,	\
-		     UNSPEC_LUTI2, QUIET)			\
-  ENTRY_BINARY_LANE (vluti2q_lane_##T##8, T##8q, T##8q, u8,	\
-		     UNSPEC_LUTI2, QUIET)			\
-  ENTRY_BINARY_LANE (vluti2q_laneq_##T##8, T##8q, T##8q, u8q,	\
-		     UNSPEC_LUTI2, QUIET)			\
-  ENTRY_BINARY_LANE (vluti4q_lane_##T##8, T##8q, T##8q, u8,	\
-		     UNSPEC_LUTI4, QUIET)			\
-  ENTRY_BINARY_LANE (vluti4q_laneq_##T##8, T##8q, T##8q, u8q,	\
-		     UNSPEC_LUTI4, QUIET)
-
-#undef ENTRY_TERNARY_VLUT16
-#define ENTRY_TERNARY_VLUT16(T)						\
-  ENTRY_BINARY_LANE (vluti2_lane_##T##16, T##16q, T##16, u8,		\
-		     UNSPEC_LUTI2, QUIET)				\
-  ENTRY_BINARY_LANE (vluti2_laneq_##T##16, T##16q, T##16, u8q,		\
-		     UNSPEC_LUTI2, QUIET)				\
-  ENTRY_BINARY_LANE (vluti2q_lane_##T##16, T##16q, T##16q, u8,		\
-		     UNSPEC_LUTI2, QUIET)				\
-  ENTRY_BINARY_LANE (vluti2q_laneq_##T##16, T##16q, T##16q, u8q,	\
-		     UNSPEC_LUTI2, QUIET)				\
-  ENTRY_BINARY_LANE (vluti4q_lane_##T##16_x2, T##16q, T##16qx2, u8,	\
-		     UNSPEC_LUTI4, QUIET)				\
-  ENTRY_BINARY_LANE (vluti4q_laneq_##T##16_x2, T##16q, T##16qx2, u8q,	\
-		     UNSPEC_LUTI4, QUIET)
-
 #undef ENTRY_UNARY_VQ_BHF
 #define ENTRY_UNARY_VQ_BHF(N, T1, UNSPEC, FLAGS)		\
   ENTRY_UNARY (N##_bf16_mf8_fpm, bf16q, T1, UNSPEC, FLAGS)	\
@@ -138,20 +108,6 @@
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_FAMINMAX)
 ENTRY_BINARY_VHSDF (vamax, UNSPEC_FAMAX, FP)
 ENTRY_BINARY_VHSDF (vamin, UNSPEC_FAMIN, FP)
-#undef REQUIRED_EXTENSIONS
-
-// lut
-#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_LUT)
-ENTRY_TERNARY_VLUT8 (p)
-ENTRY_TERNARY_VLUT8 (s)
-ENTRY_TERNARY_VLUT8 (u)
-ENTRY_TERNARY_VLUT8 (mf)
-
-ENTRY_TERNARY_VLUT16 (bf)
-ENTRY_TERNARY_VLUT16 (f)
-ENTRY_TERNARY_VLUT16 (p)
-ENTRY_TERNARY_VLUT16 (s)
-ENTRY_TERNARY_VLUT16 (u)
 #undef REQUIRED_EXTENSIONS
 
 // fpm conversion
@@ -286,38 +242,4 @@ ENTRY_STORE (vst1_mf8_x4, mf8_scalar_ptr, mf8x4, UNSPEC_ST1x4)
 ENTRY_STORE (vst1q_mf8_x4, mf8_scalar_ptr, mf8qx4, UNSPEC_ST1x4)
 ENTRY_STORE_LANE (vst4_lane_mf8, mf8_scalar_ptr, mf8x4, UNSPEC_ST4_LANE)
 ENTRY_STORE_LANE (vst4q_lane_mf8, mf8_scalar_ptr, mf8qx4, UNSPEC_ST4_LANE)
-#undef REQUIRED_EXTENSIONS
-
-// tbl<n>
-#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_BINARY (vtbl1_mf8, mf8, mf8, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vtbl2_mf8, mf8, mf8x2, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vtbl3_mf8, mf8, mf8x3, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vtbl4_mf8, mf8, mf8x4, u8, UNSPEC_TBL, QUIET)
-
-ENTRY_BINARY (vqtbl1_mf8, mf8, mf8q, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl1q_mf8, mf8q, mf8q, u8q, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl2_mf8, mf8, mf8qx2, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl2q_mf8, mf8q, mf8qx2, u8q, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl3_mf8, mf8, mf8qx3, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl3q_mf8, mf8q, mf8qx3, u8q, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl4_mf8, mf8, mf8qx4, u8, UNSPEC_TBL, QUIET)
-ENTRY_BINARY (vqtbl4q_mf8, mf8q, mf8qx4, u8q, UNSPEC_TBL, QUIET)
-#undef REQUIRED_EXTENSIONS
-
-// tbx<n>
-#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
-ENTRY_TERNARY (vtbx1_mf8, mf8, mf8, mf8, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vtbx2_mf8, mf8, mf8, mf8x2, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vtbx3_mf8, mf8, mf8, mf8x3, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vtbx4_mf8, mf8, mf8, mf8x4, u8, UNSPEC_TBX, QUIET)
-
-ENTRY_TERNARY (vqtbx1_mf8, mf8, mf8, mf8q, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx1q_mf8, mf8q, mf8q, mf8q, u8q, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx2_mf8, mf8, mf8, mf8qx2, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx2q_mf8, mf8q, mf8q, mf8qx2, u8q, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx3_mf8, mf8, mf8, mf8qx3, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx3q_mf8, mf8q, mf8q, mf8qx3, u8q, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx4_mf8, mf8, mf8, mf8qx4, u8, UNSPEC_TBX, QUIET)
-ENTRY_TERNARY (vqtbx4q_mf8, mf8q, mf8q, mf8qx4, u8q, UNSPEC_TBX, QUIET)
 #undef REQUIRED_EXTENSIONS

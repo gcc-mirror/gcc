@@ -25,6 +25,12 @@
 #define DEF_NEON_FUNCTION(NAME, TYPES, SHAPE_ARGS)
 #endif
 
+/* Define a NEON function with an explicit group suffix.  */
+#ifndef DEF_NEON_FUNCTION_GS
+#define DEF_NEON_FUNCTION_GS(NAME, TYPES, GROUPS, SHAPE_ARGS) \
+  DEF_NEON_FUNCTION (NAME, TYPES, SHAPE_ARGS)
+#endif
+
 /* Helper for generating the name of the function_group's corresponding
    neon_shape instance.  */
 #define OBJ_NAME(NAME, TYPES) NAME ## _ ## TYPES ## _obj
@@ -36,5 +42,6 @@
 #include "aarch64-neon-builtins-base.def"
 
 #undef DEF_NEON_FUNCTION
+#undef DEF_NEON_FUNCTION_GS
 #undef OBJ_NAME
 #undef SHAPE_NAME

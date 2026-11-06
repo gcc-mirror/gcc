@@ -2064,6 +2064,20 @@ function_expander::result_mode () const
   TYPES_neon_reinterpretq1 (D, p64), \
   TYPES_neon_reinterpretq1 (D, p128)
 
+/* _s8.  */
+#define TYPES_neon_tbl_s8(S, D, T) \
+  S (s8)
+
+/* _u8, _p8 and _mf8.  */
+#define TYPES_neon_tbl_other(S, D, T) \
+  S (u8), S (p8), S (mf8)
+
+#define TYPES_neon_luti2_b(S, D, T) \
+  S (u8), S (s8), S (p8), S (mf8)
+
+#define TYPES_neon_luti2_h(S, D, T) \
+  S (u16), S (s16), S (f16), S (bf16), S (p16)
+
 /* Describe a tuple of type suffixes in which only the first is used.  */
 #define DEF_VECTOR_TYPE(X) \
   { TYPE_SUFFIX_ ## X, NUM_TYPE_SUFFIXES, NUM_TYPE_SUFFIXES }
@@ -2238,6 +2252,10 @@ DEF_SVE_TYPES_ARRAY (neon_rev64);
 DEF_SVE_TYPES_ARRAY (neon_reinterpret);
 DEF_SVE_TYPES_ARRAY (neon_reinterpretq);
 DEF_SVE_TYPES_ARRAY (neon_mul);
+DEF_SVE_TYPES_ARRAY (neon_tbl_s8);
+DEF_SVE_TYPES_ARRAY (neon_tbl_other);
+DEF_SVE_TYPES_ARRAY (neon_luti2_b);
+DEF_SVE_TYPES_ARRAY (neon_luti2_h);
 
 static const group_suffix_index groups_none[] = {
   GROUP_none, NUM_GROUP_SUFFIXES

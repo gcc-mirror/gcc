@@ -44,6 +44,7 @@
 #include "aarch64-neon-builtins-functions.h"
 #include "gimple-fold.h"
 #include "ssa.h"
+#include "emit-rtl.h"
 
 namespace aarch64_acle {
 /* Build an asm volatile statement that prevents VALUE from being optimized
@@ -749,6 +750,189 @@ public:
   }
 };
 
+/* Expand legacy NEON vtbl1-4 and vtbx1-4.
+   N is the number of 64-bit vectors in the lookup table.  */
+template <unsigned int N>
+class gimple_table_lookup : public gimple_function_base
+{
+  static_assert (N >= 1 && N <= 4, "Invalid number of table vectors");
+  bool m_is_tbx;
+
+public:
+  constexpr gimple_table_lookup (bool tbx = false)
+    : m_is_tbx (tbx)
+  {}
+
+  gimple *fold (gimple_folder &) const override { return nullptr; }
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code m_code = (m_is_tbx && (N == 2 || N == 4)
+			? (N == 2 ? CODE_FOR_aarch64_qtbx1v8qi
+				  : CODE_FOR_aarch64_qtbx2v8qi)
+			: (N <= 2 ? CODE_FOR_aarch64_qtbl1v8qi
+				  : CODE_FOR_aarch64_qtbl2v8qi));
+    unsigned m_table_arg = m_is_tbx ? 1 : 0;
+    rtx parts[N];
+
+    /* vtbl1 and vtbx1 take a single V8QI vector.  The remaining
+       intrinsics take a tuple of N V8QI vectors.  */
+    if (N == 1)
+      parts[0] = e.args[m_table_arg];
+    else
+      {
+	machine_mode mode = GET_MODE (e.args[m_table_arg]);
+
+	gcc_assert ((N == 2 && mode == V2x8QImode)
+		    || (N == 3 && mode == V3x8QImode)
+		    || (N == 4 && mode == V4x8QImode));
+
+	rtx tuple = force_reg (mode, e.args[m_table_arg]);
+
+	/* Extract the individual 64-bit table vectors.  */
+	for (unsigned int i = 0; i < N; ++i)
+	  parts[i] = simplify_gen_subreg (V8QImode, tuple,
+					  mode, i * 8);
+      }
+
+    /* Construct the full hardware table.  N == 1 or 2 requires
+       one 128-bit register; N == 3 or 4 requires two.  */
+    rtx table = N > 2 ? gen_reg_rtx (V2x16QImode)
+		      : gen_reg_rtx (V16QImode);
+
+    /* Construct the first 128-bit table register.
+       For N == 1, zero the unused upper eight bytes.  */
+    rtx first = N > 2 ? simplify_gen_subreg (V16QImode, table,
+					     V2x16QImode, 0)
+		      : table;
+
+    rtx upper = N >= 2 ? parts[1]
+		       : CONST0_RTX (V8QImode);
+
+    emit_insn (gen_aarch64_combinev8qi (first,
+					 parts[0], upper));
+
+    if (N > 2)
+      {
+	rtx second = simplify_gen_subreg (V16QImode, table,
+					  V2x16QImode, 16);
+
+	upper = N == 4 ? parts[3]
+		       : CONST0_RTX (V8QImode);
+
+	emit_insn (gen_aarch64_combinev8qi (second,
+					     parts[2], upper));
+      }
+
+    /* Legacy vtbx1 and vtbx3 have tables of 8 and 24 bytes,
+       respectively.  Hardware TBX accepts tables whose sizes
+       are multiples of 16 bytes, so the padded bytes must
+       not overwrite the original destination.  */
+    if (m_is_tbx && (N == 1 || N == 3))
+      {
+	rtx indices = force_reg (V8QImode, e.args[2]);
+
+	/* Perform the table lookup.  */
+	rtx lookup = gen_reg_rtx (V8QImode);
+
+	if (N == 1)
+	  emit_insn (gen_aarch64_qtbl1v8qi (lookup, table,
+					  indices));
+	else
+	  emit_insn (gen_aarch64_qtbl2v8qi (lookup, table,
+					  indices));
+
+	/* Generate a mask for indices within the logical table.
+	   The maximum valid index is 7 for vtbx1 and 23 for vtbx3.  */
+	rtx limit = gen_const_vec_duplicate (V8QImode,
+					     GEN_INT (8 * N - 1));
+	limit = force_reg (V8QImode, limit);
+
+	rtx mask = gen_reg_rtx (V8QImode);
+
+	/* mask[i] = 0xff if indices[i] <= 8 * N - 1.  */
+	emit_insn (gen_aarch64_cmgeuv8qi (mask, limit, indices));
+
+	/* Select lookup for valid indices, otherwise preserve the
+	   original destination.  */
+	rtx result = gen_reg_rtx (V8QImode);
+
+	rtx fallback = force_reg (V8QImode, e.args[0]);
+
+	emit_insn (gen_aarch64_simd_bslv8qi (result, mask,
+					     lookup, fallback));
+	return result;
+      }
+
+    /* All vtbl variants, and vtbx2/vtbx4, map directly onto
+       the corresponding TBL or TBX instruction after packing.  */
+    e.args[m_table_arg] = table;
+    return e.use_exact_insn (m_code);
+  }
+};
+
+template <bool TBX>
+class gimple_qtbl : public gimple_function_base
+{
+public:
+  gimple *fold (gimple_folder &) const override { return nullptr; }
+
+  rtx expand (function_expander &e) const override
+  {
+    constexpr unsigned int table_arg = TBX ? 1 : 0;
+    insn_code icode
+      = TBX ? code_for_aarch64_qtbx (e.result_mode (),
+				     GET_MODE (e.args[table_arg]))
+	    : code_for_aarch64_qtbl (e.result_mode (),
+				     GET_MODE (e.args[table_arg]));
+
+    return e.use_exact_insn (icode);
+  }
+};
+
+/* Expand NEON LUTI2 and LUTI4 intrinsics.
+   BITS_PER_INDEX is the number of bits per lookup index.  */
+template <unsigned int BITS_PER_INDEX>
+class gimple_luti : public gimple_function_base
+{
+  static_assert (BITS_PER_INDEX == 2 || BITS_PER_INDEX == 4);
+
+public:
+  gimple *fold (gimple_folder &) const override { return nullptr; }
+
+  rtx expand (function_expander &e) const override
+  {
+    rtx table = e.args[0];
+
+    /* LUTI2 uses only the low 64 bits of the table.
+       The 128-bit table forms are provided for convenience.  */
+    if (BITS_PER_INDEX == 2
+	&& known_eq (GET_MODE_BITSIZE (GET_MODE (table)), 128u))
+      {
+	machine_mode mode
+	  = aarch64_v64_mode (GET_MODE_INNER (GET_MODE (table)))
+	      .require ();
+
+	table = gen_lowpart (mode, table);
+      }
+
+    /* Select the instruction based on the table and index modes.  */
+    insn_code icode
+      = code_for_aarch64_lut (GET_MODE (table),
+			      GET_MODE (e.args[1]));
+
+    gcc_assert (icode != CODE_FOR_nothing);
+
+    e.add_output_operand (icode);
+    e.add_input_operand (icode, table);
+    e.add_input_operand (icode, e.args[1]);
+    e.add_input_operand (icode, e.args[2]);
+    e.add_integer_operand (BITS_PER_INDEX);
+
+    return e.generate_insn (icode);
+  }
+};
+
 tree
 ext_mask (gimple_folder &f)
 {
@@ -1063,6 +1247,25 @@ NEON_FUNCTION (vuzp,  vuzpq,  gimple_permute_pair, (uzp_mask<false>, uzp_mask<tr
 NEON_FUNCTION (vzip1, vzip1q, gimple_permute,      (zip_mask<false>))
 NEON_FUNCTION (vzip2, vzip2q, gimple_permute,      (zip_mask<true>))
 NEON_FUNCTION (vzip,  vzipq,  gimple_permute_pair, (zip_mask<false>, zip_mask<true>))
+
+// Table lookup
+NEON_FUNCTION (vtbl1,   gimple_table_lookup<1>,)
+NEON_FUNCTION (vtbl2,   gimple_table_lookup<2>,)
+NEON_FUNCTION (vtbl3,   gimple_table_lookup<3>,)
+NEON_FUNCTION (vtbl4,   gimple_table_lookup<4>,)
+NEON_FUNCTION (vqtbl1,  vqtbl2,  vqtbl3,  vqtbl4,
+	       vqtbl1q, vqtbl2q, vqtbl3q, vqtbl4q, gimple_qtbl<false>,)
+NEON_FUNCTION (vtbx1,   gimple_table_lookup<1>, (true))
+NEON_FUNCTION (vtbx2,   gimple_table_lookup<2>, (true))
+NEON_FUNCTION (vtbx3,   gimple_table_lookup<3>, (true))
+NEON_FUNCTION (vtbx4,   gimple_table_lookup<4>, (true))
+NEON_FUNCTION (vqtbx1,  vqtbx2,  vqtbx3,  vqtbx4,
+	       vqtbx1q, vqtbx2q, vqtbx3q, vqtbx4q, gimple_qtbl<true>,)
+
+// Table lookup with 2-bit or 4-bit indices
+NEON_FUNCTION (vluti2_lane,  vluti2_laneq,
+	       vluti2q_lane, vluti2q_laneq, gimple_luti<2>,)
+NEON_FUNCTION (vluti4q_lane, vluti4q_laneq, gimple_luti<4>,)
 
 // AES
 NEON_FUNCTION (vaeseq,   gimple_exact_insn<CODE_FOR_aarch64_crypto_aesev16qi>,)

@@ -9475,6 +9475,21 @@
   DONE;
 })
 
+(define_expand "@aarch64_qtbl<VB:mode><QTBL:mode>"
+  [(set (match_operand:VB 0 "register_operand")
+	(unspec:VB [(match_operand:QTBL 1 "register_operand")
+		    (match_operand:VB 2 "register_operand")]
+		   UNSPEC_TBL))]
+  "TARGET_SIMD")
+
+(define_expand "@aarch64_qtbx<VB:mode><QTBL:mode>"
+  [(set (match_operand:VB 0 "register_operand")
+	(unspec:VB [(match_operand:VB 1 "register_operand")
+		    (match_operand:QTBL 2 "register_operand")
+		    (match_operand:VB 3 "register_operand")]
+		   UNSPEC_TBX))]
+  "TARGET_SIMD")
+
 (define_insn "aarch64_qtbl1<mode>"
   [(set (match_operand:VB 0 "register_operand" "=w")
 	(unspec:VB [(match_operand:V16QI 1 "register_operand" "w")

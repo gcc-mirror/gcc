@@ -476,6 +476,8 @@
 ;; Advanced SIMD 128-bit vector structure modes.
 (define_mode_iterator VSTRUCT_Q [VSTRUCT_2Q VSTRUCT_3Q VSTRUCT_4Q])
 
+(define_mode_iterator QTBL [V16QI V2x16QI V3x16QI V4x16QI])
+
 ;; Advanced SIMD 2-vector structure modes.
 (define_mode_iterator VSTRUCT_2QD [VSTRUCT_2D VSTRUCT_2Q])
 

@@ -188,17 +188,21 @@ constexpr group_suffix_info group_suffixes[] = {
 };
 
 constexpr const aarch64_acle::function_group_info neon_function_groups[] = {
-#define DEF_NEON_FUNCTION(NAME, TYPES, SHAPE_ARGS)			\
+#define DEF_NEON_FUNCTION_GS(NAME, TYPES, GROUPS, SHAPE_ARGS)		\
   {									\
     /* .base_name  = */ #NAME,						\
     /* .base       = */ &aarch64_acle::functions::NAME,			\
     /* .shape      = */ &aarch64_acle::shapes::SHAPE_NAME (NAME, TYPES),\
     /* .types      = */ aarch64_acle::types_##TYPES,			\
-    /* .groups     = */ aarch64_acle::groups_none,			\
+    /* .groups     = */ aarch64_acle::groups_##GROUPS,			\
     /* .preds      = */ aarch64_acle::preds_none,			\
     /* .extensions = */ aarch64_required_extensions::REQUIRED_EXTENSIONS,\
     /* .fpm_mode   = */ aarch64_acle::FPM_unused,			\
   },
+
+#define DEF_NEON_FUNCTION(NAME, TYPES, SHAPE_ARGS)			\
+  DEF_NEON_FUNCTION_GS (NAME, TYPES, none, SHAPE_ARGS)
+
 #include "aarch64-neon-builtins.def"
 };
 

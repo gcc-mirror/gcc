@@ -346,6 +346,65 @@ DEF_NEON_FUNCTION (vzip2q,  bhsd_neon,  ("Q0,Q0,Q0"))
 DEF_NEON_FUNCTION (vzipq,   bhs_neon,   ("Q0x2,Q0,Q0"))
 #undef REQUIRED_EXTENSIONS
 
+// Table lookup
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD)
+DEF_NEON_FUNCTION (vtbl1,   neon_tbl_s8,    ("D0,D0,D0"))
+DEF_NEON_FUNCTION (vtbl1,   neon_tbl_other, ("D0,D0,Du0"))
+DEF_NEON_FUNCTION (vtbl2,   neon_tbl_s8,    ("D0,D0x2,D0"))
+DEF_NEON_FUNCTION (vtbl2,   neon_tbl_other, ("D0,D0x2,Du0"))
+DEF_NEON_FUNCTION (vtbl3,   neon_tbl_s8,    ("D0,D0x3,D0"))
+DEF_NEON_FUNCTION (vtbl3,   neon_tbl_other, ("D0,D0x3,Du0"))
+DEF_NEON_FUNCTION (vtbl4,   neon_tbl_s8,    ("D0,D0x4,D0"))
+DEF_NEON_FUNCTION (vtbl4,   neon_tbl_other, ("D0,D0x4,Du0"))
+DEF_NEON_FUNCTION (vqtbl1,  neon_rev16,     ("D0,Q0,Du0"))
+DEF_NEON_FUNCTION (vqtbl2,  neon_rev16,     ("D0,Q0x2,Du0"))
+DEF_NEON_FUNCTION (vqtbl3,  neon_rev16,     ("D0,Q0x3,Du0"))
+DEF_NEON_FUNCTION (vqtbl4,  neon_rev16,     ("D0,Q0x4,Du0"))
+DEF_NEON_FUNCTION (vqtbl1q, neon_rev16,     ("Q0,Q0,Qu0"))
+DEF_NEON_FUNCTION (vqtbl2q, neon_rev16,     ("Q0,Q0x2,Qu0"))
+DEF_NEON_FUNCTION (vqtbl3q, neon_rev16,     ("Q0,Q0x3,Qu0"))
+DEF_NEON_FUNCTION (vqtbl4q, neon_rev16,     ("Q0,Q0x4,Qu0"))
+DEF_NEON_FUNCTION (vtbx1,   neon_tbl_s8,    ("D0,D0,D0,D0"))
+DEF_NEON_FUNCTION (vtbx1,   neon_tbl_other, ("D0,D0,D0,Du0"))
+DEF_NEON_FUNCTION (vtbx2,   neon_tbl_s8,    ("D0,D0,D0x2,D0"))
+DEF_NEON_FUNCTION (vtbx2,   neon_tbl_other, ("D0,D0,D0x2,Du0"))
+DEF_NEON_FUNCTION (vtbx3,   neon_tbl_s8,    ("D0,D0,D0x3,D0"))
+DEF_NEON_FUNCTION (vtbx3,   neon_tbl_other, ("D0,D0,D0x3,Du0"))
+DEF_NEON_FUNCTION (vtbx4,   neon_tbl_s8,    ("D0,D0,D0x4,D0"))
+DEF_NEON_FUNCTION (vtbx4,   neon_tbl_other, ("D0,D0,D0x4,Du0"))
+DEF_NEON_FUNCTION (vqtbx1,  neon_rev16,     ("D0,D0,Q0,Du0"))
+DEF_NEON_FUNCTION (vqtbx2,  neon_rev16,     ("D0,D0,Q0x2,Du0"))
+DEF_NEON_FUNCTION (vqtbx3,  neon_rev16,     ("D0,D0,Q0x3,Du0"))
+DEF_NEON_FUNCTION (vqtbx4,  neon_rev16,     ("D0,D0,Q0x4,Du0"))
+DEF_NEON_FUNCTION (vqtbx1q, neon_rev16,     ("Q0,Q0,Q0,Qu0"))
+DEF_NEON_FUNCTION (vqtbx2q, neon_rev16,     ("Q0,Q0,Q0x2,Qu0"))
+DEF_NEON_FUNCTION (vqtbx3q, neon_rev16,     ("Q0,Q0,Q0x3,Qu0"))
+DEF_NEON_FUNCTION (vqtbx4q, neon_rev16,     ("Q0,Q0,Q0x4,Qu0"))
+#undef REQUIRED_EXTENSIONS
+
+/* Lookup table read with packed 2-bit indices.  */
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_LUT)
+/* 8-bit result elements.  */
+DEF_NEON_FUNCTION (vluti2_lane,   neon_luti2_b, ("Q0,D0,Du8,ss32", range<2, 0, 1>))
+DEF_NEON_FUNCTION (vluti2_laneq,  neon_luti2_b, ("Q0,D0,Qu8,ss32", range<2, 0, 3>))
+DEF_NEON_FUNCTION (vluti2q_lane,  neon_luti2_b, ("Q0,Q0,Du8,ss32", range<2, 0, 1>))
+DEF_NEON_FUNCTION (vluti2q_laneq, neon_luti2_b, ("Q0,Q0,Qu8,ss32", range<2, 0, 3>))
+
+/* 16-bit result elements.  */
+DEF_NEON_FUNCTION (vluti2_lane,   neon_luti2_h, ("Q0,D0,Du8,ss32", range<2, 0, 3>))
+DEF_NEON_FUNCTION (vluti2_laneq,  neon_luti2_h, ("Q0,D0,Qu8,ss32", range<2, 0, 7>))
+DEF_NEON_FUNCTION (vluti2q_lane,  neon_luti2_h, ("Q0,Q0,Du8,ss32", range<2, 0, 3>))
+DEF_NEON_FUNCTION (vluti2q_laneq, neon_luti2_h, ("Q0,Q0,Qu8,ss32", range<2, 0, 7>))
+
+/* 8-bit forms: no group suffix.  */
+DEF_NEON_FUNCTION (vluti4q_lane,  neon_luti2_b, ("Q0,Q0,Du8,ss32", range<2, 0, 0>))
+DEF_NEON_FUNCTION (vluti4q_laneq, neon_luti2_b, ("Q0,Q0,Qu8,ss32", range<2, 0, 1>))
+
+/* 16-bit forms: the name ends with _x2.  */
+DEF_NEON_FUNCTION_GS (vluti4q_lane,  neon_luti2_h, x2, ("Q0,Q0x2,Du8,ss32", range<2, 0, 1>))
+DEF_NEON_FUNCTION_GS (vluti4q_laneq, neon_luti2_h, x2, ("Q0,Q0x2,Qu8,ss32", range<2, 0, 3>))
+#undef REQUIRED_EXTENSIONS
+
 // AES
 #define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_SIMD | AARCH64_FL_AES)
 DEF_NEON_FUNCTION (vaeseq,   b_unsigned, ("Q0,Q0,Q0"))
