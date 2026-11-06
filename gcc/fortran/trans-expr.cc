@@ -6035,6 +6035,11 @@ expr_may_alias_variables (gfc_expr *e, bool array_may_alias)
 {
   gfc_constructor *c;
 
+  if (e->expr_type == EXPR_OP
+      && e->value.op.op == INTRINSIC_PARENTHESES
+      && e->value.op.op1->expr_type == EXPR_ARRAY)
+    e = e->value.op.op1;
+
   if (e->expr_type == EXPR_VARIABLE)
     return true;
   else if (e->expr_type == EXPR_FUNCTION)

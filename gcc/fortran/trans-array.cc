@@ -8498,9 +8498,15 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 
       lse.string_length = rse.string_length;
 
+      /* A parenthesized constructor is copied like the constructor.  */
+      gfc_expr *src = expr;
+      if (src->expr_type == EXPR_OP
+	  && src->value.op.op == INTRINSIC_PARENTHESES
+	  && src->value.op.op1->expr_type == EXPR_ARRAY)
+	src = src->value.op.op1;
       deep_copy = !se->data_not_needed
-		  && (expr->expr_type == EXPR_VARIABLE
-		      || expr->expr_type == EXPR_ARRAY);
+		  && (src->expr_type == EXPR_VARIABLE
+		      || src->expr_type == EXPR_ARRAY);
       tmp = gfc_trans_scalar_assign (&lse, &rse, expr->ts,
 				     deep_copy, false);
       gfc_add_expr_to_block (&block, tmp);
