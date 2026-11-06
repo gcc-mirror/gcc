@@ -1621,7 +1621,12 @@ pass_gcn_simt_vectorize::execute (function *fn)
 		  if (special_attr != SIMT_SPECIAL_SYMBOLS_OK)
 		    {
 		      rtx tmpdi = gen_reg_rtx (GET_MODE (x));
-		      rtx movdi_symbol = gen_movdi_symbol (tmpdi, x);
+		      /* Symbols in the LDS address space (e.g. OpenACC
+			 gang-private variables) are SImode; a plain move
+			 loads them.  */
+		      rtx movdi_symbol = (GET_MODE (x) == DImode
+					  ? gen_movdi_symbol (tmpdi, x)
+					  : gen_rtx_SET (tmpdi, x));
 		      emit_insn_before (movdi_symbol, insn);
 
 		      rtx tmpv64di = gen_reg_rtx (insn_mode);
