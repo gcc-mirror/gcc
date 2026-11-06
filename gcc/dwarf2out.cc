@@ -17121,6 +17121,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      <= GET_MODE_BITSIZE (int_mode)))
 	{
 	  int shift, size;
+	  const int addr_bits = DWARF2_ADDR_SIZE * BITS_PER_UNIT;
 	  op0 = mem_loc_descriptor (XEXP (rtl, 0), inner_mode,
 				    mem_mode, VAR_INIT_STATUS_INITIALIZED);
 	  if (op0 == 0)
@@ -17134,17 +17135,16 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  shift = INTVAL (XEXP (rtl, 2));
 	  if (BITS_BIG_ENDIAN)
 	    shift = GET_MODE_BITSIZE (inner_mode) - shift - size;
-	  if (shift + size != (int) DWARF2_ADDR_SIZE)
+	  if (shift + size != addr_bits)
 	    {
 	      add_loc_descr (&mem_loc_result,
-			     int_loc_descriptor (DWARF2_ADDR_SIZE
-						 - shift - size));
+			     int_loc_descriptor (addr_bits - shift - size));
 	      add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_shl, 0, 0));
 	    }
-	  if (size != (int) DWARF2_ADDR_SIZE)
+	  if (size != addr_bits)
 	    {
 	      add_loc_descr (&mem_loc_result,
-			     int_loc_descriptor (DWARF2_ADDR_SIZE - size));
+			     int_loc_descriptor (addr_bits - size));
 	      add_loc_descr (&mem_loc_result, new_loc_descr (op, 0, 0));
 	    }
 	}
