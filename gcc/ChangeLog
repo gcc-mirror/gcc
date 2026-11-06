@@ -1,3 +1,114 @@
+2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* config/bpf/bpf.cc (bpf_expand_cpymem): Fix offset used by the
+	backward memmove loop.
+
+2026-11-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/128400
+	* lra-constraints.cc (curr_insn_transform): Spill plus for memory
+	only if there is no reg target.  Reuse reload pseudo.
+
+2026-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (optimize_target_teams): Skip if there is already a
+	'num_teams' (i.e. already optimized by the front end).
+
+2026-11-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* config/riscv/zicond.md (zicond splitters): Add missing splits for
+	(LT/LTU & EQ_NE) and (LE/LEU & EQ/NE).
+
+2026-11-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/128324
+	* config/arm/neon.md
+	(neon_vdup_lan<VDQW:mode>_internal): Calculate the register
+	before adjusting the element.
+	(neon_vdup_lane<VHFBF:mode>_internal): Likewise.
+
+2026-11-05  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/autovec.md (vec_extract<mode><v_half>): Remove.
+	(vec_extract<mode><vls_quarter>): Remove.
+	* config/riscv/riscv-v.cc (shuffle_extract_patterns): New.
+	(expand_vec_perm_const_1): Use it.
+	(expand_vec_perm_const): Reject tuple modes and use OP_MODE's
+	number of units.
+	(expand_vector_subreg_extract): Remove.
+	(legitimize_move): Don't call expand_vector_subreg_extract.
+	* config/riscv/vector-iterators.md: Remove vec_extract-specific
+	iterators.
+
+2026-11-05  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* optabs-query.cc (vec_extract_perm_p): New function
+	* (can_vec_extract): Query vec_extract_perm_p and return
+	extract mode.
+	* optabs-query.h (can_vec_extract): Change return type.
+	(vec_extract_perm_p): Declare.
+	* tree-vect-loop.cc (vect_find_reusable_accumulator): Use
+	can_vec_extract.
+	(vect_create_partial_epilog): Likewise.
+	* tree-vect-stmts.cc (vectorizable_store): Likewise.
+
+2026-11-05  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* expmed.cc (extract_vector_from_vector_perm): New function.
+	(extract_vector_from_vector): Allow vector extraction via
+	permute.
+
+2026-11-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/124872
+	* doc/sourcebuild.texi: Document checking.
+
+2026-11-05  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* config/riscv/riscv-vector-costs.cc (costs::better_main_loop_than_p):
+	Remove redundant VLA niters heuristic.
+
+2026-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128451
+	* tree-vect-generic.cc (lower_vec_perm): Use the unsigned
+	variant of the mask element type for index computations and
+	convert the mask elements to it.
+
+2026-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128188
+	* tree-vect-stmts.cc (vect_simd_lane_linear): Return when
+	the definition v is not handled, avoiding an endless loop.
+
+2026-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (operator<, operator>): Implement for
+	match_elt_t vs int.
+	* tree-vect-slp.cc (vect_analyze_slp_reductions): Use the
+	enhanced matches[] representation to more efficiently find
+	SLP reduction groups.
+
+2026-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_build_slp_tree_2): When
+	can_duplicate_and_interleave_p fails, fully populate matches[].
+
+2026-11-05  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* config/rs6000/rs6000-c.cc (altivec_resolve_overloaded_builtin): Use
+	signed types intead of unsigned for atomic_cas_local builtin casts.
+
+2026-11-05  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/127101
+	* range-op-mixed.h (operator_plus): Add using declaration for
+	range_operator::fold_range; declare fold_range override.
+	* range-op.cc (operator_plus::fold_range): New.
+	* gimple-range-gori.cc (gori_compute::refine_using_relation):
+	Pass lhs_op1/lhs_op2 relation to fold_range call-sites.
+
 2026-11-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* dwarf2out.cc (output_call_frame_info): Check for unset cie/cfi

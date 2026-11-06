@@ -1,3 +1,47 @@
+2026-11-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2026f release.
+
+2026-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118099
+	* config/abi/pre/gnu.ver: Tighten old patterns for basic_filebuf
+	and export new symbols.
+	* include/bits/fstream.tcc (basic_filebuf::overflow): Do not
+	bump the next pointer for the overflow character. Pass const
+	pointers to _M_convert_to_external.
+	(_M_convert_to_external(_CharT*, streamsize)): Replace with ...
+	(_M_convert_to_external(const _CharT*, streamsize)): Define new
+	overload.
+	* include/std/fstream (_M_convert_to_external): Declare new
+	overload. Define old overload always_inline and suppress it
+	for _GLIBCXX_INLINE_VERSION.
+
+2026-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118099
+	* include/bits/fstream.tcc
+	(basic_filebuf::_M_convert_to_external): Use __ibuf + __ilen
+	instead of this->pptr().
+	* testsuite/27_io/basic_filebuf/overflow/char/118099-unbuffered.cc:
+	New test.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/118099-unbuffered.cc:
+	New test.
+
+2026-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118099
+	* include/bits/fstream.tcc (basic_filebuf::overflow): Rewind the
+	put position if outputting the put area fails.
+	* testsuite/27_io/basic_filebuf/overflow/char/118099-codecvt.cc:
+	New test.
+	* testsuite/27_io/basic_filebuf/overflow/char/118099.cc: New
+	test.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/118099-codecvt.cc:
+	New test.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/118099.cc:
+	New test.
+
 2026-11-04  Nathan Myers  <ncm@cantrip.org>
 
 	PR libstdc++/112925

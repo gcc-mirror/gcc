@@ -1,3 +1,91 @@
+2026-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128343
+	* gfortran.dg/bom_UTF-8-2.f: New test.
+
+2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* gcc.target/bpf/memmove-3.c: New.
+	* gcc.target/bpf/memmove-4.c: New.
+
+2026-11-05  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/fmul_intrinsic_1.c: Fix loading of `in2`
+	into `c`; update expected assembly back to what it was before
+	8b8f5f19b.
+
+2026-11-05  Sam Price  <thesamprice@gmail.com>
+
+	* gcc.c-torture/execute/divmod-2.c: New test.
+	Assisted-by: Claude (Anthropic)
+
+2026-11-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/torture/bitint-96.c: Change dg-do compile to dg-do run.
+	(bar): Avoid signed _BitInt(1) -1 * -1 and -1 % -1 as that is UB.
+	Don't do predecrement and postincrement for now at runtime.
+	(main): Fix expected result of -large * 0 multiplication.
+	* gcc.dg/torture/bitint-97.c: Change dg-do compile to dg-do run.
+	* gcc.dg/torture/bitint-98.c: Likewise.
+	* gcc.dg/torture/bitint-99.c: Likewise.
+
+2026-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/spatial-dimensions-1.f90: Update scan-tree-dump.
+	* gfortran.dg/gomp/spatial-dimensions-4.f90: Likewise.
+	* gfortran.dg/gomp/spatial-dimensions-5.f90: Likewise.
+	* gfortran.dg/gomp/dyn_groupprivate-3.f90: New test.
+	* gfortran.dg/gomp/dyn_groupprivate-4.f90: New test.
+	* gfortran.dg/gomp/target-teams-1.f90: New test.
+	* gfortran.dg/gomp/target-teams-2.f90: New test.
+
+2026-11-05  Jeff Law  <jeffreyalaw@gmail.com>
+
+	* gcc.target/riscv/pr57650-2.c: New test.
+
+2026-11-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/128324
+	* gcc.target/arm/pr128324.c: New test.
+
+2026-11-05  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/subreg-extract.c: Remove xfail.
+
+2026-11-05  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR testsuite/124872
+	* lib/et-static.def (checking): New effective target.
+	* gcc.dg/plugin/crash-test-nested-ice.c: Require checking.
+	* gcc.dg/plugin/crash-test-nested-write-through-null.c: Likewise.
+
+2026-11-05  Zhongyao Chen  <chen.zhongyao@zte.com.cn>
+
+	* gcc.dg/vect/costmodel/riscv/rvv/pr113112-3.c: Remove XFAILs.
+
+2026-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128451
+	* gcc.dg/torture/pr128451.c: New test.
+
+2026-11-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128188
+	* gcc.dg/vect/vect-simd-pr128188.c: New testcase.
+
+2026-11-05  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	* gcc.target/powerpc/acmp-tst.cc: New test.
+	* gcc.target/powerpc/acmp-tst-32bit.cc: New test.
+	* gcc.target/powerpc/acmp-tst-indexed.cc: New test.
+	* gcc.target/powerpc/powerpc.exp: Accept c++ tests.
+
+2026-11-05  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	PR tree-optimization/127101
+	* gcc.dg/tree-ssa/pr127101.c: New test.
+
 2026-11-04  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* gdc.dg/pr108945.d: Actully test for the absence of the floating

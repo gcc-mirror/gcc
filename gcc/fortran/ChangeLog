@@ -1,3 +1,19 @@
+2026-11-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/128343
+	* scanner.cc (load_line): Check for optional UTF-8 BOM at beginning
+	of line.  Adjust temporary line buffer length and line truncation.
+	(load_file): Use it when reading the very first line of a source
+	file.
+
+2026-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (OMP_TEAMS_CLAUSES): Add OMP_CLAUSE_DYN_GROUPPRIVATE.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Use expression and not
+	directive line for the location.
+	(gfc_split_omp_clauses): Handle dyn_groupprivate.
+	(gfc_trans_omp_target): Handle target-consistent clauses.
+
 2026-11-03  Mikael Morin  <mikael@gcc.gnu.org>
 
 	PR fortran/128349
