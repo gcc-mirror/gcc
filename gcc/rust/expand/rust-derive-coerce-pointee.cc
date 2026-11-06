@@ -108,8 +108,9 @@ void
 DeriveCoercePointee::validate_number_of_fields (const Item &item)
 {
   rust_assert (item.get_item_kind () == Item::Kind::Struct);
-  auto &struct_item = static_cast<const StructStruct &> (item);
-  size_t field_count = struct_item.get_fields ().size ();
+
+  auto &base_struct = static_cast<const Struct &> (item);
+  size_t field_count = base_struct.get_field_count ();
 
   if (field_count == 0)
     rust_error_at (item.get_locus (), ErrorCode::E0802,

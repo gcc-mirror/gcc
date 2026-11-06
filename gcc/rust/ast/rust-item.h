@@ -1801,6 +1801,8 @@ public:
 
   Identifier get_struct_name () const { return struct_name; }
 
+  virtual size_t get_field_count () const = 0;
+
   std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
   {
     return generic_params;
@@ -2008,6 +2010,8 @@ public:
   std::vector<StructField> &get_fields () { return fields; }
   const std::vector<StructField> &get_fields () const { return fields; }
 
+  size_t get_field_count () const override { return fields.size (); }
+
 protected:
   /* Use covariance to implement clone function as returning this object
    * rather than base */
@@ -2142,6 +2146,8 @@ public:
   // TODO: this mutable getter seems really dodgy. Think up better way.
   std::vector<TupleField> &get_fields () { return fields; }
   const std::vector<TupleField> &get_fields () const { return fields; }
+
+  size_t get_field_count () const override { return fields.size (); }
 
 protected:
   /* Use covariance to implement clone function as returning this object
