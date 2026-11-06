@@ -9737,13 +9737,13 @@ static machine_mode constant_modes[] =
 {
   TFmode, FPRX2mode, TImode, TDmode,
   V16QImode, V8HImode, V4SImode, V2DImode, V1TImode,
-  V4SFmode, V2DFmode, V1TFmode,
+  V8HFmode, V4SFmode, V2DFmode, V1TFmode,
   DFmode, DImode, DDmode,
-  V8QImode, V4HImode, V2SImode, V1DImode, V2SFmode, V1DFmode,
+  V8QImode, V4HImode, V2SImode, V1DImode, V4HFmode, V2SFmode, V1DFmode,
   SFmode, SImode, SDmode,
-  V4QImode, V2HImode, V1SImode,  V1SFmode,
+  V4QImode, V2HImode, V1SImode, V2HFmode, V1SFmode,
   HImode, HFmode,
-  V2QImode, V1HImode,
+  V2QImode, V1HImode, V1HFmode,
   QImode,
   V1QImode
 };
