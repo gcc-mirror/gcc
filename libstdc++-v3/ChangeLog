@@ -1,3 +1,10 @@
+2026-11-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	Backported from master:
+	2026-11-05  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* src/c++20/tzdata.zi: Import new file from 2026f release.
+
 2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

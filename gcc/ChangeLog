@@ -1,3 +1,33 @@
+2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	Backported from master:
+	2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
+
+	PR target/128440
+	* config/bpf/bpf.cc (bpf_expand_cpymem): Fix offset used by the
+	backward memmove loop.
+
+2026-11-05  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2025-11-07  David Faust  <david.faust@oracle.com>
+
+	PR target/122140
+	* config/bpf/bpf.cc (bpf_expand_cpymem): Fix off-by-one offset
+	in backwards loop.  Improve src and dest addrs used for the
+	branch condition.
+	(emit_move_loop): Improve emitted set insns and remove the
+	explict temporary register.
+
+2026-11-05  David Faust  <david.faust@oracle.com>
+
+	Backported from master:
+	2025-10-17  David Faust  <david.faust@oracle.com>
+
+	PR target/122139
+	* config/bpf/bpf.cc (bpf_expand_setmem): Duplicate byte value
+	across to new mode when using larger modes for store.
+
 2026-11-04  Jeevitha  <jeevitha@linux.ibm.com>
 
 	Backported from master:
