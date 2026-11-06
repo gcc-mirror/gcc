@@ -5,13 +5,13 @@ LIBGCC2_INCLUDES = -I$(srcdir)/../winsup/w32api/include
 
 CUSTOM_CRTSTUFF = yes
 
-crtbegin.o: $(srcdir)/config/i386/cygming-crtbegin.c
+crtbegin.o: $(srcdir)/config/mingw/cygming-crtbegin.c
 	$(crt_compile) -fno-omit-frame-pointer  -c $<
 
-crtbeginS.o: $(srcdir)/config/i386/cygming-crtbegin.c
+crtbeginS.o: $(srcdir)/config/mingw/cygming-crtbegin.c
 	$(crt_compile) -fno-omit-frame-pointer  -c $< -DCRTSTUFFS_O
 
 # We intentionally use a implementation-reserved init priority of 0,
 # so allow the warning.
-crtend.o: $(srcdir)/config/i386/cygming-crtend.c
+crtend.o: $(srcdir)/config/mingw/cygming-crtend.c
 	$(crt_compile) -fno-omit-frame-pointer -Wno-error -c $<

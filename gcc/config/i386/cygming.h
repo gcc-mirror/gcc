@@ -462,7 +462,7 @@ do {						\
 #define SUBTARGET_MANGLE_DECL_ASSEMBLER_NAME i386_pe_mangle_decl_assembler_name
 
 #undef TARGET_ASM_ASSEMBLE_VISIBILITY
-#define TARGET_ASM_ASSEMBLE_VISIBILITY i386_pe_assemble_visibility
+#define TARGET_ASM_ASSEMBLE_VISIBILITY mingw_pe_assemble_visibility
 
 #undef SUB_TARGET_RECORD_STUB
 #define SUB_TARGET_RECORD_STUB(NAME, DECL) mingw_pe_record_stub((NAME), 0)

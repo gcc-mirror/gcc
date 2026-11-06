@@ -293,7 +293,7 @@ i386_pe_drectve_name (const char *name)
    what Clang emits for hidden visibility on PE/COFF.  */
 
 void
-i386_pe_assemble_visibility (tree decl, int vis)
+mingw_pe_assemble_visibility (tree decl, int vis)
 {
   if (!decl)
     return;
