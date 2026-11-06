@@ -344,7 +344,7 @@ complex_propagate::visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED
 
   lhs = gimple_get_lhs (stmt);
   /* Skip anything but GIMPLE_ASSIGN and GIMPLE_CALL with a lhs.  */
-  if (!lhs || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+  if (!lhs)
     return SSA_PROP_VARYING;
 
   /* These conditions should be satisfied due to the initial filter
@@ -354,8 +354,13 @@ complex_propagate::visit_stmt (gimple *stmt, edge *taken_edge_p ATTRIBUTE_UNUSED
 
   *result_p = lhs;
   ver = SSA_NAME_VERSION (lhs);
-  old_l = complex_lattice_values[ver];
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+    {
+      complex_lattice_values[ver] = VARYING;
+      return SSA_PROP_VARYING;
+    }
 
+  old_l = complex_lattice_values[ver];
   switch (gimple_expr_code (stmt))
     {
     case SSA_NAME:
@@ -444,15 +449,18 @@ complex_propagate::visit_phi (gphi *phi)
      set up in init_dont_simulate_again.  */
   gcc_assert (TREE_CODE (TREE_TYPE (lhs)) == COMPLEX_TYPE);
 
+  ver = SSA_NAME_VERSION (lhs);
   if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-    return SSA_PROP_VARYING;
+    {
+      complex_lattice_values[ver] = VARYING;
+      return SSA_PROP_VARYING;
+    }
 
   /* We've set up the lattice values such that IOR neatly models PHI meet.  */
   new_l = UNINITIALIZED;
   for (i = gimple_phi_num_args (phi) - 1; i >= 0; --i)
     new_l |= find_lattice_value (gimple_phi_arg_def (phi, i));
 
-  ver = SSA_NAME_VERSION (lhs);
   old_l = complex_lattice_values[ver];
 
   if (new_l == old_l)
