@@ -3161,6 +3161,10 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   /* Args grow down.  Not handled by generic routines.  */
 
   u = fold_convert (sizetype, size_in_bytes (type));
+  /* In SIMT mode each stack-passed argument has one copy per lane; see
+     gcn_simt_stack_variable_padding.  */
+  if (flag_simt_mode)
+    u = size_binop (MULT_EXPR, u, size_int (64));
   u = fold_build1 (NEGATE_EXPR, sizetype, u);
   t = fold_build_pointer_plus (valist, u);
 
@@ -3173,6 +3177,19 @@ gcn_gimplify_va_arg_expr (tree valist, tree type,
   t = build2 (MODIFY_EXPR, valist_type, valist, t);
 
   t = fold_convert (ptr, t);
+
+  /* Select this lane's copy; see gcn_simt_stack_variable_offset.  */
+  if (flag_simt_mode)
+    {
+      tree lane = build_call_expr (gcn_builtin_decl (GCN_BUILTIN_OMP_DIM_POS,
+						     true),
+				   1, build_int_cst (integer_type_node, 2));
+      lane = fold_convert (unsigned_type_node, lane);
+      u = size_binop (MULT_EXPR, fold_convert (sizetype, lane),
+		      fold_convert (sizetype, size_in_bytes (type)));
+      t = fold_build_pointer_plus (t, u);
+    }
+
   t = build_va_arg_indirect_ref (t);
 
   if (indirect)
