@@ -986,10 +986,14 @@ duplicate_ssa_name_pt_solution (tree dest, tree src)
     duplicate_ssa_name_pt_solution (dest, pt);
 }
 
-/* Copy any global range information from SRC to NAME.  */
+/* Copy any global range information from SRC to NAME.  If REMOVE_LOCAL_ADDR
+   is true, then any specified address that a prange may refer to is checked
+   to see if it's local to the function and removed if so.
+   The default is FALSE, which is the previous default behaviour and copies
+   the entire range as is.  */
 
 void
-duplicate_ssa_name_range_info (tree name, tree src)
+duplicate_ssa_name_range_info (tree name, tree src, bool remove_local_addr)
 {
   gcc_checking_assert (!SSA_NAME_RANGE_INFO (name));
 
@@ -998,6 +1002,10 @@ duplicate_ssa_name_range_info (tree name, tree src)
 
   value_range src_range (TREE_TYPE (src));
   range_info_get_range (src, src_range);
+
+  /* Remove any local addresses from the range if present.  */
+  if (remove_local_addr && is_a <prange> (src_range))
+    as_a <prange> (src_range).clear_function_local_addr ();
   range_info_set_range (name, src_range);
 
   unsigned align, misalign;

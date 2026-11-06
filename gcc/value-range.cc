@@ -585,7 +585,13 @@ prange::set_addr (tree expr, bool known_p)
 bool
 prange::clear_function_local_addr ()
 {
-  if (m_addr && !is_gimple_ip_invariant (m_addr))
+  if (!m_addr)
+    return false;
+
+  /* is_gimple_ip_invariant () accepts the address of a LABEL_DECL, but
+     inlining and cloning could remap it, so remove it as well.  */
+  if (!is_gimple_ip_invariant (m_addr)
+      || TREE_CODE (TREE_OPERAND (m_addr, 0)) == LABEL_DECL)
     {
       set_addr_unknown ();
       return true;

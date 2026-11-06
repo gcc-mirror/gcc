@@ -241,6 +241,9 @@ remap_ssa_name (tree name, copy_body_data *id)
       insert_decl_map (id, name, new_tree);
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
+      /* Range info can be transferred, if local addresses are removed.  */
+      if (SSA_NAME_RANGE_INFO (name))
+	duplicate_ssa_name_range_info (new_tree, name, true);
       /* At least IPA points-to info can be directly transferred.  */
       if (id->src_cfun->gimple_df
 	  && id->src_cfun->gimple_df->ipa_pta
@@ -248,10 +251,6 @@ remap_ssa_name (tree name, copy_body_data *id)
 	  && (pt = ssa_name_pt_solution (name))
 	  && !pt->anything)
 	set_ssa_name_pt_solution (new_tree, *pt);
-      /* So can range-info.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (name))
-	  && SSA_NAME_RANGE_INFO (name))
-	duplicate_ssa_name_range_info (new_tree, name);
       return new_tree;
     }
 
@@ -275,17 +274,8 @@ remap_ssa_name (tree name, copy_body_data *id)
       insert_decl_map (id, name, new_tree);
       SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_tree)
 	= SSA_NAME_OCCURS_IN_ABNORMAL_PHI (name);
-      /* At least IPA points-to info can be directly transferred.  */
-      if (id->src_cfun->gimple_df
-	  && id->src_cfun->gimple_df->ipa_pta
-	  && POINTER_TYPE_P (TREE_TYPE (name))
-	  && (pt = ssa_name_pt_solution (name))
-	  && !pt->anything)
-	set_ssa_name_pt_solution (new_tree, *pt);
-      /* So can range-info.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (name))
-	  && SSA_NAME_RANGE_INFO (name))
-	duplicate_ssa_name_range_info (new_tree, name);
+
+      tree zero = NULL_TREE;
       if (SSA_NAME_IS_DEFAULT_DEF (name))
 	{
 	  /* By inlining function having uninitialized variable, we might
@@ -307,7 +297,7 @@ remap_ssa_name (tree name, copy_body_data *id)
 	    {
 	      gimple_stmt_iterator gsi = gsi_last_bb (id->entry_bb);
 	      gimple *init_stmt;
-	      tree zero = build_zero_cst (TREE_TYPE (new_tree));
+	      zero = build_zero_cst (TREE_TYPE (new_tree));
 
 	      init_stmt = gimple_build_assign (new_tree, zero);
 	      gsi_insert_after (&gsi, init_stmt, GSI_NEW_STMT);
@@ -319,6 +309,17 @@ remap_ssa_name (tree name, copy_body_data *id)
 	      set_ssa_default_def (cfun, SSA_NAME_VAR (new_tree), new_tree);
 	    }
 	}
+      /* Range info can be transferred if local addresses are removed
+	 and no uninitialized name was processed and set to zero.  */
+      if (!zero && SSA_NAME_RANGE_INFO (name))
+	duplicate_ssa_name_range_info (new_tree, name, true);
+      /* At least IPA points-to info can be directly transferred.  */
+      if (id->src_cfun->gimple_df
+	  && id->src_cfun->gimple_df->ipa_pta
+	  && POINTER_TYPE_P (TREE_TYPE (name))
+	  && (pt = ssa_name_pt_solution (name))
+	  && !pt->anything)
+	set_ssa_name_pt_solution (new_tree, *pt);
     }
   else
     insert_decl_map (id, name, new_tree);
