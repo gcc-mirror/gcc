@@ -1927,7 +1927,7 @@ allocate_session_kernargs (struct gomp_offload_session *session,
       /* Cache miss.  */
       void *ka_addr;
       hsa_status_t status = hsa_fns.hsa_memory_allocate_fn
-	(agent->kernarg_region, sizeof (struct kernargs), &ka_addr);
+	(agent->kernarg_region, kernargs_size, &ka_addr);
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not allocate memory for GCN kernel arguments", status);
 
