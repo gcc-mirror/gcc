@@ -8,7 +8,7 @@
 /* { dg-final { scan-tree-dump-not "= fred \\\(\\\); \\\[tail call\\\]" "optimized" { target i?86-*-* x86_64*-*-* aarch64*-*-* powerpc*-*-* arm*-*-* riscv*-*-* s390*-*-* loongarch*-*-* } } } */
 /* { dg-final { scan-tree-dump-not "= corge \\\(\\\); \\\[tail call\\\]" "optimized" { target i?86-*-* x86_64*-*-* aarch64*-*-* powerpc*-*-* arm*-*-* riscv*-*-* s390*-*-* loongarch*-*-* } } } */
 /* { dg-final { scan-tree-dump "= foo \\\(\\\); \\\[tail call\\\]" "optimized" { target arm*-*-* riscv*-*-* s390*-*-* } } } */
-/* { dg-final { scan-tree-dump "= qux \\\(\\\); \\\[tail call\\\]" "optimized" { target arm*-*-* riscv*-*-* s390*-*-* } } } */
+/* { dg-final { scan-tree-dump "= baz \\\(\\\); \\\[tail call\\\]" "optimized" { target arm*-*-* riscv*-*-* s390*-*-* } } } */
 
 unsigned _BitInt(25) foo ();
 [[gnu::noipa]] unsigned _BitInt(31) bar () { return foo (); }
