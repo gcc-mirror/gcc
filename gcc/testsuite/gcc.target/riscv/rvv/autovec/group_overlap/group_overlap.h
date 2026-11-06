@@ -777,6 +777,34 @@
     ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
     ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
 
+/* A widening binary insn of the wv form like vwadd.wv reads vs2 with
+   EEW = 2 * SEW while vs1 is read with EEW = SEW, thus vs1 must not fall
+   inside the vs2 register group.  PICK0_F and PICK1_F reinterpret the wide
+   source vs2 as the narrowed element type and extract one piece of it, which
+   lives in the vs2 register group.  Then take that piece as vs1 to ask for
+   the overlap.  The wide source is stored after the insn to keep it alive, thus
+   the destination cannot simply reuse the vs2 register group.  */
+#define LOOP_WIDEN_BINARY_WV_BODY_OVERLAP_X2(NT, WT, LD_WF, PICK0_F,        \
+					     PICK1_F, OUT_F, ST_F, OUT,     \
+					     START, VL)                     \
+    WT vw0 = LD_WF ((void *)START, VL); START += VL;                        \
+    WT vw1 = LD_WF ((void *)START, VL); START += VL;                        \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    NT vt0 = PICK0_F (vw0);                                                 \
+    NT vt1 = PICK1_F (vw1);                                                 \
+                                                                            \
+    WT vd0 = OUT_F (vw0, vt0, VL);                                          \
+    WT vd1 = OUT_F (vw1, vt1, VL);                                          \
+                                                                            \
+    asm volatile("nop" ::: "memory");                                       \
+                                                                            \
+    ST_F ((void *)out, vd0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vd1, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vw0, VL); OUT += VL;                                 \
+    ST_F ((void *)out, vw1, VL); OUT += VL;                                 \
+
 #define DEF_GROUP_OVERLAP_UNARY_0(VL_F, NT, WT, LD_F, OUT_F, ST_F, NAME, \
 				  LOOP_BODY)                             \
   void test_group_overlap_##NAME##_##NT##_unary_0(uint8_t *data,         \
@@ -851,6 +879,22 @@
                                                                             \
     while (start < end) {                                                   \
       LOOP_BODY (NT, WT, LD_NF, OUT_F, ST_F, out, start, x, vl);            \
+    }                                                                       \
+  }
+
+#define DEF_GROUP_OVERLAP_BINARY_4(VL_F, NT, WT, LD_WF, PICK0_F, PICK1_F,   \
+				   OUT_F, ST_F, NAME, LOOP_BODY)            \
+  void test_group_overlap_##NAME##_##NT##_binary_4(uint8_t *data,           \
+						   uint8_t *out,            \
+						   size_t limit)            \
+  {                                                                         \
+    uint8_t *start = data;                                                  \
+    uint8_t *end = data + limit;                                            \
+    size_t vl = VL_F ();                                                    \
+                                                                            \
+    while (start < end) {                                                   \
+      LOOP_BODY (NT, WT, LD_WF, PICK0_F, PICK1_F, OUT_F, ST_F, out, start,  \
+		 vl);                                                       \
     }                                                                       \
   }
 
