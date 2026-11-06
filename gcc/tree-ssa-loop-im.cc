@@ -1757,6 +1757,8 @@ gather_mem_refs_stmt (class loop *loop, gimple *stmt)
 				   build_int_cst (ref_alias_type, mem_off));
 		  if ((*slot)->mem.volatile_p)
 		    TREE_THIS_VOLATILE (new_ref) = 1;
+		  if (reverse_storage_order_for_component_p (*mem))
+		    REF_REVERSE_STORAGE_ORDER (new_ref) = 1;
 		  (*slot)->mem.ref = new_ref;
 		  /* Make sure the recorded base and offset are consistent
 		     with the newly built ref.  */
