@@ -26,7 +26,6 @@
 #include "rust-stacked-contexts.h"
 #include "rust-item.h"
 #include "rust-name-resolution.h"
-#include "rust-util-path.h"
 
 namespace Rust {
 namespace Resolver2_0 {

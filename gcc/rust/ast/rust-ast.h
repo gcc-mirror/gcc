@@ -28,7 +28,6 @@
 #include "rust-keyword-values.h"
 #include "rust-cloneable.h"
 #include "rust-ast-identifier.h"
-#include "rust-util-path.h"
 #include "rust-raw-path.h"
 
 namespace Rust {
