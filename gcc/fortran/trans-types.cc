@@ -2470,6 +2470,33 @@ gfc_nonrestricted_type (tree t)
 }
 
 
+/* Whether VALUE dummy SYM is passed by reference to a copy made by the
+   caller; gfc_maybe_dereference_var dereferences it accordingly.  */
+
+bool
+gfc_value_dummy_passed_byref (gfc_symbol *sym)
+{
+  if (!sym->attr.value)
+    return false;
+
+  if (sym->attr.dimension)
+    return true;
+
+  /* The caller frees the components, so it must see a DEALLOCATE done by
+     the callee.  */
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived
+      && sym->ts.u.derived->attr.alloc_comp)
+    return true;
+
+  if (sym->ts.type == BT_CHARACTER
+      && (!sym->ts.u.cl || !sym->ts.u.cl->length
+	  || sym->ts.u.cl->length->expr_type != EXPR_CONSTANT))
+    return true;
+
+  return false;
+}
+
+
 /* Return the type for a symbol.  Special handling is required for character
    types to get the correct level of indirection.
    For functions return the return type.
@@ -2528,11 +2555,7 @@ gfc_sym_type (gfc_symbol * sym, bool is_bind_c)
     type = gfc_typenode_for_spec (&sym->ts, sym->attr.codimension);
 
   if (sym->attr.dummy && !sym->attr.function
-      && (!sym->attr.value
-	  || sym->attr.dimension
-	  || (sym->ts.type == BT_CHARACTER
-	      && (!sym->ts.u.cl || !sym->ts.u.cl->length
-		  || sym->ts.u.cl->length->expr_type != EXPR_CONSTANT)))
+      && (!sym->attr.value || gfc_value_dummy_passed_byref (sym))
       && !sym->pass_as_value)
     byref = 1;
   else

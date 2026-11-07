@@ -3081,7 +3081,7 @@ gfc_maybe_dereference_var (gfc_symbol *sym, tree var, bool descriptor_only_p,
 	      || sym->attr.result))
 	var = build_fold_indirect_ref_loc (input_location, var);
     }
-  else if (!sym->attr.value)
+  else if (!sym->attr.value || gfc_value_dummy_passed_byref (sym))
     {
       /* Dereference temporaries for class array dummy arguments.  */
       if (sym->attr.dummy && is_classarray
@@ -6818,6 +6818,32 @@ conv_seq_assoc_value_arg (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym,
 }
 
 
+/* Whether actual argument E can share storage with a variable, so that a
+   VALUE dummy needs a copy; any other value is freed after the call.  */
+
+static bool
+value_actual_shares_storage (gfc_expr *e)
+{
+  return (expr_may_alias_variables (e, true)
+	  || (e->ts.type == BT_DERIVED && parenthesized_variable (e)));
+}
+
+
+/* Pass the class container in PARMSE->EXPR, or its address, to a scalar
+   CLASS dummy with VALUE: a copy if actual argument E can share storage
+   with a variable, otherwise the container itself.  */
+
+static void
+conv_class_value_arg (gfc_se *parmse, gfc_expr *e)
+{
+  if (value_actual_shares_storage (e))
+    conv_class_value_copy (parmse);
+  else if (POINTER_TYPE_P (TREE_TYPE (parmse->expr)))
+    parmse->expr = build_fold_indirect_ref_loc (input_location,
+						parmse->expr);
+}
+
+
 /* Helper function for the handling of (currently) scalar dummy variables
    with the VALUE attribute.  Argument parmse should already be set up.  */
 static void
@@ -6836,7 +6862,8 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 			     gfc_copy_alloc_comp (e->ts.u.derived,
 						  parmse->expr, tmp,
 						  e->rank, 0));
-      parmse->expr = tmp;
+      parmse->expr = gfc_value_dummy_passed_byref (fsym)
+		     ? gfc_build_addr_expr (NULL_TREE, tmp) : tmp;
       tmp = gfc_deallocate_pdt_comp (e->ts.u.derived, tmp, e->rank);
       gfc_add_expr_to_block (&parmse->post, tmp);
       return;
@@ -6854,6 +6881,8 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 	  parmse->expr = null_pointer_node;
 	  parmse->string_length = build_int_cst (gfc_charlen_type_node, 0);
 	}
+      else if (gfc_value_dummy_passed_byref (fsym))
+	parmse->expr = null_pointer_node;
       else if (gfc_bt_struct (fsym->ts.type)
 	       && !(fsym->ts.u.derived->from_intmod == INTMOD_ISO_C_BINDING))
 	{
@@ -6871,6 +6900,55 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
       vec_safe_push (optionalargs, boolean_false_node);
 
       return;
+    }
+
+  /* A derived type with allocatable components is passed by reference to
+     a copy of a variable, or to a temporary as it is.  */
+  if (fsym->ts.type == BT_DERIVED && gfc_value_dummy_passed_byref (fsym))
+    {
+      bool shared = value_actual_shares_storage (e);
+      tree addr, copy, cond;
+      stmtblock_t block;
+
+      if (GFC_CLASS_TYPE_P (TREE_TYPE (parmse->expr)))
+	{
+	  /* Copy the declared type of a CLASS actual.  */
+	  parmse->expr = build_fold_indirect_ref_loc (input_location,
+						      gfc_class_data_get
+							(parmse->expr));
+	  shared = true;
+	}
+      else if (!shared)
+	parmse->expr = gfc_evaluate_now (parmse->expr, &parmse->pre);
+
+      addr = gfc_evaluate_now (gfc_build_addr_expr (NULL_TREE, parmse->expr),
+			       &parmse->pre);
+      parmse->expr = addr;
+      if (shared)
+	{
+	  /* An absent optional actual has nothing to copy or free.  */
+	  cond = fsym->attr.optional
+		 ? fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+				    addr, fold_convert (TREE_TYPE (addr),
+							null_pointer_node))
+		 : logical_true_node;
+	  copy = gfc_create_var (TREE_TYPE (TREE_TYPE (addr)), "val_copy");
+	  tmp = build_fold_indirect_ref_loc (input_location, addr);
+	  gfc_init_block (&block);
+	  gfc_add_modify (&block, copy, tmp);
+	  gfc_add_expr_to_block (&block,
+				 gfc_copy_alloc_comp (fsym->ts.u.derived, tmp,
+						      copy, 0, 0));
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, gfc_finish_block (&block),
+				 build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&parmse->pre, tmp);
+	  tmp = gfc_deallocate_alloc_comp (fsym->ts.u.derived, copy, 0);
+	  tmp = fold_build3_loc (input_location, COND_EXPR, void_type_node,
+				 cond, tmp, build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (&parmse->post, tmp);
+	  parmse->expr = gfc_build_addr_expr (NULL_TREE, copy);
+	}
     }
 
   /* Assumed-length or non-constant-length CHARACTER VALUE dummy: copy
@@ -7522,6 +7600,9 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 				     CLASS_DATA (fsym)->attr.class_pointer
 				       || CLASS_DATA (fsym)->attr.allocatable,
 				     sym->name, &derived_array);
+
+	  if (fsym->attr.value && e->rank == 0)
+	    conv_class_value_arg (&parmse, e);
 	}
       else if (UNLIMITED_POLY (fsym) && e->ts.type != BT_CLASS
 	       && e->ts.type != BT_PROCEDURE
@@ -7533,7 +7614,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	  gfc_find_vtab (&e->ts);
 	  gfc_init_se (&parmse, se);
 	  gfc_conv_intrinsic_to_class (&parmse, e, fsym->ts);
-
+	  if (fsym->attr.value)
+	    conv_class_value_copy (&parmse);
 	}
       else if (se->ss && se->ss->info->useflags)
 	{
@@ -7690,6 +7772,21 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		      conv_scalar_char_value (fsym, &parmse, &e);
 		      if (parmse.expr == NULL)
 			gfc_conv_expr (&parmse, e);
+		    }
+		  else if (fsym->ts.type == BT_CLASS)
+		    {
+		      if (e->ts.type == BT_CLASS
+			  && CLASS_DATA (e)->attr.dimension)
+			{
+			  /* An element of a class array is not a class
+			     container; repackage it as one.  */
+			  gfc_conv_expr_reference (&parmse, e);
+			  gfc_conv_class_to_class (&parmse, e, fsym->ts, false,
+						   false, false, false);
+			}
+		      else
+			gfc_conv_expr (&parmse, e);
+		      conv_class_value_arg (&parmse, e);
 		    }
 		  else
 		    {
