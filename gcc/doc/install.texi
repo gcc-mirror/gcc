@@ -347,7 +347,7 @@ documentation including the target @code{SYSTEM} definition module.
 If Python3 is unavailable Modula-2 documentation will include a target
 independent version of the SYSTEM modules.
 
-If plugins are enabled a compile time call flow analysis shared
+If plugins are enabled, a compile time call flow analysis shared
 library @file{m2rte.so} is built.  This plugin performs a limited
 amount of compile time static analysis in an attempt to detect runtime
 Modula-2 exceptions at compile time.  The plugin @file{m2rte.so}
