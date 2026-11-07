@@ -60,6 +60,7 @@ extern tree (*ix86_veclib_handler) (combined_fn, tree, tree);
 extern tree ix86_veclibabi_svml (combined_fn, tree, tree);
 extern tree ix86_veclibabi_acml (combined_fn, tree, tree);
 extern tree ix86_veclibabi_aocl (combined_fn, tree, tree);
+extern tree ix86_veclibabi_hvml (combined_fn, tree, tree);
 
 enum ix86_function_specific_strings
 {
