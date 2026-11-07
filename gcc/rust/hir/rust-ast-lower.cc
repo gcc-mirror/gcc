@@ -490,9 +490,11 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
       mappings.hir.path_expr_segments.insert (lowered_seg);
     }
 
-  translated = new HIR::PathInExpression (mapping, std::move (path_segments),
-					  expr.get_locus (),
-					  expr.has_opening_scope_resolution ());
+  RawPath<HIR::PathExprSegment> path (std::move (path_segments),
+				      expr.has_opening_scope_resolution ());
+
+  translated
+    = new HIR::PathInExpression (mapping, std::move (path), expr.get_locus ());
 }
 
 HIR::QualifiedPathType
@@ -534,13 +536,16 @@ ASTLowerQualPathInExpression::visit (AST::QualifiedPathInExpression &expr)
       mappings.hir.path_expr_segments.insert (lowered_seg);
     }
 
+  RawPath<HIR::PathExprSegment> hir_path{path_segments,
+					 expr.has_opening_scope_resolution ()};
+
   auto crate_num = mappings.crate.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, expr.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
 				 UNKNOWN_LOCAL_DEFID);
 
   translated = new HIR::QualifiedPathInExpression (mapping, qual_path_type,
-						   std::move (path_segments),
+						   std::move (hir_path),
 						   expr.get_locus (),
 						   expr.get_outer_attrs ());
 }

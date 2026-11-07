@@ -260,10 +260,9 @@ private:
   Kind kind;
 
 protected:
-  PathPattern (std::vector<PathExprSegment> segments,
-	       bool has_opening_scope_resolution)
-    : RawPath (std::move (segments), has_opening_scope_resolution),
-      lang_item (tl::nullopt), kind (Kind::Segmented)
+  PathPattern (RawPath<PathExprSegment> path)
+    : RawPath (std::move (path)), lang_item (tl::nullopt),
+      kind (Kind::Segmented)
   {}
 
   PathPattern (LangItem::Kind lang_item)
@@ -359,9 +358,8 @@ public:
 
   // Constructor
   PathInExpression (Analysis::NodeMapping mappings,
-		    std::vector<PathExprSegment> path_segments,
+		    RawPath<PathExprSegment> path,
 		    location_t locus = UNDEF_LOCATION,
-		    bool has_opening_scope_resolution = false,
 		    std::vector<AST::Attribute> outer_attrs
 		    = std::vector<AST::Attribute> ());
 
@@ -374,8 +372,7 @@ public:
   // Creates an error state path in expression.
   static PathInExpression create_error ()
   {
-    return PathInExpression (Analysis::NodeMapping::get_error (),
-			     std::vector<PathExprSegment> ());
+    return PathInExpression (Analysis::NodeMapping::get_error (), {});
   }
 
   // Returns whether path in expression is in an error state.
@@ -784,7 +781,7 @@ public:
 
   QualifiedPathInExpression (Analysis::NodeMapping mappings,
 			     QualifiedPathType qual_path_type,
-			     std::vector<PathExprSegment> path_segments,
+			     RawPath<PathExprSegment> path,
 			     location_t locus = UNDEF_LOCATION,
 			     std::vector<AST::Attribute> outer_attrs
 			     = std::vector<AST::Attribute> ());

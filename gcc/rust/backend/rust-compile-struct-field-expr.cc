@@ -72,8 +72,8 @@ CompileStructExprField::visit (HIR::StructExprFieldIdentifier &field)
   HIR::PathIdentSegment ident_seg (field.get_field_name ().as_string ());
   HIR::PathExprSegment seg (mappings_copy1, ident_seg, field.get_locus (),
 			    HIR::GenericArgs::create_empty ());
-  HIR::PathInExpression expr (mappings_copy2, {seg}, field.get_locus (), false,
-			      {});
+  RawPath<HIR::PathExprSegment> path ({seg}, false);
+  HIR::PathInExpression expr (mappings_copy2, path, field.get_locus (), {});
   translated = CompileExpr::Compile (expr, ctx);
 }
 

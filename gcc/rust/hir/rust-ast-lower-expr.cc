@@ -299,8 +299,9 @@ ASTLoweringExpr::visit (AST::IdentifierExpr &expr)
   HIR::PathIdentSegment ident_seg (expr.get_ident ().as_string ());
   HIR::PathExprSegment seg (mapping1, ident_seg, expr.get_locus (),
 			    HIR::GenericArgs::create_empty ());
-  translated = new HIR::PathInExpression (mapping2, {seg}, expr.get_locus (),
-					  false, expr.get_outer_attrs ());
+  RawPath<HIR::PathExprSegment> path ({seg}, false);
+  translated = new HIR::PathInExpression (mapping2, path, expr.get_locus (),
+					  expr.get_outer_attrs ());
 }
 
 void
