@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mgfni -mno-avx512bmm -O2" } */
+/* { dg-options "-msse2 -mgfni -mno-avx512bmm -O2" } */
 /* { dg-final { scan-assembler-times "gf2p8affineqb" 4 } } */
 /* { dg-final { scan-assembler-not "vbitrevb" } } */
 /* { dg-final { scan-assembler-not "vgf2p8affineqb" } } */
