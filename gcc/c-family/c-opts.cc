@@ -1261,7 +1261,7 @@ c_common_post_options (const char **pfilename)
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       flag_range_for_ext_temps, cxx_dialect >= cxx23);
 
-  /* Contracts are in C++26.  */
+  /* Contracts are in C++26.  Keep lang_specific_driver in sync.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
 		       flag_contracts, cxx_dialect >= cxx26);
 
