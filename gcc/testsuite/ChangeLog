@@ -1,3 +1,65 @@
+2026-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128357
+	* gfortran.dg/asan/paren_alloc_comp_leak_1.f90: New test.
+
+2026-11-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* algol68/compile/plusab-real-int-1.a68: New test.
+
+2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* g++.target/i386/pr128437.C: New test.
+
+2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/125932
+	* gcc.target/i386/pr125932-1.c: New test.
+	* gcc.target/i386/pr125932-2.c: Ditto.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128461
+	* gcc.dg/torture/pr128461.c: New testcase.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128433
+	* gcc.target/i386/vect-partial-perm-load-1.c: New testcase.
+	* gcc.dg/vect/pr128433.c: Likewise.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128464
+	* gcc.dg/torture/pr128464.c: New testcase.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128463
+	* gcc.dg/torture/pr128463.c: New testcase.
+
+2026-11-06  Torbjörn SVENSSON  <torbjorn.svensson@foss.st.com>
+
+	PR middle-end/127848
+	* gcc.dg/pr127848-4.c: Check for a tail call to baz instead of qux.
+	* gcc.dg/pr127848-5.c: Likewise.
+
+2026-11-06  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* gcc.target/riscv/rvv/autovec/vec-concat-1.c: Expect slides for
+	all functions.
+	* gcc.target/riscv/rvv/autovec/vls/extract-3.c: New test.
+
+2026-11-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/vector/vec-const-hf-1.c: New test.
+
+2026-11-06  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	* gcc.dg/fold-popcount-bitnot-arith.c: New test.
+	* gcc.dg/tree-ssa/popcount-bitnot-arith.c: New test.
+
 2026-11-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/128343

@@ -1,3 +1,8 @@
+2026-11-06  Jose E. Marchesi  <jemarch@gnu.org>
+
+	* a68-moids-misc.cc (a68_widens_to): Add two missing indirect
+	widening paths.
+
 2026-10-29  Jose E. Marchesi  <jemarch@gnu.org>
 
 	* a68-parser-moids-check.cc (find_operator): Do not apply shortcut

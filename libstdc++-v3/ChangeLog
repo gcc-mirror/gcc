@@ -1,3 +1,12 @@
+2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/128413
+	* include/bits/stl_iterator.h (iter_move): Change return type to
+	decltype(auto) in overloads for common_iterator and
+	counted_iterator, as per LWG 3953.
+	* testsuite/24_iterators/common_iterator/lwg3953.cc: New test.
+	* testsuite/24_iterators/counted_iterator/lwg3953.cc: New test.
+
 2026-11-05  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* src/c++20/tzdata.zi: Import new file from 2026f release.

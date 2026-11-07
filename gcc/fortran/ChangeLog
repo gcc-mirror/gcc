@@ -1,3 +1,13 @@
+2026-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/128357
+	* trans-array.cc (gfc_conv_expr_descriptor): Finalize the temporary
+	for a CLASS operator expression through the vtable.
+	* trans-expr.cc (parenthesized_variable): New function.
+	(gfc_conv_procedure_call): Use it.  Do not copy or free the
+	allocatable components of the temporary for a parenthesized TYPE
+	variable.
+
 2026-11-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/128343

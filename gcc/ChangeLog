@@ -1,3 +1,186 @@
+2026-11-06  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_md_reorg): Break contents into ....
+	(gcn_md_reorg_simd_execreg): ... this ...
+	(gcn_md_reorg_manually_inserted_wait_states): ... and this.
+
+2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/128437
+	* config/i386/i386.cc (ix86_remove_dead_tls_ld_base): New function.
+	(ix86_reorg): Call it for 64-bit targets with GNU TLS
+	when optimizing and TLS calls were expanded.
+
+2026-11-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/125932
+	* config/i386/i386-features.cc
+	(scalar_chain::analyze_register_chain): Abort the chain
+	when a non-convertible def is a jump insn.
+
+2026-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssa-address.cc (copy_ref_info): Call renamed routine.
+	* tree-ssa-loop-ivopts.cc (rewrite_use_nonlinear_expr): Likewise.
+	* tree-ssa-loop-prefetch.cc (issue_prefetch_ref): Likewise.
+	* tree-ssanames.cc (duplicate_ssa_name_pt_solution): Rename from
+	duplicate_ssa_name_ptr_info.
+	(maybe_duplicate_ssa_info_at_copy): Use new routine name.
+	(duplicate_ssa_name_fn): Likewise.
+	* tree-ssanames.h (duplicate_ssa_name_pt_solution): Renamed.
+	* tree-vect-data-refs.cc (vect_duplicate_ssa_name_pt_solution):
+	Renamed from vect_duplicate_ssa_name_ptr_info.
+	(vect_create_addr_base_for_vector_ref): Use new routine name.
+	(vect_create_data_ref_ptr): Likewise.
+	(bump_vector_ptr): Likewise.
+
+2026-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Adjust
+	pt_ names in prange to addr_ API.
+	(fold_using_range::range_of_phi): Likewise.
+	* ipa-prop.cc (ipa_set_jfunc_vr): Likewise.
+	(ipa_record_return_value_range_1): Likewise.
+	* range-op-ptr.cc (pointer_plus_operator::fold_range): Likewise.
+	(pointer_plus_operator::op2_range): Likewise.
+	(operator_pointer_diff::fold_range): Likewise.
+	(operator_cast::fold_range): Likewise.
+	(operator_cast::lhs_op1_relation): Likewise
+	(operator_equal::fold_range): Likewise.
+	(operator_equal::op1_range): Likewise.
+	(operator_not_equal::fold_range): Likewise.
+	(operator_not_equal::op1_range): Likewise.
+	* tree-ssa-threadbackward.cc (find_taken_edge_goto): Likewise.
+	* tree-vrp.cc (rvrp_folder::value_of_expr): Likewise.
+	(rvrp_folder::value_on_edge): Likewise.
+	* value-query.cc (range_query::get_tree_range): Likewise.
+	* value-range-pretty-print.cc (vrange_printer::print_addr):
+	Rename from print_pt and adjust.
+	(vrange_printer::visit): Call print_addr.
+	* value-range-pretty-print.h (print_addr): Change prototype name.
+	* value-range-storage.cc (prange_storage::alloc): Adjust to
+	new API naming convention.
+	(prange_storage::prange_storage): Likewise.
+	(prange_storage::prange_format): Likewise.
+	(prange_storage::set_prange): Likewise.
+	(prange_storage::get_prange): Likewise.
+	(prange_storage::equal_p): Likewise.
+	(prange_storage::set_nonnull): Likewise.
+	* value-range-storage.h (prange_storage::m_known_p): Rename.
+	(prange_storage::m_addr): Rename.
+	* value-range.cc (inchash::add_vrange): Adjust to new API.
+	(prange::set_addr): Renamed and adjust.
+	(prange::addr_base): Likewise.
+	(prange::addr_offset): Likewise.
+	(prange::addr_size): Likewise.
+	(prange::set): Adjust to new API.
+	(prange::union_): Likewise.
+	(prange::intersect): Likewise.
+	(prange::operator=): Likewise.
+	(prange::operator==): Likewise.
+	(prange::invert): Likewise.
+	(prange::verify_range): Likewise.
+	* value-range.h (prange::set_addr): Rename for new API and adjust.
+	(prange::set_addr_unknown): Likewise.
+	(prange::addr_unknown_p): Likewise.
+	(prange::addr_known): Likewise.
+	(prange::addr_excluded): Likewise.
+	(prange::addr_same_known_p): Likewise.
+	(prange::addr_same_excluded_p): Likewise.
+	(prange::addr_invert): Likewise.
+	(prange::addr_inverted_p): Likewise.
+	(prange::addr_base): Likewise.
+	(prange::addr_offset): Likewise.
+	(prange::addr_size): Likewise.
+	(prange::m_addr): Likewise.
+	(prange::m_known_p): Likewise.
+	(prange::addr_equal_p): Likewise.
+	(prange::set_undefined): Adjust to new API.
+	(prange::set_varying): Likewise.
+	(prange::set_nonzero): Likewise.
+	(prange::set_zero): Likewise.
+	(prange::varying_compatible_p): Likewise.
+
+2026-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* tree-ssanames.cc (ssa_name_prange_storage): Delete.
+	(set_pt_solution): Use ssa_name_prange_info.
+	(get_pt_solution): Likewise.
+	(range_info_set_range): Likewise.
+	(ptr_nonnull_p): Likewise.
+	(set_ptr_nonnull): Likewise.
+	(get_nonzero_bits_1): Likewise.
+	(get_known_nonzero_bits_1): Likewise.
+	(get_ptr_info_alignment): Likewise.
+	(mark_ptr_info_alignment_unknown): Likewise.
+	(set_ptr_info_alignment): Likewise.
+	(reset_flow_sensitive_info): Likewise.
+	* tree-ssanames.h (ssa_name_irange_info): New.
+	(ssa_name_prange_info): New.
+	(ssa_name_frange_info): New.
+	(ssa_name_pt_solution): Use ssa_name_prange_info.
+
+2026-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-range-storage.cc (vrange_storage::set_vrange): Use new
+	routines.
+	(vrange_storage::get_vrange): Likewise.
+	(vrange_storage::fits_p): Liekwise.
+	(vrange_storage::equal_p): Likewise.
+	* value-range-storage.h (vrange::dyn_irange): New.
+	(vrange::dyn_prange): New.
+	(vrange::dyn_frange): New.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128461
+	* tree-ssa-loop-im.cc (gather_mem_refs_stmt): Preserve SSO
+	when building a canonicalized ref.
+
+2026-11-06  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* profile-count.cc (profile_probability::sqrt): Return val
+	instead of m_val.  Alter the while loop condition.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128433
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Disable partial vectors when the group accessed per vector
+	iteration does not cover a whole number of vectors.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128464
+	* tree-complex.cc (complex_propagate::visit_stmt): Set
+	abnormal def lattice value to VARYING.
+	(complex_propagate::visit_phi): Likewise.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128463
+	* gimple-ssa-store-merging.cc
+	(pass_store_merging::terminate_all_aliasing_chains): Simplify.
+	Do not use TBAA when checking whether a stmt may clobber ref.
+	(stmts_may_clobber_ref_p): Likewise.
+
+2026-11-06  Robin Dapp  <robin.dapp@oss.qualcomm.com>
+
+	* config/riscv/riscv.cc (riscv_can_change_mode_class): Don't
+	prohibit ambiguous VLS subregs.
+	(riscv_regmode_natural_size): Make VLS regs unsplittable when
+	the vector size is variable.
+
+2026-11-06  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (constant_modes): Add modes
+	V{1,2,4,8}HFmode.
+
+2026-11-06  Naveen  <naveen.siddegowda@oss.qualcomm.com>
+
+	* match.pd (popcount (bit_not @0)): Simplify to precision minus
+	popcount.
+
 2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
 
 	PR target/128440
