@@ -5032,6 +5032,18 @@ gfc_simplify_len (gfc_expr *e, gfc_expr *kind)
   if (k == -1)
     return &gfc_bad_expr;
 
+  /* Catch parameterized strings of nested PDTs and let the expansion occur
+     downstream in trans-array.cc(structure_alloc_comps).  */
+  if (e->expr_type == EXPR_VARIABLE && IS_PDT (e->symtree->n.sym)
+      && !e->param_list && e->ref)
+    {
+      gfc_ref *r = e->ref;
+      for (; r; r = r->next)
+	if (r->type == REF_COMPONENT
+	    && (IS_PDT (r->u.c.component) || IS_CLASS_PDT (r->u.c.component)))
+	  return NULL;
+    }
+
   if (e->expr_type == EXPR_CONSTANT
       || substring_has_constant_len (e))
     {
