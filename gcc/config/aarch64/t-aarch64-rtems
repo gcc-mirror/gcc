@@ -22,9 +22,6 @@ MULTILIB_OPTIONS  =
 MULTILIB_DIRNAMES =
 MULTILIB_REQUIRED =
 
-MULTILIB_OPTIONS  += mabi=ilp32
-MULTILIB_DIRNAMES += ilp32
-
 MULTILIB_OPTIONS  += mno-outline-atomics
 MULTILIB_DIRNAMES += nooa
 
@@ -37,6 +34,4 @@ MULTILIB_DIRNAMES += fix835769
 MULTILIB_OPTIONS  += mfix-cortex-a53-843419
 MULTILIB_DIRNAMES += fix843419
 
-MULTILIB_REQUIRED += mabi=ilp32
-MULTILIB_REQUIRED += mabi=ilp32/mno-outline-atomics/mcpu=cortex-a53/mfix-cortex-a53-835769/mfix-cortex-a53-843419
 MULTILIB_REQUIRED += mno-outline-atomics/mcpu=cortex-a53/mfix-cortex-a53-835769/mfix-cortex-a53-843419
