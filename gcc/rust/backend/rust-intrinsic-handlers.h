@@ -144,28 +144,6 @@ enum class AtomicMinMaxKind
   UnsignedMin,
 };
 
-namespace inner {
-void wrapping_op (IntrinsicCtx &ctx, tree_code op);
-
-void atomic_store (IntrinsicCtx &ctx, int ordering);
-void atomic_load (IntrinsicCtx &ctx, int ordering);
-void atomic_binary_op (IntrinsicCtx &ctx, const std::string &op_name,
-		       int ordering);
-void atomic_compare_exchange (IntrinsicCtx &ctx, bool weak,
-			      int success_ordering, int failure_ordering);
-void atomic_minmax (IntrinsicCtx &ctx, AtomicMinMaxKind kind, int ordering);
-inline void copy (IntrinsicCtx &ctx, bool overlaps);
-inline void expect (IntrinsicCtx &ctx, bool likely);
-void try_handler (IntrinsicCtx &ctx, bool is_new_api);
-
-void op_with_overflow (IntrinsicCtx &ctx, tree_code op);
-
-inline void unchecked_op (IntrinsicCtx &ctx, tree_code op);
-
-void prefetch (IntrinsicCtx &ctx, Mode mode, Cache cache);
-
-} // namespace inner
-
 void rotate_left (IntrinsicCtx &ctx);
 void rotate_right (IntrinsicCtx &ctx);
 

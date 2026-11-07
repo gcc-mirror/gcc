@@ -277,7 +277,7 @@ resolve_atomic_builtin (IntrinsicCtx &ctx, const std::string &prefix)
   return decl.value ();
 }
 
-inline void
+static void
 unchecked_op (IntrinsicCtx &ctx, tree_code op)
 {
   auto x = Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
@@ -297,7 +297,7 @@ unchecked_op (IntrinsicCtx &ctx, tree_code op)
   ctx.add_statement (return_statement);
 }
 
-inline void
+static void
 expect (IntrinsicCtx &ctx, bool likely)
 {
   tree expr = Backend::var_expression (ctx.param_vars[0], UNDEF_LOCATION);
@@ -323,7 +323,7 @@ expect (IntrinsicCtx &ctx, bool likely)
   ctx.add_statement (return_statement);
 }
 
-void
+static void
 try_handler (IntrinsicCtx &ctx, bool is_new_api)
 {
   // The following tricks are needed to make sure the try-catch blocks are not
@@ -402,7 +402,7 @@ try_handler (IntrinsicCtx &ctx, bool is_new_api)
 /**
  * pub fn wrapping_{add, sub, mul}<T>(lhs: T, rhs: T) -> T;
  */
-void
+static void
 wrapping_op (IntrinsicCtx &ctx, tree_code op)
 {
   // wrapping_<op> intrinsics have two parameter
@@ -427,7 +427,7 @@ wrapping_op (IntrinsicCtx &ctx, tree_code op)
 /**
  * pub fn add_with_overflow<T>(x: T, y: T) -> (T, bool);
  */
-void
+static void
 op_with_overflow (IntrinsicCtx &ctx, tree_code op)
 {
   // wrapping_<op> intrinsics have two parameter
@@ -510,7 +510,7 @@ op_with_overflow (IntrinsicCtx &ctx, tree_code op)
  * fn copy_nonoverlapping<T>(src: *const T, dst: *mut T, count: usize);
  * fn copy<T>(src: *const T, dst: *mut T, count: usize);
  */
-void
+static void
 copy (IntrinsicCtx &ctx, bool overlaps)
 {
   // Most intrinsic functions are pure - not `copy_nonoverlapping` and `copy`
@@ -546,7 +546,7 @@ copy (IntrinsicCtx &ctx, bool overlaps)
 }
 
 // Compiles atomic_store that has the signature (*mut T, T) -> ()
-void
+static void
 atomic_store (IntrinsicCtx &ctx, int ordering)
 {
   // Most intrinsic functions are pure but not the atomic ones
@@ -577,7 +577,7 @@ atomic_store (IntrinsicCtx &ctx, int ordering)
 }
 
 // Compiles atomic_load that has the signature (*const T) -> T
-void
+static void
 atomic_load (IntrinsicCtx &ctx, int ordering)
 {
   // Most intrinsic functions are pure but not the atomic ones
@@ -608,7 +608,7 @@ atomic_load (IntrinsicCtx &ctx, int ordering)
 }
 
 // Compiles for atomic builtins that have the signature (*mut T, T) -> T
-void
+static void
 atomic_binary_op (IntrinsicCtx &ctx, const std::string &op_name, int ordering)
 {
   // Most intrinsic functions are pure but not the atomic ones
@@ -642,7 +642,7 @@ atomic_binary_op (IntrinsicCtx &ctx, const std::string &op_name, int ordering)
 }
 
 // Compiles atomic compare exchange with signature (*mut T, T, T) -> (T, bool).
-void
+static void
 atomic_compare_exchange (IntrinsicCtx &ctx, bool weak, int success_ordering,
 			 int failure_ordering)
 {
@@ -722,7 +722,7 @@ atomic_compare_exchange (IntrinsicCtx &ctx, bool weak, int success_ordering,
 //	  break;
 //   } while (true);
 // return old_val;
-void
+static void
 atomic_minmax (IntrinsicCtx &ctx, AtomicMinMaxKind kind, int ordering)
 {
   // Most intrinsic functions are pure but not the atomic ones
@@ -1193,7 +1193,7 @@ type_assert (IntrinsicCtx &ctx, TyAssert assert)
     }
 }
 
-void
+static void
 prefetch (IntrinsicCtx &ctx, Mode mode, Cache cache)
 {
   // The core library technically allows you to pass any i32 value as a
