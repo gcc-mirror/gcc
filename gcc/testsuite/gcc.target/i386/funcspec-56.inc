@@ -242,6 +242,7 @@ extern void test_arch_znver5 (void)             __attribute__((__target__("arch=
 extern void test_arch_c86_4g_m4 (void)          __attribute__((__target__("arch=c86-4g-m4")));
 extern void test_arch_c86_4g_m6 (void)          __attribute__((__target__("arch=c86-4g-m6")));
 extern void test_arch_c86_4g_m7 (void)          __attribute__((__target__("arch=c86-4g-m7")));
+extern void test_arch_c86_4g_m8 (void)          __attribute__((__target__("arch=c86-4g-m8")));
 
 extern void test_tune_nocona (void)		__attribute__((__target__("tune=nocona")));
 extern void test_tune_core2 (void)		__attribute__((__target__("tune=core2")));
@@ -272,6 +273,7 @@ extern void test_tune_znver5 (void)             __attribute__((__target__("tune=
 extern void test_tune_c86_4g_m4 (void)          __attribute__((__target__("tune=c86-4g-m4")));
 extern void test_tune_c86_4g_m6 (void)          __attribute__((__target__("tune=c86-4g-m6")));
 extern void test_tune_c86_4g_m7 (void)          __attribute__((__target__("tune=c86-4g-m7")));
+extern void test_tune_c86_4g_m8 (void)          __attribute__((__target__("tune=c86-4g-m8")));
 
 extern void test_fpmath_sse (void)		__attribute__((__target__("sse2,fpmath=sse")));
 extern void test_fpmath_387 (void)		__attribute__((__target__("sse2,fpmath=387")));

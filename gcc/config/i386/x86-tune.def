@@ -525,7 +525,7 @@ DEF_TUNE (X86_TUNE_USE_GATHER_2PARTS, "use_gather_2parts",
 /* X86_TUNE_USE_SCATTER_2PARTS: Use scater instructions for vectors with 2
    elements.  */
 DEF_TUNE (X86_TUNE_USE_SCATTER_2PARTS, "use_scatter_2parts",
-	  ~(m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7))
+	  ~(m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7 | m_C86_4G_M8))
 
 /* X86_TUNE_USE_GATHER_4PARTS: Use gather instructions for vectors with 4
    elements.  */
@@ -537,7 +537,7 @@ DEF_TUNE (X86_TUNE_USE_GATHER_4PARTS, "use_gather_4parts",
 /* X86_TUNE_USE_SCATTER_4PARTS: Use scater instructions for vectors with 4
    elements.  */
 DEF_TUNE (X86_TUNE_USE_SCATTER_4PARTS, "use_scatter_4parts",
-	  ~(m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7))
+	  ~(m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7 | m_C86_4G_M8))
 
 /* X86_TUNE_USE_GATHER: Use gather instructions for vectors with 8 or more
    elements.  */
@@ -548,7 +548,7 @@ DEF_TUNE (X86_TUNE_USE_GATHER_8PARTS, "use_gather_8parts",
 /* X86_TUNE_USE_SCATTER: Use scater instructions for vectors with 8 or more
    elements.  */
 DEF_TUNE (X86_TUNE_USE_SCATTER_8PARTS, "use_scatter_8parts",
-	  ~(m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7))
+	  ~(m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7 | m_C86_4G_M8))
 
 /* X86_TUNE_AVOID_128FMA_CHAINS: Avoid creating loops with tight 128bit or
    smaller FMA chain.  */
@@ -613,7 +613,7 @@ DEF_TUNE (X86_TUNE_AVX256_AVOID_VEC_PERM,
 
 /* X86_TUNE_AVX256_SPLIT_REGS: if true, AVX512 ops are split into two AVX256 ops.  */
 DEF_TUNE (X86_TUNE_AVX512_SPLIT_REGS, "avx512_split_regs", m_ZNVER4
-	  | m_C86_4G_M7)
+	  | m_C86_4G_M7 | m_C86_4G_M8)
 
 /* It's better to align MOVE_MAX with prefer_vector_width to reduce
    risk of STLF stalls(small store followed by big load.)  */
@@ -632,12 +632,12 @@ DEF_TUNE (X86_TUNE_AVX256_STORE_BY_PIECES, "avx256_store_by_pieces",
 /* X86_TUNE_AVX512_MOVE_BY_PIECES: Optimize move_by_pieces with 512-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX512_MOVE_BY_PIECES, "avx512_move_by_pieces",
-	   m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7)
+	   m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7 | m_C86_4G_M8)
 
 /* X86_TUNE_AVX512_STORE_BY_PIECES: Optimize store_by_pieces with 512-bit
    AVX instructions.  */
 DEF_TUNE (X86_TUNE_AVX512_STORE_BY_PIECES, "avx512_store_by_pieces",
-	  m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7)
+	  m_ZNVER4 | m_ZNVER5 | m_C86_4G_M7 | m_C86_4G_M8)
 
 /* X86_TUNE_AVX512_TWO_EPILOGUES: Use two vector epilogues for 512-bit
    vectorized loops.  */

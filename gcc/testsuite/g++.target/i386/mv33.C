@@ -25,6 +25,10 @@ int __attribute__ ((target("arch=c86-4g-m7"))) foo () {
   return 3;
 }
 
+int __attribute__ ((target("arch=c86-4g-m8"))) foo () {
+  return 4;
+}
+
 int main ()
 {
   int val = foo ();
@@ -35,6 +39,8 @@ int main ()
     assert (val == 2);
   else if (__builtin_cpu_is ("c86-4g-m7"))
     assert (val == 3);
+  else if (__builtin_cpu_is ("c86-4g-m8"))
+    assert (val == 4);
   else
     assert (val == 0);
 

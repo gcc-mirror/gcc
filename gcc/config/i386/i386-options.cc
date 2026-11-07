@@ -186,7 +186,9 @@ along with GCC; see the file COPYING3.  If not see
 #define m_C86_4G_M4 (HOST_WIDE_INT_1U<<PROCESSOR_C86_4G_M4)
 #define m_C86_4G_M6 (HOST_WIDE_INT_1U<<PROCESSOR_C86_4G_M6)
 #define m_C86_4G_M7 (HOST_WIDE_INT_1U<<PROCESSOR_C86_4G_M7)
-#define m_C86_4G (m_C86_4G_M4 | m_C86_4G_M6 | m_C86_4G_M7)
+#define m_C86_4G_M8 (HOST_WIDE_INT_1U<<PROCESSOR_C86_4G_M8)
+#define m_C86_4G (m_C86_4G_M4 | m_C86_4G_M6 | m_C86_4G_M7 \
+		  | m_C86_4G_M8)
 
 #define m_GENERIC (HOST_WIDE_INT_1U<<PROCESSOR_GENERIC)
 
@@ -827,7 +829,8 @@ static const struct processor_costs *processor_cost_table[] =
   &znver5_cost,
   &c86_4g_m4_cost,	/* PROCESSOR_C86_4G_M4.		*/
   &c86_4g_m6_cost,	/* PROCESSOR_C86_4G_M6.		*/
-  &c86_4g_m7_cost	/* PROCESSOR_C86_4G_M7.		*/
+  &c86_4g_m7_cost,	/* PROCESSOR_C86_4G_M7.		*/
+  &c86_4g_m8_cost	/* PROCESSOR_C86_4G_M8.		*/
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */

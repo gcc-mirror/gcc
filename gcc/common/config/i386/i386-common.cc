@@ -2211,7 +2211,8 @@ const char *const processor_names[] =
   "znver5",
   "c86-4g-m4",
   "c86-4g-m6",
-  "c86-4g-m7"
+  "c86-4g-m7",
+  "c86-4g-m8"
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */
@@ -2481,6 +2482,9 @@ const pta processor_alias_table[] =
   {"c86-4g-m7", PROCESSOR_C86_4G_M7, CPU_C86_4G_M7,
     PTA_C86_4G_M7,
     M_CPU_SUBTYPE (HYGONFAM18H_C86_4G_M7), P_PROC_AVX512F},
+  {"c86-4g-m8", PROCESSOR_C86_4G_M8, CPU_C86_4G_M8,
+    PTA_C86_4G_M8,
+    M_CPU_SUBTYPE (HYGONFAM18H_C86_4G_M8), P_PROC_AVX512F},
 
   {"generic", PROCESSOR_GENERIC, CPU_GENERIC,
     PTA_64BIT

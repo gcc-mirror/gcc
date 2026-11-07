@@ -367,6 +367,12 @@ get_hygon_cpu (struct __processor_model *cpu_model,
 	  CHECK___builtin_cpu_is ("c86-4g-m7");
 	  cpu_model->__cpu_subtype = HYGONFAM18H_C86_4G_M7;
 	}
+      else if (model == 0x8)
+	{
+	  cpu = "c86-4g-m8";
+	  CHECK___builtin_cpu_is ("c86-4g-m8");
+	  cpu_model->__cpu_subtype = HYGONFAM18H_C86_4G_M8;
+	}
       break;
     default:
       break;

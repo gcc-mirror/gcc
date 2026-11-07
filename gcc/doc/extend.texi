@@ -28326,6 +28326,9 @@ HYGON Family 18h model 6 shanghai CPU.
 
 @item c86-4g-m7
 HYGON Family 18h model 7 chengdu CPU.
+
+@item c86-4g-m8
+HYGON Family 18h model 8 suzhou CPU.
 @end table
 
 Here is an example:

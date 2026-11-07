@@ -716,7 +716,7 @@ sapphirerapids alderlake rocketlake eden-x2 nano nano-1000 nano-2000 nano-3000 \
 nano-x2 eden-x4 nano-x4 lujiazui yongfeng shijidadao x86-64 x86-64-v2 \
 x86-64-v3 x86-64-v4 sierraforest graniterapids graniterapids-d grandridge \
 arrowlake arrowlake-s clearwaterforest pantherlake diamondrapids \
-c86-4g-m4 c86-4g-m6 c86-4g-m7 native"
+c86-4g-m4 c86-4g-m6 c86-4g-m7 c86-4g-m8 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor
 # MUST be separated by exactly one space.
@@ -3922,6 +3922,10 @@ case ${target} in
 	arch=c86-4g-m7
 	cpu=c86-4g-m7
 	;;
+      c86_4g_m8-*)
+	arch=c86-4g-m8
+	cpu=c86-4g-m8
+	;;
       *)
 	arch=pentiumpro
 	cpu=generic
@@ -4031,6 +4035,10 @@ case ${target} in
       c86_4g_m7-*)
 	arch=c86-4g-m7
 	cpu=c86-4g-m7
+	;;
+      c86_4g_m8-*)
+	arch=c86-4g-m8
+	cpu=c86-4g-m8
 	;;
       *)
 	arch=x86-64

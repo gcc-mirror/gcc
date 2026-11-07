@@ -4336,3 +4336,5 @@ struct processor_costs c86_4g_m7_cost = {
   2,					/* Small unroll factor.  */
   COSTS_N_INSNS (2),			/* Branch mispredict scale.  */
 };
+
+struct processor_costs c86_4g_m8_cost = c86_4g_m7_cost;

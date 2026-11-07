@@ -533,8 +533,10 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	processor = PROCESSOR_C86_4G_M4;
       else if (model == 6)
 	processor = PROCESSOR_C86_4G_M6;
-      else if (model >= 7)
+      else if (model == 7)
 	processor = PROCESSOR_C86_4G_M7;
+      else if (model >= 8)
+	processor = PROCESSOR_C86_4G_M8;
     }
   else if (vendor == VENDOR_CENTAUR)
     {
@@ -886,6 +888,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
       break;
     case PROCESSOR_C86_4G_M7:
       cpu = "c86-4g-m7";
+      break;
+    case PROCESSOR_C86_4G_M8:
+      cpu = "c86-4g-m8";
       break;
 
     default:
