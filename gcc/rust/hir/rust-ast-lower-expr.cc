@@ -804,7 +804,7 @@ ASTLoweringExpr::visit (AST::RangeFromToInclExpr &expr)
   HIR::Expr *func
     = new HIR::PathInExpression (path_mapping,
 				 LangItem::Kind::RANGE_INCLUSIVE_NEW,
-				 expr.get_locus (), false);
+				 expr.get_locus ());
 
   HIR::Expr *range_from = ASTLoweringExpr::translate (expr.get_from_expr ());
   HIR::Expr *range_to = ASTLoweringExpr::translate (expr.get_to_expr ());

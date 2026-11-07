@@ -734,7 +734,7 @@ Dump::visit (PathInExpression &e)
   do_pathexpr (e);
 
   put_field ("has_opening_scope_resolution",
-	     std::to_string (e.opening_scope_resolution ()));
+	     std::to_string (e.has_opening_scope_resolution ()));
   end ("PathInExpression");
 }
 

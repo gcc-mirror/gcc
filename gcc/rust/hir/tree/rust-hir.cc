@@ -1179,7 +1179,7 @@ PathInExpression::to_string () const
 {
   std::string str;
 
-  if (has_opening_scope_resolution)
+  if (has_opening_scope_resolution ())
     {
       str = "::";
     }

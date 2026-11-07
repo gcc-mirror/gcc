@@ -472,7 +472,7 @@ ASTLowerPathInExpression::visit (AST::PathInExpression &expr)
   if (expr.is_lang_item ())
     {
       translated = new HIR::PathInExpression (mapping, expr.get_lang_item (),
-					      expr.get_locus (), false);
+					      expr.get_locus ());
       return;
     }
 

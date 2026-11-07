@@ -246,7 +246,7 @@ public:
 };
 
 // HIR node representing a pattern that involves a "path" - abstract base class
-class PathPattern : public Pattern
+class PathPattern : public Pattern, public RawPath<PathExprSegment>
 {
 public:
   enum class Kind
@@ -256,18 +256,18 @@ public:
   };
 
 private:
-  std::vector<PathExprSegment> segments;
   tl::optional<LangItem::Kind> lang_item;
   Kind kind;
 
 protected:
-  PathPattern (std::vector<PathExprSegment> segments)
-    : segments (std::move (segments)), lang_item (tl::nullopt),
-      kind (Kind::Segmented)
+  PathPattern (std::vector<PathExprSegment> segments,
+	       bool has_opening_scope_resolution)
+    : RawPath (std::move (segments), has_opening_scope_resolution),
+      lang_item (tl::nullopt), kind (Kind::Segmented)
   {}
 
   PathPattern (LangItem::Kind lang_item)
-    : segments ({}), lang_item (lang_item), kind (Kind::LangItem)
+    : RawPath ({}, false), lang_item (lang_item), kind (Kind::LangItem)
   {}
   bool is_refutable (const TyTy::BaseType &scrutinee) const override;
   bool is_refutable () const override
@@ -352,7 +352,6 @@ public:
  * arguments) */
 class PathInExpression : public PathPattern, public PathExpr
 {
-  bool has_opening_scope_resolution;
   location_t locus;
 
 public:
@@ -369,7 +368,6 @@ public:
   // lang-item Constructor
   PathInExpression (Analysis::NodeMapping mappings, LangItem::Kind kind,
 		    location_t locus = UNDEF_LOCATION,
-		    bool has_opening_scope_resolution = false,
 		    std::vector<AST::Attribute> outer_attrs
 		    = std::vector<AST::Attribute> ());
 
@@ -392,7 +390,7 @@ public:
      * so the method in the parent class should be protected, not public. Have
      * to pass in opening scope resolution as parent class has no access to it.
      */
-    return convert_to_simple_path (has_opening_scope_resolution);
+    return convert_to_simple_path (has_opening_scope_resolution ());
   }
 
   location_t get_locus () const override final { return locus; }
@@ -400,8 +398,6 @@ public:
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExpressionVisitor &vis) override;
   void accept_vis (HIRPatternVisitor &vis) override;
-
-  bool opening_scope_resolution () { return has_opening_scope_resolution; }
 
   bool is_self () const;
 

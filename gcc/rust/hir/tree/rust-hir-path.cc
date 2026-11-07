@@ -149,18 +149,15 @@ PathInExpression::PathInExpression (Analysis::NodeMapping mappings,
 				    location_t locus,
 				    bool has_opening_scope_resolution,
 				    std::vector<AST::Attribute> outer_attrs)
-  : PathPattern (std::move (path_segments)),
-    PathExpr (std::move (mappings), std::move (outer_attrs)),
-    has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
+  : PathPattern (std::move (path_segments), has_opening_scope_resolution),
+    PathExpr (std::move (mappings), std::move (outer_attrs)), locus (locus)
 {}
 
 PathInExpression::PathInExpression (Analysis::NodeMapping mappings,
 				    LangItem::Kind lang_item, location_t locus,
-				    bool has_opening_scope_resolution,
 				    std::vector<AST::Attribute> outer_attrs)
   : PathPattern (lang_item),
-    PathExpr (std::move (mappings), std::move (outer_attrs)),
-    has_opening_scope_resolution (has_opening_scope_resolution), locus (locus)
+    PathExpr (std::move (mappings), std::move (outer_attrs)), locus (locus)
 {}
 
 bool
@@ -368,7 +365,7 @@ QualifiedPathInExpression::QualifiedPathInExpression (
   Analysis::NodeMapping mappings, QualifiedPathType qual_path_type,
   std::vector<PathExprSegment> path_segments, location_t locus,
   std::vector<AST::Attribute> outer_attrs)
-  : PathPattern (std::move (path_segments)),
+  : PathPattern (std::move (path_segments), false),
     PathExpr (std::move (mappings), std::move (outer_attrs)),
     path_type (std::move (qual_path_type)), locus (locus)
 {}
