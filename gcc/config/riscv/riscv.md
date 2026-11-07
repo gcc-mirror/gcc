@@ -5515,6 +5515,29 @@
   }
 ) 
 
+;; We want to capture things like loading a 32 bit object, right shifting
+;; it by 8 bits and storing it as a 16 bit object.  Naively that would
+;; generate the 32-bit load, right shift and 16-bit store.  But if we can
+;; handle unaligned accesses, then we can adjust the address of the load
+;; and narrow it to 16 bits.
+;;
+;; Combine has actually done all the hard work to adjust the source and
+;; and destination operands.  So we just need to load from memory into
+;; the appropriately sized temporary and store from that temporary into
+;; memory.
+(define_split
+  [(set (match_operand:SUBX 0 "memory_operand")
+       (match_operand:SUBX 1 "memory_operand"))]
+  "(!MEM_VOLATILE_P (operands[0])
+    && !MEM_VOLATILE_P (operands[1])
+    && (<MODE>mode == QImode || !riscv_slow_unaligned_access_p))"
+  [(set (match_dup 2) (match_dup 1))
+   (set (match_dup 0) (match_dup 2))]
+{
+  operands[2] = gen_reg_rtx (<MODE>mode);
+})
+
+
 (include "bitmanip.md")
 (include "crypto.md")
 (include "sync.md")
