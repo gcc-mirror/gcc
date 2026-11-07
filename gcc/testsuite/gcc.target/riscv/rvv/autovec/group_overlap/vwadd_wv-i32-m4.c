@@ -14,5 +14,5 @@ DEF_GROUP_OVERLAP_BINARY_0(
   vwadd_wv,
   LOOP_WIDEN_BINARY_BODY_X4)
 
-/* { dg-final { scan-assembler-times {vwadd\.wv\s+v0,v0,v12} 1 } } */
+/* { dg-final { scan-assembler-times {vwadd\.wv\s+v16,v0,v20} 1 } } */
 /* { dg-final { scan-assembler-times {vwadd\.wv\s+v8,v8,v28} 1 } } */
