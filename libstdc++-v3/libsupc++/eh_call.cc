@@ -109,7 +109,12 @@ __cxa_call_unexpected(void* exc_obj_in)
   __try
     {
       if (foreign_exception)
-	std::unexpected();
+	{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+	  std::unexpected();
+#pragma GCC diagnostic pop
+	}
       else
 	__unexpected(unexpectedHandler);
     }
