@@ -1393,6 +1393,8 @@ commutative_op (id_base *id, bool compares_are_commutative = false)
       case CFN_FNMS:
       case CFN_ADD_OVERFLOW:
       case CFN_MUL_OVERFLOW:
+      case CFN_CLMUL:
+      case CFN_CLMUL_WIDEN:
       case CFN_SAT_ADD:
 	return 0;
 

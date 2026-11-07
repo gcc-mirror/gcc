@@ -13556,15 +13556,29 @@ c_parser_postfix_expression (c_parser *parser)
 	  }
 	case RID_BUILTIN_BSWAPG:
 	case RID_BUILTIN_BITREVERSEG:
+	case RID_BUILTIN_CLMULG:
 	  {
 	    vec<c_expr_t, va_gc> *cexpr_list;
 	    location_t close_paren_loc;
-	    internal_fn ifn
-	      = (c_parser_peek_token (parser)->keyword == RID_BUILTIN_BSWAPG
-		 ? IFN_BSWAP : IFN_BITREVERSE);
-	    const char *name
-	      = (ifn == IFN_BSWAP ? "__builtin_bswapg"
-		 : "__builtin_bitreverseg");
+	    internal_fn ifn;
+	    const char *name;
+	    switch (c_parser_peek_token (parser)->keyword)
+	      {
+	      case RID_BUILTIN_BSWAPG:
+		ifn = IFN_BSWAP;
+		name = "__builtin_bswapg";
+		break;
+	      case RID_BUILTIN_BITREVERSEG:
+		ifn = IFN_BITREVERSE;
+		name = "__builtin_bitreverseg";
+		break;
+	      case RID_BUILTIN_CLMULG:
+		ifn = IFN_CLMUL;
+		name = "__builtin_clmulg";
+		break;
+	      default:
+		gcc_unreachable ();
+	      }
 
 	    c_parser_consume_token (parser);
 	    if (!c_parser_get_builtin_args (parser, name, &cexpr_list, false,
@@ -13574,7 +13588,9 @@ c_parser_postfix_expression (c_parser *parser)
 		break;
 	      }
 
-	    if (vec_safe_length (cexpr_list) != 1)
+	    const unsigned nargs = vec_safe_length (cexpr_list);
+	    if (nargs < (ifn == IFN_CLMUL ? 2 : 1)
+		|| nargs > (ifn == IFN_CLMUL ? 3 : 1))
 	      {
 		error_at (loc, "wrong number of arguments to %qs", name);
 		expr.set_error ();
@@ -13592,41 +13608,119 @@ c_parser_postfix_expression (c_parser *parser)
 	    tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg));
 	    if (!INTEGRAL_TYPE_P (type))
 	      {
-		error_at (loc, "%qs operand not an integral type", name);
+		error_at (arg_p->get_location (),
+			  "%qs operand not an integral type", name);
 		expr.set_error ();
 		break;
 	      }
 	    if (TREE_CODE (type) == ENUMERAL_TYPE)
 	      {
-		error_at (loc, "argument %u in call to function "
+		error_at (arg_p->get_location (),
+			  "argument %u in call to function "
 			  "%qs has enumerated type", 1, name);
 		expr.set_error ();
 		break;
 	      }
 	    if (TREE_CODE (type) == BOOLEAN_TYPE)
 	      {
-		error_at (loc, "argument %u in call to function "
+		error_at (arg_p->get_location (),
+			  "argument %u in call to function "
 			  "%qs has boolean type", 1, name);
 		expr.set_error ();
 		break;
 	      }
 	    if (!TYPE_UNSIGNED (type))
 	      {
-		error_at (loc, "argument 1 in call to function "
+		error_at (arg_p->get_location (),
+			  "argument 1 in call to function "
 			  "%qs has signed type", name);
 		expr.set_error ();
 		break;
 	      }
 	    if (ifn == IFN_BSWAP && (TYPE_PRECISION (type) % 8) != 0)
 	      {
-		error_at (loc, "precision %d of argument 1 to function "
+		error_at (arg_p->get_location (),
+			  "precision %d of argument 1 to function "
 			  "%qs is not a multiple of 8",
 			  TYPE_PRECISION (type), name);
 		expr.set_error ();
 		break;
 	      }
 	    arg = c_fully_fold (arg, false, NULL);
-	    expr.value = fold_build_builtin_bswapg_bitreverseg (loc, ifn, arg);
+	    if (ifn == IFN_CLMUL)
+	      {
+		arg_p = &(*cexpr_list)[1];
+		*arg_p = convert_lvalue_to_rvalue (loc, *arg_p, true, true);
+		tree arg2 = arg_p->value;
+		if (error_operand_p (arg2))
+		  {
+		    expr.set_error ();
+		    break;
+		  }
+		if (!comptypes_same_p (type,
+				       TYPE_MAIN_VARIANT (TREE_TYPE (arg2))))
+		  {
+		    error_at (loc, "arguments 1 and 2 to function %qs "
+				   "have different types %qT and %qT",
+			      name, type,
+			      TYPE_MAIN_VARIANT (TREE_TYPE (arg2)));
+		    expr.set_error ();
+		    break;
+		  }
+		arg2 = c_fully_fold (arg2, false, NULL);
+		tree arg3 = NULL_TREE;
+		if (nargs == 3)
+		  {
+		    arg_p = &(*cexpr_list)[2];
+		    *arg_p = convert_lvalue_to_rvalue (loc, *arg_p,
+						       true, true);
+		    arg3 = arg_p->value;
+		    if (error_operand_p (arg3))
+		      {
+			expr.set_error ();
+			break;
+		      }
+		    if (!POINTER_TYPE_P (TREE_TYPE (arg3)))
+		      {
+			error_at (arg_p->get_location (),
+				  "argument 3 to function %qs does not have "
+				  "pointer type", name);
+			expr.set_error ();
+			break;
+		      }
+		    tree htype = TREE_TYPE (TREE_TYPE (arg3));
+		    if (!comptypes_same_p (type, TYPE_MAIN_VARIANT (htype)))
+		      {
+			error_at (loc, "arguments 1 and 3 to function %qs "
+				       "have incompatible types %qT and %qT",
+				  name, type, TREE_TYPE (arg3));
+			expr.set_error ();
+			break;
+		      }
+		    if (TYPE_READONLY (htype))
+		      {
+			error_at (arg_p->get_location (),
+				  "argument 3 to function %qs has pointer to "
+				  "%qs type %qT",
+				  name, "const", TREE_TYPE (arg3));
+			expr.set_error ();
+			break;
+		      }
+		    if (TYPE_ATOMIC (htype))
+		      {
+			error_at (arg_p->get_location (),
+				  "argument 3 to function %qs "
+				  "has pointer to %qs type %qT",
+				  name, "_Atomic", TREE_TYPE (arg3));
+			expr.set_error ();
+			break;
+		      }
+		  }
+		expr.value = fold_build_builtin_clmulg (loc, arg, arg2, arg3);
+	      }
+	    else
+	      expr.value = fold_build_builtin_bswapg_bitreverseg (loc, ifn,
+								  arg);
 	    set_c_expr_source_range (&expr, loc, close_paren_loc);
 	    break;
 	  }

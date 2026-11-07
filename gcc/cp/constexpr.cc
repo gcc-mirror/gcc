@@ -3738,6 +3738,49 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 						      arg);
       }
 
+    case IFN_CLMUL:
+      {
+	tree args[3] = {};
+	for (int i = 0; i < call_expr_nargs (t); ++i)
+	  {
+	    args[i] = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, i),
+						    vc_prvalue, non_constant_p,
+						    overflow_p, jump_target);
+	    if (*jump_target)
+	      return NULL_TREE;
+	    if (*non_constant_p)
+	      return t;
+	  }
+	location_t loc = cp_expr_loc_or_input_loc (t);
+	if (TREE_CODE (args[0]) != INTEGER_CST
+	    || TREE_CODE (args[1]) != INTEGER_CST)
+	  {
+	    if (!ctx->quiet)
+	      error_at (loc, "call to internal function %qE", t);
+	    *non_constant_p = true;
+	    return t;
+	  }
+	unsigned int prec = TYPE_PRECISION (TREE_TYPE (args[0]));
+	wide_int res = wi::clmul (wi::to_wide (args[0]),
+				  wi::to_wide (args[1]),
+				  prec * (args[2] ? 2 : 1));
+	if (args[2] == NULL_TREE)
+	  return wide_int_to_tree (TREE_TYPE (t), res);
+	wide_int lo = wide_int::from (res, prec, UNSIGNED);
+	wide_int hi = wide_int::from (wi::rshift (res, prec, UNSIGNED),
+				      prec, UNSIGNED);
+	tree mod = build2_loc (loc, MODIFY_EXPR, void_type_node,
+			       build_fold_indirect_ref_loc (loc, args[2]),
+			       wide_int_to_tree (TREE_TYPE (t), hi));
+	cxx_eval_constant_expression (ctx, mod, vc_prvalue, non_constant_p,
+				      overflow_p, jump_target);
+	if (*jump_target)
+	  return NULL_TREE;
+	if (*non_constant_p)
+	  return t;
+	return wide_int_to_tree (TREE_TYPE (t), lo);
+      }
+
     case IFN_VEC_CONVERT:
       {
 	tree arg = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0),
@@ -12680,6 +12723,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 		case IFN_VEC_CONVERT:
 		case IFN_BSWAP:
 		case IFN_BITREVERSE:
+		case IFN_CLMUL:
 		  bail = false;
 		  break;
 

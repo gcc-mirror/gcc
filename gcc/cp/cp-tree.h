@@ -9068,6 +9068,9 @@ extern tree build_x_shufflevector               (location_t,
 extern tree build_x_bswapg_bitreverseg		(location_t, internal_fn,
 						 vec<tree, va_gc> *,
 						 tsubst_flags_t);
+extern tree build_x_clmulg			(location_t,
+						 vec<tree, va_gc> *,
+						 tsubst_flags_t);
 #define cxx_sizeof(T)  cxx_sizeof_or_alignof_type (input_location, T, SIZEOF_EXPR, false, true)
 extern tree build_simple_component_ref		(tree, tree);
 extern tree build_ptrmemfunc_access_expr	(tree, tree);

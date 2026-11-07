@@ -4653,6 +4653,8 @@ commutative_binary_fn_p (internal_fn fn)
     case IFN_UBSAN_CHECK_MUL:
     case IFN_ADD_OVERFLOW:
     case IFN_MUL_OVERFLOW:
+    case IFN_CLMUL:
+    case IFN_CLMUL_WIDEN:
     case IFN_SAT_ADD:
     case IFN_SAT_MUL:
     case IFN_VEC_WIDEN_PLUS:
@@ -6019,4 +6021,331 @@ expand_BITREVERSE (internal_fn fn, gcall *stmt)
 {
   if (expand_bitquery (fn, stmt))
     expand_unary_optab_fn (fn, stmt, bitreverse_optab);
+}
+
+/* Expand CLMUL (OP0, OP1) where operands are in OP_MODE and have
+   minimum unsigned precision PREC0 and PREC1.  Compute result in MODE.  */
+
+static rtx
+expand_clmul (machine_mode mode, machine_mode op_mode, rtx op0, rtx op1,
+	      unsigned int prec0, unsigned int prec1)
+{
+  unsigned int op_prec = GET_MODE_PRECISION (as_a <scalar_int_mode> (op_mode));
+  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_int_mode> (mode));
+  machine_mode cmode;
+  optab_methods olw = OPTAB_LIB_WIDEN;
+  if (MIN (prec0, prec1) == 1)
+    {
+      /* If one operand has [0, 1] range, we can do just
+	 multiplication and if both are [0, 1], this is equivalent to AND.  */
+      rtx res = expand_binop (op_mode, prec0 == prec1 ? and_optab : smul_optab,
+			      op0, op1, NULL_RTX, 1, olw);
+      return convert_modes (mode, op_mode, res, 1);
+    }
+  FOR_EACH_MODE_IN_CLASS (cmode, MODE_INT)
+    {
+      unsigned int this_prec
+	= GET_MODE_PRECISION (as_a <scalar_int_mode> (cmode));
+      if (prec0 > this_prec || prec1 > this_prec)
+	continue;
+      if (optab_handler (clmul_optab, cmode) != CODE_FOR_nothing
+	  && (prec0 + prec1 - 1 <= this_prec || prec <= this_prec))
+	{
+	  rtx_insn *start = get_last_insn ();
+	  rtx op0c = convert_modes (cmode, op_mode, op0, 1);
+	  rtx op1c = convert_modes (cmode, op_mode, op1, 1);
+	  if (rtx res = expand_binop (cmode, clmul_optab, op0c, op1c,
+				      NULL_RTX, 1, OPTAB_DIRECT))
+	    return convert_modes (mode, cmode, res, 1);
+	  delete_insns_since (start);
+	}
+      if (optab_handler (clmul_widen_optab, cmode) != CODE_FOR_nothing)
+	{
+	  rtx_insn *start = get_last_insn ();
+	  rtx op0c = convert_modes (cmode, op_mode, op0, 1);
+	  rtx op1c = convert_modes (cmode, op_mode, op1, 1);
+	  rtx reslo = gen_reg_rtx (cmode);
+	  rtx reshi = gen_reg_rtx (cmode);
+	  class expand_operand ops[4];
+	  create_output_operand (&ops[0], reslo, cmode);
+	  create_output_operand (&ops[1], reshi, cmode);
+	  create_input_operand (&ops[2], op0c, cmode);
+	  create_input_operand (&ops[3], op1c, cmode);
+	  if (maybe_expand_insn (optab_handler (clmul_widen_optab, cmode),
+				 4, ops))
+	    {
+	      if (prec0 + prec1 - 1 <= this_prec || prec <= this_prec)
+		return convert_modes (mode, cmode, reslo, 1);
+	      machine_mode wmode;
+	      if (!GET_MODE_2XWIDER_MODE (cmode).exists (&wmode))
+		wmode = mode;
+	      reslo = convert_modes (wmode, cmode, reslo, 1);
+	      reshi = convert_modes (wmode, cmode, reshi, 1);
+	      reshi = expand_shift (LSHIFT_EXPR, wmode, reshi, this_prec,
+				    NULL_RTX, 1);
+	      rtx res = expand_binop (wmode, ior_optab, reslo, reshi,
+				      NULL_RTX, 1, olw);
+	      return convert_modes (mode, wmode, res, 1);
+	    }
+	  delete_insns_since (start);
+	}
+    }
+  /* Fallback using Kronecker substitution.
+     Depending on the number of active bits in the operand with smaller
+     number of those and the result precision we choose smallest spacing
+     S in [2, 13], such that MIN (prec0, prec1) <= S * ((1 << S) - 1),
+     or prec <= S * (1 << S) or prec0 + prec1 - 1 <= S * (1 << S).
+     The algorithm then uses S * S multiplications, 3 * S bitwise ANDs,
+     S * (S - 1) XORs and S - 1 IORs.
+     For e.g. S = 4 this is:
+     uint64_t x0 = x & 0x1111111111111111ULL, y0 = y & 0x1111111111111111ULL;
+     uint64_t x1 = x & 0x2222222222222222ULL, y1 = y & 0x2222222222222222ULL;
+     uint64_t x2 = x & 0x4444444444444444ULL, y2 = y & 0x4444444444444444ULL;
+     uint64_t x3 = x & 0x8888888888888888ULL, y3 = y & 0x8888888888888888ULL;
+     uint64_t z0 = (x0 * y0) ^ (x1 * y3) ^ (x2 * y2) ^ (x3 * y1);
+     uint64_t z1 = (x0 * y1) ^ (x1 * y0) ^ (x2 * y3) ^ (x3 * y2);
+     uint64_t z2 = (x0 * y2) ^ (x1 * y1) ^ (x2 * y0) ^ (x3 * y3);
+     uint64_t z3 = (x0 * y3) ^ (x1 * y2) ^ (x2 * y1) ^ (x3 * y0);
+     z0 &= 0x1111111111111111ULL;
+     z1 &= 0x2222222222222222ULL;
+     z2 &= 0x4444444444444444ULL;
+     z3 &= 0x8888888888888888ULL;
+     return (z0 | z1) | (z2 | z3);  */
+  unsigned int s;
+  for (s = 2; s <= 13; ++s)
+    if (MIN (prec0, prec1) <= s * ((1 << s) - 1)
+	|| MIN (prec, prec0 + prec1 - 1) <= s * (1 << s))
+      break;
+  /* S = 13 should handle up to _BitInt maximum 65535 (106483 bits).  */
+  gcc_assert (s <= 13);
+  rtx mask[13], x[13], y[13], t[13], r;
+  bool do_widen_mult = false;
+  if (mode != op_mode
+      && (convert_optab_handler (umul_widen_optab, mode, op_mode)
+	  != CODE_FOR_nothing))
+    do_widen_mult = true;
+  for (unsigned int i = 0; i < s; ++i)
+    {
+      mask[i]
+	= immed_wide_int_const (wi::bit_repeat (wide_int::from (1 << i, s,
+								UNSIGNED),
+						op_prec), op_mode);
+      if (CONST_INT_P (op0) && CONST_INT_P (mask[i]))
+	x[i] = gen_int_mode (INTVAL (op0) & INTVAL (mask[i]), op_mode);
+      else
+	x[i] = expand_binop (op_mode, and_optab, op0, mask[i], NULL_RTX, 1,
+			     olw);
+      if (mode != op_mode && !do_widen_mult)
+	x[i] = convert_modes (mode, op_mode, x[i], 1);
+      if (CONST_INT_P (op1) && CONST_INT_P (mask[i]))
+	y[i] = gen_int_mode (INTVAL (op1) & INTVAL (mask[i]), op_mode);
+      else
+	y[i] = expand_binop (op_mode, and_optab, op1, mask[i], NULL_RTX, 1,
+			     olw);
+      if (mode != op_mode && !do_widen_mult)
+	y[i] = convert_modes (mode, op_mode, y[i], 1);
+    }
+  for (unsigned int i = 0; i < s; ++i)
+    {
+      for (unsigned int j = 0; j < s; ++j)
+	{
+	  unsigned int k = (i + s - j) % s;
+	  if (do_widen_mult)
+	    t[j] = expand_widening_mult (mode, x[j], y[k], NULL_RTX, 1,
+					 umul_widen_optab);
+	  else
+	    t[j] = expand_binop (mode, smul_optab, x[j], y[k], NULL_RTX, 1,
+				 olw);
+	  if ((j & 1) == 1)
+	    {
+	      t[j - 1] = expand_binop (mode, xor_optab, t[j - 1], t[j],
+				       NULL_RTX, 1, olw);
+	      t[j] = NULL_RTX;
+	    }
+	  if ((j & 3) == 3)
+	    {
+	      t[j - 3] = expand_binop (mode, xor_optab, t[j - 3], t[j - 1],
+				       NULL_RTX, 1, olw);
+	      t[j - 1] = NULL_RTX;
+	    }
+	}
+      for (unsigned int j = 1; j < s; ++j)
+	if (t[j])
+	  t[0] = expand_binop (mode, xor_optab, t[0], t[j], NULL_RTX, 1, olw);
+      if (mode != op_mode)
+	mask[i]
+	  = immed_wide_int_const (wi::bit_repeat (wide_int::from (1 << i, s,
+								  UNSIGNED),
+						  prec), mode);
+      t[0] = expand_binop (mode, and_optab, t[0], mask[i], NULL_RTX, 1, olw);
+      if (i == 0)
+	r = t[0];
+      else
+	r = expand_binop (mode, ior_optab, r, t[0], NULL_RTX, 1, olw);
+    }
+  return r;
+}
+
+void
+expand_CLMUL (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg0));
+  unsigned int prec0 = get_min_precision (arg0, UNSIGNED);
+  unsigned int prec1 = get_min_precision (arg1, UNSIGNED);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx res = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+  if (TYPE_PRECISION (TREE_TYPE (arg0)) < GET_MODE_PRECISION (mode))
+    {
+      rtx mask
+	= immed_wide_int_const (wi::mask (TYPE_PRECISION (TREE_TYPE (arg0)),
+					  false,
+					  GET_MODE_PRECISION (mode)), mode);
+      res = expand_and (mode, res, mask, NULL_RTX);
+    }
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  emit_move_insn (target, res);
+}
+
+void
+expand_CLMUL_WIDEN (internal_fn, gcall *stmt)
+{
+  tree lhs = gimple_call_lhs (stmt);
+  tree arg0 = gimple_call_arg (stmt, 0);
+  tree arg1 = gimple_call_arg (stmt, 1);
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg0));
+  unsigned int prec0 = get_min_precision (arg0, UNSIGNED);
+  unsigned int prec1 = get_min_precision (arg1, UNSIGNED);
+  unsigned int prec = GET_MODE_PRECISION (mode);
+  rtx op0 = expand_normal (arg0);
+  rtx op1 = expand_normal (arg1);
+  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
+  rtx bitint_mask = NULL_RTX;
+  if (TYPE_PRECISION (TREE_TYPE (arg0)) != prec)
+    bitint_mask
+      = immed_wide_int_const (wi::mask (TYPE_PRECISION (TREE_TYPE (arg0)),
+					false, prec), mode);
+  if (prec0 + prec1 - 1 <= prec)
+    {
+      rtx res = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+      if (bitint_mask)
+	res = expand_and (mode, res, bitint_mask, NULL_RTX);
+      write_complex_part (target, res, false, true);
+      write_complex_part (target, const0_rtx, true, false);
+      return;
+    }
+  if (optab_handler (clmul_widen_optab, mode) != CODE_FOR_nothing
+      && TYPE_PRECISION (TREE_TYPE (arg0)) == prec)
+    {
+      rtx_insn *start = get_last_insn ();
+      rtx reslo = gen_reg_rtx (mode);
+      rtx reshi = gen_reg_rtx (mode);
+      class expand_operand ops[4];
+      create_output_operand (&ops[0], reslo, mode);
+      create_output_operand (&ops[1], reshi, mode);
+      create_input_operand (&ops[2], op0, mode);
+      create_input_operand (&ops[3], op1, mode);
+      if (maybe_expand_insn (optab_handler (clmul_widen_optab, mode),
+			     4, ops))
+	{
+	  write_complex_part (target, reslo, false, true);
+	  write_complex_part (target, reshi, true, false);
+	  return;
+	}
+      delete_insns_since (start);
+    }
+  scalar_int_mode wmode;
+  if (GET_MODE_2XWIDER_MODE (mode).exists (&wmode)
+      && targetm.scalar_mode_supported_p (wmode))
+    {
+      rtx res = expand_clmul (wmode, mode, op0, op1, prec0, prec1);
+      rtx reslo = convert_modes (mode, wmode, res, 1);
+      if (bitint_mask)
+	reslo = expand_and (mode, reslo, bitint_mask, NULL_RTX);
+      write_complex_part (target, reslo, false, true);
+      rtx reshi = expand_shift (RSHIFT_EXPR, wmode, res,
+				TYPE_PRECISION (TREE_TYPE (arg0)),
+				NULL_RTX, 1);
+      reshi = convert_modes (mode, wmode, reshi, 1);
+      write_complex_part (target, reshi, true, false);
+      return;
+    }
+  /* If we have native bitreverse in mode, fallback using:
+     uint64_t l = clmul (x, y);
+     uint64_t h = clmul (__builtin_bitreverseg (x),
+			 __builtin_bitreverseg (y));
+     return { l, __builtin_bitreverseg (h) >> 1 };  */
+  if (optab_handler (bitreverse_optab, mode) != CODE_FOR_nothing
+      || (prec == 2 * UNITS_PER_WORD
+	  && optab_handler (bitreverse_optab, word_mode) != CODE_FOR_nothing))
+    {
+      rtx reslo = expand_clmul (mode, mode, op0, op1, prec0, prec1);
+      if (bitint_mask)
+	reslo = expand_and (mode, reslo, bitint_mask, NULL_RTX);
+      write_complex_part (target, reslo, false, true);
+      rtx revx = expand_unop (mode, bitreverse_optab, op0, NULL_RTX, 1);
+      rtx revy = expand_unop (mode, bitreverse_optab, op1, NULL_RTX, 1);
+      rtx reshi = expand_clmul (mode, mode, revx, revy, prec, prec);
+      reshi = expand_unop (mode, bitreverse_optab, reshi, NULL_RTX, 1);
+      if (bitint_mask)
+	reshi = expand_and (mode, reshi, bitint_mask, NULL_RTX);
+      reshi = expand_shift (RSHIFT_EXPR, mode, reshi, 1, NULL_RTX, 1);
+      write_complex_part (target, reshi, true, false);
+      return;
+    }
+  /* Fallback to modified Karatsuba multiplication step
+     using 3x expand_clmul in mode.
+     For 64x64 -> 128bit CLMUL this would be:
+     uint64_t x0 = (uint32_t) x, x1 = (x >> 32);
+     uint64_t y0 = (uint32_t) y, y1 = (y >> 32);
+     uint64_t l = clmul (x0, y0);
+     uint64_t m = clmul (x0 ^ x1, y0 ^ y1);
+     uint64_t h = clmul (x1, y1);
+     m ^= l ^ h;
+     return { l ^ (m << 32), h ^ (m >> 32) };  */
+  unsigned int hprec = prec / 2;
+  rtx mask = immed_wide_int_const (wi::mask (hprec, false, prec), mode);
+  optab_methods olw = OPTAB_LIB_WIDEN;
+  rtx x0 = expand_binop (mode, and_optab, op0, mask, NULL_RTX, 1, olw);
+  rtx x1 = expand_shift (RSHIFT_EXPR, mode, op0, hprec, NULL_RTX, 1);
+  rtx y0 = expand_binop (mode, and_optab, op1, mask, NULL_RTX, 1, olw);
+  rtx y1 = expand_shift (RSHIFT_EXPR, mode, op1, hprec, NULL_RTX, 1);
+  rtx l = expand_clmul (mode, mode, x0, y0, hprec, hprec);
+  rtx t0 = expand_binop (mode, xor_optab, x0, x1, NULL_RTX, 1, olw);
+  rtx t1 = expand_binop (mode, xor_optab, y0, y1, NULL_RTX, 1, olw);
+  rtx m = expand_clmul (mode, mode, t0, t1, hprec, hprec);
+  rtx h;
+  if (prec0 <= hprec || prec1 <= hprec)
+    h = const0_rtx;
+  else
+    h = expand_clmul (mode, mode, x1, y1, MIN (hprec, prec0 - hprec),
+		      MIN (hprec, prec1 - hprec));
+  t0 = expand_binop (mode, xor_optab, l, h, NULL_RTX, 1, olw);
+  m = expand_binop (mode, xor_optab, m, t0, NULL_RTX, 1, olw);
+  t0 = expand_shift (LSHIFT_EXPR, mode, m, hprec, NULL_RTX, 1);
+  t1 = expand_shift (RSHIFT_EXPR, mode, m, hprec, NULL_RTX, 1);
+  rtx reslo = expand_binop (mode, xor_optab, l, t0, NULL_RTX, 1, olw);
+  if (bitint_mask)
+    {
+      rtx reslom = expand_and (mode, reslo, bitint_mask, NULL_RTX);
+      write_complex_part (target, reslom, false, true);
+      rtx reshi = expand_binop (mode, xor_optab, h, t1, NULL_RTX, 1, olw);
+      reshi = expand_shift (LSHIFT_EXPR, mode, reshi,
+			    prec - TYPE_PRECISION (TREE_TYPE (arg0)),
+			    NULL_RTX, 1);
+      reslo = expand_shift (RSHIFT_EXPR, mode, reslo,
+			    TYPE_PRECISION (TREE_TYPE (arg0)), NULL_RTX, 1);
+      reshi = expand_binop (mode, ior_optab, reshi, reslo, NULL_RTX, 1, olw);
+      reshi = expand_and (mode, reshi, bitint_mask, NULL_RTX);
+      write_complex_part (target, reshi, true, false);
+    }
+  else
+    {
+      write_complex_part (target, reslo, false, true);
+      rtx reshi = expand_binop (mode, xor_optab, h, t1, NULL_RTX, 1, olw);
+      write_complex_part (target, reshi, true, false);
+    }
 }

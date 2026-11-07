@@ -288,6 +288,8 @@ extern void expand_PARITY (internal_fn, gcall *);
 extern void expand_POPCOUNT (internal_fn, gcall *);
 extern void expand_BSWAP (internal_fn, gcall *);
 extern void expand_BITREVERSE (internal_fn, gcall *);
+extern void expand_CLMUL (internal_fn, gcall *);
+extern void expand_CLMUL_WIDEN (internal_fn, gcall *);
 
 extern bool vectorized_internal_fn_supported_p (internal_fn, tree);
 

@@ -22732,6 +22732,14 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		break;
 	      }
 
+	    case IFN_CLMUL:
+	      {
+		ret = build_x_clmulg (input_location, call_args, complain);
+		if (ret != error_mark_node)
+		  RETURN (ret);
+		break;
+	      }
+
 	    case IFN_ASSUME:
 	      gcc_assert (nargs == 1);
 	      if (vec_safe_length (call_args) != 1)

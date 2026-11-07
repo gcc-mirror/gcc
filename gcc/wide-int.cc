@@ -2400,6 +2400,72 @@ wi::mod_inv (const wide_int &a, const wide_int &b)
   return x1;
 }
 
+/* Return as many repetition of X.get_precision () bits from X
+   as fit into PREC.  */
+wide_int
+wi::bit_repeat (const wide_int_ref &x, unsigned int prec)
+{
+  unsigned int xprec = x.get_precision ();
+  if (xprec >= prec)
+    return wide_int::from (x, prec, UNSIGNED);
+  if (xprec <= HOST_BITS_PER_WIDE_INT && (HOST_BITS_PER_WIDE_INT % xprec) == 0)
+    {
+      unsigned HOST_WIDE_INT val = x.to_uhwi (xprec);
+      while (xprec < HOST_BITS_PER_WIDE_INT)
+	{
+	  val |= val << xprec;
+	  xprec <<= 1;
+	}
+      wide_int ret = wide_int::create (prec);
+      HOST_WIDE_INT *v = ret.write_val (0);
+      unsigned int i = 0;
+      for (unsigned int p = 0; p < prec; p += HOST_BITS_PER_WIDE_INT)
+	v[i++] = val;
+      ret.set_len (i, false);
+      return ret;
+    }
+  wide_int ret = wide_int::from (x, prec, UNSIGNED), b;
+  while (xprec < prec)
+    {
+      ret |= (ret << xprec);
+      xprec <<= 1;
+    }
+  return ret;
+}
+
+/* Compute carry-less product of X and Y with precision PREC.  */
+
+wide_int
+wi::clmul (const wide_int_ref &x, const wide_int_ref &y, unsigned int prec)
+{
+  wide_int a;
+  const wide_int_ref *b;
+  if (wi::popcount (x) >= wi::popcount (y))
+    {
+      a = wide_int::from (x, prec, UNSIGNED);
+      b = &y;
+    }
+  else
+    {
+      a = wide_int::from (y, prec, UNSIGNED);
+      b = &x;
+    }
+  unsigned int bprec = b->get_precision ();
+  wide_int r = wi::zero (prec);
+  unsigned int j = 0, k = 0;
+  for (unsigned int i = 0; i < bprec; ++i)
+    {
+      if (((((unsigned HOST_WIDE_INT) b->elt (k)) >> j) & 1) != 0)
+	r ^= a << i;
+      if (++j == HOST_BITS_PER_WIDE_INT)
+	{
+	  j = 0;
+	  ++k;
+	}
+    }
+  return r;
+}
+
 /*
  * Private utilities.
  */

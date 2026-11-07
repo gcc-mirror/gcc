@@ -3982,6 +3982,9 @@ namespace wi
 			     bool, unsigned int);
   unsigned int from_array (HOST_WIDE_INT *, const HOST_WIDE_INT *,
 			   unsigned int, unsigned int, bool);
+
+  wide_int bit_repeat (const wide_int_ref &, unsigned int);
+  wide_int clmul (const wide_int_ref &, const wide_int_ref &, unsigned int);
 }
 
 /* Return a PRECISION-bit integer in which the low WIDTH bits are set

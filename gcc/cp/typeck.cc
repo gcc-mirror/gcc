@@ -7180,6 +7180,107 @@ build_x_bswapg_bitreverseg (location_t loc, internal_fn ifn,
     }
   return exp;
 }
+
+/* Build __builtin_clmulg (ARG1, ARG2) or
+   __builtin_clmulg (ARG1, ARG2, ARG3).  */
+tree
+build_x_clmulg (location_t loc, vec<tree, va_gc> *args,
+		tsubst_flags_t complain)
+{
+  const char *name = "__builtin_clmulg";
+  if (args->length () < 2 || args->length () > 3)
+    {
+      if (complain & tf_error)
+	error_at (loc, "wrong number of arguments to %qs", name);
+      return error_mark_node;
+    }
+  tree arg1 = (*args)[0];
+  tree arg2 = (*args)[1];
+  tree arg3 = args->length () == 3 ? (*args)[2] : NULL_TREE;
+  if (error_operand_p (arg1)
+      || error_operand_p (arg2)
+      || error_operand_p (arg3))
+    return error_mark_node;
+  if (type_dependent_expression_p (arg1)
+      || type_dependent_expression_p (arg2)
+      || type_dependent_expression_p (arg3))
+    {
+      tree exp = build_min_nt_call_vec (NULL, args);
+      CALL_EXPR_IFN (exp) = IFN_CLMUL;
+      return exp;
+    }
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg1));
+  if (!INTEGRAL_TYPE_P (type))
+    {
+      if (complain & tf_error)
+	error_at (loc, "%qs operand not an integral type", name);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == ENUMERAL_TYPE)
+    {
+      if (complain & tf_error)
+	error_at (loc, "argument %u in call to function "
+		       "%qs has enumerated type", 1, name);
+      return error_mark_node;
+    }
+  if (TREE_CODE (type) == BOOLEAN_TYPE)
+    {
+      if (complain & tf_error)
+	error_at (loc, "argument %u in call to function "
+		       "%qs has boolean type", 1, name);
+      return error_mark_node;
+    }
+  if (!TYPE_UNSIGNED (type))
+    {
+      if (complain & tf_error)
+	error_at (loc, "argument 1 in call to function "
+		       "%qs has signed type", name);
+      return error_mark_node;
+    }
+  if (!same_type_p (type, TYPE_MAIN_VARIANT (TREE_TYPE (arg2))))
+    {
+      if (complain & tf_error)
+	error_at (loc, "arguments 1 and 2 to function %qs "
+		       "have different types %qT and %qT",
+		  name, type, TYPE_MAIN_VARIANT (TREE_TYPE (arg2)));
+      return error_mark_node;
+    }
+  if (arg3)
+    {
+      if (!POINTER_TYPE_P (TREE_TYPE (arg3)))
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "argument 3 to function %qs does not have "
+			   "pointer type", name);
+	  return error_mark_node;
+	}
+      tree htype = TREE_TYPE (TREE_TYPE (arg3));
+      if (!same_type_p (type, TYPE_MAIN_VARIANT (htype)))
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "arguments 1 and 3 to function %qs "
+			   "have incompatible types %qT and %qT",
+		      name, type, TREE_TYPE (arg3));
+	  return error_mark_node;
+	}
+      if (TYPE_READONLY (htype))
+	{
+	  if (complain & tf_error)
+	    error_at (loc, "argument 3 to function %qs "
+			   "has pointer to %qs type %qT",
+		      name, "const", TREE_TYPE (arg3));
+	  return error_mark_node;
+	}
+    }
+  tree exp = build_call_expr_internal_loc (loc, IFN_CLMUL, type,
+					   arg3 ? 3 : 2, arg1, arg2, arg3);
+  if (processing_template_decl)
+    {
+      exp = build_min_non_dep_call_vec (exp, NULL, args);
+      CALL_EXPR_IFN (exp) = IFN_CLMUL;
+    }
+  return exp;
+}
 
 /* Return a tree for the sum or difference (RESULTCODE says which)
    of pointer PTROP and integer INTOP.  */

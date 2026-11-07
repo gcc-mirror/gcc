@@ -10732,6 +10732,52 @@ fold_builtin_addc_subc (location_t loc, enum built_in_function fcode,
   return build2_loc (loc, COMPOUND_EXPR, type, store, intres);
 }
 
+/* Fold __builtin_clmulg (arg1, arg2) or __builtin_clmulg (arg1, arg2, arg3)
+   into IFN_CLMUL or IFN_CLMUL_WIDEN internal call.  */
+
+tree
+fold_build_builtin_clmulg (location_t loc, tree arg1, tree arg2, tree arg3)
+{
+  tree type = TYPE_MAIN_VARIANT (TREE_TYPE (arg1));
+  if (TREE_CODE (arg1) == INTEGER_CST
+      && !TREE_OVERFLOW (arg1)
+      && TREE_CODE (arg2) == INTEGER_CST
+      && !TREE_OVERFLOW (arg2))
+    {
+      unsigned prec = TYPE_PRECISION (type);
+      wide_int res = wi::clmul (wi::to_wide (arg1), wi::to_wide (arg2),
+				prec * (arg3 == NULL_TREE ? 1 : 2));
+      if (arg3 == NULL_TREE)
+	return wide_int_to_tree (type, res);
+      wide_int lo = wide_int::from (res, prec, UNSIGNED);
+      wide_int hi = wide_int::from (wi::rshift (res, prec, UNSIGNED),
+				    prec, UNSIGNED);
+      tree mem_arg3 = build_fold_indirect_ref_loc (loc, arg3);
+      tree store
+	= fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg3,
+			   wide_int_to_tree (type, hi));
+      return build2_loc (loc, COMPOUND_EXPR, type, store,
+			 wide_int_to_tree (type, lo));
+    }
+  if (arg3 == NULL_TREE)
+    return build_call_expr_internal_loc (loc, IFN_CLMUL, type, 2, arg1, arg2);
+  tree ctype = build_complex_type (type);
+  tree call = build_call_expr_internal_loc (loc, IFN_CLMUL_WIDEN, ctype, 2,
+					    arg1, arg2);
+  /* Force SAVE_EXPR even for calls which satisfy tree_invariant_p_1,
+     as while the call itself is const, the REALPART_EXPR store is
+     certainly not.  And in any case, we want just one call,
+     not multiple and trying to CSE them later.  */
+  TREE_SIDE_EFFECTS (call) = 1;
+  tree tgt = save_expr (call);
+  tree intres = build1_loc (loc, REALPART_EXPR, type, tgt);
+  tree ovfres = build1_loc (loc, IMAGPART_EXPR, type, tgt);
+  tree mem_arg3 = build_fold_indirect_ref_loc (loc, arg3);
+  tree store
+    = fold_build2_loc (loc, MODIFY_EXPR, void_type_node, mem_arg3, ovfres);
+  return build2_loc (loc, COMPOUND_EXPR, type, store, intres);
+}
+
 /* Fold a call to __builtin_FILE to a constant string.  */
 
 static inline tree

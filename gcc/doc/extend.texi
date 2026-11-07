@@ -18101,6 +18101,29 @@ recognized in such contexts.
 
 @enddefbuiltin
 
+@defbuiltin{@var{type} __builtin_clmulg (@var{type} @var{a}, @var{type} @var{b})}
+@defbuiltinx{@var{type} __builtin_clmulg (@var{type} @var{a}, @var{type} @var{b}, @var{type} *@var{c})}
+
+This type-generic built-in function returns carry-less product of the
+first two arguments.  @var{type} may be any unsigned integral type.
+The function returns the lower half of the full result, which has
+twice the precision of @var{type}.  If three arguments are specified,
+the higher half of the full result is stored into the object the argument
+points to.
+
+@smallexample
+  unsigned int a = 0x10111111U, b = 0x22002222U;
+  unsigned int c = __builtin_clmulg (a, b);
+  unsigned int d, e = __builtin_clmulg (a, b, &d);
+@end smallexample
+
+If @code{int} is 32-bit, both @var{c} and @var{e} will be set to the least significant
+32 bits of the full 64-bit carry-less product result @code{0x222022020000202ULL},
+i.e. @code{0x20000202U}, while @var{d} will be set to the most significant 32 bits
+of the full result, i.e. @code{0x2220220U}.
+
+@enddefbuiltin
+
 @defbuiltin{@var{type} __builtin_speculation_safe_value (@var{type} @var{val}, @var{type} @var{failval})}
 
 This built-in function can be used to help mitigate against unsafe

@@ -14924,6 +14924,7 @@ tree_call_nonnegative_p (tree type, combined_fn fn, tree arg0, tree arg1,
     CASE_CFN_CLRSB:
     CASE_CFN_BSWAP:
     CASE_CFN_BITREVERSE:
+    case CFN_CLMUL:
       /* Always true.  */
       return true;
 

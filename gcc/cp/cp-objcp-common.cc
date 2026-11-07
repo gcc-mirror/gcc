@@ -574,6 +574,7 @@ names_builtin_p (const char *name)
     case RID_ADDRESSOF:
     case RID_BUILTIN_BITREVERSEG:
     case RID_BUILTIN_BSWAPG:
+    case RID_BUILTIN_CLMULG:
     case RID_BUILTIN_CONVERTVECTOR:
     case RID_BUILTIN_HAS_ATTRIBUTE:
     case RID_BUILTIN_SHUFFLE:

@@ -1804,6 +1804,10 @@ fold_const_call_sss (wide_int *result, combined_fn fn,
 	return true;
       }
 
+    case CFN_CLMUL:
+      *result = wi::clmul (arg0, arg1, precision);
+      return true;
+
     default:
       return false;
     }
@@ -2089,6 +2093,20 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 	    }
 	  else
 	    return build_complex (type, r, build_int_cst (itype, ovf));
+	}
+      return NULL_TREE;
+
+    case CFN_CLMUL_WIDEN:
+      if (integer_cst_p (arg0) && integer_cst_p (arg1))
+	{
+	  unsigned int prec = TYPE_PRECISION (TREE_TYPE (arg0));
+	  wide_int res = wi::clmul (wi::to_wide (arg0), wi::to_wide (arg1),
+				    prec * 2);
+	  wide_int lo = wide_int::from (res, prec, UNSIGNED);
+	  wide_int hi = wide_int::from (wi::rshift (res, prec, UNSIGNED),
+					prec, UNSIGNED);
+	  return build_complex (type, wide_int_to_tree (TREE_TYPE (type), lo),
+				wide_int_to_tree (TREE_TYPE (type), hi));
 	}
       return NULL_TREE;
 

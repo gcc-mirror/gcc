@@ -14000,3 +14000,22 @@ and,
 	    && wi::le_p (wi::to_wide (@1), bound, TYPE_SIGN (type))))
     @3)))))
 #endif
+
+(simplify
+ (IFN_CLMUL:c @0 zero_one_valued_p@1)
+ (mult @0 @1))
+
+#if GIMPLE
+(simplify
+ (IFN_CLMUL_WIDEN @0 @1)
+ (if (INTEGRAL_TYPE_P (TREE_TYPE (@0)) && TYPE_UNSIGNED (TREE_TYPE (@0)))
+  (with { unsigned int min_prec0 = TYPE_PRECISION (TREE_TYPE (@0));
+	  unsigned int min_prec1 = min_prec0;
+	  int_range_max vr0, vr1;
+	  if (gimple_match_range_of_expr (vr0, @0) && !vr0.undefined_p ())
+	    min_prec0 = wi::min_precision (vr0.upper_bound (), UNSIGNED);
+	  if (gimple_match_range_of_expr (vr1, @1) && !vr1.undefined_p ())
+	    min_prec1 = wi::min_precision (vr1.upper_bound (), UNSIGNED); }
+   (if (min_prec0 + min_prec1 - 1 <= TYPE_PRECISION (TREE_TYPE (@0)))
+    (complex (IFN_CLMUL @0 @1) { build_zero_cst (TREE_TYPE (@0)); })))))
+#endif

@@ -439,6 +439,7 @@ const struct c_common_resword c_common_reswords[] =
   { "__builtin_call_with_static_chain",
     RID_BUILTIN_CALL_WITH_STATIC_CHAIN, D_CONLY },
   { "__builtin_choose_expr", RID_CHOOSE_EXPR, D_CONLY },
+  { "__builtin_clmulg", RID_BUILTIN_CLMULG, 0 },
   { "__builtin_complex", RID_BUILTIN_COMPLEX, D_CONLY },
   { "__builtin_convertvector", RID_BUILTIN_CONVERTVECTOR, 0 },
   { "__builtin_counted_by_ref", RID_BUILTIN_COUNTED_BY_REF, D_CONLY },

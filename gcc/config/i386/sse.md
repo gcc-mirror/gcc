@@ -28879,6 +28879,49 @@
    (set_attr "c86_decode" "*,vector,vector")
    (set_attr "mode" "TI")])
 
+(define_expand "clmuldi3"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")]
+  "TARGET_PCLMUL"
+{
+  rtx x = gen_reg_rtx (V2DImode);
+  rtx y = gen_reg_rtx (V2DImode);
+  rtx z = gen_reg_rtx (V2DImode);
+  emit_move_insn (x, gen_rtx_VEC_CONCAT (V2DImode, operands[1], const0_rtx));
+  emit_move_insn (y, gen_rtx_VEC_CONCAT (V2DImode, operands[2], const0_rtx));
+  emit_insn (gen_pclmulqdq (z, x, y, const0_rtx));
+  rtvec tmp = rtvec_alloc (1);
+  RTVEC_ELT (tmp, 0) = const0_rtx;
+  rtx selector = gen_rtx_PARALLEL (VOIDmode, tmp);
+  emit_move_insn (operands[0], gen_rtx_VEC_SELECT (DImode, z, selector));
+  DONE;
+})
+
+(define_expand "clmul_widendi3"
+  [(match_operand:DI 0 "register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")
+   (match_operand:DI 3 "register_operand")]
+  "TARGET_PCLMUL"
+{
+  rtx x = gen_reg_rtx (V2DImode);
+  rtx y = gen_reg_rtx (V2DImode);
+  rtx z = gen_reg_rtx (V2DImode);
+  emit_move_insn (x, gen_rtx_VEC_CONCAT (V2DImode, operands[2], const0_rtx));
+  emit_move_insn (y, gen_rtx_VEC_CONCAT (V2DImode, operands[3], const0_rtx));
+  emit_insn (gen_pclmulqdq (z, x, y, const0_rtx));
+  rtvec tmp = rtvec_alloc (1);
+  RTVEC_ELT (tmp, 0) = const0_rtx;
+  rtx selector = gen_rtx_PARALLEL (VOIDmode, tmp);
+  emit_move_insn (operands[0], gen_rtx_VEC_SELECT (DImode, z, selector));
+  tmp = rtvec_alloc (1);
+  RTVEC_ELT (tmp, 0) = const1_rtx;
+  selector = gen_rtx_PARALLEL (VOIDmode, tmp);
+  emit_move_insn (operands[1], gen_rtx_VEC_SELECT (DImode, z, selector));
+  DONE;
+})
+
 (define_expand "avx_vzeroall"
   [(match_par_dup 0 [(const_int 0)])]
   "TARGET_AVX"
