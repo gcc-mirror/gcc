@@ -2153,7 +2153,7 @@ TypePath::to_string () const
 {
   std::string str;
 
-  if (has_opening_scope_resolution)
+  if (has_opening_scope_resolution ())
     {
       str = "::";
     }
@@ -2319,7 +2319,7 @@ TypePath::as_simple_path () const
     }
 
   return AST::SimplePath (std::move (simple_segments),
-			  has_opening_scope_resolution, locus);
+			  has_opening_scope_resolution (), locus);
 }
 
 std::string

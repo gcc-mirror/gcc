@@ -142,10 +142,12 @@ ASTLowerTypePath::visit (AST::TypePath &path)
   Analysis::NodeMapping mapping (crate_num, path.get_node_id (), hirid,
 				 mappings.get_next_localdef_id (crate_num));
 
+  RawPath<std::unique_ptr<HIR::TypePathSegment>> translated_path (
+    std::move (translated_segments), path.has_opening_scope_resolution ());
+
   translated
-    = new HIR::TypePath (std::move (mapping), std::move (translated_segments),
-			 path.get_locus (),
-			 path.has_opening_scope_resolution ());
+    = new HIR::TypePath (std::move (mapping), std::move (translated_path),
+			 path.get_locus ());
 }
 
 HIR::QualifiedPathInType *

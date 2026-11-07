@@ -786,7 +786,7 @@ Dump::visit (TypePath &e)
 {
   begin ("TypePath");
   put_field ("has_opening_scope_resolution",
-	     std::to_string (e.has_opening_scope_resolution_op ()));
+	     std::to_string (e.has_opening_scope_resolution ()));
 
   visit_collection ("segments", e.get_segments ());
 

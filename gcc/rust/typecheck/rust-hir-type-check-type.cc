@@ -922,8 +922,9 @@ TypeResolveGenericParam::apply_trait_bounds (HIR::TypeParam &param,
 				      param.get_mappings ().get_nodeid (),
 				      implicit_id,
 				      param.get_mappings ().get_local_defid ());
+      RawPath<std::unique_ptr<HIR::TypePathSegment>> path ({}, false);
       implicit_self_bound = std::make_unique<HIR::TypePath> (
-	HIR::TypePath (mappings, {}, BUILTINS_LOCATION, false));
+	HIR::TypePath (mappings, std::move (path), BUILTINS_LOCATION));
     }
 
   std::map<DefId, std::vector<TyTy::TypeBoundPredicate>> predicates;
