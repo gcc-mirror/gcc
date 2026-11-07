@@ -29,6 +29,14 @@
 	.cfi_sections	.debug_frame
 #endif
 
+/* Regarding call-frame info notes: 32bits Windows ports are either DWARF2 or
+   sjlj-eh, with .cfi notes emitted or not, respectively, through calls to
+   the cfi_ macros exposed by i386-asm.h.  64bits Windows ports are either SEH
+   or sjlj-eh, with .seh directives emitted directly here, as they are harmless
+   for sjlj-eh and here is the only file where they are of potential use, for
+   example to help backtraces on memory faults triggered by the stack checking
+   probes.  */
+
 #ifdef L_chkstk
 /* Function prologue calls __chkstk to probe the stack when allocating more
    than CHECK_STACK_LIMIT bytes in one go.  Touching the stack at 4K
@@ -39,8 +47,12 @@
 	.global	__alloca
 #ifdef __x86_64__
 /* __alloca is a normal function call, which uses %rcx as the argument.  */
-	cfi_startproc()
+	.seh_proc __alloca
 __alloca:
+	/* No own frame, no non-volatile register push;  No prologue as
+	   far as SEH is concerned.  */
+	.seh_endprologue
+
 	movq	%rcx, %rax
 	/* FALLTHRU */
 
@@ -49,9 +61,7 @@ __alloca:
    %r8 and %r9, which leaves us with %rax, %r10, and %r11 to use.  */
 	.align	4
 ___chkstk:
-	popq	%r11			/* pop return address */
-	cfi_adjust_cfa_offset(-8)	/* indicate return address in r11 */
-	cfi_register(%rip, %r11)
+	popq	%r11			/* pop return address; .seh? */
 	movq	%rsp, %r10
 	cmpq	$0x1000, %rax		/* > 4k ?*/
 	jb	2f
@@ -63,8 +73,7 @@ ___chkstk:
 	ja	1b			/* and do it again */
 
 2:	subq	%rax, %r10
-	movq	%rsp, %rax		/* hold CFA until return */
-	cfi_def_cfa_register(%rax)
+	movq	%rsp, %rax		/* hold CFA until return; .seh? */
 	orl	$0x0, (%r10)		/* less than 4k, just peek here */
 	movq	%r10, %rsp		/* decrement stack */
 
@@ -73,7 +82,7 @@ ___chkstk:
 	   used by most modern processors.  */
 	pushq	%r11
 	ret
-	cfi_endproc()
+	.seh_endproc
 #else
 	cfi_startproc()
 ___chkstk:
@@ -112,12 +121,19 @@ __alloca:
    stack and does no stack allocation.  */
 	.global ___chkstk_ms
 #ifdef __x86_64__
-	cfi_startproc()
+	.seh_proc ___chkstk_ms
 ___chkstk_ms:
-	pushq	%rcx			/* save temps */
-	cfi_push(%rcx)
-	pushq	%rax
-	cfi_push(%rax)
+	/* prologue, using a code sequence matching the MS documentation
+	   of expected patterns to allow SEH through;  No non-volatile reg
+	   to push in our case, allocate space (for volatile temps we want
+	   to preserve) with a plain sp move.  */
+	subq   $16, %rsp
+	.seh_stackalloc 16
+	.seh_endprologue
+
+	movq   %rax, (%rsp)
+	movq   %rcx, 8(%rsp)
+
 	cmpq	$0x1000, %rax		/* > 4k ?*/
 	leaq	24(%rsp), %rcx		/* point past return addr */
 	jb	2f
@@ -131,12 +147,11 @@ ___chkstk_ms:
 2:	subq	%rax, %rcx
 	orq	$0x0, (%rcx)		/* less than 4k, just peek here */
 
-	popq	%rax
-	cfi_pop(%rax)
-	popq	%rcx
-	cfi_pop(%rcx)
+	movq   8(%rsp), %rcx
+	movq   (%rsp), %rax
+	addq   $16, %rsp
 	ret
-	cfi_endproc()
+	.seh_endproc
 #else
 	cfi_startproc()
 ___chkstk_ms:
