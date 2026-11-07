@@ -17978,6 +17978,10 @@ expand_perm_with_merge (const struct expand_vec_perm_d &d)
       op0 = d.op0;
       op1 = d.op1;
     }
+
+  op0 = force_reg (d.vmode, op0);
+  op1 = force_reg (d.vmode, op1);
+
   if (mergemode != d.vmode)
     {
       target = simplify_gen_subreg (mergemode, target, d.vmode, 0);
@@ -18137,20 +18141,33 @@ expand_perm_reverse_elements (const struct expand_vec_perm_d &d)
   if (d.op0 != d.op1 || !is_reverse_perm_mask (d))
     return false;
 
+  insn_code icode;
+  switch (d.vmode)
+    {
+    case V1TImode:
+    case V1TFmode:
+      if (!d.testing_p)
+	emit_move_insn (d.target, d.op0);
+      return true;
+    case V2DImode: icode = CODE_FOR_eltswapv2di; break;
+    case V4SImode: icode = CODE_FOR_eltswapv4si; break;
+    case V8HImode: icode = CODE_FOR_eltswapv8hi; break;
+    case V16QImode: icode = CODE_FOR_eltswapv16qi; break;
+    case V2DFmode: icode = CODE_FOR_eltswapv2df; break;
+    case V4SFmode: icode = CODE_FOR_eltswapv4sf; break;
+    case V8HFmode: icode = CODE_FOR_eltswapv8hf; break;
+    default: return false;
+    }
+
   if (d.testing_p)
     return true;
 
-  switch (d.vmode)
-    {
-    case V1TImode: emit_move_insn (d.target, d.op0); break;
-    case V2DImode: emit_insn (gen_eltswapv2di (d.target, d.op0)); break;
-    case V4SImode: emit_insn (gen_eltswapv4si (d.target, d.op0)); break;
-    case V8HImode: emit_insn (gen_eltswapv8hi (d.target, d.op0)); break;
-    case V16QImode: emit_insn (gen_eltswapv16qi (d.target, d.op0)); break;
-    case V2DFmode: emit_insn (gen_eltswapv2df (d.target, d.op0)); break;
-    case V4SFmode: emit_insn (gen_eltswapv4sf (d.target, d.op0)); break;
-    default: gcc_unreachable();
-    }
+  class expand_operand ops[2];
+  create_output_operand (&ops[0], d.target, d.vmode);
+  create_input_operand (&ops[1], d.op0, d.vmode);
+  expand_insn (icode, 2, ops);
+  if (!rtx_equal_p (ops[0].value, d.target))
+    emit_move_insn (d.target, ops[0].value);
 
   return true;
 }
@@ -18173,56 +18190,54 @@ expand_perm_as_a_vlbr_vstbr_candidate (const struct expand_vec_perm_d &d)
   if (d.vmode != V16QImode || d.op0 != d.op1)
     return false;
 
+  insn_code icode;
+  machine_mode mode;
+
   /* For halfwords a byte-swap is a rotate by 8 bits (verllh), which does not
      require VXE2.  */
   if (memcmp (d.perm, perm[0], MAX_VECT_LEN) == 0)
     {
-      if (!d.testing_p)
-	{
-	  rtx target = gen_rtx_SUBREG (V8HImode, d.target, 0);
-	  rtx op0 = gen_rtx_SUBREG (V8HImode, d.op0, 0);
-	  emit_insn (gen_bswapv8hi (target, op0));
-	}
-      return true;
+      mode = V8HImode;
+      icode = CODE_FOR_bswapv8hi;
     }
-
-  if (!TARGET_VXE2)
+  /* All remaining operations require VXE2.  */
+  else if (!TARGET_VXE2)
+    return false;
+  else if (memcmp (d.perm, perm[1], MAX_VECT_LEN) == 0)
+    {
+      mode = V4SImode;
+      icode = CODE_FOR_bswapv4si;
+    }
+  else if (memcmp (d.perm, perm[2], MAX_VECT_LEN) == 0)
+    {
+      mode = V2DImode;
+      icode = CODE_FOR_bswapv2di;
+    }
+  else if (memcmp (d.perm, perm[3], MAX_VECT_LEN) == 0)
+    {
+      mode = V1TImode;
+      icode = CODE_FOR_bswapv1ti;
+    }
+  else
     return false;
 
-  if (memcmp (d.perm, perm[1], MAX_VECT_LEN) == 0)
+  if (!d.testing_p)
     {
-      if (!d.testing_p)
-	{
-	  rtx target = gen_rtx_SUBREG (V4SImode, d.target, 0);
-	  rtx op0 = gen_rtx_SUBREG (V4SImode, d.op0, 0);
-	  emit_insn (gen_bswapv4si (target, op0));
-	}
-      return true;
+      rtx target = simplify_gen_subreg (mode, d.target, d.vmode, 0);
+      rtx op0 = simplify_gen_subreg (mode, d.op0, d.vmode, 0);
+      if (op0 == NULL_RTX)
+	op0
+	  = simplify_gen_subreg (mode, force_reg (d.vmode, d.op0), d.vmode, 0);
+
+      class expand_operand ops[2];
+      create_output_operand (&ops[0], target, mode);
+      create_input_operand (&ops[1], op0, mode);
+      expand_insn (icode, 2, ops);
+      if (!rtx_equal_p (ops[0].value, target))
+	emit_move_insn (target, ops[0].value);
     }
 
-  if (memcmp (d.perm, perm[2], MAX_VECT_LEN) == 0)
-    {
-      if (!d.testing_p)
-	{
-	  rtx target = gen_rtx_SUBREG (V2DImode, d.target, 0);
-	  rtx op0 = gen_rtx_SUBREG (V2DImode, d.op0, 0);
-	  emit_insn (gen_bswapv2di (target, op0));
-	}
-      return true;
-    }
-
-  if (memcmp (d.perm, perm[3], MAX_VECT_LEN) == 0)
-    {
-      if (!d.testing_p)
-	{
-	  rtx target = gen_rtx_SUBREG (V1TImode, d.target, 0);
-	  rtx op0 = gen_rtx_SUBREG (V1TImode, d.op0, 0);
-	  emit_insn (gen_bswapv1ti (target, op0));
-	}
-      return true;
-    }
-
-  return false;
+  return true;
 }
 
 static bool

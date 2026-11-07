@@ -44,6 +44,7 @@
 (define_mode_iterator VT_HW_SDT [V4SI V4SF V2DI V2DF V1TI V1TF TI TF])
 (define_mode_iterator V_HW_HSD [V8HI V4SI (V4SF "TARGET_VXE") V2DI V2DF])
 (define_mode_iterator V_HW_SD [V4SI (V4SF "TARGET_VXE") V2DI V2DF])
+(define_mode_iterator V_HW_H [V8HI V8HF])
 
 ; Including TI for instructions that support it (va, vn, ...)
 (define_mode_iterator VT_HW [V16QI V8HI V4SI V2DI V2DF V1TI TI (V4SF "TARGET_VXE") (V1TF "TARGET_VXE")])
@@ -227,6 +228,7 @@
 				(V1HI "V2HI") (V2HI "V4HI") (V4HI "V8HI") (V8HI "V16HI")
 				(V1SI "V2SI") (V2SI "V4SI") (V4SI "V8SI")
 				(V1DI "V2DI") (V2DI "V4DI")
+				(V1HF "V2HF") (V2HF "V4HF") (V4HF "V8HF") (V8HF "V16HF")
 				(V1SF "V2SF") (V2SF "V4SF") (V4SF "V8SF")
 				(V1DF "V2DF") (V2DF "V4DF")])
 
@@ -1049,10 +1051,10 @@
   [(set_attr "op_type" "VRR")])
 
 (define_insn "*vmrhh"
-  [(set (match_operand:V8HI                     0 "register_operand" "=v")
-        (vec_select:V8HI
-	  (vec_concat:V16HI (match_operand:V8HI 1 "register_operand"  "v")
-			    (match_operand:V8HI 2 "register_operand"  "v"))
+  [(set (match_operand:V_HW_H                              0 "register_operand" "=v")
+        (vec_select:V_HW_H
+	  (vec_concat:<vec_2x_nelts> (match_operand:V_HW_H 1 "register_operand"  "v")
+				     (match_operand:V_HW_H 2 "register_operand"  "v"))
 	  (parallel [(const_int 0) (const_int 8)
 		     (const_int 1) (const_int 9)
 		     (const_int 2) (const_int 10)
@@ -1062,10 +1064,10 @@
   [(set_attr "op_type" "VRR")])
 
 (define_insn "*vmrlh"
-  [(set (match_operand:V8HI                     0 "register_operand" "=v")
-        (vec_select:V8HI
-	  (vec_concat:V16HI (match_operand:V8HI 1 "register_operand"  "v")
-			    (match_operand:V8HI 2 "register_operand"  "v"))
+  [(set (match_operand:V_HW_H                              0 "register_operand" "=v")
+        (vec_select:V_HW_H
+	  (vec_concat:<vec_2x_nelts> (match_operand:V_HW_H 1 "register_operand"  "v")
+				     (match_operand:V_HW_H 2 "register_operand"  "v"))
 	  (parallel [(const_int 4) (const_int 12)
 		     (const_int 5) (const_int 13)
 		     (const_int 6) (const_int 14)
@@ -1222,12 +1224,12 @@
   [(set_attr "cpu_facility" "*,vxe2,vxe2")
    (set_attr "op_type" "*,VRX,VRX")])
 
-;; VECTOR REVERSE ELEMENTS V8HI
+;; VECTOR REVERSE ELEMENTS V8HI / V8HF
 
-(define_insn_and_split "eltswapv8hi"
-  [(set (match_operand:V8HI  0 "nonimmediate_operand" "=v,R,v")
-	(vec_select:V8HI
-	 (match_operand:V8HI 1 "nonimmediate_operand"  "v,v,R")
+(define_insn_and_split "eltswap<mode>"
+  [(set (match_operand:V_HW_H  0 "nonimmediate_operand" "=v,R,v")
+	(vec_select:V_HW_H
+	 (match_operand:V_HW_H 1 "nonimmediate_operand"  "v,v,R")
 	 (parallel [(const_int 7)
 		    (const_int 6)
 		    (const_int 5)
@@ -1261,7 +1263,7 @@
 	 (match_dup 3)
 	 (const_int 16)))
    (set (match_dup 0)
-	(subreg:V8HI (match_dup 3) 0))]
+	(subreg:<MODE> (match_dup 3) 0))]
   ""
   [(set_attr "cpu_facility" "*,vxe2,vxe2")
    (set_attr "op_type" "*,VRX,VRX")])
