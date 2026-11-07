@@ -8269,7 +8269,7 @@ reshape_init_r (tree type, reshape_iter *d, tree first_initializer_p,
     {
       /* Deliberately not CP_AGGREGATE_TYPE_P to get a better diagnostic for
 	 trying to designate a member of a non-aggregate class.  */
-      if (AGGREGATE_TYPE_P (type))
+      if (AGGREGATE_TYPE_P (type) || gnu_vector_type_p (type))
 	goto skip_single;
       else
 	gcc_checking_assert (seen_error ());
@@ -8548,6 +8548,9 @@ reshape_init (tree type, tree init, tsubst_flags_t complain)
   if (CONSTRUCTOR_IS_DESIGNATED_INIT (init)
       && BRACE_ENCLOSED_INITIALIZER_P (new_init))
     gcc_checking_assert (CONSTRUCTOR_IS_DESIGNATED_INIT (new_init)
+			 /* The old extension allows brace elision
+			    (128532).  */
+			 || cxx_dialect < cxx20
 			 || seen_error ());
 
   return new_init;
