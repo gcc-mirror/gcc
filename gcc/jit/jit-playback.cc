@@ -2547,6 +2547,49 @@ c_finish_goto_label (location_t loc, tree label)
 
 }
 
+/* Take the address of a block as a void * rvalue (&&block).  */
+
+playback::rvalue *
+playback::block::
+get_address (location *loc)
+{
+  tree label = as_label_decl ();
+  TREE_USED (label) = 1;
+  /* Also set during gimplification by gimplify_addr_expr, but marked
+     explicitly here when constructing the ADDR_EXPR.  */
+  FORCED_LABEL (label) = 1;
+
+  tree addr = build1 (ADDR_EXPR, ptr_type_node, label);
+  if (loc)
+    set_tree_location (addr, loc);
+
+  return new rvalue (m_func->m_ctxt, addr);
+}
+
+/* Add an indirect jump statement (goto *target_address;).  */
+
+void
+playback::block::add_indirect_jump (location *loc,
+				    rvalue *target_address,
+				    auto_vec <block *> *destinations)
+{
+  unsigned i;
+  block *dest;
+  FOR_EACH_VEC_ELT (*destinations, i, dest)
+    {
+      tree label = dest->as_label_decl ();
+      TREE_USED (label) = 1;
+      FORCED_LABEL (label) = 1;
+    }
+
+  tree target = target_address->as_tree ();
+  target = fold_convert (ptr_type_node, target);
+  tree stmt = build1 (GOTO_EXPR, void_type_node, target);
+  if (loc)
+    set_tree_location (stmt, loc);
+  add_stmt (stmt);
+}
+
 /* Add a return statement to the function's statement list.  */
 
 void

@@ -692,6 +692,13 @@ public:
   add_jump (location *loc,
 	    block *target);
 
+  rvalue *get_address (location *loc);
+
+  void
+  add_indirect_jump (location *loc,
+		     rvalue *target_address,
+		     auto_vec <block *> *destinations);
+
   void
   add_return (location *loc,
 	      rvalue *rvalue);

@@ -267,3 +267,7 @@ _gcc_jit_context_new_array_type_u64
 
 # LIBGCCJIT_ABI_38
 _gcc_jit_type_is_floating_point
+
+# LIBGCCJIT_ABI_39
+_gcc_jit_block_get_address
+_gcc_jit_block_end_with_indirect_jump

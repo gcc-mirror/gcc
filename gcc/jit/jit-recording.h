@@ -966,7 +966,7 @@ public:
   type *unqualified () final override { return m_other_type; }
 
   void replay_into (replayer *) final override;
-  memento_of_get_aligned *dyn_cast_aligned_type () final override 
+  memento_of_get_aligned *dyn_cast_aligned_type () final override
   {
     return this;
   }
@@ -1413,6 +1413,9 @@ public:
   void
   verify_valid_within_stmt (const char *api_funcname, statement *s);
 
+  bool verify_valid_within_global_init (const char *api_funcname,
+					lvalue *global);
+
   virtual void visit_children (rvalue_visitor *v) = 0;
 
   void set_scope (function *scope);
@@ -1681,6 +1684,13 @@ public:
   statement *
   end_with_jump (location *loc,
 		 block *target);
+
+  rvalue * get_address (location *loc);
+
+  statement * end_with_indirect_jump (location *loc,
+				     rvalue *target_address,
+				     int num_destinations,
+				     block **destinations);
 
   statement *
   end_with_return (location *loc,
@@ -2427,6 +2437,34 @@ private:
   lvalue *m_lvalue;
 };
 
+class get_block_address : public rvalue
+{
+public:
+  get_block_address (context *ctxt,
+		 location *loc,
+		 block *b)
+  : rvalue (ctxt, loc, ctxt->get_type (GCC_JIT_TYPE_VOID_PTR)),
+    m_block (b)
+  {
+    set_scope (b->get_function ());
+  }
+
+  void replay_into (replayer *r) final override;
+
+  void visit_children (rvalue_visitor *) final override {}
+
+private:
+  string * make_debug_string () final override;
+  void write_reproducer (reproducer &r) final override;
+  enum precedence get_precedence () const final override
+  {
+    return PRECEDENCE_UNARY;
+  }
+
+private:
+  block *m_block;
+};
+
 class function_pointer : public rvalue
 {
 public:
@@ -2648,6 +2686,28 @@ private:
 
 private:
   block *m_target;
+};
+
+class indirect_jump : public statement
+{
+public:
+  indirect_jump (block *b,
+		 location *loc,
+		 rvalue *target_address,
+		 int num_destinations,
+		 block **destinations);
+
+  void replay_into (replayer *r) final override;
+
+  vec <block *> get_successor_blocks () const final override;
+
+private:
+  string * make_debug_string () final override;
+  void write_reproducer (reproducer &r) final override;
+
+private:
+  rvalue *m_target_address;
+  auto_vec <block *> m_destinations;
 };
 
 class return_ : public statement

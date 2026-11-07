@@ -269,6 +269,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-indirect-jump.c */
+#define create_code create_code_indirect_jump
+#define verify_code verify_code_indirect_jump
+#include "test-indirect-jump.c"
+#undef create_code
+#undef verify_code
+
 /* test-link-section-assembler.c: This can't be in the testcases array as it
    doesn't have a verify_code implementation.  */
 
@@ -688,6 +695,9 @@ const struct testcase testcases[] = {
   {"vector_perm",
    create_code_vector_perm,
    verify_code_vector_perm},
+  {"indirect_jump",
+   create_code_indirect_jump,
+   verify_code_indirect_jump},
 };
 
 const int num_testcases = (sizeof (testcases) / sizeof (testcases[0]));

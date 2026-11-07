@@ -1871,6 +1871,9 @@ gcc_jit_global_set_initializer_rvalue (gcc_jit_lvalue *global,
 			       "global variable already initialized: %s",
 			       global->get_debug_string ());
 
+  if (!init_rvalue->verify_valid_within_global_init (__func__, global))
+    return NULL;
+
   /* The global need to know during playback that it will be
      initialized.  */
   gbl->set_flags (gcc::jit::GLOBAL_VAR_FLAGS_WILL_BE_RVAL_INIT);
@@ -2877,6 +2880,23 @@ gcc_jit_lvalue_get_address (gcc_jit_lvalue *lvalue,
 /* Public entrypoint.  See description in libgccjit.h.
 
    After error-checking, the real work is done by the
+   gcc::jit::recording::block::get_address method in
+   jit-recording.cc.  */
+
+gcc_jit_rvalue *
+gcc_jit_block_get_address (gcc_jit_block *block,
+			   gcc_jit_location *loc)
+{
+  RETURN_NULL_IF_FAIL (block, NULL, loc, "NULL block");
+  JIT_LOG_FUNC (block->get_context ()->get_logger ());
+  /* LOC can be NULL.  */
+
+  return (gcc_jit_rvalue *)block->get_address (loc);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
    gcc::jit::recording::lvalue::set_tls_model method in jit-recording.cc.  */
 
 void
@@ -3256,6 +3276,57 @@ gcc_jit_block_end_with_jump (gcc_jit_block *block,
     target->get_function ()->get_debug_string ());
 
   block->end_with_jump (loc, target);
+}
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::block::end_with_indirect_jump method in
+   jit-recording.cc.  */
+
+void
+gcc_jit_block_end_with_indirect_jump (gcc_jit_block *block,
+				      gcc_jit_location *loc,
+				      gcc_jit_rvalue *target_address,
+				      int num_destinations,
+				      gcc_jit_block **destinations)
+{
+  RETURN_IF_NOT_VALID_BLOCK (block, loc);
+  gcc::jit::recording::context *ctxt = block->get_context ();
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+  RETURN_IF_FAIL (target_address, ctxt, loc, "NULL target_address");
+  RETURN_IF_FAIL_PRINTF1 (
+    target_address->get_type ()->is_pointer (),
+    ctxt, loc,
+    "target_address: %s is not of a pointer type",
+    target_address->get_debug_string ());
+  RETURN_IF_FAIL (num_destinations >= 0, ctxt, loc, "num_destinations < 0");
+  if (num_destinations > 0)
+    RETURN_IF_FAIL (destinations, ctxt, loc, "NULL destinations");
+
+  for (int i = 0; i < num_destinations; i++)
+    {
+      RETURN_IF_FAIL_PRINTF1 (destinations[i], ctxt, loc,
+			      "NULL destination block at index %d", i);
+      RETURN_IF_FAIL_PRINTF4 (
+	block->get_function () == destinations[i]->get_function (),
+	ctxt, loc,
+	"destination block %d (%s) is not in the same function"
+	" (function %s) as source block %s",
+	i,
+	destinations[i]->get_debug_string (),
+	destinations[i]->get_function ()->get_debug_string (),
+	block->get_debug_string ());
+    }
+
+  gcc::jit::recording::statement *stmt =
+    block->end_with_indirect_jump (loc, target_address,
+				   num_destinations,
+				   (gcc::jit::recording::block **)destinations);
+
+  /* target_address must be valid to use within STMT.  */
+  target_address->verify_valid_within_stmt (__func__, stmt);
 }
 
 /* Public entrypoint.  See description in libgccjit.h.

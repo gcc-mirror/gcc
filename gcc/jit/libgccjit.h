@@ -1455,16 +1455,31 @@ extern gcc_jit_rvalue *
 gcc_jit_lvalue_get_address (gcc_jit_lvalue *lvalue,
 			    gcc_jit_location *loc);
 
+#define LIBGCCJIT_HAVE_gcc_jit_block_get_address
+
+/* Taking the address of a block; analogous to:
+     &&block
+   in C.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_39; you can test for its
+   presence using
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_block_get_address
+*/
+extern gcc_jit_rvalue *
+gcc_jit_block_get_address (gcc_jit_block *block,
+			   gcc_jit_location *loc);
+
 #define LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model
 
 /* Set the thread-local storage model of a global variable
 
    This API entrypoint was added in LIBGCCJIT_ABI_17; you can test for its
    presence using
-     #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model  */
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_lvalue_set_tls_model
+*/
 extern void
 gcc_jit_lvalue_set_tls_model (gcc_jit_lvalue *lvalue,
-			    enum gcc_jit_tls_model model);
+			      enum gcc_jit_tls_model model);
 
 #define LIBGCCJIT_HAVE_gcc_jit_lvalue_set_link_section
 
@@ -1591,6 +1606,32 @@ extern void
 gcc_jit_block_end_with_jump (gcc_jit_block *block,
 			     gcc_jit_location *loc,
 			     gcc_jit_block *target);
+
+#define LIBGCCJIT_HAVE_gcc_jit_block_end_with_indirect_jump
+
+/* Terminate a block by adding an indirect jump to target_address.
+
+   All possible indirect jump targets must be constrained to a fixed array.
+
+   The candidate destination blocks must be listed in DESTINATIONS
+
+   (of length NUM_DESTINATIONS) so that libgccjit can validate block
+
+   reachability within the function.
+
+   This is roughly equivalent to this C code:
+
+      goto *target_address;
+
+   This API entrypoint was added in LIBGCCJIT_ABI_39; you can test for its
+   presence using
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_block_end_with_indirect_jump.  */
+extern void
+gcc_jit_block_end_with_indirect_jump (gcc_jit_block *block,
+				      gcc_jit_location *loc,
+				      gcc_jit_rvalue *target_address,
+				      int num_destinations,
+				      gcc_jit_block **destinations);
 
 /* Terminate a block by adding evaluation of an rvalue, returning the value.
 

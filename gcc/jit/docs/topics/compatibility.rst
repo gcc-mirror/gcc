@@ -489,3 +489,11 @@ information:
 ``LIBGCCJIT_ABI_38`` covers the addition of
 
  * :func:`gcc_jit_type_is_floating_point`
+
+   .. _LIBGCCJIT_ABI_39:
+
+``LIBGCCJIT_ABI_39``
+-----------------------
+``LIBGCCJIT_ABI_39`` covers the addition of API entrypoints
+ * :func:`gcc_jit_block_get_address` 
+ * :func:`gcc_jit_block_end_with_indirect_jump`

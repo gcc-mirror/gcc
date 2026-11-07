@@ -466,6 +466,46 @@ Statements
 
       goto target;
 
+.. function:: gcc_jit_rvalue *\
+              gcc_jit_block_get_address (gcc_jit_block *block,\
+                                         gcc_jit_location *loc)
+
+   Get the address of a block as a ``void *`` rvalue, equivalent to GNU C's
+   ``&&label`` extension.
+
+   ``block`` must be non-NULL.
+
+   This API entrypoint was added in :ref:`LIBGCCJIT_ABI_39`; you can test
+   for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_block_get_address
+
+.. function:: void\
+	      gcc_jit_block_end_with_indirect_jump (\
+	      gcc_jit_block *block,\
+	      gcc_jit_location *loc,\
+	      gcc_jit_rvalue *target_address,\
+	      int num_destinations,\
+	      gcc_jit_block **destinations)
+
+   Terminate a basic block by adding an indirect jump to ``target_address``,
+   analogous to GNU C's ``goto *target_address;``.
+
+   Here, ``target_address`` must be a pointer rvalue, and ``destinations``
+   must be an array of ``num_destinations`` candidate target blocks within
+   the same function.  Listing the candidate destination blocks is required
+   so that ``libgccjit`` can validate block reachability when checking the
+   function.
+
+   This API entrypoint was added in ``LIBGCCJIT_ABI_39``; you can test for its
+   presence using:
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_block_end_with_indirect_jump
+
 .. function:: void\
               gcc_jit_block_end_with_return (gcc_jit_block *block,\
                                              gcc_jit_location *loc,\

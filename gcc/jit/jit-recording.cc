@@ -4103,25 +4103,36 @@ class rvalue_usage_validator : public recording::rvalue_visitor
  public:
   rvalue_usage_validator (const char *api_funcname,
 			  recording::context *ctxt,
-			  recording::statement *stmt);
-
+			  recording::statement *stmt,
+			  recording::lvalue *global = NULL);
   void
   visit (recording::rvalue *rvalue) final override;
+
+  bool
+  has_errors () const
+  {
+    return m_has_errors;
+  }
 
  private:
   const char *m_api_funcname;
   recording::context *m_ctxt;
   recording::statement *m_stmt;
+  recording::lvalue *m_global;
+  bool m_has_errors;
 };
 
 /* The trivial constructor for rvalue_usage_validator.  */
 
 rvalue_usage_validator::rvalue_usage_validator (const char *api_funcname,
 						recording::context *ctxt,
-						recording::statement *stmt)
+						recording::statement *stmt,
+						recording::lvalue *global)
   : m_api_funcname (api_funcname),
     m_ctxt (ctxt),
-    m_stmt (stmt)
+    m_stmt (stmt),
+    m_global (global),
+    m_has_errors (false)
 {
 }
 
@@ -4130,43 +4141,88 @@ rvalue_usage_validator::rvalue_usage_validator (const char *api_funcname,
 void
 rvalue_usage_validator::visit (recording::rvalue *rvalue)
 {
-  gcc_assert (m_stmt->get_block ());
-  recording::function *stmt_scope = m_stmt->get_block ()->get_function ();
-
-  /* Most rvalues don't have a scope (only locals and params).  */
-  if (rvalue->get_scope ())
+  if (!m_stmt)
     {
-      if (rvalue->get_scope () != stmt_scope)
-	m_ctxt->add_error
-	  (rvalue->get_loc (),
-	   "%s:"
-	   " rvalue %s (type: %s)"
-	   " has scope limited to function %s"
-	   " but was used within function %s"
-	   " (in statement: %s)",
-	   m_api_funcname,
-	   rvalue->get_debug_string (),
-	   rvalue->get_type ()->get_debug_string (),
-	   rvalue->get_scope ()->get_debug_string (),
-	   stmt_scope->get_debug_string (),
-	   m_stmt->get_debug_string ());
+      gcc_assert (m_global);
+      if (rvalue->get_scope ())
+	{
+	  m_ctxt->add_error
+	    (rvalue->get_loc (),
+	     "%s:"
+	     " rvalue %s (type: %s)"
+	     " has scope limited to function %s"
+	     " but was used in initializer for global %s",
+	     m_api_funcname,
+	     rvalue->get_debug_string (),
+	     rvalue->get_type ()->get_debug_string (),
+	     rvalue->get_scope ()->get_debug_string (),
+	     m_global->get_debug_string ());
+	  m_has_errors = true;
+	}
+      else if (rvalue->dyn_cast_param ())
+	{
+	  m_ctxt->add_error
+	    (rvalue->get_loc (),
+	     "%s:"
+	     " param %s (type: %s)"
+	     " was used in initializer for global %s"
+	     " but is not associated with any function",
+	     m_api_funcname,
+	     rvalue->get_debug_string (),
+	     rvalue->get_type ()->get_debug_string (),
+	     m_global->get_debug_string ());
+	  m_has_errors = true;
+	}
     }
   else
     {
-      if (rvalue->dyn_cast_param ())
-	m_ctxt->add_error
-	  (rvalue->get_loc (),
-	   "%s:"
-	   " param %s (type: %s)"
-	   " was used within function %s"
-	   " (in statement: %s)"
-	   " but is not associated with any function",
-	   m_api_funcname,
-	   rvalue->get_debug_string (),
-	   rvalue->get_type ()->get_debug_string (),
-	   stmt_scope->get_debug_string (),
-	   m_stmt->get_debug_string ());
+      gcc_assert (m_stmt->get_block ());
+      recording::function *stmt_scope = m_stmt->get_block ()->get_function ();
+
+      /* Most rvalues don't have a scope (only locals, params, and
+	 block addresses).  */
+      if (rvalue->get_scope ())
+	{
+	  if (rvalue->get_scope () != stmt_scope)
+	    {
+	      m_ctxt->add_error
+		(rvalue->get_loc (),
+		 "%s:"
+		 " rvalue %s (type: %s)"
+		 " has scope limited to function %s"
+		 " but was used within function %s"
+		 " (in statement: %s)",
+		 m_api_funcname,
+		 rvalue->get_debug_string (),
+		 rvalue->get_type ()->get_debug_string (),
+		 rvalue->get_scope ()->get_debug_string (),
+		 stmt_scope->get_debug_string (),
+		 m_stmt->get_debug_string ());
+	      m_has_errors = true;
+	    }
+	}
+      else
+	{
+	  if (rvalue->dyn_cast_param ())
+	    {
+	      m_ctxt->add_error
+		(rvalue->get_loc (),
+		 "%s:"
+		 " param %s (type: %s)"
+		 " was used within function %s"
+		 " (in statement: %s)"
+		 " but is not associated with any function",
+		 m_api_funcname,
+		 rvalue->get_debug_string (),
+		 rvalue->get_type ()->get_debug_string (),
+		 stmt_scope->get_debug_string (),
+		 m_stmt->get_debug_string ());
+	      m_has_errors = true;
+	    }
+	}
     }
+
+  rvalue->visit_children (this);
 }
 
 /* Verify that it's valid to use this rvalue (and all expressions
@@ -4185,10 +4241,22 @@ recording::rvalue::verify_valid_within_stmt (const char *api_funcname, statement
 
   /* Verify that it's OK to use this rvalue within s.  */
   v.visit (this);
+}
 
-  /* Traverse the expression tree below "this", verifying all rvalues
-     within it.  */
-  visit_children (&v);
+/* Verify that it's valid to use this rvalue (and all expressions
+   in the tree below it) as the initializer for GLOBAL.  */
+
+bool
+recording::rvalue::verify_valid_within_global_init (const char *api_funcname,
+						    lvalue *global)
+{
+  rvalue_usage_validator v (api_funcname,
+			    global->get_context (),
+			    NULL,
+			    global);
+
+  v.visit (this);
+  return !v.has_errors ();
 }
 
 /* Set the scope of this rvalue to be the given function.  This can only
@@ -5072,6 +5140,26 @@ recording::block::end_with_jump (recording::location *loc,
   return result;
 }
 
+/* Create a recording::end_with_indirect_jump instance and add
+   it to the block's context's list of mementos, and to the
+   block's list of statements.
+
+   Implements the heart of gcc_jit_block_end_with_indirect_jump.  */
+
+recording::statement *
+recording::block::end_with_indirect_jump (location *loc,
+					  rvalue *target_address,
+					  int num_destinations,
+					  block **destinations)
+{
+  statement *result = new indirect_jump (this, loc, target_address,
+					 num_destinations, destinations);
+  m_ctxt->record (result);
+  m_statements.safe_push (result);
+  m_has_been_terminated = true;
+  return result;
+}
+
 /* Create a recording::end_with_return instance and add it to
    the block's context's list of mementos, and to the block's
    list of statements.
@@ -5195,6 +5283,20 @@ recording::block::get_loc () const
     return stmt->get_loc ();
   else
     return NULL;
+}
+
+/* Create a recording::get_address instance and add it to
+   the block's context's list of mementos, and to the block's
+   list of statements.
+
+   Implements the heart of gcc_jit_block_get_address.  */
+
+recording::rvalue *
+recording::block::get_address (location *loc)
+{
+  recording::rvalue *result = new get_block_address (m_ctxt, loc, this);
+  m_ctxt->record (result);
+  return result;
 }
 
 /* Get the first statement within a block, if any.  */
@@ -6099,7 +6201,8 @@ void
 recording::ctor::visit_children (rvalue_visitor *v)
 {
   for (unsigned int i = 0; i < m_values.length (); i++)
-    v->visit (m_values[i]);
+    if (m_values[i])
+      v->visit (m_values[i]);
 }
 
 recording::string *
@@ -7332,6 +7435,45 @@ recording::get_address_of_lvalue::write_reproducer (reproducer &r)
 	   r.get_identifier (m_loc));
 }
 
+/* The implementation of class gcc::jit::recording::get_block_address.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::get_block_address.  */
+
+void
+recording::get_block_address::replay_into (replayer *r)
+{
+  set_playback_obj (
+    m_block->playback_block ()->
+      get_address (playback_location (r, m_loc)));
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   getting the address of a block.  */
+
+recording::string *
+recording::get_block_address::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "&&%s",
+			      m_block->get_debug_string ());
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   get_block_address.  */
+
+void
+recording::get_block_address::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "address_of");
+  r.write ("  gcc_jit_rvalue *%s =\n"
+	   "    gcc_jit_block_get_address (%s,\n"
+	   "				   %s);\n",
+	   id,
+	   r.get_identifier (m_block),
+	   r.get_identifier (m_loc));
+}
+
 /* The implementation of class gcc::jit::recording::function_pointer.  */
 
 /* Implementation of pure virtual hook recording::memento::replay_into
@@ -7763,6 +7905,90 @@ recording::jump::write_reproducer (reproducer &r)
 	   r.get_identifier (get_block ()),
 	   r.get_identifier (get_loc ()),
 	   r.get_identifier (m_target));
+}
+
+/* The implementation of class gcc::jit::recording::indirect_jump.  */
+
+/* gcc::jit::recording::indirect_jump's constructor.  */
+
+recording::indirect_jump::indirect_jump (block *b,
+					 location *loc,
+					 rvalue *target_address,
+					 int num_destinations,
+					 block **destinations)
+: statement (b, loc),
+  m_target_address (target_address)
+{
+  m_destinations.reserve_exact (num_destinations);
+  for (int i = 0; i < num_destinations; i++)
+    m_destinations.quick_push (destinations[i]);
+}
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::indirect_jump.  */
+
+void
+recording::indirect_jump::replay_into (replayer *r)
+{
+  auto_vec <playback::block *> pb_dests;
+  pb_dests.reserve_exact (m_destinations.length ());
+  for (unsigned i = 0; i < m_destinations.length (); i++)
+    pb_dests.quick_push (m_destinations[i]->playback_block ());
+
+  playback_block (get_block ())
+    ->add_indirect_jump (playback_location (r),
+			 m_target_address->playback_rvalue (),
+			 &pb_dests);
+}
+
+/* Override the poisoned default implementation of
+   gcc::jit::recording::statement::get_successor_blocks.  */
+
+vec <recording::block *>
+recording::indirect_jump::get_successor_blocks () const
+{
+  vec <block *> result;
+  result.create (m_destinations.length ());
+  for (unsigned i = 0; i < m_destinations.length (); i++)
+    result.quick_push (m_destinations[i]);
+  return result;
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   an indirect jump statement.  */
+
+recording::string *
+recording::indirect_jump::make_debug_string ()
+{
+  return string::from_printf (m_ctxt,
+			      "goto *%s;",
+			      m_target_address->get_debug_string_parens (PRECEDENCE_UNARY));
+}
+
+/* Implementation of recording::memento::write_reproducer for
+   indirect_jump statements.  */
+
+void
+recording::indirect_jump::write_reproducer (reproducer &r)
+{
+  r.make_identifier (this, "indirect_jump");
+  const char *dests_id = r.make_tmp_identifier ("destinations_for", this);
+  r.write ("  gcc_jit_block *%s[%i] = {\n",
+	   dests_id,
+	   m_destinations.length ());
+  for (unsigned i = 0; i < m_destinations.length (); i++)
+    r.write ("    %s,\n", r.get_identifier (m_destinations[i]));
+  r.write ("  };\n");
+  r.write ("  gcc_jit_block_end_with_indirect_jump (%s,\n"
+	   "					    %s,\n"
+	   "					    %s,\n"
+	   "					    %i,\n"
+	   "					    %s);\n",
+	   r.get_identifier (get_block ()),
+	   r.get_identifier (get_loc ()),
+	   r.get_identifier_as_rvalue (m_target_address),
+	   m_destinations.length (),
+	   dests_id);
 }
 
 /* The implementation of class gcc::jit::recording::return_.  */

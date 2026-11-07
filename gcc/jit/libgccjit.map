@@ -349,3 +349,9 @@ LIBGCCJIT_ABI_38 {
   global:
     gcc_jit_type_is_floating_point;
 } LIBGCCJIT_ABI_37;
+
+LIBGCCJIT_ABI_39 {
+  global:
+    gcc_jit_block_get_address;
+    gcc_jit_block_end_with_indirect_jump;
+} LIBGCCJIT_ABI_38;
