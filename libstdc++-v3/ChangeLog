@@ -1,3 +1,56 @@
+2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/128413
+	* include/bits/stl_iterator.h (iter_move): Change return type to
+	decltype(auto) in overloads for common_iterator and
+	counted_iterator, as per LWG 3953.
+	* testsuite/24_iterators/common_iterator/lwg3953.cc: New test.
+	* testsuite/24_iterators/counted_iterator/lwg3953.cc: New test.
+
+2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/127815
+	* src/c++20/tzdb.cc (time_zone::_M_get_sys_info): Clamp
+	parameter to start of first info. Use unsigned type for argument
+	to vector::reserve.
+	* testsuite/std/time/time_zone/127815.cc: New test.
+
+2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-11-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/118099
+	* include/bits/fstream.tcc (basic_filebuf::overflow): Rewind the
+	put position if outputting the put area fails.
+	* testsuite/27_io/basic_filebuf/overflow/char/118099-codecvt.cc:
+	New test.
+	* testsuite/27_io/basic_filebuf/overflow/char/118099.cc: New
+	test.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/118099-codecvt.cc:
+	New test.
+	* testsuite/27_io/basic_filebuf/overflow/wchar_t/118099.cc:
+	New test.
+
+2026-11-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2026-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/128264
+	* src/c++17/memory_resource.cc (_Pool::replenish): Rethrow
+	exception.
+	(_Pool::vector::insert): Use named variables for new capacity.
+	For initial allocation only set capacity if allocation succeeds.
+	* testsuite/20_util/unsynchronized_pool_resource/128264.cc: New
+	test.
+
 2026-11-05  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	Backported from master:

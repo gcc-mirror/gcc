@@ -1,3 +1,122 @@
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128069
+	* tree-vect-slp.cc (vect_slp_function): Split region
+	at blocks with incoming abnormal edges.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128054
+	* gimple-ssa-isolate-paths.cc (find_implicit_erroneous_behavior):
+	Iterate over edges and then PHIs for NULL dereference discovery.
+	Duplicate each path exactly once and apply all transforms for
+	UB on that edge to that duplicate.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128051
+	* gimple-fold.cc (decode_field_reference): Use TYPE_SIGN of mask
+	operand when extending and_mask to prec_in.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/128008
+	* gimple-ssa-pta-constraints.cc (create_variable_info_for_1):
+	Upon detecting recursion to the same structure type add
+	a constraint from nonlocal.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127978
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Simplify
+	vector CTOR filling accounting.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Disable
+	partial vectors if get_related_vectype_for_scalar_type returns
+	NULL_TREE for the mask.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127975
+	* tree-vect-loop.cc (vect_verify_full_masking_avx512):
+	Require all loop masks to be integer mode masks.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127966
+	* tree-ssa-loop-niter.cc (loop_niter_by_eval): Perform
+	the comparison of the STRING_CST element with the
+	terminating constant in uint8_t type.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-11-03  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127924
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Use the
+	mask part index M rather than the copy index J when getting the
+	loop mask for explicit mask arguments.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR lto/127922
+	* tree.cc (type_with_interoperable_signedness): Return true
+	for BITINT_TYPE.
+	* gimple.cc (gimple_signed_or_unsigned_type): Properly
+	handle BITINT_TYPE.
+	(gimple_get_alias_set): Add comment about signed/unsigned
+	BITINT_TYPE.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127877
+	* tree-vect-loop.cc (vectorizable_nonlinear_induction): Fix
+	shift count check.
+
+2026-11-06  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2026-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/127876
+	* tree-vect-loop.cc (vectorizable_reduction): For
+	conditional reduction assign then CONST_COND_REDUCTION mode
+	with explicit LT/GT checks.
+
 2026-11-05  David Faust  <david.faust@oss.qualcomm.com>
 
 	Backported from master:
