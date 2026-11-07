@@ -109,6 +109,9 @@ proc prune_gcc_output { text } {
     # Many tests that use visibility will still pass on platforms that don't support it.
     regsub -all "(^|\n)\[^\n\]*lto1: warning: visibility attribute not supported in this configuration; ignored\[^\n\]*" $text "" text
 
+    # Ignore 'ld' diagnostics for glibc plus '-static' plus 'dlopen'.
+    regsub -all "(^|\n)\[^\n\]*warning: Using 'dlopen' in statically linked applications requires at runtime the shared libraries from the glibc version used for linking" $text "" text
+
     #send_user "After:$text\n"
 
     return $text
