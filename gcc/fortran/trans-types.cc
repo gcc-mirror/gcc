@@ -3540,6 +3540,16 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 
 	  vec_safe_push (hidden_typelist, type);
 	}
+      else if (gfc_pdt_requires_hidden_arg (arg) && arg->param_list)
+	{
+	  if (arg->ts.type == BT_CLASS)
+	    type = gfc_typenode_for_spec (&CLASS_DATA(arg)->ts);
+	  else
+	    type = gfc_typenode_for_spec (&arg->ts);
+	  type = build_pointer_type (type);
+	  vec_safe_push (hidden_typelist, type);
+	}
+
       /* For scalar intrinsic types or derived types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */

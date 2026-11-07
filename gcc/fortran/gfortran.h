@@ -2080,6 +2080,8 @@ typedef struct gfc_symbol
   /* List of PDT parameter expressions  */
   struct gfc_actual_arglist *param_list;
   struct gfc_symbol *template_sym;
+  /* Used for allocatable PDT dummies to carry type information.  */
+  tree hidden_pdt_dummy_decl;
 
   struct gfc_expr *value;	/* Parameter/Initializer value */
   gfc_array_spec *as;
@@ -3396,6 +3398,7 @@ typedef struct gfc_code
     {
       gfc_typespec ts;
       gfc_alloc *list;
+      gfc_actual_arglist *param_list;
       /* Take the array specification from expr3 to allocate arrays
 	 without an explicit array specification.  */
       unsigned arr_spec_from_expr3:1;
@@ -4151,6 +4154,7 @@ int gfc_kind_max (gfc_expr *, gfc_expr *);
 
 bool gfc_check_conformance (gfc_expr *, gfc_expr *, const char *, ...) ATTRIBUTE_PRINTF_3;
 bool gfc_check_type_spec_parms (gfc_expr *, gfc_expr *, const char *);
+bool gfc_pdt_requires_hidden_arg (gfc_symbol *);
 bool gfc_check_assign (gfc_expr *, gfc_expr *, int, bool c = true);
 bool gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
 			       bool suppres_type_test = false,

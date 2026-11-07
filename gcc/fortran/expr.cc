@@ -4007,6 +4007,24 @@ gfc_check_type_spec_parms (gfc_expr *expr1, gfc_expr *expr2,
 }
 
 
+/* Used by the backend to decide when and where a hidden PDT should be
+   passed to a PDT dummy.  */
+
+bool gfc_pdt_requires_hidden_arg (gfc_symbol *arg)
+{
+  if (IS_PDT (arg)
+      && (arg->attr.allocatable || arg->attr.pointer))
+    return true;
+
+  if (IS_CLASS_PDT (arg)
+      && (CLASS_DATA (arg)->attr.allocatable
+	  || CLASS_DATA (arg)->attr.pointer))
+    return true;
+
+  return false;
+}
+
+
 /* Given an assignable expression and an arbitrary expression, make
    sure that the assignment can take place.  Only add a call to the intrinsic
    conversion routines, when allow_convert is set.  When this assign is a

@@ -5214,6 +5214,7 @@ gfc_match_allocate (void)
   gfc_alloc *head, *tail;
   gfc_expr *stat, *errmsg, *tmp, *source, *mold;
   gfc_typespec ts;
+  gfc_actual_arglist *ts_param_list = NULL;
   gfc_symbol *sym;
   gfc_ref *ref;
   match m;
@@ -5281,6 +5282,9 @@ gfc_match_allocate (void)
 			 "%L cannot contain DEFERRED parameters", &old_locus);
 	      goto cleanup;
 	    }
+
+	  ts_param_list = gfc_copy_actual_arglist (type_param_spec_list);
+
 	}
       else
 	{
@@ -5660,6 +5664,7 @@ alloc_opt_list:
     new_st.expr3 = mold;
   new_st.ext.alloc.list = head;
   new_st.ext.alloc.ts = ts;
+  new_st.ext.alloc.param_list = ts_param_list;
 
   if (type_param_spec_list)
     gfc_free_actual_arglist (type_param_spec_list);

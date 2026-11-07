@@ -2980,6 +2980,29 @@ create_function_arglist (gfc_symbol * sym)
 		type = gfc_sym_type (f->sym);
 	    }
 	}
+
+      else if (gfc_pdt_requires_hidden_arg (f->sym) && f->sym->param_list)
+	{
+	  tree pdt_type, hidden_pdt_dummy_decl;
+	  pdt_type = TREE_VALUE (hidden_typelist);
+	  gcc_assert (POINTER_TYPE_P (pdt_type));
+
+	  strcpy (&name[1], f->sym->name);
+	  name[0] = '_';
+	  hidden_pdt_dummy_decl = build_decl (input_location,
+			      PARM_DECL, get_identifier (name), pdt_type);
+
+	  hidden_arglist = chainon (hidden_arglist, hidden_pdt_dummy_decl);
+	  DECL_CONTEXT (hidden_pdt_dummy_decl) = fndecl;
+	  DECL_ARTIFICIAL (hidden_pdt_dummy_decl) = 1;
+	  DECL_ARG_TYPE (hidden_pdt_dummy_decl) = pdt_type;
+	  TREE_READONLY (hidden_pdt_dummy_decl) = 1;
+	  gfc_finish_decl (hidden_pdt_dummy_decl);
+	  f->sym->hidden_pdt_dummy_decl = hidden_pdt_dummy_decl;
+
+	  hidden_typelist = TREE_CHAIN (hidden_typelist);
+	}
+
       /* For scalar intrinsic types or derived types, VALUE passes the value,
 	 hence, the optional status cannot be transferred via a NULL pointer.
 	 Thus, we will use a hidden argument in that case.  */
@@ -5208,29 +5231,48 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	  else if (sym->attr.dummy)
 	    {
+	      gfc_actual_arglist *parms = sym->param_list;
 	      bool intent_out = false;
+	      bool all_explicit = true;
+	      gfc_component *c = sym->ts.u.derived->components;
+
 	      tree present = NULL_TREE;
 	      /* F2023 19.6.5(24)  */
 	      if (sym->attr.intent == INTENT_OUT)
 		intent_out = true;
-	      tmp = gfc_check_pdt_dummy (sym->ts.u.derived,
-					 sym->backend_decl,
-					 sym->as ? sym->as->rank : 0,
-					 sym->param_list, intent_out);
-	      if (sym->attr.optional)
+
+	      for (; sym->attr.allocatable && c && parms;
+		   c = c->next, parms = parms->next)
+		if (!c->attr.pdt_len)
+		  continue;
+		else if (parms->spec_type == SPEC_ASSUMED)
+		  all_explicit = false;
+
+	      /* Allocatable PDTs with assumed LEN parameters need special
+		 treatment in gfc_trans_allocate.  */
+	      if (all_explicit
+		  && !(sym->attr.pointer
+			|| sym->attr.allocatable))
 		{
-		  present = gfc_conv_expr_present (sym, false);
-		  tmp = build3_loc (input_location, COND_EXPR, void_type_node,
-				    present, tmp,
-				    build_empty_stmt (input_location));
+		  tmp = gfc_check_pdt_dummy (sym->ts.u.derived,
+					     sym->backend_decl,
+					     sym->as ? sym->as->rank : 0,
+					     sym->param_list, intent_out);
+		  if (sym->attr.optional)
+		    {
+		      present = gfc_conv_expr_present (sym, false);
+		      tmp = build3_loc (input_location, COND_EXPR,
+					void_type_node, present, tmp,
+					build_empty_stmt (input_location));
+		    }
+
+		  gfc_add_expr_to_block (&tmpblock, tmp);
+		  tmp = gfc_finish_block (&tmpblock);
+		  gfc_add_init_cleanup (block, tmp, NULL);
 		}
-
-	      gfc_add_expr_to_block (&tmpblock, tmp);
-
-	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
 	    }
 	}
-      else if (IS_CLASS_PDT (sym))
+      else if (IS_CLASS_PDT (sym) && !CLASS_DATA (sym)->attr.pointer)
 	{
 	  gfc_component *data = CLASS_DATA (sym);
 	  is_pdt_type = true;
@@ -5254,12 +5296,47 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	  else if (sym->attr.dummy)
 	    {
-	      tmp = gfc_class_data_get (sym->backend_decl);
-	      tmp = gfc_check_pdt_dummy (data->ts.u.derived, tmp,
-					 data->as ? data->as->rank : 0,
-					 sym->param_list);
-	      gfc_add_expr_to_block (&tmpblock, tmp);
-	      gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock), NULL);
+	      gfc_actual_arglist *parms = sym->param_list;
+	      bool intent_out = false;
+	      bool all_explicit = true;
+	      gfc_component *class_data = sym->ts.u.derived->components;
+	      gfc_symbol *declared = class_data->ts.u.derived;
+	      gfc_component *c = declared->components;
+
+	      tree present = NULL_TREE;
+	      /* F2023 19.6.5(24)  */
+	      if (sym->attr.intent == INTENT_OUT)
+		intent_out = true;
+
+
+	      for (; class_data->attr.allocatable && c && parms;
+		   c = c->next, parms = parms->next)
+		if (!c->attr.pdt_len)
+		  continue;
+		else if (parms->spec_type == SPEC_ASSUMED)
+		  all_explicit = false;
+
+	      /* Allocatable PDTs with assumed LEN parameters need special
+		 treatment in gfc_trans_allocate.  */
+	      if (all_explicit)
+		{
+		  tmp = gfc_class_data_get (sym->backend_decl);
+		  tmp = gfc_check_pdt_dummy (declared, tmp,
+					     class_data->as ?
+						      class_data->as->rank : 0,
+					     sym->param_list, intent_out);
+		  if (sym->attr.optional)
+		    {
+		      present = gfc_conv_expr_present (sym, false);
+		      tmp = build3_loc (input_location, COND_EXPR,
+					void_type_node, present, tmp,
+					build_empty_stmt (input_location));
+		    }
+
+		  gfc_add_expr_to_block (&tmpblock, tmp);
+		  tmp = gfc_finish_block (&tmpblock);
+		  gfc_add_init_cleanup (block, tmp, NULL);
+		}
 	    }
 	}
 

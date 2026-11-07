@@ -8951,7 +8951,56 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 
 	  vec_safe_push (stringargs, offset);
 	}
+     else if (e && gfc_pdt_requires_hidden_arg (fsym))
+	{
+	  gfc_actual_arglist *parms;
+	  tree hidden_pdt;
+	  gfc_symbol *derived;
 
+	  /* Build a temporary of the declared type.  */
+	  if (IS_CLASS_PDT (e))
+	    {
+	      tmp = gfc_typenode_for_spec (&CLASS_DATA (e)->ts);
+	      hidden_pdt = gfc_create_var (tmp, "pdt");
+	      derived = CLASS_DATA (e)->ts.u.derived;
+	    }
+	  else
+	    {
+	      tmp = gfc_typenode_for_spec (&e->ts);
+	      hidden_pdt = gfc_create_var (tmp, "pdt");
+	      derived = e->ts.u.derived;
+	    }
+
+	  /* Obtain the PDT parameter list.  */
+	  parms = e->param_list ? e->param_list :
+				  e->symtree->n.sym->param_list;
+
+	  if (gfc_spec_list_type (parms, derived) == SPEC_EXPLICIT)
+	    {
+	      /* If all the parameters are explcit, build the hidden PDT...  */
+	      tmp = gfc_allocate_pdt_comp (derived, hidden_pdt,
+					   0, parms);
+	      gfc_add_expr_to_block (&se->pre, tmp);
+	      tmp = gfc_build_addr_expr (NULL_TREE, hidden_pdt);
+	      vec_safe_push (stringargs, tmp);
+	      /* ...and deallocate it after the calls.  */
+	      tmp = gfc_deallocate_pdt_comp (derived,
+					     hidden_pdt, 0);
+	      gfc_add_expr_to_block (&se->post, tmp);
+	    }
+	  else if (e->expr_type == EXPR_VARIABLE
+		   && e->symtree->n.sym->attr.dummy
+		   && e->symtree->n.sym->hidden_pdt_dummy_decl != NULL_TREE)
+	    /* Otherwise hope that this was a dummy with a hidden arg.  */
+	    vec_safe_push (stringargs,
+			   e->symtree->n.sym->hidden_pdt_dummy_decl);
+	  else
+	    {
+	      /* Or else just add it without the parameter set here.  */
+	      tmp = gfc_build_addr_expr (NULL_TREE, hidden_pdt);
+	      vec_safe_push (stringargs, tmp);
+	    }
+	}
       vec_safe_push (arglist, parmse.expr);
     }
 

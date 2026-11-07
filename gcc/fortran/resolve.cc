@@ -16960,6 +16960,7 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 			     " rank (%d) as %qs",
 			     list->proc_sym->name, &list->where, my_rank,
 			     i->proc_sym->name);
+		  list->proc_sym->refs++;
 		  goto error;
 		}
 	    }

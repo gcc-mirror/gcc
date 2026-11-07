@@ -6712,6 +6712,187 @@ allocate_get_initializer (gfc_code * code, gfc_expr * expr)
   return NULL;
 }
 
+
+static bool
+fixup_assumed_PDT_parameters (stmtblock_t *block, gfc_code *code,
+			      gfc_actual_arglist *param_list, gfc_expr *expr)
+{
+   gfc_actual_arglist *parm;
+   gfc_component *c;
+   gfc_symbol *derived = NULL;
+   tree tmp, var = NULL_TREE;
+
+   if (expr->symtree->n.sym->attr.dummy)
+    {
+      var = expr->symtree->n.sym->hidden_pdt_dummy_decl;
+      if (var != NULL_TREE)
+	var = build_fold_indirect_ref_loc (input_location, var);
+    }
+
+  derived = IS_CLASS_PDT (expr) ? CLASS_DATA (expr)->ts.u.derived :
+				  expr->ts.u.derived;
+
+  parm = param_list;
+  for (; derived && parm; parm = parm->next)
+    {
+      tree cdecl, ctype, comp;
+      c = gfc_find_component (derived, parm->name, false, true, NULL);
+
+      if (!c || !c->attr.pdt_len || parm->expr != NULL
+	  || parm->spec_type == SPEC_DEFERRED)
+	continue;
+
+      if (var != NULL_TREE && c->backend_decl)
+	{
+	  char *name = xasprintf ("_%s_%s", expr->symtree->n.sym->name,
+				  c->name);
+	  gfc_symbol *s;
+	  cdecl = c->backend_decl;
+	  ctype = TREE_TYPE (cdecl);
+	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				  var, cdecl, NULL_TREE);
+	  gcc_assert (TREE_CODE (comp) != ERROR_MARK);
+	  tmp = gfc_create_var (ctype, "prm");
+	  TREE_STATIC (tmp) = 1;
+	  DECL_CONTEXT (tmp) = current_function_decl;
+	  gfc_add_modify (block, tmp, comp);
+	  gfc_get_symbol (name, expr->symtree->n.sym->ns, &s, &expr->where);
+	  s->ts.type = BT_INTEGER;
+	  s->ts.kind = c->ts.kind;
+	  s->attr.referenced = 1;
+	  s->attr.temporary = 1;
+	  s->backend_decl = tmp;
+	  gfc_get_symbol_decl (s);
+	  gfc_expr *p = gfc_lval_expr_from_sym (s);
+	  parm->expr = p;
+	  parm->spec_type = SPEC_EXPLICIT;
+	}
+      else if (c->initializer)
+	parm->expr = gfc_copy_expr (c->initializer);
+
+      if (parm->expr == NULL)
+	{
+	  gfc_error_now ("F2023 C939: Unable to find an expression "
+			 "for the parameter %qs at %L",
+			 c->name, &code->loc);
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+
+#define PARAMETER_MISMATCH 99
+
+static void
+check_PDT_parameters (stmtblock_t *block, gfc_code *code, gfc_expr *expr,
+		      gfc_se *se, int rtcheck, gfc_actual_arglist *param_list,
+		      tree stat, tree label_errmsg)
+{
+  gfc_actual_arglist *parm, *sym_parm;
+  gfc_component *c;
+  tree tmp;
+
+  if (IS_PDT (expr))
+    c = expr->ts.u.derived->components;
+  else
+    c = CLASS_DATA (expr)->ts.u.derived->components;
+  parm = param_list;
+  sym_parm = expr->symtree->n.sym->param_list;
+  parm = parm == sym_parm && !(code->expr1 || rtcheck) ? NULL : parm;
+  for (; c && parm && sym_parm;
+       c = c->next, parm = parm->next, sym_parm = sym_parm->next)
+    {
+      tree p1, p2, cond;
+      gfc_se tmp_se;
+      stmtblock_t cblock;
+
+      if (parm->spec_type != SPEC_EXPLICIT
+	  || sym_parm->spec_type != SPEC_EXPLICIT
+	  || c->attr.pdt_kind)
+	continue;
+
+      gcc_assert (parm->expr && sym_parm->expr);
+
+      /* Compare the parameter value from the allocate statement with
+	 that given in the allocate object declaration.  */
+      gfc_init_se (&tmp_se, NULL);
+      gfc_conv_expr (&tmp_se, parm->expr);
+      p1 = tmp_se.expr;
+      gfc_conv_expr (&tmp_se, sym_parm->expr);
+      p2 = tmp_se.expr;
+      gfc_add_block_to_block (block, &tmp_se.pre);
+      cond = fold_build2_loc (input_location, NE_EXPR,
+			      logical_type_node, p1, p2);
+      cond = gfc_evaluate_now (cond, block);
+
+      if (code->expr1)
+	{
+	  /* Set 'stat' to PARAMETER_MISMATCH if there is a mismatch
+	     in the parameter values.  */
+	  tree c1, c2;
+	  gfc_init_block (&cblock);
+	  if (code->expr2 == NULL)
+	    {
+	      gfc_add_expr_to_block (&cblock, gfc_call_free (se->expr));
+	      gfc_add_modify (&cblock,
+			      fold_convert (pvoid_type_node, se->expr),
+			      build_int_cst (pvoid_type_node, 0));
+	    }
+	  c1 = fold_build2_loc (input_location, MODIFY_EXPR,
+				void_type_node, stat,
+				build_int_cst (TREE_TYPE (stat),
+				PARAMETER_MISMATCH));
+	  gfc_add_expr_to_block (&cblock, c1);
+	  if (code->expr2 == NULL)
+	    {
+	      tmp = build1_v (GOTO_EXPR, label_errmsg);
+	      gfc_add_expr_to_block (&cblock, tmp);
+	    }
+	  c1 = gfc_finish_block (&cblock);
+	  c2 = fold_build2_loc (input_location, MODIFY_EXPR,
+				void_type_node, stat,
+				build_int_cst (TREE_TYPE (stat), 0));
+	  tmp = build3_v (COND_EXPR, cond, c1, c2);
+	  gfc_add_expr_to_block (block, tmp);
+	}
+
+      if (code->expr1 && code->expr2)
+	{
+	  /*  Deallocate the allocate object asc required by F2023
+	      9.7.1.2 p10 and jump to emit ERRMSG.  */
+	  gfc_init_block (&cblock);
+
+	  gfc_add_expr_to_block (&cblock, gfc_call_free (se->expr));
+	  gfc_add_modify (&cblock,
+			  fold_convert (pvoid_type_node, se->expr),
+			  build_int_cst (pvoid_type_node, 0));
+	  gfc_add_modify (&cblock,
+			  fold_convert (pvoid_type_node, se->expr),
+			  build_int_cst (pvoid_type_node, 0));
+	  tmp = build1_v (GOTO_EXPR, label_errmsg);
+	  gfc_add_expr_to_block (&cblock, tmp);
+	  tmp = build3_v (COND_EXPR, cond,
+			  gfc_finish_block (&cblock),
+			  build_empty_stmt (input_location));
+	  gfc_add_expr_to_block (block, tmp);
+	}
+
+      if (rtcheck)
+	{
+	  char *msg;
+	  msg = xasprintf ("Parameter mismatch for '%s' in ALLOCATE "
+			   "statement vs that in declaration of '%s'",
+			   c->name, expr->symtree->n.sym->name);
+	  gfc_trans_runtime_check (true, false, cond, block,
+				   &expr->where, msg);
+	  free (msg);
+	}
+    }
+}
+
+
 /* Translate the ALLOCATE statement.  */
 
 tree
@@ -6747,6 +6928,10 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
   symbol_attribute caf_attr;
   gfc_actual_arglist *param_list;
   tree ts_string_length = NULL_TREE;
+  const char *allmsg = "Attempt to allocate an allocated object";
+  const char *oommsg = "Insufficient virtual memory";
+  const char *pdtmsg = "PDT parameter mismatch";
+
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
@@ -6786,7 +6971,6 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
       /* GOTO destinations.  */
       label_errmsg = gfc_build_label_decl (NULL_TREE);
       label_finish = gfc_build_label_decl (NULL_TREE);
-      TREE_USED (label_finish) = 0;
     }
 
   /* When an expr3 is present evaluate it only once.  The standards prevent a
@@ -7666,7 +7850,9 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	}
 
       init_expr = NULL;
-      if (code->expr3 && !code->expr3->mold && e3_is != E3_MOLD)
+      if (code->expr3 && !code->expr3->mold && e3_is != E3_MOLD
+	  && !(expr->symtree->n.sym->attr.dummy
+	       && gfc_pdt_requires_hidden_arg (expr->symtree->n.sym)))
 	{
 	  /* Initialization via SOURCE block (or static default initializer).
 	     Switch off automatic reallocation since we have just done the
@@ -7747,6 +7933,7 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	  else
 	    type_spec_dt = NULL;
 
+	  /* Search for a usable parameter list.  */
 	  if (code->expr3 && code->expr3->param_list)
 	    param_list = code->expr3->param_list;
 	  else if (code->expr3 && code->expr3->mold
@@ -7757,7 +7944,32 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	  else
 	    param_list = expr->symtree->n.sym->param_list;
 
+	  /* ALLOCATE a dummy with an assumed (*) type-param-value. F2023 C939
+	     makes this the ONLY legal use of * in an ALLOCATE type-spec. The
+	     value is set in the caller, passed as hidden_pdt_dummy_decl and
+	     substitued below in fixup_assumed_PDT_parameters.  */
+	  if (type_spec_dt && code->ext.alloc.param_list
+	      && expr->symtree->n.sym->attr.dummy
+	      && expr->symtree->n.sym->hidden_pdt_dummy_decl != NULL_TREE)
+	    {
+	      declared = type_spec_dt;
+	      param_list = code->ext.alloc.param_list;
+	    }
+
 	  gcc_assert (param_list);
+
+	  /* If a LEN parameter is assumed, attempt to find a valid value if
+	     the expression is a dummy, otherwise set STAT and emit ERRMSG, if
+	     present, otherwise emit a runtime error.  */
+	  if (!fixup_assumed_PDT_parameters (&block, code, param_list, expr))
+	    goto pdt_parameter_error;
+
+	  /* If a LEN parameter is different from an explicit value in 'expr',
+	     emit either STAT and ERRMSG or a runtime error. If neither of
+	     these is available, silently continue with the allocation.  */
+	  check_PDT_parameters (&block, code, expr, &se, gfc_option.rtcheck,
+				param_list, stat,
+				code->expr2 ? label_errmsg : label_finish);
 
 	  /* For array allocations the allocate-shape-spec expression has
 	     rank 0 even though the symbol is an array.  Use the rank from
@@ -7850,6 +8062,8 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 	    gfc_add_expr_to_block (&block, dealloc_pdt);
 	}
 
+pdt_parameter_error:
+
       /* Nullify all pointers in derived type coarrays.  This registers a
 	 token for them which allows their allocation.  */
       if (is_coarray)
@@ -7906,9 +8120,7 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
   /* ERRMSG - only useful if STAT is present.  */
   if (code->expr1 && code->expr2)
     {
-      const char *msg = "Attempt to allocate an allocated object";
-      const char *oommsg = "Insufficient virtual memory";
-      tree slen, dlen, errmsg_str, oom_str, oom_loc;
+      tree slen, dlen, errmsg_str, oom_str, oom_loc, pdt_str, pdt_loc;
       stmtblock_t errmsg_block;
 
       gfc_init_block (&errmsg_block);
@@ -7916,9 +8128,9 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
       errmsg_str = gfc_create_var (pchar_type_node, "ERRMSG");
       gfc_add_modify (&errmsg_block, errmsg_str,
 		gfc_build_addr_expr (pchar_type_node,
-			gfc_build_localized_cstring_const (msg)));
+			gfc_build_localized_cstring_const (allmsg)));
 
-      slen = build_int_cst (gfc_charlen_type_node, strlen (msg));
+      slen = build_int_cst (gfc_charlen_type_node, strlen (allmsg));
       dlen = gfc_get_expr_charlen (code->expr2);
       slen = fold_build2_loc (input_location, MIN_EXPR,
 			      TREE_TYPE (slen), dlen, slen);
@@ -7962,6 +8174,35 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
 		      dlen, build_empty_stmt (input_location));
 
       gfc_add_expr_to_block (&block, tmp);
+
+      /* Unlike the previous allocate errors the allocate object will have been
+	 successfully allocated. F2023 9.7.1.2 p10 mandates that it should be
+	 deallocated, so do this now.  */
+
+      pdt_str = gfc_create_var (pchar_type_node, "PDTMSG");
+      pdt_loc = gfc_build_localized_cstring_const (pdtmsg);
+      gfc_add_modify (&errmsg_block, pdt_str,
+		      gfc_build_addr_expr (pchar_type_node, pdt_loc));
+
+      slen = build_int_cst (gfc_charlen_type_node, strlen (oommsg));
+      dlen = gfc_get_expr_charlen (code->expr2);
+      slen = fold_build2_loc (input_location, MIN_EXPR,
+			      TREE_TYPE (slen), dlen, slen);
+
+      gfc_trans_string_copy (&errmsg_block, dlen, errmsg,
+			     code->expr2->ts.kind,
+			     slen, pdt_str,
+			     gfc_default_character_kind);
+      dlen = gfc_finish_block (&errmsg_block);
+
+      tmp = fold_build2_loc (input_location, EQ_EXPR, logical_type_node,
+			     stat, build_int_cst (TREE_TYPE (stat),
+						  PARAMETER_MISMATCH));
+
+      tmp = build3_v (COND_EXPR, tmp,
+		      dlen, build_empty_stmt (input_location));
+
+      gfc_add_expr_to_block (&block, tmp);
     }
 
   /* STAT block.  */
@@ -7989,14 +8230,17 @@ gfc_trans_allocate (gfc_code * code, gfc_omp_namelist *omp_allocate)
       gfc_add_expr_to_block (&post, tmp);
     }
 
+  /* The copy of the typespec parameter list is no longer needed.  */
+  if (code->ext.alloc.param_list)
+    gfc_free_actual_arglist (code->ext.alloc.param_list);
   gfc_add_block_to_block (&block, &se.post);
   gfc_add_block_to_block (&block, &post);
   if (code->expr3 && code->expr3->must_finalize)
     gfc_add_block_to_block (&block, &final_block);
-
   return gfc_finish_block (&block);
 }
 
+#undef PARAMETER_MISMATCH
 
 /* Translate a DEALLOCATE statement.  */
 
