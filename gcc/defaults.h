@@ -951,11 +951,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define DEFAULT_USE_CXA_ATEXIT 0
 #endif
 
-#if GCC_VERSION >= 3000 && defined IN_GCC
-/* These old constraint macros shouldn't appear anywhere in a
-   configuration using MD constraint definitions.  */
-#endif
-
 /* Determine whether the target runtime library is Bionic */
 #ifndef TARGET_HAS_BIONIC
 #define TARGET_HAS_BIONIC 0
