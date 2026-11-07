@@ -10647,9 +10647,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     /* pow(x,1) -> x.  */
     (if (real_equal (value, &dconst1))
      @0)
-    /* pow(x,-1) -> 1/x.  */
+    /* pow(x,-1) -> 1/x.  Let fold_const_pow handle errno checking.  */
     (if (real_equal (value, &dconstm1)
-	 && (!flag_errno_math || !real_maybe_zerop (@0)))
+	 && !flag_errno_math)
      (rdiv { build_real (type, dconst1); } @0))
     /* pow(x,0.5) -> sqrt(x).  */
     (if (flag_unsafe_math_optimizations

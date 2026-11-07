@@ -5441,13 +5441,17 @@ real_isoddinteger (const REAL_VALUE_TYPE *c, format_helper fmt)
     }
 
   int e = REAL_EXP (c);
-  if (e <= 0 && e > SIGNIFICAND_BITS)
+  if (e <= 0 || e > SIGNIFICAND_BITS)
     return false;
   unsigned int n = SIGNIFICAND_BITS - e;
   int w = n / HOST_BITS_PER_LONG;
+  int i;
+  for (i = 0; i < w; ++i)
+    if (c->sig[i] != 0)
+      return false;
   unsigned int t = n % HOST_BITS_PER_LONG;
   unsigned long mask = (unsigned long)1 << t;
-  return (c->sig[w] & mask) != 0;
+  return (c->sig[w] & (mask|(mask-1))) == mask;
 }
 
 /* Calculate nextafter (X, Y) or nexttoward (X, Y).  Return true if
