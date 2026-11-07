@@ -4183,6 +4183,59 @@ parenthesized_variable (gfc_expr *e)
 }
 
 
+/* Replace the scalar class container in SE->EXPR, or its address, by a
+   container of a copy of its data, which SE->POST finalizes and frees.  */
+
+static void
+conv_class_value_copy (gfc_se *se)
+{
+  tree from, copy, data, size, tmp;
+  stmtblock_t block;
+  symbol_attribute attr;
+  gfc_se fse;
+  bool unlimited;
+
+  from = se->expr;
+  if (POINTER_TYPE_P (TREE_TYPE (from)))
+    from = build_fold_indirect_ref_loc (input_location, from);
+  if (!DECL_P (from))
+    from = gfc_evaluate_now (from, &se->pre);
+  unlimited = !integer_zerop (gfc_class_len_or_zero_get (from));
+
+  /* The copy has the _vptr and _len of FROM.  */
+  copy = gfc_create_var (TREE_TYPE (from), "class_copy");
+  gfc_add_modify (&se->pre, copy, from);
+
+  /* Leave a null _data alone; its _vptr may not be valid.  */
+  gfc_init_block (&block);
+  size = fold_convert (size_type_node, gfc_class_vtab_size_get (from));
+  size = gfc_resize_class_size_with_len (&block, from, size);
+  data = gfc_class_data_get (copy);
+  gfc_add_modify (&block, data,
+		  gfc_call_malloc (&block, TREE_TYPE (data), size));
+  gfc_add_expr_to_block (&block, gfc_copy_class_to_class (from, copy,
+							  NULL_TREE,
+							  unlimited));
+  tmp = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
+			 gfc_class_data_get (from),
+			 fold_convert (TREE_TYPE (data), null_pointer_node));
+  tmp = build3_v (COND_EXPR, tmp, gfc_finish_block (&block),
+		  build_empty_stmt (input_location));
+  gfc_add_expr_to_block (&se->pre, tmp);
+
+  gfc_init_se (&fse, NULL);
+  fse.expr = copy;
+  gfc_clear_attr (&attr);
+  attr.allocatable = 1;
+  gfc_finalize_tree_expr (&fse, NULL, attr, 0);
+  gfc_add_block_to_block (&se->pre, &fse.pre);
+  gfc_add_block_to_block (&se->post, &fse.post);
+  gfc_add_block_to_block (&se->post, &fse.finalblock);
+
+  se->expr = copy;
+}
+
+
 /* Translates an op expression. Common (binary) cases are handled by this
    function, others are passed on. Recursion is used in either case.
    We use the fact that (op1.ts == op2.ts) (except for the power
@@ -4206,6 +4259,14 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   switch (expr->value.op.op)
     {
     case INTRINSIC_PARENTHESES:
+      /* The value of a parenthesized CLASS variable is a copy.  */
+      if (expr->ts.type == BT_CLASS && expr->rank == 0
+	  && parenthesized_variable (expr))
+	{
+	  gfc_conv_expr (se, expr->value.op.op1);
+	  conv_class_value_copy (se);
+	  return;
+	}
       if ((expr->ts.type == BT_REAL || expr->ts.type == BT_COMPLEX)
 	  && flag_protect_parens)
 	{
@@ -8513,12 +8574,14 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 	 procedures.  As bounds information for descriptorless arrays is no
 	 longer available here, they are dealt with in trans-array.cc
 	 (gfc_conv_array_parameter).  A derived-type temporary for a
-	 parenthesized variable shares the components of the variable.  */
+	 parenthesized variable shares the components of the variable, and
+	 the copy of a parenthesized scalar CLASS variable frees its own.  */
       if (e && (e->ts.type == BT_DERIVED || e->ts.type == BT_CLASS)
 	    && e->ts.u.derived->attr.alloc_comp
 	    && (e->rank == 0 || elemental_proc || !nodesc_arg)
 	    && !expr_may_alias_variables (e, elemental_proc)
-	    && !(e->ts.type == BT_DERIVED && parenthesized_variable (e)))
+	    && !((e->ts.type == BT_DERIVED || e->rank == 0)
+		 && parenthesized_variable (e)))
 	{
 	  int parm_rank;
 	  /* It is known the e returns a structure type with at least one
@@ -11400,6 +11463,16 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
     {
       se->want_pointer = 1;
       gfc_conv_expr (se, expr);
+      return;
+    }
+
+  /* The copy of a parenthesized CLASS variable is freed in se->post, so it
+     must stay there until after the copy's use.  */
+  if (expr->ts.type == BT_CLASS && expr->rank == 0
+      && parenthesized_variable (expr))
+    {
+      gfc_conv_expr (se, expr);
+      se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
       return;
     }
 
