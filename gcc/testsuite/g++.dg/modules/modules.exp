@@ -359,6 +359,18 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
     if [runtest_file_p $runtests $test] {
 	set nshort [file tail [file dirname $test]]/[file tail $test]
 
+	# Kludge: inc-xlate-5.C doesn't want the libstdc++ headers, and
+	# g++_init put them in ALWAYS_CXXFLAGS, so we need to temporarily
+	# remove them for that test.  libstdc++-v3/scripts/testsuite_flags
+	# --build-includes always starts with -nostdinc++, so that's how we
+	# recognize the block we want to remove.
+	global ALWAYS_CXXFLAGS
+	set always $ALWAYS_CXXFLAGS
+	if [string match "*inc-xlate-5*" $test] {
+	    set ALWAYS_CXXFLAGS [regsub {\{additional_flags=-nostdinc[^\}]+\}} $ALWAYS_CXXFLAGS ""]
+	    verbose "set ALWAYS_CXXFLAGS $ALWAYS_CXXFLAGS" 1
+	}
+
 	set std_list [module-init $test]
 	foreach std $std_list {
 	    global module_cmis
@@ -372,6 +384,8 @@ foreach test [prune [lsort [find $srcdir/$subdir {*.[CH]}]] \
 	    set testcase [string range $test [string length "$srcdir/"] end]
 	    cleanup_module_files [module_cmi_p $testcase $module_cmis $std]
 	}
+
+    	set ALWAYS_CXXFLAGS $always
     }
 }
 

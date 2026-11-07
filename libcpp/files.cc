@@ -1190,8 +1190,8 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
       if (!buf && aname)
 	{
 	  _cpp_file *afile = _cpp_find_file (pfile, aname, dir, angle_brackets,
-					     _cpp_FFK_NORMAL, loc);
-	  if (afile && !afile->header_unit)
+					     _cpp_FFK_HAS_INCLUDE, loc);
+	  if (afile && !afile->deferred_error && !afile->header_unit)
 	    buf = (pfile->cb.translate_include
 		   (pfile, pfile->line_table, loc,
 		    afile, angle_brackets, nullptr));
