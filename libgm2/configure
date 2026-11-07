@@ -1472,9 +1472,6 @@ Optional Features:
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
   --enable-version-specific-runtime-libs    Specify that runtime libraries should be installed in a compiler-specific directory
-  --enable-maintainer-mode
-                          enable make rules and dependencies not useful (and
-                          sometimes confusing) to the casual installer
   --enable-shared[=PKGS]  build shared libraries [default=yes]
   --enable-static[=PKGS]  build static libraries [default=yes]
   --enable-fast-install[=PKGS]
@@ -7160,21 +7157,6 @@ else
 fi
 fi
 
-
-
-# Command-line options.
-# Very limited version of AC_MAINTAINER_MODE.
-# Check whether --enable-maintainer-mode was given.
-if test "${enable_maintainer_mode+set}" = set; then :
-  enableval=$enable_maintainer_mode; case ${enable_maintainer_mode} in
-     yes) MAINT='' ;;
-     no) MAINT='#' ;;
-     *) as_fn_error $? "--enable-maintainer-mode must be yes or no" "$LINENO" 5 ;;
-   esac
-   maintainer_mode=${enableval}
-else
-  MAINT='#'
-fi
 
 
 toolexecdir=no
@@ -15142,7 +15124,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 15145 "configure"
+#line 15127 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -15248,7 +15230,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 15251 "configure"
+#line 15233 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
