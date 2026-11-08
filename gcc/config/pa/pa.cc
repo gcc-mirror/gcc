@@ -11413,7 +11413,8 @@ pa_output_addr_vec (rtx lab, rtx body)
   for (idx = 0; idx < vlen; idx++)
     {
       ASM_OUTPUT_ADDR_VEC_ELT
-	(asm_out_file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+	(asm_out_file,
+	 CODE_LABEL_NUMBER (label_ref_label (XVECEXP (body, 0, idx))));
     }
   if (TARGET_GAS)
     fputs ("\t.end_brtab\n", asm_out_file);
@@ -11424,7 +11425,7 @@ pa_output_addr_vec (rtx lab, rtx body)
 void
 pa_output_addr_diff_vec (rtx lab, rtx body)
 {
-  rtx base = XEXP (XEXP (body, 0), 0);
+  rtx_insn *base = label_ref_label (XEXP (body, 0));
   int idx, vlen = XVECLEN (body, 1);
 
   targetm.asm_out.internal_label (asm_out_file, "L", CODE_LABEL_NUMBER (lab));
@@ -11435,7 +11436,7 @@ pa_output_addr_diff_vec (rtx lab, rtx body)
       ASM_OUTPUT_ADDR_DIFF_ELT
 	(asm_out_file,
 	 body,
-	 CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
+	 CODE_LABEL_NUMBER (label_ref_label (XVECEXP (body, 1, idx))),
 	 CODE_LABEL_NUMBER (base));
     }
   if (TARGET_GAS)

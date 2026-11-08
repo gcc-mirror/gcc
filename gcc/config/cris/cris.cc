@@ -2311,10 +2311,10 @@ cris_asm_output_case_end (FILE *stream, int num, rtx_insn *table)
 
   asm_fprintf (stream,
 	       "\t.word %LL%d-%LL%d%s\n",
-	       CODE_LABEL_NUMBER (XEXP
+	       CODE_LABEL_NUMBER (label_ref_label
 				  (XEXP
 				   (XEXP (XVECEXP (whole_jump_pat, 0, 0), 1),
-				    2), 0)),
+				    2))),
 	       num,
 	       (TARGET_PDEBUG ? "; default" : ""));
 }

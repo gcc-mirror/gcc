@@ -2543,7 +2543,8 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		  {
 #ifdef ASM_OUTPUT_ADDR_VEC_ELT
 		    ASM_OUTPUT_ADDR_VEC_ELT
-		      (file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+		      (file, CODE_LABEL_NUMBER
+		       (label_ref_label (XVECEXP (body, 0, idx))));
 #else
 		    gcc_unreachable ();
 #endif
@@ -2554,8 +2555,9 @@ final_scan_insn_1 (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 		    ASM_OUTPUT_ADDR_DIFF_ELT
 		      (file,
 		       body,
-		       CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
-		       CODE_LABEL_NUMBER (XEXP (XEXP (body, 0), 0)));
+		       CODE_LABEL_NUMBER
+		       (label_ref_label (XVECEXP (body, 1, idx))),
+		       CODE_LABEL_NUMBER (label_ref_label (XEXP (body, 0))));
 #else
 		    gcc_unreachable ();
 #endif

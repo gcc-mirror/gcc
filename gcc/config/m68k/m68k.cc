@@ -5312,7 +5312,7 @@ print_operand_address (FILE *file, rtx addr)
       labelno = (address.offset
 		 && !address.base
 		 && GET_CODE (address.offset) == LABEL_REF
-		 ? CODE_LABEL_NUMBER (XEXP (address.offset, 0))
+		 ? CODE_LABEL_NUMBER (label_ref_label (address.offset))
 		 : -1);
       if (MOTOROLA)
 	{

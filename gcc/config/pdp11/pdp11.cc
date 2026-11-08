@@ -1805,7 +1805,8 @@ output_addr_const_pdp11 (FILE *file, rtx x)
       break;
 
     case LABEL_REF:
-      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
+      ASM_GENERATE_INTERNAL_LABEL (buf, "L",
+				   CODE_LABEL_NUMBER (label_ref_label (x)));
       assemble_name (file, buf);
       break;
 

@@ -24544,19 +24544,19 @@ arm_final_prescan_insn (rtx_insn *insn)
       /* Flag which part of the IF_THEN_ELSE is the LABEL_REF.  */
       int then_not_else = TRUE;
       rtx_insn *this_insn = start_insn;
-      rtx label = 0;
+      rtx_insn *label = 0;
 
       /* Register the insn jumped to.  */
       if (reverse)
         {
 	  if (!seeking_return)
-	    label = XEXP (SET_SRC (body), 0);
+	    label = label_ref_label (SET_SRC (body));
         }
       else if (GET_CODE (XEXP (SET_SRC (body), 1)) == LABEL_REF)
-	label = XEXP (XEXP (SET_SRC (body), 1), 0);
+	label = label_ref_label (XEXP (SET_SRC (body), 1));
       else if (GET_CODE (XEXP (SET_SRC (body), 2)) == LABEL_REF)
 	{
-	  label = XEXP (XEXP (SET_SRC (body), 2), 0);
+	  label = label_ref_label (XEXP (SET_SRC (body), 2));
 	  then_not_else = FALSE;
 	}
       else if (ANY_RETURN_P (XEXP (SET_SRC (body), 1)))
@@ -24654,7 +24654,8 @@ arm_final_prescan_insn (rtx_insn *insn)
 		  && GET_CODE (SET_DEST (scanbody)) == PC)
 		{
 		  if (GET_CODE (SET_SRC (scanbody)) == LABEL_REF
-		      && XEXP (SET_SRC (scanbody), 0) == label && !reverse)
+		      && label_ref_label (SET_SRC (scanbody)) == label
+		      && !reverse)
 		    {
 		      arm_ccfsm_state = 2;
 		      succeed = TRUE;

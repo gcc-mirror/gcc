@@ -14910,7 +14910,7 @@ avr_output_addr_vec (rtx_insn *labl, rtx table)
 
   for (int idx = 0; idx < vlen; idx++)
     {
-      int value = CODE_LABEL_NUMBER (XEXP (XVECEXP (table, 0, idx), 0));
+      int value = CODE_LABEL_NUMBER (label_ref_label (XVECEXP (table, 0, idx)));
 
       if (AVR_HAVE_JMP_CALL)
 	fprintf (stream, "\t.word gs(.L%d)\n", value);

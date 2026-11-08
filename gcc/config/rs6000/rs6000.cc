@@ -17940,7 +17940,7 @@ output_toc (FILE *file, rtx x, int labelno, machine_mode mode)
 
     case LABEL_REF:
       ASM_GENERATE_INTERNAL_LABEL (buf, "L",
-				   CODE_LABEL_NUMBER (XEXP (base, 0)));
+				   CODE_LABEL_NUMBER (label_ref_label (base)));
       break;
 
     case CODE_LABEL:

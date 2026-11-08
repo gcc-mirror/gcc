@@ -2494,14 +2494,16 @@ conditionalize_block (rtx_insn *first)
   if (GET_CODE (XEXP (XEXP (br_pat, 1), 1)) == LABEL_REF)
     {
       /* A normal branch, so extract label out of first arm.  */
-      br_lab_num = CODE_LABEL_NUMBER (XEXP (XEXP (XEXP (br_pat, 1), 1), 0));
+      br_lab_num = CODE_LABEL_NUMBER
+	(label_ref_label (XEXP (XEXP (br_pat, 1), 1)));
     }
   else
     {
       /* An inverse branch, so extract the label out of the 2nd arm
 	 and complement the condition.  */
       cond = (cond == 0);
-      br_lab_num = CODE_LABEL_NUMBER (XEXP (XEXP (XEXP (br_pat, 1), 2), 0));
+      br_lab_num = CODE_LABEL_NUMBER
+	(label_ref_label (XEXP (XEXP (br_pat, 1), 2)));
     }
 
   /* Scan forward for the start of block 2: it must start with a

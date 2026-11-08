@@ -10478,7 +10478,8 @@ sparc_output_addr_vec (rtx vec)
   for (idx = 0; idx < vlen; idx++)
     {
       ASM_OUTPUT_ADDR_VEC_ELT
-	(asm_out_file, CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 0, idx), 0)));
+	(asm_out_file,
+	 CODE_LABEL_NUMBER (label_ref_label (XVECEXP (body, 0, idx))));
     }
 
 #ifdef ASM_OUTPUT_ADDR_VEC_END
@@ -10490,7 +10491,7 @@ static void
 sparc_output_addr_diff_vec (rtx vec)
 {
   rtx lab = XEXP (vec, 0), body = XEXP (vec, 1);
-  rtx base = XEXP (XEXP (body, 0), 0);
+  rtx_insn *base = label_ref_label (XEXP (body, 0));
   int idx, vlen = XVECLEN (body, 1);
 
 #ifdef ASM_OUTPUT_ADDR_VEC_START
@@ -10509,7 +10510,7 @@ sparc_output_addr_diff_vec (rtx vec)
       ASM_OUTPUT_ADDR_DIFF_ELT
         (asm_out_file,
          body,
-         CODE_LABEL_NUMBER (XEXP (XVECEXP (body, 1, idx), 0)),
+	 CODE_LABEL_NUMBER (label_ref_label (XVECEXP (body, 1, idx))),
          CODE_LABEL_NUMBER (base));
     }
 

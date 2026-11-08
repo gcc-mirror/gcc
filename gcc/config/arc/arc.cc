@@ -6308,7 +6308,8 @@ arc_output_pic_addr_const (FILE * file, rtx x, int code)
       break;
 
     case LABEL_REF:
-      ASM_GENERATE_INTERNAL_LABEL (buf, "L", CODE_LABEL_NUMBER (XEXP (x, 0)));
+      ASM_GENERATE_INTERNAL_LABEL (buf, "L",
+				   CODE_LABEL_NUMBER (label_ref_label (x)));
       assemble_name (file, buf);
       break;
 
