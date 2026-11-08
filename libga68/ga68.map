@@ -42,7 +42,7 @@ LIBGA68_2.0 {
     POSIX_stdin;
     POSIX_stdout;
     POSIX_stderr;
-    POSIX_fileodeault;
+    POSIX_fileodefault;
     POSIX_fileordwr;
     POSIX_fileordonly;
     POSIX_fileowronly;
