@@ -4545,7 +4545,7 @@ mark_constants (rtx_insn *insn)
       int i, n = seq->len ();
       for (i = 0; i < n; ++i)
 	{
-	  rtx subinsn = seq->element (i);
+	  rtx_insn *subinsn = seq->insn (i);
 	  if (INSN_P (subinsn))
 	    mark_constants_in_pattern (subinsn);
 	}

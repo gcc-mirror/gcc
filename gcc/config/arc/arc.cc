@@ -5047,7 +5047,7 @@ arc_print_operand (FILE *file, rtx x, int code)
 	{
 	  int cc = get_arc_condition_code (current_insn_predicate);
 	  /* Is this insn in a delay slot sequence?  */
-	  if (!final_sequence || XVECLEN (final_sequence, 0) < 2
+	  if (!final_sequence || final_sequence->len () < 2
 	      || current_insn_predicate
 	      || CALL_P (final_sequence->insn (0))
 	      || simplejump_p (final_sequence->insn (0)))
@@ -5067,8 +5067,8 @@ arc_print_operand (FILE *file, rtx x, int code)
 	    fputs (arc_condition_codes[cc], file);
 	  else /* An Instruction in a delay slot of a jump or call.  */
 	    {
-	      rtx jump = XVECEXP (final_sequence, 0, 0);
-	      rtx insn = XVECEXP (final_sequence, 0, 1);
+	      rtx_insn *jump = final_sequence->insn (0);
+	      rtx_insn *insn = final_sequence->insn (1);
 
 	      /* If the insn is annulled and is from the target path, we need
 		 to inverse the condition test.  */
@@ -7807,10 +7807,10 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
 {
   if (!TARGET_ARC600)
     return 0;
-  if (GET_CODE (PATTERN (pred)) == SEQUENCE)
-    pred = as_a <rtx_sequence *> (PATTERN (pred))->insn (1);
-  if (GET_CODE (PATTERN (succ)) == SEQUENCE)
-    succ = as_a <rtx_sequence *> (PATTERN (succ))->insn (0);
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (pred)))
+    pred = seq->insn (1);
+  if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (succ)))
+    succ = seq->insn (0);
   if (recog_memoized (pred) == CODE_FOR_mulsi_600
       || recog_memoized (pred) == CODE_FOR_umul_600
       || recog_memoized (pred) == CODE_FOR_mac_600
@@ -9436,7 +9436,7 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
   if (!INSN_P (insn))
     return len;
   /* We already handle sequences by ignoring the delay sequence flag.  */
-  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+  if (is_a <rtx_sequence *> (PATTERN (insn)))
     return len;
 
   /* Check for return with but one preceding insn since function
@@ -9448,12 +9448,13 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
       && get_attr_type (insn) == TYPE_RETURN)
     {
       rtx_insn *prev = prev_active_insn (insn);
+      rtx_sequence *prev_seq = nullptr;
 
       if (!prev || !(prev = prev_active_insn (prev))
 	  || ((NONJUMP_INSN_P (prev)
-	       && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	      ? CALL_ATTR (as_a <rtx_sequence *> (PATTERN (prev))->insn (0),
-			   NON_SIBCALL)
+	       && (prev_seq
+		   = dyn_cast <rtx_sequence *> (PATTERN (prev))))
+	      ? CALL_ATTR (prev_seq->insn (0), NON_SIBCALL)
 	      : CALL_ATTR (prev, NON_SIBCALL)))
 	return len + 4;
     }
@@ -9527,14 +9528,16 @@ arc_predicate_delay_insns (void)
 {
   for (rtx_insn *insn = get_insns (); insn; insn = NEXT_INSN (insn))
     {
-      rtx pat, jump, dlay, src, cond, *patp;
+      rtx pat, src, cond, *patp;
+      rtx_insn *jump, *dlay;
       int reverse;
+      rtx_sequence *seq;
 
       if (!NONJUMP_INSN_P (insn)
-	  || GET_CODE (pat = PATTERN (insn)) != SEQUENCE)
+	  || !(seq = dyn_cast <rtx_sequence *> (PATTERN (insn))))
 	continue;
-      jump = XVECEXP (pat, 0, 0);
-      dlay = XVECEXP (pat, 0, 1);
+      jump = seq->insn (0);
+      dlay = seq->insn (1);
       if (!JUMP_P (jump) || !INSN_ANNULLED_BRANCH_P (jump))
 	continue;
       /* If the branch insn does the annulling, leave the delay insn alone.  */

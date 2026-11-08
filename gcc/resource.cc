@@ -179,9 +179,9 @@ next_insn_no_annul (rtx_insn *insn)
 	}
 
       insn = NEXT_INSN (insn);
-      if (insn && NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = as_a <rtx_sequence *> (PATTERN (insn))->insn (0);
+      if (insn && NONJUMP_INSN_P (insn))
+	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+	  insn = seq->insn (0);
     }
 
   return insn;
@@ -347,7 +347,7 @@ mark_referenced_resources (rtx x, struct resources *res,
 		{
 		  for (i = 1; i < seq_size; i++)
 		    {
-		      rtx slot_pat = PATTERN (sequence->element (i));
+		      rtx slot_pat = PATTERN (sequence->insn (i));
 		      if (GET_CODE (slot_pat) == SET
 			  && rtx_equal_p (SET_DEST (slot_pat),
 					  XEXP (XEXP (link, 0), 0)))
@@ -511,7 +511,7 @@ mark_set_resources (rtx x, struct resources *res, int in_dest,
         mark_set_resources (control, res, 0, mark_type);
         for (i = seq->len () - 1; i >= 0; --i)
 	  {
-	    rtx elt = seq->element (i);
+	    rtx_insn *elt = seq->insn (i);
 	    if (!annul_p && INSN_FROM_TARGET_P (elt))
 	      mark_set_resources (elt, res, 0, mark_type);
 	  }
@@ -625,8 +625,10 @@ return_insn_p (const rtx_insn *insn)
   if (JUMP_P (insn) && ANY_RETURN_P (PATTERN (insn)))
     return true;
 
-  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    return return_insn_p (as_a <rtx_insn *> (XVECEXP (PATTERN (insn), 0, 0)));
+  rtx_sequence *seq;
+  if (NONJUMP_INSN_P (insn)
+      && (seq = dyn_cast <rtx_sequence *> (PATTERN (insn))))
+    return return_insn_p (seq->insn (0));
 
   return false;
 }
@@ -766,12 +768,12 @@ mark_target_live_regs (rtx_insn *insns, rtx target_maybe_return, struct resource
 		    insns : BB_HEAD (BASIC_BLOCK_FOR_FN (cfun, b)));
       stop_insn = target;
 
-      if (NONJUMP_INSN_P (start_insn)
-	  && GET_CODE (PATTERN (start_insn)) == SEQUENCE)
-	start_insn = as_a <rtx_sequence *> (PATTERN (start_insn))->insn (0);
+      if (NONJUMP_INSN_P (start_insn))
+	if (auto *seq = dyn_cast <rtx_sequence *> (PATTERN (start_insn)))
+	  start_insn = seq->insn (0);
 
       if (NONJUMP_INSN_P (stop_insn)
-	  && GET_CODE (PATTERN (stop_insn)) == SEQUENCE)
+	  && is_a <rtx_sequence *> (PATTERN (stop_insn)))
 	stop_insn = next_insn (PREV_INSN (stop_insn));
 
       for (insn = start_insn; insn != stop_insn;

@@ -268,7 +268,7 @@ int
 dbr_sequence_length (void)
 {
   if (final_sequence != 0)
-    return XVECLEN (final_sequence, 0) - 1;
+    return final_sequence->len () - 1;
   else
     return 0;
 }
@@ -1305,9 +1305,10 @@ shorten_branches (rtx_insn *first)
 	      continue;
 	    }
 
-	  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+	  rtx_sequence *seqn;
+	  if (NONJUMP_INSN_P (insn)
+	      && (seqn = dyn_cast <rtx_sequence *> (PATTERN (insn))))
 	    {
-	      rtx_sequence *seqn = as_a <rtx_sequence *> (PATTERN (insn));
 	      int i;
 
 	      body = PATTERN (insn);
@@ -4169,10 +4170,11 @@ leaf_function_p (void)
 	  && ! SIBLING_CALL_P (insn)
 	  && ! FAKE_CALL_P (insn))
 	return false;
+      rtx_sequence *seq;
       if (NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE
-	  && CALL_P (XVECEXP (PATTERN (insn), 0, 0))
-	  && ! SIBLING_CALL_P (XVECEXP (PATTERN (insn), 0, 0)))
+	  && (seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+	  && CALL_P (seq->insn (0))
+	  && ! SIBLING_CALL_P (seq->insn (0)))
 	return false;
     }
 
@@ -4531,12 +4533,10 @@ rest_of_clean_state (void)
       SET_PREV_INSN (insn) = NULL;
 
       rtx_insn *call_insn = insn;
+      rtx_sequence *seq;
       if (NONJUMP_INSN_P (call_insn)
-	  && GET_CODE (PATTERN (call_insn)) == SEQUENCE)
-	{
-	  rtx_sequence *seq = as_a <rtx_sequence *> (PATTERN (call_insn));
-	  call_insn = seq->insn (0);
-	}
+	  && (seq = dyn_cast <rtx_sequence *> (PATTERN (call_insn))))
+	call_insn = seq->insn (0);
       if (CALL_P (call_insn))
 	{
 	  rtx note

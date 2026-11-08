@@ -1243,10 +1243,12 @@ reg_set_p (const_rtx reg, const_rtx uncast_insn)
 
   /* After delay slot handling, call and branch insns might be in a
      sequence.  Check all the elements there.  */
-  if (INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
+  rtx_sequence *seq;
+  if (INSN_P (insn)
+      && (seq = dyn_cast <rtx_sequence *> (PATTERN (insn))))
     {
-      for (int i = 0; i < XVECLEN (PATTERN (insn), 0); ++i)
-	if (reg_set_p (reg, XVECEXP (PATTERN (insn), 0, i)))
+      for (int i = 0; i < seq->len (); ++i)
+	if (reg_set_p (reg, seq->element (i)))
 	  return true;
 
       return false;
@@ -3601,13 +3603,14 @@ verify_jump_tables (void)
 	}
       else if (JUMP_P (insn))
 	jumps.safe_push (insn);
-      else if (NONDEBUG_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	for (int i = 0; i < XVECLEN (PATTERN (insn), 0); ++i)
-	  {
-	    rtx_insn *part = as_a<rtx_insn *> (XVECEXP (PATTERN (insn), 0, i));
-	    if (JUMP_P (part))
-	      jumps.safe_push (part);
-	  }
+      else if (NONDEBUG_INSN_P (insn))
+	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+	  for (int i = 0; i < seq->len (); ++i)
+	    {
+	      rtx_insn *part = seq->insn (i);
+	      if (JUMP_P (part))
+		jumps.safe_push (part);
+	    }
     }
 
   for (rtx_jump_table_data *table : tables)

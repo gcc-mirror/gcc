@@ -2562,8 +2562,9 @@ pru_insert_loop_label_last (rtx_insn *last_insn, rtx_code_label *label,
 
 	if (NONDEBUG_INSN_P (prev))
 	  {
-	    if (GET_CODE (PATTERN (prev)) == SEQUENCE)
-	      prev = as_a <rtx_insn *> (XVECEXP (PATTERN (prev), 0, 1));
+	    if (rtx_sequence *seq
+		= dyn_cast <rtx_sequence *> (PATTERN (prev)))
+	      prev = seq->insn (1);
 
 	    /* Other insns that should not be in the last two opcodes.  */
 	    icode = recog_memoized (prev);

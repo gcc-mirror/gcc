@@ -403,8 +403,8 @@ cris_postdbr_cmpelim ()
 
       /* Consider filled delay slots; there might be a comparison there.
 	 It's only the second insn in a sequence that is interesting.  */
-      if (GET_CODE (pat) == SEQUENCE)
-	insn = as_a <rtx_insn *> (XVECEXP (pat, 0, 1));
+      if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
+	insn = seq->insn (1);
       /* The "else" eliminates temptations to consider an insn in a
 	 delay slot for elimination; it can only be a prev_cc_setter.  */
       else if (prev_cc_setter != 0 && GET_CODE (pat) == SET)

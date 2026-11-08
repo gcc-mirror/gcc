@@ -19357,7 +19357,7 @@ mips_classify_branch_p6600 (rtx_insn *insn)
   /* We ignore sequences here as they represent a filled delay slot.  */
   if (!insn
       || !USEFUL_INSN_P (insn)
-      || GET_CODE (PATTERN (insn)) == SEQUENCE)
+      || is_a<rtx_sequence *> (PATTERN (insn)))
     return UC_UNDEFINED;
 
   if (get_attr_jal (insn) == JAL_INDIRECT /* JIC and JIALC.  */
@@ -19418,7 +19418,7 @@ mips_avoid_hazard (rtx_insn *after, rtx_insn *insn, int *hilo_delay,
      imply it is not actually a compact branch anyway) and the current
      insn is not an inline asm, and can't go in a delay slot.  */
   else if (*fs_delay && get_attr_can_delay (insn) == CAN_DELAY_NO
-	   && GET_CODE (PATTERN (after)) != SEQUENCE
+	   && !is_a<rtx_sequence *> (PATTERN (after))
 	   && GET_CODE (pattern) != ASM_INPUT
 	   && asm_noperands (pattern) < 0)
     nops = 1;
@@ -19507,9 +19507,15 @@ mips_emit_speculation_barrier_function ()
 static bool
 mips_breakable_sequence_p (rtx_insn *insn)
 {
-  return (insn && GET_CODE (PATTERN (insn)) == SEQUENCE
-	  && TARGET_CB_MAYBE
-	  && get_attr_compact_form (SEQ_BEGIN (insn)) != COMPACT_FORM_NEVER);
+  if (!insn || !TARGET_CB_MAYBE)
+    return false;
+
+  auto seq = dyn_cast<rtx_sequence *> (PATTERN (insn));
+  if (!seq)
+    return false;
+  if (INSN_P (insn))
+    insn = seq->insn (0);
+  return get_attr_compact_form (insn) != COMPACT_FORM_NEVER;
 }
 
 /* Remove a SEQUENCE and replace it with the delay slot instruction
@@ -19619,7 +19625,7 @@ mips_reorg_process_insns (void)
       next_insn = NEXT_INSN (insn);
       if (USEFUL_INSN_P (insn))
 	{
-	  if (GET_CODE (PATTERN (insn)) == SEQUENCE)
+	  if (auto seq = dyn_cast<rtx_sequence *> (PATTERN (insn)))
 	    {
 	      rtx_insn *next_active = next_active_insn (insn);
 	      /* Undo delay slots to avoid bubbles if the next instruction can
@@ -19628,11 +19634,11 @@ mips_reorg_process_insns (void)
 		 safely breakable.  */
 	      if (TARGET_CB_MAYBE
 		  && mips_breakable_sequence_p (insn)
-		  && INSN_P (SEQ_BEGIN (insn))
-		  && INSN_P (SEQ_END (insn))
+		  && INSN_P (seq->insn (0))
+		  && INSN_P (seq->insn (seq->len () - 1))
 		  && ((next_active
 		       && INSN_P (next_active)
-		       && GET_CODE (PATTERN (next_active)) != SEQUENCE
+		       && !is_a<rtx_sequence *> (PATTERN (next_active))
 		       && get_attr_can_delay (next_active) == CAN_DELAY_YES)
 		      || !optimize_size))
 		{

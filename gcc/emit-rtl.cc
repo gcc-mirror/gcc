@@ -3164,7 +3164,7 @@ reset_all_used_flags (void)
 	    gcc_assert (REG_NOTES (p) == NULL);
 	    for (int i = 0; i < seq->len (); i++)
 	      {
-		rtx insn = seq->element (i);
+		rtx_insn *insn = seq->insn (i);
 		if (INSN_P (insn))
 		  reset_insn_used_flags (insn);
 	      }
@@ -3205,7 +3205,7 @@ verify_rtl_sharing (void)
 	if (rtx_sequence *seq = dyn_cast<rtx_sequence *> (pat))
 	  for (int i = 0; i < seq->len (); i++)
 	      {
-		rtx insn = seq->element (i);
+		rtx_insn *insn = seq->insn (i);
 		if (INSN_P (insn))
 		  verify_insn_sharing (insn);
 	      }
@@ -3636,9 +3636,9 @@ next_insn (rtx_insn *insn)
   if (insn)
     {
       insn = NEXT_INSN (insn);
-      if (insn && NONJUMP_INSN_P (insn)
-	  && GET_CODE (PATTERN (insn)) == SEQUENCE)
-	insn = as_a <rtx_sequence *> (PATTERN (insn))->insn (0);
+      if (insn && NONJUMP_INSN_P (insn))
+	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (insn)))
+	  insn = seq->insn (0);
     }
 
   return insn;
@@ -4314,28 +4314,27 @@ link_insn_into_chain (rtx_insn *insn, rtx_insn *prev, rtx_insn *next)
   if (prev != NULL)
     {
       SET_NEXT_INSN (prev) = insn;
-      if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	{
-	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (prev));
+      if (NONJUMP_INSN_P (prev))
+	if (rtx_sequence *sequence
+	    = dyn_cast <rtx_sequence *> (PATTERN (prev)))
 	  SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = insn;
-	}
     }
   if (next != NULL)
     {
       SET_PREV_INSN (next) = insn;
-      if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	{
-	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (next));
+      if (NONJUMP_INSN_P (next))
+	if (rtx_sequence *sequence
+	    = dyn_cast <rtx_sequence *> (PATTERN (next)))
 	  SET_PREV_INSN (sequence->insn (0)) = insn;
-	}
     }
 
-  if (NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    {
-      rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (insn));
-      SET_PREV_INSN (sequence->insn (0)) = prev;
-      SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = next;
-    }
+  if (NONJUMP_INSN_P (insn))
+    if (rtx_sequence *sequence
+	= dyn_cast <rtx_sequence *> (PATTERN (insn)))
+      {
+	SET_PREV_INSN (sequence->insn (0)) = prev;
+	SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = next;
+      }
 }
 
 /* Add INSN to the end of the doubly-linked list.
@@ -4499,11 +4498,10 @@ remove_insn (rtx_insn *insn)
   if (prev)
     {
       SET_NEXT_INSN (prev) = next;
-      if (NONJUMP_INSN_P (prev) && GET_CODE (PATTERN (prev)) == SEQUENCE)
-	{
-	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (prev));
+      if (NONJUMP_INSN_P (prev))
+	if (rtx_sequence *sequence
+	    = dyn_cast <rtx_sequence *> (PATTERN (prev)))
 	  SET_NEXT_INSN (sequence->insn (sequence->len () - 1)) = next;
-	}
     }
   else
     {
@@ -4522,11 +4520,10 @@ remove_insn (rtx_insn *insn)
   if (next)
     {
       SET_PREV_INSN (next) = prev;
-      if (NONJUMP_INSN_P (next) && GET_CODE (PATTERN (next)) == SEQUENCE)
-	{
-	  rtx_sequence *sequence = as_a <rtx_sequence *> (PATTERN (next));
+      if (NONJUMP_INSN_P (next))
+	if (rtx_sequence *sequence
+	    = dyn_cast <rtx_sequence *> (PATTERN (next)))
 	  SET_PREV_INSN (sequence->insn (0)) = prev;
-	}
     }
   else
     {

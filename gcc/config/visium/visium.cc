@@ -986,7 +986,7 @@ empty_delay_slot (rtx_insn *insn)
     return 1;
 
   rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
-  if (GET_CODE (PATTERN (seq)) == SEQUENCE)
+  if (is_a <rtx_sequence *> (PATTERN (seq)))
     return 0;
 
   return 1;
@@ -1276,10 +1276,10 @@ gr5_hazard_avoidance (void)
       {
 	rtx pat = PATTERN (insn);
 
-	if (GET_CODE (pat) == SEQUENCE)
+	if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
 	  {
-	    for (int i = 0; i < XVECLEN (pat, 0); i++)
-	      gr5_avoid_hazard (as_a <rtx_insn *> (XVECEXP (pat, 0, i)),
+	    for (int i = 0; i < seq->len (); i++)
+	      gr5_avoid_hazard (seq->insn (i),
 				&last_reg, &last_insn_call);
 	  }
 

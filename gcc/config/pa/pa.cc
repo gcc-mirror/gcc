@@ -4670,8 +4670,10 @@ pa_output_function_epilogue (FILE *file)
     insn = prev_real_insn (insn);
 
   /* If it is a sequence, then look inside.  */
-  if (insn && NONJUMP_INSN_P (insn) && GET_CODE (PATTERN (insn)) == SEQUENCE)
-    insn = as_a <rtx_sequence *> (PATTERN (insn))-> insn (0);
+  rtx_sequence *seq;
+  if (insn && NONJUMP_INSN_P (insn)
+      && (seq = dyn_cast <rtx_sequence *> (PATTERN (insn))))
+    insn = seq->insn (0);
 
   /* If insn is a CALL_INSN, then it must be a call to a volatile
      function (otherwise there would be epilogue insns).  */
@@ -5405,8 +5407,8 @@ pa_adjust_insn_length (rtx_insn *insn, int length)
   /* If length is negative or undefined, provide initial length.  */
   if ((unsigned int) length >= INT_MAX)
     {
-      if (GET_CODE (pat) == SEQUENCE)
-	insn = as_a <rtx_insn *> (XVECEXP (pat, 0, 0));
+      if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (pat))
+	insn = seq->insn (0);
 
       switch (get_attr_type (insn))
 	{
@@ -5507,7 +5509,7 @@ pa_print_operand (FILE *file, rtx x, int code)
       /* delay slot or nullification is requested.  */
       if (dbr_sequence_length () == 0 ||
 	  (final_sequence &&
-	   INSN_ANNULLED_BRANCH_P (XVECEXP (final_sequence, 0, 0))))
+	   INSN_ANNULLED_BRANCH_P (final_sequence->insn (0))))
         fputs (",n", file);
       return;
     case 'R':

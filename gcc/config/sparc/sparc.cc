@@ -3997,14 +3997,15 @@ empty_delay_slot (rtx_insn *insn)
 int
 emit_cbcond_nop (rtx_insn *insn)
 {
-  rtx next = next_active_insn (insn);
+  rtx_insn *next = next_active_insn (insn);
 
   if (!next)
     return 1;
 
+  rtx_sequence *seq;
   if (NONJUMP_INSN_P (next)
-      && GET_CODE (PATTERN (next)) == SEQUENCE)
-    next = XVECEXP (PATTERN (next), 0, 0);
+      && (seq = dyn_cast <rtx_sequence *> (PATTERN (next))))
+    next = seq->insn (0);
   else if (CALL_P (next)
 	   && GET_CODE (PATTERN (next)) == PARALLEL)
     {
@@ -6350,11 +6351,12 @@ sparc_asm_function_epilogue (FILE *file)
 
   rtx_insn *insn = get_last_insn ();
 
-  rtx last_real_insn = prev_real_insn (insn);
+  rtx_insn *last_real_insn = prev_real_insn (insn);
+  rtx_sequence *seq;
   if (last_real_insn
       && NONJUMP_INSN_P (last_real_insn)
-      && GET_CODE (PATTERN (last_real_insn)) == SEQUENCE)
-    last_real_insn = XVECEXP (PATTERN (last_real_insn), 0, 0);
+      && (seq = dyn_cast <rtx_sequence *> (PATTERN (last_real_insn))))
+    last_real_insn = seq->insn (0);
 
   if (last_real_insn
       && CALL_P (last_real_insn)
