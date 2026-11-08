@@ -581,7 +581,8 @@ fs::create_directory_symlink(const path& to, const path& new_symlink)
 }
 
 void
-fs::create_directory_symlink(const path& to, const path& new_symlink,
+fs::create_directory_symlink([[maybe_unused]] const path& to,
+			     [[maybe_unused]] const path& new_symlink,
 			     error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_FILESYSTEM_IS_WINDOWS
@@ -632,7 +633,8 @@ fs::create_symlink(const path& to, const path& new_symlink)
 }
 
 void
-fs::create_symlink(const path& to, const path& new_symlink,
+fs::create_symlink([[maybe_unused]] const path& to,
+		   [[maybe_unused]] const path& new_symlink,
 		   error_code& ec) noexcept
 {
 #ifdef _GLIBCXX_HAVE_SYMLINK
