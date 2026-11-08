@@ -418,13 +418,12 @@ class ResolutionPath : public RawPath<ResolutionPathSegment>
 {
 public:
   template <typename T>
-  ResolutionPath (const std::vector<T> &segments_in,
-		  bool opening_scope_resolution, NodeId node_id)
-    : RawPath ({}, opening_scope_resolution), node_id (node_id)
+  ResolutionPath (const RawPath<T> &path, NodeId node_id)
+    : RawPath ({}, path.has_opening_scope_resolution ()), node_id (node_id)
   {
     segments.clear ();
-    segments.reserve (segments_in.size ());
-    for (auto &outer_seg : segments_in)
+    segments.reserve (path.get_segments ().size ());
+    for (auto &outer_seg : path.get_segments ())
       {
 	if (auto lang_item = unwrap_segment_get_lang_item (outer_seg))
 	  {

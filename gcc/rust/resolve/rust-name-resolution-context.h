@@ -688,8 +688,7 @@ public:
     template <typename S>
     void set_path (const RawPath<S> &new_path, NodeId node_id)
     {
-      path = ResolutionPath (new_path.get_segments (),
-			     new_path.has_opening_scope_resolution (), node_id);
+      path = ResolutionPath (new_path, node_id);
       mode = ResolutionMode::Normal;
       if (new_path.has_opening_scope_resolution ())
 	{
@@ -705,8 +704,7 @@ public:
     void set_path (const RawPath<S> &new_path, NodeId node_id,
 		   ResolutionMode mode)
     {
-      path = ResolutionPath (new_path.get_segments (),
-			     new_path.has_opening_scope_resolution (), node_id);
+      path = ResolutionPath (new_path, node_id);
       this->mode = mode;
       has_path_set = true;
     }
