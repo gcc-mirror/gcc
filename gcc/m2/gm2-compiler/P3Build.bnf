@@ -54,7 +54,7 @@ FROM DynamicStrings IMPORT String, InitString, KillString, Mark, ConCat, ConCatC
 FROM M2Printf IMPORT printf0, printf1 ;
 FROM M2Debug IMPORT Assert ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
-FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT2 ;
+FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2 ;
 FROM M2CaseList IMPORT ElseCase ;
 FROM M2StackSpell IMPORT GetRecordField ;
 
@@ -174,8 +174,9 @@ FROM SymbolTable IMPORT MakeGnuAsm, PutGnuAsmVolatile, PutGnuAsm, PutGnuAsmInput
                         PutIncluded,
                         IsVarParam, IsProcedure, IsDefImp, IsModule, IsProcType,
                         IsRecord,
-                        RequestSym, IsExported, IsImported,
-                        GetSym, GetLocalSym ;
+                        RequestSym, IsExported, IsImported, IsUnknown,
+                        GetSym, GetLocalSym,
+			UnknownReported ;
 
 FROM M2Batch IMPORT IsModuleKnown ;
 
@@ -1115,25 +1116,35 @@ Designator := QualidentCheck                                               % Che
               { SubDesignator } =:
 
 SubDesignator := "."                                                       % VAR Sym, Type, tok,
-                                                                                 dotpostok     : CARDINAL ;
-                                                                                 name, n1      : Name ; %
+                                                                                 dotpostok: CARDINAL ;
+                                                                                 name     : Name ; %
                                                                            % dotpostok := GetTokenNo () -1 ;
                                                                              PopTFtok (Sym, Type, tok) ;
                                                                              Type := SkipType(Type) ;
                                                                              PushTFtok(Sym, Type, tok) ;
                                                                              IF Type=NulSym
                                                                              THEN
-                                                                                n1 := GetSymName(Sym) ;
                                                                                 IF IsModuleKnown(GetSymName(Sym))
                                                                                 THEN
-                                                                                   WriteFormat2('%a looks like a module which has not been globally imported (eg. suggest that you IMPORT %a)',
-                                                                                   n1, n1)
+                                                                                   MetaErrorT1 (tok, '{%1a} looks like a module which has not been globally imported (eg. suggest that you IMPORT {%1a}', Sym)
                                                                                 ELSE
-                                                                                   WriteFormat1('%a is not a record variable', n1)
+                                                                                   IF IsUnknown (Sym)
+										   THEN
+                                                                                      MetaErrorT1 (tok, 'the qualifier {%1Ua} is unknown {%1&siD}', Sym) ;
+                                                                                      UnknownReported (Sym)
+										   ELSE
+                                                                                      MetaErrorT1 (tok, "the type of {%1ad} is not a record (but {%1tad})", Sym)
+                                                                                   END
                                                                                 END
                                                                              ELSIF NOT IsRecord(Type)
                                                                              THEN
-                                                                                MetaErrorT2 (tok, "the type of {%1ad} is not a record (but {%2ad}) and therefore it has no field", Sym, Type) ;
+										IF IsUnknown (Type)
+										THEN
+                                                                                   MetaErrorT1 (tok, 'the qualifier {%1Ua} is unknown {%1&siD}', Type) ;
+                                                                                   UnknownReported (Type)
+										ELSE
+                                                                                   MetaErrorT2 (tok, "the type of {%1ad} is not a record (but {%2ad}) and therefore it has no field", Sym, Type)
+										END
                                                                              END ;
                                                                              StartScope(Type) %
                  Ident
